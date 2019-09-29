@@ -1,0 +1,8 @@
+{
+  "recommendations": [
+    "ms-vscode.cpptools",
+    "twxs.cmake",
+    "vector-of-bool.cmake-tools",
+    "editorconfig.editorconfig"
+  ]
+}

@@ -19,7 +19,7 @@ indent_style = tab
 indent_size = 2
 
 # Source files.
-[*.{h,cpp}]
+[*.{hpp,cpp}]
 indent_size = 2
 
 # Config files.

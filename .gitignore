@@ -3,7 +3,11 @@
 # --------------------------------------------------------------------------------------------------
 
 # Build output.
-[Bb]uild/
+/[Bb]uild*
 
-# Executables.
-[Bb]in/
+# User settings (Except portable common settings).
+/.vscode/*
+!/.vscode/settings.json
+!/.vscode/extensions.json
+!/.vscode/tasks.json
+!/.vscode/launch.json
