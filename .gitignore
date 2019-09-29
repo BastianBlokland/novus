@@ -4,6 +4,7 @@
 
 # Build output.
 /[Bb]uild*
+/[Bb]in*
 
 # User settings (Except portable common settings).
 /.vscode/*

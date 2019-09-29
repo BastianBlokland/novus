@@ -7,7 +7,7 @@ A simple interpreted programming language meant as an exercise.
 ### Building
 * Configure CMake: `cmake -B build`.
 * Build with Make: `(cd build && make)`.
-* Executables can be found here: `build/apps/`.
+* Executables can be found in the `bin` directory.
 
 ### Compiler
 * Development done using `clang 9.0.0`.
