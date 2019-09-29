@@ -1,0 +1,11 @@
+{
+  "files.encoding": "utf8",
+  "files.autoGuessEncoding": false,
+  "files.trimTrailingWhitespace": true,
+  "editor.formatOnSave": true,
+  "editor.renderWhitespace": "all",
+  "editor.detectIndentation": false,
+  "editor.rulers": [
+    100
+  ],
+}

@@ -1,0 +1,27 @@
+# --------------------------------------------------------------------------------------------------
+# Editor config file containing settings for this project.
+# https://editorconfig.org/
+# --------------------------------------------------------------------------------------------------
+
+# All files.
+[*]
+charset = utf-8
+trim_trailing_whitespace = true
+end_of_line = lf
+insert_final_newline = true
+
+# Make files.
+[Makefile]
+indent_style = tab
+
+# Cmake config.
+[CMakeLists.txt]
+indent_size = 2
+
+# Source files.
+[*.{h,cpp}]
+indent_size = 2
+
+# Config files.
+[*.{md,json}]
+indent_size = 2
