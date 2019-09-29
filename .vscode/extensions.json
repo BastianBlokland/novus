@@ -2,6 +2,7 @@
   "recommendations": [
     "ms-vscode.cpptools",
     "twxs.cmake",
+    "xaver.clang-format",
     "vector-of-bool.cmake-tools",
     "editorconfig.editorconfig"
   ]

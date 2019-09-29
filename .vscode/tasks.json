@@ -5,6 +5,11 @@
       "label": "build debug",
       "type": "shell",
       "command": "cmake -B build -DCMAKE_BUILD_TYPE=Debug && cd build && make",
+      "presentation": {
+        "echo": true,
+        "panel": "shared",
+        "clear": true
+      },
       "group": {
         "kind": "build",
         "isDefault": true

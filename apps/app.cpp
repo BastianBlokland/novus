@@ -1,8 +1,7 @@
 #include <iostream>
-using namespace std;
+using std::cout;
 
-int main()
-{
+auto main() -> int {
   cout << "Hello, World!\n";
   return 0;
 }
