@@ -27,7 +27,7 @@ auto Token::operator=(const Token& rhs) -> Token& {
 
   // Make a copy of the payload.
   delete m_payload;
-  m_payload = !rhs.m_payload ? nullptr : rhs.m_payload->Clone();
+  m_payload = rhs.m_payload ? rhs.m_payload->Clone() : nullptr;
   return *this;
 }
 
