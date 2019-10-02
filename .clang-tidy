@@ -1,4 +1,4 @@
-Checks:'*,
+Checks: '*,
     -clang-analyzer-alpha.*,
     -fuchsia-*,
     -hicpp-no-array-decay,
