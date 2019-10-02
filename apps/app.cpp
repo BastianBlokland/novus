@@ -3,18 +3,16 @@
 #include <string>
 
 auto main() -> int {
-  std::cout << "Type input:\n";
 
-  for (std::string line; std::getline(std::cin, line);) {
-    std::cout << '\n';
-    auto lexer = lex::Lexer{line.begin(), line.end()};
-    lex::Token token;
-    do {
-      token = lexer.next();
-      std::cout << '[' << token << ']' << ' ';
-    } while (!token.isEnd());
-    std::cout << '\n' << '\n';
-  }
+  std::istreambuf_iterator<char> eos;
+  std::istreambuf_iterator<char> iit(std::cin.rdbuf());
+
+  auto lexer = lex::Lexer{iit, eos};
+  lex::Token token;
+  do {
+    token = lexer.next();
+    std::cout << '[' << token << ']' << ' ';
+  } while (!token.isEnd());
 
   return 0;
 }
