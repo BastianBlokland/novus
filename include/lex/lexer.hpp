@@ -16,15 +16,15 @@ template <typename InputItr> class Lexer final {
 public:
   Lexer() = delete;
   Lexer(InputItr inputStart, const InputItr inputEnd)
-      : _input{inputStart}, _inputEnd{inputEnd}, _inputPos{-1}, _readBuffer{} {}
+      : m_input{inputStart}, m_inputEnd{inputEnd}, m_inputPos{-1}, m_readBuffer{} {}
 
   auto next() -> Token;
 
 private:
-  InputItr _input;
-  const InputItr _inputEnd;
-  int _inputPos;
-  std::deque<char> _readBuffer;
+  InputItr m_input;
+  const InputItr m_inputEnd;
+  int m_inputPos;
+  std::deque<char> m_readBuffer;
 
   auto nextLitInt(const char mostSignficantChar) -> Token;
   auto nextLitStr() -> Token;

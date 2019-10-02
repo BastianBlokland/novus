@@ -29,13 +29,13 @@ public:
   Token& operator=(Token&& rhs) noexcept;
   ~Token();
 
-  auto getType() const noexcept -> TokenType { return _type; }
+  auto getType() const noexcept -> TokenType { return m_type; }
 
-  auto getSpan() const noexcept -> SourceSpan { return _span; }
+  auto getSpan() const noexcept -> SourceSpan { return m_span; }
 
-  auto getPayload() const noexcept -> TokenPayload* { return _payload; }
+  auto getPayload() const noexcept -> TokenPayload* { return m_payload; }
 
-  auto isEnd() const noexcept -> bool { return _type == TokenType::End; }
+  auto isEnd() const noexcept -> bool { return m_type == TokenType::End; }
 
   // Static factories.
   static auto startToken() -> Token;
@@ -57,9 +57,9 @@ public:
   static auto identiferToken(const SourceSpan span, const std::string& id) -> Token;
 
 private:
-  TokenType _type;
-  SourceSpan _span;
-  TokenPayload* _payload;
+  TokenType m_type;
+  SourceSpan m_span;
+  TokenPayload* m_payload;
 
   Token(const TokenType type, const SourceSpan span, TokenPayload* payload);
 };
@@ -69,93 +69,93 @@ std::ostream& operator<<(std::ostream& out, const Token& rhs);
 class ErrorTokenPayload final : public TokenPayload {
 public:
   ErrorTokenPayload() = delete;
-  ErrorTokenPayload(const std::string& msg) : _msg{msg} {}
+  ErrorTokenPayload(const std::string& msg) : m_msg{msg} {}
 
   auto Clone() -> TokenPayload* override { return new ErrorTokenPayload{*this}; }
 
-  auto getMessage() const noexcept -> const std::string& { return _msg; }
+  auto getMessage() const noexcept -> const std::string& { return m_msg; }
 
 private:
-  const std::string _msg;
+  const std::string m_msg;
 
-  auto print(std::ostream& out) const -> std::ostream& override { return out << _msg; }
+  auto print(std::ostream& out) const -> std::ostream& override { return out << m_msg; }
 };
 
 class LitIntTokenPayload final : public TokenPayload {
 public:
   LitIntTokenPayload() = delete;
-  LitIntTokenPayload(const uint32_t val) : _val{val} {}
+  LitIntTokenPayload(const uint32_t val) : m_val{val} {}
 
   auto Clone() -> TokenPayload* override { return new LitIntTokenPayload{*this}; }
 
-  auto getValue() const noexcept -> const uint32_t { return _val; }
+  auto getValue() const noexcept -> const uint32_t { return m_val; }
 
 private:
-  const uint32_t _val;
+  const uint32_t m_val;
 
-  auto print(std::ostream& out) const -> std::ostream& override { return out << _val; }
+  auto print(std::ostream& out) const -> std::ostream& override { return out << m_val; }
 };
 
 class LitBoolTokenPayload final : public TokenPayload {
 public:
   LitBoolTokenPayload() = delete;
-  LitBoolTokenPayload(const bool val) : _val{val} {}
+  LitBoolTokenPayload(const bool val) : m_val{val} {}
 
   auto Clone() -> TokenPayload* override { return new LitBoolTokenPayload{*this}; }
 
-  auto getValue() const noexcept -> const bool { return _val; }
+  auto getValue() const noexcept -> const bool { return m_val; }
 
 private:
-  const bool _val;
+  const bool m_val;
 
   auto print(std::ostream& out) const -> std::ostream& override {
-    return out << (_val ? "true" : "false");
+    return out << (m_val ? "true" : "false");
   }
 };
 
 class LitStringTokenPayload final : public TokenPayload {
 public:
   LitStringTokenPayload() = delete;
-  LitStringTokenPayload(const std::string& val) : _val{val} {}
+  LitStringTokenPayload(const std::string& val) : m_val{val} {}
 
   auto Clone() -> TokenPayload* override { return new LitStringTokenPayload{*this}; }
 
-  auto getValue() const noexcept -> const std::string& { return _val; }
+  auto getValue() const noexcept -> const std::string& { return m_val; }
 
 private:
-  const std::string _val;
+  const std::string m_val;
 
-  auto print(std::ostream& out) const -> std::ostream& override { return out << _val; }
+  auto print(std::ostream& out) const -> std::ostream& override { return out << m_val; }
 };
 
 class KeywordTokenPayload final : public TokenPayload {
 public:
   KeywordTokenPayload() = delete;
-  KeywordTokenPayload(const Keyword keyword) : _kw{keyword} {}
+  KeywordTokenPayload(const Keyword keyword) : m_kw{keyword} {}
 
   auto Clone() -> TokenPayload* override { return new KeywordTokenPayload{*this}; }
 
-  auto getKeyword() const noexcept -> const Keyword { return _kw; }
+  auto getKeyword() const noexcept -> const Keyword { return m_kw; }
 
 private:
-  const Keyword _kw;
+  const Keyword m_kw;
 
-  auto print(std::ostream& out) const -> std::ostream& override { return out << _kw; }
+  auto print(std::ostream& out) const -> std::ostream& override { return out << m_kw; }
 };
 
 class IdentifierTokenPayload final : public TokenPayload {
 public:
   IdentifierTokenPayload() = delete;
-  IdentifierTokenPayload(const std::string& id) : _id{id} {}
+  IdentifierTokenPayload(const std::string& id) : m_id{id} {}
 
   auto Clone() -> TokenPayload* override { return new IdentifierTokenPayload{*this}; }
 
-  auto getIdentifier() const noexcept -> const std::string& { return _id; }
+  auto getIdentifier() const noexcept -> const std::string& { return m_id; }
 
 private:
-  const std::string _id;
+  const std::string m_id;
 
-  auto print(std::ostream& out) const -> std::ostream& override { return out << _id; }
+  auto print(std::ostream& out) const -> std::ostream& override { return out << m_id; }
 };
 
 } // namespace lex

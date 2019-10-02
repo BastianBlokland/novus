@@ -2,19 +2,20 @@
 
 namespace lex {
 
-Token::Token() : _type{TokenType::Start}, _span{0}, _payload{nullptr} {}
+Token::Token() : m_type{TokenType::Start}, m_span{0}, m_payload{nullptr} {}
 
 Token::Token(const TokenType type, const SourceSpan span, TokenPayload* payload)
-    : _type{type}, _span{span}, _payload{payload} {}
+    : m_type{type}, m_span{span}, m_payload{payload} {}
 
 Token::Token(const Token& rhs)
-    : _type{rhs._type}, _span{rhs._span}, _payload{rhs._payload == nullptr
-                                                       ? nullptr
-                                                       : rhs._payload->Clone()} {}
+    : m_type{rhs.m_type}, m_span{rhs.m_span}, m_payload{rhs.m_payload == nullptr
+                                                            ? nullptr
+                                                            : rhs.m_payload->Clone()} {}
 
-Token::Token(Token&& rhs) noexcept : _type{rhs._type}, _span{rhs._span}, _payload{rhs._payload} {
+Token::Token(Token&& rhs) noexcept
+    : m_type{rhs.m_type}, m_span{rhs.m_span}, m_payload{rhs.m_payload} {
   // Remove payload from rhs as we 'stole' it.
-  rhs._payload = nullptr;
+  rhs.m_payload = nullptr;
 }
 
 auto Token::operator=(const Token& rhs) -> Token& {
@@ -22,12 +23,12 @@ auto Token::operator=(const Token& rhs) -> Token& {
     return *this;
   }
 
-  _type = rhs._type;
-  _span = rhs._span;
+  m_type = rhs.m_type;
+  m_span = rhs.m_span;
 
   // Make a copy of the payload.
-  delete _payload;
-  _payload = rhs._payload == nullptr ? nullptr : rhs._payload->Clone();
+  delete m_payload;
+  m_payload = rhs.m_payload == nullptr ? nullptr : rhs.m_payload->Clone();
   return *this;
 }
 
@@ -36,20 +37,20 @@ auto Token::operator=(Token&& rhs) noexcept -> Token& {
     return *this;
   }
 
-  _type = rhs._type;
-  _span = rhs._span;
+  m_type = rhs.m_type;
+  m_span = rhs.m_span;
 
   // Steal the payload.
-  delete _payload;
-  _payload = rhs._payload;
-  rhs._payload = nullptr;
+  delete m_payload;
+  m_payload = rhs.m_payload;
+  rhs.m_payload = nullptr;
   return *this;
 }
 
 Token::~Token() {
-  if (_payload != nullptr) {
-    delete _payload;
-    _payload = nullptr;
+  if (m_payload != nullptr) {
+    delete m_payload;
+    m_payload = nullptr;
   }
 }
 

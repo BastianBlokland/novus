@@ -8,12 +8,12 @@ public:
   SourceSpan(const int pos) : SourceSpan(pos, pos){};
   SourceSpan(const int start, const int end);
 
-  auto getStart() const noexcept -> int { return _start; }
+  auto getStart() const noexcept -> int { return m_start; }
 
-  auto getEnd() const noexcept -> int { return _end; }
+  auto getEnd() const noexcept -> int { return m_end; }
 
 private:
-  int _start, _end;
+  int m_start, m_end;
 };
 
 } // namespace lex

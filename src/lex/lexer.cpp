@@ -12,25 +12,25 @@ template <typename InputItr> auto Lexer<InputItr>::next() -> Token {
     const auto c = consumeChar();
     switch (c) {
     case '\0':
-      return Token::endToken(SourceSpan{_inputPos >= 0 ? _inputPos : 0});
+      return Token::endToken(SourceSpan{m_inputPos >= 0 ? m_inputPos : 0});
     case '+':
-      return Token::basicToken(TokenType::OpPlus, SourceSpan{_inputPos});
+      return Token::basicToken(TokenType::OpPlus, SourceSpan{m_inputPos});
     case '-':
-      return Token::basicToken(TokenType::OpMinus, SourceSpan{_inputPos});
+      return Token::basicToken(TokenType::OpMinus, SourceSpan{m_inputPos});
     case '*':
-      return Token::basicToken(TokenType::OpStar, SourceSpan{_inputPos});
+      return Token::basicToken(TokenType::OpStar, SourceSpan{m_inputPos});
     case '/':
-      return Token::basicToken(TokenType::OpSlash, SourceSpan{_inputPos});
+      return Token::basicToken(TokenType::OpSlash, SourceSpan{m_inputPos});
     case '?':
-      return Token::basicToken(TokenType::OpQMark, SourceSpan{_inputPos});
+      return Token::basicToken(TokenType::OpQMark, SourceSpan{m_inputPos});
     case ':':
-      return Token::basicToken(TokenType::OpColon, SourceSpan{_inputPos});
+      return Token::basicToken(TokenType::OpColon, SourceSpan{m_inputPos});
     case '(':
-      return Token::basicToken(TokenType::SepOpenParan, SourceSpan{_inputPos});
+      return Token::basicToken(TokenType::SepOpenParan, SourceSpan{m_inputPos});
     case ')':
-      return Token::basicToken(TokenType::SepCloseParan, SourceSpan{_inputPos});
+      return Token::basicToken(TokenType::SepCloseParan, SourceSpan{m_inputPos});
     case ',':
-      return Token::basicToken(TokenType::SepComma, SourceSpan{_inputPos});
+      return Token::basicToken(TokenType::SepComma, SourceSpan{m_inputPos});
     case ' ':
     case '\t':
     case '\n':
@@ -53,7 +53,7 @@ template <typename InputItr> auto Lexer<InputItr>::next() -> Token {
       if (std::isalnum(c)) {
         return nextWordToken(c);
       }
-      return Token::errorToken(SourceSpan(_inputPos, _inputPos), "Invalid character");
+      return Token::errorToken(SourceSpan(m_inputPos, m_inputPos), "Invalid character");
     }
   }
 }
@@ -61,7 +61,7 @@ template <typename InputItr> auto Lexer<InputItr>::next() -> Token {
 template <typename InputItr> auto Lexer<InputItr>::nextLitInt(char mostSignficantChar) -> Token {
   assert(std::isdigit(mostSignficantChar));
 
-  const auto startPos = _inputPos;
+  const auto startPos = m_inputPos;
   uint32_t result = mostSignficantChar - '0';
   assert(result >= 0 && result <= 9);
 
@@ -76,14 +76,14 @@ template <typename InputItr> auto Lexer<InputItr>::nextLitInt(char mostSignfican
     result = newResult;
   }
 
-  const auto span = SourceSpan{startPos, _inputPos};
+  const auto span = SourceSpan{startPos, m_inputPos};
   return tooBig ? Token::errorToken(span, "Number literal too big")
                 : Token::litIntToken(span, result);
 }
 
 template <typename InputItr> auto Lexer<InputItr>::nextLitStr() -> Token {
   // Starting '"' already consumed by caller.
-  const auto startPos = _inputPos;
+  const auto startPos = m_inputPos;
   std::string result{};
   while (true) {
     auto c = consumeChar();
@@ -91,14 +91,14 @@ template <typename InputItr> auto Lexer<InputItr>::nextLitStr() -> Token {
     case '\0':
     case '\r':
     case '\n':
-      return Token::errorToken(SourceSpan{startPos, _inputPos}, "Unterminated string literal");
+      return Token::errorToken(SourceSpan{startPos, m_inputPos}, "Unterminated string literal");
     case '"':
       // Allow escaping of double quotes by using an additional double quote.
       if (peekChar(0) == '"') {
         result += consumeChar();
         break;
       }
-      return Token::litStrToken(SourceSpan{startPos, _inputPos}, result);
+      return Token::litStrToken(SourceSpan{startPos, m_inputPos}, result);
     default:
       result += c;
       break;
@@ -107,13 +107,13 @@ template <typename InputItr> auto Lexer<InputItr>::nextLitStr() -> Token {
 }
 
 template <typename InputItr> auto Lexer<InputItr>::nextWordToken(char startingChar) -> Token {
-  const auto startPos = _inputPos;
+  const auto startPos = m_inputPos;
   std::string result(1, startingChar);
   while (std::isalpha(peekChar(0))) {
     result += consumeChar();
   }
 
-  const auto span = SourceSpan{startPos, _inputPos};
+  const auto span = SourceSpan{startPos, m_inputPos};
 
   // Check if word is a literal.
   if (result == "true") {
@@ -137,33 +137,33 @@ template <typename InputItr> auto Lexer<InputItr>::nextWordToken(char startingCh
 
 template <typename InputItr> auto Lexer<InputItr>::consumeChar() -> char {
   char val;
-  if (!_readBuffer.empty()) {
-    val = _readBuffer.front();
-    _readBuffer.pop_front();
+  if (!m_readBuffer.empty()) {
+    val = m_readBuffer.front();
+    m_readBuffer.pop_front();
   } else {
     val = getFromInput();
   }
 
   if (val != '\0') {
-    _inputPos++;
+    m_inputPos++;
   }
   return val;
 }
 
 template <typename InputItr> auto Lexer<InputItr>::peekChar(const int ahead) -> char {
-  for (auto i = _readBuffer.size(); i <= ahead; i++) {
-    _readBuffer.push_back(getFromInput());
+  for (auto i = m_readBuffer.size(); i <= ahead; i++) {
+    m_readBuffer.push_back(getFromInput());
   }
 
-  return _readBuffer[ahead];
+  return m_readBuffer[ahead];
 }
 
 template <typename InputItr> auto Lexer<InputItr>::getFromInput() -> char {
-  if (_input == _inputEnd) {
+  if (m_input == m_inputEnd) {
     return '\0';
   }
-  const auto val = *_input;
-  _input++;
+  const auto val = *m_input;
+  m_input++;
   return val;
 }
 
