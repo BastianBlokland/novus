@@ -5,13 +5,15 @@ namespace lex {
 class SourceSpan final {
 public:
   SourceSpan() = delete;
+  SourceSpan(const int pos) : SourceSpan(pos, pos){};
   SourceSpan(const int start, const int end);
 
-  auto getStart() const -> int;
-  auto getEnd() const -> int;
+  auto getStart() const noexcept -> int { return _start; }
+
+  auto getEnd() const noexcept -> int { return _end; }
 
 private:
-  const int _start, _end;
+  int _start, _end;
 };
 
 } // namespace lex

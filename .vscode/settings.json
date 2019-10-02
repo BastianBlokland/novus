@@ -6,6 +6,6 @@
   "editor.renderWhitespace": "all",
   "editor.detectIndentation": false,
   "editor.rulers": [
-    80
+    100
   ]
 }
