@@ -8,9 +8,8 @@ Token::Token(const TokenType type, const SourceSpan span, TokenPayload* payload)
     : m_type{type}, m_span{span}, m_payload{payload} {}
 
 Token::Token(const Token& rhs)
-    : m_type{rhs.m_type}, m_span{rhs.m_span}, m_payload{rhs.m_payload == nullptr
-                                                            ? nullptr
-                                                            : rhs.m_payload->Clone()} {}
+    : m_type{rhs.m_type}, m_span{rhs.m_span}, m_payload{!rhs.m_payload ? nullptr
+                                                                       : rhs.m_payload->Clone()} {}
 
 Token::Token(Token&& rhs) noexcept
     : m_type{rhs.m_type}, m_span{rhs.m_span}, m_payload{rhs.m_payload} {
@@ -28,7 +27,7 @@ auto Token::operator=(const Token& rhs) -> Token& {
 
   // Make a copy of the payload.
   delete m_payload;
-  m_payload = rhs.m_payload == nullptr ? nullptr : rhs.m_payload->Clone();
+  m_payload = !rhs.m_payload ? nullptr : rhs.m_payload->Clone();
   return *this;
 }
 
@@ -48,7 +47,7 @@ auto Token::operator=(Token&& rhs) noexcept -> Token& {
 }
 
 Token::~Token() {
-  if (m_payload != nullptr) {
+  if (m_payload) {
     delete m_payload;
     m_payload = nullptr;
   }
@@ -91,7 +90,7 @@ auto Token::identiferToken(const SourceSpan span, const std::string& id) -> Toke
 auto operator<<(std::ostream& out, const Token& rhs) -> std::ostream& {
   out << rhs.getType();
   const auto payload = rhs.getPayload();
-  if (payload != nullptr) {
+  if (payload) {
     out << '-' << '\'' << *payload << '\'';
   }
   return out;

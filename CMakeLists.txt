@@ -12,7 +12,8 @@ set(CMAKE_CXX_CLANG_TIDY
   -clang-analyzer-alpha.*,\
   -fuchsia-*,\
   -hicpp-no-array-decay,\
-  -cppcoreguidelines-pro-bounds-array-to-pointer-decay")
+  -cppcoreguidelines-pro-bounds-array-to-pointer-decay,\
+  -readability-implicit-bool-conversion")
 
 # Output executables to bin dir.
 set(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/bin)
