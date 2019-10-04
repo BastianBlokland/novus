@@ -2,7 +2,7 @@
 
 namespace lex {
 
-Token::Token() : m_type{TokenType::Start}, m_span{0}, m_payload{nullptr} {}
+Token::Token() : m_type{TokenType::End}, m_span{0}, m_payload{nullptr} {}
 
 Token::Token(const TokenType type, const SourceSpan span, TokenPayload* payload)
     : m_type{type}, m_span{span}, m_payload{payload} {}
@@ -46,14 +46,26 @@ auto Token::operator=(Token&& rhs) noexcept -> Token& {
   return *this;
 }
 
+auto Token::operator==(const Token& rhs) noexcept -> bool {
+  if (m_type != rhs.m_type) {
+    return false;
+  }
+
+  if ((m_payload == nullptr) != (rhs.m_payload == nullptr)) {
+    return false;
+  }
+
+  return m_payload == nullptr || m_payload->operator==(*rhs.m_payload);
+}
+
+auto Token::operator!=(const Token& rhs) noexcept -> bool { return !Token::operator==(rhs); }
+
 Token::~Token() {
   if (m_payload) {
     delete m_payload;
     m_payload = nullptr;
   }
 }
-
-auto Token::startToken() -> Token { return Token{TokenType::Start, 0, nullptr}; }
 
 auto Token::endToken(const SourceSpan span) -> Token {
   return Token{TokenType::End, span, nullptr};

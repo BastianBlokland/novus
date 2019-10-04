@@ -12,7 +12,10 @@ public:
   virtual TokenPayload* Clone() = 0;
   virtual ~TokenPayload() {}
 
-  friend std::ostream& operator<<(std::ostream& out, const TokenPayload& rhs) {
+  virtual auto operator==(const TokenPayload& rhs) const noexcept -> bool = 0;
+  virtual auto operator!=(const TokenPayload& rhs) const noexcept -> bool = 0;
+
+  friend auto operator<<(std::ostream& out, const TokenPayload& rhs) -> std::ostream& {
     return rhs.print(out);
   }
 
@@ -25,8 +28,13 @@ public:
   Token();
   Token(const Token& rhs);
   Token(Token&& rhs) noexcept;
-  Token& operator=(const Token& rhs);
-  Token& operator=(Token&& rhs) noexcept;
+
+  auto operator=(const Token& rhs) -> Token&;
+  auto operator=(Token&& rhs) noexcept -> Token&;
+
+  auto operator==(const Token& rhs) noexcept -> bool;
+  auto operator!=(const Token& rhs) noexcept -> bool;
+
   ~Token();
 
   auto getType() const noexcept -> TokenType { return m_type; }
@@ -38,8 +46,6 @@ public:
   auto isEnd() const noexcept -> bool { return m_type == TokenType::End; }
 
   // Static factories.
-  static auto startToken() -> Token;
-
   static auto endToken(const SourceSpan span) -> Token;
 
   static auto basicToken(const TokenType type, const SourceSpan span) -> Token;
@@ -71,6 +77,17 @@ public:
   ErrorTokenPayload() = delete;
   ErrorTokenPayload(const std::string& msg) : m_msg{msg} {}
 
+  auto operator==(const TokenPayload& rhs) const noexcept -> bool override {
+    if (typeid(rhs) == typeid(*this)) {
+      return m_msg == static_cast<const ErrorTokenPayload&>(rhs).m_msg;
+    }
+    return false;
+  }
+
+  auto operator!=(const TokenPayload& rhs) const noexcept -> bool override {
+    return !ErrorTokenPayload::operator==(rhs);
+  }
+
   auto Clone() -> TokenPayload* override { return new ErrorTokenPayload{*this}; }
 
   auto getMessage() const noexcept -> const std::string& { return m_msg; }
@@ -86,6 +103,17 @@ public:
   LitIntTokenPayload() = delete;
   LitIntTokenPayload(const uint32_t val) : m_val{val} {}
 
+  auto operator==(const TokenPayload& rhs) const noexcept -> bool override {
+    if (typeid(rhs) == typeid(*this)) {
+      return m_val == static_cast<const LitIntTokenPayload&>(rhs).m_val;
+    }
+    return false;
+  }
+
+  auto operator!=(const TokenPayload& rhs) const noexcept -> bool override {
+    return !LitIntTokenPayload::operator==(rhs);
+  }
+
   auto Clone() -> TokenPayload* override { return new LitIntTokenPayload{*this}; }
 
   auto getValue() const noexcept -> const uint32_t { return m_val; }
@@ -100,6 +128,17 @@ class LitBoolTokenPayload final : public TokenPayload {
 public:
   LitBoolTokenPayload() = delete;
   LitBoolTokenPayload(const bool val) : m_val{val} {}
+
+  auto operator==(const TokenPayload& rhs) const noexcept -> bool override {
+    if (typeid(rhs) == typeid(*this)) {
+      return m_val == static_cast<const LitBoolTokenPayload&>(rhs).m_val;
+    }
+    return false;
+  }
+
+  auto operator!=(const TokenPayload& rhs) const noexcept -> bool override {
+    return !LitBoolTokenPayload::operator==(rhs);
+  }
 
   auto Clone() -> TokenPayload* override { return new LitBoolTokenPayload{*this}; }
 
@@ -118,6 +157,17 @@ public:
   LitStringTokenPayload() = delete;
   LitStringTokenPayload(const std::string& val) : m_val{val} {}
 
+  auto operator==(const TokenPayload& rhs) const noexcept -> bool override {
+    if (typeid(rhs) == typeid(*this)) {
+      return m_val == static_cast<const LitStringTokenPayload&>(rhs).m_val;
+    }
+    return false;
+  }
+
+  auto operator!=(const TokenPayload& rhs) const noexcept -> bool override {
+    return !LitStringTokenPayload::operator==(rhs);
+  }
+
   auto Clone() -> TokenPayload* override { return new LitStringTokenPayload{*this}; }
 
   auto getValue() const noexcept -> const std::string& { return m_val; }
@@ -133,6 +183,17 @@ public:
   KeywordTokenPayload() = delete;
   KeywordTokenPayload(const Keyword keyword) : m_kw{keyword} {}
 
+  auto operator==(const TokenPayload& rhs) const noexcept -> bool override {
+    if (typeid(rhs) == typeid(*this)) {
+      return m_kw == static_cast<const KeywordTokenPayload&>(rhs).m_kw;
+    }
+    return false;
+  }
+
+  auto operator!=(const TokenPayload& rhs) const noexcept -> bool override {
+    return !KeywordTokenPayload::operator==(rhs);
+  }
+
   auto Clone() -> TokenPayload* override { return new KeywordTokenPayload{*this}; }
 
   auto getKeyword() const noexcept -> const Keyword { return m_kw; }
@@ -147,6 +208,17 @@ class IdentifierTokenPayload final : public TokenPayload {
 public:
   IdentifierTokenPayload() = delete;
   IdentifierTokenPayload(const std::string& id) : m_id{id} {}
+
+  auto operator==(const TokenPayload& rhs) const noexcept -> bool override {
+    if (typeid(rhs) == typeid(*this)) {
+      return m_id == static_cast<const IdentifierTokenPayload&>(rhs).m_id;
+    }
+    return false;
+  }
+
+  auto operator!=(const TokenPayload& rhs) const noexcept -> bool override {
+    return !IdentifierTokenPayload::operator==(rhs);
+  }
 
   auto Clone() -> TokenPayload* override { return new IdentifierTokenPayload{*this}; }
 

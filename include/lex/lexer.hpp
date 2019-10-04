@@ -1,5 +1,6 @@
 #pragma once
 #include "lex/token.hpp"
+#include "lex/tokenitr.hpp"
 #include <deque>
 #include <iterator>
 #include <utility>
@@ -10,6 +11,7 @@ using std::iterator_traits;
 namespace lex {
 
 template <typename InputItr> class Lexer final {
+
   static_assert(is_same<typename iterator_traits<InputItr>::value_type, char>::value,
                 "Valuetype of input iterator has to be 'char'");
 
@@ -17,6 +19,10 @@ public:
   Lexer() = delete;
   Lexer(InputItr inputStart, const InputItr inputEnd)
       : m_input{inputStart}, m_inputEnd{inputEnd}, m_inputPos{-1}, m_readBuffer{} {}
+
+  auto begin() -> TokenItr<Lexer> { return TokenItr{*this}; }
+
+  auto end() -> TokenItr<NopTokenSource> { return TokenItr{}; }
 
   auto next() -> Token;
 

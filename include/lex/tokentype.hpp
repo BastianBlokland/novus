@@ -4,7 +4,6 @@
 namespace lex {
 
 enum class TokenType {
-  Start,
   OpPlus,
   OpMinus,
   OpStar,

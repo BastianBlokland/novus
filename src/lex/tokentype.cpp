@@ -4,9 +4,6 @@ namespace lex {
 
 auto operator<<(std::ostream& out, const TokenType& rhs) -> std::ostream& {
   switch (rhs) {
-  case TokenType::Start:
-    out << "start";
-    break;
   case TokenType::OpPlus:
     out << "plus";
     break;
