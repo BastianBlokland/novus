@@ -13,7 +13,8 @@ include(Catch)
 add_executable(tests
   main.cpp
   lex/helpers.hpp
-  lex/litint_test.cpp)
+  lex/litint_test.cpp
+  lex/litbool_test.cpp)
 target_include_directories(tests PRIVATE lex)
 target_link_libraries(tests PRIVATE Catch2::Catch2)
 target_link_libraries(tests PRIVATE lex)

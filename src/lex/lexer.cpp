@@ -142,10 +142,10 @@ template <typename InputItr> auto Lexer<InputItr>::nextWordToken(char startingCh
   const auto span = SourceSpan{startPos, m_inputPos};
 
   // Check if word is a literal.
-  if (result == "true") {
+  if (result == "true" || result == "TRUE") {
     return litBoolToken(true, span);
   }
-  if (result == "false") {
+  if (result == "false" || result == "FALSE") {
     return litBoolToken(false, span);
   }
 
