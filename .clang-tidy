@@ -1,8 +1,6 @@
 Checks: '*,
     -clang-analyzer-alpha.*,
-    -fuchsia-*,
-    -hicpp-no-array-decay,
-    -cppcoreguidelines-pro-bounds-array-to-pointer-decay'
+    -fuchsia-*
 CheckOptions:
   - key: readability-implicit-bool-conversion.AllowPointerConditions
     value: '1'
