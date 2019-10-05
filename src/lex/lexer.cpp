@@ -1,4 +1,5 @@
 #include "lex/lexer.hpp"
+#include "lex/error.hpp"
 #include <cctype>
 #include <iostream>
 #include <limits>
@@ -12,25 +13,25 @@ template <typename InputItr> auto Lexer<InputItr>::next() -> Token {
     const auto c = consumeChar();
     switch (c) {
     case '\0':
-      return Token::endToken(SourceSpan{m_inputPos >= 0 ? m_inputPos : 0});
+      return endToken(SourceSpan{m_inputPos >= 0 ? m_inputPos : 0});
     case '+':
-      return Token::basicToken(TokenType::OpPlus, SourceSpan{m_inputPos});
+      return basicToken(TokenType::OpPlus, SourceSpan{m_inputPos});
     case '-':
-      return Token::basicToken(TokenType::OpMinus, SourceSpan{m_inputPos});
+      return basicToken(TokenType::OpMinus, SourceSpan{m_inputPos});
     case '*':
-      return Token::basicToken(TokenType::OpStar, SourceSpan{m_inputPos});
+      return basicToken(TokenType::OpStar, SourceSpan{m_inputPos});
     case '/':
-      return Token::basicToken(TokenType::OpSlash, SourceSpan{m_inputPos});
+      return basicToken(TokenType::OpSlash, SourceSpan{m_inputPos});
     case '?':
-      return Token::basicToken(TokenType::OpQMark, SourceSpan{m_inputPos});
+      return basicToken(TokenType::OpQMark, SourceSpan{m_inputPos});
     case ':':
-      return Token::basicToken(TokenType::OpColon, SourceSpan{m_inputPos});
+      return basicToken(TokenType::OpColon, SourceSpan{m_inputPos});
     case '(':
-      return Token::basicToken(TokenType::SepOpenParan, SourceSpan{m_inputPos});
+      return basicToken(TokenType::SepOpenParan, SourceSpan{m_inputPos});
     case ')':
-      return Token::basicToken(TokenType::SepCloseParan, SourceSpan{m_inputPos});
+      return basicToken(TokenType::SepCloseParan, SourceSpan{m_inputPos});
     case ',':
-      return Token::basicToken(TokenType::SepComma, SourceSpan{m_inputPos});
+      return basicToken(TokenType::SepComma, SourceSpan{m_inputPos});
     case ' ':
     case '\t':
     case '\n':
@@ -53,7 +54,7 @@ template <typename InputItr> auto Lexer<InputItr>::next() -> Token {
       if (std::isalnum(c)) {
         return nextWordToken(c);
       }
-      return Token::errorToken(SourceSpan(m_inputPos, m_inputPos), "Invalid character");
+      return errInvalidCharacter(SourceSpan(m_inputPos, m_inputPos), c);
     }
   }
 }
@@ -77,8 +78,7 @@ template <typename InputItr> auto Lexer<InputItr>::nextLitInt(char mostSignfican
   }
 
   const auto span = SourceSpan{startPos, m_inputPos};
-  return tooBig ? Token::errorToken(span, "Number literal too big")
-                : Token::litIntToken(span, result);
+  return tooBig ? errTooBigIntLiteral(span) : litIntToken(span, result);
 }
 
 template <typename InputItr> auto Lexer<InputItr>::nextLitStr() -> Token {
@@ -91,14 +91,14 @@ template <typename InputItr> auto Lexer<InputItr>::nextLitStr() -> Token {
     case '\0':
     case '\r':
     case '\n':
-      return Token::errorToken(SourceSpan{startPos, m_inputPos}, "Unterminated string literal");
+      return errUnterminatedStringLiteral(SourceSpan{startPos, m_inputPos});
     case '"':
       // Allow escaping of double quotes by using an additional double quote.
       if (peekChar(0) == '"') {
         result += consumeChar();
         break;
       }
-      return Token::litStrToken(SourceSpan{startPos, m_inputPos}, result);
+      return litStrToken(SourceSpan{startPos, m_inputPos}, result);
     default:
       result += c;
       break;
@@ -117,10 +117,10 @@ template <typename InputItr> auto Lexer<InputItr>::nextWordToken(char startingCh
 
   // Check if word is a literal.
   if (result == "true") {
-    return Token::litBoolToken(span, true);
+    return litBoolToken(span, true);
   }
   if (result == "false") {
-    return Token::litBoolToken(span, false);
+    return litBoolToken(span, false);
   }
 
   // Check if word is a keyword.
@@ -128,11 +128,11 @@ template <typename InputItr> auto Lexer<InputItr>::nextWordToken(char startingCh
   const auto keywordSearch = keywordTable.find(result);
   if (keywordSearch != keywordTable.end()) {
     const auto keyword = keywordSearch->second;
-    return Token::keywordToken(span, keyword);
+    return keywordToken(span, keyword);
   }
 
   // It word is not a literal or a keyword its assumed to be an identifier.
-  return Token::identiferToken(span, result);
+  return identiferToken(span, result);
 }
 
 template <typename InputItr> auto Lexer<InputItr>::consumeChar() -> char {

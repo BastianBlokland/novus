@@ -25,7 +25,7 @@ protected:
 
 class NopTokenSource final {
 public:
-  auto next() -> Token { return Token::endToken(SourceSpan{0}); }
+  auto next() -> Token { return endToken(SourceSpan{0}); }
 };
 
 template <typename TokenSource = NopTokenSource> class TokenItr final : public TokenItrBase {

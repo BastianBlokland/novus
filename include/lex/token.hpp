@@ -26,8 +26,10 @@ private:
 class Token final {
 public:
   Token();
+  Token(const TokenType type, const SourceSpan span, TokenPayload* payload);
   Token(const Token& rhs);
   Token(Token&& rhs) noexcept;
+  
 
   auto operator=(const Token& rhs) -> Token&;
   auto operator=(Token&& rhs) noexcept -> Token&;
@@ -45,29 +47,10 @@ public:
 
   auto isEnd() const noexcept -> bool { return m_type == TokenType::End; }
 
-  // Static factories.
-  static auto endToken(const SourceSpan span) -> Token;
-
-  static auto basicToken(const TokenType type, const SourceSpan span) -> Token;
-
-  static auto errorToken(const SourceSpan span, const std::string& msg) -> Token;
-
-  static auto litIntToken(const SourceSpan span, const uint32_t val) -> Token;
-
-  static auto litBoolToken(const SourceSpan span, const bool val) -> Token;
-
-  static auto litStrToken(const SourceSpan span, const std::string& val) -> Token;
-
-  static auto keywordToken(const SourceSpan span, const Keyword keyword) -> Token;
-
-  static auto identiferToken(const SourceSpan span, const std::string& id) -> Token;
-
 private:
   TokenType m_type;
   SourceSpan m_span;
   TokenPayload* m_payload;
-
-  Token(const TokenType type, const SourceSpan span, TokenPayload* payload);
 };
 
 std::ostream& operator<<(std::ostream& out, const Token& rhs);
@@ -229,5 +212,22 @@ private:
 
   auto print(std::ostream& out) const -> std::ostream& override { return out << m_id; }
 };
+
+// Factories.
+auto endToken(const SourceSpan span) -> Token;
+
+auto basicToken(const TokenType type, const SourceSpan span) -> Token;
+
+auto errorToken(const SourceSpan span, const std::string& msg) -> Token;
+
+auto litIntToken(const SourceSpan span, const uint32_t val) -> Token;
+
+auto litBoolToken(const SourceSpan span, const bool val) -> Token;
+
+auto litStrToken(const SourceSpan span, const std::string& val) -> Token;
+
+auto keywordToken(const SourceSpan span, const Keyword keyword) -> Token;
+
+auto identiferToken(const SourceSpan span, const std::string& id) -> Token;
 
 } // namespace lex
