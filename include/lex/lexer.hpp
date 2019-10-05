@@ -34,7 +34,7 @@ private:
 
   auto nextLitInt(const char mostSignficantChar) -> Token;
   auto nextLitStr() -> Token;
-  auto nextWordToken(const char startingCharr) -> Token;
+  auto nextWordToken(const char startingChar) -> Token;
 
   auto consumeChar() -> char;
   auto peekChar(const int ahead) -> char;
