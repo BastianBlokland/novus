@@ -5,8 +5,12 @@ project(
   VERSION 0.1
   LANGUAGES CXX)
 
-# Use the clang-tidy linter.
-set(CMAKE_CXX_CLANG_TIDY clang-tidy)
+# Use the clang-tidy linter if installed.
+find_program(CLANG_TIDY_BIN NAMES "clang-tidy")
+if(CLANG_TIDY_BIN)
+  set(CMAKE_CXX_CLANG_TIDY ${CLANG_TIDY_BIN})
+  message("Enabled clang-tidy.")
+endif()
 
 # Output executables to bin dir.
 set(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/bin)
