@@ -18,4 +18,6 @@ private:
   int m_start, m_end;
 };
 
+auto operator<<(std::ostream& out, const SourceSpan& rhs) -> std::ostream&;
+
 } // namespace lex

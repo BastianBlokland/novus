@@ -20,4 +20,9 @@ auto SourceSpan::operator!=(const SourceSpan& rhs) const noexcept -> bool {
   return m_start != rhs.m_start || m_end != rhs.m_end;
 }
 
+auto operator<<(std::ostream& out, const SourceSpan& rhs) -> std::ostream& {
+  out << rhs.getStart() << '-' << rhs.getEnd();
+  return out;
+}
+
 } // namespace lex

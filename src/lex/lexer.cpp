@@ -60,6 +60,8 @@ template <typename InputItr> auto Lexer<InputItr>::next() -> Token {
 }
 
 template <typename InputItr> auto Lexer<InputItr>::nextLitInt(char mostSignficantChar) -> Token {
+  const static char seperator = '_'; // Legal seperator between digits.
+
   assert(std::isdigit(mostSignficantChar));
 
   const auto startPos = m_inputPos;
@@ -68,22 +70,25 @@ template <typename InputItr> auto Lexer<InputItr>::nextLitInt(char mostSignfican
 
   auto tooBig = false;
   auto invalidCharacter = false;
+  auto isSeperator = false;
   while (true) {
-    auto nextC = peekChar(0);
-    auto isDigit = std::isdigit(nextC);
-    if (!isDigit && !std::isalnum(nextC)) {
+    const auto nextC = peekChar(0);
+    const auto isDigit = std::isdigit(nextC);
+    if (!isDigit && nextC != seperator && !std::isalnum(nextC)) {
       break;
     }
-
-    auto c = consumeChar();
+    isSeperator = nextC == seperator;
+    const auto c = consumeChar();
     if (isDigit) {
       const uint64_t base = 10;
-      uint64_t newResult = result * base + (c - '0');
+      const uint64_t newResult = result * base + (c - '0');
       if (newResult > std::numeric_limits<int32_t>::max()) {
         tooBig = true;
       } else {
         result = newResult;
       }
+    } else if (isSeperator) {
+      continue; // Ignore seperator characters.
     } else {
       invalidCharacter = true;
     }
@@ -92,6 +97,9 @@ template <typename InputItr> auto Lexer<InputItr>::nextLitInt(char mostSignfican
   const auto span = SourceSpan{startPos, m_inputPos};
   if (invalidCharacter) {
     return errLitIntInvalidChar(span);
+  }
+  if (isSeperator) {
+    return errLitIntEndsWithSeperator(span);
   }
   if (tooBig) {
     return errLitIntTooBig(span);

@@ -52,7 +52,7 @@ private:
   SourceSpan m_span;
 };
 
-std::ostream& operator<<(std::ostream& out, const Token& rhs);
+auto operator<<(std::ostream& out, const Token& rhs) -> std::ostream&;
 
 class ErrorTokenPayload final : public TokenPayload {
 public:
