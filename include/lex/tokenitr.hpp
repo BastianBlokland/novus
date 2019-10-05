@@ -41,12 +41,12 @@ public:
     m_current = tokenSource.next();
   }
 
-  auto operator++() -> void { advance(); }
+  auto operator++() { advance(); }
 
 private:
   TokenSource* m_source;
 
-  auto advance() -> void {
+  auto advance() {
     if (m_source != nullptr)
       m_current = m_source->next();
   }

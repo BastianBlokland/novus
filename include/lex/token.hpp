@@ -38,13 +38,13 @@ public:
 
   ~Token();
 
-  auto getType() const noexcept -> TokenType { return m_type; }
+  auto getType() const noexcept { return m_type; }
 
-  auto getSpan() const noexcept -> SourceSpan { return m_span; }
+  auto getSpan() const noexcept { return m_span; }
 
-  auto getPayload() const noexcept -> TokenPayload* { return m_payload; }
+  auto getPayload() const noexcept { return m_payload; }
 
-  auto isEnd() const noexcept -> bool { return m_type == TokenType::End; }
+  auto isEnd() const noexcept { return m_type == TokenType::End; }
 
 private:
   TokenType m_type;
@@ -98,7 +98,7 @@ public:
 
   auto Clone() -> TokenPayload* override { return new LitIntTokenPayload{*this}; }
 
-  auto getValue() const noexcept -> const int32_t { return m_val; }
+  auto getValue() const noexcept { return m_val; }
 
 private:
   const int32_t m_val;
@@ -124,7 +124,7 @@ public:
 
   auto Clone() -> TokenPayload* override { return new LitBoolTokenPayload{*this}; }
 
-  auto getValue() const noexcept -> const bool { return m_val; }
+  auto getValue() const noexcept { return m_val; }
 
 private:
   const bool m_val;
@@ -178,7 +178,7 @@ public:
 
   auto Clone() -> TokenPayload* override { return new KeywordTokenPayload{*this}; }
 
-  auto getKeyword() const noexcept -> const Keyword { return m_kw; }
+  auto getKeyword() const noexcept { return m_kw; }
 
 private:
   const Keyword m_kw;
