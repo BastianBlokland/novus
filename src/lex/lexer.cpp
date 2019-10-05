@@ -3,7 +3,6 @@
 #include <cctype>
 #include <iostream>
 #include <limits>
-#include <map>
 #include <string>
 
 namespace lex {
@@ -124,11 +123,9 @@ template <typename InputItr> auto Lexer<InputItr>::nextWordToken(char startingCh
   }
 
   // Check if word is a keyword.
-  static const std::map<std::string, Keyword> keywordTable = {{"fun", Keyword::Function}};
-  const auto keywordSearch = keywordTable.find(result);
-  if (keywordSearch != keywordTable.end()) {
-    const auto keyword = keywordSearch->second;
-    return keywordToken(span, keyword);
+  const auto optKw = getKeyword(result);
+  if (optKw) {
+    return keywordToken(span, optKw.value());
   }
 
   // It word is not a literal or a keyword its assumed to be an identifier.
