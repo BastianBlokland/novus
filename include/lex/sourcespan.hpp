@@ -8,8 +8,10 @@ public:
   SourceSpan(const int pos) : SourceSpan(pos, pos){};
   SourceSpan(const int start, const int end);
 
-  auto getStart() const noexcept { return m_start; }
+  auto operator==(const SourceSpan& rhs) const noexcept -> bool;
+  auto operator!=(const SourceSpan& rhs) const noexcept -> bool;
 
+  auto getStart() const noexcept { return m_start; }
   auto getEnd() const noexcept { return m_end; }
 
 private:

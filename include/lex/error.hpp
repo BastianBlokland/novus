@@ -4,16 +4,12 @@
 
 namespace lex {
 
-auto errInvalidCharacter(const SourceSpan span, const char c) {
-  return errorToken(span, "Invalid character '" + std::to_string(c) + "'.");
-}
+auto errInvalidCharacter(const char c, const SourceSpan span = SourceSpan{0}) -> Token;
 
-auto errTooBigIntLiteral(const SourceSpan span) {
-  return errorToken(span, "Integer literal too big.");
-}
+auto errLitIntTooBig(const SourceSpan span = SourceSpan{0}) -> Token;
 
-auto errUnterminatedStringLiteral(const SourceSpan span) {
-  return errorToken(span, "Unterminated string literal.");
-}
+auto errLitIntInvalidChar(const SourceSpan span = SourceSpan{0}) -> Token;
+
+auto errUnterminatedStringLiteral(const SourceSpan span = SourceSpan{0}) -> Token;
 
 } // namespace lex

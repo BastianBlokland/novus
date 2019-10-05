@@ -3,6 +3,7 @@
 #include <cctype>
 #include <iostream>
 #include <limits>
+#include <optional>
 #include <string>
 
 namespace lex {
@@ -53,7 +54,7 @@ template <typename InputItr> auto Lexer<InputItr>::next() -> Token {
       if (std::isalnum(c)) {
         return nextWordToken(c);
       }
-      return errInvalidCharacter(SourceSpan(m_inputPos, m_inputPos), c);
+      return errInvalidCharacter(c, SourceSpan(m_inputPos, m_inputPos));
     }
   }
 }
@@ -65,19 +66,37 @@ template <typename InputItr> auto Lexer<InputItr>::nextLitInt(char mostSignfican
   int32_t result = mostSignficantChar - '0';
   assert(result >= 0 && result <= 9);
 
-  bool tooBig = false;
-  while (std::isdigit(peekChar(0))) {
-    const uint64_t base = 10;
-    uint64_t newResult = result * base + (consumeChar() - '0');
-    if (newResult > std::numeric_limits<int32_t>::max()) {
-      tooBig = true;
+  auto tooBig = false;
+  auto invalidCharacter = false;
+  while (true) {
+    auto nextC = peekChar(0);
+    auto isDigit = std::isdigit(nextC);
+    if (!isDigit && !std::isalnum(nextC)) {
+      break;
     }
 
-    result = newResult;
+    auto c = consumeChar();
+    if (isDigit) {
+      const uint64_t base = 10;
+      uint64_t newResult = result * base + (c - '0');
+      if (newResult > std::numeric_limits<int32_t>::max()) {
+        tooBig = true;
+      } else {
+        result = newResult;
+      }
+    } else {
+      invalidCharacter = true;
+    }
   }
 
   const auto span = SourceSpan{startPos, m_inputPos};
-  return tooBig ? errTooBigIntLiteral(span) : litIntToken(span, result);
+  if (invalidCharacter) {
+    return errLitIntInvalidChar(span);
+  }
+  if (tooBig) {
+    return errLitIntTooBig(span);
+  }
+  return litIntToken(result, span);
 }
 
 template <typename InputItr> auto Lexer<InputItr>::nextLitStr() -> Token {
@@ -97,7 +116,7 @@ template <typename InputItr> auto Lexer<InputItr>::nextLitStr() -> Token {
         result += consumeChar();
         break;
       }
-      return litStrToken(SourceSpan{startPos, m_inputPos}, result);
+      return litStrToken(result, SourceSpan{startPos, m_inputPos});
     default:
       result += c;
       break;
@@ -116,20 +135,20 @@ template <typename InputItr> auto Lexer<InputItr>::nextWordToken(char startingCh
 
   // Check if word is a literal.
   if (result == "true") {
-    return litBoolToken(span, true);
+    return litBoolToken(true, span);
   }
   if (result == "false") {
-    return litBoolToken(span, false);
+    return litBoolToken(false, span);
   }
 
   // Check if word is a keyword.
   const auto optKw = getKeyword(result);
   if (optKw) {
-    return keywordToken(span, optKw.value());
+    return keywordToken(optKw.value(), span);
   }
 
   // It word is not a literal or a keyword its assumed to be an identifier.
-  return identiferToken(span, result);
+  return identiferToken(result, span);
 }
 
 template <typename InputItr> auto Lexer<InputItr>::consumeChar() -> char {

@@ -12,4 +12,12 @@ SourceSpan::SourceSpan(const int start, const int end) : m_start{start}, m_end{e
   }
 }
 
+auto SourceSpan::operator==(const SourceSpan& rhs) const noexcept -> bool {
+  return m_start == rhs.m_start && m_end == rhs.m_end;
+}
+
+auto SourceSpan::operator!=(const SourceSpan& rhs) const noexcept -> bool {
+  return m_start != rhs.m_start || m_end != rhs.m_end;
+}
+
 } // namespace lex

@@ -26,15 +26,15 @@ private:
 class Token final {
 public:
   Token();
-  Token(const TokenType type, const SourceSpan span, TokenPayload* payload);
+  Token(const TokenType type, TokenPayload* payload, const SourceSpan span);
   Token(const Token& rhs);
   Token(Token&& rhs) noexcept;
 
   auto operator=(const Token& rhs) -> Token&;
   auto operator=(Token&& rhs) noexcept -> Token&;
 
-  auto operator==(const Token& rhs) noexcept -> bool;
-  auto operator!=(const Token& rhs) noexcept -> bool;
+  auto operator==(const Token& rhs) const noexcept -> bool;
+  auto operator!=(const Token& rhs) const noexcept -> bool;
 
   ~Token();
 
@@ -48,8 +48,8 @@ public:
 
 private:
   TokenType m_type;
-  SourceSpan m_span;
   TokenPayload* m_payload;
+  SourceSpan m_span;
 };
 
 std::ostream& operator<<(std::ostream& out, const Token& rhs);
@@ -213,20 +213,20 @@ private:
 };
 
 // Factories.
-auto endToken(const SourceSpan span) -> Token;
+auto endToken(const SourceSpan span = SourceSpan{0}) -> Token;
 
-auto basicToken(const TokenType type, const SourceSpan span) -> Token;
+auto basicToken(const TokenType type, const SourceSpan span = SourceSpan{0}) -> Token;
 
-auto errorToken(const SourceSpan span, const std::string& msg) -> Token;
+auto errorToken(const std::string& msg, const SourceSpan span = SourceSpan{0}) -> Token;
 
-auto litIntToken(const SourceSpan span, const int32_t val) -> Token;
+auto litIntToken(const int32_t val, const SourceSpan span = SourceSpan{0}) -> Token;
 
-auto litBoolToken(const SourceSpan span, const bool val) -> Token;
+auto litBoolToken(const bool val, const SourceSpan span = SourceSpan{0}) -> Token;
 
-auto litStrToken(const SourceSpan span, const std::string& val) -> Token;
+auto litStrToken(const std::string& val, const SourceSpan span = SourceSpan{0}) -> Token;
 
-auto keywordToken(const SourceSpan span, const Keyword keyword) -> Token;
+auto keywordToken(const Keyword keyword, const SourceSpan span = SourceSpan{0}) -> Token;
 
-auto identiferToken(const SourceSpan span, const std::string& id) -> Token;
+auto identiferToken(const std::string& id, const SourceSpan span = SourceSpan{0}) -> Token;
 
 } // namespace lex
