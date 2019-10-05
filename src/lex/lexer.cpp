@@ -63,14 +63,14 @@ template <typename InputItr> auto Lexer<InputItr>::nextLitInt(char mostSignfican
   assert(std::isdigit(mostSignficantChar));
 
   const auto startPos = m_inputPos;
-  uint32_t result = mostSignficantChar - '0';
+  int32_t result = mostSignficantChar - '0';
   assert(result >= 0 && result <= 9);
 
   bool tooBig = false;
   while (std::isdigit(peekChar(0))) {
     const uint64_t base = 10;
     uint64_t newResult = result * base + (consumeChar() - '0');
-    if (newResult > std::numeric_limits<uint32_t>::max()) {
+    if (newResult > std::numeric_limits<int32_t>::max()) {
       tooBig = true;
     }
 

@@ -29,7 +29,6 @@ public:
   Token(const TokenType type, const SourceSpan span, TokenPayload* payload);
   Token(const Token& rhs);
   Token(Token&& rhs) noexcept;
-  
 
   auto operator=(const Token& rhs) -> Token&;
   auto operator=(Token&& rhs) noexcept -> Token&;
@@ -84,7 +83,7 @@ private:
 class LitIntTokenPayload final : public TokenPayload {
 public:
   LitIntTokenPayload() = delete;
-  LitIntTokenPayload(const uint32_t val) : m_val{val} {}
+  LitIntTokenPayload(const int32_t val) : m_val{val} {}
 
   auto operator==(const TokenPayload& rhs) const noexcept -> bool override {
     if (typeid(rhs) == typeid(*this)) {
@@ -99,10 +98,10 @@ public:
 
   auto Clone() -> TokenPayload* override { return new LitIntTokenPayload{*this}; }
 
-  auto getValue() const noexcept -> const uint32_t { return m_val; }
+  auto getValue() const noexcept -> const int32_t { return m_val; }
 
 private:
-  const uint32_t m_val;
+  const int32_t m_val;
 
   auto print(std::ostream& out) const -> std::ostream& override { return out << m_val; }
 };
@@ -220,7 +219,7 @@ auto basicToken(const TokenType type, const SourceSpan span) -> Token;
 
 auto errorToken(const SourceSpan span, const std::string& msg) -> Token;
 
-auto litIntToken(const SourceSpan span, const uint32_t val) -> Token;
+auto litIntToken(const SourceSpan span, const int32_t val) -> Token;
 
 auto litBoolToken(const SourceSpan span, const bool val) -> Token;
 

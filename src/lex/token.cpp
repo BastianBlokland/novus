@@ -86,7 +86,7 @@ auto errorToken(const SourceSpan span, const std::string& msg) -> Token {
   return Token{TokenType::Error, span, new ErrorTokenPayload{msg}};
 }
 
-auto litIntToken(const SourceSpan span, const uint32_t val) -> Token {
+auto litIntToken(const SourceSpan span, const int32_t val) -> Token {
   return Token{TokenType::LitInt, span, new LitIntTokenPayload{val}};
 }
 
