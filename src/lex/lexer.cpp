@@ -1,5 +1,6 @@
 #include "lex/lexer.hpp"
 #include "lex/error.hpp"
+#include <cassert>
 #include <cctype>
 #include <iostream>
 #include <limits>
