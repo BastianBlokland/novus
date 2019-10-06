@@ -5,7 +5,7 @@
 namespace lex {
 
 TEST_CASE("Iterating the lexer", "[lexer]") {
-  std::string input = "x + y / z";
+  const std::string input = "x + y / z";
   auto lexer = Lexer{input.begin(), input.end()};
 
   SECTION("Range for") {
