@@ -14,6 +14,7 @@ add_executable(tests
   main.cpp
   lex/helpers.hpp
   lex/identifier_test.cpp
+  lex/keyword_test.cpp
   lex/litint_test.cpp
   lex/litbool_test.cpp
   lex/litstr_test.cpp)

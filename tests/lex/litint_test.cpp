@@ -1,7 +1,6 @@
 #include "catch2/catch.hpp"
 #include "helpers.hpp"
 #include "lex/error.hpp"
-#include "lex/lexer.hpp"
 
 namespace lex {
 
