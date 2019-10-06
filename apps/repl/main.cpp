@@ -110,6 +110,8 @@ auto run() {
 }
 
 auto main() -> int {
+  const int escDelay = 50;
+
   // Init ncurses.
   initscr();                // Setup screen.
   cbreak();                 // Disable input buffering.
@@ -117,7 +119,7 @@ auto main() -> int {
   intrflush(stdscr, false); // Flush on interupt.
   keypad(stdscr, true);     // Enable cursor keys.
   curs_set(1);              // No cursor.
-  set_escdelay(0);          // Disable delay for esc key.
+  set_escdelay(escDelay);   // Reduce delay for esc key.
 
   if (has_colors()) {
     start_color();
