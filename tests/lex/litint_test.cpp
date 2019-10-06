@@ -2,7 +2,6 @@
 #include "helpers.hpp"
 #include "lex/error.hpp"
 #include "lex/lexer.hpp"
-#include <string>
 
 namespace lex {
 
