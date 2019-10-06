@@ -2,13 +2,67 @@
 #include "char_escape.hpp"
 #include "lex/error.hpp"
 #include <cassert>
-#include <cctype>
 #include <iostream>
 #include <limits>
 #include <optional>
 #include <string>
 
 namespace lex {
+
+static auto isTokenSeperator(const char c) {
+  switch (c) {
+  case '\0':
+  case '\t':
+  case '\n':
+  case '\r':
+  case ' ':
+  case '!':
+  case '"':
+  case '#':
+  case '$':
+  case '%':
+  case '&':
+  case '(':
+  case ')':
+  case '*':
+  case '+':
+  case ',':
+  case '-':
+  case '.':
+  case '/':
+  case ':':
+  case ';':
+  case '<':
+  case '=':
+  case '>':
+  case '?':
+  case '@':
+  case '[':
+  case '\\':
+  case ']':
+  case '^':
+  case '`':
+  case '{':
+  case '|':
+  case '}':
+  case '~':
+    return true;
+  default:
+    return false;
+  }
+}
+
+static auto isDigit(const char c) { return c >= '0' && c <= '9'; }
+
+static auto isWordStart(const char c) {
+  // Either ascii letter or start of non-ascii utf8 character.
+  return (c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z') || ((unsigned char)c >= 0xC0);
+}
+
+static auto isWordContinuation(const char c) {
+  // Either ascii letter or continuation of non-ascii utf8 character.
+  return (c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z') || ((unsigned char)c >= 0x80);
+}
 
 template <typename InputItr> auto Lexer<InputItr>::next() -> Token {
   while (true) {
@@ -54,12 +108,14 @@ template <typename InputItr> auto Lexer<InputItr>::next() -> Token {
       return nextLitStr();
     case '_': {
       const auto nextChar = peekChar(0);
-      if (std::isalpha(nextChar) || std::isdigit(nextChar) || nextChar == '_') {
+      if (isWordStart(nextChar) || isdigit(nextChar) || nextChar == '_') {
         return nextWordToken(c);
+      } else {
+        return basicToken(TokenType::SepUnderscore, SourceSpan{m_inputPos});
       }
     }
     default:
-      if (std::isalnum(c)) {
+      if (isWordStart(c)) {
         return nextWordToken(c);
       }
       return errInvalidChar(c, SourceSpan(m_inputPos, m_inputPos));
@@ -67,46 +123,39 @@ template <typename InputItr> auto Lexer<InputItr>::next() -> Token {
   }
 }
 
-template <typename InputItr> auto Lexer<InputItr>::nextLitInt(char mostSignficantChar) -> Token {
-  const static char seperator = '_'; // Legal seperator between digits.
-
-  assert(std::isdigit(mostSignficantChar));
+template <typename InputItr>
+auto Lexer<InputItr>::nextLitInt(const char mostSignficantChar) -> Token {
+  assert(isdigit(mostSignficantChar));
 
   const auto startPos = m_inputPos;
   int32_t result = mostSignficantChar - '0';
   assert(result >= 0 && result <= 9);
 
   auto tooBig = false;
-  auto invalidCharacter = false;
-  auto isSeperator = false;
-  while (true) {
-    const auto nextC = peekChar(0);
-    const auto isDigit = std::isdigit(nextC);
-    if (!isDigit && nextC != seperator && !std::isalnum(nextC)) {
-      break;
-    }
-    isSeperator = nextC == seperator;
-    const auto c = consumeChar();
-    if (isDigit) {
+  auto containsInvalidChar = false;
+  char curChar = mostSignficantChar;
+  while (!isTokenSeperator(peekChar(0))) {
+    curChar = consumeChar();
+    if (isDigit(curChar)) {
       const uint64_t base = 10;
-      const uint64_t newResult = result * base + (c - '0');
+      const uint64_t newResult = result * base + (curChar - '0');
       if (newResult > std::numeric_limits<int32_t>::max()) {
         tooBig = true;
       } else {
         result = newResult;
       }
-    } else if (isSeperator) {
-      continue; // Ignore seperator characters.
+    } else if (curChar == '_') {
+      continue; // Ignore underscores as legal digit seperators.
     } else {
-      invalidCharacter = true;
+      containsInvalidChar = true;
     }
   }
 
   const auto span = SourceSpan{startPos, m_inputPos};
-  if (invalidCharacter) {
+  if (containsInvalidChar) {
     return errLitIntInvalidChar(span);
   }
-  if (isSeperator) {
+  if (curChar == '_') {
     return errLitIntEndsWithSeperator(span);
   }
   if (tooBig) {
@@ -152,29 +201,27 @@ template <typename InputItr> auto Lexer<InputItr>::nextLitStr() -> Token {
   }
 }
 
-template <typename InputItr> auto Lexer<InputItr>::nextWordToken(char startingChar) -> Token {
+template <typename InputItr> auto Lexer<InputItr>::nextWordToken(const char startingChar) -> Token {
   const auto startPos = m_inputPos;
   std::string result(1, startingChar);
 
-  // Consume all alphabetic characters, numbers and underscores.
+  auto invalidCharacter = false;
   auto illegalSequence = startingChar == '_' && peekChar(0) == '_';
-  while (true) {
-    const auto nextChar = peekChar(0);
-    const auto isUnderscore = nextChar == '_';
-    if (!std::isalpha(nextChar) && !std::isdigit(nextChar) && !isUnderscore)
-      break;
-    result += consumeChar();
-
-    // Reserve identifiers containing '__' for internal use.
-    if (isUnderscore && peekChar(0) == '_') {
-      illegalSequence = true;
+  while (!isTokenSeperator(peekChar(0))) {
+    const auto c = consumeChar();
+    if (isWordContinuation(c) || isdigit(c)) {
+      result += c;
+    } else if (c == '_') {
+      if (peekChar(0) == '_') {
+        illegalSequence = true;
+      } else {
+        result += c;
+      }
+    } else {
+      invalidCharacter = true;
     }
   }
-
   const auto span = SourceSpan{startPos, m_inputPos};
-  if (illegalSequence) {
-    return errIdentifierIllegalSequence(span);
-  }
 
   // Check if word is a literal.
   if (result == "true") {
@@ -191,6 +238,12 @@ template <typename InputItr> auto Lexer<InputItr>::nextWordToken(char startingCh
   }
 
   // It word is not a literal or a keyword its assumed to be an identifier.
+  if (invalidCharacter) {
+    return errIdentifierIllegalCharacter(span);
+  }
+  if (illegalSequence) {
+    return errIdentifierIllegalSequence(span);
+  }
   return identiferToken(result, span);
 }
 

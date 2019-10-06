@@ -13,6 +13,7 @@ enum class TokenType {
   SepOpenParan,
   SepCloseParan,
   SepComma,
+  SepUnderscore,
   LitInt,
   LitBool,
   LitStr,

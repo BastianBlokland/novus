@@ -31,6 +31,9 @@ auto operator<<(std::ostream& out, const TokenType& rhs) -> std::ostream& {
   case TokenType::SepComma:
     out << "comma";
     break;
+  case TokenType::SepUnderscore:
+    out << "underscore";
+    break;
   case TokenType::LitInt:
     out << "int";
     break;

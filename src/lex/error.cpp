@@ -27,6 +27,10 @@ auto errLitStrInvalidEscape(const SourceSpan span) -> Token {
   return errorToken("Invalid escape sequence in string literal.", span);
 }
 
+auto errIdentifierIllegalCharacter(const SourceSpan span) -> Token {
+  return errorToken("Identifier contains an invalid character.", span);
+}
+
 auto errIdentifierIllegalSequence(const SourceSpan span) -> Token {
   return errorToken("Identifier contains an illegal character sequence.", span);
 }

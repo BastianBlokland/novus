@@ -10,24 +10,34 @@ TEST_CASE("Lexing identifiers", "[lexer]") {
 
   SECTION("Valid") {
     REQUIRE_TOKENS("hello", identiferToken("hello"));
+    REQUIRE_TOKENS("héllo", identiferToken("héllo"));
     REQUIRE_TOKENS("_hello", identiferToken("_hello"));
     REQUIRE_TOKENS("_hello_world", identiferToken("_hello_world"));
     REQUIRE_TOKENS("_hello123", identiferToken("_hello123"));
     REQUIRE_TOKENS("_1", identiferToken("_1"));
+    REQUIRE_TOKENS("_1", identiferToken("_1"));
+    REQUIRE_TOKENS("你好世界", identiferToken("你好世界"));
+    REQUIRE_TOKENS("_你好世界", identiferToken("_你好世界"));
+    REQUIRE_TOKENS("_你1好2世3界", identiferToken("_你1好2世3界"));
   }
 
   SECTION("Sequences") {
     REQUIRE_TOKENS("hello world", identiferToken("hello"), identiferToken("world"));
-    REQUIRE_TOKENS("hello, world", identiferToken("hello"), basicToken(TokenType::SepComma),
+    REQUIRE_TOKENS("hello,world", identiferToken("hello"), basicToken(TokenType::SepComma),
+                   identiferToken("world"));
+    REQUIRE_TOKENS("hello@world", identiferToken("hello"), errInvalidChar('@'),
+                   identiferToken("world"));
+    REQUIRE_TOKENS("hello#world", identiferToken("hello"), errInvalidChar('#'),
                    identiferToken("world"));
   }
 
   SECTION("Errors") {
     REQUIRE_TOKENS("1hello", errLitIntInvalidChar());
-    REQUIRE_TOKENS("_", errInvalidChar('_'));
+    REQUIRE_TOKENS("h\a_hello", errIdentifierIllegalCharacter());
     REQUIRE_TOKENS("@", errInvalidChar('@'));
+    REQUIRE_TOKENS("_", basicToken(TokenType::SepUnderscore));
 
-    // Want to reserve any id containing '__' for internal use.
+    // Ids containing '__' are reserved for internal use.
     REQUIRE_TOKENS("__", errIdentifierIllegalSequence());
     REQUIRE_TOKENS("___", errIdentifierIllegalSequence());
     REQUIRE_TOKENS("__hello", errIdentifierIllegalSequence());

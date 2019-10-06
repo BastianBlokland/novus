@@ -18,6 +18,7 @@ TEST_CASE("Lexing integer literals", "[lexer]") {
     REQUIRE_TOKENS("0 0", litIntToken(0), litIntToken(0));
     REQUIRE_TOKENS("1 2 3", litIntToken(1), litIntToken(2), litIntToken(3));
     REQUIRE_TOKENS("1,2", litIntToken(1), basicToken(TokenType::SepComma), litIntToken(2));
+    REQUIRE_TOKENS("1;2", litIntToken(1), errInvalidChar(';'), litIntToken(2));
   }
 
   SECTION("Digit seperators") {
@@ -29,6 +30,8 @@ TEST_CASE("Lexing integer literals", "[lexer]") {
     REQUIRE_TOKENS("2147483648", errLitIntTooBig());
     REQUIRE_TOKENS("99999999999999999999", errLitIntTooBig());
     REQUIRE_TOKENS("13a4a2", errLitIntInvalidChar());
+    REQUIRE_TOKENS("13a4好2", errLitIntInvalidChar());
+    REQUIRE_TOKENS("13a4\a2", errLitIntInvalidChar());
     REQUIRE_TOKENS("0a", errLitIntInvalidChar());
     REQUIRE_TOKENS("0_", errLitIntEndsWithSeperator());
   }
