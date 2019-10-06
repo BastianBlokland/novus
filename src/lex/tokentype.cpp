@@ -1,4 +1,4 @@
-#include "lex/tokentype.hpp"
+#include "lex/token_type.hpp"
 
 namespace lex {
 

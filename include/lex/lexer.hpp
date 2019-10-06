@@ -1,6 +1,6 @@
 #pragma once
 #include "lex/token.hpp"
-#include "lex/tokenitr.hpp"
+#include "lex/token_itr.hpp"
 #include <deque>
 #include <iterator>
 #include <utility>
