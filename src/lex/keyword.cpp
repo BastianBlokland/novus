@@ -1,5 +1,5 @@
 #include "lex/keyword.hpp"
-#include <map>
+#include <unordered_map>
 
 namespace lex {
 
@@ -13,7 +13,7 @@ auto operator<<(std::ostream& out, const Keyword& rhs) -> std::ostream& {
 }
 
 auto getKeyword(const std::string& str) -> std::optional<Keyword> {
-  static const std::map<std::string, Keyword> keywordTable = {{"fun", Keyword::Function}};
+  static const std::unordered_map<std::string, Keyword> keywordTable = {{"fun", Keyword::Function}};
 
   const auto keywordSearch = keywordTable.find(str);
   if (keywordSearch != keywordTable.end()) {

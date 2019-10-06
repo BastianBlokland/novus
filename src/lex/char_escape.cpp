@@ -1,10 +1,10 @@
 #include "char_escape.hpp"
-#include <map>
+#include <unordered_map>
 
 namespace lex {
 
 auto escape(const char c) -> std::optional<char> {
-  static const std::map<char, char> table = {
+  static const std::unordered_map<char, char> table = {
       {'"', '"'},  {'\\', '\\'}, {'\a', 'a'}, {'\b', 'b'}, {'\f', 'f'},
       {'\n', 'n'}, {'\r', 'r'},  {'\t', 't'}, {'\v', 'v'},
   };
@@ -18,7 +18,7 @@ auto escape(const char c) -> std::optional<char> {
 }
 
 auto unescape(const char c) -> std::optional<char> {
-  static const std::map<char, char> table = {
+  static const std::unordered_map<char, char> table = {
       {'"', '"'},  {'\\', '\\'}, {'a', '\a'}, {'b', '\b'}, {'f', '\f'},
       {'n', '\n'}, {'r', '\r'},  {'t', '\t'}, {'v', '\v'},
   };
