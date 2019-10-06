@@ -13,7 +13,7 @@ add_library(lex STATIC
   lex/lexer.cpp
   lex/sourcespan.cpp
   lex/token.cpp
-  lex/tokentype.cpp
+  lex/token_type.cpp
   lex/keyword.cpp)
 target_include_directories(lex PUBLIC ../include)
 target_include_directories(lex PRIVATE lex)
