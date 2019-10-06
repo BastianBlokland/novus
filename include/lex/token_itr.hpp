@@ -9,6 +9,12 @@ namespace lex {
 
 class TokenItrBase {
 public:
+  using difference_type = ptrdiff_t;
+  using value_type = Token;
+  using pointer = const Token*;
+  using reference = const Token&;
+  using iterator_category = std::input_iterator_tag;
+
   TokenItrBase() : m_current{} {}
 
   auto operator*() -> const Token& { return m_current; }

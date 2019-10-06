@@ -4,6 +4,7 @@
 #include <deque>
 #include <iterator>
 #include <utility>
+#include <vector>
 
 using std::is_same;
 using std::iterator_traits;
@@ -22,7 +23,7 @@ public:
 
   auto begin() -> TokenItr<Lexer> { return TokenItr{*this}; }
 
-  auto end() -> TokenItr<NopTokenSource> { return TokenItr{}; }
+  auto end() -> TokenItr<Lexer> { return TokenItr<Lexer>{}; }
 
   auto next() -> Token;
 
@@ -40,5 +41,11 @@ private:
   auto peekChar(const int ahead) -> char;
   auto getFromInput() -> char;
 };
+
+// Utilities.
+template <typename InputItr> auto lexAll(InputItr inputBegin, const InputItr inputEnd) {
+  auto lexer = Lexer{inputBegin, inputEnd};
+  return std::vector<Token>{lexer.begin(), lexer.end()};
+}
 
 } // namespace lex
