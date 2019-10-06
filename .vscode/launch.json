@@ -2,10 +2,10 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "lldb app",
+      "name": "lldb repl",
       "type": "cppdbg",
       "request": "launch",
-      "program": "${workspaceFolder}/bin/app",
+      "program": "${workspaceFolder}/bin/repl",
       "args": [],
       "stopAtEntry": true,
       "cwd": "${workspaceFolder}",
