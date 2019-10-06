@@ -12,6 +12,8 @@ auto errLitIntInvalidChar(const SourceSpan span = SourceSpan{0}) -> Token;
 
 auto errLitIntEndsWithSeperator(const SourceSpan span = SourceSpan{0}) -> Token;
 
-auto errUnterminatedStringLiteral(const SourceSpan span = SourceSpan{0}) -> Token;
+auto erLitStrUnterminated(const SourceSpan span = SourceSpan{0}) -> Token;
+
+auto errLitStrInvalidEscape(const SourceSpan span = SourceSpan{0}) -> Token;
 
 } // namespace lex

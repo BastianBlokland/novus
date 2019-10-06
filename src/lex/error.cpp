@@ -19,8 +19,12 @@ auto errLitIntEndsWithSeperator(const SourceSpan span) -> Token {
   return errorToken("Integer literal ends with a seperator character.", span);
 }
 
-auto errUnterminatedStringLiteral(const SourceSpan span) -> Token {
+auto erLitStrUnterminated(const SourceSpan span) -> Token {
   return errorToken("Unterminated string literal.", span);
+}
+
+auto errLitStrInvalidEscape(const SourceSpan span) -> Token {
+  return errorToken("Invalid escape sequence in string literal.", span);
 }
 
 } // namespace lex

@@ -157,7 +157,7 @@ public:
 private:
   const std::string m_val;
 
-  auto print(std::ostream& out) const -> std::ostream& override { return out << m_val; }
+  auto print(std::ostream& out) const -> std::ostream& override;
 };
 
 class KeywordTokenPayload final : public TokenPayload {

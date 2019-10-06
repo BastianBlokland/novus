@@ -1,4 +1,5 @@
 #include "lex/lexer.hpp"
+#include "char_escape.hpp"
 #include "lex/error.hpp"
 #include <cassert>
 #include <cctype>
@@ -112,20 +113,32 @@ template <typename InputItr> auto Lexer<InputItr>::nextLitStr() -> Token {
   // Starting '"' already consumed by caller.
   const auto startPos = m_inputPos;
   std::string result{};
+
+  auto invalidEscapeSequence = false;
   while (true) {
-    auto c = consumeChar();
+    const auto c = consumeChar();
     switch (c) {
     case '\0':
     case '\r':
     case '\n':
-      return errUnterminatedStringLiteral(SourceSpan{startPos, m_inputPos});
-    case '"':
-      // Allow escaping of double quotes by using an additional double quote.
-      if (peekChar(0) == '"') {
-        result += consumeChar();
-        break;
+      return erLitStrUnterminated(SourceSpan{startPos, m_inputPos});
+    case '\\': {
+      // Backslash is used to start an escape sequence.
+      const auto unescapedC = unescape(consumeChar());
+      if (unescapedC) {
+        result += unescapedC.value();
+      } else {
+        invalidEscapeSequence = true;
       }
-      return litStrToken(result, SourceSpan{startPos, m_inputPos});
+      break;
+    }
+    case '"': {
+      const auto span = SourceSpan{startPos, m_inputPos};
+      if (invalidEscapeSequence) {
+        return errLitStrInvalidEscape(span);
+      }
+      return litStrToken(result, span);
+    }
     default:
       result += c;
       break;

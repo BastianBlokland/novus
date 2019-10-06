@@ -7,6 +7,8 @@ add_library(lex STATIC
   ../include/lex/token.hpp
   ../include/lex/token_itr.hpp
   ../include/lex/token_type.hpp
+  lex/char_escape.hpp
+  lex/char_escape.cpp
   lex/error.cpp
   lex/lexer.cpp
   lex/sourcespan.cpp
