@@ -3,8 +3,8 @@
 
 namespace lex {
 
-auto errInvalidCharacter(const char c, const SourceSpan span) -> Token {
-  return errorToken("Invalid character '" + std::string(1, c) + "'.", span);
+auto errInvalidChar(const char c, const SourceSpan span) -> Token {
+  return errorToken("Invalid character." + std::string(1, c) + "'.", span);
 }
 
 auto errLitIntTooBig(const SourceSpan span) -> Token {
@@ -25,6 +25,10 @@ auto erLitStrUnterminated(const SourceSpan span) -> Token {
 
 auto errLitStrInvalidEscape(const SourceSpan span) -> Token {
   return errorToken("Invalid escape sequence in string literal.", span);
+}
+
+auto errIdentifierIllegalSequence(const SourceSpan span) -> Token {
+  return errorToken("Identifier contains an illegal character sequence.", span);
 }
 
 } // namespace lex

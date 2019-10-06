@@ -52,11 +52,17 @@ template <typename InputItr> auto Lexer<InputItr>::next() -> Token {
       return nextLitInt(c);
     case '"':
       return nextLitStr();
+    case '_': {
+      const auto nextChar = peekChar(0);
+      if (std::isalpha(nextChar) || std::isdigit(nextChar) || nextChar == '_') {
+        return nextWordToken(c);
+      }
+    }
     default:
       if (std::isalnum(c)) {
         return nextWordToken(c);
       }
-      return errInvalidCharacter(c, SourceSpan(m_inputPos, m_inputPos));
+      return errInvalidChar(c, SourceSpan(m_inputPos, m_inputPos));
     }
   }
 }
@@ -149,11 +155,26 @@ template <typename InputItr> auto Lexer<InputItr>::nextLitStr() -> Token {
 template <typename InputItr> auto Lexer<InputItr>::nextWordToken(char startingChar) -> Token {
   const auto startPos = m_inputPos;
   std::string result(1, startingChar);
-  while (std::isalpha(peekChar(0))) {
+
+  // Consume all alphabetic characters, numbers and underscores.
+  auto illegalSequence = startingChar == '_' && peekChar(0) == '_';
+  while (true) {
+    const auto nextChar = peekChar(0);
+    const auto isUnderscore = nextChar == '_';
+    if (!std::isalpha(nextChar) && !std::isdigit(nextChar) && !isUnderscore)
+      break;
     result += consumeChar();
+
+    // Reserve identifiers containing '__' for internal use.
+    if (isUnderscore && peekChar(0) == '_') {
+      illegalSequence = true;
+    }
   }
 
   const auto span = SourceSpan{startPos, m_inputPos};
+  if (illegalSequence) {
+    return errIdentifierIllegalSequence(span);
+  }
 
   // Check if word is a literal.
   if (result == "true") {
