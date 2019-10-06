@@ -1,6 +1,7 @@
 #pragma once
 #include "lex/keyword.hpp"
 #include "lex/source_span.hpp"
+#include "lex/token_cat.hpp"
 #include "lex/token_type.hpp"
 #include <iostream>
 #include <string>
@@ -45,6 +46,8 @@ public:
   auto getPayload() const noexcept { return m_payload; }
 
   auto isEnd() const noexcept { return m_type == TokenType::End; }
+
+  auto getCat() const -> TokenCat { return lookupCat(m_type); }
 
 private:
   TokenType m_type;

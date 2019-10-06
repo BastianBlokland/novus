@@ -13,6 +13,7 @@ include(Catch)
 add_executable(tests
   main.cpp
   lex/helpers.hpp
+  lex/category_test.cpp
   lex/identifier_test.cpp
   lex/iterator_test.cpp
   lex/keyword_test.cpp
