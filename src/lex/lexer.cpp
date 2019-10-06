@@ -55,13 +55,19 @@ static auto isTokenSeperator(const char c) {
 static auto isDigit(const char c) { return c >= '0' && c <= '9'; }
 
 static auto isWordStart(const char c) {
+  const unsigned char utf8Start = 0xC0;
+
   // Either ascii letter or start of non-ascii utf8 character.
-  return (c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z') || ((unsigned char)c >= 0xC0);
+  return (c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z') ||
+         (static_cast<unsigned char>(c) >= utf8Start);
 }
 
 static auto isWordContinuation(const char c) {
+  const unsigned char utf8Continuation = 0x80;
+
   // Either ascii letter or continuation of non-ascii utf8 character.
-  return (c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z') || ((unsigned char)c >= 0x80);
+  return (c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z') ||
+         (static_cast<unsigned char>(c) >= utf8Continuation);
 }
 
 template <typename InputItr> auto Lexer<InputItr>::next() -> Token {
@@ -146,9 +152,8 @@ template <typename InputItr> auto Lexer<InputItr>::next() -> Token {
       const auto nextChar = peekChar(0);
       if (isWordStart(nextChar) || isdigit(nextChar) || nextChar == '_') {
         return nextWordToken(c);
-      } else {
-        return basicToken(TokenType::SepUnderscore, SourceSpan{m_inputPos});
       }
+      return basicToken(TokenType::SepUnderscore, SourceSpan{m_inputPos});
     }
     default:
       if (isWordStart(c)) {

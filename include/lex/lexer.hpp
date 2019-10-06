@@ -17,8 +17,8 @@ template <typename InputItr> class Lexer final {
 
 public:
   Lexer() = delete;
-  Lexer(InputItr inputStart, const InputItr inputEnd)
-      : m_input{inputStart}, m_inputEnd{inputEnd}, m_inputPos{-1}, m_readBuffer{} {}
+  Lexer(InputItr inputBegin, const InputItr inputEnd)
+      : m_input{inputBegin}, m_inputEnd{inputEnd}, m_inputPos{-1}, m_readBuffer{} {}
 
   auto begin() -> TokenItr<Lexer> { return TokenItr{*this}; }
 
