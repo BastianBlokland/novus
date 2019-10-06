@@ -11,6 +11,12 @@ public:
   auto operator==(const SourceSpan& rhs) const noexcept -> bool;
   auto operator!=(const SourceSpan& rhs) const noexcept -> bool;
 
+  auto operator<(const SourceSpan& rhs) const noexcept -> bool;
+  auto operator>(const SourceSpan& rhs) const noexcept -> bool;
+
+  auto operator<(const int& rhs) const noexcept -> bool;
+  auto operator>(const int& rhs) const noexcept -> bool;
+
   auto getStart() const noexcept { return m_start; }
   auto getEnd() const noexcept { return m_end; }
 

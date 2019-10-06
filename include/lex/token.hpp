@@ -1,6 +1,6 @@
 #pragma once
 #include "lex/keyword.hpp"
-#include "lex/sourcespan.hpp"
+#include "lex/source_span.hpp"
 #include "lex/token_type.hpp"
 #include <iostream>
 #include <string>

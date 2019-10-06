@@ -20,6 +20,18 @@ auto SourceSpan::operator!=(const SourceSpan& rhs) const noexcept -> bool {
   return m_start != rhs.m_start || m_end != rhs.m_end;
 }
 
+auto SourceSpan::operator<(const SourceSpan& rhs) const noexcept -> bool {
+  return m_end < rhs.m_start;
+}
+
+auto SourceSpan::operator>(const SourceSpan& rhs) const noexcept -> bool {
+  return m_start > rhs.m_end;
+}
+
+auto SourceSpan::operator<(const int& rhs) const noexcept -> bool { return m_end < rhs; }
+
+auto SourceSpan::operator>(const int& rhs) const noexcept -> bool { return m_start > rhs; }
+
 auto operator<<(std::ostream& out, const SourceSpan& rhs) -> std::ostream& {
   out << rhs.getStart() << '-' << rhs.getEnd();
   return out;
