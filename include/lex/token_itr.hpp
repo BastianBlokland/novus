@@ -36,8 +36,9 @@ public:
 
 template <typename TokenSource = NopTokenSource> class TokenItr final : public TokenItrBase {
 
-  static_assert(is_same<decltype(declval<TokenSource&>().next()), Token>::value,
-                "TokenSource has to have a 'next' function returning a token.");
+  static_assert(
+      is_same<decltype(declval<TokenSource&>().next()), Token>::value,
+      "TokenSource has to have a 'next' function returning a token.");
 
 public:
   TokenItr() : m_source{nullptr} {}

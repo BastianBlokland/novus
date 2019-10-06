@@ -16,14 +16,15 @@ TEST_CASE("Lexing string literals", "[lexer]") {
   SECTION("Escaping") {
     REQUIRE_TOKENS("\"hello\\nworld\"", litStrToken("hello\nworld"));
     REQUIRE_TOKENS("\"\\\"hello world\\\"\"", litStrToken("\"hello world\""));
-    REQUIRE_TOKENS("\"\\\" \\\\ \\a \\b \\f \\n \\r \\t \\v\"",
-                   litStrToken("\" \\ \a \b \f \n \r \t \v"));
+    REQUIRE_TOKENS(
+        "\"\\\" \\\\ \\a \\b \\f \\n \\r \\t \\v\"", litStrToken("\" \\ \a \b \f \n \r \t \v"));
   }
 
   SECTION("Sequences") {
     REQUIRE_TOKENS("\"hello\"\"world\"", litStrToken("hello"), litStrToken("world"));
-    REQUIRE_TOKENS("\"hello\",\"world\"", litStrToken("hello"), basicToken(TokenType::SepComma),
-                   litStrToken("world"));
+    REQUIRE_TOKENS(
+        "\"hello\",\"world\"", litStrToken("hello"), basicToken(TokenType::SepComma),
+        litStrToken("world"));
   }
 
   SECTION("Errors") {

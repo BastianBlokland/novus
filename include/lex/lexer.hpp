@@ -13,8 +13,9 @@ namespace lex {
 
 template <typename InputItr> class Lexer final {
 
-  static_assert(is_same<typename iterator_traits<InputItr>::value_type, char>::value,
-                "Valuetype of input iterator has to be 'char'");
+  static_assert(
+      is_same<typename iterator_traits<InputItr>::value_type, char>::value,
+      "Valuetype of input iterator has to be 'char'");
 
 public:
   Lexer() = delete;

@@ -22,12 +22,13 @@ TEST_CASE("Lexing identifiers", "[lexer]") {
 
   SECTION("Sequences") {
     REQUIRE_TOKENS("hello world", identiferToken("hello"), identiferToken("world"));
-    REQUIRE_TOKENS("hello,world", identiferToken("hello"), basicToken(TokenType::SepComma),
-                   identiferToken("world"));
-    REQUIRE_TOKENS("hello@world", identiferToken("hello"), errInvalidChar('@'),
-                   identiferToken("world"));
-    REQUIRE_TOKENS("hello#world", identiferToken("hello"), errInvalidChar('#'),
-                   identiferToken("world"));
+    REQUIRE_TOKENS(
+        "hello,world", identiferToken("hello"), basicToken(TokenType::SepComma),
+        identiferToken("world"));
+    REQUIRE_TOKENS(
+        "hello@world", identiferToken("hello"), errInvalidChar('@'), identiferToken("world"));
+    REQUIRE_TOKENS(
+        "hello#world", identiferToken("hello"), errInvalidChar('#'), identiferToken("world"));
   }
 
   SECTION("Errors") {

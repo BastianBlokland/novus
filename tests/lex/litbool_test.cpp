@@ -12,8 +12,8 @@ TEST_CASE("Lexing boolean literals", "[lexer]") {
 
   SECTION("Sequences") {
     REQUIRE_TOKENS("true false", litBoolToken(true), litBoolToken(false));
-    REQUIRE_TOKENS("true,true", litBoolToken(true), basicToken(TokenType::SepComma),
-                   litBoolToken(true));
+    REQUIRE_TOKENS(
+        "true,true", litBoolToken(true), basicToken(TokenType::SepComma), litBoolToken(true));
   }
 
   SECTION("Spans") { REQUIRE_SPANS(" true ", SourceSpan{1, 4}); }

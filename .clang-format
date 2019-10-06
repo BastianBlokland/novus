@@ -2,3 +2,4 @@ Language: Cpp
 BasedOnStyle: LLVM
 PointerAlignment: Left
 ColumnLimit: 100
+AlignAfterOpenBracket: AlwaysBreak
