@@ -82,6 +82,42 @@ template <typename InputItr> auto Lexer<InputItr>::next() -> Token {
       return basicToken(TokenType::OpQMark, SourceSpan{m_inputPos});
     case ':':
       return basicToken(TokenType::OpColon, SourceSpan{m_inputPos});
+    case '&':
+      if (peekChar(0) == '&') {
+        consumeChar();
+        return basicToken(TokenType::OpAmpAmp, SourceSpan{m_inputPos - 1, m_inputPos});
+      }
+      return basicToken(TokenType::OpAmp, SourceSpan{m_inputPos});
+    case '|':
+      if (peekChar(0) == '|') {
+        consumeChar();
+        return basicToken(TokenType::OpPipePipe, SourceSpan{m_inputPos - 1, m_inputPos});
+      }
+      return basicToken(TokenType::OpPipe, SourceSpan{m_inputPos});
+    case '=':
+      if (peekChar(0) == '=') {
+        consumeChar();
+        return basicToken(TokenType::OpEqEq, SourceSpan{m_inputPos - 1, m_inputPos});
+      }
+      return basicToken(TokenType::OpEq, SourceSpan{m_inputPos});
+    case '!':
+      if (peekChar(0) == '=') {
+        consumeChar();
+        return basicToken(TokenType::OpBangEq, SourceSpan{m_inputPos - 1, m_inputPos});
+      }
+      return basicToken(TokenType::OpBang, SourceSpan{m_inputPos});
+    case '<':
+      if (peekChar(0) == '=') {
+        consumeChar();
+        return basicToken(TokenType::OpLessEq, SourceSpan{m_inputPos - 1, m_inputPos});
+      }
+      return basicToken(TokenType::OpLess, SourceSpan{m_inputPos});
+    case '>':
+      if (peekChar(0) == '=') {
+        consumeChar();
+        return basicToken(TokenType::OpGtEq, SourceSpan{m_inputPos - 1, m_inputPos});
+      }
+      return basicToken(TokenType::OpGt, SourceSpan{m_inputPos});
     case '(':
       return basicToken(TokenType::SepOpenParan, SourceSpan{m_inputPos});
     case ')':

@@ -4,12 +4,6 @@
 
 namespace lex {
 
-TEST_CASE("Lexing keywords", "[lexer]") {
-
-  SECTION("Function") {
-    REQUIRE_TOKENS("fun", keywordToken(Keyword::Function));
-    REQUIRE_SPANS(" fun ", SourceSpan{1, 3})
-  }
-}
+TEST_CASE("Lexing keywords", "[lexer]") { REQUIRE_TOKENS("fun", keywordToken(Keyword::Function)); }
 
 } // namespace lex

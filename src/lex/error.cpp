@@ -4,7 +4,7 @@
 namespace lex {
 
 auto errInvalidChar(const char c, const SourceSpan span) -> Token {
-  return errorToken("Invalid character." + std::string(1, c) + "'.", span);
+  return errorToken("Invalid character '" + std::string(1, c) + "'.", span);
 }
 
 auto errLitIntTooBig(const SourceSpan span) -> Token {
