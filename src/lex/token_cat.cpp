@@ -1,5 +1,4 @@
 #include "lex/token_cat.hpp"
-#include <unordered_map>
 
 namespace lex {
 
@@ -31,41 +30,44 @@ auto operator<<(std::ostream& out, const TokenCat& rhs) -> std::ostream& {
 }
 
 auto lookupCat(const TokenType type) -> TokenCat {
-  static const std::unordered_map<TokenType, TokenCat> catTable = {
-      {TokenType::OpPlus, TokenCat::Operator},
-      {TokenType::OpMinus, TokenCat::Operator},
-      {TokenType::OpStar, TokenCat::Operator},
-      {TokenType::OpSlash, TokenCat::Operator},
-      {TokenType::OpQMark, TokenCat::Operator},
-      {TokenType::OpColon, TokenCat::Operator},
-      {TokenType::OpAmp, TokenCat::Operator},
-      {TokenType::OpAmpAmp, TokenCat::Operator},
-      {TokenType::OpPipe, TokenCat::Operator},
-      {TokenType::OpPipePipe, TokenCat::Operator},
-      {TokenType::OpEq, TokenCat::Operator},
-      {TokenType::OpEqEq, TokenCat::Operator},
-      {TokenType::OpBang, TokenCat::Operator},
-      {TokenType::OpBangEq, TokenCat::Operator},
-      {TokenType::OpLess, TokenCat::Operator},
-      {TokenType::OpLessEq, TokenCat::Operator},
-      {TokenType::OpGt, TokenCat::Operator},
-      {TokenType::OpGtEq, TokenCat::Operator},
-      {TokenType::SepOpenParan, TokenCat::Seperator},
-      {TokenType::SepCloseParan, TokenCat::Seperator},
-      {TokenType::SepComma, TokenCat::Seperator},
-      {TokenType::SepUnderscore, TokenCat::Seperator},
-      {TokenType::LitInt, TokenCat::Literal},
-      {TokenType::LitBool, TokenCat::Literal},
-      {TokenType::LitStr, TokenCat::Literal},
-      {TokenType::Keyword, TokenCat::Keyword},
-      {TokenType::Identifier, TokenCat::Identifier},
-      {TokenType::Error, TokenCat::Error}};
-
-  const auto catSearch = catTable.find(type);
-  if (catSearch != catTable.end()) {
-    return catSearch->second;
+  switch (type) {
+  case TokenType::OpPlus:
+  case TokenType::OpMinus:
+  case TokenType::OpStar:
+  case TokenType::OpSlash:
+  case TokenType::OpQMark:
+  case TokenType::OpColon:
+  case TokenType::OpAmp:
+  case TokenType::OpAmpAmp:
+  case TokenType::OpPipe:
+  case TokenType::OpPipePipe:
+  case TokenType::OpEq:
+  case TokenType::OpEqEq:
+  case TokenType::OpBang:
+  case TokenType::OpBangEq:
+  case TokenType::OpLess:
+  case TokenType::OpLessEq:
+  case TokenType::OpGt:
+  case TokenType::OpGtEq:
+    return TokenCat::Operator;
+  case TokenType::SepOpenParan:
+  case TokenType::SepCloseParan:
+  case TokenType::SepComma:
+  case TokenType::SepUnderscore:
+    return TokenCat::Seperator;
+  case TokenType::LitInt:
+  case TokenType::LitBool:
+  case TokenType::LitStr:
+    return TokenCat::Literal;
+  case TokenType::Keyword:
+    return TokenCat::Keyword;
+  case TokenType::Identifier:
+    return TokenCat::Identifier;
+  case TokenType::Error:
+    return TokenCat::Error;
+  case TokenType::End:
+    return TokenCat::Unknown;
   }
-
   return TokenCat::Unknown;
 }
 
