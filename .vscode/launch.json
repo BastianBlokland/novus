@@ -2,21 +2,22 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "lldb repl",
-      "type": "cppdbg",
+      "name": "tests",
+      "type": "lldb",
+      "request": "launch",
+      "program": "${workspaceFolder}/bin/tests",
+      "cwd": "${workspaceFolder}",
+      "terminal": "integrated",
+      "stopOnEntry": false
+    },
+    {
+      "name": "repl",
+      "type": "lldb",
       "request": "launch",
       "program": "${workspaceFolder}/bin/repl",
-      "args": [],
-      "stopAtEntry": true,
       "cwd": "${workspaceFolder}",
-      "environment": [],
-      "externalConsole": true,
-      "MIMode": "lldb",
-      "logging": {
-        "trace": true,
-        "traceResponse": true,
-        "engineLogging": true
-      }
+      "terminal": "integrated",
+      "stopOnEntry": true
     }
   ]
 }

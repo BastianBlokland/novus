@@ -5,6 +5,7 @@
 # Build output.
 /[Bb]uild*
 /[Bb]in*
+/compile_commands.json
 
 # User settings (Except portable common settings).
 /.vscode/*
@@ -12,3 +13,6 @@
 !/.vscode/extensions.json
 !/.vscode/tasks.json
 !/.vscode/launch.json
+
+# Clangd cache.
+/.clangd/index/*

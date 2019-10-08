@@ -2,10 +2,10 @@ include(FetchContent)
 
 # 'Catch2' testing framework.
 FetchContent_Declare(
-  Catch2
+  catch2
   GIT_REPOSITORY https://github.com/catchorg/Catch2.git
   GIT_TAG v2.9.2)
-FetchContent_MakeAvailable(Catch2)
+FetchContent_MakeAvailable(catch2)
 list(APPEND CMAKE_MODULE_PATH ${catch2_SOURCE_DIR}/contrib)
 include(Catch)
 

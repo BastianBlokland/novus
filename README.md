@@ -20,6 +20,12 @@ A simple interpreted programming language meant as an exercise.
 * Build with Make: `(cd build && make)`.
 * Executables can be found in the `bin` directory.
 
+## Ide
+
+* Run CMake: `cmake -B build -DCMAKE_BUILD_TYPE=Debug`.
+* Copy / symlink the file `build/compile_commands.json` to the root of the project.
+* Use `clangd` for intellisense. (vscode ext: [vscode-clangd](https://marketplace.visualstudio.com/items?itemName=llvm-vs-code-extensions.vscode-clangd))
+
 ## Name
 
 Naming things is hard 😅 From the Stargate tv-show: [Novus = 'new' in ancient](https://stargate.fandom.com/wiki/Novus).

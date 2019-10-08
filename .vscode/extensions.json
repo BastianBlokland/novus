@@ -1,8 +1,8 @@
 {
   "recommendations": [
-    "ms-vscode.cpptools",
+    "llvm-vs-code-extensions.vscode-clangd",
+    "vadimcn.vscode-lldb",
     "twxs.cmake",
-    "xaver.clang-format",
     "vector-of-bool.cmake-tools",
     "editorconfig.editorconfig"
   ]
