@@ -22,3 +22,4 @@ add_library(lex STATIC
 target_include_directories(lex PUBLIC ../include)
 target_include_directories(lex PRIVATE lex)
 target_compile_features(lex PUBLIC cxx_std_17)
+target_compile_options(lex PRIVATE -Werror -Wall -Wextra)

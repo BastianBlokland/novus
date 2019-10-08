@@ -1,5 +1,6 @@
 #include "catch2/catch.hpp"
 #include "lex/lexer.hpp"
+#include "lex/token.hpp"
 #include "lex/token_itr.hpp"
 #include <string>
 #include <vector>
@@ -11,17 +12,16 @@ TEST_CASE("Iterating the lexer", "[lexer]") {
   auto lexer = Lexer{input.begin(), input.end()};
 
   SECTION("Range for") {
-    auto i = 0;
+    std::vector<Token> tokens;
     for (const auto& token : lexer) {
-      ++i;
+      tokens.push_back(token);
     }
-    REQUIRE(i == 5);
+    REQUIRE(tokens.size() == 5);
   }
 
   SECTION("While loop") {
     auto i = 0;
-    Token token;
-    while (!(token = lexer.next()).isEnd()) {
+    while (!lexer.next().isEnd()) {
       ++i;
     }
     REQUIRE(i == 5);

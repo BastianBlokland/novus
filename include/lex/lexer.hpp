@@ -6,15 +6,12 @@
 #include <utility>
 #include <vector>
 
-using std::is_same;
-using std::iterator_traits;
-
 namespace lex {
 
 template <typename InputItr> class Lexer final {
 
   static_assert(
-      is_same<typename iterator_traits<InputItr>::value_type, char>::value,
+      std::is_same<typename std::iterator_traits<InputItr>::value_type, char>::value,
       "Valuetype of input iterator has to be 'char'");
 
 public:
@@ -34,12 +31,12 @@ private:
   int m_inputPos;
   std::deque<char> m_readBuffer;
 
-  auto nextLitInt(const char mostSignficantChar) -> Token;
+  auto nextLitInt(char mostSignficantChar) -> Token;
   auto nextLitStr() -> Token;
-  auto nextWordToken(const char startingChar) -> Token;
+  auto nextWordToken(char startingChar) -> Token;
 
   auto consumeChar() -> char;
-  auto peekChar(const int ahead) -> char;
+  auto peekChar(size_t ahead) -> char;
   auto getFromInput() -> char;
 };
 

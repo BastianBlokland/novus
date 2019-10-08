@@ -303,7 +303,7 @@ template <typename InputItr> auto Lexer<InputItr>::consumeChar() -> char {
   return val;
 }
 
-template <typename InputItr> auto Lexer<InputItr>::peekChar(const int ahead) -> char {
+template <typename InputItr> auto Lexer<InputItr>::peekChar(const size_t ahead) -> char {
   for (auto i = m_readBuffer.size(); i <= ahead; i++) {
     m_readBuffer.push_back(getFromInput());
   }

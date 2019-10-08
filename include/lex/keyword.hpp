@@ -7,7 +7,7 @@ namespace lex {
 
 enum class Keyword { Function };
 
-std::ostream& operator<<(std::ostream& out, const Keyword& rhs);
+auto operator<<(std::ostream& out, const Keyword& rhs) -> std::ostream&;
 
 auto getKeyword(const std::string& str) -> std::optional<Keyword>;
 

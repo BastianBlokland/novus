@@ -35,6 +35,6 @@ enum class TokenType {
   End,
 };
 
-std::ostream& operator<<(std::ostream& out, const TokenType& rhs);
+auto operator<<(std::ostream& out, const TokenType& rhs) -> std::ostream&;
 
 } // namespace lex

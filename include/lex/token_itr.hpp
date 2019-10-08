@@ -2,9 +2,6 @@
 #include "lex/token.hpp"
 #include <utility>
 
-using std::declval;
-using std::is_same;
-
 namespace lex {
 
 class TokenItrBase {
@@ -26,26 +23,29 @@ public:
   auto operator!=(const TokenItrBase& rhs) noexcept -> bool { return m_current != rhs.m_current; }
 
 protected:
+  auto setCurrent(Token token) { m_current = std::move(token); }
+
+private:
   Token m_current;
 };
 
 class NopTokenSource final {
 public:
-  auto next() -> Token { return endToken(SourceSpan{0}); }
+  static auto next() -> Token { return endToken(SourceSpan{0}); }
 };
 
 template <typename TokenSource = NopTokenSource> class TokenItr final : public TokenItrBase {
 
   static_assert(
-      is_same<decltype(declval<TokenSource&>().next()), Token>::value,
+      std::is_same<decltype(std::declval<TokenSource&>().next()), Token>::value,
       "TokenSource has to have a 'next' function returning a token.");
 
 public:
   TokenItr() : m_source{nullptr} {}
 
-  TokenItr(TokenSource& tokenSource) : m_source{&tokenSource} {
+  explicit TokenItr(TokenSource& tokenSource) : m_source{&tokenSource} {
     // Set the initial value.
-    m_current = tokenSource.next();
+    setCurrent(tokenSource.next());
   }
 
   auto operator++() { advance(); }
@@ -54,8 +54,9 @@ private:
   TokenSource* m_source;
 
   auto advance() {
-    if (m_source != nullptr)
-      m_current = m_source->next();
+    if (m_source != nullptr) {
+      setCurrent(m_source->next());
+    }
   }
 };
 

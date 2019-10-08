@@ -6,8 +6,8 @@ namespace lex {
 
 enum class TokenCat { Operator, Seperator, Literal, Keyword, Identifier, Error, Unknown };
 
-auto lookupCat(const TokenType type) -> TokenCat;
+auto lookupCat(TokenType type) -> TokenCat;
 
-std::ostream& operator<<(std::ostream& out, const TokenCat& rhs);
+auto operator<<(std::ostream& out, const TokenCat& rhs) -> std::ostream&;
 
 } // namespace lex

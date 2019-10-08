@@ -48,7 +48,7 @@ auto render(const std::vector<char>& input) {
   // Draw input.
   auto x = 0;
   auto y = 0;
-  for (auto i = 0; i < input.size(); ++i) {
+  for (size_t i = 0; i < input.size(); ++i) {
     const char c = input[i];
     if (c == '\n') {
       ++y;
@@ -86,7 +86,7 @@ auto run() {
     case KEY_DOWN:
       break;
     case KEY_RIGHT:
-      if (cursor < input.size()) {
+      if (cursor < static_cast<int>(input.size())) {
         ++cursor;
       }
       break;
