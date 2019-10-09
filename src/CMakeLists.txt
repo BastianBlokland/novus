@@ -19,7 +19,7 @@ add_library(lex STATIC
   lex/token_type.cpp
   lex/keyword.cpp
   lex/utilities.cpp)
-target_include_directories(lex PUBLIC ../include)
-target_include_directories(lex PRIVATE lex)
 target_compile_features(lex PUBLIC cxx_std_17)
 target_compile_options(lex PRIVATE -Werror -Wall -Wextra)
+target_include_directories(lex PUBLIC ../include)
+target_include_directories(lex PRIVATE lex)

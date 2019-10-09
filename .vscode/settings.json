@@ -5,8 +5,10 @@
   "editor.formatOnSave": true,
   "editor.renderWhitespace": "all",
   "editor.detectIndentation": false,
+  "editor.tabSize": 2,
   "editor.rulers": [
     100
   ],
-  "cmake.copyCompileCommands": "${workspaceRoot}/compile_commands.json"
+  "cmake.copyCompileCommands": "${workspaceRoot}/compile_commands.json",
+  "clangd.semanticHighlighting": true
 }
