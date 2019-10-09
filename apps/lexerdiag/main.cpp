@@ -52,7 +52,7 @@ auto run(InputItr inputBegin, const InputItr inputEnd, const bool printTokens) {
 
       const auto payload = token.getPayload();
       if (payload) {
-        std::cout << " = " << *payload;
+        std::cout << " > " << *payload;
       }
 
       std::cout << rang::bg::reset << rang::fg::reset << '\n';
