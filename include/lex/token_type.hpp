@@ -26,6 +26,7 @@ enum class TokenType {
   SepCloseParan,
   SepComma,
   SepUnderscore,
+  SepArrow,
   LitInt,
   LitBool,
   LitStr,

@@ -79,6 +79,10 @@ template <typename InputItr> auto Lexer<InputItr>::next() -> Token {
     case '+':
       return basicToken(TokenType::OpPlus, SourceSpan{m_inputPos});
     case '-':
+      if (peekChar(0) == '>') {
+        consumeChar();
+        return basicToken(TokenType::SepArrow, SourceSpan{m_inputPos - 1, m_inputPos});
+      }
       return basicToken(TokenType::OpMinus, SourceSpan{m_inputPos});
     case '*':
       return basicToken(TokenType::OpStar, SourceSpan{m_inputPos});

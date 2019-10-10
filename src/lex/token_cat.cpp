@@ -54,6 +54,7 @@ auto lookupCat(const TokenType type) -> TokenCat {
   case TokenType::SepCloseParan:
   case TokenType::SepComma:
   case TokenType::SepUnderscore:
+  case TokenType::SepArrow:
     return TokenCat::Seperator;
   case TokenType::LitInt:
   case TokenType::LitBool:
