@@ -35,7 +35,7 @@ TEST_CASE("Lexing identifiers", "[lexer]") {
     REQUIRE_TOKENS("1hello", errLitIntInvalidChar());
     REQUIRE_TOKENS("h\a_hello", errIdentifierIllegalCharacter());
     REQUIRE_TOKENS("@", errInvalidChar('@'));
-    REQUIRE_TOKENS("_", basicToken(TokenType::SepUnderscore));
+    REQUIRE_TOKENS("_", errInvalidChar('_'));
 
     // Ids containing '__' are reserved for internal use.
     REQUIRE_TOKENS("__", errIdentifierIllegalSequence());

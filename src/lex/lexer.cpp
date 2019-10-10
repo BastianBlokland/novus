@@ -88,10 +88,6 @@ template <typename InputItr> auto Lexer<InputItr>::next() -> Token {
       return basicToken(TokenType::OpStar, SourceSpan{m_inputPos});
     case '/':
       return basicToken(TokenType::OpSlash, SourceSpan{m_inputPos});
-    case '?':
-      return basicToken(TokenType::OpQMark, SourceSpan{m_inputPos});
-    case ':':
-      return basicToken(TokenType::OpColon, SourceSpan{m_inputPos});
     case '&':
       if (peekChar(0) == '&') {
         consumeChar();
@@ -157,7 +153,8 @@ template <typename InputItr> auto Lexer<InputItr>::next() -> Token {
       if (isWordStart(nextChar) || isdigit(nextChar) || nextChar == '_') {
         return nextWordToken(c);
       }
-      return basicToken(TokenType::SepUnderscore, SourceSpan{m_inputPos});
+      // Current '_' is not used as a valid token own.
+      return errInvalidChar(c, SourceSpan(m_inputPos, m_inputPos));
     }
     default:
       if (isWordStart(c)) {

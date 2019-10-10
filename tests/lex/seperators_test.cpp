@@ -9,7 +9,6 @@ TEST_CASE("Lexing seperators", "[lexer]") {
   REQUIRE_TOKENS("(", basicToken(TokenType::SepOpenParan));
   REQUIRE_TOKENS(")", basicToken(TokenType::SepCloseParan));
   REQUIRE_TOKENS(",", basicToken(TokenType::SepComma));
-  REQUIRE_TOKENS("_", basicToken(TokenType::SepUnderscore));
   REQUIRE_TOKENS("->", basicToken(TokenType::SepArrow));
 }
 

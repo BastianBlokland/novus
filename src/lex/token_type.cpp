@@ -16,12 +16,6 @@ auto operator<<(std::ostream& out, const TokenType& rhs) -> std::ostream& {
   case TokenType::OpSlash:
     out << "slash";
     break;
-  case TokenType::OpQMark:
-    out << "qmark";
-    break;
-  case TokenType::OpColon:
-    out << "colon";
-    break;
   case TokenType::OpAmp:
     out << "ampersand";
     break;
@@ -66,9 +60,6 @@ auto operator<<(std::ostream& out, const TokenType& rhs) -> std::ostream& {
     break;
   case TokenType::SepComma:
     out << "comma";
-    break;
-  case TokenType::SepUnderscore:
-    out << "underscore";
     break;
   case TokenType::SepArrow:
     out << "arrow";

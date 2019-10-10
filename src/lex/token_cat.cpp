@@ -35,8 +35,6 @@ auto lookupCat(const TokenType type) -> TokenCat {
   case TokenType::OpMinus:
   case TokenType::OpStar:
   case TokenType::OpSlash:
-  case TokenType::OpQMark:
-  case TokenType::OpColon:
   case TokenType::OpAmp:
   case TokenType::OpAmpAmp:
   case TokenType::OpPipe:
@@ -53,7 +51,6 @@ auto lookupCat(const TokenType type) -> TokenCat {
   case TokenType::SepOpenParan:
   case TokenType::SepCloseParan:
   case TokenType::SepComma:
-  case TokenType::SepUnderscore:
   case TokenType::SepArrow:
     return TokenCat::Seperator;
   case TokenType::LitInt:

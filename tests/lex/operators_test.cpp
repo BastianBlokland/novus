@@ -10,8 +10,6 @@ TEST_CASE("Lexing operators", "[lexer]") {
   REQUIRE_TOKENS("-", basicToken(TokenType::OpMinus));
   REQUIRE_TOKENS("*", basicToken(TokenType::OpStar));
   REQUIRE_TOKENS("/", basicToken(TokenType::OpSlash));
-  REQUIRE_TOKENS("?", basicToken(TokenType::OpQMark));
-  REQUIRE_TOKENS(":", basicToken(TokenType::OpColon));
   REQUIRE_TOKENS("&", basicToken(TokenType::OpAmp));
   REQUIRE_TOKENS("&&", basicToken(TokenType::OpAmpAmp));
   REQUIRE_TOKENS("|", basicToken(TokenType::OpPipe));
