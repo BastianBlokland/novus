@@ -20,43 +20,43 @@ auto operator<<(std::ostream& out, const TokenType& rhs) -> std::ostream& {
     out << "ampersand";
     break;
   case TokenType::OpAmpAmp:
-    out << "ampersandampersand";
+    out << "ampersand-ampersand";
     break;
   case TokenType::OpPipe:
     out << "pipe";
     break;
   case TokenType::OpPipePipe:
-    out << "pipepipe";
+    out << "pipe-pipe";
     break;
   case TokenType::OpEq:
     out << "equal";
     break;
   case TokenType::OpEqEq:
-    out << "equalequal";
+    out << "equal-equal";
     break;
   case TokenType::OpBang:
     out << "bang";
     break;
   case TokenType::OpBangEq:
-    out << "bangequal";
+    out << "bang-equal";
     break;
   case TokenType::OpLess:
     out << "less";
     break;
   case TokenType::OpLessEq:
-    out << "lessequal";
+    out << "less-equal";
     break;
   case TokenType::OpGt:
     out << "greater";
     break;
   case TokenType::OpGtEq:
-    out << "greaterequal";
+    out << "greater-equal";
     break;
   case TokenType::SepOpenParan:
-    out << "openparan";
+    out << "open-paran";
     break;
   case TokenType::SepCloseParan:
-    out << "closeparan";
+    out << "close-paran";
     break;
   case TokenType::SepComma:
     out << "comma";
