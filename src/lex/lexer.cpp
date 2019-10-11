@@ -70,7 +70,8 @@ static auto isWordContinuation(const char c) {
          (static_cast<unsigned char>(c) >= utf8Continuation);
 }
 
-template <typename InputItr> auto Lexer<InputItr>::next() -> Token {
+template <typename InputItr>
+auto Lexer<InputItr>::next() -> Token {
   while (true) {
     const auto c = consumeChar();
     switch (c) {
@@ -170,16 +171,16 @@ auto Lexer<InputItr>::nextLitInt(const char mostSignficantChar) -> Token {
   assert(isdigit(mostSignficantChar));
 
   const auto startPos = m_inputPos;
-  int32_t result = mostSignficantChar - '0';
+  int32_t result      = mostSignficantChar - '0';
   assert(result >= 0 && result <= 9);
 
-  auto tooBig = false;
+  auto tooBig              = false;
   auto containsInvalidChar = false;
-  char curChar = mostSignficantChar;
+  char curChar             = mostSignficantChar;
   while (!isTokenSeperator(peekChar(0))) {
     curChar = consumeChar();
     if (isDigit(curChar)) {
-      const uint64_t base = 10;
+      const uint64_t base      = 10;
       const uint64_t newResult = result * base + (curChar - '0');
       if (newResult > std::numeric_limits<int32_t>::max()) {
         tooBig = true;
@@ -206,7 +207,8 @@ auto Lexer<InputItr>::nextLitInt(const char mostSignficantChar) -> Token {
   return litIntToken(result, span);
 }
 
-template <typename InputItr> auto Lexer<InputItr>::nextLitStr() -> Token {
+template <typename InputItr>
+auto Lexer<InputItr>::nextLitStr() -> Token {
   // Starting '"' already consumed by caller.
   const auto startPos = m_inputPos;
   std::string result{};
@@ -243,12 +245,13 @@ template <typename InputItr> auto Lexer<InputItr>::nextLitStr() -> Token {
   }
 }
 
-template <typename InputItr> auto Lexer<InputItr>::nextWordToken(const char startingChar) -> Token {
+template <typename InputItr>
+auto Lexer<InputItr>::nextWordToken(const char startingChar) -> Token {
   const auto startPos = m_inputPos;
   std::string result(1, startingChar);
 
   auto invalidCharacter = false;
-  auto illegalSequence = startingChar == '_' && peekChar(0) == '_';
+  auto illegalSequence  = startingChar == '_' && peekChar(0) == '_';
   while (!isTokenSeperator(peekChar(0))) {
     const auto c = consumeChar();
     if (isWordContinuation(c) || isdigit(c)) {
@@ -289,7 +292,8 @@ template <typename InputItr> auto Lexer<InputItr>::nextWordToken(const char star
   return identiferToken(result, span);
 }
 
-template <typename InputItr> auto Lexer<InputItr>::consumeChar() -> char {
+template <typename InputItr>
+auto Lexer<InputItr>::consumeChar() -> char {
   char val;
   if (!m_readBuffer.empty()) {
     val = m_readBuffer.front();
@@ -304,7 +308,8 @@ template <typename InputItr> auto Lexer<InputItr>::consumeChar() -> char {
   return val;
 }
 
-template <typename InputItr> auto Lexer<InputItr>::peekChar(const size_t ahead) -> char {
+template <typename InputItr>
+auto Lexer<InputItr>::peekChar(const size_t ahead) -> char {
   for (auto i = m_readBuffer.size(); i <= ahead; i++) {
     m_readBuffer.push_back(getFromInput());
   }
@@ -312,7 +317,8 @@ template <typename InputItr> auto Lexer<InputItr>::peekChar(const size_t ahead) 
   return m_readBuffer[ahead];
 }
 
-template <typename InputItr> auto Lexer<InputItr>::getFromInput() -> char {
+template <typename InputItr>
+auto Lexer<InputItr>::getFromInput() -> char {
   if (m_input == m_inputEnd) {
     return '\0';
   }

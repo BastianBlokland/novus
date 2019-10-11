@@ -10,7 +10,7 @@ TEST_CASE("Lexer utilities", "[lexer]") {
 
   SECTION("Find token by position") {
     const std::string input = "\"Hello world\" + 1_000 * true";
-    const auto tokens = lexAll(input.begin(), input.end());
+    const auto tokens       = lexAll(input.begin(), input.end());
 
     REQUIRE(findToken(tokens.begin(), tokens.end(), -1) == std::nullopt);
     REQUIRE(findToken(tokens.begin(), tokens.end(), 0) == litStrToken("Hello world"));

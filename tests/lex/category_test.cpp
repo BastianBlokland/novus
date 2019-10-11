@@ -7,7 +7,7 @@ TEST_CASE("Retreiving token categories", "[lexer]") {
 
   SECTION("Every token-type has a category") {
     const int typeBegin = static_cast<int>(TokenType::OpPlus);
-    const int typeEnd = static_cast<int>(TokenType::End);
+    const int typeEnd   = static_cast<int>(TokenType::End);
 
     for (int typeInt = typeBegin; typeInt != typeEnd; typeInt++) {
       const auto type = static_cast<TokenType>(typeInt);

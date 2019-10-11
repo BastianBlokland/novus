@@ -5,6 +5,7 @@
 #include "lex/token_payload.hpp"
 #include "lex/token_type.hpp"
 #include <iostream>
+#include <memory>
 #include <string>
 #include <utility>
 
@@ -13,7 +14,7 @@ namespace lex {
 class Token final {
 public:
   Token();
-  Token(TokenType type, TokenPayload* payload, SourceSpan span);
+  Token(TokenType type, std::unique_ptr<TokenPayload> payload, SourceSpan span);
   Token(const Token& rhs);
   Token(Token&& rhs) noexcept;
 
@@ -23,13 +24,13 @@ public:
   auto operator==(const Token& rhs) const noexcept -> bool;
   auto operator!=(const Token& rhs) const noexcept -> bool;
 
-  ~Token();
+  ~Token() = default;
 
   [[nodiscard]] auto getType() const noexcept { return m_type; }
 
   [[nodiscard]] auto getSpan() const noexcept { return m_span; }
 
-  [[nodiscard]] auto getPayload() const noexcept { return m_payload; }
+  [[nodiscard]] auto getPayload() const noexcept { return m_payload.get(); }
 
   [[nodiscard]] auto isEnd() const noexcept { return m_type == TokenType::End; }
 
@@ -37,7 +38,7 @@ public:
 
 private:
   TokenType m_type;
-  TokenPayload* m_payload;
+  std::unique_ptr<TokenPayload> m_payload;
   SourceSpan m_span;
 };
 

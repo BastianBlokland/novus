@@ -23,7 +23,9 @@ TEST_CASE("Lexing string literals", "[lexer]") {
   SECTION("Sequences") {
     REQUIRE_TOKENS("\"hello\"\"world\"", litStrToken("hello"), litStrToken("world"));
     REQUIRE_TOKENS(
-        "\"hello\",\"world\"", litStrToken("hello"), basicToken(TokenType::SepComma),
+        "\"hello\",\"world\"",
+        litStrToken("hello"),
+        basicToken(TokenType::SepComma),
         litStrToken("world"));
   }
 

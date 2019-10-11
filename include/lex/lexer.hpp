@@ -8,7 +8,8 @@
 
 namespace lex {
 
-template <typename InputItr> class Lexer final {
+template <typename InputItr>
+class Lexer final {
 
   static_assert(
       std::is_same<typename std::iterator_traits<InputItr>::value_type, char>::value,
@@ -16,8 +17,8 @@ template <typename InputItr> class Lexer final {
 
 public:
   Lexer() = delete;
-  Lexer(InputItr inputBegin, const InputItr inputEnd)
-      : m_input{inputBegin}, m_inputEnd{inputEnd}, m_inputPos{-1}, m_readBuffer{} {}
+  Lexer(InputItr inputBegin, const InputItr inputEnd) :
+      m_input{inputBegin}, m_inputEnd{inputEnd}, m_inputPos{-1}, m_readBuffer{} {}
 
   auto begin() -> TokenItr<Lexer> { return TokenItr{*this}; }
 
@@ -41,7 +42,8 @@ private:
 };
 
 // Utilities.
-template <typename InputItr> auto lexAll(InputItr inputBegin, const InputItr inputEnd) {
+template <typename InputItr>
+auto lexAll(InputItr inputBegin, const InputItr inputEnd) {
   auto lexer = Lexer{inputBegin, inputEnd};
   return std::vector<Token>{lexer.begin(), lexer.end()};
 }

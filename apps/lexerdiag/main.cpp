@@ -13,7 +13,7 @@
 #include <vector>
 
 using high_resolution_clock = std::chrono::high_resolution_clock;
-using duration = std::chrono::duration<double>;
+using duration              = std::chrono::duration<double>;
 
 auto getFgColor(const lex::Token& token) -> rang::fg;
 auto getBgColor(const lex::Token& token) -> rang::bg;
@@ -23,12 +23,12 @@ auto operator<<(std::ostream& out, const duration& rhs) -> std::ostream&;
 template <typename InputItr>
 auto run(InputItr inputBegin, const InputItr inputEnd, const bool printTokens) {
   const auto tokTypeWidth = 20;
-  const auto width = 80;
+  const auto width        = 80;
 
   // Lex all the tokens and time how long it takes.
-  auto t1 = high_resolution_clock::now();
+  auto t1     = high_resolution_clock::now();
   auto tokens = lex::lexAll(inputBegin, inputEnd);
-  auto t2 = high_resolution_clock::now();
+  auto t2     = high_resolution_clock::now();
   auto lexDur = std::chrono::duration_cast<duration>(t2 - t1);
 
   std::cout << rang::style::dim << rang::style::italic;

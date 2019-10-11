@@ -6,10 +6,10 @@ namespace lex {
 
 class TokenItrBase {
 public:
-  using difference_type = ptrdiff_t;
-  using value_type = Token;
-  using pointer = const Token*;
-  using reference = const Token&;
+  using difference_type   = ptrdiff_t;
+  using value_type        = Token;
+  using pointer           = const Token*;
+  using reference         = const Token&;
   using iterator_category = std::input_iterator_tag;
 
   TokenItrBase() : m_current{} {}
@@ -34,7 +34,8 @@ public:
   static auto next() -> Token { return endToken(SourceSpan{0}); }
 };
 
-template <typename TokenSource = NopTokenSource> class TokenItr final : public TokenItrBase {
+template <typename TokenSource = NopTokenSource>
+class TokenItr final : public TokenItrBase {
 
   static_assert(
       std::is_same<decltype(std::declval<TokenSource&>().next()), Token>::value,

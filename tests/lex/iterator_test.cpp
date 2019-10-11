@@ -9,7 +9,7 @@ namespace lex {
 
 TEST_CASE("Iterating the lexer", "[lexer]") {
   const std::string input = "x + y / z";
-  auto lexer = Lexer{input.begin(), input.end()};
+  auto lexer              = Lexer{input.begin(), input.end()};
 
   SECTION("Range for") {
     std::vector<Token> tokens;
@@ -28,9 +28,9 @@ TEST_CASE("Iterating the lexer", "[lexer]") {
   }
 
   SECTION("Iterator") {
-    auto i = 0;
+    auto i        = 0;
     auto tokenItr = TokenItr{lexer};
-    auto endItr = TokenItr{};
+    auto endItr   = TokenItr{};
     for (; tokenItr != endItr; ++tokenItr) {
       i++;
     }

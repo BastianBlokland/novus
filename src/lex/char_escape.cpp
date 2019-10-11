@@ -5,8 +5,15 @@ namespace lex {
 
 auto escape(const char c) -> std::optional<char> {
   static const std::unordered_map<char, char> table = {
-      {'"', '"'},  {'\\', '\\'}, {'\a', 'a'}, {'\b', 'b'}, {'\f', 'f'},
-      {'\n', 'n'}, {'\r', 'r'},  {'\t', 't'}, {'\v', 'v'},
+      {'"', '"'},
+      {'\\', '\\'},
+      {'\a', 'a'},
+      {'\b', 'b'},
+      {'\f', 'f'},
+      {'\n', 'n'},
+      {'\r', 'r'},
+      {'\t', 't'},
+      {'\v', 'v'},
   };
 
   const auto search = table.find(c);
@@ -19,8 +26,15 @@ auto escape(const char c) -> std::optional<char> {
 
 auto unescape(const char c) -> std::optional<char> {
   static const std::unordered_map<char, char> table = {
-      {'"', '"'},  {'\\', '\\'}, {'a', '\a'}, {'b', '\b'}, {'f', '\f'},
-      {'n', '\n'}, {'r', '\r'},  {'t', '\t'}, {'v', '\v'},
+      {'"', '"'},
+      {'\\', '\\'},
+      {'a', '\a'},
+      {'b', '\b'},
+      {'f', '\f'},
+      {'n', '\n'},
+      {'r', '\r'},
+      {'t', '\t'},
+      {'v', '\v'},
   };
 
   const auto search = table.find(c);
