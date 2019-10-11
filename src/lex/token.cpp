@@ -68,18 +68,6 @@ Token::~Token() {
   }
 }
 
-auto LitStringTokenPayload::print(std::ostream& out) const -> std::ostream& {
-  for (const char c : m_val) {
-    const auto escaped = escape(c);
-    if (escaped) {
-      out << '\\' << escaped.value();
-    } else {
-      out << c;
-    }
-  }
-  return out;
-}
-
 auto operator<<(std::ostream& out, const Token& rhs) -> std::ostream& {
   out << rhs.getType();
   const auto payload = rhs.getPayload();
