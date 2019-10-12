@@ -150,7 +150,7 @@ auto Lexer<InputItr>::next() -> Token {
     case '"':
       return nextLitStr();
     case '_': {
-      const auto nextChar = peekChar(0);
+      const auto& nextChar = peekChar(0);
       if (isWordStart(nextChar) || isdigit(nextChar) || nextChar == '_') {
         return nextWordToken(c);
       }
@@ -309,7 +309,7 @@ auto Lexer<InputItr>::consumeChar() -> char {
 }
 
 template <typename InputItr>
-auto Lexer<InputItr>::peekChar(const size_t ahead) -> char {
+auto Lexer<InputItr>::peekChar(const size_t ahead) -> char& {
   for (auto i = m_readBuffer.size(); i <= ahead; i++) {
     m_readBuffer.push_back(getFromInput());
   }

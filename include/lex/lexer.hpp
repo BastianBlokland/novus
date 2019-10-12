@@ -37,7 +37,7 @@ private:
   auto nextWordToken(char startingChar) -> Token;
 
   auto consumeChar() -> char;
-  auto peekChar(size_t ahead) -> char;
+  auto peekChar(size_t ahead) -> char&;
   auto getFromInput() -> char;
 };
 
