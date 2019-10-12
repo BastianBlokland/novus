@@ -22,11 +22,15 @@ public:
 
   auto operator!=(const TokenItrBase& rhs) noexcept -> bool { return m_current != rhs.m_current; }
 
+  auto operator++() { m_current = getToken(); }
+
 protected:
   auto setCurrent(Token token) { m_current = std::move(token); }
 
 private:
   Token m_current;
+
+  virtual auto getToken() -> Token = 0;
 };
 
 class NopTokenSource final {
@@ -49,15 +53,14 @@ public:
     setCurrent(tokenSource.next());
   }
 
-  auto operator++() { advance(); }
-
 private:
   TokenSource* m_source;
 
-  auto advance() {
-    if (m_source != nullptr) {
-      setCurrent(m_source->next());
+  auto getToken() -> Token override {
+    if (m_source) {
+      return m_source->next();
     }
+    return endToken();
   }
 };
 
