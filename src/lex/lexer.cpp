@@ -9,7 +9,9 @@
 
 namespace lex {
 
-static auto isTokenSeperator(const char c) {
+namespace internal {
+
+static auto isTokenSeperator(const char& c) {
   switch (c) {
   case '\0':
   case '\t':
@@ -52,9 +54,9 @@ static auto isTokenSeperator(const char c) {
   }
 }
 
-static auto isDigit(const char c) { return c >= '0' && c <= '9'; }
+static auto isDigit(const char& c) { return c >= '0' && c <= '9'; }
 
-static auto isWordStart(const char c) {
+static auto isWordStart(const char& c) {
   const unsigned char utf8Start = 0xC0;
 
   // Either ascii letter or start of non-ascii utf8 character.
@@ -62,7 +64,7 @@ static auto isWordStart(const char c) {
          (static_cast<unsigned char>(c) >= utf8Start);
 }
 
-static auto isWordContinuation(const char c) {
+static auto isWordContinuation(const char& c) {
   const unsigned char utf8Continuation = 0x80;
 
   // Either ascii letter or continuation of non-ascii utf8 character.
@@ -70,8 +72,7 @@ static auto isWordContinuation(const char c) {
          (static_cast<unsigned char>(c) >= utf8Continuation);
 }
 
-template <typename InputItr>
-auto Lexer<InputItr>::next() -> Token {
+auto LexerImpl::next() -> Token {
   while (true) {
     const auto c = consumeChar();
     switch (c) {
@@ -151,7 +152,7 @@ auto Lexer<InputItr>::next() -> Token {
       return nextLitStr();
     case '_': {
       const auto& nextChar = peekChar(0);
-      if (isWordStart(nextChar) || isdigit(nextChar) || nextChar == '_') {
+      if (isWordStart(nextChar) || isDigit(nextChar) || nextChar == '_') {
         return nextWordToken(c);
       }
       // Current '_' is not used as a valid token own.
@@ -166,8 +167,7 @@ auto Lexer<InputItr>::next() -> Token {
   }
 }
 
-template <typename InputItr>
-auto Lexer<InputItr>::nextLitInt(const char mostSignficantChar) -> Token {
+auto LexerImpl::nextLitInt(const char mostSignficantChar) -> Token {
   assert(isdigit(mostSignficantChar));
 
   const auto startPos = m_inputPos;
@@ -207,8 +207,7 @@ auto Lexer<InputItr>::nextLitInt(const char mostSignficantChar) -> Token {
   return litIntToken(result, span);
 }
 
-template <typename InputItr>
-auto Lexer<InputItr>::nextLitStr() -> Token {
+auto LexerImpl::nextLitStr() -> Token {
   // Starting '"' already consumed by caller.
   const auto startPos = m_inputPos;
   std::string result{};
@@ -245,8 +244,7 @@ auto Lexer<InputItr>::nextLitStr() -> Token {
   }
 }
 
-template <typename InputItr>
-auto Lexer<InputItr>::nextWordToken(const char startingChar) -> Token {
+auto LexerImpl::nextWordToken(const char startingChar) -> Token {
   const auto startPos = m_inputPos;
   std::string result(1, startingChar);
 
@@ -254,7 +252,7 @@ auto Lexer<InputItr>::nextWordToken(const char startingChar) -> Token {
   auto illegalSequence  = startingChar == '_' && peekChar(0) == '_';
   while (!isTokenSeperator(peekChar(0))) {
     const auto c = consumeChar();
-    if (isWordContinuation(c) || isdigit(c)) {
+    if (isWordContinuation(c) || isDigit(c)) {
       result += c;
     } else if (c == '_') {
       if (peekChar(0) == '_') {
@@ -292,8 +290,7 @@ auto Lexer<InputItr>::nextWordToken(const char startingChar) -> Token {
   return identiferToken(result, span);
 }
 
-template <typename InputItr>
-auto Lexer<InputItr>::consumeChar() -> char {
+auto LexerImpl::consumeChar() -> char {
   char val;
   if (!m_readBuffer.empty()) {
     val = m_readBuffer.front();
@@ -308,8 +305,7 @@ auto Lexer<InputItr>::consumeChar() -> char {
   return val;
 }
 
-template <typename InputItr>
-auto Lexer<InputItr>::peekChar(const size_t ahead) -> char& {
+auto LexerImpl::peekChar(const size_t ahead) -> char& {
   for (auto i = m_readBuffer.size(); i <= ahead; i++) {
     m_readBuffer.push_back(getFromInput());
   }
@@ -317,21 +313,12 @@ auto Lexer<InputItr>::peekChar(const size_t ahead) -> char& {
   return m_readBuffer[ahead];
 }
 
-template <typename InputItr>
-auto Lexer<InputItr>::getFromInput() -> char {
-  if (m_input == m_inputEnd) {
-    return '\0';
-  }
-  const auto val = *m_input;
-  m_input++;
-  return val;
-}
+} // namespace internal
 
 // Explicit instantiations.
 template class Lexer<char*>;
 template class Lexer<std::string::iterator>;
 template class Lexer<std::string::const_iterator>;
 template class Lexer<std::istream_iterator<char>>;
-template class Lexer<std::istreambuf_iterator<char>>;
 
 } // namespace lex
