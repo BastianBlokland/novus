@@ -4,42 +4,17 @@
 
 namespace lex {
 
-class TokenItrBase {
+class TokenItrTraits {
 public:
   using difference_type   = ptrdiff_t;
   using value_type        = Token;
   using pointer           = const Token*;
   using reference         = const Token&;
   using iterator_category = std::input_iterator_tag;
-
-  TokenItrBase() : m_current{} {}
-
-  auto operator*() -> const Token& { return m_current; }
-
-  auto operator-> () -> const Token* { return &m_current; }
-
-  auto operator==(const TokenItrBase& rhs) noexcept -> bool { return m_current == rhs.m_current; }
-
-  auto operator!=(const TokenItrBase& rhs) noexcept -> bool { return m_current != rhs.m_current; }
-
-  auto operator++() { m_current = getToken(); }
-
-protected:
-  auto setCurrent(Token token) { m_current = std::move(token); }
-
-private:
-  Token m_current;
-
-  virtual auto getToken() -> Token = 0;
 };
 
-class NopTokenSource final {
-public:
-  static auto next() -> Token { return endToken(SourceSpan{0}); }
-};
-
-template <typename TokenSource = NopTokenSource>
-class TokenItr final : public TokenItrBase {
+template <typename TokenSource>
+class TokenItr final : public TokenItrTraits {
 
   static_assert(
       std::is_same<decltype(std::declval<TokenSource&>().next()), Token>::value,
@@ -50,17 +25,28 @@ public:
 
   explicit TokenItr(TokenSource& tokenSource) : m_source{&tokenSource} {
     // Set the initial value.
-    setCurrent(tokenSource.next());
+    m_current = tokenSource.next();
   }
+
+  auto operator*() -> const Token& { return m_current; }
+
+  auto operator-> () -> const Token* { return &m_current; }
+
+  auto operator==(const TokenItr& rhs) noexcept -> bool { return m_current == rhs.m_current; }
+
+  auto operator!=(const TokenItr& rhs) noexcept -> bool { return m_current != rhs.m_current; }
+
+  auto operator++() { m_current = getToken(); }
 
 private:
   TokenSource* m_source;
+  Token m_current;
 
-  auto getToken() -> Token override {
+  auto getToken() -> Token {
     if (m_source) {
       return m_source->next();
     }
-    return endToken();
+    return endToken(SourceSpan{0});
   }
 };
 

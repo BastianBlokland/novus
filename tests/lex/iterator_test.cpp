@@ -29,8 +29,8 @@ TEST_CASE("Iterating the lexer", "[lexer]") {
 
   SECTION("Iterator") {
     auto i        = 0;
-    auto tokenItr = TokenItr{lexer};
-    auto endItr   = TokenItr{};
+    auto tokenItr = lexer.begin();
+    auto endItr   = lexer.end();
     for (; tokenItr != endItr; ++tokenItr) {
       i++;
     }
