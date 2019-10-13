@@ -6,15 +6,15 @@ namespace parse {
 enum class NodeType {
   StmtFunDecl,
   StmtPrint,
-  ExpUnaryOp,
-  ExpBinaryOp,
-  ExpSwitch,
-  ExpLit,
-  ExpConst,
-  ExpConstDecl,
-  ExpCall,
-  ExpComma,
-  ExpParan,
+  ExprUnaryOp,
+  ExprBinaryOp,
+  ExprSwitch,
+  ExprLit,
+  ExprConst,
+  ExprConstDecl,
+  ExprCall,
+  ExprComma,
+  ExprParan,
   Error
 };
 

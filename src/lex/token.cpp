@@ -74,37 +74,28 @@ auto basicToken(const TokenType type, const SourceSpan span) -> Token {
 }
 
 auto errorToken(std::string msg, const SourceSpan span) -> Token {
-  return Token{TokenType::Error,
-               std::make_unique<ErrorTokenPayload>(ErrorTokenPayload{std::move(msg)}),
-               span};
+  return Token{TokenType::Error, std::make_unique<ErrorTokenPayload>(std::move(msg)), span};
 }
 
 auto litIntToken(const int32_t val, const SourceSpan span) -> Token {
-  return Token{
-      TokenType::LitInt, std::make_unique<LitIntTokenPayload>(LitIntTokenPayload{val}), span};
+  return Token{TokenType::LitInt, std::make_unique<LitIntTokenPayload>(val), span};
 }
 
 auto litBoolToken(const bool val, const SourceSpan span) -> Token {
-  return Token{
-      TokenType::LitBool, std::make_unique<LitBoolTokenPayload>(LitBoolTokenPayload{val}), span};
+  return Token{TokenType::LitBool, std::make_unique<LitBoolTokenPayload>(val), span};
 }
 
 auto litStrToken(std::string val, const SourceSpan span) -> Token {
-  return Token{TokenType::LitStr,
-               std::make_unique<LitStringTokenPayload>(LitStringTokenPayload{std::move(val)}),
-               span};
+  return Token{TokenType::LitStr, std::make_unique<LitStringTokenPayload>(std::move(val)), span};
 }
 
 auto keywordToken(Keyword keyword, const SourceSpan span) -> Token {
-  return Token{TokenType::Keyword,
-               std::make_unique<KeywordTokenPayload>(KeywordTokenPayload{keyword}),
-               span};
+  return Token{TokenType::Keyword, std::make_unique<KeywordTokenPayload>(keyword), span};
 }
 
 auto identiferToken(std::string id, const SourceSpan span) -> Token {
-  return Token{TokenType::Identifier,
-               std::make_unique<IdentifierTokenPayload>(IdentifierTokenPayload{std::move(id)}),
-               span};
+  return Token{
+      TokenType::Identifier, std::make_unique<IdentifierTokenPayload>(std::move(id)), span};
 }
 
 } // namespace lex

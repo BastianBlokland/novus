@@ -29,8 +29,8 @@ public:
     return !ErrorNode::operator==(rhs);
   }
 
-  [[nodiscard]] auto clone() -> std::unique_ptr<Node> override {
-    return std::make_unique<ErrorNode>(ErrorNode(m_msg, m_tokens));
+  [[nodiscard]] auto clone() const -> std::unique_ptr<Node> override {
+    return std::make_unique<ErrorNode>(m_msg, m_tokens);
   }
 
   [[nodiscard]] auto getMessage() const noexcept -> const std::string& { return m_msg; }
@@ -40,16 +40,16 @@ public:
   }
 
 private:
-  std::string m_msg;
-  std::vector<lex::Token> m_tokens;
+  const std::string m_msg;
+  const std::vector<lex::Token> m_tokens;
 
   auto print(std::ostream& out) const -> std::ostream& override { return out << m_msg; }
 };
 
 // Factory.
 template <typename... Tokens>
-auto errorNode(std::string msg, Tokens... tokens) -> std::unique_ptr<Node> {
-  return std::make_unique<ErrorNode>(ErrorNode{std::move(msg), {tokens...}});
+inline auto errorNode(std::string msg, Tokens... tokens) -> std::unique_ptr<Node> {
+  return std::make_unique<ErrorNode>(std::move(msg), std::vector{tokens...});
 }
 
 } // namespace parse

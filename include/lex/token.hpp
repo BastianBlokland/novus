@@ -33,7 +33,7 @@ public:
   [[nodiscard]] auto getPayload() const noexcept { return m_payload.get(); }
 
   template <typename PayloadT>
-  [[nodiscard]] auto getPayload() -> const PayloadT* {
+  [[nodiscard]] auto getPayload() const -> const PayloadT* {
     return dynamic_cast<PayloadT*>(m_payload.get());
   }
 

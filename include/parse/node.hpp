@@ -17,9 +17,9 @@ public:
   virtual auto operator==(const Node* rhs) const noexcept -> bool = 0;
   virtual auto operator!=(const Node* rhs) const noexcept -> bool = 0;
 
-  [[nodiscard]] virtual auto clone() -> std::unique_ptr<Node> = 0;
+  [[nodiscard]] virtual auto clone() const -> std::unique_ptr<Node> = 0;
 
-  [[nodiscard]] auto getType() const noexcept { return m_type; }
+  [[nodiscard]] auto getType() const noexcept -> NodeType { return m_type; }
 
   virtual auto print(std::ostream& out) const -> std::ostream& = 0;
 

@@ -1,23 +1,39 @@
 #include "parse/parser.hpp"
-#include "lex/lexer.hpp"
+#include "lex/keyword.hpp"
 #include "lex/token.hpp"
-#include "lex/token_itr.hpp"
+#include "lex/token_payload.hpp"
+#include "lex/token_type.hpp"
 #include "parse/error.hpp"
-#include <deque>
+#include "parse/node_print.hpp"
 #include <memory>
-#include <vector>
 
 namespace parse {
 
 namespace internal {
 
-auto ParserImpl::next() -> std::unique_ptr<Node> {
-  if (peekToken(0).isEnd()) {
-    return nullptr;
+static auto getKw(const lex::Token& token) -> std::optional<lex::Keyword> {
+  if (token.getType() != lex::TokenType::Keyword) {
+    return std::nullopt;
   }
+  return token.getPayload<lex::KeywordTokenPayload>()->getKeyword();
+}
 
+auto ParserImpl::next() -> std::unique_ptr<Node> {
+  return peekToken(0).isEnd() ? nullptr : nextStmt();
+}
+
+auto ParserImpl::nextStmt() -> std::unique_ptr<Node> {
   auto token = consumeToken();
+  auto kwOpt = getKw(token);
+  if (kwOpt && kwOpt.value() == lex::Keyword::Print) {
+    return printNode(token, nextExpr());
+  }
   return errInvalidStmtStart(token);
+}
+
+auto ParserImpl::nextExpr() -> std::unique_ptr<Node> {
+  auto tok = consumeToken();
+  return nullptr;
 }
 
 auto ParserImpl::consumeToken() -> lex::Token {

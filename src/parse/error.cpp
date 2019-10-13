@@ -3,6 +3,7 @@
 #include "lex/token_payload.hpp"
 #include "lex/token_type.hpp"
 #include "parse/node_error.hpp"
+#include <sstream>
 #include <string>
 
 namespace parse {
@@ -19,8 +20,10 @@ auto errInvalidStmtStart(lex::Token token) -> std::unique_ptr<Node> {
   if (token.isError()) {
     return errLexError(token);
   }
-  const auto msg = "Invalid statement start: " + token.str();
-  return errorNode(msg, std::move(token));
+
+  std::ostringstream oss;
+  oss << "Invalid statement start: " << token;
+  return errorNode(oss.str(), std::move(token));
 }
 
 } // namespace parse

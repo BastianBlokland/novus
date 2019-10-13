@@ -20,6 +20,9 @@ protected:
 private:
   std::deque<lex::Token> m_readBuffer;
 
+  auto nextStmt() -> std::unique_ptr<Node>;
+  auto nextExpr() -> std::unique_ptr<Node>;
+
   auto consumeToken() -> lex::Token;
   auto peekToken(size_t ahead) -> lex::Token&;
 
@@ -46,16 +49,16 @@ public:
 
   auto end() -> NodeItr<Parser> { return NodeItr<Parser>{}; }
 
+private:
+  InputItr m_input;
+  const InputItr m_inputEnd;
+
   auto getFromInput() -> lex::Token override {
     if (m_input == m_inputEnd) {
       return lex::endToken();
     }
     return *m_input++;
   }
-
-private:
-  InputItr m_input;
-  const InputItr m_inputEnd;
 };
 
 // Utilities.

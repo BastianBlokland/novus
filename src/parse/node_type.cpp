@@ -10,32 +10,32 @@ auto operator<<(std::ostream& out, const NodeType& rhs) -> std::ostream& {
   case NodeType::StmtPrint:
     out << "stmt-print";
     break;
-  case NodeType::ExpUnaryOp:
-    out << "exp-unary-op";
+  case NodeType::ExprUnaryOp:
+    out << "expr-unary-op";
     break;
-  case NodeType::ExpBinaryOp:
-    out << "exp-binary-op";
+  case NodeType::ExprBinaryOp:
+    out << "expr-binary-op";
     break;
-  case NodeType::ExpSwitch:
-    out << "exp-switch";
+  case NodeType::ExprSwitch:
+    out << "expr-switch";
     break;
-  case NodeType::ExpLit:
-    out << "exp-lit";
+  case NodeType::ExprLit:
+    out << "expr-lit";
     break;
-  case NodeType::ExpConst:
-    out << "exp-const";
+  case NodeType::ExprConst:
+    out << "expr-const";
     break;
-  case NodeType::ExpConstDecl:
-    out << "exp-const-decl";
+  case NodeType::ExprConstDecl:
+    out << "expr-const-decl";
     break;
-  case NodeType::ExpCall:
-    out << "exp-call";
+  case NodeType::ExprCall:
+    out << "expr-call";
     break;
-  case NodeType::ExpComma:
-    out << "exp-comma";
+  case NodeType::ExprComma:
+    out << "expr-comma";
     break;
-  case NodeType::ExpParan:
-    out << "exp-paran";
+  case NodeType::ExprParan:
+    out << "expr-paran";
     break;
   case NodeType::Error:
     out << "error";
