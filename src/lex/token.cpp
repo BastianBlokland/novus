@@ -57,6 +57,8 @@ auto operator<<(std::ostream& out, const Token& rhs) -> std::ostream& {
   return out;
 }
 
+auto endToken() -> Token { return endToken(SourceSpan{0}); }
+
 auto endToken(const SourceSpan span) -> Token { return Token{TokenType::End, nullptr, span}; }
 
 auto basicToken(const TokenType type, const SourceSpan span) -> Token {
