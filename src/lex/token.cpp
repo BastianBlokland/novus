@@ -1,6 +1,7 @@
 #include "lex/token.hpp"
 #include "char_escape.hpp"
 #include <memory>
+#include <sstream>
 #include <utility>
 
 namespace lex {
@@ -11,7 +12,7 @@ Token::Token(const TokenType type, std::unique_ptr<TokenPayload> payload, const 
     m_type{type}, m_payload{std::move(payload)}, m_span{span} {}
 
 Token::Token(const Token& rhs) :
-    m_type{rhs.m_type}, m_payload{!rhs.m_payload ? nullptr : rhs.m_payload->Clone()},
+    m_type{rhs.m_type}, m_payload{!rhs.m_payload ? nullptr : rhs.m_payload->clone()},
     m_span{rhs.m_span} {}
 
 Token::Token(Token&& rhs) noexcept :
@@ -23,7 +24,7 @@ auto Token::operator=(const Token& rhs) -> Token& {
   }
   m_type    = rhs.m_type;
   m_span    = rhs.m_span;
-  m_payload = rhs.m_payload ? rhs.m_payload->Clone() : nullptr;
+  m_payload = rhs.m_payload ? rhs.m_payload->clone() : nullptr;
   return *this;
 }
 
@@ -48,6 +49,12 @@ auto Token::operator==(const Token& rhs) const noexcept -> bool {
 }
 
 auto Token::operator!=(const Token& rhs) const noexcept -> bool { return !Token::operator==(rhs); }
+
+auto Token::str() const -> std::string {
+  std::ostringstream oss;
+  oss << *this;
+  return oss.str();
+}
 
 auto operator<<(std::ostream& out, const Token& rhs) -> std::ostream& {
   out << rhs.getType();

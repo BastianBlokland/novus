@@ -32,9 +32,16 @@ public:
 
   [[nodiscard]] auto getPayload() const noexcept { return m_payload.get(); }
 
+  template <typename PayloadT>
+  [[nodiscard]] auto getPayload() -> const PayloadT* {
+    return dynamic_cast<PayloadT*>(m_payload.get());
+  }
+
   [[nodiscard]] auto isEnd() const noexcept { return m_type == TokenType::End; }
 
   [[nodiscard]] auto getCat() const -> TokenCat { return lookupCat(m_type); }
+
+  [[nodiscard]] auto str() const -> std::string;
 
 private:
   TokenType m_type;

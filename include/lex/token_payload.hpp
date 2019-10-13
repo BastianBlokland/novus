@@ -16,7 +16,7 @@ public:
   auto operator=(const TokenPayload& rhs) -> TokenPayload& = default;
   auto operator=(TokenPayload&& rhs) noexcept -> TokenPayload& = default;
 
-  [[nodiscard]] virtual auto Clone() -> std::unique_ptr<TokenPayload> = 0;
+  [[nodiscard]] virtual auto clone() -> std::unique_ptr<TokenPayload> = 0;
 
   virtual auto operator==(const TokenPayload* rhs) const noexcept -> bool = 0;
   virtual auto operator!=(const TokenPayload* rhs) const noexcept -> bool = 0;
@@ -43,7 +43,7 @@ public:
     return !LitIntTokenPayload::operator==(rhs);
   }
 
-  [[nodiscard]] auto Clone() -> std::unique_ptr<TokenPayload> override {
+  [[nodiscard]] auto clone() -> std::unique_ptr<TokenPayload> override {
     return std::make_unique<LitIntTokenPayload>(*this);
   }
 
@@ -69,7 +69,7 @@ public:
     return !LitBoolTokenPayload::operator==(rhs);
   }
 
-  [[nodiscard]] auto Clone() -> std::unique_ptr<TokenPayload> override {
+  [[nodiscard]] auto clone() -> std::unique_ptr<TokenPayload> override {
     return std::make_unique<LitBoolTokenPayload>(*this);
   }
 
@@ -97,7 +97,7 @@ public:
     return !LitStringTokenPayload::operator==(rhs);
   }
 
-  [[nodiscard]] auto Clone() -> std::unique_ptr<TokenPayload> override {
+  [[nodiscard]] auto clone() -> std::unique_ptr<TokenPayload> override {
     return std::make_unique<LitStringTokenPayload>(*this);
   }
 
@@ -123,7 +123,7 @@ public:
     return !KeywordTokenPayload::operator==(rhs);
   }
 
-  [[nodiscard]] auto Clone() -> std::unique_ptr<TokenPayload> override {
+  [[nodiscard]] auto clone() -> std::unique_ptr<TokenPayload> override {
     return std::make_unique<KeywordTokenPayload>(*this);
   }
 
@@ -149,7 +149,7 @@ public:
     return !IdentifierTokenPayload::operator==(rhs);
   }
 
-  [[nodiscard]] auto Clone() -> std::unique_ptr<TokenPayload> override {
+  [[nodiscard]] auto clone() -> std::unique_ptr<TokenPayload> override {
     return std::make_unique<IdentifierTokenPayload>(*this);
   }
 
@@ -175,7 +175,7 @@ public:
     return !ErrorTokenPayload::operator==(rhs);
   }
 
-  [[nodiscard]] auto Clone() -> std::unique_ptr<TokenPayload> override {
+  [[nodiscard]] auto clone() -> std::unique_ptr<TokenPayload> override {
     return std::make_unique<ErrorTokenPayload>(*this);
   }
 

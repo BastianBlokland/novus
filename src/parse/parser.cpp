@@ -2,6 +2,7 @@
 #include "lex/lexer.hpp"
 #include "lex/token.hpp"
 #include "lex/token_itr.hpp"
+#include "parse/error.hpp"
 #include <deque>
 #include <memory>
 #include <vector>
@@ -10,7 +11,10 @@ namespace parse {
 
 namespace internal {
 
-auto ParserImpl::next() -> std::unique_ptr<Node> { return nullptr; }
+auto ParserImpl::next() -> std::unique_ptr<Node> {
+  auto token = consumeToken();
+  return errInvalidStmtStart(token);
+}
 
 auto ParserImpl::consumeToken() -> lex::Token {
   if (!m_readBuffer.empty()) {

@@ -28,10 +28,13 @@ target_include_directories(lex PRIVATE lex)
 
 # Parser.
 add_library(parse STATIC
+  ../include/parse/error.hpp
+  ../include/parse/node_error.hpp
   ../include/parse/node_itr.hpp
   ../include/parse/node_type.hpp
   ../include/parse/node.hpp
   ../include/parse/parser.hpp
+  parse/error.cpp
   parse/node_type.cpp
   parse/parser.cpp)
 target_compile_features(parse PUBLIC cxx_std_17)
