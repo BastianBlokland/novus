@@ -11,4 +11,6 @@ auto errLexError(lex::Token errToken) -> NodePtr;
 
 auto errInvalidStmtStart(lex::Token token) -> NodePtr;
 
+auto errInvalidPrimaryExpr(lex::Token token) -> NodePtr;
+
 } // namespace parse

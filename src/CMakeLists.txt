@@ -40,6 +40,8 @@ add_library(parse STATIC
   parse/error.cpp
   parse/node_type.cpp
   parse/node.cpp
+  parse/op_precedence.cpp
+  parse/op_precedence.hpp
   parse/parser.cpp)
 target_compile_features(parse PUBLIC cxx_std_17)
 target_link_libraries(parse PUBLIC lex)

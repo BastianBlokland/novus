@@ -15,7 +15,7 @@ public:
   PrintStmtNode(lex::Token kw, NodePtr expr) :
       Node(NodeType::StmtPrint), m_kw{std::move(kw)}, m_expr{std::move(expr)} {
 
-    if (expr == nullptr) {
+    if (m_expr == nullptr) {
       throw std::invalid_argument("Expression cannot be null");
     }
   }

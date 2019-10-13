@@ -21,7 +21,9 @@ private:
   std::deque<lex::Token> m_readBuffer;
 
   auto nextStmt() -> NodePtr;
-  auto nextExpr() -> NodePtr;
+  auto nextExpr(int minPrecedence) -> NodePtr;
+  auto nextExprLhs(int minPrecedence) -> NodePtr;
+  auto nextExprPrimary() -> NodePtr;
 
   auto consumeToken() -> lex::Token;
   auto peekToken(size_t ahead) -> lex::Token&;

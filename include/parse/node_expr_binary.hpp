@@ -17,10 +17,10 @@ public:
       m_op{std::move(op)},
       m_rhs{std::move(rhs)} {
 
-    if (lhs == nullptr) {
+    if (m_lhs == nullptr) {
       throw std::invalid_argument("Lhs cannot be null");
     }
-    if (rhs == nullptr) {
+    if (m_rhs == nullptr) {
       throw std::invalid_argument("Rhs cannot be null");
     }
   }

@@ -26,4 +26,14 @@ auto errInvalidStmtStart(lex::Token token) -> NodePtr {
   return errorNode(oss.str(), std::move(token));
 }
 
+auto errInvalidPrimaryExpr(lex::Token token) -> NodePtr {
+  if (token.isError()) {
+    return errLexError(token);
+  }
+
+  std::ostringstream oss;
+  oss << "Invalid primary expression: " << token;
+  return errorNode(oss.str(), std::move(token));
+}
+
 } // namespace parse

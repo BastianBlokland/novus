@@ -14,7 +14,7 @@ public:
   UnaryExprNode(lex::Token op, NodePtr rhs) :
       Node(NodeType::ExprUnaryOp), m_op{std::move(op)}, m_rhs{std::move(rhs)} {
 
-    if (rhs == nullptr) {
+    if (m_rhs == nullptr) {
       throw std::invalid_argument("Rhs cannot be null");
     }
   }
