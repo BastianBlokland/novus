@@ -4,6 +4,7 @@
 namespace lex {
 
 enum class TokenType {
+  End,
   OpPlus,
   OpMinus,
   OpStar,
@@ -29,8 +30,7 @@ enum class TokenType {
   LitStr,
   Keyword,
   Identifier,
-  Error,
-  End,
+  Error
 };
 
 auto operator<<(std::ostream& out, const TokenType& rhs) -> std::ostream&;

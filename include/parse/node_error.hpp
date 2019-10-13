@@ -42,6 +42,8 @@ public:
 private:
   std::string m_msg;
   std::vector<lex::Token> m_tokens;
+
+  auto print(std::ostream& out) const -> std::ostream& override { return out << m_msg; }
 };
 
 // Factory.

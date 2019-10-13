@@ -28,6 +28,14 @@ target_link_libraries(lexdiag PRIVATE CLI11::CLI11)
 target_include_directories(lexdiag PRIVATE ${rang_SOURCE_DIR}/include)
 target_link_libraries(lexdiag PRIVATE lex)
 
+# Parser diagnostic tool.
+add_executable(parsediag parsediag/main.cpp)
+target_compile_features(parsediag PRIVATE cxx_std_17)
+target_compile_options(parsediag PRIVATE -Werror -Wall -Wextra)
+target_link_libraries(parsediag PRIVATE CLI11::CLI11)
+target_include_directories(parsediag PRIVATE ${rang_SOURCE_DIR}/include)
+target_link_libraries(parsediag PRIVATE parse)
+
 # Repl prototype.
 add_executable(repl repl/main.cpp)
 target_compile_features(repl PRIVATE cxx_std_17)

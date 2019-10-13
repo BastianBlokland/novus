@@ -1,5 +1,6 @@
 #pragma once
 #include "parse/node_type.hpp"
+#include <iostream>
 
 namespace parse {
 
@@ -20,11 +21,15 @@ public:
 
   [[nodiscard]] auto getType() const noexcept { return m_type; }
 
+  virtual auto print(std::ostream& out) const -> std::ostream& = 0;
+
 protected:
   explicit Node(const NodeType type) : m_type{type} {}
 
 private:
   const NodeType m_type;
 };
+
+auto operator<<(std::ostream& out, const Node& rhs) -> std::ostream&;
 
 } // namespace parse

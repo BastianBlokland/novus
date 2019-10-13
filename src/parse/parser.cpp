@@ -12,7 +12,14 @@ namespace parse {
 namespace internal {
 
 auto ParserImpl::next() -> std::unique_ptr<Node> {
+  if (peekToken(0).isEnd()) {
+    return nullptr;
+  }
+
   auto token = consumeToken();
+  if (token.isError()) {
+    return errLexError(token);
+  }
   return errInvalidStmtStart(token);
 }
 

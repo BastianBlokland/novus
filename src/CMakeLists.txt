@@ -36,8 +36,10 @@ add_library(parse STATIC
   ../include/parse/parser.hpp
   parse/error.cpp
   parse/node_type.cpp
+  parse/node.cpp
   parse/parser.cpp)
 target_compile_features(parse PUBLIC cxx_std_17)
+target_link_libraries(parse PUBLIC lex)
 target_compile_options(parse PRIVATE -Werror -Wall -Wextra)
 target_include_directories(parse PUBLIC ../include)
 target_include_directories(parse PRIVATE parse)

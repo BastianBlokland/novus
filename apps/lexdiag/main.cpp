@@ -69,19 +69,19 @@ auto main(int argc, char** argv) -> int {
   app.add_flag("!--skip-tokens", printTokens, "Skip printing the tokens.")->capture_default_str();
 
   // Lex input characters.
-  std::string lexInput;
+  std::string charsInput;
   auto lexCmd = app.add_subcommand("lex", "Lex the provided characters.")->callback([&]() {
-    run(lexInput.begin(), lexInput.end(), printTokens);
+    run(charsInput.begin(), charsInput.end(), printTokens);
   });
-  lexCmd->add_option("input", lexInput, "Input characters to lex.")->required();
+  lexCmd->add_option("input", charsInput, "Input characters to lex.")->required();
 
   // Lex input file.
-  std::string lexFilePath;
+  std::string filePath;
   auto lexFileCmd = app.add_subcommand("lexfile", "Lex all characters in a file.")->callback([&]() {
-    std::ifstream fs{lexFilePath};
+    std::ifstream fs{filePath};
     run(std::istreambuf_iterator<char>{fs}, std::istreambuf_iterator<char>{}, printTokens);
   });
-  lexFileCmd->add_option("file", lexFilePath, "Path to file to lex.")
+  lexFileCmd->add_option("file", filePath, "Path to file to lex.")
       ->check(CLI::ExistingFile)
       ->required();
 

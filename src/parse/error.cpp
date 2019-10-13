@@ -11,8 +11,7 @@ auto errLexError(lex::Token errToken) -> std::unique_ptr<Node> {
   if (errToken.getType() != lex::TokenType::Error) {
     throw std::invalid_argument("Given token is not an error-token");
   }
-
-  const auto msg = "Invalid token: " + errToken.getPayload<lex::ErrorTokenPayload>()->getMessage();
+  const auto msg = errToken.getPayload<lex::ErrorTokenPayload>()->getMessage();
   return errorNode(msg, std::move(errToken));
 }
 

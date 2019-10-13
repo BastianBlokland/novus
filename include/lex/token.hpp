@@ -39,6 +39,8 @@ public:
 
   [[nodiscard]] auto isEnd() const noexcept { return m_type == TokenType::End; }
 
+  [[nodiscard]] auto isError() const noexcept { return m_type == TokenType::Error; }
+
   [[nodiscard]] auto getCat() const -> TokenCat { return lookupCat(m_type); }
 
   [[nodiscard]] auto str() const -> std::string;
