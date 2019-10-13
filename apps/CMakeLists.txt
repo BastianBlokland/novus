@@ -35,4 +35,3 @@ target_compile_options(repl PRIVATE -Werror -Wall -Wextra)
 target_link_libraries(repl PRIVATE lex)
 target_include_directories(repl PRIVATE ${CURSES_INCLUDE_DIR})
 target_link_libraries(repl PRIVATE ${CURSES_LIBRARIES})
-

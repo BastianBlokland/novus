@@ -25,3 +25,16 @@ target_compile_features(lex PUBLIC cxx_std_17)
 target_compile_options(lex PRIVATE -Werror -Wall -Wextra)
 target_include_directories(lex PUBLIC ../include)
 target_include_directories(lex PRIVATE lex)
+
+# Parser.
+add_library(parse STATIC
+  ../include/parse/node_itr.hpp
+  ../include/parse/node_type.hpp
+  ../include/parse/node.hpp
+  ../include/parse/parser.hpp
+  parse/node_type.cpp
+  parse/parser.cpp)
+target_compile_features(parse PUBLIC cxx_std_17)
+target_compile_options(parse PRIVATE -Werror -Wall -Wextra)
+target_include_directories(parse PUBLIC ../include)
+target_include_directories(parse PRIVATE parse)

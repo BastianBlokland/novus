@@ -9,6 +9,7 @@
 namespace lex {
 
 namespace internal {
+
 class LexerImpl {
 protected:
   LexerImpl() : m_inputPos{-1}, m_readBuffer{} {}
