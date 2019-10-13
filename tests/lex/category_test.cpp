@@ -6,8 +6,8 @@ namespace lex {
 TEST_CASE("Retreiving token categories", "[lexer]") {
 
   SECTION("Every token-type has a category") {
-    const int typeBegin = static_cast<int>(TokenType::OpPlus);
-    const int typeEnd   = static_cast<int>(TokenType::End);
+    const int typeBegin = static_cast<int>(TokenType::End) + 1;
+    const int typeEnd   = static_cast<int>(TokenType::Error) + 1;
 
     for (int typeInt = typeBegin; typeInt != typeEnd; typeInt++) {
       const auto type = static_cast<TokenType>(typeInt);

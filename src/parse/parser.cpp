@@ -17,9 +17,6 @@ auto ParserImpl::next() -> std::unique_ptr<Node> {
   }
 
   auto token = consumeToken();
-  if (token.isError()) {
-    return errLexError(token);
-  }
   return errInvalidStmtStart(token);
 }
 

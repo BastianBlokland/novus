@@ -16,6 +16,9 @@ auto errLexError(lex::Token errToken) -> std::unique_ptr<Node> {
 }
 
 auto errInvalidStmtStart(lex::Token token) -> std::unique_ptr<Node> {
+  if (token.isError()) {
+    return errLexError(token);
+  }
   const auto msg = "Invalid statement start: " + token.str();
   return errorNode(msg, std::move(token));
 }
