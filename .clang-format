@@ -7,8 +7,11 @@ AlignConsecutiveAssignments: true
 AlignEscapedNewlines: Right
 AlignTrailingComments: true
 AllowAllParametersOfDeclarationOnNextLine: true
+AllowAllArgumentsOnNextLine: true
+AllowAllConstructorInitializersOnNextLine: true
 AlwaysBreakTemplateDeclarations: Yes
 BreakConstructorInitializers: AfterColon
+ConstructorInitializerAllOnOneLineOrOnePerLine: true
 IncludeBlocks: Merge
 BinPackArguments: false
 BinPackParameters: false

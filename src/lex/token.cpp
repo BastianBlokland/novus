@@ -12,7 +12,8 @@ Token::Token(const TokenType type, std::unique_ptr<TokenPayload> payload, const 
     m_type{type}, m_payload{std::move(payload)}, m_span{span} {}
 
 Token::Token(const Token& rhs) :
-    m_type{rhs.m_type}, m_payload{!rhs.m_payload ? nullptr : rhs.m_payload->clone()},
+    m_type{rhs.m_type},
+    m_payload{!rhs.m_payload ? nullptr : rhs.m_payload->clone()},
     m_span{rhs.m_span} {}
 
 Token::Token(Token&& rhs) noexcept :
