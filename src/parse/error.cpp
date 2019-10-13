@@ -8,7 +8,7 @@
 
 namespace parse {
 
-auto errLexError(lex::Token errToken) -> std::unique_ptr<Node> {
+auto errLexError(lex::Token errToken) -> NodePtr {
   if (errToken.getType() != lex::TokenType::Error) {
     throw std::invalid_argument("Given token is not an error-token");
   }
@@ -16,7 +16,7 @@ auto errLexError(lex::Token errToken) -> std::unique_ptr<Node> {
   return errorNode(msg, std::move(errToken));
 }
 
-auto errInvalidStmtStart(lex::Token token) -> std::unique_ptr<Node> {
+auto errInvalidStmtStart(lex::Token token) -> NodePtr {
   if (token.isError()) {
     return errLexError(token);
   }

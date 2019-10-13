@@ -29,7 +29,7 @@ public:
     return !ErrorNode::operator==(rhs);
   }
 
-  [[nodiscard]] auto clone() const -> std::unique_ptr<Node> override {
+  [[nodiscard]] auto clone() const -> NodePtr override {
     return std::make_unique<ErrorNode>(m_msg, m_tokens);
   }
 
@@ -48,7 +48,7 @@ private:
 
 // Factory.
 template <typename... Tokens>
-inline auto errorNode(std::string msg, Tokens... tokens) -> std::unique_ptr<Node> {
+inline auto errorNode(std::string msg, Tokens... tokens) -> NodePtr {
   return std::make_unique<ErrorNode>(std::move(msg), std::vector{tokens...});
 }
 

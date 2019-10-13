@@ -15,13 +15,13 @@ class ParserImpl {
 protected:
   ParserImpl() : m_readBuffer{} {}
 
-  auto next() -> std::unique_ptr<Node>;
+  auto next() -> NodePtr;
 
 private:
   std::deque<lex::Token> m_readBuffer;
 
-  auto nextStmt() -> std::unique_ptr<Node>;
-  auto nextExpr() -> std::unique_ptr<Node>;
+  auto nextStmt() -> NodePtr;
+  auto nextExpr() -> NodePtr;
 
   auto consumeToken() -> lex::Token;
   auto peekToken(size_t ahead) -> lex::Token&;
@@ -43,7 +43,7 @@ public:
   Parser(InputItr inputBegin, const InputItr inputEnd) :
       m_input{inputBegin}, m_inputEnd(inputEnd) {}
 
-  auto next() -> std::unique_ptr<Node> { return internal::ParserImpl::next(); }
+  auto next() -> NodePtr { return internal::ParserImpl::next(); }
 
   auto begin() -> NodeItr<Parser> { return NodeItr{*this}; }
 
@@ -65,7 +65,7 @@ private:
 template <typename InputItr>
 auto parseAll(InputItr inputBegin, const InputItr inputEnd) {
   auto parser = Parser{inputBegin, inputEnd};
-  return std::vector<std::unique_ptr<Node>>{parser.begin(), parser.end()};
+  return std::vector<NodePtr>{parser.begin(), parser.end()};
 }
 
 } // namespace parse

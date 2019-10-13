@@ -11,7 +11,7 @@ class PrintStmtNode final : public Node {
 public:
   PrintStmtNode() = delete;
 
-  PrintStmtNode(lex::Token kw, std::unique_ptr<Node> expr) :
+  PrintStmtNode(lex::Token kw, NodePtr expr) :
       Node(NodeType::StmtPrint), m_kw{std::move(kw)}, m_expr{std::move(expr)} {}
 
   auto operator==(const Node* rhs) const noexcept -> bool override {
@@ -23,19 +23,19 @@ public:
     return !PrintStmtNode::operator==(rhs);
   }
 
-  [[nodiscard]] auto clone() const -> std::unique_ptr<Node> override {
+  [[nodiscard]] auto clone() const -> NodePtr override {
     return std::make_unique<PrintStmtNode>(m_kw, m_expr->clone());
   }
 
 private:
   const lex::Token m_kw;
-  const std::unique_ptr<Node> m_expr;
+  const NodePtr m_expr;
 
   auto print(std::ostream& out) const -> std::ostream& override { return out << "print"; }
 };
 
 // Factory.
-inline auto printStmtNode(lex::Token kw, std::unique_ptr<Node> expr) -> std::unique_ptr<Node> {
+inline auto printStmtNode(lex::Token kw, NodePtr expr) -> NodePtr {
   return std::make_unique<PrintStmtNode>(std::move(kw), std::move(expr));
 }
 

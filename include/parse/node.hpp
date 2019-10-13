@@ -30,6 +30,8 @@ private:
   const NodeType m_type;
 };
 
+using NodePtr = std::unique_ptr<Node>;
+
 auto operator<<(std::ostream& out, const Node& rhs) -> std::ostream&;
 
 } // namespace parse

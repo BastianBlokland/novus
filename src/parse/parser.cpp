@@ -18,11 +18,9 @@ static auto getKw(const lex::Token& token) -> std::optional<lex::Keyword> {
   return token.getPayload<lex::KeywordTokenPayload>()->getKeyword();
 }
 
-auto ParserImpl::next() -> std::unique_ptr<Node> {
-  return peekToken(0).isEnd() ? nullptr : nextStmt();
-}
+auto ParserImpl::next() -> NodePtr { return peekToken(0).isEnd() ? nullptr : nextStmt(); }
 
-auto ParserImpl::nextStmt() -> std::unique_ptr<Node> {
+auto ParserImpl::nextStmt() -> NodePtr {
   auto token = consumeToken();
   auto kwOpt = getKw(token);
   if (kwOpt && kwOpt.value() == lex::Keyword::Print) {
@@ -31,7 +29,7 @@ auto ParserImpl::nextStmt() -> std::unique_ptr<Node> {
   return errInvalidStmtStart(token);
 }
 
-auto ParserImpl::nextExpr() -> std::unique_ptr<Node> {
+auto ParserImpl::nextExpr() -> NodePtr {
   auto tok = consumeToken();
   return nullptr;
 }
