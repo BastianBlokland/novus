@@ -235,7 +235,7 @@ auto LexerImpl::nextLitStr() -> Token {
       if (invalidEscapeSequence) {
         return errLitStrInvalidEscape(span);
       }
-      return litStrToken(result, span);
+      return litStrToken(std::move(result), span);
     }
     default:
       result += c;
@@ -287,7 +287,7 @@ auto LexerImpl::nextWordToken(const char startingChar) -> Token {
   if (illegalSequence) {
     return errIdentifierIllegalSequence(span);
   }
-  return identiferToken(result, span);
+  return identiferToken(std::move(result), span);
 }
 
 auto LexerImpl::consumeChar() -> char {

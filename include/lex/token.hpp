@@ -49,16 +49,16 @@ auto endToken(SourceSpan span = SourceSpan{0}) -> Token;
 
 auto basicToken(TokenType type, SourceSpan span = SourceSpan{0}) -> Token;
 
-auto errorToken(const std::string& msg, SourceSpan span = SourceSpan{0}) -> Token;
+auto errorToken(std::string msg, SourceSpan span = SourceSpan{0}) -> Token;
 
 auto litIntToken(int32_t val, SourceSpan span = SourceSpan{0}) -> Token;
 
 auto litBoolToken(bool val, SourceSpan span = SourceSpan{0}) -> Token;
 
-auto litStrToken(const std::string& val, SourceSpan span = SourceSpan{0}) -> Token;
+auto litStrToken(std::string val, SourceSpan span = SourceSpan{0}) -> Token;
 
 auto keywordToken(Keyword keyword, SourceSpan span = SourceSpan{0}) -> Token;
 
-auto identiferToken(const std::string& id, SourceSpan span = SourceSpan{0}) -> Token;
+auto identiferToken(std::string id, SourceSpan span = SourceSpan{0}) -> Token;
 
 } // namespace lex

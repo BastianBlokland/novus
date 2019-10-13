@@ -1,6 +1,7 @@
 #include "lex/token.hpp"
 #include "char_escape.hpp"
 #include <memory>
+#include <utility>
 
 namespace lex {
 
@@ -65,8 +66,10 @@ auto basicToken(const TokenType type, const SourceSpan span) -> Token {
   return Token{type, nullptr, span};
 }
 
-auto errorToken(const std::string& msg, const SourceSpan span) -> Token {
-  return Token{TokenType::Error, std::make_unique<ErrorTokenPayload>(ErrorTokenPayload{msg}), span};
+auto errorToken(std::string msg, const SourceSpan span) -> Token {
+  return Token{TokenType::Error,
+               std::make_unique<ErrorTokenPayload>(ErrorTokenPayload{std::move(msg)}),
+               span};
 }
 
 auto litIntToken(const int32_t val, const SourceSpan span) -> Token {
@@ -79,9 +82,10 @@ auto litBoolToken(const bool val, const SourceSpan span) -> Token {
       TokenType::LitBool, std::make_unique<LitBoolTokenPayload>(LitBoolTokenPayload{val}), span};
 }
 
-auto litStrToken(const std::string& val, const SourceSpan span) -> Token {
-  return Token{
-      TokenType::LitStr, std::make_unique<LitStringTokenPayload>(LitStringTokenPayload{val}), span};
+auto litStrToken(std::string val, const SourceSpan span) -> Token {
+  return Token{TokenType::LitStr,
+               std::make_unique<LitStringTokenPayload>(LitStringTokenPayload{std::move(val)}),
+               span};
 }
 
 auto keywordToken(Keyword keyword, const SourceSpan span) -> Token {
@@ -90,9 +94,9 @@ auto keywordToken(Keyword keyword, const SourceSpan span) -> Token {
                span};
 }
 
-auto identiferToken(const std::string& id, const SourceSpan span) -> Token {
+auto identiferToken(std::string id, const SourceSpan span) -> Token {
   return Token{TokenType::Identifier,
-               std::make_unique<IdentifierTokenPayload>(IdentifierTokenPayload{id}),
+               std::make_unique<IdentifierTokenPayload>(IdentifierTokenPayload{std::move(id)}),
                span};
 }
 
