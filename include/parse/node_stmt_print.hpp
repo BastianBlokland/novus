@@ -7,24 +7,24 @@
 
 namespace parse {
 
-class PrintNode final : public Node {
+class PrintStmtNode final : public Node {
 public:
-  PrintNode() = delete;
+  PrintStmtNode() = delete;
 
-  PrintNode(lex::Token kw, std::unique_ptr<Node> expr) :
+  PrintStmtNode(lex::Token kw, std::unique_ptr<Node> expr) :
       Node(NodeType::StmtPrint), m_kw{std::move(kw)}, m_expr{std::move(expr)} {}
 
   auto operator==(const Node* rhs) const noexcept -> bool override {
-    const auto castedRhs = dynamic_cast<const PrintNode*>(rhs);
+    const auto castedRhs = dynamic_cast<const PrintStmtNode*>(rhs);
     return castedRhs != nullptr && m_expr == castedRhs->m_expr;
   }
 
   auto operator!=(const Node* rhs) const noexcept -> bool override {
-    return !PrintNode::operator==(rhs);
+    return !PrintStmtNode::operator==(rhs);
   }
 
   [[nodiscard]] auto clone() const -> std::unique_ptr<Node> override {
-    return std::make_unique<PrintNode>(m_kw, m_expr->clone());
+    return std::make_unique<PrintStmtNode>(m_kw, m_expr->clone());
   }
 
 private:
@@ -35,8 +35,8 @@ private:
 };
 
 // Factory.
-inline auto printNode(lex::Token kw, std::unique_ptr<Node> expr) -> std::unique_ptr<Node> {
-  return std::make_unique<PrintNode>(std::move(kw), std::move(expr));
+inline auto printStmtNode(lex::Token kw, std::unique_ptr<Node> expr) -> std::unique_ptr<Node> {
+  return std::make_unique<PrintStmtNode>(std::move(kw), std::move(expr));
 }
 
 } // namespace parse

@@ -4,7 +4,7 @@
 #include "lex/token_payload.hpp"
 #include "lex/token_type.hpp"
 #include "parse/error.hpp"
-#include "parse/node_print.hpp"
+#include "parse/node_stmt_print.hpp"
 #include <memory>
 
 namespace parse {
@@ -26,7 +26,7 @@ auto ParserImpl::nextStmt() -> std::unique_ptr<Node> {
   auto token = consumeToken();
   auto kwOpt = getKw(token);
   if (kwOpt && kwOpt.value() == lex::Keyword::Print) {
-    return printNode(token, nextExpr());
+    return printStmtNode(token, nextExpr());
   }
   return errInvalidStmtStart(token);
 }
