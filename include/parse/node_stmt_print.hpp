@@ -3,6 +3,7 @@
 #include "parse/node.hpp"
 #include "parse/node_type.hpp"
 #include <memory>
+#include <stdexcept>
 #include <utility>
 
 namespace parse {
@@ -12,11 +13,16 @@ public:
   PrintStmtNode() = delete;
 
   PrintStmtNode(lex::Token kw, NodePtr expr) :
-      Node(NodeType::StmtPrint), m_kw{std::move(kw)}, m_expr{std::move(expr)} {}
+      Node(NodeType::StmtPrint), m_kw{std::move(kw)}, m_expr{std::move(expr)} {
+
+    if (expr == nullptr) {
+      throw std::invalid_argument("Expression cannot be null");
+    }
+  }
 
   auto operator==(const Node* rhs) const noexcept -> bool override {
-    const auto castedRhs = dynamic_cast<const PrintStmtNode*>(rhs);
-    return castedRhs != nullptr && m_expr == castedRhs->m_expr;
+    const auto r = dynamic_cast<const PrintStmtNode*>(rhs);
+    return r != nullptr && m_expr == r->m_expr;
   }
 
   auto operator!=(const Node* rhs) const noexcept -> bool override {

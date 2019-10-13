@@ -21,8 +21,8 @@ public:
       Node(NodeType::Error), m_msg{std::move(msg)}, m_tokens{std::move(tokens)} {}
 
   auto operator==(const Node* rhs) const noexcept -> bool override {
-    const auto castedRhs = dynamic_cast<const ErrorNode*>(rhs);
-    return castedRhs != nullptr && m_msg == castedRhs->m_msg && m_tokens == castedRhs->m_tokens;
+    const auto r = dynamic_cast<const ErrorNode*>(rhs);
+    return r != nullptr && m_msg == r->m_msg && m_tokens == r->m_tokens;
   }
 
   auto operator!=(const Node* rhs) const noexcept -> bool override {
