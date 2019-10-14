@@ -46,7 +46,7 @@ auto Token::operator==(const Token& rhs) const noexcept -> bool {
   if ((m_payload == nullptr) != (rhs.m_payload == nullptr)) {
     return false;
   }
-  return m_payload == nullptr || m_payload->operator==(rhs.m_payload.get());
+  return m_payload == nullptr || *m_payload == *rhs.m_payload;
 }
 
 auto Token::operator!=(const Token& rhs) const noexcept -> bool { return !Token::operator==(rhs); }

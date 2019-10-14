@@ -18,8 +18,8 @@ public:
 
   [[nodiscard]] virtual auto clone() -> std::unique_ptr<TokenPayload> = 0;
 
-  virtual auto operator==(const TokenPayload* rhs) const noexcept -> bool = 0;
-  virtual auto operator!=(const TokenPayload* rhs) const noexcept -> bool = 0;
+  virtual auto operator==(const TokenPayload& rhs) const noexcept -> bool = 0;
+  virtual auto operator!=(const TokenPayload& rhs) const noexcept -> bool = 0;
 
   friend auto operator<<(std::ostream& out, const TokenPayload& rhs) -> std::ostream& {
     return rhs.print(out);
@@ -34,12 +34,12 @@ public:
   LitIntTokenPayload() = delete;
   explicit LitIntTokenPayload(const int32_t val) : m_val{val} {}
 
-  auto operator==(const TokenPayload* rhs) const noexcept -> bool override {
-    const auto castedRhs = dynamic_cast<const LitIntTokenPayload*>(rhs);
+  auto operator==(const TokenPayload& rhs) const noexcept -> bool override {
+    const auto castedRhs = dynamic_cast<const LitIntTokenPayload*>(&rhs);
     return castedRhs != nullptr && m_val == castedRhs->m_val;
   }
 
-  auto operator!=(const TokenPayload* rhs) const noexcept -> bool override {
+  auto operator!=(const TokenPayload& rhs) const noexcept -> bool override {
     return !LitIntTokenPayload::operator==(rhs);
   }
 
@@ -60,12 +60,12 @@ public:
   LitBoolTokenPayload() = delete;
   explicit LitBoolTokenPayload(const bool val) : m_val{val} {}
 
-  auto operator==(const TokenPayload* rhs) const noexcept -> bool override {
-    const auto castedRhs = dynamic_cast<const LitBoolTokenPayload*>(rhs);
+  auto operator==(const TokenPayload& rhs) const noexcept -> bool override {
+    const auto castedRhs = dynamic_cast<const LitBoolTokenPayload*>(&rhs);
     return castedRhs != nullptr && m_val == castedRhs->m_val;
   }
 
-  auto operator!=(const TokenPayload* rhs) const noexcept -> bool override {
+  auto operator!=(const TokenPayload& rhs) const noexcept -> bool override {
     return !LitBoolTokenPayload::operator==(rhs);
   }
 
@@ -88,12 +88,12 @@ public:
   LitStringTokenPayload() = delete;
   explicit LitStringTokenPayload(std::string val) : m_val{std::move(val)} {}
 
-  auto operator==(const TokenPayload* rhs) const noexcept -> bool override {
-    const auto castedRhs = dynamic_cast<const LitStringTokenPayload*>(rhs);
+  auto operator==(const TokenPayload& rhs) const noexcept -> bool override {
+    const auto castedRhs = dynamic_cast<const LitStringTokenPayload*>(&rhs);
     return castedRhs != nullptr && m_val == castedRhs->m_val;
   }
 
-  auto operator!=(const TokenPayload* rhs) const noexcept -> bool override {
+  auto operator!=(const TokenPayload& rhs) const noexcept -> bool override {
     return !LitStringTokenPayload::operator==(rhs);
   }
 
@@ -114,12 +114,12 @@ public:
   KeywordTokenPayload() = delete;
   explicit KeywordTokenPayload(const Keyword keyword) : m_kw{keyword} {}
 
-  auto operator==(const TokenPayload* rhs) const noexcept -> bool override {
-    const auto castedRhs = dynamic_cast<const KeywordTokenPayload*>(rhs);
+  auto operator==(const TokenPayload& rhs) const noexcept -> bool override {
+    const auto castedRhs = dynamic_cast<const KeywordTokenPayload*>(&rhs);
     return castedRhs != nullptr && m_kw == castedRhs->m_kw;
   }
 
-  auto operator!=(const TokenPayload* rhs) const noexcept -> bool override {
+  auto operator!=(const TokenPayload& rhs) const noexcept -> bool override {
     return !KeywordTokenPayload::operator==(rhs);
   }
 
@@ -140,12 +140,12 @@ public:
   IdentifierTokenPayload() = delete;
   explicit IdentifierTokenPayload(std::string id) : m_id{std::move(id)} {}
 
-  auto operator==(const TokenPayload* rhs) const noexcept -> bool override {
-    const auto castedRhs = dynamic_cast<const IdentifierTokenPayload*>(rhs);
+  auto operator==(const TokenPayload& rhs) const noexcept -> bool override {
+    const auto castedRhs = dynamic_cast<const IdentifierTokenPayload*>(&rhs);
     return castedRhs != nullptr && m_id == castedRhs->m_id;
   }
 
-  auto operator!=(const TokenPayload* rhs) const noexcept -> bool override {
+  auto operator!=(const TokenPayload& rhs) const noexcept -> bool override {
     return !IdentifierTokenPayload::operator==(rhs);
   }
 
@@ -166,12 +166,12 @@ public:
   ErrorTokenPayload() = delete;
   explicit ErrorTokenPayload(std::string msg) : m_msg{std::move(msg)} {}
 
-  auto operator==(const TokenPayload* rhs) const noexcept -> bool override {
-    const auto castedRhs = dynamic_cast<const ErrorTokenPayload*>(rhs);
+  auto operator==(const TokenPayload& rhs) const noexcept -> bool override {
+    const auto castedRhs = dynamic_cast<const ErrorTokenPayload*>(&rhs);
     return castedRhs != nullptr && m_msg == castedRhs->m_msg;
   }
 
-  auto operator!=(const TokenPayload* rhs) const noexcept -> bool override {
+  auto operator!=(const TokenPayload& rhs) const noexcept -> bool override {
     return !ErrorTokenPayload::operator==(rhs);
   }
 
