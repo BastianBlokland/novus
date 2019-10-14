@@ -5,7 +5,7 @@
 
 namespace lex {
 
-TEST_CASE("Lexing seperators", "[lexer]") {
+TEST_CASE("Lexing seperators", "[lex]") {
   REQUIRE_TOKENS("(", basicToken(TokenType::SepOpenParan));
   REQUIRE_TOKENS(")", basicToken(TokenType::SepCloseParan));
   REQUIRE_TOKENS(",", basicToken(TokenType::SepComma));

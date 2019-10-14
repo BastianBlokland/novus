@@ -5,7 +5,7 @@
 
 namespace lex {
 
-TEST_CASE("Lexing identifiers", "[lexer]") {
+TEST_CASE("Lexing identifiers", "[lex]") {
 
   SECTION("Valid") {
     REQUIRE_TOKENS("hello", identiferToken("hello"));

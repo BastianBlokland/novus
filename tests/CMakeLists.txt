@@ -23,12 +23,14 @@ add_executable(tests
   lex/litstr_test.cpp
   lex/operators_test.cpp
   lex/seperators_test.cpp
-  lex/utilities_test.cpp)
+  lex/utilities_test.cpp
+  parse/iterator_test.cpp)
 target_compile_features(tests PRIVATE cxx_std_17)
 target_compile_options(tests PRIVATE -Werror -Wall -Wextra)
 target_include_directories(tests PRIVATE lex)
 target_link_libraries(tests PRIVATE Catch2::Catch2)
 target_link_libraries(tests PRIVATE lex)
+target_link_libraries(tests PRIVATE parse)
 
 # Register tests to CTest.
 catch_discover_tests(tests)

@@ -6,7 +6,7 @@
 
 namespace lex {
 
-TEST_CASE("Lexer utilities", "[lexer]") {
+TEST_CASE("Lexer utilities", "[lex]") {
 
   SECTION("Find token by position") {
     const std::string input = "\"Hello world\" + 1_000 * true";

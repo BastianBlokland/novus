@@ -4,7 +4,7 @@
 
 namespace lex {
 
-TEST_CASE("Lexing keywords", "[lexer]") {
+TEST_CASE("Lexing keywords", "[lex]") {
   REQUIRE_TOKENS("if", keywordToken(Keyword::If));
   REQUIRE_TOKENS("else", keywordToken(Keyword::Else));
   REQUIRE_TOKENS("fun", keywordToken(Keyword::Fun));

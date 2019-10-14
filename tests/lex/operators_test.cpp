@@ -5,7 +5,7 @@
 
 namespace lex {
 
-TEST_CASE("Lexing operators", "[lexer]") {
+TEST_CASE("Lexing operators", "[lex]") {
   REQUIRE_TOKENS("+", basicToken(TokenType::OpPlus));
   REQUIRE_TOKENS("-", basicToken(TokenType::OpMinus));
   REQUIRE_TOKENS("*", basicToken(TokenType::OpStar));

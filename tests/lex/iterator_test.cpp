@@ -7,14 +7,14 @@
 
 namespace lex {
 
-TEST_CASE("Iterating the lexer", "[lexer]") {
+TEST_CASE("Iterating the lexer", "[lex]") {
   const std::string input = "x + y / z";
   auto lexer              = Lexer{input.begin(), input.end()};
 
   SECTION("Range for") {
     std::vector<Token> tokens;
-    for (const auto& token : lexer) {
-      tokens.push_back(token);
+    for (auto&& token : lexer) {
+      tokens.push_back(std::move(token));
     }
     REQUIRE(tokens.size() == 5);
   }
@@ -35,11 +35,6 @@ TEST_CASE("Iterating the lexer", "[lexer]") {
       i++;
     }
     REQUIRE(i == 5);
-  }
-
-  SECTION("To vector") {
-    std::vector<Token> vec{lexer.begin(), lexer.end()};
-    REQUIRE(vec.size() == 5);
   }
 
   SECTION("LexAll") {

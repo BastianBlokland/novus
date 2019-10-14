@@ -3,7 +3,7 @@
 
 namespace lex {
 
-TEST_CASE("Retreiving token categories", "[lexer]") {
+TEST_CASE("Retreiving token categories", "[lex]") {
 
   SECTION("Every token-type has a category") {
     const int typeBegin = static_cast<int>(TokenType::End) + 1;

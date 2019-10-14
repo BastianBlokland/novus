@@ -5,7 +5,7 @@
 
 namespace lex {
 
-TEST_CASE("Lexing string literals", "[lexer]") {
+TEST_CASE("Lexing string literals", "[lex]") {
 
   SECTION("Single values") {
     REQUIRE_TOKENS("\"hello\"", litStrToken("hello"));

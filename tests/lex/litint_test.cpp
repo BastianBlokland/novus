@@ -4,7 +4,7 @@
 
 namespace lex {
 
-TEST_CASE("Lexing integer literals", "[lexer]") {
+TEST_CASE("Lexing integer literals", "[lex]") {
 
   SECTION("Single values") {
     REQUIRE_TOKENS("0", litIntToken(0));
