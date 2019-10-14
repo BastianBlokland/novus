@@ -57,7 +57,9 @@ private:
     if (m_input == m_inputEnd) {
       return '\0';
     }
-    return *m_input++;
+    auto val = *m_input;
+    ++m_input;
+    return std::move(val);
   }
 };
 
