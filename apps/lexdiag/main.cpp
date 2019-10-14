@@ -1,5 +1,6 @@
 #include "CLI/CLI.hpp"
 #include "lex/lexer.hpp"
+#include "lex/token_cat.hpp"
 #include "lex/utilities.hpp"
 #include "rang.hpp"
 #include <chrono>
@@ -25,36 +26,40 @@ auto run(InputItr inputBegin, const InputItr inputEnd, const bool printTokens) {
   const auto tokTypeWidth = 20;
   const auto width        = 80;
 
+  using s  = rang::style;
+  using fg = rang::style;
+  using bg = rang::style;
+
   // Lex all the tokens and time how long it takes.
   const auto t1     = high_resolution_clock::now();
   const auto tokens = lex::lexAll(inputBegin, inputEnd);
   const auto t2     = high_resolution_clock::now();
   const auto lexDur = std::chrono::duration_cast<duration>(t2 - t1);
 
-  std::cout << rang::style::dim << rang::style::italic << std::string(width, '-') << '\n'
+  std::cout << s::dim << s::italic << std::string(width, '-') << '\n'
             << "Lexed " << tokens.size() << " tokens in " << lexDur << '\n'
             << std::string(width, '-') << '\n'
-            << rang::style::reset;
+            << s::reset;
 
   if (printTokens) {
     for (const auto& token : tokens) {
-      std::cout << rang::style::bold << "* " << getFgColor(token) << getBgColor(token)
+      std::cout << s::bold << "* " << getFgColor(token) << getBgColor(token)
                 << std::setw(tokTypeWidth) << std::left << token.getType();
 
       std::stringstream spanStr;
       spanStr << '(' << token.getSpan().getStart() << " - " << token.getSpan().getEnd() << ')';
 
-      std::cout << rang::style::dim << rang::fg::reset << std::setw(tokTypeWidth) << std::right
-                << spanStr.str() << rang::style::reset;
+      std::cout << s::dim << fg::reset << std::setw(tokTypeWidth) << std::right << spanStr.str()
+                << s::reset;
 
       const auto payload = token.getPayload();
       if (payload) {
         std::cout << " > " << *payload;
       }
 
-      std::cout << rang::bg::reset << rang::fg::reset << '\n';
+      std::cout << bg::reset << fg::reset << '\n';
     }
-    std::cout << rang::style::dim << std::string(width, '-') << '\n';
+    std::cout << s::dim << std::string(width, '-') << '\n';
   }
 }
 
@@ -94,34 +99,38 @@ auto main(int argc, char** argv) -> int {
 }
 
 auto getFgColor(const lex::Token& token) -> rang::fg {
+  using tc = lex::TokenCat;
+
   switch (token.getCat()) {
-  case lex::TokenCat::Operator:
+  case tc::Operator:
     return rang::fg::cyan;
-  case lex::TokenCat::Seperator:
+  case tc::Seperator:
     return rang::fg::magenta;
-  case lex::TokenCat::Literal:
+  case tc::Literal:
     return rang::fg::yellow;
-  case lex::TokenCat::Keyword:
+  case tc::Keyword:
     return rang::fg::blue;
-  case lex::TokenCat::Identifier:
+  case tc::Identifier:
     return rang::fg::green;
-  case lex::TokenCat::Error:
-  case lex::TokenCat::Unknown:
+  case tc::Error:
+  case tc::Unknown:
     return rang::fg::reset;
   }
   return rang::fg::reset;
 }
 
 auto getBgColor(const lex::Token& token) -> rang::bg {
+  using tc = lex::TokenCat;
+
   switch (token.getCat()) {
-  case lex::TokenCat::Operator:
-  case lex::TokenCat::Seperator:
-  case lex::TokenCat::Literal:
-  case lex::TokenCat::Keyword:
-  case lex::TokenCat::Identifier:
-  case lex::TokenCat::Unknown:
+  case tc::Operator:
+  case tc::Seperator:
+  case tc::Literal:
+  case tc::Keyword:
+  case tc::Identifier:
+  case tc::Unknown:
     return rang::bg::reset;
-  case lex::TokenCat::Error:
+  case tc::Error:
     return rang::bg::red;
   }
   return rang::bg::reset;

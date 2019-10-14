@@ -22,8 +22,12 @@ auto printNode(const parse::Node& n, std::string prefix = "", bool isLastSibling
   const static auto vert   = " │ ";
   const static auto indent = "   ";
 
+  using s  = rang::style;
+  using fg = rang::style;
+  using bg = rang::style;
+
   // Print prefix.
-  std::cout << rang::style::dim << prefix;
+  std::cout << s::dim << prefix;
   if (isLastSibling) {
     std::cout << corner;
     prefix += indent;
@@ -31,12 +35,12 @@ auto printNode(const parse::Node& n, std::string prefix = "", bool isLastSibling
     std::cout << cross;
     prefix += vert;
   }
-  std::cout << rang::style::reset;
+  std::cout << s::reset;
 
   // Print node.
-  std::cout << getFgColor(n) << getBgColor(n) << n << rang::fg::reset << rang::bg::reset
-            << rang::style::dim << rang::style::italic << ' ' << n.getType() << '\n'
-            << rang::style::reset;
+  std::cout << s::bold << getFgColor(n) << getBgColor(n) << n << fg::reset << bg::reset << s::reset
+            << s::dim << s::italic << ' ' << n.getType() << '\n'
+            << s::reset;
 
   const auto childCount = n.getChildCount();
   for (auto i = 0; i < childCount; ++i) {
@@ -107,23 +111,25 @@ auto main(int argc, char** argv) -> int {
 }
 
 auto getFgColor(const parse::Node& node) -> rang::fg {
+  using nt = parse::NodeType;
+
   switch (node.getType()) {
-  case parse::NodeType::ExprBinaryOp:
-  case parse::NodeType::ExprUnaryOp:
-  case parse::NodeType::ExprSwitch:
-  case parse::NodeType::ExprComma:
-  case parse::NodeType::ExprParan:
+  case nt::ExprBinaryOp:
+  case nt::ExprUnaryOp:
+  case nt::ExprSwitch:
+  case nt::ExprComma:
+  case nt::ExprParan:
     return rang::fg::green;
-  case parse::NodeType::StmtFunDecl:
-  case parse::NodeType::StmtPrint:
+  case nt::StmtFunDecl:
+  case nt::StmtPrint:
     return rang::fg::blue;
-  case parse::NodeType::ExprCall:
-  case parse::NodeType::ExprConst:
-  case parse::NodeType::ExprConstDecl:
+  case nt::ExprCall:
+  case nt::ExprConst:
+  case nt::ExprConstDecl:
     return rang::fg::magenta;
-  case parse::NodeType::ExprLit:
+  case nt::ExprLit:
     return rang::fg::cyan;
-  case parse::NodeType::Error:
+  case nt::Error:
     return rang::fg::reset;
   }
   return rang::fg::reset;
