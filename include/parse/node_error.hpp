@@ -29,6 +29,12 @@ public:
     return !ErrorNode::operator==(rhs);
   }
 
+  [[nodiscard]] auto operator[](int /*unused*/) const -> Node& override {
+    throw std::out_of_range("No child at given index");
+  }
+
+  [[nodiscard]] auto getChildCount() const -> int override { return 0; }
+
   [[nodiscard]] auto clone() const -> NodePtr override {
     return std::make_unique<ErrorNode>(m_msg, m_tokens);
   }

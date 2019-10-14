@@ -2,12 +2,6 @@
 
 namespace parse {
 
-auto operator<<(std::ostream& out, const Node& rhs) -> std::ostream& {
-  out << rhs.getType();
-  out << "-'";
-  rhs.print(out);
-  out << '\'';
-  return out;
-}
+auto operator<<(std::ostream& out, const Node& rhs) -> std::ostream& { return rhs.print(out); }
 
 } // namespace parse

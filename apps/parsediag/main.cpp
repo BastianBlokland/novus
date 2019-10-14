@@ -1,19 +1,72 @@
 #include "CLI/CLI.hpp"
 #include "lex/lexer.hpp"
+#include "parse/node.hpp"
+#include "parse/node_type.hpp"
 #include "parse/parser.hpp"
 #include "rang.hpp"
 #include <ios>
 #include <iostream>
 #include <iterator>
 
-template <typename InputItr>
-auto run(InputItr inputBegin, const InputItr inputEnd) {
-  auto tokens = lex::lexAll(inputBegin, inputEnd);
-  auto nodes  = parse::parseAll(tokens.begin(), tokens.end());
+using high_resolution_clock = std::chrono::high_resolution_clock;
+using duration              = std::chrono::duration<double>;
 
-  std::cout << "Parsed " << nodes.size() << " nodes from " << tokens.size() << " tokens\n";
-  for (const auto& node : nodes) {
-    std::cout << "* Node: " << *node << '\n';
+auto getFgColor(const parse::Node& node) -> rang::fg;
+auto getBgColor(const parse::Node& node) -> rang::bg;
+
+auto operator<<(std::ostream& out, const duration& rhs) -> std::ostream&;
+
+auto printNode(const parse::Node& n, std::string prefix = "", bool isLastSibling = false) -> void {
+  const static auto cross  = " ├─";
+  const static auto corner = " └─";
+  const static auto vert   = " │ ";
+  const static auto indent = "   ";
+
+  // Print prefix.
+  std::cout << rang::style::dim << prefix;
+  if (isLastSibling) {
+    std::cout << corner;
+    prefix += indent;
+  } else {
+    std::cout << cross;
+    prefix += vert;
+  }
+  std::cout << rang::style::reset;
+
+  // Print node.
+  std::cout << getFgColor(n) << getBgColor(n) << n << rang::fg::reset << rang::bg::reset
+            << rang::style::dim << rang::style::italic << ' ' << n.getType() << '\n'
+            << rang::style::reset;
+
+  const auto childCount = n.getChildCount();
+  for (auto i = 0; i < childCount; ++i) {
+    printNode(n[i], prefix, i == (childCount - 1));
+  }
+}
+
+template <typename InputItr>
+auto run(InputItr inputBegin, const InputItr inputEnd, const bool printNodes) {
+  const auto width  = 80;
+  const auto tokens = lex::lexAll(inputBegin, inputEnd);
+
+  // Parse all the tokens and time how long it takes.
+  const auto t1       = high_resolution_clock::now();
+  const auto nodes    = parse::parseAll(tokens.begin(), tokens.end());
+  const auto t2       = high_resolution_clock::now();
+  const auto parseDur = std::chrono::duration_cast<duration>(t2 - t1);
+
+  std::cout << rang::style::dim << rang::style::italic << std::string(width, '-') << '\n'
+            << "Parsed " << nodes.size() << " nodes from " << tokens.size() << " tokens in "
+            << parseDur << '\n'
+            << std::string(width, '-') << '\n'
+            << rang::style::reset;
+
+  if (printNodes) {
+    for (const auto& node : nodes) {
+      printNode(*node);
+      std::cout << rang::style::dim << " │\n" << rang::style::reset;
+    }
+    std::cout << rang::style::dim << std::string(width, '-') << '\n';
   }
 }
 
@@ -21,21 +74,24 @@ auto main(int argc, char** argv) -> int {
   auto app = CLI::App{"Parser diagnostic tool"};
   app.require_subcommand(1);
 
+  auto printNodes = true;
+  app.add_flag("!--skip-nodes", printNodes, "Skip printing the nodes")->capture_default_str();
+
   // Parse input characters.
   std::string charsInput;
-  auto lexCmd = app.add_subcommand("parse", "Parse the provided characters.")->callback([&]() {
-    run(charsInput.begin(), charsInput.end());
+  auto lexCmd = app.add_subcommand("parse", "Parse the provided characters")->callback([&]() {
+    run(charsInput.begin(), charsInput.end(), printNodes);
   });
-  lexCmd->add_option("input", charsInput, "Input characters to parse.")->required();
+  lexCmd->add_option("input", charsInput, "Input characters to parse")->required();
 
   // Parse input file.
   std::string filePath;
   auto lexFileCmd =
-      app.add_subcommand("parsefile", "Parse all characters in a file.")->callback([&]() {
+      app.add_subcommand("parsefile", "Parse all characters in a file")->callback([&]() {
         std::ifstream fs{filePath};
-        run(std::istreambuf_iterator<char>{fs}, std::istreambuf_iterator<char>{});
+        run(std::istreambuf_iterator<char>{fs}, std::istreambuf_iterator<char>{}, printNodes);
       });
-  lexFileCmd->add_option("file", filePath, "Path to file to parse.")
+  lexFileCmd->add_option("file", filePath, "Path to file to parse")
       ->check(CLI::ExistingFile)
       ->required();
 
@@ -48,4 +104,51 @@ auto main(int argc, char** argv) -> int {
     return app.exit(e);
   }
   return 0;
+}
+
+auto getFgColor(const parse::Node& node) -> rang::fg {
+  switch (node.getType()) {
+  case parse::NodeType::ExprBinaryOp:
+  case parse::NodeType::ExprUnaryOp:
+  case parse::NodeType::ExprSwitch:
+  case parse::NodeType::ExprComma:
+  case parse::NodeType::ExprParan:
+    return rang::fg::green;
+  case parse::NodeType::StmtFunDecl:
+  case parse::NodeType::StmtPrint:
+    return rang::fg::blue;
+  case parse::NodeType::ExprCall:
+  case parse::NodeType::ExprConst:
+  case parse::NodeType::ExprConstDecl:
+    return rang::fg::magenta;
+  case parse::NodeType::ExprLit:
+    return rang::fg::cyan;
+  case parse::NodeType::Error:
+    return rang::fg::reset;
+  }
+  return rang::fg::reset;
+}
+
+auto getBgColor(const parse::Node& node) -> rang::bg {
+  switch (node.getType()) {
+  case parse::NodeType::Error:
+    return rang::bg::red;
+  default:
+    return rang::bg::reset;
+  }
+  return rang::bg::reset;
+}
+
+auto operator<<(std::ostream& out, const duration& rhs) -> std::ostream& {
+  auto s = rhs.count();
+  if (s < .000001) {                // NOLINT: Magic numbers
+    out << s * 1000000000 << " ns"; // NOLINT: Magic numbers
+  } else if (s < .001) {            // NOLINT: Magic numbers
+    out << s * 1000000 << " us";    // NOLINT: Magic numbers
+  } else if (s < 1) {               // NOLINT: Magic numbers
+    out << s * 1000 << " ms";       // NOLINT: Magic numbers
+  } else {
+    out << s << " s";
+  }
+  return out;
 }

@@ -29,6 +29,17 @@ public:
     return !PrintStmtNode::operator==(rhs);
   }
 
+  [[nodiscard]] auto operator[](int i) const -> Node& override {
+    switch (i) {
+    case 0:
+      return *m_expr.get();
+    default:
+      throw std::out_of_range("No child at given index");
+    }
+  }
+
+  [[nodiscard]] auto getChildCount() const -> int override { return 1; }
+
   [[nodiscard]] auto clone() const -> NodePtr override {
     return std::make_unique<PrintStmtNode>(m_kw, m_expr->clone());
   }

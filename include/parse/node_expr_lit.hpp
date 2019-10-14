@@ -22,6 +22,12 @@ public:
     return !LitExprNode::operator==(rhs);
   }
 
+  [[nodiscard]] auto operator[](int /*unused*/) const -> Node& override {
+    throw std::out_of_range("No child at given index");
+  }
+
+  [[nodiscard]] auto getChildCount() const -> int override { return 0; }
+
   [[nodiscard]] auto clone() const -> NodePtr override {
     return std::make_unique<LitExprNode>(m_val);
   }
@@ -29,7 +35,7 @@ public:
 private:
   const lex::Token m_val;
 
-  auto print(std::ostream& out) const -> std::ostream& override { return out << "expr-literal"; }
+  auto print(std::ostream& out) const -> std::ostream& override { return out << m_val; }
 };
 
 // Factory.

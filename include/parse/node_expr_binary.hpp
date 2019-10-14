@@ -34,6 +34,19 @@ public:
     return !BinaryExprNode::operator==(rhs);
   }
 
+  [[nodiscard]] auto operator[](int i) const -> Node& override {
+    switch (i) {
+    case 0:
+      return *m_lhs.get();
+    case 1:
+      return *m_rhs.get();
+    default:
+      throw std::out_of_range("No child at given index");
+    }
+  }
+
+  [[nodiscard]] auto getChildCount() const -> int override { return 2; }
+
   [[nodiscard]] auto clone() const -> NodePtr override {
     return std::make_unique<BinaryExprNode>(m_lhs->clone(), m_op, m_rhs->clone());
   }
@@ -43,7 +56,7 @@ private:
   const lex::Token m_op;
   const NodePtr m_rhs;
 
-  auto print(std::ostream& out) const -> std::ostream& override { return out << "expr-binary"; }
+  auto print(std::ostream& out) const -> std::ostream& override { return out << m_op; }
 };
 
 // Factory.

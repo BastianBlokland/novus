@@ -26,29 +26,26 @@ auto run(InputItr inputBegin, const InputItr inputEnd, const bool printTokens) {
   const auto width        = 80;
 
   // Lex all the tokens and time how long it takes.
-  auto t1     = high_resolution_clock::now();
-  auto tokens = lex::lexAll(inputBegin, inputEnd);
-  auto t2     = high_resolution_clock::now();
-  auto lexDur = std::chrono::duration_cast<duration>(t2 - t1);
+  const auto t1     = high_resolution_clock::now();
+  const auto tokens = lex::lexAll(inputBegin, inputEnd);
+  const auto t2     = high_resolution_clock::now();
+  const auto lexDur = std::chrono::duration_cast<duration>(t2 - t1);
 
-  std::cout << rang::style::dim << rang::style::italic;
-  std::cout << std::string(width, '-') << '\n';
-  std::cout << "Lexed " << tokens.size() << " tokens in " << lexDur << '\n';
-  std::cout << std::string(width, '-') << '\n';
-  std::cout << rang::style::reset;
+  std::cout << rang::style::dim << rang::style::italic << std::string(width, '-') << '\n'
+            << "Lexed " << tokens.size() << " tokens in " << lexDur << '\n'
+            << std::string(width, '-') << '\n'
+            << rang::style::reset;
 
   if (printTokens) {
     for (const auto& token : tokens) {
-      std::cout << rang::style::bold << "* ";
-      std::cout << getFgColor(token) << getBgColor(token);
-      std::cout << std::setw(tokTypeWidth) << std::left << token.getType();
+      std::cout << rang::style::bold << "* " << getFgColor(token) << getBgColor(token)
+                << std::setw(tokTypeWidth) << std::left << token.getType();
 
       std::stringstream spanStr;
       spanStr << '(' << token.getSpan().getStart() << " - " << token.getSpan().getEnd() << ')';
 
-      std::cout << rang::style::dim << rang::fg::reset;
-      std::cout << std::setw(tokTypeWidth) << std::right << spanStr.str();
-      std::cout << rang::style::reset;
+      std::cout << rang::style::dim << rang::fg::reset << std::setw(tokTypeWidth) << std::right
+                << spanStr.str() << rang::style::reset;
 
       const auto payload = token.getPayload();
       if (payload) {
@@ -66,22 +63,22 @@ auto main(int argc, char** argv) -> int {
   app.require_subcommand(1);
 
   auto printTokens = true;
-  app.add_flag("!--skip-tokens", printTokens, "Skip printing the tokens.")->capture_default_str();
+  app.add_flag("!--skip-tokens", printTokens, "Skip printing the tokens")->capture_default_str();
 
   // Lex input characters.
   std::string charsInput;
-  auto lexCmd = app.add_subcommand("lex", "Lex the provided characters.")->callback([&]() {
+  auto lexCmd = app.add_subcommand("lex", "Lex the provided characters")->callback([&]() {
     run(charsInput.begin(), charsInput.end(), printTokens);
   });
-  lexCmd->add_option("input", charsInput, "Input characters to lex.")->required();
+  lexCmd->add_option("input", charsInput, "Input characters to lex")->required();
 
   // Lex input file.
   std::string filePath;
-  auto lexFileCmd = app.add_subcommand("lexfile", "Lex all characters in a file.")->callback([&]() {
+  auto lexFileCmd = app.add_subcommand("lexfile", "Lex all characters in a file")->callback([&]() {
     std::ifstream fs{filePath};
     run(std::istreambuf_iterator<char>{fs}, std::istreambuf_iterator<char>{}, printTokens);
   });
-  lexFileCmd->add_option("file", filePath, "Path to file to lex.")
+  lexFileCmd->add_option("file", filePath, "Path to file to lex")
       ->check(CLI::ExistingFile)
       ->required();
 
