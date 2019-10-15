@@ -1,5 +1,6 @@
 #pragma once
 #include "lex/token.hpp"
+#include "lex/token_type.hpp"
 #include "parse/node.hpp"
 #include "parse/node_type.hpp"
 #include <memory>
@@ -17,8 +18,14 @@ public:
       m_expr{std::move(expr)},
       m_close{std::move(close)} {
 
+    if (m_open.getType() != lex::TokenType::SepOpenParen) {
+      throw std::invalid_argument("Open token is not a opening parentheses");
+    }
     if (m_expr == nullptr) {
       throw std::invalid_argument("Expr cannot be null");
+    }
+    if (m_close.getType() != lex::TokenType::SepCloseParen) {
+      throw std::invalid_argument("Close token is not a closing parentheses");
     }
   }
 

@@ -1,5 +1,6 @@
 #pragma once
 #include "lex/token.hpp"
+#include "lex/token_cat.hpp"
 #include "parse/node.hpp"
 #include "parse/node_type.hpp"
 #include <memory>
@@ -11,7 +12,11 @@ class LitExprNode final : public Node {
 public:
   LitExprNode() = delete;
 
-  explicit LitExprNode(lex::Token val) : Node(NodeType::ExprLit), m_val{std::move(val)} {}
+  explicit LitExprNode(lex::Token val) : Node(NodeType::ExprLit), m_val{std::move(val)} {
+    if (m_val.getCat() != lex::TokenCat::Literal) {
+      throw std::invalid_argument("Given token is not a literal");
+    }
+  }
 
   auto operator==(const Node& rhs) const noexcept -> bool override {
     const auto r = dynamic_cast<const LitExprNode*>(&rhs);

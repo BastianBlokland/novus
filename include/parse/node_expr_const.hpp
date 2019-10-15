@@ -1,5 +1,6 @@
 #pragma once
 #include "lex/token.hpp"
+#include "lex/token_type.hpp"
 #include "parse/node.hpp"
 #include "parse/node_type.hpp"
 #include <memory>
@@ -11,7 +12,11 @@ class ConstExprNode final : public Node {
 public:
   ConstExprNode() = delete;
 
-  explicit ConstExprNode(lex::Token id) : Node(NodeType::ExprConst), m_id{std::move(id)} {}
+  explicit ConstExprNode(lex::Token id) : Node(NodeType::ExprConst), m_id{std::move(id)} {
+    if (m_id.getType() != lex::TokenType::Identifier) {
+      throw std::invalid_argument("Given token is not an identifier");
+    }
+  }
 
   auto operator==(const Node& rhs) const noexcept -> bool override {
     const auto r = dynamic_cast<const ConstExprNode*>(&rhs);

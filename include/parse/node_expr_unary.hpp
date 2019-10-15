@@ -14,6 +14,9 @@ public:
   UnaryExprNode(lex::Token op, NodePtr rhs) :
       Node(NodeType::ExprUnaryOp), m_op{std::move(op)}, m_rhs{std::move(rhs)} {
 
+    if (m_op.getCat() != lex::TokenCat::Operator) {
+      throw std::invalid_argument("Given token is not an operator");
+    }
     if (m_rhs == nullptr) {
       throw std::invalid_argument("Rhs cannot be null");
     }
