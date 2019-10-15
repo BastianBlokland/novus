@@ -1,0 +1,46 @@
+#include "catch2/catch.hpp"
+#include "helpers.hpp"
+#include "lex/error.hpp"
+#include "lex/keyword.hpp"
+#include "lex/token.hpp"
+#include "lex/token_type.hpp"
+#include "parse/error.hpp"
+#include "parse/node_expr_binary.hpp"
+#include "parse/node_expr_unary.hpp"
+
+namespace parse {
+
+TEST_CASE("Parsing operators", "[parse]") {
+
+  SECTION("Primary") {
+    CHECK_EXPR("1 true \"hello world\" 42", INT(1), BOOL(true), STR("hello world"), INT(42));
+    CHECK_EXPR("x y z", CONST("x"), CONST("y"), CONST("z"));
+
+    SECTION("Errors") {
+      CHECK_EXPR("12a", errLexError(lex::errLitIntInvalidChar()))
+      CHECK_EXPR("->", errInvalidPrimaryExpr(lex::basicToken(lex::TokenType::SepArrow)));
+      CHECK_EXPR("print", errInvalidPrimaryExpr(lex::keywordToken(lex::Keyword::Print)));
+    }
+  }
+
+  SECTION("Unary") {
+    CHECK_EXPR("-1", unaryExprNode(MINUS, INT(1)))
+    CHECK_EXPR("+1", unaryExprNode(PLUS, INT(1)))
+    CHECK_EXPR("!1", unaryExprNode(BANG, INT(1)))
+    CHECK_EXPR("!x", unaryExprNode(BANG, CONST("x")))
+    CHECK_EXPR("--1", unaryExprNode(MINUS, unaryExprNode(MINUS, INT(1))));
+    CHECK_EXPR("++1", unaryExprNode(PLUS, unaryExprNode(PLUS, INT(1))));
+    CHECK_EXPR("-+-1", unaryExprNode(MINUS, unaryExprNode(PLUS, unaryExprNode(MINUS, INT(1)))));
+    CHECK_EXPR("+-!1", unaryExprNode(PLUS, unaryExprNode(MINUS, unaryExprNode(BANG, INT(1)))));
+    CHECK_EXPR("!42 !true", unaryExprNode(BANG, INT(42)), unaryExprNode(BANG, BOOL(true)));
+
+    SECTION("Errors") {
+      CHECK_EXPR("&1", errInvalidUnaryOp(AMP, INT(1)));
+      CHECK_EXPR("&+1", errInvalidUnaryOp(AMP, unaryExprNode(PLUS, INT(1))));
+      CHECK_EXPR("&1 + 2", errInvalidUnaryOp(AMP, binaryExprNode(INT(1), PLUS, INT(2))));
+      CHECK_EXPR("&", errInvalidUnaryOp(AMP, errInvalidPrimaryExpr(END)));
+    }
+  }
+}
+
+} // namespace parse

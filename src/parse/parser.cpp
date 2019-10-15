@@ -27,9 +27,12 @@ static auto getKw(const lex::Token& token) -> std::optional<lex::Keyword> {
 
 static auto isOp(const lex::Token& token) { return token.getCat() == lex::TokenCat::Operator; }
 
-auto ParserImpl::next() -> NodePtr { return peekToken(0).isEnd() ? nullptr : nextStmt(); }
+auto ParserImpl::next() -> NodePtr { return nextStmt(); }
 
 auto ParserImpl::nextStmt() -> NodePtr {
+  if (peekToken(0).isEnd()) {
+    return nullptr;
+  }
   auto token = consumeToken();
   auto kwOpt = getKw(token);
   if (kwOpt && kwOpt.value() == lex::Keyword::Print) {
@@ -38,8 +41,15 @@ auto ParserImpl::nextStmt() -> NodePtr {
   return errInvalidStmtStart(token);
 }
 
+auto ParserImpl::nextExpr() -> NodePtr {
+  if (peekToken(0).isEnd()) {
+    return nullptr;
+  }
+  return nextExpr(0);
+}
+
 auto ParserImpl::nextExpr(const int minPrecedence) -> NodePtr {
-  auto lhs = nextExprLhs(minPrecedence);
+  auto lhs = nextExprLhs();
   while (true) {
     const auto& nextToken = peekToken(0);
     if (!isOp(nextToken)) {
@@ -56,14 +66,15 @@ auto ParserImpl::nextExpr(const int minPrecedence) -> NodePtr {
   return lhs;
 }
 
-auto ParserImpl::nextExprLhs(const int minPrecedence) -> NodePtr {
+auto ParserImpl::nextExprLhs() -> NodePtr {
   const auto& nextToken = peekToken(0);
   if (isOp(nextToken)) {
-    const auto unaryPrecedence = getUnaryOpPrecedence(nextToken);
-    if (unaryPrecedence >= minPrecedence) {
-      const auto opToken = consumeToken();
-      return unaryExprNode(opToken, nextExpr(unaryPrecedence));
+    const auto opToken    = consumeToken();
+    const auto precedence = getUnaryOpPrecedence(opToken);
+    if (precedence == 0) {
+      return errInvalidUnaryOp(opToken, nextExpr(precedence));
     }
+    return unaryExprNode(opToken, nextExpr(precedence));
   }
   return nextExprPrimary();
 }

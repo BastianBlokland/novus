@@ -43,11 +43,11 @@ public:
   Lexer() = delete;
   Lexer(InputItr inputBegin, const InputItr inputEnd) : m_input{inputBegin}, m_inputEnd{inputEnd} {}
 
-  auto next() -> Token { return LexerImpl::next(); }
+  [[nodiscard]] auto next() -> Token { return LexerImpl::next(); }
 
-  auto begin() -> TokenItr<Lexer> { return TokenItr{*this}; }
+  [[nodiscard]] auto begin() -> TokenItr<Lexer> { return TokenItr{*this}; }
 
-  auto end() -> TokenItr<Lexer> { return TokenItr<Lexer>{}; }
+  [[nodiscard]] auto end() -> TokenItr<Lexer> { return TokenItr<Lexer>{}; }
 
 private:
   InputItr m_input;

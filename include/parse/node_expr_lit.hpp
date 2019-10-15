@@ -13,16 +13,16 @@ public:
 
   explicit LitExprNode(lex::Token val) : Node(NodeType::ExprLit), m_val{std::move(val)} {}
 
-  auto operator==(const Node* rhs) const noexcept -> bool override {
-    const auto r = dynamic_cast<const LitExprNode*>(rhs);
+  auto operator==(const Node& rhs) const noexcept -> bool override {
+    const auto r = dynamic_cast<const LitExprNode*>(&rhs);
     return r != nullptr && m_val == r->m_val;
   }
 
-  auto operator!=(const Node* rhs) const noexcept -> bool override {
+  auto operator!=(const Node& rhs) const noexcept -> bool override {
     return !LitExprNode::operator==(rhs);
   }
 
-  [[nodiscard]] auto operator[](int /*unused*/) const -> Node& override {
+  [[nodiscard]] auto operator[](int /*unused*/) const -> const Node& override {
     throw std::out_of_range("No child at given index");
   }
 
@@ -38,7 +38,7 @@ private:
   auto print(std::ostream& out) const -> std::ostream& override { return out << m_val; }
 };
 
-// Factory.
+// Factories.
 inline auto litExprNode(lex::Token val) -> NodePtr {
   return std::make_unique<LitExprNode>(std::move(val));
 }

@@ -20,19 +20,19 @@ public:
     }
   }
 
-  auto operator==(const Node* rhs) const noexcept -> bool override {
-    const auto r = dynamic_cast<const PrintStmtNode*>(rhs);
-    return r != nullptr && m_expr == r->m_expr;
+  auto operator==(const Node& rhs) const noexcept -> bool override {
+    const auto r = dynamic_cast<const PrintStmtNode*>(&rhs);
+    return r != nullptr && *m_expr == *r->m_expr;
   }
 
-  auto operator!=(const Node* rhs) const noexcept -> bool override {
+  auto operator!=(const Node& rhs) const noexcept -> bool override {
     return !PrintStmtNode::operator==(rhs);
   }
 
-  [[nodiscard]] auto operator[](int i) const -> Node& override {
+  [[nodiscard]] auto operator[](int i) const -> const Node& override {
     switch (i) {
     case 0:
-      return *m_expr.get();
+      return *m_expr;
     default:
       throw std::out_of_range("No child at given index");
     }
@@ -51,7 +51,7 @@ private:
   auto print(std::ostream& out) const -> std::ostream& override { return out << "print"; }
 };
 
-// Factory.
+// Factories.
 inline auto printStmtNode(lex::Token kw, NodePtr expr) -> NodePtr {
   return std::make_unique<PrintStmtNode>(std::move(kw), std::move(expr));
 }

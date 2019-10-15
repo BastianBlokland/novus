@@ -14,10 +14,10 @@ public:
   auto operator=(const Node& rhs) -> Node& = delete;
   auto operator=(Node&& rhs) noexcept -> Node& = delete;
 
-  virtual auto operator==(const Node* rhs) const noexcept -> bool = 0;
-  virtual auto operator!=(const Node* rhs) const noexcept -> bool = 0;
+  virtual auto operator==(const Node& rhs) const noexcept -> bool = 0;
+  virtual auto operator!=(const Node& rhs) const noexcept -> bool = 0;
 
-  [[nodiscard]] virtual auto operator[](int) const -> Node& = 0;
+  [[nodiscard]] virtual auto operator[](int) const -> const Node& = 0;
 
   [[nodiscard]] auto getType() const noexcept -> NodeType { return m_type; }
 

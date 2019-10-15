@@ -25,21 +25,21 @@ public:
     }
   }
 
-  auto operator==(const Node* rhs) const noexcept -> bool override {
-    const auto r = dynamic_cast<const BinaryExprNode*>(rhs);
-    return r != nullptr && *m_lhs == r->m_lhs.get() && m_op == r->m_op && *m_rhs == r->m_rhs.get();
+  auto operator==(const Node& rhs) const noexcept -> bool override {
+    const auto r = dynamic_cast<const BinaryExprNode*>(&rhs);
+    return r != nullptr && *m_lhs == *r->m_lhs && m_op == r->m_op && *m_rhs == *r->m_rhs;
   }
 
-  auto operator!=(const Node* rhs) const noexcept -> bool override {
+  auto operator!=(const Node& rhs) const noexcept -> bool override {
     return !BinaryExprNode::operator==(rhs);
   }
 
-  [[nodiscard]] auto operator[](int i) const -> Node& override {
+  [[nodiscard]] auto operator[](int i) const -> const Node& override {
     switch (i) {
     case 0:
-      return *m_lhs.get();
+      return *m_lhs;
     case 1:
-      return *m_rhs.get();
+      return *m_rhs;
     default:
       throw std::out_of_range("No child at given index");
     }
@@ -59,7 +59,7 @@ private:
   auto print(std::ostream& out) const -> std::ostream& override { return out << m_op; }
 };
 
-// Factory.
+// Factories.
 inline auto binaryExprNode(NodePtr lhs, lex::Token op, NodePtr rhs) -> NodePtr {
   return std::make_unique<BinaryExprNode>(std::move(lhs), std::move(op), std::move(rhs));
 }

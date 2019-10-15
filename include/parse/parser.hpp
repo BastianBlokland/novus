@@ -16,13 +16,14 @@ protected:
   ParserImpl() : m_readBuffer{} {}
 
   auto next() -> NodePtr;
+  auto nextStmt() -> NodePtr;
+  auto nextExpr() -> NodePtr;
 
 private:
   std::deque<lex::Token> m_readBuffer;
 
-  auto nextStmt() -> NodePtr;
   auto nextExpr(int minPrecedence) -> NodePtr;
-  auto nextExprLhs(int minPrecedence) -> NodePtr;
+  auto nextExprLhs() -> NodePtr;
   auto nextExprPrimary() -> NodePtr;
 
   auto consumeToken() -> lex::Token;
@@ -45,11 +46,15 @@ public:
   Parser(InputItr inputBegin, const InputItr inputEnd) :
       m_input{inputBegin}, m_inputEnd(inputEnd) {}
 
-  auto next() -> NodePtr { return internal::ParserImpl::next(); }
+  [[nodiscard]] auto next() -> NodePtr { return internal::ParserImpl::next(); }
 
-  auto begin() -> NodeItr<Parser> { return NodeItr{*this}; }
+  [[nodiscard]] auto nextStmt() -> NodePtr { return internal::ParserImpl::nextStmt(); }
 
-  auto end() -> NodeItr<Parser> { return NodeItr<Parser>{}; }
+  [[nodiscard]] auto nextExpr() -> NodePtr { return internal::ParserImpl::nextExpr(); }
+
+  [[nodiscard]] auto begin() -> NodeItr<Parser> { return NodeItr{*this}; }
+
+  [[nodiscard]] auto end() -> NodeItr<Parser> { return NodeItr<Parser>{}; }
 
 private:
   InputItr m_input;
