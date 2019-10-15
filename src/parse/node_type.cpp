@@ -34,8 +34,8 @@ auto operator<<(std::ostream& out, const NodeType& rhs) -> std::ostream& {
   case NodeType::ExprComma:
     out << "expr-comma";
     break;
-  case NodeType::ExprParan:
-    out << "expr-paran";
+  case NodeType::ExprParen:
+    out << "expr-paren";
     break;
   case NodeType::Error:
     out << "error";

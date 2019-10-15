@@ -48,8 +48,8 @@ auto lookupCat(const TokenType type) -> TokenCat {
   case TokenType::OpGt:
   case TokenType::OpGtEq:
     return TokenCat::Operator;
-  case TokenType::SepOpenParan:
-  case TokenType::SepCloseParan:
+  case TokenType::SepOpenParen:
+  case TokenType::SepCloseParen:
   case TokenType::SepComma:
   case TokenType::SepArrow:
     return TokenCat::Seperator;

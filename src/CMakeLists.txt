@@ -31,6 +31,7 @@ add_library(parse STATIC
   ../include/parse/error.hpp
   ../include/parse/node_error.hpp
   ../include/parse/node_expr_binary.hpp
+  ../include/parse/node_expr_paren.hpp
   ../include/parse/node_expr_unary.hpp
   ../include/parse/node_itr.hpp
   ../include/parse/node_stmt_print.hpp

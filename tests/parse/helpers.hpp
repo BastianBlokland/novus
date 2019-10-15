@@ -25,6 +25,8 @@ namespace parse {
 #define PIPEPIPE lex::basicToken(lex::TokenType::OpPipePipe)
 #define GT lex::basicToken(lex::TokenType::OpGt)
 #define EQEQ lex::basicToken(lex::TokenType::OpEqEq)
+#define OPAREN lex::basicToken(lex::TokenType::SepOpenParen)
+#define CPAREN lex::basicToken(lex::TokenType::SepCloseParen)
 #define END lex::endToken()
 
 #define CHECK_EXPR(INPUT, ...)                                                                     \

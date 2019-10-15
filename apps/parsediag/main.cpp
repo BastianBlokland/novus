@@ -118,7 +118,7 @@ auto getFgColor(const parse::Node& node) -> rang::fg {
   case nt::ExprUnaryOp:
   case nt::ExprSwitch:
   case nt::ExprComma:
-  case nt::ExprParan:
+  case nt::ExprParen:
     return rang::fg::green;
   case nt::StmtFunDecl:
   case nt::StmtPrint:

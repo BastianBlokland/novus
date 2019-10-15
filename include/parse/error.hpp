@@ -15,4 +15,6 @@ auto errInvalidPrimaryExpr(lex::Token token) -> NodePtr;
 
 auto errInvalidUnaryOp(lex::Token op, NodePtr rhs) -> NodePtr;
 
+auto errInvalidParenExpr(lex::Token open, NodePtr expr, lex::Token close) -> NodePtr;
+
 } // namespace parse

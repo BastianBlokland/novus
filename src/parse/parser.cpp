@@ -10,6 +10,7 @@
 #include "parse/node_expr_binary.hpp"
 #include "parse/node_expr_const.hpp"
 #include "parse/node_expr_lit.hpp"
+#include "parse/node_expr_paren.hpp"
 #include "parse/node_expr_unary.hpp"
 #include "parse/node_stmt_print.hpp"
 #include <memory>
@@ -80,15 +81,30 @@ auto ParserImpl::nextExprLhs() -> NodePtr {
 }
 
 auto ParserImpl::nextExprPrimary() -> NodePtr {
-  auto tok = consumeToken();
-  switch (tok.getCat()) {
+  auto nextTok = peekToken(0);
+  switch (nextTok.getCat()) {
   case lex::TokenCat::Literal:
-    return litExprNode(tok);
+    return litExprNode(consumeToken());
   case lex::TokenCat::Identifier:
-    return constExprNode(tok);
+    return constExprNode(consumeToken());
   default:
-    return errInvalidPrimaryExpr(tok);
+    if (nextTok.getType() == lex::TokenType::SepOpenParen) {
+      return nextParenExpr();
+    }
+    return errInvalidPrimaryExpr(consumeToken());
   }
+}
+
+auto ParserImpl::nextParenExpr() -> NodePtr {
+  auto openTok  = consumeToken();
+  auto expr     = nextExpr(0);
+  auto closeTok = consumeToken();
+
+  if (openTok.getType() == lex::TokenType::SepOpenParen &&
+      closeTok.getType() == lex::TokenType::SepCloseParen) {
+    return parenExprNode(openTok, std::move(expr), closeTok);
+  }
+  return errInvalidParenExpr(openTok, std::move(expr), closeTok);
 }
 
 auto ParserImpl::consumeToken() -> lex::Token {

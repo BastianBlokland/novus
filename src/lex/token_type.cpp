@@ -52,11 +52,11 @@ auto operator<<(std::ostream& out, const TokenType& rhs) -> std::ostream& {
   case TokenType::OpGtEq:
     out << "greater-equal";
     break;
-  case TokenType::SepOpenParan:
-    out << "open-paran";
+  case TokenType::SepOpenParen:
+    out << "open-paren";
     break;
-  case TokenType::SepCloseParan:
-    out << "close-paran";
+  case TokenType::SepCloseParen:
+    out << "close-paren";
     break;
   case TokenType::SepComma:
     out << "comma";
