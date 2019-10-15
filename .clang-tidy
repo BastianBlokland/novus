@@ -3,7 +3,12 @@ Checks: '*,
     -fuchsia-*,
     -hicpp-no-array-decay,
     -cppcoreguidelines-pro-bounds-array-to-pointer-decay,
-    -bugprone-exception-escape'
+    -bugprone-exception-escape,
+    -hicpp-function-size'
 CheckOptions:
   - key: readability-implicit-bool-conversion.AllowPointerConditions
     value: '1'
+  - key: google-readability-function-size.StatementThreshold
+    value: '2000'
+  - key: readability-function-size.StatementThreshold
+    value: '2000'

@@ -13,6 +13,6 @@ auto errInvalidStmtStart(lex::Token token) -> NodePtr;
 
 auto errInvalidPrimaryExpr(lex::Token token) -> NodePtr;
 
-auto errInvalidUnaryOp(lex::Token token, NodePtr expr) -> NodePtr;
+auto errInvalidUnaryOp(lex::Token op, NodePtr rhs) -> NodePtr;
 
 } // namespace parse

@@ -17,8 +17,14 @@ namespace parse {
 
 #define MINUS lex::basicToken(lex::TokenType::OpMinus)
 #define PLUS lex::basicToken(lex::TokenType::OpPlus)
+#define STAR lex::basicToken(lex::TokenType::OpStar)
 #define BANG lex::basicToken(lex::TokenType::OpBang)
 #define AMP lex::basicToken(lex::TokenType::OpAmp)
+#define AMPAMP lex::basicToken(lex::TokenType::OpAmpAmp)
+#define PIPE lex::basicToken(lex::TokenType::OpPipe)
+#define PIPEPIPE lex::basicToken(lex::TokenType::OpPipePipe)
+#define GT lex::basicToken(lex::TokenType::OpGt)
+#define EQEQ lex::basicToken(lex::TokenType::OpEqEq)
 #define END lex::endToken()
 
 #define CHECK_EXPR(INPUT, ...)                                                                     \
