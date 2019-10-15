@@ -11,7 +11,7 @@ TEST_CASE("Retreiving token categories", "[lex]") {
 
     for (int typeInt = typeBegin; typeInt != typeEnd; typeInt++) {
       const auto type = static_cast<TokenType>(typeInt);
-      REQUIRE(lookupCat(type) != TokenCat::Unknown);
+      CHECK(lookupCat(type) != TokenCat::Unknown);
     }
   }
 }

@@ -5,10 +5,10 @@
 namespace lex {
 
 TEST_CASE("Lexing keywords", "[lex]") {
-  REQUIRE_TOKENS("if", keywordToken(Keyword::If));
-  REQUIRE_TOKENS("else", keywordToken(Keyword::Else));
-  REQUIRE_TOKENS("fun", keywordToken(Keyword::Fun));
-  REQUIRE_TOKENS("print", keywordToken(Keyword::Print));
+  CHECK_TOKENS("if", keywordToken(Keyword::If));
+  CHECK_TOKENS("else", keywordToken(Keyword::Else));
+  CHECK_TOKENS("fun", keywordToken(Keyword::Fun));
+  CHECK_TOKENS("print", keywordToken(Keyword::Print));
 }
 
 } // namespace lex

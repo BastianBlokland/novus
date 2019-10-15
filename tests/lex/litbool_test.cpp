@@ -6,17 +6,17 @@ namespace lex {
 TEST_CASE("Lexing boolean literals", "[lex]") {
 
   SECTION("Single values") {
-    REQUIRE_TOKENS("true", litBoolToken(true));
-    REQUIRE_TOKENS("false", litBoolToken(false));
+    CHECK_TOKENS("true", litBoolToken(true));
+    CHECK_TOKENS("false", litBoolToken(false));
   }
 
   SECTION("Sequences") {
-    REQUIRE_TOKENS("true false", litBoolToken(true), litBoolToken(false));
-    REQUIRE_TOKENS(
+    CHECK_TOKENS("true false", litBoolToken(true), litBoolToken(false));
+    CHECK_TOKENS(
         "true,true", litBoolToken(true), basicToken(TokenType::SepComma), litBoolToken(true));
   }
 
-  SECTION("Spans") { REQUIRE_SPANS(" true ", SourceSpan{1, 4}); }
+  SECTION("Spans") { CHECK_SPANS(" true ", SourceSpan{1, 4}); }
 }
 
 } // namespace lex

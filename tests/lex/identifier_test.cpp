@@ -8,50 +8,50 @@ namespace lex {
 TEST_CASE("Lexing identifiers", "[lex]") {
 
   SECTION("Valid") {
-    REQUIRE_TOKENS("hello", identiferToken("hello"));
-    REQUIRE_TOKENS("héllo", identiferToken("héllo"));
-    REQUIRE_TOKENS("_hello", identiferToken("_hello"));
-    REQUIRE_TOKENS("_hello_world", identiferToken("_hello_world"));
-    REQUIRE_TOKENS("_hello123", identiferToken("_hello123"));
-    REQUIRE_TOKENS("_1", identiferToken("_1"));
-    REQUIRE_TOKENS("_1", identiferToken("_1"));
-    REQUIRE_TOKENS("你好世界", identiferToken("你好世界"));
-    REQUIRE_TOKENS("_你好世界", identiferToken("_你好世界"));
-    REQUIRE_TOKENS("_你1好2世3界", identiferToken("_你1好2世3界"));
+    CHECK_TOKENS("hello", identiferToken("hello"));
+    CHECK_TOKENS("héllo", identiferToken("héllo"));
+    CHECK_TOKENS("_hello", identiferToken("_hello"));
+    CHECK_TOKENS("_hello_world", identiferToken("_hello_world"));
+    CHECK_TOKENS("_hello123", identiferToken("_hello123"));
+    CHECK_TOKENS("_1", identiferToken("_1"));
+    CHECK_TOKENS("_1", identiferToken("_1"));
+    CHECK_TOKENS("你好世界", identiferToken("你好世界"));
+    CHECK_TOKENS("_你好世界", identiferToken("_你好世界"));
+    CHECK_TOKENS("_你1好2世3界", identiferToken("_你1好2世3界"));
   }
 
   SECTION("Sequences") {
-    REQUIRE_TOKENS("hello world", identiferToken("hello"), identiferToken("world"));
-    REQUIRE_TOKENS(
+    CHECK_TOKENS("hello world", identiferToken("hello"), identiferToken("world"));
+    CHECK_TOKENS(
         "hello,world",
         identiferToken("hello"),
         basicToken(TokenType::SepComma),
         identiferToken("world"));
-    REQUIRE_TOKENS(
+    CHECK_TOKENS(
         "hello@world", identiferToken("hello"), errInvalidChar('@'), identiferToken("world"));
-    REQUIRE_TOKENS(
+    CHECK_TOKENS(
         "hello#world", identiferToken("hello"), errInvalidChar('#'), identiferToken("world"));
   }
 
   SECTION("Errors") {
-    REQUIRE_TOKENS("1hello", errLitIntInvalidChar());
-    REQUIRE_TOKENS("h\a_hello", errIdentifierIllegalCharacter());
-    REQUIRE_TOKENS("@", errInvalidChar('@'));
-    REQUIRE_TOKENS("_", errInvalidChar('_'));
+    CHECK_TOKENS("1hello", errLitIntInvalidChar());
+    CHECK_TOKENS("h\a_hello", errIdentifierIllegalCharacter());
+    CHECK_TOKENS("@", errInvalidChar('@'));
+    CHECK_TOKENS("_", errInvalidChar('_'));
 
     // Ids containing '__' are reserved for internal use.
-    REQUIRE_TOKENS("__", errIdentifierIllegalSequence());
-    REQUIRE_TOKENS("___", errIdentifierIllegalSequence());
-    REQUIRE_TOKENS("__hello", errIdentifierIllegalSequence());
-    REQUIRE_TOKENS("hello__", errIdentifierIllegalSequence());
-    REQUIRE_TOKENS("hello__world", errIdentifierIllegalSequence());
+    CHECK_TOKENS("__", errIdentifierIllegalSequence());
+    CHECK_TOKENS("___", errIdentifierIllegalSequence());
+    CHECK_TOKENS("__hello", errIdentifierIllegalSequence());
+    CHECK_TOKENS("hello__", errIdentifierIllegalSequence());
+    CHECK_TOKENS("hello__world", errIdentifierIllegalSequence());
   }
 
   SECTION("Spans") {
-    REQUIRE_SPANS(" helloworld ", SourceSpan{1, 10});
-    REQUIRE_SPANS(" helloworld__ ", SourceSpan{1, 12});
-    REQUIRE_SPANS(" __helloworld ", SourceSpan{1, 12});
-    REQUIRE_SPANS(" _1 ", SourceSpan{1, 2});
+    CHECK_SPANS(" helloworld ", SourceSpan{1, 10});
+    CHECK_SPANS(" helloworld__ ", SourceSpan{1, 12});
+    CHECK_SPANS(" __helloworld ", SourceSpan{1, 12});
+    CHECK_SPANS(" _1 ", SourceSpan{1, 2});
   }
 }
 
