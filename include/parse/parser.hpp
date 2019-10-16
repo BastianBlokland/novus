@@ -24,6 +24,7 @@ private:
 
   auto nextExpr(int minPrecedence) -> NodePtr;
   auto nextExprLhs() -> NodePtr;
+  auto nextExprComma(NodePtr firstExpr, int precedence) -> NodePtr;
   auto nextExprPrimary() -> NodePtr;
   auto nextParenExpr() -> NodePtr;
 

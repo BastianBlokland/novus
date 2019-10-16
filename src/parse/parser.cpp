@@ -8,12 +8,15 @@
 #include "parse/error.hpp"
 #include "parse/node.hpp"
 #include "parse/node_expr_binary.hpp"
+#include "parse/node_expr_comma.hpp"
 #include "parse/node_expr_const.hpp"
 #include "parse/node_expr_lit.hpp"
 #include "parse/node_expr_paren.hpp"
 #include "parse/node_expr_unary.hpp"
 #include "parse/node_stmt_print.hpp"
 #include <memory>
+#include <stdexcept>
+#include <vector>
 
 namespace parse {
 
@@ -25,8 +28,6 @@ static auto getKw(const lex::Token& token) -> std::optional<lex::Keyword> {
   }
   return token.getPayload<lex::KeywordTokenPayload>()->getKeyword();
 }
-
-static auto isOp(const lex::Token& token) { return token.getCat() == lex::TokenCat::Operator; }
 
 auto ParserImpl::next() -> NodePtr { return nextStmt(); }
 
@@ -52,24 +53,28 @@ auto ParserImpl::nextExpr() -> NodePtr {
 auto ParserImpl::nextExpr(const int minPrecedence) -> NodePtr {
   auto lhs = nextExprLhs();
   while (true) {
-    const auto& nextToken = peekToken(0);
-    if (!isOp(nextToken)) {
-      break;
-    }
+    // Handle binary operators, precedence controls if we should keep recursing or let the next
+    // iteration handle them.
+    const auto& nextToken    = peekToken(0);
     const auto binPrecedence = getBinaryOpPrecedence(nextToken);
-    if (binPrecedence <= minPrecedence) {
+    if (binPrecedence == 0 || binPrecedence <= minPrecedence) {
       break;
     }
-    auto op  = consumeToken();
-    auto rhs = nextExpr(binPrecedence);
-    lhs      = binaryExprNode(std::move(lhs), op, std::move(rhs));
+
+    if (nextToken.getType() == lex::TokenType::SepComma) {
+      lhs = nextExprComma(std::move(lhs), binPrecedence);
+    } else {
+      auto op  = consumeToken();
+      auto rhs = nextExpr(binPrecedence);
+      lhs      = binaryExprNode(std::move(lhs), op, std::move(rhs));
+    }
   }
   return lhs;
 }
 
 auto ParserImpl::nextExprLhs() -> NodePtr {
   const auto& nextToken = peekToken(0);
-  if (isOp(nextToken)) {
+  if (nextToken.getCat() == lex::TokenCat::Operator) {
     const auto opToken    = consumeToken();
     const auto precedence = getUnaryOpPrecedence(opToken);
     if (precedence == 0) {
@@ -77,7 +82,27 @@ auto ParserImpl::nextExprLhs() -> NodePtr {
     }
     return unaryExprNode(opToken, nextExpr(precedence));
   }
+
   return nextExprPrimary();
+}
+
+auto ParserImpl::nextExprComma(NodePtr firstExpr, const int precedence) -> NodePtr {
+  auto subExprs = std::vector<NodePtr>{};
+  auto commas   = std::vector<lex::Token>{};
+
+  subExprs.push_back(std::move(firstExpr));
+  while (peekToken(0).getType() == lex::TokenType::SepComma) {
+    commas.push_back(consumeToken());
+    subExprs.push_back(nextExpr(precedence));
+  }
+
+  if (commas.empty()) {
+    // Getting here means this function was called for a expression that was not followed by a
+    // comma, because this is a private function of the parser we throw instead of returning an
+    // error token.
+    throw std::logic_error("nextExprComma did not find any comma token to match");
+  }
+  return commaExprNode(std::move(subExprs), std::move(commas));
 }
 
 auto ParserImpl::nextExprPrimary() -> NodePtr {

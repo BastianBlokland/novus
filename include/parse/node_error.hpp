@@ -19,11 +19,18 @@ public:
       Node(NodeType::Error),
       m_msg{std::move(msg)},
       m_tokens{std::move(tokens)},
-      m_subExprs{std::move(subExprs)} {}
+      m_subExprs{std::move(subExprs)} {
+
+    if (std::any_of(
+            m_subExprs.begin(), m_subExprs.end(), [](const NodePtr& p) { return p == nullptr; })) {
+      throw std::invalid_argument("subExprs cannot contain a nullptr");
+    }
+  }
 
   auto operator==(const Node& rhs) const noexcept -> bool override {
     const auto r = dynamic_cast<const ErrorNode*>(&rhs);
     return r != nullptr && m_msg == r->m_msg && m_tokens == r->m_tokens &&
+        m_subExprs.size() == r->m_subExprs.size() &&
         std::equal(
                m_subExprs.begin(),
                m_subExprs.end(),

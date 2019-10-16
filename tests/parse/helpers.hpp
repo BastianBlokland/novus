@@ -10,6 +10,9 @@
 
 namespace parse {
 
+// Trick to get the number of variable args.
+#define NUM_ARGS(...) std::tuple_size<decltype(std::make_tuple(__VA_ARGS__))>::value
+
 #define INT(VAL) litExprNode(lex::litIntToken(VAL))
 #define STR(VAL) litExprNode(lex::litStrToken(VAL))
 #define BOOL(VAL) litExprNode(lex::litBoolToken(VAL))
@@ -27,7 +30,10 @@ namespace parse {
 #define EQEQ lex::basicToken(lex::TokenType::OpEqEq)
 #define OPAREN lex::basicToken(lex::TokenType::SepOpenParen)
 #define CPAREN lex::basicToken(lex::TokenType::SepCloseParen)
+#define COMMA lex::basicToken(lex::TokenType::SepComma)
 #define END lex::endToken()
+
+#define COMMA_EXPR(...) commaExprNode<std::array<NodePtr, NUM_ARGS(__VA_ARGS__)>>({__VA_ARGS__})
 
 #define CHECK_EXPR(INPUT, ...)                                                                     \
   {                                                                                                \

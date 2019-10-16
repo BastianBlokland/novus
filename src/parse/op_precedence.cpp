@@ -3,13 +3,14 @@
 
 namespace parse {
 
-const static int unaryPrecedence          = 7;
-const static int multiplicativePrecedence = 6;
-const static int additivePrecedence       = 5;
-const static int relationalPrecedence     = 4;
-const static int equalityPrecedence       = 3;
-const static int logicAndPrecedence       = 2;
-const static int logicOrPrecedence        = 1;
+const static int unaryPrecedence          = 8;
+const static int multiplicativePrecedence = 7;
+const static int additivePrecedence       = 6;
+const static int relationalPrecedence     = 5;
+const static int equalityPrecedence       = 4;
+const static int logicAndPrecedence       = 3;
+const static int logicOrPrecedence        = 2;
+const static int seperatorPrecedence      = 1;
 
 auto getUnaryOpPrecedence(const lex::Token& token) -> int {
   switch (token.getType()) {
@@ -42,6 +43,8 @@ auto getBinaryOpPrecedence(const lex::Token& token) -> int {
     return logicAndPrecedence;
   case lex::TokenType::OpPipePipe:
     return logicOrPrecedence;
+  case lex::TokenType::SepComma:
+    return seperatorPrecedence;
   default:
     return 0;
   }
