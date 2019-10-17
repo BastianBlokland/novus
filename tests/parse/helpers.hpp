@@ -2,8 +2,13 @@
 #include "catch2/catch.hpp"
 #include "lex/lexer.hpp"
 #include "lex/token.hpp"
+#include "parse/node_expr_binary.hpp"
 #include "parse/node_expr_const.hpp"
+#include "parse/node_expr_const_decl.hpp"
+#include "parse/node_expr_group.hpp"
 #include "parse/node_expr_lit.hpp"
+#include "parse/node_expr_paren.hpp"
+#include "parse/node_expr_unary.hpp"
 #include "parse/parser.hpp"
 #include <array>
 #include <string>
@@ -12,11 +17,6 @@ namespace parse {
 
 // Trick to get the number of variable args.
 #define NUM_ARGS(...) std::tuple_size<decltype(std::make_tuple(__VA_ARGS__))>::value
-
-#define INT(VAL) litExprNode(lex::litIntToken(VAL))
-#define STR(VAL) litExprNode(lex::litStrToken(VAL))
-#define BOOL(VAL) litExprNode(lex::litBoolToken(VAL))
-#define CONST(ID) constExprNode(lex::identiferToken(ID))
 
 #define MINUS lex::basicToken(lex::TokenType::OpMinus)
 #define PLUS lex::basicToken(lex::TokenType::OpPlus)
@@ -27,12 +27,19 @@ namespace parse {
 #define PIPE lex::basicToken(lex::TokenType::OpPipe)
 #define PIPEPIPE lex::basicToken(lex::TokenType::OpPipePipe)
 #define GT lex::basicToken(lex::TokenType::OpGt)
+#define EQ lex::basicToken(lex::TokenType::OpEq)
 #define EQEQ lex::basicToken(lex::TokenType::OpEqEq)
 #define SEMI lex::basicToken(lex::TokenType::OpSemi)
 #define OPAREN lex::basicToken(lex::TokenType::SepOpenParen)
 #define CPAREN lex::basicToken(lex::TokenType::SepCloseParen)
 #define COMMA lex::basicToken(lex::TokenType::SepComma)
 #define END lex::endToken()
+
+#define INT(VAL) litExprNode(lex::litIntToken(VAL))
+#define STR(VAL) litExprNode(lex::litStrToken(VAL))
+#define BOOL(VAL) litExprNode(lex::litBoolToken(VAL))
+#define CONST(ID) constExprNode(lex::identiferToken(ID))
+#define CONSTDECL(ID, EXPR) constDeclExprNode(lex::identiferToken(ID), EQ, EXPR)
 
 #define GROUP_EXPR(...) groupExprNode<std::array<NodePtr, NUM_ARGS(__VA_ARGS__)>>({__VA_ARGS__})
 

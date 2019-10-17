@@ -9,6 +9,7 @@
 #include "parse/node.hpp"
 #include "parse/node_expr_binary.hpp"
 #include "parse/node_expr_const.hpp"
+#include "parse/node_expr_const_decl.hpp"
 #include "parse/node_expr_group.hpp"
 #include "parse/node_expr_lit.hpp"
 #include "parse/node_expr_paren.hpp"
@@ -110,8 +111,14 @@ auto ParserImpl::nextExprPrimary() -> NodePtr {
   switch (nextTok.getCat()) {
   case lex::TokenCat::Literal:
     return litExprNode(consumeToken());
-  case lex::TokenCat::Identifier:
-    return constExprNode(consumeToken());
+  case lex::TokenCat::Identifier: {
+    auto id = consumeToken();
+    if (peekToken(0).getType() == lex::TokenType::OpEq) {
+      auto eq = consumeToken();
+      return constDeclExprNode(std::move(id), std::move(eq), nextExpr(groupingPrecedence));
+    }
+    return constExprNode(std::move(id));
+  }
   default:
     if (nextTok.getType() == lex::TokenType::SepOpenParen) {
       return nextParenExpr();

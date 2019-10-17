@@ -3,15 +3,6 @@
 
 namespace parse {
 
-const static int unaryPrecedence          = 8;
-const static int multiplicativePrecedence = 7;
-const static int additivePrecedence       = 6;
-const static int relationalPrecedence     = 5;
-const static int equalityPrecedence       = 4;
-const static int logicAndPrecedence       = 3;
-const static int logicOrPrecedence        = 2;
-const static int groupingPrecedence       = 1;
-
 auto getUnaryOpPrecedence(const lex::Token& token) -> int {
   switch (token.getType()) {
   case lex::TokenType::OpPlus:

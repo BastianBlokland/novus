@@ -2,9 +2,6 @@
 #include "helpers.hpp"
 #include "lex/error.hpp"
 #include "parse/error.hpp"
-#include "parse/node_expr_binary.hpp"
-#include "parse/node_expr_paren.hpp"
-#include "parse/node_expr_unary.hpp"
 
 namespace parse {
 
@@ -17,6 +14,16 @@ TEST_CASE("Parsing primary expressions", "[parse]") {
     CHECK_EXPR("12a", errLexError(lex::errLitIntInvalidChar()))
     CHECK_EXPR("->", errInvalidPrimaryExpr(lex::basicToken(lex::TokenType::SepArrow)));
     CHECK_EXPR("print", errInvalidPrimaryExpr(lex::keywordToken(lex::Keyword::Print)));
+  }
+
+  SECTION("Const declaration") {
+    CHECK_EXPR("x = 1", CONSTDECL("x", INT(1)));
+    CHECK_EXPR("x = 1; y = 2", GROUP_EXPR(CONSTDECL("x", INT(1)), CONSTDECL("y", INT(2))));
+    CHECK_EXPR(
+        "x = 1 + 2; y = 2",
+        GROUP_EXPR(CONSTDECL("x", binaryExprNode(INT(1), PLUS, INT(2))), CONSTDECL("y", INT(2))));
+
+    SECTION("Errors") { CHECK_EXPR("x =", CONSTDECL("x", errInvalidPrimaryExpr(END))); }
   }
 }
 

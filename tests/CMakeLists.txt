@@ -13,7 +13,6 @@ include(Catch)
 # 'tests' executable.
 add_executable(tests
   main.cpp
-  lex/helpers.hpp
   lex/category_test.cpp
   lex/identifier_test.cpp
   lex/iterator_test.cpp
@@ -24,7 +23,6 @@ add_executable(tests
   lex/operators_test.cpp
   lex/seperators_test.cpp
   lex/utilities_test.cpp
-  parse/helpers.hpp
   parse/iterator_test.cpp
   parse/expr_binary_test.cpp
   parse/expr_group_test.cpp
