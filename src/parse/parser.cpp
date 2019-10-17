@@ -8,8 +8,8 @@
 #include "parse/error.hpp"
 #include "parse/node.hpp"
 #include "parse/node_expr_binary.hpp"
-#include "parse/node_expr_comma.hpp"
 #include "parse/node_expr_const.hpp"
+#include "parse/node_expr_group.hpp"
 #include "parse/node_expr_lit.hpp"
 #include "parse/node_expr_paren.hpp"
 #include "parse/node_expr_unary.hpp"
@@ -61,8 +61,8 @@ auto ParserImpl::nextExpr(const int minPrecedence) -> NodePtr {
       break;
     }
 
-    if (nextToken.getType() == lex::TokenType::SepComma) {
-      lhs = nextExprComma(std::move(lhs), binPrecedence);
+    if (nextToken.getType() == lex::TokenType::OpSemi) {
+      lhs = nextExprGroup(std::move(lhs), binPrecedence);
     } else {
       auto op  = consumeToken();
       auto rhs = nextExpr(binPrecedence);
@@ -86,23 +86,23 @@ auto ParserImpl::nextExprLhs() -> NodePtr {
   return nextExprPrimary();
 }
 
-auto ParserImpl::nextExprComma(NodePtr firstExpr, const int precedence) -> NodePtr {
+auto ParserImpl::nextExprGroup(NodePtr firstExpr, const int precedence) -> NodePtr {
   auto subExprs = std::vector<NodePtr>{};
-  auto commas   = std::vector<lex::Token>{};
+  auto semis    = std::vector<lex::Token>{};
 
   subExprs.push_back(std::move(firstExpr));
-  while (peekToken(0).getType() == lex::TokenType::SepComma) {
-    commas.push_back(consumeToken());
+  while (peekToken(0).getType() == lex::TokenType::OpSemi) {
+    semis.push_back(consumeToken());
     subExprs.push_back(nextExpr(precedence));
   }
 
-  if (commas.empty()) {
+  if (semis.empty()) {
     // Getting here means this function was called for a expression that was not followed by a
-    // comma, because this is a private function of the parser we throw instead of returning an
+    // semi, because this is a private function of the parser we throw instead of returning an
     // error token.
-    throw std::logic_error("nextExprComma did not find any comma token to match");
+    throw std::logic_error("nextExprGroup did not find any semicolon token to match");
   }
-  return commaExprNode(std::move(subExprs), std::move(commas));
+  return groupExprNode(std::move(subExprs), std::move(semis));
 }
 
 auto ParserImpl::nextExprPrimary() -> NodePtr {

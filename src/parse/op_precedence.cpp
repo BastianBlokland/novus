@@ -10,7 +10,7 @@ const static int relationalPrecedence     = 5;
 const static int equalityPrecedence       = 4;
 const static int logicAndPrecedence       = 3;
 const static int logicOrPrecedence        = 2;
-const static int seperatorPrecedence      = 1;
+const static int groupingPrecedence       = 1;
 
 auto getUnaryOpPrecedence(const lex::Token& token) -> int {
   switch (token.getType()) {
@@ -43,8 +43,8 @@ auto getBinaryOpPrecedence(const lex::Token& token) -> int {
     return logicAndPrecedence;
   case lex::TokenType::OpPipePipe:
     return logicOrPrecedence;
-  case lex::TokenType::SepComma:
-    return seperatorPrecedence;
+  case lex::TokenType::OpSemi:
+    return groupingPrecedence;
   default:
     return 0;
   }

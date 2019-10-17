@@ -13,7 +13,7 @@ enum class NodeType {
   ExprConst,
   ExprConstDecl,
   ExprCall,
-  ExprComma,
+  ExprGroup,
   ExprParen,
   Error
 };

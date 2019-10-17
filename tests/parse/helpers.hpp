@@ -28,12 +28,13 @@ namespace parse {
 #define PIPEPIPE lex::basicToken(lex::TokenType::OpPipePipe)
 #define GT lex::basicToken(lex::TokenType::OpGt)
 #define EQEQ lex::basicToken(lex::TokenType::OpEqEq)
+#define SEMI lex::basicToken(lex::TokenType::OpSemi)
 #define OPAREN lex::basicToken(lex::TokenType::SepOpenParen)
 #define CPAREN lex::basicToken(lex::TokenType::SepCloseParen)
 #define COMMA lex::basicToken(lex::TokenType::SepComma)
 #define END lex::endToken()
 
-#define COMMA_EXPR(...) commaExprNode<std::array<NodePtr, NUM_ARGS(__VA_ARGS__)>>({__VA_ARGS__})
+#define GROUP_EXPR(...) groupExprNode<std::array<NodePtr, NUM_ARGS(__VA_ARGS__)>>({__VA_ARGS__})
 
 #define CHECK_EXPR(INPUT, ...)                                                                     \
   {                                                                                                \
