@@ -1,4 +1,5 @@
 #include "lex/token_cat.hpp"
+#include "lex/token_type.hpp"
 
 namespace lex {
 
@@ -47,6 +48,7 @@ auto lookupCat(const TokenType type) -> TokenCat {
   case TokenType::OpLessEq:
   case TokenType::OpGt:
   case TokenType::OpGtEq:
+  case TokenType::OpSemi:
     return TokenCat::Operator;
   case TokenType::SepOpenParen:
   case TokenType::SepCloseParen:

@@ -21,6 +21,7 @@ enum class TokenType {
   OpLessEq,
   OpGt,
   OpGtEq,
+  OpSemi,
   SepOpenParen,
   SepCloseParen,
   SepComma,

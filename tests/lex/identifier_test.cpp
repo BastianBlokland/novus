@@ -28,6 +28,11 @@ TEST_CASE("Lexing identifiers", "[lex]") {
         basicToken(TokenType::SepComma),
         identiferToken("world"));
     CHECK_TOKENS(
+        "hello;world",
+        identiferToken("hello"),
+        basicToken(TokenType::OpSemi),
+        identiferToken("world"));
+    CHECK_TOKENS(
         "hello@world", identiferToken("hello"), errInvalidChar('@'), identiferToken("world"));
     CHECK_TOKENS(
         "hello#world", identiferToken("hello"), errInvalidChar('#'), identiferToken("world"));

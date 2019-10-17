@@ -17,7 +17,6 @@ TEST_CASE("Lexing integer literals", "[lex]") {
     CHECK_TOKENS("0 0", litIntToken(0), litIntToken(0));
     CHECK_TOKENS("1 2 3", litIntToken(1), litIntToken(2), litIntToken(3));
     CHECK_TOKENS("1,2", litIntToken(1), basicToken(TokenType::SepComma), litIntToken(2));
-    CHECK_TOKENS("1;2", litIntToken(1), errInvalidChar(';'), litIntToken(2));
   }
 
   SECTION("Digit seperators") {

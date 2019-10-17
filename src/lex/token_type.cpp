@@ -52,6 +52,9 @@ auto operator<<(std::ostream& out, const TokenType& rhs) -> std::ostream& {
   case TokenType::OpGtEq:
     out << "greater-equal";
     break;
+  case TokenType::OpSemi:
+    out << "semicolon";
+    break;
   case TokenType::SepOpenParen:
     out << "open-paren";
     break;

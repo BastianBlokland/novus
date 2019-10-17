@@ -22,6 +22,7 @@ TEST_CASE("Lexing operators", "[lex]") {
   CHECK_TOKENS("<=", basicToken(TokenType::OpLessEq));
   CHECK_TOKENS(">", basicToken(TokenType::OpGt));
   CHECK_TOKENS(">=", basicToken(TokenType::OpGtEq));
+  CHECK_TOKENS(";", basicToken(TokenType::OpSemi));
 }
 
 } // namespace lex
