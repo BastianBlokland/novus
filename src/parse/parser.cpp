@@ -115,7 +115,7 @@ auto ParserImpl::nextExprPrimary() -> NodePtr {
     auto id = consumeToken();
     if (peekToken(0).getType() == lex::TokenType::OpEq) {
       auto eq = consumeToken();
-      return constDeclExprNode(std::move(id), std::move(eq), nextExpr(groupingPrecedence));
+      return constDeclExprNode(std::move(id), std::move(eq), nextExpr(assignmentPrecedence));
     }
     return constExprNode(std::move(id));
   }
