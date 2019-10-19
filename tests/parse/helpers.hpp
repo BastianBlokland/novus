@@ -1,7 +1,9 @@
 #pragma once
 #include "catch2/catch.hpp"
+#include "lex/error.hpp"
 #include "lex/lexer.hpp"
 #include "lex/token.hpp"
+#include "parse/error.hpp"
 #include "parse/node_expr_binary.hpp"
 #include "parse/node_expr_const.hpp"
 #include "parse/node_expr_const_decl.hpp"
@@ -12,11 +14,9 @@
 #include "parse/parser.hpp"
 #include <array>
 #include <string>
+#include <type_traits>
 
 namespace parse {
-
-// Trick to get the number of variable args.
-#define NUM_ARGS(...) std::tuple_size<decltype(std::make_tuple(__VA_ARGS__))>::value
 
 #define MINUS lex::basicToken(lex::TokenType::OpMinus)
 #define PLUS lex::basicToken(lex::TokenType::OpPlus)
@@ -30,18 +30,19 @@ namespace parse {
 #define EQ lex::basicToken(lex::TokenType::OpEq)
 #define EQEQ lex::basicToken(lex::TokenType::OpEqEq)
 #define SEMI lex::basicToken(lex::TokenType::OpSemi)
+#define SEMIS(COUNT) std::vector<lex::Token>(COUNT, lex::basicToken(lex::TokenType::OpSemi))
 #define OPAREN lex::basicToken(lex::TokenType::SepOpenParen)
 #define CPAREN lex::basicToken(lex::TokenType::SepCloseParen)
 #define COMMA lex::basicToken(lex::TokenType::SepComma)
+#define COMMAS(COUNT) std::vector<lex::Token>(COUNT, lex::basicToken(lex::TokenType::SepComma))
 #define END lex::endToken()
 
+#define ID(ID) lex::identiferToken(ID)
 #define INT(VAL) litExprNode(lex::litIntToken(VAL))
 #define STR(VAL) litExprNode(lex::litStrToken(VAL))
 #define BOOL(VAL) litExprNode(lex::litBoolToken(VAL))
 #define CONST(ID) constExprNode(lex::identiferToken(ID))
 #define CONSTDECL(ID, EXPR) constDeclExprNode(lex::identiferToken(ID), EQ, EXPR)
-
-#define GROUP_EXPR(...) groupExprNode<std::array<NodePtr, NUM_ARGS(__VA_ARGS__)>>({__VA_ARGS__})
 
 #define CHECK_EXPR(INPUT, ...)                                                                     \
   {                                                                                                \
@@ -58,5 +59,17 @@ namespace parse {
     }                                                                                              \
     REQUIRE(parser.nextExpr() == nullptr);                                                         \
   }
+
+template <typename Array>
+inline auto arrayMoveToVec(Array c) {
+  auto result = std::vector<typename Array::value_type>{};
+  for (auto& elem : c) {
+    result.push_back(std::move(elem));
+  }
+  return result;
+}
+
+#define NUM_ARGS(...) std::tuple_size<decltype(std::make_tuple(__VA_ARGS__))>::value
+#define NODES(...) arrayMoveToVec<std::array<NodePtr, NUM_ARGS(__VA_ARGS__)>>({__VA_ARGS__})
 
 } // namespace parse

@@ -43,8 +43,7 @@ public:
                m_subExprs.begin(),
                m_subExprs.end(),
                r->m_subExprs.begin(),
-               [](const NodePtr& l, const NodePtr& r) { return *l == *r; }) &&
-        m_semis == r->m_semis;
+               [](const NodePtr& l, const NodePtr& r) { return *l == *r; });
   }
 
   auto operator!=(const Node& rhs) const noexcept -> bool override {
@@ -74,17 +73,6 @@ private:
 // Factories.
 inline auto groupExprNode(std::vector<NodePtr> subExprs, std::vector<lex::Token> semis) -> NodePtr {
   return std::make_unique<GroupExprNode>(std::move(subExprs), std::move(semis));
-}
-
-template <typename Container>
-inline auto groupExprNode(Container subExprs) -> NodePtr {
-  auto subExprsVec = std::vector<NodePtr>{};
-  for (auto& subExpr : subExprs) {
-    subExprsVec.push_back(std::move(subExpr));
-  }
-  return std::make_unique<GroupExprNode>(
-      std::move(subExprsVec),
-      std::vector<lex::Token>(subExprs.size() - 1, lex::basicToken(lex::TokenType::OpSemi)));
 }
 
 } // namespace parse

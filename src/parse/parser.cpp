@@ -8,6 +8,7 @@
 #include "parse/error.hpp"
 #include "parse/node.hpp"
 #include "parse/node_expr_binary.hpp"
+#include "parse/node_expr_call.hpp"
 #include "parse/node_expr_const.hpp"
 #include "parse/node_expr_const_decl.hpp"
 #include "parse/node_expr_group.hpp"
@@ -97,12 +98,6 @@ auto ParserImpl::nextExprGroup(NodePtr firstExpr, const int precedence) -> NodeP
     subExprs.push_back(nextExpr(precedence));
   }
 
-  if (semis.empty()) {
-    // Getting here means this function was called for a expression that was not followed by a
-    // semi, because this is a private function of the parser we throw instead of returning an
-    // error token.
-    throw std::logic_error("nextExprGroup did not find any semicolon token to match");
-  }
   return groupExprNode(std::move(subExprs), std::move(semis));
 }
 
@@ -117,26 +112,51 @@ auto ParserImpl::nextExprPrimary() -> NodePtr {
       auto eq = consumeToken();
       return constDeclExprNode(std::move(id), std::move(eq), nextExpr(assignmentPrecedence));
     }
+    if (peekToken(0).getType() == lex::TokenType::SepOpenParen) {
+      return nextExprCall(std::move(id));
+    }
     return constExprNode(std::move(id));
   }
   default:
     if (nextTok.getType() == lex::TokenType::SepOpenParen) {
-      return nextParenExpr();
+      return nextExprParen();
     }
     return errInvalidPrimaryExpr(consumeToken());
   }
 }
 
-auto ParserImpl::nextParenExpr() -> NodePtr {
-  auto openTok  = consumeToken();
-  auto expr     = nextExpr(0);
-  auto closeTok = consumeToken();
-
-  if (openTok.getType() == lex::TokenType::SepOpenParen &&
-      closeTok.getType() == lex::TokenType::SepCloseParen) {
-    return parenExprNode(openTok, std::move(expr), closeTok);
+auto ParserImpl::nextExprCall(lex::Token id) -> NodePtr {
+  auto open   = consumeToken();
+  auto args   = std::vector<NodePtr>{};
+  auto commas = std::vector<lex::Token>{};
+  while (peekToken(0).getType() != lex::TokenType::SepCloseParen && !peekToken(0).isEnd()) {
+    args.push_back(nextExpr(0));
+    if (peekToken(0).getType() == lex::TokenType::SepComma) {
+      commas.push_back(consumeToken());
+    }
   }
-  return errInvalidParenExpr(openTok, std::move(expr), closeTok);
+  auto close = consumeToken();
+
+  if (open.getType() == lex::TokenType::SepOpenParen &&
+      close.getType() == lex::TokenType::SepCloseParen &&
+      commas.size() == (args.empty() ? 0 : args.size() - 1)) {
+    return callExprNode(
+        std::move(id), std::move(open), std::move(args), std::move(commas), std::move(close));
+  }
+  return errInvalidCallExpr(
+      std::move(id), std::move(open), std::move(args), std::move(commas), std::move(close));
+}
+
+auto ParserImpl::nextExprParen() -> NodePtr {
+  auto open  = consumeToken();
+  auto expr  = nextExpr(0);
+  auto close = consumeToken();
+
+  if (open.getType() == lex::TokenType::SepOpenParen &&
+      close.getType() == lex::TokenType::SepCloseParen) {
+    return parenExprNode(open, std::move(expr), close);
+  }
+  return errInvalidParenExpr(open, std::move(expr), close);
 }
 
 auto ParserImpl::consumeToken() -> lex::Token {

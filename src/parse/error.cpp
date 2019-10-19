@@ -66,4 +66,33 @@ auto errInvalidParenExpr(lex::Token open, NodePtr expr, lex::Token close) -> Nod
   return errorNode(oss.str(), std::move(tokens), std::move(subExprs));
 }
 
+auto errInvalidCallExpr(
+    lex::Token id,
+    lex::Token open,
+    std::vector<NodePtr> args,
+    std::vector<lex::Token> commas,
+    lex::Token close) -> NodePtr {
+
+  std::ostringstream oss;
+  if (commas.size() != (args.empty() ? 0 : args.size() - 1)) {
+    oss << "Incorrect number of comma's in call expression";
+  } else if (open.getType() != lex::TokenType::SepOpenParen) {
+    oss << "Expected opening parentheses but got: " << open;
+  } else if (close.getType() != lex::TokenType::SepCloseParen) {
+    oss << "Expected closing parentheses but got: " << close;
+  } else {
+    oss << "Invalid call expression";
+  }
+
+  auto tokens = std::vector<lex::Token>{};
+  tokens.push_back(std::move(id));
+  tokens.push_back(std::move(open));
+  for (auto& comma : commas) {
+    tokens.push_back(std::move(comma));
+  }
+  tokens.push_back(std::move(close));
+
+  return errorNode(oss.str(), std::move(tokens), std::move(args));
+}
+
 } // namespace parse

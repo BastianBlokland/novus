@@ -17,4 +17,11 @@ auto errInvalidUnaryOp(lex::Token op, NodePtr rhs) -> NodePtr;
 
 auto errInvalidParenExpr(lex::Token open, NodePtr expr, lex::Token close) -> NodePtr;
 
+auto errInvalidCallExpr(
+    lex::Token id,
+    lex::Token open,
+    std::vector<NodePtr> args,
+    std::vector<lex::Token> commas,
+    lex::Token close) -> NodePtr;
+
 } // namespace parse

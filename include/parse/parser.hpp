@@ -26,7 +26,8 @@ private:
   auto nextExprLhs() -> NodePtr;
   auto nextExprGroup(NodePtr firstExpr, int precedence) -> NodePtr;
   auto nextExprPrimary() -> NodePtr;
-  auto nextParenExpr() -> NodePtr;
+  auto nextExprCall(lex::Token id) -> NodePtr;
+  auto nextExprParen() -> NodePtr;
 
   auto consumeToken() -> lex::Token;
   auto peekToken(size_t ahead) -> lex::Token&;
