@@ -26,4 +26,6 @@ auto errInvalidCallExpr(
 
 auto errInvalidSwitchIf(lex::Token kw, NodePtr cond, lex::Token arrow, NodePtr rhs) -> NodePtr;
 
+auto errInvalidSwitchElse(lex::Token kw, lex::Token arrow, NodePtr rhs) -> NodePtr;
+
 } // namespace parse

@@ -14,6 +14,7 @@
 #include "parse/node_expr_group.hpp"
 #include "parse/node_expr_lit.hpp"
 #include "parse/node_expr_paren.hpp"
+#include "parse/node_expr_switch_else.hpp"
 #include "parse/node_expr_switch_if.hpp"
 #include "parse/node_expr_unary.hpp"
 #include "parse/node_stmt_print.hpp"
@@ -164,6 +165,17 @@ auto ParserImpl::nextExprSwitchIf() -> NodePtr {
     return switchExprIfNode(kw, std::move(cond), arrow, std::move(expr));
   }
   return errInvalidSwitchIf(kw, std::move(cond), arrow, std::move(expr));
+}
+
+auto ParserImpl::nextExprSwitchElse() -> NodePtr {
+  auto kw    = consumeToken();
+  auto arrow = consumeToken();
+  auto expr  = nextExpr(0);
+
+  if (getKw(kw) == lex::Keyword::Else && arrow.getType() == lex::TokenType::SepArrow) {
+    return switchExprElseNode(kw, arrow, std::move(expr));
+  }
+  return errInvalidSwitchElse(kw, arrow, std::move(expr));
 }
 
 auto ParserImpl::consumeToken() -> lex::Token {

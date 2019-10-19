@@ -10,6 +10,7 @@ enum class NodeType {
   ExprBinaryOp,
   ExprSwitch,
   ExprSwitchIf,
+  ExprSwitchElse,
   ExprLit,
   ExprConst,
   ExprConstDecl,

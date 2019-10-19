@@ -101,7 +101,7 @@ auto errInvalidSwitchIf(lex::Token kw, NodePtr cond, lex::Token arrow, NodePtr r
   if (getKw(kw) != lex::Keyword::If) {
     oss << "Expected keyword 'if' but got: " << kw;
   } else if (arrow.getType() != lex::TokenType::SepArrow) {
-    oss << "Expected arrow ('->') but got: " << arrow;
+    oss << "Expected arrow '->' but got: " << arrow;
   } else {
     oss << "Invalid if clause";
   }
@@ -112,6 +112,26 @@ auto errInvalidSwitchIf(lex::Token kw, NodePtr cond, lex::Token arrow, NodePtr r
 
   auto nodes = std::vector<NodePtr>{};
   nodes.push_back(std::move(cond));
+  nodes.push_back(std::move(rhs));
+
+  return errorNode(oss.str(), std::move(tokens), std::move(nodes));
+}
+
+auto errInvalidSwitchElse(lex::Token kw, lex::Token arrow, NodePtr rhs) -> NodePtr {
+  std::ostringstream oss;
+  if (getKw(kw) != lex::Keyword::Else) {
+    oss << "Expected keyword 'else' but got: " << kw;
+  } else if (arrow.getType() != lex::TokenType::SepArrow) {
+    oss << "Expected arrow '->' but got: " << arrow;
+  } else {
+    oss << "Invalid else clause";
+  }
+
+  auto tokens = std::vector<lex::Token>{};
+  tokens.push_back(std::move(kw));
+  tokens.push_back(std::move(arrow));
+
+  auto nodes = std::vector<NodePtr>{};
   nodes.push_back(std::move(rhs));
 
   return errorNode(oss.str(), std::move(tokens), std::move(nodes));
