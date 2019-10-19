@@ -14,8 +14,10 @@
 #include "parse/node_expr_group.hpp"
 #include "parse/node_expr_lit.hpp"
 #include "parse/node_expr_paren.hpp"
+#include "parse/node_expr_switch_if.hpp"
 #include "parse/node_expr_unary.hpp"
 #include "parse/node_stmt_print.hpp"
+#include "parse/utilities.hpp"
 #include <memory>
 #include <stdexcept>
 #include <vector>
@@ -23,13 +25,6 @@
 namespace parse {
 
 namespace internal {
-
-static auto getKw(const lex::Token& token) -> std::optional<lex::Keyword> {
-  if (token.getType() != lex::TokenType::Keyword) {
-    return std::nullopt;
-  }
-  return token.getPayload<lex::KeywordTokenPayload>()->getKeyword();
-}
 
 auto ParserImpl::next() -> NodePtr { return nextStmt(); }
 
@@ -157,6 +152,18 @@ auto ParserImpl::nextExprParen() -> NodePtr {
     return parenExprNode(open, std::move(expr), close);
   }
   return errInvalidParenExpr(open, std::move(expr), close);
+}
+
+auto ParserImpl::nextExprSwitchIf() -> NodePtr {
+  auto kw    = consumeToken();
+  auto cond  = nextExpr(0);
+  auto arrow = consumeToken();
+  auto expr  = nextExpr(0);
+
+  if (getKw(kw) == lex::Keyword::If && arrow.getType() == lex::TokenType::SepArrow) {
+    return switchExprIfNode(kw, std::move(cond), arrow, std::move(expr));
+  }
+  return errInvalidSwitchIf(kw, std::move(cond), arrow, std::move(expr));
 }
 
 auto ParserImpl::consumeToken() -> lex::Token {

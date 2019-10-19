@@ -1,5 +1,7 @@
 #pragma once
+#include "lex/token.hpp"
 #include <algorithm>
+#include <optional>
 
 namespace parse {
 
@@ -10,6 +12,13 @@ auto cloneSet(const Container& cont) -> Container {
     return n->clone();
   });
   return result;
+}
+
+inline auto getKw(const lex::Token& token) -> std::optional<lex::Keyword> {
+  if (token.getType() != lex::TokenType::Keyword) {
+    return std::nullopt;
+  }
+  return token.getPayload<lex::KeywordTokenPayload>()->getKeyword();
 }
 
 } // namespace parse

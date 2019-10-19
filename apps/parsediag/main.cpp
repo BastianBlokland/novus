@@ -117,6 +117,7 @@ auto getFgColor(const parse::Node& node) -> rang::fg {
   case nt::ExprBinaryOp:
   case nt::ExprUnaryOp:
   case nt::ExprSwitch:
+  case nt::ExprSwitchIf:
   case nt::ExprGroup:
   case nt::ExprParen:
     return rang::fg::green;

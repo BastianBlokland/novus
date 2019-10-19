@@ -24,4 +24,6 @@ auto errInvalidCallExpr(
     std::vector<lex::Token> commas,
     lex::Token close) -> NodePtr;
 
+auto errInvalidSwitchIf(lex::Token kw, NodePtr cond, lex::Token arrow, NodePtr rhs) -> NodePtr;
+
 } // namespace parse

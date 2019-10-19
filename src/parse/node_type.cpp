@@ -19,6 +19,9 @@ auto operator<<(std::ostream& out, const NodeType& rhs) -> std::ostream& {
   case NodeType::ExprSwitch:
     out << "expr-switch";
     break;
+  case NodeType::ExprSwitchIf:
+    out << "expr-switch-if";
+    break;
   case NodeType::ExprLit:
     out << "expr-lit";
     break;
