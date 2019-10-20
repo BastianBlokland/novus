@@ -18,12 +18,6 @@ public:
       m_eq{std::move(eq)},
       m_rhs{std::move(rhs)} {
 
-    if (m_id.getType() != lex::TokenType::Identifier) {
-      throw std::invalid_argument("Given token is not an identifier");
-    }
-    if (m_eq.getType() != lex::TokenType::OpEq) {
-      throw std::invalid_argument("Given equals token is not valid");
-    }
     if (m_rhs == nullptr) {
       throw std::invalid_argument("Rhs cannot be null");
     }

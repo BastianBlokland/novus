@@ -12,11 +12,7 @@ class LitExprNode final : public Node {
 public:
   LitExprNode() = delete;
 
-  explicit LitExprNode(lex::Token val) : Node(NodeType::ExprLit), m_val{std::move(val)} {
-    if (m_val.getCat() != lex::TokenCat::Literal) {
-      throw std::invalid_argument("Given token is not a literal");
-    }
-  }
+  explicit LitExprNode(lex::Token val) : Node(NodeType::ExprLit), m_val{std::move(val)} {}
 
   auto operator==(const Node& rhs) const noexcept -> bool override {
     const auto r = dynamic_cast<const LitExprNode*>(&rhs);

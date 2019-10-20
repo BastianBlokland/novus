@@ -18,10 +18,13 @@
 #include "parse/node_expr_switch_else.hpp"
 #include "parse/node_expr_switch_if.hpp"
 #include "parse/node_expr_unary.hpp"
+#include "parse/node_stmt_func_decl.hpp"
 #include "parse/node_stmt_print.hpp"
 #include "parse/utilities.hpp"
+#include <algorithm>
 #include <memory>
 #include <stdexcept>
+#include <utility>
 #include <vector>
 
 namespace parse {
@@ -34,12 +37,17 @@ auto ParserImpl::nextStmt() -> NodePtr {
   if (peekToken(0).isEnd()) {
     return nullptr;
   }
-  auto token = consumeToken();
-  auto kwOpt = getKw(token);
-  if (kwOpt && kwOpt.value() == lex::Keyword::Print) {
-    return printStmtNode(token, nextExpr(0));
+  if (getKw(peekToken(0)) == lex::Keyword::Print) {
+    return nextStmtPrint();
   }
-  return errInvalidStmtStart(token);
+
+  if (peekToken(0).getType() == lex::TokenType::Identifier &&
+      peekToken(1).getType() == lex::TokenType::Identifier &&
+      peekToken(2).getType() == lex::TokenType::SepOpenParen) {
+    return nextStmtFuncDecl();
+  }
+
+  return errInvalidStmt(consumeToken());
 }
 
 auto ParserImpl::nextExpr() -> NodePtr {
@@ -47,6 +55,64 @@ auto ParserImpl::nextExpr() -> NodePtr {
     return nullptr;
   }
   return nextExpr(0);
+}
+
+auto ParserImpl::nextStmtFuncDecl() -> NodePtr {
+  auto retType = consumeToken();
+  auto id      = consumeToken();
+  auto open    = consumeToken();
+  auto args    = std::vector<std::pair<lex::Token, lex::Token>>{};
+  auto commas  = std::vector<lex::Token>{};
+  while (peekToken(0).getType() != lex::TokenType::SepCloseParen && !peekToken(0).isEnd()) {
+    auto argType = consumeToken();
+    auto argId   = consumeToken();
+    args.emplace_back(argType, argId);
+    if (peekToken(0).getType() == lex::TokenType::SepComma) {
+      commas.push_back(consumeToken());
+    }
+  }
+  auto close = consumeToken();
+  auto body  = nextExpr(0);
+
+  if (retType.getType() == lex::TokenType::Identifier &&
+      id.getType() == lex::TokenType::Identifier &&
+      open.getType() == lex::TokenType::SepOpenParen &&
+      close.getType() == lex::TokenType::SepCloseParen &&
+      std::all_of(
+          args.begin(),
+          args.end(),
+          [](const auto& a) {
+            return a.first.getType() == lex::TokenType::Identifier &&
+                a.second.getType() == lex::TokenType::Identifier;
+          }) &&
+      commas.size() == (args.empty() ? 0 : args.size() - 1)) {
+
+    return funcDeclStmtNode(
+        std::move(retType),
+        std::move(id),
+        std::move(open),
+        std::move(args),
+        std::move(commas),
+        std::move(close),
+        std::move(body));
+  }
+  return errInvalidStmtFuncDecl(
+      std::move(retType),
+      std::move(id),
+      std::move(open),
+      args,
+      std::move(commas),
+      std::move(close),
+      std::move(body));
+}
+
+auto ParserImpl::nextStmtPrint() -> NodePtr {
+  auto kw   = consumeToken();
+  auto body = nextExpr(0);
+  if (getKw(kw) == lex::Keyword::Print) {
+    return printStmtNode(kw, std::move(body));
+  }
+  return errInvalidStmtPrint(kw, std::move(body));
 }
 
 auto ParserImpl::nextExpr(const int minPrecedence) -> NodePtr {

@@ -23,14 +23,16 @@ add_executable(tests
   lex/operators_test.cpp
   lex/seperators_test.cpp
   lex/utilities_test.cpp
-  parse/iterator_test.cpp
   parse/expr_binary_test.cpp
   parse/expr_call_test.cpp
   parse/expr_group_test.cpp
   parse/expr_paren_test.cpp
   parse/expr_primary_test.cpp
   parse/expr_switch_test.cpp
-  parse/expr_unary_test.cpp)
+  parse/expr_unary_test.cpp
+  parse/iterator_test.cpp
+  parse/stmt_func_decl_test.cpp
+  parse/stmt_print_test.cpp)
 target_compile_features(tests PRIVATE cxx_std_17)
 target_compile_options(tests PRIVATE -Werror -Wall -Wextra)
 target_include_directories(tests PRIVATE lex)

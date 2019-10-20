@@ -20,12 +20,6 @@ public:
       m_arrow{std::move(arrow)},
       m_rhs{std::move(rhs)} {
 
-    if (getKw(m_kw) != lex::Keyword::Else) {
-      throw std::invalid_argument("Incorrect keyword for else clause");
-    }
-    if (m_arrow.getType() != lex::TokenType::SepArrow) {
-      throw std::invalid_argument("Incorrect seperator token");
-    }
     if (m_rhs == nullptr) {
       throw std::invalid_argument("Rhs cannot be null");
     }

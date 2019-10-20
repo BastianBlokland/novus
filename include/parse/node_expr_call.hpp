@@ -22,6 +22,7 @@ public:
       std::vector<NodePtr> args,
       std::vector<lex::Token> commas,
       lex::Token close) :
+
       Node(NodeType::ExprCall),
       m_id{std::move(id)},
       m_open{std::move(open)},
@@ -29,25 +30,11 @@ public:
       m_commas{std::move(commas)},
       m_close{std::move(close)} {
 
-    if (m_id.getType() != lex::TokenType::Identifier) {
-      throw std::invalid_argument("Given token is not an identifier");
-    }
-    if (m_open.getType() != lex::TokenType::SepOpenParen) {
-      throw std::invalid_argument("Open token is not a opening parentheses");
-    }
     if (std::any_of(m_args.begin(), m_args.end(), [](const NodePtr& p) { return p == nullptr; })) {
       throw std::invalid_argument("args cannot contain a nullptr");
     }
     if (m_args.empty() ? !m_commas.empty() : m_commas.size() != m_args.size() - 1) {
       throw std::invalid_argument("Incorrect number of commas");
-    }
-    if (std::any_of(m_commas.begin(), m_commas.end(), [](const lex::Token& t) {
-          return t.getType() != lex::TokenType::SepComma;
-        })) {
-      throw std::invalid_argument("Cannot contain a non-comma token");
-    }
-    if (m_close.getType() != lex::TokenType::SepCloseParen) {
-      throw std::invalid_argument("Close token is not a closing parentheses");
     }
   }
 

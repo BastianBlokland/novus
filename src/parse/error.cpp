@@ -19,13 +19,60 @@ auto errLexError(lex::Token errToken) -> NodePtr {
   return errorNode(msg, std::move(errToken));
 }
 
-auto errInvalidStmtStart(lex::Token token) -> NodePtr {
+auto errInvalidStmt(lex::Token token) -> NodePtr {
   if (token.isError()) {
     return errLexError(token);
   }
   std::ostringstream oss;
-  oss << "Invalid statement start: " << token;
+  oss << "Invalid statement: " << token;
   return errorNode(oss.str(), std::move(token));
+}
+
+auto errInvalidStmtFuncDecl(
+    lex::Token retType,
+    lex::Token id,
+    lex::Token open,
+    const std::vector<std::pair<lex::Token, lex::Token>>& args,
+    std::vector<lex::Token> commas,
+    lex::Token close,
+    NodePtr body) -> NodePtr {
+
+  std::ostringstream oss;
+  if (retType.getType() != lex::TokenType::Identifier) {
+    oss << "Expected return-type identifier but got: " << retType;
+  } else if (id.getType() != lex::TokenType::Identifier) {
+    oss << "Expected function identifier but got: " << id;
+  } else if (open.getType() != lex::TokenType::SepOpenParen) {
+    oss << "Expected opening parentheses but got: " << open;
+  } else if (commas.size() != (args.empty() ? 0 : args.size() - 1)) {
+    oss << "Incorrect number of comma's in function declaration";
+  } else if (close.getType() != lex::TokenType::SepCloseParen) {
+    oss << "Expected closing parentheses but got: " << close;
+  } else {
+    oss << "Invalid function declaration";
+  }
+
+  auto tokens = std::vector<lex::Token>{};
+  tokens.push_back(std::move(retType));
+  tokens.push_back(std::move(id));
+  tokens.push_back(std::move(open));
+  for (auto& arg : args) {
+    tokens.push_back(arg.first);
+    tokens.push_back(arg.second);
+  }
+  for (auto& comma : commas) {
+    tokens.push_back(std::move(comma));
+  }
+  tokens.push_back(std::move(close));
+
+  auto nodes = std::vector<std::unique_ptr<Node>>{};
+  nodes.push_back(std::move(body));
+
+  return errorNode(oss.str(), std::move(tokens), std::move(nodes));
+}
+
+auto errInvalidStmtPrint(lex::Token kw, NodePtr body) -> NodePtr {
+  return errorNode("Invalid print statement", std::move(kw), std::move(body));
 }
 
 auto errInvalidPrimaryExpr(lex::Token token) -> NodePtr {

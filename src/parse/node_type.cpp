@@ -4,8 +4,8 @@ namespace parse {
 
 auto operator<<(std::ostream& out, const NodeType& rhs) -> std::ostream& {
   switch (rhs) {
-  case NodeType::StmtFunDecl:
-    out << "stmt-fun-decl";
+  case NodeType::StmtFuncDecl:
+    out << "stmt-func-decl";
     break;
   case NodeType::StmtPrint:
     out << "stmt-print";

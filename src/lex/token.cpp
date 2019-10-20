@@ -61,7 +61,7 @@ auto operator<<(std::ostream& out, const Token& rhs) -> std::ostream& {
   out << rhs.getType();
   const auto payload = rhs.getPayload();
   if (payload) {
-    out << '-' << '\'' << *payload << '\'';
+    out << '-' << *payload;
   }
   return out;
 }

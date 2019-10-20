@@ -29,11 +29,6 @@ public:
     if (m_semis.size() != m_subExprs.size() - 1) {
       throw std::invalid_argument("Incorrect number of semicolons");
     }
-    if (std::any_of(m_semis.begin(), m_semis.end(), [](const lex::Token& t) {
-          return t.getType() != lex::TokenType::OpSemi;
-        })) {
-      throw std::invalid_argument("Cannot contain a non-semicolon token");
-    }
   }
 
   auto operator==(const Node& rhs) const noexcept -> bool override {

@@ -9,7 +9,18 @@ namespace parse {
 
 auto errLexError(lex::Token errToken) -> NodePtr;
 
-auto errInvalidStmtStart(lex::Token token) -> NodePtr;
+auto errInvalidStmt(lex::Token token) -> NodePtr;
+
+auto errInvalidStmtFuncDecl(
+    lex::Token retType,
+    lex::Token id,
+    lex::Token open,
+    const std::vector<std::pair<lex::Token, lex::Token>>& args,
+    std::vector<lex::Token> commas,
+    lex::Token close,
+    NodePtr body) -> NodePtr;
+
+auto errInvalidStmtPrint(lex::Token kw, NodePtr body) -> NodePtr;
 
 auto errInvalidPrimaryExpr(lex::Token token) -> NodePtr;
 

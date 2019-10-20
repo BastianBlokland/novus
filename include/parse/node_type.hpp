@@ -4,7 +4,7 @@
 namespace parse {
 
 enum class NodeType {
-  StmtFunDecl,
+  StmtFuncDecl,
   StmtPrint,
   ExprUnaryOp,
   ExprBinaryOp,

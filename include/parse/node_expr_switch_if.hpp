@@ -21,14 +21,8 @@ public:
       m_arrow{std::move(arrow)},
       m_rhs{std::move(rhs)} {
 
-    if (getKw(m_kw) != lex::Keyword::If) {
-      throw std::invalid_argument("Incorrect keyword for if clause");
-    }
     if (m_cond == nullptr) {
       throw std::invalid_argument("Condition expr cannot be null");
-    }
-    if (m_arrow.getType() != lex::TokenType::SepArrow) {
-      throw std::invalid_argument("Incorrect seperator token");
     }
     if (m_rhs == nullptr) {
       throw std::invalid_argument("Rhs cannot be null");

@@ -22,6 +22,9 @@ protected:
 private:
   std::deque<lex::Token> m_readBuffer;
 
+  auto nextStmtFuncDecl() -> NodePtr;
+  auto nextStmtPrint() -> NodePtr;
+
   auto nextExpr(int minPrecedence) -> NodePtr;
   auto nextExprLhs() -> NodePtr;
   auto nextExprGroup(NodePtr firstExpr, int precedence) -> NodePtr;

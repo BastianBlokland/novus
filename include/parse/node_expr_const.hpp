@@ -12,11 +12,7 @@ class ConstExprNode final : public Node {
 public:
   ConstExprNode() = delete;
 
-  explicit ConstExprNode(lex::Token id) : Node(NodeType::ExprConst), m_id{std::move(id)} {
-    if (m_id.getType() != lex::TokenType::Identifier) {
-      throw std::invalid_argument("Given token is not an identifier");
-    }
-  }
+  explicit ConstExprNode(lex::Token id) : Node(NodeType::ExprConst), m_id{std::move(id)} {}
 
   auto operator==(const Node& rhs) const noexcept -> bool override {
     const auto r = dynamic_cast<const ConstExprNode*>(&rhs);

@@ -21,9 +21,6 @@ public:
     if (m_lhs == nullptr) {
       throw std::invalid_argument("Lhs cannot be null");
     }
-    if (m_op.getCat() != lex::TokenCat::Operator) {
-      throw std::invalid_argument("Given token is not an operator");
-    }
     if (m_rhs == nullptr) {
       throw std::invalid_argument("Rhs cannot be null");
     }

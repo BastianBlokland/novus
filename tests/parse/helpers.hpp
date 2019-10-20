@@ -38,6 +38,7 @@ namespace parse {
 #define ARROW lex::basicToken(lex::TokenType::SepArrow)
 #define IF lex::keywordToken(lex::Keyword::If)
 #define ELSE lex::keywordToken(lex::Keyword::Else)
+#define PRINT lex::keywordToken(lex::Keyword::Print)
 #define END lex::endToken()
 
 #define ID(ID) lex::identiferToken(ID)
@@ -61,6 +62,22 @@ namespace parse {
         REQUIRE(false);                                                                            \
     }                                                                                              \
     REQUIRE(parser.nextExpr() == nullptr);                                                         \
+  }
+
+#define CHECK_STMT(INPUT, ...)                                                                     \
+  {                                                                                                \
+    std::string input  = INPUT;                                                                    \
+    auto lexer         = lex::Lexer{input.begin(), input.end()};                                   \
+    auto parser        = parse::Parser{lexer.begin(), lexer.end()};                                \
+    auto expectedNodes = {__VA_ARGS__};                                                            \
+    for (const auto& expectedNode : expectedNodes) {                                               \
+      auto stmt = parser.nextStmt();                                                               \
+      if (stmt)                                                                                    \
+        CHECK(*stmt == *expectedNode);                                                             \
+      else                                                                                         \
+        REQUIRE(false);                                                                            \
+    }                                                                                              \
+    REQUIRE(parser.nextStmt() == nullptr);                                                         \
   }
 
 template <typename Array>
