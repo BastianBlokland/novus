@@ -1,4 +1,4 @@
-#include "lex/token.hpp"
+#include "lex/source_span.hpp"
 #include <stdexcept>
 
 namespace lex {
@@ -31,6 +31,10 @@ auto SourceSpan::operator>(const SourceSpan& rhs) const noexcept -> bool {
 auto SourceSpan::operator<(const int& rhs) const noexcept -> bool { return m_end < rhs; }
 
 auto SourceSpan::operator>(const int& rhs) const noexcept -> bool { return m_start > rhs; }
+
+auto SourceSpan::combine(SourceSpan a, SourceSpan b) -> SourceSpan {
+  return SourceSpan{std::min(a.m_start, b.m_start), std::max(a.m_end, b.m_end)};
+}
 
 auto operator<<(std::ostream& out, const SourceSpan& rhs) -> std::ostream& {
   out << rhs.getStart() << '-' << rhs.getEnd();

@@ -24,7 +24,7 @@ public:
   [[nodiscard]] auto getEnd() const noexcept { return m_end; }
 
   template <typename SpanItr>
-  static auto combine(SpanItr begin, const SpanItr end) -> std::optional<SourceSpan> {
+  [[nodiscard]] static auto combine(SpanItr begin, const SpanItr end) -> std::optional<SourceSpan> {
     static_assert(
         std::is_same<typename std::iterator_traits<SpanItr>::value_type, SourceSpan>::value,
         "Valuetype of input iterator has to be 'SourceSpan'");
@@ -34,6 +34,8 @@ public:
     auto minmax = std::minmax_element(begin, end);
     return SourceSpan{minmax.first->getStart(), minmax.second->getEnd()};
   }
+
+  [[nodiscard]] static auto combine(SourceSpan a, SourceSpan b) -> SourceSpan;
 
 private:
   int m_start, m_end;

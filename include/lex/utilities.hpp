@@ -6,7 +6,8 @@
 namespace lex {
 
 template <typename InputItr>
-auto findToken(InputItr begin, const InputItr end, const int sourcePos) -> std::optional<Token> {
+[[nodiscard]] auto findToken(InputItr begin, const InputItr end, const int sourcePos)
+    -> std::optional<Token> {
 
   static_assert(
       std::is_same<typename std::iterator_traits<InputItr>::value_type, Token>::value,
