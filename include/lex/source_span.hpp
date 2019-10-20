@@ -1,4 +1,6 @@
 #pragma once
+#include <algorithm>
+#include <optional>
 #include <ostream>
 
 namespace lex {
@@ -20,6 +22,18 @@ public:
 
   [[nodiscard]] auto getStart() const noexcept { return m_start; }
   [[nodiscard]] auto getEnd() const noexcept { return m_end; }
+
+  template <typename SpanItr>
+  static auto combine(SpanItr begin, const SpanItr end) -> std::optional<SourceSpan> {
+    static_assert(
+        std::is_same<typename std::iterator_traits<SpanItr>::value_type, SourceSpan>::value,
+        "Valuetype of input iterator has to be 'SourceSpan'");
+    if (begin == end) {
+      return std::nullopt;
+    }
+    auto minmax = std::minmax_element(begin, end);
+    return SourceSpan{minmax.first->getStart(), minmax.second->getEnd()};
+  }
 
 private:
   int m_start, m_end;
