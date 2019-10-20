@@ -28,6 +28,7 @@ private:
   auto nextExprPrimary() -> NodePtr;
   auto nextExprCall(lex::Token id) -> NodePtr;
   auto nextExprParen() -> NodePtr;
+  auto nextExprSwitch() -> NodePtr;
   auto nextExprSwitchIf() -> NodePtr;
   auto nextExprSwitchElse() -> NodePtr;
 

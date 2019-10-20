@@ -14,6 +14,7 @@
 #include "parse/node_expr_group.hpp"
 #include "parse/node_expr_lit.hpp"
 #include "parse/node_expr_paren.hpp"
+#include "parse/node_expr_switch.hpp"
 #include "parse/node_expr_switch_else.hpp"
 #include "parse/node_expr_switch_if.hpp"
 #include "parse/node_expr_unary.hpp"
@@ -113,6 +114,11 @@ auto ParserImpl::nextExprPrimary() -> NodePtr {
     }
     return constExprNode(std::move(id));
   }
+  case lex::TokenCat::Keyword:
+    if (getKw(nextTok) == lex::Keyword::If) {
+      return nextExprSwitch();
+    }
+    [[fallthrough]];
   default:
     if (nextTok.getType() == lex::TokenType::SepOpenParen) {
       return nextExprParen();
@@ -153,6 +159,14 @@ auto ParserImpl::nextExprParen() -> NodePtr {
     return parenExprNode(open, std::move(expr), close);
   }
   return errInvalidParenExpr(open, std::move(expr), close);
+}
+
+auto ParserImpl::nextExprSwitch() -> NodePtr {
+  auto ifClauses = std::vector<NodePtr>{};
+  do {
+    ifClauses.push_back(nextExprSwitchIf());
+  } while (getKw(peekToken(0)) == lex::Keyword::If);
+  return switchExprNode(std::move(ifClauses), nextExprSwitchElse());
 }
 
 auto ParserImpl::nextExprSwitchIf() -> NodePtr {

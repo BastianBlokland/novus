@@ -29,6 +29,7 @@ add_executable(tests
   parse/expr_group_test.cpp
   parse/expr_paren_test.cpp
   parse/expr_primary_test.cpp
+  parse/expr_switch_test.cpp
   parse/expr_unary_test.cpp)
 target_compile_features(tests PRIVATE cxx_std_17)
 target_compile_options(tests PRIVATE -Werror -Wall -Wextra)
