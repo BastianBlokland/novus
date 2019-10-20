@@ -1,7 +1,6 @@
 #include "catch2/catch.hpp"
 #include "lex/lexer.hpp"
 #include "lex/utilities.hpp"
-#include <optional>
 #include <string>
 
 namespace lex {

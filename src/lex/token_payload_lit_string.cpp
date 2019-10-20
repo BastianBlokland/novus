@@ -1,4 +1,4 @@
-#include "lex/token_payload.hpp"
+#include "lex/token_payload_lit_string.hpp"
 #include "char_escape.hpp"
 
 namespace lex {

@@ -20,12 +20,10 @@ auto UnaryExprNode::operator!=(const Node& rhs) const noexcept -> bool {
 }
 
 [[nodiscard]] auto UnaryExprNode::operator[](int i) const -> const Node& {
-  switch (i) {
-  case 0:
+  if (i == 0) {
     return *m_rhs;
-  default:
-    throw std::out_of_range("No child at given index");
   }
+  throw std::out_of_range("No child at given index");
 }
 
 [[nodiscard]] auto UnaryExprNode::getChildCount() const -> int { return 1; }

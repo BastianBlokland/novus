@@ -1,17 +1,6 @@
 #include "CLI/CLI.hpp"
 #include "lex/lexer.hpp"
-#include "lex/token_cat.hpp"
-#include "lex/utilities.hpp"
 #include "rang.hpp"
-#include <chrono>
-#include <fstream>
-#include <iomanip>
-#include <ios>
-#include <iostream>
-#include <iterator>
-#include <sstream>
-#include <string>
-#include <vector>
 
 using high_resolution_clock = std::chrono::high_resolution_clock;
 using duration              = std::chrono::duration<double>;

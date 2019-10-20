@@ -1,6 +1,5 @@
 #pragma once
 #include "lex/token.hpp"
-#include <string>
 
 namespace lex {
 

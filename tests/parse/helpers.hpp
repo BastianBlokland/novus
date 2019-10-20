@@ -1,9 +1,7 @@
 #pragma once
 #include "catch2/catch.hpp"
-#include "lex/error.hpp"
 #include "lex/lexer.hpp"
 #include "lex/token.hpp"
-#include "parse/error.hpp"
 #include "parse/node_expr_binary.hpp"
 #include "parse/node_expr_const.hpp"
 #include "parse/node_expr_const_decl.hpp"
@@ -14,7 +12,6 @@
 #include "parse/parser.hpp"
 #include <array>
 #include <string>
-#include <type_traits>
 
 namespace parse {
 

@@ -1,4 +1,5 @@
 #include "parse/error.hpp"
+#include "lex/token_payload_error.hpp"
 #include "parse/node_error.hpp"
 #include "utilities.hpp"
 #include <sstream>

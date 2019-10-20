@@ -1,5 +1,12 @@
 #include "lex/token.hpp"
 #include "char_escape.hpp"
+#include "lex/token_payload.hpp"
+#include "lex/token_payload_error.hpp"
+#include "lex/token_payload_id.hpp"
+#include "lex/token_payload_keyword.hpp"
+#include "lex/token_payload_lit_bool.hpp"
+#include "lex/token_payload_lit_int.hpp"
+#include "lex/token_payload_lit_string.hpp"
 #include <memory>
 #include <sstream>
 #include <utility>

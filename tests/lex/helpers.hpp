@@ -1,8 +1,6 @@
 #pragma once
 #include "catch2/catch.hpp"
 #include "lex/lexer.hpp"
-#include "lex/token.hpp"
-#include <array>
 #include <string>
 
 namespace lex {

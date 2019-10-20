@@ -2,8 +2,6 @@
 #include "lex/token.hpp"
 #include "lex/token_itr.hpp"
 #include <deque>
-#include <iterator>
-#include <utility>
 #include <vector>
 
 namespace lex {

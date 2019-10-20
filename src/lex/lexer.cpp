@@ -1,11 +1,6 @@
 #include "lex/lexer.hpp"
 #include "char_escape.hpp"
 #include "lex/error.hpp"
-#include <cassert>
-#include <iostream>
-#include <limits>
-#include <optional>
-#include <string>
 
 namespace lex {
 

@@ -1,9 +1,7 @@
 #include "catch2/catch.hpp"
 #include "lex/lexer.hpp"
-#include "lex/token.hpp"
 #include "lex/token_itr.hpp"
 #include <string>
-#include <vector>
 
 namespace lex {
 

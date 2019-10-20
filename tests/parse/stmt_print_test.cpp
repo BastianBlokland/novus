@@ -1,5 +1,6 @@
 #include "catch2/catch.hpp"
 #include "helpers.hpp"
+#include "parse/error.hpp"
 #include "parse/node_stmt_print.hpp"
 
 namespace parse {

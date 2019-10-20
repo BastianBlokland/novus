@@ -1,4 +1,6 @@
 #include "utilities.hpp"
+#include "lex/token_payload_id.hpp"
+#include "lex/token_payload_keyword.hpp"
 
 namespace parse {
 

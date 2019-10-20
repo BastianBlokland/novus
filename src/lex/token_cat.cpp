@@ -1,5 +1,4 @@
 #include "lex/token_cat.hpp"
-#include "lex/token_type.hpp"
 
 namespace lex {
 

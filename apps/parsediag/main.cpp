@@ -1,12 +1,7 @@
 #include "CLI/CLI.hpp"
 #include "lex/lexer.hpp"
-#include "parse/node.hpp"
-#include "parse/node_type.hpp"
 #include "parse/parser.hpp"
 #include "rang.hpp"
-#include <ios>
-#include <iostream>
-#include <iterator>
 
 using high_resolution_clock = std::chrono::high_resolution_clock;
 using duration              = std::chrono::duration<double>;
