@@ -29,7 +29,7 @@ auto SwitchExprElseNode::operator[](int i) const -> const Node& {
   throw std::out_of_range("No child at given index");
 }
 
-auto SwitchExprElseNode::getChildCount() const -> int { return 1; }
+auto SwitchExprElseNode::getChildCount() const -> unsigned int { return 1; }
 
 auto SwitchExprElseNode::print(std::ostream& out) const -> std::ostream& { return out << "else"; }
 

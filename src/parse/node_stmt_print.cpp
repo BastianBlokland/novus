@@ -26,7 +26,7 @@ auto PrintStmtNode::operator[](int i) const -> const Node& {
   throw std::out_of_range("No child at given index");
 }
 
-auto PrintStmtNode::getChildCount() const -> int { return 1; }
+auto PrintStmtNode::getChildCount() const -> unsigned int { return 1; }
 
 auto PrintStmtNode::print(std::ostream& out) const -> std::ostream& { return out << "print"; }
 

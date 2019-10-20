@@ -19,7 +19,7 @@ public:
 
   [[nodiscard]] virtual auto operator[](int) const -> const Node& = 0;
   [[nodiscard]] auto getType() const noexcept -> NodeType { return m_type; }
-  [[nodiscard]] virtual auto getChildCount() const -> int = 0;
+  [[nodiscard]] virtual auto getChildCount() const -> unsigned int = 0;
 
   virtual auto print(std::ostream& out) const -> std::ostream& = 0;
 

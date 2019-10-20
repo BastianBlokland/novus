@@ -45,7 +45,7 @@ auto SwitchExprNode::operator[](int i) const -> const Node& {
   throw std::out_of_range("No child at given index");
 }
 
-auto SwitchExprNode::getChildCount() const -> int { return m_ifClauses.size() + 1; }
+auto SwitchExprNode::getChildCount() const -> unsigned int { return m_ifClauses.size() + 1; }
 
 auto SwitchExprNode::print(std::ostream& out) const -> std::ostream& { return out << "switch"; }
 

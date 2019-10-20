@@ -29,7 +29,7 @@ auto ParenExprNode::operator[](int i) const -> const Node& {
   throw std::out_of_range("No child at given index");
 }
 
-auto ParenExprNode::getChildCount() const -> int { return 1; }
+auto ParenExprNode::getChildCount() const -> unsigned int { return 1; }
 
 auto ParenExprNode::print(std::ostream& out) const -> std::ostream& {
   return out << "parenthesized";

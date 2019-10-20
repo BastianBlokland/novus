@@ -26,7 +26,7 @@ auto UnaryExprNode::operator!=(const Node& rhs) const noexcept -> bool {
   throw std::out_of_range("No child at given index");
 }
 
-[[nodiscard]] auto UnaryExprNode::getChildCount() const -> int { return 1; }
+[[nodiscard]] auto UnaryExprNode::getChildCount() const -> unsigned int { return 1; }
 
 auto UnaryExprNode::print(std::ostream& out) const -> std::ostream& { return out << m_op; }
 

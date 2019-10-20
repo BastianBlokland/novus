@@ -45,7 +45,7 @@ auto CallExprNode::operator[](int i) const -> const Node& {
   return *m_args[i];
 }
 
-auto CallExprNode::getChildCount() const -> int { return m_args.size(); }
+auto CallExprNode::getChildCount() const -> unsigned int { return m_args.size(); }
 
 auto CallExprNode::print(std::ostream& out) const -> std::ostream& {
   return out << "call-" << m_id;

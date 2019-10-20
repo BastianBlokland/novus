@@ -38,7 +38,7 @@ auto GroupExprNode::operator[](int i) const -> const Node& {
   return *m_subExprs[i];
 }
 
-auto GroupExprNode::getChildCount() const -> int { return m_subExprs.size(); }
+auto GroupExprNode::getChildCount() const -> unsigned int { return m_subExprs.size(); }
 
 auto GroupExprNode::print(std::ostream& out) const -> std::ostream& { return out << "group"; }
 

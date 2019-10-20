@@ -58,7 +58,7 @@ auto FuncDeclStmtNode::operator[](int i) const -> const Node& {
   throw std::out_of_range("No child at given index");
 }
 
-auto FuncDeclStmtNode::getChildCount() const -> int { return 1; }
+auto FuncDeclStmtNode::getChildCount() const -> unsigned int { return 1; }
 
 auto FuncDeclStmtNode::print(std::ostream& out) const -> std::ostream& {
   out << getIdOrErr(m_retType) << '-' << getIdOrErr(m_id) << '(';

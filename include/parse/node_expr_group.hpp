@@ -14,7 +14,7 @@ public:
   auto operator!=(const Node& rhs) const noexcept -> bool override;
 
   [[nodiscard]] auto operator[](int i) const -> const Node& override;
-  [[nodiscard]] auto getChildCount() const -> int override;
+  [[nodiscard]] auto getChildCount() const -> unsigned int override;
 
 private:
   const std::vector<NodePtr> m_subExprs;

@@ -38,7 +38,7 @@ auto printNode(const parse::Node& n, std::string prefix = "", bool isLastSibling
             << s::reset;
 
   const auto childCount = n.getChildCount();
-  for (auto i = 0; i < childCount; ++i) {
+  for (auto i = 0U; i < childCount; ++i) {
     printNode(n[i], prefix, i == (childCount - 1));
   }
 }

@@ -17,7 +17,7 @@ auto ConstExprNode::operator[](int /*unused*/) const -> const Node& {
   throw std::out_of_range("No child at given index");
 }
 
-auto ConstExprNode::getChildCount() const -> int { return 0; }
+auto ConstExprNode::getChildCount() const -> unsigned int { return 0; }
 
 auto ConstExprNode::print(std::ostream& out) const -> std::ostream& { return out << m_id; }
 

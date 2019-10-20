@@ -37,7 +37,7 @@ auto SwitchExprIfNode::operator[](int i) const -> const Node& {
   }
 }
 
-auto SwitchExprIfNode::getChildCount() const -> int { return 2; }
+auto SwitchExprIfNode::getChildCount() const -> unsigned int { return 2; }
 
 auto SwitchExprIfNode::print(std::ostream& out) const -> std::ostream& { return out << "if"; }
 

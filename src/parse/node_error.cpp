@@ -37,7 +37,7 @@ auto ErrorNode::operator[](int i) const -> const Node& {
   return *m_subExprs[i];
 }
 
-auto ErrorNode::getChildCount() const -> int { return m_subExprs.size(); }
+auto ErrorNode::getChildCount() const -> unsigned int { return m_subExprs.size(); }
 
 auto ErrorNode::getMessage() const noexcept -> const std::string& { return m_msg; }
 

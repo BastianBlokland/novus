@@ -15,7 +15,7 @@ public:
   auto operator!=(const Node& rhs) const noexcept -> bool override;
 
   [[nodiscard]] auto operator[](int i) const -> const Node& override;
-  [[nodiscard]] auto getChildCount() const -> int override;
+  [[nodiscard]] auto getChildCount() const -> unsigned int override;
   [[nodiscard]] auto getMessage() const noexcept -> const std::string&;
   [[nodiscard]] auto getTokens() const noexcept -> const std::vector<lex::Token>&;
 

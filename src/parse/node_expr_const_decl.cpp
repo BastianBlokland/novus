@@ -26,7 +26,7 @@ auto ConstDeclExprNode::operator[](int i) const -> const Node& {
   throw std::out_of_range("No child at given index");
 }
 
-auto ConstDeclExprNode::getChildCount() const -> int { return 1; }
+auto ConstDeclExprNode::getChildCount() const -> unsigned int { return 1; }
 
 auto ConstDeclExprNode::print(std::ostream& out) const -> std::ostream& {
   return out << "decl-" << m_id;
