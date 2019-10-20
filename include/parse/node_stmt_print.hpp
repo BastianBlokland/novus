@@ -1,59 +1,28 @@
 #pragma once
 #include "lex/token.hpp"
 #include "parse/node.hpp"
-#include "parse/node_type.hpp"
-#include <memory>
-#include <stdexcept>
-#include <utility>
 
 namespace parse {
 
 class PrintStmtNode final : public Node {
 public:
   PrintStmtNode() = delete;
+  PrintStmtNode(lex::Token kw, NodePtr expr);
 
-  PrintStmtNode(lex::Token kw, NodePtr expr) :
-      Node(NodeType::StmtPrint), m_kw{std::move(kw)}, m_expr{std::move(expr)} {
+  auto operator==(const Node& rhs) const noexcept -> bool override;
+  auto operator!=(const Node& rhs) const noexcept -> bool override;
 
-    if (m_expr == nullptr) {
-      throw std::invalid_argument("Expression cannot be null");
-    }
-  }
-
-  auto operator==(const Node& rhs) const noexcept -> bool override {
-    const auto r = dynamic_cast<const PrintStmtNode*>(&rhs);
-    return r != nullptr && *m_expr == *r->m_expr;
-  }
-
-  auto operator!=(const Node& rhs) const noexcept -> bool override {
-    return !PrintStmtNode::operator==(rhs);
-  }
-
-  [[nodiscard]] auto operator[](int i) const -> const Node& override {
-    switch (i) {
-    case 0:
-      return *m_expr;
-    default:
-      throw std::out_of_range("No child at given index");
-    }
-  }
-
-  [[nodiscard]] auto getChildCount() const -> int override { return 1; }
-
-  [[nodiscard]] auto clone() const -> NodePtr override {
-    return std::make_unique<PrintStmtNode>(m_kw, m_expr->clone());
-  }
+  [[nodiscard]] auto operator[](int i) const -> const Node& override;
+  [[nodiscard]] auto getChildCount() const -> int override;
 
 private:
   const lex::Token m_kw;
   const NodePtr m_expr;
 
-  auto print(std::ostream& out) const -> std::ostream& override { return out << "print"; }
+  auto print(std::ostream& out) const -> std::ostream& override;
 };
 
 // Factories.
-inline auto printStmtNode(lex::Token kw, NodePtr expr) -> NodePtr {
-  return std::make_unique<PrintStmtNode>(std::move(kw), std::move(expr));
-}
+auto printStmtNode(lex::Token kw, NodePtr expr) -> NodePtr;
 
 } // namespace parse

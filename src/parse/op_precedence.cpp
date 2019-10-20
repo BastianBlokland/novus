@@ -1,5 +1,4 @@
 #include "op_precedence.hpp"
-#include "lex/token_type.hpp"
 
 namespace parse {
 

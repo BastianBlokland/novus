@@ -1,47 +1,27 @@
 #pragma once
 #include "lex/token.hpp"
-#include "lex/token_cat.hpp"
 #include "parse/node.hpp"
-#include "parse/node_type.hpp"
-#include <memory>
-#include <utility>
 
 namespace parse {
 
 class LitExprNode final : public Node {
 public:
   LitExprNode() = delete;
+  explicit LitExprNode(lex::Token val);
 
-  explicit LitExprNode(lex::Token val) : Node(NodeType::ExprLit), m_val{std::move(val)} {}
+  auto operator==(const Node& rhs) const noexcept -> bool override;
+  auto operator!=(const Node& rhs) const noexcept -> bool override;
 
-  auto operator==(const Node& rhs) const noexcept -> bool override {
-    const auto r = dynamic_cast<const LitExprNode*>(&rhs);
-    return r != nullptr && m_val == r->m_val;
-  }
-
-  auto operator!=(const Node& rhs) const noexcept -> bool override {
-    return !LitExprNode::operator==(rhs);
-  }
-
-  [[nodiscard]] auto operator[](int /*unused*/) const -> const Node& override {
-    throw std::out_of_range("No child at given index");
-  }
-
-  [[nodiscard]] auto getChildCount() const -> int override { return 0; }
-
-  [[nodiscard]] auto clone() const -> NodePtr override {
-    return std::make_unique<LitExprNode>(m_val);
-  }
+  [[nodiscard]] auto operator[](int i) const -> const Node& override;
+  [[nodiscard]] auto getChildCount() const -> int override;
 
 private:
   const lex::Token m_val;
 
-  auto print(std::ostream& out) const -> std::ostream& override { return out << m_val; }
+  auto print(std::ostream& out) const -> std::ostream& override;
 };
 
 // Factories.
-inline auto litExprNode(lex::Token val) -> NodePtr {
-  return std::make_unique<LitExprNode>(std::move(val));
-}
+auto litExprNode(lex::Token val) -> NodePtr;
 
 } // namespace parse

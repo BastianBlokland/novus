@@ -1,13 +1,7 @@
 #include "parse/error.hpp"
-#include "lex/keyword.hpp"
-#include "lex/token.hpp"
-#include "lex/token_payload.hpp"
-#include "lex/token_type.hpp"
-#include "parse/node.hpp"
 #include "parse/node_error.hpp"
+#include "utilities.hpp"
 #include <sstream>
-#include <string>
-#include <vector>
 
 namespace parse {
 

@@ -1,12 +1,6 @@
 #include "parse/parser.hpp"
-#include "lex/keyword.hpp"
-#include "lex/token.hpp"
-#include "lex/token_cat.hpp"
-#include "lex/token_payload.hpp"
-#include "lex/token_type.hpp"
 #include "op_precedence.hpp"
 #include "parse/error.hpp"
-#include "parse/node.hpp"
 #include "parse/node_expr_binary.hpp"
 #include "parse/node_expr_call.hpp"
 #include "parse/node_expr_const.hpp"
@@ -20,11 +14,7 @@
 #include "parse/node_expr_unary.hpp"
 #include "parse/node_stmt_func_decl.hpp"
 #include "parse/node_stmt_print.hpp"
-#include "parse/utilities.hpp"
-#include <algorithm>
-#include <memory>
-#include <stdexcept>
-#include <utility>
+#include "utilities.hpp"
 #include <vector>
 
 namespace parse {
