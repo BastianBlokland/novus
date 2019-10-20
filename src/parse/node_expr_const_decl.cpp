@@ -28,6 +28,8 @@ auto ConstDeclExprNode::operator[](int i) const -> const Node& {
 
 auto ConstDeclExprNode::getChildCount() const -> unsigned int { return 1; }
 
+auto ConstDeclExprNode::getId() const -> const lex::Token& { return m_id; }
+
 auto ConstDeclExprNode::print(std::ostream& out) const -> std::ostream& {
   return out << "decl-" << m_id;
 }

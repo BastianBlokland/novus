@@ -41,8 +41,6 @@ auto ErrorNode::getChildCount() const -> unsigned int { return m_subExprs.size()
 
 auto ErrorNode::getMessage() const noexcept -> const std::string& { return m_msg; }
 
-auto ErrorNode::getTokens() const noexcept -> const std::vector<lex::Token>& { return m_tokens; }
-
 auto ErrorNode::print(std::ostream& out) const -> std::ostream& { return out << m_msg; }
 
 // Factories.

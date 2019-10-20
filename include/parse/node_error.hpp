@@ -17,7 +17,6 @@ public:
   [[nodiscard]] auto operator[](int i) const -> const Node& override;
   [[nodiscard]] auto getChildCount() const -> unsigned int override;
   [[nodiscard]] auto getMessage() const noexcept -> const std::string&;
-  [[nodiscard]] auto getTokens() const noexcept -> const std::vector<lex::Token>&;
 
 private:
   const std::string m_msg;

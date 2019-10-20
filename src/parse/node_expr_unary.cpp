@@ -28,6 +28,8 @@ auto UnaryExprNode::operator!=(const Node& rhs) const noexcept -> bool {
 
 [[nodiscard]] auto UnaryExprNode::getChildCount() const -> unsigned int { return 1; }
 
+auto UnaryExprNode::getOperator() const -> const lex::Token& { return m_op; }
+
 auto UnaryExprNode::print(std::ostream& out) const -> std::ostream& { return out << m_op; }
 
 // Factories.

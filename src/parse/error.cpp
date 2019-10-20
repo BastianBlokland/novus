@@ -27,7 +27,7 @@ auto errInvalidStmtFuncDecl(
     lex::Token retType,
     lex::Token id,
     lex::Token open,
-    const std::vector<std::pair<lex::Token, lex::Token>>& args,
+    const std::vector<FuncDeclStmtNode::arg>& args,
     std::vector<lex::Token> commas,
     lex::Token close,
     NodePtr body) -> NodePtr {

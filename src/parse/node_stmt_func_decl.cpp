@@ -11,7 +11,7 @@ FuncDeclStmtNode::FuncDeclStmtNode(
     lex::Token retType,
     lex::Token id,
     lex::Token open,
-    std::vector<std::pair<lex::Token, lex::Token>> args,
+    std::vector<arg> args,
     std::vector<lex::Token> commas,
     lex::Token close,
     NodePtr body) :
@@ -60,6 +60,12 @@ auto FuncDeclStmtNode::operator[](int i) const -> const Node& {
 
 auto FuncDeclStmtNode::getChildCount() const -> unsigned int { return 1; }
 
+auto FuncDeclStmtNode::getRetType() const -> const lex::Token& { return m_retType; }
+
+auto FuncDeclStmtNode::getId() const -> const lex::Token& { return m_id; }
+
+auto FuncDeclStmtNode::getArgs() const -> const std::vector<arg>& { return m_args; }
+
 auto FuncDeclStmtNode::print(std::ostream& out) const -> std::ostream& {
   out << getIdOrErr(m_retType) << '-' << getIdOrErr(m_id) << '(';
   for (auto i = 0U; i < m_args.size(); ++i) {
@@ -76,7 +82,7 @@ auto funcDeclStmtNode(
     lex::Token retType,
     lex::Token id,
     lex::Token open,
-    std::vector<std::pair<lex::Token, lex::Token>> args,
+    std::vector<FuncDeclStmtNode::arg> args,
     std::vector<lex::Token> commas,
     lex::Token close,
     NodePtr body) -> NodePtr {

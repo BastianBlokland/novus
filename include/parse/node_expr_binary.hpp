@@ -14,6 +14,7 @@ public:
 
   [[nodiscard]] auto operator[](int i) const -> const Node& override;
   [[nodiscard]] auto getChildCount() const -> unsigned int override;
+  [[nodiscard]] auto getOperator() const -> const lex::Token&;
 
 private:
   const NodePtr m_lhs;

@@ -38,6 +38,8 @@ auto BinaryExprNode::operator[](int i) const -> const Node& {
 
 auto BinaryExprNode::getChildCount() const -> unsigned int { return 2; }
 
+auto BinaryExprNode::getOperator() const -> const lex::Token& { return m_op; }
+
 auto BinaryExprNode::print(std::ostream& out) const -> std::ostream& { return out << m_op; }
 
 // Factories.

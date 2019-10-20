@@ -51,7 +51,7 @@ auto ParserImpl::nextStmtFuncDecl() -> NodePtr {
   auto retType = consumeToken();
   auto id      = consumeToken();
   auto open    = consumeToken();
-  auto args    = std::vector<std::pair<lex::Token, lex::Token>>{};
+  auto args    = std::vector<FuncDeclStmtNode::arg>{};
   auto commas  = std::vector<lex::Token>{};
   while (peekToken(0).getType() != lex::TokenType::SepCloseParen && !peekToken(0).isEnd()) {
     auto argType = consumeToken();
