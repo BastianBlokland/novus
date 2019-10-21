@@ -1,9 +1,10 @@
-#include "lex/token_payload.hpp"
+#include "lex/token_payload_lit_string.hpp"
 #include "char_escape.hpp"
 
 namespace lex {
 
 auto LitStringTokenPayload::print(std::ostream& out) const -> std::ostream& {
+  out << "\"";
   for (const char c : m_val) {
     const auto escaped = escape(c);
     if (escaped) {
@@ -12,7 +13,7 @@ auto LitStringTokenPayload::print(std::ostream& out) const -> std::ostream& {
       out << c;
     }
   }
-  return out;
+  return out << "\"";
 }
 
 } // namespace lex

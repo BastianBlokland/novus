@@ -1,11 +1,6 @@
 #include "lex/lexer.hpp"
 #include "char_escape.hpp"
 #include "lex/error.hpp"
-#include <cassert>
-#include <iostream>
-#include <limits>
-#include <optional>
-#include <string>
 
 namespace lex {
 
@@ -61,7 +56,7 @@ static auto isWordStart(const char& c) {
 
   // Either ascii letter or start of non-ascii utf8 character.
   return (c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z') ||
-         (static_cast<unsigned char>(c) >= utf8Start);
+      (static_cast<unsigned char>(c) >= utf8Start);
 }
 
 static auto isWordContinuation(const char& c) {
@@ -69,7 +64,7 @@ static auto isWordContinuation(const char& c) {
 
   // Either ascii letter or continuation of non-ascii utf8 character.
   return (c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z') ||
-         (static_cast<unsigned char>(c) >= utf8Continuation);
+      (static_cast<unsigned char>(c) >= utf8Continuation);
 }
 
 auto LexerImpl::next() -> Token {
@@ -126,10 +121,12 @@ auto LexerImpl::next() -> Token {
         return basicToken(TokenType::OpGtEq, SourceSpan{m_inputPos - 1, m_inputPos});
       }
       return basicToken(TokenType::OpGt, SourceSpan{m_inputPos});
+    case ';':
+      return basicToken(TokenType::OpSemi, SourceSpan{m_inputPos});
     case '(':
-      return basicToken(TokenType::SepOpenParan, SourceSpan{m_inputPos});
+      return basicToken(TokenType::SepOpenParen, SourceSpan{m_inputPos});
     case ')':
-      return basicToken(TokenType::SepCloseParan, SourceSpan{m_inputPos});
+      return basicToken(TokenType::SepCloseParen, SourceSpan{m_inputPos});
     case ',':
       return basicToken(TokenType::SepComma, SourceSpan{m_inputPos});
     case ' ':

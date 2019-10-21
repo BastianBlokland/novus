@@ -6,9 +6,13 @@ AlignAfterOpenBracket: AlwaysBreak
 AlignConsecutiveAssignments: true
 AlignEscapedNewlines: Right
 AlignTrailingComments: true
+AlignOperands: false
 AllowAllParametersOfDeclarationOnNextLine: true
+AllowAllArgumentsOnNextLine: true
+AllowAllConstructorInitializersOnNextLine: true
 AlwaysBreakTemplateDeclarations: Yes
 BreakConstructorInitializers: AfterColon
+ConstructorInitializerAllOnOneLineOrOnePerLine: true
 IncludeBlocks: Merge
 BinPackArguments: false
 BinPackParameters: false

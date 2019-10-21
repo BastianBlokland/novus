@@ -2,7 +2,36 @@
   "version": "0.2.0",
   "configurations": [
     {
+      "name": "lexdiag",
+      "preLaunchTask": "build debug",
+      "type": "lldb",
+      "request": "launch",
+      "program": "${workspaceFolder}/bin/lexdiag",
+      "args": [
+        "lex",
+        "print x + 42 * y"
+      ],
+      "cwd": "${workspaceFolder}",
+      "terminal": "integrated",
+      "stopOnEntry": false
+    },
+    {
+      "name": "parsediag",
+      "preLaunchTask": "build debug",
+      "type": "lldb",
+      "request": "launch",
+      "program": "${workspaceFolder}/bin/parsediag",
+      "args": [
+        "parse",
+        "print x + 42 * y"
+      ],
+      "cwd": "${workspaceFolder}",
+      "terminal": "integrated",
+      "stopOnEntry": false
+    },
+    {
       "name": "tests",
+      "preLaunchTask": "build debug",
       "type": "lldb",
       "request": "launch",
       "program": "${workspaceFolder}/bin/tests",
@@ -12,12 +41,13 @@
     },
     {
       "name": "repl",
+      "preLaunchTask": "build debug",
       "type": "lldb",
       "request": "launch",
       "program": "${workspaceFolder}/bin/repl",
       "cwd": "${workspaceFolder}",
       "terminal": "integrated",
-      "stopOnEntry": true
+      "stopOnEntry": false
     }
   ]
 }

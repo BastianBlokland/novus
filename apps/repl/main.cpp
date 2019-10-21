@@ -1,10 +1,6 @@
 #include "lex/lexer.hpp"
 #include "lex/utilities.hpp"
-#include <iostream>
-#include <limits>
 #include <ncurses.h>
-#include <optional>
-#include <vector>
 
 enum class ColorType {
   Normal = 1,
