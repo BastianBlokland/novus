@@ -105,6 +105,8 @@ TEST_CASE("Parsing function declaration statements", "[parse]") {
             END,
             errInvalidPrimaryExpr(END)));
   }
+
+  SECTION("Spans") { CHECK_STMT_SPAN(" int a() 1 + 2", lex::SourceSpan(1, 13)); }
 }
 
 } // namespace parse

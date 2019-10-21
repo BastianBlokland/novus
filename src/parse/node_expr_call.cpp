@@ -1,4 +1,5 @@
 #include "parse/node_expr_call.hpp"
+#include "utilities.hpp"
 
 namespace parse {
 
@@ -47,10 +48,14 @@ auto CallExprNode::operator[](int i) const -> const Node& {
 
 auto CallExprNode::getChildCount() const -> unsigned int { return m_args.size(); }
 
+auto CallExprNode::getSpan() const -> lex::SourceSpan {
+  return lex::SourceSpan::combine(m_id.getSpan(), m_close.getSpan());
+}
+
 auto CallExprNode::getId() const -> const lex::Token& { return m_id; }
 
 auto CallExprNode::print(std::ostream& out) const -> std::ostream& {
-  return out << "call-" << m_id;
+  return out << "call-" << ::parse::getId(m_id).value_or("error");
 }
 
 // Factories.

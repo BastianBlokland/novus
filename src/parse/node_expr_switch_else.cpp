@@ -31,6 +31,10 @@ auto SwitchExprElseNode::operator[](int i) const -> const Node& {
 
 auto SwitchExprElseNode::getChildCount() const -> unsigned int { return 1; }
 
+auto SwitchExprElseNode::getSpan() const -> lex::SourceSpan {
+  return lex::SourceSpan::combine(m_kw.getSpan(), m_rhs->getSpan());
+}
+
 auto SwitchExprElseNode::print(std::ostream& out) const -> std::ostream& { return out << "else"; }
 
 // Factories.

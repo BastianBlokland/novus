@@ -19,6 +19,8 @@ auto LitExprNode::operator[](int /*unused*/) const -> const Node& {
 
 auto LitExprNode::getChildCount() const -> unsigned int { return 0; }
 
+auto LitExprNode::getSpan() const -> lex::SourceSpan { return m_val.getSpan(); }
+
 auto LitExprNode::getVal() const -> const lex::Token& { return m_val; }
 
 auto LitExprNode::print(std::ostream& out) const -> std::ostream& { return out << m_val; }

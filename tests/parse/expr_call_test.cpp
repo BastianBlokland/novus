@@ -78,6 +78,8 @@ TEST_CASE("Parsing call expressions", "[parse]") {
         errInvalidCallExpr(
             ID("a"), OPAREN, NODES(errInvalidPrimaryExpr(COMMA)), COMMAS(1), CPAREN));
   }
+
+  SECTION("Spans") { CHECK_EXPR_SPAN("a(1,2,3+4*5)", lex::SourceSpan(0, 11)); }
 }
 
 } // namespace parse

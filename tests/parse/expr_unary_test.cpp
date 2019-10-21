@@ -22,6 +22,11 @@ TEST_CASE("Parsing unary operators", "[parse]") {
     CHECK_EXPR("&1 + 2", errInvalidUnaryOp(AMP, binaryExprNode(INT(1), PLUS, INT(2))));
     CHECK_EXPR("&", errInvalidUnaryOp(AMP, errInvalidPrimaryExpr(END)));
   }
+
+  SECTION("Spans") {
+    CHECK_EXPR_SPAN("-1", lex::SourceSpan(0, 1));
+    CHECK_EXPR_SPAN(" + - ! 1 + 2 ", lex::SourceSpan(1, 11));
+  }
 }
 
 } // namespace parse

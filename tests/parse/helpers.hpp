@@ -77,6 +77,22 @@ namespace parse {
     REQUIRE(parser.nextStmt() == nullptr);                                                         \
   }
 
+#define CHECK_EXPR_SPAN(INPUT, SPAN)                                                               \
+  {                                                                                                \
+    std::string input = INPUT;                                                                     \
+    auto lexer        = lex::Lexer{input.begin(), input.end()};                                    \
+    auto parser       = parse::Parser{lexer.begin(), lexer.end()};                                 \
+    CHECK(parser.nextExpr()->getSpan() == (SPAN));                                                 \
+  }
+
+#define CHECK_STMT_SPAN(INPUT, SPAN)                                                               \
+  {                                                                                                \
+    std::string input = INPUT;                                                                     \
+    auto lexer        = lex::Lexer{input.begin(), input.end()};                                    \
+    auto parser       = parse::Parser{lexer.begin(), lexer.end()};                                 \
+    CHECK(parser.nextStmt()->getSpan() == (SPAN));                                                 \
+  }
+
 template <typename Array>
 inline auto arrayMoveToVec(Array c) {
   auto result = std::vector<typename Array::value_type>{};

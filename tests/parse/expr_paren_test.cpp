@@ -18,6 +18,8 @@ TEST_CASE("Parsing parenthesized expressions", "[parse]") {
     CHECK_EXPR("(1", errInvalidParenExpr(OPAREN, INT(1), END));
     CHECK_EXPR("(", errInvalidParenExpr(OPAREN, errInvalidPrimaryExpr(END), END));
   }
+
+  SECTION("Spans") { CHECK_EXPR_SPAN("(1 + 2) * 5", lex::SourceSpan(0, 10)); }
 }
 
 } // namespace parse

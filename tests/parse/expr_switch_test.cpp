@@ -59,6 +59,11 @@ TEST_CASE("Parsing switch expressions", "[parse]") {
             NODES(switchExprIfNode(IF, CONST("x"), ARROW, INT(1))),
             errInvalidSwitchElse(END, END, errInvalidPrimaryExpr(END))));
   }
+
+  SECTION("Spans") {
+    CHECK_EXPR_SPAN("if x -> 1 else -> 2", lex::SourceSpan(0, 18));
+    CHECK_EXPR_SPAN("if x -> 1 if 1 + 2 == y -> 2 else -> 3", lex::SourceSpan(0, 37));
+  }
 }
 
 } // namespace parse

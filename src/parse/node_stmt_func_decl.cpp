@@ -60,6 +60,10 @@ auto FuncDeclStmtNode::operator[](int i) const -> const Node& {
 
 auto FuncDeclStmtNode::getChildCount() const -> unsigned int { return 1; }
 
+auto FuncDeclStmtNode::getSpan() const -> lex::SourceSpan {
+  return lex::SourceSpan::combine(m_retType.getSpan(), m_body->getSpan());
+}
+
 auto FuncDeclStmtNode::getRetType() const -> const lex::Token& { return m_retType; }
 
 auto FuncDeclStmtNode::getId() const -> const lex::Token& { return m_id; }

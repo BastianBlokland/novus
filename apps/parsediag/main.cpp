@@ -33,8 +33,11 @@ auto printNode(const parse::Node& n, std::string prefix = "", bool isLastSibling
   std::cout << s::reset;
 
   // Print node.
+  auto span  = n.getSpan();
+  auto start = span.getStart();
+  auto end   = span.getEnd();
   std::cout << s::bold << getFgColor(n) << getBgColor(n) << n << fg::reset << bg::reset << s::reset
-            << s::dim << s::italic << ' ' << n.getType() << '\n'
+            << s::dim << s::italic << " (" << start << " - " << end << ')' << '\n'
             << s::reset;
 
   const auto childCount = n.getChildCount();

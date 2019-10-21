@@ -1,4 +1,5 @@
 #pragma once
+#include "lex/source_span.hpp"
 #include "parse/node_type.hpp"
 #include <iostream>
 
@@ -20,6 +21,7 @@ public:
   [[nodiscard]] virtual auto operator[](int) const -> const Node& = 0;
   [[nodiscard]] auto getType() const noexcept -> NodeType { return m_type; }
   [[nodiscard]] virtual auto getChildCount() const -> unsigned int = 0;
+  [[nodiscard]] virtual auto getSpan() const -> lex::SourceSpan    = 0;
 
   virtual auto print(std::ostream& out) const -> std::ostream& = 0;
 

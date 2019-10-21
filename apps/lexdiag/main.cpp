@@ -12,8 +12,8 @@ auto operator<<(std::ostream& out, const duration& rhs) -> std::ostream&;
 
 template <typename InputItr>
 auto run(InputItr inputBegin, const InputItr inputEnd, const bool printTokens) {
-  const auto tokTypeWidth = 20;
-  const auto width        = 80;
+  const auto columnWidth = 20;
+  const auto width       = 80;
 
   using s  = rang::style;
   using fg = rang::style;
@@ -33,12 +33,12 @@ auto run(InputItr inputBegin, const InputItr inputEnd, const bool printTokens) {
   if (printTokens) {
     for (const auto& token : tokens) {
       std::cout << s::bold << "* " << getFgColor(token) << getBgColor(token)
-                << std::setw(tokTypeWidth) << std::left << token.getType();
+                << std::setw(columnWidth) << std::left << token.getType();
 
       std::stringstream spanStr;
       spanStr << '(' << token.getSpan().getStart() << " - " << token.getSpan().getEnd() << ')';
 
-      std::cout << s::dim << fg::reset << std::setw(tokTypeWidth) << std::right << spanStr.str()
+      std::cout << s::dim << fg::reset << std::setw(columnWidth) << std::right << spanStr.str()
                 << s::reset;
 
       const auto payload = token.getPayload();

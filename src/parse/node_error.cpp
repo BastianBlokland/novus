@@ -1,4 +1,6 @@
 #include "parse/node_error.hpp"
+#include "utilities.hpp"
+#include <algorithm>
 
 namespace parse {
 
@@ -38,6 +40,17 @@ auto ErrorNode::operator[](int i) const -> const Node& {
 }
 
 auto ErrorNode::getChildCount() const -> unsigned int { return m_subExprs.size(); }
+
+auto ErrorNode::getSpan() const -> lex::SourceSpan {
+  /* Because there is no fixed order in a ErrorNode we need to find the start and
+  the end source position by looking at all tokens and nodes. */
+  auto tokensSpan   = ::parse::getSpan(m_tokens);
+  auto subExprsSpan = ::parse::getSpan(m_subExprs);
+  if (tokensSpan && subExprsSpan) {
+    return lex::SourceSpan::combine(*tokensSpan, *subExprsSpan);
+  }
+  return tokensSpan ? *tokensSpan : *subExprsSpan;
+}
 
 auto ErrorNode::getMessage() const noexcept -> const std::string& { return m_msg; }
 

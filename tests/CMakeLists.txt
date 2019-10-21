@@ -24,6 +24,7 @@ add_executable(tests
   lex/seperators_test.cpp
   lex/sourcespan_test.cpp
   lex/utilities_test.cpp
+  parse/error_test.cpp
   parse/expr_binary_test.cpp
   parse/expr_call_test.cpp
   parse/expr_group_test.cpp

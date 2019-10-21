@@ -47,6 +47,10 @@ auto SwitchExprNode::operator[](int i) const -> const Node& {
 
 auto SwitchExprNode::getChildCount() const -> unsigned int { return m_ifClauses.size() + 1; }
 
+auto SwitchExprNode::getSpan() const -> lex::SourceSpan {
+  return lex::SourceSpan::combine(m_ifClauses.front()->getSpan(), m_elseClause->getSpan());
+}
+
 auto SwitchExprNode::print(std::ostream& out) const -> std::ostream& { return out << "switch"; }
 
 // Factories.

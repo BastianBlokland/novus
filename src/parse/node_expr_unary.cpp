@@ -26,7 +26,11 @@ auto UnaryExprNode::operator!=(const Node& rhs) const noexcept -> bool {
   throw std::out_of_range("No child at given index");
 }
 
-[[nodiscard]] auto UnaryExprNode::getChildCount() const -> unsigned int { return 1; }
+auto UnaryExprNode::getChildCount() const -> unsigned int { return 1; }
+
+auto UnaryExprNode::getSpan() const -> lex::SourceSpan {
+  return lex::SourceSpan::combine(m_op.getSpan(), m_rhs->getSpan());
+}
 
 auto UnaryExprNode::getOperator() const -> const lex::Token& { return m_op; }
 
