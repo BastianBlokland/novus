@@ -35,15 +35,7 @@ FuncDeclStmtNode::FuncDeclStmtNode(
 
 auto FuncDeclStmtNode::operator==(const Node& rhs) const noexcept -> bool {
   const auto r = dynamic_cast<const FuncDeclStmtNode*>(&rhs);
-  return r != nullptr && m_retType == r->m_retType && m_id == r->m_id &&
-      m_args.size() == r->m_args.size() &&
-      std::equal(
-             m_args.begin(),
-             m_args.end(),
-             r->m_args.begin(),
-             [](const auto& l, const auto& r) {
-               return l.first == r.first && l.second == r.second;
-             }) &&
+  return r != nullptr && m_retType == r->m_retType && m_id == r->m_id && m_args == r->m_args &&
       *m_body == *r->m_body;
 }
 

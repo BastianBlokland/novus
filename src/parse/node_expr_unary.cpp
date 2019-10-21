@@ -19,7 +19,7 @@ auto UnaryExprNode::operator!=(const Node& rhs) const noexcept -> bool {
   return !UnaryExprNode::operator==(rhs);
 }
 
-[[nodiscard]] auto UnaryExprNode::operator[](int i) const -> const Node& {
+auto UnaryExprNode::operator[](int i) const -> const Node& {
   if (i == 0) {
     return *m_rhs;
   }

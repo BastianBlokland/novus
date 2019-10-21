@@ -12,4 +12,8 @@ auto getId(const lex::Token& token) -> std::optional<std::string>;
 auto getSpan(const std::vector<lex::Token>& tokens) -> std::optional<lex::SourceSpan>;
 auto getSpan(const std::vector<NodePtr>& nodes) -> std::optional<lex::SourceSpan>;
 
+auto nodesEqual(const std::vector<NodePtr>& a, const std::vector<NodePtr>& b) -> bool;
+
+auto anyNodeNull(const std::vector<NodePtr>&) -> bool;
+
 } // namespace parse

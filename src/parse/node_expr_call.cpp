@@ -17,7 +17,7 @@ CallExprNode::CallExprNode(
     m_commas{std::move(commas)},
     m_close{std::move(close)} {
 
-  if (std::any_of(m_args.begin(), m_args.end(), [](const NodePtr& p) { return p == nullptr; })) {
+  if (anyNodeNull(m_args)) {
     throw std::invalid_argument("args cannot contain a nullptr");
   }
   if (m_args.empty() ? !m_commas.empty() : m_commas.size() != m_args.size() - 1) {
@@ -27,12 +27,7 @@ CallExprNode::CallExprNode(
 
 auto CallExprNode::operator==(const Node& rhs) const noexcept -> bool {
   const auto r = dynamic_cast<const CallExprNode*>(&rhs);
-  return r != nullptr && m_id == r->m_id && m_args.size() == r->m_args.size() &&
-      std::equal(
-             m_args.begin(),
-             m_args.end(),
-             r->m_args.begin(),
-             [](const NodePtr& l, const NodePtr& r) { return *l == *r; });
+  return r != nullptr && m_id == r->m_id && nodesEqual(m_args, r->m_args);
 }
 
 auto CallExprNode::operator!=(const Node& rhs) const noexcept -> bool {

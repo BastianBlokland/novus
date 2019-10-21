@@ -11,8 +11,7 @@ ErrorNode::ErrorNode(
     m_tokens{std::move(tokens)},
     m_subExprs{std::move(subExprs)} {
 
-  if (std::any_of(
-          m_subExprs.begin(), m_subExprs.end(), [](const NodePtr& p) { return p == nullptr; })) {
+  if (anyNodeNull(m_subExprs)) {
     throw std::invalid_argument("subExprs cannot contain a nullptr");
   }
 }
@@ -20,12 +19,7 @@ ErrorNode::ErrorNode(
 auto ErrorNode::operator==(const Node& rhs) const noexcept -> bool {
   const auto r = dynamic_cast<const ErrorNode*>(&rhs);
   return r != nullptr && m_msg == r->m_msg && m_tokens == r->m_tokens &&
-      m_subExprs.size() == r->m_subExprs.size() &&
-      std::equal(
-             m_subExprs.begin(),
-             m_subExprs.end(),
-             r->m_subExprs.begin(),
-             [](const NodePtr& l, const NodePtr& r) { return *l == *r; });
+      nodesEqual(m_subExprs, r->m_subExprs);
 }
 
 auto ErrorNode::operator!=(const Node& rhs) const noexcept -> bool {

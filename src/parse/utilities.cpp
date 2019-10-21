@@ -40,4 +40,15 @@ auto getSpan(const std::vector<NodePtr>& nodes) -> std::optional<lex::SourceSpan
   return lex::SourceSpan::combine(spans.begin(), spans.end());
 }
 
+auto nodesEqual(const std::vector<NodePtr>& a, const std::vector<NodePtr>& b) -> bool {
+  return a.size() == b.size() &&
+      std::equal(a.begin(), a.end(), a.begin(), [](const NodePtr& l, const NodePtr& r) {
+           return *l == *r;
+         });
+}
+
+auto anyNodeNull(const std::vector<NodePtr>& v) -> bool {
+  return std::any_of(v.begin(), v.end(), [](const NodePtr& p) { return p == nullptr; });
+}
+
 } // namespace parse

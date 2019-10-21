@@ -1,4 +1,5 @@
 #include "parse/node_expr_group.hpp"
+#include "utilities.hpp"
 
 namespace parse {
 
@@ -8,8 +9,7 @@ GroupExprNode::GroupExprNode(std::vector<NodePtr> subExprs, std::vector<lex::Tok
   if (m_subExprs.size() < 2) {
     throw std::invalid_argument("Group expression has to contain aleast two sub-expressions");
   }
-  if (std::any_of(
-          m_subExprs.begin(), m_subExprs.end(), [](const NodePtr& p) { return p == nullptr; })) {
+  if (anyNodeNull(m_subExprs)) {
     throw std::invalid_argument("subExprs cannot contain a nullptr");
   }
   if (m_semis.size() != m_subExprs.size() - 1) {

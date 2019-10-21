@@ -1,4 +1,5 @@
 #include "parse/node_expr_switch.hpp"
+#include "utilities.hpp"
 
 namespace parse {
 
@@ -10,8 +11,7 @@ SwitchExprNode::SwitchExprNode(std::vector<NodePtr> ifClauses, NodePtr elseClaus
   if (m_ifClauses.empty()) {
     throw std::invalid_argument("Atleast one if clause is required");
   }
-  if (std::any_of(
-          m_ifClauses.begin(), m_ifClauses.end(), [](const NodePtr& p) { return p == nullptr; })) {
+  if (anyNodeNull(m_ifClauses)) {
     throw std::invalid_argument("Switch cannot contain a null if-clause");
   }
   if (m_elseClause == nullptr) {
@@ -21,12 +21,7 @@ SwitchExprNode::SwitchExprNode(std::vector<NodePtr> ifClauses, NodePtr elseClaus
 
 auto SwitchExprNode::operator==(const Node& rhs) const noexcept -> bool {
   const auto r = dynamic_cast<const SwitchExprNode*>(&rhs);
-  return r != nullptr && m_ifClauses.size() == r->m_ifClauses.size() &&
-      std::equal(
-             m_ifClauses.begin(),
-             m_ifClauses.end(),
-             r->m_ifClauses.begin(),
-             [](const NodePtr& l, const NodePtr& r) { return *l == *r; }) &&
+  return r != nullptr && nodesEqual(m_ifClauses, r->m_ifClauses) &&
       *m_elseClause == *r->m_elseClause;
 }
 
