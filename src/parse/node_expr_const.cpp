@@ -1,4 +1,5 @@
 #include "parse/node_expr_const.hpp"
+#include "utilities.hpp"
 
 namespace parse {
 
@@ -23,7 +24,9 @@ auto ConstExprNode::getSpan() const -> lex::SourceSpan { return m_id.getSpan(); 
 
 auto ConstExprNode::getId() const -> const lex::Token& { return m_id; }
 
-auto ConstExprNode::print(std::ostream& out) const -> std::ostream& { return out << m_id; }
+auto ConstExprNode::print(std::ostream& out) const -> std::ostream& {
+  return out << ::parse::getId(m_id).value_or("error");
+}
 
 // Factories.
 auto constExprNode(lex::Token id) -> NodePtr {

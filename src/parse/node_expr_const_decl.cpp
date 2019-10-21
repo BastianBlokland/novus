@@ -1,4 +1,5 @@
 #include "parse/node_expr_const_decl.hpp"
+#include "utilities.hpp"
 
 namespace parse {
 
@@ -35,7 +36,7 @@ auto ConstDeclExprNode::getSpan() const -> lex::SourceSpan {
 auto ConstDeclExprNode::getId() const -> const lex::Token& { return m_id; }
 
 auto ConstDeclExprNode::print(std::ostream& out) const -> std::ostream& {
-  return out << "decl-" << m_id;
+  return out << "decl-" << ::parse::getId(m_id).value_or("error");
 }
 
 // Factories.
