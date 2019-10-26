@@ -8,7 +8,7 @@ namespace parse {
 
 auto errLexError(lex::Token errToken) -> NodePtr {
   if (errToken.getKind() != lex::TokenKind::Error) {
-    throw std::invalid_argument("Given token is not an error-token");
+    throw std::invalid_argument{"Given token is not an error-token"};
   }
   const auto msg = errToken.getPayload<lex::ErrorTokenPayload>()->getMessage();
   return errorNode(msg, std::move(errToken));

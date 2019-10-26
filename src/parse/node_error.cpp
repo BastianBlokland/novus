@@ -23,7 +23,7 @@ auto ErrorNode::operator!=(const Node& rhs) const noexcept -> bool {
 
 auto ErrorNode::operator[](int i) const -> const Node& {
   if (i < 0 || static_cast<unsigned>(i) >= m_subExprs.size()) {
-    throw std::out_of_range("No child at given index");
+    throw std::out_of_range{"No child at given index"};
   }
   return *m_subExprs[i];
 }
@@ -51,7 +51,7 @@ auto ErrorNode::print(std::ostream& out) const -> std::ostream& { return out << 
 auto errorNode(std::string msg, std::vector<lex::Token> tokens, std::vector<NodePtr> subExprs)
     -> NodePtr {
   if (anyNodeNull(subExprs)) {
-    throw std::invalid_argument("subExprs cannot contain a nullptr");
+    throw std::invalid_argument{"subExprs cannot contain a nullptr"};
   }
   return std::unique_ptr<ErrorNode>{
       new ErrorNode{std::move(msg), std::move(tokens), std::move(subExprs)}};

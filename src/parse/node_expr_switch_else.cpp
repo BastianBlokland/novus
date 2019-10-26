@@ -21,7 +21,7 @@ auto SwitchExprElseNode::operator[](int i) const -> const Node& {
   if (i == 0) {
     return *m_rhs;
   }
-  throw std::out_of_range("No child at given index");
+  throw std::out_of_range{"No child at given index"};
 }
 
 auto SwitchExprElseNode::getChildCount() const -> unsigned int { return 1; }
@@ -37,7 +37,7 @@ auto SwitchExprElseNode::print(std::ostream& out) const -> std::ostream& { retur
 // Factories.
 auto switchExprElseNode(lex::Token kw, lex::Token arrow, NodePtr rhs) -> NodePtr {
   if (rhs == nullptr) {
-    throw std::invalid_argument("Rhs cannot be null");
+    throw std::invalid_argument{"Rhs cannot be null"};
   }
   return std::unique_ptr<SwitchExprElseNode>{
       new SwitchExprElseNode{std::move(kw), std::move(arrow), std::move(rhs)}};

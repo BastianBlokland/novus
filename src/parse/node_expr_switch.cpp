@@ -26,7 +26,7 @@ auto SwitchExprNode::operator[](int i) const -> const Node& {
   if (index == m_ifClauses.size()) {
     return *m_elseClause;
   }
-  throw std::out_of_range("No child at given index");
+  throw std::out_of_range{"No child at given index"};
 }
 
 auto SwitchExprNode::getChildCount() const -> unsigned int { return m_ifClauses.size() + 1; }
@@ -42,13 +42,13 @@ auto SwitchExprNode::print(std::ostream& out) const -> std::ostream& { return ou
 // Factories.
 auto switchExprNode(std::vector<NodePtr> ifClauses, NodePtr elseClause) -> NodePtr {
   if (ifClauses.empty()) {
-    throw std::invalid_argument("Atleast one if clause is required");
+    throw std::invalid_argument{"Atleast one if clause is required"};
   }
   if (anyNodeNull(ifClauses)) {
-    throw std::invalid_argument("Switch cannot contain a null if-clause");
+    throw std::invalid_argument{"Switch cannot contain a null if-clause"};
   }
   if (elseClause == nullptr) {
-    throw std::invalid_argument("Else-clause cannot be null");
+    throw std::invalid_argument{"Else-clause cannot be null"};
   }
   return std::unique_ptr<SwitchExprNode>{
       new SwitchExprNode{std::move(ifClauses), std::move(elseClause)}};

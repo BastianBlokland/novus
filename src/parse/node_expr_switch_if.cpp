@@ -25,7 +25,7 @@ auto SwitchExprIfNode::operator[](int i) const -> const Node& {
   case 1:
     return *m_rhs;
   default:
-    throw std::out_of_range("No child at given index");
+    throw std::out_of_range{"No child at given index"};
   }
 }
 
@@ -42,10 +42,10 @@ auto SwitchExprIfNode::print(std::ostream& out) const -> std::ostream& { return 
 // Factories.
 auto switchExprIfNode(lex::Token kw, NodePtr cond, lex::Token arrow, NodePtr rhs) -> NodePtr {
   if (cond == nullptr) {
-    throw std::invalid_argument("Condition expr cannot be null");
+    throw std::invalid_argument{"Condition expr cannot be null"};
   }
   if (rhs == nullptr) {
-    throw std::invalid_argument("Rhs cannot be null");
+    throw std::invalid_argument{"Rhs cannot be null"};
   }
   return std::unique_ptr<SwitchExprIfNode>{
       new SwitchExprIfNode{std::move(kw), std::move(cond), std::move(arrow), std::move(rhs)}};

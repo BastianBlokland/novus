@@ -17,8 +17,8 @@ auto Output::endDiags() const noexcept -> diagIterator { return m_diags.end(); }
 
 auto buildOutput(std::unique_ptr<Program> prog, std::vector<Diag> diags) -> Output {
   if (prog == nullptr && diags.empty()) {
-    throw std::logic_error(
-        "If not program could be constructed, at least one diagnostic should be present");
+    throw std::logic_error{
+        "If not program could be constructed, at least one diagnostic should be present"};
   }
   return Output{std::move(prog), std::move(diags)};
 }

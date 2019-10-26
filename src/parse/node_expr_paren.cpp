@@ -21,7 +21,7 @@ auto ParenExprNode::operator[](int i) const -> const Node& {
   if (i == 0) {
     return *m_expr;
   }
-  throw std::out_of_range("No child at given index");
+  throw std::out_of_range{"No child at given index"};
 }
 
 auto ParenExprNode::getChildCount() const -> unsigned int { return 1; }
@@ -39,7 +39,7 @@ auto ParenExprNode::print(std::ostream& out) const -> std::ostream& {
 // Factories.
 auto parenExprNode(lex::Token open, NodePtr expr, lex::Token close) -> NodePtr {
   if (expr == nullptr) {
-    throw std::invalid_argument("Expr cannot be null");
+    throw std::invalid_argument{"Expr cannot be null"};
   }
   return std::unique_ptr<ParenExprNode>{
       new ParenExprNode{std::move(open), std::move(expr), std::move(close)}};

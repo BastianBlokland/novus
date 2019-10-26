@@ -42,7 +42,7 @@ auto FuncDeclStmtNode::operator[](int i) const -> const Node& {
   if (i == 0) {
     return *m_body;
   }
-  throw std::out_of_range("No child at given index");
+  throw std::out_of_range{"No child at given index"};
 }
 
 auto FuncDeclStmtNode::getChildCount() const -> unsigned int { return 1; }
@@ -82,10 +82,10 @@ auto funcDeclStmtNode(
     lex::Token retType,
     NodePtr body) -> NodePtr {
   if (args.empty() ? !commas.empty() : commas.size() != args.size() - 1) {
-    throw std::invalid_argument("Incorrect number of commas");
+    throw std::invalid_argument{"Incorrect number of commas"};
   }
   if (body == nullptr) {
-    throw std::invalid_argument("Body cannot be null");
+    throw std::invalid_argument{"Body cannot be null"};
   }
   return std::unique_ptr<FuncDeclStmtNode>{new FuncDeclStmtNode{std::move(kw),
                                                                 std::move(id),

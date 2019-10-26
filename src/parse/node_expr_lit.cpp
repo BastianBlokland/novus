@@ -14,7 +14,7 @@ auto LitExprNode::operator!=(const Node& rhs) const noexcept -> bool {
 }
 
 auto LitExprNode::operator[](int /*unused*/) const -> const Node& {
-  throw std::out_of_range("No child at given index");
+  throw std::out_of_range{"No child at given index"};
 }
 
 auto LitExprNode::getChildCount() const -> unsigned int { return 0; }
