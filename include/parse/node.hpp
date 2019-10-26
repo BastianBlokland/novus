@@ -8,8 +8,8 @@ namespace parse {
 class Node {
 public:
   Node()                    = delete;
-  Node(const Node& rhs)     = default;
-  Node(Node&& rhs) noexcept = default;
+  Node(const Node& rhs)     = delete;
+  Node(Node&& rhs) noexcept = delete;
   virtual ~Node()           = default;
 
   auto operator=(const Node& rhs) -> Node& = delete;
