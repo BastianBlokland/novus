@@ -13,24 +13,24 @@
 
 namespace lex {
 
-Token::Token() : m_type{TokenKind::End}, m_payload{nullptr}, m_span{0} {}
+Token::Token() : m_kind{TokenKind::End}, m_payload{nullptr}, m_span{0} {}
 
-Token::Token(const TokenKind type, std::unique_ptr<TokenPayload> payload, const SourceSpan span) :
-    m_type{type}, m_payload{std::move(payload)}, m_span{span} {}
+Token::Token(const TokenKind kind, std::unique_ptr<TokenPayload> payload, const SourceSpan span) :
+    m_kind{kind}, m_payload{std::move(payload)}, m_span{span} {}
 
 Token::Token(const Token& rhs) :
-    m_type{rhs.m_type},
+    m_kind{rhs.m_kind},
     m_payload{!rhs.m_payload ? nullptr : rhs.m_payload->clone()},
     m_span{rhs.m_span} {}
 
 Token::Token(Token&& rhs) noexcept :
-    m_type{rhs.m_type}, m_payload{std::move(rhs.m_payload)}, m_span{rhs.m_span} {}
+    m_kind{rhs.m_kind}, m_payload{std::move(rhs.m_payload)}, m_span{rhs.m_span} {}
 
 auto Token::operator=(const Token& rhs) -> Token& {
   if (this == &rhs) {
     return *this;
   }
-  m_type    = rhs.m_type;
+  m_kind    = rhs.m_kind;
   m_span    = rhs.m_span;
   m_payload = rhs.m_payload ? rhs.m_payload->clone() : nullptr;
   return *this;
@@ -40,14 +40,14 @@ auto Token::operator=(Token&& rhs) noexcept -> Token& {
   if (this == &rhs) {
     return *this;
   }
-  m_type    = rhs.m_type;
+  m_kind    = rhs.m_kind;
   m_span    = rhs.m_span;
   m_payload = std::move(rhs.m_payload);
   return *this;
 }
 
 auto Token::operator==(const Token& rhs) const noexcept -> bool {
-  if (m_type != rhs.m_type) {
+  if (m_kind != rhs.m_kind) {
     return false;
   }
   if ((m_payload == nullptr) != (rhs.m_payload == nullptr)) {
@@ -65,7 +65,7 @@ auto Token::str() const -> std::string {
 }
 
 auto operator<<(std::ostream& out, const Token& rhs) -> std::ostream& {
-  out << rhs.getType();
+  out << rhs.getKind();
   const auto payload = rhs.getPayload();
   if (payload) {
     out << '-' << *payload;
@@ -77,8 +77,8 @@ auto endToken() -> Token { return endToken(SourceSpan{0}); }
 
 auto endToken(const SourceSpan span) -> Token { return Token{TokenKind::End, nullptr, span}; }
 
-auto basicToken(const TokenKind type, const SourceSpan span) -> Token {
-  return Token{type, nullptr, span};
+auto basicToken(const TokenKind kind, const SourceSpan span) -> Token {
+  return Token{kind, nullptr, span};
 }
 
 auto errorToken(std::string msg, const SourceSpan span) -> Token {

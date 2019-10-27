@@ -109,34 +109,34 @@ auto main(int argc, char** argv) -> int {
 }
 
 auto getFgColor(const parse::Node& node) -> rang::fg {
-  using nt = parse::NodeKind;
+  using nk = parse::NodeKind;
 
-  switch (node.getType()) {
-  case nt::ExprBinaryOp:
-  case nt::ExprUnaryOp:
-  case nt::ExprSwitch:
-  case nt::ExprSwitchIf:
-  case nt::ExprSwitchElse:
-  case nt::ExprGroup:
-  case nt::ExprParen:
+  switch (node.getKind()) {
+  case nk::ExprBinaryOp:
+  case nk::ExprUnaryOp:
+  case nk::ExprSwitch:
+  case nk::ExprSwitchIf:
+  case nk::ExprSwitchElse:
+  case nk::ExprGroup:
+  case nk::ExprParen:
     return rang::fg::green;
-  case nt::StmtFuncDecl:
-  case nt::StmtPrint:
+  case nk::StmtFuncDecl:
+  case nk::StmtPrint:
     return rang::fg::blue;
-  case nt::ExprCall:
-  case nt::ExprConst:
-  case nt::ExprConstDecl:
+  case nk::ExprCall:
+  case nk::ExprConst:
+  case nk::ExprConstDecl:
     return rang::fg::magenta;
-  case nt::ExprLit:
+  case nk::ExprLit:
     return rang::fg::cyan;
-  case nt::Error:
+  case nk::Error:
     return rang::fg::reset;
   }
   return rang::fg::reset;
 }
 
 auto getBgColor(const parse::Node& node) -> rang::bg {
-  switch (node.getType()) {
+  switch (node.getKind()) {
   case parse::NodeKind::Error:
     return rang::bg::red;
   default:

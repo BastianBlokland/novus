@@ -33,7 +33,7 @@ auto run(InputItr inputBegin, const InputItr inputEnd, const bool printTokens) {
   if (printTokens) {
     for (const auto& token : tokens) {
       std::cout << s::bold << "* " << getFgColor(token) << getBgColor(token)
-                << std::setw(columnWidth) << std::left << token.getType();
+                << std::setw(columnWidth) << std::left << token.getKind();
 
       std::stringstream spanStr;
       spanStr << '(' << token.getSpan().getStart() << " - " << token.getSpan().getEnd() << ')';

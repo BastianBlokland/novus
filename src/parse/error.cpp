@@ -7,7 +7,7 @@
 namespace parse {
 
 auto errLexError(lex::Token errToken) -> NodePtr {
-  if (errToken.getType() != lex::TokenKind::Error) {
+  if (errToken.getKind() != lex::TokenKind::Error) {
     throw std::invalid_argument("Given token is not an error-token");
   }
   const auto msg = errToken.getPayload<lex::ErrorTokenPayload>()->getMessage();
@@ -35,17 +35,17 @@ auto errInvalidStmtFuncDecl(
     NodePtr body) -> NodePtr {
 
   std::ostringstream oss;
-  if (id.getType() != lex::TokenKind::Identifier) {
+  if (id.getKind() != lex::TokenKind::Identifier) {
     oss << "Expected function identifier but got: " << id;
-  } else if (open.getType() != lex::TokenKind::SepOpenParen) {
+  } else if (open.getKind() != lex::TokenKind::SepOpenParen) {
     oss << "Expected opening parentheses but got: " << open;
   } else if (commas.size() != (args.empty() ? 0 : args.size() - 1)) {
     oss << "Incorrect number of comma's in function declaration";
-  } else if (close.getType() != lex::TokenKind::SepCloseParen) {
+  } else if (close.getKind() != lex::TokenKind::SepCloseParen) {
     oss << "Expected closing parentheses but got: " << close;
-  } else if (arrow.getType() != lex::TokenKind::SepArrow) {
+  } else if (arrow.getKind() != lex::TokenKind::SepArrow) {
     oss << "Expected return-type seperator (->) but got: " << arrow;
-  } else if (retType.getType() != lex::TokenKind::Identifier) {
+  } else if (retType.getKind() != lex::TokenKind::Identifier) {
     oss << "Expected return-type identifier but got: " << retType;
   } else {
     oss << "Invalid function declaration";
@@ -97,9 +97,9 @@ auto errInvalidUnaryOp(lex::Token op, NodePtr rhs) -> NodePtr {
 
 auto errInvalidParenExpr(lex::Token open, NodePtr expr, lex::Token close) -> NodePtr {
   std::ostringstream oss;
-  if (open.getType() != lex::TokenKind::SepOpenParen) {
+  if (open.getKind() != lex::TokenKind::SepOpenParen) {
     oss << "Expected opening parentheses but got: " << open;
-  } else if (close.getType() != lex::TokenKind::SepCloseParen) {
+  } else if (close.getKind() != lex::TokenKind::SepCloseParen) {
     oss << "Expected closing parentheses but got: " << close;
   } else {
     oss << "Invalid parenthesized expression";
@@ -125,9 +125,9 @@ auto errInvalidCallExpr(
   std::ostringstream oss;
   if (commas.size() != (args.empty() ? 0 : args.size() - 1)) {
     oss << "Incorrect number of comma's in call expression";
-  } else if (open.getType() != lex::TokenKind::SepOpenParen) {
+  } else if (open.getKind() != lex::TokenKind::SepOpenParen) {
     oss << "Expected opening parentheses but got: " << open;
-  } else if (close.getType() != lex::TokenKind::SepCloseParen) {
+  } else if (close.getKind() != lex::TokenKind::SepCloseParen) {
     oss << "Expected closing parentheses but got: " << close;
   } else {
     oss << "Invalid call expression";
@@ -148,7 +148,7 @@ auto errInvalidSwitchIf(lex::Token kw, NodePtr cond, lex::Token arrow, NodePtr r
   std::ostringstream oss;
   if (getKw(kw) != lex::Keyword::If) {
     oss << "Expected keyword 'if' but got: " << kw;
-  } else if (arrow.getType() != lex::TokenKind::SepArrow) {
+  } else if (arrow.getKind() != lex::TokenKind::SepArrow) {
     oss << "Expected arrow '->' but got: " << arrow;
   } else {
     oss << "Invalid if clause";
@@ -169,7 +169,7 @@ auto errInvalidSwitchElse(lex::Token kw, lex::Token arrow, NodePtr rhs) -> NodeP
   std::ostringstream oss;
   if (getKw(kw) != lex::Keyword::Else) {
     oss << "Expected keyword 'else' but got: " << kw;
-  } else if (arrow.getType() != lex::TokenKind::SepArrow) {
+  } else if (arrow.getKind() != lex::TokenKind::SepArrow) {
     oss << "Expected arrow '->' but got: " << arrow;
   } else {
     oss << "Invalid else clause";

@@ -19,17 +19,17 @@ public:
   virtual auto operator!=(const Node& rhs) const noexcept -> bool = 0;
 
   [[nodiscard]] virtual auto operator[](int) const -> const Node& = 0;
-  [[nodiscard]] auto getType() const noexcept -> NodeKind { return m_type; }
+  [[nodiscard]] auto getKind() const noexcept -> NodeKind { return m_kind; }
   [[nodiscard]] virtual auto getChildCount() const -> unsigned int = 0;
   [[nodiscard]] virtual auto getSpan() const -> lex::SourceSpan    = 0;
 
   virtual auto print(std::ostream& out) const -> std::ostream& = 0;
 
 protected:
-  explicit Node(const NodeKind type) : m_type{type} {}
+  explicit Node(const NodeKind kind) : m_kind{kind} {}
 
 private:
-  const NodeKind m_type;
+  const NodeKind m_kind;
 };
 
 using NodePtr = std::unique_ptr<Node>;
