@@ -3,7 +3,7 @@
 namespace parse {
 
 ParenExprNode::ParenExprNode(lex::Token open, NodePtr expr, lex::Token close) :
-    Node(NodeType::ExprParen),
+    Node(NodeKind::ExprParen),
     m_open{std::move(open)},
     m_expr{std::move(expr)},
     m_close{std::move(close)} {}

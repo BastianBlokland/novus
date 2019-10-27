@@ -3,7 +3,7 @@
 namespace parse {
 
 PrintStmtNode::PrintStmtNode(lex::Token kw, NodePtr expr) :
-    Node(NodeType::StmtPrint), m_kw{std::move(kw)}, m_expr{std::move(expr)} {}
+    Node(NodeKind::StmtPrint), m_kw{std::move(kw)}, m_expr{std::move(expr)} {}
 
 auto PrintStmtNode::operator==(const Node& rhs) const noexcept -> bool {
   const auto r = dynamic_cast<const PrintStmtNode*>(&rhs);

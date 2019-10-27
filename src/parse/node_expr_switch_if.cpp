@@ -3,7 +3,7 @@
 namespace parse {
 
 SwitchExprIfNode::SwitchExprIfNode(lex::Token kw, NodePtr cond, lex::Token arrow, NodePtr rhs) :
-    Node(NodeType::ExprSwitchIf),
+    Node(NodeKind::ExprSwitchIf),
     m_kw{std::move(kw)},
     m_cond{std::move(cond)},
     m_arrow{std::move(arrow)},

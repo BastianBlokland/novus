@@ -1,7 +1,7 @@
 #pragma once
 #include "lex/token.hpp"
 #include "parse/node.hpp"
-#include "parse/node_type.hpp"
+#include "parse/node_kind.hpp"
 #include <vector>
 
 namespace parse {

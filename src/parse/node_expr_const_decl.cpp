@@ -4,7 +4,7 @@
 namespace parse {
 
 ConstDeclExprNode::ConstDeclExprNode(lex::Token id, lex::Token eq, NodePtr rhs) :
-    Node(NodeType::ExprConstDecl),
+    Node(NodeKind::ExprConstDecl),
     m_id{std::move(id)},
     m_eq{std::move(eq)},
     m_rhs{std::move(rhs)} {}

@@ -1,49 +1,49 @@
-#include "parse/node_type.hpp"
+#include "parse/node_kind.hpp"
 
 namespace parse {
 
-auto operator<<(std::ostream& out, const NodeType& rhs) -> std::ostream& {
+auto operator<<(std::ostream& out, const NodeKind& rhs) -> std::ostream& {
   switch (rhs) {
-  case NodeType::StmtFuncDecl:
+  case NodeKind::StmtFuncDecl:
     out << "stmt-func-decl";
     break;
-  case NodeType::StmtPrint:
+  case NodeKind::StmtPrint:
     out << "stmt-print";
     break;
-  case NodeType::ExprUnaryOp:
+  case NodeKind::ExprUnaryOp:
     out << "expr-unary-op";
     break;
-  case NodeType::ExprBinaryOp:
+  case NodeKind::ExprBinaryOp:
     out << "expr-binary-op";
     break;
-  case NodeType::ExprSwitch:
+  case NodeKind::ExprSwitch:
     out << "expr-switch";
     break;
-  case NodeType::ExprSwitchIf:
+  case NodeKind::ExprSwitchIf:
     out << "expr-switch-if";
     break;
-  case NodeType::ExprSwitchElse:
+  case NodeKind::ExprSwitchElse:
     out << "expr-switch-else";
     break;
-  case NodeType::ExprLit:
+  case NodeKind::ExprLit:
     out << "expr-lit";
     break;
-  case NodeType::ExprConst:
+  case NodeKind::ExprConst:
     out << "expr-const";
     break;
-  case NodeType::ExprConstDecl:
+  case NodeKind::ExprConstDecl:
     out << "expr-const-decl";
     break;
-  case NodeType::ExprCall:
+  case NodeKind::ExprCall:
     out << "expr-call";
     break;
-  case NodeType::ExprGroup:
+  case NodeKind::ExprGroup:
     out << "expr-group";
     break;
-  case NodeType::ExprParen:
+  case NodeKind::ExprParen:
     out << "expr-paren";
     break;
-  case NodeType::Error:
+  case NodeKind::Error:
     out << "error";
     break;
   }

@@ -109,7 +109,7 @@ auto main(int argc, char** argv) -> int {
 }
 
 auto getFgColor(const parse::Node& node) -> rang::fg {
-  using nt = parse::NodeType;
+  using nt = parse::NodeKind;
 
   switch (node.getType()) {
   case nt::ExprBinaryOp:
@@ -137,7 +137,7 @@ auto getFgColor(const parse::Node& node) -> rang::fg {
 
 auto getBgColor(const parse::Node& node) -> rang::bg {
   switch (node.getType()) {
-  case parse::NodeType::Error:
+  case parse::NodeKind::Error:
     return rang::bg::red;
   default:
     return rang::bg::reset;

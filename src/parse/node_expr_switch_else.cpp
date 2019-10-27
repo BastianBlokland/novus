@@ -3,7 +3,7 @@
 namespace parse {
 
 SwitchExprElseNode::SwitchExprElseNode(lex::Token kw, lex::Token arrow, NodePtr rhs) :
-    Node(NodeType::ExprSwitchElse),
+    Node(NodeKind::ExprSwitchElse),
     m_kw{std::move(kw)},
     m_arrow{std::move(arrow)},
     m_rhs{std::move(rhs)} {}

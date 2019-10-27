@@ -3,7 +3,7 @@
 
 namespace parse {
 
-enum class NodeType {
+enum class NodeKind {
   StmtFuncDecl,
   StmtPrint,
   ExprUnaryOp,
@@ -20,6 +20,6 @@ enum class NodeType {
   Error
 };
 
-auto operator<<(std::ostream& out, const NodeType& rhs) -> std::ostream&;
+auto operator<<(std::ostream& out, const NodeKind& rhs) -> std::ostream&;
 
 } // namespace parse

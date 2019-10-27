@@ -17,7 +17,7 @@ FuncDeclStmtNode::FuncDeclStmtNode(
     lex::Token arrow,
     lex::Token retType,
     NodePtr body) :
-    Node(NodeType::StmtFuncDecl),
+    Node(NodeKind::StmtFuncDecl),
     m_kw{std::move(kw)},
     m_id{std::move(id)},
     m_open{std::move(open)},

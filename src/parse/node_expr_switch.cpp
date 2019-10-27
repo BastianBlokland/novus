@@ -4,7 +4,7 @@
 namespace parse {
 
 SwitchExprNode::SwitchExprNode(std::vector<NodePtr> ifClauses, NodePtr elseClause) :
-    Node(NodeType::ExprSwitch),
+    Node(NodeKind::ExprSwitch),
     m_ifClauses{std::move(ifClauses)},
     m_elseClause{std::move(elseClause)} {}
 

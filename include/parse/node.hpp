@@ -1,6 +1,6 @@
 #pragma once
 #include "lex/source_span.hpp"
-#include "parse/node_type.hpp"
+#include "parse/node_kind.hpp"
 #include <iostream>
 
 namespace parse {
@@ -19,17 +19,17 @@ public:
   virtual auto operator!=(const Node& rhs) const noexcept -> bool = 0;
 
   [[nodiscard]] virtual auto operator[](int) const -> const Node& = 0;
-  [[nodiscard]] auto getType() const noexcept -> NodeType { return m_type; }
+  [[nodiscard]] auto getType() const noexcept -> NodeKind { return m_type; }
   [[nodiscard]] virtual auto getChildCount() const -> unsigned int = 0;
   [[nodiscard]] virtual auto getSpan() const -> lex::SourceSpan    = 0;
 
   virtual auto print(std::ostream& out) const -> std::ostream& = 0;
 
 protected:
-  explicit Node(const NodeType type) : m_type{type} {}
+  explicit Node(const NodeKind type) : m_type{type} {}
 
 private:
-  const NodeType m_type;
+  const NodeKind m_type;
 };
 
 using NodePtr = std::unique_ptr<Node>;

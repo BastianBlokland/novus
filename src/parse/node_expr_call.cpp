@@ -9,7 +9,7 @@ CallExprNode::CallExprNode(
     std::vector<NodePtr> args,
     std::vector<lex::Token> commas,
     lex::Token close) :
-    Node(NodeType::ExprCall),
+    Node(NodeKind::ExprCall),
     m_id{std::move(id)},
     m_open{std::move(open)},
     m_args{std::move(args)},

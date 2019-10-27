@@ -3,7 +3,7 @@
 
 namespace parse {
 
-ConstExprNode::ConstExprNode(lex::Token id) : Node(NodeType::ExprConst), m_id{std::move(id)} {}
+ConstExprNode::ConstExprNode(lex::Token id) : Node(NodeKind::ExprConst), m_id{std::move(id)} {}
 
 auto ConstExprNode::operator==(const Node& rhs) const noexcept -> bool {
   const auto r = dynamic_cast<const ConstExprNode*>(&rhs);

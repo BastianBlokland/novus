@@ -6,7 +6,7 @@ namespace parse {
 
 ErrorNode::ErrorNode(
     std::string msg, std::vector<lex::Token> tokens, std::vector<NodePtr> subExprs) :
-    Node(NodeType::Error),
+    Node(NodeKind::Error),
     m_msg{std::move(msg)},
     m_tokens{std::move(tokens)},
     m_subExprs{std::move(subExprs)} {}

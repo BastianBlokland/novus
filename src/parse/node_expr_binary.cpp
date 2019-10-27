@@ -3,7 +3,7 @@
 namespace parse {
 
 BinaryExprNode::BinaryExprNode(NodePtr lhs, lex::Token op, NodePtr rhs) :
-    Node(NodeType::ExprBinaryOp),
+    Node(NodeKind::ExprBinaryOp),
     m_lhs{std::move(lhs)},
     m_op{std::move(op)},
     m_rhs{std::move(rhs)} {}
