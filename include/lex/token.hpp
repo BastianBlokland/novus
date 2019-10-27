@@ -2,8 +2,8 @@
 #include "lex/keyword.hpp"
 #include "lex/source_span.hpp"
 #include "lex/token_cat.hpp"
+#include "lex/token_kind.hpp"
 #include "lex/token_payload.hpp"
-#include "lex/token_type.hpp"
 #include <iostream>
 #include <memory>
 #include <string>
@@ -13,7 +13,7 @@ namespace lex {
 class Token final {
 public:
   Token();
-  Token(TokenType type, std::unique_ptr<TokenPayload> payload, SourceSpan span);
+  Token(TokenKind type, std::unique_ptr<TokenPayload> payload, SourceSpan span);
   Token(const Token& rhs);
   Token(Token&& rhs) noexcept;
 
@@ -36,16 +36,16 @@ public:
     return dynamic_cast<PayloadT*>(m_payload.get());
   }
 
-  [[nodiscard]] auto isEnd() const noexcept { return m_type == TokenType::End; }
+  [[nodiscard]] auto isEnd() const noexcept { return m_type == TokenKind::End; }
 
-  [[nodiscard]] auto isError() const noexcept { return m_type == TokenType::Error; }
+  [[nodiscard]] auto isError() const noexcept { return m_type == TokenKind::Error; }
 
   [[nodiscard]] auto getCat() const -> TokenCat { return lookupCat(m_type); }
 
   [[nodiscard]] auto str() const -> std::string;
 
 private:
-  TokenType m_type;
+  TokenKind m_type;
   std::unique_ptr<TokenPayload> m_payload;
   SourceSpan m_span;
 };
@@ -55,7 +55,7 @@ auto operator<<(std::ostream& out, const Token& rhs) -> std::ostream&;
 // Factories.
 auto endToken(SourceSpan span = SourceSpan{0}) -> Token;
 
-auto basicToken(TokenType type, SourceSpan span = SourceSpan{0}) -> Token;
+auto basicToken(TokenKind type, SourceSpan span = SourceSpan{0}) -> Token;
 
 auto errorToken(std::string msg, SourceSpan span = SourceSpan{0}) -> Token;
 

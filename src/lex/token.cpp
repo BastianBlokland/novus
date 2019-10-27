@@ -13,9 +13,9 @@
 
 namespace lex {
 
-Token::Token() : m_type{TokenType::End}, m_payload{nullptr}, m_span{0} {}
+Token::Token() : m_type{TokenKind::End}, m_payload{nullptr}, m_span{0} {}
 
-Token::Token(const TokenType type, std::unique_ptr<TokenPayload> payload, const SourceSpan span) :
+Token::Token(const TokenKind type, std::unique_ptr<TokenPayload> payload, const SourceSpan span) :
     m_type{type}, m_payload{std::move(payload)}, m_span{span} {}
 
 Token::Token(const Token& rhs) :
@@ -75,35 +75,35 @@ auto operator<<(std::ostream& out, const Token& rhs) -> std::ostream& {
 
 auto endToken() -> Token { return endToken(SourceSpan{0}); }
 
-auto endToken(const SourceSpan span) -> Token { return Token{TokenType::End, nullptr, span}; }
+auto endToken(const SourceSpan span) -> Token { return Token{TokenKind::End, nullptr, span}; }
 
-auto basicToken(const TokenType type, const SourceSpan span) -> Token {
+auto basicToken(const TokenKind type, const SourceSpan span) -> Token {
   return Token{type, nullptr, span};
 }
 
 auto errorToken(std::string msg, const SourceSpan span) -> Token {
-  return Token{TokenType::Error, std::make_unique<ErrorTokenPayload>(std::move(msg)), span};
+  return Token{TokenKind::Error, std::make_unique<ErrorTokenPayload>(std::move(msg)), span};
 }
 
 auto litIntToken(const int32_t val, const SourceSpan span) -> Token {
-  return Token{TokenType::LitInt, std::make_unique<LitIntTokenPayload>(val), span};
+  return Token{TokenKind::LitInt, std::make_unique<LitIntTokenPayload>(val), span};
 }
 
 auto litBoolToken(const bool val, const SourceSpan span) -> Token {
-  return Token{TokenType::LitBool, std::make_unique<LitBoolTokenPayload>(val), span};
+  return Token{TokenKind::LitBool, std::make_unique<LitBoolTokenPayload>(val), span};
 }
 
 auto litStrToken(std::string val, const SourceSpan span) -> Token {
-  return Token{TokenType::LitStr, std::make_unique<LitStringTokenPayload>(std::move(val)), span};
+  return Token{TokenKind::LitStr, std::make_unique<LitStringTokenPayload>(std::move(val)), span};
 }
 
 auto keywordToken(Keyword keyword, const SourceSpan span) -> Token {
-  return Token{TokenType::Keyword, std::make_unique<KeywordTokenPayload>(keyword), span};
+  return Token{TokenKind::Keyword, std::make_unique<KeywordTokenPayload>(keyword), span};
 }
 
 auto identiferToken(std::string id, const SourceSpan span) -> Token {
   return Token{
-      TokenType::Identifier, std::make_unique<IdentifierTokenPayload>(std::move(id)), span};
+      TokenKind::Identifier, std::make_unique<IdentifierTokenPayload>(std::move(id)), span};
 }
 
 } // namespace lex

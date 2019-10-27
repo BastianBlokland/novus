@@ -3,7 +3,7 @@
 
 namespace lex {
 
-enum class TokenType {
+enum class TokenKind {
   End,
   OpPlus,
   OpMinus,
@@ -34,6 +34,6 @@ enum class TokenType {
   Error
 };
 
-auto operator<<(std::ostream& out, const TokenType& rhs) -> std::ostream&;
+auto operator<<(std::ostream& out, const TokenKind& rhs) -> std::ostream&;
 
 } // namespace lex

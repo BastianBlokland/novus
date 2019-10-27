@@ -13,7 +13,7 @@ TEST_CASE("Lexing boolean literals", "[lex]") {
   SECTION("Sequences") {
     CHECK_TOKENS("true false", litBoolToken(true), litBoolToken(false));
     CHECK_TOKENS(
-        "true,true", litBoolToken(true), basicToken(TokenType::SepComma), litBoolToken(true));
+        "true,true", litBoolToken(true), basicToken(TokenKind::SepComma), litBoolToken(true));
   }
 
   SECTION("Spans") { CHECK_SPANS(" true ", SourceSpan{1, 4}); }

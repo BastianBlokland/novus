@@ -4,9 +4,9 @@ namespace parse {
 
 auto getUnaryOpPrecedence(const lex::Token& token) -> int {
   switch (token.getType()) {
-  case lex::TokenType::OpPlus:
-  case lex::TokenType::OpMinus:
-  case lex::TokenType::OpBang:
+  case lex::TokenKind::OpPlus:
+  case lex::TokenKind::OpMinus:
+  case lex::TokenKind::OpBang:
     return unaryPrecedence;
   default:
     return 0;
@@ -15,25 +15,25 @@ auto getUnaryOpPrecedence(const lex::Token& token) -> int {
 
 auto getBinaryOpPrecedence(const lex::Token& token) -> int {
   switch (token.getType()) {
-  case lex::TokenType::OpStar:
-  case lex::TokenType::OpSlash:
+  case lex::TokenKind::OpStar:
+  case lex::TokenKind::OpSlash:
     return multiplicativePrecedence;
-  case lex::TokenType::OpPlus:
-  case lex::TokenType::OpMinus:
+  case lex::TokenKind::OpPlus:
+  case lex::TokenKind::OpMinus:
     return additivePrecedence;
-  case lex::TokenType::OpLess:
-  case lex::TokenType::OpLessEq:
-  case lex::TokenType::OpGt:
-  case lex::TokenType::OpGtEq:
+  case lex::TokenKind::OpLess:
+  case lex::TokenKind::OpLessEq:
+  case lex::TokenKind::OpGt:
+  case lex::TokenKind::OpGtEq:
     return relationalPrecedence;
-  case lex::TokenType::OpEqEq:
-  case lex::TokenType::OpBangEq:
+  case lex::TokenKind::OpEqEq:
+  case lex::TokenKind::OpBangEq:
     return equalityPrecedence;
-  case lex::TokenType::OpAmpAmp:
+  case lex::TokenKind::OpAmpAmp:
     return logicAndPrecedence;
-  case lex::TokenType::OpPipePipe:
+  case lex::TokenKind::OpPipePipe:
     return logicOrPrecedence;
-  case lex::TokenType::OpSemi:
+  case lex::TokenKind::OpSemi:
     return groupingPrecedence;
   default:
     return 0;

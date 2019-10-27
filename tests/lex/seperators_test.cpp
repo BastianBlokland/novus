@@ -4,10 +4,10 @@
 namespace lex {
 
 TEST_CASE("Lexing seperators", "[lex]") {
-  CHECK_TOKENS("(", basicToken(TokenType::SepOpenParen));
-  CHECK_TOKENS(")", basicToken(TokenType::SepCloseParen));
-  CHECK_TOKENS(",", basicToken(TokenType::SepComma));
-  CHECK_TOKENS("->", basicToken(TokenType::SepArrow));
+  CHECK_TOKENS("(", basicToken(TokenKind::SepOpenParen));
+  CHECK_TOKENS(")", basicToken(TokenKind::SepCloseParen));
+  CHECK_TOKENS(",", basicToken(TokenKind::SepComma));
+  CHECK_TOKENS("->", basicToken(TokenKind::SepArrow));
 }
 
 } // namespace lex

@@ -29,42 +29,42 @@ auto operator<<(std::ostream& out, const TokenCat& rhs) -> std::ostream& {
   return out;
 }
 
-auto lookupCat(const TokenType type) -> TokenCat {
+auto lookupCat(const TokenKind type) -> TokenCat {
   switch (type) {
-  case TokenType::OpPlus:
-  case TokenType::OpMinus:
-  case TokenType::OpStar:
-  case TokenType::OpSlash:
-  case TokenType::OpAmp:
-  case TokenType::OpAmpAmp:
-  case TokenType::OpPipe:
-  case TokenType::OpPipePipe:
-  case TokenType::OpEq:
-  case TokenType::OpEqEq:
-  case TokenType::OpBang:
-  case TokenType::OpBangEq:
-  case TokenType::OpLess:
-  case TokenType::OpLessEq:
-  case TokenType::OpGt:
-  case TokenType::OpGtEq:
-  case TokenType::OpSemi:
+  case TokenKind::OpPlus:
+  case TokenKind::OpMinus:
+  case TokenKind::OpStar:
+  case TokenKind::OpSlash:
+  case TokenKind::OpAmp:
+  case TokenKind::OpAmpAmp:
+  case TokenKind::OpPipe:
+  case TokenKind::OpPipePipe:
+  case TokenKind::OpEq:
+  case TokenKind::OpEqEq:
+  case TokenKind::OpBang:
+  case TokenKind::OpBangEq:
+  case TokenKind::OpLess:
+  case TokenKind::OpLessEq:
+  case TokenKind::OpGt:
+  case TokenKind::OpGtEq:
+  case TokenKind::OpSemi:
     return TokenCat::Operator;
-  case TokenType::SepOpenParen:
-  case TokenType::SepCloseParen:
-  case TokenType::SepComma:
-  case TokenType::SepArrow:
+  case TokenKind::SepOpenParen:
+  case TokenKind::SepCloseParen:
+  case TokenKind::SepComma:
+  case TokenKind::SepArrow:
     return TokenCat::Seperator;
-  case TokenType::LitInt:
-  case TokenType::LitBool:
-  case TokenType::LitStr:
+  case TokenKind::LitInt:
+  case TokenKind::LitBool:
+  case TokenKind::LitStr:
     return TokenCat::Literal;
-  case TokenType::Keyword:
+  case TokenKind::Keyword:
     return TokenCat::Keyword;
-  case TokenType::Identifier:
+  case TokenKind::Identifier:
     return TokenCat::Identifier;
-  case TokenType::Error:
+  case TokenKind::Error:
     return TokenCat::Error;
-  case TokenType::End:
+  case TokenKind::End:
     return TokenCat::Unknown;
   }
   return TokenCat::Unknown;

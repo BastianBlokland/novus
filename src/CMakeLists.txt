@@ -6,8 +6,8 @@ add_library(lex STATIC
   lex/source_span.cpp
   lex/token.cpp
   lex/token_cat.cpp
+  lex/token_kind.cpp
   lex/token_payload_lit_string.cpp
-  lex/token_type.cpp
   lex/keyword.cpp
   lex/utilities.cpp)
 target_compile_features(lex PUBLIC cxx_std_17)

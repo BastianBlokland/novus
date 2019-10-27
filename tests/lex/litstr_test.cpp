@@ -24,7 +24,7 @@ TEST_CASE("Lexing string literals", "[lex]") {
     CHECK_TOKENS(
         "\"hello\",\"world\"",
         litStrToken("hello"),
-        basicToken(TokenType::SepComma),
+        basicToken(TokenKind::SepComma),
         litStrToken("world"));
   }
 

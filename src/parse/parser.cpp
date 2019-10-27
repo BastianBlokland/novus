@@ -55,12 +55,12 @@ auto ParserImpl::nextStmtFuncDecl() -> NodePtr {
   auto open   = consumeToken();
   auto args   = std::vector<FuncDeclStmtNode::arg>{};
   auto commas = std::vector<lex::Token>{};
-  while (peekToken(0).getType() == lex::TokenType::Identifier ||
-         peekToken(0).getType() == lex::TokenType::SepComma) {
+  while (peekToken(0).getType() == lex::TokenKind::Identifier ||
+         peekToken(0).getType() == lex::TokenKind::SepComma) {
     auto argType = consumeToken();
     auto argId   = consumeToken();
     args.emplace_back(argType, argId);
-    if (peekToken(0).getType() == lex::TokenType::SepComma) {
+    if (peekToken(0).getType() == lex::TokenKind::SepComma) {
       commas.push_back(consumeToken());
     }
   }
@@ -69,17 +69,17 @@ auto ParserImpl::nextStmtFuncDecl() -> NodePtr {
   auto retType = consumeToken();
   auto body    = nextExpr(0);
 
-  if (getKw(kw) == lex::Keyword::Fun && id.getType() == lex::TokenType::Identifier &&
-      open.getType() == lex::TokenType::SepOpenParen &&
-      close.getType() == lex::TokenType::SepCloseParen &&
-      arrow.getType() == lex::TokenType::SepArrow &&
-      retType.getType() == lex::TokenType::Identifier &&
+  if (getKw(kw) == lex::Keyword::Fun && id.getType() == lex::TokenKind::Identifier &&
+      open.getType() == lex::TokenKind::SepOpenParen &&
+      close.getType() == lex::TokenKind::SepCloseParen &&
+      arrow.getType() == lex::TokenKind::SepArrow &&
+      retType.getType() == lex::TokenKind::Identifier &&
       std::all_of(
           args.begin(),
           args.end(),
           [](const auto& a) {
-            return a.first.getType() == lex::TokenType::Identifier &&
-                a.second.getType() == lex::TokenType::Identifier;
+            return a.first.getType() == lex::TokenKind::Identifier &&
+                a.second.getType() == lex::TokenKind::Identifier;
           }) &&
       commas.size() == (args.empty() ? 0 : args.size() - 1)) {
 
@@ -126,7 +126,7 @@ auto ParserImpl::nextExpr(const int minPrecedence) -> NodePtr {
       break;
     }
 
-    if (nextToken.getType() == lex::TokenType::OpSemi) {
+    if (nextToken.getType() == lex::TokenKind::OpSemi) {
       lhs = nextExprGroup(std::move(lhs), binPrecedence);
     } else {
       auto op  = consumeToken();
@@ -156,7 +156,7 @@ auto ParserImpl::nextExprGroup(NodePtr firstExpr, const int precedence) -> NodeP
   auto semis    = std::vector<lex::Token>{};
 
   subExprs.push_back(std::move(firstExpr));
-  while (peekToken(0).getType() == lex::TokenType::OpSemi) {
+  while (peekToken(0).getType() == lex::TokenKind::OpSemi) {
     semis.push_back(consumeToken());
     subExprs.push_back(nextExpr(precedence));
   }
@@ -171,11 +171,11 @@ auto ParserImpl::nextExprPrimary() -> NodePtr {
     return litExprNode(consumeToken());
   case lex::TokenCat::Identifier: {
     auto id = consumeToken();
-    if (peekToken(0).getType() == lex::TokenType::OpEq) {
+    if (peekToken(0).getType() == lex::TokenKind::OpEq) {
       auto eq = consumeToken();
       return constDeclExprNode(std::move(id), std::move(eq), nextExpr(assignmentPrecedence));
     }
-    if (peekToken(0).getType() == lex::TokenType::SepOpenParen) {
+    if (peekToken(0).getType() == lex::TokenKind::SepOpenParen) {
       return nextExprCall(std::move(id));
     }
     return constExprNode(std::move(id));
@@ -186,7 +186,7 @@ auto ParserImpl::nextExprPrimary() -> NodePtr {
     }
     [[fallthrough]];
   default:
-    if (nextTok.getType() == lex::TokenType::SepOpenParen) {
+    if (nextTok.getType() == lex::TokenKind::SepOpenParen) {
       return nextExprParen();
     }
     return errInvalidPrimaryExpr(consumeToken());
@@ -197,16 +197,16 @@ auto ParserImpl::nextExprCall(lex::Token id) -> NodePtr {
   auto open   = consumeToken();
   auto args   = std::vector<NodePtr>{};
   auto commas = std::vector<lex::Token>{};
-  while (peekToken(0).getType() != lex::TokenType::SepCloseParen && !peekToken(0).isEnd()) {
+  while (peekToken(0).getType() != lex::TokenKind::SepCloseParen && !peekToken(0).isEnd()) {
     args.push_back(nextExpr(0));
-    if (peekToken(0).getType() == lex::TokenType::SepComma) {
+    if (peekToken(0).getType() == lex::TokenKind::SepComma) {
       commas.push_back(consumeToken());
     }
   }
   auto close = consumeToken();
 
-  if (open.getType() == lex::TokenType::SepOpenParen &&
-      close.getType() == lex::TokenType::SepCloseParen &&
+  if (open.getType() == lex::TokenKind::SepOpenParen &&
+      close.getType() == lex::TokenKind::SepCloseParen &&
       commas.size() == (args.empty() ? 0 : args.size() - 1)) {
     return callExprNode(
         std::move(id), std::move(open), std::move(args), std::move(commas), std::move(close));
@@ -220,8 +220,8 @@ auto ParserImpl::nextExprParen() -> NodePtr {
   auto expr  = nextExpr(0);
   auto close = consumeToken();
 
-  if (open.getType() == lex::TokenType::SepOpenParen &&
-      close.getType() == lex::TokenType::SepCloseParen) {
+  if (open.getType() == lex::TokenKind::SepOpenParen &&
+      close.getType() == lex::TokenKind::SepCloseParen) {
     return parenExprNode(open, std::move(expr), close);
   }
   return errInvalidParenExpr(open, std::move(expr), close);
@@ -241,7 +241,7 @@ auto ParserImpl::nextExprSwitchIf() -> NodePtr {
   auto arrow = consumeToken();
   auto expr  = nextExpr(0);
 
-  if (getKw(kw) == lex::Keyword::If && arrow.getType() == lex::TokenType::SepArrow) {
+  if (getKw(kw) == lex::Keyword::If && arrow.getType() == lex::TokenKind::SepArrow) {
     return switchExprIfNode(kw, std::move(cond), arrow, std::move(expr));
   }
   return errInvalidSwitchIf(kw, std::move(cond), arrow, std::move(expr));
@@ -252,7 +252,7 @@ auto ParserImpl::nextExprSwitchElse() -> NodePtr {
   auto arrow = consumeToken();
   auto expr  = nextExpr(0);
 
-  if (getKw(kw) == lex::Keyword::Else && arrow.getType() == lex::TokenType::SepArrow) {
+  if (getKw(kw) == lex::Keyword::Else && arrow.getType() == lex::TokenKind::SepArrow) {
     return switchExprElseNode(kw, arrow, std::move(expr));
   }
   return errInvalidSwitchElse(kw, arrow, std::move(expr));

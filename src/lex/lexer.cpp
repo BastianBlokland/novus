@@ -74,61 +74,61 @@ auto LexerImpl::next() -> Token {
     case '\0':
       return endToken(SourceSpan{m_inputPos >= 0 ? m_inputPos : 0});
     case '+':
-      return basicToken(TokenType::OpPlus, SourceSpan{m_inputPos});
+      return basicToken(TokenKind::OpPlus, SourceSpan{m_inputPos});
     case '-':
       if (peekChar(0) == '>') {
         consumeChar();
-        return basicToken(TokenType::SepArrow, SourceSpan{m_inputPos - 1, m_inputPos});
+        return basicToken(TokenKind::SepArrow, SourceSpan{m_inputPos - 1, m_inputPos});
       }
-      return basicToken(TokenType::OpMinus, SourceSpan{m_inputPos});
+      return basicToken(TokenKind::OpMinus, SourceSpan{m_inputPos});
     case '*':
-      return basicToken(TokenType::OpStar, SourceSpan{m_inputPos});
+      return basicToken(TokenKind::OpStar, SourceSpan{m_inputPos});
     case '/':
-      return basicToken(TokenType::OpSlash, SourceSpan{m_inputPos});
+      return basicToken(TokenKind::OpSlash, SourceSpan{m_inputPos});
     case '&':
       if (peekChar(0) == '&') {
         consumeChar();
-        return basicToken(TokenType::OpAmpAmp, SourceSpan{m_inputPos - 1, m_inputPos});
+        return basicToken(TokenKind::OpAmpAmp, SourceSpan{m_inputPos - 1, m_inputPos});
       }
-      return basicToken(TokenType::OpAmp, SourceSpan{m_inputPos});
+      return basicToken(TokenKind::OpAmp, SourceSpan{m_inputPos});
     case '|':
       if (peekChar(0) == '|') {
         consumeChar();
-        return basicToken(TokenType::OpPipePipe, SourceSpan{m_inputPos - 1, m_inputPos});
+        return basicToken(TokenKind::OpPipePipe, SourceSpan{m_inputPos - 1, m_inputPos});
       }
-      return basicToken(TokenType::OpPipe, SourceSpan{m_inputPos});
+      return basicToken(TokenKind::OpPipe, SourceSpan{m_inputPos});
     case '=':
       if (peekChar(0) == '=') {
         consumeChar();
-        return basicToken(TokenType::OpEqEq, SourceSpan{m_inputPos - 1, m_inputPos});
+        return basicToken(TokenKind::OpEqEq, SourceSpan{m_inputPos - 1, m_inputPos});
       }
-      return basicToken(TokenType::OpEq, SourceSpan{m_inputPos});
+      return basicToken(TokenKind::OpEq, SourceSpan{m_inputPos});
     case '!':
       if (peekChar(0) == '=') {
         consumeChar();
-        return basicToken(TokenType::OpBangEq, SourceSpan{m_inputPos - 1, m_inputPos});
+        return basicToken(TokenKind::OpBangEq, SourceSpan{m_inputPos - 1, m_inputPos});
       }
-      return basicToken(TokenType::OpBang, SourceSpan{m_inputPos});
+      return basicToken(TokenKind::OpBang, SourceSpan{m_inputPos});
     case '<':
       if (peekChar(0) == '=') {
         consumeChar();
-        return basicToken(TokenType::OpLessEq, SourceSpan{m_inputPos - 1, m_inputPos});
+        return basicToken(TokenKind::OpLessEq, SourceSpan{m_inputPos - 1, m_inputPos});
       }
-      return basicToken(TokenType::OpLess, SourceSpan{m_inputPos});
+      return basicToken(TokenKind::OpLess, SourceSpan{m_inputPos});
     case '>':
       if (peekChar(0) == '=') {
         consumeChar();
-        return basicToken(TokenType::OpGtEq, SourceSpan{m_inputPos - 1, m_inputPos});
+        return basicToken(TokenKind::OpGtEq, SourceSpan{m_inputPos - 1, m_inputPos});
       }
-      return basicToken(TokenType::OpGt, SourceSpan{m_inputPos});
+      return basicToken(TokenKind::OpGt, SourceSpan{m_inputPos});
     case ';':
-      return basicToken(TokenType::OpSemi, SourceSpan{m_inputPos});
+      return basicToken(TokenKind::OpSemi, SourceSpan{m_inputPos});
     case '(':
-      return basicToken(TokenType::SepOpenParen, SourceSpan{m_inputPos});
+      return basicToken(TokenKind::SepOpenParen, SourceSpan{m_inputPos});
     case ')':
-      return basicToken(TokenType::SepCloseParen, SourceSpan{m_inputPos});
+      return basicToken(TokenKind::SepCloseParen, SourceSpan{m_inputPos});
     case ',':
-      return basicToken(TokenType::SepComma, SourceSpan{m_inputPos});
+      return basicToken(TokenKind::SepComma, SourceSpan{m_inputPos});
     case ' ':
     case '\t':
     case '\n':
