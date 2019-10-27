@@ -30,7 +30,7 @@ auto ConstExprNode::print(std::ostream& out) const -> std::ostream& {
 
 // Factories.
 auto constExprNode(lex::Token id) -> NodePtr {
-  return std::make_unique<ConstExprNode>(std::move(id));
+  return std::unique_ptr<ConstExprNode>{new ConstExprNode{std::move(id)}};
 }
 
 } // namespace parse

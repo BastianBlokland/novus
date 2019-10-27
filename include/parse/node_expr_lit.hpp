@@ -5,9 +5,10 @@
 namespace parse {
 
 class LitExprNode final : public Node {
+  friend auto litExprNode(lex::Token val) -> NodePtr;
+
 public:
   LitExprNode() = delete;
-  explicit LitExprNode(lex::Token val);
 
   auto operator==(const Node& rhs) const noexcept -> bool override;
   auto operator!=(const Node& rhs) const noexcept -> bool override;
@@ -20,6 +21,8 @@ public:
 
 private:
   const lex::Token m_val;
+
+  explicit LitExprNode(lex::Token val);
 
   auto print(std::ostream& out) const -> std::ostream& override;
 };

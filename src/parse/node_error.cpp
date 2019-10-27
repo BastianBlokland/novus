@@ -9,12 +9,7 @@ ErrorNode::ErrorNode(
     Node(NodeType::Error),
     m_msg{std::move(msg)},
     m_tokens{std::move(tokens)},
-    m_subExprs{std::move(subExprs)} {
-
-  if (anyNodeNull(m_subExprs)) {
-    throw std::invalid_argument("subExprs cannot contain a nullptr");
-  }
-}
+    m_subExprs{std::move(subExprs)} {}
 
 auto ErrorNode::operator==(const Node& rhs) const noexcept -> bool {
   const auto r = dynamic_cast<const ErrorNode*>(&rhs);
@@ -53,7 +48,11 @@ auto ErrorNode::print(std::ostream& out) const -> std::ostream& { return out << 
 // Factories.
 auto errorNode(std::string msg, std::vector<lex::Token> tokens, std::vector<NodePtr> subExprs)
     -> NodePtr {
-  return std::make_unique<ErrorNode>(std::move(msg), std::move(tokens), std::move(subExprs));
+  if (anyNodeNull(subExprs)) {
+    throw std::invalid_argument("subExprs cannot contain a nullptr");
+  }
+  return std::unique_ptr<ErrorNode>{
+      new ErrorNode{std::move(msg), std::move(tokens), std::move(subExprs)}};
 }
 
 auto errorNode(std::string msg, lex::Token token) -> NodePtr {

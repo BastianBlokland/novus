@@ -7,9 +7,12 @@
 namespace parse {
 
 class ErrorNode final : public Node {
+  friend auto
+  errorNode(std::string msg, std::vector<lex::Token> tokens, std::vector<NodePtr> subExprs)
+      -> NodePtr;
+
 public:
   ErrorNode() = delete;
-  ErrorNode(std::string msg, std::vector<lex::Token> tokens, std::vector<NodePtr> subExprs);
 
   auto operator==(const Node& rhs) const noexcept -> bool override;
   auto operator!=(const Node& rhs) const noexcept -> bool override;
@@ -24,6 +27,8 @@ private:
   const std::string m_msg;
   const std::vector<lex::Token> m_tokens;
   const std::vector<NodePtr> m_subExprs;
+
+  ErrorNode(std::string msg, std::vector<lex::Token> tokens, std::vector<NodePtr> subExprs);
 
   auto print(std::ostream& out) const -> std::ostream& override;
 };

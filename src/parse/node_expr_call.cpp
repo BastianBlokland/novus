@@ -9,21 +9,12 @@ CallExprNode::CallExprNode(
     std::vector<NodePtr> args,
     std::vector<lex::Token> commas,
     lex::Token close) :
-
     Node(NodeType::ExprCall),
     m_id{std::move(id)},
     m_open{std::move(open)},
     m_args{std::move(args)},
     m_commas{std::move(commas)},
-    m_close{std::move(close)} {
-
-  if (anyNodeNull(m_args)) {
-    throw std::invalid_argument("args cannot contain a nullptr");
-  }
-  if (m_args.empty() ? !m_commas.empty() : m_commas.size() != m_args.size() - 1) {
-    throw std::invalid_argument("Incorrect number of commas");
-  }
-}
+    m_close{std::move(close)} {}
 
 auto CallExprNode::operator==(const Node& rhs) const noexcept -> bool {
   const auto r = dynamic_cast<const CallExprNode*>(&rhs);
@@ -60,8 +51,14 @@ auto callExprNode(
     std::vector<NodePtr> args,
     std::vector<lex::Token> commas,
     lex::Token close) -> NodePtr {
-  return std::make_unique<CallExprNode>(
-      std::move(id), std::move(open), std::move(args), std::move(commas), std::move(close));
+  if (anyNodeNull(args)) {
+    throw std::invalid_argument("args cannot contain a nullptr");
+  }
+  if (args.empty() ? !commas.empty() : commas.size() != args.size() - 1) {
+    throw std::invalid_argument("Incorrect number of commas");
+  }
+  return std::unique_ptr<CallExprNode>{new CallExprNode{
+      std::move(id), std::move(open), std::move(args), std::move(commas), std::move(close)}};
 }
 
 } // namespace parse

@@ -5,9 +5,10 @@
 namespace parse {
 
 class ConstDeclExprNode final : public Node {
+  friend auto constDeclExprNode(lex::Token id, lex::Token eq, NodePtr rhs) -> NodePtr;
+
 public:
   ConstDeclExprNode() = delete;
-  ConstDeclExprNode(lex::Token id, lex::Token eq, NodePtr rhs);
 
   auto operator==(const Node& rhs) const noexcept -> bool override;
   auto operator!=(const Node& rhs) const noexcept -> bool override;
@@ -22,6 +23,8 @@ private:
   const lex::Token m_id;
   const lex::Token m_eq;
   const NodePtr m_rhs;
+
+  ConstDeclExprNode(lex::Token id, lex::Token eq, NodePtr rhs);
 
   auto print(std::ostream& out) const -> std::ostream& override;
 };

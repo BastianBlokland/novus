@@ -4,18 +4,7 @@
 namespace parse {
 
 GroupExprNode::GroupExprNode(std::vector<NodePtr> subExprs, std::vector<lex::Token> semis) :
-    Node(NodeType::ExprGroup), m_subExprs{std::move(subExprs)}, m_semis{std::move(semis)} {
-
-  if (m_subExprs.size() < 2) {
-    throw std::invalid_argument("Group expression has to contain aleast two sub-expressions");
-  }
-  if (anyNodeNull(m_subExprs)) {
-    throw std::invalid_argument("subExprs cannot contain a nullptr");
-  }
-  if (m_semis.size() != m_subExprs.size() - 1) {
-    throw std::invalid_argument("Incorrect number of semicolons");
-  }
-}
+    Node(NodeType::ExprGroup), m_subExprs{std::move(subExprs)}, m_semis{std::move(semis)} {}
 
 auto GroupExprNode::operator==(const Node& rhs) const noexcept -> bool {
   const auto r = dynamic_cast<const GroupExprNode*>(&rhs);
@@ -48,7 +37,16 @@ auto GroupExprNode::print(std::ostream& out) const -> std::ostream& { return out
 
 // Factories.
 auto groupExprNode(std::vector<NodePtr> subExprs, std::vector<lex::Token> semis) -> NodePtr {
-  return std::make_unique<GroupExprNode>(std::move(subExprs), std::move(semis));
+  if (subExprs.size() < 2) {
+    throw std::invalid_argument("Group expression has to contain aleast two sub-expressions");
+  }
+  if (anyNodeNull(subExprs)) {
+    throw std::invalid_argument("subExprs cannot contain a nullptr");
+  }
+  if (semis.size() != subExprs.size() - 1) {
+    throw std::invalid_argument("Incorrect number of semicolons");
+  }
+  return std::unique_ptr<GroupExprNode>{new GroupExprNode{std::move(subExprs), std::move(semis)}};
 }
 
 } // namespace parse

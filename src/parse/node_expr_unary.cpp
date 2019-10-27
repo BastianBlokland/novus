@@ -3,12 +3,7 @@
 namespace parse {
 
 UnaryExprNode::UnaryExprNode(lex::Token op, NodePtr rhs) :
-    Node(NodeType::ExprUnaryOp), m_op{std::move(op)}, m_rhs{std::move(rhs)} {
-
-  if (m_rhs == nullptr) {
-    throw std::invalid_argument("Rhs cannot be null");
-  }
-}
+    Node(NodeType::ExprUnaryOp), m_op{std::move(op)}, m_rhs{std::move(rhs)} {}
 
 auto UnaryExprNode::operator==(const Node& rhs) const noexcept -> bool {
   const auto r = dynamic_cast<const UnaryExprNode*>(&rhs);
@@ -38,7 +33,10 @@ auto UnaryExprNode::print(std::ostream& out) const -> std::ostream& { return out
 
 // Factories.
 auto unaryExprNode(lex::Token op, NodePtr rhs) -> NodePtr {
-  return std::make_unique<UnaryExprNode>(std::move(op), std::move(rhs));
+  if (rhs == nullptr) {
+    throw std::invalid_argument("Rhs cannot be null");
+  }
+  return std::unique_ptr<UnaryExprNode>{new UnaryExprNode{std::move(op), std::move(rhs)}};
 }
 
 } // namespace parse

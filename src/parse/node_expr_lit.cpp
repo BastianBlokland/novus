@@ -27,7 +27,7 @@ auto LitExprNode::print(std::ostream& out) const -> std::ostream& { return out <
 
 // Factories.
 auto litExprNode(lex::Token val) -> NodePtr {
-  return std::make_unique<LitExprNode>(std::move(val));
+  return std::unique_ptr<LitExprNode>{new LitExprNode{std::move(val)}};
 }
 
 } // namespace parse

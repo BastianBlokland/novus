@@ -17,7 +17,6 @@ FuncDeclStmtNode::FuncDeclStmtNode(
     lex::Token arrow,
     lex::Token retType,
     NodePtr body) :
-
     Node(NodeType::StmtFuncDecl),
     m_kw{std::move(kw)},
     m_id{std::move(id)},
@@ -27,15 +26,7 @@ FuncDeclStmtNode::FuncDeclStmtNode(
     m_close{std::move(close)},
     m_arrow{std::move(arrow)},
     m_retType{std::move(retType)},
-    m_body{std::move(body)} {
-
-  if (m_args.empty() ? !m_commas.empty() : m_commas.size() != m_args.size() - 1) {
-    throw std::invalid_argument("Incorrect number of commas");
-  }
-  if (m_body == nullptr) {
-    throw std::invalid_argument("Body cannot be null");
-  }
-}
+    m_body{std::move(body)} {}
 
 auto FuncDeclStmtNode::operator==(const Node& rhs) const noexcept -> bool {
   const auto r = dynamic_cast<const FuncDeclStmtNode*>(&rhs);
@@ -88,16 +79,21 @@ auto funcDeclStmtNode(
     lex::Token arrow,
     lex::Token retType,
     NodePtr body) -> NodePtr {
-  return std::make_unique<FuncDeclStmtNode>(
-      std::move(kw),
-      std::move(id),
-      std::move(open),
-      std::move(args),
-      std::move(commas),
-      std::move(close),
-      std::move(arrow),
-      std::move(retType),
-      std::move(body));
+  if (args.empty() ? !commas.empty() : commas.size() != args.size() - 1) {
+    throw std::invalid_argument("Incorrect number of commas");
+  }
+  if (body == nullptr) {
+    throw std::invalid_argument("Body cannot be null");
+  }
+  return std::unique_ptr<FuncDeclStmtNode>{new FuncDeclStmtNode{std::move(kw),
+                                                                std::move(id),
+                                                                std::move(open),
+                                                                std::move(args),
+                                                                std::move(commas),
+                                                                std::move(close),
+                                                                std::move(arrow),
+                                                                std::move(retType),
+                                                                std::move(body)}};
 }
 
 } // namespace parse

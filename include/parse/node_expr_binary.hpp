@@ -5,9 +5,10 @@
 namespace parse {
 
 class BinaryExprNode final : public Node {
+  friend auto binaryExprNode(NodePtr lhs, lex::Token op, NodePtr rhs) -> NodePtr;
+
 public:
   BinaryExprNode() = delete;
-  BinaryExprNode(NodePtr lhs, lex::Token op, NodePtr rhs);
 
   auto operator==(const Node& rhs) const noexcept -> bool override;
   auto operator!=(const Node& rhs) const noexcept -> bool override;
@@ -22,6 +23,8 @@ private:
   const NodePtr m_lhs;
   const lex::Token m_op;
   const NodePtr m_rhs;
+
+  BinaryExprNode(NodePtr lhs, lex::Token op, NodePtr rhs);
 
   auto print(std::ostream& out) const -> std::ostream& override;
 };

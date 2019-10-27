@@ -4,12 +4,10 @@
 namespace parse {
 
 ConstDeclExprNode::ConstDeclExprNode(lex::Token id, lex::Token eq, NodePtr rhs) :
-    Node(NodeType::ExprConstDecl), m_id{std::move(id)}, m_eq{std::move(eq)}, m_rhs{std::move(rhs)} {
-
-  if (m_rhs == nullptr) {
-    throw std::invalid_argument("Rhs cannot be null");
-  }
-}
+    Node(NodeType::ExprConstDecl),
+    m_id{std::move(id)},
+    m_eq{std::move(eq)},
+    m_rhs{std::move(rhs)} {}
 
 auto ConstDeclExprNode::operator==(const Node& rhs) const noexcept -> bool {
   const auto r = dynamic_cast<const ConstDeclExprNode*>(&rhs);
@@ -41,7 +39,11 @@ auto ConstDeclExprNode::print(std::ostream& out) const -> std::ostream& {
 
 // Factories.
 auto constDeclExprNode(lex::Token id, lex::Token eq, NodePtr rhs) -> NodePtr {
-  return std::make_unique<ConstDeclExprNode>(std::move(id), std::move(eq), std::move(rhs));
+  if (rhs == nullptr) {
+    throw std::invalid_argument("Rhs cannot be null");
+  }
+  return std::unique_ptr<ConstDeclExprNode>{
+      new ConstDeclExprNode{std::move(id), std::move(eq), std::move(rhs)}};
 }
 
 } // namespace parse

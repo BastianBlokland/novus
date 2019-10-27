@@ -3,12 +3,7 @@
 namespace parse {
 
 PrintStmtNode::PrintStmtNode(lex::Token kw, NodePtr expr) :
-    Node(NodeType::StmtPrint), m_kw{std::move(kw)}, m_expr{std::move(expr)} {
-
-  if (m_expr == nullptr) {
-    throw std::invalid_argument("Expression cannot be null");
-  }
-}
+    Node(NodeType::StmtPrint), m_kw{std::move(kw)}, m_expr{std::move(expr)} {}
 
 auto PrintStmtNode::operator==(const Node& rhs) const noexcept -> bool {
   const auto r = dynamic_cast<const PrintStmtNode*>(&rhs);
@@ -36,7 +31,10 @@ auto PrintStmtNode::print(std::ostream& out) const -> std::ostream& { return out
 
 // Factories.
 auto printStmtNode(lex::Token kw, NodePtr expr) -> NodePtr {
-  return std::make_unique<PrintStmtNode>(std::move(kw), std::move(expr));
+  if (expr == nullptr) {
+    throw std::invalid_argument("Expression cannot be null");
+  }
+  return std::unique_ptr<PrintStmtNode>{new PrintStmtNode{std::move(kw), std::move(expr)}};
 }
 
 } // namespace parse

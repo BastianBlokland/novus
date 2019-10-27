@@ -6,20 +6,21 @@
 namespace parse {
 
 class FuncDeclStmtNode final : public Node {
-public:
-  using arg = typename std::pair<lex::Token, lex::Token>;
-
-  FuncDeclStmtNode() = delete;
-  FuncDeclStmtNode(
+  friend auto funcDeclStmtNode(
       lex::Token kw,
       lex::Token id,
       lex::Token open,
-      std::vector<arg> args,
+      std::vector<std::pair<lex::Token, lex::Token>> args,
       std::vector<lex::Token> commas,
       lex::Token close,
       lex::Token arrow,
       lex::Token retType,
-      NodePtr body);
+      NodePtr body) -> NodePtr;
+
+public:
+  using arg = typename std::pair<lex::Token, lex::Token>;
+
+  FuncDeclStmtNode() = delete;
 
   auto operator==(const Node& rhs) const noexcept -> bool override;
   auto operator!=(const Node& rhs) const noexcept -> bool override;
@@ -42,6 +43,17 @@ private:
   const lex::Token m_arrow;
   const lex::Token m_retType;
   const NodePtr m_body;
+
+  FuncDeclStmtNode(
+      lex::Token kw,
+      lex::Token id,
+      lex::Token open,
+      std::vector<arg> args,
+      std::vector<lex::Token> commas,
+      lex::Token close,
+      lex::Token arrow,
+      lex::Token retType,
+      NodePtr body);
 
   auto print(std::ostream& out) const -> std::ostream& override;
 };

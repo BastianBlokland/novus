@@ -5,9 +5,10 @@
 namespace parse {
 
 class SwitchExprElseNode final : public Node {
+  friend auto switchExprElseNode(lex::Token kw, lex::Token arrow, NodePtr rhs) -> NodePtr;
+
 public:
   SwitchExprElseNode() = delete;
-  SwitchExprElseNode(lex::Token kw, lex::Token arrow, NodePtr rhs);
 
   auto operator==(const Node& rhs) const noexcept -> bool override;
   auto operator!=(const Node& rhs) const noexcept -> bool override;
@@ -20,6 +21,8 @@ private:
   const lex::Token m_kw;
   const lex::Token m_arrow;
   const NodePtr m_rhs;
+
+  SwitchExprElseNode(lex::Token kw, lex::Token arrow, NodePtr rhs);
 
   auto print(std::ostream& out) const -> std::ostream& override;
 };

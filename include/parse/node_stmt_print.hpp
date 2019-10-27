@@ -5,9 +5,10 @@
 namespace parse {
 
 class PrintStmtNode final : public Node {
+  friend auto printStmtNode(lex::Token kw, NodePtr expr) -> NodePtr;
+
 public:
   PrintStmtNode() = delete;
-  PrintStmtNode(lex::Token kw, NodePtr expr);
 
   auto operator==(const Node& rhs) const noexcept -> bool override;
   auto operator!=(const Node& rhs) const noexcept -> bool override;
@@ -19,6 +20,8 @@ public:
 private:
   const lex::Token m_kw;
   const NodePtr m_expr;
+
+  PrintStmtNode(lex::Token kw, NodePtr expr);
 
   auto print(std::ostream& out) const -> std::ostream& override;
 };

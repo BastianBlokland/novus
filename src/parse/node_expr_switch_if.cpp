@@ -7,15 +7,7 @@ SwitchExprIfNode::SwitchExprIfNode(lex::Token kw, NodePtr cond, lex::Token arrow
     m_kw{std::move(kw)},
     m_cond{std::move(cond)},
     m_arrow{std::move(arrow)},
-    m_rhs{std::move(rhs)} {
-
-  if (m_cond == nullptr) {
-    throw std::invalid_argument("Condition expr cannot be null");
-  }
-  if (m_rhs == nullptr) {
-    throw std::invalid_argument("Rhs cannot be null");
-  }
-}
+    m_rhs{std::move(rhs)} {}
 
 auto SwitchExprIfNode::operator==(const Node& rhs) const noexcept -> bool {
   const auto r = dynamic_cast<const SwitchExprIfNode*>(&rhs);
@@ -47,8 +39,14 @@ auto SwitchExprIfNode::print(std::ostream& out) const -> std::ostream& { return 
 
 // Factories.
 auto switchExprIfNode(lex::Token kw, NodePtr cond, lex::Token arrow, NodePtr rhs) -> NodePtr {
-  return std::make_unique<SwitchExprIfNode>(
-      std::move(kw), std::move(cond), std::move(arrow), std::move(rhs));
+  if (cond == nullptr) {
+    throw std::invalid_argument("Condition expr cannot be null");
+  }
+  if (rhs == nullptr) {
+    throw std::invalid_argument("Rhs cannot be null");
+  }
+  return std::unique_ptr<SwitchExprIfNode>{
+      new SwitchExprIfNode{std::move(kw), std::move(cond), std::move(arrow), std::move(rhs)}};
 }
 
 } // namespace parse

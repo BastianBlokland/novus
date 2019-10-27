@@ -6,12 +6,7 @@ ParenExprNode::ParenExprNode(lex::Token open, NodePtr expr, lex::Token close) :
     Node(NodeType::ExprParen),
     m_open{std::move(open)},
     m_expr{std::move(expr)},
-    m_close{std::move(close)} {
-
-  if (m_expr == nullptr) {
-    throw std::invalid_argument("Expr cannot be null");
-  }
-}
+    m_close{std::move(close)} {}
 
 auto ParenExprNode::operator==(const Node& rhs) const noexcept -> bool {
   const auto r = dynamic_cast<const ParenExprNode*>(&rhs);
@@ -41,7 +36,11 @@ auto ParenExprNode::print(std::ostream& out) const -> std::ostream& {
 
 // Factories.
 auto parenExprNode(lex::Token open, NodePtr expr, lex::Token close) -> NodePtr {
-  return std::make_unique<ParenExprNode>(std::move(open), std::move(expr), std::move(close));
+  if (expr == nullptr) {
+    throw std::invalid_argument("Expr cannot be null");
+  }
+  return std::unique_ptr<ParenExprNode>{
+      new ParenExprNode{std::move(open), std::move(expr), std::move(close)}};
 }
 
 } // namespace parse

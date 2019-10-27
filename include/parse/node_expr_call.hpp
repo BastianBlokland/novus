@@ -6,15 +6,15 @@
 namespace parse {
 
 class CallExprNode final : public Node {
-public:
-  CallExprNode() = delete;
-
-  CallExprNode(
+  friend auto callExprNode(
       lex::Token id,
       lex::Token open,
       std::vector<NodePtr> args,
       std::vector<lex::Token> commas,
-      lex::Token close);
+      lex::Token close) -> NodePtr;
+
+public:
+  CallExprNode() = delete;
 
   auto operator==(const Node& rhs) const noexcept -> bool override;
   auto operator!=(const Node& rhs) const noexcept -> bool override;
@@ -31,6 +31,13 @@ private:
   const std::vector<NodePtr> m_args;
   const std::vector<lex::Token> m_commas;
   const lex::Token m_close;
+
+  CallExprNode(
+      lex::Token id,
+      lex::Token open,
+      std::vector<NodePtr> args,
+      std::vector<lex::Token> commas,
+      lex::Token close);
 
   auto print(std::ostream& out) const -> std::ostream& override;
 };

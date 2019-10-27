@@ -6,9 +6,10 @@
 namespace parse {
 
 class SwitchExprNode final : public Node {
+  friend auto switchExprNode(std::vector<NodePtr> ifClauses, NodePtr elseClause) -> NodePtr;
+
 public:
   SwitchExprNode() = delete;
-  SwitchExprNode(std::vector<NodePtr> ifClauses, NodePtr elseClause);
 
   auto operator==(const Node& rhs) const noexcept -> bool override;
   auto operator!=(const Node& rhs) const noexcept -> bool override;
@@ -20,6 +21,8 @@ public:
 private:
   const std::vector<NodePtr> m_ifClauses;
   const NodePtr m_elseClause;
+
+  SwitchExprNode(std::vector<NodePtr> ifClauses, NodePtr elseClause);
 
   auto print(std::ostream& out) const -> std::ostream& override;
 };

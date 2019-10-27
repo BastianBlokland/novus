@@ -6,18 +6,7 @@ namespace parse {
 SwitchExprNode::SwitchExprNode(std::vector<NodePtr> ifClauses, NodePtr elseClause) :
     Node(NodeType::ExprSwitch),
     m_ifClauses{std::move(ifClauses)},
-    m_elseClause{std::move(elseClause)} {
-
-  if (m_ifClauses.empty()) {
-    throw std::invalid_argument("Atleast one if clause is required");
-  }
-  if (anyNodeNull(m_ifClauses)) {
-    throw std::invalid_argument("Switch cannot contain a null if-clause");
-  }
-  if (m_elseClause == nullptr) {
-    throw std::invalid_argument("Else-clause cannot be null");
-  }
-}
+    m_elseClause{std::move(elseClause)} {}
 
 auto SwitchExprNode::operator==(const Node& rhs) const noexcept -> bool {
   const auto r = dynamic_cast<const SwitchExprNode*>(&rhs);
@@ -50,7 +39,17 @@ auto SwitchExprNode::print(std::ostream& out) const -> std::ostream& { return ou
 
 // Factories.
 auto switchExprNode(std::vector<NodePtr> ifClauses, NodePtr elseClause) -> NodePtr {
-  return std::make_unique<SwitchExprNode>(std::move(ifClauses), std::move(elseClause));
+  if (ifClauses.empty()) {
+    throw std::invalid_argument("Atleast one if clause is required");
+  }
+  if (anyNodeNull(ifClauses)) {
+    throw std::invalid_argument("Switch cannot contain a null if-clause");
+  }
+  if (elseClause == nullptr) {
+    throw std::invalid_argument("Else-clause cannot be null");
+  }
+  return std::unique_ptr<SwitchExprNode>{
+      new SwitchExprNode{std::move(ifClauses), std::move(elseClause)}};
 }
 
 } // namespace parse

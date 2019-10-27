@@ -6,15 +6,7 @@ BinaryExprNode::BinaryExprNode(NodePtr lhs, lex::Token op, NodePtr rhs) :
     Node(NodeType::ExprBinaryOp),
     m_lhs{std::move(lhs)},
     m_op{std::move(op)},
-    m_rhs{std::move(rhs)} {
-
-  if (m_lhs == nullptr) {
-    throw std::invalid_argument("Lhs cannot be null");
-  }
-  if (m_rhs == nullptr) {
-    throw std::invalid_argument("Rhs cannot be null");
-  }
-}
+    m_rhs{std::move(rhs)} {}
 
 auto BinaryExprNode::operator==(const Node& rhs) const noexcept -> bool {
   const auto r = dynamic_cast<const BinaryExprNode*>(&rhs);
@@ -48,7 +40,14 @@ auto BinaryExprNode::print(std::ostream& out) const -> std::ostream& { return ou
 
 // Factories.
 auto binaryExprNode(NodePtr lhs, lex::Token op, NodePtr rhs) -> NodePtr {
-  return std::make_unique<BinaryExprNode>(std::move(lhs), std::move(op), std::move(rhs));
+  if (lhs == nullptr) {
+    throw std::invalid_argument("Lhs cannot be null");
+  }
+  if (rhs == nullptr) {
+    throw std::invalid_argument("Rhs cannot be null");
+  }
+  return std::unique_ptr<BinaryExprNode>{
+      new BinaryExprNode{std::move(lhs), std::move(op), std::move(rhs)}};
 }
 
 } // namespace parse
