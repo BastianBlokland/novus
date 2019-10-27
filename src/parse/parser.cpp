@@ -27,17 +27,19 @@ auto ParserImpl::nextStmt() -> NodePtr {
   if (peekToken(0).isEnd()) {
     return nullptr;
   }
-  if (getKw(peekToken(0)) == lex::Keyword::Print) {
+  const auto kw = getKw(peekToken(0));
+  if (!kw) {
+    return errInvalidStmt(consumeToken());
+  }
+
+  switch (kw.value()) {
+  case lex::Keyword::Print:
     return nextStmtPrint();
-  }
-
-  if (peekToken(0).getType() == lex::TokenType::Identifier &&
-      peekToken(1).getType() == lex::TokenType::Identifier &&
-      peekToken(2).getType() == lex::TokenType::SepOpenParen) {
+  case lex::Keyword::Fun:
     return nextStmtFuncDecl();
+  default:
+    return errInvalidStmt(consumeToken());
   }
-
-  return errInvalidStmt(consumeToken());
 }
 
 auto ParserImpl::nextExpr() -> NodePtr {
@@ -48,12 +50,13 @@ auto ParserImpl::nextExpr() -> NodePtr {
 }
 
 auto ParserImpl::nextStmtFuncDecl() -> NodePtr {
-  auto retType = consumeToken();
-  auto id      = consumeToken();
-  auto open    = consumeToken();
-  auto args    = std::vector<FuncDeclStmtNode::arg>{};
-  auto commas  = std::vector<lex::Token>{};
-  while (peekToken(0).getType() != lex::TokenType::SepCloseParen && !peekToken(0).isEnd()) {
+  auto kw     = consumeToken();
+  auto id     = consumeToken();
+  auto open   = consumeToken();
+  auto args   = std::vector<FuncDeclStmtNode::arg>{};
+  auto commas = std::vector<lex::Token>{};
+  while (peekToken(0).getType() == lex::TokenType::Identifier ||
+         peekToken(0).getType() == lex::TokenType::SepComma) {
     auto argType = consumeToken();
     auto argId   = consumeToken();
     args.emplace_back(argType, argId);
@@ -61,13 +64,16 @@ auto ParserImpl::nextStmtFuncDecl() -> NodePtr {
       commas.push_back(consumeToken());
     }
   }
-  auto close = consumeToken();
-  auto body  = nextExpr(0);
+  auto close   = consumeToken();
+  auto arrow   = consumeToken();
+  auto retType = consumeToken();
+  auto body    = nextExpr(0);
 
-  if (retType.getType() == lex::TokenType::Identifier &&
-      id.getType() == lex::TokenType::Identifier &&
+  if (getKw(kw) == lex::Keyword::Fun && id.getType() == lex::TokenType::Identifier &&
       open.getType() == lex::TokenType::SepOpenParen &&
       close.getType() == lex::TokenType::SepCloseParen &&
+      arrow.getType() == lex::TokenType::SepArrow &&
+      retType.getType() == lex::TokenType::Identifier &&
       std::all_of(
           args.begin(),
           args.end(),
@@ -78,21 +84,25 @@ auto ParserImpl::nextStmtFuncDecl() -> NodePtr {
       commas.size() == (args.empty() ? 0 : args.size() - 1)) {
 
     return funcDeclStmtNode(
-        std::move(retType),
+        std::move(kw),
         std::move(id),
         std::move(open),
         std::move(args),
         std::move(commas),
         std::move(close),
+        std::move(arrow),
+        std::move(retType),
         std::move(body));
   }
   return errInvalidStmtFuncDecl(
-      std::move(retType),
+      std::move(kw),
       std::move(id),
       std::move(open),
       args,
       std::move(commas),
       std::move(close),
+      std::move(arrow),
+      std::move(retType),
       std::move(body));
 }
 

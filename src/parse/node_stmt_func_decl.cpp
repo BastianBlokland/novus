@@ -8,21 +8,25 @@ static auto getIdOrErr(const lex::Token& token) {
 }
 
 FuncDeclStmtNode::FuncDeclStmtNode(
-    lex::Token retType,
+    lex::Token kw,
     lex::Token id,
     lex::Token open,
     std::vector<arg> args,
     std::vector<lex::Token> commas,
     lex::Token close,
+    lex::Token arrow,
+    lex::Token retType,
     NodePtr body) :
 
     Node(NodeType::StmtFuncDecl),
-    m_retType{std::move(retType)},
+    m_kw{std::move(kw)},
     m_id{std::move(id)},
     m_open{std::move(open)},
     m_args{std::move(args)},
     m_commas{std::move(commas)},
     m_close{std::move(close)},
+    m_arrow{std::move(arrow)},
+    m_retType{std::move(retType)},
     m_body{std::move(body)} {
 
   if (m_args.empty() ? !m_commas.empty() : m_commas.size() != m_args.size() - 1) {
@@ -35,7 +39,7 @@ FuncDeclStmtNode::FuncDeclStmtNode(
 
 auto FuncDeclStmtNode::operator==(const Node& rhs) const noexcept -> bool {
   const auto r = dynamic_cast<const FuncDeclStmtNode*>(&rhs);
-  return r != nullptr && m_retType == r->m_retType && m_id == r->m_id && m_args == r->m_args &&
+  return r != nullptr && m_id == r->m_id && m_args == r->m_args && m_retType == r->m_retType &&
       *m_body == *r->m_body;
 }
 
@@ -53,42 +57,46 @@ auto FuncDeclStmtNode::operator[](int i) const -> const Node& {
 auto FuncDeclStmtNode::getChildCount() const -> unsigned int { return 1; }
 
 auto FuncDeclStmtNode::getSpan() const -> lex::SourceSpan {
-  return lex::SourceSpan::combine(m_retType.getSpan(), m_body->getSpan());
+  return lex::SourceSpan::combine(m_kw.getSpan(), m_body->getSpan());
 }
-
-auto FuncDeclStmtNode::getRetType() const -> const lex::Token& { return m_retType; }
 
 auto FuncDeclStmtNode::getId() const -> const lex::Token& { return m_id; }
 
 auto FuncDeclStmtNode::getArgs() const -> const std::vector<arg>& { return m_args; }
 
+auto FuncDeclStmtNode::getRetType() const -> const lex::Token& { return m_retType; }
+
 auto FuncDeclStmtNode::print(std::ostream& out) const -> std::ostream& {
-  out << getIdOrErr(m_retType) << '-' << getIdOrErr(m_id) << '(';
+  out << "fun-" << getIdOrErr(m_id) << '(';
   for (auto i = 0U; i < m_args.size(); ++i) {
     if (i != 0) {
       out << ",";
     }
     out << getIdOrErr(m_args[i].first) << '-' << getIdOrErr(m_args[i].second);
   }
-  return out << ')';
+  return out << ")->" << getIdOrErr(m_retType);
 }
 
 // Factories.
 auto funcDeclStmtNode(
-    lex::Token retType,
+    lex::Token kw,
     lex::Token id,
     lex::Token open,
     std::vector<FuncDeclStmtNode::arg> args,
     std::vector<lex::Token> commas,
     lex::Token close,
+    lex::Token arrow,
+    lex::Token retType,
     NodePtr body) -> NodePtr {
   return std::make_unique<FuncDeclStmtNode>(
-      std::move(retType),
+      std::move(kw),
       std::move(id),
       std::move(open),
       std::move(args),
       std::move(commas),
       std::move(close),
+      std::move(arrow),
+      std::move(retType),
       std::move(body));
 }
 

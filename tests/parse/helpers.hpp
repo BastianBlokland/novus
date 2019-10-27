@@ -33,6 +33,7 @@ namespace parse {
 #define COMMA lex::basicToken(lex::TokenType::SepComma)
 #define COMMAS(COUNT) std::vector<lex::Token>(COUNT, lex::basicToken(lex::TokenType::SepComma))
 #define ARROW lex::basicToken(lex::TokenType::SepArrow)
+#define FUN lex::keywordToken(lex::Keyword::Fun)
 #define IF lex::keywordToken(lex::Keyword::If)
 #define ELSE lex::keywordToken(lex::Keyword::Else)
 #define PRINT lex::keywordToken(lex::Keyword::Print)

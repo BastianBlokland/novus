@@ -24,18 +24,18 @@ auto errInvalidStmt(lex::Token token) -> NodePtr {
 }
 
 auto errInvalidStmtFuncDecl(
-    lex::Token retType,
+    lex::Token kw,
     lex::Token id,
     lex::Token open,
     const std::vector<FuncDeclStmtNode::arg>& args,
     std::vector<lex::Token> commas,
     lex::Token close,
+    lex::Token arrow,
+    lex::Token retType,
     NodePtr body) -> NodePtr {
 
   std::ostringstream oss;
-  if (retType.getType() != lex::TokenType::Identifier) {
-    oss << "Expected return-type identifier but got: " << retType;
-  } else if (id.getType() != lex::TokenType::Identifier) {
+  if (id.getType() != lex::TokenType::Identifier) {
     oss << "Expected function identifier but got: " << id;
   } else if (open.getType() != lex::TokenType::SepOpenParen) {
     oss << "Expected opening parentheses but got: " << open;
@@ -43,12 +43,16 @@ auto errInvalidStmtFuncDecl(
     oss << "Incorrect number of comma's in function declaration";
   } else if (close.getType() != lex::TokenType::SepCloseParen) {
     oss << "Expected closing parentheses but got: " << close;
+  } else if (arrow.getType() != lex::TokenType::SepArrow) {
+    oss << "Expected return-type seperator (->) but got: " << arrow;
+  } else if (retType.getType() != lex::TokenType::Identifier) {
+    oss << "Expected return-type identifier but got: " << retType;
   } else {
     oss << "Invalid function declaration";
   }
 
   auto tokens = std::vector<lex::Token>{};
-  tokens.push_back(std::move(retType));
+  tokens.push_back(std::move(kw));
   tokens.push_back(std::move(id));
   tokens.push_back(std::move(open));
   for (auto& arg : args) {
@@ -59,6 +63,8 @@ auto errInvalidStmtFuncDecl(
     tokens.push_back(std::move(comma));
   }
   tokens.push_back(std::move(close));
+  tokens.push_back(std::move(arrow));
+  tokens.push_back(std::move(retType));
 
   auto nodes = std::vector<std::unique_ptr<Node>>{};
   nodes.push_back(std::move(body));

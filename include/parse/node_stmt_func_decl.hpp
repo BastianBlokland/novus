@@ -11,12 +11,14 @@ public:
 
   FuncDeclStmtNode() = delete;
   FuncDeclStmtNode(
-      lex::Token retType,
+      lex::Token kw,
       lex::Token id,
       lex::Token open,
       std::vector<arg> args,
       std::vector<lex::Token> commas,
       lex::Token close,
+      lex::Token arrow,
+      lex::Token retType,
       NodePtr body);
 
   auto operator==(const Node& rhs) const noexcept -> bool override;
@@ -26,17 +28,19 @@ public:
   [[nodiscard]] auto getChildCount() const -> unsigned int override;
   [[nodiscard]] auto getSpan() const -> lex::SourceSpan override;
 
-  [[nodiscard]] auto getRetType() const -> const lex::Token&;
   [[nodiscard]] auto getId() const -> const lex::Token&;
   [[nodiscard]] auto getArgs() const -> const std::vector<arg>&;
+  [[nodiscard]] auto getRetType() const -> const lex::Token&;
 
 private:
-  const lex::Token m_retType;
+  const lex::Token m_kw;
   const lex::Token m_id;
   const lex::Token m_open;
   const std::vector<arg> m_args;
   const std::vector<lex::Token> m_commas;
   const lex::Token m_close;
+  const lex::Token m_arrow;
+  const lex::Token m_retType;
   const NodePtr m_body;
 
   auto print(std::ostream& out) const -> std::ostream& override;
@@ -44,12 +48,14 @@ private:
 
 // Factories.
 auto funcDeclStmtNode(
-    lex::Token retType,
+    lex::Token kw,
     lex::Token id,
     lex::Token open,
     std::vector<FuncDeclStmtNode::arg> args,
     std::vector<lex::Token> commas,
     lex::Token close,
+    lex::Token arrow,
+    lex::Token retType,
     NodePtr body) -> NodePtr;
 
 } // namespace parse

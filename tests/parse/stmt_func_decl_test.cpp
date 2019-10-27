@@ -9,31 +9,36 @@ namespace parse {
 TEST_CASE("Parsing function declaration statements", "[parse]") {
 
   CHECK_STMT(
-      "int a() 1", funcDeclStmtNode(ID("int"), ID("a"), OPAREN, {}, COMMAS(0), CPAREN, INT(1)));
+      "fun a() -> int 1",
+      funcDeclStmtNode(FUN, ID("a"), OPAREN, {}, COMMAS(0), CPAREN, ARROW, ID("int"), INT(1)));
   CHECK_STMT(
-      "int a(int x) 1",
+      "fun a(int x) -> int 1",
       funcDeclStmtNode(
-          ID("int"),
+          FUN,
           ID("a"),
           OPAREN,
           {std::make_pair(ID("int"), ID("x"))},
           COMMAS(0),
           CPAREN,
+          ARROW,
+          ID("int"),
           INT(1)));
   CHECK_STMT(
-      "int a(int x, int y) 1",
+      "fun a(int x, int y) -> int 1",
       funcDeclStmtNode(
-          ID("int"),
+          FUN,
           ID("a"),
           OPAREN,
           {std::make_pair(ID("int"), ID("x")), std::make_pair(ID("int"), ID("y"))},
           COMMAS(1),
           CPAREN,
+          ARROW,
+          ID("int"),
           INT(1)));
   CHECK_STMT(
-      "int a(int x, int y, bool z) x * y",
+      "fun a(int x, int y, bool z) -> int x * y",
       funcDeclStmtNode(
-          ID("int"),
+          FUN,
           ID("a"),
           OPAREN,
           {std::make_pair(ID("int"), ID("x")),
@@ -41,72 +46,106 @@ TEST_CASE("Parsing function declaration statements", "[parse]") {
            std::make_pair(ID("bool"), ID("z"))},
           COMMAS(2),
           CPAREN,
+          ARROW,
+          ID("int"),
           binaryExprNode(CONST("x"), STAR, CONST("y"))));
 
   SECTION("Errors") {
     CHECK_STMT(
-        "int a()",
+        "fun a() -> int",
         funcDeclStmtNode(
-            ID("int"), ID("a"), OPAREN, {}, COMMAS(0), CPAREN, errInvalidPrimaryExpr(END)));
-    CHECK_STMT(
-        "int a(",
-        errInvalidStmtFuncDecl(
-            ID("int"), ID("a"), OPAREN, {}, COMMAS(0), END, errInvalidPrimaryExpr(END)));
-    CHECK_STMT(
-        "int a(int x",
-        errInvalidStmtFuncDecl(
+            FUN,
+            ID("a"),
+            OPAREN,
+            {},
+            COMMAS(0),
+            CPAREN,
+            ARROW,
             ID("int"),
+            errInvalidPrimaryExpr(END)));
+    CHECK_STMT(
+        "fun",
+        errInvalidStmtFuncDecl(
+            FUN, END, END, {}, COMMAS(0), END, END, END, errInvalidPrimaryExpr(END)));
+    CHECK_STMT(
+        "fun a(",
+        errInvalidStmtFuncDecl(
+            FUN, ID("a"), OPAREN, {}, COMMAS(0), END, END, END, errInvalidPrimaryExpr(END)));
+    CHECK_STMT(
+        "fun a(int x",
+        errInvalidStmtFuncDecl(
+            FUN,
             ID("a"),
             OPAREN,
             {std::make_pair(ID("int"), ID("x"))},
             COMMAS(0),
             END,
+            END,
+            END,
             errInvalidPrimaryExpr(END)));
     CHECK_STMT(
-        "int a(int",
+        "fun a(int",
         errInvalidStmtFuncDecl(
-            ID("int"),
+            FUN,
             ID("a"),
             OPAREN,
             {std::make_pair(ID("int"), END)},
             COMMAS(0),
             END,
+            END,
+            END,
             errInvalidPrimaryExpr(END)));
     CHECK_STMT(
-        "int a(int x int y) 1",
+        "fun a(int x) 1",
         errInvalidStmtFuncDecl(
-            ID("int"),
+            FUN,
+            ID("a"),
+            OPAREN,
+            {std::make_pair(ID("int"), ID("x"))},
+            COMMAS(0),
+            CPAREN,
+            lex::litIntToken(1),
+            END,
+            errInvalidPrimaryExpr(END)));
+    CHECK_STMT(
+        "fun a(int x int y) -> int 1",
+        errInvalidStmtFuncDecl(
+            FUN,
             ID("a"),
             OPAREN,
             {std::make_pair(ID("int"), ID("x")), std::make_pair(ID("int"), ID("y"))},
             COMMAS(0),
             CPAREN,
+            ARROW,
+            ID("int"),
             INT(1)));
     CHECK_STMT(
-        "int a(int x,) 1",
+        "fun a(int x,) -> int 1",
         errInvalidStmtFuncDecl(
-            ID("int"),
+            FUN,
             ID("a"),
             OPAREN,
             {std::make_pair(ID("int"), ID("x"))},
             COMMAS(1),
             CPAREN,
+            ARROW,
+            ID("int"),
             INT(1)));
     CHECK_STMT(
-        "int a(int x,,) 1",
+        "fun a(int x,,) -> int 1",
         errInvalidStmtFuncDecl(
-            ID("int"),
+            FUN,
             ID("a"),
             OPAREN,
-            {std::make_pair(ID("int"), ID("x")),
-             std::make_pair(COMMA, CPAREN),
-             std::make_pair(lex::litIntToken(1), END)},
+            {std::make_pair(ID("int"), ID("x")), std::make_pair(COMMA, CPAREN)},
             COMMAS(1),
-            END,
+            ARROW,
+            ID("int"),
+            lex::litIntToken(1),
             errInvalidPrimaryExpr(END)));
   }
 
-  SECTION("Spans") { CHECK_STMT_SPAN(" int a() 1 + 2", lex::SourceSpan(1, 13)); }
+  SECTION("Spans") { CHECK_STMT_SPAN(" fun a() -> int 1 + 2", lex::SourceSpan(1, 20)); }
 }
 
 } // namespace parse

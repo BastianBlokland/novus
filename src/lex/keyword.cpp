@@ -5,6 +5,9 @@ namespace lex {
 
 auto operator<<(std::ostream& out, const Keyword& rhs) -> std::ostream& {
   switch (rhs) {
+  case Keyword::Fun:
+    out << "fun";
+    break;
   case Keyword::If:
     out << "if";
     break;
@@ -20,6 +23,7 @@ auto operator<<(std::ostream& out, const Keyword& rhs) -> std::ostream& {
 
 auto getKeyword(const std::string& str) -> std::optional<Keyword> {
   static const std::unordered_map<std::string, Keyword> keywordTable = {
+      {"fun", Keyword::Fun},
       {"if", Keyword::If},
       {"else", Keyword::Else},
       {"print", Keyword::Print},
