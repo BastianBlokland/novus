@@ -5,7 +5,7 @@ namespace parse {
 
 enum class NodeKind {
   StmtFuncDecl,
-  StmtPrint,
+  StmtExec,
   ExprUnaryOp,
   ExprBinaryOp,
   ExprSwitch,

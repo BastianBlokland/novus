@@ -7,8 +7,6 @@ namespace parse {
 
 auto errLexError(lex::Token errToken) -> NodePtr;
 
-auto errInvalidStmt(lex::Token token) -> NodePtr;
-
 auto errInvalidStmtFuncDecl(
     lex::Token kw,
     lex::Token id,
@@ -20,7 +18,12 @@ auto errInvalidStmtFuncDecl(
     lex::Token retType,
     NodePtr body) -> NodePtr;
 
-auto errInvalidStmtPrint(lex::Token kw, NodePtr body) -> NodePtr;
+auto errInvalidStmtExec(
+    lex::Token action,
+    lex::Token open,
+    std::vector<NodePtr> args,
+    std::vector<lex::Token> commas,
+    lex::Token close) -> NodePtr;
 
 auto errInvalidPrimaryExpr(lex::Token token) -> NodePtr;
 
@@ -29,7 +32,7 @@ auto errInvalidUnaryOp(lex::Token op, NodePtr rhs) -> NodePtr;
 auto errInvalidParenExpr(lex::Token open, NodePtr expr, lex::Token close) -> NodePtr;
 
 auto errInvalidCallExpr(
-    lex::Token id,
+    lex::Token func,
     lex::Token open,
     std::vector<NodePtr> args,
     std::vector<lex::Token> commas,

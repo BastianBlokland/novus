@@ -12,8 +12,8 @@
 #include "parse/node_expr_switch_else.hpp"
 #include "parse/node_expr_switch_if.hpp"
 #include "parse/node_expr_unary.hpp"
+#include "parse/node_stmt_exec.hpp"
 #include "parse/node_stmt_func_decl.hpp"
-#include "parse/node_stmt_print.hpp"
 #include "utilities.hpp"
 #include <vector>
 
@@ -27,19 +27,12 @@ auto ParserImpl::nextStmt() -> NodePtr {
   if (peekToken(0).isEnd()) {
     return nullptr;
   }
-  const auto kw = getKw(peekToken(0));
-  if (!kw) {
-    return errInvalidStmt(consumeToken());
+
+  if (getKw(peekToken(0)) == lex::Keyword::Fun) {
+    return nextStmtFuncDecl();
   }
 
-  switch (kw.value()) {
-  case lex::Keyword::Print:
-    return nextStmtPrint();
-  case lex::Keyword::Fun:
-    return nextStmtFuncDecl();
-  default:
-    return errInvalidStmt(consumeToken());
-  }
+  return nextStmtExec();
 }
 
 auto ParserImpl::nextExpr() -> NodePtr {
@@ -106,13 +99,28 @@ auto ParserImpl::nextStmtFuncDecl() -> NodePtr {
       std::move(body));
 }
 
-auto ParserImpl::nextStmtPrint() -> NodePtr {
-  auto kw   = consumeToken();
-  auto body = nextExpr(0);
-  if (getKw(kw) == lex::Keyword::Print) {
-    return printStmtNode(kw, std::move(body));
+auto ParserImpl::nextStmtExec() -> NodePtr {
+  auto action = consumeToken();
+  auto open   = consumeToken();
+  auto args   = std::vector<NodePtr>{};
+  auto commas = std::vector<lex::Token>{};
+  while (peekToken(0).getKind() != lex::TokenKind::SepCloseParen && !peekToken(0).isEnd()) {
+    args.push_back(nextExpr(0));
+    if (peekToken(0).getKind() == lex::TokenKind::SepComma) {
+      commas.push_back(consumeToken());
+    }
   }
-  return errInvalidStmtPrint(kw, std::move(body));
+  auto close = consumeToken();
+
+  if (action.getKind() == lex::TokenKind::Identifier &&
+      open.getKind() == lex::TokenKind::SepOpenParen &&
+      close.getKind() == lex::TokenKind::SepCloseParen &&
+      commas.size() == (args.empty() ? 0 : args.size() - 1)) {
+    return execStmtNode(
+        std::move(action), std::move(open), std::move(args), std::move(commas), std::move(close));
+  }
+  return errInvalidStmtExec(
+      std::move(action), std::move(open), std::move(args), std::move(commas), std::move(close));
 }
 
 auto ParserImpl::nextExpr(const int minPrecedence) -> NodePtr {

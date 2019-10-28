@@ -20,7 +20,7 @@ private:
   std::deque<lex::Token> m_readBuffer;
 
   auto nextStmtFuncDecl() -> NodePtr;
-  auto nextStmtPrint() -> NodePtr;
+  auto nextStmtExec() -> NodePtr;
 
   auto nextExpr(int minPrecedence) -> NodePtr;
   auto nextExprLhs() -> NodePtr;

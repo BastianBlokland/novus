@@ -14,15 +14,6 @@ auto errLexError(lex::Token errToken) -> NodePtr {
   return errorNode(msg, std::move(errToken));
 }
 
-auto errInvalidStmt(lex::Token token) -> NodePtr {
-  if (token.isError()) {
-    return errLexError(token);
-  }
-  std::ostringstream oss;
-  oss << "Invalid statement: " << token;
-  return errorNode(oss.str(), std::move(token));
-}
-
 auto errInvalidStmtFuncDecl(
     lex::Token kw,
     lex::Token id,
@@ -72,8 +63,33 @@ auto errInvalidStmtFuncDecl(
   return errorNode(oss.str(), std::move(tokens), std::move(nodes));
 }
 
-auto errInvalidStmtPrint(lex::Token kw, NodePtr body) -> NodePtr {
-  return errorNode("Invalid print statement", std::move(kw), std::move(body));
+auto errInvalidStmtExec(
+    lex::Token action,
+    lex::Token open,
+    std::vector<NodePtr> args,
+    std::vector<lex::Token> commas,
+    lex::Token close) -> NodePtr {
+
+  std::ostringstream oss;
+  if (commas.size() != (args.empty() ? 0 : args.size() - 1)) {
+    oss << "Incorrect number of comma's in execute statement";
+  } else if (open.getKind() != lex::TokenKind::SepOpenParen) {
+    oss << "Expected opening parentheses but got: " << open;
+  } else if (close.getKind() != lex::TokenKind::SepCloseParen) {
+    oss << "Expected closing parentheses but got: " << close;
+  } else {
+    oss << "Invalid execute statement";
+  }
+
+  auto tokens = std::vector<lex::Token>{};
+  tokens.push_back(std::move(action));
+  tokens.push_back(std::move(open));
+  for (auto& comma : commas) {
+    tokens.push_back(std::move(comma));
+  }
+  tokens.push_back(std::move(close));
+
+  return errorNode(oss.str(), std::move(tokens), std::move(args));
 }
 
 auto errInvalidPrimaryExpr(lex::Token token) -> NodePtr {
@@ -116,7 +132,7 @@ auto errInvalidParenExpr(lex::Token open, NodePtr expr, lex::Token close) -> Nod
 }
 
 auto errInvalidCallExpr(
-    lex::Token id,
+    lex::Token func,
     lex::Token open,
     std::vector<NodePtr> args,
     std::vector<lex::Token> commas,
@@ -134,7 +150,7 @@ auto errInvalidCallExpr(
   }
 
   auto tokens = std::vector<lex::Token>{};
-  tokens.push_back(std::move(id));
+  tokens.push_back(std::move(func));
   tokens.push_back(std::move(open));
   for (auto& comma : commas) {
     tokens.push_back(std::move(comma));

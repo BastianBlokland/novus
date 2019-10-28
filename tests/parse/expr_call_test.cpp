@@ -11,8 +11,6 @@ TEST_CASE("Parsing call expressions", "[parse]") {
   CHECK_EXPR("a()", callExprNode(ID("a"), OPAREN, NODES(), COMMAS(0), CPAREN));
   CHECK_EXPR("a(1,2)", callExprNode(ID("a"), OPAREN, NODES(INT(1), INT(2)), COMMAS(1), CPAREN));
   CHECK_EXPR(
-      "a(1,2,3)", callExprNode(ID("a"), OPAREN, NODES(INT(1), INT(2), INT(3)), COMMAS(2), CPAREN));
-  CHECK_EXPR(
       "a(1,2,3+4*5)",
       callExprNode(
           ID("a"),
@@ -38,19 +36,6 @@ TEST_CASE("Parsing call expressions", "[parse]") {
           NODES(callExprNode(ID("b"), OPAREN, NODES(), COMMAS(0), CPAREN)),
           COMMAS(0),
           CPAREN));
-  CHECK_EXPR(
-      "a(b(c()))",
-      callExprNode(
-          ID("a"),
-          OPAREN,
-          NODES(callExprNode(
-              ID("b"),
-              OPAREN,
-              NODES(callExprNode(ID("c"), OPAREN, NODES(), COMMAS(0), CPAREN)),
-              COMMAS(0),
-              CPAREN)),
-          COMMAS(0),
-          CPAREN));
 
   SECTION("Errors") {
     CHECK_EXPR(
@@ -60,23 +45,8 @@ TEST_CASE("Parsing call expressions", "[parse]") {
         "a(,",
         errInvalidCallExpr(ID("a"), OPAREN, NODES(errInvalidPrimaryExpr(COMMA)), COMMAS(0), END));
     CHECK_EXPR(
-        "a(,,",
-        errInvalidCallExpr(ID("a"), OPAREN, NODES(errInvalidPrimaryExpr(COMMA)), COMMAS(1), END));
-    CHECK_EXPR(
-        "a(,,,",
-        errInvalidCallExpr(
-            ID("a"),
-            OPAREN,
-            NODES(errInvalidPrimaryExpr(COMMA), errInvalidPrimaryExpr(COMMA)),
-            COMMAS(1),
-            END));
-    CHECK_EXPR(
         "a(,)",
         callExprNode(ID("a"), OPAREN, NODES(errInvalidPrimaryExpr(COMMA)), COMMAS(0), CPAREN));
-    CHECK_EXPR(
-        "a(,,)",
-        errInvalidCallExpr(
-            ID("a"), OPAREN, NODES(errInvalidPrimaryExpr(COMMA)), COMMAS(1), CPAREN));
   }
 
   SECTION("Spans") { CHECK_EXPR_SPAN("a(1,2,3+4*5)", lex::SourceSpan(0, 11)); }

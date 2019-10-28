@@ -7,8 +7,8 @@ auto operator<<(std::ostream& out, const NodeKind& rhs) -> std::ostream& {
   case NodeKind::StmtFuncDecl:
     out << "stmt-func-decl";
     break;
-  case NodeKind::StmtPrint:
-    out << "stmt-print";
+  case NodeKind::StmtExec:
+    out << "stmt-exec";
     break;
   case NodeKind::ExprUnaryOp:
     out << "expr-unary-op";

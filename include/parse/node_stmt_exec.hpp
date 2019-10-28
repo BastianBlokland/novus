@@ -5,16 +5,16 @@
 
 namespace parse {
 
-class CallExprNode final : public Node {
-  friend auto callExprNode(
-      lex::Token func,
+class ExecStmtNode final : public Node {
+  friend auto execStmtNode(
+      lex::Token action,
       lex::Token open,
       std::vector<NodePtr> args,
       std::vector<lex::Token> commas,
       lex::Token close) -> NodePtr;
 
 public:
-  CallExprNode() = delete;
+  ExecStmtNode() = delete;
 
   auto operator==(const Node& rhs) const noexcept -> bool override;
   auto operator!=(const Node& rhs) const noexcept -> bool override;
@@ -23,17 +23,17 @@ public:
   [[nodiscard]] auto getChildCount() const -> unsigned int override;
   [[nodiscard]] auto getSpan() const -> lex::SourceSpan override;
 
-  [[nodiscard]] auto getFunc() const -> const lex::Token&;
+  [[nodiscard]] auto getAction() const -> const lex::Token&;
 
 private:
-  const lex::Token m_func;
+  const lex::Token m_action;
   const lex::Token m_open;
   const std::vector<NodePtr> m_args;
   const std::vector<lex::Token> m_commas;
   const lex::Token m_close;
 
-  CallExprNode(
-      lex::Token func,
+  ExecStmtNode(
+      lex::Token action,
       lex::Token open,
       std::vector<NodePtr> args,
       std::vector<lex::Token> commas,
@@ -43,8 +43,8 @@ private:
 };
 
 // Factories.
-auto callExprNode(
-    lex::Token func,
+auto execStmtNode(
+    lex::Token action,
     lex::Token open,
     std::vector<NodePtr> args,
     std::vector<lex::Token> commas,

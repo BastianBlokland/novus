@@ -32,7 +32,7 @@ add_library(parse STATIC
   parse/node_expr_unary.cpp
   parse/node_kind.cpp
   parse/node_stmt_func_decl.cpp
-  parse/node_stmt_print.cpp
+  parse/node_stmt_exec.cpp
   parse/node.cpp
   parse/op_precedence.cpp
   parse/parser.cpp

@@ -34,7 +34,7 @@ add_executable(tests
   parse/expr_unary_test.cpp
   parse/iterator_test.cpp
   parse/stmt_func_decl_test.cpp
-  parse/stmt_print_test.cpp)
+  parse/stmt_exec_test.cpp)
 target_compile_features(tests PRIVATE cxx_std_17)
 target_compile_options(tests PRIVATE -Werror -Wall -Wextra)
 target_include_directories(tests PRIVATE lex)

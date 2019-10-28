@@ -9,7 +9,7 @@
       "program": "${workspaceFolder}/bin/lexdiag",
       "args": [
         "lex",
-        "print x + 42 * y"
+        "print(x + 42 * y)"
       ],
       "cwd": "${workspaceFolder}",
       "terminal": "integrated",
@@ -23,7 +23,7 @@
       "program": "${workspaceFolder}/bin/parsediag",
       "args": [
         "parse",
-        "print x + 42 * y"
+        "print(x + 42 * y)"
       ],
       "cwd": "${workspaceFolder}",
       "terminal": "integrated",
