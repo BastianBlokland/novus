@@ -49,7 +49,7 @@ TEST_CASE("Parsing call expressions", "[parse]") {
         callExprNode(ID("a"), OPAREN, NODES(errInvalidPrimaryExpr(COMMA)), COMMAS(0), CPAREN));
   }
 
-  SECTION("Spans") { CHECK_EXPR_SPAN("a(1,2,3+4*5)", input::SourceSpan(0, 11)); }
+  SECTION("Spans") { CHECK_EXPR_SPAN("a(1,2,3+4*5)", input::Span(0, 11)); }
 }
 
 } // namespace parse

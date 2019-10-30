@@ -20,7 +20,7 @@ auto ConstExprNode::operator[](int /*unused*/) const -> const Node& {
 
 auto ConstExprNode::getChildCount() const -> unsigned int { return 0; }
 
-auto ConstExprNode::getSpan() const -> input::SourceSpan { return m_id.getSpan(); }
+auto ConstExprNode::getSpan() const -> input::Span { return m_id.getSpan(); }
 
 auto ConstExprNode::getId() const -> const lex::Token& { return m_id; }
 

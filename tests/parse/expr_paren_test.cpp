@@ -19,7 +19,7 @@ TEST_CASE("Parsing parenthesized expressions", "[parse]") {
     CHECK_EXPR("(", errInvalidParenExpr(OPAREN, errInvalidPrimaryExpr(END), END));
   }
 
-  SECTION("Spans") { CHECK_EXPR_SPAN("(1 + 2) * 5", input::SourceSpan(0, 10)); }
+  SECTION("Spans") { CHECK_EXPR_SPAN("(1 + 2) * 5", input::Span(0, 10)); }
 }
 
 } // namespace parse

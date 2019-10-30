@@ -30,13 +30,13 @@ auto ErrorNode::operator[](int i) const -> const Node& {
 
 auto ErrorNode::getChildCount() const -> unsigned int { return m_subExprs.size(); }
 
-auto ErrorNode::getSpan() const -> input::SourceSpan {
+auto ErrorNode::getSpan() const -> input::Span {
   /* Because there is no fixed order in a ErrorNode we need to find the start and
   the end source position by looking at all tokens and nodes. */
   auto tokensSpan   = ::parse::getSpan(m_tokens);
   auto subExprsSpan = ::parse::getSpan(m_subExprs);
   if (tokensSpan && subExprsSpan) {
-    return input::SourceSpan::combine(*tokensSpan, *subExprsSpan);
+    return input::Span::combine(*tokensSpan, *subExprsSpan);
   }
   return tokensSpan ? *tokensSpan : *subExprsSpan;
 }

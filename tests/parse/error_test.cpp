@@ -10,8 +10,8 @@ TEST_CASE("Parsing errors", "[parse]") {
   CHECK_EXPR("123a", errLexError(lex::errLitIntInvalidChar()));
 
   SECTION("Spans") {
-    CHECK_EXPR_SPAN("123a", input::SourceSpan(0, 3));
-    CHECK_EXPR_SPAN("(1 == 2", input::SourceSpan(0, 6));
+    CHECK_EXPR_SPAN("123a", input::Span(0, 3));
+    CHECK_EXPR_SPAN("(1 == 2", input::Span(0, 6));
   }
 }
 

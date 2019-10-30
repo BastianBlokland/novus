@@ -51,7 +51,7 @@ TEST_CASE("Parsing execute statements", "[parse]") {
         execStmtNode(ID("a"), OPAREN, NODES(errInvalidPrimaryExpr(COMMA)), COMMAS(0), CPAREN));
   }
 
-  SECTION("Spans") { CHECK_STMT_SPAN("print(1,2,3+4*5)", input::SourceSpan(0, 15)); }
+  SECTION("Spans") { CHECK_STMT_SPAN("print(1,2,3+4*5)", input::Span(0, 15)); }
 }
 
 } // namespace parse

@@ -30,8 +30,8 @@ auto BinaryExprNode::operator[](int i) const -> const Node& {
 
 auto BinaryExprNode::getChildCount() const -> unsigned int { return 2; }
 
-auto BinaryExprNode::getSpan() const -> input::SourceSpan {
-  return input::SourceSpan::combine(m_lhs->getSpan(), m_rhs->getSpan());
+auto BinaryExprNode::getSpan() const -> input::Span {
+  return input::Span::combine(m_lhs->getSpan(), m_rhs->getSpan());
 }
 
 auto BinaryExprNode::getOperator() const -> const lex::Token& { return m_op; }

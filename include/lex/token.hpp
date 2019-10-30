@@ -1,5 +1,5 @@
 #pragma once
-#include "input/source_span.hpp"
+#include "input/span.hpp"
 #include "lex/keyword.hpp"
 #include "lex/token_cat.hpp"
 #include "lex/token_kind.hpp"
@@ -13,7 +13,7 @@ namespace lex {
 class Token final {
 public:
   Token();
-  Token(TokenKind kind, std::unique_ptr<TokenPayload> payload, input::SourceSpan span);
+  Token(TokenKind kind, std::unique_ptr<TokenPayload> payload, input::Span span);
   Token(const Token& rhs);
   Token(Token&& rhs) noexcept;
 
@@ -47,26 +47,26 @@ public:
 private:
   TokenKind m_kind;
   std::unique_ptr<TokenPayload> m_payload;
-  input::SourceSpan m_span;
+  input::Span m_span;
 };
 
 auto operator<<(std::ostream& out, const Token& rhs) -> std::ostream&;
 
 // Factories.
-auto endToken(input::SourceSpan span = input::SourceSpan{0}) -> Token;
+auto endToken(input::Span span = input::Span{0}) -> Token;
 
-auto basicToken(TokenKind kind, input::SourceSpan span = input::SourceSpan{0}) -> Token;
+auto basicToken(TokenKind kind, input::Span span = input::Span{0}) -> Token;
 
-auto errorToken(std::string msg, input::SourceSpan span = input::SourceSpan{0}) -> Token;
+auto errorToken(std::string msg, input::Span span = input::Span{0}) -> Token;
 
-auto litIntToken(int32_t val, input::SourceSpan span = input::SourceSpan{0}) -> Token;
+auto litIntToken(int32_t val, input::Span span = input::Span{0}) -> Token;
 
-auto litBoolToken(bool val, input::SourceSpan span = input::SourceSpan{0}) -> Token;
+auto litBoolToken(bool val, input::Span span = input::Span{0}) -> Token;
 
-auto litStrToken(std::string val, input::SourceSpan span = input::SourceSpan{0}) -> Token;
+auto litStrToken(std::string val, input::Span span = input::Span{0}) -> Token;
 
-auto keywordToken(Keyword keyword, input::SourceSpan span = input::SourceSpan{0}) -> Token;
+auto keywordToken(Keyword keyword, input::Span span = input::Span{0}) -> Token;
 
-auto identiferToken(std::string id, input::SourceSpan span = input::SourceSpan{0}) -> Token;
+auto identiferToken(std::string id, input::Span span = input::Span{0}) -> Token;
 
 } // namespace lex

@@ -52,10 +52,10 @@ TEST_CASE("Lexing identifiers", "[lex]") {
   }
 
   SECTION("Spans") {
-    CHECK_SPANS(" helloworld ", input::SourceSpan{1, 10});
-    CHECK_SPANS(" helloworld__ ", input::SourceSpan{1, 12});
-    CHECK_SPANS(" __helloworld ", input::SourceSpan{1, 12});
-    CHECK_SPANS(" _1 ", input::SourceSpan{1, 2});
+    CHECK_SPANS(" helloworld ", input::Span{1, 10});
+    CHECK_SPANS(" helloworld__ ", input::Span{1, 12});
+    CHECK_SPANS(" __helloworld ", input::Span{1, 12});
+    CHECK_SPANS(" _1 ", input::Span{1, 2});
   }
 }
 

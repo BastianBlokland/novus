@@ -15,8 +15,7 @@ namespace lex {
 
 Token::Token() : m_kind{TokenKind::End}, m_payload{nullptr}, m_span{0} {}
 
-Token::Token(
-    const TokenKind kind, std::unique_ptr<TokenPayload> payload, const input::SourceSpan span) :
+Token::Token(const TokenKind kind, std::unique_ptr<TokenPayload> payload, const input::Span span) :
     m_kind{kind}, m_payload{std::move(payload)}, m_span{span} {}
 
 Token::Token(const Token& rhs) :
@@ -74,37 +73,35 @@ auto operator<<(std::ostream& out, const Token& rhs) -> std::ostream& {
   return out;
 }
 
-auto endToken() -> Token { return endToken(input::SourceSpan{0}); }
+auto endToken() -> Token { return endToken(input::Span{0}); }
 
-auto endToken(const input::SourceSpan span) -> Token {
-  return Token{TokenKind::End, nullptr, span};
-}
+auto endToken(const input::Span span) -> Token { return Token{TokenKind::End, nullptr, span}; }
 
-auto basicToken(const TokenKind kind, const input::SourceSpan span) -> Token {
+auto basicToken(const TokenKind kind, const input::Span span) -> Token {
   return Token{kind, nullptr, span};
 }
 
-auto errorToken(std::string msg, const input::SourceSpan span) -> Token {
+auto errorToken(std::string msg, const input::Span span) -> Token {
   return Token{TokenKind::Error, std::make_unique<ErrorTokenPayload>(std::move(msg)), span};
 }
 
-auto litIntToken(const int32_t val, const input::SourceSpan span) -> Token {
+auto litIntToken(const int32_t val, const input::Span span) -> Token {
   return Token{TokenKind::LitInt, std::make_unique<LitIntTokenPayload>(val), span};
 }
 
-auto litBoolToken(const bool val, const input::SourceSpan span) -> Token {
+auto litBoolToken(const bool val, const input::Span span) -> Token {
   return Token{TokenKind::LitBool, std::make_unique<LitBoolTokenPayload>(val), span};
 }
 
-auto litStrToken(std::string val, const input::SourceSpan span) -> Token {
+auto litStrToken(std::string val, const input::Span span) -> Token {
   return Token{TokenKind::LitStr, std::make_unique<LitStringTokenPayload>(std::move(val)), span};
 }
 
-auto keywordToken(Keyword keyword, const input::SourceSpan span) -> Token {
+auto keywordToken(Keyword keyword, const input::Span span) -> Token {
   return Token{TokenKind::Keyword, std::make_unique<KeywordTokenPayload>(keyword), span};
 }
 
-auto identiferToken(std::string id, const input::SourceSpan span) -> Token {
+auto identiferToken(std::string id, const input::Span span) -> Token {
   return Token{
       TokenKind::Identifier, std::make_unique<IdentifierTokenPayload>(std::move(id)), span};
 }

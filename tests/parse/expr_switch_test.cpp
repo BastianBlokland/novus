@@ -61,8 +61,8 @@ TEST_CASE("Parsing switch expressions", "[parse]") {
   }
 
   SECTION("Spans") {
-    CHECK_EXPR_SPAN("if x -> 1 else -> 2", input::SourceSpan(0, 18));
-    CHECK_EXPR_SPAN("if x -> 1 if 1 + 2 == y -> 2 else -> 3", input::SourceSpan(0, 37));
+    CHECK_EXPR_SPAN("if x -> 1 else -> 2", input::Span(0, 18));
+    CHECK_EXPR_SPAN("if x -> 1 if 1 + 2 == y -> 2 else -> 3", input::Span(0, 37));
   }
 }
 

@@ -26,8 +26,8 @@ auto SwitchExprElseNode::operator[](int i) const -> const Node& {
 
 auto SwitchExprElseNode::getChildCount() const -> unsigned int { return 1; }
 
-auto SwitchExprElseNode::getSpan() const -> input::SourceSpan {
-  return input::SourceSpan::combine(m_kw.getSpan(), m_rhs->getSpan());
+auto SwitchExprElseNode::getSpan() const -> input::Span {
+  return input::Span::combine(m_kw.getSpan(), m_rhs->getSpan());
 }
 
 auto SwitchExprElseNode::print(std::ostream& out) const -> std::ostream& { return out << "else"; }

@@ -27,8 +27,8 @@ auto ConstDeclExprNode::operator[](int i) const -> const Node& {
 
 auto ConstDeclExprNode::getChildCount() const -> unsigned int { return 1; }
 
-auto ConstDeclExprNode::getSpan() const -> input::SourceSpan {
-  return input::SourceSpan::combine(m_id.getSpan(), m_rhs->getSpan());
+auto ConstDeclExprNode::getSpan() const -> input::Span {
+  return input::Span::combine(m_id.getSpan(), m_rhs->getSpan());
 }
 
 auto ConstDeclExprNode::getId() const -> const lex::Token& { return m_id; }

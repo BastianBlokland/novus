@@ -19,7 +19,7 @@ auto LitExprNode::operator[](int /*unused*/) const -> const Node& {
 
 auto LitExprNode::getChildCount() const -> unsigned int { return 0; }
 
-auto LitExprNode::getSpan() const -> input::SourceSpan { return m_val.getSpan(); }
+auto LitExprNode::getSpan() const -> input::Span { return m_val.getSpan(); }
 
 auto LitExprNode::getVal() const -> const lex::Token& { return m_val; }
 

@@ -37,9 +37,9 @@ TEST_CASE("Lexing string literals", "[lex]") {
   }
 
   SECTION("Spans") {
-    CHECK_SPANS(" \"Hello world\" ", input::SourceSpan{1, 13});
-    CHECK_SPANS(" \"Hello\\1 world\" ", input::SourceSpan{1, 15});
-    CHECK_SPANS(" \"Hello world ", input::SourceSpan{1, 13});
+    CHECK_SPANS(" \"Hello world\" ", input::Span{1, 13});
+    CHECK_SPANS(" \"Hello\\1 world\" ", input::Span{1, 15});
+    CHECK_SPANS(" \"Hello world ", input::Span{1, 13});
   }
 }
 

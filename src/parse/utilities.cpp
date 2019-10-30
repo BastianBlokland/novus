@@ -20,24 +20,24 @@ auto getId(const lex::Token& token) -> std::optional<std::string> {
   return token.getPayload<lex::IdentifierTokenPayload>()->getIdentifier();
 }
 
-auto getSpan(const std::vector<lex::Token>& tokens) -> std::optional<input::SourceSpan> {
-  auto spans = std::vector<input::SourceSpan>{};
+auto getSpan(const std::vector<lex::Token>& tokens) -> std::optional<input::Span> {
+  auto spans = std::vector<input::Span>{};
   spans.reserve(tokens.size());
   std::transform(
       tokens.begin(), tokens.end(), std::back_insert_iterator(spans), [](const lex::Token& t) {
         return t.getSpan();
       });
-  return input::SourceSpan::combine(spans.begin(), spans.end());
+  return input::Span::combine(spans.begin(), spans.end());
 }
 
-auto getSpan(const std::vector<NodePtr>& nodes) -> std::optional<input::SourceSpan> {
-  auto spans = std::vector<input::SourceSpan>{};
+auto getSpan(const std::vector<NodePtr>& nodes) -> std::optional<input::Span> {
+  auto spans = std::vector<input::Span>{};
   spans.reserve(nodes.size());
   std::transform(
       nodes.begin(), nodes.end(), std::back_insert_iterator(spans), [](const NodePtr& t) {
         return t->getSpan();
       });
-  return input::SourceSpan::combine(spans.begin(), spans.end());
+  return input::Span::combine(spans.begin(), spans.end());
 }
 
 auto nodesEqual(const std::vector<NodePtr>& a, const std::vector<NodePtr>& b) -> bool {
