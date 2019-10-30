@@ -32,7 +32,7 @@ auto ExecStmtNode::operator[](int i) const -> const Node& {
   return *m_args[i];
 }
 
-auto ExecStmtNode::getChildCount() const -> unsigned int { return 1; }
+auto ExecStmtNode::getChildCount() const -> unsigned int { return m_args.size(); }
 
 auto ExecStmtNode::getSpan() const -> input::SourceSpan {
   return input::SourceSpan::combine(m_action.getSpan(), m_close.getSpan());
