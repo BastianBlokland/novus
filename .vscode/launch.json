@@ -38,16 +38,6 @@
       "cwd": "${workspaceFolder}",
       "terminal": "integrated",
       "stopOnEntry": false
-    },
-    {
-      "name": "repl",
-      "preLaunchTask": "build debug",
-      "type": "lldb",
-      "request": "launch",
-      "program": "${workspaceFolder}/bin/repl",
-      "cwd": "${workspaceFolder}",
-      "terminal": "integrated",
-      "stopOnEntry": false
     }
   ]
 }
