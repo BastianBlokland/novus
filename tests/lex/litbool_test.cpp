@@ -16,7 +16,7 @@ TEST_CASE("Lexing boolean literals", "[lex]") {
         "true,true", litBoolToken(true), basicToken(TokenKind::SepComma), litBoolToken(true));
   }
 
-  SECTION("Spans") { CHECK_SPANS(" true ", SourceSpan{1, 4}); }
+  SECTION("Spans") { CHECK_SPANS(" true ", input::SourceSpan{1, 4}); }
 }
 
 } // namespace lex

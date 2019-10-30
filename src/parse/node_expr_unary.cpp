@@ -23,8 +23,8 @@ auto UnaryExprNode::operator[](int i) const -> const Node& {
 
 auto UnaryExprNode::getChildCount() const -> unsigned int { return 1; }
 
-auto UnaryExprNode::getSpan() const -> lex::SourceSpan {
-  return lex::SourceSpan::combine(m_op.getSpan(), m_rhs->getSpan());
+auto UnaryExprNode::getSpan() const -> input::SourceSpan {
+  return input::SourceSpan::combine(m_op.getSpan(), m_rhs->getSpan());
 }
 
 auto UnaryExprNode::getOperator() const -> const lex::Token& { return m_op; }

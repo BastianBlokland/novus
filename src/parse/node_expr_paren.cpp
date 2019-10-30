@@ -26,8 +26,8 @@ auto ParenExprNode::operator[](int i) const -> const Node& {
 
 auto ParenExprNode::getChildCount() const -> unsigned int { return 1; }
 
-auto ParenExprNode::getSpan() const -> lex::SourceSpan {
-  return lex::SourceSpan::combine(m_open.getSpan(), m_close.getSpan());
+auto ParenExprNode::getSpan() const -> input::SourceSpan {
+  return input::SourceSpan::combine(m_open.getSpan(), m_close.getSpan());
 }
 
 auto ParenExprNode::print(std::ostream& out) const -> std::ostream& {

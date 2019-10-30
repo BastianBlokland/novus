@@ -31,8 +31,8 @@ TEST_CASE("Parsing primary expressions", "[parse]") {
   }
 
   SECTION("Spans") {
-    CHECK_EXPR_SPAN("123", lex::SourceSpan(0, 2));
-    CHECK_EXPR_SPAN("x = 123", lex::SourceSpan(0, 6));
+    CHECK_EXPR_SPAN("123", input::SourceSpan(0, 2));
+    CHECK_EXPR_SPAN("x = 123", input::SourceSpan(0, 6));
   }
 }
 

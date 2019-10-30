@@ -34,7 +34,7 @@ TEST_CASE("Parsing group expressions", "[parse]") {
     CHECK_EXPR("1;", groupExprNode(NODES(INT(1), errInvalidPrimaryExpr(END)), SEMIS(1)));
   }
 
-  SECTION("Spans") { CHECK_EXPR_SPAN(" 1;2;3 == 5", lex::SourceSpan(1, 10)); }
+  SECTION("Spans") { CHECK_EXPR_SPAN(" 1;2;3 == 5", input::SourceSpan(1, 10)); }
 }
 
 } // namespace parse

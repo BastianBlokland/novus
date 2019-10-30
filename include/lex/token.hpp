@@ -1,6 +1,6 @@
 #pragma once
+#include "input/source_span.hpp"
 #include "lex/keyword.hpp"
-#include "lex/source_span.hpp"
 #include "lex/token_cat.hpp"
 #include "lex/token_kind.hpp"
 #include "lex/token_payload.hpp"
@@ -13,7 +13,7 @@ namespace lex {
 class Token final {
 public:
   Token();
-  Token(TokenKind kind, std::unique_ptr<TokenPayload> payload, SourceSpan span);
+  Token(TokenKind kind, std::unique_ptr<TokenPayload> payload, input::SourceSpan span);
   Token(const Token& rhs);
   Token(Token&& rhs) noexcept;
 
@@ -47,26 +47,26 @@ public:
 private:
   TokenKind m_kind;
   std::unique_ptr<TokenPayload> m_payload;
-  SourceSpan m_span;
+  input::SourceSpan m_span;
 };
 
 auto operator<<(std::ostream& out, const Token& rhs) -> std::ostream&;
 
 // Factories.
-auto endToken(SourceSpan span = SourceSpan{0}) -> Token;
+auto endToken(input::SourceSpan span = input::SourceSpan{0}) -> Token;
 
-auto basicToken(TokenKind kind, SourceSpan span = SourceSpan{0}) -> Token;
+auto basicToken(TokenKind kind, input::SourceSpan span = input::SourceSpan{0}) -> Token;
 
-auto errorToken(std::string msg, SourceSpan span = SourceSpan{0}) -> Token;
+auto errorToken(std::string msg, input::SourceSpan span = input::SourceSpan{0}) -> Token;
 
-auto litIntToken(int32_t val, SourceSpan span = SourceSpan{0}) -> Token;
+auto litIntToken(int32_t val, input::SourceSpan span = input::SourceSpan{0}) -> Token;
 
-auto litBoolToken(bool val, SourceSpan span = SourceSpan{0}) -> Token;
+auto litBoolToken(bool val, input::SourceSpan span = input::SourceSpan{0}) -> Token;
 
-auto litStrToken(std::string val, SourceSpan span = SourceSpan{0}) -> Token;
+auto litStrToken(std::string val, input::SourceSpan span = input::SourceSpan{0}) -> Token;
 
-auto keywordToken(Keyword keyword, SourceSpan span = SourceSpan{0}) -> Token;
+auto keywordToken(Keyword keyword, input::SourceSpan span = input::SourceSpan{0}) -> Token;
 
-auto identiferToken(std::string id, SourceSpan span = SourceSpan{0}) -> Token;
+auto identiferToken(std::string id, input::SourceSpan span = input::SourceSpan{0}) -> Token;
 
 } // namespace lex

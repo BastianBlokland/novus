@@ -34,8 +34,8 @@ auto CallExprNode::operator[](int i) const -> const Node& {
 
 auto CallExprNode::getChildCount() const -> unsigned int { return m_args.size(); }
 
-auto CallExprNode::getSpan() const -> lex::SourceSpan {
-  return lex::SourceSpan::combine(m_func.getSpan(), m_close.getSpan());
+auto CallExprNode::getSpan() const -> input::SourceSpan {
+  return input::SourceSpan::combine(m_func.getSpan(), m_close.getSpan());
 }
 
 auto CallExprNode::getFunc() const -> const lex::Token& { return m_func; }

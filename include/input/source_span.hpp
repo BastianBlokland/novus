@@ -3,7 +3,7 @@
 #include <optional>
 #include <ostream>
 
-namespace lex {
+namespace input {
 
 class SourceSpan final {
 public:
@@ -43,4 +43,4 @@ private:
 
 auto operator<<(std::ostream& out, const SourceSpan& rhs) -> std::ostream&;
 
-} // namespace lex
+} // namespace input

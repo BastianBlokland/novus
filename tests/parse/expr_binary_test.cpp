@@ -49,7 +49,7 @@ TEST_CASE("Parsing binary operators", "[parse]") {
         binaryExprNode(INT(1), EQEQ, errInvalidUnaryOp(EQEQ, errInvalidPrimaryExpr(END))));
   }
 
-  SECTION("Spans") { CHECK_EXPR_SPAN("1 + 2 == 2 + 3", lex::SourceSpan(0, 13)); }
+  SECTION("Spans") { CHECK_EXPR_SPAN("1 + 2 == 2 + 3", input::SourceSpan(0, 13)); }
 }
 
 } // namespace parse

@@ -29,8 +29,8 @@ auto GroupExprNode::operator[](int i) const -> const Node& {
 
 auto GroupExprNode::getChildCount() const -> unsigned int { return m_subExprs.size(); }
 
-auto GroupExprNode::getSpan() const -> lex::SourceSpan {
-  return lex::SourceSpan::combine(m_subExprs.front()->getSpan(), m_subExprs.back()->getSpan());
+auto GroupExprNode::getSpan() const -> input::SourceSpan {
+  return input::SourceSpan::combine(m_subExprs.front()->getSpan(), m_subExprs.back()->getSpan());
 }
 
 auto GroupExprNode::print(std::ostream& out) const -> std::ostream& { return out << "group"; }

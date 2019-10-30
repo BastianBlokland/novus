@@ -72,63 +72,63 @@ auto LexerImpl::next() -> Token {
     const auto c = consumeChar();
     switch (c) {
     case '\0':
-      return endToken(SourceSpan{m_inputPos >= 0 ? m_inputPos : 0});
+      return endToken(input::SourceSpan{m_inputPos >= 0 ? m_inputPos : 0});
     case '+':
-      return basicToken(TokenKind::OpPlus, SourceSpan{m_inputPos});
+      return basicToken(TokenKind::OpPlus, input::SourceSpan{m_inputPos});
     case '-':
       if (peekChar(0) == '>') {
         consumeChar();
-        return basicToken(TokenKind::SepArrow, SourceSpan{m_inputPos - 1, m_inputPos});
+        return basicToken(TokenKind::SepArrow, input::SourceSpan{m_inputPos - 1, m_inputPos});
       }
-      return basicToken(TokenKind::OpMinus, SourceSpan{m_inputPos});
+      return basicToken(TokenKind::OpMinus, input::SourceSpan{m_inputPos});
     case '*':
-      return basicToken(TokenKind::OpStar, SourceSpan{m_inputPos});
+      return basicToken(TokenKind::OpStar, input::SourceSpan{m_inputPos});
     case '/':
-      return basicToken(TokenKind::OpSlash, SourceSpan{m_inputPos});
+      return basicToken(TokenKind::OpSlash, input::SourceSpan{m_inputPos});
     case '&':
       if (peekChar(0) == '&') {
         consumeChar();
-        return basicToken(TokenKind::OpAmpAmp, SourceSpan{m_inputPos - 1, m_inputPos});
+        return basicToken(TokenKind::OpAmpAmp, input::SourceSpan{m_inputPos - 1, m_inputPos});
       }
-      return basicToken(TokenKind::OpAmp, SourceSpan{m_inputPos});
+      return basicToken(TokenKind::OpAmp, input::SourceSpan{m_inputPos});
     case '|':
       if (peekChar(0) == '|') {
         consumeChar();
-        return basicToken(TokenKind::OpPipePipe, SourceSpan{m_inputPos - 1, m_inputPos});
+        return basicToken(TokenKind::OpPipePipe, input::SourceSpan{m_inputPos - 1, m_inputPos});
       }
-      return basicToken(TokenKind::OpPipe, SourceSpan{m_inputPos});
+      return basicToken(TokenKind::OpPipe, input::SourceSpan{m_inputPos});
     case '=':
       if (peekChar(0) == '=') {
         consumeChar();
-        return basicToken(TokenKind::OpEqEq, SourceSpan{m_inputPos - 1, m_inputPos});
+        return basicToken(TokenKind::OpEqEq, input::SourceSpan{m_inputPos - 1, m_inputPos});
       }
-      return basicToken(TokenKind::OpEq, SourceSpan{m_inputPos});
+      return basicToken(TokenKind::OpEq, input::SourceSpan{m_inputPos});
     case '!':
       if (peekChar(0) == '=') {
         consumeChar();
-        return basicToken(TokenKind::OpBangEq, SourceSpan{m_inputPos - 1, m_inputPos});
+        return basicToken(TokenKind::OpBangEq, input::SourceSpan{m_inputPos - 1, m_inputPos});
       }
-      return basicToken(TokenKind::OpBang, SourceSpan{m_inputPos});
+      return basicToken(TokenKind::OpBang, input::SourceSpan{m_inputPos});
     case '<':
       if (peekChar(0) == '=') {
         consumeChar();
-        return basicToken(TokenKind::OpLessEq, SourceSpan{m_inputPos - 1, m_inputPos});
+        return basicToken(TokenKind::OpLessEq, input::SourceSpan{m_inputPos - 1, m_inputPos});
       }
-      return basicToken(TokenKind::OpLess, SourceSpan{m_inputPos});
+      return basicToken(TokenKind::OpLess, input::SourceSpan{m_inputPos});
     case '>':
       if (peekChar(0) == '=') {
         consumeChar();
-        return basicToken(TokenKind::OpGtEq, SourceSpan{m_inputPos - 1, m_inputPos});
+        return basicToken(TokenKind::OpGtEq, input::SourceSpan{m_inputPos - 1, m_inputPos});
       }
-      return basicToken(TokenKind::OpGt, SourceSpan{m_inputPos});
+      return basicToken(TokenKind::OpGt, input::SourceSpan{m_inputPos});
     case ';':
-      return basicToken(TokenKind::OpSemi, SourceSpan{m_inputPos});
+      return basicToken(TokenKind::OpSemi, input::SourceSpan{m_inputPos});
     case '(':
-      return basicToken(TokenKind::SepOpenParen, SourceSpan{m_inputPos});
+      return basicToken(TokenKind::SepOpenParen, input::SourceSpan{m_inputPos});
     case ')':
-      return basicToken(TokenKind::SepCloseParen, SourceSpan{m_inputPos});
+      return basicToken(TokenKind::SepCloseParen, input::SourceSpan{m_inputPos});
     case ',':
-      return basicToken(TokenKind::SepComma, SourceSpan{m_inputPos});
+      return basicToken(TokenKind::SepComma, input::SourceSpan{m_inputPos});
     case ' ':
     case '\t':
     case '\n':
@@ -153,13 +153,13 @@ auto LexerImpl::next() -> Token {
         return nextWordToken(c);
       }
       // Current '_' is not used as a valid token own.
-      return errInvalidChar(c, SourceSpan(m_inputPos, m_inputPos));
+      return errInvalidChar(c, input::SourceSpan(m_inputPos, m_inputPos));
     }
     default:
       if (isWordStart(c)) {
         return nextWordToken(c);
       }
-      return errInvalidChar(c, SourceSpan(m_inputPos, m_inputPos));
+      return errInvalidChar(c, input::SourceSpan(m_inputPos, m_inputPos));
     }
   }
 }
@@ -191,7 +191,7 @@ auto LexerImpl::nextLitInt(const char mostSignficantChar) -> Token {
     }
   }
 
-  const auto span = SourceSpan{startPos, m_inputPos};
+  const auto span = input::SourceSpan{startPos, m_inputPos};
   if (containsInvalidChar) {
     return errLitIntInvalidChar(span);
   }
@@ -216,7 +216,7 @@ auto LexerImpl::nextLitStr() -> Token {
     case '\0':
     case '\r':
     case '\n':
-      return erLitStrUnterminated(SourceSpan{startPos, m_inputPos});
+      return erLitStrUnterminated(input::SourceSpan{startPos, m_inputPos});
     case '\\': {
       // Backslash is used to start an escape sequence.
       const auto unescapedC = unescape(consumeChar());
@@ -228,7 +228,7 @@ auto LexerImpl::nextLitStr() -> Token {
       break;
     }
     case '"': {
-      const auto span = SourceSpan{startPos, m_inputPos};
+      const auto span = input::SourceSpan{startPos, m_inputPos};
       if (invalidEscapeSequence) {
         return errLitStrInvalidEscape(span);
       }
@@ -261,7 +261,7 @@ auto LexerImpl::nextWordToken(const char startingChar) -> Token {
       invalidCharacter = true;
     }
   }
-  const auto span = SourceSpan{startPos, m_inputPos};
+  const auto span = input::SourceSpan{startPos, m_inputPos};
 
   // Check if word is a literal.
   if (result == "true") {

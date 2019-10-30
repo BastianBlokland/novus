@@ -1,12 +1,10 @@
 #include "catch2/catch.hpp"
-#include "lex/lexer.hpp"
-#include "lex/source_span.hpp"
-#include "lex/utilities.hpp"
+#include "input/source_span.hpp"
 #include <vector>
 
-namespace lex {
+namespace input {
 
-TEST_CASE("SourceSpan utilities", "[lex]") {
+TEST_CASE("SourceSpan utilities", "[input]") {
 
   SECTION("Combine spans") {
     // NOLINTNEXTLINE: Magic numbers
@@ -17,4 +15,4 @@ TEST_CASE("SourceSpan utilities", "[lex]") {
   }
 }
 
-} // namespace lex
+} // namespace input

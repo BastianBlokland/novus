@@ -1,9 +1,16 @@
+# Input.
+add_library(input STATIC
+  input/source_span.cpp)
+target_compile_features(input PUBLIC cxx_std_17)
+target_compile_options(input PRIVATE -Werror -Wall -Wextra)
+target_include_directories(input PUBLIC ../include)
+target_include_directories(input PRIVATE input)
+
 # Lexer.
 add_library(lex STATIC
   lex/char_escape.cpp
   lex/error.cpp
   lex/lexer.cpp
-  lex/source_span.cpp
   lex/token.cpp
   lex/token_cat.cpp
   lex/token_kind.cpp
@@ -11,6 +18,7 @@ add_library(lex STATIC
   lex/keyword.cpp
   lex/utilities.cpp)
 target_compile_features(lex PUBLIC cxx_std_17)
+target_link_libraries(lex PUBLIC input)
 target_compile_options(lex PRIVATE -Werror -Wall -Wextra)
 target_include_directories(lex PUBLIC ../include)
 target_include_directories(lex PRIVATE lex)

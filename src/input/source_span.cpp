@@ -1,7 +1,7 @@
-#include "lex/source_span.hpp"
+#include "input/source_span.hpp"
 #include <stdexcept>
 
-namespace lex {
+namespace input {
 
 SourceSpan::SourceSpan(const int start, const int end) : m_start{start}, m_end{end} {
   if (start < 0) {
@@ -41,4 +41,4 @@ auto operator<<(std::ostream& out, const SourceSpan& rhs) -> std::ostream& {
   return out;
 }
 
-} // namespace lex
+} // namespace input

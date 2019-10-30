@@ -35,12 +35,12 @@ TEST_CASE("Lexing integer literals", "[lex]") {
   }
 
   SECTION("Spans") {
-    CHECK_SPANS(" 123 ", SourceSpan{1, 3});
-    CHECK_SPANS(" 123  0", SourceSpan{1, 3}, SourceSpan{6});
-    CHECK_SPANS("1__2__3", SourceSpan{0, 6});
-    CHECK_SPANS("99999999999999999999", SourceSpan{0, 19});
-    CHECK_SPANS("12a12", SourceSpan{0, 4});
-    CHECK_SPANS("11____", SourceSpan{0, 5});
+    CHECK_SPANS(" 123 ", input::SourceSpan{1, 3});
+    CHECK_SPANS(" 123  0", input::SourceSpan{1, 3}, input::SourceSpan{6});
+    CHECK_SPANS("1__2__3", input::SourceSpan{0, 6});
+    CHECK_SPANS("99999999999999999999", input::SourceSpan{0, 19});
+    CHECK_SPANS("12a12", input::SourceSpan{0, 4});
+    CHECK_SPANS("11____", input::SourceSpan{0, 5});
   }
 }
 

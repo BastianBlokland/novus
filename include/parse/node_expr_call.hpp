@@ -21,7 +21,7 @@ public:
 
   [[nodiscard]] auto operator[](int i) const -> const Node& override;
   [[nodiscard]] auto getChildCount() const -> unsigned int override;
-  [[nodiscard]] auto getSpan() const -> lex::SourceSpan override;
+  [[nodiscard]] auto getSpan() const -> input::SourceSpan override;
 
   [[nodiscard]] auto getFunc() const -> const lex::Token&;
 

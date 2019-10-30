@@ -13,6 +13,9 @@ include(Catch)
 # 'tests' executable.
 add_executable(tests
   main.cpp
+
+  input/sourcespan_test.cpp
+
   lex/category_test.cpp
   lex/identifier_test.cpp
   lex/iterator_test.cpp
@@ -22,8 +25,8 @@ add_executable(tests
   lex/litstr_test.cpp
   lex/operators_test.cpp
   lex/seperators_test.cpp
-  lex/sourcespan_test.cpp
   lex/utilities_test.cpp
+
   parse/error_test.cpp
   parse/expr_binary_test.cpp
   parse/expr_call_test.cpp

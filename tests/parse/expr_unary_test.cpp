@@ -24,8 +24,8 @@ TEST_CASE("Parsing unary operators", "[parse]") {
   }
 
   SECTION("Spans") {
-    CHECK_EXPR_SPAN("-1", lex::SourceSpan(0, 1));
-    CHECK_EXPR_SPAN(" + - ! 1 + 2 ", lex::SourceSpan(1, 11));
+    CHECK_EXPR_SPAN("-1", input::SourceSpan(0, 1));
+    CHECK_EXPR_SPAN(" + - ! 1 + 2 ", input::SourceSpan(1, 11));
   }
 }
 

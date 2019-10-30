@@ -34,8 +34,8 @@ auto ExecStmtNode::operator[](int i) const -> const Node& {
 
 auto ExecStmtNode::getChildCount() const -> unsigned int { return 1; }
 
-auto ExecStmtNode::getSpan() const -> lex::SourceSpan {
-  return lex::SourceSpan::combine(m_action.getSpan(), m_close.getSpan());
+auto ExecStmtNode::getSpan() const -> input::SourceSpan {
+  return input::SourceSpan::combine(m_action.getSpan(), m_close.getSpan());
 }
 
 auto ExecStmtNode::getAction() const -> const lex::Token& { return m_action; }
