@@ -6,7 +6,7 @@
 namespace lex {
 
 template <typename InputItr>
-[[nodiscard]] auto findToken(InputItr begin, const InputItr end, const int sourcePos)
+[[nodiscard]] auto findToken(InputItr begin, const InputItr end, const unsigned int sourcePos)
     -> std::optional<Token> {
 
   static_assert(

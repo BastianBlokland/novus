@@ -1,6 +1,8 @@
 # Input.
 add_library(input STATIC
-  input/span.cpp)
+  input/info.cpp
+  input/span.cpp
+  input/textpos.cpp)
 target_compile_features(input PUBLIC cxx_std_17)
 target_compile_options(input PRIVATE -Werror -Wall -Wextra)
 target_include_directories(input PUBLIC ../include)

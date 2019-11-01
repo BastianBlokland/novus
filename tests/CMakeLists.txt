@@ -14,6 +14,7 @@ include(Catch)
 add_executable(tests
   main.cpp
 
+  input/info_test.cpp
   input/span_test.cpp
 
   lex/category_test.cpp

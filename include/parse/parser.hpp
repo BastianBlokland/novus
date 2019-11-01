@@ -40,16 +40,16 @@ private:
 
 } // namespace internal
 
-template <typename InputItr>
+template <typename InputItrBegin, typename InputItrEnd>
 class Parser final : private internal::ParserImpl {
 
   static_assert(
-      std::is_same<typename std::iterator_traits<InputItr>::value_type, lex::Token>::value,
+      std::is_same<typename std::iterator_traits<InputItrBegin>::value_type, lex::Token>::value,
       "Valuetype of input iterator has to be 'Token'");
 
 public:
   Parser() = delete;
-  Parser(InputItr inputBegin, const InputItr inputEnd) :
+  Parser(InputItrBegin inputBegin, const InputItrEnd inputEnd) :
       m_input{inputBegin}, m_inputEnd(inputEnd) {}
 
   [[nodiscard]] auto next() -> NodePtr { return internal::ParserImpl::next(); }
@@ -63,8 +63,8 @@ public:
   [[nodiscard]] auto end() -> NodeItr<Parser> { return NodeItr<Parser>{}; }
 
 private:
-  InputItr m_input;
-  const InputItr m_inputEnd;
+  InputItrBegin m_input;
+  const InputItrEnd m_inputEnd;
 
   auto getFromInput() -> lex::Token override {
     if (m_input == m_inputEnd) {
@@ -77,8 +77,8 @@ private:
 };
 
 // Utilities.
-template <typename InputItr>
-auto parseAll(InputItr inputBegin, const InputItr inputEnd) {
+template <typename InputItrBegin, typename InputItrEnd>
+auto parseAll(InputItrBegin inputBegin, const InputItrEnd inputEnd) {
   auto parser = Parser{inputBegin, inputEnd};
   return std::vector<NodePtr>{parser.begin(), parser.end()};
 }

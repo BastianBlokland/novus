@@ -42,7 +42,7 @@ public:
     return m_current.get() != rhs.m_current.get();
   }
 
-  auto operator++() { m_current = getNode(); }
+  auto operator++() -> void { m_current = getNode(); }
 
 private:
   NodeSource* m_source;

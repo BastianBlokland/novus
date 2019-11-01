@@ -285,7 +285,7 @@ auto ParserImpl::peekToken(const size_t ahead) -> lex::Token& {
 } // namespace internal
 
 // Explicit instantiations.
-template class Parser<lex::Token*>;
-template class Parser<std::vector<lex::Token>::iterator>;
+template class Parser<lex::Token*, lex::Token*>;
+template class Parser<std::vector<lex::Token>::iterator, std::vector<lex::Token>::iterator>;
 
 } // namespace parse

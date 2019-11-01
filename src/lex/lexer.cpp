@@ -313,9 +313,9 @@ auto LexerImpl::peekChar(const size_t ahead) -> char& {
 } // namespace internal
 
 // Explicit instantiations.
-template class Lexer<char*>;
-template class Lexer<std::string::iterator>;
-template class Lexer<std::string::const_iterator>;
-template class Lexer<std::istream_iterator<char>>;
+template class Lexer<char*, char*>;
+template class Lexer<std::string::iterator, std::string::iterator>;
+template class Lexer<std::string::const_iterator, std::string::const_iterator>;
+template class Lexer<std::istream_iterator<char>, std::istream_iterator<char>>;
 
 } // namespace lex

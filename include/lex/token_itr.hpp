@@ -37,7 +37,7 @@ public:
 
   auto operator!=(const TokenItr& rhs) noexcept -> bool { return m_current != rhs.m_current; }
 
-  auto operator++() { m_current = getToken(); }
+  auto operator++() -> void { m_current = getToken(); }
 
 private:
   TokenSource* m_source;

@@ -1,4 +1,5 @@
 #include "CLI/CLI.hpp"
+#include "input/info.hpp"
 #include "lex/lexer.hpp"
 #include "parse/parser.hpp"
 #include "rang.hpp"
@@ -11,7 +12,12 @@ auto getBgColor(const parse::Node& node) -> rang::bg;
 
 auto operator<<(std::ostream& out, const duration& rhs) -> std::ostream&;
 
-auto printNode(const parse::Node& n, std::string prefix = "", bool isLastSibling = false) -> void {
+auto printNode(
+    const parse::Node& n,
+    const input::Info& inputInfo,
+    std::string prefix = "",
+    bool isLastSibling = false) -> void {
+
   const static auto cross  = " ├─";
   const static auto corner = " └─";
   const static auto vert   = " │ ";
@@ -34,22 +40,22 @@ auto printNode(const parse::Node& n, std::string prefix = "", bool isLastSibling
 
   // Print node.
   auto span  = n.getSpan();
-  auto start = span.getStart();
-  auto end   = span.getEnd();
+  auto start = inputInfo.getTextPos(span.getStart());
   std::cout << s::bold << getFgColor(n) << getBgColor(n) << n << fg::reset << bg::reset << s::reset
-            << s::dim << s::italic << " (" << start << " - " << end << ')' << '\n'
+            << s::dim << s::italic << " " << start << '\n'
             << s::reset;
 
   const auto childCount = n.getChildCount();
   for (auto i = 0U; i < childCount; ++i) {
-    printNode(n[i], prefix, i == (childCount - 1));
+    printNode(n[i], inputInfo, prefix, i == (childCount - 1));
   }
 }
 
 template <typename InputItr>
 auto run(InputItr inputBegin, const InputItr inputEnd, const bool printNodes) {
   const auto width  = 80;
-  const auto tokens = lex::lexAll(inputBegin, inputEnd);
+  auto inputInfo    = input::Info{};
+  const auto tokens = lex::lexAll(input::InfoItr(inputBegin, &inputInfo), inputEnd);
 
   // Parse all the tokens and time how long it takes.
   const auto t1       = high_resolution_clock::now();
@@ -65,7 +71,7 @@ auto run(InputItr inputBegin, const InputItr inputEnd, const bool printNodes) {
 
   if (printNodes) {
     for (const auto& node : nodes) {
-      printNode(*node);
+      printNode(*node, inputInfo);
       std::cout << rang::style::dim << " │\n" << rang::style::reset;
     }
     std::cout << rang::style::dim << std::string(width, '-') << '\n';
