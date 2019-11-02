@@ -15,6 +15,13 @@ Diag::Diag(
     m_sourceSpan{sourceSpan},
     m_sourcePos{sourcePos} {};
 
+auto Diag::operator==(const Diag& rhs) const noexcept -> bool {
+  return m_severity == rhs.m_severity && m_sourceId == rhs.m_sourceId &&
+      m_sourceSpan == rhs.m_sourceSpan && m_sourcePos == rhs.m_sourcePos;
+}
+
+auto Diag::operator!=(const Diag& rhs) const noexcept -> bool { return !Diag::operator==(rhs); }
+
 auto Diag::getSeverity() const noexcept -> DiagSeverity { return m_severity; }
 
 auto Diag::getMsg() const noexcept -> std::string { return m_msg; }

@@ -57,6 +57,8 @@ auto FuncDeclStmtNode::getArgs() const -> const std::vector<arg>& { return m_arg
 
 auto FuncDeclStmtNode::getRetType() const -> const lex::Token& { return m_retType; }
 
+auto FuncDeclStmtNode::accept(NodeVisitor* visitor) const -> void { visitor->visit(*this); }
+
 auto FuncDeclStmtNode::print(std::ostream& out) const -> std::ostream& {
   out << "fun-" << getIdOrErr(m_id) << '(';
   for (auto i = 0U; i < m_args.size(); ++i) {

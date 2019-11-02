@@ -33,6 +33,8 @@ public:
   [[nodiscard]] auto getArgs() const -> const std::vector<arg>&;
   [[nodiscard]] auto getRetType() const -> const lex::Token&;
 
+  auto accept(NodeVisitor* visitor) const -> void override;
+
 private:
   const lex::Token m_kw;
   const lex::Token m_id;

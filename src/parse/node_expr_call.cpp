@@ -40,6 +40,8 @@ auto CallExprNode::getSpan() const -> input::Span {
 
 auto CallExprNode::getFunc() const -> const lex::Token& { return m_func; }
 
+auto CallExprNode::accept(NodeVisitor* visitor) const -> void { visitor->visit(*this); }
+
 auto CallExprNode::print(std::ostream& out) const -> std::ostream& {
   return out << "call-" << ::parse::getId(m_func).value_or("error");
 }

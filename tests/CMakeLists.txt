@@ -14,6 +14,7 @@ include(Catch)
 add_executable(tests
   main.cpp
 
+  frontend/analysis_test.cpp
   frontend/source_test.cpp
 
   input/info_test.cpp

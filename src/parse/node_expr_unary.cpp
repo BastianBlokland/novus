@@ -29,6 +29,8 @@ auto UnaryExprNode::getSpan() const -> input::Span {
 
 auto UnaryExprNode::getOperator() const -> const lex::Token& { return m_op; }
 
+auto UnaryExprNode::accept(NodeVisitor* visitor) const -> void { visitor->visit(*this); }
+
 auto UnaryExprNode::print(std::ostream& out) const -> std::ostream& { return out << m_op; }
 
 // Factories.

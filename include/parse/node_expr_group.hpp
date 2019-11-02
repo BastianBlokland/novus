@@ -19,6 +19,8 @@ public:
   [[nodiscard]] auto getChildCount() const -> unsigned int override;
   [[nodiscard]] auto getSpan() const -> input::Span override;
 
+  auto accept(NodeVisitor* visitor) const -> void override;
+
 private:
   const std::vector<NodePtr> m_subExprs;
   const std::vector<lex::Token> m_semis;

@@ -7,6 +7,14 @@ namespace input {
 
 class Info final {
 public:
+  Info()                    = default;
+  Info(const Info& rhs)     = delete;
+  Info(Info&& rhs) noexcept = default;
+  ~Info()                   = default;
+
+  auto operator=(const Info& rhs) -> Info& = delete;
+  auto operator=(Info&& rhs) noexcept -> Info& = default;
+
   auto markLineEnd(unsigned int pos) -> void;
 
   [[nodiscard]] auto getTextPos(unsigned int pos) const noexcept -> TextPos;

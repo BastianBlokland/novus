@@ -30,6 +30,8 @@ auto ParenExprNode::getSpan() const -> input::Span {
   return input::Span::combine(m_open.getSpan(), m_close.getSpan());
 }
 
+auto ParenExprNode::accept(NodeVisitor* visitor) const -> void { visitor->visit(*this); }
+
 auto ParenExprNode::print(std::ostream& out) const -> std::ostream& {
   return out << "parenthesized";
 }

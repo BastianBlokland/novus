@@ -23,6 +23,8 @@ public:
 
   [[nodiscard]] auto getMessage() const noexcept -> const std::string&;
 
+  auto accept(NodeVisitor* visitor) const -> void override;
+
 private:
   const std::string m_msg;
   const std::vector<lex::Token> m_tokens;

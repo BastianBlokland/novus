@@ -41,8 +41,9 @@ add_library(parse STATIC
   parse/node_expr_switch.cpp
   parse/node_expr_unary.cpp
   parse/node_kind.cpp
-  parse/node_stmt_func_decl.cpp
   parse/node_stmt_exec.cpp
+  parse/node_stmt_func_decl.cpp
+  parse/node_visitor_recursive.cpp
   parse/node.cpp
   parse/op_precedence.cpp
   parse/parser.cpp
@@ -55,8 +56,10 @@ target_include_directories(parse PRIVATE parse)
 
 # Frontend.
 add_library(frontend STATIC
+  frontend/analysis.cpp
   frontend/diag_severity.cpp
   frontend/diag.cpp
+  frontend/output.cpp
   frontend/source.cpp)
 target_compile_features(frontend PUBLIC cxx_std_17)
 target_link_libraries(frontend PUBLIC parse)

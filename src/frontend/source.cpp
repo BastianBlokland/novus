@@ -16,6 +16,12 @@ auto Source::getTextPos(unsigned int pos) const noexcept -> input::TextPos {
   return m_info.getTextPos(pos);
 }
 
+auto Source::accept(parse::NodeVisitor* visitor) const -> void {
+  for (const auto& n : m_nodes) {
+    n->accept(visitor);
+  }
+}
+
 auto operator<<(std::ostream& out, const Source& rhs) -> std::ostream& { return out << rhs.m_id; }
 
 } // namespace frontend

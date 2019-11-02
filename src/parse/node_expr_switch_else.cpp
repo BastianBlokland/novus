@@ -30,6 +30,8 @@ auto SwitchExprElseNode::getSpan() const -> input::Span {
   return input::Span::combine(m_kw.getSpan(), m_rhs->getSpan());
 }
 
+auto SwitchExprElseNode::accept(NodeVisitor* visitor) const -> void { visitor->visit(*this); }
+
 auto SwitchExprElseNode::print(std::ostream& out) const -> std::ostream& { return out << "else"; }
 
 // Factories.

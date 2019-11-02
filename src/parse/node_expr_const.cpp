@@ -24,6 +24,8 @@ auto ConstExprNode::getSpan() const -> input::Span { return m_id.getSpan(); }
 
 auto ConstExprNode::getId() const -> const lex::Token& { return m_id; }
 
+auto ConstExprNode::accept(NodeVisitor* visitor) const -> void { visitor->visit(*this); }
+
 auto ConstExprNode::print(std::ostream& out) const -> std::ostream& {
   return out << ::parse::getId(m_id).value_or("error");
 }

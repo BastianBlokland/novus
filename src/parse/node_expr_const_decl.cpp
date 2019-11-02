@@ -33,6 +33,8 @@ auto ConstDeclExprNode::getSpan() const -> input::Span {
 
 auto ConstDeclExprNode::getId() const -> const lex::Token& { return m_id; }
 
+auto ConstDeclExprNode::accept(NodeVisitor* visitor) const -> void { visitor->visit(*this); }
+
 auto ConstDeclExprNode::print(std::ostream& out) const -> std::ostream& {
   return out << "decl-" << ::parse::getId(m_id).value_or("error");
 }

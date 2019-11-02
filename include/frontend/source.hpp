@@ -22,7 +22,7 @@ public:
   ~Source()                     = default;
 
   auto operator=(const Source& rhs) -> Source& = delete;
-  auto operator=(Source&& rhs) noexcept -> Source& = delete;
+  auto operator=(Source&& rhs) noexcept -> Source& = default;
 
   [[nodiscard]] auto begin() const noexcept -> iterator;
   [[nodiscard]] auto end() const noexcept -> iterator;
@@ -30,10 +30,12 @@ public:
   [[nodiscard]] auto getId() const noexcept -> std::string;
   [[nodiscard]] auto getTextPos(unsigned int pos) const noexcept -> input::TextPos;
 
+  auto accept(parse::NodeVisitor* visitor) const -> void;
+
 private:
-  const std::string m_id;
-  const std::vector<parse::NodePtr> m_nodes;
-  const input::Info m_info;
+  std::string m_id;
+  std::vector<parse::NodePtr> m_nodes;
+  input::Info m_info;
 
   Source(std::string id, std::vector<parse::NodePtr> nodes, input::Info info);
 };

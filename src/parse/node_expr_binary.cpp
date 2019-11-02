@@ -36,6 +36,8 @@ auto BinaryExprNode::getSpan() const -> input::Span {
 
 auto BinaryExprNode::getOperator() const -> const lex::Token& { return m_op; }
 
+auto BinaryExprNode::accept(NodeVisitor* visitor) const -> void { visitor->visit(*this); }
+
 auto BinaryExprNode::print(std::ostream& out) const -> std::ostream& { return out << m_op; }
 
 // Factories.

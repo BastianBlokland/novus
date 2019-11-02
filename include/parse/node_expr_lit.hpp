@@ -19,6 +19,8 @@ public:
 
   [[nodiscard]] auto getVal() const -> const lex::Token&;
 
+  auto accept(NodeVisitor* visitor) const -> void override;
+
 private:
   const lex::Token m_val;
 

@@ -15,6 +15,9 @@ class Diag final {
 public:
   Diag() = delete;
 
+  auto operator==(const Diag& rhs) const noexcept -> bool;
+  auto operator!=(const Diag& rhs) const noexcept -> bool;
+
   [[nodiscard]] auto getSeverity() const noexcept -> DiagSeverity;
   [[nodiscard]] auto getMsg() const noexcept -> std::string;
   [[nodiscard]] auto getSourceId() const noexcept -> std::string;

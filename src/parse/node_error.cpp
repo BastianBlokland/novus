@@ -43,6 +43,8 @@ auto ErrorNode::getSpan() const -> input::Span {
 
 auto ErrorNode::getMessage() const noexcept -> const std::string& { return m_msg; }
 
+auto ErrorNode::accept(NodeVisitor* visitor) const -> void { visitor->visit(*this); }
+
 auto ErrorNode::print(std::ostream& out) const -> std::ostream& { return out << m_msg; }
 
 // Factories.

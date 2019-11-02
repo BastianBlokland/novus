@@ -19,6 +19,8 @@ public:
 
   [[nodiscard]] auto getOperator() const -> const lex::Token&;
 
+  auto accept(NodeVisitor* visitor) const -> void override;
+
 private:
   const NodePtr m_lhs;
   const lex::Token m_op;

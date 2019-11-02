@@ -33,6 +33,8 @@ auto GroupExprNode::getSpan() const -> input::Span {
   return input::Span::combine(m_subExprs.front()->getSpan(), m_subExprs.back()->getSpan());
 }
 
+auto GroupExprNode::accept(NodeVisitor* visitor) const -> void { visitor->visit(*this); }
+
 auto GroupExprNode::print(std::ostream& out) const -> std::ostream& { return out << "group"; }
 
 // Factories.

@@ -23,6 +23,8 @@ auto LitExprNode::getSpan() const -> input::Span { return m_val.getSpan(); }
 
 auto LitExprNode::getVal() const -> const lex::Token& { return m_val; }
 
+auto LitExprNode::accept(NodeVisitor* visitor) const -> void { visitor->visit(*this); }
+
 auto LitExprNode::print(std::ostream& out) const -> std::ostream& { return out << m_val; }
 
 // Factories.

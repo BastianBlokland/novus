@@ -35,6 +35,8 @@ auto SwitchExprNode::getSpan() const -> input::Span {
   return input::Span::combine(m_ifClauses.front()->getSpan(), m_elseClause->getSpan());
 }
 
+auto SwitchExprNode::accept(NodeVisitor* visitor) const -> void { visitor->visit(*this); }
+
 auto SwitchExprNode::print(std::ostream& out) const -> std::ostream& { return out << "switch"; }
 
 // Factories.

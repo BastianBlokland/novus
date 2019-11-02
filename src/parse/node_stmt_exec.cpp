@@ -40,6 +40,8 @@ auto ExecStmtNode::getSpan() const -> input::Span {
 
 auto ExecStmtNode::getAction() const -> const lex::Token& { return m_action; }
 
+auto ExecStmtNode::accept(NodeVisitor* visitor) const -> void { visitor->visit(*this); }
+
 auto ExecStmtNode::print(std::ostream& out) const -> std::ostream& {
   return out << "exec-" << ::parse::getId(m_action).value_or("error");
 }

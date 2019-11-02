@@ -1,11 +1,14 @@
 #pragma once
 #include "input/span.hpp"
+#include "node_visitor.hpp"
 #include "parse/node_kind.hpp"
 #include <iostream>
 
 namespace parse {
 
 class Node {
+  friend auto operator<<(std::ostream& out, const Node& rhs) -> std::ostream&;
+
 public:
   Node()                    = delete;
   Node(const Node& rhs)     = delete;
@@ -23,10 +26,12 @@ public:
   [[nodiscard]] virtual auto getChildCount() const -> unsigned int = 0;
   [[nodiscard]] virtual auto getSpan() const -> input::Span        = 0;
 
-  virtual auto print(std::ostream& out) const -> std::ostream& = 0;
+  virtual auto accept(NodeVisitor* visitor) const -> void = 0;
 
 protected:
   explicit Node(const NodeKind kind) : m_kind{kind} {}
+
+  virtual auto print(std::ostream& out) const -> std::ostream& = 0;
 
 private:
   const NodeKind m_kind;
