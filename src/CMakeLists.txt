@@ -52,3 +52,12 @@ target_link_libraries(parse PUBLIC lex)
 target_compile_options(parse PRIVATE -Werror -Wall -Wextra)
 target_include_directories(parse PUBLIC ../include)
 target_include_directories(parse PRIVATE parse)
+
+# Frontend.
+add_library(frontend STATIC
+  frontend/source.cpp)
+target_compile_features(frontend PUBLIC cxx_std_17)
+target_link_libraries(frontend PUBLIC parse)
+target_compile_options(frontend PRIVATE -Werror -Wall -Wextra)
+target_include_directories(frontend PUBLIC ../include)
+target_include_directories(frontend PRIVATE frontend)
