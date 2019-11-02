@@ -8,6 +8,11 @@
 namespace frontend {
 
 class Source final {
+  template <typename InputItrBegin, typename InputItrEnd>
+  friend auto buildSource(std::string id, InputItrBegin begin, InputItrEnd end) -> Source;
+
+  friend auto operator<<(std::ostream& out, const Source& rhs) -> std::ostream&;
+
 public:
   using iterator = typename std::vector<parse::NodePtr>::const_iterator;
 
@@ -32,6 +37,8 @@ private:
 
   Source(std::string id, std::vector<parse::NodePtr> nodes, input::Info info);
 };
+
+auto operator<<(std::ostream& out, const Source& rhs) -> std::ostream&;
 
 template <typename InputItrBegin, typename InputItrEnd>
 auto buildSource(std::string id, InputItrBegin begin, InputItrEnd end) -> Source {

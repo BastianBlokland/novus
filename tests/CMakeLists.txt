@@ -14,6 +14,8 @@ include(Catch)
 add_executable(tests
   main.cpp
 
+  frontend/source_test.cpp
+
   input/info_test.cpp
   input/span_test.cpp
 
@@ -45,6 +47,7 @@ target_include_directories(tests PRIVATE lex)
 target_link_libraries(tests PRIVATE Catch2::Catch2)
 target_link_libraries(tests PRIVATE lex)
 target_link_libraries(tests PRIVATE parse)
+target_link_libraries(tests PRIVATE frontend)
 
 # Register tests to CTest.
 catch_discover_tests(tests)

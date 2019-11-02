@@ -16,4 +16,6 @@ auto Source::getTextPos(unsigned int pos) const noexcept -> input::TextPos {
   return m_info.getTextPos(pos);
 }
 
+auto operator<<(std::ostream& out, const Source& rhs) -> std::ostream& { return out << rhs.m_id; }
+
 } // namespace frontend

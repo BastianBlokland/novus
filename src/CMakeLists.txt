@@ -55,6 +55,8 @@ target_include_directories(parse PRIVATE parse)
 
 # Frontend.
 add_library(frontend STATIC
+  frontend/diag_severity.cpp
+  frontend/diag.cpp
   frontend/source.cpp)
 target_compile_features(frontend PUBLIC cxx_std_17)
 target_link_libraries(frontend PUBLIC parse)
