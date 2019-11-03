@@ -2,8 +2,7 @@
 
 namespace prog::expr {
 
-ConstExprNode::ConstExprNode(sym::ConstId id, sym::TypeId type) :
-    Node{NodeKind::Const}, m_id{id}, m_type{type} {}
+ConstExprNode::ConstExprNode(sym::ConstId id, sym::TypeId type) : m_id{id}, m_type{type} {}
 
 auto ConstExprNode::operator==(const Node& rhs) const noexcept -> bool {
   const auto r = dynamic_cast<const ConstExprNode*>(&rhs);

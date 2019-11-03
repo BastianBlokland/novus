@@ -9,7 +9,6 @@ ExecStmtNode::ExecStmtNode(
     std::vector<NodePtr> args,
     std::vector<lex::Token> commas,
     lex::Token close) :
-    Node(NodeKind::StmtExec),
     m_action{std::move(action)},
     m_open{std::move(open)},
     m_args{std::move(args)},

@@ -3,7 +3,7 @@
 namespace parse {
 
 UnaryExprNode::UnaryExprNode(lex::Token op, NodePtr rhs) :
-    Node(NodeKind::ExprUnaryOp), m_op{std::move(op)}, m_rhs{std::move(rhs)} {}
+    m_op{std::move(op)}, m_rhs{std::move(rhs)} {}
 
 auto UnaryExprNode::operator==(const Node& rhs) const noexcept -> bool {
   const auto r = dynamic_cast<const UnaryExprNode*>(&rhs);

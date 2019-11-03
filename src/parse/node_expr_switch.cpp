@@ -4,9 +4,7 @@
 namespace parse {
 
 SwitchExprNode::SwitchExprNode(std::vector<NodePtr> ifClauses, NodePtr elseClause) :
-    Node(NodeKind::ExprSwitch),
-    m_ifClauses{std::move(ifClauses)},
-    m_elseClause{std::move(elseClause)} {}
+    m_ifClauses{std::move(ifClauses)}, m_elseClause{std::move(elseClause)} {}
 
 auto SwitchExprNode::operator==(const Node& rhs) const noexcept -> bool {
   const auto r = dynamic_cast<const SwitchExprNode*>(&rhs);

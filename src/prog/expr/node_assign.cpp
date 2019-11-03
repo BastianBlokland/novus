@@ -5,7 +5,7 @@
 namespace prog::expr {
 
 AssignExprNode::AssignExprNode(sym::ConstId constId, NodePtr expr) :
-    Node{NodeKind::Assign}, m_constId{constId}, m_expr{std::move(expr)} {}
+    m_constId{constId}, m_expr{std::move(expr)} {}
 
 auto AssignExprNode::operator==(const Node& rhs) const noexcept -> bool {
   const auto r = dynamic_cast<const AssignExprNode*>(&rhs);

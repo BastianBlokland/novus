@@ -3,6 +3,8 @@
 #include "frontend/source.hpp"
 #include "rang.hpp"
 
+namespace progdiag {
+
 using high_resolution_clock = std::chrono::high_resolution_clock;
 using duration              = std::chrono::duration<double>;
 
@@ -105,6 +107,22 @@ auto run(
   }
 }
 
+auto operator<<(std::ostream& out, const duration& rhs) -> std::ostream& {
+  auto s = rhs.count();
+  if (s < .000001) {                // NOLINT: Magic numbers
+    out << s * 1000000000 << " ns"; // NOLINT: Magic numbers
+  } else if (s < .001) {            // NOLINT: Magic numbers
+    out << s * 1000000 << " us";    // NOLINT: Magic numbers
+  } else if (s < 1) {               // NOLINT: Magic numbers
+    out << s * 1000 << " ms";       // NOLINT: Magic numbers
+  } else {
+    out << s << " s";
+  }
+  return out;
+}
+
+} // namespace progdiag
+
 auto main(int argc, char** argv) -> int {
   auto app = CLI::App{"Program diagnostic tool"};
   app.require_subcommand(1);
@@ -115,7 +133,7 @@ auto main(int argc, char** argv) -> int {
   // Analyze input characters.
   std::string charsInput;
   auto lexCmd = app.add_subcommand("analyze", "Analyze the provided characters")->callback([&]() {
-    run("inline", charsInput.begin(), charsInput.end(), printOutput);
+    progdiag::run("inline", charsInput.begin(), charsInput.end(), printOutput);
   });
   lexCmd->add_option("input", charsInput, "Input characters to analyze")->required();
 
@@ -123,7 +141,8 @@ auto main(int argc, char** argv) -> int {
   std::string filePath;
   auto lexFileCmd = app.add_subcommand("analyzefile", "Analyze the provided file")->callback([&]() {
     std::ifstream fs{filePath};
-    run(filePath,
+    progdiag::run(
+        filePath,
         std::istreambuf_iterator<char>{fs},
         std::istreambuf_iterator<char>{},
         printOutput);
@@ -141,18 +160,4 @@ auto main(int argc, char** argv) -> int {
     return app.exit(e);
   }
   return 0;
-}
-
-auto operator<<(std::ostream& out, const duration& rhs) -> std::ostream& {
-  auto s = rhs.count();
-  if (s < .000001) {                // NOLINT: Magic numbers
-    out << s * 1000000000 << " ns"; // NOLINT: Magic numbers
-  } else if (s < .001) {            // NOLINT: Magic numbers
-    out << s * 1000000 << " us";    // NOLINT: Magic numbers
-  } else if (s < 1) {               // NOLINT: Magic numbers
-    out << s * 1000 << " ms";       // NOLINT: Magic numbers
-  } else {
-    out << s << " s";
-  }
-  return out;
 }

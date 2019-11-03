@@ -3,8 +3,7 @@
 
 namespace prog::expr {
 
-LitBoolNode::LitBoolNode(sym::TypeId type, bool val) :
-    Node{NodeKind::LitBool}, m_type{type}, m_val{val} {}
+LitBoolNode::LitBoolNode(sym::TypeId type, bool val) : m_type{type}, m_val{val} {}
 
 auto LitBoolNode::operator==(const Node& rhs) const noexcept -> bool {
   const auto r = dynamic_cast<const LitBoolNode*>(&rhs);

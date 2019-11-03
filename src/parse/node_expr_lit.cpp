@@ -2,7 +2,7 @@
 
 namespace parse {
 
-LitExprNode::LitExprNode(lex::Token val) : Node(NodeKind::ExprLit), m_val{std::move(val)} {}
+LitExprNode::LitExprNode(lex::Token val) : m_val{std::move(val)} {}
 
 auto LitExprNode::operator==(const Node& rhs) const noexcept -> bool {
   const auto r = dynamic_cast<const LitExprNode*>(&rhs);

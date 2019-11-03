@@ -6,10 +6,7 @@ namespace parse {
 
 ErrorNode::ErrorNode(
     std::string msg, std::vector<lex::Token> tokens, std::vector<NodePtr> subExprs) :
-    Node(NodeKind::Error),
-    m_msg{std::move(msg)},
-    m_tokens{std::move(tokens)},
-    m_subExprs{std::move(subExprs)} {}
+    m_msg{std::move(msg)}, m_tokens{std::move(tokens)}, m_subExprs{std::move(subExprs)} {}
 
 auto ErrorNode::operator==(const Node& rhs) const noexcept -> bool {
   const auto r = dynamic_cast<const ErrorNode*>(&rhs);

@@ -4,8 +4,7 @@
 
 namespace prog::expr {
 
-GroupExprNode::GroupExprNode(std::vector<NodePtr> exprs) :
-    Node{NodeKind::Group}, m_exprs{std::move(exprs)} {}
+GroupExprNode::GroupExprNode(std::vector<NodePtr> exprs) : m_exprs{std::move(exprs)} {}
 
 auto GroupExprNode::operator==(const Node& rhs) const noexcept -> bool {
   const auto r = dynamic_cast<const GroupExprNode*>(&rhs);

@@ -4,7 +4,7 @@
 namespace parse {
 
 GroupExprNode::GroupExprNode(std::vector<NodePtr> subExprs, std::vector<lex::Token> semis) :
-    Node(NodeKind::ExprGroup), m_subExprs{std::move(subExprs)}, m_semis{std::move(semis)} {}
+    m_subExprs{std::move(subExprs)}, m_semis{std::move(semis)} {}
 
 auto GroupExprNode::operator==(const Node& rhs) const noexcept -> bool {
   const auto r = dynamic_cast<const GroupExprNode*>(&rhs);

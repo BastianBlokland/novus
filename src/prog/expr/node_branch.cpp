@@ -5,7 +5,7 @@
 namespace prog::expr {
 
 BranchExprNode::BranchExprNode(std::vector<NodePtr> conditions, std::vector<NodePtr> branches) :
-    Node{NodeKind::Branch}, m_conditions{std::move(conditions)}, m_branches{std::move(branches)} {}
+    m_conditions{std::move(conditions)}, m_branches{std::move(branches)} {}
 
 auto BranchExprNode::operator==(const Node& rhs) const noexcept -> bool {
   const auto r = dynamic_cast<const BranchExprNode*>(&rhs);

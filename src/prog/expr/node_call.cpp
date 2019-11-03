@@ -5,7 +5,7 @@
 namespace prog::expr {
 
 CallExprNode::CallExprNode(sym::FuncId func, sym::TypeId resultType, std::vector<NodePtr> args) :
-    Node{NodeKind::Call}, m_func{func}, m_resultType{resultType}, m_args{std::move(args)} {}
+    m_func{func}, m_resultType{resultType}, m_args{std::move(args)} {}
 
 auto CallExprNode::operator==(const Node& rhs) const noexcept -> bool {
   const auto r = dynamic_cast<const CallExprNode*>(&rhs);

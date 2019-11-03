@@ -3,10 +3,7 @@
 namespace parse {
 
 SwitchExprElseNode::SwitchExprElseNode(lex::Token kw, lex::Token arrow, NodePtr rhs) :
-    Node(NodeKind::ExprSwitchElse),
-    m_kw{std::move(kw)},
-    m_arrow{std::move(arrow)},
-    m_rhs{std::move(rhs)} {}
+    m_kw{std::move(kw)}, m_arrow{std::move(arrow)}, m_rhs{std::move(rhs)} {}
 
 auto SwitchExprElseNode::operator==(const Node& rhs) const noexcept -> bool {
   const auto r = dynamic_cast<const SwitchExprElseNode*>(&rhs);

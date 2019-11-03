@@ -40,7 +40,6 @@ add_library(parse STATIC
   parse/node_expr_switch_else.cpp
   parse/node_expr_switch.cpp
   parse/node_expr_unary.cpp
-  parse/node_kind.cpp
   parse/node_stmt_exec.cpp
   parse/node_stmt_func_decl.cpp
   parse/node_visitor_deep.cpp
@@ -61,7 +60,6 @@ add_library(prog STATIC
   prog/expr/node_call.cpp
   prog/expr/node_const.cpp
   prog/expr/node_group.cpp
-  prog/expr/node_kind.cpp
   prog/expr/node_lit_bool.cpp
   prog/expr/node_lit_int.cpp
   prog/expr/utilities.cpp

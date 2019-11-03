@@ -3,10 +3,7 @@
 namespace parse {
 
 BinaryExprNode::BinaryExprNode(NodePtr lhs, lex::Token op, NodePtr rhs) :
-    Node(NodeKind::ExprBinaryOp),
-    m_lhs{std::move(lhs)},
-    m_op{std::move(op)},
-    m_rhs{std::move(rhs)} {}
+    m_lhs{std::move(lhs)}, m_op{std::move(op)}, m_rhs{std::move(rhs)} {}
 
 auto BinaryExprNode::operator==(const Node& rhs) const noexcept -> bool {
   const auto r = dynamic_cast<const BinaryExprNode*>(&rhs);
