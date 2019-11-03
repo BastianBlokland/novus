@@ -1,13 +1,17 @@
 #pragma once
 #include "input/textpos.hpp"
+#include <stdexcept>
 #include <utility>
 #include <vector>
 
 namespace input {
 
 class Info final {
+  template <typename SourceItr>
+  friend class InfoItr;
+
 public:
-  Info()                    = default;
+  Info();
   Info(const Info& rhs)     = delete;
   Info(Info&& rhs) noexcept = default;
   ~Info()                   = default;
@@ -15,12 +19,16 @@ public:
   auto operator=(const Info& rhs) -> Info& = delete;
   auto operator=(Info&& rhs) noexcept -> Info& = default;
 
-  auto markLineEnd(unsigned int pos) -> void;
-
+  [[nodiscard]] auto getLineCount() const noexcept -> unsigned int;
+  [[nodiscard]] auto getCharCount() const noexcept -> unsigned int;
   [[nodiscard]] auto getTextPos(unsigned int pos) const noexcept -> TextPos;
 
 private:
   std::vector<unsigned int> m_lines;
+  unsigned int m_end;
+
+  auto markLineEnd(unsigned int pos) -> void;
+  auto markFileEnd(unsigned int pos) -> void;
 };
 
 class InfoItrTraits {
@@ -42,7 +50,11 @@ class InfoItr final : public InfoItrTraits {
 public:
   InfoItr() = delete;
 
-  InfoItr(SourceItr& source, Info* tracker) : m_source{&source}, m_tracker{tracker}, m_pos{} {}
+  InfoItr(SourceItr& source, Info* tracker) : m_source{&source}, m_tracker{tracker}, m_pos{} {
+    if (!m_tracker) {
+      throw std::invalid_argument{"Given tracker cannot be null"};
+    }
+  }
 
   auto operator*() -> char { return **m_source; }
 
@@ -61,8 +73,11 @@ public:
   auto operator++() -> void {
     ++(*m_source);
     ++m_pos;
-    if (**m_source == '\n' && m_tracker) {
+    switch (**m_source) {
+    case '\n':
       m_tracker->markLineEnd(m_pos);
+    case '\0':
+      m_tracker->markFileEnd(m_pos);
     }
   }
 
@@ -76,7 +91,7 @@ template <typename InputItrBegin, typename InputItrEnd>
 auto buildInfo(InputItrBegin inputBegin, InputItrEnd inputEnd) {
   auto info = Info{};
   for (auto itr = InfoItr{inputBegin, &info}; itr != inputEnd; ++itr) {
-  };
+  }
   return info;
 }
 

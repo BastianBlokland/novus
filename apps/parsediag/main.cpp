@@ -53,19 +53,19 @@ auto printNode(
 
 template <typename InputItr>
 auto run(InputItr inputBegin, const InputItr inputEnd, const bool printNodes) {
-  const auto width  = 80;
-  auto inputInfo    = input::Info{};
-  const auto tokens = lex::lexAll(input::InfoItr(inputBegin, &inputInfo), inputEnd);
+  const auto width = 80;
 
-  // Parse all the tokens and time how long it takes.
+  // Parse the input and time how long it takes.
   const auto t1       = high_resolution_clock::now();
-  const auto nodes    = parse::parseAll(tokens.begin(), tokens.end());
+  auto inputInfo      = input::Info{};
+  auto lexer          = lex::Lexer{input::InfoItr{inputBegin, &inputInfo}, inputEnd};
+  const auto nodes    = parse::parseAll(lexer.begin(), lexer.end());
   const auto t2       = high_resolution_clock::now();
   const auto parseDur = std::chrono::duration_cast<duration>(t2 - t1);
 
   std::cout << rang::style::dim << rang::style::italic << std::string(width, '-') << '\n'
-            << "Parsed " << nodes.size() << " nodes from " << tokens.size() << " tokens in "
-            << parseDur << '\n'
+            << "Parsed " << nodes.size() << " nodes from " << inputInfo.getCharCount()
+            << " chars in " << parseDur << '\n'
             << std::string(width, '-') << '\n'
             << rang::style::reset;
 
