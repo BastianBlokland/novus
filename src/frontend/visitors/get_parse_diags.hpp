@@ -2,12 +2,12 @@
 #include "frontend/diag_defs.hpp"
 #include "frontend/source.hpp"
 #include "parse/node_error.hpp"
-#include "parse/node_visitor_reqursive.hpp"
+#include "parse/node_visitor_deep.hpp"
 #include <vector>
 
 namespace frontend::visitors {
 
-class GetParseDiags final : public parse::RecursiveNodeVisitor {
+class GetParseDiags final : public parse::DeepNodeVisitor {
 public:
   GetParseDiags() = delete;
   explicit GetParseDiags(const Source& src) : m_src{src}, m_diags{} {}
@@ -17,7 +17,7 @@ public:
   [[nodiscard]] auto getDiags() const noexcept -> const std::vector<Diag>& { return m_diags; }
 
   auto visit(const parse::ErrorNode& n) -> void override {
-    parse::RecursiveNodeVisitor::visit(n);
+    parse::DeepNodeVisitor::visit(n);
 
     m_diags.push_back(errParseError(m_src, n));
   }
