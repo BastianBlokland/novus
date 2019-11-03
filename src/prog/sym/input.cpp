@@ -24,7 +24,7 @@ auto Input::end() const -> iterator { return m_val.end(); }
 auto operator<<(std::ostream& out, const Input& rhs) -> std::ostream& {
   for (auto i = 0U; i < rhs.m_val.size(); ++i) {
     if (i != 0) {
-      out << ',';
+      out << ", ";
     }
     out << rhs.m_val[i];
   }

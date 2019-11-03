@@ -30,6 +30,20 @@
       "stopOnEntry": false
     },
     {
+      "name": "progdiag",
+      "preLaunchTask": "build debug",
+      "type": "lldb",
+      "request": "launch",
+      "program": "${workspaceFolder}/bin/progdiag",
+      "args": [
+        "analyze",
+        "fun add(int a, int b) -> int a + b print(add(1, 2) == 3)"
+      ],
+      "cwd": "${workspaceFolder}",
+      "terminal": "integrated",
+      "stopOnEntry": false
+    },
+    {
       "name": "tests",
       "preLaunchTask": "build debug",
       "type": "lldb",

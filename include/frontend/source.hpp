@@ -28,6 +28,7 @@ public:
   [[nodiscard]] auto end() const noexcept -> iterator;
 
   [[nodiscard]] auto getId() const noexcept -> std::string;
+  [[nodiscard]] auto getCharCount() const noexcept -> unsigned int;
   [[nodiscard]] auto getTextPos(unsigned int pos) const noexcept -> input::TextPos;
 
   auto accept(parse::NodeVisitor* visitor) const -> void;

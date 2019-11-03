@@ -11,7 +11,7 @@ auto getBgColor(const lex::Token& token) -> rang::bg;
 auto operator<<(std::ostream& out, const duration& rhs) -> std::ostream&;
 
 template <typename InputItr>
-auto run(InputItr inputBegin, const InputItr inputEnd, const bool printTokens) {
+auto run(InputItr inputBegin, const InputItr inputEnd, const bool outputTokens) {
   const auto columnWidth = 20;
   const auto width       = 80;
 
@@ -30,7 +30,7 @@ auto run(InputItr inputBegin, const InputItr inputEnd, const bool printTokens) {
             << std::string(width, '-') << '\n'
             << s::reset;
 
-  if (printTokens) {
+  if (outputTokens) {
     for (const auto& token : tokens) {
       std::cout << s::bold << "* " << getFgColor(token) << getBgColor(token)
                 << std::setw(columnWidth) << std::left << token.getKind();
@@ -56,13 +56,13 @@ auto main(int argc, char** argv) -> int {
   auto app = CLI::App{"Lexer diagnostic tool"};
   app.require_subcommand(1);
 
-  auto printTokens = true;
-  app.add_flag("!--skip-tokens", printTokens, "Skip printing the tokens")->capture_default_str();
+  auto printOutput = true;
+  app.add_flag("!--skip-output", printOutput, "Skip printing the tokens")->capture_default_str();
 
   // Lex input characters.
   std::string charsInput;
   auto lexCmd = app.add_subcommand("lex", "Lex the provided characters")->callback([&]() {
-    run(charsInput.begin(), charsInput.end(), printTokens);
+    run(charsInput.begin(), charsInput.end(), printOutput);
   });
   lexCmd->add_option("input", charsInput, "Input characters to lex")->required();
 
@@ -70,7 +70,7 @@ auto main(int argc, char** argv) -> int {
   std::string filePath;
   auto lexFileCmd = app.add_subcommand("lexfile", "Lex all characters in a file")->callback([&]() {
     std::ifstream fs{filePath};
-    run(std::istreambuf_iterator<char>{fs}, std::istreambuf_iterator<char>{}, printTokens);
+    run(std::istreambuf_iterator<char>{fs}, std::istreambuf_iterator<char>{}, printOutput);
   });
   lexFileCmd->add_option("file", filePath, "Path to file to lex")
       ->check(CLI::ExistingFile)

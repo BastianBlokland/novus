@@ -21,7 +21,7 @@ auto analyze(const Source& src) -> Output {
   auto declareUserFuncs = visitors::DeclareUserFuncs{src, prog.get()};
   src.accept(&declareUserFuncs);
   if (declareUserFuncs.hasErrors()) {
-    return buildOutput(nullptr, getParseDiags.getDiags());
+    return buildOutput(nullptr, declareUserFuncs.getDiags());
   }
 
   return buildOutput(std::move(prog), {});

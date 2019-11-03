@@ -44,7 +44,7 @@ public:
       isValid = false;
     }
 
-    // Get input types.
+    // Get func input.
     auto argTypes = std::vector<prog::sym::TypeId>{};
     for (const auto& arg : n.getArgs()) {
       const auto argTypeName = getName(arg.first);
@@ -56,6 +56,7 @@ public:
         isValid = false;
       }
     }
+    auto input = prog::sym::Input{std::move(argTypes)};
 
     // Get return type.
     const auto retTypeName = getName(n.getRetType());
@@ -66,15 +67,14 @@ public:
     }
 
     // Verify that this is not a duplicate declaration.
-    auto sig = prog::sym::FuncSig{prog::sym::Input{std::move(argTypes)}, retType.value()};
-    if (m_prog->lookupFunc(funcName, sig.getInput())) {
-      m_diags.push_back(errDuplicateFuncDeclaration(m_src, retTypeName, n.getSpan()));
+    if (m_prog->lookupFunc(funcName, input)) {
+      m_diags.push_back(errDuplicateFuncDeclaration(m_src, funcName, n.getSpan()));
       isValid = false;
     }
 
     // Declare the function in the program.
     if (isValid) {
-      m_prog->declareUserFunc(funcName, std::move(sig));
+      m_prog->declareUserFunc(funcName, prog::sym::FuncSig{std::move(input), retType.value()});
     }
   }
 

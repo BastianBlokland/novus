@@ -52,7 +52,7 @@ auto printNode(
 }
 
 template <typename InputItr>
-auto run(InputItr inputBegin, const InputItr inputEnd, const bool printNodes) {
+auto run(InputItr inputBegin, const InputItr inputEnd, const bool outputNodes) {
   const auto width = 80;
 
   // Parse the input and time how long it takes.
@@ -69,7 +69,7 @@ auto run(InputItr inputBegin, const InputItr inputEnd, const bool printNodes) {
             << std::string(width, '-') << '\n'
             << rang::style::reset;
 
-  if (printNodes) {
+  if (outputNodes) {
     for (const auto& node : nodes) {
       printNode(*node, inputInfo);
       std::cout << rang::style::dim << " │\n" << rang::style::reset;
@@ -82,13 +82,13 @@ auto main(int argc, char** argv) -> int {
   auto app = CLI::App{"Parser diagnostic tool"};
   app.require_subcommand(1);
 
-  auto printNodes = true;
-  app.add_flag("!--skip-nodes", printNodes, "Skip printing the nodes")->capture_default_str();
+  auto printOutput = true;
+  app.add_flag("!--skip-output", printOutput, "Skip printing the nodes")->capture_default_str();
 
   // Parse input characters.
   std::string charsInput;
   auto lexCmd = app.add_subcommand("parse", "Parse the provided characters")->callback([&]() {
-    run(charsInput.begin(), charsInput.end(), printNodes);
+    run(charsInput.begin(), charsInput.end(), printOutput);
   });
   lexCmd->add_option("input", charsInput, "Input characters to parse")->required();
 
@@ -97,7 +97,7 @@ auto main(int argc, char** argv) -> int {
   auto lexFileCmd =
       app.add_subcommand("parsefile", "Parse all characters in a file")->callback([&]() {
         std::ifstream fs{filePath};
-        run(std::istreambuf_iterator<char>{fs}, std::istreambuf_iterator<char>{}, printNodes);
+        run(std::istreambuf_iterator<char>{fs}, std::istreambuf_iterator<char>{}, printOutput);
       });
   lexFileCmd->add_option("file", filePath, "Path to file to parse")
       ->check(CLI::ExistingFile)

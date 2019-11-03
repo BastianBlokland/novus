@@ -1,6 +1,17 @@
 #include "prog/program.hpp"
+#include "prog/intrinsics.hpp"
 
 namespace prog {
+
+Program::Program() { registerIntrinsics(&m_typeDecls, &m_funcDecls, &m_actionDecls); }
+
+auto Program::beginTypeDecls() const -> typeDeclIterator { return m_typeDecls.begin(); }
+
+auto Program::endTypeDecls() const -> typeDeclIterator { return m_typeDecls.end(); }
+
+auto Program::beginFuncDecls() const -> funcDeclIterator { return m_funcDecls.begin(); }
+
+auto Program::endFuncDecls() const -> funcDeclIterator { return m_funcDecls.end(); }
 
 auto Program::lookupType(const std::string& name) const -> std::optional<sym::TypeId> {
   return m_typeDecls.lookup(name);

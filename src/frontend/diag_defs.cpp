@@ -11,7 +11,7 @@ auto errParseError(const Source& src, const parse::ErrorNode& n) -> Diag {
 
 auto errUndeclaredType(const Source& src, const std::string& typeName, input::Span span) -> Diag {
   std::ostringstream oss;
-  oss << "Unkown type: '" << typeName << '\'';
+  oss << "Unknown type: '" << typeName << '\'';
   return error(src, oss.str(), span);
 }
 

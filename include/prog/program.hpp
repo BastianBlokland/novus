@@ -9,13 +9,22 @@ namespace prog {
 
 class Program final {
 public:
-  Program()                       = default;
+  using typeDeclIterator = typename sym::TypeDeclTable::iterator;
+  using funcDeclIterator = typename sym::FuncDeclTable::iterator;
+
+  Program();
   Program(const Program& rhs)     = delete;
   Program(Program&& rhs) noexcept = default;
   ~Program()                      = default;
 
   auto operator=(const Program& rhs) -> Program& = delete;
   auto operator=(Program&& rhs) noexcept -> Program& = delete;
+
+  [[nodiscard]] auto beginTypeDecls() const -> typeDeclIterator;
+  [[nodiscard]] auto endTypeDecls() const -> typeDeclIterator;
+
+  [[nodiscard]] auto beginFuncDecls() const -> funcDeclIterator;
+  [[nodiscard]] auto endFuncDecls() const -> funcDeclIterator;
 
   [[nodiscard]] auto lookupType(const std::string& name) const -> std::optional<sym::TypeId>;
   [[nodiscard]] auto lookupFunc(const std::string& name, const sym::Input& input) const
