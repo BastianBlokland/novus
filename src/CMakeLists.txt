@@ -99,6 +99,7 @@ target_include_directories(prog PRIVATE prog)
 # Frontend.
 add_library(frontend STATIC
   frontend/analysis.cpp
+  frontend/diag_defs.cpp
   frontend/diag_severity.cpp
   frontend/diag.cpp
   frontend/output.cpp

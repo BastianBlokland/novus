@@ -11,21 +11,30 @@ auto Program::lookupFunc(const std::string& name, const sym::Input& input) const
   return m_funcDecls.lookup(name, input);
 }
 
+auto Program::lookupFuncs(const std::string& name) const -> std::vector<sym::FuncId> {
+  return m_funcDecls.lookup(name);
+}
+
 auto Program::lookupAction(const std::string& name, const sym::Input& input) const
     -> std::optional<sym::ActionId> {
   return m_actionDecls.lookup(name, input);
 }
 
-auto Program::declareUserFunc(std::string name, sym::FuncSig sig) {
+auto Program::lookupActions(const std::string& name) const -> std::vector<sym::ActionId> {
+  return m_actionDecls.lookup(name);
+}
+
+auto Program::declareUserFunc(std::string name, sym::FuncSig sig) -> void {
   m_funcDecls.registerUser(std::move(name), std::move(sig));
 }
 
-auto Program::defineUserFunc(sym::FuncId id, sym::ConstDeclTable consts, expr::NodePtr expr) {
+auto Program::defineUserFunc(sym::FuncId id, sym::ConstDeclTable consts, expr::NodePtr expr)
+    -> void {
   m_funcDefs.registerFunc(m_funcDecls, id, std::move(consts), std::move(expr));
 }
 
 auto Program::addExec(
-    sym::ActionId action, sym::ConstDeclTable consts, std::vector<expr::NodePtr> args) {
+    sym::ActionId action, sym::ConstDeclTable consts, std::vector<expr::NodePtr> args) -> void {
   return m_execs.push_back(sym::execDef(m_actionDecls, action, std::move(consts), std::move(args)));
 }
 

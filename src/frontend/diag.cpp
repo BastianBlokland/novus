@@ -37,6 +37,7 @@ auto operator<<(std::ostream& out, const Diag& rhs) -> std::ostream& {
              << rhs.m_msg;
 }
 
+// Factories.
 auto warning(const Source& src, std::string msg, input::Span span) -> Diag {
   const auto srcPos = src.getTextPos(span.getStart());
   return Diag{DiagSeverity::Warning, std::move(msg), src.getId(), span, srcPos};

@@ -20,12 +20,16 @@ public:
   [[nodiscard]] auto lookupType(const std::string& name) const -> std::optional<sym::TypeId>;
   [[nodiscard]] auto lookupFunc(const std::string& name, const sym::Input& input) const
       -> std::optional<sym::FuncId>;
+  [[nodiscard]] auto lookupFuncs(const std::string& name) const -> std::vector<sym::FuncId>;
+
   [[nodiscard]] auto lookupAction(const std::string& name, const sym::Input& input) const
       -> std::optional<sym::ActionId>;
+  [[nodiscard]] auto lookupActions(const std::string& name) const -> std::vector<sym::ActionId>;
 
-  auto declareUserFunc(std::string name, sym::FuncSig sig);
-  auto defineUserFunc(sym::FuncId id, sym::ConstDeclTable consts, expr::NodePtr expr);
-  auto addExec(sym::ActionId action, sym::ConstDeclTable consts, std::vector<expr::NodePtr> args);
+  auto declareUserFunc(std::string name, sym::FuncSig sig) -> void;
+  auto defineUserFunc(sym::FuncId id, sym::ConstDeclTable consts, expr::NodePtr expr) -> void;
+  auto addExec(sym::ActionId action, sym::ConstDeclTable consts, std::vector<expr::NodePtr> args)
+      -> void;
 
 private:
   sym::TypeDeclTable m_typeDecls;

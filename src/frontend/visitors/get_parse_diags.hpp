@@ -1,5 +1,5 @@
 #pragma once
-#include "frontend/diag.hpp"
+#include "frontend/diag_defs.hpp"
 #include "frontend/source.hpp"
 #include "parse/node_error.hpp"
 #include "parse/node_visitor_reqursive.hpp"
@@ -12,12 +12,14 @@ public:
   GetParseDiags() = delete;
   explicit GetParseDiags(const Source& src) : m_src{src}, m_diags{} {}
 
+  [[nodiscard]] auto hasErrors() const noexcept -> bool { return !m_diags.empty(); }
+
   [[nodiscard]] auto getDiags() const noexcept -> const std::vector<Diag>& { return m_diags; }
 
   auto visit(const parse::ErrorNode& n) -> void override {
     parse::RecursiveNodeVisitor::visit(n);
 
-    m_diags.push_back(error(m_src, n.getMessage(), n.getSpan()));
+    m_diags.push_back(errParseError(m_src, n));
   }
 
 private:
