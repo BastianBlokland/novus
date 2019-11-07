@@ -5,13 +5,13 @@
 
 namespace prog::expr {
 
-class BranchExprNode final : public Node {
-  friend auto branchExprNode(
+class SwitchExprNode final : public Node {
+  friend auto switchExprNode(
       const Program& program, std::vector<NodePtr> conditions, std::vector<NodePtr> branches)
       -> NodePtr;
 
 public:
-  BranchExprNode() = delete;
+  SwitchExprNode() = delete;
 
   auto operator==(const Node& rhs) const noexcept -> bool override;
   auto operator!=(const Node& rhs) const noexcept -> bool override;
@@ -26,13 +26,13 @@ private:
   std::vector<NodePtr> m_conditions;
   std::vector<NodePtr> m_branches;
 
-  explicit BranchExprNode(std::vector<NodePtr> conditions, std::vector<NodePtr> branches);
+  explicit SwitchExprNode(std::vector<NodePtr> conditions, std::vector<NodePtr> branches);
 
   auto print(std::ostream& out) const -> std::ostream& override;
 };
 
 // Factories.
-auto branchExprNode(
+auto switchExprNode(
     const Program& program, std::vector<NodePtr> conditions, std::vector<NodePtr> branches)
     -> NodePtr;
 

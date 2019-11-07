@@ -1,23 +1,23 @@
-#include "prog/expr/node_branch.hpp"
+#include "prog/expr/node_switch.hpp"
 #include "utilities.hpp"
 #include <stdexcept>
 
 namespace prog::expr {
 
-BranchExprNode::BranchExprNode(std::vector<NodePtr> conditions, std::vector<NodePtr> branches) :
+SwitchExprNode::SwitchExprNode(std::vector<NodePtr> conditions, std::vector<NodePtr> branches) :
     m_conditions{std::move(conditions)}, m_branches{std::move(branches)} {}
 
-auto BranchExprNode::operator==(const Node& rhs) const noexcept -> bool {
-  const auto r = dynamic_cast<const BranchExprNode*>(&rhs);
+auto SwitchExprNode::operator==(const Node& rhs) const noexcept -> bool {
+  const auto r = dynamic_cast<const SwitchExprNode*>(&rhs);
   return r != nullptr && nodesEqual(m_conditions, r->m_conditions) &&
       nodesEqual(m_branches, r->m_branches);
 }
 
-auto BranchExprNode::operator!=(const Node& rhs) const noexcept -> bool {
-  return !BranchExprNode::operator==(rhs);
+auto SwitchExprNode::operator!=(const Node& rhs) const noexcept -> bool {
+  return !SwitchExprNode::operator==(rhs);
 }
 
-auto BranchExprNode::operator[](unsigned int i) const -> const Node& {
+auto SwitchExprNode::operator[](unsigned int i) const -> const Node& {
   if (i < m_conditions.size()) {
     return *m_conditions[i];
   }
@@ -28,35 +28,35 @@ auto BranchExprNode::operator[](unsigned int i) const -> const Node& {
   throw std::out_of_range{"No child at given index"};
 }
 
-auto BranchExprNode::getChildCount() const -> unsigned int {
+auto SwitchExprNode::getChildCount() const -> unsigned int {
   return m_conditions.size() + m_branches.size();
 }
 
-auto BranchExprNode::getType() const noexcept -> sym::TypeId {
+auto SwitchExprNode::getType() const noexcept -> sym::TypeId {
   return m_branches.front()->getType();
 }
 
-auto BranchExprNode::accept(NodeVisitor* visitor) const -> void { visitor->visit(*this); }
+auto SwitchExprNode::accept(NodeVisitor* visitor) const -> void { visitor->visit(*this); }
 
-auto BranchExprNode::print(std::ostream& out) const -> std::ostream& { return out << "branch"; }
+auto SwitchExprNode::print(std::ostream& out) const -> std::ostream& { return out << "switch"; }
 
 // Factories.
-auto branchExprNode(
+auto switchExprNode(
     const Program& program, std::vector<NodePtr> conditions, std::vector<NodePtr> branches)
     -> NodePtr {
 
   if (conditions.empty()) {
-    throw std::invalid_argument{"Branch node needs to contain atleast one condition"};
+    throw std::invalid_argument{"Switch node needs to contain atleast one condition"};
   }
   if (branches.size() != conditions.size() + 1) {
     throw std::invalid_argument{
-        "Branch node needs to contain one more branch then conditions (else branch)"};
+        "Switch node needs to contain one more branch then conditions (else branch)"};
   }
   if (anyNodeNull(conditions)) {
-    throw std::invalid_argument{"Branch node cannot contain a null condition"};
+    throw std::invalid_argument{"Switch node cannot contain a null condition"};
   }
   if (anyNodeNull(branches)) {
-    throw std::invalid_argument{"Branch node cannot contain a null branch"};
+    throw std::invalid_argument{"Switch node cannot contain a null branch"};
   }
   const auto boolType = program.lookupType("bool");
   if (!boolType) {
@@ -68,8 +68,8 @@ auto branchExprNode(
   if (!getType(branches)) {
     throw std::invalid_argument{"All branches need to have the same type"};
   }
-  return std::unique_ptr<BranchExprNode>{
-      new BranchExprNode{std::move(conditions), std::move(branches)}};
+  return std::unique_ptr<SwitchExprNode>{
+      new SwitchExprNode{std::move(conditions), std::move(branches)}};
 }
 
 } // namespace prog::expr

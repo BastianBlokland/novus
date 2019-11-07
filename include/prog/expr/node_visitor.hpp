@@ -3,7 +3,7 @@
 namespace prog::expr {
 
 class AssignExprNode;
-class BranchExprNode;
+class SwitchExprNode;
 class CallExprNode;
 class ConstExprNode;
 class GroupExprNode;
@@ -13,7 +13,7 @@ class LitIntNode;
 class NodeVisitor {
 public:
   virtual auto visit(const AssignExprNode& n) -> void = 0;
-  virtual auto visit(const BranchExprNode& n) -> void = 0;
+  virtual auto visit(const SwitchExprNode& n) -> void = 0;
   virtual auto visit(const CallExprNode& n) -> void   = 0;
   virtual auto visit(const ConstExprNode& n) -> void  = 0;
   virtual auto visit(const GroupExprNode& n) -> void  = 0;

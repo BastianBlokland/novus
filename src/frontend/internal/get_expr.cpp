@@ -221,7 +221,7 @@ auto GetExpr::visit(const parse::SwitchExprNode& n) -> void {
   }
 
   if (isValid) {
-    m_expr = prog::expr::branchExprNode(*m_prog, std::move(conditions), std::move(branches));
+    m_expr = prog::expr::switchExprNode(*m_prog, std::move(conditions), std::move(branches));
   }
 }
 
