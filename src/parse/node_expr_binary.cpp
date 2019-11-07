@@ -14,7 +14,7 @@ auto BinaryExprNode::operator!=(const Node& rhs) const noexcept -> bool {
   return !BinaryExprNode::operator==(rhs);
 }
 
-auto BinaryExprNode::operator[](int i) const -> const Node& {
+auto BinaryExprNode::operator[](unsigned int i) const -> const Node& {
   switch (i) {
   case 0:
     return *m_lhs;

@@ -2,7 +2,7 @@
 #include "parse/node_visitor.hpp"
 #include "rang.hpp"
 
-namespace parsediag::visitors {
+namespace parsediag {
 
 class GetColor final : public parse::NodeVisitor {
 public:
@@ -85,4 +85,4 @@ private:
   rang::bg m_bg{};
 };
 
-} // namespace parsediag::visitors
+} // namespace parsediag

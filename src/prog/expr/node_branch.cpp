@@ -17,15 +17,31 @@ auto BranchExprNode::operator!=(const Node& rhs) const noexcept -> bool {
   return !BranchExprNode::operator==(rhs);
 }
 
+auto BranchExprNode::operator[](unsigned int i) const -> const Node& {
+  if (i < m_conditions.size()) {
+    return *m_conditions[i];
+  }
+  i -= m_conditions.size();
+  if (i < m_branches.size()) {
+    return *m_branches[i];
+  }
+  throw std::out_of_range{"No child at given index"};
+}
+
+auto BranchExprNode::getChildCount() const -> unsigned int {
+  return m_conditions.size() + m_branches.size();
+}
+
 auto BranchExprNode::getType() const noexcept -> sym::TypeId {
   return m_branches.front()->getType();
 }
 
+auto BranchExprNode::print(std::ostream& out) const -> std::ostream& { return out << "branch"; }
+
 // Factories.
 auto branchExprNode(
-    const sym::TypeDeclTable& typeTable,
-    std::vector<NodePtr> conditions,
-    std::vector<NodePtr> branches) -> NodePtr {
+    const Program& program, std::vector<NodePtr> conditions, std::vector<NodePtr> branches)
+    -> NodePtr {
 
   if (conditions.empty()) {
     throw std::invalid_argument{"Branch node needs to contain atleast one condition"};
@@ -40,7 +56,7 @@ auto branchExprNode(
   if (anyNodeNull(branches)) {
     throw std::invalid_argument{"Branch node cannot contain a null branch"};
   }
-  const auto boolType = typeTable.lookup("bool");
+  const auto boolType = program.lookupType("bool");
   if (!boolType) {
     throw std::invalid_argument{"No 'bool' type present in type-table"};
   }

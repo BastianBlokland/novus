@@ -62,6 +62,7 @@ add_library(prog STATIC
   prog/expr/node_group.cpp
   prog/expr/node_lit_bool.cpp
   prog/expr/node_lit_int.cpp
+  prog/expr/node.cpp
   prog/expr/utilities.cpp
 
   prog/sym/action_decl_table.cpp
@@ -96,6 +97,11 @@ target_include_directories(prog PRIVATE prog)
 
 # Frontend.
 add_library(frontend STATIC
+  frontend/internal/declare_user_funcs.cpp
+  frontend/internal/define_user_funcs.cpp
+  frontend/internal/get_expr.cpp
+  frontend/internal/get_parse_diags.cpp
+
   frontend/analysis.cpp
   frontend/diag_defs.cpp
   frontend/diag_severity.cpp

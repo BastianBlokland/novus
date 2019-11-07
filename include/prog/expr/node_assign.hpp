@@ -16,6 +16,8 @@ public:
   auto operator==(const Node& rhs) const noexcept -> bool override;
   auto operator!=(const Node& rhs) const noexcept -> bool override;
 
+  [[nodiscard]] auto operator[](unsigned int i) const -> const Node& override;
+  [[nodiscard]] auto getChildCount() const -> unsigned int override;
   [[nodiscard]] auto getType() const noexcept -> sym::TypeId override;
 
 private:
@@ -23,6 +25,8 @@ private:
   NodePtr m_expr;
 
   AssignExprNode(sym::ConstId constId, NodePtr expr);
+
+  auto print(std::ostream& out) const -> std::ostream& override;
 };
 
 // Factories.

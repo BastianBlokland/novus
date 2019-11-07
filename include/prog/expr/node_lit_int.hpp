@@ -1,11 +1,11 @@
 #pragma once
 #include "prog/expr/node.hpp"
-#include "prog/sym/type_decl_table.hpp"
+#include "prog/program.hpp"
 
 namespace prog::expr {
 
 class LitIntNode final : public Node {
-  friend auto litIntNode(const sym::TypeDeclTable& typeTable, int32_t val) -> NodePtr;
+  friend auto litIntNode(const Program& program, int32_t val) -> NodePtr;
 
 public:
   LitIntNode() = delete;
@@ -13,6 +13,8 @@ public:
   auto operator==(const Node& rhs) const noexcept -> bool override;
   auto operator!=(const Node& rhs) const noexcept -> bool override;
 
+  [[nodiscard]] auto operator[](unsigned int i) const -> const Node& override;
+  [[nodiscard]] auto getChildCount() const -> unsigned int override;
   [[nodiscard]] auto getType() const noexcept -> sym::TypeId override;
 
 private:
@@ -20,9 +22,11 @@ private:
   int32_t m_val;
 
   LitIntNode(sym::TypeId type, int32_t val);
+
+  auto print(std::ostream& out) const -> std::ostream& override;
 };
 
 // Factories.
-auto litIntNode(const sym::TypeDeclTable& typeTable, int32_t val) -> NodePtr;
+auto litIntNode(const Program& program, int32_t val) -> NodePtr;
 
 } // namespace prog::expr

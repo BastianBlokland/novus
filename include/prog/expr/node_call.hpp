@@ -1,12 +1,11 @@
 #pragma once
 #include "prog/expr/node.hpp"
-#include "prog/sym/func_decl_table.hpp"
+#include "prog/program.hpp"
 
 namespace prog::expr {
 
 class CallExprNode final : public Node {
-  friend auto
-  callExprNode(const sym::FuncDeclTable& funcTable, sym::FuncId func, std::vector<NodePtr> args)
+  friend auto callExprNode(const Program& program, sym::FuncId func, std::vector<NodePtr> args)
       -> NodePtr;
 
 public:
@@ -15,6 +14,8 @@ public:
   auto operator==(const Node& rhs) const noexcept -> bool override;
   auto operator!=(const Node& rhs) const noexcept -> bool override;
 
+  [[nodiscard]] auto operator[](unsigned int i) const -> const Node& override;
+  [[nodiscard]] auto getChildCount() const -> unsigned int override;
   [[nodiscard]] auto getType() const noexcept -> sym::TypeId override;
 
 private:
@@ -23,10 +24,11 @@ private:
   std::vector<NodePtr> m_args;
 
   CallExprNode(sym::FuncId func, sym::TypeId resultType, std::vector<NodePtr> args);
+
+  auto print(std::ostream& out) const -> std::ostream& override;
 };
 
 // Factories.
-auto callExprNode(const sym::FuncDeclTable& funcTable, sym::FuncId func, std::vector<NodePtr> args)
-    -> NodePtr;
+auto callExprNode(const Program& program, sym::FuncId func, std::vector<NodePtr> args) -> NodePtr;
 
 } // namespace prog::expr

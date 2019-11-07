@@ -13,6 +13,10 @@ auto Program::beginFuncDecls() const -> funcDeclIterator { return m_funcDecls.be
 
 auto Program::endFuncDecls() const -> funcDeclIterator { return m_funcDecls.end(); }
 
+auto Program::beginFuncDefs() const -> funcDefIterator { return m_funcDefs.begin(); }
+
+auto Program::endFuncDefs() const -> funcDefIterator { return m_funcDefs.end(); }
+
 auto Program::lookupType(const std::string& name) const -> std::optional<sym::TypeId> {
   return m_typeDecls.lookup(name);
 }
@@ -33,6 +37,14 @@ auto Program::lookupAction(const std::string& name, const sym::Input& input) con
 
 auto Program::lookupActions(const std::string& name) const -> std::vector<sym::ActionId> {
   return m_actionDecls.lookup(name);
+}
+
+auto Program::getTypeDecl(sym::TypeId id) const -> const sym::TypeDecl& { return m_typeDecls[id]; }
+
+auto Program::getFuncDecl(sym::FuncId id) const -> const sym::FuncDecl& { return m_funcDecls[id]; }
+
+auto Program::getActionDecl(sym::ActionId id) const -> const sym::ActionDecl& {
+  return m_actionDecls[id];
 }
 
 auto Program::declareUserFunc(std::string name, sym::FuncSig sig) -> void {

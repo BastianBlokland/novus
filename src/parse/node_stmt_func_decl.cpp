@@ -37,7 +37,7 @@ auto FuncDeclStmtNode::operator!=(const Node& rhs) const noexcept -> bool {
   return !FuncDeclStmtNode::operator==(rhs);
 }
 
-auto FuncDeclStmtNode::operator[](int i) const -> const Node& {
+auto FuncDeclStmtNode::operator[](unsigned int i) const -> const Node& {
   if (i == 0) {
     return *m_body;
   }

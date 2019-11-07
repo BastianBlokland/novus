@@ -13,7 +13,15 @@ auto ConstExprNode::operator!=(const Node& rhs) const noexcept -> bool {
   return !ConstExprNode::operator==(rhs);
 }
 
+auto ConstExprNode::operator[](unsigned int /*unused*/) const -> const Node& {
+  throw std::out_of_range{"No child at given index"};
+}
+
+auto ConstExprNode::getChildCount() const -> unsigned int { return 0; }
+
 auto ConstExprNode::getType() const noexcept -> sym::TypeId { return m_type; }
+
+auto ConstExprNode::print(std::ostream& out) const -> std::ostream& { return out << m_id; }
 
 // Factories.
 auto constExprNode(const sym::ConstDeclTable& constTable, sym::ConstId id) -> NodePtr {

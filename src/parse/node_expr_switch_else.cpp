@@ -14,7 +14,7 @@ auto SwitchExprElseNode::operator!=(const Node& rhs) const noexcept -> bool {
   return !SwitchExprElseNode::operator==(rhs);
 }
 
-auto SwitchExprElseNode::operator[](int i) const -> const Node& {
+auto SwitchExprElseNode::operator[](unsigned int i) const -> const Node& {
   if (i == 0) {
     return *m_rhs;
   }

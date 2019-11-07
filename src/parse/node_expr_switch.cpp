@@ -16,12 +16,11 @@ auto SwitchExprNode::operator!=(const Node& rhs) const noexcept -> bool {
   return !SwitchExprNode::operator==(rhs);
 }
 
-auto SwitchExprNode::operator[](int i) const -> const Node& {
-  auto index = static_cast<unsigned>(i);
-  if (i >= 0 && index < m_ifClauses.size()) {
-    return *m_ifClauses[index];
+auto SwitchExprNode::operator[](unsigned int i) const -> const Node& {
+  if (i < m_ifClauses.size()) {
+    return *m_ifClauses[i];
   }
-  if (index == m_ifClauses.size()) {
+  if (i == m_ifClauses.size()) {
     return *m_elseClause;
   }
   throw std::out_of_range{"No child at given index"};

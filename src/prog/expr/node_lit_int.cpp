@@ -14,11 +14,19 @@ auto LitIntNode::operator!=(const Node& rhs) const noexcept -> bool {
   return !LitIntNode::operator==(rhs);
 }
 
+auto LitIntNode::operator[](unsigned int /*unused*/) const -> const Node& {
+  throw std::out_of_range{"No child at given index"};
+}
+
+auto LitIntNode::getChildCount() const -> unsigned int { return 0; }
+
 auto LitIntNode::getType() const noexcept -> sym::TypeId { return m_type; }
 
+auto LitIntNode::print(std::ostream& out) const -> std::ostream& { return out << m_val; }
+
 // Factories.
-auto litIntNode(const sym::TypeDeclTable& typeTable, int32_t val) -> NodePtr {
-  const auto type = typeTable.lookup("int");
+auto litIntNode(const Program& program, int32_t val) -> NodePtr {
+  const auto type = program.lookupType("int");
   if (!type) {
     throw std::invalid_argument{"No 'int' type present in type-table"};
   }

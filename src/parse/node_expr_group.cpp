@@ -20,8 +20,8 @@ auto GroupExprNode::operator!=(const Node& rhs) const noexcept -> bool {
   return !GroupExprNode::operator==(rhs);
 }
 
-auto GroupExprNode::operator[](int i) const -> const Node& {
-  if (i < 0 || static_cast<unsigned>(i) >= m_subExprs.size()) {
+auto GroupExprNode::operator[](unsigned int i) const -> const Node& {
+  if (i >= m_subExprs.size()) {
     throw std::out_of_range{"No child at given index"};
   }
   return *m_subExprs[i];

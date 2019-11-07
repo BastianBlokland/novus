@@ -18,8 +18,8 @@ auto ErrorNode::operator!=(const Node& rhs) const noexcept -> bool {
   return !ErrorNode::operator==(rhs);
 }
 
-auto ErrorNode::operator[](int i) const -> const Node& {
-  if (i < 0 || static_cast<unsigned>(i) >= m_subExprs.size()) {
+auto ErrorNode::operator[](unsigned int i) const -> const Node& {
+  if (i >= m_subExprs.size()) {
     throw std::out_of_range{"No child at given index"};
   }
   return *m_subExprs[i];

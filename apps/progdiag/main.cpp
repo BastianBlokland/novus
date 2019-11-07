@@ -10,10 +10,44 @@ using duration              = std::chrono::duration<double>;
 
 auto operator<<(std::ostream& out, const duration& rhs) -> std::ostream&;
 
+auto printExpr(
+    const prog::expr::Node& n,
+    std::string prefix = "",
+    bool isRoot        = true,
+    bool isLastSibling = false) -> void {
+
+  const static auto cross  = " ├─";
+  const static auto corner = " └─";
+  const static auto vert   = " │ ";
+  const static auto indent = "   ";
+
+  if (isRoot) {
+    std::cout << prefix << rang::style::italic << "* ";
+    prefix += "  ";
+  } else {
+    std::cout << rang::style::dim << prefix;
+    if (isLastSibling) {
+      std::cout << corner;
+      prefix += indent;
+    } else {
+      std::cout << cross;
+      prefix += vert;
+    }
+    std::cout << rang::style::reset;
+  }
+
+  std::cout << n << ' ' << rang::style::dim << n.getType() << rang::style::reset << '\n';
+
+  const auto childCount = n.getChildCount();
+  for (auto i = 0U; i < childCount; ++i) {
+    printExpr(n[i], prefix, false, i == (childCount - 1));
+  }
+}
+
 auto printTypeDecls(const prog::Program& prog) -> void {
   const auto idColWidth = 5;
 
-  std::cout << rang::style::bold << "Types:\n" << rang::style::reset;
+  std::cout << rang::style::bold << "Type declarations:\n" << rang::style::reset;
   for (auto typeItr = prog.beginTypeDecls(); typeItr != prog.endTypeDecls(); ++typeItr) {
     const auto& typeDecl = *typeItr;
     std::stringstream idStr;
@@ -35,7 +69,7 @@ auto printFuncDecls(const prog::Program& prog) -> void {
   const auto nameColWidth  = 20;
   const auto inputColWidth = 20;
 
-  std::cout << rang::style::bold << "Functions:\n" << rang::style::reset;
+  std::cout << rang::style::bold << "Function declarations:\n" << rang::style::reset;
   for (auto funcItr = prog.beginFuncDecls(); funcItr != prog.endFuncDecls(); ++funcItr) {
     const auto& funcDecl = *funcItr;
     std::stringstream idStr;
@@ -61,10 +95,46 @@ auto printFuncDecls(const prog::Program& prog) -> void {
   }
 }
 
+auto printFuncDefs(const prog::Program& prog) -> void {
+  const auto constIdColWidth = 10;
+
+  std::cout << rang::style::bold << "Function definitions:\n" << rang::style::reset;
+  for (auto funcItr = prog.beginFuncDefs(); funcItr != prog.endFuncDefs(); ++funcItr) {
+    const auto funcId   = funcItr->getId();
+    const auto funcName = prog.getFuncDecl(funcId).getName();
+    std::cout << " " << rang::style::bold << funcName << rang::style::dim << " " << funcId
+              << rang::style::reset << "\n";
+
+    std::cout << rang::style::italic << "  Consts:\n" << rang::style::reset;
+    for (const auto& c : funcItr->getConsts()) {
+      switch (c.getKind()) {
+      case prog::sym::ConstKind::Input:
+        std::cout << rang::fg::blue;
+        break;
+      case prog::sym::ConstKind::Local:
+        std::cout << rang::fg::green;
+        break;
+      }
+      std::stringstream idStr;
+      idStr << c.getId() << ": " << c.getKind();
+      std::cout << rang::style::bold << "   * " << std::setw(constIdColWidth) << std::left
+                << idStr.str() << "  " << c.getName() << ' ' << rang::style::reset
+                << rang::style::dim << c.getType() << rang::style::reset << '\n';
+    }
+
+    // Print expression.
+    std::cout << rang::style::italic << "  Body:\n" << rang::style::reset;
+    printExpr(funcItr->getExpr(), "   ");
+    std::cout << '\n';
+  }
+}
+
 auto printProgram(const prog::Program& prog) -> void {
   printTypeDecls(prog);
   std::cout << '\n';
   printFuncDecls(prog);
+  std::cout << '\n';
+  printFuncDefs(prog);
 }
 
 template <typename InputItr>

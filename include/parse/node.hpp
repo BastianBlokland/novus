@@ -19,9 +19,9 @@ public:
   virtual auto operator==(const Node& rhs) const noexcept -> bool = 0;
   virtual auto operator!=(const Node& rhs) const noexcept -> bool = 0;
 
-  [[nodiscard]] virtual auto operator[](int) const -> const Node&  = 0;
-  [[nodiscard]] virtual auto getChildCount() const -> unsigned int = 0;
-  [[nodiscard]] virtual auto getSpan() const -> input::Span        = 0;
+  [[nodiscard]] virtual auto operator[](unsigned int) const -> const Node& = 0;
+  [[nodiscard]] virtual auto getChildCount() const -> unsigned int         = 0;
+  [[nodiscard]] virtual auto getSpan() const -> input::Span                = 0;
 
   virtual auto accept(NodeVisitor* visitor) const -> void = 0;
 

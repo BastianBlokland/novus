@@ -13,6 +13,8 @@ auto ConstDecl::operator!=(const ConstDecl& rhs) const noexcept -> bool {
 
 auto ConstDecl::getId() const -> const ConstId& { return m_id; }
 
+auto ConstDecl::getKind() const -> const ConstKind& { return m_kind; }
+
 auto ConstDecl::getName() const -> const std::string& { return m_name; }
 
 auto ConstDecl::getType() const -> const TypeId& { return m_type; }

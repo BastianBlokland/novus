@@ -1,9 +1,9 @@
 #include "CLI/CLI.hpp"
+#include "get_color.hpp"
 #include "input/info.hpp"
 #include "lex/lexer.hpp"
 #include "parse/parser.hpp"
 #include "rang.hpp"
-#include "visitors/get_color.hpp"
 
 namespace parsediag {
 
@@ -38,7 +38,7 @@ auto printNode(
   }
   std::cout << s::reset;
 
-  auto nodeCol = visitors::GetColor{};
+  auto nodeCol = GetColor{};
   n.accept(&nodeCol);
 
   // Print node.

@@ -16,7 +16,20 @@ auto AssignExprNode::operator!=(const Node& rhs) const noexcept -> bool {
   return !AssignExprNode::operator==(rhs);
 }
 
+auto AssignExprNode::operator[](unsigned int i) const -> const Node& {
+  if (i == 0) {
+    return *m_expr;
+  }
+  throw std::out_of_range{"No child at given index"};
+}
+
+auto AssignExprNode::getChildCount() const -> unsigned int { return 1; }
+
 auto AssignExprNode::getType() const noexcept -> sym::TypeId { return m_expr->getType(); }
+
+auto AssignExprNode::print(std::ostream& out) const -> std::ostream& {
+  return out << "assign-" << m_constId;
+}
 
 // Factories.
 auto assignExprNode(const sym::ConstDeclTable& constTable, sym::ConstId constId, NodePtr expr)

@@ -24,8 +24,8 @@ auto ExecStmtNode::operator!=(const Node& rhs) const noexcept -> bool {
   return !ExecStmtNode::operator==(rhs);
 }
 
-auto ExecStmtNode::operator[](int i) const -> const Node& {
-  if (i < 0 || static_cast<unsigned>(i) >= m_args.size()) {
+auto ExecStmtNode::operator[](unsigned int i) const -> const Node& {
+  if (i >= m_args.size()) {
     throw std::out_of_range("No child at given index");
   }
   return *m_args[i];

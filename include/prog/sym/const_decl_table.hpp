@@ -24,6 +24,8 @@ public:
   [[nodiscard]] auto begin() const -> iterator;
   [[nodiscard]] auto end() const -> iterator;
 
+  [[nodiscard]] auto getAll() const -> std::vector<ConstId>;
+
   [[nodiscard]] auto lookup(const std::string& name) const -> std::optional<ConstId>;
 
   auto registerInput(std::string name, TypeId type) -> ConstId;

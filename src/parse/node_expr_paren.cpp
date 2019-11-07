@@ -14,7 +14,7 @@ auto ParenExprNode::operator!=(const Node& rhs) const noexcept -> bool {
   return !ParenExprNode::operator==(rhs);
 }
 
-auto ParenExprNode::operator[](int i) const -> const Node& {
+auto ParenExprNode::operator[](unsigned int i) const -> const Node& {
   if (i == 0) {
     return *m_expr;
   }

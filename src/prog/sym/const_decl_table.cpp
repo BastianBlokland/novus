@@ -13,6 +13,15 @@ auto ConstDeclTable::begin() const -> iterator { return m_types.begin(); }
 
 auto ConstDeclTable::end() const -> iterator { return m_types.end(); }
 
+auto ConstDeclTable::getAll() const -> std::vector<ConstId> {
+  auto result = std::vector<ConstId>{};
+  result.reserve(m_types.size());
+  for (const auto& c : m_types) {
+    result.push_back(c.m_id);
+  }
+  return result;
+}
+
 auto ConstDeclTable::lookup(const std::string& name) const -> std::optional<ConstId> {
   const auto itr = m_lookup.find(name);
   if (itr == m_lookup.end()) {

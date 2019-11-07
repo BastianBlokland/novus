@@ -16,15 +16,27 @@ auto CallExprNode::operator!=(const Node& rhs) const noexcept -> bool {
   return !CallExprNode::operator==(rhs);
 }
 
+auto CallExprNode::operator[](unsigned int i) const -> const Node& {
+  if (i >= m_args.size()) {
+    throw std::out_of_range("No child at given index");
+  }
+  return *m_args[i];
+}
+
+auto CallExprNode::getChildCount() const -> unsigned int { return m_args.size(); }
+
 auto CallExprNode::getType() const noexcept -> sym::TypeId { return m_resultType; }
 
+auto CallExprNode::print(std::ostream& out) const -> std::ostream& {
+  return out << "call-" << m_func;
+}
+
 // Factories.
-auto callExprNode(const sym::FuncDeclTable& funcTable, sym::FuncId func, std::vector<NodePtr> args)
-    -> NodePtr {
+auto callExprNode(const Program& program, sym::FuncId func, std::vector<NodePtr> args) -> NodePtr {
   if (anyNodeNull(args)) {
     throw std::invalid_argument{"Call node cannot contain a null argument"};
   }
-  const auto& funcSig   = funcTable[func].getSig();
+  const auto& funcSig   = program.getFuncDecl(func).getSig();
   const auto& funcInput = funcSig.getInput();
   if (funcInput.getCount() != args.size()) {
     throw std::invalid_argument{"Call node contains incorrect number of arguments"};

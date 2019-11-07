@@ -14,7 +14,7 @@ auto ConstExprNode::operator!=(const Node& rhs) const noexcept -> bool {
   return !ConstExprNode::operator==(rhs);
 }
 
-auto ConstExprNode::operator[](int /*unused*/) const -> const Node& {
+auto ConstExprNode::operator[](unsigned int /*unused*/) const -> const Node& {
   throw std::out_of_range{"No child at given index"};
 }
 

@@ -11,6 +11,7 @@ class Program final {
 public:
   using typeDeclIterator = typename sym::TypeDeclTable::iterator;
   using funcDeclIterator = typename sym::FuncDeclTable::iterator;
+  using funcDefIterator  = typename sym::FuncDefTable::iterator;
 
   Program();
   Program(const Program& rhs)     = delete;
@@ -26,6 +27,9 @@ public:
   [[nodiscard]] auto beginFuncDecls() const -> funcDeclIterator;
   [[nodiscard]] auto endFuncDecls() const -> funcDeclIterator;
 
+  [[nodiscard]] auto beginFuncDefs() const -> funcDefIterator;
+  [[nodiscard]] auto endFuncDefs() const -> funcDefIterator;
+
   [[nodiscard]] auto lookupType(const std::string& name) const -> std::optional<sym::TypeId>;
   [[nodiscard]] auto lookupFunc(const std::string& name, const sym::Input& input) const
       -> std::optional<sym::FuncId>;
@@ -34,6 +38,10 @@ public:
   [[nodiscard]] auto lookupAction(const std::string& name, const sym::Input& input) const
       -> std::optional<sym::ActionId>;
   [[nodiscard]] auto lookupActions(const std::string& name) const -> std::vector<sym::ActionId>;
+
+  [[nodiscard]] auto getTypeDecl(sym::TypeId id) const -> const sym::TypeDecl&;
+  [[nodiscard]] auto getFuncDecl(sym::FuncId id) const -> const sym::FuncDecl&;
+  [[nodiscard]] auto getActionDecl(sym::ActionId id) const -> const sym::ActionDecl&;
 
   auto declareUserFunc(std::string name, sym::FuncSig sig) -> void;
   auto defineUserFunc(sym::FuncId id, sym::ConstDeclTable consts, expr::NodePtr expr) -> void;

@@ -15,7 +15,18 @@ auto GroupExprNode::operator!=(const Node& rhs) const noexcept -> bool {
   return !GroupExprNode::operator==(rhs);
 }
 
+auto GroupExprNode::operator[](unsigned int i) const -> const Node& {
+  if (i >= m_exprs.size()) {
+    throw std::out_of_range("No child at given index");
+  }
+  return *m_exprs[i];
+}
+
+auto GroupExprNode::getChildCount() const -> unsigned int { return m_exprs.size(); }
+
 auto GroupExprNode::getType() const noexcept -> sym::TypeId { return m_exprs.back()->getType(); }
+
+auto GroupExprNode::print(std::ostream& out) const -> std::ostream& { return out << "group"; }
 
 // Factories.
 auto groupExprNode(std::vector<NodePtr> exprs) -> NodePtr {

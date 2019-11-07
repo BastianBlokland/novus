@@ -17,6 +17,10 @@ public:
   auto operator=(const FuncDef& rhs) -> FuncDef& = delete;
   auto operator=(FuncDef&& rhs) noexcept -> FuncDef& = delete;
 
+  [[nodiscard]] auto getId() const noexcept -> const FuncId&;
+  [[nodiscard]] auto getConsts() const noexcept -> const sym::ConstDeclTable&;
+  [[nodiscard]] auto getExpr() const noexcept -> const expr::Node&;
+
 private:
   sym::FuncId m_id;
   sym::ConstDeclTable m_consts;

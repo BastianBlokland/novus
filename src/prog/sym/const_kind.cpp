@@ -5,10 +5,10 @@ namespace prog::sym {
 auto operator<<(std::ostream& out, const ConstKind& rhs) -> std::ostream& {
   switch (rhs) {
   case ConstKind::Input:
-    out << "input";
+    out << "in";
     break;
   case ConstKind::Local:
-    out << "local";
+    out << "loc";
     break;
   }
   return out;

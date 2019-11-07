@@ -24,8 +24,8 @@ auto CallExprNode::operator!=(const Node& rhs) const noexcept -> bool {
   return !CallExprNode::operator==(rhs);
 }
 
-auto CallExprNode::operator[](int i) const -> const Node& {
-  if (i < 0 || static_cast<unsigned>(i) >= m_args.size()) {
+auto CallExprNode::operator[](unsigned int i) const -> const Node& {
+  if (i >= m_args.size()) {
     throw std::out_of_range{"No child at given index"};
   }
   return *m_args[i];

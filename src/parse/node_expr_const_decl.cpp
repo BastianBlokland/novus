@@ -15,7 +15,7 @@ auto ConstDeclExprNode::operator!=(const Node& rhs) const noexcept -> bool {
   return !ConstDeclExprNode::operator==(rhs);
 }
 
-auto ConstDeclExprNode::operator[](int i) const -> const Node& {
+auto ConstDeclExprNode::operator[](unsigned int i) const -> const Node& {
   if (i == 0) {
     return *m_rhs;
   }
