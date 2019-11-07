@@ -36,6 +36,8 @@ auto BranchExprNode::getType() const noexcept -> sym::TypeId {
   return m_branches.front()->getType();
 }
 
+auto BranchExprNode::accept(NodeVisitor* visitor) const -> void { visitor->visit(*this); }
+
 auto BranchExprNode::print(std::ostream& out) const -> std::ostream& { return out << "branch"; }
 
 // Factories.

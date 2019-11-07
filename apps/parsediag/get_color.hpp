@@ -4,7 +4,7 @@
 
 namespace parsediag {
 
-class GetColor final : public parse::NodeVisitor {
+class GetExprColor final : public parse::NodeVisitor {
 public:
   [[nodiscard]] auto getFgColor() const noexcept -> rang::fg { return m_fg; }
 

@@ -27,6 +27,8 @@ auto AssignExprNode::getChildCount() const -> unsigned int { return 1; }
 
 auto AssignExprNode::getType() const noexcept -> sym::TypeId { return m_expr->getType(); }
 
+auto AssignExprNode::accept(NodeVisitor* visitor) const -> void { visitor->visit(*this); }
+
 auto AssignExprNode::print(std::ostream& out) const -> std::ostream& {
   return out << "assign-" << m_constId;
 }

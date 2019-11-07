@@ -27,6 +27,8 @@ auto CallExprNode::getChildCount() const -> unsigned int { return m_args.size();
 
 auto CallExprNode::getType() const noexcept -> sym::TypeId { return m_resultType; }
 
+auto CallExprNode::accept(NodeVisitor* visitor) const -> void { visitor->visit(*this); }
+
 auto CallExprNode::print(std::ostream& out) const -> std::ostream& {
   return out << "call-" << m_func;
 }

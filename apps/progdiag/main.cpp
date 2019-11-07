@@ -1,6 +1,7 @@
 #include "CLI/CLI.hpp"
 #include "frontend/analysis.hpp"
 #include "frontend/source.hpp"
+#include "get_expr_color.hpp"
 #include "rang.hpp"
 
 namespace progdiag {
@@ -36,7 +37,11 @@ auto printExpr(
     std::cout << rang::style::reset;
   }
 
-  std::cout << n << ' ' << rang::style::dim << n.getType() << rang::style::reset << '\n';
+  auto exprCol = GetExprColor{};
+  n.accept(&exprCol);
+
+  std::cout << rang::style::bold << exprCol.getFgColor() << n << ' ' << rang::fg::reset
+            << rang::style::dim << n.getType() << rang::style::reset << '\n';
 
   const auto childCount = n.getChildCount();
   for (auto i = 0U; i < childCount; ++i) {

@@ -20,6 +20,8 @@ public:
   [[nodiscard]] auto getChildCount() const -> unsigned int override;
   [[nodiscard]] auto getType() const noexcept -> sym::TypeId override;
 
+  auto accept(NodeVisitor* visitor) const -> void override;
+
 private:
   sym::ConstId m_constId;
   NodePtr m_expr;

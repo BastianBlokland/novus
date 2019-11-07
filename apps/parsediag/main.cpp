@@ -38,7 +38,7 @@ auto printNode(
   }
   std::cout << s::reset;
 
-  auto nodeCol = GetColor{};
+  auto nodeCol = GetExprColor{};
   n.accept(&nodeCol);
 
   // Print node.
