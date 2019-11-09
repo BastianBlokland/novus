@@ -9,9 +9,10 @@ namespace prog {
 
 class Program final {
 public:
-  using typeDeclIterator = typename sym::TypeDeclTable::iterator;
-  using funcDeclIterator = typename sym::FuncDeclTable::iterator;
-  using funcDefIterator  = typename sym::FuncDefTable::iterator;
+  using typeDeclIterator   = typename sym::TypeDeclTable::iterator;
+  using funcDeclIterator   = typename sym::FuncDeclTable::iterator;
+  using actionDeclIterator = typename sym::ActionDeclTable::iterator;
+  using funcDefIterator    = typename sym::FuncDefTable::iterator;
 
   Program();
   Program(const Program& rhs)     = delete;
@@ -26,6 +27,9 @@ public:
 
   [[nodiscard]] auto beginFuncDecls() const -> funcDeclIterator;
   [[nodiscard]] auto endFuncDecls() const -> funcDeclIterator;
+
+  [[nodiscard]] auto beginActionDecls() const -> actionDeclIterator;
+  [[nodiscard]] auto endActionDecls() const -> actionDeclIterator;
 
   [[nodiscard]] auto beginFuncDefs() const -> funcDefIterator;
   [[nodiscard]] auto endFuncDefs() const -> funcDefIterator;

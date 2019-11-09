@@ -91,12 +91,35 @@ auto printFuncDecls(const prog::Program& prog) -> void {
       break;
     }
     std::cout << "  " << rang::style::bold << std::setw(nameColWidth) << std::left
-              << funcDecl.getName() << rang::style::reset << "  ";
+              << funcDecl.getName() << rang::style::reset;
 
     std::stringstream inputStr;
     inputStr << "(" << funcDecl.getSig().getInput() << ")";
-    std::cout << " " << std::setw(inputColWidth) << std::left << inputStr.str() << " -> "
+    std::cout << std::setw(inputColWidth) << std::left << inputStr.str() << " -> "
               << funcDecl.getSig().getOutput() << '\n';
+  }
+}
+
+auto printActionDecls(const prog::Program& prog) -> void {
+  const auto idColWidth   = 5;
+  const auto nameColWidth = 20;
+
+  std::cout << rang::style::bold << "Action declarations:\n" << rang::style::reset;
+  for (auto funcItr = prog.beginActionDecls(); funcItr != prog.endActionDecls(); ++funcItr) {
+    const auto& actionDecl = *funcItr;
+    std::stringstream idStr;
+    idStr << actionDecl.getId();
+
+    std::cout << " * " << std::setw(idColWidth) << std::left << idStr.str();
+
+    switch (actionDecl.getKind()) {
+    case prog::sym::ActionKind::Intrinsic:
+      std::cout << rang::fg::yellow;
+      break;
+    }
+    std::cout << "  " << rang::style::bold << std::setw(nameColWidth) << std::left
+              << actionDecl.getName() << rang::style::reset << '(' << actionDecl.getInput()
+              << ")\n";
   }
 }
 
@@ -138,6 +161,8 @@ auto printProgram(const prog::Program& prog) -> void {
   printTypeDecls(prog);
   std::cout << '\n';
   printFuncDecls(prog);
+  std::cout << '\n';
+  printActionDecls(prog);
   std::cout << '\n';
   printFuncDefs(prog);
 }

@@ -13,6 +13,10 @@ auto Program::beginFuncDecls() const -> funcDeclIterator { return m_funcDecls.be
 
 auto Program::endFuncDecls() const -> funcDeclIterator { return m_funcDecls.end(); }
 
+auto Program::beginActionDecls() const -> actionDeclIterator { return m_actionDecls.begin(); }
+
+auto Program::endActionDecls() const -> actionDeclIterator { return m_actionDecls.end(); }
+
 auto Program::beginFuncDefs() const -> funcDefIterator { return m_funcDefs.begin(); }
 
 auto Program::endFuncDefs() const -> funcDefIterator { return m_funcDefs.end(); }
