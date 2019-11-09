@@ -1,5 +1,6 @@
 #include "frontend/analysis.hpp"
 #include "internal/declare_user_funcs.hpp"
+#include "internal/define_exec_stmts.hpp"
 #include "internal/define_user_funcs.hpp"
 #include "internal/get_parse_diags.hpp"
 #include "prog/program.hpp"
@@ -30,6 +31,13 @@ auto analyze(const Source& src) -> Output {
   src.accept(&defineUserFuncs);
   if (defineUserFuncs.hasErrors()) {
     return buildOutput(nullptr, defineUserFuncs.getDiags());
+  }
+
+  // Define execute statements.
+  auto defineExecStmts = internal::DefineExecStmts{src, prog.get()};
+  src.accept(&defineExecStmts);
+  if (defineExecStmts.hasErrors()) {
+    return buildOutput(nullptr, defineExecStmts.getDiags());
   }
 
   return buildOutput(std::move(prog), {});

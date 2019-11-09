@@ -6,23 +6,21 @@
 
 namespace frontend::internal {
 
-class DefineUserFuncs final : public parse::OptionalNodeVisitor {
+class DefineExecStmts final : public parse::OptionalNodeVisitor {
 public:
-  DefineUserFuncs() = delete;
-  DefineUserFuncs(const Source& src, prog::Program* prog);
+  DefineExecStmts() = delete;
+  DefineExecStmts(const Source& src, prog::Program* prog);
 
   [[nodiscard]] auto hasErrors() const noexcept -> bool;
   [[nodiscard]] auto getDiags() const noexcept -> const std::vector<Diag>&;
 
-  auto visit(const parse::FuncDeclStmtNode& n) -> void override;
+  auto visit(const parse::ExecStmtNode& n) -> void override;
 
 private:
   const Source& m_src;
   prog::Program* m_prog;
   std::vector<Diag> m_diags;
 
-  auto getFuncId(const parse::FuncDeclStmtNode& n) -> prog::sym::FuncId;
-  auto declareInputs(const parse::FuncDeclStmtNode& n, prog::sym::ConstDeclTable* consts) -> bool;
   auto getExpr(
       const parse::Node& n,
       prog::sym::ConstDeclTable* consts,

@@ -73,7 +73,7 @@ add_library(prog STATIC
   prog/sym/const_decl.cpp
   prog/sym/const_id.cpp
   prog/sym/const_kind.cpp
-  prog/sym/exec_def.cpp
+  prog/sym/exec_stmt.cpp
   prog/sym/func_decl_table.cpp
   prog/sym/func_decl.cpp
   prog/sym/func_def_table.cpp
@@ -98,6 +98,7 @@ target_include_directories(prog PRIVATE prog)
 # Frontend.
 add_library(frontend STATIC
   frontend/internal/declare_user_funcs.cpp
+  frontend/internal/define_exec_stmts.cpp
   frontend/internal/define_user_funcs.cpp
   frontend/internal/get_expr.cpp
   frontend/internal/get_parse_diags.cpp

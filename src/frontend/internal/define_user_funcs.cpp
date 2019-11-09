@@ -22,22 +22,20 @@ auto DefineUserFuncs::visit(const parse::FuncDeclStmtNode& n) -> void {
   const auto& funcDecl = m_prog->getFuncDecl(id);
 
   auto visibleConsts = consts.getAll();
-  auto getExpr       = GetExpr{m_src, m_prog, &consts, &visibleConsts};
-  n[0].accept(&getExpr);
-  m_diags.insert(m_diags.end(), getExpr.getDiags().begin(), getExpr.getDiags().end());
-  if (!getExpr.getValue()) {
+  auto expr          = getExpr(n[0], &consts, &visibleConsts);
+  if (!expr) {
     return;
   }
 
-  if (getExpr.getValue()->getType() != funcDecl.getSig().getOutput()) {
+  if (expr->getType() != funcDecl.getSig().getOutput()) {
     const auto& declaredType = m_prog->getTypeDecl(funcDecl.getSig().getOutput()).getName();
-    const auto& returnedType = m_prog->getTypeDecl(getExpr.getValue()->getType()).getName();
+    const auto& returnedType = m_prog->getTypeDecl(expr->getType()).getName();
     m_diags.push_back(errNonMatchingFuncReturnType(
         m_src, funcDecl.getName(), declaredType, returnedType, n[0].getSpan()));
     return;
   }
 
-  m_prog->defineUserFunc(id, std::move(consts), std::move(getExpr.getValue()));
+  m_prog->defineUserFunc(id, std::move(consts), std::move(expr));
 }
 
 auto DefineUserFuncs::getFuncId(const parse::FuncDeclStmtNode& n) -> prog::sym::FuncId {
@@ -89,6 +87,17 @@ auto DefineUserFuncs::declareInputs(
     consts->registerInput(getName(arg.second), argType.value());
   }
   return isValid;
+}
+
+auto DefineUserFuncs::getExpr(
+    const parse::Node& n,
+    prog::sym::ConstDeclTable* consts,
+    std::vector<prog::sym::ConstId>* visibleConsts) -> prog::expr::NodePtr {
+
+  auto getExpr = GetExpr{m_src, m_prog, consts, visibleConsts};
+  n.accept(&getExpr);
+  m_diags.insert(m_diags.end(), getExpr.getDiags().begin(), getExpr.getDiags().end());
+  return std::move(getExpr.getValue());
 }
 
 } // namespace frontend::internal

@@ -1,17 +1,23 @@
-#include "prog/sym/exec_def.hpp"
+#include "prog/sym/exec_stmt.hpp"
 #include "../expr/utilities.hpp"
 
 namespace prog::sym {
 
-ExecDef::ExecDef(
+ExecStmt::ExecStmt(
     sym::ActionId action, sym::ConstDeclTable consts, std::vector<expr::NodePtr> args) :
     m_action{action}, m_consts{std::move(consts)}, m_args{std::move(args)} {}
 
-auto execDef(
+auto ExecStmt::getActionId() const noexcept -> const ActionId& { return m_action; }
+
+auto ExecStmt::getConsts() const noexcept -> const sym::ConstDeclTable& { return m_consts; }
+
+auto ExecStmt::getArgs() const noexcept -> const std::vector<expr::NodePtr>& { return m_args; }
+
+auto execStmt(
     const sym::ActionDeclTable& actionTable,
     sym::ActionId action,
     sym::ConstDeclTable consts,
-    std::vector<expr::NodePtr> args) -> ExecDef {
+    std::vector<expr::NodePtr> args) -> ExecStmt {
 
   if (expr::anyNodeNull(args)) {
     throw std::invalid_argument{"Action execution cannot contain a null argument"};
@@ -26,7 +32,7 @@ auto execDef(
           "Action execution contains argument who's type doesn't match action input"};
     }
   }
-  return ExecDef{action, std::move(consts), std::move(args)};
+  return ExecStmt{action, std::move(consts), std::move(args)};
 }
 
 } // namespace prog::sym

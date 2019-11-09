@@ -21,6 +21,10 @@ auto Program::beginFuncDefs() const -> funcDefIterator { return m_funcDefs.begin
 
 auto Program::endFuncDefs() const -> funcDefIterator { return m_funcDefs.end(); }
 
+auto Program::beginExecStmts() const -> execStmtIterator { return m_execStmts.begin(); }
+
+auto Program::endExecStmts() const -> execStmtIterator { return m_execStmts.end(); }
+
 auto Program::lookupType(const std::string& name) const -> std::optional<sym::TypeId> {
   return m_typeDecls.lookup(name);
 }
@@ -60,9 +64,10 @@ auto Program::defineUserFunc(sym::FuncId id, sym::ConstDeclTable consts, expr::N
   m_funcDefs.registerFunc(m_funcDecls, id, std::move(consts), std::move(expr));
 }
 
-auto Program::addExec(
+auto Program::addExecStmt(
     sym::ActionId action, sym::ConstDeclTable consts, std::vector<expr::NodePtr> args) -> void {
-  return m_execs.push_back(sym::execDef(m_actionDecls, action, std::move(consts), std::move(args)));
+  return m_execStmts.push_back(
+      sym::execStmt(m_actionDecls, action, std::move(consts), std::move(args)));
 }
 
 } // namespace prog

@@ -108,12 +108,42 @@ auto errUndeclaredFuncOverload(
     const std::vector<const std::string*>& argTypes,
     input::Span span) -> Diag {
   std::ostringstream oss;
-  oss << "No overload for function '" << name << "' has been declared with argument types: ";
-  for (auto i = 0U; i < argTypes.size(); ++i) {
-    if (i != 0) {
-      oss << ", ";
+  if (argTypes.empty()) {
+    oss << "No overload for function '" << name << "' has been declared without any arguments";
+  } else {
+    oss << "No overload for function '" << name << "' has been declared with argument types: ";
+    for (auto i = 0U; i < argTypes.size(); ++i) {
+      if (i != 0) {
+        oss << ", ";
+      }
+      oss << '\'' << *argTypes[i] << '\'';
     }
-    oss << '\'' << *argTypes[i] << '\'';
+  }
+  return error(src, oss.str(), span);
+}
+
+auto errUndeclaredAction(const Source& src, const std::string& name, input::Span span) -> Diag {
+  std::ostringstream oss;
+  oss << "No action named '" << name << "' has been declared";
+  return error(src, oss.str(), span);
+}
+
+auto errUndeclaredActionOverload(
+    const Source& src,
+    const std::string& name,
+    const std::vector<const std::string*>& argTypes,
+    input::Span span) -> Diag {
+  std::ostringstream oss;
+  if (argTypes.empty()) {
+    oss << "No overload for action '" << name << "' has been declared without any arguments";
+  } else {
+    oss << "No overload for action '" << name << "' has been declared with argument types: ";
+    for (auto i = 0U; i < argTypes.size(); ++i) {
+      if (i != 0) {
+        oss << ", ";
+      }
+      oss << '\'' << *argTypes[i] << '\'';
+    }
   }
   return error(src, oss.str(), span);
 }

@@ -51,6 +51,14 @@ auto errUndeclaredFuncOverload(
     const std::vector<const std::string*>& argTypes,
     input::Span span) -> Diag;
 
+auto errUndeclaredAction(const Source& src, const std::string& name, input::Span span) -> Diag;
+
+auto errUndeclaredActionOverload(
+    const Source& src,
+    const std::string& name,
+    const std::vector<const std::string*>& argTypes,
+    input::Span span) -> Diag;
+
 auto errUnsupportedOperator(const Source& src, const std::string& name, input::Span span) -> Diag;
 
 auto errUndeclaredUnaryOperator(
