@@ -21,11 +21,11 @@ public:
   }
 
   auto visit(const prog::expr::ConstExprNode & /*unused*/) -> void override {
-    m_fg = rang::fg::magenta;
+    m_fg = rang::fg::green;
   }
 
   auto visit(const prog::expr::GroupExprNode & /*unused*/) -> void override {
-    m_fg = rang::fg::green;
+    m_fg = rang::fg::blue;
   }
 
   auto visit(const prog::expr::LitBoolNode & /*unused*/) -> void override { m_fg = rang::fg::cyan; }
