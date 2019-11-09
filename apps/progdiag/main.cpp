@@ -145,19 +145,20 @@ auto printConsts(const prog::sym::ConstDeclTable& consts) -> void {
 auto printFuncDefs(const prog::Program& prog) -> void {
   std::cout << rang::style::bold << "Function definitions:\n" << rang::style::reset;
   for (auto funcItr = prog.beginFuncDefs(); funcItr != prog.endFuncDefs(); ++funcItr) {
-    const auto funcId   = funcItr->getId();
+    const auto funcId   = funcItr->first;
+    const auto& funcDef = funcItr->second;
     const auto funcName = prog.getFuncDecl(funcId).getName();
     std::cout << " " << rang::style::bold << funcName << rang::style::dim << " " << funcId
               << rang::style::reset << "\n";
 
-    const auto& consts = funcItr->getConsts();
+    const auto& consts = funcDef.getConsts();
     if (consts.begin() != consts.end()) {
       std::cout << rang::style::italic << "  Consts:\n" << rang::style::reset;
       printConsts(consts);
     }
 
     std::cout << rang::style::italic << "  Body:\n" << rang::style::reset;
-    printExpr(funcItr->getExpr(), "   ");
+    printExpr(funcDef.getExpr(), "   ");
     std::cout << '\n';
   }
 }

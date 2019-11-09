@@ -4,9 +4,11 @@
 namespace prog::sym {
 
 auto FuncDefTable::operator[](sym::FuncId id) const -> const FuncDef& {
-  const auto index = id.m_id;
-  assert(index < this->m_funcs.size());
-  return m_funcs[index];
+  auto itr = m_funcs.find(id);
+  if (itr == m_funcs.end()) {
+    throw std::invalid_argument{"No definition has been registered for given function id"};
+  }
+  return itr->second;
 }
 
 auto FuncDefTable::begin() const -> iterator { return m_funcs.begin(); }
@@ -25,7 +27,11 @@ auto FuncDefTable::registerFunc(
   if (expr->getType() != sig.getOutput()) {
     throw std::invalid_argument{"Type of expresion does not match function return type"};
   }
-  m_funcs.push_back(FuncDef{id, std::move(consts), std::move(expr)});
+  auto itr = m_funcs.find(id);
+  if (itr != m_funcs.end()) {
+    throw std::logic_error{"Function already has a definition registered"};
+  }
+  m_funcs.insert({id, FuncDef{id, std::move(consts), std::move(expr)}});
 }
 
 } // namespace prog::sym

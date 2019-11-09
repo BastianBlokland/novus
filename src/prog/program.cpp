@@ -55,6 +55,8 @@ auto Program::getActionDecl(sym::ActionId id) const -> const sym::ActionDecl& {
   return m_actionDecls[id];
 }
 
+auto Program::getFuncDef(sym::FuncId id) const -> const sym::FuncDef& { return m_funcDefs[id]; }
+
 auto Program::declareUserFunc(std::string name, sym::FuncSig sig) -> void {
   m_funcDecls.registerUser(std::move(name), std::move(sig));
 }

@@ -50,6 +50,7 @@ public:
   [[nodiscard]] auto getTypeDecl(sym::TypeId id) const -> const sym::TypeDecl&;
   [[nodiscard]] auto getFuncDecl(sym::FuncId id) const -> const sym::FuncDecl&;
   [[nodiscard]] auto getActionDecl(sym::ActionId id) const -> const sym::ActionDecl&;
+  [[nodiscard]] auto getFuncDef(sym::FuncId id) const -> const sym::FuncDef&;
 
   auto declareUserFunc(std::string name, sym::FuncSig sig) -> void;
   auto defineUserFunc(sym::FuncId id, sym::ConstDeclTable consts, expr::NodePtr expr) -> void;

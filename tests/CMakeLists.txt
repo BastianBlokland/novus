@@ -14,7 +14,18 @@ include(Catch)
 add_executable(tests
   main.cpp
 
-  frontend/analysis_test.cpp
+  frontend/declare_user_funcs_test.cpp
+  frontend/define_exec_stmts_test.cpp
+  frontend/define_user_funcs_test.cpp
+  frontend/get_binary_expr_test.cpp
+  frontend/get_call_expr_test.cpp
+  frontend/get_const_expr_test.cpp
+  frontend/get_group_expr_test.cpp
+  frontend/get_lit_expr_test.cpp
+  frontend/get_paren_expr_test.cpp
+  frontend/get_switch_expr_test.cpp
+  frontend/get_unary_expr_test.cpp
+  frontend/parse_diags_test.cpp
   frontend/source_test.cpp
 
   input/info_test.cpp

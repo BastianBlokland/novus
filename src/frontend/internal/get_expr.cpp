@@ -89,9 +89,9 @@ auto GetExpr::visit(const parse::CallExprNode& n) -> void {
     if (m_prog->lookupFuncs(funcName).empty()) {
       m_diags.push_back(errUndeclaredFunc(m_src, funcName, n.getFunc().getSpan()));
     } else {
-      auto argTypeNames = std::vector<const std::string*>{};
+      auto argTypeNames = std::vector<std::string>{};
       for (const auto& argType : argTypes) {
-        argTypeNames.push_back(&m_prog->getTypeDecl(argType).getName());
+        argTypeNames.push_back(m_prog->getTypeDecl(argType).getName());
       }
       m_diags.push_back(errUndeclaredFuncOverload(m_src, funcName, argTypeNames, n.getSpan()));
     }

@@ -39,9 +39,9 @@ auto DefineExecStmts::visit(const parse::ExecStmtNode& n) -> void {
     if (m_prog->lookupActions(actionName).empty()) {
       m_diags.push_back(errUndeclaredAction(m_src, actionName, n.getAction().getSpan()));
     } else {
-      auto argTypeNames = std::vector<const std::string*>{};
+      auto argTypeNames = std::vector<std::string>{};
       for (const auto& argType : argTypes) {
-        argTypeNames.push_back(&m_prog->getTypeDecl(argType).getName());
+        argTypeNames.push_back(m_prog->getTypeDecl(argType).getName());
       }
       m_diags.push_back(errUndeclaredActionOverload(m_src, actionName, argTypeNames, n.getSpan()));
     }

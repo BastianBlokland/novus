@@ -105,7 +105,7 @@ auto errUndeclaredFunc(const Source& src, const std::string& name, input::Span s
 auto errUndeclaredFuncOverload(
     const Source& src,
     const std::string& name,
-    const std::vector<const std::string*>& argTypes,
+    const std::vector<std::string>& argTypes,
     input::Span span) -> Diag {
   std::ostringstream oss;
   if (argTypes.empty()) {
@@ -116,7 +116,7 @@ auto errUndeclaredFuncOverload(
       if (i != 0) {
         oss << ", ";
       }
-      oss << '\'' << *argTypes[i] << '\'';
+      oss << '\'' << argTypes[i] << '\'';
     }
   }
   return error(src, oss.str(), span);
@@ -131,7 +131,7 @@ auto errUndeclaredAction(const Source& src, const std::string& name, input::Span
 auto errUndeclaredActionOverload(
     const Source& src,
     const std::string& name,
-    const std::vector<const std::string*>& argTypes,
+    const std::vector<std::string>& argTypes,
     input::Span span) -> Diag {
   std::ostringstream oss;
   if (argTypes.empty()) {
@@ -142,7 +142,7 @@ auto errUndeclaredActionOverload(
       if (i != 0) {
         oss << ", ";
       }
-      oss << '\'' << *argTypes[i] << '\'';
+      oss << '\'' << argTypes[i] << '\'';
     }
   }
   return error(src, oss.str(), span);

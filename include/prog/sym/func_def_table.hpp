@@ -2,13 +2,15 @@
 #include "prog/sym/const_decl_table.hpp"
 #include "prog/sym/func_def.hpp"
 #include "prog/sym/func_id.hpp"
+#include "prog/sym/func_id_hasher.hpp"
+#include <unordered_map>
 #include <vector>
 
 namespace prog::sym {
 
 class FuncDefTable final {
 public:
-  using iterator = typename std::vector<FuncDef>::const_iterator;
+  using iterator = typename std::unordered_map<FuncId, FuncDef>::const_iterator;
 
   FuncDefTable()                            = default;
   FuncDefTable(const FuncDefTable& rhs)     = delete;
@@ -30,7 +32,7 @@ public:
       expr::NodePtr expr) -> void;
 
 private:
-  std::vector<FuncDef> m_funcs;
+  std::unordered_map<FuncId, FuncDef, FuncIdHasher> m_funcs;
 };
 
 } // namespace prog::sym

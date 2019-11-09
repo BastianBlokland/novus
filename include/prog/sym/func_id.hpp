@@ -6,6 +6,7 @@ namespace prog::sym {
 class FuncId final {
   friend class FuncDeclTable;
   friend class FuncDefTable;
+  friend class FuncIdHasher;
   friend auto operator<<(std::ostream& out, const FuncId& rhs) -> std::ostream&;
 
 public:

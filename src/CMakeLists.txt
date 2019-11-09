@@ -78,6 +78,7 @@ add_library(prog STATIC
   prog/sym/func_decl.cpp
   prog/sym/func_def_table.cpp
   prog/sym/func_def.cpp
+  prog/sym/func_id_hasher.cpp
   prog/sym/func_id.cpp
   prog/sym/func_kind.cpp
   prog/sym/func_sig.cpp
