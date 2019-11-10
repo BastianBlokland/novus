@@ -174,6 +174,13 @@ auto errUndeclaredBinOperator(
   return error(src, oss.str(), span);
 }
 
+auto errNonBoolExpressionInLogicOp(const Source& src, const std::string& typeName, input::Span span)
+    -> Diag {
+  std::ostringstream oss;
+  oss << "Type in logical operation has to be 'bool' but was: '" << typeName << '\'';
+  return error(src, oss.str(), span);
+}
+
 auto errNonBoolExpressionInSwitch(const Source& src, const std::string& typeName, input::Span span)
     -> Diag {
   std::ostringstream oss;

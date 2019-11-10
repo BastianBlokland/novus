@@ -48,10 +48,6 @@ auto registerIntrinsics(
 
   // Register binary bool operators.
   funcTable->registerIntrinsic(
-      getFuncName(Operator::AmpAmp), sym::FuncSig{sym::Input{boolT, boolT}, boolT});
-  funcTable->registerIntrinsic(
-      getFuncName(Operator::PipePipe), sym::FuncSig{sym::Input{boolT, boolT}, boolT});
-  funcTable->registerIntrinsic(
       getFuncName(Operator::EqEq), sym::FuncSig{sym::Input{boolT, boolT}, boolT});
   funcTable->registerIntrinsic(
       getFuncName(Operator::BangEq), sym::FuncSig{sym::Input{boolT, boolT}, boolT});

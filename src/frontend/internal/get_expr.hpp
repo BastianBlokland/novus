@@ -34,6 +34,8 @@ public:
   auto visit(const parse::FuncDeclStmtNode& n) -> void override;
 
 private:
+  enum class BinLogicOp { And, Or };
+
   const Source& m_src;
   prog::Program* m_prog;
   prog::sym::ConstDeclTable* m_consts;
@@ -43,6 +45,8 @@ private:
 
   auto getSubExpr(const parse::Node& n, std::vector<prog::sym::ConstId>* visibleConsts)
       -> prog::expr::NodePtr;
+
+  auto getBinLogicOpExpr(const parse::BinaryExprNode& n, BinLogicOp op) -> prog::expr::NodePtr;
 
   auto declareConst(const lex::Token& nameToken, prog::sym::TypeId type)
       -> std::optional<prog::sym::ConstId>;

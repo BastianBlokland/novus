@@ -67,6 +67,9 @@ TEST_CASE("Get constant expression", "[frontend]") {
         "if b = a * a; b > 5  -> b "
         "else                 -> b + 1",
         errUninitializedConst(src, "b", input::Span{70, 70}));
+    CHECK_DIAG(
+        "fun f() -> int (true && (x = 5; false)); x",
+        errUninitializedConst(src, "x", input::Span{41, 41}));
   }
 }
 

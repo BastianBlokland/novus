@@ -39,7 +39,17 @@ auto GetExpr::visit(const parse::ErrorNode & /*unused*/) -> void {
 
 auto GetExpr::visit(const parse::BinaryExprNode& n) -> void {
   const auto& opToken = n.getOperator();
-  const auto op       = getOperator(opToken);
+  switch (opToken.getKind()) {
+  case lex::TokenKind::OpAmpAmp:
+    m_expr = getBinLogicOpExpr(n, BinLogicOp::And);
+    return;
+  case lex::TokenKind::OpPipePipe:
+    m_expr = getBinLogicOpExpr(n, BinLogicOp::Or);
+    return;
+  default:
+    break;
+  }
+  const auto op = getOperator(opToken);
   if (!op) {
     m_diags.push_back(errUnsupportedOperator(m_src, opToken.str(), opToken.getSpan()));
     return;
@@ -266,6 +276,53 @@ auto GetExpr::getSubExpr(const parse::Node& n, std::vector<prog::sym::ConstId>* 
   n.accept(&visitor);
   m_diags.insert(m_diags.end(), visitor.getDiags().begin(), visitor.getDiags().end());
   return std::move(visitor.getValue());
+}
+
+auto GetExpr::getBinLogicOpExpr(const parse::BinaryExprNode& n, BinLogicOp op)
+    -> prog::expr::NodePtr {
+  auto isValid = true;
+  auto lhs     = getSubExpr(n[0], m_visibleConsts);
+
+  // Because the rhs might not get executed the constants it declares are not visible outside.
+  auto rhsVisibleConsts = *m_visibleConsts;
+  auto rhs              = getSubExpr(n[1], &rhsVisibleConsts);
+  if (!lhs || !rhs) {
+    return nullptr;
+  }
+
+  auto boolType = m_prog->lookupType("bool");
+  if (!boolType) {
+    throw std::logic_error{"No 'bool' type present in type-table"};
+  }
+  if (lhs->getType() != boolType) {
+    const auto& typeName = m_prog->getTypeDecl(lhs->getType()).getName();
+    m_diags.push_back(errNonBoolExpressionInLogicOp(m_src, typeName, n[0].getSpan()));
+    isValid = false;
+  }
+  if (rhs->getType() != boolType) {
+    const auto& typeName = m_prog->getTypeDecl(rhs->getType()).getName();
+    m_diags.push_back(errNonBoolExpressionInLogicOp(m_src, typeName, n[1].getSpan()));
+    isValid = false;
+  }
+
+  if (isValid) {
+    auto conditions = std::vector<prog::expr::NodePtr>{};
+    conditions.push_back(std::move(lhs));
+
+    auto branches = std::vector<prog::expr::NodePtr>{};
+    switch (op) {
+    case BinLogicOp::And:
+      branches.push_back(std::move(rhs));
+      branches.push_back(prog::expr::litBoolNode(*m_prog, false));
+      break;
+    case BinLogicOp::Or:
+      branches.push_back(prog::expr::litBoolNode(*m_prog, true));
+      branches.push_back(std::move(rhs));
+    }
+
+    return prog::expr::switchExprNode(*m_prog, std::move(conditions), std::move(branches));
+  }
+  return nullptr;
 }
 
 auto GetExpr::declareConst(const lex::Token& nameToken, prog::sym::TypeId type)

@@ -15,12 +15,8 @@ auto getFuncName(Operator op) -> std::string {
     return "__op_slash";
   case Operator::Amp:
     return "__op_amp";
-  case Operator::AmpAmp:
-    return "__op_ampamp";
   case Operator::Pipe:
     return "__op_pipe";
-  case Operator::PipePipe:
-    return "__op_pipepipe";
   case Operator::EqEq:
     return "__op_eqeq";
   case Operator::Bang:
