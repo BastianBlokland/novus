@@ -1,7 +1,6 @@
 #pragma once
 #include "lex/token.hpp"
 #include "parse/node.hpp"
-#include "parse/node_kind.hpp"
 #include <vector>
 
 namespace parse {
@@ -17,7 +16,7 @@ public:
   auto operator==(const Node& rhs) const noexcept -> bool override;
   auto operator!=(const Node& rhs) const noexcept -> bool override;
 
-  [[nodiscard]] auto operator[](int i) const -> const Node& override;
+  [[nodiscard]] auto operator[](unsigned int i) const -> const Node& override;
   [[nodiscard]] auto getChildCount() const -> unsigned int override;
   [[nodiscard]] auto getSpan() const -> input::Span override;
 

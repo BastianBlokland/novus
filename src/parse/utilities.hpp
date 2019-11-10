@@ -14,6 +14,6 @@ auto getSpan(const std::vector<NodePtr>& nodes) -> std::optional<input::Span>;
 
 auto nodesEqual(const std::vector<NodePtr>& a, const std::vector<NodePtr>& b) -> bool;
 
-auto anyNodeNull(const std::vector<NodePtr>&) -> bool;
+auto anyNodeNull(const std::vector<NodePtr>& v) -> bool;
 
 } // namespace parse

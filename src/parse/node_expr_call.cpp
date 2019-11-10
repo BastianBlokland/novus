@@ -9,7 +9,6 @@ CallExprNode::CallExprNode(
     std::vector<NodePtr> args,
     std::vector<lex::Token> commas,
     lex::Token close) :
-    Node(NodeKind::ExprCall),
     m_func{std::move(func)},
     m_open{std::move(open)},
     m_args{std::move(args)},
@@ -25,9 +24,9 @@ auto CallExprNode::operator!=(const Node& rhs) const noexcept -> bool {
   return !CallExprNode::operator==(rhs);
 }
 
-auto CallExprNode::operator[](int i) const -> const Node& {
-  if (i < 0 || static_cast<unsigned>(i) >= m_args.size()) {
-    throw std::out_of_range("No child at given index");
+auto CallExprNode::operator[](unsigned int i) const -> const Node& {
+  if (i >= m_args.size()) {
+    throw std::out_of_range{"No child at given index"};
   }
   return *m_args[i];
 }
@@ -54,10 +53,10 @@ auto callExprNode(
     std::vector<lex::Token> commas,
     lex::Token close) -> NodePtr {
   if (anyNodeNull(args)) {
-    throw std::invalid_argument("args cannot contain a nullptr");
+    throw std::invalid_argument{"args cannot contain a nullptr"};
   }
   if (args.empty() ? !commas.empty() : commas.size() != args.size() - 1) {
-    throw std::invalid_argument("Incorrect number of commas");
+    throw std::invalid_argument{"Incorrect number of commas"};
   }
   return std::unique_ptr<CallExprNode>{new CallExprNode{
       std::move(func), std::move(open), std::move(args), std::move(commas), std::move(close)}};

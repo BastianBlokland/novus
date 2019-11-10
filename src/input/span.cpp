@@ -6,16 +6,16 @@ namespace input {
 Span::Span(const int start, const int end) :
     m_start{static_cast<unsigned int>(start)}, m_end{static_cast<unsigned int>(end)} {
   if (start < 0) {
-    throw std::invalid_argument("Start cannot be negative");
+    throw std::invalid_argument{"Start cannot be negative"};
   }
   if (end < start) {
-    throw std::invalid_argument("End cannot be smaller then Start");
+    throw std::invalid_argument{"End cannot be smaller then Start"};
   }
 }
 
 Span::Span(const unsigned int start, const unsigned int end) : m_start{start}, m_end{end} {
   if (end < start) {
-    throw std::invalid_argument("End cannot be smaller then Start");
+    throw std::invalid_argument{"End cannot be smaller then Start"};
   }
 }
 

@@ -4,10 +4,7 @@
 namespace parse {
 
 ConstDeclExprNode::ConstDeclExprNode(lex::Token id, lex::Token eq, NodePtr rhs) :
-    Node(NodeKind::ExprConstDecl),
-    m_id{std::move(id)},
-    m_eq{std::move(eq)},
-    m_rhs{std::move(rhs)} {}
+    m_id{std::move(id)}, m_eq{std::move(eq)}, m_rhs{std::move(rhs)} {}
 
 auto ConstDeclExprNode::operator==(const Node& rhs) const noexcept -> bool {
   const auto r = dynamic_cast<const ConstDeclExprNode*>(&rhs);
@@ -18,11 +15,11 @@ auto ConstDeclExprNode::operator!=(const Node& rhs) const noexcept -> bool {
   return !ConstDeclExprNode::operator==(rhs);
 }
 
-auto ConstDeclExprNode::operator[](int i) const -> const Node& {
+auto ConstDeclExprNode::operator[](unsigned int i) const -> const Node& {
   if (i == 0) {
     return *m_rhs;
   }
-  throw std::out_of_range("No child at given index");
+  throw std::out_of_range{"No child at given index"};
 }
 
 auto ConstDeclExprNode::getChildCount() const -> unsigned int { return 1; }
@@ -42,7 +39,7 @@ auto ConstDeclExprNode::print(std::ostream& out) const -> std::ostream& {
 // Factories.
 auto constDeclExprNode(lex::Token id, lex::Token eq, NodePtr rhs) -> NodePtr {
   if (rhs == nullptr) {
-    throw std::invalid_argument("Rhs cannot be null");
+    throw std::invalid_argument{"Rhs cannot be null"};
   }
   return std::unique_ptr<ConstDeclExprNode>{
       new ConstDeclExprNode{std::move(id), std::move(eq), std::move(rhs)}};

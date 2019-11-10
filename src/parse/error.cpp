@@ -8,7 +8,7 @@ namespace parse {
 
 auto errLexError(lex::Token errToken) -> NodePtr {
   if (errToken.getKind() != lex::TokenKind::Error) {
-    throw std::invalid_argument("Given token is not an error-token");
+    throw std::invalid_argument{"Given token is not an error-token"};
   }
   const auto msg = errToken.getPayload<lex::ErrorTokenPayload>()->getMessage();
   return errorNode(msg, std::move(errToken));
@@ -71,12 +71,12 @@ auto errInvalidStmtExec(
     lex::Token close) -> NodePtr {
 
   std::ostringstream oss;
-  if (commas.size() != (args.empty() ? 0 : args.size() - 1)) {
-    oss << "Incorrect number of comma's in execute statement";
-  } else if (open.getKind() != lex::TokenKind::SepOpenParen) {
+  if (open.getKind() != lex::TokenKind::SepOpenParen) {
     oss << "Expected opening parentheses but got: " << open;
   } else if (close.getKind() != lex::TokenKind::SepCloseParen) {
     oss << "Expected closing parentheses but got: " << close;
+  } else if (commas.size() != (args.empty() ? 0 : args.size() - 1)) {
+    oss << "Incorrect number of comma's in execute statement";
   } else {
     oss << "Invalid execute statement";
   }

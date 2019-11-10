@@ -42,7 +42,7 @@ auto getSpan(const std::vector<NodePtr>& nodes) -> std::optional<input::Span> {
 
 auto nodesEqual(const std::vector<NodePtr>& a, const std::vector<NodePtr>& b) -> bool {
   return a.size() == b.size() &&
-      std::equal(a.begin(), a.end(), a.begin(), [](const NodePtr& l, const NodePtr& r) {
+      std::equal(a.begin(), a.end(), b.begin(), [](const NodePtr& l, const NodePtr& r) {
            return *l == *r;
          });
 }

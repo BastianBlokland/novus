@@ -16,7 +16,7 @@ Diag::Diag(
     m_sourcePos{sourcePos} {};
 
 auto Diag::operator==(const Diag& rhs) const noexcept -> bool {
-  return m_severity == rhs.m_severity && m_sourceId == rhs.m_sourceId &&
+  return m_severity == rhs.m_severity && m_msg == rhs.m_msg && m_sourceId == rhs.m_sourceId &&
       m_sourceSpan == rhs.m_sourceSpan && m_sourcePos == rhs.m_sourcePos;
 }
 
@@ -37,6 +37,7 @@ auto operator<<(std::ostream& out, const Diag& rhs) -> std::ostream& {
              << rhs.m_msg;
 }
 
+// Factories.
 auto warning(const Source& src, std::string msg, input::Span span) -> Diag {
   const auto srcPos = src.getTextPos(span.getStart());
   return Diag{DiagSeverity::Warning, std::move(msg), src.getId(), span, srcPos};

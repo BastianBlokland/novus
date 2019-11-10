@@ -31,3 +31,11 @@ target_compile_options(parsediag PRIVATE -Werror -Wall -Wextra)
 target_link_libraries(parsediag PRIVATE CLI11::CLI11)
 target_include_directories(parsediag PRIVATE ${rang_SOURCE_DIR}/include)
 target_link_libraries(parsediag PRIVATE parse)
+
+# Program diagnostic tool.
+add_executable(progdiag progdiag/main.cpp)
+target_compile_features(progdiag PRIVATE cxx_std_17)
+target_compile_options(progdiag PRIVATE -Werror -Wall -Wextra)
+target_link_libraries(progdiag PRIVATE CLI11::CLI11)
+target_include_directories(progdiag PRIVATE ${rang_SOURCE_DIR}/include)
+target_link_libraries(progdiag PRIVATE frontend)

@@ -2,7 +2,7 @@
 
 namespace parse {
 
-LitExprNode::LitExprNode(lex::Token val) : Node(NodeKind::ExprLit), m_val{std::move(val)} {}
+LitExprNode::LitExprNode(lex::Token val) : m_val{std::move(val)} {}
 
 auto LitExprNode::operator==(const Node& rhs) const noexcept -> bool {
   const auto r = dynamic_cast<const LitExprNode*>(&rhs);
@@ -13,8 +13,8 @@ auto LitExprNode::operator!=(const Node& rhs) const noexcept -> bool {
   return !LitExprNode::operator==(rhs);
 }
 
-auto LitExprNode::operator[](int /*unused*/) const -> const Node& {
-  throw std::out_of_range("No child at given index");
+auto LitExprNode::operator[](unsigned int /*unused*/) const -> const Node& {
+  throw std::out_of_range{"No child at given index"};
 }
 
 auto LitExprNode::getChildCount() const -> unsigned int { return 0; }

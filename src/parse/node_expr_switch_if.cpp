@@ -3,7 +3,6 @@
 namespace parse {
 
 SwitchExprIfNode::SwitchExprIfNode(lex::Token kw, NodePtr cond, lex::Token arrow, NodePtr rhs) :
-    Node(NodeKind::ExprSwitchIf),
     m_kw{std::move(kw)},
     m_cond{std::move(cond)},
     m_arrow{std::move(arrow)},
@@ -18,14 +17,14 @@ auto SwitchExprIfNode::operator!=(const Node& rhs) const noexcept -> bool {
   return !SwitchExprIfNode::operator==(rhs);
 }
 
-auto SwitchExprIfNode::operator[](int i) const -> const Node& {
+auto SwitchExprIfNode::operator[](unsigned int i) const -> const Node& {
   switch (i) {
   case 0:
     return *m_cond;
   case 1:
     return *m_rhs;
   default:
-    throw std::out_of_range("No child at given index");
+    throw std::out_of_range{"No child at given index"};
   }
 }
 
@@ -42,10 +41,10 @@ auto SwitchExprIfNode::print(std::ostream& out) const -> std::ostream& { return 
 // Factories.
 auto switchExprIfNode(lex::Token kw, NodePtr cond, lex::Token arrow, NodePtr rhs) -> NodePtr {
   if (cond == nullptr) {
-    throw std::invalid_argument("Condition expr cannot be null");
+    throw std::invalid_argument{"Condition expr cannot be null"};
   }
   if (rhs == nullptr) {
-    throw std::invalid_argument("Rhs cannot be null");
+    throw std::invalid_argument{"Rhs cannot be null"};
   }
   return std::unique_ptr<SwitchExprIfNode>{
       new SwitchExprIfNode{std::move(kw), std::move(cond), std::move(arrow), std::move(rhs)}};

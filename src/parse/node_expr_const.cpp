@@ -3,7 +3,7 @@
 
 namespace parse {
 
-ConstExprNode::ConstExprNode(lex::Token id) : Node(NodeKind::ExprConst), m_id{std::move(id)} {}
+ConstExprNode::ConstExprNode(lex::Token id) : m_id{std::move(id)} {}
 
 auto ConstExprNode::operator==(const Node& rhs) const noexcept -> bool {
   const auto r = dynamic_cast<const ConstExprNode*>(&rhs);
@@ -14,8 +14,8 @@ auto ConstExprNode::operator!=(const Node& rhs) const noexcept -> bool {
   return !ConstExprNode::operator==(rhs);
 }
 
-auto ConstExprNode::operator[](int /*unused*/) const -> const Node& {
-  throw std::out_of_range("No child at given index");
+auto ConstExprNode::operator[](unsigned int /*unused*/) const -> const Node& {
+  throw std::out_of_range{"No child at given index"};
 }
 
 auto ConstExprNode::getChildCount() const -> unsigned int { return 0; }

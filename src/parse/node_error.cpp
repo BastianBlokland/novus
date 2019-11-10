@@ -6,10 +6,7 @@ namespace parse {
 
 ErrorNode::ErrorNode(
     std::string msg, std::vector<lex::Token> tokens, std::vector<NodePtr> subExprs) :
-    Node(NodeKind::Error),
-    m_msg{std::move(msg)},
-    m_tokens{std::move(tokens)},
-    m_subExprs{std::move(subExprs)} {}
+    m_msg{std::move(msg)}, m_tokens{std::move(tokens)}, m_subExprs{std::move(subExprs)} {}
 
 auto ErrorNode::operator==(const Node& rhs) const noexcept -> bool {
   const auto r = dynamic_cast<const ErrorNode*>(&rhs);
@@ -21,9 +18,9 @@ auto ErrorNode::operator!=(const Node& rhs) const noexcept -> bool {
   return !ErrorNode::operator==(rhs);
 }
 
-auto ErrorNode::operator[](int i) const -> const Node& {
-  if (i < 0 || static_cast<unsigned>(i) >= m_subExprs.size()) {
-    throw std::out_of_range("No child at given index");
+auto ErrorNode::operator[](unsigned int i) const -> const Node& {
+  if (i >= m_subExprs.size()) {
+    throw std::out_of_range{"No child at given index"};
   }
   return *m_subExprs[i];
 }
@@ -51,7 +48,7 @@ auto ErrorNode::print(std::ostream& out) const -> std::ostream& { return out << 
 auto errorNode(std::string msg, std::vector<lex::Token> tokens, std::vector<NodePtr> subExprs)
     -> NodePtr {
   if (anyNodeNull(subExprs)) {
-    throw std::invalid_argument("subExprs cannot contain a nullptr");
+    throw std::invalid_argument{"subExprs cannot contain a nullptr"};
   }
   return std::unique_ptr<ErrorNode>{
       new ErrorNode{std::move(msg), std::move(tokens), std::move(subExprs)}};

@@ -2,6 +2,8 @@
 #include "lex/lexer.hpp"
 #include "rang.hpp"
 
+namespace lexdiag {
+
 using high_resolution_clock = std::chrono::high_resolution_clock;
 using duration              = std::chrono::duration<double>;
 
@@ -11,7 +13,7 @@ auto getBgColor(const lex::Token& token) -> rang::bg;
 auto operator<<(std::ostream& out, const duration& rhs) -> std::ostream&;
 
 template <typename InputItr>
-auto run(InputItr inputBegin, const InputItr inputEnd, const bool printTokens) {
+auto run(InputItr inputBegin, const InputItr inputEnd, const bool outputTokens) {
   const auto columnWidth = 20;
   const auto width       = 80;
 
@@ -30,7 +32,7 @@ auto run(InputItr inputBegin, const InputItr inputEnd, const bool printTokens) {
             << std::string(width, '-') << '\n'
             << s::reset;
 
-  if (printTokens) {
+  if (outputTokens) {
     for (const auto& token : tokens) {
       std::cout << s::bold << "* " << getFgColor(token) << getBgColor(token)
                 << std::setw(columnWidth) << std::left << token.getKind();
@@ -50,41 +52,6 @@ auto run(InputItr inputBegin, const InputItr inputEnd, const bool printTokens) {
     }
     std::cout << s::dim << std::string(width, '-') << '\n';
   }
-}
-
-auto main(int argc, char** argv) -> int {
-  auto app = CLI::App{"Lexer diagnostic tool"};
-  app.require_subcommand(1);
-
-  auto printTokens = true;
-  app.add_flag("!--skip-tokens", printTokens, "Skip printing the tokens")->capture_default_str();
-
-  // Lex input characters.
-  std::string charsInput;
-  auto lexCmd = app.add_subcommand("lex", "Lex the provided characters")->callback([&]() {
-    run(charsInput.begin(), charsInput.end(), printTokens);
-  });
-  lexCmd->add_option("input", charsInput, "Input characters to lex")->required();
-
-  // Lex input file.
-  std::string filePath;
-  auto lexFileCmd = app.add_subcommand("lexfile", "Lex all characters in a file")->callback([&]() {
-    std::ifstream fs{filePath};
-    run(std::istreambuf_iterator<char>{fs}, std::istreambuf_iterator<char>{}, printTokens);
-  });
-  lexFileCmd->add_option("file", filePath, "Path to file to lex")
-      ->check(CLI::ExistingFile)
-      ->required();
-
-  // Parse arguments and run subcommands.
-  std::atexit([]() { std::cout << rang::style::reset; });
-  try {
-    app.parse(argc, argv);
-  } catch (const CLI::ParseError& e) {
-    std::cout << (e.get_exit_code() == 0 ? rang::fg::green : rang::fg::red);
-    return app.exit(e);
-  }
-  return 0;
 }
 
 auto getFgColor(const lex::Token& token) -> rang::fg {
@@ -137,4 +104,41 @@ auto operator<<(std::ostream& out, const duration& rhs) -> std::ostream& {
     out << s << " s";
   }
   return out;
+}
+
+} // namespace lexdiag
+
+auto main(int argc, char** argv) -> int {
+  auto app = CLI::App{"Lexer diagnostic tool"};
+  app.require_subcommand(1);
+
+  auto printOutput = true;
+  app.add_flag("!--skip-output", printOutput, "Skip printing the tokens")->capture_default_str();
+
+  // Lex input characters.
+  std::string charsInput;
+  auto lexCmd = app.add_subcommand("lex", "Lex the provided characters")->callback([&]() {
+    lexdiag::run(charsInput.begin(), charsInput.end(), printOutput);
+  });
+  lexCmd->add_option("input", charsInput, "Input characters to lex")->required();
+
+  // Lex input file.
+  std::string filePath;
+  auto lexFileCmd = app.add_subcommand("lexfile", "Lex all characters in a file")->callback([&]() {
+    std::ifstream fs{filePath};
+    lexdiag::run(std::istreambuf_iterator<char>{fs}, std::istreambuf_iterator<char>{}, printOutput);
+  });
+  lexFileCmd->add_option("file", filePath, "Path to file to lex")
+      ->check(CLI::ExistingFile)
+      ->required();
+
+  // Parse arguments and run subcommands.
+  std::atexit([]() { std::cout << rang::style::reset; });
+  try {
+    app.parse(argc, argv);
+  } catch (const CLI::ParseError& e) {
+    std::cout << (e.get_exit_code() == 0 ? rang::fg::green : rang::fg::red);
+    return app.exit(e);
+  }
+  return 0;
 }

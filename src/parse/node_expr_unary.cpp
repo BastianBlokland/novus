@@ -3,7 +3,7 @@
 namespace parse {
 
 UnaryExprNode::UnaryExprNode(lex::Token op, NodePtr rhs) :
-    Node(NodeKind::ExprUnaryOp), m_op{std::move(op)}, m_rhs{std::move(rhs)} {}
+    m_op{std::move(op)}, m_rhs{std::move(rhs)} {}
 
 auto UnaryExprNode::operator==(const Node& rhs) const noexcept -> bool {
   const auto r = dynamic_cast<const UnaryExprNode*>(&rhs);
@@ -14,11 +14,11 @@ auto UnaryExprNode::operator!=(const Node& rhs) const noexcept -> bool {
   return !UnaryExprNode::operator==(rhs);
 }
 
-auto UnaryExprNode::operator[](int i) const -> const Node& {
+auto UnaryExprNode::operator[](unsigned int i) const -> const Node& {
   if (i == 0) {
     return *m_rhs;
   }
-  throw std::out_of_range("No child at given index");
+  throw std::out_of_range{"No child at given index"};
 }
 
 auto UnaryExprNode::getChildCount() const -> unsigned int { return 1; }
@@ -36,7 +36,7 @@ auto UnaryExprNode::print(std::ostream& out) const -> std::ostream& { return out
 // Factories.
 auto unaryExprNode(lex::Token op, NodePtr rhs) -> NodePtr {
   if (rhs == nullptr) {
-    throw std::invalid_argument("Rhs cannot be null");
+    throw std::invalid_argument{"Rhs cannot be null"};
   }
   return std::unique_ptr<UnaryExprNode>{new UnaryExprNode{std::move(op), std::move(rhs)}};
 }
