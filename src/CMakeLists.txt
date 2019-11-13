@@ -116,3 +116,16 @@ target_link_libraries(frontend PUBLIC prog)
 target_compile_options(frontend PRIVATE -Werror -Wall -Wextra)
 target_include_directories(frontend PUBLIC ../include)
 target_include_directories(frontend PRIVATE frontend)
+
+# Virtual Machine.
+add_library(vm STATIC
+  vm/internal/call_stack.cpp
+  vm/internal/eval_stack.cpp
+  vm/internal/exec_scope.cpp
+  vm/internal/value.cpp
+  vm/program.cpp
+  vm/executor.cpp)
+target_compile_features(vm PUBLIC cxx_std_17)
+target_compile_options(vm PRIVATE -Werror -Wall -Wextra)
+target_include_directories(vm PUBLIC ../include)
+target_include_directories(vm PRIVATE vm)
