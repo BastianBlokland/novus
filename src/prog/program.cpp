@@ -1,9 +1,78 @@
 #include "prog/program.hpp"
-#include "prog/intrinsics.hpp"
+#include "prog/operator.hpp"
+#include "prog/sym/action_kind.hpp"
 
 namespace prog {
 
-Program::Program() { registerIntrinsics(&m_typeDecls, &m_funcDecls, &m_actionDecls); }
+Program::Program() {
+  // Register build-in types.
+  const auto intT  = m_typeDecls.registerType(sym::TypeKind::Int, "int");
+  const auto boolT = m_typeDecls.registerType(sym::TypeKind::Bool, "bool");
+
+  // Register build-in unary int operators.
+  m_funcDecls.registerFunc(
+      sym::FuncKind::NegateInt, getFuncName(Operator::Minus), sym::FuncSig{sym::Input{intT}, intT});
+
+  // Register build-in binary int operators.
+  m_funcDecls.registerFunc(
+      sym::FuncKind::AddInt,
+      getFuncName(Operator::Plus),
+      sym::FuncSig{sym::Input{intT, intT}, intT});
+  m_funcDecls.registerFunc(
+      sym::FuncKind::SubInt,
+      getFuncName(Operator::Minus),
+      sym::FuncSig{sym::Input{intT, intT}, intT});
+  m_funcDecls.registerFunc(
+      sym::FuncKind::MulInt,
+      getFuncName(Operator::Star),
+      sym::FuncSig{sym::Input{intT, intT}, intT});
+  m_funcDecls.registerFunc(
+      sym::FuncKind::DivInt,
+      getFuncName(Operator::Slash),
+      sym::FuncSig{sym::Input{intT, intT}, intT});
+  m_funcDecls.registerFunc(
+      sym::FuncKind::CheckEqInt,
+      getFuncName(Operator::EqEq),
+      sym::FuncSig{sym::Input{intT, intT}, boolT});
+  m_funcDecls.registerFunc(
+      sym::FuncKind::CheckNEqInt,
+      getFuncName(Operator::BangEq),
+      sym::FuncSig{sym::Input{intT, intT}, boolT});
+  m_funcDecls.registerFunc(
+      sym::FuncKind::CheckLessInt,
+      getFuncName(Operator::Less),
+      sym::FuncSig{sym::Input{intT, intT}, boolT});
+  m_funcDecls.registerFunc(
+      sym::FuncKind::CheckLessEqInt,
+      getFuncName(Operator::LessEq),
+      sym::FuncSig{sym::Input{intT, intT}, boolT});
+  m_funcDecls.registerFunc(
+      sym::FuncKind::CheckGreaterInt,
+      getFuncName(Operator::Gt),
+      sym::FuncSig{sym::Input{intT, intT}, boolT});
+  m_funcDecls.registerFunc(
+      sym::FuncKind::CheckGreaterEqInt,
+      getFuncName(Operator::GtEq),
+      sym::FuncSig{sym::Input{intT, intT}, boolT});
+
+  // Register build-in unary bool operators.
+  m_funcDecls.registerFunc(
+      sym::FuncKind::InvBool, getFuncName(Operator::Bang), sym::FuncSig{sym::Input{boolT}, boolT});
+
+  // Register build-in binary bool operators.
+  m_funcDecls.registerFunc(
+      sym::FuncKind::CheckEqBool,
+      getFuncName(Operator::EqEq),
+      sym::FuncSig{sym::Input{boolT, boolT}, boolT});
+  m_funcDecls.registerFunc(
+      sym::FuncKind::CheckNEqBool,
+      getFuncName(Operator::BangEq),
+      sym::FuncSig{sym::Input{boolT, boolT}, boolT});
+
+  // Register build-in actions.
+  m_actionDecls.registerAction(sym::ActionKind::PrintInt, "print", sym::Input{intT});
+  m_actionDecls.registerAction(sym::ActionKind::PrintBool, "print", sym::Input{boolT});
+}
 
 auto Program::beginTypeDecls() const -> typeDeclIterator { return m_typeDecls.begin(); }
 
@@ -58,7 +127,7 @@ auto Program::getActionDecl(sym::ActionId id) const -> const sym::ActionDecl& {
 auto Program::getFuncDef(sym::FuncId id) const -> const sym::FuncDef& { return m_funcDefs[id]; }
 
 auto Program::declareUserFunc(std::string name, sym::FuncSig sig) -> void {
-  m_funcDecls.registerUser(std::move(name), std::move(sig));
+  m_funcDecls.registerFunc(sym::FuncKind::User, std::move(name), std::move(sig));
 }
 
 auto Program::defineUserFunc(sym::FuncId id, sym::ConstDeclTable consts, expr::NodePtr expr)

@@ -22,7 +22,7 @@ auto ActionDecl::getName() const -> const std::string& { return m_name; }
 auto ActionDecl::getInput() const -> const Input& { return m_input; }
 
 auto operator<<(std::ostream& out, const ActionDecl& rhs) -> std::ostream& {
-  return out << '[' << rhs.m_id << "]-" << rhs.m_kind << "-'" << rhs.m_name << "'-" << rhs.m_input;
+  return out << '[' << rhs.m_id << "]-'" << rhs.m_name << "'-" << rhs.m_input;
 }
 
 } // namespace prog::sym

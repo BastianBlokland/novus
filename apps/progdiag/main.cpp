@@ -59,13 +59,8 @@ auto printTypeDecls(const prog::Program& prog) -> void {
     idStr << typeDecl.getId();
 
     std::cout << " * " << std::setw(idColWidth) << std::left << idStr.str();
-
-    switch (typeDecl.getKind()) {
-    case prog::sym::TypeKind::Intrinsic:
-      std::cout << rang::fg::yellow;
-      break;
-    }
-    std::cout << "  " << rang::style::bold << typeDecl.getName() << rang::style::reset << '\n';
+    std::cout << "  " << rang::fg::yellow << rang::style::bold << typeDecl.getName()
+              << rang::style::reset << '\n';
   }
 }
 
@@ -83,11 +78,11 @@ auto printFuncDecls(const prog::Program& prog) -> void {
     std::cout << " * " << std::setw(idColWidth) << std::left << idStr.str();
 
     switch (funcDecl.getKind()) {
-    case prog::sym::FuncKind::Intrinsic:
-      std::cout << rang::fg::yellow;
-      break;
     case prog::sym::FuncKind::User:
       std::cout << rang::fg::green;
+      break;
+    default:
+      std::cout << rang::fg::yellow;
       break;
     }
     std::cout << "  " << rang::style::bold << std::setw(nameColWidth) << std::left
@@ -111,15 +106,9 @@ auto printActionDecls(const prog::Program& prog) -> void {
     idStr << actionDecl.getId();
 
     std::cout << " * " << std::setw(idColWidth) << std::left << idStr.str();
-
-    switch (actionDecl.getKind()) {
-    case prog::sym::ActionKind::Intrinsic:
-      std::cout << rang::fg::yellow;
-      break;
-    }
-    std::cout << "  " << rang::style::bold << std::setw(nameColWidth) << std::left
-              << actionDecl.getName() << rang::style::reset << '(' << actionDecl.getInput()
-              << ")\n";
+    std::cout << "  " << rang::fg::yellow << rang::style::bold << std::setw(nameColWidth)
+              << std::left << actionDecl.getName() << rang::style::reset << '('
+              << actionDecl.getInput() << ")\n";
   }
 }
 

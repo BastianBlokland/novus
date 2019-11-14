@@ -29,7 +29,7 @@ public:
   [[nodiscard]] auto lookup(const std::string& name, const Input& input) const
       -> std::optional<ActionId>;
 
-  auto registerIntrinsic(std::string name, Input input) -> ActionId;
+  auto registerAction(ActionKind kind, std::string name, Input input) -> ActionId;
 
 private:
   std::vector<ActionDecl> m_actions;

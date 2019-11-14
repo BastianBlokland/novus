@@ -68,7 +68,6 @@ add_library(prog STATIC
   prog/sym/action_decl_table.cpp
   prog/sym/action_decl.cpp
   prog/sym/action_id.cpp
-  prog/sym/action_kind.cpp
   prog/sym/const_decl_table.cpp
   prog/sym/const_decl.cpp
   prog/sym/const_id.cpp
@@ -80,15 +79,12 @@ add_library(prog STATIC
   prog/sym/func_def.cpp
   prog/sym/func_id_hasher.cpp
   prog/sym/func_id.cpp
-  prog/sym/func_kind.cpp
   prog/sym/func_sig.cpp
   prog/sym/input.cpp
   prog/sym/type_decl_table.cpp
   prog/sym/type_decl.cpp
   prog/sym/type_id.cpp
-  prog/sym/type_kind.cpp
 
-  prog/intrinsics.cpp
   prog/operator.cpp
   prog/program.cpp)
 target_compile_features(prog PUBLIC cxx_std_17)
