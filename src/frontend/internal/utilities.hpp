@@ -32,10 +32,10 @@ inline auto getOperator(const lex::Token& token) -> std::optional<prog::Operator
     return prog::Operator::Bang;
   case lex::TokenKind::OpBangEq:
     return prog::Operator::BangEq;
-  case lex::TokenKind::OpLess:
-    return prog::Operator::Less;
-  case lex::TokenKind::OpLessEq:
-    return prog::Operator::LessEq;
+  case lex::TokenKind::OpLe:
+    return prog::Operator::Le;
+  case lex::TokenKind::OpLeEq:
+    return prog::Operator::LeEq;
   case lex::TokenKind::OpGt:
     return prog::Operator::Gt;
   case lex::TokenKind::OpGtEq:
@@ -65,9 +65,9 @@ inline auto getText(const prog::Operator& op) -> std::string {
     return "!";
   case prog::Operator::BangEq:
     return "!=";
-  case prog::Operator::Less:
+  case prog::Operator::Le:
     return "<";
-  case prog::Operator::LessEq:
+  case prog::Operator::LeEq:
     return "<=";
   case prog::Operator::Gt:
     return ">";

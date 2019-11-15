@@ -5,19 +5,29 @@ namespace prog::sym {
 
 auto ConstDeclTable::operator[](ConstId id) const -> const ConstDecl& {
   const auto index = id.m_id;
-  assert(index < this->m_types.size());
-  return m_types[index];
+  assert(index < this->m_consts.size());
+  return m_consts[index];
 }
 
-auto ConstDeclTable::begin() const -> iterator { return m_types.begin(); }
+auto ConstDeclTable::begin() const -> iterator { return m_consts.begin(); }
 
-auto ConstDeclTable::end() const -> iterator { return m_types.end(); }
+auto ConstDeclTable::end() const -> iterator { return m_consts.end(); }
 
 auto ConstDeclTable::getAll() const -> std::vector<ConstId> {
   auto result = std::vector<ConstId>{};
-  result.reserve(m_types.size());
-  for (const auto& c : m_types) {
+  result.reserve(m_consts.size());
+  for (const auto& c : m_consts) {
     result.push_back(c.m_id);
+  }
+  return result;
+}
+
+auto ConstDeclTable::getInputs() const -> std::vector<ConstId> {
+  auto result = std::vector<ConstId>{};
+  for (const auto& c : m_consts) {
+    if (c.m_kind == ConstKind::Input) {
+      result.push_back(c.m_id);
+    }
   }
   return result;
 }
@@ -43,9 +53,9 @@ auto ConstDeclTable::registerConst(ConstKind kind, std::string name, TypeId type
     throw std::invalid_argument{"Name has to contain aleast 1 char"};
   }
 
-  auto id = ConstId{static_cast<unsigned int>(m_types.size())};
+  auto id = ConstId{static_cast<unsigned int>(m_consts.size())};
   if (m_lookup.insert({name, id}).second) {
-    m_types.push_back(ConstDecl{id, kind, std::move(name), type});
+    m_consts.push_back(ConstDecl{id, kind, std::move(name), type});
     return id;
   }
   throw std::logic_error{"Const with an identical name has already been registered"};

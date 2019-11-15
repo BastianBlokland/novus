@@ -23,9 +23,9 @@ auto getFuncName(Operator op) -> std::string {
     return "__op_bang";
   case Operator::BangEq:
     return "__op_bangeq";
-  case Operator::Less:
+  case Operator::Le:
     return "__op_less";
-  case Operator::LessEq:
+  case Operator::LeEq:
     return "__op_lesseq";
   case Operator::Gt:
     return "__op_gt";

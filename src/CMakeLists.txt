@@ -113,14 +113,30 @@ target_compile_options(frontend PRIVATE -Werror -Wall -Wextra)
 target_include_directories(frontend PUBLIC ../include)
 target_include_directories(frontend PRIVATE frontend)
 
+# Backend (assembly generator).
+add_library(backend STATIC
+  backend/dasm/disassembler.cpp
+  backend/dasm/instruction.cpp
+  backend/internal/gen_expr.cpp
+  backend/internal/utilities.cpp
+  backend/builder.cpp
+  backend/generator.cpp)
+target_compile_features(backend PUBLIC cxx_std_17)
+target_link_libraries(backend PUBLIC prog)
+target_link_libraries(backend PUBLIC vm)
+target_compile_options(backend PRIVATE -Werror -Wall -Wextra)
+target_include_directories(backend PUBLIC ../include)
+target_include_directories(backend PRIVATE backend)
+
 # Virtual Machine.
 add_library(vm STATIC
   vm/internal/call_stack.cpp
   vm/internal/eval_stack.cpp
   vm/internal/exec_scope.cpp
   vm/internal/value.cpp
-  vm/program.cpp
-  vm/executor.cpp)
+  vm/assembly.cpp
+  vm/executor.cpp
+  vm/opcode.cpp)
 target_compile_features(vm PUBLIC cxx_std_17)
 target_compile_options(vm PRIVATE -Werror -Wall -Wextra)
 target_include_directories(vm PUBLIC ../include)

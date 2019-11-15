@@ -9,6 +9,8 @@ EvalStack::EvalStack(unsigned int capacity) :
 
 EvalStack::~EvalStack() { delete[] m_stack; }
 
+auto EvalStack::getSize() const noexcept -> unsigned int { return m_stackTop - m_stack; }
+
 auto EvalStack::push(const Value value) -> void {
   // TODO(bastian): Reduce the cost by checking if enough stack-space is left before running a
   // function instead of checking on every push.

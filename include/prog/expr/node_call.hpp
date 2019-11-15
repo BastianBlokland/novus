@@ -18,6 +18,8 @@ public:
   [[nodiscard]] auto getChildCount() const -> unsigned int override;
   [[nodiscard]] auto getType() const noexcept -> sym::TypeId override;
 
+  [[nodiscard]] auto getFunc() const noexcept -> sym::FuncId;
+
   auto accept(NodeVisitor* visitor) const -> void override;
 
 private:

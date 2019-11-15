@@ -21,6 +21,8 @@ auto ConstExprNode::getChildCount() const -> unsigned int { return 0; }
 
 auto ConstExprNode::getType() const noexcept -> sym::TypeId { return m_type; }
 
+auto ConstExprNode::getId() const noexcept -> sym::ConstId { return m_id; }
+
 auto ConstExprNode::accept(NodeVisitor* visitor) const -> void { visitor->visit(*this); }
 
 auto ConstExprNode::print(std::ostream& out) const -> std::ostream& { return out << m_id; }

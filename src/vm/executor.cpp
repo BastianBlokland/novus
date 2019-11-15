@@ -1,7 +1,7 @@
 #include "vm/executor.hpp"
 #include "internal/call_stack.hpp"
 #include "internal/eval_stack.hpp"
-#include "vm/exceptions/invalid_program.hpp"
+#include "vm/exceptions/invalid_assembly.hpp"
 #include "vm/opcode.hpp"
 #include <iostream>
 
@@ -9,10 +9,10 @@ namespace vm {
 
 static const int MaxEvalStackSize = 1024;
 
-static auto execute(const Program& program, uint32_t entryPoint) {
+static auto execute(const Assembly& assembly, uint32_t entryPoint) {
   auto evalStack = internal::EvalStack{MaxEvalStackSize};
   auto callStack = internal::CallStack{};
-  callStack.push(program, entryPoint);
+  callStack.push(assembly, entryPoint);
 
   while (true) {
     auto scope = callStack.getTop();
@@ -69,7 +69,7 @@ static auto execute(const Program& program, uint32_t entryPoint) {
       auto a = evalStack.pop().getInt();
       evalStack.push(internal::intValue(a > b ? 1 : 0));
     } break;
-    case OpCode::CheckLessInt: {
+    case OpCode::CheckLeInt: {
       auto b = evalStack.pop().getInt();
       auto a = evalStack.pop().getInt();
       evalStack.push(internal::intValue(a < b ? 1 : 0));
@@ -77,11 +77,11 @@ static auto execute(const Program& program, uint32_t entryPoint) {
 
     case OpCode::PrintInt: {
       auto a = evalStack.pop().getInt();
-      std::cout << a;
+      std::cout << a << '\n';
     } break;
     case OpCode::PrintLogic: {
       auto a = evalStack.pop().getInt();
-      std::cout << (a == 0 ? "false" : "true");
+      std::cout << (a == 0 ? "false\n" : "true\n");
     } break;
 
     case OpCode::Jump: {
@@ -98,34 +98,25 @@ static auto execute(const Program& program, uint32_t entryPoint) {
 
     case OpCode::Call: {
       auto ipOffset = scope->readUInt32();
-      callStack.push(program, ipOffset);
+      callStack.push(assembly, ipOffset);
     } break;
     case OpCode::Ret: {
       if (!callStack.pop()) {
+        assert(evalStack.getSize() == 0);
         return; // Execution finishes after we returned from the last scope.
       }
     } break;
 
-    case OpCode::Dup: {
-      evalStack.push(evalStack.peek());
-    } break;
-    case OpCode::Pop: {
-      evalStack.pop();
-    } break;
-
-    case OpCode::Nop: {
-      break;
-    }
     case OpCode::Fail:
     default:
-      throw exceptions::InvalidProgram{};
+      throw exceptions::InvalidAssembly{};
     }
   }
 }
 
-auto execute(const Program& program) -> void {
-  for (auto itr = program.beginEntryPoints(); itr != program.endEntryPoints(); ++itr) {
-    execute(program, *itr);
+auto execute(const Assembly& assembly) -> void {
+  for (auto itr = assembly.beginEntryPoints(); itr != assembly.endEntryPoints(); ++itr) {
+    execute(assembly, *itr);
   }
 }
 

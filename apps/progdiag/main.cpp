@@ -258,22 +258,24 @@ auto main(int argc, char** argv) -> int {
 
   // Analyze input characters.
   std::string charsInput;
-  auto lexCmd = app.add_subcommand("analyze", "Analyze the provided characters")->callback([&]() {
-    progdiag::run("inline", charsInput.begin(), charsInput.end(), printOutput);
-  });
-  lexCmd->add_option("input", charsInput, "Input characters to analyze")->required();
+  auto analyzeCmd =
+      app.add_subcommand("analyze", "Analyze the provided characters")->callback([&]() {
+        progdiag::run("inline", charsInput.begin(), charsInput.end(), printOutput);
+      });
+  analyzeCmd->add_option("input", charsInput, "Input characters to analyze")->required();
 
   // Analyze input file.
   std::string filePath;
-  auto lexFileCmd = app.add_subcommand("analyzefile", "Analyze the provided file")->callback([&]() {
-    std::ifstream fs{filePath};
-    progdiag::run(
-        filePath,
-        std::istreambuf_iterator<char>{fs},
-        std::istreambuf_iterator<char>{},
-        printOutput);
-  });
-  lexFileCmd->add_option("file", filePath, "Path to file to analyze")
+  auto analyzeFileCmd =
+      app.add_subcommand("analyzefile", "Analyze the provided file")->callback([&]() {
+        std::ifstream fs{filePath};
+        progdiag::run(
+            filePath,
+            std::istreambuf_iterator<char>{fs},
+            std::istreambuf_iterator<char>{},
+            printOutput);
+      });
+  analyzeFileCmd->add_option("file", filePath, "Path to file to analyze")
       ->check(CLI::ExistingFile)
       ->required();
 

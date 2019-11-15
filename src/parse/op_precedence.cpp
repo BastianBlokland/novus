@@ -21,8 +21,8 @@ auto getBinaryOpPrecedence(const lex::Token& token) -> int {
   case lex::TokenKind::OpPlus:
   case lex::TokenKind::OpMinus:
     return additivePrecedence;
-  case lex::TokenKind::OpLess:
-  case lex::TokenKind::OpLessEq:
+  case lex::TokenKind::OpLe:
+  case lex::TokenKind::OpLeEq:
   case lex::TokenKind::OpGt:
   case lex::TokenKind::OpGtEq:
     return relationalPrecedence;

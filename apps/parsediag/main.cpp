@@ -106,20 +106,20 @@ auto main(int argc, char** argv) -> int {
 
   // Parse input characters.
   std::string charsInput;
-  auto lexCmd = app.add_subcommand("parse", "Parse the provided characters")->callback([&]() {
+  auto parseCmd = app.add_subcommand("parse", "Parse the provided characters")->callback([&]() {
     parsediag::run(charsInput.begin(), charsInput.end(), printOutput);
   });
-  lexCmd->add_option("input", charsInput, "Input characters to parse")->required();
+  parseCmd->add_option("input", charsInput, "Input characters to parse")->required();
 
   // Parse input file.
   std::string filePath;
-  auto lexFileCmd =
+  auto parseFileCmd =
       app.add_subcommand("parsefile", "Parse all characters in a file")->callback([&]() {
         std::ifstream fs{filePath};
         parsediag::run(
             std::istreambuf_iterator<char>{fs}, std::istreambuf_iterator<char>{}, printOutput);
       });
-  lexFileCmd->add_option("file", filePath, "Path to file to parse")
+  parseFileCmd->add_option("file", filePath, "Path to file to parse")
       ->check(CLI::ExistingFile)
       ->required();
 

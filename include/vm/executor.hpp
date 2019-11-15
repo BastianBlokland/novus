@@ -1,8 +1,8 @@
 #pragma once
-#include "vm/program.hpp"
+#include "vm/assembly.hpp"
 
 namespace vm {
 
-auto execute(const Program& program) -> void;
+auto execute(const Assembly& assembly) -> void;
 
 } // namespace vm

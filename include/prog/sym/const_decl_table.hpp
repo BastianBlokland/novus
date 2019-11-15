@@ -25,6 +25,7 @@ public:
   [[nodiscard]] auto end() const -> iterator;
 
   [[nodiscard]] auto getAll() const -> std::vector<ConstId>;
+  [[nodiscard]] auto getInputs() const -> std::vector<ConstId>;
 
   [[nodiscard]] auto lookup(const std::string& name) const -> std::optional<ConstId>;
 
@@ -32,7 +33,7 @@ public:
   auto registerLocal(std::string name, TypeId type) -> ConstId;
 
 private:
-  std::vector<ConstDecl> m_types;
+  std::vector<ConstDecl> m_consts;
   std::unordered_map<std::string, ConstId> m_lookup;
 
   auto registerConst(ConstKind kind, std::string name, TypeId type) -> ConstId;

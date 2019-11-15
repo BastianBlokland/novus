@@ -39,19 +39,19 @@ Program::Program() {
       getFuncName(Operator::BangEq),
       sym::FuncSig{sym::Input{intT, intT}, boolT});
   m_funcDecls.registerFunc(
-      sym::FuncKind::CheckLessInt,
-      getFuncName(Operator::Less),
+      sym::FuncKind::CheckLeInt,
+      getFuncName(Operator::Le),
       sym::FuncSig{sym::Input{intT, intT}, boolT});
   m_funcDecls.registerFunc(
-      sym::FuncKind::CheckLessEqInt,
-      getFuncName(Operator::LessEq),
+      sym::FuncKind::CheckLeEqInt,
+      getFuncName(Operator::LeEq),
       sym::FuncSig{sym::Input{intT, intT}, boolT});
   m_funcDecls.registerFunc(
-      sym::FuncKind::CheckGreaterInt,
+      sym::FuncKind::CheckGtInt,
       getFuncName(Operator::Gt),
       sym::FuncSig{sym::Input{intT, intT}, boolT});
   m_funcDecls.registerFunc(
-      sym::FuncKind::CheckGreaterEqInt,
+      sym::FuncKind::CheckGtEqInt,
       getFuncName(Operator::GtEq),
       sym::FuncSig{sym::Input{intT, intT}, boolT});
 

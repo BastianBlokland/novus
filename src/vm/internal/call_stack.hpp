@@ -9,14 +9,14 @@ public:
   CallStack()                         = default;
   CallStack(const CallStack& rhs)     = delete;
   CallStack(CallStack&& rhs) noexcept = delete;
-  ~CallStack();
+  ~CallStack()                        = default;
 
   auto operator=(const CallStack& rhs) -> CallStack& = delete;
   auto operator=(CallStack&& rhs) noexcept -> CallStack& = delete;
 
   [[nodiscard]] auto getTop() -> ExecScope*;
 
-  auto push(const Program& program, uint32_t ipOffset) -> void;
+  auto push(const Assembly& assembly, uint32_t ipOffset) -> void;
   auto pop() -> bool;
 
 private:

@@ -3,6 +3,6 @@
 
 namespace vm::exceptions {
 
-class InvalidProgram final : public std::exception {};
+class InvalidAssembly final : public std::exception {};
 
 } // namespace vm::exceptions

@@ -1,5 +1,6 @@
 #pragma once
 #include <cstdint>
+#include <iostream>
 
 namespace vm {
 
@@ -16,9 +17,9 @@ enum class OpCode : uint8_t {
   NegInt      = 54,
   LogicInvInt = 55,
 
-  CheckEqInt   = 60,
-  CheckGtInt   = 61,
-  CheckLessInt = 62,
+  CheckEqInt = 60,
+  CheckGtInt = 61,
+  CheckLeInt = 62,
 
   PrintInt   = 100,
   PrintLogic = 101,
@@ -29,11 +30,9 @@ enum class OpCode : uint8_t {
   Call = 230,
   Ret  = 231,
 
-  Dup = 240,
-  Pop = 241,
-
-  Nop  = 254,
   Fail = 255,
 };
+
+auto operator<<(std::ostream& out, const OpCode& rhs) -> std::ostream&;
 
 } // namespace vm
