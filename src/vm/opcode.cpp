@@ -35,13 +35,13 @@ auto operator<<(std::ostream& out, const OpCode& rhs) -> std::ostream& {
     break;
 
   case OpCode::CheckEqInt:
-    out << "checkeq-int";
+    out << "check-eq-int";
     break;
   case OpCode::CheckGtInt:
-    out << "checkgt-int";
+    out << "check-gt-int";
     break;
   case OpCode::CheckLeInt:
-    out << "checkle-int";
+    out << "check-le-int";
     break;
 
   case OpCode::PrintInt:
@@ -55,7 +55,7 @@ auto operator<<(std::ostream& out, const OpCode& rhs) -> std::ostream& {
     out << "jump";
     break;
   case OpCode::JumpIf:
-    out << "jumpif";
+    out << "jump-if";
     break;
 
   case OpCode::Call:

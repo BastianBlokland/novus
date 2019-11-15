@@ -43,7 +43,9 @@ static auto execute(const Assembly& assembly, uint32_t entryPoint) {
       evalStack.push(internal::intValue(a - b));
     } break;
     case OpCode::MulInt: {
-      evalStack.push(internal::intValue(evalStack.pop().getInt() * evalStack.pop().getInt()));
+      auto b = evalStack.pop().getInt();
+      auto a = evalStack.pop().getInt();
+      evalStack.push(internal::intValue(a * b));
     } break;
     case OpCode::DivInt: {
       auto b = evalStack.pop().getInt();
