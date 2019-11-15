@@ -77,17 +77,8 @@ auto run(
   // Print diagnostics.
   for (auto diagItr = frontendOutput.beginDiags(); diagItr != frontendOutput.endDiags();
        ++diagItr) {
-    const auto& diag = *diagItr;
-    switch (diag.getSeverity()) {
-    case frontend::DiagSeverity::Warning:
-      std::cout << rang::style::bold << rang::bg::yellow << diag << rang::bg::reset << '\n'
-                << rang::style::reset;
-      break;
-    case frontend::DiagSeverity::Error:
-      std::cout << rang::style::bold << rang::bg::red << diag << rang::bg::reset << '\n'
-                << rang::style::reset;
-      break;
-    }
+    std::cout << rang::style::bold << rang::bg::red << *diagItr << rang::bg::reset << '\n'
+              << rang::style::reset;
   }
 
   if (assembly && outputProgram) {

@@ -2,6 +2,19 @@
   "version": "0.2.0",
   "configurations": [
     {
+      "name": "eval",
+      "preLaunchTask": "build debug",
+      "type": "lldb",
+      "request": "launch",
+      "program": "${workspaceFolder}/bin/eval",
+      "args": [
+        "print(1 + 1)"
+      ],
+      "cwd": "${workspaceFolder}",
+      "terminal": "integrated",
+      "stopOnEntry": false
+    },
+    {
       "name": "lexdiag",
       "preLaunchTask": "build debug",
       "type": "lldb",

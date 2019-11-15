@@ -16,6 +16,16 @@ FetchContent_Declare(
   GIT_SHALLOW TRUE)
 FetchContent_MakeAvailable(rang)
 
+# Evaluator.
+add_executable(eval eval/main.cpp)
+target_compile_features(eval PRIVATE cxx_std_17)
+target_compile_options(eval PRIVATE -Werror -Wall -Wextra)
+target_link_libraries(eval PRIVATE CLI11::CLI11)
+target_include_directories(eval PRIVATE ${rang_SOURCE_DIR}/include)
+target_link_libraries(eval PRIVATE frontend)
+target_link_libraries(eval PRIVATE backend)
+target_link_libraries(eval PRIVATE vm)
+
 # Lexer diagnostic tool.
 add_executable(lexdiag lexdiag/main.cpp)
 target_compile_features(lexdiag PRIVATE cxx_std_17)
