@@ -1,6 +1,7 @@
 #include "vm/executor.hpp"
 #include "internal/call_stack.hpp"
 #include "internal/eval_stack.hpp"
+#include "vm/exceptions/div_by_zero.hpp"
 #include "vm/exceptions/invalid_assembly.hpp"
 #include "vm/exceptions/stack_not_empty.hpp"
 #include "vm/opcode.hpp"
@@ -51,6 +52,9 @@ static auto execute(const Assembly& assembly, io::Interface* interface, uint32_t
     case OpCode::DivInt: {
       auto b = evalStack.pop().getInt();
       auto a = evalStack.pop().getInt();
+      if (b == 0) {
+        throw exceptions::DivByZero{};
+      }
       evalStack.push(internal::intValue(a / b));
     } break;
     case OpCode::NegInt: {

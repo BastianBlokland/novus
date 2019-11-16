@@ -130,6 +130,7 @@ target_include_directories(backend PRIVATE backend)
 
 # Virtual Machine.
 add_library(vm STATIC
+  vm/exceptions/div_by_zero.cpp
   vm/exceptions/invalid_assembly.cpp
   vm/exceptions/stack_not_empty.cpp
   vm/exceptions/stack_overflow.cpp

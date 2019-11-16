@@ -16,7 +16,11 @@ auto run(const std::string& inputId, InputItr inputBegin, const InputItr inputEn
   if (frontendOutput.isSuccess()) {
     const auto vmProg = backend::generate(frontendOutput.getProg());
     auto interface    = vm::io::TerminalInterface{};
-    vm::execute(vmProg, &interface);
+    try {
+      vm::execute(vmProg, &interface);
+    } catch (const std::exception& e) {
+      std::cout << rang::bg::red << "Runtime error: " << e.what() << '\n';
+    }
   }
 
   if (!frontendOutput.isSuccess()) {
