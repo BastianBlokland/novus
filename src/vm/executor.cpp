@@ -2,6 +2,7 @@
 #include "internal/call_stack.hpp"
 #include "internal/eval_stack.hpp"
 #include "vm/exceptions/invalid_assembly.hpp"
+#include "vm/exceptions/stack_not_empty.hpp"
 #include "vm/opcode.hpp"
 #include <stdexcept>
 
@@ -104,7 +105,9 @@ static auto execute(const Assembly& assembly, io::Interface* interface, uint32_t
     } break;
     case OpCode::Ret: {
       if (!callStack.pop()) {
-        assert(evalStack.getSize() == 0);
+        if (evalStack.getSize() != 0) {
+          throw exceptions::StackNotEmpty{};
+        }
         return; // Execution finishes after we returned from the last scope.
       }
     } break;
