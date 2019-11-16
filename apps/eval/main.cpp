@@ -4,6 +4,7 @@
 #include "frontend/source.hpp"
 #include "rang.hpp"
 #include "vm/executor.hpp"
+#include "vm/io/terminal_interface.hpp"
 
 namespace eval {
 
@@ -14,7 +15,8 @@ auto run(const std::string& inputId, InputItr inputBegin, const InputItr inputEn
   const auto frontendOutput = frontend::analyze(src);
   if (frontendOutput.isSuccess()) {
     const auto vmProg = backend::generate(frontendOutput.getProg());
-    vm::execute(vmProg);
+    auto interface    = vm::io::TerminalInterface{};
+    vm::execute(vmProg, &interface);
   }
 
   if (!frontendOutput.isSuccess()) {

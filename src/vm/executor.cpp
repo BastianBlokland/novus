@@ -3,13 +3,13 @@
 #include "internal/eval_stack.hpp"
 #include "vm/exceptions/invalid_assembly.hpp"
 #include "vm/opcode.hpp"
-#include <iostream>
+#include <stdexcept>
 
 namespace vm {
 
 static const int MaxEvalStackSize = 1024;
 
-static auto execute(const Assembly& assembly, uint32_t entryPoint) {
+static auto execute(const Assembly& assembly, io::Interface* interface, uint32_t entryPoint) {
   auto evalStack = internal::EvalStack{MaxEvalStackSize};
   auto callStack = internal::CallStack{};
   callStack.push(assembly, entryPoint);
@@ -79,11 +79,11 @@ static auto execute(const Assembly& assembly, uint32_t entryPoint) {
 
     case OpCode::PrintInt: {
       auto a = evalStack.pop().getInt();
-      std::cout << a << '\n';
+      interface->print(std::to_string(a));
     } break;
     case OpCode::PrintLogic: {
       auto a = evalStack.pop().getInt();
-      std::cout << (a == 0 ? "false\n" : "true\n");
+      interface->print(a == 0 ? "false" : "true");
     } break;
 
     case OpCode::Jump: {
@@ -116,9 +116,12 @@ static auto execute(const Assembly& assembly, uint32_t entryPoint) {
   }
 }
 
-auto execute(const Assembly& assembly) -> void {
+auto execute(const Assembly& assembly, io::Interface* interface) -> void {
+  if (!interface) {
+    throw std::invalid_argument{"Interface cannot be null"};
+  }
   for (auto itr = assembly.beginEntryPoints(); itr != assembly.endEntryPoints(); ++itr) {
-    execute(assembly, *itr);
+    execute(assembly, interface, *itr);
   }
 }
 

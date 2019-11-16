@@ -134,6 +134,8 @@ add_library(vm STATIC
   vm/internal/eval_stack.cpp
   vm/internal/exec_scope.cpp
   vm/internal/value.cpp
+  vm/io/memory_interface.cpp
+  vm/io/terminal_interface.cpp
   vm/assembly.cpp
   vm/executor.cpp
   vm/opcode.cpp)
