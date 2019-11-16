@@ -14,6 +14,11 @@ include(Catch)
 add_executable(tests
   main.cpp
 
+  backend/assembly_output.cpp
+  backend/call_expr_test.cpp
+  backend/constants_test.cpp
+  backend/switch_expr_test.cpp
+
   frontend/declare_user_funcs_test.cpp
   frontend/define_exec_stmts_test.cpp
   frontend/define_user_funcs_test.cpp
@@ -52,7 +57,16 @@ add_executable(tests
   parse/expr_unary_test.cpp
   parse/iterator_test.cpp
   parse/stmt_func_decl_test.cpp
-  parse/stmt_exec_test.cpp)
+  parse/stmt_exec_test.cpp
+
+  vm/call_test.cpp
+  vm/consts_test.cpp
+  vm/error_test.cpp
+  vm/int_check_test.cpp
+  vm/int_op_test.cpp
+  vm/io_test.cpp
+  vm/jump_test.cpp
+  vm/literal_test.cpp)
 target_compile_features(tests PRIVATE cxx_std_17)
 target_compile_options(tests PRIVATE -Werror -Wall -Wextra)
 target_include_directories(tests PRIVATE lex)
@@ -60,6 +74,8 @@ target_link_libraries(tests PRIVATE Catch2::Catch2)
 target_link_libraries(tests PRIVATE lex)
 target_link_libraries(tests PRIVATE parse)
 target_link_libraries(tests PRIVATE frontend)
+target_link_libraries(tests PRIVATE backend)
+target_link_libraries(tests PRIVATE vm)
 
 # Register tests to CTest.
 catch_discover_tests(tests)

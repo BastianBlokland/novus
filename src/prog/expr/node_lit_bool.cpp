@@ -22,6 +22,8 @@ auto LitBoolNode::getChildCount() const -> unsigned int { return 0; }
 
 auto LitBoolNode::getType() const noexcept -> sym::TypeId { return m_type; }
 
+auto LitBoolNode::getVal() const noexcept -> bool { return m_val; }
+
 auto LitBoolNode::accept(NodeVisitor* visitor) const -> void { visitor->visit(*this); }
 
 auto LitBoolNode::print(std::ostream& out) const -> std::ostream& {

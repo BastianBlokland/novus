@@ -30,7 +30,7 @@ auto ActionDeclTable::lookup(const std::string& name, const Input& input) const
   return findOverload(itr->second, input);
 }
 
-auto ActionDeclTable::registerIntrinsic(std::string name, Input input) -> ActionId {
+auto ActionDeclTable::registerAction(ActionKind kind, std::string name, Input input) -> ActionId {
   if (name.empty()) {
     throw std::invalid_argument{"Name has to contain aleast 1 char"};
   }
@@ -44,7 +44,7 @@ auto ActionDeclTable::registerIntrinsic(std::string name, Input input) -> Action
     throw std::logic_error{"Action with an identical name and input has already been registered"};
   }
   itr->second.push_back(id);
-  m_actions.push_back(ActionDecl{id, ActionKind::Intrinsic, std::move(name), std::move(input)});
+  m_actions.push_back(ActionDecl{id, kind, std::move(name), std::move(input)});
   return id;
 }
 

@@ -30,14 +30,6 @@ auto FuncDeclTable::lookup(const std::string& name, const Input& input) const
   return findOverload(itr->second, input);
 }
 
-auto FuncDeclTable::registerIntrinsic(std::string name, FuncSig sig) -> FuncId {
-  return registerFunc(FuncKind::Intrinsic, std::move(name), std::move(sig));
-}
-
-auto FuncDeclTable::registerUser(std::string name, FuncSig sig) -> FuncId {
-  return registerFunc(FuncKind::User, std::move(name), std::move(sig));
-}
-
 auto FuncDeclTable::registerFunc(FuncKind kind, std::string name, FuncSig sig) -> FuncId {
   if (name.empty()) {
     throw std::invalid_argument{"Name has to contain aleast 1 char"};

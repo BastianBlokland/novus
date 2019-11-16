@@ -30,14 +30,11 @@ public:
   [[nodiscard]] auto lookup(const std::string& name, const Input& input) const
       -> std::optional<FuncId>;
 
-  auto registerIntrinsic(std::string name, FuncSig sig) -> FuncId;
-  auto registerUser(std::string name, FuncSig sig) -> FuncId;
+  auto registerFunc(FuncKind kind, std::string name, FuncSig sig) -> FuncId;
 
 private:
   std::vector<FuncDecl> m_funcs;
   std::unordered_map<std::string, std::vector<FuncId>> m_lookup;
-
-  auto registerFunc(FuncKind kind, std::string name, FuncSig sig) -> FuncId;
 
   [[nodiscard]] auto findOverload(const std::vector<FuncId>& overloads, const Input& input) const
       -> std::optional<FuncId>;

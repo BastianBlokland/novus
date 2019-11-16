@@ -18,7 +18,7 @@ auto TypeDecl::getKind() const -> const TypeKind& { return m_kind; }
 auto TypeDecl::getName() const -> const std::string& { return m_name; }
 
 auto operator<<(std::ostream& out, const TypeDecl& rhs) -> std::ostream& {
-  return out << '[' << rhs.m_id << "]-'" << rhs.m_name << "'-" << rhs.m_kind;
+  return out << '[' << rhs.m_id << "]-'" << rhs.m_name << '\'';
 }
 
 } // namespace prog::sym

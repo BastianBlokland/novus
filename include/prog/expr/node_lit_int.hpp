@@ -17,6 +17,8 @@ public:
   [[nodiscard]] auto getChildCount() const -> unsigned int override;
   [[nodiscard]] auto getType() const noexcept -> sym::TypeId override;
 
+  [[nodiscard]] auto getVal() const noexcept -> int32_t;
+
   auto accept(NodeVisitor* visitor) const -> void override;
 
 private:

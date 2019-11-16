@@ -59,13 +59,8 @@ auto printTypeDecls(const prog::Program& prog) -> void {
     idStr << typeDecl.getId();
 
     std::cout << " * " << std::setw(idColWidth) << std::left << idStr.str();
-
-    switch (typeDecl.getKind()) {
-    case prog::sym::TypeKind::Intrinsic:
-      std::cout << rang::fg::yellow;
-      break;
-    }
-    std::cout << "  " << rang::style::bold << typeDecl.getName() << rang::style::reset << '\n';
+    std::cout << "  " << rang::fg::yellow << rang::style::bold << typeDecl.getName()
+              << rang::style::reset << '\n';
   }
 }
 
@@ -83,11 +78,11 @@ auto printFuncDecls(const prog::Program& prog) -> void {
     std::cout << " * " << std::setw(idColWidth) << std::left << idStr.str();
 
     switch (funcDecl.getKind()) {
-    case prog::sym::FuncKind::Intrinsic:
-      std::cout << rang::fg::yellow;
-      break;
     case prog::sym::FuncKind::User:
       std::cout << rang::fg::green;
+      break;
+    default:
+      std::cout << rang::fg::yellow;
       break;
     }
     std::cout << "  " << rang::style::bold << std::setw(nameColWidth) << std::left
@@ -111,15 +106,9 @@ auto printActionDecls(const prog::Program& prog) -> void {
     idStr << actionDecl.getId();
 
     std::cout << " * " << std::setw(idColWidth) << std::left << idStr.str();
-
-    switch (actionDecl.getKind()) {
-    case prog::sym::ActionKind::Intrinsic:
-      std::cout << rang::fg::yellow;
-      break;
-    }
-    std::cout << "  " << rang::style::bold << std::setw(nameColWidth) << std::left
-              << actionDecl.getName() << rang::style::reset << '(' << actionDecl.getInput()
-              << ")\n";
+    std::cout << "  " << rang::fg::yellow << rang::style::bold << std::setw(nameColWidth)
+              << std::left << actionDecl.getName() << rang::style::reset << '('
+              << actionDecl.getInput() << ")\n";
   }
 }
 
@@ -269,22 +258,24 @@ auto main(int argc, char** argv) -> int {
 
   // Analyze input characters.
   std::string charsInput;
-  auto lexCmd = app.add_subcommand("analyze", "Analyze the provided characters")->callback([&]() {
-    progdiag::run("inline", charsInput.begin(), charsInput.end(), printOutput);
-  });
-  lexCmd->add_option("input", charsInput, "Input characters to analyze")->required();
+  auto analyzeCmd =
+      app.add_subcommand("analyze", "Analyze the provided characters")->callback([&]() {
+        progdiag::run("inline", charsInput.begin(), charsInput.end(), printOutput);
+      });
+  analyzeCmd->add_option("input", charsInput, "Input characters to analyze")->required();
 
   // Analyze input file.
   std::string filePath;
-  auto lexFileCmd = app.add_subcommand("analyzefile", "Analyze the provided file")->callback([&]() {
-    std::ifstream fs{filePath};
-    progdiag::run(
-        filePath,
-        std::istreambuf_iterator<char>{fs},
-        std::istreambuf_iterator<char>{},
-        printOutput);
-  });
-  lexFileCmd->add_option("file", filePath, "Path to file to analyze")
+  auto analyzeFileCmd =
+      app.add_subcommand("analyzefile", "Analyze the provided file")->callback([&]() {
+        std::ifstream fs{filePath};
+        progdiag::run(
+            filePath,
+            std::istreambuf_iterator<char>{fs},
+            std::istreambuf_iterator<char>{},
+            printOutput);
+      });
+  analyzeFileCmd->add_option("file", filePath, "Path to file to analyze")
       ->check(CLI::ExistingFile)
       ->required();
 

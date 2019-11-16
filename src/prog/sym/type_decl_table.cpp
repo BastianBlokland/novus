@@ -21,14 +21,14 @@ auto TypeDeclTable::lookup(const std::string& name) const -> std::optional<TypeI
   return itr->second;
 }
 
-auto TypeDeclTable::registerIntrinsic(std::string name) -> TypeId {
+auto TypeDeclTable::registerType(TypeKind kind, std::string name) -> TypeId {
   if (name.empty()) {
     throw std::invalid_argument{"Name has to contain aleast 1 char"};
   }
 
   auto id = TypeId{static_cast<unsigned int>(m_types.size())};
   if (m_lookup.insert({name, id}).second) {
-    m_types.push_back(TypeDecl{id, TypeKind::Intrinsic, std::move(name)});
+    m_types.push_back(TypeDecl{id, kind, std::move(name)});
     return id;
   }
   throw std::logic_error{"Type with an identical name has already been registered"};

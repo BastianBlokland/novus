@@ -20,6 +20,9 @@ public:
   [[nodiscard]] auto getChildCount() const -> unsigned int override;
   [[nodiscard]] auto getType() const noexcept -> sym::TypeId override;
 
+  [[nodiscard]] auto getConditions() const noexcept -> const std::vector<NodePtr>&;
+  [[nodiscard]] auto getBranches() const noexcept -> const std::vector<NodePtr>&;
+
   auto accept(NodeVisitor* visitor) const -> void override;
 
 private:

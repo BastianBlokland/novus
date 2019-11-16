@@ -20,7 +20,7 @@ auto FuncDecl::getName() const -> const std::string& { return m_name; }
 auto FuncDecl::getSig() const -> const FuncSig& { return m_sig; }
 
 auto operator<<(std::ostream& out, const FuncDecl& rhs) -> std::ostream& {
-  return out << '[' << rhs.m_id << "]-" << rhs.m_kind << "-'" << rhs.m_name << "'-" << rhs.m_sig;
+  return out << '[' << rhs.m_id << "]-'" << rhs.m_name << "'-" << rhs.m_sig;
 }
 
 } // namespace prog::sym

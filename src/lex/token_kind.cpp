@@ -40,10 +40,10 @@ auto operator<<(std::ostream& out, const TokenKind& rhs) -> std::ostream& {
   case TokenKind::OpBangEq:
     out << "bang-equal";
     break;
-  case TokenKind::OpLess:
+  case TokenKind::OpLe:
     out << "less";
     break;
-  case TokenKind::OpLessEq:
+  case TokenKind::OpLeEq:
     out << "less-equal";
     break;
   case TokenKind::OpGt:

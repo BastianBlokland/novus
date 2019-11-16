@@ -2,6 +2,19 @@
   "version": "0.2.0",
   "configurations": [
     {
+      "name": "eval",
+      "preLaunchTask": "build debug",
+      "type": "lldb",
+      "request": "launch",
+      "program": "${workspaceFolder}/bin/eval",
+      "args": [
+        "print(1 + 1)"
+      ],
+      "cwd": "${workspaceFolder}",
+      "terminal": "integrated",
+      "stopOnEntry": false
+    },
+    {
       "name": "lexdiag",
       "preLaunchTask": "build debug",
       "type": "lldb",
@@ -37,6 +50,20 @@
       "program": "${workspaceFolder}/bin/progdiag",
       "args": [
         "analyze",
+        "fun add(int a, int b) -> int a + b print(add(1, 2) == 3)"
+      ],
+      "cwd": "${workspaceFolder}",
+      "terminal": "integrated",
+      "stopOnEntry": false
+    },
+    {
+      "name": "asmdiag",
+      "preLaunchTask": "build debug",
+      "type": "lldb",
+      "request": "launch",
+      "program": "${workspaceFolder}/bin/asmdiag",
+      "args": [
+        "gen",
         "fun add(int a, int b) -> int a + b print(add(1, 2) == 3)"
       ],
       "cwd": "${workspaceFolder}",

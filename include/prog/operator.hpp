@@ -13,8 +13,8 @@ enum class Operator {
   EqEq,
   Bang,
   BangEq,
-  Less,
-  LessEq,
+  Le,
+  LeEq,
   Gt,
   GtEq,
 };

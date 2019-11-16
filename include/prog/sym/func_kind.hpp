@@ -1,10 +1,25 @@
 #pragma once
-#include <iostream>
 
 namespace prog::sym {
 
-enum class FuncKind { Intrinsic, User };
+enum class FuncKind {
+  User,
 
-auto operator<<(std::ostream& out, const FuncKind& rhs) -> std::ostream&;
+  NegateInt,
+  AddInt,
+  SubInt,
+  MulInt,
+  DivInt,
+  CheckEqInt,
+  CheckNEqInt,
+  CheckLeInt,
+  CheckLeEqInt,
+  CheckGtInt,
+  CheckGtEqInt,
+
+  InvBool,
+  CheckEqBool,
+  CheckNEqBool,
+};
 
 } // namespace prog::sym

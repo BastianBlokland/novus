@@ -112,9 +112,9 @@ auto LexerImpl::next() -> Token {
     case '<':
       if (peekChar(0) == '=') {
         consumeChar();
-        return basicToken(TokenKind::OpLessEq, input::Span{m_inputPos - 1, m_inputPos});
+        return basicToken(TokenKind::OpLeEq, input::Span{m_inputPos - 1, m_inputPos});
       }
-      return basicToken(TokenKind::OpLess, input::Span{m_inputPos});
+      return basicToken(TokenKind::OpLe, input::Span{m_inputPos});
     case '>':
       if (peekChar(0) == '=') {
         consumeChar();

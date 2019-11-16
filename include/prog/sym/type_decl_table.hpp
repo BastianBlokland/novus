@@ -26,7 +26,7 @@ public:
 
   [[nodiscard]] auto lookup(const std::string& name) const -> std::optional<TypeId>;
 
-  auto registerIntrinsic(std::string name) -> TypeId;
+  auto registerType(TypeKind kind, std::string name) -> TypeId;
 
 private:
   std::vector<TypeDecl> m_types;

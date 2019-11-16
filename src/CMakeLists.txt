@@ -68,7 +68,6 @@ add_library(prog STATIC
   prog/sym/action_decl_table.cpp
   prog/sym/action_decl.cpp
   prog/sym/action_id.cpp
-  prog/sym/action_kind.cpp
   prog/sym/const_decl_table.cpp
   prog/sym/const_decl.cpp
   prog/sym/const_id.cpp
@@ -80,15 +79,12 @@ add_library(prog STATIC
   prog/sym/func_def.cpp
   prog/sym/func_id_hasher.cpp
   prog/sym/func_id.cpp
-  prog/sym/func_kind.cpp
   prog/sym/func_sig.cpp
   prog/sym/input.cpp
   prog/sym/type_decl_table.cpp
   prog/sym/type_decl.cpp
   prog/sym/type_id.cpp
-  prog/sym/type_kind.cpp
 
-  prog/intrinsics.cpp
   prog/operator.cpp
   prog/program.cpp)
 target_compile_features(prog PUBLIC cxx_std_17)
@@ -116,3 +112,40 @@ target_link_libraries(frontend PUBLIC prog)
 target_compile_options(frontend PRIVATE -Werror -Wall -Wextra)
 target_include_directories(frontend PUBLIC ../include)
 target_include_directories(frontend PRIVATE frontend)
+
+# Backend (assembly generator).
+add_library(backend STATIC
+  backend/dasm/disassembler.cpp
+  backend/dasm/instruction.cpp
+  backend/internal/gen_expr.cpp
+  backend/internal/utilities.cpp
+  backend/builder.cpp
+  backend/generator.cpp)
+target_compile_features(backend PUBLIC cxx_std_17)
+target_link_libraries(backend PUBLIC prog)
+target_link_libraries(backend PUBLIC vm)
+target_compile_options(backend PRIVATE -Werror -Wall -Wextra)
+target_include_directories(backend PUBLIC ../include)
+target_include_directories(backend PRIVATE backend)
+
+# Virtual Machine.
+add_library(vm STATIC
+  vm/exceptions/const_stack_overflow.cpp
+  vm/exceptions/div_by_zero.cpp
+  vm/exceptions/eval_stack_not_empty.cpp
+  vm/exceptions/eval_stack_overflow.cpp
+  vm/exceptions/invalid_assembly.cpp
+  vm/internal/call_stack.cpp
+  vm/internal/const_stack.cpp
+  vm/internal/eval_stack.cpp
+  vm/internal/exec_scope.cpp
+  vm/internal/value.cpp
+  vm/io/memory_interface.cpp
+  vm/io/terminal_interface.cpp
+  vm/assembly.cpp
+  vm/executor.cpp
+  vm/opcode.cpp)
+target_compile_features(vm PUBLIC cxx_std_17)
+target_compile_options(vm PRIVATE -Werror -Wall -Wextra)
+target_include_directories(vm PUBLIC ../include)
+target_include_directories(vm PRIVATE vm)

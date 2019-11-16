@@ -22,6 +22,8 @@ auto LitIntNode::getChildCount() const -> unsigned int { return 0; }
 
 auto LitIntNode::getType() const noexcept -> sym::TypeId { return m_type; }
 
+auto LitIntNode::getVal() const noexcept -> int32_t { return m_val; }
+
 auto LitIntNode::accept(NodeVisitor* visitor) const -> void { visitor->visit(*this); }
 
 auto LitIntNode::print(std::ostream& out) const -> std::ostream& { return out << m_val; }

@@ -16,8 +16,8 @@ TEST_CASE("Lexing operators", "[lex]") {
   CHECK_TOKENS("==", basicToken(TokenKind::OpEqEq));
   CHECK_TOKENS("!", basicToken(TokenKind::OpBang));
   CHECK_TOKENS("!=", basicToken(TokenKind::OpBangEq));
-  CHECK_TOKENS("<", basicToken(TokenKind::OpLess));
-  CHECK_TOKENS("<=", basicToken(TokenKind::OpLessEq));
+  CHECK_TOKENS("<", basicToken(TokenKind::OpLe));
+  CHECK_TOKENS("<=", basicToken(TokenKind::OpLeEq));
   CHECK_TOKENS(">", basicToken(TokenKind::OpGt));
   CHECK_TOKENS(">=", basicToken(TokenKind::OpGtEq));
   CHECK_TOKENS(";", basicToken(TokenKind::OpSemi));
