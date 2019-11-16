@@ -14,10 +14,10 @@ auto run(const std::string& inputId, InputItr inputBegin, const InputItr inputEn
   const auto src            = frontend::buildSource(inputId, inputBegin, inputEnd);
   const auto frontendOutput = frontend::analyze(src);
   if (frontendOutput.isSuccess()) {
-    const auto vmProg = backend::generate(frontendOutput.getProg());
-    auto interface    = vm::io::TerminalInterface{};
+    const auto assembly = backend::generate(frontendOutput.getProg());
+    auto interface      = vm::io::TerminalInterface{};
     try {
-      vm::execute(vmProg, &interface);
+      vm::execute(assembly, &interface);
     } catch (const std::exception& e) {
       std::cout << rang::bg::red << "Runtime error: " << e.what() << '\n';
     }

@@ -15,6 +15,9 @@ public:
   auto operator=(const Assembly& rhs) -> Assembly& = delete;
   auto operator=(Assembly&& rhs) noexcept -> Assembly& = delete;
 
+  auto operator==(const Assembly& rhs) const noexcept -> bool;
+  auto operator!=(const Assembly& rhs) const noexcept -> bool;
+
   [[nodiscard]] auto beginEntryPoints() const noexcept -> entryPointIterator;
   [[nodiscard]] auto endEntryPoints() const noexcept -> entryPointIterator;
 

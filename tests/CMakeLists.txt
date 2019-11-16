@@ -14,6 +14,11 @@ include(Catch)
 add_executable(tests
   main.cpp
 
+  backend/assembly_output.cpp
+  backend/call_expr_test.cpp
+  backend/constants_test.cpp
+  backend/switch_expr_test.cpp
+
   frontend/declare_user_funcs_test.cpp
   frontend/define_exec_stmts_test.cpp
   frontend/define_user_funcs_test.cpp

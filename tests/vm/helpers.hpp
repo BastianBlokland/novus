@@ -19,7 +19,6 @@ inline auto buildAssemblyExpr(const std::function<void(backend::Builder*)>& buil
 inline auto buildAssembly(const std::function<void(backend::Builder*)>& build) -> vm::Assembly {
   auto builder = backend::Builder{};
   build(&builder);
-
   return builder.close();
 }
 

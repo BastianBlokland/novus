@@ -43,7 +43,11 @@ auto GenExpr::visit(const prog::expr::SwitchExprNode& n) -> void {
   for (auto i = 0U; i < conditions.size(); ++i) {
     m_builder->label(condBranchesLabels[i]);
     genSubExpr(*branches[i]);
-    m_builder->addJump(endLabel);
+
+    // No need for a jump for the last.
+    if (i != conditions.size() - 1) {
+      m_builder->addJump(endLabel);
+    }
   }
 
   m_builder->label(endLabel);

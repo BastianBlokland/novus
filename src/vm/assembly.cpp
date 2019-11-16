@@ -7,6 +7,14 @@ namespace vm {
 Assembly::Assembly(std::vector<uint8_t> instructions, std::vector<uint32_t> entryPoints) :
     m_instructions{std::move(instructions)}, m_entryPoints{std::move(entryPoints)} {}
 
+auto Assembly::operator==(const Assembly& rhs) const noexcept -> bool {
+  return m_instructions == rhs.m_instructions && m_entryPoints == rhs.m_entryPoints;
+}
+
+auto Assembly::operator!=(const Assembly& rhs) const noexcept -> bool {
+  return !Assembly::operator==(rhs);
+}
+
 auto Assembly::beginEntryPoints() const noexcept -> entryPointIterator {
   return m_entryPoints.begin();
 }
