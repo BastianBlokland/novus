@@ -8,6 +8,9 @@ auto operator<<(std::ostream& out, const OpCode& rhs) -> std::ostream& {
     out << "load-int";
     break;
 
+  case OpCode::ReserveConsts:
+    out << "reserve-consts";
+    break;
   case OpCode::StoreConst:
     out << "store-const";
     break;

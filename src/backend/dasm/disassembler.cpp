@@ -15,6 +15,7 @@ auto disassembleInstructions(const vm::Assembly& assembly) -> std::vector<Instru
       result.push_back(Instruction(opCode, ipOffset, {assembly.readInt32(ipOffset + 1)}));
       ipOffset += 4;
       continue;
+    case vm::OpCode::ReserveConsts:
     case vm::OpCode::LoadConst:
     case vm::OpCode::StoreConst:
       result.push_back(Instruction(opCode, ipOffset, {instrData[ipOffset + 1]}));

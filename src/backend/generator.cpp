@@ -11,9 +11,20 @@
 
 namespace backend {
 
+static auto reserveConsts(Builder* builder, const prog::sym::ConstDeclTable& constTable) {
+  const auto constCount = constTable.getCount();
+  if (constCount > 0) {
+    if (constCount > std::numeric_limits<uint8_t>::max()) {
+      throw std::logic_error{"More then 256 constants in one scope are not supported"};
+    }
+    builder->addReserveConsts(static_cast<uint8_t>(constCount));
+  }
+}
+
 static auto
 generateFunc(Builder* builder, const prog::Program& program, const prog::sym::FuncDef& func) {
   builder->label(internal::getLabel(func.getId()));
+  reserveConsts(builder, func.getConsts());
 
   const auto inputs = func.getConsts().getInputs();
   // Its important to read the constants from right to left as that's how they will be on the stack.
@@ -35,6 +46,7 @@ generateExecStmt(Builder* builder, const prog::Program& program, const prog::sym
   const auto label = builder->generateLabel();
   builder->label(label);
   builder->addEntryPoint(label);
+  reserveConsts(builder, exec.getConsts());
 
   // Generate the arguments to the action.
   for (const auto& arg : exec.getArgs()) {

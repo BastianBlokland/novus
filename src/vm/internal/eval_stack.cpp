@@ -1,5 +1,5 @@
 #include "internal/eval_stack.hpp"
-#include "vm/exceptions/stack_overflow.hpp"
+#include "vm/exceptions/eval_stack_overflow.hpp"
 #include <cassert>
 
 namespace vm::internal {
@@ -15,7 +15,7 @@ auto EvalStack::push(const Value value) -> void {
   // TODO(bastian): Reduce the cost by checking if enough stack-space is left before running a
   // function instead of checking on every push.
   if (m_stackTop - m_stack >= m_capacity) {
-    throw exceptions::StackOverflow{};
+    throw exceptions::EvalStackOverflow{};
   }
   *m_stackTop = value;
   ++m_stackTop;

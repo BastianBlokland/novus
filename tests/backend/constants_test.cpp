@@ -6,12 +6,14 @@ namespace backend {
 TEST_CASE("Store and load constants", "[backend]") {
 
   CHECK_EXPR_INT("x = 42; x", [](backend::Builder* builder) -> void {
+    builder->addReserveConsts(1);
     builder->addLoadLitInt(42);
     builder->addStoreConst(0);
     builder->addLoadConst(0);
   });
 
   CHECK_EXPR_INT("x = 42; y = 1337; x + y", [](backend::Builder* builder) -> void {
+    builder->addReserveConsts(2);
     builder->addLoadLitInt(42);
     builder->addStoreConst(0);
 

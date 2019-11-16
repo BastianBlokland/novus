@@ -1,9 +1,9 @@
 #pragma once
+#include "internal/const_stack.hpp"
 #include "internal/value.hpp"
 #include "vm/assembly.hpp"
 #include "vm/opcode.hpp"
 #include <cstdint>
-#include <unordered_map>
 
 namespace vm::internal {
 
@@ -16,6 +16,9 @@ public:
   [[nodiscard]] auto readInt32() -> int32_t;
   [[nodiscard]] auto readUInt32() -> uint32_t;
 
+  auto reserveConsts(ConstStack* stack, unsigned int amount) -> void;
+  auto releaseConsts(ConstStack* stack) -> void;
+
   auto getConst(uint8_t id) -> Value;
   auto setConst(uint8_t id, Value value) -> void;
 
@@ -24,7 +27,8 @@ public:
 private:
   const Assembly& m_assembly;
   const uint8_t* m_ip;
-  std::unordered_map<uint8_t, Value> m_consts;
+  unsigned int m_constsCount;
+  Value* m_constsPtr;
 };
 
 } // namespace vm::internal

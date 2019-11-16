@@ -9,6 +9,8 @@ auto ConstDeclTable::operator[](ConstId id) const -> const ConstDecl& {
   return m_consts[index];
 }
 
+auto ConstDeclTable::getCount() const -> unsigned int { return m_consts.size(); }
+
 auto ConstDeclTable::begin() const -> iterator { return m_consts.begin(); }
 
 auto ConstDeclTable::end() const -> iterator { return m_consts.end(); }

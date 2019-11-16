@@ -7,6 +7,7 @@ TEST_CASE("Constants", "[vm]") {
 
   CHECK_EXPR(
       [](backend::Builder* builder) -> void {
+        builder->addReserveConsts(1);
         builder->addLoadLitInt(42);
         builder->addStoreConst(0);
 
@@ -17,6 +18,7 @@ TEST_CASE("Constants", "[vm]") {
 
   CHECK_EXPR(
       [](backend::Builder* builder) -> void {
+        builder->addReserveConsts(2);
         builder->addLoadLitInt(42);
         builder->addStoreConst(0);
 

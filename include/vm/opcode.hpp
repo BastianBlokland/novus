@@ -7,8 +7,9 @@ namespace vm {
 enum class OpCode : uint8_t {
   LoadLitInt = 10,
 
-  StoreConst = 21,
-  LoadConst  = 22,
+  ReserveConsts = 20,
+  StoreConst    = 21,
+  LoadConst     = 22,
 
   AddInt      = 50,
   SubInt      = 51,

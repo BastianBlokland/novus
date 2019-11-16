@@ -42,4 +42,6 @@ inline auto buildAssembly(const std::function<void(backend::Builder*)>& build) -
 
 #define CHECK_PROG(BUILD, ...) CHECK_ASM(buildAssembly(BUILD), __VA_ARGS__)
 
+#define CHECK_PROG_THROWS(BUILD, ...) CHECK_ASM_THROWS(buildAssembly(BUILD), __VA_ARGS__)
+
 } // namespace vm

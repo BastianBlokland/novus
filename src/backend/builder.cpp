@@ -27,6 +27,11 @@ auto Builder::addLoadLitInt(int32_t val) -> void {
   writeInt32(val);
 }
 
+auto Builder::addReserveConsts(uint8_t amount) -> void {
+  writeOpCode(vm::OpCode::ReserveConsts);
+  writeUInt8(amount);
+}
+
 auto Builder::addStoreConst(uint8_t constId) -> void {
   writeOpCode(vm::OpCode::StoreConst);
   writeUInt8(constId);

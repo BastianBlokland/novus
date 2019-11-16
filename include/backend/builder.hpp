@@ -23,6 +23,7 @@ public:
 
   auto addLoadLitInt(int32_t val) -> void;
 
+  auto addReserveConsts(uint8_t amount) -> void;
   auto addStoreConst(uint8_t constId) -> void;
   auto addLoadConst(uint8_t constId) -> void;
 

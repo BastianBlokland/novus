@@ -1,19 +1,22 @@
 #include "vm/executor.hpp"
 #include "internal/call_stack.hpp"
+#include "internal/const_stack.hpp"
 #include "internal/eval_stack.hpp"
 #include "vm/exceptions/div_by_zero.hpp"
+#include "vm/exceptions/eval_stack_not_empty.hpp"
 #include "vm/exceptions/invalid_assembly.hpp"
-#include "vm/exceptions/stack_not_empty.hpp"
 #include "vm/opcode.hpp"
 #include <stdexcept>
 
 namespace vm {
 
-static const int MaxEvalStackSize = 1024;
+static const int EvalStackSize   = 1024;
+static const int ConstsStackSize = 1024;
 
 static auto execute(const Assembly& assembly, io::Interface* interface, uint32_t entryPoint) {
-  auto evalStack = internal::EvalStack{MaxEvalStackSize};
-  auto callStack = internal::CallStack{};
+  auto evalStack  = internal::EvalStack{EvalStackSize};
+  auto constStack = internal::ConstStack{ConstsStackSize};
+  auto callStack  = internal::CallStack{};
   callStack.push(assembly, entryPoint);
 
   while (true) {
@@ -24,6 +27,11 @@ static auto execute(const Assembly& assembly, io::Interface* interface, uint32_t
       evalStack.push(internal::intValue(litInt));
     } break;
 
+    case OpCode::ReserveConsts: {
+      auto amount = scope->readUInt8();
+      scope->reserveConsts(&constStack, amount);
+      break;
+    }
     case OpCode::StoreConst: {
       auto constId = scope->readUInt8();
       auto a       = evalStack.pop();
@@ -108,10 +116,12 @@ static auto execute(const Assembly& assembly, io::Interface* interface, uint32_t
       callStack.push(assembly, ipOffset);
     } break;
     case OpCode::Ret: {
+      scope->releaseConsts(&constStack);
       if (!callStack.pop()) {
         if (evalStack.getSize() != 0) {
-          throw exceptions::StackNotEmpty{};
+          throw exceptions::EvalStackNotEmpty{};
         }
+        assert(constStack.getSize() == 0);
         return; // Execution finishes after we returned from the last scope.
       }
     } break;

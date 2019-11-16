@@ -3,7 +3,7 @@
 
 namespace vm::exceptions {
 
-class StackNotEmpty final : public std::exception {
+class EvalStackOverflow final : public std::exception {
 public:
   [[nodiscard]] auto what() const noexcept -> const char* override;
 };

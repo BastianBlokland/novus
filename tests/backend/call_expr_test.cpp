@@ -127,6 +127,7 @@ TEST_CASE("Call Expression", "[backend]") {
         "print(test(42, 1337))",
         [](backend::Builder* builder) -> void {
           builder->label("test");
+          builder->addReserveConsts(2);
           builder->addStoreConst(1);
           builder->addStoreConst(0);
           builder->addLoadConst(0);
