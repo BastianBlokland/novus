@@ -181,21 +181,21 @@ auto errNonBoolExpressionInLogicOp(const Source& src, const std::string& typeNam
   return error(src, oss.str(), span);
 }
 
-auto errNonBoolExpressionInSwitch(const Source& src, const std::string& typeName, input::Span span)
+auto errNonBoolConditionExpression(const Source& src, const std::string& typeName, input::Span span)
     -> Diag {
   std::ostringstream oss;
-  oss << "Type of conditional expression in switch has to be 'bool' but was: '" << typeName << '\'';
+  oss << "Type of conditional expression has to be 'bool' but was: '" << typeName << '\'';
   return error(src, oss.str(), span);
 }
 
-auto errMismatchedBranchTypesInSwitch(
+auto errMismatchedBranchTypes(
     const Source& src,
     const std::string& prevTypeName,
     const std::string& newTypeName,
     input::Span span) -> Diag {
   std::ostringstream oss;
-  oss << "Branch of switch has type '" << newTypeName << "' but type of previous branch is '"
-      << prevTypeName << '\'';
+  oss << "Branch has type '" << newTypeName << "' but type of previous branch is '" << prevTypeName
+      << '\'';
   return error(src, oss.str(), span);
 }
 

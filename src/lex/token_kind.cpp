@@ -55,6 +55,9 @@ auto operator<<(std::ostream& out, const TokenKind& rhs) -> std::ostream& {
   case TokenKind::OpSemi:
     out << "semicolon";
     break;
+  case TokenKind::OpQMark:
+    out << "qmark";
+    break;
   case TokenKind::SepOpenParen:
     out << "open-paren";
     break;
@@ -63,6 +66,9 @@ auto operator<<(std::ostream& out, const TokenKind& rhs) -> std::ostream& {
     break;
   case TokenKind::SepComma:
     out << "comma";
+    break;
+  case TokenKind::SepColon:
+    out << "colon";
     break;
   case TokenKind::SepArrow:
     out << "arrow";

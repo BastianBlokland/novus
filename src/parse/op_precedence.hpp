@@ -3,18 +3,19 @@
 
 namespace parse {
 
-const int unaryPrecedence          = 9;
-const int multiplicativePrecedence = 8;
-const int additivePrecedence       = 7;
-const int relationalPrecedence     = 6;
-const int equalityPrecedence       = 5;
-const int logicAndPrecedence       = 4;
-const int logicOrPrecedence        = 3;
+const int unaryPrecedence          = 10;
+const int multiplicativePrecedence = 9;
+const int additivePrecedence       = 8;
+const int relationalPrecedence     = 7;
+const int equalityPrecedence       = 6;
+const int logicAndPrecedence       = 5;
+const int logicOrPrecedence        = 4;
+const int conditionalPrecedence    = 3;
 const int assignmentPrecedence     = 2;
 const int groupingPrecedence       = 1;
 
-auto getUnaryOpPrecedence(const lex::Token& token) -> int;
+auto getLhsOpPrecedence(const lex::Token& token) -> int;
 
-auto getBinaryOpPrecedence(const lex::Token& token) -> int;
+auto getRhsOpPrecedence(const lex::Token& token) -> int;
 
 } // namespace parse

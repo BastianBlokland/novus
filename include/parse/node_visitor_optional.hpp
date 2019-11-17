@@ -8,6 +8,7 @@ public:
   auto visit(const ErrorNode & /*unused*/) -> void override {}
   auto visit(const BinaryExprNode & /*unused*/) -> void override {}
   auto visit(const CallExprNode & /*unused*/) -> void override {}
+  auto visit(const ConditionalExprNode & /*unused*/) -> void override {}
   auto visit(const ConstDeclExprNode & /*unused*/) -> void override {}
   auto visit(const ConstExprNode & /*unused*/) -> void override {}
   auto visit(const GroupExprNode & /*unused*/) -> void override {}

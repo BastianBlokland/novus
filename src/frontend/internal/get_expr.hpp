@@ -21,6 +21,7 @@ public:
   auto visit(const parse::ErrorNode& n) -> void override;
   auto visit(const parse::BinaryExprNode& n) -> void override;
   auto visit(const parse::CallExprNode& n) -> void override;
+  auto visit(const parse::ConditionalExprNode& n) -> void override;
   auto visit(const parse::ConstDeclExprNode& n) -> void override;
   auto visit(const parse::ConstExprNode& n) -> void override;
   auto visit(const parse::GroupExprNode& n) -> void override;
@@ -50,6 +51,8 @@ private:
 
   auto declareConst(const lex::Token& nameToken, prog::sym::TypeId type)
       -> std::optional<prog::sym::ConstId>;
+
+  auto isBoolType(prog::sym::TypeId type) -> bool;
 };
 
 } // namespace frontend::internal

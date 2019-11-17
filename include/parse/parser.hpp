@@ -27,6 +27,7 @@ private:
   auto nextExprGroup(NodePtr firstExpr, int precedence) -> NodePtr;
   auto nextExprPrimary() -> NodePtr;
   auto nextExprCall(lex::Token id) -> NodePtr;
+  auto nextExprConditional(NodePtr condExpr) -> NodePtr;
   auto nextExprParen() -> NodePtr;
   auto nextExprSwitch() -> NodePtr;
   auto nextExprSwitchIf() -> NodePtr;

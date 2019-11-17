@@ -8,6 +8,7 @@ public:
   auto visit(const ErrorNode& n) -> void override;
   auto visit(const BinaryExprNode& n) -> void override;
   auto visit(const CallExprNode& n) -> void override;
+  auto visit(const ConditionalExprNode& n) -> void override;
   auto visit(const ConstDeclExprNode& n) -> void override;
   auto visit(const ConstExprNode& n) -> void override;
   auto visit(const GroupExprNode& n) -> void override;

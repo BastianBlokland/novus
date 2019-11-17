@@ -74,10 +74,10 @@ auto errUndeclaredBinOperator(
 auto errNonBoolExpressionInLogicOp(const Source& src, const std::string& typeName, input::Span span)
     -> Diag;
 
-auto errNonBoolExpressionInSwitch(const Source& src, const std::string& typeName, input::Span span)
+auto errNonBoolConditionExpression(const Source& src, const std::string& typeName, input::Span span)
     -> Diag;
 
-auto errMismatchedBranchTypesInSwitch(
+auto errMismatchedBranchTypes(
     const Source& src,
     const std::string& prevTypeName,
     const std::string& newTypeName,

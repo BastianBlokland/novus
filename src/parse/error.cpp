@@ -29,11 +29,11 @@ auto errInvalidStmtFuncDecl(
   if (id.getKind() != lex::TokenKind::Identifier) {
     oss << "Expected function identifier but got: " << id;
   } else if (open.getKind() != lex::TokenKind::SepOpenParen) {
-    oss << "Expected opening parentheses but got: " << open;
+    oss << "Expected opening parentheses '(' but got: " << open;
   } else if (commas.size() != (args.empty() ? 0 : args.size() - 1)) {
-    oss << "Incorrect number of comma's in function declaration";
+    oss << "Incorrect number of comma's ',' in function declaration";
   } else if (close.getKind() != lex::TokenKind::SepCloseParen) {
-    oss << "Expected closing parentheses but got: " << close;
+    oss << "Expected closing parentheses ')' but got: " << close;
   } else if (arrow.getKind() != lex::TokenKind::SepArrow) {
     oss << "Expected return-type seperator (->) but got: " << arrow;
   } else if (retType.getKind() != lex::TokenKind::Identifier) {
@@ -72,11 +72,11 @@ auto errInvalidStmtExec(
 
   std::ostringstream oss;
   if (open.getKind() != lex::TokenKind::SepOpenParen) {
-    oss << "Expected opening parentheses but got: " << open;
+    oss << "Expected opening parentheses '(' but got: " << open;
   } else if (close.getKind() != lex::TokenKind::SepCloseParen) {
-    oss << "Expected closing parentheses but got: " << close;
+    oss << "Expected closing parentheses ')' but got: " << close;
   } else if (commas.size() != (args.empty() ? 0 : args.size() - 1)) {
-    oss << "Incorrect number of comma's in execute statement";
+    oss << "Incorrect number of comma's ',' in execute statement";
   } else {
     oss << "Invalid execute statement";
   }
@@ -114,9 +114,9 @@ auto errInvalidUnaryOp(lex::Token op, NodePtr rhs) -> NodePtr {
 auto errInvalidParenExpr(lex::Token open, NodePtr expr, lex::Token close) -> NodePtr {
   std::ostringstream oss;
   if (open.getKind() != lex::TokenKind::SepOpenParen) {
-    oss << "Expected opening parentheses but got: " << open;
+    oss << "Expected opening parentheses '(' but got: " << open;
   } else if (close.getKind() != lex::TokenKind::SepCloseParen) {
-    oss << "Expected closing parentheses but got: " << close;
+    oss << "Expected closing parentheses ')' but got: " << close;
   } else {
     oss << "Invalid parenthesized expression";
   }
@@ -140,11 +140,11 @@ auto errInvalidCallExpr(
 
   std::ostringstream oss;
   if (commas.size() != (args.empty() ? 0 : args.size() - 1)) {
-    oss << "Incorrect number of comma's in call expression";
+    oss << "Incorrect number of comma's ',' in call expression";
   } else if (open.getKind() != lex::TokenKind::SepOpenParen) {
-    oss << "Expected opening parentheses but got: " << open;
+    oss << "Expected opening parentheses '(' but got: " << open;
   } else if (close.getKind() != lex::TokenKind::SepCloseParen) {
-    oss << "Expected closing parentheses but got: " << close;
+    oss << "Expected closing parentheses ')' but got: " << close;
   } else {
     oss << "Invalid call expression";
   }
@@ -158,6 +158,31 @@ auto errInvalidCallExpr(
   tokens.push_back(std::move(close));
 
   return errorNode(oss.str(), std::move(tokens), std::move(args));
+}
+
+auto errInvalidConditionalExpr(
+    NodePtr cond, lex::Token qmark, NodePtr ifBranch, lex::Token colon, NodePtr elseBranch)
+    -> NodePtr {
+
+  std::ostringstream oss;
+  if (qmark.getKind() != lex::TokenKind::OpQMark) {
+    oss << "Expected question-mark '?' but got: " << qmark;
+  } else if (colon.getKind() != lex::TokenKind::SepColon) {
+    oss << "Expected colon ':' but got: " << colon;
+  } else {
+    oss << "Invalid conditional operator";
+  }
+
+  auto tokens = std::vector<lex::Token>{};
+  tokens.push_back(std::move(qmark));
+  tokens.push_back(std::move(colon));
+
+  auto nodes = std::vector<NodePtr>{};
+  nodes.push_back(std::move(cond));
+  nodes.push_back(std::move(ifBranch));
+  nodes.push_back(std::move(elseBranch));
+
+  return errorNode(oss.str(), std::move(tokens), std::move(nodes));
 }
 
 auto errInvalidSwitchIf(lex::Token kw, NodePtr cond, lex::Token arrow, NodePtr rhs) -> NodePtr {

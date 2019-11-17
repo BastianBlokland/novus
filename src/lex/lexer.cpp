@@ -123,12 +123,16 @@ auto LexerImpl::next() -> Token {
       return basicToken(TokenKind::OpGt, input::Span{m_inputPos});
     case ';':
       return basicToken(TokenKind::OpSemi, input::Span{m_inputPos});
+    case '?':
+      return basicToken(TokenKind::OpQMark, input::Span{m_inputPos});
     case '(':
       return basicToken(TokenKind::SepOpenParen, input::Span{m_inputPos});
     case ')':
       return basicToken(TokenKind::SepCloseParen, input::Span{m_inputPos});
     case ',':
       return basicToken(TokenKind::SepComma, input::Span{m_inputPos});
+    case ':':
+      return basicToken(TokenKind::SepColon, input::Span{m_inputPos});
     case ' ':
     case '\t':
     case '\n':
