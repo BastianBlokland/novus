@@ -126,8 +126,8 @@ auto Program::getActionDecl(sym::ActionId id) const -> const sym::ActionDecl& {
 
 auto Program::getFuncDef(sym::FuncId id) const -> const sym::FuncDef& { return m_funcDefs[id]; }
 
-auto Program::declareUserFunc(std::string name, sym::FuncSig sig) -> void {
-  m_funcDecls.registerFunc(sym::FuncKind::User, std::move(name), std::move(sig));
+auto Program::declareUserFunc(std::string name, sym::FuncSig sig) -> sym::FuncId {
+  return m_funcDecls.registerFunc(sym::FuncKind::User, std::move(name), std::move(sig));
 }
 
 auto Program::defineUserFunc(sym::FuncId id, sym::ConstDeclTable consts, expr::NodePtr expr)

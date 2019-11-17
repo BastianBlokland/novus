@@ -28,7 +28,9 @@ auto analyze(const Source& src) -> Output {
 
   // Define user functions.
   auto defineUserFuncs = internal::DefineUserFuncs{src, prog.get()};
-  src.accept(&defineUserFuncs);
+  for (const auto& funcDecl : declareUserFuncs.getFuncs()) {
+    defineUserFuncs.define(funcDecl.first, funcDecl.second);
+  }
   if (defineUserFuncs.hasErrors()) {
     return buildOutput(nullptr, defineUserFuncs.getDiags());
   }

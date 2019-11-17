@@ -13,9 +13,8 @@ auto DefineUserFuncs::hasErrors() const noexcept -> bool { return !m_diags.empty
 
 auto DefineUserFuncs::getDiags() const noexcept -> const std::vector<Diag>& { return m_diags; }
 
-auto DefineUserFuncs::visit(const parse::FuncDeclStmtNode& n) -> void {
-  const auto id = getFuncId(n);
-  auto consts   = prog::sym::ConstDeclTable{};
+auto DefineUserFuncs::define(prog::sym::FuncId id, const parse::FuncDeclStmtNode& n) -> void {
+  auto consts = prog::sym::ConstDeclTable{};
   if (!declareInputs(n, &consts)) {
     return;
   }
@@ -36,21 +35,6 @@ auto DefineUserFuncs::visit(const parse::FuncDeclStmtNode& n) -> void {
   }
 
   m_prog->defineUserFunc(id, std::move(consts), std::move(expr));
-}
-
-auto DefineUserFuncs::getFuncId(const parse::FuncDeclStmtNode& n) -> prog::sym::FuncId {
-  auto argTypes = std::vector<prog::sym::TypeId>{};
-  for (const auto& arg : n.getArgs()) {
-    const auto argType = m_prog->lookupType(getName(arg.getType()));
-    if (argType) {
-      argTypes.push_back(argType.value());
-    }
-  }
-  const auto result = m_prog->lookupFunc(getName(n.getId()), prog::sym::Input{std::move(argTypes)});
-  if (!result) {
-    throw std::logic_error("Attempted to define function which was not declared yet");
-  }
-  return result.value();
 }
 
 auto DefineUserFuncs::declareInputs(

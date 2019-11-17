@@ -16,6 +16,10 @@ auto DeclareUserFuncs::hasErrors() const noexcept -> bool { return !m_diags.empt
 
 auto DeclareUserFuncs::getDiags() const noexcept -> const std::vector<Diag>& { return m_diags; }
 
+auto DeclareUserFuncs::getFuncs() const noexcept -> const std::vector<Declaration>& {
+  return m_funcs;
+}
+
 auto DeclareUserFuncs::visit(const parse::FuncDeclStmtNode& n) -> void {
   // Get func name.
   const auto name = getName(n.getId());
@@ -49,7 +53,8 @@ auto DeclareUserFuncs::visit(const parse::FuncDeclStmtNode& n) -> void {
   }
 
   // Declare the function in the program.
-  m_prog->declareUserFunc(name, prog::sym::FuncSig{input.value(), retType.value()});
+  auto funcId = m_prog->declareUserFunc(name, prog::sym::FuncSig{input.value(), retType.value()});
+  m_funcs.emplace_back(funcId, n);
 }
 
 auto DeclareUserFuncs::validateFuncName(const lex::Token& nameToken) -> bool {
