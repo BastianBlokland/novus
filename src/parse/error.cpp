@@ -18,11 +18,10 @@ auto errInvalidStmtFuncDecl(
     lex::Token kw,
     lex::Token id,
     lex::Token open,
-    const std::vector<FuncDeclStmtNode::arg>& args,
+    const std::vector<FuncDeclStmtNode::ArgSpec>& args,
     std::vector<lex::Token> commas,
     lex::Token close,
-    lex::Token arrow,
-    lex::Token retType,
+    std::optional<FuncDeclStmtNode::RetTypeSpec> retType,
     NodePtr body) -> NodePtr {
 
   std::ostringstream oss;
@@ -34,10 +33,10 @@ auto errInvalidStmtFuncDecl(
     oss << "Incorrect number of comma's ',' in function declaration";
   } else if (close.getKind() != lex::TokenKind::SepCloseParen) {
     oss << "Expected closing parentheses ')' but got: " << close;
-  } else if (arrow.getKind() != lex::TokenKind::SepArrow) {
-    oss << "Expected return-type seperator (->) but got: " << arrow;
-  } else if (retType.getKind() != lex::TokenKind::Identifier) {
-    oss << "Expected return-type identifier but got: " << retType;
+  } else if (retType && retType->getArrow().getKind() != lex::TokenKind::SepArrow) {
+    oss << "Expected return-type seperator (->) but got: " << retType->getArrow();
+  } else if (retType && retType->getType().getKind() != lex::TokenKind::Identifier) {
+    oss << "Expected return-type identifier but got: " << retType->getType();
   } else {
     oss << "Invalid function declaration";
   }
@@ -47,15 +46,17 @@ auto errInvalidStmtFuncDecl(
   tokens.push_back(std::move(id));
   tokens.push_back(std::move(open));
   for (auto& arg : args) {
-    tokens.push_back(arg.first);
-    tokens.push_back(arg.second);
+    tokens.push_back(arg.getIdentifier());
+    tokens.push_back(arg.getType());
   }
   for (auto& comma : commas) {
     tokens.push_back(std::move(comma));
   }
   tokens.push_back(std::move(close));
-  tokens.push_back(std::move(arrow));
-  tokens.push_back(std::move(retType));
+  if (retType) {
+    tokens.push_back(retType->getArrow());
+    tokens.push_back(retType->getType());
+  }
 
   auto nodes = std::vector<std::unique_ptr<Node>>{};
   nodes.push_back(std::move(body));

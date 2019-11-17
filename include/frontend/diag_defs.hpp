@@ -18,6 +18,9 @@ auto errFuncNameConflictsWithAction(const Source& src, const std::string& name, 
 auto errDuplicateFuncDeclaration(const Source& src, const std::string& name, input::Span span)
     -> Diag;
 
+auto errUnableToInferFuncReturnType(const Source& src, const std::string& name, input::Span span)
+    -> Diag;
+
 auto errNonMatchingFuncReturnType(
     const Source& src,
     const std::string& name,

@@ -41,7 +41,7 @@ auto DefineUserFuncs::visit(const parse::FuncDeclStmtNode& n) -> void {
 auto DefineUserFuncs::getFuncId(const parse::FuncDeclStmtNode& n) -> prog::sym::FuncId {
   auto argTypes = std::vector<prog::sym::TypeId>{};
   for (const auto& arg : n.getArgs()) {
-    const auto argType = m_prog->lookupType(getName(arg.first));
+    const auto argType = m_prog->lookupType(getName(arg.getType()));
     if (argType) {
       argTypes.push_back(argType.value());
     }
@@ -57,34 +57,35 @@ auto DefineUserFuncs::declareInputs(
     const parse::FuncDeclStmtNode& n, prog::sym::ConstDeclTable* consts) -> bool {
   bool isValid = true;
   for (const auto& arg : n.getArgs()) {
-    const auto name = getName(arg.second);
+    const auto name = getName(arg.getIdentifier());
+    const auto span = arg.getIdentifier().getSpan();
     if (m_prog->lookupType(name)) {
-      m_diags.push_back(errConstNameConflictsWithType(m_src, name, arg.second.getSpan()));
+      m_diags.push_back(errConstNameConflictsWithType(m_src, name, span));
       isValid = false;
       continue;
     }
     if (!m_prog->lookupFuncs(name).empty()) {
-      m_diags.push_back(errConstNameConflictsWithFunction(m_src, name, arg.second.getSpan()));
+      m_diags.push_back(errConstNameConflictsWithFunction(m_src, name, span));
       isValid = false;
       continue;
     }
     if (!m_prog->lookupActions(name).empty()) {
-      m_diags.push_back(errConstNameConflictsWithAction(m_src, name, arg.second.getSpan()));
+      m_diags.push_back(errConstNameConflictsWithAction(m_src, name, span));
       isValid = false;
       continue;
     }
     if (consts->lookup(name)) {
-      m_diags.push_back(errConstNameConflictsWithConst(m_src, name, arg.second.getSpan()));
+      m_diags.push_back(errConstNameConflictsWithConst(m_src, name, span));
       isValid = false;
       continue;
     }
 
-    const auto argType = m_prog->lookupType(getName(arg.first));
+    const auto argType = m_prog->lookupType(getName(arg.getType()));
     if (!argType) {
       // Fail because this should have been caught during function declaration.
       throw std::logic_error("No declaration found for function input");
     }
-    consts->registerInput(getName(arg.second), argType.value());
+    consts->registerInput(name, argType.value());
   }
   return isValid;
 }

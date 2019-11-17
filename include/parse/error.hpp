@@ -11,11 +11,10 @@ auto errInvalidStmtFuncDecl(
     lex::Token kw,
     lex::Token id,
     lex::Token open,
-    const std::vector<FuncDeclStmtNode::arg>& args,
+    const std::vector<FuncDeclStmtNode::ArgSpec>& args,
     std::vector<lex::Token> commas,
     lex::Token close,
-    lex::Token arrow,
-    lex::Token retType,
+    std::optional<FuncDeclStmtNode::RetTypeSpec> retType,
     NodePtr body) -> NodePtr;
 
 auto errInvalidStmtExec(

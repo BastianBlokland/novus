@@ -36,10 +36,15 @@ auto DeclareUserFuncs::visit(const parse::FuncDeclStmtNode& n) -> void {
   }
 
   // Get return type.
-  const auto retTypeName = getName(n.getRetType());
+  const auto& retTypeSpec = n.getRetType();
+  if (!retTypeSpec) {
+    m_diags.push_back(errUnableToInferFuncReturnType(m_src, name, n.getSpan()));
+    return;
+  }
+  const auto retTypeName = getName(retTypeSpec->getType());
   const auto retType     = m_prog->lookupType(retTypeName);
   if (!retType) {
-    m_diags.push_back(errUndeclaredType(m_src, retTypeName, n.getRetType().getSpan()));
+    m_diags.push_back(errUndeclaredType(m_src, retTypeName, retTypeSpec->getType().getSpan()));
     return;
   }
 
@@ -65,12 +70,12 @@ auto DeclareUserFuncs::getFuncInput(const parse::FuncDeclStmtNode& n)
   auto isValid  = true;
   auto argTypes = std::vector<prog::sym::TypeId>{};
   for (const auto& arg : n.getArgs()) {
-    const auto argTypeName = getName(arg.first);
+    const auto argTypeName = getName(arg.getType());
     const auto argType     = m_prog->lookupType(argTypeName);
     if (argType) {
       argTypes.push_back(argType.value());
     } else {
-      m_diags.push_back(errUndeclaredType(m_src, argTypeName, arg.first.getSpan()));
+      m_diags.push_back(errUndeclaredType(m_src, argTypeName, arg.getType().getSpan()));
       isValid = false;
     }
   }
