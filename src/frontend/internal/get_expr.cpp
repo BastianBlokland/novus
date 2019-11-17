@@ -110,6 +110,10 @@ auto GetExpr::visit(const parse::CallExprNode& n) -> void {
   m_expr = prog::expr::callExprNode(*m_prog, func.value(), std::move(args));
 }
 
+auto GetExpr::visit(const parse::ConditionalExprNode & /*unused*/) -> void {
+  throw std::logic_error{"GetExpr is not implemented for this node type"};
+}
+
 auto GetExpr::visit(const parse::ConstDeclExprNode& n) -> void {
   auto assignExpr = getSubExpr(n[0], m_visibleConsts);
   if (assignExpr == nullptr) {

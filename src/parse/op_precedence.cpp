@@ -2,7 +2,7 @@
 
 namespace parse {
 
-auto getUnaryOpPrecedence(const lex::Token& token) -> int {
+auto getLhsOpPrecedence(const lex::Token& token) -> int {
   switch (token.getKind()) {
   case lex::TokenKind::OpPlus:
   case lex::TokenKind::OpMinus:
@@ -13,7 +13,7 @@ auto getUnaryOpPrecedence(const lex::Token& token) -> int {
   }
 }
 
-auto getBinaryOpPrecedence(const lex::Token& token) -> int {
+auto getRhsOpPrecedence(const lex::Token& token) -> int {
   switch (token.getKind()) {
   case lex::TokenKind::OpStar:
   case lex::TokenKind::OpSlash:
@@ -33,6 +33,8 @@ auto getBinaryOpPrecedence(const lex::Token& token) -> int {
     return logicAndPrecedence;
   case lex::TokenKind::OpPipePipe:
     return logicOrPrecedence;
+  case lex::TokenKind::OpQMark:
+    return conditionalPrecedence;
   case lex::TokenKind::OpSemi:
     return groupingPrecedence;
   default:

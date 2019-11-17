@@ -25,6 +25,11 @@ public:
     m_bg = rang::bg::reset;
   }
 
+  auto visit(const parse::ConditionalExprNode & /*unused*/) -> void override {
+    m_fg = rang::fg::green;
+    m_bg = rang::bg::reset;
+  }
+
   auto visit(const parse::ConstDeclExprNode & /*unused*/) -> void override {
     m_fg = rang::fg::magenta;
     m_bg = rang::bg::reset;

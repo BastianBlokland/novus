@@ -1,6 +1,7 @@
 #include "parse/node_error.hpp"
 #include "parse/node_expr_binary.hpp"
 #include "parse/node_expr_call.hpp"
+#include "parse/node_expr_conditional.hpp"
 #include "parse/node_expr_const.hpp"
 #include "parse/node_expr_const_decl.hpp"
 #include "parse/node_expr_group.hpp"

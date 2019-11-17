@@ -117,16 +117,18 @@ auto ParserImpl::nextExpr(const int minPrecedence) -> NodePtr {
     // Handle binary operators, precedence controls if we should keep recursing or let the next
     // iteration handle them.
     const auto& nextToken    = peekToken(0);
-    const auto binPrecedence = getBinaryOpPrecedence(nextToken);
-    if (binPrecedence == 0 || binPrecedence <= minPrecedence) {
+    const auto rhsPrecedence = getRhsOpPrecedence(nextToken);
+    if (rhsPrecedence == 0 || rhsPrecedence <= minPrecedence) {
       break;
     }
 
     if (nextToken.getKind() == lex::TokenKind::OpSemi) {
-      lhs = nextExprGroup(std::move(lhs), binPrecedence);
+      lhs = nextExprGroup(std::move(lhs), rhsPrecedence);
+    } else if (nextToken.getKind() == lex::TokenKind::OpQMark) {
+      lhs = nextExprConditional(std::move(lhs));
     } else {
       auto op  = consumeToken();
-      auto rhs = nextExpr(binPrecedence);
+      auto rhs = nextExpr(rhsPrecedence);
       lhs      = binaryExprNode(std::move(lhs), op, std::move(rhs));
     }
   }
@@ -137,7 +139,7 @@ auto ParserImpl::nextExprLhs() -> NodePtr {
   const auto& nextToken = peekToken(0);
   if (nextToken.getCat() == lex::TokenCat::Operator) {
     const auto opToken    = consumeToken();
-    const auto precedence = getUnaryOpPrecedence(opToken);
+    const auto precedence = getLhsOpPrecedence(opToken);
     if (precedence == 0) {
       return errInvalidUnaryOp(opToken, nextExpr(precedence));
     }
@@ -209,6 +211,28 @@ auto ParserImpl::nextExprCall(lex::Token id) -> NodePtr {
   }
   return errInvalidCallExpr(
       std::move(id), std::move(open), std::move(args), std::move(commas), std::move(close));
+}
+
+auto ParserImpl::nextExprConditional(NodePtr condExpr) -> NodePtr {
+  auto qmark      = consumeToken();
+  auto ifBranch   = nextExpr(0);
+  auto colon      = consumeToken();
+  auto elseBranch = nextExpr(0);
+
+  if (qmark.getKind() == lex::TokenKind::OpQMark && colon.getKind() == lex::TokenKind::SepColon) {
+    return conditionalExprNode(
+        std::move(condExpr),
+        std::move(qmark),
+        std::move(ifBranch),
+        std::move(colon),
+        std::move(elseBranch));
+  }
+  return errInvalidConditionalExpr(
+      std::move(condExpr),
+      std::move(qmark),
+      std::move(ifBranch),
+      std::move(colon),
+      std::move(elseBranch));
 }
 
 auto ParserImpl::nextExprParen() -> NodePtr {

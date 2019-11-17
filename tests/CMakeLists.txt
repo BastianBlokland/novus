@@ -50,6 +50,7 @@ add_executable(tests
   parse/error_test.cpp
   parse/expr_binary_test.cpp
   parse/expr_call_test.cpp
+  parse/expr_condtional_test.cpp
   parse/expr_group_test.cpp
   parse/expr_paren_test.cpp
   parse/expr_primary_test.cpp

@@ -38,6 +38,10 @@ auto errInvalidCallExpr(
     std::vector<lex::Token> commas,
     lex::Token close) -> NodePtr;
 
+auto errInvalidConditionalExpr(
+    NodePtr cond, lex::Token qmark, NodePtr ifBranch, lex::Token colon, NodePtr elseBranch)
+    -> NodePtr;
+
 auto errInvalidSwitchIf(lex::Token kw, NodePtr cond, lex::Token arrow, NodePtr rhs) -> NodePtr;
 
 auto errInvalidSwitchElse(lex::Token kw, lex::Token arrow, NodePtr rhs) -> NodePtr;
