@@ -110,8 +110,38 @@ auto GetExpr::visit(const parse::CallExprNode& n) -> void {
   m_expr = prog::expr::callExprNode(*m_prog, func.value(), std::move(args));
 }
 
-auto GetExpr::visit(const parse::ConditionalExprNode & /*unused*/) -> void {
-  throw std::logic_error{"GetExpr is not implemented for this node type"};
+auto GetExpr::visit(const parse::ConditionalExprNode& n) -> void {
+  auto conditions = std::vector<prog::expr::NodePtr>();
+  auto branches   = std::vector<prog::expr::NodePtr>();
+  conditions.push_back(getSubExpr(n[0], m_visibleConsts));
+  if (!conditions[0]) {
+    return;
+  }
+  if (!isBoolType(conditions[0]->getType())) {
+    const auto& typeName = m_prog->getTypeDecl(conditions[0]->getType()).getName();
+    m_diags.push_back(errNonBoolConditionExpression(m_src, typeName, n[0].getSpan()));
+    return;
+  }
+
+  // Make a copy of the visible constants, constants should not be visible outside.
+  auto ifBranchConsts = *m_visibleConsts;
+  branches.push_back(getSubExpr(n[1], &ifBranchConsts));
+
+  // Make a copy of the visible constants, constants should not be visible outside.
+  auto elseBranchConsts = *m_visibleConsts;
+  branches.push_back(getSubExpr(n[2], &elseBranchConsts));
+
+  if (!branches[0] || !branches[1]) {
+    return;
+  }
+  if (branches[0]->getType() != branches[1]->getType()) {
+    const auto& typeName       = m_prog->getTypeDecl(branches[0]->getType()).getName();
+    const auto& branchTypeName = m_prog->getTypeDecl(branches[1]->getType()).getName();
+    m_diags.push_back(errMismatchedBranchTypes(m_src, typeName, branchTypeName, n[2].getSpan()));
+    return;
+  }
+
+  m_expr = prog::expr::switchExprNode(*m_prog, std::move(conditions), std::move(branches));
 }
 
 auto GetExpr::visit(const parse::ConstDeclExprNode& n) -> void {
@@ -185,10 +215,6 @@ auto GetExpr::visit(const parse::SwitchExprIfNode & /*unused*/) -> void {
 }
 
 auto GetExpr::visit(const parse::SwitchExprNode& n) -> void {
-  auto boolType = m_prog->lookupType("bool");
-  if (!boolType) {
-    throw std::logic_error{"No 'bool' type present in type-table"};
-  }
   auto isValid                          = true;
   auto conditions                       = std::vector<prog::expr::NodePtr>();
   auto branches                         = std::vector<prog::expr::NodePtr>();
@@ -198,8 +224,7 @@ auto GetExpr::visit(const parse::SwitchExprNode& n) -> void {
     const auto isElseClause = i == n.getChildCount() - 1;
 
     // Keep a separate set of visible constants, because consts declared in 1 branch should not
-    // be allowed to be accessed from another branch or even after the switch as there is no
-    // guarantee that they will have been assigned at that time.
+    // be allowed to be accessed from another branch or after the switch.
     auto branchConsts = *m_visibleConsts;
     if (!isElseClause) {
       auto condition = getSubExpr(n[i][0], &branchConsts);
@@ -207,9 +232,9 @@ auto GetExpr::visit(const parse::SwitchExprNode& n) -> void {
         isValid = false;
         continue;
       }
-      if (condition->getType() != boolType) {
+      if (!isBoolType(condition->getType())) {
         const auto& typeName = m_prog->getTypeDecl(condition->getType()).getName();
-        m_diags.push_back(errNonBoolExpressionInSwitch(m_src, typeName, n[i][0].getSpan()));
+        m_diags.push_back(errNonBoolConditionExpression(m_src, typeName, n[i][0].getSpan()));
         isValid = false;
         continue;
       }
@@ -226,7 +251,7 @@ auto GetExpr::visit(const parse::SwitchExprNode& n) -> void {
     } else if (branch->getType() != type) {
       const auto& typeName       = m_prog->getTypeDecl(type.value()).getName();
       const auto& branchTypeName = m_prog->getTypeDecl(branch->getType()).getName();
-      m_diags.push_back(errMismatchedBranchTypesInSwitch(
+      m_diags.push_back(errMismatchedBranchTypes(
           m_src, typeName, branchTypeName, n[i][isElseClause ? 0 : 1].getSpan()));
       isValid = false;
       continue;
@@ -294,16 +319,12 @@ auto GetExpr::getBinLogicOpExpr(const parse::BinaryExprNode& n, BinLogicOp op)
     return nullptr;
   }
 
-  auto boolType = m_prog->lookupType("bool");
-  if (!boolType) {
-    throw std::logic_error{"No 'bool' type present in type-table"};
-  }
-  if (lhs->getType() != boolType) {
+  if (!isBoolType(lhs->getType())) {
     const auto& typeName = m_prog->getTypeDecl(lhs->getType()).getName();
     m_diags.push_back(errNonBoolExpressionInLogicOp(m_src, typeName, n[0].getSpan()));
     isValid = false;
   }
-  if (rhs->getType() != boolType) {
+  if (!isBoolType(rhs->getType())) {
     const auto& typeName = m_prog->getTypeDecl(rhs->getType()).getName();
     m_diags.push_back(errNonBoolExpressionInLogicOp(m_src, typeName, n[1].getSpan()));
     isValid = false;
@@ -351,6 +372,14 @@ auto GetExpr::declareConst(const lex::Token& nameToken, prog::sym::TypeId type)
   const auto constId = m_consts->registerLocal(name, type);
   m_visibleConsts->push_back(constId);
   return constId;
+}
+
+auto GetExpr::isBoolType(prog::sym::TypeId type) -> bool {
+  auto boolType = m_prog->lookupType("bool");
+  if (!boolType) {
+    throw std::logic_error{"No 'bool' type present in type-table"};
+  }
+  return type == boolType;
 }
 
 } // namespace frontend::internal

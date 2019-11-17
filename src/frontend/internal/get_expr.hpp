@@ -51,6 +51,8 @@ private:
 
   auto declareConst(const lex::Token& nameToken, prog::sym::TypeId type)
       -> std::optional<prog::sym::ConstId>;
+
+  auto isBoolType(prog::sym::TypeId type) -> bool;
 };
 
 } // namespace frontend::internal

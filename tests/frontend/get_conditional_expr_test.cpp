@@ -10,23 +10,19 @@
 
 namespace frontend {
 
-TEST_CASE("Get switch expression", "[frontend]") {
+TEST_CASE("Get conditional expression", "[frontend]") {
 
-  SECTION("Get basic switch expression") {
+  SECTION("Get basic conditional expression") {
     const auto& output = ANALYZE("fun f() -> int "
-                                 "if true   -> 1 "
-                                 "if false  -> 2 "
-                                 "else      -> 3");
+                                 "true ? 1 : 3");
     REQUIRE(output.isSuccess());
     const auto& funcDef = GET_FUNC_DEF(output, "f");
 
     auto conditions = std::vector<prog::expr::NodePtr>{};
     conditions.push_back(prog::expr::litBoolNode(output.getProg(), true));
-    conditions.push_back(prog::expr::litBoolNode(output.getProg(), false));
 
     auto branches = std::vector<prog::expr::NodePtr>{};
     branches.push_back(prog::expr::litIntNode(output.getProg(), 1));
-    branches.push_back(prog::expr::litIntNode(output.getProg(), 2));
     branches.push_back(prog::expr::litIntNode(output.getProg(), 3));
 
     CHECK(
@@ -34,10 +30,9 @@ TEST_CASE("Get switch expression", "[frontend]") {
         *prog::expr::switchExprNode(output.getProg(), std::move(conditions), std::move(branches)));
   }
 
-  SECTION("Declare consts in switch expression conditions") {
+  SECTION("Declare consts in condition expression conditions") {
     const auto& output = ANALYZE("fun f() -> int "
-                                 "if x = 1; true  -> x "
-                                 "else            -> 2");
+                                 "(x = 1; true) ? x : 2");
     REQUIRE(output.isSuccess());
     const auto& funcDef = GET_FUNC_DEF(output, "f");
     const auto& consts  = funcDef.getConsts();
@@ -62,20 +57,12 @@ TEST_CASE("Get switch expression", "[frontend]") {
   SECTION("Diagnostics") {
     CHECK_DIAG(
         "fun f(int a) -> int "
-        "if a   -> 1 "
-        "else   -> 2",
-        errNonBoolConditionExpression(src, "int", input::Span{23, 23}));
+        "a ? 1 : 2",
+        errNonBoolConditionExpression(src, "int", input::Span{20, 20}));
     CHECK_DIAG(
         "fun f() -> int "
-        "if true   -> 1 "
-        "else      -> true",
-        errMismatchedBranchTypes(src, "int", "bool", input::Span{43, 46}));
-    CHECK_DIAG(
-        "fun f() -> int "
-        "if true   -> 1 "
-        "if false  -> false "
-        "else      -> 2",
-        errMismatchedBranchTypes(src, "int", "bool", input::Span{43, 47}));
+        "true ? 1 : true",
+        errMismatchedBranchTypes(src, "int", "bool", input::Span{26, 29}));
   }
 }
 

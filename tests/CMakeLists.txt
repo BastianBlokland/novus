@@ -24,6 +24,7 @@ add_executable(tests
   frontend/define_user_funcs_test.cpp
   frontend/get_binary_expr_test.cpp
   frontend/get_call_expr_test.cpp
+  frontend/get_conditional_expr_test.cpp
   frontend/get_const_expr_test.cpp
   frontend/get_group_expr_test.cpp
   frontend/get_lit_expr_test.cpp
