@@ -141,4 +141,8 @@ auto Program::addExecStmt(
       sym::execStmt(m_actionDecls, action, std::move(consts), std::move(args)));
 }
 
+auto Program::updateFuncRetType(sym::FuncId funcId, sym::TypeId newRetType) -> void {
+  m_funcDecls.updateFuncRetType(funcId, newRetType);
+}
+
 } // namespace prog

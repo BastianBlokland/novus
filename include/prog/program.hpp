@@ -58,6 +58,8 @@ public:
   addExecStmt(sym::ActionId action, sym::ConstDeclTable consts, std::vector<expr::NodePtr> args)
       -> void;
 
+  auto updateFuncRetType(sym::FuncId funcId, sym::TypeId newRetType) -> void;
+
 private:
   sym::TypeDeclTable m_typeDecls;
   sym::FuncDeclTable m_funcDecls;

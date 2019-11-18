@@ -32,6 +32,8 @@ public:
 
   auto registerFunc(FuncKind kind, std::string name, FuncSig sig) -> FuncId;
 
+  auto updateFuncRetType(FuncId id, TypeId newRetType) -> void;
+
 private:
   std::vector<FuncDecl> m_funcs;
   std::unordered_map<std::string, std::vector<FuncId>> m_lookup;

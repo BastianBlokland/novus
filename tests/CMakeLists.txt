@@ -33,6 +33,7 @@ add_executable(tests
   frontend/get_unary_expr_test.cpp
   frontend/parse_diags_test.cpp
   frontend/source_test.cpp
+  frontend/typeinfer_user_funcs_test.cpp
 
   input/info_test.cpp
   input/span_test.cpp

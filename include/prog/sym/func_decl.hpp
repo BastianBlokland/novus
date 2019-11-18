@@ -22,6 +22,8 @@ public:
   [[nodiscard]] auto getName() const -> const std::string&;
   [[nodiscard]] auto getSig() const -> const FuncSig&;
 
+  auto updateSig(FuncSig newSig) -> void;
+
 private:
   FuncId m_id;
   FuncKind m_kind;
