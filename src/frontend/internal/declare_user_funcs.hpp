@@ -9,13 +9,13 @@ namespace frontend::internal {
 
 class DeclareUserFuncs final : public parse::OptionalNodeVisitor {
 public:
-  using Declaration = typename std::pair<prog::sym::FuncId, const parse::FuncDeclStmtNode&>;
+  using DeclarationInfo = typename std::pair<prog::sym::FuncId, const parse::FuncDeclStmtNode&>;
 
   DeclareUserFuncs() = delete;
   DeclareUserFuncs(const Source& src, prog::Program* prog);
 
   [[nodiscard]] auto hasErrors() const noexcept -> bool;
-  [[nodiscard]] auto getFuncs() const noexcept -> const std::vector<Declaration>&;
+  [[nodiscard]] auto getFuncs() const noexcept -> const std::vector<DeclarationInfo>&;
   [[nodiscard]] auto getDiags() const noexcept -> const std::vector<Diag>&;
 
   auto visit(const parse::FuncDeclStmtNode& n) -> void override;
@@ -23,7 +23,7 @@ public:
 private:
   const Source& m_src;
   prog::Program* m_prog;
-  std::vector<Declaration> m_funcs;
+  std::vector<DeclarationInfo> m_funcs;
   std::vector<Diag> m_diags;
 
   auto getRetType(const parse::FuncDeclStmtNode& n) -> std::optional<prog::sym::TypeId>;

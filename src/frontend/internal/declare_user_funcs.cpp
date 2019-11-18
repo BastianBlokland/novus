@@ -16,7 +16,7 @@ auto DeclareUserFuncs::hasErrors() const noexcept -> bool { return !m_diags.empt
 
 auto DeclareUserFuncs::getDiags() const noexcept -> const std::vector<Diag>& { return m_diags; }
 
-auto DeclareUserFuncs::getFuncs() const noexcept -> const std::vector<Declaration>& {
+auto DeclareUserFuncs::getFuncs() const noexcept -> const std::vector<DeclarationInfo>& {
   return m_funcs;
 }
 
@@ -54,7 +54,7 @@ auto DeclareUserFuncs::getRetType(const parse::FuncDeclStmtNode& n)
     -> std::optional<prog::sym::TypeId> {
   const auto& retTypeSpec = n.getRetType();
   if (!retTypeSpec) {
-    return prog::sym::TypeId::inferredType();
+    return prog::sym::TypeId::inferType();
   }
   const auto retTypeName = getName(retTypeSpec->getType());
   auto retType           = m_prog->lookupType(retTypeName);

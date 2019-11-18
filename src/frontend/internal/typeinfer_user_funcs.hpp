@@ -8,17 +8,12 @@ namespace frontend::internal {
 class TypeInferUserFuncs final {
 public:
   TypeInferUserFuncs() = delete;
-  TypeInferUserFuncs(const Source& src, prog::Program* prog);
+  explicit TypeInferUserFuncs(prog::Program* prog);
 
-  [[nodiscard]] auto hasErrors() const noexcept -> bool;
-  [[nodiscard]] auto getDiags() const noexcept -> const std::vector<Diag>&;
-
-  auto inferTypes(prog::sym::FuncId id, const parse::FuncDeclStmtNode& n) -> void;
+  auto inferRetType(prog::sym::FuncId id, const parse::FuncDeclStmtNode& n) -> bool;
 
 private:
-  const Source& m_src;
   prog::Program* m_prog;
-  std::vector<Diag> m_diags;
 };
 
 } // namespace frontend::internal

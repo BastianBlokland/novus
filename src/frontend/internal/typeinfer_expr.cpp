@@ -8,7 +8,7 @@ namespace frontend::internal {
 
 TypeInferExpr::TypeInferExpr(
     prog::Program* prog, std::unordered_map<std::string, prog::sym::TypeId>* constTypes) :
-    m_prog{prog}, m_constTypes{constTypes}, m_type{prog::sym::TypeId::inferredType()} {
+    m_prog{prog}, m_constTypes{constTypes}, m_type{prog::sym::TypeId::inferType()} {
   if (m_prog == nullptr) {
     throw std::invalid_argument{"Program cannot be null"};
   }
@@ -61,7 +61,7 @@ auto TypeInferExpr::visit(const parse::CallExprNode& n) -> void {
 
 auto TypeInferExpr::visit(const parse::ConditionalExprNode& n) -> void {
   const auto ifBranchType = inferSubExpr(n[1]);
-  if (!ifBranchType.isInferred()) {
+  if (ifBranchType.isConcrete()) {
     m_type = ifBranchType;
     return;
   }
@@ -122,7 +122,7 @@ auto TypeInferExpr::visit(const parse::SwitchExprNode& n) -> void {
     auto branchType         = inferSubExpr(n[i][isElseClause ? 0 : 1]);
 
     // Because all branches have the same type we can stop when we successfully inferred one.
-    if (!branchType.isInferred()) {
+    if (branchType.isConcrete()) {
       m_type = branchType;
       return;
     }
@@ -156,15 +156,15 @@ auto TypeInferExpr::inferSubExpr(const parse::Node& n) -> prog::sym::TypeId {
 auto TypeInferExpr::inferFuncCall(
     const std::string& funcName, std::vector<prog::sym::TypeId> argTypes) -> prog::sym::TypeId {
   for (const auto& argType : argTypes) {
-    if (argType.isInferred()) {
-      return prog::sym::TypeId::inferredType();
+    if (argType.isInfer()) {
+      return prog::sym::TypeId::inferType();
     }
   }
   auto func = m_prog->lookupFunc(funcName, prog::sym::Input{std::move(argTypes)});
   if (func) {
     return m_prog->getFuncDecl(*func).getSig().getOutput();
   }
-  return prog::sym::TypeId::inferredType();
+  return prog::sym::TypeId::inferType();
 }
 
 auto TypeInferExpr::setConstType(const lex::Token& constId, prog::sym::TypeId type) -> void {
@@ -175,7 +175,7 @@ auto TypeInferExpr::setConstType(const lex::Token& constId, prog::sym::TypeId ty
 auto TypeInferExpr::inferConstType(const lex::Token& constId) -> prog::sym::TypeId {
   const auto itr = m_constTypes->find(getName(constId));
   if (itr == m_constTypes->end()) {
-    return prog::sym::TypeId::inferredType();
+    return prog::sym::TypeId::inferType();
   }
   return itr->second;
 }

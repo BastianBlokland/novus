@@ -6,19 +6,10 @@
 
 namespace frontend::internal {
 
-TypeInferUserFuncs::TypeInferUserFuncs(const Source& src, prog::Program* prog) :
-    m_src{src}, m_prog{prog} {}
+TypeInferUserFuncs::TypeInferUserFuncs(prog::Program* prog) : m_prog{prog} {}
 
-auto TypeInferUserFuncs::hasErrors() const noexcept -> bool { return !m_diags.empty(); }
-
-auto TypeInferUserFuncs::getDiags() const noexcept -> const std::vector<Diag>& { return m_diags; }
-
-auto TypeInferUserFuncs::inferTypes(prog::sym::FuncId id, const parse::FuncDeclStmtNode& n)
-    -> void {
-  auto& funcDecl = m_prog->getFuncDecl(id);
-  if (!funcDecl.getSig().getOutput().isInferred()) {
-    return;
-  }
+auto TypeInferUserFuncs::inferRetType(prog::sym::FuncId id, const parse::FuncDeclStmtNode& n)
+    -> bool {
 
   auto constTypes = std::unordered_map<std::string, prog::sym::TypeId>{};
   for (const auto& arg : n.getArgs()) {
@@ -33,13 +24,13 @@ auto TypeInferUserFuncs::inferTypes(prog::sym::FuncId id, const parse::FuncDeclS
   const auto type = inferBodyType.getType();
 
   // If type is still not a concrete type then we fail.
-  if (type.isInferred()) {
-    m_diags.push_back(errUnableToInferFuncReturnType(m_src, funcDecl.getName(), n.getSpan()));
-    return;
+  if (!type.isConcrete()) {
+    return false;
   }
 
   // Update signature with inferred type.
   m_prog->updateFuncRetType(id, type);
+  return true;
 }
 
 } // namespace frontend::internal

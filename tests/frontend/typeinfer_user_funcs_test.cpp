@@ -84,12 +84,19 @@ TEST_CASE("Infer return type of user functions", "[frontend]") {
     CHECK(GET_FUNC_DECL(output, "f2").getSig().getOutput() == GET_TYPE_ID(output, "bool"));
   }
 
+  SECTION("Call function that is declared later") {
+    const auto& output = ANALYZE("fun f1() f2() "
+                                 "fun f2() false");
+    REQUIRE(output.isSuccess());
+    CHECK(GET_FUNC_DECL(output, "f1").getSig().getOutput() == GET_TYPE_ID(output, "bool"));
+  }
+
   SECTION("Diagnostics") {
     CHECK_DIAG(
         "fun f1() f2() "
         "fun f2() f1()",
-        errUnableToInferFuncReturnType(src, "f1", input::Span{0, 12}),
-        errUnableToInferFuncReturnType(src, "f2", input::Span{14, 26}));
+        errUnableToInferFuncReturnType(src, "f1", input::Span{9, 12}),
+        errUnableToInferFuncReturnType(src, "f2", input::Span{23, 26}));
   }
 }
 

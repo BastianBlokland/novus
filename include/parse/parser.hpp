@@ -69,7 +69,7 @@ private:
 
   auto getFromInput() -> lex::Token override {
     if (m_input == m_inputEnd) {
-      return lex::endToken();
+      return *m_input;
     }
     auto val = *m_input;
     ++m_input;
