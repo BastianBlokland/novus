@@ -3,6 +3,7 @@
 #include "internal/define_exec_stmts.hpp"
 #include "internal/define_user_funcs.hpp"
 #include "internal/get_parse_diags.hpp"
+#include "internal/typeinfer_user_funcs.hpp"
 #include "prog/program.hpp"
 #include <memory>
 #include <vector>
@@ -24,6 +25,15 @@ auto analyze(const Source& src) -> Output {
   src.accept(&declareUserFuncs);
   if (declareUserFuncs.hasErrors()) {
     return buildOutput(nullptr, declareUserFuncs.getDiags());
+  }
+
+  // Infer types for user fuctions.
+  auto typeInferUserFuncs = internal::TypeInferUserFuncs{src, prog.get()};
+  for (const auto& funcDecl : declareUserFuncs.getFuncs()) {
+    typeInferUserFuncs.inferTypes(funcDecl.first, funcDecl.second);
+  }
+  if (typeInferUserFuncs.hasErrors()) {
+    return buildOutput(nullptr, typeInferUserFuncs.getDiags());
   }
 
   // Define user functions.

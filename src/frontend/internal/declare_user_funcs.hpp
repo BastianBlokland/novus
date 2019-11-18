@@ -26,8 +26,8 @@ private:
   std::vector<Declaration> m_funcs;
   std::vector<Diag> m_diags;
 
+  auto getRetType(const parse::FuncDeclStmtNode& n) -> std::optional<prog::sym::TypeId>;
   auto validateFuncName(const lex::Token& nameToken) -> bool;
-
   auto getFuncInput(const parse::FuncDeclStmtNode& n) -> std::optional<prog::sym::Input>;
 };
 

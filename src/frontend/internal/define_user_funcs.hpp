@@ -1,7 +1,6 @@
 #pragma once
 #include "frontend/diag.hpp"
 #include "frontend/source.hpp"
-#include "parse/node_visitor_optional.hpp"
 #include "prog/program.hpp"
 
 namespace frontend::internal {

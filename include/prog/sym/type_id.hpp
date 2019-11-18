@@ -8,8 +8,12 @@ class TypeId final {
   friend auto operator<<(std::ostream& out, const TypeId& rhs) -> std::ostream&;
 
 public:
+  [[nodiscard]] static auto inferredType() -> TypeId;
+
   auto operator==(const TypeId& rhs) const noexcept -> bool;
   auto operator!=(const TypeId& rhs) const noexcept -> bool;
+
+  [[nodiscard]] auto isInferred() const noexcept -> bool;
 
 private:
   unsigned int m_id;

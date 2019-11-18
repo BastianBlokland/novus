@@ -14,11 +14,12 @@ auto DefineUserFuncs::hasErrors() const noexcept -> bool { return !m_diags.empty
 auto DefineUserFuncs::getDiags() const noexcept -> const std::vector<Diag>& { return m_diags; }
 
 auto DefineUserFuncs::define(prog::sym::FuncId id, const parse::FuncDeclStmtNode& n) -> void {
+  const auto& funcDecl = m_prog->getFuncDecl(id);
+
   auto consts = prog::sym::ConstDeclTable{};
   if (!declareInputs(n, &consts)) {
     return;
   }
-  const auto& funcDecl = m_prog->getFuncDecl(id);
 
   auto visibleConsts = consts.getAll();
   auto expr          = getExpr(n[0], &consts, &visibleConsts);

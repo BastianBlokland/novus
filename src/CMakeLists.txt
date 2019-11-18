@@ -100,6 +100,7 @@ add_library(frontend STATIC
   frontend/internal/define_user_funcs.cpp
   frontend/internal/get_expr.cpp
   frontend/internal/get_parse_diags.cpp
+  frontend/internal/typeinfer_user_funcs.cpp
 
   frontend/analysis.cpp
   frontend/diag_defs.cpp
