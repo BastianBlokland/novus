@@ -74,7 +74,7 @@ inline auto getText(const prog::Operator& op) -> std::string {
   case prog::Operator::GtEq:
     return ">=";
   }
-  return "__unkown";
+  return "__unknown";
 }
 
 } // namespace frontend::internal

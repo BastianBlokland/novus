@@ -1,24 +1,50 @@
 #pragma once
 #include "lex/token.hpp"
 #include "parse/node.hpp"
+#include <utility>
 #include <vector>
 
 namespace parse {
 
 class FuncDeclStmtNode final : public Node {
+public:
+  class ArgSpec final {
+  public:
+    ArgSpec(lex::Token type, lex::Token identifier);
+
+    auto operator==(const ArgSpec& rhs) const noexcept -> bool;
+
+    [[nodiscard]] auto getType() const noexcept -> const lex::Token&;
+    [[nodiscard]] auto getIdentifier() const noexcept -> const lex::Token&;
+
+  private:
+    lex::Token m_type;
+    lex::Token m_identifier;
+  };
+
+  class RetTypeSpec final {
+  public:
+    RetTypeSpec(lex::Token arrow, lex::Token type);
+
+    auto operator==(const RetTypeSpec& rhs) const noexcept -> bool;
+
+    [[nodiscard]] auto getArrow() const noexcept -> const lex::Token&;
+    [[nodiscard]] auto getType() const noexcept -> const lex::Token&;
+
+  private:
+    lex::Token m_arrow;
+    lex::Token m_type;
+  };
+
   friend auto funcDeclStmtNode(
       lex::Token kw,
       lex::Token id,
       lex::Token open,
-      std::vector<std::pair<lex::Token, lex::Token>> args,
+      std::vector<ArgSpec> args,
       std::vector<lex::Token> commas,
       lex::Token close,
-      lex::Token arrow,
-      lex::Token retType,
+      std::optional<RetTypeSpec> retType,
       NodePtr body) -> NodePtr;
-
-public:
-  using arg = typename std::pair<lex::Token, lex::Token>;
 
   FuncDeclStmtNode() = delete;
 
@@ -30,8 +56,8 @@ public:
   [[nodiscard]] auto getSpan() const -> input::Span override;
 
   [[nodiscard]] auto getId() const -> const lex::Token&;
-  [[nodiscard]] auto getArgs() const -> const std::vector<arg>&;
-  [[nodiscard]] auto getRetType() const -> const lex::Token&;
+  [[nodiscard]] auto getArgs() const -> const std::vector<ArgSpec>&;
+  [[nodiscard]] auto getRetType() const -> const std::optional<RetTypeSpec>&;
 
   auto accept(NodeVisitor* visitor) const -> void override;
 
@@ -39,22 +65,20 @@ private:
   const lex::Token m_kw;
   const lex::Token m_id;
   const lex::Token m_open;
-  const std::vector<arg> m_args;
+  const std::vector<ArgSpec> m_args;
   const std::vector<lex::Token> m_commas;
   const lex::Token m_close;
-  const lex::Token m_arrow;
-  const lex::Token m_retType;
+  const std::optional<RetTypeSpec> m_retType;
   const NodePtr m_body;
 
   FuncDeclStmtNode(
       lex::Token kw,
       lex::Token id,
       lex::Token open,
-      std::vector<arg> args,
+      std::vector<ArgSpec> args,
       std::vector<lex::Token> commas,
       lex::Token close,
-      lex::Token arrow,
-      lex::Token retType,
+      std::optional<RetTypeSpec> retType,
       NodePtr body);
 
   auto print(std::ostream& out) const -> std::ostream& override;
@@ -65,11 +89,10 @@ auto funcDeclStmtNode(
     lex::Token kw,
     lex::Token id,
     lex::Token open,
-    std::vector<FuncDeclStmtNode::arg> args,
+    std::vector<FuncDeclStmtNode::ArgSpec> args,
     std::vector<lex::Token> commas,
     lex::Token close,
-    lex::Token arrow,
-    lex::Token retType,
+    std::optional<FuncDeclStmtNode::RetTypeSpec> retTypeSpec,
     NodePtr body) -> NodePtr;
 
 } // namespace parse

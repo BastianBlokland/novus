@@ -16,6 +16,10 @@ auto DeclareUserFuncs::hasErrors() const noexcept -> bool { return !m_diags.empt
 
 auto DeclareUserFuncs::getDiags() const noexcept -> const std::vector<Diag>& { return m_diags; }
 
+auto DeclareUserFuncs::getFuncs() const noexcept -> const std::vector<DeclarationInfo>& {
+  return m_funcs;
+}
+
 auto DeclareUserFuncs::visit(const parse::FuncDeclStmtNode& n) -> void {
   // Get func name.
   const auto name = getName(n.getId());
@@ -36,15 +40,29 @@ auto DeclareUserFuncs::visit(const parse::FuncDeclStmtNode& n) -> void {
   }
 
   // Get return type.
-  const auto retTypeName = getName(n.getRetType());
-  const auto retType     = m_prog->lookupType(retTypeName);
+  const auto retType = getRetType(n);
   if (!retType) {
-    m_diags.push_back(errUndeclaredType(m_src, retTypeName, n.getRetType().getSpan()));
     return;
   }
 
   // Declare the function in the program.
-  m_prog->declareUserFunc(name, prog::sym::FuncSig{input.value(), retType.value()});
+  auto funcId = m_prog->declareUserFunc(name, prog::sym::FuncSig{input.value(), retType.value()});
+  m_funcs.emplace_back(funcId, n);
+}
+
+auto DeclareUserFuncs::getRetType(const parse::FuncDeclStmtNode& n)
+    -> std::optional<prog::sym::TypeId> {
+  const auto& retTypeSpec = n.getRetType();
+  if (!retTypeSpec) {
+    return prog::sym::TypeId::inferType();
+  }
+  const auto retTypeName = getName(retTypeSpec->getType());
+  auto retType           = m_prog->lookupType(retTypeName);
+  if (!retType) {
+    m_diags.push_back(errUndeclaredType(m_src, retTypeName, retTypeSpec->getType().getSpan()));
+    return std::nullopt;
+  }
+  return retType;
 }
 
 auto DeclareUserFuncs::validateFuncName(const lex::Token& nameToken) -> bool {
@@ -65,12 +83,12 @@ auto DeclareUserFuncs::getFuncInput(const parse::FuncDeclStmtNode& n)
   auto isValid  = true;
   auto argTypes = std::vector<prog::sym::TypeId>{};
   for (const auto& arg : n.getArgs()) {
-    const auto argTypeName = getName(arg.first);
+    const auto argTypeName = getName(arg.getType());
     const auto argType     = m_prog->lookupType(argTypeName);
     if (argType) {
       argTypes.push_back(argType.value());
     } else {
-      m_diags.push_back(errUndeclaredType(m_src, argTypeName, arg.first.getSpan()));
+      m_diags.push_back(errUndeclaredType(m_src, argTypeName, arg.getType().getSpan()));
       isValid = false;
     }
   }

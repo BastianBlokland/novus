@@ -19,6 +19,8 @@ auto FuncDecl::getName() const -> const std::string& { return m_name; }
 
 auto FuncDecl::getSig() const -> const FuncSig& { return m_sig; }
 
+auto FuncDecl::updateSig(FuncSig sig) -> void { m_sig = std::move(sig); }
+
 auto operator<<(std::ostream& out, const FuncDecl& rhs) -> std::ostream& {
   return out << '[' << rhs.m_id << "]-'" << rhs.m_name << "'-" << rhs.m_sig;
 }

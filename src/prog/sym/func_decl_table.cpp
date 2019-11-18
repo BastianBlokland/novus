@@ -48,6 +48,12 @@ auto FuncDeclTable::registerFunc(FuncKind kind, std::string name, FuncSig sig) -
   return id;
 }
 
+auto FuncDeclTable::updateFuncRetType(FuncId id, TypeId newRetType) -> void {
+  const auto index = id.m_id;
+  assert(index < this->m_funcs.size());
+  m_funcs[index].updateSig(FuncSig{m_funcs[index].getSig().getInput(), newRetType});
+}
+
 auto FuncDeclTable::findOverload(const std::vector<FuncId>& overloads, const Input& input) const
     -> std::optional<FuncId> {
   for (const auto& funcId : overloads) {

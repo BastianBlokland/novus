@@ -52,11 +52,13 @@ public:
   [[nodiscard]] auto getActionDecl(sym::ActionId id) const -> const sym::ActionDecl&;
   [[nodiscard]] auto getFuncDef(sym::FuncId id) const -> const sym::FuncDef&;
 
-  auto declareUserFunc(std::string name, sym::FuncSig sig) -> void;
+  auto declareUserFunc(std::string name, sym::FuncSig sig) -> sym::FuncId;
   auto defineUserFunc(sym::FuncId id, sym::ConstDeclTable consts, expr::NodePtr expr) -> void;
   auto
   addExecStmt(sym::ActionId action, sym::ConstDeclTable consts, std::vector<expr::NodePtr> args)
       -> void;
+
+  auto updateFuncRetType(sym::FuncId funcId, sym::TypeId newRetType) -> void;
 
 private:
   sym::TypeDeclTable m_typeDecls;

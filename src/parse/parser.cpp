@@ -34,7 +34,7 @@ auto ParserImpl::nextStmtFuncDecl() -> NodePtr {
   auto kw     = consumeToken();
   auto id     = consumeToken();
   auto open   = consumeToken();
-  auto args   = std::vector<FuncDeclStmtNode::arg>{};
+  auto args   = std::vector<FuncDeclStmtNode::ArgSpec>{};
   auto commas = std::vector<lex::Token>{};
   while (peekToken(0).getKind() == lex::TokenKind::Identifier ||
          peekToken(0).getKind() == lex::TokenKind::SepComma) {
@@ -46,21 +46,26 @@ auto ParserImpl::nextStmtFuncDecl() -> NodePtr {
     }
   }
   auto close   = consumeToken();
-  auto arrow   = consumeToken();
-  auto retType = consumeToken();
-  auto body    = nextExpr(0);
+  auto retType = std::optional<FuncDeclStmtNode::RetTypeSpec>{};
+  if (peekToken(0).getKind() == lex::TokenKind::SepArrow) {
+    auto arrow = consumeToken();
+    auto type  = consumeToken();
+    retType    = FuncDeclStmtNode::RetTypeSpec{std::move(arrow), std::move(type)};
+  }
+  auto body = nextExpr(0);
 
   if (getKw(kw) == lex::Keyword::Fun && id.getKind() == lex::TokenKind::Identifier &&
       open.getKind() == lex::TokenKind::SepOpenParen &&
       close.getKind() == lex::TokenKind::SepCloseParen &&
-      arrow.getKind() == lex::TokenKind::SepArrow &&
-      retType.getKind() == lex::TokenKind::Identifier &&
+      (!retType ||
+       (retType->getArrow().getKind() == lex::TokenKind::SepArrow &&
+        retType->getType().getKind() == lex::TokenKind::Identifier)) &&
       std::all_of(
           args.begin(),
           args.end(),
           [](const auto& a) {
-            return a.first.getKind() == lex::TokenKind::Identifier &&
-                a.second.getKind() == lex::TokenKind::Identifier;
+            return a.getIdentifier().getKind() == lex::TokenKind::Identifier &&
+                a.getType().getKind() == lex::TokenKind::Identifier;
           }) &&
       commas.size() == (args.empty() ? 0 : args.size() - 1)) {
 
@@ -71,7 +76,6 @@ auto ParserImpl::nextStmtFuncDecl() -> NodePtr {
         std::move(args),
         std::move(commas),
         std::move(close),
-        std::move(arrow),
         std::move(retType),
         std::move(body));
   }
@@ -82,7 +86,6 @@ auto ParserImpl::nextStmtFuncDecl() -> NodePtr {
       args,
       std::move(commas),
       std::move(close),
-      std::move(arrow),
       std::move(retType),
       std::move(body));
 }

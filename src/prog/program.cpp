@@ -126,8 +126,8 @@ auto Program::getActionDecl(sym::ActionId id) const -> const sym::ActionDecl& {
 
 auto Program::getFuncDef(sym::FuncId id) const -> const sym::FuncDef& { return m_funcDefs[id]; }
 
-auto Program::declareUserFunc(std::string name, sym::FuncSig sig) -> void {
-  m_funcDecls.registerFunc(sym::FuncKind::User, std::move(name), std::move(sig));
+auto Program::declareUserFunc(std::string name, sym::FuncSig sig) -> sym::FuncId {
+  return m_funcDecls.registerFunc(sym::FuncKind::User, std::move(name), std::move(sig));
 }
 
 auto Program::defineUserFunc(sym::FuncId id, sym::ConstDeclTable consts, expr::NodePtr expr)
@@ -139,6 +139,10 @@ auto Program::addExecStmt(
     sym::ActionId action, sym::ConstDeclTable consts, std::vector<expr::NodePtr> args) -> void {
   return m_execStmts.push_back(
       sym::execStmt(m_actionDecls, action, std::move(consts), std::move(args)));
+}
+
+auto Program::updateFuncRetType(sym::FuncId funcId, sym::TypeId newRetType) -> void {
+  m_funcDecls.updateFuncRetType(funcId, newRetType);
 }
 
 } // namespace prog
