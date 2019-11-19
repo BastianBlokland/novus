@@ -15,8 +15,9 @@ enum class OpCode : uint8_t {
   SubInt      = 51,
   MulInt      = 52,
   DivInt      = 53,
-  NegInt      = 54,
-  LogicInvInt = 55,
+  RemInt      = 54,
+  NegInt      = 55,
+  LogicInvInt = 56,
 
   CheckEqInt = 60,
   CheckGtInt = 61,

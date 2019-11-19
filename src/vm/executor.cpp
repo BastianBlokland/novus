@@ -65,6 +65,14 @@ static auto execute(const Assembly& assembly, io::Interface* interface, uint32_t
       }
       evalStack.push(internal::intValue(a / b));
     } break;
+    case OpCode::RemInt: {
+      auto b = evalStack.pop().getInt();
+      auto a = evalStack.pop().getInt();
+      if (b == 0) {
+        throw exceptions::DivByZero{};
+      }
+      evalStack.push(internal::intValue(a % b));
+    } break;
     case OpCode::NegInt: {
       auto a = evalStack.pop().getInt();
       evalStack.push(internal::intValue(-a));

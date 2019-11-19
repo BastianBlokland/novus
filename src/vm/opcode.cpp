@@ -30,6 +30,9 @@ auto operator<<(std::ostream& out, const OpCode& rhs) -> std::ostream& {
   case OpCode::DivInt:
     out << "div-int";
     break;
+  case OpCode::RemInt:
+    out << "rem-int";
+    break;
   case OpCode::NegInt:
     out << "neg-int";
     break;

@@ -8,6 +8,7 @@ enum class Operator {
   Minus,
   Star,
   Slash,
+  Rem,
   Amp,
   Pipe,
   EqEq,

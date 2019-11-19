@@ -17,6 +17,7 @@ auto getRhsOpPrecedence(const lex::Token& token) -> int {
   switch (token.getKind()) {
   case lex::TokenKind::OpStar:
   case lex::TokenKind::OpSlash:
+  case lex::TokenKind::OpRem:
     return multiplicativePrecedence;
   case lex::TokenKind::OpPlus:
   case lex::TokenKind::OpMinus:

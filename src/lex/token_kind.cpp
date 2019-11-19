@@ -16,6 +16,9 @@ auto operator<<(std::ostream& out, const TokenKind& rhs) -> std::ostream& {
   case TokenKind::OpSlash:
     out << "slash";
     break;
+  case TokenKind::OpRem:
+    out << "remainder";
+    break;
   case TokenKind::OpAmp:
     out << "ampersand";
     break;

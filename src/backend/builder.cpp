@@ -50,6 +50,8 @@ auto Builder::addMulInt() -> void { writeOpCode(vm::OpCode::MulInt); }
 
 auto Builder::addDivInt() -> void { writeOpCode(vm::OpCode::DivInt); }
 
+auto Builder::addRemInt() -> void { writeOpCode(vm::OpCode::RemInt); }
+
 auto Builder::addNegInt() -> void { writeOpCode(vm::OpCode::NegInt); }
 
 auto Builder::addLogicInvInt() -> void { writeOpCode(vm::OpCode::LogicInvInt); }

@@ -82,6 +82,25 @@ TEST_CASE("Integer operations", "[vm]") {
         vm::exceptions::DivByZero);
   }
 
+  SECTION("Remainder") {
+    CHECK_EXPR(
+        [](backend::Builder* builder) -> void {
+          builder->addLoadLitInt(33);
+          builder->addLoadLitInt(4);
+          builder->addRemInt();
+          builder->addPrintInt();
+        },
+        "1");
+    CHECK_EXPR_THROWS(
+        [](backend::Builder* builder) -> void {
+          builder->addLoadLitInt(1);
+          builder->addLoadLitInt(0);
+          builder->addRemInt();
+          builder->addPrintInt();
+        },
+        vm::exceptions::DivByZero);
+  }
+
   SECTION("Negate") {
     CHECK_EXPR(
         [](backend::Builder* builder) -> void {

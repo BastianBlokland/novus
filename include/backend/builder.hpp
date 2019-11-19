@@ -31,6 +31,7 @@ public:
   auto addSubInt() -> void;
   auto addMulInt() -> void;
   auto addDivInt() -> void;
+  auto addRemInt() -> void;
   auto addNegInt() -> void;
   auto addLogicInvInt() -> void;
 

@@ -22,6 +22,8 @@ inline auto getOperator(const lex::Token& token) -> std::optional<prog::Operator
     return prog::Operator::Star;
   case lex::TokenKind::OpSlash:
     return prog::Operator::Slash;
+  case lex::TokenKind::OpRem:
+    return prog::Operator::Rem;
   case lex::TokenKind::OpAmp:
     return prog::Operator::Amp;
   case lex::TokenKind::OpPipe:
@@ -55,6 +57,8 @@ inline auto getText(const prog::Operator& op) -> std::string {
     return "*";
   case prog::Operator::Slash:
     return "/";
+  case prog::Operator::Rem:
+    return "%";
   case prog::Operator::Amp:
     return "&";
   case prog::Operator::Pipe:

@@ -80,6 +80,9 @@ auto GenExpr::visit(const prog::expr::CallExprNode& n) -> void {
   case prog::sym::FuncKind::DivInt:
     m_builder->addDivInt();
     break;
+  case prog::sym::FuncKind::RemInt:
+    m_builder->addRemInt();
+    break;
   case prog::sym::FuncKind::CheckEqInt:
     m_builder->addCheckEqInt();
     break;

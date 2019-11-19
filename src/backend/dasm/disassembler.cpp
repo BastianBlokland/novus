@@ -25,6 +25,7 @@ auto disassembleInstructions(const vm::Assembly& assembly) -> std::vector<Instru
     case vm::OpCode::SubInt:
     case vm::OpCode::MulInt:
     case vm::OpCode::DivInt:
+    case vm::OpCode::RemInt:
     case vm::OpCode::NegInt:
     case vm::OpCode::LogicInvInt:
     case vm::OpCode::CheckEqInt:

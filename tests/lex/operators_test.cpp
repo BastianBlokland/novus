@@ -8,6 +8,7 @@ TEST_CASE("Lexing operators", "[lex]") {
   CHECK_TOKENS("-", basicToken(TokenKind::OpMinus));
   CHECK_TOKENS("*", basicToken(TokenKind::OpStar));
   CHECK_TOKENS("/", basicToken(TokenKind::OpSlash));
+  CHECK_TOKENS("%", basicToken(TokenKind::OpRem));
   CHECK_TOKENS("&", basicToken(TokenKind::OpAmp));
   CHECK_TOKENS("&&", basicToken(TokenKind::OpAmpAmp));
   CHECK_TOKENS("|", basicToken(TokenKind::OpPipe));

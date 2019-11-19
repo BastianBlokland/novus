@@ -85,6 +85,8 @@ auto LexerImpl::next() -> Token {
       return basicToken(TokenKind::OpStar, input::Span{m_inputPos});
     case '/':
       return basicToken(TokenKind::OpSlash, input::Span{m_inputPos});
+    case '%':
+      return basicToken(TokenKind::OpRem, input::Span{m_inputPos});
     case '&':
       if (peekChar(0) == '&') {
         consumeChar();
