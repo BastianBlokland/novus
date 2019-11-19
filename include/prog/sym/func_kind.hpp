@@ -10,6 +10,7 @@ enum class FuncKind {
   SubInt,
   MulInt,
   DivInt,
+  RemInt,
   CheckEqInt,
   CheckNEqInt,
   CheckLeInt,

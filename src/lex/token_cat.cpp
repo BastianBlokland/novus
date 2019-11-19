@@ -35,6 +35,7 @@ auto lookupCat(const TokenKind kind) -> TokenCat {
   case TokenKind::OpMinus:
   case TokenKind::OpStar:
   case TokenKind::OpSlash:
+  case TokenKind::OpRem:
   case TokenKind::OpAmp:
   case TokenKind::OpAmpAmp:
   case TokenKind::OpPipe:

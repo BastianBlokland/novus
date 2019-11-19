@@ -31,6 +31,10 @@ Program::Program() {
       getFuncName(Operator::Slash),
       sym::FuncSig{sym::Input{intT, intT}, intT});
   m_funcDecls.registerFunc(
+      sym::FuncKind::RemInt,
+      getFuncName(Operator::Rem),
+      sym::FuncSig{sym::Input{intT, intT}, intT});
+  m_funcDecls.registerFunc(
       sym::FuncKind::CheckEqInt,
       getFuncName(Operator::EqEq),
       sym::FuncSig{sym::Input{intT, intT}, boolT});

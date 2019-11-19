@@ -9,6 +9,7 @@ enum class TokenKind {
   OpMinus,
   OpStar,
   OpSlash,
+  OpRem,
   OpAmp,
   OpAmpAmp,
   OpPipe,

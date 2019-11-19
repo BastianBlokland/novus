@@ -41,6 +41,11 @@ TEST_CASE("Call Expression", "[backend]") {
       builder->addLoadLitInt(3);
       builder->addDivInt();
     });
+    CHECK_EXPR_INT("1 % 3", [](backend::Builder* builder) -> void {
+      builder->addLoadLitInt(1);
+      builder->addLoadLitInt(3);
+      builder->addRemInt();
+    });
   }
 
   SECTION("Int checks") {

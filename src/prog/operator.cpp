@@ -13,6 +13,8 @@ auto getFuncName(Operator op) -> std::string {
     return "__op_star";
   case Operator::Slash:
     return "__op_slash";
+  case Operator::Rem:
+    return "__op_rem";
   case Operator::Amp:
     return "__op_amp";
   case Operator::Pipe:
