@@ -5,7 +5,7 @@ project(
   VERSION 0.1
   LANGUAGES CXX)
 
-  # Generate a 'compile_commands.json' for use by clangd.
+# Generate a 'compile_commands.json' for use by clangd.
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 # Use the clang-tidy linter if installed.
