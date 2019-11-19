@@ -58,7 +58,8 @@ auto GetExpr::visit(const parse::BinaryExprNode& n) -> void {
   auto args = std::vector<prog::expr::NodePtr>{};
   args.push_back(getSubExpr(n[0], m_visibleConsts));
   args.push_back(getSubExpr(n[1], m_visibleConsts));
-  if (!args[0] || !args[1]) {
+  if (!args[0] || !args[1] || !args[0]->getType().isConcrete() ||
+      !args[1]->getType().isConcrete()) {
     return;
   }
 
@@ -83,11 +84,14 @@ auto GetExpr::visit(const parse::CallExprNode& n) -> void {
   for (auto i = 0U; i < n.getChildCount(); ++i) {
     auto arg = getSubExpr(n[i], m_visibleConsts);
     if (arg) {
-      argTypes.push_back(arg->getType());
-      args.push_back(std::move(arg));
-    } else {
-      isValid = false;
+      const auto argType = arg->getType();
+      if (argType.isConcrete()) {
+        argTypes.push_back(argType);
+        args.push_back(std::move(arg));
+        continue;
+      }
     }
+    isValid = false;
   }
   if (!isValid) {
     return;
@@ -274,7 +278,7 @@ auto GetExpr::visit(const parse::UnaryExprNode& n) -> void {
 
   auto args = std::vector<prog::expr::NodePtr>{};
   args.push_back(getSubExpr(n[0], m_visibleConsts));
-  if (!args[0]) {
+  if (!args[0] || !args[0]->getType().isConcrete()) {
     return;
   }
 

@@ -97,6 +97,33 @@ TEST_CASE("Infer return type of user functions", "[frontend]") {
         "fun f2() f1()",
         errUnableToInferFuncReturnType(src, "f1", input::Span{9, 12}),
         errUnableToInferFuncReturnType(src, "f2", input::Span{23, 26}));
+    CHECK_DIAG("fun f() a", errUndeclaredConst(src, "a", input::Span{8, 8}));
+    CHECK_DIAG(
+        "fun f1() f1() "
+        "fun f2() a",
+        errUnableToInferFuncReturnType(src, "f1", input::Span{9, 12}),
+        errUndeclaredConst(src, "a", input::Span{23, 23}));
+    CHECK_DIAG(
+        "fun f1() f2(); 1 "
+        "fun f2() a",
+        errUndeclaredConst(src, "a", input::Span{26, 26}));
+    CHECK_DIAG(
+        "fun f1() a "
+        "fun f2() f1() + 1",
+        errUndeclaredConst(src, "a", input::Span{9, 9}));
+    CHECK_DIAG(
+        "fun f1() a "
+        "fun f2() 1 + f1()",
+        errUndeclaredConst(src, "a", input::Span{9, 9}));
+    CHECK_DIAG(
+        "fun f1() a "
+        "fun f2() -f1()",
+        errUndeclaredConst(src, "a", input::Span{9, 9}));
+    CHECK_DIAG(
+        "fun f1() a "
+        "fun f2() f3(f1()) "
+        "fun f3(int i) 1",
+        errUndeclaredConst(src, "a", input::Span{9, 9}));
   }
 }
 

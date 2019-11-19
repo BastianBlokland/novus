@@ -44,21 +44,11 @@ auto analyze(const Source& src) -> Output {
       inferredAllFuncs &= success;
       inferredOne |= success;
     }
+    // Stop the loop if we failed to make any progress.
     if (!inferredOne) {
       break;
     }
   } while (!inferredAllFuncs);
-  if (!inferredAllFuncs) {
-    auto diags = std::vector<Diag>();
-    for (const auto& funcDeclInfo : declareUserFuncs.getFuncs()) {
-      auto& funcDecl = prog->getFuncDecl(funcDeclInfo.first);
-      if (funcDecl.getSig().getOutput().isInfer()) {
-        diags.push_back(errUnableToInferFuncReturnType(
-            src, funcDecl.getName(), funcDeclInfo.second[0].getSpan()));
-      }
-    }
-    return buildOutput(nullptr, std::move(diags));
-  }
 
   // Define user functions.
   auto defineUserFuncs = internal::DefineUserFuncs{src, prog.get()};

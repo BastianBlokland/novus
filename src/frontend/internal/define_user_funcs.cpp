@@ -14,7 +14,8 @@ auto DefineUserFuncs::hasErrors() const noexcept -> bool { return !m_diags.empty
 auto DefineUserFuncs::getDiags() const noexcept -> const std::vector<Diag>& { return m_diags; }
 
 auto DefineUserFuncs::define(prog::sym::FuncId id, const parse::FuncDeclStmtNode& n) -> void {
-  const auto& funcDecl = m_prog->getFuncDecl(id);
+  const auto& funcDecl   = m_prog->getFuncDecl(id);
+  const auto funcRetType = funcDecl.getSig().getOutput();
 
   auto consts = prog::sym::ConstDeclTable{};
   if (!declareInputs(n, &consts)) {
@@ -27,7 +28,12 @@ auto DefineUserFuncs::define(prog::sym::FuncId id, const parse::FuncDeclStmtNode
     return;
   }
 
-  if (expr->getType() != funcDecl.getSig().getOutput()) {
+  if (funcRetType.isInfer()) {
+    m_diags.push_back(errUnableToInferFuncReturnType(m_src, funcDecl.getName(), n[0].getSpan()));
+    return;
+  }
+
+  if (expr->getType() != funcRetType) {
     const auto& declaredType = m_prog->getTypeDecl(funcDecl.getSig().getOutput()).getName();
     const auto& returnedType = m_prog->getTypeDecl(expr->getType()).getName();
     m_diags.push_back(errNonMatchingFuncReturnType(
