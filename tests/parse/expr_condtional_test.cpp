@@ -18,11 +18,11 @@ TEST_CASE("Parsing conditional expressions", "[parse]") {
           COLON,
           conditionalExprNode(CONST("z"), QMARK, CONST("a"), COLON, CONST("b"))));
   CHECK_EXPR(
-      "x ? a; b : z",
+      "x ? (a; b) : z",
       conditionalExprNode(
           CONST("x"),
           QMARK,
-          groupExprNode(NODES(CONST("a"), CONST("b")), SEMIS(1)),
+          parenExprNode(OPAREN, groupExprNode(NODES(CONST("a"), CONST("b")), SEMIS(1)), CPAREN),
           COLON,
           CONST("z")));
 
