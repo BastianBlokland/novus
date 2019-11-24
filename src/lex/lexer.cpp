@@ -1,5 +1,5 @@
 #include "lex/lexer.hpp"
-#include "char_escape.hpp"
+#include "input/char_escape.hpp"
 #include "lex/error.hpp"
 
 namespace lex {
@@ -225,7 +225,7 @@ auto LexerImpl::nextLitStr() -> Token {
       return erLitStrUnterminated(input::Span{startPos, m_inputPos});
     case '\\': {
       // Backslash is used to start an escape sequence.
-      const auto unescapedC = unescape(consumeChar());
+      const auto unescapedC = input::unescape(consumeChar());
       if (unescapedC) {
         result += unescapedC.value();
       } else {

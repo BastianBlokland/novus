@@ -16,6 +16,7 @@ public:
   [[nodiscard]] auto operator[](unsigned int i) const -> const Node& override;
   [[nodiscard]] auto getChildCount() const -> unsigned int override;
   [[nodiscard]] auto getType() const noexcept -> sym::TypeId override;
+  [[nodiscard]] auto toString() const -> std::string override;
 
   [[nodiscard]] auto getId() const noexcept -> sym::ConstId;
 
@@ -26,8 +27,6 @@ private:
   sym::TypeId m_type;
 
   ConstExprNode(sym::ConstId id, sym::TypeId type);
-
-  auto print(std::ostream& out) const -> std::ostream& override;
 };
 
 using ConstNodePtr = std::unique_ptr<ConstExprNode>;

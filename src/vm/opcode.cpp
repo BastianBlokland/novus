@@ -7,6 +7,9 @@ auto operator<<(std::ostream& out, const OpCode& rhs) -> std::ostream& {
   case OpCode::LoadLitInt:
     out << "load-int";
     break;
+  case OpCode::LoadLitString:
+    out << "load-string";
+    break;
 
   case OpCode::ReserveConsts:
     out << "reserve-consts";
@@ -50,11 +53,12 @@ auto operator<<(std::ostream& out, const OpCode& rhs) -> std::ostream& {
     out << "check-le-int";
     break;
 
-  case OpCode::PrintInt:
-    out << "print-int";
+  case OpCode::ConvIntString:
+    out << "conv-int-string";
     break;
-  case OpCode::PrintLogic:
-    out << "print-logic";
+
+  case OpCode::PrintString:
+    out << "print-string";
     break;
 
   case OpCode::Jump:

@@ -3,7 +3,7 @@
 
 namespace backend {
 
-TEST_CASE("Call Expression", "[backend]") {
+TEST_CASE("Generate assembly for call expressions", "[backend]") {
 
   SECTION("Int operations") {
     CHECK_EXPR_INT("-42", [](backend::Builder* builder) -> void {
@@ -126,10 +126,21 @@ TEST_CASE("Call Expression", "[backend]") {
     });
   }
 
+  SECTION("Conversions") {
+    CHECK_EXPR_STRING("string(42)", [](backend::Builder* builder) -> void {
+      builder->addLoadLitInt(42);
+      builder->addConvIntString();
+    });
+    CHECK_EXPR_STRING("string(true)", [](backend::Builder* builder) -> void {
+      builder->addLoadLitInt(1);
+      builder->addConvBoolString();
+    });
+  }
+
   SECTION("User functions") {
     CHECK_PROG(
         "fun test(int a, int b) -> int a + b "
-        "print(test(42, 1337))",
+        "print(string(test(42, 1337)))",
         [](backend::Builder* builder) -> void {
           builder->label("test");
           builder->addReserveConsts(2);
@@ -145,7 +156,8 @@ TEST_CASE("Call Expression", "[backend]") {
           builder->addLoadLitInt(42);
           builder->addLoadLitInt(1337);
           builder->addCall("test");
-          builder->addPrintInt();
+          builder->addConvIntString();
+          builder->addPrintString();
           builder->addRet();
           builder->addFail();
 

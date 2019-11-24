@@ -17,6 +17,7 @@ add_executable(tests
   backend/assembly_output.cpp
   backend/call_expr_test.cpp
   backend/constants_test.cpp
+  backend/literals_test.cpp
   backend/switch_expr_test.cpp
 
   frontend/declare_user_funcs_test.cpp
@@ -35,6 +36,7 @@ add_executable(tests
   frontend/source_test.cpp
   frontend/typeinfer_user_funcs_test.cpp
 
+  input/char_escape_test.cpp
   input/info_test.cpp
   input/span_test.cpp
 
@@ -64,6 +66,7 @@ add_executable(tests
 
   vm/call_test.cpp
   vm/consts_test.cpp
+  vm/conv_test.cpp
   vm/error_test.cpp
   vm/int_check_test.cpp
   vm/int_op_test.cpp

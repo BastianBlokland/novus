@@ -3,7 +3,7 @@
 
 namespace vm {
 
-TEST_CASE("Integer checks", "[vm]") {
+TEST_CASE("Execute integer checks", "[vm]") {
 
   SECTION("Equal") {
     CHECK_EXPR(
@@ -11,7 +11,8 @@ TEST_CASE("Integer checks", "[vm]") {
           builder->addLoadLitInt(1);
           builder->addLoadLitInt(-2);
           builder->addCheckEqInt();
-          builder->addPrintLogic();
+          builder->addConvBoolString();
+          builder->addPrintString();
         },
         "false");
     CHECK_EXPR(
@@ -19,7 +20,8 @@ TEST_CASE("Integer checks", "[vm]") {
           builder->addLoadLitInt(2);
           builder->addLoadLitInt(2);
           builder->addCheckEqInt();
-          builder->addPrintLogic();
+          builder->addConvBoolString();
+          builder->addPrintString();
         },
         "true");
   }
@@ -30,7 +32,8 @@ TEST_CASE("Integer checks", "[vm]") {
           builder->addLoadLitInt(-1);
           builder->addLoadLitInt(2);
           builder->addCheckGtInt();
-          builder->addPrintLogic();
+          builder->addConvBoolString();
+          builder->addPrintString();
         },
         "false");
     CHECK_EXPR(
@@ -38,7 +41,8 @@ TEST_CASE("Integer checks", "[vm]") {
           builder->addLoadLitInt(2);
           builder->addLoadLitInt(1);
           builder->addCheckGtInt();
-          builder->addPrintLogic();
+          builder->addConvBoolString();
+          builder->addPrintString();
         },
         "true");
   }
@@ -49,7 +53,8 @@ TEST_CASE("Integer checks", "[vm]") {
           builder->addLoadLitInt(3);
           builder->addLoadLitInt(2);
           builder->addCheckLeInt();
-          builder->addPrintLogic();
+          builder->addConvBoolString();
+          builder->addPrintString();
         },
         "false");
     CHECK_EXPR(
@@ -57,7 +62,8 @@ TEST_CASE("Integer checks", "[vm]") {
           builder->addLoadLitInt(2);
           builder->addLoadLitInt(3);
           builder->addCheckLeInt();
-          builder->addPrintLogic();
+          builder->addConvBoolString();
+          builder->addPrintString();
         },
         "true");
   }

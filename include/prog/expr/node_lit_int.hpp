@@ -16,6 +16,7 @@ public:
   [[nodiscard]] auto operator[](unsigned int i) const -> const Node& override;
   [[nodiscard]] auto getChildCount() const -> unsigned int override;
   [[nodiscard]] auto getType() const noexcept -> sym::TypeId override;
+  [[nodiscard]] auto toString() const -> std::string override;
 
   [[nodiscard]] auto getVal() const noexcept -> int32_t;
 
@@ -26,8 +27,6 @@ private:
   int32_t m_val;
 
   LitIntNode(sym::TypeId type, int32_t val);
-
-  auto print(std::ostream& out) const -> std::ostream& override;
 };
 
 // Factories.

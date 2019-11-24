@@ -9,6 +9,7 @@ class ConstExprNode;
 class GroupExprNode;
 class LitBoolNode;
 class LitIntNode;
+class LitStringNode;
 
 class NodeVisitor {
 public:
@@ -19,6 +20,7 @@ public:
   virtual auto visit(const GroupExprNode& n) -> void  = 0;
   virtual auto visit(const LitBoolNode& n) -> void    = 0;
   virtual auto visit(const LitIntNode& n) -> void     = 0;
+  virtual auto visit(const LitStringNode& n) -> void  = 0;
 };
 
 } // namespace prog::expr

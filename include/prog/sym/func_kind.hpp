@@ -21,6 +21,9 @@ enum class FuncKind {
   InvBool,
   CheckEqBool,
   CheckNEqBool,
+
+  ConvIntString,
+  ConvBoolString,
 };
 
 } // namespace prog::sym

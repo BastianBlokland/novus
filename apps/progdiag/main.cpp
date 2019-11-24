@@ -2,6 +2,7 @@
 #include "frontend/analysis.hpp"
 #include "frontend/source.hpp"
 #include "get_expr_color.hpp"
+#include "input/char_escape.hpp"
 #include "rang.hpp"
 
 namespace progdiag {
@@ -40,8 +41,8 @@ auto printExpr(
   auto exprCol = GetExprColor{};
   n.accept(&exprCol);
 
-  std::cout << rang::style::bold << exprCol.getFgColor() << n << ' ' << rang::fg::reset
-            << rang::style::dim << n.getType() << rang::style::reset << '\n';
+  std::cout << rang::style::bold << exprCol.getFgColor() << input::escape(n.toString()) << ' '
+            << rang::fg::reset << rang::style::dim << n.getType() << rang::style::reset << '\n';
 
   const auto childCount = n.getChildCount();
   for (auto i = 0U; i < childCount; ++i) {

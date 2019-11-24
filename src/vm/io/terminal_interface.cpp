@@ -3,6 +3,8 @@
 
 namespace vm::io {
 
-auto TerminalInterface::print(std::string text) -> void { std::cout << text << '\n'; }
+auto TerminalInterface::print(const char* data, unsigned int size) -> void {
+  std::cout.write(data, size);
+}
 
 } // namespace vm::io

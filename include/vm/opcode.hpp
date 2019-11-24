@@ -5,7 +5,8 @@
 namespace vm {
 
 enum class OpCode : uint8_t {
-  LoadLitInt = 10,
+  LoadLitInt    = 10,
+  LoadLitString = 11,
 
   ReserveConsts = 20,
   StoreConst    = 21,
@@ -23,8 +24,9 @@ enum class OpCode : uint8_t {
   CheckGtInt = 61,
   CheckLeInt = 62,
 
-  PrintInt   = 100,
-  PrintLogic = 101,
+  ConvIntString = 70,
+
+  PrintString = 100,
 
   Jump   = 220,
   JumpIf = 221,

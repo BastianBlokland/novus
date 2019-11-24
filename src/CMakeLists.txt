@@ -1,5 +1,6 @@
 # Input.
 add_library(input STATIC
+  input/char_escape.cpp
   input/info.cpp
   input/span.cpp
   input/textpos.cpp)
@@ -10,7 +11,6 @@ target_include_directories(input PRIVATE input)
 
 # Lexer.
 add_library(lex STATIC
-  lex/char_escape.cpp
   lex/error.cpp
   lex/lexer.cpp
   lex/token.cpp
@@ -63,6 +63,7 @@ add_library(prog STATIC
   prog/expr/node_group.cpp
   prog/expr/node_lit_bool.cpp
   prog/expr/node_lit_int.cpp
+  prog/expr/node_lit_string.cpp
   prog/expr/node.cpp
   prog/expr/utilities.cpp
 
@@ -138,11 +139,11 @@ add_library(vm STATIC
   vm/exceptions/eval_stack_not_empty.cpp
   vm/exceptions/eval_stack_overflow.cpp
   vm/exceptions/invalid_assembly.cpp
+  vm/internal/allocator.cpp
   vm/internal/call_stack.cpp
   vm/internal/const_stack.cpp
   vm/internal/eval_stack.cpp
   vm/internal/exec_scope.cpp
-  vm/internal/value.cpp
   vm/io/memory_interface.cpp
   vm/io/terminal_interface.cpp
   vm/assembly.cpp

@@ -1,17 +1,14 @@
 #pragma once
 #include "prog/expr/node.hpp"
-#include "prog/sym/const_decl_table.hpp"
-#include "prog/sym/const_id.hpp"
+#include "prog/program.hpp"
 
 namespace prog::expr {
 
-class AssignExprNode final : public Node {
-  friend auto
-  assignExprNode(const sym::ConstDeclTable& constTable, sym::ConstId constId, NodePtr expr)
-      -> NodePtr;
+class LitStringNode final : public Node {
+  friend auto litStringNode(const Program& program, std::string val) -> NodePtr;
 
 public:
-  AssignExprNode() = delete;
+  LitStringNode() = delete;
 
   auto operator==(const Node& rhs) const noexcept -> bool override;
   auto operator!=(const Node& rhs) const noexcept -> bool override;
@@ -21,19 +18,18 @@ public:
   [[nodiscard]] auto getType() const noexcept -> sym::TypeId override;
   [[nodiscard]] auto toString() const -> std::string override;
 
-  [[nodiscard]] auto getConst() const noexcept -> sym::ConstId;
+  [[nodiscard]] auto getVal() const noexcept -> const std::string&;
 
   auto accept(NodeVisitor* visitor) const -> void override;
 
 private:
-  sym::ConstId m_constId;
-  NodePtr m_expr;
+  sym::TypeId m_type;
+  std::string m_val;
 
-  AssignExprNode(sym::ConstId constId, NodePtr expr);
+  LitStringNode(sym::TypeId type, std::string val);
 };
 
 // Factories.
-auto assignExprNode(const sym::ConstDeclTable& constTable, sym::ConstId constId, NodePtr expr)
-    -> NodePtr;
+auto litStringNode(const Program& program, std::string val) -> NodePtr;
 
 } // namespace prog::expr

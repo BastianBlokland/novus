@@ -22,6 +22,7 @@ public:
   auto label(std::string label) -> void;
 
   auto addLoadLitInt(int32_t val) -> void;
+  auto addLoadLitString(const std::string& val) -> void;
 
   auto addReserveConsts(uint8_t amount) -> void;
   auto addStoreConst(uint8_t constId) -> void;
@@ -39,8 +40,10 @@ public:
   auto addCheckGtInt() -> void;
   auto addCheckLeInt() -> void;
 
-  auto addPrintInt() -> void;
-  auto addPrintLogic() -> void;
+  auto addConvIntString() -> void;
+  auto addConvBoolString() -> void;
+
+  auto addPrintString() -> void;
 
   auto addJump(std::string label) -> void;
   auto addJumpIf(std::string label) -> void;
@@ -56,11 +59,14 @@ public:
 private:
   bool m_closed;
   unsigned int m_genLabelCounter;
+  std::unordered_map<std::string, uint32_t> m_litStringLookup;
+  std::vector<std::string> m_litStrings;
   std::vector<uint8_t> m_instructions;
   std::vector<std::string> m_entryPointLabels;
   std::unordered_map<std::string, uint32_t> m_labels;
   std::vector<std::pair<std::string, unsigned int>> m_labelTargets;
 
+  [[nodiscard]] auto addLitString(const std::string& string) -> uint32_t;
   [[nodiscard]] auto getCurrentIpOffset() -> uint32_t;
 
   auto writeOpCode(vm::OpCode opCode) -> void;

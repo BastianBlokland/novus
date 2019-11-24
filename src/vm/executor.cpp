@@ -1,11 +1,14 @@
 #include "vm/executor.hpp"
+#include "internal/allocator.hpp"
 #include "internal/call_stack.hpp"
 #include "internal/const_stack.hpp"
 #include "internal/eval_stack.hpp"
+#include "internal/ref_string.hpp"
 #include "vm/exceptions/div_by_zero.hpp"
 #include "vm/exceptions/eval_stack_not_empty.hpp"
 #include "vm/exceptions/invalid_assembly.hpp"
 #include "vm/opcode.hpp"
+#include <charconv>
 #include <stdexcept>
 
 namespace vm {
@@ -17,6 +20,7 @@ static auto execute(const Assembly& assembly, io::Interface* interface, uint32_t
   auto evalStack  = internal::EvalStack{EvalStackSize};
   auto constStack = internal::ConstStack{ConstsStackSize};
   auto callStack  = internal::CallStack{};
+  auto allocator  = internal::Allocator{};
   callStack.push(assembly, entryPoint);
 
   while (true) {
@@ -25,6 +29,12 @@ static auto execute(const Assembly& assembly, io::Interface* interface, uint32_t
     case OpCode::LoadLitInt: {
       auto litInt = scope->readInt32();
       evalStack.push(internal::intValue(litInt));
+    } break;
+    case OpCode::LoadLitString: {
+      const auto litStrId = scope->readInt32();
+      const auto& litStr  = assembly.getLitString(litStrId);
+      auto strRef         = allocator.allocStrLit(litStr);
+      evalStack.push(internal::refValue(strRef));
     } break;
 
     case OpCode::ReserveConsts: {
@@ -98,13 +108,22 @@ static auto execute(const Assembly& assembly, io::Interface* interface, uint32_t
       evalStack.push(internal::intValue(a < b ? 1 : 0));
     } break;
 
-    case OpCode::PrintInt: {
-      auto a = evalStack.pop().getInt();
-      interface->print(std::to_string(a));
+    case OpCode::ConvIntString: {
+      static const auto maxCharSize = 11;
+
+      const auto val         = evalStack.pop().getInt();
+      const auto strRefAlloc = allocator.allocStr(maxCharSize);
+      const auto convRes = std::to_chars(strRefAlloc.second, strRefAlloc.second + maxCharSize, val);
+      if (convRes.ec != std::errc()) {
+        throw std::logic_error("Failed to convert integer to string");
+      }
+      strRefAlloc.first->updateSize(convRes.ptr - strRefAlloc.second);
+      evalStack.push(internal::refValue(strRefAlloc.first));
     } break;
-    case OpCode::PrintLogic: {
-      auto a = evalStack.pop().getInt();
-      interface->print(a == 0 ? "false" : "true");
+
+    case OpCode::PrintString: {
+      auto* strRef = evalStack.pop().getStringRef();
+      interface->print(strRef->getDataPtr(), strRef->getSize());
     } break;
 
     case OpCode::Jump: {

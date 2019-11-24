@@ -1,5 +1,6 @@
 #include "prog/expr/node_assign.hpp"
 #include "utilities.hpp"
+#include <sstream>
 #include <stdexcept>
 
 namespace prog::expr {
@@ -27,13 +28,15 @@ auto AssignExprNode::getChildCount() const -> unsigned int { return 1; }
 
 auto AssignExprNode::getType() const noexcept -> sym::TypeId { return m_expr->getType(); }
 
+auto AssignExprNode::toString() const -> std::string {
+  auto oss = std::ostringstream{};
+  oss << "assign-" << m_constId;
+  return oss.str();
+}
+
 auto AssignExprNode::getConst() const noexcept -> sym::ConstId { return m_constId; }
 
 auto AssignExprNode::accept(NodeVisitor* visitor) const -> void { visitor->visit(*this); }
-
-auto AssignExprNode::print(std::ostream& out) const -> std::ostream& {
-  return out << "assign-" << m_constId;
-}
 
 // Factories.
 auto assignExprNode(const sym::ConstDeclTable& constTable, sym::ConstId constId, NodePtr expr)

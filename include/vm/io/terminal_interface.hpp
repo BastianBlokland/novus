@@ -5,7 +5,7 @@ namespace vm::io {
 
 class TerminalInterface final : public Interface {
 public:
-  auto print(std::string text) -> void override;
+  auto print(const char* data, unsigned int size) -> void override;
 };
 
 } // namespace vm::io

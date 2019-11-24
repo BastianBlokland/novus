@@ -17,6 +17,7 @@ public:
   [[nodiscard]] auto operator[](unsigned int i) const -> const Node& override;
   [[nodiscard]] auto getChildCount() const -> unsigned int override;
   [[nodiscard]] auto getType() const noexcept -> sym::TypeId override;
+  [[nodiscard]] auto toString() const -> std::string override;
 
   [[nodiscard]] auto getFunc() const noexcept -> sym::FuncId;
 
@@ -28,8 +29,6 @@ private:
   std::vector<NodePtr> m_args;
 
   CallExprNode(sym::FuncId func, sym::TypeId resultType, std::vector<NodePtr> args);
-
-  auto print(std::ostream& out) const -> std::ostream& override;
 };
 
 // Factories.

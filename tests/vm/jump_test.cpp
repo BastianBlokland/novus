@@ -3,19 +3,19 @@
 
 namespace vm {
 
-TEST_CASE("Jump", "[vm]") {
+TEST_CASE("Execute jump", "[vm]") {
 
   SECTION("Unconditional Jump") {
     CHECK_EXPR(
         [](backend::Builder* builder) -> void {
           builder->addJump("print42");
 
-          builder->addLoadLitInt(1337);
-          builder->addPrintInt();
+          builder->addLoadLitString("1337");
+          builder->addPrintString();
 
           builder->label("print42");
-          builder->addLoadLitInt(42);
-          builder->addPrintInt();
+          builder->addLoadLitString("42");
+          builder->addPrintString();
         },
         "42");
     CHECK_EXPR(
@@ -23,8 +23,8 @@ TEST_CASE("Jump", "[vm]") {
           builder->addJump("jump1");
 
           builder->label("jump3");
-          builder->addLoadLitInt(1337);
-          builder->addPrintInt();
+          builder->addLoadLitString("1337");
+          builder->addPrintString();
           builder->addJump("end");
 
           builder->label("jump2");
@@ -44,12 +44,12 @@ TEST_CASE("Jump", "[vm]") {
           builder->addLoadLitInt(0);
           builder->addJumpIf("print42");
 
-          builder->addLoadLitInt(1337);
-          builder->addPrintInt();
+          builder->addLoadLitString("1337");
+          builder->addPrintString();
 
           builder->label("print42");
-          builder->addLoadLitInt(42);
-          builder->addPrintInt();
+          builder->addLoadLitString("42");
+          builder->addPrintString();
         },
         "1337",
         "42");
@@ -58,12 +58,12 @@ TEST_CASE("Jump", "[vm]") {
           builder->addLoadLitInt(1);
           builder->addJumpIf("print42");
 
-          builder->addLoadLitInt(1337);
-          builder->addPrintInt();
+          builder->addLoadLitString("1337");
+          builder->addPrintString();
 
           builder->label("print42");
-          builder->addLoadLitInt(42);
-          builder->addPrintInt();
+          builder->addLoadLitString("42");
+          builder->addPrintString();
         },
         "42");
   }

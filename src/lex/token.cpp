@@ -1,5 +1,4 @@
 #include "lex/token.hpp"
-#include "char_escape.hpp"
 #include "lex/token_payload.hpp"
 #include "lex/token_payload_error.hpp"
 #include "lex/token_payload_id.hpp"
@@ -94,7 +93,7 @@ auto litBoolToken(const bool val, const input::Span span) -> Token {
 }
 
 auto litStrToken(std::string val, const input::Span span) -> Token {
-  return Token{TokenKind::LitStr, std::make_unique<LitStringTokenPayload>(std::move(val)), span};
+  return Token{TokenKind::LitString, std::make_unique<LitStringTokenPayload>(std::move(val)), span};
 }
 
 auto keywordToken(Keyword keyword, const input::Span span) -> Token {

@@ -13,7 +13,8 @@ inline auto buildAssemblyExprInt(const std::function<void(backend::Builder*)>& b
   auto builder = backend::Builder{};
   builder.label("print");
   build(&builder);
-  builder.addPrintInt();
+  builder.addConvIntString();
+  builder.addPrintString();
   builder.addRet();
   builder.addFail();
   builder.addEntryPoint("print");
@@ -25,7 +26,20 @@ inline auto buildAssemblyExprBool(const std::function<void(backend::Builder*)>& 
   auto builder = backend::Builder{};
   builder.label("print");
   build(&builder);
-  builder.addPrintLogic();
+  builder.addConvBoolString();
+  builder.addPrintString();
+  builder.addRet();
+  builder.addFail();
+  builder.addEntryPoint("print");
+  return builder.close();
+}
+
+inline auto buildAssemblyExprString(const std::function<void(backend::Builder*)>& build)
+    -> vm::Assembly {
+  auto builder = backend::Builder{};
+  builder.label("print");
+  build(&builder);
+  builder.addPrintString();
   builder.addRet();
   builder.addFail();
   builder.addEntryPoint("print");
@@ -49,10 +63,13 @@ inline auto buildAssembly(const std::function<void(backend::Builder*)>& build) -
   }
 
 #define CHECK_EXPR_INT(INPUT, BUILD_EXPECTED_ASM)                                                  \
-  CHECK_ASM("print(" + std::string(INPUT) + ")", buildAssemblyExprInt(BUILD_EXPECTED_ASM))
+  CHECK_ASM("print(string(" + std::string(INPUT) + "))", buildAssemblyExprInt(BUILD_EXPECTED_ASM))
 
 #define CHECK_EXPR_BOOL(INPUT, BUILD_EXPECTED_ASM)                                                 \
-  CHECK_ASM("print(" + std::string(INPUT) + ")", buildAssemblyExprBool(BUILD_EXPECTED_ASM))
+  CHECK_ASM("print(string(" + std::string(INPUT) + "))", buildAssemblyExprBool(BUILD_EXPECTED_ASM))
+
+#define CHECK_EXPR_STRING(INPUT, BUILD_EXPECTED_ASM)                                               \
+  CHECK_ASM("print(" + std::string(INPUT) + ")", buildAssemblyExprString(BUILD_EXPECTED_ASM))
 
 #define CHECK_PROG(INPUT, BUILD_EXPECTED_ASM) CHECK_ASM(INPUT, buildAssembly(BUILD_EXPECTED_ASM))
 

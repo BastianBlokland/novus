@@ -114,6 +114,12 @@ auto GenExpr::visit(const prog::expr::CallExprNode& n) -> void {
     m_builder->addCheckEqInt();
     m_builder->addLogicInvInt();
     break;
+  case prog::sym::FuncKind::ConvIntString:
+    m_builder->addConvIntString();
+    break;
+  case prog::sym::FuncKind::ConvBoolString:
+    m_builder->addConvBoolString();
+    break;
   }
 }
 
@@ -134,6 +140,10 @@ auto GenExpr::visit(const prog::expr::LitBoolNode& n) -> void {
 
 auto GenExpr::visit(const prog::expr::LitIntNode& n) -> void {
   m_builder->addLoadLitInt(n.getVal());
+}
+
+auto GenExpr::visit(const prog::expr::LitStringNode& n) -> void {
+  m_builder->addLoadLitString(n.getVal());
 }
 
 auto GenExpr::genSubExpr(const prog::expr::Node& n) -> void {

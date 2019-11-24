@@ -2,9 +2,6 @@
 
 namespace prog::sym {
 
-enum class ActionKind {
-  PrintInt,
-  PrintBool,
-};
+enum class ActionKind { PrintString };
 
 } // namespace prog::sym
