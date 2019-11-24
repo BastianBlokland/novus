@@ -26,9 +26,9 @@ auto GroupExprNode::getChildCount() const -> unsigned int { return m_exprs.size(
 
 auto GroupExprNode::getType() const noexcept -> sym::TypeId { return m_exprs.back()->getType(); }
 
-auto GroupExprNode::accept(NodeVisitor* visitor) const -> void { visitor->visit(*this); }
+auto GroupExprNode::toString() const -> std::string { return "group"; }
 
-auto GroupExprNode::print(std::ostream& out) const -> std::ostream& { return out << "group"; }
+auto GroupExprNode::accept(NodeVisitor* visitor) const -> void { visitor->visit(*this); }
 
 // Factories.
 auto groupExprNode(std::vector<NodePtr> exprs) -> NodePtr {

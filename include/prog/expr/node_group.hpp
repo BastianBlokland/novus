@@ -16,6 +16,7 @@ public:
   [[nodiscard]] auto operator[](unsigned int i) const -> const Node& override;
   [[nodiscard]] auto getChildCount() const -> unsigned int override;
   [[nodiscard]] auto getType() const noexcept -> sym::TypeId override;
+  [[nodiscard]] auto toString() const -> std::string override;
 
   auto accept(NodeVisitor* visitor) const -> void override;
 
@@ -23,8 +24,6 @@ private:
   std::vector<NodePtr> m_exprs;
 
   explicit GroupExprNode(std::vector<NodePtr> exprs);
-
-  auto print(std::ostream& out) const -> std::ostream& override;
 };
 
 // Factories.

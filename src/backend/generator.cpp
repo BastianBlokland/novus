@@ -56,11 +56,8 @@ generateExecStmt(Builder* builder, const prog::Program& program, const prog::sym
 
   const auto& actionDecl = program.getActionDecl(exec.getActionId());
   switch (actionDecl.getKind()) {
-  case prog::sym::ActionKind::PrintInt:
-    builder->addPrintInt();
-    break;
-  case prog::sym::ActionKind::PrintBool:
-    builder->addPrintLogic();
+  case prog::sym::ActionKind::PrintString:
+    builder->addPrintString();
     break;
   }
   builder->addRet();

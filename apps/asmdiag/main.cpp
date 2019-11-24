@@ -4,6 +4,7 @@
 #include "frontend/analysis.hpp"
 #include "frontend/output.hpp"
 #include "frontend/source.hpp"
+#include "input/char_escape.hpp"
 #include "rang.hpp"
 #include "vm/assembly.hpp"
 #include <optional>
@@ -20,6 +21,17 @@ static auto genAssembly(const frontend::Output& frontendOutput) -> std::optional
     return std::nullopt;
   }
   return backend::generate(frontendOutput.getProg());
+}
+
+auto printStringLiterals(const vm::Assembly& assembly) -> void {
+  const auto idColWidth = 5;
+
+  std::cout << rang::style::bold << "StringLiterals:\n" << rang::style::reset;
+  auto id = 0U;
+  for (auto itr = assembly.beginLitStrings(); itr != assembly.endLitStrings(); ++itr, ++id) {
+    std::cout << "  " << rang::style::bold << std::setw(idColWidth) << std::left << id
+              << rang::style::reset << " \"" << input::escape(*itr) << '"' << '\n';
+  }
 }
 
 auto printEntryPoints(const vm::Assembly& assembly) -> void {
@@ -48,6 +60,8 @@ auto printInstructions(const vm::Assembly& assembly) -> void {
 }
 
 auto printProgram(const vm::Assembly& assembly) -> void {
+  printStringLiterals(assembly);
+  std::cout << '\n';
   printEntryPoints(assembly);
   std::cout << '\n';
   printInstructions(assembly);

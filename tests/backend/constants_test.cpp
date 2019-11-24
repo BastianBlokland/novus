@@ -3,7 +3,7 @@
 
 namespace backend {
 
-TEST_CASE("Store and load constants", "[backend]") {
+TEST_CASE("Generate assembly for storing and loading constants", "[backend]") {
 
   CHECK_EXPR_INT("x = 42; x", [](backend::Builder* builder) -> void {
     builder->addReserveConsts(1);

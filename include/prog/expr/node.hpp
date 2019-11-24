@@ -22,13 +22,12 @@ public:
   [[nodiscard]] virtual auto operator[](unsigned int) const -> const Node& = 0;
   [[nodiscard]] virtual auto getChildCount() const -> unsigned int         = 0;
   [[nodiscard]] virtual auto getType() const noexcept -> sym::TypeId       = 0;
+  [[nodiscard]] virtual auto toString() const -> std::string               = 0;
 
   virtual auto accept(NodeVisitor* visitor) const -> void = 0;
 
 protected:
   Node() = default;
-
-  virtual auto print(std::ostream& out) const -> std::ostream& = 0;
 };
 
 using NodePtr = std::unique_ptr<Node>;

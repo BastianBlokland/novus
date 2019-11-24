@@ -3,6 +3,7 @@
 #include "helpers.hpp"
 #include "prog/expr/node_lit_bool.hpp"
 #include "prog/expr/node_lit_int.hpp"
+#include "prog/expr/node_lit_string.hpp"
 #include "prog/operator.hpp"
 
 namespace frontend {
@@ -15,10 +16,18 @@ TEST_CASE("Get literal expression", "[frontend]") {
     CHECK(GET_FUNC_DEF(output, "f").getExpr() == *prog::expr::litIntNode(output.getProg(), 42));
   }
 
-  SECTION("Get int literal expression") {
+  SECTION("Get bool literal expression") {
     const auto& output = ANALYZE("fun f() -> bool true");
     REQUIRE(output.isSuccess());
     CHECK(GET_FUNC_DEF(output, "f").getExpr() == *prog::expr::litBoolNode(output.getProg(), true));
+  }
+
+  SECTION("Get string literal expression") {
+    const auto& output = ANALYZE("fun f() -> string \"hello world\"");
+    REQUIRE(output.isSuccess());
+    CHECK(
+        GET_FUNC_DEF(output, "f").getExpr() ==
+        *prog::expr::litStringNode(output.getProg(), "hello world"));
   }
 }
 

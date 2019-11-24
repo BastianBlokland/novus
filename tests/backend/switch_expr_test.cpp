@@ -3,7 +3,7 @@
 
 namespace backend {
 
-TEST_CASE("Switch expressions", "[backend]") {
+TEST_CASE("Generating assembly for switch expressions", "[backend]") {
 
   CHECK_EXPR_INT(
       "if true -> 10 "

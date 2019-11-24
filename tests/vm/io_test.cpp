@@ -3,37 +3,30 @@
 
 namespace vm {
 
-TEST_CASE("Input / Output", "[vm]") {
+TEST_CASE("Execute input and output", "[vm]") {
 
   SECTION("Print") {
     CHECK_EXPR(
         [](backend::Builder* builder) -> void {
-          builder->addLoadLitInt(42);
-          builder->addPrintInt();
+          builder->addLoadLitString("hello world");
+          builder->addPrintString();
 
-          builder->addLoadLitInt(-42);
-          builder->addPrintInt();
-        },
-        "42",
-        "-42");
-    CHECK_EXPR(
-        [](backend::Builder* builder) -> void {
           builder->addLoadLitInt(0);
-          builder->addPrintLogic();
+          builder->addConvBoolString();
+          builder->addPrintString();
 
           builder->addLoadLitInt(1);
-          builder->addPrintLogic();
-
-          builder->addLoadLitInt(5);
-          builder->addPrintLogic();
+          builder->addConvBoolString();
+          builder->addPrintString();
 
           builder->addLoadLitInt(-42);
-          builder->addPrintLogic();
+          builder->addConvIntString();
+          builder->addPrintString();
         },
+        "hello world",
         "false",
         "true",
-        "true",
-        "true");
+        "-42");
   }
 }
 

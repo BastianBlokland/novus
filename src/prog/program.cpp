@@ -6,8 +6,9 @@ namespace prog {
 
 Program::Program() {
   // Register build-in types.
-  const auto intT  = m_typeDecls.registerType(sym::TypeKind::Int, "int");
-  const auto boolT = m_typeDecls.registerType(sym::TypeKind::Bool, "bool");
+  const auto intT    = m_typeDecls.registerType(sym::TypeKind::Int, "int");
+  const auto boolT   = m_typeDecls.registerType(sym::TypeKind::Bool, "bool");
+  const auto stringT = m_typeDecls.registerType(sym::TypeKind::String, "string");
 
   // Register build-in unary int operators.
   m_funcDecls.registerFunc(
@@ -73,9 +74,20 @@ Program::Program() {
       getFuncName(Operator::BangEq),
       sym::FuncSig{sym::Input{boolT, boolT}, boolT});
 
+  // Register build-in binary string operators.
+  m_funcDecls.registerFunc(
+      sym::FuncKind::AddString,
+      getFuncName(Operator::Plus),
+      sym::FuncSig{sym::Input{stringT, stringT}, stringT});
+
+  // Register build-in conversions.
+  m_funcDecls.registerFunc(
+      sym::FuncKind::ConvIntString, "string", sym::FuncSig{sym::Input{intT}, stringT});
+  m_funcDecls.registerFunc(
+      sym::FuncKind::ConvBoolString, "string", sym::FuncSig{sym::Input{boolT}, stringT});
+
   // Register build-in actions.
-  m_actionDecls.registerAction(sym::ActionKind::PrintInt, "print", sym::Input{intT});
-  m_actionDecls.registerAction(sym::ActionKind::PrintBool, "print", sym::Input{boolT});
+  m_actionDecls.registerAction(sym::ActionKind::PrintString, "print", sym::Input{stringT});
 }
 
 auto Program::beginTypeDecls() const -> typeDeclIterator { return m_typeDecls.begin(); }

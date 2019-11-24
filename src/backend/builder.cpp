@@ -7,8 +7,6 @@ namespace backend {
 
 Builder::Builder() : m_closed{false}, m_genLabelCounter{0U} {}
 
-auto Builder::getCurrentIpOffset() -> uint32_t { return m_instructions.size(); }
-
 auto Builder::generateLabel() -> std::string {
   std::ostringstream oss;
   oss << "__gen_" << m_genLabelCounter++;
@@ -25,6 +23,12 @@ auto Builder::label(std::string label) -> void {
 auto Builder::addLoadLitInt(int32_t val) -> void {
   writeOpCode(vm::OpCode::LoadLitInt);
   writeInt32(val);
+}
+
+auto Builder::addLoadLitString(const std::string& val) -> void {
+  const auto litId = addLitString(val);
+  writeOpCode(vm::OpCode::LoadLitString);
+  writeInt32(litId);
 }
 
 auto Builder::addReserveConsts(uint8_t amount) -> void {
@@ -44,6 +48,8 @@ auto Builder::addLoadConst(uint8_t constId) -> void {
 
 auto Builder::addAddInt() -> void { writeOpCode(vm::OpCode::AddInt); }
 
+auto Builder::addAddString() -> void { writeOpCode(vm::OpCode::AddString); }
+
 auto Builder::addSubInt() -> void { writeOpCode(vm::OpCode::SubInt); }
 
 auto Builder::addMulInt() -> void { writeOpCode(vm::OpCode::MulInt); }
@@ -62,9 +68,24 @@ auto Builder::addCheckGtInt() -> void { writeOpCode(vm::OpCode::CheckGtInt); }
 
 auto Builder::addCheckLeInt() -> void { writeOpCode(vm::OpCode::CheckLeInt); }
 
-auto Builder::addPrintInt() -> void { writeOpCode(vm::OpCode::PrintInt); }
+auto Builder::addConvIntString() -> void { writeOpCode(vm::OpCode::ConvIntString); }
 
-auto Builder::addPrintLogic() -> void { writeOpCode(vm::OpCode::PrintLogic); }
+auto Builder::addConvBoolString() -> void {
+  // Implemented on the backend level to keep the vm simpler.
+  const auto endLabel  = generateLabel();
+  const auto trueLabel = generateLabel();
+  addJumpIf(trueLabel);
+
+  addLoadLitString("false");
+  addJump(endLabel);
+
+  label(trueLabel);
+  addLoadLitString("true");
+
+  label(endLabel);
+}
+
+auto Builder::addPrintString() -> void { writeOpCode(vm::OpCode::PrintString); }
 
 auto Builder::addJump(std::string label) -> void {
   writeOpCode(vm::OpCode::Jump);
@@ -107,8 +128,21 @@ auto Builder::close() -> vm::Assembly {
     entryPoints.push_back(ipOffsetItr->second);
   }
 
-  return vm::Assembly{std::move(m_instructions), std::move(entryPoints)};
+  return vm::Assembly{std::move(m_litStrings), std::move(m_instructions), std::move(entryPoints)};
 }
+
+auto Builder::addLitString(const std::string& string) -> uint32_t {
+  const auto itr = m_litStringLookup.find(string);
+  if (itr != m_litStringLookup.end()) {
+    return itr->second;
+  }
+  const auto id = m_litStrings.size();
+  m_litStrings.push_back(string);
+  m_litStringLookup.insert({string, id});
+  return id;
+}
+
+auto Builder::getCurrentIpOffset() -> uint32_t { return m_instructions.size(); }
 
 auto Builder::writeOpCode(vm::OpCode opCode) -> void {
   throwIfClosed();

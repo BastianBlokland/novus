@@ -3,14 +3,15 @@
 
 namespace vm {
 
-TEST_CASE("Call", "[vm]") {
+TEST_CASE("Execute calls", "[vm]") {
 
   CHECK_PROG(
       [](backend::Builder* builder) -> void {
         builder->label("section1");
         builder->addLoadLitInt(0);
         builder->addCall("section2");
-        builder->addPrintInt();
+        builder->addConvIntString();
+        builder->addPrintString();
         builder->addRet();
 
         builder->label("section2");

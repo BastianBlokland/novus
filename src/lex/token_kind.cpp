@@ -82,7 +82,7 @@ auto operator<<(std::ostream& out, const TokenKind& rhs) -> std::ostream& {
   case TokenKind::LitBool:
     out << "bool";
     break;
-  case TokenKind::LitStr:
+  case TokenKind::LitString:
     out << "string";
     break;
   case TokenKind::Keyword:

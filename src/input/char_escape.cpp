@@ -1,7 +1,7 @@
-#include "char_escape.hpp"
+#include "input/char_escape.hpp"
 #include <unordered_map>
 
-namespace lex {
+namespace input {
 
 auto escape(const char c) -> std::optional<char> {
   static const std::unordered_map<char, char> table = {
@@ -22,6 +22,22 @@ auto escape(const char c) -> std::optional<char> {
   }
 
   return std::nullopt;
+}
+
+auto escape(const std::string& str) -> std::string {
+  auto result = std::string{};
+  result.reserve(str.size());
+
+  for (const auto& c : str) {
+    const auto esc = escape(c);
+    if (esc) {
+      result.push_back('\\');
+      result.push_back(*esc);
+    } else {
+      result.push_back(c);
+    }
+  }
+  return result;
 }
 
 auto unescape(const char c) -> std::optional<char> {
@@ -45,4 +61,4 @@ auto unescape(const char c) -> std::optional<char> {
   return std::nullopt;
 }
 
-} // namespace lex
+} // namespace input

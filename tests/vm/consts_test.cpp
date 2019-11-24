@@ -3,7 +3,7 @@
 
 namespace vm {
 
-TEST_CASE("Constants", "[vm]") {
+TEST_CASE("Execute constants", "[vm]") {
 
   CHECK_EXPR(
       [](backend::Builder* builder) -> void {
@@ -12,7 +12,8 @@ TEST_CASE("Constants", "[vm]") {
         builder->addStoreConst(0);
 
         builder->addLoadConst(0);
-        builder->addPrintInt();
+        builder->addConvIntString();
+        builder->addPrintString();
       },
       "42");
 
@@ -26,10 +27,12 @@ TEST_CASE("Constants", "[vm]") {
         builder->addStoreConst(1);
 
         builder->addLoadConst(0);
-        builder->addPrintInt();
+        builder->addConvIntString();
+        builder->addPrintString();
 
         builder->addLoadConst(1);
-        builder->addPrintInt();
+        builder->addConvIntString();
+        builder->addPrintString();
       },
       "42",
       "1337");

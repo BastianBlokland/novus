@@ -18,6 +18,7 @@ auto run(const std::string& inputId, InputItr inputBegin, const InputItr inputEn
     auto interface      = vm::io::TerminalInterface{};
     try {
       vm::execute(assembly, &interface);
+      std::cout << '\n'; // Auto-insert final newline.
     } catch (const std::exception& e) {
       std::cout << rang::bg::red << "Runtime error: " << e.what() << '\n';
     }

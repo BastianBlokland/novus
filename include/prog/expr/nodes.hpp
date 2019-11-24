@@ -4,4 +4,5 @@
 #include "prog/expr/node_group.hpp"
 #include "prog/expr/node_lit_bool.hpp"
 #include "prog/expr/node_lit_int.hpp"
+#include "prog/expr/node_lit_string.hpp"
 #include "prog/expr/node_switch.hpp"

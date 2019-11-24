@@ -1,4 +1,5 @@
 #include "prog/expr/node_const.hpp"
+#include <sstream>
 
 namespace prog::expr {
 
@@ -21,11 +22,15 @@ auto ConstExprNode::getChildCount() const -> unsigned int { return 0; }
 
 auto ConstExprNode::getType() const noexcept -> sym::TypeId { return m_type; }
 
+auto ConstExprNode::toString() const -> std::string {
+  auto oss = std::ostringstream{};
+  oss << m_id;
+  return oss.str();
+}
+
 auto ConstExprNode::getId() const noexcept -> sym::ConstId { return m_id; }
 
 auto ConstExprNode::accept(NodeVisitor* visitor) const -> void { visitor->visit(*this); }
-
-auto ConstExprNode::print(std::ostream& out) const -> std::ostream& { return out << m_id; }
 
 // Factories.
 auto constExprNode(const sym::ConstDeclTable& constTable, sym::ConstId id) -> NodePtr {

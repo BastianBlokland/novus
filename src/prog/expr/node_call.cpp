@@ -1,5 +1,6 @@
 #include "prog/expr/node_call.hpp"
 #include "utilities.hpp"
+#include <sstream>
 #include <stdexcept>
 
 namespace prog::expr {
@@ -27,13 +28,15 @@ auto CallExprNode::getChildCount() const -> unsigned int { return m_args.size();
 
 auto CallExprNode::getType() const noexcept -> sym::TypeId { return m_resultType; }
 
+auto CallExprNode::toString() const -> std::string {
+  auto oss = std::ostringstream{};
+  oss << "call-" << m_func;
+  return oss.str();
+}
+
 auto CallExprNode::getFunc() const noexcept -> sym::FuncId { return m_func; }
 
 auto CallExprNode::accept(NodeVisitor* visitor) const -> void { visitor->visit(*this); }
-
-auto CallExprNode::print(std::ostream& out) const -> std::ostream& {
-  return out << "call-" << m_func;
-}
 
 // Factories.
 auto callExprNode(const Program& program, sym::FuncId func, std::vector<NodePtr> args) -> NodePtr {

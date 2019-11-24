@@ -31,7 +31,7 @@ enum class TokenKind {
   SepArrow,
   LitInt,
   LitBool,
-  LitStr,
+  LitString,
   Keyword,
   Identifier,
   Error

@@ -6,6 +6,8 @@ auto MemoryInterface::getOutput() const noexcept -> const std::vector<std::strin
   return m_output;
 }
 
-auto MemoryInterface::print(std::string text) -> void { m_output.push_back(std::move(text)); }
+auto MemoryInterface::print(const char* data, unsigned int size) -> void {
+  m_output.emplace_back(data, size);
+}
 
 } // namespace vm::io

@@ -36,6 +36,8 @@ auto SwitchExprNode::getType() const noexcept -> sym::TypeId {
   return m_branches.front()->getType();
 }
 
+auto SwitchExprNode::toString() const -> std::string { return "switch"; }
+
 auto SwitchExprNode::getConditions() const noexcept -> const std::vector<NodePtr>& {
   return m_conditions;
 }
@@ -45,8 +47,6 @@ auto SwitchExprNode::getBranches() const noexcept -> const std::vector<NodePtr>&
 }
 
 auto SwitchExprNode::accept(NodeVisitor* visitor) const -> void { visitor->visit(*this); }
-
-auto SwitchExprNode::print(std::ostream& out) const -> std::ostream& { return out << "switch"; }
 
 // Factories.
 auto switchExprNode(
