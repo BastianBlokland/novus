@@ -218,9 +218,9 @@ auto ParserImpl::nextExprCall(lex::Token id) -> NodePtr {
 
 auto ParserImpl::nextExprConditional(NodePtr condExpr) -> NodePtr {
   auto qmark      = consumeToken();
-  auto ifBranch   = nextExpr(0);
+  auto ifBranch   = nextExpr(groupingPrecedence);
   auto colon      = consumeToken();
-  auto elseBranch = nextExpr(0);
+  auto elseBranch = nextExpr(groupingPrecedence);
 
   if (qmark.getKind() == lex::TokenKind::OpQMark && colon.getKind() == lex::TokenKind::SepColon) {
     return conditionalExprNode(
