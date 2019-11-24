@@ -13,8 +13,8 @@
 
 namespace vm {
 
-static const int EvalStackSize   = 1024;
-static const int ConstsStackSize = 1024;
+static const int EvalStackSize   = 4096;
+static const int ConstsStackSize = 4096;
 
 static auto execute(const Assembly& assembly, io::Interface* interface, uint32_t entryPoint) {
   auto evalStack  = internal::EvalStack{EvalStackSize};
