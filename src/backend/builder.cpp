@@ -48,6 +48,8 @@ auto Builder::addLoadConst(uint8_t constId) -> void {
 
 auto Builder::addAddInt() -> void { writeOpCode(vm::OpCode::AddInt); }
 
+auto Builder::addAddString() -> void { writeOpCode(vm::OpCode::AddString); }
+
 auto Builder::addSubInt() -> void { writeOpCode(vm::OpCode::SubInt); }
 
 auto Builder::addMulInt() -> void { writeOpCode(vm::OpCode::MulInt); }

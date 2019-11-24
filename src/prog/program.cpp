@@ -74,6 +74,12 @@ Program::Program() {
       getFuncName(Operator::BangEq),
       sym::FuncSig{sym::Input{boolT, boolT}, boolT});
 
+  // Register build-in binary string operators.
+  m_funcDecls.registerFunc(
+      sym::FuncKind::AddString,
+      getFuncName(Operator::Plus),
+      sym::FuncSig{sym::Input{stringT, stringT}, stringT});
+
   // Register build-in conversions.
   m_funcDecls.registerFunc(
       sym::FuncKind::ConvIntString, "string", sym::FuncSig{sym::Input{intT}, stringT});

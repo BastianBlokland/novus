@@ -29,6 +29,7 @@ public:
   auto addLoadConst(uint8_t constId) -> void;
 
   auto addAddInt() -> void;
+  auto addAddString() -> void;
   auto addSubInt() -> void;
   auto addMulInt() -> void;
   auto addDivInt() -> void;

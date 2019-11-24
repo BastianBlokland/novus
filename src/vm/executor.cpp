@@ -57,6 +57,16 @@ static auto execute(const Assembly& assembly, io::Interface* interface, uint32_t
       auto a = evalStack.pop().getInt();
       evalStack.push(internal::intValue(a + b));
     } break;
+    case OpCode::AddString: {
+      auto b = evalStack.pop().getStringRef();
+      auto a = evalStack.pop().getStringRef();
+
+      // Make a new string big enough to fit both and copy both there.
+      auto result = allocator.allocStr(a->getSize() + b->getSize());
+      std::memcpy(result.second, a->getDataPtr(), a->getSize());
+      std::memcpy(result.second + a->getSize(), b->getDataPtr(), b->getSize());
+      evalStack.push(internal::refValue(result.first));
+    } break;
     case OpCode::SubInt: {
       auto b = evalStack.pop().getInt();
       auto a = evalStack.pop().getInt();

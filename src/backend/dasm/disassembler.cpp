@@ -22,6 +22,7 @@ auto disassembleInstructions(const vm::Assembly& assembly) -> std::vector<Instru
       ++ipOffset;
       continue;
     case vm::OpCode::AddInt:
+    case vm::OpCode::AddString:
     case vm::OpCode::SubInt:
     case vm::OpCode::MulInt:
     case vm::OpCode::DivInt:

@@ -22,6 +22,8 @@ enum class FuncKind {
   CheckEqBool,
   CheckNEqBool,
 
+  AddString,
+
   ConvIntString,
   ConvBoolString,
 };

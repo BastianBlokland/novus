@@ -126,6 +126,14 @@ TEST_CASE("Generate assembly for call expressions", "[backend]") {
     });
   }
 
+  SECTION("String operations") {
+    CHECK_EXPR_STRING("\"hello\" + \"world\"", [](backend::Builder* builder) -> void {
+      builder->addLoadLitString("hello");
+      builder->addLoadLitString("world");
+      builder->addAddString();
+    });
+  }
+
   SECTION("Conversions") {
     CHECK_EXPR_STRING("string(42)", [](backend::Builder* builder) -> void {
       builder->addLoadLitInt(42);

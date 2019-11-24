@@ -72,7 +72,8 @@ add_executable(tests
   vm/int_op_test.cpp
   vm/io_test.cpp
   vm/jump_test.cpp
-  vm/literal_test.cpp)
+  vm/literal_test.cpp
+  vm/string_op_test.cpp)
 target_compile_features(tests PRIVATE cxx_std_17)
 target_compile_options(tests PRIVATE -Werror -Wall -Wextra)
 target_include_directories(tests PRIVATE lex)

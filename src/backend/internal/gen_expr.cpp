@@ -114,6 +114,9 @@ auto GenExpr::visit(const prog::expr::CallExprNode& n) -> void {
     m_builder->addCheckEqInt();
     m_builder->addLogicInvInt();
     break;
+  case prog::sym::FuncKind::AddString:
+    m_builder->addAddString();
+    break;
   case prog::sym::FuncKind::ConvIntString:
     m_builder->addConvIntString();
     break;

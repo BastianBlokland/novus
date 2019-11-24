@@ -24,6 +24,9 @@ auto operator<<(std::ostream& out, const OpCode& rhs) -> std::ostream& {
   case OpCode::AddInt:
     out << "add-int";
     break;
+  case OpCode::AddString:
+    out << "add-string";
+    break;
   case OpCode::SubInt:
     out << "sub-int";
     break;
