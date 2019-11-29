@@ -49,6 +49,9 @@ auto operator<<(std::ostream& out, const OpCode& rhs) -> std::ostream& {
   case OpCode::CheckEqInt:
     out << "check-eq-int";
     break;
+  case OpCode::CheckEqString:
+    out << "check-eq-string";
+    break;
   case OpCode::CheckGtInt:
     out << "check-gt-int";
     break;

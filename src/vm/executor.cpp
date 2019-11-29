@@ -107,6 +107,13 @@ static auto execute(const Assembly& assembly, io::Interface* interface, uint32_t
       auto a = evalStack.pop().getInt();
       evalStack.push(internal::intValue(a == b ? 1 : 0));
     } break;
+    case OpCode::CheckEqString: {
+      auto b  = evalStack.pop().getStringRef();
+      auto a  = evalStack.pop().getStringRef();
+      auto eq = (a->getSize() == b->getSize()) &&
+          std::memcmp(a->getDataPtr(), b->getDataPtr(), a->getSize()) == 0;
+      evalStack.push(internal::intValue(eq ? 1 : 0));
+    } break;
     case OpCode::CheckGtInt: {
       auto b = evalStack.pop().getInt();
       auto a = evalStack.pop().getInt();

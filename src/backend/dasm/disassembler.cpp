@@ -30,6 +30,7 @@ auto disassembleInstructions(const vm::Assembly& assembly) -> std::vector<Instru
     case vm::OpCode::NegInt:
     case vm::OpCode::LogicInvInt:
     case vm::OpCode::CheckEqInt:
+    case vm::OpCode::CheckEqString:
     case vm::OpCode::CheckGtInt:
     case vm::OpCode::CheckLeInt:
     case vm::OpCode::ConvIntString:

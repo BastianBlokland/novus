@@ -134,6 +134,20 @@ TEST_CASE("Generate assembly for call expressions", "[backend]") {
     });
   }
 
+  SECTION("String checks") {
+    CHECK_EXPR_BOOL("\"hello\" == \"world\"", [](backend::Builder* builder) -> void {
+      builder->addLoadLitString("hello");
+      builder->addLoadLitString("world");
+      builder->addCheckEqString();
+    });
+    CHECK_EXPR_BOOL("\"hello\" != \"world\"", [](backend::Builder* builder) -> void {
+      builder->addLoadLitString("hello");
+      builder->addLoadLitString("world");
+      builder->addCheckEqString();
+      builder->addLogicInvInt();
+    });
+  }
+
   SECTION("Conversions") {
     CHECK_EXPR_STRING("string(42)", [](backend::Builder* builder) -> void {
       builder->addLoadLitInt(42);

@@ -38,6 +38,7 @@ public:
   auto addLogicInvInt() -> void;
 
   auto addCheckEqInt() -> void;
+  auto addCheckEqString() -> void;
   auto addCheckGtInt() -> void;
   auto addCheckLeInt() -> void;
 

@@ -64,6 +64,8 @@ auto Builder::addLogicInvInt() -> void { writeOpCode(vm::OpCode::LogicInvInt); }
 
 auto Builder::addCheckEqInt() -> void { writeOpCode(vm::OpCode::CheckEqInt); }
 
+auto Builder::addCheckEqString() -> void { writeOpCode(vm::OpCode::CheckEqString); }
+
 auto Builder::addCheckGtInt() -> void { writeOpCode(vm::OpCode::CheckGtInt); }
 
 auto Builder::addCheckLeInt() -> void { writeOpCode(vm::OpCode::CheckLeInt); }

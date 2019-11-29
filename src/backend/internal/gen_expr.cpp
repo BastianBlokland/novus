@@ -90,6 +90,13 @@ auto GenExpr::visit(const prog::expr::CallExprNode& n) -> void {
     m_builder->addCheckEqInt();
     m_builder->addLogicInvInt();
     break;
+  case prog::sym::FuncKind::CheckEqString:
+    m_builder->addCheckEqString();
+    break;
+  case prog::sym::FuncKind::CheckNEqString:
+    m_builder->addCheckEqString();
+    m_builder->addLogicInvInt();
+    break;
   case prog::sym::FuncKind::CheckLeInt:
     m_builder->addCheckLeInt();
     break;
