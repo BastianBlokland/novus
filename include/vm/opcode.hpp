@@ -21,9 +21,11 @@ enum class OpCode : uint8_t {
   NegInt      = 56,
   LogicInvInt = 57,
 
-  CheckEqInt = 60,
-  CheckGtInt = 61,
-  CheckLeInt = 62,
+  CheckEqInt    = 60,
+  CheckEqString = 61,
+
+  CheckGtInt = 62,
+  CheckLeInt = 63,
 
   ConvIntString = 70,
 

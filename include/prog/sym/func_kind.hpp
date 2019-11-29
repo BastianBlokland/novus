@@ -13,6 +13,8 @@ enum class FuncKind {
   RemInt,
   CheckEqInt,
   CheckNEqInt,
+  CheckEqString,
+  CheckNEqString,
   CheckLeInt,
   CheckLeEqInt,
   CheckGtInt,

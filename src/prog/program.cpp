@@ -88,6 +88,18 @@ Program::Program() {
       getFuncName(Operator::Plus),
       sym::Input{stringT, stringT},
       stringT);
+  m_funcDecls.registerFunc(
+      *this,
+      sym::FuncKind::CheckEqString,
+      getFuncName(Operator::EqEq),
+      sym::Input{stringT, stringT},
+      boolT);
+  m_funcDecls.registerFunc(
+      *this,
+      sym::FuncKind::CheckNEqString,
+      getFuncName(Operator::BangEq),
+      sym::Input{stringT, stringT},
+      boolT);
 
   // Register build-in conversions.
   m_funcDecls.registerFunc(
