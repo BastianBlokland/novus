@@ -13,3 +13,4 @@
 #include "parse/node_expr_unary.hpp"
 #include "parse/node_stmt_exec.hpp"
 #include "parse/node_stmt_func_decl.hpp"
+#include "parse/node_stmt_struct_decl.hpp"

@@ -62,8 +62,9 @@ add_executable(tests
   parse/expr_switch_test.cpp
   parse/expr_unary_test.cpp
   parse/iterator_test.cpp
-  parse/stmt_func_decl_test.cpp
   parse/stmt_exec_test.cpp
+  parse/stmt_func_decl_test.cpp
+  parse/stmt_struct_decl_test.cpp
 
   vm/call_test.cpp
   vm/consts_test.cpp

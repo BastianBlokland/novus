@@ -2,6 +2,7 @@
 #include "lex/token.hpp"
 #include "parse/node.hpp"
 #include "parse/node_stmt_func_decl.hpp"
+#include "parse/node_stmt_struct_decl.hpp"
 
 namespace parse {
 
@@ -16,6 +17,13 @@ auto errInvalidStmtFuncDecl(
     lex::Token close,
     std::optional<FuncDeclStmtNode::RetTypeSpec> retType,
     NodePtr body) -> NodePtr;
+
+auto errInvalidStmtStructDecl(
+    lex::Token kw,
+    lex::Token id,
+    lex::Token eq,
+    const std::vector<StructDeclStmtNode::FieldSpec>& fields,
+    std::vector<lex::Token> commas) -> NodePtr;
 
 auto errInvalidStmtExec(
     lex::Token action,

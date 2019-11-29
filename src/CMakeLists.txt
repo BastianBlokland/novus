@@ -43,6 +43,7 @@ add_library(parse STATIC
   parse/node_expr_unary.cpp
   parse/node_stmt_exec.cpp
   parse/node_stmt_func_decl.cpp
+  parse/node_stmt_struct_decl.cpp
   parse/node_visitor_deep.cpp
   parse/node.cpp
   parse/op_precedence.cpp

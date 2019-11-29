@@ -17,6 +17,7 @@ class SwitchExprNode;
 class UnaryExprNode;
 class ExecStmtNode;
 class FuncDeclStmtNode;
+class StructDeclStmtNode;
 
 class NodeVisitor {
 public:
@@ -35,6 +36,7 @@ public:
   virtual auto visit(const UnaryExprNode& n) -> void       = 0;
   virtual auto visit(const ExecStmtNode& n) -> void        = 0;
   virtual auto visit(const FuncDeclStmtNode& n) -> void    = 0;
+  virtual auto visit(const StructDeclStmtNode& n) -> void  = 0;
 };
 
 } // namespace parse

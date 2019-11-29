@@ -155,6 +155,10 @@ auto TypeInferExpr::visit(const parse::FuncDeclStmtNode & /*unused*/) -> void {
   throw std::logic_error{"TypeInferExpr is not implemented for this node type"};
 }
 
+auto TypeInferExpr::visit(const parse::StructDeclStmtNode & /*unused*/) -> void {
+  throw std::logic_error{"TypeInferExpr is not implemented for this node type"};
+}
+
 auto TypeInferExpr::inferSubExpr(const parse::Node& n) -> prog::sym::TypeId {
   auto visitor = TypeInferExpr{m_prog, m_constTypes};
   n.accept(&visitor);

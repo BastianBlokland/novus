@@ -33,6 +33,7 @@ public:
   auto visit(const parse::UnaryExprNode& n) -> void override;
   auto visit(const parse::ExecStmtNode& n) -> void override;
   auto visit(const parse::FuncDeclStmtNode& n) -> void override;
+  auto visit(const parse::StructDeclStmtNode& n) -> void override;
 
 private:
   enum class BinLogicOp { And, Or };

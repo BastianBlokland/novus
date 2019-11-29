@@ -16,8 +16,16 @@ auto ParserImpl::nextStmt() -> NodePtr {
     return nullptr;
   }
 
-  if (getKw(peekToken(0)) == lex::Keyword::Fun) {
-    return nextStmtFuncDecl();
+  const auto kw = getKw(peekToken(0));
+  if (kw) {
+    switch (*kw) {
+    case lex::Keyword::Fun:
+      return nextStmtFuncDecl();
+    case lex::Keyword::Struct:
+      return nextStmtStructDecl();
+    default:
+      break;
+    }
   }
 
   return nextStmtExec();
@@ -88,6 +96,40 @@ auto ParserImpl::nextStmtFuncDecl() -> NodePtr {
       std::move(close),
       std::move(retType),
       std::move(body));
+}
+
+auto ParserImpl::nextStmtStructDecl() -> NodePtr {
+  auto kw     = consumeToken();
+  auto id     = consumeToken();
+  auto eq     = consumeToken();
+  auto fields = std::vector<StructDeclStmtNode::FieldSpec>{};
+  auto commas = std::vector<lex::Token>{};
+  while (peekToken(0).getKind() == lex::TokenKind::Identifier ||
+         peekToken(0).getKind() == lex::TokenKind::SepComma) {
+    auto fieldType = consumeToken();
+    auto fieldId   = consumeToken();
+    fields.emplace_back(fieldType, fieldId);
+    if (peekToken(0).getKind() == lex::TokenKind::SepComma) {
+      commas.push_back(consumeToken());
+    }
+  }
+
+  if (getKw(kw) == lex::Keyword::Struct && id.getKind() == lex::TokenKind::Identifier &&
+      eq.getKind() == lex::TokenKind::OpEq && !fields.empty() &&
+      std::all_of(
+          fields.begin(),
+          fields.end(),
+          [](const auto& a) {
+            return a.getIdentifier().getKind() == lex::TokenKind::Identifier &&
+                a.getType().getKind() == lex::TokenKind::Identifier;
+          }) &&
+      commas.size() == fields.size() - 1) {
+
+    return structDeclStmtNode(
+        std::move(kw), std::move(id), std::move(eq), std::move(fields), std::move(commas));
+  }
+  return errInvalidStmtStructDecl(
+      std::move(kw), std::move(id), std::move(eq), fields, std::move(commas));
 }
 
 auto ParserImpl::nextStmtExec() -> NodePtr {

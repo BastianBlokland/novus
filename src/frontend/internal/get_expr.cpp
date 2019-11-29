@@ -308,6 +308,10 @@ auto GetExpr::visit(const parse::FuncDeclStmtNode & /*unused*/) -> void {
   throw std::logic_error{"GetExpr is not implemented for this node type"};
 }
 
+auto GetExpr::visit(const parse::StructDeclStmtNode & /*unused*/) -> void {
+  throw std::logic_error{"GetExpr is not implemented for this node type"};
+}
+
 auto GetExpr::getSubExpr(const parse::Node& n, std::vector<prog::sym::ConstId>* visibleConsts)
     -> prog::expr::NodePtr {
   auto visitor = GetExpr{m_src, m_prog, m_consts, visibleConsts};

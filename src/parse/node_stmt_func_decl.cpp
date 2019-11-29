@@ -88,7 +88,7 @@ auto FuncDeclStmtNode::print(std::ostream& out) const -> std::ostream& {
     if (i != 0) {
       out << ",";
     }
-    out << getIdOrErr(m_args[i].getIdentifier()) << '-' << getIdOrErr(m_args[i].getType());
+    out << getIdOrErr(m_args[i].getType()) << '-' << getIdOrErr(m_args[i].getIdentifier());
   }
   return out << ")->" << (m_retType ? getIdOrErr(m_retType->getType()) : "infer");
 }

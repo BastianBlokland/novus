@@ -64,6 +64,41 @@ auto errInvalidStmtFuncDecl(
   return errorNode(oss.str(), std::move(tokens), std::move(nodes));
 }
 
+auto errInvalidStmtStructDecl(
+    lex::Token kw,
+    lex::Token id,
+    lex::Token eq,
+    const std::vector<StructDeclStmtNode::FieldSpec>& fields,
+    std::vector<lex::Token> commas) -> NodePtr {
+
+  std::ostringstream oss;
+  if (id.getKind() != lex::TokenKind::Identifier) {
+    oss << "Expected struct identifier but got: " << id;
+  } else if (eq.getKind() != lex::TokenKind::OpEq) {
+    oss << "Expected equals-sign '=' but got: " << eq;
+  } else if (fields.empty()) {
+    oss << "Struct declaration needs at least one field";
+  } else if (commas.size() != fields.size() - 1) {
+    oss << "Incorrect number of comma's ',' in struct declaration";
+  } else {
+    oss << "Invalid struct declaration";
+  }
+
+  auto tokens = std::vector<lex::Token>{};
+  tokens.push_back(std::move(kw));
+  tokens.push_back(std::move(id));
+  tokens.push_back(std::move(eq));
+  for (auto& field : fields) {
+    tokens.push_back(field.getIdentifier());
+    tokens.push_back(field.getType());
+  }
+  for (auto& comma : commas) {
+    tokens.push_back(std::move(comma));
+  }
+
+  return errorNode(oss.str(), std::move(tokens), {});
+}
+
 auto errInvalidStmtExec(
     lex::Token action,
     lex::Token open,

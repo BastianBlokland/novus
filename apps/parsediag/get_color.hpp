@@ -85,6 +85,11 @@ public:
     m_bg = rang::bg::reset;
   }
 
+  auto visit(const parse::StructDeclStmtNode & /*unused*/) -> void override {
+    m_fg = rang::fg::yellow;
+    m_bg = rang::bg::reset;
+  }
+
 private:
   rang::fg m_fg{};
   rang::bg m_bg{};
