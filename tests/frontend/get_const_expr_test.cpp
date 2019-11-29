@@ -8,7 +8,7 @@
 
 namespace frontend {
 
-TEST_CASE("Get constant expression", "[frontend]") {
+TEST_CASE("Analyzing constant expressions", "[frontend]") {
 
   SECTION("Access function input") {
     const auto& output = ANALYZE("fun f(int a) -> int a");

@@ -7,11 +7,16 @@
 #include <unordered_map>
 #include <vector>
 
-namespace prog::sym {
+namespace prog {
+
+class Program;
+
+namespace sym {
 
 class FuncDeclTable final {
 public:
   using iterator = typename std::vector<FuncDecl>::const_iterator;
+  using id       = typename prog::sym::FuncId;
 
   FuncDeclTable()                             = default;
   FuncDeclTable(const FuncDeclTable& rhs)     = delete;
@@ -27,19 +32,21 @@ public:
   [[nodiscard]] auto end() const -> iterator;
 
   [[nodiscard]] auto lookup(const std::string& name) const -> std::vector<FuncId>;
-  [[nodiscard]] auto lookup(const std::string& name, const Input& input) const
+  [[nodiscard]] auto
+  lookup(const Program& prog, const std::string& name, const Input& input, int maxConversions) const
       -> std::optional<FuncId>;
 
-  auto registerFunc(FuncKind kind, std::string name, FuncSig sig) -> FuncId;
+  auto
+  registerFunc(const Program& prog, FuncKind kind, std::string name, Input input, TypeId output)
+      -> FuncId;
 
-  auto updateFuncRetType(FuncId id, TypeId newRetType) -> void;
+  auto updateFuncOutput(FuncId id, TypeId newOutput) -> void;
 
 private:
   std::vector<FuncDecl> m_funcs;
   std::unordered_map<std::string, std::vector<FuncId>> m_lookup;
-
-  [[nodiscard]] auto findOverload(const std::vector<FuncId>& overloads, const Input& input) const
-      -> std::optional<FuncId>;
 };
 
-} // namespace prog::sym
+} // namespace sym
+
+} // namespace prog

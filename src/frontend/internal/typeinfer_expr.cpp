@@ -101,6 +101,14 @@ auto TypeInferExpr::visit(const parse::LitExprNode& n) -> void {
     m_type = *boolType;
     break;
   }
+  case lex::TokenKind::LitString: {
+    auto stringType = m_prog->lookupType("string");
+    if (!stringType) {
+      throw std::logic_error{"No 'string' type present in type-table"};
+    }
+    m_type = *stringType;
+    break;
+  }
   default:
     break;
   }
@@ -160,9 +168,9 @@ auto TypeInferExpr::inferFuncCall(
       return prog::sym::TypeId::inferType();
     }
   }
-  auto func = m_prog->lookupFunc(funcName, prog::sym::Input{std::move(argTypes)});
+  auto func = m_prog->lookupFunc(funcName, prog::sym::Input{std::move(argTypes)}, -1);
   if (func) {
-    return m_prog->getFuncDecl(*func).getSig().getOutput();
+    return m_prog->getFuncDecl(*func).getOutput();
   }
   return prog::sym::TypeId::inferType();
 }

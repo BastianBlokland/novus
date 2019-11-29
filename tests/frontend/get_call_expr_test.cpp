@@ -6,7 +6,7 @@
 
 namespace frontend {
 
-TEST_CASE("Get call expression", "[frontend]") {
+TEST_CASE("Analyzing call expressions", "[frontend]") {
 
   SECTION("Get basic call") {
     const auto& output = ANALYZE("fun f1() -> int 1 "

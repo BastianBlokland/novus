@@ -90,9 +90,9 @@ auto printFuncDecls(const prog::Program& prog) -> void {
               << funcDecl.getName() << rang::style::reset;
 
     std::stringstream inputStr;
-    inputStr << "(" << funcDecl.getSig().getInput() << ")";
+    inputStr << "(" << funcDecl.getInput() << ")";
     std::cout << std::setw(inputColWidth) << std::left << inputStr.str() << " -> "
-              << funcDecl.getSig().getOutput() << '\n';
+              << funcDecl.getOutput() << '\n';
   }
 }
 

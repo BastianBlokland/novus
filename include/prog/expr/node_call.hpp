@@ -5,7 +5,7 @@
 namespace prog::expr {
 
 class CallExprNode final : public Node {
-  friend auto callExprNode(const Program& program, sym::FuncId func, std::vector<NodePtr> args)
+  friend auto callExprNode(const Program& prog, sym::FuncId func, std::vector<NodePtr> args)
       -> NodePtr;
 
 public:
@@ -32,6 +32,6 @@ private:
 };
 
 // Factories.
-auto callExprNode(const Program& program, sym::FuncId func, std::vector<NodePtr> args) -> NodePtr;
+auto callExprNode(const Program& prog, sym::FuncId func, std::vector<NodePtr> args) -> NodePtr;
 
 } // namespace prog::expr

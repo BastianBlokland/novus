@@ -10,7 +10,7 @@
 
 namespace frontend {
 
-TEST_CASE("Get conditional expression", "[frontend]") {
+TEST_CASE("Analyzing conditional expressions", "[frontend]") {
 
   SECTION("Get basic conditional expression") {
     const auto& output = ANALYZE("fun f() -> int "

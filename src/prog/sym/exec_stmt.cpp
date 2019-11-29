@@ -1,5 +1,7 @@
 #include "prog/sym/exec_stmt.hpp"
 #include "../expr/utilities.hpp"
+#include "internal/conversion.hpp"
+#include "prog/program.hpp"
 
 namespace prog::sym {
 
@@ -14,7 +16,7 @@ auto ExecStmt::getConsts() const noexcept -> const sym::ConstDeclTable& { return
 auto ExecStmt::getArgs() const noexcept -> const std::vector<expr::NodePtr>& { return m_args; }
 
 auto execStmt(
-    const sym::ActionDeclTable& actionTable,
+    const Program& prog,
     sym::ActionId action,
     sym::ConstDeclTable consts,
     std::vector<expr::NodePtr> args) -> ExecStmt {
@@ -22,16 +24,14 @@ auto execStmt(
   if (expr::anyNodeNull(args)) {
     throw std::invalid_argument{"Action execution cannot contain a null argument"};
   }
-  const auto input = actionTable[action].getInput();
+  const auto input = prog.getActionDecl(action).getInput();
   if (input.getCount() != args.size()) {
     throw std::invalid_argument{"Action execution contains incorrect number of arguments"};
   }
-  for (auto i = 0U; i < input.getCount(); ++i) {
-    if (args[i]->getType() != input[i]) {
-      throw std::invalid_argument{
-          "Action execution contains argument who's type doesn't match action input"};
-    }
-  }
+
+  // Apply conversions if necessary (and throw if types are incompatible).
+  internal::applyConversions(prog, input, &args);
+
   return ExecStmt{action, std::move(consts), std::move(args)};
 }
 

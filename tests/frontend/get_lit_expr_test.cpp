@@ -8,7 +8,7 @@
 
 namespace frontend {
 
-TEST_CASE("Get literal expression", "[frontend]") {
+TEST_CASE("Analyzing literal expressions", "[frontend]") {
 
   SECTION("Get int literal expression") {
     const auto& output = ANALYZE("fun f() -> int 42");

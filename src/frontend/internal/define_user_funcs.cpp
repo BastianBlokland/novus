@@ -3,6 +3,7 @@
 #include "internal/get_expr.hpp"
 #include "internal/utilities.hpp"
 #include "parse/nodes.hpp"
+#include "prog/expr/node_call.hpp"
 
 namespace frontend::internal {
 
@@ -15,7 +16,7 @@ auto DefineUserFuncs::getDiags() const noexcept -> const std::vector<Diag>& { re
 
 auto DefineUserFuncs::define(prog::sym::FuncId id, const parse::FuncDeclStmtNode& n) -> void {
   const auto& funcDecl   = m_prog->getFuncDecl(id);
-  const auto funcRetType = funcDecl.getSig().getOutput();
+  const auto funcRetType = funcDecl.getOutput();
 
   auto consts = prog::sym::ConstDeclTable{};
   if (!declareInputs(n, &consts)) {
@@ -33,15 +34,24 @@ auto DefineUserFuncs::define(prog::sym::FuncId id, const parse::FuncDeclStmtNode
     return;
   }
 
-  if (expr->getType() != funcRetType) {
-    const auto& declaredType = m_prog->getTypeDecl(funcDecl.getSig().getOutput()).getName();
-    const auto& returnedType = m_prog->getTypeDecl(expr->getType()).getName();
-    m_diags.push_back(errNonMatchingFuncReturnType(
-        m_src, funcDecl.getName(), declaredType, returnedType, n[0].getSpan()));
+  if (expr->getType() == funcRetType) {
+    m_prog->defineUserFunc(id, std::move(consts), std::move(expr));
     return;
   }
 
-  m_prog->defineUserFunc(id, std::move(consts), std::move(expr));
+  const auto conv = m_prog->lookupConversion(expr->getType(), funcRetType);
+  if (conv) {
+    auto convArgs = std::vector<prog::expr::NodePtr>{};
+    convArgs.push_back(std::move(expr));
+    m_prog->defineUserFunc(
+        id, std::move(consts), prog::expr::callExprNode(*m_prog, *conv, std::move(convArgs)));
+    return;
+  }
+
+  const auto& declaredType = m_prog->getTypeDecl(funcDecl.getOutput()).getName();
+  const auto& returnedType = m_prog->getTypeDecl(expr->getType()).getName();
+  m_diags.push_back(errNonMatchingFuncReturnType(
+      m_src, funcDecl.getName(), declaredType, returnedType, n[0].getSpan()));
 }
 
 auto DefineUserFuncs::declareInputs(

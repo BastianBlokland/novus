@@ -66,7 +66,7 @@ auto GetExpr::visit(const parse::BinaryExprNode& n) -> void {
 
   auto funcName = prog::getFuncName(op.value());
   auto func     = m_prog->lookupFunc(
-      prog::getFuncName(op.value()), prog::sym::Input{{args[0]->getType(), args[1]->getType()}});
+      prog::getFuncName(op.value()), prog::sym::Input{{args[0]->getType(), args[1]->getType()}}, 1);
   if (!func) {
     const auto& lhsTypeName = m_prog->getTypeDecl(args[0]->getType()).getName();
     const auto& rhsTypeName = m_prog->getTypeDecl(args[1]->getType()).getName();
@@ -99,7 +99,7 @@ auto GetExpr::visit(const parse::CallExprNode& n) -> void {
   }
 
   const auto& funcName = getName(n.getFunc());
-  const auto func      = m_prog->lookupFunc(funcName, prog::sym::Input{argTypes});
+  const auto func      = m_prog->lookupFunc(funcName, prog::sym::Input{argTypes}, -1);
   if (!func) {
     if (m_prog->lookupFuncs(funcName).empty()) {
       m_diags.push_back(errUndeclaredFunc(m_src, funcName, n.getFunc().getSpan()));
@@ -289,7 +289,7 @@ auto GetExpr::visit(const parse::UnaryExprNode& n) -> void {
 
   auto funcName = prog::getFuncName(op.value());
   auto func =
-      m_prog->lookupFunc(prog::getFuncName(op.value()), prog::sym::Input{{args[0]->getType()}});
+      m_prog->lookupFunc(prog::getFuncName(op.value()), prog::sym::Input{{args[0]->getType()}}, 0);
   if (!func) {
     const auto& typeName = m_prog->getTypeDecl(args[0]->getType()).getName();
     m_diags.push_back(

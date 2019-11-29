@@ -7,7 +7,21 @@
 
 namespace prog {
 
+class Program;
+
+namespace internal {
+
+[[nodiscard]] auto getTypeDeclTable(const Program& prog) -> const sym::TypeDeclTable&;
+[[nodiscard]] auto getFuncDeclTable(const Program& prog) -> const sym::FuncDeclTable&;
+[[nodiscard]] auto getActionDeclTable(const Program& prog) -> const sym::ActionDeclTable&;
+
+} // namespace internal
+
 class Program final {
+  friend auto internal::getTypeDeclTable(const Program& prog) -> const sym::TypeDeclTable&;
+  friend auto internal::getFuncDeclTable(const Program& prog) -> const sym::FuncDeclTable&;
+  friend auto internal::getActionDeclTable(const Program& prog) -> const sym::ActionDeclTable&;
+
 public:
   using typeDeclIterator   = typename sym::TypeDeclTable::iterator;
   using funcDeclIterator   = typename sym::FuncDeclTable::iterator;
@@ -39,26 +53,31 @@ public:
   [[nodiscard]] auto endExecStmts() const -> execStmtIterator;
 
   [[nodiscard]] auto lookupType(const std::string& name) const -> std::optional<sym::TypeId>;
-  [[nodiscard]] auto lookupFunc(const std::string& name, const sym::Input& input) const
+  [[nodiscard]] auto
+  lookupFunc(const std::string& name, const sym::Input& input, int maxConversions) const
       -> std::optional<sym::FuncId>;
   [[nodiscard]] auto lookupFuncs(const std::string& name) const -> std::vector<sym::FuncId>;
 
-  [[nodiscard]] auto lookupAction(const std::string& name, const sym::Input& input) const
+  [[nodiscard]] auto
+  lookupAction(const std::string& name, const sym::Input& input, int maxConversions) const
       -> std::optional<sym::ActionId>;
   [[nodiscard]] auto lookupActions(const std::string& name) const -> std::vector<sym::ActionId>;
+
+  [[nodiscard]] auto lookupConversion(sym::TypeId from, sym::TypeId to) const
+      -> std::optional<sym::FuncId>;
 
   [[nodiscard]] auto getTypeDecl(sym::TypeId id) const -> const sym::TypeDecl&;
   [[nodiscard]] auto getFuncDecl(sym::FuncId id) const -> const sym::FuncDecl&;
   [[nodiscard]] auto getActionDecl(sym::ActionId id) const -> const sym::ActionDecl&;
   [[nodiscard]] auto getFuncDef(sym::FuncId id) const -> const sym::FuncDef&;
 
-  auto declareUserFunc(std::string name, sym::FuncSig sig) -> sym::FuncId;
+  auto declareUserFunc(std::string name, sym::Input input, sym::TypeId output) -> sym::FuncId;
   auto defineUserFunc(sym::FuncId id, sym::ConstDeclTable consts, expr::NodePtr expr) -> void;
   auto
   addExecStmt(sym::ActionId action, sym::ConstDeclTable consts, std::vector<expr::NodePtr> args)
       -> void;
 
-  auto updateFuncRetType(sym::FuncId funcId, sym::TypeId newRetType) -> void;
+  auto updateFuncOutput(sym::FuncId funcId, sym::TypeId newOutput) -> void;
 
 private:
   sym::TypeDeclTable m_typeDecls;

@@ -1,7 +1,7 @@
 #pragma once
 #include "prog/sym/func_id.hpp"
 #include "prog/sym/func_kind.hpp"
-#include "prog/sym/func_sig.hpp"
+#include "prog/sym/input.hpp"
 #include <string>
 #include <vector>
 
@@ -20,17 +20,19 @@ public:
   [[nodiscard]] auto getId() const -> const FuncId&;
   [[nodiscard]] auto getKind() const -> const FuncKind&;
   [[nodiscard]] auto getName() const -> const std::string&;
-  [[nodiscard]] auto getSig() const -> const FuncSig&;
+  [[nodiscard]] auto getInput() const -> const Input&;
+  [[nodiscard]] auto getOutput() const -> TypeId;
 
-  auto updateSig(FuncSig newSig) -> void;
+  auto updateOutput(TypeId newOutput) -> void;
 
 private:
   FuncId m_id;
   FuncKind m_kind;
   std::string m_name;
-  FuncSig m_sig;
+  Input m_input;
+  TypeId m_output;
 
-  FuncDecl(FuncId id, FuncKind kind, std::string name, FuncSig sig);
+  FuncDecl(FuncId id, FuncKind kind, std::string name, Input input, TypeId output);
 };
 
 auto operator<<(std::ostream& out, const FuncDecl& rhs) -> std::ostream&;

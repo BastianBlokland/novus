@@ -10,7 +10,7 @@
 
 namespace frontend {
 
-TEST_CASE("Get group expression", "[frontend]") {
+TEST_CASE("Analyzing group expressions", "[frontend]") {
 
   SECTION("Get basic group expression") {
     const auto& output = ANALYZE("fun f() -> int b = 1; c = 2; b * c");

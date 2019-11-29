@@ -23,9 +23,8 @@ auto FuncDefTable::registerFunc(
   if (expr == nullptr) {
     throw std::invalid_argument{"Function expresion cannot be null"};
   }
-  const auto sig = funcTable[id].getSig();
-  if (expr->getType() != sig.getOutput()) {
-    throw std::invalid_argument{"Type of expresion does not match function return type"};
+  if (expr->getType() != funcTable[id].getOutput()) {
+    throw std::invalid_argument{"Type of expresion does not match function output type"};
   }
   auto itr = m_funcs.find(id);
   if (itr != m_funcs.end()) {

@@ -1,4 +1,5 @@
 #include "prog/sym/action_decl_table.hpp"
+#include "internal/overload.hpp"
 #include <stdexcept>
 
 namespace prog::sym {
@@ -21,18 +22,19 @@ auto ActionDeclTable::lookup(const std::string& name) const -> std::vector<Actio
   return itr->second;
 }
 
-auto ActionDeclTable::lookup(const std::string& name, const Input& input) const
+auto ActionDeclTable::lookup(
+    const Program& prog, const std::string& name, const Input& input, int maxConversions) const
     -> std::optional<ActionId> {
-  const auto itr = m_lookup.find(name);
-  if (itr == m_lookup.end()) {
-    return std::nullopt;
-  }
-  return findOverload(itr->second, input);
+  return internal::findOverload(prog, *this, name, input, maxConversions);
 }
 
-auto ActionDeclTable::registerAction(ActionKind kind, std::string name, Input input) -> ActionId {
+auto ActionDeclTable::registerAction(
+    const Program& prog, ActionKind kind, std::string name, Input input) -> ActionId {
   if (name.empty()) {
     throw std::invalid_argument{"Name has to contain aleast 1 char"};
+  }
+  if (internal::findOverload(prog, *this, name, input, 0)) {
+    throw std::logic_error{"Action with an identical name and input has already been registered"};
   }
 
   auto id  = ActionId{static_cast<unsigned int>(m_actions.size())};
@@ -40,23 +42,9 @@ auto ActionDeclTable::registerAction(ActionKind kind, std::string name, Input in
   if (itr == m_lookup.end()) {
     itr = m_lookup.insert({name, std::vector<ActionId>{}}).first;
   }
-  if (findOverload(itr->second, input)) {
-    throw std::logic_error{"Action with an identical name and input has already been registered"};
-  }
   itr->second.push_back(id);
   m_actions.push_back(ActionDecl{id, kind, std::move(name), std::move(input)});
   return id;
-}
-
-auto ActionDeclTable::findOverload(const std::vector<ActionId>& overloads, const Input& input) const
-    -> std::optional<ActionId> {
-  for (const auto& actionId : overloads) {
-    const auto& actionDecl = ActionDeclTable::operator[](actionId);
-    if (actionDecl.m_input == input) {
-      return actionId;
-    }
-  }
-  return std::nullopt;
 }
 
 } // namespace prog::sym
