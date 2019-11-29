@@ -101,6 +101,14 @@ auto TypeInferExpr::visit(const parse::LitExprNode& n) -> void {
     m_type = *boolType;
     break;
   }
+  case lex::TokenKind::LitString: {
+    auto stringType = m_prog->lookupType("string");
+    if (!stringType) {
+      throw std::logic_error{"No 'string' type present in type-table"};
+    }
+    m_type = *stringType;
+    break;
+  }
   default:
     break;
   }
