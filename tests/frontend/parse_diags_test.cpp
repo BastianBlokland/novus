@@ -3,7 +3,7 @@
 
 namespace frontend {
 
-TEST_CASE("Parse diagnostics", "[frontend]") {
+TEST_CASE("Analyzing parse diagnostics", "[frontend]") {
 
   CHECK_DIAG("print(1 + .)", error(src, "Parse error: Invalid character '.'", input::Span{10, 10}));
 }

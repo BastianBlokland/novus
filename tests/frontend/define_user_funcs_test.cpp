@@ -1,12 +1,13 @@
 #include "catch2/catch.hpp"
 #include "frontend/diag_defs.hpp"
 #include "helpers.hpp"
+#include "prog/expr/node_call.hpp"
 #include "prog/expr/node_lit_int.hpp"
 #include "prog/sym/input.hpp"
 
 namespace frontend {
 
-TEST_CASE("Define user functions", "[frontend]") {
+TEST_CASE("Analyzing user-function definitions", "[frontend]") {
 
   SECTION("Define basic function") {
     const auto& output = ANALYZE("fun f(int a) -> int 42");
@@ -18,6 +19,20 @@ TEST_CASE("Define user functions", "[frontend]") {
     CHECK(consts[a.value()].getKind() == prog::sym::ConstKind::Input);
     CHECK(consts[a.value()].getType() == GET_TYPE_ID(output, "int"));
     CHECK(funcDef.getExpr() == *prog::expr::litIntNode(output.getProg(), 42));
+  }
+
+  SECTION("Define function with conversion") {
+    const auto& output = ANALYZE("fun f() -> string 2");
+    REQUIRE(output.isSuccess());
+    const auto& funcDef = GET_FUNC_DEF(output, "f");
+
+    const auto conversion = GET_CONV(output, "int", "string");
+    auto convArgs         = std::vector<prog::expr::NodePtr>{};
+    convArgs.push_back(prog::expr::litIntNode(output.getProg(), 2));
+
+    CHECK(
+        funcDef.getExpr() ==
+        *prog::expr::callExprNode(output.getProg(), *conversion, std::move(convArgs)));
   }
 
   SECTION("Diagnostics") {

@@ -37,7 +37,7 @@ auto analyze(const Source& src) -> Output {
     auto inferredOne = false;
     for (const auto& funcDeclInfo : declareUserFuncs.getFuncs()) {
       auto& funcDecl = prog->getFuncDecl(funcDeclInfo.first);
-      if (funcDecl.getSig().getOutput().isConcrete()) {
+      if (funcDecl.getOutput().isConcrete()) {
         continue;
       }
       auto success = typeInferUserFuncs.inferRetType(funcDeclInfo.first, funcDeclInfo.second);

@@ -6,11 +6,16 @@
 #include <unordered_map>
 #include <vector>
 
-namespace prog::sym {
+namespace prog {
+
+class Program;
+
+namespace sym {
 
 class ActionDeclTable final {
 public:
   using iterator = typename std::vector<ActionDecl>::const_iterator;
+  using id       = typename prog::sym::ActionId;
 
   ActionDeclTable()                               = default;
   ActionDeclTable(const ActionDeclTable& rhs)     = delete;
@@ -26,17 +31,18 @@ public:
   [[nodiscard]] auto end() const -> iterator;
 
   [[nodiscard]] auto lookup(const std::string& name) const -> std::vector<ActionId>;
-  [[nodiscard]] auto lookup(const std::string& name, const Input& input) const
+  [[nodiscard]] auto
+  lookup(const Program& prog, const std::string& name, const Input& input, int maxConversions) const
       -> std::optional<ActionId>;
 
-  auto registerAction(ActionKind kind, std::string name, Input input) -> ActionId;
+  auto registerAction(const Program& prog, ActionKind kind, std::string name, Input input)
+      -> ActionId;
 
 private:
   std::vector<ActionDecl> m_actions;
   std::unordered_map<std::string, std::vector<ActionId>> m_lookup;
-
-  [[nodiscard]] auto findOverload(const std::vector<ActionId>& overloads, const Input& input) const
-      -> std::optional<ActionId>;
 };
 
-} // namespace prog::sym
+} // namespace sym
+
+} // namespace prog

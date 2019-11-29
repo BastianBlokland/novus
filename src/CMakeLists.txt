@@ -67,6 +67,9 @@ add_library(prog STATIC
   prog/expr/node.cpp
   prog/expr/utilities.cpp
 
+  prog/internal/conversion.cpp
+  prog/internal/overload.cpp
+
   prog/sym/action_decl_table.cpp
   prog/sym/action_decl.cpp
   prog/sym/action_id.cpp
@@ -81,7 +84,6 @@ add_library(prog STATIC
   prog/sym/func_def.cpp
   prog/sym/func_id_hasher.cpp
   prog/sym/func_id.cpp
-  prog/sym/func_sig.cpp
   prog/sym/input.cpp
   prog/sym/type_decl_table.cpp
   prog/sym/type_decl.cpp

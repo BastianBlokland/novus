@@ -8,7 +8,7 @@
 
 namespace frontend {
 
-TEST_CASE("Get unary expression", "[frontend]") {
+TEST_CASE("Analyzing unary expressions", "[frontend]") {
 
   SECTION("Get basic unary expression") {
     const auto& output = ANALYZE("fun f(int a) -> int -a");

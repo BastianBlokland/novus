@@ -1,4 +1,5 @@
 #include "prog/expr/node_call.hpp"
+#include "internal/conversion.hpp"
 #include "utilities.hpp"
 #include <sstream>
 #include <stdexcept>
@@ -39,23 +40,21 @@ auto CallExprNode::getFunc() const noexcept -> sym::FuncId { return m_func; }
 auto CallExprNode::accept(NodeVisitor* visitor) const -> void { visitor->visit(*this); }
 
 // Factories.
-auto callExprNode(const Program& program, sym::FuncId func, std::vector<NodePtr> args) -> NodePtr {
+auto callExprNode(const Program& prog, sym::FuncId func, std::vector<NodePtr> args) -> NodePtr {
   if (anyNodeNull(args)) {
     throw std::invalid_argument{"Call node cannot contain a null argument"};
   }
-  const auto& funcSig   = program.getFuncDecl(func).getSig();
-  const auto& funcInput = funcSig.getInput();
+  const auto& funcDecl  = prog.getFuncDecl(func);
+  const auto& funcInput = funcDecl.getInput();
   if (funcInput.getCount() != args.size()) {
     throw std::invalid_argument{"Call node contains incorrect number of arguments"};
   }
-  for (auto i = 0U; i < funcInput.getCount(); ++i) {
-    if (args[i]->getType() != funcInput[i]) {
-      throw std::invalid_argument{
-          "Call node contains argument who's type doesn't match function input"};
-    }
-  }
+
+  // Apply conversions if necessary (and throw if types are incompatible).
+  internal::applyConversions(prog, funcDecl.getInput(), &args);
+
   return std::unique_ptr<CallExprNode>{
-      new CallExprNode{func, funcSig.getOutput(), std::move(args)}};
+      new CallExprNode{funcDecl.getId(), funcDecl.getOutput(), std::move(args)}};
 }
 
 } // namespace prog::expr

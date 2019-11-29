@@ -5,29 +5,32 @@
 
 namespace frontend {
 
-TEST_CASE("Declare user functions", "[frontend]") {
+TEST_CASE("Analyzing user-function declarations", "[frontend]") {
 
   SECTION("Declare basic function") {
     const auto& output = ANALYZE("fun f(int a, bool b) -> bool false");
     REQUIRE(output.isSuccess());
     CHECK(
         GET_FUNC_DECL(output, "f", GET_TYPE_ID(output, "int"), GET_TYPE_ID(output, "bool"))
-            .getSig()
             .getOutput() == GET_TYPE_ID(output, "bool"));
   }
 
   SECTION("Declare overloaded function") {
     const auto& output = ANALYZE("fun f(int a) -> bool false "
+                                 "fun f(string a) -> string \"hello world\" "
                                  "fun f(bool a) -> bool a "
                                  "fun f() -> int 1");
     REQUIRE(output.isSuccess());
     CHECK(
-        GET_FUNC_DECL(output, "f", GET_TYPE_ID(output, "int")).getSig().getOutput() ==
+        GET_FUNC_DECL(output, "f", GET_TYPE_ID(output, "int")).getOutput() ==
         GET_TYPE_ID(output, "bool"));
     CHECK(
-        GET_FUNC_DECL(output, "f", GET_TYPE_ID(output, "bool")).getSig().getOutput() ==
+        GET_FUNC_DECL(output, "f", GET_TYPE_ID(output, "string")).getOutput() ==
+        GET_TYPE_ID(output, "string"));
+    CHECK(
+        GET_FUNC_DECL(output, "f", GET_TYPE_ID(output, "bool")).getOutput() ==
         GET_TYPE_ID(output, "bool"));
-    CHECK(GET_FUNC_DECL(output, "f").getSig().getOutput() == output.getProg().lookupType("int"));
+    CHECK(GET_FUNC_DECL(output, "f").getOutput() == output.getProg().lookupType("int"));
   }
 
   SECTION("Diagnostics") {

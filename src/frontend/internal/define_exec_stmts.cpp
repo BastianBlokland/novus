@@ -34,20 +34,21 @@ auto DefineExecStmts::visit(const parse::ExecStmtNode& n) -> void {
   }
 
   const auto& actionName = getName(n.getAction());
-  const auto& action     = m_prog->lookupAction(actionName, prog::sym::Input{argTypes});
-  if (!action) {
-    if (m_prog->lookupActions(actionName).empty()) {
-      m_diags.push_back(errUndeclaredAction(m_src, actionName, n.getAction().getSpan()));
-    } else {
-      auto argTypeNames = std::vector<std::string>{};
-      for (const auto& argType : argTypes) {
-        argTypeNames.push_back(m_prog->getTypeDecl(argType).getName());
-      }
-      m_diags.push_back(errUndeclaredActionOverload(m_src, actionName, argTypeNames, n.getSpan()));
-    }
+  const auto& action     = m_prog->lookupAction(actionName, prog::sym::Input{argTypes}, -1);
+  if (action) {
+    m_prog->addExecStmt(action.value(), std::move(consts), std::move(args));
     return;
   }
-  m_prog->addExecStmt(action.value(), std::move(consts), std::move(args));
+
+  if (m_prog->lookupActions(actionName).empty()) {
+    m_diags.push_back(errUndeclaredAction(m_src, actionName, n.getAction().getSpan()));
+  } else {
+    auto argTypeNames = std::vector<std::string>{};
+    for (const auto& argType : argTypes) {
+      argTypeNames.push_back(m_prog->getTypeDecl(argType).getName());
+    }
+    m_diags.push_back(errUndeclaredActionOverload(m_src, actionName, argTypeNames, n.getSpan()));
+  }
 }
 
 auto DefineExecStmts::getExpr(

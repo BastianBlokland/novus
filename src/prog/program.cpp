@@ -1,8 +1,21 @@
 #include "prog/program.hpp"
+#include "internal/conversion.hpp"
 #include "prog/operator.hpp"
 #include "prog/sym/action_kind.hpp"
 
 namespace prog {
+
+namespace internal {
+
+auto getTypeDeclTable(const Program& prog) -> const sym::TypeDeclTable& { return prog.m_typeDecls; }
+
+auto getFuncDeclTable(const Program& prog) -> const sym::FuncDeclTable& { return prog.m_funcDecls; }
+
+auto getActionDeclTable(const Program& prog) -> const sym::ActionDeclTable& {
+  return prog.m_actionDecls;
+}
+
+} // namespace internal
 
 Program::Program() {
   // Register build-in types.
@@ -12,82 +25,78 @@ Program::Program() {
 
   // Register build-in unary int operators.
   m_funcDecls.registerFunc(
-      sym::FuncKind::NegateInt, getFuncName(Operator::Minus), sym::FuncSig{sym::Input{intT}, intT});
+      *this, sym::FuncKind::NegateInt, getFuncName(Operator::Minus), sym::Input{intT}, intT);
 
   // Register build-in binary int operators.
   m_funcDecls.registerFunc(
-      sym::FuncKind::AddInt,
-      getFuncName(Operator::Plus),
-      sym::FuncSig{sym::Input{intT, intT}, intT});
+      *this, sym::FuncKind::AddInt, getFuncName(Operator::Plus), sym::Input{intT, intT}, intT);
   m_funcDecls.registerFunc(
-      sym::FuncKind::SubInt,
-      getFuncName(Operator::Minus),
-      sym::FuncSig{sym::Input{intT, intT}, intT});
+      *this, sym::FuncKind::SubInt, getFuncName(Operator::Minus), sym::Input{intT, intT}, intT);
   m_funcDecls.registerFunc(
-      sym::FuncKind::MulInt,
-      getFuncName(Operator::Star),
-      sym::FuncSig{sym::Input{intT, intT}, intT});
+      *this, sym::FuncKind::MulInt, getFuncName(Operator::Star), sym::Input{intT, intT}, intT);
   m_funcDecls.registerFunc(
-      sym::FuncKind::DivInt,
-      getFuncName(Operator::Slash),
-      sym::FuncSig{sym::Input{intT, intT}, intT});
+      *this, sym::FuncKind::DivInt, getFuncName(Operator::Slash), sym::Input{intT, intT}, intT);
   m_funcDecls.registerFunc(
-      sym::FuncKind::RemInt,
-      getFuncName(Operator::Rem),
-      sym::FuncSig{sym::Input{intT, intT}, intT});
+      *this, sym::FuncKind::RemInt, getFuncName(Operator::Rem), sym::Input{intT, intT}, intT);
   m_funcDecls.registerFunc(
-      sym::FuncKind::CheckEqInt,
-      getFuncName(Operator::EqEq),
-      sym::FuncSig{sym::Input{intT, intT}, boolT});
+      *this, sym::FuncKind::CheckEqInt, getFuncName(Operator::EqEq), sym::Input{intT, intT}, boolT);
   m_funcDecls.registerFunc(
+      *this,
       sym::FuncKind::CheckNEqInt,
       getFuncName(Operator::BangEq),
-      sym::FuncSig{sym::Input{intT, intT}, boolT});
+      sym::Input{intT, intT},
+      boolT);
   m_funcDecls.registerFunc(
-      sym::FuncKind::CheckLeInt,
-      getFuncName(Operator::Le),
-      sym::FuncSig{sym::Input{intT, intT}, boolT});
+      *this, sym::FuncKind::CheckLeInt, getFuncName(Operator::Le), sym::Input{intT, intT}, boolT);
   m_funcDecls.registerFunc(
+      *this,
       sym::FuncKind::CheckLeEqInt,
       getFuncName(Operator::LeEq),
-      sym::FuncSig{sym::Input{intT, intT}, boolT});
+      sym::Input{intT, intT},
+      boolT);
   m_funcDecls.registerFunc(
-      sym::FuncKind::CheckGtInt,
-      getFuncName(Operator::Gt),
-      sym::FuncSig{sym::Input{intT, intT}, boolT});
+      *this, sym::FuncKind::CheckGtInt, getFuncName(Operator::Gt), sym::Input{intT, intT}, boolT);
   m_funcDecls.registerFunc(
+      *this,
       sym::FuncKind::CheckGtEqInt,
       getFuncName(Operator::GtEq),
-      sym::FuncSig{sym::Input{intT, intT}, boolT});
+      sym::Input{intT, intT},
+      boolT);
 
   // Register build-in unary bool operators.
   m_funcDecls.registerFunc(
-      sym::FuncKind::InvBool, getFuncName(Operator::Bang), sym::FuncSig{sym::Input{boolT}, boolT});
+      *this, sym::FuncKind::InvBool, getFuncName(Operator::Bang), sym::Input{boolT}, boolT);
 
   // Register build-in binary bool operators.
   m_funcDecls.registerFunc(
+      *this,
       sym::FuncKind::CheckEqBool,
       getFuncName(Operator::EqEq),
-      sym::FuncSig{sym::Input{boolT, boolT}, boolT});
+      sym::Input{boolT, boolT},
+      boolT);
   m_funcDecls.registerFunc(
+      *this,
       sym::FuncKind::CheckNEqBool,
       getFuncName(Operator::BangEq),
-      sym::FuncSig{sym::Input{boolT, boolT}, boolT});
+      sym::Input{boolT, boolT},
+      boolT);
 
   // Register build-in binary string operators.
   m_funcDecls.registerFunc(
+      *this,
       sym::FuncKind::AddString,
       getFuncName(Operator::Plus),
-      sym::FuncSig{sym::Input{stringT, stringT}, stringT});
+      sym::Input{stringT, stringT},
+      stringT);
 
   // Register build-in conversions.
   m_funcDecls.registerFunc(
-      sym::FuncKind::ConvIntString, "string", sym::FuncSig{sym::Input{intT}, stringT});
+      *this, sym::FuncKind::ConvIntString, "string", sym::Input{intT}, stringT);
   m_funcDecls.registerFunc(
-      sym::FuncKind::ConvBoolString, "string", sym::FuncSig{sym::Input{boolT}, stringT});
+      *this, sym::FuncKind::ConvBoolString, "string", sym::Input{boolT}, stringT);
 
   // Register build-in actions.
-  m_actionDecls.registerAction(sym::ActionKind::PrintString, "print", sym::Input{stringT});
+  m_actionDecls.registerAction(*this, sym::ActionKind::PrintString, "print", sym::Input{stringT});
 }
 
 auto Program::beginTypeDecls() const -> typeDeclIterator { return m_typeDecls.begin(); }
@@ -114,22 +123,27 @@ auto Program::lookupType(const std::string& name) const -> std::optional<sym::Ty
   return m_typeDecls.lookup(name);
 }
 
-auto Program::lookupFunc(const std::string& name, const sym::Input& input) const
+auto Program::lookupFunc(const std::string& name, const sym::Input& input, int maxConversions) const
     -> std::optional<sym::FuncId> {
-  return m_funcDecls.lookup(name, input);
+  return m_funcDecls.lookup(*this, name, input, maxConversions);
 }
 
 auto Program::lookupFuncs(const std::string& name) const -> std::vector<sym::FuncId> {
   return m_funcDecls.lookup(name);
 }
 
-auto Program::lookupAction(const std::string& name, const sym::Input& input) const
-    -> std::optional<sym::ActionId> {
-  return m_actionDecls.lookup(name, input);
+auto Program::lookupAction(const std::string& name, const sym::Input& input, int maxConversions)
+    const -> std::optional<sym::ActionId> {
+  return m_actionDecls.lookup(*this, name, input, maxConversions);
 }
 
 auto Program::lookupActions(const std::string& name) const -> std::vector<sym::ActionId> {
   return m_actionDecls.lookup(name);
+}
+
+auto Program::lookupConversion(sym::TypeId from, sym::TypeId to) const
+    -> std::optional<sym::FuncId> {
+  return internal::findConversion(*this, from, to);
 }
 
 auto Program::getTypeDecl(sym::TypeId id) const -> const sym::TypeDecl& { return m_typeDecls[id]; }
@@ -142,8 +156,10 @@ auto Program::getActionDecl(sym::ActionId id) const -> const sym::ActionDecl& {
 
 auto Program::getFuncDef(sym::FuncId id) const -> const sym::FuncDef& { return m_funcDefs[id]; }
 
-auto Program::declareUserFunc(std::string name, sym::FuncSig sig) -> sym::FuncId {
-  return m_funcDecls.registerFunc(sym::FuncKind::User, std::move(name), std::move(sig));
+auto Program::declareUserFunc(std::string name, sym::Input input, sym::TypeId output)
+    -> sym::FuncId {
+  return m_funcDecls.registerFunc(
+      *this, sym::FuncKind::User, std::move(name), std::move(input), output);
 }
 
 auto Program::defineUserFunc(sym::FuncId id, sym::ConstDeclTable consts, expr::NodePtr expr)
@@ -153,12 +169,11 @@ auto Program::defineUserFunc(sym::FuncId id, sym::ConstDeclTable consts, expr::N
 
 auto Program::addExecStmt(
     sym::ActionId action, sym::ConstDeclTable consts, std::vector<expr::NodePtr> args) -> void {
-  return m_execStmts.push_back(
-      sym::execStmt(m_actionDecls, action, std::move(consts), std::move(args)));
+  return m_execStmts.push_back(sym::execStmt(*this, action, std::move(consts), std::move(args)));
 }
 
-auto Program::updateFuncRetType(sym::FuncId funcId, sym::TypeId newRetType) -> void {
-  m_funcDecls.updateFuncRetType(funcId, newRetType);
+auto Program::updateFuncOutput(sym::FuncId funcId, sym::TypeId newOutput) -> void {
+  m_funcDecls.updateFuncOutput(funcId, newOutput);
 }
 
 } // namespace prog

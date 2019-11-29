@@ -28,8 +28,8 @@ auto TypeInferUserFuncs::inferRetType(prog::sym::FuncId id, const parse::FuncDec
     return false;
   }
 
-  // Update signature with inferred type.
-  m_prog->updateFuncRetType(id, type);
+  // Update function output with inferred type.
+  m_prog->updateFuncOutput(id, type);
   return true;
 }
 

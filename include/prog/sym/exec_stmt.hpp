@@ -4,11 +4,15 @@
 #include "prog/sym/action_id.hpp"
 #include "prog/sym/const_decl_table.hpp"
 
-namespace prog::sym {
+namespace prog {
+
+class Program;
+
+namespace sym {
 
 class ExecStmt final {
   friend auto execStmt(
-      const sym::ActionDeclTable& actionTable,
+      const Program& program,
       sym::ActionId action,
       sym::ConstDeclTable consts,
       std::vector<expr::NodePtr> args) -> ExecStmt;
@@ -36,9 +40,11 @@ private:
 
 // Factories.
 auto execStmt(
-    const sym::ActionDeclTable& actionTable,
+    const Program& program,
     sym::ActionId action,
     sym::ConstDeclTable consts,
     std::vector<expr::NodePtr> args) -> ExecStmt;
 
-} // namespace prog::sym
+} // namespace sym
+
+} // namespace prog

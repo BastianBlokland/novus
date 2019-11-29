@@ -34,7 +34,7 @@ auto DeclareUserFuncs::visit(const parse::FuncDeclStmtNode& n) -> void {
   }
 
   // Verify that this is not a duplicate declaration.
-  if (m_prog->lookupFunc(name, input.value())) {
+  if (m_prog->lookupFunc(name, input.value(), 0)) {
     m_diags.push_back(errDuplicateFuncDeclaration(m_src, name, n.getSpan()));
     return;
   }
@@ -46,7 +46,7 @@ auto DeclareUserFuncs::visit(const parse::FuncDeclStmtNode& n) -> void {
   }
 
   // Declare the function in the program.
-  auto funcId = m_prog->declareUserFunc(name, prog::sym::FuncSig{input.value(), retType.value()});
+  auto funcId = m_prog->declareUserFunc(name, input.value(), retType.value());
   m_funcs.emplace_back(funcId, n);
 }
 

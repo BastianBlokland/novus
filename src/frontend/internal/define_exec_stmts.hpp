@@ -21,7 +21,7 @@ private:
   prog::Program* m_prog;
   std::vector<Diag> m_diags;
 
-  auto getExpr(
+  [[nodiscard]] auto getExpr(
       const parse::Node& n,
       prog::sym::ConstDeclTable* consts,
       std::vector<prog::sym::ConstId>* visibleConsts) -> prog::expr::NodePtr;

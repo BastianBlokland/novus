@@ -7,7 +7,7 @@
 
 namespace frontend {
 
-TEST_CASE("Get parenthesized expression", "[frontend]") {
+TEST_CASE("Analyzing parenthesized expressions", "[frontend]") {
 
   SECTION("Get basic paren expression") {
     const auto& output = ANALYZE("fun f(int a, int b) -> int ((a) + (b))");
