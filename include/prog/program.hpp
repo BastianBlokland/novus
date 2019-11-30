@@ -71,6 +71,7 @@ public:
   [[nodiscard]] auto getActionDecl(sym::ActionId id) const -> const sym::ActionDecl&;
   [[nodiscard]] auto getFuncDef(sym::FuncId id) const -> const sym::FuncDef&;
 
+  auto declareUserStruct(std::string name) -> sym::TypeId;
   auto declareUserFunc(std::string name, sym::Input input, sym::TypeId output) -> sym::FuncId;
   auto defineUserFunc(sym::FuncId id, sym::ConstDeclTable consts, expr::NodePtr expr) -> void;
   auto

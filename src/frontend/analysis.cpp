@@ -1,6 +1,7 @@
 #include "frontend/analysis.hpp"
 #include "frontend/diag_defs.hpp"
 #include "internal/declare_user_funcs.hpp"
+#include "internal/declare_user_types.hpp"
 #include "internal/define_exec_stmts.hpp"
 #include "internal/define_user_funcs.hpp"
 #include "internal/get_parse_diags.hpp"
@@ -21,6 +22,13 @@ auto analyze(const Source& src) -> Output {
   }
 
   auto prog = std::make_unique<prog::Program>();
+
+  // Declare user types.
+  auto declareUserTypes = internal::DeclareUserTypes{src, prog.get()};
+  src.accept(&declareUserTypes);
+  if (declareUserTypes.hasErrors()) {
+    return buildOutput(nullptr, declareUserTypes.getDiags());
+  }
 
   // Declare user functions.
   auto declareUserFuncs = internal::DeclareUserFuncs{src, prog.get()};

@@ -9,6 +9,8 @@ namespace frontend {
 
 #define ANALYZE(INPUT) analyze(SRC(INPUT))
 
+#define TYPE_EXISTS(OUTPUT, TYPE_NAME) OUTPUT.getProg().lookupType(TYPE_NAME).has_value()
+
 #define GET_TYPE_ID(OUTPUT, TYPE_NAME) OUTPUT.getProg().lookupType(TYPE_NAME).value()
 
 #define GET_FUNC_ID(OUTPUT, FUNCNAME, ...)                                                         \

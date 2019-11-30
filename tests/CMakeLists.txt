@@ -21,6 +21,7 @@ add_executable(tests
   backend/switch_expr_test.cpp
 
   frontend/declare_user_funcs_test.cpp
+  frontend/declare_user_types_test.cpp
   frontend/define_exec_stmts_test.cpp
   frontend/define_user_funcs_test.cpp
   frontend/get_binary_expr_test.cpp

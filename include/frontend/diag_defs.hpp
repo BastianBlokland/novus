@@ -7,6 +7,11 @@ namespace frontend {
 
 auto errParseError(const Source& src, const parse::ErrorNode& n) -> Diag;
 
+auto errTypeAlreadyDeclared(const Source& src, const std::string& name, input::Span span) -> Diag;
+
+auto errTypeNameConflictsWithAction(const Source& src, const std::string& name, input::Span span)
+    -> Diag;
+
 auto errUnsupportedLiteral(const Source& src, const std::string& name, input::Span span) -> Diag;
 
 auto errFuncNameConflictsWithType(const Source& src, const std::string& name, input::Span span)

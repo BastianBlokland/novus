@@ -15,6 +15,19 @@ auto errUnsupportedLiteral(const Source& src, const std::string& name, input::Sp
   return error(src, oss.str(), span);
 }
 
+auto errTypeAlreadyDeclared(const Source& src, const std::string& name, input::Span span) -> Diag {
+  std::ostringstream oss;
+  oss << "Type name '" << name << "' conflicts with an previously declared type";
+  return error(src, oss.str(), span);
+}
+
+auto errTypeNameConflictsWithAction(const Source& src, const std::string& name, input::Span span)
+    -> Diag {
+  std::ostringstream oss;
+  oss << "Type name '" << name << "' conflicts with a build-in action with the same name";
+  return error(src, oss.str(), span);
+}
+
 auto errFuncNameConflictsWithType(const Source& src, const std::string& name, input::Span span)
     -> Diag {
   std::ostringstream oss;

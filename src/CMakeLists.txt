@@ -100,6 +100,7 @@ target_include_directories(prog PRIVATE prog)
 # Frontend.
 add_library(frontend STATIC
   frontend/internal/declare_user_funcs.cpp
+  frontend/internal/declare_user_types.cpp
   frontend/internal/define_exec_stmts.cpp
   frontend/internal/define_user_funcs.cpp
   frontend/internal/get_expr.cpp

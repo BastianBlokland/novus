@@ -168,6 +168,10 @@ auto Program::getActionDecl(sym::ActionId id) const -> const sym::ActionDecl& {
 
 auto Program::getFuncDef(sym::FuncId id) const -> const sym::FuncDef& { return m_funcDefs[id]; }
 
+auto Program::declareUserStruct(std::string name) -> sym::TypeId {
+  return m_typeDecls.registerType(sym::TypeKind::UserStruct, std::move(name));
+}
+
 auto Program::declareUserFunc(std::string name, sym::Input input, sym::TypeId output)
     -> sym::FuncId {
   return m_funcDecls.registerFunc(
