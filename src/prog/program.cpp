@@ -187,7 +187,17 @@ auto Program::declareUserFunc(std::string name, sym::Input input, sym::TypeId ou
 }
 
 auto Program::defineUserStruct(sym::TypeId id, std::vector<sym::StructDef::Field> fields) -> void {
+  auto fieldTypes = std::vector<sym::TypeId>{};
+  for (const auto& field : fields) {
+    fieldTypes.push_back(field.getType());
+  }
+
+  // Register struct definition.
   m_typeDefs.registerStruct(m_typeDecls, id, std::move(fields));
+
+  // Register constructor function.
+  const auto& name = m_typeDecls[id].getName();
+  m_funcDecls.registerFunc(*this, sym::FuncKind::MakeStruct, name, sym::Input{fieldTypes}, id);
 }
 
 auto Program::defineUserFunc(sym::FuncId id, sym::ConstDeclTable consts, expr::NodePtr expr)

@@ -45,6 +45,8 @@ public:
   auto addConvIntString() -> void;
   auto addConvBoolString() -> void;
 
+  auto addMakeStruct(uint8_t fieldCount) -> void;
+
   auto addPrintString() -> void;
 
   auto addJump(std::string label) -> void;

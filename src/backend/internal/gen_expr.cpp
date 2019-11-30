@@ -130,6 +130,13 @@ auto GenExpr::visit(const prog::expr::CallExprNode& n) -> void {
   case prog::sym::FuncKind::ConvBoolString:
     m_builder->addConvBoolString();
     break;
+  case prog::sym::FuncKind::MakeStruct:
+    auto fieldCount = n.getChildCount();
+    if (fieldCount > std::numeric_limits<uint8_t>::max()) {
+      throw std::logic_error{"More then 256 fields in one struct are not supported"};
+    }
+    m_builder->addMakeStruct(static_cast<uint8_t>(fieldCount));
+    break;
   }
 }
 
