@@ -104,13 +104,14 @@ auto ParserImpl::nextStmtStructDecl() -> NodePtr {
   auto eq     = consumeToken();
   auto fields = std::vector<StructDeclStmtNode::FieldSpec>{};
   auto commas = std::vector<lex::Token>{};
-  while (peekToken(0).getKind() == lex::TokenKind::Identifier ||
-         peekToken(0).getKind() == lex::TokenKind::SepComma) {
+  while (peekToken(0).getKind() == lex::TokenKind::Identifier) {
     auto fieldType = consumeToken();
     auto fieldId   = consumeToken();
     fields.emplace_back(fieldType, fieldId);
     if (peekToken(0).getKind() == lex::TokenKind::SepComma) {
       commas.push_back(consumeToken());
+    } else {
+      break;
     }
   }
 
