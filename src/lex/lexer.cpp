@@ -127,6 +127,8 @@ auto LexerImpl::next() -> Token {
       return basicToken(TokenKind::OpSemi, input::Span{m_inputPos});
     case '?':
       return basicToken(TokenKind::OpQMark, input::Span{m_inputPos});
+    case '.':
+      return basicToken(TokenKind::OpDot, input::Span{m_inputPos});
     case '(':
       return basicToken(TokenKind::SepOpenParen, input::Span{m_inputPos});
     case ')':
