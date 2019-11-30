@@ -86,9 +86,13 @@ add_library(prog STATIC
   prog/sym/func_id_hasher.cpp
   prog/sym/func_id.cpp
   prog/sym/input.cpp
+  prog/sym/struct_def.cpp
   prog/sym/type_decl_table.cpp
   prog/sym/type_decl.cpp
+  prog/sym/type_def_table.cpp
+  prog/sym/type_id_hasher.cpp
   prog/sym/type_id.cpp
+  prog/sym/type_kind.cpp
 
   prog/operator.cpp
   prog/program.cpp)
@@ -103,6 +107,7 @@ add_library(frontend STATIC
   frontend/internal/declare_user_types.cpp
   frontend/internal/define_exec_stmts.cpp
   frontend/internal/define_user_funcs.cpp
+  frontend/internal/define_user_types.cpp
   frontend/internal/get_expr.cpp
   frontend/internal/get_parse_diags.cpp
   frontend/internal/typeinfer_expr.cpp

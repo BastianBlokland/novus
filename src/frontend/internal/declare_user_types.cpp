@@ -16,8 +16,8 @@ auto DeclareUserTypes::hasErrors() const noexcept -> bool { return !m_diags.empt
 
 auto DeclareUserTypes::getDiags() const noexcept -> const std::vector<Diag>& { return m_diags; }
 
-auto DeclareUserTypes::getTypes() const noexcept -> const std::vector<DeclarationInfo>& {
-  return m_types;
+auto DeclareUserTypes::getStructs() const noexcept -> const std::vector<StructDeclarationInfo>& {
+  return m_structs;
 }
 
 auto DeclareUserTypes::visit(const parse::StructDeclStmtNode& n) -> void {
@@ -29,13 +29,17 @@ auto DeclareUserTypes::visit(const parse::StructDeclStmtNode& n) -> void {
 
   // Declare the struct in the program.
   auto typeId = m_prog->declareUserStruct(name);
-  m_types.emplace_back(typeId, n);
+  m_structs.emplace_back(typeId, n);
 }
 
 auto DeclareUserTypes::validateTypeName(const lex::Token& nameToken) -> bool {
   const auto name = getName(nameToken);
   if (m_prog->lookupType(name)) {
     m_diags.push_back(errTypeAlreadyDeclared(m_src, name, nameToken.getSpan()));
+    return false;
+  }
+  if (!m_prog->lookupFuncs(name).empty()) {
+    m_diags.push_back(errTypeNameConflictsWithFunc(m_src, name, nameToken.getSpan()));
     return false;
   }
   if (!m_prog->lookupActions(name).empty()) {

@@ -18,6 +18,8 @@ namespace frontend {
 
 #define GET_OP_ID(OUTPUT, OP, ...) GET_FUNC_ID(OUTPUT, getFuncName(OP), __VA_ARGS__)
 
+#define GET_TYPE_DEF(OUTPUT, TYPENAME) OUTPUT.getProg().getTypeDef(GET_TYPE_ID(OUTPUT, TYPENAME))
+
 #define GET_FUNC_DECL(OUTPUT, FUNCNAME, ...)                                                       \
   OUTPUT.getProg().getFuncDecl(GET_FUNC_ID(OUTPUT, FUNCNAME, __VA_ARGS__))
 

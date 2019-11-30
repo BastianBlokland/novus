@@ -9,13 +9,14 @@ namespace frontend::internal {
 
 class DeclareUserTypes final : public parse::OptionalNodeVisitor {
 public:
-  using DeclarationInfo = typename std::pair<prog::sym::TypeId, const parse::StructDeclStmtNode&>;
+  using StructDeclarationInfo =
+      typename std::pair<prog::sym::TypeId, const parse::StructDeclStmtNode&>;
 
   DeclareUserTypes() = delete;
   DeclareUserTypes(const Source& src, prog::Program* prog);
 
   [[nodiscard]] auto hasErrors() const noexcept -> bool;
-  [[nodiscard]] auto getTypes() const noexcept -> const std::vector<DeclarationInfo>&;
+  [[nodiscard]] auto getStructs() const noexcept -> const std::vector<StructDeclarationInfo>&;
   [[nodiscard]] auto getDiags() const noexcept -> const std::vector<Diag>&;
 
   auto visit(const parse::StructDeclStmtNode& n) -> void override;
@@ -23,7 +24,7 @@ public:
 private:
   const Source& m_src;
   prog::Program* m_prog;
-  std::vector<DeclarationInfo> m_types;
+  std::vector<StructDeclarationInfo> m_structs;
   std::vector<Diag> m_diags;
 
   auto validateTypeName(const lex::Token& nameToken) -> bool;

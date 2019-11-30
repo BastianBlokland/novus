@@ -21,10 +21,31 @@ auto errTypeAlreadyDeclared(const Source& src, const std::string& name, input::S
   return error(src, oss.str(), span);
 }
 
+auto errTypeNameConflictsWithFunc(const Source& src, const std::string& name, input::Span span)
+    -> Diag {
+  std::ostringstream oss;
+  oss << "Type name '" << name << "' conflicts with a build-in function with the same name";
+  return error(src, oss.str(), span);
+}
+
 auto errTypeNameConflictsWithAction(const Source& src, const std::string& name, input::Span span)
     -> Diag {
   std::ostringstream oss;
   oss << "Type name '" << name << "' conflicts with a build-in action with the same name";
+  return error(src, oss.str(), span);
+}
+
+auto errDuplicateFieldNameInStruct(
+    const Source& src, const std::string& fieldName, input::Span span) -> Diag {
+  std::ostringstream oss;
+  oss << "Field name '" << fieldName << "' conflicts with another field with the same name";
+  return error(src, oss.str(), span);
+}
+
+auto errFieldNameConflictsWithType(const Source& src, const std::string& name, input::Span span)
+    -> Diag {
+  std::ostringstream oss;
+  oss << "Field name '" << name << "' conflicts with a type with the same name";
   return error(src, oss.str(), span);
 }
 

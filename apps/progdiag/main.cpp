@@ -113,6 +113,29 @@ auto printActionDecls(const prog::Program& prog) -> void {
   }
 }
 
+auto printTypeDefs(const prog::Program& prog) -> void {
+  const auto nameColWidth = 15;
+
+  std::cout << rang::style::bold << "Type definitions:\n" << rang::style::reset;
+  for (auto funcItr = prog.beginTypeDefs(); funcItr != prog.endTypeDefs(); ++funcItr) {
+    const auto typeId    = funcItr->first;
+    const auto& typeDecl = prog.getTypeDecl(typeId);
+    const auto& typeDef  = funcItr->second;
+    std::cout << " " << rang::style::bold << typeDecl.getName() << rang::style::dim << " ("
+              << typeDecl.getKind() << ") " << typeId << rang::style::reset << "\n";
+
+    // Print struct fields.
+    if (std::holds_alternative<prog::sym::StructDef>(typeDef)) {
+      const auto& structDef = std::get<prog::sym::StructDef>(typeDef);
+      for (const auto& field : structDef) {
+        const auto& typeName = prog.getTypeDecl(field.getType()).getName();
+        std::cout << "  " << rang::fg::yellow << rang::style::bold << std::setw(nameColWidth)
+                  << std::left << typeName << rang::style::reset << field.getIdentifier() << '\n';
+      }
+    }
+  }
+}
+
 auto printConsts(const prog::sym::ConstDeclTable& consts) -> void {
   const auto colWidth = 10;
   for (const auto& c : consts) {
@@ -184,6 +207,10 @@ auto printProgram(const prog::Program& prog) -> void {
   printFuncDecls(prog);
   std::cout << '\n';
   printActionDecls(prog);
+  if (prog.beginTypeDefs() != prog.endTypeDefs()) {
+    std::cout << '\n';
+    printTypeDefs(prog);
+  }
   if (prog.beginFuncDefs() != prog.endFuncDefs()) {
     std::cout << '\n';
     printFuncDefs(prog);

@@ -5,6 +5,8 @@ namespace prog::sym {
 
 class TypeId final {
   friend class TypeDeclTable;
+  friend class TypeDefTable;
+  friend class TypeIdHasher;
   friend auto operator<<(std::ostream& out, const TypeId& rhs) -> std::ostream&;
 
 public:

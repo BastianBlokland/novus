@@ -4,6 +4,7 @@
 #include "internal/declare_user_types.hpp"
 #include "internal/define_exec_stmts.hpp"
 #include "internal/define_user_funcs.hpp"
+#include "internal/define_user_types.hpp"
 #include "internal/get_parse_diags.hpp"
 #include "internal/typeinfer_user_funcs.hpp"
 #include "parse/nodes.hpp"
@@ -28,6 +29,15 @@ auto analyze(const Source& src) -> Output {
   src.accept(&declareUserTypes);
   if (declareUserTypes.hasErrors()) {
     return buildOutput(nullptr, declareUserTypes.getDiags());
+  }
+
+  // Define user types.
+  auto defineUserTypes = internal::DefineUserTypes{src, prog.get()};
+  for (const auto& structDecl : declareUserTypes.getStructs()) {
+    defineUserTypes.define(structDecl.first, structDecl.second);
+  }
+  if (defineUserTypes.hasErrors()) {
+    return buildOutput(nullptr, defineUserTypes.getDiags());
   }
 
   // Declare user functions.
