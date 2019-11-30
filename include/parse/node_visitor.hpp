@@ -8,6 +8,7 @@ class CallExprNode;
 class ConditionalExprNode;
 class ConstDeclExprNode;
 class ConstExprNode;
+class FieldExprNode;
 class GroupExprNode;
 class LitExprNode;
 class ParenExprNode;
@@ -27,6 +28,7 @@ public:
   virtual auto visit(const ConditionalExprNode& n) -> void = 0;
   virtual auto visit(const ConstDeclExprNode& n) -> void   = 0;
   virtual auto visit(const ConstExprNode& n) -> void       = 0;
+  virtual auto visit(const FieldExprNode& n) -> void       = 0;
   virtual auto visit(const GroupExprNode& n) -> void       = 0;
   virtual auto visit(const LitExprNode& n) -> void         = 0;
   virtual auto visit(const ParenExprNode& n) -> void       = 0;

@@ -167,6 +167,26 @@ auto errInvalidParenExpr(lex::Token open, NodePtr expr, lex::Token close) -> Nod
   return errorNode(oss.str(), std::move(tokens), std::move(subExprs));
 }
 
+auto errInvalidFieldExpr(NodePtr lhs, lex::Token dot, lex::Token id) -> NodePtr {
+  std::ostringstream oss;
+  if (dot.getKind() != lex::TokenKind::OpDot) {
+    oss << "Expected dot '.' but got: " << dot;
+  } else if (id.getKind() != lex::TokenKind::Identifier) {
+    oss << "Expected field identifier but got: " << id;
+  } else {
+    oss << "Invalid field expression";
+  }
+
+  auto tokens = std::vector<lex::Token>{};
+  tokens.push_back(std::move(dot));
+  tokens.push_back(std::move(id));
+
+  auto subExprs = std::vector<std::unique_ptr<Node>>{};
+  subExprs.push_back(std::move(lhs));
+
+  return errorNode(oss.str(), std::move(tokens), std::move(subExprs));
+}
+
 auto errInvalidCallExpr(
     lex::Token func,
     lex::Token open,

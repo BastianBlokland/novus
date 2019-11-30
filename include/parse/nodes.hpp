@@ -4,6 +4,7 @@
 #include "parse/node_expr_conditional.hpp"
 #include "parse/node_expr_const.hpp"
 #include "parse/node_expr_const_decl.hpp"
+#include "parse/node_expr_field.hpp"
 #include "parse/node_expr_group.hpp"
 #include "parse/node_expr_lit.hpp"
 #include "parse/node_expr_paren.hpp"

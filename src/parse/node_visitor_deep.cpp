@@ -21,6 +21,8 @@ auto DeepNodeVisitor::visit(const ConstDeclExprNode& n) -> void { visitChildren(
 
 auto DeepNodeVisitor::visit(const ConstExprNode& n) -> void { visitChildren(&n, this); }
 
+auto DeepNodeVisitor::visit(const FieldExprNode& n) -> void { visitChildren(&n, this); }
+
 auto DeepNodeVisitor::visit(const GroupExprNode& n) -> void { visitChildren(&n, this); }
 
 auto DeepNodeVisitor::visit(const LitExprNode& n) -> void { visitChildren(&n, this); }

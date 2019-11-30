@@ -28,6 +28,7 @@ namespace parse {
 #define EQEQ lex::basicToken(lex::TokenKind::OpEqEq)
 #define SEMI lex::basicToken(lex::TokenKind::OpSemi)
 #define QMARK lex::basicToken(lex::TokenKind::OpQMark)
+#define DOT lex::basicToken(lex::TokenKind::OpDot)
 #define SEMIS(COUNT) std::vector<lex::Token>(COUNT, lex::basicToken(lex::TokenKind::OpSemi))
 #define OPAREN lex::basicToken(lex::TokenKind::SepOpenParen)
 #define CPAREN lex::basicToken(lex::TokenKind::SepCloseParen)

@@ -177,6 +177,10 @@ auto GetExpr::visit(const parse::ConstExprNode& n) -> void {
   m_expr = prog::expr::constExprNode(*m_consts, constId.value());
 }
 
+auto GetExpr::visit(const parse::FieldExprNode & /*unused*/) -> void {
+  throw std::logic_error{"GetExpr is not implemented for this node type"};
+}
+
 auto GetExpr::visit(const parse::GroupExprNode& n) -> void {
   auto subExprs = std::vector<prog::expr::NodePtr>();
   for (auto i = 0U; i < n.getChildCount(); ++i) {

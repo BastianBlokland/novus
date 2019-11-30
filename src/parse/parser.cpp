@@ -168,14 +168,21 @@ auto ParserImpl::nextExpr(const int minPrecedence) -> NodePtr {
       break;
     }
 
-    if (nextToken.getKind() == lex::TokenKind::OpSemi) {
+    switch (nextToken.getKind()) {
+    case lex::TokenKind::OpSemi:
       lhs = nextExprGroup(std::move(lhs), rhsPrecedence);
-    } else if (nextToken.getKind() == lex::TokenKind::OpQMark) {
+      break;
+    case lex::TokenKind::OpQMark:
       lhs = nextExprConditional(std::move(lhs));
-    } else {
+      break;
+    case lex::TokenKind::OpDot:
+      lhs = nextExprField(std::move(lhs));
+      break;
+    default:
       auto op  = consumeToken();
       auto rhs = nextExpr(rhsPrecedence);
       lhs      = binaryExprNode(std::move(lhs), op, std::move(rhs));
+      break;
     }
   }
   return lhs;
@@ -235,6 +242,16 @@ auto ParserImpl::nextExprPrimary() -> NodePtr {
     }
     return errInvalidPrimaryExpr(consumeToken());
   }
+}
+
+auto ParserImpl::nextExprField(NodePtr lhs) -> NodePtr {
+  auto dot = consumeToken();
+  auto id  = consumeToken();
+
+  if (dot.getKind() == lex::TokenKind::OpDot && id.getKind() == lex::TokenKind::Identifier) {
+    return fieldExprNode(std::move(lhs), std::move(dot), std::move(id));
+  }
+  return errInvalidFieldExpr(std::move(lhs), std::move(dot), std::move(id));
 }
 
 auto ParserImpl::nextExprCall(lex::Token id) -> NodePtr {

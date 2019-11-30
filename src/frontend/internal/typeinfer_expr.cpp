@@ -77,6 +77,10 @@ auto TypeInferExpr::visit(const parse::ConstExprNode& n) -> void {
   m_type = inferConstType(n.getId());
 }
 
+auto TypeInferExpr::visit(const parse::FieldExprNode & /*unused*/) -> void {
+  throw std::logic_error{"TypeInferExpr is not implemented for this node type"};
+}
+
 auto TypeInferExpr::visit(const parse::GroupExprNode& n) -> void {
   for (auto i = 0U; i < n.getChildCount(); ++i) {
     m_type = inferSubExpr(n[i]);

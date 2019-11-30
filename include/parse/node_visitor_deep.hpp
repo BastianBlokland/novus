@@ -11,6 +11,7 @@ public:
   auto visit(const ConditionalExprNode& n) -> void override;
   auto visit(const ConstDeclExprNode& n) -> void override;
   auto visit(const ConstExprNode& n) -> void override;
+  auto visit(const FieldExprNode& n) -> void override;
   auto visit(const GroupExprNode& n) -> void override;
   auto visit(const LitExprNode& n) -> void override;
   auto visit(const ParenExprNode& n) -> void override;

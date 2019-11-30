@@ -38,6 +38,8 @@ auto errInvalidUnaryOp(lex::Token op, NodePtr rhs) -> NodePtr;
 
 auto errInvalidParenExpr(lex::Token open, NodePtr expr, lex::Token close) -> NodePtr;
 
+auto errInvalidFieldExpr(NodePtr lhs, lex::Token dot, lex::Token id) -> NodePtr;
+
 auto errInvalidCallExpr(
     lex::Token func,
     lex::Token open,
