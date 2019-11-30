@@ -1,6 +1,5 @@
 #pragma once
 #include "internal/ref.hpp"
-#include "internal/ref_string.hpp"
 #include <cassert>
 #include <cstdint>
 
@@ -34,12 +33,6 @@ public:
     // Mask of the tag and interpret it as a pointer (works because due to alignment lowest bit is
     // always 0).
     return reinterpret_cast<Ref*>(m_raw & valMask); // NOLINT: Reinterpret cast
-  }
-
-  [[nodiscard]] inline auto getStringRef() const noexcept {
-    auto* ref = getRef();
-    assert(ref->getKind() == RefKind::String);
-    return static_cast<StringRef*>(ref); // NOLINT: Down-cast.
   }
 
 private:

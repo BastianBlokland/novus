@@ -46,6 +46,7 @@ public:
   auto addConvBoolString() -> void;
 
   auto addMakeStruct(uint8_t fieldCount) -> void;
+  auto addLoadStructField(uint8_t fieldIndex) -> void;
 
   auto addPrintString() -> void;
 

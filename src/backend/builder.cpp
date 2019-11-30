@@ -92,6 +92,11 @@ auto Builder::addMakeStruct(uint8_t fieldCount) -> void {
   writeUInt8(fieldCount);
 }
 
+auto Builder::addLoadStructField(uint8_t fieldIndex) -> void {
+  writeOpCode(vm::OpCode::LoadStructField);
+  writeUInt8(fieldIndex);
+}
+
 auto Builder::addPrintString() -> void { writeOpCode(vm::OpCode::PrintString); }
 
 auto Builder::addJump(std::string label) -> void {

@@ -58,8 +58,8 @@ static auto execute(const Assembly& assembly, io::Interface* interface, uint32_t
       evalStack.push(internal::intValue(a + b));
     } break;
     case OpCode::AddString: {
-      auto b = evalStack.pop().getStringRef();
-      auto a = evalStack.pop().getStringRef();
+      auto b = getStringRef(evalStack.pop());
+      auto a = getStringRef(evalStack.pop());
 
       // Make a new string big enough to fit both and copy both there.
       auto result = allocator.allocStr(a->getSize() + b->getSize());
@@ -108,8 +108,8 @@ static auto execute(const Assembly& assembly, io::Interface* interface, uint32_t
       evalStack.push(internal::intValue(a == b ? 1 : 0));
     } break;
     case OpCode::CheckEqString: {
-      auto b  = evalStack.pop().getStringRef();
-      auto a  = evalStack.pop().getStringRef();
+      auto b  = getStringRef(evalStack.pop());
+      auto a  = getStringRef(evalStack.pop());
       auto eq = (a->getSize() == b->getSize()) &&
           std::memcmp(a->getDataPtr(), b->getDataPtr(), a->getSize()) == 0;
       evalStack.push(internal::intValue(eq ? 1 : 0));
@@ -138,8 +138,23 @@ static auto execute(const Assembly& assembly, io::Interface* interface, uint32_t
       evalStack.push(internal::refValue(strRefAlloc.first));
     } break;
 
+    case OpCode::MakeStruct: {
+      const auto fieldCount = scope->readUInt8();
+      auto structRefAlloc   = allocator.allocStruct(fieldCount);
+      // Important to iterate in reverse, as the fields are in reverse order on the stack.
+      for (auto fieldIndex = fieldCount; fieldIndex-- > 0;) {
+        *(structRefAlloc.second + fieldIndex) = evalStack.pop();
+      }
+      evalStack.push(internal::refValue(structRefAlloc.first));
+    } break;
+    case OpCode::LoadStructField: {
+      const auto fieldIndex = scope->readUInt8();
+      auto s                = getStructRef(evalStack.pop());
+      evalStack.push(s->getField(fieldIndex));
+    } break;
+
     case OpCode::PrintString: {
-      auto* strRef = evalStack.pop().getStringRef();
+      auto* strRef = getStringRef(evalStack.pop());
       interface->print(strRef->getDataPtr(), strRef->getSize());
     } break;
 

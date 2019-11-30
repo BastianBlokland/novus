@@ -1,5 +1,6 @@
 #pragma once
 #include "internal/ref.hpp"
+#include "internal/value.hpp"
 #include <string>
 
 namespace vm::internal {
@@ -27,5 +28,11 @@ private:
   inline explicit StringRef(const char* data, unsigned int size) :
       Ref(RefKind::String), m_data{data}, m_size{size} {}
 };
+
+inline auto getStringRef(const Value& val) noexcept {
+  auto* ref = val.getRef();
+  assert(ref->getKind() == RefKind::String);
+  return static_cast<StringRef*>(ref); // NOLINT: Down-cast.
+}
 
 } // namespace vm::internal
