@@ -16,12 +16,11 @@ auto TypeDefTable::begin() const -> iterator { return m_types.begin(); }
 auto TypeDefTable::end() const -> iterator { return m_types.end(); }
 
 auto TypeDefTable::registerStruct(
-    const sym::TypeDeclTable& typeTable, sym::TypeId id, std::vector<StructDef::Field> fields)
-    -> void {
+    const sym::TypeDeclTable& typeTable, sym::TypeId id, sym::FieldDeclTable fields) -> void {
   if (typeTable[id].getKind() != sym::TypeKind::UserStruct) {
     throw std::invalid_argument{"Type has not been declared as being a user-defined struct"};
   }
-  if (fields.empty()) {
+  if (fields.getCount() == 0) {
     throw std::invalid_argument{"Struct needs atleast one field"};
   }
   auto itr = m_types.find(id);

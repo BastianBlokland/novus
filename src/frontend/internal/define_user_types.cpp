@@ -13,8 +13,8 @@ auto DefineUserTypes::hasErrors() const noexcept -> bool { return !m_diags.empty
 auto DefineUserTypes::getDiags() const noexcept -> const std::vector<Diag>& { return m_diags; }
 
 auto DefineUserTypes::define(prog::sym::TypeId id, const parse::StructDeclStmtNode& n) -> void {
-  auto isValid      = true;
-  auto resultFields = std::vector<prog::sym::StructDef::Field>{};
+  auto isValid    = true;
+  auto fieldTable = prog::sym::FieldDeclTable{};
   for (const auto& field : n.getFields()) {
     // Get field type.
     const auto fieldTypeName = getName(field.getType());
@@ -27,12 +27,7 @@ auto DefineUserTypes::define(prog::sym::TypeId id, const parse::StructDeclStmtNo
 
     // Get field identifier.
     const auto fieldName = getName(field.getIdentifier());
-    if (std::any_of(
-            resultFields.begin(),
-            resultFields.end(),
-            [&fieldName](const prog::sym::StructDef::Field& f) {
-              return f.getIdentifier() == fieldName;
-            })) {
+    if (fieldTable.lookup(fieldName)) {
       m_diags.push_back(
           errDuplicateFieldNameInStruct(m_src, fieldName, field.getIdentifier().getSpan()));
       isValid = false;
@@ -45,11 +40,11 @@ auto DefineUserTypes::define(prog::sym::TypeId id, const parse::StructDeclStmtNo
       continue;
     }
 
-    resultFields.emplace_back(*fieldType, fieldName);
+    fieldTable.registerField(fieldName, *fieldType);
   }
 
   if (isValid) {
-    m_prog->defineUserStruct(id, std::move(resultFields));
+    m_prog->defineUserStruct(id, std::move(fieldTable));
   }
 }
 

@@ -186,7 +186,7 @@ auto Program::declareUserFunc(std::string name, sym::Input input, sym::TypeId ou
       *this, sym::FuncKind::User, std::move(name), std::move(input), output);
 }
 
-auto Program::defineUserStruct(sym::TypeId id, std::vector<sym::StructDef::Field> fields) -> void {
+auto Program::defineUserStruct(sym::TypeId id, sym::FieldDeclTable fields) -> void {
   auto fieldTypes = std::vector<sym::TypeId>{};
   for (const auto& field : fields) {
     fieldTypes.push_back(field.getType());

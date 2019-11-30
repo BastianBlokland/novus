@@ -131,10 +131,10 @@ auto printTypeDefs(const prog::Program& prog) -> void {
     // Print struct fields.
     if (std::holds_alternative<prog::sym::StructDef>(typeDef)) {
       const auto& structDef = std::get<prog::sym::StructDef>(typeDef);
-      for (const auto& field : structDef) {
+      for (const auto& field : structDef.getFields()) {
         const auto& typeName = prog.getTypeDecl(field.getType()).getName();
         std::cout << "  " << rang::fg::yellow << rang::style::bold << std::setw(nameColWidth)
-                  << std::left << typeName << rang::style::reset << field.getIdentifier() << '\n';
+                  << std::left << typeName << rang::style::reset << field.getName() << '\n';
       }
     }
   }

@@ -80,6 +80,9 @@ add_library(prog STATIC
   prog/sym/const_id.cpp
   prog/sym/const_kind.cpp
   prog/sym/exec_stmt.cpp
+  prog/sym/field_decl_table.cpp
+  prog/sym/field_decl.cpp
+  prog/sym/field_id.cpp
   prog/sym/func_decl_table.cpp
   prog/sym/func_decl.cpp
   prog/sym/func_def_table.cpp

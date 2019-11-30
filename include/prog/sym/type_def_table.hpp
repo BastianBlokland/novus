@@ -25,8 +25,8 @@ public:
   [[nodiscard]] auto begin() const -> iterator;
   [[nodiscard]] auto end() const -> iterator;
 
-  auto registerStruct(
-      const sym::TypeDeclTable& typeTable, sym::TypeId id, std::vector<StructDef::Field> fields)
+  auto
+  registerStruct(const sym::TypeDeclTable& typeTable, sym::TypeId id, sym::FieldDeclTable fields)
       -> void;
 
 private:

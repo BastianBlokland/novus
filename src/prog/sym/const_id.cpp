@@ -13,7 +13,7 @@ auto ConstId::operator!=(const ConstId& rhs) const noexcept -> bool {
 auto ConstId::getNum() const noexcept -> unsigned int { return m_id; }
 
 auto operator<<(std::ostream& out, const ConstId& rhs) -> std::ostream& {
-  return out << "c-" << rhs.m_id;
+  return out << "const-" << rhs.m_id;
 }
 
 } // namespace prog::sym

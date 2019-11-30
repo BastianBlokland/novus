@@ -11,13 +11,12 @@ TEST_CASE("Analyzing user-type definitions", "[frontend]") {
     REQUIRE(output.isSuccess());
     const auto& typeDef = GET_TYPE_DEF(output, "s");
     REQUIRE(std::holds_alternative<prog::sym::StructDef>(typeDef));
-    const auto& structDef = std::get<prog::sym::StructDef>(typeDef);
+    const auto& structDef    = std::get<prog::sym::StructDef>(typeDef);
+    const auto& structFields = structDef.getFields();
 
-    REQUIRE(structDef.getCount() == 2);
-    auto expectedFields = std::vector<prog::sym::StructDef::Field>{};
-    expectedFields.emplace_back(GET_TYPE_ID(output, "int"), "a");
-    expectedFields.emplace_back(GET_TYPE_ID(output, "bool"), "b");
-    CHECK(std::equal(structDef.begin(), structDef.end(), expectedFields.begin()));
+    REQUIRE(structFields.getCount() == 2);
+    CHECK(structFields[*structFields.lookup("a")].getType() == GET_TYPE_ID(output, "int"));
+    CHECK(structFields[*structFields.lookup("b")].getType() == GET_TYPE_ID(output, "bool"));
   }
 
   SECTION("Diagnostics") {
