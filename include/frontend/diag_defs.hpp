@@ -33,8 +33,8 @@ auto errFieldNotFoundOnType(
     const Source& src, const std::string& fieldName, const std::string& typeName, input::Span span)
     -> Diag;
 
-auto errFuncNameConflictsWithType(const Source& src, const std::string& name, input::Span span)
-    -> Diag;
+auto errConvFuncCannotSpecifyReturnType(
+    const Source& src, const std::string& name, input::Span span) -> Diag;
 
 auto errFuncNameConflictsWithAction(const Source& src, const std::string& name, input::Span span)
     -> Diag;

@@ -40,9 +40,18 @@ auto DeclareUserFuncs::visit(const parse::FuncDeclStmtNode& n) -> void {
   }
 
   // Get return type.
-  const auto retType = getRetType(n);
+  auto retType = getRetType(n);
   if (!retType) {
     return;
+  }
+
+  // Check if this function is a conversion.
+  const auto convType = m_prog->lookupType(name);
+  if (convType) {
+    if (!retType->isInfer()) {
+      m_diags.push_back(errConvFuncCannotSpecifyReturnType(m_src, name, n.getId().getSpan()));
+    }
+    retType = *convType;
   }
 
   // Declare the function in the program.
@@ -67,10 +76,6 @@ auto DeclareUserFuncs::getRetType(const parse::FuncDeclStmtNode& n)
 
 auto DeclareUserFuncs::validateFuncName(const lex::Token& nameToken) -> bool {
   const auto name = getName(nameToken);
-  if (m_prog->lookupType(name)) {
-    m_diags.push_back(errFuncNameConflictsWithType(m_src, name, nameToken.getSpan()));
-    return false;
-  }
   if (!m_prog->lookupActions(name).empty()) {
     m_diags.push_back(errFuncNameConflictsWithAction(m_src, name, nameToken.getSpan()));
     return false;

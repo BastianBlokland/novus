@@ -33,9 +33,13 @@ TEST_CASE("Analyzing user-function declarations", "[frontend]") {
     CHECK(GET_FUNC_DECL(output, "f").getOutput() == output.getProg().lookupType("int"));
   }
 
+  SECTION("Declare conversion function") {
+    const auto& output = ANALYZE("fun bool(int i) i != 0");
+    REQUIRE(output.isSuccess());
+    REQUIRE(GET_CONV(output, "int", "bool"));
+  }
+
   SECTION("Diagnostics") {
-    CHECK_DIAG(
-        "fun int() -> bool true", errFuncNameConflictsWithType(src, "int", input::Span{4, 6}));
     CHECK_DIAG(
         "fun print() -> int 1", errFuncNameConflictsWithAction(src, "print", input::Span{4, 8}));
     CHECK_DIAG(
@@ -44,6 +48,9 @@ TEST_CASE("Analyzing user-function declarations", "[frontend]") {
         errDuplicateFuncDeclaration(src, "a", input::Span{17, 32}));
     CHECK_DIAG("fun a(b c) -> int 1", errUndeclaredType(src, "b", input::Span{6, 6}));
     CHECK_DIAG("fun a() -> b 1", errUndeclaredType(src, "b", input::Span{11, 11}));
+    CHECK_DIAG(
+        "fun bool(int i) -> int i",
+        errConvFuncCannotSpecifyReturnType(src, "bool", input::Span{4, 7}));
   }
 }
 
