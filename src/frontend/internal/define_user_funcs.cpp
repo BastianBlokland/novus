@@ -40,7 +40,7 @@ auto DefineUserFuncs::define(prog::sym::FuncId id, const parse::FuncDeclStmtNode
   }
 
   const auto conv = m_prog->lookupConversion(expr->getType(), funcRetType);
-  if (conv) {
+  if (conv && *conv != id) {
     auto convArgs = std::vector<prog::expr::NodePtr>{};
     convArgs.push_back(std::move(expr));
     m_prog->defineUserFunc(

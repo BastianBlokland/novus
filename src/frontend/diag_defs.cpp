@@ -67,10 +67,16 @@ auto errFieldNotFoundOnType(
   return error(src, oss.str(), span);
 }
 
-auto errFuncNameConflictsWithType(const Source& src, const std::string& name, input::Span span)
-    -> Diag {
+auto errConvFuncCannotSpecifyReturnType(
+    const Source& src, const std::string& name, input::Span span) -> Diag {
   std::ostringstream oss;
-  oss << "Function name '" << name << "' conflicts with a type with the same name";
+  oss << "Conversion function '" << name << "' cannot specify a return-type";
+  return error(src, oss.str(), span);
+}
+
+auto errConvFuncCallsItself(const Source& src, const std::string& name, input::Span span) -> Diag {
+  std::ostringstream oss;
+  oss << "Conversion function '" << name << "' cannot specify a return-type";
   return error(src, oss.str(), span);
 }
 
@@ -105,7 +111,7 @@ auto errNonMatchingFuncReturnType(
     input::Span span) -> Diag {
   std::ostringstream oss;
   oss << "Function '" << name << "' returns value of type '" << returnedType
-      << "' but its declared to return values of type '" << declaredType << "'";
+      << "' but its declared to return a value of type '" << declaredType << "'";
   return error(src, oss.str(), span);
 }
 
