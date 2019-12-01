@@ -40,6 +40,14 @@ auto analyze(const Source& src) -> Output {
     return buildOutput(nullptr, defineUserTypes.getDiags());
   }
 
+  // Check the type-definitions (used to detect things like cyclic structs).
+  for (const auto& structDecl : declareUserTypes.getStructs()) {
+    defineUserTypes.check(structDecl.first, structDecl.second);
+  }
+  if (defineUserTypes.hasErrors()) {
+    return buildOutput(nullptr, defineUserTypes.getDiags());
+  }
+
   // Declare user functions.
   auto declareUserFuncs = internal::DeclareUserFuncs{src, prog.get()};
   src.accept(&declareUserFuncs);

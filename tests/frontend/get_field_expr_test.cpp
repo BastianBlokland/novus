@@ -27,7 +27,7 @@ TEST_CASE("Analyzing field expressions", "[frontend]") {
   }
 
   SECTION("Get nested field expression") {
-    const auto& output = ANALYZE("struct S1 = S1 a "
+    const auto& output = ANALYZE("struct S1 = S2 a "
                                  "struct S2 = int a "
                                  "fun f(S1 s) s.a.a");
     REQUIRE(output.isSuccess());

@@ -15,10 +15,18 @@ public:
 
   auto define(prog::sym::TypeId id, const parse::StructDeclStmtNode& n) -> void;
 
+  // Check should be run after all types have been defined, is used to detect things like cyclic
+  // structs.
+  auto check(prog::sym::TypeId id, const parse::StructDeclStmtNode& n) -> void;
+
 private:
   const Source& m_src;
   prog::Program* m_prog;
   std::vector<Diag> m_diags;
+
+  [[nodiscard]] auto
+  getCyclicField(const prog::sym::FieldDeclTable& fields, prog::sym::TypeId rootType)
+      -> std::optional<prog::sym::FieldId>;
 };
 
 } // namespace frontend::internal

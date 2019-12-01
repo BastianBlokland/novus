@@ -20,6 +20,12 @@ auto errTypeNameConflictsWithAction(const Source& src, const std::string& name, 
 auto errDuplicateFieldNameInStruct(
     const Source& src, const std::string& fieldName, input::Span span) -> Diag;
 
+auto errCyclicStruct(
+    const Source& src,
+    const std::string& fieldName,
+    const std::string& structName,
+    input::Span span) -> Diag;
+
 auto errFieldNameConflictsWithType(const Source& src, const std::string& name, input::Span span)
     -> Diag;
 

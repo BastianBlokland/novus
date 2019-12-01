@@ -25,6 +25,12 @@ TEST_CASE("Analyzing user-type definitions", "[frontend]") {
         "struct s = int a, bool a", errDuplicateFieldNameInStruct(src, "a", input::Span{23, 23}));
     CHECK_DIAG(
         "struct s = int int", errFieldNameConflictsWithType(src, "int", input::Span{15, 17}));
+    CHECK_DIAG("struct s = s i", errCyclicStruct(src, "i", "s", input::Span{0, 13}));
+    CHECK_DIAG(
+        "struct s1 = s2 a "
+        "struct s2 = s1 b",
+        errCyclicStruct(src, "a", "s1", input::Span{0, 15}),
+        errCyclicStruct(src, "b", "s2", input::Span{17, 32}));
   }
 }
 

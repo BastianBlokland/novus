@@ -39,13 +39,48 @@ auto DefineUserTypes::define(prog::sym::TypeId id, const parse::StructDeclStmtNo
       isValid = false;
       continue;
     }
-
     fieldTable.registerField(fieldName, *fieldType);
   }
 
   if (isValid) {
     m_prog->defineUserStruct(id, std::move(fieldTable));
   }
+}
+
+auto DefineUserTypes::check(prog::sym::TypeId id, const parse::StructDeclStmtNode& n) -> void {
+  const auto& typedecl = m_prog->getTypeDecl(id);
+  if (typedecl.getKind() == prog::sym::TypeKind::UserStruct) {
+    const auto& structDef = std::get<prog::sym::StructDef>(m_prog->getTypeDef(id));
+    const auto& fields    = structDef.getFields();
+
+    // Detect cyclic struct.
+    const auto cyclicField = DefineUserTypes::getCyclicField(fields, id);
+    if (cyclicField) {
+      const auto fieldName = fields[*cyclicField].getName();
+      m_diags.push_back(errCyclicStruct(m_src, fieldName, typedecl.getName(), n.getSpan()));
+      return;
+    }
+  }
+}
+
+auto DefineUserTypes::getCyclicField(
+    const prog::sym::FieldDeclTable& fields, prog::sym::TypeId rootType)
+    -> std::optional<prog::sym::FieldId> {
+  for (const auto& f : fields) {
+    const auto fType = f.getType();
+    if (fType == rootType) {
+      return f.getId();
+    }
+    const auto& fTypeDecl = m_prog->getTypeDecl(fType);
+    if (fTypeDecl.getKind() == prog::sym::TypeKind::UserStruct) {
+      const auto& structDef  = std::get<prog::sym::StructDef>(m_prog->getTypeDef(fType));
+      const auto cyclicField = getCyclicField(structDef.getFields(), rootType);
+      if (cyclicField) {
+        return f.getId();
+      }
+    }
+  }
+  return std::nullopt;
 }
 
 } // namespace frontend::internal

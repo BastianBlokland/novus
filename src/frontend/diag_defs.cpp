@@ -42,6 +42,16 @@ auto errDuplicateFieldNameInStruct(
   return error(src, oss.str(), span);
 }
 
+auto errCyclicStruct(
+    const Source& src,
+    const std::string& fieldName,
+    const std::string& structName,
+    input::Span span) -> Diag {
+  std::ostringstream oss;
+  oss << "Field '" << fieldName << "' causes struct '" << structName << "' to become cyclic";
+  return error(src, oss.str(), span);
+}
+
 auto errFieldNameConflictsWithType(const Source& src, const std::string& name, input::Span span)
     -> Diag {
   std::ostringstream oss;
