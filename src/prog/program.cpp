@@ -198,6 +198,20 @@ auto Program::defineUserStruct(sym::TypeId id, sym::FieldDeclTable fields) -> vo
   // Register constructor function.
   const auto& name = m_typeDecls[id].getName();
   m_funcDecls.registerFunc(*this, sym::FuncKind::MakeStruct, name, sym::Input{fieldTypes}, id);
+
+  // Register (in)equality function.
+  m_funcDecls.registerFunc(
+      *this,
+      sym::FuncKind::CheckEqUserType,
+      getFuncName(Operator::EqEq),
+      sym::Input{id, id},
+      *m_typeDecls.lookup("bool"));
+  m_funcDecls.registerFunc(
+      *this,
+      sym::FuncKind::CheckNEqUserType,
+      getFuncName(Operator::BangEq),
+      sym::Input{id, id},
+      *m_typeDecls.lookup("bool"));
 }
 
 auto Program::defineUserFunc(sym::FuncId id, sym::ConstDeclTable consts, expr::NodePtr expr)

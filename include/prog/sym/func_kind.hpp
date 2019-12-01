@@ -30,6 +30,9 @@ enum class FuncKind {
   ConvBoolString,
 
   MakeStruct,
+
+  CheckEqUserType,
+  CheckNEqUserType,
 };
 
 } // namespace prog::sym

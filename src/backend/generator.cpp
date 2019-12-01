@@ -1,6 +1,7 @@
 #include "backend/generator.hpp"
 #include "backend/builder.hpp"
 #include "internal/gen_expr.hpp"
+#include "internal/gen_type_eq.hpp"
 #include "internal/utilities.hpp"
 #include "prog/sym/action_kind.hpp"
 #include "prog/sym/const_kind.hpp"
@@ -38,7 +39,7 @@ generateFunc(Builder* builder, const prog::Program& program, const prog::sym::Fu
   func.getExpr().accept(&genExpr);
 
   builder->addRet();
-  builder->addFail(); // Add a fail between section to aid in detecting invalid programs.
+  builder->addFail(); // Add a fail between sections to aid in detecting invalid programs.
 }
 
 static auto
@@ -61,16 +62,26 @@ generateExecStmt(Builder* builder, const prog::Program& program, const prog::sym
     break;
   }
   builder->addRet();
-  builder->addFail(); // Add a fail between section to aid in detecting invalid programs.
+  builder->addFail(); // Add a fail between sections to aid in detecting invalid programs.
 }
 
 auto generate(const prog::Program& program) -> vm::Assembly {
   auto builder = Builder{};
 
+  // Generate utility functions for user types.
+  for (auto tDefItr = program.beginTypeDefs(); tDefItr != program.endTypeDefs(); ++tDefItr) {
+    if (std::holds_alternative<prog::sym::StructDef>(tDefItr->second)) {
+      const auto& structDef = std::get<prog::sym::StructDef>(tDefItr->second);
+      internal::generateStructEquality(&builder, program, structDef);
+    }
+  }
+
+  // Generate function definitons.
   for (auto funcItr = program.beginFuncDefs(); funcItr != program.endFuncDefs(); ++funcItr) {
     generateFunc(&builder, program, funcItr->second);
   }
 
+  // Generate execution statements.
   for (auto execItr = program.beginExecStmts(); execItr != program.endExecStmts(); ++execItr) {
     generateExecStmt(&builder, program, *execItr);
   }
