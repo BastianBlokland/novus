@@ -19,6 +19,7 @@ add_executable(tests
   backend/constants_test.cpp
   backend/literals_test.cpp
   backend/switch_expr_test.cpp
+  backend/user_struct_test.cpp
 
   frontend/declare_user_funcs_test.cpp
   frontend/declare_user_types_test.cpp

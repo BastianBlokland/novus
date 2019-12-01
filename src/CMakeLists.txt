@@ -136,6 +136,7 @@ add_library(backend STATIC
   backend/dasm/disassembler.cpp
   backend/dasm/instruction.cpp
   backend/internal/gen_expr.cpp
+  backend/internal/gen_type_eq.cpp
   backend/internal/utilities.cpp
   backend/builder.cpp
   backend/generator.cpp)
