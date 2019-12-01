@@ -74,6 +74,12 @@ auto errConvFuncCannotSpecifyReturnType(
   return error(src, oss.str(), span);
 }
 
+auto errConvFuncCallsItself(const Source& src, const std::string& name, input::Span span) -> Diag {
+  std::ostringstream oss;
+  oss << "Conversion function '" << name << "' cannot specify a return-type";
+  return error(src, oss.str(), span);
+}
+
 auto errFuncNameConflictsWithAction(const Source& src, const std::string& name, input::Span span)
     -> Diag {
   std::ostringstream oss;
@@ -105,7 +111,7 @@ auto errNonMatchingFuncReturnType(
     input::Span span) -> Diag {
   std::ostringstream oss;
   oss << "Function '" << name << "' returns value of type '" << returnedType
-      << "' but its declared to return values of type '" << declaredType << "'";
+      << "' but its declared to return a value of type '" << declaredType << "'";
   return error(src, oss.str(), span);
 }
 
