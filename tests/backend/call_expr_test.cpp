@@ -162,7 +162,7 @@ TEST_CASE("Generate assembly for call expressions", "[backend]") {
   SECTION("User struct") {
     CHECK_PROG(
         "struct User = string name, int age "
-        "print(u = User(\"hello\", 27); \"world\")",
+        "print(u = User(\"hello\", 27); u.age)",
         [](backend::Builder* builder) -> void {
           builder->label("print");
           builder->addReserveConsts(1);
@@ -172,7 +172,9 @@ TEST_CASE("Generate assembly for call expressions", "[backend]") {
           builder->addMakeStruct(2);
           builder->addStoreConst(0);
 
-          builder->addLoadLitString("world");
+          builder->addLoadConst(0);
+          builder->addLoadStructField(1);
+          builder->addConvIntString();
           builder->addPrintString();
           builder->addRet();
           builder->addFail();

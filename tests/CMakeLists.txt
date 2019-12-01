@@ -29,6 +29,7 @@ add_executable(tests
   frontend/get_call_expr_test.cpp
   frontend/get_conditional_expr_test.cpp
   frontend/get_const_expr_test.cpp
+  frontend/get_field_expr_test.cpp
   frontend/get_group_expr_test.cpp
   frontend/get_lit_expr_test.cpp
   frontend/get_paren_expr_test.cpp

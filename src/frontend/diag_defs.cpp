@@ -49,6 +49,14 @@ auto errFieldNameConflictsWithType(const Source& src, const std::string& name, i
   return error(src, oss.str(), span);
 }
 
+auto errFieldNotFoundOnType(
+    const Source& src, const std::string& fieldName, const std::string& typeName, input::Span span)
+    -> Diag {
+  std::ostringstream oss;
+  oss << "Type '" << typeName << "' has no field named '" << fieldName << '\'';
+  return error(src, oss.str(), span);
+}
+
 auto errFuncNameConflictsWithType(const Source& src, const std::string& name, input::Span span)
     -> Diag {
   std::ostringstream oss;

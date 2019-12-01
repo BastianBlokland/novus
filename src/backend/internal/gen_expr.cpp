@@ -145,6 +145,15 @@ auto GenExpr::visit(const prog::expr::ConstExprNode& n) -> void {
   m_builder->addLoadConst(constId);
 }
 
+auto GenExpr::visit(const prog::expr::FieldExprNode& n) -> void {
+  // Load the struct.
+  genSubExpr(n[0]);
+
+  // Load the field.
+  const auto fieldId = getFieldId(n.getId());
+  m_builder->addLoadStructField(fieldId);
+}
+
 auto GenExpr::visit(const prog::expr::GroupExprNode& n) -> void {
   for (auto i = 0U; i < n.getChildCount(); ++i) {
     genSubExpr(n[i]);

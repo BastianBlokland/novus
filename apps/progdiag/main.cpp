@@ -51,7 +51,7 @@ auto printExpr(
 }
 
 auto printTypeDecls(const prog::Program& prog) -> void {
-  const auto idColWidth = 5;
+  const auto idColWidth = 10;
 
   std::cout << rang::style::bold << "Type declarations:\n" << rang::style::reset;
   for (auto typeItr = prog.beginTypeDecls(); typeItr != prog.endTypeDecls(); ++typeItr) {
@@ -66,7 +66,7 @@ auto printTypeDecls(const prog::Program& prog) -> void {
 }
 
 auto printFuncDecls(const prog::Program& prog) -> void {
-  const auto idColWidth    = 5;
+  const auto idColWidth    = 10;
   const auto nameColWidth  = 20;
   const auto inputColWidth = 20;
 
@@ -97,7 +97,7 @@ auto printFuncDecls(const prog::Program& prog) -> void {
 }
 
 auto printActionDecls(const prog::Program& prog) -> void {
-  const auto idColWidth   = 5;
+  const auto idColWidth   = 10;
   const auto nameColWidth = 20;
 
   std::cout << rang::style::bold << "Action declarations:\n" << rang::style::reset;

@@ -177,8 +177,27 @@ auto GetExpr::visit(const parse::ConstExprNode& n) -> void {
   m_expr = prog::expr::constExprNode(*m_consts, constId.value());
 }
 
-auto GetExpr::visit(const parse::FieldExprNode & /*unused*/) -> void {
-  throw std::logic_error{"GetExpr is not implemented for this node type"};
+auto GetExpr::visit(const parse::FieldExprNode& n) -> void {
+  const auto& fieldName = getName(n.getId());
+  auto lhsExpr          = getSubExpr(n[0], m_visibleConsts);
+  if (lhsExpr == nullptr) {
+    return;
+  }
+
+  const auto lhsType      = lhsExpr->getType();
+  const auto& lhsTypeDecl = m_prog->getTypeDecl(lhsType);
+  if (lhsTypeDecl.getKind() != prog::sym::TypeKind::UserStruct) {
+    m_diags.push_back(errFieldNotFoundOnType(m_src, fieldName, lhsTypeDecl.getName(), n.getSpan()));
+    return;
+  }
+  const auto& structDef = std::get<prog::sym::StructDef>(m_prog->getTypeDef(lhsType));
+  const auto field      = structDef.getFields().lookup(fieldName);
+  if (!field) {
+    m_diags.push_back(errFieldNotFoundOnType(m_src, fieldName, lhsTypeDecl.getName(), n.getSpan()));
+    return;
+  }
+
+  m_expr = prog::expr::fieldExprNode(*m_prog, std::move(lhsExpr), *field);
 }
 
 auto GetExpr::visit(const parse::GroupExprNode& n) -> void {

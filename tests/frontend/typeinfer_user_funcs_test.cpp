@@ -45,6 +45,15 @@ TEST_CASE("Infer return type of user functions", "[frontend]") {
     CHECK(GET_FUNC_DECL(output, "f").getOutput() == GET_TYPE_ID(output, "int"));
   }
 
+  SECTION("Field") {
+    const auto& output = ANALYZE("struct S = int a "
+                                 "fun f(S s) s.a");
+    REQUIRE(output.isSuccess());
+    CHECK(
+        GET_FUNC_DECL(output, "f", GET_TYPE_ID(output, "S")).getOutput() ==
+        GET_TYPE_ID(output, "int"));
+  }
+
   SECTION("Logic and operator") {
     const auto& output = ANALYZE("fun f() true && false");
     REQUIRE(output.isSuccess());

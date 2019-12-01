@@ -17,7 +17,7 @@ auto TypeId::isInfer() const noexcept -> bool { return m_id == 0; };
 auto TypeId::isConcrete() const noexcept -> bool { return m_id != 0; };
 
 auto operator<<(std::ostream& out, const TypeId& rhs) -> std::ostream& {
-  return out << "t-" << rhs.m_id;
+  return out << "type-" << rhs.m_id;
 }
 
 } // namespace prog::sym
