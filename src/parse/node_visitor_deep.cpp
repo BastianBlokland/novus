@@ -21,6 +21,8 @@ auto DeepNodeVisitor::visit(const ConstDeclExprNode& n) -> void { visitChildren(
 
 auto DeepNodeVisitor::visit(const ConstExprNode& n) -> void { visitChildren(&n, this); }
 
+auto DeepNodeVisitor::visit(const FieldExprNode& n) -> void { visitChildren(&n, this); }
+
 auto DeepNodeVisitor::visit(const GroupExprNode& n) -> void { visitChildren(&n, this); }
 
 auto DeepNodeVisitor::visit(const LitExprNode& n) -> void { visitChildren(&n, this); }
@@ -38,5 +40,7 @@ auto DeepNodeVisitor::visit(const UnaryExprNode& n) -> void { visitChildren(&n, 
 auto DeepNodeVisitor::visit(const ExecStmtNode& n) -> void { visitChildren(&n, this); }
 
 auto DeepNodeVisitor::visit(const FuncDeclStmtNode& n) -> void { visitChildren(&n, this); }
+
+auto DeepNodeVisitor::visit(const StructDeclStmtNode& n) -> void { visitChildren(&n, this); }
 
 } // namespace parse

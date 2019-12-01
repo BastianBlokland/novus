@@ -123,6 +123,10 @@ auto Program::beginActionDecls() const -> actionDeclIterator { return m_actionDe
 
 auto Program::endActionDecls() const -> actionDeclIterator { return m_actionDecls.end(); }
 
+auto Program::beginTypeDefs() const -> typeDefIterator { return m_typeDefs.begin(); }
+
+auto Program::endTypeDefs() const -> typeDefIterator { return m_typeDefs.end(); }
+
 auto Program::beginFuncDefs() const -> funcDefIterator { return m_funcDefs.begin(); }
 
 auto Program::endFuncDefs() const -> funcDefIterator { return m_funcDefs.end(); }
@@ -168,10 +172,32 @@ auto Program::getActionDecl(sym::ActionId id) const -> const sym::ActionDecl& {
 
 auto Program::getFuncDef(sym::FuncId id) const -> const sym::FuncDef& { return m_funcDefs[id]; }
 
+auto Program::getTypeDef(sym::TypeId id) const -> const sym::TypeDefTable::typeDef& {
+  return m_typeDefs[id];
+}
+
+auto Program::declareUserStruct(std::string name) -> sym::TypeId {
+  return m_typeDecls.registerType(sym::TypeKind::UserStruct, std::move(name));
+}
+
 auto Program::declareUserFunc(std::string name, sym::Input input, sym::TypeId output)
     -> sym::FuncId {
   return m_funcDecls.registerFunc(
       *this, sym::FuncKind::User, std::move(name), std::move(input), output);
+}
+
+auto Program::defineUserStruct(sym::TypeId id, sym::FieldDeclTable fields) -> void {
+  auto fieldTypes = std::vector<sym::TypeId>{};
+  for (const auto& field : fields) {
+    fieldTypes.push_back(field.getType());
+  }
+
+  // Register struct definition.
+  m_typeDefs.registerStruct(m_typeDecls, id, std::move(fields));
+
+  // Register constructor function.
+  const auto& name = m_typeDecls[id].getName();
+  m_funcDecls.registerFunc(*this, sym::FuncKind::MakeStruct, name, sym::Input{fieldTypes}, id);
 }
 
 auto Program::defineUserFunc(sym::FuncId id, sym::ConstDeclTable consts, expr::NodePtr expr)

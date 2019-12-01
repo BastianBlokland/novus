@@ -11,7 +11,7 @@ auto FuncId::operator!=(const FuncId& rhs) const noexcept -> bool {
 }
 
 auto operator<<(std::ostream& out, const FuncId& rhs) -> std::ostream& {
-  return out << "f-" << rhs.m_id;
+  return out << "func-" << rhs.m_id;
 }
 
 } // namespace prog::sym

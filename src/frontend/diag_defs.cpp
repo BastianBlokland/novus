@@ -15,6 +15,58 @@ auto errUnsupportedLiteral(const Source& src, const std::string& name, input::Sp
   return error(src, oss.str(), span);
 }
 
+auto errTypeAlreadyDeclared(const Source& src, const std::string& name, input::Span span) -> Diag {
+  std::ostringstream oss;
+  oss << "Type name '" << name << "' conflicts with an previously declared type";
+  return error(src, oss.str(), span);
+}
+
+auto errTypeNameConflictsWithFunc(const Source& src, const std::string& name, input::Span span)
+    -> Diag {
+  std::ostringstream oss;
+  oss << "Type name '" << name << "' conflicts with a build-in function with the same name";
+  return error(src, oss.str(), span);
+}
+
+auto errTypeNameConflictsWithAction(const Source& src, const std::string& name, input::Span span)
+    -> Diag {
+  std::ostringstream oss;
+  oss << "Type name '" << name << "' conflicts with a build-in action with the same name";
+  return error(src, oss.str(), span);
+}
+
+auto errDuplicateFieldNameInStruct(
+    const Source& src, const std::string& fieldName, input::Span span) -> Diag {
+  std::ostringstream oss;
+  oss << "Field name '" << fieldName << "' conflicts with another field with the same name";
+  return error(src, oss.str(), span);
+}
+
+auto errCyclicStruct(
+    const Source& src,
+    const std::string& fieldName,
+    const std::string& structName,
+    input::Span span) -> Diag {
+  std::ostringstream oss;
+  oss << "Field '" << fieldName << "' causes struct '" << structName << "' to become cyclic";
+  return error(src, oss.str(), span);
+}
+
+auto errFieldNameConflictsWithType(const Source& src, const std::string& name, input::Span span)
+    -> Diag {
+  std::ostringstream oss;
+  oss << "Field name '" << name << "' conflicts with a type with the same name";
+  return error(src, oss.str(), span);
+}
+
+auto errFieldNotFoundOnType(
+    const Source& src, const std::string& fieldName, const std::string& typeName, input::Span span)
+    -> Diag {
+  std::ostringstream oss;
+  oss << "Type '" << typeName << "' has no field named '" << fieldName << '\'';
+  return error(src, oss.str(), span);
+}
+
 auto errFuncNameConflictsWithType(const Source& src, const std::string& name, input::Span span)
     -> Diag {
   std::ostringstream oss;

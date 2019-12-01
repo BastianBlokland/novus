@@ -43,7 +43,7 @@ auto printEntryPoints(const vm::Assembly& assembly) -> void {
 
 auto printInstructions(const vm::Assembly& assembly) -> void {
   const auto ipOffsetColWidth = 5;
-  const auto opCodeColWidth   = 15;
+  const auto opCodeColWidth   = 20;
 
   std::cout << rang::style::bold << "Instructions:\n" << rang::style::reset;
   auto instructions = backend::dasm::disassembleInstructions(assembly);

@@ -15,6 +15,8 @@ auto getLhsOpPrecedence(const lex::Token& token) -> int {
 
 auto getRhsOpPrecedence(const lex::Token& token) -> int {
   switch (token.getKind()) {
+  case lex::TokenKind::OpDot:
+    return dotPrecendece;
   case lex::TokenKind::OpStar:
   case lex::TokenKind::OpSlash:
   case lex::TokenKind::OpRem:

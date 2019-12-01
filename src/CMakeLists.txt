@@ -34,6 +34,7 @@ add_library(parse STATIC
   parse/node_expr_conditional.cpp
   parse/node_expr_const_decl.cpp
   parse/node_expr_const.cpp
+  parse/node_expr_field.cpp
   parse/node_expr_group.cpp
   parse/node_expr_lit.cpp
   parse/node_expr_paren.cpp
@@ -43,6 +44,7 @@ add_library(parse STATIC
   parse/node_expr_unary.cpp
   parse/node_stmt_exec.cpp
   parse/node_stmt_func_decl.cpp
+  parse/node_stmt_struct_decl.cpp
   parse/node_visitor_deep.cpp
   parse/node.cpp
   parse/op_precedence.cpp
@@ -60,6 +62,7 @@ add_library(prog STATIC
   prog/expr/node_switch.cpp
   prog/expr/node_call.cpp
   prog/expr/node_const.cpp
+  prog/expr/node_field.cpp
   prog/expr/node_group.cpp
   prog/expr/node_lit_bool.cpp
   prog/expr/node_lit_int.cpp
@@ -78,6 +81,9 @@ add_library(prog STATIC
   prog/sym/const_id.cpp
   prog/sym/const_kind.cpp
   prog/sym/exec_stmt.cpp
+  prog/sym/field_decl_table.cpp
+  prog/sym/field_decl.cpp
+  prog/sym/field_id.cpp
   prog/sym/func_decl_table.cpp
   prog/sym/func_decl.cpp
   prog/sym/func_def_table.cpp
@@ -85,9 +91,13 @@ add_library(prog STATIC
   prog/sym/func_id_hasher.cpp
   prog/sym/func_id.cpp
   prog/sym/input.cpp
+  prog/sym/struct_def.cpp
   prog/sym/type_decl_table.cpp
   prog/sym/type_decl.cpp
+  prog/sym/type_def_table.cpp
+  prog/sym/type_id_hasher.cpp
   prog/sym/type_id.cpp
+  prog/sym/type_kind.cpp
 
   prog/operator.cpp
   prog/program.cpp)
@@ -99,8 +109,10 @@ target_include_directories(prog PRIVATE prog)
 # Frontend.
 add_library(frontend STATIC
   frontend/internal/declare_user_funcs.cpp
+  frontend/internal/declare_user_types.cpp
   frontend/internal/define_exec_stmts.cpp
   frontend/internal/define_user_funcs.cpp
+  frontend/internal/define_user_types.cpp
   frontend/internal/get_expr.cpp
   frontend/internal/get_parse_diags.cpp
   frontend/internal/typeinfer_expr.cpp

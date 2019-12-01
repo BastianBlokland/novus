@@ -1,5 +1,6 @@
 #pragma once
 #include "internal/ref_string.hpp"
+#include "internal/ref_struct.hpp"
 #include <utility>
 
 namespace vm::internal {
@@ -16,6 +17,8 @@ public:
 
   [[nodiscard]] auto allocStrLit(const std::string& literal) -> StringRef*;
   [[nodiscard]] auto allocStr(unsigned int size) -> std::pair<StringRef*, char*>;
+
+  [[nodiscard]] auto allocStruct(uint8_t fieldCount) -> std::pair<StructRef*, Value*>;
 
 private:
   Ref* m_firstRef;

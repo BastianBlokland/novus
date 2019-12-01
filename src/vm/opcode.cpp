@@ -63,6 +63,13 @@ auto operator<<(std::ostream& out, const OpCode& rhs) -> std::ostream& {
     out << "conv-int-string";
     break;
 
+  case OpCode::MakeStruct:
+    out << "make-struct";
+    break;
+  case OpCode::LoadStructField:
+    out << "load-struct-field";
+    break;
+
   case OpCode::PrintString:
     out << "print-string";
     break;

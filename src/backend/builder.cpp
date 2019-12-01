@@ -73,7 +73,7 @@ auto Builder::addCheckLeInt() -> void { writeOpCode(vm::OpCode::CheckLeInt); }
 auto Builder::addConvIntString() -> void { writeOpCode(vm::OpCode::ConvIntString); }
 
 auto Builder::addConvBoolString() -> void {
-  // Implemented on the backend level to keep the vm simpler.
+  // Implemented on the backend to keep the vm simpler.
   const auto endLabel  = generateLabel();
   const auto trueLabel = generateLabel();
   addJumpIf(trueLabel);
@@ -85,6 +85,16 @@ auto Builder::addConvBoolString() -> void {
   addLoadLitString("true");
 
   label(endLabel);
+}
+
+auto Builder::addMakeStruct(uint8_t fieldCount) -> void {
+  writeOpCode(vm::OpCode::MakeStruct);
+  writeUInt8(fieldCount);
+}
+
+auto Builder::addLoadStructField(uint8_t fieldIndex) -> void {
+  writeOpCode(vm::OpCode::LoadStructField);
+  writeUInt8(fieldIndex);
 }
 
 auto Builder::addPrintString() -> void { writeOpCode(vm::OpCode::PrintString); }

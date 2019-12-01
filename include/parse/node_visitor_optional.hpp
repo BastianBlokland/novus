@@ -11,6 +11,7 @@ public:
   auto visit(const ConditionalExprNode & /*unused*/) -> void override {}
   auto visit(const ConstDeclExprNode & /*unused*/) -> void override {}
   auto visit(const ConstExprNode & /*unused*/) -> void override {}
+  auto visit(const FieldExprNode & /*unused*/) -> void override {}
   auto visit(const GroupExprNode & /*unused*/) -> void override {}
   auto visit(const LitExprNode & /*unused*/) -> void override {}
   auto visit(const ParenExprNode & /*unused*/) -> void override {}
@@ -20,6 +21,7 @@ public:
   auto visit(const UnaryExprNode & /*unused*/) -> void override {}
   auto visit(const ExecStmtNode & /*unused*/) -> void override {}
   auto visit(const FuncDeclStmtNode & /*unused*/) -> void override {}
+  auto visit(const StructDeclStmtNode & /*unused*/) -> void override {}
 };
 
 } // namespace parse

@@ -51,7 +51,7 @@ auto printExpr(
 }
 
 auto printTypeDecls(const prog::Program& prog) -> void {
-  const auto idColWidth = 5;
+  const auto idColWidth = 10;
 
   std::cout << rang::style::bold << "Type declarations:\n" << rang::style::reset;
   for (auto typeItr = prog.beginTypeDecls(); typeItr != prog.endTypeDecls(); ++typeItr) {
@@ -66,9 +66,9 @@ auto printTypeDecls(const prog::Program& prog) -> void {
 }
 
 auto printFuncDecls(const prog::Program& prog) -> void {
-  const auto idColWidth    = 5;
+  const auto idColWidth    = 10;
   const auto nameColWidth  = 20;
-  const auto inputColWidth = 20;
+  const auto inputColWidth = 30;
 
   std::cout << rang::style::bold << "Function declarations:\n" << rang::style::reset;
   for (auto funcItr = prog.beginFuncDecls(); funcItr != prog.endFuncDecls(); ++funcItr) {
@@ -97,7 +97,7 @@ auto printFuncDecls(const prog::Program& prog) -> void {
 }
 
 auto printActionDecls(const prog::Program& prog) -> void {
-  const auto idColWidth   = 5;
+  const auto idColWidth   = 10;
   const auto nameColWidth = 20;
 
   std::cout << rang::style::bold << "Action declarations:\n" << rang::style::reset;
@@ -110,6 +110,33 @@ auto printActionDecls(const prog::Program& prog) -> void {
     std::cout << "  " << rang::fg::yellow << rang::style::bold << std::setw(nameColWidth)
               << std::left << actionDecl.getName() << rang::style::reset << '('
               << actionDecl.getInput() << ")\n";
+  }
+}
+
+auto printTypeDefs(const prog::Program& prog) -> void {
+  const auto nameColWidth = 15;
+
+  std::cout << rang::style::bold << "Type definitions:\n" << rang::style::reset;
+  for (auto typeItr = prog.beginTypeDefs(); typeItr != prog.endTypeDefs(); ++typeItr) {
+    if (typeItr != prog.beginTypeDefs()) {
+      std::cout << "\n";
+    }
+
+    const auto typeId    = typeItr->first;
+    const auto& typeDecl = prog.getTypeDecl(typeId);
+    const auto& typeDef  = typeItr->second;
+    std::cout << " " << rang::style::bold << typeDecl.getName() << rang::style::dim << " ("
+              << typeDecl.getKind() << ") " << typeId << rang::style::reset << "\n";
+
+    // Print struct fields.
+    if (std::holds_alternative<prog::sym::StructDef>(typeDef)) {
+      const auto& structDef = std::get<prog::sym::StructDef>(typeDef);
+      for (const auto& field : structDef.getFields()) {
+        const auto& typeName = prog.getTypeDecl(field.getType()).getName();
+        std::cout << "  " << rang::fg::yellow << rang::style::bold << std::setw(nameColWidth)
+                  << std::left << typeName << rang::style::reset << field.getName() << '\n';
+      }
+    }
   }
 }
 
@@ -135,6 +162,10 @@ auto printConsts(const prog::sym::ConstDeclTable& consts) -> void {
 auto printFuncDefs(const prog::Program& prog) -> void {
   std::cout << rang::style::bold << "Function definitions:\n" << rang::style::reset;
   for (auto funcItr = prog.beginFuncDefs(); funcItr != prog.endFuncDefs(); ++funcItr) {
+    if (funcItr != prog.beginFuncDefs()) {
+      std::cout << "\n";
+    }
+
     const auto funcId   = funcItr->first;
     const auto& funcDef = funcItr->second;
     const auto funcName = prog.getFuncDecl(funcId).getName();
@@ -149,7 +180,6 @@ auto printFuncDefs(const prog::Program& prog) -> void {
 
     std::cout << rang::style::italic << "  Body:\n" << rang::style::reset;
     printExpr(funcDef.getExpr(), "   ");
-    std::cout << '\n';
   }
 }
 
@@ -184,6 +214,10 @@ auto printProgram(const prog::Program& prog) -> void {
   printFuncDecls(prog);
   std::cout << '\n';
   printActionDecls(prog);
+  if (prog.beginTypeDefs() != prog.endTypeDefs()) {
+    std::cout << '\n';
+    printTypeDefs(prog);
+  }
   if (prog.beginFuncDefs() != prog.endFuncDefs()) {
     std::cout << '\n';
     printFuncDefs(prog);

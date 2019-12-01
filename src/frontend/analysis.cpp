@@ -1,8 +1,10 @@
 #include "frontend/analysis.hpp"
 #include "frontend/diag_defs.hpp"
 #include "internal/declare_user_funcs.hpp"
+#include "internal/declare_user_types.hpp"
 #include "internal/define_exec_stmts.hpp"
 #include "internal/define_user_funcs.hpp"
+#include "internal/define_user_types.hpp"
 #include "internal/get_parse_diags.hpp"
 #include "internal/typeinfer_user_funcs.hpp"
 #include "parse/nodes.hpp"
@@ -21,6 +23,30 @@ auto analyze(const Source& src) -> Output {
   }
 
   auto prog = std::make_unique<prog::Program>();
+
+  // Declare user types.
+  auto declareUserTypes = internal::DeclareUserTypes{src, prog.get()};
+  src.accept(&declareUserTypes);
+  if (declareUserTypes.hasErrors()) {
+    return buildOutput(nullptr, declareUserTypes.getDiags());
+  }
+
+  // Define user types.
+  auto defineUserTypes = internal::DefineUserTypes{src, prog.get()};
+  for (const auto& structDecl : declareUserTypes.getStructs()) {
+    defineUserTypes.define(structDecl.first, structDecl.second);
+  }
+  if (defineUserTypes.hasErrors()) {
+    return buildOutput(nullptr, defineUserTypes.getDiags());
+  }
+
+  // Check the type-definitions (used to detect things like cyclic structs).
+  for (const auto& structDecl : declareUserTypes.getStructs()) {
+    defineUserTypes.check(structDecl.first, structDecl.second);
+  }
+  if (defineUserTypes.hasErrors()) {
+    return buildOutput(nullptr, defineUserTypes.getDiags());
+  }
 
   // Declare user functions.
   auto declareUserFuncs = internal::DeclareUserFuncs{src, prog.get()};

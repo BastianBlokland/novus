@@ -40,6 +40,11 @@ public:
     m_bg = rang::bg::reset;
   }
 
+  auto visit(const parse::FieldExprNode & /*unused*/) -> void override {
+    m_fg = rang::fg::magenta;
+    m_bg = rang::bg::reset;
+  }
+
   auto visit(const parse::GroupExprNode & /*unused*/) -> void override {
     m_fg = rang::fg::green;
     m_bg = rang::bg::reset;
@@ -82,6 +87,11 @@ public:
 
   auto visit(const parse::FuncDeclStmtNode & /*unused*/) -> void override {
     m_fg = rang::fg::blue;
+    m_bg = rang::bg::reset;
+  }
+
+  auto visit(const parse::StructDeclStmtNode & /*unused*/) -> void override {
+    m_fg = rang::fg::yellow;
     m_bg = rang::bg::reset;
   }
 

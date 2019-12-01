@@ -9,6 +9,30 @@ auto errParseError(const Source& src, const parse::ErrorNode& n) -> Diag;
 
 auto errUnsupportedLiteral(const Source& src, const std::string& name, input::Span span) -> Diag;
 
+auto errTypeAlreadyDeclared(const Source& src, const std::string& name, input::Span span) -> Diag;
+
+auto errTypeNameConflictsWithFunc(const Source& src, const std::string& name, input::Span span)
+    -> Diag;
+
+auto errTypeNameConflictsWithAction(const Source& src, const std::string& name, input::Span span)
+    -> Diag;
+
+auto errDuplicateFieldNameInStruct(
+    const Source& src, const std::string& fieldName, input::Span span) -> Diag;
+
+auto errCyclicStruct(
+    const Source& src,
+    const std::string& fieldName,
+    const std::string& structName,
+    input::Span span) -> Diag;
+
+auto errFieldNameConflictsWithType(const Source& src, const std::string& name, input::Span span)
+    -> Diag;
+
+auto errFieldNotFoundOnType(
+    const Source& src, const std::string& fieldName, const std::string& typeName, input::Span span)
+    -> Diag;
+
 auto errFuncNameConflictsWithType(const Source& src, const std::string& name, input::Span span)
     -> Diag;
 

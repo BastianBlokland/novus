@@ -26,11 +26,19 @@ auto Allocator::allocStrLit(const std::string& lit) -> StringRef* {
 }
 
 auto Allocator::allocStr(const unsigned int size) -> std::pair<StringRef*, char*> {
-  auto mem         = alloc<StringRef>(size);
-  char* payloadPtr = static_cast<char*>(mem.second);
-  auto* refPtr     = static_cast<StringRef*>(new (mem.first) StringRef{payloadPtr, size});
+  auto mem        = alloc<StringRef>(size);
+  auto payloadPtr = static_cast<char*>(mem.second);
+  auto* refPtr    = static_cast<StringRef*>(new (mem.first) StringRef{payloadPtr, size});
   initRef(refPtr);
   return {refPtr, payloadPtr};
+}
+
+auto Allocator::allocStruct(uint8_t fieldCount) -> std::pair<StructRef*, Value*> {
+  auto mem       = alloc<StructRef>(sizeof(Value) * fieldCount);
+  auto fieldsPtr = static_cast<Value*>(mem.second);
+  auto* refPtr   = static_cast<StructRef*>(new (mem.first) StructRef{fieldsPtr, fieldCount});
+  initRef(refPtr);
+  return {refPtr, fieldsPtr};
 }
 
 auto Allocator::initRef(Ref* ref) -> void {

@@ -18,6 +18,8 @@ auto disassembleInstructions(const vm::Assembly& assembly) -> std::vector<Instru
     case vm::OpCode::ReserveConsts:
     case vm::OpCode::LoadConst:
     case vm::OpCode::StoreConst:
+    case vm::OpCode::MakeStruct:
+    case vm::OpCode::LoadStructField:
       result.push_back(Instruction(opCode, ipOffset, {instrData[ipOffset + 1]}));
       ++ipOffset;
       continue;

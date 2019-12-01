@@ -21,12 +21,15 @@ add_executable(tests
   backend/switch_expr_test.cpp
 
   frontend/declare_user_funcs_test.cpp
+  frontend/declare_user_types_test.cpp
   frontend/define_exec_stmts_test.cpp
   frontend/define_user_funcs_test.cpp
+  frontend/define_user_types_test.cpp
   frontend/get_binary_expr_test.cpp
   frontend/get_call_expr_test.cpp
   frontend/get_conditional_expr_test.cpp
   frontend/get_const_expr_test.cpp
+  frontend/get_field_expr_test.cpp
   frontend/get_group_expr_test.cpp
   frontend/get_lit_expr_test.cpp
   frontend/get_paren_expr_test.cpp
@@ -56,14 +59,16 @@ add_executable(tests
   parse/expr_binary_test.cpp
   parse/expr_call_test.cpp
   parse/expr_condtional_test.cpp
+  parse/expr_field_test.cpp
   parse/expr_group_test.cpp
   parse/expr_paren_test.cpp
   parse/expr_primary_test.cpp
   parse/expr_switch_test.cpp
   parse/expr_unary_test.cpp
   parse/iterator_test.cpp
-  parse/stmt_func_decl_test.cpp
   parse/stmt_exec_test.cpp
+  parse/stmt_func_decl_test.cpp
+  parse/stmt_struct_decl_test.cpp
 
   vm/call_test.cpp
   vm/consts_test.cpp
@@ -75,7 +80,8 @@ add_executable(tests
   vm/jump_test.cpp
   vm/literal_test.cpp
   vm/string_check_test.cpp
-  vm/string_op_test.cpp)
+  vm/string_op_test.cpp
+  vm/struct_op_test.cpp)
 target_compile_features(tests PRIVATE cxx_std_17)
 target_compile_options(tests PRIVATE -Werror -Wall -Wextra)
 target_include_directories(tests PRIVATE lex)

@@ -29,6 +29,9 @@ enum class OpCode : uint8_t {
 
   ConvIntString = 70,
 
+  MakeStruct      = 80,
+  LoadStructField = 81,
+
   PrintString = 100,
 
   Jump   = 220,

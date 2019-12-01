@@ -4,6 +4,7 @@
 #include "prog/sym/func_decl_table.hpp"
 #include "prog/sym/func_def_table.hpp"
 #include "prog/sym/type_decl_table.hpp"
+#include "prog/sym/type_def_table.hpp"
 
 namespace prog {
 
@@ -26,6 +27,7 @@ public:
   using typeDeclIterator   = typename sym::TypeDeclTable::iterator;
   using funcDeclIterator   = typename sym::FuncDeclTable::iterator;
   using actionDeclIterator = typename sym::ActionDeclTable::iterator;
+  using typeDefIterator    = typename sym::TypeDefTable::iterator;
   using funcDefIterator    = typename sym::FuncDefTable::iterator;
   using execStmtIterator   = typename std::vector<sym::ExecStmt>::const_iterator;
 
@@ -45,6 +47,9 @@ public:
 
   [[nodiscard]] auto beginActionDecls() const -> actionDeclIterator;
   [[nodiscard]] auto endActionDecls() const -> actionDeclIterator;
+
+  [[nodiscard]] auto beginTypeDefs() const -> typeDefIterator;
+  [[nodiscard]] auto endTypeDefs() const -> typeDefIterator;
 
   [[nodiscard]] auto beginFuncDefs() const -> funcDefIterator;
   [[nodiscard]] auto endFuncDefs() const -> funcDefIterator;
@@ -69,9 +74,12 @@ public:
   [[nodiscard]] auto getTypeDecl(sym::TypeId id) const -> const sym::TypeDecl&;
   [[nodiscard]] auto getFuncDecl(sym::FuncId id) const -> const sym::FuncDecl&;
   [[nodiscard]] auto getActionDecl(sym::ActionId id) const -> const sym::ActionDecl&;
+  [[nodiscard]] auto getTypeDef(sym::TypeId id) const -> const sym::TypeDefTable::typeDef&;
   [[nodiscard]] auto getFuncDef(sym::FuncId id) const -> const sym::FuncDef&;
 
+  auto declareUserStruct(std::string name) -> sym::TypeId;
   auto declareUserFunc(std::string name, sym::Input input, sym::TypeId output) -> sym::FuncId;
+  auto defineUserStruct(sym::TypeId id, sym::FieldDeclTable fields) -> void;
   auto defineUserFunc(sym::FuncId id, sym::ConstDeclTable consts, expr::NodePtr expr) -> void;
   auto
   addExecStmt(sym::ActionId action, sym::ConstDeclTable consts, std::vector<expr::NodePtr> args)
@@ -83,6 +91,7 @@ private:
   sym::TypeDeclTable m_typeDecls;
   sym::FuncDeclTable m_funcDecls;
   sym::ActionDeclTable m_actionDecls;
+  sym::TypeDefTable m_typeDefs;
   sym::FuncDefTable m_funcDefs;
   std::vector<sym::ExecStmt> m_execStmts;
 };

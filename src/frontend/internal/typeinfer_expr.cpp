@@ -77,6 +77,25 @@ auto TypeInferExpr::visit(const parse::ConstExprNode& n) -> void {
   m_type = inferConstType(n.getId());
 }
 
+auto TypeInferExpr::visit(const parse::FieldExprNode& n) -> void {
+  const auto lhsType = inferSubExpr(n[0]);
+  if (!lhsType.isConcrete()) {
+    return;
+  }
+
+  // Only structs are supported atm.
+  if (m_prog->getTypeDecl(lhsType).getKind() != prog::sym::TypeKind::UserStruct) {
+    return;
+  }
+
+  const auto& structDef    = std::get<prog::sym::StructDef>(m_prog->getTypeDef(lhsType));
+  const auto& structFields = structDef.getFields();
+  const auto& field        = structFields.lookup(getName(n.getId()));
+  if (field) {
+    m_type = structFields[*field].getType();
+  }
+}
+
 auto TypeInferExpr::visit(const parse::GroupExprNode& n) -> void {
   for (auto i = 0U; i < n.getChildCount(); ++i) {
     m_type = inferSubExpr(n[i]);
@@ -152,6 +171,10 @@ auto TypeInferExpr::visit(const parse::ExecStmtNode & /*unused*/) -> void {
 }
 
 auto TypeInferExpr::visit(const parse::FuncDeclStmtNode & /*unused*/) -> void {
+  throw std::logic_error{"TypeInferExpr is not implemented for this node type"};
+}
+
+auto TypeInferExpr::visit(const parse::StructDeclStmtNode & /*unused*/) -> void {
   throw std::logic_error{"TypeInferExpr is not implemented for this node type"};
 }
 

@@ -28,6 +28,8 @@ enum class FuncKind {
 
   ConvIntString,
   ConvBoolString,
+
+  MakeStruct,
 };
 
 } // namespace prog::sym

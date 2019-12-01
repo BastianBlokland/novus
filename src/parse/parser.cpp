@@ -16,8 +16,16 @@ auto ParserImpl::nextStmt() -> NodePtr {
     return nullptr;
   }
 
-  if (getKw(peekToken(0)) == lex::Keyword::Fun) {
-    return nextStmtFuncDecl();
+  const auto kw = getKw(peekToken(0));
+  if (kw) {
+    switch (*kw) {
+    case lex::Keyword::Fun:
+      return nextStmtFuncDecl();
+    case lex::Keyword::Struct:
+      return nextStmtStructDecl();
+    default:
+      break;
+    }
   }
 
   return nextStmtExec();
@@ -90,6 +98,41 @@ auto ParserImpl::nextStmtFuncDecl() -> NodePtr {
       std::move(body));
 }
 
+auto ParserImpl::nextStmtStructDecl() -> NodePtr {
+  auto kw     = consumeToken();
+  auto id     = consumeToken();
+  auto eq     = consumeToken();
+  auto fields = std::vector<StructDeclStmtNode::FieldSpec>{};
+  auto commas = std::vector<lex::Token>{};
+  while (peekToken(0).getKind() == lex::TokenKind::Identifier) {
+    auto fieldType = consumeToken();
+    auto fieldId   = consumeToken();
+    fields.emplace_back(fieldType, fieldId);
+    if (peekToken(0).getKind() == lex::TokenKind::SepComma) {
+      commas.push_back(consumeToken());
+    } else {
+      break;
+    }
+  }
+
+  if (getKw(kw) == lex::Keyword::Struct && id.getKind() == lex::TokenKind::Identifier &&
+      eq.getKind() == lex::TokenKind::OpEq && !fields.empty() &&
+      std::all_of(
+          fields.begin(),
+          fields.end(),
+          [](const auto& a) {
+            return a.getIdentifier().getKind() == lex::TokenKind::Identifier &&
+                a.getType().getKind() == lex::TokenKind::Identifier;
+          }) &&
+      commas.size() == fields.size() - 1) {
+
+    return structDeclStmtNode(
+        std::move(kw), std::move(id), std::move(eq), std::move(fields), std::move(commas));
+  }
+  return errInvalidStmtStructDecl(
+      std::move(kw), std::move(id), std::move(eq), fields, std::move(commas));
+}
+
 auto ParserImpl::nextStmtExec() -> NodePtr {
   auto action = consumeToken();
   auto open   = consumeToken();
@@ -125,14 +168,21 @@ auto ParserImpl::nextExpr(const int minPrecedence) -> NodePtr {
       break;
     }
 
-    if (nextToken.getKind() == lex::TokenKind::OpSemi) {
+    switch (nextToken.getKind()) {
+    case lex::TokenKind::OpSemi:
       lhs = nextExprGroup(std::move(lhs), rhsPrecedence);
-    } else if (nextToken.getKind() == lex::TokenKind::OpQMark) {
+      break;
+    case lex::TokenKind::OpQMark:
       lhs = nextExprConditional(std::move(lhs));
-    } else {
+      break;
+    case lex::TokenKind::OpDot:
+      lhs = nextExprField(std::move(lhs));
+      break;
+    default:
       auto op  = consumeToken();
       auto rhs = nextExpr(rhsPrecedence);
       lhs      = binaryExprNode(std::move(lhs), op, std::move(rhs));
+      break;
     }
   }
   return lhs;
@@ -192,6 +242,16 @@ auto ParserImpl::nextExprPrimary() -> NodePtr {
     }
     return errInvalidPrimaryExpr(consumeToken());
   }
+}
+
+auto ParserImpl::nextExprField(NodePtr lhs) -> NodePtr {
+  auto dot = consumeToken();
+  auto id  = consumeToken();
+
+  if (dot.getKind() == lex::TokenKind::OpDot && id.getKind() == lex::TokenKind::Identifier) {
+    return fieldExprNode(std::move(lhs), std::move(dot), std::move(id));
+  }
+  return errInvalidFieldExpr(std::move(lhs), std::move(dot), std::move(id));
 }
 
 auto ParserImpl::nextExprCall(lex::Token id) -> NodePtr {
