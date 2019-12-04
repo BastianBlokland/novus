@@ -11,7 +11,7 @@ TEST_CASE("Parsing primary expressions", "[parse]") {
   CHECK_EXPR("x y z", CONST("x"), CONST("y"), CONST("z"));
 
   SECTION("Errors") {
-    CHECK_EXPR("12a", errLexError(lex::errLitIntInvalidChar()))
+    CHECK_EXPR("12a", errLexError(lex::errLitNumberInvalidChar()))
     CHECK_EXPR("->", errInvalidPrimaryExpr(lex::basicToken(lex::TokenKind::SepArrow)));
     CHECK_EXPR("fun", errInvalidPrimaryExpr(lex::keywordToken(lex::Keyword::Fun)));
   }

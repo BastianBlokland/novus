@@ -7,9 +7,13 @@ auto errInvalidChar(char c, input::Span span = input::Span{0}) -> Token;
 
 auto errLitIntTooBig(input::Span span = input::Span{0}) -> Token;
 
-auto errLitIntInvalidChar(input::Span span = input::Span{0}) -> Token;
+auto errLitFloatUnrepresentable(input::Span span = input::Span{0}) -> Token;
 
-auto errLitIntEndsWithSeperator(input::Span span = input::Span{0}) -> Token;
+auto errLitNumberInvalidChar(input::Span span = input::Span{0}) -> Token;
+
+auto errLitNumberEndsWithSeperator(input::Span span = input::Span{0}) -> Token;
+
+auto errLitNumberEndsWithDecimalPoint(input::Span span = input::Span{0}) -> Token;
 
 auto erLitStrUnterminated(input::Span span = input::Span{0}) -> Token;
 

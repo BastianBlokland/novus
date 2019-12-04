@@ -11,12 +11,20 @@ auto errLitIntTooBig(const input::Span span) -> Token {
   return errorToken("Integer literal too big", span);
 }
 
-auto errLitIntInvalidChar(const input::Span span) -> Token {
-  return errorToken("Integer literal contains an invalid character", span);
+auto errLitFloatUnrepresentable(const input::Span span) -> Token {
+  return errorToken("Literal not representable by a floating-point number", span);
 }
 
-auto errLitIntEndsWithSeperator(const input::Span span) -> Token {
-  return errorToken("Integer literal ends with a seperator character", span);
+auto errLitNumberInvalidChar(const input::Span span) -> Token {
+  return errorToken("Number literal contains an invalid character", span);
+}
+
+auto errLitNumberEndsWithSeperator(const input::Span span) -> Token {
+  return errorToken("Number literal ends with a seperator character", span);
+}
+
+auto errLitNumberEndsWithDecimalPoint(const input::Span span) -> Token {
+  return errorToken("Number literal ends with a decimal point character", span);
 }
 
 auto erLitStrUnterminated(const input::Span span) -> Token {

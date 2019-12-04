@@ -7,7 +7,8 @@ namespace parse {
 
 TEST_CASE("Parsing errors", "[parse]") {
 
-  CHECK_EXPR("123a", errLexError(lex::errLitIntInvalidChar()));
+  CHECK_EXPR("123a", errLexError(lex::errLitNumberInvalidChar()));
+  CHECK_EXPR("123a.", errLexError(lex::errLitNumberInvalidChar()));
 
   SECTION("Spans") {
     CHECK_EXPR_SPAN("123a", input::Span(0, 3));

@@ -128,6 +128,9 @@ auto LexerImpl::next() -> Token {
     case '?':
       return basicToken(TokenKind::OpQMark, input::Span{m_inputPos});
     case '.':
+      if (isDigit(peekChar(0))) {
+        return nextLitNumber('.');
+      }
       return basicToken(TokenKind::OpDot, input::Span{m_inputPos});
     case '(':
       return basicToken(TokenKind::SepOpenParen, input::Span{m_inputPos});
@@ -152,7 +155,7 @@ auto LexerImpl::next() -> Token {
     case '7':
     case '8':
     case '9':
-      return nextLitInt(c);
+      return nextLitNumber(c);
     case '"':
       return nextLitStr();
     case '_': {
@@ -172,28 +175,40 @@ auto LexerImpl::next() -> Token {
   }
 }
 
-auto LexerImpl::nextLitInt(const char mostSignficantChar) -> Token {
-  assert(isdigit(mostSignficantChar));
+auto LexerImpl::nextLitNumber(const char mostSignficantChar) -> Token {
+  assert(isdigit(mostSignficantChar) || mostSignficantChar == '.');
 
+  const uint64_t base = 10;
   const auto startPos = m_inputPos;
-  int32_t result      = mostSignficantChar - '0';
+  auto passedDecPoint = mostSignficantChar == '.';
+  uint64_t result     = passedDecPoint ? 0 : mostSignficantChar - '0';
   assert(result >= 0 && result <= 9);
 
   auto tooBig              = false;
   auto containsInvalidChar = false;
+  uint64_t divider         = 1;
   char curChar             = mostSignficantChar;
-  while (!isTokenSeperator(peekChar(0))) {
+  while (!isTokenSeperator(peekChar(0)) || peekChar(0) == '.') {
     curChar = consumeChar();
     if (isDigit(curChar)) {
-      const uint64_t base      = 10;
       const uint64_t newResult = result * base + (curChar - '0');
-      if (newResult > std::numeric_limits<int32_t>::max()) {
+      if (newResult < result) {
         tooBig = true;
-      } else {
-        result = newResult;
+        continue;
+      }
+      result = newResult;
+      if (passedDecPoint) {
+        const uint64_t newDivider = divider * base;
+        if (newDivider < divider) {
+          tooBig = true;
+          continue;
+        }
+        divider = newDivider;
       }
     } else if (curChar == '_') {
       continue; // Ignore underscores as legal digit seperators.
+    } else if (!passedDecPoint && curChar == '.') {
+      passedDecPoint = true;
     } else {
       containsInvalidChar = true;
     }
@@ -201,15 +216,32 @@ auto LexerImpl::nextLitInt(const char mostSignficantChar) -> Token {
 
   const auto span = input::Span{startPos, m_inputPos};
   if (containsInvalidChar) {
-    return errLitIntInvalidChar(span);
+    return errLitNumberInvalidChar(span);
   }
   if (curChar == '_') {
-    return errLitIntEndsWithSeperator(span);
+    return errLitNumberEndsWithSeperator(span);
   }
-  if (tooBig) {
+  if (curChar == '.') {
+    return errLitNumberEndsWithDecimalPoint(span);
+  }
+
+  // Float.
+  if (passedDecPoint) {
+    if (tooBig) {
+      // This is not fully correct as it might still be representable by a float but things get
+      // allot more complicated if we cannot store the result and the divider as uint64's.
+      return errLitFloatUnrepresentable(span);
+    }
+    /* For floats we divide the result by the divider. This still stuffers two rounding errors
+    but its allot better then rounding in the loop. */
+    return litFloatToken(static_cast<float>(result) / static_cast<float>(divider), span);
+  }
+
+  // Integer.
+  if (tooBig || result > std::numeric_limits<int32_t>::max()) {
     return errLitIntTooBig(span);
   }
-  return litIntToken(result, span);
+  return litIntToken(static_cast<int32_t>(result), span);
 }
 
 auto LexerImpl::nextLitStr() -> Token {
