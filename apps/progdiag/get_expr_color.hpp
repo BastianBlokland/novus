@@ -34,6 +34,10 @@ public:
 
   auto visit(const prog::expr::LitBoolNode & /*unused*/) -> void override { m_fg = rang::fg::cyan; }
 
+  auto visit(const prog::expr::LitFloatNode & /*unused*/) -> void override {
+    m_fg = rang::fg::cyan;
+  }
+
   auto visit(const prog::expr::LitIntNode & /*unused*/) -> void override { m_fg = rang::fg::cyan; }
 
   auto visit(const prog::expr::LitStringNode & /*unused*/) -> void override {

@@ -177,6 +177,10 @@ auto GenExpr::visit(const prog::expr::LitBoolNode& n) -> void {
   m_builder->addLoadLitInt(n.getVal() ? 1U : 0U);
 }
 
+auto GenExpr::visit(const prog::expr::LitFloatNode & /*unused*/) -> void {
+  throw std::logic_error{"Floats are not implemented in the vm yet"};
+}
+
 auto GenExpr::visit(const prog::expr::LitIntNode& n) -> void {
   m_builder->addLoadLitInt(n.getVal());
 }

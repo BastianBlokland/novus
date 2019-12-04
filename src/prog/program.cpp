@@ -19,7 +19,8 @@ auto getActionDeclTable(const Program& prog) -> const sym::ActionDeclTable& {
 
 Program::Program() {
   // Register build-in types.
-  const auto intT    = m_typeDecls.registerType(sym::TypeKind::Int, "int");
+  const auto intT = m_typeDecls.registerType(sym::TypeKind::Int, "int");
+  m_typeDecls.registerType(sym::TypeKind::Float, "float");
   const auto boolT   = m_typeDecls.registerType(sym::TypeKind::Bool, "bool");
   const auto stringT = m_typeDecls.registerType(sym::TypeKind::String, "string");
 

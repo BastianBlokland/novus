@@ -65,6 +65,7 @@ add_library(prog STATIC
   prog/expr/node_field.cpp
   prog/expr/node_group.cpp
   prog/expr/node_lit_bool.cpp
+  prog/expr/node_lit_float.cpp
   prog/expr/node_lit_int.cpp
   prog/expr/node_lit_string.cpp
   prog/expr/node.cpp

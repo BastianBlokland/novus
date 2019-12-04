@@ -112,6 +112,14 @@ auto TypeInferExpr::visit(const parse::LitExprNode& n) -> void {
     m_type = *intType;
     break;
   }
+  case lex::TokenKind::LitFloat: {
+    auto floatType = m_prog->lookupType("float");
+    if (!floatType) {
+      throw std::logic_error{"No 'float' type present in type-table"};
+    }
+    m_type = *floatType;
+    break;
+  }
   case lex::TokenKind::LitBool: {
     auto boolType = m_prog->lookupType("bool");
     if (!boolType) {
