@@ -24,6 +24,13 @@ auto ExecScope::readUInt32() -> uint32_t {
   return value;
 }
 
+auto ExecScope::readFloat() -> float {
+  // TODO(bastian): Handle endianess differences.
+  float value = *reinterpret_cast<const float*>(m_ip); // NOLINT: Reinterpret cast
+  m_ip += 4;
+  return value;
+}
+
 auto ExecScope::reserveConsts(ConstStack* stack, unsigned int amount) -> void {
   assert(m_constsPtr == nullptr);
   m_constsCount = amount;

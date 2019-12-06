@@ -15,6 +15,7 @@ public:
   [[nodiscard]] auto readUInt8() -> uint8_t;
   [[nodiscard]] auto readInt32() -> int32_t;
   [[nodiscard]] auto readUInt32() -> uint32_t;
+  [[nodiscard]] auto readFloat() -> float;
 
   auto reserveConsts(ConstStack* stack, unsigned int amount) -> void;
   auto releaseConsts(ConstStack* stack) -> void;

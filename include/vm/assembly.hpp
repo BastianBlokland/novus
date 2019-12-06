@@ -35,6 +35,7 @@ public:
 
   [[nodiscard]] auto readInt32(uint32_t ipOffset) const noexcept -> int32_t;
   [[nodiscard]] auto readUInt32(uint32_t ipOffset) const noexcept -> uint32_t;
+  [[nodiscard]] auto readFloat(uint32_t ipOffset) const noexcept -> float;
 
 private:
   std::vector<std::string> m_litStrings;

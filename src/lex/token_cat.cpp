@@ -59,6 +59,7 @@ auto lookupCat(const TokenKind kind) -> TokenCat {
   case TokenKind::SepArrow:
     return TokenCat::Seperator;
   case TokenKind::LitInt:
+  case TokenKind::LitFloat:
   case TokenKind::LitBool:
   case TokenKind::LitString:
     return TokenCat::Literal;

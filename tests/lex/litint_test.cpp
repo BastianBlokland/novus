@@ -27,11 +27,11 @@ TEST_CASE("Lexing integer literals", "[lex]") {
   SECTION("Errors") {
     CHECK_TOKENS("2147483648", errLitIntTooBig());
     CHECK_TOKENS("99999999999999999999", errLitIntTooBig());
-    CHECK_TOKENS("13a4a2", errLitIntInvalidChar());
-    CHECK_TOKENS("13a4好2", errLitIntInvalidChar());
-    CHECK_TOKENS("13a4\a2", errLitIntInvalidChar());
-    CHECK_TOKENS("0a", errLitIntInvalidChar());
-    CHECK_TOKENS("0_", errLitIntEndsWithSeperator());
+    CHECK_TOKENS("13a4a2", errLitNumberInvalidChar());
+    CHECK_TOKENS("13a4好2", errLitNumberInvalidChar());
+    CHECK_TOKENS("13a4\a2", errLitNumberInvalidChar());
+    CHECK_TOKENS("0a", errLitNumberInvalidChar());
+    CHECK_TOKENS("0_", errLitNumberEndsWithSeperator());
   }
 
   SECTION("Spans") {

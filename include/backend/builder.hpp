@@ -22,6 +22,7 @@ public:
   auto label(std::string label) -> void;
 
   auto addLoadLitInt(int32_t val) -> void;
+  auto addLoadLitFloat(float val) -> void;
   auto addLoadLitString(const std::string& val) -> void;
 
   auto addReserveConsts(uint8_t amount) -> void;
@@ -29,20 +30,31 @@ public:
   auto addLoadConst(uint8_t constId) -> void;
 
   auto addAddInt() -> void;
+  auto addAddFloat() -> void;
   auto addAddString() -> void;
   auto addSubInt() -> void;
+  auto addSubFloat() -> void;
   auto addMulInt() -> void;
+  auto addMulFloat() -> void;
   auto addDivInt() -> void;
+  auto addDivFloat() -> void;
   auto addRemInt() -> void;
   auto addNegInt() -> void;
+  auto addNegFloat() -> void;
   auto addLogicInvInt() -> void;
 
   auto addCheckEqInt() -> void;
+  auto addCheckEqFloat() -> void;
   auto addCheckEqString() -> void;
   auto addCheckGtInt() -> void;
+  auto addCheckGtFloat() -> void;
   auto addCheckLeInt() -> void;
+  auto addCheckLeFloat() -> void;
 
+  auto addConvIntFloat() -> void;
+  auto addConvFloatInt() -> void;
   auto addConvIntString() -> void;
+  auto addConvFloatString() -> void;
   auto addConvBoolString() -> void;
 
   auto addMakeStruct(uint8_t fieldCount) -> void;
@@ -78,6 +90,7 @@ private:
   auto writeUInt8(uint8_t val) -> void;
   auto writeInt32(int32_t val) -> void;
   auto writeUInt32(uint32_t val) -> void;
+  auto writeFloat(float val) -> void;
   auto writeIpOffset(std::string label) -> void;
 
   auto patchLabels() -> void;

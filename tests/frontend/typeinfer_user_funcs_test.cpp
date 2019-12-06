@@ -13,6 +13,12 @@ TEST_CASE("Infer return type of user functions", "[frontend]") {
     CHECK(GET_FUNC_DECL(output, "f").getOutput() == GET_TYPE_ID(output, "int"));
   }
 
+  SECTION("Float literal") {
+    const auto& output = ANALYZE("fun f() 1.0");
+    REQUIRE(output.isSuccess());
+    CHECK(GET_FUNC_DECL(output, "f").getOutput() == GET_TYPE_ID(output, "float"));
+  }
+
   SECTION("Bool literal") {
     const auto& output = ANALYZE("fun f() false");
     REQUIRE(output.isSuccess());

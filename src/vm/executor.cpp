@@ -9,6 +9,7 @@
 #include "vm/exceptions/invalid_assembly.hpp"
 #include "vm/opcode.hpp"
 #include <charconv>
+#include <cstdio>
 #include <stdexcept>
 
 namespace vm {
@@ -29,6 +30,10 @@ static auto execute(const Assembly& assembly, io::Interface* interface, uint32_t
     case OpCode::LoadLitInt: {
       auto litInt = scope->readInt32();
       evalStack.push(internal::intValue(litInt));
+    } break;
+    case OpCode::LoadLitFloat: {
+      auto litFloat = scope->readFloat();
+      evalStack.push(internal::floatValue(litFloat));
     } break;
     case OpCode::LoadLitString: {
       const auto litStrId = scope->readInt32();
@@ -57,6 +62,11 @@ static auto execute(const Assembly& assembly, io::Interface* interface, uint32_t
       auto a = evalStack.pop().getInt();
       evalStack.push(internal::intValue(a + b));
     } break;
+    case OpCode::AddFloat: {
+      auto b = evalStack.pop().getFloat();
+      auto a = evalStack.pop().getFloat();
+      evalStack.push(internal::floatValue(a + b));
+    } break;
     case OpCode::AddString: {
       auto b = getStringRef(evalStack.pop());
       auto a = getStringRef(evalStack.pop());
@@ -72,10 +82,20 @@ static auto execute(const Assembly& assembly, io::Interface* interface, uint32_t
       auto a = evalStack.pop().getInt();
       evalStack.push(internal::intValue(a - b));
     } break;
+    case OpCode::SubFloat: {
+      auto b = evalStack.pop().getFloat();
+      auto a = evalStack.pop().getFloat();
+      evalStack.push(internal::floatValue(a - b));
+    } break;
     case OpCode::MulInt: {
       auto b = evalStack.pop().getInt();
       auto a = evalStack.pop().getInt();
       evalStack.push(internal::intValue(a * b));
+    } break;
+    case OpCode::MulFloat: {
+      auto b = evalStack.pop().getFloat();
+      auto a = evalStack.pop().getFloat();
+      evalStack.push(internal::floatValue(a * b));
     } break;
     case OpCode::DivInt: {
       auto b = evalStack.pop().getInt();
@@ -84,6 +104,14 @@ static auto execute(const Assembly& assembly, io::Interface* interface, uint32_t
         throw exceptions::DivByZero{};
       }
       evalStack.push(internal::intValue(a / b));
+    } break;
+    case OpCode::DivFloat: {
+      auto b = evalStack.pop().getFloat();
+      auto a = evalStack.pop().getFloat();
+      if (b == 0) {
+        throw exceptions::DivByZero{};
+      }
+      evalStack.push(internal::floatValue(a / b));
     } break;
     case OpCode::RemInt: {
       auto b = evalStack.pop().getInt();
@@ -97,6 +125,10 @@ static auto execute(const Assembly& assembly, io::Interface* interface, uint32_t
       auto a = evalStack.pop().getInt();
       evalStack.push(internal::intValue(-a));
     } break;
+    case OpCode::NegFloat: {
+      auto a = evalStack.pop().getFloat();
+      evalStack.push(internal::floatValue(-a));
+    } break;
     case OpCode::LogicInvInt: {
       auto a = evalStack.pop().getInt();
       evalStack.push(internal::intValue(a == 0 ? 1 : 0));
@@ -105,6 +137,11 @@ static auto execute(const Assembly& assembly, io::Interface* interface, uint32_t
     case OpCode::CheckEqInt: {
       auto b = evalStack.pop().getInt();
       auto a = evalStack.pop().getInt();
+      evalStack.push(internal::intValue(a == b ? 1 : 0));
+    } break;
+    case OpCode::CheckEqFloat: {
+      auto b = evalStack.pop().getFloat();
+      auto a = evalStack.pop().getFloat();
       evalStack.push(internal::intValue(a == b ? 1 : 0));
     } break;
     case OpCode::CheckEqString: {
@@ -119,12 +156,30 @@ static auto execute(const Assembly& assembly, io::Interface* interface, uint32_t
       auto a = evalStack.pop().getInt();
       evalStack.push(internal::intValue(a > b ? 1 : 0));
     } break;
+    case OpCode::CheckGtFloat: {
+      auto b = evalStack.pop().getFloat();
+      auto a = evalStack.pop().getFloat();
+      evalStack.push(internal::intValue(a > b ? 1 : 0));
+    } break;
     case OpCode::CheckLeInt: {
       auto b = evalStack.pop().getInt();
       auto a = evalStack.pop().getInt();
       evalStack.push(internal::intValue(a < b ? 1 : 0));
     } break;
+    case OpCode::CheckLeFloat: {
+      auto b = evalStack.pop().getFloat();
+      auto a = evalStack.pop().getFloat();
+      evalStack.push(internal::intValue(a < b ? 1 : 0));
+    } break;
 
+    case OpCode::ConvIntFloat: {
+      auto val = evalStack.pop().getInt();
+      evalStack.push(internal::floatValue(static_cast<float>(val)));
+    } break;
+    case OpCode::ConvFloatInt: {
+      auto val = evalStack.pop().getFloat();
+      evalStack.push(internal::intValue(static_cast<int>(val)));
+    } break;
     case OpCode::ConvIntString: {
       static const auto maxCharSize = 11;
 
@@ -132,9 +187,24 @@ static auto execute(const Assembly& assembly, io::Interface* interface, uint32_t
       const auto strRefAlloc = allocator.allocStr(maxCharSize);
       const auto convRes = std::to_chars(strRefAlloc.second, strRefAlloc.second + maxCharSize, val);
       if (convRes.ec != std::errc()) {
-        throw std::logic_error("Failed to convert integer to string");
+        throw std::logic_error{"Failed to convert integer to string"};
       }
       strRefAlloc.first->updateSize(convRes.ptr - strRefAlloc.second);
+      evalStack.push(internal::refValue(strRefAlloc.first));
+    } break;
+    case OpCode::ConvFloatString: {
+      const auto val = evalStack.pop().getFloat();
+
+      // NOLINTNEXTLINE: C-style var-arg func, needed because clang is missing std::to_chars(float).
+      const auto charSize    = std::snprintf(nullptr, 0, "%.6g", val) + 1; // +1: null-terminator.
+      const auto strRefAlloc = allocator.allocStr(charSize);
+
+      // NOLINTNEXTLINE: C-style var-arg func, needed because clang is missing std::to_chars(float).
+      std::snprintf(strRefAlloc.second, charSize, "%.6g", val);
+
+      // Remove the null-terminator from the size. Our strings don't use a null-terminator but
+      // snprintf always outputs one.
+      strRefAlloc.first->updateSize(charSize - 1);
       evalStack.push(internal::refValue(strRefAlloc.first));
     } break;
 

@@ -18,7 +18,7 @@ private:
   int m_inputPos;
   std::deque<char> m_readBuffer;
 
-  auto nextLitInt(char mostSignficantChar) -> Token;
+  auto nextLitNumber(char mostSignficantChar) -> Token;
   auto nextLitStr() -> Token;
   auto nextWordToken(char startingChar) -> Token;
 

@@ -25,6 +25,11 @@ auto Builder::addLoadLitInt(int32_t val) -> void {
   writeInt32(val);
 }
 
+auto Builder::addLoadLitFloat(float val) -> void {
+  writeOpCode(vm::OpCode::LoadLitFloat);
+  writeFloat(val);
+}
+
 auto Builder::addLoadLitString(const std::string& val) -> void {
   const auto litId = addLitString(val);
   writeOpCode(vm::OpCode::LoadLitString);
@@ -48,29 +53,51 @@ auto Builder::addLoadConst(uint8_t constId) -> void {
 
 auto Builder::addAddInt() -> void { writeOpCode(vm::OpCode::AddInt); }
 
+auto Builder::addAddFloat() -> void { writeOpCode(vm::OpCode::AddFloat); }
+
 auto Builder::addAddString() -> void { writeOpCode(vm::OpCode::AddString); }
 
 auto Builder::addSubInt() -> void { writeOpCode(vm::OpCode::SubInt); }
 
+auto Builder::addSubFloat() -> void { writeOpCode(vm::OpCode::SubFloat); }
+
 auto Builder::addMulInt() -> void { writeOpCode(vm::OpCode::MulInt); }
 
+auto Builder::addMulFloat() -> void { writeOpCode(vm::OpCode::MulFloat); }
+
 auto Builder::addDivInt() -> void { writeOpCode(vm::OpCode::DivInt); }
+
+auto Builder::addDivFloat() -> void { writeOpCode(vm::OpCode::DivFloat); }
 
 auto Builder::addRemInt() -> void { writeOpCode(vm::OpCode::RemInt); }
 
 auto Builder::addNegInt() -> void { writeOpCode(vm::OpCode::NegInt); }
 
+auto Builder::addNegFloat() -> void { writeOpCode(vm::OpCode::NegFloat); }
+
 auto Builder::addLogicInvInt() -> void { writeOpCode(vm::OpCode::LogicInvInt); }
 
 auto Builder::addCheckEqInt() -> void { writeOpCode(vm::OpCode::CheckEqInt); }
+
+auto Builder::addCheckEqFloat() -> void { writeOpCode(vm::OpCode::CheckEqFloat); }
 
 auto Builder::addCheckEqString() -> void { writeOpCode(vm::OpCode::CheckEqString); }
 
 auto Builder::addCheckGtInt() -> void { writeOpCode(vm::OpCode::CheckGtInt); }
 
+auto Builder::addCheckGtFloat() -> void { writeOpCode(vm::OpCode::CheckGtFloat); }
+
 auto Builder::addCheckLeInt() -> void { writeOpCode(vm::OpCode::CheckLeInt); }
 
+auto Builder::addCheckLeFloat() -> void { writeOpCode(vm::OpCode::CheckLeFloat); }
+
+auto Builder::addConvIntFloat() -> void { writeOpCode(vm::OpCode::ConvIntFloat); }
+
+auto Builder::addConvFloatInt() -> void { writeOpCode(vm::OpCode::ConvFloatInt); }
+
 auto Builder::addConvIntString() -> void { writeOpCode(vm::OpCode::ConvIntString); }
+
+auto Builder::addConvFloatString() -> void { writeOpCode(vm::OpCode::ConvFloatString); }
 
 auto Builder::addConvBoolString() -> void {
   // Implemented on the backend to keep the vm simpler.
@@ -168,7 +195,7 @@ auto Builder::writeUInt8(uint8_t val) -> void {
 
 auto Builder::writeInt32(int32_t val) -> void {
   throwIfClosed();
-  writeUInt32(static_cast<uint32_t>(val));
+  writeUInt32(reinterpret_cast<uint32_t&>(val)); // NOLINT: Reinterpret cast
 }
 
 auto Builder::writeUInt32(uint32_t val) -> void {
@@ -177,6 +204,11 @@ auto Builder::writeUInt32(uint32_t val) -> void {
   m_instructions.push_back(val >> 8U);  // NOLINT: Magic number
   m_instructions.push_back(val >> 16U); // NOLINT: Magic number
   m_instructions.push_back(val >> 24U); // NOLINT: Magic number
+}
+
+auto Builder::writeFloat(float val) -> void {
+  throwIfClosed();
+  writeUInt32(reinterpret_cast<uint32_t&>(val)); // NOLINT: Reinterpret cast
 }
 
 auto Builder::writeIpOffset(std::string label) -> void {

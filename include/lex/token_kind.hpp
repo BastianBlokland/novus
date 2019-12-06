@@ -31,6 +31,7 @@ enum class TokenKind {
   SepColon,
   SepArrow,
   LitInt,
+  LitFloat,
   LitBool,
   LitString,
   Keyword,

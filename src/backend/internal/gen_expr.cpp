@@ -65,9 +65,7 @@ auto GenExpr::visit(const prog::expr::CallExprNode& n) -> void {
   case prog::sym::FuncKind::User:
     m_builder->addCall(getLabel(funcDecl.getId()));
     break;
-  case prog::sym::FuncKind::NegateInt:
-    m_builder->addNegInt();
-    break;
+
   case prog::sym::FuncKind::AddInt:
     m_builder->addAddInt();
     break;
@@ -83,18 +81,14 @@ auto GenExpr::visit(const prog::expr::CallExprNode& n) -> void {
   case prog::sym::FuncKind::RemInt:
     m_builder->addRemInt();
     break;
+  case prog::sym::FuncKind::NegateInt:
+    m_builder->addNegInt();
+    break;
   case prog::sym::FuncKind::CheckEqInt:
     m_builder->addCheckEqInt();
     break;
   case prog::sym::FuncKind::CheckNEqInt:
     m_builder->addCheckEqInt();
-    m_builder->addLogicInvInt();
-    break;
-  case prog::sym::FuncKind::CheckEqString:
-    m_builder->addCheckEqString();
-    break;
-  case prog::sym::FuncKind::CheckNEqString:
-    m_builder->addCheckEqString();
     m_builder->addLogicInvInt();
     break;
   case prog::sym::FuncKind::CheckLeInt:
@@ -111,6 +105,44 @@ auto GenExpr::visit(const prog::expr::CallExprNode& n) -> void {
     m_builder->addCheckLeInt();
     m_builder->addLogicInvInt();
     break;
+
+  case prog::sym::FuncKind::AddFloat:
+    m_builder->addAddFloat();
+    break;
+  case prog::sym::FuncKind::SubFloat:
+    m_builder->addSubFloat();
+    break;
+  case prog::sym::FuncKind::MulFloat:
+    m_builder->addMulFloat();
+    break;
+  case prog::sym::FuncKind::DivFloat:
+    m_builder->addDivFloat();
+    break;
+  case prog::sym::FuncKind::NegateFloat:
+    m_builder->addNegFloat();
+    break;
+  case prog::sym::FuncKind::CheckEqFloat:
+    m_builder->addCheckEqFloat();
+    break;
+  case prog::sym::FuncKind::CheckNEqFloat:
+    m_builder->addCheckEqFloat();
+    m_builder->addLogicInvInt();
+    break;
+  case prog::sym::FuncKind::CheckLeFloat:
+    m_builder->addCheckLeFloat();
+    break;
+  case prog::sym::FuncKind::CheckLeEqFloat:
+    m_builder->addCheckGtFloat();
+    m_builder->addLogicInvInt();
+    break;
+  case prog::sym::FuncKind::CheckGtFloat:
+    m_builder->addCheckGtFloat();
+    break;
+  case prog::sym::FuncKind::CheckGtEqFloat:
+    m_builder->addCheckLeFloat();
+    m_builder->addLogicInvInt();
+    break;
+
   case prog::sym::FuncKind::InvBool:
     m_builder->addLogicInvInt();
     break;
@@ -121,15 +153,34 @@ auto GenExpr::visit(const prog::expr::CallExprNode& n) -> void {
     m_builder->addCheckEqInt();
     m_builder->addLogicInvInt();
     break;
+
   case prog::sym::FuncKind::AddString:
     m_builder->addAddString();
+    break;
+  case prog::sym::FuncKind::CheckEqString:
+    m_builder->addCheckEqString();
+    break;
+  case prog::sym::FuncKind::CheckNEqString:
+    m_builder->addCheckEqString();
+    m_builder->addLogicInvInt();
+    break;
+
+  case prog::sym::FuncKind::ConvIntFloat:
+    m_builder->addConvIntFloat();
+    break;
+  case prog::sym::FuncKind::ConvFloatInt:
+    m_builder->addConvFloatInt();
     break;
   case prog::sym::FuncKind::ConvIntString:
     m_builder->addConvIntString();
     break;
+  case prog::sym::FuncKind::ConvFloatString:
+    m_builder->addConvFloatString();
+    break;
   case prog::sym::FuncKind::ConvBoolString:
     m_builder->addConvBoolString();
     break;
+
   case prog::sym::FuncKind::MakeStruct: {
     auto fieldCount = n.getChildCount();
     if (fieldCount > std::numeric_limits<uint8_t>::max()) {
@@ -138,6 +189,7 @@ auto GenExpr::visit(const prog::expr::CallExprNode& n) -> void {
     m_builder->addMakeStruct(static_cast<uint8_t>(fieldCount));
     break;
   }
+
   case prog::sym::FuncKind::CheckEqUserType:
   case prog::sym::FuncKind::CheckNEqUserType:
     auto lhsType = n[0].getType();
@@ -175,6 +227,10 @@ auto GenExpr::visit(const prog::expr::GroupExprNode& n) -> void {
 
 auto GenExpr::visit(const prog::expr::LitBoolNode& n) -> void {
   m_builder->addLoadLitInt(n.getVal() ? 1U : 0U);
+}
+
+auto GenExpr::visit(const prog::expr::LitFloatNode& n) -> void {
+  m_builder->addLoadLitFloat(n.getVal());
 }
 
 auto GenExpr::visit(const prog::expr::LitIntNode& n) -> void {

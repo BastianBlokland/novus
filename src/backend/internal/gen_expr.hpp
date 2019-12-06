@@ -16,6 +16,7 @@ public:
   auto visit(const prog::expr::FieldExprNode& n) -> void override;
   auto visit(const prog::expr::GroupExprNode& n) -> void override;
   auto visit(const prog::expr::LitBoolNode& n) -> void override;
+  auto visit(const prog::expr::LitFloatNode& n) -> void override;
   auto visit(const prog::expr::LitIntNode& n) -> void override;
   auto visit(const prog::expr::LitStringNode& n) -> void override;
 

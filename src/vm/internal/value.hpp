@@ -10,6 +10,7 @@ static const uint64_t valMask = ~static_cast<uint64_t>(1U);
 
 class Value final {
   friend auto intValue(int32_t val) -> Value;
+  friend auto floatValue(float val) -> Value;
   friend auto refValue(Ref* ref) -> Value;
 
   static_assert(
@@ -18,6 +19,8 @@ class Value final {
   static_assert(
       alignof(Ref) > 1); // Assert that the alignment of 'Ref' leaves us a bit to store a tag.
 
+  static_assert(sizeof(float) == sizeof(uint32_t)); // Assert that floats are 32 bit.
+
 public:
   Value() = default;
 
@@ -25,7 +28,14 @@ public:
 
   [[nodiscard]] inline auto getInt() const noexcept {
     assert(!isRef());
-    return static_cast<int32_t>(m_raw >> 32U);
+    auto upperRaw = static_cast<uint32_t>(m_raw >> 32U);
+    return reinterpret_cast<int32_t&>(upperRaw); // NOLINT: Reinterpret cast
+  }
+
+  [[nodiscard]] inline auto getFloat() const noexcept {
+    assert(!isRef());
+    auto upperRaw = static_cast<uint32_t>(m_raw >> 32U);
+    return reinterpret_cast<float&>(upperRaw); // NOLINT: Reinterpret cast
   }
 
   [[nodiscard]] inline auto getRef() const noexcept {
@@ -43,7 +53,14 @@ private:
 
 [[nodiscard]] inline auto intValue(int32_t val) -> Value {
   // Int's are stored in the upper 32 bit of the raw value.
-  return Value{static_cast<uint64_t>(val) << 32U};
+  auto upperRaw = reinterpret_cast<uint32_t&>(val); // NOLINT: Reinterpret cast
+  return Value{static_cast<uint64_t>(upperRaw) << 32U};
+}
+
+[[nodiscard]] inline auto floatValue(float val) -> Value {
+  // Float's are stored in the upper 32 bit of the raw value.
+  auto upperRaw = reinterpret_cast<uint32_t&>(val); // NOLINT: Reinterpret cast
+  return Value{static_cast<uint64_t>(upperRaw) << 32U};
 }
 
 [[nodiscard]] inline auto refValue(Ref* ref) -> Value {

@@ -48,6 +48,45 @@ TEST_CASE("Generate assembly for call expressions", "[backend]") {
     });
   }
 
+  SECTION("Float operations") {
+    CHECK_EXPR_FLOAT("-.1337", [](backend::Builder* builder) -> void {
+      builder->addLoadLitFloat(0.1337F); // NOLINT: Magic numbers
+      builder->addNegFloat();
+    });
+    CHECK_EXPR_FLOAT("1.42 + 3.42", [](backend::Builder* builder) -> void {
+      builder->addLoadLitFloat(1.42F); // NOLINT: Magic numbers
+      builder->addLoadLitFloat(3.42F); // NOLINT: Magic numbers
+      builder->addAddFloat();
+    });
+    CHECK_EXPR_FLOAT("1.42 - 3.42", [](backend::Builder* builder) -> void {
+      builder->addLoadLitFloat(1.42F); // NOLINT: Magic numbers
+      builder->addLoadLitFloat(3.42F); // NOLINT: Magic numbers
+      builder->addSubFloat();
+    });
+    CHECK_EXPR_FLOAT("1.42 * 3.42", [](backend::Builder* builder) -> void {
+      builder->addLoadLitFloat(1.42F); // NOLINT: Magic numbers
+      builder->addLoadLitFloat(3.42F); // NOLINT: Magic numbers
+      builder->addMulFloat();
+    });
+    CHECK_EXPR_FLOAT("1.42 / 3.42", [](backend::Builder* builder) -> void {
+      builder->addLoadLitFloat(1.42F); // NOLINT: Magic numbers
+      builder->addLoadLitFloat(3.42F); // NOLINT: Magic numbers
+      builder->addDivFloat();
+    });
+    CHECK_EXPR_FLOAT("1.0 / 2", [](backend::Builder* builder) -> void {
+      builder->addLoadLitFloat(1.0F);
+      builder->addLoadLitInt(2);
+      builder->addConvIntFloat();
+      builder->addDivFloat();
+    });
+    CHECK_EXPR_FLOAT("1 / 2.0", [](backend::Builder* builder) -> void {
+      builder->addLoadLitInt(1);
+      builder->addConvIntFloat();
+      builder->addLoadLitFloat(2.0F); // NOLINT: Magic numbers
+      builder->addDivFloat();
+    });
+  }
+
   SECTION("Int checks") {
     CHECK_EXPR_BOOL("1 == 3", [](backend::Builder* builder) -> void {
       builder->addLoadLitInt(1);
@@ -86,6 +125,42 @@ TEST_CASE("Generate assembly for call expressions", "[backend]") {
       builder->addLoadLitInt(1);
       builder->addLoadLitInt(3);
       builder->addCheckLeInt();
+      builder->addLogicInvInt();
+    });
+  }
+
+  SECTION("Float checks") {
+    CHECK_EXPR_BOOL("1.42 == 3.42", [](backend::Builder* builder) -> void {
+      builder->addLoadLitFloat(1.42F); // NOLINT: Magic numbers
+      builder->addLoadLitFloat(3.42F); // NOLINT: Magic numbers
+      builder->addCheckEqFloat();
+    });
+    CHECK_EXPR_BOOL("1.42 != 3.42", [](backend::Builder* builder) -> void {
+      builder->addLoadLitFloat(1.42F); // NOLINT: Magic numbers
+      builder->addLoadLitFloat(3.42F); // NOLINT: Magic numbers
+      builder->addCheckEqFloat();
+      builder->addLogicInvInt();
+    });
+    CHECK_EXPR_BOOL("1.42 < 3.42", [](backend::Builder* builder) -> void {
+      builder->addLoadLitFloat(1.42F); // NOLINT: Magic numbers
+      builder->addLoadLitFloat(3.42F); // NOLINT: Magic numbers
+      builder->addCheckLeFloat();
+    });
+    CHECK_EXPR_BOOL("1.42 <= 3.42", [](backend::Builder* builder) -> void {
+      builder->addLoadLitFloat(1.42F); // NOLINT: Magic numbers
+      builder->addLoadLitFloat(3.42F); // NOLINT: Magic numbers
+      builder->addCheckGtFloat();
+      builder->addLogicInvInt();
+    });
+    CHECK_EXPR_BOOL("1.42 > 3.42", [](backend::Builder* builder) -> void {
+      builder->addLoadLitFloat(1.42F); // NOLINT: Magic numbers
+      builder->addLoadLitFloat(3.42F); // NOLINT: Magic numbers
+      builder->addCheckGtFloat();
+    });
+    CHECK_EXPR_BOOL("1.42 >= 3.42", [](backend::Builder* builder) -> void {
+      builder->addLoadLitFloat(1.42F); // NOLINT: Magic numbers
+      builder->addLoadLitFloat(3.42F); // NOLINT: Magic numbers
+      builder->addCheckLeFloat();
       builder->addLogicInvInt();
     });
   }
@@ -149,9 +224,21 @@ TEST_CASE("Generate assembly for call expressions", "[backend]") {
   }
 
   SECTION("Conversions") {
+    CHECK_EXPR_FLOAT("float(42)", [](backend::Builder* builder) -> void {
+      builder->addLoadLitInt(42);
+      builder->addConvIntFloat();
+    });
+    CHECK_EXPR_INT("toInt(42.1337)", [](backend::Builder* builder) -> void {
+      builder->addLoadLitFloat(42.1337F); // NOLINT: Magic numbers
+      builder->addConvFloatInt();
+    });
     CHECK_EXPR_STRING("string(42)", [](backend::Builder* builder) -> void {
       builder->addLoadLitInt(42);
       builder->addConvIntString();
+    });
+    CHECK_EXPR_STRING("string(.1337)", [](backend::Builder* builder) -> void {
+      builder->addLoadLitFloat(0.1337F); // NOLINT: Magic numbers
+      builder->addConvFloatString();
     });
     CHECK_EXPR_STRING("string(true)", [](backend::Builder* builder) -> void {
       builder->addLoadLitInt(1);
