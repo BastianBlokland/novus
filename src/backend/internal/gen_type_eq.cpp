@@ -30,7 +30,7 @@ auto generateStructEquality(
       builder->addCheckEqInt();
       break;
     case prog::sym::TypeKind::Float:
-      throw std::logic_error{"Floats are not implemented in the vm yet"};
+      builder->addCheckEqFloat();
       break;
     case prog::sym::TypeKind::String:
       builder->addCheckEqString();
