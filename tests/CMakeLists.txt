@@ -64,6 +64,7 @@ add_executable(tests
   parse/expr_condtional_test.cpp
   parse/expr_field_test.cpp
   parse/expr_group_test.cpp
+  parse/expr_is_test.cpp
   parse/expr_paren_test.cpp
   parse/expr_primary_test.cpp
   parse/expr_switch_test.cpp

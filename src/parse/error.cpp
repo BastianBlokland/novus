@@ -221,6 +221,29 @@ auto errInvalidFieldExpr(NodePtr lhs, lex::Token dot, lex::Token id) -> NodePtr 
   return errorNode(oss.str(), std::move(tokens), std::move(subExprs));
 }
 
+auto errInvalidIsExpr(NodePtr lhs, lex::Token kw, lex::Token type, lex::Token id) -> NodePtr {
+  std::ostringstream oss;
+  if (getKw(kw) != lex::Keyword::Is) {
+    oss << "Expected keyword 'is' but got: " << kw;
+  } else if (type.getKind() != lex::TokenKind::Identifier) {
+    oss << "Expected type identifier but got: " << type;
+  } else if (id.getKind() != lex::TokenKind::Identifier) {
+    oss << "Expected identifier but got: " << id;
+  } else {
+    oss << "Invalid 'is' expression";
+  }
+
+  auto tokens = std::vector<lex::Token>{};
+  tokens.push_back(std::move(kw));
+  tokens.push_back(std::move(type));
+  tokens.push_back(std::move(id));
+
+  auto subExprs = std::vector<std::unique_ptr<Node>>{};
+  subExprs.push_back(std::move(lhs));
+
+  return errorNode(oss.str(), std::move(tokens), std::move(subExprs));
+}
+
 auto errInvalidCallExpr(
     lex::Token func,
     lex::Token open,

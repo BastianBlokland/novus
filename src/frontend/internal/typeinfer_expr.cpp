@@ -102,6 +102,14 @@ auto TypeInferExpr::visit(const parse::GroupExprNode& n) -> void {
   }
 }
 
+auto TypeInferExpr::visit(const parse::IsExprNode & /*unused*/) -> void {
+  auto boolType = m_prog->lookupType("bool");
+  if (!boolType) {
+    throw std::logic_error{"No 'bool' type present in type-table"};
+  }
+  m_type = *boolType;
+}
+
 auto TypeInferExpr::visit(const parse::LitExprNode& n) -> void {
   switch (n.getVal().getKind()) {
   case lex::TokenKind::LitInt: {

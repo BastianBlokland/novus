@@ -41,6 +41,7 @@ namespace parse {
 #define UNION lex::keywordToken(lex::Keyword::Union)
 #define IF lex::keywordToken(lex::Keyword::If)
 #define ELSE lex::keywordToken(lex::Keyword::Else)
+#define IS lex::keywordToken(lex::Keyword::Is)
 #define END lex::endToken()
 
 #define ID(ID) lex::identiferToken(ID)

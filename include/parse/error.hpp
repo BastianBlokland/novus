@@ -47,6 +47,8 @@ auto errInvalidParenExpr(lex::Token open, NodePtr expr, lex::Token close) -> Nod
 
 auto errInvalidFieldExpr(NodePtr lhs, lex::Token dot, lex::Token id) -> NodePtr;
 
+auto errInvalidIsExpr(NodePtr lhs, lex::Token kw, lex::Token type, lex::Token id) -> NodePtr;
+
 auto errInvalidCallExpr(
     lex::Token func,
     lex::Token open,

@@ -20,6 +20,9 @@ auto operator<<(std::ostream& out, const Keyword& rhs) -> std::ostream& {
   case Keyword::Else:
     out << "else";
     break;
+  case Keyword::Is:
+    out << "is";
+    break;
   }
   return out;
 }
@@ -31,6 +34,7 @@ auto getKeyword(const std::string& str) -> std::optional<Keyword> {
       {"union", Keyword::Union},
       {"if", Keyword::If},
       {"else", Keyword::Else},
+      {"is", Keyword::Is},
   };
 
   const auto keywordSearch = keywordTable.find(str);

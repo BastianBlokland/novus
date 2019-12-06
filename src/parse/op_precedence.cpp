@@ -1,4 +1,5 @@
 #include "op_precedence.hpp"
+#include "utilities.hpp"
 
 namespace parse {
 
@@ -40,6 +41,11 @@ auto getRhsOpPrecedence(const lex::Token& token) -> int {
     return conditionalPrecedence;
   case lex::TokenKind::OpSemi:
     return groupingPrecedence;
+  case lex::TokenKind::Keyword:
+    if (getKw(token) == lex::Keyword::Is) {
+      return typeTestPrecedence;
+    }
+    [[fallthrough]];
   default:
     return 0;
   }

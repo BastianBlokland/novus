@@ -210,6 +210,12 @@ auto ParserImpl::nextExpr(const int minPrecedence) -> NodePtr {
     case lex::TokenKind::OpDot:
       lhs = nextExprField(std::move(lhs));
       break;
+    case lex::TokenKind::Keyword:
+      if (getKw(nextToken) == lex::Keyword::Is) {
+        lhs = nextExprIs(std::move(lhs));
+        break;
+      }
+      [[fallthrough]];
     default:
       auto op  = consumeToken();
       auto rhs = nextExpr(rhsPrecedence);
@@ -284,6 +290,18 @@ auto ParserImpl::nextExprField(NodePtr lhs) -> NodePtr {
     return fieldExprNode(std::move(lhs), std::move(dot), std::move(id));
   }
   return errInvalidFieldExpr(std::move(lhs), std::move(dot), std::move(id));
+}
+
+auto ParserImpl::nextExprIs(NodePtr lhs) -> NodePtr {
+  auto kw   = consumeToken();
+  auto type = consumeToken();
+  auto id   = consumeToken();
+
+  if (getKw(kw) == lex::Keyword::Is && type.getKind() == lex::TokenKind::Identifier &&
+      id.getKind() == lex::TokenKind::Identifier) {
+    return isExprNode(std::move(lhs), std::move(kw), std::move(type), std::move(id));
+  }
+  return errInvalidIsExpr(std::move(lhs), std::move(kw), std::move(type), std::move(id));
 }
 
 auto ParserImpl::nextExprCall(lex::Token id) -> NodePtr {

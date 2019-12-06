@@ -9,6 +9,7 @@ TEST_CASE("Lexing keywords", "[lex]") {
   CHECK_TOKENS("union", keywordToken(Keyword::Union));
   CHECK_TOKENS("if", keywordToken(Keyword::If));
   CHECK_TOKENS("else", keywordToken(Keyword::Else));
+  CHECK_TOKENS("is", keywordToken(Keyword::Is));
 }
 
 } // namespace lex

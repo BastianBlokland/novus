@@ -5,7 +5,7 @@
 
 namespace lex {
 
-enum class Keyword { Fun, Struct, Union, If, Else };
+enum class Keyword { Fun, Struct, Union, If, Else, Is };
 
 auto operator<<(std::ostream& out, const Keyword& rhs) -> std::ostream&;
 

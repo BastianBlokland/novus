@@ -214,6 +214,10 @@ auto GetExpr::visit(const parse::GroupExprNode& n) -> void {
   }
 }
 
+auto GetExpr::visit(const parse::IsExprNode & /*unused*/) -> void {
+  throw std::logic_error{"GetExpr is not implemented for this node type"};
+}
+
 auto GetExpr::visit(const parse::LitExprNode& n) -> void {
   switch (n.getVal().getKind()) {
   case lex::TokenKind::LitInt:
