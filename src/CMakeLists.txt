@@ -100,6 +100,7 @@ add_library(prog STATIC
   prog/sym/type_id_hasher.cpp
   prog/sym/type_id.cpp
   prog/sym/type_kind.cpp
+  prog/sym/union_def.cpp
 
   prog/operator.cpp
   prog/program.cpp)

@@ -67,6 +67,13 @@ auto errFieldNotFoundOnType(
   return error(src, oss.str(), span);
 }
 
+auto errDuplicateTypeInUnion(const Source& src, const std::string& typeName, input::Span span)
+    -> Diag {
+  std::ostringstream oss;
+  oss << "Type '" << typeName << "' is already part of the same union";
+  return error(src, oss.str(), span);
+}
+
 auto errConvFuncCannotSpecifyReturnType(
     const Source& src, const std::string& name, input::Span span) -> Diag {
   std::ostringstream oss;

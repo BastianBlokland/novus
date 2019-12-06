@@ -36,6 +36,9 @@ auto analyze(const Source& src) -> Output {
   for (const auto& structDecl : declareUserTypes.getStructs()) {
     defineUserTypes.define(structDecl.first, structDecl.second);
   }
+  for (const auto& unionDecl : declareUserTypes.getUnions()) {
+    defineUserTypes.define(unionDecl.first, unionDecl.second);
+  }
   if (defineUserTypes.hasErrors()) {
     return buildOutput(nullptr, defineUserTypes.getDiags());
   }

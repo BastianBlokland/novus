@@ -38,6 +38,9 @@ auto generateStructEquality(
     case prog::sym::TypeKind::UserStruct:
       builder->addCall(getUserTypeEqLabel(field.getType()));
       break;
+    case prog::sym::TypeKind::UserUnion:
+      // TODO(bastian): Add union support.
+      throw std::logic_error{"Unions are not implemented in the backend yet"};
     }
 
     // If equal jump to the next field.

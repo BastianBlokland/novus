@@ -19,7 +19,21 @@ TEST_CASE("Analyzing user-type definitions", "[frontend]") {
     CHECK(structFields[*structFields.lookup("b")].getType() == GET_TYPE_ID(output, "bool"));
   }
 
-  SECTION("Diagnostics") {
+  SECTION("Define union") {
+    const auto& output = ANALYZE("union u = int, bool");
+    REQUIRE(output.isSuccess());
+    const auto& typeDef = GET_TYPE_DEF(output, "u");
+    REQUIRE(std::holds_alternative<prog::sym::UnionDef>(typeDef));
+    const auto& unionDef = std::get<prog::sym::UnionDef>(typeDef);
+
+    CHECK(
+        unionDef.getTypes() ==
+        std::vector<prog::sym::TypeId>{GET_TYPE_ID(output, "int"), GET_TYPE_ID(output, "bool")});
+    CHECK(unionDef.hasType(GET_TYPE_ID(output, "int")));
+    CHECK(unionDef.hasType(GET_TYPE_ID(output, "bool")));
+  }
+
+  SECTION("Struct diagnostics") {
     CHECK_DIAG("struct s = hello a, bool b", errUndeclaredType(src, "hello", input::Span{11, 15}));
     CHECK_DIAG(
         "struct s = int a, bool a", errDuplicateFieldNameInStruct(src, "a", input::Span{23, 23}));
@@ -31,6 +45,11 @@ TEST_CASE("Analyzing user-type definitions", "[frontend]") {
         "struct s2 = s1 b",
         errCyclicStruct(src, "a", "s1", input::Span{0, 15}),
         errCyclicStruct(src, "b", "s2", input::Span{17, 32}));
+  }
+
+  SECTION("Union diagnostics") {
+    CHECK_DIAG("union u = hello, bool", errUndeclaredType(src, "hello", input::Span{10, 14}));
+    CHECK_DIAG("union u = int, int", errDuplicateTypeInUnion(src, "int", input::Span{15, 17}));
   }
 }
 

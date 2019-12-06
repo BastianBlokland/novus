@@ -186,6 +186,10 @@ auto Program::declareUserStruct(std::string name) -> sym::TypeId {
   return m_typeDecls.registerType(sym::TypeKind::UserStruct, std::move(name));
 }
 
+auto Program::declareUserUnion(std::string name) -> sym::TypeId {
+  return m_typeDecls.registerType(sym::TypeKind::UserUnion, std::move(name));
+}
+
 auto Program::declareUserFunc(std::string name, sym::Input input, sym::TypeId output)
     -> sym::FuncId {
   return m_funcDecls.registerFunc(
@@ -218,6 +222,11 @@ auto Program::defineUserStruct(sym::TypeId id, sym::FieldDeclTable fields) -> vo
       getFuncName(Operator::BangEq),
       sym::Input{id, id},
       *m_typeDecls.lookup("bool"));
+}
+
+auto Program::defineUserUnion(sym::TypeId id, std::vector<sym::TypeId> types) -> void {
+  // Register union definition.
+  m_typeDefs.registerUnion(m_typeDecls, id, std::move(types));
 }
 
 auto Program::defineUserFunc(sym::FuncId id, sym::ConstDeclTable consts, expr::NodePtr expr)

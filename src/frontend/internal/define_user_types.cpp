@@ -47,6 +47,30 @@ auto DefineUserTypes::define(prog::sym::TypeId id, const parse::StructDeclStmtNo
   }
 }
 
+auto DefineUserTypes::define(prog::sym::TypeId id, const parse::UnionDeclStmtNode& n) -> void {
+  auto isValid = true;
+  auto types   = std::vector<prog::sym::TypeId>{};
+  for (const auto& typeToken : n.getTypes()) {
+    const auto typeName = getName(typeToken);
+    const auto type     = m_prog->lookupType(typeName);
+    if (!type) {
+      m_diags.push_back(errUndeclaredType(m_src, typeName, typeToken.getSpan()));
+      isValid = false;
+      continue;
+    }
+    if (std::find(types.begin(), types.end(), *type) != types.end()) {
+      m_diags.push_back(errDuplicateTypeInUnion(m_src, typeName, typeToken.getSpan()));
+      isValid = false;
+      continue;
+    }
+    types.push_back(*type);
+  }
+
+  if (isValid) {
+    m_prog->defineUserUnion(id, std::move(types));
+  }
+}
+
 auto DefineUserTypes::check(prog::sym::TypeId id, const parse::StructDeclStmtNode& n) -> void {
   const auto& typedecl = m_prog->getTypeDecl(id);
   if (typedecl.getKind() == prog::sym::TypeKind::UserStruct) {

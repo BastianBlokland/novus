@@ -2,6 +2,7 @@
 #include "prog/sym/struct_def.hpp"
 #include "prog/sym/type_decl_table.hpp"
 #include "prog/sym/type_id_hasher.hpp"
+#include "prog/sym/union_def.hpp"
 #include <unordered_map>
 #include <variant>
 
@@ -9,7 +10,7 @@ namespace prog::sym {
 
 class TypeDefTable final {
 public:
-  using typeDef  = typename std::variant<StructDef>;
+  using typeDef  = typename std::variant<StructDef, UnionDef>;
   using iterator = typename std::unordered_map<TypeId, typeDef>::const_iterator;
 
   TypeDefTable()                            = default;
@@ -27,6 +28,10 @@ public:
 
   auto
   registerStruct(const sym::TypeDeclTable& typeTable, sym::TypeId id, sym::FieldDeclTable fields)
+      -> void;
+
+  auto
+  registerUnion(const sym::TypeDeclTable& typeTable, sym::TypeId id, std::vector<sym::TypeId> types)
       -> void;
 
 private:
