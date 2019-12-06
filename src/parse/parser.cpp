@@ -23,6 +23,8 @@ auto ParserImpl::nextStmt() -> NodePtr {
       return nextStmtFuncDecl();
     case lex::Keyword::Struct:
       return nextStmtStructDecl();
+    case lex::Keyword::Union:
+      return nextStmtUnionDecl();
     default:
       break;
     }
@@ -131,6 +133,36 @@ auto ParserImpl::nextStmtStructDecl() -> NodePtr {
   }
   return errInvalidStmtStructDecl(
       std::move(kw), std::move(id), std::move(eq), fields, std::move(commas));
+}
+
+auto ParserImpl::nextStmtUnionDecl() -> NodePtr {
+  auto kw     = consumeToken();
+  auto id     = consumeToken();
+  auto eq     = consumeToken();
+  auto types  = std::vector<lex::Token>{};
+  auto commas = std::vector<lex::Token>{};
+  while (peekToken(0).getKind() == lex::TokenKind::Identifier) {
+    types.push_back(consumeToken());
+    if (peekToken(0).getKind() == lex::TokenKind::SepComma) {
+      commas.push_back(consumeToken());
+    } else {
+      break;
+    }
+  }
+
+  if (getKw(kw) == lex::Keyword::Union && id.getKind() == lex::TokenKind::Identifier &&
+      eq.getKind() == lex::TokenKind::OpEq && types.size() >= 2 &&
+      std::all_of(
+          types.begin(),
+          types.end(),
+          [](const auto& a) { return a.getKind() == lex::TokenKind::Identifier; }) &&
+      commas.size() == types.size() - 1) {
+
+    return unionDeclStmtNode(
+        std::move(kw), std::move(id), std::move(eq), std::move(types), std::move(commas));
+  }
+  return errInvalidStmtUnionDecl(
+      std::move(kw), std::move(id), std::move(eq), types, std::move(commas));
 }
 
 auto ParserImpl::nextStmtExec() -> NodePtr {

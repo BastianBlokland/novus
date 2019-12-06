@@ -99,6 +99,40 @@ auto errInvalidStmtStructDecl(
   return errorNode(oss.str(), std::move(tokens), {});
 }
 
+auto errInvalidStmtUnionDecl(
+    lex::Token kw,
+    lex::Token id,
+    lex::Token eq,
+    std::vector<lex::Token> types,
+    std::vector<lex::Token> commas) -> NodePtr {
+
+  std::ostringstream oss;
+  if (id.getKind() != lex::TokenKind::Identifier) {
+    oss << "Expected union identifier but got: " << id;
+  } else if (eq.getKind() != lex::TokenKind::OpEq) {
+    oss << "Expected equals-sign '=' but got: " << eq;
+  } else if (types.size() < 2) {
+    oss << "Union declaration needs at least two types";
+  } else if (commas.size() != types.size() - 1) {
+    oss << "Incorrect number of comma's ',' in union declaration";
+  } else {
+    oss << "Invalid union declaration";
+  }
+
+  auto tokens = std::vector<lex::Token>{};
+  tokens.push_back(std::move(kw));
+  tokens.push_back(std::move(id));
+  tokens.push_back(std::move(eq));
+  for (auto& type : types) {
+    tokens.push_back(std::move(type));
+  }
+  for (auto& comma : commas) {
+    tokens.push_back(std::move(comma));
+  }
+
+  return errorNode(oss.str(), std::move(tokens), {});
+}
+
 auto errInvalidStmtExec(
     lex::Token action,
     lex::Token open,

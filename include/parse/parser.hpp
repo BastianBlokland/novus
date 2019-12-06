@@ -21,6 +21,7 @@ private:
 
   auto nextStmtFuncDecl() -> NodePtr;
   auto nextStmtStructDecl() -> NodePtr;
+  auto nextStmtUnionDecl() -> NodePtr;
   auto nextStmtExec() -> NodePtr;
 
   auto nextExpr(int minPrecedence) -> NodePtr;

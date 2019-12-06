@@ -15,3 +15,4 @@
 #include "parse/node_stmt_exec.hpp"
 #include "parse/node_stmt_func_decl.hpp"
 #include "parse/node_stmt_struct_decl.hpp"
+#include "parse/node_stmt_union_decl.hpp"

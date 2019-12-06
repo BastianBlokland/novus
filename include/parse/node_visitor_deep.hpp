@@ -22,6 +22,7 @@ public:
   auto visit(const ExecStmtNode& n) -> void override;
   auto visit(const FuncDeclStmtNode& n) -> void override;
   auto visit(const StructDeclStmtNode& n) -> void override;
+  auto visit(const UnionDeclStmtNode& n) -> void override;
 };
 
 } // namespace parse

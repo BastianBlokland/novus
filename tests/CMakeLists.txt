@@ -71,6 +71,7 @@ add_executable(tests
   parse/stmt_exec_test.cpp
   parse/stmt_func_decl_test.cpp
   parse/stmt_struct_decl_test.cpp
+  parse/stmt_union_decl_test.cpp
 
   vm/call_test.cpp
   vm/consts_test.cpp

@@ -25,6 +25,13 @@ auto errInvalidStmtStructDecl(
     const std::vector<StructDeclStmtNode::FieldSpec>& fields,
     std::vector<lex::Token> commas) -> NodePtr;
 
+auto errInvalidStmtUnionDecl(
+    lex::Token kw,
+    lex::Token id,
+    lex::Token eq,
+    std::vector<lex::Token> types,
+    std::vector<lex::Token> commas) -> NodePtr;
+
 auto errInvalidStmtExec(
     lex::Token action,
     lex::Token open,

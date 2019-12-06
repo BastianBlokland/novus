@@ -30,6 +30,7 @@ public:
   auto visit(const parse::ExecStmtNode& n) -> void override;
   auto visit(const parse::FuncDeclStmtNode& n) -> void override;
   auto visit(const parse::StructDeclStmtNode& n) -> void override;
+  auto visit(const parse::UnionDeclStmtNode& n) -> void override;
 
 private:
   prog::Program* m_prog;
