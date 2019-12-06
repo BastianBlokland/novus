@@ -6,31 +6,42 @@ namespace vm {
 
 enum class OpCode : uint8_t {
   LoadLitInt    = 10,
-  LoadLitString = 11,
+  LoadLitFloat  = 11,
+  LoadLitString = 12,
 
   ReserveConsts = 20,
   StoreConst    = 21,
   LoadConst     = 22,
 
   AddInt      = 50,
-  AddString   = 51,
-  SubInt      = 52,
-  MulInt      = 53,
-  DivInt      = 54,
-  RemInt      = 55,
-  NegInt      = 56,
-  LogicInvInt = 57,
+  AddFloat    = 51,
+  AddString   = 52,
+  SubInt      = 53,
+  SubFloat    = 54,
+  MulInt      = 55,
+  MulFloat    = 56,
+  DivInt      = 57,
+  DivFloat    = 58,
+  RemInt      = 59,
+  NegInt      = 60,
+  NegFloat    = 61,
+  LogicInvInt = 62,
 
-  CheckEqInt    = 60,
-  CheckEqString = 61,
+  CheckEqInt    = 70,
+  CheckEqFloat  = 71,
+  CheckEqString = 72,
+  CheckGtInt    = 73,
+  CheckGtFloat  = 74,
+  CheckLeInt    = 75,
+  CheckLeFloat  = 76,
 
-  CheckGtInt = 62,
-  CheckLeInt = 63,
+  ConvIntFloat    = 81,
+  ConvFloatInt    = 82,
+  ConvIntString   = 83,
+  ConvFloatString = 84,
 
-  ConvIntString = 70,
-
-  MakeStruct      = 80,
-  LoadStructField = 81,
+  MakeStruct      = 90,
+  LoadStructField = 91,
 
   PrintString = 100,
 

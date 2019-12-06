@@ -10,6 +10,6 @@ CheckOptions:
   - key: readability-implicit-bool-conversion.AllowPointerConditions
     value: '1'
   - key: google-readability-function-size.StatementThreshold
-    value: '2000'
+    value: '5000'
   - key: readability-function-size.StatementThreshold
-    value: '2000'
+    value: '5000'

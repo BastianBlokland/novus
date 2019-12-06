@@ -76,6 +76,8 @@ add_executable(tests
   vm/consts_test.cpp
   vm/conv_test.cpp
   vm/error_test.cpp
+  vm/float_check_test.cpp
+  vm/float_op_test.cpp
   vm/int_check_test.cpp
   vm/int_op_test.cpp
   vm/io_test.cpp

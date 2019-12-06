@@ -48,11 +48,8 @@ auto Assembly::getIp(uint32_t ipOffset) const noexcept -> const uint8_t* {
 }
 
 auto Assembly::readInt32(uint32_t ipOffset) const noexcept -> int32_t {
-  int32_t result = 0;
-  for (auto i = ipOffset + 4; i >= ipOffset; --i) {
-    result = (result << 8) + m_instructions[i]; // NOLINT: Signed bitwise operator
-  }
-  return result;
+  auto raw = readUInt32(ipOffset);
+  return reinterpret_cast<int32_t&>(raw); // NOLINT: Reinterpret cast
 }
 
 auto Assembly::readUInt32(uint32_t ipOffset) const noexcept -> uint32_t {
@@ -61,6 +58,11 @@ auto Assembly::readUInt32(uint32_t ipOffset) const noexcept -> uint32_t {
     result = (result << 8) + m_instructions[i]; // NOLINT: Signed bitwise operator
   }
   return result;
+}
+
+auto Assembly::readFloat(uint32_t ipOffset) const noexcept -> float {
+  auto raw = readUInt32(ipOffset);
+  return reinterpret_cast<float&>(raw); // NOLINT: Reinterpret cast
 }
 
 } // namespace vm

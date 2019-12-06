@@ -53,7 +53,7 @@ auto printInstructions(const vm::Assembly& assembly) -> void {
               << instr.getIpOffset() << rang::style::reset << std::setw(opCodeColWidth) << std::left
               << instr.getOp();
     for (const auto& arg : instr.getArgs()) {
-      std::cout << ' ' << arg;
+      backend::dasm::operator<<(std::cout, arg);
     }
     std::cout << '\n';
   }

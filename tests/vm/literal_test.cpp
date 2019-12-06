@@ -22,6 +22,23 @@ TEST_CASE("Execute literals", "[vm]") {
         "-42");
   }
 
+  SECTION("Float literals") {
+    CHECK_EXPR(
+        [](backend::Builder* builder) -> void {
+          builder->addLoadLitFloat(0.1337F); // NOLINT: Magic numbers
+          builder->addConvFloatString();
+          builder->addPrintString();
+        },
+        "0.1337");
+    CHECK_EXPR(
+        [](backend::Builder* builder) -> void {
+          builder->addLoadLitFloat(-0.1337F); // NOLINT: Magic numbers
+          builder->addConvFloatString();
+          builder->addPrintString();
+        },
+        "-0.1337");
+  }
+
   SECTION("String literals") {
     CHECK_EXPR(
         [](backend::Builder* builder) -> void {
