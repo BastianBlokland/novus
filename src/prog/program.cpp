@@ -202,14 +202,11 @@ auto Program::defineUserStruct(sym::TypeId id, sym::FieldDeclTable fields) -> vo
     fieldTypes.push_back(field.getType());
   }
 
-  // Register struct definition.
-  m_typeDefs.registerStruct(m_typeDecls, id, std::move(fields));
-
   // Register constructor function.
   const auto& name = m_typeDecls[id].getName();
   m_funcDecls.registerFunc(*this, sym::FuncKind::MakeStruct, name, sym::Input{fieldTypes}, id);
 
-  // Register (in)equality function.
+  // Register (in)equality functions.
   m_funcDecls.registerFunc(
       *this,
       sym::FuncKind::CheckEqUserType,
@@ -222,9 +219,32 @@ auto Program::defineUserStruct(sym::TypeId id, sym::FieldDeclTable fields) -> vo
       getFuncName(Operator::BangEq),
       sym::Input{id, id},
       *m_typeDecls.lookup("bool"));
+
+  // Register struct definition.
+  m_typeDefs.registerStruct(m_typeDecls, id, std::move(fields));
 }
 
 auto Program::defineUserUnion(sym::TypeId id, std::vector<sym::TypeId> types) -> void {
+  // Register constructor functions for each type.
+  const auto& name = m_typeDecls[id].getName();
+  for (const auto& type : types) {
+    m_funcDecls.registerFunc(*this, sym::FuncKind::MakeUnion, name, sym::Input{type}, id);
+  }
+
+  // Register (in)equality functions.
+  m_funcDecls.registerFunc(
+      *this,
+      sym::FuncKind::CheckEqUserType,
+      getFuncName(Operator::EqEq),
+      sym::Input{id, id},
+      *m_typeDecls.lookup("bool"));
+  m_funcDecls.registerFunc(
+      *this,
+      sym::FuncKind::CheckNEqUserType,
+      getFuncName(Operator::BangEq),
+      sym::Input{id, id},
+      *m_typeDecls.lookup("bool"));
+
   // Register union definition.
   m_typeDefs.registerUnion(m_typeDecls, id, std::move(types));
 }

@@ -20,6 +20,7 @@ add_executable(tests
   backend/literals_test.cpp
   backend/switch_expr_test.cpp
   backend/user_struct_test.cpp
+  backend/user_union_test.cpp
 
   frontend/declare_user_funcs_test.cpp
   frontend/declare_user_types_test.cpp

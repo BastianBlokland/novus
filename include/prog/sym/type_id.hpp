@@ -15,6 +15,7 @@ public:
   auto operator==(const TypeId& rhs) const noexcept -> bool;
   auto operator!=(const TypeId& rhs) const noexcept -> bool;
 
+  [[nodiscard]] auto getNum() const noexcept -> unsigned int;
   [[nodiscard]] auto isInfer() const noexcept -> bool;
   [[nodiscard]] auto isConcrete() const noexcept -> bool;
 

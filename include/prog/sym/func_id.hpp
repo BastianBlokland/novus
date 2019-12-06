@@ -13,6 +13,8 @@ public:
   auto operator==(const FuncId& rhs) const noexcept -> bool;
   auto operator!=(const FuncId& rhs) const noexcept -> bool;
 
+  [[nodiscard]] auto getNum() const noexcept -> unsigned int;
+
 private:
   unsigned int m_id;
 

@@ -54,13 +54,19 @@ auto GenExpr::visit(const prog::expr::SwitchExprNode& n) -> void {
 }
 
 auto GenExpr::visit(const prog::expr::CallExprNode& n) -> void {
+  const auto& funcDecl = m_program.getFuncDecl(n.getFunc());
+  if (funcDecl.getKind() == prog::sym::FuncKind::MakeUnion) {
+    // Union is an exception where the type-id needs to be on the stack before the argument.
+    auto type = n[0].getType();
+    m_builder->addLoadLitInt(static_cast<int32_t>(type.getNum()));
+  }
+
   // Push the arguments on the stack.
   for (auto i = 0U; i < n.getChildCount(); ++i) {
     genSubExpr(n[i]);
   }
 
   // Either call the user function or the appropriate build-in instruction.
-  const auto& funcDecl = m_program.getFuncDecl(n.getFunc());
   switch (funcDecl.getKind()) {
   case prog::sym::FuncKind::User:
     m_builder->addCall(getLabel(funcDecl.getId()));
@@ -187,6 +193,12 @@ auto GenExpr::visit(const prog::expr::CallExprNode& n) -> void {
       throw std::logic_error{"More then 256 fields in one struct are not supported"};
     }
     m_builder->addMakeStruct(static_cast<uint8_t>(fieldCount));
+    break;
+  }
+  case prog::sym::FuncKind::MakeUnion: {
+    // Unions are structs with 2 fields, first the type-id and then the value.
+    // Note: The type-id is being pushed on the stack at the top of this function.
+    m_builder->addMakeStruct(2);
     break;
   }
 

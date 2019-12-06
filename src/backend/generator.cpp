@@ -73,6 +73,10 @@ auto generate(const prog::Program& program) -> vm::Assembly {
     if (std::holds_alternative<prog::sym::StructDef>(tDefItr->second)) {
       const auto& structDef = std::get<prog::sym::StructDef>(tDefItr->second);
       internal::generateStructEquality(&builder, program, structDef);
+
+    } else if (std::holds_alternative<prog::sym::UnionDef>(tDefItr->second)) {
+      const auto& unionDef = std::get<prog::sym::UnionDef>(tDefItr->second);
+      internal::generateUnionEquality(&builder, program, unionDef);
     }
   }
 
