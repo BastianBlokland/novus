@@ -293,4 +293,10 @@ auto errMismatchedBranchTypes(
   return error(src, oss.str(), span);
 }
 
+auto nonExhaustiveSwitchWithoutElse(const Source& src, input::Span span) -> Diag {
+  std::ostringstream oss;
+  oss << "Switch expression is missing an 'else' branch and cannot be guaranteed to be exhaustive";
+  return error(src, oss.str(), span);
+}
+
 } // namespace frontend

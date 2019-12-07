@@ -121,4 +121,6 @@ auto errMismatchedBranchTypes(
     const std::string& newTypeName,
     input::Span span) -> Diag;
 
+auto nonExhaustiveSwitchWithoutElse(const Source& src, input::Span span) -> Diag;
+
 } // namespace frontend
