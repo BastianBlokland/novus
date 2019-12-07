@@ -8,4 +8,5 @@
 #include "prog/expr/node_lit_int.hpp"
 #include "prog/expr/node_lit_string.hpp"
 #include "prog/expr/node_switch.hpp"
+#include "prog/expr/node_union_check.hpp"
 #include "prog/expr/node_union_get.hpp"

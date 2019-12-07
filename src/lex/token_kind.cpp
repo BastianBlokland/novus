@@ -94,6 +94,9 @@ auto operator<<(std::ostream& out, const TokenKind& rhs) -> std::ostream& {
   case TokenKind::Keyword:
     out << "keyword";
     break;
+  case TokenKind::Discard:
+    out << "discard";
+    break;
   case TokenKind::Identifier:
     out << "identifier";
     break;

@@ -251,6 +251,11 @@ auto GetExpr::visit(const parse::IsExprNode& n) -> void {
     return;
   }
 
+  if (!n.hasId()) {
+    m_expr = prog::expr::unionCheckExprNode(*m_prog, std::move(lhsExpr), *type);
+    return;
+  }
+
   // Validate that this expression is part of a checked context, meaning the const is only accessed
   // when the expression evaluates to 'true'.
   if (!m_checkedConstsAccess) {

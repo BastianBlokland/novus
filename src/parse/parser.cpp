@@ -298,7 +298,7 @@ auto ParserImpl::nextExprIs(NodePtr lhs) -> NodePtr {
   auto id   = consumeToken();
 
   if (getKw(kw) == lex::Keyword::Is && type.getKind() == lex::TokenKind::Identifier &&
-      id.getKind() == lex::TokenKind::Identifier) {
+      (id.getKind() == lex::TokenKind::Identifier || id.getKind() == lex::TokenKind::Discard)) {
     return isExprNode(std::move(lhs), std::move(kw), std::move(type), std::move(id));
   }
   return errInvalidIsExpr(std::move(lhs), std::move(kw), std::move(type), std::move(id));

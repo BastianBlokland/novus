@@ -32,6 +32,10 @@ public:
     m_fg = rang::fg::yellow;
   }
 
+  auto visit(const prog::expr::UnionCheckExprNode & /*unused*/) -> void override {
+    m_fg = rang::fg::green;
+  }
+
   auto visit(const prog::expr::UnionGetExprNode & /*unused*/) -> void override {
     m_fg = rang::fg::green;
   }

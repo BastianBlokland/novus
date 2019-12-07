@@ -17,6 +17,7 @@ TEST_CASE("Lexing identifiers", "[lex]") {
     CHECK_TOKENS("你好世界", identiferToken("你好世界"));
     CHECK_TOKENS("_你好世界", identiferToken("_你好世界"));
     CHECK_TOKENS("_你1好2世3界", identiferToken("_你1好2世3界"));
+    CHECK_TOKENS("_", basicToken(TokenKind::Discard));
   }
 
   SECTION("Sequences") {
@@ -41,7 +42,6 @@ TEST_CASE("Lexing identifiers", "[lex]") {
     CHECK_TOKENS("1hello", errLitNumberInvalidChar());
     CHECK_TOKENS("h\a_hello", errIdentifierIllegalCharacter());
     CHECK_TOKENS("@", errInvalidChar('@'));
-    CHECK_TOKENS("_", errInvalidChar('_'));
 
     // Ids containing '__' are reserved for internal use.
     CHECK_TOKENS("__", errIdentifierIllegalSequence());

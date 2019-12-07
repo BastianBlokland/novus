@@ -4,13 +4,14 @@
 #include "prog/expr/node_const.hpp"
 #include "prog/expr/node_lit_int.hpp"
 #include "prog/expr/node_switch.hpp"
+#include "prog/expr/node_union_check.hpp"
 #include "prog/expr/node_union_get.hpp"
 
 namespace frontend {
 
 TEST_CASE("Analyzing 'is' expressions", "[frontend]") {
 
-  SECTION("Get basic is expression") {
+  SECTION("Get 'is' expression") {
     const auto& output = ANALYZE("union Val = int, bool "
                                  "fun f(Val v) "
                                  "  if v is int i -> i"
@@ -34,6 +35,22 @@ TEST_CASE("Analyzing 'is' expressions", "[frontend]") {
     CHECK(
         funcDef.getExpr() ==
         *prog::expr::switchExprNode(output.getProg(), std::move(conditions), std::move(branches)));
+  }
+
+  SECTION("Check 'is' expression") {
+    const auto& output = ANALYZE("union Val = int, bool "
+                                 "fun f(Val v) v is int _");
+    REQUIRE(output.isSuccess());
+
+    const auto& funcDef    = GET_FUNC_DEF(output, "f", GET_TYPE_ID(output, "Val"));
+    const auto& funcConsts = funcDef.getConsts();
+
+    CHECK(
+        funcDef.getExpr() ==
+        *prog::expr::unionCheckExprNode(
+            output.getProg(),
+            prog::expr::constExprNode(funcConsts, *funcConsts.lookup("v")),
+            GET_TYPE_ID(output, "int")));
   }
 
   SECTION("Diagnostics") {

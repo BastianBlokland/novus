@@ -163,8 +163,7 @@ auto LexerImpl::next() -> Token {
       if (isWordStart(nextChar) || isDigit(nextChar) || nextChar == '_') {
         return nextWordToken(c);
       }
-      // Current '_' is not used as a valid token own.
-      return errInvalidChar(c, input::Span(m_inputPos, m_inputPos));
+      return basicToken(TokenKind::Discard, input::Span{m_inputPos});
     }
     default:
       if (isWordStart(c)) {
