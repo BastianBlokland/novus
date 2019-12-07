@@ -99,6 +99,40 @@ auto errInvalidStmtStructDecl(
   return errorNode(oss.str(), std::move(tokens), {});
 }
 
+auto errInvalidStmtUnionDecl(
+    lex::Token kw,
+    lex::Token id,
+    lex::Token eq,
+    std::vector<lex::Token> types,
+    std::vector<lex::Token> commas) -> NodePtr {
+
+  std::ostringstream oss;
+  if (id.getKind() != lex::TokenKind::Identifier) {
+    oss << "Expected union identifier but got: " << id;
+  } else if (eq.getKind() != lex::TokenKind::OpEq) {
+    oss << "Expected equals-sign '=' but got: " << eq;
+  } else if (types.size() < 2) {
+    oss << "Union declaration needs at least two types";
+  } else if (commas.size() != types.size() - 1) {
+    oss << "Incorrect number of comma's ',' in union declaration";
+  } else {
+    oss << "Invalid union declaration";
+  }
+
+  auto tokens = std::vector<lex::Token>{};
+  tokens.push_back(std::move(kw));
+  tokens.push_back(std::move(id));
+  tokens.push_back(std::move(eq));
+  for (auto& type : types) {
+    tokens.push_back(std::move(type));
+  }
+  for (auto& comma : commas) {
+    tokens.push_back(std::move(comma));
+  }
+
+  return errorNode(oss.str(), std::move(tokens), {});
+}
+
 auto errInvalidStmtExec(
     lex::Token action,
     lex::Token open,
@@ -179,6 +213,29 @@ auto errInvalidFieldExpr(NodePtr lhs, lex::Token dot, lex::Token id) -> NodePtr 
 
   auto tokens = std::vector<lex::Token>{};
   tokens.push_back(std::move(dot));
+  tokens.push_back(std::move(id));
+
+  auto subExprs = std::vector<std::unique_ptr<Node>>{};
+  subExprs.push_back(std::move(lhs));
+
+  return errorNode(oss.str(), std::move(tokens), std::move(subExprs));
+}
+
+auto errInvalidIsExpr(NodePtr lhs, lex::Token kw, lex::Token type, lex::Token id) -> NodePtr {
+  std::ostringstream oss;
+  if (getKw(kw) != lex::Keyword::Is) {
+    oss << "Expected keyword 'is' but got: " << kw;
+  } else if (type.getKind() != lex::TokenKind::Identifier) {
+    oss << "Expected type identifier but got: " << type;
+  } else if (id.getKind() != lex::TokenKind::Identifier) {
+    oss << "Expected identifier but got: " << id;
+  } else {
+    oss << "Invalid 'is' expression";
+  }
+
+  auto tokens = std::vector<lex::Token>{};
+  tokens.push_back(std::move(kw));
+  tokens.push_back(std::move(type));
   tokens.push_back(std::move(id));
 
   auto subExprs = std::vector<std::unique_ptr<Node>>{};

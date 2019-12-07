@@ -20,6 +20,7 @@ add_executable(tests
   backend/literals_test.cpp
   backend/switch_expr_test.cpp
   backend/user_struct_test.cpp
+  backend/user_union_test.cpp
 
   frontend/declare_user_funcs_test.cpp
   frontend/declare_user_types_test.cpp
@@ -32,6 +33,7 @@ add_executable(tests
   frontend/get_const_expr_test.cpp
   frontend/get_field_expr_test.cpp
   frontend/get_group_expr_test.cpp
+  frontend/get_is_expr_test.cpp
   frontend/get_lit_expr_test.cpp
   frontend/get_paren_expr_test.cpp
   frontend/get_switch_expr_test.cpp
@@ -63,6 +65,7 @@ add_executable(tests
   parse/expr_condtional_test.cpp
   parse/expr_field_test.cpp
   parse/expr_group_test.cpp
+  parse/expr_is_test.cpp
   parse/expr_paren_test.cpp
   parse/expr_primary_test.cpp
   parse/expr_switch_test.cpp
@@ -71,6 +74,7 @@ add_executable(tests
   parse/stmt_exec_test.cpp
   parse/stmt_func_decl_test.cpp
   parse/stmt_struct_decl_test.cpp
+  parse/stmt_union_decl_test.cpp
 
   vm/call_test.cpp
   vm/consts_test.cpp
@@ -83,6 +87,7 @@ add_executable(tests
   vm/io_test.cpp
   vm/jump_test.cpp
   vm/literal_test.cpp
+  vm/misc_test.cpp
   vm/string_check_test.cpp
   vm/string_op_test.cpp
   vm/struct_op_test.cpp)

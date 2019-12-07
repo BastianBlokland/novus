@@ -3,10 +3,11 @@
 
 namespace parse {
 
-const int dotPrecendece            = 11;
-const int unaryPrecedence          = 10;
-const int multiplicativePrecedence = 9;
-const int additivePrecedence       = 8;
+const int dotPrecendece            = 12;
+const int unaryPrecedence          = 11;
+const int multiplicativePrecedence = 10;
+const int additivePrecedence       = 9;
+const int typeTestPrecedence       = 8;
 const int relationalPrecedence     = 7;
 const int equalityPrecedence       = 6;
 const int logicAndPrecedence       = 5;

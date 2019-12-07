@@ -6,6 +6,7 @@
 #include "parse/node_expr_const_decl.hpp"
 #include "parse/node_expr_field.hpp"
 #include "parse/node_expr_group.hpp"
+#include "parse/node_expr_is.hpp"
 #include "parse/node_expr_lit.hpp"
 #include "parse/node_expr_paren.hpp"
 #include "parse/node_expr_switch.hpp"
@@ -15,3 +16,4 @@
 #include "parse/node_stmt_exec.hpp"
 #include "parse/node_stmt_func_decl.hpp"
 #include "parse/node_stmt_struct_decl.hpp"
+#include "parse/node_stmt_union_decl.hpp"

@@ -50,6 +50,11 @@ public:
     m_bg = rang::bg::reset;
   }
 
+  auto visit(const parse::IsExprNode & /*unused*/) -> void override {
+    m_fg = rang::fg::yellow;
+    m_bg = rang::bg::reset;
+  }
+
   auto visit(const parse::LitExprNode & /*unused*/) -> void override {
     m_fg = rang::fg::cyan;
     m_bg = rang::bg::reset;
@@ -91,6 +96,11 @@ public:
   }
 
   auto visit(const parse::StructDeclStmtNode & /*unused*/) -> void override {
+    m_fg = rang::fg::yellow;
+    m_bg = rang::bg::reset;
+  }
+
+  auto visit(const parse::UnionDeclStmtNode & /*unused*/) -> void override {
     m_fg = rang::fg::yellow;
     m_bg = rang::bg::reset;
   }

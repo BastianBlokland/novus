@@ -14,6 +14,7 @@ public:
   [[nodiscard]] auto getDiags() const noexcept -> const std::vector<Diag>&;
 
   auto define(prog::sym::TypeId id, const parse::StructDeclStmtNode& n) -> void;
+  auto define(prog::sym::TypeId id, const parse::UnionDeclStmtNode& n) -> void;
 
   // Check should be run after all types have been defined, is used to detect things like cyclic
   // structs.

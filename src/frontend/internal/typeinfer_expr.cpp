@@ -102,6 +102,21 @@ auto TypeInferExpr::visit(const parse::GroupExprNode& n) -> void {
   }
 }
 
+auto TypeInferExpr::visit(const parse::IsExprNode& n) -> void {
+  // Register the type of the constant this declares.
+  const auto constType = m_prog->lookupType(getName(n.getType()));
+  if (constType) {
+    setConstType(n.getId(), *constType);
+  }
+
+  // Expression itself always evaluates to a bool.
+  auto boolType = m_prog->lookupType("bool");
+  if (!boolType) {
+    throw std::logic_error{"No 'bool' type present in type-table"};
+  }
+  m_type = *boolType;
+}
+
 auto TypeInferExpr::visit(const parse::LitExprNode& n) -> void {
   switch (n.getVal().getKind()) {
   case lex::TokenKind::LitInt: {
@@ -183,6 +198,10 @@ auto TypeInferExpr::visit(const parse::FuncDeclStmtNode & /*unused*/) -> void {
 }
 
 auto TypeInferExpr::visit(const parse::StructDeclStmtNode & /*unused*/) -> void {
+  throw std::logic_error{"TypeInferExpr is not implemented for this node type"};
+}
+
+auto TypeInferExpr::visit(const parse::UnionDeclStmtNode & /*unused*/) -> void {
   throw std::logic_error{"TypeInferExpr is not implemented for this node type"};
 }
 

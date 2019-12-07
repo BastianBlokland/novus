@@ -11,11 +11,17 @@ auto operator<<(std::ostream& out, const Keyword& rhs) -> std::ostream& {
   case Keyword::Struct:
     out << "struct";
     break;
+  case Keyword::Union:
+    out << "union";
+    break;
   case Keyword::If:
     out << "if";
     break;
   case Keyword::Else:
     out << "else";
+    break;
+  case Keyword::Is:
+    out << "is";
     break;
   }
   return out;
@@ -25,8 +31,10 @@ auto getKeyword(const std::string& str) -> std::optional<Keyword> {
   static const std::unordered_map<std::string, Keyword> keywordTable = {
       {"fun", Keyword::Fun},
       {"struct", Keyword::Struct},
+      {"union", Keyword::Union},
       {"if", Keyword::If},
       {"else", Keyword::Else},
+      {"is", Keyword::Is},
   };
 
   const auto keywordSearch = keywordTable.find(str);

@@ -67,6 +67,34 @@ auto errFieldNotFoundOnType(
   return error(src, oss.str(), span);
 }
 
+auto errDuplicateTypeInUnion(const Source& src, const std::string& typeName, input::Span span)
+    -> Diag {
+  std::ostringstream oss;
+  oss << "Type '" << typeName << "' is already part of the same union";
+  return error(src, oss.str(), span);
+}
+
+auto errNonUnionIsExpression(const Source& src, input::Span span) -> Diag {
+  std::ostringstream oss;
+  oss << "Left-hand-side of 'is' expression has to be a union type.";
+  return error(src, oss.str(), span);
+}
+
+auto errTypeNotPartOfUnion(
+    const Source& src, const std::string& typeName, const std::string& unionName, input::Span span)
+    -> Diag {
+  std::ostringstream oss;
+  oss << "Type '" << typeName << "' is not part of the union '" << unionName << "'.";
+  return error(src, oss.str(), span);
+}
+
+auto errUncheckedIsExpressionWithConst(const Source& src, input::Span span) -> Diag {
+  std::ostringstream oss;
+  oss << "Unchecked 'is' expression with constant declaration, either use in a checked context or "
+         "discard '_' the const. ";
+  return error(src, oss.str(), span);
+}
+
 auto errConvFuncCannotSpecifyReturnType(
     const Source& src, const std::string& name, input::Span span) -> Diag {
   std::ostringstream oss;

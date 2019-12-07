@@ -19,6 +19,9 @@ auto operator<<(std::ostream& out, const TypeKind& rhs) -> std::ostream& {
   case TypeKind::UserStruct:
     out << "struct";
     break;
+  case TypeKind::UserUnion:
+    out << "union";
+    break;
   }
   return out;
 }

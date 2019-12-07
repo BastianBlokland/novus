@@ -21,7 +21,7 @@ auto EvalStack::push(const Value value) -> void {
   ++m_stackTop;
 }
 
-auto EvalStack::peek() -> Value { return *m_stackTop; }
+auto EvalStack::peek() -> Value { return *(m_stackTop - 1); }
 
 auto EvalStack::pop() -> Value {
   assert(m_stackTop - m_stack != 0);

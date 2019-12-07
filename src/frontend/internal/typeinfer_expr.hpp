@@ -21,6 +21,7 @@ public:
   auto visit(const parse::ConstExprNode& n) -> void override;
   auto visit(const parse::FieldExprNode& n) -> void override;
   auto visit(const parse::GroupExprNode& n) -> void override;
+  auto visit(const parse::IsExprNode& n) -> void override;
   auto visit(const parse::LitExprNode& n) -> void override;
   auto visit(const parse::ParenExprNode& n) -> void override;
   auto visit(const parse::SwitchExprElseNode& n) -> void override;
@@ -30,6 +31,7 @@ public:
   auto visit(const parse::ExecStmtNode& n) -> void override;
   auto visit(const parse::FuncDeclStmtNode& n) -> void override;
   auto visit(const parse::StructDeclStmtNode& n) -> void override;
+  auto visit(const parse::UnionDeclStmtNode& n) -> void override;
 
 private:
   prog::Program* m_prog;

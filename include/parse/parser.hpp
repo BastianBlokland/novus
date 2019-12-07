@@ -21,6 +21,7 @@ private:
 
   auto nextStmtFuncDecl() -> NodePtr;
   auto nextStmtStructDecl() -> NodePtr;
+  auto nextStmtUnionDecl() -> NodePtr;
   auto nextStmtExec() -> NodePtr;
 
   auto nextExpr(int minPrecedence) -> NodePtr;
@@ -28,6 +29,7 @@ private:
   auto nextExprGroup(NodePtr firstExpr, int precedence) -> NodePtr;
   auto nextExprPrimary() -> NodePtr;
   auto nextExprField(NodePtr lhs) -> NodePtr;
+  auto nextExprIs(NodePtr lhs) -> NodePtr;
   auto nextExprCall(lex::Token id) -> NodePtr;
   auto nextExprConditional(NodePtr condExpr) -> NodePtr;
   auto nextExprParen() -> NodePtr;

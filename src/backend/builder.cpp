@@ -143,6 +143,10 @@ auto Builder::addCall(std::string label) -> void {
 
 auto Builder::addRet() -> void { writeOpCode(vm::OpCode::Ret); }
 
+auto Builder::addDup() -> void { writeOpCode(vm::OpCode::Dup); }
+
+auto Builder::addPop() -> void { writeOpCode(vm::OpCode::Pop); }
+
 auto Builder::addFail() -> void { writeOpCode(vm::OpCode::Fail); }
 
 auto Builder::addEntryPoint(std::string label) -> void {

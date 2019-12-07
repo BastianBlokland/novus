@@ -45,6 +45,7 @@ enum class FuncKind {
   ConvBoolString,
 
   MakeStruct,
+  MakeUnion,
 
   CheckEqUserType,
   CheckNEqUserType,

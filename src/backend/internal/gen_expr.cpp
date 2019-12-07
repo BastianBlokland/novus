@@ -54,13 +54,19 @@ auto GenExpr::visit(const prog::expr::SwitchExprNode& n) -> void {
 }
 
 auto GenExpr::visit(const prog::expr::CallExprNode& n) -> void {
+  const auto& funcDecl = m_program.getFuncDecl(n.getFunc());
+  if (funcDecl.getKind() == prog::sym::FuncKind::MakeUnion) {
+    // Union is an exception where the type-id needs to be on the stack before the argument.
+    auto type = n[0].getType();
+    m_builder->addLoadLitInt(static_cast<int32_t>(type.getNum()));
+  }
+
   // Push the arguments on the stack.
   for (auto i = 0U; i < n.getChildCount(); ++i) {
     genSubExpr(n[i]);
   }
 
   // Either call the user function or the appropriate build-in instruction.
-  const auto& funcDecl = m_program.getFuncDecl(n.getFunc());
   switch (funcDecl.getKind()) {
   case prog::sym::FuncKind::User:
     m_builder->addCall(getLabel(funcDecl.getId()));
@@ -189,6 +195,12 @@ auto GenExpr::visit(const prog::expr::CallExprNode& n) -> void {
     m_builder->addMakeStruct(static_cast<uint8_t>(fieldCount));
     break;
   }
+  case prog::sym::FuncKind::MakeUnion: {
+    // Unions are structs with 2 fields, first the type-id and then the value.
+    // Note: The type-id is being pushed on the stack at the top of this function.
+    m_builder->addMakeStruct(2);
+    break;
+  }
 
   case prog::sym::FuncKind::CheckEqUserType:
   case prog::sym::FuncKind::CheckNEqUserType:
@@ -223,6 +235,38 @@ auto GenExpr::visit(const prog::expr::GroupExprNode& n) -> void {
   for (auto i = 0U; i < n.getChildCount(); ++i) {
     genSubExpr(n[i]);
   }
+}
+
+auto GenExpr::visit(const prog::expr::UnionGetExprNode& n) -> void {
+  // Load the union.
+  genSubExpr(n[0]);
+
+  // We need the union twice on the stack, once for the type check and once for getting the value.
+  m_builder->addDup();
+
+  const auto typeEqLabel = m_builder->generateLabel();
+  const auto endLabel    = m_builder->generateLabel();
+
+  // Test if the union is the correct type.
+  m_builder->addLoadStructField(0);
+  m_builder->addLoadLitInt(static_cast<int32_t>(n.getTargetType().getNum()));
+  m_builder->addCheckEqInt();
+  m_builder->addJumpIf(typeEqLabel);
+
+  m_builder->addPop(); // Pop the extra union value from the stack (from the duplicate before).
+  m_builder->addLoadLitInt(0); // Load false.
+  m_builder->addJump(endLabel);
+
+  m_builder->label(typeEqLabel);
+
+  // Store the union value as a const and load 'true' on the stack.
+  const auto constId = getConstId(n.getConst());
+  m_builder->addLoadStructField(1);
+  m_builder->addStoreConst(constId);
+
+  m_builder->addLoadLitInt(1); // Load true.
+
+  m_builder->label(endLabel);
 }
 
 auto GenExpr::visit(const prog::expr::LitBoolNode& n) -> void {

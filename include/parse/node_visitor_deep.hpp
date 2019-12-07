@@ -13,6 +13,7 @@ public:
   auto visit(const ConstExprNode& n) -> void override;
   auto visit(const FieldExprNode& n) -> void override;
   auto visit(const GroupExprNode& n) -> void override;
+  auto visit(const IsExprNode& n) -> void override;
   auto visit(const LitExprNode& n) -> void override;
   auto visit(const ParenExprNode& n) -> void override;
   auto visit(const SwitchExprElseNode& n) -> void override;
@@ -22,6 +23,7 @@ public:
   auto visit(const ExecStmtNode& n) -> void override;
   auto visit(const FuncDeclStmtNode& n) -> void override;
   auto visit(const StructDeclStmtNode& n) -> void override;
+  auto visit(const UnionDeclStmtNode& n) -> void override;
 };
 
 } // namespace parse

@@ -10,6 +10,7 @@ class ConstDeclExprNode;
 class ConstExprNode;
 class FieldExprNode;
 class GroupExprNode;
+class IsExprNode;
 class LitExprNode;
 class ParenExprNode;
 class SwitchExprElseNode;
@@ -19,6 +20,7 @@ class UnaryExprNode;
 class ExecStmtNode;
 class FuncDeclStmtNode;
 class StructDeclStmtNode;
+class UnionDeclStmtNode;
 
 class NodeVisitor {
 public:
@@ -30,6 +32,7 @@ public:
   virtual auto visit(const ConstExprNode& n) -> void       = 0;
   virtual auto visit(const FieldExprNode& n) -> void       = 0;
   virtual auto visit(const GroupExprNode& n) -> void       = 0;
+  virtual auto visit(const IsExprNode& n) -> void          = 0;
   virtual auto visit(const LitExprNode& n) -> void         = 0;
   virtual auto visit(const ParenExprNode& n) -> void       = 0;
   virtual auto visit(const SwitchExprElseNode& n) -> void  = 0;
@@ -39,6 +42,7 @@ public:
   virtual auto visit(const ExecStmtNode& n) -> void        = 0;
   virtual auto visit(const FuncDeclStmtNode& n) -> void    = 0;
   virtual auto visit(const StructDeclStmtNode& n) -> void  = 0;
+  virtual auto visit(const UnionDeclStmtNode& n) -> void   = 0;
 };
 
 } // namespace parse

@@ -51,6 +51,9 @@ enum class OpCode : uint8_t {
   Call = 230,
   Ret  = 231,
 
+  Dup = 240,
+  Pop = 241,
+
   Fail = 255,
 };
 

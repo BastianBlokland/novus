@@ -21,13 +21,28 @@ auto TypeDefTable::registerStruct(
     throw std::invalid_argument{"Type has not been declared as being a user-defined struct"};
   }
   if (fields.getCount() == 0) {
-    throw std::invalid_argument{"Struct needs atleast one field"};
+    throw std::invalid_argument{"Struct needs at least one field"};
   }
   auto itr = m_types.find(id);
   if (itr != m_types.end()) {
     throw std::logic_error{"Type already has a definition registered"};
   }
   m_types.insert({id, StructDef{id, std::move(fields)}});
+}
+
+auto TypeDefTable::registerUnion(
+    const sym::TypeDeclTable& typeTable, sym::TypeId id, std::vector<sym::TypeId> types) -> void {
+  if (typeTable[id].getKind() != sym::TypeKind::UserUnion) {
+    throw std::invalid_argument{"Type has not been declared as being a user-defined union"};
+  }
+  if (types.size() < 2) {
+    throw std::invalid_argument{"Union needs at least two types"};
+  }
+  auto itr = m_types.find(id);
+  if (itr != m_types.end()) {
+    throw std::logic_error{"Type already has a definition registered"};
+  }
+  m_types.insert({id, UnionDef{id, std::move(types)}});
 }
 
 } // namespace prog::sym

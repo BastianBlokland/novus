@@ -36,6 +36,7 @@ add_library(parse STATIC
   parse/node_expr_const.cpp
   parse/node_expr_field.cpp
   parse/node_expr_group.cpp
+  parse/node_expr_is.cpp
   parse/node_expr_lit.cpp
   parse/node_expr_paren.cpp
   parse/node_expr_switch_if.cpp
@@ -45,6 +46,7 @@ add_library(parse STATIC
   parse/node_stmt_exec.cpp
   parse/node_stmt_func_decl.cpp
   parse/node_stmt_struct_decl.cpp
+  parse/node_stmt_union_decl.cpp
   parse/node_visitor_deep.cpp
   parse/node.cpp
   parse/op_precedence.cpp
@@ -59,7 +61,6 @@ target_include_directories(parse PRIVATE parse)
 # Program (internal representation).
 add_library(prog STATIC
   prog/expr/node_assign.cpp
-  prog/expr/node_switch.cpp
   prog/expr/node_call.cpp
   prog/expr/node_const.cpp
   prog/expr/node_field.cpp
@@ -68,6 +69,8 @@ add_library(prog STATIC
   prog/expr/node_lit_float.cpp
   prog/expr/node_lit_int.cpp
   prog/expr/node_lit_string.cpp
+  prog/expr/node_switch.cpp
+  prog/expr/node_union_get.cpp
   prog/expr/node.cpp
   prog/expr/utilities.cpp
 
@@ -99,6 +102,7 @@ add_library(prog STATIC
   prog/sym/type_id_hasher.cpp
   prog/sym/type_id.cpp
   prog/sym/type_kind.cpp
+  prog/sym/union_def.cpp
 
   prog/operator.cpp
   prog/program.cpp)

@@ -20,6 +20,10 @@ auto DeclareUserTypes::getStructs() const noexcept -> const std::vector<StructDe
   return m_structs;
 }
 
+auto DeclareUserTypes::getUnions() const noexcept -> const std::vector<UnionDeclarationInfo>& {
+  return m_unions;
+}
+
 auto DeclareUserTypes::visit(const parse::StructDeclStmtNode& n) -> void {
   // Get type name.
   const auto name = getName(n.getId());
@@ -30,6 +34,18 @@ auto DeclareUserTypes::visit(const parse::StructDeclStmtNode& n) -> void {
   // Declare the struct in the program.
   auto typeId = m_prog->declareUserStruct(name);
   m_structs.emplace_back(typeId, n);
+}
+
+auto DeclareUserTypes::visit(const parse::UnionDeclStmtNode& n) -> void {
+  // Get type name.
+  const auto name = getName(n.getId());
+  if (!validateTypeName(n.getId())) {
+    return;
+  }
+
+  // Declare the union in the program.
+  auto typeId = m_prog->declareUserUnion(name);
+  m_unions.emplace_back(typeId, n);
 }
 
 auto DeclareUserTypes::validateTypeName(const lex::Token& nameToken) -> bool {

@@ -9,6 +9,7 @@ enum class TypeKind {
   Bool,
   String,
   UserStruct,
+  UserUnion,
 };
 
 auto operator<<(std::ostream& out, const TypeKind& rhs) -> std::ostream&;

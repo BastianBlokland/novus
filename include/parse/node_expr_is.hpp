@@ -1,0 +1,39 @@
+#pragma once
+#include "lex/token.hpp"
+#include "parse/node.hpp"
+
+namespace parse {
+
+class IsExprNode final : public Node {
+  friend auto isExprNode(NodePtr lhs, lex::Token kw, lex::Token type, lex::Token id) -> NodePtr;
+
+public:
+  IsExprNode() = delete;
+
+  auto operator==(const Node& rhs) const noexcept -> bool override;
+  auto operator!=(const Node& rhs) const noexcept -> bool override;
+
+  [[nodiscard]] auto operator[](unsigned int i) const -> const Node& override;
+  [[nodiscard]] auto getChildCount() const -> unsigned int override;
+  [[nodiscard]] auto getSpan() const -> input::Span override;
+
+  [[nodiscard]] auto getType() const -> const lex::Token&;
+  [[nodiscard]] auto getId() const -> const lex::Token&;
+
+  auto accept(NodeVisitor* visitor) const -> void override;
+
+private:
+  const NodePtr m_lhs;
+  const lex::Token m_kw;
+  const lex::Token m_type;
+  const lex::Token m_id;
+
+  IsExprNode(NodePtr lhs, lex::Token kw, lex::Token type, lex::Token id);
+
+  auto print(std::ostream& out) const -> std::ostream& override;
+};
+
+// Factories.
+auto isExprNode(NodePtr lhs, lex::Token kw, lex::Token type, lex::Token id) -> NodePtr;
+
+} // namespace parse

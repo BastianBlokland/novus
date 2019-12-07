@@ -124,6 +124,13 @@ auto operator<<(std::ostream& out, const OpCode& rhs) -> std::ostream& {
     out << "ret";
     break;
 
+  case OpCode::Dup:
+    out << "dup";
+    break;
+  case OpCode::Pop:
+    out << "pop";
+    break;
+
   case OpCode::Fail:
     out << "fail";
     break;

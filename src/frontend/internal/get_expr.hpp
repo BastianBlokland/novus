@@ -12,7 +12,8 @@ public:
       const Source& src,
       prog::Program* prog,
       prog::sym::ConstDeclTable* consts,
-      std::vector<prog::sym::ConstId>* visibleConsts);
+      std::vector<prog::sym::ConstId>* visibleConsts,
+      bool checkedConstsAccess = false);
 
   [[nodiscard]] auto hasErrors() const noexcept -> bool;
   [[nodiscard]] auto getDiags() const noexcept -> const std::vector<Diag>&;
@@ -26,6 +27,7 @@ public:
   auto visit(const parse::ConstExprNode& n) -> void override;
   auto visit(const parse::FieldExprNode& n) -> void override;
   auto visit(const parse::GroupExprNode& n) -> void override;
+  auto visit(const parse::IsExprNode& n) -> void override;
   auto visit(const parse::LitExprNode& n) -> void override;
   auto visit(const parse::ParenExprNode& n) -> void override;
   auto visit(const parse::SwitchExprElseNode& n) -> void override;
@@ -35,6 +37,7 @@ public:
   auto visit(const parse::ExecStmtNode& n) -> void override;
   auto visit(const parse::FuncDeclStmtNode& n) -> void override;
   auto visit(const parse::StructDeclStmtNode& n) -> void override;
+  auto visit(const parse::UnionDeclStmtNode& n) -> void override;
 
 private:
   enum class BinLogicOp { And, Or };
@@ -43,11 +46,14 @@ private:
   prog::Program* m_prog;
   prog::sym::ConstDeclTable* m_consts;
   std::vector<prog::sym::ConstId>* m_visibleConsts;
+  bool m_checkedConstsAccess;
   std::vector<Diag> m_diags;
   prog::expr::NodePtr m_expr;
 
-  auto getSubExpr(const parse::Node& n, std::vector<prog::sym::ConstId>* visibleConsts)
-      -> prog::expr::NodePtr;
+  auto getSubExpr(
+      const parse::Node& n,
+      std::vector<prog::sym::ConstId>* visibleConsts,
+      bool checkedConstsAccess = false) -> prog::expr::NodePtr;
 
   auto getBinLogicOpExpr(const parse::BinaryExprNode& n, BinLogicOp op) -> prog::expr::NodePtr;
 
