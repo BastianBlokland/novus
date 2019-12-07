@@ -245,6 +245,7 @@ auto GenExpr::visit(const prog::expr::UnionGetExprNode& n) -> void {
   m_builder->addDup();
 
   const auto typeEqLabel = m_builder->generateLabel();
+  const auto endLabel    = m_builder->generateLabel();
 
   // Test if the union is the correct type.
   m_builder->addLoadStructField(0);
@@ -254,6 +255,7 @@ auto GenExpr::visit(const prog::expr::UnionGetExprNode& n) -> void {
 
   m_builder->addPop(); // Pop the extra union value from the stack (from the duplicate before).
   m_builder->addLoadLitInt(0); // Load false.
+  m_builder->addJump(endLabel);
 
   m_builder->label(typeEqLabel);
 
@@ -263,6 +265,8 @@ auto GenExpr::visit(const prog::expr::UnionGetExprNode& n) -> void {
   m_builder->addStoreConst(constId);
 
   m_builder->addLoadLitInt(1); // Load true.
+
+  m_builder->label(endLabel);
 }
 
 auto GenExpr::visit(const prog::expr::LitBoolNode& n) -> void {

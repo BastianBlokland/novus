@@ -102,7 +102,14 @@ auto TypeInferExpr::visit(const parse::GroupExprNode& n) -> void {
   }
 }
 
-auto TypeInferExpr::visit(const parse::IsExprNode & /*unused*/) -> void {
+auto TypeInferExpr::visit(const parse::IsExprNode& n) -> void {
+  // Register the type of the constant this declares.
+  const auto constType = m_prog->lookupType(getName(n.getType()));
+  if (constType) {
+    setConstType(n.getId(), *constType);
+  }
+
+  // Expression itself always evaluates to a bool.
   auto boolType = m_prog->lookupType("bool");
   if (!boolType) {
     throw std::logic_error{"No 'bool' type present in type-table"};

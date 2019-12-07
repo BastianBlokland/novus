@@ -16,8 +16,14 @@ GetExpr::GetExpr(
     const Source& src,
     prog::Program* prog,
     prog::sym::ConstDeclTable* consts,
-    std::vector<prog::sym::ConstId>* visibleConsts) :
-    m_src{src}, m_prog{prog}, m_consts{consts}, m_visibleConsts{visibleConsts} {
+    std::vector<prog::sym::ConstId>* visibleConsts,
+    bool checkedConstsAccess) :
+    m_src{src},
+    m_prog{prog},
+    m_consts{consts},
+    m_visibleConsts{visibleConsts},
+    m_checkedConstsAccess{checkedConstsAccess} {
+
   if (m_prog == nullptr) {
     throw std::invalid_argument{"Program cannot be null"};
   }
@@ -119,7 +125,7 @@ auto GetExpr::visit(const parse::CallExprNode& n) -> void {
 auto GetExpr::visit(const parse::ConditionalExprNode& n) -> void {
   auto conditions = std::vector<prog::expr::NodePtr>();
   auto branches   = std::vector<prog::expr::NodePtr>();
-  conditions.push_back(getSubExpr(n[0], m_visibleConsts));
+  conditions.push_back(getSubExpr(n[0], m_visibleConsts, true));
   if (!conditions[0]) {
     return;
   }
@@ -204,7 +210,8 @@ auto GetExpr::visit(const parse::FieldExprNode& n) -> void {
 auto GetExpr::visit(const parse::GroupExprNode& n) -> void {
   auto subExprs = std::vector<prog::expr::NodePtr>();
   for (auto i = 0U; i < n.getChildCount(); ++i) {
-    auto subExpr = getSubExpr(n[i], m_visibleConsts);
+    auto last    = i == n.getChildCount() - 1;
+    auto subExpr = getSubExpr(n[i], m_visibleConsts, m_checkedConstsAccess && last);
     if (subExpr) {
       subExprs.push_back(std::move(subExpr));
     }
@@ -214,8 +221,48 @@ auto GetExpr::visit(const parse::GroupExprNode& n) -> void {
   }
 }
 
-auto GetExpr::visit(const parse::IsExprNode & /*unused*/) -> void {
-  throw std::logic_error{"GetExpr is not implemented for this node type"};
+auto GetExpr::visit(const parse::IsExprNode& n) -> void {
+  auto lhsExpr = getSubExpr(n[0], m_visibleConsts);
+  if (lhsExpr == nullptr) {
+    return;
+  }
+
+  // Validate lhs is a union type.
+  const auto lhsType      = lhsExpr->getType();
+  const auto& lhsTypeDecl = m_prog->getTypeDecl(lhsType);
+  if (lhsTypeDecl.getKind() != prog::sym::TypeKind::UserUnion) {
+    m_diags.push_back(errNonUnionIsExpression(m_src, n[0].getSpan()));
+    return;
+  }
+  const auto& unionDef = std::get<prog::sym::UnionDef>(m_prog->getTypeDef(lhsType));
+
+  // Validate that the type is a valid type.
+  const auto typeName = getName(n.getType());
+  const auto type     = m_prog->lookupType(typeName);
+  if (!type) {
+    m_diags.push_back(errUndeclaredType(m_src, typeName, n.getType().getSpan()));
+    return;
+  }
+
+  // Validate that the type is part of the union.
+  if (!unionDef.hasType(*type)) {
+    m_diags.push_back(
+        errTypeNotPartOfUnion(m_src, typeName, lhsTypeDecl.getName(), n.getType().getSpan()));
+    return;
+  }
+
+  // Validate that this expression is part of a checked context, meaning the const is only accessed
+  // when the expression evaluates to 'true'.
+  if (!m_checkedConstsAccess) {
+    m_diags.push_back(errUncheckedIsExpressionWithConst(m_src, n.getType().getSpan()));
+    return;
+  }
+
+  // Declare the const.
+  const auto constId = declareConst(n.getId(), *type);
+  if (constId) {
+    m_expr = prog::expr::unionGetExprNode(*m_prog, std::move(lhsExpr), *m_consts, *constId);
+  }
 }
 
 auto GetExpr::visit(const parse::LitExprNode& n) -> void {
@@ -244,7 +291,7 @@ auto GetExpr::visit(const parse::LitExprNode& n) -> void {
 }
 
 auto GetExpr::visit(const parse::ParenExprNode& n) -> void {
-  m_expr = getSubExpr(n[0], m_visibleConsts);
+  m_expr = getSubExpr(n[0], m_visibleConsts, m_checkedConstsAccess);
 }
 
 auto GetExpr::visit(const parse::SwitchExprElseNode & /*unused*/) -> void {
@@ -268,7 +315,7 @@ auto GetExpr::visit(const parse::SwitchExprNode& n) -> void {
     // be allowed to be accessed from another branch or after the switch.
     auto branchConsts = *m_visibleConsts;
     if (!isElseClause) {
-      auto condition = getSubExpr(n[i][0], &branchConsts);
+      auto condition = getSubExpr(n[i][0], &branchConsts, true);
       if (!condition) {
         isValid = false;
         continue;
@@ -348,9 +395,10 @@ auto GetExpr::visit(const parse::UnionDeclStmtNode & /*unused*/) -> void {
   throw std::logic_error{"GetExpr is not implemented for this node type"};
 }
 
-auto GetExpr::getSubExpr(const parse::Node& n, std::vector<prog::sym::ConstId>* visibleConsts)
+auto GetExpr::getSubExpr(
+    const parse::Node& n, std::vector<prog::sym::ConstId>* visibleConsts, bool checkedConstsAccess)
     -> prog::expr::NodePtr {
-  auto visitor = GetExpr{m_src, m_prog, m_consts, visibleConsts};
+  auto visitor = GetExpr{m_src, m_prog, m_consts, visibleConsts, checkedConstsAccess};
   n.accept(&visitor);
   m_diags.insert(m_diags.end(), visitor.getDiags().begin(), visitor.getDiags().end());
   return std::move(visitor.getValue());
@@ -359,7 +407,11 @@ auto GetExpr::getSubExpr(const parse::Node& n, std::vector<prog::sym::ConstId>* 
 auto GetExpr::getBinLogicOpExpr(const parse::BinaryExprNode& n, BinLogicOp op)
     -> prog::expr::NodePtr {
   auto isValid = true;
-  auto lhs     = getSubExpr(n[0], m_visibleConsts);
+
+  // 'And' has checked consts for the lhs, meaning the constants the lhs declares are only accessed
+  // when the lhs expression evaluates to 'true'.
+  auto checkedConsts = op == BinLogicOp::And;
+  auto lhs           = getSubExpr(n[0], m_visibleConsts, checkedConsts);
 
   // Because the rhs might not get executed the constants it declares are not visible outside.
   auto rhsVisibleConsts = *m_visibleConsts;

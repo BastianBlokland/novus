@@ -36,6 +36,14 @@ auto errFieldNotFoundOnType(
 auto errDuplicateTypeInUnion(const Source& src, const std::string& typeName, input::Span span)
     -> Diag;
 
+auto errNonUnionIsExpression(const Source& src, input::Span span) -> Diag;
+
+auto errTypeNotPartOfUnion(
+    const Source& src, const std::string& typeName, const std::string& unionName, input::Span span)
+    -> Diag;
+
+auto errUncheckedIsExpressionWithConst(const Source& src, input::Span span) -> Diag;
+
 auto errConvFuncCannotSpecifyReturnType(
     const Source& src, const std::string& name, input::Span span) -> Diag;
 

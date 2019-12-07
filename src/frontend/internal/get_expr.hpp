@@ -12,7 +12,8 @@ public:
       const Source& src,
       prog::Program* prog,
       prog::sym::ConstDeclTable* consts,
-      std::vector<prog::sym::ConstId>* visibleConsts);
+      std::vector<prog::sym::ConstId>* visibleConsts,
+      bool checkedConstsAccess = false);
 
   [[nodiscard]] auto hasErrors() const noexcept -> bool;
   [[nodiscard]] auto getDiags() const noexcept -> const std::vector<Diag>&;
@@ -45,11 +46,14 @@ private:
   prog::Program* m_prog;
   prog::sym::ConstDeclTable* m_consts;
   std::vector<prog::sym::ConstId>* m_visibleConsts;
+  bool m_checkedConstsAccess;
   std::vector<Diag> m_diags;
   prog::expr::NodePtr m_expr;
 
-  auto getSubExpr(const parse::Node& n, std::vector<prog::sym::ConstId>* visibleConsts)
-      -> prog::expr::NodePtr;
+  auto getSubExpr(
+      const parse::Node& n,
+      std::vector<prog::sym::ConstId>* visibleConsts,
+      bool checkedConstsAccess = false) -> prog::expr::NodePtr;
 
   auto getBinLogicOpExpr(const parse::BinaryExprNode& n, BinLogicOp op) -> prog::expr::NodePtr;
 

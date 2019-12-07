@@ -33,6 +33,7 @@ add_executable(tests
   frontend/get_const_expr_test.cpp
   frontend/get_field_expr_test.cpp
   frontend/get_group_expr_test.cpp
+  frontend/get_is_expr_test.cpp
   frontend/get_lit_expr_test.cpp
   frontend/get_paren_expr_test.cpp
   frontend/get_switch_expr_test.cpp
