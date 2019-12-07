@@ -40,6 +40,8 @@ public:
     m_fg = rang::fg::green;
   }
 
+  auto visit(const prog::expr::FailNode & /*unused*/) -> void override { m_fg = rang::fg::red; }
+
   auto visit(const prog::expr::LitBoolNode & /*unused*/) -> void override { m_fg = rang::fg::cyan; }
 
   auto visit(const prog::expr::LitFloatNode & /*unused*/) -> void override {

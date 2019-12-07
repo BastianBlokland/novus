@@ -63,6 +63,7 @@ add_library(prog STATIC
   prog/expr/node_assign.cpp
   prog/expr/node_call.cpp
   prog/expr/node_const.cpp
+  prog/expr/node_fail.cpp
   prog/expr/node_field.cpp
   prog/expr/node_group.cpp
   prog/expr/node_lit_bool.cpp
