@@ -18,6 +18,7 @@ public:
   [[nodiscard]] auto getSpan() const -> input::Span override;
 
   [[nodiscard]] auto getType() const -> const lex::Token&;
+  [[nodiscard]] auto hasId() const -> bool;
   [[nodiscard]] auto getId() const -> const lex::Token&;
 
   auto accept(NodeVisitor* visitor) const -> void override;

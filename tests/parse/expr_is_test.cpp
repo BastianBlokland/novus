@@ -11,6 +11,7 @@ namespace parse {
 TEST_CASE("Parsing is expressions", "[parse]") {
 
   CHECK_EXPR("x is int i", isExprNode(CONST("x"), IS, ID("int"), ID("i")));
+  CHECK_EXPR("x is int _", isExprNode(CONST("x"), IS, ID("int"), DISCARD));
   CHECK_EXPR("-x is int i", isExprNode(unaryExprNode(MINUS, CONST("x")), IS, ID("int"), ID("i")));
   CHECK_EXPR(
       "(x + y) is int i",

@@ -30,13 +30,18 @@ auto IsExprNode::getSpan() const -> input::Span {
 
 auto IsExprNode::getType() const -> const lex::Token& { return m_type; }
 
+auto IsExprNode::hasId() const -> bool { return m_id.getKind() == lex::TokenKind::Identifier; }
+
 auto IsExprNode::getId() const -> const lex::Token& { return m_id; }
 
 auto IsExprNode::accept(NodeVisitor* visitor) const -> void { visitor->visit(*this); }
 
 auto IsExprNode::print(std::ostream& out) const -> std::ostream& {
-  return out << "is-" << parse::getId(m_type).value_or("error") << '-'
-             << parse::getId(m_id).value_or("error");
+  out << "is-" << parse::getId(m_type).value_or("error");
+  if (m_id.getKind() == lex::TokenKind::Identifier) {
+    out << '-' << parse::getId(m_id).value_or("error");
+  }
+  return out;
 }
 
 // Factories.

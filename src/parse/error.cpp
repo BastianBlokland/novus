@@ -227,8 +227,9 @@ auto errInvalidIsExpr(NodePtr lhs, lex::Token kw, lex::Token type, lex::Token id
     oss << "Expected keyword 'is' but got: " << kw;
   } else if (type.getKind() != lex::TokenKind::Identifier) {
     oss << "Expected type identifier but got: " << type;
-  } else if (id.getKind() != lex::TokenKind::Identifier) {
-    oss << "Expected identifier but got: " << id;
+  } else if (
+      id.getKind() != lex::TokenKind::Identifier && id.getKind() != lex::TokenKind::Discard) {
+    oss << "Expected identifier or discard '_' but got: " << id;
   } else {
     oss << "Invalid 'is' expression";
   }
