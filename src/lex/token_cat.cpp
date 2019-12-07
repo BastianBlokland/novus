@@ -66,6 +66,7 @@ auto lookupCat(const TokenKind kind) -> TokenCat {
   case TokenKind::Keyword:
     return TokenCat::Keyword;
   case TokenKind::Identifier:
+  case TokenKind::Discard:
     return TokenCat::Identifier;
   case TokenKind::Error:
     return TokenCat::Error;
