@@ -279,6 +279,8 @@ auto GenExpr::visit(const prog::expr::UnionGetExprNode& n) -> void {
   m_builder->label(endLabel);
 }
 
+auto GenExpr::visit(const prog::expr::FailNode & /*unused*/) -> void { m_builder->addFail(); }
+
 auto GenExpr::visit(const prog::expr::LitBoolNode& n) -> void {
   m_builder->addLoadLitInt(n.getVal() ? 1U : 0U);
 }

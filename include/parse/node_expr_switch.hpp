@@ -18,6 +18,8 @@ public:
   [[nodiscard]] auto getChildCount() const -> unsigned int override;
   [[nodiscard]] auto getSpan() const -> input::Span override;
 
+  [[nodiscard]] auto hasElse() const -> bool;
+
   auto accept(NodeVisitor* visitor) const -> void override;
 
 private:

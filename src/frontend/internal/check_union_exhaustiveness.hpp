@@ -1,13 +1,15 @@
 #pragma once
-#include "backend/builder.hpp"
 #include "prog/expr/node_visitor.hpp"
 #include "prog/program.hpp"
+#include <optional>
 
-namespace backend::internal {
+namespace frontend::internal {
 
-class GenExpr final : public prog::expr::NodeVisitor {
+class CheckUnionExhaustiveness final : public prog::expr::NodeVisitor {
 public:
-  GenExpr(const prog::Program& program, Builder* builder);
+  explicit CheckUnionExhaustiveness(const prog::Program& program);
+
+  [[nodiscard]] auto isExhaustive() const -> bool;
 
   auto visit(const prog::expr::AssignExprNode& n) -> void override;
   auto visit(const prog::expr::SwitchExprNode& n) -> void override;
@@ -25,9 +27,8 @@ public:
 
 private:
   const prog::Program& m_program;
-  Builder* m_builder;
-
-  auto genSubExpr(const prog::expr::Node& n) -> void;
+  std::optional<prog::sym::TypeId> m_unionType;
+  std::vector<prog::sym::TypeId> m_checkedTypes;
 };
 
-} // namespace backend::internal
+} // namespace frontend::internal

@@ -63,6 +63,7 @@ add_library(prog STATIC
   prog/expr/node_assign.cpp
   prog/expr/node_call.cpp
   prog/expr/node_const.cpp
+  prog/expr/node_fail.cpp
   prog/expr/node_field.cpp
   prog/expr/node_group.cpp
   prog/expr/node_lit_bool.cpp
@@ -114,6 +115,7 @@ target_include_directories(prog PRIVATE prog)
 
 # Frontend.
 add_library(frontend STATIC
+  frontend/internal/check_union_exhaustiveness.cpp
   frontend/internal/declare_user_funcs.cpp
   frontend/internal/declare_user_types.cpp
   frontend/internal/define_exec_stmts.cpp

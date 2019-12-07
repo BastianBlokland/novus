@@ -10,6 +10,7 @@ class FieldExprNode;
 class GroupExprNode;
 class UnionCheckExprNode;
 class UnionGetExprNode;
+class FailNode;
 class LitBoolNode;
 class LitFloatNode;
 class LitIntNode;
@@ -25,6 +26,7 @@ public:
   virtual auto visit(const GroupExprNode& n) -> void      = 0;
   virtual auto visit(const UnionCheckExprNode& n) -> void = 0;
   virtual auto visit(const UnionGetExprNode& n) -> void   = 0;
+  virtual auto visit(const FailNode& n) -> void           = 0;
   virtual auto visit(const LitBoolNode& n) -> void        = 0;
   virtual auto visit(const LitFloatNode& n) -> void       = 0;
   virtual auto visit(const LitIntNode& n) -> void         = 0;

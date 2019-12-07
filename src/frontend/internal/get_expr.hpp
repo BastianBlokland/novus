@@ -50,17 +50,20 @@ private:
   std::vector<Diag> m_diags;
   prog::expr::NodePtr m_expr;
 
-  auto getSubExpr(
+  [[nodiscard]] auto getSubExpr(
       const parse::Node& n,
       std::vector<prog::sym::ConstId>* visibleConsts,
       bool checkedConstsAccess = false) -> prog::expr::NodePtr;
 
-  auto getBinLogicOpExpr(const parse::BinaryExprNode& n, BinLogicOp op) -> prog::expr::NodePtr;
+  [[nodiscard]] auto getBinLogicOpExpr(const parse::BinaryExprNode& n, BinLogicOp op)
+      -> prog::expr::NodePtr;
 
-  auto declareConst(const lex::Token& nameToken, prog::sym::TypeId type)
+  [[nodiscard]] auto declareConst(const lex::Token& nameToken, prog::sym::TypeId type)
       -> std::optional<prog::sym::ConstId>;
 
-  auto isBoolType(prog::sym::TypeId type) -> bool;
+  [[nodiscard]] auto isExhaustive(const std::vector<prog::expr::NodePtr>& conditions) const -> bool;
+
+  [[nodiscard]] auto isBoolType(prog::sym::TypeId type) -> bool;
 };
 
 } // namespace frontend::internal

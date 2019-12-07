@@ -1,5 +1,6 @@
 #include "internal/get_expr.hpp"
 #include "frontend/diag_defs.hpp"
+#include "internal/check_union_exhaustiveness.hpp"
 #include "internal/utilities.hpp"
 #include "lex/token_payload_lit_bool.hpp"
 #include "lex/token_payload_lit_float.hpp"
@@ -314,7 +315,7 @@ auto GetExpr::visit(const parse::SwitchExprNode& n) -> void {
   std::optional<prog::sym::TypeId> type = std::nullopt;
 
   for (auto i = 0U; i < n.getChildCount(); ++i) {
-    const auto isElseClause = i == n.getChildCount() - 1;
+    const auto isElseClause = n.hasElse() && i == n.getChildCount() - 1;
 
     // Keep a separate set of visible constants, because consts declared in 1 branch should not
     // be allowed to be accessed from another branch or after the switch.
@@ -353,6 +354,14 @@ auto GetExpr::visit(const parse::SwitchExprNode& n) -> void {
   }
 
   if (isValid) {
+    if (!n.hasElse()) {
+      if (!isExhaustive(conditions)) {
+        m_diags.push_back(nonExhaustiveSwitchWithoutElse(m_src, n.getSpan()));
+        return;
+      }
+      // When we know the switch is exhaustive then we insert a 'else' branch that is never taken.
+      branches.push_back(prog::expr::failNode(branches[0]->getType()));
+    }
     m_expr = prog::expr::switchExprNode(*m_prog, std::move(conditions), std::move(branches));
   }
 }
@@ -478,6 +487,15 @@ auto GetExpr::declareConst(const lex::Token& nameToken, prog::sym::TypeId type)
   const auto constId = m_consts->registerLocal(name, type);
   m_visibleConsts->push_back(constId);
   return constId;
+}
+
+auto GetExpr::isExhaustive(const std::vector<prog::expr::NodePtr>& conditions) const -> bool {
+  // Note: At the moment only union exhaustiveness check is implemented.
+  auto checkUnion = CheckUnionExhaustiveness{*m_prog};
+  for (const auto& cond : conditions) {
+    cond->accept(&checkUnion);
+  }
+  return checkUnion.isExhaustive();
 }
 
 auto GetExpr::isBoolType(prog::sym::TypeId type) -> bool {

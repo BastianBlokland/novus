@@ -168,8 +168,15 @@ auto TypeInferExpr::visit(const parse::SwitchExprIfNode & /*unused*/) -> void {
 
 auto TypeInferExpr::visit(const parse::SwitchExprNode& n) -> void {
   for (auto i = 0U; i < n.getChildCount(); ++i) {
-    const auto isElseClause = i == n.getChildCount() - 1;
-    auto branchType         = inferSubExpr(n[i][isElseClause ? 0 : 1]);
+    const auto isElseClause = n.hasElse() && i == n.getChildCount() - 1;
+
+    // Also run type-inference on the conditions as they might declare consts.
+    if (!isElseClause) {
+      inferSubExpr(n[i][0]);
+    }
+
+    // Get type of the branch.
+    auto branchType = inferSubExpr(n[i][isElseClause ? 0 : 1]);
 
     // Because all branches have the same type we can stop when we successfully inferred one.
     if (branchType.isConcrete()) {
