@@ -365,7 +365,8 @@ auto ParserImpl::nextExprSwitch() -> NodePtr {
   do {
     ifClauses.push_back(nextExprSwitchIf());
   } while (getKw(peekToken(0)) == lex::Keyword::If);
-  return switchExprNode(std::move(ifClauses), nextExprSwitchElse());
+  auto elseClause = getKw(peekToken(0)) == lex::Keyword::Else ? nextExprSwitchElse() : nullptr;
+  return switchExprNode(std::move(ifClauses), std::move(elseClause));
 }
 
 auto ParserImpl::nextExprSwitchIf() -> NodePtr {

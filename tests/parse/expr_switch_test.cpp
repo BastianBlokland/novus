@@ -12,12 +12,24 @@ namespace parse {
 TEST_CASE("Parsing switch expressions", "[parse]") {
 
   CHECK_EXPR(
-      "if x -> 1 else -> 2",
+      "if x -> 1 "
+      "else -> 2",
       switchExprNode(
           NODES(switchExprIfNode(IF, CONST("x"), ARROW, INT(1))),
           switchExprElseNode(ELSE, ARROW, INT(2))));
   CHECK_EXPR(
-      "if y > 5 -> x + 1 else -> x * 2",
+      "if x -> 1", switchExprNode(NODES(switchExprIfNode(IF, CONST("x"), ARROW, INT(1))), nullptr));
+  CHECK_EXPR(
+      "if x -> 1 "
+      "if y -> 2",
+      switchExprNode(
+          NODES(
+              switchExprIfNode(IF, CONST("x"), ARROW, INT(1)),
+              switchExprIfNode(IF, CONST("y"), ARROW, INT(2))),
+          nullptr));
+  CHECK_EXPR(
+      "if y > 5 -> x + 1 "
+      "else -> x * 2",
       switchExprNode(
           NODES(switchExprIfNode(
               IF,
@@ -26,7 +38,10 @@ TEST_CASE("Parsing switch expressions", "[parse]") {
               binaryExprNode(CONST("x"), PLUS, INT(1)))),
           switchExprElseNode(ELSE, ARROW, binaryExprNode(CONST("x"), STAR, INT(2)))));
   CHECK_EXPR(
-      "if x -> 1 if y -> 2 if z -> 3 else -> 4",
+      "if x -> 1 "
+      "if y -> 2 "
+      "if z -> 3 "
+      "else -> 4",
       switchExprNode(
           NODES(
               switchExprIfNode(IF, CONST("x"), ARROW, INT(1)),
@@ -52,17 +67,25 @@ TEST_CASE("Parsing switch expressions", "[parse]") {
         switchExprNode(
             NODES(errInvalidSwitchIf(
                 IF, errInvalidPrimaryExpr(END), END, errInvalidPrimaryExpr(END))),
-            errInvalidSwitchElse(END, END, errInvalidPrimaryExpr(END))));
+            nullptr));
     CHECK_EXPR(
-        "if x -> 1",
+        "if x -> 1 else",
         switchExprNode(
             NODES(switchExprIfNode(IF, CONST("x"), ARROW, INT(1))),
-            errInvalidSwitchElse(END, END, errInvalidPrimaryExpr(END))));
+            errInvalidSwitchElse(ELSE, END, errInvalidPrimaryExpr(END))));
   }
 
   SECTION("Spans") {
-    CHECK_EXPR_SPAN("if x -> 1 else -> 2", input::Span(0, 18));
-    CHECK_EXPR_SPAN("if x -> 1 if 1 + 2 == y -> 2 else -> 3", input::Span(0, 37));
+    CHECK_EXPR_SPAN("if x -> 1", input::Span(0, 8));
+    CHECK_EXPR_SPAN(
+        "if x -> 1 "
+        "else -> 2",
+        input::Span(0, 18));
+    CHECK_EXPR_SPAN(
+        "if x -> 1 "
+        "if 1 + 2 == y -> 2 "
+        "else -> 3",
+        input::Span(0, 37));
   }
 }
 

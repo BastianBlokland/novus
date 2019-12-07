@@ -8,8 +8,13 @@ SwitchExprNode::SwitchExprNode(std::vector<NodePtr> ifClauses, NodePtr elseClaus
 
 auto SwitchExprNode::operator==(const Node& rhs) const noexcept -> bool {
   const auto r = dynamic_cast<const SwitchExprNode*>(&rhs);
-  return r != nullptr && nodesEqual(m_ifClauses, r->m_ifClauses) &&
-      *m_elseClause == *r->m_elseClause;
+  if (r == nullptr || !nodesEqual(m_ifClauses, r->m_ifClauses)) {
+    return false;
+  }
+  if (hasElse() != r->hasElse()) {
+    return false;
+  }
+  return m_elseClause == nullptr || *m_elseClause == *r->m_elseClause;
 }
 
 auto SwitchExprNode::operator!=(const Node& rhs) const noexcept -> bool {
@@ -20,17 +25,23 @@ auto SwitchExprNode::operator[](unsigned int i) const -> const Node& {
   if (i < m_ifClauses.size()) {
     return *m_ifClauses[i];
   }
-  if (i == m_ifClauses.size()) {
+  if (i == m_ifClauses.size() && hasElse()) {
     return *m_elseClause;
   }
   throw std::out_of_range{"No child at given index"};
 }
 
-auto SwitchExprNode::getChildCount() const -> unsigned int { return m_ifClauses.size() + 1; }
+auto SwitchExprNode::getChildCount() const -> unsigned int {
+  return m_ifClauses.size() + (hasElse() ? 1 : 0);
+}
 
 auto SwitchExprNode::getSpan() const -> input::Span {
-  return input::Span::combine(m_ifClauses.front()->getSpan(), m_elseClause->getSpan());
+  return input::Span::combine(
+      m_ifClauses.front()->getSpan(),
+      hasElse() ? m_elseClause->getSpan() : m_ifClauses.back()->getSpan());
 }
+
+auto SwitchExprNode::hasElse() const -> bool { return m_elseClause != nullptr; }
 
 auto SwitchExprNode::accept(NodeVisitor* visitor) const -> void { visitor->visit(*this); }
 
@@ -43,9 +54,6 @@ auto switchExprNode(std::vector<NodePtr> ifClauses, NodePtr elseClause) -> NodeP
   }
   if (anyNodeNull(ifClauses)) {
     throw std::invalid_argument{"Switch cannot contain a null if-clause"};
-  }
-  if (elseClause == nullptr) {
-    throw std::invalid_argument{"Else-clause cannot be null"};
   }
   return std::unique_ptr<SwitchExprNode>{
       new SwitchExprNode{std::move(ifClauses), std::move(elseClause)}};
