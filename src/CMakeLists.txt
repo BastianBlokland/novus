@@ -61,7 +61,6 @@ target_include_directories(parse PRIVATE parse)
 # Program (internal representation).
 add_library(prog STATIC
   prog/expr/node_assign.cpp
-  prog/expr/node_switch.cpp
   prog/expr/node_call.cpp
   prog/expr/node_const.cpp
   prog/expr/node_field.cpp
@@ -70,6 +69,8 @@ add_library(prog STATIC
   prog/expr/node_lit_float.cpp
   prog/expr/node_lit_int.cpp
   prog/expr/node_lit_string.cpp
+  prog/expr/node_switch.cpp
+  prog/expr/node_union_get.cpp
   prog/expr/node.cpp
   prog/expr/utilities.cpp
 

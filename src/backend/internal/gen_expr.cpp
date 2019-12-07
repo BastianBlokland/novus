@@ -237,6 +237,34 @@ auto GenExpr::visit(const prog::expr::GroupExprNode& n) -> void {
   }
 }
 
+auto GenExpr::visit(const prog::expr::UnionGetExprNode& n) -> void {
+  // Load the union.
+  genSubExpr(n[0]);
+
+  // We need the union twice on the stack, once for the type check and once for getting the value.
+  m_builder->addDup();
+
+  const auto typeEqLabel = m_builder->generateLabel();
+
+  // Test if the union is the correct type.
+  m_builder->addLoadStructField(0);
+  m_builder->addLoadLitInt(static_cast<int32_t>(n.getTargetType().getNum()));
+  m_builder->addCheckEqInt();
+  m_builder->addJumpIf(typeEqLabel);
+
+  m_builder->addPop(); // Pop the extra union value from the stack (from the duplicate before).
+  m_builder->addLoadLitInt(0); // Load false.
+
+  m_builder->label(typeEqLabel);
+
+  // Store the union value as a const and load 'true' on the stack.
+  const auto constId = getConstId(n.getConst());
+  m_builder->addLoadStructField(1);
+  m_builder->addStoreConst(constId);
+
+  m_builder->addLoadLitInt(1); // Load true.
+}
+
 auto GenExpr::visit(const prog::expr::LitBoolNode& n) -> void {
   m_builder->addLoadLitInt(n.getVal() ? 1U : 0U);
 }
