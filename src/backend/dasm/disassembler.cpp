@@ -54,6 +54,8 @@ auto disassembleInstructions(const vm::Assembly& assembly) -> std::vector<Instru
     case vm::OpCode::PrintString:
     case vm::OpCode::Ret:
     case vm::OpCode::Fail:
+    case vm::OpCode::Dup:
+    case vm::OpCode::Pop:
       result.push_back(Instruction(opCode, ipOffset, {}));
       continue;
     case vm::OpCode::LoadLitString:

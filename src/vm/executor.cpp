@@ -255,6 +255,13 @@ static auto execute(const Assembly& assembly, io::Interface* interface, uint32_t
       }
     } break;
 
+    case OpCode::Dup:
+      evalStack.push(evalStack.peek());
+      break;
+    case OpCode::Pop:
+      evalStack.pop();
+      break;
+
     case OpCode::Fail:
     default:
       throw exceptions::InvalidAssembly{};

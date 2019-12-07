@@ -67,6 +67,9 @@ public:
 
   auto addCall(std::string label) -> void;
   auto addRet() -> void;
+
+  auto addDup() -> void;
+  auto addPop() -> void;
   auto addFail() -> void;
 
   auto addEntryPoint(std::string label) -> void;
