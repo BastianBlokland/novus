@@ -237,6 +237,16 @@ auto GenExpr::visit(const prog::expr::GroupExprNode& n) -> void {
   }
 }
 
+auto GenExpr::visit(const prog::expr::UnionCheckExprNode& n) -> void {
+  // Load the union.
+  genSubExpr(n[0]);
+
+  // Test if the union is the correct type.
+  m_builder->addLoadStructField(0);
+  m_builder->addLoadLitInt(static_cast<int32_t>(n.getTargetType().getNum()));
+  m_builder->addCheckEqInt();
+}
+
 auto GenExpr::visit(const prog::expr::UnionGetExprNode& n) -> void {
   // Load the union.
   genSubExpr(n[0]);
