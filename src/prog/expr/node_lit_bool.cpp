@@ -30,11 +30,7 @@ auto LitBoolNode::accept(NodeVisitor* visitor) const -> void { visitor->visit(*t
 
 // Factories.
 auto litBoolNode(const Program& program, bool val) -> NodePtr {
-  const auto type = program.lookupType("bool");
-  if (!type) {
-    throw std::invalid_argument{"No 'bool' type present in type-table"};
-  }
-  return std::unique_ptr<LitBoolNode>{new LitBoolNode{type.value(), val}};
+  return std::unique_ptr<LitBoolNode>{new LitBoolNode{program.getBool(), val}};
 }
 
 } // namespace prog::expr

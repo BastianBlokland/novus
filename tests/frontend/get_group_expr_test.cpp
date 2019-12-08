@@ -2,7 +2,6 @@
 #include "frontend/diag_defs.hpp"
 #include "helpers.hpp"
 #include "prog/expr/node_assign.hpp"
-#include "prog/expr/node_call.hpp"
 #include "prog/expr/node_const.hpp"
 #include "prog/expr/node_group.hpp"
 #include "prog/expr/node_lit_int.hpp"
@@ -13,7 +12,7 @@ namespace frontend {
 TEST_CASE("Analyzing group expressions", "[frontend]") {
 
   SECTION("Get basic group expression") {
-    const auto& output = ANALYZE("fun f() -> int b = 1; c = 2; b * c");
+    const auto& output = ANALYZE("fun f() b = 1; c = 2; b * c");
     REQUIRE(output.isSuccess());
     const auto& funcDef = GET_FUNC_DEF(output, "f");
     const auto& consts  = funcDef.getConsts();

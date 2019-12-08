@@ -34,7 +34,51 @@ TEST_CASE("Analyzing binary expressions", "[frontend]") {
             std::move(args)));
   }
 
-  SECTION("Get logic and expression") {
+  SECTION("Get binary expression with conversion on lhs") {
+    const auto& output = ANALYZE("fun f(float a) 2 * a");
+    REQUIRE(output.isSuccess());
+    const auto& funcDef = GET_FUNC_DEF(output, "f", GET_TYPE_ID(output, "float"));
+
+    auto args = std::vector<prog::expr::NodePtr>{};
+    args.push_back(applyConv(output, "int", "float", prog::expr::litIntNode(output.getProg(), 2)));
+    args.push_back(
+        prog::expr::constExprNode(funcDef.getConsts(), funcDef.getConsts().lookup("a").value()));
+
+    CHECK(
+        funcDef.getExpr() ==
+        *prog::expr::callExprNode(
+            output.getProg(),
+            GET_OP_ID(
+                output,
+                prog::Operator::Star,
+                GET_TYPE_ID(output, "float"),
+                GET_TYPE_ID(output, "float")),
+            std::move(args)));
+  }
+
+  SECTION("Get binary expression with conversion on rhs") {
+    const auto& output = ANALYZE("fun f(float a) a * 2");
+    REQUIRE(output.isSuccess());
+    const auto& funcDef = GET_FUNC_DEF(output, "f", GET_TYPE_ID(output, "float"));
+
+    auto args = std::vector<prog::expr::NodePtr>{};
+    args.push_back(
+        prog::expr::constExprNode(funcDef.getConsts(), funcDef.getConsts().lookup("a").value()));
+    args.push_back(applyConv(output, "int", "float", prog::expr::litIntNode(output.getProg(), 2)));
+
+    CHECK(
+        funcDef.getExpr() ==
+        *prog::expr::callExprNode(
+            output.getProg(),
+            GET_OP_ID(
+                output,
+                prog::Operator::Star,
+                GET_TYPE_ID(output, "float"),
+                GET_TYPE_ID(output, "float")),
+            std::move(args)));
+  }
+
+  SECTION("Get logic 'and' expression") {
     const auto& output = ANALYZE("fun f(bool a, bool b) -> bool a && b");
     REQUIRE(output.isSuccess());
     const auto& funcDef =
@@ -53,7 +97,29 @@ TEST_CASE("Analyzing binary expressions", "[frontend]") {
         *prog::expr::switchExprNode(output.getProg(), std::move(conditions), std::move(branches)));
   }
 
-  SECTION("Get logic or expression") {
+  SECTION("Get logic 'and' expression with conversions") {
+    const auto& output = ANALYZE("fun bool(int i) i != 0 "
+                                 "fun f(int a, int b) a && b");
+    REQUIRE(output.isSuccess());
+    const auto& funcDef =
+        GET_FUNC_DEF(output, "f", GET_TYPE_ID(output, "int"), GET_TYPE_ID(output, "int"));
+    const auto& consts = funcDef.getConsts();
+
+    auto conditions = std::vector<prog::expr::NodePtr>{};
+    conditions.push_back(applyConv(
+        output, "int", "bool", prog::expr::constExprNode(consts, consts.lookup("a").value())));
+
+    auto branches = std::vector<prog::expr::NodePtr>{};
+    branches.push_back(applyConv(
+        output, "int", "bool", prog::expr::constExprNode(consts, consts.lookup("b").value())));
+    branches.push_back(prog::expr::litBoolNode(output.getProg(), false));
+
+    CHECK(
+        funcDef.getExpr() ==
+        *prog::expr::switchExprNode(output.getProg(), std::move(conditions), std::move(branches)));
+  }
+
+  SECTION("Get logic 'or' expression") {
     const auto& output = ANALYZE("fun f(bool a, bool b) -> bool a || b");
     REQUIRE(output.isSuccess());
     const auto& funcDef =
@@ -72,16 +138,38 @@ TEST_CASE("Analyzing binary expressions", "[frontend]") {
         *prog::expr::switchExprNode(output.getProg(), std::move(conditions), std::move(branches)));
   }
 
+  SECTION("Get logic 'or' expression with conversions") {
+    const auto& output = ANALYZE("fun bool(int i) i != 0 "
+                                 "fun f(int a, int b) a || b");
+    REQUIRE(output.isSuccess());
+    const auto& funcDef =
+        GET_FUNC_DEF(output, "f", GET_TYPE_ID(output, "int"), GET_TYPE_ID(output, "int"));
+    const auto& consts = funcDef.getConsts();
+
+    auto conditions = std::vector<prog::expr::NodePtr>{};
+    conditions.push_back(applyConv(
+        output, "int", "bool", prog::expr::constExprNode(consts, consts.lookup("a").value())));
+
+    auto branches = std::vector<prog::expr::NodePtr>{};
+    branches.push_back(prog::expr::litBoolNode(output.getProg(), true));
+    branches.push_back(applyConv(
+        output, "int", "bool", prog::expr::constExprNode(consts, consts.lookup("b").value())));
+
+    CHECK(
+        funcDef.getExpr() ==
+        *prog::expr::switchExprNode(output.getProg(), std::move(conditions), std::move(branches)));
+  }
+
   SECTION("Diagnostics") {
     CHECK_DIAG(
         "fun f() -> int true + false",
         errUndeclaredBinOperator(src, "+", "bool", "bool", input::Span{20, 20}));
     CHECK_DIAG(
         "fun f(int a, bool b) -> bool a && b",
-        errNonBoolExpressionInLogicOp(src, "int", input::Span{29, 29}));
+        errNoConversionFound(src, "int", "bool", input::Span{29, 29}));
     CHECK_DIAG(
         "fun f(bool a, int b) -> bool a || b",
-        errNonBoolExpressionInLogicOp(src, "int", input::Span{34, 34}));
+        errNoConversionFound(src, "int", "bool", input::Span{34, 34}));
   }
 }
 

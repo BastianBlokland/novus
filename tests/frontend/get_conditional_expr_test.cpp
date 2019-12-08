@@ -5,6 +5,7 @@
 #include "prog/expr/node_const.hpp"
 #include "prog/expr/node_group.hpp"
 #include "prog/expr/node_lit_bool.hpp"
+#include "prog/expr/node_lit_float.hpp"
 #include "prog/expr/node_lit_int.hpp"
 #include "prog/expr/node_switch.hpp"
 
@@ -24,6 +25,61 @@ TEST_CASE("Analyzing conditional expressions", "[frontend]") {
     auto branches = std::vector<prog::expr::NodePtr>{};
     branches.push_back(prog::expr::litIntNode(output.getProg(), 1));
     branches.push_back(prog::expr::litIntNode(output.getProg(), 3));
+
+    CHECK(
+        funcDef.getExpr() ==
+        *prog::expr::switchExprNode(output.getProg(), std::move(conditions), std::move(branches)));
+  }
+
+  SECTION("Get conditional expression with conversion on the condition") {
+    const auto& output = ANALYZE("fun bool(int i) i != 0 "
+                                 "fun f() 1 ? 1 : 3");
+    REQUIRE(output.isSuccess());
+    const auto& funcDef = GET_FUNC_DEF(output, "f");
+
+    auto conditions = std::vector<prog::expr::NodePtr>{};
+    conditions.push_back(
+        applyConv(output, "int", "bool", prog::expr::litIntNode(output.getProg(), 1)));
+
+    auto branches = std::vector<prog::expr::NodePtr>{};
+    branches.push_back(prog::expr::litIntNode(output.getProg(), 1));
+    branches.push_back(prog::expr::litIntNode(output.getProg(), 3));
+
+    CHECK(
+        funcDef.getExpr() ==
+        *prog::expr::switchExprNode(output.getProg(), std::move(conditions), std::move(branches)));
+  }
+
+  SECTION("Get conditional expression with conversion on the lhs branch") {
+    const auto& output = ANALYZE("fun f() true ? 0 : 1.0");
+    REQUIRE(output.isSuccess());
+    const auto& funcDef = GET_FUNC_DEF(output, "f");
+
+    auto conditions = std::vector<prog::expr::NodePtr>{};
+    conditions.push_back(prog::expr::litBoolNode(output.getProg(), true));
+
+    auto branches = std::vector<prog::expr::NodePtr>{};
+    branches.push_back(
+        applyConv(output, "int", "float", prog::expr::litIntNode(output.getProg(), 0)));
+    branches.push_back(prog::expr::litFloatNode(output.getProg(), 1.0F));
+
+    CHECK(
+        funcDef.getExpr() ==
+        *prog::expr::switchExprNode(output.getProg(), std::move(conditions), std::move(branches)));
+  }
+
+  SECTION("Get conditional expression with conversion on the rhs branch") {
+    const auto& output = ANALYZE("fun f() true ? 1.0 : 0");
+    REQUIRE(output.isSuccess());
+    const auto& funcDef = GET_FUNC_DEF(output, "f");
+
+    auto conditions = std::vector<prog::expr::NodePtr>{};
+    conditions.push_back(prog::expr::litBoolNode(output.getProg(), true));
+
+    auto branches = std::vector<prog::expr::NodePtr>{};
+    branches.push_back(prog::expr::litFloatNode(output.getProg(), 1.0F));
+    branches.push_back(
+        applyConv(output, "int", "float", prog::expr::litIntNode(output.getProg(), 0)));
 
     CHECK(
         funcDef.getExpr() ==
@@ -58,11 +114,11 @@ TEST_CASE("Analyzing conditional expressions", "[frontend]") {
     CHECK_DIAG(
         "fun f(int a) -> int "
         "a ? 1 : 2",
-        errNonBoolConditionExpression(src, "int", input::Span{20, 20}));
+        errNoConversionFound(src, "int", "bool", input::Span{20, 20}));
     CHECK_DIAG(
         "fun f() -> int "
         "true ? 1 : true",
-        errMismatchedBranchTypes(src, "int", "bool", input::Span{26, 29}));
+        errNoConversionFound(src, "bool", "int", input::Span{22, 22}));
   }
 }
 

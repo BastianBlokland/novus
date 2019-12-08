@@ -85,17 +85,17 @@ TEST_CASE("Infer return type of user functions", "[frontend]") {
   }
 
   SECTION("Conditional operator") {
-    const auto& output = ANALYZE("fun f() 1 > 2 ? 42 : 1337");
+    const auto& output = ANALYZE("fun f() 1 > 2 ? 42 : 1337.0");
     REQUIRE(output.isSuccess());
-    CHECK(GET_FUNC_DECL(output, "f").getOutput() == GET_TYPE_ID(output, "int"));
+    CHECK(GET_FUNC_DECL(output, "f").getOutput() == GET_TYPE_ID(output, "float"));
   }
 
   SECTION("Switch") {
     const auto& output = ANALYZE("fun f() "
                                  "if 1 > 2  -> 1 "
-                                 "else      -> 2");
+                                 "else      -> 2.0");
     REQUIRE(output.isSuccess());
-    CHECK(GET_FUNC_DECL(output, "f").getOutput() == GET_TYPE_ID(output, "int"));
+    CHECK(GET_FUNC_DECL(output, "f").getOutput() == GET_TYPE_ID(output, "float"));
   }
 
   SECTION("Call") {

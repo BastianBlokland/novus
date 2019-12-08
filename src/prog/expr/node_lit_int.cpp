@@ -30,11 +30,7 @@ auto LitIntNode::accept(NodeVisitor* visitor) const -> void { visitor->visit(*th
 
 // Factories.
 auto litIntNode(const Program& program, int32_t val) -> NodePtr {
-  const auto type = program.lookupType("int");
-  if (!type) {
-    throw std::invalid_argument{"No 'int' type present in type-table"};
-  }
-  return std::unique_ptr<LitIntNode>{new LitIntNode{type.value(), val}};
+  return std::unique_ptr<LitIntNode>{new LitIntNode{program.getInt(), val}};
 }
 
 } // namespace prog::expr

@@ -11,7 +11,7 @@ namespace frontend {
 TEST_CASE("Analyzing constant expressions", "[frontend]") {
 
   SECTION("Access function input") {
-    const auto& output = ANALYZE("fun f(int a) -> int a");
+    const auto& output = ANALYZE("fun f(int a) a");
     REQUIRE(output.isSuccess());
     const auto& funcDef = GET_FUNC_DEF(output, "f", GET_TYPE_ID(output, "int"));
     const auto& consts  = funcDef.getConsts();
@@ -19,7 +19,7 @@ TEST_CASE("Analyzing constant expressions", "[frontend]") {
   }
 
   SECTION("Declare and access local const") {
-    const auto& output = ANALYZE("fun f() -> int a = 1; b = a; b");
+    const auto& output = ANALYZE("fun f() a = 1; b = a; b");
     REQUIRE(output.isSuccess());
     const auto& funcDef = GET_FUNC_DEF(output, "f");
     const auto& consts  = funcDef.getConsts();

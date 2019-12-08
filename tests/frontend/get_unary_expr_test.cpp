@@ -1,7 +1,6 @@
 #include "catch2/catch.hpp"
 #include "frontend/diag_defs.hpp"
 #include "helpers.hpp"
-#include "prog/expr/node_call.hpp"
 #include "prog/expr/node_const.hpp"
 #include "prog/expr/node_lit_int.hpp"
 #include "prog/operator.hpp"

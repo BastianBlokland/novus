@@ -24,7 +24,7 @@ auto DefineUserFuncs::define(prog::sym::FuncId id, const parse::FuncDeclStmtNode
   }
 
   auto visibleConsts = consts.getAll();
-  auto expr          = getExpr(n[0], &consts, &visibleConsts);
+  auto expr          = getExpr(n[0], &consts, &visibleConsts, funcRetType);
   if (!expr) {
     return;
   }
@@ -94,9 +94,10 @@ auto DefineUserFuncs::declareInputs(
 auto DefineUserFuncs::getExpr(
     const parse::Node& n,
     prog::sym::ConstDeclTable* consts,
-    std::vector<prog::sym::ConstId>* visibleConsts) -> prog::expr::NodePtr {
+    std::vector<prog::sym::ConstId>* visibleConsts,
+    prog::sym::TypeId typeHint) -> prog::expr::NodePtr {
 
-  auto getExpr = GetExpr{m_src, m_prog, consts, visibleConsts};
+  auto getExpr = GetExpr{m_src, m_prog, consts, visibleConsts, typeHint};
   n.accept(&getExpr);
   m_diags.insert(m_diags.end(), getExpr.getDiags().begin(), getExpr.getDiags().end());
   return std::move(getExpr.getValue());

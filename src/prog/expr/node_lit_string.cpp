@@ -36,11 +36,7 @@ auto LitStringNode::accept(NodeVisitor* visitor) const -> void { visitor->visit(
 
 // Factories.
 auto litStringNode(const Program& program, std::string val) -> NodePtr {
-  const auto type = program.lookupType("string");
-  if (!type) {
-    throw std::invalid_argument{"No 'string' type present in type-table"};
-  }
-  return std::unique_ptr<LitStringNode>{new LitStringNode{type.value(), std::move(val)}};
+  return std::unique_ptr<LitStringNode>{new LitStringNode{program.getString(), std::move(val)}};
 }
 
 } // namespace prog::expr

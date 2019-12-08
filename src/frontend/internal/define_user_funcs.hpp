@@ -24,7 +24,8 @@ private:
   auto getExpr(
       const parse::Node& n,
       prog::sym::ConstDeclTable* consts,
-      std::vector<prog::sym::ConstId>* visibleConsts) -> prog::expr::NodePtr;
+      std::vector<prog::sym::ConstId>* visibleConsts,
+      prog::sym::TypeId typeHint) -> prog::expr::NodePtr;
 };
 
 } // namespace frontend::internal

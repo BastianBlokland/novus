@@ -15,6 +15,14 @@ TEST_CASE("Analyzing user-function declarations", "[frontend]") {
             .getOutput() == GET_TYPE_ID(output, "bool"));
   }
 
+  SECTION("Declare type-inferred function") {
+    const auto& output = ANALYZE("fun f(int a, bool b) b");
+    REQUIRE(output.isSuccess());
+    CHECK(
+        GET_FUNC_DECL(output, "f", GET_TYPE_ID(output, "int"), GET_TYPE_ID(output, "bool"))
+            .getOutput() == GET_TYPE_ID(output, "bool"));
+  }
+
   SECTION("Declare overloaded function") {
     const auto& output = ANALYZE("fun f(int a) -> bool false "
                                  "fun f(string a) -> string \"hello world\" "
@@ -30,7 +38,7 @@ TEST_CASE("Analyzing user-function declarations", "[frontend]") {
     CHECK(
         GET_FUNC_DECL(output, "f", GET_TYPE_ID(output, "bool")).getOutput() ==
         GET_TYPE_ID(output, "bool"));
-    CHECK(GET_FUNC_DECL(output, "f").getOutput() == output.getProg().lookupType("int"));
+    CHECK(GET_FUNC_DECL(output, "f").getOutput() == output.getProg().getInt());
   }
 
   SECTION("Declare conversion function") {

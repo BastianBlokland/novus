@@ -17,104 +17,97 @@ auto getActionDeclTable(const Program& prog) -> const sym::ActionDeclTable& {
 
 } // namespace internal
 
-Program::Program() {
-  using tk = typename sym::TypeKind;
-  using fk = typename sym::FuncKind;
-  using ak = typename sym::ActionKind;
+Program::Program() :
+    m_int{m_typeDecls.registerType(sym::TypeKind::Int, "int")},
+    m_float{m_typeDecls.registerType(sym::TypeKind::Float, "float")},
+    m_bool{m_typeDecls.registerType(sym::TypeKind::Bool, "bool")},
+    m_string{m_typeDecls.registerType(sym::TypeKind::String, "string")} {
 
-  // Register build-in types.
-  const auto intT    = m_typeDecls.registerType(tk::Int, "int");
-  const auto floatT  = m_typeDecls.registerType(tk::Float, "float");
-  const auto boolT   = m_typeDecls.registerType(tk::Bool, "bool");
-  const auto stringT = m_typeDecls.registerType(tk::String, "string");
+  using fk = typename prog::sym::FuncKind;
+  using ak = typename prog::sym::ActionKind;
+  using op = typename prog::Operator;
 
   // Register build-in unary int operators.
-  m_funcDecls.registerFunc(
-      *this, fk::NegateInt, getFuncName(Operator::Minus), sym::Input{intT}, intT);
+  m_funcDecls.registerFunc(*this, fk::NegateInt, getFuncName(op::Minus), sym::Input{m_int}, m_int);
 
   // Register build-in binary int operators.
   m_funcDecls.registerFunc(
-      *this, fk::AddInt, getFuncName(Operator::Plus), sym::Input{intT, intT}, intT);
+      *this, fk::AddInt, getFuncName(op::Plus), sym::Input{m_int, m_int}, m_int);
   m_funcDecls.registerFunc(
-      *this, fk::SubInt, getFuncName(Operator::Minus), sym::Input{intT, intT}, intT);
+      *this, fk::SubInt, getFuncName(op::Minus), sym::Input{m_int, m_int}, m_int);
   m_funcDecls.registerFunc(
-      *this, fk::MulInt, getFuncName(Operator::Star), sym::Input{intT, intT}, intT);
+      *this, fk::MulInt, getFuncName(op::Star), sym::Input{m_int, m_int}, m_int);
   m_funcDecls.registerFunc(
-      *this, fk::DivInt, getFuncName(Operator::Slash), sym::Input{intT, intT}, intT);
+      *this, fk::DivInt, getFuncName(op::Slash), sym::Input{m_int, m_int}, m_int);
   m_funcDecls.registerFunc(
-      *this, fk::RemInt, getFuncName(Operator::Rem), sym::Input{intT, intT}, intT);
+      *this, fk::RemInt, getFuncName(op::Rem), sym::Input{m_int, m_int}, m_int);
   m_funcDecls.registerFunc(
-      *this, fk::CheckEqInt, getFuncName(Operator::EqEq), sym::Input{intT, intT}, boolT);
+      *this, fk::CheckEqInt, getFuncName(op::EqEq), sym::Input{m_int, m_int}, m_bool);
   m_funcDecls.registerFunc(
-      *this, fk::CheckNEqInt, getFuncName(Operator::BangEq), sym::Input{intT, intT}, boolT);
+      *this, fk::CheckNEqInt, getFuncName(op::BangEq), sym::Input{m_int, m_int}, m_bool);
   m_funcDecls.registerFunc(
-      *this, fk::CheckLeInt, getFuncName(Operator::Le), sym::Input{intT, intT}, boolT);
+      *this, fk::CheckLeInt, getFuncName(op::Le), sym::Input{m_int, m_int}, m_bool);
   m_funcDecls.registerFunc(
-      *this, fk::CheckLeEqInt, getFuncName(Operator::LeEq), sym::Input{intT, intT}, boolT);
+      *this, fk::CheckLeEqInt, getFuncName(op::LeEq), sym::Input{m_int, m_int}, m_bool);
   m_funcDecls.registerFunc(
-      *this, fk::CheckGtInt, getFuncName(Operator::Gt), sym::Input{intT, intT}, boolT);
+      *this, fk::CheckGtInt, getFuncName(op::Gt), sym::Input{m_int, m_int}, m_bool);
   m_funcDecls.registerFunc(
-      *this, fk::CheckGtEqInt, getFuncName(Operator::GtEq), sym::Input{intT, intT}, boolT);
+      *this, fk::CheckGtEqInt, getFuncName(op::GtEq), sym::Input{m_int, m_int}, m_bool);
 
   // Register build-in unary float operators.
   m_funcDecls.registerFunc(
-      *this, fk::NegateFloat, getFuncName(Operator::Minus), sym::Input{floatT}, floatT);
+      *this, fk::NegateFloat, getFuncName(op::Minus), sym::Input{m_float}, m_float);
 
   // Register build-in binary float operators.
   m_funcDecls.registerFunc(
-      *this, fk::AddFloat, getFuncName(Operator::Plus), sym::Input{floatT, floatT}, floatT);
+      *this, fk::AddFloat, getFuncName(op::Plus), sym::Input{m_float, m_float}, m_float);
   m_funcDecls.registerFunc(
-      *this, fk::SubFloat, getFuncName(Operator::Minus), sym::Input{floatT, floatT}, floatT);
+      *this, fk::SubFloat, getFuncName(op::Minus), sym::Input{m_float, m_float}, m_float);
   m_funcDecls.registerFunc(
-      *this, fk::MulFloat, getFuncName(Operator::Star), sym::Input{floatT, floatT}, floatT);
+      *this, fk::MulFloat, getFuncName(op::Star), sym::Input{m_float, m_float}, m_float);
   m_funcDecls.registerFunc(
-      *this, fk::DivFloat, getFuncName(Operator::Slash), sym::Input{floatT, floatT}, floatT);
+      *this, fk::DivFloat, getFuncName(op::Slash), sym::Input{m_float, m_float}, m_float);
   m_funcDecls.registerFunc(
-      *this, fk::CheckEqFloat, getFuncName(Operator::EqEq), sym::Input{floatT, floatT}, boolT);
+      *this, fk::CheckEqFloat, getFuncName(op::EqEq), sym::Input{m_float, m_float}, m_bool);
   m_funcDecls.registerFunc(
-      *this, fk::CheckNEqFloat, getFuncName(Operator::BangEq), sym::Input{floatT, floatT}, boolT);
+      *this, fk::CheckNEqFloat, getFuncName(op::BangEq), sym::Input{m_float, m_float}, m_bool);
   m_funcDecls.registerFunc(
-      *this, fk::CheckLeFloat, getFuncName(Operator::Le), sym::Input{floatT, floatT}, boolT);
+      *this, fk::CheckLeFloat, getFuncName(op::Le), sym::Input{m_float, m_float}, m_bool);
   m_funcDecls.registerFunc(
-      *this, fk::CheckLeEqFloat, getFuncName(Operator::LeEq), sym::Input{floatT, floatT}, boolT);
+      *this, fk::CheckLeEqFloat, getFuncName(op::LeEq), sym::Input{m_float, m_float}, m_bool);
   m_funcDecls.registerFunc(
-      *this, fk::CheckGtFloat, getFuncName(Operator::Gt), sym::Input{floatT, floatT}, boolT);
+      *this, fk::CheckGtFloat, getFuncName(op::Gt), sym::Input{m_float, m_float}, m_bool);
   m_funcDecls.registerFunc(
-      *this, fk::CheckGtEqFloat, getFuncName(Operator::GtEq), sym::Input{floatT, floatT}, boolT);
+      *this, fk::CheckGtEqFloat, getFuncName(op::GtEq), sym::Input{m_float, m_float}, m_bool);
 
   // Register build-in unary bool operators.
-  m_funcDecls.registerFunc(
-      *this, fk::InvBool, getFuncName(Operator::Bang), sym::Input{boolT}, boolT);
+  m_funcDecls.registerFunc(*this, fk::InvBool, getFuncName(op::Bang), sym::Input{m_bool}, m_bool);
 
   // Register build-in binary bool operators.
   m_funcDecls.registerFunc(
-      *this, fk::CheckEqBool, getFuncName(Operator::EqEq), sym::Input{boolT, boolT}, boolT);
+      *this, fk::CheckEqBool, getFuncName(op::EqEq), sym::Input{m_bool, m_bool}, m_bool);
   m_funcDecls.registerFunc(
-      *this, fk::CheckNEqBool, getFuncName(Operator::BangEq), sym::Input{boolT, boolT}, boolT);
+      *this, fk::CheckNEqBool, getFuncName(op::BangEq), sym::Input{m_bool, m_bool}, m_bool);
 
   // Register build-in binary string operators.
   m_funcDecls.registerFunc(
-      *this, fk::AddString, getFuncName(Operator::Plus), sym::Input{stringT, stringT}, stringT);
+      *this, fk::AddString, getFuncName(op::Plus), sym::Input{m_string, m_string}, m_string);
   m_funcDecls.registerFunc(
-      *this, fk::CheckEqString, getFuncName(Operator::EqEq), sym::Input{stringT, stringT}, boolT);
+      *this, fk::CheckEqString, getFuncName(op::EqEq), sym::Input{m_string, m_string}, m_bool);
   m_funcDecls.registerFunc(
-      *this,
-      fk::CheckNEqString,
-      getFuncName(Operator::BangEq),
-      sym::Input{stringT, stringT},
-      boolT);
+      *this, fk::CheckNEqString, getFuncName(op::BangEq), sym::Input{m_string, m_string}, m_bool);
 
   // Register build-in implicit conversions.
-  m_funcDecls.registerFunc(*this, fk::ConvIntFloat, "float", sym::Input{intT}, floatT);
-  m_funcDecls.registerFunc(*this, fk::ConvIntString, "string", sym::Input{intT}, stringT);
-  m_funcDecls.registerFunc(*this, fk::ConvFloatString, "string", sym::Input{floatT}, stringT);
-  m_funcDecls.registerFunc(*this, fk::ConvBoolString, "string", sym::Input{boolT}, stringT);
+  m_funcDecls.registerFunc(*this, fk::ConvIntFloat, "float", sym::Input{m_int}, m_float);
+  m_funcDecls.registerFunc(*this, fk::ConvIntString, "string", sym::Input{m_int}, m_string);
+  m_funcDecls.registerFunc(*this, fk::ConvFloatString, "string", sym::Input{m_float}, m_string);
+  m_funcDecls.registerFunc(*this, fk::ConvBoolString, "string", sym::Input{m_bool}, m_string);
 
   // Register build-in explicit conversions.
-  m_funcDecls.registerFunc(*this, fk::ConvFloatInt, "toInt", sym::Input{floatT}, intT);
+  m_funcDecls.registerFunc(*this, fk::ConvFloatInt, "toInt", sym::Input{m_float}, m_int);
 
   // Register build-in actions.
-  m_actionDecls.registerAction(*this, ak::PrintString, "print", sym::Input{stringT});
+  m_actionDecls.registerAction(*this, ak::PrintString, "print", sym::Input{m_string});
 }
 
 auto Program::beginTypeDecls() const -> typeDeclIterator { return m_typeDecls.begin(); }
@@ -141,6 +134,14 @@ auto Program::beginExecStmts() const -> execStmtIterator { return m_execStmts.be
 
 auto Program::endExecStmts() const -> execStmtIterator { return m_execStmts.end(); }
 
+auto Program::getInt() const noexcept -> sym::TypeId { return m_int; }
+
+auto Program::getFloat() const noexcept -> sym::TypeId { return m_float; }
+
+auto Program::getBool() const noexcept -> sym::TypeId { return m_bool; }
+
+auto Program::getString() const noexcept -> sym::TypeId { return m_string; }
+
 auto Program::lookupType(const std::string& name) const -> std::optional<sym::TypeId> {
   return m_typeDecls.lookup(name);
 }
@@ -166,6 +167,10 @@ auto Program::lookupActions(const std::string& name) const -> std::vector<sym::A
 auto Program::lookupConversion(sym::TypeId from, sym::TypeId to) const
     -> std::optional<sym::FuncId> {
   return internal::findConversion(*this, from, to);
+}
+
+auto Program::findCommonType(const std::vector<sym::TypeId>& types) -> std::optional<sym::TypeId> {
+  return internal::findCommonType(*this, types);
 }
 
 auto Program::getTypeDecl(sym::TypeId id) const -> const sym::TypeDecl& { return m_typeDecls[id]; }
@@ -212,13 +217,13 @@ auto Program::defineUserStruct(sym::TypeId id, sym::FieldDeclTable fields) -> vo
       sym::FuncKind::CheckEqUserType,
       getFuncName(Operator::EqEq),
       sym::Input{id, id},
-      *m_typeDecls.lookup("bool"));
+      m_bool);
   m_funcDecls.registerFunc(
       *this,
       sym::FuncKind::CheckNEqUserType,
       getFuncName(Operator::BangEq),
       sym::Input{id, id},
-      *m_typeDecls.lookup("bool"));
+      m_bool);
 
   // Register struct definition.
   m_typeDefs.registerStruct(m_typeDecls, id, std::move(fields));
@@ -237,13 +242,13 @@ auto Program::defineUserUnion(sym::TypeId id, std::vector<sym::TypeId> types) ->
       sym::FuncKind::CheckEqUserType,
       getFuncName(Operator::EqEq),
       sym::Input{id, id},
-      *m_typeDecls.lookup("bool"));
+      m_bool);
   m_funcDecls.registerFunc(
       *this,
       sym::FuncKind::CheckNEqUserType,
       getFuncName(Operator::BangEq),
       sym::Input{id, id},
-      *m_typeDecls.lookup("bool"));
+      m_bool);
 
   // Register union definition.
   m_typeDefs.registerUnion(m_typeDecls, id, std::move(types));

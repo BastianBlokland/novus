@@ -66,11 +66,7 @@ auto switchExprNode(
   if (anyNodeNull(branches)) {
     throw std::invalid_argument{"Switch node cannot contain a null branch"};
   }
-  const auto boolType = program.lookupType("bool");
-  if (!boolType) {
-    throw std::invalid_argument{"No 'bool' type present in type-table"};
-  }
-  if (getType(conditions) != boolType) {
+  if (getType(conditions) != program.getBool()) {
     throw std::invalid_argument{"All conditions need to be of type 'bool'"};
   }
   if (!getType(branches)) {

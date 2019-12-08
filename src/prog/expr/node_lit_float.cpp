@@ -30,11 +30,7 @@ auto LitFloatNode::accept(NodeVisitor* visitor) const -> void { visitor->visit(*
 
 // Factories.
 auto litFloatNode(const Program& program, float val) -> NodePtr {
-  const auto type = program.lookupType("float");
-  if (!type) {
-    throw std::invalid_argument{"No 'float' type present in type-table"};
-  }
-  return std::unique_ptr<LitFloatNode>{new LitFloatNode{type.value(), val}};
+  return std::unique_ptr<LitFloatNode>{new LitFloatNode{program.getFloat(), val}};
 }
 
 } // namespace prog::expr

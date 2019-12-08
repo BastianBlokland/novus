@@ -49,10 +49,6 @@ auto unionGetExprNode(
   if (!lhs) {
     throw std::invalid_argument{"Left-hand-side expression in union-get cannot be null"};
   }
-  const auto boolType = prog.lookupType("bool");
-  if (!boolType) {
-    throw std::logic_error{"No 'bool' type found in program"};
-  }
 
   const auto& exprTypeDecl = prog.getTypeDecl(lhs->getType());
   if (exprTypeDecl.getKind() != sym::TypeKind::UserUnion) {
@@ -68,7 +64,7 @@ auto unionGetExprNode(
   }
 
   return std::unique_ptr<UnionGetExprNode>{
-      new UnionGetExprNode{*boolType, std::move(lhs), targetType, constId}};
+      new UnionGetExprNode{prog.getBool(), std::move(lhs), targetType, constId}};
 }
 
 } // namespace prog::expr
