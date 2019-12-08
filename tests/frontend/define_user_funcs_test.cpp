@@ -1,7 +1,6 @@
 #include "catch2/catch.hpp"
 #include "frontend/diag_defs.hpp"
 #include "helpers.hpp"
-#include "prog/expr/node_call.hpp"
 #include "prog/expr/node_lit_int.hpp"
 #include "prog/sym/input.hpp"
 
@@ -26,13 +25,9 @@ TEST_CASE("Analyzing user-function definitions", "[frontend]") {
     REQUIRE(output.isSuccess());
     const auto& funcDef = GET_FUNC_DEF(output, "f");
 
-    const auto conversion = GET_CONV(output, "int", "string");
-    auto convArgs         = std::vector<prog::expr::NodePtr>{};
-    convArgs.push_back(prog::expr::litIntNode(output.getProg(), 2));
-
     CHECK(
         funcDef.getExpr() ==
-        *prog::expr::callExprNode(output.getProg(), *conversion, std::move(convArgs)));
+        *applyConv(output, "int", "string", prog::expr::litIntNode(output.getProg(), 2)));
   }
 
   SECTION("Diagnostics") {

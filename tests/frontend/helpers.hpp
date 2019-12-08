@@ -2,6 +2,7 @@
 #include "catch2/catch.hpp"
 #include "frontend/analysis.hpp"
 #include "frontend/source.hpp"
+#include "prog/expr/node_call.hpp"
 
 namespace frontend {
 
@@ -43,5 +44,17 @@ namespace frontend {
     const std::vector<frontend::Diag> expectedDiags = {__VA_ARGS__};                               \
     CHECK_THAT(diags, Catch::UnorderedEquals(expectedDiags));                                      \
   }
+
+inline auto applyConv(
+    const Output& output,
+    const std::string& fromType,
+    const std::string& toType,
+    prog::expr::NodePtr childExpr) -> prog::expr::NodePtr {
+  auto conv     = GET_CONV(output, fromType, toType);
+  auto convArgs = std::vector<prog::expr::NodePtr>{};
+  convArgs.push_back(std::move(childExpr));
+
+  return prog::expr::callExprNode(output.getProg(), *conv, std::move(convArgs));
+}
 
 } // namespace frontend

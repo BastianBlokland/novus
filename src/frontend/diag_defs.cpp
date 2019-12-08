@@ -268,32 +268,20 @@ auto errUndeclaredBinOperator(
   return error(src, oss.str(), span);
 }
 
-auto errNonBoolExpressionInLogicOp(const Source& src, const std::string& typeName, input::Span span)
-    -> Diag {
+auto errBranchesHaveNoCommonType(const Source& src, input::Span span) -> Diag {
   std::ostringstream oss;
-  oss << "Type in logical operation has to be 'bool' but was: '" << typeName << '\'';
+  oss << "Branches have no common type they are convertable to";
   return error(src, oss.str(), span);
 }
 
-auto errNonBoolConditionExpression(const Source& src, const std::string& typeName, input::Span span)
-    -> Diag {
+auto errNoConversionFound(
+    const Source& src, const std::string& from, const std::string& to, input::Span span) -> Diag {
   std::ostringstream oss;
-  oss << "Type of conditional expression has to be 'bool' but was: '" << typeName << '\'';
+  oss << "No conversion found from '" << from << "' to '" << to << '\'';
   return error(src, oss.str(), span);
 }
 
-auto errMismatchedBranchTypes(
-    const Source& src,
-    const std::string& prevTypeName,
-    const std::string& newTypeName,
-    input::Span span) -> Diag {
-  std::ostringstream oss;
-  oss << "Branch has type '" << newTypeName << "' but type of previous branch is '" << prevTypeName
-      << '\'';
-  return error(src, oss.str(), span);
-}
-
-auto nonExhaustiveSwitchWithoutElse(const Source& src, input::Span span) -> Diag {
+auto errNonExhaustiveSwitchWithoutElse(const Source& src, input::Span span) -> Diag {
   std::ostringstream oss;
   oss << "Switch expression is missing an 'else' branch and cannot be guaranteed to be exhaustive";
   return error(src, oss.str(), span);

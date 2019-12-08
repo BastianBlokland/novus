@@ -13,6 +13,7 @@ public:
       prog::Program* prog,
       prog::sym::ConstDeclTable* consts,
       std::vector<prog::sym::ConstId>* visibleConsts,
+      prog::sym::TypeId typeHint,
       bool checkedConstsAccess = false);
 
   [[nodiscard]] auto hasErrors() const noexcept -> bool;
@@ -46,14 +47,20 @@ private:
   prog::Program* m_prog;
   prog::sym::ConstDeclTable* m_consts;
   std::vector<prog::sym::ConstId>* m_visibleConsts;
+  prog::sym::TypeId m_typeHint;
   bool m_checkedConstsAccess;
-  std::vector<Diag> m_diags;
+
   prog::expr::NodePtr m_expr;
+  std::vector<Diag> m_diags;
 
   [[nodiscard]] auto getSubExpr(
       const parse::Node& n,
       std::vector<prog::sym::ConstId>* visibleConsts,
+      prog::sym::TypeId typeHint,
       bool checkedConstsAccess = false) -> prog::expr::NodePtr;
+
+  [[nodiscard]] auto
+  applyConversion(prog::expr::NodePtr* expr, prog::sym::TypeId toType, input::Span span) -> bool;
 
   [[nodiscard]] auto getBinLogicOpExpr(const parse::BinaryExprNode& n, BinLogicOp op)
       -> prog::expr::NodePtr;
@@ -62,8 +69,6 @@ private:
       -> std::optional<prog::sym::ConstId>;
 
   [[nodiscard]] auto isExhaustive(const std::vector<prog::expr::NodePtr>& conditions) const -> bool;
-
-  [[nodiscard]] auto isBoolType(prog::sym::TypeId type) -> bool;
 };
 
 } // namespace frontend::internal

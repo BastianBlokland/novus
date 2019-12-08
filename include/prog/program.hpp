@@ -57,6 +57,11 @@ public:
   [[nodiscard]] auto beginExecStmts() const -> execStmtIterator;
   [[nodiscard]] auto endExecStmts() const -> execStmtIterator;
 
+  [[nodiscard]] auto getInt() const noexcept -> sym::TypeId;
+  [[nodiscard]] auto getFloat() const noexcept -> sym::TypeId;
+  [[nodiscard]] auto getBool() const noexcept -> sym::TypeId;
+  [[nodiscard]] auto getString() const noexcept -> sym::TypeId;
+
   [[nodiscard]] auto lookupType(const std::string& name) const -> std::optional<sym::TypeId>;
   [[nodiscard]] auto
   lookupFunc(const std::string& name, const sym::Input& input, int maxConversions) const
@@ -70,6 +75,9 @@ public:
 
   [[nodiscard]] auto lookupConversion(sym::TypeId from, sym::TypeId to) const
       -> std::optional<sym::FuncId>;
+
+  [[nodiscard]] auto findCommonType(const std::vector<sym::TypeId>& types)
+      -> std::optional<sym::TypeId>;
 
   [[nodiscard]] auto getTypeDecl(sym::TypeId id) const -> const sym::TypeDecl&;
   [[nodiscard]] auto getFuncDecl(sym::FuncId id) const -> const sym::FuncDecl&;
@@ -98,6 +106,11 @@ private:
   sym::TypeDefTable m_typeDefs;
   sym::FuncDefTable m_funcDefs;
   std::vector<sym::ExecStmt> m_execStmts;
+
+  sym::TypeId m_int;
+  sym::TypeId m_float;
+  sym::TypeId m_bool;
+  sym::TypeId m_string;
 };
 
 } // namespace prog

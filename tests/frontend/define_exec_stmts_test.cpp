@@ -1,7 +1,6 @@
 #include "catch2/catch.hpp"
 #include "frontend/diag_defs.hpp"
 #include "helpers.hpp"
-#include "prog/expr/node_call.hpp"
 #include "prog/expr/node_lit_int.hpp"
 #include "prog/expr/node_lit_string.hpp"
 #include "prog/sym/input.hpp"
@@ -26,17 +25,13 @@ TEST_CASE("Analyzing execute statements", "[frontend]") {
     const auto& output = ANALYZE("print(2)");
     REQUIRE(output.isSuccess());
 
-    const auto conversion = GET_CONV(output, "int", "string");
-    auto convArgs         = std::vector<prog::expr::NodePtr>{};
-    convArgs.push_back(prog::expr::litIntNode(output.getProg(), 2));
-
     auto execsBegin     = output.getProg().beginExecStmts();
     const auto execsEnd = output.getProg().endExecStmts();
     CHECK(
         execsBegin->getActionId() == GET_ACTION_ID(output, "print", GET_TYPE_ID(output, "string")));
     CHECK(
         *execsBegin->getArgs()[0] ==
-        *prog::expr::callExprNode(output.getProg(), *conversion, std::move(convArgs)));
+        *applyConv(output, "int", "string", prog::expr::litIntNode(output.getProg(), 2)));
     REQUIRE(++execsBegin == execsEnd);
   }
 

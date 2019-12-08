@@ -21,7 +21,7 @@ auto DefineExecStmts::visit(const parse::ExecStmtNode& n) -> void {
   auto args          = std::vector<prog::expr::NodePtr>{};
 
   for (auto i = 0U; i < n.getChildCount(); ++i) {
-    auto arg = getExpr(n[i], &consts, &visibleConsts);
+    auto arg = getExpr(n[i], &consts, &visibleConsts, prog::sym::TypeId::inferType());
     if (arg) {
       argTypes.push_back(arg->getType());
       args.push_back(std::move(arg));
@@ -54,9 +54,10 @@ auto DefineExecStmts::visit(const parse::ExecStmtNode& n) -> void {
 auto DefineExecStmts::getExpr(
     const parse::Node& n,
     prog::sym::ConstDeclTable* consts,
-    std::vector<prog::sym::ConstId>* visibleConsts) -> prog::expr::NodePtr {
+    std::vector<prog::sym::ConstId>* visibleConsts,
+    prog::sym::TypeId typeHint) -> prog::expr::NodePtr {
 
-  auto getExpr = GetExpr{m_src, m_prog, consts, visibleConsts};
+  auto getExpr = GetExpr{m_src, m_prog, consts, visibleConsts, typeHint};
   n.accept(&getExpr);
   m_diags.insert(m_diags.end(), getExpr.getDiags().begin(), getExpr.getDiags().end());
   return std::move(getExpr.getValue());

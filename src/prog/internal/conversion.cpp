@@ -1,8 +1,10 @@
 #include "internal/conversion.hpp"
 #include "prog/expr/node_call.hpp"
 #include "prog/program.hpp"
+#include <algorithm>
 #include <limits>
 #include <stdexcept>
+#include <unordered_map>
 
 namespace prog::internal {
 
@@ -30,6 +32,26 @@ auto findConversion(const Program& prog, sym::TypeId from, sym::TypeId to)
   return std::nullopt;
 }
 
+auto findConvertibleTypes(const Program& prog, sym::TypeId from) -> std::vector<sym::TypeId> {
+  const auto& typeTable = internal::getTypeDeclTable(prog);
+  const auto& funcTable = internal::getFuncDeclTable(prog);
+
+  auto result = std::vector<sym::TypeId>{};
+
+  // Conversions are funcs with the name of the target and a single input param.
+  for (const auto& funcDecl : funcTable) {
+    if (funcDecl.getInput().getCount() != 1 || *funcDecl.getInput().begin() != from) {
+      continue;
+    }
+    if (typeTable[funcDecl.getOutput()].getName() != funcDecl.getName()) {
+      continue;
+    }
+    result.push_back(funcDecl.getOutput());
+  }
+
+  return result;
+}
+
 auto applyConversions(
     const Program& prog, const sym::Input& input, std::vector<expr::NodePtr>* args) -> void {
   if (!args) {
@@ -55,6 +77,49 @@ auto applyConversions(
     convArgs.push_back(std::move(*argsItr));
     *argsItr = expr::callExprNode(prog, *conv, std::move(convArgs));
   }
+}
+
+auto findCommonType(const Program& prog, const std::vector<sym::TypeId>& types)
+    -> std::optional<sym::TypeId> {
+
+  auto possible = std::unordered_map<sym::TypeId, unsigned int, sym::TypeIdHasher>{};
+
+  // Gather all types to check (every type and what types those are convertible to).
+  for (const auto& type : types) {
+    possible.insert({type, 0});
+    for (const auto& convertibleType : findConvertibleTypes(prog, type)) {
+      possible.insert({convertibleType, 0});
+    }
+  }
+
+  // Test if the given types are convertible to those and count how many conversions it takes.
+  for (auto possibleItr = possible.begin(); possibleItr != possible.end();) {
+    auto erased = false;
+    for (const auto& type : types) {
+      if (type == possibleItr->first) {
+        continue;
+      }
+      if (findConversion(prog, type, possibleItr->first)) {
+        ++possibleItr->second;
+      } else {
+        possibleItr = possible.erase(possibleItr);
+        erased      = true;
+        break;
+      }
+    }
+    if (!erased) {
+      ++possibleItr;
+    }
+  }
+
+  // Return the type that required the least amount of conversions.
+  auto best = std::min_element(possible.begin(), possible.end(), [](const auto& a, const auto& b) {
+    return a.second < b.second;
+  });
+  if (best != possible.end()) {
+    return best->first;
+  }
+  return std::nullopt;
 }
 
 } // namespace prog::internal

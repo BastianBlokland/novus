@@ -1,7 +1,6 @@
 #include "catch2/catch.hpp"
 #include "frontend/diag_defs.hpp"
 #include "helpers.hpp"
-#include "prog/expr/node_call.hpp"
 #include "prog/expr/node_const.hpp"
 #include "prog/operator.hpp"
 
@@ -10,7 +9,7 @@ namespace frontend {
 TEST_CASE("Analyzing parenthesized expressions", "[frontend]") {
 
   SECTION("Get basic paren expression") {
-    const auto& output = ANALYZE("fun f(int a, int b) -> int ((a) + (b))");
+    const auto& output = ANALYZE("fun f(int a, int b) ((a) + (b))");
     REQUIRE(output.isSuccess());
     const auto& funcDef =
         GET_FUNC_DEF(output, "f", GET_TYPE_ID(output, "int"), GET_TYPE_ID(output, "int"));

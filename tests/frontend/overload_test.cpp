@@ -1,6 +1,5 @@
 #include "catch2/catch.hpp"
 #include "helpers.hpp"
-#include "prog/expr/node_call.hpp"
 
 namespace frontend {
 

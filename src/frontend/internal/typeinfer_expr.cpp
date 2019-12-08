@@ -28,11 +28,7 @@ auto TypeInferExpr::visit(const parse::BinaryExprNode& n) -> void {
   switch (opToken.getKind()) {
   case lex::TokenKind::OpAmpAmp:
   case lex::TokenKind::OpPipePipe: {
-    auto boolType = m_prog->lookupType("bool");
-    if (!boolType) {
-      throw std::logic_error{"No 'bool' type present in type-table"};
-    }
-    m_type = *boolType;
+    m_type = m_prog->getBool();
     break;
   }
   default:
@@ -60,12 +56,28 @@ auto TypeInferExpr::visit(const parse::CallExprNode& n) -> void {
 }
 
 auto TypeInferExpr::visit(const parse::ConditionalExprNode& n) -> void {
+  // Run type-inference on the condition as it might declare consts.
+  inferSubExpr(n[0]);
+
+  auto branchTypes = std::vector<prog::sym::TypeId>{};
+  branchTypes.reserve(2);
+
   const auto ifBranchType = inferSubExpr(n[1]);
-  if (ifBranchType.isConcrete()) {
-    m_type = ifBranchType;
+  if (ifBranchType.isInfer()) {
     return;
   }
-  m_type = inferSubExpr(n[2]);
+  branchTypes.push_back(ifBranchType);
+
+  const auto elseBranchType = inferSubExpr(n[2]);
+  if (elseBranchType.isInfer()) {
+  }
+  branchTypes.push_back(elseBranchType);
+
+  // Find a type that both of the branches are convertible to.
+  auto commonType = m_prog->findCommonType(branchTypes);
+  if (commonType) {
+    m_type = *commonType;
+  }
 }
 
 auto TypeInferExpr::visit(const parse::ConstDeclExprNode& n) -> void {
@@ -110,45 +122,25 @@ auto TypeInferExpr::visit(const parse::IsExprNode& n) -> void {
   }
 
   // Expression itself always evaluates to a bool.
-  auto boolType = m_prog->lookupType("bool");
-  if (!boolType) {
-    throw std::logic_error{"No 'bool' type present in type-table"};
-  }
-  m_type = *boolType;
+  m_type = m_prog->getBool();
 }
 
 auto TypeInferExpr::visit(const parse::LitExprNode& n) -> void {
   switch (n.getVal().getKind()) {
   case lex::TokenKind::LitInt: {
-    auto intType = m_prog->lookupType("int");
-    if (!intType) {
-      throw std::logic_error{"No 'int' type present in type-table"};
-    }
-    m_type = *intType;
+    m_type = m_prog->getInt();
     break;
   }
   case lex::TokenKind::LitFloat: {
-    auto floatType = m_prog->lookupType("float");
-    if (!floatType) {
-      throw std::logic_error{"No 'float' type present in type-table"};
-    }
-    m_type = *floatType;
+    m_type = m_prog->getFloat();
     break;
   }
   case lex::TokenKind::LitBool: {
-    auto boolType = m_prog->lookupType("bool");
-    if (!boolType) {
-      throw std::logic_error{"No 'bool' type present in type-table"};
-    }
-    m_type = *boolType;
+    m_type = m_prog->getBool();
     break;
   }
   case lex::TokenKind::LitString: {
-    auto stringType = m_prog->lookupType("string");
-    if (!stringType) {
-      throw std::logic_error{"No 'string' type present in type-table"};
-    }
-    m_type = *stringType;
+    m_type = m_prog->getString();
     break;
   }
   default:
@@ -167,22 +159,29 @@ auto TypeInferExpr::visit(const parse::SwitchExprIfNode & /*unused*/) -> void {
 }
 
 auto TypeInferExpr::visit(const parse::SwitchExprNode& n) -> void {
+  auto branchTypes = std::vector<prog::sym::TypeId>{};
+  branchTypes.reserve(n.getChildCount());
+
   for (auto i = 0U; i < n.getChildCount(); ++i) {
     const auto isElseClause = n.hasElse() && i == n.getChildCount() - 1;
 
-    // Also run type-inference on the conditions as they might declare consts.
+    // Run type-inference on the conditions as they might declare consts.
     if (!isElseClause) {
       inferSubExpr(n[i][0]);
     }
 
-    // Get type of the branch.
+    // Get types of the branches.
     auto branchType = inferSubExpr(n[i][isElseClause ? 0 : 1]);
-
-    // Because all branches have the same type we can stop when we successfully inferred one.
-    if (branchType.isConcrete()) {
-      m_type = branchType;
+    if (branchType.isInfer()) {
       return;
     }
+    branchTypes.push_back(branchType);
+  }
+
+  // Find a type that all of the branches are convertible to.
+  auto commonType = m_prog->findCommonType(branchTypes);
+  if (commonType) {
+    m_type = *commonType;
   }
 }
 

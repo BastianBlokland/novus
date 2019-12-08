@@ -43,10 +43,6 @@ auto unionCheckExprNode(const Program& prog, NodePtr lhs, sym::TypeId targetType
   if (!lhs) {
     throw std::invalid_argument{"Left-hand-side expression in union-check cannot be null"};
   }
-  const auto boolType = prog.lookupType("bool");
-  if (!boolType) {
-    throw std::logic_error{"No 'bool' type found in program"};
-  }
 
   const auto& exprTypeDecl = prog.getTypeDecl(lhs->getType());
   if (exprTypeDecl.getKind() != sym::TypeKind::UserUnion) {
@@ -61,7 +57,7 @@ auto unionCheckExprNode(const Program& prog, NodePtr lhs, sym::TypeId targetType
   }
 
   return std::unique_ptr<UnionCheckExprNode>{
-      new UnionCheckExprNode{*boolType, std::move(lhs), targetType}};
+      new UnionCheckExprNode{prog.getBool(), std::move(lhs), targetType}};
 }
 
 } // namespace prog::expr
