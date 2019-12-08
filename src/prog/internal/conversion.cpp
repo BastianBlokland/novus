@@ -43,6 +43,9 @@ auto findConvertibleTypes(const Program& prog, sym::TypeId from) -> std::vector<
     if (funcDecl.getInput().getCount() != 1 || *funcDecl.getInput().begin() != from) {
       continue;
     }
+    if (!funcDecl.getOutput().isConcrete()) {
+      continue;
+    }
     if (typeTable[funcDecl.getOutput()].getName() != funcDecl.getName()) {
       continue;
     }
