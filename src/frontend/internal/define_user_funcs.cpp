@@ -25,12 +25,16 @@ auto DefineUserFuncs::define(prog::sym::FuncId id, const parse::FuncDeclStmtNode
 
   auto visibleConsts = consts.getAll();
   auto expr          = getExpr(n[0], &consts, &visibleConsts, funcRetType);
-  if (!expr) {
+
+  // Report this diagnostic after processing the body so other diagnostics are also reported.
+  if (funcRetType.isInfer()) {
+    m_diags.push_back(
+        errUnableToInferFuncReturnType(m_src, funcDecl.getName(), n.getId().getSpan()));
     return;
   }
 
-  if (funcRetType.isInfer()) {
-    m_diags.push_back(errUnableToInferFuncReturnType(m_src, funcDecl.getName(), n[0].getSpan()));
+  if (!expr) {
+    assert(!m_diags.empty());
     return;
   }
 
@@ -48,8 +52,8 @@ auto DefineUserFuncs::define(prog::sym::FuncId id, const parse::FuncDeclStmtNode
     return;
   }
 
-  const auto& declaredType = m_prog->getTypeDecl(funcDecl.getOutput()).getName();
-  const auto& returnedType = m_prog->getTypeDecl(expr->getType()).getName();
+  const auto& declaredType = getName(*m_prog, funcDecl.getOutput());
+  const auto& returnedType = getName(*m_prog, expr->getType());
   m_diags.push_back(errNonMatchingFuncReturnType(
       m_src, funcDecl.getName(), declaredType, returnedType, n[0].getSpan()));
 }

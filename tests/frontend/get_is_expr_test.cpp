@@ -78,8 +78,8 @@ TEST_CASE("Analyzing 'is' expressions", "[frontend]") {
         errUncheckedIsExpressionWithConst(src, input::Span{38, 40}));
     CHECK_DIAG(
         "union U = int, float "
-        "fun f(U u) (u is int i || true) ? i : 42",
-        errUncheckedIsExpressionWithConst(src, input::Span{38, 40}));
+        "fun f(U u) -> int (u is int i || true) ? i : 42",
+        errUncheckedIsExpressionWithConst(src, input::Span{45, 47}));
 
     CHECK_DIAG(
         "union U = int, float "

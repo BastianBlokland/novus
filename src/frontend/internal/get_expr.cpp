@@ -78,8 +78,8 @@ auto GetExpr::visit(const parse::BinaryExprNode& n) -> void {
   auto func     = m_prog->lookupFunc(
       prog::getFuncName(op.value()), prog::sym::Input{{args[0]->getType(), args[1]->getType()}}, 1);
   if (!func) {
-    const auto& lhsTypeName = m_prog->getTypeDecl(args[0]->getType()).getName();
-    const auto& rhsTypeName = m_prog->getTypeDecl(args[1]->getType()).getName();
+    const auto& lhsTypeName = getName(*m_prog, args[0]->getType());
+    const auto& rhsTypeName = getName(*m_prog, args[1]->getType());
     m_diags.push_back(errUndeclaredBinOperator(
         m_src, getText(op.value()), lhsTypeName, rhsTypeName, opToken.getSpan()));
     return;
@@ -116,7 +116,7 @@ auto GetExpr::visit(const parse::CallExprNode& n) -> void {
     } else {
       auto argTypeNames = std::vector<std::string>{};
       for (const auto& argType : argTypes) {
-        argTypeNames.push_back(m_prog->getTypeDecl(argType).getName());
+        argTypeNames.push_back(getName(*m_prog, argType));
       }
       m_diags.push_back(errUndeclaredFuncOverload(m_src, funcName, argTypeNames, n.getSpan()));
     }
@@ -406,7 +406,7 @@ auto GetExpr::visit(const parse::UnaryExprNode& n) -> void {
   auto func =
       m_prog->lookupFunc(prog::getFuncName(op.value()), prog::sym::Input{{args[0]->getType()}}, 0);
   if (!func) {
-    const auto& typeName = m_prog->getTypeDecl(args[0]->getType()).getName();
+    const auto& typeName = getName(*m_prog, args[0]->getType());
     m_diags.push_back(
         errUndeclaredUnaryOperator(m_src, getText(op.value()), typeName, opToken.getSpan()));
     return;
@@ -451,8 +451,8 @@ auto GetExpr::applyConversion(prog::expr::NodePtr* expr, prog::sym::TypeId toTyp
 
   const auto conv = m_prog->lookupConversion(fromType, toType);
   if (!conv) {
-    const auto& fromName = m_prog->getTypeDecl(fromType).getName();
-    const auto& toName   = m_prog->getTypeDecl(toType).getName();
+    const auto& fromName = getName(*m_prog, fromType);
+    const auto& toName   = getName(*m_prog, toType);
     m_diags.push_back(errNoConversionFound(m_src, fromName, toName, span));
     return false;
   }

@@ -10,6 +10,9 @@ namespace prog::internal {
 
 auto findConversion(const Program& prog, sym::TypeId from, sym::TypeId to)
     -> std::optional<sym::FuncId> {
+  if (!from.isConcrete() || !to.isConcrete()) {
+    return std::nullopt;
+  }
   if (from == to) {
     throw std::logic_error{"No conversion required if types are equal"};
   }

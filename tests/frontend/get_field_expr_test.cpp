@@ -49,11 +49,12 @@ TEST_CASE("Analyzing field expressions", "[frontend]") {
   }
 
   SECTION("Diagnostics") {
-    CHECK_DIAG("fun f(int i) i.a", errFieldNotFoundOnType(src, "a", "int", input::Span{13, 15}));
+    CHECK_DIAG(
+        "fun f(int i) -> int i.a", errFieldNotFoundOnType(src, "a", "int", input::Span{20, 22}));
     CHECK_DIAG(
         "struct S = int a "
-        "fun f(S s) s.b",
-        errFieldNotFoundOnType(src, "b", "S", input::Span{28, 30}));
+        "fun f(S s) -> int s.b",
+        errFieldNotFoundOnType(src, "b", "S", input::Span{35, 37}));
   }
 }
 
