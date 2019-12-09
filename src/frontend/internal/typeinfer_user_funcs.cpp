@@ -11,6 +11,14 @@ TypeInferUserFuncs::TypeInferUserFuncs(prog::Program* prog) : m_prog{prog} {}
 auto TypeInferUserFuncs::inferRetType(prog::sym::FuncId id, const parse::FuncDeclStmtNode& n)
     -> bool {
 
+  // If we've processed this func before (and failed) we try more aggressively.
+  // Reason for this is that in the first iteration we only make a decision if we are sure that its
+  // the best type (mostly related to conversions), and hope that more information will become
+  // available when we type-infer the other functions. In the second 'aggressive' iteration we trust
+  // that this is all the information we will get and make a choice based on that.
+  auto agressive = m_processed.find(id) != m_processed.end();
+  m_processed.insert(id);
+
   auto constTypes = std::unordered_map<std::string, prog::sym::TypeId>{};
   for (const auto& arg : n.getArgs()) {
     const auto argType = m_prog->lookupType(getName(arg.getType()));
@@ -19,7 +27,7 @@ auto TypeInferUserFuncs::inferRetType(prog::sym::FuncId id, const parse::FuncDec
     }
   }
 
-  auto inferBodyType = TypeInferExpr{m_prog, &constTypes};
+  auto inferBodyType = TypeInferExpr{m_prog, &constTypes, agressive};
   n[0].accept(&inferBodyType);
   const auto type = inferBodyType.getType();
 

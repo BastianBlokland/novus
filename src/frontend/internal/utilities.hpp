@@ -2,6 +2,7 @@
 #include "lex/token.hpp"
 #include "lex/token_payload_id.hpp"
 #include "prog/operator.hpp"
+#include "prog/program.hpp"
 
 namespace frontend::internal {
 
@@ -10,6 +11,13 @@ inline auto getName(const lex::Token& token) -> std::string {
     return "__unknown";
   }
   return token.getPayload<lex::IdentifierTokenPayload>()->getIdentifier();
+}
+
+inline auto getName(const prog::Program& prog, prog::sym::TypeId typeId) -> std::string {
+  if (!typeId.isConcrete()) {
+    return "unknown";
+  }
+  return prog.getTypeDecl(typeId).getName();
 }
 
 inline auto getOperator(const lex::Token& token) -> std::optional<prog::Operator> {

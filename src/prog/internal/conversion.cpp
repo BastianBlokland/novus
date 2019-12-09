@@ -10,6 +10,9 @@ namespace prog::internal {
 
 auto findConversion(const Program& prog, sym::TypeId from, sym::TypeId to)
     -> std::optional<sym::FuncId> {
+  if (!from.isConcrete() || !to.isConcrete()) {
+    return std::nullopt;
+  }
   if (from == to) {
     throw std::logic_error{"No conversion required if types are equal"};
   }
@@ -84,6 +87,10 @@ auto applyConversions(
 
 auto findCommonType(const Program& prog, const std::vector<sym::TypeId>& types)
     -> std::optional<sym::TypeId> {
+
+  if (types.size() == 1U) {
+    return types[0];
+  }
 
   auto possible = std::unordered_map<sym::TypeId, unsigned int, sym::TypeIdHasher>{};
 

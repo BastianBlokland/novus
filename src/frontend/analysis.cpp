@@ -60,6 +60,7 @@ auto analyze(const Source& src) -> Output {
 
   // Infer return-types of user functions (run multiple passes until all have been inferred).
   auto typeInferUserFuncs = internal::TypeInferUserFuncs{prog.get()};
+  auto firstInferItr      = true;
   bool inferredAllFuncs;
   do {
     inferredAllFuncs = true;
@@ -74,9 +75,10 @@ auto analyze(const Source& src) -> Output {
       inferredOne |= success;
     }
     // Stop the loop if we failed to make any progress.
-    if (!inferredOne) {
+    if (!firstInferItr && !inferredOne) {
       break;
     }
+    firstInferItr = false;
   } while (!inferredAllFuncs);
 
   // Define user functions.

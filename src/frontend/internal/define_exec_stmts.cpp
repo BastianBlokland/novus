@@ -45,7 +45,7 @@ auto DefineExecStmts::visit(const parse::ExecStmtNode& n) -> void {
   } else {
     auto argTypeNames = std::vector<std::string>{};
     for (const auto& argType : argTypes) {
-      argTypeNames.push_back(m_prog->getTypeDecl(argType).getName());
+      argTypeNames.push_back(getName(*m_prog, argType));
     }
     m_diags.push_back(errUndeclaredActionOverload(m_src, actionName, argTypeNames, n.getSpan()));
   }

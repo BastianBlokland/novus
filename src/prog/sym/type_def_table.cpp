@@ -20,9 +20,6 @@ auto TypeDefTable::registerStruct(
   if (typeTable[id].getKind() != sym::TypeKind::UserStruct) {
     throw std::invalid_argument{"Type has not been declared as being a user-defined struct"};
   }
-  if (fields.getCount() == 0) {
-    throw std::invalid_argument{"Struct needs at least one field"};
-  }
   auto itr = m_types.find(id);
   if (itr != m_types.end()) {
     throw std::logic_error{"Type already has a definition registered"};

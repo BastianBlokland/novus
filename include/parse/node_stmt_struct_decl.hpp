@@ -25,7 +25,7 @@ public:
   friend auto structDeclStmtNode(
       lex::Token kw,
       lex::Token id,
-      lex::Token eq,
+      std::optional<lex::Token> eq,
       std::vector<StructDeclStmtNode::FieldSpec> fields,
       std::vector<lex::Token> commas) -> NodePtr;
 
@@ -46,14 +46,14 @@ public:
 private:
   const lex::Token m_kw;
   const lex::Token m_id;
-  const lex::Token m_eq;
+  const std::optional<lex::Token> m_eq;
   const std::vector<FieldSpec> m_fields;
   const std::vector<lex::Token> m_commas;
 
   StructDeclStmtNode(
       lex::Token kw,
       lex::Token id,
-      lex::Token eq,
+      std::optional<lex::Token> eq,
       std::vector<FieldSpec> fields,
       std::vector<lex::Token> commas);
 
@@ -64,7 +64,7 @@ private:
 auto structDeclStmtNode(
     lex::Token kw,
     lex::Token id,
-    lex::Token eq,
+    std::optional<lex::Token> eq,
     std::vector<StructDeclStmtNode::FieldSpec> fields,
     std::vector<lex::Token> commas) -> NodePtr;
 

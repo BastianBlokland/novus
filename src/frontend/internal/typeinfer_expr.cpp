@@ -7,8 +7,13 @@
 namespace frontend::internal {
 
 TypeInferExpr::TypeInferExpr(
-    prog::Program* prog, std::unordered_map<std::string, prog::sym::TypeId>* constTypes) :
-    m_prog{prog}, m_constTypes{constTypes}, m_type{prog::sym::TypeId::inferType()} {
+    prog::Program* prog,
+    std::unordered_map<std::string, prog::sym::TypeId>* constTypes,
+    bool aggressive) :
+    m_prog{prog},
+    m_constTypes{constTypes},
+    m_aggressive{aggressive},
+    m_type{prog::sym::TypeId::inferType()} {
   if (m_prog == nullptr) {
     throw std::invalid_argument{"Program cannot be null"};
   }
@@ -63,15 +68,19 @@ auto TypeInferExpr::visit(const parse::ConditionalExprNode& n) -> void {
   branchTypes.reserve(2);
 
   const auto ifBranchType = inferSubExpr(n[1]);
-  if (ifBranchType.isInfer()) {
+  if (ifBranchType.isInfer() && !m_aggressive) {
     return;
   }
-  branchTypes.push_back(ifBranchType);
+  if (ifBranchType.isConcrete()) {
+    branchTypes.push_back(ifBranchType);
+  }
 
   const auto elseBranchType = inferSubExpr(n[2]);
-  if (elseBranchType.isInfer()) {
+  if (elseBranchType.isInfer() && !m_aggressive) {
   }
-  branchTypes.push_back(elseBranchType);
+  if (elseBranchType.isConcrete()) {
+    branchTypes.push_back(elseBranchType);
+  }
 
   // Find a type that both of the branches are convertible to.
   auto commonType = m_prog->findCommonType(branchTypes);
@@ -172,10 +181,12 @@ auto TypeInferExpr::visit(const parse::SwitchExprNode& n) -> void {
 
     // Get types of the branches.
     auto branchType = inferSubExpr(n[i][isElseClause ? 0 : 1]);
-    if (branchType.isInfer()) {
+    if (branchType.isInfer() && !m_aggressive) {
       return;
     }
-    branchTypes.push_back(branchType);
+    if (branchType.isConcrete()) {
+      branchTypes.push_back(branchType);
+    }
   }
 
   // Find a type that all of the branches are convertible to.
@@ -212,7 +223,7 @@ auto TypeInferExpr::visit(const parse::UnionDeclStmtNode & /*unused*/) -> void {
 }
 
 auto TypeInferExpr::inferSubExpr(const parse::Node& n) -> prog::sym::TypeId {
-  auto visitor = TypeInferExpr{m_prog, m_constTypes};
+  auto visitor = TypeInferExpr{m_prog, m_constTypes, m_aggressive};
   n.accept(&visitor);
   return visitor.getType();
 }

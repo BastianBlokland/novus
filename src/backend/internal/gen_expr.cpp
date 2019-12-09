@@ -189,6 +189,12 @@ auto GenExpr::visit(const prog::expr::CallExprNode& n) -> void {
 
   case prog::sym::FuncKind::MakeStruct: {
     auto fieldCount = n.getChildCount();
+    if (fieldCount == 0U) {
+      // For empty structs we avoid the allocation as they require no storage.
+      m_builder->addLoadLitInt(0);
+      break;
+    }
+
     if (fieldCount > std::numeric_limits<uint8_t>::max()) {
       throw std::logic_error{"More then 256 fields in one struct are not supported"};
     }
