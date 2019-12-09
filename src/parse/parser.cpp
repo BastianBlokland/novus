@@ -101,33 +101,39 @@ auto ParserImpl::nextStmtFuncDecl() -> NodePtr {
 }
 
 auto ParserImpl::nextStmtStructDecl() -> NodePtr {
-  auto kw     = consumeToken();
-  auto id     = consumeToken();
-  auto eq     = consumeToken();
-  auto fields = std::vector<StructDeclStmtNode::FieldSpec>{};
-  auto commas = std::vector<lex::Token>{};
-  while (peekToken(0).getKind() == lex::TokenKind::Identifier) {
-    auto fieldType = consumeToken();
-    auto fieldId   = consumeToken();
-    fields.emplace_back(fieldType, fieldId);
-    if (peekToken(0).getKind() == lex::TokenKind::SepComma) {
-      commas.push_back(consumeToken());
-    } else {
-      break;
+  auto kw      = consumeToken();
+  auto id      = consumeToken();
+  auto isEmpty = peekToken(0).getKind() != lex::TokenKind::OpEq;
+  auto eq      = isEmpty ? std::nullopt : std::optional{consumeToken()};
+  auto fields  = std::vector<StructDeclStmtNode::FieldSpec>{};
+  auto commas  = std::vector<lex::Token>{};
+  if (!isEmpty) {
+    while (peekToken(0).getKind() == lex::TokenKind::Identifier) {
+      auto fieldType = consumeToken();
+      auto fieldId   = consumeToken();
+      fields.emplace_back(fieldType, fieldId);
+      if (peekToken(0).getKind() == lex::TokenKind::SepComma) {
+        commas.push_back(consumeToken());
+      } else {
+        break;
+      }
     }
   }
 
-  if (getKw(kw) == lex::Keyword::Struct && id.getKind() == lex::TokenKind::Identifier &&
-      eq.getKind() == lex::TokenKind::OpEq && !fields.empty() &&
-      std::all_of(
-          fields.begin(),
-          fields.end(),
-          [](const auto& a) {
-            return a.getIdentifier().getKind() == lex::TokenKind::Identifier &&
-                a.getType().getKind() == lex::TokenKind::Identifier;
-          }) &&
-      commas.size() == fields.size() - 1) {
+  auto isValid = getKw(kw) == lex::Keyword::Struct && id.getKind() == lex::TokenKind::Identifier;
+  if (!isEmpty) {
+    isValid &= !fields.empty() &&
+        std::all_of(
+            fields.begin(),
+            fields.end(),
+            [](const auto& a) {
+              return a.getIdentifier().getKind() == lex::TokenKind::Identifier &&
+                  a.getType().getKind() == lex::TokenKind::Identifier;
+            }) &&
+        (commas.size() == fields.size() - 1);
+  }
 
+  if (isValid) {
     return structDeclStmtNode(
         std::move(kw), std::move(id), std::move(eq), std::move(fields), std::move(commas));
   }

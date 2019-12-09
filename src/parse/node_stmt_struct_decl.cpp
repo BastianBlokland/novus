@@ -23,7 +23,7 @@ auto StructDeclStmtNode::FieldSpec::getIdentifier() const noexcept -> const lex:
 StructDeclStmtNode::StructDeclStmtNode(
     lex::Token kw,
     lex::Token id,
-    lex::Token eq,
+    std::optional<lex::Token> eq,
     std::vector<StructDeclStmtNode::FieldSpec> fields,
     std::vector<lex::Token> commas) :
     m_kw{std::move(kw)},
@@ -48,7 +48,9 @@ auto StructDeclStmtNode::operator[](unsigned int /*unused*/) const -> const Node
 auto StructDeclStmtNode::getChildCount() const -> unsigned int { return 0; }
 
 auto StructDeclStmtNode::getSpan() const -> input::Span {
-  return input::Span::combine(m_kw.getSpan(), m_fields.back().getIdentifier().getSpan());
+  return input::Span::combine(
+      m_kw.getSpan(),
+      m_fields.empty() ? m_id.getSpan() : m_fields.back().getIdentifier().getSpan());
 }
 
 auto StructDeclStmtNode::getId() const -> const lex::Token& { return m_id; }
@@ -58,7 +60,10 @@ auto StructDeclStmtNode::getFields() const -> const std::vector<FieldSpec>& { re
 auto StructDeclStmtNode::accept(NodeVisitor* visitor) const -> void { visitor->visit(*this); }
 
 auto StructDeclStmtNode::print(std::ostream& out) const -> std::ostream& {
-  out << "struct-" << getIdOrErr(m_id) << '=';
+  out << "struct-" << getIdOrErr(m_id);
+  if (m_eq) {
+    out << '=';
+  }
   for (auto i = 0U; i < m_fields.size(); ++i) {
     if (i != 0) {
       out << ",";
@@ -72,13 +77,13 @@ auto StructDeclStmtNode::print(std::ostream& out) const -> std::ostream& {
 auto structDeclStmtNode(
     lex::Token kw,
     lex::Token id,
-    lex::Token eq,
+    std::optional<lex::Token> eq,
     std::vector<StructDeclStmtNode::FieldSpec> fields,
     std::vector<lex::Token> commas) -> NodePtr {
-  if (fields.empty()) {
-    throw std::invalid_argument{"Struct needs atleast one field"};
+  if (eq && fields.empty()) {
+    throw std::invalid_argument{"Non-empty struct needs atleast one field"};
   }
-  if (commas.size() != fields.size() - 1) {
+  if (commas.size() != (fields.empty() ? 0 : fields.size() - 1)) {
     throw std::invalid_argument{"Incorrect number of commas"};
   }
   return std::unique_ptr<StructDeclStmtNode>{new StructDeclStmtNode{

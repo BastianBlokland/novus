@@ -42,6 +42,16 @@ auto generateStructEquality(
     Builder* builder, const prog::Program& program, const prog::sym::StructDef& structDef) -> void {
   builder->label(getUserTypeEqLabel(structDef.getId()));
 
+  // For empty structs we can just return 'true'.
+  if (structDef.getFields().getCount() == 0) {
+    builder->addPop();
+    builder->addPop();
+    builder->addLoadLitInt(1);
+    builder->addRet();
+    builder->addFail(); // Add a fail between sections to aid in detecting invalid programs.
+    return;
+  }
+
   // Store the 2 structs as consts.
   builder->addReserveConsts(2);
   builder->addStoreConst(0);

@@ -11,6 +11,7 @@ TEST_CASE("Parsing struct declaration statements", "[parse]") {
       "struct s = int a",
       structDeclStmtNode(
           STRUCT, ID("s"), EQ, {StructDeclStmtNode::FieldSpec(ID("int"), ID("a"))}, COMMAS(0)));
+  CHECK_STMT("struct s", structDeclStmtNode(STRUCT, ID("s"), std::nullopt, {}, {}));
   CHECK_STMT(
       "struct s = int a, bool b",
       structDeclStmtNode(
@@ -42,15 +43,15 @@ TEST_CASE("Parsing struct declaration statements", "[parse]") {
         errInvalidStmtStructDecl(
             STRUCT, FUN, EQ, {StructDeclStmtNode::FieldSpec(ID("int"), ID("a"))}, COMMAS(0)));
     CHECK_STMT(
-        "struct s fun int a",
+        "struct s = int fun",
         errInvalidStmtStructDecl(
-            STRUCT, ID("s"), FUN, {StructDeclStmtNode::FieldSpec(ID("int"), ID("a"))}, COMMAS(0)));
+            STRUCT, ID("s"), EQ, {StructDeclStmtNode::FieldSpec(ID("int"), FUN)}, COMMAS(0)));
   }
 
   SECTION("Spans") {
     CHECK_STMT_SPAN(" struct user = int a ", input::Span(1, 19));
     CHECK_STMT_SPAN(" struct user = int a, bool b ", input::Span(1, 27));
   }
-}
+} // namespace parse
 
 } // namespace parse
