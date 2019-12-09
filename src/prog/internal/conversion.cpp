@@ -88,6 +88,10 @@ auto applyConversions(
 auto findCommonType(const Program& prog, const std::vector<sym::TypeId>& types)
     -> std::optional<sym::TypeId> {
 
+  if (types.size() == 1U) {
+    return types[0];
+  }
+
   auto possible = std::unordered_map<sym::TypeId, unsigned int, sym::TypeIdHasher>{};
 
   // Gather all types to check (every type and what types those are convertible to).

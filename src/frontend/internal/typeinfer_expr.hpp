@@ -9,7 +9,9 @@ class TypeInferExpr final : public parse::NodeVisitor {
 public:
   TypeInferExpr() = delete;
   TypeInferExpr(
-      prog::Program* prog, std::unordered_map<std::string, prog::sym::TypeId>* constTypes);
+      prog::Program* prog,
+      std::unordered_map<std::string, prog::sym::TypeId>* constTypes,
+      bool aggressive);
 
   [[nodiscard]] auto getType() const noexcept -> prog::sym::TypeId;
 
@@ -36,6 +38,7 @@ public:
 private:
   prog::Program* m_prog;
   std::unordered_map<std::string, prog::sym::TypeId>* m_constTypes;
+  bool m_aggressive;
   prog::sym::TypeId m_type;
 
   auto inferSubExpr(const parse::Node& n) -> prog::sym::TypeId;

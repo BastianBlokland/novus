@@ -112,6 +112,24 @@ TEST_CASE("Infer return type of user functions", "[frontend]") {
     CHECK(GET_FUNC_DECL(output, "f1").getOutput() == GET_TYPE_ID(output, "bool"));
   }
 
+  SECTION("Recursive call in conditional") {
+    const auto& output = ANALYZE("fun f(bool b) b ? f(false) : 42");
+    REQUIRE(output.isSuccess());
+    CHECK(
+        GET_FUNC_DECL(output, "f", GET_TYPE_ID(output, "bool")).getOutput() ==
+        GET_TYPE_ID(output, "int"));
+  }
+
+  SECTION("Recursive call in switch") {
+    const auto& output = ANALYZE("fun f(bool b) "
+                                 "  if b  -> f(false) "
+                                 "  else  -> 42");
+    REQUIRE(output.isSuccess());
+    CHECK(
+        GET_FUNC_DECL(output, "f", GET_TYPE_ID(output, "bool")).getOutput() ==
+        GET_TYPE_ID(output, "int"));
+  }
+
   SECTION("Diagnostics") {
     CHECK_DIAG(
         "fun f1() f2() "
