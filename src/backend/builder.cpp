@@ -21,8 +21,17 @@ auto Builder::label(std::string label) -> void {
 }
 
 auto Builder::addLoadLitInt(int32_t val) -> void {
-  writeOpCode(vm::OpCode::LoadLitInt);
-  writeInt32(val);
+  if (val == 0) {
+    writeOpCode(vm::OpCode::LoadLitInt0);
+  } else if (val == 1) {
+    writeOpCode(vm::OpCode::LoadLitInt1);
+  } else if (val >= 0 && val <= std::numeric_limits<uint8_t>::max()) {
+    writeOpCode(vm::OpCode::LoadLitIntSmall);
+    writeUInt8(static_cast<uint8_t>(val));
+  } else {
+    writeOpCode(vm::OpCode::LoadLitInt);
+    writeInt32(val);
+  }
 }
 
 auto Builder::addLoadLitFloat(float val) -> void {

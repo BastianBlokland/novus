@@ -5,13 +5,17 @@
 namespace vm {
 
 enum class OpCode : uint8_t {
-  LoadLitInt    = 10,
-  LoadLitFloat  = 11,
-  LoadLitString = 12,
+  LoadLitInt      = 10,
+  LoadLitIntSmall = 11,
+  LoadLitInt0     = 12,
+  LoadLitInt1     = 13,
 
-  ReserveConsts = 20,
-  StoreConst    = 21,
-  LoadConst     = 22,
+  LoadLitFloat  = 20,
+  LoadLitString = 21,
+
+  ReserveConsts = 30,
+  StoreConst    = 31,
+  LoadConst     = 32,
 
   AddInt      = 50,
   AddFloat    = 51,
