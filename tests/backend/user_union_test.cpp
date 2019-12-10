@@ -10,9 +10,6 @@ TEST_CASE("Generating assembly for user-unions", "[backend]") {
         "union Val = int, float "
         "print(Val(1) == Val(1.0))",
         [](backend::Builder* builder) -> void {
-          const auto intTypeId   = 1;
-          const auto floatTypeId = 2;
-
           // --- Union equality function start.
           builder->label("ValEq");
           // Store both unions as consts.
@@ -36,14 +33,14 @@ TEST_CASE("Generating assembly for user-unions", "[backend]") {
           // Check if the union type is int.
           builder->addLoadConst(0);
           builder->addLoadStructField(0);
-          builder->addLoadLitInt(intTypeId);
+          builder->addLoadLitInt(0); // 0 because 'int' is the first type in the union.
           builder->addCheckEqInt();
           builder->addJumpIf("int");
 
           // Check if the union type is float.
           builder->addLoadConst(0);
           builder->addLoadStructField(0);
-          builder->addLoadLitInt(floatTypeId);
+          builder->addLoadLitInt(1); // 1 because 'float' is the second type in the union.
           builder->addCheckEqInt();
           builder->addJumpIf("float");
 
@@ -82,12 +79,12 @@ TEST_CASE("Generating assembly for user-unions", "[backend]") {
           // --- Print statement start.
           builder->label("print");
           // Make union with int 'Val(1)'.
-          builder->addLoadLitInt(intTypeId);
+          builder->addLoadLitInt(0); // 0 because 'int' is the first type in the union.
           builder->addLoadLitInt(1);
           builder->addMakeStruct(2);
 
           // Make union with float 'Val(1.0)'.
-          builder->addLoadLitInt(floatTypeId);
+          builder->addLoadLitInt(1); // 1 because 'float' is the second type in the union.
           builder->addLoadLitFloat(1.0F);
           builder->addMakeStruct(2);
 

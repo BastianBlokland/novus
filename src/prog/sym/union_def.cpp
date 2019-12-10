@@ -13,4 +13,12 @@ auto UnionDef::hasType(sym::TypeId type) const noexcept -> bool {
   return std::find(m_types.begin(), m_types.end(), type) != m_types.end();
 }
 
+auto UnionDef::getTypeIndex(sym::TypeId type) const -> unsigned int {
+  const auto itr = std::find(m_types.begin(), m_types.end(), type);
+  if (itr == m_types.end()) {
+    throw std::invalid_argument{"Given type is not part of the union"};
+  }
+  return itr - m_types.begin();
+}
+
 } // namespace prog::sym
