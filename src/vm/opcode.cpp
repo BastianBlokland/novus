@@ -7,9 +7,20 @@ auto operator<<(std::ostream& out, const OpCode& rhs) -> std::ostream& {
   case OpCode::LoadLitInt:
     out << "load-int";
     break;
+  case OpCode::LoadLitIntSmall:
+    out << "load-int-small";
+    break;
+  case OpCode::LoadLitInt0:
+    out << "load-int-0";
+    break;
+  case OpCode::LoadLitInt1:
+    out << "load-int-1";
+    break;
+
   case OpCode::LoadLitFloat:
     out << "load-float";
     break;
+
   case OpCode::LoadLitString:
     out << "load-string";
     break;

@@ -31,6 +31,16 @@ static auto execute(const Assembly& assembly, io::Interface* interface, uint32_t
       auto litInt = scope->readInt32();
       evalStack.push(internal::intValue(litInt));
     } break;
+    case OpCode::LoadLitIntSmall: {
+      auto litInt = scope->readUInt8();
+      evalStack.push(internal::intValue(litInt));
+    } break;
+    case OpCode::LoadLitInt0: {
+      evalStack.push(internal::intValue(0));
+    } break;
+    case OpCode::LoadLitInt1: {
+      evalStack.push(internal::intValue(1));
+    } break;
     case OpCode::LoadLitFloat: {
       auto litFloat = scope->readFloat();
       evalStack.push(internal::floatValue(litFloat));
