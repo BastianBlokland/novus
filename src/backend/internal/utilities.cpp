@@ -32,4 +32,19 @@ auto getFieldId(prog::sym::FieldId fieldId) -> uint8_t {
   return static_cast<uint8_t>(fieldNum);
 }
 
+auto getUnionTypeId(
+    const prog::Program& prog, prog::sym::TypeId unionType, prog::sym::TypeId targetType)
+    -> uint8_t {
+  const auto& typeDef = prog.getTypeDef(unionType);
+  if (!std::holds_alternative<prog::sym::UnionDef>(typeDef)) {
+    throw std::logic_error{"Child expression has to be of a union type"};
+  }
+  const auto& unionDef = std::get<prog::sym::UnionDef>(typeDef);
+  const auto index     = unionDef.getTypeIndex(targetType);
+  if (index > std::numeric_limits<uint8_t>::max()) {
+    throw std::logic_error{"More then 256 types in one union are not supported"};
+  }
+  return static_cast<uint8_t>(index);
+}
+
 } // namespace backend::internal

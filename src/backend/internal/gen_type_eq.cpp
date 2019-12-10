@@ -100,11 +100,9 @@ auto generateUnionEquality(
   // Check which type the union is.
   builder->label(sameTypeLabel);
   for (auto i = 0U; i != unionDef.getTypes().size(); ++i) {
-    const auto& type = unionDef.getTypes()[i];
-
     builder->addLoadConst(0);
     builder->addLoadStructField(0);
-    builder->addLoadLitInt(static_cast<int32_t>(type.getNum()));
+    builder->addLoadLitInt(i);
     builder->addCheckEqInt();
 
     // If its this type then jump to the value check for that type.

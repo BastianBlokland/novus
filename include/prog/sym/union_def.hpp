@@ -20,6 +20,7 @@ public:
   [[nodiscard]] auto getId() const noexcept -> const TypeId&;
   [[nodiscard]] auto getTypes() const noexcept -> const std::vector<sym::TypeId>&;
   [[nodiscard]] auto hasType(sym::TypeId type) const noexcept -> bool;
+  [[nodiscard]] auto getTypeIndex(sym::TypeId type) const -> unsigned int;
 
 private:
   sym::TypeId m_id;

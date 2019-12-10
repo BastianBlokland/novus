@@ -57,8 +57,7 @@ auto GenExpr::visit(const prog::expr::CallExprNode& n) -> void {
   const auto& funcDecl = m_program.getFuncDecl(n.getFunc());
   if (funcDecl.getKind() == prog::sym::FuncKind::MakeUnion) {
     // Union is an exception where the type-id needs to be on the stack before the argument.
-    auto type = n[0].getType();
-    m_builder->addLoadLitInt(static_cast<int32_t>(type.getNum()));
+    m_builder->addLoadLitInt(getUnionTypeId(m_program, n.getType(), n[0].getType()));
   }
 
   // Push the arguments on the stack.
@@ -243,7 +242,7 @@ auto GenExpr::visit(const prog::expr::UnionCheckExprNode& n) -> void {
 
   // Test if the union is the correct type.
   m_builder->addLoadStructField(0);
-  m_builder->addLoadLitInt(static_cast<int32_t>(n.getTargetType().getNum()));
+  m_builder->addLoadLitInt(getUnionTypeId(m_program, n[0].getType(), n.getTargetType()));
   m_builder->addCheckEqInt();
 }
 
@@ -259,7 +258,7 @@ auto GenExpr::visit(const prog::expr::UnionGetExprNode& n) -> void {
 
   // Test if the union is the correct type.
   m_builder->addLoadStructField(0);
-  m_builder->addLoadLitInt(static_cast<int32_t>(n.getTargetType().getNum()));
+  m_builder->addLoadLitInt(getUnionTypeId(m_program, n[0].getType(), n.getTargetType()));
   m_builder->addCheckEqInt();
   m_builder->addJumpIf(typeEqLabel);
 
