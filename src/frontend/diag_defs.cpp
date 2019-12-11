@@ -115,6 +115,13 @@ auto errFuncNameConflictsWithAction(const Source& src, const std::string& name, 
   return error(src, oss.str(), span);
 }
 
+auto errNonOverloadableOperator(const Source& src, const std::string& name, input::Span span)
+    -> Diag {
+  std::ostringstream oss;
+  oss << "Operator '" << name << "' does not support overloading";
+  return error(src, oss.str(), span);
+}
+
 auto errDuplicateFuncDeclaration(const Source& src, const std::string& name, input::Span span)
     -> Diag {
   std::ostringstream oss;

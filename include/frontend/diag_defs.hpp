@@ -57,6 +57,9 @@ errFuncNameConflictsWithAction(const Source& src, const std::string& name, input
     -> Diag;
 
 [[nodiscard]] auto
+errNonOverloadableOperator(const Source& src, const std::string& name, input::Span span) -> Diag;
+
+[[nodiscard]] auto
 errDuplicateFuncDeclaration(const Source& src, const std::string& name, input::Span span) -> Diag;
 
 [[nodiscard]] auto

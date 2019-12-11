@@ -83,7 +83,13 @@ auto FuncDeclStmtNode::getRetType() const -> const std::optional<RetTypeSpec>& {
 auto FuncDeclStmtNode::accept(NodeVisitor* visitor) const -> void { visitor->visit(*this); }
 
 auto FuncDeclStmtNode::print(std::ostream& out) const -> std::ostream& {
-  out << "fun-" << getIdOrErr(m_id) << '(';
+  out << "fun-";
+  if (m_id.getKind() == lex::TokenKind::Identifier) {
+    out << getIdOrErr(m_id);
+  } else {
+    out << "op-" << m_id;
+  }
+  out << '(';
   for (auto i = 0U; i < m_args.size(); ++i) {
     if (i != 0) {
       out << ",";

@@ -1,7 +1,9 @@
 #include "catch2/catch.hpp"
 #include "frontend/diag_defs.hpp"
 #include "helpers.hpp"
-#include "prog/sym/input.hpp"
+#include "prog/expr/node_call.hpp"
+#include "prog/expr/node_lit_bool.hpp"
+#include "prog/operator.hpp"
 
 namespace frontend {
 
@@ -47,6 +49,23 @@ TEST_CASE("Analyzing user-function declarations", "[frontend]") {
     REQUIRE(GET_CONV(output, "int", "bool"));
   }
 
+  SECTION("Overload operator") {
+    const auto& output = ANALYZE("fun -(bool b) !b "
+                                 "fun f() -false");
+    REQUIRE(output.isSuccess());
+
+    auto args = std::vector<prog::expr::NodePtr>{};
+    args.push_back(prog::expr::litBoolNode(output.getProg(), false));
+
+    const auto& funcDef = GET_FUNC_DEF(output, "f");
+    CHECK(
+        funcDef.getExpr() ==
+        *prog::expr::callExprNode(
+            output.getProg(),
+            GET_OP_ID(output, prog::Operator::Minus, GET_TYPE_ID(output, "bool")),
+            std::move(args)));
+  }
+
   SECTION("Diagnostics") {
     CHECK_DIAG(
         "fun print() -> int 1", errFuncNameConflictsWithAction(src, "print", input::Span{4, 8}));
@@ -59,6 +78,10 @@ TEST_CASE("Analyzing user-function declarations", "[frontend]") {
     CHECK_DIAG(
         "fun bool(int i) -> int i",
         errConvFuncCannotSpecifyReturnType(src, "bool", input::Span{4, 7}));
+    CHECK_DIAG(
+        "fun -(int i) -> int 1",
+        errDuplicateFuncDeclaration(src, "operator-minus", input::Span{0, 20}));
+    CHECK_DIAG("fun ?() -> int 1", errNonOverloadableOperator(src, "qmark", input::Span{4, 4}));
   }
 }
 
