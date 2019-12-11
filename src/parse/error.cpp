@@ -25,7 +25,7 @@ auto errInvalidStmtFuncDecl(
     NodePtr body) -> NodePtr {
 
   std::ostringstream oss;
-  if (id.getKind() != lex::TokenKind::Identifier) {
+  if (id.getKind() != lex::TokenKind::Identifier && id.getCat() != lex::TokenCat::Operator) {
     oss << "Expected function identifier but got: " << id;
   } else if (open.getKind() != lex::TokenKind::SepOpenParen) {
     oss << "Expected opening parentheses '(' but got: " << open;

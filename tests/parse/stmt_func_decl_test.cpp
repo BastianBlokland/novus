@@ -77,6 +77,9 @@ TEST_CASE("Parsing function declaration statements", "[parse]") {
         errInvalidStmtFuncDecl(
             FUN, END, END, {}, COMMAS(0), END, std::nullopt, errInvalidPrimaryExpr(END)));
     CHECK_STMT(
+        "fun _() 1",
+        errInvalidStmtFuncDecl(FUN, DISCARD, OPAREN, {}, COMMAS(0), CPAREN, std::nullopt, INT(1)));
+    CHECK_STMT(
         "fun a(",
         errInvalidStmtFuncDecl(
             FUN, ID("a"), OPAREN, {}, COMMAS(0), END, std::nullopt, errInvalidPrimaryExpr(END)));

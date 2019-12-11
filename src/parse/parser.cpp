@@ -64,21 +64,18 @@ auto ParserImpl::nextStmtFuncDecl() -> NodePtr {
   }
   auto body = nextExpr(0);
 
-  if (getKw(kw) == lex::Keyword::Fun && id.getKind() == lex::TokenKind::Identifier &&
-      open.getKind() == lex::TokenKind::SepOpenParen &&
-      close.getKind() == lex::TokenKind::SepCloseParen &&
-      (!retType ||
-       (retType->getArrow().getKind() == lex::TokenKind::SepArrow &&
-        retType->getType().getKind() == lex::TokenKind::Identifier)) &&
-      std::all_of(
-          args.begin(),
-          args.end(),
-          [](const auto& a) {
-            return a.getIdentifier().getKind() == lex::TokenKind::Identifier &&
-                a.getType().getKind() == lex::TokenKind::Identifier;
-          }) &&
+  auto idValid =
+      id.getKind() == lex::TokenKind::Identifier || id.getCat() == lex::TokenCat::Operator;
+  auto retTypeValid = !retType ||
+      (retType->getArrow().getKind() == lex::TokenKind::SepArrow &&
+       retType->getType().getKind() == lex::TokenKind::Identifier);
+  auto argsValid = std::all_of(args.begin(), args.end(), [](const auto& a) {
+    return a.getIdentifier().getKind() == lex::TokenKind::Identifier &&
+        a.getType().getKind() == lex::TokenKind::Identifier;
+  });
+  if (getKw(kw) == lex::Keyword::Fun && idValid && open.getKind() == lex::TokenKind::SepOpenParen &&
+      close.getKind() == lex::TokenKind::SepCloseParen && retTypeValid && argsValid &&
       commas.size() == (args.empty() ? 0 : args.size() - 1)) {
-
     return funcDeclStmtNode(
         std::move(kw),
         std::move(id),

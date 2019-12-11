@@ -21,10 +21,21 @@ auto DeclareUserFuncs::getFuncs() const noexcept -> const std::vector<Declaratio
 }
 
 auto DeclareUserFuncs::visit(const parse::FuncDeclStmtNode& n) -> void {
-  // Get func name.
-  const auto name = getName(n.getId());
-  if (!validateFuncName(n.getId())) {
-    return;
+  std::string name;
+  std::string displayName;
+  if (n.getId().getKind() == lex::TokenKind::Identifier) {
+    name = displayName = getName(n.getId());
+    if (!validateFuncName(n.getId())) {
+      return;
+    }
+  } else {
+    auto op = getOperator(n.getId());
+    if (!op) {
+      m_diags.push_back(errNonOverloadableOperator(m_src, n.getId().str(), n.getId().getSpan()));
+      return;
+    }
+    name        = prog::getFuncName(*op);
+    displayName = "operator-" + n.getId().str();
   }
 
   // Get func input.
@@ -35,7 +46,7 @@ auto DeclareUserFuncs::visit(const parse::FuncDeclStmtNode& n) -> void {
 
   // Verify that this is not a duplicate declaration.
   if (m_prog->lookupFunc(name, input.value(), 0)) {
-    m_diags.push_back(errDuplicateFuncDeclaration(m_src, name, n.getSpan()));
+    m_diags.push_back(errDuplicateFuncDeclaration(m_src, displayName, n.getSpan()));
     return;
   }
 
