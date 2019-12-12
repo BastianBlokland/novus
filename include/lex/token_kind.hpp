@@ -27,6 +27,8 @@ enum class TokenKind {
   OpDot,
   SepOpenParen,
   SepCloseParen,
+  SepOpenCurly,
+  SepCloseCurly,
   SepComma,
   SepColon,
   SepArrow,
