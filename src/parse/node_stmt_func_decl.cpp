@@ -36,6 +36,7 @@ auto FuncDeclStmtNode::RetTypeSpec::getType() const noexcept -> const lex::Token
 FuncDeclStmtNode::FuncDeclStmtNode(
     lex::Token kw,
     lex::Token id,
+    std::optional<TypeParamList> typeParams,
     lex::Token open,
     std::vector<ArgSpec> args,
     std::vector<lex::Token> commas,
@@ -44,6 +45,7 @@ FuncDeclStmtNode::FuncDeclStmtNode(
     NodePtr body) :
     m_kw{std::move(kw)},
     m_id{std::move(id)},
+    m_typeParams{std::move(typeParams)},
     m_open{std::move(open)},
     m_args{std::move(args)},
     m_commas{std::move(commas)},
@@ -76,6 +78,10 @@ auto FuncDeclStmtNode::getSpan() const -> input::Span {
 
 auto FuncDeclStmtNode::getId() const -> const lex::Token& { return m_id; }
 
+auto FuncDeclStmtNode::getTypeParams() const -> const std::optional<TypeParamList>& {
+  return m_typeParams;
+}
+
 auto FuncDeclStmtNode::getArgs() const -> const std::vector<ArgSpec>& { return m_args; }
 
 auto FuncDeclStmtNode::getRetType() const -> const std::optional<RetTypeSpec>& { return m_retType; }
@@ -89,10 +95,13 @@ auto FuncDeclStmtNode::print(std::ostream& out) const -> std::ostream& {
   } else {
     out << "op-" << m_id;
   }
+  if (m_typeParams) {
+    out << *m_typeParams;
+  }
   out << '(';
   for (auto i = 0U; i < m_args.size(); ++i) {
     if (i != 0) {
-      out << ",";
+      out << ',';
     }
     out << getIdOrErr(m_args[i].getType()) << '-' << getIdOrErr(m_args[i].getIdentifier());
   }
@@ -103,6 +112,7 @@ auto FuncDeclStmtNode::print(std::ostream& out) const -> std::ostream& {
 auto funcDeclStmtNode(
     lex::Token kw,
     lex::Token id,
+    std::optional<TypeParamList> typeParams,
     lex::Token open,
     std::vector<FuncDeclStmtNode::ArgSpec> args,
     std::vector<lex::Token> commas,
@@ -118,6 +128,7 @@ auto funcDeclStmtNode(
   }
   return std::unique_ptr<FuncDeclStmtNode>{new FuncDeclStmtNode{std::move(kw),
                                                                 std::move(id),
+                                                                std::move(typeParams),
                                                                 std::move(open),
                                                                 std::move(args),
                                                                 std::move(commas),

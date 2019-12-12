@@ -17,6 +17,7 @@ auto errLexError(lex::Token errToken) -> NodePtr {
 auto errInvalidStmtFuncDecl(
     lex::Token kw,
     lex::Token id,
+    std::optional<TypeParamList> typeParams,
     lex::Token open,
     const std::vector<FuncDeclStmtNode::ArgSpec>& args,
     std::vector<lex::Token> commas,
@@ -27,6 +28,8 @@ auto errInvalidStmtFuncDecl(
   std::ostringstream oss;
   if (id.getKind() != lex::TokenKind::Identifier && id.getCat() != lex::TokenCat::Operator) {
     oss << "Expected function identifier but got: " << id;
+  } else if (typeParams && !typeParams->validate()) {
+    oss << "Invalid type parameters";
   } else if (open.getKind() != lex::TokenKind::SepOpenParen) {
     oss << "Expected opening parentheses '(' but got: " << open;
   } else if (commas.size() != (args.empty() ? 0 : args.size() - 1)) {
@@ -249,6 +252,7 @@ auto errInvalidIsExpr(NodePtr lhs, lex::Token kw, lex::Token type, lex::Token id
 
 auto errInvalidCallExpr(
     lex::Token func,
+    std::optional<TypeParamList> typeParams,
     lex::Token open,
     std::vector<NodePtr> args,
     std::vector<lex::Token> commas,
@@ -257,6 +261,8 @@ auto errInvalidCallExpr(
   std::ostringstream oss;
   if (commas.size() != (args.empty() ? 0 : args.size() - 1)) {
     oss << "Incorrect number of comma's ',' in call expression";
+  } else if (typeParams && !typeParams->validate()) {
+    oss << "Invalid type parameters";
   } else if (open.getKind() != lex::TokenKind::SepOpenParen) {
     oss << "Expected opening parentheses '(' but got: " << open;
   } else if (close.getKind() != lex::TokenKind::SepCloseParen) {

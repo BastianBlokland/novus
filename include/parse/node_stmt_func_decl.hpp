@@ -1,6 +1,7 @@
 #pragma once
 #include "lex/token.hpp"
 #include "parse/node.hpp"
+#include "parse/type_param_list.hpp"
 #include <utility>
 #include <vector>
 
@@ -39,6 +40,7 @@ public:
   friend auto funcDeclStmtNode(
       lex::Token kw,
       lex::Token id,
+      std::optional<TypeParamList> typeParams,
       lex::Token open,
       std::vector<ArgSpec> args,
       std::vector<lex::Token> commas,
@@ -56,6 +58,7 @@ public:
   [[nodiscard]] auto getSpan() const -> input::Span override;
 
   [[nodiscard]] auto getId() const -> const lex::Token&;
+  [[nodiscard]] auto getTypeParams() const -> const std::optional<TypeParamList>&;
   [[nodiscard]] auto getArgs() const -> const std::vector<ArgSpec>&;
   [[nodiscard]] auto getRetType() const -> const std::optional<RetTypeSpec>&;
 
@@ -64,6 +67,7 @@ public:
 private:
   const lex::Token m_kw;
   const lex::Token m_id;
+  const std::optional<TypeParamList> m_typeParams;
   const lex::Token m_open;
   const std::vector<ArgSpec> m_args;
   const std::vector<lex::Token> m_commas;
@@ -74,6 +78,7 @@ private:
   FuncDeclStmtNode(
       lex::Token kw,
       lex::Token id,
+      std::optional<TypeParamList> typeParams,
       lex::Token open,
       std::vector<ArgSpec> args,
       std::vector<lex::Token> commas,
@@ -88,6 +93,7 @@ private:
 auto funcDeclStmtNode(
     lex::Token kw,
     lex::Token id,
+    std::optional<TypeParamList> typeParams,
     lex::Token open,
     std::vector<FuncDeclStmtNode::ArgSpec> args,
     std::vector<lex::Token> commas,
