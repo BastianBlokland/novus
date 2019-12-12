@@ -13,6 +13,9 @@ auto GenExpr::visit(const prog::expr::AssignExprNode& n) -> void {
   // Expression.
   genSubExpr(n[0]);
 
+  // Duplicate the value as the store instruction will consume one.
+  m_builder->addDup();
+
   // Assign op.
   const auto constId = getConstId(n.getConst());
   m_builder->addStoreConst(constId);
@@ -239,6 +242,11 @@ auto GenExpr::visit(const prog::expr::FieldExprNode& n) -> void {
 auto GenExpr::visit(const prog::expr::GroupExprNode& n) -> void {
   for (auto i = 0U; i < n.getChildCount(); ++i) {
     genSubExpr(n[i]);
+
+    // For all but the last expression we ignore the result.
+    if (i != n.getChildCount() - 1) {
+      m_builder->addPop();
+    }
   }
 }
 
