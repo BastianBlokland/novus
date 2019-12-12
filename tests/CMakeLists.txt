@@ -17,6 +17,7 @@ add_executable(tests
   backend/assembly_output.cpp
   backend/call_expr_test.cpp
   backend/constants_test.cpp
+  backend/group_expr_test.cpp
   backend/literals_test.cpp
   backend/switch_expr_test.cpp
   backend/user_struct_test.cpp
