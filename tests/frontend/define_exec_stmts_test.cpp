@@ -3,7 +3,6 @@
 #include "helpers.hpp"
 #include "prog/expr/node_lit_int.hpp"
 #include "prog/expr/node_lit_string.hpp"
-#include "prog/sym/input.hpp"
 
 namespace frontend {
 

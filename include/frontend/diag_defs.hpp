@@ -60,6 +60,10 @@ errFuncNameConflictsWithAction(const Source& src, const std::string& name, input
 errNonOverloadableOperator(const Source& src, const std::string& name, input::Span span) -> Diag;
 
 [[nodiscard]] auto
+errTypeParamNameConflictsWithType(const Source& src, const std::string& name, input::Span span)
+    -> Diag;
+
+[[nodiscard]] auto
 errDuplicateFuncDeclaration(const Source& src, const std::string& name, input::Span span) -> Diag;
 
 [[nodiscard]] auto
@@ -84,6 +88,9 @@ errConstNameConflictsWithFunction(const Source& src, const std::string& name, in
 errConstNameConflictsWithAction(const Source& src, const std::string& name, input::Span span)
     -> Diag;
 
+[[nodiscard]] auto errConstNameConflictsWithTypeSubstitution(
+    const Source& src, const std::string& name, input::Span span) -> Diag;
+
 [[nodiscard]] auto
 errConstNameConflictsWithConst(const Source& src, const std::string& name, input::Span span)
     -> Diag;
@@ -97,14 +104,16 @@ errConstNameConflictsWithConst(const Source& src, const std::string& name, input
 [[nodiscard]] auto
 errUninitializedConst(const Source& src, const std::string& name, input::Span span) -> Diag;
 
-[[nodiscard]] auto errUndeclaredFunc(const Source& src, const std::string& name, input::Span span)
-    -> Diag;
-
-[[nodiscard]] auto errUndeclaredFuncOverload(
+[[nodiscard]] auto errUndeclaredFunc(
     const Source& src,
     const std::string& name,
     const std::vector<std::string>& argTypes,
     input::Span span) -> Diag;
+
+[[nodiscard]] auto errUndeclaredFuncTemplate(
+    const Source& src, const std::string& name, unsigned int argCount, input::Span span) -> Diag;
+
+[[nodiscard]] auto errInvalidFuncInstantiation(const Source& src, input::Span span) -> Diag;
 
 [[nodiscard]] auto errUndeclaredAction(const Source& src, const std::string& name, input::Span span)
     -> Diag;

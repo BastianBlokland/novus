@@ -70,6 +70,12 @@ auto operator<<(std::ostream& out, const TokenKind& rhs) -> std::ostream& {
   case TokenKind::SepCloseParen:
     out << "close-paren";
     break;
+  case TokenKind::SepOpenCurly:
+    out << "open-curly";
+    break;
+  case TokenKind::SepCloseCurly:
+    out << "close-curly";
+    break;
   case TokenKind::SepComma:
     out << "comma";
     break;

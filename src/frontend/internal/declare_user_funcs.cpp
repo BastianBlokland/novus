@@ -5,10 +5,14 @@
 
 namespace frontend::internal {
 
-DeclareUserFuncs::DeclareUserFuncs(const Source& src, prog::Program* prog) :
-    m_src{src}, m_prog{prog} {
+DeclareUserFuncs::DeclareUserFuncs(
+    const Source& src, prog::Program* prog, FuncTemplateTable* funcTemplates) :
+    m_src{src}, m_prog{prog}, m_funcTemplates(funcTemplates) {
   if (m_prog == nullptr) {
     throw std::invalid_argument{"Program cannot be null"};
+  }
+  if (m_funcTemplates == nullptr) {
+    throw std::invalid_argument{"FuncTemplatesTable cannot be null"};
   }
 }
 
@@ -38,8 +42,27 @@ auto DeclareUserFuncs::visit(const parse::FuncDeclStmtNode& n) -> void {
     displayName = "operator-" + n.getId().str();
   }
 
+  // Check if this function is a conversion.
+  const auto convType = m_prog->lookupType(name);
+  if (convType) {
+    if (n.getRetType()) {
+      m_diags.push_back(errConvFuncCannotSpecifyReturnType(m_src, name, n.getId().getSpan()));
+      return;
+    }
+  }
+
+  // If the function is a template then we don't declare it in the program yet but declare it in
+  // the function-template table.
+  if (n.getTypeParams()) {
+    auto typeParams = getTypeParams(m_src, *m_prog, *n.getTypeParams(), &m_diags);
+    if (typeParams) {
+      m_funcTemplates->declare(name, std::move(*typeParams), n);
+    }
+    return;
+  }
+
   // Get func input.
-  const auto input = getFuncInput(n);
+  const auto input = getFuncInput(m_src, *m_prog, nullptr, n, &m_diags);
   if (!input) {
     return;
   }
@@ -51,38 +74,14 @@ auto DeclareUserFuncs::visit(const parse::FuncDeclStmtNode& n) -> void {
   }
 
   // Get return type.
-  auto retType = getRetType(n);
+  auto retType = convType ? convType : getRetType(m_src, *m_prog, nullptr, n, &m_diags);
   if (!retType) {
     return;
-  }
-
-  // Check if this function is a conversion.
-  const auto convType = m_prog->lookupType(name);
-  if (convType) {
-    if (!retType->isInfer()) {
-      m_diags.push_back(errConvFuncCannotSpecifyReturnType(m_src, name, n.getId().getSpan()));
-    }
-    retType = *convType;
   }
 
   // Declare the function in the program.
   auto funcId = m_prog->declareUserFunc(name, input.value(), retType.value());
   m_funcs.emplace_back(funcId, n);
-}
-
-auto DeclareUserFuncs::getRetType(const parse::FuncDeclStmtNode& n)
-    -> std::optional<prog::sym::TypeId> {
-  const auto& retTypeSpec = n.getRetType();
-  if (!retTypeSpec) {
-    return prog::sym::TypeId::inferType();
-  }
-  const auto retTypeName = getName(retTypeSpec->getType());
-  auto retType           = m_prog->lookupType(retTypeName);
-  if (!retType) {
-    m_diags.push_back(errUndeclaredType(m_src, retTypeName, retTypeSpec->getType().getSpan()));
-    return std::nullopt;
-  }
-  return retType;
 }
 
 auto DeclareUserFuncs::validateFuncName(const lex::Token& nameToken) -> bool {
@@ -92,23 +91,6 @@ auto DeclareUserFuncs::validateFuncName(const lex::Token& nameToken) -> bool {
     return false;
   }
   return true;
-}
-
-auto DeclareUserFuncs::getFuncInput(const parse::FuncDeclStmtNode& n)
-    -> std::optional<prog::sym::Input> {
-  auto isValid  = true;
-  auto argTypes = std::vector<prog::sym::TypeId>{};
-  for (const auto& arg : n.getArgs()) {
-    const auto argTypeName = getName(arg.getType());
-    const auto argType     = m_prog->lookupType(argTypeName);
-    if (argType) {
-      argTypes.push_back(argType.value());
-    } else {
-      m_diags.push_back(errUndeclaredType(m_src, argTypeName, arg.getType().getSpan()));
-      isValid = false;
-    }
-  }
-  return isValid ? std::optional{prog::sym::Input{std::move(argTypes)}} : std::nullopt;
 }
 
 } // namespace frontend::internal

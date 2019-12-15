@@ -11,6 +11,7 @@ auto errLexError(lex::Token errToken) -> NodePtr;
 auto errInvalidStmtFuncDecl(
     lex::Token kw,
     lex::Token id,
+    std::optional<TypeParamList> typeParams,
     lex::Token open,
     const std::vector<FuncDeclStmtNode::ArgSpec>& args,
     std::vector<lex::Token> commas,
@@ -51,6 +52,7 @@ auto errInvalidIsExpr(NodePtr lhs, lex::Token kw, lex::Token type, lex::Token id
 
 auto errInvalidCallExpr(
     lex::Token func,
+    std::optional<TypeParamList> typeParams,
     lex::Token open,
     std::vector<NodePtr> args,
     std::vector<lex::Token> commas,

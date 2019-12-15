@@ -1,6 +1,8 @@
 #pragma once
 #include "frontend/diag.hpp"
 #include "frontend/source.hpp"
+#include "internal/func_template_table.hpp"
+#include "internal/type_substitution_table.hpp"
 #include "prog/program.hpp"
 
 namespace frontend::internal {
@@ -11,6 +13,8 @@ public:
   GetExpr(
       const Source& src,
       prog::Program* prog,
+      FuncTemplateTable* funcTemplates,
+      const TypeSubstitutionTable* typeSubTable,
       prog::sym::ConstDeclTable* consts,
       std::vector<prog::sym::ConstId>* visibleConsts,
       prog::sym::TypeId typeHint,
@@ -45,6 +49,8 @@ private:
 
   const Source& m_src;
   prog::Program* m_prog;
+  FuncTemplateTable* m_funcTemplates;
+  const TypeSubstitutionTable* m_typeSubTable;
   prog::sym::ConstDeclTable* m_consts;
   std::vector<prog::sym::ConstId>* m_visibleConsts;
   prog::sym::TypeId m_typeHint;

@@ -1,8 +1,13 @@
 #pragma once
+#include "frontend/diag.hpp"
+#include "frontend/source.hpp"
 #include "lex/token.hpp"
 #include "lex/token_payload_id.hpp"
+#include "parse/node_stmt_func_decl.hpp"
+#include "parse/type_param_list.hpp"
 #include "prog/operator.hpp"
 #include "prog/program.hpp"
+#include "type_substitution_table.hpp"
 
 namespace frontend::internal {
 
@@ -88,5 +93,49 @@ inline auto getText(const prog::Operator& op) -> std::string {
   }
   return "__unknown";
 }
+
+auto getType(
+    const prog::Program& prog, const TypeSubstitutionTable* subTable, const std::string& name)
+    -> std::optional<prog::sym::TypeId>;
+
+auto getRetType(
+    const Source& src,
+    const prog::Program& prog,
+    const TypeSubstitutionTable* subTable,
+    const parse::FuncDeclStmtNode& n,
+    std::vector<Diag>* diags) -> std::optional<prog::sym::TypeId>;
+
+auto getFuncInput(
+    const Source& src,
+    const prog::Program& prog,
+    const TypeSubstitutionTable* subTable,
+    const parse::FuncDeclStmtNode& n,
+    std::vector<Diag>* diags) -> std::optional<prog::sym::TypeSet>;
+
+auto getTypeParams(
+    const Source& src,
+    const prog::Program& prog,
+    const parse::TypeParamList& paramList,
+    std::vector<Diag>* diags) -> std::optional<std::vector<std::string>>;
+
+auto getTypeSet(
+    const Source& src,
+    const prog::Program& prog,
+    const TypeSubstitutionTable* subTable,
+    const std::vector<lex::Token>& typeTokens,
+    std::vector<Diag>* diags) -> std::optional<prog::sym::TypeSet>;
+
+auto getTypeSet(
+    const prog::Program& prog,
+    const TypeSubstitutionTable* subTable,
+    const std::vector<lex::Token>& typeTokens) -> std::optional<prog::sym::TypeSet>;
+
+auto getConstName(
+    const Source& src,
+    const prog::Program& prog,
+    const TypeSubstitutionTable* subTable,
+    const prog::sym::ConstDeclTable& consts,
+    const lex::Token& nameToken,
+    std::vector<Diag>* diags) -> std::optional<std::string>;
 
 } // namespace frontend::internal

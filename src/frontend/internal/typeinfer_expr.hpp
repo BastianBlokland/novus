@@ -1,5 +1,6 @@
 #pragma once
 #include "frontend/diag.hpp"
+#include "internal/func_template_table.hpp"
 #include "prog/program.hpp"
 #include <unordered_map>
 
@@ -10,10 +11,12 @@ public:
   TypeInferExpr() = delete;
   TypeInferExpr(
       prog::Program* prog,
+      FuncTemplateTable* funcTemplates,
+      const TypeSubstitutionTable* typeSubTable,
       std::unordered_map<std::string, prog::sym::TypeId>* constTypes,
       bool aggressive);
 
-  [[nodiscard]] auto getType() const noexcept -> prog::sym::TypeId;
+  [[nodiscard]] auto getInferredType() const noexcept -> prog::sym::TypeId;
 
   auto visit(const parse::ErrorNode& n) -> void override;
   auto visit(const parse::BinaryExprNode& n) -> void override;
@@ -37,6 +40,8 @@ public:
 
 private:
   prog::Program* m_prog;
+  FuncTemplateTable* m_funcTemplates;
+  const TypeSubstitutionTable* m_typeSubTable;
   std::unordered_map<std::string, prog::sym::TypeId>* m_constTypes;
   bool m_aggressive;
   prog::sym::TypeId m_type;

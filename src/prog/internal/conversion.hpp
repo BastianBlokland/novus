@@ -12,7 +12,7 @@ namespace prog::internal {
 
 // Apply conversions to the args vector so it matches the given input set.
 auto applyConversions(
-    const Program& prog, const sym::Input& input, std::vector<expr::NodePtr>* args) -> void;
+    const Program& prog, const sym::TypeSet& input, std::vector<expr::NodePtr>* args) -> void;
 
 [[nodiscard]] auto findCommonType(const Program& prog, const std::vector<sym::TypeId>& types)
     -> std::optional<sym::TypeId>;

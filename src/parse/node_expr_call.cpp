@@ -5,11 +5,13 @@ namespace parse {
 
 CallExprNode::CallExprNode(
     lex::Token func,
+    std::optional<TypeParamList> typeParams,
     lex::Token open,
     std::vector<NodePtr> args,
     std::vector<lex::Token> commas,
     lex::Token close) :
     m_func{std::move(func)},
+    m_typeParams{std::move(typeParams)},
     m_open{std::move(open)},
     m_args{std::move(args)},
     m_commas{std::move(commas)},
@@ -39,15 +41,24 @@ auto CallExprNode::getSpan() const -> input::Span {
 
 auto CallExprNode::getFunc() const -> const lex::Token& { return m_func; }
 
+auto CallExprNode::getTypeParams() const -> const std::optional<TypeParamList>& {
+  return m_typeParams;
+}
+
 auto CallExprNode::accept(NodeVisitor* visitor) const -> void { visitor->visit(*this); }
 
 auto CallExprNode::print(std::ostream& out) const -> std::ostream& {
-  return out << "call-" << ::parse::getId(m_func).value_or("error");
+  out << "call-" << ::parse::getId(m_func).value_or("error");
+  if (m_typeParams) {
+    out << *m_typeParams;
+  }
+  return out;
 }
 
 // Factories.
 auto callExprNode(
     lex::Token func,
+    std::optional<TypeParamList> typeParams,
     lex::Token open,
     std::vector<NodePtr> args,
     std::vector<lex::Token> commas,
@@ -58,8 +69,12 @@ auto callExprNode(
   if (args.empty() ? !commas.empty() : commas.size() != args.size() - 1) {
     throw std::invalid_argument{"Incorrect number of commas"};
   }
-  return std::unique_ptr<CallExprNode>{new CallExprNode{
-      std::move(func), std::move(open), std::move(args), std::move(commas), std::move(close)}};
+  return std::unique_ptr<CallExprNode>{new CallExprNode{std::move(func),
+                                                        std::move(typeParams),
+                                                        std::move(open),
+                                                        std::move(args),
+                                                        std::move(commas),
+                                                        std::move(close)}};
 }
 
 } // namespace parse

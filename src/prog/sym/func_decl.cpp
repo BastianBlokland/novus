@@ -2,7 +2,7 @@
 
 namespace prog::sym {
 
-FuncDecl::FuncDecl(FuncId id, FuncKind kind, std::string name, Input input, TypeId output) :
+FuncDecl::FuncDecl(FuncId id, FuncKind kind, std::string name, TypeSet input, TypeId output) :
     m_id{id}, m_kind{kind}, m_name{std::move(name)}, m_input{std::move(input)}, m_output{output} {}
 
 auto FuncDecl::operator==(const FuncDecl& rhs) const noexcept -> bool { return m_id == rhs.m_id; }
@@ -17,7 +17,7 @@ auto FuncDecl::getKind() const -> const FuncKind& { return m_kind; }
 
 auto FuncDecl::getName() const -> const std::string& { return m_name; }
 
-auto FuncDecl::getInput() const -> const Input& { return m_input; }
+auto FuncDecl::getInput() const -> const TypeSet& { return m_input; }
 
 auto FuncDecl::getOutput() const -> TypeId { return m_output; }
 

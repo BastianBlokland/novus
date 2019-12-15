@@ -28,6 +28,7 @@ target_include_directories(lex PRIVATE lex)
 # Parser.
 add_library(parse STATIC
   parse/error.cpp
+  parse/type_param_list.cpp
   parse/node_error.cpp
   parse/node_expr_binary.cpp
   parse/node_expr_call.cpp
@@ -96,7 +97,6 @@ add_library(prog STATIC
   prog/sym/func_def.cpp
   prog/sym/func_id_hasher.cpp
   prog/sym/func_id.cpp
-  prog/sym/input.cpp
   prog/sym/struct_def.cpp
   prog/sym/type_decl_table.cpp
   prog/sym/type_decl.cpp
@@ -104,6 +104,7 @@ add_library(prog STATIC
   prog/sym/type_id_hasher.cpp
   prog/sym/type_id.cpp
   prog/sym/type_kind.cpp
+  prog/sym/type_set.cpp
   prog/sym/union_def.cpp
 
   prog/operator.cpp
@@ -123,8 +124,13 @@ add_library(frontend STATIC
   frontend/internal/define_user_types.cpp
   frontend/internal/get_expr.cpp
   frontend/internal/get_parse_diags.cpp
+  frontend/internal/func_template_inst.cpp
+  frontend/internal/func_template_table.cpp
+  frontend/internal/func_template.cpp
+  frontend/internal/type_substitution_table.cpp
   frontend/internal/typeinfer_expr.cpp
   frontend/internal/typeinfer_user_funcs.cpp
+  frontend/internal/utilities.cpp
 
   frontend/analysis.cpp
   frontend/diag_defs.cpp

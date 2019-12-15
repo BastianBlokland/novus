@@ -5,6 +5,7 @@
 #include "internal/define_exec_stmts.hpp"
 #include "internal/define_user_funcs.hpp"
 #include "internal/define_user_types.hpp"
+#include "internal/func_template_table.hpp"
 #include "internal/get_parse_diags.hpp"
 #include "internal/typeinfer_user_funcs.hpp"
 #include "parse/nodes.hpp"
@@ -22,7 +23,8 @@ auto analyze(const Source& src) -> Output {
     return buildOutput(nullptr, getParseDiags.getDiags());
   }
 
-  auto prog = std::make_unique<prog::Program>();
+  auto prog          = std::make_unique<prog::Program>();
+  auto funcTemplates = internal::FuncTemplateTable{src, prog.get()};
 
   // Declare user types.
   auto declareUserTypes = internal::DeclareUserTypes{src, prog.get()};
@@ -52,14 +54,14 @@ auto analyze(const Source& src) -> Output {
   }
 
   // Declare user functions.
-  auto declareUserFuncs = internal::DeclareUserFuncs{src, prog.get()};
+  auto declareUserFuncs = internal::DeclareUserFuncs{src, prog.get(), &funcTemplates};
   src.accept(&declareUserFuncs);
   if (declareUserFuncs.hasErrors()) {
     return buildOutput(nullptr, declareUserFuncs.getDiags());
   }
 
   // Infer return-types of user functions (run multiple passes until all have been inferred).
-  auto typeInferUserFuncs = internal::TypeInferUserFuncs{prog.get()};
+  auto typeInferUserFuncs = internal::TypeInferUserFuncs{prog.get(), &funcTemplates, nullptr};
   auto firstInferItr      = true;
   bool inferredAllFuncs;
   do {
@@ -82,7 +84,7 @@ auto analyze(const Source& src) -> Output {
   } while (!inferredAllFuncs);
 
   // Define user functions.
-  auto defineUserFuncs = internal::DefineUserFuncs{src, prog.get()};
+  auto defineUserFuncs = internal::DefineUserFuncs{src, prog.get(), &funcTemplates, nullptr};
   for (const auto& funcDecl : declareUserFuncs.getFuncs()) {
     defineUserFuncs.define(funcDecl.first, funcDecl.second);
   }
@@ -91,7 +93,7 @@ auto analyze(const Source& src) -> Output {
   }
 
   // Define execute statements.
-  auto defineExecStmts = internal::DefineExecStmts{src, prog.get()};
+  auto defineExecStmts = internal::DefineExecStmts{src, prog.get(), &funcTemplates};
   src.accept(&defineExecStmts);
   if (defineExecStmts.hasErrors()) {
     return buildOutput(nullptr, defineExecStmts.getDiags());

@@ -2,7 +2,6 @@
 #include "frontend/diag_defs.hpp"
 #include "helpers.hpp"
 #include "prog/expr/node_lit_int.hpp"
-#include "prog/sym/input.hpp"
 
 namespace frontend {
 
@@ -46,6 +45,28 @@ TEST_CASE("Analyzing user-function definitions", "[frontend]") {
     CHECK_DIAG(
         "fun f(int a, int a) -> int true",
         errConstNameConflictsWithConst(src, "a", input::Span{17, 17}));
+    CHECK_DIAG(
+        "fun f2() -> int f{int}(1)", errUndeclaredFuncTemplate(src, "f", 1, input::Span{16, 16}));
+    CHECK_DIAG(
+        "fun f{T}(T t) t "
+        "fun f2() -> int f{int, float}(1)",
+        errUndeclaredFuncTemplate(src, "f", 2, input::Span{32, 32}));
+    CHECK_DIAG(
+        "fun f{T}(T T) -> T T "
+        "fun f2() -> int f{int}(1)",
+        errInvalidFuncInstantiation(src, input::Span{37, 45}),
+        errConstNameConflictsWithTypeSubstitution(src, "T", input::Span{11, 11}));
+    CHECK_DIAG(
+        "fun f{T}(T T) -> T T "
+        "fun f2() f{int}(1)",
+        errInvalidFuncInstantiation(src, input::Span{30, 38}),
+        errConstNameConflictsWithTypeSubstitution(src, "T", input::Span{11, 11}));
+    CHECK_DIAG(
+        "fun f{T}(T i) -> T "
+        "  T = i * 2; i "
+        "fun f2() -> int f{int}(1)",
+        errInvalidFuncInstantiation(src, input::Span{50, 58}),
+        errConstNameConflictsWithTypeSubstitution(src, "T", input::Span{21, 21}));
   }
 }
 
