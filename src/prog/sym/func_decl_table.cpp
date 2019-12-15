@@ -23,18 +23,18 @@ auto FuncDeclTable::lookup(const std::string& name) const -> std::vector<FuncId>
 }
 
 auto FuncDeclTable::lookup(
-    const Program& prog, const std::string& name, const Input& input, int maxConversions) const
+    const Program& prog, const std::string& name, const TypeSet& input, int maxConversions) const
     -> std::optional<FuncId> {
-  return internal::findOverload(prog, *this, name, input, maxConversions);
+  return internal::findOverload(prog, *this, lookup(name), input, maxConversions);
 }
 
 auto FuncDeclTable::registerFunc(
-    const Program& prog, FuncKind kind, std::string name, Input input, TypeId output) -> FuncId {
+    const Program& prog, FuncKind kind, std::string name, TypeSet input, TypeId output) -> FuncId {
   if (name.empty()) {
     throw std::invalid_argument{"Name has to contain aleast 1 char"};
   }
-  if (internal::findOverload(prog, *this, name, input, 0)) {
-    throw std::logic_error{"Action with an identical name and input has already been registered"};
+  if (internal::findOverload(prog, *this, lookup(name), input, 0)) {
+    throw std::logic_error{"Function with an identical name and input has already been registered"};
   }
 
   auto id  = FuncId{static_cast<unsigned int>(m_funcs.size())};

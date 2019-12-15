@@ -16,12 +16,16 @@ namespace frontend::internal {
 GetExpr::GetExpr(
     const Source& src,
     prog::Program* prog,
+    FuncTemplateTable* funcTemplates,
+    const TypeSubstitutionTable* typeSubTable,
     prog::sym::ConstDeclTable* consts,
     std::vector<prog::sym::ConstId>* visibleConsts,
     prog::sym::TypeId typeHint,
     bool checkedConstsAccess) :
     m_src{src},
     m_prog{prog},
+    m_funcTemplates{funcTemplates},
+    m_typeSubTable{typeSubTable},
     m_consts{consts},
     m_visibleConsts{visibleConsts},
     m_typeHint{typeHint},
@@ -29,6 +33,9 @@ GetExpr::GetExpr(
 
   if (m_prog == nullptr) {
     throw std::invalid_argument{"Program cannot be null"};
+  }
+  if (funcTemplates == nullptr) {
+    throw std::invalid_argument{"Func templates table cannot be null"};
   }
   if (m_consts == nullptr) {
     throw std::invalid_argument{"Constants table cannot be null"};
@@ -76,7 +83,9 @@ auto GetExpr::visit(const parse::BinaryExprNode& n) -> void {
 
   auto funcName = prog::getFuncName(op.value());
   auto func     = m_prog->lookupFunc(
-      prog::getFuncName(op.value()), prog::sym::Input{{args[0]->getType(), args[1]->getType()}}, 1);
+      prog::getFuncName(op.value()),
+      prog::sym::TypeSet{{args[0]->getType(), args[1]->getType()}},
+      1);
   if (!func) {
     const auto& lhsTypeName = getName(*m_prog, args[0]->getType());
     const auto& rhsTypeName = getName(*m_prog, args[1]->getType());
@@ -89,7 +98,9 @@ auto GetExpr::visit(const parse::BinaryExprNode& n) -> void {
 }
 
 auto GetExpr::visit(const parse::CallExprNode& n) -> void {
-  auto isValid  = true;
+  auto isValid         = true;
+  const auto& funcName = getName(n.getFunc());
+
   auto argTypes = std::vector<prog::sym::TypeId>{};
   auto args     = std::vector<prog::expr::NodePtr>{};
   for (auto i = 0U; i < n.getChildCount(); ++i) {
@@ -108,18 +119,47 @@ auto GetExpr::visit(const parse::CallExprNode& n) -> void {
     return;
   }
 
-  const auto& funcName = getName(n.getFunc());
-  const auto func      = m_prog->lookupFunc(funcName, prog::sym::Input{argTypes}, -1);
-  if (!func) {
-    if (m_prog->lookupFuncs(funcName).empty()) {
-      m_diags.push_back(errUndeclaredFunc(m_src, funcName, n.getFunc().getSpan()));
-    } else {
-      auto argTypeNames = std::vector<std::string>{};
-      for (const auto& argType : argTypes) {
-        argTypeNames.push_back(getName(*m_prog, argType));
-      }
-      m_diags.push_back(errUndeclaredFuncOverload(m_src, funcName, argTypeNames, n.getSpan()));
+  auto possibleFuncs = std::vector<prog::sym::FuncId>{};
+
+  // If this is a template call then instantiate the templates.
+  if (n.getTypeParams()) {
+    auto typeParams =
+        getTypeSet(m_src, *m_prog, m_typeSubTable, n.getTypeParams()->getParams(), &m_diags);
+    if (!typeParams) {
+      assert(!m_diags.empty());
+      return;
     }
+    const auto instantiations = m_funcTemplates->instantiate(funcName, *typeParams);
+    if (instantiations.empty()) {
+      m_diags.push_back(errUndeclaredFuncTemplate(
+          m_src, funcName, typeParams->getCount(), n.getFunc().getSpan()));
+      return;
+    }
+    for (const auto& inst : instantiations) {
+      if (inst->hasErrors()) {
+        m_diags.push_back(errInvalidFuncInstantiation(m_src, n.getSpan()));
+        const auto& instDiags = inst->getDiags();
+        m_diags.insert(m_diags.end(), instDiags.begin(), instDiags.end());
+        isValid = false;
+      } else {
+        possibleFuncs.push_back(*inst->getFunc());
+      }
+    }
+  }
+  if (!isValid) {
+    return;
+  }
+
+  if (possibleFuncs.empty()) {
+    possibleFuncs = m_prog->lookupFuncs(funcName);
+  }
+  const auto func = m_prog->lookupFunc(possibleFuncs, prog::sym::TypeSet{argTypes}, -1);
+  if (!func) {
+    auto argTypeNames = std::vector<std::string>{};
+    for (const auto& argType : argTypes) {
+      argTypeNames.push_back(getName(*m_prog, argType));
+    }
+    m_diags.push_back(errUndeclaredFunc(m_src, funcName, argTypeNames, n.getSpan()));
     return;
   }
   m_expr = prog::expr::callExprNode(*m_prog, func.value(), std::move(args));
@@ -256,7 +296,7 @@ auto GetExpr::visit(const parse::IsExprNode& n) -> void {
 
   // Validate that the type is a valid type.
   const auto typeName = getName(n.getType());
-  const auto type     = m_prog->lookupType(typeName);
+  const auto type     = getType(*m_prog, m_typeSubTable, typeName);
   if (!type) {
     m_diags.push_back(errUndeclaredType(m_src, typeName, n.getType().getSpan()));
     return;
@@ -403,8 +443,8 @@ auto GetExpr::visit(const parse::UnaryExprNode& n) -> void {
   }
 
   auto funcName = prog::getFuncName(op.value());
-  auto func =
-      m_prog->lookupFunc(prog::getFuncName(op.value()), prog::sym::Input{{args[0]->getType()}}, 0);
+  auto func     = m_prog->lookupFunc(
+      prog::getFuncName(op.value()), prog::sym::TypeSet{{args[0]->getType()}}, 0);
   if (!func) {
     const auto& typeName = getName(*m_prog, args[0]->getType());
     m_diags.push_back(
@@ -436,7 +476,14 @@ auto GetExpr::getSubExpr(
     std::vector<prog::sym::ConstId>* visibleConsts,
     prog::sym::TypeId typeHint,
     bool checkedConstsAccess) -> prog::expr::NodePtr {
-  auto visitor = GetExpr{m_src, m_prog, m_consts, visibleConsts, typeHint, checkedConstsAccess};
+  auto visitor = GetExpr{m_src,
+                         m_prog,
+                         m_funcTemplates,
+                         m_typeSubTable,
+                         m_consts,
+                         visibleConsts,
+                         typeHint,
+                         checkedConstsAccess};
   n.accept(&visitor);
   m_diags.insert(m_diags.end(), visitor.getDiags().begin(), visitor.getDiags().end());
   return std::move(visitor.getValue());
@@ -504,24 +551,12 @@ auto GetExpr::getBinLogicOpExpr(const parse::BinaryExprNode& n, BinLogicOp op)
 
 auto GetExpr::declareConst(const lex::Token& nameToken, prog::sym::TypeId type)
     -> std::optional<prog::sym::ConstId> {
-  const auto name = getName(nameToken);
-  if (m_prog->lookupType(name)) {
-    m_diags.push_back(errConstNameConflictsWithType(m_src, name, nameToken.getSpan()));
+  const auto constName =
+      getConstName(m_src, *m_prog, m_typeSubTable, *m_consts, nameToken, &m_diags);
+  if (!constName) {
     return std::nullopt;
   }
-  if (!m_prog->lookupFuncs(name).empty()) {
-    m_diags.push_back(errConstNameConflictsWithFunction(m_src, name, nameToken.getSpan()));
-    return std::nullopt;
-  }
-  if (!m_prog->lookupActions(name).empty()) {
-    m_diags.push_back(errConstNameConflictsWithAction(m_src, name, nameToken.getSpan()));
-    return std::nullopt;
-  }
-  if (m_consts->lookup(name)) {
-    m_diags.push_back(errConstNameConflictsWithConst(m_src, name, nameToken.getSpan()));
-    return std::nullopt;
-  }
-  const auto constId = m_consts->registerLocal(name, type);
+  const auto constId = m_consts->registerLocal(*constName, type);
   m_visibleConsts->push_back(constId);
   return constId;
 }

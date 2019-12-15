@@ -64,12 +64,15 @@ public:
 
   [[nodiscard]] auto lookupType(const std::string& name) const -> std::optional<sym::TypeId>;
   [[nodiscard]] auto
-  lookupFunc(const std::string& name, const sym::Input& input, int maxConversions) const
+  lookupFunc(const std::string& name, const sym::TypeSet& input, int maxConversions) const
+      -> std::optional<sym::FuncId>;
+  [[nodiscard]] auto lookupFunc(
+      const std::vector<sym::FuncId>& funcs, const sym::TypeSet& input, int maxConversions) const
       -> std::optional<sym::FuncId>;
   [[nodiscard]] auto lookupFuncs(const std::string& name) const -> std::vector<sym::FuncId>;
 
   [[nodiscard]] auto
-  lookupAction(const std::string& name, const sym::Input& input, int maxConversions) const
+  lookupAction(const std::string& name, const sym::TypeSet& input, int maxConversions) const
       -> std::optional<sym::ActionId>;
   [[nodiscard]] auto lookupActions(const std::string& name) const -> std::vector<sym::ActionId>;
 
@@ -87,7 +90,7 @@ public:
 
   auto declareUserStruct(std::string name) -> sym::TypeId;
   auto declareUserUnion(std::string name) -> sym::TypeId;
-  auto declareUserFunc(std::string name, sym::Input input, sym::TypeId output) -> sym::FuncId;
+  auto declareUserFunc(std::string name, sym::TypeSet input, sym::TypeId output) -> sym::FuncId;
 
   auto defineUserStruct(sym::TypeId id, sym::FieldDeclTable fields) -> void;
   auto defineUserUnion(sym::TypeId id, std::vector<sym::TypeId> types) -> void;

@@ -43,6 +43,7 @@ add_executable(tests
   frontend/parse_diags_test.cpp
   frontend/source_test.cpp
   frontend/typeinfer_user_funcs_test.cpp
+  frontend/user_func_templates_test.cpp
 
   input/char_escape_test.cpp
   input/info_test.cpp

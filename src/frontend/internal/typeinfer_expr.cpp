@@ -235,7 +235,7 @@ auto TypeInferExpr::inferFuncCall(
       return prog::sym::TypeId::inferType();
     }
   }
-  auto func = m_prog->lookupFunc(funcName, prog::sym::Input{std::move(argTypes)}, -1);
+  auto func = m_prog->lookupFunc(funcName, prog::sym::TypeSet{std::move(argTypes)}, -1);
   if (func) {
     return m_prog->getFuncDecl(*func).getOutput();
   }

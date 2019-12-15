@@ -122,6 +122,13 @@ auto errNonOverloadableOperator(const Source& src, const std::string& name, inpu
   return error(src, oss.str(), span);
 }
 
+auto errTypeParamNameConflictsWithType(const Source& src, const std::string& name, input::Span span)
+    -> Diag {
+  std::ostringstream oss;
+  oss << "Type parameter name '" << name << "' conflicts with a type with the same name";
+  return error(src, oss.str(), span);
+}
+
 auto errDuplicateFuncDeclaration(const Source& src, const std::string& name, input::Span span)
     -> Diag {
   std::ostringstream oss;
@@ -147,6 +154,13 @@ auto errNonMatchingFuncReturnType(
   std::ostringstream oss;
   oss << "Function '" << name << "' returns value of type '" << returnedType
       << "' but its declared to return a value of type '" << declaredType << "'";
+  return error(src, oss.str(), span);
+}
+
+auto errConstNameConflictsWithTypeSubstitution(
+    const Source& src, const std::string& name, input::Span span) -> Diag {
+  std::ostringstream oss;
+  oss << "Constant name '" << name << "' conflicts with a type-substitution with the same name";
   return error(src, oss.str(), span);
 }
 
@@ -197,13 +211,7 @@ auto errUninitializedConst(const Source& src, const std::string& name, input::Sp
   return error(src, oss.str(), span);
 }
 
-auto errUndeclaredFunc(const Source& src, const std::string& name, input::Span span) -> Diag {
-  std::ostringstream oss;
-  oss << "No function named '" << name << "' has been declared";
-  return error(src, oss.str(), span);
-}
-
-auto errUndeclaredFuncOverload(
+auto errUndeclaredFunc(
     const Source& src,
     const std::string& name,
     const std::vector<std::string>& argTypes,
@@ -220,6 +228,20 @@ auto errUndeclaredFuncOverload(
       oss << '\'' << argTypes[i] << '\'';
     }
   }
+  return error(src, oss.str(), span);
+}
+
+auto errUndeclaredFuncTemplate(
+    const Source& src, const std::string& name, unsigned int argCount, input::Span span) -> Diag {
+  std::ostringstream oss;
+  oss << "No function template named '" << name << "' has been declared with '" << argCount
+      << "' type arguments";
+  return error(src, oss.str(), span);
+}
+
+auto errInvalidFuncInstantiation(const Source& src, input::Span span) -> Diag {
+  std::ostringstream oss;
+  oss << "One or more errors occurred in function template instantiation";
   return error(src, oss.str(), span);
 }
 

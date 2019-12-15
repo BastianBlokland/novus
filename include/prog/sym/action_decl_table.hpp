@@ -1,7 +1,7 @@
 #pragma once
 #include "prog/sym/action_decl.hpp"
 #include "prog/sym/action_id.hpp"
-#include "prog/sym/input.hpp"
+#include "prog/sym/type_set.hpp"
 #include <string>
 #include <unordered_map>
 #include <vector>
@@ -31,11 +31,11 @@ public:
   [[nodiscard]] auto end() const -> iterator;
 
   [[nodiscard]] auto lookup(const std::string& name) const -> std::vector<ActionId>;
-  [[nodiscard]] auto
-  lookup(const Program& prog, const std::string& name, const Input& input, int maxConversions) const
+  [[nodiscard]] auto lookup(
+      const Program& prog, const std::string& name, const TypeSet& input, int maxConversions) const
       -> std::optional<ActionId>;
 
-  auto registerAction(const Program& prog, ActionKind kind, std::string name, Input input)
+  auto registerAction(const Program& prog, ActionKind kind, std::string name, TypeSet input)
       -> ActionId;
 
 private:

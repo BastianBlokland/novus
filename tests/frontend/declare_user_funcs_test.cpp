@@ -49,6 +49,19 @@ TEST_CASE("Analyzing user-function declarations", "[frontend]") {
     REQUIRE(GET_CONV(output, "int", "bool"));
   }
 
+  SECTION("Declare template function") {
+    const auto& output = ANALYZE("fun f{T}(T a) -> T a "
+                                 "fun f2() -> int f{int}(1) "
+                                 "fun f3() -> float f{float}(1.0)");
+    REQUIRE(output.isSuccess());
+    CHECK(
+        GET_FUNC_DECL(output, "f__int", GET_TYPE_ID(output, "int")).getOutput() ==
+        GET_TYPE_ID(output, "int"));
+    CHECK(
+        GET_FUNC_DECL(output, "f__float", GET_TYPE_ID(output, "float")).getOutput() ==
+        GET_TYPE_ID(output, "float"));
+  }
+
   SECTION("Overload operator") {
     const auto& output = ANALYZE("fun -(bool b) !b "
                                  "fun f() -false");
@@ -82,6 +95,8 @@ TEST_CASE("Analyzing user-function declarations", "[frontend]") {
         "fun -(int i) -> int 1",
         errDuplicateFuncDeclaration(src, "operator-minus", input::Span{0, 20}));
     CHECK_DIAG("fun ?() -> int 1", errNonOverloadableOperator(src, "qmark", input::Span{4, 4}));
+    CHECK_DIAG(
+        "fun f{int}() -> int 1", errTypeParamNameConflictsWithType(src, "int", input::Span{6, 8}));
   }
 }
 

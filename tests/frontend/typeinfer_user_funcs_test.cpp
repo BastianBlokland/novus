@@ -1,7 +1,6 @@
 #include "catch2/catch.hpp"
 #include "frontend/diag_defs.hpp"
 #include "helpers.hpp"
-#include "prog/sym/input.hpp"
 
 namespace frontend {
 

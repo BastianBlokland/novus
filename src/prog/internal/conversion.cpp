@@ -59,7 +59,7 @@ auto findConvertibleTypes(const Program& prog, sym::TypeId from) -> std::vector<
 }
 
 auto applyConversions(
-    const Program& prog, const sym::Input& input, std::vector<expr::NodePtr>* args) -> void {
+    const Program& prog, const sym::TypeSet& input, std::vector<expr::NodePtr>* args) -> void {
   if (!args) {
     throw std::invalid_argument{"Null args pointer provided"};
   }

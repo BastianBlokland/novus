@@ -8,6 +8,8 @@ class TypeParamList final {
   friend auto operator<<(std::ostream& out, const TypeParamList& rhs) -> std::ostream&;
 
 public:
+  using iterator = typename std::vector<lex::Token>::const_iterator;
+
   TypeParamList() = delete;
   TypeParamList(
       lex::Token open,
@@ -17,6 +19,9 @@ public:
 
   auto operator==(const TypeParamList& rhs) const noexcept -> bool;
   auto operator!=(const TypeParamList& rhs) const noexcept -> bool;
+
+  [[nodiscard]] auto begin() const -> iterator;
+  [[nodiscard]] auto end() const -> iterator;
 
   [[nodiscard]] auto getSpan() const -> input::Span;
   [[nodiscard]] auto getParams() const -> const std::vector<lex::Token>&;

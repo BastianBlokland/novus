@@ -60,11 +60,11 @@ TEST_CASE("Analyzing call expressions", "[frontend]") {
     CHECK_DIAG(
         "fun f1() -> int 1 "
         "fun f2() -> int f3()",
-        errUndeclaredFunc(src, "f3", input::Span{34, 35}));
+        errUndeclaredFunc(src, "f3", {}, input::Span{34, 37}));
     CHECK_DIAG(
         "fun f1() -> int 1 "
         "fun f2() -> int f2(1)",
-        errUndeclaredFuncOverload(src, "f2", {"int"}, input::Span{34, 38}));
+        errUndeclaredFunc(src, "f2", {"int"}, input::Span{34, 38}));
   }
 }
 

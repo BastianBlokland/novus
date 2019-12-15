@@ -6,19 +6,19 @@
 
 namespace prog::sym {
 
-class Input final {
-  friend auto operator<<(std::ostream& out, const Input& rhs) -> std::ostream&;
+class TypeSet final {
+  friend auto operator<<(std::ostream& out, const TypeSet& rhs) -> std::ostream&;
 
 public:
   using iterator = typename std::vector<TypeId>::const_iterator;
 
-  Input(std::initializer_list<TypeId> list);
-  explicit Input(std::vector<TypeId> val);
+  TypeSet(std::initializer_list<TypeId> list);
+  explicit TypeSet(std::vector<TypeId> val);
 
   [[nodiscard]] auto operator[](unsigned int) const -> TypeId;
 
-  auto operator==(const Input& rhs) const noexcept -> bool;
-  auto operator!=(const Input& rhs) const noexcept -> bool;
+  auto operator==(const TypeSet& rhs) const noexcept -> bool;
+  auto operator!=(const TypeSet& rhs) const noexcept -> bool;
 
   [[nodiscard]] auto getCount() const -> unsigned int;
 
@@ -29,6 +29,6 @@ private:
   std::vector<TypeId> m_val;
 };
 
-auto operator<<(std::ostream& out, const Input& rhs) -> std::ostream&;
+auto operator<<(std::ostream& out, const TypeSet& rhs) -> std::ostream&;
 
 } // namespace prog::sym

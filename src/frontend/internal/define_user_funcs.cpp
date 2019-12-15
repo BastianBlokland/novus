@@ -7,8 +7,20 @@
 
 namespace frontend::internal {
 
-DefineUserFuncs::DefineUserFuncs(const Source& src, prog::Program* prog) :
-    m_src{src}, m_prog{prog} {}
+DefineUserFuncs::DefineUserFuncs(
+    const Source& src,
+    prog::Program* prog,
+    FuncTemplateTable* funcTemplates,
+    const TypeSubstitutionTable* typeSubTable) :
+    m_src{src}, m_prog{prog}, m_funcTemplates(funcTemplates), m_typeSubTable{typeSubTable} {
+
+  if (m_prog == nullptr) {
+    throw std::invalid_argument{"Program cannot be null"};
+  }
+  if (funcTemplates == nullptr) {
+    throw std::invalid_argument{"Func templates table cannot be null"};
+  }
+}
 
 auto DefineUserFuncs::hasErrors() const noexcept -> bool { return !m_diags.empty(); }
 
@@ -62,35 +74,19 @@ auto DefineUserFuncs::declareInputs(
     const parse::FuncDeclStmtNode& n, prog::sym::ConstDeclTable* consts) -> bool {
   bool isValid = true;
   for (const auto& arg : n.getArgs()) {
-    const auto name = getName(arg.getIdentifier());
-    const auto span = arg.getIdentifier().getSpan();
-    if (m_prog->lookupType(name)) {
-      m_diags.push_back(errConstNameConflictsWithType(m_src, name, span));
-      isValid = false;
-      continue;
-    }
-    if (!m_prog->lookupFuncs(name).empty()) {
-      m_diags.push_back(errConstNameConflictsWithFunction(m_src, name, span));
-      isValid = false;
-      continue;
-    }
-    if (!m_prog->lookupActions(name).empty()) {
-      m_diags.push_back(errConstNameConflictsWithAction(m_src, name, span));
-      isValid = false;
-      continue;
-    }
-    if (consts->lookup(name)) {
-      m_diags.push_back(errConstNameConflictsWithConst(m_src, name, span));
+    const auto constName =
+        getConstName(m_src, *m_prog, m_typeSubTable, *consts, arg.getIdentifier(), &m_diags);
+    if (!constName) {
       isValid = false;
       continue;
     }
 
-    const auto argType = m_prog->lookupType(getName(arg.getType()));
+    const auto argType = getType(*m_prog, m_typeSubTable, getName(arg.getType()));
     if (!argType) {
       // Fail because this should have been caught during function declaration.
       throw std::logic_error("No declaration found for function input");
     }
-    consts->registerInput(name, argType.value());
+    consts->registerInput(*constName, argType.value());
   }
   return isValid;
 }
@@ -101,7 +97,8 @@ auto DefineUserFuncs::getExpr(
     std::vector<prog::sym::ConstId>* visibleConsts,
     prog::sym::TypeId typeHint) -> prog::expr::NodePtr {
 
-  auto getExpr = GetExpr{m_src, m_prog, consts, visibleConsts, typeHint};
+  auto getExpr =
+      GetExpr{m_src, m_prog, m_funcTemplates, m_typeSubTable, consts, visibleConsts, typeHint};
   n.accept(&getExpr);
   m_diags.insert(m_diags.end(), getExpr.getDiags().begin(), getExpr.getDiags().end());
   return std::move(getExpr.getValue());

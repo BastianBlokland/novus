@@ -25,6 +25,10 @@ auto TypeParamList::operator!=(const TypeParamList& rhs) const noexcept -> bool 
   return !TypeParamList::operator==(rhs);
 }
 
+auto TypeParamList::begin() const -> iterator { return m_params.begin(); }
+
+auto TypeParamList::end() const -> iterator { return m_params.end(); }
+
 auto TypeParamList::getSpan() const -> input::Span {
   return input::Span::combine(m_open.getSpan(), m_close.getSpan());
 }

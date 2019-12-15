@@ -1,7 +1,7 @@
 #pragma once
 #include "prog/sym/func_id.hpp"
 #include "prog/sym/func_kind.hpp"
-#include "prog/sym/input.hpp"
+#include "prog/sym/type_set.hpp"
 #include <string>
 #include <vector>
 
@@ -20,7 +20,7 @@ public:
   [[nodiscard]] auto getId() const -> const FuncId&;
   [[nodiscard]] auto getKind() const -> const FuncKind&;
   [[nodiscard]] auto getName() const -> const std::string&;
-  [[nodiscard]] auto getInput() const -> const Input&;
+  [[nodiscard]] auto getInput() const -> const TypeSet&;
   [[nodiscard]] auto getOutput() const -> TypeId;
 
   auto updateOutput(TypeId newOutput) -> void;
@@ -29,10 +29,10 @@ private:
   FuncId m_id;
   FuncKind m_kind;
   std::string m_name;
-  Input m_input;
+  TypeSet m_input;
   TypeId m_output;
 
-  FuncDecl(FuncId id, FuncKind kind, std::string name, Input input, TypeId output);
+  FuncDecl(FuncId id, FuncKind kind, std::string name, TypeSet input, TypeId output);
 };
 
 auto operator<<(std::ostream& out, const FuncDecl& rhs) -> std::ostream&;

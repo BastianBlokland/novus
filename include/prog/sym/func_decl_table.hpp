@@ -1,8 +1,8 @@
 #pragma once
 #include "prog/sym/func_decl.hpp"
 #include "prog/sym/func_id.hpp"
-#include "prog/sym/input.hpp"
 #include "prog/sym/type_decl.hpp"
+#include "prog/sym/type_set.hpp"
 #include <string>
 #include <unordered_map>
 #include <vector>
@@ -32,12 +32,12 @@ public:
   [[nodiscard]] auto end() const -> iterator;
 
   [[nodiscard]] auto lookup(const std::string& name) const -> std::vector<FuncId>;
-  [[nodiscard]] auto
-  lookup(const Program& prog, const std::string& name, const Input& input, int maxConversions) const
+  [[nodiscard]] auto lookup(
+      const Program& prog, const std::string& name, const TypeSet& input, int maxConversions) const
       -> std::optional<FuncId>;
 
   auto
-  registerFunc(const Program& prog, FuncKind kind, std::string name, Input input, TypeId output)
+  registerFunc(const Program& prog, FuncKind kind, std::string name, TypeSet input, TypeId output)
       -> FuncId;
 
   auto updateFuncOutput(FuncId id, TypeId newOutput) -> void;

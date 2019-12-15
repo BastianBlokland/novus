@@ -6,8 +6,17 @@
 
 namespace frontend::internal {
 
-DefineExecStmts::DefineExecStmts(const Source& src, prog::Program* prog) :
-    m_src{src}, m_prog{prog} {}
+DefineExecStmts::DefineExecStmts(
+    const Source& src, prog::Program* prog, FuncTemplateTable* funcTemplates) :
+    m_src{src}, m_prog{prog}, m_funcTemplates{funcTemplates} {
+
+  if (m_prog == nullptr) {
+    throw std::invalid_argument{"Program cannot be null"};
+  }
+  if (funcTemplates == nullptr) {
+    throw std::invalid_argument{"Func templates table cannot be null"};
+  }
+}
 
 auto DefineExecStmts::hasErrors() const noexcept -> bool { return !m_diags.empty(); }
 
@@ -34,7 +43,7 @@ auto DefineExecStmts::visit(const parse::ExecStmtNode& n) -> void {
   }
 
   const auto& actionName = getName(n.getAction());
-  const auto& action     = m_prog->lookupAction(actionName, prog::sym::Input{argTypes}, -1);
+  const auto& action     = m_prog->lookupAction(actionName, prog::sym::TypeSet{argTypes}, -1);
   if (action) {
     m_prog->addExecStmt(action.value(), std::move(consts), std::move(args));
     return;
@@ -57,7 +66,7 @@ auto DefineExecStmts::getExpr(
     std::vector<prog::sym::ConstId>* visibleConsts,
     prog::sym::TypeId typeHint) -> prog::expr::NodePtr {
 
-  auto getExpr = GetExpr{m_src, m_prog, consts, visibleConsts, typeHint};
+  auto getExpr = GetExpr{m_src, m_prog, m_funcTemplates, nullptr, consts, visibleConsts, typeHint};
   n.accept(&getExpr);
   m_diags.insert(m_diags.end(), getExpr.getDiags().begin(), getExpr.getDiags().end());
   return std::move(getExpr.getValue());

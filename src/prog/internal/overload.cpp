@@ -7,25 +7,25 @@ template <typename DeclTable>
 auto findOverload(
     const Program& prog,
     const DeclTable& declTable,
-    const std::string& name,
-    const sym::Input& input,
+    const std::vector<typename DeclTable::id>& overloads,
+    const sym::TypeSet& input,
     int maxConversions) -> std::optional<typename DeclTable::id> {
 
   std::optional<typename DeclTable::id> result = std::nullopt;
   auto resultConvAmount                        = std::numeric_limits<int>::max();
 
-  for (const auto& overload : declTable.lookup(name)) {
-    const auto funcInput = declTable[overload].getInput();
-    if (funcInput.getCount() != input.getCount()) {
+  for (const auto& overload : overloads) {
+    const auto ovInput = declTable[overload].getInput();
+    if (ovInput.getCount() != input.getCount()) {
       continue; // Argument count has to match.
     }
 
-    auto convAmount   = 0;
-    auto valid        = true;
-    auto inputItr     = input.begin();
-    auto funcInputItr = funcInput.begin();
-    for (; inputItr != input.end(); ++inputItr, ++funcInputItr) {
-      if (*inputItr == *funcInputItr) {
+    auto convAmount = 0;
+    auto valid      = true;
+    auto inputItr   = input.begin();
+    auto ovInputItr = ovInput.begin();
+    for (; inputItr != input.end(); ++inputItr, ++ovInputItr) {
+      if (*inputItr == *ovInputItr) {
         continue;
       }
       if (maxConversions >= 0 && convAmount >= maxConversions) {
@@ -33,7 +33,7 @@ auto findOverload(
         break;
       }
 
-      auto conv = findConversion(prog, *inputItr, *funcInputItr);
+      auto conv = findConversion(prog, *inputItr, *ovInputItr);
       if (conv) {
         convAmount++;
         continue;
@@ -55,14 +55,14 @@ auto findOverload(
 template std::optional<sym::FuncDeclTable::id> findOverload(
     const Program& prog,
     const sym::FuncDeclTable& declTable,
-    const std::string& name,
-    const sym::Input& input,
+    const std::vector<sym::FuncId>& overloads,
+    const sym::TypeSet& input,
     int maxConversions);
 template std::optional<sym::ActionDeclTable::id> findOverload(
     const Program& prog,
     const sym::ActionDeclTable& declTable,
-    const std::string& name,
-    const sym::Input& input,
+    const std::vector<sym::ActionId>& overloads,
+    const sym::TypeSet& input,
     int maxConversions);
 
 } // namespace prog::internal
