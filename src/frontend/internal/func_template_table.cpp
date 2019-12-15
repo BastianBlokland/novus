@@ -37,4 +37,29 @@ auto FuncTemplateTable::instantiate(const std::string& name, const prog::sym::Ty
   return result;
 }
 
+auto FuncTemplateTable::getRetType(const std::string& name, const prog::sym::TypeSet& typeParams)
+    -> std::optional<prog::sym::TypeId> {
+  auto itr = m_templates.find(name);
+  if (itr == m_templates.end()) {
+    return std::nullopt;
+  }
+
+  // Only return a value if all overloads agree on the result-type.
+  std::optional<prog::sym::TypeId> result = std::nullopt;
+  for (auto& funcTemplate : itr->second) {
+    if (funcTemplate.getTypeParamCount() == typeParams.getCount()) {
+      const auto retType = funcTemplate.getRetType(typeParams);
+      if (!retType) {
+        continue;
+      }
+      if (!result) {
+        result = retType;
+      } else if (*result != *retType) {
+        return std::nullopt;
+      }
+    }
+  }
+  return result;
+}
+
 } // namespace frontend::internal

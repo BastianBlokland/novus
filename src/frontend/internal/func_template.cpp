@@ -32,6 +32,25 @@ auto FuncTemplate::getName() const -> const std::string& { return m_name; }
 
 auto FuncTemplate::getTypeParamCount() const -> unsigned int { return m_typeParams.size(); }
 
+auto FuncTemplate::getRetType(const prog::sym::TypeSet& typeParams)
+    -> std::optional<prog::sym::TypeId> {
+  if (typeParams.getCount() != m_typeParams.size()) {
+    throw std::invalid_argument{"Invalid number of type-parameters provided"};
+  }
+
+  // Check if we have a previous instantiation for the given type params then return that type.
+  const auto previousInst =
+      std::find_if(m_instances.begin(), m_instances.end(), [&typeParams](const auto& inst) {
+        return inst->getTypeParams() == typeParams;
+      });
+  if (previousInst != m_instances.end()) {
+    return (*previousInst)->m_retType;
+  }
+
+  const auto subTable = createSubTable(typeParams);
+  return getRetType(subTable, typeParams, nullptr);
+}
+
 auto FuncTemplate::instantiate(const prog::sym::TypeSet& typeParams) -> const FuncTemplateInst* {
   if (typeParams.getCount() != m_typeParams.size()) {
     throw std::invalid_argument{"Invalid number of type-parameters provided"};
@@ -63,8 +82,8 @@ auto FuncTemplate::instantiate(FuncTemplateInst* instance) -> void {
     return;
   }
 
-  auto retType = getRetType(subTable, *funcInput, &instance->m_diags);
-  if (!retType) {
+  instance->m_retType = getRetType(subTable, *funcInput, &instance->m_diags);
+  if (!instance->m_retType) {
     assert(instance->hasErrors());
     return;
   }
@@ -76,7 +95,8 @@ auto FuncTemplate::instantiate(FuncTemplateInst* instance) -> void {
   }
 
   // Declare the function in the program.
-  instance->m_func = m_prog->declareUserFunc(mangledName, std::move(*funcInput), *retType);
+  instance->m_func =
+      m_prog->declareUserFunc(mangledName, std::move(*funcInput), *instance->m_retType);
 
   // Define the function.
   auto defineFuncs = DefineUserFuncs{m_src, m_prog, m_funcTemplates, &subTable};
@@ -131,9 +151,9 @@ auto FuncTemplate::getRetType(
       constTypes.insert({argName, input[i]});
     }
 
-    auto inferBodyType = TypeInferExpr{m_prog, &constTypes, true};
+    auto inferBodyType = TypeInferExpr{m_prog, m_funcTemplates, &subTable, &constTypes, true};
     m_parseNode[0].accept(&inferBodyType);
-    return inferBodyType.getType();
+    return inferBodyType.getInferredType();
   }
 
   return retType;

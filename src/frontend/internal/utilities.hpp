@@ -125,6 +125,11 @@ auto getTypeSet(
     const std::vector<lex::Token>& typeTokens,
     std::vector<Diag>* diags) -> std::optional<prog::sym::TypeSet>;
 
+auto getTypeSet(
+    const prog::Program& prog,
+    const TypeSubstitutionTable* subTable,
+    const std::vector<lex::Token>& typeTokens) -> std::optional<prog::sym::TypeSet>;
+
 auto getConstName(
     const Source& src,
     const prog::Program& prog,

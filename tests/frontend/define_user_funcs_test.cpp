@@ -60,8 +60,7 @@ TEST_CASE("Analyzing user-function definitions", "[frontend]") {
         "fun f{T}(T T) -> T T "
         "fun f2() f{int}(1)",
         errInvalidFuncInstantiation(src, input::Span{30, 38}),
-        errConstNameConflictsWithTypeSubstitution(src, "T", input::Span{11, 11}),
-        errUnableToInferFuncReturnType(src, "f2", input::Span{25, 26}));
+        errConstNameConflictsWithTypeSubstitution(src, "T", input::Span{11, 11}));
     CHECK_DIAG(
         "fun f{T}(T i) -> T "
         "  T = i * 2; i "

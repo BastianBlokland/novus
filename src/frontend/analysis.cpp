@@ -61,7 +61,7 @@ auto analyze(const Source& src) -> Output {
   }
 
   // Infer return-types of user functions (run multiple passes until all have been inferred).
-  auto typeInferUserFuncs = internal::TypeInferUserFuncs{prog.get()};
+  auto typeInferUserFuncs = internal::TypeInferUserFuncs{prog.get(), &funcTemplates, nullptr};
   auto firstInferItr      = true;
   bool inferredAllFuncs;
   do {

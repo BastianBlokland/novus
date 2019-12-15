@@ -108,6 +108,25 @@ auto getTypeSet(
   return isValid ? std::optional{prog::sym::TypeSet{std::move(types)}} : std::nullopt;
 }
 
+auto getTypeSet(
+    const prog::Program& prog,
+    const TypeSubstitutionTable* subTable,
+    const std::vector<lex::Token>& typeTokens) -> std::optional<prog::sym::TypeSet> {
+
+  auto isValid = true;
+  auto types   = std::vector<prog::sym::TypeId>{};
+  for (const auto& typeToken : typeTokens) {
+    const auto typeName = getName(typeToken);
+    auto type           = getType(prog, subTable, typeName);
+    if (type) {
+      types.push_back(*type);
+    } else {
+      isValid = false;
+    }
+  }
+  return isValid ? std::optional{prog::sym::TypeSet{std::move(types)}} : std::nullopt;
+}
+
 auto getConstName(
     const Source& src,
     const prog::Program& prog,

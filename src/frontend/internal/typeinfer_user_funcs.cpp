@@ -6,7 +6,19 @@
 
 namespace frontend::internal {
 
-TypeInferUserFuncs::TypeInferUserFuncs(prog::Program* prog) : m_prog{prog} {}
+TypeInferUserFuncs::TypeInferUserFuncs(
+    prog::Program* prog,
+    FuncTemplateTable* funcTemplates,
+    const TypeSubstitutionTable* typeSubTable) :
+    m_prog{prog}, m_funcTemplates{funcTemplates}, m_typeSubTable{typeSubTable} {
+
+  if (m_prog == nullptr) {
+    throw std::invalid_argument{"Program cannot be null"};
+  }
+  if (m_funcTemplates == nullptr) {
+    throw std::invalid_argument{"Function template table cannot be null"};
+  }
+}
 
 auto TypeInferUserFuncs::inferRetType(prog::sym::FuncId id, const parse::FuncDeclStmtNode& n)
     -> bool {
@@ -27,9 +39,10 @@ auto TypeInferUserFuncs::inferRetType(prog::sym::FuncId id, const parse::FuncDec
     }
   }
 
-  auto inferBodyType = TypeInferExpr{m_prog, &constTypes, agressive};
+  auto inferBodyType =
+      TypeInferExpr{m_prog, m_funcTemplates, m_typeSubTable, &constTypes, agressive};
   n[0].accept(&inferBodyType);
-  const auto type = inferBodyType.getType();
+  const auto type = inferBodyType.getInferredType();
 
   // If type is still not a concrete type then we fail.
   if (!type.isConcrete()) {

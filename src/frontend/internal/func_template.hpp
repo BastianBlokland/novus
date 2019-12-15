@@ -17,6 +17,8 @@ public:
 
   [[nodiscard]] auto getName() const -> const std::string&;
   [[nodiscard]] auto getTypeParamCount() const -> unsigned int;
+  [[nodiscard]] auto getRetType(const prog::sym::TypeSet& typeParams)
+      -> std::optional<prog::sym::TypeId>;
 
   auto instantiate(const prog::sym::TypeSet& typeParams) -> const FuncTemplateInst*;
 

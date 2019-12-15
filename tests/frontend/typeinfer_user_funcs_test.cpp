@@ -129,6 +129,15 @@ TEST_CASE("Infer return type of user functions", "[frontend]") {
         GET_TYPE_ID(output, "int"));
   }
 
+  SECTION("Templated call") {
+    const auto& output = ANALYZE("fun ft{T}(T a) a == a "
+                                 "fun f(int i) ft{int}(i)");
+    REQUIRE(output.isSuccess());
+    CHECK(
+        GET_FUNC_DECL(output, "f", GET_TYPE_ID(output, "int")).getOutput() ==
+        GET_TYPE_ID(output, "bool"));
+  }
+
   SECTION("Diagnostics") {
     CHECK_DIAG(
         "fun f1() f2() "

@@ -26,6 +26,9 @@ public:
   auto instantiate(const std::string& name, const prog::sym::TypeSet& typeParams)
       -> std::vector<const FuncTemplateInst*>;
 
+  auto getRetType(const std::string& name, const prog::sym::TypeSet& typeParams)
+      -> std::optional<prog::sym::TypeId>;
+
 private:
   const Source& m_src;
   prog::Program* m_prog;

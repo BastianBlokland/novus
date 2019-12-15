@@ -8,21 +8,28 @@ namespace frontend::internal {
 
 TypeInferExpr::TypeInferExpr(
     prog::Program* prog,
+    FuncTemplateTable* funcTemplates,
+    const TypeSubstitutionTable* typeSubTable,
     std::unordered_map<std::string, prog::sym::TypeId>* constTypes,
     bool aggressive) :
     m_prog{prog},
+    m_funcTemplates{funcTemplates},
+    m_typeSubTable{typeSubTable},
     m_constTypes{constTypes},
     m_aggressive{aggressive},
     m_type{prog::sym::TypeId::inferType()} {
   if (m_prog == nullptr) {
     throw std::invalid_argument{"Program cannot be null"};
   }
+  if (m_funcTemplates == nullptr) {
+    throw std::invalid_argument{"Function template table cannot be null"};
+  }
   if (m_constTypes == nullptr) {
     throw std::invalid_argument{"ConstTypes cannot be null"};
   }
 }
 
-auto TypeInferExpr::getType() const noexcept -> prog::sym::TypeId { return m_type; }
+auto TypeInferExpr::getInferredType() const noexcept -> prog::sym::TypeId { return m_type; }
 
 auto TypeInferExpr::visit(const parse::ErrorNode & /*unused*/) -> void {
   throw std::logic_error{"TypeInferExpr is not implemented for this node type"};
@@ -52,12 +59,25 @@ auto TypeInferExpr::visit(const parse::BinaryExprNode& n) -> void {
 }
 
 auto TypeInferExpr::visit(const parse::CallExprNode& n) -> void {
+  const auto funcName = getName(n.getFunc());
+  if (n.getTypeParams()) {
+    const auto typeSet = getTypeSet(*m_prog, m_typeSubTable, n.getTypeParams()->getParams());
+    if (!typeSet) {
+      return;
+    }
+    const auto retType = m_funcTemplates->getRetType(funcName, *typeSet);
+    if (retType) {
+      m_type = *retType;
+    }
+    return;
+  }
+
   auto argTypes = std::vector<prog::sym::TypeId>{};
   argTypes.reserve(n.getChildCount());
   for (auto i = 0U; i < n.getChildCount(); ++i) {
     argTypes.push_back(inferSubExpr(n[i]));
   }
-  m_type = inferFuncCall(getName(n.getFunc()), std::move(argTypes));
+  m_type = inferFuncCall(funcName, std::move(argTypes));
 }
 
 auto TypeInferExpr::visit(const parse::ConditionalExprNode& n) -> void {
@@ -125,7 +145,7 @@ auto TypeInferExpr::visit(const parse::GroupExprNode& n) -> void {
 
 auto TypeInferExpr::visit(const parse::IsExprNode& n) -> void {
   // Register the type of the constant this declares.
-  const auto constType = m_prog->lookupType(getName(n.getType()));
+  const auto constType = getType(*m_prog, m_typeSubTable, getName(n.getType()));
   if (constType) {
     setConstType(n.getId(), *constType);
   }
@@ -223,9 +243,9 @@ auto TypeInferExpr::visit(const parse::UnionDeclStmtNode & /*unused*/) -> void {
 }
 
 auto TypeInferExpr::inferSubExpr(const parse::Node& n) -> prog::sym::TypeId {
-  auto visitor = TypeInferExpr{m_prog, m_constTypes, m_aggressive};
+  auto visitor = TypeInferExpr{m_prog, m_funcTemplates, m_typeSubTable, m_constTypes, m_aggressive};
   n.accept(&visitor);
-  return visitor.getType();
+  return visitor.getInferredType();
 }
 
 auto TypeInferExpr::inferFuncCall(
