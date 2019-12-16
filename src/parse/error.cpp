@@ -6,6 +6,8 @@
 
 namespace parse {
 
+static auto addTokens(const Type& type, std::vector<lex::Token>* tokens) -> void;
+
 auto errLexError(lex::Token errToken) -> NodePtr {
   if (errToken.getKind() != lex::TokenKind::Error) {
     throw std::invalid_argument{"Given token is not an error-token"};
@@ -14,10 +16,40 @@ auto errLexError(lex::Token errToken) -> NodePtr {
   return errorNode(msg, std::move(errToken));
 }
 
+static auto addTokens(const TypeParamList& paramList, std::vector<lex::Token>* tokens) -> void {
+  tokens->push_back(paramList.getOpen());
+  for (const auto& type : paramList.getTypes()) {
+    addTokens(type, tokens);
+  }
+  for (const auto& comma : paramList.getCommas()) {
+    tokens->push_back(comma);
+  }
+  tokens->push_back(paramList.getClose());
+}
+
+static auto addTokens(const Type& type, std::vector<lex::Token>* tokens) -> void {
+  tokens->push_back(type.getId());
+  if (type.getParamList()) {
+    addTokens(*type.getParamList(), tokens);
+  }
+}
+
+static auto addTokens(const TypeSubstitutionList& subList, std::vector<lex::Token>* tokens)
+    -> void {
+  tokens->push_back(subList.getOpen());
+  for (const auto& subToken : subList.getSubs()) {
+    tokens->push_back(subToken);
+  }
+  for (const auto& comma : subList.getCommas()) {
+    tokens->push_back(comma);
+  }
+  tokens->push_back(subList.getClose());
+}
+
 auto errInvalidStmtFuncDecl(
     lex::Token kw,
     lex::Token id,
-    std::optional<TypeParamList> typeParams,
+    std::optional<TypeSubstitutionList> typeSubs,
     lex::Token open,
     const std::vector<FuncDeclStmtNode::ArgSpec>& args,
     std::vector<lex::Token> commas,
@@ -28,8 +60,8 @@ auto errInvalidStmtFuncDecl(
   std::ostringstream oss;
   if (id.getKind() != lex::TokenKind::Identifier && id.getCat() != lex::TokenCat::Operator) {
     oss << "Expected function identifier but got: " << id;
-  } else if (typeParams && !typeParams->validate()) {
-    oss << "Invalid type parameters";
+  } else if (typeSubs && !typeSubs->validate()) {
+    oss << "Invalid type substitution parameters";
   } else if (open.getKind() != lex::TokenKind::SepOpenParen) {
     oss << "Expected opening parentheses '(' but got: " << open;
   } else if (commas.size() != (args.empty() ? 0 : args.size() - 1)) {
@@ -38,8 +70,8 @@ auto errInvalidStmtFuncDecl(
     oss << "Expected closing parentheses ')' but got: " << close;
   } else if (retType && retType->getArrow().getKind() != lex::TokenKind::SepArrow) {
     oss << "Expected return-type seperator (->) but got: " << retType->getArrow();
-  } else if (retType && retType->getType().getKind() != lex::TokenKind::Identifier) {
-    oss << "Expected return-type identifier but got: " << retType->getType();
+  } else if (retType && !retType->getType().validate()) {
+    oss << "Invalid return-type specification: " << retType->getType();
   } else {
     oss << "Invalid function declaration";
   }
@@ -47,10 +79,13 @@ auto errInvalidStmtFuncDecl(
   auto tokens = std::vector<lex::Token>{};
   tokens.push_back(std::move(kw));
   tokens.push_back(std::move(id));
+  if (typeSubs) {
+    addTokens(*typeSubs, &tokens);
+  }
   tokens.push_back(std::move(open));
   for (auto& arg : args) {
     tokens.push_back(arg.getIdentifier());
-    tokens.push_back(arg.getType());
+    addTokens(arg.getType(), &tokens);
   }
   for (auto& comma : commas) {
     tokens.push_back(std::move(comma));
@@ -58,7 +93,7 @@ auto errInvalidStmtFuncDecl(
   tokens.push_back(std::move(close));
   if (retType) {
     tokens.push_back(retType->getArrow());
-    tokens.push_back(retType->getType());
+    addTokens(retType->getType(), &tokens);
   }
 
   auto nodes = std::vector<std::unique_ptr<Node>>{};
@@ -70,6 +105,7 @@ auto errInvalidStmtFuncDecl(
 auto errInvalidStmtStructDecl(
     lex::Token kw,
     lex::Token id,
+    std::optional<TypeSubstitutionList> typeSubs,
     std::optional<lex::Token> eq,
     const std::vector<StructDeclStmtNode::FieldSpec>& fields,
     std::vector<lex::Token> commas) -> NodePtr {
@@ -77,6 +113,8 @@ auto errInvalidStmtStructDecl(
   std::ostringstream oss;
   if (id.getKind() != lex::TokenKind::Identifier) {
     oss << "Expected struct identifier but got: " << id;
+  } else if (typeSubs && !typeSubs->validate()) {
+    oss << "Invalid type substitution parameters";
   } else if (eq && eq->getKind() != lex::TokenKind::OpEq) {
     oss << "Expected equals-sign '=' but got: " << *eq;
   } else if (eq && fields.empty()) {
@@ -90,12 +128,15 @@ auto errInvalidStmtStructDecl(
   auto tokens = std::vector<lex::Token>{};
   tokens.push_back(std::move(kw));
   tokens.push_back(std::move(id));
+  if (typeSubs) {
+    addTokens(*typeSubs, &tokens);
+  }
   if (eq) {
     tokens.push_back(std::move(*eq));
   }
   for (auto& field : fields) {
     tokens.push_back(field.getIdentifier());
-    tokens.push_back(field.getType());
+    addTokens(field.getType(), &tokens);
   }
   for (auto& comma : commas) {
     tokens.push_back(std::move(comma));
@@ -107,13 +148,16 @@ auto errInvalidStmtStructDecl(
 auto errInvalidStmtUnionDecl(
     lex::Token kw,
     lex::Token id,
+    std::optional<TypeSubstitutionList> typeSubs,
     lex::Token eq,
-    std::vector<lex::Token> types,
+    const std::vector<Type>& types,
     std::vector<lex::Token> commas) -> NodePtr {
 
   std::ostringstream oss;
   if (id.getKind() != lex::TokenKind::Identifier) {
     oss << "Expected union identifier but got: " << id;
+  } else if (typeSubs && !typeSubs->validate()) {
+    oss << "Invalid type substitution parameters";
   } else if (eq.getKind() != lex::TokenKind::OpEq) {
     oss << "Expected equals-sign '=' but got: " << eq;
   } else if (types.size() < 2) {
@@ -127,9 +171,12 @@ auto errInvalidStmtUnionDecl(
   auto tokens = std::vector<lex::Token>{};
   tokens.push_back(std::move(kw));
   tokens.push_back(std::move(id));
+  if (typeSubs) {
+    addTokens(*typeSubs, &tokens);
+  }
   tokens.push_back(std::move(eq));
   for (auto& type : types) {
-    tokens.push_back(std::move(type));
+    addTokens(type, &tokens);
   }
   for (auto& comma : commas) {
     tokens.push_back(std::move(comma));
@@ -226,12 +273,12 @@ auto errInvalidFieldExpr(NodePtr lhs, lex::Token dot, lex::Token id) -> NodePtr 
   return errorNode(oss.str(), std::move(tokens), std::move(subExprs));
 }
 
-auto errInvalidIsExpr(NodePtr lhs, lex::Token kw, lex::Token type, lex::Token id) -> NodePtr {
+auto errInvalidIsExpr(NodePtr lhs, lex::Token kw, const Type& type, lex::Token id) -> NodePtr {
   std::ostringstream oss;
   if (getKw(kw) != lex::Keyword::Is) {
     oss << "Expected keyword 'is' but got: " << kw;
-  } else if (type.getKind() != lex::TokenKind::Identifier) {
-    oss << "Expected type identifier but got: " << type;
+  } else if (!type.validate()) {
+    oss << "Invalid type identifier: " << type;
   } else if (
       id.getKind() != lex::TokenKind::Identifier && id.getKind() != lex::TokenKind::Discard) {
     oss << "Expected identifier or discard '_' but got: " << id;
@@ -241,7 +288,7 @@ auto errInvalidIsExpr(NodePtr lhs, lex::Token kw, lex::Token type, lex::Token id
 
   auto tokens = std::vector<lex::Token>{};
   tokens.push_back(std::move(kw));
-  tokens.push_back(std::move(type));
+  addTokens(type, &tokens);
   tokens.push_back(std::move(id));
 
   auto subExprs = std::vector<std::unique_ptr<Node>>{};

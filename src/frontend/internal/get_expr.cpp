@@ -124,7 +124,7 @@ auto GetExpr::visit(const parse::CallExprNode& n) -> void {
   // If this is a template call then instantiate the templates.
   if (n.getTypeParams()) {
     auto typeParams =
-        getTypeSet(m_src, *m_prog, m_typeSubTable, n.getTypeParams()->getParams(), &m_diags);
+        getTypeSet(m_src, *m_prog, m_typeSubTable, n.getTypeParams()->getTypes(), &m_diags);
     if (!typeParams) {
       assert(!m_diags.empty());
       return;

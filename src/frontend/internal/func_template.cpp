@@ -11,13 +11,13 @@ FuncTemplate::FuncTemplate(
     prog::Program* prog,
     FuncTemplateTable* funcTemplates,
     std::string name,
-    std::vector<std::string> typeParams,
+    std::vector<std::string> typeSubs,
     const parse::FuncDeclStmtNode& parseNode) :
     m_src{src},
     m_prog{prog},
     m_funcTemplates(funcTemplates),
     m_name{std::move(name)},
-    m_typeParams{std::move(typeParams)},
+    m_typeSubs{std::move(typeSubs)},
     m_parseNode{parseNode} {
 
   if (m_prog == nullptr) {
@@ -30,11 +30,11 @@ FuncTemplate::FuncTemplate(
 
 auto FuncTemplate::getName() const -> const std::string& { return m_name; }
 
-auto FuncTemplate::getTypeParamCount() const -> unsigned int { return m_typeParams.size(); }
+auto FuncTemplate::getTypeParamCount() const -> unsigned int { return m_typeSubs.size(); }
 
 auto FuncTemplate::getRetType(const prog::sym::TypeSet& typeParams)
     -> std::optional<prog::sym::TypeId> {
-  if (typeParams.getCount() != m_typeParams.size()) {
+  if (typeParams.getCount() != m_typeSubs.size()) {
     throw std::invalid_argument{"Invalid number of type-parameters provided"};
   }
 
@@ -52,7 +52,7 @@ auto FuncTemplate::getRetType(const prog::sym::TypeSet& typeParams)
 }
 
 auto FuncTemplate::instantiate(const prog::sym::TypeSet& typeParams) -> const FuncTemplateInst* {
-  if (typeParams.getCount() != m_typeParams.size()) {
+  if (typeParams.getCount() != m_typeSubs.size()) {
     throw std::invalid_argument{"Invalid number of type-parameters provided"};
   }
 
@@ -121,8 +121,8 @@ auto FuncTemplate::mangleName(const prog::sym::TypeSet& typeParams) const -> std
 auto FuncTemplate::createSubTable(const prog::sym::TypeSet& typeParams) const
     -> TypeSubstitutionTable {
   auto subTable = TypeSubstitutionTable{};
-  for (auto i = 0U; i != m_typeParams.size(); ++i) {
-    subTable.declare(m_typeParams[i], typeParams[i]);
+  for (auto i = 0U; i != m_typeSubs.size(); ++i) {
+    subTable.declare(m_typeSubs[i], typeParams[i]);
   }
   return subTable;
 }

@@ -3,7 +3,7 @@
 
 namespace parse {
 
-IsExprNode::IsExprNode(NodePtr lhs, lex::Token kw, lex::Token type, lex::Token id) :
+IsExprNode::IsExprNode(NodePtr lhs, lex::Token kw, Type type, lex::Token id) :
     m_lhs{std::move(lhs)}, m_kw{std::move(kw)}, m_type{std::move(type)}, m_id{std::move(id)} {}
 
 auto IsExprNode::operator==(const Node& rhs) const noexcept -> bool {
@@ -28,7 +28,7 @@ auto IsExprNode::getSpan() const -> input::Span {
   return input::Span::combine(m_lhs->getSpan(), m_id.getSpan());
 }
 
-auto IsExprNode::getType() const -> const lex::Token& { return m_type; }
+auto IsExprNode::getType() const -> const Type& { return m_type; }
 
 auto IsExprNode::hasId() const -> bool { return m_id.getKind() == lex::TokenKind::Identifier; }
 
@@ -37,7 +37,7 @@ auto IsExprNode::getId() const -> const lex::Token& { return m_id; }
 auto IsExprNode::accept(NodeVisitor* visitor) const -> void { visitor->visit(*this); }
 
 auto IsExprNode::print(std::ostream& out) const -> std::ostream& {
-  out << "is-" << parse::getId(m_type).value_or("error");
+  out << "is-" << m_type;
   if (m_id.getKind() == lex::TokenKind::Identifier) {
     out << '-' << parse::getId(m_id).value_or("error");
   }
@@ -45,7 +45,7 @@ auto IsExprNode::print(std::ostream& out) const -> std::ostream& {
 }
 
 // Factories.
-auto isExprNode(NodePtr lhs, lex::Token kw, lex::Token type, lex::Token id) -> NodePtr {
+auto isExprNode(NodePtr lhs, lex::Token kw, Type type, lex::Token id) -> NodePtr {
   if (lhs == nullptr) {
     throw std::invalid_argument{"Lhs cannot be null"};
   }

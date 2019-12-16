@@ -61,20 +61,20 @@ auto getFuncInput(
   return isValid ? std::optional{prog::sym::TypeSet{std::move(argTypes)}} : std::nullopt;
 }
 
-auto getTypeParams(
+auto getSubstitutionParams(
     const Source& src,
     const prog::Program& prog,
-    const parse::TypeParamList& paramList,
+    const parse::TypeSubstitutionList& subList,
     std::vector<Diag>* diags) -> std::optional<std::vector<std::string>> {
 
   auto typeParams = std::vector<std::string>{};
   auto isValid    = true;
-  for (const auto& typeParamToken : paramList) {
-    const auto typeParamName = getName(typeParamToken);
+  for (const auto& typeSubToken : subList) {
+    const auto typeParamName = getName(typeSubToken);
     if (prog.lookupType(typeParamName)) {
       if (diags) {
         diags->push_back(
-            errTypeParamNameConflictsWithType(src, typeParamName, typeParamToken.getSpan()));
+            errTypeParamNameConflictsWithType(src, typeParamName, typeSubToken.getSpan()));
       }
       isValid = false;
     } else {
@@ -88,19 +88,19 @@ auto getTypeSet(
     const Source& src,
     const prog::Program& prog,
     const TypeSubstitutionTable* subTable,
-    const std::vector<lex::Token>& typeTokens,
+    const std::vector<parse::Type>& parseTypes,
     std::vector<Diag>* diags) -> std::optional<prog::sym::TypeSet> {
 
   auto isValid = true;
   auto types   = std::vector<prog::sym::TypeId>{};
-  for (const auto& typeToken : typeTokens) {
-    const auto typeName = getName(typeToken);
+  for (const auto& parseType : parseTypes) {
+    const auto typeName = getName(parseType);
     auto type           = getType(prog, subTable, typeName);
     if (type) {
       types.push_back(*type);
     } else {
       if (diags) {
-        diags->push_back(errUndeclaredType(src, typeName, typeToken.getSpan()));
+        diags->push_back(errUndeclaredType(src, typeName, parseType.getSpan()));
       }
       isValid = false;
     }
@@ -111,12 +111,12 @@ auto getTypeSet(
 auto getTypeSet(
     const prog::Program& prog,
     const TypeSubstitutionTable* subTable,
-    const std::vector<lex::Token>& typeTokens) -> std::optional<prog::sym::TypeSet> {
+    const std::vector<parse::Type>& parseTypes) -> std::optional<prog::sym::TypeSet> {
 
   auto isValid = true;
   auto types   = std::vector<prog::sym::TypeId>{};
-  for (const auto& typeToken : typeTokens) {
-    const auto typeName = getName(typeToken);
+  for (const auto& parseType : parseTypes) {
+    const auto typeName = getName(parseType);
     auto type           = getType(prog, subTable, typeName);
     if (type) {
       types.push_back(*type);

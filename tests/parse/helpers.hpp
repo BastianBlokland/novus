@@ -15,6 +15,8 @@
 
 namespace parse {
 
+#define NUM_ARGS(...) std::tuple_size<decltype(std::make_tuple(__VA_ARGS__))>::value
+
 #define MINUS lex::basicToken(lex::TokenKind::OpMinus)
 #define PLUS lex::basicToken(lex::TokenKind::OpPlus)
 #define STAR lex::basicToken(lex::TokenKind::OpStar)
@@ -48,6 +50,17 @@ namespace parse {
 #define END lex::endToken()
 
 #define ID(ID) lex::identiferToken(ID)
+#define TYPE(NAME, ...)                                                                            \
+  NUM_ARGS(__VA_ARGS__) == 0                                                                       \
+      ? Type(ID(NAME))                                                                             \
+      : Type(                                                                                      \
+            ID(NAME),                                                                              \
+            TypeParamList(                                                                         \
+                OCURLY,                                                                            \
+                {__VA_ARGS__},                                                                     \
+                COMMAS(NUM_ARGS(__VA_ARGS__) == 0 ? 0 : (NUM_ARGS(__VA_ARGS__) - 1)),              \
+                CCURLY))
+
 #define INT(VAL) litExprNode(lex::litIntToken(VAL))
 #define STR(VAL) litExprNode(lex::litStrToken(VAL))
 #define BOOL(VAL) litExprNode(lex::litBoolToken(VAL))
@@ -111,7 +124,6 @@ inline auto arrayMoveToVec(Array c) {
   return result;
 }
 
-#define NUM_ARGS(...) std::tuple_size<decltype(std::make_tuple(__VA_ARGS__))>::value
 #define NODES(...) arrayMoveToVec<std::array<NodePtr, NUM_ARGS(__VA_ARGS__)>>({__VA_ARGS__})
 
 } // namespace parse

@@ -47,7 +47,7 @@ TEST_CASE("Parsing call expressions", "[parse]") {
       "a{T}()",
       callExprNode(
           ID("a"),
-          TypeParamList{OCURLY, {ID("T")}, COMMAS(0), CCURLY},
+          TypeParamList{OCURLY, {TYPE("T")}, COMMAS(0), CCURLY},
           OPAREN,
           NODES(),
           COMMAS(0),
@@ -56,7 +56,7 @@ TEST_CASE("Parsing call expressions", "[parse]") {
       "a{T}(1,2)",
       callExprNode(
           ID("a"),
-          TypeParamList{OCURLY, {ID("T")}, COMMAS(0), CCURLY},
+          TypeParamList{OCURLY, {TYPE("T")}, COMMAS(0), CCURLY},
           OPAREN,
           NODES(INT(1), INT(2)),
           COMMAS(1),
@@ -65,7 +65,7 @@ TEST_CASE("Parsing call expressions", "[parse]") {
       "a{T, Y}()",
       callExprNode(
           ID("a"),
-          TypeParamList{OCURLY, {ID("T"), ID("Y")}, COMMAS(1), CCURLY},
+          TypeParamList{OCURLY, {TYPE("T"), TYPE("Y")}, COMMAS(1), CCURLY},
           OPAREN,
           NODES(),
           COMMAS(0),
@@ -74,7 +74,7 @@ TEST_CASE("Parsing call expressions", "[parse]") {
       "a{T, U, W}()",
       callExprNode(
           ID("a"),
-          TypeParamList{OCURLY, {ID("T"), ID("U"), ID("W")}, COMMAS(2), CCURLY},
+          TypeParamList{OCURLY, {TYPE("T"), TYPE("U"), TYPE("W")}, COMMAS(2), CCURLY},
           OPAREN,
           NODES(),
           COMMAS(0),
@@ -103,7 +103,7 @@ TEST_CASE("Parsing call expressions", "[parse]") {
         "a{T U}()",
         errInvalidCallExpr(
             ID("a"),
-            TypeParamList{OCURLY, {ID("T"), ID("U")}, COMMAS(0), END},
+            TypeParamList{OCURLY, {TYPE("T"), TYPE("U")}, COMMAS(0), END},
             OPAREN,
             NODES(),
             COMMAS(0),

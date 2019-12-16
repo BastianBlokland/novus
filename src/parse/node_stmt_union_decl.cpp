@@ -6,15 +6,16 @@ namespace parse {
 static auto getIdOrErr(const lex::Token& token) {
   return getId(token).value_or(std::string("err"));
 }
-
 UnionDeclStmtNode::UnionDeclStmtNode(
     lex::Token kw,
     lex::Token id,
+    std::optional<TypeSubstitutionList> typeSubs,
     lex::Token eq,
-    std::vector<lex::Token> types,
+    std::vector<Type> types,
     std::vector<lex::Token> commas) :
     m_kw{std::move(kw)},
     m_id{std::move(id)},
+    m_typeSubs{std::move(typeSubs)},
     m_eq{std::move(eq)},
     m_types{std::move(types)},
     m_commas{std::move(commas)} {}
@@ -40,17 +41,25 @@ auto UnionDeclStmtNode::getSpan() const -> input::Span {
 
 auto UnionDeclStmtNode::getId() const -> const lex::Token& { return m_id; }
 
-auto UnionDeclStmtNode::getTypes() const -> const std::vector<lex::Token>& { return m_types; }
+auto UnionDeclStmtNode::getTypeSubs() const -> const std::optional<TypeSubstitutionList>& {
+  return m_typeSubs;
+}
+
+auto UnionDeclStmtNode::getTypes() const -> const std::vector<Type>& { return m_types; }
 
 auto UnionDeclStmtNode::accept(NodeVisitor* visitor) const -> void { visitor->visit(*this); }
 
 auto UnionDeclStmtNode::print(std::ostream& out) const -> std::ostream& {
-  out << "union-" << getIdOrErr(m_id) << '=';
+  out << "union-" << getIdOrErr(m_id);
+  if (m_typeSubs) {
+    out << *m_typeSubs;
+  }
+  out << '=';
   for (auto i = 0U; i < m_types.size(); ++i) {
     if (i != 0) {
       out << ",";
     }
-    out << getIdOrErr(m_types[i]);
+    out << m_types[i];
   }
   return out;
 }
@@ -59,8 +68,9 @@ auto UnionDeclStmtNode::print(std::ostream& out) const -> std::ostream& {
 auto unionDeclStmtNode(
     lex::Token kw,
     lex::Token id,
+    std::optional<TypeSubstitutionList> typeSubs,
     lex::Token eq,
-    std::vector<lex::Token> types,
+    std::vector<Type> types,
     std::vector<lex::Token> commas) -> NodePtr {
   if (types.size() < 2) {
     throw std::invalid_argument{"Union needs at least two types"};
@@ -68,8 +78,12 @@ auto unionDeclStmtNode(
   if (commas.size() != types.size() - 1) {
     throw std::invalid_argument{"Incorrect number of commas"};
   }
-  return std::unique_ptr<UnionDeclStmtNode>{new UnionDeclStmtNode{
-      std::move(kw), std::move(id), std::move(eq), std::move(types), std::move(commas)}};
+  return std::unique_ptr<UnionDeclStmtNode>{new UnionDeclStmtNode{std::move(kw),
+                                                                  std::move(id),
+                                                                  std::move(typeSubs),
+                                                                  std::move(eq),
+                                                                  std::move(types),
+                                                                  std::move(commas)}};
 }
 
 } // namespace parse

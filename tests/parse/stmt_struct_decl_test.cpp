@@ -10,42 +10,103 @@ TEST_CASE("Parsing struct declaration statements", "[parse]") {
   CHECK_STMT(
       "struct s = int a",
       structDeclStmtNode(
-          STRUCT, ID("s"), EQ, {StructDeclStmtNode::FieldSpec(ID("int"), ID("a"))}, COMMAS(0)));
-  CHECK_STMT("struct s", structDeclStmtNode(STRUCT, ID("s"), std::nullopt, {}, {}));
+          STRUCT,
+          ID("s"),
+          std::nullopt,
+          EQ,
+          {StructDeclStmtNode::FieldSpec(TYPE("int"), ID("a"))},
+          COMMAS(0)));
+  CHECK_STMT("struct s", structDeclStmtNode(STRUCT, ID("s"), std::nullopt, std::nullopt, {}, {}));
   CHECK_STMT(
       "struct s = int a, bool b",
       structDeclStmtNode(
           STRUCT,
           ID("s"),
+          std::nullopt,
           EQ,
-          {StructDeclStmtNode::FieldSpec(ID("int"), ID("a")),
-           StructDeclStmtNode::FieldSpec(ID("bool"), ID("b"))},
+          {StructDeclStmtNode::FieldSpec(TYPE("int"), ID("a")),
+           StructDeclStmtNode::FieldSpec(TYPE("bool"), ID("b"))},
           COMMAS(1)));
   CHECK_STMT(
       "struct s = int a, bool b, string c",
       structDeclStmtNode(
           STRUCT,
           ID("s"),
+          std::nullopt,
           EQ,
-          {StructDeclStmtNode::FieldSpec(ID("int"), ID("a")),
-           StructDeclStmtNode::FieldSpec(ID("bool"), ID("b")),
-           StructDeclStmtNode::FieldSpec(ID("string"), ID("c"))},
+          {StructDeclStmtNode::FieldSpec(TYPE("int"), ID("a")),
+           StructDeclStmtNode::FieldSpec(TYPE("bool"), ID("b")),
+           StructDeclStmtNode::FieldSpec(TYPE("string"), ID("c"))},
           COMMAS(2)));
+  CHECK_STMT(
+      "struct s{T, U} = T a, U b",
+      structDeclStmtNode(
+          STRUCT,
+          ID("s"),
+          TypeSubstitutionList{OCURLY, {ID("T"), ID("U")}, COMMAS(1), CCURLY},
+          EQ,
+          {StructDeclStmtNode::FieldSpec(TYPE("T"), ID("a")),
+           StructDeclStmtNode::FieldSpec(TYPE("U"), ID("b"))},
+          COMMAS(1)));
+  CHECK_STMT(
+      "struct s{T, U} = List{T{U}} a",
+      structDeclStmtNode(
+          STRUCT,
+          ID("s"),
+          TypeSubstitutionList{OCURLY, {ID("T"), ID("U")}, COMMAS(1), CCURLY},
+          EQ,
+          {StructDeclStmtNode::FieldSpec(TYPE("List", TYPE("T", TYPE("U"))), ID("a"))},
+          COMMAS(0)));
 
   SECTION("Errors") {
-    CHECK_STMT("struct s =", errInvalidStmtStructDecl(STRUCT, ID("s"), EQ, {}, COMMAS(0)));
+    CHECK_STMT(
+        "struct s =", errInvalidStmtStructDecl(STRUCT, ID("s"), std::nullopt, EQ, {}, COMMAS(0)));
     CHECK_STMT(
         "struct s = int a,",
         errInvalidStmtStructDecl(
-            STRUCT, ID("s"), EQ, {StructDeclStmtNode::FieldSpec(ID("int"), ID("a"))}, COMMAS(1)));
+            STRUCT,
+            ID("s"),
+            std::nullopt,
+            EQ,
+            {StructDeclStmtNode::FieldSpec(TYPE("int"), ID("a"))},
+            COMMAS(1)));
     CHECK_STMT(
         "struct fun = int a",
         errInvalidStmtStructDecl(
-            STRUCT, FUN, EQ, {StructDeclStmtNode::FieldSpec(ID("int"), ID("a"))}, COMMAS(0)));
+            STRUCT,
+            FUN,
+            std::nullopt,
+            EQ,
+            {StructDeclStmtNode::FieldSpec(TYPE("int"), ID("a"))},
+            COMMAS(0)));
     CHECK_STMT(
         "struct s = int fun",
         errInvalidStmtStructDecl(
-            STRUCT, ID("s"), EQ, {StructDeclStmtNode::FieldSpec(ID("int"), FUN)}, COMMAS(0)));
+            STRUCT,
+            ID("s"),
+            std::nullopt,
+            EQ,
+            {StructDeclStmtNode::FieldSpec(TYPE("int"), FUN)},
+            COMMAS(0)));
+    CHECK_STMT(
+        "struct s{} = int a",
+        errInvalidStmtStructDecl(
+            STRUCT,
+            ID("s"),
+            TypeSubstitutionList{OCURLY, {}, COMMAS(0), CCURLY},
+            EQ,
+            {StructDeclStmtNode::FieldSpec(TYPE("int"), ID("a"))},
+            COMMAS(0)));
+    CHECK_STMT(
+        "struct s{T, U} = T{} a",
+        errInvalidStmtStructDecl(
+            STRUCT,
+            ID("s"),
+            TypeSubstitutionList{OCURLY, {ID("T"), ID("U")}, COMMAS(1), CCURLY},
+            EQ,
+            {StructDeclStmtNode::FieldSpec(
+                Type(ID("T"), TypeParamList(OCURLY, {}, {}, CCURLY)), ID("a"))},
+            COMMAS(0)));
   }
 
   SECTION("Spans") {

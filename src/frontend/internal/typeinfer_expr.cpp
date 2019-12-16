@@ -61,7 +61,7 @@ auto TypeInferExpr::visit(const parse::BinaryExprNode& n) -> void {
 auto TypeInferExpr::visit(const parse::CallExprNode& n) -> void {
   const auto funcName = getName(n.getFunc());
   if (n.getTypeParams()) {
-    const auto typeSet = getTypeSet(*m_prog, m_typeSubTable, n.getTypeParams()->getParams());
+    const auto typeSet = getTypeSet(*m_prog, m_typeSubTable, n.getTypeParams()->getTypes());
     if (!typeSet) {
       return;
     }

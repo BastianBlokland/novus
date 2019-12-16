@@ -5,6 +5,7 @@
 #include "lex/token_payload_id.hpp"
 #include "parse/node_stmt_func_decl.hpp"
 #include "parse/type_param_list.hpp"
+#include "parse/type_substitution_list.hpp"
 #include "prog/operator.hpp"
 #include "prog/program.hpp"
 #include "type_substitution_table.hpp"
@@ -16,6 +17,10 @@ inline auto getName(const lex::Token& token) -> std::string {
     return "__unknown";
   }
   return token.getPayload<lex::IdentifierTokenPayload>()->getIdentifier();
+}
+
+inline auto getName(const parse::Type& parseType) -> std::string {
+  return getName(parseType.getId());
 }
 
 inline auto getName(const prog::Program& prog, prog::sym::TypeId typeId) -> std::string {
@@ -112,23 +117,23 @@ auto getFuncInput(
     const parse::FuncDeclStmtNode& n,
     std::vector<Diag>* diags) -> std::optional<prog::sym::TypeSet>;
 
-auto getTypeParams(
+auto getSubstitutionParams(
     const Source& src,
     const prog::Program& prog,
-    const parse::TypeParamList& paramList,
+    const parse::TypeSubstitutionList& subList,
     std::vector<Diag>* diags) -> std::optional<std::vector<std::string>>;
 
 auto getTypeSet(
     const Source& src,
     const prog::Program& prog,
     const TypeSubstitutionTable* subTable,
-    const std::vector<lex::Token>& typeTokens,
+    const std::vector<parse::Type>& parseTypes,
     std::vector<Diag>* diags) -> std::optional<prog::sym::TypeSet>;
 
 auto getTypeSet(
     const prog::Program& prog,
     const TypeSubstitutionTable* subTable,
-    const std::vector<lex::Token>& typeTokens) -> std::optional<prog::sym::TypeSet>;
+    const std::vector<parse::Type>& parseTypes) -> std::optional<prog::sym::TypeSet>;
 
 auto getConstName(
     const Source& src,

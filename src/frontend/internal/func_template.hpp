@@ -27,7 +27,7 @@ private:
   prog::Program* m_prog;
   FuncTemplateTable* m_funcTemplates;
   std::string m_name;
-  std::vector<std::string> m_typeParams;
+  std::vector<std::string> m_typeSubs;
   const parse::FuncDeclStmtNode& m_parseNode;
   std::vector<std::unique_ptr<FuncTemplateInst>> m_instances;
 
@@ -36,7 +36,7 @@ private:
       prog::Program* prog,
       FuncTemplateTable* funcTemplates,
       std::string name,
-      std::vector<std::string> typeParams,
+      std::vector<std::string> typeSubs,
       const parse::FuncDeclStmtNode& parseNode);
 
   auto instantiate(FuncTemplateInst* instance) -> void;

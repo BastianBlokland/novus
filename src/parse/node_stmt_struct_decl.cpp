@@ -7,14 +7,14 @@ static auto getIdOrErr(const lex::Token& token) {
   return getId(token).value_or(std::string("err"));
 }
 
-StructDeclStmtNode::FieldSpec::FieldSpec(lex::Token type, lex::Token identifier) :
+StructDeclStmtNode::FieldSpec::FieldSpec(Type type, lex::Token identifier) :
     m_type{std::move(type)}, m_identifier{std::move(identifier)} {}
 
 auto StructDeclStmtNode::FieldSpec::operator==(const FieldSpec& rhs) const noexcept -> bool {
   return m_type == rhs.m_type && m_identifier == rhs.m_identifier;
 }
 
-auto StructDeclStmtNode::FieldSpec::getType() const noexcept -> const lex::Token& { return m_type; }
+auto StructDeclStmtNode::FieldSpec::getType() const noexcept -> const Type& { return m_type; }
 
 auto StructDeclStmtNode::FieldSpec::getIdentifier() const noexcept -> const lex::Token& {
   return m_identifier;
@@ -23,11 +23,13 @@ auto StructDeclStmtNode::FieldSpec::getIdentifier() const noexcept -> const lex:
 StructDeclStmtNode::StructDeclStmtNode(
     lex::Token kw,
     lex::Token id,
+    std::optional<TypeSubstitutionList> typeSubs,
     std::optional<lex::Token> eq,
     std::vector<StructDeclStmtNode::FieldSpec> fields,
     std::vector<lex::Token> commas) :
     m_kw{std::move(kw)},
     m_id{std::move(id)},
+    m_typeSubs{std::move(typeSubs)},
     m_eq{std::move(eq)},
     m_fields{std::move(fields)},
     m_commas{std::move(commas)} {}
@@ -55,12 +57,19 @@ auto StructDeclStmtNode::getSpan() const -> input::Span {
 
 auto StructDeclStmtNode::getId() const -> const lex::Token& { return m_id; }
 
+auto StructDeclStmtNode::getTypeSubs() const -> const std::optional<TypeSubstitutionList>& {
+  return m_typeSubs;
+}
+
 auto StructDeclStmtNode::getFields() const -> const std::vector<FieldSpec>& { return m_fields; }
 
 auto StructDeclStmtNode::accept(NodeVisitor* visitor) const -> void { visitor->visit(*this); }
 
 auto StructDeclStmtNode::print(std::ostream& out) const -> std::ostream& {
   out << "struct-" << getIdOrErr(m_id);
+  if (m_typeSubs) {
+    out << *m_typeSubs;
+  }
   if (m_eq) {
     out << '=';
   }
@@ -68,7 +77,7 @@ auto StructDeclStmtNode::print(std::ostream& out) const -> std::ostream& {
     if (i != 0) {
       out << ",";
     }
-    out << getIdOrErr(m_fields[i].getType()) << '-' << getIdOrErr(m_fields[i].getIdentifier());
+    out << m_fields[i].getType() << '-' << getIdOrErr(m_fields[i].getIdentifier());
   }
   return out;
 }
@@ -77,6 +86,7 @@ auto StructDeclStmtNode::print(std::ostream& out) const -> std::ostream& {
 auto structDeclStmtNode(
     lex::Token kw,
     lex::Token id,
+    std::optional<TypeSubstitutionList> typeSubs,
     std::optional<lex::Token> eq,
     std::vector<StructDeclStmtNode::FieldSpec> fields,
     std::vector<lex::Token> commas) -> NodePtr {
@@ -86,8 +96,12 @@ auto structDeclStmtNode(
   if (commas.size() != (fields.empty() ? 0 : fields.size() - 1)) {
     throw std::invalid_argument{"Incorrect number of commas"};
   }
-  return std::unique_ptr<StructDeclStmtNode>{new StructDeclStmtNode{
-      std::move(kw), std::move(id), std::move(eq), std::move(fields), std::move(commas)}};
+  return std::unique_ptr<StructDeclStmtNode>{new StructDeclStmtNode{std::move(kw),
+                                                                    std::move(id),
+                                                                    std::move(typeSubs),
+                                                                    std::move(eq),
+                                                                    std::move(fields),
+                                                                    std::move(commas)}};
 }
 
 } // namespace parse

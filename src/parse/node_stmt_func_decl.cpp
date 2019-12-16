@@ -7,20 +7,20 @@ static auto getIdOrErr(const lex::Token& token) {
   return getId(token).value_or(std::string("err"));
 }
 
-FuncDeclStmtNode::ArgSpec::ArgSpec(lex::Token type, lex::Token identifier) :
+FuncDeclStmtNode::ArgSpec::ArgSpec(Type type, lex::Token identifier) :
     m_type{std::move(type)}, m_identifier{std::move(identifier)} {}
 
 auto FuncDeclStmtNode::ArgSpec::operator==(const ArgSpec& rhs) const noexcept -> bool {
   return m_type == rhs.m_type && m_identifier == rhs.m_identifier;
 }
 
-auto FuncDeclStmtNode::ArgSpec::getType() const noexcept -> const lex::Token& { return m_type; }
+auto FuncDeclStmtNode::ArgSpec::getType() const noexcept -> const Type& { return m_type; }
 
 auto FuncDeclStmtNode::ArgSpec::getIdentifier() const noexcept -> const lex::Token& {
   return m_identifier;
 }
 
-FuncDeclStmtNode::RetTypeSpec::RetTypeSpec(lex::Token arrow, lex::Token type) :
+FuncDeclStmtNode::RetTypeSpec::RetTypeSpec(lex::Token arrow, Type type) :
     m_arrow{std::move(arrow)}, m_type{std::move(type)} {}
 
 auto FuncDeclStmtNode::RetTypeSpec::operator==(const RetTypeSpec& rhs) const noexcept -> bool {
@@ -31,12 +31,12 @@ auto FuncDeclStmtNode::RetTypeSpec::getArrow() const noexcept -> const lex::Toke
   return m_arrow;
 }
 
-auto FuncDeclStmtNode::RetTypeSpec::getType() const noexcept -> const lex::Token& { return m_type; }
+auto FuncDeclStmtNode::RetTypeSpec::getType() const noexcept -> const Type& { return m_type; }
 
 FuncDeclStmtNode::FuncDeclStmtNode(
     lex::Token kw,
     lex::Token id,
-    std::optional<TypeParamList> typeParams,
+    std::optional<TypeSubstitutionList> typeSubs,
     lex::Token open,
     std::vector<ArgSpec> args,
     std::vector<lex::Token> commas,
@@ -45,7 +45,7 @@ FuncDeclStmtNode::FuncDeclStmtNode(
     NodePtr body) :
     m_kw{std::move(kw)},
     m_id{std::move(id)},
-    m_typeParams{std::move(typeParams)},
+    m_typeSubs{std::move(typeSubs)},
     m_open{std::move(open)},
     m_args{std::move(args)},
     m_commas{std::move(commas)},
@@ -78,8 +78,8 @@ auto FuncDeclStmtNode::getSpan() const -> input::Span {
 
 auto FuncDeclStmtNode::getId() const -> const lex::Token& { return m_id; }
 
-auto FuncDeclStmtNode::getTypeParams() const -> const std::optional<TypeParamList>& {
-  return m_typeParams;
+auto FuncDeclStmtNode::getTypeSubs() const -> const std::optional<TypeSubstitutionList>& {
+  return m_typeSubs;
 }
 
 auto FuncDeclStmtNode::getArgs() const -> const std::vector<ArgSpec>& { return m_args; }
@@ -95,24 +95,30 @@ auto FuncDeclStmtNode::print(std::ostream& out) const -> std::ostream& {
   } else {
     out << "op-" << m_id;
   }
-  if (m_typeParams) {
-    out << *m_typeParams;
+  if (m_typeSubs) {
+    out << *m_typeSubs;
   }
   out << '(';
   for (auto i = 0U; i < m_args.size(); ++i) {
     if (i != 0) {
       out << ',';
     }
-    out << getIdOrErr(m_args[i].getType()) << '-' << getIdOrErr(m_args[i].getIdentifier());
+    out << m_args[i].getType() << '-' << getIdOrErr(m_args[i].getIdentifier());
   }
-  return out << ")->" << (m_retType ? getIdOrErr(m_retType->getType()) : "infer");
+  out << ")->";
+  if (m_retType) {
+    out << m_retType->getType();
+  } else {
+    out << "infer";
+  }
+  return out;
 }
 
 // Factories.
 auto funcDeclStmtNode(
     lex::Token kw,
     lex::Token id,
-    std::optional<TypeParamList> typeParams,
+    std::optional<TypeSubstitutionList> typeSubs,
     lex::Token open,
     std::vector<FuncDeclStmtNode::ArgSpec> args,
     std::vector<lex::Token> commas,
@@ -128,7 +134,7 @@ auto funcDeclStmtNode(
   }
   return std::unique_ptr<FuncDeclStmtNode>{new FuncDeclStmtNode{std::move(kw),
                                                                 std::move(id),
-                                                                std::move(typeParams),
+                                                                std::move(typeSubs),
                                                                 std::move(open),
                                                                 std::move(args),
                                                                 std::move(commas),

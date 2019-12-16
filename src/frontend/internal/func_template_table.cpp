@@ -10,9 +10,9 @@ FuncTemplateTable::FuncTemplateTable(const Source& src, prog::Program* prog) :
 }
 
 auto FuncTemplateTable::declare(
-    const std::string& name, std::vector<std::string> typeParams, const parse::FuncDeclStmtNode& n)
+    const std::string& name, std::vector<std::string> typeSubs, const parse::FuncDeclStmtNode& n)
     -> void {
-  auto funcTemplate = FuncTemplate{m_src, m_prog, this, name, std::move(typeParams), n};
+  auto funcTemplate = FuncTemplate{m_src, m_prog, this, name, std::move(typeSubs), n};
 
   auto itr = m_templates.find(name);
   if (itr == m_templates.end()) {

@@ -19,9 +19,8 @@ public:
   auto operator=(FuncTemplateTable&& rhs) noexcept -> FuncTemplateTable& = delete;
 
   auto declare(
-      const std::string& name,
-      std::vector<std::string> typeParams,
-      const parse::FuncDeclStmtNode& n) -> void;
+      const std::string& name, std::vector<std::string> typeSubs, const parse::FuncDeclStmtNode& n)
+      -> void;
 
   auto instantiate(const std::string& name, const prog::sym::TypeSet& typeParams)
       -> std::vector<const FuncTemplateInst*>;

@@ -28,7 +28,6 @@ target_include_directories(lex PRIVATE lex)
 # Parser.
 add_library(parse STATIC
   parse/error.cpp
-  parse/type_param_list.cpp
   parse/node_error.cpp
   parse/node_expr_binary.cpp
   parse/node_expr_call.cpp
@@ -52,6 +51,9 @@ add_library(parse STATIC
   parse/node.cpp
   parse/op_precedence.cpp
   parse/parser.cpp
+  parse/type_param_list.cpp
+  parse/type_substitution_list.cpp
+  parse/type.cpp
   parse/utilities.cpp)
 target_compile_features(parse PUBLIC cxx_std_17)
 target_link_libraries(parse PUBLIC lex)

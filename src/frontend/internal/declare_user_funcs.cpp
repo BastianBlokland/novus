@@ -53,10 +53,10 @@ auto DeclareUserFuncs::visit(const parse::FuncDeclStmtNode& n) -> void {
 
   // If the function is a template then we don't declare it in the program yet but declare it in
   // the function-template table.
-  if (n.getTypeParams()) {
-    auto typeParams = getTypeParams(m_src, *m_prog, *n.getTypeParams(), &m_diags);
-    if (typeParams) {
-      m_funcTemplates->declare(name, std::move(*typeParams), n);
+  if (n.getTypeSubs()) {
+    auto typeSubs = getSubstitutionParams(m_src, *m_prog, *n.getTypeSubs(), &m_diags);
+    if (typeSubs) {
+      m_funcTemplates->declare(name, std::move(*typeSubs), n);
     }
     return;
   }
