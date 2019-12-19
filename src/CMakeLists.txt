@@ -119,6 +119,7 @@ target_include_directories(prog PRIVATE prog)
 # Frontend.
 add_library(frontend STATIC
   frontend/internal/check_union_exhaustiveness.cpp
+  frontend/internal/context.cpp
   frontend/internal/declare_user_funcs.cpp
   frontend/internal/declare_user_types.cpp
   frontend/internal/define_exec_stmts.cpp
@@ -126,13 +127,20 @@ add_library(frontend STATIC
   frontend/internal/define_user_types.cpp
   frontend/internal/get_expr.cpp
   frontend/internal/get_parse_diags.cpp
+  frontend/internal/struct_template.cpp
+  frontend/internal/type_info.cpp
+  frontend/internal/type_template_base.cpp
+  frontend/internal/type_template_inst.cpp
+  frontend/internal/type_template_table.cpp
   frontend/internal/func_template_inst.cpp
   frontend/internal/func_template_table.cpp
   frontend/internal/func_template.cpp
   frontend/internal/type_substitution_table.cpp
   frontend/internal/typeinfer_expr.cpp
   frontend/internal/typeinfer_user_funcs.cpp
+  frontend/internal/union_template.cpp
   frontend/internal/utilities.cpp
+  frontend/internal/validate_types.cpp
 
   frontend/analysis.cpp
   frontend/diag_defs.cpp

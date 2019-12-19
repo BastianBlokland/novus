@@ -1,7 +1,5 @@
 #pragma once
-#include "frontend/diag.hpp"
 #include "internal/func_template_table.hpp"
-#include "prog/program.hpp"
 #include <unordered_map>
 
 namespace frontend::internal {
@@ -10,8 +8,7 @@ class TypeInferExpr final : public parse::NodeVisitor {
 public:
   TypeInferExpr() = delete;
   TypeInferExpr(
-      prog::Program* prog,
-      FuncTemplateTable* funcTemplates,
+      Context* context,
       const TypeSubstitutionTable* typeSubTable,
       std::unordered_map<std::string, prog::sym::TypeId>* constTypes,
       bool aggressive);
@@ -39,8 +36,7 @@ public:
   auto visit(const parse::UnionDeclStmtNode& n) -> void override;
 
 private:
-  prog::Program* m_prog;
-  FuncTemplateTable* m_funcTemplates;
+  Context* m_context;
   const TypeSubstitutionTable* m_typeSubTable;
   std::unordered_map<std::string, prog::sym::TypeId>* m_constTypes;
   bool m_aggressive;
@@ -52,6 +48,8 @@ private:
 
   auto setConstType(const lex::Token& constId, prog::sym::TypeId type) -> void;
   auto inferConstType(const lex::Token& constId) -> prog::sym::TypeId;
+
+  [[nodiscard]] auto isType(const std::string& name) const -> bool;
 };
 
 } // namespace frontend::internal

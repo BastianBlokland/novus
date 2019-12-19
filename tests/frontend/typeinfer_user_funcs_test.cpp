@@ -138,12 +138,20 @@ TEST_CASE("Infer return type of user functions", "[frontend]") {
         GET_TYPE_ID(output, "bool"));
   }
 
+  SECTION("Templated constructor") {
+    const auto& output = ANALYZE("struct tuple{T1, T2} = T1 a, T2 b "
+                                 "fun f(int i) tuple{int, bool}(i, false)");
+    REQUIRE(output.isSuccess());
+    CHECK(
+        GET_FUNC_DECL(output, "f", GET_TYPE_ID(output, "int")).getOutput() ==
+        GET_TYPE_ID(output, "tuple__int_bool"));
+  }
+
   SECTION("Diagnostics") {
     CHECK_DIAG(
         "fun f1() f2() "
         "fun f2() f1()",
-        errUnableToInferFuncReturnType(src, "f1", input::Span{4, 5}),
-        errUnableToInferFuncReturnType(src, "f2", input::Span{18, 19}));
+        errUnableToInferFuncReturnType(src, "f1", input::Span{4, 5}));
     CHECK_DIAG(
         "fun f() a",
         errUndeclaredConst(src, "a", input::Span{8, 8}),
@@ -151,9 +159,7 @@ TEST_CASE("Infer return type of user functions", "[frontend]") {
     CHECK_DIAG(
         "fun f1() f1() "
         "fun f2() a",
-        errUnableToInferFuncReturnType(src, "f1", input::Span{4, 5}),
-        errUndeclaredConst(src, "a", input::Span{23, 23}),
-        errUnableToInferFuncReturnType(src, "f2", input::Span{18, 19}));
+        errUnableToInferFuncReturnType(src, "f1", input::Span{4, 5}));
     CHECK_DIAG(
         "fun f1() f2(); 1 "
         "fun f2() a",
@@ -163,27 +169,23 @@ TEST_CASE("Infer return type of user functions", "[frontend]") {
         "fun f1() a "
         "fun f2() f1() + 1",
         errUndeclaredConst(src, "a", input::Span{9, 9}),
-        errUnableToInferFuncReturnType(src, "f1", input::Span{4, 5}),
-        errUnableToInferFuncReturnType(src, "f2", input::Span{15, 16}));
+        errUnableToInferFuncReturnType(src, "f1", input::Span{4, 5}));
     CHECK_DIAG(
         "fun f1() a "
         "fun f2() 1 + f1()",
         errUndeclaredConst(src, "a", input::Span{9, 9}),
-        errUnableToInferFuncReturnType(src, "f1", input::Span{4, 5}),
-        errUnableToInferFuncReturnType(src, "f2", input::Span{15, 16}));
+        errUnableToInferFuncReturnType(src, "f1", input::Span{4, 5}));
     CHECK_DIAG(
         "fun f1() a "
         "fun f2() -f1()",
         errUndeclaredConst(src, "a", input::Span{9, 9}),
-        errUnableToInferFuncReturnType(src, "f1", input::Span{4, 5}),
-        errUnableToInferFuncReturnType(src, "f2", input::Span{15, 16}));
+        errUnableToInferFuncReturnType(src, "f1", input::Span{4, 5}));
     CHECK_DIAG(
         "fun f1() a "
         "fun f2() f3(f1()) "
         "fun f3(int i) 1",
         errUndeclaredConst(src, "a", input::Span{9, 9}),
-        errUnableToInferFuncReturnType(src, "f1", input::Span{4, 5}),
-        errUnableToInferFuncReturnType(src, "f2", input::Span{15, 16}));
+        errUnableToInferFuncReturnType(src, "f1", input::Span{4, 5}));
   }
 }
 

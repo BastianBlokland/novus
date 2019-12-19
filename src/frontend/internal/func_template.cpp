@@ -7,28 +7,21 @@
 namespace frontend::internal {
 
 FuncTemplate::FuncTemplate(
-    const Source& src,
-    prog::Program* prog,
-    FuncTemplateTable* funcTemplates,
+    Context* context,
     std::string name,
     std::vector<std::string> typeSubs,
     const parse::FuncDeclStmtNode& parseNode) :
-    m_src{src},
-    m_prog{prog},
-    m_funcTemplates(funcTemplates),
+    m_context{context},
     m_name{std::move(name)},
     m_typeSubs{std::move(typeSubs)},
     m_parseNode{parseNode} {
 
-  if (m_prog == nullptr) {
-    throw std::invalid_argument{"Program cannot be null"};
-  }
-  if (funcTemplates == nullptr) {
-    throw std::invalid_argument{"Func templates table cannot be null"};
+  if (m_context == nullptr) {
+    throw std::invalid_argument{"Context cannot be null"};
   }
 }
 
-auto FuncTemplate::getName() const -> const std::string& { return m_name; }
+auto FuncTemplate::getTemplateName() const -> const std::string& { return m_name; }
 
 auto FuncTemplate::getTypeParamCount() const -> unsigned int { return m_typeSubs.size(); }
 
@@ -48,7 +41,11 @@ auto FuncTemplate::getRetType(const prog::sym::TypeSet& typeParams)
   }
 
   const auto subTable = createSubTable(typeParams);
-  return getRetType(subTable, typeParams, nullptr);
+  auto funcInput      = getFuncInput(m_context, &subTable, m_parseNode);
+  if (!funcInput) {
+    return std::nullopt;
+  }
+  return getRetType(subTable, *funcInput);
 }
 
 auto FuncTemplate::instantiate(const prog::sym::TypeSet& typeParams) -> const FuncTemplateInst* {
@@ -68,54 +65,63 @@ auto FuncTemplate::instantiate(const prog::sym::TypeSet& typeParams) -> const Fu
   m_instances.push_back(std::make_unique<FuncTemplateInst>(FuncTemplateInst{typeParams}));
   auto instance = m_instances.back().get();
 
-  instantiate(instance);
+  setupInstance(instance);
   return instance;
 }
 
-auto FuncTemplate::instantiate(FuncTemplateInst* instance) -> void {
-  const auto mangledName = mangleName(instance->m_typeParams);
-  const auto subTable    = createSubTable(instance->m_typeParams);
-
-  auto funcInput = getFuncInput(m_src, *m_prog, &subTable, m_parseNode, &instance->m_diags);
+auto FuncTemplate::setupInstance(FuncTemplateInst* instance) -> void {
+  const auto subTable = createSubTable(instance->m_typeParams);
+  auto funcInput      = getFuncInput(m_context, &subTable, m_parseNode);
   if (!funcInput) {
-    assert(instance->hasErrors());
+    assert(m_context->hasErrors());
     return;
   }
 
-  instance->m_retType = getRetType(subTable, *funcInput, &instance->m_diags);
+  instance->m_retType = getRetType(subTable, *funcInput);
   if (!instance->m_retType) {
-    assert(instance->hasErrors());
+    assert(m_context->hasErrors());
     return;
   }
+  const auto retTypeName = getName(m_context, *instance->m_retType);
+  const auto isConv      = isConversion();
+
+  // For conversions verify that a correct type is returned.
+  if (isConv) {
+    // Verify that a conversion to a non-templated type returns the correct type.
+    const auto nonTemplConvType = m_context->getProg()->lookupType(m_name);
+    if (nonTemplConvType && instance->m_retType != *nonTemplConvType) {
+      m_context->reportDiag(errIncorrectReturnTypeInConvFunc(
+          m_context->getSrc(), m_name, retTypeName, m_parseNode.getSpan()));
+      return;
+    }
+    // Verify that a conversion to a templated type returns the correct type.
+    if (m_context->getTypeTemplates()->hasType(m_name)) {
+      const auto typeInfo = m_context->getTypeInfo(*instance->m_retType);
+      if (!typeInfo || typeInfo->getName() != m_name) {
+        m_context->reportDiag(errIncorrectReturnTypeInConvFunc(
+            m_context->getSrc(), m_name, retTypeName, m_parseNode.getSpan()));
+        return;
+      }
+    }
+  }
+
+  const auto funcName =
+      isConv ? retTypeName : mangleName(m_context, m_name, instance->m_typeParams);
 
   // Check if an identical function has already been registered.
-  if (m_prog->lookupFunc(mangledName, *funcInput, 0)) {
-    instance->m_diags.push_back(errDuplicateFuncDeclaration(m_src, m_name, m_parseNode.getSpan()));
+  if (m_context->getProg()->lookupFunc(funcName, *funcInput, 0)) {
+    m_context->reportDiag(
+        errDuplicateFuncDeclaration(m_context->getSrc(), m_name, m_parseNode.getSpan()));
     return;
   }
 
   // Declare the function in the program.
   instance->m_func =
-      m_prog->declareUserFunc(mangledName, std::move(*funcInput), *instance->m_retType);
+      m_context->getProg()->declareUserFunc(funcName, std::move(*funcInput), *instance->m_retType);
 
   // Define the function.
-  auto defineFuncs = DefineUserFuncs{m_src, m_prog, m_funcTemplates, &subTable};
+  auto defineFuncs = DefineUserFuncs{m_context, &subTable};
   defineFuncs.define(*instance->m_func, m_parseNode);
-  if (defineFuncs.hasErrors()) {
-    const auto& defineDiags = defineFuncs.getDiags();
-    assert(!defineDiags.empty());
-    instance->m_diags.insert(instance->m_diags.end(), defineDiags.begin(), defineDiags.end());
-    return;
-  }
-}
-
-auto FuncTemplate::mangleName(const prog::sym::TypeSet& typeParams) const -> std::string {
-  auto result = m_name + '_';
-  for (const auto& type : typeParams) {
-    const auto& typeName = m_prog->getTypeDecl(type).getName();
-    result += '_' + typeName;
-  }
-  return result;
 }
 
 auto FuncTemplate::createSubTable(const prog::sym::TypeSet& typeParams) const
@@ -127,31 +133,28 @@ auto FuncTemplate::createSubTable(const prog::sym::TypeSet& typeParams) const
   return subTable;
 }
 
-auto FuncTemplate::getRetType(
-    const TypeSubstitutionTable& subTable,
-    const prog::sym::TypeSet& input,
-    std::vector<Diag>* diags) const -> std::optional<prog::sym::TypeId> {
+auto FuncTemplate::isConversion() const -> bool {
+  return m_context->getProg()->lookupType(m_name) || m_context->getTypeTemplates()->hasType(m_name);
+}
 
-  auto retType = ::frontend::internal::getRetType(m_src, *m_prog, &subTable, m_parseNode, diags);
+auto FuncTemplate::getRetType(
+    const TypeSubstitutionTable& subTable, const prog::sym::TypeSet& input) const
+    -> std::optional<prog::sym::TypeId> {
+
+  auto retType = ::frontend::internal::getRetType(m_context, &subTable, m_parseNode);
   if (!retType) {
     return std::nullopt;
-  }
-
-  // Check if this function is a conversion.
-  const auto convType = m_prog->lookupType(m_name);
-  if (convType) {
-    return convType;
   }
 
   if (retType->isInfer()) {
     // Attempt to infer the return type.
     auto constTypes = std::unordered_map<std::string, prog::sym::TypeId>{};
     for (auto i = 0U; i != input.getCount(); ++i) {
-      const auto& argName = ::frontend::internal::getName(m_parseNode.getArgs()[i].getIdentifier());
+      const auto& argName = getName(m_parseNode.getArgs()[i].getIdentifier());
       constTypes.insert({argName, input[i]});
     }
 
-    auto inferBodyType = TypeInferExpr{m_prog, m_funcTemplates, &subTable, &constTypes, true};
+    auto inferBodyType = TypeInferExpr{m_context, &subTable, &constTypes, true};
     m_parseNode[0].accept(&inferBodyType);
     return inferBodyType.getInferredType();
   }

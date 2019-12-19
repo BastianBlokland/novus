@@ -1,27 +1,18 @@
 #pragma once
-#include "frontend/diag.hpp"
-#include "frontend/source.hpp"
-#include "internal/func_template_table.hpp"
+#include "internal/context.hpp"
 #include "parse/node_visitor_optional.hpp"
-#include "prog/program.hpp"
 
 namespace frontend::internal {
 
 class DefineExecStmts final : public parse::OptionalNodeVisitor {
 public:
   DefineExecStmts() = delete;
-  DefineExecStmts(const Source& src, prog::Program* prog, FuncTemplateTable* funcTemplates);
-
-  [[nodiscard]] auto hasErrors() const noexcept -> bool;
-  [[nodiscard]] auto getDiags() const noexcept -> const std::vector<Diag>&;
+  explicit DefineExecStmts(Context* context);
 
   auto visit(const parse::ExecStmtNode& n) -> void override;
 
 private:
-  const Source& m_src;
-  prog::Program* m_prog;
-  FuncTemplateTable* m_funcTemplates;
-  std::vector<Diag> m_diags;
+  Context* m_context;
 
   [[nodiscard]] auto getExpr(
       const parse::Node& n,

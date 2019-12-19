@@ -1,36 +1,29 @@
 #pragma once
-#include "frontend/diag.hpp"
-#include "frontend/source.hpp"
-#include "lex/token.hpp"
+#include "internal/context.hpp"
 #include "lex/token_payload_id.hpp"
-#include "parse/node_stmt_func_decl.hpp"
-#include "parse/type_param_list.hpp"
-#include "parse/type_substitution_list.hpp"
 #include "prog/operator.hpp"
-#include "prog/program.hpp"
-#include "type_substitution_table.hpp"
 
 namespace frontend::internal {
 
-inline auto getName(const lex::Token& token) -> std::string {
+[[nodiscard]] inline auto getName(const lex::Token& token) -> std::string {
   if (token.getKind() != lex::TokenKind::Identifier) {
     return "__unknown";
   }
   return token.getPayload<lex::IdentifierTokenPayload>()->getIdentifier();
 }
 
-inline auto getName(const parse::Type& parseType) -> std::string {
+[[nodiscard]] inline auto getName(const parse::Type& parseType) -> std::string {
   return getName(parseType.getId());
 }
 
-inline auto getName(const prog::Program& prog, prog::sym::TypeId typeId) -> std::string {
+[[nodiscard]] inline auto getName(Context* context, prog::sym::TypeId typeId) -> std::string {
   if (!typeId.isConcrete()) {
     return "unknown";
   }
-  return prog.getTypeDecl(typeId).getName();
+  return context->getProg()->getTypeDecl(typeId).getName();
 }
 
-inline auto getOperator(const lex::Token& token) -> std::optional<prog::Operator> {
+[[nodiscard]] inline auto getOperator(const lex::Token& token) -> std::optional<prog::Operator> {
   switch (token.getKind()) {
   case lex::TokenKind::OpPlus:
     return prog::Operator::Plus;
@@ -65,7 +58,7 @@ inline auto getOperator(const lex::Token& token) -> std::optional<prog::Operator
   }
 }
 
-inline auto getText(const prog::Operator& op) -> std::string {
+[[nodiscard]] inline auto getText(const prog::Operator& op) -> std::string {
   switch (op) {
   case prog::Operator::Plus:
     return "+";
@@ -99,48 +92,35 @@ inline auto getText(const prog::Operator& op) -> std::string {
   return "__unknown";
 }
 
-auto getType(
-    const prog::Program& prog, const TypeSubstitutionTable* subTable, const std::string& name)
+[[nodiscard]] auto
+getOrInstType(Context* context, const TypeSubstitutionTable* subTable, const parse::Type& parseType)
     -> std::optional<prog::sym::TypeId>;
 
-auto getRetType(
-    const Source& src,
-    const prog::Program& prog,
-    const TypeSubstitutionTable* subTable,
-    const parse::FuncDeclStmtNode& n,
-    std::vector<Diag>* diags) -> std::optional<prog::sym::TypeId>;
+[[nodiscard]] auto getRetType(
+    Context* context, const TypeSubstitutionTable* subTable, const parse::FuncDeclStmtNode& n)
+    -> std::optional<prog::sym::TypeId>;
 
-auto getFuncInput(
-    const Source& src,
-    const prog::Program& prog,
-    const TypeSubstitutionTable* subTable,
-    const parse::FuncDeclStmtNode& n,
-    std::vector<Diag>* diags) -> std::optional<prog::sym::TypeSet>;
+[[nodiscard]] auto getFuncInput(
+    Context* context, const TypeSubstitutionTable* subTable, const parse::FuncDeclStmtNode& n)
+    -> std::optional<prog::sym::TypeSet>;
 
-auto getSubstitutionParams(
-    const Source& src,
-    const prog::Program& prog,
-    const parse::TypeSubstitutionList& subList,
-    std::vector<Diag>* diags) -> std::optional<std::vector<std::string>>;
+[[nodiscard]] auto
+getSubstitutionParams(Context* context, const parse::TypeSubstitutionList& subList)
+    -> std::optional<std::vector<std::string>>;
 
-auto getTypeSet(
-    const Source& src,
-    const prog::Program& prog,
-    const TypeSubstitutionTable* subTable,
-    const std::vector<parse::Type>& parseTypes,
-    std::vector<Diag>* diags) -> std::optional<prog::sym::TypeSet>;
-
-auto getTypeSet(
-    const prog::Program& prog,
+[[nodiscard]] auto getTypeSet(
+    Context* context,
     const TypeSubstitutionTable* subTable,
     const std::vector<parse::Type>& parseTypes) -> std::optional<prog::sym::TypeSet>;
 
-auto getConstName(
-    const Source& src,
-    const prog::Program& prog,
+[[nodiscard]] auto getConstName(
+    Context* context,
     const TypeSubstitutionTable* subTable,
     const prog::sym::ConstDeclTable& consts,
-    const lex::Token& nameToken,
-    std::vector<Diag>* diags) -> std::optional<std::string>;
+    const lex::Token& nameToken) -> std::optional<std::string>;
+
+[[nodiscard]] auto
+mangleName(Context* context, const std::string& name, const prog::sym::TypeSet& typeParams)
+    -> std::string;
 
 } // namespace frontend::internal

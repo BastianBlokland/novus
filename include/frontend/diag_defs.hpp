@@ -14,6 +14,10 @@ errUnsupportedLiteral(const Source& src, const std::string& name, input::Span sp
 errTypeAlreadyDeclared(const Source& src, const std::string& name, input::Span span) -> Diag;
 
 [[nodiscard]] auto
+errTypeTemplateAlreadyDeclared(const Source& src, const std::string& name, input::Span span)
+    -> Diag;
+
+[[nodiscard]] auto
 errTypeNameConflictsWithFunc(const Source& src, const std::string& name, input::Span span) -> Diag;
 
 [[nodiscard]] auto
@@ -23,6 +27,9 @@ errTypeNameConflictsWithAction(const Source& src, const std::string& name, input
 [[nodiscard]] auto
 errDuplicateFieldNameInStruct(const Source& src, const std::string& fieldName, input::Span span)
     -> Diag;
+
+[[nodiscard]] auto errFieldNameConflictsWithTypeSubstitution(
+    const Source& src, const std::string& fieldName, input::Span span) -> Diag;
 
 [[nodiscard]] auto errCyclicStruct(
     const Source& src,
@@ -48,8 +55,8 @@ errDuplicateTypeInUnion(const Source& src, const std::string& typeName, input::S
 
 [[nodiscard]] auto errUncheckedIsExpressionWithConst(const Source& src, input::Span span) -> Diag;
 
-[[nodiscard]] auto
-errConvFuncCannotSpecifyReturnType(const Source& src, const std::string& name, input::Span span)
+[[nodiscard]] auto errIncorrectReturnTypeInConvFunc(
+    const Source& src, const std::string& name, const std::string& returnedType, input::Span span)
     -> Diag;
 
 [[nodiscard]] auto
@@ -98,6 +105,12 @@ errConstNameConflictsWithConst(const Source& src, const std::string& name, input
 [[nodiscard]] auto errUndeclaredType(const Source& src, const std::string& name, input::Span span)
     -> Diag;
 
+[[nodiscard]] auto
+errTypeParamOnSubstitutionType(const Source& src, const std::string& name, input::Span span)
+    -> Diag;
+
+[[nodiscard]] auto errInvalidTypeInstantiation(const Source& src, input::Span span) -> Diag;
+
 [[nodiscard]] auto errUndeclaredConst(const Source& src, const std::string& name, input::Span span)
     -> Diag;
 
@@ -109,9 +122,6 @@ errUninitializedConst(const Source& src, const std::string& name, input::Span sp
     const std::string& name,
     const std::vector<std::string>& argTypes,
     input::Span span) -> Diag;
-
-[[nodiscard]] auto errUndeclaredFuncTemplate(
-    const Source& src, const std::string& name, unsigned int argCount, input::Span span) -> Diag;
 
 [[nodiscard]] auto errInvalidFuncInstantiation(const Source& src, input::Span span) -> Diag;
 

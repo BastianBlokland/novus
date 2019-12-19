@@ -11,6 +11,10 @@ auto TypeDefTable::operator[](sym::TypeId id) const -> const typeDef& {
   return itr->second;
 }
 
+auto TypeDefTable::hasDef(sym::TypeId id) const -> bool {
+  return m_types.find(id) != m_types.end();
+}
+
 auto TypeDefTable::begin() const -> iterator { return m_types.begin(); }
 
 auto TypeDefTable::end() const -> iterator { return m_types.end(); }

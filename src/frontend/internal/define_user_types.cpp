@@ -5,12 +5,13 @@
 
 namespace frontend::internal {
 
-DefineUserTypes::DefineUserTypes(const Source& src, prog::Program* prog) :
-    m_src{src}, m_prog{prog} {}
+DefineUserTypes::DefineUserTypes(Context* context, const TypeSubstitutionTable* typeSubTable) :
+    m_context{context}, m_typeSubTable{typeSubTable} {
 
-auto DefineUserTypes::hasErrors() const noexcept -> bool { return !m_diags.empty(); }
-
-auto DefineUserTypes::getDiags() const noexcept -> const std::vector<Diag>& { return m_diags; }
+  if (m_context == nullptr) {
+    throw std::invalid_argument{"Context cannot be null"};
+  }
+}
 
 auto DefineUserTypes::define(prog::sym::TypeId id, const parse::StructDeclStmtNode& n) -> void {
   auto isValid    = true;
@@ -18,9 +19,12 @@ auto DefineUserTypes::define(prog::sym::TypeId id, const parse::StructDeclStmtNo
   for (const auto& field : n.getFields()) {
     // Get field type.
     const auto fieldTypeName = getName(field.getType());
-    const auto fieldType     = m_prog->lookupType(fieldTypeName);
+    const auto fieldType     = getOrInstType(m_context, m_typeSubTable, field.getType());
     if (!fieldType) {
-      m_diags.push_back(errUndeclaredType(m_src, fieldTypeName, field.getType().getSpan()));
+      if (!m_context->hasErrors()) {
+        m_context->reportDiag(errUndeclaredType(
+            m_context->getSrc(), getName(field.getType()), field.getType().getSpan()));
+      }
       isValid = false;
       continue;
     }
@@ -28,14 +32,20 @@ auto DefineUserTypes::define(prog::sym::TypeId id, const parse::StructDeclStmtNo
     // Get field identifier.
     const auto fieldName = getName(field.getIdentifier());
     if (fieldTable.lookup(fieldName)) {
-      m_diags.push_back(
-          errDuplicateFieldNameInStruct(m_src, fieldName, field.getIdentifier().getSpan()));
+      m_context->reportDiag(errDuplicateFieldNameInStruct(
+          m_context->getSrc(), fieldName, field.getIdentifier().getSpan()));
       isValid = false;
       continue;
     }
-    if (m_prog->lookupType(fieldName)) {
-      m_diags.push_back(
-          errFieldNameConflictsWithType(m_src, fieldName, field.getIdentifier().getSpan()));
+    if (m_typeSubTable != nullptr && m_typeSubTable->lookupType(fieldName)) {
+      m_context->reportDiag(errFieldNameConflictsWithTypeSubstitution(
+          m_context->getSrc(), fieldName, field.getIdentifier().getSpan()));
+      isValid = false;
+      continue;
+    }
+    if (m_context->getProg()->lookupType(fieldName)) {
+      m_context->reportDiag(errFieldNameConflictsWithType(
+          m_context->getSrc(), fieldName, field.getIdentifier().getSpan()));
       isValid = false;
       continue;
     }
@@ -43,23 +53,24 @@ auto DefineUserTypes::define(prog::sym::TypeId id, const parse::StructDeclStmtNo
   }
 
   if (isValid) {
-    m_prog->defineUserStruct(id, std::move(fieldTable));
+    m_context->getProg()->defineUserStruct(id, std::move(fieldTable));
   }
 }
 
 auto DefineUserTypes::define(prog::sym::TypeId id, const parse::UnionDeclStmtNode& n) -> void {
   auto isValid = true;
   auto types   = std::vector<prog::sym::TypeId>{};
-  for (const auto& typeToken : n.getTypes()) {
-    const auto typeName = getName(typeToken);
-    const auto type     = m_prog->lookupType(typeName);
+  for (const auto& parseType : n.getTypes()) {
+    const auto type = getOrInstType(m_context, m_typeSubTable, parseType);
     if (!type) {
-      m_diags.push_back(errUndeclaredType(m_src, typeName, typeToken.getSpan()));
+      m_context->reportDiag(
+          errUndeclaredType(m_context->getSrc(), getName(parseType), parseType.getSpan()));
       isValid = false;
       continue;
     }
     if (std::find(types.begin(), types.end(), *type) != types.end()) {
-      m_diags.push_back(errDuplicateTypeInUnion(m_src, typeName, typeToken.getSpan()));
+      m_context->reportDiag(
+          errDuplicateTypeInUnion(m_context->getSrc(), getName(parseType), parseType.getSpan()));
       isValid = false;
       continue;
     }
@@ -67,44 +78,8 @@ auto DefineUserTypes::define(prog::sym::TypeId id, const parse::UnionDeclStmtNod
   }
 
   if (isValid) {
-    m_prog->defineUserUnion(id, std::move(types));
+    m_context->getProg()->defineUserUnion(id, std::move(types));
   }
-}
-
-auto DefineUserTypes::check(prog::sym::TypeId id, const parse::StructDeclStmtNode& n) -> void {
-  const auto& typedecl = m_prog->getTypeDecl(id);
-  if (typedecl.getKind() == prog::sym::TypeKind::UserStruct) {
-    const auto& structDef = std::get<prog::sym::StructDef>(m_prog->getTypeDef(id));
-    const auto& fields    = structDef.getFields();
-
-    // Detect cyclic struct.
-    const auto cyclicField = DefineUserTypes::getCyclicField(fields, id);
-    if (cyclicField) {
-      const auto fieldName = fields[*cyclicField].getName();
-      m_diags.push_back(errCyclicStruct(m_src, fieldName, typedecl.getName(), n.getSpan()));
-      return;
-    }
-  }
-}
-
-auto DefineUserTypes::getCyclicField(
-    const prog::sym::FieldDeclTable& fields, prog::sym::TypeId rootType)
-    -> std::optional<prog::sym::FieldId> {
-  for (const auto& f : fields) {
-    const auto fType = f.getType();
-    if (fType == rootType) {
-      return f.getId();
-    }
-    const auto& fTypeDecl = m_prog->getTypeDecl(fType);
-    if (fTypeDecl.getKind() == prog::sym::TypeKind::UserStruct) {
-      const auto& structDef  = std::get<prog::sym::StructDef>(m_prog->getTypeDef(fType));
-      const auto cyclicField = getCyclicField(structDef.getFields(), rootType);
-      if (cyclicField) {
-        return f.getId();
-      }
-    }
-  }
-  return std::nullopt;
 }
 
 } // namespace frontend::internal

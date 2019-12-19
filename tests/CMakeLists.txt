@@ -44,6 +44,7 @@ add_executable(tests
   frontend/source_test.cpp
   frontend/typeinfer_user_funcs_test.cpp
   frontend/user_func_templates_test.cpp
+  frontend/user_type_templates_test.cpp
 
   input/char_escape_test.cpp
   input/info_test.cpp
