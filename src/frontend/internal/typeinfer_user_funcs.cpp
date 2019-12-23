@@ -26,17 +26,12 @@ auto TypeInferUserFuncs::inferRetType(prog::sym::FuncId id, const parse::FuncDec
   auto agressive = m_processed.find(id) != m_processed.end();
   m_processed.insert(id);
 
-  auto constTypes = std::unordered_map<std::string, prog::sym::TypeId>{};
-  for (const auto& arg : n.getArgs()) {
-    const auto argType = m_context->getProg()->lookupType(getName(arg.getType()));
-    if (argType) {
-      constTypes.insert({getName(arg.getIdentifier()), *argType});
-    }
+  auto funcInput = getFuncInput(m_context, m_typeSubTable, n);
+  if (!funcInput) {
+    return false;
   }
-
-  auto inferBodyType = TypeInferExpr{m_context, m_typeSubTable, &constTypes, agressive};
-  n[0].accept(&inferBodyType);
-  const auto type = inferBodyType.getInferredType();
+  const auto type =
+      ::frontend::internal::inferRetType(m_context, m_typeSubTable, n, *funcInput, agressive);
 
   // If type is still not a concrete type then we fail.
   if (!type.isConcrete()) {

@@ -1,7 +1,9 @@
 #include "utilities.hpp"
 #include "frontend/diag_defs.hpp"
 #include "internal/context.hpp"
+#include "internal/typeinfer_expr.hpp"
 #include "parse/type_param_list.hpp"
+#include <stdexcept>
 
 namespace frontend::internal {
 
@@ -57,6 +59,28 @@ auto getRetType(
     return std::nullopt;
   }
   return retType;
+}
+
+auto inferRetType(
+    Context* context,
+    const TypeSubstitutionTable* subTable,
+    const parse::FuncDeclStmtNode& funcDeclParseNode,
+    const prog::sym::TypeSet& input,
+    bool aggressive) -> prog::sym::TypeId {
+
+  if (input.getCount() != funcDeclParseNode.getArgs().size()) {
+    throw std::invalid_argument{"Incorrect number of input types provided"};
+  }
+
+  auto constTypes = std::unordered_map<std::string, prog::sym::TypeId>{};
+  for (auto i = 0U; i != input.getCount(); ++i) {
+    const auto& argName = getName(funcDeclParseNode.getArgs()[i].getIdentifier());
+    constTypes.insert({argName, input[i]});
+  }
+
+  auto inferBodyType = TypeInferExpr{context, subTable, &constTypes, aggressive};
+  funcDeclParseNode[0].accept(&inferBodyType);
+  return inferBodyType.getInferredType();
 }
 
 auto getFuncInput(
@@ -159,6 +183,10 @@ auto mangleName(Context* context, const std::string& name, const prog::sym::Type
     result += '_' + typeName;
   }
   return result;
+}
+
+auto isConversion(Context* context, const std::string& name) -> bool {
+  return context->getProg()->lookupType(name) || context->getTypeTemplates()->hasType(name);
 }
 
 } // namespace frontend::internal

@@ -100,6 +100,13 @@ getOrInstType(Context* context, const TypeSubstitutionTable* subTable, const par
     Context* context, const TypeSubstitutionTable* subTable, const parse::FuncDeclStmtNode& n)
     -> std::optional<prog::sym::TypeId>;
 
+[[nodiscard]] auto inferRetType(
+    Context* context,
+    const TypeSubstitutionTable* subTable,
+    const parse::FuncDeclStmtNode& funcDeclParseNode,
+    const prog::sym::TypeSet& input,
+    bool aggressive) -> prog::sym::TypeId;
+
 [[nodiscard]] auto getFuncInput(
     Context* context, const TypeSubstitutionTable* subTable, const parse::FuncDeclStmtNode& n)
     -> std::optional<prog::sym::TypeSet>;
@@ -122,5 +129,7 @@ getSubstitutionParams(Context* context, const parse::TypeSubstitutionList& subLi
 [[nodiscard]] auto
 mangleName(Context* context, const std::string& name, const prog::sym::TypeSet& typeParams)
     -> std::string;
+
+[[nodiscard]] auto isConversion(Context* context, const std::string& name) -> bool;
 
 } // namespace frontend::internal

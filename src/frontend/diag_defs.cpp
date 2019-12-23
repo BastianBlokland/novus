@@ -160,6 +160,14 @@ auto errUnableToInferFuncReturnType(const Source& src, const std::string& name, 
   return error(src, oss.str(), span);
 }
 
+auto errUnableToInferReturnTypeOfConversionToTemplatedType(
+    const Source& src, const std::string& name, input::Span span) -> Diag {
+  std::ostringstream oss;
+  oss << "Unable to infer return-type of conversion '" << name
+      << "' to templated type, please specify return-type using the '-> [TYPE]' syntax";
+  return error(src, oss.str(), span);
+}
+
 auto errNonMatchingFuncReturnType(
     const Source& src,
     const std::string& name,

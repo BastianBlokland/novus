@@ -63,19 +63,39 @@ auto DeclareUserFuncs::visit(const parse::FuncDeclStmtNode& n) -> void {
     return;
   }
 
-  // Check if this function is a conversion.
-  const auto convType = m_context->getProg()->lookupType(name);
-  if (convType) {
-    if (retType->isInfer()) {
-      retType = convType;
-    } else if (*retType != *convType) {
-      m_context->reportDiag(errIncorrectReturnTypeInConvFunc(
-          m_context->getSrc(), name, getName(m_context, *retType), n.getId().getSpan()));
+  // For conversions validate that correct types are returned.
+  const auto isConv = isConversion(m_context, name);
+  if (isConv) {
+    const auto nonTemplConvType = m_context->getProg()->lookupType(name);
+    if (nonTemplConvType) {
+      if (retType->isInfer()) {
+        retType = nonTemplConvType;
+      } else if (*retType != *nonTemplConvType) {
+        m_context->reportDiag(errIncorrectReturnTypeInConvFunc(
+            m_context->getSrc(), name, getName(m_context, *retType), n.getId().getSpan()));
+        return;
+      }
+    } else {
+      if (retType->isInfer()) {
+        retType = inferRetType(m_context, nullptr, n, *input, true);
+        if (!retType->isConcrete()) {
+          m_context->reportDiag(errUnableToInferReturnTypeOfConversionToTemplatedType(
+              m_context->getSrc(), name, n.getId().getSpan()));
+          return;
+        }
+      }
+      const auto typeInfo = m_context->getTypeInfo(*retType);
+      if (!typeInfo || typeInfo->getName() != name) {
+        m_context->reportDiag(errIncorrectReturnTypeInConvFunc(
+            m_context->getSrc(), name, getName(m_context, *retType), n.getId().getSpan()));
+        return;
+      }
     }
   }
 
   // Declare the function in the program.
-  auto funcId = m_context->getProg()->declareUserFunc(name, input.value(), retType.value());
+  const auto funcName = isConv ? getName(m_context, *retType) : name;
+  auto funcId = m_context->getProg()->declareUserFunc(funcName, input.value(), retType.value());
   m_funcs.emplace_back(funcId, n);
 }
 

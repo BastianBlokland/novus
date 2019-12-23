@@ -83,11 +83,11 @@ TEST_CASE("Analyzing user-function declarations", "[frontend]") {
   SECTION("Declare templated conversion function") {
     const auto& output = ANALYZE("struct Tuple{T, Y} = T a, Y b "
                                  "fun Tuple(int i) Tuple{int, bool}(i, false)"
-                                 "fun f() Tuple(42)");
+                                 "fun f() Tuple{int, bool}(42)");
     REQUIRE(output.isSuccess());
     CHECK(GET_FUNC_DECL(output, "f").getOutput() == GET_TYPE_ID(output, "Tuple__int_bool"));
     CHECK(
-        GET_FUNC_DECL(output, "Tuple", GET_TYPE_ID(output, "int")).getOutput() ==
+        GET_FUNC_DECL(output, "Tuple__int_bool", GET_TYPE_ID(output, "int")).getOutput() ==
         GET_TYPE_ID(output, "Tuple__int_bool"));
   }
 

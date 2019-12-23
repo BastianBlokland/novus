@@ -27,6 +27,11 @@ auto DefineUserFuncs::define(prog::sym::FuncId id, const parse::FuncDeclStmtNode
   auto visibleConsts = consts.getAll();
   auto expr          = getExpr(n[0], &consts, &visibleConsts, funcRetType);
 
+  // Abort if any errors are encountered.
+  if (m_context->hasErrors()) {
+    return;
+  }
+
   // Report this diagnostic after processing the body so other diagnostics are also reported.
   if (funcRetType.isInfer()) {
     m_context->reportDiag(errUnableToInferFuncReturnType(

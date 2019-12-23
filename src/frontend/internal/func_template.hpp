@@ -38,12 +38,6 @@ private:
 
   [[nodiscard]] auto createSubTable(const prog::sym::TypeSet& typeParams) const
       -> TypeSubstitutionTable;
-
-  [[nodiscard]] auto isConversion() const -> bool;
-
-  [[nodiscard]] auto
-  getRetType(const TypeSubstitutionTable& subTable, const prog::sym::TypeSet& input) const
-      -> std::optional<prog::sym::TypeId>;
 };
 
 } // namespace frontend::internal

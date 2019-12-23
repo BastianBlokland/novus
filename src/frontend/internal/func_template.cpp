@@ -45,7 +45,14 @@ auto FuncTemplate::getRetType(const prog::sym::TypeSet& typeParams)
   if (!funcInput) {
     return std::nullopt;
   }
-  return getRetType(subTable, *funcInput);
+  auto retType = ::frontend::internal::getRetType(m_context, &subTable, m_parseNode);
+  if (!retType) {
+    return std::nullopt;
+  }
+  if (retType->isInfer()) {
+    retType = inferRetType(m_context, &subTable, m_parseNode, *funcInput, true);
+  }
+  return retType->isConcrete() ? std::optional{*retType} : std::nullopt;
 }
 
 auto FuncTemplate::instantiate(const prog::sym::TypeSet& typeParams) -> const FuncTemplateInst* {
@@ -77,13 +84,23 @@ auto FuncTemplate::setupInstance(FuncTemplateInst* instance) -> void {
     return;
   }
 
-  instance->m_retType = getRetType(subTable, *funcInput);
+  instance->m_retType = ::frontend::internal::getRetType(m_context, &subTable, m_parseNode);
   if (!instance->m_retType) {
     assert(m_context->hasErrors());
     return;
   }
+
+  if (instance->m_retType->isInfer()) {
+    instance->m_retType = inferRetType(m_context, &subTable, m_parseNode, *funcInput, true);
+    if (!instance->m_retType->isConcrete()) {
+      m_context->reportDiag(errUnableToInferFuncReturnType(
+          m_context->getSrc(), m_name, m_parseNode.getId().getSpan()));
+      return;
+    }
+  }
+
   const auto retTypeName = getName(m_context, *instance->m_retType);
-  const auto isConv      = isConversion();
+  const auto isConv      = isConversion(m_context, m_name);
 
   // For conversions verify that a correct type is returned.
   if (isConv) {
@@ -131,35 +148,6 @@ auto FuncTemplate::createSubTable(const prog::sym::TypeSet& typeParams) const
     subTable.declare(m_typeSubs[i], typeParams[i]);
   }
   return subTable;
-}
-
-auto FuncTemplate::isConversion() const -> bool {
-  return m_context->getProg()->lookupType(m_name) || m_context->getTypeTemplates()->hasType(m_name);
-}
-
-auto FuncTemplate::getRetType(
-    const TypeSubstitutionTable& subTable, const prog::sym::TypeSet& input) const
-    -> std::optional<prog::sym::TypeId> {
-
-  auto retType = ::frontend::internal::getRetType(m_context, &subTable, m_parseNode);
-  if (!retType) {
-    return std::nullopt;
-  }
-
-  if (retType->isInfer()) {
-    // Attempt to infer the return type.
-    auto constTypes = std::unordered_map<std::string, prog::sym::TypeId>{};
-    for (auto i = 0U; i != input.getCount(); ++i) {
-      const auto& argName = getName(m_parseNode.getArgs()[i].getIdentifier());
-      constTypes.insert({argName, input[i]});
-    }
-
-    auto inferBodyType = TypeInferExpr{m_context, &subTable, &constTypes, true};
-    m_parseNode[0].accept(&inferBodyType);
-    return inferBodyType.getInferredType();
-  }
-
-  return retType;
 }
 
 } // namespace frontend::internal

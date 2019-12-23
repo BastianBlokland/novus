@@ -77,6 +77,9 @@ errDuplicateFuncDeclaration(const Source& src, const std::string& name, input::S
 errUnableToInferFuncReturnType(const Source& src, const std::string& name, input::Span span)
     -> Diag;
 
+[[nodiscard]] auto errUnableToInferReturnTypeOfConversionToTemplatedType(
+    const Source& src, const std::string& name, input::Span span) -> Diag;
+
 [[nodiscard]] auto errNonMatchingFuncReturnType(
     const Source& src,
     const std::string& name,
