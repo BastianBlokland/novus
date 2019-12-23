@@ -115,6 +115,23 @@ TEST_CASE("Analyzing user-function templates", "[frontend]") {
             GET_FUNC_ID(output, "ft__string", GET_TYPE_ID(output, "int")),
             std::move(args3)));
   }
+
+  SECTION("Substituted constructor") {
+    const auto& output = ANALYZE("struct s = int a "
+                                 "fun factory{T}(int i) -> T T(i) "
+                                 "fun f() -> s factory{s}(1)");
+    REQUIRE(output.isSuccess());
+
+    const auto& fDef = GET_FUNC_DEF(output, "factory__s", GET_TYPE_ID(output, "int"));
+    auto fArgs       = std::vector<prog::expr::NodePtr>{};
+    fArgs.push_back(prog::expr::constExprNode(fDef.getConsts(), *fDef.getConsts().lookup("i")));
+    CHECK(
+        fDef.getExpr() ==
+        *prog::expr::callExprNode(
+            output.getProg(),
+            GET_FUNC_ID(output, "s", GET_TYPE_ID(output, "int")),
+            std::move(fArgs)));
+  }
 }
 
 } // namespace frontend

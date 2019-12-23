@@ -54,6 +54,10 @@ auto TypeInferExpr::visit(const parse::CallExprNode& n) -> void {
   const auto funcName = getName(n.getFunc());
 
   // Check if this is calling a constructor / conversion.
+  if (m_typeSubTable != nullptr && m_typeSubTable->lookupType(funcName)) {
+    m_type = *m_typeSubTable->lookupType(funcName);
+    return;
+  }
   if (isType(funcName)) {
     const auto isTemplType          = m_context->getTypeTemplates()->hasType(funcName);
     const auto synthesisedParseType = (isTemplType && n.getTypeParams())

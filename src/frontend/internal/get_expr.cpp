@@ -540,18 +540,21 @@ auto GetExpr::getFunctions(const parse::CallExprNode& n) -> std::vector<prog::sy
   auto isValid        = true;
 
   // Check if this is a call to a constructor / conversion function.
-  if (isType(funcName)) {
+  std::optional<prog::sym::TypeId> convType = std::nullopt;
+  if (m_typeSubTable != nullptr && m_typeSubTable->lookupType(funcName)) {
+    convType = m_typeSubTable->lookupType(funcName);
+  } else if (isType(funcName)) {
     // Treat this function name (including type parameters) as a type reference.
     const auto isTemplType          = m_context->getTypeTemplates()->hasType(funcName);
     const auto synthesisedParseType = (isTemplType && n.getTypeParams())
         ? parse::Type{n.getFunc(), *n.getTypeParams()}
         : parse::Type{n.getFunc()};
-    const auto type = getOrInstType(m_context, m_typeSubTable, synthesisedParseType);
-    if (type) {
-      const auto typeName = getName(m_context, *type);
-      const auto funcs    = m_context->getProg()->lookupFuncs(typeName);
-      result.insert(result.end(), funcs.begin(), funcs.end());
-    }
+    convType = getOrInstType(m_context, m_typeSubTable, synthesisedParseType);
+  }
+  if (convType) {
+    const auto typeName = getName(m_context, *convType);
+    const auto funcs    = m_context->getProg()->lookupFuncs(typeName);
+    result.insert(result.end(), funcs.begin(), funcs.end());
   }
 
   if (n.getTypeParams()) {
