@@ -147,6 +147,14 @@ TEST_CASE("Infer return type of user functions", "[frontend]") {
         GET_TYPE_ID(output, "tuple__int_bool"));
   }
 
+  SECTION("Substituted constructor") {
+    const auto& output = ANALYZE("struct s = int a "
+                                 "fun factory{T}(int i) T(i) "
+                                 "fun f() factory{s}(42)");
+    REQUIRE(output.isSuccess());
+    CHECK(GET_FUNC_DECL(output, "f").getOutput() == GET_TYPE_ID(output, "s"));
+  }
+
   SECTION("Diagnostics") {
     CHECK_DIAG(
         "fun f1() f2() "
