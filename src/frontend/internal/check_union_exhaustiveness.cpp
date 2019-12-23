@@ -3,14 +3,14 @@
 
 namespace frontend::internal {
 
-CheckUnionExhaustiveness::CheckUnionExhaustiveness(const prog::Program& program) :
-    m_program{program} {}
+CheckUnionExhaustiveness::CheckUnionExhaustiveness(const Context& context) : m_context{context} {}
 
 auto CheckUnionExhaustiveness::isExhaustive() const -> bool {
   if (!m_unionType) {
     return false;
   }
-  const auto& unionDef = std::get<prog::sym::UnionDef>(m_program.getTypeDef(*m_unionType));
+  const auto& unionDef =
+      std::get<prog::sym::UnionDef>(m_context.getProg()->getTypeDef(*m_unionType));
 
   // Validate that all union-types have been checked.
   for (const auto& type : unionDef.getTypes()) {

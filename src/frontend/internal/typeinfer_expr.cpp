@@ -1,31 +1,23 @@
 #include "internal/typeinfer_expr.hpp"
+#include "internal/context.hpp"
 #include "internal/utilities.hpp"
-#include "lex/token_payload_lit_bool.hpp"
-#include "lex/token_payload_lit_int.hpp"
 #include "parse/nodes.hpp"
 
 namespace frontend::internal {
 
 TypeInferExpr::TypeInferExpr(
-    prog::Program* prog,
-    FuncTemplateTable* funcTemplates,
+    Context* context,
     const TypeSubstitutionTable* typeSubTable,
     std::unordered_map<std::string, prog::sym::TypeId>* constTypes,
     bool aggressive) :
-    m_prog{prog},
-    m_funcTemplates{funcTemplates},
+    m_context{context},
     m_typeSubTable{typeSubTable},
     m_constTypes{constTypes},
     m_aggressive{aggressive},
     m_type{prog::sym::TypeId::inferType()} {
-  if (m_prog == nullptr) {
-    throw std::invalid_argument{"Program cannot be null"};
-  }
-  if (m_funcTemplates == nullptr) {
-    throw std::invalid_argument{"Function template table cannot be null"};
-  }
-  if (m_constTypes == nullptr) {
-    throw std::invalid_argument{"ConstTypes cannot be null"};
+
+  if (m_context == nullptr) {
+    throw std::invalid_argument{"Context cannot be null"};
   }
 }
 
@@ -40,7 +32,7 @@ auto TypeInferExpr::visit(const parse::BinaryExprNode& n) -> void {
   switch (opToken.getKind()) {
   case lex::TokenKind::OpAmpAmp:
   case lex::TokenKind::OpPipePipe: {
-    m_type = m_prog->getBool();
+    m_type = m_context->getProg()->getBool();
     break;
   }
   default:
@@ -60,18 +52,34 @@ auto TypeInferExpr::visit(const parse::BinaryExprNode& n) -> void {
 
 auto TypeInferExpr::visit(const parse::CallExprNode& n) -> void {
   const auto funcName = getName(n.getFunc());
+
+  // Check if this is calling a constructor / conversion.
+  if (isType(funcName)) {
+    const auto isTemplType          = m_context->getTypeTemplates()->hasType(funcName);
+    const auto synthesisedParseType = (isTemplType && n.getTypeParams())
+        ? parse::Type{n.getFunc(), *n.getTypeParams()}
+        : parse::Type{n.getFunc()};
+    const auto type = getOrInstType(m_context, m_typeSubTable, synthesisedParseType);
+    if (type) {
+      m_type = *type;
+      return;
+    }
+  }
+
+  // Templated function.
   if (n.getTypeParams()) {
-    const auto typeSet = getTypeSet(*m_prog, m_typeSubTable, n.getTypeParams()->getParams());
+    const auto typeSet = getTypeSet(m_context, m_typeSubTable, n.getTypeParams()->getTypes());
     if (!typeSet) {
       return;
     }
-    const auto retType = m_funcTemplates->getRetType(funcName, *typeSet);
+    const auto retType = m_context->getFuncTemplates()->getRetType(funcName, *typeSet);
     if (retType) {
       m_type = *retType;
     }
     return;
   }
 
+  // Regular functions.
   auto argTypes = std::vector<prog::sym::TypeId>{};
   argTypes.reserve(n.getChildCount());
   for (auto i = 0U; i < n.getChildCount(); ++i) {
@@ -103,7 +111,7 @@ auto TypeInferExpr::visit(const parse::ConditionalExprNode& n) -> void {
   }
 
   // Find a type that both of the branches are convertible to.
-  auto commonType = m_prog->findCommonType(branchTypes);
+  auto commonType = m_context->getProg()->findCommonType(branchTypes);
   if (commonType) {
     m_type = *commonType;
   }
@@ -125,11 +133,11 @@ auto TypeInferExpr::visit(const parse::FieldExprNode& n) -> void {
   }
 
   // Only structs are supported atm.
-  if (m_prog->getTypeDecl(lhsType).getKind() != prog::sym::TypeKind::UserStruct) {
+  if (m_context->getProg()->getTypeDecl(lhsType).getKind() != prog::sym::TypeKind::UserStruct) {
     return;
   }
 
-  const auto& structDef    = std::get<prog::sym::StructDef>(m_prog->getTypeDef(lhsType));
+  const auto& structDef = std::get<prog::sym::StructDef>(m_context->getProg()->getTypeDef(lhsType));
   const auto& structFields = structDef.getFields();
   const auto& field        = structFields.lookup(getName(n.getId()));
   if (field) {
@@ -145,31 +153,31 @@ auto TypeInferExpr::visit(const parse::GroupExprNode& n) -> void {
 
 auto TypeInferExpr::visit(const parse::IsExprNode& n) -> void {
   // Register the type of the constant this declares.
-  const auto constType = getType(*m_prog, m_typeSubTable, getName(n.getType()));
+  const auto constType = getOrInstType(m_context, m_typeSubTable, n.getType());
   if (constType) {
     setConstType(n.getId(), *constType);
   }
 
   // Expression itself always evaluates to a bool.
-  m_type = m_prog->getBool();
+  m_type = m_context->getProg()->getBool();
 }
 
 auto TypeInferExpr::visit(const parse::LitExprNode& n) -> void {
   switch (n.getVal().getKind()) {
   case lex::TokenKind::LitInt: {
-    m_type = m_prog->getInt();
+    m_type = m_context->getProg()->getInt();
     break;
   }
   case lex::TokenKind::LitFloat: {
-    m_type = m_prog->getFloat();
+    m_type = m_context->getProg()->getFloat();
     break;
   }
   case lex::TokenKind::LitBool: {
-    m_type = m_prog->getBool();
+    m_type = m_context->getProg()->getBool();
     break;
   }
   case lex::TokenKind::LitString: {
-    m_type = m_prog->getString();
+    m_type = m_context->getProg()->getString();
     break;
   }
   default:
@@ -210,7 +218,7 @@ auto TypeInferExpr::visit(const parse::SwitchExprNode& n) -> void {
   }
 
   // Find a type that all of the branches are convertible to.
-  auto commonType = m_prog->findCommonType(branchTypes);
+  auto commonType = m_context->getProg()->findCommonType(branchTypes);
   if (commonType) {
     m_type = *commonType;
   }
@@ -243,7 +251,7 @@ auto TypeInferExpr::visit(const parse::UnionDeclStmtNode & /*unused*/) -> void {
 }
 
 auto TypeInferExpr::inferSubExpr(const parse::Node& n) -> prog::sym::TypeId {
-  auto visitor = TypeInferExpr{m_prog, m_funcTemplates, m_typeSubTable, m_constTypes, m_aggressive};
+  auto visitor = TypeInferExpr{m_context, m_typeSubTable, m_constTypes, m_aggressive};
   n.accept(&visitor);
   return visitor.getInferredType();
 }
@@ -255,9 +263,10 @@ auto TypeInferExpr::inferFuncCall(
       return prog::sym::TypeId::inferType();
     }
   }
-  auto func = m_prog->lookupFunc(funcName, prog::sym::TypeSet{std::move(argTypes)}, -1);
+  auto func =
+      m_context->getProg()->lookupFunc(funcName, prog::sym::TypeSet{std::move(argTypes)}, -1);
   if (func) {
-    return m_prog->getFuncDecl(*func).getOutput();
+    return m_context->getProg()->getFuncDecl(*func).getOutput();
   }
   return prog::sym::TypeId::inferType();
 }
@@ -273,6 +282,10 @@ auto TypeInferExpr::inferConstType(const lex::Token& constId) -> prog::sym::Type
     return prog::sym::TypeId::inferType();
   }
   return itr->second;
+}
+
+auto TypeInferExpr::isType(const std::string& name) const -> bool {
+  return m_context->getProg()->lookupType(name) || m_context->getTypeTemplates()->hasType(name);
 }
 
 } // namespace frontend::internal

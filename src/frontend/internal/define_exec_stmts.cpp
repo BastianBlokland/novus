@@ -6,23 +6,18 @@
 
 namespace frontend::internal {
 
-DefineExecStmts::DefineExecStmts(
-    const Source& src, prog::Program* prog, FuncTemplateTable* funcTemplates) :
-    m_src{src}, m_prog{prog}, m_funcTemplates{funcTemplates} {
-
-  if (m_prog == nullptr) {
-    throw std::invalid_argument{"Program cannot be null"};
-  }
-  if (funcTemplates == nullptr) {
-    throw std::invalid_argument{"Func templates table cannot be null"};
+DefineExecStmts::DefineExecStmts(Context* context) : m_context{context} {
+  if (m_context == nullptr) {
+    throw std::invalid_argument{"Context cannot be null"};
   }
 }
 
-auto DefineExecStmts::hasErrors() const noexcept -> bool { return !m_diags.empty(); }
-
-auto DefineExecStmts::getDiags() const noexcept -> const std::vector<Diag>& { return m_diags; }
-
 auto DefineExecStmts::visit(const parse::ExecStmtNode& n) -> void {
+  if (m_context->hasErrors()) {
+    // Stop to avoid cascading errors that distract from the original problem.
+    return;
+  }
+
   auto isValid       = true;
   auto consts        = prog::sym::ConstDeclTable{};
   auto visibleConsts = std::vector<prog::sym::ConstId>{};
@@ -43,20 +38,23 @@ auto DefineExecStmts::visit(const parse::ExecStmtNode& n) -> void {
   }
 
   const auto& actionName = getName(n.getAction());
-  const auto& action     = m_prog->lookupAction(actionName, prog::sym::TypeSet{argTypes}, -1);
+  const auto& action =
+      m_context->getProg()->lookupAction(actionName, prog::sym::TypeSet{argTypes}, -1);
   if (action) {
-    m_prog->addExecStmt(action.value(), std::move(consts), std::move(args));
+    m_context->getProg()->addExecStmt(action.value(), std::move(consts), std::move(args));
     return;
   }
 
-  if (m_prog->lookupActions(actionName).empty()) {
-    m_diags.push_back(errUndeclaredAction(m_src, actionName, n.getAction().getSpan()));
+  if (m_context->getProg()->lookupActions(actionName).empty()) {
+    m_context->reportDiag(
+        errUndeclaredAction(m_context->getSrc(), actionName, n.getAction().getSpan()));
   } else {
     auto argTypeNames = std::vector<std::string>{};
     for (const auto& argType : argTypes) {
-      argTypeNames.push_back(getName(*m_prog, argType));
+      argTypeNames.push_back(getName(m_context, argType));
     }
-    m_diags.push_back(errUndeclaredActionOverload(m_src, actionName, argTypeNames, n.getSpan()));
+    m_context->reportDiag(
+        errUndeclaredActionOverload(m_context->getSrc(), actionName, argTypeNames, n.getSpan()));
   }
 }
 
@@ -66,9 +64,8 @@ auto DefineExecStmts::getExpr(
     std::vector<prog::sym::ConstId>* visibleConsts,
     prog::sym::TypeId typeHint) -> prog::expr::NodePtr {
 
-  auto getExpr = GetExpr{m_src, m_prog, m_funcTemplates, nullptr, consts, visibleConsts, typeHint};
+  auto getExpr = GetExpr{m_context, nullptr, consts, visibleConsts, typeHint};
   n.accept(&getExpr);
-  m_diags.insert(m_diags.end(), getExpr.getDiags().begin(), getExpr.getDiags().end());
   return std::move(getExpr.getValue());
 }
 

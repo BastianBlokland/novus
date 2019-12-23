@@ -7,16 +7,11 @@
 namespace frontend::internal {
 
 TypeInferUserFuncs::TypeInferUserFuncs(
-    prog::Program* prog,
-    FuncTemplateTable* funcTemplates,
-    const TypeSubstitutionTable* typeSubTable) :
-    m_prog{prog}, m_funcTemplates{funcTemplates}, m_typeSubTable{typeSubTable} {
+    Context* context, const TypeSubstitutionTable* typeSubTable) :
+    m_context{context}, m_typeSubTable{typeSubTable} {
 
-  if (m_prog == nullptr) {
-    throw std::invalid_argument{"Program cannot be null"};
-  }
-  if (m_funcTemplates == nullptr) {
-    throw std::invalid_argument{"Function template table cannot be null"};
+  if (m_context == nullptr) {
+    throw std::invalid_argument{"Context cannot be null"};
   }
 }
 
@@ -31,18 +26,12 @@ auto TypeInferUserFuncs::inferRetType(prog::sym::FuncId id, const parse::FuncDec
   auto agressive = m_processed.find(id) != m_processed.end();
   m_processed.insert(id);
 
-  auto constTypes = std::unordered_map<std::string, prog::sym::TypeId>{};
-  for (const auto& arg : n.getArgs()) {
-    const auto argType = m_prog->lookupType(getName(arg.getType()));
-    if (argType) {
-      constTypes.insert({getName(arg.getIdentifier()), *argType});
-    }
+  auto funcInput = getFuncInput(m_context, m_typeSubTable, n);
+  if (!funcInput) {
+    return false;
   }
-
-  auto inferBodyType =
-      TypeInferExpr{m_prog, m_funcTemplates, m_typeSubTable, &constTypes, agressive};
-  n[0].accept(&inferBodyType);
-  const auto type = inferBodyType.getInferredType();
+  const auto type =
+      ::frontend::internal::inferRetType(m_context, m_typeSubTable, n, *funcInput, agressive);
 
   // If type is still not a concrete type then we fail.
   if (!type.isConcrete()) {
@@ -50,7 +39,7 @@ auto TypeInferUserFuncs::inferRetType(prog::sym::FuncId id, const parse::FuncDec
   }
 
   // Update function output with inferred type.
-  m_prog->updateFuncOutput(id, type);
+  m_context->getProg()->updateFuncOutput(id, type);
   return true;
 }
 

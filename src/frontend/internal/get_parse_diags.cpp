@@ -3,15 +3,15 @@
 
 namespace frontend::internal {
 
-GetParseDiags::GetParseDiags(const Source& src) : m_src{src} {}
-
-auto GetParseDiags::hasErrors() const noexcept -> bool { return !m_diags.empty(); }
-
-auto GetParseDiags::getDiags() const noexcept -> const std::vector<Diag>& { return m_diags; }
+GetParseDiags::GetParseDiags(Context* context) : m_context{context} {
+  if (m_context == nullptr) {
+    throw std::invalid_argument{"Context cannot be null"};
+  }
+}
 
 auto GetParseDiags::visit(const parse::ErrorNode& n) -> void {
   parse::DeepNodeVisitor::visit(n);
-  m_diags.push_back(errParseError(m_src, n));
+  m_context->reportDiag(errParseError(m_context->getSrc(), n));
 }
 
 } // namespace frontend::internal

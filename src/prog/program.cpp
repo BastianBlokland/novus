@@ -191,6 +191,8 @@ auto Program::getActionDecl(sym::ActionId id) const -> const sym::ActionDecl& {
 
 auto Program::getFuncDef(sym::FuncId id) const -> const sym::FuncDef& { return m_funcDefs[id]; }
 
+auto Program::hasTypeDef(sym::TypeId id) const -> bool { return m_typeDefs.hasDef(id); }
+
 auto Program::getTypeDef(sym::TypeId id) const -> const sym::TypeDefTable::typeDef& {
   return m_typeDefs[id];
 }

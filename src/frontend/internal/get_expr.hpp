@@ -1,9 +1,6 @@
 #pragma once
-#include "frontend/diag.hpp"
-#include "frontend/source.hpp"
-#include "internal/func_template_table.hpp"
+#include "internal/context.hpp"
 #include "internal/type_substitution_table.hpp"
-#include "prog/program.hpp"
 
 namespace frontend::internal {
 
@@ -11,9 +8,7 @@ class GetExpr final : public parse::NodeVisitor {
 public:
   GetExpr() = delete;
   GetExpr(
-      const Source& src,
-      prog::Program* prog,
-      FuncTemplateTable* funcTemplates,
+      Context* context,
       const TypeSubstitutionTable* typeSubTable,
       prog::sym::ConstDeclTable* consts,
       std::vector<prog::sym::ConstId>* visibleConsts,
@@ -47,9 +42,7 @@ public:
 private:
   enum class BinLogicOp { And, Or };
 
-  const Source& m_src;
-  prog::Program* m_prog;
-  FuncTemplateTable* m_funcTemplates;
+  Context* m_context;
   const TypeSubstitutionTable* m_typeSubTable;
   prog::sym::ConstDeclTable* m_consts;
   std::vector<prog::sym::ConstId>* m_visibleConsts;
@@ -57,7 +50,6 @@ private:
   bool m_checkedConstsAccess;
 
   prog::expr::NodePtr m_expr;
-  std::vector<Diag> m_diags;
 
   [[nodiscard]] auto getSubExpr(
       const parse::Node& n,
@@ -75,6 +67,10 @@ private:
       -> std::optional<prog::sym::ConstId>;
 
   [[nodiscard]] auto isExhaustive(const std::vector<prog::expr::NodePtr>& conditions) const -> bool;
+
+  [[nodiscard]] auto isType(const std::string& name) const -> bool;
+
+  [[nodiscard]] auto getFunctions(const parse::CallExprNode& n) -> std::vector<prog::sym::FuncId>;
 };
 
 } // namespace frontend::internal

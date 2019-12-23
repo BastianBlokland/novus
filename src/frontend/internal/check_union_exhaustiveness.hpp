@@ -1,13 +1,13 @@
 #pragma once
+#include "internal/context.hpp"
 #include "prog/expr/node_visitor.hpp"
-#include "prog/program.hpp"
 #include <optional>
 
 namespace frontend::internal {
 
 class CheckUnionExhaustiveness final : public prog::expr::NodeVisitor {
 public:
-  explicit CheckUnionExhaustiveness(const prog::Program& program);
+  explicit CheckUnionExhaustiveness(const Context& context);
 
   [[nodiscard]] auto isExhaustive() const -> bool;
 
@@ -26,7 +26,7 @@ public:
   auto visit(const prog::expr::LitStringNode& n) -> void override;
 
 private:
-  const prog::Program& m_program;
+  const Context& m_context;
   std::optional<prog::sym::TypeId> m_unionType;
   std::vector<prog::sym::TypeId> m_checkedTypes;
 };

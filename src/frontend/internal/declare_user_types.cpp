@@ -5,16 +5,11 @@
 
 namespace frontend::internal {
 
-DeclareUserTypes::DeclareUserTypes(const Source& src, prog::Program* prog) :
-    m_src{src}, m_prog{prog} {
-  if (m_prog == nullptr) {
-    throw std::invalid_argument{"Program cannot be null"};
+DeclareUserTypes::DeclareUserTypes(Context* context) : m_context{context} {
+  if (m_context == nullptr) {
+    throw std::invalid_argument{"Context cannot be null"};
   }
 }
-
-auto DeclareUserTypes::hasErrors() const noexcept -> bool { return !m_diags.empty(); }
-
-auto DeclareUserTypes::getDiags() const noexcept -> const std::vector<Diag>& { return m_diags; }
 
 auto DeclareUserTypes::getStructs() const noexcept -> const std::vector<StructDeclarationInfo>& {
   return m_structs;
@@ -31,9 +26,22 @@ auto DeclareUserTypes::visit(const parse::StructDeclStmtNode& n) -> void {
     return;
   }
 
+  // If the type is a template then we don't declare it in the program yet but declare it in
+  // the type-template table.
+  if (n.getTypeSubs()) {
+    auto typeSubs = getSubstitutionParams(m_context, *n.getTypeSubs());
+    if (typeSubs) {
+      m_context->getTypeTemplates()->declareStruct(m_context, name, std::move(*typeSubs), n);
+    }
+    return;
+  }
+
   // Declare the struct in the program.
-  auto typeId = m_prog->declareUserStruct(name);
+  auto typeId = m_context->getProg()->declareUserStruct(name);
   m_structs.emplace_back(typeId, n);
+
+  // Keep track of some extra information about the type.
+  m_context->declareTypeInfo(typeId, TypeInfo{name, n.getSpan()});
 }
 
 auto DeclareUserTypes::visit(const parse::UnionDeclStmtNode& n) -> void {
@@ -43,23 +51,43 @@ auto DeclareUserTypes::visit(const parse::UnionDeclStmtNode& n) -> void {
     return;
   }
 
+  // If the type is a template then we don't declare it in the program yet but declare it in
+  // the type-template table.
+  if (n.getTypeSubs()) {
+    auto typeSubs = getSubstitutionParams(m_context, *n.getTypeSubs());
+    if (typeSubs) {
+      m_context->getTypeTemplates()->declareUnion(m_context, name, std::move(*typeSubs), n);
+    }
+    return;
+  }
+
   // Declare the union in the program.
-  auto typeId = m_prog->declareUserUnion(name);
+  auto typeId = m_context->getProg()->declareUserUnion(name);
   m_unions.emplace_back(typeId, n);
+
+  // Keep track of some extra information about the type.
+  m_context->declareTypeInfo(typeId, TypeInfo{name, n.getSpan()});
 }
 
 auto DeclareUserTypes::validateTypeName(const lex::Token& nameToken) -> bool {
   const auto name = getName(nameToken);
-  if (m_prog->lookupType(name)) {
-    m_diags.push_back(errTypeAlreadyDeclared(m_src, name, nameToken.getSpan()));
+  if (m_context->getProg()->lookupType(name)) {
+    m_context->reportDiag(errTypeAlreadyDeclared(m_context->getSrc(), name, nameToken.getSpan()));
     return false;
   }
-  if (!m_prog->lookupFuncs(name).empty()) {
-    m_diags.push_back(errTypeNameConflictsWithFunc(m_src, name, nameToken.getSpan()));
+  if (m_context->getTypeTemplates()->hasType(name)) {
+    m_context->reportDiag(
+        errTypeTemplateAlreadyDeclared(m_context->getSrc(), name, nameToken.getSpan()));
     return false;
   }
-  if (!m_prog->lookupActions(name).empty()) {
-    m_diags.push_back(errTypeNameConflictsWithAction(m_src, name, nameToken.getSpan()));
+  if (!m_context->getProg()->lookupFuncs(name).empty()) {
+    m_context->reportDiag(
+        errTypeNameConflictsWithFunc(m_context->getSrc(), name, nameToken.getSpan()));
+    return false;
+  }
+  if (!m_context->getProg()->lookupActions(name).empty()) {
+    m_context->reportDiag(
+        errTypeNameConflictsWithAction(m_context->getSrc(), name, nameToken.getSpan()));
     return false;
   }
   return true;

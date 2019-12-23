@@ -2,17 +2,12 @@
 
 namespace frontend::internal {
 
-FuncTemplateTable::FuncTemplateTable(const Source& src, prog::Program* prog) :
-    m_src{src}, m_prog{prog} {
-  if (m_prog == nullptr) {
-    throw std::invalid_argument{"Program cannot be null"};
-  }
-}
-
 auto FuncTemplateTable::declare(
-    const std::string& name, std::vector<std::string> typeParams, const parse::FuncDeclStmtNode& n)
-    -> void {
-  auto funcTemplate = FuncTemplate{m_src, m_prog, this, name, std::move(typeParams), n};
+    Context* context,
+    const std::string& name,
+    std::vector<std::string> typeSubs,
+    const parse::FuncDeclStmtNode& n) -> void {
+  auto funcTemplate = FuncTemplate{context, name, std::move(typeSubs), n};
 
   auto itr = m_templates.find(name);
   if (itr == m_templates.end()) {

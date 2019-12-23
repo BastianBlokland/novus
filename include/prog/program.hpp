@@ -85,6 +85,8 @@ public:
   [[nodiscard]] auto getTypeDecl(sym::TypeId id) const -> const sym::TypeDecl&;
   [[nodiscard]] auto getFuncDecl(sym::FuncId id) const -> const sym::FuncDecl&;
   [[nodiscard]] auto getActionDecl(sym::ActionId id) const -> const sym::ActionDecl&;
+
+  [[nodiscard]] auto hasTypeDef(sym::TypeId id) const -> bool;
   [[nodiscard]] auto getTypeDef(sym::TypeId id) const -> const sym::TypeDefTable::typeDef&;
   [[nodiscard]] auto getFuncDef(sym::FuncId id) const -> const sym::FuncDef&;
 

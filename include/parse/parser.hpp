@@ -2,7 +2,8 @@
 #include "lex/token.hpp"
 #include "parse/node.hpp"
 #include "parse/node_itr.hpp"
-#include "parse/type_param_list.hpp"
+#include "parse/type.hpp"
+#include "parse/type_substitution_list.hpp"
 #include <deque>
 
 namespace parse {
@@ -38,7 +39,9 @@ private:
   auto nextExprSwitchIf() -> NodePtr;
   auto nextExprSwitchElse() -> NodePtr;
 
+  auto nextType() -> Type;
   auto nextTypeParamList() -> TypeParamList;
+  auto nextTypeSubstitutionList() -> TypeSubstitutionList;
 
   auto consumeToken() -> lex::Token;
   auto peekToken(size_t ahead) -> lex::Token&;

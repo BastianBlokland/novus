@@ -3,6 +3,8 @@
 #include "parse/node.hpp"
 #include "parse/node_stmt_func_decl.hpp"
 #include "parse/node_stmt_struct_decl.hpp"
+#include "parse/type_param_list.hpp"
+#include "parse/type_substitution_list.hpp"
 
 namespace parse {
 
@@ -11,7 +13,7 @@ auto errLexError(lex::Token errToken) -> NodePtr;
 auto errInvalidStmtFuncDecl(
     lex::Token kw,
     lex::Token id,
-    std::optional<TypeParamList> typeParams,
+    std::optional<TypeSubstitutionList> typeSubs,
     lex::Token open,
     const std::vector<FuncDeclStmtNode::ArgSpec>& args,
     std::vector<lex::Token> commas,
@@ -22,6 +24,7 @@ auto errInvalidStmtFuncDecl(
 auto errInvalidStmtStructDecl(
     lex::Token kw,
     lex::Token id,
+    std::optional<TypeSubstitutionList> typeSubs,
     std::optional<lex::Token> eq,
     const std::vector<StructDeclStmtNode::FieldSpec>& fields,
     std::vector<lex::Token> commas) -> NodePtr;
@@ -29,8 +32,9 @@ auto errInvalidStmtStructDecl(
 auto errInvalidStmtUnionDecl(
     lex::Token kw,
     lex::Token id,
+    std::optional<TypeSubstitutionList> typeSubs,
     lex::Token eq,
-    std::vector<lex::Token> types,
+    const std::vector<Type>& types,
     std::vector<lex::Token> commas) -> NodePtr;
 
 auto errInvalidStmtExec(
@@ -48,7 +52,7 @@ auto errInvalidParenExpr(lex::Token open, NodePtr expr, lex::Token close) -> Nod
 
 auto errInvalidFieldExpr(NodePtr lhs, lex::Token dot, lex::Token id) -> NodePtr;
 
-auto errInvalidIsExpr(NodePtr lhs, lex::Token kw, lex::Token type, lex::Token id) -> NodePtr;
+auto errInvalidIsExpr(NodePtr lhs, lex::Token kw, const Type& type, lex::Token id) -> NodePtr;
 
 auto errInvalidCallExpr(
     lex::Token func,

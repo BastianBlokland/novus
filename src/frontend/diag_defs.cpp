@@ -21,6 +21,13 @@ auto errTypeAlreadyDeclared(const Source& src, const std::string& name, input::S
   return error(src, oss.str(), span);
 }
 
+auto errTypeTemplateAlreadyDeclared(const Source& src, const std::string& name, input::Span span)
+    -> Diag {
+  std::ostringstream oss;
+  oss << "Type name '" << name << "' conflicts with an previously declared type template";
+  return error(src, oss.str(), span);
+}
+
 auto errTypeNameConflictsWithFunc(const Source& src, const std::string& name, input::Span span)
     -> Diag {
   std::ostringstream oss;
@@ -39,6 +46,13 @@ auto errDuplicateFieldNameInStruct(
     const Source& src, const std::string& fieldName, input::Span span) -> Diag {
   std::ostringstream oss;
   oss << "Field name '" << fieldName << "' conflicts with another field with the same name";
+  return error(src, oss.str(), span);
+}
+
+auto errFieldNameConflictsWithTypeSubstitution(
+    const Source& src, const std::string& fieldName, input::Span span) -> Diag {
+  std::ostringstream oss;
+  oss << "Field name '" << fieldName << "' conflicts with a type-substitution with the same name";
   return error(src, oss.str(), span);
 }
 
@@ -95,10 +109,11 @@ auto errUncheckedIsExpressionWithConst(const Source& src, input::Span span) -> D
   return error(src, oss.str(), span);
 }
 
-auto errConvFuncCannotSpecifyReturnType(
-    const Source& src, const std::string& name, input::Span span) -> Diag {
+auto errIncorrectReturnTypeInConvFunc(
+    const Source& src, const std::string& name, const std::string& returnedType, input::Span span)
+    -> Diag {
   std::ostringstream oss;
-  oss << "Conversion function '" << name << "' cannot specify a return-type";
+  oss << "Conversion function '" << name << "' returns incorrect type '" << returnedType << '\'';
   return error(src, oss.str(), span);
 }
 
@@ -142,6 +157,14 @@ auto errUnableToInferFuncReturnType(const Source& src, const std::string& name, 
   std::ostringstream oss;
   oss << "Unable to infer return-type of function '" << name
       << "', please specify return-type using the '-> [TYPE]' syntax";
+  return error(src, oss.str(), span);
+}
+
+auto errUnableToInferReturnTypeOfConversionToTemplatedType(
+    const Source& src, const std::string& name, input::Span span) -> Diag {
+  std::ostringstream oss;
+  oss << "Unable to infer return-type of conversion '" << name
+      << "' to templated type, please specify return-type using the '-> [TYPE]' syntax";
   return error(src, oss.str(), span);
 }
 
@@ -199,6 +222,19 @@ auto errUndeclaredType(const Source& src, const std::string& name, input::Span s
   return error(src, oss.str(), span);
 }
 
+auto errTypeParamOnSubstitutionType(const Source& src, const std::string& name, input::Span span)
+    -> Diag {
+  std::ostringstream oss;
+  oss << "Type parameters cannot be applied to substitution type: '" << name << '\'';
+  return error(src, oss.str(), span);
+}
+
+auto errInvalidTypeInstantiation(const Source& src, input::Span span) -> Diag {
+  std::ostringstream oss;
+  oss << "One or more errors occurred in type template instantiation";
+  return error(src, oss.str(), span);
+}
+
 auto errUndeclaredConst(const Source& src, const std::string& name, input::Span span) -> Diag {
   std::ostringstream oss;
   oss << "No constant named '" << name << "' has been declared in the current scope";
@@ -228,14 +264,6 @@ auto errUndeclaredFunc(
       oss << '\'' << argTypes[i] << '\'';
     }
   }
-  return error(src, oss.str(), span);
-}
-
-auto errUndeclaredFuncTemplate(
-    const Source& src, const std::string& name, unsigned int argCount, input::Span span) -> Diag {
-  std::ostringstream oss;
-  oss << "No function template named '" << name << "' has been declared with '" << argCount
-      << "' type arguments";
   return error(src, oss.str(), span);
 }
 

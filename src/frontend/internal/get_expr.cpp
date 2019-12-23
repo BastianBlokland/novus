@@ -8,34 +8,26 @@
 #include "lex/token_payload_lit_string.hpp"
 #include "parse/nodes.hpp"
 #include "prog/expr/nodes.hpp"
-#include "prog/operator.hpp"
 #include <sstream>
 
 namespace frontend::internal {
 
 GetExpr::GetExpr(
-    const Source& src,
-    prog::Program* prog,
-    FuncTemplateTable* funcTemplates,
+    Context* context,
     const TypeSubstitutionTable* typeSubTable,
     prog::sym::ConstDeclTable* consts,
     std::vector<prog::sym::ConstId>* visibleConsts,
     prog::sym::TypeId typeHint,
     bool checkedConstsAccess) :
-    m_src{src},
-    m_prog{prog},
-    m_funcTemplates{funcTemplates},
+    m_context{context},
     m_typeSubTable{typeSubTable},
     m_consts{consts},
     m_visibleConsts{visibleConsts},
     m_typeHint{typeHint},
     m_checkedConstsAccess{checkedConstsAccess} {
 
-  if (m_prog == nullptr) {
-    throw std::invalid_argument{"Program cannot be null"};
-  }
-  if (funcTemplates == nullptr) {
-    throw std::invalid_argument{"Func templates table cannot be null"};
+  if (m_context == nullptr) {
+    throw std::invalid_argument{"Context cannot be null"};
   }
   if (m_consts == nullptr) {
     throw std::invalid_argument{"Constants table cannot be null"};
@@ -44,10 +36,6 @@ GetExpr::GetExpr(
     throw std::invalid_argument{"Visible constants vector cannot be null"};
   }
 }
-
-auto GetExpr::hasErrors() const noexcept -> bool { return !m_diags.empty(); }
-
-auto GetExpr::getDiags() const noexcept -> const std::vector<Diag>& { return m_diags; }
 
 auto GetExpr::getValue() -> prog::expr::NodePtr& { return m_expr; }
 
@@ -69,7 +57,8 @@ auto GetExpr::visit(const parse::BinaryExprNode& n) -> void {
   }
   const auto op = getOperator(opToken);
   if (!op) {
-    m_diags.push_back(errUnsupportedOperator(m_src, opToken.str(), opToken.getSpan()));
+    m_context->reportDiag(
+        errUnsupportedOperator(m_context->getSrc(), opToken.str(), opToken.getSpan()));
     return;
   }
 
@@ -82,25 +71,23 @@ auto GetExpr::visit(const parse::BinaryExprNode& n) -> void {
   }
 
   auto funcName = prog::getFuncName(op.value());
-  auto func     = m_prog->lookupFunc(
+  auto func     = m_context->getProg()->lookupFunc(
       prog::getFuncName(op.value()),
       prog::sym::TypeSet{{args[0]->getType(), args[1]->getType()}},
       1);
   if (!func) {
-    const auto& lhsTypeName = getName(*m_prog, args[0]->getType());
-    const auto& rhsTypeName = getName(*m_prog, args[1]->getType());
-    m_diags.push_back(errUndeclaredBinOperator(
-        m_src, getText(op.value()), lhsTypeName, rhsTypeName, opToken.getSpan()));
+    const auto& lhsTypeName = getName(m_context, args[0]->getType());
+    const auto& rhsTypeName = getName(m_context, args[1]->getType());
+    m_context->reportDiag(errUndeclaredBinOperator(
+        m_context->getSrc(), getText(op.value()), lhsTypeName, rhsTypeName, opToken.getSpan()));
     return;
   }
 
-  m_expr = prog::expr::callExprNode(*m_prog, func.value(), std::move(args));
+  m_expr = prog::expr::callExprNode(*m_context->getProg(), func.value(), std::move(args));
 }
 
 auto GetExpr::visit(const parse::CallExprNode& n) -> void {
-  auto isValid         = true;
-  const auto& funcName = getName(n.getFunc());
-
+  auto isValid  = true;
   auto argTypes = std::vector<prog::sym::TypeId>{};
   auto args     = std::vector<prog::expr::NodePtr>{};
   for (auto i = 0U; i < n.getChildCount(); ++i) {
@@ -119,60 +106,33 @@ auto GetExpr::visit(const parse::CallExprNode& n) -> void {
     return;
   }
 
-  auto possibleFuncs = std::vector<prog::sym::FuncId>{};
-
-  // If this is a template call then instantiate the templates.
-  if (n.getTypeParams()) {
-    auto typeParams =
-        getTypeSet(m_src, *m_prog, m_typeSubTable, n.getTypeParams()->getParams(), &m_diags);
-    if (!typeParams) {
-      assert(!m_diags.empty());
-      return;
-    }
-    const auto instantiations = m_funcTemplates->instantiate(funcName, *typeParams);
-    if (instantiations.empty()) {
-      m_diags.push_back(errUndeclaredFuncTemplate(
-          m_src, funcName, typeParams->getCount(), n.getFunc().getSpan()));
-      return;
-    }
-    for (const auto& inst : instantiations) {
-      if (inst->hasErrors()) {
-        m_diags.push_back(errInvalidFuncInstantiation(m_src, n.getSpan()));
-        const auto& instDiags = inst->getDiags();
-        m_diags.insert(m_diags.end(), instDiags.begin(), instDiags.end());
-        isValid = false;
-      } else {
-        possibleFuncs.push_back(*inst->getFunc());
-      }
-    }
-  }
-  if (!isValid) {
+  auto possibleFuncs = getFunctions(n);
+  if (m_context->hasErrors()) {
     return;
   }
 
-  if (possibleFuncs.empty()) {
-    possibleFuncs = m_prog->lookupFuncs(funcName);
-  }
-  const auto func = m_prog->lookupFunc(possibleFuncs, prog::sym::TypeSet{argTypes}, -1);
+  const auto func =
+      m_context->getProg()->lookupFunc(possibleFuncs, prog::sym::TypeSet{argTypes}, -1);
   if (!func) {
     auto argTypeNames = std::vector<std::string>{};
     for (const auto& argType : argTypes) {
-      argTypeNames.push_back(getName(*m_prog, argType));
+      argTypeNames.push_back(getName(m_context, argType));
     }
-    m_diags.push_back(errUndeclaredFunc(m_src, funcName, argTypeNames, n.getSpan()));
+    m_context->reportDiag(
+        errUndeclaredFunc(m_context->getSrc(), getName(n.getFunc()), argTypeNames, n.getSpan()));
     return;
   }
-  m_expr = prog::expr::callExprNode(*m_prog, func.value(), std::move(args));
+  m_expr = prog::expr::callExprNode(*m_context->getProg(), func.value(), std::move(args));
 }
 
 auto GetExpr::visit(const parse::ConditionalExprNode& n) -> void {
   auto conditions = std::vector<prog::expr::NodePtr>{};
   auto branches   = std::vector<prog::expr::NodePtr>{};
-  conditions.push_back(getSubExpr(n[0], m_visibleConsts, m_prog->getBool(), true));
+  conditions.push_back(getSubExpr(n[0], m_visibleConsts, m_context->getProg()->getBool(), true));
   if (!conditions[0]) {
     return;
   }
-  if (!applyConversion(&conditions[0], m_prog->getBool(), n[0].getSpan())) {
+  if (!applyConversion(&conditions[0], m_context->getProg()->getBool(), n[0].getSpan())) {
     return;
   }
 
@@ -192,9 +152,9 @@ auto GetExpr::visit(const parse::ConditionalExprNode& n) -> void {
   // have in common.
   if (m_typeHint.isInfer()) {
     const auto branchTypes = std::vector{branches[0]->getType(), branches[1]->getType()};
-    auto commonType        = m_prog->findCommonType(branchTypes);
+    auto commonType        = m_context->getProg()->findCommonType(branchTypes);
     if (!commonType) {
-      m_diags.push_back(errBranchesHaveNoCommonType(m_src, n.getSpan()));
+      m_context->reportDiag(errBranchesHaveNoCommonType(m_context->getSrc(), n.getSpan()));
       return;
     }
     m_typeHint = *commonType;
@@ -207,7 +167,8 @@ auto GetExpr::visit(const parse::ConditionalExprNode& n) -> void {
     }
   }
 
-  m_expr = prog::expr::switchExprNode(*m_prog, std::move(conditions), std::move(branches));
+  m_expr =
+      prog::expr::switchExprNode(*m_context->getProg(), std::move(conditions), std::move(branches));
 }
 
 auto GetExpr::visit(const parse::ConstDeclExprNode& n) -> void {
@@ -225,13 +186,13 @@ auto GetExpr::visit(const parse::ConstExprNode& n) -> void {
   const auto& name   = getName(n.getId());
   const auto constId = m_consts->lookup(name);
   if (!constId) {
-    m_diags.push_back(errUndeclaredConst(m_src, name, n.getSpan()));
+    m_context->reportDiag(errUndeclaredConst(m_context->getSrc(), name, n.getSpan()));
     return;
   }
 
   if (std::find(m_visibleConsts->begin(), m_visibleConsts->end(), constId.value()) ==
       m_visibleConsts->end()) {
-    m_diags.push_back(errUninitializedConst(m_src, name, n.getSpan()));
+    m_context->reportDiag(errUninitializedConst(m_context->getSrc(), name, n.getSpan()));
     return;
   }
 
@@ -246,19 +207,21 @@ auto GetExpr::visit(const parse::FieldExprNode& n) -> void {
   }
 
   const auto lhsType      = lhsExpr->getType();
-  const auto& lhsTypeDecl = m_prog->getTypeDecl(lhsType);
+  const auto& lhsTypeDecl = m_context->getProg()->getTypeDecl(lhsType);
   if (lhsTypeDecl.getKind() != prog::sym::TypeKind::UserStruct) {
-    m_diags.push_back(errFieldNotFoundOnType(m_src, fieldName, lhsTypeDecl.getName(), n.getSpan()));
+    m_context->reportDiag(
+        errFieldNotFoundOnType(m_context->getSrc(), fieldName, lhsTypeDecl.getName(), n.getSpan()));
     return;
   }
-  const auto& structDef = std::get<prog::sym::StructDef>(m_prog->getTypeDef(lhsType));
+  const auto& structDef = std::get<prog::sym::StructDef>(m_context->getProg()->getTypeDef(lhsType));
   const auto field      = structDef.getFields().lookup(fieldName);
   if (!field) {
-    m_diags.push_back(errFieldNotFoundOnType(m_src, fieldName, lhsTypeDecl.getName(), n.getSpan()));
+    m_context->reportDiag(
+        errFieldNotFoundOnType(m_context->getSrc(), fieldName, lhsTypeDecl.getName(), n.getSpan()));
     return;
   }
 
-  m_expr = prog::expr::fieldExprNode(*m_prog, std::move(lhsExpr), *field);
+  m_expr = prog::expr::fieldExprNode(*m_context->getProg(), std::move(lhsExpr), *field);
 }
 
 auto GetExpr::visit(const parse::GroupExprNode& n) -> void {
@@ -287,44 +250,46 @@ auto GetExpr::visit(const parse::IsExprNode& n) -> void {
 
   // Validate lhs is a union type.
   const auto lhsType      = lhsExpr->getType();
-  const auto& lhsTypeDecl = m_prog->getTypeDecl(lhsType);
+  const auto& lhsTypeDecl = m_context->getProg()->getTypeDecl(lhsType);
   if (lhsTypeDecl.getKind() != prog::sym::TypeKind::UserUnion) {
-    m_diags.push_back(errNonUnionIsExpression(m_src, n[0].getSpan()));
+    m_context->reportDiag(errNonUnionIsExpression(m_context->getSrc(), n[0].getSpan()));
     return;
   }
-  const auto& unionDef = std::get<prog::sym::UnionDef>(m_prog->getTypeDef(lhsType));
+  const auto& unionDef = std::get<prog::sym::UnionDef>(m_context->getProg()->getTypeDef(lhsType));
 
   // Validate that the type is a valid type.
-  const auto typeName = getName(n.getType());
-  const auto type     = getType(*m_prog, m_typeSubTable, typeName);
+  const auto type = getOrInstType(m_context, m_typeSubTable, n.getType());
   if (!type) {
-    m_diags.push_back(errUndeclaredType(m_src, typeName, n.getType().getSpan()));
+    m_context->reportDiag(
+        errUndeclaredType(m_context->getSrc(), getName(n.getType()), n.getType().getSpan()));
     return;
   }
 
   // Validate that the type is part of the union.
   if (!unionDef.hasType(*type)) {
-    m_diags.push_back(
-        errTypeNotPartOfUnion(m_src, typeName, lhsTypeDecl.getName(), n.getType().getSpan()));
+    m_context->reportDiag(errTypeNotPartOfUnion(
+        m_context->getSrc(), getName(n.getType()), lhsTypeDecl.getName(), n.getType().getSpan()));
     return;
   }
 
   if (!n.hasId()) {
-    m_expr = prog::expr::unionCheckExprNode(*m_prog, std::move(lhsExpr), *type);
+    m_expr = prog::expr::unionCheckExprNode(*m_context->getProg(), std::move(lhsExpr), *type);
     return;
   }
 
   // Validate that this expression is part of a checked context, meaning the const is only accessed
   // when the expression evaluates to 'true'.
   if (!m_checkedConstsAccess) {
-    m_diags.push_back(errUncheckedIsExpressionWithConst(m_src, n.getType().getSpan()));
+    m_context->reportDiag(
+        errUncheckedIsExpressionWithConst(m_context->getSrc(), n.getType().getSpan()));
     return;
   }
 
   // Declare the const.
   const auto constId = declareConst(n.getId(), *type);
   if (constId) {
-    m_expr = prog::expr::unionGetExprNode(*m_prog, std::move(lhsExpr), *m_consts, *constId);
+    m_expr = prog::expr::unionGetExprNode(
+        *m_context->getProg(), std::move(lhsExpr), *m_consts, *constId);
   }
 }
 
@@ -332,24 +297,24 @@ auto GetExpr::visit(const parse::LitExprNode& n) -> void {
   switch (n.getVal().getKind()) {
   case lex::TokenKind::LitInt:
     m_expr = prog::expr::litIntNode(
-        *m_prog, n.getVal().getPayload<lex::LitIntTokenPayload>()->getValue());
+        *m_context->getProg(), n.getVal().getPayload<lex::LitIntTokenPayload>()->getValue());
     return;
   case lex::TokenKind::LitFloat:
     m_expr = prog::expr::litFloatNode(
-        *m_prog, n.getVal().getPayload<lex::LitFloatTokenPayload>()->getValue());
+        *m_context->getProg(), n.getVal().getPayload<lex::LitFloatTokenPayload>()->getValue());
     return;
   case lex::TokenKind::LitBool:
     m_expr = prog::expr::litBoolNode(
-        *m_prog, n.getVal().getPayload<lex::LitBoolTokenPayload>()->getValue());
+        *m_context->getProg(), n.getVal().getPayload<lex::LitBoolTokenPayload>()->getValue());
     return;
   case lex::TokenKind::LitString:
     m_expr = prog::expr::litStringNode(
-        *m_prog, n.getVal().getPayload<lex::LitStringTokenPayload>()->getValue());
+        *m_context->getProg(), n.getVal().getPayload<lex::LitStringTokenPayload>()->getValue());
     return;
   default:
     std::stringstream oss;
     oss << n.getVal().getKind();
-    m_diags.push_back(errUnsupportedLiteral(m_src, oss.str(), n.getSpan()));
+    m_context->reportDiag(errUnsupportedLiteral(m_context->getSrc(), oss.str(), n.getSpan()));
   }
 }
 
@@ -378,12 +343,12 @@ auto GetExpr::visit(const parse::SwitchExprNode& n) -> void {
     // be allowed to be accessed from another branch or after the switch.
     auto branchConsts = *m_visibleConsts;
     if (!isElseClause) {
-      auto condition = getSubExpr(n[i][0], &branchConsts, m_prog->getBool(), true);
+      auto condition = getSubExpr(n[i][0], &branchConsts, m_context->getProg()->getBool(), true);
       if (!condition) {
         isValid = false;
         continue;
       }
-      if (applyConversion(&condition, m_prog->getBool(), n[i][0].getSpan())) {
+      if (applyConversion(&condition, m_context->getProg()->getBool(), n[i][0].getSpan())) {
         conditions.push_back(std::move(condition));
       } else {
         isValid = false;
@@ -402,9 +367,9 @@ auto GetExpr::visit(const parse::SwitchExprNode& n) -> void {
   // If no preference is given over the desired output type then check what type the branches
   // have in common.
   if (m_typeHint.isInfer()) {
-    auto commonType = m_prog->findCommonType(branchTypes);
+    auto commonType = m_context->getProg()->findCommonType(branchTypes);
     if (!commonType) {
-      m_diags.push_back(errBranchesHaveNoCommonType(m_src, n.getSpan()));
+      m_context->reportDiag(errBranchesHaveNoCommonType(m_context->getSrc(), n.getSpan()));
       return;
     }
     m_typeHint = *commonType;
@@ -418,13 +383,14 @@ auto GetExpr::visit(const parse::SwitchExprNode& n) -> void {
   if (isValid) {
     if (!n.hasElse()) {
       if (!isExhaustive(conditions)) {
-        m_diags.push_back(errNonExhaustiveSwitchWithoutElse(m_src, n.getSpan()));
+        m_context->reportDiag(errNonExhaustiveSwitchWithoutElse(m_context->getSrc(), n.getSpan()));
         return;
       }
       // When we know the switch is exhaustive then we insert a 'else' branch that is never taken.
       branches.push_back(prog::expr::failNode(branches[0]->getType()));
     }
-    m_expr = prog::expr::switchExprNode(*m_prog, std::move(conditions), std::move(branches));
+    m_expr = prog::expr::switchExprNode(
+        *m_context->getProg(), std::move(conditions), std::move(branches));
   }
 }
 
@@ -432,7 +398,8 @@ auto GetExpr::visit(const parse::UnaryExprNode& n) -> void {
   const auto& opToken = n.getOperator();
   const auto op       = getOperator(opToken);
   if (!op) {
-    m_diags.push_back(errUnsupportedOperator(m_src, opToken.str(), opToken.getSpan()));
+    m_context->reportDiag(
+        errUnsupportedOperator(m_context->getSrc(), opToken.str(), opToken.getSpan()));
     return;
   }
 
@@ -443,16 +410,16 @@ auto GetExpr::visit(const parse::UnaryExprNode& n) -> void {
   }
 
   auto funcName = prog::getFuncName(op.value());
-  auto func     = m_prog->lookupFunc(
+  auto func     = m_context->getProg()->lookupFunc(
       prog::getFuncName(op.value()), prog::sym::TypeSet{{args[0]->getType()}}, 0);
   if (!func) {
-    const auto& typeName = getName(*m_prog, args[0]->getType());
-    m_diags.push_back(
-        errUndeclaredUnaryOperator(m_src, getText(op.value()), typeName, opToken.getSpan()));
+    const auto& typeName = getName(m_context, args[0]->getType());
+    m_context->reportDiag(errUndeclaredUnaryOperator(
+        m_context->getSrc(), getText(op.value()), typeName, opToken.getSpan()));
     return;
   }
 
-  m_expr = prog::expr::callExprNode(*m_prog, func.value(), std::move(args));
+  m_expr = prog::expr::callExprNode(*m_context->getProg(), func.value(), std::move(args));
 }
 
 auto GetExpr::visit(const parse::ExecStmtNode & /*unused*/) -> void {
@@ -476,16 +443,9 @@ auto GetExpr::getSubExpr(
     std::vector<prog::sym::ConstId>* visibleConsts,
     prog::sym::TypeId typeHint,
     bool checkedConstsAccess) -> prog::expr::NodePtr {
-  auto visitor = GetExpr{m_src,
-                         m_prog,
-                         m_funcTemplates,
-                         m_typeSubTable,
-                         m_consts,
-                         visibleConsts,
-                         typeHint,
-                         checkedConstsAccess};
+  auto visitor =
+      GetExpr{m_context, m_typeSubTable, m_consts, visibleConsts, typeHint, checkedConstsAccess};
   n.accept(&visitor);
-  m_diags.insert(m_diags.end(), visitor.getDiags().begin(), visitor.getDiags().end());
   return std::move(visitor.getValue());
 }
 
@@ -496,17 +456,17 @@ auto GetExpr::applyConversion(prog::expr::NodePtr* expr, prog::sym::TypeId toTyp
     return true;
   }
 
-  const auto conv = m_prog->lookupConversion(fromType, toType);
+  const auto conv = m_context->getProg()->lookupConversion(fromType, toType);
   if (!conv) {
-    const auto& fromName = getName(*m_prog, fromType);
-    const auto& toName   = getName(*m_prog, toType);
-    m_diags.push_back(errNoConversionFound(m_src, fromName, toName, span));
+    const auto& fromName = getName(m_context, fromType);
+    const auto& toName   = getName(m_context, toType);
+    m_context->reportDiag(errNoConversionFound(m_context->getSrc(), fromName, toName, span));
     return false;
   }
 
   auto convArgs = std::vector<prog::expr::NodePtr>{};
   convArgs.push_back(std::move(*expr));
-  *expr = prog::expr::callExprNode(*m_prog, *conv, std::move(convArgs));
+  *expr = prog::expr::callExprNode(*m_context->getProg(), *conv, std::move(convArgs));
   return true;
 }
 
@@ -517,17 +477,17 @@ auto GetExpr::getBinLogicOpExpr(const parse::BinaryExprNode& n, BinLogicOp op)
   // 'And' has checked consts for the lhs, meaning the constants the lhs declares are only accessed
   // when the lhs expression evaluates to 'true'.
   auto checkedConsts = op == BinLogicOp::And;
-  auto lhs           = getSubExpr(n[0], m_visibleConsts, m_prog->getBool(), checkedConsts);
+  auto lhs = getSubExpr(n[0], m_visibleConsts, m_context->getProg()->getBool(), checkedConsts);
 
   // Because the rhs might not get executed the constants it declares are not visible outside.
   auto rhsVisibleConsts = *m_visibleConsts;
-  auto rhs              = getSubExpr(n[1], &rhsVisibleConsts, m_prog->getBool());
+  auto rhs              = getSubExpr(n[1], &rhsVisibleConsts, m_context->getProg()->getBool());
   if (!lhs || !rhs) {
     return nullptr;
   }
 
-  isValid &= applyConversion(&lhs, m_prog->getBool(), n[0].getSpan());
-  isValid &= applyConversion(&rhs, m_prog->getBool(), n[1].getSpan());
+  isValid &= applyConversion(&lhs, m_context->getProg()->getBool(), n[0].getSpan());
+  isValid &= applyConversion(&rhs, m_context->getProg()->getBool(), n[1].getSpan());
 
   if (isValid) {
     auto conditions = std::vector<prog::expr::NodePtr>{};
@@ -537,22 +497,22 @@ auto GetExpr::getBinLogicOpExpr(const parse::BinaryExprNode& n, BinLogicOp op)
     switch (op) {
     case BinLogicOp::And:
       branches.push_back(std::move(rhs));
-      branches.push_back(prog::expr::litBoolNode(*m_prog, false));
+      branches.push_back(prog::expr::litBoolNode(*m_context->getProg(), false));
       break;
     case BinLogicOp::Or:
-      branches.push_back(prog::expr::litBoolNode(*m_prog, true));
+      branches.push_back(prog::expr::litBoolNode(*m_context->getProg(), true));
       branches.push_back(std::move(rhs));
     }
 
-    return prog::expr::switchExprNode(*m_prog, std::move(conditions), std::move(branches));
+    return prog::expr::switchExprNode(
+        *m_context->getProg(), std::move(conditions), std::move(branches));
   }
   return nullptr;
 }
 
 auto GetExpr::declareConst(const lex::Token& nameToken, prog::sym::TypeId type)
     -> std::optional<prog::sym::ConstId> {
-  const auto constName =
-      getConstName(m_src, *m_prog, m_typeSubTable, *m_consts, nameToken, &m_diags);
+  const auto constName = getConstName(m_context, m_typeSubTable, *m_consts, nameToken);
   if (!constName) {
     return std::nullopt;
   }
@@ -563,11 +523,56 @@ auto GetExpr::declareConst(const lex::Token& nameToken, prog::sym::TypeId type)
 
 auto GetExpr::isExhaustive(const std::vector<prog::expr::NodePtr>& conditions) const -> bool {
   // Note: At the moment only union exhaustiveness check is implemented.
-  auto checkUnion = CheckUnionExhaustiveness{*m_prog};
+  auto checkUnion = CheckUnionExhaustiveness{*m_context};
   for (const auto& cond : conditions) {
     cond->accept(&checkUnion);
   }
   return checkUnion.isExhaustive();
+}
+
+auto GetExpr::isType(const std::string& name) const -> bool {
+  return m_context->getProg()->lookupType(name) || m_context->getTypeTemplates()->hasType(name);
+}
+
+auto GetExpr::getFunctions(const parse::CallExprNode& n) -> std::vector<prog::sym::FuncId> {
+  const auto funcName = getName(n.getFunc());
+  auto result         = m_context->getProg()->lookupFuncs(funcName);
+  auto isValid        = true;
+
+  // Check if this is a call to a constructor / conversion function.
+  if (isType(funcName)) {
+    // Treat this function name (including type parameters) as a type reference.
+    const auto isTemplType          = m_context->getTypeTemplates()->hasType(funcName);
+    const auto synthesisedParseType = (isTemplType && n.getTypeParams())
+        ? parse::Type{n.getFunc(), *n.getTypeParams()}
+        : parse::Type{n.getFunc()};
+    const auto type = getOrInstType(m_context, m_typeSubTable, synthesisedParseType);
+    if (type) {
+      const auto typeName = getName(m_context, *type);
+      const auto funcs    = m_context->getProg()->lookupFuncs(typeName);
+      result.insert(result.end(), funcs.begin(), funcs.end());
+    }
+  }
+
+  if (n.getTypeParams()) {
+    // If this is a template call then instantiate the templates.
+    auto typeParams = getTypeSet(m_context, m_typeSubTable, n.getTypeParams()->getTypes());
+    if (!typeParams) {
+      assert(m_context->hasErrors());
+      return {};
+    }
+    const auto instantiations = m_context->getFuncTemplates()->instantiate(funcName, *typeParams);
+    for (const auto& inst : instantiations) {
+      if (m_context->hasErrors()) {
+        m_context->reportDiag(errInvalidFuncInstantiation(m_context->getSrc(), n.getSpan()));
+        isValid = false;
+      } else {
+        result.push_back(*inst->getFunc());
+      }
+    }
+  }
+
+  return isValid ? result : std::vector<prog::sym::FuncId>{};
 }
 
 } // namespace frontend::internal

@@ -1,6 +1,7 @@
 #include "catch2/catch.hpp"
 #include "frontend/diag_defs.hpp"
 #include "helpers.hpp"
+#include "prog/expr/node_const.hpp"
 #include "prog/expr/node_lit_int.hpp"
 
 namespace frontend {
@@ -29,6 +30,19 @@ TEST_CASE("Analyzing user-function definitions", "[frontend]") {
         *applyConv(output, "int", "string", prog::expr::litIntNode(output.getProg(), 2)));
   }
 
+  SECTION("Define templated function") {
+    const auto& output = ANALYZE("fun f{T}(T a) -> T a "
+                                 "fun f1() f{int}(42)");
+    REQUIRE(output.isSuccess());
+    const auto& funcDef = GET_FUNC_DEF(output, "f__int", GET_TYPE_ID(output, "int"));
+    const auto& consts  = funcDef.getConsts();
+    auto a              = consts.lookup("a");
+    REQUIRE(a);
+    CHECK(consts[a.value()].getKind() == prog::sym::ConstKind::Input);
+    CHECK(consts[a.value()].getType() == GET_TYPE_ID(output, "int"));
+    CHECK(funcDef.getExpr() == *prog::expr::constExprNode(consts, *a));
+  }
+
   SECTION("Diagnostics") {
     CHECK_DIAG(
         "fun f() -> int true",
@@ -46,27 +60,27 @@ TEST_CASE("Analyzing user-function definitions", "[frontend]") {
         "fun f(int a, int a) -> int true",
         errConstNameConflictsWithConst(src, "a", input::Span{17, 17}));
     CHECK_DIAG(
-        "fun f2() -> int f{int}(1)", errUndeclaredFuncTemplate(src, "f", 1, input::Span{16, 16}));
+        "fun f2() -> int f{int}(1)", errUndeclaredFunc(src, "f", {"int"}, input::Span{16, 24}));
     CHECK_DIAG(
         "fun f{T}(T t) t "
         "fun f2() -> int f{int, float}(1)",
-        errUndeclaredFuncTemplate(src, "f", 2, input::Span{32, 32}));
+        errUndeclaredFunc(src, "f", {"int"}, input::Span{32, 47}));
     CHECK_DIAG(
         "fun f{T}(T T) -> T T "
         "fun f2() -> int f{int}(1)",
-        errInvalidFuncInstantiation(src, input::Span{37, 45}),
-        errConstNameConflictsWithTypeSubstitution(src, "T", input::Span{11, 11}));
+        errConstNameConflictsWithTypeSubstitution(src, "T", input::Span{11, 11}),
+        errInvalidFuncInstantiation(src, input::Span{37, 45}));
     CHECK_DIAG(
         "fun f{T}(T T) -> T T "
         "fun f2() f{int}(1)",
-        errInvalidFuncInstantiation(src, input::Span{30, 38}),
-        errConstNameConflictsWithTypeSubstitution(src, "T", input::Span{11, 11}));
+        errConstNameConflictsWithTypeSubstitution(src, "T", input::Span{11, 11}),
+        errInvalidFuncInstantiation(src, input::Span{30, 38}));
     CHECK_DIAG(
         "fun f{T}(T i) -> T "
         "  T = i * 2; i "
         "fun f2() -> int f{int}(1)",
-        errInvalidFuncInstantiation(src, input::Span{50, 58}),
-        errConstNameConflictsWithTypeSubstitution(src, "T", input::Span{21, 21}));
+        errConstNameConflictsWithTypeSubstitution(src, "T", input::Span{21, 21}),
+        errInvalidFuncInstantiation(src, input::Span{50, 58}));
   }
 }
 

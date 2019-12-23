@@ -23,6 +23,8 @@ public:
 
   [[nodiscard]] auto operator[](sym::TypeId id) const -> const typeDef&;
 
+  [[nodiscard]] auto hasDef(sym::TypeId id) const -> bool;
+
   [[nodiscard]] auto begin() const -> iterator;
   [[nodiscard]] auto end() const -> iterator;
 

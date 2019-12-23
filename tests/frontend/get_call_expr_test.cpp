@@ -56,6 +56,21 @@ TEST_CASE("Analyzing call expressions", "[frontend]") {
             std::move(args)));
   }
 
+  SECTION("Get templated call") {
+    const auto& output = ANALYZE("fun f1{T}(T t) -> T t "
+                                 "fun f2() -> int f1{int}(1)");
+    REQUIRE(output.isSuccess());
+
+    auto args = std::vector<prog::expr::NodePtr>{};
+    args.push_back(prog::expr::litIntNode(output.getProg(), 1));
+    CHECK(
+        GET_FUNC_DEF(output, "f2").getExpr() ==
+        *prog::expr::callExprNode(
+            output.getProg(),
+            GET_FUNC_ID(output, "f1__int", GET_TYPE_ID(output, "int")),
+            std::move(args)));
+  }
+
   SECTION("Diagnostics") {
     CHECK_DIAG(
         "fun f1() -> int 1 "

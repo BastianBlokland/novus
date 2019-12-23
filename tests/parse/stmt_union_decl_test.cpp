@@ -9,23 +9,65 @@ TEST_CASE("Parsing union declaration statements", "[parse]") {
 
   CHECK_STMT(
       "union u = int, float",
-      unionDeclStmtNode(UNION, ID("u"), EQ, {ID("int"), ID("float")}, COMMAS(1)));
+      unionDeclStmtNode(UNION, ID("u"), std::nullopt, EQ, {TYPE("int"), TYPE("float")}, COMMAS(1)));
   CHECK_STMT(
       "union u = int, float, bool",
-      unionDeclStmtNode(UNION, ID("u"), EQ, {ID("int"), ID("float"), ID("bool")}, COMMAS(2)));
+      unionDeclStmtNode(
+          UNION, ID("u"), std::nullopt, EQ, {TYPE("int"), TYPE("float"), TYPE("bool")}, COMMAS(2)));
+  CHECK_STMT(
+      "union u{T, U} = T, U",
+      unionDeclStmtNode(
+          UNION,
+          ID("u"),
+          TypeSubstitutionList{OCURLY, {ID("T"), ID("U")}, COMMAS(1), CCURLY},
+          EQ,
+          {TYPE("T"), TYPE("U")},
+          COMMAS(1)));
+  CHECK_STMT(
+      "union u{T, U} = List{T{U}}, U",
+      unionDeclStmtNode(
+          UNION,
+          ID("u"),
+          TypeSubstitutionList{OCURLY, {ID("T"), ID("U")}, COMMAS(1), CCURLY},
+          EQ,
+          {TYPE("List", TYPE("T", TYPE("U"))), TYPE("U")},
+          COMMAS(1)));
 
   SECTION("Errors") {
-    CHECK_STMT("union u =", errInvalidStmtUnionDecl(UNION, ID("u"), EQ, {}, COMMAS(0)));
     CHECK_STMT(
-        "union u = int", errInvalidStmtUnionDecl(UNION, ID("u"), EQ, {ID("int")}, COMMAS(0)));
+        "union u =", errInvalidStmtUnionDecl(UNION, ID("u"), std::nullopt, EQ, {}, COMMAS(0)));
     CHECK_STMT(
-        "union u = int,", errInvalidStmtUnionDecl(UNION, ID("u"), EQ, {ID("int")}, COMMAS(1)));
+        "union u = int",
+        errInvalidStmtUnionDecl(UNION, ID("u"), std::nullopt, EQ, {TYPE("int")}, COMMAS(0)));
+    CHECK_STMT(
+        "union u = int,",
+        errInvalidStmtUnionDecl(UNION, ID("u"), std::nullopt, EQ, {TYPE("int")}, COMMAS(1)));
     CHECK_STMT(
         "union fun = int, float",
-        errInvalidStmtUnionDecl(UNION, FUN, EQ, {ID("int"), ID("float")}, COMMAS(1)));
+        errInvalidStmtUnionDecl(
+            UNION, FUN, std::nullopt, EQ, {TYPE("int"), TYPE("float")}, COMMAS(1)));
     CHECK_STMT(
         "union u fun int, float",
-        errInvalidStmtUnionDecl(UNION, ID("u"), FUN, {ID("int"), ID("float")}, COMMAS(1)));
+        errInvalidStmtUnionDecl(
+            UNION, ID("u"), std::nullopt, FUN, {TYPE("int"), TYPE("float")}, COMMAS(1)));
+    CHECK_STMT(
+        "union u{} = int, float",
+        errInvalidStmtUnionDecl(
+            UNION,
+            ID("u"),
+            TypeSubstitutionList{OCURLY, {}, COMMAS(0), CCURLY},
+            EQ,
+            {TYPE("int"), TYPE("float")},
+            COMMAS(1)));
+    CHECK_STMT(
+        "union u{T, U} = T{}, U",
+        errInvalidStmtUnionDecl(
+            UNION,
+            ID("u"),
+            TypeSubstitutionList{OCURLY, {ID("T"), ID("U")}, COMMAS(1), CCURLY},
+            EQ,
+            {Type(ID("T"), TypeParamList(OCURLY, {}, {}, CCURLY)), TYPE("U")},
+            COMMAS(1)));
   }
 
   SECTION("Spans") {
