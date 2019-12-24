@@ -474,14 +474,22 @@ auto GetExpr::getBinLogicOpExpr(const parse::BinaryExprNode& n, BinLogicOp op)
     -> prog::expr::NodePtr {
   auto isValid = true;
 
-  // 'And' has checked consts for the lhs, meaning the constants the lhs declares are only accessed
-  // when the lhs expression evaluates to 'true'.
-  auto checkedConsts = op == BinLogicOp::And;
-  auto lhs = getSubExpr(n[0], m_visibleConsts, m_context->getProg()->getBool(), checkedConsts);
+  // 'And' has checked constants, meaning the constants that are declared are only accessed
+  // when the expressions evaluate to 'true'.
+  auto lhsCheckedConsts = op == BinLogicOp::And;
+  auto lhs = getSubExpr(n[0], m_visibleConsts, m_context->getProg()->getBool(), lhsCheckedConsts);
 
-  // Because the rhs might not get executed the constants it declares are not visible outside.
-  auto rhsVisibleConsts = *m_visibleConsts;
-  auto rhs              = getSubExpr(n[1], &rhsVisibleConsts, m_context->getProg()->getBool());
+  // Rhs might not get executed, so we only expose constants when 'checkedConstsAccess' is 'true'
+  // for this expression (meaning that the constants are only observed when both lfs and rhs
+  // evaluate to 'true')
+  auto rhsConstantsCopy = m_checkedConstsAccess
+      ? nullptr
+      : std::make_unique<std::vector<prog::sym::ConstId>>(*m_visibleConsts);
+  auto rhs = getSubExpr(
+      n[1],
+      rhsConstantsCopy ? rhsConstantsCopy.get() : m_visibleConsts,
+      m_context->getProg()->getBool(),
+      m_checkedConstsAccess && op == BinLogicOp::And);
   if (!lhs || !rhs) {
     return nullptr;
   }
