@@ -6,6 +6,7 @@
 #include "prog/expr/node_lit_bool.hpp"
 #include "prog/expr/node_lit_int.hpp"
 #include "prog/expr/node_switch.hpp"
+#include "prog/expr/node_union_get.hpp"
 #include "prog/operator.hpp"
 
 namespace frontend {
@@ -117,6 +118,46 @@ TEST_CASE("Analyzing binary expressions", "[frontend]") {
     CHECK(
         funcDef.getExpr() ==
         *prog::expr::switchExprNode(output.getProg(), std::move(conditions), std::move(branches)));
+  }
+
+  SECTION("Chain 'is' checks with binary 'and' in switch") {
+    const auto& output = ANALYZE("struct Null "
+                                 "union Option = int, Null "
+                                 "fun f(Option a, Option b) "
+                                 "  if a is int aVal && b is int bVal -> bVal "
+                                 "  else                              -> 0");
+    REQUIRE(output.isSuccess());
+    const auto& funcDef =
+        GET_FUNC_DEF(output, "f", GET_TYPE_ID(output, "Option"), GET_TYPE_ID(output, "Option"));
+    const auto& consts = funcDef.getConsts();
+
+    auto andConditions = std::vector<prog::expr::NodePtr>{};
+    andConditions.push_back(prog::expr::unionGetExprNode(
+        output.getProg(),
+        prog::expr::constExprNode(consts, *consts.lookup("a")),
+        consts,
+        *consts.lookup("aVal")));
+
+    auto andBranches = std::vector<prog::expr::NodePtr>{};
+    andBranches.push_back(prog::expr::unionGetExprNode(
+        output.getProg(),
+        prog::expr::constExprNode(consts, *consts.lookup("b")),
+        consts,
+        *consts.lookup("bVal")));
+    andBranches.push_back(prog::expr::litBoolNode(output.getProg(), false));
+
+    auto switchConditions = std::vector<prog::expr::NodePtr>{};
+    switchConditions.push_back(prog::expr::switchExprNode(
+        output.getProg(), std::move(andConditions), std::move(andBranches)));
+
+    auto switchBranches = std::vector<prog::expr::NodePtr>{};
+    switchBranches.push_back(prog::expr::constExprNode(consts, consts.lookup("bVal").value()));
+    switchBranches.push_back(prog::expr::litIntNode(output.getProg(), 0));
+
+    CHECK(
+        funcDef.getExpr() ==
+        *prog::expr::switchExprNode(
+            output.getProg(), std::move(switchConditions), std::move(switchBranches)));
   }
 
   SECTION("Get logic 'or' expression") {
