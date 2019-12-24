@@ -44,6 +44,11 @@ enum class FuncKind {
   ConvFloatString,
   ConvBoolString,
 
+  DefInt,
+  DefFloat,
+  DefBool,
+  DefString,
+
   MakeStruct,
   MakeUnion,
 

@@ -246,6 +246,15 @@ TEST_CASE("Generate assembly for call expressions", "[backend]") {
     });
   }
 
+  SECTION("Default constructors") {
+    CHECK_EXPR_INT("int()", [](backend::Builder* builder) -> void { builder->addLoadLitInt(0); });
+    CHECK_EXPR_FLOAT(
+        "float()", [](backend::Builder* builder) -> void { builder->addLoadLitFloat(.0); });
+    CHECK_EXPR_BOOL("bool()", [](backend::Builder* builder) -> void { builder->addLoadLitInt(0); });
+    CHECK_EXPR_STRING(
+        "string()", [](backend::Builder* builder) -> void { builder->addLoadLitString(""); });
+  }
+
   SECTION("User functions") {
     CHECK_PROG(
         "fun test(int a, int b) -> int a + b "
