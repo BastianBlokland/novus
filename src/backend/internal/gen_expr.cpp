@@ -189,6 +189,19 @@ auto GenExpr::visit(const prog::expr::CallExprNode& n) -> void {
     m_builder->addConvBoolString();
     break;
 
+  case prog::sym::FuncKind::DefInt:
+    m_builder->addLoadLitInt(0);
+    break;
+  case prog::sym::FuncKind::DefFloat:
+    m_builder->addLoadLitFloat(.0);
+    break;
+  case prog::sym::FuncKind::DefBool:
+    m_builder->addLoadLitInt(0);
+    break;
+  case prog::sym::FuncKind::DefString:
+    m_builder->addLoadLitString("");
+    break;
+
   case prog::sym::FuncKind::MakeStruct: {
     auto fieldCount = n.getChildCount();
     if (fieldCount == 0U) {

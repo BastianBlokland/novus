@@ -99,6 +99,12 @@ Program::Program() :
   m_funcDecls.registerFunc(
       *this, fk::CheckNEqString, getFuncName(op::BangEq), sym::TypeSet{m_string, m_string}, m_bool);
 
+  // Register build-in default constructors.
+  m_funcDecls.registerFunc(*this, fk::DefInt, "int", sym::TypeSet{}, m_int);
+  m_funcDecls.registerFunc(*this, fk::DefFloat, "float", sym::TypeSet{}, m_float);
+  m_funcDecls.registerFunc(*this, fk::DefBool, "bool", sym::TypeSet{}, m_bool);
+  m_funcDecls.registerFunc(*this, fk::DefString, "string", sym::TypeSet{}, m_string);
+
   // Register build-in implicit conversions.
   m_funcDecls.registerFunc(*this, fk::ConvIntFloat, "float", sym::TypeSet{m_int}, m_float);
   m_funcDecls.registerFunc(*this, fk::ConvIntString, "string", sym::TypeSet{m_int}, m_string);
