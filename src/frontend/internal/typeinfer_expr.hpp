@@ -43,7 +43,7 @@ private:
   prog::sym::TypeId m_type;
 
   auto inferSubExpr(const parse::Node& n) -> prog::sym::TypeId;
-  auto inferFuncCall(const std::string& funcName, std::vector<prog::sym::TypeId> argTypes)
+  auto inferFuncCall(const std::string& funcName, const prog::sym::TypeSet& argTypes)
       -> prog::sym::TypeId;
 
   auto setConstType(const lex::Token& constId, prog::sym::TypeId type) -> void;

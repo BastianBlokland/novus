@@ -70,7 +70,16 @@ private:
 
   [[nodiscard]] auto isType(const std::string& name) const -> bool;
 
-  [[nodiscard]] auto getFunctions(const parse::CallExprNode& n) -> std::vector<prog::sym::FuncId>;
+  [[nodiscard]] auto getFunctionsInclConversions(
+      const lex::Token& nameToken,
+      const std::optional<parse::TypeParamList>& typeParams,
+      const prog::sym::TypeSet& argTypes) -> std::vector<prog::sym::FuncId>;
+
+  [[nodiscard]] auto getFunctions(
+      const std::string& funcName,
+      const std::optional<parse::TypeParamList>& typeParams,
+      const prog::sym::TypeSet& argTypes,
+      input::Span span) -> std::vector<prog::sym::FuncId>;
 };
 
 } // namespace frontend::internal

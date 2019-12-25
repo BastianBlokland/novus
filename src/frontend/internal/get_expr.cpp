@@ -70,11 +70,11 @@ auto GetExpr::visit(const parse::BinaryExprNode& n) -> void {
     return;
   }
 
-  auto funcName = prog::getFuncName(op.value());
-  auto func     = m_context->getProg()->lookupFunc(
-      prog::getFuncName(op.value()),
-      prog::sym::TypeSet{{args[0]->getType(), args[1]->getType()}},
-      1);
+  const auto argTypeSet = prog::sym::TypeSet{{args[0]->getType(), args[1]->getType()}};
+  const auto funcName   = prog::getFuncName(op.value());
+  const auto possibleFuncs =
+      getFunctions(funcName, std::nullopt, argTypeSet, n.getOperator().getSpan());
+  const auto func = m_context->getProg()->lookupFunc(possibleFuncs, argTypeSet, 1);
   if (!func) {
     const auto& lhsTypeName = getName(m_context, args[0]->getType());
     const auto& rhsTypeName = getName(m_context, args[1]->getType());
@@ -106,16 +106,17 @@ auto GetExpr::visit(const parse::CallExprNode& n) -> void {
     return;
   }
 
-  auto possibleFuncs = getFunctions(n);
+  const auto argTypeSet = prog::sym::TypeSet{std::move(argTypes)};
+  const auto possibleFuncs =
+      getFunctionsInclConversions(n.getFunc(), n.getTypeParams(), argTypeSet);
   if (m_context->hasErrors()) {
     return;
   }
 
-  const auto func =
-      m_context->getProg()->lookupFunc(possibleFuncs, prog::sym::TypeSet{argTypes}, -1);
+  const auto func = m_context->getProg()->lookupFunc(possibleFuncs, argTypeSet, -1);
   if (!func) {
     auto argTypeNames = std::vector<std::string>{};
-    for (const auto& argType : argTypes) {
+    for (const auto& argType : argTypeSet) {
       argTypeNames.push_back(getName(m_context, argType));
     }
     m_context->reportDiag(
@@ -409,9 +410,11 @@ auto GetExpr::visit(const parse::UnaryExprNode& n) -> void {
     return;
   }
 
-  auto funcName = prog::getFuncName(op.value());
-  auto func     = m_context->getProg()->lookupFunc(
-      prog::getFuncName(op.value()), prog::sym::TypeSet{{args[0]->getType()}}, 0);
+  const auto argTypes = prog::sym::TypeSet{{args[0]->getType()}};
+  const auto funcName = prog::getFuncName(op.value());
+  const auto possibleFuncs =
+      getFunctions(funcName, std::nullopt, argTypes, n.getOperator().getSpan());
+  const auto func = m_context->getProg()->lookupFunc(possibleFuncs, argTypes, 0);
   if (!func) {
     const auto& typeName = getName(m_context, args[0]->getType());
     m_context->reportDiag(errUndeclaredUnaryOperator(
@@ -542,9 +545,12 @@ auto GetExpr::isType(const std::string& name) const -> bool {
   return m_context->getProg()->lookupType(name) || m_context->getTypeTemplates()->hasType(name);
 }
 
-auto GetExpr::getFunctions(const parse::CallExprNode& n) -> std::vector<prog::sym::FuncId> {
-  const auto funcName = getName(n.getFunc());
-  auto result         = m_context->getProg()->lookupFuncs(funcName);
+auto GetExpr::getFunctionsInclConversions(
+    const lex::Token& nameToken,
+    const std::optional<parse::TypeParamList>& typeParams,
+    const prog::sym::TypeSet& argTypes) -> std::vector<prog::sym::FuncId> {
+  const auto funcName = getName(nameToken);
+  auto result         = getFunctions(funcName, typeParams, argTypes, nameToken.getSpan());
   auto isValid        = true;
 
   // Check if this is a call to a constructor / conversion function.
@@ -553,10 +559,9 @@ auto GetExpr::getFunctions(const parse::CallExprNode& n) -> std::vector<prog::sy
     convType = m_typeSubTable->lookupType(funcName);
   } else if (isType(funcName)) {
     // Treat this function name (including type parameters) as a type reference.
-    const auto isTemplType          = m_context->getTypeTemplates()->hasType(funcName);
-    const auto synthesisedParseType = (isTemplType && n.getTypeParams())
-        ? parse::Type{n.getFunc(), *n.getTypeParams()}
-        : parse::Type{n.getFunc()};
+    const auto isTemplType = m_context->getTypeTemplates()->hasType(funcName);
+    const auto synthesisedParseType =
+        (isTemplType && typeParams) ? parse::Type{nameToken, *typeParams} : parse::Type{nameToken};
     convType = getOrInstType(m_context, m_typeSubTable, synthesisedParseType);
   }
   if (convType) {
@@ -565,17 +570,40 @@ auto GetExpr::getFunctions(const parse::CallExprNode& n) -> std::vector<prog::sy
     result.insert(result.end(), funcs.begin(), funcs.end());
   }
 
-  if (n.getTypeParams()) {
+  return isValid ? result : std::vector<prog::sym::FuncId>{};
+}
+
+auto GetExpr::getFunctions(
+    const std::string& funcName,
+    const std::optional<parse::TypeParamList>& typeParams,
+    const prog::sym::TypeSet& argTypes,
+    input::Span span) -> std::vector<prog::sym::FuncId> {
+  auto result  = m_context->getProg()->lookupFuncs(funcName);
+  auto isValid = true;
+
+  if (typeParams) {
     // If this is a template call then instantiate the templates.
-    auto typeParams = getTypeSet(m_context, m_typeSubTable, n.getTypeParams()->getTypes());
-    if (!typeParams) {
+    auto typeParamSet = getTypeSet(m_context, m_typeSubTable, typeParams->getTypes());
+    if (!typeParamSet) {
       assert(m_context->hasErrors());
       return {};
     }
-    const auto instantiations = m_context->getFuncTemplates()->instantiate(funcName, *typeParams);
+    const auto instantiations = m_context->getFuncTemplates()->instantiate(funcName, *typeParamSet);
     for (const auto& inst : instantiations) {
       if (m_context->hasErrors()) {
-        m_context->reportDiag(errInvalidFuncInstantiation(m_context->getSrc(), n.getSpan()));
+        m_context->reportDiag(errInvalidFuncInstantiation(m_context->getSrc(), span));
+        isValid = false;
+      } else {
+        result.push_back(*inst->getFunc());
+      }
+    }
+  } else {
+    // If no type params are given check if we can infer the type params for a function template.
+    const auto instantiations =
+        m_context->getFuncTemplates()->inferParamsAndInstantiate(funcName, argTypes);
+    for (const auto& inst : instantiations) {
+      if (m_context->hasErrors()) {
+        m_context->reportDiag(errInvalidFuncInstantiation(m_context->getSrc(), span));
         isValid = false;
       } else {
         result.push_back(*inst->getFunc());

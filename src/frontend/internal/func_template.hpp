@@ -16,10 +16,14 @@ public:
 
   [[nodiscard]] auto getTemplateName() const -> const std::string&;
   [[nodiscard]] auto getTypeParamCount() const -> unsigned int;
+  [[nodiscard]] auto getArgumentCount() const -> unsigned int;
   [[nodiscard]] auto getRetType(const prog::sym::TypeSet& typeParams)
       -> std::optional<prog::sym::TypeId>;
 
-  auto instantiate(const prog::sym::TypeSet& typeParams) -> const FuncTemplateInst*;
+  [[nodiscard]] auto inferTypeParams(const prog::sym::TypeSet& argTypes)
+      -> std::optional<prog::sym::TypeSet>;
+
+  [[nodiscard]] auto instantiate(const prog::sym::TypeSet& typeParams) -> const FuncTemplateInst*;
 
 private:
   Context* m_context;
@@ -38,6 +42,9 @@ private:
 
   [[nodiscard]] auto createSubTable(const prog::sym::TypeSet& typeParams) const
       -> TypeSubstitutionTable;
+
+  [[nodiscard]] auto inferSubType(const std::string& subType, const prog::sym::TypeSet& argTypes)
+      -> std::optional<prog::sym::TypeId>;
 };
 
 } // namespace frontend::internal

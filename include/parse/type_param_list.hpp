@@ -18,6 +18,10 @@ public:
   auto operator==(const TypeParamList& rhs) const noexcept -> bool;
   auto operator!=(const TypeParamList& rhs) const noexcept -> bool;
 
+  [[nodiscard]] auto operator[](unsigned int i) const -> const Type&;
+
+  [[nodiscard]] auto getCount() const -> unsigned int;
+
   [[nodiscard]] auto begin() const -> iterator;
   [[nodiscard]] auto end() const -> iterator;
 

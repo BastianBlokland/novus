@@ -69,18 +69,18 @@ TEST_CASE("Analyzing user-function definitions", "[frontend]") {
         "fun f{T}(T T) -> T T "
         "fun f2() -> int f{int}(1)",
         errConstNameConflictsWithTypeSubstitution(src, "T", input::Span{11, 11}),
-        errInvalidFuncInstantiation(src, input::Span{37, 45}));
+        errInvalidFuncInstantiation(src, input::Span{37, 37}));
     CHECK_DIAG(
         "fun f{T}(T T) -> T T "
         "fun f2() f{int}(1)",
         errConstNameConflictsWithTypeSubstitution(src, "T", input::Span{11, 11}),
-        errInvalidFuncInstantiation(src, input::Span{30, 38}));
+        errInvalidFuncInstantiation(src, input::Span{30, 30}));
     CHECK_DIAG(
         "fun f{T}(T i) -> T "
         "  T = i * 2; i "
         "fun f2() -> int f{int}(1)",
         errConstNameConflictsWithTypeSubstitution(src, "T", input::Span{21, 21}),
-        errInvalidFuncInstantiation(src, input::Span{50, 58}));
+        errInvalidFuncInstantiation(src, input::Span{50, 50}));
   }
 }
 
