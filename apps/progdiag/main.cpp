@@ -67,8 +67,8 @@ auto printTypeDecls(const prog::Program& prog) -> void {
 
 auto printFuncDecls(const prog::Program& prog) -> void {
   const auto idColWidth    = 10;
-  const auto nameColWidth  = 20;
-  const auto inputColWidth = 30;
+  const auto nameColWidth  = 30;
+  const auto inputColWidth = 25;
 
   std::cout << rang::style::bold << "Function declarations:\n" << rang::style::reset;
   for (auto funcItr = prog.beginFuncDecls(); funcItr != prog.endFuncDecls(); ++funcItr) {

@@ -1,3 +1,4 @@
+#include "parse/node_comment.hpp"
 #include "parse/node_error.hpp"
 #include "parse/node_expr_binary.hpp"
 #include "parse/node_expr_call.hpp"

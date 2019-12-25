@@ -39,6 +39,10 @@ GetExpr::GetExpr(
 
 auto GetExpr::getValue() -> prog::expr::NodePtr& { return m_expr; }
 
+auto GetExpr::visit(const parse::CommentNode & /*unused*/) -> void {
+  throw std::logic_error{"GetExpr is not implemented for this node type"};
+}
+
 auto GetExpr::visit(const parse::ErrorNode & /*unused*/) -> void {
   throw std::logic_error{"GetExpr is not implemented for this node type"};
 }

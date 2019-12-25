@@ -42,6 +42,7 @@ enum class TokenKind {
   LitString,
   Keyword,
   Identifier,
+  LineComment,
   Discard,
   Error
 };

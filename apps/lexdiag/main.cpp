@@ -67,6 +67,7 @@ auto getFgColor(const lex::Token& token) -> rang::fg {
   case tc::Keyword:
     return rang::fg::blue;
   case tc::Identifier:
+  case tc::Comment:
     return rang::fg::green;
   case tc::Error:
   case tc::Unknown:
@@ -84,6 +85,7 @@ auto getBgColor(const lex::Token& token) -> rang::bg {
   case tc::Literal:
   case tc::Keyword:
   case tc::Identifier:
+  case tc::Comment:
   case tc::Unknown:
     return rang::bg::reset;
   case tc::Error:

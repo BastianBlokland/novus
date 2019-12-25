@@ -52,6 +52,7 @@ add_executable(tests
   input/span_test.cpp
 
   lex/category_test.cpp
+  lex/comment_test.cpp
   lex/identifier_test.cpp
   lex/iterator_test.cpp
   lex/keyword_test.cpp
@@ -63,6 +64,7 @@ add_executable(tests
   lex/seperators_test.cpp
   lex/utilities_test.cpp
 
+  parse/comment_test.cpp
   parse/error_test.cpp
   parse/expr_binary_test.cpp
   parse/expr_call_test.cpp

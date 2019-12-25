@@ -10,6 +10,11 @@ public:
 
   [[nodiscard]] auto getBgColor() const noexcept -> rang::bg { return m_bg; }
 
+  auto visit(const parse::CommentNode & /*unused*/) -> void override {
+    m_fg = rang::fg::green;
+    m_bg = rang::bg::reset;
+  }
+
   auto visit(const parse::ErrorNode & /*unused*/) -> void override {
     m_fg = rang::fg::reset;
     m_bg = rang::bg::red;
