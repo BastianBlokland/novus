@@ -30,6 +30,10 @@ auto ParserImpl::nextStmt() -> NodePtr {
     }
   }
 
+  if (peekToken(0).getKind() == lex::TokenKind::LineComment) {
+    return nextComment();
+  }
+
   return nextStmtExec();
 }
 
@@ -39,6 +43,8 @@ auto ParserImpl::nextExpr() -> NodePtr {
   }
   return nextExpr(0);
 }
+
+auto ParserImpl::nextComment() -> NodePtr { return commentNode(consumeToken()); }
 
 auto ParserImpl::nextStmtFuncDecl() -> NodePtr {
   auto kw       = consumeToken();

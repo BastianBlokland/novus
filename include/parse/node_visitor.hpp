@@ -2,6 +2,7 @@
 
 namespace parse {
 
+class CommentNode;
 class ErrorNode;
 class BinaryExprNode;
 class CallExprNode;
@@ -25,6 +26,7 @@ class UnionDeclStmtNode;
 
 class NodeVisitor {
 public:
+  virtual auto visit(const CommentNode& n) -> void         = 0;
   virtual auto visit(const ErrorNode& n) -> void           = 0;
   virtual auto visit(const BinaryExprNode& n) -> void      = 0;
   virtual auto visit(const CallExprNode& n) -> void        = 0;

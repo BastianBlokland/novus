@@ -15,6 +15,7 @@ public:
 
   [[nodiscard]] auto getInferredType() const noexcept -> prog::sym::TypeId;
 
+  auto visit(const parse::CommentNode& n) -> void override;
   auto visit(const parse::ErrorNode& n) -> void override;
   auto visit(const parse::BinaryExprNode& n) -> void override;
   auto visit(const parse::CallExprNode& n) -> void override;

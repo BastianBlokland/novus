@@ -21,6 +21,7 @@ protected:
 private:
   std::deque<lex::Token> m_readBuffer;
 
+  auto nextComment() -> NodePtr;
   auto nextStmtFuncDecl() -> NodePtr;
   auto nextStmtStructDecl() -> NodePtr;
   auto nextStmtUnionDecl() -> NodePtr;

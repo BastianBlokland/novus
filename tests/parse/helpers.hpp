@@ -54,6 +54,7 @@ namespace parse {
 #define END lex::endToken()
 
 #define ID(ID) lex::identiferToken(ID)
+#define COMMENT(MSG) lex::lineCommentToken(MSG)
 #define TYPE(NAME, ...)                                                                            \
   NUM_ARGS(__VA_ARGS__) == 0                                                                       \
       ? Type(ID(NAME))                                                                             \

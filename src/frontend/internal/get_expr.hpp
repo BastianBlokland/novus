@@ -19,6 +19,7 @@ public:
   [[nodiscard]] auto getDiags() const noexcept -> const std::vector<Diag>&;
   [[nodiscard]] auto getValue() -> prog::expr::NodePtr&;
 
+  auto visit(const parse::CommentNode& n) -> void override;
   auto visit(const parse::ErrorNode& n) -> void override;
   auto visit(const parse::BinaryExprNode& n) -> void override;
   auto visit(const parse::CallExprNode& n) -> void override;

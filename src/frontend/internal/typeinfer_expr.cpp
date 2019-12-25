@@ -23,6 +23,10 @@ TypeInferExpr::TypeInferExpr(
 
 auto TypeInferExpr::getInferredType() const noexcept -> prog::sym::TypeId { return m_type; }
 
+auto TypeInferExpr::visit(const parse::CommentNode & /*unused*/) -> void {
+  throw std::logic_error{"TypeInferExpr is not implemented for this node type"};
+}
+
 auto TypeInferExpr::visit(const parse::ErrorNode & /*unused*/) -> void {
   throw std::logic_error{"TypeInferExpr is not implemented for this node type"};
 }

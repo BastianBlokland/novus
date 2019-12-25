@@ -5,6 +5,7 @@ namespace parse {
 
 class OptionalNodeVisitor : public NodeVisitor {
 public:
+  auto visit(const CommentNode & /*unused*/) -> void override {}
   auto visit(const ErrorNode & /*unused*/) -> void override {}
   auto visit(const BinaryExprNode & /*unused*/) -> void override {}
   auto visit(const CallExprNode & /*unused*/) -> void override {}
