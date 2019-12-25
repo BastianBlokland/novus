@@ -53,6 +53,8 @@ namespace frontend::internal {
     return prog::Operator::Gt;
   case lex::TokenKind::OpGtEq:
     return prog::Operator::GtEq;
+  case lex::TokenKind::OpColonColon:
+    return prog::Operator::ColonColon;
   default:
     return std::nullopt;
   }
@@ -88,6 +90,8 @@ namespace frontend::internal {
     return ">";
   case prog::Operator::GtEq:
     return ">=";
+  case prog::Operator::ColonColon:
+    return "::";
   }
   return "__unknown";
 }

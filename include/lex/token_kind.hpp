@@ -25,6 +25,7 @@ enum class TokenKind {
   OpSemi,
   OpQMark,
   OpDot,
+  OpColonColon,
   SepOpenParen,
   SepCloseParen,
   SepOpenCurly,

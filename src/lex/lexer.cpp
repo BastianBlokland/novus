@@ -143,6 +143,10 @@ auto LexerImpl::next() -> Token {
     case ',':
       return basicToken(TokenKind::SepComma, input::Span{m_inputPos});
     case ':':
+      if (peekChar(0) == ':') {
+        consumeChar();
+        return basicToken(TokenKind::OpColonColon, input::Span{m_inputPos - 1, m_inputPos});
+      }
       return basicToken(TokenKind::SepColon, input::Span{m_inputPos});
     case ' ':
     case '\t':

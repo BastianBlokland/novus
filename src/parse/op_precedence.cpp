@@ -24,6 +24,7 @@ auto getRhsOpPrecedence(const lex::Token& token) -> int {
     return multiplicativePrecedence;
   case lex::TokenKind::OpPlus:
   case lex::TokenKind::OpMinus:
+  case lex::TokenKind::OpColonColon:
     return additivePrecedence;
   case lex::TokenKind::OpLe:
   case lex::TokenKind::OpLeEq:
@@ -48,6 +49,15 @@ auto getRhsOpPrecedence(const lex::Token& token) -> int {
     [[fallthrough]];
   default:
     return 0;
+  }
+}
+
+auto isRightAssociative(const lex::Token& token) -> bool {
+  switch (token.getKind()) {
+  case lex::TokenKind::OpColonColon:
+    return true;
+  default:
+    return false;
   }
 }
 
