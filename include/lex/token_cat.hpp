@@ -4,7 +4,7 @@
 
 namespace lex {
 
-enum class TokenCat { Operator, Seperator, Literal, Keyword, Identifier, Error, Unknown };
+enum class TokenCat { Operator, Seperator, Literal, Keyword, Identifier, Comment, Error, Unknown };
 
 auto lookupCat(TokenKind kind) -> TokenCat;
 

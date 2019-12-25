@@ -1,5 +1,6 @@
 #include "lex/token.hpp"
 #include "lex/token_payload.hpp"
+#include "lex/token_payload_comment.hpp"
 #include "lex/token_payload_error.hpp"
 #include "lex/token_payload_id.hpp"
 #include "lex/token_payload_keyword.hpp"
@@ -108,6 +109,11 @@ auto keywordToken(Keyword keyword, const input::Span span) -> Token {
 auto identiferToken(std::string id, const input::Span span) -> Token {
   return Token{
       TokenKind::Identifier, std::make_unique<IdentifierTokenPayload>(std::move(id)), span};
+}
+
+auto lineCommentToken(std::string comment, const input::Span span) -> Token {
+  return Token{
+      TokenKind::LineComment, std::make_unique<CommentTokenPayload>(std::move(comment)), span};
 }
 
 } // namespace lex

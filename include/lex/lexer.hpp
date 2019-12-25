@@ -21,6 +21,7 @@ private:
   auto nextLitNumber(char mostSignficantChar) -> Token;
   auto nextLitStr() -> Token;
   auto nextWordToken(char startingChar) -> Token;
+  auto nextLineComment() -> Token;
 
   auto consumeChar() -> char;
   auto peekChar(size_t ahead) -> char&;

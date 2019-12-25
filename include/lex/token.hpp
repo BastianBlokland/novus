@@ -71,4 +71,6 @@ auto keywordToken(Keyword keyword, input::Span span = input::Span{0}) -> Token;
 
 auto identiferToken(std::string id, input::Span span = input::Span{0}) -> Token;
 
+auto lineCommentToken(std::string comment, input::Span span = input::Span{0}) -> Token;
+
 } // namespace lex

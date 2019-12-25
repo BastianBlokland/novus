@@ -118,6 +118,9 @@ auto operator<<(std::ostream& out, const TokenKind& rhs) -> std::ostream& {
   case TokenKind::Identifier:
     out << "identifier";
     break;
+  case TokenKind::LineComment:
+    out << "line-comment";
+    break;
   case TokenKind::Error:
     out << "error";
     break;

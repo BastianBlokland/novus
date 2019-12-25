@@ -84,6 +84,9 @@ auto LexerImpl::next() -> Token {
     case '*':
       return basicToken(TokenKind::OpStar, input::Span{m_inputPos});
     case '/':
+      if (peekChar(0) == '/') {
+        return nextLineComment();
+      }
       return basicToken(TokenKind::OpSlash, input::Span{m_inputPos});
     case '%':
       return basicToken(TokenKind::OpRem, input::Span{m_inputPos});
@@ -340,6 +343,28 @@ auto LexerImpl::nextWordToken(const char startingChar) -> Token {
     return errIdentifierIllegalSequence(span);
   }
   return identiferToken(std::move(result), span);
+}
+
+auto LexerImpl::nextLineComment() -> Token {
+  // First '/' already consumed by caller.
+  const auto startPos = m_inputPos;
+  assert(peekChar(0) == '/');
+  consumeChar(); // Consume second '/'.
+
+  auto comment = std::string{};
+  while (true) {
+    const auto c = consumeChar();
+    switch (c) {
+    case '\r':
+      break;
+    case '\0':
+    case '\n':
+      return lineCommentToken(comment, input::Span{startPos, m_inputPos});
+    default:
+      comment += c;
+      break;
+    }
+  }
 }
 
 auto LexerImpl::consumeChar() -> char {

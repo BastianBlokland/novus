@@ -19,6 +19,9 @@ auto operator<<(std::ostream& out, const TokenCat& rhs) -> std::ostream& {
   case TokenCat::Identifier:
     out << "identifier";
     break;
+  case TokenCat::Comment:
+    out << "comment";
+    break;
   case TokenCat::Error:
     out << "error";
     break;
@@ -74,6 +77,8 @@ auto lookupCat(const TokenKind kind) -> TokenCat {
   case TokenKind::Identifier:
   case TokenKind::Discard:
     return TokenCat::Identifier;
+  case TokenKind::LineComment:
+    return TokenCat::Comment;
   case TokenKind::Error:
     return TokenCat::Error;
   case TokenKind::End:
