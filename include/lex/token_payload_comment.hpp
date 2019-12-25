@@ -26,7 +26,9 @@ public:
 private:
   const std::string m_comment;
 
-  auto print(std::ostream& out) const -> std::ostream& override { return out << m_comment; }
+  auto print(std::ostream& out) const -> std::ostream& override {
+    return out << '\'' << m_comment << '\'';
+  }
 };
 
 } // namespace lex
