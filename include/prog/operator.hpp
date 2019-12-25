@@ -18,6 +18,7 @@ enum class Operator {
   LeEq,
   Gt,
   GtEq,
+  ColonColon,
 };
 
 auto getFuncName(Operator op) -> std::string;

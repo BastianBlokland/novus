@@ -33,6 +33,8 @@ auto getFuncName(Operator op) -> std::string {
     return "__op_gt";
   case Operator::GtEq:
     return "__op_gteq";
+  case Operator::ColonColon:
+    return "__op_coloncolon";
   }
   throw std::invalid_argument("Unknown operator");
 }
