@@ -126,6 +126,9 @@ errUninitializedConst(const Source& src, const std::string& name, input::Span sp
     const std::vector<std::string>& argTypes,
     input::Span span) -> Diag;
 
+[[nodiscard]] auto errUndeclaredIndexOperator(
+    const Source& src, const std::vector<std::string>& argTypes, input::Span span) -> Diag;
+
 [[nodiscard]] auto errInvalidFuncInstantiation(const Source& src, input::Span span) -> Diag;
 
 [[nodiscard]] auto errUndeclaredAction(const Source& src, const std::string& name, input::Span span)

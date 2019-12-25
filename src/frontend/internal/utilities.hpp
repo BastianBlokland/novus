@@ -55,6 +55,8 @@ namespace frontend::internal {
     return prog::Operator::GtEq;
   case lex::TokenKind::OpColonColon:
     return prog::Operator::ColonColon;
+  case lex::TokenKind::OpSquareSquare:
+    return prog::Operator::SquareSquare;
   default:
     return std::nullopt;
   }
@@ -92,6 +94,8 @@ namespace frontend::internal {
     return ">=";
   case prog::Operator::ColonColon:
     return "::";
+  case prog::Operator::SquareSquare:
+    return "[]";
   }
   return "__unknown";
 }

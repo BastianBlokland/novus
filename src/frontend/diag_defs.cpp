@@ -267,6 +267,19 @@ auto errUndeclaredFunc(
   return error(src, oss.str(), span);
 }
 
+auto errUndeclaredIndexOperator(
+    const Source& src, const std::vector<std::string>& argTypes, input::Span span) -> Diag {
+  std::ostringstream oss;
+  oss << "No overload for the index operator has been declared with argument types: ";
+  for (auto i = 0U; i < argTypes.size(); ++i) {
+    if (i != 0) {
+      oss << ", ";
+    }
+    oss << '\'' << argTypes[i] << '\'';
+  }
+  return error(src, oss.str(), span);
+}
+
 auto errInvalidFuncInstantiation(const Source& src, input::Span span) -> Diag {
   std::ostringstream oss;
   oss << "One or more errors occurred in function template instantiation";

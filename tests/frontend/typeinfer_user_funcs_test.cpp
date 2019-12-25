@@ -155,6 +155,16 @@ TEST_CASE("Infer return type of user functions", "[frontend]") {
     CHECK(GET_FUNC_DECL(output, "f").getOutput() == GET_TYPE_ID(output, "s"));
   }
 
+  SECTION("Index operator") {
+    const auto& output = ANALYZE("struct s = int a "
+                                 "fun [](s a, int i) a.a + i "
+                                 "fun f(s a) a[0]");
+    REQUIRE(output.isSuccess());
+    CHECK(
+        GET_FUNC_DECL(output, "f", GET_TYPE_ID(output, "s")).getOutput() ==
+        GET_TYPE_ID(output, "int"));
+  }
+
   SECTION("Diagnostics") {
     CHECK_DIAG(
         "fun f1() f2() "

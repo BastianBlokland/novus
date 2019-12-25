@@ -52,6 +52,9 @@ private:
 
   prog::expr::NodePtr m_expr;
 
+  [[nodiscard]] auto getChildExprs(const parse::Node& n)
+      -> std::optional<std::pair<std::vector<prog::expr::NodePtr>, prog::sym::TypeSet>>;
+
   [[nodiscard]] auto getSubExpr(
       const parse::Node& n,
       std::vector<prog::sym::ConstId>* visibleConsts,
