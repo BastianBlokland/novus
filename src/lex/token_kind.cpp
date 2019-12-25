@@ -64,6 +64,9 @@ auto operator<<(std::ostream& out, const TokenKind& rhs) -> std::ostream& {
   case TokenKind::OpDot:
     out << "dot";
     break;
+  case TokenKind::OpColonColon:
+    out << "coloncolon";
+    break;
   case TokenKind::SepOpenParen:
     out << "open-paren";
     break;
