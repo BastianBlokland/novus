@@ -223,6 +223,9 @@ auto ParserImpl::nextExpr(const int minPrecedence) -> NodePtr {
     case lex::TokenKind::OpDot:
       lhs = nextExprField(std::move(lhs));
       break;
+    case lex::TokenKind::SepOpenSquare:
+      lhs = nextExprIndex(std::move(lhs));
+      break;
     case lex::TokenKind::Keyword:
       if (getKw(nextToken) == lex::Keyword::Is) {
         lhs = nextExprIs(std::move(lhs));
@@ -341,6 +344,26 @@ auto ParserImpl::nextExprCall(lex::Token id) -> NodePtr {
   }
   return errInvalidCallExpr(
       std::move(id), std::move(typeParams), open, std::move(args), std::move(commas), close);
+}
+
+auto ParserImpl::nextExprIndex(NodePtr lhs) -> NodePtr {
+  auto open   = consumeToken();
+  auto args   = std::vector<NodePtr>{};
+  auto commas = std::vector<lex::Token>{};
+  while (peekToken(0).getKind() != lex::TokenKind::SepCloseSquare && !peekToken(0).isEnd()) {
+    args.push_back(nextExpr(0));
+    if (peekToken(0).getKind() == lex::TokenKind::SepComma) {
+      commas.push_back(consumeToken());
+    }
+  }
+  auto close = consumeToken();
+
+  if (open.getKind() == lex::TokenKind::SepOpenSquare &&
+      close.getKind() == lex::TokenKind::SepCloseSquare && !args.empty() &&
+      commas.size() == args.size() - 1) {
+    return indexExprNode(std::move(lhs), open, std::move(args), std::move(commas), close);
+  }
+  return errInvalidIndexExpr(std::move(lhs), open, std::move(args), std::move(commas), close);
 }
 
 auto ParserImpl::nextExprConditional(NodePtr condExpr) -> NodePtr {

@@ -50,6 +50,11 @@ public:
     m_bg = rang::bg::reset;
   }
 
+  auto visit(const parse::IndexExprNode & /*unused*/) -> void override {
+    m_fg = rang::fg::magenta;
+    m_bg = rang::bg::reset;
+  }
+
   auto visit(const parse::IsExprNode & /*unused*/) -> void override {
     m_fg = rang::fg::yellow;
     m_bg = rang::bg::reset;

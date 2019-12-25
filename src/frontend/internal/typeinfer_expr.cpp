@@ -157,6 +157,10 @@ auto TypeInferExpr::visit(const parse::GroupExprNode& n) -> void {
   }
 }
 
+auto TypeInferExpr::visit(const parse::IndexExprNode & /*unused*/) -> void {
+  throw std::logic_error{"TypeInferExpr is not implemented for this node type"};
+}
+
 auto TypeInferExpr::visit(const parse::IsExprNode& n) -> void {
   // Register the type of the constant this declares.
   const auto constType = getOrInstType(m_context, m_typeSubTable, n.getType());

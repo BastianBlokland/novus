@@ -243,6 +243,10 @@ auto GetExpr::visit(const parse::GroupExprNode& n) -> void {
   }
 }
 
+auto GetExpr::visit(const parse::IndexExprNode & /*unused*/) -> void {
+  throw std::logic_error{"GetExpr is not implemented for this node type"};
+}
+
 auto GetExpr::visit(const parse::IsExprNode& n) -> void {
   auto lhsExpr = getSubExpr(n[0], m_visibleConsts, prog::sym::TypeId::inferType());
   if (lhsExpr == nullptr) {
