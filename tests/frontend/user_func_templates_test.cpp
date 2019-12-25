@@ -132,6 +132,53 @@ TEST_CASE("Analyzing user-function templates", "[frontend]") {
             GET_FUNC_ID(output, "s", GET_TYPE_ID(output, "int")),
             std::move(fArgs)));
   }
+
+  SECTION("Infer type-parameter in templated call") {
+    const auto& output = ANALYZE("fun ft{T, Y}(T a, Y b) "
+                                 "  a + b "
+                                 "fun f() ft(2, 1.0)");
+    REQUIRE(output.isSuccess());
+
+    const auto& fDef = GET_FUNC_DEF(output, "f");
+    auto fArgs       = std::vector<prog::expr::NodePtr>{};
+    fArgs.push_back(prog::expr::litIntNode(output.getProg(), 2));
+    fArgs.push_back(prog::expr::litFloatNode(output.getProg(), 1.0));
+    CHECK(
+        fDef.getExpr() ==
+        *prog::expr::callExprNode(
+            output.getProg(),
+            GET_FUNC_ID(
+                output, "ft__int_float", GET_TYPE_ID(output, "int"), GET_TYPE_ID(output, "float")),
+            std::move(fArgs)));
+  }
+
+  SECTION("Infer type-parameter in templated call") {
+    const auto& output = ANALYZE("struct Null "
+                                 "union Option{T} = T, Null "
+                                 "fun ft{T}(Option{T} a, Option{T} b) "
+                                 "  if a is T aVal && b is T bVal -> aVal + bVal "
+                                 "  else -> T()"
+                                 "fun f() ft(Option{int}(1), Option{int}(2))");
+    REQUIRE(output.isSuccess());
+
+    const auto& fDef = GET_FUNC_DEF(output, "f");
+    auto fArgs       = std::vector<prog::expr::NodePtr>{};
+    fArgs.push_back(
+        applyConv(output, "int", "Option__int", prog::expr::litIntNode(output.getProg(), 1)));
+    fArgs.push_back(
+        applyConv(output, "int", "Option__int", prog::expr::litIntNode(output.getProg(), 2)));
+
+    CHECK(
+        fDef.getExpr() ==
+        *prog::expr::callExprNode(
+            output.getProg(),
+            GET_FUNC_ID(
+                output,
+                "ft__int",
+                GET_TYPE_ID(output, "Option__int"),
+                GET_TYPE_ID(output, "Option__int")),
+            std::move(fArgs)));
+  }
 }
 
 } // namespace frontend

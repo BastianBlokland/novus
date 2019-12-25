@@ -3,6 +3,7 @@
 #include "internal/define_user_funcs.hpp"
 #include "internal/typeinfer_expr.hpp"
 #include "internal/utilities.hpp"
+#include "parse/type_param_list.hpp"
 
 namespace frontend::internal {
 
@@ -24,6 +25,8 @@ FuncTemplate::FuncTemplate(
 auto FuncTemplate::getTemplateName() const -> const std::string& { return m_name; }
 
 auto FuncTemplate::getTypeParamCount() const -> unsigned int { return m_typeSubs.size(); }
+
+auto FuncTemplate::getArgumentCount() const -> unsigned int { return m_parseNode.getArgs().size(); }
 
 auto FuncTemplate::getRetType(const prog::sym::TypeSet& typeParams)
     -> std::optional<prog::sym::TypeId> {
@@ -53,6 +56,22 @@ auto FuncTemplate::getRetType(const prog::sym::TypeSet& typeParams)
     retType = inferRetType(m_context, &subTable, m_parseNode, *funcInput, true);
   }
   return retType->isConcrete() ? std::optional{*retType} : std::nullopt;
+}
+
+auto FuncTemplate::inferTypeParams(const prog::sym::TypeSet& argTypes)
+    -> std::optional<prog::sym::TypeSet> {
+  if (argTypes.getCount() != m_parseNode.getArgs().size()) {
+    return std::nullopt;
+  }
+  auto typeParams = std::vector<prog::sym::TypeId>{};
+  for (const auto& typeSub : m_typeSubs) {
+    const auto inferredType = inferSubType(typeSub, argTypes);
+    if (!inferredType) {
+      return std::nullopt;
+    }
+    typeParams.push_back(*inferredType);
+  }
+  return prog::sym::TypeSet{std::move(typeParams)};
 }
 
 auto FuncTemplate::instantiate(const prog::sym::TypeSet& typeParams) -> const FuncTemplateInst* {
@@ -148,6 +167,68 @@ auto FuncTemplate::createSubTable(const prog::sym::TypeSet& typeParams) const
     subTable.declare(m_typeSubs[i], typeParams[i]);
   }
   return subTable;
+}
+
+using TypePath = typename std::vector<unsigned int>;
+
+static auto
+getPathsToSub(const std::string& subType, const parse::Type& parsetype, const TypePath& path)
+    -> std::vector<TypePath> {
+  if (getName(parsetype.getId()) == subType) {
+    return {path};
+  }
+  std::vector<TypePath> result = {};
+  const auto* paramList        = parsetype.getParamList();
+  if (paramList != nullptr) {
+    for (auto paramInd = 0U; paramInd != paramList->getCount(); ++paramInd) {
+      auto childPath = path;
+      childPath.push_back(paramInd);
+      auto childResult = getPathsToSub(subType, (*paramList)[paramInd], childPath);
+      result.insert(result.end(), childResult.begin(), childResult.end());
+    }
+  }
+  return result;
+}
+
+static auto resolvePathToSub(
+    const Context& context,
+    TypePath::const_iterator begin,
+    TypePath::const_iterator end,
+    prog::sym::TypeId type) -> std::optional<prog::sym::TypeId> {
+  if (begin == end) {
+    return type;
+  }
+  const auto info = context.getTypeInfo(type);
+  if (!info || !info->hasParams()) {
+    return std::nullopt;
+  }
+  const auto& params = *info->getParams();
+  const auto index   = *begin;
+  if (index >= params.getCount()) {
+    return std::nullopt;
+  }
+  return resolvePathToSub(context, ++begin, end, params[index]);
+}
+
+auto FuncTemplate::inferSubType(const std::string& subType, const prog::sym::TypeSet& argTypes)
+    -> std::optional<prog::sym::TypeId> {
+  std::optional<prog::sym::TypeId> result = std::nullopt;
+  for (auto argInd = 0U; argInd != m_parseNode.getArgs().size(); ++argInd) {
+    const auto& arg = m_parseNode.getArgs()[argInd];
+    for (const auto& path : getPathsToSub(subType, arg.getType(), {})) {
+      const auto& inferredType =
+          resolvePathToSub(*m_context, path.begin(), path.end(), argTypes[argInd]);
+      if (!inferredType) {
+        return std::nullopt;
+      }
+      if (!result) {
+        result = inferredType;
+      } else if (result != inferredType) {
+        return std::nullopt;
+      }
+    }
+  }
+  return result;
 }
 
 } // namespace frontend::internal

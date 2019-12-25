@@ -47,7 +47,8 @@ auto TypeInferExpr::visit(const parse::BinaryExprNode& n) -> void {
   for (auto i = 0U; i < n.getChildCount(); ++i) {
     argTypes.push_back(inferSubExpr(n[i]));
   }
-  m_type = inferFuncCall(prog::getFuncName(*op), std::move(argTypes));
+  const auto argTypeSet = prog::sym::TypeSet{std::move(argTypes)};
+  m_type                = inferFuncCall(prog::getFuncName(*op), argTypeSet);
 }
 
 auto TypeInferExpr::visit(const parse::CallExprNode& n) -> void {
@@ -89,7 +90,8 @@ auto TypeInferExpr::visit(const parse::CallExprNode& n) -> void {
   for (auto i = 0U; i < n.getChildCount(); ++i) {
     argTypes.push_back(inferSubExpr(n[i]));
   }
-  m_type = inferFuncCall(funcName, std::move(argTypes));
+  const auto argTypeSet = prog::sym::TypeSet{std::move(argTypes)};
+  m_type                = inferFuncCall(funcName, argTypeSet);
 }
 
 auto TypeInferExpr::visit(const parse::ConditionalExprNode& n) -> void {
@@ -260,18 +262,27 @@ auto TypeInferExpr::inferSubExpr(const parse::Node& n) -> prog::sym::TypeId {
   return visitor.getInferredType();
 }
 
-auto TypeInferExpr::inferFuncCall(
-    const std::string& funcName, std::vector<prog::sym::TypeId> argTypes) -> prog::sym::TypeId {
+auto TypeInferExpr::inferFuncCall(const std::string& funcName, const prog::sym::TypeSet& argTypes)
+    -> prog::sym::TypeId {
   for (const auto& argType : argTypes) {
     if (argType.isInfer()) {
       return prog::sym::TypeId::inferType();
     }
   }
-  auto func =
-      m_context->getProg()->lookupFunc(funcName, prog::sym::TypeSet{std::move(argTypes)}, -1);
+
+  // Attempt to get a return-type for a non-templated function.
+  auto func = m_context->getProg()->lookupFunc(funcName, argTypes, -1);
   if (func) {
     return m_context->getProg()->getFuncDecl(*func).getOutput();
   }
+
+  // Attempt to get a return-type for a inferred templated function.
+  auto retTypeForInferredTemplFunc =
+      m_context->getFuncTemplates()->inferParamsAndGetRetType(funcName, argTypes);
+  if (retTypeForInferredTemplFunc) {
+    return *retTypeForInferredTemplFunc;
+  }
+
   return prog::sym::TypeId::inferType();
 }
 

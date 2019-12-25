@@ -136,7 +136,7 @@ TEST_CASE("Analyzing user-function declarations", "[frontend]") {
         "fun s{T}(T a) -> T a "
         "fun f() s{int}(1)",
         errIncorrectReturnTypeInConvFunc(src, "s", "int", input::Span{30, 49}),
-        errInvalidFuncInstantiation(src, input::Span{59, 67}));
+        errInvalidFuncInstantiation(src, input::Span{59, 59}));
     CHECK_DIAG(
         "fun -(int i) -> int 1",
         errDuplicateFuncDeclaration(src, "operator-minus", input::Span{0, 20}));

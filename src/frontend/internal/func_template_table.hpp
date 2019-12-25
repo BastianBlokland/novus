@@ -23,7 +23,13 @@ public:
   auto instantiate(const std::string& name, const prog::sym::TypeSet& typeParams)
       -> std::vector<const FuncTemplateInst*>;
 
+  auto inferParamsAndInstantiate(const std::string& name, const prog::sym::TypeSet& argTypes)
+      -> std::vector<const FuncTemplateInst*>;
+
   auto getRetType(const std::string& name, const prog::sym::TypeSet& typeParams)
+      -> std::optional<prog::sym::TypeId>;
+
+  auto inferParamsAndGetRetType(const std::string& name, const prog::sym::TypeSet& argTypes)
       -> std::optional<prog::sym::TypeId>;
 
 private:

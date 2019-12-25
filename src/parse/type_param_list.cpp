@@ -18,6 +18,15 @@ auto TypeParamList::operator!=(const TypeParamList& rhs) const noexcept -> bool 
   return !TypeParamList::operator==(rhs);
 }
 
+auto TypeParamList::operator[](unsigned int i) const -> const Type& {
+  if (i >= m_params.size()) {
+    throw std::out_of_range{"No parameter at given index"};
+  }
+  return m_params[i];
+}
+
+auto TypeParamList::getCount() const -> unsigned int { return m_params.size(); }
+
 auto TypeParamList::begin() const -> iterator { return m_params.begin(); }
 
 auto TypeParamList::end() const -> iterator { return m_params.end(); }
