@@ -40,6 +40,9 @@ TEST_CASE("Parsing binary operators", "[parse]") {
                             unaryExprNode(MINUS, INT(5)),
                             MINUS,
                             binaryExprNode(INT(2), STAR, INT(3))))))));
+    CHECK_EXPR(
+        "1 :: 2 :: 3",
+        binaryExprNode(INT(1), COLONCOLON, binaryExprNode(INT(2), COLONCOLON, INT(3))));
   }
 
   SECTION("Errors") {

@@ -205,9 +205,11 @@ auto ParserImpl::nextExpr(const int minPrecedence) -> NodePtr {
   while (true) {
     // Handle binary operators, precedence controls if we should keep recursing or let the next
     // iteration handle them.
-    const auto& nextToken    = peekToken(0);
-    const auto rhsPrecedence = getRhsOpPrecedence(nextToken);
-    if (rhsPrecedence == 0 || rhsPrecedence <= minPrecedence) {
+    const auto& nextToken       = peekToken(0);
+    const auto rhsPrecedence    = getRhsOpPrecedence(nextToken);
+    const auto rightAssociative = isRightAssociative(nextToken);
+    if (rhsPrecedence == 0 || rhsPrecedence < minPrecedence ||
+        (!rightAssociative && rhsPrecedence == minPrecedence)) {
       break;
     }
 

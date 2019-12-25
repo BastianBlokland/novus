@@ -20,4 +20,6 @@ auto getLhsOpPrecedence(const lex::Token& token) -> int;
 
 auto getRhsOpPrecedence(const lex::Token& token) -> int;
 
+auto isRightAssociative(const lex::Token& token) -> bool;
+
 } // namespace parse
