@@ -34,6 +34,7 @@ add_executable(tests
   frontend/get_const_expr_test.cpp
   frontend/get_field_expr_test.cpp
   frontend/get_group_expr_test.cpp
+  frontend/get_index_expr_test.cpp
   frontend/get_is_expr_test.cpp
   frontend/get_lit_expr_test.cpp
   frontend/get_paren_expr_test.cpp
@@ -68,6 +69,7 @@ add_executable(tests
   parse/expr_condtional_test.cpp
   parse/expr_field_test.cpp
   parse/expr_group_test.cpp
+  parse/expr_index_test.cpp
   parse/expr_is_test.cpp
   parse/expr_paren_test.cpp
   parse/expr_primary_test.cpp

@@ -140,6 +140,14 @@ auto LexerImpl::next() -> Token {
       return basicToken(TokenKind::SepOpenCurly, input::Span{m_inputPos});
     case '}':
       return basicToken(TokenKind::SepCloseCurly, input::Span{m_inputPos});
+    case '[':
+      if (peekChar(0) == ']') {
+        consumeChar();
+        return basicToken(TokenKind::OpSquareSquare, input::Span{m_inputPos - 1, m_inputPos});
+      }
+      return basicToken(TokenKind::SepOpenSquare, input::Span{m_inputPos});
+    case ']':
+      return basicToken(TokenKind::SepCloseSquare, input::Span{m_inputPos});
     case ',':
       return basicToken(TokenKind::SepComma, input::Span{m_inputPos});
     case ':':

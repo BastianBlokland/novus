@@ -87,43 +87,29 @@ auto GetExpr::visit(const parse::BinaryExprNode& n) -> void {
 }
 
 auto GetExpr::visit(const parse::CallExprNode& n) -> void {
-  auto isValid  = true;
-  auto argTypes = std::vector<prog::sym::TypeId>{};
-  auto args     = std::vector<prog::expr::NodePtr>{};
-  for (auto i = 0U; i < n.getChildCount(); ++i) {
-    auto arg = getSubExpr(n[i], m_visibleConsts, prog::sym::TypeId::inferType());
-    if (arg) {
-      const auto argType = arg->getType();
-      if (argType.isConcrete()) {
-        argTypes.push_back(argType);
-        args.push_back(std::move(arg));
-        continue;
-      }
-    }
-    isValid = false;
-  }
-  if (!isValid) {
+  auto args = getChildExprs(n);
+  if (!args) {
+    assert(m_context->hasErrors());
     return;
   }
 
-  const auto argTypeSet = prog::sym::TypeSet{std::move(argTypes)};
   const auto possibleFuncs =
-      getFunctionsInclConversions(n.getFunc(), n.getTypeParams(), argTypeSet);
+      getFunctionsInclConversions(n.getFunc(), n.getTypeParams(), args->second);
   if (m_context->hasErrors()) {
     return;
   }
 
-  const auto func = m_context->getProg()->lookupFunc(possibleFuncs, argTypeSet, -1);
+  const auto func = m_context->getProg()->lookupFunc(possibleFuncs, args->second, -1);
   if (!func) {
     auto argTypeNames = std::vector<std::string>{};
-    for (const auto& argType : argTypeSet) {
+    for (const auto& argType : args->second) {
       argTypeNames.push_back(getName(m_context, argType));
     }
     m_context->reportDiag(
         errUndeclaredFunc(m_context->getSrc(), getName(n.getFunc()), argTypeNames, n.getSpan()));
     return;
   }
-  m_expr = prog::expr::callExprNode(*m_context->getProg(), func.value(), std::move(args));
+  m_expr = prog::expr::callExprNode(*m_context->getProg(), func.value(), std::move(args->first));
 }
 
 auto GetExpr::visit(const parse::ConditionalExprNode& n) -> void {
@@ -241,6 +227,29 @@ auto GetExpr::visit(const parse::GroupExprNode& n) -> void {
   if (subExprs.size() > 1) {
     m_expr = prog::expr::groupExprNode(std::move(subExprs));
   }
+}
+
+auto GetExpr::visit(const parse::IndexExprNode& n) -> void {
+  auto args = getChildExprs(n);
+  if (!args) {
+    assert(m_context->hasErrors());
+    return;
+  }
+
+  const auto funcName      = prog::getFuncName(prog::Operator::SquareSquare);
+  const auto possibleFuncs = getFunctions(funcName, std::nullopt, args->second, n.getSpan());
+  const auto func          = m_context->getProg()->lookupFunc(possibleFuncs, args->second, -1);
+  if (!func) {
+    auto argTypeNames = std::vector<std::string>{};
+    for (const auto& argType : args->second) {
+      argTypeNames.push_back(getName(m_context, argType));
+    }
+    m_context->reportDiag(
+        errUndeclaredIndexOperator(m_context->getSrc(), argTypeNames, n.getSpan()));
+    return;
+  }
+
+  m_expr = prog::expr::callExprNode(*m_context->getProg(), func.value(), std::move(args->first));
 }
 
 auto GetExpr::visit(const parse::IsExprNode& n) -> void {
@@ -450,6 +459,31 @@ auto GetExpr::getSubExpr(
       GetExpr{m_context, m_typeSubTable, m_consts, visibleConsts, typeHint, checkedConstsAccess};
   n.accept(&visitor);
   return std::move(visitor.getValue());
+}
+
+auto GetExpr::getChildExprs(const parse::Node& n)
+    -> std::optional<std::pair<std::vector<prog::expr::NodePtr>, prog::sym::TypeSet>> {
+  auto isValid  = true;
+  auto argTypes = std::vector<prog::sym::TypeId>{};
+  auto args     = std::vector<prog::expr::NodePtr>{};
+  for (auto i = 0U; i < n.getChildCount(); ++i) {
+    auto arg = getSubExpr(n[i], m_visibleConsts, prog::sym::TypeId::inferType());
+    if (arg) {
+      const auto argType = arg->getType();
+      if (argType.isConcrete()) {
+        argTypes.push_back(argType);
+        args.push_back(std::move(arg));
+        continue;
+      }
+    }
+    isValid = false;
+  }
+  if (!isValid) {
+    return std::nullopt;
+  }
+
+  auto argTypeSet = prog::sym::TypeSet{std::move(argTypes)};
+  return std::make_pair(std::move(args), std::move(argTypeSet));
 }
 
 auto GetExpr::applyConversion(prog::expr::NodePtr* expr, prog::sym::TypeId toType, input::Span span)

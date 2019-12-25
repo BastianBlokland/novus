@@ -329,6 +329,42 @@ auto errInvalidCallExpr(
   return errorNode(oss.str(), std::move(tokens), std::move(args));
 }
 
+auto errInvalidIndexExpr(
+    NodePtr lhs,
+    lex::Token open,
+    std::vector<NodePtr> args,
+    std::vector<lex::Token> commas,
+    lex::Token close) -> NodePtr {
+
+  std::ostringstream oss;
+  if (args.empty()) {
+    oss << "No argument given to index expression";
+  } else if (commas.size() != args.size() - 1) {
+    oss << "Incorrect number of comma's ',' in index expression";
+  } else if (open.getKind() != lex::TokenKind::SepOpenSquare) {
+    oss << "Expected opening square-bracket '[' but got: " << open;
+  } else if (close.getKind() != lex::TokenKind::SepCloseSquare) {
+    oss << "Expected closing square-bracket ']' but got: " << close;
+  } else {
+    oss << "Invalid index expression";
+  }
+
+  auto tokens = std::vector<lex::Token>{};
+  tokens.push_back(std::move(open));
+  for (auto& comma : commas) {
+    tokens.push_back(std::move(comma));
+  }
+  tokens.push_back(std::move(close));
+
+  auto nodes = std::vector<NodePtr>{};
+  nodes.push_back(std::move(lhs));
+  for (auto& arg : args) {
+    nodes.push_back(std::move(arg));
+  }
+
+  return errorNode(oss.str(), std::move(tokens), std::move(nodes));
+}
+
 auto errInvalidConditionalExpr(
     NodePtr cond, lex::Token qmark, NodePtr ifBranch, lex::Token colon, NodePtr elseBranch)
     -> NodePtr {

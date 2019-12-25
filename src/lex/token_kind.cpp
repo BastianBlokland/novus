@@ -67,6 +67,9 @@ auto operator<<(std::ostream& out, const TokenKind& rhs) -> std::ostream& {
   case TokenKind::OpColonColon:
     out << "coloncolon";
     break;
+  case TokenKind::OpSquareSquare:
+    out << "squaresquare";
+    break;
   case TokenKind::SepOpenParen:
     out << "open-paren";
     break;
@@ -78,6 +81,12 @@ auto operator<<(std::ostream& out, const TokenKind& rhs) -> std::ostream& {
     break;
   case TokenKind::SepCloseCurly:
     out << "close-curly";
+    break;
+  case TokenKind::SepOpenSquare:
+    out << "open-square";
+    break;
+  case TokenKind::SepCloseSquare:
+    out << "close-square";
     break;
   case TokenKind::SepComma:
     out << "comma";

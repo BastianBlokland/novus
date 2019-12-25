@@ -27,6 +27,7 @@ public:
   auto visit(const parse::ConstExprNode& n) -> void override;
   auto visit(const parse::FieldExprNode& n) -> void override;
   auto visit(const parse::GroupExprNode& n) -> void override;
+  auto visit(const parse::IndexExprNode& n) -> void override;
   auto visit(const parse::IsExprNode& n) -> void override;
   auto visit(const parse::LitExprNode& n) -> void override;
   auto visit(const parse::ParenExprNode& n) -> void override;
@@ -50,6 +51,9 @@ private:
   bool m_checkedConstsAccess;
 
   prog::expr::NodePtr m_expr;
+
+  [[nodiscard]] auto getChildExprs(const parse::Node& n)
+      -> std::optional<std::pair<std::vector<prog::expr::NodePtr>, prog::sym::TypeSet>>;
 
   [[nodiscard]] auto getSubExpr(
       const parse::Node& n,

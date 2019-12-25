@@ -157,6 +157,17 @@ auto TypeInferExpr::visit(const parse::GroupExprNode& n) -> void {
   }
 }
 
+auto TypeInferExpr::visit(const parse::IndexExprNode& n) -> void {
+  auto argTypes = std::vector<prog::sym::TypeId>{};
+  argTypes.reserve(n.getChildCount());
+  for (auto i = 0U; i < n.getChildCount(); ++i) {
+    argTypes.push_back(inferSubExpr(n[i]));
+  }
+  const auto argTypeSet = prog::sym::TypeSet{std::move(argTypes)};
+  const auto funcName   = prog::getFuncName(prog::Operator::SquareSquare);
+  m_type                = inferFuncCall(funcName, argTypeSet);
+}
+
 auto TypeInferExpr::visit(const parse::IsExprNode& n) -> void {
   // Register the type of the constant this declares.
   const auto constType = getOrInstType(m_context, m_typeSubTable, n.getType());

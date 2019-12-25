@@ -52,11 +52,14 @@ auto lookupCat(const TokenKind kind) -> TokenCat {
   case TokenKind::OpQMark:
   case TokenKind::OpDot:
   case TokenKind::OpColonColon:
+  case TokenKind::OpSquareSquare:
     return TokenCat::Operator;
   case TokenKind::SepOpenParen:
   case TokenKind::SepCloseParen:
   case TokenKind::SepOpenCurly:
   case TokenKind::SepCloseCurly:
+  case TokenKind::SepOpenSquare:
+  case TokenKind::SepCloseSquare:
   case TokenKind::SepComma:
   case TokenKind::SepColon:
   case TokenKind::SepArrow:

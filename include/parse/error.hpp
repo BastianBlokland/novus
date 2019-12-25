@@ -62,6 +62,13 @@ auto errInvalidCallExpr(
     std::vector<lex::Token> commas,
     lex::Token close) -> NodePtr;
 
+auto errInvalidIndexExpr(
+    NodePtr lhs,
+    lex::Token open,
+    std::vector<NodePtr> args,
+    std::vector<lex::Token> commas,
+    lex::Token close) -> NodePtr;
+
 auto errInvalidConditionalExpr(
     NodePtr cond, lex::Token qmark, NodePtr ifBranch, lex::Token colon, NodePtr elseBranch)
     -> NodePtr;
