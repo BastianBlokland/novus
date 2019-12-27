@@ -35,6 +35,10 @@ public:
   [[nodiscard]] auto instantiate(const std::string& name, const prog::sym::TypeSet& typeParams)
       -> std::optional<const TypeTemplateInst*>;
 
+  [[nodiscard]] auto
+  inferParamsAndInstantiate(const std::string& name, const prog::sym::TypeSet& constructorArgTypes)
+      -> std::optional<const TypeTemplateInst*>;
+
 private:
   std::unordered_map<std::string, StructTemplate> m_structs;
   std::unordered_map<std::string, UnionTemplate> m_unions;
@@ -49,6 +53,13 @@ private:
       std::unordered_map<std::string, T>* templates,
       const std::string& name,
       const prog::sym::TypeSet& typeParams) const -> std::optional<const TypeTemplateInst*>;
+
+  template <typename T>
+  auto inferParamsAndInstantiate(
+      std::unordered_map<std::string, T>* templates,
+      const std::string& name,
+      const prog::sym::TypeSet& constructorArgTypes) const
+      -> std::optional<const TypeTemplateInst*>;
 };
 
 } // namespace frontend::internal

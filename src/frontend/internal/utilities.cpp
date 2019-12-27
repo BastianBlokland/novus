@@ -8,6 +8,47 @@
 namespace frontend::internal {
 
 auto getOrInstType(
+    Context* context,
+    const TypeSubstitutionTable* subTable,
+    const lex::Token& nameToken,
+    const std::optional<parse::TypeParamList>& typeParams,
+    const prog::sym::TypeSet& constructorArgs) -> std::optional<prog::sym::TypeId> {
+
+  const auto typeName = getName(nameToken);
+
+  // Check if there is an entry in the substitution table for this name.
+  if (subTable != nullptr && subTable->lookupType(typeName)) {
+    return subTable->lookupType(typeName);
+  }
+  if (!isType(context, typeName)) {
+    return std::nullopt;
+  }
+
+  // Check if the type is a non-templated type.
+  auto type = context->getProg()->lookupType(typeName);
+  if (type) {
+    return type;
+  }
+
+  // If type arguments are provided we attempt to instantiate a type using them.
+  if (typeParams) {
+    return instType(context, subTable, nameToken, *typeParams);
+  }
+
+  // If no type arguments are provided attempt to infer them based on the constructor arguments.
+  const auto typeInstantiation =
+      context->getTypeTemplates()->inferParamsAndInstantiate(typeName, constructorArgs);
+  if (typeInstantiation) {
+    if (context->hasErrors()) {
+      context->reportDiag(errInvalidTypeInstantiation(context->getSrc(), nameToken.getSpan()));
+    } else {
+      return (*typeInstantiation)->getType();
+    }
+  }
+  return std::nullopt;
+}
+
+auto getOrInstType(
     Context* context, const TypeSubstitutionTable* subTable, const parse::Type& parseType)
     -> std::optional<prog::sym::TypeId> {
 
@@ -25,23 +66,33 @@ auto getOrInstType(
   }
   auto paramList = parseType.getParamList();
   if (paramList) {
-    const auto typeSet = getTypeSet(context, subTable, paramList->getTypes());
-    if (!typeSet) {
-      assert(context->hasErrors());
-      return std::nullopt;
-    }
-    const auto typeInstantiation = context->getTypeTemplates()->instantiate(name, *typeSet);
-    if (!typeInstantiation) {
-      return std::nullopt;
-    }
-    if (context->hasErrors()) {
-      context->reportDiag(errInvalidTypeInstantiation(context->getSrc(), parseType.getSpan()));
-      return std::nullopt;
-    }
-    return (*typeInstantiation)->getType();
+    return instType(context, subTable, parseType.getId(), *paramList);
   }
 
   return context->getProg()->lookupType(name);
+}
+
+auto instType(
+    Context* context,
+    const TypeSubstitutionTable* subTable,
+    const lex::Token& nameToken,
+    const parse::TypeParamList& typeParams) -> std::optional<prog::sym::TypeId> {
+
+  const auto typeName = getName(nameToken);
+  const auto typeSet  = getTypeSet(context, subTable, typeParams.getTypes());
+  if (!typeSet) {
+    assert(context->hasErrors());
+    return std::nullopt;
+  }
+  const auto typeInstantiation = context->getTypeTemplates()->instantiate(typeName, *typeSet);
+  if (!typeInstantiation) {
+    return std::nullopt;
+  }
+  if (context->hasErrors()) {
+    context->reportDiag(errInvalidTypeInstantiation(context->getSrc(), nameToken.getSpan()));
+    return std::nullopt;
+  }
+  return (*typeInstantiation)->getType();
 }
 
 auto getRetType(
@@ -185,7 +236,7 @@ auto mangleName(Context* context, const std::string& name, const prog::sym::Type
   return result;
 }
 
-auto isConversion(Context* context, const std::string& name) -> bool {
+auto isType(Context* context, const std::string& name) -> bool {
   return context->getProg()->lookupType(name) || context->getTypeTemplates()->hasType(name);
 }
 

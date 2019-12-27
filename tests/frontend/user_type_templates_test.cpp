@@ -32,6 +32,28 @@ TEST_CASE("Analyzing user-type templates", "[frontend]") {
             std::move(fArgs)));
   }
 
+  SECTION("Construct templated type with inferred type params") {
+    const auto& output = ANALYZE("struct tuple{T1, T2} = T1 a, T2 b "
+                                 "fun f() tuple(1, \"hello world\")");
+    REQUIRE(output.isSuccess());
+
+    const auto& fDef = GET_FUNC_DEF(output, "f");
+    auto fArgs       = std::vector<prog::expr::NodePtr>{};
+    fArgs.push_back(prog::expr::litIntNode(output.getProg(), 1));
+    fArgs.push_back(prog::expr::litStringNode(output.getProg(), "hello world"));
+
+    CHECK(
+        fDef.getExpr() ==
+        *prog::expr::callExprNode(
+            output.getProg(),
+            GET_FUNC_ID(
+                output,
+                "tuple__int_string",
+                GET_TYPE_ID(output, "int"),
+                GET_TYPE_ID(output, "string")),
+            std::move(fArgs)));
+  }
+
   SECTION("Conversion to templated type") {
     const auto& output = ANALYZE("struct tuple{T1, T2} = T1 a, T2 b "
                                  "fun tuple{T}(T a) tuple{T, bool}(a, false) "

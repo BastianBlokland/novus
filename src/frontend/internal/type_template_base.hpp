@@ -19,7 +19,10 @@ public:
   [[nodiscard]] auto getTemplateName() const -> const std::string&;
   [[nodiscard]] auto getTypeParamCount() const -> unsigned int;
 
-  auto instantiate(const prog::sym::TypeSet& typeParams) -> const TypeTemplateInst*;
+  [[nodiscard]] virtual auto inferTypeParams(const prog::sym::TypeSet& constructorArgTypes)
+      -> std::optional<prog::sym::TypeSet> = 0;
+
+  [[nodiscard]] auto instantiate(const prog::sym::TypeSet& typeParams) -> const TypeTemplateInst*;
 
 protected:
   TypeTemplateBase(Context* context, std::string name, std::vector<std::string> typeSubs);

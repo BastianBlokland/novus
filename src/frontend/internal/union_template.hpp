@@ -16,6 +16,9 @@ public:
 
   UnionTemplate() = delete;
 
+  [[nodiscard]] auto inferTypeParams(const prog::sym::TypeSet& constructorArgTypes)
+      -> std::optional<prog::sym::TypeSet> override;
+
 private:
   const parse::UnionDeclStmtNode& m_parseNode;
 

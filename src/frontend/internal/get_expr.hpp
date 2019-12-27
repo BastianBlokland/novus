@@ -73,8 +73,6 @@ private:
 
   [[nodiscard]] auto isExhaustive(const std::vector<prog::expr::NodePtr>& conditions) const -> bool;
 
-  [[nodiscard]] auto isType(const std::string& name) const -> bool;
-
   [[nodiscard]] auto getFunctionsInclConversions(
       const lex::Token& nameToken,
       const std::optional<parse::TypeParamList>& typeParams,

@@ -139,6 +139,7 @@ add_library(frontend STATIC
   frontend/internal/func_template.cpp
   frontend/internal/type_substitution_table.cpp
   frontend/internal/typeinfer_expr.cpp
+  frontend/internal/typeinfer_typesub.cpp
   frontend/internal/typeinfer_user_funcs.cpp
   frontend/internal/union_template.cpp
   frontend/internal/utilities.cpp
