@@ -17,6 +17,9 @@ public:
 
   StructTemplate() = delete;
 
+  [[nodiscard]] auto inferTypeParams(const prog::sym::TypeSet& constructorArgTypes)
+      -> std::optional<prog::sym::TypeSet> override;
+
 private:
   const parse::StructDeclStmtNode& m_parseNode;
 

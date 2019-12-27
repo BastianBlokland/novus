@@ -11,6 +11,12 @@ UnionTemplate::UnionTemplate(
     const parse::UnionDeclStmtNode& parseNode) :
     TypeTemplateBase{context, std::move(name), std::move(typeSubs)}, m_parseNode{parseNode} {}
 
+auto UnionTemplate::inferTypeParams(const prog::sym::TypeSet & /* unused */)
+    -> std::optional<prog::sym::TypeSet> {
+  // Not implemented atm.
+  return std::nullopt;
+}
+
 auto UnionTemplate::setupInstance(TypeTemplateInst* instance) -> void {
   const auto mangledName = mangleName(getContext(), getTemplateName(), instance->m_typeParams);
   const auto subTable    = createSubTable(instance->m_typeParams);

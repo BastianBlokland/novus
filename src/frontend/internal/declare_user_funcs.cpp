@@ -64,7 +64,7 @@ auto DeclareUserFuncs::visit(const parse::FuncDeclStmtNode& n) -> void {
   }
 
   // For conversions validate that correct types are returned.
-  const auto isConv = isConversion(m_context, name);
+  const auto isConv = isType(m_context, name);
   if (isConv) {
     const auto nonTemplConvType = m_context->getProg()->lookupType(name);
     if (nonTemplConvType) {

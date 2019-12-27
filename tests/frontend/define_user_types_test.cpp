@@ -85,7 +85,7 @@ TEST_CASE("Analyzing user-type definitions", "[frontend]") {
         "struct s{T} = T T "
         "struct s2 = s{int} s",
         errFieldNameConflictsWithTypeSubstitution(src, "T", input::Span{16, 16}),
-        errInvalidTypeInstantiation(src, input::Span{30, 35}));
+        errInvalidTypeInstantiation(src, input::Span{30, 30}));
   }
 
   SECTION("Union diagnostics") {

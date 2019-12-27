@@ -35,6 +35,16 @@ auto TypeTemplateTable::instantiate(const std::string& name, const prog::sym::Ty
   return instantiateTemplate(&m_unions, name, typeParams);
 }
 
+auto TypeTemplateTable::inferParamsAndInstantiate(
+    const std::string& name, const prog::sym::TypeSet& constructorArgTypes)
+    -> std::optional<const TypeTemplateInst*> {
+  const auto structInst = inferParamsAndInstantiate(&m_structs, name, constructorArgTypes);
+  if (structInst) {
+    return structInst;
+  }
+  return inferParamsAndInstantiate(&m_unions, name, constructorArgTypes);
+}
+
 template <typename T>
 auto TypeTemplateTable::declareTemplate(
     std::unordered_map<std::string, T>* templates, const std::string& name, T newTemplate) -> void {
@@ -57,6 +67,23 @@ auto TypeTemplateTable::instantiateTemplate(
     return std::nullopt;
   }
   return itr->second.instantiate(typeParams);
+}
+
+template <typename T>
+auto TypeTemplateTable::inferParamsAndInstantiate(
+    std::unordered_map<std::string, T>* templates,
+    const std::string& name,
+    const prog::sym::TypeSet& constructorArgTypes) const -> std::optional<const TypeTemplateInst*> {
+
+  auto itr = templates->find(name);
+  if (itr == templates->end()) {
+    return std::nullopt;
+  }
+  const auto inferredTypeParams = itr->second.inferTypeParams(constructorArgTypes);
+  if (!inferredTypeParams) {
+    return std::nullopt;
+  }
+  return itr->second.instantiate(*inferredTypeParams);
 }
 
 } // namespace frontend::internal

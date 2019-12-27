@@ -42,9 +42,6 @@ private:
 
   [[nodiscard]] auto createSubTable(const prog::sym::TypeSet& typeParams) const
       -> TypeSubstitutionTable;
-
-  [[nodiscard]] auto inferSubType(const std::string& subType, const prog::sym::TypeSet& argTypes)
-      -> std::optional<prog::sym::TypeId>;
 };
 
 } // namespace frontend::internal

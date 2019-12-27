@@ -43,11 +43,9 @@ auto FuncTemplateTable::inferParamsAndInstantiate(
   }
   auto result = std::vector<const FuncTemplateInst*>{};
   for (auto& funcTemplate : itr->second) {
-    if (funcTemplate.getArgumentCount() == argTypes.getCount()) {
-      const auto inferredTypeParams = funcTemplate.inferTypeParams(argTypes);
-      if (inferredTypeParams) {
-        result.push_back(funcTemplate.instantiate(*inferredTypeParams));
-      }
+    const auto inferredTypeParams = funcTemplate.inferTypeParams(argTypes);
+    if (inferredTypeParams) {
+      result.push_back(funcTemplate.instantiate(*inferredTypeParams));
     }
   }
   return result;

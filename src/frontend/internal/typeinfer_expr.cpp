@@ -1,4 +1,5 @@
 #include "internal/typeinfer_expr.hpp"
+#include "frontend/diag_defs.hpp"
 #include "internal/context.hpp"
 #include "internal/utilities.hpp"
 #include "parse/nodes.hpp"
@@ -58,21 +59,19 @@ auto TypeInferExpr::visit(const parse::BinaryExprNode& n) -> void {
 auto TypeInferExpr::visit(const parse::CallExprNode& n) -> void {
   const auto funcName = getName(n.getFunc());
 
-  // Check if this is calling a constructor / conversion.
-  if (m_typeSubTable != nullptr && m_typeSubTable->lookupType(funcName)) {
-    m_type = *m_typeSubTable->lookupType(funcName);
-    return;
+  auto argTypes = std::vector<prog::sym::TypeId>{};
+  argTypes.reserve(n.getChildCount());
+  for (auto i = 0U; i < n.getChildCount(); ++i) {
+    argTypes.push_back(inferSubExpr(n[i]));
   }
-  if (isType(funcName)) {
-    const auto isTemplType          = m_context->getTypeTemplates()->hasType(funcName);
-    const auto synthesisedParseType = (isTemplType && n.getTypeParams())
-        ? parse::Type{n.getFunc(), *n.getTypeParams()}
-        : parse::Type{n.getFunc()};
-    const auto type = getOrInstType(m_context, m_typeSubTable, synthesisedParseType);
-    if (type) {
-      m_type = *type;
-      return;
-    }
+  const auto argTypeSet = prog::sym::TypeSet{std::move(argTypes)};
+
+  // Check if this is calling a constructor / conversion.
+  auto convType =
+      getOrInstType(m_context, m_typeSubTable, n.getFunc(), n.getTypeParams(), argTypeSet);
+  if (convType) {
+    m_type = *convType;
+    return;
   }
 
   // Templated function.
@@ -89,13 +88,7 @@ auto TypeInferExpr::visit(const parse::CallExprNode& n) -> void {
   }
 
   // Regular functions.
-  auto argTypes = std::vector<prog::sym::TypeId>{};
-  argTypes.reserve(n.getChildCount());
-  for (auto i = 0U; i < n.getChildCount(); ++i) {
-    argTypes.push_back(inferSubExpr(n[i]));
-  }
-  const auto argTypeSet = prog::sym::TypeSet{std::move(argTypes)};
-  m_type                = inferFuncCall(funcName, argTypeSet);
+  m_type = inferFuncCall(funcName, argTypeSet);
 }
 
 auto TypeInferExpr::visit(const parse::ConditionalExprNode& n) -> void {

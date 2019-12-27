@@ -579,10 +579,6 @@ auto GetExpr::isExhaustive(const std::vector<prog::expr::NodePtr>& conditions) c
   return checkUnion.isExhaustive();
 }
 
-auto GetExpr::isType(const std::string& name) const -> bool {
-  return m_context->getProg()->lookupType(name) || m_context->getTypeTemplates()->hasType(name);
-}
-
 auto GetExpr::getFunctionsInclConversions(
     const lex::Token& nameToken,
     const std::optional<parse::TypeParamList>& typeParams,
@@ -592,16 +588,7 @@ auto GetExpr::getFunctionsInclConversions(
   auto isValid        = true;
 
   // Check if this is a call to a constructor / conversion function.
-  std::optional<prog::sym::TypeId> convType = std::nullopt;
-  if (m_typeSubTable != nullptr && m_typeSubTable->lookupType(funcName)) {
-    convType = m_typeSubTable->lookupType(funcName);
-  } else if (isType(funcName)) {
-    // Treat this function name (including type parameters) as a type reference.
-    const auto isTemplType = m_context->getTypeTemplates()->hasType(funcName);
-    const auto synthesisedParseType =
-        (isTemplType && typeParams) ? parse::Type{nameToken, *typeParams} : parse::Type{nameToken};
-    convType = getOrInstType(m_context, m_typeSubTable, synthesisedParseType);
-  }
+  auto convType = getOrInstType(m_context, m_typeSubTable, nameToken, typeParams, argTypes);
   if (convType) {
     const auto typeName = getName(m_context, *convType);
     const auto funcs    = m_context->getProg()->lookupFuncs(typeName);

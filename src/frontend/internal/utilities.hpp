@@ -100,9 +100,22 @@ namespace frontend::internal {
   return "__unknown";
 }
 
+[[nodiscard]] auto getOrInstType(
+    Context* context,
+    const TypeSubstitutionTable* subTable,
+    const lex::Token& nameToken,
+    const std::optional<parse::TypeParamList>& typeParams,
+    const prog::sym::TypeSet& constructorArgs) -> std::optional<prog::sym::TypeId>;
+
 [[nodiscard]] auto
 getOrInstType(Context* context, const TypeSubstitutionTable* subTable, const parse::Type& parseType)
     -> std::optional<prog::sym::TypeId>;
+
+[[nodiscard]] auto instType(
+    Context* context,
+    const TypeSubstitutionTable* subTable,
+    const lex::Token& nameToken,
+    const parse::TypeParamList& typeParams) -> std::optional<prog::sym::TypeId>;
 
 [[nodiscard]] auto getRetType(
     Context* context, const TypeSubstitutionTable* subTable, const parse::FuncDeclStmtNode& n)
@@ -138,6 +151,6 @@ getSubstitutionParams(Context* context, const parse::TypeSubstitutionList& subLi
 mangleName(Context* context, const std::string& name, const prog::sym::TypeSet& typeParams)
     -> std::string;
 
-[[nodiscard]] auto isConversion(Context* context, const std::string& name) -> bool;
+[[nodiscard]] auto isType(Context* context, const std::string& name) -> bool;
 
 } // namespace frontend::internal

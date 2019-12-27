@@ -2,6 +2,7 @@
 #include "frontend/diag_defs.hpp"
 #include "internal/define_user_types.hpp"
 #include "internal/type_info.hpp"
+#include "internal/typeinfer_typesub.hpp"
 #include "internal/utilities.hpp"
 
 namespace frontend::internal {
@@ -12,6 +13,23 @@ StructTemplate::StructTemplate(
     std::vector<std::string> typeSubs,
     const parse::StructDeclStmtNode& parseNode) :
     TypeTemplateBase{context, std::move(name), std::move(typeSubs)}, m_parseNode{parseNode} {}
+
+auto StructTemplate::inferTypeParams(const prog::sym::TypeSet& constructorArgTypes)
+    -> std::optional<prog::sym::TypeSet> {
+  if (constructorArgTypes.getCount() != m_parseNode.getFields().size()) {
+    return std::nullopt;
+  }
+  auto typeParams = std::vector<prog::sym::TypeId>{};
+  for (const auto& typeSub : getTypeSubs()) {
+    const auto inferredType =
+        inferSubTypeFromSpecs(*getContext(), typeSub, m_parseNode.getFields(), constructorArgTypes);
+    if (!inferredType) {
+      return std::nullopt;
+    }
+    typeParams.push_back(*inferredType);
+  }
+  return prog::sym::TypeSet{std::move(typeParams)};
+}
 
 auto StructTemplate::setupInstance(TypeTemplateInst* instance) -> void {
   const auto mangledName = mangleName(getContext(), getTemplateName(), instance->m_typeParams);
