@@ -10,7 +10,7 @@ namespace frontend {
 
 TEST_CASE("Analyzing user-type templates", "[frontend]") {
 
-  SECTION("Construct templated type") {
+  SECTION("Construct templated struct") {
     const auto& output = ANALYZE("struct tuple{T1, T2} = T1 a, T2 b "
                                  "fun f() tuple{int, string}(1, \"hello world\")");
     REQUIRE(output.isSuccess());
@@ -32,7 +32,25 @@ TEST_CASE("Analyzing user-type templates", "[frontend]") {
             std::move(fArgs)));
   }
 
-  SECTION("Construct templated type with inferred type params") {
+  SECTION("Construct templated union") {
+    const auto& output = ANALYZE("struct none "
+                                 "union opt{T} = T, none "
+                                 "fun f() opt{int}(1)");
+    REQUIRE(output.isSuccess());
+
+    const auto& fDef = GET_FUNC_DEF(output, "f");
+    auto fArgs       = std::vector<prog::expr::NodePtr>{};
+    fArgs.push_back(prog::expr::litIntNode(output.getProg(), 1));
+
+    CHECK(
+        fDef.getExpr() ==
+        *prog::expr::callExprNode(
+            output.getProg(),
+            GET_FUNC_ID(output, "opt__int", GET_TYPE_ID(output, "int")),
+            std::move(fArgs)));
+  }
+
+  SECTION("Construct templated struct with inferred type params") {
     const auto& output = ANALYZE("struct tuple{T1, T2} = T1 a, T2 b "
                                  "fun f() tuple(1, \"hello world\")");
     REQUIRE(output.isSuccess());
@@ -54,7 +72,25 @@ TEST_CASE("Analyzing user-type templates", "[frontend]") {
             std::move(fArgs)));
   }
 
-  SECTION("Conversion to templated type") {
+  SECTION("Construct templated union with inferred type param") {
+    const auto& output = ANALYZE("struct none "
+                                 "union opt{T} = T, none "
+                                 "fun f() opt(1)");
+    REQUIRE(output.isSuccess());
+
+    const auto& fDef = GET_FUNC_DEF(output, "f");
+    auto fArgs       = std::vector<prog::expr::NodePtr>{};
+    fArgs.push_back(prog::expr::litIntNode(output.getProg(), 1));
+
+    CHECK(
+        fDef.getExpr() ==
+        *prog::expr::callExprNode(
+            output.getProg(),
+            GET_FUNC_ID(output, "opt__int", GET_TYPE_ID(output, "int")),
+            std::move(fArgs)));
+  }
+
+  SECTION("Conversion to templated struct") {
     const auto& output = ANALYZE("struct tuple{T1, T2} = T1 a, T2 b "
                                  "fun tuple{T}(T a) tuple{T, bool}(a, false) "
                                  "fun f() tuple{int}(1)");
