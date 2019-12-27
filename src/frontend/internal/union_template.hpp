@@ -29,6 +29,9 @@ private:
       const parse::UnionDeclStmtNode& parseNode);
 
   auto setupInstance(TypeTemplateInst* instance) -> void override;
+
+  [[nodiscard]] auto inferSubType(const std::string& subType, const prog::sym::TypeId& inputType)
+      -> std::optional<prog::sym::TypeId>;
 };
 
 } // namespace frontend::internal

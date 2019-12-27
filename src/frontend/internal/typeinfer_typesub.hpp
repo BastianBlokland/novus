@@ -23,6 +23,10 @@ template <typename TypeSpec>
     const std::vector<TypeSpec>& typeSpecs,
     const prog::sym::TypeSet& inputTypes) -> std::optional<prog::sym::TypeId> {
 
+  if (typeSpecs.size() != inputTypes.getCount()) {
+    throw std::invalid_argument{"Amount of type specifications and input types have to match"};
+  }
+
   /* Given a set of type specifications (like a argument list of a function or a field list of a
   struct) this will attempt to infer the type of the given substitution based on a set of input
   types. */
