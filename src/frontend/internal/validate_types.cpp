@@ -21,7 +21,7 @@ auto ValidateTypes::validate(prog::sym::TypeId id) -> void {
     auto visitedTypes = std::unordered_set<prog::sym::TypeId, prog::sym::TypeIdHasher>{};
     visitedTypes.insert(id);
 
-    const auto cyclicField = getCyclicField(fields, &visitedTypes);
+    const auto cyclicField = getCyclicField(fields, visitedTypes);
     if (cyclicField) {
       const auto fieldName = fields[*cyclicField].getName();
       m_context->reportDiag(
@@ -33,21 +33,22 @@ auto ValidateTypes::validate(prog::sym::TypeId id) -> void {
 
 auto ValidateTypes::getCyclicField(
     const prog::sym::FieldDeclTable& fields,
-    std::unordered_set<prog::sym::TypeId, prog::sym::TypeIdHasher>* visitedTypes)
+    const std::unordered_set<prog::sym::TypeId, prog::sym::TypeIdHasher>& visitedTypes)
     -> std::optional<prog::sym::FieldId> {
 
   for (const auto& f : fields) {
     const auto fType = f.getType();
-    if (visitedTypes->find(fType) != visitedTypes->end()) {
+    if (visitedTypes.find(fType) != visitedTypes.end()) {
       return f.getId();
     }
     const auto& fTypeDecl = m_context->getProg()->getTypeDecl(fType);
     if (fTypeDecl.getKind() == prog::sym::TypeKind::UserStruct) {
-      visitedTypes->insert(fTypeDecl.getId());
+      auto childVisitedTypes = visitedTypes;
+      childVisitedTypes.insert(fTypeDecl.getId());
 
       const auto& structDef =
           std::get<prog::sym::StructDef>(m_context->getProg()->getTypeDef(fType));
-      const auto cyclicField = getCyclicField(structDef.getFields(), visitedTypes);
+      const auto cyclicField = getCyclicField(structDef.getFields(), childVisitedTypes);
       if (cyclicField) {
         return f.getId();
       }

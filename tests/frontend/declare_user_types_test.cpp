@@ -51,6 +51,24 @@ TEST_CASE("Analyzing user-type declarations", "[frontend]") {
     CHECK(TYPE_EXISTS(output, "u__float_bool"));
   }
 
+  SECTION("Declare nested struct") {
+    const auto& output = ANALYZE("struct s1 = int a "
+                                 "struct s2 = s1 a, s1 b");
+    REQUIRE(output.isSuccess());
+    CHECK(TYPE_EXISTS(output, "s1"));
+    CHECK(TYPE_EXISTS(output, "s2"));
+  }
+
+  SECTION("Declare nested templated struct") {
+    const auto& output = ANALYZE("struct pair{T} = T a, T b "
+                                 "struct s1 = int a "
+                                 "struct s2 = pair{s1} a");
+    REQUIRE(output.isSuccess());
+    CHECK(TYPE_EXISTS(output, "pair__s1"));
+    CHECK(TYPE_EXISTS(output, "s1"));
+    CHECK(TYPE_EXISTS(output, "s2"));
+  }
+
   SECTION("Diagnostics") {
     CHECK_DIAG("struct int = bool i", errTypeAlreadyDeclared(src, "int", input::Span{7, 9}));
     CHECK_DIAG("union int = int, bool", errTypeAlreadyDeclared(src, "int", input::Span{6, 8}));

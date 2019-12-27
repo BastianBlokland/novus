@@ -75,6 +75,13 @@ TEST_CASE("Analyzing user-type definitions", "[frontend]") {
         errCyclicStruct(src, "a", "s1", input::Span{0, 15}),
         errCyclicStruct(src, "b", "s2", input::Span{17, 32}));
     CHECK_DIAG(
+        "struct s1 = s2 a "
+        "struct s2 = int a, s1 b "
+        "struct s3 = s1 a, s2 b",
+        errCyclicStruct(src, "a", "s1", input::Span{0, 15}),
+        errCyclicStruct(src, "b", "s2", input::Span{17, 39}),
+        errCyclicStruct(src, "a", "s3", input::Span{41, 62}));
+    CHECK_DIAG(
         "struct s{T} = T T "
         "struct s2 = s{int} s",
         errFieldNameConflictsWithTypeSubstitution(src, "T", input::Span{16, 16}),

@@ -18,7 +18,7 @@ private:
 
   [[nodiscard]] auto getCyclicField(
       const prog::sym::FieldDeclTable& fields,
-      std::unordered_set<prog::sym::TypeId, prog::sym::TypeIdHasher>* visitedTypes)
+      const std::unordered_set<prog::sym::TypeId, prog::sym::TypeIdHasher>& visitedTypes)
       -> std::optional<prog::sym::FieldId>;
 };
 
