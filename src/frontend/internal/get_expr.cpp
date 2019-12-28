@@ -105,12 +105,28 @@ auto GetExpr::visit(const parse::CallExprNode& n) -> void {
 
   const auto func = m_context->getProg()->lookupFunc(possibleFuncs, args->second, -1);
   if (!func) {
-    auto argTypeNames = std::vector<std::string>{};
-    for (const auto& argType : args->second) {
-      argTypeNames.push_back(getName(m_context, argType));
+    auto isTypeOrConv = isType(m_context, getName(n.getFunc()));
+    if (n.getTypeParams()) {
+      if (isTypeOrConv) {
+        m_context->reportDiag(errNoTypeOrConversionFoundToInstantiate(
+            m_context->getSrc(), getName(n.getFunc()), n.getTypeParams()->getCount(), n.getSpan()));
+      } else {
+        m_context->reportDiag(errNoFuncFoundToInstantiate(
+            m_context->getSrc(), getName(n.getFunc()), n.getTypeParams()->getCount(), n.getSpan()));
+      }
+    } else {
+      auto argTypeNames = std::vector<std::string>{};
+      for (const auto& argType : args->second) {
+        argTypeNames.push_back(getName(m_context, argType));
+      }
+      if (isTypeOrConv) {
+        m_context->reportDiag(errUndeclaredTypeOrConversion(
+            m_context->getSrc(), getName(n.getFunc()), argTypeNames, n.getSpan()));
+      } else {
+        m_context->reportDiag(errUndeclaredFunc(
+            m_context->getSrc(), getName(n.getFunc()), argTypeNames, n.getSpan()));
+      }
     }
-    m_context->reportDiag(
-        errUndeclaredFunc(m_context->getSrc(), getName(n.getFunc()), argTypeNames, n.getSpan()));
     return;
   }
   m_expr = prog::expr::callExprNode(*m_context->getProg(), func.value(), std::move(args->first));
@@ -603,7 +619,7 @@ auto GetExpr::getFunctions(
     const std::optional<parse::TypeParamList>& typeParams,
     const prog::sym::TypeSet& argTypes,
     input::Span span) -> std::vector<prog::sym::FuncId> {
-  auto result  = m_context->getProg()->lookupFuncs(funcName);
+  auto result  = std::vector<prog::sym::FuncId>{};
   auto isValid = true;
 
   if (typeParams) {
@@ -622,8 +638,14 @@ auto GetExpr::getFunctions(
         result.push_back(*inst->getFunc());
       }
     }
-  } else {
-    // If no type params are given check if we can infer the type params for a function template.
+  } else { // no type params.
+
+    // Find all non-templated funcs.
+    for (const auto& f : m_context->getProg()->lookupFuncs(funcName)) {
+      result.push_back(f);
+    }
+
+    // Find templated funcs where we can infer the type params based on the argument types.
     const auto instantiations =
         m_context->getFuncTemplates()->inferParamsAndInstantiate(funcName, argTypes);
     for (const auto& inst : instantiations) {

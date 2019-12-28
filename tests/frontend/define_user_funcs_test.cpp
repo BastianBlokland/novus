@@ -59,12 +59,23 @@ TEST_CASE("Analyzing user-function definitions", "[frontend]") {
     CHECK_DIAG(
         "fun f(int a, int a) -> int true",
         errConstNameConflictsWithConst(src, "a", input::Span{17, 17}));
+    CHECK_DIAG("fun f() -> int f2()", errUndeclaredFunc(src, "f2", {}, input::Span{15, 18}));
     CHECK_DIAG(
-        "fun f2() -> int f{int}(1)", errUndeclaredFunc(src, "f", {"int"}, input::Span{16, 24}));
+        "fun f() -> int int(1)",
+        errUndeclaredTypeOrConversion(src, "int", {"int"}, input::Span{15, 20}));
+    CHECK_DIAG(
+        "fun f() -> int int{float}()",
+        errNoTypeOrConversionFoundToInstantiate(src, "int", 1, input::Span{15, 26}));
+    CHECK_DIAG(
+        "fun f2() -> int f{int}(1)", errNoFuncFoundToInstantiate(src, "f", 1, input::Span{16, 24}));
+    CHECK_DIAG(
+        "fun f1() -> int 1 "
+        "fun f2() -> int f1{int}()",
+        errNoFuncFoundToInstantiate(src, "f1", 1, input::Span{34, 42}));
     CHECK_DIAG(
         "fun f{T}(T t) t "
         "fun f2() -> int f{int, float}(1)",
-        errUndeclaredFunc(src, "f", {"int"}, input::Span{32, 47}));
+        errNoFuncFoundToInstantiate(src, "f", 2, input::Span{32, 47}));
     CHECK_DIAG(
         "fun f{T}(T T) -> T T "
         "fun f2() -> int f{int}(1)",

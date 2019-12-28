@@ -222,6 +222,35 @@ auto errUndeclaredType(const Source& src, const std::string& name, input::Span s
   return error(src, oss.str(), span);
 }
 
+auto errUndeclaredTypeOrConversion(
+    const Source& src,
+    const std::string& name,
+    const std::vector<std::string>& argTypes,
+    input::Span span) -> Diag {
+  std::ostringstream oss;
+  if (argTypes.empty()) {
+    oss << "No type or conversion '" << name << "' has been declared without any arguments";
+  } else {
+    oss << "No type or conversion '" << name << "' has been declared with argument types: ";
+    for (auto i = 0U; i < argTypes.size(); ++i) {
+      if (i != 0) {
+        oss << ", ";
+      }
+      oss << '\'' << argTypes[i] << '\'';
+    }
+  }
+  return error(src, oss.str(), span);
+}
+
+auto errNoTypeOrConversionFoundToInstantiate(
+    const Source& src, const std::string& name, unsigned int templateParamCount, input::Span span)
+    -> Diag {
+  std::ostringstream oss;
+  oss << "No templated type or conversion '" << name << "' has been declared with '"
+      << templateParamCount << "' type parameters";
+  return error(src, oss.str(), span);
+}
+
 auto errTypeParamOnSubstitutionType(const Source& src, const std::string& name, input::Span span)
     -> Diag {
   std::ostringstream oss;
@@ -264,6 +293,15 @@ auto errUndeclaredFunc(
       oss << '\'' << argTypes[i] << '\'';
     }
   }
+  return error(src, oss.str(), span);
+}
+
+auto errNoFuncFoundToInstantiate(
+    const Source& src, const std::string& name, unsigned int templateParamCount, input::Span span)
+    -> Diag {
+  std::ostringstream oss;
+  oss << "No templated function '" << name << "' has been declared with '" << templateParamCount
+      << "' type parameters";
   return error(src, oss.str(), span);
 }
 

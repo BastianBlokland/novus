@@ -108,6 +108,16 @@ errConstNameConflictsWithConst(const Source& src, const std::string& name, input
 [[nodiscard]] auto errUndeclaredType(const Source& src, const std::string& name, input::Span span)
     -> Diag;
 
+[[nodiscard]] auto errUndeclaredTypeOrConversion(
+    const Source& src,
+    const std::string& name,
+    const std::vector<std::string>& argTypes,
+    input::Span span) -> Diag;
+
+[[nodiscard]] auto errNoTypeOrConversionFoundToInstantiate(
+    const Source& src, const std::string& name, unsigned int templateParamCount, input::Span span)
+    -> Diag;
+
 [[nodiscard]] auto
 errTypeParamOnSubstitutionType(const Source& src, const std::string& name, input::Span span)
     -> Diag;
@@ -125,6 +135,10 @@ errUninitializedConst(const Source& src, const std::string& name, input::Span sp
     const std::string& name,
     const std::vector<std::string>& argTypes,
     input::Span span) -> Diag;
+
+[[nodiscard]] auto errNoFuncFoundToInstantiate(
+    const Source& src, const std::string& name, unsigned int templateParamCount, input::Span span)
+    -> Diag;
 
 [[nodiscard]] auto errUndeclaredIndexOperator(
     const Source& src, const std::vector<std::string>& argTypes, input::Span span) -> Diag;

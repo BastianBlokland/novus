@@ -24,18 +24,19 @@ auto getOrInstType(
     return std::nullopt;
   }
 
-  // Check if the type is a non-templated type.
-  auto type = context->getProg()->lookupType(typeName);
-  if (type) {
-    return type;
-  }
-
   // If type arguments are provided we attempt to instantiate a type using them.
   if (typeParams) {
     return instType(context, subTable, nameToken, *typeParams);
   }
 
-  // If no type arguments are provided attempt to infer them based on the constructor arguments.
+  // Check if the type is non-templated type.
+  auto type = context->getProg()->lookupType(typeName);
+  if (type) {
+    return type;
+  }
+
+  // Attempt to instantiate a templated type by infering the type parameters based on the
+  // constructor arguments.
   const auto typeInstantiation =
       context->getTypeTemplates()->inferParamsAndInstantiate(typeName, constructorArgs);
   if (typeInstantiation) {
