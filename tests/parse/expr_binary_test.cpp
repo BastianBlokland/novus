@@ -7,7 +7,7 @@ namespace parse {
 TEST_CASE("Parsing binary operators", "[parse]") {
 
   CHECK_EXPR("-1 + 2", binaryExprNode(unaryExprNode(MINUS, INT(1)), PLUS, INT(2)));
-  CHECK_EXPR("y == false", binaryExprNode(CONST("y"), EQEQ, BOOL(false)));
+  CHECK_EXPR("y == false", binaryExprNode(ID_EXPR("y"), EQEQ, BOOL(false)));
   CHECK_EXPR("1 + 2 + 3", binaryExprNode(binaryExprNode(INT(1), PLUS, INT(2)), PLUS, INT(3)));
   CHECK_EXPR(
       "1 + 3 1 * 2", binaryExprNode(INT(1), PLUS, INT(3)), binaryExprNode(INT(1), STAR, INT(2)));
@@ -25,16 +25,16 @@ TEST_CASE("Parsing binary operators", "[parse]") {
     CHECK_EXPR(
         "x || y && -z == q > -5 - 2 * 3",
         binaryExprNode(
-            CONST("x"),
+            ID_EXPR("x"),
             PIPEPIPE,
             binaryExprNode(
-                CONST("y"),
+                ID_EXPR("y"),
                 AMPAMP,
                 binaryExprNode(
-                    unaryExprNode(MINUS, CONST("z")),
+                    unaryExprNode(MINUS, ID_EXPR("z")),
                     EQEQ,
                     binaryExprNode(
-                        CONST("q"),
+                        ID_EXPR("q"),
                         GT,
                         binaryExprNode(
                             unaryExprNode(MINUS, INT(5)),

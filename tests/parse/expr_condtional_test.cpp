@@ -8,35 +8,37 @@ namespace parse {
 
 TEST_CASE("Parsing conditional expressions", "[parse]") {
 
-  CHECK_EXPR("x ? y : z", conditionalExprNode(CONST("x"), QMARK, CONST("y"), COLON, CONST("z")));
+  CHECK_EXPR(
+      "x ? y : z", conditionalExprNode(ID_EXPR("x"), QMARK, ID_EXPR("y"), COLON, ID_EXPR("z")));
   CHECK_EXPR(
       "x ? y : z ? a : b",
       conditionalExprNode(
-          CONST("x"),
+          ID_EXPR("x"),
           QMARK,
-          CONST("y"),
+          ID_EXPR("y"),
           COLON,
-          conditionalExprNode(CONST("z"), QMARK, CONST("a"), COLON, CONST("b"))));
+          conditionalExprNode(ID_EXPR("z"), QMARK, ID_EXPR("a"), COLON, ID_EXPR("b"))));
   CHECK_EXPR(
       "x ? (a; b) : z",
       conditionalExprNode(
-          CONST("x"),
+          ID_EXPR("x"),
           QMARK,
-          parenExprNode(OPAREN, groupExprNode(NODES(CONST("a"), CONST("b")), SEMIS(1)), CPAREN),
+          parenExprNode(OPAREN, groupExprNode(NODES(ID_EXPR("a"), ID_EXPR("b")), SEMIS(1)), CPAREN),
           COLON,
-          CONST("z")));
+          ID_EXPR("z")));
 
   SECTION("Errors") {
     CHECK_EXPR(
         "x ?",
         errInvalidConditionalExpr(
-            CONST("x"), QMARK, errInvalidPrimaryExpr(END), END, errInvalidPrimaryExpr(END)));
+            ID_EXPR("x"), QMARK, errInvalidPrimaryExpr(END), END, errInvalidPrimaryExpr(END)));
     CHECK_EXPR(
         "x ? y",
-        errInvalidConditionalExpr(CONST("x"), QMARK, CONST("y"), END, errInvalidPrimaryExpr(END)));
+        errInvalidConditionalExpr(
+            ID_EXPR("x"), QMARK, ID_EXPR("y"), END, errInvalidPrimaryExpr(END)));
     CHECK_EXPR(
         "x ? y :",
-        conditionalExprNode(CONST("x"), QMARK, CONST("y"), COLON, errInvalidPrimaryExpr(END)));
+        conditionalExprNode(ID_EXPR("x"), QMARK, ID_EXPR("y"), COLON, errInvalidPrimaryExpr(END)));
   }
 
   SECTION("Spans") { CHECK_EXPR_SPAN("x ? y : z", input::Span(0, 8)); }

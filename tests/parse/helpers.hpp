@@ -3,9 +3,9 @@
 #include "lex/lexer.hpp"
 #include "lex/token.hpp"
 #include "parse/node_expr_binary.hpp"
-#include "parse/node_expr_const.hpp"
 #include "parse/node_expr_const_decl.hpp"
 #include "parse/node_expr_group.hpp"
+#include "parse/node_expr_id.hpp"
 #include "parse/node_expr_lit.hpp"
 #include "parse/node_expr_paren.hpp"
 #include "parse/node_expr_unary.hpp"
@@ -36,6 +36,7 @@ namespace parse {
 #define SEMIS(COUNT) std::vector<lex::Token>(COUNT, lex::basicToken(lex::TokenKind::OpSemi))
 #define OPAREN lex::basicToken(lex::TokenKind::SepOpenParen)
 #define CPAREN lex::basicToken(lex::TokenKind::SepCloseParen)
+#define PARENPAREN lex::basicToken(lex::TokenKind::OpParenParen)
 #define OCURLY lex::basicToken(lex::TokenKind::SepOpenCurly)
 #define CCURLY lex::basicToken(lex::TokenKind::SepCloseCurly)
 #define OSQUARE lex::basicToken(lex::TokenKind::SepOpenSquare)
@@ -69,7 +70,7 @@ namespace parse {
 #define INT(VAL) litExprNode(lex::litIntToken(VAL))
 #define STR(VAL) litExprNode(lex::litStrToken(VAL))
 #define BOOL(VAL) litExprNode(lex::litBoolToken(VAL))
-#define CONST(ID) constExprNode(lex::identiferToken(ID))
+#define ID_EXPR(ID) idExprNode(lex::identiferToken(ID))
 #define CONSTDECL(ID, EXPR) constDeclExprNode(lex::identiferToken(ID), EQ, EXPR)
 
 #define CHECK_EXPR(INPUT, ...)                                                                     \

@@ -70,6 +70,9 @@ auto operator<<(std::ostream& out, const TokenKind& rhs) -> std::ostream& {
   case TokenKind::OpSquareSquare:
     out << "squaresquare";
     break;
+  case TokenKind::OpParenParen:
+    out << "parenparen";
+    break;
   case TokenKind::SepOpenParen:
     out << "open-paren";
     break;

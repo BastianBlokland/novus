@@ -26,7 +26,9 @@ TEST_CASE("Parsing group expressions", "[parse]") {
   CHECK_EXPR(
       "x == y; 1 == 2",
       groupExprNode(
-          NODES(binaryExprNode(CONST("x"), EQEQ, CONST("y")), binaryExprNode(INT(1), EQEQ, INT(2))),
+          NODES(
+              binaryExprNode(ID_EXPR("x"), EQEQ, ID_EXPR("y")),
+              binaryExprNode(INT(1), EQEQ, INT(2))),
           SEMIS(1)));
 
   SECTION("Errors") {

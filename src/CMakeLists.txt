@@ -34,9 +34,9 @@ add_library(parse STATIC
   parse/node_expr_call.cpp
   parse/node_expr_conditional.cpp
   parse/node_expr_const_decl.cpp
-  parse/node_expr_const.cpp
   parse/node_expr_field.cpp
   parse/node_expr_group.cpp
+  parse/node_expr_id.cpp
   parse/node_expr_index.cpp
   parse/node_expr_is.cpp
   parse/node_expr_lit.cpp
@@ -128,6 +128,7 @@ add_library(frontend STATIC
   frontend/internal/define_user_funcs.cpp
   frontend/internal/define_user_types.cpp
   frontend/internal/get_expr.cpp
+  frontend/internal/get_identifier.cpp
   frontend/internal/get_parse_diags.cpp
   frontend/internal/struct_template.cpp
   frontend/internal/type_info.cpp

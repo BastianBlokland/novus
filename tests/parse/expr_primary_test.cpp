@@ -8,7 +8,7 @@ namespace parse {
 TEST_CASE("Parsing primary expressions", "[parse]") {
 
   CHECK_EXPR("1 true \"hello world\" 42", INT(1), BOOL(true), STR("hello world"), INT(42));
-  CHECK_EXPR("x y z", CONST("x"), CONST("y"), CONST("z"));
+  CHECK_EXPR("x y z", ID_EXPR("x"), ID_EXPR("y"), ID_EXPR("z"));
 
   SECTION("Errors") {
     CHECK_EXPR("12a", errLexError(lex::errLitNumberInvalidChar()))

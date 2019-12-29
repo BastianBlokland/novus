@@ -33,7 +33,7 @@ private:
   auto nextExprPrimary() -> NodePtr;
   auto nextExprField(NodePtr lhs) -> NodePtr;
   auto nextExprIs(NodePtr lhs) -> NodePtr;
-  auto nextExprCall(lex::Token id) -> NodePtr;
+  auto nextExprCall(NodePtr lhs) -> NodePtr;
   auto nextExprIndex(NodePtr lhs) -> NodePtr;
   auto nextExprConditional(NodePtr condExpr) -> NodePtr;
   auto nextExprParen() -> NodePtr;

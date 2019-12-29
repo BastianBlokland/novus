@@ -57,6 +57,8 @@ namespace frontend::internal {
     return prog::Operator::ColonColon;
   case lex::TokenKind::OpSquareSquare:
     return prog::Operator::SquareSquare;
+  case lex::TokenKind::OpParenParen:
+    return prog::Operator::ParenParen;
   default:
     return std::nullopt;
   }
@@ -96,6 +98,8 @@ namespace frontend::internal {
     return "::";
   case prog::Operator::SquareSquare:
     return "[]";
+  case prog::Operator::ParenParen:
+    return "()";
   }
   return "__unknown";
 }

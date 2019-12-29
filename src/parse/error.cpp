@@ -62,11 +62,15 @@ auto errInvalidStmtFuncDecl(
     oss << "Expected function identifier but got: " << id;
   } else if (typeSubs && !typeSubs->validate()) {
     oss << "Invalid type substitution parameters";
-  } else if (open.getKind() != lex::TokenKind::SepOpenParen) {
+  } else if (
+      open.getKind() != lex::TokenKind::SepOpenParen &&
+      open.getKind() != lex::TokenKind::OpParenParen) {
     oss << "Expected opening parentheses '(' but got: " << open;
   } else if (commas.size() != (args.empty() ? 0 : args.size() - 1)) {
     oss << "Incorrect number of comma's ',' in function declaration";
-  } else if (close.getKind() != lex::TokenKind::SepCloseParen) {
+  } else if (
+      close.getKind() != lex::TokenKind::SepCloseParen &&
+      close.getKind() != lex::TokenKind::OpParenParen) {
     oss << "Expected closing parentheses ')' but got: " << close;
   } else if (retType && retType->getArrow().getKind() != lex::TokenKind::SepArrow) {
     oss << "Expected return-type seperator (->) but got: " << retType->getArrow();
@@ -193,9 +197,12 @@ auto errInvalidStmtExec(
     lex::Token close) -> NodePtr {
 
   std::ostringstream oss;
-  if (open.getKind() != lex::TokenKind::SepOpenParen) {
+  if (open.getKind() != lex::TokenKind::SepOpenParen &&
+      open.getKind() != lex::TokenKind::OpParenParen) {
     oss << "Expected opening parentheses '(' but got: " << open;
-  } else if (close.getKind() != lex::TokenKind::SepCloseParen) {
+  } else if (
+      close.getKind() != lex::TokenKind::SepCloseParen &&
+      close.getKind() != lex::TokenKind::OpParenParen) {
     oss << "Expected closing parentheses ')' but got: " << close;
   } else if (commas.size() != (args.empty() ? 0 : args.size() - 1)) {
     oss << "Incorrect number of comma's ',' in execute statement";
@@ -235,9 +242,12 @@ auto errInvalidUnaryOp(lex::Token op, NodePtr rhs) -> NodePtr {
 
 auto errInvalidParenExpr(lex::Token open, NodePtr expr, lex::Token close) -> NodePtr {
   std::ostringstream oss;
-  if (open.getKind() != lex::TokenKind::SepOpenParen) {
+  if (open.getKind() != lex::TokenKind::SepOpenParen &&
+      open.getKind() != lex::TokenKind::OpParenParen) {
     oss << "Expected opening parentheses '(' but got: " << open;
-  } else if (close.getKind() != lex::TokenKind::SepCloseParen) {
+  } else if (
+      close.getKind() != lex::TokenKind::SepCloseParen &&
+      close.getKind() != lex::TokenKind::OpParenParen) {
     oss << "Expected closing parentheses ')' but got: " << close;
   } else {
     oss << "Invalid parenthesized expression";
@@ -298,7 +308,7 @@ auto errInvalidIsExpr(NodePtr lhs, lex::Token kw, const Type& type, lex::Token i
 }
 
 auto errInvalidCallExpr(
-    lex::Token func,
+    NodePtr lhs,
     std::optional<TypeParamList> typeParams,
     lex::Token open,
     std::vector<NodePtr> args,
@@ -310,23 +320,32 @@ auto errInvalidCallExpr(
     oss << "Incorrect number of comma's ',' in call expression";
   } else if (typeParams && !typeParams->validate()) {
     oss << "Invalid type parameters";
-  } else if (open.getKind() != lex::TokenKind::SepOpenParen) {
+  } else if (
+      open.getKind() != lex::TokenKind::SepOpenParen &&
+      open.getKind() != lex::TokenKind::OpParenParen) {
     oss << "Expected opening parentheses '(' but got: " << open;
-  } else if (close.getKind() != lex::TokenKind::SepCloseParen) {
+  } else if (
+      close.getKind() != lex::TokenKind::SepCloseParen &&
+      close.getKind() != lex::TokenKind::OpParenParen) {
     oss << "Expected closing parentheses ')' but got: " << close;
   } else {
     oss << "Invalid call expression";
   }
 
   auto tokens = std::vector<lex::Token>{};
-  tokens.push_back(std::move(func));
   tokens.push_back(std::move(open));
   for (auto& comma : commas) {
     tokens.push_back(std::move(comma));
   }
   tokens.push_back(std::move(close));
 
-  return errorNode(oss.str(), std::move(tokens), std::move(args));
+  auto nodes = std::vector<NodePtr>{};
+  nodes.push_back(std::move(lhs));
+  for (auto& arg : args) {
+    nodes.push_back(std::move(arg));
+  }
+
+  return errorNode(oss.str(), std::move(tokens), std::move(nodes));
 }
 
 auto errInvalidIndexExpr(

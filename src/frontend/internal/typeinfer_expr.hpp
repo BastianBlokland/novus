@@ -21,7 +21,7 @@ public:
   auto visit(const parse::CallExprNode& n) -> void override;
   auto visit(const parse::ConditionalExprNode& n) -> void override;
   auto visit(const parse::ConstDeclExprNode& n) -> void override;
-  auto visit(const parse::ConstExprNode& n) -> void override;
+  auto visit(const parse::IdExprNode& n) -> void override;
   auto visit(const parse::FieldExprNode& n) -> void override;
   auto visit(const parse::GroupExprNode& n) -> void override;
   auto visit(const parse::IndexExprNode& n) -> void override;
@@ -45,11 +45,12 @@ private:
   prog::sym::TypeId m_type;
 
   auto inferSubExpr(const parse::Node& n) -> prog::sym::TypeId;
-  auto inferFuncCall(const std::string& funcName, const prog::sym::TypeSet& argTypes)
+  [[nodiscard]] auto inferDynCall(const parse::CallExprNode& n) -> prog::sym::TypeId;
+  [[nodiscard]] auto inferFuncCall(const std::string& funcName, const prog::sym::TypeSet& argTypes)
       -> prog::sym::TypeId;
 
   auto setConstType(const lex::Token& constId, prog::sym::TypeId type) -> void;
-  auto inferConstType(const lex::Token& constId) -> prog::sym::TypeId;
+  [[nodiscard]] auto inferConstType(const lex::Token& constId) -> prog::sym::TypeId;
 
   [[nodiscard]] auto isType(const std::string& name) const -> bool;
 };

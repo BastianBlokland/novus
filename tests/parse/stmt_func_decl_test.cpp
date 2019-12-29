@@ -2,7 +2,7 @@
 #include "helpers.hpp"
 #include "parse/error.hpp"
 #include "parse/node_expr_binary.hpp"
-#include "parse/node_expr_const.hpp"
+#include "parse/node_expr_id.hpp"
 #include "parse/node_stmt_func_decl.hpp"
 
 namespace parse {
@@ -63,7 +63,7 @@ TEST_CASE("Parsing function declaration statements", "[parse]") {
           COMMAS(2),
           CPAREN,
           FuncDeclStmtNode::RetTypeSpec{ARROW, TYPE("int")},
-          binaryExprNode(CONST("x"), STAR, CONST("y"))));
+          binaryExprNode(ID_EXPR("x"), STAR, ID_EXPR("y"))));
   CHECK_STMT(
       "fun a{T}() 1",
       funcDeclStmtNode(
@@ -99,7 +99,7 @@ TEST_CASE("Parsing function declaration statements", "[parse]") {
           COMMAS(0),
           CPAREN,
           FuncDeclStmtNode::RetTypeSpec{ARROW, TYPE("T")},
-          CONST("x")));
+          ID_EXPR("x")));
   CHECK_STMT(
       "fun a() -> List{T{Y}} 1",
       funcDeclStmtNode(
@@ -123,7 +123,7 @@ TEST_CASE("Parsing function declaration statements", "[parse]") {
           COMMAS(0),
           CPAREN,
           FuncDeclStmtNode::RetTypeSpec{ARROW, TYPE("T")},
-          CONST("x")));
+          ID_EXPR("x")));
   CHECK_STMT(
       "fun a{T, U}(T{U} x) x",
       funcDeclStmtNode(
@@ -135,7 +135,7 @@ TEST_CASE("Parsing function declaration statements", "[parse]") {
           COMMAS(0),
           CPAREN,
           std::nullopt,
-          CONST("x")));
+          ID_EXPR("x")));
 
   SECTION("Errors") {
     CHECK_STMT(
@@ -201,7 +201,15 @@ TEST_CASE("Parsing function declaration statements", "[parse]") {
     CHECK_STMT(
         "fun _() 1",
         errInvalidStmtFuncDecl(
-            FUN, DISCARD, std::nullopt, OPAREN, {}, COMMAS(0), CPAREN, std::nullopt, INT(1)));
+            FUN,
+            DISCARD,
+            std::nullopt,
+            PARENPAREN,
+            {},
+            COMMAS(0),
+            PARENPAREN,
+            std::nullopt,
+            INT(1)));
     CHECK_STMT(
         "fun a(",
         errInvalidStmtFuncDecl(
@@ -288,17 +296,17 @@ TEST_CASE("Parsing function declaration statements", "[parse]") {
             COMMAS(1),
             ARROW,
             std::nullopt,
-            constExprNode(ID("int"))));
+            idExprNode(ID("int"))));
     CHECK_STMT(
         "fun a() -> T{} 1",
         errInvalidStmtFuncDecl(
             FUN,
             ID("a"),
             std::nullopt,
-            OPAREN,
+            PARENPAREN,
             {},
             COMMAS(0),
-            CPAREN,
+            PARENPAREN,
             FuncDeclStmtNode::RetTypeSpec{ARROW,
                                           Type(ID("T"), TypeParamList(OCURLY, {}, {}, CCURLY))},
             INT(1)));
@@ -314,7 +322,7 @@ TEST_CASE("Parsing function declaration statements", "[parse]") {
             COMMAS(0),
             CPAREN,
             std::nullopt,
-            CONST("x")));
+            ID_EXPR("x")));
   }
 
   SECTION("Spans") {

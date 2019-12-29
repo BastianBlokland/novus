@@ -10,17 +10,18 @@ namespace parse {
 
 TEST_CASE("Parsing field expressions", "[parse]") {
 
-  CHECK_EXPR("x.a", fieldExprNode(CONST("x"), DOT, ID("a")));
-  CHECK_EXPR("-x.a", unaryExprNode(MINUS, fieldExprNode(CONST("x"), DOT, ID("a"))));
+  CHECK_EXPR("x.a", fieldExprNode(ID_EXPR("x"), DOT, ID("a")));
+  CHECK_EXPR("-x.a", unaryExprNode(MINUS, fieldExprNode(ID_EXPR("x"), DOT, ID("a"))));
   CHECK_EXPR(
       "(x + y).a",
       fieldExprNode(
-          parenExprNode(OPAREN, binaryExprNode(CONST("x"), PLUS, CONST("y")), CPAREN),
+          parenExprNode(OPAREN, binaryExprNode(ID_EXPR("x"), PLUS, ID_EXPR("y")), CPAREN),
           DOT,
           ID("a")));
-  CHECK_EXPR("x * y.a", binaryExprNode(CONST("x"), STAR, fieldExprNode(CONST("y"), DOT, ID("a"))));
+  CHECK_EXPR(
+      "x * y.a", binaryExprNode(ID_EXPR("x"), STAR, fieldExprNode(ID_EXPR("y"), DOT, ID("a"))));
 
-  SECTION("Errors") { CHECK_EXPR("x.+", errInvalidFieldExpr(CONST("x"), DOT, PLUS)); }
+  SECTION("Errors") { CHECK_EXPR("x.+", errInvalidFieldExpr(ID_EXPR("x"), DOT, PLUS)); }
 
   SECTION("Spans") { CHECK_EXPR_SPAN("x.a", input::Span(0, 2)); }
 }

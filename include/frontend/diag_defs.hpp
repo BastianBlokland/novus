@@ -67,6 +67,10 @@ errFuncNameConflictsWithAction(const Source& src, const std::string& name, input
 errNonOverloadableOperator(const Source& src, const std::string& name, input::Span span) -> Diag;
 
 [[nodiscard]] auto
+errOperatorOverloadWithoutArgs(const Source& src, const std::string& name, input::Span span)
+    -> Diag;
+
+[[nodiscard]] auto
 errTypeParamNameConflictsWithType(const Source& src, const std::string& name, input::Span span)
     -> Diag;
 
@@ -139,6 +143,12 @@ errUninitializedConst(const Source& src, const std::string& name, input::Span sp
 [[nodiscard]] auto errNoFuncFoundToInstantiate(
     const Source& src, const std::string& name, unsigned int templateParamCount, input::Span span)
     -> Diag;
+
+[[nodiscard]] auto errTypeParamsOnDynamicCallIsNotSupported(const Source& src, input::Span span)
+    -> Diag;
+
+[[nodiscard]] auto errUndeclaredCallOperator(
+    const Source& src, const std::vector<std::string>& argTypes, input::Span span) -> Diag;
 
 [[nodiscard]] auto errUndeclaredIndexOperator(
     const Source& src, const std::vector<std::string>& argTypes, input::Span span) -> Diag;

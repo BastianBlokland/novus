@@ -20,6 +20,7 @@ enum class Operator {
   GtEq,
   ColonColon,
   SquareSquare,
+  ParenParen,
 };
 
 auto getFuncName(Operator op) -> std::string;

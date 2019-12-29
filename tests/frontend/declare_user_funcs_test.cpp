@@ -148,6 +148,12 @@ TEST_CASE("Analyzing user-function declarations", "[frontend]") {
         "fun f() f{int}(1)",
         errTypeParamOnSubstitutionType(src, "T", input::Span{9, 14}),
         errUndeclaredType(src, "T", input::Span{9, 14}));
+    CHECK_DIAG(
+        "fun +() -> int i",
+        errOperatorOverloadWithoutArgs(src, "operator-plus", input::Span{4, 4}));
+    CHECK_DIAG(
+        "fun +{T}() -> T T()",
+        errOperatorOverloadWithoutArgs(src, "operator-plus", input::Span{4, 4}));
   }
 }
 
