@@ -95,19 +95,19 @@ TEST_CASE("Parsing call expressions", "[parse]") {
         errInvalidCallExpr(
             ID("a"),
             TypeParamList{OCURLY, {}, COMMAS(0), END},
-            OPAREN,
+            PARENPAREN,
             NODES(),
             COMMAS(0),
-            CPAREN));
+            PARENPAREN));
     CHECK_EXPR(
         "a{T U}()",
         errInvalidCallExpr(
             ID("a"),
             TypeParamList{OCURLY, {TYPE("T"), TYPE("U")}, COMMAS(0), END},
-            OPAREN,
+            PARENPAREN,
             NODES(),
             COMMAS(0),
-            CPAREN));
+            PARENPAREN));
     CHECK_EXPR(
         "a(,",
         errInvalidCallExpr(

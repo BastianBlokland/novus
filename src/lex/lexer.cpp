@@ -136,6 +136,10 @@ auto LexerImpl::next() -> Token {
       }
       return basicToken(TokenKind::OpDot, input::Span{m_inputPos});
     case '(':
+      if (peekChar(0) == ')') {
+        consumeChar();
+        return basicToken(TokenKind::OpParenParen, input::Span{m_inputPos - 1, m_inputPos});
+      }
       return basicToken(TokenKind::SepOpenParen, input::Span{m_inputPos});
     case ')':
       return basicToken(TokenKind::SepCloseParen, input::Span{m_inputPos});

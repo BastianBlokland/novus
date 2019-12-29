@@ -37,6 +37,8 @@ auto getFuncName(Operator op) -> std::string {
     return "__op_coloncolon";
   case Operator::SquareSquare:
     return "__op_squaresquare";
+  case Operator::ParenParen:
+    return "__op_parenparen";
   }
   throw std::invalid_argument("Unknown operator");
 }

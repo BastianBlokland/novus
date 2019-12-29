@@ -201,7 +201,15 @@ TEST_CASE("Parsing function declaration statements", "[parse]") {
     CHECK_STMT(
         "fun _() 1",
         errInvalidStmtFuncDecl(
-            FUN, DISCARD, std::nullopt, OPAREN, {}, COMMAS(0), CPAREN, std::nullopt, INT(1)));
+            FUN,
+            DISCARD,
+            std::nullopt,
+            PARENPAREN,
+            {},
+            COMMAS(0),
+            PARENPAREN,
+            std::nullopt,
+            INT(1)));
     CHECK_STMT(
         "fun a(",
         errInvalidStmtFuncDecl(
@@ -295,10 +303,10 @@ TEST_CASE("Parsing function declaration statements", "[parse]") {
             FUN,
             ID("a"),
             std::nullopt,
-            OPAREN,
+            PARENPAREN,
             {},
             COMMAS(0),
-            CPAREN,
+            PARENPAREN,
             FuncDeclStmtNode::RetTypeSpec{ARROW,
                                           Type(ID("T"), TypeParamList(OCURLY, {}, {}, CCURLY))},
             INT(1)));

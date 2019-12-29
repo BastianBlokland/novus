@@ -36,6 +36,7 @@ namespace parse {
 #define SEMIS(COUNT) std::vector<lex::Token>(COUNT, lex::basicToken(lex::TokenKind::OpSemi))
 #define OPAREN lex::basicToken(lex::TokenKind::SepOpenParen)
 #define CPAREN lex::basicToken(lex::TokenKind::SepCloseParen)
+#define PARENPAREN lex::basicToken(lex::TokenKind::OpParenParen)
 #define OCURLY lex::basicToken(lex::TokenKind::SepOpenCurly)
 #define CCURLY lex::basicToken(lex::TokenKind::SepCloseCurly)
 #define OSQUARE lex::basicToken(lex::TokenKind::SepOpenSquare)
