@@ -137,6 +137,13 @@ auto errNonOverloadableOperator(const Source& src, const std::string& name, inpu
   return error(src, oss.str(), span);
 }
 
+auto errOperatorOverloadWithoutArgs(const Source& src, const std::string& name, input::Span span)
+    -> Diag {
+  std::ostringstream oss;
+  oss << "Operator '" << name << "' cannot be defined without arguments";
+  return error(src, oss.str(), span);
+}
+
 auto errTypeParamNameConflictsWithType(const Source& src, const std::string& name, input::Span span)
     -> Diag {
   std::ostringstream oss;

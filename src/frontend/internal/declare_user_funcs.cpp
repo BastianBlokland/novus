@@ -32,6 +32,12 @@ auto DeclareUserFuncs::visit(const parse::FuncDeclStmtNode& n) -> void {
     }
     name        = prog::getFuncName(*op);
     displayName = "operator-" + n.getId().str();
+
+    if (n.getArgs().empty()) {
+      m_context->reportDiag(
+          errOperatorOverloadWithoutArgs(m_context->getSrc(), displayName, n.getId().getSpan()));
+      return;
+    }
   }
 
   // If the function is a template then we don't declare it in the program yet but declare it in

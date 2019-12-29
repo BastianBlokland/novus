@@ -67,6 +67,10 @@ errFuncNameConflictsWithAction(const Source& src, const std::string& name, input
 errNonOverloadableOperator(const Source& src, const std::string& name, input::Span span) -> Diag;
 
 [[nodiscard]] auto
+errOperatorOverloadWithoutArgs(const Source& src, const std::string& name, input::Span span)
+    -> Diag;
+
+[[nodiscard]] auto
 errTypeParamNameConflictsWithType(const Source& src, const std::string& name, input::Span span)
     -> Diag;
 
