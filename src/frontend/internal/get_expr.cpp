@@ -1,6 +1,7 @@
 #include "internal/get_expr.hpp"
 #include "frontend/diag_defs.hpp"
 #include "internal/check_union_exhaustiveness.hpp"
+#include "internal/get_identifier.hpp"
 #include "internal/utilities.hpp"
 #include "lex/token_payload_lit_bool.hpp"
 #include "lex/token_payload_lit_float.hpp"
@@ -11,6 +12,12 @@
 #include <sstream>
 
 namespace frontend::internal {
+
+static auto getIdentifier(const parse::Node& n) -> std::optional<lex::Token> {
+  auto visitor = GetIdentifier{};
+  n.accept(&visitor);
+  return visitor.getIdentifier();
+}
 
 GetExpr::GetExpr(
     Context* context,
@@ -91,28 +98,37 @@ auto GetExpr::visit(const parse::BinaryExprNode& n) -> void {
 }
 
 auto GetExpr::visit(const parse::CallExprNode& n) -> void {
-  auto args = getChildExprs(n);
+  // If the lhs is not an identifier (but a different expression) or if the identifier is a constant
+  // then treat it as a 'dynamic' call, otherwise its a regular function call.
+  auto identifier = getIdentifier(n[0]);
+  if (!identifier || m_consts->lookup(getName(*identifier))) {
+    m_expr = getDynCallExpr(n);
+    return;
+  }
+
+  auto nameToken = *identifier;
+  auto args      = getChildExprs(n, 1);
   if (!args) {
     assert(m_context->hasErrors());
     return;
   }
 
   const auto possibleFuncs =
-      getFunctionsInclConversions(n.getFunc(), n.getTypeParams(), args->second);
+      getFunctionsInclConversions(nameToken, n.getTypeParams(), args->second);
   if (m_context->hasErrors()) {
     return;
   }
 
   const auto func = m_context->getProg()->lookupFunc(possibleFuncs, args->second, -1);
   if (!func) {
-    auto isTypeOrConv = isType(m_context, getName(n.getFunc()));
+    auto isTypeOrConv = isType(m_context, getName(nameToken));
     if (n.getTypeParams()) {
       if (isTypeOrConv) {
         m_context->reportDiag(errNoTypeOrConversionFoundToInstantiate(
-            m_context->getSrc(), getName(n.getFunc()), n.getTypeParams()->getCount(), n.getSpan()));
+            m_context->getSrc(), getName(nameToken), n.getTypeParams()->getCount(), n.getSpan()));
       } else {
         m_context->reportDiag(errNoFuncFoundToInstantiate(
-            m_context->getSrc(), getName(n.getFunc()), n.getTypeParams()->getCount(), n.getSpan()));
+            m_context->getSrc(), getName(nameToken), n.getTypeParams()->getCount(), n.getSpan()));
       }
     } else {
       auto argTypeNames = std::vector<std::string>{};
@@ -121,10 +137,10 @@ auto GetExpr::visit(const parse::CallExprNode& n) -> void {
       }
       if (isTypeOrConv) {
         m_context->reportDiag(errUndeclaredTypeOrConversion(
-            m_context->getSrc(), getName(n.getFunc()), argTypeNames, n.getSpan()));
+            m_context->getSrc(), getName(nameToken), argTypeNames, n.getSpan()));
       } else {
-        m_context->reportDiag(errUndeclaredFunc(
-            m_context->getSrc(), getName(n.getFunc()), argTypeNames, n.getSpan()));
+        m_context->reportDiag(
+            errUndeclaredFunc(m_context->getSrc(), getName(nameToken), argTypeNames, n.getSpan()));
       }
     }
     return;
@@ -470,23 +486,12 @@ auto GetExpr::visit(const parse::UnionDeclStmtNode & /*unused*/) -> void {
   throw std::logic_error{"GetExpr is not implemented for this node type"};
 }
 
-auto GetExpr::getSubExpr(
-    const parse::Node& n,
-    std::vector<prog::sym::ConstId>* visibleConsts,
-    prog::sym::TypeId typeHint,
-    bool checkedConstsAccess) -> prog::expr::NodePtr {
-  auto visitor =
-      GetExpr{m_context, m_typeSubTable, m_consts, visibleConsts, typeHint, checkedConstsAccess};
-  n.accept(&visitor);
-  return std::move(visitor.getValue());
-}
-
-auto GetExpr::getChildExprs(const parse::Node& n)
+auto GetExpr::getChildExprs(const parse::Node& n, unsigned int skipAmount)
     -> std::optional<std::pair<std::vector<prog::expr::NodePtr>, prog::sym::TypeSet>> {
   auto isValid  = true;
   auto argTypes = std::vector<prog::sym::TypeId>{};
   auto args     = std::vector<prog::expr::NodePtr>{};
-  for (auto i = 0U; i < n.getChildCount(); ++i) {
+  for (auto i = skipAmount; i < n.getChildCount(); ++i) {
     auto arg = getSubExpr(n[i], m_visibleConsts, prog::sym::TypeId::inferType());
     if (arg) {
       const auto argType = arg->getType();
@@ -504,6 +509,17 @@ auto GetExpr::getChildExprs(const parse::Node& n)
 
   auto argTypeSet = prog::sym::TypeSet{std::move(argTypes)};
   return std::make_pair(std::move(args), std::move(argTypeSet));
+}
+
+auto GetExpr::getSubExpr(
+    const parse::Node& n,
+    std::vector<prog::sym::ConstId>* visibleConsts,
+    prog::sym::TypeId typeHint,
+    bool checkedConstsAccess) -> prog::expr::NodePtr {
+  auto visitor =
+      GetExpr{m_context, m_typeSubTable, m_consts, visibleConsts, typeHint, checkedConstsAccess};
+  n.accept(&visitor);
+  return std::move(visitor.getValue());
 }
 
 auto GetExpr::applyConversion(prog::expr::NodePtr* expr, prog::sym::TypeId toType, input::Span span)
@@ -573,6 +589,35 @@ auto GetExpr::getBinLogicOpExpr(const parse::BinaryExprNode& n, BinLogicOp op)
         *m_context->getProg(), std::move(conditions), std::move(branches));
   }
   return nullptr;
+}
+
+auto GetExpr::getDynCallExpr(const parse::CallExprNode& n) -> prog::expr::NodePtr {
+  if (n.getTypeParams()) {
+    m_context->reportDiag(
+        errTypeParamsOnDynamicCallIsNotSupported(m_context->getSrc(), n.getSpan()));
+    return nullptr;
+  }
+
+  auto args = getChildExprs(n);
+  if (!args) {
+    assert(m_context->hasErrors());
+    return nullptr;
+  }
+
+  const auto funcName      = prog::getFuncName(prog::Operator::ParenParen);
+  const auto possibleFuncs = getFunctions(funcName, std::nullopt, args->second, n.getSpan());
+  const auto func          = m_context->getProg()->lookupFunc(possibleFuncs, args->second, -1);
+  if (!func) {
+    auto argTypeNames = std::vector<std::string>{};
+    for (const auto& argType : args->second) {
+      argTypeNames.push_back(getName(m_context, argType));
+    }
+    m_context->reportDiag(
+        errUndeclaredCallOperator(m_context->getSrc(), argTypeNames, n.getSpan()));
+    return nullptr;
+  }
+
+  return prog::expr::callExprNode(*m_context->getProg(), func.value(), std::move(args->first));
 }
 
 auto GetExpr::declareConst(const lex::Token& nameToken, prog::sym::TypeId type)

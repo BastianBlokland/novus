@@ -55,7 +55,7 @@ auto errInvalidFieldExpr(NodePtr lhs, lex::Token dot, lex::Token id) -> NodePtr;
 auto errInvalidIsExpr(NodePtr lhs, lex::Token kw, const Type& type, lex::Token id) -> NodePtr;
 
 auto errInvalidCallExpr(
-    lex::Token func,
+    NodePtr lhs,
     std::optional<TypeParamList> typeParams,
     lex::Token open,
     std::vector<NodePtr> args,

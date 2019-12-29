@@ -35,7 +35,7 @@ TEST_CASE("Parsing execute statements", "[parse]") {
       execStmtNode(
           ID("print"),
           OPAREN,
-          NODES(callExprNode(ID("a"), std::nullopt, OPAREN, NODES(), COMMAS(0), CPAREN)),
+          NODES(callExprNode(ID_EXPR("a"), std::nullopt, OPAREN, NODES(), COMMAS(0), CPAREN)),
           COMMAS(0),
           CPAREN));
 

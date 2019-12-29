@@ -1,10 +1,17 @@
 #include "internal/typeinfer_expr.hpp"
 #include "frontend/diag_defs.hpp"
 #include "internal/context.hpp"
+#include "internal/get_identifier.hpp"
 #include "internal/utilities.hpp"
 #include "parse/nodes.hpp"
 
 namespace frontend::internal {
+
+static auto getIdentifier(const parse::Node& n) -> std::optional<lex::Token> {
+  auto visitor = GetIdentifier{};
+  n.accept(&visitor);
+  return visitor.getIdentifier();
+}
 
 TypeInferExpr::TypeInferExpr(
     Context* context,
@@ -57,18 +64,26 @@ auto TypeInferExpr::visit(const parse::BinaryExprNode& n) -> void {
 }
 
 auto TypeInferExpr::visit(const parse::CallExprNode& n) -> void {
-  const auto funcName = getName(n.getFunc());
+  auto identifier = getIdentifier(n[0]);
+
+  // Dynamic call.
+  if (!identifier || m_constTypes->find(getName(*identifier)) != m_constTypes->end()) {
+    m_type = inferDynCall(n);
+    return;
+  }
+  auto nameToken = *identifier;
+  auto funcName  = getName(nameToken);
 
   auto argTypes = std::vector<prog::sym::TypeId>{};
   argTypes.reserve(n.getChildCount());
-  for (auto i = 0U; i < n.getChildCount(); ++i) {
+  for (auto i = 1U; i < n.getChildCount(); ++i) {
     argTypes.push_back(inferSubExpr(n[i]));
   }
   const auto argTypeSet = prog::sym::TypeSet{std::move(argTypes)};
 
   // Check if this is calling a constructor / conversion.
   auto convType =
-      getOrInstType(m_context, m_typeSubTable, n.getFunc(), n.getTypeParams(), argTypeSet);
+      getOrInstType(m_context, m_typeSubTable, nameToken, n.getTypeParams(), argTypeSet);
   if (convType) {
     m_type = *convType;
     return;
@@ -268,6 +283,17 @@ auto TypeInferExpr::inferSubExpr(const parse::Node& n) -> prog::sym::TypeId {
   auto visitor = TypeInferExpr{m_context, m_typeSubTable, m_constTypes, m_aggressive};
   n.accept(&visitor);
   return visitor.getInferredType();
+}
+
+auto TypeInferExpr::inferDynCall(const parse::CallExprNode& n) -> prog::sym::TypeId {
+  auto argTypes = std::vector<prog::sym::TypeId>{};
+  argTypes.reserve(n.getChildCount());
+  for (auto i = 0U; i < n.getChildCount(); ++i) {
+    argTypes.push_back(inferSubExpr(n[i]));
+  }
+  const auto argTypeSet = prog::sym::TypeSet{std::move(argTypes)};
+  const auto funcName   = prog::getFuncName(prog::Operator::ParenParen);
+  return inferFuncCall(funcName, argTypeSet);
 }
 
 auto TypeInferExpr::inferFuncCall(const std::string& funcName, const prog::sym::TypeSet& argTypes)

@@ -128,6 +128,7 @@ add_library(frontend STATIC
   frontend/internal/define_user_funcs.cpp
   frontend/internal/define_user_types.cpp
   frontend/internal/get_expr.cpp
+  frontend/internal/get_identifier.cpp
   frontend/internal/get_parse_diags.cpp
   frontend/internal/struct_template.cpp
   frontend/internal/type_info.cpp

@@ -1,6 +1,7 @@
 #include "catch2/catch.hpp"
 #include "frontend/diag_defs.hpp"
 #include "helpers.hpp"
+#include "prog/expr/node_const.hpp"
 #include "prog/expr/node_lit_int.hpp"
 
 namespace frontend {
@@ -71,6 +72,39 @@ TEST_CASE("Analyzing call expressions", "[frontend]") {
             std::move(args)));
   }
 
+  SECTION("Get call to overloaded call operator on literal") {
+    const auto& output = ANALYZE("fun ()(int i) -> int i * i "
+                                 "fun f() -> int 1()");
+    REQUIRE(output.isSuccess());
+
+    auto args = std::vector<prog::expr::NodePtr>{};
+    args.push_back(prog::expr::litIntNode(output.getProg(), 1));
+    CHECK(
+        GET_FUNC_DEF(output, "f").getExpr() ==
+        *prog::expr::callExprNode(
+            output.getProg(),
+            GET_FUNC_ID(output, "__op_parenparen", GET_TYPE_ID(output, "int")),
+            std::move(args)));
+  }
+
+  SECTION("Get call to overloaded call operator on const") {
+    const auto& output = ANALYZE("fun ()(int i) -> int i * i "
+                                 "fun f(int i) -> int i()");
+    REQUIRE(output.isSuccess());
+
+    const auto& fDef   = GET_FUNC_DEF(output, "f", GET_TYPE_ID(output, "int"));
+    const auto& consts = fDef.getConsts();
+
+    auto args = std::vector<prog::expr::NodePtr>{};
+    args.push_back(prog::expr::constExprNode(consts, *consts.lookup("i")));
+    CHECK(
+        fDef.getExpr() ==
+        *prog::expr::callExprNode(
+            output.getProg(),
+            GET_FUNC_ID(output, "__op_parenparen", GET_TYPE_ID(output, "int")),
+            std::move(args)));
+  }
+
   SECTION("Diagnostics") {
     CHECK_DIAG(
         "fun f1() -> int 1 "
@@ -80,6 +114,15 @@ TEST_CASE("Analyzing call expressions", "[frontend]") {
         "fun f1() -> int 1 "
         "fun f2() -> int f2(1)",
         errUndeclaredFunc(src, "f2", {"int"}, input::Span{34, 38}));
+    CHECK_DIAG("fun f() -> int 1()", errUndeclaredCallOperator(src, {"int"}, input::Span{15, 17}));
+    CHECK_DIAG(
+        "fun f(int i) -> int i()", errUndeclaredCallOperator(src, {"int"}, input::Span{20, 22}));
+    CHECK_DIAG(
+        "fun f() -> int 1{T}()",
+        errTypeParamsOnDynamicCallIsNotSupported(src, input::Span{15, 20}));
+    CHECK_DIAG(
+        "fun f(int i) -> int i{T}()",
+        errTypeParamsOnDynamicCallIsNotSupported(src, input::Span{20, 25}));
   }
 }
 

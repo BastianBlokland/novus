@@ -237,6 +237,11 @@ auto ParserImpl::nextExpr(const int minPrecedence) -> NodePtr {
     }
 
     switch (nextToken.getKind()) {
+    case lex::TokenKind::SepOpenParen:
+    case lex::TokenKind::OpParenParen:
+    case lex::TokenKind::SepOpenCurly:
+      lhs = nextExprCall(std::move(lhs));
+      break;
     case lex::TokenKind::OpSemi:
       lhs = nextExprGroup(std::move(lhs), rhsPrecedence);
       break;
@@ -303,11 +308,6 @@ auto ParserImpl::nextExprPrimary() -> NodePtr {
       auto eq = consumeToken();
       return constDeclExprNode(std::move(id), eq, nextExpr(assignmentPrecedence));
     }
-    if (peekToken(0).getKind() == lex::TokenKind::SepOpenParen ||
-        peekToken(0).getKind() == lex::TokenKind::OpParenParen ||
-        peekToken(0).getKind() == lex::TokenKind::SepOpenCurly) {
-      return nextExprCall(std::move(id));
-    }
     return idExprNode(std::move(id));
   }
   case lex::TokenCat::Keyword:
@@ -345,7 +345,7 @@ auto ParserImpl::nextExprIs(NodePtr lhs) -> NodePtr {
   return errInvalidIsExpr(std::move(lhs), kw, type, std::move(id));
 }
 
-auto ParserImpl::nextExprCall(lex::Token id) -> NodePtr {
+auto ParserImpl::nextExprCall(NodePtr lhs) -> NodePtr {
   auto typeParams = peekToken(0).getKind() == lex::TokenKind::SepOpenCurly
       ? std::optional<TypeParamList>{nextTypeParamList()}
       : std::nullopt;
@@ -367,10 +367,10 @@ auto ParserImpl::nextExprCall(lex::Token id) -> NodePtr {
   if (validateParentheses(open, close) && (!typeParams || typeParams->validate()) &&
       commas.size() == (args.empty() ? 0 : args.size() - 1)) {
     return callExprNode(
-        std::move(id), std::move(typeParams), open, std::move(args), std::move(commas), close);
+        std::move(lhs), std::move(typeParams), open, std::move(args), std::move(commas), close);
   }
   return errInvalidCallExpr(
-      std::move(id), std::move(typeParams), open, std::move(args), std::move(commas), close);
+      std::move(lhs), std::move(typeParams), open, std::move(args), std::move(commas), close);
 }
 
 auto ParserImpl::nextExprIndex(NodePtr lhs) -> NodePtr {

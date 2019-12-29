@@ -53,7 +53,7 @@ private:
 
   prog::expr::NodePtr m_expr;
 
-  [[nodiscard]] auto getChildExprs(const parse::Node& n)
+  [[nodiscard]] auto getChildExprs(const parse::Node& n, unsigned int skipAmount = 0U)
       -> std::optional<std::pair<std::vector<prog::expr::NodePtr>, prog::sym::TypeSet>>;
 
   [[nodiscard]] auto getSubExpr(
@@ -67,6 +67,8 @@ private:
 
   [[nodiscard]] auto getBinLogicOpExpr(const parse::BinaryExprNode& n, BinLogicOp op)
       -> prog::expr::NodePtr;
+
+  [[nodiscard]] auto getDynCallExpr(const parse::CallExprNode& n) -> prog::expr::NodePtr;
 
   [[nodiscard]] auto declareConst(const lex::Token& nameToken, prog::sym::TypeId type)
       -> std::optional<prog::sym::ConstId>;

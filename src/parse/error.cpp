@@ -308,7 +308,7 @@ auto errInvalidIsExpr(NodePtr lhs, lex::Token kw, const Type& type, lex::Token i
 }
 
 auto errInvalidCallExpr(
-    lex::Token func,
+    NodePtr lhs,
     std::optional<TypeParamList> typeParams,
     lex::Token open,
     std::vector<NodePtr> args,
@@ -333,14 +333,19 @@ auto errInvalidCallExpr(
   }
 
   auto tokens = std::vector<lex::Token>{};
-  tokens.push_back(std::move(func));
   tokens.push_back(std::move(open));
   for (auto& comma : commas) {
     tokens.push_back(std::move(comma));
   }
   tokens.push_back(std::move(close));
 
-  return errorNode(oss.str(), std::move(tokens), std::move(args));
+  auto nodes = std::vector<NodePtr>{};
+  nodes.push_back(std::move(lhs));
+  for (auto& arg : args) {
+    nodes.push_back(std::move(arg));
+  }
+
+  return errorNode(oss.str(), std::move(tokens), std::move(nodes));
 }
 
 auto errInvalidIndexExpr(

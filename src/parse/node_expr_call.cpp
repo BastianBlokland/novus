@@ -4,13 +4,13 @@
 namespace parse {
 
 CallExprNode::CallExprNode(
-    lex::Token func,
+    NodePtr lhs,
     std::optional<TypeParamList> typeParams,
     lex::Token open,
     std::vector<NodePtr> args,
     std::vector<lex::Token> commas,
     lex::Token close) :
-    m_func{std::move(func)},
+    m_lhs{std::move(lhs)},
     m_typeParams{std::move(typeParams)},
     m_open{std::move(open)},
     m_args{std::move(args)},
@@ -19,7 +19,7 @@ CallExprNode::CallExprNode(
 
 auto CallExprNode::operator==(const Node& rhs) const noexcept -> bool {
   const auto r = dynamic_cast<const CallExprNode*>(&rhs);
-  return r != nullptr && m_func == r->m_func && nodesEqual(m_args, r->m_args);
+  return r != nullptr && *m_lhs == *r->m_lhs && nodesEqual(m_args, r->m_args);
 }
 
 auto CallExprNode::operator!=(const Node& rhs) const noexcept -> bool {
@@ -27,19 +27,20 @@ auto CallExprNode::operator!=(const Node& rhs) const noexcept -> bool {
 }
 
 auto CallExprNode::operator[](unsigned int i) const -> const Node& {
-  if (i >= m_args.size()) {
+  if (i == 0) {
+    return *m_lhs;
+  }
+  if (i > m_args.size()) {
     throw std::out_of_range{"No child at given index"};
   }
-  return *m_args[i];
+  return *m_args[i - 1];
 }
 
-auto CallExprNode::getChildCount() const -> unsigned int { return m_args.size(); }
+auto CallExprNode::getChildCount() const -> unsigned int { return m_args.size() + 1; }
 
 auto CallExprNode::getSpan() const -> input::Span {
-  return input::Span::combine(m_func.getSpan(), m_close.getSpan());
+  return input::Span::combine(m_lhs->getSpan(), m_close.getSpan());
 }
-
-auto CallExprNode::getFunc() const -> const lex::Token& { return m_func; }
 
 auto CallExprNode::getTypeParams() const -> const std::optional<TypeParamList>& {
   return m_typeParams;
@@ -48,7 +49,7 @@ auto CallExprNode::getTypeParams() const -> const std::optional<TypeParamList>& 
 auto CallExprNode::accept(NodeVisitor* visitor) const -> void { visitor->visit(*this); }
 
 auto CallExprNode::print(std::ostream& out) const -> std::ostream& {
-  out << "call-" << ::parse::getId(m_func).value_or("error");
+  out << "call";
   if (m_typeParams) {
     out << *m_typeParams;
   }
@@ -57,7 +58,7 @@ auto CallExprNode::print(std::ostream& out) const -> std::ostream& {
 
 // Factories.
 auto callExprNode(
-    lex::Token func,
+    NodePtr lhs,
     std::optional<TypeParamList> typeParams,
     lex::Token open,
     std::vector<NodePtr> args,
@@ -69,7 +70,7 @@ auto callExprNode(
   if (args.empty() ? !commas.empty() : commas.size() != args.size() - 1) {
     throw std::invalid_argument{"Incorrect number of commas"};
   }
-  return std::unique_ptr<CallExprNode>{new CallExprNode{std::move(func),
+  return std::unique_ptr<CallExprNode>{new CallExprNode{std::move(lhs),
                                                         std::move(typeParams),
                                                         std::move(open),
                                                         std::move(args),
