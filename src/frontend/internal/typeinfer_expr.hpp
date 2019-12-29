@@ -21,7 +21,7 @@ public:
   auto visit(const parse::CallExprNode& n) -> void override;
   auto visit(const parse::ConditionalExprNode& n) -> void override;
   auto visit(const parse::ConstDeclExprNode& n) -> void override;
-  auto visit(const parse::ConstExprNode& n) -> void override;
+  auto visit(const parse::IdExprNode& n) -> void override;
   auto visit(const parse::FieldExprNode& n) -> void override;
   auto visit(const parse::GroupExprNode& n) -> void override;
   auto visit(const parse::IndexExprNode& n) -> void override;

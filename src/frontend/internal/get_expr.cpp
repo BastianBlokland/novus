@@ -189,7 +189,7 @@ auto GetExpr::visit(const parse::ConstDeclExprNode& n) -> void {
   }
 }
 
-auto GetExpr::visit(const parse::ConstExprNode& n) -> void {
+auto GetExpr::visit(const parse::IdExprNode& n) -> void {
   const auto& name   = getName(n.getId());
   const auto constId = m_consts->lookup(name);
   if (!constId) {

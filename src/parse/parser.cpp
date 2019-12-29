@@ -290,7 +290,7 @@ auto ParserImpl::nextExprPrimary() -> NodePtr {
         peekToken(0).getKind() == lex::TokenKind::SepOpenCurly) {
       return nextExprCall(std::move(id));
     }
-    return constExprNode(std::move(id));
+    return idExprNode(std::move(id));
   }
   case lex::TokenCat::Keyword:
     if (getKw(nextTok) == lex::Keyword::If) {

@@ -4,11 +4,11 @@
 
 namespace parse {
 
-class ConstExprNode final : public Node {
-  friend auto constExprNode(lex::Token id) -> NodePtr;
+class IdExprNode final : public Node {
+  friend auto idExprNode(lex::Token id) -> NodePtr;
 
 public:
-  ConstExprNode() = delete;
+  IdExprNode() = delete;
 
   auto operator==(const Node& rhs) const noexcept -> bool override;
   auto operator!=(const Node& rhs) const noexcept -> bool override;
@@ -24,12 +24,12 @@ public:
 private:
   const lex::Token m_id;
 
-  explicit ConstExprNode(lex::Token id);
+  explicit IdExprNode(lex::Token id);
 
   auto print(std::ostream& out) const -> std::ostream& override;
 };
 
 // Factories.
-auto constExprNode(lex::Token id) -> NodePtr;
+auto idExprNode(lex::Token id) -> NodePtr;
 
 } // namespace parse

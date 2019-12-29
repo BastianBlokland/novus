@@ -15,17 +15,18 @@ TEST_CASE("Parsing switch expressions", "[parse]") {
       "if x -> 1 "
       "else -> 2",
       switchExprNode(
-          NODES(switchExprIfNode(IF, CONST("x"), ARROW, INT(1))),
+          NODES(switchExprIfNode(IF, ID_EXPR("x"), ARROW, INT(1))),
           switchExprElseNode(ELSE, ARROW, INT(2))));
   CHECK_EXPR(
-      "if x -> 1", switchExprNode(NODES(switchExprIfNode(IF, CONST("x"), ARROW, INT(1))), nullptr));
+      "if x -> 1",
+      switchExprNode(NODES(switchExprIfNode(IF, ID_EXPR("x"), ARROW, INT(1))), nullptr));
   CHECK_EXPR(
       "if x -> 1 "
       "if y -> 2",
       switchExprNode(
           NODES(
-              switchExprIfNode(IF, CONST("x"), ARROW, INT(1)),
-              switchExprIfNode(IF, CONST("y"), ARROW, INT(2))),
+              switchExprIfNode(IF, ID_EXPR("x"), ARROW, INT(1)),
+              switchExprIfNode(IF, ID_EXPR("y"), ARROW, INT(2))),
           nullptr));
   CHECK_EXPR(
       "if y > 5 -> x + 1 "
@@ -33,10 +34,10 @@ TEST_CASE("Parsing switch expressions", "[parse]") {
       switchExprNode(
           NODES(switchExprIfNode(
               IF,
-              binaryExprNode(CONST("y"), GT, INT(5)),
+              binaryExprNode(ID_EXPR("y"), GT, INT(5)),
               ARROW,
-              binaryExprNode(CONST("x"), PLUS, INT(1)))),
-          switchExprElseNode(ELSE, ARROW, binaryExprNode(CONST("x"), STAR, INT(2)))));
+              binaryExprNode(ID_EXPR("x"), PLUS, INT(1)))),
+          switchExprElseNode(ELSE, ARROW, binaryExprNode(ID_EXPR("x"), STAR, INT(2)))));
   CHECK_EXPR(
       "if x -> 1 "
       "if y -> 2 "
@@ -44,9 +45,9 @@ TEST_CASE("Parsing switch expressions", "[parse]") {
       "else -> 4",
       switchExprNode(
           NODES(
-              switchExprIfNode(IF, CONST("x"), ARROW, INT(1)),
-              switchExprIfNode(IF, CONST("y"), ARROW, INT(2)),
-              switchExprIfNode(IF, CONST("z"), ARROW, INT(3))),
+              switchExprIfNode(IF, ID_EXPR("x"), ARROW, INT(1)),
+              switchExprIfNode(IF, ID_EXPR("y"), ARROW, INT(2)),
+              switchExprIfNode(IF, ID_EXPR("z"), ARROW, INT(3))),
           switchExprElseNode(ELSE, ARROW, INT(4))));
   CHECK_EXPR(
       "a(if x -> 1 else -> 2, 3)",
@@ -56,7 +57,7 @@ TEST_CASE("Parsing switch expressions", "[parse]") {
           OPAREN,
           NODES(
               switchExprNode(
-                  NODES(switchExprIfNode(IF, CONST("x"), ARROW, INT(1))),
+                  NODES(switchExprIfNode(IF, ID_EXPR("x"), ARROW, INT(1))),
                   switchExprElseNode(ELSE, ARROW, INT(2))),
               INT(3)),
           COMMAS(1),
@@ -72,7 +73,7 @@ TEST_CASE("Parsing switch expressions", "[parse]") {
     CHECK_EXPR(
         "if x -> 1 else",
         switchExprNode(
-            NODES(switchExprIfNode(IF, CONST("x"), ARROW, INT(1))),
+            NODES(switchExprIfNode(IF, ID_EXPR("x"), ARROW, INT(1))),
             errInvalidSwitchElse(ELSE, END, errInvalidPrimaryExpr(END))));
   }
 

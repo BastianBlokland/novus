@@ -40,7 +40,7 @@ public:
     m_bg = rang::bg::reset;
   }
 
-  auto visit(const parse::ConstExprNode & /*unused*/) -> void override {
+  auto visit(const parse::IdExprNode & /*unused*/) -> void override {
     m_fg = rang::fg::magenta;
     m_bg = rang::bg::reset;
   }

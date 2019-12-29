@@ -125,7 +125,7 @@ auto TypeInferExpr::visit(const parse::ConstDeclExprNode& n) -> void {
   setConstType(n.getId(), assignmentType);
 }
 
-auto TypeInferExpr::visit(const parse::ConstExprNode& n) -> void {
+auto TypeInferExpr::visit(const parse::IdExprNode& n) -> void {
   m_type = inferConstType(n.getId());
 }
 

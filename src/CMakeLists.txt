@@ -34,9 +34,9 @@ add_library(parse STATIC
   parse/node_expr_call.cpp
   parse/node_expr_conditional.cpp
   parse/node_expr_const_decl.cpp
-  parse/node_expr_const.cpp
   parse/node_expr_field.cpp
   parse/node_expr_group.cpp
+  parse/node_expr_id.cpp
   parse/node_expr_index.cpp
   parse/node_expr_is.cpp
   parse/node_expr_lit.cpp

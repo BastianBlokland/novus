@@ -9,7 +9,7 @@ TEST_CASE("Parsing unary operators", "[parse]") {
   CHECK_EXPR("-1", unaryExprNode(MINUS, INT(1)))
   CHECK_EXPR("+1", unaryExprNode(PLUS, INT(1)))
   CHECK_EXPR("!1", unaryExprNode(BANG, INT(1)))
-  CHECK_EXPR("!x", unaryExprNode(BANG, CONST("x")))
+  CHECK_EXPR("!x", unaryExprNode(BANG, ID_EXPR("x")))
   CHECK_EXPR("--1", unaryExprNode(MINUS, unaryExprNode(MINUS, INT(1))));
   CHECK_EXPR("++1", unaryExprNode(PLUS, unaryExprNode(PLUS, INT(1))));
   CHECK_EXPR("-+-1", unaryExprNode(MINUS, unaryExprNode(PLUS, unaryExprNode(MINUS, INT(1)))));
