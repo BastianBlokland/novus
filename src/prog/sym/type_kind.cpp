@@ -22,6 +22,9 @@ auto operator<<(std::ostream& out, const TypeKind& rhs) -> std::ostream& {
   case TypeKind::UserUnion:
     out << "union";
     break;
+  case TypeKind::UserDelegate:
+    out << "delegate";
+    break;
   }
   return out;
 }

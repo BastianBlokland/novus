@@ -45,6 +45,11 @@ auto Builder::addLoadLitString(const std::string& val) -> void {
   writeInt32(litId);
 }
 
+auto Builder::addLoadLitIp(std::string label) -> void {
+  writeOpCode(vm::OpCode::LoadLitIp);
+  writeIpOffset(std::move(label));
+}
+
 auto Builder::addReserveConsts(uint8_t amount) -> void {
   writeOpCode(vm::OpCode::ReserveConsts);
   writeUInt8(amount);
@@ -91,6 +96,8 @@ auto Builder::addCheckEqInt() -> void { writeOpCode(vm::OpCode::CheckEqInt); }
 auto Builder::addCheckEqFloat() -> void { writeOpCode(vm::OpCode::CheckEqFloat); }
 
 auto Builder::addCheckEqString() -> void { writeOpCode(vm::OpCode::CheckEqString); }
+
+auto Builder::addCheckEqIp() -> void { writeOpCode(vm::OpCode::CheckEqIp); }
 
 auto Builder::addCheckGtInt() -> void { writeOpCode(vm::OpCode::CheckGtInt); }
 
@@ -149,6 +156,8 @@ auto Builder::addCall(std::string label) -> void {
   writeOpCode(vm::OpCode::Call);
   writeIpOffset(std::move(label));
 }
+
+auto Builder::addCallDyn() -> void { writeOpCode(vm::OpCode::CallDyn); }
 
 auto Builder::addRet() -> void { writeOpCode(vm::OpCode::Ret); }
 

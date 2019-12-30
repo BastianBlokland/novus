@@ -27,6 +27,8 @@ auto CheckUnionExhaustiveness::visit(const prog::expr::SwitchExprNode & /*unused
 
 auto CheckUnionExhaustiveness::visit(const prog::expr::CallExprNode & /*unused*/) -> void {}
 
+auto CheckUnionExhaustiveness::visit(const prog::expr::CallDynExprNode & /*unused*/) -> void {}
+
 auto CheckUnionExhaustiveness::visit(const prog::expr::ConstExprNode & /*unused*/) -> void {}
 
 auto CheckUnionExhaustiveness::visit(const prog::expr::FieldExprNode & /*unused*/) -> void {}
@@ -56,6 +58,8 @@ auto CheckUnionExhaustiveness::visit(const prog::expr::FailNode & /*unused*/) ->
 auto CheckUnionExhaustiveness::visit(const prog::expr::LitBoolNode & /*unused*/) -> void {}
 
 auto CheckUnionExhaustiveness::visit(const prog::expr::LitFloatNode & /*unused*/) -> void {}
+
+auto CheckUnionExhaustiveness::visit(const prog::expr::LitFuncNode & /*unused*/) -> void {}
 
 auto CheckUnionExhaustiveness::visit(const prog::expr::LitIntNode & /*unused*/) -> void {}
 

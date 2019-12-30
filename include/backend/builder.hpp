@@ -24,6 +24,7 @@ public:
   auto addLoadLitInt(int32_t val) -> void;
   auto addLoadLitFloat(float val) -> void;
   auto addLoadLitString(const std::string& val) -> void;
+  auto addLoadLitIp(std::string label) -> void;
 
   auto addReserveConsts(uint8_t amount) -> void;
   auto addStoreConst(uint8_t constId) -> void;
@@ -46,6 +47,7 @@ public:
   auto addCheckEqInt() -> void;
   auto addCheckEqFloat() -> void;
   auto addCheckEqString() -> void;
+  auto addCheckEqIp() -> void;
   auto addCheckGtInt() -> void;
   auto addCheckGtFloat() -> void;
   auto addCheckLeInt() -> void;
@@ -66,6 +68,7 @@ public:
   auto addJumpIf(std::string label) -> void;
 
   auto addCall(std::string label) -> void;
+  auto addCallDyn() -> void;
   auto addRet() -> void;
 
   auto addDup() -> void;

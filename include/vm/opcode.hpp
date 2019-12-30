@@ -13,9 +13,11 @@ enum class OpCode : uint8_t {
   LoadLitFloat  = 20,
   LoadLitString = 21,
 
-  ReserveConsts = 30,
-  StoreConst    = 31,
-  LoadConst     = 32,
+  LoadLitIp = 30,
+
+  ReserveConsts = 40,
+  StoreConst    = 41,
+  LoadConst     = 42,
 
   AddInt      = 50,
   AddFloat    = 51,
@@ -34,10 +36,11 @@ enum class OpCode : uint8_t {
   CheckEqInt    = 70,
   CheckEqFloat  = 71,
   CheckEqString = 72,
-  CheckGtInt    = 73,
-  CheckGtFloat  = 74,
-  CheckLeInt    = 75,
-  CheckLeFloat  = 76,
+  CheckEqIp     = 73,
+  CheckGtInt    = 74,
+  CheckGtFloat  = 75,
+  CheckLeInt    = 76,
+  CheckLeFloat  = 77,
 
   ConvIntFloat    = 81,
   ConvFloatInt    = 82,
@@ -52,8 +55,9 @@ enum class OpCode : uint8_t {
   Jump   = 220,
   JumpIf = 221,
 
-  Call = 230,
-  Ret  = 231,
+  Call    = 230,
+  CallDyn = 231,
+  Ret     = 232,
 
   Dup = 240,
   Pop = 241,

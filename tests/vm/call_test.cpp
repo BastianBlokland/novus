@@ -31,6 +31,23 @@ TEST_CASE("Execute calls", "[vm]") {
         builder->addEntryPoint("section1");
       },
       "1337");
+
+  CHECK_PROG(
+      [](backend::Builder* builder) -> void {
+        builder->label("section1");
+        builder->addLoadLitIp("section2");
+        builder->addCallDyn();
+        builder->addConvIntString();
+        builder->addPrintString();
+        builder->addRet();
+
+        builder->label("section2");
+        builder->addLoadLitInt(1337);
+        builder->addRet();
+
+        builder->addEntryPoint("section1");
+      },
+      "1337");
 }
 
 } // namespace vm

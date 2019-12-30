@@ -51,6 +51,10 @@ static auto execute(const Assembly& assembly, io::Interface* interface, uint32_t
       auto strRef         = allocator.allocStrLit(litStr);
       evalStack.push(internal::refValue(strRef));
     } break;
+    case OpCode::LoadLitIp: {
+      auto litIp = scope->readUInt32();
+      evalStack.push(internal::uintValue(litIp));
+    } break;
 
     case OpCode::ReserveConsts: {
       auto amount = scope->readUInt8();
@@ -161,6 +165,11 @@ static auto execute(const Assembly& assembly, io::Interface* interface, uint32_t
           std::memcmp(a->getDataPtr(), b->getDataPtr(), a->getSize()) == 0;
       evalStack.push(internal::intValue(eq ? 1 : 0));
     } break;
+    case OpCode::CheckEqIp: {
+      auto b = evalStack.pop().getUInt();
+      auto a = evalStack.pop().getUInt();
+      evalStack.push(internal::intValue(a == b ? 1 : 0));
+    } break;
     case OpCode::CheckGtInt: {
       auto b = evalStack.pop().getInt();
       auto a = evalStack.pop().getInt();
@@ -252,6 +261,10 @@ static auto execute(const Assembly& assembly, io::Interface* interface, uint32_t
 
     case OpCode::Call: {
       auto ipOffset = scope->readUInt32();
+      callStack.push(assembly, ipOffset);
+    } break;
+    case OpCode::CallDyn: {
+      auto ipOffset = evalStack.pop().getUInt();
       callStack.push(assembly, ipOffset);
     } break;
     case OpCode::Ret: {

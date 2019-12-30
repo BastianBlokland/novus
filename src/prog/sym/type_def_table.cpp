@@ -46,4 +46,16 @@ auto TypeDefTable::registerUnion(
   m_types.insert({id, UnionDef{id, std::move(types)}});
 }
 
+auto TypeDefTable::registerDelegate(
+    const sym::TypeDeclTable& typeTable, sym::TypeId id, TypeSet input, TypeId output) -> void {
+  if (typeTable[id].getKind() != sym::TypeKind::UserDelegate) {
+    throw std::invalid_argument{"Type has not been declared as being a user-defined delegate"};
+  }
+  auto itr = m_types.find(id);
+  if (itr != m_types.end()) {
+    throw std::logic_error{"Type already has a definition registered"};
+  }
+  m_types.insert({id, DelegateDef{id, std::move(input), output}});
+}
+
 } // namespace prog::sym

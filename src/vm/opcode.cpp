@@ -25,6 +25,10 @@ auto operator<<(std::ostream& out, const OpCode& rhs) -> std::ostream& {
     out << "load-string";
     break;
 
+  case OpCode::LoadLitIp:
+    out << "load-ip";
+    break;
+
   case OpCode::ReserveConsts:
     out << "reserve-consts";
     break;
@@ -84,6 +88,9 @@ auto operator<<(std::ostream& out, const OpCode& rhs) -> std::ostream& {
   case OpCode::CheckEqString:
     out << "check-eq-string";
     break;
+  case OpCode::CheckEqIp:
+    out << "check-eq-ip";
+    break;
   case OpCode::CheckGtInt:
     out << "check-gt-int";
     break;
@@ -130,6 +137,9 @@ auto operator<<(std::ostream& out, const OpCode& rhs) -> std::ostream& {
 
   case OpCode::Call:
     out << "call";
+    break;
+  case OpCode::CallDyn:
+    out << "call-dyn";
     break;
   case OpCode::Ret:
     out << "ret";

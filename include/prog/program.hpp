@@ -92,10 +92,12 @@ public:
 
   auto declareUserStruct(std::string name) -> sym::TypeId;
   auto declareUserUnion(std::string name) -> sym::TypeId;
+  auto declareUserDelegate(std::string name) -> sym::TypeId;
   auto declareUserFunc(std::string name, sym::TypeSet input, sym::TypeId output) -> sym::FuncId;
 
   auto defineUserStruct(sym::TypeId id, sym::FieldDeclTable fields) -> void;
   auto defineUserUnion(sym::TypeId id, std::vector<sym::TypeId> types) -> void;
+  auto defineUserDelegate(sym::TypeId id, sym::TypeSet input, sym::TypeId output) -> void;
   auto defineUserFunc(sym::FuncId id, sym::ConstDeclTable consts, expr::NodePtr expr) -> void;
 
   auto
