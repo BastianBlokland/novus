@@ -43,6 +43,12 @@ TEST_CASE("Parsing binary operators", "[parse]") {
     CHECK_EXPR(
         "1 :: 2 :: 3",
         binaryExprNode(INT(1), COLONCOLON, binaryExprNode(INT(2), COLONCOLON, INT(3))));
+    CHECK_EXPR(
+        "a{int} + b{float}",
+        binaryExprNode(
+            ID_EXPR_PARAM("a", TypeParamList(OCURLY, {TYPE("int")}, COMMAS(0), CCURLY)),
+            PLUS,
+            ID_EXPR_PARAM("b", TypeParamList(OCURLY, {TYPE("float")}, COMMAS(0), CCURLY))));
   }
 
   SECTION("Errors") {

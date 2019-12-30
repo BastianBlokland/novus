@@ -7,12 +7,6 @@
 
 namespace frontend::internal {
 
-static auto getIdentifier(const parse::Node& n) -> std::optional<lex::Token> {
-  auto visitor = GetIdentifier{};
-  n.accept(&visitor);
-  return visitor.getIdentifier();
-}
-
 TypeInferExpr::TypeInferExpr(
     Context* context,
     const TypeSubstitutionTable* typeSubTable,
@@ -64,7 +58,10 @@ auto TypeInferExpr::visit(const parse::BinaryExprNode& n) -> void {
 }
 
 auto TypeInferExpr::visit(const parse::CallExprNode& n) -> void {
-  auto identifier = getIdentifier(n[0]);
+  auto getIdVisitor = GetIdentifier{};
+  n[0].accept(&getIdVisitor);
+  auto identifier = getIdVisitor.getIdentifier();
+  auto typeParams = getIdVisitor.getTypeParams();
 
   // Dynamic call.
   if (!identifier || m_constTypes->find(getName(*identifier)) != m_constTypes->end()) {
@@ -82,16 +79,15 @@ auto TypeInferExpr::visit(const parse::CallExprNode& n) -> void {
   const auto argTypeSet = prog::sym::TypeSet{std::move(argTypes)};
 
   // Check if this is calling a constructor / conversion.
-  auto convType =
-      getOrInstType(m_context, m_typeSubTable, nameToken, n.getTypeParams(), argTypeSet);
+  auto convType = getOrInstType(m_context, m_typeSubTable, nameToken, typeParams, argTypeSet);
   if (convType) {
     m_type = *convType;
     return;
   }
 
   // Templated function.
-  if (n.getTypeParams()) {
-    const auto typeSet = getTypeSet(m_context, m_typeSubTable, n.getTypeParams()->getTypes());
+  if (typeParams) {
+    const auto typeSet = getTypeSet(m_context, m_typeSubTable, typeParams->getTypes());
     if (!typeSet) {
       return;
     }

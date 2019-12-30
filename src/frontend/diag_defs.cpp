@@ -312,9 +312,10 @@ auto errNoFuncFoundToInstantiate(
   return error(src, oss.str(), span);
 }
 
-auto errTypeParamsOnDynamicCallIsNotSupported(const Source& src, input::Span span) -> Diag {
+auto errTypeParametersProvidedToConstant(
+    const Source& src, const std::string& name, input::Span span) -> Diag {
   std::ostringstream oss;
-  oss << "Dynamic calls do not support explicitly specified type arguments";
+  oss << "Explicit type parameters provided to constant '" << name << "', this is not supported";
   return error(src, oss.str(), span);
 }
 

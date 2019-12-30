@@ -5,13 +5,11 @@ namespace parse {
 
 CallExprNode::CallExprNode(
     NodePtr lhs,
-    std::optional<TypeParamList> typeParams,
     lex::Token open,
     std::vector<NodePtr> args,
     std::vector<lex::Token> commas,
     lex::Token close) :
     m_lhs{std::move(lhs)},
-    m_typeParams{std::move(typeParams)},
     m_open{std::move(open)},
     m_args{std::move(args)},
     m_commas{std::move(commas)},
@@ -42,24 +40,13 @@ auto CallExprNode::getSpan() const -> input::Span {
   return input::Span::combine(m_lhs->getSpan(), m_close.getSpan());
 }
 
-auto CallExprNode::getTypeParams() const -> const std::optional<TypeParamList>& {
-  return m_typeParams;
-}
-
 auto CallExprNode::accept(NodeVisitor* visitor) const -> void { visitor->visit(*this); }
 
-auto CallExprNode::print(std::ostream& out) const -> std::ostream& {
-  out << "call";
-  if (m_typeParams) {
-    out << *m_typeParams;
-  }
-  return out;
-}
+auto CallExprNode::print(std::ostream& out) const -> std::ostream& { return out << "call"; }
 
 // Factories.
 auto callExprNode(
     NodePtr lhs,
-    std::optional<TypeParamList> typeParams,
     lex::Token open,
     std::vector<NodePtr> args,
     std::vector<lex::Token> commas,
@@ -70,12 +57,8 @@ auto callExprNode(
   if (args.empty() ? !commas.empty() : commas.size() != args.size() - 1) {
     throw std::invalid_argument{"Incorrect number of commas"};
   }
-  return std::unique_ptr<CallExprNode>{new CallExprNode{std::move(lhs),
-                                                        std::move(typeParams),
-                                                        std::move(open),
-                                                        std::move(args),
-                                                        std::move(commas),
-                                                        std::move(close)}};
+  return std::unique_ptr<CallExprNode>{new CallExprNode{
+      std::move(lhs), std::move(open), std::move(args), std::move(commas), std::move(close)}};
 }
 
 } // namespace parse

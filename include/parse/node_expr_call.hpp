@@ -1,7 +1,6 @@
 #pragma once
 #include "lex/token.hpp"
 #include "parse/node.hpp"
-#include "parse/type_param_list.hpp"
 #include <vector>
 
 namespace parse {
@@ -9,7 +8,6 @@ namespace parse {
 class CallExprNode final : public Node {
   friend auto callExprNode(
       NodePtr lhs,
-      std::optional<TypeParamList> typeParams,
       lex::Token open,
       std::vector<NodePtr> args,
       std::vector<lex::Token> commas,
@@ -25,13 +23,10 @@ public:
   [[nodiscard]] auto getChildCount() const -> unsigned int override;
   [[nodiscard]] auto getSpan() const -> input::Span override;
 
-  [[nodiscard]] auto getTypeParams() const -> const std::optional<TypeParamList>&;
-
   auto accept(NodeVisitor* visitor) const -> void override;
 
 private:
   const NodePtr m_lhs;
-  const std::optional<TypeParamList> m_typeParams;
   const lex::Token m_open;
   const std::vector<NodePtr> m_args;
   const std::vector<lex::Token> m_commas;
@@ -39,7 +34,6 @@ private:
 
   CallExprNode(
       NodePtr lhs,
-      std::optional<TypeParamList> typeParams,
       lex::Token open,
       std::vector<NodePtr> args,
       std::vector<lex::Token> commas,
@@ -51,7 +45,6 @@ private:
 // Factories.
 auto callExprNode(
     NodePtr lhs,
-    std::optional<TypeParamList> typeParams,
     lex::Token open,
     std::vector<NodePtr> args,
     std::vector<lex::Token> commas,

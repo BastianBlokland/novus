@@ -239,7 +239,6 @@ auto ParserImpl::nextExpr(const int minPrecedence) -> NodePtr {
     switch (nextToken.getKind()) {
     case lex::TokenKind::SepOpenParen:
     case lex::TokenKind::OpParenParen:
-    case lex::TokenKind::SepOpenCurly:
       lhs = nextExprCall(std::move(lhs));
       break;
     case lex::TokenKind::OpSemi:
@@ -308,7 +307,13 @@ auto ParserImpl::nextExprPrimary() -> NodePtr {
       auto eq = consumeToken();
       return constDeclExprNode(std::move(id), eq, nextExpr(assignmentPrecedence));
     }
-    return idExprNode(std::move(id));
+    auto typeParams = peekToken(0).getKind() == lex::TokenKind::SepOpenCurly
+        ? std::optional<TypeParamList>{nextTypeParamList()}
+        : std::nullopt;
+    if (!typeParams || typeParams->validate()) {
+      return idExprNode(std::move(id), std::move(typeParams));
+    }
+    return errInvalidIdExpr(std::move(id), std::move(typeParams));
   }
   case lex::TokenCat::Keyword:
     if (getKw(nextTok) == lex::Keyword::If) {
@@ -346,9 +351,6 @@ auto ParserImpl::nextExprIs(NodePtr lhs) -> NodePtr {
 }
 
 auto ParserImpl::nextExprCall(NodePtr lhs) -> NodePtr {
-  auto typeParams = peekToken(0).getKind() == lex::TokenKind::SepOpenCurly
-      ? std::optional<TypeParamList>{nextTypeParamList()}
-      : std::nullopt;
   auto open  = consumeToken();
   auto empty = open.getKind() == lex::TokenKind::OpParenParen;
 
@@ -364,13 +366,10 @@ auto ParserImpl::nextExprCall(NodePtr lhs) -> NodePtr {
   }
   auto close = empty ? open : consumeToken();
 
-  if (validateParentheses(open, close) && (!typeParams || typeParams->validate()) &&
-      commas.size() == (args.empty() ? 0 : args.size() - 1)) {
-    return callExprNode(
-        std::move(lhs), std::move(typeParams), open, std::move(args), std::move(commas), close);
+  if (validateParentheses(open, close) && commas.size() == (args.empty() ? 0 : args.size() - 1)) {
+    return callExprNode(std::move(lhs), open, std::move(args), std::move(commas), close);
   }
-  return errInvalidCallExpr(
-      std::move(lhs), std::move(typeParams), open, std::move(args), std::move(commas), close);
+  return errInvalidCallExpr(std::move(lhs), open, std::move(args), std::move(commas), close);
 }
 
 auto ParserImpl::nextExprIndex(NodePtr lhs) -> NodePtr {

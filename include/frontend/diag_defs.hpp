@@ -144,7 +144,8 @@ errUninitializedConst(const Source& src, const std::string& name, input::Span sp
     const Source& src, const std::string& name, unsigned int templateParamCount, input::Span span)
     -> Diag;
 
-[[nodiscard]] auto errTypeParamsOnDynamicCallIsNotSupported(const Source& src, input::Span span)
+[[nodiscard]] auto
+errTypeParametersProvidedToConstant(const Source& src, const std::string& name, input::Span span)
     -> Diag;
 
 [[nodiscard]] auto errUndeclaredCallOperator(

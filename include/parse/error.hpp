@@ -8,9 +8,9 @@
 
 namespace parse {
 
-auto errLexError(lex::Token errToken) -> NodePtr;
+[[nodiscard]] auto errLexError(lex::Token errToken) -> NodePtr;
 
-auto errInvalidStmtFuncDecl(
+[[nodiscard]] auto errInvalidStmtFuncDecl(
     lex::Token kw,
     lex::Token id,
     std::optional<TypeSubstitutionList> typeSubs,
@@ -21,7 +21,7 @@ auto errInvalidStmtFuncDecl(
     std::optional<FuncDeclStmtNode::RetTypeSpec> retType,
     NodePtr body) -> NodePtr;
 
-auto errInvalidStmtStructDecl(
+[[nodiscard]] auto errInvalidStmtStructDecl(
     lex::Token kw,
     lex::Token id,
     std::optional<TypeSubstitutionList> typeSubs,
@@ -29,7 +29,7 @@ auto errInvalidStmtStructDecl(
     const std::vector<StructDeclStmtNode::FieldSpec>& fields,
     std::vector<lex::Token> commas) -> NodePtr;
 
-auto errInvalidStmtUnionDecl(
+[[nodiscard]] auto errInvalidStmtUnionDecl(
     lex::Token kw,
     lex::Token id,
     std::optional<TypeSubstitutionList> typeSubs,
@@ -37,44 +37,48 @@ auto errInvalidStmtUnionDecl(
     const std::vector<Type>& types,
     std::vector<lex::Token> commas) -> NodePtr;
 
-auto errInvalidStmtExec(
+[[nodiscard]] auto errInvalidStmtExec(
     lex::Token action,
     lex::Token open,
     std::vector<NodePtr> args,
     std::vector<lex::Token> commas,
     lex::Token close) -> NodePtr;
 
-auto errInvalidPrimaryExpr(lex::Token token) -> NodePtr;
+[[nodiscard]] auto errInvalidPrimaryExpr(lex::Token token) -> NodePtr;
 
-auto errInvalidUnaryOp(lex::Token op, NodePtr rhs) -> NodePtr;
+[[nodiscard]] auto errInvalidUnaryOp(lex::Token op, NodePtr rhs) -> NodePtr;
 
-auto errInvalidParenExpr(lex::Token open, NodePtr expr, lex::Token close) -> NodePtr;
+[[nodiscard]] auto errInvalidParenExpr(lex::Token open, NodePtr expr, lex::Token close) -> NodePtr;
 
-auto errInvalidFieldExpr(NodePtr lhs, lex::Token dot, lex::Token id) -> NodePtr;
+[[nodiscard]] auto errInvalidFieldExpr(NodePtr lhs, lex::Token dot, lex::Token id) -> NodePtr;
 
-auto errInvalidIsExpr(NodePtr lhs, lex::Token kw, const Type& type, lex::Token id) -> NodePtr;
+[[nodiscard]] auto errInvalidIdExpr(lex::Token id, std::optional<TypeParamList> typeParams)
+    -> NodePtr;
 
-auto errInvalidCallExpr(
-    NodePtr lhs,
-    std::optional<TypeParamList> typeParams,
-    lex::Token open,
-    std::vector<NodePtr> args,
-    std::vector<lex::Token> commas,
-    lex::Token close) -> NodePtr;
+[[nodiscard]] auto errInvalidIsExpr(NodePtr lhs, lex::Token kw, const Type& type, lex::Token id)
+    -> NodePtr;
 
-auto errInvalidIndexExpr(
+[[nodiscard]] auto errInvalidCallExpr(
     NodePtr lhs,
     lex::Token open,
     std::vector<NodePtr> args,
     std::vector<lex::Token> commas,
     lex::Token close) -> NodePtr;
 
-auto errInvalidConditionalExpr(
+[[nodiscard]] auto errInvalidIndexExpr(
+    NodePtr lhs,
+    lex::Token open,
+    std::vector<NodePtr> args,
+    std::vector<lex::Token> commas,
+    lex::Token close) -> NodePtr;
+
+[[nodiscard]] auto errInvalidConditionalExpr(
     NodePtr cond, lex::Token qmark, NodePtr ifBranch, lex::Token colon, NodePtr elseBranch)
     -> NodePtr;
 
-auto errInvalidSwitchIf(lex::Token kw, NodePtr cond, lex::Token arrow, NodePtr rhs) -> NodePtr;
+[[nodiscard]] auto errInvalidSwitchIf(lex::Token kw, NodePtr cond, lex::Token arrow, NodePtr rhs)
+    -> NodePtr;
 
-auto errInvalidSwitchElse(lex::Token kw, lex::Token arrow, NodePtr rhs) -> NodePtr;
+[[nodiscard]] auto errInvalidSwitchElse(lex::Token kw, lex::Token arrow, NodePtr rhs) -> NodePtr;
 
 } // namespace parse

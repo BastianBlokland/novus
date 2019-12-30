@@ -117,12 +117,6 @@ TEST_CASE("Analyzing call expressions", "[frontend]") {
     CHECK_DIAG("fun f() -> int 1()", errUndeclaredCallOperator(src, {"int"}, input::Span{15, 17}));
     CHECK_DIAG(
         "fun f(int i) -> int i()", errUndeclaredCallOperator(src, {"int"}, input::Span{20, 22}));
-    CHECK_DIAG(
-        "fun f() -> int 1{T}()",
-        errTypeParamsOnDynamicCallIsNotSupported(src, input::Span{15, 20}));
-    CHECK_DIAG(
-        "fun f(int i) -> int i{T}()",
-        errTypeParamsOnDynamicCallIsNotSupported(src, input::Span{20, 25}));
   }
 }
 

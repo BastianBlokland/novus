@@ -53,7 +53,6 @@ TEST_CASE("Parsing switch expressions", "[parse]") {
       "a(if x -> 1 else -> 2, 3)",
       callExprNode(
           ID_EXPR("a"),
-          std::nullopt,
           OPAREN,
           NODES(
               switchExprNode(

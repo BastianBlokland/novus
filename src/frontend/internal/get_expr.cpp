@@ -13,12 +13,6 @@
 
 namespace frontend::internal {
 
-static auto getIdentifier(const parse::Node& n) -> std::optional<lex::Token> {
-  auto visitor = GetIdentifier{};
-  n.accept(&visitor);
-  return visitor.getIdentifier();
-}
-
 GetExpr::GetExpr(
     Context* context,
     const TypeSubstitutionTable* typeSubTable,
@@ -98,9 +92,13 @@ auto GetExpr::visit(const parse::BinaryExprNode& n) -> void {
 }
 
 auto GetExpr::visit(const parse::CallExprNode& n) -> void {
+  auto getIdVisitor = GetIdentifier{};
+  n[0].accept(&getIdVisitor);
+  auto identifier = getIdVisitor.getIdentifier();
+  auto typeParams = getIdVisitor.getTypeParams();
+
   // If the lhs is not an identifier (but a different expression) or if the identifier is a constant
   // then treat it as a 'dynamic' call, otherwise its a regular function call.
-  auto identifier = getIdentifier(n[0]);
   if (!identifier || m_consts->lookup(getName(*identifier))) {
     m_expr = getDynCallExpr(n);
     return;
@@ -113,8 +111,7 @@ auto GetExpr::visit(const parse::CallExprNode& n) -> void {
     return;
   }
 
-  const auto possibleFuncs =
-      getFunctionsInclConversions(nameToken, n.getTypeParams(), args->second);
+  const auto possibleFuncs = getFunctionsInclConversions(nameToken, typeParams, args->second);
   if (m_context->hasErrors()) {
     return;
   }
@@ -122,13 +119,13 @@ auto GetExpr::visit(const parse::CallExprNode& n) -> void {
   const auto func = m_context->getProg()->lookupFunc(possibleFuncs, args->second, -1);
   if (!func) {
     auto isTypeOrConv = isType(m_context, getName(nameToken));
-    if (n.getTypeParams()) {
+    if (typeParams) {
       if (isTypeOrConv) {
         m_context->reportDiag(errNoTypeOrConversionFoundToInstantiate(
-            m_context->getSrc(), getName(nameToken), n.getTypeParams()->getCount(), n.getSpan()));
+            m_context->getSrc(), getName(nameToken), typeParams->getCount(), n.getSpan()));
       } else {
         m_context->reportDiag(errNoFuncFoundToInstantiate(
-            m_context->getSrc(), getName(nameToken), n.getTypeParams()->getCount(), n.getSpan()));
+            m_context->getSrc(), getName(nameToken), typeParams->getCount(), n.getSpan()));
       }
     } else {
       auto argTypeNames = std::vector<std::string>{};
@@ -210,6 +207,12 @@ auto GetExpr::visit(const parse::IdExprNode& n) -> void {
   const auto constId = m_consts->lookup(name);
   if (!constId) {
     m_context->reportDiag(errUndeclaredConst(m_context->getSrc(), name, n.getSpan()));
+    return;
+  }
+
+  if (n.getTypeParams()) {
+    m_context->reportDiag(
+        errTypeParametersProvidedToConstant(m_context->getSrc(), name, n.getSpan()));
     return;
   }
 
@@ -592,12 +595,6 @@ auto GetExpr::getBinLogicOpExpr(const parse::BinaryExprNode& n, BinLogicOp op)
 }
 
 auto GetExpr::getDynCallExpr(const parse::CallExprNode& n) -> prog::expr::NodePtr {
-  if (n.getTypeParams()) {
-    m_context->reportDiag(
-        errTypeParamsOnDynamicCallIsNotSupported(m_context->getSrc(), n.getSpan()));
-    return nullptr;
-  }
-
   auto args = getChildExprs(n);
   if (!args) {
     assert(m_context->hasErrors());

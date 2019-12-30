@@ -10,13 +10,12 @@ namespace parse {
 
 TEST_CASE("Parsing call expressions", "[parse]") {
 
-  CHECK_EXPR("a()", callExprNode(ID_EXPR("a"), std::nullopt, OPAREN, NODES(), COMMAS(0), CPAREN));
-  CHECK_EXPR("1()", callExprNode(INT(1), std::nullopt, OPAREN, NODES(), COMMAS(0), CPAREN));
+  CHECK_EXPR("a()", callExprNode(ID_EXPR("a"), OPAREN, NODES(), COMMAS(0), CPAREN));
+  CHECK_EXPR("1()", callExprNode(INT(1), OPAREN, NODES(), COMMAS(0), CPAREN));
   CHECK_EXPR(
       "1()()",
       callExprNode(
-          callExprNode(INT(1), std::nullopt, OPAREN, NODES(), COMMAS(0), CPAREN),
-          std::nullopt,
+          callExprNode(INT(1), OPAREN, NODES(), COMMAS(0), CPAREN),
           OPAREN,
           NODES(),
           COMMAS(0),
@@ -25,22 +24,18 @@ TEST_CASE("Parsing call expressions", "[parse]") {
       "(-1)()",
       callExprNode(
           parenExprNode(OPAREN, unaryExprNode(MINUS, INT(1)), CPAREN),
-          std::nullopt,
           OPAREN,
           NODES(),
           COMMAS(0),
           CPAREN));
   CHECK_EXPR(
-      "-1()",
-      unaryExprNode(MINUS, callExprNode(INT(1), std::nullopt, OPAREN, NODES(), COMMAS(0), CPAREN)));
+      "-1()", unaryExprNode(MINUS, callExprNode(INT(1), OPAREN, NODES(), COMMAS(0), CPAREN)));
   CHECK_EXPR(
-      "a(1,2)",
-      callExprNode(ID_EXPR("a"), std::nullopt, OPAREN, NODES(INT(1), INT(2)), COMMAS(1), CPAREN));
+      "a(1,2)", callExprNode(ID_EXPR("a"), OPAREN, NODES(INT(1), INT(2)), COMMAS(1), CPAREN));
   CHECK_EXPR(
       "a(1,2,3+4*5)",
       callExprNode(
           ID_EXPR("a"),
-          std::nullopt,
           OPAREN,
           NODES(INT(1), INT(2), binaryExprNode(INT(3), PLUS, binaryExprNode(INT(4), STAR, INT(5)))),
           COMMAS(2),
@@ -49,7 +44,6 @@ TEST_CASE("Parsing call expressions", "[parse]") {
       "a(1;2,3;4)",
       callExprNode(
           ID_EXPR("a"),
-          std::nullopt,
           OPAREN,
           NODES(
               groupExprNode(NODES(INT(1), INT(2)), SEMIS(1)),
@@ -60,16 +54,14 @@ TEST_CASE("Parsing call expressions", "[parse]") {
       "a(b())",
       callExprNode(
           ID_EXPR("a"),
-          std::nullopt,
           OPAREN,
-          NODES(callExprNode(ID_EXPR("b"), std::nullopt, OPAREN, NODES(), COMMAS(0), CPAREN)),
+          NODES(callExprNode(ID_EXPR("b"), OPAREN, NODES(), COMMAS(0), CPAREN)),
           COMMAS(0),
           CPAREN));
   CHECK_EXPR(
       "a{T}()",
       callExprNode(
-          ID_EXPR("a"),
-          TypeParamList{OCURLY, {TYPE("T")}, COMMAS(0), CCURLY},
+          ID_EXPR_PARAM("a", TypeParamList(OCURLY, {TYPE("T")}, COMMAS(0), CCURLY)),
           OPAREN,
           NODES(),
           COMMAS(0),
@@ -77,8 +69,7 @@ TEST_CASE("Parsing call expressions", "[parse]") {
   CHECK_EXPR(
       "a{T}(1,2)",
       callExprNode(
-          ID_EXPR("a"),
-          TypeParamList{OCURLY, {TYPE("T")}, COMMAS(0), CCURLY},
+          ID_EXPR_PARAM("a", TypeParamList(OCURLY, {TYPE("T")}, COMMAS(0), CCURLY)),
           OPAREN,
           NODES(INT(1), INT(2)),
           COMMAS(1),
@@ -86,8 +77,7 @@ TEST_CASE("Parsing call expressions", "[parse]") {
   CHECK_EXPR(
       "a{T, Y}()",
       callExprNode(
-          ID_EXPR("a"),
-          TypeParamList{OCURLY, {TYPE("T"), TYPE("Y")}, COMMAS(1), CCURLY},
+          ID_EXPR_PARAM("a", TypeParamList(OCURLY, {TYPE("T"), TYPE("Y")}, COMMAS(1), CCURLY)),
           OPAREN,
           NODES(),
           COMMAS(0),
@@ -95,8 +85,8 @@ TEST_CASE("Parsing call expressions", "[parse]") {
   CHECK_EXPR(
       "a{T, U, W}()",
       callExprNode(
-          ID_EXPR("a"),
-          TypeParamList{OCURLY, {TYPE("T"), TYPE("U"), TYPE("W")}, COMMAS(2), CCURLY},
+          ID_EXPR_PARAM(
+              "a", TypeParamList(OCURLY, {TYPE("T"), TYPE("U"), TYPE("W")}, COMMAS(2), CCURLY)),
           OPAREN,
           NODES(),
           COMMAS(0),
@@ -105,28 +95,22 @@ TEST_CASE("Parsing call expressions", "[parse]") {
   SECTION("Errors") {
     CHECK_EXPR(
         "a(1 1)",
-        errInvalidCallExpr(
-            ID_EXPR("a"), std::nullopt, OPAREN, NODES(INT(1), INT(1)), COMMAS(0), CPAREN));
-    CHECK_EXPR(
-        "a(", errInvalidCallExpr(ID_EXPR("a"), std::nullopt, OPAREN, NODES(), COMMAS(0), END));
-    CHECK_EXPR(
-        "a{",
-        errInvalidCallExpr(
-            ID_EXPR("a"), TypeParamList{OCURLY, {}, COMMAS(0), END}, END, NODES(), COMMAS(0), END));
+        errInvalidCallExpr(ID_EXPR("a"), OPAREN, NODES(INT(1), INT(1)), COMMAS(0), CPAREN));
+    CHECK_EXPR("a(", errInvalidCallExpr(ID_EXPR("a"), OPAREN, NODES(), COMMAS(0), END));
+    CHECK_EXPR("a{", errInvalidIdExpr(ID("a"), TypeParamList(OCURLY, {}, COMMAS(0), END)));
     CHECK_EXPR(
         "a{}()",
-        errInvalidCallExpr(
-            ID_EXPR("a"),
-            TypeParamList{OCURLY, {}, COMMAS(0), END},
+        callExprNode(
+            errInvalidIdExpr(ID("a"), TypeParamList(OCURLY, {}, COMMAS(0), CCURLY)),
             PARENPAREN,
             NODES(),
             COMMAS(0),
             PARENPAREN));
     CHECK_EXPR(
         "a{T U}()",
-        errInvalidCallExpr(
-            ID_EXPR("a"),
-            TypeParamList{OCURLY, {TYPE("T"), TYPE("U")}, COMMAS(0), END},
+        callExprNode(
+            errInvalidIdExpr(
+                ID("a"), TypeParamList(OCURLY, {TYPE("T"), TYPE("U")}, COMMAS(0), CCURLY)),
             PARENPAREN,
             NODES(),
             COMMAS(0),
@@ -134,21 +118,10 @@ TEST_CASE("Parsing call expressions", "[parse]") {
     CHECK_EXPR(
         "a(,",
         errInvalidCallExpr(
-            ID_EXPR("a"),
-            std::nullopt,
-            OPAREN,
-            NODES(errInvalidPrimaryExpr(COMMA)),
-            COMMAS(0),
-            END));
+            ID_EXPR("a"), OPAREN, NODES(errInvalidPrimaryExpr(COMMA)), COMMAS(0), END));
     CHECK_EXPR(
         "a(,)",
-        callExprNode(
-            ID_EXPR("a"),
-            std::nullopt,
-            OPAREN,
-            NODES(errInvalidPrimaryExpr(COMMA)),
-            COMMAS(0),
-            CPAREN));
+        callExprNode(ID_EXPR("a"), OPAREN, NODES(errInvalidPrimaryExpr(COMMA)), COMMAS(0), CPAREN));
   }
 
   SECTION("Spans") {

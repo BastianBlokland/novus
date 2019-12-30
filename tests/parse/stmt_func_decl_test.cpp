@@ -296,7 +296,7 @@ TEST_CASE("Parsing function declaration statements", "[parse]") {
             COMMAS(1),
             ARROW,
             std::nullopt,
-            idExprNode(ID("int"))));
+            ID_EXPR("int")));
     CHECK_STMT(
         "fun a() -> T{} 1",
         errInvalidStmtFuncDecl(

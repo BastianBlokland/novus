@@ -70,7 +70,8 @@ namespace parse {
 #define INT(VAL) litExprNode(lex::litIntToken(VAL))
 #define STR(VAL) litExprNode(lex::litStrToken(VAL))
 #define BOOL(VAL) litExprNode(lex::litBoolToken(VAL))
-#define ID_EXPR(ID) idExprNode(lex::identiferToken(ID))
+#define ID_EXPR(ID) idExprNode(lex::identiferToken(ID), std::nullopt)
+#define ID_EXPR_PARAM(ID, TYPE_PARAMS) idExprNode(lex::identiferToken(ID), TYPE_PARAMS)
 #define CONSTDECL(ID, EXPR) constDeclExprNode(lex::identiferToken(ID), EQ, EXPR)
 
 #define CHECK_EXPR(INPUT, ...)                                                                     \

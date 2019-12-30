@@ -283,6 +283,23 @@ auto errInvalidFieldExpr(NodePtr lhs, lex::Token dot, lex::Token id) -> NodePtr 
   return errorNode(oss.str(), std::move(tokens), std::move(subExprs));
 }
 
+auto errInvalidIdExpr(lex::Token id, std::optional<TypeParamList> typeParams) -> NodePtr {
+  std::ostringstream oss;
+  if (typeParams && !typeParams->validate()) {
+    oss << "Invalid type parameters";
+  } else {
+    oss << "Invalid id expression";
+  }
+
+  auto tokens = std::vector<lex::Token>{};
+  tokens.push_back(std::move(id));
+  if (typeParams) {
+    addTokens(*typeParams, &tokens);
+  }
+
+  return errorNode(oss.str(), std::move(tokens), {});
+}
+
 auto errInvalidIsExpr(NodePtr lhs, lex::Token kw, const Type& type, lex::Token id) -> NodePtr {
   std::ostringstream oss;
   if (getKw(kw) != lex::Keyword::Is) {
@@ -309,7 +326,6 @@ auto errInvalidIsExpr(NodePtr lhs, lex::Token kw, const Type& type, lex::Token i
 
 auto errInvalidCallExpr(
     NodePtr lhs,
-    std::optional<TypeParamList> typeParams,
     lex::Token open,
     std::vector<NodePtr> args,
     std::vector<lex::Token> commas,
@@ -318,8 +334,6 @@ auto errInvalidCallExpr(
   std::ostringstream oss;
   if (commas.size() != (args.empty() ? 0 : args.size() - 1)) {
     oss << "Incorrect number of comma's ',' in call expression";
-  } else if (typeParams && !typeParams->validate()) {
-    oss << "Invalid type parameters";
   } else if (
       open.getKind() != lex::TokenKind::SepOpenParen &&
       open.getKind() != lex::TokenKind::OpParenParen) {
