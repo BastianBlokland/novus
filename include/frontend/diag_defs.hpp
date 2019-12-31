@@ -18,6 +18,9 @@ errTypeTemplateAlreadyDeclared(const Source& src, const std::string& name, input
     -> Diag;
 
 [[nodiscard]] auto
+errTypeNameIsReserved(const Source& src, const std::string& name, input::Span span) -> Diag;
+
+[[nodiscard]] auto
 errTypeNameConflictsWithFunc(const Source& src, const std::string& name, input::Span span) -> Diag;
 
 [[nodiscard]] auto

@@ -72,6 +72,7 @@ TEST_CASE("Analyzing user-type declarations", "[frontend]") {
   SECTION("Diagnostics") {
     CHECK_DIAG("struct int = bool i", errTypeAlreadyDeclared(src, "int", input::Span{7, 9}));
     CHECK_DIAG("union int = int, bool", errTypeAlreadyDeclared(src, "int", input::Span{6, 8}));
+    CHECK_DIAG("struct func = bool i", errTypeNameIsReserved(src, "func", input::Span{7, 10}));
     CHECK_DIAG(
         "struct print = bool i", errTypeNameConflictsWithAction(src, "print", input::Span{7, 11}));
     CHECK_DIAG(

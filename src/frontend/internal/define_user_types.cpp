@@ -43,7 +43,7 @@ auto DefineUserTypes::define(prog::sym::TypeId id, const parse::StructDeclStmtNo
       isValid = false;
       continue;
     }
-    if (m_context->getProg()->lookupType(fieldName)) {
+    if (m_context->getProg()->lookupType(fieldName) || isReservedTypeName(fieldName)) {
       m_context->reportDiag(errFieldNameConflictsWithType(
           m_context->getSrc(), fieldName, field.getIdentifier().getSpan()));
       isValid = false;

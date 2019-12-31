@@ -28,6 +28,12 @@ auto errTypeTemplateAlreadyDeclared(const Source& src, const std::string& name, 
   return error(src, oss.str(), span);
 }
 
+auto errTypeNameIsReserved(const Source& src, const std::string& name, input::Span span) -> Diag {
+  std::ostringstream oss;
+  oss << "Type name '" << name << "' is a reserved type-name that cannot be used for user types";
+  return error(src, oss.str(), span);
+}
+
 auto errTypeNameConflictsWithFunc(const Source& src, const std::string& name, input::Span span)
     -> Diag {
   std::ostringstream oss;
