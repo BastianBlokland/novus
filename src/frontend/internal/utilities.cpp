@@ -194,6 +194,11 @@ auto instType(
     assert(context->hasErrors());
     return std::nullopt;
   }
+
+  if (typeName == "func") {
+    return context->getDelegates()->getDelegate(context, *typeSet);
+  }
+
   const auto typeInstantiation = context->getTypeTemplates()->instantiate(typeName, *typeSet);
   if (!typeInstantiation) {
     return std::nullopt;
@@ -270,7 +275,7 @@ auto getSubstitutionParams(Context* context, const parse::TypeSubstitutionList& 
   auto isValid    = true;
   for (const auto& typeSubToken : subList) {
     const auto typeParamName = getName(typeSubToken);
-    if (context->getProg()->lookupType(typeParamName)) {
+    if (isType(context, typeParamName)) {
       context->reportDiag(errTypeParamNameConflictsWithType(
           context->getSrc(), typeParamName, typeSubToken.getSpan()));
       isValid = false;
@@ -347,7 +352,8 @@ auto mangleName(Context* context, const std::string& name, const prog::sym::Type
 }
 
 auto isType(Context* context, const std::string& name) -> bool {
-  return context->getProg()->lookupType(name) || context->getTypeTemplates()->hasType(name);
+  return isReservedTypeName(name) || context->getProg()->lookupType(name) ||
+      context->getTypeTemplates()->hasType(name);
 }
 
 } // namespace frontend::internal

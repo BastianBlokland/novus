@@ -123,6 +123,13 @@ auto errIncorrectReturnTypeInConvFunc(
   return error(src, oss.str(), span);
 }
 
+auto errConversionToUnsupportedType(const Source& src, const std::string& name, input::Span span)
+    -> Diag {
+  std::ostringstream oss;
+  oss << "User defined conversion to type '" << name << "' is not supported";
+  return error(src, oss.str(), span);
+}
+
 auto errConvFuncCallsItself(const Source& src, const std::string& name, input::Span span) -> Diag {
   std::ostringstream oss;
   oss << "Conversion function '" << name << "' cannot specify a return-type";

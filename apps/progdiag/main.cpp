@@ -148,7 +148,8 @@ auto printTypeDefs(const prog::Program& prog) -> void {
       std::stringstream inputStr;
       inputStr << "(" << delegateDef.getInput() << ")";
       std::cout << "  " << rang::fg::yellow << rang::style::bold << std::setw(nameColWidth)
-                << std::left << inputStr.str() << " -> " << delegateDef.getOutput() << '\n';
+                << std::left << inputStr.str() << " -> " << delegateDef.getOutput()
+                << rang::style::reset << '\n';
     }
   }
 }

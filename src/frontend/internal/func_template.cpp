@@ -125,17 +125,23 @@ auto FuncTemplate::setupInstance(FuncTemplateInst* instance) -> void {
 
   // For conversions verify that a correct type is returned.
   if (isConv) {
-    // Verify that a conversion to a non-templated type returns the correct type.
     const auto nonTemplConvType = m_context->getProg()->lookupType(m_name);
-    if (nonTemplConvType && instance->m_retType != *nonTemplConvType) {
-      m_context->reportDiag(errIncorrectReturnTypeInConvFunc(
-          m_context->getSrc(), m_name, retTypeName, m_parseNode.getSpan()));
-      return;
-    }
-    // Verify that a conversion to a templated type returns the correct type.
-    if (m_context->getTypeTemplates()->hasType(m_name)) {
+    if (nonTemplConvType) {
+      // Verify that a conversion to a non-templated type returns the correct type.
+      if (instance->m_retType != *nonTemplConvType) {
+        m_context->reportDiag(errIncorrectReturnTypeInConvFunc(
+            m_context->getSrc(), m_name, retTypeName, m_parseNode.getSpan()));
+        return;
+      }
+    } else {
+      // Verify that a conversion to a templated type returns the correct type.
       const auto typeInfo = m_context->getTypeInfo(*instance->m_retType);
-      if (!typeInfo || typeInfo->getName() != m_name) {
+      if (!typeInfo) {
+        m_context->reportDiag(
+            errConversionToUnsupportedType(m_context->getSrc(), m_name, m_parseNode.getSpan()));
+        return;
+      }
+      if (typeInfo->getName() != m_name) {
         m_context->reportDiag(errIncorrectReturnTypeInConvFunc(
             m_context->getSrc(), m_name, retTypeName, m_parseNode.getSpan()));
         return;

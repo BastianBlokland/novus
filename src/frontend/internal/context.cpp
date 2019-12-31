@@ -6,8 +6,13 @@ Context::Context(
     const Source& src,
     prog::Program* prog,
     TypeTemplateTable* typeTemplates,
-    FuncTemplateTable* funcTemplates) :
-    m_src{src}, m_prog{prog}, m_typeTemplates{typeTemplates}, m_funcTemplates{funcTemplates} {
+    FuncTemplateTable* funcTemplates,
+    DelegateTable* delegates) :
+    m_src{src},
+    m_prog{prog},
+    m_typeTemplates{typeTemplates},
+    m_funcTemplates{funcTemplates},
+    m_delegates(delegates) {
 
   if (m_prog == nullptr) {
     throw std::invalid_argument{"Program cannot be null"};
@@ -17,6 +22,9 @@ Context::Context(
   }
   if (m_funcTemplates == nullptr) {
     throw std::invalid_argument{"FuncTemplatesTable cannot be null"};
+  }
+  if (m_delegates == nullptr) {
+    throw std::invalid_argument{"DelegateTable cannot be null"};
   }
 }
 
@@ -31,6 +39,8 @@ auto Context::getProg() const noexcept -> prog::Program* { return m_prog; }
 auto Context::getTypeTemplates() const noexcept -> TypeTemplateTable* { return m_typeTemplates; }
 
 auto Context::getFuncTemplates() const noexcept -> FuncTemplateTable* { return m_funcTemplates; }
+
+auto Context::getDelegates() const noexcept -> DelegateTable* { return m_delegates; }
 
 auto Context::getTypeInfo(prog::sym::TypeId typeId) const noexcept -> std::optional<TypeInfo> {
   const auto itr = m_typeInfos.find(typeId);

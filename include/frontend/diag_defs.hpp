@@ -63,6 +63,10 @@ errDuplicateTypeInUnion(const Source& src, const std::string& typeName, input::S
     -> Diag;
 
 [[nodiscard]] auto
+errConversionToUnsupportedType(const Source& src, const std::string& name, input::Span span)
+    -> Diag;
+
+[[nodiscard]] auto
 errFuncNameConflictsWithAction(const Source& src, const std::string& name, input::Span span)
     -> Diag;
 
