@@ -3,6 +3,7 @@
 #include "internal/context.hpp"
 #include "internal/typeinfer_expr.hpp"
 #include "parse/type_param_list.hpp"
+#include "prog/expr/node_lit_func.hpp"
 #include <stdexcept>
 #include <unordered_set>
 
@@ -247,6 +248,13 @@ auto inferRetType(
   auto inferBodyType = TypeInferExpr{context, subTable, &constTypes, aggressive};
   funcDeclParseNode[0].accept(&inferBodyType);
   return inferBodyType.getInferredType();
+}
+
+auto getLitFunc(Context* context, prog::sym::FuncId func) -> prog::expr::NodePtr {
+  const auto funcDecl = context->getProg()->getFuncDecl(func);
+  const auto delegateType =
+      context->getDelegates()->getDelegate(context, funcDecl.getInput(), funcDecl.getOutput());
+  return prog::expr::litFuncNode(*context->getProg(), delegateType, func);
 }
 
 auto getFuncInput(

@@ -68,6 +68,8 @@ private:
   [[nodiscard]] auto getBinLogicOpExpr(const parse::BinaryExprNode& n, BinLogicOp op)
       -> prog::expr::NodePtr;
 
+  [[nodiscard]] auto getConstExpr(const parse::IdExprNode& n) -> prog::expr::NodePtr;
+
   [[nodiscard]] auto getDynCallExpr(const parse::CallExprNode& n) -> prog::expr::NodePtr;
 
   [[nodiscard]] auto declareConst(const lex::Token& nameToken, prog::sym::TypeId type)

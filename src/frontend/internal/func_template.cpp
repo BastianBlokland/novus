@@ -136,12 +136,7 @@ auto FuncTemplate::setupInstance(FuncTemplateInst* instance) -> void {
     } else {
       // Verify that a conversion to a templated type returns the correct type.
       const auto typeInfo = m_context->getTypeInfo(*instance->m_retType);
-      if (!typeInfo) {
-        m_context->reportDiag(
-            errConversionToUnsupportedType(m_context->getSrc(), m_name, m_parseNode.getSpan()));
-        return;
-      }
-      if (typeInfo->getName() != m_name) {
+      if (!typeInfo || typeInfo->getName() != m_name) {
         m_context->reportDiag(errIncorrectReturnTypeInConvFunc(
             m_context->getSrc(), m_name, retTypeName, m_parseNode.getSpan()));
         return;

@@ -123,13 +123,6 @@ auto errIncorrectReturnTypeInConvFunc(
   return error(src, oss.str(), span);
 }
 
-auto errConversionToUnsupportedType(const Source& src, const std::string& name, input::Span span)
-    -> Diag {
-  std::ostringstream oss;
-  oss << "User defined conversion to type '" << name << "' is not supported";
-  return error(src, oss.str(), span);
-}
-
 auto errConvFuncCallsItself(const Source& src, const std::string& name, input::Span span) -> Diag {
   std::ostringstream oss;
   oss << "Conversion function '" << name << "' cannot specify a return-type";
@@ -325,10 +318,31 @@ auto errNoFuncFoundToInstantiate(
   return error(src, oss.str(), span);
 }
 
-auto errTypeParametersProvidedToConstant(
+auto errNoTypeParamsProvidedToTemplateFunction(
     const Source& src, const std::string& name, input::Span span) -> Diag {
   std::ostringstream oss;
-  oss << "Explicit type parameters provided to constant '" << name << "', this is not supported";
+  oss << "No type parameters provided to function template '" << name << '\'';
+  return error(src, oss.str(), span);
+}
+
+auto errAmbiguousFunction(const Source& src, const std::string& name, input::Span span) -> Diag {
+  std::ostringstream oss;
+  oss << "Ambiguous function, multiple functions named '" << name << '\'';
+  return error(src, oss.str(), span);
+}
+
+auto errAmbiguousTemplateFunction(
+    const Source& src, const std::string& name, unsigned int templateParamCount, input::Span span)
+    -> Diag {
+  std::ostringstream oss;
+  oss << "Ambiguous function, multiple templated functions named '" << name << "' with '"
+      << templateParamCount << "' type parameters";
+  return error(src, oss.str(), span);
+}
+
+auto errIncorrectArgsToDelegate(const Source& src, input::Span span) -> Diag {
+  std::ostringstream oss;
+  oss << "Incorrect arguments provided to function delegate";
   return error(src, oss.str(), span);
 }
 

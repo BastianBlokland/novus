@@ -82,6 +82,13 @@ public:
   [[nodiscard]] auto findCommonType(const std::vector<sym::TypeId>& types)
       -> std::optional<sym::TypeId>;
 
+  [[nodiscard]] auto isDelegate(sym::TypeId id) const -> bool;
+
+  [[nodiscard]] auto isCallable(sym::FuncId func, const std::vector<expr::NodePtr>& args) const
+      -> bool;
+  [[nodiscard]] auto isCallable(sym::TypeId delegate, const std::vector<expr::NodePtr>& args) const
+      -> bool;
+
   [[nodiscard]] auto getTypeDecl(sym::TypeId id) const -> const sym::TypeDecl&;
   [[nodiscard]] auto getFuncDecl(sym::FuncId id) const -> const sym::FuncDecl&;
   [[nodiscard]] auto getActionDecl(sym::ActionId id) const -> const sym::ActionDecl&;

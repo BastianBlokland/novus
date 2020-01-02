@@ -10,6 +10,10 @@ namespace prog::internal {
 [[nodiscard]] auto findConvertibleTypes(const Program& prog, sym::TypeId from)
     -> std::vector<sym::TypeId>;
 
+// Are the arguments convertable to the given input set.
+[[nodiscard]] auto isConvertable(
+    const Program& prog, const sym::TypeSet& input, const std::vector<expr::NodePtr>& args) -> bool;
+
 // Apply conversions to the args vector so it matches the given input set.
 auto applyConversions(
     const Program& prog, const sym::TypeSet& input, std::vector<expr::NodePtr>* args) -> void;

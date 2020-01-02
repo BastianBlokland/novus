@@ -58,6 +58,25 @@ auto findConvertibleTypes(const Program& prog, sym::TypeId from) -> std::vector<
   return result;
 }
 
+auto isConvertable(
+    const Program& prog, const sym::TypeSet& input, const std::vector<expr::NodePtr>& args)
+    -> bool {
+
+  if (input.getCount() != args.size()) {
+    return false;
+  }
+  auto argsItr  = args.begin();
+  auto inputItr = input.begin();
+  for (; argsItr != args.end(); ++argsItr, ++inputItr) {
+    const auto argType   = (*argsItr)->getType();
+    const auto inputType = *inputItr;
+    if (argType != inputType && !findConversion(prog, argType, inputType)) {
+      return false;
+    }
+  }
+  return true;
+}
+
 auto applyConversions(
     const Program& prog, const sym::TypeSet& input, std::vector<expr::NodePtr>* args) -> void {
   if (!args) {

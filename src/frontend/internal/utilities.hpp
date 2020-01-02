@@ -45,6 +45,8 @@ getOrInstType(Context* context, const TypeSubstitutionTable* subTable, const par
     const prog::sym::TypeSet& input,
     bool aggressive) -> prog::sym::TypeId;
 
+[[nodiscard]] auto getLitFunc(Context* context, prog::sym::FuncId func) -> prog::expr::NodePtr;
+
 [[nodiscard]] auto getFuncInput(
     Context* context, const TypeSubstitutionTable* subTable, const parse::FuncDeclStmtNode& n)
     -> std::optional<prog::sym::TypeSet>;

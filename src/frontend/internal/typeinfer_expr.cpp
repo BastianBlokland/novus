@@ -137,6 +137,33 @@ auto TypeInferExpr::visit(const parse::ConstDeclExprNode& n) -> void {
 }
 
 auto TypeInferExpr::visit(const parse::IdExprNode& n) -> void {
+  const auto& name = getName(n.getId());
+
+  // Templated function literal.
+  if (n.getTypeParams()) {
+    const auto typeSet = getTypeSet(m_context, m_typeSubTable, n.getTypeParams()->getTypes());
+    if (!typeSet) {
+      return;
+    }
+    const auto instances = m_context->getFuncTemplates()->instantiate(name, *typeSet);
+    if (!instances.empty() && !m_context->hasErrors()) {
+      const auto funcDecl = m_context->getProg()->getFuncDecl(*instances[0]->getFunc());
+      m_type              = m_context->getDelegates()->getDelegate(
+          m_context, funcDecl.getInput(), funcDecl.getOutput());
+    }
+    return;
+  }
+
+  // Non-templated function literal.
+  const auto funcs = m_context->getProg()->lookupFuncs(name);
+  if (!funcs.empty() && !m_context->hasErrors()) {
+    const auto funcDecl = m_context->getProg()->getFuncDecl(funcs[0]);
+    m_type              = m_context->getDelegates()->getDelegate(
+        m_context, funcDecl.getInput(), funcDecl.getOutput());
+    return;
+  }
+
+  // If its not a function literal treat it as a constant.
   m_type = inferConstType(n.getId());
 }
 
@@ -287,6 +314,15 @@ auto TypeInferExpr::inferDynCall(const parse::CallExprNode& n) -> prog::sym::Typ
   for (auto i = 0U; i < n.getChildCount(); ++i) {
     argTypes.push_back(inferSubExpr(n[i]));
   }
+
+  // Call to a delegate type.
+  if (m_context->getProg()->isDelegate(argTypes[0])) {
+    const auto& delegateDef =
+        std::get<prog::sym::DelegateDef>(m_context->getProg()->getTypeDef(argTypes[0]));
+    return delegateDef.getOutput();
+  }
+
+  // Call to a overloaded call operator.
   const auto argTypeSet = prog::sym::TypeSet{std::move(argTypes)};
   const auto funcName   = prog::getFuncName(prog::Operator::ParenParen);
   return inferFuncCall(funcName, argTypeSet);

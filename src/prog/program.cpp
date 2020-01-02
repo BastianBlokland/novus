@@ -187,6 +187,26 @@ auto Program::findCommonType(const std::vector<sym::TypeId>& types) -> std::opti
   return internal::findCommonType(*this, types);
 }
 
+auto Program::isDelegate(sym::TypeId id) const -> bool {
+  const auto& typeDecl = getTypeDecl(id);
+  return typeDecl.getKind() == sym::TypeKind::UserDelegate;
+}
+
+auto Program::isCallable(sym::FuncId func, const std::vector<expr::NodePtr>& args) const -> bool {
+  const auto& funcDecl = getFuncDecl(func);
+  return internal::isConvertable(*this, funcDecl.getInput(), args);
+}
+
+auto Program::isCallable(sym::TypeId delegate, const std::vector<expr::NodePtr>& args) const
+    -> bool {
+  const auto& typeDecl = getTypeDecl(delegate);
+  if (typeDecl.getKind() != sym::TypeKind::UserDelegate) {
+    return false;
+  }
+  const auto& delegateDef = std::get<sym::DelegateDef>(getTypeDef(delegate));
+  return internal::isConvertable(*this, delegateDef.getInput(), args);
+}
+
 auto Program::getTypeDecl(sym::TypeId id) const -> const sym::TypeDecl& { return m_typeDecls[id]; }
 
 auto Program::getFuncDecl(sym::FuncId id) const -> const sym::FuncDecl& { return m_funcDecls[id]; }

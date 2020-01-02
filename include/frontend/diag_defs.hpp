@@ -63,10 +63,6 @@ errDuplicateTypeInUnion(const Source& src, const std::string& typeName, input::S
     -> Diag;
 
 [[nodiscard]] auto
-errConversionToUnsupportedType(const Source& src, const std::string& name, input::Span span)
-    -> Diag;
-
-[[nodiscard]] auto
 errFuncNameConflictsWithAction(const Source& src, const std::string& name, input::Span span)
     -> Diag;
 
@@ -151,9 +147,17 @@ errUninitializedConst(const Source& src, const std::string& name, input::Span sp
     const Source& src, const std::string& name, unsigned int templateParamCount, input::Span span)
     -> Diag;
 
+[[nodiscard]] auto errNoTypeParamsProvidedToTemplateFunction(
+    const Source& src, const std::string& name, input::Span span) -> Diag;
+
 [[nodiscard]] auto
-errTypeParametersProvidedToConstant(const Source& src, const std::string& name, input::Span span)
+errAmbiguousFunction(const Source& src, const std::string& name, input::Span span) -> Diag;
+
+[[nodiscard]] auto errAmbiguousTemplateFunction(
+    const Source& src, const std::string& name, unsigned int templateParamCount, input::Span span)
     -> Diag;
+
+[[nodiscard]] auto errIncorrectArgsToDelegate(const Source& src, input::Span span) -> Diag;
 
 [[nodiscard]] auto errUndeclaredCallOperator(
     const Source& src, const std::vector<std::string>& argTypes, input::Span span) -> Diag;
