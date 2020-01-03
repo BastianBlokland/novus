@@ -18,6 +18,9 @@ namespace parse {
     std::optional<FuncDeclStmtNode::RetTypeSpec> retType,
     NodePtr body) -> NodePtr;
 
+[[nodiscard]] auto
+errInvalidAnonFuncExpr(lex::Token kw, const ArgumentListDecl& argList, NodePtr body) -> NodePtr;
+
 [[nodiscard]] auto errInvalidStmtStructDecl(
     lex::Token kw,
     lex::Token id,

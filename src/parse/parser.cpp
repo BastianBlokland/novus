@@ -66,10 +66,16 @@ auto ParserImpl::nextStmtFuncDecl() -> NodePtr {
       id.getKind() == lex::TokenKind::Identifier || id.getCat() == lex::TokenCat::Operator;
   auto retTypeValid = !retType ||
       (retType->getArrow().getKind() == lex::TokenKind::SepArrow && retType->getType().validate());
-  auto argsValid = argList.validate();
-  if (getKw(kw) == lex::Keyword::Fun && idValid && typeSubsValid && retTypeValid && argsValid) {
+
+  if (getKw(kw) == lex::Keyword::Fun && idValid && typeSubsValid && retTypeValid &&
+      argList.validate()) {
     return funcDeclStmtNode(
-        kw, std::move(id), std::move(typeSubs), argList, std::move(retType), std::move(body));
+        kw,
+        std::move(id),
+        std::move(typeSubs),
+        std::move(argList),
+        std::move(retType),
+        std::move(body));
   }
   return errInvalidStmtFuncDecl(
       kw, std::move(id), std::move(typeSubs), argList, std::move(retType), std::move(body));
@@ -272,6 +278,9 @@ auto ParserImpl::nextExprPrimary() -> NodePtr {
     if (getKw(nextTok) == lex::Keyword::If) {
       return nextExprSwitch();
     }
+    if (getKw(nextTok) == lex::Keyword::Fun) {
+      return nextExprAnonFunc();
+    }
     [[fallthrough]];
   default:
     if (nextTok.getKind() == lex::TokenKind::SepOpenParen) {
@@ -401,6 +410,17 @@ auto ParserImpl::nextExprSwitchElse() -> NodePtr {
     return switchExprElseNode(kw, arrow, std::move(expr));
   }
   return errInvalidSwitchElse(kw, arrow, std::move(expr));
+}
+
+auto ParserImpl::nextExprAnonFunc() -> NodePtr {
+  auto kw      = consumeToken();
+  auto argList = nextArgDeclList();
+  auto body    = nextExpr(0);
+
+  if (getKw(kw) == lex::Keyword::Fun && argList.validate()) {
+    return anonFuncExprNode(kw, std::move(argList), std::move(body));
+  }
+  return errInvalidAnonFuncExpr(kw, argList, std::move(body));
 }
 
 auto ParserImpl::nextType() -> Type {

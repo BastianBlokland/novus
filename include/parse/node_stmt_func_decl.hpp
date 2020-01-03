@@ -4,7 +4,6 @@
 #include "parse/node.hpp"
 #include "parse/type_substitution_list.hpp"
 #include <utility>
-#include <vector>
 
 namespace parse {
 

@@ -4,6 +4,7 @@ namespace parse {
 
 class CommentNode;
 class ErrorNode;
+class AnonFuncExprNode;
 class BinaryExprNode;
 class CallExprNode;
 class ConditionalExprNode;
@@ -28,6 +29,7 @@ class NodeVisitor {
 public:
   virtual auto visit(const CommentNode& n) -> void         = 0;
   virtual auto visit(const ErrorNode& n) -> void           = 0;
+  virtual auto visit(const AnonFuncExprNode& n) -> void    = 0;
   virtual auto visit(const BinaryExprNode& n) -> void      = 0;
   virtual auto visit(const CallExprNode& n) -> void        = 0;
   virtual auto visit(const ConditionalExprNode& n) -> void = 0;

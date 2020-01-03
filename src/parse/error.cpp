@@ -114,6 +114,25 @@ auto errInvalidStmtFuncDecl(
   return errorNode(oss.str(), std::move(tokens), std::move(nodes));
 }
 
+auto errInvalidAnonFuncExpr(lex::Token kw, const ArgumentListDecl& argList, NodePtr body)
+    -> NodePtr {
+  std::ostringstream oss;
+  if (!argList.validate()) {
+    getError(oss, argList);
+  } else {
+    oss << "Invalid anonymous function";
+  }
+
+  auto tokens = std::vector<lex::Token>{};
+  tokens.push_back(std::move(kw));
+  addTokens(argList, &tokens);
+
+  auto nodes = std::vector<std::unique_ptr<Node>>{};
+  nodes.push_back(std::move(body));
+
+  return errorNode(oss.str(), std::move(tokens), std::move(nodes));
+}
+
 auto errInvalidStmtStructDecl(
     lex::Token kw,
     lex::Token id,

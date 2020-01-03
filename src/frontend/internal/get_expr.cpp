@@ -48,6 +48,10 @@ auto GetExpr::visit(const parse::ErrorNode & /*unused*/) -> void {
   throw std::logic_error{"GetExpr is not implemented for this node type"};
 }
 
+auto GetExpr::visit(const parse::AnonFuncExprNode & /*unused*/) -> void {
+  throw std::logic_error{"GetExpr is not implemented for this node type"};
+}
+
 auto GetExpr::visit(const parse::BinaryExprNode& n) -> void {
   const auto& opToken = n.getOperator();
   switch (opToken.getKind()) {

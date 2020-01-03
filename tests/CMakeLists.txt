@@ -68,6 +68,7 @@ add_executable(tests
 
   parse/comment_test.cpp
   parse/error_test.cpp
+  parse/expr_anon_func_test.cpp
   parse/expr_binary_test.cpp
   parse/expr_call_test.cpp
   parse/expr_condtional_test.cpp

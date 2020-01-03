@@ -7,6 +7,7 @@ class DeepNodeVisitor : public NodeVisitor {
 public:
   auto visit(const CommentNode& n) -> void override;
   auto visit(const ErrorNode& n) -> void override;
+  auto visit(const AnonFuncExprNode& n) -> void override;
   auto visit(const BinaryExprNode& n) -> void override;
   auto visit(const CallExprNode& n) -> void override;
   auto visit(const ConditionalExprNode& n) -> void override;
