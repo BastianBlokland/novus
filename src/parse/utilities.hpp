@@ -6,14 +6,16 @@
 
 namespace parse {
 
-auto getKw(const lex::Token& token) -> std::optional<lex::Keyword>;
-auto getId(const lex::Token& token) -> std::optional<std::string>;
+[[nodiscard]] auto getKw(const lex::Token& token) -> std::optional<lex::Keyword>;
+[[nodiscard]] auto getId(const lex::Token& token) -> std::optional<std::string>;
 
-auto getSpan(const std::vector<lex::Token>& tokens) -> std::optional<input::Span>;
-auto getSpan(const std::vector<NodePtr>& nodes) -> std::optional<input::Span>;
+[[nodiscard]] auto getSpan(const std::vector<lex::Token>& tokens) -> std::optional<input::Span>;
+[[nodiscard]] auto getSpan(const std::vector<NodePtr>& nodes) -> std::optional<input::Span>;
 
-auto nodesEqual(const std::vector<NodePtr>& a, const std::vector<NodePtr>& b) -> bool;
+[[nodiscard]] auto nodesEqual(const std::vector<NodePtr>& a, const std::vector<NodePtr>& b) -> bool;
 
-auto anyNodeNull(const std::vector<NodePtr>& v) -> bool;
+[[nodiscard]] auto anyNodeNull(const std::vector<NodePtr>& v) -> bool;
+
+[[nodiscard]] auto validateParentheses(const lex::Token& open, const lex::Token& close) -> bool;
 
 } // namespace parse

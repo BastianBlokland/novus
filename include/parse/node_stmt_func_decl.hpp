@@ -1,7 +1,7 @@
 #pragma once
 #include "lex/token.hpp"
+#include "parse/argument_list_decl.hpp"
 #include "parse/node.hpp"
-#include "parse/type.hpp"
 #include "parse/type_substitution_list.hpp"
 #include <utility>
 #include <vector>
@@ -10,20 +10,6 @@ namespace parse {
 
 class FuncDeclStmtNode final : public Node {
 public:
-  class ArgSpec final {
-  public:
-    ArgSpec(Type type, lex::Token identifier);
-
-    auto operator==(const ArgSpec& rhs) const noexcept -> bool;
-
-    [[nodiscard]] auto getType() const noexcept -> const Type&;
-    [[nodiscard]] auto getIdentifier() const noexcept -> const lex::Token&;
-
-  private:
-    Type m_type;
-    lex::Token m_identifier;
-  };
-
   class RetTypeSpec final {
   public:
     RetTypeSpec(lex::Token arrow, Type type);
@@ -42,10 +28,7 @@ public:
       lex::Token kw,
       lex::Token id,
       std::optional<TypeSubstitutionList> typeSubs,
-      lex::Token open,
-      std::vector<ArgSpec> args,
-      std::vector<lex::Token> commas,
-      lex::Token close,
+      ArgumentListDecl argList,
       std::optional<RetTypeSpec> retType,
       NodePtr body) -> NodePtr;
 
@@ -60,7 +43,7 @@ public:
 
   [[nodiscard]] auto getId() const -> const lex::Token&;
   [[nodiscard]] auto getTypeSubs() const -> const std::optional<TypeSubstitutionList>&;
-  [[nodiscard]] auto getArgs() const -> const std::vector<ArgSpec>&;
+  [[nodiscard]] auto getArgList() const -> const ArgumentListDecl&;
   [[nodiscard]] auto getRetType() const -> const std::optional<RetTypeSpec>&;
 
   auto accept(NodeVisitor* visitor) const -> void override;
@@ -69,10 +52,7 @@ private:
   const lex::Token m_kw;
   const lex::Token m_id;
   const std::optional<TypeSubstitutionList> m_typeSubs;
-  const lex::Token m_open;
-  const std::vector<ArgSpec> m_args;
-  const std::vector<lex::Token> m_commas;
-  const lex::Token m_close;
+  const ArgumentListDecl m_argList;
   const std::optional<RetTypeSpec> m_retType;
   const NodePtr m_body;
 
@@ -80,10 +60,7 @@ private:
       lex::Token kw,
       lex::Token id,
       std::optional<TypeSubstitutionList> typeSubs,
-      lex::Token open,
-      std::vector<ArgSpec> args,
-      std::vector<lex::Token> commas,
-      lex::Token close,
+      ArgumentListDecl argList,
       std::optional<RetTypeSpec> retType,
       NodePtr body);
 
@@ -95,10 +72,7 @@ auto funcDeclStmtNode(
     lex::Token kw,
     lex::Token id,
     std::optional<TypeSubstitutionList> typeSubs,
-    lex::Token open,
-    std::vector<FuncDeclStmtNode::ArgSpec> args,
-    std::vector<lex::Token> commas,
-    lex::Token close,
+    ArgumentListDecl argList,
     std::optional<FuncDeclStmtNode::RetTypeSpec> retTypeSpec,
     NodePtr body) -> NodePtr;
 

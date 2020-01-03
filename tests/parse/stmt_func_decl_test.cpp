@@ -1,5 +1,6 @@
 #include "catch2/catch.hpp"
 #include "helpers.hpp"
+#include "parse/argument_list_decl.hpp"
 #include "parse/error.hpp"
 #include "parse/node_expr_binary.hpp"
 #include "parse/node_expr_id.hpp"
@@ -12,17 +13,19 @@ TEST_CASE("Parsing function declaration statements", "[parse]") {
   CHECK_STMT(
       "fun a() 1",
       funcDeclStmtNode(
-          FUN, ID("a"), std::nullopt, OPAREN, {}, COMMAS(0), CPAREN, std::nullopt, INT(1)));
+          FUN,
+          ID("a"),
+          std::nullopt,
+          ArgumentListDecl(OPAREN, {}, COMMAS(0), CPAREN),
+          std::nullopt,
+          INT(1)));
   CHECK_STMT(
       "fun a() -> int 1",
       funcDeclStmtNode(
           FUN,
           ID("a"),
           std::nullopt,
-          OPAREN,
-          {},
-          COMMAS(0),
-          CPAREN,
+          ArgumentListDecl(OPAREN, {}, COMMAS(0), CPAREN),
           FuncDeclStmtNode::RetTypeSpec{ARROW, TYPE("int")},
           INT(1)));
   CHECK_STMT(
@@ -31,10 +34,8 @@ TEST_CASE("Parsing function declaration statements", "[parse]") {
           FUN,
           ID("a"),
           std::nullopt,
-          OPAREN,
-          {FuncDeclStmtNode::ArgSpec(TYPE("int"), ID("x"))},
-          COMMAS(0),
-          CPAREN,
+          ArgumentListDecl(
+              OPAREN, {ArgumentListDecl::ArgSpec(TYPE("int"), ID("x"))}, COMMAS(0), CPAREN),
           FuncDeclStmtNode::RetTypeSpec{ARROW, TYPE("int")},
           INT(1)));
   CHECK_STMT(
@@ -43,11 +44,12 @@ TEST_CASE("Parsing function declaration statements", "[parse]") {
           FUN,
           ID("a"),
           std::nullopt,
-          OPAREN,
-          {FuncDeclStmtNode::ArgSpec(TYPE("int"), ID("x")),
-           FuncDeclStmtNode::ArgSpec(TYPE("int"), ID("y"))},
-          COMMAS(1),
-          CPAREN,
+          ArgumentListDecl(
+              OPAREN,
+              {ArgumentListDecl::ArgSpec(TYPE("int"), ID("x")),
+               ArgumentListDecl::ArgSpec(TYPE("int"), ID("y"))},
+              COMMAS(1),
+              CPAREN),
           FuncDeclStmtNode::RetTypeSpec{ARROW, TYPE("int")},
           INT(1)));
   CHECK_STMT(
@@ -56,12 +58,13 @@ TEST_CASE("Parsing function declaration statements", "[parse]") {
           FUN,
           ID("a"),
           std::nullopt,
-          OPAREN,
-          {FuncDeclStmtNode::ArgSpec(TYPE("int"), ID("x")),
-           FuncDeclStmtNode::ArgSpec(TYPE("int"), ID("y")),
-           FuncDeclStmtNode::ArgSpec(TYPE("bool"), ID("z"))},
-          COMMAS(2),
-          CPAREN,
+          ArgumentListDecl(
+              OPAREN,
+              {ArgumentListDecl::ArgSpec(TYPE("int"), ID("x")),
+               ArgumentListDecl::ArgSpec(TYPE("int"), ID("y")),
+               ArgumentListDecl::ArgSpec(TYPE("bool"), ID("z"))},
+              COMMAS(2),
+              CPAREN),
           FuncDeclStmtNode::RetTypeSpec{ARROW, TYPE("int")},
           binaryExprNode(ID_EXPR("x"), STAR, ID_EXPR("y"))));
   CHECK_STMT(
@@ -70,10 +73,7 @@ TEST_CASE("Parsing function declaration statements", "[parse]") {
           FUN,
           ID("a"),
           TypeSubstitutionList{OCURLY, {ID("T")}, COMMAS(0), CCURLY},
-          OPAREN,
-          {},
-          COMMAS(0),
-          CPAREN,
+          ArgumentListDecl(OPAREN, {}, COMMAS(0), CPAREN),
           std::nullopt,
           INT(1)));
   CHECK_STMT(
@@ -82,10 +82,7 @@ TEST_CASE("Parsing function declaration statements", "[parse]") {
           FUN,
           ID("a"),
           TypeSubstitutionList{OCURLY, {ID("T"), ID("U")}, COMMAS(1), CCURLY},
-          OPAREN,
-          {},
-          COMMAS(0),
-          CPAREN,
+          ArgumentListDecl(OPAREN, {}, COMMAS(0), CPAREN),
           std::nullopt,
           INT(1)));
   CHECK_STMT(
@@ -94,10 +91,8 @@ TEST_CASE("Parsing function declaration statements", "[parse]") {
           FUN,
           ID("a"),
           TypeSubstitutionList{OCURLY, {ID("T"), ID("U"), ID("W")}, COMMAS(2), CCURLY},
-          OPAREN,
-          {FuncDeclStmtNode::ArgSpec(TYPE("T"), ID("x"))},
-          COMMAS(0),
-          CPAREN,
+          ArgumentListDecl(
+              OPAREN, {ArgumentListDecl::ArgSpec(TYPE("T"), ID("x"))}, COMMAS(0), CPAREN),
           FuncDeclStmtNode::RetTypeSpec{ARROW, TYPE("T")},
           ID_EXPR("x")));
   CHECK_STMT(
@@ -106,10 +101,7 @@ TEST_CASE("Parsing function declaration statements", "[parse]") {
           FUN,
           ID("a"),
           std::nullopt,
-          OPAREN,
-          {},
-          COMMAS(0),
-          CPAREN,
+          ArgumentListDecl(OPAREN, {}, COMMAS(0), CPAREN),
           FuncDeclStmtNode::RetTypeSpec{ARROW, TYPE("List", TYPE("T", TYPE("Y")))},
           INT(1)));
   CHECK_STMT(
@@ -118,10 +110,8 @@ TEST_CASE("Parsing function declaration statements", "[parse]") {
           FUN,
           ID("a"),
           TypeSubstitutionList{OCURLY, {ID("T"), ID("U"), ID("W")}, COMMAS(2), CCURLY},
-          OPAREN,
-          {FuncDeclStmtNode::ArgSpec(TYPE("T"), ID("x"))},
-          COMMAS(0),
-          CPAREN,
+          ArgumentListDecl(
+              OPAREN, {ArgumentListDecl::ArgSpec(TYPE("T"), ID("x"))}, COMMAS(0), CPAREN),
           FuncDeclStmtNode::RetTypeSpec{ARROW, TYPE("T")},
           ID_EXPR("x")));
   CHECK_STMT(
@@ -130,10 +120,11 @@ TEST_CASE("Parsing function declaration statements", "[parse]") {
           FUN,
           ID("a"),
           TypeSubstitutionList{OCURLY, {ID("T"), ID("U")}, COMMAS(1), CCURLY},
-          OPAREN,
-          {FuncDeclStmtNode::ArgSpec(TYPE("T", TYPE("U")), ID("x"))},
-          COMMAS(0),
-          CPAREN,
+          ArgumentListDecl(
+              OPAREN,
+              {ArgumentListDecl::ArgSpec(TYPE("T", TYPE("U")), ID("x"))},
+              COMMAS(0),
+              CPAREN),
           std::nullopt,
           ID_EXPR("x")));
 
@@ -144,10 +135,7 @@ TEST_CASE("Parsing function declaration statements", "[parse]") {
             FUN,
             ID("a"),
             std::nullopt,
-            OPAREN,
-            {},
-            COMMAS(0),
-            CPAREN,
+            ArgumentListDecl(OPAREN, {}, COMMAS(0), CPAREN),
             FuncDeclStmtNode::RetTypeSpec{ARROW, TYPE("int")},
             errInvalidPrimaryExpr(END)));
     CHECK_STMT(
@@ -156,10 +144,7 @@ TEST_CASE("Parsing function declaration statements", "[parse]") {
             FUN,
             END,
             std::nullopt,
-            END,
-            {},
-            COMMAS(0),
-            END,
+            ArgumentListDecl(END, {}, COMMAS(0), END),
             std::nullopt,
             errInvalidPrimaryExpr(END)));
     CHECK_STMT(
@@ -168,10 +153,7 @@ TEST_CASE("Parsing function declaration statements", "[parse]") {
             FUN,
             ID("a"),
             TypeSubstitutionList{OCURLY, {}, COMMAS(0), END},
-            END,
-            {},
-            COMMAS(0),
-            END,
+            ArgumentListDecl(END, {}, COMMAS(0), END),
             std::nullopt,
             errInvalidPrimaryExpr(END)));
     CHECK_STMT(
@@ -180,10 +162,8 @@ TEST_CASE("Parsing function declaration statements", "[parse]") {
             FUN,
             ID("a"),
             TypeSubstitutionList{OCURLY, {}, COMMAS(0), CCURLY},
-            OPAREN,
-            {FuncDeclStmtNode::ArgSpec(TYPE("int"), ID("x"))},
-            COMMAS(0),
-            CPAREN,
+            ArgumentListDecl(
+                OPAREN, {ArgumentListDecl::ArgSpec(TYPE("int"), ID("x"))}, COMMAS(0), CPAREN),
             FuncDeclStmtNode::RetTypeSpec{ARROW, TYPE("int")},
             INT(1)));
     CHECK_STMT(
@@ -192,10 +172,8 @@ TEST_CASE("Parsing function declaration statements", "[parse]") {
             FUN,
             ID("a"),
             TypeSubstitutionList{OCURLY, {ID("T"), ID("U")}, COMMAS(0), CCURLY},
-            OPAREN,
-            {FuncDeclStmtNode::ArgSpec(TYPE("int"), ID("x"))},
-            COMMAS(0),
-            CPAREN,
+            ArgumentListDecl(
+                OPAREN, {ArgumentListDecl::ArgSpec(TYPE("int"), ID("x"))}, COMMAS(0), CPAREN),
             FuncDeclStmtNode::RetTypeSpec{ARROW, TYPE("int")},
             INT(1)));
     CHECK_STMT(
@@ -204,10 +182,7 @@ TEST_CASE("Parsing function declaration statements", "[parse]") {
             FUN,
             DISCARD,
             std::nullopt,
-            PARENPAREN,
-            {},
-            COMMAS(0),
-            PARENPAREN,
+            ArgumentListDecl(PARENPAREN, {}, COMMAS(0), PARENPAREN),
             std::nullopt,
             INT(1)));
     CHECK_STMT(
@@ -216,10 +191,7 @@ TEST_CASE("Parsing function declaration statements", "[parse]") {
             FUN,
             ID("a"),
             std::nullopt,
-            OPAREN,
-            {},
-            COMMAS(0),
-            END,
+            ArgumentListDecl(OPAREN, {}, COMMAS(0), END),
             std::nullopt,
             errInvalidPrimaryExpr(END)));
     CHECK_STMT(
@@ -228,10 +200,8 @@ TEST_CASE("Parsing function declaration statements", "[parse]") {
             FUN,
             ID("a"),
             std::nullopt,
-            OPAREN,
-            {FuncDeclStmtNode::ArgSpec(TYPE("int"), ID("x"))},
-            COMMAS(0),
-            END,
+            ArgumentListDecl(
+                OPAREN, {ArgumentListDecl::ArgSpec(TYPE("int"), ID("x"))}, COMMAS(0), END),
             std::nullopt,
             errInvalidPrimaryExpr(END)));
     CHECK_STMT(
@@ -240,10 +210,7 @@ TEST_CASE("Parsing function declaration statements", "[parse]") {
             FUN,
             ID("a"),
             std::nullopt,
-            OPAREN,
-            {FuncDeclStmtNode::ArgSpec(TYPE("int"), END)},
-            COMMAS(0),
-            END,
+            ArgumentListDecl(OPAREN, {ArgumentListDecl::ArgSpec(TYPE("int"), END)}, COMMAS(0), END),
             std::nullopt,
             errInvalidPrimaryExpr(END)));
     CHECK_STMT(
@@ -252,11 +219,12 @@ TEST_CASE("Parsing function declaration statements", "[parse]") {
             FUN,
             ID("a"),
             std::nullopt,
-            OPAREN,
-            {FuncDeclStmtNode::ArgSpec(TYPE("int"), ID("x")),
-             FuncDeclStmtNode::ArgSpec(TYPE("int"), ID("y"))},
-            COMMAS(0),
-            CPAREN,
+            ArgumentListDecl(
+                OPAREN,
+                {ArgumentListDecl::ArgSpec(TYPE("int"), ID("x")),
+                 ArgumentListDecl::ArgSpec(TYPE("int"), ID("y"))},
+                COMMAS(0),
+                CPAREN),
             FuncDeclStmtNode::RetTypeSpec{ARROW, TYPE("x")},
             errInvalidPrimaryExpr(END)));
     CHECK_STMT(
@@ -265,11 +233,12 @@ TEST_CASE("Parsing function declaration statements", "[parse]") {
             FUN,
             ID("a"),
             std::nullopt,
-            OPAREN,
-            {FuncDeclStmtNode::ArgSpec(TYPE("int"), ID("x")),
-             FuncDeclStmtNode::ArgSpec(TYPE("int"), ID("y"))},
-            COMMAS(0),
-            CPAREN,
+            ArgumentListDecl(
+                OPAREN,
+                {ArgumentListDecl::ArgSpec(TYPE("int"), ID("x")),
+                 ArgumentListDecl::ArgSpec(TYPE("int"), ID("y"))},
+                COMMAS(0),
+                CPAREN),
             FuncDeclStmtNode::RetTypeSpec{ARROW, TYPE("int")},
             INT(1)));
     CHECK_STMT(
@@ -278,10 +247,8 @@ TEST_CASE("Parsing function declaration statements", "[parse]") {
             FUN,
             ID("a"),
             std::nullopt,
-            OPAREN,
-            {FuncDeclStmtNode::ArgSpec(TYPE("int"), ID("x"))},
-            COMMAS(1),
-            CPAREN,
+            ArgumentListDecl(
+                OPAREN, {ArgumentListDecl::ArgSpec(TYPE("int"), ID("x"))}, COMMAS(1), CPAREN),
             FuncDeclStmtNode::RetTypeSpec{ARROW, TYPE("int")},
             INT(1)));
     CHECK_STMT(
@@ -290,11 +257,12 @@ TEST_CASE("Parsing function declaration statements", "[parse]") {
             FUN,
             ID("a"),
             std::nullopt,
-            OPAREN,
-            {FuncDeclStmtNode::ArgSpec(TYPE("int"), ID("x")),
-             FuncDeclStmtNode::ArgSpec(Type(COMMA), CPAREN)},
-            COMMAS(1),
-            ARROW,
+            ArgumentListDecl(
+                OPAREN,
+                {ArgumentListDecl::ArgSpec(TYPE("int"), ID("x")),
+                 ArgumentListDecl::ArgSpec(Type(COMMA), CPAREN)},
+                COMMAS(1),
+                ARROW),
             std::nullopt,
             ID_EXPR("int")));
     CHECK_STMT(
@@ -303,10 +271,7 @@ TEST_CASE("Parsing function declaration statements", "[parse]") {
             FUN,
             ID("a"),
             std::nullopt,
-            PARENPAREN,
-            {},
-            COMMAS(0),
-            PARENPAREN,
+            ArgumentListDecl(PARENPAREN, {}, COMMAS(0), PARENPAREN),
             FuncDeclStmtNode::RetTypeSpec{ARROW,
                                           Type(ID("T"), TypeParamList(OCURLY, {}, {}, CCURLY))},
             INT(1)));
@@ -316,11 +281,12 @@ TEST_CASE("Parsing function declaration statements", "[parse]") {
             FUN,
             ID("a"),
             TypeSubstitutionList{OCURLY, {ID("T"), ID("U")}, COMMAS(1), CCURLY},
-            OPAREN,
-            {FuncDeclStmtNode::ArgSpec(
-                Type(ID("T"), TypeParamList(OCURLY, {}, {}, CCURLY)), ID("x"))},
-            COMMAS(0),
-            CPAREN,
+            ArgumentListDecl(
+                OPAREN,
+                {ArgumentListDecl::ArgSpec(
+                    Type(ID("T"), TypeParamList(OCURLY, {}, {}, CCURLY)), ID("x"))},
+                COMMAS(0),
+                CPAREN),
             std::nullopt,
             ID_EXPR("x")));
   }

@@ -27,7 +27,9 @@ auto FuncTemplate::getTemplateName() const -> const std::string& { return m_name
 
 auto FuncTemplate::getTypeParamCount() const -> unsigned int { return m_typeSubs.size(); }
 
-auto FuncTemplate::getArgumentCount() const -> unsigned int { return m_parseNode.getArgs().size(); }
+auto FuncTemplate::getArgumentCount() const -> unsigned int {
+  return m_parseNode.getArgList().getCount();
+}
 
 auto FuncTemplate::getRetType(const prog::sym::TypeSet& typeParams)
     -> std::optional<prog::sym::TypeId> {
@@ -69,13 +71,13 @@ auto FuncTemplate::getRetType(const prog::sym::TypeSet& typeParams)
 
 auto FuncTemplate::inferTypeParams(const prog::sym::TypeSet& argTypes)
     -> std::optional<prog::sym::TypeSet> {
-  if (argTypes.getCount() != m_parseNode.getArgs().size()) {
+  if (argTypes.getCount() != m_parseNode.getArgList().getCount()) {
     return std::nullopt;
   }
   auto typeParams = std::vector<prog::sym::TypeId>{};
   for (const auto& typeSub : m_typeSubs) {
     const auto inferredType =
-        inferSubTypeFromSpecs(*m_context, typeSub, m_parseNode.getArgs(), argTypes);
+        inferSubTypeFromSpecs(*m_context, typeSub, m_parseNode.getArgList().getArgs(), argTypes);
     if (!inferredType) {
       return std::nullopt;
     }

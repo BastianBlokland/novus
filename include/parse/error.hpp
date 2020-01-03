@@ -14,10 +14,7 @@ namespace parse {
     lex::Token kw,
     lex::Token id,
     std::optional<TypeSubstitutionList> typeSubs,
-    lex::Token open,
-    const std::vector<FuncDeclStmtNode::ArgSpec>& args,
-    std::vector<lex::Token> commas,
-    lex::Token close,
+    const ArgumentListDecl& argList,
     std::optional<FuncDeclStmtNode::RetTypeSpec> retType,
     NodePtr body) -> NodePtr;
 

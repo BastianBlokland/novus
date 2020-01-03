@@ -69,7 +69,7 @@ auto DefineUserFuncs::define(prog::sym::FuncId id, const parse::FuncDeclStmtNode
 auto DefineUserFuncs::declareInputs(
     const parse::FuncDeclStmtNode& n, prog::sym::ConstDeclTable* consts) -> bool {
   bool isValid = true;
-  for (const auto& arg : n.getArgs()) {
+  for (const auto& arg : n.getArgList()) {
     const auto constName = getConstName(m_context, m_typeSubTable, *consts, arg.getIdentifier());
     if (!constName) {
       isValid = false;

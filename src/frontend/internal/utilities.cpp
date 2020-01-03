@@ -235,13 +235,13 @@ auto inferRetType(
     const prog::sym::TypeSet& input,
     bool aggressive) -> prog::sym::TypeId {
 
-  if (input.getCount() != funcDeclParseNode.getArgs().size()) {
+  if (input.getCount() != funcDeclParseNode.getArgList().getCount()) {
     throw std::invalid_argument{"Incorrect number of input types provided"};
   }
 
   auto constTypes = std::unordered_map<std::string, prog::sym::TypeId>{};
   for (auto i = 0U; i != input.getCount(); ++i) {
-    const auto& argName = getName(funcDeclParseNode.getArgs()[i].getIdentifier());
+    const auto& argName = getName(funcDeclParseNode.getArgList().getArgs()[i].getIdentifier());
     constTypes.insert({argName, input[i]});
   }
 
@@ -263,7 +263,7 @@ auto getFuncInput(
 
   auto isValid  = true;
   auto argTypes = std::vector<prog::sym::TypeId>{};
-  for (const auto& arg : n.getArgs()) {
+  for (const auto& arg : n.getArgList()) {
     const auto argType = getOrInstType(context, subTable, arg.getType());
     if (argType) {
       argTypes.push_back(argType.value());

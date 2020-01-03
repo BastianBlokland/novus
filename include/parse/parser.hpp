@@ -1,5 +1,6 @@
 #pragma once
 #include "lex/token.hpp"
+#include "parse/argument_list_decl.hpp"
 #include "parse/node.hpp"
 #include "parse/node_itr.hpp"
 #include "parse/type.hpp"
@@ -44,6 +45,7 @@ private:
   auto nextType() -> Type;
   auto nextTypeParamList() -> TypeParamList;
   auto nextTypeSubstitutionList() -> TypeSubstitutionList;
+  auto nextArgDeclList() -> ArgumentListDecl;
 
   auto consumeToken() -> lex::Token;
   auto peekToken(size_t ahead) -> lex::Token&;

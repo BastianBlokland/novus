@@ -51,4 +51,16 @@ auto anyNodeNull(const std::vector<NodePtr>& v) -> bool {
   return std::any_of(v.begin(), v.end(), [](const NodePtr& p) { return p == nullptr; });
 }
 
+auto validateParentheses(const lex::Token& open, const lex::Token& close) -> bool {
+  if (open.getKind() == lex::TokenKind::SepOpenParen &&
+      close.getKind() == lex::TokenKind::SepCloseParen) {
+    return true;
+  }
+  if (open.getKind() == lex::TokenKind::OpParenParen &&
+      close.getKind() == lex::TokenKind::OpParenParen) {
+    return true;
+  }
+  return false;
+}
+
 } // namespace parse
