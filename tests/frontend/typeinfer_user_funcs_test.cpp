@@ -152,6 +152,15 @@ TEST_CASE("Infer return type of user functions", "[frontend]") {
         GET_TYPE_ID(output, "bool"));
   }
 
+  SECTION("Recursive templated call") {
+    const auto& output = ANALYZE("fun ft{T}(T a) a < 0 ? ft(-a) : a "
+                                 "fun f(int i) ft{int}(i)");
+    REQUIRE(output.isSuccess());
+    CHECK(
+        GET_FUNC_DECL(output, "f", GET_TYPE_ID(output, "int")).getOutput() ==
+        GET_TYPE_ID(output, "int"));
+  }
+
   SECTION("Templated constructor") {
     const auto& output = ANALYZE("struct tuple{T1, T2} = T1 a, T2 b "
                                  "fun f(int i) tuple{int, bool}(i, false)");

@@ -3,6 +3,7 @@
 #include "internal/type_substitution_table.hpp"
 #include "parse/node_stmt_func_decl.hpp"
 #include "prog/program.hpp"
+#include <deque>
 
 namespace frontend::internal {
 
@@ -31,6 +32,9 @@ private:
   std::vector<std::string> m_typeSubs;
   const parse::FuncDeclStmtNode& m_parseNode;
   std::vector<std::unique_ptr<FuncTemplateInst>> m_instances;
+
+  // Keep track of current 'getRetType' calls to detect cycles.
+  std::deque<prog::sym::TypeSet> m_inferStack;
 
   FuncTemplate(
       Context* context,

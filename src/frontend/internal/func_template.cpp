@@ -44,6 +44,12 @@ auto FuncTemplate::getRetType(const prog::sym::TypeSet& typeParams)
     return (*previousInst)->m_retType;
   }
 
+  // Check if we are already infering these types, prevents infinite loop in case of recursion.
+  if (std::find(m_inferStack.begin(), m_inferStack.end(), typeParams) != m_inferStack.end()) {
+    return std::nullopt;
+  }
+  m_inferStack.push_front(typeParams);
+
   const auto subTable = createSubTable(typeParams);
   auto funcInput      = getFuncInput(m_context, &subTable, m_parseNode);
   if (!funcInput) {
@@ -56,6 +62,8 @@ auto FuncTemplate::getRetType(const prog::sym::TypeSet& typeParams)
   if (retType->isInfer()) {
     retType = inferRetType(m_context, &subTable, m_parseNode, *funcInput, true);
   }
+
+  m_inferStack.pop_front();
   return retType->isConcrete() ? std::optional{*retType} : std::nullopt;
 }
 
