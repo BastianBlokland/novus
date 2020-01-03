@@ -30,6 +30,7 @@ static auto generateStructFieldEquality(
     break;
   case prog::sym::TypeKind::UserStruct:
   case prog::sym::TypeKind::UserUnion:
+  case prog::sym::TypeKind::UserDelegate:
     builder->addCall(getUserTypeEqLabel(typeDecl.getId()));
     break;
   }
@@ -138,6 +139,13 @@ auto generateUnionEquality(
   builder->addLoadLitInt(1);
   builder->addRet();
   builder->addFail(); // Add a fail between sections to aid in detecting invalid programs.
+}
+
+auto generateDelegateEquality(
+    Builder* builder, const prog::Program& /* unused */, const prog::sym::DelegateDef &
+    /* unused */) -> void {
+  // Atm delegates are represented by instruction pointers.
+  builder->addCheckEqIp();
 }
 
 } // namespace backend::internal

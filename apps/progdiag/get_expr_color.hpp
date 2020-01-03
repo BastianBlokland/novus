@@ -20,6 +20,10 @@ public:
     m_fg = rang::fg::yellow;
   }
 
+  auto visit(const prog::expr::CallDynExprNode & /*unused*/) -> void override {
+    m_fg = rang::fg::yellow;
+  }
+
   auto visit(const prog::expr::ConstExprNode & /*unused*/) -> void override {
     m_fg = rang::fg::green;
   }
@@ -47,6 +51,8 @@ public:
   auto visit(const prog::expr::LitFloatNode & /*unused*/) -> void override {
     m_fg = rang::fg::cyan;
   }
+
+  auto visit(const prog::expr::LitFuncNode & /*unused*/) -> void override { m_fg = rang::fg::cyan; }
 
   auto visit(const prog::expr::LitIntNode & /*unused*/) -> void override { m_fg = rang::fg::cyan; }
 

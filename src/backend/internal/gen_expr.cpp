@@ -237,6 +237,18 @@ auto GenExpr::visit(const prog::expr::CallExprNode& n) -> void {
     break;
   }
 }
+auto GenExpr::visit(const prog::expr::CallDynExprNode& n) -> void {
+  // Push the arguments on the stack.
+  for (auto i = 1U; i < n.getChildCount(); ++i) {
+    genSubExpr(n[i]);
+  }
+
+  // Push the delegate on the stack.
+  genSubExpr(n[0]);
+
+  // Invoke the delegate.
+  m_builder->addCallDyn();
+}
 
 auto GenExpr::visit(const prog::expr::ConstExprNode& n) -> void {
   const auto constId = getConstId(n.getId());
@@ -313,6 +325,11 @@ auto GenExpr::visit(const prog::expr::LitBoolNode& n) -> void {
 
 auto GenExpr::visit(const prog::expr::LitFloatNode& n) -> void {
   m_builder->addLoadLitFloat(n.getVal());
+}
+
+auto GenExpr::visit(const prog::expr::LitFuncNode& n) -> void {
+  const auto funcId = n.getFunc();
+  m_builder->addLoadLitIp(getLabel(funcId));
 }
 
 auto GenExpr::visit(const prog::expr::LitIntNode& n) -> void {

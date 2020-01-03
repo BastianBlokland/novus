@@ -203,26 +203,54 @@ auto GetExpr::visit(const parse::ConstDeclExprNode& n) -> void {
 }
 
 auto GetExpr::visit(const parse::IdExprNode& n) -> void {
-  const auto& name   = getName(n.getId());
-  const auto constId = m_consts->lookup(name);
-  if (!constId) {
-    m_context->reportDiag(errUndeclaredConst(m_context->getSrc(), name, n.getSpan()));
-    return;
-  }
+  const auto& name = getName(n.getId());
 
+  // Templated function literal.
   if (n.getTypeParams()) {
+    const auto typeSet = getTypeSet(m_context, m_typeSubTable, n.getTypeParams()->getTypes());
+    if (!typeSet) {
+      assert(m_context->hasErrors());
+      return;
+    }
+    const auto instances = m_context->getFuncTemplates()->instantiate(name, *typeSet);
+    if (instances.empty()) {
+      m_context->reportDiag(
+          errNoFuncFoundToInstantiate(m_context->getSrc(), name, typeSet->getCount(), n.getSpan()));
+      return;
+    }
+    if (instances.size() != 1) {
+      m_context->reportDiag(errAmbiguousTemplateFunction(
+          m_context->getSrc(), name, typeSet->getCount(), n.getSpan()));
+      return;
+    }
+    if (m_context->hasErrors()) {
+      return;
+    }
+    m_expr = getLitFunc(m_context, *instances[0]->getFunc());
+    return;
+  }
+
+  // Non-templated function literal.
+  const auto funcs = m_context->getProg()->lookupFuncs(name);
+  if (!funcs.empty()) {
+    if (funcs.size() != 1) {
+      m_context->reportDiag(errAmbiguousFunction(m_context->getSrc(), name, n.getSpan()));
+      return;
+    }
+    m_expr = getLitFunc(m_context, funcs[0]);
+    return;
+  }
+
+  // Error if no templated args are provided to templated function.
+  if (m_context->getFuncTemplates()->hasFunc(name)) {
     m_context->reportDiag(
-        errTypeParametersProvidedToConstant(m_context->getSrc(), name, n.getSpan()));
+        errNoTypeParamsProvidedToTemplateFunction(m_context->getSrc(), name, n.getSpan()));
     return;
   }
 
-  if (std::find(m_visibleConsts->begin(), m_visibleConsts->end(), constId.value()) ==
-      m_visibleConsts->end()) {
-    m_context->reportDiag(errUninitializedConst(m_context->getSrc(), name, n.getSpan()));
-    return;
-  }
-
-  m_expr = prog::expr::constExprNode(*m_consts, constId.value());
+  // If its not a function literal treat it as a constant.
+  m_expr = getConstExpr(n);
+  assert(m_expr != nullptr || m_context->hasErrors());
 }
 
 auto GetExpr::visit(const parse::FieldExprNode& n) -> void {
@@ -594,6 +622,23 @@ auto GetExpr::getBinLogicOpExpr(const parse::BinaryExprNode& n, BinLogicOp op)
   return nullptr;
 }
 
+auto GetExpr::getConstExpr(const parse::IdExprNode& n) -> prog::expr::NodePtr {
+  const auto& name   = getName(n.getId());
+  const auto constId = m_consts->lookup(name);
+  if (!constId) {
+    m_context->reportDiag(errUndeclaredConst(m_context->getSrc(), name, n.getSpan()));
+    return nullptr;
+  }
+
+  if (std::find(m_visibleConsts->begin(), m_visibleConsts->end(), constId.value()) ==
+      m_visibleConsts->end()) {
+    m_context->reportDiag(errUninitializedConst(m_context->getSrc(), name, n.getSpan()));
+    return nullptr;
+  }
+
+  return prog::expr::constExprNode(*m_consts, constId.value());
+}
+
 auto GetExpr::getDynCallExpr(const parse::CallExprNode& n) -> prog::expr::NodePtr {
   auto args = getChildExprs(n);
   if (!args) {
@@ -601,6 +646,21 @@ auto GetExpr::getDynCallExpr(const parse::CallExprNode& n) -> prog::expr::NodePt
     return nullptr;
   }
 
+  // Check if this is a call to to a delegate type.
+  if (m_context->getProg()->isDelegate(args->second[0])) {
+    auto delArgs = std::vector<prog::expr::NodePtr>{};
+    for (auto i = 1U; i != args->first.size(); ++i) {
+      delArgs.push_back(std::move(args->first[i]));
+    }
+    if (!m_context->getProg()->isCallable(args->second[0], delArgs)) {
+      m_context->reportDiag(errIncorrectArgsToDelegate(m_context->getSrc(), n.getSpan()));
+      return nullptr;
+    }
+    return prog::expr::callDynExprNode(
+        *m_context->getProg(), std::move(args->first[0]), std::move(delArgs));
+  }
+
+  // Check if this is a call to a overloaded call operator.
   const auto funcName      = prog::getFuncName(prog::Operator::ParenParen);
   const auto possibleFuncs = getFunctions(funcName, std::nullopt, args->second, n.getSpan());
   const auto func          = m_context->getProg()->lookupFunc(possibleFuncs, args->second, -1);

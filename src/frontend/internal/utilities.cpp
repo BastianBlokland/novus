@@ -3,9 +3,119 @@
 #include "internal/context.hpp"
 #include "internal/typeinfer_expr.hpp"
 #include "parse/type_param_list.hpp"
+#include "prog/expr/node_lit_func.hpp"
 #include <stdexcept>
+#include <unordered_set>
 
 namespace frontend::internal {
+
+auto getName(const lex::Token& token) -> std::string {
+  if (token.getKind() != lex::TokenKind::Identifier) {
+    return "__unknown";
+  }
+  return token.getPayload<lex::IdentifierTokenPayload>()->getIdentifier();
+}
+
+auto getName(const parse::Type& parseType) -> std::string { return getName(parseType.getId()); }
+
+auto getName(Context* context, prog::sym::TypeId typeId) -> std::string {
+  if (!typeId.isConcrete()) {
+    return "unknown";
+  }
+  return context->getProg()->getTypeDecl(typeId).getName();
+}
+
+auto getOperator(const lex::Token& token) -> std::optional<prog::Operator> {
+  switch (token.getKind()) {
+  case lex::TokenKind::OpPlus:
+    return prog::Operator::Plus;
+  case lex::TokenKind::OpMinus:
+    return prog::Operator::Minus;
+  case lex::TokenKind::OpStar:
+    return prog::Operator::Star;
+  case lex::TokenKind::OpSlash:
+    return prog::Operator::Slash;
+  case lex::TokenKind::OpRem:
+    return prog::Operator::Rem;
+  case lex::TokenKind::OpAmp:
+    return prog::Operator::Amp;
+  case lex::TokenKind::OpPipe:
+    return prog::Operator::Pipe;
+  case lex::TokenKind::OpEqEq:
+    return prog::Operator::EqEq;
+  case lex::TokenKind::OpBang:
+    return prog::Operator::Bang;
+  case lex::TokenKind::OpBangEq:
+    return prog::Operator::BangEq;
+  case lex::TokenKind::OpLe:
+    return prog::Operator::Le;
+  case lex::TokenKind::OpLeEq:
+    return prog::Operator::LeEq;
+  case lex::TokenKind::OpGt:
+    return prog::Operator::Gt;
+  case lex::TokenKind::OpGtEq:
+    return prog::Operator::GtEq;
+  case lex::TokenKind::OpColonColon:
+    return prog::Operator::ColonColon;
+  case lex::TokenKind::OpSquareSquare:
+    return prog::Operator::SquareSquare;
+  case lex::TokenKind::OpParenParen:
+    return prog::Operator::ParenParen;
+  default:
+    return std::nullopt;
+  }
+}
+
+auto getText(const prog::Operator& op) -> std::string {
+  switch (op) {
+  case prog::Operator::Plus:
+    return "+";
+  case prog::Operator::Minus:
+    return "-";
+  case prog::Operator::Star:
+    return "*";
+  case prog::Operator::Slash:
+    return "/";
+  case prog::Operator::Rem:
+    return "%";
+  case prog::Operator::Amp:
+    return "&";
+  case prog::Operator::Pipe:
+    return "|";
+  case prog::Operator::EqEq:
+    return "==";
+  case prog::Operator::Bang:
+    return "!";
+  case prog::Operator::BangEq:
+    return "!=";
+  case prog::Operator::Le:
+    return "<";
+  case prog::Operator::LeEq:
+    return "<=";
+  case prog::Operator::Gt:
+    return ">";
+  case prog::Operator::GtEq:
+    return ">=";
+  case prog::Operator::ColonColon:
+    return "::";
+  case prog::Operator::SquareSquare:
+    return "[]";
+  case prog::Operator::ParenParen:
+    return "()";
+  }
+  return "__unknown";
+}
+
+auto isReservedTypeName(const std::string& name) -> bool {
+  static const std::unordered_set<std::string> reservedTypes = {
+      "int",
+      "float",
+      "bool",
+      "string",
+      "func",
+  };
+  return reservedTypes.find(name) != reservedTypes.end();
+}
 
 auto getOrInstType(
     Context* context,
@@ -85,6 +195,11 @@ auto instType(
     assert(context->hasErrors());
     return std::nullopt;
   }
+
+  if (typeName == "func") {
+    return context->getDelegates()->getDelegate(context, *typeSet);
+  }
+
   const auto typeInstantiation = context->getTypeTemplates()->instantiate(typeName, *typeSet);
   if (!typeInstantiation) {
     return std::nullopt;
@@ -135,6 +250,13 @@ auto inferRetType(
   return inferBodyType.getInferredType();
 }
 
+auto getLitFunc(Context* context, prog::sym::FuncId func) -> prog::expr::NodePtr {
+  const auto funcDecl = context->getProg()->getFuncDecl(func);
+  const auto delegateType =
+      context->getDelegates()->getDelegate(context, funcDecl.getInput(), funcDecl.getOutput());
+  return prog::expr::litFuncNode(*context->getProg(), delegateType, func);
+}
+
 auto getFuncInput(
     Context* context, const TypeSubstitutionTable* subTable, const parse::FuncDeclStmtNode& n)
     -> std::optional<prog::sym::TypeSet> {
@@ -161,7 +283,7 @@ auto getSubstitutionParams(Context* context, const parse::TypeSubstitutionList& 
   auto isValid    = true;
   for (const auto& typeSubToken : subList) {
     const auto typeParamName = getName(typeSubToken);
-    if (context->getProg()->lookupType(typeParamName)) {
+    if (isType(context, typeParamName)) {
       context->reportDiag(errTypeParamNameConflictsWithType(
           context->getSrc(), typeParamName, typeSubToken.getSpan()));
       isValid = false;
@@ -204,7 +326,7 @@ auto getConstName(
         errConstNameConflictsWithTypeSubstitution(context->getSrc(), name, nameToken.getSpan()));
     return std::nullopt;
   }
-  if (context->getProg()->lookupType(name)) {
+  if (context->getProg()->lookupType(name) || isReservedTypeName(name)) {
     context->reportDiag(
         errConstNameConflictsWithType(context->getSrc(), name, nameToken.getSpan()));
     return std::nullopt;
@@ -238,7 +360,8 @@ auto mangleName(Context* context, const std::string& name, const prog::sym::Type
 }
 
 auto isType(Context* context, const std::string& name) -> bool {
-  return context->getProg()->lookupType(name) || context->getTypeTemplates()->hasType(name);
+  return isReservedTypeName(name) || context->getProg()->lookupType(name) ||
+      context->getTypeTemplates()->hasType(name);
 }
 
 } // namespace frontend::internal

@@ -187,6 +187,26 @@ auto Program::findCommonType(const std::vector<sym::TypeId>& types) -> std::opti
   return internal::findCommonType(*this, types);
 }
 
+auto Program::isDelegate(sym::TypeId id) const -> bool {
+  const auto& typeDecl = getTypeDecl(id);
+  return typeDecl.getKind() == sym::TypeKind::UserDelegate;
+}
+
+auto Program::isCallable(sym::FuncId func, const std::vector<expr::NodePtr>& args) const -> bool {
+  const auto& funcDecl = getFuncDecl(func);
+  return internal::isConvertable(*this, funcDecl.getInput(), args);
+}
+
+auto Program::isCallable(sym::TypeId delegate, const std::vector<expr::NodePtr>& args) const
+    -> bool {
+  const auto& typeDecl = getTypeDecl(delegate);
+  if (typeDecl.getKind() != sym::TypeKind::UserDelegate) {
+    return false;
+  }
+  const auto& delegateDef = std::get<sym::DelegateDef>(getTypeDef(delegate));
+  return internal::isConvertable(*this, delegateDef.getInput(), args);
+}
+
 auto Program::getTypeDecl(sym::TypeId id) const -> const sym::TypeDecl& { return m_typeDecls[id]; }
 
 auto Program::getFuncDecl(sym::FuncId id) const -> const sym::FuncDecl& { return m_funcDecls[id]; }
@@ -209,6 +229,10 @@ auto Program::declareUserStruct(std::string name) -> sym::TypeId {
 
 auto Program::declareUserUnion(std::string name) -> sym::TypeId {
   return m_typeDecls.registerType(sym::TypeKind::UserUnion, std::move(name));
+}
+
+auto Program::declareUserDelegate(std::string name) -> sym::TypeId {
+  return m_typeDecls.registerType(sym::TypeKind::UserDelegate, std::move(name));
 }
 
 auto Program::declareUserFunc(std::string name, sym::TypeSet input, sym::TypeId output)
@@ -268,6 +292,25 @@ auto Program::defineUserUnion(sym::TypeId id, std::vector<sym::TypeId> types) ->
 
   // Register union definition.
   m_typeDefs.registerUnion(m_typeDecls, id, std::move(types));
+}
+
+auto Program::defineUserDelegate(sym::TypeId id, sym::TypeSet input, sym::TypeId output) -> void {
+  // Register (in)equality functions.
+  m_funcDecls.registerFunc(
+      *this,
+      sym::FuncKind::CheckEqUserType,
+      getFuncName(Operator::EqEq),
+      sym::TypeSet{id, id},
+      m_bool);
+  m_funcDecls.registerFunc(
+      *this,
+      sym::FuncKind::CheckNEqUserType,
+      getFuncName(Operator::BangEq),
+      sym::TypeSet{id, id},
+      m_bool);
+
+  // Register delegate definition.
+  m_typeDefs.registerDelegate(m_typeDecls, id, std::move(input), output);
 }
 
 auto Program::defineUserFunc(sym::FuncId id, sym::ConstDeclTable consts, expr::NodePtr expr)

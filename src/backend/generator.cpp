@@ -77,6 +77,10 @@ auto generate(const prog::Program& program) -> vm::Assembly {
     } else if (std::holds_alternative<prog::sym::UnionDef>(tDefItr->second)) {
       const auto& unionDef = std::get<prog::sym::UnionDef>(tDefItr->second);
       internal::generateUnionEquality(&builder, program, unionDef);
+
+    } else if (std::holds_alternative<prog::sym::DelegateDef>(tDefItr->second)) {
+      const auto& delegateDef = std::get<prog::sym::DelegateDef>(tDefItr->second);
+      internal::generateDelegateEquality(&builder, program, delegateDef);
     }
   }
 

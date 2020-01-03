@@ -51,6 +51,9 @@ TEST_CASE("Analyzing user-function definitions", "[frontend]") {
         "fun f(int int) -> int true",
         errConstNameConflictsWithType(src, "int", input::Span{10, 12}));
     CHECK_DIAG(
+        "fun f(int func) -> int true",
+        errConstNameConflictsWithType(src, "func", input::Span{10, 13}));
+    CHECK_DIAG(
         "fun f(int f) -> int true",
         errConstNameConflictsWithFunction(src, "f", input::Span{10, 10}));
     CHECK_DIAG(

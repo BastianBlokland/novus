@@ -30,6 +30,20 @@ TEST_CASE("Infer return type of user functions", "[frontend]") {
     CHECK(GET_FUNC_DECL(output, "f").getOutput() == GET_TYPE_ID(output, "string"));
   }
 
+  SECTION("Function literal") {
+    const auto& output = ANALYZE("fun f1(int i) i "
+                                 "fun f() f1");
+    REQUIRE(output.isSuccess());
+    CHECK(GET_FUNC_DECL(output, "f").getOutput() == GET_TYPE_ID(output, "__func_int_int"));
+  }
+
+  SECTION("Templated function literal") {
+    const auto& output = ANALYZE("fun f1{T}(T t) t "
+                                 "fun f() f1{int}");
+    REQUIRE(output.isSuccess());
+    CHECK(GET_FUNC_DECL(output, "f").getOutput() == GET_TYPE_ID(output, "__func_int_int"));
+  }
+
   SECTION("Function argument") {
     const auto& output = ANALYZE("fun f(int arg) arg");
     REQUIRE(output.isSuccess());
@@ -162,6 +176,21 @@ TEST_CASE("Infer return type of user functions", "[frontend]") {
     REQUIRE(output.isSuccess());
     CHECK(
         GET_FUNC_DECL(output, "f", GET_TYPE_ID(output, "s")).getOutput() ==
+        GET_TYPE_ID(output, "int"));
+  }
+
+  SECTION("Call operator") {
+    const auto& output = ANALYZE("fun ()(int i) i != 0 "
+                                 "fun f() 42()");
+    REQUIRE(output.isSuccess());
+    CHECK(GET_FUNC_DECL(output, "f").getOutput() == GET_TYPE_ID(output, "bool"));
+  }
+
+  SECTION("Dynamic call") {
+    const auto& output = ANALYZE("fun f(func{int, int} op) op(1)");
+    REQUIRE(output.isSuccess());
+    CHECK(
+        GET_FUNC_DECL(output, "f", GET_TYPE_ID(output, "__func_int_int")).getOutput() ==
         GET_TYPE_ID(output, "int"));
   }
 

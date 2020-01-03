@@ -14,6 +14,8 @@ public:
   auto operator=(const FuncTemplateTable& rhs) -> FuncTemplateTable& = delete;
   auto operator=(FuncTemplateTable&& rhs) noexcept -> FuncTemplateTable& = delete;
 
+  auto hasFunc(const std::string& name) -> bool;
+
   auto declare(
       Context* context,
       const std::string& name,

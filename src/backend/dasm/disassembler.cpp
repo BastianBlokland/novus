@@ -46,6 +46,7 @@ auto disassembleInstructions(const vm::Assembly& assembly) -> std::vector<Instru
     case vm::OpCode::CheckEqInt:
     case vm::OpCode::CheckEqFloat:
     case vm::OpCode::CheckEqString:
+    case vm::OpCode::CheckEqIp:
     case vm::OpCode::CheckGtInt:
     case vm::OpCode::CheckGtFloat:
     case vm::OpCode::CheckLeInt:
@@ -55,6 +56,7 @@ auto disassembleInstructions(const vm::Assembly& assembly) -> std::vector<Instru
     case vm::OpCode::ConvIntString:
     case vm::OpCode::ConvFloatString:
     case vm::OpCode::PrintString:
+    case vm::OpCode::CallDyn:
     case vm::OpCode::Ret:
     case vm::OpCode::Fail:
     case vm::OpCode::Dup:
@@ -62,6 +64,7 @@ auto disassembleInstructions(const vm::Assembly& assembly) -> std::vector<Instru
       result.push_back(Instruction(opCode, ipOffset, {}));
       continue;
     case vm::OpCode::LoadLitString:
+    case vm::OpCode::LoadLitIp:
     case vm::OpCode::Jump:
     case vm::OpCode::JumpIf:
     case vm::OpCode::Call:

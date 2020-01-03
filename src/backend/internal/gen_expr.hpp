@@ -12,6 +12,7 @@ public:
   auto visit(const prog::expr::AssignExprNode& n) -> void override;
   auto visit(const prog::expr::SwitchExprNode& n) -> void override;
   auto visit(const prog::expr::CallExprNode& n) -> void override;
+  auto visit(const prog::expr::CallDynExprNode& n) -> void override;
   auto visit(const prog::expr::ConstExprNode& n) -> void override;
   auto visit(const prog::expr::FieldExprNode& n) -> void override;
   auto visit(const prog::expr::GroupExprNode& n) -> void override;
@@ -20,6 +21,7 @@ public:
   auto visit(const prog::expr::FailNode& n) -> void override;
   auto visit(const prog::expr::LitBoolNode& n) -> void override;
   auto visit(const prog::expr::LitFloatNode& n) -> void override;
+  auto visit(const prog::expr::LitFuncNode& n) -> void override;
   auto visit(const prog::expr::LitIntNode& n) -> void override;
   auto visit(const prog::expr::LitStringNode& n) -> void override;
 

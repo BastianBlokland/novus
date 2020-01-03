@@ -70,9 +70,6 @@ TEST_CASE("Analyzing constant expressions", "[frontend]") {
     CHECK_DIAG(
         "fun f() -> int (true && (x = 5; false)); x",
         errUninitializedConst(src, "x", input::Span{41, 41}));
-    CHECK_DIAG(
-        "fun f(int a) -> int a{int}",
-        errTypeParametersProvidedToConstant(src, "a", input::Span{20, 25}));
   }
 }
 

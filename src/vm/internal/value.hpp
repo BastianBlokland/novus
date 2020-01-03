@@ -9,6 +9,7 @@ static const uint64_t refTag  = static_cast<uint64_t>(1U);
 static const uint64_t valMask = ~static_cast<uint64_t>(1U);
 
 class Value final {
+  friend auto uintValue(uint32_t val) -> Value;
   friend auto intValue(int32_t val) -> Value;
   friend auto floatValue(float val) -> Value;
   friend auto refValue(Ref* ref) -> Value;
@@ -25,6 +26,11 @@ public:
   Value() = default;
 
   [[nodiscard]] inline auto isRef() const noexcept { return (m_raw & refTag) != 0U; }
+
+  [[nodiscard]] inline auto getUInt() const noexcept {
+    assert(!isRef());
+    return static_cast<uint32_t>(m_raw >> 32U);
+  }
 
   [[nodiscard]] inline auto getInt() const noexcept {
     assert(!isRef());
@@ -50,6 +56,11 @@ private:
 
   inline explicit Value(uint64_t raw) : m_raw{raw} {}
 };
+
+[[nodiscard]] inline auto uintValue(uint32_t val) -> Value {
+  // UInt's are stored in the upper 32 bit of the raw value.
+  return Value{static_cast<uint64_t>(val) << 32U};
+}
 
 [[nodiscard]] inline auto intValue(int32_t val) -> Value {
   // Int's are stored in the upper 32 bit of the raw value.

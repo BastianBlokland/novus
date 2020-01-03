@@ -20,7 +20,8 @@ auto analyze(const Source& src) -> Output {
   auto prog          = std::make_unique<prog::Program>();
   auto typeTemplates = internal::TypeTemplateTable{};
   auto funcTemplates = internal::FuncTemplateTable{};
-  auto context       = internal::Context{src, prog.get(), &typeTemplates, &funcTemplates};
+  auto delegates     = internal::DelegateTable{};
+  auto context = internal::Context{src, prog.get(), &typeTemplates, &funcTemplates, &delegates};
 
   // Check source for any parse errors.
   auto getParseDiags = internal::GetParseDiags{&context};

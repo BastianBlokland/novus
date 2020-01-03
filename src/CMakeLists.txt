@@ -66,6 +66,7 @@ target_include_directories(parse PRIVATE parse)
 # Program (internal representation).
 add_library(prog STATIC
   prog/expr/node_assign.cpp
+  prog/expr/node_call_dyn.cpp
   prog/expr/node_call.cpp
   prog/expr/node_const.cpp
   prog/expr/node_fail.cpp
@@ -73,6 +74,7 @@ add_library(prog STATIC
   prog/expr/node_group.cpp
   prog/expr/node_lit_bool.cpp
   prog/expr/node_lit_float.cpp
+  prog/expr/node_lit_func.cpp
   prog/expr/node_lit_int.cpp
   prog/expr/node_lit_string.cpp
   prog/expr/node_switch.cpp
@@ -91,6 +93,7 @@ add_library(prog STATIC
   prog/sym/const_decl.cpp
   prog/sym/const_id.cpp
   prog/sym/const_kind.cpp
+  prog/sym/delegate_def.cpp
   prog/sym/exec_stmt.cpp
   prog/sym/field_decl_table.cpp
   prog/sym/field_decl.cpp
@@ -135,6 +138,7 @@ add_library(frontend STATIC
   frontend/internal/type_template_base.cpp
   frontend/internal/type_template_inst.cpp
   frontend/internal/type_template_table.cpp
+  frontend/internal/delegate_table.cpp
   frontend/internal/func_template_inst.cpp
   frontend/internal/func_template_table.cpp
   frontend/internal/func_template.cpp

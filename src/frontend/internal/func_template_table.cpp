@@ -2,6 +2,10 @@
 
 namespace frontend::internal {
 
+auto FuncTemplateTable::hasFunc(const std::string& name) -> bool {
+  return m_templates.find(name) != m_templates.end();
+}
+
 auto FuncTemplateTable::declare(
     Context* context,
     const std::string& name,

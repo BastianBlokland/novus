@@ -15,6 +15,7 @@ add_executable(tests
   main.cpp
 
   backend/assembly_output.cpp
+  backend/call_dyn_expr_test.cpp
   backend/call_expr_test.cpp
   backend/constants_test.cpp
   backend/group_expr_test.cpp
@@ -29,6 +30,7 @@ add_executable(tests
   frontend/define_user_funcs_test.cpp
   frontend/define_user_types_test.cpp
   frontend/get_binary_expr_test.cpp
+  frontend/get_call_dyn_expr_test.cpp
   frontend/get_call_expr_test.cpp
   frontend/get_conditional_expr_test.cpp
   frontend/get_const_expr_test.cpp

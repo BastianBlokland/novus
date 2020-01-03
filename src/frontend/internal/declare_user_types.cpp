@@ -80,6 +80,10 @@ auto DeclareUserTypes::validateTypeName(const lex::Token& nameToken) -> bool {
         errTypeTemplateAlreadyDeclared(m_context->getSrc(), name, nameToken.getSpan()));
     return false;
   }
+  if (isReservedTypeName(name)) {
+    m_context->reportDiag(errTypeNameIsReserved(m_context->getSrc(), name, nameToken.getSpan()));
+    return false;
+  }
   if (!m_context->getProg()->lookupFuncs(name).empty()) {
     m_context->reportDiag(
         errTypeNameConflictsWithFunc(m_context->getSrc(), name, nameToken.getSpan()));
