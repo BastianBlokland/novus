@@ -3,8 +3,8 @@
 **-Work in progress-**
 
 Novus is a statically typed functional programming language, it compiles into instructions for a
-stack based vm. Compiler is fully handwritten with a recursive decedent parser, and multiple stages
-of syntax analysis supporting generic types and functions.
+stack based vm. Compiler is fully handwritten with a recursive decedent parser, multiple stages
+of syntax analysis and supports generic types and functions.
 
 Design philosophy is to keep the language simple (very little build-in types) and highly extendable
 through operator overloading. Safety is also a major design goal, thats why the language is fully
