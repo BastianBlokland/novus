@@ -70,6 +70,17 @@ auto GenExpr::visit(const prog::expr::CallExprNode& n) -> void {
 
   // Either call the user function or the appropriate build-in instruction.
   switch (funcDecl.getKind()) {
+  case prog::sym::FuncKind::NoOp:
+    // Make sure exactly one value is produced on the stack (insert placeholder if function takes no
+    // arguments and add pops if function takes more then 1 argument).
+    if (n.getChildCount() == 0) {
+      m_builder->addLoadLitInt(0);
+    } else {
+      for (auto i = 1U; i < n.getChildCount(); ++i) {
+        m_builder->addPop();
+      }
+    }
+    break;
   case prog::sym::FuncKind::User:
     m_builder->addCall(getLabel(funcDecl.getId()));
     break;

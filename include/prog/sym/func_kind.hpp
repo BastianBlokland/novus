@@ -3,6 +3,7 @@
 namespace prog::sym {
 
 enum class FuncKind {
+  NoOp,
   User,
 
   AddInt,
