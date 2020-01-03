@@ -282,6 +282,19 @@ TEST_CASE("Generate assembly for call expressions", "[backend]") {
           builder->addEntryPoint("print");
         });
   }
+
+  SECTION("Identity conversions") {
+    CHECK_EXPR_INT(
+        "int(42)", [](backend::Builder* builder) -> void { builder->addLoadLitInt(42); });
+    CHECK_EXPR_FLOAT("float(42.1337)", [](backend::Builder* builder) -> void {
+      builder->addLoadLitFloat(42.1337F); // NOLINT: Magic numbers
+    });
+    CHECK_EXPR_BOOL(
+        "bool(false)", [](backend::Builder* builder) -> void { builder->addLoadLitInt(0); });
+    CHECK_EXPR_STRING("string(\"hello world\")", [](backend::Builder* builder) -> void {
+      builder->addLoadLitString("hello world");
+    });
+  }
 }
 
 } // namespace backend

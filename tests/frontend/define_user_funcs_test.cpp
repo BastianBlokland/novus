@@ -64,8 +64,8 @@ TEST_CASE("Analyzing user-function definitions", "[frontend]") {
         errConstNameConflictsWithConst(src, "a", input::Span{17, 17}));
     CHECK_DIAG("fun f() -> int f2()", errUndeclaredFunc(src, "f2", {}, input::Span{15, 18}));
     CHECK_DIAG(
-        "fun f() -> int int(1)",
-        errUndeclaredTypeOrConversion(src, "int", {"int"}, input::Span{15, 20}));
+        "fun f() -> int bool(1)",
+        errUndeclaredTypeOrConversion(src, "bool", {"int"}, input::Span{15, 21}));
     CHECK_DIAG(
         "fun f() -> int int{float}()",
         errNoTypeOrConversionFoundToInstantiate(src, "int", 1, input::Span{15, 26}));
