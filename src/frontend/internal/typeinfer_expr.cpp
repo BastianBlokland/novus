@@ -137,7 +137,7 @@ auto TypeInferExpr::visit(const parse::ConstDeclExprNode& n) -> void {
 }
 
 auto TypeInferExpr::visit(const parse::IdExprNode& n) -> void {
-  const auto& name = getName(n.getId());
+  const auto name = getName(n.getId());
 
   // Templated function literal.
   if (n.getTypeParams()) {

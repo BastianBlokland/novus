@@ -81,8 +81,8 @@ auto GetExpr::visit(const parse::BinaryExprNode& n) -> void {
       getFunctions(funcName, std::nullopt, argTypeSet, n.getOperator().getSpan());
   const auto func = m_context->getProg()->lookupFunc(possibleFuncs, argTypeSet, 1);
   if (!func) {
-    const auto& lhsTypeName = getName(m_context, args[0]->getType());
-    const auto& rhsTypeName = getName(m_context, args[1]->getType());
+    const auto lhsTypeName = getName(m_context, args[0]->getType());
+    const auto rhsTypeName = getName(m_context, args[1]->getType());
     m_context->reportDiag(errUndeclaredBinOperator(
         m_context->getSrc(), getText(op.value()), lhsTypeName, rhsTypeName, opToken.getSpan()));
     return;
@@ -203,7 +203,7 @@ auto GetExpr::visit(const parse::ConstDeclExprNode& n) -> void {
 }
 
 auto GetExpr::visit(const parse::IdExprNode& n) -> void {
-  const auto& name = getName(n.getId());
+  const auto name = getName(n.getId());
 
   // Templated function literal.
   if (n.getTypeParams()) {
@@ -254,8 +254,8 @@ auto GetExpr::visit(const parse::IdExprNode& n) -> void {
 }
 
 auto GetExpr::visit(const parse::FieldExprNode& n) -> void {
-  const auto& fieldName = getName(n.getId());
-  auto lhsExpr          = getSubExpr(n[0], m_visibleConsts, prog::sym::TypeId::inferType());
+  const auto fieldName = getName(n.getId());
+  auto lhsExpr         = getSubExpr(n[0], m_visibleConsts, prog::sym::TypeId::inferType());
   if (lhsExpr == nullptr) {
     return;
   }
@@ -492,7 +492,7 @@ auto GetExpr::visit(const parse::UnaryExprNode& n) -> void {
       getFunctions(funcName, std::nullopt, argTypes, n.getOperator().getSpan());
   const auto func = m_context->getProg()->lookupFunc(possibleFuncs, argTypes, 0);
   if (!func) {
-    const auto& typeName = getName(m_context, args[0]->getType());
+    const auto typeName = getName(m_context, args[0]->getType());
     m_context->reportDiag(errUndeclaredUnaryOperator(
         m_context->getSrc(), getText(op.value()), typeName, opToken.getSpan()));
     return;
@@ -562,8 +562,8 @@ auto GetExpr::applyConversion(prog::expr::NodePtr* expr, prog::sym::TypeId toTyp
 
   const auto conv = m_context->getProg()->lookupConversion(fromType, toType);
   if (!conv) {
-    const auto& fromName = getName(m_context, fromType);
-    const auto& toName   = getName(m_context, toType);
+    const auto fromName = getName(m_context, fromType);
+    const auto toName   = getName(m_context, toType);
     m_context->reportDiag(errNoConversionFound(m_context->getSrc(), fromName, toName, span));
     return false;
   }
@@ -623,7 +623,7 @@ auto GetExpr::getBinLogicOpExpr(const parse::BinaryExprNode& n, BinLogicOp op)
 }
 
 auto GetExpr::getConstExpr(const parse::IdExprNode& n) -> prog::expr::NodePtr {
-  const auto& name   = getName(n.getId());
+  const auto name    = getName(n.getId());
   const auto constId = m_consts->lookup(name);
   if (!constId) {
     m_context->reportDiag(errUndeclaredConst(m_context->getSrc(), name, n.getSpan()));
