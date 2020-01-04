@@ -24,6 +24,7 @@ add_executable(tests
   backend/user_struct_test.cpp
   backend/user_union_test.cpp
 
+  frontend/anon_func_test.cpp
   frontend/declare_user_funcs_test.cpp
   frontend/declare_user_types_test.cpp
   frontend/define_exec_stmts_test.cpp

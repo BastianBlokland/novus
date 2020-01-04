@@ -64,11 +64,12 @@ auto analyze(const Source& src) -> Output {
     inferredAllFuncs = true;
     auto inferredOne = false;
     for (const auto& funcDeclInfo : declareUserFuncs.getFuncs()) {
-      auto& funcDecl = prog->getFuncDecl(funcDeclInfo.first);
+      auto& funcDecl = prog->getFuncDecl(std::get<0>(funcDeclInfo));
       if (funcDecl.getOutput().isConcrete()) {
         continue;
       }
-      auto success = typeInferUserFuncs.inferRetType(funcDeclInfo.first, funcDeclInfo.second);
+      auto success =
+          typeInferUserFuncs.inferRetType(std::get<0>(funcDeclInfo), std::get<2>(funcDeclInfo));
       if (context.hasErrors()) {
         return buildOutput(nullptr, context.getDiags());
       }
@@ -86,7 +87,7 @@ auto analyze(const Source& src) -> Output {
   auto defineUserFuncs = internal::DefineUserFuncs{&context, nullptr};
   for (const auto& funcDecl : declareUserFuncs.getFuncs()) {
     if (!context.hasErrors()) {
-      defineUserFuncs.define(funcDecl.first, funcDecl.second);
+      defineUserFuncs.define(std::get<0>(funcDecl), std::get<1>(funcDecl), std::get<2>(funcDecl));
     }
   }
   if (context.hasErrors()) {

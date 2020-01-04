@@ -102,7 +102,7 @@ auto DeclareUserFuncs::visit(const parse::FuncDeclStmtNode& n) -> void {
   // Declare the function in the program.
   const auto funcName = isConv ? getName(m_context, *retType) : name;
   auto funcId = m_context->getProg()->declareUserFunc(funcName, input.value(), retType.value());
-  m_funcs.emplace_back(funcId, n);
+  m_funcs.emplace_back(funcId, name, n);
 }
 
 auto DeclareUserFuncs::validateFuncName(const lex::Token& nameToken) -> bool {

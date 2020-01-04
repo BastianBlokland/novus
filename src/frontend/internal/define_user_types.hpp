@@ -9,8 +9,8 @@ public:
   DefineUserTypes() = delete;
   DefineUserTypes(Context* context, const TypeSubstitutionTable* typeSubTable);
 
-  auto define(prog::sym::TypeId id, const parse::StructDeclStmtNode& n) -> void;
-  auto define(prog::sym::TypeId id, const parse::UnionDeclStmtNode& n) -> void;
+  auto define(prog::sym::TypeId id, const parse::StructDeclStmtNode& n) -> bool;
+  auto define(prog::sym::TypeId id, const parse::UnionDeclStmtNode& n) -> bool;
 
 private:
   Context* m_context;

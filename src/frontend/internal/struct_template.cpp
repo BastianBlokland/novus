@@ -42,8 +42,8 @@ auto StructTemplate::setupInstance(TypeTemplateInst* instance) -> void {
   instance->m_type = getContext()->getProg()->declareUserStruct(mangledName);
 
   // Define the struct.
-  auto defineTypes = DefineUserTypes{getContext(), &subTable};
-  defineTypes.define(*instance->m_type, m_parseNode);
+  auto defineTypes    = DefineUserTypes{getContext(), &subTable};
+  instance->m_success = defineTypes.define(*instance->m_type, m_parseNode);
 
   // Keep track of some extra information about the type.
   getContext()->declareTypeInfo(

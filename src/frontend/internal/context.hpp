@@ -33,6 +33,8 @@ public:
   [[nodiscard]] auto getTypeInfo(prog::sym::TypeId typeId) const noexcept
       -> std::optional<TypeInfo>;
 
+  [[nodiscard]] auto genAnonFuncName() -> std::string;
+
   auto declareTypeInfo(prog::sym::TypeId typeId, TypeInfo typeInfo) -> void;
 
   auto reportDiag(Diag diag) -> void;
@@ -44,6 +46,7 @@ private:
   FuncTemplateTable* m_funcTemplates;
   DelegateTable* m_delegates;
   std::vector<Diag> m_diags;
+  unsigned int m_anonFuncCounter;
 
   std::unordered_map<prog::sym::TypeId, TypeInfo, prog::sym::TypeIdHasher> m_typeInfos;
 };

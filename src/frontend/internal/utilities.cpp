@@ -2,6 +2,7 @@
 #include "frontend/diag_defs.hpp"
 #include "internal/context.hpp"
 #include "internal/typeinfer_expr.hpp"
+#include "parse/node_expr_anon_func.hpp"
 #include "parse/type_param_list.hpp"
 #include "prog/expr/node_lit_func.hpp"
 #include <stdexcept>
@@ -112,7 +113,7 @@ auto isReservedTypeName(const std::string& name) -> bool {
       "float",
       "bool",
       "string",
-      "func",
+      "delegate",
   };
   return reservedTypes.find(name) != reservedTypes.end();
 }
@@ -150,7 +151,7 @@ auto getOrInstType(
   const auto typeInstantiation =
       context->getTypeTemplates()->inferParamsAndInstantiate(typeName, constructorArgs);
   if (typeInstantiation) {
-    if (context->hasErrors()) {
+    if (!(*typeInstantiation)->isSuccess()) {
       context->reportDiag(errInvalidTypeInstantiation(context->getSrc(), nameToken.getSpan()));
     } else {
       return (*typeInstantiation)->getType();
@@ -196,7 +197,7 @@ auto instType(
     return std::nullopt;
   }
 
-  if (typeName == "func") {
+  if (typeName == "delegate") {
     return context->getDelegates()->getDelegate(context, *typeSet);
   }
 
@@ -204,7 +205,7 @@ auto instType(
   if (!typeInstantiation) {
     return std::nullopt;
   }
-  if (context->hasErrors()) {
+  if (!(*typeInstantiation)->isSuccess()) {
     context->reportDiag(errInvalidTypeInstantiation(context->getSrc(), nameToken.getSpan()));
     return std::nullopt;
   }
@@ -228,25 +229,27 @@ auto getRetType(
   return retType;
 }
 
+template <typename FuncParseNode>
 auto inferRetType(
     Context* context,
     const TypeSubstitutionTable* subTable,
-    const parse::FuncDeclStmtNode& funcDeclParseNode,
+    const FuncParseNode& parseNode,
     const prog::sym::TypeSet& input,
     bool aggressive) -> prog::sym::TypeId {
 
-  if (input.getCount() != funcDeclParseNode.getArgList().getCount()) {
+  if (input.getCount() != parseNode.getArgList().getCount()) {
     throw std::invalid_argument{"Incorrect number of input types provided"};
   }
 
   auto constTypes = std::unordered_map<std::string, prog::sym::TypeId>{};
   for (auto i = 0U; i != input.getCount(); ++i) {
-    const auto& argName = getName(funcDeclParseNode.getArgList().getArgs()[i].getIdentifier());
+    const auto& argList = parseNode.getArgList().getArgs();
+    const auto& argName = getName(argList[i].getIdentifier());
     constTypes.insert({argName, input[i]});
   }
 
   auto inferBodyType = TypeInferExpr{context, subTable, &constTypes, aggressive};
-  funcDeclParseNode[0].accept(&inferBodyType);
+  parseNode[0].accept(&inferBodyType);
   return inferBodyType.getInferredType();
 }
 
@@ -257,13 +260,14 @@ auto getLitFunc(Context* context, prog::sym::FuncId func) -> prog::expr::NodePtr
   return prog::expr::litFuncNode(*context->getProg(), delegateType, func);
 }
 
+template <typename FuncParseNode>
 auto getFuncInput(
-    Context* context, const TypeSubstitutionTable* subTable, const parse::FuncDeclStmtNode& n)
+    Context* context, const TypeSubstitutionTable* subTable, const FuncParseNode& parseNode)
     -> std::optional<prog::sym::TypeSet> {
 
   auto isValid  = true;
   auto argTypes = std::vector<prog::sym::TypeId>{};
-  for (const auto& arg : n.getArgList()) {
+  for (const auto& arg : parseNode.getArgList()) {
     const auto argType = getOrInstType(context, subTable, arg.getType());
     if (argType) {
       argTypes.push_back(argType.value());
@@ -331,7 +335,8 @@ auto getConstName(
         errConstNameConflictsWithType(context->getSrc(), name, nameToken.getSpan()));
     return std::nullopt;
   }
-  if (!context->getProg()->lookupFuncs(name).empty()) {
+  if (!context->getProg()->lookupFuncs(name).empty() ||
+      context->getFuncTemplates()->hasFunc(name)) {
     context->reportDiag(
         errConstNameConflictsWithFunction(context->getSrc(), name, nameToken.getSpan()));
     return std::nullopt;
@@ -363,5 +368,24 @@ auto isType(Context* context, const std::string& name) -> bool {
   return isReservedTypeName(name) || context->getProg()->lookupType(name) ||
       context->getTypeTemplates()->hasType(name);
 }
+
+// Explicit instantiations.
+template prog::sym::TypeId inferRetType(
+    Context* context,
+    const TypeSubstitutionTable* subTable,
+    const parse::FuncDeclStmtNode& parseNode,
+    const prog::sym::TypeSet& input,
+    bool aggressive);
+template prog::sym::TypeId inferRetType(
+    Context* context,
+    const TypeSubstitutionTable* subTable,
+    const parse::AnonFuncExprNode& parseNode,
+    const prog::sym::TypeSet& input,
+    bool aggressive);
+
+template std::optional<prog::sym::TypeSet> getFuncInput(
+    Context* context, const TypeSubstitutionTable* subTable, const parse::FuncDeclStmtNode& n);
+template std::optional<prog::sym::TypeSet> getFuncInput(
+    Context* context, const TypeSubstitutionTable* subTable, const parse::AnonFuncExprNode& n);
 
 } // namespace frontend::internal

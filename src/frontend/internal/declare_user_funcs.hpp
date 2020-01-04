@@ -1,13 +1,14 @@
 #pragma once
 #include "internal/context.hpp"
 #include "parse/node_visitor_optional.hpp"
-#include <utility>
+#include <tuple>
 
 namespace frontend::internal {
 
 class DeclareUserFuncs final : public parse::OptionalNodeVisitor {
 public:
-  using DeclarationInfo = typename std::pair<prog::sym::FuncId, const parse::FuncDeclStmtNode&>;
+  using DeclarationInfo =
+      typename std::tuple<prog::sym::FuncId, std::string, const parse::FuncDeclStmtNode&>;
 
   DeclareUserFuncs() = delete;
   explicit DeclareUserFuncs(Context* context);

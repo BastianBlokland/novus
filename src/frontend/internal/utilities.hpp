@@ -38,17 +38,19 @@ getOrInstType(Context* context, const TypeSubstitutionTable* subTable, const par
     Context* context, const TypeSubstitutionTable* subTable, const parse::FuncDeclStmtNode& n)
     -> std::optional<prog::sym::TypeId>;
 
+template <typename FuncParseNode>
 [[nodiscard]] auto inferRetType(
     Context* context,
     const TypeSubstitutionTable* subTable,
-    const parse::FuncDeclStmtNode& funcDeclParseNode,
+    const FuncParseNode& parseNode,
     const prog::sym::TypeSet& input,
     bool aggressive) -> prog::sym::TypeId;
 
 [[nodiscard]] auto getLitFunc(Context* context, prog::sym::FuncId func) -> prog::expr::NodePtr;
 
+template <typename FuncParseNode>
 [[nodiscard]] auto getFuncInput(
-    Context* context, const TypeSubstitutionTable* subTable, const parse::FuncDeclStmtNode& n)
+    Context* context, const TypeSubstitutionTable* subTable, const FuncParseNode& parseNode)
     -> std::optional<prog::sym::TypeSet>;
 
 [[nodiscard]] auto

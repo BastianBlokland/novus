@@ -9,13 +9,16 @@ public:
   DefineUserFuncs() = delete;
   DefineUserFuncs(Context* context, const TypeSubstitutionTable* typeSubTable);
 
-  auto define(prog::sym::FuncId id, const parse::FuncDeclStmtNode& n) -> void;
+  template <typename FuncParseNode>
+  auto define(prog::sym::FuncId id, std::string funcName, const FuncParseNode& n) -> bool;
 
 private:
   Context* m_context;
   const TypeSubstitutionTable* m_typeSubTable;
 
-  auto declareInputs(const parse::FuncDeclStmtNode& n, prog::sym::ConstDeclTable* consts) -> bool;
+  template <typename FuncParseNode>
+  auto declareInputs(const FuncParseNode& n, prog::sym::ConstDeclTable* consts) -> bool;
+
   auto getExpr(
       const parse::Node& n,
       prog::sym::ConstDeclTable* consts,

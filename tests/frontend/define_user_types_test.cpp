@@ -69,7 +69,8 @@ TEST_CASE("Analyzing user-type definitions", "[frontend]") {
     CHECK_DIAG(
         "struct s = int int", errFieldNameConflictsWithType(src, "int", input::Span{15, 17}));
     CHECK_DIAG(
-        "struct s = int func", errFieldNameConflictsWithType(src, "func", input::Span{15, 18}));
+        "struct s = int delegate",
+        errFieldNameConflictsWithType(src, "delegate", input::Span{15, 22}));
     CHECK_DIAG("struct s = s i", errCyclicStruct(src, "i", "s", input::Span{0, 13}));
     CHECK_DIAG(
         "struct s1 = s2 a "
@@ -87,7 +88,8 @@ TEST_CASE("Analyzing user-type definitions", "[frontend]") {
         "struct s{T} = T T "
         "struct s2 = s{int} s",
         errFieldNameConflictsWithTypeSubstitution(src, "T", input::Span{16, 16}),
-        errInvalidTypeInstantiation(src, input::Span{30, 30}));
+        errInvalidTypeInstantiation(src, input::Span{30, 30}),
+        errUndeclaredType(src, "s", input::Span{30, 35}));
   }
 
   SECTION("Union diagnostics") {

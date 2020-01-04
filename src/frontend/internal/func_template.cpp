@@ -112,24 +112,24 @@ auto FuncTemplate::setupInstance(FuncTemplateInst* instance) -> void {
   auto funcInput      = getFuncInput(m_context, &subTable, m_parseNode);
   if (!funcInput) {
     assert(m_context->hasErrors());
+
+    instance->m_success = false;
     return;
   }
 
   instance->m_retType = ::frontend::internal::getRetType(m_context, &subTable, m_parseNode);
   if (!instance->m_retType) {
     assert(m_context->hasErrors());
+
+    instance->m_success = false;
     return;
   }
 
   if (instance->m_retType->isInfer()) {
     instance->m_retType = inferRetType(m_context, &subTable, m_parseNode, *funcInput, true);
-    if (!instance->m_retType->isConcrete()) {
-      m_context->reportDiag(errUnableToInferFuncReturnType(
-          m_context->getSrc(), m_name, m_parseNode.getId().getSpan()));
-      return;
-    }
+    // We don't produce a diagnostic yet if the inferring failed as that is done by the definition
+    // step.
   }
-
   const auto retTypeName = getName(m_context, *instance->m_retType);
   const auto isConv      = isType(m_context, m_name);
 
@@ -141,6 +141,8 @@ auto FuncTemplate::setupInstance(FuncTemplateInst* instance) -> void {
       if (instance->m_retType != *nonTemplConvType) {
         m_context->reportDiag(errIncorrectReturnTypeInConvFunc(
             m_context->getSrc(), m_name, retTypeName, m_parseNode.getSpan()));
+
+        instance->m_success = false;
         return;
       }
     } else {
@@ -149,6 +151,8 @@ auto FuncTemplate::setupInstance(FuncTemplateInst* instance) -> void {
       if (!typeInfo || typeInfo->getName() != m_name) {
         m_context->reportDiag(errIncorrectReturnTypeInConvFunc(
             m_context->getSrc(), m_name, retTypeName, m_parseNode.getSpan()));
+
+        instance->m_success = false;
         return;
       }
     }
@@ -161,6 +165,7 @@ auto FuncTemplate::setupInstance(FuncTemplateInst* instance) -> void {
   if (m_context->getProg()->lookupFunc(funcName, *funcInput, 0)) {
     m_context->reportDiag(
         errDuplicateFuncDeclaration(m_context->getSrc(), m_name, m_parseNode.getSpan()));
+    instance->m_success = false;
     return;
   }
 
@@ -169,8 +174,13 @@ auto FuncTemplate::setupInstance(FuncTemplateInst* instance) -> void {
       m_context->getProg()->declareUserFunc(funcName, std::move(*funcInput), *instance->m_retType);
 
   // Define the function.
-  auto defineFuncs = DefineUserFuncs{m_context, &subTable};
-  defineFuncs.define(*instance->m_func, m_parseNode);
+  auto defineFuncs    = DefineUserFuncs{m_context, &subTable};
+  instance->m_success = defineFuncs.define(*instance->m_func, m_name, m_parseNode);
+
+  // If we failed to infer a return-type for this function a diagnostic should have been emitted
+  // during definition (the reason for not emitting one before is that otherwise it might hide
+  // other errors in the function).
+  assert(instance->m_retType->isInfer() ? m_context->hasErrors() : true);
 }
 
 auto FuncTemplate::createSubTable(const prog::sym::TypeSet& typeParams) const

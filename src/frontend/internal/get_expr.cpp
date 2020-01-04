@@ -1,6 +1,7 @@
 #include "internal/get_expr.hpp"
 #include "frontend/diag_defs.hpp"
 #include "internal/check_union_exhaustiveness.hpp"
+#include "internal/define_user_funcs.hpp"
 #include "internal/get_identifier.hpp"
 #include "internal/utilities.hpp"
 #include "lex/token_payload_lit_bool.hpp"
@@ -48,8 +49,25 @@ auto GetExpr::visit(const parse::ErrorNode & /*unused*/) -> void {
   throw std::logic_error{"GetExpr is not implemented for this node type"};
 }
 
-auto GetExpr::visit(const parse::AnonFuncExprNode & /*unused*/) -> void {
-  throw std::logic_error{"GetExpr is not implemented for this node type"};
+auto GetExpr::visit(const parse::AnonFuncExprNode& n) -> void {
+  auto funcName  = m_context->genAnonFuncName();
+  auto funcInput = getFuncInput(m_context, m_typeSubTable, n);
+  if (!funcInput) {
+    assert(m_context->hasErrors());
+    return;
+  }
+
+  // Declare the function in the program.
+  const auto retType = inferRetType(m_context, m_typeSubTable, n, *funcInput, true);
+  const auto funcId =
+      m_context->getProg()->declareUserFunc(funcName, std::move(*funcInput), retType);
+
+  // Define the function.
+  auto defineFuncs = DefineUserFuncs{m_context, m_typeSubTable};
+  defineFuncs.define(funcId, "anonymous", n);
+
+  // Create a function literal pointing to the newly defined anonymous function.
+  m_expr = getLitFunc(m_context, funcId);
 }
 
 auto GetExpr::visit(const parse::BinaryExprNode& n) -> void {
@@ -116,11 +134,7 @@ auto GetExpr::visit(const parse::CallExprNode& n) -> void {
   }
 
   const auto possibleFuncs = getFunctionsInclConversions(nameToken, typeParams, args->second);
-  if (m_context->hasErrors()) {
-    return;
-  }
-
-  const auto func = m_context->getProg()->lookupFunc(possibleFuncs, args->second, -1);
+  const auto func          = m_context->getProg()->lookupFunc(possibleFuncs, args->second, -1);
   if (!func) {
     auto isTypeOrConv = isType(m_context, getName(nameToken));
     if (typeParams) {
@@ -225,9 +239,6 @@ auto GetExpr::visit(const parse::IdExprNode& n) -> void {
     if (instances.size() != 1) {
       m_context->reportDiag(errAmbiguousTemplateFunction(
           m_context->getSrc(), name, typeSet->getCount(), n.getSpan()));
-      return;
-    }
-    if (m_context->hasErrors()) {
       return;
     }
     m_expr = getLitFunc(m_context, *instances[0]->getFunc());
@@ -737,7 +748,7 @@ auto GetExpr::getFunctions(
     }
     const auto instantiations = m_context->getFuncTemplates()->instantiate(funcName, *typeParamSet);
     for (const auto& inst : instantiations) {
-      if (m_context->hasErrors()) {
+      if (!inst->isSuccess()) {
         m_context->reportDiag(errInvalidFuncInstantiation(m_context->getSrc(), span));
         isValid = false;
       } else {
@@ -755,7 +766,7 @@ auto GetExpr::getFunctions(
     const auto instantiations =
         m_context->getFuncTemplates()->inferParamsAndInstantiate(funcName, argTypes);
     for (const auto& inst : instantiations) {
-      if (m_context->hasErrors()) {
+      if (!inst->isSuccess()) {
         m_context->reportDiag(errInvalidFuncInstantiation(m_context->getSrc(), span));
         isValid = false;
       } else {

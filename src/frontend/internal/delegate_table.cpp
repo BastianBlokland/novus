@@ -5,12 +5,12 @@ namespace frontend::internal {
 
 static auto getName(Context* context, const prog::sym::TypeSet& input, prog::sym::TypeId output)
     -> std::string {
-  auto result = std::string{"__func"};
+  auto result = std::string{"__delegate"};
   for (const auto& type : input) {
-    const auto& typeName = context->getProg()->getTypeDecl(type).getName();
+    const auto& typeName = getName(context, type);
     result += '_' + typeName;
   }
-  result += '_' + context->getProg()->getTypeDecl(output).getName();
+  result += '_' + getName(context, output);
   return result;
 }
 
@@ -57,7 +57,7 @@ auto DelegateTable::getDelegate(
   types.insert(types.end(), input.begin(), input.end());
   types.push_back(output);
   context->declareTypeInfo(
-      delegateType, TypeInfo{"func", input::Span{0}, prog::sym::TypeSet{std::move(types)}});
+      delegateType, TypeInfo{"delegate", input::Span{0}, prog::sym::TypeSet{std::move(types)}});
 
   m_delegates.insert({std::move(sig), delegateType});
   return delegateType;

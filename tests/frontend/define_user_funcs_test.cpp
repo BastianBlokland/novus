@@ -51,8 +51,8 @@ TEST_CASE("Analyzing user-function definitions", "[frontend]") {
         "fun f(int int) -> int true",
         errConstNameConflictsWithType(src, "int", input::Span{10, 12}));
     CHECK_DIAG(
-        "fun f(int func) -> int true",
-        errConstNameConflictsWithType(src, "func", input::Span{10, 13}));
+        "fun f(int delegate) -> int true",
+        errConstNameConflictsWithType(src, "delegate", input::Span{10, 17}));
     CHECK_DIAG(
         "fun f(int f) -> int true",
         errConstNameConflictsWithFunction(src, "f", input::Span{10, 10}));
@@ -83,18 +83,21 @@ TEST_CASE("Analyzing user-function definitions", "[frontend]") {
         "fun f{T}(T T) -> T T "
         "fun f2() -> int f{int}(1)",
         errConstNameConflictsWithTypeSubstitution(src, "T", input::Span{11, 11}),
-        errInvalidFuncInstantiation(src, input::Span{37, 37}));
+        errInvalidFuncInstantiation(src, input::Span{37, 37}),
+        errNoFuncFoundToInstantiate(src, "f", 1, input::Span{37, 45}));
     CHECK_DIAG(
         "fun f{T}(T T) -> T T "
         "fun f2() f{int}(1)",
         errConstNameConflictsWithTypeSubstitution(src, "T", input::Span{11, 11}),
-        errInvalidFuncInstantiation(src, input::Span{30, 30}));
+        errInvalidFuncInstantiation(src, input::Span{30, 30}),
+        errNoFuncFoundToInstantiate(src, "f", 1, input::Span{30, 38}));
     CHECK_DIAG(
         "fun f{T}(T i) -> T "
         "  T = i * 2; i "
         "fun f2() -> int f{int}(1)",
         errConstNameConflictsWithTypeSubstitution(src, "T", input::Span{21, 21}),
-        errInvalidFuncInstantiation(src, input::Span{50, 50}));
+        errInvalidFuncInstantiation(src, input::Span{50, 50}),
+        errNoFuncFoundToInstantiate(src, "f", 1, input::Span{50, 58}));
   }
 }
 

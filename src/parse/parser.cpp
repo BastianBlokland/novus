@@ -278,7 +278,7 @@ auto ParserImpl::nextExprPrimary() -> NodePtr {
     if (getKw(nextTok) == lex::Keyword::If) {
       return nextExprSwitch();
     }
-    if (getKw(nextTok) == lex::Keyword::Fun) {
+    if (getKw(nextTok) == lex::Keyword::Lambda) {
       return nextExprAnonFunc();
     }
     [[fallthrough]];
@@ -415,9 +415,9 @@ auto ParserImpl::nextExprSwitchElse() -> NodePtr {
 auto ParserImpl::nextExprAnonFunc() -> NodePtr {
   auto kw      = consumeToken();
   auto argList = nextArgDeclList();
-  auto body    = nextExpr(0);
+  auto body    = nextExpr(groupingPrecedence);
 
-  if (getKw(kw) == lex::Keyword::Fun && argList.validate()) {
+  if (getKw(kw) == lex::Keyword::Lambda && argList.validate()) {
     return anonFuncExprNode(kw, std::move(argList), std::move(body));
   }
   return errInvalidAnonFuncExpr(kw, argList, std::move(body));
