@@ -13,11 +13,6 @@ DefineExecStmts::DefineExecStmts(Context* context) : m_context{context} {
 }
 
 auto DefineExecStmts::visit(const parse::ExecStmtNode& n) -> void {
-  if (m_context->hasErrors()) {
-    // Stop to avoid cascading errors that distract from the original problem.
-    return;
-  }
-
   auto isValid       = true;
   auto consts        = prog::sym::ConstDeclTable{};
   auto visibleConsts = std::vector<prog::sym::ConstId>{};

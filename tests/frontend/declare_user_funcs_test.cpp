@@ -136,7 +136,8 @@ TEST_CASE("Analyzing user-function declarations", "[frontend]") {
         "fun s{T}(T a) -> T a "
         "fun f() s{int}(1)",
         errIncorrectReturnTypeInConvFunc(src, "s", "int", input::Span{30, 49}),
-        errInvalidFuncInstantiation(src, input::Span{59, 59}));
+        errInvalidFuncInstantiation(src, input::Span{59, 59}),
+        errNoTypeOrConversionFoundToInstantiate(src, "s", 1, input::Span{59, 67}));
     CHECK_DIAG(
         "fun -(int i) -> int 1",
         errDuplicateFuncDeclaration(src, "operator-minus", input::Span{0, 20}));
@@ -148,6 +149,18 @@ TEST_CASE("Analyzing user-function declarations", "[frontend]") {
         "fun f() f{int}(1)",
         errTypeParamOnSubstitutionType(src, "T", input::Span{9, 14}),
         errUndeclaredType(src, "T", input::Span{9, 14}));
+    CHECK_DIAG(
+        "fun f{T}(T a) b "
+        "fun f() f{int}(1)",
+        errUndeclaredConst(src, "b", input::Span{14, 14}),
+        errInvalidFuncInstantiation(src, input::Span{24, 24}),
+        errNoFuncFoundToInstantiate(src, "f", 1, input::Span{24, 32}));
+    CHECK_DIAG(
+        "fun test{T}(int test) -> int test "
+        "fun f() test{int}(1)",
+        errConstNameConflictsWithFunction(src, "test", input::Span{16, 19}),
+        errInvalidFuncInstantiation(src, input::Span{42, 45}),
+        errNoFuncFoundToInstantiate(src, "test", 1, input::Span{42, 53}));
     CHECK_DIAG(
         "fun +() -> int i",
         errOperatorOverloadWithoutArgs(src, "operator-plus", input::Span{4, 4}));

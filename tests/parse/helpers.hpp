@@ -47,6 +47,7 @@ namespace parse {
 #define ARROW lex::basicToken(lex::TokenKind::SepArrow)
 #define DISCARD lex::basicToken(lex::TokenKind::Discard)
 #define FUN lex::keywordToken(lex::Keyword::Fun)
+#define LAMBDA lex::keywordToken(lex::Keyword::Lambda)
 #define STRUCT lex::keywordToken(lex::Keyword::Struct)
 #define UNION lex::keywordToken(lex::Keyword::Union)
 #define IF lex::keywordToken(lex::Keyword::If)

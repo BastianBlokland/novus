@@ -13,7 +13,7 @@ DefineUserTypes::DefineUserTypes(Context* context, const TypeSubstitutionTable* 
   }
 }
 
-auto DefineUserTypes::define(prog::sym::TypeId id, const parse::StructDeclStmtNode& n) -> void {
+auto DefineUserTypes::define(prog::sym::TypeId id, const parse::StructDeclStmtNode& n) -> bool {
   auto isValid    = true;
   auto fieldTable = prog::sym::FieldDeclTable{};
   for (const auto& field : n.getFields()) {
@@ -21,10 +21,8 @@ auto DefineUserTypes::define(prog::sym::TypeId id, const parse::StructDeclStmtNo
     const auto fieldTypeName = getName(field.getType());
     const auto fieldType     = getOrInstType(m_context, m_typeSubTable, field.getType());
     if (!fieldType) {
-      if (!m_context->hasErrors()) {
-        m_context->reportDiag(errUndeclaredType(
-            m_context->getSrc(), getName(field.getType()), field.getType().getSpan()));
-      }
+      m_context->reportDiag(errUndeclaredType(
+          m_context->getSrc(), getName(field.getType()), field.getType().getSpan()));
       isValid = false;
       continue;
     }
@@ -55,9 +53,10 @@ auto DefineUserTypes::define(prog::sym::TypeId id, const parse::StructDeclStmtNo
   if (isValid) {
     m_context->getProg()->defineUserStruct(id, std::move(fieldTable));
   }
+  return isValid;
 }
 
-auto DefineUserTypes::define(prog::sym::TypeId id, const parse::UnionDeclStmtNode& n) -> void {
+auto DefineUserTypes::define(prog::sym::TypeId id, const parse::UnionDeclStmtNode& n) -> bool {
   auto isValid = true;
   auto types   = std::vector<prog::sym::TypeId>{};
   for (const auto& parseType : n.getTypes()) {
@@ -80,6 +79,7 @@ auto DefineUserTypes::define(prog::sym::TypeId id, const parse::UnionDeclStmtNod
   if (isValid) {
     m_context->getProg()->defineUserUnion(id, std::move(types));
   }
+  return isValid;
 }
 
 } // namespace frontend::internal

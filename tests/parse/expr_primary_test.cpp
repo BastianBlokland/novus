@@ -13,7 +13,8 @@ TEST_CASE("Parsing primary expressions", "[parse]") {
   SECTION("Errors") {
     CHECK_EXPR("12a", errLexError(lex::errLitNumberInvalidChar()))
     CHECK_EXPR("->", errInvalidPrimaryExpr(lex::basicToken(lex::TokenKind::SepArrow)));
-    CHECK_EXPR("fun", errInvalidPrimaryExpr(lex::keywordToken(lex::Keyword::Fun)));
+    CHECK_EXPR("struct", errInvalidPrimaryExpr(lex::keywordToken(lex::Keyword::Struct)));
+    CHECK_EXPR("union", errInvalidPrimaryExpr(lex::keywordToken(lex::Keyword::Union)));
   }
 
   SECTION("Const declaration") {

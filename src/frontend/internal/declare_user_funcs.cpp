@@ -33,7 +33,7 @@ auto DeclareUserFuncs::visit(const parse::FuncDeclStmtNode& n) -> void {
     name        = prog::getFuncName(*op);
     displayName = "operator-" + n.getId().str();
 
-    if (n.getArgs().empty()) {
+    if (n.getArgList().getCount() == 0) {
       m_context->reportDiag(
           errOperatorOverloadWithoutArgs(m_context->getSrc(), displayName, n.getId().getSpan()));
       return;
@@ -102,7 +102,7 @@ auto DeclareUserFuncs::visit(const parse::FuncDeclStmtNode& n) -> void {
   // Declare the function in the program.
   const auto funcName = isConv ? getName(m_context, *retType) : name;
   auto funcId = m_context->getProg()->declareUserFunc(funcName, input.value(), retType.value());
-  m_funcs.emplace_back(funcId, n);
+  m_funcs.emplace_back(funcId, name, n);
 }
 
 auto DeclareUserFuncs::validateFuncName(const lex::Token& nameToken) -> bool {

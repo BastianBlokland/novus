@@ -15,38 +15,34 @@ DefineUserFuncs::DefineUserFuncs(Context* context, const TypeSubstitutionTable* 
   }
 }
 
-auto DefineUserFuncs::define(prog::sym::FuncId id, const parse::FuncDeclStmtNode& n) -> void {
+template <typename FuncParseNode>
+auto DefineUserFuncs::define(prog::sym::FuncId id, std::string funcName, const FuncParseNode& n)
+    -> bool {
   const auto& funcDecl   = m_context->getProg()->getFuncDecl(id);
   const auto funcRetType = funcDecl.getOutput();
 
   auto consts = prog::sym::ConstDeclTable{};
   if (!declareInputs(n, &consts)) {
-    return;
+    return false;
   }
 
   auto visibleConsts = consts.getAll();
   auto expr          = getExpr(n[0], &consts, &visibleConsts, funcRetType);
-
-  // Abort if any errors are encountered.
-  if (m_context->hasErrors()) {
-    return;
-  }
-
-  // Report this diagnostic after processing the body so other diagnostics are also reported.
-  if (funcRetType.isInfer()) {
-    m_context->reportDiag(errUnableToInferFuncReturnType(
-        m_context->getSrc(), getName(n.getId()), n.getId().getSpan()));
-    return;
-  }
-
   if (!expr) {
     assert(m_context->hasErrors());
-    return;
+    return false;
+  }
+
+  // Report this diagnostic after processing the body so other errors have priority over this.
+  if (funcRetType.isInfer()) {
+    m_context->reportDiag(
+        errUnableToInferFuncReturnType(m_context->getSrc(), funcName, n.getSpan()));
+    return false;
   }
 
   if (expr->getType() == funcRetType) {
     m_context->getProg()->defineUserFunc(id, std::move(consts), std::move(expr));
-    return;
+    return true;
   }
 
   const auto conv = m_context->getProg()->lookupConversion(expr->getType(), funcRetType);
@@ -57,19 +53,21 @@ auto DefineUserFuncs::define(prog::sym::FuncId id, const parse::FuncDeclStmtNode
         id,
         std::move(consts),
         prog::expr::callExprNode(*m_context->getProg(), *conv, std::move(convArgs)));
-    return;
+    return true;
   }
 
   const auto& declaredType = getName(m_context, funcDecl.getOutput());
   const auto& returnedType = getName(m_context, expr->getType());
   m_context->reportDiag(errNonMatchingFuncReturnType(
-      m_context->getSrc(), getName(n.getId()), declaredType, returnedType, n[0].getSpan()));
+      m_context->getSrc(), funcName, declaredType, returnedType, n[0].getSpan()));
+  return false;
 }
 
-auto DefineUserFuncs::declareInputs(
-    const parse::FuncDeclStmtNode& n, prog::sym::ConstDeclTable* consts) -> bool {
+template <typename FuncParseNode>
+auto DefineUserFuncs::declareInputs(const FuncParseNode& n, prog::sym::ConstDeclTable* consts)
+    -> bool {
   bool isValid = true;
-  for (const auto& arg : n.getArgs()) {
+  for (const auto& arg : n.getArgList()) {
     const auto constName = getConstName(m_context, m_typeSubTable, *consts, arg.getIdentifier());
     if (!constName) {
       isValid = false;
@@ -96,5 +94,11 @@ auto DefineUserFuncs::getExpr(
   n.accept(&getExpr);
   return std::move(getExpr.getValue());
 }
+
+// Explicit instantiations.
+template bool DefineUserFuncs::define(
+    prog::sym::FuncId id, std::string funcName, const parse::FuncDeclStmtNode& n);
+template bool DefineUserFuncs::define(
+    prog::sym::FuncId id, std::string funcName, const parse::AnonFuncExprNode& n);
 
 } // namespace frontend::internal

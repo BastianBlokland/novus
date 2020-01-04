@@ -20,6 +20,11 @@ public:
     m_bg = rang::bg::red;
   }
 
+  auto visit(const parse::AnonFuncExprNode & /*unused*/) -> void override {
+    m_fg = rang::fg::blue;
+    m_bg = rang::bg::reset;
+  }
+
   auto visit(const parse::BinaryExprNode & /*unused*/) -> void override {
     m_fg = rang::fg::green;
     m_bg = rang::bg::reset;

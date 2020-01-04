@@ -46,14 +46,38 @@ static auto addTokens(const TypeSubstitutionList& subList, std::vector<lex::Toke
   tokens->push_back(subList.getClose());
 }
 
+static auto addTokens(const ArgumentListDecl& argList, std::vector<lex::Token>* tokens) -> void {
+  tokens->push_back(argList.getOpen());
+  for (const auto& argToken : argList.getArgs()) {
+    addTokens(argToken.getType(), tokens);
+    tokens->push_back(argToken.getIdentifier());
+  }
+  for (const auto& comma : argList.getCommas()) {
+    tokens->push_back(comma);
+  }
+  tokens->push_back(argList.getClose());
+}
+
+static auto getError(std::ostream& out, const ArgumentListDecl& argList) -> void {
+  if (argList.getOpen().getKind() != lex::TokenKind::SepOpenParen &&
+      argList.getOpen().getKind() != lex::TokenKind::OpParenParen) {
+    out << "Expected opening parentheses '(' but got: " << argList.getOpen();
+  } else if (argList.getCommas().size() != (argList.getCount() == 0 ? 0 : argList.getCount() - 1)) {
+    out << "Incorrect number of comma's ',' in function declaration";
+  } else if (
+      argList.getClose().getKind() != lex::TokenKind::SepCloseParen &&
+      argList.getClose().getKind() != lex::TokenKind::OpParenParen) {
+    out << "Expected closing parentheses ')' but got: " << argList.getClose();
+  } else {
+    out << "Invalid argument list";
+  }
+}
+
 auto errInvalidStmtFuncDecl(
     lex::Token kw,
     lex::Token id,
     std::optional<TypeSubstitutionList> typeSubs,
-    lex::Token open,
-    const std::vector<FuncDeclStmtNode::ArgSpec>& args,
-    std::vector<lex::Token> commas,
-    lex::Token close,
+    const ArgumentListDecl& argList,
     std::optional<FuncDeclStmtNode::RetTypeSpec> retType,
     NodePtr body) -> NodePtr {
 
@@ -62,16 +86,8 @@ auto errInvalidStmtFuncDecl(
     oss << "Expected function identifier but got: " << id;
   } else if (typeSubs && !typeSubs->validate()) {
     oss << "Invalid type substitution parameters";
-  } else if (
-      open.getKind() != lex::TokenKind::SepOpenParen &&
-      open.getKind() != lex::TokenKind::OpParenParen) {
-    oss << "Expected opening parentheses '(' but got: " << open;
-  } else if (commas.size() != (args.empty() ? 0 : args.size() - 1)) {
-    oss << "Incorrect number of comma's ',' in function declaration";
-  } else if (
-      close.getKind() != lex::TokenKind::SepCloseParen &&
-      close.getKind() != lex::TokenKind::OpParenParen) {
-    oss << "Expected closing parentheses ')' but got: " << close;
+  } else if (!argList.validate()) {
+    getError(oss, argList);
   } else if (retType && retType->getArrow().getKind() != lex::TokenKind::SepArrow) {
     oss << "Expected return-type seperator (->) but got: " << retType->getArrow();
   } else if (retType && !retType->getType().validate()) {
@@ -86,19 +102,30 @@ auto errInvalidStmtFuncDecl(
   if (typeSubs) {
     addTokens(*typeSubs, &tokens);
   }
-  tokens.push_back(std::move(open));
-  for (auto& arg : args) {
-    tokens.push_back(arg.getIdentifier());
-    addTokens(arg.getType(), &tokens);
-  }
-  for (auto& comma : commas) {
-    tokens.push_back(std::move(comma));
-  }
-  tokens.push_back(std::move(close));
+  addTokens(argList, &tokens);
   if (retType) {
     tokens.push_back(retType->getArrow());
     addTokens(retType->getType(), &tokens);
   }
+
+  auto nodes = std::vector<std::unique_ptr<Node>>{};
+  nodes.push_back(std::move(body));
+
+  return errorNode(oss.str(), std::move(tokens), std::move(nodes));
+}
+
+auto errInvalidAnonFuncExpr(lex::Token kw, const ArgumentListDecl& argList, NodePtr body)
+    -> NodePtr {
+  std::ostringstream oss;
+  if (!argList.validate()) {
+    getError(oss, argList);
+  } else {
+    oss << "Invalid anonymous function";
+  }
+
+  auto tokens = std::vector<lex::Token>{};
+  tokens.push_back(std::move(kw));
+  addTokens(argList, &tokens);
 
   auto nodes = std::vector<std::unique_ptr<Node>>{};
   nodes.push_back(std::move(body));

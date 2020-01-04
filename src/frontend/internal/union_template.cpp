@@ -41,8 +41,8 @@ auto UnionTemplate::setupInstance(TypeTemplateInst* instance) -> void {
   instance->m_type = getContext()->getProg()->declareUserUnion(mangledName);
 
   // Define the union.
-  auto defineTypes = DefineUserTypes{getContext(), &subTable};
-  defineTypes.define(*instance->m_type, m_parseNode);
+  auto defineTypes    = DefineUserTypes{getContext(), &subTable};
+  instance->m_success = defineTypes.define(*instance->m_type, m_parseNode);
 
   // Keep track of some extra information about the type.
   getContext()->declareTypeInfo(

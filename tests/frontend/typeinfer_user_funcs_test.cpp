@@ -34,14 +34,14 @@ TEST_CASE("Infer return type of user functions", "[frontend]") {
     const auto& output = ANALYZE("fun f1(int i) i "
                                  "fun f() f1");
     REQUIRE(output.isSuccess());
-    CHECK(GET_FUNC_DECL(output, "f").getOutput() == GET_TYPE_ID(output, "__func_int_int"));
+    CHECK(GET_FUNC_DECL(output, "f").getOutput() == GET_TYPE_ID(output, "__delegate_int_int"));
   }
 
   SECTION("Templated function literal") {
     const auto& output = ANALYZE("fun f1{T}(T t) t "
                                  "fun f() f1{int}");
     REQUIRE(output.isSuccess());
-    CHECK(GET_FUNC_DECL(output, "f").getOutput() == GET_TYPE_ID(output, "__func_int_int"));
+    CHECK(GET_FUNC_DECL(output, "f").getOutput() == GET_TYPE_ID(output, "__delegate_int_int"));
   }
 
   SECTION("Function argument") {
@@ -196,18 +196,24 @@ TEST_CASE("Infer return type of user functions", "[frontend]") {
   }
 
   SECTION("Dynamic call") {
-    const auto& output = ANALYZE("fun f(func{int, int} op) op(1)");
+    const auto& output = ANALYZE("fun f(delegate{int, int} op) op(1)");
     REQUIRE(output.isSuccess());
     CHECK(
-        GET_FUNC_DECL(output, "f", GET_TYPE_ID(output, "__func_int_int")).getOutput() ==
+        GET_FUNC_DECL(output, "f", GET_TYPE_ID(output, "__delegate_int_int")).getOutput() ==
         GET_TYPE_ID(output, "int"));
+  }
+
+  SECTION("Anonymous function") {
+    const auto& output = ANALYZE("fun f() lambda (int i) i == i");
+    REQUIRE(output.isSuccess());
+    CHECK(GET_FUNC_DECL(output, "f").getOutput() == GET_TYPE_ID(output, "__delegate_int_bool"));
   }
 
   SECTION("Diagnostics") {
     CHECK_DIAG(
         "fun f1() f2() "
         "fun f2() f1()",
-        errUnableToInferFuncReturnType(src, "f1", input::Span{4, 5}));
+        errUnableToInferFuncReturnType(src, "f1", input::Span{0, 12}));
   }
 }
 

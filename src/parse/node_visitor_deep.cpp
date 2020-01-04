@@ -13,6 +13,8 @@ auto DeepNodeVisitor::visit(const CommentNode& n) -> void { visitChildren(&n, th
 
 auto DeepNodeVisitor::visit(const ErrorNode& n) -> void { visitChildren(&n, this); }
 
+auto DeepNodeVisitor::visit(const AnonFuncExprNode& n) -> void { visitChildren(&n, this); }
+
 auto DeepNodeVisitor::visit(const BinaryExprNode& n) -> void { visitChildren(&n, this); }
 
 auto DeepNodeVisitor::visit(const CallExprNode& n) -> void { visitChildren(&n, this); }

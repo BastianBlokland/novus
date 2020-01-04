@@ -1,4 +1,5 @@
 #include "internal/context.hpp"
+#include <sstream>
 
 namespace frontend::internal {
 
@@ -12,7 +13,8 @@ Context::Context(
     m_prog{prog},
     m_typeTemplates{typeTemplates},
     m_funcTemplates{funcTemplates},
-    m_delegates(delegates) {
+    m_delegates(delegates),
+    m_anonFuncCounter{0} {
 
   if (m_prog == nullptr) {
     throw std::invalid_argument{"Program cannot be null"};
@@ -48,6 +50,12 @@ auto Context::getTypeInfo(prog::sym::TypeId typeId) const noexcept -> std::optio
     return std::nullopt;
   }
   return itr->second;
+}
+
+auto Context::genAnonFuncName() -> std::string {
+  std::ostringstream oss;
+  oss << "__anon_" << m_anonFuncCounter++;
+  return oss.str();
 }
 
 auto Context::declareTypeInfo(prog::sym::TypeId typeId, TypeInfo typeInfo) -> void {

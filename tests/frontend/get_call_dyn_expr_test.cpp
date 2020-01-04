@@ -13,10 +13,10 @@ TEST_CASE("Analyzing call dynamic expressions", "[frontend]") {
 
   SECTION("Get delegate call without args") {
     const auto& output = ANALYZE("fun f1() -> int 1 "
-                                 "fun f2(func{int} op) -> int op() "
+                                 "fun f2(delegate{int} op) -> int op() "
                                  "fun f() -> int f2(f1)");
     REQUIRE(output.isSuccess());
-    const auto& f2Def = GET_FUNC_DEF(output, "f2", GET_TYPE_ID(output, "__func_int"));
+    const auto& f2Def = GET_FUNC_DEF(output, "f2", GET_TYPE_ID(output, "__delegate_int"));
     const auto& fDef  = GET_FUNC_DEF(output, "f");
 
     CHECK(
@@ -28,7 +28,7 @@ TEST_CASE("Analyzing call dynamic expressions", "[frontend]") {
 
     auto fArgs = std::vector<prog::expr::NodePtr>{};
     fArgs.push_back(prog::expr::litFuncNode(
-        output.getProg(), GET_TYPE_ID(output, "__func_int"), GET_FUNC_ID(output, "f1")));
+        output.getProg(), GET_TYPE_ID(output, "__delegate_int"), GET_FUNC_ID(output, "f1")));
     CHECK(
         fDef.getExpr() ==
         *prog::expr::callExprNode(output.getProg(), f2Def.getId(), std::move(fArgs)));
@@ -36,11 +36,12 @@ TEST_CASE("Analyzing call dynamic expressions", "[frontend]") {
 
   SECTION("Get delegate call with args") {
     const auto& output = ANALYZE("fun f1(bool b, float v) -> int b ? 1 : 0 "
-                                 "fun f2(func{bool, float, int} op) -> int op(false, 1) "
+                                 "fun f2(delegate{bool, float, int} op) -> int op(false, 1) "
                                  "fun f() -> int f2(f1)");
     REQUIRE(output.isSuccess());
-    const auto& f2Def = GET_FUNC_DEF(output, "f2", GET_TYPE_ID(output, "__func_bool_float_int"));
-    const auto& fDef  = GET_FUNC_DEF(output, "f");
+    const auto& f2Def =
+        GET_FUNC_DEF(output, "f2", GET_TYPE_ID(output, "__delegate_bool_float_int"));
+    const auto& fDef = GET_FUNC_DEF(output, "f");
 
     auto f2Args = std::vector<prog::expr::NodePtr>{};
     f2Args.push_back(prog::expr::litBoolNode(output.getProg(), false));
@@ -55,7 +56,7 @@ TEST_CASE("Analyzing call dynamic expressions", "[frontend]") {
     auto fArgs = std::vector<prog::expr::NodePtr>{};
     fArgs.push_back(prog::expr::litFuncNode(
         output.getProg(),
-        GET_TYPE_ID(output, "__func_bool_float_int"),
+        GET_TYPE_ID(output, "__delegate_bool_float_int"),
         GET_FUNC_ID(output, "f1", GET_TYPE_ID(output, "bool"), GET_TYPE_ID(output, "float"))));
     CHECK(
         fDef.getExpr() ==
@@ -64,10 +65,10 @@ TEST_CASE("Analyzing call dynamic expressions", "[frontend]") {
 
   SECTION("Get delegate call with templated function") {
     const auto& output = ANALYZE("fun f1{T}() -> T T() "
-                                 "fun f2(func{int} op) -> int op() "
+                                 "fun f2(delegate{int} op) -> int op() "
                                  "fun f() -> int f2(f1{int})");
     REQUIRE(output.isSuccess());
-    const auto& f2Def = GET_FUNC_DEF(output, "f2", GET_TYPE_ID(output, "__func_int"));
+    const auto& f2Def = GET_FUNC_DEF(output, "f2", GET_TYPE_ID(output, "__delegate_int"));
     const auto& fDef  = GET_FUNC_DEF(output, "f");
 
     CHECK(
@@ -79,7 +80,7 @@ TEST_CASE("Analyzing call dynamic expressions", "[frontend]") {
 
     auto fArgs = std::vector<prog::expr::NodePtr>{};
     fArgs.push_back(prog::expr::litFuncNode(
-        output.getProg(), GET_TYPE_ID(output, "__func_int"), GET_FUNC_ID(output, "f1__int")));
+        output.getProg(), GET_TYPE_ID(output, "__delegate_int"), GET_FUNC_ID(output, "f1__int")));
     CHECK(
         fDef.getExpr() ==
         *prog::expr::callExprNode(output.getProg(), f2Def.getId(), std::move(fArgs)));
@@ -87,23 +88,26 @@ TEST_CASE("Analyzing call dynamic expressions", "[frontend]") {
 
   SECTION("Diagnostics") {
     CHECK_DIAG(
-        "fun f(func{int, float, bool} op) -> bool op(false, 1.0)",
-        errIncorrectArgsToDelegate(src, input::Span{41, 54}));
+        "fun f(delegate{int, float, bool} op) -> bool op(false, 1.0)",
+        errIncorrectArgsToDelegate(src, input::Span{45, 58}));
     CHECK_DIAG(
         "fun f1(int v) -> int v "
         "fun f1(float v) -> float v "
         "fun f2() -> int op = f1; op()",
-        errAmbiguousFunction(src, "f1", input::Span{71, 72}));
+        errAmbiguousFunction(src, "f1", input::Span{71, 72}),
+        errUndeclaredFunc(src, "op", {}, input::Span{75, 78}));
     CHECK_DIAG(
         "fun f1{T}(int v) -> T T() "
         "fun f1{T}(float v) -> T T() "
         "fun f2() -> int op = f1{int}; op(1)",
-        errAmbiguousTemplateFunction(src, "f1", 1, input::Span{75, 81}));
+        errAmbiguousTemplateFunction(src, "f1", 1, input::Span{75, 81}),
+        errUndeclaredFunc(src, "op", {"int"}, input::Span{84, 88}));
     CHECK_DIAG("fun f() f1{float}", errNoFuncFoundToInstantiate(src, "f1", 1, input::Span{8, 16}));
     CHECK_DIAG(
         "fun f1{T}() -> T T() "
         "fun f2() -> int op = f1; op()",
-        errNoTypeParamsProvidedToTemplateFunction(src, "f1", input::Span{42, 43}));
+        errNoTypeParamsProvidedToTemplateFunction(src, "f1", input::Span{42, 43}),
+        errUndeclaredFunc(src, "op", {}, input::Span{46, 49}));
   }
 }
 

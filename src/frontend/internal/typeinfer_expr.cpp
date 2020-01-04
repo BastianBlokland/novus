@@ -33,6 +33,17 @@ auto TypeInferExpr::visit(const parse::ErrorNode & /*unused*/) -> void {
   throw std::logic_error{"TypeInferExpr is not implemented for this node type"};
 }
 
+auto TypeInferExpr::visit(const parse::AnonFuncExprNode& n) -> void {
+  auto funcInput = getFuncInput(m_context, m_typeSubTable, n);
+  if (!funcInput) {
+    assert(m_context->hasErrors());
+    return;
+  }
+  const auto retType = inferRetType(m_context, m_typeSubTable, n, *funcInput, true);
+
+  m_type = m_context->getDelegates()->getDelegate(m_context, *funcInput, retType);
+}
+
 auto TypeInferExpr::visit(const parse::BinaryExprNode& n) -> void {
   const auto& opToken = n.getOperator();
   switch (opToken.getKind()) {

@@ -7,6 +7,7 @@ class OptionalNodeVisitor : public NodeVisitor {
 public:
   auto visit(const CommentNode & /*unused*/) -> void override {}
   auto visit(const ErrorNode & /*unused*/) -> void override {}
+  auto visit(const AnonFuncExprNode & /*unused*/) -> void override {}
   auto visit(const BinaryExprNode & /*unused*/) -> void override {}
   auto visit(const CallExprNode & /*unused*/) -> void override {}
   auto visit(const ConditionalExprNode & /*unused*/) -> void override {}
