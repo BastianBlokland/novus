@@ -158,6 +158,9 @@ auto printConsts(const prog::sym::ConstDeclTable& consts) -> void {
   const auto colWidth = 10;
   for (const auto& c : consts) {
     switch (c.getKind()) {
+    case prog::sym::ConstKind::Bound:
+      std::cout << rang::fg::magenta;
+      break;
     case prog::sym::ConstKind::Input:
       std::cout << rang::fg::blue;
       break;

@@ -59,7 +59,8 @@ auto DefineExecStmts::getExpr(
     std::vector<prog::sym::ConstId>* visibleConsts,
     prog::sym::TypeId typeHint) -> prog::expr::NodePtr {
 
-  auto getExpr = GetExpr{m_context, nullptr, consts, visibleConsts, typeHint};
+  auto constBinder = ConstBinder{consts, visibleConsts, nullptr};
+  auto getExpr     = GetExpr{m_context, nullptr, &constBinder, typeHint};
   n.accept(&getExpr);
   return std::move(getExpr.getValue());
 }

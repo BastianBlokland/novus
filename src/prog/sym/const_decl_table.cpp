@@ -1,4 +1,5 @@
 #include "prog/sym/const_decl_table.hpp"
+#include <sstream>
 #include <stdexcept>
 
 namespace prog::sym {
@@ -26,11 +27,21 @@ auto ConstDeclTable::getAll() const -> std::vector<ConstId> {
 
 auto ConstDeclTable::getInputs() const -> std::vector<ConstId> {
   auto result = std::vector<ConstId>{};
+
+  // First include all input constants in the order they are registered.
   for (const auto& c : m_consts) {
     if (c.m_kind == ConstKind::Input) {
       result.push_back(c.m_id);
     }
   }
+
+  // Then include all bound constants in the order they are registered.
+  for (const auto& c : m_consts) {
+    if (c.m_kind == ConstKind::Bound) {
+      result.push_back(c.m_id);
+    }
+  }
+
   return result;
 }
 
@@ -40,6 +51,12 @@ auto ConstDeclTable::lookup(const std::string& name) const -> std::optional<Cons
     return std::nullopt;
   }
   return itr->second;
+}
+
+auto ConstDeclTable::registerBound(TypeId type) -> ConstId {
+  std::ostringstream oss;
+  oss << "__bound_" << m_consts.size();
+  return registerConst(ConstKind::Bound, oss.str(), type);
 }
 
 auto ConstDeclTable::registerInput(std::string name, TypeId type) -> ConstId {

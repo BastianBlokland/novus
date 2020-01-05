@@ -42,6 +42,76 @@ TEST_CASE("Generate assembly for call dynamic expressions", "[backend]") {
           builder->addEntryPoint("print");
         });
   }
+
+  SECTION("Closure") {
+    CHECK_PROG("print(i = 1337; (lambda () 42 + i)())", [](backend::Builder* builder) -> void {
+      builder->label("anon func");
+      builder->addReserveConsts(1);
+      builder->addStoreConst(0);
+      builder->addLoadLitInt(42);
+      builder->addLoadConst(0);
+      builder->addAddInt();
+      builder->addRet();
+      builder->addFail();
+
+      builder->label("print");
+      builder->addReserveConsts(1);
+
+      builder->addLoadLitInt(1337);
+      builder->addDup();
+      builder->addStoreConst(0);
+      builder->addPop();
+
+      builder->addLoadConst(0);
+      builder->addLoadLitIp("anon func");
+      builder->addMakeStruct(2);
+
+      builder->addCallDyn();
+      builder->addConvIntString();
+      builder->addPrintString();
+      builder->addRet();
+      builder->addFail();
+
+      builder->addEntryPoint("print");
+    });
+  }
+
+  SECTION("Closure") {
+    CHECK_PROG(
+        "print(i = 1337; (lambda (float f) f + i)(.1))", [](backend::Builder* builder) -> void {
+          builder->label("anon func");
+          builder->addReserveConsts(2);
+          builder->addStoreConst(1);
+          builder->addStoreConst(0);
+          builder->addLoadConst(0);
+          builder->addLoadConst(1);
+          builder->addConvIntFloat();
+          builder->addAddFloat();
+          builder->addRet();
+          builder->addFail();
+
+          builder->label("print");
+          builder->addReserveConsts(1);
+
+          builder->addLoadLitInt(1337);
+          builder->addDup();
+          builder->addStoreConst(0);
+          builder->addPop();
+
+          builder->addLoadLitFloat(.1F); // NOLINT: Magic numbers
+          builder->addLoadConst(0);
+          builder->addLoadLitIp("anon func");
+          builder->addMakeStruct(2);
+
+          builder->addCallDyn();
+          builder->addConvFloatString();
+          builder->addPrintString();
+          builder->addRet();
+          builder->addFail();
+
+          builder->addEntryPoint("print");
+        });
+  }
 }
 
 } // namespace backend

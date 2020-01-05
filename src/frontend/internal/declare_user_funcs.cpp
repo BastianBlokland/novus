@@ -83,7 +83,7 @@ auto DeclareUserFuncs::visit(const parse::FuncDeclStmtNode& n) -> void {
       }
     } else {
       if (retType->isInfer()) {
-        retType = inferRetType(m_context, nullptr, n, *input, true);
+        retType = inferRetType(m_context, nullptr, n, *input, nullptr, true);
         if (!retType->isConcrete()) {
           m_context->reportDiag(errUnableToInferReturnTypeOfConversionToTemplatedType(
               m_context->getSrc(), name, n.getId().getSpan()));

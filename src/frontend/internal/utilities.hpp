@@ -44,9 +44,14 @@ template <typename FuncParseNode>
     const TypeSubstitutionTable* subTable,
     const FuncParseNode& parseNode,
     const prog::sym::TypeSet& input,
+    const std::unordered_map<std::string, prog::sym::TypeId>* additionalConstTypes,
     bool aggressive) -> prog::sym::TypeId;
 
 [[nodiscard]] auto getLitFunc(Context* context, prog::sym::FuncId func) -> prog::expr::NodePtr;
+
+[[nodiscard]] auto
+getFuncClosure(Context* context, prog::sym::FuncId func, std::vector<prog::expr::NodePtr> boundArgs)
+    -> prog::expr::NodePtr;
 
 template <typename FuncParseNode>
 [[nodiscard]] auto getFuncInput(

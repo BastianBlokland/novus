@@ -53,20 +53,21 @@ auto closureNode(
   const auto& delegateDef = std::get<sym::DelegateDef>(program.getTypeDef(type));
   const auto& funcDecl    = program.getFuncDecl(func);
   if (delegateDef.getOutput() != funcDecl.getOutput()) {
-    throw std::invalid_argument{"Function signature does not match delegate definition"};
+    throw std::invalid_argument{"Function output does not match delegate definition"};
   }
 
-  // Both the bound arguments and the delegate arguments are inputs to the function.
+  // Both the delegate arguments and the bound arguments are inputs to the function.
   auto inputTypes = std::vector<prog::sym::TypeId>{};
+  inputTypes.reserve(delegateDef.getInput().getCount() + boundArgs.size());
+  inputTypes.insert(inputTypes.end(), delegateDef.getInput().begin(), delegateDef.getInput().end());
   for (const auto& boundArg : boundArgs) {
     inputTypes.push_back(boundArg->getType());
   }
-  inputTypes.insert(inputTypes.end(), delegateDef.getInput().begin(), delegateDef.getInput().end());
   const auto inputTypeSet = prog::sym::TypeSet{std::move(inputTypes)};
 
   if (inputTypeSet != funcDecl.getInput()) {
     throw std::invalid_argument{
-        "Bound argument types and delegate input types do not match function input"};
+        "Delegate input and bound argument types do not match function input"};
   }
   return std::unique_ptr<ClosureNode>{new ClosureNode{type, func, std::move(boundArgs)}};
 }

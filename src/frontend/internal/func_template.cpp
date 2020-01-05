@@ -62,7 +62,7 @@ auto FuncTemplate::getRetType(const prog::sym::TypeSet& typeParams)
     return std::nullopt;
   }
   if (retType->isInfer()) {
-    retType = inferRetType(m_context, &subTable, m_parseNode, *funcInput, true);
+    retType = inferRetType(m_context, &subTable, m_parseNode, *funcInput, nullptr, true);
   }
 
   m_inferStack.pop_front();
@@ -125,13 +125,20 @@ auto FuncTemplate::setupInstance(FuncTemplateInst* instance) -> void {
     return;
   }
 
+  const auto isConv = isType(m_context, m_name);
   if (instance->m_retType->isInfer()) {
-    instance->m_retType = inferRetType(m_context, &subTable, m_parseNode, *funcInput, true);
-    // We don't produce a diagnostic yet if the inferring failed as that is done by the definition
-    // step.
+    // For conversions to non-templated types we know the return-type by looking at the name.
+    if (isConv && m_context->getProg()->lookupType(m_name)) {
+      instance->m_retType = m_context->getProg()->lookupType(m_name);
+    } else {
+      // Otherwise try to infer the return-type.
+      instance->m_retType =
+          inferRetType(m_context, &subTable, m_parseNode, *funcInput, nullptr, true);
+      // We don't produce a diagnostic yet if the inferring failed as that is done by the definition
+      // step.
+    }
   }
   const auto retTypeName = getName(m_context, *instance->m_retType);
-  const auto isConv      = isType(m_context, m_name);
 
   // For conversions verify that a correct type is returned.
   if (isConv) {

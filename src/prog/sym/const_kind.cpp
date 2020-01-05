@@ -4,6 +4,9 @@ namespace prog::sym {
 
 auto operator<<(std::ostream& out, const ConstKind& rhs) -> std::ostream& {
   switch (rhs) {
+  case ConstKind::Bound:
+    out << "b";
+    break;
   case ConstKind::Input:
     out << "in";
     break;

@@ -1,5 +1,6 @@
 #include "internal/define_user_funcs.hpp"
 #include "frontend/diag_defs.hpp"
+#include "internal/const_binder.hpp"
 #include "internal/get_expr.hpp"
 #include "internal/utilities.hpp"
 #include "parse/nodes.hpp"
@@ -56,7 +57,7 @@ auto DefineUserFuncs::define(prog::sym::FuncId id, std::string funcName, const F
     return true;
   }
 
-  const auto& declaredType = getName(m_context, funcDecl.getOutput());
+  const auto& declaredType = getName(m_context, funcRetType);
   const auto& returnedType = getName(m_context, expr->getType());
   m_context->reportDiag(errNonMatchingFuncReturnType(
       m_context->getSrc(), funcName, declaredType, returnedType, n[0].getSpan()));
@@ -69,7 +70,8 @@ auto DefineUserFuncs::getExpr(
     std::vector<prog::sym::ConstId>* visibleConsts,
     prog::sym::TypeId typeHint) -> prog::expr::NodePtr {
 
-  auto getExpr = GetExpr{m_context, m_typeSubTable, consts, visibleConsts, typeHint};
+  auto constBinder = ConstBinder{consts, visibleConsts, nullptr};
+  auto getExpr     = GetExpr{m_context, m_typeSubTable, &constBinder, typeHint};
   n.accept(&getExpr);
   return std::move(getExpr.getValue());
 }
