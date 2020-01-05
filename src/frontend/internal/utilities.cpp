@@ -280,6 +280,30 @@ auto getFuncInput(
   return isValid ? std::optional{prog::sym::TypeSet{std::move(argTypes)}} : std::nullopt;
 }
 
+template <typename FuncParseNode>
+auto declareFuncInput(
+    Context* context,
+    const TypeSubstitutionTable* subTable,
+    const FuncParseNode& n,
+    prog::sym::ConstDeclTable* consts) -> bool {
+  bool isValid = true;
+  for (const auto& arg : n.getArgList()) {
+    const auto constName = getConstName(context, subTable, *consts, arg.getIdentifier());
+    if (!constName) {
+      isValid = false;
+      continue;
+    }
+
+    const auto argType = getOrInstType(context, subTable, arg.getType());
+    if (!argType) {
+      // Fail because this should have been caught during function declaration.
+      throw std::logic_error{"No declaration found for function input"};
+    }
+    consts->registerInput(*constName, argType.value());
+  }
+  return isValid;
+}
+
 auto getSubstitutionParams(Context* context, const parse::TypeSubstitutionList& subList)
     -> std::optional<std::vector<std::string>> {
 
@@ -387,5 +411,16 @@ template std::optional<prog::sym::TypeSet> getFuncInput(
     Context* context, const TypeSubstitutionTable* subTable, const parse::FuncDeclStmtNode& n);
 template std::optional<prog::sym::TypeSet> getFuncInput(
     Context* context, const TypeSubstitutionTable* subTable, const parse::AnonFuncExprNode& n);
+
+template bool declareFuncInput(
+    Context* context,
+    const TypeSubstitutionTable* subTable,
+    const parse::FuncDeclStmtNode& n,
+    prog::sym::ConstDeclTable* consts);
+template bool declareFuncInput(
+    Context* context,
+    const TypeSubstitutionTable* subTable,
+    const parse::AnonFuncExprNode& n,
+    prog::sym::ConstDeclTable* consts);
 
 } // namespace frontend::internal

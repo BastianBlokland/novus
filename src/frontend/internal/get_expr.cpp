@@ -50,21 +50,31 @@ auto GetExpr::visit(const parse::ErrorNode & /*unused*/) -> void {
 }
 
 auto GetExpr::visit(const parse::AnonFuncExprNode& n) -> void {
-  auto funcName  = m_context->genAnonFuncName();
+  auto consts = prog::sym::ConstDeclTable{};
+  if (!declareFuncInput(m_context, m_typeSubTable, n, &consts)) {
+    assert(m_context->hasErrors());
+    return;
+  }
+
+  auto visibleConsts = consts.getAll();
+  auto getExpr =
+      GetExpr{m_context, m_typeSubTable, &consts, &visibleConsts, prog::sym::TypeId::inferType()};
+  n[0].accept(&getExpr);
+  if (!getExpr.m_expr) {
+    assert(m_context->hasErrors());
+    return;
+  }
+
   auto funcInput = getFuncInput(m_context, m_typeSubTable, n);
   if (!funcInput) {
     assert(m_context->hasErrors());
     return;
   }
 
-  // Declare the function in the program.
-  const auto retType = inferRetType(m_context, m_typeSubTable, n, *funcInput, true);
-  const auto funcId =
-      m_context->getProg()->declareUserFunc(funcName, std::move(*funcInput), retType);
-
-  // Define the function.
-  auto defineFuncs = DefineUserFuncs{m_context, m_typeSubTable};
-  defineFuncs.define(funcId, "anonymous", n);
+  // Declare and define the function in the program.
+  const auto funcId = m_context->getProg()->declareUserFunc(
+      m_context->genAnonFuncName(), std::move(*funcInput), getExpr.m_expr->getType());
+  m_context->getProg()->defineUserFunc(funcId, std::move(consts), std::move(getExpr.m_expr));
 
   // Create a function literal pointing to the newly defined anonymous function.
   m_expr = getLitFunc(m_context, funcId);

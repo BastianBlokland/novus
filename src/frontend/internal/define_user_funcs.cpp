@@ -22,7 +22,7 @@ auto DefineUserFuncs::define(prog::sym::FuncId id, std::string funcName, const F
   const auto funcRetType = funcDecl.getOutput();
 
   auto consts = prog::sym::ConstDeclTable{};
-  if (!declareInputs(n, &consts)) {
+  if (!declareFuncInput(m_context, m_typeSubTable, n, &consts)) {
     return false;
   }
 
@@ -61,27 +61,6 @@ auto DefineUserFuncs::define(prog::sym::FuncId id, std::string funcName, const F
   m_context->reportDiag(errNonMatchingFuncReturnType(
       m_context->getSrc(), funcName, declaredType, returnedType, n[0].getSpan()));
   return false;
-}
-
-template <typename FuncParseNode>
-auto DefineUserFuncs::declareInputs(const FuncParseNode& n, prog::sym::ConstDeclTable* consts)
-    -> bool {
-  bool isValid = true;
-  for (const auto& arg : n.getArgList()) {
-    const auto constName = getConstName(m_context, m_typeSubTable, *consts, arg.getIdentifier());
-    if (!constName) {
-      isValid = false;
-      continue;
-    }
-
-    const auto argType = getOrInstType(m_context, m_typeSubTable, arg.getType());
-    if (!argType) {
-      // Fail because this should have been caught during function declaration.
-      throw std::logic_error{"No declaration found for function input"};
-    }
-    consts->registerInput(*constName, argType.value());
-  }
-  return isValid;
 }
 
 auto DefineUserFuncs::getExpr(

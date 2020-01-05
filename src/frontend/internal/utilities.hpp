@@ -53,6 +53,13 @@ template <typename FuncParseNode>
     Context* context, const TypeSubstitutionTable* subTable, const FuncParseNode& parseNode)
     -> std::optional<prog::sym::TypeSet>;
 
+template <typename FuncParseNode>
+[[nodiscard]] auto declareFuncInput(
+    Context* context,
+    const TypeSubstitutionTable* subTable,
+    const FuncParseNode& n,
+    prog::sym::ConstDeclTable* consts) -> bool;
+
 [[nodiscard]] auto
 getSubstitutionParams(Context* context, const parse::TypeSubstitutionList& subList)
     -> std::optional<std::vector<std::string>>;
