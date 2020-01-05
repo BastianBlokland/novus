@@ -99,6 +99,8 @@ auto Builder::addCheckEqString() -> void { writeOpCode(vm::OpCode::CheckEqString
 
 auto Builder::addCheckEqIp() -> void { writeOpCode(vm::OpCode::CheckEqIp); }
 
+auto Builder::addCheckEqCallDynTgt() -> void { writeOpCode(vm::OpCode::CheckEqCallDynTgt); }
+
 auto Builder::addCheckGtInt() -> void { writeOpCode(vm::OpCode::CheckGtInt); }
 
 auto Builder::addCheckGtFloat() -> void { writeOpCode(vm::OpCode::CheckGtFloat); }

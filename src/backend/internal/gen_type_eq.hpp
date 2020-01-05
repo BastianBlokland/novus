@@ -10,8 +10,4 @@ auto generateStructEquality(
 auto generateUnionEquality(
     Builder* builder, const prog::Program& program, const prog::sym::UnionDef& unionDef) -> void;
 
-auto generateDelegateEquality(
-    Builder* builder, const prog::Program& program, const prog::sym::DelegateDef& delegateDef)
-    -> void;
-
 } // namespace backend::internal

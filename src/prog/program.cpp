@@ -301,21 +301,6 @@ auto Program::defineUserUnion(sym::TypeId id, std::vector<sym::TypeId> types) ->
 }
 
 auto Program::defineUserDelegate(sym::TypeId id, sym::TypeSet input, sym::TypeId output) -> void {
-  // Register (in)equality functions.
-  m_funcDecls.registerFunc(
-      *this,
-      sym::FuncKind::CheckEqUserType,
-      getFuncName(Operator::EqEq),
-      sym::TypeSet{id, id},
-      m_bool);
-  m_funcDecls.registerFunc(
-      *this,
-      sym::FuncKind::CheckNEqUserType,
-      getFuncName(Operator::BangEq),
-      sym::TypeSet{id, id},
-      m_bool);
-
-  // Register delegate definition.
   m_typeDefs.registerDelegate(m_typeDecls, id, std::move(input), output);
 }
 

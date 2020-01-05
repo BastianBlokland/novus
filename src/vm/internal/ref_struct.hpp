@@ -23,6 +23,10 @@ public:
     return *(m_fields + index);
   }
 
+  [[nodiscard]] inline auto getLastField() const noexcept {
+    return *(m_fields + (m_fieldCount - 1));
+  }
+
 private:
   const Value* m_fields;
   uint8_t m_fieldCount;

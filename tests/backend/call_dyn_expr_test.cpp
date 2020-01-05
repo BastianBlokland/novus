@@ -11,9 +11,6 @@ TEST_CASE("Generate assembly for call dynamic expressions", "[backend]") {
         "fun test(int a, int b) -> int a + b "
         "print(op = test; op(42, 1337))",
         [](backend::Builder* builder) -> void {
-          builder->label("check_eq_func");
-          builder->addCheckEqIp();
-
           builder->label("test");
           builder->addReserveConsts(2);
           builder->addStoreConst(1);

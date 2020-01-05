@@ -47,6 +47,7 @@ auto disassembleInstructions(const vm::Assembly& assembly) -> std::vector<Instru
     case vm::OpCode::CheckEqFloat:
     case vm::OpCode::CheckEqString:
     case vm::OpCode::CheckEqIp:
+    case vm::OpCode::CheckEqCallDynTgt:
     case vm::OpCode::CheckGtInt:
     case vm::OpCode::CheckGtFloat:
     case vm::OpCode::CheckLeInt:

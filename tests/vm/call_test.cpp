@@ -35,8 +35,11 @@ TEST_CASE("Execute calls", "[vm]") {
   CHECK_PROG(
       [](backend::Builder* builder) -> void {
         builder->label("section1");
+
+        // Call raw instruction pointer.
         builder->addLoadLitIp("section2");
         builder->addCallDyn();
+
         builder->addConvIntString();
         builder->addPrintString();
         builder->addRet();
@@ -48,6 +51,31 @@ TEST_CASE("Execute calls", "[vm]") {
         builder->addEntryPoint("section1");
       },
       "1337");
+
+  CHECK_PROG(
+      [](backend::Builder* builder) -> void {
+        builder->label("section1");
+
+        // Make a closure struct.
+        builder->addLoadLitInt(42);
+        builder->addLoadLitIp("section2");
+        builder->addMakeStruct(2);
+
+        // Call closure struct.
+        builder->addCallDyn();
+
+        builder->addConvIntString();
+        builder->addPrintString();
+        builder->addRet();
+
+        builder->label("section2");
+        builder->addLoadLitInt(1337);
+        builder->addAddInt();
+        builder->addRet();
+
+        builder->addEntryPoint("section1");
+      },
+      "1379");
 }
 
 } // namespace vm

@@ -1,6 +1,7 @@
 #include "prog/expr/node_assign.hpp"
 #include "prog/expr/node_call.hpp"
 #include "prog/expr/node_call_dyn.hpp"
+#include "prog/expr/node_closure.hpp"
 #include "prog/expr/node_const.hpp"
 #include "prog/expr/node_fail.hpp"
 #include "prog/expr/node_field.hpp"

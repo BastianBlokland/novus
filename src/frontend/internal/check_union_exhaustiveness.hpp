@@ -15,6 +15,7 @@ public:
   auto visit(const prog::expr::SwitchExprNode& n) -> void override;
   auto visit(const prog::expr::CallExprNode& n) -> void override;
   auto visit(const prog::expr::CallDynExprNode& n) -> void override;
+  auto visit(const prog::expr::ClosureNode& n) -> void override;
   auto visit(const prog::expr::ConstExprNode& n) -> void override;
   auto visit(const prog::expr::FieldExprNode& n) -> void override;
   auto visit(const prog::expr::GroupExprNode& n) -> void override;

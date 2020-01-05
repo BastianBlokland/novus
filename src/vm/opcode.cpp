@@ -91,6 +91,9 @@ auto operator<<(std::ostream& out, const OpCode& rhs) -> std::ostream& {
   case OpCode::CheckEqIp:
     out << "check-eq-ip";
     break;
+  case OpCode::CheckEqCallDynTgt:
+    out << "check-eq-calldyntgt";
+    break;
   case OpCode::CheckGtInt:
     out << "check-gt-int";
     break;

@@ -170,6 +170,16 @@ static auto execute(const Assembly& assembly, io::Interface* interface, uint32_t
       auto a = evalStack.pop().getUInt();
       evalStack.push(internal::intValue(a == b ? 1 : 0));
     } break;
+    case OpCode::CheckEqCallDynTgt: {
+      // Compare the target instruction pointers (which for closure structs are stored in the last
+      // field). Note: This does not compare bound arguments in a closure struct, main reason is
+      // that we have no type information for those.
+      auto b   = evalStack.pop();
+      auto bIp = (b.isRef() ? getStructRef(b)->getLastField() : b).getUInt();
+      auto a   = evalStack.pop();
+      auto aIp = (a.isRef() ? getStructRef(a)->getLastField() : a).getUInt();
+      evalStack.push(internal::intValue(aIp == bIp ? 1 : 0));
+    } break;
     case OpCode::CheckGtInt: {
       auto b = evalStack.pop().getInt();
       auto a = evalStack.pop().getInt();
@@ -264,8 +274,23 @@ static auto execute(const Assembly& assembly, io::Interface* interface, uint32_t
       callStack.push(assembly, ipOffset);
     } break;
     case OpCode::CallDyn: {
-      auto ipOffset = evalStack.pop().getUInt();
-      callStack.push(assembly, ipOffset);
+      auto target = evalStack.pop();
+      if (target.isRef()) {
+        // Target is a closure struct containing bound arguments and a instruction pointer.
+        auto closure = getStructRef(target);
+        assert(closure->getFieldCount() > 0);
+
+        // Push all bound arguments on the stack.
+        for (auto i = 0U; i != closure->getFieldCount() - 1; ++i) {
+          evalStack.push(closure->getField(i));
+        }
+
+        // Call the instruction-pointer at the last field of the closure struct.
+        callStack.push(assembly, closure->getLastField().getUInt());
+      } else {
+        // Target is a instruction pointer only.
+        callStack.push(assembly, target.getUInt());
+      }
     } break;
     case OpCode::Ret: {
       scope->releaseConsts(&constStack);
