@@ -261,6 +261,20 @@ auto GenExpr::visit(const prog::expr::CallDynExprNode& n) -> void {
   m_builder->addCallDyn();
 }
 
+auto GenExpr::visit(const prog::expr::ClosureNode& n) -> void {
+  // Push the bound arguments on the stack.
+  for (auto i = 0U; i < n.getChildCount(); ++i) {
+    genSubExpr(n[i]);
+  }
+
+  // Push the function instruction-pointer on the stack.
+  const auto funcId = n.getFunc();
+  m_builder->addLoadLitIp(getLabel(funcId));
+
+  // Create a struct containing both the bound arguments and the function pointer.
+  m_builder->addMakeStruct(n.getChildCount() + 1);
+}
+
 auto GenExpr::visit(const prog::expr::ConstExprNode& n) -> void {
   const auto constId = getConstId(n.getId());
   m_builder->addLoadConst(constId);

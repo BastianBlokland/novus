@@ -29,6 +29,8 @@ auto CheckUnionExhaustiveness::visit(const prog::expr::CallExprNode & /*unused*/
 
 auto CheckUnionExhaustiveness::visit(const prog::expr::CallDynExprNode & /*unused*/) -> void {}
 
+auto CheckUnionExhaustiveness::visit(const prog::expr::ClosureNode & /*unused*/) -> void {}
+
 auto CheckUnionExhaustiveness::visit(const prog::expr::ConstExprNode & /*unused*/) -> void {}
 
 auto CheckUnionExhaustiveness::visit(const prog::expr::FieldExprNode & /*unused*/) -> void {}

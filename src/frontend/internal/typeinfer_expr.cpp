@@ -39,9 +39,9 @@ auto TypeInferExpr::visit(const parse::AnonFuncExprNode& n) -> void {
     assert(m_context->hasErrors());
     return;
   }
-  const auto retType = inferRetType(m_context, m_typeSubTable, n, *funcInput, true);
 
-  m_type = m_context->getDelegates()->getDelegate(m_context, *funcInput, retType);
+  const auto retType = inferRetType(m_context, m_typeSubTable, n, *funcInput, m_constTypes, true);
+  m_type             = m_context->getDelegates()->getDelegate(m_context, *funcInput, retType);
 }
 
 auto TypeInferExpr::visit(const parse::BinaryExprNode& n) -> void {

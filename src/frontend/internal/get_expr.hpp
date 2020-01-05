@@ -1,4 +1,5 @@
 #pragma once
+#include "internal/const_binder.hpp"
 #include "internal/context.hpp"
 #include "internal/type_substitution_table.hpp"
 
@@ -10,13 +11,11 @@ public:
   GetExpr(
       Context* context,
       const TypeSubstitutionTable* typeSubTable,
-      prog::sym::ConstDeclTable* consts,
-      std::vector<prog::sym::ConstId>* visibleConsts,
+      ConstBinder* constBinder,
       prog::sym::TypeId typeHint,
       bool checkedConstsAccess = false);
 
   [[nodiscard]] auto hasErrors() const noexcept -> bool;
-  [[nodiscard]] auto getDiags() const noexcept -> const std::vector<Diag>&;
   [[nodiscard]] auto getValue() -> prog::expr::NodePtr&;
 
   auto visit(const parse::CommentNode& n) -> void override;
@@ -47,8 +46,7 @@ private:
 
   Context* m_context;
   const TypeSubstitutionTable* m_typeSubTable;
-  prog::sym::ConstDeclTable* m_consts;
-  std::vector<prog::sym::ConstId>* m_visibleConsts;
+  ConstBinder* m_constBinder;
   prog::sym::TypeId m_typeHint;
   bool m_checkedConstsAccess;
 
@@ -56,6 +54,10 @@ private:
 
   [[nodiscard]] auto getChildExprs(const parse::Node& n, unsigned int skipAmount = 0U)
       -> std::optional<std::pair<std::vector<prog::expr::NodePtr>, prog::sym::TypeSet>>;
+
+  [[nodiscard]] auto
+  getSubExpr(const parse::Node& n, prog::sym::TypeId typeHint, bool checkedConstsAccess = false)
+      -> prog::expr::NodePtr;
 
   [[nodiscard]] auto getSubExpr(
       const parse::Node& n,

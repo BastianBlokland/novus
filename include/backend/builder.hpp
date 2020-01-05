@@ -48,6 +48,7 @@ public:
   auto addCheckEqFloat() -> void;
   auto addCheckEqString() -> void;
   auto addCheckEqIp() -> void;
+  auto addCheckEqCallDynTgt() -> void;
   auto addCheckGtInt() -> void;
   auto addCheckGtFloat() -> void;
   auto addCheckLeInt() -> void;

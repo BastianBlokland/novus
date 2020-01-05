@@ -31,6 +31,7 @@ public:
 
   [[nodiscard]] auto lookup(const std::string& name) const -> std::optional<ConstId>;
 
+  auto registerBound(TypeId type) -> ConstId;
   auto registerInput(std::string name, TypeId type) -> ConstId;
   auto registerLocal(std::string name, TypeId type) -> ConstId;
 

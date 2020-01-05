@@ -30,8 +30,8 @@ auto TypeInferUserFuncs::inferRetType(prog::sym::FuncId id, const parse::FuncDec
   if (!funcInput) {
     return false;
   }
-  const auto type =
-      ::frontend::internal::inferRetType(m_context, m_typeSubTable, n, *funcInput, agressive);
+  const auto type = ::frontend::internal::inferRetType(
+      m_context, m_typeSubTable, n, *funcInput, nullptr, agressive);
 
   // If type is still not a concrete type then we fail.
   if (!type.isConcrete()) {

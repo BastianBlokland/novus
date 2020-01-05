@@ -24,16 +24,6 @@ TEST_CASE("Execute integer checks", "[vm]") {
           builder->addPrintString();
         },
         "true");
-    CHECK_EXPR(
-        [](backend::Builder* builder) -> void {
-          builder->label("label");
-          builder->addLoadLitIp("label");
-          builder->addLoadLitIp("label");
-          builder->addCheckEqIp();
-          builder->addConvBoolString();
-          builder->addPrintString();
-        },
-        "true");
   }
 
   SECTION("Greater") {

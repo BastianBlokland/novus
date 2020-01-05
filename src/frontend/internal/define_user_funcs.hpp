@@ -16,9 +16,6 @@ private:
   Context* m_context;
   const TypeSubstitutionTable* m_typeSubTable;
 
-  template <typename FuncParseNode>
-  auto declareInputs(const FuncParseNode& n, prog::sym::ConstDeclTable* consts) -> bool;
-
   auto getExpr(
       const parse::Node& n,
       prog::sym::ConstDeclTable* consts,

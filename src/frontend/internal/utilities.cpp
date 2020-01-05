@@ -4,6 +4,7 @@
 #include "internal/typeinfer_expr.hpp"
 #include "parse/node_expr_anon_func.hpp"
 #include "parse/type_param_list.hpp"
+#include "prog/expr/node_closure.hpp"
 #include "prog/expr/node_lit_func.hpp"
 #include <stdexcept>
 #include <unordered_set>
@@ -235,6 +236,7 @@ auto inferRetType(
     const TypeSubstitutionTable* subTable,
     const FuncParseNode& parseNode,
     const prog::sym::TypeSet& input,
+    const std::unordered_map<std::string, prog::sym::TypeId>* additionalConstTypes,
     bool aggressive) -> prog::sym::TypeId {
 
   if (input.getCount() != parseNode.getArgList().getCount()) {
@@ -248,6 +250,10 @@ auto inferRetType(
     constTypes.insert({argName, input[i]});
   }
 
+  if (additionalConstTypes) {
+    constTypes.insert(additionalConstTypes->begin(), additionalConstTypes->end());
+  }
+
   auto inferBodyType = TypeInferExpr{context, subTable, &constTypes, aggressive};
   parseNode[0].accept(&inferBodyType);
   return inferBodyType.getInferredType();
@@ -258,6 +264,37 @@ auto getLitFunc(Context* context, prog::sym::FuncId func) -> prog::expr::NodePtr
   const auto delegateType =
       context->getDelegates()->getDelegate(context, funcDecl.getInput(), funcDecl.getOutput());
   return prog::expr::litFuncNode(*context->getProg(), delegateType, func);
+}
+
+auto getFuncClosure(
+    Context* context, prog::sym::FuncId func, std::vector<prog::expr::NodePtr> boundArgs)
+    -> prog::expr::NodePtr {
+  const auto funcDecl = context->getProg()->getFuncDecl(func);
+
+  const auto nonBoundArgsCount = funcDecl.getInput().getCount() - boundArgs.size();
+  if (nonBoundArgsCount < 0) {
+    throw std::logic_error{"More arguments are bound then there are inputs to the function"};
+  }
+
+  // Find the input type of the delegate, the bound arguments are not part of the delegate type as
+  // they are provided by the closure.
+  auto delegateInput = std::vector<prog::sym::TypeId>{};
+  for (auto i = 0U; i != funcDecl.getInput().getCount(); ++i) {
+    const auto inputType = funcDecl.getInput()[i];
+    if (i < nonBoundArgsCount) {
+      // Not a bound argument so it becomes part of the delegate input.
+      delegateInput.push_back(inputType);
+      continue;
+    }
+    if (inputType != boundArgs[i - nonBoundArgsCount]->getType()) {
+      throw std::logic_error{
+          "Type of bound argument does not match the type of the function input"};
+    }
+  }
+
+  const auto delegateType = context->getDelegates()->getDelegate(
+      context, prog::sym::TypeSet{std::move(delegateInput)}, funcDecl.getOutput());
+  return prog::expr::closureNode(*context->getProg(), delegateType, func, std::move(boundArgs));
 }
 
 template <typename FuncParseNode>
@@ -278,6 +315,30 @@ auto getFuncInput(
     }
   }
   return isValid ? std::optional{prog::sym::TypeSet{std::move(argTypes)}} : std::nullopt;
+}
+
+template <typename FuncParseNode>
+auto declareFuncInput(
+    Context* context,
+    const TypeSubstitutionTable* subTable,
+    const FuncParseNode& n,
+    prog::sym::ConstDeclTable* consts) -> bool {
+  bool isValid = true;
+  for (const auto& arg : n.getArgList()) {
+    const auto constName = getConstName(context, subTable, *consts, arg.getIdentifier());
+    if (!constName) {
+      isValid = false;
+      continue;
+    }
+
+    const auto argType = getOrInstType(context, subTable, arg.getType());
+    if (!argType) {
+      // Fail because this should have been caught during function declaration.
+      throw std::logic_error{"No declaration found for function input"};
+    }
+    consts->registerInput(*constName, argType.value());
+  }
+  return isValid;
 }
 
 auto getSubstitutionParams(Context* context, const parse::TypeSubstitutionList& subList)
@@ -375,17 +436,30 @@ template prog::sym::TypeId inferRetType(
     const TypeSubstitutionTable* subTable,
     const parse::FuncDeclStmtNode& parseNode,
     const prog::sym::TypeSet& input,
+    const std::unordered_map<std::string, prog::sym::TypeId>* additionalConstTypes,
     bool aggressive);
 template prog::sym::TypeId inferRetType(
     Context* context,
     const TypeSubstitutionTable* subTable,
     const parse::AnonFuncExprNode& parseNode,
     const prog::sym::TypeSet& input,
+    const std::unordered_map<std::string, prog::sym::TypeId>* additionalConstTypes,
     bool aggressive);
 
 template std::optional<prog::sym::TypeSet> getFuncInput(
     Context* context, const TypeSubstitutionTable* subTable, const parse::FuncDeclStmtNode& n);
 template std::optional<prog::sym::TypeSet> getFuncInput(
     Context* context, const TypeSubstitutionTable* subTable, const parse::AnonFuncExprNode& n);
+
+template bool declareFuncInput(
+    Context* context,
+    const TypeSubstitutionTable* subTable,
+    const parse::FuncDeclStmtNode& n,
+    prog::sym::ConstDeclTable* consts);
+template bool declareFuncInput(
+    Context* context,
+    const TypeSubstitutionTable* subTable,
+    const parse::AnonFuncExprNode& n,
+    prog::sym::ConstDeclTable* consts);
 
 } // namespace frontend::internal

@@ -209,6 +209,44 @@ TEST_CASE("Infer return type of user functions", "[frontend]") {
     CHECK(GET_FUNC_DECL(output, "f").getOutput() == GET_TYPE_ID(output, "__delegate_int_bool"));
   }
 
+  SECTION("Anonymous function call") {
+    const auto& output = ANALYZE("fun f() (lambda (int i) i == i)(42)");
+    REQUIRE(output.isSuccess());
+    CHECK(GET_FUNC_DECL(output, "f").getOutput() == GET_TYPE_ID(output, "bool"));
+  }
+
+  SECTION("Anonymous function with closure") {
+    const auto& output = ANALYZE("fun f(float v) lambda (int i) i + v");
+    REQUIRE(output.isSuccess());
+    CHECK(
+        GET_FUNC_DECL(output, "f", GET_TYPE_ID(output, "float")).getOutput() ==
+        GET_TYPE_ID(output, "__delegate_int_float"));
+  }
+
+  SECTION("Anonymous function with nested closure") {
+    const auto& output = ANALYZE("fun f(float v) lambda (int i) (lambda () i + v)");
+    REQUIRE(output.isSuccess());
+    CHECK(
+        GET_FUNC_DECL(output, "f", GET_TYPE_ID(output, "float")).getOutput() ==
+        GET_TYPE_ID(output, "__delegate_int___delegate_float"));
+  }
+
+  SECTION("Anonymous function call with closure") {
+    const auto& output = ANALYZE("fun f(float v) (lambda (int i) i + v)(42)");
+    REQUIRE(output.isSuccess());
+    CHECK(
+        GET_FUNC_DECL(output, "f", GET_TYPE_ID(output, "float")).getOutput() ==
+        GET_TYPE_ID(output, "float"));
+  }
+
+  SECTION("Anonymous function call with nested closure") {
+    const auto& output = ANALYZE("fun f(float v) (lambda (int i) (lambda () i + v))(42)");
+    REQUIRE(output.isSuccess());
+    CHECK(
+        GET_FUNC_DECL(output, "f", GET_TYPE_ID(output, "float")).getOutput() ==
+        GET_TYPE_ID(output, "__delegate_float"));
+  }
+
   SECTION("Diagnostics") {
     CHECK_DIAG(
         "fun f1() f2() "
