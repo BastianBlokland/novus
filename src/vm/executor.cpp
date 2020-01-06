@@ -19,7 +19,7 @@ static const int ConstsStackSize = 25600;
 static const int CallStackSize   = 8192;
 
 static auto execute(const Assembly& assembly, io::Interface* interface, uint32_t entryPoint) {
-  auto evalStack  = internal::EvalStack{EvalStackSize};
+  auto evalStack  = internal::EvalStack<EvalStackSize>{};
   auto constStack = internal::ConstStack{ConstsStackSize};
   auto callStack  = internal::CallStack{CallStackSize};
   auto allocator  = internal::Allocator{};

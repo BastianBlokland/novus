@@ -194,7 +194,6 @@ add_library(vm STATIC
   vm/internal/allocator.cpp
   vm/internal/call_stack.cpp
   vm/internal/const_stack.cpp
-  vm/internal/eval_stack.cpp
   vm/internal/exec_scope.cpp
   vm/io/memory_interface.cpp
   vm/io/terminal_interface.cpp
