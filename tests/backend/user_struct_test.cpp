@@ -62,7 +62,7 @@ TEST_CASE("Generating assembly for user-structs", "[backend]") {
           builder->addMakeStruct(2);
 
           // Call the equality function and print the result.
-          builder->addCall("UserEq");
+          builder->addCall("UserEq", false);
           builder->addConvBoolString();
           builder->addPrintString();
           builder->addRet();

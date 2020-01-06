@@ -273,7 +273,7 @@ TEST_CASE("Generate assembly for call expressions", "[backend]") {
           builder->label("print");
           builder->addLoadLitInt(42);
           builder->addLoadLitInt(1337);
-          builder->addCall("test");
+          builder->addCall("test", false);
           builder->addConvIntString();
           builder->addPrintString();
           builder->addRet();

@@ -89,7 +89,7 @@ TEST_CASE("Generating assembly for user-unions", "[backend]") {
           builder->addMakeStruct(2);
 
           // Call equality function and print the result.
-          builder->addCall("ValEq");
+          builder->addCall("ValEq", false);
           builder->addConvBoolString();
           builder->addPrintString();
           builder->addRet();
