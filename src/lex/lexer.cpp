@@ -183,6 +183,10 @@ auto LexerImpl::next() -> Token {
         consumeChar();
         return nextLitIntHex();
       }
+      if (peekChar(0) == 'b' || peekChar(0) == 'B') {
+        consumeChar();
+        return nextLitIntBinary();
+      }
       [[fallthrough]];
     case '1':
     case '2':
@@ -308,6 +312,40 @@ auto LexerImpl::nextLitIntHex() -> Token {
   const auto span = input::Span{startPos, m_inputPos};
   if (containsInvalidChar) {
     return errLitHexInvalidChar(span);
+  }
+  if (curChar == '_') {
+    return errLitNumberEndsWithSeperator(span);
+  }
+
+  if (result > std::numeric_limits<int32_t>::max()) {
+    return errLitIntTooBig(span);
+  }
+  return litIntToken(static_cast<int32_t>(result), span);
+}
+
+auto LexerImpl::nextLitIntBinary() -> Token {
+  const auto startPos = m_inputPos - 1; // Take the '0b' prefix into account.
+
+  uint64_t result          = 0;
+  char curChar             = 'b';
+  auto containsInvalidChar = false;
+  while (!isTokenSeperator(peekChar(0))) {
+    curChar = consumeChar();
+    if (curChar == '0') {
+      result <<= 1U; // Shift up the result by one bit.
+    } else if (curChar == '1') {
+      result <<= 1U; // Shift up the result by one bit.
+      result += 1;
+    } else if (curChar == '_') {
+      continue; // Ignore underscores as legal digit seperators.
+    } else {
+      containsInvalidChar = true;
+    }
+  }
+
+  const auto span = input::Span{startPos, m_inputPos};
+  if (containsInvalidChar) {
+    return errLitBinaryInvalidChar(span);
   }
   if (curChar == '_') {
     return errLitNumberEndsWithSeperator(span);

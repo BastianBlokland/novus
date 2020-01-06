@@ -30,6 +30,20 @@ TEST_CASE("Lexing integer literals", "[lex]") {
     CHECK_TOKENS("0x1E240", litIntToken(0x1E240));
   }
 
+  SECTION("Binary values") {
+    CHECK_TOKENS("0b", litIntToken(0));
+    CHECK_TOKENS("0B", litIntToken(0));
+    CHECK_TOKENS("0b0", litIntToken(0));
+    CHECK_TOKENS("0B0", litIntToken(0));
+    CHECK_TOKENS("0b0001", litIntToken(1));
+    CHECK_TOKENS("0b10", litIntToken(2));
+    CHECK_TOKENS("0b11", litIntToken(3));
+    CHECK_TOKENS("0b01111111_11111111_11111111_11111111", litIntToken(0x7FFFFFFF));
+    CHECK_TOKENS("0b101010", litIntToken(42));
+    CHECK_TOKENS("0b10100111001", litIntToken(1337));
+    CHECK_TOKENS("0b10010101_01010101", litIntToken(0b1001010101010101));
+  }
+
   SECTION("Sequences") {
     CHECK_TOKENS("0 0", litIntToken(0), litIntToken(0));
     CHECK_TOKENS("1 2 3", litIntToken(1), litIntToken(2), litIntToken(3));
@@ -38,6 +52,14 @@ TEST_CASE("Lexing integer literals", "[lex]") {
     CHECK_TOKENS("0x 0x123", litIntToken(0), litIntToken(0x123));
     CHECK_TOKENS("0x1 0x2 0x3", litIntToken(1), litIntToken(2), litIntToken(3));
     CHECK_TOKENS("0xF,0Xf", litIntToken(15), basicToken(TokenKind::SepComma), litIntToken(15));
+
+    CHECK_TOKENS("0x 0x123", litIntToken(0), litIntToken(0x123));
+    CHECK_TOKENS("0x1 0x2 0x3", litIntToken(1), litIntToken(2), litIntToken(3));
+    CHECK_TOKENS("0xF,0Xf", litIntToken(15), basicToken(TokenKind::SepComma), litIntToken(15));
+
+    CHECK_TOKENS("0b 0b111", litIntToken(0), litIntToken(0b111));
+    CHECK_TOKENS("0b1 0b01 0b11", litIntToken(0b1), litIntToken(0b01), litIntToken(0b11));
+    CHECK_TOKENS("0b1,0B1", litIntToken(1), basicToken(TokenKind::SepComma), litIntToken(1));
   }
 
   SECTION("Digit seperators") {
@@ -46,6 +68,9 @@ TEST_CASE("Lexing integer literals", "[lex]") {
 
     CHECK_TOKENS("0xF_F_F", litIntToken(0xFFF));
     CHECK_TOKENS("0xA_B___C", litIntToken(0xABC));
+
+    CHECK_TOKENS("0b1_1_1", litIntToken(7));
+    CHECK_TOKENS("0b1_0___1", litIntToken(5));
   }
 
   SECTION("Errors") {
@@ -63,6 +88,18 @@ TEST_CASE("Lexing integer literals", "[lex]") {
     CHECK_TOKENS("0x13a4好2", errLitHexInvalidChar());
     CHECK_TOKENS("0x13a4\a2", errLitHexInvalidChar());
     CHECK_TOKENS("0x_", errLitNumberEndsWithSeperator());
+
+    CHECK_TOKENS("0b11111111_11111111_11111111_11111111", errLitIntTooBig());
+    CHECK_TOKENS(
+        "0b11111111_11111111_11111111_11111111_11111111_11111111_11111111_11111111",
+        errLitIntTooBig());
+    CHECK_TOKENS(
+        "0b11111111_11111111_11111111_11111111_11111111_11111111_11111111_11111111_1",
+        errLitIntTooBig());
+    CHECK_TOKENS("0b0101a01", errLitBinaryInvalidChar());
+    CHECK_TOKENS("0b0好0", errLitBinaryInvalidChar());
+    CHECK_TOKENS("0b01\a001", errLitBinaryInvalidChar());
+    CHECK_TOKENS("0b_", errLitNumberEndsWithSeperator());
   }
 
   SECTION("Spans") {
@@ -79,6 +116,13 @@ TEST_CASE("Lexing integer literals", "[lex]") {
     CHECK_SPANS("0x123456789ABCDEF", input::Span{0, 16});
     CHECK_SPANS("0xhelloworld", input::Span{0, 11});
     CHECK_SPANS("0xa____", input::Span{0, 6});
+
+    CHECK_SPANS(" 0b1 ", input::Span{1, 3});
+    CHECK_SPANS(" 0b101  0b", input::Span{1, 5}, input::Span{8, 9});
+    CHECK_SPANS("0b1__1__1", input::Span{0, 8});
+    CHECK_SPANS("0b1010101101", input::Span{0, 11});
+    CHECK_SPANS("0bhelloworld", input::Span{0, 11});
+    CHECK_SPANS("0b1____", input::Span{0, 6});
   }
 }
 

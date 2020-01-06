@@ -13,6 +13,8 @@ namespace lex {
 
 [[nodiscard]] auto errLitHexInvalidChar(input::Span span = input::Span{0}) -> Token;
 
+[[nodiscard]] auto errLitBinaryInvalidChar(input::Span span = input::Span{0}) -> Token;
+
 [[nodiscard]] auto errLitNumberEndsWithSeperator(input::Span span = input::Span{0}) -> Token;
 
 [[nodiscard]] auto errLitNumberEndsWithDecimalPoint(input::Span span = input::Span{0}) -> Token;

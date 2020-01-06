@@ -20,6 +20,7 @@ private:
 
   auto nextLitNumber(char mostSignficantChar) -> Token;
   auto nextLitIntHex() -> Token;
+  auto nextLitIntBinary() -> Token;
   auto nextLitStr() -> Token;
   auto nextWordToken(char startingChar) -> Token;
   auto nextLineComment() -> Token;
