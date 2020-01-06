@@ -29,6 +29,9 @@ auto getRhsOpPrecedence(const lex::Token& token) -> int {
   case lex::TokenKind::OpMinus:
   case lex::TokenKind::OpColonColon:
     return additivePrecedence;
+  case lex::TokenKind::OpShiftL:
+  case lex::TokenKind::OpShiftR:
+    return shiftPrecedence;
   case lex::TokenKind::OpLe:
   case lex::TokenKind::OpLeEq:
   case lex::TokenKind::OpGt:
@@ -37,10 +40,14 @@ auto getRhsOpPrecedence(const lex::Token& token) -> int {
   case lex::TokenKind::OpEqEq:
   case lex::TokenKind::OpBangEq:
     return equalityPrecedence;
+  case lex::TokenKind::OpAmp:
   case lex::TokenKind::OpAmpAmp:
-    return logicAndPrecedence;
+    return andPrecedence;
+  case lex::TokenKind::OpHat:
+    return xorPrecedence;
+  case lex::TokenKind::OpPipe:
   case lex::TokenKind::OpPipePipe:
-    return logicOrPrecedence;
+    return orPrecedence;
   case lex::TokenKind::OpQMark:
     return conditionalPrecedence;
   case lex::TokenKind::OpSemi:

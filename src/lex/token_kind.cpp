@@ -31,6 +31,15 @@ auto operator<<(std::ostream& out, const TokenKind& rhs) -> std::ostream& {
   case TokenKind::OpPipePipe:
     out << "pipe-pipe";
     break;
+  case TokenKind::OpHat:
+    out << "hat";
+    break;
+  case TokenKind::OpShiftL:
+    out << "shift-left";
+    break;
+  case TokenKind::OpShiftR:
+    out << "shift-right";
+    break;
   case TokenKind::OpEq:
     out << "equal";
     break;

@@ -102,6 +102,8 @@ auto LexerImpl::next() -> Token {
         return basicToken(TokenKind::OpPipePipe, input::Span{m_inputPos - 1, m_inputPos});
       }
       return basicToken(TokenKind::OpPipe, input::Span{m_inputPos});
+    case '^':
+      return basicToken(TokenKind::OpHat, input::Span{m_inputPos});
     case '=':
       if (peekChar(0) == '=') {
         consumeChar();
@@ -119,11 +121,19 @@ auto LexerImpl::next() -> Token {
         consumeChar();
         return basicToken(TokenKind::OpLeEq, input::Span{m_inputPos - 1, m_inputPos});
       }
+      if (peekChar(0) == '<') {
+        consumeChar();
+        return basicToken(TokenKind::OpShiftL, input::Span{m_inputPos - 1, m_inputPos});
+      }
       return basicToken(TokenKind::OpLe, input::Span{m_inputPos});
     case '>':
       if (peekChar(0) == '=') {
         consumeChar();
         return basicToken(TokenKind::OpGtEq, input::Span{m_inputPos - 1, m_inputPos});
+      }
+      if (peekChar(0) == '>') {
+        consumeChar();
+        return basicToken(TokenKind::OpShiftR, input::Span{m_inputPos - 1, m_inputPos});
       }
       return basicToken(TokenKind::OpGt, input::Span{m_inputPos});
     case ';':

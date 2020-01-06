@@ -43,6 +43,9 @@ auto lookupCat(const TokenKind kind) -> TokenCat {
   case TokenKind::OpAmpAmp:
   case TokenKind::OpPipe:
   case TokenKind::OpPipePipe:
+  case TokenKind::OpHat:
+  case TokenKind::OpShiftL:
+  case TokenKind::OpShiftR:
   case TokenKind::OpEq:
   case TokenKind::OpEqEq:
   case TokenKind::OpBang:
