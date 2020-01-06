@@ -5,28 +5,26 @@
 namespace vm::internal {
 
 EvalStack::EvalStack(unsigned int capacity) :
-    m_capacity{capacity}, m_stack{new Value[capacity]}, m_stackTop{m_stack} {}
+    m_stack{new Value[capacity]}, m_stackNext{m_stack}, m_stackMax{m_stack + capacity} {}
 
 EvalStack::~EvalStack() { delete[] m_stack; }
 
-auto EvalStack::getSize() const noexcept -> unsigned int { return m_stackTop - m_stack; }
+auto EvalStack::getSize() const noexcept -> unsigned int { return m_stackNext - m_stack; }
 
 auto EvalStack::push(const Value value) -> void {
-  // TODO(bastian): Reduce the cost by checking if enough stack-space is left before running a
-  // function instead of checking on every push.
-  if (m_stackTop - m_stack >= m_capacity) {
+  if (m_stackNext == m_stackMax) {
     throw exceptions::EvalStackOverflow{};
   }
-  *m_stackTop = value;
-  ++m_stackTop;
+  *m_stackNext = value;
+  ++m_stackNext;
 }
 
-auto EvalStack::peek() -> Value { return *(m_stackTop - 1); }
+auto EvalStack::peek() -> Value { return *(m_stackNext - 1); }
 
 auto EvalStack::pop() -> Value {
-  assert(m_stackTop - m_stack != 0);
-  m_stackTop--;
-  return *m_stackTop;
+  assert(m_stackNext - m_stack != 0);
+  m_stackNext--;
+  return *m_stackNext;
 }
 
 } // namespace vm::internal

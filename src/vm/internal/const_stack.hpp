@@ -19,9 +19,9 @@ public:
   auto release(unsigned int amount) -> void;
 
 private:
-  unsigned int m_capacity;
   Value* m_stack;
   Value* m_stackTop;
+  Value* m_stackMax;
 };
 
 } // namespace vm::internal

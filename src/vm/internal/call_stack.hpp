@@ -1,26 +1,27 @@
 #pragma once
 #include "internal/exec_scope.hpp"
-#include <stack>
 
 namespace vm::internal {
 
 class CallStack final {
 public:
-  CallStack()                         = default;
+  explicit CallStack(unsigned int capacity);
   CallStack(const CallStack& rhs)     = delete;
   CallStack(CallStack&& rhs) noexcept = delete;
-  ~CallStack()                        = default;
+  ~CallStack();
 
   auto operator=(const CallStack& rhs) -> CallStack& = delete;
   auto operator=(CallStack&& rhs) noexcept -> CallStack& = delete;
 
   [[nodiscard]] auto getTop() -> ExecScope*;
 
-  auto push(const Assembly& assembly, uint32_t ipOffset) -> void;
+  auto push(const uint8_t* ip) -> void;
   auto pop() -> bool;
 
 private:
-  std::stack<ExecScope> m_scopes;
+  ExecScope* m_stack;
+  ExecScope* m_stackTop;
+  ExecScope* m_stackMax;
 };
 
 } // namespace vm::internal

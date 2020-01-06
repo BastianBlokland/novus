@@ -14,15 +14,16 @@
 
 namespace vm {
 
-static const int EvalStackSize   = 4096;
-static const int ConstsStackSize = 4096;
+static const int EvalStackSize   = 512;
+static const int ConstsStackSize = 25600;
+static const int CallStackSize   = 8192;
 
 static auto execute(const Assembly& assembly, io::Interface* interface, uint32_t entryPoint) {
   auto evalStack  = internal::EvalStack{EvalStackSize};
   auto constStack = internal::ConstStack{ConstsStackSize};
-  auto callStack  = internal::CallStack{};
+  auto callStack  = internal::CallStack{CallStackSize};
   auto allocator  = internal::Allocator{};
-  callStack.push(assembly, entryPoint);
+  callStack.push(assembly.getIp(entryPoint));
 
   while (true) {
     auto scope = callStack.getTop();
@@ -259,19 +260,19 @@ static auto execute(const Assembly& assembly, io::Interface* interface, uint32_t
 
     case OpCode::Jump: {
       auto ipOffset = scope->readUInt32();
-      scope->jump(ipOffset);
+      scope->jump(assembly.getIp(ipOffset));
     } break;
     case OpCode::JumpIf: {
       auto ipOffset = scope->readUInt32();
       auto a        = evalStack.pop().getInt();
       if (a != 0) {
-        scope->jump(ipOffset);
+        scope->jump(assembly.getIp(ipOffset));
       }
     } break;
 
     case OpCode::Call: {
       auto ipOffset = scope->readUInt32();
-      callStack.push(assembly, ipOffset);
+      callStack.push(assembly.getIp(ipOffset));
     } break;
     case OpCode::CallDyn: {
       auto target = evalStack.pop();
@@ -286,10 +287,10 @@ static auto execute(const Assembly& assembly, io::Interface* interface, uint32_t
         }
 
         // Call the instruction-pointer at the last field of the closure struct.
-        callStack.push(assembly, closure->getLastField().getUInt());
+        callStack.push(assembly.getIp(closure->getLastField().getUInt()));
       } else {
         // Target is a instruction pointer only.
-        callStack.push(assembly, target.getUInt());
+        callStack.push(assembly.getIp(target.getUInt()));
       }
     } break;
     case OpCode::Ret: {

@@ -1,5 +1,6 @@
 #include "catch2/catch.hpp"
 #include "helpers.hpp"
+#include "vm/exceptions/call_stack_overflow.hpp"
 #include "vm/exceptions/const_stack_overflow.hpp"
 #include "vm/exceptions/eval_stack_not_empty.hpp"
 #include "vm/exceptions/eval_stack_overflow.hpp"
@@ -19,6 +20,17 @@ TEST_CASE("Runtime errors", "[vm]") {
     CHECK_EXPR_THROWS(
         [](backend::Builder* builder) -> void { builder->addLoadLitInt(1); },
         vm::exceptions::EvalStackNotEmpty);
+  }
+
+  SECTION("Call stack overflow") {
+    CHECK_PROG_THROWS(
+        [](backend::Builder* builder) -> void {
+          builder->label("func");
+          builder->addCall("func");
+
+          builder->addEntryPoint("func");
+        },
+        vm::exceptions::CallStackOverflow);
   }
 
   SECTION("Evaluation stack overflow") {

@@ -7,9 +7,19 @@
 
 namespace vm::internal {
 
+class CallStack;
+
 class ExecScope final {
+  friend CallStack;
+
 public:
-  explicit ExecScope(const Assembly& assembly, uint32_t ipOffset);
+  ExecScope()                         = default;
+  ExecScope(const ExecScope& rhs)     = delete;
+  ExecScope(ExecScope&& rhs) noexcept = delete;
+  ~ExecScope()                        = default;
+
+  auto operator=(const ExecScope& rhs) -> ExecScope& = delete;
+  auto operator=(ExecScope&& rhs) noexcept -> ExecScope& = delete;
 
   [[nodiscard]] auto readOpCode() -> OpCode;
   [[nodiscard]] auto readUInt8() -> uint8_t;
@@ -23,13 +33,12 @@ public:
   auto getConst(uint8_t id) -> Value;
   auto setConst(uint8_t id, Value value) -> void;
 
-  auto jump(uint32_t ipOffset) -> void;
+  inline auto jump(const uint8_t* ip) -> void { m_ip = ip; }
 
 private:
-  const Assembly& m_assembly;
   const uint8_t* m_ip;
-  unsigned int m_constsCount;
   Value* m_constsPtr;
+  unsigned int m_constsCount;
 };
 
 } // namespace vm::internal

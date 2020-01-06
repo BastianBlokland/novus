@@ -5,19 +5,19 @@
 namespace vm::internal {
 
 ConstStack::ConstStack(unsigned int capacity) :
-    m_capacity{capacity}, m_stack{new Value[capacity]}, m_stackTop{m_stack} {}
+    m_stack{new Value[capacity]}, m_stackTop{m_stack}, m_stackMax{m_stack + capacity} {}
 
 ConstStack::~ConstStack() { delete[] m_stack; }
 
 auto ConstStack::getSize() const noexcept -> unsigned int { return m_stackTop - m_stack; }
 
 auto ConstStack::reserve(unsigned int amount) -> Value* {
-  if ((m_stackTop - m_stack) + amount > m_capacity) {
+  const auto cur = m_stackTop;
+  m_stackTop += amount;
+  if (m_stackTop >= m_stackMax) {
     throw exceptions::ConstStackOverflow{};
   }
-  const auto ret = m_stackTop;
-  m_stackTop += amount;
-  return ret;
+  return cur;
 }
 
 auto ConstStack::release(unsigned int amount) -> void {

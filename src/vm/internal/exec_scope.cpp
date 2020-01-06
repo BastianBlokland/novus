@@ -3,9 +3,6 @@
 
 namespace vm::internal {
 
-ExecScope::ExecScope(const Assembly& assembly, uint32_t ipOffset) :
-    m_assembly{assembly}, m_ip{assembly.getIp(ipOffset)}, m_constsCount(0), m_constsPtr(nullptr) {}
-
 auto ExecScope::readOpCode() -> OpCode { return static_cast<OpCode>(readUInt8()); }
 
 auto ExecScope::readUInt8() -> uint8_t { return *m_ip++; }
@@ -56,7 +53,5 @@ auto ExecScope::setConst(uint8_t id, Value value) -> void {
   assert(id < m_constsCount);
   *(m_constsPtr + id) = value;
 }
-
-auto ExecScope::jump(uint32_t ipOffset) -> void { m_ip = m_assembly.getIp(ipOffset); }
 
 } // namespace vm::internal

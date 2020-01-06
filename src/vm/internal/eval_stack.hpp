@@ -20,9 +20,9 @@ public:
   auto pop() -> Value;
 
 private:
-  unsigned int m_capacity;
   Value* m_stack;
-  Value* m_stackTop;
+  Value* m_stackNext;
+  Value* m_stackMax;
 };
 
 } // namespace vm::internal
