@@ -141,8 +141,14 @@ auto operator<<(std::ostream& out, const OpCode& rhs) -> std::ostream& {
   case OpCode::Call:
     out << "call";
     break;
+  case OpCode::CallTail:
+    out << "call-tail";
+    break;
   case OpCode::CallDyn:
     out << "call-dyn";
+    break;
+  case OpCode::CallDynTail:
+    out << "call-dyn-tail";
     break;
   case OpCode::Ret:
     out << "ret";

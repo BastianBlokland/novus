@@ -159,7 +159,14 @@ auto Builder::addCall(std::string label) -> void {
   writeIpOffset(std::move(label));
 }
 
+auto Builder::addCallTail(std::string label) -> void {
+  writeOpCode(vm::OpCode::CallTail);
+  writeIpOffset(std::move(label));
+}
+
 auto Builder::addCallDyn() -> void { writeOpCode(vm::OpCode::CallDyn); }
+
+auto Builder::addCallDynTail() -> void { writeOpCode(vm::OpCode::CallDynTail); }
 
 auto Builder::addRet() -> void { writeOpCode(vm::OpCode::Ret); }
 

@@ -58,6 +58,7 @@ auto disassembleInstructions(const vm::Assembly& assembly) -> std::vector<Instru
     case vm::OpCode::ConvFloatString:
     case vm::OpCode::PrintString:
     case vm::OpCode::CallDyn:
+    case vm::OpCode::CallDynTail:
     case vm::OpCode::Ret:
     case vm::OpCode::Fail:
     case vm::OpCode::Dup:
@@ -69,6 +70,7 @@ auto disassembleInstructions(const vm::Assembly& assembly) -> std::vector<Instru
     case vm::OpCode::Jump:
     case vm::OpCode::JumpIf:
     case vm::OpCode::Call:
+    case vm::OpCode::CallTail:
       result.push_back(Instruction(opCode, ipOffset, {assembly.readUInt32(ipOffset + 1)}));
       ipOffset += 4;
       continue;
