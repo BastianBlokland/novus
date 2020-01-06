@@ -46,6 +46,31 @@ TEST_CASE("Generate assembly for call expressions", "[backend]") {
       builder->addLoadLitInt(3);
       builder->addRemInt();
     });
+    CHECK_EXPR_INT("1 << 3", [](backend::Builder* builder) -> void {
+      builder->addLoadLitInt(1);
+      builder->addLoadLitInt(3);
+      builder->addShiftLeftInt();
+    });
+    CHECK_EXPR_INT("1 >> 3", [](backend::Builder* builder) -> void {
+      builder->addLoadLitInt(1);
+      builder->addLoadLitInt(3);
+      builder->addShiftRightInt();
+    });
+    CHECK_EXPR_INT("1 & 3", [](backend::Builder* builder) -> void {
+      builder->addLoadLitInt(1);
+      builder->addLoadLitInt(3);
+      builder->addAndInt();
+    });
+    CHECK_EXPR_INT("1 | 3", [](backend::Builder* builder) -> void {
+      builder->addLoadLitInt(1);
+      builder->addLoadLitInt(3);
+      builder->addOrInt();
+    });
+    CHECK_EXPR_INT("1 ^ 3", [](backend::Builder* builder) -> void {
+      builder->addLoadLitInt(1);
+      builder->addLoadLitInt(3);
+      builder->addXorInt();
+    });
   }
 
   SECTION("Float operations") {
