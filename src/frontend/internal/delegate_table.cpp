@@ -3,7 +3,8 @@
 
 namespace frontend::internal {
 
-static auto getName(Context* context, const prog::sym::TypeSet& input, prog::sym::TypeId output)
+static auto
+getName(const Context& context, const prog::sym::TypeSet& input, prog::sym::TypeId output)
     -> std::string {
   auto result = std::string{"__delegate"};
   for (const auto& type : input) {
@@ -47,7 +48,7 @@ auto DelegateTable::getDelegate(
 
   // Declare a new delegate.
   const auto delegateType =
-      context->getProg()->declareUserDelegate(getName(context, input, output));
+      context->getProg()->declareUserDelegate(getName(*context, input, output));
 
   // Define the delegate.
   context->getProg()->defineUserDelegate(delegateType, input, output);

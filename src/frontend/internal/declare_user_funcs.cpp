@@ -78,7 +78,7 @@ auto DeclareUserFuncs::visit(const parse::FuncDeclStmtNode& n) -> void {
         retType = nonTemplConvType;
       } else if (*retType != *nonTemplConvType) {
         m_context->reportDiag(errIncorrectReturnTypeInConvFunc(
-            m_context->getSrc(), name, getDisplayName(m_context, *retType), n.getId().getSpan()));
+            m_context->getSrc(), name, getDisplayName(*m_context, *retType), n.getId().getSpan()));
         return;
       }
     } else {
@@ -93,14 +93,14 @@ auto DeclareUserFuncs::visit(const parse::FuncDeclStmtNode& n) -> void {
       const auto typeInfo = m_context->getTypeInfo(*retType);
       if (!typeInfo || typeInfo->getName() != name) {
         m_context->reportDiag(errIncorrectReturnTypeInConvFunc(
-            m_context->getSrc(), name, getDisplayName(m_context, *retType), n.getId().getSpan()));
+            m_context->getSrc(), name, getDisplayName(*m_context, *retType), n.getId().getSpan()));
         return;
       }
     }
   }
 
   // Declare the function in the program.
-  const auto funcName = isConv ? getName(m_context, *retType) : name;
+  const auto funcName = isConv ? getName(*m_context, *retType) : name;
   auto funcId = m_context->getProg()->declareUserFunc(funcName, input.value(), retType.value());
   m_funcs.emplace_back(funcId, name, n);
 }

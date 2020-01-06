@@ -10,7 +10,7 @@ public:
   DefineUserFuncs(Context* context, const TypeSubstitutionTable* typeSubTable);
 
   template <typename FuncParseNode>
-  auto define(prog::sym::FuncId id, std::string funcName, const FuncParseNode& n) -> bool;
+  auto define(prog::sym::FuncId id, std::string funcDisplayName, const FuncParseNode& n) -> bool;
 
 private:
   Context* m_context;

@@ -100,7 +100,7 @@ auto FuncTemplate::instantiate(const prog::sym::TypeSet& typeParams) -> const Fu
     return previousInst->get();
   }
 
-  m_instances.push_back(std::make_unique<FuncTemplateInst>(FuncTemplateInst{typeParams}));
+  m_instances.push_back(std::make_unique<FuncTemplateInst>(FuncTemplateInst{m_name, typeParams}));
   auto instance = m_instances.back().get();
 
   setupInstance(instance);
@@ -147,8 +147,8 @@ auto FuncTemplate::setupInstance(FuncTemplateInst* instance) -> void {
       if (instance->m_retType != *nonTemplConvType) {
         m_context->reportDiag(errIncorrectReturnTypeInConvFunc(
             m_context->getSrc(),
-            m_name,
-            getDisplayName(m_context, *instance->m_retType),
+            instance->getDisplayName(*m_context),
+            getDisplayName(*m_context, *instance->m_retType),
             m_parseNode.getSpan()));
 
         instance->m_success = false;
@@ -160,8 +160,8 @@ auto FuncTemplate::setupInstance(FuncTemplateInst* instance) -> void {
       if (!typeInfo || typeInfo->getName() != m_name) {
         m_context->reportDiag(errIncorrectReturnTypeInConvFunc(
             m_context->getSrc(),
-            m_name,
-            getDisplayName(m_context, *instance->m_retType),
+            instance->getDisplayName(*m_context),
+            getDisplayName(*m_context, *instance->m_retType),
             m_parseNode.getSpan()));
 
         instance->m_success = false;
@@ -170,13 +170,13 @@ auto FuncTemplate::setupInstance(FuncTemplateInst* instance) -> void {
     }
   }
 
-  const auto funcName = isConv ? getName(m_context, *instance->m_retType)
+  const auto funcName = isConv ? getName(*m_context, *instance->m_retType)
                                : mangleName(m_context, m_name, instance->m_typeParams);
 
   // Check if an identical function has already been registered.
   if (m_context->getProg()->lookupFunc(funcName, *funcInput, 0)) {
-    m_context->reportDiag(
-        errDuplicateFuncDeclaration(m_context->getSrc(), m_name, m_parseNode.getSpan()));
+    m_context->reportDiag(errDuplicateFuncDeclaration(
+        m_context->getSrc(), instance->getDisplayName(*m_context), m_parseNode.getSpan()));
     instance->m_success = false;
     return;
   }
@@ -186,8 +186,9 @@ auto FuncTemplate::setupInstance(FuncTemplateInst* instance) -> void {
       m_context->getProg()->declareUserFunc(funcName, std::move(*funcInput), *instance->m_retType);
 
   // Define the function.
-  auto defineFuncs    = DefineUserFuncs{m_context, &subTable};
-  instance->m_success = defineFuncs.define(*instance->m_func, m_name, m_parseNode);
+  auto defineFuncs = DefineUserFuncs{m_context, &subTable};
+  instance->m_success =
+      defineFuncs.define(*instance->m_func, instance->getDisplayName(*m_context), m_parseNode);
 
   // If we failed to infer a return-type for this function a diagnostic should have been emitted
   // during definition (the reason for not emitting one before is that otherwise it might hide

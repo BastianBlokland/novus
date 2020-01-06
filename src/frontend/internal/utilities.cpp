@@ -21,15 +21,15 @@ auto getName(const lex::Token& token) -> std::string {
 
 auto getName(const parse::Type& parseType) -> std::string { return getName(parseType.getId()); }
 
-auto getName(Context* context, prog::sym::TypeId typeId) -> std::string {
+auto getName(const Context& context, prog::sym::TypeId typeId) -> std::string {
   if (!typeId.isConcrete()) {
     return "unknown";
   }
-  return context->getProg()->getTypeDecl(typeId).getName();
+  return context.getProg()->getTypeDecl(typeId).getName();
 }
 
-auto getDisplayName(Context* context, prog::sym::TypeId typeId) -> std::string {
-  const auto typeInfo = context->getTypeInfo(typeId);
+auto getDisplayName(const Context& context, prog::sym::TypeId typeId) -> std::string {
+  const auto typeInfo = context.getTypeInfo(typeId);
   if (!typeInfo) {
     return getName(context, typeId);
   }

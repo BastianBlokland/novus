@@ -17,8 +17,8 @@ DefineUserFuncs::DefineUserFuncs(Context* context, const TypeSubstitutionTable* 
 }
 
 template <typename FuncParseNode>
-auto DefineUserFuncs::define(prog::sym::FuncId id, std::string funcName, const FuncParseNode& n)
-    -> bool {
+auto DefineUserFuncs::define(
+    prog::sym::FuncId id, std::string funcDisplayName, const FuncParseNode& n) -> bool {
   const auto& funcDecl   = m_context->getProg()->getFuncDecl(id);
   const auto funcRetType = funcDecl.getOutput();
 
@@ -37,7 +37,7 @@ auto DefineUserFuncs::define(prog::sym::FuncId id, std::string funcName, const F
   // Report this diagnostic after processing the body so other errors have priority over this.
   if (funcRetType.isInfer()) {
     m_context->reportDiag(
-        errUnableToInferFuncReturnType(m_context->getSrc(), funcName, n.getSpan()));
+        errUnableToInferFuncReturnType(m_context->getSrc(), funcDisplayName, n.getSpan()));
     return false;
   }
 
@@ -59,9 +59,9 @@ auto DefineUserFuncs::define(prog::sym::FuncId id, std::string funcName, const F
 
   m_context->reportDiag(errNonMatchingFuncReturnType(
       m_context->getSrc(),
-      funcName,
-      getDisplayName(m_context, funcRetType),
-      getDisplayName(m_context, expr->getType()),
+      funcDisplayName,
+      getDisplayName(*m_context, funcRetType),
+      getDisplayName(*m_context, expr->getType()),
       n[0].getSpan()));
   return false;
 }
@@ -80,8 +80,8 @@ auto DefineUserFuncs::getExpr(
 
 // Explicit instantiations.
 template bool DefineUserFuncs::define(
-    prog::sym::FuncId id, std::string funcName, const parse::FuncDeclStmtNode& n);
+    prog::sym::FuncId id, std::string funcDisplayName, const parse::FuncDeclStmtNode& n);
 template bool DefineUserFuncs::define(
-    prog::sym::FuncId id, std::string funcName, const parse::AnonFuncExprNode& n);
+    prog::sym::FuncId id, std::string funcDisplayName, const parse::AnonFuncExprNode& n);
 
 } // namespace frontend::internal

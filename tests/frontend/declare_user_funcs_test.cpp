@@ -135,7 +135,7 @@ TEST_CASE("Analyzing user-function declarations", "[frontend]") {
         "struct s{T1, T2} = T1 a, T2 b "
         "fun s{T}(T a) -> T a "
         "fun f() s{int}(1)",
-        errIncorrectReturnTypeInConvFunc(src, "s", "int", input::Span{30, 49}),
+        errIncorrectReturnTypeInConvFunc(src, "s{int}", "int", input::Span{30, 49}),
         errInvalidFuncInstantiation(src, input::Span{59, 59}),
         errNoTypeOrConversionFoundToInstantiate(src, "s", 1, input::Span{59, 67}));
     CHECK_DIAG(

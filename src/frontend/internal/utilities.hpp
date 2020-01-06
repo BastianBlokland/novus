@@ -9,9 +9,9 @@ namespace frontend::internal {
 
 [[nodiscard]] auto getName(const parse::Type& parseType) -> std::string;
 
-[[nodiscard]] auto getName(Context* context, prog::sym::TypeId typeId) -> std::string;
+[[nodiscard]] auto getName(const Context& context, prog::sym::TypeId typeId) -> std::string;
 
-[[nodiscard]] auto getDisplayName(Context* context, prog::sym::TypeId typeId) -> std::string;
+[[nodiscard]] auto getDisplayName(const Context& context, prog::sym::TypeId typeId) -> std::string;
 
 [[nodiscard]] auto getOperator(const lex::Token& token) -> std::optional<prog::Operator>;
 
