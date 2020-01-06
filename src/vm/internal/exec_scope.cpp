@@ -33,10 +33,9 @@ auto ExecScope::reserveConsts(ConstStack* stack, unsigned int amount) -> void {
     m_constsCount = amount;
     m_constsPtr   = stack->reserve(amount);
   } else {
-    const auto extraAmount = amount - m_constsCount;
-    if (extraAmount > 0) {
+    if (amount > m_constsCount) {
+      stack->reserve(amount - m_constsCount);
       m_constsCount = amount;
-      stack->reserve(extraAmount);
     }
   }
 }
