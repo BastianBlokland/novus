@@ -187,6 +187,10 @@ auto LexerImpl::next() -> Token {
         consumeChar();
         return nextLitIntBinary();
       }
+      if (peekChar(0) == 'o' || peekChar(0) == 'O') {
+        consumeChar();
+        return nextLitIntOctal();
+      }
       [[fallthrough]];
     case '1':
     case '2':
@@ -346,6 +350,38 @@ auto LexerImpl::nextLitIntBinary() -> Token {
   const auto span = input::Span{startPos, m_inputPos};
   if (containsInvalidChar) {
     return errLitBinaryInvalidChar(span);
+  }
+  if (curChar == '_') {
+    return errLitNumberEndsWithSeperator(span);
+  }
+
+  if (result > std::numeric_limits<int32_t>::max()) {
+    return errLitIntTooBig(span);
+  }
+  return litIntToken(static_cast<int32_t>(result), span);
+}
+
+auto LexerImpl::nextLitIntOctal() -> Token {
+  const auto startPos = m_inputPos - 1; // Take the '0o' prefix into account.
+
+  uint64_t result          = 0;
+  char curChar             = 'o';
+  auto containsInvalidChar = false;
+  while (!isTokenSeperator(peekChar(0))) {
+    curChar = consumeChar();
+    if (curChar >= '0' && curChar <= '7') {
+      result <<= 3U; // Shift up the result by one 'octal'.
+      result += curChar - '0';
+    } else if (curChar == '_') {
+      continue; // Ignore underscores as legal digit seperators.
+    } else {
+      containsInvalidChar = true;
+    }
+  }
+
+  const auto span = input::Span{startPos, m_inputPos};
+  if (containsInvalidChar) {
+    return errLitOctalInvalidChar(span);
   }
   if (curChar == '_') {
     return errLitNumberEndsWithSeperator(span);
