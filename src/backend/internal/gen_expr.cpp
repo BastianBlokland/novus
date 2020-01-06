@@ -140,6 +140,22 @@ auto GenExpr::visit(const prog::expr::CallExprNode& n) -> void {
   case prog::sym::FuncKind::NegateFloat:
     m_builder->addNegFloat();
     break;
+  case prog::sym::FuncKind::ShiftLeftInt:
+    m_builder->addShiftLeftInt();
+    break;
+  case prog::sym::FuncKind::ShiftRightInt:
+    m_builder->addShiftRightInt();
+    break;
+  case prog::sym::FuncKind::AndInt:
+    m_builder->addAndInt();
+    break;
+  case prog::sym::FuncKind::OrInt:
+    m_builder->addOrInt();
+    break;
+  case prog::sym::FuncKind::XorInt:
+    m_builder->addXorInt();
+    break;
+
   case prog::sym::FuncKind::CheckEqFloat:
     m_builder->addCheckEqFloat();
     break;

@@ -43,6 +43,11 @@ auto disassembleInstructions(const vm::Assembly& assembly) -> std::vector<Instru
     case vm::OpCode::NegInt:
     case vm::OpCode::NegFloat:
     case vm::OpCode::LogicInvInt:
+    case vm::OpCode::ShiftLeftInt:
+    case vm::OpCode::ShiftRightInt:
+    case vm::OpCode::AndInt:
+    case vm::OpCode::OrInt:
+    case vm::OpCode::XorInt:
     case vm::OpCode::CheckEqInt:
     case vm::OpCode::CheckEqFloat:
     case vm::OpCode::CheckEqString:

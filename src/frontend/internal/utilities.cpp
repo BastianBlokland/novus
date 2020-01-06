@@ -43,6 +43,12 @@ auto getOperator(const lex::Token& token) -> std::optional<prog::Operator> {
     return prog::Operator::Amp;
   case lex::TokenKind::OpPipe:
     return prog::Operator::Pipe;
+  case lex::TokenKind::OpShiftL:
+    return prog::Operator::ShiftL;
+  case lex::TokenKind::OpShiftR:
+    return prog::Operator::ShiftR;
+  case lex::TokenKind::OpHat:
+    return prog::Operator::Hat;
   case lex::TokenKind::OpEqEq:
     return prog::Operator::EqEq;
   case lex::TokenKind::OpBang:
@@ -84,6 +90,12 @@ auto getText(const prog::Operator& op) -> std::string {
     return "&";
   case prog::Operator::Pipe:
     return "|";
+  case prog::Operator::ShiftL:
+    return "<<";
+  case prog::Operator::ShiftR:
+    return ">>";
+  case prog::Operator::Hat:
+    return "^";
   case prog::Operator::EqEq:
     return "==";
   case prog::Operator::Bang:

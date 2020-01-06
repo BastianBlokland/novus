@@ -43,6 +43,11 @@ public:
   auto addNegInt() -> void;
   auto addNegFloat() -> void;
   auto addLogicInvInt() -> void;
+  auto addShiftLeftInt() -> void;
+  auto addShiftRightInt() -> void;
+  auto addAndInt() -> void;
+  auto addOrInt() -> void;
+  auto addXorInt() -> void;
 
   auto addCheckEqInt() -> void;
   auto addCheckEqFloat() -> void;

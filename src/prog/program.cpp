@@ -44,6 +44,16 @@ Program::Program() :
   m_funcDecls.registerFunc(
       *this, fk::RemInt, getFuncName(op::Rem), sym::TypeSet{m_int, m_int}, m_int);
   m_funcDecls.registerFunc(
+      *this, fk::ShiftLeftInt, getFuncName(op::ShiftL), sym::TypeSet{m_int, m_int}, m_int);
+  m_funcDecls.registerFunc(
+      *this, fk::ShiftRightInt, getFuncName(op::ShiftR), sym::TypeSet{m_int, m_int}, m_int);
+  m_funcDecls.registerFunc(
+      *this, fk::AndInt, getFuncName(op::Amp), sym::TypeSet{m_int, m_int}, m_int);
+  m_funcDecls.registerFunc(
+      *this, fk::OrInt, getFuncName(op::Pipe), sym::TypeSet{m_int, m_int}, m_int);
+  m_funcDecls.registerFunc(
+      *this, fk::XorInt, getFuncName(op::Hat), sym::TypeSet{m_int, m_int}, m_int);
+  m_funcDecls.registerFunc(
       *this, fk::CheckEqInt, getFuncName(op::EqEq), sym::TypeSet{m_int, m_int}, m_bool);
   m_funcDecls.registerFunc(
       *this, fk::CheckNEqInt, getFuncName(op::BangEq), sym::TypeSet{m_int, m_int}, m_bool);

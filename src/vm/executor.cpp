@@ -148,6 +148,31 @@ static auto execute(const Assembly& assembly, io::Interface* interface, uint32_t
       auto a = evalStack.pop().getInt();
       evalStack.push(internal::intValue(a == 0 ? 1 : 0));
     } break;
+    case OpCode::ShiftLeftInt: {
+      auto b = evalStack.pop().getInt();
+      auto a = evalStack.pop().getInt();
+      evalStack.push(internal::intValue(a << b)); // NOLINT: Signed bitwise operand
+    } break;
+    case OpCode::ShiftRightInt: {
+      auto b = evalStack.pop().getInt();
+      auto a = evalStack.pop().getInt();
+      evalStack.push(internal::intValue(a >> b)); // NOLINT: Signed bitwise operand
+    } break;
+    case OpCode::AndInt: {
+      auto b = evalStack.pop().getInt();
+      auto a = evalStack.pop().getInt();
+      evalStack.push(internal::intValue(a & b)); // NOLINT: Signed bitwise operand
+    } break;
+    case OpCode::OrInt: {
+      auto b = evalStack.pop().getInt();
+      auto a = evalStack.pop().getInt();
+      evalStack.push(internal::intValue(a | b)); // NOLINT: Signed bitwise operand
+    } break;
+    case OpCode::XorInt: {
+      auto b = evalStack.pop().getInt();
+      auto a = evalStack.pop().getInt();
+      evalStack.push(internal::intValue(a ^ b)); // NOLINT: Signed bitwise operand
+    } break;
 
     case OpCode::CheckEqInt: {
       auto b = evalStack.pop().getInt();

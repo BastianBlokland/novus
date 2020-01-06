@@ -78,6 +78,21 @@ auto operator<<(std::ostream& out, const OpCode& rhs) -> std::ostream& {
   case OpCode::LogicInvInt:
     out << "logicinvert-int";
     break;
+  case OpCode::ShiftLeftInt:
+    out << "shiftleft-int";
+    break;
+  case OpCode::ShiftRightInt:
+    out << "shiftright-int";
+    break;
+  case OpCode::AndInt:
+    out << "and-int";
+    break;
+  case OpCode::OrInt:
+    out << "or-float";
+    break;
+  case OpCode::XorInt:
+    out << "xor-int";
+    break;
 
   case OpCode::CheckEqInt:
     out << "check-eq-int";

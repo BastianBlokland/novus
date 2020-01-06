@@ -91,6 +91,16 @@ auto Builder::addNegFloat() -> void { writeOpCode(vm::OpCode::NegFloat); }
 
 auto Builder::addLogicInvInt() -> void { writeOpCode(vm::OpCode::LogicInvInt); }
 
+auto Builder::addShiftLeftInt() -> void { writeOpCode(vm::OpCode::ShiftLeftInt); }
+
+auto Builder::addShiftRightInt() -> void { writeOpCode(vm::OpCode::ShiftRightInt); }
+
+auto Builder::addAndInt() -> void { writeOpCode(vm::OpCode::AndInt); }
+
+auto Builder::addOrInt() -> void { writeOpCode(vm::OpCode::OrInt); }
+
+auto Builder::addXorInt() -> void { writeOpCode(vm::OpCode::XorInt); }
+
 auto Builder::addCheckEqInt() -> void { writeOpCode(vm::OpCode::CheckEqInt); }
 
 auto Builder::addCheckEqFloat() -> void { writeOpCode(vm::OpCode::CheckEqFloat); }
