@@ -33,7 +33,7 @@ static auto generateStructFieldEquality(
     break;
   case prog::sym::TypeKind::UserStruct:
   case prog::sym::TypeKind::UserUnion:
-    builder->addCall(getUserTypeEqLabel(typeDecl.getId()));
+    builder->addCall(getUserTypeEqLabel(typeDecl.getId()), false);
     break;
   }
 

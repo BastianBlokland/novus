@@ -274,10 +274,13 @@ static auto execute(const Assembly& assembly, io::Interface* interface, uint32_t
       auto ipOffset = scope->readUInt32();
       callStack.push(assembly.getIp(ipOffset));
     } break;
+    case OpCode::CallTail: {
+      auto ipOffset = scope->readUInt32();
+      scope->jump(assembly.getIp(ipOffset));
+    } break;
     case OpCode::CallDyn: {
       auto target = evalStack.pop();
-      if (target.isRef()) {
-        // Target is a closure struct containing bound arguments and a instruction pointer.
+      if (target.isRef()) { // Target is a closure containing bound args and a instruction pointer.
         auto closure = getStructRef(target);
         assert(closure->getFieldCount() > 0);
 
@@ -285,12 +288,24 @@ static auto execute(const Assembly& assembly, io::Interface* interface, uint32_t
         for (auto i = 0U; i != closure->getFieldCount() - 1; ++i) {
           evalStack.push(closure->getField(i));
         }
-
-        // Call the instruction-pointer at the last field of the closure struct.
         callStack.push(assembly.getIp(closure->getLastField().getUInt()));
-      } else {
-        // Target is a instruction pointer only.
+      } else { // Target is a instruction pointer only.
         callStack.push(assembly.getIp(target.getUInt()));
+      }
+    } break;
+    case OpCode::CallDynTail: {
+      auto target = evalStack.pop();
+      if (target.isRef()) { // Target is a closure containing bound args and a instruction pointer.
+        auto closure = getStructRef(target);
+        assert(closure->getFieldCount() > 0);
+
+        // Push all bound arguments on the stack.
+        for (auto i = 0U; i != closure->getFieldCount() - 1; ++i) {
+          evalStack.push(closure->getField(i));
+        }
+        scope->jump(assembly.getIp(closure->getLastField().getUInt()));
+      } else { // Target is a instruction pointer only.
+        scope->jump(assembly.getIp(target.getUInt()));
       }
     } break;
     case OpCode::Ret: {

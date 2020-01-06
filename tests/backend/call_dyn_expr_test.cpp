@@ -32,7 +32,7 @@ TEST_CASE("Generate assembly for call dynamic expressions", "[backend]") {
           builder->addLoadLitInt(42);
           builder->addLoadLitInt(1337);
           builder->addLoadConst(0);
-          builder->addCallDyn();
+          builder->addCallDyn(false);
 
           builder->addConvIntString();
           builder->addPrintString();
@@ -66,7 +66,7 @@ TEST_CASE("Generate assembly for call dynamic expressions", "[backend]") {
       builder->addLoadLitIp("anon func");
       builder->addMakeStruct(2);
 
-      builder->addCallDyn();
+      builder->addCallDyn(false);
       builder->addConvIntString();
       builder->addPrintString();
       builder->addRet();
@@ -103,7 +103,7 @@ TEST_CASE("Generate assembly for call dynamic expressions", "[backend]") {
           builder->addLoadLitIp("anon func");
           builder->addMakeStruct(2);
 
-          builder->addCallDyn();
+          builder->addCallDyn(false);
           builder->addConvFloatString();
           builder->addPrintString();
           builder->addRet();

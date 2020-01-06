@@ -29,9 +29,16 @@ auto ExecScope::readFloat() -> float {
 }
 
 auto ExecScope::reserveConsts(ConstStack* stack, unsigned int amount) -> void {
-  assert(m_constsPtr == nullptr);
-  m_constsCount = amount;
-  m_constsPtr   = stack->reserve(amount);
+  if (m_constsPtr == nullptr) {
+    m_constsCount = amount;
+    m_constsPtr   = stack->reserve(amount);
+  } else {
+    const auto extraAmount = amount - m_constsCount;
+    if (extraAmount > 0) {
+      m_constsCount = amount;
+      stack->reserve(extraAmount);
+    }
+  }
 }
 
 auto ExecScope::releaseConsts(ConstStack* stack) -> void {

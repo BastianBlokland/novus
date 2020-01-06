@@ -68,8 +68,8 @@ public:
   auto addJump(std::string label) -> void;
   auto addJumpIf(std::string label) -> void;
 
-  auto addCall(std::string label) -> void;
-  auto addCallDyn() -> void;
+  auto addCall(std::string label, bool tail) -> void;
+  auto addCallDyn(bool tail) -> void;
   auto addRet() -> void;
 
   auto addDup() -> void;

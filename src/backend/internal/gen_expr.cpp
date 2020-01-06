@@ -6,12 +6,12 @@
 
 namespace backend::internal {
 
-GenExpr::GenExpr(const prog::Program& program, Builder* builder) :
-    m_program{program}, m_builder{builder} {}
+GenExpr::GenExpr(const prog::Program& program, Builder* builder, bool tail) :
+    m_program{program}, m_builder{builder}, m_tail{tail} {}
 
 auto GenExpr::visit(const prog::expr::AssignExprNode& n) -> void {
   // Expression.
-  genSubExpr(n[0]);
+  genSubExpr(n[0], false);
 
   // Duplicate the value as the store instruction will consume one.
   m_builder->addDup();
@@ -34,18 +34,18 @@ auto GenExpr::visit(const prog::expr::SwitchExprNode& n) -> void {
 
   // Jump for the 'if' cases and fall-through for the else cases.
   for (auto i = 0U; i < conditions.size(); ++i) {
-    genSubExpr(*conditions[i]);
+    genSubExpr(*conditions[i], false);
     m_builder->addJumpIf(condBranchesLabels[i]);
   }
 
   // If all conditions where false we execute the else branch.
-  genSubExpr(*branches.back());
+  genSubExpr(*branches.back(), m_tail);
   m_builder->addJump(endLabel);
 
   // Generate code for the 'if' branches.
   for (auto i = 0U; i < conditions.size(); ++i) {
     m_builder->label(condBranchesLabels[i]);
-    genSubExpr(*branches[i]);
+    genSubExpr(*branches[i], m_tail);
 
     // No need for a jump for the last.
     if (i != conditions.size() - 1) {
@@ -65,7 +65,7 @@ auto GenExpr::visit(const prog::expr::CallExprNode& n) -> void {
 
   // Push the arguments on the stack.
   for (auto i = 0U; i < n.getChildCount(); ++i) {
-    genSubExpr(n[i]);
+    genSubExpr(n[i], false);
   }
 
   // Either call the user function or the appropriate build-in instruction.
@@ -82,7 +82,7 @@ auto GenExpr::visit(const prog::expr::CallExprNode& n) -> void {
     }
     break;
   case prog::sym::FuncKind::User:
-    m_builder->addCall(getLabel(funcDecl.getId()));
+    m_builder->addCall(getLabel(funcDecl.getId()), m_tail);
     break;
 
   case prog::sym::FuncKind::AddInt:
@@ -241,8 +241,9 @@ auto GenExpr::visit(const prog::expr::CallExprNode& n) -> void {
     if (lhsType != rhsType) {
       throw std::logic_error{"User-type equality function requires args to have the same type"};
     }
-    m_builder->addCall(getUserTypeEqLabel(lhsType));
-    if (funcDecl.getKind() == prog::sym::FuncKind::CheckNEqUserType) {
+    auto invert = funcDecl.getKind() == prog::sym::FuncKind::CheckNEqUserType;
+    m_builder->addCall(getUserTypeEqLabel(lhsType), m_tail && !invert);
+    if (invert) {
       m_builder->addLogicInvInt();
     }
     break;
@@ -251,20 +252,20 @@ auto GenExpr::visit(const prog::expr::CallExprNode& n) -> void {
 auto GenExpr::visit(const prog::expr::CallDynExprNode& n) -> void {
   // Push the arguments on the stack.
   for (auto i = 1U; i < n.getChildCount(); ++i) {
-    genSubExpr(n[i]);
+    genSubExpr(n[i], false);
   }
 
   // Push the delegate on the stack.
-  genSubExpr(n[0]);
+  genSubExpr(n[0], false);
 
   // Invoke the delegate.
-  m_builder->addCallDyn();
+  m_builder->addCallDyn(m_tail);
 }
 
 auto GenExpr::visit(const prog::expr::ClosureNode& n) -> void {
   // Push the bound arguments on the stack.
   for (auto i = 0U; i < n.getChildCount(); ++i) {
-    genSubExpr(n[i]);
+    genSubExpr(n[i], false);
   }
 
   // Push the function instruction-pointer on the stack.
@@ -282,7 +283,7 @@ auto GenExpr::visit(const prog::expr::ConstExprNode& n) -> void {
 
 auto GenExpr::visit(const prog::expr::FieldExprNode& n) -> void {
   // Load the struct.
-  genSubExpr(n[0]);
+  genSubExpr(n[0], false);
 
   // Load the field.
   const auto fieldId = getFieldId(n.getId());
@@ -291,10 +292,11 @@ auto GenExpr::visit(const prog::expr::FieldExprNode& n) -> void {
 
 auto GenExpr::visit(const prog::expr::GroupExprNode& n) -> void {
   for (auto i = 0U; i < n.getChildCount(); ++i) {
-    genSubExpr(n[i]);
+    const auto last = i == n.getChildCount() - 1;
+    genSubExpr(n[i], m_tail && last);
 
     // For all but the last expression we ignore the result.
-    if (i != n.getChildCount() - 1) {
+    if (!last) {
       m_builder->addPop();
     }
   }
@@ -302,7 +304,7 @@ auto GenExpr::visit(const prog::expr::GroupExprNode& n) -> void {
 
 auto GenExpr::visit(const prog::expr::UnionCheckExprNode& n) -> void {
   // Load the union.
-  genSubExpr(n[0]);
+  genSubExpr(n[0], false);
 
   // Test if the union is the correct type.
   m_builder->addLoadStructField(0);
@@ -312,7 +314,7 @@ auto GenExpr::visit(const prog::expr::UnionCheckExprNode& n) -> void {
 
 auto GenExpr::visit(const prog::expr::UnionGetExprNode& n) -> void {
   // Load the union.
-  genSubExpr(n[0]);
+  genSubExpr(n[0], false);
 
   // We need the union twice on the stack, once for the type check and once for getting the value.
   m_builder->addDup();
@@ -365,8 +367,8 @@ auto GenExpr::visit(const prog::expr::LitStringNode& n) -> void {
   m_builder->addLoadLitString(n.getVal());
 }
 
-auto GenExpr::genSubExpr(const prog::expr::Node& n) -> void {
-  auto genExpr = GenExpr{m_program, m_builder};
+auto GenExpr::genSubExpr(const prog::expr::Node& n, bool tail) -> void {
+  auto genExpr = GenExpr{m_program, m_builder, tail};
   n.accept(&genExpr);
 }
 

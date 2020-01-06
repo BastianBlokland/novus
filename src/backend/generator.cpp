@@ -35,9 +35,10 @@ generateFunc(Builder* builder, const prog::Program& program, const prog::sym::Fu
   }
 
   // Generate the function body.
-  auto genExpr = internal::GenExpr{program, builder};
+  auto genExpr = internal::GenExpr{program, builder, true};
   func.getExpr().accept(&genExpr);
 
+  // Note: Due to tail calls this return might never be executed.
   builder->addRet();
   builder->addFail(); // Add a fail between sections to aid in detecting invalid programs.
 }
@@ -51,7 +52,7 @@ generateExecStmt(Builder* builder, const prog::Program& program, const prog::sym
 
   // Generate the arguments to the action.
   for (const auto& arg : exec.getArgs()) {
-    auto genExpr = internal::GenExpr{program, builder};
+    auto genExpr = internal::GenExpr{program, builder, false};
     arg->accept(&genExpr);
   }
 

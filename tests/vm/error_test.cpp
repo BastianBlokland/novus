@@ -26,7 +26,7 @@ TEST_CASE("Runtime errors", "[vm]") {
     CHECK_PROG_THROWS(
         [](backend::Builder* builder) -> void {
           builder->label("func");
-          builder->addCall("func");
+          builder->addCall("func", false);
 
           builder->addEntryPoint("func");
         },
@@ -48,7 +48,7 @@ TEST_CASE("Runtime errors", "[vm]") {
         [](backend::Builder* builder) -> void {
           builder->label("func");
           builder->addReserveConsts(10);
-          builder->addCall("func");
+          builder->addCall("func", false);
 
           builder->addEntryPoint("func");
         },

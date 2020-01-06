@@ -7,7 +7,7 @@ namespace backend::internal {
 
 class GenExpr final : public prog::expr::NodeVisitor {
 public:
-  GenExpr(const prog::Program& program, Builder* builder);
+  GenExpr(const prog::Program& program, Builder* builder, bool tail);
 
   auto visit(const prog::expr::AssignExprNode& n) -> void override;
   auto visit(const prog::expr::SwitchExprNode& n) -> void override;
@@ -29,8 +29,9 @@ public:
 private:
   const prog::Program& m_program;
   Builder* m_builder;
+  bool m_tail;
 
-  auto genSubExpr(const prog::expr::Node& n) -> void;
+  auto genSubExpr(const prog::expr::Node& n, bool tail) -> void;
 };
 
 } // namespace backend::internal
