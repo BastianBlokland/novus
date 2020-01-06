@@ -138,7 +138,6 @@ auto FuncTemplate::setupInstance(FuncTemplateInst* instance) -> void {
       // step.
     }
   }
-  const auto retTypeName = getName(m_context, *instance->m_retType);
 
   // For conversions verify that a correct type is returned.
   if (isConv) {
@@ -147,7 +146,10 @@ auto FuncTemplate::setupInstance(FuncTemplateInst* instance) -> void {
       // Verify that a conversion to a non-templated type returns the correct type.
       if (instance->m_retType != *nonTemplConvType) {
         m_context->reportDiag(errIncorrectReturnTypeInConvFunc(
-            m_context->getSrc(), m_name, retTypeName, m_parseNode.getSpan()));
+            m_context->getSrc(),
+            m_name,
+            getDisplayName(m_context, *instance->m_retType),
+            m_parseNode.getSpan()));
 
         instance->m_success = false;
         return;
@@ -157,7 +159,10 @@ auto FuncTemplate::setupInstance(FuncTemplateInst* instance) -> void {
       const auto typeInfo = m_context->getTypeInfo(*instance->m_retType);
       if (!typeInfo || typeInfo->getName() != m_name) {
         m_context->reportDiag(errIncorrectReturnTypeInConvFunc(
-            m_context->getSrc(), m_name, retTypeName, m_parseNode.getSpan()));
+            m_context->getSrc(),
+            m_name,
+            getDisplayName(m_context, *instance->m_retType),
+            m_parseNode.getSpan()));
 
         instance->m_success = false;
         return;
@@ -165,8 +170,8 @@ auto FuncTemplate::setupInstance(FuncTemplateInst* instance) -> void {
     }
   }
 
-  const auto funcName =
-      isConv ? retTypeName : mangleName(m_context, m_name, instance->m_typeParams);
+  const auto funcName = isConv ? getName(m_context, *instance->m_retType)
+                               : mangleName(m_context, m_name, instance->m_typeParams);
 
   // Check if an identical function has already been registered.
   if (m_context->getProg()->lookupFunc(funcName, *funcInput, 0)) {

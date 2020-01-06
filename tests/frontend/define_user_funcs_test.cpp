@@ -98,6 +98,10 @@ TEST_CASE("Analyzing user-function definitions", "[frontend]") {
         errConstNameConflictsWithTypeSubstitution(src, "T", input::Span{21, 21}),
         errInvalidFuncInstantiation(src, input::Span{50, 50}),
         errNoFuncFoundToInstantiate(src, "f", 1, input::Span{50, 58}));
+    CHECK_DIAG(
+        "fun f() -> delegate{int} lambda () false",
+        errNonMatchingFuncReturnType(
+            src, "f", "delegate{int}", "delegate{bool}", input::Span{25, 39}));
   }
 }
 

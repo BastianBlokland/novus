@@ -119,10 +119,12 @@ auto GetExpr::visit(const parse::BinaryExprNode& n) -> void {
       getFunctions(funcName, std::nullopt, argTypeSet, n.getOperator().getSpan());
   const auto func = m_context->getProg()->lookupFunc(possibleFuncs, argTypeSet, 1);
   if (!func) {
-    const auto lhsTypeName = getName(m_context, args[0]->getType());
-    const auto rhsTypeName = getName(m_context, args[1]->getType());
     m_context->reportDiag(errUndeclaredBinOperator(
-        m_context->getSrc(), getText(op.value()), lhsTypeName, rhsTypeName, opToken.getSpan()));
+        m_context->getSrc(),
+        getText(op.value()),
+        getDisplayName(m_context, args[0]->getType()),
+        getDisplayName(m_context, args[1]->getType()),
+        opToken.getSpan()));
     return;
   }
 
@@ -164,7 +166,7 @@ auto GetExpr::visit(const parse::CallExprNode& n) -> void {
     } else {
       auto argTypeNames = std::vector<std::string>{};
       for (const auto& argType : args->second) {
-        argTypeNames.push_back(getName(m_context, argType));
+        argTypeNames.push_back(getDisplayName(m_context, argType));
       }
       if (isTypeOrConv) {
         m_context->reportDiag(errUndeclaredTypeOrConversion(
@@ -338,7 +340,7 @@ auto GetExpr::visit(const parse::IndexExprNode& n) -> void {
   if (!func) {
     auto argTypeNames = std::vector<std::string>{};
     for (const auto& argType : args->second) {
-      argTypeNames.push_back(getName(m_context, argType));
+      argTypeNames.push_back(getDisplayName(m_context, argType));
     }
     m_context->reportDiag(
         errUndeclaredIndexOperator(m_context->getSrc(), argTypeNames, n.getSpan()));
@@ -521,9 +523,11 @@ auto GetExpr::visit(const parse::UnaryExprNode& n) -> void {
       getFunctions(funcName, std::nullopt, argTypes, n.getOperator().getSpan());
   const auto func = m_context->getProg()->lookupFunc(possibleFuncs, argTypes, 0);
   if (!func) {
-    const auto typeName = getName(m_context, args[0]->getType());
     m_context->reportDiag(errUndeclaredUnaryOperator(
-        m_context->getSrc(), getText(op.value()), typeName, opToken.getSpan()));
+        m_context->getSrc(),
+        getText(op.value()),
+        getDisplayName(m_context, args[0]->getType()),
+        opToken.getSpan()));
     return;
   }
 
@@ -604,9 +608,11 @@ auto GetExpr::applyConversion(prog::expr::NodePtr* expr, prog::sym::TypeId toTyp
 
   const auto conv = m_context->getProg()->lookupConversion(fromType, toType);
   if (!conv) {
-    const auto fromName = getName(m_context, fromType);
-    const auto toName   = getName(m_context, toType);
-    m_context->reportDiag(errNoConversionFound(m_context->getSrc(), fromName, toName, span));
+    m_context->reportDiag(errNoConversionFound(
+        m_context->getSrc(),
+        getDisplayName(m_context, fromType),
+        getDisplayName(m_context, toType),
+        span));
     return false;
   }
 
@@ -707,7 +713,7 @@ auto GetExpr::getDynCallExpr(const parse::CallExprNode& n) -> prog::expr::NodePt
   if (!func) {
     auto argTypeNames = std::vector<std::string>{};
     for (const auto& argType : args->second) {
-      argTypeNames.push_back(getName(m_context, argType));
+      argTypeNames.push_back(getDisplayName(m_context, argType));
     }
     m_context->reportDiag(
         errUndeclaredCallOperator(m_context->getSrc(), argTypeNames, n.getSpan()));

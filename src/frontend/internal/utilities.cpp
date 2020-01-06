@@ -6,6 +6,7 @@
 #include "parse/type_param_list.hpp"
 #include "prog/expr/node_closure.hpp"
 #include "prog/expr/node_lit_func.hpp"
+#include <sstream>
 #include <stdexcept>
 #include <unordered_set>
 
@@ -25,6 +26,27 @@ auto getName(Context* context, prog::sym::TypeId typeId) -> std::string {
     return "unknown";
   }
   return context->getProg()->getTypeDecl(typeId).getName();
+}
+
+auto getDisplayName(Context* context, prog::sym::TypeId typeId) -> std::string {
+  const auto typeInfo = context->getTypeInfo(typeId);
+  if (!typeInfo) {
+    return getName(context, typeId);
+  }
+  const auto params = typeInfo->getParams();
+  if (!params) {
+    return typeInfo->getName();
+  }
+  std::ostringstream oss;
+  oss << typeInfo->getName() << '{';
+  for (auto i = 0U; i < params->getCount(); ++i) {
+    if (i != 0) {
+      oss << ',';
+    }
+    oss << getDisplayName(context, (*params)[i]);
+  }
+  oss << '}';
+  return oss.str();
 }
 
 auto getOperator(const lex::Token& token) -> std::optional<prog::Operator> {

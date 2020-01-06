@@ -11,6 +11,8 @@ namespace frontend::internal {
 
 [[nodiscard]] auto getName(Context* context, prog::sym::TypeId typeId) -> std::string;
 
+[[nodiscard]] auto getDisplayName(Context* context, prog::sym::TypeId typeId) -> std::string;
+
 [[nodiscard]] auto getOperator(const lex::Token& token) -> std::optional<prog::Operator>;
 
 [[nodiscard]] auto getText(const prog::Operator& op) -> std::string;

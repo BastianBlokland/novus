@@ -57,10 +57,12 @@ auto DefineUserFuncs::define(prog::sym::FuncId id, std::string funcName, const F
     return true;
   }
 
-  const auto& declaredType = getName(m_context, funcRetType);
-  const auto& returnedType = getName(m_context, expr->getType());
   m_context->reportDiag(errNonMatchingFuncReturnType(
-      m_context->getSrc(), funcName, declaredType, returnedType, n[0].getSpan()));
+      m_context->getSrc(),
+      funcName,
+      getDisplayName(m_context, funcRetType),
+      getDisplayName(m_context, expr->getType()),
+      n[0].getSpan()));
   return false;
 }
 
