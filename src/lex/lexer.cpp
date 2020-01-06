@@ -179,6 +179,11 @@ auto LexerImpl::next() -> Token {
     case '\r':
       break; // Skip whitespace.
     case '0':
+      if (peekChar(0) == 'x' || peekChar(0) == 'X') {
+        consumeChar();
+        return nextLitIntHex();
+      }
+      [[fallthrough]];
     case '1':
     case '2':
     case '3':
@@ -271,6 +276,44 @@ auto LexerImpl::nextLitNumber(const char mostSignficantChar) -> Token {
 
   // Integer.
   if (tooBig || result > std::numeric_limits<int32_t>::max()) {
+    return errLitIntTooBig(span);
+  }
+  return litIntToken(static_cast<int32_t>(result), span);
+}
+
+auto LexerImpl::nextLitIntHex() -> Token {
+  const auto startPos = m_inputPos - 1; // Take the '0x' prefix into account.
+
+  uint64_t result          = 0;
+  char curChar             = 'x';
+  auto containsInvalidChar = false;
+  while (!isTokenSeperator(peekChar(0))) {
+    curChar = consumeChar();
+    if (isDigit(curChar)) {
+      result <<= 4U; // Shift up the result by one 'nibble'.
+      result += curChar - '0';
+    } else if (curChar >= 'a' && curChar <= 'f') {
+      result <<= 4U;                  // Shift up the result by one 'nibble'.
+      result += curChar - ('a' - 10); // NOLINT: Magic numbers
+    } else if (curChar >= 'A' && curChar <= 'F') {
+      result <<= 4U;                  // Shift up the result by one 'nibble'.
+      result += curChar - ('A' - 10); // NOLINT: Magic numbers
+    } else if (curChar == '_') {
+      continue; // Ignore underscores as legal digit seperators.
+    } else {
+      containsInvalidChar = true;
+    }
+  }
+
+  const auto span = input::Span{startPos, m_inputPos};
+  if (containsInvalidChar) {
+    return errLitHexInvalidChar(span);
+  }
+  if (curChar == '_') {
+    return errLitNumberEndsWithSeperator(span);
+  }
+
+  if (result > std::numeric_limits<int32_t>::max()) {
     return errLitIntTooBig(span);
   }
   return litIntToken(static_cast<int32_t>(result), span);

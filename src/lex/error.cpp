@@ -19,6 +19,10 @@ auto errLitNumberInvalidChar(const input::Span span) -> Token {
   return errorToken("Number literal contains an invalid character", span);
 }
 
+auto errLitHexInvalidChar(const input::Span span) -> Token {
+  return errorToken("Hex integer literal contains an invalid character", span);
+}
+
 auto errLitNumberEndsWithSeperator(const input::Span span) -> Token {
   return errorToken("Number literal ends with a seperator character", span);
 }

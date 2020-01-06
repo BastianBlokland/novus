@@ -19,6 +19,7 @@ private:
   std::deque<char> m_readBuffer;
 
   auto nextLitNumber(char mostSignficantChar) -> Token;
+  auto nextLitIntHex() -> Token;
   auto nextLitStr() -> Token;
   auto nextWordToken(char startingChar) -> Token;
   auto nextLineComment() -> Token;
