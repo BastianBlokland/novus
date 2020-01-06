@@ -23,6 +23,10 @@ auto errLitHexInvalidChar(const input::Span span) -> Token {
   return errorToken("Hex integer literal contains an invalid character", span);
 }
 
+auto errLitBinaryInvalidChar(const input::Span span) -> Token {
+  return errorToken("Binary integer literal contains an invalid character", span);
+}
+
 auto errLitNumberEndsWithSeperator(const input::Span span) -> Token {
   return errorToken("Number literal ends with a seperator character", span);
 }
