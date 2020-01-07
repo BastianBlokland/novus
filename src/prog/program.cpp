@@ -31,6 +31,7 @@ Program::Program() :
   // Register build-in unary int operators.
   m_funcDecls.registerFunc(
       *this, fk::NegateInt, getFuncName(op::Minus), sym::TypeSet{m_int}, m_int);
+  m_funcDecls.registerFunc(*this, fk::NoOp, getFuncName(op::Plus), sym::TypeSet{m_int}, m_int);
 
   // Register build-in binary int operators.
   m_funcDecls.registerFunc(
