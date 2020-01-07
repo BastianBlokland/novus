@@ -173,6 +173,10 @@ static auto execute(const Assembly& assembly, io::Interface* interface, uint32_t
       auto a = evalStack.pop().getInt();
       evalStack.push(internal::intValue(a ^ b)); // NOLINT: Signed bitwise operand
     } break;
+    case OpCode::LengthString: {
+      auto* strRef = getStringRef(evalStack.pop());
+      evalStack.push(internal::intValue(strRef->getSize()));
+    } break;
 
     case OpCode::CheckEqInt: {
       auto b = evalStack.pop().getInt();

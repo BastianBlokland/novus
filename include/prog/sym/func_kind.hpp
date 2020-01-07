@@ -41,6 +41,7 @@ enum class FuncKind {
   CheckNEqBool,
 
   AddString,
+  LengthString,
   CheckEqString,
   CheckNEqString,
 

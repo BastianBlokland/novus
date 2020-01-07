@@ -48,6 +48,7 @@ public:
   auto addAndInt() -> void;
   auto addOrInt() -> void;
   auto addXorInt() -> void;
+  auto addLengthString() -> void;
 
   auto addCheckEqInt() -> void;
   auto addCheckEqFloat() -> void;
