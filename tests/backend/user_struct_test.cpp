@@ -47,7 +47,7 @@ TEST_CASE("Generating assembly for user-structs", "[backend]") {
           builder->addLoadLitInt(1);
           builder->addRet();
           builder->addFail();
-          // --- Struct equality function start.
+          // --- Struct equality function end.
 
           // --- Print statement start.
           builder->label("print");
@@ -71,6 +71,85 @@ TEST_CASE("Generating assembly for user-structs", "[backend]") {
 
           builder->addEntryPoint("print");
         });
+  }
+
+  SECTION("Create empty struct and check for equality") {
+    CHECK_PROG(
+        "struct Empty "
+        "print(Empty() == Empty())",
+        [](backend::Builder* builder) -> void {
+          // --- Struct equality function start.
+          builder->label("UserEq");
+          builder->addPop();
+          builder->addPop();
+          builder->addLoadLitInt(1); // Empty structs are always equal.
+          builder->addRet();
+          builder->addFail();
+          // --- Struct equality function end.
+
+          // --- Print statement start.
+          builder->label("print");
+          // Make struct 1 'Empty()'.
+          builder->addLoadLitInt(0); // Empty struct is represented by '0'.
+
+          // Make struct 2 'Empty()'.
+          builder->addLoadLitInt(0); // Empty struct is represented by '0'.
+
+          // Call the equality function and print the result.
+          builder->addCall("UserEq", false);
+          builder->addConvBoolString();
+          builder->addPrintString();
+          builder->addRet();
+          builder->addFail();
+          // --- Print statement end.
+
+          builder->addEntryPoint("print");
+        });
+
+    SECTION("Create struct with one field, check for equality and load field") {
+      CHECK_PROG(
+          "struct Age = int years "
+          "print(Age(42) == Age(1337)) "
+          "print(Age(42).years)",
+          [](backend::Builder* builder) -> void {
+            // --- Struct equality function start.
+            builder->label("UserEq");
+            builder->addCheckEqInt(); // Check the field itself.
+            builder->addRet();
+            builder->addFail();
+            // --- Struct equality function end.
+
+            // --- Print statement 1 start.
+            builder->label("print1");
+            // Make struct 1 'Age(42)'.
+            builder->addLoadLitInt(42); // Struct with 1 field is represented by the field itself.
+
+            // Make struct 2 'Age(1337)'.
+            builder->addLoadLitInt(1337); // Struct with 1 field is represented by the field itself.
+
+            // Call the equality function and print the result.
+            builder->addCall("UserEq", false);
+            builder->addConvBoolString();
+            builder->addPrintString();
+            builder->addRet();
+            builder->addFail();
+            // --- Print statement 1 end.
+
+            // --- Print statement 2 start.
+            builder->label("print2");
+            // Make struct 'Age(42)'.
+            builder->addLoadLitInt(42); // Struct with 1 field is represented by the field itself.
+
+            builder->addConvIntString();
+            builder->addPrintString();
+            builder->addRet();
+            builder->addFail();
+            // --- Print statement 2 end.
+
+            builder->addEntryPoint("print1");
+            builder->addEntryPoint("print2");
+          });
+    }
   }
 }
 

@@ -232,8 +232,12 @@ auto GenExpr::visit(const prog::expr::CallExprNode& n) -> void {
   case prog::sym::FuncKind::MakeStruct: {
     auto fieldCount = n.getChildCount();
     if (fieldCount == 0U) {
-      // For empty structs we avoid the allocation as they require no storage.
+      // Empty structs are represented by the value 0 (avoids allocation).
       m_builder->addLoadLitInt(0);
+      break;
+    }
+    if (fieldCount == 1U) {
+      // Structs with one field are represented by the field only (avoids allocation).
       break;
     }
 
@@ -300,6 +304,20 @@ auto GenExpr::visit(const prog::expr::ConstExprNode& n) -> void {
 auto GenExpr::visit(const prog::expr::FieldExprNode& n) -> void {
   // Load the struct.
   genSubExpr(n[0], false);
+
+  const auto& structType = m_program.getTypeDecl(n[0].getType());
+  if (structType.getKind() != prog::sym::TypeKind::UserStruct) {
+    throw std::logic_error{"Field expr node only works on struct types"};
+  }
+  const auto& structDef = std::get<prog::sym::StructDef>(m_program.getTypeDef(structType.getId()));
+  if (structDef.getFields().getCount() == 0) {
+    throw std::logic_error{"Cannot get a field on a struct without fields"};
+  }
+  if (structDef.getFields().getCount() == 1) {
+    // Structs with one field are represented by the field only, so in this case the struct itself
+    // is the value already.
+    return;
+  }
 
   // Load the field.
   const auto fieldId = getFieldId(n.getId());
