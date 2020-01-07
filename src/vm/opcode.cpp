@@ -93,6 +93,9 @@ auto operator<<(std::ostream& out, const OpCode& rhs) -> std::ostream& {
   case OpCode::XorInt:
     out << "xor-int";
     break;
+  case OpCode::LengthString:
+    out << "length-string";
+    break;
 
   case OpCode::CheckEqInt:
     out << "check-eq-int";

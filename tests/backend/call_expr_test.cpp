@@ -232,6 +232,11 @@ TEST_CASE("Generate assembly for call expressions", "[backend]") {
       builder->addLoadLitString("world");
       builder->addAddString();
     });
+
+    CHECK_EXPR_INT("length(\"hello world\")", [](backend::Builder* builder) -> void {
+      builder->addLoadLitString("hello world");
+      builder->addLengthString();
+    });
   }
 
   SECTION("String checks") {

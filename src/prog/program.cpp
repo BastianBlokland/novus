@@ -130,6 +130,7 @@ Program::Program() :
 
   // Register build-in explicit conversions.
   m_funcDecls.registerFunc(*this, fk::ConvFloatInt, "toInt", sym::TypeSet{m_float}, m_int);
+  m_funcDecls.registerFunc(*this, fk::LengthString, "length", sym::TypeSet{m_string}, m_int);
 
   // Register build-in actions.
   m_actionDecls.registerAction(*this, ak::PrintString, "print", sym::TypeSet{m_string});
