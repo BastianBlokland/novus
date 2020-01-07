@@ -3,20 +3,7 @@
 
 namespace backend::internal {
 
-// This assumes that the structs are stored as consts 0 and 1.
-static auto generateStructFieldEquality(
-    Builder* builder,
-    uint8_t fieldId,
-    const prog::sym::TypeDecl& typeDecl,
-    const std::string& eqLabel) {
-
-  // Load the field for both structs on the stack.
-  builder->addLoadConst(0);
-  builder->addLoadStructField(fieldId);
-  builder->addLoadConst(1);
-  builder->addLoadStructField(fieldId);
-
-  // Check if the field is equal.
+static auto genTypeEquality(Builder* builder, const prog::sym::TypeDecl& typeDecl) {
   switch (typeDecl.getKind()) {
   case prog::sym::TypeKind::Bool:
   case prog::sym::TypeKind::Int:
@@ -36,6 +23,23 @@ static auto generateStructFieldEquality(
     builder->addCall(getUserTypeEqLabel(typeDecl.getId()), false);
     break;
   }
+}
+
+// This assumes that the structs are stored as consts 0 and 1.
+static auto generateStructFieldEquality(
+    Builder* builder,
+    uint8_t fieldId,
+    const prog::sym::TypeDecl& typeDecl,
+    const std::string& eqLabel) {
+
+  // Load the field for both structs on the stack.
+  builder->addLoadConst(0);
+  builder->addLoadStructField(fieldId);
+  builder->addLoadConst(1);
+  builder->addLoadStructField(fieldId);
+
+  // Check if the field is equal.
+  genTypeEquality(builder, typeDecl);
 
   // Jump to the given label if the fields are equal.
   builder->addJumpIf(eqLabel);
@@ -46,10 +50,19 @@ auto generateStructEquality(
   builder->label(getUserTypeEqLabel(structDef.getId()));
 
   // For empty structs we can just return 'true'.
-  if (structDef.getFields().getCount() == 0) {
+  if (structDef.getFields().getCount() == 0U) {
     builder->addPop();
     builder->addPop();
     builder->addLoadLitInt(1);
+    builder->addRet();
+    builder->addFail(); // Add a fail between sections to aid in detecting invalid programs.
+    return;
+  }
+
+  // Structs with one field are represented just by the field.
+  if (structDef.getFields().getCount() == 1U) {
+    const auto& fieldTypeDecl = program.getTypeDecl(structDef.getFields().begin()->getType());
+    genTypeEquality(builder, fieldTypeDecl);
     builder->addRet();
     builder->addFail(); // Add a fail between sections to aid in detecting invalid programs.
     return;
