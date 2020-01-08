@@ -144,6 +144,10 @@ auto Builder::addConvBoolString() -> void {
   label(endLabel);
 }
 
+auto Builder::addConvCharString() -> void { writeOpCode(vm::OpCode::ConvCharString); }
+
+auto Builder::addConvIntChar() -> void { writeOpCode(vm::OpCode::ConvIntChar); }
+
 auto Builder::addMakeStruct(uint8_t fieldCount) -> void {
   writeOpCode(vm::OpCode::MakeStruct);
   writeUInt8(fieldCount);

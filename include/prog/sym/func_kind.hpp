@@ -50,6 +50,8 @@ enum class FuncKind {
   ConvIntString,
   ConvFloatString,
   ConvBoolString,
+  ConvCharString,
+  ConvIntChar,
 
   DefInt,
   DefFloat,

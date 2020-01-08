@@ -62,6 +62,8 @@ auto disassembleInstructions(const vm::Assembly& assembly) -> std::vector<Instru
     case vm::OpCode::ConvFloatInt:
     case vm::OpCode::ConvIntString:
     case vm::OpCode::ConvFloatString:
+    case vm::OpCode::ConvCharString:
+    case vm::OpCode::ConvIntChar:
     case vm::OpCode::PrintString:
     case vm::OpCode::CallDyn:
     case vm::OpCode::CallDynTail:

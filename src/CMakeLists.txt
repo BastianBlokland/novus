@@ -197,6 +197,7 @@ add_library(vm STATIC
   vm/internal/call_stack.cpp
   vm/internal/const_stack.cpp
   vm/internal/exec_scope.cpp
+  vm/internal/string_utilities.cpp
   vm/io/memory_interface.cpp
   vm/io/terminal_interface.cpp
   vm/assembly.cpp

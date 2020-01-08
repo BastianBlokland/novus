@@ -137,6 +137,12 @@ auto operator<<(std::ostream& out, const OpCode& rhs) -> std::ostream& {
   case OpCode::ConvFloatString:
     out << "conv-float-string";
     break;
+  case OpCode::ConvCharString:
+    out << "conv-char-string";
+    break;
+  case OpCode::ConvIntChar:
+    out << "conv-int-char";
+    break;
 
   case OpCode::MakeStruct:
     out << "make-struct";
