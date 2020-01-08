@@ -440,7 +440,7 @@ auto LexerImpl::nextLitChar() -> Token {
 
   auto tooBig                = false;
   auto invalidEscapeSequence = false;
-  char c                     = consumeChar();
+  uint8_t c                  = consumeChar();
   if (c == '\'') {
     return erLitCharEmpty(input::Span{startPos, m_inputPos});
   }

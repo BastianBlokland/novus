@@ -219,6 +219,42 @@ TEST_CASE("Execute conversions", "[vm]") {
           builder->addPrintString();
         },
         "42");
+    CHECK_EXPR(
+        [](backend::Builder* builder) -> void {
+          builder->addLoadLitInt(255);
+          builder->addConvIntChar();
+
+          builder->addConvIntString();
+          builder->addPrintString();
+        },
+        "255");
+    CHECK_EXPR(
+        [](backend::Builder* builder) -> void {
+          builder->addLoadLitInt(256);
+          builder->addConvIntChar();
+
+          builder->addConvIntString();
+          builder->addPrintString();
+        },
+        "0");
+    CHECK_EXPR(
+        [](backend::Builder* builder) -> void {
+          builder->addLoadLitInt(-1);
+          builder->addConvIntChar();
+
+          builder->addConvIntString();
+          builder->addPrintString();
+        },
+        "255");
+    CHECK_EXPR(
+        [](backend::Builder* builder) -> void {
+          builder->addLoadLitInt(1337);
+          builder->addConvIntChar();
+
+          builder->addConvIntString();
+          builder->addPrintString();
+        },
+        "57");
   }
 }
 

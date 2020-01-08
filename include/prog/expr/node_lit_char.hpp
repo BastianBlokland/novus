@@ -5,7 +5,7 @@
 namespace prog::expr {
 
 class LitCharNode final : public Node {
-  friend auto litCharNode(const Program& program, char val) -> NodePtr;
+  friend auto litCharNode(const Program& program, uint8_t val) -> NodePtr;
 
 public:
   LitCharNode() = delete;
@@ -18,18 +18,18 @@ public:
   [[nodiscard]] auto getType() const noexcept -> sym::TypeId override;
   [[nodiscard]] auto toString() const -> std::string override;
 
-  [[nodiscard]] auto getVal() const noexcept -> char;
+  [[nodiscard]] auto getVal() const noexcept -> uint8_t;
 
   auto accept(NodeVisitor* visitor) const -> void override;
 
 private:
   sym::TypeId m_type;
-  char m_val;
+  uint8_t m_val;
 
-  LitCharNode(sym::TypeId type, char val);
+  LitCharNode(sym::TypeId type, uint8_t val);
 };
 
 // Factories.
-auto litCharNode(const Program& program, char val) -> NodePtr;
+auto litCharNode(const Program& program, uint8_t val) -> NodePtr;
 
 } // namespace prog::expr

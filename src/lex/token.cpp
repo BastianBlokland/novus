@@ -103,7 +103,7 @@ auto litStrToken(std::string val, const input::Span span) -> Token {
   return Token{TokenKind::LitString, std::make_unique<LitStringTokenPayload>(std::move(val)), span};
 }
 
-auto litCharToken(char val, const input::Span span) -> Token {
+auto litCharToken(uint8_t val, const input::Span span) -> Token {
   return Token{TokenKind::LitChar, std::make_unique<LitCharTokenPayload>(val), span};
 }
 

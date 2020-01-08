@@ -237,10 +237,11 @@ static auto execute(const Assembly& assembly, io::Interface* interface, uint32_t
       evalStack.push(internal::toString(&allocator, evalStack.pop().getFloat()));
     } break;
     case OpCode::ConvCharString: {
-      evalStack.push(internal::toString(&allocator, static_cast<char>(evalStack.pop().getInt())));
+      evalStack.push(
+          internal::toString(&allocator, static_cast<uint8_t>(evalStack.pop().getInt())));
     } break;
     case OpCode::ConvIntChar: {
-      auto c = static_cast<char>(evalStack.pop().getInt());
+      auto c = static_cast<uint8_t>(evalStack.pop().getInt());
       evalStack.push(internal::intValue(c));
     } break;
 

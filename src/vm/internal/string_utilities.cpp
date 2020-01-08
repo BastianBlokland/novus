@@ -31,7 +31,7 @@ auto toString(Allocator* allocator, float val) -> Value {
   return internal::refValue(strRefAlloc.first);
 }
 
-auto toString(Allocator* allocator, char val) -> Value {
+auto toString(Allocator* allocator, uint8_t val) -> Value {
   const auto strRefAlloc = allocator->allocStr(1);
   *strRefAlloc.second    = val;
   return internal::refValue(strRefAlloc.first);

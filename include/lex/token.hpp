@@ -67,7 +67,7 @@ auto litBoolToken(bool val, input::Span span = input::Span{0}) -> Token;
 
 auto litStrToken(std::string val, input::Span span = input::Span{0}) -> Token;
 
-auto litCharToken(char val, input::Span span = input::Span{0}) -> Token;
+auto litCharToken(uint8_t val, input::Span span = input::Span{0}) -> Token;
 
 auto keywordToken(Keyword keyword, input::Span span = input::Span{0}) -> Token;
 

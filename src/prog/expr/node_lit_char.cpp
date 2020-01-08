@@ -4,7 +4,7 @@
 
 namespace prog::expr {
 
-LitCharNode::LitCharNode(sym::TypeId type, char val) : m_type{type}, m_val{val} {}
+LitCharNode::LitCharNode(sym::TypeId type, uint8_t val) : m_type{type}, m_val{val} {}
 
 auto LitCharNode::operator==(const Node& rhs) const noexcept -> bool {
   const auto r = dynamic_cast<const LitCharNode*>(&rhs);
@@ -29,12 +29,12 @@ auto LitCharNode::toString() const -> std::string {
   return oss.str();
 }
 
-auto LitCharNode::getVal() const noexcept -> char { return m_val; }
+auto LitCharNode::getVal() const noexcept -> uint8_t { return m_val; }
 
 auto LitCharNode::accept(NodeVisitor* visitor) const -> void { visitor->visit(*this); }
 
 // Factories.
-auto litCharNode(const Program& program, char val) -> NodePtr {
+auto litCharNode(const Program& program, uint8_t val) -> NodePtr {
   return std::unique_ptr<LitCharNode>{new LitCharNode{program.getChar(), val}};
 }
 
