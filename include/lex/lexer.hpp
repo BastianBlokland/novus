@@ -22,7 +22,9 @@ private:
   auto nextLitIntHex() -> Token;
   auto nextLitIntBinary() -> Token;
   auto nextLitIntOctal() -> Token;
+
   auto nextLitStr() -> Token;
+  auto nextLitChar() -> Token;
   auto nextWordToken(char startingChar) -> Token;
   auto nextLineComment() -> Token;
 

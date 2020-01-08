@@ -16,6 +16,7 @@ add_library(lex STATIC
   lex/token.cpp
   lex/token_cat.cpp
   lex/token_kind.cpp
+  lex/token_payload_lit_char.cpp
   lex/token_payload_lit_string.cpp
   lex/keyword.cpp
   lex/utilities.cpp)

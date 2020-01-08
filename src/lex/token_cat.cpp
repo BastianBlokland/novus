@@ -75,6 +75,7 @@ auto lookupCat(const TokenKind kind) -> TokenCat {
   case TokenKind::LitFloat:
   case TokenKind::LitBool:
   case TokenKind::LitString:
+  case TokenKind::LitChar:
     return TokenCat::Literal;
   case TokenKind::Keyword:
     return TokenCat::Keyword;
