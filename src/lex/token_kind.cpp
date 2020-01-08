@@ -70,6 +70,9 @@ auto operator<<(std::ostream& out, const TokenKind& rhs) -> std::ostream& {
   case TokenKind::OpQMark:
     out << "qmark";
     break;
+  case TokenKind::OpQMarkQMark:
+    out << "qmarkqmark";
+    break;
   case TokenKind::OpDot:
     out << "dot";
     break;

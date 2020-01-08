@@ -45,6 +45,8 @@ auto getFuncName(Operator op) -> std::string {
     return "__op_squaresquare";
   case Operator::ParenParen:
     return "__op_parenparen";
+  case Operator::QMarkQMark:
+    return "__op_qmarkqmark";
   }
   throw std::invalid_argument("Unknown operator");
 }

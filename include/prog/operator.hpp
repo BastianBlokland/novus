@@ -24,6 +24,7 @@ enum class Operator {
   ColonColon,
   SquareSquare,
   ParenParen,
+  QMarkQMark,
 };
 
 auto getFuncName(Operator op) -> std::string;

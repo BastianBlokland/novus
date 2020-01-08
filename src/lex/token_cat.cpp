@@ -56,6 +56,7 @@ auto lookupCat(const TokenKind kind) -> TokenCat {
   case TokenKind::OpGtEq:
   case TokenKind::OpSemi:
   case TokenKind::OpQMark:
+  case TokenKind::OpQMarkQMark:
   case TokenKind::OpDot:
   case TokenKind::OpColonColon:
   case TokenKind::OpSquareSquare:

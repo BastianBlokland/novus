@@ -26,6 +26,7 @@ TEST_CASE("Lexing operators", "[lex]") {
   CHECK_TOKENS(">=", basicToken(TokenKind::OpGtEq));
   CHECK_TOKENS(";", basicToken(TokenKind::OpSemi));
   CHECK_TOKENS("?", basicToken(TokenKind::OpQMark));
+  CHECK_TOKENS("??", basicToken(TokenKind::OpQMarkQMark));
   CHECK_TOKENS(".", basicToken(TokenKind::OpDot));
   CHECK_TOKENS("::", basicToken(TokenKind::OpColonColon));
   CHECK_TOKENS("[]", basicToken(TokenKind::OpSquareSquare));
