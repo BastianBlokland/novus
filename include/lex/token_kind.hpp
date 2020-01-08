@@ -27,6 +27,7 @@ enum class TokenKind {
   OpGtEq,
   OpSemi,
   OpQMark,
+  OpQMarkQMark,
   OpDot,
   OpColonColon,
   OpSquareSquare,

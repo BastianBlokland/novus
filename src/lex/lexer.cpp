@@ -139,6 +139,10 @@ auto LexerImpl::next() -> Token {
     case ';':
       return basicToken(TokenKind::OpSemi, input::Span{m_inputPos});
     case '?':
+      if (peekChar(0) == '?') {
+        consumeChar();
+        return basicToken(TokenKind::OpQMarkQMark, input::Span{m_inputPos - 1, m_inputPos});
+      }
       return basicToken(TokenKind::OpQMark, input::Span{m_inputPos});
     case '.':
       if (isDigit(peekChar(0))) {
