@@ -179,15 +179,17 @@ auto LexerImpl::next() -> Token {
     case '\r':
       break; // Skip whitespace.
     case '0':
-      if (peekChar(0) == 'x' || peekChar(0) == 'X') {
+      switch (peekChar(0)) {
+      case 'x':
+      case 'X':
         consumeChar();
         return nextLitIntHex();
-      }
-      if (peekChar(0) == 'b' || peekChar(0) == 'B') {
+      case 'b':
+      case 'B':
         consumeChar();
         return nextLitIntBinary();
-      }
-      if (peekChar(0) == 'o' || peekChar(0) == 'O') {
+      case 'o':
+      case 'O':
         consumeChar();
         return nextLitIntOctal();
       }
@@ -204,6 +206,8 @@ auto LexerImpl::next() -> Token {
       return nextLitNumber(c);
     case '"':
       return nextLitStr();
+    case '\'':
+      return nextLitChar();
     case '_': {
       const auto& nextChar = peekChar(0);
       if (isWordStart(nextChar) || isDigit(nextChar) || nextChar == '_') {
@@ -425,6 +429,48 @@ auto LexerImpl::nextLitStr() -> Token {
     }
     default:
       result += c;
+      break;
+    }
+  }
+}
+
+auto LexerImpl::nextLitChar() -> Token {
+  // Starting quote already consumed by caller.
+  const auto startPos = m_inputPos;
+
+  auto tooBig                = false;
+  auto invalidEscapeSequence = false;
+  uint8_t c                  = consumeChar();
+  if (c == '\'') {
+    return erLitCharEmpty(input::Span{startPos, m_inputPos});
+  }
+  if (c == '\\') {
+    // Backslash is used to start an escape sequence.
+    const auto unescapedC = input::unescape(consumeChar());
+    if (unescapedC) {
+      c = unescapedC.value();
+    } else {
+      invalidEscapeSequence = true;
+    }
+  }
+  while (true) {
+    switch (consumeChar()) {
+    case '\0':
+    case '\r':
+    case '\n':
+      return errLitCharUnterminated(input::Span{startPos, m_inputPos});
+    case '\'': {
+      const auto span = input::Span{startPos, m_inputPos};
+      if (tooBig) {
+        return errLitCharTooBig(span);
+      }
+      if (invalidEscapeSequence) {
+        return errLitCharInvalidEscape(span);
+      }
+      return litCharToken(c, span);
+    }
+    default:
+      tooBig = true;
       break;
     }
   }

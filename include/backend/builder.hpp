@@ -49,6 +49,7 @@ public:
   auto addOrInt() -> void;
   auto addXorInt() -> void;
   auto addLengthString() -> void;
+  auto addIndexString() -> void;
 
   auto addCheckEqInt() -> void;
   auto addCheckEqFloat() -> void;
@@ -65,6 +66,8 @@ public:
   auto addConvIntString() -> void;
   auto addConvFloatString() -> void;
   auto addConvBoolString() -> void;
+  auto addConvCharString() -> void;
+  auto addConvIntChar() -> void;
 
   auto addMakeStruct(uint8_t fieldCount) -> void;
   auto addLoadStructField(uint8_t fieldIndex) -> void;

@@ -44,6 +44,7 @@ enum class TokenKind {
   LitFloat,
   LitBool,
   LitString,
+  LitChar,
   Keyword,
   Identifier,
   LineComment,

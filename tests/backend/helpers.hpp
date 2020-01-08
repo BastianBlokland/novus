@@ -59,6 +59,19 @@ inline auto buildAssemblyExprString(const std::function<void(backend::Builder*)>
   return builder.close();
 }
 
+inline auto buildAssemblyExprChar(const std::function<void(backend::Builder*)>& build)
+    -> vm::Assembly {
+  auto builder = backend::Builder{};
+  builder.label("print");
+  build(&builder);
+  builder.addConvCharString();
+  builder.addPrintString();
+  builder.addRet();
+  builder.addFail();
+  builder.addEntryPoint("print");
+  return builder.close();
+}
+
 inline auto buildAssembly(const std::function<void(backend::Builder*)>& build) -> vm::Assembly {
   auto builder = backend::Builder{};
   build(&builder);
@@ -86,6 +99,9 @@ inline auto buildAssembly(const std::function<void(backend::Builder*)>& build) -
 
 #define CHECK_EXPR_STRING(INPUT, BUILD_EXPECTED_ASM)                                               \
   CHECK_ASM("print(" + std::string(INPUT) + ")", buildAssemblyExprString(BUILD_EXPECTED_ASM))
+
+#define CHECK_EXPR_CHAR(INPUT, BUILD_EXPECTED_ASM)                                                 \
+  CHECK_ASM("print(string(" + std::string(INPUT) + "))", buildAssemblyExprChar(BUILD_EXPECTED_ASM))
 
 #define CHECK_PROG(INPUT, BUILD_EXPECTED_ASM) CHECK_ASM(INPUT, buildAssembly(BUILD_EXPECTED_ASM))
 

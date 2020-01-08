@@ -227,22 +227,21 @@ auto TypeInferExpr::visit(const parse::IsExprNode& n) -> void {
 
 auto TypeInferExpr::visit(const parse::LitExprNode& n) -> void {
   switch (n.getVal().getKind()) {
-  case lex::TokenKind::LitInt: {
+  case lex::TokenKind::LitInt:
     m_type = m_context->getProg()->getInt();
     break;
-  }
-  case lex::TokenKind::LitFloat: {
+  case lex::TokenKind::LitFloat:
     m_type = m_context->getProg()->getFloat();
     break;
-  }
-  case lex::TokenKind::LitBool: {
+  case lex::TokenKind::LitBool:
     m_type = m_context->getProg()->getBool();
     break;
-  }
-  case lex::TokenKind::LitString: {
+  case lex::TokenKind::LitString:
     m_type = m_context->getProg()->getString();
     break;
-  }
+  case lex::TokenKind::LitChar:
+    m_type = m_context->getProg()->getChar();
+    break;
   default:
     break;
   }

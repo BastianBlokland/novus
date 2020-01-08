@@ -168,6 +168,94 @@ TEST_CASE("Execute conversions", "[vm]") {
         },
         "-1e+10"); // Rounding error.
   }
+
+  SECTION("Char to String") {
+    CHECK_EXPR(
+        [](backend::Builder* builder) -> void {
+          builder->addLoadLitInt(48);
+          builder->addConvCharString();
+          builder->addPrintString();
+        },
+        "0");
+    CHECK_EXPR(
+        [](backend::Builder* builder) -> void {
+          builder->addLoadLitInt(10);
+          builder->addConvCharString();
+          builder->addPrintString();
+        },
+        "\n");
+    CHECK_EXPR(
+        [](backend::Builder* builder) -> void {
+          builder->addLoadLitInt(38);
+          builder->addConvCharString();
+          builder->addPrintString();
+        },
+        "&");
+    CHECK_EXPR(
+        [](backend::Builder* builder) -> void {
+          builder->addLoadLitInt(32);
+          builder->addConvCharString();
+          builder->addPrintString();
+        },
+        " ");
+  }
+
+  SECTION("Int to Char") {
+    CHECK_EXPR(
+        [](backend::Builder* builder) -> void {
+          builder->addLoadLitInt(0);
+          builder->addConvIntChar();
+
+          builder->addConvIntString();
+          builder->addPrintString();
+        },
+        "0");
+    CHECK_EXPR(
+        [](backend::Builder* builder) -> void {
+          builder->addLoadLitInt(42);
+          builder->addConvIntChar();
+
+          builder->addConvIntString();
+          builder->addPrintString();
+        },
+        "42");
+    CHECK_EXPR(
+        [](backend::Builder* builder) -> void {
+          builder->addLoadLitInt(255);
+          builder->addConvIntChar();
+
+          builder->addConvIntString();
+          builder->addPrintString();
+        },
+        "255");
+    CHECK_EXPR(
+        [](backend::Builder* builder) -> void {
+          builder->addLoadLitInt(256);
+          builder->addConvIntChar();
+
+          builder->addConvIntString();
+          builder->addPrintString();
+        },
+        "0");
+    CHECK_EXPR(
+        [](backend::Builder* builder) -> void {
+          builder->addLoadLitInt(-1);
+          builder->addConvIntChar();
+
+          builder->addConvIntString();
+          builder->addPrintString();
+        },
+        "255");
+    CHECK_EXPR(
+        [](backend::Builder* builder) -> void {
+          builder->addLoadLitInt(1337);
+          builder->addConvIntChar();
+
+          builder->addConvIntString();
+          builder->addPrintString();
+        },
+        "57");
+  }
 }
 
 } // namespace vm

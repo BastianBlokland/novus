@@ -7,6 +7,7 @@ static auto genTypeEquality(Builder* builder, const prog::sym::TypeDecl& typeDec
   switch (typeDecl.getKind()) {
   case prog::sym::TypeKind::Bool:
   case prog::sym::TypeKind::Int:
+  case prog::sym::TypeKind::Char:
     builder->addCheckEqInt();
     break;
   case prog::sym::TypeKind::Float:

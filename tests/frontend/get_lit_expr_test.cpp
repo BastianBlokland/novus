@@ -2,6 +2,7 @@
 #include "frontend/diag_defs.hpp"
 #include "helpers.hpp"
 #include "prog/expr/node_lit_bool.hpp"
+#include "prog/expr/node_lit_char.hpp"
 #include "prog/expr/node_lit_float.hpp"
 #include "prog/expr/node_lit_int.hpp"
 #include "prog/expr/node_lit_string.hpp"
@@ -37,6 +38,12 @@ TEST_CASE("Analyzing literal expressions", "[frontend]") {
     CHECK(
         GET_FUNC_DEF(output, "f").getExpr() ==
         *prog::expr::litStringNode(output.getProg(), "hello world"));
+  }
+
+  SECTION("Get character literal expression") {
+    const auto& output = ANALYZE("fun f() -> char \'a\'");
+    REQUIRE(output.isSuccess());
+    CHECK(GET_FUNC_DEF(output, "f").getExpr() == *prog::expr::litCharNode(output.getProg(), 'a'));
   }
 }
 

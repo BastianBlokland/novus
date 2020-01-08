@@ -67,4 +67,6 @@ auto CheckUnionExhaustiveness::visit(const prog::expr::LitIntNode & /*unused*/) 
 
 auto CheckUnionExhaustiveness::visit(const prog::expr::LitStringNode & /*unused*/) -> void {}
 
+auto CheckUnionExhaustiveness::visit(const prog::expr::LitCharNode & /*unused*/) -> void {}
+
 } // namespace frontend::internal

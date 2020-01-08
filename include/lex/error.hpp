@@ -25,6 +25,14 @@ namespace lex {
 
 [[nodiscard]] auto errLitStrInvalidEscape(input::Span span = input::Span{0}) -> Token;
 
+[[nodiscard]] auto erLitCharEmpty(input::Span span = input::Span{0}) -> Token;
+
+[[nodiscard]] auto errLitCharTooBig(input::Span span = input::Span{0}) -> Token;
+
+[[nodiscard]] auto errLitCharUnterminated(input::Span span = input::Span{0}) -> Token;
+
+[[nodiscard]] auto errLitCharInvalidEscape(input::Span span = input::Span{0}) -> Token;
+
 [[nodiscard]] auto errIdentifierIllegalCharacter(input::Span span = input::Span{0}) -> Token;
 
 [[nodiscard]] auto errIdentifierIllegalSequence(input::Span span = input::Span{0}) -> Token;

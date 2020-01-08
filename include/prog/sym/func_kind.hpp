@@ -42,6 +42,7 @@ enum class FuncKind {
 
   AddString,
   LengthString,
+  IndexString,
   CheckEqString,
   CheckNEqString,
 
@@ -50,6 +51,8 @@ enum class FuncKind {
   ConvIntString,
   ConvFloatString,
   ConvBoolString,
+  ConvCharString,
+  ConvIntChar,
 
   DefInt,
   DefFloat,

@@ -5,6 +5,7 @@
 #include "internal/get_identifier.hpp"
 #include "internal/utilities.hpp"
 #include "lex/token_payload_lit_bool.hpp"
+#include "lex/token_payload_lit_char.hpp"
 #include "lex/token_payload_lit_float.hpp"
 #include "lex/token_payload_lit_int.hpp"
 #include "lex/token_payload_lit_string.hpp"
@@ -418,6 +419,10 @@ auto GetExpr::visit(const parse::LitExprNode& n) -> void {
   case lex::TokenKind::LitString:
     m_expr = prog::expr::litStringNode(
         *m_context->getProg(), n.getVal().getPayload<lex::LitStringTokenPayload>()->getValue());
+    return;
+  case lex::TokenKind::LitChar:
+    m_expr = prog::expr::litCharNode(
+        *m_context->getProg(), n.getVal().getPayload<lex::LitCharTokenPayload>()->getValue());
     return;
   default:
     std::stringstream oss;

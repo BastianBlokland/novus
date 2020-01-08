@@ -96,6 +96,9 @@ auto operator<<(std::ostream& out, const OpCode& rhs) -> std::ostream& {
   case OpCode::LengthString:
     out << "length-string";
     break;
+  case OpCode::IndexString:
+    out << "index-string";
+    break;
 
   case OpCode::CheckEqInt:
     out << "check-eq-int";
@@ -136,6 +139,12 @@ auto operator<<(std::ostream& out, const OpCode& rhs) -> std::ostream& {
     break;
   case OpCode::ConvFloatString:
     out << "conv-float-string";
+    break;
+  case OpCode::ConvCharString:
+    out << "conv-char-string";
+    break;
+  case OpCode::ConvIntChar:
+    out << "conv-int-char";
     break;
 
   case OpCode::MakeStruct:

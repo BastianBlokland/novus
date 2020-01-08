@@ -22,7 +22,8 @@ Program::Program() :
     m_int{m_typeDecls.registerType(sym::TypeKind::Int, "int")},
     m_float{m_typeDecls.registerType(sym::TypeKind::Float, "float")},
     m_bool{m_typeDecls.registerType(sym::TypeKind::Bool, "bool")},
-    m_string{m_typeDecls.registerType(sym::TypeKind::String, "string")} {
+    m_string{m_typeDecls.registerType(sym::TypeKind::String, "string")},
+    m_char{m_typeDecls.registerType(sym::TypeKind::Char, "char")} {
 
   using fk = typename prog::sym::FuncKind;
   using ak = typename prog::sym::ActionKind;
@@ -110,6 +111,20 @@ Program::Program() :
   m_funcDecls.registerFunc(
       *this, fk::CheckNEqString, getFuncName(op::BangEq), sym::TypeSet{m_string, m_string}, m_bool);
 
+  // Register build-in binary char operators.
+  m_funcDecls.registerFunc(
+      *this, fk::CheckEqInt, getFuncName(op::EqEq), sym::TypeSet{m_char, m_char}, m_bool);
+  m_funcDecls.registerFunc(
+      *this, fk::CheckNEqInt, getFuncName(op::BangEq), sym::TypeSet{m_char, m_char}, m_bool);
+  m_funcDecls.registerFunc(
+      *this, fk::CheckLeInt, getFuncName(op::Le), sym::TypeSet{m_char, m_char}, m_bool);
+  m_funcDecls.registerFunc(
+      *this, fk::CheckLeEqInt, getFuncName(op::LeEq), sym::TypeSet{m_char, m_char}, m_bool);
+  m_funcDecls.registerFunc(
+      *this, fk::CheckGtInt, getFuncName(op::Gt), sym::TypeSet{m_char, m_char}, m_bool);
+  m_funcDecls.registerFunc(
+      *this, fk::CheckGtEqInt, getFuncName(op::GtEq), sym::TypeSet{m_char, m_char}, m_bool);
+
   // Register build-in default constructors.
   m_funcDecls.registerFunc(*this, fk::DefInt, "int", sym::TypeSet{}, m_int);
   m_funcDecls.registerFunc(*this, fk::DefFloat, "float", sym::TypeSet{}, m_float);
@@ -117,20 +132,28 @@ Program::Program() :
   m_funcDecls.registerFunc(*this, fk::DefString, "string", sym::TypeSet{}, m_string);
 
   // Register build-in implicit conversions.
+  m_funcDecls.registerFunc(*this, fk::NoOp, "int", sym::TypeSet{m_char}, m_int);
   m_funcDecls.registerFunc(*this, fk::ConvIntFloat, "float", sym::TypeSet{m_int}, m_float);
   m_funcDecls.registerFunc(*this, fk::ConvIntString, "string", sym::TypeSet{m_int}, m_string);
   m_funcDecls.registerFunc(*this, fk::ConvFloatString, "string", sym::TypeSet{m_float}, m_string);
   m_funcDecls.registerFunc(*this, fk::ConvBoolString, "string", sym::TypeSet{m_bool}, m_string);
+  m_funcDecls.registerFunc(*this, fk::ConvCharString, "string", sym::TypeSet{m_char}, m_string);
 
   // Register build-in identity conversions (turn into no-ops).
   m_funcDecls.registerFunc(*this, fk::NoOp, "int", sym::TypeSet{m_int}, m_int);
   m_funcDecls.registerFunc(*this, fk::NoOp, "float", sym::TypeSet{m_float}, m_float);
   m_funcDecls.registerFunc(*this, fk::NoOp, "bool", sym::TypeSet{m_bool}, m_bool);
   m_funcDecls.registerFunc(*this, fk::NoOp, "string", sym::TypeSet{m_string}, m_string);
+  m_funcDecls.registerFunc(*this, fk::NoOp, "char", sym::TypeSet{m_char}, m_char);
 
   // Register build-in explicit conversions.
   m_funcDecls.registerFunc(*this, fk::ConvFloatInt, "toInt", sym::TypeSet{m_float}, m_int);
+  m_funcDecls.registerFunc(*this, fk::ConvIntChar, "toChar", sym::TypeSet{m_int}, m_char);
+
+  // Register build-in functions.
   m_funcDecls.registerFunc(*this, fk::LengthString, "length", sym::TypeSet{m_string}, m_int);
+  m_funcDecls.registerFunc(
+      *this, fk::IndexString, getFuncName(op::SquareSquare), sym::TypeSet{m_string, m_int}, m_char);
 
   // Register build-in actions.
   m_actionDecls.registerAction(*this, ak::PrintString, "print", sym::TypeSet{m_string});
@@ -167,6 +190,8 @@ auto Program::getFloat() const noexcept -> sym::TypeId { return m_float; }
 auto Program::getBool() const noexcept -> sym::TypeId { return m_bool; }
 
 auto Program::getString() const noexcept -> sym::TypeId { return m_string; }
+
+auto Program::getChar() const noexcept -> sym::TypeId { return m_char; }
 
 auto Program::lookupType(const std::string& name) const -> std::optional<sym::TypeId> {
   return m_typeDecls.lookup(name);

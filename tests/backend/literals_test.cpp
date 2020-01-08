@@ -27,6 +27,10 @@ TEST_CASE("Generate assembly for literals", "[backend]") {
     CHECK_EXPR_STRING(
         "\"\"", [](backend::Builder* builder) -> void { builder->addLoadLitString(""); });
   }
+
+  SECTION("Char literals") {
+    CHECK_EXPR_CHAR("'a'", [](backend::Builder* builder) -> void { builder->addLoadLitInt('a'); });
+  }
 }
 
 } // namespace backend

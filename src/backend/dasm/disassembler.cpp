@@ -49,6 +49,7 @@ auto disassembleInstructions(const vm::Assembly& assembly) -> std::vector<Instru
     case vm::OpCode::OrInt:
     case vm::OpCode::XorInt:
     case vm::OpCode::LengthString:
+    case vm::OpCode::IndexString:
     case vm::OpCode::CheckEqInt:
     case vm::OpCode::CheckEqFloat:
     case vm::OpCode::CheckEqString:
@@ -62,6 +63,8 @@ auto disassembleInstructions(const vm::Assembly& assembly) -> std::vector<Instru
     case vm::OpCode::ConvFloatInt:
     case vm::OpCode::ConvIntString:
     case vm::OpCode::ConvFloatString:
+    case vm::OpCode::ConvCharString:
+    case vm::OpCode::ConvIntChar:
     case vm::OpCode::PrintString:
     case vm::OpCode::CallDyn:
     case vm::OpCode::CallDynTail:

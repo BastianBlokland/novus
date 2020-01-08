@@ -61,6 +61,7 @@ public:
   [[nodiscard]] auto getFloat() const noexcept -> sym::TypeId;
   [[nodiscard]] auto getBool() const noexcept -> sym::TypeId;
   [[nodiscard]] auto getString() const noexcept -> sym::TypeId;
+  [[nodiscard]] auto getChar() const noexcept -> sym::TypeId;
 
   [[nodiscard]] auto lookupType(const std::string& name) const -> std::optional<sym::TypeId>;
   [[nodiscard]] auto
@@ -125,6 +126,7 @@ private:
   sym::TypeId m_float;
   sym::TypeId m_bool;
   sym::TypeId m_string;
+  sym::TypeId m_char;
 };
 
 } // namespace prog

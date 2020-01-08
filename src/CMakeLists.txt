@@ -16,6 +16,7 @@ add_library(lex STATIC
   lex/token.cpp
   lex/token_cat.cpp
   lex/token_kind.cpp
+  lex/token_payload_lit_char.cpp
   lex/token_payload_lit_string.cpp
   lex/keyword.cpp
   lex/utilities.cpp)
@@ -80,6 +81,7 @@ add_library(prog STATIC
   prog/expr/node_lit_func.cpp
   prog/expr/node_lit_int.cpp
   prog/expr/node_lit_string.cpp
+  prog/expr/node_lit_char.cpp
   prog/expr/node_switch.cpp
   prog/expr/node_union_check.cpp
   prog/expr/node_union_get.cpp
@@ -195,6 +197,7 @@ add_library(vm STATIC
   vm/internal/call_stack.cpp
   vm/internal/const_stack.cpp
   vm/internal/exec_scope.cpp
+  vm/internal/string_utilities.cpp
   vm/io/memory_interface.cpp
   vm/io/terminal_interface.cpp
   vm/assembly.cpp

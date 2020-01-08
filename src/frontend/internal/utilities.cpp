@@ -148,6 +148,7 @@ auto isReservedTypeName(const std::string& name) -> bool {
       "float",
       "bool",
       "string",
+      "char",
       "delegate",
   };
   return reservedTypes.find(name) != reservedTypes.end();

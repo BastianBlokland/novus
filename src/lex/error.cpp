@@ -47,6 +47,22 @@ auto errLitStrInvalidEscape(const input::Span span) -> Token {
   return errorToken("Invalid escape sequence in string literal", span);
 }
 
+auto erLitCharEmpty(const input::Span span) -> Token {
+  return errorToken("Empty character literal", span);
+}
+
+auto errLitCharTooBig(const input::Span span) -> Token {
+  return errorToken("Character literal too big", span);
+}
+
+auto errLitCharUnterminated(const input::Span span) -> Token {
+  return errorToken("Unterminated character literal", span);
+}
+
+auto errLitCharInvalidEscape(const input::Span span) -> Token {
+  return errorToken("Invalid escape sequence in character literal", span);
+}
+
 auto errIdentifierIllegalCharacter(const input::Span span) -> Token {
   return errorToken("Identifier contains an invalid character", span);
 }

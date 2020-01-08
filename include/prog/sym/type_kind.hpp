@@ -8,6 +8,7 @@ enum class TypeKind {
   Float,
   Bool,
   String,
+  Char,
   UserStruct,
   UserUnion,
   UserDelegate,

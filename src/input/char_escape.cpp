@@ -6,7 +6,9 @@ namespace input {
 auto escape(const char c) -> std::optional<char> {
   static const std::unordered_map<char, char> table = {
       {'"', '"'},
+      {'\'', '\''},
       {'\\', '\\'},
+      {'\0', '0'},
       {'\a', 'a'},
       {'\b', 'b'},
       {'\f', 'f'},
@@ -43,7 +45,9 @@ auto escape(const std::string& str) -> std::string {
 auto unescape(const char c) -> std::optional<char> {
   static const std::unordered_map<char, char> table = {
       {'"', '"'},
+      {'\'', '\''},
       {'\\', '\\'},
+      {'0', '\0'},
       {'a', '\a'},
       {'b', '\b'},
       {'f', '\f'},

@@ -64,6 +64,7 @@ add_executable(tests
   lex/litint_test.cpp
   lex/litbool_test.cpp
   lex/litstr_test.cpp
+  lex/litchar_test.cpp
   lex/operators_test.cpp
   lex/seperators_test.cpp
   lex/utilities_test.cpp

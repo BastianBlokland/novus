@@ -4,12 +4,11 @@
 #include "internal/const_stack.hpp"
 #include "internal/eval_stack.hpp"
 #include "internal/ref_string.hpp"
+#include "internal/string_utilities.hpp"
 #include "vm/exceptions/div_by_zero.hpp"
 #include "vm/exceptions/eval_stack_not_empty.hpp"
 #include "vm/exceptions/invalid_assembly.hpp"
 #include "vm/opcode.hpp"
-#include <charconv>
-#include <cstdio>
 #include <stdexcept>
 
 namespace vm {
@@ -83,14 +82,9 @@ static auto execute(const Assembly& assembly, io::Interface* interface, uint32_t
       evalStack.push(internal::floatValue(a + b));
     } break;
     case OpCode::AddString: {
-      auto b = getStringRef(evalStack.pop());
-      auto a = getStringRef(evalStack.pop());
-
-      // Make a new string big enough to fit both and copy both there.
-      auto result = allocator.allocStr(a->getSize() + b->getSize());
-      std::memcpy(result.second, a->getDataPtr(), a->getSize());
-      std::memcpy(result.second + a->getSize(), b->getDataPtr(), b->getSize());
-      evalStack.push(internal::refValue(result.first));
+      auto b = evalStack.pop();
+      auto a = evalStack.pop();
+      evalStack.push(internal::concatString(&allocator, a, b));
     } break;
     case OpCode::SubInt: {
       auto b = evalStack.pop().getInt();
@@ -174,8 +168,12 @@ static auto execute(const Assembly& assembly, io::Interface* interface, uint32_t
       evalStack.push(internal::intValue(a ^ b)); // NOLINT: Signed bitwise operand
     } break;
     case OpCode::LengthString: {
-      auto* strRef = getStringRef(evalStack.pop());
-      evalStack.push(internal::intValue(strRef->getSize()));
+      evalStack.push(internal::intValue(internal::getStringLength(evalStack.pop())));
+    } break;
+    case OpCode::IndexString: {
+      auto index = evalStack.pop().getInt();
+      auto str   = evalStack.pop();
+      evalStack.push(internal::intValue(internal::indexString(str, index)));
     } break;
 
     case OpCode::CheckEqInt: {
@@ -189,11 +187,9 @@ static auto execute(const Assembly& assembly, io::Interface* interface, uint32_t
       evalStack.push(internal::intValue(a == b ? 1 : 0));
     } break;
     case OpCode::CheckEqString: {
-      auto b  = getStringRef(evalStack.pop());
-      auto a  = getStringRef(evalStack.pop());
-      auto eq = (a->getSize() == b->getSize()) &&
-          std::memcmp(a->getDataPtr(), b->getDataPtr(), a->getSize()) == 0;
-      evalStack.push(internal::intValue(eq ? 1 : 0));
+      auto b = evalStack.pop();
+      auto a = evalStack.pop();
+      evalStack.push(internal::intValue(internal::checkStringEq(a, b) ? 1 : 0));
     } break;
     case OpCode::CheckEqIp: {
       auto b = evalStack.pop().getUInt();
@@ -240,31 +236,18 @@ static auto execute(const Assembly& assembly, io::Interface* interface, uint32_t
       evalStack.push(internal::intValue(static_cast<int>(val)));
     } break;
     case OpCode::ConvIntString: {
-      static const auto maxCharSize = 11;
-
-      const auto val         = evalStack.pop().getInt();
-      const auto strRefAlloc = allocator.allocStr(maxCharSize);
-      const auto convRes = std::to_chars(strRefAlloc.second, strRefAlloc.second + maxCharSize, val);
-      if (convRes.ec != std::errc()) {
-        throw std::logic_error{"Failed to convert integer to string"};
-      }
-      strRefAlloc.first->updateSize(convRes.ptr - strRefAlloc.second);
-      evalStack.push(internal::refValue(strRefAlloc.first));
+      evalStack.push(internal::toString(&allocator, evalStack.pop().getInt()));
     } break;
     case OpCode::ConvFloatString: {
-      const auto val = evalStack.pop().getFloat();
-
-      // NOLINTNEXTLINE: C-style var-arg func, needed because clang is missing std::to_chars(float).
-      const auto charSize    = std::snprintf(nullptr, 0, "%.6g", val) + 1; // +1: null-terminator.
-      const auto strRefAlloc = allocator.allocStr(charSize);
-
-      // NOLINTNEXTLINE: C-style var-arg func, needed because clang is missing std::to_chars(float).
-      std::snprintf(strRefAlloc.second, charSize, "%.6g", val);
-
-      // Remove the null-terminator from the size. Our strings don't use a null-terminator but
-      // snprintf always outputs one.
-      strRefAlloc.first->updateSize(charSize - 1);
-      evalStack.push(internal::refValue(strRefAlloc.first));
+      evalStack.push(internal::toString(&allocator, evalStack.pop().getFloat()));
+    } break;
+    case OpCode::ConvCharString: {
+      evalStack.push(
+          internal::toString(&allocator, static_cast<uint8_t>(evalStack.pop().getInt())));
+    } break;
+    case OpCode::ConvIntChar: {
+      auto c = static_cast<uint8_t>(evalStack.pop().getInt());
+      evalStack.push(internal::intValue(c));
     } break;
 
     case OpCode::MakeStruct: {

@@ -103,6 +103,8 @@ auto Builder::addXorInt() -> void { writeOpCode(vm::OpCode::XorInt); }
 
 auto Builder::addLengthString() -> void { writeOpCode(vm::OpCode::LengthString); }
 
+auto Builder::addIndexString() -> void { writeOpCode(vm::OpCode::IndexString); }
+
 auto Builder::addCheckEqInt() -> void { writeOpCode(vm::OpCode::CheckEqInt); }
 
 auto Builder::addCheckEqFloat() -> void { writeOpCode(vm::OpCode::CheckEqFloat); }
@@ -143,6 +145,10 @@ auto Builder::addConvBoolString() -> void {
 
   label(endLabel);
 }
+
+auto Builder::addConvCharString() -> void { writeOpCode(vm::OpCode::ConvCharString); }
+
+auto Builder::addConvIntChar() -> void { writeOpCode(vm::OpCode::ConvIntChar); }
 
 auto Builder::addMakeStruct(uint8_t fieldCount) -> void {
   writeOpCode(vm::OpCode::MakeStruct);
