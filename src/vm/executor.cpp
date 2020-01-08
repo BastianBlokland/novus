@@ -170,6 +170,11 @@ static auto execute(const Assembly& assembly, io::Interface* interface, uint32_t
     case OpCode::LengthString: {
       evalStack.push(internal::intValue(internal::getStringLength(evalStack.pop())));
     } break;
+    case OpCode::IndexString: {
+      auto index = evalStack.pop().getInt();
+      auto str   = evalStack.pop();
+      evalStack.push(internal::intValue(internal::indexString(str, index)));
+    } break;
 
     case OpCode::CheckEqInt: {
       auto b = evalStack.pop().getInt();

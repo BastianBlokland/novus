@@ -101,7 +101,7 @@ inline auto buildAssembly(const std::function<void(backend::Builder*)>& build) -
   CHECK_ASM("print(" + std::string(INPUT) + ")", buildAssemblyExprString(BUILD_EXPECTED_ASM))
 
 #define CHECK_EXPR_CHAR(INPUT, BUILD_EXPECTED_ASM)                                                 \
-  CHECK_ASM("print(" + std::string(INPUT) + ")", buildAssemblyExprChar(BUILD_EXPECTED_ASM))
+  CHECK_ASM("print(string(" + std::string(INPUT) + "))", buildAssemblyExprChar(BUILD_EXPECTED_ASM))
 
 #define CHECK_PROG(INPUT, BUILD_EXPECTED_ASM) CHECK_ASM(INPUT, buildAssembly(BUILD_EXPECTED_ASM))
 

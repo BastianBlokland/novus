@@ -103,6 +103,8 @@ auto Builder::addXorInt() -> void { writeOpCode(vm::OpCode::XorInt); }
 
 auto Builder::addLengthString() -> void { writeOpCode(vm::OpCode::LengthString); }
 
+auto Builder::addIndexString() -> void { writeOpCode(vm::OpCode::IndexString); }
+
 auto Builder::addCheckEqInt() -> void { writeOpCode(vm::OpCode::CheckEqInt); }
 
 auto Builder::addCheckEqFloat() -> void { writeOpCode(vm::OpCode::CheckEqFloat); }

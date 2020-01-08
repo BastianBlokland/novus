@@ -195,6 +195,9 @@ auto GenExpr::visit(const prog::expr::CallExprNode& n) -> void {
   case prog::sym::FuncKind::LengthString:
     m_builder->addLengthString();
     break;
+  case prog::sym::FuncKind::IndexString:
+    m_builder->addIndexString();
+    break;
   case prog::sym::FuncKind::CheckEqString:
     m_builder->addCheckEqString();
     break;

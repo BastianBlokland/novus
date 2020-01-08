@@ -63,8 +63,12 @@ TEST_CASE("Analyzing index expressions", "[frontend]") {
 
   SECTION("Diagnostics") {
     CHECK_DIAG(
-        "fun f(int i) -> int i[0]",
-        errUndeclaredIndexOperator(src, {"int", "int"}, input::Span{20, 23}));
+        "fun f(int i) -> int i[.0]",
+        errUndeclaredIndexOperator(src, {"int", "float"}, input::Span{20, 24}));
+    CHECK_DIAG(
+        "struct test = int i "
+        "fun f(test t) -> int t[0]",
+        errUndeclaredIndexOperator(src, {"test", "int"}, input::Span{41, 44}));
   }
 }
 

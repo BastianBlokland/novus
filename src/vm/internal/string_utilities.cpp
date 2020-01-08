@@ -13,7 +13,7 @@ auto toString(Allocator* allocator, int32_t val) -> Value {
     throw std::logic_error{"Failed to convert integer to string"};
   }
   strRefAlloc.first->updateSize(convRes.ptr - strRefAlloc.second);
-  return internal::refValue(strRefAlloc.first);
+  return refValue(strRefAlloc.first);
 }
 
 auto toString(Allocator* allocator, float val) -> Value {
@@ -28,13 +28,13 @@ auto toString(Allocator* allocator, float val) -> Value {
   // snprintf always outputs one.
   strRefAlloc.first->updateSize(charSize - 1);
 
-  return internal::refValue(strRefAlloc.first);
+  return refValue(strRefAlloc.first);
 }
 
 auto toString(Allocator* allocator, uint8_t val) -> Value {
   const auto strRefAlloc = allocator->allocStr(1);
   *strRefAlloc.second    = val;
-  return internal::refValue(strRefAlloc.first);
+  return refValue(strRefAlloc.first);
 }
 
 auto getStringLength(Value val) -> int32_t {
@@ -50,6 +50,14 @@ auto checkStringEq(Value a, Value b) -> bool {
       std::memcmp(strA->getDataPtr(), strB->getDataPtr(), strA->getSize()) == 0;
 }
 
+auto indexString(Value target, int32_t idx) -> char {
+  auto* strTgt = getStringRef(target);
+  if (idx < 0 || static_cast<unsigned>(idx) >= strTgt->getSize()) {
+    return 0;
+  }
+  return *(strTgt->getDataPtr() + idx);
+}
+
 auto concatString(Allocator* allocator, Value a, Value b) -> Value {
   auto* strA = getStringRef(a);
   auto* strB = getStringRef(b);
@@ -60,7 +68,7 @@ auto concatString(Allocator* allocator, Value a, Value b) -> Value {
   std::memcpy(result.second, strA->getDataPtr(), strA->getSize());
   std::memcpy(result.second + strA->getSize(), strB->getDataPtr(), strB->getSize());
 
-  return internal::refValue(result.first);
+  return refValue(result.first);
 }
 
 } // namespace vm::internal

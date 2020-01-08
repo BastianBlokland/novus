@@ -23,6 +23,7 @@ TEST_CASE("Lexing character literals", "[lex]") {
     CHECK_TOKENS("'\\\"'", litCharToken('"'));
     CHECK_TOKENS("'\\''", litCharToken('\''));
     CHECK_TOKENS("'\\\\'", litCharToken('\\'));
+    CHECK_TOKENS("'\\0'", litCharToken(0));
     CHECK_TOKENS("'\\a'", litCharToken('\a'));
     CHECK_TOKENS("'\\b'", litCharToken('\b'));
     CHECK_TOKENS("'\\f'", litCharToken('\f'));

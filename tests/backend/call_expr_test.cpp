@@ -190,6 +190,42 @@ TEST_CASE("Generate assembly for call expressions", "[backend]") {
     });
   }
 
+  SECTION("Char checks") {
+    CHECK_EXPR_BOOL("'1' == '3'", [](backend::Builder* builder) -> void {
+      builder->addLoadLitInt('1');
+      builder->addLoadLitInt('3');
+      builder->addCheckEqInt();
+    });
+    CHECK_EXPR_BOOL("'1' != '3'", [](backend::Builder* builder) -> void {
+      builder->addLoadLitInt('1');
+      builder->addLoadLitInt('3');
+      builder->addCheckEqInt();
+      builder->addLogicInvInt();
+    });
+    CHECK_EXPR_BOOL("'1' < '3'", [](backend::Builder* builder) -> void {
+      builder->addLoadLitInt('1');
+      builder->addLoadLitInt('3');
+      builder->addCheckLeInt();
+    });
+    CHECK_EXPR_BOOL("'1' <= '3'", [](backend::Builder* builder) -> void {
+      builder->addLoadLitInt('1');
+      builder->addLoadLitInt('3');
+      builder->addCheckGtInt();
+      builder->addLogicInvInt();
+    });
+    CHECK_EXPR_BOOL("'1' > '3'", [](backend::Builder* builder) -> void {
+      builder->addLoadLitInt('1');
+      builder->addLoadLitInt('3');
+      builder->addCheckGtInt();
+    });
+    CHECK_EXPR_BOOL("'1' >= '3'", [](backend::Builder* builder) -> void {
+      builder->addLoadLitInt('1');
+      builder->addLoadLitInt('3');
+      builder->addCheckLeInt();
+      builder->addLogicInvInt();
+    });
+  }
+
   SECTION("Bool operations") {
     CHECK_EXPR_BOOL("!false", [](backend::Builder* builder) -> void {
       builder->addLoadLitInt(0);
@@ -237,6 +273,12 @@ TEST_CASE("Generate assembly for call expressions", "[backend]") {
       builder->addLoadLitString("hello world");
       builder->addLengthString();
     });
+
+    CHECK_EXPR_CHAR("\"hello world\"[6]", [](backend::Builder* builder) -> void {
+      builder->addLoadLitString("hello world");
+      builder->addLoadLitInt(6);
+      builder->addIndexString();
+    });
   }
 
   SECTION("String checks") {
@@ -273,6 +315,10 @@ TEST_CASE("Generate assembly for call expressions", "[backend]") {
     CHECK_EXPR_STRING("string(true)", [](backend::Builder* builder) -> void {
       builder->addLoadLitInt(1);
       builder->addConvBoolString();
+    });
+    CHECK_EXPR_STRING("string('a')", [](backend::Builder* builder) -> void {
+      builder->addLoadLitInt('a');
+      builder->addConvCharString();
     });
   }
 
@@ -324,6 +370,8 @@ TEST_CASE("Generate assembly for call expressions", "[backend]") {
     CHECK_EXPR_STRING("string(\"hello world\")", [](backend::Builder* builder) -> void {
       builder->addLoadLitString("hello world");
     });
+    CHECK_EXPR_CHAR(
+        "char('a')", [](backend::Builder* builder) -> void { builder->addLoadLitInt('a'); });
   }
 }
 
