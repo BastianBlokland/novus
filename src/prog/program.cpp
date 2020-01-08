@@ -22,7 +22,8 @@ Program::Program() :
     m_int{m_typeDecls.registerType(sym::TypeKind::Int, "int")},
     m_float{m_typeDecls.registerType(sym::TypeKind::Float, "float")},
     m_bool{m_typeDecls.registerType(sym::TypeKind::Bool, "bool")},
-    m_string{m_typeDecls.registerType(sym::TypeKind::String, "string")} {
+    m_string{m_typeDecls.registerType(sym::TypeKind::String, "string")},
+    m_char{m_typeDecls.registerType(sym::TypeKind::Char, "char")} {
 
   using fk = typename prog::sym::FuncKind;
   using ak = typename prog::sym::ActionKind;
@@ -167,6 +168,8 @@ auto Program::getFloat() const noexcept -> sym::TypeId { return m_float; }
 auto Program::getBool() const noexcept -> sym::TypeId { return m_bool; }
 
 auto Program::getString() const noexcept -> sym::TypeId { return m_string; }
+
+auto Program::getChar() const noexcept -> sym::TypeId { return m_char; }
 
 auto Program::lookupType(const std::string& name) const -> std::optional<sym::TypeId> {
   return m_typeDecls.lookup(name);

@@ -30,6 +30,12 @@ TEST_CASE("Infer return type of user functions", "[frontend]") {
     CHECK(GET_FUNC_DECL(output, "f").getOutput() == GET_TYPE_ID(output, "string"));
   }
 
+  SECTION("Character literal") {
+    const auto& output = ANALYZE("fun f() 'a'");
+    REQUIRE(output.isSuccess());
+    CHECK(GET_FUNC_DECL(output, "f").getOutput() == GET_TYPE_ID(output, "char"));
+  }
+
   SECTION("Function literal") {
     const auto& output = ANALYZE("fun f1(int i) i "
                                  "fun f() f1");

@@ -16,6 +16,9 @@ auto operator<<(std::ostream& out, const TypeKind& rhs) -> std::ostream& {
   case TypeKind::String:
     out << "string";
     break;
+  case TypeKind::Char:
+    out << "char";
+    break;
   case TypeKind::UserStruct:
     out << "struct";
     break;

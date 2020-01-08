@@ -62,6 +62,8 @@ public:
     m_fg = rang::fg::cyan;
   }
 
+  auto visit(const prog::expr::LitCharNode & /*unused*/) -> void override { m_fg = rang::fg::cyan; }
+
 private:
   rang::fg m_fg{};
 };

@@ -81,6 +81,7 @@ add_library(prog STATIC
   prog/expr/node_lit_func.cpp
   prog/expr/node_lit_int.cpp
   prog/expr/node_lit_string.cpp
+  prog/expr/node_lit_char.cpp
   prog/expr/node_switch.cpp
   prog/expr/node_union_check.cpp
   prog/expr/node_union_get.cpp

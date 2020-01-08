@@ -7,6 +7,7 @@
 #include "prog/expr/node_field.hpp"
 #include "prog/expr/node_group.hpp"
 #include "prog/expr/node_lit_bool.hpp"
+#include "prog/expr/node_lit_char.hpp"
 #include "prog/expr/node_lit_float.hpp"
 #include "prog/expr/node_lit_func.hpp"
 #include "prog/expr/node_lit_int.hpp"
