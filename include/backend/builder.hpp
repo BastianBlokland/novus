@@ -50,6 +50,7 @@ public:
   auto addXorInt() -> void;
   auto addLengthString() -> void;
   auto addIndexString() -> void;
+  auto addSliceString() -> void;
 
   auto addCheckEqInt() -> void;
   auto addCheckEqFloat() -> void;

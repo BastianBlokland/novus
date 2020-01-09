@@ -50,6 +50,7 @@ auto disassembleInstructions(const vm::Assembly& assembly) -> std::vector<Instru
     case vm::OpCode::XorInt:
     case vm::OpCode::LengthString:
     case vm::OpCode::IndexString:
+    case vm::OpCode::SliceString:
     case vm::OpCode::CheckEqInt:
     case vm::OpCode::CheckEqFloat:
     case vm::OpCode::CheckEqString:

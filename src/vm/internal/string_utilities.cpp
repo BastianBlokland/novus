@@ -58,6 +58,37 @@ auto indexString(Value target, int32_t idx) -> char {
   return *(strTgt->getDataPtr() + idx);
 }
 
+auto sliceString(Allocator* allocator, Value target, int32_t start, int32_t end) -> Value {
+  auto* strTgt       = getStringRef(target);
+  const auto tgtSize = strTgt->getSize();
+  if (tgtSize == 0) {
+    return target;
+  }
+  if (start < 0) {
+    start = 0;
+  }
+  if (end < 0) {
+    end = 0;
+  }
+
+  if (static_cast<unsigned>(end) >= tgtSize - 1) {
+    end = tgtSize - 1;
+    // 'Slice' of the entire string.
+    if (start == 0) {
+      return target;
+    }
+  }
+  if (start > end) {
+    start = end;
+  }
+
+  // Copy the slice into a new string.
+  const auto sliceSize = 1 + end - start;
+  const auto result    = allocator->allocStr(sliceSize);
+  std::memcpy(result.second, strTgt->getDataPtr() + start, sliceSize);
+  return refValue(result.first);
+}
+
 auto concatString(Allocator* allocator, Value a, Value b) -> Value {
   auto* strA = getStringRef(a);
   auto* strB = getStringRef(b);

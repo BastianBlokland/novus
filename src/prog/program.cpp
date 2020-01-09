@@ -154,6 +154,12 @@ Program::Program() :
   m_funcDecls.registerFunc(*this, fk::LengthString, "length", sym::TypeSet{m_string}, m_int);
   m_funcDecls.registerFunc(
       *this, fk::IndexString, getFuncName(op::SquareSquare), sym::TypeSet{m_string, m_int}, m_char);
+  m_funcDecls.registerFunc(
+      *this,
+      fk::SliceString,
+      getFuncName(op::SquareSquare),
+      sym::TypeSet{m_string, m_int, m_int},
+      m_string);
 
   // Register build-in actions.
   m_actionDecls.registerAction(*this, ak::PrintString, "print", sym::TypeSet{m_string});
