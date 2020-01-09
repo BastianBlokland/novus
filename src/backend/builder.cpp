@@ -105,6 +105,8 @@ auto Builder::addLengthString() -> void { writeOpCode(vm::OpCode::LengthString);
 
 auto Builder::addIndexString() -> void { writeOpCode(vm::OpCode::IndexString); }
 
+auto Builder::addSliceString() -> void { writeOpCode(vm::OpCode::SliceString); }
+
 auto Builder::addCheckEqInt() -> void { writeOpCode(vm::OpCode::CheckEqInt); }
 
 auto Builder::addCheckEqFloat() -> void { writeOpCode(vm::OpCode::CheckEqFloat); }

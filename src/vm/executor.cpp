@@ -175,6 +175,12 @@ static auto execute(const Assembly& assembly, io::Interface* interface, uint32_t
       auto str   = evalStack.pop();
       evalStack.push(internal::intValue(internal::indexString(str, index)));
     } break;
+    case OpCode::SliceString: {
+      auto end   = evalStack.pop().getInt();
+      auto start = evalStack.pop().getInt();
+      auto str   = evalStack.pop();
+      evalStack.push(internal::sliceString(&allocator, str, start, end));
+    } break;
 
     case OpCode::CheckEqInt: {
       auto b = evalStack.pop().getInt();

@@ -43,6 +43,7 @@ enum class FuncKind {
   AddString,
   LengthString,
   IndexString,
+  SliceString,
   CheckEqString,
   CheckNEqString,
 

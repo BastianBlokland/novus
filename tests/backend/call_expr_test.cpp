@@ -279,6 +279,12 @@ TEST_CASE("Generate assembly for call expressions", "[backend]") {
       builder->addLoadLitInt(6);
       builder->addIndexString();
     });
+    CHECK_EXPR_STRING("\"hello world\"[0, 6]", [](backend::Builder* builder) -> void {
+      builder->addLoadLitString("hello world");
+      builder->addLoadLitInt(0);
+      builder->addLoadLitInt(6);
+      builder->addSliceString();
+    });
   }
 
   SECTION("String checks") {
