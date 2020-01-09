@@ -237,6 +237,9 @@ auto Program::findCommonType(const std::vector<sym::TypeId>& types) -> std::opti
 }
 
 auto Program::isDelegate(sym::TypeId id) const -> bool {
+  if (!id.isConcrete()) {
+    return false;
+  }
   const auto& typeDecl = getTypeDecl(id);
   return typeDecl.getKind() == sym::TypeKind::UserDelegate;
 }
@@ -248,6 +251,9 @@ auto Program::isCallable(sym::FuncId func, const std::vector<expr::NodePtr>& arg
 
 auto Program::isCallable(sym::TypeId delegate, const std::vector<expr::NodePtr>& args) const
     -> bool {
+  if (!delegate.isConcrete()) {
+    return false;
+  }
   const auto& typeDecl = getTypeDecl(delegate);
   if (typeDecl.getKind() != sym::TypeKind::UserDelegate) {
     return false;
