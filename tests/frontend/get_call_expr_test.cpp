@@ -3,6 +3,7 @@
 #include "helpers.hpp"
 #include "prog/expr/node_const.hpp"
 #include "prog/expr/node_lit_int.hpp"
+#include "prog/expr/node_lit_string.hpp"
 
 namespace frontend {
 
@@ -105,6 +106,43 @@ TEST_CASE("Analyzing call expressions", "[frontend]") {
             std::move(args)));
   }
 
+  SECTION("Get instance call") {
+    const auto& output = ANALYZE("fun f1(int i) -> int i "
+                                 "fun f2(int i) -> int i.f1()");
+    REQUIRE(output.isSuccess());
+
+    const auto& fDef   = GET_FUNC_DEF(output, "f2", GET_TYPE_ID(output, "int"));
+    const auto& consts = fDef.getConsts();
+
+    auto args = std::vector<prog::expr::NodePtr>{};
+    args.push_back(prog::expr::constExprNode(consts, *consts.lookup("i")));
+    CHECK(
+        fDef.getExpr() ==
+        *prog::expr::callExprNode(
+            output.getProg(),
+            GET_FUNC_ID(output, "f1", GET_TYPE_ID(output, "int")),
+            std::move(args)));
+  }
+
+  SECTION("Get instance call with args") {
+    const auto& output = ANALYZE("fun f1(int i, string v) -> string i.string() + v "
+                                 "fun f2(int i) -> string i.f1(\"test\")");
+    REQUIRE(output.isSuccess());
+
+    const auto& fDef   = GET_FUNC_DEF(output, "f2", GET_TYPE_ID(output, "int"));
+    const auto& consts = fDef.getConsts();
+
+    auto args = std::vector<prog::expr::NodePtr>{};
+    args.push_back(prog::expr::constExprNode(consts, *consts.lookup("i")));
+    args.push_back(prog::expr::litStringNode(output.getProg(), "test"));
+    CHECK(
+        fDef.getExpr() ==
+        *prog::expr::callExprNode(
+            output.getProg(),
+            GET_FUNC_ID(output, "f1", GET_TYPE_ID(output, "int"), GET_TYPE_ID(output, "string")),
+            std::move(args)));
+  }
+
   SECTION("Diagnostics") {
     CHECK_DIAG(
         "fun f1() -> int 1 "
@@ -117,6 +155,8 @@ TEST_CASE("Analyzing call expressions", "[frontend]") {
     CHECK_DIAG("fun f() -> int 1()", errUndeclaredCallOperator(src, {"int"}, input::Span{15, 17}));
     CHECK_DIAG(
         "fun f(int i) -> int i()", errUndeclaredCallOperator(src, {"int"}, input::Span{20, 22}));
+    CHECK_DIAG(
+        "fun f1(int i) -> int i.f2()", errUndeclaredFunc(src, "f2", {"int"}, input::Span{21, 26}));
   }
 }
 

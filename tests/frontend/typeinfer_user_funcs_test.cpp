@@ -201,6 +201,20 @@ TEST_CASE("Infer return type of user functions", "[frontend]") {
     CHECK(GET_FUNC_DECL(output, "f").getOutput() == GET_TYPE_ID(output, "bool"));
   }
 
+  SECTION("Instance function call") {
+    const auto& output = ANALYZE("fun double(int i) i * 2 "
+                                 "fun f() (42).double()");
+    REQUIRE(output.isSuccess());
+    CHECK(GET_FUNC_DECL(output, "f").getOutput() == GET_TYPE_ID(output, "int"));
+  }
+
+  SECTION("Instance function call with arguments") {
+    const auto& output = ANALYZE("fun test(int a, string b) a.string() + b "
+                                 "fun f() (42).test(\"test\")");
+    REQUIRE(output.isSuccess());
+    CHECK(GET_FUNC_DECL(output, "f").getOutput() == GET_TYPE_ID(output, "string"));
+  }
+
   SECTION("Dynamic call") {
     const auto& output = ANALYZE("fun f(delegate{int, int} op) op(1)");
     REQUIRE(output.isSuccess());
