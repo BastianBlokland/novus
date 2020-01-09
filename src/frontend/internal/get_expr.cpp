@@ -135,6 +135,7 @@ auto GetExpr::visit(const parse::BinaryExprNode& n) -> void {
 auto GetExpr::visit(const parse::CallExprNode& n) -> void {
   auto getIdVisitor = GetIdentifier{};
   n[0].accept(&getIdVisitor);
+  auto* instance  = getIdVisitor.getInstance();
   auto identifier = getIdVisitor.getIdentifier();
   auto typeParams = getIdVisitor.getTypeParams();
 
@@ -146,7 +147,7 @@ auto GetExpr::visit(const parse::CallExprNode& n) -> void {
   }
 
   auto nameToken = *identifier;
-  auto args      = getChildExprs(n, 1);
+  auto args      = getChildExprs(n, instance, 1);
   if (!args) {
     assert(m_context->hasErrors());
     return;
@@ -557,9 +558,27 @@ auto GetExpr::visit(const parse::UnionDeclStmtNode & /*unused*/) -> void {
 
 auto GetExpr::getChildExprs(const parse::Node& n, unsigned int skipAmount)
     -> std::optional<std::pair<std::vector<prog::expr::NodePtr>, prog::sym::TypeSet>> {
+  return getChildExprs(n, nullptr, skipAmount);
+}
+
+auto GetExpr::getChildExprs(
+    const parse::Node& n, const parse::Node* additionalNode, unsigned int skipAmount)
+    -> std::optional<std::pair<std::vector<prog::expr::NodePtr>, prog::sym::TypeSet>> {
   auto isValid  = true;
   auto argTypes = std::vector<prog::sym::TypeId>{};
   auto args     = std::vector<prog::expr::NodePtr>{};
+  if (additionalNode) {
+    auto arg = getSubExpr(*additionalNode, prog::sym::TypeId::inferType());
+    if (arg) {
+      const auto argType = arg->getType();
+      if (argType.isConcrete()) {
+        argTypes.push_back(argType);
+        args.push_back(std::move(arg));
+      } else {
+        isValid = false;
+      }
+    }
+  }
   for (auto i = skipAmount; i < n.getChildCount(); ++i) {
     auto arg = getSubExpr(n[i], prog::sym::TypeId::inferType());
     if (arg) {

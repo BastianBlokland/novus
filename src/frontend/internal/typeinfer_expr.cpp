@@ -71,6 +71,7 @@ auto TypeInferExpr::visit(const parse::BinaryExprNode& n) -> void {
 auto TypeInferExpr::visit(const parse::CallExprNode& n) -> void {
   auto getIdVisitor = GetIdentifier{};
   n[0].accept(&getIdVisitor);
+  auto* instance  = getIdVisitor.getInstance();
   auto identifier = getIdVisitor.getIdentifier();
   auto typeParams = getIdVisitor.getTypeParams();
 
@@ -84,6 +85,9 @@ auto TypeInferExpr::visit(const parse::CallExprNode& n) -> void {
 
   auto argTypes = std::vector<prog::sym::TypeId>{};
   argTypes.reserve(n.getChildCount());
+  if (instance) {
+    argTypes.push_back(inferSubExpr(*instance));
+  }
   for (auto i = 1U; i < n.getChildCount(); ++i) {
     argTypes.push_back(inferSubExpr(n[i]));
   }
