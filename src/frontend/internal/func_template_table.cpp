@@ -95,7 +95,7 @@ auto FuncTemplateTable::inferParamsAndGetRetType(
       const auto inferredTypeParams = funcTemplate.inferTypeParams(argTypes);
       if (inferredTypeParams) {
         const auto retType = funcTemplate.getRetType(*inferredTypeParams);
-        if (!retType) {
+        if (!retType || retType->isInfer()) {
           continue;
         }
         if (!result) {

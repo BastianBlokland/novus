@@ -276,6 +276,14 @@ TEST_CASE("Infer return type of user functions", "[frontend]") {
         GET_TYPE_ID(output, "__delegate_float"));
   }
 
+  SECTION("Templated overloaded call") {
+    const auto& output = ANALYZE("fun f1{T}(T a, int b) f1(a, false) "
+                                 "fun f1{T}(T a, bool b) b "
+                                 "fun f2() f1(0, 0)");
+    REQUIRE(output.isSuccess());
+    CHECK(GET_FUNC_DECL(output, "f2").getOutput() == GET_TYPE_ID(output, "bool"));
+  }
+
   SECTION("Diagnostics") {
     CHECK_DIAG(
         "fun f1() f2() "
