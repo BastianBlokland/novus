@@ -167,6 +167,9 @@ TEST_CASE("Analyzing user-function declarations", "[frontend]") {
     CHECK_DIAG(
         "fun +{T}() -> T T()",
         errOperatorOverloadWithoutArgs(src, "operator-plus", input::Span{4, 4}));
+    CHECK_DIAG("fun f{T}(test a) -> int 1", errUndeclaredType(src, "test", input::Span{9, 12}));
+    CHECK_DIAG("fun f{T}(int{M} a) -> int 1", errUndeclaredType(src, "M", input::Span{13, 13}));
+    CHECK_DIAG("fun f{T}(int{T{M}} a) -> int 1", errUndeclaredType(src, "M", input::Span{15, 15}));
   }
 }
 

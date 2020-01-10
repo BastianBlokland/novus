@@ -22,6 +22,11 @@ private:
   std::vector<DeclarationInfo> m_funcs;
 
   auto validateFuncName(const lex::Token& nameToken) -> bool;
+
+  auto validateFuncTemplateArgList(
+      const parse::ArgumentListDecl& args, const std::vector<std::string>& typeSubParams) -> bool;
+
+  auto validateType(const parse::Type& type, const std::vector<std::string>& typeSubParams) -> bool;
 };
 
 } // namespace frontend::internal

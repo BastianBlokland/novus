@@ -44,7 +44,7 @@ auto DeclareUserFuncs::visit(const parse::FuncDeclStmtNode& n) -> void {
   // the function-template table.
   if (n.getTypeSubs()) {
     auto typeSubs = getSubstitutionParams(m_context, *n.getTypeSubs());
-    if (typeSubs) {
+    if (typeSubs && validateFuncTemplateArgList(n.getArgList(), *typeSubs)) {
       m_context->getFuncTemplates()->declare(m_context, name, std::move(*typeSubs), n);
     }
     return;
@@ -113,6 +113,36 @@ auto DeclareUserFuncs::validateFuncName(const lex::Token& nameToken) -> bool {
     return false;
   }
   return true;
+}
+
+auto DeclareUserFuncs::validateFuncTemplateArgList(
+    const parse::ArgumentListDecl& args, const std::vector<std::string>& typeSubParams) -> bool {
+
+  auto isValid = true;
+  for (const auto& arg : args) {
+    isValid &= validateType(arg.getType(), typeSubParams);
+  }
+  return isValid;
+}
+
+auto DeclareUserFuncs::validateType(
+    const parse::Type& type, const std::vector<std::string>& typeSubParams) -> bool {
+
+  auto isValid    = true;
+  const auto name = getName(type.getId());
+  if (!isType(m_context, name) &&
+      std::find(typeSubParams.begin(), typeSubParams.end(), name) == typeSubParams.end()) {
+
+    m_context->reportDiag(errUndeclaredType(m_context->getSrc(), name, type.getSpan()));
+    isValid = false;
+  }
+
+  if (type.getParamList()) {
+    for (const auto& sub : *type.getParamList()) {
+      isValid &= validateType(sub, typeSubParams);
+    }
+  }
+  return isValid;
 }
 
 } // namespace frontend::internal
