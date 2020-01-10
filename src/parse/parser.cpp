@@ -415,7 +415,7 @@ auto ParserImpl::nextExprSwitchElse() -> NodePtr {
 auto ParserImpl::nextExprAnonFunc() -> NodePtr {
   auto kw      = consumeToken();
   auto argList = nextArgDeclList();
-  auto body    = nextExpr(groupingPrecedence);
+  auto body    = nextExpr(0);
 
   if (getKw(kw) == lex::Keyword::Lambda && argList.validate()) {
     return anonFuncExprNode(kw, std::move(argList), std::move(body));

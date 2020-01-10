@@ -39,6 +39,23 @@ TEST_CASE("Analyzing constant expressions", "[frontend]") {
     CHECK(funcDef.getExpr() == *prog::expr::groupExprNode(std::move(exprs)));
   }
 
+  SECTION("Access const in anonymous function") {
+    const auto& output = ANALYZE("fun f() lambda () x = 1; x");
+    REQUIRE(output.isSuccess());
+    const auto& anonDef = GET_FUNC_DEF(output, "__anon_0");
+    const auto& consts  = anonDef.getConsts();
+
+    const auto x = consts.lookup("x");
+    REQUIRE(x);
+
+    auto exprs = std::vector<prog::expr::NodePtr>{};
+    exprs.push_back(
+        prog::expr::assignExprNode(consts, x.value(), prog::expr::litIntNode(output.getProg(), 1)));
+    exprs.push_back(prog::expr::constExprNode(consts, x.value()));
+
+    CHECK(anonDef.getExpr() == *prog::expr::groupExprNode(std::move(exprs)));
+  }
+
   SECTION("Diagnostics") {
     CHECK_DIAG("fun f() -> int x", errUndeclaredConst(src, "x", input::Span{15, 15}));
     CHECK_DIAG(
