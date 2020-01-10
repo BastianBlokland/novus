@@ -139,9 +139,14 @@ auto GetExpr::visit(const parse::CallExprNode& n) -> void {
   auto identifier = getIdVisitor.getIdentifier();
   auto typeParams = getIdVisitor.getTypeParams();
 
-  // If the lhs is not an identifier (but a different expression) or if the identifier is a
-  // constant then treat it as a 'dynamic' call, otherwise its a regular function call.
-  if (!identifier || m_constBinder->canBind(getName(*identifier))) {
+  /* Check what kind of call this is.
+  - If lhs is not an identifier (but some other expression): Dynamic call.
+  - Lhs is an identifier that matches a constant name: Dynamic call.
+  - Lhs has an instance (like a struct) and its (field) name is not a function: Dynamic call.
+  - Otherwise: Static call (If there is an lhs instance its treated as the first arg). */
+  if (!identifier || m_constBinder->canBind(getName(*identifier)) ||
+      (instance != nullptr && !isFuncOrConv(m_context, getName(*identifier)))) {
+
     m_expr = getDynCallExpr(n);
     return;
   }

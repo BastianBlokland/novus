@@ -223,6 +223,15 @@ TEST_CASE("Infer return type of user functions", "[frontend]") {
         GET_TYPE_ID(output, "int"));
   }
 
+  SECTION("Dynamic call on struct field") {
+    const auto& output = ANALYZE("struct S = delegate{int} del "
+                                 "fun f(S s) s.del()");
+    REQUIRE(output.isSuccess());
+    CHECK(
+        GET_FUNC_DECL(output, "f", GET_TYPE_ID(output, "S")).getOutput() ==
+        GET_TYPE_ID(output, "int"));
+  }
+
   SECTION("Anonymous function") {
     const auto& output = ANALYZE("fun f() lambda (int i) i == i");
     REQUIRE(output.isSuccess());

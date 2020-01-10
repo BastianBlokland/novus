@@ -76,7 +76,8 @@ auto TypeInferExpr::visit(const parse::CallExprNode& n) -> void {
   auto typeParams = getIdVisitor.getTypeParams();
 
   // Dynamic call.
-  if (!identifier || m_constTypes->find(getName(*identifier)) != m_constTypes->end()) {
+  if (!identifier || m_constTypes->find(getName(*identifier)) != m_constTypes->end() ||
+      (instance != nullptr && !isFuncOrConv(m_context, getName(*identifier)))) {
     m_type = inferDynCall(n);
     return;
   }

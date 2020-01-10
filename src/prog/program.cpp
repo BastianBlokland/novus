@@ -199,9 +199,13 @@ auto Program::getString() const noexcept -> sym::TypeId { return m_string; }
 
 auto Program::getChar() const noexcept -> sym::TypeId { return m_char; }
 
+auto Program::hasType(const std::string& name) const -> bool { return m_typeDecls.exists(name); }
+
 auto Program::lookupType(const std::string& name) const -> std::optional<sym::TypeId> {
   return m_typeDecls.lookup(name);
 }
+
+auto Program::hasFunc(const std::string& name) const -> bool { return m_funcDecls.exists(name); }
 
 auto Program::lookupFunc(const std::string& name, const sym::TypeSet& input, int maxConversions)
     const -> std::optional<sym::FuncId> {

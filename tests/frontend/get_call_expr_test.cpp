@@ -156,7 +156,8 @@ TEST_CASE("Analyzing call expressions", "[frontend]") {
     CHECK_DIAG(
         "fun f(int i) -> int i()", errUndeclaredCallOperator(src, {"int"}, input::Span{20, 22}));
     CHECK_DIAG(
-        "fun f1(int i) -> int i.f2()", errUndeclaredFunc(src, "f2", {"int"}, input::Span{21, 26}));
+        "fun f1(int i) -> int i.f2()",
+        errFieldNotFoundOnType(src, "f2", "int", input::Span{21, 24}));
   }
 }
 

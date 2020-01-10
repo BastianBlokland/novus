@@ -63,7 +63,10 @@ public:
   [[nodiscard]] auto getString() const noexcept -> sym::TypeId;
   [[nodiscard]] auto getChar() const noexcept -> sym::TypeId;
 
+  [[nodiscard]] auto hasType(const std::string& name) const -> bool;
   [[nodiscard]] auto lookupType(const std::string& name) const -> std::optional<sym::TypeId>;
+
+  [[nodiscard]] auto hasFunc(const std::string& name) const -> bool;
   [[nodiscard]] auto
   lookupFunc(const std::string& name, const sym::TypeSet& input, int maxConversions) const
       -> std::optional<sym::FuncId>;

@@ -3,6 +3,7 @@
 #include "helpers.hpp"
 #include "prog/expr/node_call_dyn.hpp"
 #include "prog/expr/node_const.hpp"
+#include "prog/expr/node_field.hpp"
 #include "prog/expr/node_lit_bool.hpp"
 #include "prog/expr/node_lit_func.hpp"
 #include "prog/expr/node_lit_int.hpp"
@@ -84,6 +85,24 @@ TEST_CASE("Analyzing call dynamic expressions", "[frontend]") {
     CHECK(
         fDef.getExpr() ==
         *prog::expr::callExprNode(output.getProg(), f2Def.getId(), std::move(fArgs)));
+  }
+
+  SECTION("Get delegate call on struct") {
+    const auto& output = ANALYZE("struct S = delegate{int} del "
+                                 "fun f(S s) -> int s.del()");
+    REQUIRE(output.isSuccess());
+    const auto& sDef = std::get<prog::sym::StructDef>(GET_TYPE_DEF(output, "S"));
+    const auto& fDef = GET_FUNC_DEF(output, "f", GET_TYPE_ID(output, "S"));
+
+    CHECK(
+        fDef.getExpr() ==
+        *prog::expr::callDynExprNode(
+            output.getProg(),
+            prog::expr::fieldExprNode(
+                output.getProg(),
+                prog::expr::constExprNode(fDef.getConsts(), *fDef.getConsts().lookup("s")),
+                *sDef.getFields().lookup("del")),
+            {}));
   }
 
   SECTION("Diagnostics") {

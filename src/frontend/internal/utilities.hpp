@@ -88,4 +88,6 @@ mangleName(Context* context, const std::string& name, const prog::sym::TypeSet& 
 
 [[nodiscard]] auto isType(Context* context, const std::string& name) -> bool;
 
+[[nodiscard]] auto isFuncOrConv(Context* context, const std::string& name) -> bool;
+
 } // namespace frontend::internal

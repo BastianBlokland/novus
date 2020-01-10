@@ -430,13 +430,12 @@ auto getConstName(
         errConstNameConflictsWithTypeSubstitution(context->getSrc(), name, nameToken.getSpan()));
     return std::nullopt;
   }
-  if (context->getProg()->lookupType(name) || isReservedTypeName(name)) {
+  if (isType(context, name)) {
     context->reportDiag(
         errConstNameConflictsWithType(context->getSrc(), name, nameToken.getSpan()));
     return std::nullopt;
   }
-  if (!context->getProg()->lookupFuncs(name).empty() ||
-      context->getFuncTemplates()->hasFunc(name)) {
+  if (isFuncOrConv(context, name)) {
     context->reportDiag(
         errConstNameConflictsWithFunction(context->getSrc(), name, nameToken.getSpan()));
     return std::nullopt;
@@ -465,8 +464,13 @@ auto mangleName(Context* context, const std::string& name, const prog::sym::Type
 }
 
 auto isType(Context* context, const std::string& name) -> bool {
-  return isReservedTypeName(name) || context->getProg()->lookupType(name) ||
+  return isReservedTypeName(name) || context->getProg()->hasType(name) ||
       context->getTypeTemplates()->hasType(name);
+}
+
+auto isFuncOrConv(Context* context, const std::string& name) -> bool {
+  return isType(context, name) || context->getProg()->hasFunc(name) ||
+      context->getFuncTemplates()->hasFunc(name);
 }
 
 // Explicit instantiations.
