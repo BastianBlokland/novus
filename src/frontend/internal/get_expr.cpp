@@ -304,15 +304,15 @@ auto GetExpr::visit(const parse::FieldExprNode& n) -> void {
   const auto lhsType      = lhsExpr->getType();
   const auto& lhsTypeDecl = m_context->getProg()->getTypeDecl(lhsType);
   if (lhsTypeDecl.getKind() != prog::sym::TypeKind::UserStruct) {
-    m_context->reportDiag(
-        errFieldNotFoundOnType(m_context->getSrc(), fieldName, lhsTypeDecl.getName(), n.getSpan()));
+    m_context->reportDiag(errFieldNotFoundOnType(
+        m_context->getSrc(), fieldName, getDisplayName(*m_context, lhsType), n.getSpan()));
     return;
   }
   const auto& structDef = std::get<prog::sym::StructDef>(m_context->getProg()->getTypeDef(lhsType));
   const auto field      = structDef.getFields().lookup(fieldName);
   if (!field) {
-    m_context->reportDiag(
-        errFieldNotFoundOnType(m_context->getSrc(), fieldName, lhsTypeDecl.getName(), n.getSpan()));
+    m_context->reportDiag(errFieldNotFoundOnType(
+        m_context->getSrc(), fieldName, getDisplayName(*m_context, lhsType), n.getSpan()));
     return;
   }
 
