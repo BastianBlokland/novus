@@ -139,9 +139,8 @@ TEST_CASE("Analyzing user-function declarations", "[frontend]") {
         errInvalidFuncInstantiation(src, input::Span{59, 59}),
         errNoTypeOrConversionFoundToInstantiate(src, "s", 1, input::Span{59, 67}));
     CHECK_DIAG(
-        "fun -(int i) -> int 1",
-        errDuplicateFuncDeclaration(src, "operator-minus", input::Span{0, 20}));
-    CHECK_DIAG("fun ?() -> int 1", errNonOverloadableOperator(src, "qmark", input::Span{4, 4}));
+        "fun -(int i) -> int 1", errDuplicateFuncDeclaration(src, "operator-", input::Span{0, 20}));
+    CHECK_DIAG("fun ?() -> int 1", errNonOverloadableOperator(src, "?", input::Span{4, 4}));
     CHECK_DIAG(
         "fun f{int}() -> int 1", errTypeParamNameConflictsWithType(src, "int", input::Span{6, 8}));
     CHECK_DIAG(
@@ -162,11 +161,9 @@ TEST_CASE("Analyzing user-function declarations", "[frontend]") {
         errInvalidFuncInstantiation(src, input::Span{42, 45}),
         errNoFuncFoundToInstantiate(src, "test", 1, input::Span{42, 53}));
     CHECK_DIAG(
-        "fun +() -> int i",
-        errOperatorOverloadWithoutArgs(src, "operator-plus", input::Span{4, 4}));
+        "fun +() -> int i", errOperatorOverloadWithoutArgs(src, "operator+", input::Span{4, 4}));
     CHECK_DIAG(
-        "fun +{T}() -> T T()",
-        errOperatorOverloadWithoutArgs(src, "operator-plus", input::Span{4, 4}));
+        "fun +{T}() -> T T()", errOperatorOverloadWithoutArgs(src, "operator+", input::Span{4, 4}));
     CHECK_DIAG("fun f{T}(test a) -> int 1", errUndeclaredType(src, "test", 0, input::Span{9, 12}));
     CHECK_DIAG("fun f{T}(int{M} a) -> int 1", errUndeclaredType(src, "M", 0, input::Span{13, 13}));
     CHECK_DIAG(

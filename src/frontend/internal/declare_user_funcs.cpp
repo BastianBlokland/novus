@@ -31,7 +31,7 @@ auto DeclareUserFuncs::visit(const parse::FuncDeclStmtNode& n) -> void {
       return;
     }
     name        = prog::getFuncName(*op);
-    displayName = "operator-" + n.getId().str();
+    displayName = "operator" + n.getId().str();
 
     if (n.getArgList().getCount() == 0) {
       m_context->reportDiag(

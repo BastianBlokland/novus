@@ -5,112 +5,112 @@ namespace lex {
 auto operator<<(std::ostream& out, const TokenKind& rhs) -> std::ostream& {
   switch (rhs) {
   case TokenKind::OpPlus:
-    out << "plus";
+    out << "+";
     break;
   case TokenKind::OpMinus:
-    out << "minus";
+    out << "-";
     break;
   case TokenKind::OpStar:
-    out << "star";
+    out << "*";
     break;
   case TokenKind::OpSlash:
-    out << "slash";
+    out << "/";
     break;
   case TokenKind::OpRem:
-    out << "remainder";
+    out << "%";
     break;
   case TokenKind::OpAmp:
-    out << "ampersand";
+    out << "&";
     break;
   case TokenKind::OpAmpAmp:
-    out << "ampersand-ampersand";
+    out << "&&";
     break;
   case TokenKind::OpPipe:
-    out << "pipe";
+    out << "|";
     break;
   case TokenKind::OpPipePipe:
-    out << "pipe-pipe";
+    out << "||";
     break;
   case TokenKind::OpHat:
-    out << "hat";
+    out << "^";
     break;
   case TokenKind::OpShiftL:
-    out << "shift-left";
+    out << "<<";
     break;
   case TokenKind::OpShiftR:
-    out << "shift-right";
+    out << ">>";
     break;
   case TokenKind::OpEq:
-    out << "equal";
+    out << "=";
     break;
   case TokenKind::OpEqEq:
-    out << "equal-equal";
+    out << "==";
     break;
   case TokenKind::OpBang:
-    out << "bang";
+    out << "!";
     break;
   case TokenKind::OpBangEq:
-    out << "bang-equal";
+    out << "!=";
     break;
   case TokenKind::OpLe:
-    out << "less";
+    out << "<";
     break;
   case TokenKind::OpLeEq:
-    out << "less-equal";
+    out << "<=";
     break;
   case TokenKind::OpGt:
-    out << "greater";
+    out << ">";
     break;
   case TokenKind::OpGtEq:
-    out << "greater-equal";
+    out << ">=";
     break;
   case TokenKind::OpSemi:
-    out << "semicolon";
+    out << ";";
     break;
   case TokenKind::OpQMark:
-    out << "qmark";
+    out << "?";
     break;
   case TokenKind::OpQMarkQMark:
-    out << "qmarkqmark";
+    out << "??";
     break;
   case TokenKind::OpDot:
-    out << "dot";
+    out << ".";
     break;
   case TokenKind::OpColonColon:
-    out << "coloncolon";
+    out << "::";
     break;
   case TokenKind::OpSquareSquare:
-    out << "squaresquare";
+    out << "[]";
     break;
   case TokenKind::OpParenParen:
-    out << "parenparen";
+    out << "()";
     break;
   case TokenKind::SepOpenParen:
-    out << "open-paren";
+    out << "(";
     break;
   case TokenKind::SepCloseParen:
-    out << "close-paren";
+    out << ")";
     break;
   case TokenKind::SepOpenCurly:
-    out << "open-curly";
+    out << "{";
     break;
   case TokenKind::SepCloseCurly:
-    out << "close-curly";
+    out << "}";
     break;
   case TokenKind::SepOpenSquare:
-    out << "open-square";
+    out << "[";
     break;
   case TokenKind::SepCloseSquare:
-    out << "close-square";
+    out << "]";
     break;
   case TokenKind::SepComma:
-    out << "comma";
+    out << ",";
     break;
   case TokenKind::SepColon:
-    out << "colon";
+    out << ":";
     break;
   case TokenKind::SepArrow:
-    out << "arrow";
+    out << "->";
     break;
   case TokenKind::LitInt:
     out << "int";
