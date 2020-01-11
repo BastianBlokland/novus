@@ -373,17 +373,18 @@ auto GetExpr::visit(const parse::IsExprNode& n) -> void {
   const auto& unionDef = std::get<prog::sym::UnionDef>(m_context->getProg()->getTypeDef(lhsType));
 
   // Validate that the type is a valid type.
-  const auto type = getOrInstType(m_context, m_typeSubTable, n.getType());
+  const auto& parseType = n.getType();
+  const auto type       = getOrInstType(m_context, m_typeSubTable, parseType);
   if (!type) {
-    m_context->reportDiag(
-        errUndeclaredType(m_context->getSrc(), getName(n.getType()), n.getType().getSpan()));
+    m_context->reportDiag(errUndeclaredType(
+        m_context->getSrc(), getName(parseType), parseType.getParamCount(), parseType.getSpan()));
     return;
   }
 
   // Validate that the type is part of the union.
   if (!unionDef.hasType(*type)) {
     m_context->reportDiag(errTypeNotPartOfUnion(
-        m_context->getSrc(), getName(n.getType()), lhsTypeDecl.getName(), n.getType().getSpan()));
+        m_context->getSrc(), getName(parseType), lhsTypeDecl.getName(), parseType.getSpan()));
     return;
   }
 
@@ -396,7 +397,7 @@ auto GetExpr::visit(const parse::IsExprNode& n) -> void {
   // accessed when the expression evaluates to 'true'.
   if (!m_checkedConstsAccess) {
     m_context->reportDiag(
-        errUncheckedIsExpressionWithConst(m_context->getSrc(), n.getType().getSpan()));
+        errUncheckedIsExpressionWithConst(m_context->getSrc(), parseType.getSpan()));
     return;
   }
 

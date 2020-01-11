@@ -260,10 +260,14 @@ auto getRetType(
   if (!retTypeSpec) {
     return prog::sym::TypeId::inferType();
   }
-  auto retType = getOrInstType(context, subTable, retTypeSpec->getType());
+  const auto& retParseType = retTypeSpec->getType();
+  auto retType             = getOrInstType(context, subTable, retParseType);
   if (!retType) {
     context->reportDiag(errUndeclaredType(
-        context->getSrc(), getName(retTypeSpec->getType()), retTypeSpec->getType().getSpan()));
+        context->getSrc(),
+        getName(retParseType),
+        retParseType.getParamCount(),
+        retParseType.getSpan()));
     return std::nullopt;
   }
   return retType;
@@ -344,12 +348,16 @@ auto getFuncInput(
   auto isValid  = true;
   auto argTypes = std::vector<prog::sym::TypeId>{};
   for (const auto& arg : parseNode.getArgList()) {
-    const auto argType = getOrInstType(context, subTable, arg.getType());
+    const auto& argParseType = arg.getType();
+    const auto argType       = getOrInstType(context, subTable, argParseType);
     if (argType) {
       argTypes.push_back(argType.value());
     } else {
-      context->reportDiag(
-          errUndeclaredType(context->getSrc(), getName(arg.getType()), arg.getType().getSpan()));
+      context->reportDiag(errUndeclaredType(
+          context->getSrc(),
+          getName(argParseType),
+          argParseType.getParamCount(),
+          argParseType.getSpan()));
       isValid = false;
     }
   }
@@ -410,8 +418,8 @@ auto getTypeSet(
     if (type) {
       types.push_back(*type);
     } else {
-      context->reportDiag(
-          errUndeclaredType(context->getSrc(), getName(parseType), parseType.getSpan()));
+      context->reportDiag(errUndeclaredType(
+          context->getSrc(), getName(parseType), parseType.getParamCount(), parseType.getSpan()));
       isValid = false;
     }
   }

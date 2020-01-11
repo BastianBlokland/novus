@@ -18,11 +18,15 @@ auto DefineUserTypes::define(prog::sym::TypeId id, const parse::StructDeclStmtNo
   auto fieldTable = prog::sym::FieldDeclTable{};
   for (const auto& field : n.getFields()) {
     // Get field type.
-    const auto fieldTypeName = getName(field.getType());
-    const auto fieldType     = getOrInstType(m_context, m_typeSubTable, field.getType());
+    const auto& fieldParseType = field.getType();
+    const auto fieldTypeName   = getName(fieldParseType);
+    const auto fieldType       = getOrInstType(m_context, m_typeSubTable, fieldParseType);
     if (!fieldType) {
       m_context->reportDiag(errUndeclaredType(
-          m_context->getSrc(), getName(field.getType()), field.getType().getSpan()));
+          m_context->getSrc(),
+          getName(fieldParseType),
+          fieldParseType.getParamCount(),
+          fieldParseType.getSpan()));
       isValid = false;
       continue;
     }
@@ -62,8 +66,8 @@ auto DefineUserTypes::define(prog::sym::TypeId id, const parse::UnionDeclStmtNod
   for (const auto& parseType : n.getTypes()) {
     const auto type = getOrInstType(m_context, m_typeSubTable, parseType);
     if (!type) {
-      m_context->reportDiag(
-          errUndeclaredType(m_context->getSrc(), getName(parseType), parseType.getSpan()));
+      m_context->reportDiag(errUndeclaredType(
+          m_context->getSrc(), getName(parseType), parseType.getParamCount(), parseType.getSpan()));
       isValid = false;
       continue;
     }

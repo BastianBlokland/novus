@@ -179,7 +179,7 @@ TEST_CASE("Analyzing anonymous functions", "[frontend]") {
   }
 
   SECTION("Diagnostics") {
-    CHECK_DIAG("fun f() lambda (b c) 1", errUndeclaredType(src, "b", input::Span{16, 16}));
+    CHECK_DIAG("fun f() lambda (b c) 1", errUndeclaredType(src, "b", 0, input::Span{16, 16}));
     CHECK_DIAG(
         "fun f() lambda (int f) 1",
         errConstNameConflictsWithFunction(src, "f", input::Span{20, 20}));

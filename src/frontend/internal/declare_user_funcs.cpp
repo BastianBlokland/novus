@@ -133,7 +133,8 @@ auto DeclareUserFuncs::validateType(
   if (!isType(m_context, name) &&
       std::find(typeSubParams.begin(), typeSubParams.end(), name) == typeSubParams.end()) {
 
-    m_context->reportDiag(errUndeclaredType(m_context->getSrc(), name, type.getSpan()));
+    m_context->reportDiag(
+        errUndeclaredType(m_context->getSrc(), name, type.getParamCount(), type.getSpan()));
     isValid = false;
   }
 

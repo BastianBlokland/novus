@@ -229,9 +229,15 @@ auto errConstNameConflictsWithConst(const Source& src, const std::string& name, 
   return error(src, oss.str(), span);
 }
 
-auto errUndeclaredType(const Source& src, const std::string& name, input::Span span) -> Diag {
+auto errUndeclaredType(
+    const Source& src, const std::string& name, unsigned int typeParams, input::Span span) -> Diag {
   std::ostringstream oss;
   oss << "Unknown type: '" << name << '\'';
+  if (typeParams == 0) {
+    oss << " with no type parameters";
+  } else {
+    oss << " with '" << typeParams << "' type parameters";
+  }
   return error(src, oss.str(), span);
 }
 

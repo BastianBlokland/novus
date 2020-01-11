@@ -71,6 +71,10 @@ auto Type::getId() const -> const lex::Token& { return m_id; }
 
 auto Type::getParamList() const -> const TypeParamList* { return m_paramList; }
 
+auto Type::getParamCount() const -> unsigned int {
+  return m_paramList ? m_paramList->getCount() : 0;
+}
+
 auto Type::validate() const -> bool {
   if (m_id.getKind() != lex::TokenKind::Identifier) {
     return false;

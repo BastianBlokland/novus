@@ -63,7 +63,8 @@ TEST_CASE("Analyzing user-type definitions", "[frontend]") {
   }
 
   SECTION("Struct diagnostics") {
-    CHECK_DIAG("struct s = hello a, bool b", errUndeclaredType(src, "hello", input::Span{11, 15}));
+    CHECK_DIAG(
+        "struct s = hello a, bool b", errUndeclaredType(src, "hello", 0, input::Span{11, 15}));
     CHECK_DIAG(
         "struct s = int a, bool a", errDuplicateFieldNameInStruct(src, "a", input::Span{23, 23}));
     CHECK_DIAG(
@@ -89,11 +90,11 @@ TEST_CASE("Analyzing user-type definitions", "[frontend]") {
         "struct s2 = s{int} s",
         errFieldNameConflictsWithTypeSubstitution(src, "T", input::Span{16, 16}),
         errInvalidTypeInstantiation(src, input::Span{30, 30}),
-        errUndeclaredType(src, "s", input::Span{30, 35}));
+        errUndeclaredType(src, "s", 1, input::Span{30, 35}));
   }
 
   SECTION("Union diagnostics") {
-    CHECK_DIAG("union u = hello, bool", errUndeclaredType(src, "hello", input::Span{10, 14}));
+    CHECK_DIAG("union u = hello, bool", errUndeclaredType(src, "hello", 0, input::Span{10, 14}));
     CHECK_DIAG("union u = int, int", errDuplicateTypeInUnion(src, "int", input::Span{15, 17}));
   }
 }

@@ -112,8 +112,8 @@ errConstNameConflictsWithAction(const Source& src, const std::string& name, inpu
 errConstNameConflictsWithConst(const Source& src, const std::string& name, input::Span span)
     -> Diag;
 
-[[nodiscard]] auto errUndeclaredType(const Source& src, const std::string& name, input::Span span)
-    -> Diag;
+[[nodiscard]] auto errUndeclaredType(
+    const Source& src, const std::string& name, unsigned int typeParams, input::Span span) -> Diag;
 
 [[nodiscard]] auto errUndeclaredTypeOrConversion(
     const Source& src,

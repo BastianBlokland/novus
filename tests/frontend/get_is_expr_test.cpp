@@ -62,7 +62,7 @@ TEST_CASE("Analyzing 'is' expressions", "[frontend]") {
     CHECK_DIAG(
         "union U = int, float "
         "fun f(U u) u is hello i",
-        errUndeclaredType(src, "hello", input::Span{37, 41}));
+        errUndeclaredType(src, "hello", 0, input::Span{37, 41}));
     CHECK_DIAG(
         "union U = int, float "
         "fun f(U u) u is bool b",

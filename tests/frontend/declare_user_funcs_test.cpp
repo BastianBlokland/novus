@@ -126,8 +126,8 @@ TEST_CASE("Analyzing user-function declarations", "[frontend]") {
         "fun a() -> int 1 "
         "fun a() -> int 1",
         errDuplicateFuncDeclaration(src, "a", input::Span{17, 32}));
-    CHECK_DIAG("fun a(b c) -> int 1", errUndeclaredType(src, "b", input::Span{6, 6}));
-    CHECK_DIAG("fun a() -> b 1", errUndeclaredType(src, "b", input::Span{11, 11}));
+    CHECK_DIAG("fun a(b c) -> int 1", errUndeclaredType(src, "b", 0, input::Span{6, 6}));
+    CHECK_DIAG("fun a() -> b 1", errUndeclaredType(src, "b", 0, input::Span{11, 11}));
     CHECK_DIAG(
         "fun bool(int i) -> int i",
         errIncorrectReturnTypeInConvFunc(src, "bool", "int", input::Span{4, 7}));
@@ -148,7 +148,7 @@ TEST_CASE("Analyzing user-function declarations", "[frontend]") {
         "fun f{T}(T{int} a) -> int i "
         "fun f() f{int}(1)",
         errTypeParamOnSubstitutionType(src, "T", input::Span{9, 14}),
-        errUndeclaredType(src, "T", input::Span{9, 14}));
+        errUndeclaredType(src, "T", 1, input::Span{9, 14}));
     CHECK_DIAG(
         "fun f{T}(T a) b "
         "fun f() f{int}(1)",
@@ -167,9 +167,10 @@ TEST_CASE("Analyzing user-function declarations", "[frontend]") {
     CHECK_DIAG(
         "fun +{T}() -> T T()",
         errOperatorOverloadWithoutArgs(src, "operator-plus", input::Span{4, 4}));
-    CHECK_DIAG("fun f{T}(test a) -> int 1", errUndeclaredType(src, "test", input::Span{9, 12}));
-    CHECK_DIAG("fun f{T}(int{M} a) -> int 1", errUndeclaredType(src, "M", input::Span{13, 13}));
-    CHECK_DIAG("fun f{T}(int{T{M}} a) -> int 1", errUndeclaredType(src, "M", input::Span{15, 15}));
+    CHECK_DIAG("fun f{T}(test a) -> int 1", errUndeclaredType(src, "test", 0, input::Span{9, 12}));
+    CHECK_DIAG("fun f{T}(int{M} a) -> int 1", errUndeclaredType(src, "M", 0, input::Span{13, 13}));
+    CHECK_DIAG(
+        "fun f{T}(int{T{M}} a) -> int 1", errUndeclaredType(src, "M", 0, input::Span{15, 15}));
   }
 }
 

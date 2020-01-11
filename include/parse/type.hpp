@@ -26,6 +26,7 @@ public:
   [[nodiscard]] auto getSpan() const -> input::Span;
   [[nodiscard]] auto getId() const -> const lex::Token&;
   [[nodiscard]] auto getParamList() const -> const TypeParamList*;
+  [[nodiscard]] auto getParamCount() const -> unsigned int;
 
   [[nodiscard]] auto validate() const -> bool;
 
