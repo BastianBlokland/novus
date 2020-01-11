@@ -72,8 +72,11 @@ auto DefineUserTypes::define(prog::sym::TypeId id, const parse::UnionDeclStmtNod
       continue;
     }
     if (std::find(types.begin(), types.end(), *type) != types.end()) {
-      m_context->reportDiag(
-          errDuplicateTypeInUnion(m_context->getSrc(), getName(parseType), parseType.getSpan()));
+      m_context->reportDiag(errDuplicateTypeInUnion(
+          m_context->getSrc(),
+          getName(parseType),
+          getDisplayName(*m_context, *type),
+          parseType.getSpan()));
       isValid = false;
       continue;
     }

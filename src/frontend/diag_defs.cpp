@@ -87,10 +87,17 @@ auto errFieldNotFoundOnType(
   return error(src, oss.str(), span);
 }
 
-auto errDuplicateTypeInUnion(const Source& src, const std::string& typeName, input::Span span)
-    -> Diag {
+auto errDuplicateTypeInUnion(
+    const Source& src,
+    const std::string& typeName,
+    const std::string& substitutedTypeName,
+    input::Span span) -> Diag {
   std::ostringstream oss;
-  oss << "Type '" << typeName << "' is already part of the same union";
+  oss << "Type '" << typeName << '\'';
+  if (typeName != substitutedTypeName) {
+    oss << " ('" << substitutedTypeName << "')";
+  }
+  oss << " is already part of this union";
   return error(src, oss.str(), span);
 }
 

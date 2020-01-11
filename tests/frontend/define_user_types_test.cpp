@@ -95,7 +95,14 @@ TEST_CASE("Analyzing user-type definitions", "[frontend]") {
 
   SECTION("Union diagnostics") {
     CHECK_DIAG("union u = hello, bool", errUndeclaredType(src, "hello", 0, input::Span{10, 14}));
-    CHECK_DIAG("union u = int, int", errDuplicateTypeInUnion(src, "int", input::Span{15, 17}));
+    CHECK_DIAG(
+        "union u = int, int", errDuplicateTypeInUnion(src, "int", "int", input::Span{15, 17}));
+    CHECK_DIAG(
+        "union u{T} = int, T "
+        "fun f(u{int} in) -> int 1",
+        errDuplicateTypeInUnion(src, "T", "int", input::Span{18, 18}),
+        errInvalidTypeInstantiation(src, input::Span{26, 26}),
+        errUndeclaredType(src, "u", 1, input::Span{26, 31}));
   }
 }
 

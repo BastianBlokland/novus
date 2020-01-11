@@ -47,8 +47,11 @@ errFieldNameConflictsWithType(const Source& src, const std::string& name, input:
     const Source& src, const std::string& fieldName, const std::string& typeName, input::Span span)
     -> Diag;
 
-[[nodiscard]] auto
-errDuplicateTypeInUnion(const Source& src, const std::string& typeName, input::Span span) -> Diag;
+[[nodiscard]] auto errDuplicateTypeInUnion(
+    const Source& src,
+    const std::string& typeName,
+    const std::string& substitutedTypeName,
+    input::Span span) -> Diag;
 
 [[nodiscard]] auto errNonUnionIsExpression(const Source& src, input::Span span) -> Diag;
 
