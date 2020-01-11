@@ -378,10 +378,16 @@ auto declareFuncInput(
       continue;
     }
 
-    const auto argType = getOrInstType(context, subTable, arg.getType());
+    const auto& argParseType = arg.getType();
+    const auto argType       = getOrInstType(context, subTable, argParseType);
     if (!argType) {
-      // Fail because this should have been caught during function declaration.
-      throw std::logic_error{"No declaration found for function input"};
+      context->reportDiag(errUndeclaredType(
+          context->getSrc(),
+          getName(argParseType),
+          argParseType.getParamCount(),
+          argParseType.getSpan()));
+      isValid = false;
+      continue;
     }
     consts->registerInput(*constName, argType.value());
   }
