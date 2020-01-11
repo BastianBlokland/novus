@@ -1,32 +1,41 @@
 #include "internal/string_utilities.hpp"
-#include <charconv>
 #include <cstdio>
+
+#if __has_include(<charconv>)
+#include <charconv>
+#define HAS_CHAR_CONV
+#endif
 
 namespace vm::internal {
 
 auto toString(Allocator* allocator, int32_t val) -> Value {
+#ifdef HAS_CHAR_CONV
   static const auto maxCharSize = 11;
-
+#else
+  static const auto maxCharSize = 12; // +1 for null-terminator.
+#endif
   const auto strRefAlloc = allocator->allocStr(maxCharSize);
-  const auto convRes     = std::to_chars(strRefAlloc.second, strRefAlloc.second + maxCharSize, val);
-  if (convRes.ec != std::errc()) {
-    throw std::logic_error{"Failed to convert integer to string"};
-  }
+
+#ifdef HAS_CHAR_CONV
+  const auto convRes = std::to_chars(strRefAlloc.second, strRefAlloc.second + maxCharSize, val);
   strRefAlloc.first->updateSize(convRes.ptr - strRefAlloc.second);
+#else
+  // NOLINTNEXTLINE: C-style var-arg func.
+  const auto size = std::snprintf(strRefAlloc.second, maxCharSize, "%d", val);
+  strRefAlloc.first->updateSize(size);
+#endif
+
   return refValue(strRefAlloc.first);
 }
 
 auto toString(Allocator* allocator, float val) -> Value {
-  // NOLINTNEXTLINE: C-style var-arg func, needed because clang is missing std::to_chars(float).
+  // NOLINTNEXTLINE: C-style var-arg func.
   const auto charSize    = std::snprintf(nullptr, 0, "%.6g", val) + 1; // +1: null-terminator.
   const auto strRefAlloc = allocator->allocStr(charSize);
 
-  // NOLINTNEXTLINE: C-style var-arg func, needed because clang is missing std::to_chars(float).
-  std::snprintf(strRefAlloc.second, charSize, "%.6g", val);
-
-  // Remove the null-terminator from the size. Our strings don't use a null-terminator but
-  // snprintf always outputs one.
-  strRefAlloc.first->updateSize(charSize - 1);
+  // NOLINTNEXTLINE: C-style var-arg func.
+  const auto size = std::snprintf(strRefAlloc.second, charSize, "%.6g", val);
+  strRefAlloc.first->updateSize(size);
 
   return refValue(strRefAlloc.first);
 }
