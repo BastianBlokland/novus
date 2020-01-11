@@ -1,5 +1,6 @@
 #include "internal/string_utilities.hpp"
 #include <cstdio>
+#include <cstring>
 
 #if __has_include(<charconv>)
 #include <charconv>
