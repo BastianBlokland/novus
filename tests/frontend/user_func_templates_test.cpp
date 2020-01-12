@@ -3,6 +3,7 @@
 #include "helpers.hpp"
 #include "prog/expr/node_call.hpp"
 #include "prog/expr/node_const.hpp"
+#include "prog/expr/node_lit_bool.hpp"
 #include "prog/expr/node_lit_float.hpp"
 #include "prog/expr/node_lit_int.hpp"
 
@@ -178,6 +179,42 @@ TEST_CASE("Analyzing user-function templates", "[frontend]") {
                 GET_TYPE_ID(output, "Option__int"),
                 GET_TYPE_ID(output, "Option__int")),
             std::move(fArgs)));
+  }
+
+  SECTION("Overload func templates based on amount of type-parameters") {
+    const auto& output = ANALYZE("union Choice{T1, T2} = T1, T2 "
+                                 "fun ft{T1, T2}(T1 a, T2 b) -> Choice{T1, T2} "
+                                 "  bool(a) ? a : b "
+                                 "fun ft{T}(T a, T b) -> T "
+                                 "  a + b "
+                                 "fun f1() ft(1, 2)"
+                                 "fun f2() ft(false, 2)");
+    REQUIRE(output.isSuccess());
+
+    // Check that f1 instantiates the version with one type-parameter.
+    const auto& f1Def = GET_FUNC_DEF(output, "f1");
+    auto f1Args       = std::vector<prog::expr::NodePtr>{};
+    f1Args.push_back(prog::expr::litIntNode(output.getProg(), 1));
+    f1Args.push_back(prog::expr::litIntNode(output.getProg(), 2));
+    CHECK(
+        f1Def.getExpr() ==
+        *prog::expr::callExprNode(
+            output.getProg(),
+            GET_FUNC_ID(output, "ft__int", GET_TYPE_ID(output, "int"), GET_TYPE_ID(output, "int")),
+            std::move(f1Args)));
+
+    // Check that f2 instantiates the version with two type-parameters.
+    const auto& f2Def = GET_FUNC_DEF(output, "f2");
+    auto f2Args       = std::vector<prog::expr::NodePtr>{};
+    f2Args.push_back(prog::expr::litBoolNode(output.getProg(), false));
+    f2Args.push_back(prog::expr::litIntNode(output.getProg(), 2));
+    CHECK(
+        f2Def.getExpr() ==
+        *prog::expr::callExprNode(
+            output.getProg(),
+            GET_FUNC_ID(
+                output, "ft__bool_int", GET_TYPE_ID(output, "bool"), GET_TYPE_ID(output, "int")),
+            std::move(f2Args)));
   }
 }
 

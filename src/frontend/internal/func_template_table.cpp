@@ -1,4 +1,5 @@
 #include "func_template_table.hpp"
+#include <limits>
 
 namespace frontend::internal {
 
@@ -40,16 +41,9 @@ auto FuncTemplateTable::inferParamsAndInstantiate(
     const std::string& name, const prog::sym::TypeSet& argTypes)
     -> std::vector<const FuncTemplateInst*> {
 
-  auto itr = m_templates.find(name);
-  if (itr == m_templates.end()) {
-    return {};
-  }
   auto result = std::vector<const FuncTemplateInst*>{};
-  for (auto& funcTemplate : itr->second) {
-    const auto inferredTypeParams = funcTemplate.inferTypeParams(argTypes);
-    if (inferredTypeParams) {
-      result.push_back(funcTemplate.instantiate(*inferredTypeParams));
-    }
+  for (const auto& funcTemplAndParams : inferParams(name, argTypes)) {
+    result.push_back(funcTemplAndParams.first->instantiate(funcTemplAndParams.second));
   }
   return result;
 }
@@ -82,29 +76,53 @@ auto FuncTemplateTable::getRetType(const std::string& name, const prog::sym::Typ
 auto FuncTemplateTable::inferParamsAndGetRetType(
     const std::string& name, const prog::sym::TypeSet& argTypes)
     -> std::optional<prog::sym::TypeId> {
+
+  // Only return a value if all templates agree on the result-type.
+  std::optional<prog::sym::TypeId> result = std::nullopt;
+  for (const auto& funcTemplAndParams : inferParams(name, argTypes)) {
+    const auto retType = funcTemplAndParams.first->getRetType(funcTemplAndParams.second);
+    if (!retType || retType->isInfer()) {
+      continue;
+    }
+    if (!result) {
+      result = retType;
+    } else if (*result != *retType) {
+      return std::nullopt;
+    }
+  }
+  return result;
+}
+
+auto FuncTemplateTable::inferParams(const std::string& name, const prog::sym::TypeSet& argTypes)
+    -> std::vector<std::pair<FuncTemplate*, prog::sym::TypeSet>> {
+
   auto itr = m_templates.find(name);
   if (itr == m_templates.end()) {
-    return std::nullopt;
+    return {};
   }
 
-  // Only return a value if all overloads agree on the result-type.
-  std::optional<prog::sym::TypeId> result = std::nullopt;
+  /* Find the templates where we can successfully infer the type-parameters, prefer templates with
+  // the least amount of type-parameters. Can return multiple templates if they have the same amount
+  of type-parameters. */
+
+  auto typeParamCount = std::numeric_limits<unsigned int>::max();
+  auto result         = std::vector<std::pair<FuncTemplate*, prog::sym::TypeSet>>{};
+
   for (auto& funcTemplate : itr->second) {
     if (funcTemplate.getArgumentCount() == argTypes.getCount()) {
       const auto inferredTypeParams = funcTemplate.inferTypeParams(argTypes);
       if (inferredTypeParams) {
-        const auto retType = funcTemplate.getRetType(*inferredTypeParams);
-        if (!retType || retType->isInfer()) {
-          continue;
-        }
-        if (!result) {
-          result = retType;
-        } else if (*result != *retType) {
-          return std::nullopt;
+        if (funcTemplate.getTypeParamCount() < typeParamCount) {
+          result.clear();
+          result.emplace_back(&funcTemplate, *inferredTypeParams);
+          typeParamCount = funcTemplate.getTypeParamCount();
+        } else if (funcTemplate.getTypeParamCount() == typeParamCount) {
+          result.emplace_back(&funcTemplate, *inferredTypeParams);
         }
       }
     }
   }
+
   return result;
 }
 

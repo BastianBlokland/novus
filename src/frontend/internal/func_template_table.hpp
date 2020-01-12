@@ -1,6 +1,7 @@
 #pragma once
 #include "internal/func_template.hpp"
 #include <unordered_map>
+#include <utility>
 
 namespace frontend::internal {
 
@@ -22,20 +23,25 @@ public:
       std::vector<std::string> typeSubs,
       const parse::FuncDeclStmtNode* n) -> void;
 
-  auto instantiate(const std::string& name, const prog::sym::TypeSet& typeParams)
+  [[nodiscard]] auto instantiate(const std::string& name, const prog::sym::TypeSet& typeParams)
       -> std::vector<const FuncTemplateInst*>;
 
-  auto inferParamsAndInstantiate(const std::string& name, const prog::sym::TypeSet& argTypes)
+  [[nodiscard]] auto
+  inferParamsAndInstantiate(const std::string& name, const prog::sym::TypeSet& argTypes)
       -> std::vector<const FuncTemplateInst*>;
 
-  auto getRetType(const std::string& name, const prog::sym::TypeSet& typeParams)
+  [[nodiscard]] auto getRetType(const std::string& name, const prog::sym::TypeSet& typeParams)
       -> std::optional<prog::sym::TypeId>;
 
-  auto inferParamsAndGetRetType(const std::string& name, const prog::sym::TypeSet& argTypes)
+  [[nodiscard]] auto
+  inferParamsAndGetRetType(const std::string& name, const prog::sym::TypeSet& argTypes)
       -> std::optional<prog::sym::TypeId>;
 
 private:
   std::unordered_map<std::string, std::vector<FuncTemplate>> m_templates;
+
+  auto inferParams(const std::string& name, const prog::sym::TypeSet& argTypes)
+      -> std::vector<std::pair<FuncTemplate*, prog::sym::TypeSet>>;
 };
 
 } // namespace frontend::internal
