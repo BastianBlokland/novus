@@ -351,12 +351,12 @@ static auto execute(const Assembly& assembly, io::Interface* interface, uint32_t
   }
 }
 
-auto execute(const Assembly& assembly, io::Interface* interface) -> void {
-  if (!interface) {
+auto execute(const Assembly& assembly, io::Interface* iface) -> void {
+  if (!iface) {
     throw std::invalid_argument{"Interface cannot be null"};
   }
   for (auto itr = assembly.beginEntryPoints(); itr != assembly.endEntryPoints(); ++itr) {
-    execute(assembly, interface, *itr);
+    execute(assembly, iface, *itr);
   }
 }
 

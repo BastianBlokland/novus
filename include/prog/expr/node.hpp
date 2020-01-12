@@ -1,7 +1,9 @@
 #pragma once
 #include "prog/expr/node_visitor.hpp"
 #include "prog/sym/type_id.hpp"
+#include <iostream>
 #include <memory>
+#include <string>
 
 namespace prog::expr {
 

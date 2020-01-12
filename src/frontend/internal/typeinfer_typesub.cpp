@@ -24,7 +24,7 @@ auto getPathsToTypeSub(
 auto resolvePathToTypeSub(
     const Context& context,
     TypePath::const_iterator begin,
-    TypePath::const_iterator end,
+    const TypePath::const_iterator& end,
     prog::sym::TypeId type) -> std::optional<prog::sym::TypeId> {
   if (begin == end) {
     return type;

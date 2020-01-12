@@ -4,6 +4,6 @@
 
 namespace vm {
 
-auto execute(const Assembly& assembly, io::Interface* interface) -> void;
+auto execute(const Assembly& assembly, io::Interface* iface) -> void;
 
 } // namespace vm

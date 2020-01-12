@@ -3,6 +3,7 @@
 #include "prog/sym/func_id.hpp"
 #include "prog/sym/type_decl.hpp"
 #include "prog/sym/type_set.hpp"
+#include <optional>
 #include <string>
 #include <unordered_map>
 #include <vector>

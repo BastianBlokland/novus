@@ -1,5 +1,6 @@
 #pragma once
 #include "prog/sym/type_id.hpp"
+#include <optional>
 #include <unordered_map>
 #include <utility>
 

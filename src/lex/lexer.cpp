@@ -236,7 +236,7 @@ auto LexerImpl::nextLitNumber(const char mostSignficantChar) -> Token {
   const auto startPos = m_inputPos;
   auto passedDecPoint = mostSignficantChar == '.';
   uint64_t result     = passedDecPoint ? 0 : mostSignficantChar - '0';
-  assert(result >= 0 && result <= 9);
+  assert(result <= 9);
 
   auto tooBig              = false;
   auto containsInvalidChar = false;

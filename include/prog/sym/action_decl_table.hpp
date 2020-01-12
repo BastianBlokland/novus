@@ -2,6 +2,7 @@
 #include "prog/sym/action_decl.hpp"
 #include "prog/sym/action_id.hpp"
 #include "prog/sym/type_set.hpp"
+#include <optional>
 #include <string>
 #include <unordered_map>
 #include <vector>
