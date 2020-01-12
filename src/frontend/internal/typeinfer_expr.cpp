@@ -174,9 +174,11 @@ auto TypeInferExpr::visit(const parse::IdExprNode& n) -> void {
   // Non-templated function literal.
   const auto funcs = m_context->getProg()->lookupFuncs(name);
   if (!funcs.empty() && !m_context->hasErrors()) {
-    const auto funcDecl = m_context->getProg()->getFuncDecl(funcs[0]);
-    m_type              = m_context->getDelegates()->getDelegate(
-        m_context, funcDecl.getInput(), funcDecl.getOutput());
+    const auto& funcDecl = m_context->getProg()->getFuncDecl(funcs[0]);
+    if (funcDecl.getOutput().isConcrete()) {
+      m_type = m_context->getDelegates()->getDelegate(
+          m_context, funcDecl.getInput(), funcDecl.getOutput());
+    }
     return;
   }
 

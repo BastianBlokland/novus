@@ -480,7 +480,8 @@ auto mangleName(Context* context, const std::string& name, const prog::sym::Type
     -> std::string {
   auto result = name + '_';
   for (const auto& type : typeParams) {
-    const auto& typeName = context->getProg()->getTypeDecl(type).getName();
+    const auto& typeName =
+        type.isConcrete() ? context->getProg()->getTypeDecl(type).getName() : "error";
     result += '_' + typeName;
   }
   return result;
