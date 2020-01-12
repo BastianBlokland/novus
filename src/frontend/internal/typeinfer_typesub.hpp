@@ -1,10 +1,11 @@
 #pragma once
 #include "internal/utilities.hpp"
 #include "parse/type_param_list.hpp"
+#include <utility>
 
 namespace frontend::internal {
 
-using TypePath = typename std::vector<unsigned int>;
+using TypePath = typename std::vector<std::pair<std::string, unsigned int>>;
 
 [[nodiscard]] auto
 getPathsToTypeSub(const std::string& subType, const parse::Type& parsetype, const TypePath& path)

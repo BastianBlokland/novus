@@ -181,6 +181,16 @@ TEST_CASE("Analyzing user-function templates", "[frontend]") {
             std::move(fArgs)));
   }
 
+  SECTION("Templated function with non-matching type-parameters is not instantiated") {
+    const auto& output = ANALYZE("struct A{T} = T v1, int v2 "
+                                 "struct B{T} = T v1, bool v2 "
+                                 "fun ft{T}(A{T} a) a / \"doesnotwork\" "
+                                 "fun ft{T}(B{T} b) b.v2 "
+                                 "fun f() ft(B(42, false))");
+    REQUIRE(output.isSuccess());
+    CHECK(output.getProg().lookupFuncs("ft__int").size() == 1);
+  }
+
   SECTION("Overload func templates based on amount of type-parameters") {
     const auto& output = ANALYZE("union Choice{T1, T2} = T1, T2 "
                                  "fun ft{T1, T2}(T1 a, T2 b) -> Choice{T1, T2} "

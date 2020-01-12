@@ -5,7 +5,8 @@ namespace frontend::internal {
 auto getPathsToTypeSub(
     const std::string& subType, const parse::Type& parsetype, const TypePath& path)
     -> std::vector<TypePath> {
-  if (getName(parsetype.getId()) == subType) {
+  const auto parseTypeName = getName(parsetype.getId());
+  if (parseTypeName == subType) {
     return {path};
   }
   std::vector<TypePath> result = {};
@@ -13,7 +14,7 @@ auto getPathsToTypeSub(
   if (paramList != nullptr) {
     for (auto paramInd = 0U; paramInd != paramList->getCount(); ++paramInd) {
       auto childPath = path;
-      childPath.push_back(paramInd);
+      childPath.emplace_back(parseTypeName, paramInd);
       auto childResult = getPathsToTypeSub(subType, (*paramList)[paramInd], childPath);
       result.insert(result.end(), childResult.begin(), childResult.end());
     }
@@ -33,12 +34,16 @@ auto resolvePathToTypeSub(
   if (!info || !info->hasParams()) {
     return std::nullopt;
   }
-  const auto& params = *info->getParams();
-  const auto index   = *begin;
-  if (index >= params.getCount()) {
+  const auto& params     = *info->getParams();
+  const auto& targetName = begin->first;
+  if (targetName != info->getName()) {
     return std::nullopt;
   }
-  return resolvePathToTypeSub(context, ++begin, end, params[index]);
+  const auto& targetIndex = begin->second;
+  if (targetIndex >= params.getCount()) {
+    return std::nullopt;
+  }
+  return resolvePathToTypeSub(context, ++begin, end, params[targetIndex]);
 }
 
 } // namespace frontend::internal
