@@ -385,7 +385,10 @@ auto GetExpr::visit(const parse::IsExprNode& n) -> void {
   // Validate that the type is part of the union.
   if (!unionDef.hasType(*type)) {
     m_context->reportDiag(errTypeNotPartOfUnion(
-        m_context->getSrc(), getName(parseType), lhsTypeDecl.getName(), parseType.getSpan()));
+        m_context->getSrc(),
+        getDisplayName(*m_context, *type),
+        getDisplayName(*m_context, lhsType),
+        parseType.getSpan()));
     return;
   }
 
