@@ -31,7 +31,7 @@
     {
       "label": "test",
       "type": "shell",
-      "command": "cmake -B build -DCMAKE_BUILD_TYPE=Debug && cd build && make tests -j8 && make test",
+      "command": "cmake -B build -DCMAKE_BUILD_TYPE=Debug && cd build && make tests -j 8 && make test",
       "presentation": {
         "echo": true,
         "panel": "shared",
