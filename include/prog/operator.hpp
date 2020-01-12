@@ -5,7 +5,9 @@ namespace prog {
 
 enum class Operator {
   Plus,
+  PlusPlus,
   Minus,
+  MinusMinus,
   Star,
   Slash,
   Rem,

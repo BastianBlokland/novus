@@ -103,6 +103,14 @@ auto GenExpr::visit(const prog::expr::CallExprNode& n) -> void {
   case prog::sym::FuncKind::NegateInt:
     m_builder->addNegInt();
     break;
+  case prog::sym::FuncKind::IncrementInt:
+    m_builder->addLoadLitInt(1);
+    m_builder->addAddInt();
+    break;
+  case prog::sym::FuncKind::DecrementInt:
+    m_builder->addLoadLitInt(1);
+    m_builder->addSubInt();
+    break;
   case prog::sym::FuncKind::CheckEqInt:
     m_builder->addCheckEqInt();
     break;
@@ -139,6 +147,14 @@ auto GenExpr::visit(const prog::expr::CallExprNode& n) -> void {
     break;
   case prog::sym::FuncKind::NegateFloat:
     m_builder->addNegFloat();
+    break;
+  case prog::sym::FuncKind::IncrementFloat:
+    m_builder->addLoadLitFloat(1.0F);
+    m_builder->addAddFloat();
+    break;
+  case prog::sym::FuncKind::DecrementFloat:
+    m_builder->addLoadLitFloat(1.0F);
+    m_builder->addSubFloat();
     break;
   case prog::sym::FuncKind::ShiftLeftInt:
     m_builder->addShiftLeftInt();
@@ -207,6 +223,17 @@ auto GenExpr::visit(const prog::expr::CallExprNode& n) -> void {
   case prog::sym::FuncKind::CheckNEqString:
     m_builder->addCheckEqString();
     m_builder->addLogicInvInt();
+    break;
+
+  case prog::sym::FuncKind::IncrementChar:
+    m_builder->addLoadLitInt(1);
+    m_builder->addAddInt();
+    m_builder->addConvIntChar();
+    break;
+  case prog::sym::FuncKind::DecrementChar:
+    m_builder->addLoadLitInt(1);
+    m_builder->addSubInt();
+    m_builder->addConvIntChar();
     break;
 
   case prog::sym::FuncKind::ConvIntFloat:

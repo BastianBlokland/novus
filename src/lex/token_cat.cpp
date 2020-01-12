@@ -35,7 +35,9 @@ auto operator<<(std::ostream& out, const TokenCat& rhs) -> std::ostream& {
 auto lookupCat(const TokenKind kind) -> TokenCat {
   switch (kind) {
   case TokenKind::OpPlus:
+  case TokenKind::OpPlusPlus:
   case TokenKind::OpMinus:
+  case TokenKind::OpMinusMinus:
   case TokenKind::OpStar:
   case TokenKind::OpSlash:
   case TokenKind::OpRem:

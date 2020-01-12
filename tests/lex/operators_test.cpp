@@ -5,7 +5,9 @@ namespace lex {
 
 TEST_CASE("Lexing operators", "[lex]") {
   CHECK_TOKENS("+", basicToken(TokenKind::OpPlus));
+  CHECK_TOKENS("++", basicToken(TokenKind::OpPlusPlus));
   CHECK_TOKENS("-", basicToken(TokenKind::OpMinus));
+  CHECK_TOKENS("--", basicToken(TokenKind::OpMinusMinus));
   CHECK_TOKENS("*", basicToken(TokenKind::OpStar));
   CHECK_TOKENS("/", basicToken(TokenKind::OpSlash));
   CHECK_TOKENS("%", basicToken(TokenKind::OpRem));
