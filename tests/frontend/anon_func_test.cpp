@@ -156,12 +156,14 @@ TEST_CASE("Analyzing anonymous functions", "[frontend]") {
     CHECK(
         GET_FUNC_DEF(output, "__anon_0").getExpr() ==
         *prog::expr::callExprNode(
-            output.getProg(), *output.getProg().lookupFunc("int", prog::sym::TypeSet({}), -1), {}));
+            output.getProg(),
+            *output.getProg().lookupFunc("int", prog::sym::TypeSet({}), 0, false),
+            {}));
     CHECK(
         GET_FUNC_DEF(output, "__anon_1").getExpr() ==
         *prog::expr::callExprNode(
             output.getProg(),
-            *output.getProg().lookupFunc("float", prog::sym::TypeSet({}), -1),
+            *output.getProg().lookupFunc("float", prog::sym::TypeSet({}), 0, false),
             {}));
 
     CHECK(

@@ -26,7 +26,7 @@ auto ActionDeclTable::lookup(const std::string& name) const -> std::vector<Actio
 auto ActionDeclTable::lookup(
     const Program& prog, const std::string& name, const TypeSet& input, int maxConversions) const
     -> std::optional<ActionId> {
-  return internal::findOverload(prog, *this, lookup(name), input, maxConversions);
+  return internal::findOverload(prog, *this, lookup(name), input, maxConversions, true);
 }
 
 auto ActionDeclTable::registerAction(
@@ -34,7 +34,7 @@ auto ActionDeclTable::registerAction(
   if (name.empty()) {
     throw std::invalid_argument{"Name has to contain aleast 1 char"};
   }
-  if (internal::findOverload(prog, *this, lookup(name), input, 0)) {
+  if (internal::findOverload(prog, *this, lookup(name), input, 0, false)) {
     throw std::logic_error{"Action with an identical name and input has already been registered"};
   }
 

@@ -57,7 +57,7 @@ auto DeclareUserFuncs::visit(const parse::FuncDeclStmtNode& n) -> void {
   }
 
   // Verify that this is not a duplicate declaration.
-  if (m_context->getProg()->lookupFunc(name, input.value(), 0)) {
+  if (m_context->getProg()->lookupFunc(name, input.value(), 0, false)) {
     m_context->reportDiag(
         errDuplicateFuncDeclaration(m_context->getSrc(), displayName, n.getSpan()));
     return;

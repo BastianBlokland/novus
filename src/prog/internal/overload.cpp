@@ -9,7 +9,8 @@ auto findOverload(
     const DeclTable& declTable,
     const std::vector<typename DeclTable::id>& overloads,
     const sym::TypeSet& input,
-    int maxConversions) -> std::optional<typename DeclTable::id> {
+    int maxConversions,
+    bool allowConvOnFirstArg) -> std::optional<typename DeclTable::id> {
 
   std::optional<typename DeclTable::id> result = std::nullopt;
   auto resultConvAmount                        = std::numeric_limits<int>::max();
@@ -27,6 +28,10 @@ auto findOverload(
     for (; inputItr != input.end(); ++inputItr, ++ovInputItr) {
       if (*inputItr == *ovInputItr) {
         continue;
+      }
+      if (inputItr == input.begin() && !allowConvOnFirstArg) {
+        valid = false; // Conversions are not allowed on the first argument.
+        break;
       }
       if (maxConversions >= 0 && convAmount >= maxConversions) {
         valid = false; // Too many conversions are required for this overload.
@@ -57,12 +62,14 @@ template std::optional<sym::FuncDeclTable::id> findOverload(
     const sym::FuncDeclTable& declTable,
     const std::vector<sym::FuncId>& overloads,
     const sym::TypeSet& input,
-    int maxConversions);
+    int maxConversions,
+    bool allowConvOnFirstArg);
 template std::optional<sym::ActionDeclTable::id> findOverload(
     const Program& prog,
     const sym::ActionDeclTable& declTable,
     const std::vector<sym::ActionId>& overloads,
     const sym::TypeSet& input,
-    int maxConversions);
+    int maxConversions,
+    bool allowConvOnFirstArg);
 
 } // namespace prog::internal

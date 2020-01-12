@@ -35,8 +35,11 @@ public:
   [[nodiscard]] auto exists(const std::string& name) const -> bool;
   [[nodiscard]] auto lookup(const std::string& name) const -> std::vector<FuncId>;
   [[nodiscard]] auto lookup(
-      const Program& prog, const std::string& name, const TypeSet& input, int maxConversions) const
-      -> std::optional<FuncId>;
+      const Program& prog,
+      const std::string& name,
+      const TypeSet& input,
+      int maxConversions,
+      bool allowConvOnFirstArg) const -> std::optional<FuncId>;
 
   auto
   registerFunc(const Program& prog, FuncKind kind, std::string name, TypeSet input, TypeId output)

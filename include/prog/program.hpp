@@ -67,17 +67,24 @@ public:
   [[nodiscard]] auto lookupType(const std::string& name) const -> std::optional<sym::TypeId>;
 
   [[nodiscard]] auto hasFunc(const std::string& name) const -> bool;
-  [[nodiscard]] auto
-  lookupFunc(const std::string& name, const sym::TypeSet& input, int maxConversions) const
-      -> std::optional<sym::FuncId>;
   [[nodiscard]] auto lookupFunc(
-      const std::vector<sym::FuncId>& funcs, const sym::TypeSet& input, int maxConversions) const
-      -> std::optional<sym::FuncId>;
+      const std::string& name,
+      const sym::TypeSet& input,
+      int maxConversions,
+      bool allowConvOnFirstArg) const -> std::optional<sym::FuncId>;
+
+  [[nodiscard]] auto lookupFunc(
+      const std::vector<sym::FuncId>& funcs,
+      const sym::TypeSet& input,
+      int maxConversions,
+      bool allowConvOnFirstArg) const -> std::optional<sym::FuncId>;
+
   [[nodiscard]] auto lookupFuncs(const std::string& name) const -> std::vector<sym::FuncId>;
 
   [[nodiscard]] auto
   lookupAction(const std::string& name, const sym::TypeSet& input, int maxConversions) const
       -> std::optional<sym::ActionId>;
+
   [[nodiscard]] auto lookupActions(const std::string& name) const -> std::vector<sym::ActionId>;
 
   [[nodiscard]] auto lookupConversion(sym::TypeId from, sym::TypeId to) const

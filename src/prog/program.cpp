@@ -222,15 +222,21 @@ auto Program::lookupType(const std::string& name) const -> std::optional<sym::Ty
 
 auto Program::hasFunc(const std::string& name) const -> bool { return m_funcDecls.exists(name); }
 
-auto Program::lookupFunc(const std::string& name, const sym::TypeSet& input, int maxConversions)
-    const -> std::optional<sym::FuncId> {
-  return m_funcDecls.lookup(*this, name, input, maxConversions);
+auto Program::lookupFunc(
+    const std::string& name,
+    const sym::TypeSet& input,
+    int maxConversions,
+    bool allowConvOnFirstArg) const -> std::optional<sym::FuncId> {
+  return m_funcDecls.lookup(*this, name, input, maxConversions, allowConvOnFirstArg);
 }
 
 auto Program::lookupFunc(
-    const std::vector<sym::FuncId>& funcs, const sym::TypeSet& input, int maxConversions) const
-    -> std::optional<sym::FuncId> {
-  return internal::findOverload(*this, m_funcDecls, funcs, input, maxConversions);
+    const std::vector<sym::FuncId>& funcs,
+    const sym::TypeSet& input,
+    int maxConversions,
+    bool allowConvOnFirstArg) const -> std::optional<sym::FuncId> {
+  return internal::findOverload(
+      *this, m_funcDecls, funcs, input, maxConversions, allowConvOnFirstArg);
 }
 
 auto Program::lookupFuncs(const std::string& name) const -> std::vector<sym::FuncId> {

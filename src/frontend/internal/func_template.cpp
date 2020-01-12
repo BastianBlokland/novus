@@ -178,7 +178,7 @@ auto FuncTemplate::setupInstance(FuncTemplateInst* instance) -> void {
                                : mangleName(m_context, m_name, instance->m_typeParams);
 
   // Check if an identical function has already been registered.
-  if (m_context->getProg()->lookupFunc(funcName, *funcInput, 0)) {
+  if (m_context->getProg()->lookupFunc(funcName, *funcInput, 0, false)) {
     m_context->reportDiag(errDuplicateFuncDeclaration(
         m_context->getSrc(), instance->getDisplayName(*m_context), m_parseNode->getSpan()));
     instance->m_success = false;

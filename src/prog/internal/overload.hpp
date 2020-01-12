@@ -16,7 +16,8 @@ auto findOverload(
     const DeclTable& declTable,
     const std::vector<typename DeclTable::id>& overloads,
     const sym::TypeSet& input,
-    int maxConversions) -> std::optional<typename DeclTable::id>;
+    int maxConversions,
+    bool allowConvOnFirstArg) -> std::optional<typename DeclTable::id>;
 
 } // namespace internal
 

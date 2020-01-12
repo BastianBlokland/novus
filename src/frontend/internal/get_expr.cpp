@@ -119,7 +119,7 @@ auto GetExpr::visit(const parse::BinaryExprNode& n) -> void {
   const auto funcName   = prog::getFuncName(op.value());
   const auto possibleFuncs =
       getFunctions(funcName, std::nullopt, argTypeSet, n.getOperator().getSpan());
-  const auto func = m_context->getProg()->lookupFunc(possibleFuncs, argTypeSet, 1);
+  const auto func = m_context->getProg()->lookupFunc(possibleFuncs, argTypeSet, 1, true);
   if (!func) {
     m_context->reportDiag(errUndeclaredBinOperator(
         m_context->getSrc(),
@@ -160,7 +160,8 @@ auto GetExpr::visit(const parse::CallExprNode& n) -> void {
   }
 
   const auto possibleFuncs = getFunctionsInclConversions(nameToken, typeParams, args->second);
-  const auto func          = m_context->getProg()->lookupFunc(possibleFuncs, args->second, -1);
+  const auto func =
+      m_context->getProg()->lookupFunc(possibleFuncs, args->second, -1, instance == nullptr);
   if (!func) {
     auto isTypeOrConv = isType(m_context, getName(nameToken));
     if (typeParams) {
@@ -344,7 +345,7 @@ auto GetExpr::visit(const parse::IndexExprNode& n) -> void {
 
   const auto funcName      = prog::getFuncName(prog::Operator::SquareSquare);
   const auto possibleFuncs = getFunctions(funcName, std::nullopt, args->second, n.getSpan());
-  const auto func          = m_context->getProg()->lookupFunc(possibleFuncs, args->second, -1);
+  const auto func = m_context->getProg()->lookupFunc(possibleFuncs, args->second, -1, false);
   if (!func) {
     auto argTypeNames = std::vector<std::string>{};
     for (const auto& argType : args->second) {
@@ -537,7 +538,7 @@ auto GetExpr::visit(const parse::UnaryExprNode& n) -> void {
   const auto funcName = prog::getFuncName(op.value());
   const auto possibleFuncs =
       getFunctions(funcName, std::nullopt, argTypes, n.getOperator().getSpan());
-  const auto func = m_context->getProg()->lookupFunc(possibleFuncs, argTypes, 0);
+  const auto func = m_context->getProg()->lookupFunc(possibleFuncs, argTypes, 0, false);
   if (!func) {
     m_context->reportDiag(errUndeclaredUnaryOperator(
         m_context->getSrc(),
@@ -743,7 +744,7 @@ auto GetExpr::getDynCallExpr(const parse::CallExprNode& n) -> prog::expr::NodePt
   // Check if this is a call to a overloaded call operator.
   const auto funcName      = prog::getFuncName(prog::Operator::ParenParen);
   const auto possibleFuncs = getFunctions(funcName, std::nullopt, args->second, n.getSpan());
-  const auto func          = m_context->getProg()->lookupFunc(possibleFuncs, args->second, -1);
+  const auto func = m_context->getProg()->lookupFunc(possibleFuncs, args->second, -1, false);
   if (!func) {
     auto argTypeNames = std::vector<std::string>{};
     for (const auto& argType : args->second) {

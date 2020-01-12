@@ -47,7 +47,8 @@ private:
 
   auto inferSubExpr(const parse::Node& n) -> prog::sym::TypeId;
   [[nodiscard]] auto inferDynCall(const parse::CallExprNode& n) -> prog::sym::TypeId;
-  [[nodiscard]] auto inferFuncCall(const std::string& funcName, const prog::sym::TypeSet& argTypes)
+  [[nodiscard]] auto inferFuncCall(
+      const std::string& funcName, const prog::sym::TypeSet& argTypes, bool allowConvOnFirstArg)
       -> prog::sym::TypeId;
 
   auto setConstType(const lex::Token& constId, prog::sym::TypeId type) -> void;

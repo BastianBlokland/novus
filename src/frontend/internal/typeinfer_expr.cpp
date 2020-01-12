@@ -66,7 +66,7 @@ auto TypeInferExpr::visit(const parse::BinaryExprNode& n) -> void {
     argTypes.push_back(inferSubExpr(n[i]));
   }
   const auto argTypeSet = prog::sym::TypeSet{std::move(argTypes)};
-  m_type                = inferFuncCall(prog::getFuncName(*op), argTypeSet);
+  m_type                = inferFuncCall(prog::getFuncName(*op), argTypeSet, true);
 }
 
 auto TypeInferExpr::visit(const parse::CallExprNode& n) -> void {
@@ -116,7 +116,7 @@ auto TypeInferExpr::visit(const parse::CallExprNode& n) -> void {
   }
 
   // Regular functions.
-  m_type = inferFuncCall(funcName, argTypeSet);
+  m_type = inferFuncCall(funcName, argTypeSet, true);
 }
 
 auto TypeInferExpr::visit(const parse::ConditionalExprNode& n) -> void {
@@ -217,7 +217,7 @@ auto TypeInferExpr::visit(const parse::IndexExprNode& n) -> void {
   }
   const auto argTypeSet = prog::sym::TypeSet{std::move(argTypes)};
   const auto funcName   = prog::getFuncName(prog::Operator::SquareSquare);
-  m_type                = inferFuncCall(funcName, argTypeSet);
+  m_type                = inferFuncCall(funcName, argTypeSet, false);
 }
 
 auto TypeInferExpr::visit(const parse::IsExprNode& n) -> void {
@@ -299,7 +299,7 @@ auto TypeInferExpr::visit(const parse::UnaryExprNode& n) -> void {
     return;
   }
   auto argType = inferSubExpr(n[0]);
-  m_type       = inferFuncCall(prog::getFuncName(*op), {argType});
+  m_type       = inferFuncCall(prog::getFuncName(*op), {argType}, false);
 }
 
 auto TypeInferExpr::visit(const parse::ExecStmtNode & /*unused*/) -> void {
@@ -341,10 +341,11 @@ auto TypeInferExpr::inferDynCall(const parse::CallExprNode& n) -> prog::sym::Typ
   // Call to a overloaded call operator.
   const auto argTypeSet = prog::sym::TypeSet{std::move(argTypes)};
   const auto funcName   = prog::getFuncName(prog::Operator::ParenParen);
-  return inferFuncCall(funcName, argTypeSet);
+  return inferFuncCall(funcName, argTypeSet, false);
 }
 
-auto TypeInferExpr::inferFuncCall(const std::string& funcName, const prog::sym::TypeSet& argTypes)
+auto TypeInferExpr::inferFuncCall(
+    const std::string& funcName, const prog::sym::TypeSet& argTypes, bool allowConvOnFirstArg)
     -> prog::sym::TypeId {
   for (const auto& argType : argTypes) {
     if (argType.isInfer()) {
@@ -353,7 +354,7 @@ auto TypeInferExpr::inferFuncCall(const std::string& funcName, const prog::sym::
   }
 
   // Attempt to get a return-type for a non-templated function.
-  auto func = m_context->getProg()->lookupFunc(funcName, argTypes, -1);
+  auto func = m_context->getProg()->lookupFunc(funcName, argTypes, -1, allowConvOnFirstArg);
   if (func) {
     return m_context->getProg()->getFuncDecl(*func).getOutput();
   }
