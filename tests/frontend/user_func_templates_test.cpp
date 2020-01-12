@@ -216,6 +216,19 @@ TEST_CASE("Analyzing user-function templates", "[frontend]") {
                 output, "ft__bool_int", GET_TYPE_ID(output, "bool"), GET_TYPE_ID(output, "int")),
             std::move(f2Args)));
   }
+
+  SECTION("Call conversion function through type substitution") {
+    const auto& output = ANALYZE("struct Test{T} = T val "
+                                 "fun Test{T}() Test(T()) "
+                                 "fun factory{T}() T() "
+                                 "fun f1() factory{Test{int}}()");
+    REQUIRE(output.isSuccess());
+
+    const auto& factoryDef = GET_FUNC_DEF(output, "factory__Test__int");
+    CHECK(
+        factoryDef.getExpr() ==
+        *prog::expr::callExprNode(output.getProg(), GET_FUNC_ID(output, "Test__int"), {}));
+  }
 }
 
 } // namespace frontend

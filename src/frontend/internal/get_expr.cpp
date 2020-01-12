@@ -784,12 +784,29 @@ auto GetExpr::getFunctionsInclConversions(
   auto result         = getFunctions(funcName, typeParams, argTypes, nameToken.getSpan());
   auto isValid        = true;
 
-  // Check if this is a call to a constructor / conversion function.
+  // Check if this name + typeParams is a type (or type template) in the program.
   auto convType = getOrInstType(m_context, m_typeSubTable, nameToken, typeParams, argTypes);
   if (convType) {
+    // Check if there is a constructor / conversion function for this type in the program.
     const auto typeName = getName(*m_context, *convType);
     const auto funcs    = m_context->getProg()->lookupFuncs(typeName);
     result.insert(result.end(), funcs.begin(), funcs.end());
+
+    // Check if there is a function template we can instantiate for this type.
+    const auto& typeInfo = m_context->getTypeInfo(*convType);
+    if (typeInfo && typeInfo->hasParams()) {
+      const auto instantiations =
+          m_context->getFuncTemplates()->instantiate(typeInfo->getName(), *typeInfo->getParams());
+      for (const auto& inst : instantiations) {
+        if (!inst->isSuccess()) {
+          m_context->reportDiag(
+              errInvalidFuncInstantiation(m_context->getSrc(), nameToken.getSpan()));
+          isValid = false;
+        } else {
+          result.push_back(*inst->getFunc());
+        }
+      }
+    }
   }
 
   return isValid ? result : std::vector<prog::sym::FuncId>{};
