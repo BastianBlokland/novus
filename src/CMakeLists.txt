@@ -6,7 +6,7 @@ add_library(input STATIC
   input/textpos.cpp)
 target_compile_features(input PUBLIC cxx_std_17)
 target_compile_options(input PRIVATE -Werror -Wall -Wextra)
-target_include_directories(input PUBLIC ../include)
+target_include_directories(input PUBLIC ${PROJECT_SOURCE_DIR}/include)
 target_include_directories(input PRIVATE input)
 
 # Lexer.
@@ -23,7 +23,7 @@ add_library(lex STATIC
 target_compile_features(lex PUBLIC cxx_std_17)
 target_link_libraries(lex PUBLIC input)
 target_compile_options(lex PRIVATE -Werror -Wall -Wextra)
-target_include_directories(lex PUBLIC ../include)
+target_include_directories(lex PUBLIC ${PROJECT_SOURCE_DIR}/include)
 target_include_directories(lex PRIVATE lex)
 
 # Parser.
@@ -63,7 +63,7 @@ add_library(parse STATIC
 target_compile_features(parse PUBLIC cxx_std_17)
 target_link_libraries(parse PUBLIC lex)
 target_compile_options(parse PRIVATE -Werror -Wall -Wextra)
-target_include_directories(parse PUBLIC ../include)
+target_include_directories(parse PUBLIC ${PROJECT_SOURCE_DIR}/include)
 target_include_directories(parse PRIVATE parse)
 
 # Program (internal representation).
@@ -123,7 +123,7 @@ add_library(prog STATIC
   prog/program.cpp)
 target_compile_features(prog PUBLIC cxx_std_17)
 target_compile_options(prog PRIVATE -Werror -Wall -Wextra)
-target_include_directories(prog PUBLIC ../include)
+target_include_directories(prog PUBLIC ${PROJECT_SOURCE_DIR}/include)
 target_include_directories(prog PRIVATE prog)
 
 # Frontend.
@@ -166,7 +166,7 @@ target_compile_features(frontend PUBLIC cxx_std_17)
 target_link_libraries(frontend PUBLIC parse)
 target_link_libraries(frontend PUBLIC prog)
 target_compile_options(frontend PRIVATE -Werror -Wall -Wextra)
-target_include_directories(frontend PUBLIC ../include)
+target_include_directories(frontend PUBLIC ${PROJECT_SOURCE_DIR}/include)
 target_include_directories(frontend PRIVATE frontend)
 
 # Backend (assembly generator).
@@ -182,7 +182,7 @@ target_compile_features(backend PUBLIC cxx_std_17)
 target_link_libraries(backend PUBLIC prog)
 target_link_libraries(backend PUBLIC vm)
 target_compile_options(backend PRIVATE -Werror -Wall -Wextra)
-target_include_directories(backend PUBLIC ../include)
+target_include_directories(backend PUBLIC ${PROJECT_SOURCE_DIR}/include)
 target_include_directories(backend PRIVATE backend)
 
 # Virtual Machine.
@@ -205,5 +205,5 @@ add_library(vm STATIC
   vm/opcode.cpp)
 target_compile_features(vm PUBLIC cxx_std_17)
 target_compile_options(vm PRIVATE -Werror -Wall -Wextra)
-target_include_directories(vm PUBLIC ../include)
+target_include_directories(vm PUBLIC ${PROJECT_SOURCE_DIR}/include)
 target_include_directories(vm PRIVATE vm)
