@@ -7,8 +7,14 @@ auto operator<<(std::ostream& out, const TokenKind& rhs) -> std::ostream& {
   case TokenKind::OpPlus:
     out << "+";
     break;
+  case TokenKind::OpPlusPlus:
+    out << "++";
+    break;
   case TokenKind::OpMinus:
     out << "-";
+    break;
+  case TokenKind::OpMinusMinus:
+    out << "--";
     break;
   case TokenKind::OpStar:
     out << "*";

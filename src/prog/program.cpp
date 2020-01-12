@@ -33,6 +33,10 @@ Program::Program() :
   m_funcDecls.registerFunc(
       *this, fk::NegateInt, getFuncName(op::Minus), sym::TypeSet{m_int}, m_int);
   m_funcDecls.registerFunc(*this, fk::NoOp, getFuncName(op::Plus), sym::TypeSet{m_int}, m_int);
+  m_funcDecls.registerFunc(
+      *this, fk::IncrementInt, getFuncName(op::PlusPlus), sym::TypeSet{m_int}, m_int);
+  m_funcDecls.registerFunc(
+      *this, fk::DecrementInt, getFuncName(op::MinusMinus), sym::TypeSet{m_int}, m_int);
 
   // Register build-in binary int operators.
   m_funcDecls.registerFunc(
@@ -71,6 +75,11 @@ Program::Program() :
   // Register build-in unary float operators.
   m_funcDecls.registerFunc(
       *this, fk::NegateFloat, getFuncName(op::Minus), sym::TypeSet{m_float}, m_float);
+  m_funcDecls.registerFunc(*this, fk::NoOp, getFuncName(op::Plus), sym::TypeSet{m_float}, m_float);
+  m_funcDecls.registerFunc(
+      *this, fk::IncrementFloat, getFuncName(op::PlusPlus), sym::TypeSet{m_float}, m_float);
+  m_funcDecls.registerFunc(
+      *this, fk::DecrementFloat, getFuncName(op::MinusMinus), sym::TypeSet{m_float}, m_float);
 
   // Register build-in binary float operators.
   m_funcDecls.registerFunc(
@@ -110,6 +119,12 @@ Program::Program() :
       *this, fk::CheckEqString, getFuncName(op::EqEq), sym::TypeSet{m_string, m_string}, m_bool);
   m_funcDecls.registerFunc(
       *this, fk::CheckNEqString, getFuncName(op::BangEq), sym::TypeSet{m_string, m_string}, m_bool);
+
+  // Register build-in unary char operators.
+  m_funcDecls.registerFunc(
+      *this, fk::IncrementChar, getFuncName(op::PlusPlus), sym::TypeSet{m_char}, m_char);
+  m_funcDecls.registerFunc(
+      *this, fk::DecrementChar, getFuncName(op::MinusMinus), sym::TypeSet{m_char}, m_char);
 
   // Register build-in binary char operators.
   m_funcDecls.registerFunc(

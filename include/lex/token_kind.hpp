@@ -6,7 +6,9 @@ namespace lex {
 enum class TokenKind {
   End,
   OpPlus,
+  OpPlusPlus,
   OpMinus,
+  OpMinusMinus,
   OpStar,
   OpSlash,
   OpRem,

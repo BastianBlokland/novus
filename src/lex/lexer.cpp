@@ -75,11 +75,19 @@ auto LexerImpl::next() -> Token {
     case '\0':
       return endToken(input::Span{m_inputPos >= 0 ? m_inputPos : 0});
     case '+':
+      if (peekChar(0) == '+') {
+        consumeChar();
+        return basicToken(TokenKind::OpPlusPlus, input::Span{m_inputPos - 1, m_inputPos});
+      }
       return basicToken(TokenKind::OpPlus, input::Span{m_inputPos});
     case '-':
       if (peekChar(0) == '>') {
         consumeChar();
         return basicToken(TokenKind::SepArrow, input::Span{m_inputPos - 1, m_inputPos});
+      }
+      if (peekChar(0) == '-') {
+        consumeChar();
+        return basicToken(TokenKind::OpMinusMinus, input::Span{m_inputPos - 1, m_inputPos});
       }
       return basicToken(TokenKind::OpMinus, input::Span{m_inputPos});
     case '*':

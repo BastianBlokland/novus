@@ -54,8 +54,12 @@ auto getOperator(const lex::Token& token) -> std::optional<prog::Operator> {
   switch (token.getKind()) {
   case lex::TokenKind::OpPlus:
     return prog::Operator::Plus;
+  case lex::TokenKind::OpPlusPlus:
+    return prog::Operator::PlusPlus;
   case lex::TokenKind::OpMinus:
     return prog::Operator::Minus;
+  case lex::TokenKind::OpMinusMinus:
+    return prog::Operator::MinusMinus;
   case lex::TokenKind::OpStar:
     return prog::Operator::Star;
   case lex::TokenKind::OpSlash:
@@ -103,8 +107,12 @@ auto getText(const prog::Operator& op) -> std::string {
   switch (op) {
   case prog::Operator::Plus:
     return "+";
+  case prog::Operator::PlusPlus:
+    return "++";
   case prog::Operator::Minus:
     return "-";
+  case prog::Operator::MinusMinus:
+    return "--";
   case prog::Operator::Star:
     return "*";
   case prog::Operator::Slash:

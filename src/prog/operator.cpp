@@ -7,8 +7,12 @@ auto getFuncName(Operator op) -> std::string {
   switch (op) {
   case Operator::Plus:
     return "__op_plus";
+  case Operator::PlusPlus:
+    return "__op_plusplus";
   case Operator::Minus:
     return "__op_minus";
+  case Operator::MinusMinus:
+    return "__op_minusminus";
   case Operator::Star:
     return "__op_star";
   case Operator::Slash:

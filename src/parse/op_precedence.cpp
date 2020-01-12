@@ -6,7 +6,9 @@ namespace parse {
 auto getLhsOpPrecedence(const lex::Token& token) -> int {
   switch (token.getKind()) {
   case lex::TokenKind::OpPlus:
+  case lex::TokenKind::OpPlusPlus:
   case lex::TokenKind::OpMinus:
+  case lex::TokenKind::OpMinusMinus:
   case lex::TokenKind::OpBang:
     return unaryPrecedence;
   default:

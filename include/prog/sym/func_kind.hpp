@@ -12,6 +12,8 @@ enum class FuncKind {
   DivInt,
   RemInt,
   NegateInt,
+  IncrementInt,
+  DecrementInt,
   ShiftLeftInt,
   ShiftRightInt,
   AndInt,
@@ -29,6 +31,8 @@ enum class FuncKind {
   MulFloat,
   DivFloat,
   NegateFloat,
+  IncrementFloat,
+  DecrementFloat,
   CheckEqFloat,
   CheckNEqFloat,
   CheckLeFloat,
@@ -46,6 +50,9 @@ enum class FuncKind {
   SliceString,
   CheckEqString,
   CheckNEqString,
+
+  IncrementChar,
+  DecrementChar,
 
   ConvIntFloat,
   ConvFloatInt,

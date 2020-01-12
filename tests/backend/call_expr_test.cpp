@@ -10,10 +10,21 @@ TEST_CASE("Generate assembly for call expressions", "[backend]") {
       builder->addLoadLitInt(42);
       builder->addNegInt();
     });
-    CHECK_EXPR_INT("--42", [](backend::Builder* builder) -> void {
+    CHECK_EXPR_INT("+42", [](backend::Builder* builder) -> void { builder->addLoadLitInt(42); });
+    CHECK_EXPR_INT("- -42", [](backend::Builder* builder) -> void {
       builder->addLoadLitInt(42);
       builder->addNegInt();
       builder->addNegInt();
+    });
+    CHECK_EXPR_INT("--42", [](backend::Builder* builder) -> void {
+      builder->addLoadLitInt(42);
+      builder->addLoadLitInt(1);
+      builder->addSubInt();
+    });
+    CHECK_EXPR_INT("++42", [](backend::Builder* builder) -> void {
+      builder->addLoadLitInt(42);
+      builder->addLoadLitInt(1);
+      builder->addAddInt();
     });
     CHECK_EXPR_INT("1 + 3", [](backend::Builder* builder) -> void {
       builder->addLoadLitInt(1);
@@ -77,6 +88,19 @@ TEST_CASE("Generate assembly for call expressions", "[backend]") {
     CHECK_EXPR_FLOAT("-.1337", [](backend::Builder* builder) -> void {
       builder->addLoadLitFloat(0.1337F); // NOLINT: Magic numbers
       builder->addNegFloat();
+    });
+    CHECK_EXPR_FLOAT("+.1337", [](backend::Builder* builder) -> void {
+      builder->addLoadLitFloat(0.1337F); // NOLINT: Magic numbers
+    });
+    CHECK_EXPR_FLOAT("--.1337", [](backend::Builder* builder) -> void {
+      builder->addLoadLitFloat(0.1337F); // NOLINT: Magic numbers
+      builder->addLoadLitFloat(1.0F);
+      builder->addSubFloat();
+    });
+    CHECK_EXPR_FLOAT("++.1337", [](backend::Builder* builder) -> void {
+      builder->addLoadLitFloat(0.1337F); // NOLINT: Magic numbers
+      builder->addLoadLitFloat(1.0F);
+      builder->addAddFloat();
     });
     CHECK_EXPR_FLOAT("1.42 + 3.42", [](backend::Builder* builder) -> void {
       builder->addLoadLitFloat(1.42F); // NOLINT: Magic numbers
@@ -187,6 +211,21 @@ TEST_CASE("Generate assembly for call expressions", "[backend]") {
       builder->addLoadLitFloat(3.42F); // NOLINT: Magic numbers
       builder->addCheckLeFloat();
       builder->addLogicInvInt();
+    });
+  }
+
+  SECTION("Char operations") {
+    CHECK_EXPR_CHAR("--'a'", [](backend::Builder* builder) -> void {
+      builder->addLoadLitInt('a');
+      builder->addLoadLitInt(1);
+      builder->addSubInt();
+      builder->addConvIntChar();
+    });
+    CHECK_EXPR_CHAR("++'a'", [](backend::Builder* builder) -> void {
+      builder->addLoadLitInt('a');
+      builder->addLoadLitInt(1);
+      builder->addAddInt();
+      builder->addConvIntChar();
     });
   }
 

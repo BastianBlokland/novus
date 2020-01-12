@@ -17,8 +17,10 @@ namespace parse {
 
 #define NUM_ARGS(...) std::tuple_size<decltype(std::make_tuple(__VA_ARGS__))>::value
 
-#define MINUS lex::basicToken(lex::TokenKind::OpMinus)
 #define PLUS lex::basicToken(lex::TokenKind::OpPlus)
+#define PLUSPLUS lex::basicToken(lex::TokenKind::OpPlusPlus)
+#define MINUS lex::basicToken(lex::TokenKind::OpMinus)
+#define MINUSMINUS lex::basicToken(lex::TokenKind::OpMinusMinus)
 #define STAR lex::basicToken(lex::TokenKind::OpStar)
 #define BANG lex::basicToken(lex::TokenKind::OpBang)
 #define AMP lex::basicToken(lex::TokenKind::OpAmp)
