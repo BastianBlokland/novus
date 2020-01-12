@@ -1,4 +1,5 @@
 #include "prog/sym/type_set.hpp"
+#include <cassert>
 
 namespace prog::sym {
 

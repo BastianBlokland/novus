@@ -4,6 +4,7 @@
 #include "lex/lexer.hpp"
 #include "parse/parser.hpp"
 #include "rang.hpp"
+#include <chrono>
 
 namespace parsediag {
 

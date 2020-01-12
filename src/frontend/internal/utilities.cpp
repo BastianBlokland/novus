@@ -6,6 +6,7 @@
 #include "parse/type_param_list.hpp"
 #include "prog/expr/node_closure.hpp"
 #include "prog/expr/node_lit_func.hpp"
+#include <cassert>
 #include <sstream>
 #include <stdexcept>
 #include <unordered_set>

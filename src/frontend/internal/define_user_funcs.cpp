@@ -5,6 +5,7 @@
 #include "internal/utilities.hpp"
 #include "parse/nodes.hpp"
 #include "prog/expr/node_call.hpp"
+#include <cassert>
 
 namespace frontend::internal {
 

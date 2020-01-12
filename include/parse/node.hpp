@@ -2,6 +2,7 @@
 #include "input/span.hpp"
 #include "node_visitor.hpp"
 #include <iostream>
+#include <memory>
 
 namespace parse {
 

@@ -7,6 +7,7 @@
 #include "input/char_escape.hpp"
 #include "rang.hpp"
 #include "vm/assembly.hpp"
+#include <chrono>
 #include <optional>
 
 namespace asmdiag {

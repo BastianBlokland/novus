@@ -1,5 +1,6 @@
 #include "prog/sym/func_decl_table.hpp"
 #include "internal/overload.hpp"
+#include <cassert>
 #include <stdexcept>
 
 namespace prog::sym {

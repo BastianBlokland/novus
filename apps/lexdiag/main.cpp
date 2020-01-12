@@ -1,6 +1,7 @@
 #include "CLI/CLI.hpp"
 #include "lex/lexer.hpp"
 #include "rang.hpp"
+#include <chrono>
 
 namespace lexdiag {
 

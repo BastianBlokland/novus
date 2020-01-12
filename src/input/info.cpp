@@ -1,5 +1,6 @@
 #include "input/info.hpp"
 #include <algorithm>
+#include <cassert>
 
 namespace input {
 

@@ -45,7 +45,7 @@ auto DeclareUserFuncs::visit(const parse::FuncDeclStmtNode& n) -> void {
   if (n.getTypeSubs()) {
     auto typeSubs = getSubstitutionParams(m_context, *n.getTypeSubs());
     if (typeSubs && validateFuncTemplateArgList(n.getArgList(), *typeSubs)) {
-      m_context->getFuncTemplates()->declare(m_context, name, std::move(*typeSubs), n);
+      m_context->getFuncTemplates()->declare(m_context, name, std::move(*typeSubs), &n);
     }
     return;
   }

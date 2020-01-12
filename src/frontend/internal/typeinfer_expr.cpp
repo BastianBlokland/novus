@@ -4,6 +4,7 @@
 #include "internal/get_identifier.hpp"
 #include "internal/utilities.hpp"
 #include "parse/nodes.hpp"
+#include <cassert>
 
 namespace frontend::internal {
 

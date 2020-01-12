@@ -1,4 +1,5 @@
 #include "prog/sym/const_decl_table.hpp"
+#include <cassert>
 #include <sstream>
 #include <stdexcept>
 

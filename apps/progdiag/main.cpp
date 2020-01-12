@@ -4,6 +4,7 @@
 #include "get_expr_color.hpp"
 #include "input/char_escape.hpp"
 #include "rang.hpp"
+#include <chrono>
 
 namespace progdiag {
 

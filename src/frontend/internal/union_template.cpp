@@ -2,6 +2,7 @@
 #include "internal/define_user_types.hpp"
 #include "internal/typeinfer_typesub.hpp"
 #include "internal/utilities.hpp"
+#include <cassert>
 
 namespace frontend::internal {
 

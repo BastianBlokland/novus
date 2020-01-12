@@ -1,4 +1,5 @@
 #include "prog/sym/union_def.hpp"
+#include <algorithm>
 
 namespace prog::sym {
 

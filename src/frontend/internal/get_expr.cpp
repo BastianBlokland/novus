@@ -11,6 +11,7 @@
 #include "lex/token_payload_lit_string.hpp"
 #include "parse/nodes.hpp"
 #include "prog/expr/nodes.hpp"
+#include <cassert>
 #include <sstream>
 
 namespace frontend::internal {

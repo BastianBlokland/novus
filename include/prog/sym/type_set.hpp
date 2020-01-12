@@ -12,6 +12,7 @@ class TypeSet final {
 public:
   using iterator = typename std::vector<TypeId>::const_iterator;
 
+  TypeSet() = default;
   TypeSet(std::initializer_list<TypeId> list);
   explicit TypeSet(std::vector<TypeId> val);
 

@@ -12,7 +12,7 @@ namespace prog::sym {
 class TypeDefTable final {
 public:
   using typeDef  = typename std::variant<StructDef, UnionDef, DelegateDef>;
-  using iterator = typename std::unordered_map<TypeId, typeDef>::const_iterator;
+  using iterator = typename std::unordered_map<TypeId, typeDef, TypeIdHasher>::const_iterator;
 
   TypeDefTable()                            = default;
   TypeDefTable(const TypeDefTable& rhs)     = delete;

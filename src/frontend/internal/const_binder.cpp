@@ -1,4 +1,5 @@
 #include "internal/const_binder.hpp"
+#include <algorithm>
 #include <sstream>
 
 namespace frontend::internal {

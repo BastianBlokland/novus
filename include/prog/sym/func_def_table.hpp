@@ -10,7 +10,7 @@ namespace prog::sym {
 
 class FuncDefTable final {
 public:
-  using iterator = typename std::unordered_map<FuncId, FuncDef>::const_iterator;
+  using iterator = typename std::unordered_map<FuncId, FuncDef, FuncIdHasher>::const_iterator;
 
   FuncDefTable()                            = default;
   FuncDefTable(const FuncDefTable& rhs)     = delete;

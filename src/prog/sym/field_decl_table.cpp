@@ -1,4 +1,5 @@
 #include "prog/sym/field_decl_table.hpp"
+#include <cassert>
 #include <stdexcept>
 
 namespace prog::sym {

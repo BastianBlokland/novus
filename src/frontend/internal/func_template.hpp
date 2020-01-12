@@ -13,7 +13,12 @@ class FuncTemplate final {
   friend class FuncTemplateTable;
 
 public:
-  FuncTemplate() = delete;
+  FuncTemplate(const FuncTemplate& rhs)     = delete;
+  FuncTemplate(FuncTemplate&& rhs) noexcept = default;
+  ~FuncTemplate()                           = default;
+
+  auto operator=(const FuncTemplate& rhs) -> FuncTemplate& = delete;
+  auto operator=(FuncTemplate&& rhs) noexcept -> FuncTemplate& = default;
 
   [[nodiscard]] auto getTemplateName() const -> const std::string&;
   [[nodiscard]] auto getTypeParamCount() const -> unsigned int;
@@ -30,7 +35,7 @@ private:
   Context* m_context;
   std::string m_name;
   std::vector<std::string> m_typeSubs;
-  const parse::FuncDeclStmtNode& m_parseNode;
+  const parse::FuncDeclStmtNode* m_parseNode;
   std::vector<std::unique_ptr<FuncTemplateInst>> m_instances;
 
   // Keep track of current 'getRetType' calls to detect cycles.
@@ -40,7 +45,7 @@ private:
       Context* context,
       std::string name,
       std::vector<std::string> typeSubs,
-      const parse::FuncDeclStmtNode& parseNode);
+      const parse::FuncDeclStmtNode* parseNode);
 
   auto setupInstance(FuncTemplateInst* instance) -> void;
 

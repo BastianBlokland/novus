@@ -96,7 +96,11 @@ private:
 template <typename InputItrBegin, typename InputItrEnd>
 auto parseAll(InputItrBegin inputBegin, const InputItrEnd inputEnd) {
   auto parser = Parser{inputBegin, inputEnd};
-  return std::vector<NodePtr>{parser.begin(), parser.end()};
+  auto result = std::vector<NodePtr>{};
+  for (auto nodeItr = parser.begin(); nodeItr != parser.end(); ++nodeItr) {
+    result.push_back(*nodeItr);
+  }
+  return result;
 }
 
 } // namespace parse

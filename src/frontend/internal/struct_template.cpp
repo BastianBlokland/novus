@@ -4,6 +4,7 @@
 #include "internal/type_info.hpp"
 #include "internal/typeinfer_typesub.hpp"
 #include "internal/utilities.hpp"
+#include <cassert>
 
 namespace frontend::internal {
 

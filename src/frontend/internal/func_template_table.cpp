@@ -10,14 +10,13 @@ auto FuncTemplateTable::declare(
     Context* context,
     const std::string& name,
     std::vector<std::string> typeSubs,
-    const parse::FuncDeclStmtNode& n) -> void {
-  auto funcTemplate = FuncTemplate{context, name, std::move(typeSubs), n};
+    const parse::FuncDeclStmtNode* n) -> void {
 
   auto itr = m_templates.find(name);
   if (itr == m_templates.end()) {
     itr = m_templates.insert({name, std::vector<FuncTemplate>{}}).first;
   }
-  itr->second.push_back(std::move(funcTemplate));
+  itr->second.push_back(FuncTemplate{context, name, std::move(typeSubs), n});
 }
 
 auto FuncTemplateTable::instantiate(const std::string& name, const prog::sym::TypeSet& typeParams)
