@@ -8,6 +8,7 @@ namespace parse {
 
 [[nodiscard]] auto getKw(const lex::Token& token) -> std::optional<lex::Keyword>;
 [[nodiscard]] auto getId(const lex::Token& token) -> std::optional<std::string>;
+[[nodiscard]] auto getInt(const lex::Token& token) -> std::optional<int32_t>;
 
 [[nodiscard]] auto getSpan(const std::vector<lex::Token>& tokens) -> std::optional<input::Span>;
 [[nodiscard]] auto getSpan(const std::vector<NodePtr>& nodes) -> std::optional<input::Span>;

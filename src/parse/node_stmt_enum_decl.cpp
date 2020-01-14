@@ -7,6 +7,8 @@ static auto getIdOrErr(const lex::Token& token) {
   return getId(token).value_or(std::string("err"));
 }
 
+static auto getIntOrDef(const lex::Token& token) { return getInt(token).value_or(-1); }
+
 EnumDeclStmtNode::ValueSpec::ValueSpec(lex::Token colon, lex::Token value) :
     m_colon{std::move(colon)}, m_value{std::move(value)} {}
 
@@ -94,7 +96,7 @@ auto EnumDeclStmtNode::print(std::ostream& out) const -> std::ostream& {
     const auto& entry = m_entries[i];
     out << getIdOrErr(entry.getIdentifier());
     if (entry.getValueSpec()) {
-      out << ':' << entry.getValueSpec()->getValue();
+      out << ':' << getIntOrDef(entry.getValueSpec()->getValue());
     }
   }
   return out;

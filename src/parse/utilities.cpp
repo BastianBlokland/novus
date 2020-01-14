@@ -1,6 +1,7 @@
 #include "utilities.hpp"
 #include "lex/token_payload_id.hpp"
 #include "lex/token_payload_keyword.hpp"
+#include "lex/token_payload_lit_int.hpp"
 #include <algorithm>
 #include <iterator>
 
@@ -18,6 +19,13 @@ auto getId(const lex::Token& token) -> std::optional<std::string> {
     return std::nullopt;
   }
   return token.getPayload<lex::IdentifierTokenPayload>()->getIdentifier();
+}
+
+auto getInt(const lex::Token& token) -> std::optional<int32_t> {
+  if (token.getKind() != lex::TokenKind::LitInt) {
+    return std::nullopt;
+  }
+  return token.getPayload<lex::LitIntTokenPayload>()->getValue();
 }
 
 auto getSpan(const std::vector<lex::Token>& tokens) -> std::optional<input::Span> {
