@@ -113,6 +113,6 @@ TEST_CASE("Parsing struct declaration statements", "[parse]") {
     CHECK_STMT_SPAN(" struct user = int a ", input::Span(1, 19));
     CHECK_STMT_SPAN(" struct user = int a, bool b ", input::Span(1, 27));
   }
-} // namespace parse
+}
 
 } // namespace parse

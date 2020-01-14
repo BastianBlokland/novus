@@ -36,7 +36,7 @@ StructDeclStmtNode::StructDeclStmtNode(
 
 auto StructDeclStmtNode::operator==(const Node& rhs) const noexcept -> bool {
   const auto r = dynamic_cast<const StructDeclStmtNode*>(&rhs);
-  return r != nullptr && m_id == r->m_id && m_fields == r->m_fields;
+  return r != nullptr && m_id == r->m_id && m_typeSubs == r->m_typeSubs && m_fields == r->m_fields;
 }
 
 auto StructDeclStmtNode::operator!=(const Node& rhs) const noexcept -> bool {

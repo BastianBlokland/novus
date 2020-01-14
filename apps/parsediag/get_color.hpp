@@ -100,6 +100,11 @@ public:
     m_bg = rang::bg::reset;
   }
 
+  auto visit(const parse::EnumDeclStmtNode & /*unused*/) -> void override {
+    m_fg = rang::fg::yellow;
+    m_bg = rang::bg::reset;
+  }
+
   auto visit(const parse::ExecStmtNode & /*unused*/) -> void override {
     m_fg = rang::fg::blue;
     m_bg = rang::bg::reset;

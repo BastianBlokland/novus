@@ -551,6 +551,10 @@ auto GetExpr::visit(const parse::UnaryExprNode& n) -> void {
   m_expr = prog::expr::callExprNode(*m_context->getProg(), func.value(), std::move(args));
 }
 
+auto GetExpr::visit(const parse::EnumDeclStmtNode & /*unused*/) -> void {
+  throw std::logic_error{"GetExpr is not implemented for this node type"};
+}
+
 auto GetExpr::visit(const parse::ExecStmtNode & /*unused*/) -> void {
   throw std::logic_error{"GetExpr is not implemented for this node type"};
 }

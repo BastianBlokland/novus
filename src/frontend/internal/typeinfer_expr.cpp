@@ -304,6 +304,10 @@ auto TypeInferExpr::visit(const parse::UnaryExprNode& n) -> void {
   m_type       = inferFuncCall(prog::getFuncName(*op), {argType}, false);
 }
 
+auto TypeInferExpr::visit(const parse::EnumDeclStmtNode & /*unused*/) -> void {
+  throw std::logic_error{"TypeInferExpr is not implemented for this node type"};
+}
+
 auto TypeInferExpr::visit(const parse::ExecStmtNode & /*unused*/) -> void {
   throw std::logic_error{"TypeInferExpr is not implemented for this node type"};
 }

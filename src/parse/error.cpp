@@ -216,6 +216,47 @@ auto errInvalidStmtUnionDecl(
   return errorNode(oss.str(), std::move(tokens), {});
 }
 
+auto errInvalidStmtEnumDecl(
+    lex::Token kw,
+    lex::Token id,
+    lex::Token eq,
+    const std::vector<EnumDeclStmtNode::EntrySpec>& entries,
+    std::vector<lex::Token> commas) -> NodePtr {
+  std::ostringstream oss;
+  if (id.getKind() != lex::TokenKind::Identifier) {
+    oss << "Expected union identifier but got: " << id;
+  } else if (eq.getKind() != lex::TokenKind::OpEq) {
+    oss << "Expected equals-sign '=' but got: " << eq;
+  } else if (entries.empty()) {
+    oss << "Enum declaration needs at least one entry";
+  } else if (!std::all_of(entries.begin(), entries.end(), [](const auto& entry) {
+               return entry.validate();
+             })) {
+    oss << "Invalid entry in enum declaration";
+  } else if (commas.size() != entries.size() - 1) {
+    oss << "Incorrect number of comma's ',' in enum declaration";
+  } else {
+    oss << "Invalid enum declaration";
+  }
+
+  auto tokens = std::vector<lex::Token>{};
+  tokens.push_back(std::move(kw));
+  tokens.push_back(std::move(id));
+  tokens.push_back(std::move(eq));
+  for (auto& entry : entries) {
+    tokens.push_back(entry.getIdentifier());
+    if (entry.getValueSpec()) {
+      tokens.push_back(entry.getValueSpec()->getColon());
+      tokens.push_back(entry.getValueSpec()->getValue());
+    }
+  }
+  for (auto& comma : commas) {
+    tokens.push_back(std::move(comma));
+  }
+
+  return errorNode(oss.str(), std::move(tokens), {});
+}
+
 auto errInvalidStmtExec(
     lex::Token action,
     lex::Token open,

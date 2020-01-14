@@ -48,6 +48,7 @@ add_library(parse STATIC
   parse/node_expr_switch_else.cpp
   parse/node_expr_switch.cpp
   parse/node_expr_unary.cpp
+  parse/node_stmt_enum_decl.cpp
   parse/node_stmt_exec.cpp
   parse/node_stmt_func_decl.cpp
   parse/node_stmt_struct_decl.cpp

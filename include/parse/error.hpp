@@ -1,6 +1,7 @@
 #pragma once
 #include "lex/token.hpp"
 #include "parse/node.hpp"
+#include "parse/node_stmt_enum_decl.hpp"
 #include "parse/node_stmt_func_decl.hpp"
 #include "parse/node_stmt_struct_decl.hpp"
 #include "parse/type_param_list.hpp"
@@ -35,6 +36,13 @@ errInvalidAnonFuncExpr(lex::Token kw, const ArgumentListDecl& argList, NodePtr b
     std::optional<TypeSubstitutionList> typeSubs,
     lex::Token eq,
     const std::vector<Type>& types,
+    std::vector<lex::Token> commas) -> NodePtr;
+
+[[nodiscard]] auto errInvalidStmtEnumDecl(
+    lex::Token kw,
+    lex::Token id,
+    lex::Token eq,
+    const std::vector<EnumDeclStmtNode::EntrySpec>& entries,
     std::vector<lex::Token> commas) -> NodePtr;
 
 [[nodiscard]] auto errInvalidStmtExec(
