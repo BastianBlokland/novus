@@ -28,6 +28,7 @@ public:
   auto visit(const prog::expr::LitIntNode& n) -> void override;
   auto visit(const prog::expr::LitStringNode& n) -> void override;
   auto visit(const prog::expr::LitCharNode& n) -> void override;
+  auto visit(const prog::expr::LitEnumNode& n) -> void override;
 
 private:
   const Context& m_context;

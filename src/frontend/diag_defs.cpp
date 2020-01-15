@@ -87,6 +87,14 @@ auto errFieldNotFoundOnType(
   return error(src, oss.str(), span);
 }
 
+auto errStaticFieldNotFoundOnType(
+    const Source& src, const std::string& fieldName, const std::string& typeName, input::Span span)
+    -> Diag {
+  std::ostringstream oss;
+  oss << "Type '" << typeName << "' has no static field named '" << fieldName << '\'';
+  return error(src, oss.str(), span);
+}
+
 auto errDuplicateTypeInUnion(
     const Source& src,
     const std::string& typeName,
@@ -132,6 +140,14 @@ auto errDuplicateEntryNameInEnum(const Source& src, const std::string& entryName
 auto errDuplicateEntryValueInEnum(const Source& src, int32_t entryValue, input::Span span) -> Diag {
   std::ostringstream oss;
   oss << "Value '" << entryValue << "' conflicts with a previous entry in the same enum";
+  return error(src, oss.str(), span);
+}
+
+auto errValueNotFoundInEnum(
+    const Source& src, const std::string& entryName, const std::string& enumName, input::Span span)
+    -> Diag {
+  std::ostringstream oss;
+  oss << "Enum '" << enumName << "' does not contain '" << entryName << '\'';
   return error(src, oss.str(), span);
 }
 

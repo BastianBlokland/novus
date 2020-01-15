@@ -76,6 +76,11 @@ private:
   [[nodiscard]] auto getBinLogicOpExpr(const parse::BinaryExprNode& n, BinLogicOp op)
       -> prog::expr::NodePtr;
 
+  [[nodiscard]] auto getStaticFieldExpr(
+      const lex::Token& nameToken,
+      const std::optional<parse::TypeParamList>& typeParams,
+      const lex::Token& fieldToken) -> prog::expr::NodePtr;
+
   [[nodiscard]] auto getConstExpr(const parse::IdExprNode& n) -> prog::expr::NodePtr;
 
   [[nodiscard]] auto getDynCallExpr(const parse::CallExprNode& n) -> prog::expr::NodePtr;

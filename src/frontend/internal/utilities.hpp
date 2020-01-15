@@ -23,6 +23,12 @@ namespace frontend::internal {
     Context* context,
     const TypeSubstitutionTable* subTable,
     const lex::Token& nameToken,
+    const std::optional<parse::TypeParamList>& typeParams) -> std::optional<prog::sym::TypeId>;
+
+[[nodiscard]] auto getOrInstType(
+    Context* context,
+    const TypeSubstitutionTable* subTable,
+    const lex::Token& nameToken,
     const std::optional<parse::TypeParamList>& typeParams,
     const prog::sym::TypeSet& constructorArgs) -> std::optional<prog::sym::TypeId>;
 

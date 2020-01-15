@@ -47,6 +47,10 @@ errFieldNameConflictsWithType(const Source& src, const std::string& name, input:
     const Source& src, const std::string& fieldName, const std::string& typeName, input::Span span)
     -> Diag;
 
+[[nodiscard]] auto errStaticFieldNotFoundOnType(
+    const Source& src, const std::string& fieldName, const std::string& typeName, input::Span span)
+    -> Diag;
+
 [[nodiscard]] auto errDuplicateTypeInUnion(
     const Source& src,
     const std::string& typeName,
@@ -67,6 +71,10 @@ errDuplicateEntryNameInEnum(const Source& src, const std::string& entryName, inp
 
 [[nodiscard]] auto
 errDuplicateEntryValueInEnum(const Source& src, int32_t entryValue, input::Span span) -> Diag;
+
+[[nodiscard]] auto errValueNotFoundInEnum(
+    const Source& src, const std::string& entryName, const std::string& enumName, input::Span span)
+    -> Diag;
 
 [[nodiscard]] auto errIncorrectReturnTypeInConvFunc(
     const Source& src, const std::string& name, const std::string& returnedType, input::Span span)

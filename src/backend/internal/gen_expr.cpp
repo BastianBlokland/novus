@@ -447,6 +447,10 @@ auto GenExpr::visit(const prog::expr::LitCharNode& n) -> void {
   m_builder->addLoadLitInt(n.getVal());
 }
 
+auto GenExpr::visit(const prog::expr::LitEnumNode& n) -> void {
+  m_builder->addLoadLitInt(n.getVal());
+}
+
 auto GenExpr::genSubExpr(const prog::expr::Node& n, bool tail) -> void {
   auto genExpr = GenExpr{m_program, m_builder, tail};
   n.accept(&genExpr);

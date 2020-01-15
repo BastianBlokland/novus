@@ -171,8 +171,7 @@ auto getOrInstType(
     Context* context,
     const TypeSubstitutionTable* subTable,
     const lex::Token& nameToken,
-    const std::optional<parse::TypeParamList>& typeParams,
-    const prog::sym::TypeSet& constructorArgs) -> std::optional<prog::sym::TypeId> {
+    const std::optional<parse::TypeParamList>& typeParams) -> std::optional<prog::sym::TypeId> {
 
   const auto typeName = getName(nameToken);
 
@@ -195,8 +194,25 @@ auto getOrInstType(
     return type;
   }
 
+  return std::nullopt;
+}
+
+auto getOrInstType(
+    Context* context,
+    const TypeSubstitutionTable* subTable,
+    const lex::Token& nameToken,
+    const std::optional<parse::TypeParamList>& typeParams,
+    const prog::sym::TypeSet& constructorArgs) -> std::optional<prog::sym::TypeId> {
+
+  // Check if a type can be found / instantiated.
+  const auto result = getOrInstType(context, subTable, nameToken, typeParams);
+  if (result) {
+    return result;
+  }
+
   // Attempt to instantiate a templated type by infering the type parameters based on the
   // constructor arguments.
+  const auto typeName = getName(nameToken);
   const auto typeInstantiation =
       context->getTypeTemplates()->inferParamsAndInstantiate(typeName, constructorArgs);
   if (typeInstantiation) {

@@ -70,7 +70,7 @@ auto TypeInferExpr::visit(const parse::BinaryExprNode& n) -> void {
 }
 
 auto TypeInferExpr::visit(const parse::CallExprNode& n) -> void {
-  auto getIdVisitor = GetIdentifier{};
+  auto getIdVisitor = GetIdentifier{true};
   n[0].accept(&getIdVisitor);
   auto* instance  = getIdVisitor.getInstance();
   auto identifier = getIdVisitor.getIdentifier();
@@ -187,6 +187,21 @@ auto TypeInferExpr::visit(const parse::IdExprNode& n) -> void {
 }
 
 auto TypeInferExpr::visit(const parse::FieldExprNode& n) -> void {
+  // Check if the lhs is a type name token, in that case treat this as access to a 'static' field.
+  auto getIdVisitor = GetIdentifier{false};
+  n[0].accept(&getIdVisitor);
+  auto identifier = getIdVisitor.getIdentifier();
+  if (identifier && isType(m_context, getName(*identifier))) {
+    const auto type =
+        getOrInstType(m_context, m_typeSubTable, *identifier, getIdVisitor.getTypeParams());
+    // If the type is an enum then any field on that enum will have that type.
+    if (type && m_context->getProg()->getTypeDecl(*type).getKind() == prog::sym::TypeKind::Enum) {
+      m_type = *type;
+      return;
+    }
+  }
+
+  // If not a static field then acces the field on the lhs expression.
   const auto lhsType = inferSubExpr(n[0]);
   if (!lhsType.isConcrete()) {
     return;
@@ -386,10 +401,6 @@ auto TypeInferExpr::inferConstType(const lex::Token& constId) -> prog::sym::Type
     return prog::sym::TypeId::inferType();
   }
   return itr->second;
-}
-
-auto TypeInferExpr::isType(const std::string& name) const -> bool {
-  return m_context->getProg()->lookupType(name) || m_context->getTypeTemplates()->hasType(name);
 }
 
 } // namespace frontend::internal

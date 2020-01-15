@@ -54,8 +54,6 @@ private:
 
   auto setConstType(const lex::Token& constId, prog::sym::TypeId type) -> void;
   [[nodiscard]] auto inferConstType(const lex::Token& constId) -> prog::sym::TypeId;
-
-  [[nodiscard]] auto isType(const std::string& name) const -> bool;
 };
 
 } // namespace frontend::internal

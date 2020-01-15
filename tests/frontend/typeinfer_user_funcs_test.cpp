@@ -79,6 +79,13 @@ TEST_CASE("Infer return type of user functions", "[frontend]") {
         GET_TYPE_ID(output, "int"));
   }
 
+  SECTION("Enum entry") {
+    const auto& output = ANALYZE("enum E = a, b "
+                                 "fun f() E.a");
+    REQUIRE(output.isSuccess());
+    CHECK(GET_FUNC_DECL(output, "f").getOutput() == GET_TYPE_ID(output, "E"));
+  }
+
   SECTION("Logic and operator") {
     const auto& output = ANALYZE("fun f() true && false");
     REQUIRE(output.isSuccess());

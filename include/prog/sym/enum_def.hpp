@@ -25,6 +25,7 @@ public:
   [[nodiscard]] auto end() const -> iterator;
 
   [[nodiscard]] auto getId() const noexcept -> const TypeId&;
+  [[nodiscard]] auto hasEntry(const std::string& name) const noexcept -> bool;
   [[nodiscard]] auto getValue(const std::string& name) const noexcept -> std::optional<int32_t>;
 
 private:
