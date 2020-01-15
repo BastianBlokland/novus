@@ -19,6 +19,10 @@ auto DeclareUserTypes::getUnions() const noexcept -> const std::vector<UnionDecl
   return m_unions;
 }
 
+auto DeclareUserTypes::getEnums() const noexcept -> const std::vector<EnumDeclarationInfo>& {
+  return m_enums;
+}
+
 auto DeclareUserTypes::visit(const parse::StructDeclStmtNode& n) -> void {
   // Get type name.
   const auto name = getName(n.getId());
@@ -37,7 +41,7 @@ auto DeclareUserTypes::visit(const parse::StructDeclStmtNode& n) -> void {
   }
 
   // Declare the struct in the program.
-  auto typeId = m_context->getProg()->declareUserStruct(name);
+  auto typeId = m_context->getProg()->declareStruct(name);
   m_structs.emplace_back(typeId, n);
 
   // Keep track of some extra information about the type.
@@ -62,8 +66,23 @@ auto DeclareUserTypes::visit(const parse::UnionDeclStmtNode& n) -> void {
   }
 
   // Declare the union in the program.
-  auto typeId = m_context->getProg()->declareUserUnion(name);
+  auto typeId = m_context->getProg()->declareUnion(name);
   m_unions.emplace_back(typeId, n);
+
+  // Keep track of some extra information about the type.
+  m_context->declareTypeInfo(typeId, TypeInfo{name, n.getSpan()});
+}
+
+auto DeclareUserTypes::visit(const parse::EnumDeclStmtNode& n) -> void {
+  // Get type name.
+  const auto name = getName(n.getId());
+  if (!validateTypeName(n.getId())) {
+    return;
+  }
+
+  // Declare the enum in the program.
+  auto typeId = m_context->getProg()->declareEnum(name);
+  m_enums.emplace_back(typeId, n);
 
   // Keep track of some extra information about the type.
   m_context->declareTypeInfo(typeId, TypeInfo{name, n.getSpan()});

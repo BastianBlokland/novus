@@ -7,10 +7,9 @@ static auto getIdOrErr(const lex::Token& token) {
   return getId(token).value_or(std::string("err"));
 }
 
-static auto getIntOrDef(const lex::Token& token) { return getInt(token).value_or(-1); }
-
-EnumDeclStmtNode::ValueSpec::ValueSpec(lex::Token colon, lex::Token value) :
-    m_colon{std::move(colon)}, m_value{std::move(value)} {}
+EnumDeclStmtNode::ValueSpec::ValueSpec(
+    lex::Token colon, std::optional<lex::Token> minus, lex::Token value) :
+    m_colon{std::move(colon)}, m_minus{std::move(minus)}, m_value{std::move(value)} {}
 
 auto EnumDeclStmtNode::ValueSpec::operator==(const ValueSpec& rhs) const noexcept -> bool {
   return m_colon == rhs.m_colon && m_value == rhs.m_value;
@@ -18,7 +17,18 @@ auto EnumDeclStmtNode::ValueSpec::operator==(const ValueSpec& rhs) const noexcep
 
 auto EnumDeclStmtNode::ValueSpec::getColon() const noexcept -> const lex::Token& { return m_colon; }
 
-auto EnumDeclStmtNode::ValueSpec::getValue() const noexcept -> const lex::Token& { return m_value; }
+auto EnumDeclStmtNode::ValueSpec::getMinusToken() const noexcept
+    -> const std::optional<lex::Token>& {
+  return m_minus;
+}
+
+auto EnumDeclStmtNode::ValueSpec::getValueToken() const noexcept -> const lex::Token& {
+  return m_value;
+}
+
+auto EnumDeclStmtNode::ValueSpec::getValue() const noexcept -> int32_t {
+  return getInt(m_value).value_or(0) * (m_minus.has_value() ? -1 : 1);
+}
 
 auto EnumDeclStmtNode::ValueSpec::validate() const noexcept -> bool {
   return m_colon.getKind() == lex::TokenKind::SepColon &&
@@ -33,7 +43,7 @@ auto EnumDeclStmtNode::EntrySpec::operator==(const EntrySpec& rhs) const noexcep
 }
 
 auto EnumDeclStmtNode::EntrySpec::getSpan() const -> input::Span {
-  return m_value ? input::Span::combine(m_identifier.getSpan(), m_value->getValue().getSpan())
+  return m_value ? input::Span::combine(m_identifier.getSpan(), m_value->getValueToken().getSpan())
                  : m_identifier.getSpan();
 }
 
@@ -96,7 +106,7 @@ auto EnumDeclStmtNode::print(std::ostream& out) const -> std::ostream& {
     const auto& entry = m_entries[i];
     out << getIdOrErr(entry.getIdentifier());
     if (entry.getValueSpec()) {
-      out << ':' << getIntOrDef(entry.getValueSpec()->getValue());
+      out << ':' << entry.getValueSpec()->getValue();
     }
   }
   return out;

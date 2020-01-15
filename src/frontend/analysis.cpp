@@ -45,6 +45,9 @@ auto analyze(const Source& src) -> Output {
   for (const auto& unionDecl : declareUserTypes.getUnions()) {
     defineUserTypes.define(unionDecl.first, unionDecl.second);
   }
+  for (const auto& enumDecl : declareUserTypes.getEnums()) {
+    defineUserTypes.define(enumDecl.first, enumDecl.second);
+  }
   if (context.hasErrors()) {
     return buildOutput(nullptr, context.getDiags());
   }

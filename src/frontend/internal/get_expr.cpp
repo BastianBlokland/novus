@@ -71,9 +71,9 @@ auto GetExpr::visit(const parse::AnonFuncExprNode& n) -> void {
   auto inputTypeSet = prog::sym::TypeSet{std::move(inputTypes)};
 
   // Declare and define the function in the program.
-  const auto funcId = m_context->getProg()->declareUserFunc(
+  const auto funcId = m_context->getProg()->declareFunc(
       m_context->genAnonFuncName(), std::move(inputTypeSet), getExpr.m_expr->getType());
-  m_context->getProg()->defineUserFunc(funcId, std::move(consts), std::move(getExpr.m_expr));
+  m_context->getProg()->defineFunc(funcId, std::move(consts), std::move(getExpr.m_expr));
 
   // Either create a function literal or a closure, depending on if the anonymous func binds any
   // consts from the parent.
@@ -305,7 +305,7 @@ auto GetExpr::visit(const parse::FieldExprNode& n) -> void {
 
   const auto lhsType      = lhsExpr->getType();
   const auto& lhsTypeDecl = m_context->getProg()->getTypeDecl(lhsType);
-  if (lhsTypeDecl.getKind() != prog::sym::TypeKind::UserStruct) {
+  if (lhsTypeDecl.getKind() != prog::sym::TypeKind::Struct) {
     m_context->reportDiag(errFieldNotFoundOnType(
         m_context->getSrc(), fieldName, getDisplayName(*m_context, lhsType), n.getSpan()));
     return;
@@ -368,7 +368,7 @@ auto GetExpr::visit(const parse::IsExprNode& n) -> void {
   // Validate lhs is a union type.
   const auto lhsType      = lhsExpr->getType();
   const auto& lhsTypeDecl = m_context->getProg()->getTypeDecl(lhsType);
-  if (lhsTypeDecl.getKind() != prog::sym::TypeKind::UserUnion) {
+  if (lhsTypeDecl.getKind() != prog::sym::TypeKind::Union) {
     m_context->reportDiag(errNonUnionIsExpression(m_context->getSrc(), n[0].getSpan()));
     return;
   }

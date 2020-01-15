@@ -47,7 +47,7 @@ auto closureNode(
     throw std::invalid_argument{"Closure node cannot contain a null bound argument"};
   }
   const auto& typeDecl = program.getTypeDecl(type);
-  if (typeDecl.getKind() != sym::TypeKind::UserDelegate) {
+  if (typeDecl.getKind() != sym::TypeKind::Delegate) {
     throw std::invalid_argument{"Type is not a delegate type"};
   }
   const auto& delegateDef = std::get<sym::DelegateDef>(program.getTypeDef(type));

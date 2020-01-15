@@ -144,6 +144,12 @@ auto printTypeDefs(const prog::Program& prog) -> void {
         std::cout << "  " << rang::fg::yellow << rang::style::bold << std::setw(nameColWidth)
                   << std::left << typeName << rang::style::reset << '\n';
       }
+    } else if (std::holds_alternative<prog::sym::EnumDef>(typeDef)) {
+      const auto& enumDef = std::get<prog::sym::EnumDef>(typeDef);
+      for (const auto& entry : enumDef) {
+        std::cout << "  " << rang::fg::yellow << rang::style::bold << std::setw(nameColWidth)
+                  << std::left << entry.first << rang::style::reset << entry.second << '\n';
+      }
     } else if (std::holds_alternative<prog::sym::DelegateDef>(typeDef)) {
       const auto& delegateDef = std::get<prog::sym::DelegateDef>(typeDef);
       std::stringstream inputStr;

@@ -69,6 +69,12 @@ TEST_CASE("Analyzing user-type declarations", "[frontend]") {
     CHECK(TYPE_EXISTS(output, "s2"));
   }
 
+  SECTION("Declare basic enum") {
+    const auto& output = ANALYZE("enum e = a, b, c");
+    REQUIRE(output.isSuccess());
+    CHECK(TYPE_EXISTS(output, "e"));
+  }
+
   SECTION("Diagnostics") {
     CHECK_DIAG("struct int = bool i", errTypeAlreadyDeclared(src, "int", input::Span{7, 9}));
     CHECK_DIAG("union int = int, bool", errTypeAlreadyDeclared(src, "int", input::Span{6, 8}));
@@ -99,6 +105,9 @@ TEST_CASE("Analyzing user-type declarations", "[frontend]") {
         "union s{T} = T, bool "
         "struct s{T} = T t",
         errTypeTemplateAlreadyDeclared(src, "s", input::Span{28, 28}));
+    CHECK_DIAG("enum int = a", errTypeAlreadyDeclared(src, "int", input::Span{5, 7}));
+    CHECK_DIAG("enum delegate = a", errTypeNameIsReserved(src, "delegate", input::Span{5, 12}));
+    CHECK_DIAG("enum print = a", errTypeNameConflictsWithAction(src, "print", input::Span{5, 9}));
   }
 }
 

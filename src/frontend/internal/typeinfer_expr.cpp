@@ -193,7 +193,7 @@ auto TypeInferExpr::visit(const parse::FieldExprNode& n) -> void {
   }
 
   // Only structs are supported atm.
-  if (m_context->getProg()->getTypeDecl(lhsType).getKind() != prog::sym::TypeKind::UserStruct) {
+  if (m_context->getProg()->getTypeDecl(lhsType).getKind() != prog::sym::TypeKind::Struct) {
     return;
   }
 

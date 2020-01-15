@@ -170,16 +170,18 @@ auto ParserImpl::nextStmtEnumDecl() -> NodePtr {
   auto entries = std::vector<EnumDeclStmtNode::EntrySpec>{};
   auto commas  = std::vector<lex::Token>{};
   while (peekToken(0).getKind() == lex::TokenKind::Identifier) {
-    auto entryId                                          = consumeToken();
-    std::optional<EnumDeclStmtNode::ValueSpec> entryValue = std::nullopt;
+    auto entryId    = consumeToken();
+    auto entryValue = std::optional<EnumDeclStmtNode::ValueSpec>{};
 
     // Allow consume value specifiers that use '=' instead of ':', reason is that its common in
     // other languages and this way we can provide a proper error message in that case.
     if (peekToken(0).getKind() == lex::TokenKind::SepColon ||
         peekToken(0).getKind() == lex::TokenKind::OpEq) {
       auto colon = consumeToken();
+      auto minus = peekToken(0).getKind() == lex::TokenKind::OpMinus ? std::optional{consumeToken()}
+                                                                     : std::nullopt;
       auto value = consumeToken();
-      entryValue = EnumDeclStmtNode::ValueSpec{colon, std::move(value)};
+      entryValue = EnumDeclStmtNode::ValueSpec{colon, std::move(minus), std::move(value)};
     }
     entries.emplace_back(EnumDeclStmtNode::EntrySpec{std::move(entryId), std::move(entryValue)});
     if (peekToken(0).getKind() == lex::TokenKind::SepComma) {

@@ -348,7 +348,7 @@ auto GenExpr::visit(const prog::expr::FieldExprNode& n) -> void {
   genSubExpr(n[0], false);
 
   const auto& structType = m_program.getTypeDecl(n[0].getType());
-  if (structType.getKind() != prog::sym::TypeKind::UserStruct) {
+  if (structType.getKind() != prog::sym::TypeKind::Struct) {
     throw std::logic_error{"Field expr node only works on struct types"};
   }
   const auto& structDef = std::get<prog::sym::StructDef>(m_program.getTypeDef(structType.getId()));

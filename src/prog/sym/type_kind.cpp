@@ -19,13 +19,16 @@ auto operator<<(std::ostream& out, const TypeKind& rhs) -> std::ostream& {
   case TypeKind::Char:
     out << "char";
     break;
-  case TypeKind::UserStruct:
+  case TypeKind::Struct:
     out << "struct";
     break;
-  case TypeKind::UserUnion:
+  case TypeKind::Union:
     out << "union";
     break;
-  case TypeKind::UserDelegate:
+  case TypeKind::Enum:
+    out << "enum";
+    break;
+  case TypeKind::Delegate:
     out << "delegate";
     break;
   }

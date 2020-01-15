@@ -47,6 +47,42 @@ TEST_CASE("Analyzing user-type definitions", "[frontend]") {
     CHECK(unionDef.hasType(GET_TYPE_ID(output, "bool")));
   }
 
+  SECTION("Define enum") {
+    const auto& output = ANALYZE("enum e = a, b, c");
+    REQUIRE(output.isSuccess());
+    const auto& typeDef = GET_TYPE_DEF(output, "e");
+    REQUIRE(std::holds_alternative<prog::sym::EnumDef>(typeDef));
+    const auto& enumDef = std::get<prog::sym::EnumDef>(typeDef);
+
+    CHECK(*enumDef.getValue("a") == 0);
+    CHECK(*enumDef.getValue("b") == 1);
+    CHECK(*enumDef.getValue("c") == 2);
+  }
+
+  SECTION("Define enum with values") {
+    const auto& output = ANALYZE("enum e = a : 42, b : -1337, c");
+    REQUIRE(output.isSuccess());
+    const auto& typeDef = GET_TYPE_DEF(output, "e");
+    REQUIRE(std::holds_alternative<prog::sym::EnumDef>(typeDef));
+    const auto& enumDef = std::get<prog::sym::EnumDef>(typeDef);
+
+    CHECK(*enumDef.getValue("a") == 42);
+    CHECK(*enumDef.getValue("b") == -1337);
+    CHECK(*enumDef.getValue("c") == -1336);
+  }
+
+  SECTION("Define enum with names of types") {
+    const auto& output = ANALYZE("enum e = int, float, bool");
+    REQUIRE(output.isSuccess());
+    const auto& typeDef = GET_TYPE_DEF(output, "e");
+    REQUIRE(std::holds_alternative<prog::sym::EnumDef>(typeDef));
+    const auto& enumDef = std::get<prog::sym::EnumDef>(typeDef);
+
+    CHECK(*enumDef.getValue("int") == 0);
+    CHECK(*enumDef.getValue("float") == 1);
+    CHECK(*enumDef.getValue("bool") == 2);
+  }
+
   SECTION("Define templated union") {
     const auto& output = ANALYZE("union u{T} = int, T "
                                  "struct s = u{float} a");
@@ -103,6 +139,12 @@ TEST_CASE("Analyzing user-type definitions", "[frontend]") {
         errDuplicateTypeInUnion(src, "T", "int", input::Span{18, 18}),
         errInvalidTypeInstantiation(src, input::Span{26, 26}),
         errUndeclaredType(src, "u", 1, input::Span{26, 31}));
+  }
+
+  SECTION("Enum diagnostics") {
+    CHECK_DIAG("enum e = a, b, a", errDuplicateEntryNameInEnum(src, "a", input::Span{15, 15}));
+    CHECK_DIAG(
+        "enum e = a : 1, b, c : 1", errDuplicateEntryValueInEnum(src, 1, input::Span{19, 23}));
   }
 }
 

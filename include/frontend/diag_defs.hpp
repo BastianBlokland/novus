@@ -61,6 +61,13 @@ errFieldNameConflictsWithType(const Source& src, const std::string& name, input:
 
 [[nodiscard]] auto errUncheckedIsExpressionWithConst(const Source& src, input::Span span) -> Diag;
 
+[[nodiscard]] auto
+errDuplicateEntryNameInEnum(const Source& src, const std::string& entryName, input::Span span)
+    -> Diag;
+
+[[nodiscard]] auto
+errDuplicateEntryValueInEnum(const Source& src, int32_t entryValue, input::Span span) -> Diag;
+
 [[nodiscard]] auto errIncorrectReturnTypeInConvFunc(
     const Source& src, const std::string& name, const std::string& returnedType, input::Span span)
     -> Diag;

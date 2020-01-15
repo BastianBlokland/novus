@@ -108,15 +108,17 @@ public:
   [[nodiscard]] auto getTypeDef(sym::TypeId id) const -> const sym::TypeDefTable::typeDef&;
   [[nodiscard]] auto getFuncDef(sym::FuncId id) const -> const sym::FuncDef&;
 
-  auto declareUserStruct(std::string name) -> sym::TypeId;
-  auto declareUserUnion(std::string name) -> sym::TypeId;
-  auto declareUserDelegate(std::string name) -> sym::TypeId;
-  auto declareUserFunc(std::string name, sym::TypeSet input, sym::TypeId output) -> sym::FuncId;
+  auto declareStruct(std::string name) -> sym::TypeId;
+  auto declareUnion(std::string name) -> sym::TypeId;
+  auto declareEnum(std::string name) -> sym::TypeId;
+  auto declareDelegate(std::string name) -> sym::TypeId;
+  auto declareFunc(std::string name, sym::TypeSet input, sym::TypeId output) -> sym::FuncId;
 
-  auto defineUserStruct(sym::TypeId id, sym::FieldDeclTable fields) -> void;
-  auto defineUserUnion(sym::TypeId id, std::vector<sym::TypeId> types) -> void;
-  auto defineUserDelegate(sym::TypeId id, sym::TypeSet input, sym::TypeId output) -> void;
-  auto defineUserFunc(sym::FuncId id, sym::ConstDeclTable consts, expr::NodePtr expr) -> void;
+  auto defineStruct(sym::TypeId id, sym::FieldDeclTable fields) -> void;
+  auto defineUnion(sym::TypeId id, std::vector<sym::TypeId> types) -> void;
+  auto defineEnum(sym::TypeId id, std::unordered_map<std::string, int32_t> entries) -> void;
+  auto defineDelegate(sym::TypeId id, sym::TypeSet input, sym::TypeId output) -> void;
+  auto defineFunc(sym::FuncId id, sym::ConstDeclTable consts, expr::NodePtr expr) -> void;
 
   auto
   addExecStmt(sym::ActionId action, sym::ConstDeclTable consts, std::vector<expr::NodePtr> args)

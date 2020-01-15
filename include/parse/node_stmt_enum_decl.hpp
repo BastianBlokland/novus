@@ -12,17 +12,20 @@ class EnumDeclStmtNode final : public Node {
 public:
   class ValueSpec final {
   public:
-    ValueSpec(lex::Token colon, lex::Token value);
+    ValueSpec(lex::Token colon, std::optional<lex::Token> minus, lex::Token value);
 
     auto operator==(const ValueSpec& rhs) const noexcept -> bool;
 
     [[nodiscard]] auto getColon() const noexcept -> const lex::Token&;
-    [[nodiscard]] auto getValue() const noexcept -> const lex::Token&;
+    [[nodiscard]] auto getMinusToken() const noexcept -> const std::optional<lex::Token>&;
+    [[nodiscard]] auto getValueToken() const noexcept -> const lex::Token&;
+    [[nodiscard]] auto getValue() const noexcept -> int32_t;
 
     [[nodiscard]] auto validate() const noexcept -> bool;
 
   private:
     lex::Token m_colon;
+    std::optional<lex::Token> m_minus;
     lex::Token m_value;
   };
 

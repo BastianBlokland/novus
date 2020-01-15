@@ -187,7 +187,7 @@ auto FuncTemplate::setupInstance(FuncTemplateInst* instance) -> void {
 
   // Declare the function in the program.
   instance->m_func =
-      m_context->getProg()->declareUserFunc(funcName, std::move(*funcInput), *instance->m_retType);
+      m_context->getProg()->declareFunc(funcName, std::move(*funcInput), *instance->m_retType);
 
   // Define the function.
   auto defineFuncs = DefineUserFuncs{m_context, &subTable};
