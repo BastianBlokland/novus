@@ -18,12 +18,13 @@ add_executable(tests
   backend/call_dyn_expr_test.cpp
   backend/call_expr_test.cpp
   backend/constants_test.cpp
+  backend/enum_test.cpp
   backend/group_expr_test.cpp
   backend/literals_test.cpp
+  backend/struct_test.cpp
   backend/switch_expr_test.cpp
   backend/tail_calls_test.cpp
-  backend/user_struct_test.cpp
-  backend/user_union_test.cpp
+  backend/union_test.cpp
 
   frontend/anon_func_test.cpp
   frontend/declare_user_funcs_test.cpp
