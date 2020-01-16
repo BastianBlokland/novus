@@ -87,6 +87,14 @@ auto errFieldNotFoundOnType(
   return error(src, oss.str(), span);
 }
 
+auto errStaticFieldNotFoundOnType(
+    const Source& src, const std::string& fieldName, const std::string& typeName, input::Span span)
+    -> Diag {
+  std::ostringstream oss;
+  oss << "Type '" << typeName << "' has no static field named '" << fieldName << '\'';
+  return error(src, oss.str(), span);
+}
+
 auto errDuplicateTypeInUnion(
     const Source& src,
     const std::string& typeName,
@@ -103,7 +111,7 @@ auto errDuplicateTypeInUnion(
 
 auto errNonUnionIsExpression(const Source& src, input::Span span) -> Diag {
   std::ostringstream oss;
-  oss << "Left-hand-side of 'is' expression has to be a union type.";
+  oss << "Left-hand-side of 'is' expression has to be a union type";
   return error(src, oss.str(), span);
 }
 
@@ -111,14 +119,35 @@ auto errTypeNotPartOfUnion(
     const Source& src, const std::string& typeName, const std::string& unionName, input::Span span)
     -> Diag {
   std::ostringstream oss;
-  oss << "Type '" << typeName << "' is not part of the union '" << unionName << "'.";
+  oss << "Type '" << typeName << "' is not part of the union '" << unionName << '\'';
   return error(src, oss.str(), span);
 }
 
 auto errUncheckedIsExpressionWithConst(const Source& src, input::Span span) -> Diag {
   std::ostringstream oss;
   oss << "Unchecked 'is' expression with constant declaration, either use in a checked context or "
-         "discard '_' the const. ";
+         "discard '_' the const";
+  return error(src, oss.str(), span);
+}
+
+auto errDuplicateEntryNameInEnum(const Source& src, const std::string& entryName, input::Span span)
+    -> Diag {
+  std::ostringstream oss;
+  oss << "Name '" << entryName << "' conflicts with a previous entry in the same enum";
+  return error(src, oss.str(), span);
+}
+
+auto errDuplicateEntryValueInEnum(const Source& src, int32_t entryValue, input::Span span) -> Diag {
+  std::ostringstream oss;
+  oss << "Value '" << entryValue << "' conflicts with a previous entry in the same enum";
+  return error(src, oss.str(), span);
+}
+
+auto errValueNotFoundInEnum(
+    const Source& src, const std::string& entryName, const std::string& enumName, input::Span span)
+    -> Diag {
+  std::ostringstream oss;
+  oss << "Enum '" << enumName << "' does not contain '" << entryName << '\'';
   return error(src, oss.str(), span);
 }
 

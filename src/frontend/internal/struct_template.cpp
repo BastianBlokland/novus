@@ -40,7 +40,7 @@ auto StructTemplate::setupInstance(TypeTemplateInst* instance) -> void {
   assert(getContext()->getProg()->lookupType(mangledName) == std::nullopt);
 
   // Declare the struct in the program.
-  instance->m_type = getContext()->getProg()->declareUserStruct(mangledName);
+  instance->m_type = getContext()->getProg()->declareStruct(mangledName);
 
   // Define the struct.
   auto defineTypes    = DefineUserTypes{getContext(), &subTable};

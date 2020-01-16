@@ -43,7 +43,7 @@ auto DefineUserFuncs::define(
   }
 
   if (expr->getType() == funcRetType) {
-    m_context->getProg()->defineUserFunc(id, std::move(consts), std::move(expr));
+    m_context->getProg()->defineFunc(id, std::move(consts), std::move(expr));
     return true;
   }
 
@@ -51,7 +51,7 @@ auto DefineUserFuncs::define(
   if (conv && *conv != id) {
     auto convArgs = std::vector<prog::expr::NodePtr>{};
     convArgs.push_back(std::move(expr));
-    m_context->getProg()->defineUserFunc(
+    m_context->getProg()->defineFunc(
         id,
         std::move(consts),
         prog::expr::callExprNode(*m_context->getProg(), *conv, std::move(convArgs)));

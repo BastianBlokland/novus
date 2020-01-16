@@ -20,6 +20,7 @@ class SwitchExprElseNode;
 class SwitchExprIfNode;
 class SwitchExprNode;
 class UnaryExprNode;
+class EnumDeclStmtNode;
 class ExecStmtNode;
 class FuncDeclStmtNode;
 class StructDeclStmtNode;
@@ -45,6 +46,7 @@ public:
   virtual auto visit(const SwitchExprIfNode& n) -> void    = 0;
   virtual auto visit(const SwitchExprNode& n) -> void      = 0;
   virtual auto visit(const UnaryExprNode& n) -> void       = 0;
+  virtual auto visit(const EnumDeclStmtNode& n) -> void    = 0;
   virtual auto visit(const ExecStmtNode& n) -> void        = 0;
   virtual auto visit(const FuncDeclStmtNode& n) -> void    = 0;
   virtual auto visit(const StructDeclStmtNode& n) -> void  = 0;

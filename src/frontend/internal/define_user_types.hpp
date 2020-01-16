@@ -1,6 +1,5 @@
 #pragma once
 #include "internal/context.hpp"
-#include "internal/struct_template.hpp"
 
 namespace frontend::internal {
 
@@ -11,6 +10,7 @@ public:
 
   auto define(prog::sym::TypeId id, const parse::StructDeclStmtNode& n) -> bool;
   auto define(prog::sym::TypeId id, const parse::UnionDeclStmtNode& n) -> bool;
+  auto define(prog::sym::TypeId id, const parse::EnumDeclStmtNode& n) -> bool;
 
 private:
   Context* m_context;

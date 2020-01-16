@@ -3,7 +3,7 @@
 
 namespace backend {
 
-TEST_CASE("Generating assembly for user-structs", "[backend]") {
+TEST_CASE("Generating assembly for structs", "[backend]") {
 
   SECTION("Create user struct and check for equality") {
     CHECK_PROG(

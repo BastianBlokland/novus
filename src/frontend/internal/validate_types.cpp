@@ -11,7 +11,7 @@ ValidateTypes::ValidateTypes(Context* context) : m_context{context} {
 
 auto ValidateTypes::validate(prog::sym::TypeId id) -> void {
   const auto& typedecl = m_context->getProg()->getTypeDecl(id);
-  if (typedecl.getKind() == prog::sym::TypeKind::UserStruct) {
+  if (typedecl.getKind() == prog::sym::TypeKind::Struct) {
     const auto typeInfo   = m_context->getTypeInfo(id);
     const auto sourceSpan = typeInfo ? typeInfo->getSourceSpan() : input::Span{0, 0};
     const auto& structDef = std::get<prog::sym::StructDef>(m_context->getProg()->getTypeDef(id));
@@ -42,7 +42,7 @@ auto ValidateTypes::getCyclicField(
       return f.getId();
     }
     const auto& fTypeDecl = m_context->getProg()->getTypeDecl(fType);
-    if (fTypeDecl.getKind() == prog::sym::TypeKind::UserStruct) {
+    if (fTypeDecl.getKind() == prog::sym::TypeKind::Struct) {
       auto childVisitedTypes = visitedTypes;
       childVisitedTypes.insert(fTypeDecl.getId());
 

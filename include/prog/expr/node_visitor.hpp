@@ -19,6 +19,7 @@ class LitFuncNode;
 class LitIntNode;
 class LitStringNode;
 class LitCharNode;
+class LitEnumNode;
 
 class NodeVisitor {
 public:
@@ -39,6 +40,7 @@ public:
   virtual auto visit(const LitIntNode& n) -> void         = 0;
   virtual auto visit(const LitStringNode& n) -> void      = 0;
   virtual auto visit(const LitCharNode& n) -> void        = 0;
+  virtual auto visit(const LitEnumNode& n) -> void        = 0;
 };
 
 } // namespace prog::expr

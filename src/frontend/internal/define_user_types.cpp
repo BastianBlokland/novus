@@ -2,6 +2,8 @@
 #include "frontend/diag_defs.hpp"
 #include "internal/utilities.hpp"
 #include "parse/nodes.hpp"
+#include <unordered_map>
+#include <unordered_set>
 
 namespace frontend::internal {
 
@@ -55,7 +57,7 @@ auto DefineUserTypes::define(prog::sym::TypeId id, const parse::StructDeclStmtNo
   }
 
   if (isValid) {
-    m_context->getProg()->defineUserStruct(id, std::move(fieldTable));
+    m_context->getProg()->defineStruct(id, std::move(fieldTable));
   }
   return isValid;
 }
@@ -84,7 +86,36 @@ auto DefineUserTypes::define(prog::sym::TypeId id, const parse::UnionDeclStmtNod
   }
 
   if (isValid) {
-    m_context->getProg()->defineUserUnion(id, std::move(types));
+    m_context->getProg()->defineUnion(id, std::move(types));
+  }
+  return isValid;
+}
+
+auto DefineUserTypes::define(prog::sym::TypeId id, const parse::EnumDeclStmtNode& n) -> bool {
+  auto isValid      = true;
+  auto values       = std::unordered_set<int32_t>{};
+  auto entries      = std::unordered_map<std::string, int32_t>{};
+  int32_t lastValue = -1;
+
+  for (const auto& entry : n.getEntries()) {
+    const auto name  = getName(entry.getIdentifier());
+    const auto value = lastValue =
+        entry.getValueSpec() ? entry.getValueSpec()->getValue() : lastValue + 1;
+
+    if (!entries.insert({name, value}).second) {
+      m_context->reportDiag(
+          errDuplicateEntryNameInEnum(m_context->getSrc(), name, entry.getSpan()));
+      isValid = false;
+    }
+    if (!values.insert(value).second) {
+      m_context->reportDiag(
+          errDuplicateEntryValueInEnum(m_context->getSrc(), value, entry.getSpan()));
+      isValid = false;
+    }
+  }
+
+  if (isValid) {
+    m_context->getProg()->defineEnum(id, std::move(entries));
   }
   return isValid;
 }

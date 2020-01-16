@@ -22,7 +22,7 @@ UnionDeclStmtNode::UnionDeclStmtNode(
 
 auto UnionDeclStmtNode::operator==(const Node& rhs) const noexcept -> bool {
   const auto r = dynamic_cast<const UnionDeclStmtNode*>(&rhs);
-  return r != nullptr && m_id == r->m_id && m_types == r->m_types;
+  return r != nullptr && m_id == r->m_id && m_typeSubs == r->m_typeSubs && m_types == r->m_types;
 }
 
 auto UnionDeclStmtNode::operator!=(const Node& rhs) const noexcept -> bool {

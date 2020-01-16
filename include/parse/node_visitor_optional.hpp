@@ -23,6 +23,7 @@ public:
   auto visit(const SwitchExprIfNode & /*unused*/) -> void override {}
   auto visit(const SwitchExprNode & /*unused*/) -> void override {}
   auto visit(const UnaryExprNode & /*unused*/) -> void override {}
+  auto visit(const EnumDeclStmtNode & /*unused*/) -> void override {}
   auto visit(const ExecStmtNode & /*unused*/) -> void override {}
   auto visit(const FuncDeclStmtNode & /*unused*/) -> void override {}
   auto visit(const StructDeclStmtNode & /*unused*/) -> void override {}

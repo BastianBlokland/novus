@@ -266,7 +266,7 @@ auto Program::isDelegate(sym::TypeId id) const -> bool {
     return false;
   }
   const auto& typeDecl = getTypeDecl(id);
-  return typeDecl.getKind() == sym::TypeKind::UserDelegate;
+  return typeDecl.getKind() == sym::TypeKind::Delegate;
 }
 
 auto Program::isCallable(sym::FuncId func, const std::vector<expr::NodePtr>& args) const -> bool {
@@ -280,7 +280,7 @@ auto Program::isCallable(sym::TypeId delegate, const std::vector<expr::NodePtr>&
     return false;
   }
   const auto& typeDecl = getTypeDecl(delegate);
-  if (typeDecl.getKind() != sym::TypeKind::UserDelegate) {
+  if (typeDecl.getKind() != sym::TypeKind::Delegate) {
     return false;
   }
   const auto& delegateDef = std::get<sym::DelegateDef>(getTypeDef(delegate));
@@ -303,25 +303,28 @@ auto Program::getTypeDef(sym::TypeId id) const -> const sym::TypeDefTable::typeD
   return m_typeDefs[id];
 }
 
-auto Program::declareUserStruct(std::string name) -> sym::TypeId {
-  return m_typeDecls.registerType(sym::TypeKind::UserStruct, std::move(name));
+auto Program::declareStruct(std::string name) -> sym::TypeId {
+  return m_typeDecls.registerType(sym::TypeKind::Struct, std::move(name));
 }
 
-auto Program::declareUserUnion(std::string name) -> sym::TypeId {
-  return m_typeDecls.registerType(sym::TypeKind::UserUnion, std::move(name));
+auto Program::declareUnion(std::string name) -> sym::TypeId {
+  return m_typeDecls.registerType(sym::TypeKind::Union, std::move(name));
 }
 
-auto Program::declareUserDelegate(std::string name) -> sym::TypeId {
-  return m_typeDecls.registerType(sym::TypeKind::UserDelegate, std::move(name));
+auto Program::declareEnum(std::string name) -> sym::TypeId {
+  return m_typeDecls.registerType(sym::TypeKind::Enum, std::move(name));
 }
 
-auto Program::declareUserFunc(std::string name, sym::TypeSet input, sym::TypeId output)
-    -> sym::FuncId {
+auto Program::declareDelegate(std::string name) -> sym::TypeId {
+  return m_typeDecls.registerType(sym::TypeKind::Delegate, std::move(name));
+}
+
+auto Program::declareFunc(std::string name, sym::TypeSet input, sym::TypeId output) -> sym::FuncId {
   return m_funcDecls.registerFunc(
       *this, sym::FuncKind::User, std::move(name), std::move(input), output);
 }
 
-auto Program::defineUserStruct(sym::TypeId id, sym::FieldDeclTable fields) -> void {
+auto Program::defineStruct(sym::TypeId id, sym::FieldDeclTable fields) -> void {
   auto fieldTypes = std::vector<sym::TypeId>{};
   for (const auto& field : fields) {
     fieldTypes.push_back(field.getType());
@@ -349,7 +352,7 @@ auto Program::defineUserStruct(sym::TypeId id, sym::FieldDeclTable fields) -> vo
   m_typeDefs.registerStruct(m_typeDecls, id, std::move(fields));
 }
 
-auto Program::defineUserUnion(sym::TypeId id, std::vector<sym::TypeId> types) -> void {
+auto Program::defineUnion(sym::TypeId id, std::vector<sym::TypeId> types) -> void {
   // Register constructor functions for each type.
   const auto& name = m_typeDecls[id].getName();
   for (const auto& type : types) {
@@ -374,12 +377,40 @@ auto Program::defineUserUnion(sym::TypeId id, std::vector<sym::TypeId> types) ->
   m_typeDefs.registerUnion(m_typeDecls, id, std::move(types));
 }
 
-auto Program::defineUserDelegate(sym::TypeId id, sym::TypeSet input, sym::TypeId output) -> void {
+auto Program::defineEnum(sym::TypeId id, std::unordered_map<std::string, int32_t> entries) -> void {
+  const auto& name = m_typeDecls[id].getName();
+
+  // Register explicit conversion from int.
+  m_funcDecls.registerFunc(*this, sym::FuncKind::NoOp, "to" + name, sym::TypeSet{m_int}, id);
+
+  // Register implicit conversion to int.
+  m_funcDecls.registerFunc(*this, sym::FuncKind::NoOp, "int", sym::TypeSet{id}, m_int);
+
+  // Register bitwise & and | operators.
+  m_funcDecls.registerFunc(
+      *this, sym::FuncKind::OrInt, getFuncName(Operator::Pipe), sym::TypeSet{id, id}, id);
+  m_funcDecls.registerFunc(
+      *this, sym::FuncKind::AndInt, getFuncName(Operator::Amp), sym::TypeSet{id, id}, id);
+
+  // Register (in)equality functions.
+  m_funcDecls.registerFunc(
+      *this, sym::FuncKind::CheckEqInt, getFuncName(Operator::EqEq), sym::TypeSet{id, id}, m_bool);
+  m_funcDecls.registerFunc(
+      *this,
+      sym::FuncKind::CheckNEqInt,
+      getFuncName(Operator::BangEq),
+      sym::TypeSet{id, id},
+      m_bool);
+
+  // Register enum definition.
+  m_typeDefs.registerEnum(m_typeDecls, id, std::move(entries));
+}
+
+auto Program::defineDelegate(sym::TypeId id, sym::TypeSet input, sym::TypeId output) -> void {
   m_typeDefs.registerDelegate(m_typeDecls, id, std::move(input), output);
 }
 
-auto Program::defineUserFunc(sym::FuncId id, sym::ConstDeclTable consts, expr::NodePtr expr)
-    -> void {
+auto Program::defineFunc(sym::FuncId id, sym::ConstDeclTable consts, expr::NodePtr expr) -> void {
   m_funcDefs.registerFunc(m_funcDecls, id, std::move(consts), std::move(expr));
 }
 

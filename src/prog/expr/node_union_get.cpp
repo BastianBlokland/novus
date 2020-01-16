@@ -51,7 +51,7 @@ auto unionGetExprNode(
   }
 
   const auto& exprTypeDecl = prog.getTypeDecl(lhs->getType());
-  if (exprTypeDecl.getKind() != sym::TypeKind::UserUnion) {
+  if (exprTypeDecl.getKind() != sym::TypeKind::Union) {
     throw std::invalid_argument{"Type of the left-hand-side expression needs to be a union type"};
   }
   const auto& exprTypeDef = prog.getTypeDef(lhs->getType());

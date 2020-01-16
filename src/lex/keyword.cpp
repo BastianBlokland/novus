@@ -17,6 +17,9 @@ auto operator<<(std::ostream& out, const Keyword& rhs) -> std::ostream& {
   case Keyword::Union:
     out << "union";
     break;
+  case Keyword::Enum:
+    out << "enum";
+    break;
   case Keyword::If:
     out << "if";
     break;
@@ -36,6 +39,7 @@ auto getKeyword(const std::string& str) -> std::optional<Keyword> {
       {"lambda", Keyword::Lambda},
       {"struct", Keyword::Struct},
       {"union", Keyword::Union},
+      {"enum", Keyword::Enum},
       {"if", Keyword::If},
       {"else", Keyword::Else},
       {"is", Keyword::Is},

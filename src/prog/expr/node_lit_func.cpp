@@ -37,7 +37,7 @@ auto LitFuncNode::accept(NodeVisitor* visitor) const -> void { visitor->visit(*t
 // Factories.
 auto litFuncNode(const Program& program, sym::TypeId type, sym::FuncId func) -> NodePtr {
   const auto& typeDecl = program.getTypeDecl(type);
-  if (typeDecl.getKind() != sym::TypeKind::UserDelegate) {
+  if (typeDecl.getKind() != sym::TypeKind::Delegate) {
     throw std::invalid_argument{"Type is not a delegate type"};
   }
   const auto& delegateDef = std::get<sym::DelegateDef>(program.getTypeDef(type));

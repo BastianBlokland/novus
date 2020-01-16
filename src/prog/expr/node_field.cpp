@@ -40,7 +40,7 @@ auto FieldExprNode::accept(NodeVisitor* visitor) const -> void { visitor->visit(
 auto fieldExprNode(const Program& prog, NodePtr lhs, sym::FieldId id) -> NodePtr {
   const auto lhsType      = lhs->getType();
   const auto& lhsTypeDecl = prog.getTypeDecl(lhsType);
-  if (lhsTypeDecl.getKind() != sym::TypeKind::UserStruct) {
+  if (lhsTypeDecl.getKind() != sym::TypeKind::Struct) {
     throw std::invalid_argument{"Fields are only supported on structs"};
   }
   const auto& structDef = std::get<prog::sym::StructDef>(prog.getTypeDef(lhsType));

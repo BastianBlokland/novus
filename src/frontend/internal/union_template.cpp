@@ -39,7 +39,7 @@ auto UnionTemplate::setupInstance(TypeTemplateInst* instance) -> void {
   assert(getContext()->getProg()->lookupType(mangledName) == std::nullopt);
 
   // Declare the struct in the program.
-  instance->m_type = getContext()->getProg()->declareUserUnion(mangledName);
+  instance->m_type = getContext()->getProg()->declareUnion(mangledName);
 
   // Define the union.
   auto defineTypes    = DefineUserTypes{getContext(), &subTable};

@@ -10,7 +10,7 @@ namespace frontend::internal {
 
 class GetIdentifier final : public parse::OptionalNodeVisitor {
 public:
-  GetIdentifier();
+  explicit GetIdentifier(bool includeInstances);
 
   [[nodiscard]] auto getInstance() const noexcept -> const parse::Node*;
   [[nodiscard]] auto getIdentifier() const noexcept -> const std::optional<lex::Token>&;
@@ -21,6 +21,7 @@ public:
   auto visit(const parse::FieldExprNode& n) -> void override;
 
 private:
+  bool m_includeInstances;
   const parse::Node* m_instance;
   std::optional<lex::Token> m_identifier;
   std::optional<parse::TypeParamList> m_typeParams;

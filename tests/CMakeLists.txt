@@ -18,12 +18,13 @@ add_executable(tests
   backend/call_dyn_expr_test.cpp
   backend/call_expr_test.cpp
   backend/constants_test.cpp
+  backend/enum_test.cpp
   backend/group_expr_test.cpp
   backend/literals_test.cpp
+  backend/struct_test.cpp
   backend/switch_expr_test.cpp
   backend/tail_calls_test.cpp
-  backend/user_struct_test.cpp
-  backend/user_union_test.cpp
+  backend/union_test.cpp
 
   frontend/anon_func_test.cpp
   frontend/declare_user_funcs_test.cpp
@@ -36,6 +37,7 @@ add_executable(tests
   frontend/get_call_expr_test.cpp
   frontend/get_conditional_expr_test.cpp
   frontend/get_const_expr_test.cpp
+  frontend/get_enum_expr_test.cpp
   frontend/get_field_expr_test.cpp
   frontend/get_group_expr_test.cpp
   frontend/get_index_expr_test.cpp
@@ -84,6 +86,7 @@ add_executable(tests
   parse/expr_switch_test.cpp
   parse/expr_unary_test.cpp
   parse/iterator_test.cpp
+  parse/stmt_enum_decl_test.cpp
   parse/stmt_exec_test.cpp
   parse/stmt_func_decl_test.cpp
   parse/stmt_struct_decl_test.cpp

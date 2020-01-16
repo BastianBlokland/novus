@@ -45,7 +45,7 @@ auto callDynExprNode(const Program& prog, NodePtr lhs, std::vector<NodePtr> args
     throw std::invalid_argument{"Call dyn node cannot contain a null argument"};
   }
   const auto& typeDecl = prog.getTypeDecl(lhs->getType());
-  if (typeDecl.getKind() != sym::TypeKind::UserDelegate) {
+  if (typeDecl.getKind() != sym::TypeKind::Delegate) {
     throw std::invalid_argument{"Lhs expr to dyn call has to be a delegate type"};
   }
   const auto& delegateDef   = std::get<sym::DelegateDef>(prog.getTypeDef(lhs->getType()));

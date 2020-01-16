@@ -71,9 +71,9 @@ auto GetExpr::visit(const parse::AnonFuncExprNode& n) -> void {
   auto inputTypeSet = prog::sym::TypeSet{std::move(inputTypes)};
 
   // Declare and define the function in the program.
-  const auto funcId = m_context->getProg()->declareUserFunc(
+  const auto funcId = m_context->getProg()->declareFunc(
       m_context->genAnonFuncName(), std::move(inputTypeSet), getExpr.m_expr->getType());
-  m_context->getProg()->defineUserFunc(funcId, std::move(consts), std::move(getExpr.m_expr));
+  m_context->getProg()->defineFunc(funcId, std::move(consts), std::move(getExpr.m_expr));
 
   // Either create a function literal or a closure, depending on if the anonymous func binds any
   // consts from the parent.
@@ -134,7 +134,7 @@ auto GetExpr::visit(const parse::BinaryExprNode& n) -> void {
 }
 
 auto GetExpr::visit(const parse::CallExprNode& n) -> void {
-  auto getIdVisitor = GetIdentifier{};
+  auto getIdVisitor = GetIdentifier{true};
   n[0].accept(&getIdVisitor);
   auto* instance  = getIdVisitor.getInstance();
   auto identifier = getIdVisitor.getIdentifier();
@@ -297,15 +297,25 @@ auto GetExpr::visit(const parse::IdExprNode& n) -> void {
 }
 
 auto GetExpr::visit(const parse::FieldExprNode& n) -> void {
-  const auto fieldName = getName(n.getId());
-  auto lhsExpr         = getSubExpr(n[0], prog::sym::TypeId::inferType());
+  // Check if the lhs is a type name token, in that case treat this as access to a 'static' field.
+  auto getIdVisitor = GetIdentifier{false};
+  n[0].accept(&getIdVisitor);
+  auto identifier = getIdVisitor.getIdentifier();
+  if (identifier && isType(m_context, getName(*identifier))) {
+    m_expr = getStaticFieldExpr(*identifier, getIdVisitor.getTypeParams(), n.getId());
+    return;
+  }
+
+  // If not a static field then acces the field on the lhs expression.
+  auto lhsExpr = getSubExpr(n[0], prog::sym::TypeId::inferType());
   if (lhsExpr == nullptr) {
     return;
   }
 
+  const auto fieldName    = getName(n.getId());
   const auto lhsType      = lhsExpr->getType();
   const auto& lhsTypeDecl = m_context->getProg()->getTypeDecl(lhsType);
-  if (lhsTypeDecl.getKind() != prog::sym::TypeKind::UserStruct) {
+  if (lhsTypeDecl.getKind() != prog::sym::TypeKind::Struct) {
     m_context->reportDiag(errFieldNotFoundOnType(
         m_context->getSrc(), fieldName, getDisplayName(*m_context, lhsType), n.getSpan()));
     return;
@@ -368,7 +378,7 @@ auto GetExpr::visit(const parse::IsExprNode& n) -> void {
   // Validate lhs is a union type.
   const auto lhsType      = lhsExpr->getType();
   const auto& lhsTypeDecl = m_context->getProg()->getTypeDecl(lhsType);
-  if (lhsTypeDecl.getKind() != prog::sym::TypeKind::UserUnion) {
+  if (lhsTypeDecl.getKind() != prog::sym::TypeKind::Union) {
     m_context->reportDiag(errNonUnionIsExpression(m_context->getSrc(), n[0].getSpan()));
     return;
   }
@@ -551,6 +561,10 @@ auto GetExpr::visit(const parse::UnaryExprNode& n) -> void {
   m_expr = prog::expr::callExprNode(*m_context->getProg(), func.value(), std::move(args));
 }
 
+auto GetExpr::visit(const parse::EnumDeclStmtNode & /*unused*/) -> void {
+  throw std::logic_error{"GetExpr is not implemented for this node type"};
+}
+
 auto GetExpr::visit(const parse::ExecStmtNode & /*unused*/) -> void {
   throw std::logic_error{"GetExpr is not implemented for this node type"};
 }
@@ -702,6 +716,36 @@ auto GetExpr::getBinLogicOpExpr(const parse::BinaryExprNode& n, BinLogicOp op)
     return prog::expr::switchExprNode(
         *m_context->getProg(), std::move(conditions), std::move(branches));
   }
+  return nullptr;
+}
+
+auto GetExpr::getStaticFieldExpr(
+    const lex::Token& nameToken,
+    const std::optional<parse::TypeParamList>& typeParams,
+    const lex::Token& fieldToken) -> prog::expr::NodePtr {
+
+  // Get the type that this field is 'on'.
+  const auto type = getOrInstType(m_context, m_typeSubTable, nameToken, typeParams);
+  if (!type) {
+    assert(m_context->hasErrors());
+    return nullptr;
+  }
+
+  const auto fieldName = getName(fieldToken);
+  const auto& typeDecl = m_context->getProg()->getTypeDecl(*type);
+
+  if (typeDecl.getKind() == prog::sym::TypeKind::Enum) {
+    const auto& enumDef = std::get<prog::sym::EnumDef>(m_context->getProg()->getTypeDef(*type));
+    if (!enumDef.hasEntry(fieldName)) {
+      m_context->reportDiag(errValueNotFoundInEnum(
+          m_context->getSrc(), fieldName, getDisplayName(*m_context, *type), fieldToken.getSpan()));
+      return nullptr;
+    }
+    return prog::expr::litEnumNode(*m_context->getProg(), *type, fieldName);
+  }
+
+  m_context->reportDiag(errStaticFieldNotFoundOnType(
+      m_context->getSrc(), fieldName, getDisplayName(*m_context, *type), fieldToken.getSpan()));
   return nullptr;
 }
 

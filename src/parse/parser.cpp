@@ -25,6 +25,8 @@ auto ParserImpl::nextStmt() -> NodePtr {
       return nextStmtStructDecl();
     case lex::Keyword::Union:
       return nextStmtUnionDecl();
+    case lex::Keyword::Enum:
+      return nextStmtEnumDecl();
     default:
       break;
     }
@@ -145,17 +147,61 @@ auto ParserImpl::nextStmtUnionDecl() -> NodePtr {
     }
   }
 
-  auto typeSubsValid = !typeSubs || typeSubs->validate();
-  if (getKw(kw) == lex::Keyword::Union && id.getKind() == lex::TokenKind::Identifier &&
-      typeSubsValid && eq.getKind() == lex::TokenKind::OpEq && types.size() >= 2 &&
-      std::all_of(types.begin(), types.end(), [](const auto& t) { return t.validate(); }) &&
-      commas.size() == types.size() - 1) {
+  const auto kwValid       = getKw(kw) == lex::Keyword::Union;
+  const auto idValid       = id.getKind() == lex::TokenKind::Identifier;
+  const auto typeSubsValid = !typeSubs || typeSubs->validate();
+  const auto eqValid       = eq.getKind() == lex::TokenKind::OpEq;
+  const auto typesValid =
+      std::all_of(types.begin(), types.end(), [](const auto& t) { return t.validate(); });
 
+  if (kwValid && idValid && typeSubsValid && eqValid && types.size() >= 2 && typesValid &&
+      commas.size() == types.size() - 1) {
     return unionDeclStmtNode(
         kw, std::move(id), std::move(typeSubs), eq, std::move(types), std::move(commas));
   }
   return errInvalidStmtUnionDecl(
       kw, std::move(id), std::move(typeSubs), eq, types, std::move(commas));
+}
+
+auto ParserImpl::nextStmtEnumDecl() -> NodePtr {
+  auto kw      = consumeToken();
+  auto id      = consumeToken();
+  auto eq      = consumeToken();
+  auto entries = std::vector<EnumDeclStmtNode::EntrySpec>{};
+  auto commas  = std::vector<lex::Token>{};
+  while (peekToken(0).getKind() == lex::TokenKind::Identifier) {
+    auto entryId    = consumeToken();
+    auto entryValue = std::optional<EnumDeclStmtNode::ValueSpec>{};
+
+    // Allow consume value specifiers that use '=' instead of ':', reason is that its common in
+    // other languages and this way we can provide a proper error message in that case.
+    if (peekToken(0).getKind() == lex::TokenKind::SepColon ||
+        peekToken(0).getKind() == lex::TokenKind::OpEq) {
+      auto colon = consumeToken();
+      auto minus = peekToken(0).getKind() == lex::TokenKind::OpMinus ? std::optional{consumeToken()}
+                                                                     : std::nullopt;
+      auto value = consumeToken();
+      entryValue = EnumDeclStmtNode::ValueSpec{colon, std::move(minus), std::move(value)};
+    }
+    entries.emplace_back(EnumDeclStmtNode::EntrySpec{std::move(entryId), std::move(entryValue)});
+    if (peekToken(0).getKind() == lex::TokenKind::SepComma) {
+      commas.push_back(consumeToken());
+    } else {
+      break;
+    }
+  }
+
+  const auto kwValid = getKw(kw) == lex::Keyword::Enum;
+  const auto idValid = id.getKind() == lex::TokenKind::Identifier;
+  const auto eqValid = eq.getKind() == lex::TokenKind::OpEq;
+  const auto entriesValid =
+      std::all_of(entries.begin(), entries.end(), [](const auto& e) { return e.validate(); });
+  const auto commasValid = commas.size() == entries.size() - 1;
+
+  if (kwValid && idValid && eqValid && !entries.empty() && entriesValid && commasValid) {
+    return enumDeclStmtNode(kw, std::move(id), eq, std::move(entries), std::move(commas));
+  }
+  return errInvalidStmtEnumDecl(kw, std::move(id), eq, entries, std::move(commas));
 }
 
 auto ParserImpl::nextStmtExec() -> NodePtr {
@@ -175,8 +221,9 @@ auto ParserImpl::nextStmtExec() -> NodePtr {
   }
   auto close = empty ? open : consumeToken();
 
-  if (action.getKind() == lex::TokenKind::Identifier && validateParentheses(open, close) &&
-      commas.size() == (args.empty() ? 0 : args.size() - 1)) {
+  const auto idValid     = action.getKind() == lex::TokenKind::Identifier;
+  const auto commasValid = commas.size() == (args.empty() ? 0 : args.size() - 1);
+  if (idValid && validateParentheses(open, close) && commasValid) {
     return execStmtNode(std::move(action), open, std::move(args), std::move(commas), close);
   }
   return errInvalidStmtExec(std::move(action), open, std::move(args), std::move(commas), close);
@@ -305,8 +352,10 @@ auto ParserImpl::nextExprIs(NodePtr lhs) -> NodePtr {
   auto type = nextType();
   auto id   = consumeToken();
 
-  if (getKw(kw) == lex::Keyword::Is && type.validate() &&
-      (id.getKind() == lex::TokenKind::Identifier || id.getKind() == lex::TokenKind::Discard)) {
+  const auto idValid =
+      id.getKind() == lex::TokenKind::Identifier || id.getKind() == lex::TokenKind::Discard;
+
+  if (getKw(kw) == lex::Keyword::Is && type.validate() && idValid) {
     return isExprNode(std::move(lhs), kw, std::move(type), std::move(id));
   }
   return errInvalidIsExpr(std::move(lhs), kw, type, std::move(id));
@@ -328,7 +377,8 @@ auto ParserImpl::nextExprCall(NodePtr lhs) -> NodePtr {
   }
   auto close = empty ? open : consumeToken();
 
-  if (validateParentheses(open, close) && commas.size() == (args.empty() ? 0 : args.size() - 1)) {
+  const auto commasValid = commas.size() == (args.empty() ? 0 : args.size() - 1);
+  if (validateParentheses(open, close) && commasValid) {
     return callExprNode(std::move(lhs), open, std::move(args), std::move(commas), close);
   }
   return errInvalidCallExpr(std::move(lhs), open, std::move(args), std::move(commas), close);
@@ -346,9 +396,10 @@ auto ParserImpl::nextExprIndex(NodePtr lhs) -> NodePtr {
   }
   auto close = consumeToken();
 
-  if (open.getKind() == lex::TokenKind::SepOpenSquare &&
-      close.getKind() == lex::TokenKind::SepCloseSquare && !args.empty() &&
-      commas.size() == args.size() - 1) {
+  const auto openValid   = open.getKind() == lex::TokenKind::SepOpenSquare;
+  const auto closeValid  = close.getKind() == lex::TokenKind::SepCloseSquare;
+  const auto commasValid = commas.size() == args.size() - 1;
+  if (openValid && closeValid && !args.empty() && commasValid) {
     return indexExprNode(std::move(lhs), open, std::move(args), std::move(commas), close);
   }
   return errInvalidIndexExpr(std::move(lhs), open, std::move(args), std::move(commas), close);

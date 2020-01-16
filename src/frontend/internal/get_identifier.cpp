@@ -4,8 +4,11 @@
 
 namespace frontend::internal {
 
-GetIdentifier::GetIdentifier() :
-    m_instance{nullptr}, m_identifier{std::nullopt}, m_typeParams{std::nullopt} {}
+GetIdentifier::GetIdentifier(bool includeInstances) :
+    m_includeInstances{includeInstances},
+    m_instance{nullptr},
+    m_identifier{std::nullopt},
+    m_typeParams{std::nullopt} {}
 
 auto GetIdentifier::getInstance() const noexcept -> const parse::Node* { return m_instance; }
 
@@ -23,8 +26,10 @@ auto GetIdentifier::visit(const parse::IdExprNode& n) -> void {
 }
 
 auto GetIdentifier::visit(const parse::FieldExprNode& n) -> void {
-  m_instance   = &n[0];
-  m_identifier = n.getId();
+  if (m_includeInstances) {
+    m_instance   = &n[0];
+    m_identifier = n.getId();
+  }
 }
 
 } // namespace frontend::internal

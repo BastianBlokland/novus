@@ -45,6 +45,8 @@ auto DeepNodeVisitor::visit(const SwitchExprNode& n) -> void { visitChildren(&n,
 
 auto DeepNodeVisitor::visit(const UnaryExprNode& n) -> void { visitChildren(&n, this); }
 
+auto DeepNodeVisitor::visit(const EnumDeclStmtNode& n) -> void { visitChildren(&n, this); }
+
 auto DeepNodeVisitor::visit(const ExecStmtNode& n) -> void { visitChildren(&n, this); }
 
 auto DeepNodeVisitor::visit(const FuncDeclStmtNode& n) -> void { visitChildren(&n, this); }

@@ -36,6 +36,7 @@ public:
   auto visit(const parse::SwitchExprIfNode& n) -> void override;
   auto visit(const parse::SwitchExprNode& n) -> void override;
   auto visit(const parse::UnaryExprNode& n) -> void override;
+  auto visit(const parse::EnumDeclStmtNode& n) -> void override;
   auto visit(const parse::ExecStmtNode& n) -> void override;
   auto visit(const parse::FuncDeclStmtNode& n) -> void override;
   auto visit(const parse::StructDeclStmtNode& n) -> void override;
@@ -74,6 +75,11 @@ private:
 
   [[nodiscard]] auto getBinLogicOpExpr(const parse::BinaryExprNode& n, BinLogicOp op)
       -> prog::expr::NodePtr;
+
+  [[nodiscard]] auto getStaticFieldExpr(
+      const lex::Token& nameToken,
+      const std::optional<parse::TypeParamList>& typeParams,
+      const lex::Token& fieldToken) -> prog::expr::NodePtr;
 
   [[nodiscard]] auto getConstExpr(const parse::IdExprNode& n) -> prog::expr::NodePtr;
 

@@ -88,7 +88,7 @@ auto operator<<(std::ostream& out, const OpCode& rhs) -> std::ostream& {
     out << "and-int";
     break;
   case OpCode::OrInt:
-    out << "or-float";
+    out << "or-int";
     break;
   case OpCode::XorInt:
     out << "xor-int";

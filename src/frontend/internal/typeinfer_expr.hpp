@@ -33,6 +33,7 @@ public:
   auto visit(const parse::SwitchExprIfNode& n) -> void override;
   auto visit(const parse::SwitchExprNode& n) -> void override;
   auto visit(const parse::UnaryExprNode& n) -> void override;
+  auto visit(const parse::EnumDeclStmtNode& n) -> void override;
   auto visit(const parse::ExecStmtNode& n) -> void override;
   auto visit(const parse::FuncDeclStmtNode& n) -> void override;
   auto visit(const parse::StructDeclStmtNode& n) -> void override;
@@ -53,8 +54,6 @@ private:
 
   auto setConstType(const lex::Token& constId, prog::sym::TypeId type) -> void;
   [[nodiscard]] auto inferConstType(const lex::Token& constId) -> prog::sym::TypeId;
-
-  [[nodiscard]] auto isType(const std::string& name) const -> bool;
 };
 
 } // namespace frontend::internal

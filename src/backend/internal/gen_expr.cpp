@@ -348,7 +348,7 @@ auto GenExpr::visit(const prog::expr::FieldExprNode& n) -> void {
   genSubExpr(n[0], false);
 
   const auto& structType = m_program.getTypeDecl(n[0].getType());
-  if (structType.getKind() != prog::sym::TypeKind::UserStruct) {
+  if (structType.getKind() != prog::sym::TypeKind::Struct) {
     throw std::logic_error{"Field expr node only works on struct types"};
   }
   const auto& structDef = std::get<prog::sym::StructDef>(m_program.getTypeDef(structType.getId()));
@@ -444,6 +444,10 @@ auto GenExpr::visit(const prog::expr::LitStringNode& n) -> void {
 }
 
 auto GenExpr::visit(const prog::expr::LitCharNode& n) -> void {
+  m_builder->addLoadLitInt(n.getVal());
+}
+
+auto GenExpr::visit(const prog::expr::LitEnumNode& n) -> void {
   m_builder->addLoadLitInt(n.getVal());
 }
 

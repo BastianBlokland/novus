@@ -21,7 +21,7 @@ auto TypeDefTable::end() const -> iterator { return m_types.end(); }
 
 auto TypeDefTable::registerStruct(
     const sym::TypeDeclTable& typeTable, sym::TypeId id, sym::FieldDeclTable fields) -> void {
-  if (typeTable[id].getKind() != sym::TypeKind::UserStruct) {
+  if (typeTable[id].getKind() != sym::TypeKind::Struct) {
     throw std::invalid_argument{"Type has not been declared as being a user-defined struct"};
   }
   auto itr = m_types.find(id);
@@ -33,7 +33,7 @@ auto TypeDefTable::registerStruct(
 
 auto TypeDefTable::registerUnion(
     const sym::TypeDeclTable& typeTable, sym::TypeId id, std::vector<sym::TypeId> types) -> void {
-  if (typeTable[id].getKind() != sym::TypeKind::UserUnion) {
+  if (typeTable[id].getKind() != sym::TypeKind::Union) {
     throw std::invalid_argument{"Type has not been declared as being a user-defined union"};
   }
   if (types.size() < 2) {
@@ -46,9 +46,26 @@ auto TypeDefTable::registerUnion(
   m_types.insert({id, UnionDef{id, std::move(types)}});
 }
 
+auto TypeDefTable::registerEnum(
+    const sym::TypeDeclTable& typeTable,
+    sym::TypeId id,
+    std::unordered_map<std::string, int32_t> entries) -> void {
+  if (typeTable[id].getKind() != sym::TypeKind::Enum) {
+    throw std::invalid_argument{"Type has not been declared as being a user-defined enum"};
+  }
+  if (entries.empty()) {
+    throw std::invalid_argument{"Enum needs at least one entry"};
+  }
+  auto itr = m_types.find(id);
+  if (itr != m_types.end()) {
+    throw std::logic_error{"Type already has a definition registered"};
+  }
+  m_types.insert({id, EnumDef{id, std::move(entries)}});
+}
+
 auto TypeDefTable::registerDelegate(
     const sym::TypeDeclTable& typeTable, sym::TypeId id, TypeSet input, TypeId output) -> void {
-  if (typeTable[id].getKind() != sym::TypeKind::UserDelegate) {
+  if (typeTable[id].getKind() != sym::TypeKind::Delegate) {
     throw std::invalid_argument{"Type has not been declared as being a user-defined delegate"};
   }
   auto itr = m_types.find(id);

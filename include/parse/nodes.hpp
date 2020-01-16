@@ -16,6 +16,7 @@
 #include "parse/node_expr_switch_else.hpp"
 #include "parse/node_expr_switch_if.hpp"
 #include "parse/node_expr_unary.hpp"
+#include "parse/node_stmt_enum_decl.hpp"
 #include "parse/node_stmt_exec.hpp"
 #include "parse/node_stmt_func_decl.hpp"
 #include "parse/node_stmt_struct_decl.hpp"

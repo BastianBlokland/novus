@@ -48,6 +48,7 @@ add_library(parse STATIC
   parse/node_expr_switch_else.cpp
   parse/node_expr_switch.cpp
   parse/node_expr_unary.cpp
+  parse/node_stmt_enum_decl.cpp
   parse/node_stmt_exec.cpp
   parse/node_stmt_func_decl.cpp
   parse/node_stmt_struct_decl.cpp
@@ -77,6 +78,7 @@ add_library(prog STATIC
   prog/expr/node_field.cpp
   prog/expr/node_group.cpp
   prog/expr/node_lit_bool.cpp
+  prog/expr/node_lit_enum.cpp
   prog/expr/node_lit_float.cpp
   prog/expr/node_lit_func.cpp
   prog/expr/node_lit_int.cpp
@@ -99,6 +101,7 @@ add_library(prog STATIC
   prog/sym/const_id.cpp
   prog/sym/const_kind.cpp
   prog/sym/delegate_def.cpp
+  prog/sym/enum_def.cpp
   prog/sym/exec_stmt.cpp
   prog/sym/field_decl_table.cpp
   prog/sym/field_decl.cpp

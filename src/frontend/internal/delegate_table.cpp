@@ -47,11 +47,10 @@ auto DelegateTable::getDelegate(
   }
 
   // Declare a new delegate.
-  const auto delegateType =
-      context->getProg()->declareUserDelegate(getName(*context, input, output));
+  const auto delegateType = context->getProg()->declareDelegate(getName(*context, input, output));
 
   // Define the delegate.
-  context->getProg()->defineUserDelegate(delegateType, input, output);
+  context->getProg()->defineDelegate(delegateType, input, output);
 
   // Keep track of some extra information about the type.
   auto types = std::vector<prog::sym::TypeId>{};

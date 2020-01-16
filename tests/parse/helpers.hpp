@@ -52,10 +52,12 @@ namespace parse {
 #define LAMBDA lex::keywordToken(lex::Keyword::Lambda)
 #define STRUCT lex::keywordToken(lex::Keyword::Struct)
 #define UNION lex::keywordToken(lex::Keyword::Union)
+#define ENUM lex::keywordToken(lex::Keyword::Enum)
 #define IF lex::keywordToken(lex::Keyword::If)
 #define ELSE lex::keywordToken(lex::Keyword::Else)
 #define IS lex::keywordToken(lex::Keyword::Is)
 #define END lex::endToken()
+#define INT_TOK(VAL) lex::litIntToken(VAL)
 
 #define ID(ID) lex::identiferToken(ID)
 #define COMMENT(MSG) lex::lineCommentToken(MSG)

@@ -8,6 +8,7 @@ static auto genTypeEquality(Builder* builder, const prog::sym::TypeDecl& typeDec
   case prog::sym::TypeKind::Bool:
   case prog::sym::TypeKind::Int:
   case prog::sym::TypeKind::Char:
+  case prog::sym::TypeKind::Enum:
     builder->addCheckEqInt();
     break;
   case prog::sym::TypeKind::Float:
@@ -16,11 +17,11 @@ static auto genTypeEquality(Builder* builder, const prog::sym::TypeDecl& typeDec
   case prog::sym::TypeKind::String:
     builder->addCheckEqString();
     break;
-  case prog::sym::TypeKind::UserDelegate:
+  case prog::sym::TypeKind::Delegate:
     builder->addCheckEqCallDynTgt();
     break;
-  case prog::sym::TypeKind::UserStruct:
-  case prog::sym::TypeKind::UserUnion:
+  case prog::sym::TypeKind::Struct:
+  case prog::sym::TypeKind::Union:
     builder->addCall(getUserTypeEqLabel(typeDecl.getId()), false);
     break;
   }
