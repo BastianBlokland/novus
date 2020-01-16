@@ -19,7 +19,6 @@ TEST_CASE("Generate assembly for call dynamic expressions", "[backend]") {
           builder->addLoadConst(1);
           builder->addAddInt();
           builder->addRet();
-          builder->addFail();
 
           builder->label("print");
           builder->addReserveConsts(1);
@@ -37,7 +36,6 @@ TEST_CASE("Generate assembly for call dynamic expressions", "[backend]") {
           builder->addConvIntString();
           builder->addPrintString();
           builder->addRet();
-          builder->addFail();
 
           builder->addEntryPoint("print");
         });
@@ -52,7 +50,6 @@ TEST_CASE("Generate assembly for call dynamic expressions", "[backend]") {
       builder->addLoadConst(0);
       builder->addAddInt();
       builder->addRet();
-      builder->addFail();
 
       builder->label("print");
       builder->addReserveConsts(1);
@@ -70,7 +67,6 @@ TEST_CASE("Generate assembly for call dynamic expressions", "[backend]") {
       builder->addConvIntString();
       builder->addPrintString();
       builder->addRet();
-      builder->addFail();
 
       builder->addEntryPoint("print");
     });
@@ -88,7 +84,6 @@ TEST_CASE("Generate assembly for call dynamic expressions", "[backend]") {
           builder->addConvIntFloat();
           builder->addAddFloat();
           builder->addRet();
-          builder->addFail();
 
           builder->label("print");
           builder->addReserveConsts(1);
@@ -107,7 +102,6 @@ TEST_CASE("Generate assembly for call dynamic expressions", "[backend]") {
           builder->addConvFloatString();
           builder->addPrintString();
           builder->addRet();
-          builder->addFail();
 
           builder->addEntryPoint("print");
         });

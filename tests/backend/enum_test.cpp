@@ -19,7 +19,6 @@ TEST_CASE("Generating assembly for enums", "[backend]") {
           builder->addConvBoolString();
           builder->addPrintString();
           builder->addRet();
-          builder->addFail();
           // --- Print statement end.
 
           builder->addEntryPoint("print");
@@ -43,7 +42,6 @@ TEST_CASE("Generating assembly for enums", "[backend]") {
           builder->addConvBoolString();
           builder->addPrintString();
           builder->addRet();
-          builder->addFail();
           // --- Print statement end.
 
           builder->addEntryPoint("print");
@@ -64,7 +62,6 @@ TEST_CASE("Generating assembly for enums", "[backend]") {
           builder->addConvBoolString();
           builder->addPrintString();
           builder->addRet();
-          builder->addFail();
           // --- Print statement end.
 
           builder->addEntryPoint("print");

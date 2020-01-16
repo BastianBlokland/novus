@@ -46,7 +46,6 @@ TEST_CASE("Generating assembly for structs", "[backend]") {
           // If both are equal then return true.
           builder->addLoadLitInt(1);
           builder->addRet();
-          builder->addFail();
           // --- Struct equality function end.
 
           // --- Print statement start.
@@ -66,7 +65,6 @@ TEST_CASE("Generating assembly for structs", "[backend]") {
           builder->addConvBoolString();
           builder->addPrintString();
           builder->addRet();
-          builder->addFail();
           // --- Print statement end.
 
           builder->addEntryPoint("print");
@@ -84,7 +82,6 @@ TEST_CASE("Generating assembly for structs", "[backend]") {
           builder->addPop();
           builder->addLoadLitInt(1); // Empty structs are always equal.
           builder->addRet();
-          builder->addFail();
           // --- Struct equality function end.
 
           // --- Print statement start.
@@ -100,7 +97,6 @@ TEST_CASE("Generating assembly for structs", "[backend]") {
           builder->addConvBoolString();
           builder->addPrintString();
           builder->addRet();
-          builder->addFail();
           // --- Print statement end.
 
           builder->addEntryPoint("print");
@@ -116,7 +112,6 @@ TEST_CASE("Generating assembly for structs", "[backend]") {
             builder->label("UserEq");
             builder->addCheckEqInt(); // Check the field itself.
             builder->addRet();
-            builder->addFail();
             // --- Struct equality function end.
 
             // --- Print statement 1 start.
@@ -132,7 +127,6 @@ TEST_CASE("Generating assembly for structs", "[backend]") {
             builder->addConvBoolString();
             builder->addPrintString();
             builder->addRet();
-            builder->addFail();
             // --- Print statement 1 end.
 
             // --- Print statement 2 start.
@@ -143,7 +137,6 @@ TEST_CASE("Generating assembly for structs", "[backend]") {
             builder->addConvIntString();
             builder->addPrintString();
             builder->addRet();
-            builder->addFail();
             // --- Print statement 2 end.
 
             builder->addEntryPoint("print1");

@@ -57,7 +57,6 @@ auto generateStructEquality(
     builder->addPop();
     builder->addLoadLitInt(1);
     builder->addRet();
-    builder->addFail(); // Add a fail between sections to aid in detecting invalid programs.
     return;
   }
 
@@ -66,7 +65,6 @@ auto generateStructEquality(
     const auto& fieldTypeDecl = program.getTypeDecl(structDef.getFields().begin()->getType());
     genTypeEquality(builder, fieldTypeDecl);
     builder->addRet();
-    builder->addFail(); // Add a fail between sections to aid in detecting invalid programs.
     return;
   }
 
@@ -92,7 +90,6 @@ auto generateStructEquality(
 
   builder->addLoadLitInt(1);
   builder->addRet();
-  builder->addFail(); // Add a fail between sections to aid in detecting invalid programs.
 }
 
 auto generateUnionEquality(
@@ -155,7 +152,6 @@ auto generateUnionEquality(
   builder->label(sameValueLabel);
   builder->addLoadLitInt(1);
   builder->addRet();
-  builder->addFail(); // Add a fail between sections to aid in detecting invalid programs.
 }
 
 } // namespace backend::internal

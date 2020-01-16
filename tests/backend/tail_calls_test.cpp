@@ -27,7 +27,6 @@ TEST_CASE("Generate assembly for tail calls", "[backend]") {
 
           builder->label("false");
           builder->addRet();
-          builder->addFail();
 
           builder->label("print");
           builder->addLoadLitInt(42);
@@ -35,7 +34,6 @@ TEST_CASE("Generate assembly for tail calls", "[backend]") {
           builder->addConvIntString();
           builder->addPrintString();
           builder->addRet();
-          builder->addFail();
 
           builder->addEntryPoint("print");
         });
@@ -50,19 +48,16 @@ TEST_CASE("Generate assembly for tail calls", "[backend]") {
           builder->label("f2");
           builder->addCall("f1", true);
           builder->addRet();
-          builder->addFail();
 
           builder->label("f1");
           builder->addLoadLitInt(42);
           builder->addRet();
-          builder->addFail();
 
           builder->label("print");
           builder->addCall("f2", false);
           builder->addConvIntString();
           builder->addPrintString();
           builder->addRet();
-          builder->addFail();
 
           builder->addEntryPoint("print");
         });
@@ -83,21 +78,18 @@ TEST_CASE("Generate assembly for tail calls", "[backend]") {
           builder->addLoadConst(0);
           builder->addCall("f1", true);
           builder->addRet();
-          builder->addFail();
 
           builder->label("f1");
           builder->addReserveConsts(1);
           builder->addStoreConst(0);
           builder->addLoadConst(0);
           builder->addRet();
-          builder->addFail();
 
           builder->label("print");
           builder->addCall("f2", false);
           builder->addConvIntString();
           builder->addPrintString();
           builder->addRet();
-          builder->addFail();
 
           builder->addEntryPoint("print");
         });
@@ -115,12 +107,10 @@ TEST_CASE("Generate assembly for tail calls", "[backend]") {
           builder->addLoadConst(0);
           builder->addCallDyn(true);
           builder->addRet();
-          builder->addFail();
 
           builder->label("f1");
           builder->addLoadLitInt(42);
           builder->addRet();
-          builder->addFail();
 
           builder->label("print");
           builder->addLoadLitIp("f1");
@@ -128,7 +118,6 @@ TEST_CASE("Generate assembly for tail calls", "[backend]") {
           builder->addConvIntString();
           builder->addPrintString();
           builder->addRet();
-          builder->addFail();
 
           builder->addEntryPoint("print");
         });

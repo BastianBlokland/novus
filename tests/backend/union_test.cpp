@@ -73,7 +73,6 @@ TEST_CASE("Generating assembly for unions", "[backend]") {
           builder->label("valueEqual");
           builder->addLoadLitInt(1);
           builder->addRet();
-          builder->addFail();
           // --- Struct equality function end.
 
           // --- Print statement start.
@@ -93,7 +92,6 @@ TEST_CASE("Generating assembly for unions", "[backend]") {
           builder->addConvBoolString();
           builder->addPrintString();
           builder->addRet();
-          builder->addFail();
           // --- Print statement end.
 
           builder->addEntryPoint("print");

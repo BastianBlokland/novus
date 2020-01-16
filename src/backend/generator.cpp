@@ -40,7 +40,6 @@ generateFunc(Builder* builder, const prog::Program& program, const prog::sym::Fu
 
   // Note: Due to tail calls this return might never be executed.
   builder->addRet();
-  builder->addFail(); // Add a fail between sections to aid in detecting invalid programs.
 }
 
 static auto
@@ -63,7 +62,6 @@ generateExecStmt(Builder* builder, const prog::Program& program, const prog::sym
     break;
   }
   builder->addRet();
-  builder->addFail(); // Add a fail between sections to aid in detecting invalid programs.
 }
 
 auto generate(const prog::Program& program) -> vm::Assembly {
