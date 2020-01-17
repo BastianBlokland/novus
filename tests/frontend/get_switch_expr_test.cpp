@@ -115,8 +115,8 @@ TEST_CASE("Analyzing switch expressions", "[frontend]") {
   SECTION("Exhaustive union check switch expression") {
     const auto& output = ANALYZE("union U = int, float "
                                  "fun f(U u) -> int "
-                                 "  if u is int i   -> i "
-                                 "  if u is float _ -> 0");
+                                 "  if u as int i -> i "
+                                 "  if u is float -> 0");
     REQUIRE(output.isSuccess());
     const auto& funcDef = GET_FUNC_DEF(output, "f", GET_TYPE_ID(output, "U"));
     const auto& consts  = funcDef.getConsts();
@@ -166,8 +166,8 @@ TEST_CASE("Analyzing switch expressions", "[frontend]") {
     CHECK_DIAG(
         "union U = int, float "
         "fun f(U u) -> int "
-        "  if u is float _ -> 1 ",
-        errNonExhaustiveSwitchWithoutElse(src, input::Span{41, 60}));
+        "  if u is float -> 1 ",
+        errNonExhaustiveSwitchWithoutElse(src, input::Span{41, 58}));
   }
 }
 

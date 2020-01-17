@@ -63,7 +63,8 @@ errInvalidAnonFuncExpr(lex::Token kw, const ArgumentListDecl& argList, NodePtr b
 [[nodiscard]] auto errInvalidIdExpr(lex::Token id, std::optional<TypeParamList> typeParams)
     -> NodePtr;
 
-[[nodiscard]] auto errInvalidIsExpr(NodePtr lhs, lex::Token kw, const Type& type, lex::Token id)
+[[nodiscard]] auto
+errInvalidIsExpr(NodePtr lhs, lex::Token kw, const Type& type, std::optional<lex::Token> id)
     -> NodePtr;
 
 [[nodiscard]] auto errInvalidCallExpr(

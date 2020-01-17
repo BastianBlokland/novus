@@ -371,23 +371,29 @@ auto errInvalidIdExpr(lex::Token id, std::optional<TypeParamList> typeParams) ->
   return errorNode(oss.str(), std::move(tokens), {});
 }
 
-auto errInvalidIsExpr(NodePtr lhs, lex::Token kw, const Type& type, lex::Token id) -> NodePtr {
+auto errInvalidIsExpr(NodePtr lhs, lex::Token kw, const Type& type, std::optional<lex::Token> id)
+    -> NodePtr {
   std::ostringstream oss;
-  if (getKw(kw) != lex::Keyword::Is) {
-    oss << "Expected keyword 'is' but got: '" << kw << '\'';
-  } else if (!type.validate()) {
+  if (!type.validate()) {
     oss << "Invalid type identifier: " << type;
   } else if (
-      id.getKind() != lex::TokenKind::Identifier && id.getKind() != lex::TokenKind::Discard) {
-    oss << "Expected identifier or discard '_' but got: '" << id << '\'';
+      id && id->getKind() != lex::TokenKind::Identifier &&
+      id->getKind() != lex::TokenKind::Discard) {
+    oss << "Expected identifier or discard '_' but got: '" << *id << '\'';
   } else {
-    oss << "Invalid 'is' expression";
+    if (getKw(kw) == lex::Keyword::Is) {
+      oss << "Invalid 'is' expression";
+    } else {
+      oss << "Invalid 'as' expression";
+    }
   }
 
   auto tokens = std::vector<lex::Token>{};
   tokens.push_back(std::move(kw));
   addTokens(type, &tokens);
-  tokens.push_back(std::move(id));
+  if (id) {
+    tokens.push_back(*id);
+  }
 
   auto subExprs = std::vector<std::unique_ptr<Node>>{};
   subExprs.push_back(std::move(lhs));

@@ -120,11 +120,11 @@ TEST_CASE("Analyzing binary expressions", "[frontend]") {
         *prog::expr::switchExprNode(output.getProg(), std::move(conditions), std::move(branches)));
   }
 
-  SECTION("Chain 'is' checks with binary 'and' in switch") {
+  SECTION("Chain 'as' checks with binary 'and' in switch") {
     const auto& output = ANALYZE("struct Null "
                                  "union Option = int, Null "
                                  "fun f(Option a, Option b) "
-                                 "  if a is int aVal && b is int bVal -> bVal "
+                                 "  if a as int aVal && b as int bVal -> bVal "
                                  "  else                              -> 0");
     REQUIRE(output.isSuccess());
     const auto& funcDef =

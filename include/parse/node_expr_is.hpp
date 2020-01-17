@@ -2,11 +2,13 @@
 #include "lex/token.hpp"
 #include "parse/node.hpp"
 #include "parse/type.hpp"
+#include <optional>
 
 namespace parse {
 
 class IsExprNode final : public Node {
-  friend auto isExprNode(NodePtr lhs, lex::Token kw, Type type, lex::Token id) -> NodePtr;
+  friend auto isExprNode(NodePtr lhs, lex::Token kw, Type type, std::optional<lex::Token> id)
+      -> NodePtr;
 
 public:
   IsExprNode() = delete;
@@ -20,7 +22,7 @@ public:
 
   [[nodiscard]] auto getType() const -> const Type&;
   [[nodiscard]] auto hasId() const -> bool;
-  [[nodiscard]] auto getId() const -> const lex::Token&;
+  [[nodiscard]] auto getId() const -> const std::optional<lex::Token>&;
 
   auto accept(NodeVisitor* visitor) const -> void override;
 
@@ -28,14 +30,14 @@ private:
   const NodePtr m_lhs;
   const lex::Token m_kw;
   const Type m_type;
-  const lex::Token m_id;
+  const std::optional<lex::Token> m_id;
 
-  IsExprNode(NodePtr lhs, lex::Token kw, Type type, lex::Token id);
+  IsExprNode(NodePtr lhs, lex::Token kw, Type type, std::optional<lex::Token> id);
 
   auto print(std::ostream& out) const -> std::ostream& override;
 };
 
 // Factories.
-auto isExprNode(NodePtr lhs, lex::Token kw, Type type, lex::Token id) -> NodePtr;
+auto isExprNode(NodePtr lhs, lex::Token kw, Type type, std::optional<lex::Token> id) -> NodePtr;
 
 } // namespace parse

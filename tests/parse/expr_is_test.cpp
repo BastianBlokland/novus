@@ -8,35 +8,39 @@
 
 namespace parse {
 
-TEST_CASE("Parsing is expressions", "[parse]") {
+TEST_CASE("Parsing is / as expressions", "[parse]") {
 
-  CHECK_EXPR("x is int i", isExprNode(ID_EXPR("x"), IS, TYPE("int"), ID("i")));
-  CHECK_EXPR("x is int _", isExprNode(ID_EXPR("x"), IS, TYPE("int"), DISCARD));
+  CHECK_EXPR("x as int i", isExprNode(ID_EXPR("x"), AS, TYPE("int"), ID("i")));
+  CHECK_EXPR("x as int _", isExprNode(ID_EXPR("x"), AS, TYPE("int"), DISCARD));
+  CHECK_EXPR("x is int", isExprNode(ID_EXPR("x"), IS, TYPE("int"), std::nullopt));
   CHECK_EXPR(
-      "-x is int i", isExprNode(unaryExprNode(MINUS, ID_EXPR("x")), IS, TYPE("int"), ID("i")));
+      "-x as int i", isExprNode(unaryExprNode(MINUS, ID_EXPR("x")), AS, TYPE("int"), ID("i")));
   CHECK_EXPR(
-      "(x + y) is int i",
+      "(x + y) as int i",
       isExprNode(
           parenExprNode(OPAREN, binaryExprNode(ID_EXPR("x"), PLUS, ID_EXPR("y")), CPAREN),
-          IS,
+          AS,
           TYPE("int"),
           ID("i")));
   CHECK_EXPR(
-      "x is List{T{Y}} i",
-      isExprNode(ID_EXPR("x"), IS, TYPE("List", TYPE("T", TYPE("Y"))), ID("i")));
+      "x as List{T{Y}} i",
+      isExprNode(ID_EXPR("x"), AS, TYPE("List", TYPE("T", TYPE("Y"))), ID("i")));
+  CHECK_EXPR(
+      "x is List{T{Y}}",
+      isExprNode(ID_EXPR("x"), IS, TYPE("List", TYPE("T", TYPE("Y"))), std::nullopt));
 
   SECTION("Errors") {
-    CHECK_EXPR("x is", errInvalidIsExpr(ID_EXPR("x"), IS, Type(END), END));
-    CHECK_EXPR("x is int", errInvalidIsExpr(ID_EXPR("x"), IS, TYPE("int"), END));
-    CHECK_EXPR("x is is i", errInvalidIsExpr(ID_EXPR("x"), IS, Type(IS), ID("i")));
-    CHECK_EXPR("x is int is", errInvalidIsExpr(ID_EXPR("x"), IS, TYPE("int"), IS));
+    CHECK_EXPR("x as", errInvalidIsExpr(ID_EXPR("x"), AS, Type(END), END));
+    CHECK_EXPR("x as int", errInvalidIsExpr(ID_EXPR("x"), AS, TYPE("int"), END));
+    CHECK_EXPR("x as is i", errInvalidIsExpr(ID_EXPR("x"), AS, Type(IS), ID("i")));
+    CHECK_EXPR("x as int is", errInvalidIsExpr(ID_EXPR("x"), AS, TYPE("int"), IS));
     CHECK_EXPR(
-        "x is int{} i",
+        "x as int{} i",
         errInvalidIsExpr(
-            ID_EXPR("x"), IS, Type(ID("int"), TypeParamList(OCURLY, {}, {}, CCURLY)), ID("i")));
+            ID_EXPR("x"), AS, Type(ID("int"), TypeParamList(OCURLY, {}, {}, CCURLY)), ID("i")));
   }
 
-  SECTION("Spans") { CHECK_EXPR_SPAN("x is int i", input::Span(0, 9)); }
+  SECTION("Spans") { CHECK_EXPR_SPAN("x as int i", input::Span(0, 9)); }
 }
 
 } // namespace parse
