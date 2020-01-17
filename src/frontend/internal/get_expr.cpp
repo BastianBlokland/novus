@@ -417,7 +417,7 @@ auto GetExpr::visit(const parse::IsExprNode& n) -> void {
   }
 
   // Declare the const.
-  const auto constId = declareConst(n.getId(), *type);
+  const auto constId = declareConst(*n.getId(), *type);
   if (constId) {
     m_expr = prog::expr::unionGetExprNode(
         *m_context->getProg(), std::move(lhsExpr), *m_constBinder->getConsts(), *constId);

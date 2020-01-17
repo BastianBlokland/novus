@@ -260,7 +260,7 @@ auto ParserImpl::nextExpr(const int minPrecedence) -> NodePtr {
       lhs = nextExprIndex(std::move(lhs));
       break;
     case lex::TokenKind::Keyword:
-      if (getKw(nextToken) == lex::Keyword::Is) {
+      if (getKw(nextToken) == lex::Keyword::Is || getKw(nextToken) == lex::Keyword::As) {
         lhs = nextExprIs(std::move(lhs));
         break;
       }
@@ -348,17 +348,19 @@ auto ParserImpl::nextExprField(NodePtr lhs) -> NodePtr {
 }
 
 auto ParserImpl::nextExprIs(NodePtr lhs) -> NodePtr {
-  auto kw   = consumeToken();
-  auto type = nextType();
-  auto id   = consumeToken();
+  auto kwTok = consumeToken();
+  auto kw    = getKw(kwTok);
+  auto type  = nextType();
+  auto id    = kw == lex::Keyword::As ? std::optional{consumeToken()} : std::nullopt;
 
-  const auto idValid =
-      id.getKind() == lex::TokenKind::Identifier || id.getKind() == lex::TokenKind::Discard;
+  const auto kwValid = kw == lex::Keyword::Is || kw == lex::Keyword::As;
+  const auto idValid = !id ||
+      (id->getKind() == lex::TokenKind::Identifier || id->getKind() == lex::TokenKind::Discard);
 
-  if (getKw(kw) == lex::Keyword::Is && type.validate() && idValid) {
-    return isExprNode(std::move(lhs), kw, std::move(type), std::move(id));
+  if (kwValid && type.validate() && idValid) {
+    return isExprNode(std::move(lhs), kwTok, std::move(type), std::move(id));
   }
-  return errInvalidIsExpr(std::move(lhs), kw, type, std::move(id));
+  return errInvalidIsExpr(std::move(lhs), kwTok, type, std::move(id));
 }
 
 auto ParserImpl::nextExprCall(NodePtr lhs) -> NodePtr {

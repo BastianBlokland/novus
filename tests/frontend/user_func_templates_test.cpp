@@ -157,7 +157,7 @@ TEST_CASE("Analyzing user-function templates", "[frontend]") {
     const auto& output = ANALYZE("struct Null "
                                  "union Option{T} = T, Null "
                                  "fun ft{T}(Option{T} a, Option{T} b) "
-                                 "  if a is T aVal && b is T bVal -> aVal + bVal "
+                                 "  if a as T aVal && b as T bVal -> aVal + bVal "
                                  "  else -> T()"
                                  "fun f() ft(Option{int}(1), Option{int}(2))");
     REQUIRE(output.isSuccess());

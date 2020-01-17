@@ -11,10 +11,10 @@ namespace frontend {
 
 TEST_CASE("Analyzing 'is' expressions", "[frontend]") {
 
-  SECTION("Get 'is' expression") {
+  SECTION("Get 'as' expression") {
     const auto& output = ANALYZE("union Val = int, bool "
                                  "fun f(Val v) "
-                                 "  if v is int i -> i"
+                                 "  if v as int i -> i"
                                  "  else          -> 42");
     REQUIRE(output.isSuccess());
 
@@ -39,7 +39,23 @@ TEST_CASE("Analyzing 'is' expressions", "[frontend]") {
 
   SECTION("Check 'is' expression") {
     const auto& output = ANALYZE("union Val = int, bool "
-                                 "fun f(Val v) v is int _");
+                                 "fun f(Val v) v is int");
+    REQUIRE(output.isSuccess());
+
+    const auto& funcDef    = GET_FUNC_DEF(output, "f", GET_TYPE_ID(output, "Val"));
+    const auto& funcConsts = funcDef.getConsts();
+
+    CHECK(
+        funcDef.getExpr() ==
+        *prog::expr::unionCheckExprNode(
+            output.getProg(),
+            prog::expr::constExprNode(funcConsts, *funcConsts.lookup("v")),
+            GET_TYPE_ID(output, "int")));
+  }
+
+  SECTION("Check 'as' with discard expression") {
+    const auto& output = ANALYZE("union Val = int, bool "
+                                 "fun f(Val v) v as int _");
     REQUIRE(output.isSuccess());
 
     const auto& funcDef    = GET_FUNC_DEF(output, "f", GET_TYPE_ID(output, "Val"));
@@ -54,48 +70,48 @@ TEST_CASE("Analyzing 'is' expressions", "[frontend]") {
   }
 
   SECTION("Diagnostics") {
-    CHECK_DIAG(" fun f(int i) i is bool b", errNonUnionIsExpression(src, input::Span{14, 14}));
+    CHECK_DIAG(" fun f(int i) i as bool b", errNonUnionIsExpression(src, input::Span{14, 14}));
     CHECK_DIAG(
         "struct S = int i "
-        "fun f(S s) s is int i",
+        "fun f(S s) s as int i",
         errNonUnionIsExpression(src, input::Span{28, 28}));
     CHECK_DIAG(
         "union U = int, float "
-        "fun f(U u) u is hello i",
+        "fun f(U u) u as hello i",
         errUndeclaredType(src, "hello", 0, input::Span{37, 41}));
     CHECK_DIAG(
         "union U = int, float "
-        "fun f(U u) u is bool b",
+        "fun f(U u) u as bool b",
         errTypeNotPartOfUnion(src, "bool", "U", input::Span{37, 40}));
 
     CHECK_DIAG(
         "union U = int, float "
-        "fun f(U u) !(u is int i) ? i : 42",
+        "fun f(U u) !(u as int i) ? i : 42",
         errUncheckedIsExpressionWithConst(src, input::Span{39, 41}));
     CHECK_DIAG(
         "union U = int, float "
-        "fun f(U u) (u is int i; z = 4) ? i : 42",
+        "fun f(U u) (u as int i; z = 4) ? i : 42",
         errUncheckedIsExpressionWithConst(src, input::Span{38, 40}));
     CHECK_DIAG(
         "union U = int, float "
-        "fun f(U u) -> int (u is int i || true) ? i : 42",
+        "fun f(U u) -> int (u as int i || true) ? i : 42",
         errUncheckedIsExpressionWithConst(src, input::Span{45, 47}));
 
     CHECK_DIAG(
         "union U = int, float "
-        "fun f(U u) u is int int ? 1 : 2",
+        "fun f(U u) u as int int ? 1 : 2",
         errConstNameConflictsWithType(src, "int", input::Span{41, 43}));
     CHECK_DIAG(
         "union U = int, float "
-        "fun f(U u) u is int f ? 1 : 2",
+        "fun f(U u) u as int f ? 1 : 2",
         errConstNameConflictsWithFunction(src, "f", input::Span{41, 41}));
     CHECK_DIAG(
         "union U = int, float "
-        "fun f(U u) u is int print ? 1 : 2",
+        "fun f(U u) u as int print ? 1 : 2",
         errConstNameConflictsWithAction(src, "print", input::Span{41, 45}));
     CHECK_DIAG(
         "union U = int, float "
-        "fun f(U u) u is int u ? 1 : 2",
+        "fun f(U u) u as int u ? 1 : 2",
         errConstNameConflictsWithConst(src, "u", input::Span{41, 41}));
   }
 }

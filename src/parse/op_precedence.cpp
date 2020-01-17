@@ -56,8 +56,12 @@ auto getRhsOpPrecedence(const lex::Token& token) -> int {
   case lex::TokenKind::OpSemi:
     return groupingPrecedence;
   case lex::TokenKind::Keyword:
-    if (getKw(token) == lex::Keyword::Is) {
+    switch (*getKw(token)) {
+    case lex::Keyword::Is:
+    case lex::Keyword::As:
       return typeTestPrecedence;
+    default:
+      break;
     }
     [[fallthrough]];
   default:

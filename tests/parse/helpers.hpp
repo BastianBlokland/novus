@@ -56,6 +56,7 @@ namespace parse {
 #define IF lex::keywordToken(lex::Keyword::If)
 #define ELSE lex::keywordToken(lex::Keyword::Else)
 #define IS lex::keywordToken(lex::Keyword::Is)
+#define AS lex::keywordToken(lex::Keyword::As)
 #define END lex::endToken()
 #define INT_TOK(VAL) lex::litIntToken(VAL)
 

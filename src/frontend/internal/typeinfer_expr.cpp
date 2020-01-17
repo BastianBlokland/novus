@@ -238,10 +238,12 @@ auto TypeInferExpr::visit(const parse::IndexExprNode& n) -> void {
 }
 
 auto TypeInferExpr::visit(const parse::IsExprNode& n) -> void {
-  // Register the type of the constant this declares.
-  const auto constType = getOrInstType(m_context, m_typeSubTable, n.getType());
-  if (constType) {
-    setConstType(n.getId(), *constType);
+  if (n.hasId()) {
+    // Register the type of the constant this declares.
+    const auto constType = getOrInstType(m_context, m_typeSubTable, n.getType());
+    if (constType) {
+      setConstType(*n.getId(), *constType);
+    }
   }
 
   // Expression itself always evaluates to a bool.
