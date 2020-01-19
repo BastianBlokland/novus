@@ -10,6 +10,8 @@
 #include "vm/exceptions/eval_stack_not_empty.hpp"
 #include "vm/exceptions/invalid_assembly.hpp"
 #include "vm/opcode.hpp"
+#include "vm/platform/memory_interface.hpp"
+#include "vm/platform/terminal_interface.hpp"
 #include <stdexcept>
 
 namespace vm {
@@ -18,7 +20,8 @@ static const int EvalStackSize   = 512;
 static const int ConstsStackSize = 25600;
 static const int CallStackSize   = 8192;
 
-static auto execute(const Assembly& assembly, platform::Interface* iface, uint32_t entryPoint) {
+template <typename PlatformInterface>
+static auto execute(const Assembly& assembly, PlatformInterface& iface, uint32_t entryPoint) {
   auto evalStack  = internal::EvalStack<EvalStackSize>{};
   auto constStack = internal::ConstStack{ConstsStackSize};
   auto callStack  = internal::CallStack{CallStackSize};
@@ -350,13 +353,15 @@ static auto execute(const Assembly& assembly, platform::Interface* iface, uint32
   }
 }
 
-auto execute(const Assembly& assembly, platform::Interface* iface) -> void {
-  if (!iface) {
-    throw std::invalid_argument{"Interface cannot be null"};
-  }
+template <typename PlatformInterface>
+auto execute(const Assembly& assembly, PlatformInterface& iface) -> void {
   for (auto itr = assembly.beginEntryPoints(); itr != assembly.endEntryPoints(); ++itr) {
     execute(assembly, iface, *itr);
   }
 }
+
+// Explicit instantiations.
+template void execute(const Assembly& assembly, platform::MemoryInterface& iface);
+template void execute(const Assembly& assembly, platform::TerminalInterface& iface);
 
 } // namespace vm

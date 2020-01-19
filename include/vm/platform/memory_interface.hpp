@@ -1,18 +1,17 @@
 #pragma once
-#include "vm/platform/interface.hpp"
 #include <string>
 #include <vector>
 
 namespace vm::platform {
 
-class MemoryInterface final : public Interface {
+class MemoryInterface final {
 public:
-  auto print(const char* data, unsigned int size) -> void override;
+  auto print(const char* data, unsigned int size) -> void;
 
-  [[nodiscard]] auto getOutput() const noexcept -> const std::vector<std::string>&;
+  [[nodiscard]] auto getStdOut() const noexcept -> const std::vector<std::string>&;
 
 private:
-  std::vector<std::string> m_output;
+  std::vector<std::string> m_stdOut;
 };
 
 } // namespace vm::platform

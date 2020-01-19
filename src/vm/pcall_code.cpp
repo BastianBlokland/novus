@@ -7,6 +7,9 @@ auto operator<<(std::ostream& out, const PCallCode& rhs) -> std::ostream& {
   case PCallCode::Print:
     out << "print";
     break;
+  case PCallCode::PrintLine:
+    out << "print-line";
+    break;
   }
   return out;
 }

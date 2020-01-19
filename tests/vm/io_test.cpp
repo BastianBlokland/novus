@@ -32,6 +32,22 @@ TEST_CASE("Execute input and output", "[vm]") {
         "true",
         "-42");
   }
+  SECTION("PrintLine") {
+    CHECK_EXPR(
+        [](backend::Builder* builder) -> void {
+          builder->addLoadLitString("hello");
+          builder->addPCall(vm::PCallCode::PrintLine);
+          builder->addPop();
+
+          builder->addLoadLitString("world");
+          builder->addPCall(vm::PCallCode::PrintLine);
+          builder->addPop();
+        },
+        "hello",
+        "\n",
+        "world",
+        "\n");
+  }
 }
 
 } // namespace vm

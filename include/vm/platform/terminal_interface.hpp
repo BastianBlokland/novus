@@ -1,11 +1,10 @@
 #pragma once
-#include "vm/platform/interface.hpp"
 
 namespace vm::platform {
 
-class TerminalInterface final : public Interface {
+class TerminalInterface final {
 public:
-  auto print(const char* data, unsigned int size) -> void override;
+  auto print(const char* data, unsigned int size) -> void;
 };
 
 } // namespace vm::platform

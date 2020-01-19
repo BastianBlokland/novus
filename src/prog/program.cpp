@@ -172,6 +172,8 @@ Program::Program() :
 
   // Register build-in actions.
   m_funcDecls.registerAction(*this, fk::ActionPrint, "print", sym::TypeSet{m_string}, m_string);
+  m_funcDecls.registerAction(
+      *this, fk::ActionPrintLine, "printl", sym::TypeSet{m_string}, m_string);
 }
 
 auto Program::beginTypeDecls() const -> typeDeclIterator { return m_typeDecls.begin(); }

@@ -2,12 +2,12 @@
 
 namespace vm::platform {
 
-auto MemoryInterface::getOutput() const noexcept -> const std::vector<std::string>& {
-  return m_output;
+auto MemoryInterface::getStdOut() const noexcept -> const std::vector<std::string>& {
+  return m_stdOut;
 }
 
 auto MemoryInterface::print(const char* data, unsigned int size) -> void {
-  m_output.emplace_back(data, size);
+  m_stdOut.emplace_back(data, size);
 }
 
 } // namespace vm::platform

@@ -17,8 +17,7 @@ auto run(const std::string& inputId, InputItr inputBegin, const InputItr inputEn
     const auto assembly = backend::generate(frontendOutput.getProg());
     auto iface          = vm::platform::TerminalInterface{};
     try {
-      vm::execute(assembly, &iface);
-      std::cout << '\n'; // Auto-insert final newline.
+      vm::execute(assembly, iface);
     } catch (const std::exception& e) {
       std::cout << rang::bg::red << "Runtime error: " << e.what() << '\n';
     }
