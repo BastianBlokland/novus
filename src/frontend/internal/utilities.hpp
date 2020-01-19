@@ -97,4 +97,8 @@ mangleName(Context* context, const std::string& name, const prog::sym::TypeSet& 
 
 [[nodiscard]] auto isFuncOrConv(Context* context, const std::string& name) -> bool;
 
+[[nodiscard]] auto isPure(const Context* context, prog::sym::FuncId func) -> bool;
+
+[[nodiscard]] auto isAction(const Context* context, prog::sym::FuncId func) -> bool;
+
 } // namespace frontend::internal

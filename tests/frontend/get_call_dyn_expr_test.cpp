@@ -134,6 +134,16 @@ TEST_CASE("Analyzing call dynamic expressions", "[frontend]") {
         "fun f() -> string op = print; op(\"hello world\")",
         errUndeclaredConst(src, "print", input::Span{23, 27}),
         errUndeclaredPureFunc(src, "op", {"string"}, input::Span{30, 46}));
+    CHECK_DIAG(
+        "action main() print(\"hello world\") "
+        "action a() -> string op = main; op()",
+        errUndeclaredConst(src, "main", input::Span{61, 64}),
+        errUndeclaredFuncOrAction(src, "op", {}, input::Span{67, 70}));
+    CHECK_DIAG(
+        "action main{T}() print(\"hello world\") "
+        "action a() -> string op = main{int}; op()",
+        errNoFuncFoundToInstantiate(src, "main", 1, input::Span{64, 72}),
+        errUndeclaredFuncOrAction(src, "op", {}, input::Span{75, 78}));
   }
 }
 

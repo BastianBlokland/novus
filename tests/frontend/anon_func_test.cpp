@@ -198,6 +198,10 @@ TEST_CASE("Analyzing anonymous functions", "[frontend]") {
     CHECK_DIAG(
         "fun f() false ? i = 1 : (lambda () i)() ",
         errUninitializedConst(src, "i", input::Span{35, 35}));
+    CHECK_DIAG(
+        "action a1() -> int 42 "
+        "action a2() lambda () a1()",
+        errUndeclaredPureFunc(src, "a1", {}, input::Span{44, 47}));
   }
 }
 

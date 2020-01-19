@@ -34,6 +34,9 @@ auto TypeInferUserFuncs::inferRetType(prog::sym::FuncId id, const parse::FuncDec
   if (agressive) {
     flags = flags | TypeInferExpr::Flags::Aggressive;
   }
+  if (isAction(m_context, id)) {
+    flags = flags | TypeInferExpr::Flags::AllowActionCalls;
+  }
 
   const auto type =
       ::frontend::internal::inferRetType(m_context, m_typeSubTable, n, *funcInput, nullptr, flags);

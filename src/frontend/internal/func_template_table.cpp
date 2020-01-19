@@ -3,24 +3,38 @@
 
 namespace frontend::internal {
 
+auto inline satisfiesOptions(const FuncTemplate& templ, prog::OvOptions options) -> bool {
+  if (options.hasFlag<prog::OvFlags::ExclPureFuncs>() && !templ.isAction()) {
+    return false;
+  }
+  if (options.hasFlag<prog::OvFlags::ExclActions>() && templ.isAction()) {
+    return false;
+  }
+  return true;
+}
+
 auto FuncTemplateTable::hasFunc(const std::string& name) -> bool {
   return m_templates.find(name) != m_templates.end();
 }
 
-auto FuncTemplateTable::declare(
+auto FuncTemplateTable::declarePure(
     Context* context,
     const std::string& name,
     std::vector<std::string> typeSubs,
     const parse::FuncDeclStmtNode* n) -> void {
-
-  auto itr = m_templates.find(name);
-  if (itr == m_templates.end()) {
-    itr = m_templates.insert({name, std::vector<FuncTemplate>{}}).first;
-  }
-  itr->second.push_back(FuncTemplate{context, name, std::move(typeSubs), n});
+  declare(context, name, false, std::move(typeSubs), n);
 }
 
-auto FuncTemplateTable::instantiate(const std::string& name, const prog::sym::TypeSet& typeParams)
+auto FuncTemplateTable::declareAction(
+    Context* context,
+    const std::string& name,
+    std::vector<std::string> typeSubs,
+    const parse::FuncDeclStmtNode* n) -> void {
+  declare(context, name, true, std::move(typeSubs), n);
+}
+
+auto FuncTemplateTable::instantiate(
+    const std::string& name, const prog::sym::TypeSet& typeParams, prog::OvOptions options)
     -> std::vector<const FuncTemplateInst*> {
 
   auto itr = m_templates.find(name);
@@ -30,7 +44,8 @@ auto FuncTemplateTable::instantiate(const std::string& name, const prog::sym::Ty
 
   auto result = std::vector<const FuncTemplateInst*>{};
   for (auto& funcTemplate : itr->second) {
-    if (funcTemplate.getTypeParamCount() == typeParams.getCount()) {
+    if (satisfiesOptions(funcTemplate, options) &&
+        funcTemplate.getTypeParamCount() == typeParams.getCount()) {
       result.push_back(funcTemplate.instantiate(typeParams));
     }
   }
@@ -38,17 +53,18 @@ auto FuncTemplateTable::instantiate(const std::string& name, const prog::sym::Ty
 }
 
 auto FuncTemplateTable::inferParamsAndInstantiate(
-    const std::string& name, const prog::sym::TypeSet& argTypes)
+    const std::string& name, const prog::sym::TypeSet& argTypes, prog::OvOptions options)
     -> std::vector<const FuncTemplateInst*> {
 
   auto result = std::vector<const FuncTemplateInst*>{};
-  for (const auto& funcTemplAndParams : inferParams(name, argTypes)) {
+  for (const auto& funcTemplAndParams : inferParams(name, argTypes, options)) {
     result.push_back(funcTemplAndParams.first->instantiate(funcTemplAndParams.second));
   }
   return result;
 }
 
-auto FuncTemplateTable::getRetType(const std::string& name, const prog::sym::TypeSet& typeParams)
+auto FuncTemplateTable::getRetType(
+    const std::string& name, const prog::sym::TypeSet& typeParams, prog::OvOptions options)
     -> std::optional<prog::sym::TypeId> {
   auto itr = m_templates.find(name);
   if (itr == m_templates.end()) {
@@ -58,7 +74,9 @@ auto FuncTemplateTable::getRetType(const std::string& name, const prog::sym::Typ
   // Only return a value if all overloads agree on the result-type.
   std::optional<prog::sym::TypeId> result = std::nullopt;
   for (auto& funcTemplate : itr->second) {
-    if (funcTemplate.getTypeParamCount() == typeParams.getCount()) {
+    if (satisfiesOptions(funcTemplate, options) &&
+        funcTemplate.getTypeParamCount() == typeParams.getCount()) {
+
       const auto retType = funcTemplate.getRetType(typeParams);
       if (!retType) {
         continue;
@@ -74,12 +92,12 @@ auto FuncTemplateTable::getRetType(const std::string& name, const prog::sym::Typ
 }
 
 auto FuncTemplateTable::inferParamsAndGetRetType(
-    const std::string& name, const prog::sym::TypeSet& argTypes)
+    const std::string& name, const prog::sym::TypeSet& argTypes, prog::OvOptions options)
     -> std::optional<prog::sym::TypeId> {
 
   // Only return a value if all templates agree on the result-type.
   std::optional<prog::sym::TypeId> result = std::nullopt;
-  for (const auto& funcTemplAndParams : inferParams(name, argTypes)) {
+  for (const auto& funcTemplAndParams : inferParams(name, argTypes, options)) {
     const auto retType = funcTemplAndParams.first->getRetType(funcTemplAndParams.second);
     if (!retType || retType->isInfer()) {
       continue;
@@ -93,7 +111,22 @@ auto FuncTemplateTable::inferParamsAndGetRetType(
   return result;
 }
 
-auto FuncTemplateTable::inferParams(const std::string& name, const prog::sym::TypeSet& argTypes)
+auto FuncTemplateTable::declare(
+    Context* context,
+    const std::string& name,
+    bool isAction,
+    std::vector<std::string> typeSubs,
+    const parse::FuncDeclStmtNode* n) -> void {
+
+  auto itr = m_templates.find(name);
+  if (itr == m_templates.end()) {
+    itr = m_templates.insert({name, std::vector<FuncTemplate>{}}).first;
+  }
+  itr->second.push_back(FuncTemplate{context, name, isAction, std::move(typeSubs), n});
+}
+
+auto FuncTemplateTable::inferParams(
+    const std::string& name, const prog::sym::TypeSet& argTypes, prog::OvOptions options)
     -> std::vector<std::pair<FuncTemplate*, prog::sym::TypeSet>> {
 
   auto itr = m_templates.find(name);
@@ -109,7 +142,9 @@ auto FuncTemplateTable::inferParams(const std::string& name, const prog::sym::Ty
   auto result         = std::vector<std::pair<FuncTemplate*, prog::sym::TypeSet>>{};
 
   for (auto& funcTemplate : itr->second) {
-    if (funcTemplate.getArgumentCount() == argTypes.getCount()) {
+    if (satisfiesOptions(funcTemplate, options) &&
+        funcTemplate.getArgumentCount() == argTypes.getCount()) {
+
       const auto inferredTypeParams = funcTemplate.inferTypeParams(argTypes);
       if (inferredTypeParams) {
         if (funcTemplate.getTypeParamCount() < typeParamCount) {

@@ -508,6 +508,14 @@ auto isFuncOrConv(Context* context, const std::string& name) -> bool {
       context->getFuncTemplates()->hasFunc(name);
 }
 
+auto isPure(const Context* context, prog::sym::FuncId func) -> bool {
+  return !isAction(context, func);
+}
+
+auto isAction(const Context* context, prog::sym::FuncId func) -> bool {
+  return context->getProg()->getFuncDecl(func).isAction();
+}
+
 // Explicit instantiations.
 template prog::sym::TypeId inferRetType(
     Context* context,

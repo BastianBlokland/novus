@@ -72,7 +72,7 @@ auto GetExpr::visit(const parse::AnonFuncExprNode& n) -> void {
   auto inputTypeSet = prog::sym::TypeSet{std::move(inputTypes)};
 
   // Declare and define the function in the program.
-  const auto funcId = m_context->getProg()->declareFunc(
+  const auto funcId = m_context->getProg()->declarePureFunc(
       m_context->genAnonFuncName(), std::move(inputTypeSet), getExpr.m_expr->getType());
   m_context->getProg()->defineFunc(funcId, std::move(consts), std::move(getExpr.m_expr));
 
@@ -119,7 +119,7 @@ auto GetExpr::visit(const parse::BinaryExprNode& n) -> void {
   const auto argTypeSet = prog::sym::TypeSet{{args[0]->getType(), args[1]->getType()}};
   const auto funcName   = prog::getFuncName(op.value());
   const auto possibleFuncs =
-      getFunctions(funcName, std::nullopt, argTypeSet, n.getOperator().getSpan());
+      getFunctions(funcName, std::nullopt, argTypeSet, n.getOperator().getSpan(), true);
   const auto func =
       m_context->getProg()->lookupFunc(possibleFuncs, argTypeSet, getOvOptions(1, false));
   if (!func) {
@@ -160,10 +160,15 @@ auto GetExpr::visit(const parse::CallExprNode& n) -> void {
     assert(m_context->hasErrors());
     return;
   }
+  // Actions cannot be called using the 'instance call' syntax.
+  const auto exclActions = instance != nullptr;
+  // For instance calls the first argument has to match exactly.
+  const auto disableConvOnFirstArg = instance != nullptr;
 
-  const auto possibleFuncs = getFunctionsInclConversions(nameToken, typeParams, args->second);
-  const auto func          = m_context->getProg()->lookupFunc(
-      possibleFuncs, args->second, getOvOptions(-1, instance != nullptr));
+  const auto possibleFuncs =
+      getFunctionsInclConversions(nameToken, typeParams, args->second, exclActions);
+  const auto func = m_context->getProg()->lookupFunc(
+      possibleFuncs, args->second, getOvOptions(-1, disableConvOnFirstArg));
   if (!func) {
     auto isTypeOrConv = isType(m_context, getName(nameToken));
     if (typeParams) {
@@ -183,7 +188,7 @@ auto GetExpr::visit(const parse::CallExprNode& n) -> void {
         m_context->reportDiag(errUndeclaredTypeOrConversion(
             m_context->getSrc(), getName(nameToken), argTypeNames, n.getSpan()));
       } else {
-        if (hasFlag<Flags::AllowActionCalls>()) {
+        if (hasFlag<Flags::AllowActionCalls>() && !exclActions) {
           m_context->reportDiag(errUndeclaredFuncOrAction(
               m_context->getSrc(), getName(nameToken), argTypeNames, n.getSpan()));
         } else {
@@ -265,7 +270,8 @@ auto GetExpr::visit(const parse::IdExprNode& n) -> void {
       assert(m_context->hasErrors());
       return;
     }
-    const auto instances = m_context->getFuncTemplates()->instantiate(name, *typeSet);
+    const auto instances = m_context->getFuncTemplates()->instantiate(
+        name, *typeSet, prog::OvOptions{prog::OvFlags::ExclActions});
     if (instances.empty()) {
       m_context->reportDiag(
           errNoFuncFoundToInstantiate(m_context->getSrc(), name, typeSet->getCount(), n.getSpan()));
@@ -364,7 +370,7 @@ auto GetExpr::visit(const parse::IndexExprNode& n) -> void {
   }
 
   const auto funcName      = prog::getFuncName(prog::Operator::SquareSquare);
-  const auto possibleFuncs = getFunctions(funcName, std::nullopt, args->second, n.getSpan());
+  const auto possibleFuncs = getFunctions(funcName, std::nullopt, args->second, n.getSpan(), true);
   const auto func =
       m_context->getProg()->lookupFunc(possibleFuncs, args->second, getOvOptions(-1, true));
   if (!func) {
@@ -558,7 +564,7 @@ auto GetExpr::visit(const parse::UnaryExprNode& n) -> void {
   const auto argTypes = prog::sym::TypeSet{{args[0]->getType()}};
   const auto funcName = prog::getFuncName(op.value());
   const auto possibleFuncs =
-      getFunctions(funcName, std::nullopt, argTypes, n.getOperator().getSpan());
+      getFunctions(funcName, std::nullopt, argTypes, n.getOperator().getSpan(), true);
   const auto func =
       m_context->getProg()->lookupFunc(possibleFuncs, argTypes, getOvOptions(0, true));
   if (!func) {
@@ -806,7 +812,7 @@ auto GetExpr::getDynCallExpr(const parse::CallExprNode& n) -> prog::expr::NodePt
 
   // Check if this is a call to a overloaded call operator.
   const auto funcName      = prog::getFuncName(prog::Operator::ParenParen);
-  const auto possibleFuncs = getFunctions(funcName, std::nullopt, args->second, n.getSpan());
+  const auto possibleFuncs = getFunctions(funcName, std::nullopt, args->second, n.getSpan(), true);
   const auto func =
       m_context->getProg()->lookupFunc(possibleFuncs, args->second, getOvOptions(-1, true));
   if (!func) {
@@ -844,10 +850,12 @@ auto GetExpr::isExhaustive(const std::vector<prog::expr::NodePtr>& conditions) c
 auto GetExpr::getFunctionsInclConversions(
     const lex::Token& nameToken,
     const std::optional<parse::TypeParamList>& typeParams,
-    const prog::sym::TypeSet& argTypes) -> std::vector<prog::sym::FuncId> {
+    const prog::sym::TypeSet& argTypes,
+    bool exclActions) -> std::vector<prog::sym::FuncId> {
+
   const auto funcName = getName(nameToken);
-  auto result         = getFunctions(funcName, typeParams, argTypes, nameToken.getSpan());
-  auto isValid        = true;
+  auto result  = getFunctions(funcName, typeParams, argTypes, nameToken.getSpan(), exclActions);
+  auto isValid = true;
 
   // Check if this name + typeParams is a type (or type template) in the program.
   auto convType = getOrInstType(m_context, m_typeSubTable, nameToken, typeParams, argTypes);
@@ -861,8 +869,8 @@ auto GetExpr::getFunctionsInclConversions(
     // Check if there is a function template we can instantiate for this type.
     const auto& typeInfo = m_context->getTypeInfo(*convType);
     if (typeInfo && typeInfo->hasParams()) {
-      const auto instantiations =
-          m_context->getFuncTemplates()->instantiate(typeInfo->getName(), *typeInfo->getParams());
+      const auto instantiations = m_context->getFuncTemplates()->instantiate(
+          typeInfo->getName(), *typeInfo->getParams(), prog::OvOptions{prog::OvFlags::ExclActions});
       for (const auto& inst : instantiations) {
         if (!inst->isSuccess()) {
           m_context->reportDiag(
@@ -882,9 +890,14 @@ auto GetExpr::getFunctions(
     const std::string& funcName,
     const std::optional<parse::TypeParamList>& typeParams,
     const prog::sym::TypeSet& argTypes,
-    input::Span span) -> std::vector<prog::sym::FuncId> {
-  auto result  = std::vector<prog::sym::FuncId>{};
-  auto isValid = true;
+    input::Span span,
+    bool exclActions) -> std::vector<prog::sym::FuncId> {
+
+  auto result    = std::vector<prog::sym::FuncId>{};
+  auto isValid   = true;
+  auto ovOptions = prog::OvOptions{(hasFlag<Flags::AllowActionCalls>() && !exclActions)
+                                       ? prog::OvFlags::None
+                                       : prog::OvFlags::ExclActions};
 
   if (typeParams) {
     // If this is a template call then instantiate the templates.
@@ -893,7 +906,8 @@ auto GetExpr::getFunctions(
       assert(m_context->hasErrors());
       return {};
     }
-    const auto instantiations = m_context->getFuncTemplates()->instantiate(funcName, *typeParamSet);
+    const auto instantiations =
+        m_context->getFuncTemplates()->instantiate(funcName, *typeParamSet, ovOptions);
     for (const auto& inst : instantiations) {
       if (!inst->isSuccess()) {
         m_context->reportDiag(errInvalidFuncInstantiation(m_context->getSrc(), span));
@@ -905,16 +919,13 @@ auto GetExpr::getFunctions(
   } else { // no type params.
 
     // Find all non-templated funcs.
-    for (const auto& f : m_context->getProg()->lookupFuncs(
-             funcName,
-             prog::OvOptions{hasFlag<Flags::AllowActionCalls>() ? prog::OvFlags::None
-                                                                : prog::OvFlags::ExclActions})) {
+    for (const auto& f : m_context->getProg()->lookupFuncs(funcName, ovOptions)) {
       result.push_back(f);
     }
 
     // Find templated funcs where we can infer the type params based on the argument types.
     const auto instantiations =
-        m_context->getFuncTemplates()->inferParamsAndInstantiate(funcName, argTypes);
+        m_context->getFuncTemplates()->inferParamsAndInstantiate(funcName, argTypes, ovOptions);
     for (const auto& inst : instantiations) {
       if (!inst->isSuccess()) {
         m_context->reportDiag(errInvalidFuncInstantiation(m_context->getSrc(), span));

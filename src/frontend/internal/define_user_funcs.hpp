@@ -20,7 +20,8 @@ private:
       const parse::Node& n,
       prog::sym::ConstDeclTable* consts,
       std::vector<prog::sym::ConstId>* visibleConsts,
-      prog::sym::TypeId typeHint) -> prog::expr::NodePtr;
+      prog::sym::TypeId typeHint,
+      bool allowActionCalls) -> prog::expr::NodePtr;
 };
 
 } // namespace frontend::internal

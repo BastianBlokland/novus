@@ -109,7 +109,9 @@ auto TypeInferExpr::visit(const parse::CallExprNode& n) -> void {
     if (!typeSet) {
       return;
     }
-    const auto retType = m_context->getFuncTemplates()->getRetType(funcName, *typeSet);
+    auto ovOptions = prog::OvOptions{
+        hasFlag<Flags::AllowActionCalls>() ? prog::OvFlags::None : prog::OvFlags::ExclActions};
+    const auto retType = m_context->getFuncTemplates()->getRetType(funcName, *typeSet, ovOptions);
     if (retType) {
       m_type = *retType;
     }
@@ -163,7 +165,8 @@ auto TypeInferExpr::visit(const parse::IdExprNode& n) -> void {
     if (!typeSet) {
       return;
     }
-    const auto instances = m_context->getFuncTemplates()->instantiate(name, *typeSet);
+    const auto instances = m_context->getFuncTemplates()->instantiate(
+        name, *typeSet, prog::OvOptions{prog::OvFlags::ExclActions});
     if (!instances.empty() && !m_context->hasErrors()) {
       const auto funcDecl = m_context->getProg()->getFuncDecl(*instances[0]->getFunc());
       m_type              = m_context->getDelegates()->getDelegate(
@@ -394,8 +397,8 @@ auto TypeInferExpr::inferFuncCall(
   }
 
   // Attempt to get a return-type for a inferred templated function.
-  auto retTypeForInferredTemplFunc =
-      m_context->getFuncTemplates()->inferParamsAndGetRetType(funcName, argTypes);
+  auto retTypeForInferredTemplFunc = m_context->getFuncTemplates()->inferParamsAndGetRetType(
+      funcName, argTypes, prog::OvOptions{ovFlags});
   if (retTypeForInferredTemplFunc) {
     return *retTypeForInferredTemplFunc;
   }

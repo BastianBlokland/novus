@@ -165,6 +165,12 @@ auto errNonOverloadableOperator(const Source& src, const std::string& name, inpu
   return error(src, oss.str(), span);
 }
 
+auto errNonPureOperatorOverload(const Source& src, input::Span span) -> Diag {
+  std::ostringstream oss;
+  oss << "Operator overloads have to be pure ('fun' instead of 'action')";
+  return error(src, oss.str(), span);
+}
+
 auto errOperatorOverloadWithoutArgs(const Source& src, const std::string& name, input::Span span)
     -> Diag {
   std::ostringstream oss;
@@ -317,10 +323,10 @@ auto errUndeclaredPureFunc(
     input::Span span) -> Diag {
   std::ostringstream oss;
   if (argTypes.empty()) {
-    oss << "No overload for a pure function '" << name
+    oss << "No overload for a pure function called: '" << name
         << "' has been declared without any arguments";
   } else {
-    oss << "No overload for a pure function '" << name
+    oss << "No overload for a pure function called: '" << name
         << "' has been declared with argument types: ";
     for (auto i = 0U; i < argTypes.size(); ++i) {
       if (i != 0) {
@@ -339,10 +345,10 @@ auto errUndeclaredFuncOrAction(
     input::Span span) -> Diag {
   std::ostringstream oss;
   if (argTypes.empty()) {
-    oss << "No overload for a function or action '" << name
+    oss << "No overload for a function or action called: '" << name
         << "' has been declared without any arguments";
   } else {
-    oss << "No overload for a function or action '" << name
+    oss << "No overload for a function or action called: '" << name
         << "' has been declared with argument types: ";
     for (auto i = 0U; i < argTypes.size(); ++i) {
       if (i != 0) {
@@ -465,6 +471,12 @@ auto errNoConversionFound(
 auto errNonExhaustiveSwitchWithoutElse(const Source& src, input::Span span) -> Diag {
   std::ostringstream oss;
   oss << "Switch expression is missing an 'else' branch and cannot be guaranteed to be exhaustive";
+  return error(src, oss.str(), span);
+}
+
+auto errNonPureConversion(const Source& src, input::Span span) -> Diag {
+  std::ostringstream oss;
+  oss << "Type conversion has to be pure ('fun' instead of 'action')";
   return error(src, oss.str(), span);
 }
 

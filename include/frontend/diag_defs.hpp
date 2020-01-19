@@ -79,6 +79,8 @@ errDuplicateEntryValueInEnum(const Source& src, int32_t entryValue, input::Span 
 [[nodiscard]] auto
 errNonOverloadableOperator(const Source& src, const std::string& name, input::Span span) -> Diag;
 
+[[nodiscard]] auto errNonPureOperatorOverload(const Source& src, input::Span span) -> Diag;
+
 [[nodiscard]] auto
 errOperatorOverloadWithoutArgs(const Source& src, const std::string& name, input::Span span)
     -> Diag;
@@ -198,6 +200,8 @@ errUnsupportedOperator(const Source& src, const std::string& name, input::Span s
     const Source& src, const std::string& from, const std::string& to, input::Span span) -> Diag;
 
 [[nodiscard]] auto errNonExhaustiveSwitchWithoutElse(const Source& src, input::Span span) -> Diag;
+
+[[nodiscard]] auto errNonPureConversion(const Source& src, input::Span span) -> Diag;
 
 [[nodiscard]] auto errInvalidExecStmt(
     const Source& src,

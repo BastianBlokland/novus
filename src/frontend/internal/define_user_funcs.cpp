@@ -28,8 +28,9 @@ auto DefineUserFuncs::define(
     return false;
   }
 
-  auto visibleConsts = consts.getAll();
-  auto expr          = getExpr(n[0], &consts, &visibleConsts, funcRetType);
+  auto allowActionCalls = funcDecl.isAction();
+  auto visibleConsts    = consts.getAll();
+  auto expr             = getExpr(n[0], &consts, &visibleConsts, funcRetType, allowActionCalls);
   if (!expr) {
     assert(m_context->hasErrors());
     return false;
@@ -71,10 +72,16 @@ auto DefineUserFuncs::getExpr(
     const parse::Node& n,
     prog::sym::ConstDeclTable* consts,
     std::vector<prog::sym::ConstId>* visibleConsts,
-    prog::sym::TypeId typeHint) -> prog::expr::NodePtr {
+    prog::sym::TypeId typeHint,
+    bool allowActionCalls) -> prog::expr::NodePtr {
 
   auto constBinder = ConstBinder{consts, visibleConsts, nullptr};
-  auto getExpr = GetExpr{m_context, m_typeSubTable, &constBinder, typeHint, GetExpr::Flags::None};
+  auto getExpr =
+      GetExpr{m_context,
+              m_typeSubTable,
+              &constBinder,
+              typeHint,
+              allowActionCalls ? GetExpr::Flags::AllowActionCalls : GetExpr::Flags::None};
   n.accept(&getExpr);
   return std::move(getExpr.getValue());
 }

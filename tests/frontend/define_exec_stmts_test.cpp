@@ -57,6 +57,21 @@ TEST_CASE("Analyzing execute statements", "[frontend]") {
     REQUIRE(++execsBegin == execsEnd);
   }
 
+  SECTION("Define exec statement to custom action") {
+    const auto& output = ANALYZE("action main() "
+                                 " print(\"hello \"); "
+                                 " print(\"world\") "
+                                 "main()");
+    REQUIRE(output.isSuccess());
+    auto execsBegin     = output.getProg().beginExecStmts();
+    const auto execsEnd = output.getProg().endExecStmts();
+
+    CHECK(
+        execsBegin->getExpr() ==
+        *prog::expr::callExprNode(output.getProg(), GET_FUNC_ID(output, "main"), {}));
+    REQUIRE(++execsBegin == execsEnd);
+  }
+
   SECTION("Diagnostics") {
     CHECK_DIAG("things()", errInvalidExecStmt(src, "things", {}, input::Span{0, 7}));
     CHECK_DIAG(

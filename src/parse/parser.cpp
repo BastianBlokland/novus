@@ -20,6 +20,7 @@ auto ParserImpl::nextStmt() -> NodePtr {
   if (kw) {
     switch (*kw) {
     case lex::Keyword::Fun:
+    case lex::Keyword::Action:
       return nextStmtFuncDecl();
     case lex::Keyword::Struct:
       return nextStmtStructDecl();
@@ -49,7 +50,8 @@ auto ParserImpl::nextExpr() -> NodePtr {
 auto ParserImpl::nextComment() -> NodePtr { return commentNode(consumeToken()); }
 
 auto ParserImpl::nextStmtFuncDecl() -> NodePtr {
-  auto kw       = consumeToken();
+  auto kwTok    = consumeToken();
+  auto kw       = getKw(kwTok);
   auto id       = consumeToken();
   auto typeSubs = peekToken(0).getKind() == lex::TokenKind::SepOpenCurly
       ? std::optional<TypeSubstitutionList>{nextTypeSubstitutionList()}
@@ -63,16 +65,16 @@ auto ParserImpl::nextStmtFuncDecl() -> NodePtr {
   }
   auto body = nextExpr(0);
 
+  auto kwValid       = kw == lex::Keyword::Fun || kw == lex::Keyword::Action;
   auto typeSubsValid = !typeSubs || typeSubs->validate();
   auto idValid =
       id.getKind() == lex::TokenKind::Identifier || id.getCat() == lex::TokenCat::Operator;
   auto retTypeValid = !retType ||
       (retType->getArrow().getKind() == lex::TokenKind::SepArrow && retType->getType().validate());
 
-  if (getKw(kw) == lex::Keyword::Fun && idValid && typeSubsValid && retTypeValid &&
-      argList.validate()) {
+  if (kwValid && idValid && typeSubsValid && retTypeValid && argList.validate()) {
     return funcDeclStmtNode(
-        kw,
+        kwTok,
         std::move(id),
         std::move(typeSubs),
         std::move(argList),
@@ -80,7 +82,7 @@ auto ParserImpl::nextStmtFuncDecl() -> NodePtr {
         std::move(body));
   }
   return errInvalidStmtFuncDecl(
-      kw, std::move(id), std::move(typeSubs), argList, std::move(retType), std::move(body));
+      kwTok, std::move(id), std::move(typeSubs), argList, std::move(retType), std::move(body));
 }
 
 auto ParserImpl::nextStmtStructDecl() -> NodePtr {

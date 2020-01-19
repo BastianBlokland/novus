@@ -99,7 +99,8 @@ public:
   auto declareUnion(std::string name) -> sym::TypeId;
   auto declareEnum(std::string name) -> sym::TypeId;
   auto declareDelegate(std::string name) -> sym::TypeId;
-  auto declareFunc(std::string name, sym::TypeSet input, sym::TypeId output) -> sym::FuncId;
+  auto declarePureFunc(std::string name, sym::TypeSet input, sym::TypeId output) -> sym::FuncId;
+  auto declareAction(std::string name, sym::TypeSet input, sym::TypeId output) -> sym::FuncId;
 
   auto defineStruct(sym::TypeId id, sym::FieldDeclTable fields) -> void;
   auto defineUnion(sym::TypeId id, std::vector<sym::TypeId> types) -> void;

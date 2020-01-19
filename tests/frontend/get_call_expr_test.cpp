@@ -143,6 +143,30 @@ TEST_CASE("Analyzing call expressions", "[frontend]") {
             std::move(args)));
   }
 
+  SECTION("Get call to action") {
+    const auto& output = ANALYZE("action a1() -> int 1 "
+                                 "action a2() -> int a1()");
+    REQUIRE(output.isSuccess());
+    CHECK(
+        GET_FUNC_DEF(output, "a2").getExpr() ==
+        *prog::expr::callExprNode(output.getProg(), GET_FUNC_ID(output, "a1"), {}));
+  }
+
+  SECTION("Get call to templated action") {
+    const auto& output = ANALYZE("fun a1{T}(T t) -> T t "
+                                 "fun a2() -> int a1{int}(1)");
+    REQUIRE(output.isSuccess());
+
+    auto args = std::vector<prog::expr::NodePtr>{};
+    args.push_back(prog::expr::litIntNode(output.getProg(), 1));
+    CHECK(
+        GET_FUNC_DEF(output, "a2").getExpr() ==
+        *prog::expr::callExprNode(
+            output.getProg(),
+            GET_FUNC_ID(output, "a1__int", GET_TYPE_ID(output, "int")),
+            std::move(args)));
+  }
+
   SECTION("Diagnostics") {
     CHECK_DIAG(
         "fun f1() -> int 1 "
@@ -165,6 +189,18 @@ TEST_CASE("Analyzing call expressions", "[frontend]") {
         "fun ()(string s) -> int s.length() "
         "fun f() -> int 42()",
         errUndeclaredCallOperator(src, {"int"}, input::Span{50, 53}));
+    CHECK_DIAG(
+        "action a() -> int 1 "
+        "fun f2() -> int a()",
+        errUndeclaredPureFunc(src, "a", {}, input::Span{36, 38}));
+    CHECK_DIAG(
+        "action a{T}() -> T T() "
+        "fun f2() -> int a{int}()",
+        errNoFuncFoundToInstantiate(src, "a", 1, input::Span{39, 46}));
+    CHECK_DIAG(
+        "action a(int i) -> int i * 2 "
+        "fun f2(int i) -> int i.a()",
+        errUndeclaredPureFunc(src, "a", {"int"}, input::Span{50, 54}));
   }
 }
 

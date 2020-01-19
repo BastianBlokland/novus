@@ -21,6 +21,7 @@ public:
   auto operator=(FuncTemplate&& rhs) noexcept -> FuncTemplate& = default;
 
   [[nodiscard]] auto getTemplateName() const -> const std::string&;
+  [[nodiscard]] auto isAction() const -> bool;
   [[nodiscard]] auto getTypeParamCount() const -> unsigned int;
   [[nodiscard]] auto getArgumentCount() const -> unsigned int;
   [[nodiscard]] auto getRetType(const prog::sym::TypeSet& typeParams)
@@ -34,6 +35,7 @@ public:
 private:
   Context* m_context;
   std::string m_name;
+  bool m_isAction;
   std::vector<std::string> m_typeSubs;
   const parse::FuncDeclStmtNode* m_parseNode;
   std::vector<std::unique_ptr<FuncTemplateInst>> m_instances;
@@ -44,6 +46,7 @@ private:
   FuncTemplate(
       Context* context,
       std::string name,
+      bool isAction,
       std::vector<std::string> typeSubs,
       const parse::FuncDeclStmtNode* parseNode);
 
