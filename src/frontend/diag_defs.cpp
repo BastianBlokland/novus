@@ -41,13 +41,6 @@ auto errTypeNameConflictsWithFunc(const Source& src, const std::string& name, in
   return error(src, oss.str(), span);
 }
 
-auto errTypeNameConflictsWithAction(const Source& src, const std::string& name, input::Span span)
-    -> Diag {
-  std::ostringstream oss;
-  oss << "Type name '" << name << "' conflicts with a build-in action with the same name";
-  return error(src, oss.str(), span);
-}
-
 auto errDuplicateFieldNameInStruct(
     const Source& src, const std::string& fieldName, input::Span span) -> Diag {
   std::ostringstream oss;
@@ -165,13 +158,6 @@ auto errConvFuncCallsItself(const Source& src, const std::string& name, input::S
   return error(src, oss.str(), span);
 }
 
-auto errFuncNameConflictsWithAction(const Source& src, const std::string& name, input::Span span)
-    -> Diag {
-  std::ostringstream oss;
-  oss << "Function name '" << name << "' conflicts with an action with the same name";
-  return error(src, oss.str(), span);
-}
-
 auto errNonOverloadableOperator(const Source& src, const std::string& name, input::Span span)
     -> Diag {
   std::ostringstream oss;
@@ -250,13 +236,6 @@ auto errConstNameConflictsWithFunction(const Source& src, const std::string& nam
   return error(src, oss.str(), span);
 }
 
-auto errConstNameConflictsWithAction(const Source& src, const std::string& name, input::Span span)
-    -> Diag {
-  std::ostringstream oss;
-  oss << "Constant name '" << name << "' conflicts with an action with the same name";
-  return error(src, oss.str(), span);
-}
-
 auto errConstNameConflictsWithConst(const Source& src, const std::string& name, input::Span span)
     -> Diag {
   std::ostringstream oss;
@@ -331,16 +310,40 @@ auto errUninitializedConst(const Source& src, const std::string& name, input::Sp
   return error(src, oss.str(), span);
 }
 
-auto errUndeclaredFunc(
+auto errUndeclaredPureFunc(
     const Source& src,
     const std::string& name,
     const std::vector<std::string>& argTypes,
     input::Span span) -> Diag {
   std::ostringstream oss;
   if (argTypes.empty()) {
-    oss << "No overload for function '" << name << "' has been declared without any arguments";
+    oss << "No overload for a pure function '" << name
+        << "' has been declared without any arguments";
   } else {
-    oss << "No overload for function '" << name << "' has been declared with argument types: ";
+    oss << "No overload for a pure function '" << name
+        << "' has been declared with argument types: ";
+    for (auto i = 0U; i < argTypes.size(); ++i) {
+      if (i != 0) {
+        oss << ", ";
+      }
+      oss << '\'' << argTypes[i] << '\'';
+    }
+  }
+  return error(src, oss.str(), span);
+}
+
+auto errUndeclaredFuncOrAction(
+    const Source& src,
+    const std::string& name,
+    const std::vector<std::string>& argTypes,
+    input::Span span) -> Diag {
+  std::ostringstream oss;
+  if (argTypes.empty()) {
+    oss << "No overload for a function or action '" << name
+        << "' has been declared without any arguments";
+  } else {
+    oss << "No overload for a function or action '" << name
+        << "' has been declared with argument types: ";
     for (auto i = 0U; i < argTypes.size(); ++i) {
       if (i != 0) {
         oss << ", ";
@@ -420,32 +423,6 @@ auto errInvalidFuncInstantiation(const Source& src, input::Span span) -> Diag {
   return error(src, oss.str(), span);
 }
 
-auto errUndeclaredAction(const Source& src, const std::string& name, input::Span span) -> Diag {
-  std::ostringstream oss;
-  oss << "No action named '" << name << "' has been declared";
-  return error(src, oss.str(), span);
-}
-
-auto errUndeclaredActionOverload(
-    const Source& src,
-    const std::string& name,
-    const std::vector<std::string>& argTypes,
-    input::Span span) -> Diag {
-  std::ostringstream oss;
-  if (argTypes.empty()) {
-    oss << "No overload for action '" << name << "' has been declared without any arguments";
-  } else {
-    oss << "No overload for action '" << name << "' has been declared with argument types: ";
-    for (auto i = 0U; i < argTypes.size(); ++i) {
-      if (i != 0) {
-        oss << ", ";
-      }
-      oss << '\'' << argTypes[i] << '\'';
-    }
-  }
-  return error(src, oss.str(), span);
-}
-
 auto errUnsupportedOperator(const Source& src, const std::string& name, input::Span span) -> Diag {
   std::ostringstream oss;
   oss << "Unsupported operator '" << name << '\'';
@@ -488,6 +465,26 @@ auto errNoConversionFound(
 auto errNonExhaustiveSwitchWithoutElse(const Source& src, input::Span span) -> Diag {
   std::ostringstream oss;
   oss << "Switch expression is missing an 'else' branch and cannot be guaranteed to be exhaustive";
+  return error(src, oss.str(), span);
+}
+
+auto errInvalidExecStmt(
+    const Source& src,
+    const std::string& name,
+    const std::vector<std::string>& argTypes,
+    input::Span span) -> Diag {
+  std::ostringstream oss;
+  if (argTypes.empty()) {
+    oss << "No action named '" << name << "' has been declared without any arguments";
+  } else {
+    oss << "No action named '" << name << "' has been declared with argument types: ";
+    for (auto i = 0U; i < argTypes.size(); ++i) {
+      if (i != 0) {
+        oss << ", ";
+      }
+      oss << '\'' << argTypes[i] << '\'';
+    }
+  }
   return error(src, oss.str(), span);
 }
 

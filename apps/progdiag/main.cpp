@@ -81,10 +81,10 @@ auto printFuncDecls(const prog::Program& prog) -> void {
 
     switch (funcDecl.getKind()) {
     case prog::sym::FuncKind::User:
-      std::cout << rang::fg::green;
+      std::cout << (funcDecl.isAction() ? rang::fg::blue : rang::fg::green);
       break;
     default:
-      std::cout << rang::fg::yellow;
+      std::cout << (funcDecl.isAction() ? rang::fg::magenta : rang::fg::yellow);
       break;
     }
     std::cout << "  " << rang::style::bold << std::setw(nameColWidth) << std::left
@@ -94,23 +94,6 @@ auto printFuncDecls(const prog::Program& prog) -> void {
     inputStr << "(" << funcDecl.getInput() << ")";
     std::cout << std::setw(inputColWidth) << std::left << inputStr.str() << " -> "
               << funcDecl.getOutput() << '\n';
-  }
-}
-
-auto printActionDecls(const prog::Program& prog) -> void {
-  const auto idColWidth   = 10;
-  const auto nameColWidth = 20;
-
-  std::cout << rang::style::bold << "Action declarations:\n" << rang::style::reset;
-  for (auto actionItr = prog.beginActionDecls(); actionItr != prog.endActionDecls(); ++actionItr) {
-    const auto& actionDecl = *actionItr;
-    std::stringstream idStr;
-    idStr << actionDecl.getId();
-
-    std::cout << " * " << std::setw(idColWidth) << std::left << idStr.str();
-    std::cout << "  " << rang::fg::yellow << rang::style::bold << std::setw(nameColWidth)
-              << std::left << actionDecl.getName() << rang::style::reset << '('
-              << actionDecl.getInput() << ")\n";
   }
 }
 
@@ -190,10 +173,12 @@ auto printFuncDefs(const prog::Program& prog) -> void {
       std::cout << "\n";
     }
 
-    const auto funcId   = funcItr->first;
-    const auto& funcDef = funcItr->second;
-    const auto funcName = prog.getFuncDecl(funcId).getName();
-    std::cout << " " << rang::style::bold << funcName << rang::style::dim << " " << funcId
+    const auto funcId    = funcItr->first;
+    const auto& funcDef  = funcItr->second;
+    const auto& funcDecl = prog.getFuncDecl(funcId);
+    const auto& funcName = funcDecl.getName();
+    std::cout << (funcDecl.isAction() ? " action " : " ");
+    std::cout << rang::style::bold << funcName << rang::style::dim << " " << funcId
               << rang::style::reset << "\n";
 
     const auto& consts = funcDef.getConsts();
@@ -210,24 +195,14 @@ auto printFuncDefs(const prog::Program& prog) -> void {
 auto printExecStmts(const prog::Program& prog) -> void {
   std::cout << rang::style::bold << "Execute statements:\n" << rang::style::reset;
   for (auto execItr = prog.beginExecStmts(); execItr != prog.endExecStmts(); ++execItr) {
-    const auto actionId   = execItr->getActionId();
-    const auto actionName = prog.getActionDecl(actionId).getName();
-    std::cout << " " << rang::style::bold << actionName << rang::style::dim << " " << actionId
-              << rang::style::reset << "\n";
-
     const auto& consts = execItr->getConsts();
     if (consts.begin() != consts.end()) {
       std::cout << rang::style::italic << "  Consts:\n" << rang::style::reset;
       printConsts(consts);
     }
 
-    const auto& args = execItr->getArgs();
-    if (args.begin() != args.end()) {
-      std::cout << rang::style::italic << "  Args:\n" << rang::style::reset;
-      for (const auto& arg : args) {
-        printExpr(*arg, "   ");
-      }
-    }
+    std::cout << rang::style::italic << "  Body:\n" << rang::style::reset;
+    printExpr(execItr->getExpr(), "   ");
     std::cout << '\n';
   }
 }
@@ -236,8 +211,6 @@ auto printProgram(const prog::Program& prog) -> void {
   printTypeDecls(prog);
   std::cout << '\n';
   printFuncDecls(prog);
-  std::cout << '\n';
-  printActionDecls(prog);
   if (prog.beginTypeDefs() != prog.endTypeDefs()) {
     std::cout << '\n';
     printTypeDefs(prog);

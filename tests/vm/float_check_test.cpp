@@ -13,6 +13,7 @@ TEST_CASE("Execute float checks", "[vm]") {
           builder->addCheckEqFloat();
           builder->addConvBoolString();
           builder->addPrintString();
+          builder->addPop();
         },
         "false");
     CHECK_EXPR(
@@ -22,6 +23,7 @@ TEST_CASE("Execute float checks", "[vm]") {
           builder->addCheckEqFloat();
           builder->addConvBoolString();
           builder->addPrintString();
+          builder->addPop();
         },
         "true");
   }
@@ -34,6 +36,7 @@ TEST_CASE("Execute float checks", "[vm]") {
           builder->addCheckGtFloat();
           builder->addConvBoolString();
           builder->addPrintString();
+          builder->addPop();
         },
         "false");
     CHECK_EXPR(
@@ -43,6 +46,7 @@ TEST_CASE("Execute float checks", "[vm]") {
           builder->addCheckGtFloat();
           builder->addConvBoolString();
           builder->addPrintString();
+          builder->addPop();
         },
         "true");
   }
@@ -55,6 +59,7 @@ TEST_CASE("Execute float checks", "[vm]") {
           builder->addCheckLeFloat();
           builder->addConvBoolString();
           builder->addPrintString();
+          builder->addPop();
         },
         "false");
     CHECK_EXPR(
@@ -64,6 +69,7 @@ TEST_CASE("Execute float checks", "[vm]") {
           builder->addCheckLeFloat();
           builder->addConvBoolString();
           builder->addPrintString();
+          builder->addPop();
         },
         "true");
   }

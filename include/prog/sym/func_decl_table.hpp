@@ -1,6 +1,7 @@
 #pragma once
 #include "prog/sym/func_decl.hpp"
 #include "prog/sym/func_id.hpp"
+#include "prog/sym/overload_options.hpp"
 #include "prog/sym/type_decl.hpp"
 #include "prog/sym/type_set.hpp"
 #include <optional>
@@ -33,16 +34,20 @@ public:
   [[nodiscard]] auto end() const -> iterator;
 
   [[nodiscard]] auto exists(const std::string& name) const -> bool;
-  [[nodiscard]] auto lookup(const std::string& name) const -> std::vector<FuncId>;
+  [[nodiscard]] auto lookup(const std::string& name, OverloadOptions options) const
+      -> std::vector<FuncId>;
   [[nodiscard]] auto lookup(
       const Program& prog,
       const std::string& name,
       const TypeSet& input,
-      int maxConversions,
-      bool allowConvOnFirstArg) const -> std::optional<FuncId>;
+      OverloadOptions options) const -> std::optional<FuncId>;
 
   auto
   registerFunc(const Program& prog, FuncKind kind, std::string name, TypeSet input, TypeId output)
+      -> FuncId;
+
+  auto
+  registerAction(const Program& prog, FuncKind kind, std::string name, TypeSet input, TypeId output)
       -> FuncId;
 
   auto updateFuncOutput(FuncId id, TypeId newOutput) -> void;
@@ -50,6 +55,14 @@ public:
 private:
   std::vector<FuncDecl> m_funcs;
   std::unordered_map<std::string, std::vector<FuncId>> m_lookup;
+
+  auto registerFunc(
+      const Program& prog,
+      FuncKind kind,
+      bool isAction,
+      std::string name,
+      TypeSet input,
+      TypeId output) -> FuncId;
 };
 
 } // namespace sym

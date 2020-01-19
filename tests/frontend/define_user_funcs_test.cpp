@@ -57,12 +57,9 @@ TEST_CASE("Analyzing user-function definitions", "[frontend]") {
         "fun f(int f) -> int true",
         errConstNameConflictsWithFunction(src, "f", input::Span{10, 10}));
     CHECK_DIAG(
-        "fun f(int print) -> int true",
-        errConstNameConflictsWithAction(src, "print", input::Span{10, 14}));
-    CHECK_DIAG(
         "fun f(int a, int a) -> int true",
         errConstNameConflictsWithConst(src, "a", input::Span{17, 17}));
-    CHECK_DIAG("fun f() -> int f2()", errUndeclaredFunc(src, "f2", {}, input::Span{15, 18}));
+    CHECK_DIAG("fun f() -> int f2()", errUndeclaredPureFunc(src, "f2", {}, input::Span{15, 18}));
     CHECK_DIAG(
         "fun f() -> int bool(1)",
         errUndeclaredTypeOrConversion(src, "bool", {"int"}, input::Span{15, 21}));
@@ -102,6 +99,9 @@ TEST_CASE("Analyzing user-function definitions", "[frontend]") {
         "fun f() -> delegate{int} lambda () false",
         errNonMatchingFuncReturnType(
             src, "f", "delegate{int}", "delegate{bool}", input::Span{25, 39}));
+    CHECK_DIAG(
+        "fun f() -> string print(\"hello world\")",
+        errUndeclaredPureFunc(src, "print", {"string"}, input::Span{18, 37}));
   }
 }
 

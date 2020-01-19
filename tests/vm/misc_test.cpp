@@ -15,6 +15,7 @@ TEST_CASE("Execute miscellaneous instructions", "[vm]") {
           builder->addAddInt();
           builder->addConvIntString();
           builder->addPrintString();
+          builder->addPop();
           builder->addRet();
 
           builder->addEntryPoint("start");
@@ -32,6 +33,7 @@ TEST_CASE("Execute miscellaneous instructions", "[vm]") {
 
           builder->addConvIntString();
           builder->addPrintString();
+          builder->addPop();
           builder->addRet();
 
           builder->addEntryPoint("start");

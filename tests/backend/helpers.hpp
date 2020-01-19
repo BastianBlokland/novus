@@ -15,6 +15,7 @@ inline auto buildAssemblyExprInt(const std::function<void(backend::Builder*)>& b
   build(&builder);
   builder.addConvIntString();
   builder.addPrintString();
+  builder.addPop();
   builder.addRet();
   builder.addEntryPoint("print");
   return builder.close();
@@ -27,6 +28,7 @@ inline auto buildAssemblyExprFloat(const std::function<void(backend::Builder*)>&
   build(&builder);
   builder.addConvFloatString();
   builder.addPrintString();
+  builder.addPop();
   builder.addRet();
   builder.addEntryPoint("print");
   return builder.close();
@@ -39,6 +41,7 @@ inline auto buildAssemblyExprBool(const std::function<void(backend::Builder*)>& 
   build(&builder);
   builder.addConvBoolString();
   builder.addPrintString();
+  builder.addPop();
   builder.addRet();
   builder.addEntryPoint("print");
   return builder.close();
@@ -50,6 +53,7 @@ inline auto buildAssemblyExprString(const std::function<void(backend::Builder*)>
   builder.label("print");
   build(&builder);
   builder.addPrintString();
+  builder.addPop();
   builder.addRet();
   builder.addEntryPoint("print");
   return builder.close();
@@ -62,6 +66,7 @@ inline auto buildAssemblyExprChar(const std::function<void(backend::Builder*)>& 
   build(&builder);
   builder.addConvCharString();
   builder.addPrintString();
+  builder.addPop();
   builder.addRet();
   builder.addEntryPoint("print");
   return builder.close();

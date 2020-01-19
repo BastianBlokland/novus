@@ -93,9 +93,6 @@ add_library(prog STATIC
   prog/internal/conversion.cpp
   prog/internal/overload.cpp
 
-  prog/sym/action_decl_table.cpp
-  prog/sym/action_decl.cpp
-  prog/sym/action_id.cpp
   prog/sym/const_decl_table.cpp
   prog/sym/const_decl.cpp
   prog/sym/const_id.cpp

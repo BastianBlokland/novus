@@ -12,10 +12,12 @@ TEST_CASE("Execute jump", "[vm]") {
 
           builder->addLoadLitString("1337");
           builder->addPrintString();
+          builder->addPop();
 
           builder->label("print42");
           builder->addLoadLitString("42");
           builder->addPrintString();
+          builder->addPop();
         },
         "42");
     CHECK_EXPR(
@@ -25,6 +27,7 @@ TEST_CASE("Execute jump", "[vm]") {
           builder->label("jump3");
           builder->addLoadLitString("1337");
           builder->addPrintString();
+          builder->addPop();
           builder->addJump("end");
 
           builder->label("jump2");
@@ -46,10 +49,12 @@ TEST_CASE("Execute jump", "[vm]") {
 
           builder->addLoadLitString("1337");
           builder->addPrintString();
+          builder->addPop();
 
           builder->label("print42");
           builder->addLoadLitString("42");
           builder->addPrintString();
+          builder->addPop();
         },
         "1337",
         "42");
@@ -60,10 +65,12 @@ TEST_CASE("Execute jump", "[vm]") {
 
           builder->addLoadLitString("1337");
           builder->addPrintString();
+          builder->addPop();
 
           builder->label("print42");
           builder->addLoadLitString("42");
           builder->addPrintString();
+          builder->addPop();
         },
         "42");
   }

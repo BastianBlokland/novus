@@ -19,30 +19,65 @@ auto FuncDeclTable::exists(const std::string& name) const -> bool {
   return m_lookup.find(name) != m_lookup.end();
 }
 
-auto FuncDeclTable::lookup(const std::string& name) const -> std::vector<FuncId> {
+auto FuncDeclTable::lookup(const std::string& name, OverloadOptions options) const
+    -> std::vector<FuncId> {
   const auto itr = m_lookup.find(name);
   if (itr == m_lookup.end()) {
-    return std::vector<FuncId>{};
+    return {};
   }
-  return itr->second;
+
+  auto result = std::vector<FuncId>{};
+  result.reserve(itr->second.size());
+  for (const auto& f : itr->second) {
+    if (options.hasFlag<OverloadFlags::ExclActions>() && m_funcs[f.m_id].isAction()) {
+      continue;
+    }
+    if (options.hasFlag<OverloadFlags::ExclPureFuncs>() && !m_funcs[f.m_id].isAction()) {
+      continue;
+    }
+    result.push_back(f);
+  }
+
+  return result;
 }
 
 auto FuncDeclTable::lookup(
     const Program& prog,
     const std::string& name,
     const TypeSet& input,
-    int maxConversions,
-    bool allowConvOnFirstArg) const -> std::optional<FuncId> {
-  return internal::findOverload(
-      prog, *this, lookup(name), input, maxConversions, allowConvOnFirstArg);
+    OverloadOptions options) const -> std::optional<FuncId> {
+  return internal::findOverload(prog, *this, lookup(name, options), input, options);
 }
 
 auto FuncDeclTable::registerFunc(
     const Program& prog, FuncKind kind, std::string name, TypeSet input, TypeId output) -> FuncId {
+  return registerFunc(prog, kind, false, std::move(name), std::move(input), output);
+}
+
+auto FuncDeclTable::registerAction(
+    const Program& prog, FuncKind kind, std::string name, TypeSet input, TypeId output) -> FuncId {
+  return registerFunc(prog, kind, true, std::move(name), std::move(input), output);
+}
+
+auto FuncDeclTable::updateFuncOutput(FuncId id, TypeId newOutput) -> void {
+  const auto index = id.m_id;
+  assert(index < this->m_funcs.size());
+  m_funcs[index].updateOutput(newOutput);
+}
+
+auto FuncDeclTable::registerFunc(
+    const Program& prog,
+    FuncKind kind,
+    bool isAction,
+    std::string name,
+    TypeSet input,
+    TypeId output) -> FuncId {
+
   if (name.empty()) {
     throw std::invalid_argument{"Name has to contain aleast 1 char"};
   }
-  if (internal::findOverload(prog, *this, lookup(name), input, 0, false)) {
+  if (internal::findOverload(
+          prog, *this, lookup(name, OverloadOptions{0}), input, OverloadOptions{0})) {
     throw std::logic_error{"Function with an identical name and input has already been registered"};
   }
 
@@ -52,14 +87,8 @@ auto FuncDeclTable::registerFunc(
     itr = m_lookup.insert({name, std::vector<FuncId>{}}).first;
   }
   itr->second.push_back(id);
-  m_funcs.push_back(FuncDecl{id, kind, std::move(name), std::move(input), output});
+  m_funcs.push_back(FuncDecl{id, kind, isAction, std::move(name), std::move(input), output});
   return id;
-}
-
-auto FuncDeclTable::updateFuncOutput(FuncId id, TypeId newOutput) -> void {
-  const auto index = id.m_id;
-  assert(index < this->m_funcs.size());
-  m_funcs[index].updateOutput(newOutput);
 }
 
 } // namespace prog::sym

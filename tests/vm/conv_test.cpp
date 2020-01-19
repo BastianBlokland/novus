@@ -13,6 +13,7 @@ TEST_CASE("Execute conversions", "[vm]") {
 
           builder->addConvFloatString();
           builder->addPrintString();
+          builder->addPop();
         },
         "42");
     CHECK_EXPR(
@@ -22,6 +23,7 @@ TEST_CASE("Execute conversions", "[vm]") {
 
           builder->addConvFloatString();
           builder->addPrintString();
+          builder->addPop();
         },
         "-2.14748e+09");
   }
@@ -34,6 +36,7 @@ TEST_CASE("Execute conversions", "[vm]") {
 
           builder->addConvIntString();
           builder->addPrintString();
+          builder->addPop();
         },
         "42");
     CHECK_EXPR(
@@ -43,6 +46,7 @@ TEST_CASE("Execute conversions", "[vm]") {
 
           builder->addConvIntString();
           builder->addPrintString();
+          builder->addPop();
         },
         "42");
     CHECK_EXPR(
@@ -52,6 +56,7 @@ TEST_CASE("Execute conversions", "[vm]") {
 
           builder->addConvIntString();
           builder->addPrintString();
+          builder->addPop();
         },
         "0");
     CHECK_EXPR(
@@ -61,6 +66,7 @@ TEST_CASE("Execute conversions", "[vm]") {
 
           builder->addConvIntString();
           builder->addPrintString();
+          builder->addPop();
         },
         "-2147483648"); // Unrepresentable by int, high bit 1 all others 0.
   }
@@ -71,6 +77,7 @@ TEST_CASE("Execute conversions", "[vm]") {
           builder->addLoadLitInt(0);
           builder->addConvIntString();
           builder->addPrintString();
+          builder->addPop();
         },
         "0");
     CHECK_EXPR(
@@ -78,6 +85,7 @@ TEST_CASE("Execute conversions", "[vm]") {
           builder->addLoadLitInt(42);
           builder->addConvIntString();
           builder->addPrintString();
+          builder->addPop();
         },
         "42");
     CHECK_EXPR(
@@ -85,6 +93,7 @@ TEST_CASE("Execute conversions", "[vm]") {
           builder->addLoadLitInt(2147483647);
           builder->addConvIntString();
           builder->addPrintString();
+          builder->addPop();
         },
         "2147483647");
     CHECK_EXPR(
@@ -92,6 +101,7 @@ TEST_CASE("Execute conversions", "[vm]") {
           builder->addLoadLitInt(-2147483647);
           builder->addConvIntString();
           builder->addPrintString();
+          builder->addPop();
         },
         "-2147483647");
   }
@@ -102,6 +112,7 @@ TEST_CASE("Execute conversions", "[vm]") {
           builder->addLoadLitFloat(0.0F);
           builder->addConvFloatString();
           builder->addPrintString();
+          builder->addPop();
         },
         "0");
     CHECK_EXPR(
@@ -109,6 +120,7 @@ TEST_CASE("Execute conversions", "[vm]") {
           builder->addLoadLitFloat(42.0F); // NOLINT: Magic numbers
           builder->addConvFloatString();
           builder->addPrintString();
+          builder->addPop();
         },
         "42");
     CHECK_EXPR(
@@ -116,6 +128,7 @@ TEST_CASE("Execute conversions", "[vm]") {
           builder->addLoadLitFloat(42.1337F); // NOLINT: Magic numbers
           builder->addConvFloatString();
           builder->addPrintString();
+          builder->addPop();
         },
         "42.1337");
     CHECK_EXPR(
@@ -123,6 +136,7 @@ TEST_CASE("Execute conversions", "[vm]") {
           builder->addLoadLitFloat(0.42F); // NOLINT: Magic numbers
           builder->addConvFloatString();
           builder->addPrintString();
+          builder->addPop();
         },
         "0.42");
     CHECK_EXPR(
@@ -130,6 +144,7 @@ TEST_CASE("Execute conversions", "[vm]") {
           builder->addLoadLitFloat(999999.0F); // NOLINT: Magic numbers
           builder->addConvFloatString();
           builder->addPrintString();
+          builder->addPop();
         },
         "999999");
     CHECK_EXPR(
@@ -137,6 +152,7 @@ TEST_CASE("Execute conversions", "[vm]") {
           builder->addLoadLitFloat(99999.1F); // NOLINT: Magic numbers
           builder->addConvFloatString();
           builder->addPrintString();
+          builder->addPop();
         },
         "99999.1");
     CHECK_EXPR(
@@ -144,6 +160,7 @@ TEST_CASE("Execute conversions", "[vm]") {
           builder->addLoadLitFloat(0.000001F); // NOLINT: Magic numbers
           builder->addConvFloatString();
           builder->addPrintString();
+          builder->addPop();
         },
         "1e-06");
     CHECK_EXPR(
@@ -151,6 +168,7 @@ TEST_CASE("Execute conversions", "[vm]") {
           builder->addLoadLitFloat(9999999999.0F); // NOLINT: Magic numbers
           builder->addConvFloatString();
           builder->addPrintString();
+          builder->addPop();
         },
         "1e+10"); // Rounding error.
     CHECK_EXPR(
@@ -158,6 +176,7 @@ TEST_CASE("Execute conversions", "[vm]") {
           builder->addLoadLitFloat(-0.42F); // NOLINT: Magic numbers
           builder->addConvFloatString();
           builder->addPrintString();
+          builder->addPop();
         },
         "-0.42");
     CHECK_EXPR(
@@ -165,6 +184,7 @@ TEST_CASE("Execute conversions", "[vm]") {
           builder->addLoadLitFloat(-9999999999.0F); // NOLINT: Magic numbers
           builder->addConvFloatString();
           builder->addPrintString();
+          builder->addPop();
         },
         "-1e+10"); // Rounding error.
   }
@@ -175,6 +195,7 @@ TEST_CASE("Execute conversions", "[vm]") {
           builder->addLoadLitInt(48);
           builder->addConvCharString();
           builder->addPrintString();
+          builder->addPop();
         },
         "0");
     CHECK_EXPR(
@@ -182,6 +203,7 @@ TEST_CASE("Execute conversions", "[vm]") {
           builder->addLoadLitInt(10);
           builder->addConvCharString();
           builder->addPrintString();
+          builder->addPop();
         },
         "\n");
     CHECK_EXPR(
@@ -189,6 +211,7 @@ TEST_CASE("Execute conversions", "[vm]") {
           builder->addLoadLitInt(38);
           builder->addConvCharString();
           builder->addPrintString();
+          builder->addPop();
         },
         "&");
     CHECK_EXPR(
@@ -196,6 +219,7 @@ TEST_CASE("Execute conversions", "[vm]") {
           builder->addLoadLitInt(32);
           builder->addConvCharString();
           builder->addPrintString();
+          builder->addPop();
         },
         " ");
   }
@@ -208,6 +232,7 @@ TEST_CASE("Execute conversions", "[vm]") {
 
           builder->addConvIntString();
           builder->addPrintString();
+          builder->addPop();
         },
         "0");
     CHECK_EXPR(
@@ -217,6 +242,7 @@ TEST_CASE("Execute conversions", "[vm]") {
 
           builder->addConvIntString();
           builder->addPrintString();
+          builder->addPop();
         },
         "42");
     CHECK_EXPR(
@@ -226,6 +252,7 @@ TEST_CASE("Execute conversions", "[vm]") {
 
           builder->addConvIntString();
           builder->addPrintString();
+          builder->addPop();
         },
         "255");
     CHECK_EXPR(
@@ -235,6 +262,7 @@ TEST_CASE("Execute conversions", "[vm]") {
 
           builder->addConvIntString();
           builder->addPrintString();
+          builder->addPop();
         },
         "0");
     CHECK_EXPR(
@@ -244,6 +272,7 @@ TEST_CASE("Execute conversions", "[vm]") {
 
           builder->addConvIntString();
           builder->addPrintString();
+          builder->addPop();
         },
         "255");
     CHECK_EXPR(
@@ -253,6 +282,7 @@ TEST_CASE("Execute conversions", "[vm]") {
 
           builder->addConvIntString();
           builder->addPrintString();
+          builder->addPop();
         },
         "57");
   }

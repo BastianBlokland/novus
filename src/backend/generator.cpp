@@ -3,7 +3,6 @@
 #include "internal/gen_expr.hpp"
 #include "internal/gen_type_eq.hpp"
 #include "internal/utilities.hpp"
-#include "prog/sym/action_kind.hpp"
 #include "prog/sym/const_kind.hpp"
 #include "prog/sym/exec_stmt.hpp"
 #include "prog/sym/func_decl.hpp"
@@ -49,18 +48,11 @@ generateExecStmt(Builder* builder, const prog::Program& program, const prog::sym
   builder->addEntryPoint(label);
   reserveConsts(builder, exec.getConsts());
 
-  // Generate the arguments to the action.
-  for (const auto& arg : exec.getArgs()) {
-    auto genExpr = internal::GenExpr{program, builder, false};
-    arg->accept(&genExpr);
-  }
+  // Generate the expression.
+  auto genExpr = internal::GenExpr{program, builder, false};
+  exec.getExpr().accept(&genExpr);
 
-  const auto& actionDecl = program.getActionDecl(exec.getActionId());
-  switch (actionDecl.getKind()) {
-  case prog::sym::ActionKind::PrintString:
-    builder->addPrintString();
-    break;
-  }
+  builder->addPop(); // Ignore the result.
   builder->addRet();
 }
 

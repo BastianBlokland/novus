@@ -14,9 +14,15 @@ TEST_CASE("Analyzing execute statements", "[frontend]") {
     auto execsBegin     = output.getProg().beginExecStmts();
     const auto execsEnd = output.getProg().endExecStmts();
 
+    auto args = std::vector<prog::expr::NodePtr>{};
+    args.push_back(prog::expr::litStringNode(output.getProg(), "hello world"));
+
     CHECK(
-        execsBegin->getActionId() == GET_ACTION_ID(output, "print", GET_TYPE_ID(output, "string")));
-    CHECK(*execsBegin->getArgs()[0] == *prog::expr::litStringNode(output.getProg(), "hello world"));
+        execsBegin->getExpr() ==
+        *prog::expr::callExprNode(
+            output.getProg(),
+            GET_FUNC_ID(output, "print", GET_TYPE_ID(output, "string")),
+            std::move(args)));
     REQUIRE(++execsBegin == execsEnd);
   }
 
@@ -26,11 +32,16 @@ TEST_CASE("Analyzing execute statements", "[frontend]") {
 
     auto execsBegin     = output.getProg().beginExecStmts();
     const auto execsEnd = output.getProg().endExecStmts();
+
+    auto args = std::vector<prog::expr::NodePtr>{};
+    args.push_back(applyConv(output, "int", "string", prog::expr::litIntNode(output.getProg(), 2)));
+
     CHECK(
-        execsBegin->getActionId() == GET_ACTION_ID(output, "print", GET_TYPE_ID(output, "string")));
-    CHECK(
-        *execsBegin->getArgs()[0] ==
-        *applyConv(output, "int", "string", prog::expr::litIntNode(output.getProg(), 2)));
+        execsBegin->getExpr() ==
+        *prog::expr::callExprNode(
+            output.getProg(),
+            GET_FUNC_ID(output, "print", GET_TYPE_ID(output, "string")),
+            std::move(args)));
     REQUIRE(++execsBegin == execsEnd);
   }
 
@@ -47,11 +58,16 @@ TEST_CASE("Analyzing execute statements", "[frontend]") {
   }
 
   SECTION("Diagnostics") {
-    CHECK_DIAG("things()", errUndeclaredAction(src, "things", input::Span{0, 5}));
+    CHECK_DIAG("things()", errInvalidExecStmt(src, "things", {}, input::Span{0, 7}));
     CHECK_DIAG(
         "print(1, 1)",
-        errUndeclaredActionOverload(
+        errInvalidExecStmt(
             src, "print", std::vector<std::string>{"int", "int"}, input::Span{0, 10}));
+    CHECK_DIAG(
+        "fun f() -> int 1 "
+        "f()",
+        errInvalidExecStmt(src, "f", {}, input::Span{17, 19}));
+    CHECK_DIAG("print(test())", errUndeclaredFuncOrAction(src, "test", {}, input::Span{6, 11}));
   }
 }
 

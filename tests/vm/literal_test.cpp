@@ -11,6 +11,7 @@ TEST_CASE("Execute literals", "[vm]") {
           builder->addLoadLitInt(42);
           builder->addConvIntString();
           builder->addPrintString();
+          builder->addPop();
         },
         "42");
     CHECK_EXPR(
@@ -18,6 +19,7 @@ TEST_CASE("Execute literals", "[vm]") {
           builder->addLoadLitInt(-42);
           builder->addConvIntString();
           builder->addPrintString();
+          builder->addPop();
         },
         "-42");
   }
@@ -28,6 +30,7 @@ TEST_CASE("Execute literals", "[vm]") {
           builder->addLoadLitFloat(0.1337F); // NOLINT: Magic numbers
           builder->addConvFloatString();
           builder->addPrintString();
+          builder->addPop();
         },
         "0.1337");
     CHECK_EXPR(
@@ -35,6 +38,7 @@ TEST_CASE("Execute literals", "[vm]") {
           builder->addLoadLitFloat(-0.1337F); // NOLINT: Magic numbers
           builder->addConvFloatString();
           builder->addPrintString();
+          builder->addPop();
         },
         "-0.1337");
   }
@@ -44,21 +48,27 @@ TEST_CASE("Execute literals", "[vm]") {
         [](backend::Builder* builder) -> void {
           builder->addLoadLitString("");
           builder->addPrintString();
+          builder->addPop();
 
           builder->addLoadLitString("hello");
           builder->addPrintString();
+          builder->addPop();
 
           builder->addLoadLitString(" ");
           builder->addPrintString();
+          builder->addPop();
 
           builder->addLoadLitString("world");
           builder->addPrintString();
+          builder->addPop();
 
           builder->addLoadLitString(" ");
           builder->addPrintString();
+          builder->addPop();
 
           builder->addLoadLitString("!");
           builder->addPrintString();
+          builder->addPop();
         },
         "",
         "hello",

@@ -147,11 +147,11 @@ TEST_CASE("Analyzing call expressions", "[frontend]") {
     CHECK_DIAG(
         "fun f1() -> int 1 "
         "fun f2() -> int f3()",
-        errUndeclaredFunc(src, "f3", {}, input::Span{34, 37}));
+        errUndeclaredPureFunc(src, "f3", {}, input::Span{34, 37}));
     CHECK_DIAG(
         "fun f1() -> int 1 "
         "fun f2() -> int f2(1)",
-        errUndeclaredFunc(src, "f2", {"int"}, input::Span{34, 38}));
+        errUndeclaredPureFunc(src, "f2", {"int"}, input::Span{34, 38}));
     CHECK_DIAG("fun f() -> int 1()", errUndeclaredCallOperator(src, {"int"}, input::Span{15, 17}));
     CHECK_DIAG(
         "fun f(int i) -> int i()", errUndeclaredCallOperator(src, {"int"}, input::Span{20, 22}));
@@ -160,7 +160,7 @@ TEST_CASE("Analyzing call expressions", "[frontend]") {
         errFieldNotFoundOnType(src, "f2", "int", input::Span{21, 24}));
     CHECK_DIAG(
         "fun f() -> int (42).length()",
-        errUndeclaredFunc(src, "length", {"int"}, input::Span{15, 27}));
+        errUndeclaredPureFunc(src, "length", {"int"}, input::Span{15, 27}));
     CHECK_DIAG(
         "fun ()(string s) -> int s.length() "
         "fun f() -> int 42()",

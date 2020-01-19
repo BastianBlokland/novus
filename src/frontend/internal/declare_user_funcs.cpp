@@ -20,9 +20,6 @@ auto DeclareUserFuncs::visit(const parse::FuncDeclStmtNode& n) -> void {
   std::string displayName;
   if (n.getId().getKind() == lex::TokenKind::Identifier) {
     name = displayName = getName(n.getId());
-    if (!validateFuncName(n.getId())) {
-      return;
-    }
   } else {
     auto op = getOperator(n.getId());
     if (!op) {
@@ -57,7 +54,7 @@ auto DeclareUserFuncs::visit(const parse::FuncDeclStmtNode& n) -> void {
   }
 
   // Verify that this is not a duplicate declaration.
-  if (m_context->getProg()->lookupFunc(name, input.value(), 0, false)) {
+  if (m_context->getProg()->lookupFunc(name, input.value(), prog::OvOptions{0})) {
     m_context->reportDiag(
         errDuplicateFuncDeclaration(m_context->getSrc(), displayName, n.getSpan()));
     return;
@@ -83,7 +80,8 @@ auto DeclareUserFuncs::visit(const parse::FuncDeclStmtNode& n) -> void {
       }
     } else {
       if (retType->isInfer()) {
-        retType = inferRetType(m_context, nullptr, n, *input, nullptr, true);
+        retType =
+            inferRetType(m_context, nullptr, n, *input, nullptr, TypeInferExpr::Flags::Aggressive);
         if (!retType->isConcrete()) {
           m_context->reportDiag(errUnableToInferReturnTypeOfConversionToTemplatedType(
               m_context->getSrc(), name, n.getId().getSpan()));
@@ -103,16 +101,6 @@ auto DeclareUserFuncs::visit(const parse::FuncDeclStmtNode& n) -> void {
   const auto funcName = isConv ? getName(*m_context, *retType) : name;
   auto funcId         = m_context->getProg()->declareFunc(funcName, input.value(), retType.value());
   m_funcs.emplace_back(funcId, name, n);
-}
-
-auto DeclareUserFuncs::validateFuncName(const lex::Token& nameToken) -> bool {
-  const auto name = getName(nameToken);
-  if (!m_context->getProg()->lookupActions(name).empty()) {
-    m_context->reportDiag(
-        errFuncNameConflictsWithAction(m_context->getSrc(), name, nameToken.getSpan()));
-    return false;
-  }
-  return true;
 }
 
 auto DeclareUserFuncs::validateFuncTemplateArgList(

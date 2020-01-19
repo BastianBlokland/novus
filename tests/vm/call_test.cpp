@@ -12,6 +12,7 @@ TEST_CASE("Execute calls", "[vm]") {
         builder->addCall("section2", false);
         builder->addConvIntString();
         builder->addPrintString();
+        builder->addPop();
         builder->addRet();
 
         builder->label("section2");
@@ -39,6 +40,7 @@ TEST_CASE("Execute calls", "[vm]") {
         builder->addCall("section2", false);
         builder->addConvIntString();
         builder->addPrintString();
+        builder->addPop();
         builder->addRet();
 
         builder->label("section2");
@@ -67,6 +69,7 @@ TEST_CASE("Execute calls", "[vm]") {
 
         builder->addConvIntString();
         builder->addPrintString();
+        builder->addPop();
         builder->addRet();
 
         builder->label("section2");
@@ -87,6 +90,7 @@ TEST_CASE("Execute calls", "[vm]") {
 
         builder->addConvIntString();
         builder->addPrintString();
+        builder->addPop();
         builder->addRet();
 
         builder->label("section2");
@@ -109,6 +113,7 @@ TEST_CASE("Execute calls", "[vm]") {
         builder->addCall("section2", false);
         builder->addConvIntString();
         builder->addPrintString();
+        builder->addPop();
         builder->addRet();
 
         builder->label("section2");
@@ -142,6 +147,7 @@ TEST_CASE("Execute calls", "[vm]") {
 
         builder->addConvIntString();
         builder->addPrintString();
+        builder->addPop();
         builder->addRet();
 
         builder->label("section2");

@@ -261,7 +261,7 @@ auto errInvalidStmtEnumDecl(
 }
 
 auto errInvalidStmtExec(
-    lex::Token action,
+    lex::Token target,
     lex::Token open,
     std::vector<NodePtr> args,
     std::vector<lex::Token> commas,
@@ -282,7 +282,7 @@ auto errInvalidStmtExec(
   }
 
   auto tokens = std::vector<lex::Token>{};
-  tokens.push_back(std::move(action));
+  tokens.push_back(std::move(target));
   tokens.push_back(std::move(open));
   for (auto& comma : commas) {
     tokens.push_back(std::move(comma));

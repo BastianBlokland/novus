@@ -297,7 +297,7 @@ auto GenExpr::visit(const prog::expr::CallExprNode& n) -> void {
   }
 
   case prog::sym::FuncKind::CheckEqUserType:
-  case prog::sym::FuncKind::CheckNEqUserType:
+  case prog::sym::FuncKind::CheckNEqUserType: {
     auto lhsType = n[0].getType();
     auto rhsType = n[1].getType();
     if (lhsType != rhsType) {
@@ -310,7 +310,13 @@ auto GenExpr::visit(const prog::expr::CallExprNode& n) -> void {
     }
     break;
   }
+
+  case prog::sym::FuncKind::ActionPrint:
+    m_builder->addPrintString();
+    break;
+  }
 }
+
 auto GenExpr::visit(const prog::expr::CallDynExprNode& n) -> void {
   // Push the arguments on the stack.
   for (auto i = 1U; i < n.getChildCount(); ++i) {

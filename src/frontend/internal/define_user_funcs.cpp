@@ -74,7 +74,7 @@ auto DefineUserFuncs::getExpr(
     prog::sym::TypeId typeHint) -> prog::expr::NodePtr {
 
   auto constBinder = ConstBinder{consts, visibleConsts, nullptr};
-  auto getExpr     = GetExpr{m_context, m_typeSubTable, &constBinder, typeHint};
+  auto getExpr = GetExpr{m_context, m_typeSubTable, &constBinder, typeHint, GetExpr::Flags::None};
   n.accept(&getExpr);
   return std::move(getExpr.getValue());
 }

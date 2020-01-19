@@ -18,6 +18,7 @@ TEST_CASE("Generating assembly for enums", "[backend]") {
 
           builder->addConvBoolString();
           builder->addPrintString();
+          builder->addPop();
           builder->addRet();
           // --- Print statement end.
 
@@ -41,6 +42,7 @@ TEST_CASE("Generating assembly for enums", "[backend]") {
 
           builder->addConvBoolString();
           builder->addPrintString();
+          builder->addPop();
           builder->addRet();
           // --- Print statement end.
 
@@ -61,6 +63,7 @@ TEST_CASE("Generating assembly for enums", "[backend]") {
 
           builder->addConvBoolString();
           builder->addPrintString();
+          builder->addPop();
           builder->addRet();
           // --- Print statement end.
 

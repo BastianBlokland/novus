@@ -91,6 +91,7 @@ TEST_CASE("Generating assembly for unions", "[backend]") {
           builder->addCall("ValEq", false);
           builder->addConvBoolString();
           builder->addPrintString();
+          builder->addPop();
           builder->addRet();
           // --- Print statement end.
 

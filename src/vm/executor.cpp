@@ -272,7 +272,7 @@ static auto execute(const Assembly& assembly, io::Interface* interface, uint32_t
     } break;
 
     case OpCode::PrintString: {
-      auto* strRef = getStringRef(evalStack.pop());
+      auto* strRef = getStringRef(evalStack.peek());
       interface->print(strRef->getDataPtr(), strRef->getSize());
     } break;
 

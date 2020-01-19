@@ -19,6 +19,7 @@ public:
 
   [[nodiscard]] auto getId() const -> const FuncId&;
   [[nodiscard]] auto getKind() const -> const FuncKind&;
+  [[nodiscard]] auto isAction() const -> bool;
   [[nodiscard]] auto getName() const -> const std::string&;
   [[nodiscard]] auto getInput() const -> const TypeSet&;
   [[nodiscard]] auto getOutput() const -> TypeId;
@@ -28,11 +29,12 @@ public:
 private:
   FuncId m_id;
   FuncKind m_kind;
+  bool m_isAction;
   std::string m_name;
   TypeSet m_input;
   TypeId m_output;
 
-  FuncDecl(FuncId id, FuncKind kind, std::string name, TypeSet input, TypeId output);
+  FuncDecl(FuncId id, FuncKind kind, bool isAction, std::string name, TypeSet input, TypeId output);
 };
 
 auto operator<<(std::ostream& out, const FuncDecl& rhs) -> std::ostream&;

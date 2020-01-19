@@ -114,19 +114,26 @@ TEST_CASE("Analyzing call dynamic expressions", "[frontend]") {
         "fun f1(float v) -> float v "
         "fun f2() -> int op = f1; op()",
         errAmbiguousFunction(src, "f1", input::Span{71, 72}),
-        errUndeclaredFunc(src, "op", {}, input::Span{75, 78}));
+        errUndeclaredPureFunc(src, "op", {}, input::Span{75, 78}));
     CHECK_DIAG(
         "fun f1{T}(int v) -> T T() "
         "fun f1{T}(float v) -> T T() "
         "fun f2() -> int op = f1{int}; op(1)",
         errAmbiguousTemplateFunction(src, "f1", 1, input::Span{75, 81}),
-        errUndeclaredFunc(src, "op", {"int"}, input::Span{84, 88}));
+        errUndeclaredPureFunc(src, "op", {"int"}, input::Span{84, 88}));
     CHECK_DIAG("fun f() f1{float}", errNoFuncFoundToInstantiate(src, "f1", 1, input::Span{8, 16}));
     CHECK_DIAG(
         "fun f1{T}() -> T T() "
         "fun f2() -> int op = f1; op()",
         errNoTypeParamsProvidedToTemplateFunction(src, "f1", input::Span{42, 43}),
-        errUndeclaredFunc(src, "op", {}, input::Span{46, 49}));
+        errUndeclaredPureFunc(src, "op", {}, input::Span{46, 49}));
+    CHECK_DIAG(
+        "fun f() -> delegate{string, string} print",
+        errUndeclaredConst(src, "print", input::Span{36, 40}));
+    CHECK_DIAG(
+        "fun f() -> string op = print; op(\"hello world\")",
+        errUndeclaredConst(src, "print", input::Span{23, 27}),
+        errUndeclaredPureFunc(src, "op", {"string"}, input::Span{30, 46}));
   }
 }
 

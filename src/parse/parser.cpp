@@ -205,7 +205,7 @@ auto ParserImpl::nextStmtEnumDecl() -> NodePtr {
 }
 
 auto ParserImpl::nextStmtExec() -> NodePtr {
-  auto action = consumeToken();
+  auto target = consumeToken();
   auto open   = consumeToken();
   auto empty  = open.getKind() == lex::TokenKind::OpParenParen;
 
@@ -221,12 +221,12 @@ auto ParserImpl::nextStmtExec() -> NodePtr {
   }
   auto close = empty ? open : consumeToken();
 
-  const auto idValid     = action.getKind() == lex::TokenKind::Identifier;
+  const auto idValid     = target.getKind() == lex::TokenKind::Identifier;
   const auto commasValid = commas.size() == (args.empty() ? 0 : args.size() - 1);
   if (idValid && validateParentheses(open, close) && commasValid) {
-    return execStmtNode(std::move(action), open, std::move(args), std::move(commas), close);
+    return execStmtNode(std::move(target), open, std::move(args), std::move(commas), close);
   }
-  return errInvalidStmtExec(std::move(action), open, std::move(args), std::move(commas), close);
+  return errInvalidStmtExec(std::move(target), open, std::move(args), std::move(commas), close);
 }
 
 auto ParserImpl::nextExpr(const int minPrecedence) -> NodePtr {

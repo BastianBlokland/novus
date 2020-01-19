@@ -22,7 +22,7 @@ auto findConversion(const Program& prog, sym::TypeId from, sym::TypeId to)
 
   // Conversions are funcs with the name of the target and a single input param.
   const auto& toName = typeTable[to].getName();
-  for (const auto& funcId : funcTable.lookup(toName)) {
+  for (const auto& funcId : funcTable.lookup(toName, OvOptions{OvFlags::ExclActions})) {
     const auto& funcDecl = funcTable[funcId];
     if (funcDecl.getOutput() != to) {
       continue;
@@ -43,6 +43,9 @@ auto findConvertibleTypes(const Program& prog, sym::TypeId from) -> std::vector<
 
   // Conversions are funcs with the name of the target and a single input param.
   for (const auto& funcDecl : funcTable) {
+    if (funcDecl.isAction()) {
+      continue;
+    }
     if (funcDecl.getInput().getCount() != 1 || *funcDecl.getInput().begin() != from) {
       continue;
     }

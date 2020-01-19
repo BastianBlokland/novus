@@ -155,16 +155,10 @@ TEST_CASE("Analyzing anonymous functions", "[frontend]") {
 
     CHECK(
         GET_FUNC_DEF(output, "__anon_0").getExpr() ==
-        *prog::expr::callExprNode(
-            output.getProg(),
-            *output.getProg().lookupFunc("int", prog::sym::TypeSet({}), 0, false),
-            {}));
+        *prog::expr::callExprNode(output.getProg(), GET_FUNC_ID(output, "int"), {}));
     CHECK(
         GET_FUNC_DEF(output, "__anon_1").getExpr() ==
-        *prog::expr::callExprNode(
-            output.getProg(),
-            *output.getProg().lookupFunc("float", prog::sym::TypeSet({}), 0, false),
-            {}));
+        *prog::expr::callExprNode(output.getProg(), GET_FUNC_ID(output, "float"), {}));
 
     CHECK(
         GET_FUNC_DEF(output, "f1__int").getExpr() ==
@@ -188,9 +182,6 @@ TEST_CASE("Analyzing anonymous functions", "[frontend]") {
     CHECK_DIAG(
         "fun f() lambda (int int) 1",
         errConstNameConflictsWithType(src, "int", input::Span{20, 22}));
-    CHECK_DIAG(
-        "fun f() lambda (int print) 1",
-        errConstNameConflictsWithAction(src, "print", input::Span{20, 24}));
     CHECK_DIAG(
         "fun f() lambda (int i, int i) 1",
         errConstNameConflictsWithConst(src, "i", input::Span{27, 27}));

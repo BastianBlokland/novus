@@ -121,8 +121,6 @@ TEST_CASE("Analyzing user-function declarations", "[frontend]") {
 
   SECTION("Diagnostics") {
     CHECK_DIAG(
-        "fun print() -> int 1", errFuncNameConflictsWithAction(src, "print", input::Span{4, 8}));
-    CHECK_DIAG(
         "fun a() -> int 1 "
         "fun a() -> int 1",
         errDuplicateFuncDeclaration(src, "a", input::Span{17, 32}));
@@ -168,6 +166,9 @@ TEST_CASE("Analyzing user-function declarations", "[frontend]") {
     CHECK_DIAG("fun f{T}(int{M} a) -> int 1", errUndeclaredType(src, "M", 0, input::Span{13, 13}));
     CHECK_DIAG(
         "fun f{T}(int{T{M}} a) -> int 1", errUndeclaredType(src, "M", 0, input::Span{15, 15}));
+    CHECK_DIAG(
+        "fun print(string input) input",
+        errDuplicateFuncDeclaration(src, "print", input::Span{0, 28}));
   }
 }
 

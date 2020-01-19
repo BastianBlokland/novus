@@ -14,6 +14,7 @@ TEST_CASE("Execute float operations", "[vm]") {
           builder->addAddFloat();
           builder->addConvFloatString();
           builder->addPrintString();
+          builder->addPop();
         },
         "0.2337");
     CHECK_EXPR(
@@ -23,6 +24,7 @@ TEST_CASE("Execute float operations", "[vm]") {
           builder->addAddFloat();
           builder->addConvFloatString();
           builder->addPrintString();
+          builder->addPop();
         },
         "10000");
   }
@@ -35,6 +37,7 @@ TEST_CASE("Execute float operations", "[vm]") {
           builder->addSubFloat();
           builder->addConvFloatString();
           builder->addPrintString();
+          builder->addPop();
         },
         "0.0337");
     CHECK_EXPR(
@@ -44,6 +47,7 @@ TEST_CASE("Execute float operations", "[vm]") {
           builder->addSubFloat();
           builder->addConvFloatString();
           builder->addPrintString();
+          builder->addPop();
         },
         "-0.0337");
   }
@@ -56,6 +60,7 @@ TEST_CASE("Execute float operations", "[vm]") {
           builder->addMulFloat();
           builder->addConvFloatString();
           builder->addPrintString();
+          builder->addPop();
         },
         "1337");
     CHECK_EXPR(
@@ -65,6 +70,7 @@ TEST_CASE("Execute float operations", "[vm]") {
           builder->addMulFloat();
           builder->addConvFloatString();
           builder->addPrintString();
+          builder->addPop();
         },
         "0.1337");
   }
@@ -77,6 +83,7 @@ TEST_CASE("Execute float operations", "[vm]") {
           builder->addDivFloat();
           builder->addConvFloatString();
           builder->addPrintString();
+          builder->addPop();
         },
         "0.02");
     CHECK_EXPR_THROWS(
@@ -86,6 +93,7 @@ TEST_CASE("Execute float operations", "[vm]") {
           builder->addDivFloat();
           builder->addConvFloatString();
           builder->addPrintString();
+          builder->addPop();
         },
         vm::exceptions::DivByZero);
   }
@@ -97,6 +105,7 @@ TEST_CASE("Execute float operations", "[vm]") {
           builder->addNegFloat();
           builder->addConvFloatString();
           builder->addPrintString();
+          builder->addPop();
         },
         "-0.1337");
     CHECK_EXPR(
@@ -105,6 +114,7 @@ TEST_CASE("Execute float operations", "[vm]") {
           builder->addNegFloat();
           builder->addConvFloatString();
           builder->addPrintString();
+          builder->addPop();
         },
         "-0");
     CHECK_EXPR(
@@ -114,6 +124,7 @@ TEST_CASE("Execute float operations", "[vm]") {
           builder->addNegFloat();
           builder->addConvFloatString();
           builder->addPrintString();
+          builder->addPop();
         },
         "0.1337");
   }

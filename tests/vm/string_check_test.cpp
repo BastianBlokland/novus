@@ -13,6 +13,7 @@ TEST_CASE("Execute string checks", "[vm]") {
           builder->addCheckEqString();
           builder->addConvBoolString();
           builder->addPrintString();
+          builder->addPop();
         },
         "false");
     CHECK_EXPR(
@@ -22,6 +23,7 @@ TEST_CASE("Execute string checks", "[vm]") {
           builder->addCheckEqString();
           builder->addConvBoolString();
           builder->addPrintString();
+          builder->addPop();
         },
         "true");
     CHECK_EXPR(
@@ -33,6 +35,7 @@ TEST_CASE("Execute string checks", "[vm]") {
           builder->addCheckEqString();
           builder->addConvBoolString();
           builder->addPrintString();
+          builder->addPop();
         },
         "true");
   }

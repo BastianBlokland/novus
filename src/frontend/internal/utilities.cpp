@@ -305,7 +305,7 @@ auto inferRetType(
     const FuncParseNode& parseNode,
     const prog::sym::TypeSet& input,
     const std::unordered_map<std::string, prog::sym::TypeId>* additionalConstTypes,
-    bool aggressive) -> prog::sym::TypeId {
+    TypeInferExpr::Flags flags) -> prog::sym::TypeId {
 
   if (input.getCount() != parseNode.getArgList().getCount()) {
     throw std::invalid_argument{"Incorrect number of input types provided"};
@@ -322,7 +322,7 @@ auto inferRetType(
     constTypes.insert(additionalConstTypes->begin(), additionalConstTypes->end());
   }
 
-  auto inferBodyType = TypeInferExpr{context, subTable, &constTypes, aggressive};
+  auto inferBodyType = TypeInferExpr{context, subTable, &constTypes, flags};
   parseNode[0].accept(&inferBodyType);
   return inferBodyType.getInferredType();
 }
@@ -479,11 +479,6 @@ auto getConstName(
         errConstNameConflictsWithFunction(context->getSrc(), name, nameToken.getSpan()));
     return std::nullopt;
   }
-  if (!context->getProg()->lookupActions(name).empty()) {
-    context->reportDiag(
-        errConstNameConflictsWithAction(context->getSrc(), name, nameToken.getSpan()));
-    return std::nullopt;
-  }
   if (consts.lookup(name)) {
     context->reportDiag(
         errConstNameConflictsWithConst(context->getSrc(), name, nameToken.getSpan()));
@@ -520,14 +515,14 @@ template prog::sym::TypeId inferRetType(
     const parse::FuncDeclStmtNode& parseNode,
     const prog::sym::TypeSet& input,
     const std::unordered_map<std::string, prog::sym::TypeId>* additionalConstTypes,
-    bool aggressive);
+    TypeInferExpr::Flags flags);
 template prog::sym::TypeId inferRetType(
     Context* context,
     const TypeSubstitutionTable* subTable,
     const parse::AnonFuncExprNode& parseNode,
     const prog::sym::TypeSet& input,
     const std::unordered_map<std::string, prog::sym::TypeId>* additionalConstTypes,
-    bool aggressive);
+    TypeInferExpr::Flags flags);
 
 template std::optional<prog::sym::TypeSet> getFuncInput(
     Context* context, const TypeSubstitutionTable* subTable, const parse::FuncDeclStmtNode& n);

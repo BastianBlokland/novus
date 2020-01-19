@@ -3,6 +3,7 @@
 #include "internal/get_expr.hpp"
 #include "internal/utilities.hpp"
 #include "parse/nodes.hpp"
+#include "prog/expr/node_call.hpp"
 
 namespace frontend::internal {
 
@@ -32,25 +33,22 @@ auto DefineExecStmts::visit(const parse::ExecStmtNode& n) -> void {
     return;
   }
 
-  const auto& actionName = getName(n.getAction());
-  const auto& action =
-      m_context->getProg()->lookupAction(actionName, prog::sym::TypeSet{argTypes}, -1);
-  if (action) {
-    m_context->getProg()->addExecStmt(action.value(), std::move(consts), std::move(args));
-    return;
-  }
+  const auto& targetName = getName(n.getTarget());
+  const auto& target     = m_context->getProg()->lookupFunc(
+      targetName, prog::sym::TypeSet{argTypes}, prog::OvOptions{prog::OvFlags::ExclPureFuncs});
 
-  if (m_context->getProg()->lookupActions(actionName).empty()) {
-    m_context->reportDiag(
-        errUndeclaredAction(m_context->getSrc(), actionName, n.getAction().getSpan()));
-  } else {
+  if (!target) {
     auto argTypeNames = std::vector<std::string>{};
     for (const auto& argType : argTypes) {
       argTypeNames.push_back(getDisplayName(*m_context, argType));
     }
     m_context->reportDiag(
-        errUndeclaredActionOverload(m_context->getSrc(), actionName, argTypeNames, n.getSpan()));
+        errInvalidExecStmt(m_context->getSrc(), targetName, argTypeNames, n.getSpan()));
+    return;
   }
+
+  m_context->getProg()->addExecStmt(
+      std::move(consts), prog::expr::callExprNode(*m_context->getProg(), *target, std::move(args)));
 }
 
 auto DefineExecStmts::getExpr(
@@ -60,7 +58,8 @@ auto DefineExecStmts::getExpr(
     prog::sym::TypeId typeHint) -> prog::expr::NodePtr {
 
   auto constBinder = ConstBinder{consts, visibleConsts, nullptr};
-  auto getExpr     = GetExpr{m_context, nullptr, &constBinder, typeHint};
+  auto getExpr =
+      GetExpr{m_context, nullptr, &constBinder, typeHint, GetExpr::Flags::AllowActionCalls};
   n.accept(&getExpr);
   return std::move(getExpr.getValue());
 }

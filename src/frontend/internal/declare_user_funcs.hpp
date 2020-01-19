@@ -21,8 +21,6 @@ private:
   Context* m_context;
   std::vector<DeclarationInfo> m_funcs;
 
-  auto validateFuncName(const lex::Token& nameToken) -> bool;
-
   auto validateFuncTemplateArgList(
       const parse::ArgumentListDecl& args, const std::vector<std::string>& typeSubParams) -> bool;
 

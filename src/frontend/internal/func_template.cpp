@@ -66,7 +66,8 @@ auto FuncTemplate::getRetType(const prog::sym::TypeSet& typeParams)
     return std::nullopt;
   }
   if (retType->isInfer()) {
-    retType = inferRetType(m_context, &subTable, *m_parseNode, *funcInput, nullptr, true);
+    retType = inferRetType(
+        m_context, &subTable, *m_parseNode, *funcInput, nullptr, TypeInferExpr::Flags::Aggressive);
   }
 
   m_inferStack.pop_front();
@@ -136,8 +137,13 @@ auto FuncTemplate::setupInstance(FuncTemplateInst* instance) -> void {
       instance->m_retType = m_context->getProg()->lookupType(m_name);
     } else {
       // Otherwise try to infer the return-type.
-      instance->m_retType =
-          inferRetType(m_context, &subTable, *m_parseNode, *funcInput, nullptr, true);
+      instance->m_retType = inferRetType(
+          m_context,
+          &subTable,
+          *m_parseNode,
+          *funcInput,
+          nullptr,
+          TypeInferExpr::Flags::Aggressive);
       // We don't produce a diagnostic yet if the inferring failed as that is done by the definition
       // step.
     }
@@ -178,7 +184,7 @@ auto FuncTemplate::setupInstance(FuncTemplateInst* instance) -> void {
                                : mangleName(m_context, m_name, instance->m_typeParams);
 
   // Check if an identical function has already been registered.
-  if (m_context->getProg()->lookupFunc(funcName, *funcInput, 0, false)) {
+  if (m_context->getProg()->lookupFunc(funcName, *funcInput, prog::OvOptions{0})) {
     m_context->reportDiag(errDuplicateFuncDeclaration(
         m_context->getSrc(), instance->getDisplayName(*m_context), m_parseNode->getSpan()));
     instance->m_success = false;

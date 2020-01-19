@@ -64,6 +64,7 @@ TEST_CASE("Generating assembly for structs", "[backend]") {
           builder->addCall("UserEq", false);
           builder->addConvBoolString();
           builder->addPrintString();
+          builder->addPop();
           builder->addRet();
           // --- Print statement end.
 
@@ -96,6 +97,7 @@ TEST_CASE("Generating assembly for structs", "[backend]") {
           builder->addCall("UserEq", false);
           builder->addConvBoolString();
           builder->addPrintString();
+          builder->addPop();
           builder->addRet();
           // --- Print statement end.
 
@@ -126,6 +128,7 @@ TEST_CASE("Generating assembly for structs", "[backend]") {
             builder->addCall("UserEq", false);
             builder->addConvBoolString();
             builder->addPrintString();
+            builder->addPop();
             builder->addRet();
             // --- Print statement 1 end.
 
@@ -136,6 +139,7 @@ TEST_CASE("Generating assembly for structs", "[backend]") {
 
             builder->addConvIntString();
             builder->addPrintString();
+            builder->addPop();
             builder->addRet();
             // --- Print statement 2 end.
 

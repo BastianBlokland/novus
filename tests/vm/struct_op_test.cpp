@@ -23,6 +23,7 @@ TEST_CASE("Execute struct operations", "[vm]") {
 
           builder->addAddString();
           builder->addPrintString();
+          builder->addPop();
         },
         "hello world");
   }

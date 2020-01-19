@@ -14,6 +14,7 @@ TEST_CASE("Execute integer operations", "[vm]") {
           builder->addAddInt();
           builder->addConvIntString();
           builder->addPrintString();
+          builder->addPop();
         },
         "3");
     CHECK_EXPR(
@@ -23,6 +24,7 @@ TEST_CASE("Execute integer operations", "[vm]") {
           builder->addAddInt();
           builder->addConvIntString();
           builder->addPrintString();
+          builder->addPop();
         },
         "-2147483648");
   }
@@ -35,6 +37,7 @@ TEST_CASE("Execute integer operations", "[vm]") {
           builder->addSubInt();
           builder->addConvIntString();
           builder->addPrintString();
+          builder->addPop();
         },
         "5");
     CHECK_EXPR(
@@ -44,6 +47,7 @@ TEST_CASE("Execute integer operations", "[vm]") {
           builder->addSubInt();
           builder->addConvIntString();
           builder->addPrintString();
+          builder->addPop();
         },
         "-10");
   }
@@ -56,6 +60,7 @@ TEST_CASE("Execute integer operations", "[vm]") {
           builder->addMulInt();
           builder->addConvIntString();
           builder->addPrintString();
+          builder->addPop();
         },
         "15");
     CHECK_EXPR(
@@ -65,6 +70,7 @@ TEST_CASE("Execute integer operations", "[vm]") {
           builder->addMulInt();
           builder->addConvIntString();
           builder->addPrintString();
+          builder->addPop();
         },
         "-15");
   }
@@ -77,6 +83,7 @@ TEST_CASE("Execute integer operations", "[vm]") {
           builder->addDivInt();
           builder->addConvIntString();
           builder->addPrintString();
+          builder->addPop();
         },
         "8");
     CHECK_EXPR_THROWS(
@@ -86,6 +93,7 @@ TEST_CASE("Execute integer operations", "[vm]") {
           builder->addDivInt();
           builder->addConvIntString();
           builder->addPrintString();
+          builder->addPop();
         },
         vm::exceptions::DivByZero);
   }
@@ -98,6 +106,7 @@ TEST_CASE("Execute integer operations", "[vm]") {
           builder->addRemInt();
           builder->addConvIntString();
           builder->addPrintString();
+          builder->addPop();
         },
         "1");
     CHECK_EXPR_THROWS(
@@ -107,6 +116,7 @@ TEST_CASE("Execute integer operations", "[vm]") {
           builder->addRemInt();
           builder->addConvIntString();
           builder->addPrintString();
+          builder->addPop();
         },
         vm::exceptions::DivByZero);
   }
@@ -118,6 +128,7 @@ TEST_CASE("Execute integer operations", "[vm]") {
           builder->addNegInt();
           builder->addConvIntString();
           builder->addPrintString();
+          builder->addPop();
         },
         "-42");
     CHECK_EXPR(
@@ -126,6 +137,7 @@ TEST_CASE("Execute integer operations", "[vm]") {
           builder->addNegInt();
           builder->addConvIntString();
           builder->addPrintString();
+          builder->addPop();
         },
         "0");
     CHECK_EXPR(
@@ -135,6 +147,7 @@ TEST_CASE("Execute integer operations", "[vm]") {
           builder->addNegInt();
           builder->addConvIntString();
           builder->addPrintString();
+          builder->addPop();
         },
         "42");
   }
@@ -146,6 +159,7 @@ TEST_CASE("Execute integer operations", "[vm]") {
           builder->addLogicInvInt();
           builder->addConvIntString();
           builder->addPrintString();
+          builder->addPop();
         },
         "1");
     CHECK_EXPR(
@@ -154,6 +168,7 @@ TEST_CASE("Execute integer operations", "[vm]") {
           builder->addLogicInvInt();
           builder->addConvIntString();
           builder->addPrintString();
+          builder->addPop();
         },
         "0");
     CHECK_EXPR(
@@ -162,6 +177,7 @@ TEST_CASE("Execute integer operations", "[vm]") {
           builder->addLogicInvInt();
           builder->addConvIntString();
           builder->addPrintString();
+          builder->addPop();
         },
         "0");
   }
@@ -174,6 +190,7 @@ TEST_CASE("Execute integer operations", "[vm]") {
           builder->addShiftLeftInt();
           builder->addConvIntString();
           builder->addPrintString();
+          builder->addPop();
         },
         "2");
     CHECK_EXPR(
@@ -183,6 +200,7 @@ TEST_CASE("Execute integer operations", "[vm]") {
           builder->addShiftLeftInt();
           builder->addConvIntString();
           builder->addPrintString();
+          builder->addPop();
         },
         "8");
     CHECK_EXPR(
@@ -192,6 +210,7 @@ TEST_CASE("Execute integer operations", "[vm]") {
           builder->addShiftLeftInt();
           builder->addConvIntString();
           builder->addPrintString();
+          builder->addPop();
         },
         "4");
     CHECK_EXPR(
@@ -201,6 +220,7 @@ TEST_CASE("Execute integer operations", "[vm]") {
           builder->addShiftLeftInt();
           builder->addConvIntString();
           builder->addPrintString();
+          builder->addPop();
         },
         "-2147483648");
   }
@@ -213,6 +233,7 @@ TEST_CASE("Execute integer operations", "[vm]") {
           builder->addShiftRightInt();
           builder->addConvIntString();
           builder->addPrintString();
+          builder->addPop();
         },
         "0");
     CHECK_EXPR(
@@ -222,6 +243,7 @@ TEST_CASE("Execute integer operations", "[vm]") {
           builder->addShiftRightInt();
           builder->addConvIntString();
           builder->addPrintString();
+          builder->addPop();
         },
         "2");
     CHECK_EXPR(
@@ -231,6 +253,7 @@ TEST_CASE("Execute integer operations", "[vm]") {
           builder->addShiftRightInt();
           builder->addConvIntString();
           builder->addPrintString();
+          builder->addPop();
         },
         "8");
     CHECK_EXPR(
@@ -240,6 +263,7 @@ TEST_CASE("Execute integer operations", "[vm]") {
           builder->addShiftRightInt();
           builder->addConvIntString();
           builder->addPrintString();
+          builder->addPop();
         },
         "0");
   }
@@ -252,6 +276,7 @@ TEST_CASE("Execute integer operations", "[vm]") {
           builder->addAndInt();
           builder->addConvIntString();
           builder->addPrintString();
+          builder->addPop();
         },
         "1");
     CHECK_EXPR(
@@ -261,6 +286,7 @@ TEST_CASE("Execute integer operations", "[vm]") {
           builder->addAndInt();
           builder->addConvIntString();
           builder->addPrintString();
+          builder->addPop();
         },
         "8");
     CHECK_EXPR(
@@ -270,6 +296,7 @@ TEST_CASE("Execute integer operations", "[vm]") {
           builder->addAndInt();
           builder->addConvIntString();
           builder->addPrintString();
+          builder->addPop();
         },
         "-42");
     CHECK_EXPR(
@@ -279,6 +306,7 @@ TEST_CASE("Execute integer operations", "[vm]") {
           builder->addAndInt();
           builder->addConvIntString();
           builder->addPrintString();
+          builder->addPop();
         },
         "2");
   }
@@ -291,6 +319,7 @@ TEST_CASE("Execute integer operations", "[vm]") {
           builder->addOrInt();
           builder->addConvIntString();
           builder->addPrintString();
+          builder->addPop();
         },
         "1");
     CHECK_EXPR(
@@ -300,6 +329,7 @@ TEST_CASE("Execute integer operations", "[vm]") {
           builder->addOrInt();
           builder->addConvIntString();
           builder->addPrintString();
+          builder->addPop();
         },
         "11");
     CHECK_EXPR(
@@ -309,6 +339,7 @@ TEST_CASE("Execute integer operations", "[vm]") {
           builder->addOrInt();
           builder->addConvIntString();
           builder->addPrintString();
+          builder->addPop();
         },
         "-42");
     CHECK_EXPR(
@@ -318,6 +349,7 @@ TEST_CASE("Execute integer operations", "[vm]") {
           builder->addOrInt();
           builder->addConvIntString();
           builder->addPrintString();
+          builder->addPop();
         },
         "-2");
   }
@@ -330,6 +362,7 @@ TEST_CASE("Execute integer operations", "[vm]") {
           builder->addXorInt();
           builder->addConvIntString();
           builder->addPrintString();
+          builder->addPop();
         },
         "0");
     CHECK_EXPR(
@@ -339,6 +372,7 @@ TEST_CASE("Execute integer operations", "[vm]") {
           builder->addXorInt();
           builder->addConvIntString();
           builder->addPrintString();
+          builder->addPop();
         },
         "3");
     CHECK_EXPR(
@@ -348,6 +382,7 @@ TEST_CASE("Execute integer operations", "[vm]") {
           builder->addXorInt();
           builder->addConvIntString();
           builder->addPrintString();
+          builder->addPop();
         },
         "0");
     CHECK_EXPR(
@@ -357,6 +392,7 @@ TEST_CASE("Execute integer operations", "[vm]") {
           builder->addXorInt();
           builder->addConvIntString();
           builder->addPrintString();
+          builder->addPop();
         },
         "-4");
   }

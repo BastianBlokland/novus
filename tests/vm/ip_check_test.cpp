@@ -15,6 +15,7 @@ TEST_CASE("Execute instruction pointer checks", "[vm]") {
           builder->addCheckEqIp();
           builder->addConvBoolString();
           builder->addPrintString();
+          builder->addPop();
         },
         "true");
 
@@ -29,6 +30,7 @@ TEST_CASE("Execute instruction pointer checks", "[vm]") {
           builder->label("label2");
           builder->addConvBoolString();
           builder->addPrintString();
+          builder->addPop();
         },
         "false");
 
@@ -41,6 +43,7 @@ TEST_CASE("Execute instruction pointer checks", "[vm]") {
           builder->addCheckEqCallDynTgt();
           builder->addConvBoolString();
           builder->addPrintString();
+          builder->addPop();
         },
         "true");
 
@@ -55,6 +58,7 @@ TEST_CASE("Execute instruction pointer checks", "[vm]") {
           builder->label("label2");
           builder->addConvBoolString();
           builder->addPrintString();
+          builder->addPop();
         },
         "false");
 
@@ -76,6 +80,7 @@ TEST_CASE("Execute instruction pointer checks", "[vm]") {
 
           builder->addConvBoolString();
           builder->addPrintString();
+          builder->addPop();
         },
         "true");
 
@@ -98,6 +103,7 @@ TEST_CASE("Execute instruction pointer checks", "[vm]") {
           builder->label("label2");
           builder->addConvBoolString();
           builder->addPrintString();
+          builder->addPop();
         },
         "false");
 
@@ -116,6 +122,7 @@ TEST_CASE("Execute instruction pointer checks", "[vm]") {
 
           builder->addConvBoolString();
           builder->addPrintString();
+          builder->addPop();
         },
         "true");
 
@@ -135,6 +142,7 @@ TEST_CASE("Execute instruction pointer checks", "[vm]") {
           builder->label("label2");
           builder->addConvBoolString();
           builder->addPrintString();
+          builder->addPop();
         },
         "false");
   }

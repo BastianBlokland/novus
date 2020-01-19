@@ -1,5 +1,6 @@
 #pragma once
 #include "prog/sym/func_id.hpp"
+#include "prog/sym/overload_options.hpp"
 #include "prog/sym/type_set.hpp"
 #include <optional>
 #include <string>
@@ -16,8 +17,7 @@ auto findOverload(
     const DeclTable& declTable,
     const std::vector<typename DeclTable::id>& overloads,
     const sym::TypeSet& input,
-    int maxConversions,
-    bool allowConvOnFirstArg) -> std::optional<typename DeclTable::id>;
+    sym::OverloadOptions options) -> std::optional<typename DeclTable::id>;
 
 } // namespace internal
 
