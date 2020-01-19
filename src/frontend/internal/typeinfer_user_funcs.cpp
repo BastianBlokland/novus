@@ -38,12 +38,20 @@ auto TypeInferUserFuncs::inferRetType(prog::sym::FuncId id, const parse::FuncDec
     flags = flags | TypeInferExpr::Flags::AllowActionCalls;
   }
 
-  const auto type =
+  auto type =
       ::frontend::internal::inferRetType(m_context, m_typeSubTable, n, *funcInput, nullptr, flags);
 
   // If type is still not a concrete type then we fail.
   if (!type.isConcrete()) {
-    return false;
+    if (isAction(m_context, id)) {
+      // For actions we default to a int return type if we cannot infer it, reason is that its
+      // common to make infinite recursing actions (for example a 'main' action) and in those cases
+      // we cannot infer a return type.
+      type = m_context->getProg()->getInt();
+    } else {
+      // If its a pure functions then fail if we cannot infer the type.
+      return false;
+    }
   }
 
   // Update function output with inferred type.
