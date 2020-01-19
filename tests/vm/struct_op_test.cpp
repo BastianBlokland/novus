@@ -22,7 +22,7 @@ TEST_CASE("Execute struct operations", "[vm]") {
           builder->addLoadStructField(1);
 
           builder->addAddString();
-          builder->addPCall(vm::PCallCode::Print);
+          builder->addPCall(vm::PCallCode::PrintString);
           builder->addPop();
         },
         "hello world");

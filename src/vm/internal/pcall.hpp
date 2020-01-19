@@ -10,12 +10,17 @@ const auto static newl = '\n';
 template <typename EvalStack, typename PlatformInterface>
 auto inline pcall(EvalStack& evalStack, PlatformInterface& iface, PCallCode code) -> void {
   switch (code) {
-  case vm::PCallCode::Print: {
+  case vm::PCallCode::PrintChar: {
+    auto c = static_cast<char>(evalStack.peek().getInt());
+    iface.print(&c, 1);
+    return;
+  }
+  case vm::PCallCode::PrintString: {
     auto* strRef = getStringRef(evalStack.peek());
     iface.print(strRef->getDataPtr(), strRef->getSize());
     return;
   }
-  case vm::PCallCode::PrintLine: {
+  case vm::PCallCode::PrintStringLine: {
     auto* strRef = getStringRef(evalStack.peek());
     iface.print(strRef->getDataPtr(), strRef->getSize());
     iface.print(&newl, 1);

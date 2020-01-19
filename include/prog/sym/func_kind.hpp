@@ -73,8 +73,9 @@ enum class FuncKind {
   CheckEqUserType,
   CheckNEqUserType,
 
-  ActionPrint,
-  ActionPrintLine,
+  ActionPrintChar,
+  ActionPrintString,
+  ActionPrintStringLine,
 };
 
 } // namespace prog::sym

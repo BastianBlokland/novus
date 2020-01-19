@@ -11,12 +11,12 @@ TEST_CASE("Execute jump", "[vm]") {
           builder->addJump("print42");
 
           builder->addLoadLitString("1337");
-          builder->addPCall(vm::PCallCode::Print);
+          builder->addPCall(vm::PCallCode::PrintString);
           builder->addPop();
 
           builder->label("print42");
           builder->addLoadLitString("42");
-          builder->addPCall(vm::PCallCode::Print);
+          builder->addPCall(vm::PCallCode::PrintString);
           builder->addPop();
         },
         "42");
@@ -26,7 +26,7 @@ TEST_CASE("Execute jump", "[vm]") {
 
           builder->label("jump3");
           builder->addLoadLitString("1337");
-          builder->addPCall(vm::PCallCode::Print);
+          builder->addPCall(vm::PCallCode::PrintString);
           builder->addPop();
           builder->addJump("end");
 
@@ -48,12 +48,12 @@ TEST_CASE("Execute jump", "[vm]") {
           builder->addJumpIf("print42");
 
           builder->addLoadLitString("1337");
-          builder->addPCall(vm::PCallCode::Print);
+          builder->addPCall(vm::PCallCode::PrintString);
           builder->addPop();
 
           builder->label("print42");
           builder->addLoadLitString("42");
-          builder->addPCall(vm::PCallCode::Print);
+          builder->addPCall(vm::PCallCode::PrintString);
           builder->addPop();
         },
         "1337",
@@ -64,12 +64,12 @@ TEST_CASE("Execute jump", "[vm]") {
           builder->addJumpIf("print42");
 
           builder->addLoadLitString("1337");
-          builder->addPCall(vm::PCallCode::Print);
+          builder->addPCall(vm::PCallCode::PrintString);
           builder->addPop();
 
           builder->label("print42");
           builder->addLoadLitString("42");
-          builder->addPCall(vm::PCallCode::Print);
+          builder->addPCall(vm::PCallCode::PrintString);
           builder->addPop();
         },
         "42");

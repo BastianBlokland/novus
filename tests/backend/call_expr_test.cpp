@@ -395,7 +395,7 @@ TEST_CASE("Generate assembly for call expressions", "[backend]") {
           builder->addLoadLitInt(1337);
           builder->addCall("test", false);
           builder->addConvIntString();
-          builder->addPCall(vm::PCallCode::Print);
+          builder->addPCall(vm::PCallCode::PrintString);
           builder->addPop();
           builder->addRet();
 

@@ -4,11 +4,14 @@ namespace vm {
 
 auto operator<<(std::ostream& out, const PCallCode& rhs) -> std::ostream& {
   switch (rhs) {
-  case PCallCode::Print:
-    out << "print";
+  case PCallCode::PrintChar:
+    out << "print-char";
     break;
-  case PCallCode::PrintLine:
-    out << "print-line";
+  case PCallCode::PrintString:
+    out << "print-string";
+    break;
+  case PCallCode::PrintStringLine:
+    out << "print-string-line";
     break;
   }
   return out;

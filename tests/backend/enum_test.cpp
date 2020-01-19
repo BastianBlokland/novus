@@ -17,7 +17,7 @@ TEST_CASE("Generating assembly for enums", "[backend]") {
           builder->addCheckEqInt();
 
           builder->addConvBoolString();
-          builder->addPCall(vm::PCallCode::Print);
+          builder->addPCall(vm::PCallCode::PrintString);
           builder->addPop();
           builder->addRet();
           // --- Print statement end.
@@ -41,7 +41,7 @@ TEST_CASE("Generating assembly for enums", "[backend]") {
           builder->addCheckEqInt();
 
           builder->addConvBoolString();
-          builder->addPCall(vm::PCallCode::Print);
+          builder->addPCall(vm::PCallCode::PrintString);
           builder->addPop();
           builder->addRet();
           // --- Print statement end.
@@ -62,7 +62,7 @@ TEST_CASE("Generating assembly for enums", "[backend]") {
           builder->addCheckEqInt();
 
           builder->addConvBoolString();
-          builder->addPCall(vm::PCallCode::Print);
+          builder->addPCall(vm::PCallCode::PrintString);
           builder->addPop();
           builder->addRet();
           // --- Print statement end.

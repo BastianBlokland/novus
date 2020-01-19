@@ -312,11 +312,14 @@ auto GenExpr::visit(const prog::expr::CallExprNode& n) -> void {
   }
 
   // Platform actions:
-  case prog::sym::FuncKind::ActionPrint:
-    m_builder->addPCall(vm::PCallCode::Print);
+  case prog::sym::FuncKind::ActionPrintChar:
+    m_builder->addPCall(vm::PCallCode::PrintChar);
     break;
-  case prog::sym::FuncKind::ActionPrintLine:
-    m_builder->addPCall(vm::PCallCode::PrintLine);
+  case prog::sym::FuncKind::ActionPrintString:
+    m_builder->addPCall(vm::PCallCode::PrintString);
+    break;
+  case prog::sym::FuncKind::ActionPrintStringLine:
+    m_builder->addPCall(vm::PCallCode::PrintStringLine);
     break;
   }
 }

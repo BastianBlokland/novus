@@ -13,7 +13,7 @@ TEST_CASE("Execute constants", "[vm]") {
 
         builder->addLoadConst(0);
         builder->addConvIntString();
-        builder->addPCall(vm::PCallCode::Print);
+        builder->addPCall(vm::PCallCode::PrintString);
         builder->addPop();
       },
       "42");
@@ -29,12 +29,12 @@ TEST_CASE("Execute constants", "[vm]") {
 
         builder->addLoadConst(0);
         builder->addConvIntString();
-        builder->addPCall(vm::PCallCode::Print);
+        builder->addPCall(vm::PCallCode::PrintString);
         builder->addPop();
 
         builder->addLoadConst(1);
         builder->addConvIntString();
-        builder->addPCall(vm::PCallCode::Print);
+        builder->addPCall(vm::PCallCode::PrintString);
         builder->addPop();
       },
       "42",
@@ -54,12 +54,12 @@ TEST_CASE("Execute constants", "[vm]") {
 
         builder->addLoadConst(0);
         builder->addConvIntString();
-        builder->addPCall(vm::PCallCode::Print);
+        builder->addPCall(vm::PCallCode::PrintString);
         builder->addPop();
 
         builder->addLoadConst(1);
         builder->addConvIntString();
-        builder->addPCall(vm::PCallCode::Print);
+        builder->addPCall(vm::PCallCode::PrintString);
         builder->addPop();
       },
       "42",
@@ -79,12 +79,12 @@ TEST_CASE("Execute constants", "[vm]") {
 
         builder->addLoadConst(0);
         builder->addConvIntString();
-        builder->addPCall(vm::PCallCode::Print);
+        builder->addPCall(vm::PCallCode::PrintString);
         builder->addPop();
 
         builder->addLoadConst(1);
         builder->addConvIntString();
-        builder->addPCall(vm::PCallCode::Print);
+        builder->addPCall(vm::PCallCode::PrintString);
         builder->addPop();
       },
       "42",
