@@ -3,7 +3,7 @@
 namespace vm::platform {
 
 MemoryInterface::MemoryInterface(std::string stdIn) :
-    m_stdIn{std::move(stdIn)}, m_stdInPtr{m_stdIn.data()}, m_stdOut{} {}
+    m_stdIn{std::move(stdIn)}, m_stdInPtr{m_stdIn.data()} {}
 
 auto MemoryInterface::getStdOut() const noexcept -> const std::vector<std::string>& {
   return m_stdOut;
