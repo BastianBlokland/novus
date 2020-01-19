@@ -43,13 +43,13 @@ auto TypeInferUserFuncs::inferRetType(prog::sym::FuncId id, const parse::FuncDec
 
   // If type is still not a concrete type then we fail.
   if (!type.isConcrete()) {
-    if (isAction(m_context, id)) {
+    if (isAction(m_context, id) && agressive) {
       // For actions we default to a int return type if we cannot infer it, reason is that its
       // common to make infinite recursing actions (for example a 'main' action) and in those cases
       // we cannot infer a return type.
       type = m_context->getProg()->getInt();
     } else {
-      // If its a pure functions then fail if we cannot infer the type.
+      // Fail the inference.
       return false;
     }
   }
