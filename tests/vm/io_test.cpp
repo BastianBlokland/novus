@@ -131,6 +131,22 @@ TEST_CASE("Execute input and output", "[vm]") {
         "hello: John Doe",
         "hello: Jane Doe");
   }
+
+  SECTION("Sleep") {
+    CHECK_PROG(
+        [](backend::Builder* builder) -> void {
+          builder->label("entry");
+          builder->addEntryPoint("entry");
+
+          // Its hard to test sleep, but at least this tests if the application exits cleanly.
+          builder->addLoadLitInt(0); // Sleep for 0 milliseconds.
+          builder->addPCall(vm::PCallCode::Sleep);
+          builder->addPop();
+
+          builder->addRet();
+        },
+        "input");
+  }
 }
 
 } // namespace vm

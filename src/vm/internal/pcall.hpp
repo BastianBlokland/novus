@@ -3,6 +3,8 @@
 #include "internal/string_utilities.hpp"
 #include "vm/exceptions/invalid_assembly.hpp"
 #include "vm/pcall_code.hpp"
+#include <chrono>
+#include <thread>
 
 namespace vm::internal {
 
@@ -45,6 +47,9 @@ auto inline pcall(
     evalStack.push(internal::toString(allocator, line));
     return;
   }
+  case vm::PCallCode::Sleep:
+    std::this_thread::sleep_for(std::chrono::milliseconds(evalStack.peek().getInt()));
+    return;
   }
   throw exceptions::InvalidAssembly{};
 }

@@ -10,6 +10,7 @@ enum class PCallCode : uint8_t {
   PrintStringLine = 2,
   ReadChar        = 3,
   ReadStringLine  = 4,
+  Sleep           = 5,
 };
 
 auto operator<<(std::ostream& out, const PCallCode& rhs) -> std::ostream&;

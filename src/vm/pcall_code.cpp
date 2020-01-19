@@ -19,6 +19,9 @@ auto operator<<(std::ostream& out, const PCallCode& rhs) -> std::ostream& {
   case PCallCode::ReadStringLine:
     out << "read-string-line";
     break;
+  case PCallCode::Sleep:
+    out << "sleep";
+    break;
   }
   return out;
 }
