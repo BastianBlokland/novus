@@ -12,8 +12,10 @@ TEST_CASE("Execute integer checks", "[vm]") {
           builder->addLoadLitInt(-2);
           builder->addCheckEqInt();
           builder->addConvBoolString();
-          builder->addPrintString();
+          builder->addPCall(vm::PCallCode::PrintString);
+          builder->addPop();
         },
+        "input",
         "false");
     CHECK_EXPR(
         [](backend::Builder* builder) -> void {
@@ -21,8 +23,10 @@ TEST_CASE("Execute integer checks", "[vm]") {
           builder->addLoadLitInt(2);
           builder->addCheckEqInt();
           builder->addConvBoolString();
-          builder->addPrintString();
+          builder->addPCall(vm::PCallCode::PrintString);
+          builder->addPop();
         },
+        "input",
         "true");
   }
 
@@ -33,8 +37,10 @@ TEST_CASE("Execute integer checks", "[vm]") {
           builder->addLoadLitInt(2);
           builder->addCheckGtInt();
           builder->addConvBoolString();
-          builder->addPrintString();
+          builder->addPCall(vm::PCallCode::PrintString);
+          builder->addPop();
         },
+        "input",
         "false");
     CHECK_EXPR(
         [](backend::Builder* builder) -> void {
@@ -42,8 +48,10 @@ TEST_CASE("Execute integer checks", "[vm]") {
           builder->addLoadLitInt(1);
           builder->addCheckGtInt();
           builder->addConvBoolString();
-          builder->addPrintString();
+          builder->addPCall(vm::PCallCode::PrintString);
+          builder->addPop();
         },
+        "input",
         "true");
   }
 
@@ -54,8 +62,10 @@ TEST_CASE("Execute integer checks", "[vm]") {
           builder->addLoadLitInt(2);
           builder->addCheckLeInt();
           builder->addConvBoolString();
-          builder->addPrintString();
+          builder->addPCall(vm::PCallCode::PrintString);
+          builder->addPop();
         },
+        "input",
         "false");
     CHECK_EXPR(
         [](backend::Builder* builder) -> void {
@@ -63,8 +73,10 @@ TEST_CASE("Execute integer checks", "[vm]") {
           builder->addLoadLitInt(3);
           builder->addCheckLeInt();
           builder->addConvBoolString();
-          builder->addPrintString();
+          builder->addPCall(vm::PCallCode::PrintString);
+          builder->addPop();
         },
+        "input",
         "true");
   }
 }

@@ -40,6 +40,7 @@ public:
   [[nodiscard]] auto getChildCount() const -> unsigned int override;
   [[nodiscard]] auto getSpan() const -> input::Span override;
 
+  [[nodiscard]] auto isAction() const -> bool;
   [[nodiscard]] auto getId() const -> const lex::Token&;
   [[nodiscard]] auto getTypeSubs() const -> const std::optional<TypeSubstitutionList>&;
   [[nodiscard]] auto getArgList() const -> const ArgumentListDecl&;

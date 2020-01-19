@@ -157,10 +157,6 @@ auto operator<<(std::ostream& out, const OpCode& rhs) -> std::ostream& {
     out << "load-struct-field";
     break;
 
-  case OpCode::PrintString:
-    out << "print-string";
-    break;
-
   case OpCode::Jump:
     out << "jump";
     break;
@@ -179,6 +175,9 @@ auto operator<<(std::ostream& out, const OpCode& rhs) -> std::ostream& {
     break;
   case OpCode::CallDynTail:
     out << "call-dyn-tail";
+    break;
+  case OpCode::PCall:
+    out << "pcall";
     break;
   case OpCode::Ret:
     out << "ret";

@@ -9,119 +9,144 @@ namespace frontend {
 
 TEST_CASE("Analyzing user-function declarations", "[frontend]") {
 
-  SECTION("Declare basic function") {
-    const auto& output = ANALYZE("fun f(int a, bool b) -> bool false");
-    REQUIRE(output.isSuccess());
-    CHECK(
-        GET_FUNC_DECL(output, "f", GET_TYPE_ID(output, "int"), GET_TYPE_ID(output, "bool"))
-            .getOutput() == GET_TYPE_ID(output, "bool"));
+  SECTION("Pure functions") {
+
+    SECTION("Declare basic function") {
+      const auto& output = ANALYZE("fun f(int a, bool b) -> bool false");
+      REQUIRE(output.isSuccess());
+      CHECK(
+          GET_FUNC_DECL(output, "f", GET_TYPE_ID(output, "int"), GET_TYPE_ID(output, "bool"))
+              .getOutput() == GET_TYPE_ID(output, "bool"));
+    }
+
+    SECTION("Declare type-inferred function") {
+      const auto& output = ANALYZE("fun f(int a, bool b) b");
+      REQUIRE(output.isSuccess());
+      CHECK(
+          GET_FUNC_DECL(output, "f", GET_TYPE_ID(output, "int"), GET_TYPE_ID(output, "bool"))
+              .getOutput() == GET_TYPE_ID(output, "bool"));
+    }
+
+    SECTION("Declare overloaded function") {
+      const auto& output = ANALYZE("fun f(int a) -> bool false "
+                                   "fun f(string a) -> string \"hello world\" "
+                                   "fun f(bool a) -> bool a "
+                                   "fun f() -> int 1");
+      REQUIRE(output.isSuccess());
+      CHECK(
+          GET_FUNC_DECL(output, "f", GET_TYPE_ID(output, "int")).getOutput() ==
+          GET_TYPE_ID(output, "bool"));
+      CHECK(
+          GET_FUNC_DECL(output, "f", GET_TYPE_ID(output, "string")).getOutput() ==
+          GET_TYPE_ID(output, "string"));
+      CHECK(
+          GET_FUNC_DECL(output, "f", GET_TYPE_ID(output, "bool")).getOutput() ==
+          GET_TYPE_ID(output, "bool"));
+      CHECK(GET_FUNC_DECL(output, "f").getOutput() == output.getProg().getInt());
+    }
+
+    SECTION("Declare function template") {
+      const auto& output = ANALYZE("fun f{T}(T a) -> T a "
+                                   "fun f2() -> int f{int}(1) "
+                                   "fun f3() -> float f{float}(1.0)");
+      REQUIRE(output.isSuccess());
+      CHECK(
+          GET_FUNC_DECL(output, "f__int", GET_TYPE_ID(output, "int")).getOutput() ==
+          GET_TYPE_ID(output, "int"));
+      CHECK(
+          GET_FUNC_DECL(output, "f__float", GET_TYPE_ID(output, "float")).getOutput() ==
+          GET_TYPE_ID(output, "float"));
+    }
+
+    SECTION("Declare conversion function") {
+      const auto& output = ANALYZE("fun bool(int i) i != 0");
+      REQUIRE(output.isSuccess());
+      REQUIRE(GET_CONV(output, "int", "bool"));
+    }
+
+    SECTION("Declare conversion function with explicit ret type") {
+      const auto& output = ANALYZE("fun bool(int i) -> bool i != 0");
+      REQUIRE(output.isSuccess());
+      REQUIRE(GET_CONV(output, "int", "bool"));
+    }
+
+    SECTION("Declare templated conversion function") {
+      const auto& output = ANALYZE("struct Tuple{T, Y} = T a, Y b "
+                                   "fun string{T, Y}(Tuple{T, Y} t) "
+                                   " t.a + \",\" + t.b "
+                                   "fun f() string{int, bool}(Tuple{int, bool}(42, false))");
+      REQUIRE(output.isSuccess());
+      CHECK(GET_FUNC_DECL(output, "f").getOutput() == GET_TYPE_ID(output, "string"));
+      CHECK(
+          GET_FUNC_DECL(output, "string", GET_TYPE_ID(output, "Tuple__int_bool")).getOutput() ==
+          GET_TYPE_ID(output, "string"));
+    }
+
+    SECTION("Declare templated conversion function") {
+      const auto& output = ANALYZE("struct Tuple{T, Y} = T a, Y b "
+                                   "fun Tuple(int i) Tuple{int, bool}(i, false)"
+                                   "fun f() Tuple{int, bool}(42)");
+      REQUIRE(output.isSuccess());
+      CHECK(GET_FUNC_DECL(output, "f").getOutput() == GET_TYPE_ID(output, "Tuple__int_bool"));
+      CHECK(
+          GET_FUNC_DECL(output, "Tuple__int_bool", GET_TYPE_ID(output, "int")).getOutput() ==
+          GET_TYPE_ID(output, "Tuple__int_bool"));
+    }
+
+    SECTION("Declare templated conversion function") {
+      const auto& output = ANALYZE("struct Tuple{T, Y} = T a, Y b "
+                                   "fun Tuple{T}(T t) Tuple{T, bool}(t, false) "
+                                   "fun f() Tuple{string}(\"hello world\")");
+      REQUIRE(output.isSuccess());
+      CHECK(GET_FUNC_DECL(output, "f").getOutput() == GET_TYPE_ID(output, "Tuple__string_bool"));
+      CHECK(
+          GET_FUNC_DECL(output, "Tuple__string_bool", GET_TYPE_ID(output, "string")).getOutput() ==
+          GET_TYPE_ID(output, "Tuple__string_bool"));
+    }
+
+    SECTION("Overload operator") {
+      const auto& output = ANALYZE("fun -(bool b) !b "
+                                   "fun f() -false");
+      REQUIRE(output.isSuccess());
+
+      auto args = std::vector<prog::expr::NodePtr>{};
+      args.push_back(prog::expr::litBoolNode(output.getProg(), false));
+
+      const auto& funcDef = GET_FUNC_DEF(output, "f");
+      CHECK(
+          funcDef.getExpr() ==
+          *prog::expr::callExprNode(
+              output.getProg(),
+              GET_OP_ID(output, prog::Operator::Minus, GET_TYPE_ID(output, "bool")),
+              std::move(args)));
+    }
   }
 
-  SECTION("Declare type-inferred function") {
-    const auto& output = ANALYZE("fun f(int a, bool b) b");
-    REQUIRE(output.isSuccess());
-    CHECK(
-        GET_FUNC_DECL(output, "f", GET_TYPE_ID(output, "int"), GET_TYPE_ID(output, "bool"))
-            .getOutput() == GET_TYPE_ID(output, "bool"));
-  }
+  SECTION("Actions") {
 
-  SECTION("Declare overloaded function") {
-    const auto& output = ANALYZE("fun f(int a) -> bool false "
-                                 "fun f(string a) -> string \"hello world\" "
-                                 "fun f(bool a) -> bool a "
-                                 "fun f() -> int 1");
-    REQUIRE(output.isSuccess());
-    CHECK(
-        GET_FUNC_DECL(output, "f", GET_TYPE_ID(output, "int")).getOutput() ==
-        GET_TYPE_ID(output, "bool"));
-    CHECK(
-        GET_FUNC_DECL(output, "f", GET_TYPE_ID(output, "string")).getOutput() ==
-        GET_TYPE_ID(output, "string"));
-    CHECK(
-        GET_FUNC_DECL(output, "f", GET_TYPE_ID(output, "bool")).getOutput() ==
-        GET_TYPE_ID(output, "bool"));
-    CHECK(GET_FUNC_DECL(output, "f").getOutput() == output.getProg().getInt());
-  }
+    SECTION("Declare basic action") {
+      const auto& output = ANALYZE("action act(int a, bool b) -> bool false");
+      REQUIRE(output.isSuccess());
+      CHECK(
+          GET_FUNC_DECL(output, "act", GET_TYPE_ID(output, "int"), GET_TYPE_ID(output, "bool"))
+              .getOutput() == GET_TYPE_ID(output, "bool"));
+    }
 
-  SECTION("Declare template function") {
-    const auto& output = ANALYZE("fun f{T}(T a) -> T a "
-                                 "fun f2() -> int f{int}(1) "
-                                 "fun f3() -> float f{float}(1.0)");
-    REQUIRE(output.isSuccess());
-    CHECK(
-        GET_FUNC_DECL(output, "f__int", GET_TYPE_ID(output, "int")).getOutput() ==
-        GET_TYPE_ID(output, "int"));
-    CHECK(
-        GET_FUNC_DECL(output, "f__float", GET_TYPE_ID(output, "float")).getOutput() ==
-        GET_TYPE_ID(output, "float"));
-  }
-
-  SECTION("Declare conversion function") {
-    const auto& output = ANALYZE("fun bool(int i) i != 0");
-    REQUIRE(output.isSuccess());
-    REQUIRE(GET_CONV(output, "int", "bool"));
-  }
-
-  SECTION("Declare conversion function with explicit ret type") {
-    const auto& output = ANALYZE("fun bool(int i) -> bool i != 0");
-    REQUIRE(output.isSuccess());
-    REQUIRE(GET_CONV(output, "int", "bool"));
-  }
-
-  SECTION("Declare templated conversion function") {
-    const auto& output = ANALYZE("struct Tuple{T, Y} = T a, Y b "
-                                 "fun string{T, Y}(Tuple{T, Y} t) "
-                                 " t.a + \",\" + t.b "
-                                 "fun f() string{int, bool}(Tuple{int, bool}(42, false))");
-    REQUIRE(output.isSuccess());
-    CHECK(GET_FUNC_DECL(output, "f").getOutput() == GET_TYPE_ID(output, "string"));
-    CHECK(
-        GET_FUNC_DECL(output, "string", GET_TYPE_ID(output, "Tuple__int_bool")).getOutput() ==
-        GET_TYPE_ID(output, "string"));
-  }
-
-  SECTION("Declare templated conversion function") {
-    const auto& output = ANALYZE("struct Tuple{T, Y} = T a, Y b "
-                                 "fun Tuple(int i) Tuple{int, bool}(i, false)"
-                                 "fun f() Tuple{int, bool}(42)");
-    REQUIRE(output.isSuccess());
-    CHECK(GET_FUNC_DECL(output, "f").getOutput() == GET_TYPE_ID(output, "Tuple__int_bool"));
-    CHECK(
-        GET_FUNC_DECL(output, "Tuple__int_bool", GET_TYPE_ID(output, "int")).getOutput() ==
-        GET_TYPE_ID(output, "Tuple__int_bool"));
-  }
-
-  SECTION("Declare templated conversion function") {
-    const auto& output = ANALYZE("struct Tuple{T, Y} = T a, Y b "
-                                 "fun Tuple{T}(T t) Tuple{T, bool}(t, false) "
-                                 "fun f() Tuple{string}(\"hello world\")");
-    REQUIRE(output.isSuccess());
-    CHECK(GET_FUNC_DECL(output, "f").getOutput() == GET_TYPE_ID(output, "Tuple__string_bool"));
-    CHECK(
-        GET_FUNC_DECL(output, "Tuple__string_bool", GET_TYPE_ID(output, "string")).getOutput() ==
-        GET_TYPE_ID(output, "Tuple__string_bool"));
-  }
-
-  SECTION("Overload operator") {
-    const auto& output = ANALYZE("fun -(bool b) !b "
-                                 "fun f() -false");
-    REQUIRE(output.isSuccess());
-
-    auto args = std::vector<prog::expr::NodePtr>{};
-    args.push_back(prog::expr::litBoolNode(output.getProg(), false));
-
-    const auto& funcDef = GET_FUNC_DEF(output, "f");
-    CHECK(
-        funcDef.getExpr() ==
-        *prog::expr::callExprNode(
-            output.getProg(),
-            GET_OP_ID(output, prog::Operator::Minus, GET_TYPE_ID(output, "bool")),
-            std::move(args)));
+    SECTION("Declare action template") {
+      const auto& output = ANALYZE("fun act{T}(T a) -> T a "
+                                   "fun f2() -> int act{int}(1) "
+                                   "fun f3() -> float act{float}(1.0)");
+      REQUIRE(output.isSuccess());
+      CHECK(
+          GET_FUNC_DECL(output, "act__int", GET_TYPE_ID(output, "int")).getOutput() ==
+          GET_TYPE_ID(output, "int"));
+      CHECK(
+          GET_FUNC_DECL(output, "act__float", GET_TYPE_ID(output, "float")).getOutput() ==
+          GET_TYPE_ID(output, "float"));
+    }
   }
 
   SECTION("Diagnostics") {
-    CHECK_DIAG(
-        "fun print() -> int 1", errFuncNameConflictsWithAction(src, "print", input::Span{4, 8}));
     CHECK_DIAG(
         "fun a() -> int 1 "
         "fun a() -> int 1",
@@ -168,6 +193,22 @@ TEST_CASE("Analyzing user-function declarations", "[frontend]") {
     CHECK_DIAG("fun f{T}(int{M} a) -> int 1", errUndeclaredType(src, "M", 0, input::Span{13, 13}));
     CHECK_DIAG(
         "fun f{T}(int{T{M}} a) -> int 1", errUndeclaredType(src, "M", 0, input::Span{15, 15}));
+    CHECK_DIAG(
+        "fun print(string input) input",
+        errDuplicateFuncDeclaration(src, "print", input::Span{0, 28}));
+    CHECK_DIAG("action +(int i) i + 1", errNonPureOperatorOverload(src, input::Span{7, 7}));
+    CHECK_DIAG("action +{T}(T t) t + 1", errNonPureOperatorOverload(src, input::Span{7, 7}));
+    CHECK_DIAG(
+        "struct S = int i, bool b "
+        "action S() S(0, false)",
+        errNonPureConversion(src, input::Span{32, 32}));
+    CHECK_DIAG(
+        "struct S{T} = int i, T t "
+        "action S{T}() S{T}(0, T()) "
+        "action act() S{int}()",
+        errNonPureConversion(src, input::Span{25, 50}),
+        errInvalidFuncInstantiation(src, input::Span{65, 65}),
+        errNoTypeOrConversionFoundToInstantiate(src, "S", 1, input::Span{65, 72}));
   }
 }
 

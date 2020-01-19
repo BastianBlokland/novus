@@ -24,10 +24,6 @@ errTypeNameIsReserved(const Source& src, const std::string& name, input::Span sp
 errTypeNameConflictsWithFunc(const Source& src, const std::string& name, input::Span span) -> Diag;
 
 [[nodiscard]] auto
-errTypeNameConflictsWithAction(const Source& src, const std::string& name, input::Span span)
-    -> Diag;
-
-[[nodiscard]] auto
 errDuplicateFieldNameInStruct(const Source& src, const std::string& fieldName, input::Span span)
     -> Diag;
 
@@ -81,11 +77,9 @@ errDuplicateEntryValueInEnum(const Source& src, int32_t entryValue, input::Span 
     -> Diag;
 
 [[nodiscard]] auto
-errFuncNameConflictsWithAction(const Source& src, const std::string& name, input::Span span)
-    -> Diag;
-
-[[nodiscard]] auto
 errNonOverloadableOperator(const Source& src, const std::string& name, input::Span span) -> Diag;
+
+[[nodiscard]] auto errNonPureOperatorOverload(const Source& src, input::Span span) -> Diag;
 
 [[nodiscard]] auto
 errOperatorOverloadWithoutArgs(const Source& src, const std::string& name, input::Span span)
@@ -117,10 +111,6 @@ errConstNameConflictsWithType(const Source& src, const std::string& name, input:
 
 [[nodiscard]] auto
 errConstNameConflictsWithFunction(const Source& src, const std::string& name, input::Span span)
-    -> Diag;
-
-[[nodiscard]] auto
-errConstNameConflictsWithAction(const Source& src, const std::string& name, input::Span span)
     -> Diag;
 
 [[nodiscard]] auto errConstNameConflictsWithTypeSubstitution(
@@ -155,11 +145,19 @@ errTypeParamOnSubstitutionType(const Source& src, const std::string& name, input
 [[nodiscard]] auto
 errUninitializedConst(const Source& src, const std::string& name, input::Span span) -> Diag;
 
-[[nodiscard]] auto errUndeclaredFunc(
+[[nodiscard]] auto errUndeclaredPureFunc(
     const Source& src,
     const std::string& name,
     const std::vector<std::string>& argTypes,
     input::Span span) -> Diag;
+
+[[nodiscard]] auto errUndeclaredFuncOrAction(
+    const Source& src,
+    const std::string& name,
+    const std::vector<std::string>& argTypes,
+    input::Span span) -> Diag;
+
+[[nodiscard]] auto errPureFuncInfRecursion(const Source& src, input::Span span) -> Diag;
 
 [[nodiscard]] auto errNoFuncFoundToInstantiate(
     const Source& src, const std::string& name, unsigned int templateParamCount, input::Span span)
@@ -185,15 +183,6 @@ errAmbiguousFunction(const Source& src, const std::string& name, input::Span spa
 
 [[nodiscard]] auto errInvalidFuncInstantiation(const Source& src, input::Span span) -> Diag;
 
-[[nodiscard]] auto errUndeclaredAction(const Source& src, const std::string& name, input::Span span)
-    -> Diag;
-
-[[nodiscard]] auto errUndeclaredActionOverload(
-    const Source& src,
-    const std::string& name,
-    const std::vector<std::string>& argTypes,
-    input::Span span) -> Diag;
-
 [[nodiscard]] auto
 errUnsupportedOperator(const Source& src, const std::string& name, input::Span span) -> Diag;
 
@@ -213,5 +202,13 @@ errUnsupportedOperator(const Source& src, const std::string& name, input::Span s
     const Source& src, const std::string& from, const std::string& to, input::Span span) -> Diag;
 
 [[nodiscard]] auto errNonExhaustiveSwitchWithoutElse(const Source& src, input::Span span) -> Diag;
+
+[[nodiscard]] auto errNonPureConversion(const Source& src, input::Span span) -> Diag;
+
+[[nodiscard]] auto errInvalidExecStmt(
+    const Source& src,
+    const std::string& name,
+    const std::vector<std::string>& argTypes,
+    input::Span span) -> Diag;
 
 } // namespace frontend

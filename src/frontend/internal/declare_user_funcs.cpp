@@ -16,14 +16,17 @@ auto DeclareUserFuncs::getFuncs() const noexcept -> const std::vector<Declaratio
 }
 
 auto DeclareUserFuncs::visit(const parse::FuncDeclStmtNode& n) -> void {
+
   std::string name;
   std::string displayName;
   if (n.getId().getKind() == lex::TokenKind::Identifier) {
     name = displayName = getName(n.getId());
-    if (!validateFuncName(n.getId())) {
+  } else {
+    if (n.isAction()) {
+      m_context->reportDiag(errNonPureOperatorOverload(m_context->getSrc(), n.getId().getSpan()));
       return;
     }
-  } else {
+
     auto op = getOperator(n.getId());
     if (!op) {
       m_context->reportDiag(
@@ -45,7 +48,12 @@ auto DeclareUserFuncs::visit(const parse::FuncDeclStmtNode& n) -> void {
   if (n.getTypeSubs()) {
     auto typeSubs = getSubstitutionParams(m_context, *n.getTypeSubs());
     if (typeSubs && validateFuncTemplateArgList(n.getArgList(), *typeSubs)) {
-      m_context->getFuncTemplates()->declare(m_context, name, std::move(*typeSubs), &n);
+
+      if (n.isAction()) {
+        m_context->getFuncTemplates()->declareAction(m_context, name, std::move(*typeSubs), &n);
+      } else {
+        m_context->getFuncTemplates()->declarePure(m_context, name, std::move(*typeSubs), &n);
+      }
     }
     return;
   }
@@ -57,7 +65,7 @@ auto DeclareUserFuncs::visit(const parse::FuncDeclStmtNode& n) -> void {
   }
 
   // Verify that this is not a duplicate declaration.
-  if (m_context->getProg()->lookupFunc(name, input.value(), 0, false)) {
+  if (m_context->getProg()->lookupFunc(name, input.value(), prog::OvOptions{0})) {
     m_context->reportDiag(
         errDuplicateFuncDeclaration(m_context->getSrc(), displayName, n.getSpan()));
     return;
@@ -69,8 +77,16 @@ auto DeclareUserFuncs::visit(const parse::FuncDeclStmtNode& n) -> void {
     return;
   }
 
-  // For conversions validate that correct types are returned.
   const auto isConv = isType(m_context, name);
+  if (isConv && n.isAction()) {
+    if (n.isAction()) {
+      m_context->reportDiag(errNonPureConversion(m_context->getSrc(), n.getId().getSpan()));
+      return;
+    }
+    return;
+  }
+
+  // For conversions validate that correct types are returned.
   if (isConv) {
     const auto nonTemplConvType = m_context->getProg()->lookupType(name);
     if (nonTemplConvType) {
@@ -83,7 +99,8 @@ auto DeclareUserFuncs::visit(const parse::FuncDeclStmtNode& n) -> void {
       }
     } else {
       if (retType->isInfer()) {
-        retType = inferRetType(m_context, nullptr, n, *input, nullptr, true);
+        retType =
+            inferRetType(m_context, nullptr, n, *input, nullptr, TypeInferExpr::Flags::Aggressive);
         if (!retType->isConcrete()) {
           m_context->reportDiag(errUnableToInferReturnTypeOfConversionToTemplatedType(
               m_context->getSrc(), name, n.getId().getSpan()));
@@ -101,18 +118,10 @@ auto DeclareUserFuncs::visit(const parse::FuncDeclStmtNode& n) -> void {
 
   // Declare the function in the program.
   const auto funcName = isConv ? getName(*m_context, *retType) : name;
-  auto funcId         = m_context->getProg()->declareFunc(funcName, input.value(), retType.value());
+  auto funcId         = n.isAction()
+      ? m_context->getProg()->declareAction(funcName, input.value(), retType.value())
+      : m_context->getProg()->declarePureFunc(funcName, input.value(), retType.value());
   m_funcs.emplace_back(funcId, name, n);
-}
-
-auto DeclareUserFuncs::validateFuncName(const lex::Token& nameToken) -> bool {
-  const auto name = getName(nameToken);
-  if (!m_context->getProg()->lookupActions(name).empty()) {
-    m_context->reportDiag(
-        errFuncNameConflictsWithAction(m_context->getSrc(), name, nameToken.getSpan()));
-    return false;
-  }
-  return true;
 }
 
 auto DeclareUserFuncs::validateFuncTemplateArgList(

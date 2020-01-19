@@ -2,8 +2,10 @@
 #include "frontend/diag_defs.hpp"
 #include "helpers.hpp"
 #include "prog/expr/node_const.hpp"
+#include "prog/expr/node_lit_bool.hpp"
 #include "prog/expr/node_lit_int.hpp"
 #include "prog/expr/node_lit_string.hpp"
+#include "prog/expr/node_switch.hpp"
 
 namespace frontend {
 
@@ -35,11 +37,19 @@ TEST_CASE("Analyzing call expressions", "[frontend]") {
   }
 
   SECTION("Get recursive call") {
-    const auto& output = ANALYZE("fun f() -> int f()");
+    const auto& output = ANALYZE("fun f() -> int false ? f() : 1");
     REQUIRE(output.isSuccess());
+
+    auto conditions = std::vector<prog::expr::NodePtr>{};
+    conditions.push_back(prog::expr::litBoolNode(output.getProg(), false));
+
+    auto branches = std::vector<prog::expr::NodePtr>{};
+    branches.push_back(prog::expr::callExprNode(output.getProg(), GET_FUNC_ID(output, "f"), {}));
+    branches.push_back(prog::expr::litIntNode(output.getProg(), 1));
+
     CHECK(
         GET_FUNC_DEF(output, "f").getExpr() ==
-        *prog::expr::callExprNode(output.getProg(), GET_FUNC_ID(output, "f"), {}));
+        *prog::expr::switchExprNode(output.getProg(), std::move(conditions), std::move(branches)));
   }
 
   SECTION("Get call with conversion") {
@@ -143,15 +153,39 @@ TEST_CASE("Analyzing call expressions", "[frontend]") {
             std::move(args)));
   }
 
+  SECTION("Get call to action") {
+    const auto& output = ANALYZE("action a1() -> int 1 "
+                                 "action a2() -> int a1()");
+    REQUIRE(output.isSuccess());
+    CHECK(
+        GET_FUNC_DEF(output, "a2").getExpr() ==
+        *prog::expr::callExprNode(output.getProg(), GET_FUNC_ID(output, "a1"), {}));
+  }
+
+  SECTION("Get call to templated action") {
+    const auto& output = ANALYZE("fun a1{T}(T t) -> T t "
+                                 "fun a2() -> int a1{int}(1)");
+    REQUIRE(output.isSuccess());
+
+    auto args = std::vector<prog::expr::NodePtr>{};
+    args.push_back(prog::expr::litIntNode(output.getProg(), 1));
+    CHECK(
+        GET_FUNC_DEF(output, "a2").getExpr() ==
+        *prog::expr::callExprNode(
+            output.getProg(),
+            GET_FUNC_ID(output, "a1__int", GET_TYPE_ID(output, "int")),
+            std::move(args)));
+  }
+
   SECTION("Diagnostics") {
     CHECK_DIAG(
         "fun f1() -> int 1 "
         "fun f2() -> int f3()",
-        errUndeclaredFunc(src, "f3", {}, input::Span{34, 37}));
+        errUndeclaredPureFunc(src, "f3", {}, input::Span{34, 37}));
     CHECK_DIAG(
         "fun f1() -> int 1 "
         "fun f2() -> int f2(1)",
-        errUndeclaredFunc(src, "f2", {"int"}, input::Span{34, 38}));
+        errUndeclaredPureFunc(src, "f2", {"int"}, input::Span{34, 38}));
     CHECK_DIAG("fun f() -> int 1()", errUndeclaredCallOperator(src, {"int"}, input::Span{15, 17}));
     CHECK_DIAG(
         "fun f(int i) -> int i()", errUndeclaredCallOperator(src, {"int"}, input::Span{20, 22}));
@@ -160,11 +194,23 @@ TEST_CASE("Analyzing call expressions", "[frontend]") {
         errFieldNotFoundOnType(src, "f2", "int", input::Span{21, 24}));
     CHECK_DIAG(
         "fun f() -> int (42).length()",
-        errUndeclaredFunc(src, "length", {"int"}, input::Span{15, 27}));
+        errUndeclaredPureFunc(src, "length", {"int"}, input::Span{15, 27}));
     CHECK_DIAG(
         "fun ()(string s) -> int s.length() "
         "fun f() -> int 42()",
         errUndeclaredCallOperator(src, {"int"}, input::Span{50, 53}));
+    CHECK_DIAG(
+        "action a() -> int 1 "
+        "fun f2() -> int a()",
+        errUndeclaredPureFunc(src, "a", {}, input::Span{36, 38}));
+    CHECK_DIAG(
+        "action a{T}() -> T T() "
+        "fun f2() -> int a{int}()",
+        errNoFuncFoundToInstantiate(src, "a", 1, input::Span{39, 46}));
+    CHECK_DIAG(
+        "action a(int i) -> int i * 2 "
+        "fun f2(int i) -> int i.a()",
+        errUndeclaredPureFunc(src, "a", {"int"}, input::Span{50, 54}));
   }
 }
 

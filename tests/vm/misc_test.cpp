@@ -14,11 +14,13 @@ TEST_CASE("Execute miscellaneous instructions", "[vm]") {
 
           builder->addAddInt();
           builder->addConvIntString();
-          builder->addPrintString();
+          builder->addPCall(vm::PCallCode::PrintString);
+          builder->addPop();
           builder->addRet();
 
           builder->addEntryPoint("start");
         },
+        "input",
         "84");
   }
 
@@ -31,11 +33,13 @@ TEST_CASE("Execute miscellaneous instructions", "[vm]") {
           builder->addPop();
 
           builder->addConvIntString();
-          builder->addPrintString();
+          builder->addPCall(vm::PCallCode::PrintString);
+          builder->addPop();
           builder->addRet();
 
           builder->addEntryPoint("start");
         },
+        "input",
         "42");
   }
 }

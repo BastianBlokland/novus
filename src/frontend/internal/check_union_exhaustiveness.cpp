@@ -21,22 +21,6 @@ auto CheckUnionExhaustiveness::isExhaustive() const -> bool {
   return true;
 }
 
-auto CheckUnionExhaustiveness::visit(const prog::expr::AssignExprNode & /*unused*/) -> void {}
-
-auto CheckUnionExhaustiveness::visit(const prog::expr::SwitchExprNode & /*unused*/) -> void {}
-
-auto CheckUnionExhaustiveness::visit(const prog::expr::CallExprNode & /*unused*/) -> void {}
-
-auto CheckUnionExhaustiveness::visit(const prog::expr::CallDynExprNode & /*unused*/) -> void {}
-
-auto CheckUnionExhaustiveness::visit(const prog::expr::ClosureNode & /*unused*/) -> void {}
-
-auto CheckUnionExhaustiveness::visit(const prog::expr::ConstExprNode & /*unused*/) -> void {}
-
-auto CheckUnionExhaustiveness::visit(const prog::expr::FieldExprNode & /*unused*/) -> void {}
-
-auto CheckUnionExhaustiveness::visit(const prog::expr::GroupExprNode & /*unused*/) -> void {}
-
 auto CheckUnionExhaustiveness::visit(const prog::expr::UnionCheckExprNode& n) -> void {
   const auto unionType = n[0].getType();
   if (m_unionType && m_unionType != unionType) {
@@ -54,21 +38,5 @@ auto CheckUnionExhaustiveness::visit(const prog::expr::UnionGetExprNode& n) -> v
   m_unionType = unionType;
   m_checkedTypes.push_back(n.getTargetType());
 }
-
-auto CheckUnionExhaustiveness::visit(const prog::expr::FailNode & /*unused*/) -> void {}
-
-auto CheckUnionExhaustiveness::visit(const prog::expr::LitBoolNode & /*unused*/) -> void {}
-
-auto CheckUnionExhaustiveness::visit(const prog::expr::LitFloatNode & /*unused*/) -> void {}
-
-auto CheckUnionExhaustiveness::visit(const prog::expr::LitFuncNode & /*unused*/) -> void {}
-
-auto CheckUnionExhaustiveness::visit(const prog::expr::LitIntNode & /*unused*/) -> void {}
-
-auto CheckUnionExhaustiveness::visit(const prog::expr::LitStringNode & /*unused*/) -> void {}
-
-auto CheckUnionExhaustiveness::visit(const prog::expr::LitCharNode & /*unused*/) -> void {}
-
-auto CheckUnionExhaustiveness::visit(const prog::expr::LitEnumNode & /*unused*/) -> void {}
 
 } // namespace frontend::internal

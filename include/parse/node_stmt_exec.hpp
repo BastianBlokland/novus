@@ -7,7 +7,7 @@ namespace parse {
 
 class ExecStmtNode final : public Node {
   friend auto execStmtNode(
-      lex::Token action,
+      lex::Token target,
       lex::Token open,
       std::vector<NodePtr> args,
       std::vector<lex::Token> commas,
@@ -23,19 +23,19 @@ public:
   [[nodiscard]] auto getChildCount() const -> unsigned int override;
   [[nodiscard]] auto getSpan() const -> input::Span override;
 
-  [[nodiscard]] auto getAction() const -> const lex::Token&;
+  [[nodiscard]] auto getTarget() const -> const lex::Token&;
 
   auto accept(NodeVisitor* visitor) const -> void override;
 
 private:
-  const lex::Token m_action;
+  const lex::Token m_target;
   const lex::Token m_open;
   const std::vector<NodePtr> m_args;
   const std::vector<lex::Token> m_commas;
   const lex::Token m_close;
 
   ExecStmtNode(
-      lex::Token action,
+      lex::Token target,
       lex::Token open,
       std::vector<NodePtr> args,
       std::vector<lex::Token> commas,
@@ -46,7 +46,7 @@ private:
 
 // Factories.
 auto execStmtNode(
-    lex::Token action,
+    lex::Token target,
     lex::Token open,
     std::vector<NodePtr> args,
     std::vector<lex::Token> commas,

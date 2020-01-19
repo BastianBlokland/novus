@@ -10,123 +10,160 @@ namespace parse {
 
 TEST_CASE("Parsing function declaration statements", "[parse]") {
 
-  CHECK_STMT(
-      "fun a() 1",
-      funcDeclStmtNode(
-          FUN,
-          ID("a"),
-          std::nullopt,
-          ArgumentListDecl(OPAREN, {}, COMMAS(0), CPAREN),
-          std::nullopt,
-          INT(1)));
-  CHECK_STMT(
-      "fun a() -> int 1",
-      funcDeclStmtNode(
-          FUN,
-          ID("a"),
-          std::nullopt,
-          ArgumentListDecl(OPAREN, {}, COMMAS(0), CPAREN),
-          FuncDeclStmtNode::RetTypeSpec{ARROW, TYPE("int")},
-          INT(1)));
-  CHECK_STMT(
-      "fun a(int x) -> int 1",
-      funcDeclStmtNode(
-          FUN,
-          ID("a"),
-          std::nullopt,
-          ArgumentListDecl(
-              OPAREN, {ArgumentListDecl::ArgSpec(TYPE("int"), ID("x"))}, COMMAS(0), CPAREN),
-          FuncDeclStmtNode::RetTypeSpec{ARROW, TYPE("int")},
-          INT(1)));
-  CHECK_STMT(
-      "fun a(int x, int y) -> int 1",
-      funcDeclStmtNode(
-          FUN,
-          ID("a"),
-          std::nullopt,
-          ArgumentListDecl(
-              OPAREN,
-              {ArgumentListDecl::ArgSpec(TYPE("int"), ID("x")),
-               ArgumentListDecl::ArgSpec(TYPE("int"), ID("y"))},
-              COMMAS(1),
-              CPAREN),
-          FuncDeclStmtNode::RetTypeSpec{ARROW, TYPE("int")},
-          INT(1)));
-  CHECK_STMT(
-      "fun a(int x, int y, bool z) -> int x * y",
-      funcDeclStmtNode(
-          FUN,
-          ID("a"),
-          std::nullopt,
-          ArgumentListDecl(
-              OPAREN,
-              {ArgumentListDecl::ArgSpec(TYPE("int"), ID("x")),
-               ArgumentListDecl::ArgSpec(TYPE("int"), ID("y")),
-               ArgumentListDecl::ArgSpec(TYPE("bool"), ID("z"))},
-              COMMAS(2),
-              CPAREN),
-          FuncDeclStmtNode::RetTypeSpec{ARROW, TYPE("int")},
-          binaryExprNode(ID_EXPR("x"), STAR, ID_EXPR("y"))));
-  CHECK_STMT(
-      "fun a{T}() 1",
-      funcDeclStmtNode(
-          FUN,
-          ID("a"),
-          TypeSubstitutionList{OCURLY, {ID("T")}, COMMAS(0), CCURLY},
-          ArgumentListDecl(OPAREN, {}, COMMAS(0), CPAREN),
-          std::nullopt,
-          INT(1)));
-  CHECK_STMT(
-      "fun a{T, U}() 1",
-      funcDeclStmtNode(
-          FUN,
-          ID("a"),
-          TypeSubstitutionList{OCURLY, {ID("T"), ID("U")}, COMMAS(1), CCURLY},
-          ArgumentListDecl(OPAREN, {}, COMMAS(0), CPAREN),
-          std::nullopt,
-          INT(1)));
-  CHECK_STMT(
-      "fun a{T, U, W}(T x) -> T x",
-      funcDeclStmtNode(
-          FUN,
-          ID("a"),
-          TypeSubstitutionList{OCURLY, {ID("T"), ID("U"), ID("W")}, COMMAS(2), CCURLY},
-          ArgumentListDecl(
-              OPAREN, {ArgumentListDecl::ArgSpec(TYPE("T"), ID("x"))}, COMMAS(0), CPAREN),
-          FuncDeclStmtNode::RetTypeSpec{ARROW, TYPE("T")},
-          ID_EXPR("x")));
-  CHECK_STMT(
-      "fun a() -> List{T{Y}} 1",
-      funcDeclStmtNode(
-          FUN,
-          ID("a"),
-          std::nullopt,
-          ArgumentListDecl(OPAREN, {}, COMMAS(0), CPAREN),
-          FuncDeclStmtNode::RetTypeSpec{ARROW, TYPE("List", TYPE("T", TYPE("Y")))},
-          INT(1)));
-  CHECK_STMT(
-      "fun a{T, U, W}(T x) -> T x",
-      funcDeclStmtNode(
-          FUN,
-          ID("a"),
-          TypeSubstitutionList{OCURLY, {ID("T"), ID("U"), ID("W")}, COMMAS(2), CCURLY},
-          ArgumentListDecl(
-              OPAREN, {ArgumentListDecl::ArgSpec(TYPE("T"), ID("x"))}, COMMAS(0), CPAREN),
-          FuncDeclStmtNode::RetTypeSpec{ARROW, TYPE("T")},
-          ID_EXPR("x")));
-  CHECK_STMT(
-      "fun a{T, U}(T{U} x) x",
-      funcDeclStmtNode(
-          FUN,
-          ID("a"),
-          TypeSubstitutionList{OCURLY, {ID("T"), ID("U")}, COMMAS(1), CCURLY},
-          ArgumentListDecl(
-              OPAREN,
-              {ArgumentListDecl::ArgSpec(TYPE("T", TYPE("U")), ID("x"))},
-              COMMAS(0),
-              CPAREN),
-          std::nullopt,
-          ID_EXPR("x")));
+  SECTION("Pure functions") {
+    CHECK_STMT(
+        "fun a() 1",
+        funcDeclStmtNode(
+            FUN,
+            ID("a"),
+            std::nullopt,
+            ArgumentListDecl(OPAREN, {}, COMMAS(0), CPAREN),
+            std::nullopt,
+            INT(1)));
+    CHECK_STMT(
+        "fun a() -> int 1",
+        funcDeclStmtNode(
+            FUN,
+            ID("a"),
+            std::nullopt,
+            ArgumentListDecl(OPAREN, {}, COMMAS(0), CPAREN),
+            FuncDeclStmtNode::RetTypeSpec{ARROW, TYPE("int")},
+            INT(1)));
+    CHECK_STMT(
+        "fun a(int x) -> int 1",
+        funcDeclStmtNode(
+            FUN,
+            ID("a"),
+            std::nullopt,
+            ArgumentListDecl(
+                OPAREN, {ArgumentListDecl::ArgSpec(TYPE("int"), ID("x"))}, COMMAS(0), CPAREN),
+            FuncDeclStmtNode::RetTypeSpec{ARROW, TYPE("int")},
+            INT(1)));
+    CHECK_STMT(
+        "fun a(int x, int y) -> int 1",
+        funcDeclStmtNode(
+            FUN,
+            ID("a"),
+            std::nullopt,
+            ArgumentListDecl(
+                OPAREN,
+                {ArgumentListDecl::ArgSpec(TYPE("int"), ID("x")),
+                 ArgumentListDecl::ArgSpec(TYPE("int"), ID("y"))},
+                COMMAS(1),
+                CPAREN),
+            FuncDeclStmtNode::RetTypeSpec{ARROW, TYPE("int")},
+            INT(1)));
+    CHECK_STMT(
+        "fun a(int x, int y, bool z) -> int x * y",
+        funcDeclStmtNode(
+            FUN,
+            ID("a"),
+            std::nullopt,
+            ArgumentListDecl(
+                OPAREN,
+                {ArgumentListDecl::ArgSpec(TYPE("int"), ID("x")),
+                 ArgumentListDecl::ArgSpec(TYPE("int"), ID("y")),
+                 ArgumentListDecl::ArgSpec(TYPE("bool"), ID("z"))},
+                COMMAS(2),
+                CPAREN),
+            FuncDeclStmtNode::RetTypeSpec{ARROW, TYPE("int")},
+            binaryExprNode(ID_EXPR("x"), STAR, ID_EXPR("y"))));
+    CHECK_STMT(
+        "fun a{T}() 1",
+        funcDeclStmtNode(
+            FUN,
+            ID("a"),
+            TypeSubstitutionList{OCURLY, {ID("T")}, COMMAS(0), CCURLY},
+            ArgumentListDecl(OPAREN, {}, COMMAS(0), CPAREN),
+            std::nullopt,
+            INT(1)));
+    CHECK_STMT(
+        "fun a{T, U}() 1",
+        funcDeclStmtNode(
+            FUN,
+            ID("a"),
+            TypeSubstitutionList{OCURLY, {ID("T"), ID("U")}, COMMAS(1), CCURLY},
+            ArgumentListDecl(OPAREN, {}, COMMAS(0), CPAREN),
+            std::nullopt,
+            INT(1)));
+    CHECK_STMT(
+        "fun a{T, U, W}(T x) -> T x",
+        funcDeclStmtNode(
+            FUN,
+            ID("a"),
+            TypeSubstitutionList{OCURLY, {ID("T"), ID("U"), ID("W")}, COMMAS(2), CCURLY},
+            ArgumentListDecl(
+                OPAREN, {ArgumentListDecl::ArgSpec(TYPE("T"), ID("x"))}, COMMAS(0), CPAREN),
+            FuncDeclStmtNode::RetTypeSpec{ARROW, TYPE("T")},
+            ID_EXPR("x")));
+    CHECK_STMT(
+        "fun a() -> List{T{Y}} 1",
+        funcDeclStmtNode(
+            FUN,
+            ID("a"),
+            std::nullopt,
+            ArgumentListDecl(OPAREN, {}, COMMAS(0), CPAREN),
+            FuncDeclStmtNode::RetTypeSpec{ARROW, TYPE("List", TYPE("T", TYPE("Y")))},
+            INT(1)));
+    CHECK_STMT(
+        "fun a{T, U, W}(T x) -> T x",
+        funcDeclStmtNode(
+            FUN,
+            ID("a"),
+            TypeSubstitutionList{OCURLY, {ID("T"), ID("U"), ID("W")}, COMMAS(2), CCURLY},
+            ArgumentListDecl(
+                OPAREN, {ArgumentListDecl::ArgSpec(TYPE("T"), ID("x"))}, COMMAS(0), CPAREN),
+            FuncDeclStmtNode::RetTypeSpec{ARROW, TYPE("T")},
+            ID_EXPR("x")));
+    CHECK_STMT(
+        "fun a{T, U}(T{U} x) x",
+        funcDeclStmtNode(
+            FUN,
+            ID("a"),
+            TypeSubstitutionList{OCURLY, {ID("T"), ID("U")}, COMMAS(1), CCURLY},
+            ArgumentListDecl(
+                OPAREN,
+                {ArgumentListDecl::ArgSpec(TYPE("T", TYPE("U")), ID("x"))},
+                COMMAS(0),
+                CPAREN),
+            std::nullopt,
+            ID_EXPR("x")));
+  }
+
+  SECTION("Actions") {
+    CHECK_STMT(
+        "action a() 1",
+        funcDeclStmtNode(
+            ACTION,
+            ID("a"),
+            std::nullopt,
+            ArgumentListDecl(OPAREN, {}, COMMAS(0), CPAREN),
+            std::nullopt,
+            INT(1)));
+    CHECK_STMT(
+        "action a(int x) -> int 1",
+        funcDeclStmtNode(
+            ACTION,
+            ID("a"),
+            std::nullopt,
+            ArgumentListDecl(
+                OPAREN, {ArgumentListDecl::ArgSpec(TYPE("int"), ID("x"))}, COMMAS(0), CPAREN),
+            FuncDeclStmtNode::RetTypeSpec{ARROW, TYPE("int")},
+            INT(1)));
+    CHECK_STMT(
+        "action a{T, U}(T{U} x) x",
+        funcDeclStmtNode(
+            ACTION,
+            ID("a"),
+            TypeSubstitutionList{OCURLY, {ID("T"), ID("U")}, COMMAS(1), CCURLY},
+            ArgumentListDecl(
+                OPAREN,
+                {ArgumentListDecl::ArgSpec(TYPE("T", TYPE("U")), ID("x"))},
+                COMMAS(0),
+                CPAREN),
+            std::nullopt,
+            ID_EXPR("x")));
+  }
 
   SECTION("Errors") {
     CHECK_STMT(

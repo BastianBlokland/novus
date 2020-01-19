@@ -21,6 +21,8 @@ auto operator<<(std::ostream& out, const Arg& rhs) -> std::ostream& {
     out << std::get<uint32_t>(rhs);
   } else if (std::holds_alternative<float>(rhs)) {
     out << std::get<float>(rhs);
+  } else if (std::holds_alternative<vm::PCallCode>(rhs)) {
+    out << std::get<vm::PCallCode>(rhs);
   } else {
     throw std::logic_error{"Unknown arg type"};
   }

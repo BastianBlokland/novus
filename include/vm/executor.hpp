@@ -1,9 +1,9 @@
 #pragma once
 #include "vm/assembly.hpp"
-#include "vm/io/interface.hpp"
 
 namespace vm {
 
-auto execute(const Assembly& assembly, io::Interface* iface) -> void;
+template <typename PlatformInterface>
+auto execute(const Assembly& assembly, PlatformInterface& iface) -> void;
 
 } // namespace vm

@@ -63,7 +63,8 @@ TEST_CASE("Generating assembly for structs", "[backend]") {
           // Call the equality function and print the result.
           builder->addCall("UserEq", false);
           builder->addConvBoolString();
-          builder->addPrintString();
+          builder->addPCall(vm::PCallCode::PrintString);
+          builder->addPop();
           builder->addRet();
           // --- Print statement end.
 
@@ -95,7 +96,8 @@ TEST_CASE("Generating assembly for structs", "[backend]") {
           // Call the equality function and print the result.
           builder->addCall("UserEq", false);
           builder->addConvBoolString();
-          builder->addPrintString();
+          builder->addPCall(vm::PCallCode::PrintString);
+          builder->addPop();
           builder->addRet();
           // --- Print statement end.
 
@@ -125,7 +127,8 @@ TEST_CASE("Generating assembly for structs", "[backend]") {
             // Call the equality function and print the result.
             builder->addCall("UserEq", false);
             builder->addConvBoolString();
-            builder->addPrintString();
+            builder->addPCall(vm::PCallCode::PrintString);
+            builder->addPop();
             builder->addRet();
             // --- Print statement 1 end.
 
@@ -135,7 +138,8 @@ TEST_CASE("Generating assembly for structs", "[backend]") {
             builder->addLoadLitInt(42); // Struct with 1 field is represented by the field itself.
 
             builder->addConvIntString();
-            builder->addPrintString();
+            builder->addPCall(vm::PCallCode::PrintString);
+            builder->addPop();
             builder->addRet();
             // --- Print statement 2 end.
 

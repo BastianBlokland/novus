@@ -47,6 +47,12 @@ auto toString(Allocator* allocator, uint8_t val) -> Value {
   return refValue(strRefAlloc.first);
 }
 
+auto toString(Allocator* allocator, const std::string& val) -> Value {
+  const auto strRefAlloc = allocator->allocStr(val.length());
+  std::memcpy(strRefAlloc.second, val.data(), val.length());
+  return refValue(strRefAlloc.first);
+}
+
 auto getStringLength(Value val) -> int32_t {
   auto* str = getStringRef(val);
   return str->getSize();

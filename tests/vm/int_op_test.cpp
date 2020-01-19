@@ -13,8 +13,10 @@ TEST_CASE("Execute integer operations", "[vm]") {
           builder->addLoadLitInt(2);
           builder->addAddInt();
           builder->addConvIntString();
-          builder->addPrintString();
+          builder->addPCall(vm::PCallCode::PrintString);
+          builder->addPop();
         },
+        "input",
         "3");
     CHECK_EXPR(
         [](backend::Builder* builder) -> void {
@@ -22,8 +24,10 @@ TEST_CASE("Execute integer operations", "[vm]") {
           builder->addLoadLitInt(1);
           builder->addAddInt();
           builder->addConvIntString();
-          builder->addPrintString();
+          builder->addPCall(vm::PCallCode::PrintString);
+          builder->addPop();
         },
+        "input",
         "-2147483648");
   }
 
@@ -34,8 +38,10 @@ TEST_CASE("Execute integer operations", "[vm]") {
           builder->addLoadLitInt(5);
           builder->addSubInt();
           builder->addConvIntString();
-          builder->addPrintString();
+          builder->addPCall(vm::PCallCode::PrintString);
+          builder->addPop();
         },
+        "input",
         "5");
     CHECK_EXPR(
         [](backend::Builder* builder) -> void {
@@ -43,8 +49,10 @@ TEST_CASE("Execute integer operations", "[vm]") {
           builder->addLoadLitInt(20);
           builder->addSubInt();
           builder->addConvIntString();
-          builder->addPrintString();
+          builder->addPCall(vm::PCallCode::PrintString);
+          builder->addPop();
         },
+        "input",
         "-10");
   }
 
@@ -55,8 +63,10 @@ TEST_CASE("Execute integer operations", "[vm]") {
           builder->addLoadLitInt(5);
           builder->addMulInt();
           builder->addConvIntString();
-          builder->addPrintString();
+          builder->addPCall(vm::PCallCode::PrintString);
+          builder->addPop();
         },
+        "input",
         "15");
     CHECK_EXPR(
         [](backend::Builder* builder) -> void {
@@ -64,8 +74,10 @@ TEST_CASE("Execute integer operations", "[vm]") {
           builder->addLoadLitInt(-5);
           builder->addMulInt();
           builder->addConvIntString();
-          builder->addPrintString();
+          builder->addPCall(vm::PCallCode::PrintString);
+          builder->addPop();
         },
+        "input",
         "-15");
   }
 
@@ -76,8 +88,10 @@ TEST_CASE("Execute integer operations", "[vm]") {
           builder->addLoadLitInt(4);
           builder->addDivInt();
           builder->addConvIntString();
-          builder->addPrintString();
+          builder->addPCall(vm::PCallCode::PrintString);
+          builder->addPop();
         },
+        "input",
         "8");
     CHECK_EXPR_THROWS(
         [](backend::Builder* builder) -> void {
@@ -85,8 +99,10 @@ TEST_CASE("Execute integer operations", "[vm]") {
           builder->addLoadLitInt(0);
           builder->addDivInt();
           builder->addConvIntString();
-          builder->addPrintString();
+          builder->addPCall(vm::PCallCode::PrintString);
+          builder->addPop();
         },
+        "input",
         vm::exceptions::DivByZero);
   }
 
@@ -97,8 +113,10 @@ TEST_CASE("Execute integer operations", "[vm]") {
           builder->addLoadLitInt(4);
           builder->addRemInt();
           builder->addConvIntString();
-          builder->addPrintString();
+          builder->addPCall(vm::PCallCode::PrintString);
+          builder->addPop();
         },
+        "input",
         "1");
     CHECK_EXPR_THROWS(
         [](backend::Builder* builder) -> void {
@@ -106,8 +124,10 @@ TEST_CASE("Execute integer operations", "[vm]") {
           builder->addLoadLitInt(0);
           builder->addRemInt();
           builder->addConvIntString();
-          builder->addPrintString();
+          builder->addPCall(vm::PCallCode::PrintString);
+          builder->addPop();
         },
+        "input",
         vm::exceptions::DivByZero);
   }
 
@@ -117,16 +137,20 @@ TEST_CASE("Execute integer operations", "[vm]") {
           builder->addLoadLitInt(42);
           builder->addNegInt();
           builder->addConvIntString();
-          builder->addPrintString();
+          builder->addPCall(vm::PCallCode::PrintString);
+          builder->addPop();
         },
+        "input",
         "-42");
     CHECK_EXPR(
         [](backend::Builder* builder) -> void {
           builder->addLoadLitInt(0);
           builder->addNegInt();
           builder->addConvIntString();
-          builder->addPrintString();
+          builder->addPCall(vm::PCallCode::PrintString);
+          builder->addPop();
         },
+        "input",
         "0");
     CHECK_EXPR(
         [](backend::Builder* builder) -> void {
@@ -134,8 +158,10 @@ TEST_CASE("Execute integer operations", "[vm]") {
           builder->addNegInt();
           builder->addNegInt();
           builder->addConvIntString();
-          builder->addPrintString();
+          builder->addPCall(vm::PCallCode::PrintString);
+          builder->addPop();
         },
+        "input",
         "42");
   }
 
@@ -145,24 +171,30 @@ TEST_CASE("Execute integer operations", "[vm]") {
           builder->addLoadLitInt(0);
           builder->addLogicInvInt();
           builder->addConvIntString();
-          builder->addPrintString();
+          builder->addPCall(vm::PCallCode::PrintString);
+          builder->addPop();
         },
+        "input",
         "1");
     CHECK_EXPR(
         [](backend::Builder* builder) -> void {
           builder->addLoadLitInt(1);
           builder->addLogicInvInt();
           builder->addConvIntString();
-          builder->addPrintString();
+          builder->addPCall(vm::PCallCode::PrintString);
+          builder->addPop();
         },
+        "input",
         "0");
     CHECK_EXPR(
         [](backend::Builder* builder) -> void {
           builder->addLoadLitInt(2);
           builder->addLogicInvInt();
           builder->addConvIntString();
-          builder->addPrintString();
+          builder->addPCall(vm::PCallCode::PrintString);
+          builder->addPop();
         },
+        "input",
         "0");
   }
 
@@ -173,8 +205,10 @@ TEST_CASE("Execute integer operations", "[vm]") {
           builder->addLoadLitInt(1);
           builder->addShiftLeftInt();
           builder->addConvIntString();
-          builder->addPrintString();
+          builder->addPCall(vm::PCallCode::PrintString);
+          builder->addPop();
         },
+        "input",
         "2");
     CHECK_EXPR(
         [](backend::Builder* builder) -> void {
@@ -182,8 +216,10 @@ TEST_CASE("Execute integer operations", "[vm]") {
           builder->addLoadLitInt(2);
           builder->addShiftLeftInt();
           builder->addConvIntString();
-          builder->addPrintString();
+          builder->addPCall(vm::PCallCode::PrintString);
+          builder->addPop();
         },
+        "input",
         "8");
     CHECK_EXPR(
         [](backend::Builder* builder) -> void {
@@ -191,8 +227,10 @@ TEST_CASE("Execute integer operations", "[vm]") {
           builder->addLoadLitInt(0);
           builder->addShiftLeftInt();
           builder->addConvIntString();
-          builder->addPrintString();
+          builder->addPCall(vm::PCallCode::PrintString);
+          builder->addPop();
         },
+        "input",
         "4");
     CHECK_EXPR(
         [](backend::Builder* builder) -> void {
@@ -200,8 +238,10 @@ TEST_CASE("Execute integer operations", "[vm]") {
           builder->addLoadLitInt(-2);
           builder->addShiftLeftInt();
           builder->addConvIntString();
-          builder->addPrintString();
+          builder->addPCall(vm::PCallCode::PrintString);
+          builder->addPop();
         },
+        "input",
         "-2147483648");
   }
 
@@ -212,8 +252,10 @@ TEST_CASE("Execute integer operations", "[vm]") {
           builder->addLoadLitInt(1);
           builder->addShiftRightInt();
           builder->addConvIntString();
-          builder->addPrintString();
+          builder->addPCall(vm::PCallCode::PrintString);
+          builder->addPop();
         },
+        "input",
         "0");
     CHECK_EXPR(
         [](backend::Builder* builder) -> void {
@@ -221,8 +263,10 @@ TEST_CASE("Execute integer operations", "[vm]") {
           builder->addLoadLitInt(2);
           builder->addShiftRightInt();
           builder->addConvIntString();
-          builder->addPrintString();
+          builder->addPCall(vm::PCallCode::PrintString);
+          builder->addPop();
         },
+        "input",
         "2");
     CHECK_EXPR(
         [](backend::Builder* builder) -> void {
@@ -230,8 +274,10 @@ TEST_CASE("Execute integer operations", "[vm]") {
           builder->addLoadLitInt(0);
           builder->addShiftRightInt();
           builder->addConvIntString();
-          builder->addPrintString();
+          builder->addPCall(vm::PCallCode::PrintString);
+          builder->addPop();
         },
+        "input",
         "8");
     CHECK_EXPR(
         [](backend::Builder* builder) -> void {
@@ -239,8 +285,10 @@ TEST_CASE("Execute integer operations", "[vm]") {
           builder->addLoadLitInt(-1);
           builder->addShiftRightInt();
           builder->addConvIntString();
-          builder->addPrintString();
+          builder->addPCall(vm::PCallCode::PrintString);
+          builder->addPop();
         },
+        "input",
         "0");
   }
 
@@ -251,8 +299,10 @@ TEST_CASE("Execute integer operations", "[vm]") {
           builder->addLoadLitInt(1);
           builder->addAndInt();
           builder->addConvIntString();
-          builder->addPrintString();
+          builder->addPCall(vm::PCallCode::PrintString);
+          builder->addPop();
         },
+        "input",
         "1");
     CHECK_EXPR(
         [](backend::Builder* builder) -> void {
@@ -260,8 +310,10 @@ TEST_CASE("Execute integer operations", "[vm]") {
           builder->addLoadLitInt(9);
           builder->addAndInt();
           builder->addConvIntString();
-          builder->addPrintString();
+          builder->addPCall(vm::PCallCode::PrintString);
+          builder->addPop();
         },
+        "input",
         "8");
     CHECK_EXPR(
         [](backend::Builder* builder) -> void {
@@ -269,8 +321,10 @@ TEST_CASE("Execute integer operations", "[vm]") {
           builder->addLoadLitInt(-42);
           builder->addAndInt();
           builder->addConvIntString();
-          builder->addPrintString();
+          builder->addPCall(vm::PCallCode::PrintString);
+          builder->addPop();
         },
+        "input",
         "-42");
     CHECK_EXPR(
         [](backend::Builder* builder) -> void {
@@ -278,8 +332,10 @@ TEST_CASE("Execute integer operations", "[vm]") {
           builder->addLoadLitInt(42);
           builder->addAndInt();
           builder->addConvIntString();
-          builder->addPrintString();
+          builder->addPCall(vm::PCallCode::PrintString);
+          builder->addPop();
         },
+        "input",
         "2");
   }
 
@@ -290,8 +346,10 @@ TEST_CASE("Execute integer operations", "[vm]") {
           builder->addLoadLitInt(1);
           builder->addOrInt();
           builder->addConvIntString();
-          builder->addPrintString();
+          builder->addPCall(vm::PCallCode::PrintString);
+          builder->addPop();
         },
+        "input",
         "1");
     CHECK_EXPR(
         [](backend::Builder* builder) -> void {
@@ -299,8 +357,10 @@ TEST_CASE("Execute integer operations", "[vm]") {
           builder->addLoadLitInt(9);
           builder->addOrInt();
           builder->addConvIntString();
-          builder->addPrintString();
+          builder->addPCall(vm::PCallCode::PrintString);
+          builder->addPop();
         },
+        "input",
         "11");
     CHECK_EXPR(
         [](backend::Builder* builder) -> void {
@@ -308,8 +368,10 @@ TEST_CASE("Execute integer operations", "[vm]") {
           builder->addLoadLitInt(-42);
           builder->addOrInt();
           builder->addConvIntString();
-          builder->addPrintString();
+          builder->addPCall(vm::PCallCode::PrintString);
+          builder->addPop();
         },
+        "input",
         "-42");
     CHECK_EXPR(
         [](backend::Builder* builder) -> void {
@@ -317,8 +379,10 @@ TEST_CASE("Execute integer operations", "[vm]") {
           builder->addLoadLitInt(42);
           builder->addOrInt();
           builder->addConvIntString();
-          builder->addPrintString();
+          builder->addPCall(vm::PCallCode::PrintString);
+          builder->addPop();
         },
+        "input",
         "-2");
   }
 
@@ -329,8 +393,10 @@ TEST_CASE("Execute integer operations", "[vm]") {
           builder->addLoadLitInt(1);
           builder->addXorInt();
           builder->addConvIntString();
-          builder->addPrintString();
+          builder->addPCall(vm::PCallCode::PrintString);
+          builder->addPop();
         },
+        "input",
         "0");
     CHECK_EXPR(
         [](backend::Builder* builder) -> void {
@@ -338,8 +404,10 @@ TEST_CASE("Execute integer operations", "[vm]") {
           builder->addLoadLitInt(9);
           builder->addXorInt();
           builder->addConvIntString();
-          builder->addPrintString();
+          builder->addPCall(vm::PCallCode::PrintString);
+          builder->addPop();
         },
+        "input",
         "3");
     CHECK_EXPR(
         [](backend::Builder* builder) -> void {
@@ -347,8 +415,10 @@ TEST_CASE("Execute integer operations", "[vm]") {
           builder->addLoadLitInt(-42);
           builder->addXorInt();
           builder->addConvIntString();
-          builder->addPrintString();
+          builder->addPCall(vm::PCallCode::PrintString);
+          builder->addPop();
         },
+        "input",
         "0");
     CHECK_EXPR(
         [](backend::Builder* builder) -> void {
@@ -356,8 +426,10 @@ TEST_CASE("Execute integer operations", "[vm]") {
           builder->addLoadLitInt(42);
           builder->addXorInt();
           builder->addConvIntString();
-          builder->addPrintString();
+          builder->addPCall(vm::PCallCode::PrintString);
+          builder->addPop();
         },
+        "input",
         "-4");
   }
 }

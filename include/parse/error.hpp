@@ -46,7 +46,7 @@ errInvalidAnonFuncExpr(lex::Token kw, const ArgumentListDecl& argList, NodePtr b
     std::vector<lex::Token> commas) -> NodePtr;
 
 [[nodiscard]] auto errInvalidStmtExec(
-    lex::Token action,
+    lex::Token target,
     lex::Token open,
     std::vector<NodePtr> args,
     std::vector<lex::Token> commas,

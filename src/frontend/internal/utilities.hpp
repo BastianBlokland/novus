@@ -1,5 +1,6 @@
 #pragma once
 #include "internal/context.hpp"
+#include "internal/typeinfer_expr.hpp"
 #include "lex/token_payload_id.hpp"
 #include "prog/operator.hpp"
 
@@ -53,7 +54,7 @@ template <typename FuncParseNode>
     const FuncParseNode& parseNode,
     const prog::sym::TypeSet& input,
     const std::unordered_map<std::string, prog::sym::TypeId>* additionalConstTypes,
-    bool aggressive) -> prog::sym::TypeId;
+    TypeInferExpr::Flags flags) -> prog::sym::TypeId;
 
 [[nodiscard]] auto getLitFunc(Context* context, prog::sym::FuncId func) -> prog::expr::NodePtr;
 
@@ -95,5 +96,9 @@ mangleName(Context* context, const std::string& name, const prog::sym::TypeSet& 
 [[nodiscard]] auto isType(Context* context, const std::string& name) -> bool;
 
 [[nodiscard]] auto isFuncOrConv(Context* context, const std::string& name) -> bool;
+
+[[nodiscard]] auto isPure(const Context* context, prog::sym::FuncId func) -> bool;
+
+[[nodiscard]] auto isAction(const Context* context, prog::sym::FuncId func) -> bool;
 
 } // namespace frontend::internal

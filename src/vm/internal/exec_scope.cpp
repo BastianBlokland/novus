@@ -5,6 +5,8 @@ namespace vm::internal {
 
 auto ExecScope::readOpCode() -> OpCode { return static_cast<OpCode>(readUInt8()); }
 
+auto ExecScope::readPCallCode() -> PCallCode { return static_cast<PCallCode>(readUInt8()); }
+
 auto ExecScope::readUInt8() -> uint8_t { return *m_ip++; }
 
 auto ExecScope::readInt32() -> int32_t {

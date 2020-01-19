@@ -93,9 +93,6 @@ add_library(prog STATIC
   prog/internal/conversion.cpp
   prog/internal/overload.cpp
 
-  prog/sym/action_decl_table.cpp
-  prog/sym/action_decl.cpp
-  prog/sym/action_id.cpp
   prog/sym/const_decl_table.cpp
   prog/sym/const_decl.cpp
   prog/sym/const_id.cpp
@@ -131,6 +128,7 @@ target_include_directories(prog PRIVATE prog)
 
 # Frontend.
 add_library(frontend STATIC
+  frontend/internal/check_inf_recursion.cpp
   frontend/internal/check_union_exhaustiveness.cpp
   frontend/internal/const_binder.cpp
   frontend/internal/context.cpp
@@ -201,11 +199,12 @@ add_library(vm STATIC
   vm/internal/const_stack.cpp
   vm/internal/exec_scope.cpp
   vm/internal/string_utilities.cpp
-  vm/io/memory_interface.cpp
-  vm/io/terminal_interface.cpp
+  vm/platform/memory_interface.cpp
+  vm/platform/terminal_interface.cpp
   vm/assembly.cpp
   vm/executor.cpp
-  vm/opcode.cpp)
+  vm/opcode.cpp
+  vm/pcall_code.cpp)
 target_compile_features(vm PUBLIC cxx_std_17)
 target_compile_options(vm PRIVATE -Werror -Wall -Wextra)
 target_include_directories(vm PUBLIC ${PROJECT_SOURCE_DIR}/include)

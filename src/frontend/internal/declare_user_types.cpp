@@ -103,14 +103,9 @@ auto DeclareUserTypes::validateTypeName(const lex::Token& nameToken) -> bool {
     m_context->reportDiag(errTypeNameIsReserved(m_context->getSrc(), name, nameToken.getSpan()));
     return false;
   }
-  if (!m_context->getProg()->lookupFuncs(name).empty()) {
+  if (m_context->getProg()->hasFunc(name)) {
     m_context->reportDiag(
         errTypeNameConflictsWithFunc(m_context->getSrc(), name, nameToken.getSpan()));
-    return false;
-  }
-  if (!m_context->getProg()->lookupActions(name).empty()) {
-    m_context->reportDiag(
-        errTypeNameConflictsWithAction(m_context->getSrc(), name, nameToken.getSpan()));
     return false;
   }
   return true;

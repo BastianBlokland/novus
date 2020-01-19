@@ -11,12 +11,15 @@ TEST_CASE("Execute jump", "[vm]") {
           builder->addJump("print42");
 
           builder->addLoadLitString("1337");
-          builder->addPrintString();
+          builder->addPCall(vm::PCallCode::PrintString);
+          builder->addPop();
 
           builder->label("print42");
           builder->addLoadLitString("42");
-          builder->addPrintString();
+          builder->addPCall(vm::PCallCode::PrintString);
+          builder->addPop();
         },
+        "input",
         "42");
     CHECK_EXPR(
         [](backend::Builder* builder) -> void {
@@ -24,7 +27,8 @@ TEST_CASE("Execute jump", "[vm]") {
 
           builder->label("jump3");
           builder->addLoadLitString("1337");
-          builder->addPrintString();
+          builder->addPCall(vm::PCallCode::PrintString);
+          builder->addPop();
           builder->addJump("end");
 
           builder->label("jump2");
@@ -35,6 +39,7 @@ TEST_CASE("Execute jump", "[vm]") {
 
           builder->label("end");
         },
+        "input",
         "1337");
   }
 
@@ -45,12 +50,15 @@ TEST_CASE("Execute jump", "[vm]") {
           builder->addJumpIf("print42");
 
           builder->addLoadLitString("1337");
-          builder->addPrintString();
+          builder->addPCall(vm::PCallCode::PrintString);
+          builder->addPop();
 
           builder->label("print42");
           builder->addLoadLitString("42");
-          builder->addPrintString();
+          builder->addPCall(vm::PCallCode::PrintString);
+          builder->addPop();
         },
+        "input",
         "1337",
         "42");
     CHECK_EXPR(
@@ -59,12 +67,15 @@ TEST_CASE("Execute jump", "[vm]") {
           builder->addJumpIf("print42");
 
           builder->addLoadLitString("1337");
-          builder->addPrintString();
+          builder->addPCall(vm::PCallCode::PrintString);
+          builder->addPop();
 
           builder->label("print42");
           builder->addLoadLitString("42");
-          builder->addPrintString();
+          builder->addPCall(vm::PCallCode::PrintString);
+          builder->addPop();
         },
+        "input",
         "42");
   }
 }

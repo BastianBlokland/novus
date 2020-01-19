@@ -9,7 +9,7 @@
 
 namespace frontend {
 
-TEST_CASE("Analyzing 'is' expressions", "[frontend]") {
+TEST_CASE("Analyzing 'is' / 'as' expressions", "[frontend]") {
 
   SECTION("Get 'as' expression") {
     const auto& output = ANALYZE("union Val = int, bool "
@@ -105,10 +105,6 @@ TEST_CASE("Analyzing 'is' expressions", "[frontend]") {
         "union U = int, float "
         "fun f(U u) u as int f ? 1 : 2",
         errConstNameConflictsWithFunction(src, "f", input::Span{41, 41}));
-    CHECK_DIAG(
-        "union U = int, float "
-        "fun f(U u) u as int print ? 1 : 2",
-        errConstNameConflictsWithAction(src, "print", input::Span{41, 45}));
     CHECK_DIAG(
         "union U = int, float "
         "fun f(U u) u as int u ? 1 : 2",

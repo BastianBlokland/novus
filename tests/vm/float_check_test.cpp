@@ -12,8 +12,10 @@ TEST_CASE("Execute float checks", "[vm]") {
           builder->addLoadLitFloat(-0.1337F); // NOLINT: Magic numbers
           builder->addCheckEqFloat();
           builder->addConvBoolString();
-          builder->addPrintString();
+          builder->addPCall(vm::PCallCode::PrintString);
+          builder->addPop();
         },
+        "input",
         "false");
     CHECK_EXPR(
         [](backend::Builder* builder) -> void {
@@ -21,8 +23,10 @@ TEST_CASE("Execute float checks", "[vm]") {
           builder->addLoadLitFloat(0.1337F); // NOLINT: Magic numbers
           builder->addCheckEqFloat();
           builder->addConvBoolString();
-          builder->addPrintString();
+          builder->addPCall(vm::PCallCode::PrintString);
+          builder->addPop();
         },
+        "input",
         "true");
   }
 
@@ -33,8 +37,10 @@ TEST_CASE("Execute float checks", "[vm]") {
           builder->addLoadLitFloat(0.1337F);  // NOLINT: Magic numbers
           builder->addCheckGtFloat();
           builder->addConvBoolString();
-          builder->addPrintString();
+          builder->addPCall(vm::PCallCode::PrintString);
+          builder->addPop();
         },
+        "input",
         "false");
     CHECK_EXPR(
         [](backend::Builder* builder) -> void {
@@ -42,8 +48,10 @@ TEST_CASE("Execute float checks", "[vm]") {
           builder->addLoadLitFloat(0.1337F); // NOLINT: Magic numbers
           builder->addCheckGtFloat();
           builder->addConvBoolString();
-          builder->addPrintString();
+          builder->addPCall(vm::PCallCode::PrintString);
+          builder->addPop();
         },
+        "input",
         "true");
   }
 
@@ -54,8 +62,10 @@ TEST_CASE("Execute float checks", "[vm]") {
           builder->addLoadLitFloat(0.1337F); // NOLINT: Magic numbers
           builder->addCheckLeFloat();
           builder->addConvBoolString();
-          builder->addPrintString();
+          builder->addPCall(vm::PCallCode::PrintString);
+          builder->addPop();
         },
+        "input",
         "false");
     CHECK_EXPR(
         [](backend::Builder* builder) -> void {
@@ -63,8 +73,10 @@ TEST_CASE("Execute float checks", "[vm]") {
           builder->addLoadLitFloat(0.2337F); // NOLINT: Magic numbers
           builder->addCheckLeFloat();
           builder->addConvBoolString();
-          builder->addPrintString();
+          builder->addPCall(vm::PCallCode::PrintString);
+          builder->addPop();
         },
+        "input",
         "true");
   }
 }

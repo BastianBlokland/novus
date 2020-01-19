@@ -26,7 +26,7 @@ auto LitStringNode::getType() const noexcept -> sym::TypeId { return m_type; }
 
 auto LitStringNode::toString() const -> std::string {
   auto oss = std::ostringstream{};
-  oss << '\'' << m_val << '\'';
+  oss << '"' << m_val << '"';
   return oss.str();
 }
 

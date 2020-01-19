@@ -57,12 +57,9 @@ TEST_CASE("Analyzing user-function definitions", "[frontend]") {
         "fun f(int f) -> int true",
         errConstNameConflictsWithFunction(src, "f", input::Span{10, 10}));
     CHECK_DIAG(
-        "fun f(int print) -> int true",
-        errConstNameConflictsWithAction(src, "print", input::Span{10, 14}));
-    CHECK_DIAG(
         "fun f(int a, int a) -> int true",
         errConstNameConflictsWithConst(src, "a", input::Span{17, 17}));
-    CHECK_DIAG("fun f() -> int f2()", errUndeclaredFunc(src, "f2", {}, input::Span{15, 18}));
+    CHECK_DIAG("fun f() -> int f2()", errUndeclaredPureFunc(src, "f2", {}, input::Span{15, 18}));
     CHECK_DIAG(
         "fun f() -> int bool(1)",
         errUndeclaredTypeOrConversion(src, "bool", {"int"}, input::Span{15, 21}));
@@ -102,6 +99,31 @@ TEST_CASE("Analyzing user-function definitions", "[frontend]") {
         "fun f() -> delegate{int} lambda () false",
         errNonMatchingFuncReturnType(
             src, "f", "delegate{int}", "delegate{bool}", input::Span{25, 39}));
+    CHECK_DIAG(
+        "fun f() -> string print(\"hello world\")",
+        errUndeclaredPureFunc(src, "print", {"string"}, input::Span{18, 37}));
+
+    SECTION("Infinite recursion") {
+      CHECK_DIAG("fun f() f()", errUnableToInferFuncReturnType(src, "f", input::Span{0, 10}));
+
+      CHECK_DIAG("fun f() -> int f()", errPureFuncInfRecursion(src, input::Span{15, 17}));
+      CHECK_DIAG("fun f() -> int a = f()", errPureFuncInfRecursion(src, input::Span{15, 21}));
+      CHECK_DIAG("fun f(int i) -> int i + f(i)", errPureFuncInfRecursion(src, input::Span{20, 27}));
+      CHECK_DIAG(
+          "fun f(int a, int b) -> int "
+          " a2 = 42; b2 = 1337; f(a + a2, b + b2)",
+          errPureFuncInfRecursion(src, input::Span{28, 64}));
+      CHECK_DIAG(
+          "fun f(int a, int b) -> int "
+          " if f(a, b) == a -> a "
+          " else            -> b",
+          errPureFuncInfRecursion(src, input::Span{28, 69}));
+      CHECK_DIAG(
+          "fun f(int a, int b) -> int "
+          " if a > b  -> f(a, 0) "
+          " else      -> f(0, b)",
+          errPureFuncInfRecursion(src, input::Span{28, 69}));
+    }
   }
 }
 

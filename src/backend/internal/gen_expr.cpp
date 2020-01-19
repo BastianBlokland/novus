@@ -297,7 +297,7 @@ auto GenExpr::visit(const prog::expr::CallExprNode& n) -> void {
   }
 
   case prog::sym::FuncKind::CheckEqUserType:
-  case prog::sym::FuncKind::CheckNEqUserType:
+  case prog::sym::FuncKind::CheckNEqUserType: {
     auto lhsType = n[0].getType();
     auto rhsType = n[1].getType();
     if (lhsType != rhsType) {
@@ -310,7 +310,29 @@ auto GenExpr::visit(const prog::expr::CallExprNode& n) -> void {
     }
     break;
   }
+
+  // Platform actions:
+  case prog::sym::FuncKind::ActionPrintChar:
+    m_builder->addPCall(vm::PCallCode::PrintChar);
+    break;
+  case prog::sym::FuncKind::ActionPrintString:
+    m_builder->addPCall(vm::PCallCode::PrintString);
+    break;
+  case prog::sym::FuncKind::ActionPrintStringLine:
+    m_builder->addPCall(vm::PCallCode::PrintStringLine);
+    break;
+  case prog::sym::FuncKind::ActionReadChar:
+    m_builder->addPCall(vm::PCallCode::ReadChar);
+    break;
+  case prog::sym::FuncKind::ActionReadStringLine:
+    m_builder->addPCall(vm::PCallCode::ReadStringLine);
+    break;
+  case prog::sym::FuncKind::ActionSleep:
+    m_builder->addPCall(vm::PCallCode::Sleep);
+    break;
+  }
 }
+
 auto GenExpr::visit(const prog::expr::CallDynExprNode& n) -> void {
   // Push the arguments on the stack.
   for (auto i = 1U; i < n.getChildCount(); ++i) {

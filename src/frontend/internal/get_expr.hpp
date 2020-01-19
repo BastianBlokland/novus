@@ -7,13 +7,24 @@ namespace frontend::internal {
 
 class GetExpr final : public parse::NodeVisitor {
 public:
+  enum class Flags : unsigned int {
+    None = 0U,
+
+    // Checked constants access means that any constants that this expression declares are only
+    // visible when this expression evaluates to 'true'. For example the 'as' expression (with a
+    // constant) is only valid in a 'CheckedConstsAccess' expression.
+    CheckedConstsAccess = 1U << 1U,
+
+    AllowActionCalls = 1U << 2U,
+  };
+
   GetExpr() = delete;
   GetExpr(
       Context* context,
       const TypeSubstitutionTable* typeSubTable,
       ConstBinder* constBinder,
       prog::sym::TypeId typeHint,
-      bool checkedConstsAccess = false);
+      Flags flags);
 
   [[nodiscard]] auto hasErrors() const noexcept -> bool;
   [[nodiscard]] auto getValue() -> prog::expr::NodePtr&;
@@ -49,7 +60,7 @@ private:
   const TypeSubstitutionTable* m_typeSubTable;
   ConstBinder* m_constBinder;
   prog::sym::TypeId m_typeHint;
-  bool m_checkedConstsAccess;
+  Flags m_flags;
 
   prog::expr::NodePtr m_expr;
 
@@ -93,13 +104,47 @@ private:
   [[nodiscard]] auto getFunctionsInclConversions(
       const lex::Token& nameToken,
       const std::optional<parse::TypeParamList>& typeParams,
-      const prog::sym::TypeSet& argTypes) -> std::vector<prog::sym::FuncId>;
+      const prog::sym::TypeSet& argTypes,
+      bool exclActions) -> std::vector<prog::sym::FuncId>;
 
   [[nodiscard]] auto getFunctions(
       const std::string& funcName,
       const std::optional<parse::TypeParamList>& typeParams,
       const prog::sym::TypeSet& argTypes,
-      input::Span span) -> std::vector<prog::sym::FuncId>;
+      input::Span span,
+      bool exclActions) -> std::vector<prog::sym::FuncId>;
+
+  template <Flags F>
+  [[nodiscard]] inline auto hasFlag() const noexcept {
+    return (static_cast<unsigned int>(m_flags) & static_cast<unsigned int>(F)) ==
+        static_cast<unsigned int>(F);
+  }
+
+  [[nodiscard]] inline auto getOvOptions(int maxConversion, bool disableConversionOnFirstArg) const
+      noexcept {
+    auto ovFlags = prog::OvFlags::None;
+    if (disableConversionOnFirstArg) {
+      ovFlags = ovFlags | prog::OvFlags::DisableConvOnFirstArg;
+    }
+    if (!hasFlag<Flags::AllowActionCalls>()) {
+      ovFlags = ovFlags | prog::OvFlags::ExclActions;
+    }
+    return prog::OvOptions{ovFlags, maxConversion};
+  }
 };
+
+inline auto operator|(GetExpr::Flags lhs, GetExpr::Flags rhs) noexcept {
+  return static_cast<GetExpr::Flags>(
+      static_cast<unsigned int>(lhs) | static_cast<unsigned int>(rhs));
+}
+
+inline auto operator&(GetExpr::Flags lhs, GetExpr::Flags rhs) noexcept {
+  return static_cast<GetExpr::Flags>(
+      static_cast<unsigned int>(lhs) & static_cast<unsigned int>(rhs));
+}
+
+inline auto operator~(GetExpr::Flags rhs) noexcept {
+  return static_cast<GetExpr::Flags>(~static_cast<unsigned int>(rhs));
+}
 
 } // namespace frontend::internal

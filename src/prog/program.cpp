@@ -2,7 +2,6 @@
 #include "internal/conversion.hpp"
 #include "internal/overload.hpp"
 #include "prog/operator.hpp"
-#include "prog/sym/action_kind.hpp"
 
 namespace prog {
 
@@ -11,10 +10,6 @@ namespace internal {
 auto getTypeDeclTable(const Program& prog) -> const sym::TypeDeclTable& { return prog.m_typeDecls; }
 
 auto getFuncDeclTable(const Program& prog) -> const sym::FuncDeclTable& { return prog.m_funcDecls; }
-
-auto getActionDeclTable(const Program& prog) -> const sym::ActionDeclTable& {
-  return prog.m_actionDecls;
-}
 
 } // namespace internal
 
@@ -26,7 +21,6 @@ Program::Program() :
     m_char{m_typeDecls.registerType(sym::TypeKind::Char, "char")} {
 
   using fk = typename prog::sym::FuncKind;
-  using ak = typename prog::sym::ActionKind;
   using op = typename prog::Operator;
 
   // Register build-in unary int operators.
@@ -177,7 +171,14 @@ Program::Program() :
       m_string);
 
   // Register build-in actions.
-  m_actionDecls.registerAction(*this, ak::PrintString, "print", sym::TypeSet{m_string});
+  m_funcDecls.registerAction(*this, fk::ActionPrintChar, "print", sym::TypeSet{m_char}, m_char);
+  m_funcDecls.registerAction(
+      *this, fk::ActionPrintString, "print", sym::TypeSet{m_string}, m_string);
+  m_funcDecls.registerAction(
+      *this, fk::ActionPrintStringLine, "printl", sym::TypeSet{m_string}, m_string);
+  m_funcDecls.registerAction(*this, fk::ActionReadChar, "read", sym::TypeSet{}, m_char);
+  m_funcDecls.registerAction(*this, fk::ActionReadStringLine, "readl", sym::TypeSet{}, m_string);
+  m_funcDecls.registerAction(*this, fk::ActionSleep, "sleep", sym::TypeSet{m_int}, m_int);
 }
 
 auto Program::beginTypeDecls() const -> typeDeclIterator { return m_typeDecls.begin(); }
@@ -187,10 +188,6 @@ auto Program::endTypeDecls() const -> typeDeclIterator { return m_typeDecls.end(
 auto Program::beginFuncDecls() const -> funcDeclIterator { return m_funcDecls.begin(); }
 
 auto Program::endFuncDecls() const -> funcDeclIterator { return m_funcDecls.end(); }
-
-auto Program::beginActionDecls() const -> actionDeclIterator { return m_actionDecls.begin(); }
-
-auto Program::endActionDecls() const -> actionDeclIterator { return m_actionDecls.end(); }
 
 auto Program::beginTypeDefs() const -> typeDefIterator { return m_typeDefs.begin(); }
 
@@ -222,34 +219,20 @@ auto Program::lookupType(const std::string& name) const -> std::optional<sym::Ty
 
 auto Program::hasFunc(const std::string& name) const -> bool { return m_funcDecls.exists(name); }
 
-auto Program::lookupFunc(
-    const std::string& name,
-    const sym::TypeSet& input,
-    int maxConversions,
-    bool allowConvOnFirstArg) const -> std::optional<sym::FuncId> {
-  return m_funcDecls.lookup(*this, name, input, maxConversions, allowConvOnFirstArg);
+auto Program::lookupFunc(const std::string& name, const sym::TypeSet& input, OvOptions options)
+    const -> std::optional<sym::FuncId> {
+  return m_funcDecls.lookup(*this, name, input, options);
 }
 
 auto Program::lookupFunc(
-    const std::vector<sym::FuncId>& funcs,
-    const sym::TypeSet& input,
-    int maxConversions,
-    bool allowConvOnFirstArg) const -> std::optional<sym::FuncId> {
-  return internal::findOverload(
-      *this, m_funcDecls, funcs, input, maxConversions, allowConvOnFirstArg);
+    const std::vector<sym::FuncId>& funcs, const sym::TypeSet& input, OvOptions options) const
+    -> std::optional<sym::FuncId> {
+  return internal::findOverload(*this, m_funcDecls, funcs, input, options);
 }
 
-auto Program::lookupFuncs(const std::string& name) const -> std::vector<sym::FuncId> {
-  return m_funcDecls.lookup(name);
-}
-
-auto Program::lookupAction(const std::string& name, const sym::TypeSet& input, int maxConversions)
-    const -> std::optional<sym::ActionId> {
-  return m_actionDecls.lookup(*this, name, input, maxConversions);
-}
-
-auto Program::lookupActions(const std::string& name) const -> std::vector<sym::ActionId> {
-  return m_actionDecls.lookup(name);
+auto Program::lookupFuncs(const std::string& name, OvOptions options) const
+    -> std::vector<sym::FuncId> {
+  return m_funcDecls.lookup(name, options);
 }
 
 auto Program::lookupConversion(sym::TypeId from, sym::TypeId to) const
@@ -291,10 +274,6 @@ auto Program::getTypeDecl(sym::TypeId id) const -> const sym::TypeDecl& { return
 
 auto Program::getFuncDecl(sym::FuncId id) const -> const sym::FuncDecl& { return m_funcDecls[id]; }
 
-auto Program::getActionDecl(sym::ActionId id) const -> const sym::ActionDecl& {
-  return m_actionDecls[id];
-}
-
 auto Program::getFuncDef(sym::FuncId id) const -> const sym::FuncDef& { return m_funcDefs[id]; }
 
 auto Program::hasTypeDef(sym::TypeId id) const -> bool { return m_typeDefs.hasDef(id); }
@@ -319,8 +298,15 @@ auto Program::declareDelegate(std::string name) -> sym::TypeId {
   return m_typeDecls.registerType(sym::TypeKind::Delegate, std::move(name));
 }
 
-auto Program::declareFunc(std::string name, sym::TypeSet input, sym::TypeId output) -> sym::FuncId {
+auto Program::declarePureFunc(std::string name, sym::TypeSet input, sym::TypeId output)
+    -> sym::FuncId {
   return m_funcDecls.registerFunc(
+      *this, sym::FuncKind::User, std::move(name), std::move(input), output);
+}
+
+auto Program::declareAction(std::string name, sym::TypeSet input, sym::TypeId output)
+    -> sym::FuncId {
+  return m_funcDecls.registerAction(
       *this, sym::FuncKind::User, std::move(name), std::move(input), output);
 }
 
@@ -414,9 +400,8 @@ auto Program::defineFunc(sym::FuncId id, sym::ConstDeclTable consts, expr::NodeP
   m_funcDefs.registerFunc(m_funcDecls, id, std::move(consts), std::move(expr));
 }
 
-auto Program::addExecStmt(
-    sym::ActionId action, sym::ConstDeclTable consts, std::vector<expr::NodePtr> args) -> void {
-  return m_execStmts.push_back(sym::execStmt(*this, action, std::move(consts), std::move(args)));
+auto Program::addExecStmt(sym::ConstDeclTable consts, expr::NodePtr expr) -> void {
+  return m_execStmts.push_back(sym::execStmt(std::move(consts), std::move(expr)));
 }
 
 auto Program::updateFuncOutput(sym::FuncId funcId, sym::TypeId newOutput) -> void {

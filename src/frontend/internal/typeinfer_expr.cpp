@@ -12,11 +12,11 @@ TypeInferExpr::TypeInferExpr(
     Context* context,
     const TypeSubstitutionTable* typeSubTable,
     std::unordered_map<std::string, prog::sym::TypeId>* constTypes,
-    bool aggressive) :
+    Flags flags) :
     m_context{context},
     m_typeSubTable{typeSubTable},
     m_constTypes{constTypes},
-    m_aggressive{aggressive},
+    m_flags{flags},
     m_type{prog::sym::TypeId::inferType()} {
 
   if (m_context == nullptr) {
@@ -41,8 +41,9 @@ auto TypeInferExpr::visit(const parse::AnonFuncExprNode& n) -> void {
     return;
   }
 
-  const auto retType = inferRetType(m_context, m_typeSubTable, n, *funcInput, m_constTypes, true);
-  m_type             = m_context->getDelegates()->getDelegate(m_context, *funcInput, retType);
+  const auto retType = inferRetType(
+      m_context, m_typeSubTable, n, *funcInput, m_constTypes, TypeInferExpr::Flags::Aggressive);
+  m_type = m_context->getDelegates()->getDelegate(m_context, *funcInput, retType);
 }
 
 auto TypeInferExpr::visit(const parse::BinaryExprNode& n) -> void {
@@ -66,7 +67,7 @@ auto TypeInferExpr::visit(const parse::BinaryExprNode& n) -> void {
     argTypes.push_back(inferSubExpr(n[i]));
   }
   const auto argTypeSet = prog::sym::TypeSet{std::move(argTypes)};
-  m_type                = inferFuncCall(prog::getFuncName(*op), argTypeSet, true);
+  m_type                = inferFuncCall(prog::getFuncName(*op), argTypeSet, false);
 }
 
 auto TypeInferExpr::visit(const parse::CallExprNode& n) -> void {
@@ -108,7 +109,9 @@ auto TypeInferExpr::visit(const parse::CallExprNode& n) -> void {
     if (!typeSet) {
       return;
     }
-    const auto retType = m_context->getFuncTemplates()->getRetType(funcName, *typeSet);
+    auto ovOptions = prog::OvOptions{
+        hasFlag<Flags::AllowActionCalls>() ? prog::OvFlags::None : prog::OvFlags::ExclActions};
+    const auto retType = m_context->getFuncTemplates()->getRetType(funcName, *typeSet, ovOptions);
     if (retType) {
       m_type = *retType;
     }
@@ -116,7 +119,7 @@ auto TypeInferExpr::visit(const parse::CallExprNode& n) -> void {
   }
 
   // Regular functions.
-  m_type = inferFuncCall(funcName, argTypeSet, true);
+  m_type = inferFuncCall(funcName, argTypeSet, false);
 }
 
 auto TypeInferExpr::visit(const parse::ConditionalExprNode& n) -> void {
@@ -127,7 +130,7 @@ auto TypeInferExpr::visit(const parse::ConditionalExprNode& n) -> void {
   branchTypes.reserve(2);
 
   const auto ifBranchType = inferSubExpr(n[1]);
-  if (ifBranchType.isInfer() && !m_aggressive) {
+  if (ifBranchType.isInfer() && !hasFlag<Flags::Aggressive>()) {
     return;
   }
   if (ifBranchType.isConcrete()) {
@@ -135,7 +138,7 @@ auto TypeInferExpr::visit(const parse::ConditionalExprNode& n) -> void {
   }
 
   const auto elseBranchType = inferSubExpr(n[2]);
-  if (elseBranchType.isInfer() && !m_aggressive) {
+  if (elseBranchType.isInfer() && !hasFlag<Flags::Aggressive>()) {
   }
   if (elseBranchType.isConcrete()) {
     branchTypes.push_back(elseBranchType);
@@ -162,7 +165,8 @@ auto TypeInferExpr::visit(const parse::IdExprNode& n) -> void {
     if (!typeSet) {
       return;
     }
-    const auto instances = m_context->getFuncTemplates()->instantiate(name, *typeSet);
+    const auto instances = m_context->getFuncTemplates()->instantiate(
+        name, *typeSet, prog::OvOptions{prog::OvFlags::ExclActions});
     if (!instances.empty() && !m_context->hasErrors()) {
       const auto funcDecl = m_context->getProg()->getFuncDecl(*instances[0]->getFunc());
       m_type              = m_context->getDelegates()->getDelegate(
@@ -172,7 +176,8 @@ auto TypeInferExpr::visit(const parse::IdExprNode& n) -> void {
   }
 
   // Non-templated function literal.
-  const auto funcs = m_context->getProg()->lookupFuncs(name);
+  const auto funcs =
+      m_context->getProg()->lookupFuncs(name, prog::OvOptions{prog::OvFlags::ExclActions});
   if (!funcs.empty() && !m_context->hasErrors()) {
     const auto& funcDecl = m_context->getProg()->getFuncDecl(funcs[0]);
     if (funcDecl.getOutput().isConcrete()) {
@@ -234,7 +239,7 @@ auto TypeInferExpr::visit(const parse::IndexExprNode& n) -> void {
   }
   const auto argTypeSet = prog::sym::TypeSet{std::move(argTypes)};
   const auto funcName   = prog::getFuncName(prog::Operator::SquareSquare);
-  m_type                = inferFuncCall(funcName, argTypeSet, false);
+  m_type                = inferFuncCall(funcName, argTypeSet, true);
 }
 
 auto TypeInferExpr::visit(const parse::IsExprNode& n) -> void {
@@ -296,7 +301,7 @@ auto TypeInferExpr::visit(const parse::SwitchExprNode& n) -> void {
 
     // Get types of the branches.
     auto branchType = inferSubExpr(n[i][isElseClause ? 0 : 1]);
-    if (branchType.isInfer() && !m_aggressive) {
+    if (branchType.isInfer() && !hasFlag<Flags::Aggressive>()) {
       return;
     }
     if (branchType.isConcrete()) {
@@ -318,7 +323,7 @@ auto TypeInferExpr::visit(const parse::UnaryExprNode& n) -> void {
     return;
   }
   auto argType = inferSubExpr(n[0]);
-  m_type       = inferFuncCall(prog::getFuncName(*op), {argType}, false);
+  m_type       = inferFuncCall(prog::getFuncName(*op), {argType}, true);
 }
 
 auto TypeInferExpr::visit(const parse::EnumDeclStmtNode & /*unused*/) -> void {
@@ -342,7 +347,7 @@ auto TypeInferExpr::visit(const parse::UnionDeclStmtNode & /*unused*/) -> void {
 }
 
 auto TypeInferExpr::inferSubExpr(const parse::Node& n) -> prog::sym::TypeId {
-  auto visitor = TypeInferExpr{m_context, m_typeSubTable, m_constTypes, m_aggressive};
+  auto visitor = TypeInferExpr{m_context, m_typeSubTable, m_constTypes, m_flags};
   n.accept(&visitor);
   return visitor.getInferredType();
 }
@@ -364,27 +369,36 @@ auto TypeInferExpr::inferDynCall(const parse::CallExprNode& n) -> prog::sym::Typ
   // Call to a overloaded call operator.
   const auto argTypeSet = prog::sym::TypeSet{std::move(argTypes)};
   const auto funcName   = prog::getFuncName(prog::Operator::ParenParen);
-  return inferFuncCall(funcName, argTypeSet, false);
+  return inferFuncCall(funcName, argTypeSet, true);
 }
 
 auto TypeInferExpr::inferFuncCall(
-    const std::string& funcName, const prog::sym::TypeSet& argTypes, bool allowConvOnFirstArg)
+    const std::string& funcName, const prog::sym::TypeSet& argTypes, bool disableConvOnFirstArg)
     -> prog::sym::TypeId {
+
   for (const auto& argType : argTypes) {
     if (argType.isInfer()) {
       return prog::sym::TypeId::inferType();
     }
   }
 
+  auto ovFlags = prog::OvFlags::None;
+  if (disableConvOnFirstArg) {
+    ovFlags = ovFlags | prog::OvFlags::DisableConvOnFirstArg;
+  }
+  if (!hasFlag<Flags::AllowActionCalls>()) {
+    ovFlags = ovFlags | prog::OvFlags::ExclActions;
+  }
+
   // Attempt to get a return-type for a non-templated function.
-  auto func = m_context->getProg()->lookupFunc(funcName, argTypes, -1, allowConvOnFirstArg);
+  auto func = m_context->getProg()->lookupFunc(funcName, argTypes, prog::OvOptions{ovFlags});
   if (func) {
     return m_context->getProg()->getFuncDecl(*func).getOutput();
   }
 
   // Attempt to get a return-type for a inferred templated function.
-  auto retTypeForInferredTemplFunc =
-      m_context->getFuncTemplates()->inferParamsAndGetRetType(funcName, argTypes);
+  auto retTypeForInferredTemplFunc = m_context->getFuncTemplates()->inferParamsAndGetRetType(
+      funcName, argTypes, prog::OvOptions{ovFlags});
   if (retTypeForInferredTemplFunc) {
     return *retTypeForInferredTemplFunc;
   }

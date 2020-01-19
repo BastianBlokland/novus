@@ -6,12 +6,22 @@ namespace frontend::internal {
 
 class TypeInferExpr final : public parse::NodeVisitor {
 public:
+  enum class Flags : unsigned int {
+    None = 0U,
+
+    // Without the aggressive flag inference will only reach an conclusion when it has all the
+    // information required, with aggressive it can act on incomplete data.
+    Aggressive = 1U << 1U,
+
+    AllowActionCalls = 1U << 2U,
+  };
+
   TypeInferExpr() = delete;
   TypeInferExpr(
       Context* context,
       const TypeSubstitutionTable* typeSubTable,
       std::unordered_map<std::string, prog::sym::TypeId>* constTypes,
-      bool aggressive);
+      Flags flags);
 
   [[nodiscard]] auto getInferredType() const noexcept -> prog::sym::TypeId;
 
@@ -43,17 +53,37 @@ private:
   Context* m_context;
   const TypeSubstitutionTable* m_typeSubTable;
   std::unordered_map<std::string, prog::sym::TypeId>* m_constTypes;
-  bool m_aggressive;
+  Flags m_flags;
   prog::sym::TypeId m_type;
 
   auto inferSubExpr(const parse::Node& n) -> prog::sym::TypeId;
   [[nodiscard]] auto inferDynCall(const parse::CallExprNode& n) -> prog::sym::TypeId;
   [[nodiscard]] auto inferFuncCall(
-      const std::string& funcName, const prog::sym::TypeSet& argTypes, bool allowConvOnFirstArg)
+      const std::string& funcName, const prog::sym::TypeSet& argTypes, bool disableConvOnFirstArg)
       -> prog::sym::TypeId;
 
   auto setConstType(const lex::Token& constId, prog::sym::TypeId type) -> void;
   [[nodiscard]] auto inferConstType(const lex::Token& constId) -> prog::sym::TypeId;
+
+  template <Flags F>
+  [[nodiscard]] inline auto hasFlag() const noexcept {
+    return (static_cast<unsigned int>(m_flags) & static_cast<unsigned int>(F)) ==
+        static_cast<unsigned int>(F);
+  }
 };
+
+inline auto operator|(TypeInferExpr::Flags lhs, TypeInferExpr::Flags rhs) noexcept {
+  return static_cast<TypeInferExpr::Flags>(
+      static_cast<unsigned int>(lhs) | static_cast<unsigned int>(rhs));
+}
+
+inline auto operator&(TypeInferExpr::Flags lhs, TypeInferExpr::Flags rhs) noexcept {
+  return static_cast<TypeInferExpr::Flags>(
+      static_cast<unsigned int>(lhs) & static_cast<unsigned int>(rhs));
+}
+
+inline auto operator~(TypeInferExpr::Flags rhs) noexcept {
+  return static_cast<TypeInferExpr::Flags>(~static_cast<unsigned int>(rhs));
+}
 
 } // namespace frontend::internal

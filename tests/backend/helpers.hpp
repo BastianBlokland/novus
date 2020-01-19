@@ -14,7 +14,8 @@ inline auto buildAssemblyExprInt(const std::function<void(backend::Builder*)>& b
   builder.label("print");
   build(&builder);
   builder.addConvIntString();
-  builder.addPrintString();
+  builder.addPCall(vm::PCallCode::PrintString);
+  builder.addPop();
   builder.addRet();
   builder.addEntryPoint("print");
   return builder.close();
@@ -26,7 +27,8 @@ inline auto buildAssemblyExprFloat(const std::function<void(backend::Builder*)>&
   builder.label("print");
   build(&builder);
   builder.addConvFloatString();
-  builder.addPrintString();
+  builder.addPCall(vm::PCallCode::PrintString);
+  builder.addPop();
   builder.addRet();
   builder.addEntryPoint("print");
   return builder.close();
@@ -38,7 +40,8 @@ inline auto buildAssemblyExprBool(const std::function<void(backend::Builder*)>& 
   builder.label("print");
   build(&builder);
   builder.addConvBoolString();
-  builder.addPrintString();
+  builder.addPCall(vm::PCallCode::PrintString);
+  builder.addPop();
   builder.addRet();
   builder.addEntryPoint("print");
   return builder.close();
@@ -49,7 +52,8 @@ inline auto buildAssemblyExprString(const std::function<void(backend::Builder*)>
   auto builder = backend::Builder{};
   builder.label("print");
   build(&builder);
-  builder.addPrintString();
+  builder.addPCall(vm::PCallCode::PrintString);
+  builder.addPop();
   builder.addRet();
   builder.addEntryPoint("print");
   return builder.close();
@@ -61,7 +65,8 @@ inline auto buildAssemblyExprChar(const std::function<void(backend::Builder*)>& 
   builder.label("print");
   build(&builder);
   builder.addConvCharString();
-  builder.addPrintString();
+  builder.addPCall(vm::PCallCode::PrintString);
+  builder.addPop();
   builder.addRet();
   builder.addEntryPoint("print");
   return builder.close();

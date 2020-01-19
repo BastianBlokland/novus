@@ -12,10 +12,12 @@ namespace frontend::internal {
 FuncTemplate::FuncTemplate(
     Context* context,
     std::string name,
+    bool isAction,
     std::vector<std::string> typeSubs,
     const parse::FuncDeclStmtNode* parseNode) :
     m_context{context},
     m_name{std::move(name)},
+    m_isAction{isAction},
     m_typeSubs{std::move(typeSubs)},
     m_parseNode{parseNode} {
 
@@ -28,6 +30,8 @@ FuncTemplate::FuncTemplate(
 }
 
 auto FuncTemplate::getTemplateName() const -> const std::string& { return m_name; }
+
+auto FuncTemplate::isAction() const -> bool { return m_isAction; }
 
 auto FuncTemplate::getTypeParamCount() const -> unsigned int { return m_typeSubs.size(); }
 
@@ -66,7 +70,8 @@ auto FuncTemplate::getRetType(const prog::sym::TypeSet& typeParams)
     return std::nullopt;
   }
   if (retType->isInfer()) {
-    retType = inferRetType(m_context, &subTable, *m_parseNode, *funcInput, nullptr, true);
+    retType = inferRetType(
+        m_context, &subTable, *m_parseNode, *funcInput, nullptr, TypeInferExpr::Flags::Aggressive);
   }
 
   m_inferStack.pop_front();
@@ -130,14 +135,25 @@ auto FuncTemplate::setupInstance(FuncTemplateInst* instance) -> void {
   }
 
   const auto isConv = isType(m_context, m_name);
+  if (isConv && m_isAction) {
+    m_context->reportDiag(errNonPureConversion(m_context->getSrc(), m_parseNode->getSpan()));
+    instance->m_success = false;
+    return;
+  }
+
   if (instance->m_retType->isInfer()) {
     // For conversions to non-templated types we know the return-type by looking at the name.
     if (isConv && m_context->getProg()->lookupType(m_name)) {
       instance->m_retType = m_context->getProg()->lookupType(m_name);
     } else {
       // Otherwise try to infer the return-type.
-      instance->m_retType =
-          inferRetType(m_context, &subTable, *m_parseNode, *funcInput, nullptr, true);
+      instance->m_retType = inferRetType(
+          m_context,
+          &subTable,
+          *m_parseNode,
+          *funcInput,
+          nullptr,
+          TypeInferExpr::Flags::Aggressive);
       // We don't produce a diagnostic yet if the inferring failed as that is done by the definition
       // step.
     }
@@ -178,7 +194,7 @@ auto FuncTemplate::setupInstance(FuncTemplateInst* instance) -> void {
                                : mangleName(m_context, m_name, instance->m_typeParams);
 
   // Check if an identical function has already been registered.
-  if (m_context->getProg()->lookupFunc(funcName, *funcInput, 0, false)) {
+  if (m_context->getProg()->lookupFunc(funcName, *funcInput, prog::OvOptions{0})) {
     m_context->reportDiag(errDuplicateFuncDeclaration(
         m_context->getSrc(), instance->getDisplayName(*m_context), m_parseNode->getSpan()));
     instance->m_success = false;
@@ -186,8 +202,10 @@ auto FuncTemplate::setupInstance(FuncTemplateInst* instance) -> void {
   }
 
   // Declare the function in the program.
-  instance->m_func =
-      m_context->getProg()->declareFunc(funcName, std::move(*funcInput), *instance->m_retType);
+  instance->m_func = m_isAction
+      ? m_context->getProg()->declareAction(funcName, std::move(*funcInput), *instance->m_retType)
+      : m_context->getProg()->declarePureFunc(
+            funcName, std::move(*funcInput), *instance->m_retType);
 
   // Define the function.
   auto defineFuncs = DefineUserFuncs{m_context, &subTable};

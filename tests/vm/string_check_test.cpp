@@ -12,8 +12,10 @@ TEST_CASE("Execute string checks", "[vm]") {
           builder->addLoadLitString("world");
           builder->addCheckEqString();
           builder->addConvBoolString();
-          builder->addPrintString();
+          builder->addPCall(vm::PCallCode::PrintString);
+          builder->addPop();
         },
+        "input",
         "false");
     CHECK_EXPR(
         [](backend::Builder* builder) -> void {
@@ -21,8 +23,10 @@ TEST_CASE("Execute string checks", "[vm]") {
           builder->addLoadLitString("hello world");
           builder->addCheckEqString();
           builder->addConvBoolString();
-          builder->addPrintString();
+          builder->addPCall(vm::PCallCode::PrintString);
+          builder->addPop();
         },
+        "input",
         "true");
     CHECK_EXPR(
         [](backend::Builder* builder) -> void {
@@ -32,8 +36,10 @@ TEST_CASE("Execute string checks", "[vm]") {
           builder->addAddString();
           builder->addCheckEqString();
           builder->addConvBoolString();
-          builder->addPrintString();
+          builder->addPCall(vm::PCallCode::PrintString);
+          builder->addPop();
         },
+        "input",
         "true");
   }
 }

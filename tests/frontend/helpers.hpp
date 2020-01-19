@@ -15,7 +15,9 @@ namespace frontend {
 #define GET_TYPE_ID(OUTPUT, TYPE_NAME) OUTPUT.getProg().lookupType(TYPE_NAME).value()
 
 #define GET_FUNC_ID(OUTPUT, FUNCNAME, ...)                                                         \
-  OUTPUT.getProg().lookupFunc(FUNCNAME, prog::sym::TypeSet{__VA_ARGS__}, 0, false).value()
+  OUTPUT.getProg()                                                                                 \
+      .lookupFunc(FUNCNAME, prog::sym::TypeSet{__VA_ARGS__}, prog::sym::OverloadOptions{0})        \
+      .value()
 
 #define GET_OP_ID(OUTPUT, OP, ...) GET_FUNC_ID(OUTPUT, getFuncName(OP), __VA_ARGS__)
 

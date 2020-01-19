@@ -291,6 +291,14 @@ TEST_CASE("Infer return type of user functions", "[frontend]") {
     CHECK(GET_FUNC_DECL(output, "f2").getOutput() == GET_TYPE_ID(output, "bool"));
   }
 
+  SECTION("Infinite recursing action") {
+    const auto& output = ANALYZE("action main() "
+                                 " print(\"hello world\"); "
+                                 " main()");
+    REQUIRE(output.isSuccess());
+    CHECK(GET_FUNC_DECL(output, "main").getOutput() == GET_TYPE_ID(output, "int"));
+  }
+
   SECTION("Diagnostics") {
     CHECK_DIAG(
         "fun f1() f2() "

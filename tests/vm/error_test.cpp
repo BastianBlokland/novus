@@ -13,12 +13,14 @@ TEST_CASE("Runtime errors", "[vm]") {
   SECTION("InvalidAssembly") {
     CHECK_EXPR_THROWS(
         [](backend::Builder* builder) -> void { builder->addFail(); },
+        "input",
         vm::exceptions::InvalidAssembly);
   }
 
   SECTION("Evaluation stack not empty") {
     CHECK_EXPR_THROWS(
         [](backend::Builder* builder) -> void { builder->addLoadLitInt(1); },
+        "input",
         vm::exceptions::EvalStackNotEmpty);
   }
 
@@ -30,6 +32,7 @@ TEST_CASE("Runtime errors", "[vm]") {
 
           builder->addEntryPoint("func");
         },
+        "input",
         vm::exceptions::CallStackOverflow);
   }
 
@@ -40,6 +43,7 @@ TEST_CASE("Runtime errors", "[vm]") {
           builder->addLoadLitInt(1);
           builder->addJump("push1");
         },
+        "input",
         vm::exceptions::EvalStackOverflow);
   }
 
@@ -52,6 +56,7 @@ TEST_CASE("Runtime errors", "[vm]") {
 
           builder->addEntryPoint("func");
         },
+        "input",
         vm::exceptions::ConstStackOverflow);
   }
 }

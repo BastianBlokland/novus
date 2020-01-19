@@ -17,30 +17,46 @@ public:
 
   auto hasFunc(const std::string& name) -> bool;
 
-  auto declare(
+  auto declarePure(
       Context* context,
       const std::string& name,
       std::vector<std::string> typeSubs,
       const parse::FuncDeclStmtNode* n) -> void;
 
-  [[nodiscard]] auto instantiate(const std::string& name, const prog::sym::TypeSet& typeParams)
+  auto declareAction(
+      Context* context,
+      const std::string& name,
+      std::vector<std::string> typeSubs,
+      const parse::FuncDeclStmtNode* n) -> void;
+
+  [[nodiscard]] auto instantiate(
+      const std::string& name, const prog::sym::TypeSet& typeParams, prog::OvOptions options)
+      -> std::vector<const FuncTemplateInst*>;
+
+  [[nodiscard]] auto inferParamsAndInstantiate(
+      const std::string& name, const prog::sym::TypeSet& argTypes, prog::OvOptions options)
       -> std::vector<const FuncTemplateInst*>;
 
   [[nodiscard]] auto
-  inferParamsAndInstantiate(const std::string& name, const prog::sym::TypeSet& argTypes)
-      -> std::vector<const FuncTemplateInst*>;
-
-  [[nodiscard]] auto getRetType(const std::string& name, const prog::sym::TypeSet& typeParams)
+  getRetType(const std::string& name, const prog::sym::TypeSet& typeParams, prog::OvOptions options)
       -> std::optional<prog::sym::TypeId>;
 
-  [[nodiscard]] auto
-  inferParamsAndGetRetType(const std::string& name, const prog::sym::TypeSet& argTypes)
+  [[nodiscard]] auto inferParamsAndGetRetType(
+      const std::string& name, const prog::sym::TypeSet& argTypes, prog::OvOptions options)
       -> std::optional<prog::sym::TypeId>;
 
 private:
   std::unordered_map<std::string, std::vector<FuncTemplate>> m_templates;
 
-  auto inferParams(const std::string& name, const prog::sym::TypeSet& argTypes)
+  auto declare(
+      Context* context,
+      const std::string& name,
+      bool isAction,
+      std::vector<std::string> typeSubs,
+      const parse::FuncDeclStmtNode* n) -> void;
+
+  auto
+  inferParams(const std::string& name, const prog::sym::TypeSet& argTypes, prog::OvOptions options)
       -> std::vector<std::pair<FuncTemplate*, prog::sym::TypeSet>>;
 };
 
