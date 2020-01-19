@@ -12,7 +12,7 @@ TEST_CASE("Execute float checks", "[vm]") {
           builder->addLoadLitFloat(-0.1337F); // NOLINT: Magic numbers
           builder->addCheckEqFloat();
           builder->addConvBoolString();
-          builder->addPrintString();
+          builder->addPCall(vm::PCallCode::Print);
           builder->addPop();
         },
         "false");
@@ -22,7 +22,7 @@ TEST_CASE("Execute float checks", "[vm]") {
           builder->addLoadLitFloat(0.1337F); // NOLINT: Magic numbers
           builder->addCheckEqFloat();
           builder->addConvBoolString();
-          builder->addPrintString();
+          builder->addPCall(vm::PCallCode::Print);
           builder->addPop();
         },
         "true");
@@ -35,7 +35,7 @@ TEST_CASE("Execute float checks", "[vm]") {
           builder->addLoadLitFloat(0.1337F);  // NOLINT: Magic numbers
           builder->addCheckGtFloat();
           builder->addConvBoolString();
-          builder->addPrintString();
+          builder->addPCall(vm::PCallCode::Print);
           builder->addPop();
         },
         "false");
@@ -45,7 +45,7 @@ TEST_CASE("Execute float checks", "[vm]") {
           builder->addLoadLitFloat(0.1337F); // NOLINT: Magic numbers
           builder->addCheckGtFloat();
           builder->addConvBoolString();
-          builder->addPrintString();
+          builder->addPCall(vm::PCallCode::Print);
           builder->addPop();
         },
         "true");
@@ -58,7 +58,7 @@ TEST_CASE("Execute float checks", "[vm]") {
           builder->addLoadLitFloat(0.1337F); // NOLINT: Magic numbers
           builder->addCheckLeFloat();
           builder->addConvBoolString();
-          builder->addPrintString();
+          builder->addPCall(vm::PCallCode::Print);
           builder->addPop();
         },
         "false");
@@ -68,7 +68,7 @@ TEST_CASE("Execute float checks", "[vm]") {
           builder->addLoadLitFloat(0.2337F); // NOLINT: Magic numbers
           builder->addCheckLeFloat();
           builder->addConvBoolString();
-          builder->addPrintString();
+          builder->addPCall(vm::PCallCode::Print);
           builder->addPop();
         },
         "true");

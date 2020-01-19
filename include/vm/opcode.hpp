@@ -61,8 +61,6 @@ enum class OpCode : uint8_t {
   MakeStruct      = 100,
   LoadStructField = 101,
 
-  PrintString = 150,
-
   Jump   = 220,
   JumpIf = 221,
 
@@ -70,7 +68,8 @@ enum class OpCode : uint8_t {
   CallTail    = 231,
   CallDyn     = 232,
   CallDynTail = 233,
-  Ret         = 234,
+  PCall       = 234,
+  Ret         = 235,
 
   Dup = 240,
   Pop = 241,

@@ -1,6 +1,7 @@
 #pragma once
 #include "vm/assembly.hpp"
 #include "vm/opcode.hpp"
+#include "vm/pcall_code.hpp"
 #include <string>
 #include <unordered_map>
 #include <utility>
@@ -73,13 +74,12 @@ public:
   auto addMakeStruct(uint8_t fieldCount) -> void;
   auto addLoadStructField(uint8_t fieldIndex) -> void;
 
-  auto addPrintString() -> void;
-
   auto addJump(std::string label) -> void;
   auto addJumpIf(std::string label) -> void;
 
   auto addCall(std::string label, bool tail) -> void;
   auto addCallDyn(bool tail) -> void;
+  auto addPCall(vm::PCallCode code) -> void;
   auto addRet() -> void;
 
   auto addDup() -> void;

@@ -2,7 +2,7 @@
 #include "backend/builder.hpp"
 #include "catch2/catch.hpp"
 #include "vm/executor.hpp"
-#include "vm/io/memory_interface.hpp"
+#include "vm/platform/memory_interface.hpp"
 #include <functional>
 
 namespace vm {
@@ -24,7 +24,7 @@ inline auto buildAssembly(const std::function<void(backend::Builder*)>& build) -
 
 #define CHECK_ASM(ASM, ...)                                                                        \
   {                                                                                                \
-    auto memInterface = io::MemoryInterface{};                                                     \
+    auto memInterface = platform::MemoryInterface{};                                               \
     execute(ASM, &memInterface);                                                                   \
     const std::vector<std::string> expectedOutput = {__VA_ARGS__};                                 \
     CHECK_THAT(memInterface.getOutput(), Catch::Equals(expectedOutput));                           \
@@ -32,7 +32,7 @@ inline auto buildAssembly(const std::function<void(backend::Builder*)>& build) -
 
 #define CHECK_ASM_THROWS(ASM, EXCEPTION_TYPE)                                                      \
   {                                                                                                \
-    auto memInterface = io::MemoryInterface{};                                                     \
+    auto memInterface = platform::MemoryInterface{};                                               \
     CHECK_THROWS_AS(execute(ASM, &memInterface), EXCEPTION_TYPE);                                  \
   }
 

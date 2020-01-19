@@ -10,7 +10,7 @@ TEST_CASE("Execute literals", "[vm]") {
         [](backend::Builder* builder) -> void {
           builder->addLoadLitInt(42);
           builder->addConvIntString();
-          builder->addPrintString();
+          builder->addPCall(vm::PCallCode::Print);
           builder->addPop();
         },
         "42");
@@ -18,7 +18,7 @@ TEST_CASE("Execute literals", "[vm]") {
         [](backend::Builder* builder) -> void {
           builder->addLoadLitInt(-42);
           builder->addConvIntString();
-          builder->addPrintString();
+          builder->addPCall(vm::PCallCode::Print);
           builder->addPop();
         },
         "-42");
@@ -29,7 +29,7 @@ TEST_CASE("Execute literals", "[vm]") {
         [](backend::Builder* builder) -> void {
           builder->addLoadLitFloat(0.1337F); // NOLINT: Magic numbers
           builder->addConvFloatString();
-          builder->addPrintString();
+          builder->addPCall(vm::PCallCode::Print);
           builder->addPop();
         },
         "0.1337");
@@ -37,7 +37,7 @@ TEST_CASE("Execute literals", "[vm]") {
         [](backend::Builder* builder) -> void {
           builder->addLoadLitFloat(-0.1337F); // NOLINT: Magic numbers
           builder->addConvFloatString();
-          builder->addPrintString();
+          builder->addPCall(vm::PCallCode::Print);
           builder->addPop();
         },
         "-0.1337");
@@ -47,27 +47,27 @@ TEST_CASE("Execute literals", "[vm]") {
     CHECK_EXPR(
         [](backend::Builder* builder) -> void {
           builder->addLoadLitString("");
-          builder->addPrintString();
+          builder->addPCall(vm::PCallCode::Print);
           builder->addPop();
 
           builder->addLoadLitString("hello");
-          builder->addPrintString();
+          builder->addPCall(vm::PCallCode::Print);
           builder->addPop();
 
           builder->addLoadLitString(" ");
-          builder->addPrintString();
+          builder->addPCall(vm::PCallCode::Print);
           builder->addPop();
 
           builder->addLoadLitString("world");
-          builder->addPrintString();
+          builder->addPCall(vm::PCallCode::Print);
           builder->addPop();
 
           builder->addLoadLitString(" ");
-          builder->addPrintString();
+          builder->addPCall(vm::PCallCode::Print);
           builder->addPop();
 
           builder->addLoadLitString("!");
-          builder->addPrintString();
+          builder->addPCall(vm::PCallCode::Print);
           builder->addPop();
         },
         "",

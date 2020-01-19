@@ -32,7 +32,7 @@ TEST_CASE("Generate assembly for tail calls", "[backend]") {
           builder->addLoadLitInt(42);
           builder->addCall("test", false);
           builder->addConvIntString();
-          builder->addPrintString();
+          builder->addPCall(vm::PCallCode::Print);
           builder->addPop();
           builder->addRet();
 
@@ -57,7 +57,7 @@ TEST_CASE("Generate assembly for tail calls", "[backend]") {
           builder->label("print");
           builder->addCall("f2", false);
           builder->addConvIntString();
-          builder->addPrintString();
+          builder->addPCall(vm::PCallCode::Print);
           builder->addPop();
           builder->addRet();
 
@@ -90,7 +90,7 @@ TEST_CASE("Generate assembly for tail calls", "[backend]") {
           builder->label("print");
           builder->addCall("f2", false);
           builder->addConvIntString();
-          builder->addPrintString();
+          builder->addPCall(vm::PCallCode::Print);
           builder->addPop();
           builder->addRet();
 
@@ -119,7 +119,7 @@ TEST_CASE("Generate assembly for tail calls", "[backend]") {
           builder->addLoadLitIp("f1");
           builder->addCall("f2", false);
           builder->addConvIntString();
-          builder->addPrintString();
+          builder->addPCall(vm::PCallCode::Print);
           builder->addPop();
           builder->addRet();
 

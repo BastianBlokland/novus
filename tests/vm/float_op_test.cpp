@@ -13,7 +13,7 @@ TEST_CASE("Execute float operations", "[vm]") {
           builder->addLoadLitFloat(0.1F);    // NOLINT: Magic numbers
           builder->addAddFloat();
           builder->addConvFloatString();
-          builder->addPrintString();
+          builder->addPCall(vm::PCallCode::Print);
           builder->addPop();
         },
         "0.2337");
@@ -23,7 +23,7 @@ TEST_CASE("Execute float operations", "[vm]") {
           builder->addLoadLitFloat(1.0F);
           builder->addAddFloat();
           builder->addConvFloatString();
-          builder->addPrintString();
+          builder->addPCall(vm::PCallCode::Print);
           builder->addPop();
         },
         "10000");
@@ -36,7 +36,7 @@ TEST_CASE("Execute float operations", "[vm]") {
           builder->addLoadLitFloat(0.1F);    // NOLINT: Magic numbers
           builder->addSubFloat();
           builder->addConvFloatString();
-          builder->addPrintString();
+          builder->addPCall(vm::PCallCode::Print);
           builder->addPop();
         },
         "0.0337");
@@ -46,7 +46,7 @@ TEST_CASE("Execute float operations", "[vm]") {
           builder->addLoadLitFloat(0.1337F); // NOLINT: Magic numbers
           builder->addSubFloat();
           builder->addConvFloatString();
-          builder->addPrintString();
+          builder->addPCall(vm::PCallCode::Print);
           builder->addPop();
         },
         "-0.0337");
@@ -59,7 +59,7 @@ TEST_CASE("Execute float operations", "[vm]") {
           builder->addLoadLitFloat(10000.0F); // NOLINT: Magic numbers
           builder->addMulFloat();
           builder->addConvFloatString();
-          builder->addPrintString();
+          builder->addPCall(vm::PCallCode::Print);
           builder->addPop();
         },
         "1337");
@@ -69,7 +69,7 @@ TEST_CASE("Execute float operations", "[vm]") {
           builder->addLoadLitFloat(0.0001F); // NOLINT: Magic numbers
           builder->addMulFloat();
           builder->addConvFloatString();
-          builder->addPrintString();
+          builder->addPCall(vm::PCallCode::Print);
           builder->addPop();
         },
         "0.1337");
@@ -82,7 +82,7 @@ TEST_CASE("Execute float operations", "[vm]") {
           builder->addLoadLitFloat(50.0F); // NOLINT: Magic numbers
           builder->addDivFloat();
           builder->addConvFloatString();
-          builder->addPrintString();
+          builder->addPCall(vm::PCallCode::Print);
           builder->addPop();
         },
         "0.02");
@@ -92,7 +92,7 @@ TEST_CASE("Execute float operations", "[vm]") {
           builder->addLoadLitFloat(0.0F);
           builder->addDivFloat();
           builder->addConvFloatString();
-          builder->addPrintString();
+          builder->addPCall(vm::PCallCode::Print);
           builder->addPop();
         },
         vm::exceptions::DivByZero);
@@ -104,7 +104,7 @@ TEST_CASE("Execute float operations", "[vm]") {
           builder->addLoadLitFloat(0.1337F); // NOLINT: Magic numbers
           builder->addNegFloat();
           builder->addConvFloatString();
-          builder->addPrintString();
+          builder->addPCall(vm::PCallCode::Print);
           builder->addPop();
         },
         "-0.1337");
@@ -113,7 +113,7 @@ TEST_CASE("Execute float operations", "[vm]") {
           builder->addLoadLitFloat(0);
           builder->addNegFloat();
           builder->addConvFloatString();
-          builder->addPrintString();
+          builder->addPCall(vm::PCallCode::Print);
           builder->addPop();
         },
         "-0");
@@ -123,7 +123,7 @@ TEST_CASE("Execute float operations", "[vm]") {
           builder->addNegFloat();
           builder->addNegFloat();
           builder->addConvFloatString();
-          builder->addPrintString();
+          builder->addPCall(vm::PCallCode::Print);
           builder->addPop();
         },
         "0.1337");

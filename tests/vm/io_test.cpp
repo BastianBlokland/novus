@@ -9,22 +9,22 @@ TEST_CASE("Execute input and output", "[vm]") {
     CHECK_EXPR(
         [](backend::Builder* builder) -> void {
           builder->addLoadLitString("hello world");
-          builder->addPrintString();
+          builder->addPCall(vm::PCallCode::Print);
           builder->addPop();
 
           builder->addLoadLitInt(0);
           builder->addConvBoolString();
-          builder->addPrintString();
+          builder->addPCall(vm::PCallCode::Print);
           builder->addPop();
 
           builder->addLoadLitInt(1);
           builder->addConvBoolString();
-          builder->addPrintString();
+          builder->addPCall(vm::PCallCode::Print);
           builder->addPop();
 
           builder->addLoadLitInt(-42);
           builder->addConvIntString();
-          builder->addPrintString();
+          builder->addPCall(vm::PCallCode::Print);
           builder->addPop();
         },
         "hello world",

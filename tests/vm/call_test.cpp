@@ -11,7 +11,7 @@ TEST_CASE("Execute calls", "[vm]") {
         builder->addLoadLitInt(0);
         builder->addCall("section2", false);
         builder->addConvIntString();
-        builder->addPrintString();
+        builder->addPCall(vm::PCallCode::Print);
         builder->addPop();
         builder->addRet();
 
@@ -39,7 +39,7 @@ TEST_CASE("Execute calls", "[vm]") {
         builder->addLoadLitInt(0);
         builder->addCall("section2", false);
         builder->addConvIntString();
-        builder->addPrintString();
+        builder->addPCall(vm::PCallCode::Print);
         builder->addPop();
         builder->addRet();
 
@@ -68,7 +68,7 @@ TEST_CASE("Execute calls", "[vm]") {
         builder->addCallDyn(false);
 
         builder->addConvIntString();
-        builder->addPrintString();
+        builder->addPCall(vm::PCallCode::Print);
         builder->addPop();
         builder->addRet();
 
@@ -89,7 +89,7 @@ TEST_CASE("Execute calls", "[vm]") {
         builder->addCallDyn(false);
 
         builder->addConvIntString();
-        builder->addPrintString();
+        builder->addPCall(vm::PCallCode::Print);
         builder->addPop();
         builder->addRet();
 
@@ -112,7 +112,7 @@ TEST_CASE("Execute calls", "[vm]") {
         builder->label("section1");
         builder->addCall("section2", false);
         builder->addConvIntString();
-        builder->addPrintString();
+        builder->addPCall(vm::PCallCode::Print);
         builder->addPop();
         builder->addRet();
 
@@ -146,7 +146,7 @@ TEST_CASE("Execute calls", "[vm]") {
         builder->addCallDyn(false);
 
         builder->addConvIntString();
-        builder->addPrintString();
+        builder->addPCall(vm::PCallCode::Print);
         builder->addPop();
         builder->addRet();
 

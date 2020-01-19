@@ -1,10 +1,10 @@
-#include "vm/io/terminal_interface.hpp"
+#include "vm/platform/terminal_interface.hpp"
 #include <iostream>
 
-namespace vm::io {
+namespace vm::platform {
 
 auto TerminalInterface::print(const char* data, unsigned int size) -> void {
   std::cout.write(data, size);
 }
 
-} // namespace vm::io
+} // namespace vm::platform

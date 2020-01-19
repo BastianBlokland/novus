@@ -3,6 +3,7 @@
 #include "internal/call_stack.hpp"
 #include "internal/const_stack.hpp"
 #include "internal/eval_stack.hpp"
+#include "internal/pcall.hpp"
 #include "internal/ref_string.hpp"
 #include "internal/string_utilities.hpp"
 #include "vm/exceptions/div_by_zero.hpp"
@@ -17,7 +18,7 @@ static const int EvalStackSize   = 512;
 static const int ConstsStackSize = 25600;
 static const int CallStackSize   = 8192;
 
-static auto execute(const Assembly& assembly, io::Interface* interface, uint32_t entryPoint) {
+static auto execute(const Assembly& assembly, platform::Interface* iface, uint32_t entryPoint) {
   auto evalStack  = internal::EvalStack<EvalStackSize>{};
   auto constStack = internal::ConstStack{ConstsStackSize};
   auto callStack  = internal::CallStack{CallStackSize};
@@ -271,11 +272,6 @@ static auto execute(const Assembly& assembly, io::Interface* interface, uint32_t
       evalStack.push(s->getField(fieldIndex));
     } break;
 
-    case OpCode::PrintString: {
-      auto* strRef = getStringRef(evalStack.peek());
-      interface->print(strRef->getDataPtr(), strRef->getSize());
-    } break;
-
     case OpCode::Jump: {
       auto ipOffset = scope->readUInt32();
       scope->jump(assembly.getIp(ipOffset));
@@ -326,6 +322,9 @@ static auto execute(const Assembly& assembly, io::Interface* interface, uint32_t
         scope->jump(assembly.getIp(target.getUInt()));
       }
     } break;
+    case OpCode::PCall: {
+      internal::pcall(evalStack, iface, scope->readPCallCode());
+    } break;
     case OpCode::Ret: {
       scope->releaseConsts(&constStack);
       if (!callStack.pop()) {
@@ -351,7 +350,7 @@ static auto execute(const Assembly& assembly, io::Interface* interface, uint32_t
   }
 }
 
-auto execute(const Assembly& assembly, io::Interface* iface) -> void {
+auto execute(const Assembly& assembly, platform::Interface* iface) -> void {
   if (!iface) {
     throw std::invalid_argument{"Interface cannot be null"};
   }

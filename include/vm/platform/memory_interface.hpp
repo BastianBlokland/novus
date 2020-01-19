@@ -1,9 +1,9 @@
 #pragma once
-#include "vm/io/interface.hpp"
+#include "vm/platform/interface.hpp"
 #include <string>
 #include <vector>
 
-namespace vm::io {
+namespace vm::platform {
 
 class MemoryInterface final : public Interface {
 public:
@@ -15,4 +15,4 @@ private:
   std::vector<std::string> m_output;
 };
 
-} // namespace vm::io
+} // namespace vm::platform

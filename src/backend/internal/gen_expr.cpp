@@ -312,7 +312,7 @@ auto GenExpr::visit(const prog::expr::CallExprNode& n) -> void {
   }
 
   case prog::sym::FuncKind::ActionPrint:
-    m_builder->addPrintString();
+    m_builder->addPCall(vm::PCallCode::Print);
     break;
   }
 }

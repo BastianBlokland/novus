@@ -199,11 +199,12 @@ add_library(vm STATIC
   vm/internal/const_stack.cpp
   vm/internal/exec_scope.cpp
   vm/internal/string_utilities.cpp
-  vm/io/memory_interface.cpp
-  vm/io/terminal_interface.cpp
+  vm/platform/memory_interface.cpp
+  vm/platform/terminal_interface.cpp
   vm/assembly.cpp
   vm/executor.cpp
-  vm/opcode.cpp)
+  vm/opcode.cpp
+  vm/pcall_code.cpp)
 target_compile_features(vm PUBLIC cxx_std_17)
 target_compile_options(vm PRIVATE -Werror -Wall -Wextra)
 target_include_directories(vm PUBLIC ${PROJECT_SOURCE_DIR}/include)

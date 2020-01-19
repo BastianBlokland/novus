@@ -1,13 +1,14 @@
 #pragma once
 #include "vm/assembly.hpp"
 #include "vm/opcode.hpp"
+#include "vm/pcall_code.hpp"
 #include <initializer_list>
 #include <iostream>
 #include <variant>
 
 namespace backend::dasm {
 
-using Arg = typename std::variant<int32_t, uint32_t, float>;
+using Arg = typename std::variant<int32_t, uint32_t, float, vm::PCallCode>;
 
 class Instruction final {
   friend auto operator<<(std::ostream& out, const Instruction& rhs) -> std::ostream&;

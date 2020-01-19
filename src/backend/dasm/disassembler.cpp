@@ -1,5 +1,6 @@
 #include "backend/dasm/disassembler.hpp"
 #include "backend/dasm/instruction.hpp"
+#include "vm/pcall_code.hpp"
 #include <stdexcept>
 
 namespace backend::dasm {
@@ -66,7 +67,6 @@ auto disassembleInstructions(const vm::Assembly& assembly) -> std::vector<Instru
     case vm::OpCode::ConvFloatString:
     case vm::OpCode::ConvCharString:
     case vm::OpCode::ConvIntChar:
-    case vm::OpCode::PrintString:
     case vm::OpCode::CallDyn:
     case vm::OpCode::CallDynTail:
     case vm::OpCode::Ret:
@@ -83,6 +83,11 @@ auto disassembleInstructions(const vm::Assembly& assembly) -> std::vector<Instru
     case vm::OpCode::CallTail:
       result.push_back(Instruction(opCode, ipOffset, {assembly.readUInt32(ipOffset + 1)}));
       ipOffset += 4;
+      continue;
+    case vm::OpCode::PCall:
+      result.push_back(
+          Instruction(opCode, ipOffset, {static_cast<vm::PCallCode>(instrData[ipOffset + 1])}));
+      ++ipOffset;
       continue;
     }
     throw std::logic_error{"Bad assembly"};

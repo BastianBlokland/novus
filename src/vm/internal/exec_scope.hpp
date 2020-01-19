@@ -3,6 +3,7 @@
 #include "internal/value.hpp"
 #include "vm/assembly.hpp"
 #include "vm/opcode.hpp"
+#include "vm/pcall_code.hpp"
 #include <cstdint>
 
 namespace vm::internal {
@@ -22,6 +23,7 @@ public:
   auto operator=(ExecScope&& rhs) noexcept -> ExecScope& = delete;
 
   [[nodiscard]] auto readOpCode() -> OpCode;
+  [[nodiscard]] auto readPCallCode() -> PCallCode;
   [[nodiscard]] auto readUInt8() -> uint8_t;
   [[nodiscard]] auto readInt32() -> int32_t;
   [[nodiscard]] auto readUInt32() -> uint32_t;

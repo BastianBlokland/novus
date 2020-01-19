@@ -162,8 +162,6 @@ auto Builder::addLoadStructField(uint8_t fieldIndex) -> void {
   writeUInt8(fieldIndex);
 }
 
-auto Builder::addPrintString() -> void { writeOpCode(vm::OpCode::PrintString); }
-
 auto Builder::addJump(std::string label) -> void {
   writeOpCode(vm::OpCode::Jump);
   writeIpOffset(std::move(label));
@@ -181,6 +179,11 @@ auto Builder::addCall(std::string label, bool tail) -> void {
 
 auto Builder::addCallDyn(bool tail) -> void {
   writeOpCode(tail ? vm::OpCode::CallDynTail : vm::OpCode::CallDyn);
+}
+
+auto Builder::addPCall(vm::PCallCode code) -> void {
+  writeOpCode(vm::OpCode::PCall);
+  writeUInt8(static_cast<uint8_t>(code));
 }
 
 auto Builder::addRet() -> void { writeOpCode(vm::OpCode::Ret); }
