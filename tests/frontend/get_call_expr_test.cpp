@@ -2,8 +2,10 @@
 #include "frontend/diag_defs.hpp"
 #include "helpers.hpp"
 #include "prog/expr/node_const.hpp"
+#include "prog/expr/node_lit_bool.hpp"
 #include "prog/expr/node_lit_int.hpp"
 #include "prog/expr/node_lit_string.hpp"
+#include "prog/expr/node_switch.hpp"
 
 namespace frontend {
 
@@ -35,11 +37,19 @@ TEST_CASE("Analyzing call expressions", "[frontend]") {
   }
 
   SECTION("Get recursive call") {
-    const auto& output = ANALYZE("fun f() -> int f()");
+    const auto& output = ANALYZE("fun f() -> int false ? f() : 1");
     REQUIRE(output.isSuccess());
+
+    auto conditions = std::vector<prog::expr::NodePtr>{};
+    conditions.push_back(prog::expr::litBoolNode(output.getProg(), false));
+
+    auto branches = std::vector<prog::expr::NodePtr>{};
+    branches.push_back(prog::expr::callExprNode(output.getProg(), GET_FUNC_ID(output, "f"), {}));
+    branches.push_back(prog::expr::litIntNode(output.getProg(), 1));
+
     CHECK(
         GET_FUNC_DEF(output, "f").getExpr() ==
-        *prog::expr::callExprNode(output.getProg(), GET_FUNC_ID(output, "f"), {}));
+        *prog::expr::switchExprNode(output.getProg(), std::move(conditions), std::move(branches)));
   }
 
   SECTION("Get call with conversion") {

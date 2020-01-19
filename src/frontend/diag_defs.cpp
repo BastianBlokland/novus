@@ -360,6 +360,12 @@ auto errUndeclaredFuncOrAction(
   return error(src, oss.str(), span);
 }
 
+auto errPureFuncInfRecursion(const Source& src, input::Span span) -> Diag {
+  std::ostringstream oss;
+  oss << "Pure function recurses infinitely";
+  return error(src, oss.str(), span);
+}
+
 auto errNoFuncFoundToInstantiate(
     const Source& src, const std::string& name, unsigned int templateParamCount, input::Span span)
     -> Diag {
