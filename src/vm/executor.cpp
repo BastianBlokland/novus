@@ -326,7 +326,7 @@ static auto execute(const Assembly& assembly, PlatformInterface& iface, uint32_t
       }
     } break;
     case OpCode::PCall: {
-      internal::pcall(evalStack, iface, scope->readPCallCode());
+      internal::pcall(evalStack, &allocator, iface, scope->readPCallCode());
     } break;
     case OpCode::Ret: {
       scope->releaseConsts(&constStack);

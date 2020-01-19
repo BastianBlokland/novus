@@ -102,6 +102,35 @@ TEST_CASE("Execute input and output", "[vm]") {
         "hello: b",
         "hello: c");
   }
+
+  SECTION("Read line") {
+    CHECK_PROG(
+        [](backend::Builder* builder) -> void {
+          builder->label("entry");
+          builder->addEntryPoint("entry");
+
+          builder->addLoadLitString("hello: ");
+
+          builder->addPCall(vm::PCallCode::ReadStringLine);
+          builder->addDup();
+          builder->addLengthString();
+          builder->addLogicInvInt();
+          builder->addJumpIf("end");
+
+          builder->addAddString();
+          builder->addPCall(vm::PCallCode::PrintString);
+          builder->addPop();
+          builder->addJump("entry");
+
+          builder->label("end");
+          builder->addPop();
+          builder->addPop();
+          builder->addRet();
+        },
+        "John Doe\nJane Doe\n",
+        "hello: John Doe",
+        "hello: Jane Doe");
+  }
 }
 
 } // namespace vm

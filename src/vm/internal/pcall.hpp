@@ -1,5 +1,6 @@
 #pragma once
 #include "internal/eval_stack.hpp"
+#include "internal/string_utilities.hpp"
 #include "vm/exceptions/invalid_assembly.hpp"
 #include "vm/pcall_code.hpp"
 
@@ -8,7 +9,9 @@ namespace vm::internal {
 const auto static newl = '\n';
 
 template <typename EvalStack, typename PlatformInterface>
-auto inline pcall(EvalStack& evalStack, PlatformInterface& iface, PCallCode code) -> void {
+auto inline pcall(
+    EvalStack& evalStack, Allocator* allocator, PlatformInterface& iface, PCallCode code) -> void {
+
   switch (code) {
   case vm::PCallCode::PrintChar: {
     auto c = static_cast<char>(evalStack.peek().getInt());
@@ -28,6 +31,18 @@ auto inline pcall(EvalStack& evalStack, PlatformInterface& iface, PCallCode code
   }
   case vm::PCallCode::ReadChar: {
     evalStack.push(internal::intValue(iface.read()));
+    return;
+  }
+  case vm::PCallCode::ReadStringLine: {
+    std::string line = {};
+    while (true) {
+      const auto c = iface.read();
+      if (c == '\0' || c == '\n') {
+        break;
+      }
+      line += c;
+    }
+    evalStack.push(internal::toString(allocator, line));
     return;
   }
   }
