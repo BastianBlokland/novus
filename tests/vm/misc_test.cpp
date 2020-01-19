@@ -20,6 +20,7 @@ TEST_CASE("Execute miscellaneous instructions", "[vm]") {
 
           builder->addEntryPoint("start");
         },
+        "input",
         "84");
   }
 
@@ -38,6 +39,7 @@ TEST_CASE("Execute miscellaneous instructions", "[vm]") {
 
           builder->addEntryPoint("start");
         },
+        "input",
         "42");
   }
 }

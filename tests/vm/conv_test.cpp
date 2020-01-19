@@ -15,6 +15,7 @@ TEST_CASE("Execute conversions", "[vm]") {
           builder->addPCall(vm::PCallCode::PrintString);
           builder->addPop();
         },
+        "input",
         "42");
     CHECK_EXPR(
         [](backend::Builder* builder) -> void {
@@ -25,6 +26,7 @@ TEST_CASE("Execute conversions", "[vm]") {
           builder->addPCall(vm::PCallCode::PrintString);
           builder->addPop();
         },
+        "input",
         "-2.14748e+09");
   }
 
@@ -38,6 +40,7 @@ TEST_CASE("Execute conversions", "[vm]") {
           builder->addPCall(vm::PCallCode::PrintString);
           builder->addPop();
         },
+        "input",
         "42");
     CHECK_EXPR(
         [](backend::Builder* builder) -> void {
@@ -48,6 +51,7 @@ TEST_CASE("Execute conversions", "[vm]") {
           builder->addPCall(vm::PCallCode::PrintString);
           builder->addPop();
         },
+        "input",
         "42");
     CHECK_EXPR(
         [](backend::Builder* builder) -> void {
@@ -58,6 +62,7 @@ TEST_CASE("Execute conversions", "[vm]") {
           builder->addPCall(vm::PCallCode::PrintString);
           builder->addPop();
         },
+        "input",
         "0");
     CHECK_EXPR(
         [](backend::Builder* builder) -> void {
@@ -68,6 +73,7 @@ TEST_CASE("Execute conversions", "[vm]") {
           builder->addPCall(vm::PCallCode::PrintString);
           builder->addPop();
         },
+        "input",
         "-2147483648"); // Unrepresentable by int, high bit 1 all others 0.
   }
 
@@ -79,6 +85,7 @@ TEST_CASE("Execute conversions", "[vm]") {
           builder->addPCall(vm::PCallCode::PrintString);
           builder->addPop();
         },
+        "input",
         "0");
     CHECK_EXPR(
         [](backend::Builder* builder) -> void {
@@ -87,6 +94,7 @@ TEST_CASE("Execute conversions", "[vm]") {
           builder->addPCall(vm::PCallCode::PrintString);
           builder->addPop();
         },
+        "input",
         "42");
     CHECK_EXPR(
         [](backend::Builder* builder) -> void {
@@ -95,6 +103,7 @@ TEST_CASE("Execute conversions", "[vm]") {
           builder->addPCall(vm::PCallCode::PrintString);
           builder->addPop();
         },
+        "input",
         "2147483647");
     CHECK_EXPR(
         [](backend::Builder* builder) -> void {
@@ -103,6 +112,7 @@ TEST_CASE("Execute conversions", "[vm]") {
           builder->addPCall(vm::PCallCode::PrintString);
           builder->addPop();
         },
+        "input",
         "-2147483647");
   }
 
@@ -114,6 +124,7 @@ TEST_CASE("Execute conversions", "[vm]") {
           builder->addPCall(vm::PCallCode::PrintString);
           builder->addPop();
         },
+        "input",
         "0");
     CHECK_EXPR(
         [](backend::Builder* builder) -> void {
@@ -122,6 +133,7 @@ TEST_CASE("Execute conversions", "[vm]") {
           builder->addPCall(vm::PCallCode::PrintString);
           builder->addPop();
         },
+        "input",
         "42");
     CHECK_EXPR(
         [](backend::Builder* builder) -> void {
@@ -130,6 +142,7 @@ TEST_CASE("Execute conversions", "[vm]") {
           builder->addPCall(vm::PCallCode::PrintString);
           builder->addPop();
         },
+        "input",
         "42.1337");
     CHECK_EXPR(
         [](backend::Builder* builder) -> void {
@@ -138,6 +151,7 @@ TEST_CASE("Execute conversions", "[vm]") {
           builder->addPCall(vm::PCallCode::PrintString);
           builder->addPop();
         },
+        "input",
         "0.42");
     CHECK_EXPR(
         [](backend::Builder* builder) -> void {
@@ -146,6 +160,7 @@ TEST_CASE("Execute conversions", "[vm]") {
           builder->addPCall(vm::PCallCode::PrintString);
           builder->addPop();
         },
+        "input",
         "999999");
     CHECK_EXPR(
         [](backend::Builder* builder) -> void {
@@ -154,6 +169,7 @@ TEST_CASE("Execute conversions", "[vm]") {
           builder->addPCall(vm::PCallCode::PrintString);
           builder->addPop();
         },
+        "input",
         "99999.1");
     CHECK_EXPR(
         [](backend::Builder* builder) -> void {
@@ -162,6 +178,7 @@ TEST_CASE("Execute conversions", "[vm]") {
           builder->addPCall(vm::PCallCode::PrintString);
           builder->addPop();
         },
+        "input",
         "1e-06");
     CHECK_EXPR(
         [](backend::Builder* builder) -> void {
@@ -170,6 +187,7 @@ TEST_CASE("Execute conversions", "[vm]") {
           builder->addPCall(vm::PCallCode::PrintString);
           builder->addPop();
         },
+        "input",
         "1e+10"); // Rounding error.
     CHECK_EXPR(
         [](backend::Builder* builder) -> void {
@@ -178,6 +196,7 @@ TEST_CASE("Execute conversions", "[vm]") {
           builder->addPCall(vm::PCallCode::PrintString);
           builder->addPop();
         },
+        "input",
         "-0.42");
     CHECK_EXPR(
         [](backend::Builder* builder) -> void {
@@ -186,6 +205,7 @@ TEST_CASE("Execute conversions", "[vm]") {
           builder->addPCall(vm::PCallCode::PrintString);
           builder->addPop();
         },
+        "input",
         "-1e+10"); // Rounding error.
   }
 
@@ -197,6 +217,7 @@ TEST_CASE("Execute conversions", "[vm]") {
           builder->addPCall(vm::PCallCode::PrintString);
           builder->addPop();
         },
+        "input",
         "0");
     CHECK_EXPR(
         [](backend::Builder* builder) -> void {
@@ -205,6 +226,7 @@ TEST_CASE("Execute conversions", "[vm]") {
           builder->addPCall(vm::PCallCode::PrintString);
           builder->addPop();
         },
+        "input",
         "\n");
     CHECK_EXPR(
         [](backend::Builder* builder) -> void {
@@ -213,6 +235,7 @@ TEST_CASE("Execute conversions", "[vm]") {
           builder->addPCall(vm::PCallCode::PrintString);
           builder->addPop();
         },
+        "input",
         "&");
     CHECK_EXPR(
         [](backend::Builder* builder) -> void {
@@ -221,6 +244,7 @@ TEST_CASE("Execute conversions", "[vm]") {
           builder->addPCall(vm::PCallCode::PrintString);
           builder->addPop();
         },
+        "input",
         " ");
   }
 
@@ -234,6 +258,7 @@ TEST_CASE("Execute conversions", "[vm]") {
           builder->addPCall(vm::PCallCode::PrintString);
           builder->addPop();
         },
+        "input",
         "0");
     CHECK_EXPR(
         [](backend::Builder* builder) -> void {
@@ -244,6 +269,7 @@ TEST_CASE("Execute conversions", "[vm]") {
           builder->addPCall(vm::PCallCode::PrintString);
           builder->addPop();
         },
+        "input",
         "42");
     CHECK_EXPR(
         [](backend::Builder* builder) -> void {
@@ -254,6 +280,7 @@ TEST_CASE("Execute conversions", "[vm]") {
           builder->addPCall(vm::PCallCode::PrintString);
           builder->addPop();
         },
+        "input",
         "255");
     CHECK_EXPR(
         [](backend::Builder* builder) -> void {
@@ -264,6 +291,7 @@ TEST_CASE("Execute conversions", "[vm]") {
           builder->addPCall(vm::PCallCode::PrintString);
           builder->addPop();
         },
+        "input",
         "0");
     CHECK_EXPR(
         [](backend::Builder* builder) -> void {
@@ -274,6 +302,7 @@ TEST_CASE("Execute conversions", "[vm]") {
           builder->addPCall(vm::PCallCode::PrintString);
           builder->addPop();
         },
+        "input",
         "255");
     CHECK_EXPR(
         [](backend::Builder* builder) -> void {
@@ -284,6 +313,7 @@ TEST_CASE("Execute conversions", "[vm]") {
           builder->addPCall(vm::PCallCode::PrintString);
           builder->addPop();
         },
+        "input",
         "57");
   }
 }

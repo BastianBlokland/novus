@@ -16,6 +16,7 @@ TEST_CASE("Execute integer operations", "[vm]") {
           builder->addPCall(vm::PCallCode::PrintString);
           builder->addPop();
         },
+        "input",
         "3");
     CHECK_EXPR(
         [](backend::Builder* builder) -> void {
@@ -26,6 +27,7 @@ TEST_CASE("Execute integer operations", "[vm]") {
           builder->addPCall(vm::PCallCode::PrintString);
           builder->addPop();
         },
+        "input",
         "-2147483648");
   }
 
@@ -39,6 +41,7 @@ TEST_CASE("Execute integer operations", "[vm]") {
           builder->addPCall(vm::PCallCode::PrintString);
           builder->addPop();
         },
+        "input",
         "5");
     CHECK_EXPR(
         [](backend::Builder* builder) -> void {
@@ -49,6 +52,7 @@ TEST_CASE("Execute integer operations", "[vm]") {
           builder->addPCall(vm::PCallCode::PrintString);
           builder->addPop();
         },
+        "input",
         "-10");
   }
 
@@ -62,6 +66,7 @@ TEST_CASE("Execute integer operations", "[vm]") {
           builder->addPCall(vm::PCallCode::PrintString);
           builder->addPop();
         },
+        "input",
         "15");
     CHECK_EXPR(
         [](backend::Builder* builder) -> void {
@@ -72,6 +77,7 @@ TEST_CASE("Execute integer operations", "[vm]") {
           builder->addPCall(vm::PCallCode::PrintString);
           builder->addPop();
         },
+        "input",
         "-15");
   }
 
@@ -85,6 +91,7 @@ TEST_CASE("Execute integer operations", "[vm]") {
           builder->addPCall(vm::PCallCode::PrintString);
           builder->addPop();
         },
+        "input",
         "8");
     CHECK_EXPR_THROWS(
         [](backend::Builder* builder) -> void {
@@ -95,6 +102,7 @@ TEST_CASE("Execute integer operations", "[vm]") {
           builder->addPCall(vm::PCallCode::PrintString);
           builder->addPop();
         },
+        "input",
         vm::exceptions::DivByZero);
   }
 
@@ -108,6 +116,7 @@ TEST_CASE("Execute integer operations", "[vm]") {
           builder->addPCall(vm::PCallCode::PrintString);
           builder->addPop();
         },
+        "input",
         "1");
     CHECK_EXPR_THROWS(
         [](backend::Builder* builder) -> void {
@@ -118,6 +127,7 @@ TEST_CASE("Execute integer operations", "[vm]") {
           builder->addPCall(vm::PCallCode::PrintString);
           builder->addPop();
         },
+        "input",
         vm::exceptions::DivByZero);
   }
 
@@ -130,6 +140,7 @@ TEST_CASE("Execute integer operations", "[vm]") {
           builder->addPCall(vm::PCallCode::PrintString);
           builder->addPop();
         },
+        "input",
         "-42");
     CHECK_EXPR(
         [](backend::Builder* builder) -> void {
@@ -139,6 +150,7 @@ TEST_CASE("Execute integer operations", "[vm]") {
           builder->addPCall(vm::PCallCode::PrintString);
           builder->addPop();
         },
+        "input",
         "0");
     CHECK_EXPR(
         [](backend::Builder* builder) -> void {
@@ -149,6 +161,7 @@ TEST_CASE("Execute integer operations", "[vm]") {
           builder->addPCall(vm::PCallCode::PrintString);
           builder->addPop();
         },
+        "input",
         "42");
   }
 
@@ -161,6 +174,7 @@ TEST_CASE("Execute integer operations", "[vm]") {
           builder->addPCall(vm::PCallCode::PrintString);
           builder->addPop();
         },
+        "input",
         "1");
     CHECK_EXPR(
         [](backend::Builder* builder) -> void {
@@ -170,6 +184,7 @@ TEST_CASE("Execute integer operations", "[vm]") {
           builder->addPCall(vm::PCallCode::PrintString);
           builder->addPop();
         },
+        "input",
         "0");
     CHECK_EXPR(
         [](backend::Builder* builder) -> void {
@@ -179,6 +194,7 @@ TEST_CASE("Execute integer operations", "[vm]") {
           builder->addPCall(vm::PCallCode::PrintString);
           builder->addPop();
         },
+        "input",
         "0");
   }
 
@@ -192,6 +208,7 @@ TEST_CASE("Execute integer operations", "[vm]") {
           builder->addPCall(vm::PCallCode::PrintString);
           builder->addPop();
         },
+        "input",
         "2");
     CHECK_EXPR(
         [](backend::Builder* builder) -> void {
@@ -202,6 +219,7 @@ TEST_CASE("Execute integer operations", "[vm]") {
           builder->addPCall(vm::PCallCode::PrintString);
           builder->addPop();
         },
+        "input",
         "8");
     CHECK_EXPR(
         [](backend::Builder* builder) -> void {
@@ -212,6 +230,7 @@ TEST_CASE("Execute integer operations", "[vm]") {
           builder->addPCall(vm::PCallCode::PrintString);
           builder->addPop();
         },
+        "input",
         "4");
     CHECK_EXPR(
         [](backend::Builder* builder) -> void {
@@ -222,6 +241,7 @@ TEST_CASE("Execute integer operations", "[vm]") {
           builder->addPCall(vm::PCallCode::PrintString);
           builder->addPop();
         },
+        "input",
         "-2147483648");
   }
 
@@ -235,6 +255,7 @@ TEST_CASE("Execute integer operations", "[vm]") {
           builder->addPCall(vm::PCallCode::PrintString);
           builder->addPop();
         },
+        "input",
         "0");
     CHECK_EXPR(
         [](backend::Builder* builder) -> void {
@@ -245,6 +266,7 @@ TEST_CASE("Execute integer operations", "[vm]") {
           builder->addPCall(vm::PCallCode::PrintString);
           builder->addPop();
         },
+        "input",
         "2");
     CHECK_EXPR(
         [](backend::Builder* builder) -> void {
@@ -255,6 +277,7 @@ TEST_CASE("Execute integer operations", "[vm]") {
           builder->addPCall(vm::PCallCode::PrintString);
           builder->addPop();
         },
+        "input",
         "8");
     CHECK_EXPR(
         [](backend::Builder* builder) -> void {
@@ -265,6 +288,7 @@ TEST_CASE("Execute integer operations", "[vm]") {
           builder->addPCall(vm::PCallCode::PrintString);
           builder->addPop();
         },
+        "input",
         "0");
   }
 
@@ -278,6 +302,7 @@ TEST_CASE("Execute integer operations", "[vm]") {
           builder->addPCall(vm::PCallCode::PrintString);
           builder->addPop();
         },
+        "input",
         "1");
     CHECK_EXPR(
         [](backend::Builder* builder) -> void {
@@ -288,6 +313,7 @@ TEST_CASE("Execute integer operations", "[vm]") {
           builder->addPCall(vm::PCallCode::PrintString);
           builder->addPop();
         },
+        "input",
         "8");
     CHECK_EXPR(
         [](backend::Builder* builder) -> void {
@@ -298,6 +324,7 @@ TEST_CASE("Execute integer operations", "[vm]") {
           builder->addPCall(vm::PCallCode::PrintString);
           builder->addPop();
         },
+        "input",
         "-42");
     CHECK_EXPR(
         [](backend::Builder* builder) -> void {
@@ -308,6 +335,7 @@ TEST_CASE("Execute integer operations", "[vm]") {
           builder->addPCall(vm::PCallCode::PrintString);
           builder->addPop();
         },
+        "input",
         "2");
   }
 
@@ -321,6 +349,7 @@ TEST_CASE("Execute integer operations", "[vm]") {
           builder->addPCall(vm::PCallCode::PrintString);
           builder->addPop();
         },
+        "input",
         "1");
     CHECK_EXPR(
         [](backend::Builder* builder) -> void {
@@ -331,6 +360,7 @@ TEST_CASE("Execute integer operations", "[vm]") {
           builder->addPCall(vm::PCallCode::PrintString);
           builder->addPop();
         },
+        "input",
         "11");
     CHECK_EXPR(
         [](backend::Builder* builder) -> void {
@@ -341,6 +371,7 @@ TEST_CASE("Execute integer operations", "[vm]") {
           builder->addPCall(vm::PCallCode::PrintString);
           builder->addPop();
         },
+        "input",
         "-42");
     CHECK_EXPR(
         [](backend::Builder* builder) -> void {
@@ -351,6 +382,7 @@ TEST_CASE("Execute integer operations", "[vm]") {
           builder->addPCall(vm::PCallCode::PrintString);
           builder->addPop();
         },
+        "input",
         "-2");
   }
 
@@ -364,6 +396,7 @@ TEST_CASE("Execute integer operations", "[vm]") {
           builder->addPCall(vm::PCallCode::PrintString);
           builder->addPop();
         },
+        "input",
         "0");
     CHECK_EXPR(
         [](backend::Builder* builder) -> void {
@@ -374,6 +407,7 @@ TEST_CASE("Execute integer operations", "[vm]") {
           builder->addPCall(vm::PCallCode::PrintString);
           builder->addPop();
         },
+        "input",
         "3");
     CHECK_EXPR(
         [](backend::Builder* builder) -> void {
@@ -384,6 +418,7 @@ TEST_CASE("Execute integer operations", "[vm]") {
           builder->addPCall(vm::PCallCode::PrintString);
           builder->addPop();
         },
+        "input",
         "0");
     CHECK_EXPR(
         [](backend::Builder* builder) -> void {
@@ -394,6 +429,7 @@ TEST_CASE("Execute integer operations", "[vm]") {
           builder->addPCall(vm::PCallCode::PrintString);
           builder->addPop();
         },
+        "input",
         "-4");
   }
 }

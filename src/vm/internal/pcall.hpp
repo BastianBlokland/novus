@@ -26,6 +26,10 @@ auto inline pcall(EvalStack& evalStack, PlatformInterface& iface, PCallCode code
     iface.print(&newl, 1);
     return;
   }
+  case vm::PCallCode::ReadChar: {
+    evalStack.push(internal::intValue(iface.read()));
+    return;
+  }
   }
   throw exceptions::InvalidAssembly{};
 }

@@ -13,6 +13,7 @@ TEST_CASE("Execute literals", "[vm]") {
           builder->addPCall(vm::PCallCode::PrintString);
           builder->addPop();
         },
+        "input",
         "42");
     CHECK_EXPR(
         [](backend::Builder* builder) -> void {
@@ -21,6 +22,7 @@ TEST_CASE("Execute literals", "[vm]") {
           builder->addPCall(vm::PCallCode::PrintString);
           builder->addPop();
         },
+        "input",
         "-42");
   }
 
@@ -32,6 +34,7 @@ TEST_CASE("Execute literals", "[vm]") {
           builder->addPCall(vm::PCallCode::PrintString);
           builder->addPop();
         },
+        "input",
         "0.1337");
     CHECK_EXPR(
         [](backend::Builder* builder) -> void {
@@ -40,6 +43,7 @@ TEST_CASE("Execute literals", "[vm]") {
           builder->addPCall(vm::PCallCode::PrintString);
           builder->addPop();
         },
+        "input",
         "-0.1337");
   }
 
@@ -70,6 +74,7 @@ TEST_CASE("Execute literals", "[vm]") {
           builder->addPCall(vm::PCallCode::PrintString);
           builder->addPop();
         },
+        "input",
         "",
         "hello",
         " ",

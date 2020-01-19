@@ -31,6 +31,7 @@ TEST_CASE("Execute calls", "[vm]") {
 
         builder->addEntryPoint("section1");
       },
+      "input",
       "1337");
 
   CHECK_PROG(
@@ -57,6 +58,7 @@ TEST_CASE("Execute calls", "[vm]") {
 
         builder->addEntryPoint("section1");
       },
+      "input",
       "1337");
 
   CHECK_PROG(
@@ -78,6 +80,7 @@ TEST_CASE("Execute calls", "[vm]") {
 
         builder->addEntryPoint("section1");
       },
+      "input",
       "1337");
 
   CHECK_PROG(
@@ -105,6 +108,7 @@ TEST_CASE("Execute calls", "[vm]") {
 
         builder->addEntryPoint("section1");
       },
+      "input",
       "2674");
 
   CHECK_PROG(
@@ -131,6 +135,7 @@ TEST_CASE("Execute calls", "[vm]") {
 
         builder->addEntryPoint("section1");
       },
+      "input",
       "1379");
 
   CHECK_PROG(
@@ -157,6 +162,7 @@ TEST_CASE("Execute calls", "[vm]") {
 
         builder->addEntryPoint("section1");
       },
+      "input",
       "1379");
 }
 

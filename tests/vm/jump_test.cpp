@@ -19,6 +19,7 @@ TEST_CASE("Execute jump", "[vm]") {
           builder->addPCall(vm::PCallCode::PrintString);
           builder->addPop();
         },
+        "input",
         "42");
     CHECK_EXPR(
         [](backend::Builder* builder) -> void {
@@ -38,6 +39,7 @@ TEST_CASE("Execute jump", "[vm]") {
 
           builder->label("end");
         },
+        "input",
         "1337");
   }
 
@@ -56,6 +58,7 @@ TEST_CASE("Execute jump", "[vm]") {
           builder->addPCall(vm::PCallCode::PrintString);
           builder->addPop();
         },
+        "input",
         "1337",
         "42");
     CHECK_EXPR(
@@ -72,6 +75,7 @@ TEST_CASE("Execute jump", "[vm]") {
           builder->addPCall(vm::PCallCode::PrintString);
           builder->addPop();
         },
+        "input",
         "42");
   }
 }

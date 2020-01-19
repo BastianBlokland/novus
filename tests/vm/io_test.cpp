@@ -20,6 +20,7 @@ TEST_CASE("Execute input and output", "[vm]") {
           builder->addPCall(vm::PCallCode::PrintChar);
           builder->addPop();
         },
+        "input",
         "a",
         "b",
         "c");
@@ -47,6 +48,7 @@ TEST_CASE("Execute input and output", "[vm]") {
           builder->addPCall(vm::PCallCode::PrintString);
           builder->addPop();
         },
+        "input",
         "hello world",
         "false",
         "true",
@@ -64,10 +66,41 @@ TEST_CASE("Execute input and output", "[vm]") {
           builder->addPCall(vm::PCallCode::PrintStringLine);
           builder->addPop();
         },
+        "input",
         "hello",
         "\n",
         "world",
         "\n");
+  }
+
+  SECTION("Read char") {
+    CHECK_PROG(
+        [](backend::Builder* builder) -> void {
+          builder->label("entry");
+          builder->addEntryPoint("entry");
+
+          builder->addLoadLitString("hello: ");
+
+          builder->addPCall(vm::PCallCode::ReadChar);
+          builder->addDup();
+          builder->addLogicInvInt();
+          builder->addJumpIf("end");
+
+          builder->addConvCharString();
+          builder->addAddString();
+          builder->addPCall(vm::PCallCode::PrintString);
+          builder->addPop();
+          builder->addJump("entry");
+
+          builder->label("end");
+          builder->addPop();
+          builder->addPop();
+          builder->addRet();
+        },
+        "abc",
+        "hello: a",
+        "hello: b",
+        "hello: c");
   }
 }
 

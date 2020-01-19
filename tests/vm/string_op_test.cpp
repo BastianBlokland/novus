@@ -16,6 +16,7 @@ TEST_CASE("Execute string operations", "[vm]") {
           builder->addPCall(vm::PCallCode::PrintString);
           builder->addPop();
         },
+        "input",
         "hello world");
   }
 
@@ -28,6 +29,7 @@ TEST_CASE("Execute string operations", "[vm]") {
           builder->addPCall(vm::PCallCode::PrintString);
           builder->addPop();
         },
+        "input",
         "0");
     CHECK_EXPR(
         [](backend::Builder* builder) -> void {
@@ -37,6 +39,7 @@ TEST_CASE("Execute string operations", "[vm]") {
           builder->addPCall(vm::PCallCode::PrintString);
           builder->addPop();
         },
+        "input",
         "5");
     CHECK_EXPR(
         [](backend::Builder* builder) -> void {
@@ -50,6 +53,7 @@ TEST_CASE("Execute string operations", "[vm]") {
           builder->addPCall(vm::PCallCode::PrintString);
           builder->addPop();
         },
+        "input",
         "11");
   }
 
@@ -63,6 +67,7 @@ TEST_CASE("Execute string operations", "[vm]") {
           builder->addPCall(vm::PCallCode::PrintString);
           builder->addPop();
         },
+        "input",
         "h");
     CHECK_EXPR(
         [](backend::Builder* builder) -> void {
@@ -73,6 +78,7 @@ TEST_CASE("Execute string operations", "[vm]") {
           builder->addPCall(vm::PCallCode::PrintString);
           builder->addPop();
         },
+        "input",
         "o");
     CHECK_EXPR(
         [](backend::Builder* builder) -> void {
@@ -83,6 +89,7 @@ TEST_CASE("Execute string operations", "[vm]") {
           builder->addPCall(vm::PCallCode::PrintString);
           builder->addPop();
         },
+        "input",
         "0");
     CHECK_EXPR(
         [](backend::Builder* builder) -> void {
@@ -93,6 +100,7 @@ TEST_CASE("Execute string operations", "[vm]") {
           builder->addPCall(vm::PCallCode::PrintString);
           builder->addPop();
         },
+        "input",
         "0");
     CHECK_EXPR(
         [](backend::Builder* builder) -> void {
@@ -103,6 +111,7 @@ TEST_CASE("Execute string operations", "[vm]") {
           builder->addPCall(vm::PCallCode::PrintString);
           builder->addPop();
         },
+        "input",
         "0");
     CHECK_EXPR(
         [](backend::Builder* builder) -> void {
@@ -113,6 +122,7 @@ TEST_CASE("Execute string operations", "[vm]") {
           builder->addPCall(vm::PCallCode::PrintString);
           builder->addPop();
         },
+        "input",
         ".");
   }
 
@@ -126,6 +136,7 @@ TEST_CASE("Execute string operations", "[vm]") {
           builder->addPCall(vm::PCallCode::PrintString);
           builder->addPop();
         },
+        "input",
         "hello");
     CHECK_EXPR(
         [](backend::Builder* builder) -> void {
@@ -136,6 +147,7 @@ TEST_CASE("Execute string operations", "[vm]") {
           builder->addPCall(vm::PCallCode::PrintString);
           builder->addPop();
         },
+        "input",
         "o");
     CHECK_EXPR(
         [](backend::Builder* builder) -> void {
@@ -146,6 +158,7 @@ TEST_CASE("Execute string operations", "[vm]") {
           builder->addPCall(vm::PCallCode::PrintString);
           builder->addPop();
         },
+        "input",
         "hello");
     CHECK_EXPR(
         [](backend::Builder* builder) -> void {
@@ -156,6 +169,7 @@ TEST_CASE("Execute string operations", "[vm]") {
           builder->addPCall(vm::PCallCode::PrintString);
           builder->addPop();
         },
+        "input",
         "world");
     CHECK_EXPR(
         [](backend::Builder* builder) -> void {
@@ -166,6 +180,7 @@ TEST_CASE("Execute string operations", "[vm]") {
           builder->addPCall(vm::PCallCode::PrintString);
           builder->addPop();
         },
+        "input",
         "world");
     CHECK_EXPR(
         [](backend::Builder* builder) -> void {
@@ -176,6 +191,7 @@ TEST_CASE("Execute string operations", "[vm]") {
           builder->addPCall(vm::PCallCode::PrintString);
           builder->addPop();
         },
+        "input",
         "llo wor");
     CHECK_EXPR(
         [](backend::Builder* builder) -> void {
@@ -186,6 +202,7 @@ TEST_CASE("Execute string operations", "[vm]") {
           builder->addPCall(vm::PCallCode::PrintString);
           builder->addPop();
         },
+        "input",
         "l");
     CHECK_EXPR(
         [](backend::Builder* builder) -> void {
@@ -196,6 +213,7 @@ TEST_CASE("Execute string operations", "[vm]") {
           builder->addPCall(vm::PCallCode::PrintString);
           builder->addPop();
         },
+        "input",
         "hello world");
     CHECK_EXPR(
         [](backend::Builder* builder) -> void {
@@ -206,6 +224,7 @@ TEST_CASE("Execute string operations", "[vm]") {
           builder->addPCall(vm::PCallCode::PrintString);
           builder->addPop();
         },
+        "input",
         "hello world");
     CHECK_EXPR(
         [](backend::Builder* builder) -> void {
@@ -216,6 +235,7 @@ TEST_CASE("Execute string operations", "[vm]") {
           builder->addPCall(vm::PCallCode::PrintString);
           builder->addPop();
         },
+        "input",
         "");
   }
 }

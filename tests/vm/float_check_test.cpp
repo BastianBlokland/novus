@@ -15,6 +15,7 @@ TEST_CASE("Execute float checks", "[vm]") {
           builder->addPCall(vm::PCallCode::PrintString);
           builder->addPop();
         },
+        "input",
         "false");
     CHECK_EXPR(
         [](backend::Builder* builder) -> void {
@@ -25,6 +26,7 @@ TEST_CASE("Execute float checks", "[vm]") {
           builder->addPCall(vm::PCallCode::PrintString);
           builder->addPop();
         },
+        "input",
         "true");
   }
 
@@ -38,6 +40,7 @@ TEST_CASE("Execute float checks", "[vm]") {
           builder->addPCall(vm::PCallCode::PrintString);
           builder->addPop();
         },
+        "input",
         "false");
     CHECK_EXPR(
         [](backend::Builder* builder) -> void {
@@ -48,6 +51,7 @@ TEST_CASE("Execute float checks", "[vm]") {
           builder->addPCall(vm::PCallCode::PrintString);
           builder->addPop();
         },
+        "input",
         "true");
   }
 
@@ -61,6 +65,7 @@ TEST_CASE("Execute float checks", "[vm]") {
           builder->addPCall(vm::PCallCode::PrintString);
           builder->addPop();
         },
+        "input",
         "false");
     CHECK_EXPR(
         [](backend::Builder* builder) -> void {
@@ -71,6 +76,7 @@ TEST_CASE("Execute float checks", "[vm]") {
           builder->addPCall(vm::PCallCode::PrintString);
           builder->addPop();
         },
+        "input",
         "true");
   }
 }

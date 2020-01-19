@@ -4,7 +4,12 @@
 
 namespace vm {
 
-enum class PCallCode : uint8_t { PrintChar = 0, PrintString = 1, PrintStringLine = 2 };
+enum class PCallCode : uint8_t {
+  PrintChar       = 0,
+  PrintString     = 1,
+  PrintStringLine = 2,
+  ReadChar        = 3,
+};
 
 auto operator<<(std::ostream& out, const PCallCode& rhs) -> std::ostream&;
 

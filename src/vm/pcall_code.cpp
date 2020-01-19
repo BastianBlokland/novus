@@ -13,6 +13,9 @@ auto operator<<(std::ostream& out, const PCallCode& rhs) -> std::ostream& {
   case PCallCode::PrintStringLine:
     out << "print-string-line";
     break;
+  case PCallCode::ReadChar:
+    out << "read-char";
+    break;
   }
   return out;
 }

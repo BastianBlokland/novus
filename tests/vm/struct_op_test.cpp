@@ -25,6 +25,7 @@ TEST_CASE("Execute struct operations", "[vm]") {
           builder->addPCall(vm::PCallCode::PrintString);
           builder->addPop();
         },
+        "input",
         "hello world");
   }
 }
