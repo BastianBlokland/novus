@@ -19,6 +19,8 @@ auto ParserImpl::nextStmt() -> NodePtr {
   const auto kw = getKw(peekToken(0));
   if (kw) {
     switch (*kw) {
+    case lex::Keyword::Import:
+      return nextImport();
     case lex::Keyword::Fun:
     case lex::Keyword::Action:
       return nextStmtFuncDecl();
@@ -48,6 +50,16 @@ auto ParserImpl::nextExpr() -> NodePtr {
 }
 
 auto ParserImpl::nextComment() -> NodePtr { return commentNode(consumeToken()); }
+
+auto ParserImpl::nextImport() -> NodePtr {
+  auto kw   = consumeToken();
+  auto path = consumeToken();
+
+  if (getKw(kw) == lex::Keyword::Import && path.getKind() == lex::TokenKind::LitString) {
+    return importStmtNode(kw, std::move(path));
+  }
+  return errInvalidStmtImport(kw, std::move(path));
+}
 
 auto ParserImpl::nextStmtFuncDecl() -> NodePtr {
   auto kwTok    = consumeToken();

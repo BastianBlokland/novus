@@ -51,6 +51,7 @@ add_library(parse STATIC
   parse/node_stmt_enum_decl.cpp
   parse/node_stmt_exec.cpp
   parse/node_stmt_func_decl.cpp
+  parse/node_stmt_import.cpp
   parse/node_stmt_struct_decl.cpp
   parse/node_stmt_union_decl.cpp
   parse/node_visitor_deep.cpp

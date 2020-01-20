@@ -591,6 +591,10 @@ auto GetExpr::visit(const parse::FuncDeclStmtNode & /*unused*/) -> void {
   throw std::logic_error{"GetExpr is not implemented for this node type"};
 }
 
+auto GetExpr::visit(const parse::ImportStmtNode & /*unused*/) -> void {
+  throw std::logic_error{"GetExpr is not implemented for this node type"};
+}
+
 auto GetExpr::visit(const parse::StructDeclStmtNode & /*unused*/) -> void {
   throw std::logic_error{"GetExpr is not implemented for this node type"};
 }

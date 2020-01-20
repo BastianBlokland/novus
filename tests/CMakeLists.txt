@@ -89,6 +89,7 @@ add_executable(tests
   parse/stmt_enum_decl_test.cpp
   parse/stmt_exec_test.cpp
   parse/stmt_func_decl_test.cpp
+  parse/stmt_import_test.cpp
   parse/stmt_struct_decl_test.cpp
   parse/stmt_union_decl_test.cpp
 
