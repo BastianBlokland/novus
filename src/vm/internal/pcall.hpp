@@ -1,6 +1,7 @@
 #pragma once
 #include "internal/eval_stack.hpp"
 #include "internal/string_utilities.hpp"
+#include "vm/exceptions/assert_failed.hpp"
 #include "vm/exceptions/invalid_assembly.hpp"
 #include "vm/pcall_code.hpp"
 #include <chrono>
@@ -50,6 +51,14 @@ auto inline pcall(
   case vm::PCallCode::Sleep:
     std::this_thread::sleep_for(std::chrono::milliseconds(evalStack.peek().getInt()));
     return;
+  case vm::PCallCode::Assert: {
+    auto* msg = getStringRef(evalStack.pop());
+    auto cond = evalStack.peek().getInt();
+    if (cond == 0) {
+      throw exceptions::AssertFailed{std::string{msg->getDataPtr(), msg->getSize()}};
+    }
+    return;
+  }
   }
   throw exceptions::InvalidAssembly{};
 }

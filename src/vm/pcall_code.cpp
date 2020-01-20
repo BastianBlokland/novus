@@ -22,6 +22,9 @@ auto operator<<(std::ostream& out, const PCallCode& rhs) -> std::ostream& {
   case PCallCode::Sleep:
     out << "sleep";
     break;
+  case PCallCode::Assert:
+    out << "assert";
+    break;
   }
   return out;
 }

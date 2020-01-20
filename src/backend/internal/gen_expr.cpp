@@ -330,6 +330,9 @@ auto GenExpr::visit(const prog::expr::CallExprNode& n) -> void {
   case prog::sym::FuncKind::ActionSleep:
     m_builder->addPCall(vm::PCallCode::Sleep);
     break;
+  case prog::sym::FuncKind::ActionAssert:
+    m_builder->addPCall(vm::PCallCode::Assert);
+    break;
   }
 }
 

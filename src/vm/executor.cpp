@@ -52,7 +52,7 @@ static auto execute(const Assembly& assembly, PlatformInterface& iface, uint32_t
     case OpCode::LoadLitString: {
       const auto litStrId = scope->readInt32();
       const auto& litStr  = assembly.getLitString(litStrId);
-      auto strRef         = allocator.allocStrLit(litStr);
+      auto* strRef        = allocator.allocStrLit(litStr);
       evalStack.push(internal::refValue(strRef));
     } break;
     case OpCode::LoadLitIp: {

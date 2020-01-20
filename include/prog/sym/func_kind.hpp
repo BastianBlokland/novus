@@ -79,6 +79,7 @@ enum class FuncKind {
   ActionReadChar,
   ActionReadStringLine,
   ActionSleep,
+  ActionAssert,
 };
 
 } // namespace prog::sym
