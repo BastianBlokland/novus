@@ -1,5 +1,6 @@
 #include "catch2/catch.hpp"
 #include "helpers.hpp"
+#include "vm/exceptions/assert_failed.hpp"
 
 namespace vm {
 
@@ -141,6 +142,36 @@ TEST_CASE("Execute input and output", "[vm]") {
           // Its hard to test sleep, but at least this tests if the application exits cleanly.
           builder->addLoadLitInt(0); // Sleep for 0 milliseconds.
           builder->addPCall(vm::PCallCode::Sleep);
+          builder->addPop();
+
+          builder->addRet();
+        },
+        "input");
+  }
+
+  SECTION("Assert") {
+    CHECK_PROG_THROWS(
+        [](backend::Builder* builder) -> void {
+          builder->label("entry");
+          builder->addEntryPoint("entry");
+
+          builder->addLoadLitInt(0);
+          builder->addLoadLitString("Fails");
+          builder->addPCall(vm::PCallCode::Assert);
+          builder->addPop();
+
+          builder->addRet();
+        },
+        "input",
+        vm::exceptions::AssertFailed);
+    CHECK_PROG(
+        [](backend::Builder* builder) -> void {
+          builder->label("entry");
+          builder->addEntryPoint("entry");
+
+          builder->addLoadLitInt(1);
+          builder->addLoadLitString("Does not fail");
+          builder->addPCall(vm::PCallCode::Assert);
           builder->addPop();
 
           builder->addRet();
