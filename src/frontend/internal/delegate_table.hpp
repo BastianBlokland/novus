@@ -24,9 +24,9 @@ public:
   auto operator=(const DelegateTable& rhs) -> DelegateTable& = delete;
   auto operator=(DelegateTable&& rhs) noexcept -> DelegateTable& = delete;
 
-  auto getDelegate(Context* context, const prog::sym::TypeSet& types) -> prog::sym::TypeId;
+  auto getDelegate(Context* ctx, const prog::sym::TypeSet& types) -> prog::sym::TypeId;
 
-  auto getDelegate(Context* context, const prog::sym::TypeSet& input, prog::sym::TypeId output)
+  auto getDelegate(Context* ctx, const prog::sym::TypeSet& input, prog::sym::TypeId output)
       -> prog::sym::TypeId;
 
 private:

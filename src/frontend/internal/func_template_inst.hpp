@@ -17,7 +17,7 @@ public:
   auto operator=(const FuncTemplateInst& rhs) -> FuncTemplateInst& = delete;
   auto operator=(FuncTemplateInst&& rhs) noexcept -> FuncTemplateInst& = default;
 
-  [[nodiscard]] auto getDisplayName(const Context& context) const -> std::string;
+  [[nodiscard]] auto getDisplayName(const Context& ctx) const -> std::string;
   [[nodiscard]] auto getTypeParams() const noexcept -> const prog::sym::TypeSet&;
   [[nodiscard]] auto getFunc() const noexcept -> std::optional<prog::sym::FuncId>;
   [[nodiscard]] auto getRetType() const noexcept -> std::optional<prog::sym::TypeId>;

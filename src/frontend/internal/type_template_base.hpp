@@ -25,16 +25,16 @@ public:
   [[nodiscard]] auto instantiate(const prog::sym::TypeSet& typeParams) -> const TypeTemplateInst*;
 
 protected:
-  TypeTemplateBase(Context* context, std::string name, std::vector<std::string> typeSubs);
+  TypeTemplateBase(Context* ctx, std::string name, std::vector<std::string> typeSubs);
 
-  [[nodiscard]] auto getContext() const -> Context*;
+  [[nodiscard]] auto getCtx() const -> Context*;
   [[nodiscard]] auto getTypeSubs() const -> const std::vector<std::string>&;
 
   [[nodiscard]] auto createSubTable(const prog::sym::TypeSet& typeParams) const
       -> TypeSubstitutionTable;
 
 private:
-  Context* m_context;
+  Context* m_ctx;
   std::string m_name;
   std::vector<std::string> m_typeSubs;
   std::vector<std::unique_ptr<TypeTemplateInst>> m_instances;

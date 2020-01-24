@@ -10,101 +10,97 @@
 
 namespace frontend::internal {
 
-DefineUserFuncs::DefineUserFuncs(Context* context, const TypeSubstitutionTable* typeSubTable) :
-    m_context{context}, m_typeSubTable{typeSubTable} {
-
-  if (m_context == nullptr) {
-    throw std::invalid_argument{"Context cannot be null"};
-  }
-}
-
 template <typename FuncParseNode>
-auto DefineUserFuncs::define(
-    prog::sym::FuncId id, std::string funcDisplayName, const FuncParseNode& n) -> bool {
-  const auto& funcDecl   = m_context->getProg()->getFuncDecl(id);
+auto defineFunc(
+    Context* ctx,
+    const TypeSubstitutionTable* typeSubTable,
+    prog::sym::FuncId id,
+    std::string funcDisplayName,
+    const FuncParseNode& n) -> bool {
+
+  const auto& funcDecl   = ctx->getProg()->getFuncDecl(id);
   const auto funcRetType = funcDecl.getOutput();
 
   auto consts = prog::sym::ConstDeclTable{};
-  if (!declareFuncInput(m_context, m_typeSubTable, n, &consts)) {
+  if (!declareFuncInput(ctx, typeSubTable, n, &consts)) {
     return false;
   }
 
   auto allowActionCalls = funcDecl.isAction();
   auto visibleConsts    = consts.getAll();
-  auto expr             = getExpr(n[0], &consts, &visibleConsts, funcRetType, allowActionCalls);
+  auto constBinder      = ConstBinder{&consts, &visibleConsts, nullptr};
+
+  auto getExpr =
+      GetExpr{ctx,
+              typeSubTable,
+              &constBinder,
+              funcRetType,
+              allowActionCalls ? GetExpr::Flags::AllowActionCalls : GetExpr::Flags::None};
+  n[0].accept(&getExpr);
+  auto expr = std::move(getExpr.getValue());
 
   // Report this diagnostic after processing the body so other errors have priority over this.
   if (funcRetType.isInfer()) {
-    if (!m_context->hasErrors()) {
-      m_context->reportDiag(
-          errUnableToInferFuncReturnType(m_context->getSrc(), funcDisplayName, n.getSpan()));
+    if (!ctx->hasErrors()) {
+      ctx->reportDiag(errUnableToInferFuncReturnType, funcDisplayName, n.getSpan());
     }
     return false;
   }
 
   // Bail out if we failed to get an expression for the body.
   if (!expr) {
-    assert(m_context->hasErrors());
+    assert(ctx->hasErrors());
     return false;
   }
 
   // Check if a pure functions contains infinite recursion.
   if (!funcDecl.isAction()) {
-    auto checkInfRec = CheckInfRecursion{*m_context, id};
+    auto checkInfRec = CheckInfRecursion{*ctx, id};
     expr->accept(&checkInfRec);
     if (checkInfRec.isInfRecursion()) {
-      m_context->reportDiag(errPureFuncInfRecursion(m_context->getSrc(), n[0].getSpan()));
+      ctx->reportDiag(errPureFuncInfRecursion, n[0].getSpan());
       return false;
     }
   }
 
   if (expr->getType() == funcRetType) {
-    m_context->getProg()->defineFunc(id, std::move(consts), std::move(expr));
+    ctx->getProg()->defineFunc(id, std::move(consts), std::move(expr));
     return true;
   }
 
-  const auto conv = m_context->getProg()->lookupConversion(expr->getType(), funcRetType);
+  const auto conv = ctx->getProg()->lookupConversion(expr->getType(), funcRetType);
   if (conv && *conv != id) {
     auto convArgs = std::vector<prog::expr::NodePtr>{};
     convArgs.push_back(std::move(expr));
-    m_context->getProg()->defineFunc(
+    ctx->getProg()->defineFunc(
         id,
         std::move(consts),
-        prog::expr::callExprNode(*m_context->getProg(), *conv, std::move(convArgs)));
+        prog::expr::callExprNode(*ctx->getProg(), *conv, std::move(convArgs)));
     return true;
   }
 
-  m_context->reportDiag(errNonMatchingFuncReturnType(
-      m_context->getSrc(),
+  ctx->reportDiag(
+      errNonMatchingFuncReturnType,
       funcDisplayName,
-      getDisplayName(*m_context, funcRetType),
-      getDisplayName(*m_context, expr->getType()),
-      n[0].getSpan()));
+      getDisplayName(*ctx, funcRetType),
+      getDisplayName(*ctx, expr->getType()),
+      n[0].getSpan());
   return false;
 }
 
-auto DefineUserFuncs::getExpr(
-    const parse::Node& n,
-    prog::sym::ConstDeclTable* consts,
-    std::vector<prog::sym::ConstId>* visibleConsts,
-    prog::sym::TypeId typeHint,
-    bool allowActionCalls) -> prog::expr::NodePtr {
-
-  auto constBinder = ConstBinder{consts, visibleConsts, nullptr};
-  auto getExpr =
-      GetExpr{m_context,
-              m_typeSubTable,
-              &constBinder,
-              typeHint,
-              allowActionCalls ? GetExpr::Flags::AllowActionCalls : GetExpr::Flags::None};
-  n.accept(&getExpr);
-  return std::move(getExpr.getValue());
-}
-
 // Explicit instantiations.
-template bool DefineUserFuncs::define(
-    prog::sym::FuncId id, std::string funcDisplayName, const parse::FuncDeclStmtNode& n);
-template bool DefineUserFuncs::define(
-    prog::sym::FuncId id, std::string funcDisplayName, const parse::AnonFuncExprNode& n);
+template bool defineFunc(
+    Context* ctx,
+    const TypeSubstitutionTable* typeSubTable,
+    prog::sym::FuncId id,
+    std::string funcDisplayName,
+    const parse::FuncDeclStmtNode& n);
+
+template bool defineFunc(
+    Context* ctx,
+    const TypeSubstitutionTable* typeSubTable,
+    prog::sym::FuncId id,
+    std::string funcDisplayName,
+    const parse::AnonFuncExprNode& n);
 
 } // namespace frontend::internal

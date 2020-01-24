@@ -23,7 +23,7 @@ private:
   const parse::UnionDeclStmtNode& m_parseNode;
 
   UnionTemplate(
-      Context* context,
+      Context* ctx,
       std::string name,
       std::vector<std::string> typeSubs,
       const parse::UnionDeclStmtNode& parseNode);

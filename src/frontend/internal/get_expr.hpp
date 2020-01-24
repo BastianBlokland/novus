@@ -20,7 +20,7 @@ public:
 
   GetExpr() = delete;
   GetExpr(
-      Context* context,
+      Context* ctx,
       const TypeSubstitutionTable* typeSubTable,
       ConstBinder* constBinder,
       prog::sym::TypeId typeHint,
@@ -57,7 +57,7 @@ public:
 private:
   enum class BinLogicOp { And, Or };
 
-  Context* m_context;
+  Context* m_ctx;
   const TypeSubstitutionTable* m_typeSubTable;
   ConstBinder* m_constBinder;
   prog::sym::TypeId m_typeHint;

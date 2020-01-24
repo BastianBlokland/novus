@@ -8,6 +8,7 @@
 #include "rang.hpp"
 #include "vm/assembly.hpp"
 #include <chrono>
+#include <filesystem>
 #include <optional>
 
 namespace asmdiag {
@@ -71,15 +72,17 @@ auto printProgram(const vm::Assembly& assembly) -> void {
 template <typename InputItr>
 auto run(
     const std::string& inputId,
+    std::optional<std::filesystem::path> inputPath,
+    const std::vector<std::filesystem::path>& searchPaths,
     InputItr inputBegin,
     const InputItr inputEnd,
     const bool outputProgram) {
   const auto width = 80;
 
   // Generate an assembly file and time how long it takes.
-  const auto t1             = high_resolution_clock::now();
-  const auto src            = frontend::buildSource(inputId, inputBegin, inputEnd);
-  const auto frontendOutput = frontend::analyze(src);
+  const auto t1  = high_resolution_clock::now();
+  const auto src = frontend::buildSource(inputId, std::move(inputPath), inputBegin, inputEnd);
+  const auto frontendOutput = frontend::analyze(src, searchPaths);
   const auto assembly       = genAssembly(frontendOutput);
   const auto t2             = high_resolution_clock::now();
   const auto genDur         = std::chrono::duration_cast<duration>(t2 - t1);
@@ -100,6 +103,8 @@ auto run(
     printProgram(*assembly);
     std::cout << rang::style::dim << std::string(width, '-') << '\n';
   }
+
+  return assembly ? 0 : 1;
 }
 
 auto operator<<(std::ostream& out, const duration& rhs) -> std::ostream& {
@@ -118,28 +123,42 @@ auto operator<<(std::ostream& out, const duration& rhs) -> std::ostream& {
 
 } // namespace asmdiag
 
+auto getSearchPaths(char** argv) {
+  auto result = std::vector<std::filesystem::path>{};
+
+  // Add the path to the binary.
+  result.push_back(std::filesystem::absolute(argv[0]).parent_path());
+
+  return result;
+}
+
 auto main(int argc, char** argv) -> int {
-  auto app = CLI::App{"Assembly diagnostic tool"};
+  auto exitcode = 0;
+  auto app      = CLI::App{"Assembly diagnostic tool"};
   app.require_subcommand(1);
 
   auto printOutput = true;
   app.add_flag("!--skip-output", printOutput, "Skip printing the assembly")->capture_default_str();
 
   // Generate assembly for input characters.
-  std::string charsInput;
+  std::string input;
   auto genCmd =
       app.add_subcommand("gen", "Generate assembly for the provided characters")->callback([&]() {
-        asmdiag::run("inline", charsInput.begin(), charsInput.end(), printOutput);
+        exitcode = asmdiag::run(
+            "inline", std::nullopt, getSearchPaths(argv), input.begin(), input.end(), printOutput);
       });
-  genCmd->add_option("input", charsInput, "Input characters to generate assembly for")->required();
+  genCmd->add_option("input", input, "Input characters to generate assembly for")->required();
 
   // Generate assembly  input file.
-  std::string filePath;
+  std::filesystem::path filePath;
   auto genFileCmd =
       app.add_subcommand("genfile", "Generate assembly for the provided file")->callback([&]() {
+        auto absFilePath = std::filesystem::absolute(filePath);
         std::ifstream fs{filePath};
-        asmdiag::run(
-            filePath,
+        exitcode = asmdiag::run(
+            filePath.filename(),
+            absFilePath,
+            getSearchPaths(argv),
             std::istreambuf_iterator<char>{fs},
             std::istreambuf_iterator<char>{},
             printOutput);
@@ -156,5 +175,5 @@ auto main(int argc, char** argv) -> int {
     std::cout << (e.get_exit_code() == 0 ? rang::fg::green : rang::fg::red);
     return app.exit(e);
   }
-  return 0;
+  return exitcode;
 }

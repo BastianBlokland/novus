@@ -5,21 +5,30 @@
 #include "rang.hpp"
 #include "vm/executor.hpp"
 #include "vm/platform/terminal_interface.hpp"
+#include <filesystem>
+#include <system_error>
 
 namespace eval {
 
 template <typename InputItr>
-auto run(const std::string& inputId, InputItr inputBegin, const InputItr inputEnd) {
+auto run(
+    const std::string& inputId,
+    std::optional<std::filesystem::path> inputPath,
+    const std::vector<std::filesystem::path>& searchPaths,
+    InputItr inputBegin,
+    const InputItr inputEnd) {
 
-  const auto src            = frontend::buildSource(inputId, inputBegin, inputEnd);
-  const auto frontendOutput = frontend::analyze(src);
+  const auto src = frontend::buildSource(inputId, std::move(inputPath), inputBegin, inputEnd);
+  const auto frontendOutput = frontend::analyze(src, searchPaths);
   if (frontendOutput.isSuccess()) {
     const auto assembly = backend::generate(frontendOutput.getProg());
     auto iface          = vm::platform::TerminalInterface{};
     try {
       vm::execute(assembly, iface);
+      return 0;
     } catch (const std::exception& e) {
       std::cout << rang::bg::red << "Runtime error: " << e.what() << '\n';
+      return 1;
     }
   }
 
@@ -30,9 +39,19 @@ auto run(const std::string& inputId, InputItr inputBegin, const InputItr inputEn
                 << rang::style::reset;
     }
   }
+  return 1;
 }
 
 } // namespace eval
+
+auto getSearchPaths(char** argv) {
+  auto result = std::vector<std::filesystem::path>{};
+
+  // Add the path to the binary.
+  result.push_back(std::filesystem::absolute(argv[0]).parent_path());
+
+  return result;
+}
 
 auto main(int argc, char** argv) -> int {
   auto app = CLI::App{"Evaluator"};
@@ -49,12 +68,17 @@ auto main(int argc, char** argv) -> int {
     return app.exit(e);
   }
 
-  std::ifstream fs{input};
+  auto path = std::filesystem::path{input};
+  auto fs   = std::ifstream{path};
   if (fs.good()) {
-    eval::run(input, std::istreambuf_iterator<char>{fs}, std::istreambuf_iterator<char>{});
-  } else {
-    eval::run("inline", input.begin(), input.end());
+    std::error_code getAbsErr;
+    auto absInputPath = std::filesystem::absolute(path, getAbsErr);
+    return eval::run(
+        path.filename(),
+        absInputPath,
+        getSearchPaths(argv),
+        std::istreambuf_iterator<char>{fs},
+        std::istreambuf_iterator<char>{});
   }
-
-  return 0;
+  return eval::run("inline", std::nullopt, getSearchPaths(argv), input.begin(), input.end());
 }

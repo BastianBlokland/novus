@@ -5,9 +5,9 @@
 namespace frontend::internal {
 
 TypeTemplateBase::TypeTemplateBase(
-    Context* context, std::string name, std::vector<std::string> typeSubs) :
-    m_context{context}, m_name{std::move(name)}, m_typeSubs{std::move(typeSubs)} {
-  if (m_context == nullptr) {
+    Context* ctx, std::string name, std::vector<std::string> typeSubs) :
+    m_ctx{ctx}, m_name{std::move(name)}, m_typeSubs{std::move(typeSubs)} {
+  if (m_ctx == nullptr) {
     throw std::invalid_argument{"Context cannot be null"};
   }
 }
@@ -16,7 +16,7 @@ auto TypeTemplateBase::getTemplateName() const -> const std::string& { return m_
 
 auto TypeTemplateBase::getTypeParamCount() const -> unsigned int { return m_typeSubs.size(); }
 
-auto TypeTemplateBase::getContext() const -> Context* { return m_context; }
+auto TypeTemplateBase::getCtx() const -> Context* { return m_ctx; }
 
 auto TypeTemplateBase::getTypeSubs() const -> const std::vector<std::string>& { return m_typeSubs; }
 

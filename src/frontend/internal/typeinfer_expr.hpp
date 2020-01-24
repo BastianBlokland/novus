@@ -18,7 +18,7 @@ public:
 
   TypeInferExpr() = delete;
   TypeInferExpr(
-      Context* context,
+      Context* ctx,
       const TypeSubstitutionTable* typeSubTable,
       std::unordered_map<std::string, prog::sym::TypeId>* constTypes,
       Flags flags);
@@ -51,7 +51,7 @@ public:
   auto visit(const parse::UnionDeclStmtNode& n) -> void override;
 
 private:
-  Context* m_context;
+  Context* m_ctx;
   const TypeSubstitutionTable* m_typeSubTable;
   std::unordered_map<std::string, prog::sym::TypeId>* m_constTypes;
   Flags m_flags;

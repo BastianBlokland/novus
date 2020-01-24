@@ -187,6 +187,8 @@ auto Program::beginTypeDecls() const -> typeDeclIterator { return m_typeDecls.be
 
 auto Program::endTypeDecls() const -> typeDeclIterator { return m_typeDecls.end(); }
 
+auto Program::getFuncCount() const -> unsigned int { return m_funcDecls.getFuncCount(); }
+
 auto Program::beginFuncDecls() const -> funcDeclIterator { return m_funcDecls.begin(); }
 
 auto Program::endFuncDecls() const -> funcDeclIterator { return m_funcDecls.end(); }

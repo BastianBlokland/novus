@@ -7,7 +7,7 @@ namespace frontend::internal {
 
 class CheckUnionExhaustiveness final : public prog::expr::OptionalNodeVisitor {
 public:
-  explicit CheckUnionExhaustiveness(const Context& context);
+  explicit CheckUnionExhaustiveness(const Context& ctx);
 
   [[nodiscard]] auto isExhaustive() const -> bool;
 
@@ -15,7 +15,7 @@ public:
   auto visit(const prog::expr::UnionGetExprNode& n) -> void override;
 
 private:
-  const Context& m_context;
+  const Context& m_ctx;
   std::optional<prog::sym::TypeId> m_unionType;
   std::vector<prog::sym::TypeId> m_checkedTypes;
 };

@@ -15,7 +15,7 @@ auto ImportStmtNode::operator!=(const Node& rhs) const noexcept -> bool {
   return !ImportStmtNode::operator==(rhs);
 }
 
-auto ImportStmtNode::operator[](unsigned int) const -> const Node& {
+auto ImportStmtNode::operator[](unsigned int /*unused*/) const -> const Node& {
   throw std::out_of_range("No child at given index");
 }
 
@@ -26,6 +26,14 @@ auto ImportStmtNode::getSpan() const -> input::Span {
 }
 
 auto ImportStmtNode::getPath() const -> const lex::Token& { return m_path; }
+
+auto ImportStmtNode::getPathString() const -> std::string {
+  const auto result = getString(m_path);
+  if (!result) {
+    throw std::logic_error{"Invalid import statement"};
+  }
+  return *result;
+}
 
 auto ImportStmtNode::accept(NodeVisitor* visitor) const -> void { visitor->visit(*this); }
 

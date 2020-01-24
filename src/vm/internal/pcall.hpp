@@ -55,7 +55,8 @@ auto inline pcall(
     auto* msg = getStringRef(evalStack.pop());
     auto cond = evalStack.peek().getInt();
     if (cond == 0) {
-      throw exceptions::AssertFailed{std::string{msg->getDataPtr(), msg->getSize()}};
+      throw exceptions::AssertFailed{"Assert failed: " +
+                                     std::string{msg->getDataPtr(), msg->getSize()}};
     }
     return;
   }

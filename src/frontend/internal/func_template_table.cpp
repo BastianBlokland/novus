@@ -18,19 +18,19 @@ auto FuncTemplateTable::hasFunc(const std::string& name) -> bool {
 }
 
 auto FuncTemplateTable::declarePure(
-    Context* context,
+    Context* ctx,
     const std::string& name,
     std::vector<std::string> typeSubs,
     const parse::FuncDeclStmtNode* n) -> void {
-  declare(context, name, false, std::move(typeSubs), n);
+  declare(ctx, name, false, std::move(typeSubs), n);
 }
 
 auto FuncTemplateTable::declareAction(
-    Context* context,
+    Context* ctx,
     const std::string& name,
     std::vector<std::string> typeSubs,
     const parse::FuncDeclStmtNode* n) -> void {
-  declare(context, name, true, std::move(typeSubs), n);
+  declare(ctx, name, true, std::move(typeSubs), n);
 }
 
 auto FuncTemplateTable::instantiate(
@@ -112,7 +112,7 @@ auto FuncTemplateTable::inferParamsAndGetRetType(
 }
 
 auto FuncTemplateTable::declare(
-    Context* context,
+    Context* ctx,
     const std::string& name,
     bool isAction,
     std::vector<std::string> typeSubs,
@@ -122,7 +122,7 @@ auto FuncTemplateTable::declare(
   if (itr == m_templates.end()) {
     itr = m_templates.insert({name, std::vector<FuncTemplate>{}}).first;
   }
-  itr->second.push_back(FuncTemplate{context, name, isAction, std::move(typeSubs), n});
+  itr->second.push_back(FuncTemplate{ctx, name, isAction, std::move(typeSubs), n});
 }
 
 auto FuncTemplateTable::inferParams(

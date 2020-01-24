@@ -3,22 +3,22 @@
 namespace frontend::internal {
 
 auto TypeTemplateTable::declareStruct(
-    Context* context,
+    Context* ctx,
     const std::string& name,
     std::vector<std::string> typeSubs,
     const parse::StructDeclStmtNode& n) -> void {
 
-  auto structTemplate = StructTemplate{context, name, std::move(typeSubs), n};
+  auto structTemplate = StructTemplate{ctx, name, std::move(typeSubs), n};
   declareTemplate(&m_structs, name, std::move(structTemplate));
 }
 
 auto TypeTemplateTable::declareUnion(
-    Context* context,
+    Context* ctx,
     const std::string& name,
     std::vector<std::string> typeSubs,
     const parse::UnionDeclStmtNode& n) -> void {
 
-  auto unionTemplate = UnionTemplate{context, name, std::move(typeSubs), n};
+  auto unionTemplate = UnionTemplate{ctx, name, std::move(typeSubs), n};
   declareTemplate(&m_unions, name, std::move(unionTemplate));
 }
 

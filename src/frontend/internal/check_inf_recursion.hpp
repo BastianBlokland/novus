@@ -8,7 +8,7 @@ namespace frontend::internal {
 // recursion but its a first guard against mistakes.
 class CheckInfRecursion final : public prog::expr::OptionalNodeVisitor {
 public:
-  CheckInfRecursion(const Context& context, prog::sym::FuncId func);
+  CheckInfRecursion(const Context& ctx, prog::sym::FuncId func);
 
   [[nodiscard]] auto isInfRecursion() const -> bool;
 
@@ -23,7 +23,7 @@ public:
   auto visit(const prog::expr::UnionGetExprNode& n) -> void override;
 
 private:
-  const Context& m_context;
+  const Context& m_ctx;
   prog::sym::FuncId m_func;
   bool m_infRec;
 

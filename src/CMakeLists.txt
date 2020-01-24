@@ -139,18 +139,14 @@ add_library(frontend STATIC
   frontend/internal/define_user_funcs.cpp
   frontend/internal/define_user_types.cpp
   frontend/internal/get_expr.cpp
-  frontend/internal/get_identifier.cpp
-  frontend/internal/get_parse_diags.cpp
+  frontend/internal/import_sources.cpp
   frontend/internal/struct_template.cpp
-  frontend/internal/type_info.cpp
   frontend/internal/type_template_base.cpp
-  frontend/internal/type_template_inst.cpp
   frontend/internal/type_template_table.cpp
   frontend/internal/delegate_table.cpp
   frontend/internal/func_template_inst.cpp
   frontend/internal/func_template_table.cpp
   frontend/internal/func_template.cpp
-  frontend/internal/type_substitution_table.cpp
   frontend/internal/typeinfer_expr.cpp
   frontend/internal/typeinfer_typesub.cpp
   frontend/internal/typeinfer_user_funcs.cpp

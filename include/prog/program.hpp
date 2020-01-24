@@ -42,6 +42,7 @@ public:
   [[nodiscard]] auto beginTypeDecls() const -> typeDeclIterator;
   [[nodiscard]] auto endTypeDecls() const -> typeDeclIterator;
 
+  [[nodiscard]] auto getFuncCount() const -> unsigned int;
   [[nodiscard]] auto beginFuncDecls() const -> funcDeclIterator;
   [[nodiscard]] auto endFuncDecls() const -> funcDeclIterator;
 

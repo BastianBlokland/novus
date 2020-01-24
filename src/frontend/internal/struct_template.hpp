@@ -24,7 +24,7 @@ private:
   const parse::StructDeclStmtNode& m_parseNode;
 
   StructTemplate(
-      Context* context,
+      Context* ctx,
       std::string name,
       std::vector<std::string> typeSubs,
       const parse::StructDeclStmtNode& parseNode);

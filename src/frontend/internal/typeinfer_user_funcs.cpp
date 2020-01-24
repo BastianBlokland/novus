@@ -6,17 +6,11 @@
 
 namespace frontend::internal {
 
-TypeInferUserFuncs::TypeInferUserFuncs(
-    Context* context, const TypeSubstitutionTable* typeSubTable) :
-    m_context{context}, m_typeSubTable{typeSubTable} {
+TypeInferUserFuncs::TypeInferUserFuncs(const TypeSubstitutionTable* typeSubTable) :
+    m_typeSubTable{typeSubTable} {}
 
-  if (m_context == nullptr) {
-    throw std::invalid_argument{"Context cannot be null"};
-  }
-}
-
-auto TypeInferUserFuncs::inferRetType(prog::sym::FuncId id, const parse::FuncDeclStmtNode& n)
-    -> bool {
+auto TypeInferUserFuncs::inferRetType(
+    Context* ctx, prog::sym::FuncId id, const parse::FuncDeclStmtNode& n) -> bool {
 
   // If we've processed this func before (and failed) we try more aggressively.
   // Reason for this is that in the first iteration we only make a decision if we are sure that its
@@ -26,7 +20,7 @@ auto TypeInferUserFuncs::inferRetType(prog::sym::FuncId id, const parse::FuncDec
   auto agressive = m_processed.find(id) != m_processed.end();
   m_processed.insert(id);
 
-  auto funcInput = getFuncInput(m_context, m_typeSubTable, n);
+  auto funcInput = getFuncInput(ctx, m_typeSubTable, n);
   if (!funcInput) {
     return false;
   }
@@ -34,20 +28,20 @@ auto TypeInferUserFuncs::inferRetType(prog::sym::FuncId id, const parse::FuncDec
   if (agressive) {
     flags = flags | TypeInferExpr::Flags::Aggressive;
   }
-  if (isAction(m_context, id)) {
+  if (isAction(ctx, id)) {
     flags = flags | TypeInferExpr::Flags::AllowActionCalls;
   }
 
   auto type =
-      ::frontend::internal::inferRetType(m_context, m_typeSubTable, n, *funcInput, nullptr, flags);
+      ::frontend::internal::inferRetType(ctx, m_typeSubTable, n, *funcInput, nullptr, flags);
 
   // If type is still not a concrete type then we fail.
   if (!type.isConcrete()) {
-    if (isAction(m_context, id) && agressive) {
+    if (isAction(ctx, id) && agressive) {
       // For actions we default to a int return type if we cannot infer it, reason is that its
       // common to make infinite recursing actions (for example a 'main' action) and in those cases
       // we cannot infer a return type.
-      type = m_context->getProg()->getInt();
+      type = ctx->getProg()->getInt();
     } else {
       // Fail the inference.
       return false;
@@ -55,7 +49,7 @@ auto TypeInferUserFuncs::inferRetType(prog::sym::FuncId id, const parse::FuncDec
   }
 
   // Update function output with inferred type.
-  m_context->getProg()->updateFuncOutput(id, type);
+  ctx->getProg()->updateFuncOutput(id, type);
   return true;
 }
 

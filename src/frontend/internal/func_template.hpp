@@ -33,7 +33,7 @@ public:
   [[nodiscard]] auto instantiate(const prog::sym::TypeSet& typeParams) -> const FuncTemplateInst*;
 
 private:
-  Context* m_context;
+  Context* m_ctx;
   std::string m_name;
   bool m_isAction;
   std::vector<std::string> m_typeSubs;
@@ -44,7 +44,7 @@ private:
   std::deque<prog::sym::TypeSet> m_inferStack;
 
   FuncTemplate(
-      Context* context,
+      Context* ctx,
       std::string name,
       bool isAction,
       std::vector<std::string> typeSubs,

@@ -10,18 +10,18 @@
 namespace frontend::internal {
 
 FuncTemplate::FuncTemplate(
-    Context* context,
+    Context* ctx,
     std::string name,
     bool isAction,
     std::vector<std::string> typeSubs,
     const parse::FuncDeclStmtNode* parseNode) :
-    m_context{context},
+    m_ctx{ctx},
     m_name{std::move(name)},
     m_isAction{isAction},
     m_typeSubs{std::move(typeSubs)},
     m_parseNode{parseNode} {
 
-  if (m_context == nullptr) {
+  if (m_ctx == nullptr) {
     throw std::invalid_argument{"Context cannot be null"};
   }
   if (m_parseNode == nullptr) {
@@ -61,17 +61,17 @@ auto FuncTemplate::getRetType(const prog::sym::TypeSet& typeParams)
   m_inferStack.push_front(typeParams);
 
   const auto subTable = createSubTable(typeParams);
-  auto funcInput      = getFuncInput(m_context, &subTable, *m_parseNode);
+  auto funcInput      = getFuncInput(m_ctx, &subTable, *m_parseNode);
   if (!funcInput) {
     return std::nullopt;
   }
-  auto retType = ::frontend::internal::getRetType(m_context, &subTable, *m_parseNode);
+  auto retType = ::frontend::internal::getRetType(m_ctx, &subTable, *m_parseNode);
   if (!retType) {
     return std::nullopt;
   }
   if (retType->isInfer()) {
     retType = inferRetType(
-        m_context, &subTable, *m_parseNode, *funcInput, nullptr, TypeInferExpr::Flags::Aggressive);
+        m_ctx, &subTable, *m_parseNode, *funcInput, nullptr, TypeInferExpr::Flags::Aggressive);
   }
 
   m_inferStack.pop_front();
@@ -86,7 +86,7 @@ auto FuncTemplate::inferTypeParams(const prog::sym::TypeSet& argTypes)
   auto typeParams = std::vector<prog::sym::TypeId>{};
   for (const auto& typeSub : m_typeSubs) {
     const auto inferredType =
-        inferSubTypeFromSpecs(*m_context, typeSub, m_parseNode->getArgList().getArgs(), argTypes);
+        inferSubTypeFromSpecs(*m_ctx, typeSub, m_parseNode->getArgList().getArgs(), argTypes);
     if (!inferredType) {
       return std::nullopt;
     }
@@ -118,42 +118,37 @@ auto FuncTemplate::instantiate(const prog::sym::TypeSet& typeParams) -> const Fu
 
 auto FuncTemplate::setupInstance(FuncTemplateInst* instance) -> void {
   const auto subTable = createSubTable(instance->m_typeParams);
-  auto funcInput      = getFuncInput(m_context, &subTable, *m_parseNode);
+  auto funcInput      = getFuncInput(m_ctx, &subTable, *m_parseNode);
   if (!funcInput) {
-    assert(m_context->hasErrors());
+    assert(m_ctx->hasErrors());
 
     instance->m_success = false;
     return;
   }
 
-  instance->m_retType = ::frontend::internal::getRetType(m_context, &subTable, *m_parseNode);
+  instance->m_retType = ::frontend::internal::getRetType(m_ctx, &subTable, *m_parseNode);
   if (!instance->m_retType) {
-    assert(m_context->hasErrors());
+    assert(m_ctx->hasErrors());
 
     instance->m_success = false;
     return;
   }
 
-  const auto isConv = isType(m_context, m_name);
+  const auto isConv = isType(m_ctx, m_name);
   if (isConv && m_isAction) {
-    m_context->reportDiag(errNonPureConversion(m_context->getSrc(), m_parseNode->getSpan()));
+    m_ctx->reportDiag(errNonPureConversion, m_parseNode->getSpan());
     instance->m_success = false;
     return;
   }
 
   if (instance->m_retType->isInfer()) {
     // For conversions to non-templated types we know the return-type by looking at the name.
-    if (isConv && m_context->getProg()->lookupType(m_name)) {
-      instance->m_retType = m_context->getProg()->lookupType(m_name);
+    if (isConv && m_ctx->getProg()->lookupType(m_name)) {
+      instance->m_retType = m_ctx->getProg()->lookupType(m_name);
     } else {
       // Otherwise try to infer the return-type.
       instance->m_retType = inferRetType(
-          m_context,
-          &subTable,
-          *m_parseNode,
-          *funcInput,
-          nullptr,
-          TypeInferExpr::Flags::Aggressive);
+          m_ctx, &subTable, *m_parseNode, *funcInput, nullptr, TypeInferExpr::Flags::Aggressive);
       // We don't produce a diagnostic yet if the inferring failed as that is done by the definition
       // step.
     }
@@ -161,28 +156,28 @@ auto FuncTemplate::setupInstance(FuncTemplateInst* instance) -> void {
 
   // For conversions verify that a correct type is returned.
   if (isConv) {
-    const auto nonTemplConvType = m_context->getProg()->lookupType(m_name);
+    const auto nonTemplConvType = m_ctx->getProg()->lookupType(m_name);
     if (nonTemplConvType) {
       // Verify that a conversion to a non-templated type returns the correct type.
       if (instance->m_retType != *nonTemplConvType) {
-        m_context->reportDiag(errIncorrectReturnTypeInConvFunc(
-            m_context->getSrc(),
-            instance->getDisplayName(*m_context),
-            getDisplayName(*m_context, *instance->m_retType),
-            m_parseNode->getSpan()));
+        m_ctx->reportDiag(
+            errIncorrectReturnTypeInConvFunc,
+            instance->getDisplayName(*m_ctx),
+            getDisplayName(*m_ctx, *instance->m_retType),
+            m_parseNode->getSpan());
 
         instance->m_success = false;
         return;
       }
     } else {
       // Verify that a conversion to a templated type returns the correct type.
-      const auto typeInfo = m_context->getTypeInfo(*instance->m_retType);
+      const auto typeInfo = m_ctx->getTypeInfo(*instance->m_retType);
       if (!typeInfo || typeInfo->getName() != m_name) {
-        m_context->reportDiag(errIncorrectReturnTypeInConvFunc(
-            m_context->getSrc(),
-            instance->getDisplayName(*m_context),
-            getDisplayName(*m_context, *instance->m_retType),
-            m_parseNode->getSpan()));
+        m_ctx->reportDiag(
+            errIncorrectReturnTypeInConvFunc,
+            instance->getDisplayName(*m_ctx),
+            getDisplayName(*m_ctx, *instance->m_retType),
+            m_parseNode->getSpan());
 
         instance->m_success = false;
         return;
@@ -190,32 +185,30 @@ auto FuncTemplate::setupInstance(FuncTemplateInst* instance) -> void {
     }
   }
 
-  const auto funcName = isConv ? getName(*m_context, *instance->m_retType)
-                               : mangleName(m_context, m_name, instance->m_typeParams);
+  const auto funcName = isConv ? getName(*m_ctx, *instance->m_retType)
+                               : mangleName(m_ctx, m_name, instance->m_typeParams);
 
   // Check if an identical function has already been registered.
-  if (m_context->getProg()->lookupFunc(funcName, *funcInput, prog::OvOptions{0})) {
-    m_context->reportDiag(errDuplicateFuncDeclaration(
-        m_context->getSrc(), instance->getDisplayName(*m_context), m_parseNode->getSpan()));
+  if (m_ctx->getProg()->lookupFunc(funcName, *funcInput, prog::OvOptions{0})) {
+    m_ctx->reportDiag(
+        errDuplicateFuncDeclaration, instance->getDisplayName(*m_ctx), m_parseNode->getSpan());
     instance->m_success = false;
     return;
   }
 
   // Declare the function in the program.
   instance->m_func = m_isAction
-      ? m_context->getProg()->declareAction(funcName, std::move(*funcInput), *instance->m_retType)
-      : m_context->getProg()->declarePureFunc(
-            funcName, std::move(*funcInput), *instance->m_retType);
+      ? m_ctx->getProg()->declareAction(funcName, std::move(*funcInput), *instance->m_retType)
+      : m_ctx->getProg()->declarePureFunc(funcName, std::move(*funcInput), *instance->m_retType);
 
   // Define the function.
-  auto defineFuncs = DefineUserFuncs{m_context, &subTable};
-  instance->m_success =
-      defineFuncs.define(*instance->m_func, instance->getDisplayName(*m_context), *m_parseNode);
+  instance->m_success = defineFunc(
+      m_ctx, &subTable, *instance->m_func, instance->getDisplayName(*m_ctx), *m_parseNode);
 
   // If we failed to infer a return-type for this function a diagnostic should have been emitted
   // during definition (the reason for not emitting one before is that otherwise it might hide
   // other errors in the function).
-  assert(instance->m_retType->isInfer() ? m_context->hasErrors() : true);
+  assert(instance->m_retType->isInfer() ? m_ctx->hasErrors() : true);
 }
 
 auto FuncTemplate::createSubTable(const prog::sym::TypeSet& typeParams) const

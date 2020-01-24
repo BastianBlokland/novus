@@ -11,14 +11,14 @@ FuncTemplateInst::FuncTemplateInst(std::string baseName, prog::sym::TypeSet type
     m_retType{std::nullopt},
     m_success{true} {}
 
-auto FuncTemplateInst::getDisplayName(const Context& context) const -> std::string {
+auto FuncTemplateInst::getDisplayName(const Context& ctx) const -> std::string {
   std::ostringstream oss;
   oss << m_baseName << '{';
   for (auto i = 0U; i < m_typeParams.getCount(); ++i) {
     if (i != 0) {
       oss << ',';
     }
-    oss << internal::getDisplayName(context, m_typeParams[i]);
+    oss << internal::getDisplayName(ctx, m_typeParams[i]);
   }
   oss << '}';
   return oss.str();

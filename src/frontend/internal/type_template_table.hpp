@@ -19,13 +19,13 @@ public:
   auto operator=(TypeTemplateTable&& rhs) noexcept -> TypeTemplateTable& = delete;
 
   auto declareStruct(
-      Context* context,
+      Context* ctx,
       const std::string& name,
       std::vector<std::string> typeSubs,
       const parse::StructDeclStmtNode& n) -> void;
 
   auto declareUnion(
-      Context* context,
+      Context* ctx,
       const std::string& name,
       std::vector<std::string> typeSubs,
       const parse::UnionDeclStmtNode& n) -> void;

@@ -23,14 +23,14 @@ auto getPathsToTypeSub(
 }
 
 auto resolvePathToTypeSub(
-    const Context& context,
+    const Context& ctx,
     TypePath::const_iterator begin,
     const TypePath::const_iterator& end,
     prog::sym::TypeId type) -> std::optional<prog::sym::TypeId> {
   if (begin == end) {
     return type;
   }
-  const auto info = context.getTypeInfo(type);
+  const auto info = ctx.getTypeInfo(type);
   if (!info || !info->hasParams()) {
     return std::nullopt;
   }
@@ -43,7 +43,7 @@ auto resolvePathToTypeSub(
   if (targetIndex >= params.getCount()) {
     return std::nullopt;
   }
-  return resolvePathToTypeSub(context, ++begin, end, params[targetIndex]);
+  return resolvePathToTypeSub(ctx, ++begin, end, params[targetIndex]);
 }
 
 } // namespace frontend::internal

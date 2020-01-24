@@ -18,6 +18,7 @@ public:
   [[nodiscard]] auto getSpan() const -> input::Span override;
 
   [[nodiscard]] auto getPath() const -> const lex::Token&;
+  [[nodiscard]] auto getPathString() const -> std::string;
 
   auto accept(NodeVisitor* visitor) const -> void override;
 

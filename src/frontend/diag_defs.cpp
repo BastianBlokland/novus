@@ -3,6 +3,12 @@
 
 namespace frontend {
 
+auto errUnresolvedImport(const Source& src, const std::string& path, input::Span span) -> Diag {
+  std::ostringstream oss;
+  oss << "Unable to resolve import '" << path << '\'';
+  return error(src, oss.str(), span);
+}
+
 auto errParseError(const Source& src, const parse::ErrorNode& n) -> Diag {
   std::ostringstream oss;
   oss << "Parse error: " << n.getMessage();

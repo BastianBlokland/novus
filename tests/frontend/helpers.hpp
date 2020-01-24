@@ -6,7 +6,8 @@
 
 namespace frontend {
 
-#define SRC(INPUT) buildSource("test", std::string{INPUT}.begin(), std::string{INPUT}.end())
+#define SRC(INPUT)                                                                                 \
+  buildSource("test", std::nullopt, std::string{INPUT}.begin(), std::string{INPUT}.end())
 
 #define ANALYZE(INPUT) analyze(SRC(INPUT))
 
@@ -46,6 +47,21 @@ namespace frontend {
     const std::vector<frontend::Diag> expectedDiags = {__VA_ARGS__};                               \
     CHECK_THAT(diags, Catch::UnorderedEquals(expectedDiags));                                      \
   }
+
+inline auto findAnonFunc(const Output& output, unsigned int num) -> prog::sym::FuncId {
+  for (auto itr = output.getProg().beginFuncDecls(); itr != output.getProg().endFuncDecls();
+       ++itr) {
+    const auto isAnon = itr->getName().rfind("__anon_", 0) == 0;
+    if (isAnon && num-- == 0) {
+      return itr->getId();
+    }
+  }
+  throw std::logic_error{"Unable to find anonymous function"};
+}
+
+inline auto findAnonFuncDef(const Output& output, unsigned int num) -> const prog::sym::FuncDef& {
+  return output.getProg().getFuncDef(findAnonFunc(output, num));
+}
 
 inline auto applyConv(
     const Output& output,

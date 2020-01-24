@@ -5,14 +5,15 @@
 
 namespace frontend::internal {
 
-DeclareUserFuncs::DeclareUserFuncs(Context* context) : m_context{context} {
-  if (m_context == nullptr) {
+DeclareUserFuncs::DeclareUserFuncs(Context* ctx, std::vector<FuncDeclInfo>* funcDecls) :
+    m_ctx{ctx}, m_funcDecls{funcDecls} {
+
+  if (m_ctx == nullptr) {
     throw std::invalid_argument{"Context cannot be null"};
   }
-}
-
-auto DeclareUserFuncs::getFuncs() const noexcept -> const std::vector<DeclarationInfo>& {
-  return m_funcs;
+  if (m_funcDecls == nullptr) {
+    throw std::invalid_argument{"FuncDecl vector cannot be null"};
+  }
 }
 
 auto DeclareUserFuncs::visit(const parse::FuncDeclStmtNode& n) -> void {
@@ -23,22 +24,20 @@ auto DeclareUserFuncs::visit(const parse::FuncDeclStmtNode& n) -> void {
     name = displayName = getName(n.getId());
   } else {
     if (n.isAction()) {
-      m_context->reportDiag(errNonPureOperatorOverload(m_context->getSrc(), n.getId().getSpan()));
+      m_ctx->reportDiag(errNonPureOperatorOverload, n.getId().getSpan());
       return;
     }
 
     auto op = getOperator(n.getId());
     if (!op) {
-      m_context->reportDiag(
-          errNonOverloadableOperator(m_context->getSrc(), n.getId().str(), n.getId().getSpan()));
+      m_ctx->reportDiag(errNonOverloadableOperator, n.getId().str(), n.getId().getSpan());
       return;
     }
     name        = prog::getFuncName(*op);
     displayName = "operator" + n.getId().str();
 
     if (n.getArgList().getCount() == 0) {
-      m_context->reportDiag(
-          errOperatorOverloadWithoutArgs(m_context->getSrc(), displayName, n.getId().getSpan()));
+      m_ctx->reportDiag(errOperatorOverloadWithoutArgs, displayName, n.getId().getSpan());
       return;
     }
   }
@@ -46,41 +45,40 @@ auto DeclareUserFuncs::visit(const parse::FuncDeclStmtNode& n) -> void {
   // If the function is a template then we don't declare it in the program yet but declare it in
   // the function-template table.
   if (n.getTypeSubs()) {
-    auto typeSubs = getSubstitutionParams(m_context, *n.getTypeSubs());
+    auto typeSubs = getSubstitutionParams(m_ctx, *n.getTypeSubs());
     if (typeSubs && validateFuncTemplateArgList(n.getArgList(), *typeSubs)) {
 
       if (n.isAction()) {
-        m_context->getFuncTemplates()->declareAction(m_context, name, std::move(*typeSubs), &n);
+        m_ctx->getFuncTemplates()->declareAction(m_ctx, name, std::move(*typeSubs), &n);
       } else {
-        m_context->getFuncTemplates()->declarePure(m_context, name, std::move(*typeSubs), &n);
+        m_ctx->getFuncTemplates()->declarePure(m_ctx, name, std::move(*typeSubs), &n);
       }
     }
     return;
   }
 
   // Get func input.
-  const auto input = getFuncInput(m_context, nullptr, n);
+  const auto input = getFuncInput(m_ctx, nullptr, n);
   if (!input) {
     return;
   }
 
   // Verify that this is not a duplicate declaration.
-  if (m_context->getProg()->lookupFunc(name, input.value(), prog::OvOptions{0})) {
-    m_context->reportDiag(
-        errDuplicateFuncDeclaration(m_context->getSrc(), displayName, n.getSpan()));
+  if (m_ctx->getProg()->lookupFunc(name, input.value(), prog::OvOptions{0})) {
+    m_ctx->reportDiag(errDuplicateFuncDeclaration, displayName, n.getSpan());
     return;
   }
 
   // Get return type.
-  auto retType = getRetType(m_context, nullptr, n);
+  auto retType = getRetType(m_ctx, nullptr, n);
   if (!retType) {
     return;
   }
 
-  const auto isConv = isType(m_context, name);
+  const auto isConv = isType(m_ctx, name);
   if (isConv && n.isAction()) {
     if (n.isAction()) {
-      m_context->reportDiag(errNonPureConversion(m_context->getSrc(), n.getId().getSpan()));
+      m_ctx->reportDiag(errNonPureConversion, n.getId().getSpan());
       return;
     }
     return;
@@ -88,40 +86,46 @@ auto DeclareUserFuncs::visit(const parse::FuncDeclStmtNode& n) -> void {
 
   // For conversions validate that correct types are returned.
   if (isConv) {
-    const auto nonTemplConvType = m_context->getProg()->lookupType(name);
+    const auto nonTemplConvType = m_ctx->getProg()->lookupType(name);
     if (nonTemplConvType) {
       if (retType->isInfer()) {
         retType = nonTemplConvType;
       } else if (*retType != *nonTemplConvType) {
-        m_context->reportDiag(errIncorrectReturnTypeInConvFunc(
-            m_context->getSrc(), name, getDisplayName(*m_context, *retType), n.getId().getSpan()));
+        m_ctx->reportDiag(
+            errIncorrectReturnTypeInConvFunc,
+            name,
+            getDisplayName(*m_ctx, *retType),
+            n.getId().getSpan());
         return;
       }
     } else {
       if (retType->isInfer()) {
         retType =
-            inferRetType(m_context, nullptr, n, *input, nullptr, TypeInferExpr::Flags::Aggressive);
+            inferRetType(m_ctx, nullptr, n, *input, nullptr, TypeInferExpr::Flags::Aggressive);
         if (!retType->isConcrete()) {
-          m_context->reportDiag(errUnableToInferReturnTypeOfConversionToTemplatedType(
-              m_context->getSrc(), name, n.getId().getSpan()));
+          m_ctx->reportDiag(
+              errUnableToInferReturnTypeOfConversionToTemplatedType, name, n.getId().getSpan());
           return;
         }
       }
-      const auto typeInfo = m_context->getTypeInfo(*retType);
+      const auto typeInfo = m_ctx->getTypeInfo(*retType);
       if (!typeInfo || typeInfo->getName() != name) {
-        m_context->reportDiag(errIncorrectReturnTypeInConvFunc(
-            m_context->getSrc(), name, getDisplayName(*m_context, *retType), n.getId().getSpan()));
+        m_ctx->reportDiag(
+            errIncorrectReturnTypeInConvFunc,
+            name,
+            getDisplayName(*m_ctx, *retType),
+            n.getId().getSpan());
         return;
       }
     }
   }
 
   // Declare the function in the program.
-  const auto funcName = isConv ? getName(*m_context, *retType) : name;
+  const auto funcName = isConv ? getName(*m_ctx, *retType) : name;
   auto funcId         = n.isAction()
-      ? m_context->getProg()->declareAction(funcName, input.value(), retType.value())
-      : m_context->getProg()->declarePureFunc(funcName, input.value(), retType.value());
-  m_funcs.emplace_back(funcId, name, n);
+      ? m_ctx->getProg()->declareAction(funcName, input.value(), retType.value())
+      : m_ctx->getProg()->declarePureFunc(funcName, input.value(), retType.value());
+  m_funcDecls->emplace_back(funcId, m_ctx, name, n);
 }
 
 auto DeclareUserFuncs::validateFuncTemplateArgList(
@@ -139,11 +143,10 @@ auto DeclareUserFuncs::validateType(
 
   auto isValid    = true;
   const auto name = getName(type.getId());
-  if (!isType(m_context, name) &&
+  if (!isType(m_ctx, name) &&
       std::find(typeSubParams.begin(), typeSubParams.end(), name) == typeSubParams.end()) {
 
-    m_context->reportDiag(
-        errUndeclaredType(m_context->getSrc(), name, type.getParamCount(), type.getSpan()));
+    m_ctx->reportDiag(errUndeclaredType, name, type.getParamCount(), type.getSpan());
     isValid = false;
   }
 

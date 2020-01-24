@@ -5,6 +5,9 @@
 
 namespace frontend {
 
+[[nodiscard]] auto errUnresolvedImport(const Source& src, const std::string& path, input::Span span)
+    -> Diag;
+
 [[nodiscard]] auto errParseError(const Source& src, const parse::ErrorNode& n) -> Diag;
 
 [[nodiscard]] auto
