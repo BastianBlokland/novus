@@ -4,6 +4,8 @@
 #include "internal/utilities.hpp"
 #include "parse/nodes.hpp"
 #include "prog/expr/node_call.hpp"
+#include "prog/expr/node_lit_string.hpp"
+#include <sstream>
 
 namespace frontend::internal {
 
@@ -34,7 +36,16 @@ auto DefineExecStmts::visit(const parse::ExecStmtNode& n) -> void {
   }
 
   const auto& targetName = getName(n.getTarget());
-  const auto& target     = m_ctx->getProg()->lookupFunc(
+
+  // Assert has an exception where you are allowed omit the second arg (the message).
+  if (targetName == "assert" && args.size() == 1 && argTypes[0] == m_ctx->getProg()->getBool()) {
+    std::ostringstream msgoss;
+    msgoss << m_ctx->getSrc().getId() << " " << m_ctx->getSrc().getTextPos(n.getSpan().getStart());
+    args.push_back(prog::expr::litStringNode(*m_ctx->getProg(), msgoss.str()));
+    argTypes.push_back(m_ctx->getProg()->getString());
+  }
+
+  const auto& target = m_ctx->getProg()->lookupFunc(
       targetName, prog::sym::TypeSet{argTypes}, prog::OvOptions{prog::OvFlags::ExclPureFuncs});
 
   if (!target) {
