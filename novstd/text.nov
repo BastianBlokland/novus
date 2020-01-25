@@ -130,6 +130,12 @@ fun toChars(string str, int idx, List{char} result)
   if idx < 0  -> result
   else        -> toChars(str, --idx, str[idx] :: result)
 
+fun join(List{string} l)
+  l.sum()
+
+fun join(List{char} l)
+  l.fold(lambda (string s, char c) s + c)
+
 // Tests
 
 assert(
@@ -255,4 +261,11 @@ assert(
 assert(
   "h".toChars() == List{char}('h') &&
   "hello".toChars() == 'h' :: 'e' :: 'l' :: 'l' :: 'o' :: List{char}() &&
+  "1337".toChars().join() == "1337" &&
   "".toChars() == List{char}())
+
+assert(
+  join("hello" :: " " :: "world" :: List{string}()) == "hello world" &&
+  join('h' :: 'e' :: 'l' :: 'l' :: 'o' :: List{char}()) == "hello" &&
+  List{string}().join() == "" &&
+  List{char}().join() == "")
