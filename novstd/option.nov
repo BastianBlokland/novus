@@ -1,0 +1,55 @@
+// Types
+
+union Option{T} = T, None
+
+struct None
+
+// Constructors
+
+fun Option{T}()
+  Option{T}(None())
+
+// Operators
+
+fun ??{T}(Option{T} opt, T def)
+  opt as T val ? val : def
+
+fun ??{T}(Option{T} opt, delegate{T} defFactory)
+  opt as T val ? val : defFactory()
+
+// Conversions
+
+fun string{T}(Option{T} opt)
+  opt as T val ? val.string() : "none"
+
+// Functions
+
+fun map{T, TResult}(Option{T} opt, delegate{T, TResult} del)
+  opt as T val ? del(val) : opt
+
+fun filter{T}(Option{T} opt, delegate{T, bool} pred)
+  if opt as T val   -> pred(val) ? opt : None()
+  if opt is None    -> opt
+
+// Tests
+
+assert(
+  o = Option(42);
+  o == 42 && o != 43 && o != Option{int}())
+assert(Option{int}() == Option{int}())
+
+assert(Option{int}() ?? 42 == 42)
+assert(Option(1337) ?? 42 == 1337)
+
+assert(Option{int}() ?? (lambda () 42) == 42)
+assert(Option(1337) ?? (lambda () 42) == 1337)
+
+assert(Option(42).string() == "42")
+assert(Option{int}().string() == "none")
+
+assert(Option(42).map(lambda (int val) val * 2) == 84)
+assert(Option{int}().map(lambda (int val) val * 2) == None())
+
+assert(Option(42).filter(lambda (int val) val > 0) == 42)
+assert(Option(-42).filter(lambda (int val) val > 0) == None())
+assert(Option{int}().filter(lambda (int val) val > 0) == None())

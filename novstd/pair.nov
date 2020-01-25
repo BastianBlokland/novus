@@ -1,0 +1,27 @@
+// Types
+
+struct Pair{T1, T2} = T1 first, T2 second
+
+// Operators
+
+fun []{T1, T2}(Pair{T1, T2} pair, int idx)
+  idx == 0 ? pair.first : pair.second
+
+// Conversions
+
+fun string{T1, T2}(Pair{T1, T2} pair)
+  "(" + pair.first.string() + "," + pair.second.string() + ")"
+
+// Tests
+
+assert(
+  p = Pair(42, "hello world");
+  p == Pair(42, "hello world") &&
+  p != Pair(42, "hello") &&
+  p != Pair(1337, "hello world"))
+
+assert(
+  p = Pair(42, "hello world");
+  p[0] == 42 && p[1] == "hello world")
+
+assert(Pair(42, "hello world").string() == "(42,hello world)")
