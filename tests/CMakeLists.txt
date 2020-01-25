@@ -46,6 +46,7 @@ add_executable(tests
   frontend/get_paren_expr_test.cpp
   frontend/get_switch_expr_test.cpp
   frontend/get_unary_expr_test.cpp
+  frontend/import_test.cpp
   frontend/overload_test.cpp
   frontend/parse_diags_test.cpp
   frontend/source_test.cpp
@@ -89,6 +90,7 @@ add_executable(tests
   parse/stmt_enum_decl_test.cpp
   parse/stmt_exec_test.cpp
   parse/stmt_func_decl_test.cpp
+  parse/stmt_import_test.cpp
   parse/stmt_struct_decl_test.cpp
   parse/stmt_union_decl_test.cpp
 

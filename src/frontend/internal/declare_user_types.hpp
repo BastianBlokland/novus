@@ -1,34 +1,48 @@
 #pragma once
 #include "internal/context.hpp"
 #include "parse/node_visitor_optional.hpp"
-#include <utility>
+#include <vector>
 
 namespace frontend::internal {
 
+template <typename NodeType>
+class TypeDeclInfo final {
+public:
+  TypeDeclInfo(prog::sym::TypeId id, Context* ctx, const NodeType& parseNode) :
+      m_id{id}, m_ctx{ctx}, m_parseNode{parseNode} {}
+
+  [[nodiscard]] auto getId() const noexcept -> prog::sym::TypeId { return m_id; }
+  [[nodiscard]] auto getCtx() const noexcept -> Context* { return m_ctx; }
+  [[nodiscard]] auto getParseNode() const noexcept -> const NodeType& { return m_parseNode; }
+
+private:
+  prog::sym::TypeId m_id;
+  Context* m_ctx;
+  const NodeType& m_parseNode;
+};
+
+using StructDeclInfo = TypeDeclInfo<parse::StructDeclStmtNode>;
+using UnionDeclInfo  = TypeDeclInfo<parse::UnionDeclStmtNode>;
+using EnumDeclInfo   = TypeDeclInfo<parse::EnumDeclStmtNode>;
+
 class DeclareUserTypes final : public parse::OptionalNodeVisitor {
 public:
-  using StructDeclarationInfo =
-      typename std::pair<prog::sym::TypeId, const parse::StructDeclStmtNode&>;
-  using UnionDeclarationInfo =
-      typename std::pair<prog::sym::TypeId, const parse::UnionDeclStmtNode&>;
-  using EnumDeclarationInfo = typename std::pair<prog::sym::TypeId, const parse::EnumDeclStmtNode&>;
-
   DeclareUserTypes() = delete;
-  explicit DeclareUserTypes(Context* context);
-
-  [[nodiscard]] auto getStructs() const noexcept -> const std::vector<StructDeclarationInfo>&;
-  [[nodiscard]] auto getUnions() const noexcept -> const std::vector<UnionDeclarationInfo>&;
-  [[nodiscard]] auto getEnums() const noexcept -> const std::vector<EnumDeclarationInfo>&;
+  explicit DeclareUserTypes(
+      Context* ctx,
+      std::vector<StructDeclInfo>* structDecls,
+      std::vector<UnionDeclInfo>* unionDecls,
+      std::vector<EnumDeclInfo>* enumDecls);
 
   auto visit(const parse::StructDeclStmtNode& n) -> void override;
   auto visit(const parse::UnionDeclStmtNode& n) -> void override;
   auto visit(const parse::EnumDeclStmtNode& n) -> void override;
 
 private:
-  Context* m_context;
-  std::vector<StructDeclarationInfo> m_structs;
-  std::vector<UnionDeclarationInfo> m_unions;
-  std::vector<EnumDeclarationInfo> m_enums;
+  Context* m_ctx;
+  std::vector<StructDeclInfo>* m_structDecls;
+  std::vector<UnionDeclInfo>* m_unionDecls;
+  std::vector<EnumDeclInfo>* m_enumDecls;
 
   auto validateTypeName(const lex::Token& nameToken) -> bool;
 };

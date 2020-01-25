@@ -20,7 +20,7 @@ public:
 
   GetExpr() = delete;
   GetExpr(
-      Context* context,
+      Context* ctx,
       const TypeSubstitutionTable* typeSubTable,
       ConstBinder* constBinder,
       prog::sym::TypeId typeHint,
@@ -50,13 +50,14 @@ public:
   auto visit(const parse::EnumDeclStmtNode& n) -> void override;
   auto visit(const parse::ExecStmtNode& n) -> void override;
   auto visit(const parse::FuncDeclStmtNode& n) -> void override;
+  auto visit(const parse::ImportStmtNode& n) -> void override;
   auto visit(const parse::StructDeclStmtNode& n) -> void override;
   auto visit(const parse::UnionDeclStmtNode& n) -> void override;
 
 private:
   enum class BinLogicOp { And, Or };
 
-  Context* m_context;
+  Context* m_ctx;
   const TypeSubstitutionTable* m_typeSubTable;
   ConstBinder* m_constBinder;
   prog::sym::TypeId m_typeHint;

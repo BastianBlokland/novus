@@ -51,6 +51,8 @@ auto DeepNodeVisitor::visit(const ExecStmtNode& n) -> void { visitChildren(&n, t
 
 auto DeepNodeVisitor::visit(const FuncDeclStmtNode& n) -> void { visitChildren(&n, this); }
 
+auto DeepNodeVisitor::visit(const ImportStmtNode& n) -> void { visitChildren(&n, this); }
+
 auto DeepNodeVisitor::visit(const StructDeclStmtNode& n) -> void { visitChildren(&n, this); }
 
 auto DeepNodeVisitor::visit(const UnionDeclStmtNode& n) -> void { visitChildren(&n, this); }

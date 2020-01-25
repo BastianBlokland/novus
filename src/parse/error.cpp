@@ -73,6 +73,21 @@ static auto getError(std::ostream& out, const ArgumentListDecl& argList) -> void
   }
 }
 
+auto errInvalidStmtImport(lex::Token kw, lex::Token path) -> NodePtr {
+  std::ostringstream oss;
+  if (path.getKind() != lex::TokenKind::LitString) {
+    oss << "Expected import path (string) but got: '" << path << '\'';
+  } else {
+    oss << "Invalid import statement";
+  }
+
+  auto tokens = std::vector<lex::Token>{};
+  tokens.push_back(std::move(kw));
+  tokens.push_back(std::move(path));
+
+  return errorNode(oss.str(), std::move(tokens));
+}
+
 auto errInvalidStmtFuncDecl(
     lex::Token kw,
     lex::Token id,

@@ -12,14 +12,14 @@ getPathsToTypeSub(const std::string& subType, const parse::Type& parsetype, cons
     -> std::vector<TypePath>;
 
 [[nodiscard]] auto resolvePathToTypeSub(
-    const Context& context,
+    const Context& ctx,
     TypePath::const_iterator begin,
     const TypePath::const_iterator& end,
     prog::sym::TypeId type) -> std::optional<prog::sym::TypeId>;
 
 template <typename TypeSpec>
 [[nodiscard]] auto inferSubTypeFromSpecs(
-    const Context& context,
+    const Context& ctx,
     const std::string& subType,
     const std::vector<TypeSpec>& typeSpecs,
     const prog::sym::TypeSet& inputTypes) -> std::optional<prog::sym::TypeId> {
@@ -37,7 +37,7 @@ template <typename TypeSpec>
     const auto& typeSpec = typeSpecs[typeInd];
     for (const auto& path : getPathsToTypeSub(subType, typeSpec.getType(), {})) {
       const auto& inferredType =
-          resolvePathToTypeSub(context, path.begin(), path.end(), inputTypes[typeInd]);
+          resolvePathToTypeSub(ctx, path.begin(), path.end(), inputTypes[typeInd]);
       if (!inferredType) {
         return std::nullopt;
       }

@@ -1,0 +1,258 @@
+import "list.nov"
+
+// Char functions
+
+fun isDigit(char c)
+  c >= '0' && c <= '9'
+
+fun isLetter(char c)
+  isLower(c) || isUpper(c)
+
+fun isLower(char c)
+  c >= 'a' && c <= 'z'
+
+fun isUpper(char c)
+  c >= 'A' && c <= 'Z'
+
+fun isWhitespace(char c)
+  c == ' ' || c == '\t' || isNewline(c)
+
+fun isNewline(char c)
+  c == '\n' || c == '\r'
+
+fun toUpper(char c)
+  c.isLower() ? toChar(c ^ 0x20) : c
+
+fun toLower(char c)
+  c.isUpper() ? toChar(c ^ 0x20) : c
+
+// String functions
+
+fun isEmpty(string str)
+  str.length() == 0
+
+fun contains(string str, string subStr)
+  str.indexOf(subStr) >= 0
+
+fun indexOf(string str, string subStr)
+  indexOf(str, 0, subStr, 0)
+
+fun indexOf(string str, int idx, string subStr, int subStrIdx)
+  if idx >= str.length()            -> -1
+  if str[idx] == subStr[subStrIdx]  -> subStrIdx >= --subStr.length() ?
+                                        idx - --subStr.length() :
+                                        indexOf(str, ++idx, subStr, ++subStrIdx)
+  else                              -> indexOf(str, subStrIdx == 0 ? ++idx : idx, subStr, 0)
+
+fun indexOfLast(string str, string subStr)
+  indexOfLast(str, --str.length(), subStr, --subStr.length())
+
+fun indexOfLast(string str, int idx, string subStr, int subStrIdx)
+  if idx < 0                        -> -1
+  if str[idx] == subStr[subStrIdx]  -> subStrIdx <= 0 ?
+                                        idx :
+                                        indexOfLast(str, --idx, subStr, --subStrIdx)
+  else                              -> indexOfLast(
+                                          str,
+                                          subStrIdx == --subStr.length() ? --idx : idx,
+                                          subStr,
+                                          --subStr.length())
+
+fun indexOf(string str, delegate{char, bool} pred)
+  indexOf(str, 0, pred)
+
+fun indexOf(string str, int idx, delegate{char, bool} pred)
+  if idx >= str.length()  -> -1
+  if pred(str[idx])       -> idx
+  else                    -> indexOf(str, ++idx, pred)
+
+fun any(string str, delegate{char, bool} pred)
+  any(str, 0, pred)
+
+fun any(string str, int idx, delegate{char, bool} pred)
+  if idx >= str.length()  -> false
+  else                    -> pred(str[idx]) || any(str, ++idx, pred)
+
+fun all(string str, delegate{char, bool} pred)
+  all(str, 0, pred)
+
+fun all(string str, int idx, delegate{char, bool} pred)
+  if idx >= str.length()  -> true
+  else                    -> pred(str[idx]) && all(str, ++idx, pred)
+
+fun none(string str, delegate{char, bool} pred)
+  none(str, 0, pred)
+
+fun none(string str, int idx, delegate{char, bool} pred)
+  if idx >= str.length()  -> true
+  else                    -> !pred(str[idx]) && none(str, ++idx, pred)
+
+fun replace(string str, string old, string new)
+  replace(str, 0, old, new)
+
+fun replace(string str, int startIdx, string old, string new)
+  idx = str.indexOf(startIdx, old, 0);
+  if idx < 0  ->  str
+  else        ->  prefix = idx == 0 ? "" : str[0, --idx];
+                  suffix = idx == str.length() - old.length() ? "" :
+                    str[idx + old.length(), --str.length()];
+                  newStr = prefix + new + suffix;
+                  replace(newStr, idx + new.length(), old, new)
+
+fun insert(string str, int idx, string val)
+  if idx == 0             -> val + str
+  if idx >= str.length()  -> str + val
+  else                    -> str[0, --idx] + val + str[idx, --str.length()]
+
+fun fold{T}(string str, delegate{T, char, T} del)
+  fold(str, 0, del, T())
+
+fun fold{T}(string str, int idx, delegate{T, char, T} del, T val)
+  idx >= str.length() ? val : fold(str, ++idx, del, del(val, str[idx]))
+
+fun transform(string str, delegate{char, char} del)
+  str.fold(lambda (string res, char c) res + del(c))
+
+fun split(string str, delegate{char, bool} pred)
+  split(str, --str.length(), --str.length(), pred, List{string}())
+
+fun split(string str, int startIdx, int endIdx, delegate{char, bool} pred, List{string} result)
+  if startIdx < 0         -> startIdx == endIdx ? result : str[startIdx, endIdx] :: result
+  if pred(str[startIdx])  -> startIdx == endIdx ?
+    split(str, --startIdx, --endIdx, pred, result) :
+    split(str, --startIdx, --startIdx, pred, str[++startIdx, endIdx] :: result)
+  else                    -> split(str, --startIdx, endIdx, pred, result)
+
+fun toChars(string str)
+  toChars(str, --str.length(), List{char}())
+
+fun toChars(string str, int idx, List{char} result)
+  if idx < 0  -> result
+  else        -> toChars(str, --idx, str[idx] :: result)
+
+// Tests
+
+assert(
+  rangeList('0', '9').all(isDigit) &&
+  rangeList('a', 'z').none(isDigit))
+
+assert(
+  rangeList('a', 'z').all(isLetter) &&
+  rangeList('A', 'Z').all(isLetter) &&
+  rangeList('0', '9').none(isLetter))
+
+assert(
+  rangeList('a', 'z').all(isLower) &&
+  rangeList('A', 'Z').none(isLower) &&
+  rangeList('0', '9').none(isLower))
+
+assert(
+  rangeList('A', 'Z').all(isUpper) &&
+  rangeList('a', 'z').none(isUpper) &&
+  rangeList('0', '9').none(isUpper))
+
+assert(
+  ' '.isWhitespace() && '\t'.isWhitespace() && '\n'.isWhitespace() &&
+  rangeList('a', 'z').none(isWhitespace) &&
+  rangeList('A', 'Z').none(isWhitespace) &&
+  rangeList('0', '9').none(isWhitespace))
+
+assert('\n'.isNewline() && '\r'.isNewline() && !'\t'.isNewline())
+
+assert(
+  rangeList('a', 'z').map(toUpper) == rangeList('A', 'Z') &&
+  rangeList('A', 'Z').map(toLower) == rangeList('a', 'z'))
+
+assert("".isEmpty() && !" ".isEmpty())
+
+assert(
+  "hello world".contains("hello") &&
+  "hello world".contains("world") &&
+  "hello world".contains(" ") &&
+  "hello world".contains("ld") &&
+  "hello world".contains("he") &&
+  "hello world".contains("o w") &&
+  !"hello".contains("world") &&
+  !"hello".contains("llow") &&
+  !"hello".contains(""))
+
+assert(
+  "hello world".indexOf("hello") == 0 &&
+  "hello world".indexOf("world") == 6 &&
+  "hello world".indexOf(" ") == 5 &&
+  "hello world".indexOf("ld") == 9 &&
+  "hello world".indexOf("lo") == 3 &&
+  "hello world".indexOf("el") == 1 &&
+  "hello world".indexOf("he") == 0 &&
+  "hello world".indexOf("o w") == 4 &&
+  "wasd wasd".indexOf("wasd") == 0 &&
+  "hello".indexOf("world") == -1 &&
+  "hello".indexOf("llow") == -1 &&
+  "hello".indexOf("") == -1)
+
+assert(
+  "wasd wasd".indexOfLast("wasd") == 5 &&
+  "hello world".indexOfLast("hello") == 0 &&
+  "hello world".indexOfLast("world") == 6 &&
+  "hello world".indexOfLast("lo") == 3 &&
+  "hello world".indexOfLast("el") == 1 &&
+  "wasd wasd".indexOfLast(" ") == 4 &&
+  "wasd wasd".indexOfLast("d w") == 3 &&
+  "wasd wasd".indexOfLast("wasdz") == -1 &&
+  "wasd wasd".indexOfLast("") == -1)
+
+assert(
+  "hello world".indexOf(isWhitespace) == 5 &&
+  "hello world".indexOf(lambda (char c) c == 'd') == 10 &&
+  "hello world".indexOf(isLetter) == 0 &&
+  "hello world".indexOf(isDigit) == -1 &&
+  "".indexOf(isLetter) == -1)
+
+assert(
+  "hello world".any(isWhitespace) &&
+  !"hello world".any(isUpper))
+
+assert(
+  "hello".all(isLower) &&
+  !"hello world".all(isLetter))
+
+assert(
+  "hello world".none(isUpper) &&
+  !"hello world".none(isWhitespace))
+
+assert(
+  "hello world".replace("hello", "world") == "world world" &&
+  "hello hello hello".replace(" ", "-") == "hello-hello-hello" &&
+  "hello hello hello".replace(" ", "") == "hellohellohello" &&
+  "hello hello hello".replace("l", "L") == "heLLo heLLo heLLo" &&
+  "hello hello hello".replace(" ", " world ") == "hello world hello world hello" &&
+  "hello".replace("world", "1337") == "hello" &&
+  "hellohellohello".replace("hello", "world") == "worldworldworld" &&
+  "hellohellohello".replace("hello", "") == "" &&
+  "lelelel".replace("e", "lele") == "llelellelellelel" &&
+  "".replace("", "") == "")
+
+assert(
+  "helloworld".insert(0, "_") == "_helloworld" &&
+  "helloworld".insert("helloworld".length(), "_") == "helloworld_" &&
+  "helloworld".insert(1, "_") == "h_elloworld" &&
+  "helloworld".insert(5, "_") == "hello_world")
+
+assert(
+  "hello world".transform(toUpper) == "HELLO WORLD" &&
+  "hElLo wORlD".transform(toUpper) == "HELLO WORLD" &&
+  "hElLo wORlD".transform(toLower) == "hello world")
+
+assert(
+  "hello world".split(isWhitespace) == "hello" :: "world" :: List{string}() &&
+  "lineA\nlineB\nlineC".split(isNewline) == "lineA" :: "lineB" :: "lineC" :: List{string}() &&
+  "   hello   world   ".split(isWhitespace) == "hello" :: "world" :: List{string}() &&
+  "    ".split(isWhitespace).isEmpty() &&
+  " h e l l o ".split(isWhitespace) == "h" :: "e" :: "l" :: "l" :: "o" :: List{string}() &&
+  "hello-world".split(isWhitespace) == List("hello-world") &&
+  "".split(isWhitespace) == List{string}())
+
+assert(
+  "h".toChars() == List{char}('h') &&
+  "hello".toChars() == 'h' :: 'e' :: 'l' :: 'l' :: 'o' :: List{char}() &&
+  "".toChars() == List{char}())

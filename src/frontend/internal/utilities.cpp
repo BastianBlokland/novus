@@ -22,17 +22,17 @@ auto getName(const lex::Token& token) -> std::string {
 
 auto getName(const parse::Type& parseType) -> std::string { return getName(parseType.getId()); }
 
-auto getName(const Context& context, prog::sym::TypeId typeId) -> std::string {
+auto getName(const Context& ctx, prog::sym::TypeId typeId) -> std::string {
   if (!typeId.isConcrete()) {
     return "unknown";
   }
-  return context.getProg()->getTypeDecl(typeId).getName();
+  return ctx.getProg()->getTypeDecl(typeId).getName();
 }
 
-auto getDisplayName(const Context& context, prog::sym::TypeId typeId) -> std::string {
-  const auto typeInfo = context.getTypeInfo(typeId);
+auto getDisplayName(const Context& ctx, prog::sym::TypeId typeId) -> std::string {
+  const auto typeInfo = ctx.getTypeInfo(typeId);
   if (!typeInfo) {
-    return getName(context, typeId);
+    return getName(ctx, typeId);
   }
   const auto params = typeInfo->getParams();
   if (!params) {
@@ -44,7 +44,7 @@ auto getDisplayName(const Context& context, prog::sym::TypeId typeId) -> std::st
     if (i != 0) {
       oss << ',';
     }
-    oss << getDisplayName(context, (*params)[i]);
+    oss << getDisplayName(ctx, (*params)[i]);
   }
   oss << '}';
   return oss.str();
@@ -168,7 +168,7 @@ auto isReservedTypeName(const std::string& name) -> bool {
 }
 
 auto getOrInstType(
-    Context* context,
+    Context* ctx,
     const TypeSubstitutionTable* subTable,
     const lex::Token& nameToken,
     const std::optional<parse::TypeParamList>& typeParams) -> std::optional<prog::sym::TypeId> {
@@ -179,17 +179,17 @@ auto getOrInstType(
   if (subTable != nullptr && subTable->lookupType(typeName)) {
     return subTable->lookupType(typeName);
   }
-  if (!isType(context, typeName)) {
+  if (!isType(ctx, typeName)) {
     return std::nullopt;
   }
 
   // If type arguments are provided we attempt to instantiate a type using them.
   if (typeParams) {
-    return instType(context, subTable, nameToken, *typeParams);
+    return instType(ctx, subTable, nameToken, *typeParams);
   }
 
   // Check if the type is non-templated type.
-  auto type = context->getProg()->lookupType(typeName);
+  auto type = ctx->getProg()->lookupType(typeName);
   if (type) {
     return type;
   }
@@ -198,14 +198,14 @@ auto getOrInstType(
 }
 
 auto getOrInstType(
-    Context* context,
+    Context* ctx,
     const TypeSubstitutionTable* subTable,
     const lex::Token& nameToken,
     const std::optional<parse::TypeParamList>& typeParams,
     const prog::sym::TypeSet& constructorArgs) -> std::optional<prog::sym::TypeId> {
 
   // Check if a type can be found / instantiated.
-  const auto result = getOrInstType(context, subTable, nameToken, typeParams);
+  const auto result = getOrInstType(ctx, subTable, nameToken, typeParams);
   if (result) {
     return result;
   }
@@ -214,10 +214,10 @@ auto getOrInstType(
   // constructor arguments.
   const auto typeName = getName(nameToken);
   const auto typeInstantiation =
-      context->getTypeTemplates()->inferParamsAndInstantiate(typeName, constructorArgs);
+      ctx->getTypeTemplates()->inferParamsAndInstantiate(typeName, constructorArgs);
   if (typeInstantiation) {
     if (!(*typeInstantiation)->isSuccess()) {
-      context->reportDiag(errInvalidTypeInstantiation(context->getSrc(), nameToken.getSpan()));
+      ctx->reportDiag(errInvalidTypeInstantiation, nameToken.getSpan());
     } else {
       return (*typeInstantiation)->getType();
     }
@@ -226,7 +226,7 @@ auto getOrInstType(
 }
 
 auto getOrInstType(
-    Context* context, const TypeSubstitutionTable* subTable, const parse::Type& parseType)
+    Context* ctx, const TypeSubstitutionTable* subTable, const parse::Type& parseType)
     -> std::optional<prog::sym::TypeId> {
 
   const auto name = getName(parseType.getId());
@@ -234,8 +234,7 @@ auto getOrInstType(
     const auto subType = subTable->lookupType(name);
     if (subType) {
       if (parseType.getParamList()) {
-        context->reportDiag(
-            errTypeParamOnSubstitutionType(context->getSrc(), name, parseType.getSpan()));
+        ctx->reportDiag(errTypeParamOnSubstitutionType, name, parseType.getSpan());
         return std::nullopt;
       }
       return subType;
@@ -243,42 +242,42 @@ auto getOrInstType(
   }
   auto paramList = parseType.getParamList();
   if (paramList) {
-    return instType(context, subTable, parseType.getId(), *paramList);
+    return instType(ctx, subTable, parseType.getId(), *paramList);
   }
 
-  return context->getProg()->lookupType(name);
+  return ctx->getProg()->lookupType(name);
 }
 
 auto instType(
-    Context* context,
+    Context* ctx,
     const TypeSubstitutionTable* subTable,
     const lex::Token& nameToken,
     const parse::TypeParamList& typeParams) -> std::optional<prog::sym::TypeId> {
 
   const auto typeName = getName(nameToken);
-  const auto typeSet  = getTypeSet(context, subTable, typeParams.getTypes());
+  const auto typeSet  = getTypeSet(ctx, subTable, typeParams.getTypes());
   if (!typeSet) {
-    assert(context->hasErrors());
+    assert(ctx->hasErrors());
     return std::nullopt;
   }
 
   if (typeName == "delegate") {
-    return context->getDelegates()->getDelegate(context, *typeSet);
+    return ctx->getDelegates()->getDelegate(ctx, *typeSet);
   }
 
-  const auto typeInstantiation = context->getTypeTemplates()->instantiate(typeName, *typeSet);
+  const auto typeInstantiation = ctx->getTypeTemplates()->instantiate(typeName, *typeSet);
   if (!typeInstantiation) {
     return std::nullopt;
   }
   if (!(*typeInstantiation)->isSuccess()) {
-    context->reportDiag(errInvalidTypeInstantiation(context->getSrc(), nameToken.getSpan()));
+    ctx->reportDiag(errInvalidTypeInstantiation, nameToken.getSpan());
     return std::nullopt;
   }
   return (*typeInstantiation)->getType();
 }
 
 auto getRetType(
-    Context* context, const TypeSubstitutionTable* subTable, const parse::FuncDeclStmtNode& n)
+    Context* ctx, const TypeSubstitutionTable* subTable, const parse::FuncDeclStmtNode& n)
     -> std::optional<prog::sym::TypeId> {
 
   const auto& retTypeSpec = n.getRetType();
@@ -286,13 +285,13 @@ auto getRetType(
     return prog::sym::TypeId::inferType();
   }
   const auto& retParseType = retTypeSpec->getType();
-  auto retType             = getOrInstType(context, subTable, retParseType);
+  auto retType             = getOrInstType(ctx, subTable, retParseType);
   if (!retType) {
-    context->reportDiag(errUndeclaredType(
-        context->getSrc(),
+    ctx->reportDiag(
+        errUndeclaredType,
         getName(retParseType),
         retParseType.getParamCount(),
-        retParseType.getSpan()));
+        retParseType.getSpan());
     return std::nullopt;
   }
   return retType;
@@ -300,7 +299,7 @@ auto getRetType(
 
 template <typename FuncParseNode>
 auto inferRetType(
-    Context* context,
+    Context* ctx,
     const TypeSubstitutionTable* subTable,
     const FuncParseNode& parseNode,
     const prog::sym::TypeSet& input,
@@ -322,22 +321,22 @@ auto inferRetType(
     constTypes.insert(additionalConstTypes->begin(), additionalConstTypes->end());
   }
 
-  auto inferBodyType = TypeInferExpr{context, subTable, &constTypes, flags};
+  auto inferBodyType = TypeInferExpr{ctx, subTable, &constTypes, flags};
   parseNode[0].accept(&inferBodyType);
   return inferBodyType.getInferredType();
 }
 
-auto getLitFunc(Context* context, prog::sym::FuncId func) -> prog::expr::NodePtr {
-  const auto funcDecl = context->getProg()->getFuncDecl(func);
+auto getLitFunc(Context* ctx, prog::sym::FuncId func) -> prog::expr::NodePtr {
+  const auto funcDecl = ctx->getProg()->getFuncDecl(func);
   const auto delegateType =
-      context->getDelegates()->getDelegate(context, funcDecl.getInput(), funcDecl.getOutput());
-  return prog::expr::litFuncNode(*context->getProg(), delegateType, func);
+      ctx->getDelegates()->getDelegate(ctx, funcDecl.getInput(), funcDecl.getOutput());
+  return prog::expr::litFuncNode(*ctx->getProg(), delegateType, func);
 }
 
 auto getFuncClosure(
-    Context* context, prog::sym::FuncId func, std::vector<prog::expr::NodePtr> boundArgs)
+    Context* ctx, prog::sym::FuncId func, std::vector<prog::expr::NodePtr> boundArgs)
     -> prog::expr::NodePtr {
-  const auto funcDecl = context->getProg()->getFuncDecl(func);
+  const auto funcDecl = ctx->getProg()->getFuncDecl(func);
 
   const auto nonBoundArgsCount = funcDecl.getInput().getCount() - boundArgs.size();
   if (nonBoundArgsCount < 0) {
@@ -360,29 +359,29 @@ auto getFuncClosure(
     }
   }
 
-  const auto delegateType = context->getDelegates()->getDelegate(
-      context, prog::sym::TypeSet{std::move(delegateInput)}, funcDecl.getOutput());
-  return prog::expr::closureNode(*context->getProg(), delegateType, func, std::move(boundArgs));
+  const auto delegateType = ctx->getDelegates()->getDelegate(
+      ctx, prog::sym::TypeSet{std::move(delegateInput)}, funcDecl.getOutput());
+  return prog::expr::closureNode(*ctx->getProg(), delegateType, func, std::move(boundArgs));
 }
 
 template <typename FuncParseNode>
 auto getFuncInput(
-    Context* context, const TypeSubstitutionTable* subTable, const FuncParseNode& parseNode)
+    Context* ctx, const TypeSubstitutionTable* subTable, const FuncParseNode& parseNode)
     -> std::optional<prog::sym::TypeSet> {
 
   auto isValid  = true;
   auto argTypes = std::vector<prog::sym::TypeId>{};
   for (const auto& arg : parseNode.getArgList()) {
     const auto& argParseType = arg.getType();
-    const auto argType       = getOrInstType(context, subTable, argParseType);
+    const auto argType       = getOrInstType(ctx, subTable, argParseType);
     if (argType) {
       argTypes.push_back(argType.value());
     } else {
-      context->reportDiag(errUndeclaredType(
-          context->getSrc(),
+      ctx->reportDiag(
+          errUndeclaredType,
           getName(argParseType),
           argParseType.getParamCount(),
-          argParseType.getSpan()));
+          argParseType.getSpan());
       isValid = false;
     }
   }
@@ -391,26 +390,26 @@ auto getFuncInput(
 
 template <typename FuncParseNode>
 auto declareFuncInput(
-    Context* context,
+    Context* ctx,
     const TypeSubstitutionTable* subTable,
     const FuncParseNode& n,
     prog::sym::ConstDeclTable* consts) -> bool {
   bool isValid = true;
   for (const auto& arg : n.getArgList()) {
-    const auto constName = getConstName(context, subTable, *consts, arg.getIdentifier());
+    const auto constName = getConstName(ctx, subTable, *consts, arg.getIdentifier());
     if (!constName) {
       isValid = false;
       continue;
     }
 
     const auto& argParseType = arg.getType();
-    const auto argType       = getOrInstType(context, subTable, argParseType);
+    const auto argType       = getOrInstType(ctx, subTable, argParseType);
     if (!argType) {
-      context->reportDiag(errUndeclaredType(
-          context->getSrc(),
+      ctx->reportDiag(
+          errUndeclaredType,
           getName(argParseType),
           argParseType.getParamCount(),
-          argParseType.getSpan()));
+          argParseType.getSpan());
       isValid = false;
       continue;
     }
@@ -419,16 +418,15 @@ auto declareFuncInput(
   return isValid;
 }
 
-auto getSubstitutionParams(Context* context, const parse::TypeSubstitutionList& subList)
+auto getSubstitutionParams(Context* ctx, const parse::TypeSubstitutionList& subList)
     -> std::optional<std::vector<std::string>> {
 
   auto typeParams = std::vector<std::string>{};
   auto isValid    = true;
   for (const auto& typeSubToken : subList) {
     const auto typeParamName = getName(typeSubToken);
-    if (isType(context, typeParamName)) {
-      context->reportDiag(errTypeParamNameConflictsWithType(
-          context->getSrc(), typeParamName, typeSubToken.getSpan()));
+    if (isType(ctx, typeParamName)) {
+      ctx->reportDiag(errTypeParamNameConflictsWithType, typeParamName, typeSubToken.getSpan());
       isValid = false;
     } else {
       typeParams.push_back(typeParamName);
@@ -438,19 +436,18 @@ auto getSubstitutionParams(Context* context, const parse::TypeSubstitutionList& 
 }
 
 auto getTypeSet(
-    Context* context,
-    const TypeSubstitutionTable* subTable,
-    const std::vector<parse::Type>& parseTypes) -> std::optional<prog::sym::TypeSet> {
+    Context* ctx, const TypeSubstitutionTable* subTable, const std::vector<parse::Type>& parseTypes)
+    -> std::optional<prog::sym::TypeSet> {
 
   auto isValid = true;
   auto types   = std::vector<prog::sym::TypeId>{};
   for (const auto& parseType : parseTypes) {
-    auto type = getOrInstType(context, subTable, parseType);
+    auto type = getOrInstType(ctx, subTable, parseType);
     if (type) {
       types.push_back(*type);
     } else {
-      context->reportDiag(errUndeclaredType(
-          context->getSrc(), getName(parseType), parseType.getParamCount(), parseType.getSpan()));
+      ctx->reportDiag(
+          errUndeclaredType, getName(parseType), parseType.getParamCount(), parseType.getSpan());
       isValid = false;
     }
   }
@@ -458,92 +455,86 @@ auto getTypeSet(
 }
 
 auto getConstName(
-    Context* context,
+    Context* ctx,
     const TypeSubstitutionTable* subTable,
     const prog::sym::ConstDeclTable& consts,
     const lex::Token& nameToken) -> std::optional<std::string> {
 
   const auto name = getName(nameToken);
   if (subTable != nullptr && subTable->lookupType(name)) {
-    context->reportDiag(
-        errConstNameConflictsWithTypeSubstitution(context->getSrc(), name, nameToken.getSpan()));
+    ctx->reportDiag(errConstNameConflictsWithTypeSubstitution, name, nameToken.getSpan());
     return std::nullopt;
   }
-  if (isType(context, name)) {
-    context->reportDiag(
-        errConstNameConflictsWithType(context->getSrc(), name, nameToken.getSpan()));
+  if (isType(ctx, name)) {
+    ctx->reportDiag(errConstNameConflictsWithType, name, nameToken.getSpan());
     return std::nullopt;
   }
-  if (isFuncOrConv(context, name)) {
-    context->reportDiag(
-        errConstNameConflictsWithFunction(context->getSrc(), name, nameToken.getSpan()));
+  if (isFuncOrConv(ctx, name)) {
+    ctx->reportDiag(errConstNameConflictsWithFunction, name, nameToken.getSpan());
     return std::nullopt;
   }
   if (consts.lookup(name)) {
-    context->reportDiag(
-        errConstNameConflictsWithConst(context->getSrc(), name, nameToken.getSpan()));
+    ctx->reportDiag(errConstNameConflictsWithConst, name, nameToken.getSpan());
     return std::nullopt;
   }
   return name;
 }
 
-auto mangleName(Context* context, const std::string& name, const prog::sym::TypeSet& typeParams)
+auto mangleName(Context* ctx, const std::string& name, const prog::sym::TypeSet& typeParams)
     -> std::string {
   auto result = name + '_';
   for (const auto& type : typeParams) {
     const auto& typeName =
-        type.isConcrete() ? context->getProg()->getTypeDecl(type).getName() : "error";
+        type.isConcrete() ? ctx->getProg()->getTypeDecl(type).getName() : "error";
     result += '_' + typeName;
   }
   return result;
 }
 
-auto isType(Context* context, const std::string& name) -> bool {
-  return isReservedTypeName(name) || context->getProg()->hasType(name) ||
-      context->getTypeTemplates()->hasType(name);
+auto isType(Context* ctx, const std::string& name) -> bool {
+  return isReservedTypeName(name) || ctx->getProg()->hasType(name) ||
+      ctx->getTypeTemplates()->hasType(name);
 }
 
-auto isFuncOrConv(Context* context, const std::string& name) -> bool {
-  return isType(context, name) || context->getProg()->hasFunc(name) ||
-      context->getFuncTemplates()->hasFunc(name);
+auto isFuncOrConv(Context* ctx, const std::string& name) -> bool {
+  return isType(ctx, name) || ctx->getProg()->hasFunc(name) ||
+      ctx->getFuncTemplates()->hasFunc(name);
 }
 
-auto isPure(const Context* context, prog::sym::FuncId func) -> bool {
-  return !isAction(context, func);
-}
+auto isPure(const Context* ctx, prog::sym::FuncId func) -> bool { return !isAction(ctx, func); }
 
-auto isAction(const Context* context, prog::sym::FuncId func) -> bool {
-  return context->getProg()->getFuncDecl(func).isAction();
+auto isAction(const Context* ctx, prog::sym::FuncId func) -> bool {
+  return ctx->getProg()->getFuncDecl(func).isAction();
 }
 
 // Explicit instantiations.
 template prog::sym::TypeId inferRetType(
-    Context* context,
+    Context* ctx,
     const TypeSubstitutionTable* subTable,
     const parse::FuncDeclStmtNode& parseNode,
     const prog::sym::TypeSet& input,
     const std::unordered_map<std::string, prog::sym::TypeId>* additionalConstTypes,
     TypeInferExpr::Flags flags);
 template prog::sym::TypeId inferRetType(
-    Context* context,
+    Context* ctx,
     const TypeSubstitutionTable* subTable,
     const parse::AnonFuncExprNode& parseNode,
     const prog::sym::TypeSet& input,
     const std::unordered_map<std::string, prog::sym::TypeId>* additionalConstTypes,
     TypeInferExpr::Flags flags);
 
-template std::optional<prog::sym::TypeSet> getFuncInput(
-    Context* context, const TypeSubstitutionTable* subTable, const parse::FuncDeclStmtNode& n);
-template std::optional<prog::sym::TypeSet> getFuncInput(
-    Context* context, const TypeSubstitutionTable* subTable, const parse::AnonFuncExprNode& n);
+template std::optional<prog::sym::TypeSet>
+getFuncInput(Context* ctx, const TypeSubstitutionTable* subTable, const parse::FuncDeclStmtNode& n);
+template std::optional<prog::sym::TypeSet>
+getFuncInput(Context* ctx, const TypeSubstitutionTable* subTable, const parse::AnonFuncExprNode& n);
 
 template bool declareFuncInput(
-    Context* context,
+    Context* ctx,
     const TypeSubstitutionTable* subTable,
     const parse::FuncDeclStmtNode& n,
     prog::sym::ConstDeclTable* consts);
 template bool declareFuncInput(
-    Context* context,
+    Context* ctx,
     const TypeSubstitutionTable* subTable,
     const parse::AnonFuncExprNode& n,
     prog::sym::ConstDeclTable* consts);

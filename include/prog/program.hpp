@@ -42,6 +42,7 @@ public:
   [[nodiscard]] auto beginTypeDecls() const -> typeDeclIterator;
   [[nodiscard]] auto endTypeDecls() const -> typeDeclIterator;
 
+  [[nodiscard]] auto getFuncCount() const -> unsigned int;
   [[nodiscard]] auto beginFuncDecls() const -> funcDeclIterator;
   [[nodiscard]] auto endFuncDecls() const -> funcDeclIterator;
 
@@ -77,6 +78,9 @@ public:
 
   [[nodiscard]] auto lookupConversion(sym::TypeId from, sym::TypeId to) const
       -> std::optional<sym::FuncId>;
+
+  [[nodiscard]] auto isConvertible(const sym::TypeSet& toTypes, const sym::TypeSet& fromTypes) const
+      -> bool;
 
   [[nodiscard]] auto findCommonType(const std::vector<sym::TypeId>& types)
       -> std::optional<sym::TypeId>;

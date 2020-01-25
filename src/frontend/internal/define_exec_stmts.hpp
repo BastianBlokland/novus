@@ -7,12 +7,12 @@ namespace frontend::internal {
 class DefineExecStmts final : public parse::OptionalNodeVisitor {
 public:
   DefineExecStmts() = delete;
-  explicit DefineExecStmts(Context* context);
+  explicit DefineExecStmts(Context* ctx);
 
   auto visit(const parse::ExecStmtNode& n) -> void override;
 
 private:
-  Context* m_context;
+  Context* m_ctx;
 
   [[nodiscard]] auto getExpr(
       const parse::Node& n,

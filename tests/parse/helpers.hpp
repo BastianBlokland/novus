@@ -48,6 +48,7 @@ namespace parse {
 #define COMMAS(COUNT) std::vector<lex::Token>(COUNT, lex::basicToken(lex::TokenKind::SepComma))
 #define ARROW lex::basicToken(lex::TokenKind::SepArrow)
 #define DISCARD lex::basicToken(lex::TokenKind::Discard)
+#define IMPORT lex::keywordToken(lex::Keyword::Import)
 #define FUN lex::keywordToken(lex::Keyword::Fun)
 #define ACTION lex::keywordToken(lex::Keyword::Action)
 #define LAMBDA lex::keywordToken(lex::Keyword::Lambda)
@@ -60,6 +61,7 @@ namespace parse {
 #define AS lex::keywordToken(lex::Keyword::As)
 #define END lex::endToken()
 #define INT_TOK(VAL) lex::litIntToken(VAL)
+#define STR_TOK(VAL) lex::litStrToken(VAL)
 
 #define ID(ID) lex::identiferToken(ID)
 #define COMMENT(MSG) lex::lineCommentToken(MSG)

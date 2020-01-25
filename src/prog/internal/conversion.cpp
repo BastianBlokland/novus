@@ -61,19 +61,32 @@ auto findConvertibleTypes(const Program& prog, sym::TypeId from) -> std::vector<
   return result;
 }
 
-auto isConvertable(
-    const Program& prog, const sym::TypeSet& input, const std::vector<expr::NodePtr>& args)
+auto isConvertable(const Program& prog, const sym::TypeSet& toTypes, const sym::TypeSet& fromTypes)
     -> bool {
-
-  if (input.getCount() != args.size()) {
+  if (toTypes.getCount() != fromTypes.getCount()) {
     return false;
   }
-  auto argsItr  = args.begin();
-  auto inputItr = input.begin();
-  for (; argsItr != args.end(); ++argsItr, ++inputItr) {
-    const auto argType   = (*argsItr)->getType();
-    const auto inputType = *inputItr;
-    if (argType != inputType && !findConversion(prog, argType, inputType)) {
+  auto fromTypesItr = fromTypes.begin();
+  auto toTypesItr   = toTypes.begin();
+  for (; fromTypesItr != fromTypes.end(); ++fromTypesItr, ++toTypesItr) {
+    if (*fromTypesItr != *toTypesItr && !findConversion(prog, *fromTypesItr, *toTypesItr)) {
+      return false;
+    }
+  }
+  return true;
+}
+
+auto isConvertable(
+    const Program& prog, const sym::TypeSet& toTypes, const std::vector<expr::NodePtr>& fromArgs)
+    -> bool {
+  if (toTypes.getCount() != fromArgs.size()) {
+    return false;
+  }
+  auto fromArgsItr = fromArgs.begin();
+  auto toTypesItr  = toTypes.begin();
+  for (; fromArgsItr != fromArgs.end(); ++fromArgsItr, ++toTypesItr) {
+    const auto argType = (*fromArgsItr)->getType();
+    if (argType != *toTypesItr && !findConversion(prog, argType, *toTypesItr)) {
       return false;
     }
   }
@@ -81,29 +94,30 @@ auto isConvertable(
 }
 
 auto applyConversions(
-    const Program& prog, const sym::TypeSet& input, std::vector<expr::NodePtr>* args) -> void {
-  if (!args) {
-    throw std::invalid_argument{"Null args pointer provided"};
+    const Program& prog, const sym::TypeSet& toTypes, std::vector<expr::NodePtr>* fromArgs)
+    -> void {
+  if (!fromArgs) {
+    throw std::invalid_argument{"Null fromArgs pointer provided"};
   }
-  if (input.getCount() != args->size()) {
-    throw std::invalid_argument{"Number of arguments does not match input argument count"};
+  if (toTypes.getCount() != fromArgs->size()) {
+    throw std::invalid_argument{"Number of arguments does not match toTypes argument count"};
   }
 
-  auto argsItr  = args->begin();
-  auto inputItr = input.begin();
-  for (; argsItr != args->end(); ++argsItr, ++inputItr) {
-    const auto argType   = (*argsItr)->getType();
-    const auto inputType = *inputItr;
-    if (argType == inputType) {
+  auto fromArgsItr = fromArgs->begin();
+  auto toTypesItr  = toTypes.begin();
+  for (; fromArgsItr != fromArgs->end(); ++fromArgsItr, ++toTypesItr) {
+    const auto fromType = (*fromArgsItr)->getType();
+    const auto toType   = *toTypesItr;
+    if (fromType == toType) {
       continue;
     }
-    auto conv = findConversion(prog, argType, inputType);
+    auto conv = findConversion(prog, fromType, toType);
     if (!conv) {
       throw std::logic_error{"No conversion possible for one of the arguments"};
     }
     auto convArgs = std::vector<expr::NodePtr>{};
-    convArgs.push_back(std::move(*argsItr));
-    *argsItr = expr::callExprNode(prog, *conv, std::move(convArgs));
+    convArgs.push_back(std::move(*fromArgsItr));
+    *fromArgsItr = expr::callExprNode(prog, *conv, std::move(convArgs));
   }
 }
 

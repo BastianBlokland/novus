@@ -9,7 +9,7 @@ TEST_CASE("Source representation", "[frontend]") {
 
   SECTION("Build") {
     const auto input = std::string{"print(1)\nprint(2)"};
-    const auto src   = buildSource("input", input.begin(), input.end());
+    const auto src   = buildSource("input", std::nullopt, input.begin(), input.end());
 
     CHECK(src.getId() == "input");
     CHECK(src.getTextPos(9) == input::TextPos{2, 1});

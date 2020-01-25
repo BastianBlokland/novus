@@ -80,8 +80,8 @@ inline auto buildAssembly(const std::function<void(backend::Builder*)>& build) -
 
 #define CHECK_ASM(INPUT, EXPECTED_ASM)                                                             \
   {                                                                                                \
-    const auto srcText        = std::string{INPUT};                                                \
-    const auto src            = frontend::buildSource("test", srcText.begin(), srcText.end());     \
+    const auto srcText = std::string{INPUT};                                                       \
+    const auto src = frontend::buildSource("test", std::nullopt, srcText.begin(), srcText.end());  \
     const auto frontendOutput = frontend::analyze(src);                                            \
     REQUIRE(frontendOutput.isSuccess());                                                           \
     const auto assembly = backend::generate(frontendOutput.getProg());                             \

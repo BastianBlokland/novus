@@ -3,8 +3,8 @@
 
 namespace frontend::internal {
 
-CheckInfRecursion::CheckInfRecursion(const Context& context, prog::sym::FuncId func) :
-    m_context{context}, m_func{func}, m_infRec{false} {}
+CheckInfRecursion::CheckInfRecursion(const Context& ctx, prog::sym::FuncId func) :
+    m_ctx{ctx}, m_func{func}, m_infRec{false} {}
 
 auto CheckInfRecursion::isInfRecursion() const -> bool { return m_infRec; }
 
@@ -67,7 +67,7 @@ auto CheckInfRecursion::visit(const prog::expr::UnionGetExprNode& n) -> void {
 }
 
 auto CheckInfRecursion::exprLeadsToInfRec(const prog::expr::Node& expr) const -> bool {
-  auto visitor = CheckInfRecursion{m_context, m_func};
+  auto visitor = CheckInfRecursion{m_ctx, m_func};
   expr.accept(&visitor);
   return visitor.m_infRec;
 }

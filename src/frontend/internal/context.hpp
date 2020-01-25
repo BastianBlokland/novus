@@ -12,6 +12,8 @@
 namespace frontend::internal {
 
 class Context final {
+  using typeInfoMap = std::unordered_map<prog::sym::TypeId, TypeInfo, prog::sym::TypeIdHasher>;
+
 public:
   Context() = delete;
   Context(
@@ -19,10 +21,11 @@ public:
       prog::Program* prog,
       TypeTemplateTable* typeTemplates,
       FuncTemplateTable* funcTemplates,
-      DelegateTable* delegates);
+      DelegateTable* delegates,
+      typeInfoMap* typeInfos,
+      std::vector<Diag>* diags);
 
   [[nodiscard]] auto hasErrors() const noexcept -> bool;
-  [[nodiscard]] auto getDiags() const noexcept -> const std::vector<Diag>&;
 
   [[nodiscard]] auto getSrc() const noexcept -> const Source&;
   [[nodiscard]] auto getProg() const noexcept -> prog::Program*;
@@ -33,11 +36,12 @@ public:
   [[nodiscard]] auto getTypeInfo(prog::sym::TypeId typeId) const noexcept
       -> std::optional<TypeInfo>;
 
-  [[nodiscard]] auto genAnonFuncName() -> std::string;
-
   auto declareTypeInfo(prog::sym::TypeId typeId, TypeInfo typeInfo) -> void;
 
-  auto reportDiag(Diag diag) -> void;
+  template <typename DiagConstructor, class... Args>
+  auto reportDiag(DiagConstructor constructor, Args&&... args) -> void {
+    m_diags->push_back(constructor(m_src, std::forward<Args>(args)...));
+  }
 
 private:
   const Source& m_src;
@@ -45,10 +49,8 @@ private:
   TypeTemplateTable* m_typeTemplates;
   FuncTemplateTable* m_funcTemplates;
   DelegateTable* m_delegates;
-  std::vector<Diag> m_diags;
-  unsigned int m_anonFuncCounter;
-
-  std::unordered_map<prog::sym::TypeId, TypeInfo, prog::sym::TypeIdHasher> m_typeInfos;
+  typeInfoMap* m_typeInfos;
+  std::vector<Diag>* m_diags;
 };
 
 } // namespace frontend::internal

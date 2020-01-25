@@ -30,6 +30,7 @@ public:
 
   [[nodiscard]] auto operator[](FuncId id) const -> const FuncDecl&;
 
+  [[nodiscard]] auto getFuncCount() const -> unsigned int;
   [[nodiscard]] auto begin() const -> iterator;
   [[nodiscard]] auto end() const -> iterator;
 

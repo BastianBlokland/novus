@@ -4,6 +4,7 @@
 namespace lex {
 
 TEST_CASE("Lexing keywords", "[lex]") {
+  CHECK_TOKENS("import", keywordToken(Keyword::Import));
   CHECK_TOKENS("fun", keywordToken(Keyword::Fun));
   CHECK_TOKENS("lambda", keywordToken(Keyword::Lambda));
   CHECK_TOKENS("struct", keywordToken(Keyword::Struct));

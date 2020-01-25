@@ -1,37 +1,14 @@
 #include "internal/validate_types.hpp"
 #include "frontend/diag_defs.hpp"
+#include "internal/context.hpp"
+#include "prog/sym/struct_def.hpp"
+#include "prog/sym/type_id_hasher.hpp"
+#include <unordered_set>
 
 namespace frontend::internal {
 
-ValidateTypes::ValidateTypes(Context* context) : m_context{context} {
-  if (m_context == nullptr) {
-    throw std::invalid_argument{"Context cannot be null"};
-  }
-}
-
-auto ValidateTypes::validate(prog::sym::TypeId id) -> void {
-  const auto& typedecl = m_context->getProg()->getTypeDecl(id);
-  if (typedecl.getKind() == prog::sym::TypeKind::Struct) {
-    const auto typeInfo   = m_context->getTypeInfo(id);
-    const auto sourceSpan = typeInfo ? typeInfo->getSourceSpan() : input::Span{0, 0};
-    const auto& structDef = std::get<prog::sym::StructDef>(m_context->getProg()->getTypeDef(id));
-    const auto& fields    = structDef.getFields();
-
-    // Detect cyclic struct.
-    auto visitedTypes = std::unordered_set<prog::sym::TypeId, prog::sym::TypeIdHasher>{};
-    visitedTypes.insert(id);
-
-    const auto cyclicField = getCyclicField(fields, visitedTypes);
-    if (cyclicField) {
-      const auto fieldName = fields[*cyclicField].getName();
-      m_context->reportDiag(
-          errCyclicStruct(m_context->getSrc(), fieldName, typedecl.getName(), sourceSpan));
-      return;
-    }
-  }
-}
-
-auto ValidateTypes::getCyclicField(
+static auto getCyclicField(
+    Context* ctx,
     const prog::sym::FieldDeclTable& fields,
     const std::unordered_set<prog::sym::TypeId, prog::sym::TypeIdHasher>& visitedTypes)
     -> std::optional<prog::sym::FieldId> {
@@ -41,20 +18,39 @@ auto ValidateTypes::getCyclicField(
     if (visitedTypes.find(fType) != visitedTypes.end()) {
       return f.getId();
     }
-    const auto& fTypeDecl = m_context->getProg()->getTypeDecl(fType);
+    const auto& fTypeDecl = ctx->getProg()->getTypeDecl(fType);
     if (fTypeDecl.getKind() == prog::sym::TypeKind::Struct) {
       auto childVisitedTypes = visitedTypes;
       childVisitedTypes.insert(fTypeDecl.getId());
 
-      const auto& structDef =
-          std::get<prog::sym::StructDef>(m_context->getProg()->getTypeDef(fType));
-      const auto cyclicField = getCyclicField(structDef.getFields(), childVisitedTypes);
+      const auto& structDef  = std::get<prog::sym::StructDef>(ctx->getProg()->getTypeDef(fType));
+      const auto cyclicField = getCyclicField(ctx, structDef.getFields(), childVisitedTypes);
       if (cyclicField) {
         return f.getId();
       }
     }
   }
   return std::nullopt;
+}
+
+auto validateType(prog::sym::TypeId id, const TypeInfo& info) -> void {
+  auto* ctx            = info.getCtx();
+  const auto& typeDecl = ctx->getProg()->getTypeDecl(id);
+  if (typeDecl.getKind() == prog::sym::TypeKind::Struct) {
+    const auto& structDef = std::get<prog::sym::StructDef>(ctx->getProg()->getTypeDef(id));
+    const auto& fields    = structDef.getFields();
+
+    // Detect cyclic struct.
+    auto visitedTypes = std::unordered_set<prog::sym::TypeId, prog::sym::TypeIdHasher>{};
+    visitedTypes.insert(id);
+
+    const auto cyclicField = getCyclicField(ctx, fields, visitedTypes);
+    if (cyclicField) {
+      const auto fieldName = fields[*cyclicField].getName();
+      ctx->reportDiag(errCyclicStruct, fieldName, typeDecl.getName(), info.getSourceSpan());
+      return;
+    }
+  }
 }
 
 } // namespace frontend::internal

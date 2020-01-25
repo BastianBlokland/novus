@@ -5,6 +5,9 @@
 
 namespace frontend {
 
+[[nodiscard]] auto errUnresolvedImport(const Source& src, const std::string& path, input::Span span)
+    -> Diag;
+
 [[nodiscard]] auto errParseError(const Source& src, const parse::ErrorNode& n) -> Diag;
 
 [[nodiscard]] auto
@@ -59,7 +62,7 @@ errFieldNameConflictsWithType(const Source& src, const std::string& name, input:
     const Source& src, const std::string& typeName, const std::string& unionName, input::Span span)
     -> Diag;
 
-[[nodiscard]] auto errUncheckedIsExpressionWithConst(const Source& src, input::Span span) -> Diag;
+[[nodiscard]] auto errUncheckedAsExpressionWithConst(const Source& src, input::Span span) -> Diag;
 
 [[nodiscard]] auto
 errDuplicateEntryNameInEnum(const Source& src, const std::string& entryName, input::Span span)

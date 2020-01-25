@@ -23,6 +23,7 @@ class UnaryExprNode;
 class EnumDeclStmtNode;
 class ExecStmtNode;
 class FuncDeclStmtNode;
+class ImportStmtNode;
 class StructDeclStmtNode;
 class UnionDeclStmtNode;
 
@@ -49,6 +50,7 @@ public:
   virtual auto visit(const EnumDeclStmtNode& n) -> void    = 0;
   virtual auto visit(const ExecStmtNode& n) -> void        = 0;
   virtual auto visit(const FuncDeclStmtNode& n) -> void    = 0;
+  virtual auto visit(const ImportStmtNode& n) -> void      = 0;
   virtual auto visit(const StructDeclStmtNode& n) -> void  = 0;
   virtual auto visit(const UnionDeclStmtNode& n) -> void   = 0;
 };

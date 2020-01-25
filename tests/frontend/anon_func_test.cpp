@@ -16,15 +16,11 @@ TEST_CASE("Analyzing anonymous functions", "[frontend]") {
                                  "  lambda () 42");
     REQUIRE(output.isSuccess());
 
-    CHECK(
-        GET_FUNC_DEF(output, "__anon_0").getExpr() ==
-        *prog::expr::litIntNode(output.getProg(), 42));
+    CHECK(findAnonFuncDef(output, 0).getExpr() == *prog::expr::litIntNode(output.getProg(), 42));
     CHECK(
         GET_FUNC_DEF(output, "f").getExpr() ==
         *prog::expr::litFuncNode(
-            output.getProg(),
-            GET_TYPE_ID(output, "__delegate_int"),
-            GET_FUNC_ID(output, "__anon_0")));
+            output.getProg(), GET_TYPE_ID(output, "__delegate_int"), findAnonFunc(output, 0)));
   }
 
   SECTION("Invoke anonymous function") {
@@ -32,16 +28,13 @@ TEST_CASE("Analyzing anonymous functions", "[frontend]") {
                                  "  (lambda () 1)()");
     REQUIRE(output.isSuccess());
 
-    CHECK(
-        GET_FUNC_DEF(output, "__anon_0").getExpr() == *prog::expr::litIntNode(output.getProg(), 1));
+    CHECK(findAnonFuncDef(output, 0).getExpr() == *prog::expr::litIntNode(output.getProg(), 1));
     CHECK(
         GET_FUNC_DEF(output, "f").getExpr() ==
         *prog::expr::callDynExprNode(
             output.getProg(),
             prog::expr::litFuncNode(
-                output.getProg(),
-                GET_TYPE_ID(output, "__delegate_int"),
-                GET_FUNC_ID(output, "__anon_0")),
+                output.getProg(), GET_TYPE_ID(output, "__delegate_int"), findAnonFunc(output, 0)),
             {}));
   }
 
@@ -51,7 +44,7 @@ TEST_CASE("Analyzing anonymous functions", "[frontend]") {
     REQUIRE(output.isSuccess());
 
     // Check the anonymous function.
-    const auto& anonDef = GET_FUNC_DEF(output, "__anon_0", GET_TYPE_ID(output, "int"));
+    const auto& anonDef = findAnonFuncDef(output, 0);
     CHECK(
         anonDef.getExpr() ==
         *prog::expr::constExprNode(anonDef.getConsts(), *anonDef.getConsts().lookup("i")));
@@ -66,7 +59,7 @@ TEST_CASE("Analyzing anonymous functions", "[frontend]") {
             prog::expr::litFuncNode(
                 output.getProg(),
                 GET_TYPE_ID(output, "__delegate_int_int"),
-                GET_FUNC_ID(output, "__anon_0", GET_TYPE_ID(output, "int"))),
+                findAnonFunc(output, 0)),
             std::move(args)));
   }
 
@@ -76,8 +69,7 @@ TEST_CASE("Analyzing anonymous functions", "[frontend]") {
     REQUIRE(output.isSuccess());
 
     // Check the anonymous function.
-    const auto& anonDef =
-        GET_FUNC_DEF(output, "__anon_0", GET_TYPE_ID(output, "int"), GET_TYPE_ID(output, "float"));
+    const auto& anonDef = findAnonFuncDef(output, 0);
     CHECK(
         anonDef.getExpr() ==
         *prog::expr::constExprNode(anonDef.getConsts(), *anonDef.getConsts().lookup("__bound_1")));
@@ -97,8 +89,7 @@ TEST_CASE("Analyzing anonymous functions", "[frontend]") {
             prog::expr::closureNode(
                 output.getProg(),
                 GET_TYPE_ID(output, "__delegate_int_float"),
-                GET_FUNC_ID(
-                    output, "__anon_0", GET_TYPE_ID(output, "int"), GET_TYPE_ID(output, "float")),
+                findAnonFunc(output, 0),
                 std::move(closureArgs)),
             std::move(delArgs)));
   }
@@ -109,14 +100,14 @@ TEST_CASE("Analyzing anonymous functions", "[frontend]") {
     REQUIRE(output.isSuccess());
 
     // Check the most nested anonymous function.
-    const auto& anon0Def = GET_FUNC_DEF(output, "__anon_0", GET_TYPE_ID(output, "float"));
+    const auto& anon0Def = findAnonFuncDef(output, 0);
     CHECK(
         anon0Def.getExpr() ==
         *prog::expr::constExprNode(
             anon0Def.getConsts(), *anon0Def.getConsts().lookup("__bound_0")));
 
     // Check the other anonymous function.
-    const auto& anon1Def     = GET_FUNC_DEF(output, "__anon_1", GET_TYPE_ID(output, "float"));
+    const auto& anon1Def     = findAnonFuncDef(output, 1);
     auto anon1DefClosureArgs = std::vector<prog::expr::NodePtr>{};
     anon1DefClosureArgs.push_back(
         prog::expr::constExprNode(anon1Def.getConsts(), *anon1Def.getConsts().lookup("__bound_0")));
@@ -125,7 +116,7 @@ TEST_CASE("Analyzing anonymous functions", "[frontend]") {
         *prog::expr::closureNode(
             output.getProg(),
             GET_TYPE_ID(output, "__delegate_float"),
-            GET_FUNC_ID(output, "__anon_0", GET_TYPE_ID(output, "float")),
+            findAnonFunc(output, 0),
             std::move(anon1DefClosureArgs)));
 
     // Check the 'f' function.
@@ -141,7 +132,7 @@ TEST_CASE("Analyzing anonymous functions", "[frontend]") {
             prog::expr::closureNode(
                 output.getProg(),
                 GET_TYPE_ID(output, "__delegate___delegate_float"),
-                GET_FUNC_ID(output, "__anon_1", GET_TYPE_ID(output, "float")),
+                findAnonFunc(output, 1),
                 std::move(fClosureArgs)),
             {}));
   }
@@ -154,24 +145,20 @@ TEST_CASE("Analyzing anonymous functions", "[frontend]") {
     REQUIRE(output.isSuccess());
 
     CHECK(
-        GET_FUNC_DEF(output, "__anon_0").getExpr() ==
+        findAnonFuncDef(output, 0).getExpr() ==
         *prog::expr::callExprNode(output.getProg(), GET_FUNC_ID(output, "int"), {}));
     CHECK(
-        GET_FUNC_DEF(output, "__anon_1").getExpr() ==
+        findAnonFuncDef(output, 1).getExpr() ==
         *prog::expr::callExprNode(output.getProg(), GET_FUNC_ID(output, "float"), {}));
 
     CHECK(
         GET_FUNC_DEF(output, "f1__int").getExpr() ==
         *prog::expr::litFuncNode(
-            output.getProg(),
-            GET_TYPE_ID(output, "__delegate_int"),
-            GET_FUNC_ID(output, "__anon_0")));
+            output.getProg(), GET_TYPE_ID(output, "__delegate_int"), findAnonFunc(output, 0)));
     CHECK(
         GET_FUNC_DEF(output, "f1__float").getExpr() ==
         *prog::expr::litFuncNode(
-            output.getProg(),
-            GET_TYPE_ID(output, "__delegate_float"),
-            GET_FUNC_ID(output, "__anon_1")));
+            output.getProg(), GET_TYPE_ID(output, "__delegate_float"), findAnonFunc(output, 1)));
   }
 
   SECTION("Diagnostics") {

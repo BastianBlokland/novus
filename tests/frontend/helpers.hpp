@@ -6,11 +6,14 @@
 
 namespace frontend {
 
-#define SRC(INPUT) buildSource("test", std::string{INPUT}.begin(), std::string{INPUT}.end())
+#define SRC(INPUT)                                                                                 \
+  buildSource("test", std::nullopt, std::string{INPUT}.begin(), std::string{INPUT}.end())
 
 #define ANALYZE(INPUT) analyze(SRC(INPUT))
 
 #define TYPE_EXISTS(OUTPUT, TYPE_NAME) OUTPUT.getProg().lookupType(TYPE_NAME).has_value()
+
+#define FUNC_EXISTS(OUTPUT, FUNC_NAME) OUTPUT.getProg().hasFunc(FUNC_NAME)
 
 #define GET_TYPE_ID(OUTPUT, TYPE_NAME) OUTPUT.getProg().lookupType(TYPE_NAME).value()
 
@@ -46,6 +49,21 @@ namespace frontend {
     const std::vector<frontend::Diag> expectedDiags = {__VA_ARGS__};                               \
     CHECK_THAT(diags, Catch::UnorderedEquals(expectedDiags));                                      \
   }
+
+inline auto findAnonFunc(const Output& output, unsigned int num) -> prog::sym::FuncId {
+  for (auto itr = output.getProg().beginFuncDecls(); itr != output.getProg().endFuncDecls();
+       ++itr) {
+    const auto isAnon = itr->getName().rfind("__anon_", 0) == 0;
+    if (isAnon && num-- == 0) {
+      return itr->getId();
+    }
+  }
+  throw std::logic_error{"Unable to find anonymous function"};
+}
+
+inline auto findAnonFuncDef(const Output& output, unsigned int num) -> const prog::sym::FuncDef& {
+  return output.getProg().getFuncDef(findAnonFunc(output, num));
+}
 
 inline auto applyConv(
     const Output& output,

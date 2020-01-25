@@ -10,13 +10,19 @@ namespace prog::internal {
 [[nodiscard]] auto findConvertibleTypes(const Program& prog, sym::TypeId from)
     -> std::vector<sym::TypeId>;
 
-// Are the arguments convertable to the given input set.
-[[nodiscard]] auto isConvertable(
-    const Program& prog, const sym::TypeSet& input, const std::vector<expr::NodePtr>& args) -> bool;
+// Are the fromTypes convertible to the toTypes.
+[[nodiscard]] auto
+isConvertable(const Program& prog, const sym::TypeSet& toTypes, const sym::TypeSet& fromTypes)
+    -> bool;
 
-// Apply conversions to the args vector so it matches the given input set.
+// Are the fromArgs convertible to the toTypes.
+[[nodiscard]] auto isConvertable(
+    const Program& prog, const sym::TypeSet& toTypes, const std::vector<expr::NodePtr>& fromArgs)
+    -> bool;
+
+// Apply conversions to the fromArgs so are matches the toTypes.
 auto applyConversions(
-    const Program& prog, const sym::TypeSet& input, std::vector<expr::NodePtr>* args) -> void;
+    const Program& prog, const sym::TypeSet& toTypes, std::vector<expr::NodePtr>* fromArgs) -> void;
 
 [[nodiscard]] auto findCommonType(const Program& prog, const std::vector<sym::TypeId>& types)
     -> std::optional<sym::TypeId>;

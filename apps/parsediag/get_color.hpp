@@ -115,6 +115,11 @@ public:
     m_bg = rang::bg::reset;
   }
 
+  auto visit(const parse::ImportStmtNode & /*unused*/) -> void override {
+    m_fg = rang::fg::red;
+    m_bg = rang::bg::reset;
+  }
+
   auto visit(const parse::StructDeclStmtNode & /*unused*/) -> void override {
     m_fg = rang::fg::yellow;
     m_bg = rang::bg::reset;

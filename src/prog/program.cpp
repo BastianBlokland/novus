@@ -187,6 +187,8 @@ auto Program::beginTypeDecls() const -> typeDeclIterator { return m_typeDecls.be
 
 auto Program::endTypeDecls() const -> typeDeclIterator { return m_typeDecls.end(); }
 
+auto Program::getFuncCount() const -> unsigned int { return m_funcDecls.getFuncCount(); }
+
 auto Program::beginFuncDecls() const -> funcDeclIterator { return m_funcDecls.begin(); }
 
 auto Program::endFuncDecls() const -> funcDeclIterator { return m_funcDecls.end(); }
@@ -240,6 +242,11 @@ auto Program::lookupFuncs(const std::string& name, OvOptions options) const
 auto Program::lookupConversion(sym::TypeId from, sym::TypeId to) const
     -> std::optional<sym::FuncId> {
   return internal::findConversion(*this, from, to);
+}
+
+auto Program::isConvertible(const sym::TypeSet& toTypes, const sym::TypeSet& fromTypes) const
+    -> bool {
+  return internal::isConvertable(*this, toTypes, fromTypes);
 }
 
 auto Program::findCommonType(const std::vector<sym::TypeId>& types) -> std::optional<sym::TypeId> {

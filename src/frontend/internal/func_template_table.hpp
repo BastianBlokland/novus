@@ -18,13 +18,13 @@ public:
   auto hasFunc(const std::string& name) -> bool;
 
   auto declarePure(
-      Context* context,
+      Context* ctx,
       const std::string& name,
       std::vector<std::string> typeSubs,
       const parse::FuncDeclStmtNode* n) -> void;
 
   auto declareAction(
-      Context* context,
+      Context* ctx,
       const std::string& name,
       std::vector<std::string> typeSubs,
       const parse::FuncDeclStmtNode* n) -> void;
@@ -49,7 +49,7 @@ private:
   std::unordered_map<std::string, std::vector<FuncTemplate>> m_templates;
 
   auto declare(
-      Context* context,
+      Context* ctx,
       const std::string& name,
       bool isAction,
       std::vector<std::string> typeSubs,

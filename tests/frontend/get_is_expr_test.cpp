@@ -87,15 +87,15 @@ TEST_CASE("Analyzing 'is' / 'as' expressions", "[frontend]") {
     CHECK_DIAG(
         "union U = int, float "
         "fun f(U u) !(u as int i) ? i : 42",
-        errUncheckedIsExpressionWithConst(src, input::Span{39, 41}));
+        errUncheckedAsExpressionWithConst(src, input::Span{39, 41}));
     CHECK_DIAG(
         "union U = int, float "
         "fun f(U u) (u as int i; z = 4) ? i : 42",
-        errUncheckedIsExpressionWithConst(src, input::Span{38, 40}));
+        errUncheckedAsExpressionWithConst(src, input::Span{38, 40}));
     CHECK_DIAG(
         "union U = int, float "
         "fun f(U u) -> int (u as int i || true) ? i : 42",
-        errUncheckedIsExpressionWithConst(src, input::Span{45, 47}));
+        errUncheckedAsExpressionWithConst(src, input::Span{45, 47}));
 
     CHECK_DIAG(
         "union U = int, float "

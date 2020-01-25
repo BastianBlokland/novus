@@ -18,19 +18,19 @@ auto FuncTemplateTable::hasFunc(const std::string& name) -> bool {
 }
 
 auto FuncTemplateTable::declarePure(
-    Context* context,
+    Context* ctx,
     const std::string& name,
     std::vector<std::string> typeSubs,
     const parse::FuncDeclStmtNode* n) -> void {
-  declare(context, name, false, std::move(typeSubs), n);
+  declare(ctx, name, false, std::move(typeSubs), n);
 }
 
 auto FuncTemplateTable::declareAction(
-    Context* context,
+    Context* ctx,
     const std::string& name,
     std::vector<std::string> typeSubs,
     const parse::FuncDeclStmtNode* n) -> void {
-  declare(context, name, true, std::move(typeSubs), n);
+  declare(ctx, name, true, std::move(typeSubs), n);
 }
 
 auto FuncTemplateTable::instantiate(
@@ -112,7 +112,7 @@ auto FuncTemplateTable::inferParamsAndGetRetType(
 }
 
 auto FuncTemplateTable::declare(
-    Context* context,
+    Context* ctx,
     const std::string& name,
     bool isAction,
     std::vector<std::string> typeSubs,
@@ -122,7 +122,7 @@ auto FuncTemplateTable::declare(
   if (itr == m_templates.end()) {
     itr = m_templates.insert({name, std::vector<FuncTemplate>{}}).first;
   }
-  itr->second.push_back(FuncTemplate{context, name, isAction, std::move(typeSubs), n});
+  itr->second.push_back(FuncTemplate{ctx, name, isAction, std::move(typeSubs), n});
 }
 
 auto FuncTemplateTable::inferParams(
@@ -134,9 +134,9 @@ auto FuncTemplateTable::inferParams(
     return {};
   }
 
-  /* Find the templates where we can successfully infer the type-parameters, prefer templates with
-  // the least amount of type-parameters. Can return multiple templates if they have the same amount
-  of type-parameters. */
+  /* Find the templates where we can successfully infer the type-parameters (and call it with the
+  given argument types), prefer templates with the least amount of type-parameters. Can return
+  multiple templates if they have the same amount of type-parameters. */
 
   auto typeParamCount = std::numeric_limits<unsigned int>::max();
   auto result         = std::vector<std::pair<FuncTemplate*, prog::sym::TypeSet>>{};
@@ -146,7 +146,7 @@ auto FuncTemplateTable::inferParams(
         funcTemplate.getArgumentCount() == argTypes.getCount()) {
 
       const auto inferredTypeParams = funcTemplate.inferTypeParams(argTypes);
-      if (inferredTypeParams) {
+      if (inferredTypeParams && funcTemplate.isCallable(*inferredTypeParams, argTypes)) {
         if (funcTemplate.getTypeParamCount() < typeParamCount) {
           result.clear();
           result.emplace_back(&funcTemplate, *inferredTypeParams);

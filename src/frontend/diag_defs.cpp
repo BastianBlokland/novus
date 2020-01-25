@@ -3,6 +3,12 @@
 
 namespace frontend {
 
+auto errUnresolvedImport(const Source& src, const std::string& path, input::Span span) -> Diag {
+  std::ostringstream oss;
+  oss << "Unable to resolve import '" << path << '\'';
+  return error(src, oss.str(), span);
+}
+
 auto errParseError(const Source& src, const parse::ErrorNode& n) -> Diag {
   std::ostringstream oss;
   oss << "Parse error: " << n.getMessage();
@@ -116,9 +122,9 @@ auto errTypeNotPartOfUnion(
   return error(src, oss.str(), span);
 }
 
-auto errUncheckedIsExpressionWithConst(const Source& src, input::Span span) -> Diag {
+auto errUncheckedAsExpressionWithConst(const Source& src, input::Span span) -> Diag {
   std::ostringstream oss;
-  oss << "Unchecked 'is' expression with constant declaration, either use in a checked context or "
+  oss << "Unchecked 'as' expression with constant declaration, either use in a checked context or "
          "discard '_' the const";
   return error(src, oss.str(), span);
 }

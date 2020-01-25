@@ -42,7 +42,7 @@ TEST_CASE("Analyzing constant expressions", "[frontend]") {
   SECTION("Access const in anonymous function") {
     const auto& output = ANALYZE("fun f() lambda () x = 1; x");
     REQUIRE(output.isSuccess());
-    const auto& anonDef = GET_FUNC_DEF(output, "__anon_0");
+    const auto& anonDef = findAnonFuncDef(output, 0);
     const auto& consts  = anonDef.getConsts();
 
     const auto x = consts.lookup("x");

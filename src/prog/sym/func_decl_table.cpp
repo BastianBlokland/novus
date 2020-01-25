@@ -11,6 +11,8 @@ auto FuncDeclTable::operator[](FuncId id) const -> const FuncDecl& {
   return m_funcs[index];
 }
 
+auto FuncDeclTable::getFuncCount() const -> unsigned int { return m_funcs.size(); }
+
 auto FuncDeclTable::begin() const -> iterator { return m_funcs.begin(); }
 
 auto FuncDeclTable::end() const -> iterator { return m_funcs.end(); }

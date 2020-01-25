@@ -5,22 +5,25 @@
 
 namespace frontend::internal {
 
-DeclareUserTypes::DeclareUserTypes(Context* context) : m_context{context} {
-  if (m_context == nullptr) {
+DeclareUserTypes::DeclareUserTypes(
+    Context* ctx,
+    std::vector<StructDeclInfo>* structDecls,
+    std::vector<UnionDeclInfo>* unionDecls,
+    std::vector<EnumDeclInfo>* enumDecls) :
+    m_ctx{ctx}, m_structDecls{structDecls}, m_unionDecls{unionDecls}, m_enumDecls{enumDecls} {
+
+  if (m_ctx == nullptr) {
     throw std::invalid_argument{"Context cannot be null"};
   }
-}
-
-auto DeclareUserTypes::getStructs() const noexcept -> const std::vector<StructDeclarationInfo>& {
-  return m_structs;
-}
-
-auto DeclareUserTypes::getUnions() const noexcept -> const std::vector<UnionDeclarationInfo>& {
-  return m_unions;
-}
-
-auto DeclareUserTypes::getEnums() const noexcept -> const std::vector<EnumDeclarationInfo>& {
-  return m_enums;
+  if (m_structDecls == nullptr) {
+    throw std::invalid_argument{"StructDecl vector cannot be null"};
+  }
+  if (m_unionDecls == nullptr) {
+    throw std::invalid_argument{"UnionDecl vector cannot be null"};
+  }
+  if (m_enumDecls == nullptr) {
+    throw std::invalid_argument{"EnumDecl vector cannot be null"};
+  }
 }
 
 auto DeclareUserTypes::visit(const parse::StructDeclStmtNode& n) -> void {
@@ -33,19 +36,19 @@ auto DeclareUserTypes::visit(const parse::StructDeclStmtNode& n) -> void {
   // If the type is a template then we don't declare it in the program yet but declare it in
   // the type-template table.
   if (n.getTypeSubs()) {
-    auto typeSubs = getSubstitutionParams(m_context, *n.getTypeSubs());
+    auto typeSubs = getSubstitutionParams(m_ctx, *n.getTypeSubs());
     if (typeSubs) {
-      m_context->getTypeTemplates()->declareStruct(m_context, name, std::move(*typeSubs), n);
+      m_ctx->getTypeTemplates()->declareStruct(m_ctx, name, std::move(*typeSubs), n);
     }
     return;
   }
 
   // Declare the struct in the program.
-  auto typeId = m_context->getProg()->declareStruct(name);
-  m_structs.emplace_back(typeId, n);
+  auto typeId = m_ctx->getProg()->declareStruct(name);
+  m_structDecls->emplace_back(typeId, m_ctx, n);
 
   // Keep track of some extra information about the type.
-  m_context->declareTypeInfo(typeId, TypeInfo{name, n.getSpan()});
+  m_ctx->declareTypeInfo(typeId, TypeInfo{m_ctx, name, n.getSpan()});
 }
 
 auto DeclareUserTypes::visit(const parse::UnionDeclStmtNode& n) -> void {
@@ -58,19 +61,19 @@ auto DeclareUserTypes::visit(const parse::UnionDeclStmtNode& n) -> void {
   // If the type is a template then we don't declare it in the program yet but declare it in
   // the type-template table.
   if (n.getTypeSubs()) {
-    auto typeSubs = getSubstitutionParams(m_context, *n.getTypeSubs());
+    auto typeSubs = getSubstitutionParams(m_ctx, *n.getTypeSubs());
     if (typeSubs) {
-      m_context->getTypeTemplates()->declareUnion(m_context, name, std::move(*typeSubs), n);
+      m_ctx->getTypeTemplates()->declareUnion(m_ctx, name, std::move(*typeSubs), n);
     }
     return;
   }
 
   // Declare the union in the program.
-  auto typeId = m_context->getProg()->declareUnion(name);
-  m_unions.emplace_back(typeId, n);
+  auto typeId = m_ctx->getProg()->declareUnion(name);
+  m_unionDecls->emplace_back(typeId, m_ctx, n);
 
   // Keep track of some extra information about the type.
-  m_context->declareTypeInfo(typeId, TypeInfo{name, n.getSpan()});
+  m_ctx->declareTypeInfo(typeId, TypeInfo{m_ctx, name, n.getSpan()});
 }
 
 auto DeclareUserTypes::visit(const parse::EnumDeclStmtNode& n) -> void {
@@ -81,31 +84,29 @@ auto DeclareUserTypes::visit(const parse::EnumDeclStmtNode& n) -> void {
   }
 
   // Declare the enum in the program.
-  auto typeId = m_context->getProg()->declareEnum(name);
-  m_enums.emplace_back(typeId, n);
+  auto typeId = m_ctx->getProg()->declareEnum(name);
+  m_enumDecls->emplace_back(typeId, m_ctx, n);
 
   // Keep track of some extra information about the type.
-  m_context->declareTypeInfo(typeId, TypeInfo{name, n.getSpan()});
+  m_ctx->declareTypeInfo(typeId, TypeInfo{m_ctx, name, n.getSpan()});
 }
 
 auto DeclareUserTypes::validateTypeName(const lex::Token& nameToken) -> bool {
   const auto name = getName(nameToken);
-  if (m_context->getProg()->lookupType(name)) {
-    m_context->reportDiag(errTypeAlreadyDeclared(m_context->getSrc(), name, nameToken.getSpan()));
+  if (m_ctx->getProg()->lookupType(name)) {
+    m_ctx->reportDiag(errTypeAlreadyDeclared, name, nameToken.getSpan());
     return false;
   }
-  if (m_context->getTypeTemplates()->hasType(name)) {
-    m_context->reportDiag(
-        errTypeTemplateAlreadyDeclared(m_context->getSrc(), name, nameToken.getSpan()));
+  if (m_ctx->getTypeTemplates()->hasType(name)) {
+    m_ctx->reportDiag(errTypeTemplateAlreadyDeclared, name, nameToken.getSpan());
     return false;
   }
   if (isReservedTypeName(name)) {
-    m_context->reportDiag(errTypeNameIsReserved(m_context->getSrc(), name, nameToken.getSpan()));
+    m_ctx->reportDiag(errTypeNameIsReserved, name, nameToken.getSpan());
     return false;
   }
-  if (m_context->getProg()->hasFunc(name)) {
-    m_context->reportDiag(
-        errTypeNameConflictsWithFunc(m_context->getSrc(), name, nameToken.getSpan()));
+  if (m_ctx->getProg()->hasFunc(name)) {
+    m_ctx->reportDiag(errTypeNameConflictsWithFunc, name, nameToken.getSpan());
     return false;
   }
   return true;

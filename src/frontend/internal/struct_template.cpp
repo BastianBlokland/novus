@@ -9,11 +9,11 @@
 namespace frontend::internal {
 
 StructTemplate::StructTemplate(
-    Context* context,
+    Context* ctx,
     std::string name,
     std::vector<std::string> typeSubs,
     const parse::StructDeclStmtNode& parseNode) :
-    TypeTemplateBase{context, std::move(name), std::move(typeSubs)}, m_parseNode{parseNode} {}
+    TypeTemplateBase{ctx, std::move(name), std::move(typeSubs)}, m_parseNode{parseNode} {}
 
 auto StructTemplate::inferTypeParams(const prog::sym::TypeSet& constructorArgTypes)
     -> std::optional<prog::sym::TypeSet> {
@@ -23,7 +23,7 @@ auto StructTemplate::inferTypeParams(const prog::sym::TypeSet& constructorArgTyp
   auto typeParams = std::vector<prog::sym::TypeId>{};
   for (const auto& typeSub : getTypeSubs()) {
     const auto inferredType =
-        inferSubTypeFromSpecs(*getContext(), typeSub, m_parseNode.getFields(), constructorArgTypes);
+        inferSubTypeFromSpecs(*getCtx(), typeSub, m_parseNode.getFields(), constructorArgTypes);
     if (!inferredType) {
       return std::nullopt;
     }
@@ -33,23 +33,22 @@ auto StructTemplate::inferTypeParams(const prog::sym::TypeSet& constructorArgTyp
 }
 
 auto StructTemplate::setupInstance(TypeTemplateInst* instance) -> void {
-  const auto mangledName = mangleName(getContext(), getTemplateName(), instance->m_typeParams);
+  const auto mangledName = mangleName(getCtx(), getTemplateName(), instance->m_typeParams);
   const auto subTable    = createSubTable(instance->m_typeParams);
 
   // Should be unique in the program.
-  assert(getContext()->getProg()->lookupType(mangledName) == std::nullopt);
+  assert(getCtx()->getProg()->lookupType(mangledName) == std::nullopt);
 
   // Declare the struct in the program.
-  instance->m_type = getContext()->getProg()->declareStruct(mangledName);
+  instance->m_type = getCtx()->getProg()->declareStruct(mangledName);
 
   // Define the struct.
-  auto defineTypes    = DefineUserTypes{getContext(), &subTable};
-  instance->m_success = defineTypes.define(*instance->m_type, m_parseNode);
+  instance->m_success = defineType(getCtx(), &subTable, *instance->m_type, m_parseNode);
 
   // Keep track of some extra information about the type.
-  getContext()->declareTypeInfo(
+  getCtx()->declareTypeInfo(
       *instance->m_type,
-      TypeInfo{getTemplateName(), m_parseNode.getSpan(), instance->getTypeParams()});
+      TypeInfo{getCtx(), getTemplateName(), m_parseNode.getSpan(), instance->getTypeParams()});
 }
 
 } // namespace frontend::internal

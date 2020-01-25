@@ -11,6 +11,8 @@ namespace parse {
 
 [[nodiscard]] auto errLexError(lex::Token errToken) -> NodePtr;
 
+[[nodiscard]] auto errInvalidStmtImport(lex::Token kw, lex::Token path) -> NodePtr;
+
 [[nodiscard]] auto errInvalidStmtFuncDecl(
     lex::Token kw,
     lex::Token id,

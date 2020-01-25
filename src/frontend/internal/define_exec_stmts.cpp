@@ -4,11 +4,13 @@
 #include "internal/utilities.hpp"
 #include "parse/nodes.hpp"
 #include "prog/expr/node_call.hpp"
+#include "prog/expr/node_lit_string.hpp"
+#include <sstream>
 
 namespace frontend::internal {
 
-DefineExecStmts::DefineExecStmts(Context* context) : m_context{context} {
-  if (m_context == nullptr) {
+DefineExecStmts::DefineExecStmts(Context* ctx) : m_ctx{ctx} {
+  if (m_ctx == nullptr) {
     throw std::invalid_argument{"Context cannot be null"};
   }
 }
@@ -34,21 +36,29 @@ auto DefineExecStmts::visit(const parse::ExecStmtNode& n) -> void {
   }
 
   const auto& targetName = getName(n.getTarget());
-  const auto& target     = m_context->getProg()->lookupFunc(
+
+  // Assert has an exception where you are allowed omit the second arg (the message).
+  if (targetName == "assert" && args.size() == 1 && argTypes[0] == m_ctx->getProg()->getBool()) {
+    std::ostringstream msgoss;
+    msgoss << m_ctx->getSrc().getId() << " " << m_ctx->getSrc().getTextPos(n.getSpan().getStart());
+    args.push_back(prog::expr::litStringNode(*m_ctx->getProg(), msgoss.str()));
+    argTypes.push_back(m_ctx->getProg()->getString());
+  }
+
+  const auto& target = m_ctx->getProg()->lookupFunc(
       targetName, prog::sym::TypeSet{argTypes}, prog::OvOptions{prog::OvFlags::ExclPureFuncs});
 
   if (!target) {
     auto argTypeNames = std::vector<std::string>{};
     for (const auto& argType : argTypes) {
-      argTypeNames.push_back(getDisplayName(*m_context, argType));
+      argTypeNames.push_back(getDisplayName(*m_ctx, argType));
     }
-    m_context->reportDiag(
-        errInvalidExecStmt(m_context->getSrc(), targetName, argTypeNames, n.getSpan()));
+    m_ctx->reportDiag(errInvalidExecStmt, targetName, argTypeNames, n.getSpan());
     return;
   }
 
-  m_context->getProg()->addExecStmt(
-      std::move(consts), prog::expr::callExprNode(*m_context->getProg(), *target, std::move(args)));
+  m_ctx->getProg()->addExecStmt(
+      std::move(consts), prog::expr::callExprNode(*m_ctx->getProg(), *target, std::move(args)));
 }
 
 auto DefineExecStmts::getExpr(
@@ -58,8 +68,7 @@ auto DefineExecStmts::getExpr(
     prog::sym::TypeId typeHint) -> prog::expr::NodePtr {
 
   auto constBinder = ConstBinder{consts, visibleConsts, nullptr};
-  auto getExpr =
-      GetExpr{m_context, nullptr, &constBinder, typeHint, GetExpr::Flags::AllowActionCalls};
+  auto getExpr = GetExpr{m_ctx, nullptr, &constBinder, typeHint, GetExpr::Flags::AllowActionCalls};
   n.accept(&getExpr);
   return std::move(getExpr.getValue());
 }

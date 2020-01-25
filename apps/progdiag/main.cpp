@@ -5,6 +5,7 @@
 #include "input/char_escape.hpp"
 #include "rang.hpp"
 #include <chrono>
+#include <filesystem>
 
 namespace progdiag {
 
@@ -228,6 +229,8 @@ auto printProgram(const prog::Program& prog) -> void {
 template <typename InputItr>
 auto run(
     const std::string& inputId,
+    std::optional<std::filesystem::path> inputPath,
+    const std::vector<std::filesystem::path>& searchPaths,
     InputItr inputBegin,
     const InputItr inputEnd,
     const bool outputProgram) {
@@ -235,8 +238,8 @@ auto run(
 
   // Analyze the input and time how long it takes.
   const auto t1       = high_resolution_clock::now();
-  const auto src      = frontend::buildSource(inputId, inputBegin, inputEnd);
-  const auto output   = frontend::analyze(src);
+  const auto src      = frontend::buildSource(inputId, std::move(inputPath), inputBegin, inputEnd);
+  const auto output   = frontend::analyze(src, searchPaths);
   const auto t2       = high_resolution_clock::now();
   const auto parseDur = std::chrono::duration_cast<duration>(t2 - t1);
 
@@ -263,6 +266,7 @@ auto run(
     printProgram(output.getProg());
     std::cout << rang::style::dim << std::string(width, '-') << '\n';
   }
+  return output.isSuccess() ? 0 : 1;
 }
 
 auto operator<<(std::ostream& out, const duration& rhs) -> std::ostream& {
@@ -281,28 +285,42 @@ auto operator<<(std::ostream& out, const duration& rhs) -> std::ostream& {
 
 } // namespace progdiag
 
+auto getSearchPaths(char** argv) {
+  auto result = std::vector<std::filesystem::path>{};
+
+  // Add the path to the binary.
+  result.push_back(std::filesystem::absolute(argv[0]).parent_path());
+
+  return result;
+}
+
 auto main(int argc, char** argv) -> int {
-  auto app = CLI::App{"Program diagnostic tool"};
+  auto exitcode = 0;
+  auto app      = CLI::App{"Program diagnostic tool"};
   app.require_subcommand(1);
 
   auto printOutput = true;
   app.add_flag("!--skip-output", printOutput, "Skip printing the program")->capture_default_str();
 
   // Analyze input characters.
-  std::string charsInput;
+  std::string input;
   auto analyzeCmd =
       app.add_subcommand("analyze", "Analyze the provided characters")->callback([&]() {
-        progdiag::run("inline", charsInput.begin(), charsInput.end(), printOutput);
+        exitcode = progdiag::run(
+            "inline", std::nullopt, getSearchPaths(argv), input.begin(), input.end(), printOutput);
       });
-  analyzeCmd->add_option("input", charsInput, "Input characters to analyze")->required();
+  analyzeCmd->add_option("input", input, "Input characters to analyze")->required();
 
   // Analyze input file.
-  std::string filePath;
+  std::filesystem::path filePath;
   auto analyzeFileCmd =
       app.add_subcommand("analyzefile", "Analyze the provided file")->callback([&]() {
+        auto absFilePath = std::filesystem::absolute(filePath);
         std::ifstream fs{filePath};
-        progdiag::run(
-            filePath,
+        exitcode = progdiag::run(
+            filePath.filename(),
+            absFilePath,
+            getSearchPaths(argv),
             std::istreambuf_iterator<char>{fs},
             std::istreambuf_iterator<char>{},
             printOutput);
@@ -319,5 +337,5 @@ auto main(int argc, char** argv) -> int {
     std::cout << (e.get_exit_code() == 0 ? rang::fg::green : rang::fg::red);
     return app.exit(e);
   }
-  return 0;
+  return exitcode;
 }
