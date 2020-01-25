@@ -227,6 +227,19 @@ TEST_CASE("Analyzing user-function templates", "[frontend]") {
             std::move(f2Args)));
   }
 
+  SECTION("Func templates are ignored when arguments don't match") {
+    const auto& output = ANALYZE("fun ft{T}(int i, T v) -> bool false "
+                                 "fun ft{T1, T2}(delegate{T1} d, T2 v) -> bool false "
+                                 "fun f() -> bool ft(lambda () 42, 42)");
+    REQUIRE(output.isSuccess());
+
+    // Check that the version of ft with 2 type params is instantiated.
+    CHECK(FUNC_EXISTS(output, "ft__int_int"));
+
+    // Check that the version of ft with 1 type params is not instantiated.
+    CHECK(!FUNC_EXISTS(output, "ft__int"));
+  }
+
   SECTION("Call conversion function through type substitution") {
     const auto& output = ANALYZE("struct Test{T} = T val "
                                  "fun Test{T}() Test(T()) "

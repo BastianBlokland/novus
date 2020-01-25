@@ -30,6 +30,9 @@ public:
   [[nodiscard]] auto inferTypeParams(const prog::sym::TypeSet& argTypes)
       -> std::optional<prog::sym::TypeSet>;
 
+  [[nodiscard]] auto
+  isCallable(const prog::sym::TypeSet& typeParams, const prog::sym::TypeSet& argTypes) -> bool;
+
   [[nodiscard]] auto instantiate(const prog::sym::TypeSet& typeParams) -> const FuncTemplateInst*;
 
 private:

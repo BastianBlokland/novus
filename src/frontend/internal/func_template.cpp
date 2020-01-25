@@ -95,6 +95,13 @@ auto FuncTemplate::inferTypeParams(const prog::sym::TypeSet& argTypes)
   return prog::sym::TypeSet{std::move(typeParams)};
 }
 
+auto FuncTemplate::isCallable(
+    const prog::sym::TypeSet& typeParams, const prog::sym::TypeSet& argTypes) -> bool {
+  const auto subTable = createSubTable(typeParams);
+  auto funcInput      = getFuncInput(m_ctx, &subTable, *m_parseNode);
+  return funcInput && m_ctx->getProg()->isConvertible(*funcInput, argTypes);
+}
+
 auto FuncTemplate::instantiate(const prog::sym::TypeSet& typeParams) -> const FuncTemplateInst* {
   if (typeParams.getCount() != m_typeSubs.size()) {
     throw std::invalid_argument{"Invalid number of type-parameters provided"};

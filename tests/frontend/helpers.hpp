@@ -13,6 +13,8 @@ namespace frontend {
 
 #define TYPE_EXISTS(OUTPUT, TYPE_NAME) OUTPUT.getProg().lookupType(TYPE_NAME).has_value()
 
+#define FUNC_EXISTS(OUTPUT, FUNC_NAME) OUTPUT.getProg().hasFunc(FUNC_NAME)
+
 #define GET_TYPE_ID(OUTPUT, TYPE_NAME) OUTPUT.getProg().lookupType(TYPE_NAME).value()
 
 #define GET_FUNC_ID(OUTPUT, FUNCNAME, ...)                                                         \

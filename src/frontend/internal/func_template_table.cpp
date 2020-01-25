@@ -134,9 +134,9 @@ auto FuncTemplateTable::inferParams(
     return {};
   }
 
-  /* Find the templates where we can successfully infer the type-parameters, prefer templates with
-  // the least amount of type-parameters. Can return multiple templates if they have the same amount
-  of type-parameters. */
+  /* Find the templates where we can successfully infer the type-parameters (and call it with the
+  given argument types), prefer templates with the least amount of type-parameters. Can return
+  multiple templates if they have the same amount of type-parameters. */
 
   auto typeParamCount = std::numeric_limits<unsigned int>::max();
   auto result         = std::vector<std::pair<FuncTemplate*, prog::sym::TypeSet>>{};
@@ -146,7 +146,7 @@ auto FuncTemplateTable::inferParams(
         funcTemplate.getArgumentCount() == argTypes.getCount()) {
 
       const auto inferredTypeParams = funcTemplate.inferTypeParams(argTypes);
-      if (inferredTypeParams) {
+      if (inferredTypeParams && funcTemplate.isCallable(*inferredTypeParams, argTypes)) {
         if (funcTemplate.getTypeParamCount() < typeParamCount) {
           result.clear();
           result.emplace_back(&funcTemplate, *inferredTypeParams);

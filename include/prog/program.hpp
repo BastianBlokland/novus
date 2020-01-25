@@ -79,6 +79,9 @@ public:
   [[nodiscard]] auto lookupConversion(sym::TypeId from, sym::TypeId to) const
       -> std::optional<sym::FuncId>;
 
+  [[nodiscard]] auto isConvertible(const sym::TypeSet& toTypes, const sym::TypeSet& fromTypes) const
+      -> bool;
+
   [[nodiscard]] auto findCommonType(const std::vector<sym::TypeId>& types)
       -> std::optional<sym::TypeId>;
 
