@@ -428,7 +428,7 @@ auto GetExpr::visit(const parse::IsExprNode& n) -> void {
   // Validate that this expression is part of a checked context, meaning the const is only
   // accessed when the expression evaluates to 'true'.
   if (!hasFlag<Flags::CheckedConstsAccess>()) {
-    m_ctx->reportDiag(errUncheckedIsExpressionWithConst, parseType.getSpan());
+    m_ctx->reportDiag(errUncheckedAsExpressionWithConst, parseType.getSpan());
     return;
   }
 

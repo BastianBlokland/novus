@@ -122,9 +122,9 @@ auto errTypeNotPartOfUnion(
   return error(src, oss.str(), span);
 }
 
-auto errUncheckedIsExpressionWithConst(const Source& src, input::Span span) -> Diag {
+auto errUncheckedAsExpressionWithConst(const Source& src, input::Span span) -> Diag {
   std::ostringstream oss;
-  oss << "Unchecked 'is' expression with constant declaration, either use in a checked context or "
+  oss << "Unchecked 'as' expression with constant declaration, either use in a checked context or "
          "discard '_' the const";
   return error(src, oss.str(), span);
 }
