@@ -99,6 +99,17 @@ Program::Program() :
   m_funcDecls.registerFunc(
       *this, fk::CheckGtEqFloat, getFuncName(op::GtEq), sym::TypeSet{m_float, m_float}, m_bool);
 
+  // Register build-in float functions.
+  m_funcDecls.registerFunc(*this, fk::PowFloat, "pow", sym::TypeSet{m_float, m_float}, m_float);
+  m_funcDecls.registerFunc(*this, fk::SqrtFloat, "sqrt", sym::TypeSet{m_float}, m_float);
+  m_funcDecls.registerFunc(*this, fk::SinFloat, "sin", sym::TypeSet{m_float}, m_float);
+  m_funcDecls.registerFunc(*this, fk::CosFloat, "cos", sym::TypeSet{m_float}, m_float);
+  m_funcDecls.registerFunc(*this, fk::TanFloat, "tan", sym::TypeSet{m_float}, m_float);
+  m_funcDecls.registerFunc(*this, fk::ASinFloat, "asin", sym::TypeSet{m_float}, m_float);
+  m_funcDecls.registerFunc(*this, fk::ACosFloat, "acos", sym::TypeSet{m_float}, m_float);
+  m_funcDecls.registerFunc(*this, fk::ATanFloat, "atan", sym::TypeSet{m_float}, m_float);
+  m_funcDecls.registerFunc(*this, fk::ATan2Float, "atan2", sym::TypeSet{m_float, m_float}, m_float);
+
   // Register build-in unary bool operators.
   m_funcDecls.registerFunc(*this, fk::InvBool, getFuncName(op::Bang), sym::TypeSet{m_bool}, m_bool);
 
@@ -160,6 +171,8 @@ Program::Program() :
   // Register build-in explicit conversions.
   m_funcDecls.registerFunc(*this, fk::ConvFloatInt, "toInt", sym::TypeSet{m_float}, m_int);
   m_funcDecls.registerFunc(*this, fk::ConvIntChar, "toChar", sym::TypeSet{m_int}, m_char);
+  m_funcDecls.registerFunc(*this, fk::NoOp, "asFloat", sym::TypeSet{m_int}, m_float);
+  m_funcDecls.registerFunc(*this, fk::NoOp, "asInt", sym::TypeSet{m_float}, m_int);
 
   // Register build-in functions.
   m_funcDecls.registerFunc(*this, fk::LengthString, "length", sym::TypeSet{m_string}, m_int);

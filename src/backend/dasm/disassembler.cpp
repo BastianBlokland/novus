@@ -42,6 +42,15 @@ auto disassembleInstructions(const vm::Assembly& assembly) -> std::vector<Instru
     case vm::OpCode::DivFloat:
     case vm::OpCode::RemInt:
     case vm::OpCode::ModFloat:
+    case vm::OpCode::PowFloat:
+    case vm::OpCode::SqrtFloat:
+    case vm::OpCode::SinFloat:
+    case vm::OpCode::CosFloat:
+    case vm::OpCode::TanFloat:
+    case vm::OpCode::ASinFloat:
+    case vm::OpCode::ACosFloat:
+    case vm::OpCode::ATanFloat:
+    case vm::OpCode::ATan2Float:
     case vm::OpCode::NegInt:
     case vm::OpCode::NegFloat:
     case vm::OpCode::LogicInvInt:
