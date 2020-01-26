@@ -101,6 +101,8 @@ auto Builder::addOrInt() -> void { writeOpCode(vm::OpCode::OrInt); }
 
 auto Builder::addXorInt() -> void { writeOpCode(vm::OpCode::XorInt); }
 
+auto Builder::addInvInt() -> void { writeOpCode(vm::OpCode::InvInt); }
+
 auto Builder::addLengthString() -> void { writeOpCode(vm::OpCode::LengthString); }
 
 auto Builder::addIndexString() -> void { writeOpCode(vm::OpCode::IndexString); }

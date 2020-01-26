@@ -40,6 +40,9 @@ auto operator<<(std::ostream& out, const TokenKind& rhs) -> std::ostream& {
   case TokenKind::OpHat:
     out << "^";
     break;
+  case TokenKind::OpTilde:
+    out << "~";
+    break;
   case TokenKind::OpShiftL:
     out << "<<";
     break;

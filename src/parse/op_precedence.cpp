@@ -10,6 +10,7 @@ auto getLhsOpPrecedence(const lex::Token& token) -> int {
   case lex::TokenKind::OpMinus:
   case lex::TokenKind::OpMinusMinus:
   case lex::TokenKind::OpBang:
+  case lex::TokenKind::OpTilde:
     return unaryPrecedence;
   default:
     return 0;
@@ -31,6 +32,7 @@ auto getRhsOpPrecedence(const lex::Token& token) -> int {
   case lex::TokenKind::OpPlus:
   case lex::TokenKind::OpMinus:
   case lex::TokenKind::OpColonColon:
+  case lex::TokenKind::OpTilde:
     return additivePrecedence;
   case lex::TokenKind::OpShiftL:
   case lex::TokenKind::OpShiftR:

@@ -113,6 +113,8 @@ auto LexerImpl::next() -> Token {
       return basicToken(TokenKind::OpPipe, input::Span{m_inputPos});
     case '^':
       return basicToken(TokenKind::OpHat, input::Span{m_inputPos});
+    case '~':
+      return basicToken(TokenKind::OpTilde, input::Span{m_inputPos});
     case '=':
       if (peekChar(0) == '=') {
         consumeChar();

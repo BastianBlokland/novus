@@ -16,6 +16,7 @@ enum class Operator {
   ShiftL,
   ShiftR,
   Hat,
+  Tilde,
   EqEq,
   Bang,
   BangEq,

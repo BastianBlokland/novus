@@ -171,6 +171,10 @@ static auto execute(const Assembly& assembly, PlatformInterface& iface, uint32_t
       auto a = evalStack.pop().getInt();
       evalStack.push(internal::intValue(a ^ b)); // NOLINT: Signed bitwise operand
     } break;
+    case OpCode::InvInt: {
+      auto a = evalStack.pop().getInt();
+      evalStack.push(internal::intValue(~a)); // NOLINT: Signed bitwise operand
+    } break;
     case OpCode::LengthString: {
       evalStack.push(internal::intValue(internal::getStringLength(evalStack.pop())));
     } break;

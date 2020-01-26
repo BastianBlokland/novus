@@ -29,6 +29,8 @@ auto getFuncName(Operator op) -> std::string {
     return "__op_shiftr";
   case Operator::Hat:
     return "__op_hat";
+  case Operator::Tilde:
+    return "__op_tilde";
   case Operator::EqEq:
     return "__op_eqeq";
   case Operator::Bang:

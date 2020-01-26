@@ -17,6 +17,7 @@ enum class TokenKind {
   OpPipe,
   OpPipePipe,
   OpHat,
+  OpTilde,
   OpShiftL,
   OpShiftR,
   OpEq,

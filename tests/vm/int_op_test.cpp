@@ -432,5 +432,38 @@ TEST_CASE("Execute integer operations", "[vm]") {
         "input",
         "-4");
   }
+
+  SECTION("Inv") {
+    CHECK_EXPR(
+        [](backend::Builder* builder) -> void {
+          builder->addLoadLitInt(0);
+          builder->addInvInt();
+          builder->addConvIntString();
+          builder->addPCall(vm::PCallCode::PrintString);
+          builder->addPop();
+        },
+        "input",
+        "-1");
+    CHECK_EXPR(
+        [](backend::Builder* builder) -> void {
+          builder->addLoadLitInt(-1);
+          builder->addInvInt();
+          builder->addConvIntString();
+          builder->addPCall(vm::PCallCode::PrintString);
+          builder->addPop();
+        },
+        "input",
+        "0");
+    CHECK_EXPR(
+        [](backend::Builder* builder) -> void {
+          builder->addLoadLitInt(0xFFFF);
+          builder->addInvInt();
+          builder->addConvIntString();
+          builder->addPCall(vm::PCallCode::PrintString);
+          builder->addPop();
+        },
+        "input",
+        "-65536");
+  }
 }
 } // namespace vm

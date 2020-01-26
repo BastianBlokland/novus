@@ -16,6 +16,7 @@ TEST_CASE("Lexing operators", "[lex]") {
   CHECK_TOKENS("|", basicToken(TokenKind::OpPipe));
   CHECK_TOKENS("||", basicToken(TokenKind::OpPipePipe));
   CHECK_TOKENS("^", basicToken(TokenKind::OpHat));
+  CHECK_TOKENS("~", basicToken(TokenKind::OpTilde));
   CHECK_TOKENS("<<", basicToken(TokenKind::OpShiftL));
   CHECK_TOKENS(">>", basicToken(TokenKind::OpShiftR));
   CHECK_TOKENS("=", basicToken(TokenKind::OpEq));

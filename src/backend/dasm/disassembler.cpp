@@ -49,6 +49,7 @@ auto disassembleInstructions(const vm::Assembly& assembly) -> std::vector<Instru
     case vm::OpCode::AndInt:
     case vm::OpCode::OrInt:
     case vm::OpCode::XorInt:
+    case vm::OpCode::InvInt:
     case vm::OpCode::LengthString:
     case vm::OpCode::IndexString:
     case vm::OpCode::SliceString:

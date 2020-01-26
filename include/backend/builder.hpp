@@ -49,6 +49,7 @@ public:
   auto addAndInt() -> void;
   auto addOrInt() -> void;
   auto addXorInt() -> void;
+  auto addInvInt() -> void;
   auto addLengthString() -> void;
   auto addIndexString() -> void;
   auto addSliceString() -> void;

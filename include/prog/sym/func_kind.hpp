@@ -19,6 +19,7 @@ enum class FuncKind {
   AndInt,
   OrInt,
   XorInt,
+  InvInt,
   CheckEqInt,
   CheckNEqInt,
   CheckLeInt,

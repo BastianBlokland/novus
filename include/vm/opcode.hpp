@@ -37,9 +37,10 @@ enum class OpCode : uint8_t {
   AndInt        = 65,
   OrInt         = 66,
   XorInt        = 67,
-  LengthString  = 68,
-  IndexString   = 69,
-  SliceString   = 70,
+  InvInt        = 68,
+  LengthString  = 69,
+  IndexString   = 70,
+  SliceString   = 71,
 
   CheckEqInt        = 80,
   CheckEqFloat      = 81,
