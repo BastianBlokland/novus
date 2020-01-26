@@ -89,6 +89,7 @@ enum class FuncKind {
   ActionPrintStringLine,
   ActionReadChar,
   ActionReadStringLine,
+  ActionGetEnvVar,
   ActionSleep,
   ActionAssert,
 };

@@ -198,7 +198,6 @@ add_library(vm STATIC
   vm/internal/exec_scope.cpp
   vm/internal/string_utilities.cpp
   vm/platform/memory_interface.cpp
-  vm/platform/terminal_interface.cpp
   vm/assembly.cpp
   vm/executor.cpp
   vm/opcode.cpp

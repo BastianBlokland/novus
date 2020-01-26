@@ -133,6 +133,32 @@ TEST_CASE("Execute input and output", "[vm]") {
         "hello: Jane Doe");
   }
 
+  SECTION("GetEnvVar") {
+    auto envVars =
+        std::unordered_map<std::string, std::string>{{"var1", "hello world"}, {"var2", "nope"}};
+    CHECK_PROG_WITH_ENV_VARS(
+        [](backend::Builder* builder) -> void {
+          builder->label("entry");
+          builder->addEntryPoint("entry");
+
+          builder->addLoadLitString("var1");
+          builder->addPCall(vm::PCallCode::GetEnvVar);
+          builder->addPCall(vm::PCallCode::PrintString);
+          builder->addPop();
+
+          builder->addLoadLitString("var3");
+          builder->addPCall(vm::PCallCode::GetEnvVar);
+          builder->addPCall(vm::PCallCode::PrintString);
+          builder->addPop();
+
+          builder->addRet();
+        },
+        "input",
+        envVars,
+        "hello world",
+        "");
+  }
+
   SECTION("Sleep") {
     CHECK_PROG(
         [](backend::Builder* builder) -> void {

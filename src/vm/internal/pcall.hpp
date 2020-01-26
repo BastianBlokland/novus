@@ -48,6 +48,16 @@ auto inline pcall(
     evalStack.push(internal::toString(allocator, line));
     return;
   }
+  case vm::PCallCode::GetEnvVar: {
+    auto* nameStrRef = getStringRef(evalStack.pop());
+    auto* res        = iface.getEnvVar(nameStrRef->getDataPtr());
+    if (res == nullptr) {
+      evalStack.push(internal::emptyString(allocator));
+    } else {
+      evalStack.push(internal::toString(allocator, res));
+    }
+    return;
+  }
   case vm::PCallCode::Sleep:
     std::this_thread::sleep_for(std::chrono::milliseconds(evalStack.peek().getInt()));
     return;
