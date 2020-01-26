@@ -93,7 +93,7 @@ TEST_CASE("Execute float operations", "[vm]") {
         },
         "input",
         "0.02");
-    CHECK_EXPR_THROWS(
+    CHECK_EXPR(
         [](backend::Builder* builder) -> void {
           builder->addLoadLitFloat(1.0F);
           builder->addLoadLitFloat(0.0F);
@@ -103,7 +103,65 @@ TEST_CASE("Execute float operations", "[vm]") {
           builder->addPop();
         },
         "input",
-        vm::exceptions::DivByZero);
+        "inf");
+    CHECK_EXPR(
+        [](backend::Builder* builder) -> void {
+          builder->addLoadLitFloat(0.0F);
+          builder->addLoadLitFloat(0.0F);
+          builder->addDivFloat();
+          builder->addConvFloatString();
+          builder->addPCall(vm::PCallCode::PrintString);
+          builder->addPop();
+        },
+        "input",
+        "nan");
+  }
+
+  SECTION("Mod") {
+    CHECK_EXPR(
+        [](backend::Builder* builder) -> void {
+          builder->addLoadLitFloat(1.3F); // NOLINT: Magic numbers
+          builder->addLoadLitFloat(1.0F);
+          builder->addModFloat();
+          builder->addConvFloatString();
+          builder->addPCall(vm::PCallCode::PrintString);
+          builder->addPop();
+        },
+        "input",
+        "0.3");
+    CHECK_EXPR(
+        [](backend::Builder* builder) -> void {
+          builder->addLoadLitFloat(1.25F); // NOLINT: Magic numbers
+          builder->addLoadLitFloat(.25F);  // NOLINT: Magic numbers
+          builder->addModFloat();
+          builder->addConvFloatString();
+          builder->addPCall(vm::PCallCode::PrintString);
+          builder->addPop();
+        },
+        "input",
+        "0");
+    CHECK_EXPR(
+        [](backend::Builder* builder) -> void {
+          builder->addLoadLitFloat(1.3F); // NOLINT: Magic numbers
+          builder->addLoadLitFloat(-1.0F);
+          builder->addModFloat();
+          builder->addConvFloatString();
+          builder->addPCall(vm::PCallCode::PrintString);
+          builder->addPop();
+        },
+        "input",
+        "0.3");
+    CHECK_EXPR(
+        [](backend::Builder* builder) -> void {
+          builder->addLoadLitFloat(1.3F); // NOLINT: Magic numbers
+          builder->addLoadLitFloat(0.0F);
+          builder->addModFloat();
+          builder->addConvFloatString();
+          builder->addPCall(vm::PCallCode::PrintString);
+          builder->addPop();
+        },
+        "input",
+        "nan");
   }
 
   SECTION("Negate") {

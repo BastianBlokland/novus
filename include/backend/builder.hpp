@@ -41,6 +41,7 @@ public:
   auto addDivInt() -> void;
   auto addDivFloat() -> void;
   auto addRemInt() -> void;
+  auto addModFloat() -> void;
   auto addNegInt() -> void;
   auto addNegFloat() -> void;
   auto addLogicInvInt() -> void;

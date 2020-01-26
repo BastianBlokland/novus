@@ -31,6 +31,7 @@ enum class FuncKind {
   SubFloat,
   MulFloat,
   DivFloat,
+  ModFloat,
   NegateFloat,
   IncrementFloat,
   DecrementFloat,

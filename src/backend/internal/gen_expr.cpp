@@ -145,6 +145,9 @@ auto GenExpr::visit(const prog::expr::CallExprNode& n) -> void {
   case prog::sym::FuncKind::DivFloat:
     m_builder->addDivFloat();
     break;
+  case prog::sym::FuncKind::ModFloat:
+    m_builder->addModFloat();
+    break;
   case prog::sym::FuncKind::NegateFloat:
     m_builder->addNegFloat();
     break;

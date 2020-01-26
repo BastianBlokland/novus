@@ -85,6 +85,8 @@ auto Builder::addDivFloat() -> void { writeOpCode(vm::OpCode::DivFloat); }
 
 auto Builder::addRemInt() -> void { writeOpCode(vm::OpCode::RemInt); }
 
+auto Builder::addModFloat() -> void { writeOpCode(vm::OpCode::ModFloat); }
+
 auto Builder::addNegInt() -> void { writeOpCode(vm::OpCode::NegInt); }
 
 auto Builder::addNegFloat() -> void { writeOpCode(vm::OpCode::NegFloat); }

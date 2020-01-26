@@ -12,6 +12,7 @@
 #include "vm/opcode.hpp"
 #include "vm/platform/memory_interface.hpp"
 #include "vm/platform/terminal_interface.hpp"
+#include <cmath>
 #include <stdexcept>
 
 namespace vm {
@@ -121,9 +122,6 @@ static auto execute(const Assembly& assembly, PlatformInterface& iface, uint32_t
     case OpCode::DivFloat: {
       auto b = evalStack.pop().getFloat();
       auto a = evalStack.pop().getFloat();
-      if (b == 0) {
-        throw exceptions::DivByZero{};
-      }
       evalStack.push(internal::floatValue(a / b));
     } break;
     case OpCode::RemInt: {
@@ -133,6 +131,11 @@ static auto execute(const Assembly& assembly, PlatformInterface& iface, uint32_t
         throw exceptions::DivByZero{};
       }
       evalStack.push(internal::intValue(a % b));
+    } break;
+    case OpCode::ModFloat: {
+      auto b = evalStack.pop().getFloat();
+      auto a = evalStack.pop().getFloat();
+      evalStack.push(internal::floatValue(std::fmod(a, b)));
     } break;
     case OpCode::NegInt: {
       auto a = evalStack.pop().getInt();

@@ -85,6 +85,8 @@ Program::Program() :
   m_funcDecls.registerFunc(
       *this, fk::DivFloat, getFuncName(op::Slash), sym::TypeSet{m_float, m_float}, m_float);
   m_funcDecls.registerFunc(
+      *this, fk::ModFloat, getFuncName(op::Rem), sym::TypeSet{m_float, m_float}, m_float);
+  m_funcDecls.registerFunc(
       *this, fk::CheckEqFloat, getFuncName(op::EqEq), sym::TypeSet{m_float, m_float}, m_bool);
   m_funcDecls.registerFunc(
       *this, fk::CheckNEqFloat, getFuncName(op::BangEq), sym::TypeSet{m_float, m_float}, m_bool);

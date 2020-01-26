@@ -69,6 +69,9 @@ auto operator<<(std::ostream& out, const OpCode& rhs) -> std::ostream& {
   case OpCode::RemInt:
     out << "rem-int";
     break;
+  case OpCode::ModFloat:
+    out << "mod-float";
+    break;
   case OpCode::NegInt:
     out << "neg-int";
     break;
