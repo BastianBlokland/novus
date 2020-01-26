@@ -22,6 +22,7 @@ TEST_CASE("Lexing integer literals", "[lex]") {
     CHECK_TOKENS("0xF", litIntToken(0xF));
     CHECK_TOKENS("0xFF", litIntToken(0xFF));
     CHECK_TOKENS("0x7FFFFFFF", litIntToken(0x7FFFFFFF));
+    CHECK_TOKENS("0x8FFFFFFF", litIntToken(0x8FFFFFFF));
     CHECK_TOKENS("0xf", litIntToken(0xf));
     CHECK_TOKENS("0xFf", litIntToken(0xFf));
     CHECK_TOKENS("0x7FffFfFf", litIntToken(0x7FffFfFf));
@@ -39,6 +40,7 @@ TEST_CASE("Lexing integer literals", "[lex]") {
     CHECK_TOKENS("0b10", litIntToken(2));
     CHECK_TOKENS("0b11", litIntToken(3));
     CHECK_TOKENS("0b01111111_11111111_11111111_11111111", litIntToken(0x7FFFFFFF));
+    CHECK_TOKENS("0b11111111_11111111_11111111_11111111", litIntToken(-1));
     CHECK_TOKENS("0b101010", litIntToken(42));
     CHECK_TOKENS("0b10100111001", litIntToken(1337));
     CHECK_TOKENS("0b10010101_01010101", litIntToken(0b1001010101010101));
@@ -54,6 +56,7 @@ TEST_CASE("Lexing integer literals", "[lex]") {
     CHECK_TOKENS("0o10", litIntToken(8));
     CHECK_TOKENS("0o52", litIntToken(42));
     CHECK_TOKENS("0o17777777777", litIntToken(0x7FFFFFFF));
+    CHECK_TOKENS("0o21777777777", litIntToken(0x8FFFFFFF));
     CHECK_TOKENS("0o2471", litIntToken(1337));
   }
 
@@ -102,14 +105,12 @@ TEST_CASE("Lexing integer literals", "[lex]") {
     CHECK_TOKENS("0a", errLitNumberInvalidChar());
     CHECK_TOKENS("0_", errLitNumberEndsWithSeperator());
 
-    CHECK_TOKENS("0x8FFFFFFF", errLitIntTooBig());
     CHECK_TOKENS("0xFFFFFFFFFFFFFFFFFF2", errLitIntTooBig());
     CHECK_TOKENS("0x13ga4a2", errLitHexInvalidChar());
     CHECK_TOKENS("0x13a4好2", errLitHexInvalidChar());
     CHECK_TOKENS("0x13a4\a2", errLitHexInvalidChar());
     CHECK_TOKENS("0x_", errLitNumberEndsWithSeperator());
 
-    CHECK_TOKENS("0b11111111_11111111_11111111_11111111", errLitIntTooBig());
     CHECK_TOKENS(
         "0b11111111_11111111_11111111_11111111_11111111_11111111_11111111_11111111",
         errLitIntTooBig());
@@ -121,7 +122,6 @@ TEST_CASE("Lexing integer literals", "[lex]") {
     CHECK_TOKENS("0b01\a001", errLitBinaryInvalidChar());
     CHECK_TOKENS("0b_", errLitNumberEndsWithSeperator());
 
-    CHECK_TOKENS("0o21777777777", errLitIntTooBig());
     CHECK_TOKENS("0o1777777777777777777777", errLitIntTooBig());
     CHECK_TOKENS("0o8", errLitOctalInvalidChar());
     CHECK_TOKENS("0o9", errLitOctalInvalidChar());

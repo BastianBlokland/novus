@@ -339,11 +339,12 @@ auto LexerImpl::nextLitIntHex() -> Token {
   if (curChar == '_') {
     return errLitNumberEndsWithSeperator(span);
   }
-
-  if (result > std::numeric_limits<int32_t>::max()) {
+  if (result > std::numeric_limits<uint32_t>::max()) {
     return errLitIntTooBig(span);
   }
-  return litIntToken(static_cast<int32_t>(result), span);
+  // Reinterpret because we support negative hex literals.
+  int32_t signedResult = reinterpret_cast<int32_t&>(result); // NOLINT: Reinterpret cast
+  return litIntToken(signedResult, span);
 }
 
 auto LexerImpl::nextLitIntBinary() -> Token {
@@ -373,11 +374,12 @@ auto LexerImpl::nextLitIntBinary() -> Token {
   if (curChar == '_') {
     return errLitNumberEndsWithSeperator(span);
   }
-
-  if (result > std::numeric_limits<int32_t>::max()) {
+  if (result > std::numeric_limits<uint32_t>::max()) {
     return errLitIntTooBig(span);
   }
-  return litIntToken(static_cast<int32_t>(result), span);
+  // Reinterpret because we support negative binary literals.
+  int32_t signedResult = reinterpret_cast<int32_t&>(result); // NOLINT: Reinterpret cast
+  return litIntToken(static_cast<int32_t>(signedResult), span);
 }
 
 auto LexerImpl::nextLitIntOctal() -> Token {
@@ -405,11 +407,12 @@ auto LexerImpl::nextLitIntOctal() -> Token {
   if (curChar == '_') {
     return errLitNumberEndsWithSeperator(span);
   }
-
-  if (result > std::numeric_limits<int32_t>::max()) {
+  if (result > std::numeric_limits<uint32_t>::max()) {
     return errLitIntTooBig(span);
   }
-  return litIntToken(static_cast<int32_t>(result), span);
+  // Reinterpret because we support negative octal literals.
+  int32_t signedResult = reinterpret_cast<int32_t&>(result); // NOLINT: Reinterpret cast
+  return litIntToken(static_cast<int32_t>(signedResult), span);
 }
 
 auto LexerImpl::nextLitStr() -> Token {
