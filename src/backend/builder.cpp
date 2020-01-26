@@ -87,6 +87,24 @@ auto Builder::addRemInt() -> void { writeOpCode(vm::OpCode::RemInt); }
 
 auto Builder::addModFloat() -> void { writeOpCode(vm::OpCode::ModFloat); }
 
+auto Builder::addPowFloat() -> void { writeOpCode(vm::OpCode::PowFloat); }
+
+auto Builder::addSqrtFloat() -> void { writeOpCode(vm::OpCode::SqrtFloat); }
+
+auto Builder::addSinFloat() -> void { writeOpCode(vm::OpCode::SinFloat); }
+
+auto Builder::addCosFloat() -> void { writeOpCode(vm::OpCode::CosFloat); }
+
+auto Builder::addTanFloat() -> void { writeOpCode(vm::OpCode::TanFloat); }
+
+auto Builder::addASinFloat() -> void { writeOpCode(vm::OpCode::ASinFloat); }
+
+auto Builder::addACosFloat() -> void { writeOpCode(vm::OpCode::ACosFloat); }
+
+auto Builder::addATanFloat() -> void { writeOpCode(vm::OpCode::ATanFloat); }
+
+auto Builder::addATan2Float() -> void { writeOpCode(vm::OpCode::ATan2Float); }
+
 auto Builder::addNegInt() -> void { writeOpCode(vm::OpCode::NegInt); }
 
 auto Builder::addNegFloat() -> void { writeOpCode(vm::OpCode::NegFloat); }

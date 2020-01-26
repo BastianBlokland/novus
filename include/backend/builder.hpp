@@ -42,6 +42,15 @@ public:
   auto addDivFloat() -> void;
   auto addRemInt() -> void;
   auto addModFloat() -> void;
+  auto addPowFloat() -> void;
+  auto addSqrtFloat() -> void;
+  auto addSinFloat() -> void;
+  auto addCosFloat() -> void;
+  auto addTanFloat() -> void;
+  auto addASinFloat() -> void;
+  auto addACosFloat() -> void;
+  auto addATanFloat() -> void;
+  auto addATan2Float() -> void;
   auto addNegInt() -> void;
   auto addNegFloat() -> void;
   auto addLogicInvInt() -> void;

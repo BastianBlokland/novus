@@ -164,6 +164,213 @@ TEST_CASE("Execute float operations", "[vm]") {
         "nan");
   }
 
+  SECTION("Pow") {
+    CHECK_EXPR(
+        [](backend::Builder* builder) -> void {
+          builder->addLoadLitFloat(1.0F);
+          builder->addLoadLitFloat(2.0F); // NOLINT: Magic numbers
+          builder->addPowFloat();
+          builder->addConvFloatString();
+          builder->addPCall(vm::PCallCode::PrintString);
+          builder->addPop();
+        },
+        "input",
+        "1");
+    CHECK_EXPR(
+        [](backend::Builder* builder) -> void {
+          builder->addLoadLitFloat(2.0F); // NOLINT: Magic numbers
+          builder->addLoadLitFloat(2.0F); // NOLINT: Magic numbers
+          builder->addPowFloat();
+          builder->addConvFloatString();
+          builder->addPCall(vm::PCallCode::PrintString);
+          builder->addPop();
+        },
+        "input",
+        "4");
+    CHECK_EXPR(
+        [](backend::Builder* builder) -> void {
+          builder->addLoadLitFloat(4.0F); // NOLINT: Magic numbers
+          builder->addLoadLitFloat(4.0F); // NOLINT: Magic numbers
+          builder->addPowFloat();
+          builder->addConvFloatString();
+          builder->addPCall(vm::PCallCode::PrintString);
+          builder->addPop();
+        },
+        "input",
+        "256");
+    CHECK_EXPR(
+        [](backend::Builder* builder) -> void {
+          builder->addLoadLitFloat(4.0F); // NOLINT: Magic numbers
+          builder->addLoadLitFloat(0.0F);
+          builder->addPowFloat();
+          builder->addConvFloatString();
+          builder->addPCall(vm::PCallCode::PrintString);
+          builder->addPop();
+        },
+        "input",
+        "1");
+    CHECK_EXPR(
+        [](backend::Builder* builder) -> void {
+          builder->addLoadLitFloat(-2.0F); // NOLINT: Magic numbers
+          builder->addLoadLitFloat(2.0F);  // NOLINT: Magic numbers
+          builder->addPowFloat();
+          builder->addConvFloatString();
+          builder->addPCall(vm::PCallCode::PrintString);
+          builder->addPop();
+        },
+        "input",
+        "4");
+    CHECK_EXPR(
+        [](backend::Builder* builder) -> void {
+          builder->addLoadLitFloat(2.0F);  // NOLINT: Magic numbers
+          builder->addLoadLitFloat(-2.0F); // NOLINT: Magic numbers
+          builder->addPowFloat();
+          builder->addConvFloatString();
+          builder->addPCall(vm::PCallCode::PrintString);
+          builder->addPop();
+        },
+        "input",
+        "0.25");
+  }
+
+  SECTION("Sqrt") {
+    CHECK_EXPR(
+        [](backend::Builder* builder) -> void {
+          builder->addLoadLitFloat(2.0F); // NOLINT: Magic numbers
+          builder->addSqrtFloat();
+          builder->addConvFloatString();
+          builder->addPCall(vm::PCallCode::PrintString);
+          builder->addPop();
+        },
+        "input",
+        "1.41421");
+    CHECK_EXPR(
+        [](backend::Builder* builder) -> void {
+          builder->addLoadLitFloat(4.0F); // NOLINT: Magic numbers
+          builder->addSqrtFloat();
+          builder->addConvFloatString();
+          builder->addPCall(vm::PCallCode::PrintString);
+          builder->addPop();
+        },
+        "input",
+        "2");
+    CHECK_EXPR(
+        [](backend::Builder* builder) -> void {
+          builder->addLoadLitFloat(0.0F);
+          builder->addSqrtFloat();
+          builder->addConvFloatString();
+          builder->addPCall(vm::PCallCode::PrintString);
+          builder->addPop();
+        },
+        "input",
+        "0");
+    CHECK_EXPR(
+        [](backend::Builder* builder) -> void {
+          builder->addLoadLitFloat(-1.0F); // NOLINT: Magic numbers
+          builder->addSqrtFloat();
+          builder->addConvFloatString();
+          builder->addPCall(vm::PCallCode::PrintString);
+          builder->addPop();
+        },
+        "input",
+        "nan");
+  }
+
+  SECTION("Sin") {
+    CHECK_EXPR(
+        [](backend::Builder* builder) -> void {
+          builder->addLoadLitFloat(0.0F);
+          builder->addSinFloat();
+          builder->addConvFloatString();
+          builder->addPCall(vm::PCallCode::PrintString);
+          builder->addPop();
+        },
+        "input",
+        "0");
+  }
+
+  SECTION("Cos") {
+    CHECK_EXPR(
+        [](backend::Builder* builder) -> void {
+          builder->addLoadLitFloat(0.0F);
+          builder->addCosFloat();
+          builder->addConvFloatString();
+          builder->addPCall(vm::PCallCode::PrintString);
+          builder->addPop();
+        },
+        "input",
+        "1");
+  }
+
+  SECTION("Tan") {
+    CHECK_EXPR(
+        [](backend::Builder* builder) -> void {
+          builder->addLoadLitFloat(0.0F);
+          builder->addTanFloat();
+          builder->addConvFloatString();
+          builder->addPCall(vm::PCallCode::PrintString);
+          builder->addPop();
+        },
+        "input",
+        "0");
+  }
+
+  SECTION("ASin") {
+    CHECK_EXPR(
+        [](backend::Builder* builder) -> void {
+          builder->addLoadLitFloat(1.0F);
+          builder->addSinFloat();
+          builder->addASinFloat();
+          builder->addConvFloatString();
+          builder->addPCall(vm::PCallCode::PrintString);
+          builder->addPop();
+        },
+        "input",
+        "1");
+  }
+
+  SECTION("ACos") {
+    CHECK_EXPR(
+        [](backend::Builder* builder) -> void {
+          builder->addLoadLitFloat(1.0F);
+          builder->addCosFloat();
+          builder->addACosFloat();
+          builder->addConvFloatString();
+          builder->addPCall(vm::PCallCode::PrintString);
+          builder->addPop();
+        },
+        "input",
+        "1");
+  }
+
+  SECTION("ATan") {
+    CHECK_EXPR(
+        [](backend::Builder* builder) -> void {
+          builder->addLoadLitFloat(1.0F);
+          builder->addTanFloat();
+          builder->addATanFloat();
+          builder->addConvFloatString();
+          builder->addPCall(vm::PCallCode::PrintString);
+          builder->addPop();
+        },
+        "input",
+        "1");
+  }
+
+  SECTION("ATan2") {
+    CHECK_EXPR(
+        [](backend::Builder* builder) -> void {
+          builder->addLoadLitFloat(0.0F);
+          builder->addLoadLitFloat(0.0F);
+          builder->addATan2Float();
+          builder->addConvFloatString();
+          builder->addPCall(vm::PCallCode::PrintString);
+          builder->addPop();
+        },
+        "input",
+        "0");
+  }
+
   SECTION("Negate") {
     CHECK_EXPR(
         [](backend::Builder* builder) -> void {
@@ -177,7 +384,7 @@ TEST_CASE("Execute float operations", "[vm]") {
         "-0.1337");
     CHECK_EXPR(
         [](backend::Builder* builder) -> void {
-          builder->addLoadLitFloat(0);
+          builder->addLoadLitFloat(0.0F);
           builder->addNegFloat();
           builder->addConvFloatString();
           builder->addPCall(vm::PCallCode::PrintString);

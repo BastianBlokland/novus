@@ -72,6 +72,33 @@ auto operator<<(std::ostream& out, const OpCode& rhs) -> std::ostream& {
   case OpCode::ModFloat:
     out << "mod-float";
     break;
+  case OpCode::PowFloat:
+    out << "pow-float";
+    break;
+  case OpCode::SqrtFloat:
+    out << "sqrt-float";
+    break;
+  case OpCode::SinFloat:
+    out << "sin-float";
+    break;
+  case OpCode::CosFloat:
+    out << "cos-float";
+    break;
+  case OpCode::TanFloat:
+    out << "tan-float";
+    break;
+  case OpCode::ASinFloat:
+    out << "asin-float";
+    break;
+  case OpCode::ACosFloat:
+    out << "acos-float";
+    break;
+  case OpCode::ATanFloat:
+    out << "atan-float";
+    break;
+  case OpCode::ATan2Float:
+    out << "atan2-float";
+    break;
   case OpCode::NegInt:
     out << "neg-int";
     break;

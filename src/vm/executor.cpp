@@ -135,7 +135,45 @@ static auto execute(const Assembly& assembly, PlatformInterface& iface, uint32_t
     case OpCode::ModFloat: {
       auto b = evalStack.pop().getFloat();
       auto a = evalStack.pop().getFloat();
-      evalStack.push(internal::floatValue(std::fmod(a, b)));
+      evalStack.push(internal::floatValue(std::fmodf(a, b)));
+    } break;
+    case OpCode::PowFloat: {
+      auto b = evalStack.pop().getFloat();
+      auto a = evalStack.pop().getFloat();
+      evalStack.push(internal::floatValue(std::powf(a, b)));
+    } break;
+    case OpCode::SqrtFloat: {
+      auto a = evalStack.pop().getFloat();
+      evalStack.push(internal::floatValue(std::sqrtf(a)));
+    } break;
+    case OpCode::SinFloat: {
+      auto a = evalStack.pop().getFloat();
+      evalStack.push(internal::floatValue(std::sinf(a)));
+    } break;
+    case OpCode::CosFloat: {
+      auto a = evalStack.pop().getFloat();
+      evalStack.push(internal::floatValue(std::cosf(a)));
+    } break;
+    case OpCode::TanFloat: {
+      auto a = evalStack.pop().getFloat();
+      evalStack.push(internal::floatValue(std::tanf(a)));
+    } break;
+    case OpCode::ASinFloat: {
+      auto a = evalStack.pop().getFloat();
+      evalStack.push(internal::floatValue(std::asinf(a)));
+    } break;
+    case OpCode::ACosFloat: {
+      auto a = evalStack.pop().getFloat();
+      evalStack.push(internal::floatValue(std::acosf(a)));
+    } break;
+    case OpCode::ATanFloat: {
+      auto a = evalStack.pop().getFloat();
+      evalStack.push(internal::floatValue(std::atanf(a)));
+    } break;
+    case OpCode::ATan2Float: {
+      auto b = evalStack.pop().getFloat();
+      auto a = evalStack.pop().getFloat();
+      evalStack.push(internal::floatValue(std::atan2f(a, b)));
     } break;
     case OpCode::NegInt: {
       auto a = evalStack.pop().getInt();

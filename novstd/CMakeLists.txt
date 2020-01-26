@@ -11,6 +11,7 @@ endfunction(configure_novstd_file)
 
 # Standard nov library.
 configure_novstd_file(list)
+configure_novstd_file(math)
 configure_novstd_file(option)
 configure_novstd_file(pair)
 configure_novstd_file(text)

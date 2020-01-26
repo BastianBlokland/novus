@@ -148,6 +148,33 @@ auto GenExpr::visit(const prog::expr::CallExprNode& n) -> void {
   case prog::sym::FuncKind::ModFloat:
     m_builder->addModFloat();
     break;
+  case prog::sym::FuncKind::PowFloat:
+    m_builder->addPowFloat();
+    break;
+  case prog::sym::FuncKind::SqrtFloat:
+    m_builder->addSqrtFloat();
+    break;
+  case prog::sym::FuncKind::SinFloat:
+    m_builder->addSinFloat();
+    break;
+  case prog::sym::FuncKind::CosFloat:
+    m_builder->addCosFloat();
+    break;
+  case prog::sym::FuncKind::TanFloat:
+    m_builder->addTanFloat();
+    break;
+  case prog::sym::FuncKind::ASinFloat:
+    m_builder->addASinFloat();
+    break;
+  case prog::sym::FuncKind::ACosFloat:
+    m_builder->addACosFloat();
+    break;
+  case prog::sym::FuncKind::ATanFloat:
+    m_builder->addATanFloat();
+    break;
+  case prog::sym::FuncKind::ATan2Float:
+    m_builder->addATan2Float();
+    break;
   case prog::sym::FuncKind::NegateFloat:
     m_builder->addNegFloat();
     break;
