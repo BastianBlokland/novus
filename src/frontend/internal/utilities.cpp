@@ -473,10 +473,6 @@ auto getConstName(
     ctx->reportDiag(errConstNameConflictsWithType, name, nameToken.getSpan());
     return std::nullopt;
   }
-  if (isFuncOrConv(ctx, name)) {
-    ctx->reportDiag(errConstNameConflictsWithFunction, name, nameToken.getSpan());
-    return std::nullopt;
-  }
   if (consts.lookup(name)) {
     ctx->reportDiag(errConstNameConflictsWithConst, name, nameToken.getSpan());
     return std::nullopt;

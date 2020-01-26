@@ -180,12 +180,6 @@ TEST_CASE("Analyzing user-function declarations", "[frontend]") {
         errInvalidFuncInstantiation(src, input::Span{24, 24}),
         errNoFuncFoundToInstantiate(src, "f", 1, input::Span{24, 32}));
     CHECK_DIAG(
-        "fun test{T}(int test) -> int test "
-        "fun f() test{int}(1)",
-        errConstNameConflictsWithFunction(src, "test", input::Span{16, 19}),
-        errInvalidFuncInstantiation(src, input::Span{42, 45}),
-        errNoFuncFoundToInstantiate(src, "test", 1, input::Span{42, 53}));
-    CHECK_DIAG(
         "fun +() -> int i", errOperatorOverloadWithoutArgs(src, "operator+", input::Span{4, 4}));
     CHECK_DIAG(
         "fun +{T}() -> T T()", errOperatorOverloadWithoutArgs(src, "operator+", input::Span{4, 4}));

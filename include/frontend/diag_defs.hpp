@@ -112,10 +112,6 @@ errUnableToInferFuncReturnType(const Source& src, const std::string& name, input
 [[nodiscard]] auto
 errConstNameConflictsWithType(const Source& src, const std::string& name, input::Span span) -> Diag;
 
-[[nodiscard]] auto
-errConstNameConflictsWithFunction(const Source& src, const std::string& name, input::Span span)
-    -> Diag;
-
 [[nodiscard]] auto errConstNameConflictsWithTypeSubstitution(
     const Source& src, const std::string& name, input::Span span) -> Diag;
 

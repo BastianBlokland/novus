@@ -266,6 +266,12 @@ auto GetExpr::visit(const parse::ConstDeclExprNode& n) -> void {
 
 auto GetExpr::visit(const parse::IdExprNode& n) -> void {
   const auto name = getName(n.getId());
+  // Check if this is a constant, if so bind to it.
+  if (m_constBinder->canBind(name)) {
+    m_expr = getConstExpr(n);
+    assert(m_expr != nullptr || m_ctx->hasErrors());
+    return;
+  }
 
   // Templated function literal.
   if (n.getTypeParams()) {
@@ -306,7 +312,9 @@ auto GetExpr::visit(const parse::IdExprNode& n) -> void {
     return;
   }
 
-  // If its not a function literal treat it as a constant.
+  // If its not a function literal treat it as a constant, even tho we already checked if this is
+  // a constant at the top of this function we would rather have the error be 'no constant found'
+  // then no function found.
   m_expr = getConstExpr(n);
   assert(m_expr != nullptr || m_ctx->hasErrors());
 }

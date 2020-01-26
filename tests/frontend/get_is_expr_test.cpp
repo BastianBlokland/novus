@@ -103,10 +103,6 @@ TEST_CASE("Analyzing 'is' / 'as' expressions", "[frontend]") {
         errConstNameConflictsWithType(src, "int", input::Span{41, 43}));
     CHECK_DIAG(
         "union U = int, float "
-        "fun f(U u) u as int f ? 1 : 2",
-        errConstNameConflictsWithFunction(src, "f", input::Span{41, 41}));
-    CHECK_DIAG(
-        "union U = int, float "
         "fun f(U u) u as int u ? 1 : 2",
         errConstNameConflictsWithConst(src, "u", input::Span{41, 41}));
   }

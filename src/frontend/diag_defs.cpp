@@ -241,13 +241,6 @@ auto errConstNameConflictsWithType(const Source& src, const std::string& name, i
   return error(src, oss.str(), span);
 }
 
-auto errConstNameConflictsWithFunction(const Source& src, const std::string& name, input::Span span)
-    -> Diag {
-  std::ostringstream oss;
-  oss << "Constant name '" << name << "' conflicts with an function with the same name";
-  return error(src, oss.str(), span);
-}
-
 auto errConstNameConflictsWithConst(const Source& src, const std::string& name, input::Span span)
     -> Diag {
   std::ostringstream oss;

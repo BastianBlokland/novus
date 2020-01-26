@@ -54,9 +54,6 @@ TEST_CASE("Analyzing user-function definitions", "[frontend]") {
         "fun f(int delegate) -> int true",
         errConstNameConflictsWithType(src, "delegate", input::Span{10, 17}));
     CHECK_DIAG(
-        "fun f(int f) -> int true",
-        errConstNameConflictsWithFunction(src, "f", input::Span{10, 10}));
-    CHECK_DIAG(
         "fun f(int a, int a) -> int true",
         errConstNameConflictsWithConst(src, "a", input::Span{17, 17}));
     CHECK_DIAG("fun f() -> int f2()", errUndeclaredPureFunc(src, "f2", {}, input::Span{15, 18}));

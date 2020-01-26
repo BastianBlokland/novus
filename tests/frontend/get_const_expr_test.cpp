@@ -62,8 +62,6 @@ TEST_CASE("Analyzing constant expressions", "[frontend]") {
         "fun f() -> int bool = 42",
         errConstNameConflictsWithType(src, "bool", input::Span{15, 18}));
     CHECK_DIAG(
-        "fun f() -> int f = 42", errConstNameConflictsWithFunction(src, "f", input::Span{15, 15}));
-    CHECK_DIAG(
         "fun f(int a) -> int a = 42",
         errConstNameConflictsWithConst(src, "a", input::Span{20, 20}));
     CHECK_DIAG(
