@@ -26,9 +26,10 @@ auto Allocator::allocStrLit(const std::string& lit) -> StringRef* {
 }
 
 auto Allocator::allocStr(const unsigned int size) -> std::pair<StringRef*, char*> {
-  auto mem        = alloc<StringRef>(size);
-  auto payloadPtr = static_cast<char*>(mem.second);
-  auto* refPtr    = static_cast<StringRef*>(new (mem.first) StringRef{payloadPtr, size});
+  auto mem         = alloc<StringRef>(size + 1); // +1 for null-terminator.
+  auto payloadPtr  = static_cast<char*>(mem.second);
+  payloadPtr[size] = '\0'; // Null-terminate the payload.
+  auto* refPtr     = static_cast<StringRef*>(new (mem.first) StringRef{payloadPtr, size});
   initRef(refPtr);
   return {refPtr, payloadPtr};
 }

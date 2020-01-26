@@ -193,6 +193,8 @@ Program::Program() :
       *this, fk::ActionPrintStringLine, "printl", sym::TypeSet{m_string}, m_string);
   m_funcDecls.registerAction(*this, fk::ActionReadChar, "read", sym::TypeSet{}, m_char);
   m_funcDecls.registerAction(*this, fk::ActionReadStringLine, "readl", sym::TypeSet{}, m_string);
+  m_funcDecls.registerAction(
+      *this, fk::ActionGetEnvVar, "getEnvVar", sym::TypeSet{m_string}, m_string);
   m_funcDecls.registerAction(*this, fk::ActionSleep, "sleep", sym::TypeSet{m_int}, m_int);
   m_funcDecls.registerAction(
       *this, fk::ActionAssert, "assert", sym::TypeSet{m_bool, m_string}, m_bool);

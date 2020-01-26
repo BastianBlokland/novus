@@ -32,7 +32,9 @@ private:
 inline auto getStringRef(const Value& val) noexcept {
   auto* ref = val.getRef();
   assert(ref->getKind() == RefKind::String);
-  return static_cast<StringRef*>(ref); // NOLINT: Down-cast.
+  auto* res = static_cast<StringRef*>(ref);          // NOLINT: Down-cast.
+  assert(res->getDataPtr()[res->getSize()] == '\0'); // Assert that the string is null-terminated.
+  return res;
 }
 
 } // namespace vm::internal

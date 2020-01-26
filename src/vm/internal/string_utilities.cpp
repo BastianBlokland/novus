@@ -9,20 +9,24 @@
 
 namespace vm::internal {
 
+auto emptyString(Allocator* allocator) -> Value {
+  auto emptyStrAlloc = allocator->allocStr(0);
+  return refValue(emptyStrAlloc.first);
+}
+
 auto toString(Allocator* allocator, int32_t val) -> Value {
-#ifdef HAS_CHAR_CONV
   static const auto maxCharSize = 11;
-#else
-  static const auto maxCharSize = 12; // +1 for null-terminator.
-#endif
-  const auto strRefAlloc = allocator->allocStr(maxCharSize);
+  const auto strRefAlloc        = allocator->allocStr(maxCharSize);
 
 #ifdef HAS_CHAR_CONV
-  const auto convRes = std::to_chars(strRefAlloc.second, strRefAlloc.second + maxCharSize, val);
+  const auto convRes    = std::to_chars(strRefAlloc.second, strRefAlloc.second + maxCharSize, val);
+  const auto resultSize = convRes.ptr - strRefAlloc.second;
+  strRefAlloc.second[resultSize] = '\0'; // Null-terminate.
   strRefAlloc.first->updateSize(convRes.ptr - strRefAlloc.second);
 #else
   // NOLINTNEXTLINE: C-style var-arg func.
-  const auto size = std::snprintf(strRefAlloc.second, maxCharSize, "%d", val);
+  const auto size = std::snprintf(strRefAlloc.second, maxCharSize + 1, "%d", val);
+  assert(strRefAlloc.first[size] == '\0');
   strRefAlloc.first->updateSize(size);
 #endif
 
@@ -49,7 +53,14 @@ auto toString(Allocator* allocator, uint8_t val) -> Value {
 
 auto toString(Allocator* allocator, const std::string& val) -> Value {
   const auto strRefAlloc = allocator->allocStr(val.length());
-  std::memcpy(strRefAlloc.second, val.data(), val.length());
+  std::memcpy(strRefAlloc.second, val.data(), val.length() + 1); // +1 to cpy the null-terminator.
+  return refValue(strRefAlloc.first);
+}
+
+auto toString(Allocator* allocator, const char* val) -> Value {
+  const auto len         = std::strlen(val);
+  const auto strRefAlloc = allocator->allocStr(len);
+  std::memcpy(strRefAlloc.second, val, len + 1); // +1 to cpy the null-terminator.
   return refValue(strRefAlloc.first);
 }
 
