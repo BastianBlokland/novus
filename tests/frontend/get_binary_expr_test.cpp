@@ -98,28 +98,6 @@ TEST_CASE("Analyzing binary expressions", "[frontend]") {
         *prog::expr::switchExprNode(output.getProg(), std::move(conditions), std::move(branches)));
   }
 
-  SECTION("Get logic 'and' expression with conversions") {
-    const auto& output = ANALYZE("fun bool(int i) i != 0 "
-                                 "fun f(int a, int b) a && b");
-    REQUIRE(output.isSuccess());
-    const auto& funcDef =
-        GET_FUNC_DEF(output, "f", GET_TYPE_ID(output, "int"), GET_TYPE_ID(output, "int"));
-    const auto& consts = funcDef.getConsts();
-
-    auto conditions = std::vector<prog::expr::NodePtr>{};
-    conditions.push_back(applyConv(
-        output, "int", "bool", prog::expr::constExprNode(consts, consts.lookup("a").value())));
-
-    auto branches = std::vector<prog::expr::NodePtr>{};
-    branches.push_back(applyConv(
-        output, "int", "bool", prog::expr::constExprNode(consts, consts.lookup("b").value())));
-    branches.push_back(prog::expr::litBoolNode(output.getProg(), false));
-
-    CHECK(
-        funcDef.getExpr() ==
-        *prog::expr::switchExprNode(output.getProg(), std::move(conditions), std::move(branches)));
-  }
-
   SECTION("Chain 'as' checks with binary 'and' in switch") {
     const auto& output = ANALYZE("struct Null "
                                  "union Option = int, Null "
@@ -179,38 +157,16 @@ TEST_CASE("Analyzing binary expressions", "[frontend]") {
         *prog::expr::switchExprNode(output.getProg(), std::move(conditions), std::move(branches)));
   }
 
-  SECTION("Get logic 'or' expression with conversions") {
-    const auto& output = ANALYZE("fun bool(int i) i != 0 "
-                                 "fun f(int a, int b) a || b");
-    REQUIRE(output.isSuccess());
-    const auto& funcDef =
-        GET_FUNC_DEF(output, "f", GET_TYPE_ID(output, "int"), GET_TYPE_ID(output, "int"));
-    const auto& consts = funcDef.getConsts();
-
-    auto conditions = std::vector<prog::expr::NodePtr>{};
-    conditions.push_back(applyConv(
-        output, "int", "bool", prog::expr::constExprNode(consts, consts.lookup("a").value())));
-
-    auto branches = std::vector<prog::expr::NodePtr>{};
-    branches.push_back(prog::expr::litBoolNode(output.getProg(), true));
-    branches.push_back(applyConv(
-        output, "int", "bool", prog::expr::constExprNode(consts, consts.lookup("b").value())));
-
-    CHECK(
-        funcDef.getExpr() ==
-        *prog::expr::switchExprNode(output.getProg(), std::move(conditions), std::move(branches)));
-  }
-
   SECTION("Diagnostics") {
     CHECK_DIAG(
         "fun f() -> int true + false",
         errUndeclaredBinOperator(src, "+", "bool", "bool", input::Span{20, 20}));
     CHECK_DIAG(
         "fun f(int a, bool b) -> bool a && b",
-        errNoConversionFound(src, "int", "bool", input::Span{29, 29}));
+        errNoImplicitConversionFound(src, "int", "bool", input::Span{29, 29}));
     CHECK_DIAG(
         "fun f(bool a, int b) -> bool a || b",
-        errNoConversionFound(src, "int", "bool", input::Span{34, 34}));
+        errNoImplicitConversionFound(src, "int", "bool", input::Span{34, 34}));
   }
 }
 

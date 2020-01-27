@@ -21,13 +21,13 @@ TEST_CASE("Analyzing user-function definitions", "[frontend]") {
   }
 
   SECTION("Define function with conversion") {
-    const auto& output = ANALYZE("fun f() -> string 2");
+    const auto& output = ANALYZE("fun f() -> float 2");
     REQUIRE(output.isSuccess());
     const auto& funcDef = GET_FUNC_DEF(output, "f");
 
     CHECK(
         funcDef.getExpr() ==
-        *applyConv(output, "int", "string", prog::expr::litIntNode(output.getProg(), 2)));
+        *applyConv(output, "int", "float", prog::expr::litIntNode(output.getProg(), 2)));
   }
 
   SECTION("Define templated function") {

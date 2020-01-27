@@ -123,7 +123,7 @@ auto GetExpr::visit(const parse::BinaryExprNode& n) -> void {
   const auto funcName   = prog::getFuncName(op.value());
   const auto possibleFuncs =
       getFunctions(funcName, std::nullopt, argTypeSet, n.getOperator().getSpan(), true);
-  const auto func = m_ctx->getProg()->lookupFunc(possibleFuncs, argTypeSet, getOvOptions(1, false));
+  const auto func = m_ctx->getProg()->lookupFunc(possibleFuncs, argTypeSet, getOvOptions(1));
   if (!func) {
     m_ctx->reportDiag(
         errUndeclaredBinOperator,
@@ -164,13 +164,10 @@ auto GetExpr::visit(const parse::CallExprNode& n) -> void {
   }
   // Actions cannot be called using the 'instance call' syntax.
   const auto exclActions = instance != nullptr;
-  // For instance calls the first argument has to match exactly.
-  const auto disableConvOnFirstArg = instance != nullptr;
 
   const auto possibleFuncs =
       getFunctionsInclConversions(nameToken, typeParams, args->second, exclActions);
-  const auto func = m_ctx->getProg()->lookupFunc(
-      possibleFuncs, args->second, getOvOptions(-1, disableConvOnFirstArg));
+  const auto func = m_ctx->getProg()->lookupFunc(possibleFuncs, args->second, getOvOptions(-1));
   if (!func) {
     auto isTypeOrConv = isType(m_ctx, getName(nameToken));
     if (typeParams) {
@@ -213,7 +210,7 @@ auto GetExpr::visit(const parse::ConditionalExprNode& n) -> void {
   if (!conditions[0]) {
     return;
   }
-  if (!applyConversion(&conditions[0], m_ctx->getProg()->getBool(), n[0].getSpan())) {
+  if (!applyImplicitConversion(&conditions[0], m_ctx->getProg()->getBool(), n[0].getSpan())) {
     return;
   }
 
@@ -243,7 +240,7 @@ auto GetExpr::visit(const parse::ConditionalExprNode& n) -> void {
 
   // Add a conversion for all branches that require one.
   for (auto i = 0U; i != branches.size(); ++i) {
-    if (!applyConversion(&branches[i], m_typeHint, n[i].getSpan())) {
+    if (!applyImplicitConversion(&branches[i], m_typeHint, n[i].getSpan())) {
       return;
     }
   }
@@ -380,8 +377,7 @@ auto GetExpr::visit(const parse::IndexExprNode& n) -> void {
 
   const auto funcName      = prog::getFuncName(prog::Operator::SquareSquare);
   const auto possibleFuncs = getFunctions(funcName, std::nullopt, args->second, n.getSpan(), true);
-  const auto func =
-      m_ctx->getProg()->lookupFunc(possibleFuncs, args->second, getOvOptions(-1, true));
+  const auto func = m_ctx->getProg()->lookupFunc(possibleFuncs, args->second, getOvOptions(-1));
   if (!func) {
     auto argTypeNames = std::vector<std::string>{};
     for (const auto& argType : args->second) {
@@ -507,7 +503,7 @@ auto GetExpr::visit(const parse::SwitchExprNode& n) -> void {
         isValid = false;
         continue;
       }
-      if (applyConversion(&condition, m_ctx->getProg()->getBool(), n[i][0].getSpan())) {
+      if (applyImplicitConversion(&condition, m_ctx->getProg()->getBool(), n[i][0].getSpan())) {
         conditions.push_back(std::move(condition));
       } else {
         isValid = false;
@@ -536,7 +532,7 @@ auto GetExpr::visit(const parse::SwitchExprNode& n) -> void {
 
   // Add a conversion for all branches that require one.
   for (auto i = 0U; i != branches.size(); ++i) {
-    isValid &= applyConversion(&branches[i], m_typeHint, n[i].getSpan());
+    isValid &= applyImplicitConversion(&branches[i], m_typeHint, n[i].getSpan());
   }
 
   if (isValid) {
@@ -571,7 +567,7 @@ auto GetExpr::visit(const parse::UnaryExprNode& n) -> void {
   const auto funcName = prog::getFuncName(op.value());
   const auto possibleFuncs =
       getFunctions(funcName, std::nullopt, argTypes, n.getOperator().getSpan(), true);
-  const auto func = m_ctx->getProg()->lookupFunc(possibleFuncs, argTypes, getOvOptions(0, true));
+  const auto func = m_ctx->getProg()->lookupFunc(possibleFuncs, argTypes, getOvOptions(0));
   if (!func) {
     m_ctx->reportDiag(
         errUndeclaredUnaryOperator,
@@ -683,17 +679,17 @@ auto GetExpr::getSubExpr(
   return std::move(visitor.getValue());
 }
 
-auto GetExpr::applyConversion(prog::expr::NodePtr* expr, prog::sym::TypeId toType, input::Span span)
-    -> bool {
+auto GetExpr::applyImplicitConversion(
+    prog::expr::NodePtr* expr, prog::sym::TypeId toType, input::Span span) -> bool {
   const auto fromType = (*expr)->getType();
   if (fromType == toType) {
     return true;
   }
 
-  const auto conv = m_ctx->getProg()->lookupConversion(fromType, toType);
+  const auto conv = m_ctx->getProg()->lookupImplicitConv(fromType, toType);
   if (!conv) {
     m_ctx->reportDiag(
-        errNoConversionFound,
+        errNoImplicitConversionFound,
         getDisplayName(*m_ctx, fromType),
         getDisplayName(*m_ctx, toType),
         span);
@@ -730,8 +726,8 @@ auto GetExpr::getBinLogicOpExpr(const parse::BinaryExprNode& n, BinLogicOp op)
     return nullptr;
   }
 
-  isValid &= applyConversion(&lhs, m_ctx->getProg()->getBool(), n[0].getSpan());
-  isValid &= applyConversion(&rhs, m_ctx->getProg()->getBool(), n[1].getSpan());
+  isValid &= applyImplicitConversion(&lhs, m_ctx->getProg()->getBool(), n[0].getSpan());
+  isValid &= applyImplicitConversion(&rhs, m_ctx->getProg()->getBool(), n[1].getSpan());
 
   if (isValid) {
     auto conditions = std::vector<prog::expr::NodePtr>{};
@@ -822,8 +818,7 @@ auto GetExpr::getDynCallExpr(const parse::CallExprNode& n) -> prog::expr::NodePt
   // Check if this is a call to a overloaded call operator.
   const auto funcName      = prog::getFuncName(prog::Operator::ParenParen);
   const auto possibleFuncs = getFunctions(funcName, std::nullopt, args->second, n.getSpan(), true);
-  const auto func =
-      m_ctx->getProg()->lookupFunc(possibleFuncs, args->second, getOvOptions(-1, true));
+  const auto func = m_ctx->getProg()->lookupFunc(possibleFuncs, args->second, getOvOptions(-1));
   if (!func) {
     auto argTypeNames = std::vector<std::string>{};
     for (const auto& argType : args->second) {

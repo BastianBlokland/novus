@@ -39,7 +39,7 @@ namespace frontend {
   OUTPUT.getProg().getActionDecl(GET_ACTION_ID(OUTPUT, ACTIONNAME, __VA_ARGS__))
 
 #define GET_CONV(OUTPUT, FROM_TYPE, TO_TYPE)                                                       \
-  OUTPUT.getProg().lookupConversion(GET_TYPE_ID(OUTPUT, FROM_TYPE), GET_TYPE_ID(OUTPUT, TO_TYPE))
+  OUTPUT.getProg().lookupImplicitConv(GET_TYPE_ID(OUTPUT, FROM_TYPE), GET_TYPE_ID(OUTPUT, TO_TYPE))
 
 #define CHECK_DIAG(INPUT, ...)                                                                     \
   {                                                                                                \

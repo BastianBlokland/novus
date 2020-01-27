@@ -8,7 +8,7 @@ TEST_CASE("Generating assembly for unions", "[backend]") {
   SECTION("Create user union and check for equality") {
     CHECK_PROG(
         "union Val = int, float "
-        "print(Val(1) == Val(1.0))",
+        "print(string(Val(1) == Val(1.0)))",
         [](backend::Builder* builder) -> void {
           // --- Union equality function start.
           builder->label("ValEq");

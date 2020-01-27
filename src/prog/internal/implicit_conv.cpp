@@ -1,4 +1,4 @@
-#include "internal/conversion.hpp"
+#include "internal/implicit_conv.hpp"
 #include "prog/expr/node_call.hpp"
 #include "prog/program.hpp"
 #include <algorithm>
@@ -8,7 +8,7 @@
 
 namespace prog::internal {
 
-auto findConversion(const Program& prog, sym::TypeId from, sym::TypeId to)
+auto findImplicitConv(const Program& prog, sym::TypeId from, sym::TypeId to)
     -> std::optional<sym::FuncId> {
   if (!from.isConcrete() || !to.isConcrete()) {
     return std::nullopt;
@@ -20,11 +20,10 @@ auto findConversion(const Program& prog, sym::TypeId from, sym::TypeId to)
   const auto& typeTable = internal::getTypeDeclTable(prog);
   const auto& funcTable = internal::getFuncDeclTable(prog);
 
-  // Conversions are funcs with the name of the target and a single input param.
   const auto& toName = typeTable[to].getName();
   for (const auto& funcId : funcTable.lookup(toName, OvOptions{OvFlags::ExclActions})) {
     const auto& funcDecl = funcTable[funcId];
-    if (funcDecl.getOutput() != to) {
+    if (!funcDecl.isImplicitConv() || funcDecl.getOutput() != to) {
       continue;
     }
     const auto& funcInput = funcDecl.getInput();
@@ -35,15 +34,14 @@ auto findConversion(const Program& prog, sym::TypeId from, sym::TypeId to)
   return std::nullopt;
 }
 
-auto findConvertibleTypes(const Program& prog, sym::TypeId from) -> std::vector<sym::TypeId> {
+auto findImplicitConvTypes(const Program& prog, sym::TypeId from) -> std::vector<sym::TypeId> {
   const auto& typeTable = internal::getTypeDeclTable(prog);
   const auto& funcTable = internal::getFuncDeclTable(prog);
 
   auto result = std::vector<sym::TypeId>{};
 
-  // Conversions are funcs with the name of the target and a single input param.
   for (const auto& funcDecl : funcTable) {
-    if (funcDecl.isAction()) {
+    if (!funcDecl.isImplicitConv()) {
       continue;
     }
     if (funcDecl.getInput().getCount() != 1 || *funcDecl.getInput().begin() != from) {
@@ -61,22 +59,22 @@ auto findConvertibleTypes(const Program& prog, sym::TypeId from) -> std::vector<
   return result;
 }
 
-auto isConvertable(const Program& prog, const sym::TypeSet& toTypes, const sym::TypeSet& fromTypes)
-    -> bool {
+auto isImplicitConvertible(
+    const Program& prog, const sym::TypeSet& toTypes, const sym::TypeSet& fromTypes) -> bool {
   if (toTypes.getCount() != fromTypes.getCount()) {
     return false;
   }
   auto fromTypesItr = fromTypes.begin();
   auto toTypesItr   = toTypes.begin();
   for (; fromTypesItr != fromTypes.end(); ++fromTypesItr, ++toTypesItr) {
-    if (*fromTypesItr != *toTypesItr && !findConversion(prog, *fromTypesItr, *toTypesItr)) {
+    if (*fromTypesItr != *toTypesItr && !findImplicitConv(prog, *fromTypesItr, *toTypesItr)) {
       return false;
     }
   }
   return true;
 }
 
-auto isConvertable(
+auto isImplicitConvertible(
     const Program& prog, const sym::TypeSet& toTypes, const std::vector<expr::NodePtr>& fromArgs)
     -> bool {
   if (toTypes.getCount() != fromArgs.size()) {
@@ -86,14 +84,14 @@ auto isConvertable(
   auto toTypesItr  = toTypes.begin();
   for (; fromArgsItr != fromArgs.end(); ++fromArgsItr, ++toTypesItr) {
     const auto argType = (*fromArgsItr)->getType();
-    if (argType != *toTypesItr && !findConversion(prog, argType, *toTypesItr)) {
+    if (argType != *toTypesItr && !findImplicitConv(prog, argType, *toTypesItr)) {
       return false;
     }
   }
   return true;
 }
 
-auto applyConversions(
+auto applyImplicitConversions(
     const Program& prog, const sym::TypeSet& toTypes, std::vector<expr::NodePtr>* fromArgs)
     -> void {
   if (!fromArgs) {
@@ -111,7 +109,7 @@ auto applyConversions(
     if (fromType == toType) {
       continue;
     }
-    auto conv = findConversion(prog, fromType, toType);
+    auto conv = findImplicitConv(prog, fromType, toType);
     if (!conv) {
       throw std::logic_error{"No conversion possible for one of the arguments"};
     }
@@ -133,7 +131,7 @@ auto findCommonType(const Program& prog, const std::vector<sym::TypeId>& types)
   // Gather all types to check (every type and what types those are convertible to).
   for (const auto& type : types) {
     possible.insert({type, 0});
-    for (const auto& convertibleType : findConvertibleTypes(prog, type)) {
+    for (const auto& convertibleType : findImplicitConvTypes(prog, type)) {
       possible.insert({convertibleType, 0});
     }
   }
@@ -145,7 +143,7 @@ auto findCommonType(const Program& prog, const std::vector<sym::TypeId>& types)
       if (type == possibleItr->first) {
         continue;
       }
-      if (findConversion(prog, type, possibleItr->first)) {
+      if (findImplicitConv(prog, type, possibleItr->first)) {
         ++possibleItr->second;
       } else {
         possibleItr = possible.erase(possibleItr);

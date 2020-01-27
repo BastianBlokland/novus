@@ -345,7 +345,7 @@ TEST_CASE("Generate assembly for call expressions", "[backend]") {
       builder->addLoadLitInt(42);
       builder->addConvIntFloat();
     });
-    CHECK_EXPR_INT("toInt(42.1337)", [](backend::Builder* builder) -> void {
+    CHECK_EXPR_INT("int(42.1337)", [](backend::Builder* builder) -> void {
       builder->addLoadLitFloat(42.1337F); // NOLINT: Magic numbers
       builder->addConvFloatInt();
     });

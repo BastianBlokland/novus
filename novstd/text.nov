@@ -1,5 +1,10 @@
 import "list.nov"
 
+// Operators
+
+fun +{T}(string s, T v)
+  s + v.string()
+
 // Char functions
 
 fun isDigit(char c)
@@ -21,10 +26,10 @@ fun isNewline(char c)
   c == '\n' || c == '\r'
 
 fun toUpper(char c)
-  c.isLower() ? toChar(c ^ 0x20) : c
+  c.isLower() ? char(c ^ 0x20) : c
 
 fun toLower(char c)
-  c.isUpper() ? toChar(c ^ 0x20) : c
+  c.isUpper() ? char(c ^ 0x20) : c
 
 // String functions
 

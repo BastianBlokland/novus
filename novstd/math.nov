@@ -51,7 +51,7 @@ fun clamp{T}(T v, T min, T max)
   else        -> v
 
 fun trunc(float v)
-  float(toInt(v))
+  float(int(v))
 
 fun floor(float v)
   t = trunc(v); t > v ? --t : t
@@ -63,7 +63,7 @@ fun round(float v)
   t = trunc(v);
   d = abs(v - t);
   if d < .5   -> t
-  if d == .5  -> isEven(toInt(t)) ? t : t + sign(v)
+  if d == .5  -> isEven(int(t)) ? t : t + sign(v)
   else        -> t + sign(v)
 
 fun approx(float a, float b)

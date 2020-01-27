@@ -466,10 +466,10 @@ auto errBranchesHaveNoCommonType(const Source& src, input::Span span) -> Diag {
   return error(src, oss.str(), span);
 }
 
-auto errNoConversionFound(
+auto errNoImplicitConversionFound(
     const Source& src, const std::string& from, const std::string& to, input::Span span) -> Diag {
   std::ostringstream oss;
-  oss << "No conversion found from '" << from << "' to '" << to << '\'';
+  oss << "No implicit conversion found from '" << from << "' to '" << to << '\'';
   return error(src, oss.str(), span);
 }
 

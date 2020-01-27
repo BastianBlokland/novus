@@ -197,7 +197,7 @@ errUnsupportedOperator(const Source& src, const std::string& name, input::Span s
 
 [[nodiscard]] auto errBranchesHaveNoCommonType(const Source& src, input::Span span) -> Diag;
 
-[[nodiscard]] auto errNoConversionFound(
+[[nodiscard]] auto errNoImplicitConversionFound(
     const Source& src, const std::string& from, const std::string& to, input::Span span) -> Diag;
 
 [[nodiscard]] auto errNonExhaustiveSwitchWithoutElse(const Source& src, input::Span span) -> Diag;

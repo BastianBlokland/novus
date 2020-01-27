@@ -99,7 +99,7 @@ auto FuncTemplate::isCallable(
     const prog::sym::TypeSet& typeParams, const prog::sym::TypeSet& argTypes) -> bool {
   const auto subTable = createSubTable(typeParams);
   auto funcInput      = getFuncInput(m_ctx, &subTable, *m_parseNode);
-  return funcInput && m_ctx->getProg()->isConvertible(*funcInput, argTypes);
+  return funcInput && m_ctx->getProg()->isImplicitConvertible(*funcInput, argTypes);
 }
 
 auto FuncTemplate::instantiate(const prog::sym::TypeSet& typeParams) -> const FuncTemplateInst* {

@@ -6,14 +6,14 @@ namespace frontend {
 TEST_CASE("Analyzing overloads", "[frontend]") {
 
   SECTION("Allow conversion") {
-    const auto& output = ANALYZE("fun f1(string a, string b) a + b "
+    const auto& output = ANALYZE("fun f1(float a, float b) a + b "
                                  "fun f2() f1(42, 1337)");
     REQUIRE(output.isSuccess());
-    CHECK(GET_FUNC_DEF(output, "f2").getExpr().getType() == GET_TYPE_ID(output, "string"));
+    CHECK(GET_FUNC_DEF(output, "f2").getExpr().getType() == GET_TYPE_ID(output, "float"));
   }
 
   SECTION("Prefer overload with no conversion") {
-    const auto& output = ANALYZE("fun f1(string s) s "
+    const auto& output = ANALYZE("fun f1(float f) f "
                                  "fun f1(int i) i "
                                  "fun f2() f1(1337)");
     REQUIRE(output.isSuccess());
@@ -21,15 +21,15 @@ TEST_CASE("Analyzing overloads", "[frontend]") {
   }
 
   SECTION("Prefer overload with less conversions") {
-    const auto& output = ANALYZE("fun f1(string a, string b) b "
-                                 "fun f1(string a, int b) b "
+    const auto& output = ANALYZE("fun f1(float a, float b) b "
+                                 "fun f1(float a, int b) b "
                                  "fun f2() f1(42, 1337)");
     REQUIRE(output.isSuccess());
     CHECK(GET_FUNC_DEF(output, "f2").getExpr().getType() == GET_TYPE_ID(output, "int"));
   }
 
   SECTION("Allow conversion in binary operator") {
-    const auto& output = ANALYZE("print(\"hello\" + 42)");
+    const auto& output = ANALYZE("print(string(1.0 / 2))");
     REQUIRE(output.isSuccess());
   }
 

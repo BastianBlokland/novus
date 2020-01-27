@@ -67,7 +67,7 @@ auto TypeInferExpr::visit(const parse::BinaryExprNode& n) -> void {
     argTypes.push_back(inferSubExpr(n[i]));
   }
   const auto argTypeSet = prog::sym::TypeSet{std::move(argTypes)};
-  m_type                = inferFuncCall(prog::getFuncName(*op), argTypeSet, false);
+  m_type                = inferFuncCall(prog::getFuncName(*op), argTypeSet);
 }
 
 auto TypeInferExpr::visit(const parse::CallExprNode& n) -> void {
@@ -119,7 +119,7 @@ auto TypeInferExpr::visit(const parse::CallExprNode& n) -> void {
   }
 
   // Regular functions.
-  m_type = inferFuncCall(funcName, argTypeSet, false);
+  m_type = inferFuncCall(funcName, argTypeSet);
 }
 
 auto TypeInferExpr::visit(const parse::ConditionalExprNode& n) -> void {
@@ -237,7 +237,7 @@ auto TypeInferExpr::visit(const parse::IndexExprNode& n) -> void {
   }
   const auto argTypeSet = prog::sym::TypeSet{std::move(argTypes)};
   const auto funcName   = prog::getFuncName(prog::Operator::SquareSquare);
-  m_type                = inferFuncCall(funcName, argTypeSet, true);
+  m_type                = inferFuncCall(funcName, argTypeSet);
 }
 
 auto TypeInferExpr::visit(const parse::IsExprNode& n) -> void {
@@ -321,7 +321,7 @@ auto TypeInferExpr::visit(const parse::UnaryExprNode& n) -> void {
     return;
   }
   auto argType = inferSubExpr(n[0]);
-  m_type       = inferFuncCall(prog::getFuncName(*op), {argType}, true);
+  m_type       = inferFuncCall(prog::getFuncName(*op), {argType});
 }
 
 auto TypeInferExpr::visit(const parse::EnumDeclStmtNode & /*unused*/) -> void {
@@ -371,11 +371,10 @@ auto TypeInferExpr::inferDynCall(const parse::CallExprNode& n) -> prog::sym::Typ
   // Call to a overloaded call operator.
   const auto argTypeSet = prog::sym::TypeSet{std::move(argTypes)};
   const auto funcName   = prog::getFuncName(prog::Operator::ParenParen);
-  return inferFuncCall(funcName, argTypeSet, true);
+  return inferFuncCall(funcName, argTypeSet);
 }
 
-auto TypeInferExpr::inferFuncCall(
-    const std::string& funcName, const prog::sym::TypeSet& argTypes, bool disableConvOnFirstArg)
+auto TypeInferExpr::inferFuncCall(const std::string& funcName, const prog::sym::TypeSet& argTypes)
     -> prog::sym::TypeId {
 
   for (const auto& argType : argTypes) {
@@ -385,9 +384,6 @@ auto TypeInferExpr::inferFuncCall(
   }
 
   auto ovFlags = prog::OvFlags::None;
-  if (disableConvOnFirstArg) {
-    ovFlags = ovFlags | prog::OvFlags::DisableConvOnFirstArg;
-  }
   if (!hasFlag<Flags::AllowActionCalls>()) {
     ovFlags = ovFlags | prog::OvFlags::ExclActions;
   }

@@ -68,7 +68,7 @@ auto defineFunc(
     return true;
   }
 
-  const auto conv = ctx->getProg()->lookupConversion(expr->getType(), funcRetType);
+  const auto conv = ctx->getProg()->lookupImplicitConv(expr->getType(), funcRetType);
   if (conv && *conv != id) {
     auto convArgs = std::vector<prog::expr::NodePtr>{};
     convArgs.push_back(std::move(expr));

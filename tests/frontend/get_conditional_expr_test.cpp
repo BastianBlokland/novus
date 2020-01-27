@@ -31,25 +31,6 @@ TEST_CASE("Analyzing conditional expressions", "[frontend]") {
         *prog::expr::switchExprNode(output.getProg(), std::move(conditions), std::move(branches)));
   }
 
-  SECTION("Get conditional expression with conversion on the condition") {
-    const auto& output = ANALYZE("fun bool(int i) i != 0 "
-                                 "fun f() 1 ? 1 : 3");
-    REQUIRE(output.isSuccess());
-    const auto& funcDef = GET_FUNC_DEF(output, "f");
-
-    auto conditions = std::vector<prog::expr::NodePtr>{};
-    conditions.push_back(
-        applyConv(output, "int", "bool", prog::expr::litIntNode(output.getProg(), 1)));
-
-    auto branches = std::vector<prog::expr::NodePtr>{};
-    branches.push_back(prog::expr::litIntNode(output.getProg(), 1));
-    branches.push_back(prog::expr::litIntNode(output.getProg(), 3));
-
-    CHECK(
-        funcDef.getExpr() ==
-        *prog::expr::switchExprNode(output.getProg(), std::move(conditions), std::move(branches)));
-  }
-
   SECTION("Get conditional expression with conversion on the lhs branch") {
     const auto& output = ANALYZE("fun f() true ? 0 : 1.0");
     REQUIRE(output.isSuccess());
@@ -114,11 +95,11 @@ TEST_CASE("Analyzing conditional expressions", "[frontend]") {
     CHECK_DIAG(
         "fun f(int a) -> int "
         "a ? 1 : 2",
-        errNoConversionFound(src, "int", "bool", input::Span{20, 20}));
+        errNoImplicitConversionFound(src, "int", "bool", input::Span{20, 20}));
     CHECK_DIAG(
         "fun f() -> int "
         "true ? 1 : true",
-        errNoConversionFound(src, "bool", "int", input::Span{22, 22}));
+        errNoImplicitConversionFound(src, "bool", "int", input::Span{22, 22}));
   }
 }
 

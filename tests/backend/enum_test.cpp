@@ -8,7 +8,7 @@ TEST_CASE("Generating assembly for enums", "[backend]") {
   SECTION("Create and convert to int") {
     CHECK_PROG(
         "enum E = a : 42 "
-        "print(E.a == 1337)",
+        "print(string(E.a == 1337))",
         [](backend::Builder* builder) -> void {
           // --- Print statement start.
           builder->label("print");
@@ -29,7 +29,7 @@ TEST_CASE("Generating assembly for enums", "[backend]") {
   SECTION("Bitwise ops") {
     CHECK_PROG(
         "enum E = a:0b01, b:0b10, ab:0b11 "
-        "print((E.a | E.b) == E.ab)",
+        "print(string((E.a | E.b) == E.ab))",
         [](backend::Builder* builder) -> void {
           // --- Print statement start.
           builder->label("print");
@@ -53,7 +53,7 @@ TEST_CASE("Generating assembly for enums", "[backend]") {
   SECTION("Convert from int") {
     CHECK_PROG(
         "enum E = a "
-        "print(toE(0) == E.a)",
+        "print(string(E(0) == E.a))",
         [](backend::Builder* builder) -> void {
           // --- Print statement start.
           builder->label("print");

@@ -109,9 +109,10 @@ TEST_CASE("Analyzing user-type templates", "[frontend]") {
   }
 
   SECTION("Templated conversion") {
-    const auto& output = ANALYZE("struct tuple{T1, T2} = T1 a, T2 b "
-                                 "fun string{T1, T2}(tuple{T1, T2} t) t.a + \",\" + t.b "
-                                 "fun f(tuple{int, float} t) string{int, float}(t)");
+    const auto& output =
+        ANALYZE("struct tuple{T1, T2} = T1 a, T2 b "
+                "fun string{T1, T2}(tuple{T1, T2} t) t.a.string() + \",\" + t.b.string() "
+                "fun f(tuple{int, float} t) string{int, float}(t)");
     REQUIRE(output.isSuccess());
 
     const auto& fDef   = GET_FUNC_DEF(output, "f", GET_TYPE_ID(output, "tuple__int_float"));

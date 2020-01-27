@@ -8,7 +8,7 @@ TEST_CASE("Generating assembly for structs", "[backend]") {
   SECTION("Create user struct and check for equality") {
     CHECK_PROG(
         "struct User = string name, int age "
-        "print(User(\"hello\", 42) == User(\"world\", 1337))",
+        "print(string(User(\"hello\", 42) == User(\"world\", 1337)))",
         [](backend::Builder* builder) -> void {
           // --- Struct equality function start.
           builder->label("UserEq");
@@ -75,7 +75,7 @@ TEST_CASE("Generating assembly for structs", "[backend]") {
   SECTION("Create empty struct and check for equality") {
     CHECK_PROG(
         "struct Empty "
-        "print(Empty() == Empty())",
+        "print(string(Empty() == Empty()))",
         [](backend::Builder* builder) -> void {
           // --- Struct equality function start.
           builder->label("UserEq");
@@ -107,8 +107,8 @@ TEST_CASE("Generating assembly for structs", "[backend]") {
     SECTION("Create struct with one field, check for equality and load field") {
       CHECK_PROG(
           "struct Age = int years "
-          "print(Age(42) == Age(1337)) "
-          "print(Age(42).years)",
+          "print(string(Age(42) == Age(1337))) "
+          "print(string(Age(42).years))",
           [](backend::Builder* builder) -> void {
             // --- Struct equality function start.
             builder->label("UserEq");

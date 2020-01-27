@@ -3,10 +3,17 @@
 namespace prog::sym {
 
 FuncDecl::FuncDecl(
-    FuncId id, FuncKind kind, bool isAction, std::string name, TypeSet input, TypeId output) :
+    FuncId id,
+    FuncKind kind,
+    bool isAction,
+    bool isImplicitConv,
+    std::string name,
+    TypeSet input,
+    TypeId output) :
     m_id{id},
     m_kind{kind},
     m_isAction{isAction},
+    m_isImplicitConv{isImplicitConv},
     m_name{std::move(name)},
     m_input{std::move(input)},
     m_output{output} {}
@@ -22,6 +29,8 @@ auto FuncDecl::getId() const -> const FuncId& { return m_id; }
 auto FuncDecl::getKind() const -> const FuncKind& { return m_kind; }
 
 auto FuncDecl::isAction() const -> bool { return m_isAction; }
+
+auto FuncDecl::isImplicitConv() const -> bool { return m_isImplicitConv; }
 
 auto FuncDecl::getName() const -> const std::string& { return m_name; }
 

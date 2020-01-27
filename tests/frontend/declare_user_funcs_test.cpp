@@ -58,22 +58,10 @@ TEST_CASE("Analyzing user-function declarations", "[frontend]") {
           GET_TYPE_ID(output, "float"));
     }
 
-    SECTION("Declare conversion function") {
-      const auto& output = ANALYZE("fun bool(int i) i != 0");
-      REQUIRE(output.isSuccess());
-      REQUIRE(GET_CONV(output, "int", "bool"));
-    }
-
-    SECTION("Declare conversion function with explicit ret type") {
-      const auto& output = ANALYZE("fun bool(int i) -> bool i != 0");
-      REQUIRE(output.isSuccess());
-      REQUIRE(GET_CONV(output, "int", "bool"));
-    }
-
     SECTION("Declare templated conversion function") {
       const auto& output = ANALYZE("struct Tuple{T, Y} = T a, Y b "
                                    "fun string{T, Y}(Tuple{T, Y} t) "
-                                   " t.a + \",\" + t.b "
+                                   " t.a.string() + \",\" + t.b.string() "
                                    "fun f() string{int, bool}(Tuple{int, bool}(42, false))");
       REQUIRE(output.isSuccess());
       CHECK(GET_FUNC_DECL(output, "f").getOutput() == GET_TYPE_ID(output, "string"));

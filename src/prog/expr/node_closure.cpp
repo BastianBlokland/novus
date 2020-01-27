@@ -1,5 +1,5 @@
 #include "prog/expr/node_closure.hpp"
-#include "internal/conversion.hpp"
+#include "internal/implicit_conv.hpp"
 #include "utilities.hpp"
 #include <sstream>
 #include <stdexcept>

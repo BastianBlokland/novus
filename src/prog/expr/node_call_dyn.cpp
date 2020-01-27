@@ -1,5 +1,5 @@
 #include "prog/expr/node_call_dyn.hpp"
-#include "internal/conversion.hpp"
+#include "internal/implicit_conv.hpp"
 #include "utilities.hpp"
 #include <sstream>
 #include <stdexcept>
@@ -54,8 +54,8 @@ auto callDynExprNode(const Program& prog, NodePtr lhs, std::vector<NodePtr> args
     throw std::invalid_argument{"Call node contains incorrect number of arguments"};
   }
 
-  // Apply conversions if necessary (and throw if types are incompatible).
-  internal::applyConversions(prog, delegateInput, &args);
+  // Apply implicit conversions if necessary (and throw if types are incompatible).
+  internal::applyImplicitConversions(prog, delegateInput, &args);
 
   return std::unique_ptr<CallDynExprNode>{
       new CallDynExprNode{std::move(lhs), delegateDef.getOutput(), std::move(args)}};

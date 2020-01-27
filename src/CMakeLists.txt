@@ -91,7 +91,7 @@ add_library(prog STATIC
   prog/expr/node.cpp
   prog/expr/utilities.cpp
 
-  prog/internal/conversion.cpp
+  prog/internal/implicit_conv.cpp
   prog/internal/overload.cpp
 
   prog/sym/const_decl_table.cpp

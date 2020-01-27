@@ -51,14 +51,19 @@ auto FuncDeclTable::lookup(
   return internal::findOverload(prog, *this, lookup(name, options), input, options);
 }
 
+auto FuncDeclTable::registerImplicitConv(
+    const Program& prog, FuncKind kind, std::string name, TypeSet input, TypeId output) -> FuncId {
+  return registerFunc(prog, kind, false, true, std::move(name), std::move(input), output);
+}
+
 auto FuncDeclTable::registerFunc(
     const Program& prog, FuncKind kind, std::string name, TypeSet input, TypeId output) -> FuncId {
-  return registerFunc(prog, kind, false, std::move(name), std::move(input), output);
+  return registerFunc(prog, kind, false, false, std::move(name), std::move(input), output);
 }
 
 auto FuncDeclTable::registerAction(
     const Program& prog, FuncKind kind, std::string name, TypeSet input, TypeId output) -> FuncId {
-  return registerFunc(prog, kind, true, std::move(name), std::move(input), output);
+  return registerFunc(prog, kind, true, false, std::move(name), std::move(input), output);
 }
 
 auto FuncDeclTable::updateFuncOutput(FuncId id, TypeId newOutput) -> void {
@@ -71,6 +76,7 @@ auto FuncDeclTable::registerFunc(
     const Program& prog,
     FuncKind kind,
     bool isAction,
+    bool isImplicitConv,
     std::string name,
     TypeSet input,
     TypeId output) -> FuncId {
@@ -89,7 +95,8 @@ auto FuncDeclTable::registerFunc(
     itr = m_lookup.insert({name, std::vector<FuncId>{}}).first;
   }
   itr->second.push_back(id);
-  m_funcs.push_back(FuncDecl{id, kind, isAction, std::move(name), std::move(input), output});
+  m_funcs.push_back(
+      FuncDecl{id, kind, isAction, isImplicitConv, std::move(name), std::move(input), output});
   return id;
 }
 

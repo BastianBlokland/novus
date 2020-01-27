@@ -83,7 +83,8 @@ private:
       bool checkedConstsAccess = false) -> prog::expr::NodePtr;
 
   [[nodiscard]] auto
-  applyConversion(prog::expr::NodePtr* expr, prog::sym::TypeId toType, input::Span span) -> bool;
+  applyImplicitConversion(prog::expr::NodePtr* expr, prog::sym::TypeId toType, input::Span span)
+      -> bool;
 
   [[nodiscard]] auto getBinLogicOpExpr(const parse::BinaryExprNode& n, BinLogicOp op)
       -> prog::expr::NodePtr;
@@ -121,12 +122,8 @@ private:
         static_cast<unsigned int>(F);
   }
 
-  [[nodiscard]] inline auto getOvOptions(int maxConversion, bool disableConversionOnFirstArg) const
-      noexcept {
+  [[nodiscard]] inline auto getOvOptions(int maxConversion) const noexcept {
     auto ovFlags = prog::OvFlags::None;
-    if (disableConversionOnFirstArg) {
-      ovFlags = ovFlags | prog::OvFlags::DisableConvOnFirstArg;
-    }
     if (!hasFlag<Flags::AllowActionCalls>()) {
       ovFlags = ovFlags | prog::OvFlags::ExclActions;
     }

@@ -1,6 +1,7 @@
 #include "catch2/catch.hpp"
 #include "frontend/diag_defs.hpp"
 #include "helpers.hpp"
+#include "prog/expr/node_lit_enum.hpp"
 #include "prog/expr/node_lit_int.hpp"
 #include "prog/expr/node_lit_string.hpp"
 
@@ -27,20 +28,25 @@ TEST_CASE("Analyzing execute statements", "[frontend]") {
   }
 
   SECTION("Define exec statement with conversion") {
-    const auto& output = ANALYZE("print(2)");
+    const auto& output = ANALYZE("enum SleepTimes = short : 10, long : 100 "
+                                 "sleep(SleepTimes.short)");
     REQUIRE(output.isSuccess());
 
     auto execsBegin     = output.getProg().beginExecStmts();
     const auto execsEnd = output.getProg().endExecStmts();
 
     auto args = std::vector<prog::expr::NodePtr>{};
-    args.push_back(applyConv(output, "int", "string", prog::expr::litIntNode(output.getProg(), 2)));
+    args.push_back(applyConv(
+        output,
+        "SleepTimes",
+        "int",
+        prog::expr::litEnumNode(output.getProg(), GET_TYPE_ID(output, "SleepTimes"), "short")));
 
     CHECK(
         execsBegin->getExpr() ==
         *prog::expr::callExprNode(
             output.getProg(),
-            GET_FUNC_ID(output, "print", GET_TYPE_ID(output, "string")),
+            GET_FUNC_ID(output, "sleep", GET_TYPE_ID(output, "int")),
             std::move(args)));
     REQUIRE(++execsBegin == execsEnd);
   }

@@ -1,5 +1,5 @@
 #include "prog/program.hpp"
-#include "internal/conversion.hpp"
+#include "internal/implicit_conv.hpp"
 #include "internal/overload.hpp"
 #include "prog/operator.hpp"
 
@@ -154,12 +154,8 @@ Program::Program() :
   m_funcDecls.registerFunc(*this, fk::DefString, "string", sym::TypeSet{}, m_string);
 
   // Register build-in implicit conversions.
-  m_funcDecls.registerFunc(*this, fk::NoOp, "int", sym::TypeSet{m_char}, m_int);
-  m_funcDecls.registerFunc(*this, fk::ConvIntFloat, "float", sym::TypeSet{m_int}, m_float);
-  m_funcDecls.registerFunc(*this, fk::ConvIntString, "string", sym::TypeSet{m_int}, m_string);
-  m_funcDecls.registerFunc(*this, fk::ConvFloatString, "string", sym::TypeSet{m_float}, m_string);
-  m_funcDecls.registerFunc(*this, fk::ConvBoolString, "string", sym::TypeSet{m_bool}, m_string);
-  m_funcDecls.registerFunc(*this, fk::ConvCharString, "string", sym::TypeSet{m_char}, m_string);
+  m_funcDecls.registerImplicitConv(*this, fk::NoOp, "int", sym::TypeSet{m_char}, m_int);
+  m_funcDecls.registerImplicitConv(*this, fk::ConvIntFloat, "float", sym::TypeSet{m_int}, m_float);
 
   // Register build-in identity conversions (turn into no-ops).
   m_funcDecls.registerFunc(*this, fk::NoOp, "int", sym::TypeSet{m_int}, m_int);
@@ -169,8 +165,12 @@ Program::Program() :
   m_funcDecls.registerFunc(*this, fk::NoOp, "char", sym::TypeSet{m_char}, m_char);
 
   // Register build-in explicit conversions.
-  m_funcDecls.registerFunc(*this, fk::ConvFloatInt, "toInt", sym::TypeSet{m_float}, m_int);
-  m_funcDecls.registerFunc(*this, fk::ConvIntChar, "toChar", sym::TypeSet{m_int}, m_char);
+  m_funcDecls.registerFunc(*this, fk::ConvFloatInt, "int", sym::TypeSet{m_float}, m_int);
+  m_funcDecls.registerFunc(*this, fk::ConvIntChar, "char", sym::TypeSet{m_int}, m_char);
+  m_funcDecls.registerFunc(*this, fk::ConvIntString, "string", sym::TypeSet{m_int}, m_string);
+  m_funcDecls.registerFunc(*this, fk::ConvFloatString, "string", sym::TypeSet{m_float}, m_string);
+  m_funcDecls.registerFunc(*this, fk::ConvBoolString, "string", sym::TypeSet{m_bool}, m_string);
+  m_funcDecls.registerFunc(*this, fk::ConvCharString, "string", sym::TypeSet{m_char}, m_string);
   m_funcDecls.registerFunc(*this, fk::NoOp, "asFloat", sym::TypeSet{m_int}, m_float);
   m_funcDecls.registerFunc(*this, fk::NoOp, "asInt", sym::TypeSet{m_float}, m_int);
 
@@ -256,14 +256,14 @@ auto Program::lookupFuncs(const std::string& name, OvOptions options) const
   return m_funcDecls.lookup(name, options);
 }
 
-auto Program::lookupConversion(sym::TypeId from, sym::TypeId to) const
+auto Program::lookupImplicitConv(sym::TypeId from, sym::TypeId to) const
     -> std::optional<sym::FuncId> {
-  return internal::findConversion(*this, from, to);
+  return internal::findImplicitConv(*this, from, to);
 }
 
-auto Program::isConvertible(const sym::TypeSet& toTypes, const sym::TypeSet& fromTypes) const
-    -> bool {
-  return internal::isConvertable(*this, toTypes, fromTypes);
+auto Program::isImplicitConvertible(
+    const sym::TypeSet& toTypes, const sym::TypeSet& fromTypes) const -> bool {
+  return internal::isImplicitConvertible(*this, toTypes, fromTypes);
 }
 
 auto Program::findCommonType(const std::vector<sym::TypeId>& types) -> std::optional<sym::TypeId> {
@@ -280,7 +280,7 @@ auto Program::isDelegate(sym::TypeId id) const -> bool {
 
 auto Program::isCallable(sym::FuncId func, const std::vector<expr::NodePtr>& args) const -> bool {
   const auto& funcDecl = getFuncDecl(func);
-  return internal::isConvertable(*this, funcDecl.getInput(), args);
+  return internal::isImplicitConvertible(*this, funcDecl.getInput(), args);
 }
 
 auto Program::isCallable(sym::TypeId delegate, const std::vector<expr::NodePtr>& args) const
@@ -293,7 +293,7 @@ auto Program::isCallable(sym::TypeId delegate, const std::vector<expr::NodePtr>&
     return false;
   }
   const auto& delegateDef = std::get<sym::DelegateDef>(getTypeDef(delegate));
-  return internal::isConvertable(*this, delegateDef.getInput(), args);
+  return internal::isImplicitConvertible(*this, delegateDef.getInput(), args);
 }
 
 auto Program::getTypeDecl(sym::TypeId id) const -> const sym::TypeDecl& { return m_typeDecls[id]; }
@@ -368,7 +368,7 @@ auto Program::defineUnion(sym::TypeId id, std::vector<sym::TypeId> types) -> voi
   // Register constructor functions for each type.
   const auto& name = m_typeDecls[id].getName();
   for (const auto& type : types) {
-    m_funcDecls.registerFunc(*this, sym::FuncKind::MakeUnion, name, sym::TypeSet{type}, id);
+    m_funcDecls.registerImplicitConv(*this, sym::FuncKind::MakeUnion, name, sym::TypeSet{type}, id);
   }
 
   // Register (in)equality functions.
@@ -393,10 +393,10 @@ auto Program::defineEnum(sym::TypeId id, std::unordered_map<std::string, int32_t
   const auto& name = m_typeDecls[id].getName();
 
   // Register explicit conversion from int.
-  m_funcDecls.registerFunc(*this, sym::FuncKind::NoOp, "to" + name, sym::TypeSet{m_int}, id);
+  m_funcDecls.registerFunc(*this, sym::FuncKind::NoOp, name, sym::TypeSet{m_int}, id);
 
   // Register implicit conversion to int.
-  m_funcDecls.registerFunc(*this, sym::FuncKind::NoOp, "int", sym::TypeSet{id}, m_int);
+  m_funcDecls.registerImplicitConv(*this, sym::FuncKind::NoOp, "int", sym::TypeSet{id}, m_int);
 
   // Register bitwise & and | operators.
   m_funcDecls.registerFunc(

@@ -1,4 +1,4 @@
-#include "internal/conversion.hpp"
+#include "internal/implicit_conv.hpp"
 #include "prog/program.hpp"
 
 namespace prog::internal {
@@ -28,22 +28,17 @@ auto findOverload(
       if (*inputItr == *ovInputItr) {
         continue;
       }
-      if (inputItr == input.begin() &&
-          options.hasFlag<sym::OverloadFlags::DisableConvOnFirstArg>()) {
-        valid = false; // Conversions are not allowed on the first argument.
-        break;
-      }
-      if (options.getMaxConversions() >= 0 && convAmount >= options.getMaxConversions()) {
-        valid = false; // Too many conversions are required for this overload.
+      if (options.getMaxImplicitConvs() >= 0 && convAmount >= options.getMaxImplicitConvs()) {
+        valid = false; // Too many implicit conversions are required for this overload.
         break;
       }
 
-      auto conv = findConversion(prog, *inputItr, *ovInputItr);
+      auto conv = findImplicitConv(prog, *inputItr, *ovInputItr);
       if (conv) {
         convAmount++;
         continue;
       }
-      valid = false; // Type's don't match and no conversion is possible.
+      valid = false; // Type's don't match and no implicit conversion is possible.
       break;
     }
 

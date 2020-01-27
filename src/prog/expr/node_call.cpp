@@ -1,5 +1,5 @@
 #include "prog/expr/node_call.hpp"
-#include "internal/conversion.hpp"
+#include "internal/implicit_conv.hpp"
 #include "utilities.hpp"
 #include <sstream>
 #include <stdexcept>
@@ -50,8 +50,8 @@ auto callExprNode(const Program& prog, sym::FuncId func, std::vector<NodePtr> ar
     throw std::invalid_argument{"Call node contains incorrect number of arguments"};
   }
 
-  // Apply conversions if necessary (and throw if types are incompatible).
-  internal::applyConversions(prog, funcDecl.getInput(), &args);
+  // Apply implicit conversions if necessary (and throw if types are incompatible).
+  internal::applyImplicitConversions(prog, funcDecl.getInput(), &args);
 
   return std::unique_ptr<CallExprNode>{
       new CallExprNode{funcDecl.getId(), funcDecl.getOutput(), std::move(args)}};

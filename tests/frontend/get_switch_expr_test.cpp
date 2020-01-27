@@ -38,31 +38,6 @@ TEST_CASE("Analyzing switch expressions", "[frontend]") {
         *prog::expr::switchExprNode(output.getProg(), std::move(conditions), std::move(branches)));
   }
 
-  SECTION("Get switch expression with conversion on the conditions") {
-    const auto& output = ANALYZE("fun bool(int i) i != 0 "
-                                 "fun f() "
-                                 "  if 1  -> 1 "
-                                 "  if 0  -> 2 "
-                                 "  else  -> 3");
-    REQUIRE(output.isSuccess());
-    const auto& funcDef = GET_FUNC_DEF(output, "f");
-
-    auto conditions = std::vector<prog::expr::NodePtr>{};
-    conditions.push_back(
-        applyConv(output, "int", "bool", prog::expr::litIntNode(output.getProg(), 1)));
-    conditions.push_back(
-        applyConv(output, "int", "bool", prog::expr::litIntNode(output.getProg(), 0)));
-
-    auto branches = std::vector<prog::expr::NodePtr>{};
-    branches.push_back(prog::expr::litIntNode(output.getProg(), 1));
-    branches.push_back(prog::expr::litIntNode(output.getProg(), 2));
-    branches.push_back(prog::expr::litIntNode(output.getProg(), 3));
-
-    CHECK(
-        funcDef.getExpr() ==
-        *prog::expr::switchExprNode(output.getProg(), std::move(conditions), std::move(branches)));
-  }
-
   SECTION("Get switch expression with conversion on the branches") {
     const auto& output = ANALYZE("fun f() "
                                  "  if true   -> 1 "
@@ -147,18 +122,18 @@ TEST_CASE("Analyzing switch expressions", "[frontend]") {
         "fun f(int a) -> int "
         "  if a   -> 1 "
         "  else   -> 2",
-        errNoConversionFound(src, "int", "bool", input::Span{25, 25}));
+        errNoImplicitConversionFound(src, "int", "bool", input::Span{25, 25}));
     CHECK_DIAG(
         "fun f() -> int "
         "  if true   -> 1 "
         "  else      -> true",
-        errNoConversionFound(src, "bool", "int", input::Span{34, 50}));
+        errNoImplicitConversionFound(src, "bool", "int", input::Span{34, 50}));
     CHECK_DIAG(
         "fun f() -> int "
         "  if true   -> 1 "
         "  if false  -> false "
         "  else      -> 2",
-        errNoConversionFound(src, "bool", "int", input::Span{34, 51}));
+        errNoImplicitConversionFound(src, "bool", "int", input::Span{34, 51}));
     CHECK_DIAG(
         "fun f() -> int "
         "  if false  -> 2 ",

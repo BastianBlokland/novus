@@ -3,25 +3,24 @@
 
 namespace prog::internal {
 
-[[nodiscard]] auto findConversion(const Program& prog, sym::TypeId from, sym::TypeId to)
+[[nodiscard]] auto findImplicitConv(const Program& prog, sym::TypeId from, sym::TypeId to)
     -> std::optional<sym::FuncId>;
 
 // Note: Can be expensive as it involves walking all function declarations.
-[[nodiscard]] auto findConvertibleTypes(const Program& prog, sym::TypeId from)
+[[nodiscard]] auto findImplicitConvTypes(const Program& prog, sym::TypeId from)
     -> std::vector<sym::TypeId>;
 
 // Are the fromTypes convertible to the toTypes.
-[[nodiscard]] auto
-isConvertable(const Program& prog, const sym::TypeSet& toTypes, const sym::TypeSet& fromTypes)
-    -> bool;
+[[nodiscard]] auto isImplicitConvertible(
+    const Program& prog, const sym::TypeSet& toTypes, const sym::TypeSet& fromTypes) -> bool;
 
 // Are the fromArgs convertible to the toTypes.
-[[nodiscard]] auto isConvertable(
+[[nodiscard]] auto isImplicitConvertible(
     const Program& prog, const sym::TypeSet& toTypes, const std::vector<expr::NodePtr>& fromArgs)
     -> bool;
 
 // Apply conversions to the fromArgs so are matches the toTypes.
-auto applyConversions(
+auto applyImplicitConversions(
     const Program& prog, const sym::TypeSet& toTypes, std::vector<expr::NodePtr>* fromArgs) -> void;
 
 [[nodiscard]] auto findCommonType(const Program& prog, const std::vector<sym::TypeId>& types)
