@@ -13,6 +13,7 @@
 #include "internal/type_template_table.hpp"
 #include "internal/typeinfer_user_funcs.hpp"
 #include "internal/validate_types.hpp"
+#include <forward_list>
 #include <memory>
 #include <vector>
 
@@ -43,7 +44,7 @@ auto analyze(const Source& mainSrc, const std::vector<std::filesystem::path>& se
   };
 
   // Resolve all imports.
-  auto importedSources = std::vector<Source>{};
+  auto importedSources = std::forward_list<Source>{};
   auto import          = internal::ImportSources{mainSrc, searchPaths, &importedSources, &diags};
   mainSrc.accept(&import);
   auto allContexts = std::vector<internal::Context>{makeCtx(mainSrc)};
@@ -54,7 +55,7 @@ auto analyze(const Source& mainSrc, const std::vector<std::filesystem::path>& se
   // Check any parse errors.
   visitAll<internal::GetParseDiags>(&allContexts);
   if (!diags.empty()) {
-    return buildOutput(nullptr, diags);
+    return buildOutput(nullptr, std::move(importedSources), diags);
   }
 
   // Declare user types.
@@ -64,7 +65,7 @@ auto analyze(const Source& mainSrc, const std::vector<std::filesystem::path>& se
   visitAll<internal::DeclareUserTypes>(
       &allContexts, &structDeclInfos, &unionDeclInfos, &enumDeclInfos);
   if (!diags.empty()) {
-    return buildOutput(nullptr, diags);
+    return buildOutput(nullptr, std::move(importedSources), diags);
   }
 
   // Define user types.
@@ -78,14 +79,14 @@ auto analyze(const Source& mainSrc, const std::vector<std::filesystem::path>& se
     defineType(eDeclInfo.getCtx(), eDeclInfo.getId(), eDeclInfo.getParseNode());
   }
   if (!diags.empty()) {
-    return buildOutput(nullptr, diags);
+    return buildOutput(nullptr, std::move(importedSources), diags);
   }
 
   // Declare user functions.
   auto funcDeclInfos = std::vector<internal::FuncDeclInfo>{};
   visitAll<internal::DeclareUserFuncs>(&allContexts, &funcDeclInfos);
   if (!diags.empty()) {
-    return buildOutput(nullptr, diags);
+    return buildOutput(nullptr, std::move(importedSources), diags);
   }
 
   // Infer return-types of user functions (run multiple passes until all have been inferred).
@@ -103,7 +104,7 @@ auto analyze(const Source& mainSrc, const std::vector<std::filesystem::path>& se
       auto success = typeInferUserFuncs.inferRetType(
           fDeclInfo.getCtx(), fDeclInfo.getId(), fDeclInfo.getParseNode());
       if (!diags.empty()) {
-        return buildOutput(nullptr, diags);
+        return buildOutput(nullptr, std::move(importedSources), diags);
       }
       inferredAllFuncs &= success;
       inferredOne |= success;
@@ -137,14 +138,14 @@ auto analyze(const Source& mainSrc, const std::vector<std::filesystem::path>& se
     }
   }
   if (!diags.empty()) {
-    return buildOutput(nullptr, diags);
+    return buildOutput(nullptr, std::move(importedSources), diags);
   }
 
   // Define execute statements from the main-source.
   auto defineExecStmts = internal::DefineExecStmts{&allContexts[0]};
   mainSrc.accept(&defineExecStmts);
   if (!diags.empty()) {
-    return buildOutput(nullptr, diags);
+    return buildOutput(nullptr, std::move(importedSources), diags);
   }
 
   // Validate the type-definitions (used to detect things like cyclic structs).
@@ -152,10 +153,10 @@ auto analyze(const Source& mainSrc, const std::vector<std::filesystem::path>& se
     validateType(t.first, t.second);
   }
   if (!diags.empty()) {
-    return buildOutput(nullptr, diags);
+    return buildOutput(nullptr, std::move(importedSources), diags);
   }
 
-  return buildOutput(std::move(prog), {});
+  return buildOutput(std::move(prog), std::move(importedSources), {});
 }
 
 } // namespace frontend

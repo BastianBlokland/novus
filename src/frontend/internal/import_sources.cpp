@@ -10,7 +10,7 @@ namespace frontend::internal {
 ImportSources::ImportSources(
     const Source& mainSource,
     const std::vector<path>& searchPaths,
-    std::vector<Source>* importedSources,
+    std::forward_list<Source>* importedSources,
     std::vector<Diag>* diags) :
     ImportSources(mainSource, mainSource, searchPaths, importedSources, diags) {}
 
@@ -18,7 +18,7 @@ ImportSources::ImportSources(
     const Source& mainSource,
     const Source& currentSource,
     const std::vector<path>& searchPaths,
-    std::vector<Source>* importedSources,
+    std::forward_list<Source>* importedSources,
     std::vector<Diag>* diags) :
     m_mainSource{mainSource},
     m_currentSource{currentSource},
@@ -27,7 +27,7 @@ ImportSources::ImportSources(
     m_diags{diags} {
 
   if (m_importedSources == nullptr) {
-    throw std::invalid_argument{"ImportedSources output vector cannot be null"};
+    throw std::invalid_argument{"ImportedSources output list cannot be null"};
   }
   if (m_diags == nullptr) {
     throw std::invalid_argument{"Diagnostics output vector cannot be null"};
@@ -79,15 +79,15 @@ auto ImportSources::importFromDir(const path& searchPath, const path& file) cons
     return false;
   }
 
-  m_importedSources->push_back(frontend::buildSource(
+  m_importedSources->push_front(frontend::buildSource(
       file.filename(),
       fullPath,
       std::istreambuf_iterator<char>{fs},
       std::istreambuf_iterator<char>{}));
 
   auto importNested = ImportSources{
-      m_mainSource, m_importedSources->back(), m_searchPaths, m_importedSources, m_diags};
-  m_importedSources->back().accept(&importNested);
+      m_mainSource, m_importedSources->front(), m_searchPaths, m_importedSources, m_diags};
+  m_importedSources->front().accept(&importNested);
   return true;
 }
 
