@@ -12,7 +12,9 @@ enum class PCallCode : uint8_t {
   ReadChar       = 21,
   ReadStringLine = 22,
 
-  GetEnvVar = 30,
+  GetEnvArg      = 30,
+  GetEnvArgCount = 31,
+  GetEnvVar      = 32,
 
   Sleep  = 240,
   Assert = 241,

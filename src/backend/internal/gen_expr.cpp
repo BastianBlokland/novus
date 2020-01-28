@@ -360,6 +360,12 @@ auto GenExpr::visit(const prog::expr::CallExprNode& n) -> void {
   case prog::sym::FuncKind::ActionReadStringLine:
     m_builder->addPCall(vm::PCallCode::ReadStringLine);
     break;
+  case prog::sym::FuncKind::ActionGetEnvArg:
+    m_builder->addPCall(vm::PCallCode::GetEnvArg);
+    break;
+  case prog::sym::FuncKind::ActionGetEnvArgCount:
+    m_builder->addPCall(vm::PCallCode::GetEnvArgCount);
+    break;
   case prog::sym::FuncKind::ActionGetEnvVar:
     m_builder->addPCall(vm::PCallCode::GetEnvVar);
     break;

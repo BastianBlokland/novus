@@ -71,6 +71,24 @@ fun indexOf(string str, int idx, delegate{char, bool} pred)
   if pred(str[idx])       -> idx
   else                    -> indexOf(str, ++idx, pred)
 
+fun startsWith(string str, string subStr)
+  startsWith(str, 0, subStr)
+
+fun startsWith(string str, int idx, string subStr)
+  if idx >= subStr.length()   -> true
+  if idx >= str.length()      -> false
+  if str[idx] != subStr[idx]  -> false
+  else                        -> startsWith(str, ++idx, subStr)
+
+fun endsWith(string str, string subStr)
+  endsWith(str, 0, subStr)
+
+fun endsWith(string str, int revIdx, string subStr)
+  if revIdx >= subStr.length()                                          -> true
+  if revIdx >= str.length()                                             -> false
+  if str[--str.length() - revIdx] != subStr[--subStr.length() - revIdx] -> false
+  else -> endsWith(str, ++revIdx, subStr)
+
 fun any(string str, delegate{char, bool} pred)
   any(str, 0, pred)
 
@@ -218,6 +236,28 @@ assert(
   "hello world".indexOf(isLetter) == 0 &&
   "hello world".indexOf(isDigit) == -1 &&
   "".indexOf(isLetter) == -1)
+
+assert(
+  "hello world".startsWith("hello") &&
+  "hello world".startsWith("h") &&
+  "hello world".startsWith("hello world") &&
+  "hello world".startsWith("") &&
+  !"hello world".startsWith("world") &&
+  !"hello".startsWith("hello world") &&
+  !"hello".startsWith("ello") &&
+  !"".startsWith("h") &&
+  "".startsWith(""))
+
+assert(
+  "hello world".endsWith("world") &&
+  "hello world".endsWith("d") &&
+  "hello world".endsWith("hello world") &&
+  "hello world".endsWith("") &&
+  !"hello world".endsWith("hello") &&
+  !"hello".endsWith("hello world") &&
+  !"hello".endsWith("hell") &&
+  !"".endsWith("h") &&
+  "".endsWith(""))
 
 assert(
   "hello world".any(isWhitespace) &&

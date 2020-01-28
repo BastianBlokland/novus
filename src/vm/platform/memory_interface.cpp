@@ -11,6 +11,16 @@ auto MemoryInterface::setStdIn(std::string stdIn) -> void {
   m_stdIn = std::move(stdIn);
 }
 
+auto MemoryInterface::getEnvArg(int idx) -> const char* {
+  return idx < 0 || idx >= static_cast<int>(m_envArgs.size()) ? nullptr : m_envArgs[idx].data();
+}
+
+auto MemoryInterface::getEnvArgCount() -> int { return static_cast<int>(m_envArgs.size()); }
+
+auto MemoryInterface::setEnvArgs(std::vector<std::string> envArgs) -> void {
+  m_envArgs = std::move(envArgs);
+}
+
 auto MemoryInterface::setEnvVars(std::unordered_map<std::string, std::string> envVars) -> void {
   m_envVars = std::move(envVars);
 }
@@ -33,7 +43,7 @@ auto MemoryInterface::read() -> char {
   return *m_stdInPtr == '\0' ? *m_stdInPtr : *m_stdInPtr++;
 }
 
-auto MemoryInterface::getEnvVar(const char* name) -> char* {
+auto MemoryInterface::getEnvVar(const char* name) -> const char* {
   auto nameStr = std::string(name);
   auto itr     = m_envVars.find(nameStr);
   if (itr == m_envVars.end()) {

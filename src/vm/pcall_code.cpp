@@ -19,6 +19,12 @@ auto operator<<(std::ostream& out, const PCallCode& rhs) -> std::ostream& {
   case PCallCode::ReadStringLine:
     out << "read-string-line";
     break;
+  case PCallCode::GetEnvArg:
+    out << "get-env-arg";
+    break;
+  case PCallCode::GetEnvArgCount:
+    out << "get-env-arg-count";
+    break;
   case PCallCode::GetEnvVar:
     out << "get-env-var";
     break;

@@ -48,6 +48,19 @@ auto inline pcall(
     evalStack.push(internal::toString(allocator, line));
     return;
   }
+  case vm::PCallCode::GetEnvArg: {
+    auto* res = iface.getEnvArg(evalStack.pop().getInt());
+    if (res == nullptr) {
+      evalStack.push(internal::emptyString(allocator));
+    } else {
+      evalStack.push(internal::toString(allocator, res));
+    }
+    return;
+  }
+  case vm::PCallCode::GetEnvArgCount: {
+    evalStack.push(internal::intValue(iface.getEnvArgCount()));
+    return;
+  }
   case vm::PCallCode::GetEnvVar: {
     auto* nameStrRef = getStringRef(evalStack.pop());
     auto* res        = iface.getEnvVar(nameStrRef->getDataPtr());

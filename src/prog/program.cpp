@@ -194,6 +194,10 @@ Program::Program() :
   m_funcDecls.registerAction(*this, fk::ActionReadChar, "read", sym::TypeSet{}, m_char);
   m_funcDecls.registerAction(*this, fk::ActionReadStringLine, "readl", sym::TypeSet{}, m_string);
   m_funcDecls.registerAction(
+      *this, fk::ActionGetEnvArg, "getEnvArg", sym::TypeSet{m_int}, m_string);
+  m_funcDecls.registerAction(
+      *this, fk::ActionGetEnvArgCount, "getEnvArgCount", sym::TypeSet{}, m_int);
+  m_funcDecls.registerAction(
       *this, fk::ActionGetEnvVar, "getEnvVar", sym::TypeSet{m_string}, m_string);
   m_funcDecls.registerAction(*this, fk::ActionSleep, "sleep", sym::TypeSet{m_int}, m_int);
   m_funcDecls.registerAction(

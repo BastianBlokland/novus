@@ -21,20 +21,20 @@ fun List{T}(T val, List{T} next) -> List{T}
 // Operators
 
 fun ::{T}(T val, List{T} l)
-  l.pushFront(val)
+  l.push(val)
 
 fun ::{T}(List{T} l1, List{T} l2)
-  l2.pushFront(l1)
+  l2.push(l1)
 
 fun ::{T}(Option{T} opt, List{T} l)
-  if opt as T val -> l.pushFront(val)
+  if opt as T val -> l.push(val)
   if opt is None  -> l
 
 fun []{T}(List{T} l, int idx) -> Option{T}
-  l.popFront(idx).front()
+  l.pop(idx).front()
 
 fun []{T}(List{T} l, int startIdx, int endIdx) -> List{T}
-  l.popFront(startIdx).take(endIdx - startIdx + 1)
+  l.pop(startIdx).take(endIdx - startIdx + 1)
 
 // Conversions
 
@@ -42,7 +42,7 @@ fun string{T}(List{T} l)
   l.string("[", ",", "]")
 
 fun string{T}(List{T} l, string start, string sep, string end)
-  start + l.fold(lambda (string prefix, T v) prefix == "" ?
+  start + l.fold(lambda (string prefix, T v) prefix.length() == 0 ?
     v.string() :
     prefix + sep + v.string()) + end
 
@@ -58,30 +58,30 @@ fun back{T}(List{T} l) -> Option{T}
   if l as LNode{T} n  -> n.next is LEnd ? n.val : back(n.next)
   if l is LEnd        -> None()
 
-fun pushFront{T}(List{T} l, T val)
+fun push{T}(List{T} l, T val)
   List(val, l)
 
-fun pushFront{T}(List{T} l, List{T} l2)
-  if l2 as LNode{T} n -> List{T}(n.val, pushFront(l, n.next))
+fun push{T}(List{T} l, List{T} l2)
+  if l2 as LNode{T} n -> List{T}(n.val, push(l, n.next))
   if l2 is LEnd       -> l
 
-fun pushFrontRange{T}(List{T} l, T start, T end)
+fun pushRange{T}(List{T} l, T start, T end)
   if start >= end   -> List(start, l)
-  else              -> pushFrontRange(end :: l, start, --end)
+  else              -> pushRange(end :: l, start, --end)
 
 fun pushBack{T}(List{T} l, T val)
   if l as LNode{T} n  -> List(n.val, n.next.pushBack(val))
   if l is LEnd        -> List(val)
 
-fun popFront{T}(List{T} l)
-  popFront(l, 1)
+fun pop{T}(List{T} l)
+  pop(l, 1)
 
-fun popFront{T}(List{T} l, int amount)
-  if l as LNode{T} n  -> amount > 0 ? popFront(n.next, --amount) : l
+fun pop{T}(List{T} l, int amount)
+  if l as LNode{T} n  -> amount > 0 ? pop(n.next, --amount) : l
   if l is LEnd        -> l
 
-fun popFront{T}(List{T} l, delegate{T, bool} pred)
-  if l as LNode{T} n  -> pred(n.val) ? popFront(n.next, pred) : l
+fun pop{T}(List{T} l, delegate{T, bool} pred)
+  if l as LNode{T} n  -> pred(n.val) ? pop(n.next, pred) : l
   if l is LEnd        -> l
 
 fun popBack{T}(List{T} l)
@@ -99,14 +99,14 @@ fun take{T}(List{T} l, delegate{T, bool} pred)
   if l is LEnd        -> l
 
 fun insert{T}(List{T} l, int idx, T val)
-  l.take(idx) :: val :: l.popFront(idx)
+  l.take(idx) :: val :: l.pop(idx)
 
 fun insertOrdered{T}(List{T} l, T val)
   if l as LNode{T} n -> val < n.val ? List(val, l) : List(n.val, insertOrdered(n.next, val))
   if l is LEnd       -> List(val)
 
 fun rangeList{T}(T start, T end)
-  List{T}().pushFrontRange(start, end)
+  List{T}().pushRange(start, end)
 
 fun fold{T, TResult}(List{T} l, delegate{TResult, T, TResult} del)
   l.fold(del, TResult())
@@ -206,7 +206,7 @@ assert(
   l.string() == "[hello,world]" && l.string("", "", "") == "helloworld")
 assert(string(List{int}()) == "[]")
 
-assert(List{int}().isEmpty() && !List{int}(42).isEmpty() && List{int}(42).popFront().isEmpty())
+assert(List{int}().isEmpty() && !List{int}(42).isEmpty() && List{int}(42).pop().isEmpty())
 
 assert(
   l = 1 :: 2 :: 3 :: List{int}();
@@ -215,39 +215,39 @@ assert(
   l = List{int}();
   l.front() is None && l.back() is None)
 
-assert(pushFront(List{int}(), 42) == List(42))
-assert(pushFront(2 :: 3 :: List{int}(), 1) == 1 :: 2 :: 3 :: List{int}())
+assert(push(List{int}(), 42) == List(42))
+assert(push(2 :: 3 :: List{int}(), 1) == 1 :: 2 :: 3 :: List{int}())
 
 assert(
   l = 1 :: 2 :: 3 :: List{int}();
-  l.pushFront(List(42)) == 42 :: 1 :: 2 :: 3 :: List{int}() &&
-  l.pushFront(42 :: 1337 :: List{int}()) == 42 :: 1337 :: 1 :: 2 :: 3 :: List{int}() &&
-  l.pushFront(3 :: 2 :: 1 :: List{int}()) == 3 :: 2 :: 1 :: 1 :: 2 :: 3 :: List{int}())
+  l.push(List(42)) == 42 :: 1 :: 2 :: 3 :: List{int}() &&
+  l.push(42 :: 1337 :: List{int}()) == 42 :: 1337 :: 1 :: 2 :: 3 :: List{int}() &&
+  l.push(3 :: 2 :: 1 :: List{int}()) == 3 :: 2 :: 1 :: 1 :: 2 :: 3 :: List{int}())
 
 assert(
   l = 42 :: 1337 :: List{int}();
-  l.pushFrontRange(1, 3) == 1 :: 2 :: 3 :: 42 :: 1337 :: List{int}())
+  l.pushRange(1, 3) == 1 :: 2 :: 3 :: 42 :: 1337 :: List{int}())
 
 assert(pushBack(List{int}(), 42) == List(42))
 assert(pushBack(1 :: 2 :: List{int}(), 3) == 1 :: 2 :: 3 :: List{int}())
 
 assert(
   l = 1 :: 2 :: 3 :: 4 :: List{int}();
-  l.popFront() == 2 :: 3 :: 4 :: List{int}() &&
-  l.popFront(-1) == l &&
-  l.popFront(0) == l &&
-  l.popFront(1) == 2 :: 3 :: 4 :: List{int}() &&
-  l.popFront(2) == 3 :: 4 :: List{int}() &&
-  l.popFront(3) == 4 :: List{int}() &&
-  l.popFront(4) == List{int}() &&
-  l.popFront(5) == List{int}())
+  l.pop() == 2 :: 3 :: 4 :: List{int}() &&
+  l.pop(-1) == l &&
+  l.pop(0) == l &&
+  l.pop(1) == 2 :: 3 :: 4 :: List{int}() &&
+  l.pop(2) == 3 :: 4 :: List{int}() &&
+  l.pop(3) == 4 :: List{int}() &&
+  l.pop(4) == List{int}() &&
+  l.pop(5) == List{int}())
 
 assert(
   l = 1 :: 2 :: 3 :: 4 :: List{int}();
-  l.popFront(lambda (int i) i == 0) == l &&
-  l.popFront(lambda (int i) i > 0) == List{int}() &&
-  l.popFront(lambda (int i) i == 1) == 2 :: 3 :: 4 :: List{int}() &&
-  l.popFront(lambda (int i) i < 3) == 3 :: 4 :: List{int}())
+  l.pop(lambda (int i) i == 0) == l &&
+  l.pop(lambda (int i) i > 0) == List{int}() &&
+  l.pop(lambda (int i) i == 1) == 2 :: 3 :: 4 :: List{int}() &&
+  l.pop(lambda (int i) i < 3) == 3 :: 4 :: List{int}())
 
 assert(
   l = 1 :: 2 :: 3 :: List{int}();

@@ -159,6 +159,51 @@ TEST_CASE("Execute input and output", "[vm]") {
         "");
   }
 
+  SECTION("GetEnvArg && GetEnvArgCount") {
+    auto envArgs = std::vector<std::string>{"a", "b", "c"};
+    CHECK_PROG_WITH_ENV_ARGS(
+        [](backend::Builder* builder) -> void {
+          builder->label("printArgCount");
+          builder->addPCall(vm::PCallCode::GetEnvArgCount);
+          builder->addConvIntString();
+          builder->addPCall(vm::PCallCode::PrintString);
+          builder->addPop();
+          builder->addRet();
+
+          builder->label("printArg1");
+          builder->addLoadLitInt(0);
+          builder->addPCall(vm::PCallCode::GetEnvArg);
+          builder->addPCall(vm::PCallCode::PrintString);
+          builder->addPop();
+          builder->addRet();
+
+          builder->label("printArg3");
+          builder->addLoadLitInt(2);
+          builder->addPCall(vm::PCallCode::GetEnvArg);
+          builder->addPCall(vm::PCallCode::PrintString);
+          builder->addPop();
+          builder->addRet();
+
+          builder->label("printArg4");
+          builder->addLoadLitInt(3);
+          builder->addPCall(vm::PCallCode::GetEnvArg);
+          builder->addPCall(vm::PCallCode::PrintString);
+          builder->addPop();
+          builder->addRet();
+
+          builder->addEntryPoint("printArgCount");
+          builder->addEntryPoint("printArg1");
+          builder->addEntryPoint("printArg3");
+          builder->addEntryPoint("printArg4");
+        },
+        "input",
+        envArgs,
+        "3",
+        "a",
+        "c",
+        "");
+  }
+
   SECTION("Sleep") {
     CHECK_PROG(
         [](backend::Builder* builder) -> void {
