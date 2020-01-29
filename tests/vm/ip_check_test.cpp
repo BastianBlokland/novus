@@ -14,7 +14,7 @@ TEST_CASE("Execute instruction pointer checks", "[vm]") {
           builder->label("label");
           builder->addCheckEqIp();
           builder->addConvBoolString();
-          builder->addPCall(vm::PCallCode::PrintString);
+          builder->addPCall(vm::PCallCode::ConWriteString);
           builder->addPop();
         },
         "input",
@@ -30,7 +30,7 @@ TEST_CASE("Execute instruction pointer checks", "[vm]") {
 
           builder->label("label2");
           builder->addConvBoolString();
-          builder->addPCall(vm::PCallCode::PrintString);
+          builder->addPCall(vm::PCallCode::ConWriteString);
           builder->addPop();
         },
         "input",
@@ -44,7 +44,7 @@ TEST_CASE("Execute instruction pointer checks", "[vm]") {
           builder->label("label");
           builder->addCheckEqCallDynTgt();
           builder->addConvBoolString();
-          builder->addPCall(vm::PCallCode::PrintString);
+          builder->addPCall(vm::PCallCode::ConWriteString);
           builder->addPop();
         },
         "input",
@@ -60,7 +60,7 @@ TEST_CASE("Execute instruction pointer checks", "[vm]") {
 
           builder->label("label2");
           builder->addConvBoolString();
-          builder->addPCall(vm::PCallCode::PrintString);
+          builder->addPCall(vm::PCallCode::ConWriteString);
           builder->addPop();
         },
         "input",
@@ -83,7 +83,7 @@ TEST_CASE("Execute instruction pointer checks", "[vm]") {
           builder->addCheckEqCallDynTgt();
 
           builder->addConvBoolString();
-          builder->addPCall(vm::PCallCode::PrintString);
+          builder->addPCall(vm::PCallCode::ConWriteString);
           builder->addPop();
         },
         "input",
@@ -107,7 +107,7 @@ TEST_CASE("Execute instruction pointer checks", "[vm]") {
 
           builder->label("label2");
           builder->addConvBoolString();
-          builder->addPCall(vm::PCallCode::PrintString);
+          builder->addPCall(vm::PCallCode::ConWriteString);
           builder->addPop();
         },
         "input",
@@ -127,7 +127,7 @@ TEST_CASE("Execute instruction pointer checks", "[vm]") {
           builder->addCheckEqCallDynTgt();
 
           builder->addConvBoolString();
-          builder->addPCall(vm::PCallCode::PrintString);
+          builder->addPCall(vm::PCallCode::ConWriteString);
           builder->addPop();
         },
         "input",
@@ -148,7 +148,7 @@ TEST_CASE("Execute instruction pointer checks", "[vm]") {
 
           builder->label("label2");
           builder->addConvBoolString();
-          builder->addPCall(vm::PCallCode::PrintString);
+          builder->addPCall(vm::PCallCode::ConWriteString);
           builder->addPop();
         },
         "input",

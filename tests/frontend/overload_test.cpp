@@ -29,12 +29,12 @@ TEST_CASE("Analyzing overloads", "[frontend]") {
   }
 
   SECTION("Allow conversion in binary operator") {
-    const auto& output = ANALYZE("print(string(1.0 / 2))");
+    const auto& output = ANALYZE("conWrite(string(1.0 / 2))");
     REQUIRE(output.isSuccess());
   }
 
   SECTION("Disallow more then one conversion in binary operator") {
-    const auto& output = ANALYZE("print(false + true)");
+    const auto& output = ANALYZE("conWrite(false + true)");
     REQUIRE(!output.isSuccess());
   }
 }

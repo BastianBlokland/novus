@@ -6,7 +6,7 @@
 namespace parse {
 
 TEST_CASE("Iterating the parser", "[parse]") {
-  const std::string input = "print(1) print(x * y)";
+  const std::string input = "conWrite(1) conWrite(x * y)";
   auto lexer              = lex::Lexer{input.begin(), input.end()};
   auto parser             = parse::Parser{lexer.begin(), lexer.end()};
 

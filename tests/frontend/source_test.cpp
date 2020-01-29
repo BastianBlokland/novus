@@ -8,11 +8,11 @@ namespace frontend {
 TEST_CASE("Source representation", "[frontend]") {
 
   SECTION("Build") {
-    const auto input = std::string{"print(1)\nprint(2)"};
+    const auto input = std::string{"conWrite(1)\nconWrite(2)"};
     const auto src   = buildSource("input", std::nullopt, input.begin(), input.end());
 
     CHECK(src.getId() == "input");
-    CHECK(src.getTextPos(9) == input::TextPos{2, 1});
+    CHECK(src.getTextPos(12) == input::TextPos{2, 1});
     CHECK(std::count_if(src.begin(), src.end(), [](const parse::NodePtr& n) -> bool {
             return n != nullptr;
           }) == 2);

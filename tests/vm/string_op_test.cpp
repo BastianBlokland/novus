@@ -13,7 +13,7 @@ TEST_CASE("Execute string operations", "[vm]") {
           builder->addAddString();
           builder->addLoadLitString("world");
           builder->addAddString();
-          builder->addPCall(vm::PCallCode::PrintString);
+          builder->addPCall(vm::PCallCode::ConWriteString);
           builder->addPop();
         },
         "input",
@@ -26,7 +26,7 @@ TEST_CASE("Execute string operations", "[vm]") {
           builder->addLoadLitString("");
           builder->addLengthString();
           builder->addConvIntString();
-          builder->addPCall(vm::PCallCode::PrintString);
+          builder->addPCall(vm::PCallCode::ConWriteString);
           builder->addPop();
         },
         "input",
@@ -36,7 +36,7 @@ TEST_CASE("Execute string operations", "[vm]") {
           builder->addLoadLitString("hello");
           builder->addLengthString();
           builder->addConvIntString();
-          builder->addPCall(vm::PCallCode::PrintString);
+          builder->addPCall(vm::PCallCode::ConWriteString);
           builder->addPop();
         },
         "input",
@@ -50,7 +50,7 @@ TEST_CASE("Execute string operations", "[vm]") {
           builder->addAddString();
           builder->addLengthString();
           builder->addConvIntString();
-          builder->addPCall(vm::PCallCode::PrintString);
+          builder->addPCall(vm::PCallCode::ConWriteString);
           builder->addPop();
         },
         "input",
@@ -64,7 +64,7 @@ TEST_CASE("Execute string operations", "[vm]") {
           builder->addLoadLitInt(0);
           builder->addIndexString();
           builder->addConvCharString();
-          builder->addPCall(vm::PCallCode::PrintString);
+          builder->addPCall(vm::PCallCode::ConWriteString);
           builder->addPop();
         },
         "input",
@@ -75,7 +75,7 @@ TEST_CASE("Execute string operations", "[vm]") {
           builder->addLoadLitInt(4);
           builder->addIndexString();
           builder->addConvCharString();
-          builder->addPCall(vm::PCallCode::PrintString);
+          builder->addPCall(vm::PCallCode::ConWriteString);
           builder->addPop();
         },
         "input",
@@ -86,7 +86,7 @@ TEST_CASE("Execute string operations", "[vm]") {
           builder->addLoadLitInt(-1);
           builder->addIndexString();
           builder->addConvIntString(); // NOTE: Using int to string conversion, is '\0' char.
-          builder->addPCall(vm::PCallCode::PrintString);
+          builder->addPCall(vm::PCallCode::ConWriteString);
           builder->addPop();
         },
         "input",
@@ -97,7 +97,7 @@ TEST_CASE("Execute string operations", "[vm]") {
           builder->addLoadLitInt(5);
           builder->addIndexString();
           builder->addConvIntString(); // NOTE: Using int to string conversion, is '\0' char.
-          builder->addPCall(vm::PCallCode::PrintString);
+          builder->addPCall(vm::PCallCode::ConWriteString);
           builder->addPop();
         },
         "input",
@@ -108,7 +108,7 @@ TEST_CASE("Execute string operations", "[vm]") {
           builder->addLoadLitInt(0);
           builder->addIndexString();
           builder->addConvIntString(); // NOTE: Using int to string conversion, is '\0' char.
-          builder->addPCall(vm::PCallCode::PrintString);
+          builder->addPCall(vm::PCallCode::ConWriteString);
           builder->addPop();
         },
         "input",
@@ -119,7 +119,7 @@ TEST_CASE("Execute string operations", "[vm]") {
           builder->addLoadLitInt(0);
           builder->addIndexString();
           builder->addConvCharString();
-          builder->addPCall(vm::PCallCode::PrintString);
+          builder->addPCall(vm::PCallCode::ConWriteString);
           builder->addPop();
         },
         "input",
@@ -133,7 +133,7 @@ TEST_CASE("Execute string operations", "[vm]") {
           builder->addLoadLitInt(0);
           builder->addLoadLitInt(5);
           builder->addSliceString();
-          builder->addPCall(vm::PCallCode::PrintString);
+          builder->addPCall(vm::PCallCode::ConWriteString);
           builder->addPop();
         },
         "input",
@@ -144,7 +144,7 @@ TEST_CASE("Execute string operations", "[vm]") {
           builder->addLoadLitInt(4);
           builder->addLoadLitInt(4);
           builder->addSliceString();
-          builder->addPCall(vm::PCallCode::PrintString);
+          builder->addPCall(vm::PCallCode::ConWriteString);
           builder->addPop();
         },
         "input",
@@ -155,7 +155,7 @@ TEST_CASE("Execute string operations", "[vm]") {
           builder->addLoadLitInt(4);
           builder->addLoadLitInt(5);
           builder->addSliceString();
-          builder->addPCall(vm::PCallCode::PrintString);
+          builder->addPCall(vm::PCallCode::ConWriteString);
           builder->addPop();
         },
         "input",
@@ -166,7 +166,7 @@ TEST_CASE("Execute string operations", "[vm]") {
           builder->addLoadLitInt(-99);
           builder->addLoadLitInt(5);
           builder->addSliceString();
-          builder->addPCall(vm::PCallCode::PrintString);
+          builder->addPCall(vm::PCallCode::ConWriteString);
           builder->addPop();
         },
         "input",
@@ -177,7 +177,7 @@ TEST_CASE("Execute string operations", "[vm]") {
           builder->addLoadLitInt(6);
           builder->addLoadLitInt(11);
           builder->addSliceString();
-          builder->addPCall(vm::PCallCode::PrintString);
+          builder->addPCall(vm::PCallCode::ConWriteString);
           builder->addPop();
         },
         "input",
@@ -188,7 +188,7 @@ TEST_CASE("Execute string operations", "[vm]") {
           builder->addLoadLitInt(6);
           builder->addLoadLitInt(99);
           builder->addSliceString();
-          builder->addPCall(vm::PCallCode::PrintString);
+          builder->addPCall(vm::PCallCode::ConWriteString);
           builder->addPop();
         },
         "input",
@@ -199,7 +199,7 @@ TEST_CASE("Execute string operations", "[vm]") {
           builder->addLoadLitInt(2);
           builder->addLoadLitInt(9);
           builder->addSliceString();
-          builder->addPCall(vm::PCallCode::PrintString);
+          builder->addPCall(vm::PCallCode::ConWriteString);
           builder->addPop();
         },
         "input",
@@ -210,7 +210,7 @@ TEST_CASE("Execute string operations", "[vm]") {
           builder->addLoadLitInt(8);
           builder->addLoadLitInt(3);
           builder->addSliceString();
-          builder->addPCall(vm::PCallCode::PrintString);
+          builder->addPCall(vm::PCallCode::ConWriteString);
           builder->addPop();
         },
         "input",
@@ -221,7 +221,7 @@ TEST_CASE("Execute string operations", "[vm]") {
           builder->addLoadLitInt(0);
           builder->addLoadLitInt(11);
           builder->addSliceString();
-          builder->addPCall(vm::PCallCode::PrintString);
+          builder->addPCall(vm::PCallCode::ConWriteString);
           builder->addPop();
         },
         "input",
@@ -232,7 +232,7 @@ TEST_CASE("Execute string operations", "[vm]") {
           builder->addLoadLitInt(0);
           builder->addLoadLitInt(99);
           builder->addSliceString();
-          builder->addPCall(vm::PCallCode::PrintString);
+          builder->addPCall(vm::PCallCode::ConWriteString);
           builder->addPop();
         },
         "input",
@@ -243,7 +243,7 @@ TEST_CASE("Execute string operations", "[vm]") {
           builder->addLoadLitInt(0);
           builder->addLoadLitInt(0);
           builder->addSliceString();
-          builder->addPCall(vm::PCallCode::PrintString);
+          builder->addPCall(vm::PCallCode::ConWriteString);
           builder->addPop();
         },
         "input",

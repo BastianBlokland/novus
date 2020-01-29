@@ -12,7 +12,7 @@ TEST_CASE("Execute integer checks", "[vm]") {
           builder->addLoadLitInt(-2);
           builder->addCheckEqInt();
           builder->addConvBoolString();
-          builder->addPCall(vm::PCallCode::PrintString);
+          builder->addPCall(vm::PCallCode::ConWriteString);
           builder->addPop();
         },
         "input",
@@ -23,7 +23,7 @@ TEST_CASE("Execute integer checks", "[vm]") {
           builder->addLoadLitInt(2);
           builder->addCheckEqInt();
           builder->addConvBoolString();
-          builder->addPCall(vm::PCallCode::PrintString);
+          builder->addPCall(vm::PCallCode::ConWriteString);
           builder->addPop();
         },
         "input",
@@ -37,7 +37,7 @@ TEST_CASE("Execute integer checks", "[vm]") {
           builder->addLoadLitInt(2);
           builder->addCheckGtInt();
           builder->addConvBoolString();
-          builder->addPCall(vm::PCallCode::PrintString);
+          builder->addPCall(vm::PCallCode::ConWriteString);
           builder->addPop();
         },
         "input",
@@ -48,7 +48,7 @@ TEST_CASE("Execute integer checks", "[vm]") {
           builder->addLoadLitInt(1);
           builder->addCheckGtInt();
           builder->addConvBoolString();
-          builder->addPCall(vm::PCallCode::PrintString);
+          builder->addPCall(vm::PCallCode::ConWriteString);
           builder->addPop();
         },
         "input",
@@ -62,7 +62,7 @@ TEST_CASE("Execute integer checks", "[vm]") {
           builder->addLoadLitInt(2);
           builder->addCheckLeInt();
           builder->addConvBoolString();
-          builder->addPCall(vm::PCallCode::PrintString);
+          builder->addPCall(vm::PCallCode::ConWriteString);
           builder->addPop();
         },
         "input",
@@ -73,7 +73,7 @@ TEST_CASE("Execute integer checks", "[vm]") {
           builder->addLoadLitInt(3);
           builder->addCheckLeInt();
           builder->addConvBoolString();
-          builder->addPCall(vm::PCallCode::PrintString);
+          builder->addPCall(vm::PCallCode::ConWriteString);
           builder->addPop();
         },
         "input",

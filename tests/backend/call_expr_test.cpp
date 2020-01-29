@@ -379,7 +379,7 @@ TEST_CASE("Generate assembly for call expressions", "[backend]") {
   SECTION("User functions") {
     CHECK_PROG(
         "fun test(int a, int b) -> int a + b "
-        "print(string(test(42, 1337)))",
+        "conWrite(string(test(42, 1337)))",
         [](backend::Builder* builder) -> void {
           builder->label("test");
           builder->addReserveConsts(2);
@@ -390,16 +390,16 @@ TEST_CASE("Generate assembly for call expressions", "[backend]") {
           builder->addAddInt();
           builder->addRet();
 
-          builder->label("print");
+          builder->label("prog");
           builder->addLoadLitInt(42);
           builder->addLoadLitInt(1337);
           builder->addCall("test", false);
           builder->addConvIntString();
-          builder->addPCall(vm::PCallCode::PrintString);
+          builder->addPCall(vm::PCallCode::ConWriteString);
           builder->addPop();
           builder->addRet();
 
-          builder->addEntryPoint("print");
+          builder->addEntryPoint("prog");
         });
   }
 

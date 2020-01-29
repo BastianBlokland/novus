@@ -345,20 +345,20 @@ auto GenExpr::visit(const prog::expr::CallExprNode& n) -> void {
   }
 
   // Platform actions:
-  case prog::sym::FuncKind::ActionPrintChar:
-    m_builder->addPCall(vm::PCallCode::PrintChar);
+  case prog::sym::FuncKind::ActionConWriteChar:
+    m_builder->addPCall(vm::PCallCode::ConWriteChar);
     break;
-  case prog::sym::FuncKind::ActionPrintString:
-    m_builder->addPCall(vm::PCallCode::PrintString);
+  case prog::sym::FuncKind::ActionConWriteString:
+    m_builder->addPCall(vm::PCallCode::ConWriteString);
     break;
-  case prog::sym::FuncKind::ActionPrintStringLine:
-    m_builder->addPCall(vm::PCallCode::PrintStringLine);
+  case prog::sym::FuncKind::ActionConWriteStringLine:
+    m_builder->addPCall(vm::PCallCode::ConWriteStringLine);
     break;
-  case prog::sym::FuncKind::ActionReadChar:
-    m_builder->addPCall(vm::PCallCode::ReadChar);
+  case prog::sym::FuncKind::ActionConReadChar:
+    m_builder->addPCall(vm::PCallCode::ConReadChar);
     break;
-  case prog::sym::FuncKind::ActionReadStringLine:
-    m_builder->addPCall(vm::PCallCode::ReadStringLine);
+  case prog::sym::FuncKind::ActionConReadStringLine:
+    m_builder->addPCall(vm::PCallCode::ConReadStringLine);
     break;
   case prog::sym::FuncKind::ActionGetEnvArg:
     m_builder->addPCall(vm::PCallCode::GetEnvArg);

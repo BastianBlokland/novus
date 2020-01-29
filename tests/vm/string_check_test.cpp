@@ -12,7 +12,7 @@ TEST_CASE("Execute string checks", "[vm]") {
           builder->addLoadLitString("world");
           builder->addCheckEqString();
           builder->addConvBoolString();
-          builder->addPCall(vm::PCallCode::PrintString);
+          builder->addPCall(vm::PCallCode::ConWriteString);
           builder->addPop();
         },
         "input",
@@ -23,7 +23,7 @@ TEST_CASE("Execute string checks", "[vm]") {
           builder->addLoadLitString("hello world");
           builder->addCheckEqString();
           builder->addConvBoolString();
-          builder->addPCall(vm::PCallCode::PrintString);
+          builder->addPCall(vm::PCallCode::ConWriteString);
           builder->addPop();
         },
         "input",
@@ -36,7 +36,7 @@ TEST_CASE("Execute string checks", "[vm]") {
           builder->addAddString();
           builder->addCheckEqString();
           builder->addConvBoolString();
-          builder->addPCall(vm::PCallCode::PrintString);
+          builder->addPCall(vm::PCallCode::ConWriteString);
           builder->addPop();
         },
         "input",

@@ -12,12 +12,12 @@ public:
       m_envArgsCount{envArgsCount}, m_envArgs(envArgs) {}
 
   // NOLINTNEXTLINE: Cannot be static because it needs to match the interface.
-  auto inline print(const char* data, unsigned int size) -> void {
+  auto inline conWrite(const char* data, unsigned int size) -> void {
     std::fwrite(data, sizeof(char), size, stdout);
   }
 
   // NOLINTNEXTLINE: Cannot be static because it needs to match the interface.
-  auto inline read() -> char {
+  auto inline conRead() -> char {
     auto res = std::getc(stdin);
     return res > 0 ? static_cast<char>(res) : '\0';
   }

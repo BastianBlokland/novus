@@ -10,7 +10,7 @@ namespace frontend {
 TEST_CASE("Analyzing execute statements", "[frontend]") {
 
   SECTION("Define exec statement") {
-    const auto& output = ANALYZE("print(\"hello world\")");
+    const auto& output = ANALYZE("conWrite(\"hello world\")");
     REQUIRE(output.isSuccess());
     auto execsBegin     = output.getProg().beginExecStmts();
     const auto execsEnd = output.getProg().endExecStmts();
@@ -22,7 +22,7 @@ TEST_CASE("Analyzing execute statements", "[frontend]") {
         execsBegin->getExpr() ==
         *prog::expr::callExprNode(
             output.getProg(),
-            GET_FUNC_ID(output, "print", GET_TYPE_ID(output, "string")),
+            GET_FUNC_ID(output, "conWrite", GET_TYPE_ID(output, "string")),
             std::move(args)));
     REQUIRE(++execsBegin == execsEnd);
   }
@@ -52,7 +52,7 @@ TEST_CASE("Analyzing execute statements", "[frontend]") {
   }
 
   SECTION("Define exec statement with const") {
-    const auto& output = ANALYZE("print(string(x = 5; x + 1))");
+    const auto& output = ANALYZE("conWrite(string(x = 5; x + 1))");
     REQUIRE(output.isSuccess());
     auto execsBegin        = output.getProg().beginExecStmts();
     const auto execsEnd    = output.getProg().endExecStmts();
@@ -65,8 +65,8 @@ TEST_CASE("Analyzing execute statements", "[frontend]") {
 
   SECTION("Define exec statement to custom action") {
     const auto& output = ANALYZE("action main() "
-                                 " print(\"hello \"); "
-                                 " print(\"world\") "
+                                 " conWrite(\"hello \"); "
+                                 " conWrite(\"world\") "
                                  "main()");
     REQUIRE(output.isSuccess());
     auto execsBegin     = output.getProg().beginExecStmts();
@@ -81,14 +81,14 @@ TEST_CASE("Analyzing execute statements", "[frontend]") {
   SECTION("Diagnostics") {
     CHECK_DIAG("things()", errInvalidExecStmt(src, "things", {}, input::Span{0, 7}));
     CHECK_DIAG(
-        "print(1, 1)",
+        "conWrite(1, 1)",
         errInvalidExecStmt(
-            src, "print", std::vector<std::string>{"int", "int"}, input::Span{0, 10}));
+            src, "conWrite", std::vector<std::string>{"int", "int"}, input::Span{0, 13}));
     CHECK_DIAG(
         "fun f() -> int 1 "
         "f()",
         errInvalidExecStmt(src, "f", {}, input::Span{17, 19}));
-    CHECK_DIAG("print(test())", errUndeclaredFuncOrAction(src, "test", {}, input::Span{6, 11}));
+    CHECK_DIAG("conWrite(test())", errUndeclaredFuncOrAction(src, "test", {}, input::Span{9, 14}));
   }
 }
 

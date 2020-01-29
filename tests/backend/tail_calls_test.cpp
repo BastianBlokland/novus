@@ -8,7 +8,7 @@ TEST_CASE("Generate assembly for tail calls", "[backend]") {
   SECTION("Tail recursion") {
     CHECK_PROG(
         "fun test(int a) -> int a > 0 ? test(0) : a "
-        "print(string(test(42)))",
+        "conWrite(string(test(42)))",
         [](backend::Builder* builder) -> void {
           builder->label("test");
           builder->addReserveConsts(1);
@@ -28,15 +28,15 @@ TEST_CASE("Generate assembly for tail calls", "[backend]") {
           builder->label("false");
           builder->addRet();
 
-          builder->label("print");
+          builder->label("prog");
           builder->addLoadLitInt(42);
           builder->addCall("test", false);
           builder->addConvIntString();
-          builder->addPCall(vm::PCallCode::PrintString);
+          builder->addPCall(vm::PCallCode::ConWriteString);
           builder->addPop();
           builder->addRet();
 
-          builder->addEntryPoint("print");
+          builder->addEntryPoint("prog");
         });
   }
 
@@ -44,7 +44,7 @@ TEST_CASE("Generate assembly for tail calls", "[backend]") {
     CHECK_PROG(
         "fun f1() -> int 42 "
         "fun f2() -> int f1() "
-        "print(string(f2()))",
+        "conWrite(string(f2()))",
         [](backend::Builder* builder) -> void {
           builder->label("f2");
           builder->addCall("f1", true);
@@ -54,14 +54,14 @@ TEST_CASE("Generate assembly for tail calls", "[backend]") {
           builder->addLoadLitInt(42);
           builder->addRet();
 
-          builder->label("print");
+          builder->label("prog");
           builder->addCall("f2", false);
           builder->addConvIntString();
-          builder->addPCall(vm::PCallCode::PrintString);
+          builder->addPCall(vm::PCallCode::ConWriteString);
           builder->addPop();
           builder->addRet();
 
-          builder->addEntryPoint("print");
+          builder->addEntryPoint("prog");
         });
   }
 
@@ -69,7 +69,7 @@ TEST_CASE("Generate assembly for tail calls", "[backend]") {
     CHECK_PROG(
         "fun f1(int i) -> int i "
         "fun f2() -> int v = 42; f1(v) "
-        "print(string(f2()))",
+        "conWrite(string(f2()))",
         [](backend::Builder* builder) -> void {
           builder->label("f2");
           builder->addReserveConsts(1);
@@ -87,14 +87,14 @@ TEST_CASE("Generate assembly for tail calls", "[backend]") {
           builder->addLoadConst(0);
           builder->addRet();
 
-          builder->label("print");
+          builder->label("prog");
           builder->addCall("f2", false);
           builder->addConvIntString();
-          builder->addPCall(vm::PCallCode::PrintString);
+          builder->addPCall(vm::PCallCode::ConWriteString);
           builder->addPop();
           builder->addRet();
 
-          builder->addEntryPoint("print");
+          builder->addEntryPoint("prog");
         });
   }
 
@@ -102,7 +102,7 @@ TEST_CASE("Generate assembly for tail calls", "[backend]") {
     CHECK_PROG(
         "fun f1() -> int 42 "
         "fun f2(delegate{int} func) -> int func() "
-        "print(string(f2(f1)))",
+        "conWrite(string(f2(f1)))",
         [](backend::Builder* builder) -> void {
           builder->label("f2");
           builder->addReserveConsts(1);
@@ -115,15 +115,15 @@ TEST_CASE("Generate assembly for tail calls", "[backend]") {
           builder->addLoadLitInt(42);
           builder->addRet();
 
-          builder->label("print");
+          builder->label("prog");
           builder->addLoadLitIp("f1");
           builder->addCall("f2", false);
           builder->addConvIntString();
-          builder->addPCall(vm::PCallCode::PrintString);
+          builder->addPCall(vm::PCallCode::ConWriteString);
           builder->addPop();
           builder->addRet();
 
-          builder->addEntryPoint("print");
+          builder->addEntryPoint("prog");
         });
   }
 }

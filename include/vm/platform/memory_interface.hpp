@@ -13,8 +13,8 @@ public:
   auto setEnvArgs(std::vector<std::string> envArgs) -> void;
   auto setEnvVars(std::unordered_map<std::string, std::string> envVars) -> void;
 
-  auto print(const char* data, unsigned int size) -> void;
-  auto read() -> char;
+  auto conWrite(const char* data, unsigned int size) -> void;
+  auto conRead() -> char;
   auto getEnvArg(int idx) -> const char*;
   auto getEnvArgCount() -> int;
   auto getEnvVar(const char* name) -> const char*;

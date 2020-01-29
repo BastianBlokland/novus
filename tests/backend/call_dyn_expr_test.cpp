@@ -9,7 +9,7 @@ TEST_CASE("Generate assembly for call dynamic expressions", "[backend]") {
   SECTION("User functions") {
     CHECK_PROG(
         "fun test(int a, int b) -> int a + b "
-        "print(op = test; op(42, 1337).string())",
+        "conWrite(op = test; op(42, 1337).string())",
         [](backend::Builder* builder) -> void {
           builder->label("test");
           builder->addReserveConsts(2);
@@ -20,7 +20,7 @@ TEST_CASE("Generate assembly for call dynamic expressions", "[backend]") {
           builder->addAddInt();
           builder->addRet();
 
-          builder->label("print");
+          builder->label("prog");
           builder->addReserveConsts(1);
 
           builder->addLoadLitIp("test");
@@ -34,17 +34,17 @@ TEST_CASE("Generate assembly for call dynamic expressions", "[backend]") {
           builder->addCallDyn(false);
 
           builder->addConvIntString();
-          builder->addPCall(vm::PCallCode::PrintString);
+          builder->addPCall(vm::PCallCode::ConWriteString);
           builder->addPop();
           builder->addRet();
 
-          builder->addEntryPoint("print");
+          builder->addEntryPoint("prog");
         });
   }
 
   SECTION("Closure") {
     CHECK_PROG(
-        "print(i = 1337; (lambda () 42 + i)().string())", [](backend::Builder* builder) -> void {
+        "conWrite(i = 1337; (lambda () 42 + i)().string())", [](backend::Builder* builder) -> void {
           builder->label("anon func");
           builder->addReserveConsts(1);
           builder->addStoreConst(0);
@@ -53,7 +53,7 @@ TEST_CASE("Generate assembly for call dynamic expressions", "[backend]") {
           builder->addAddInt();
           builder->addRet();
 
-          builder->label("print");
+          builder->label("prog");
           builder->addReserveConsts(1);
 
           builder->addLoadLitInt(1337);
@@ -67,17 +67,17 @@ TEST_CASE("Generate assembly for call dynamic expressions", "[backend]") {
 
           builder->addCallDyn(false);
           builder->addConvIntString();
-          builder->addPCall(vm::PCallCode::PrintString);
+          builder->addPCall(vm::PCallCode::ConWriteString);
           builder->addPop();
           builder->addRet();
 
-          builder->addEntryPoint("print");
+          builder->addEntryPoint("prog");
         });
   }
 
   SECTION("Closure") {
     CHECK_PROG(
-        "print(i = 1337; (lambda (float f) f + i)(.1).string())",
+        "conWrite(i = 1337; (lambda (float f) f + i)(.1).string())",
         [](backend::Builder* builder) -> void {
           builder->label("anon func");
           builder->addReserveConsts(2);
@@ -89,7 +89,7 @@ TEST_CASE("Generate assembly for call dynamic expressions", "[backend]") {
           builder->addAddFloat();
           builder->addRet();
 
-          builder->label("print");
+          builder->label("prog");
           builder->addReserveConsts(1);
 
           builder->addLoadLitInt(1337);
@@ -104,11 +104,11 @@ TEST_CASE("Generate assembly for call dynamic expressions", "[backend]") {
 
           builder->addCallDyn(false);
           builder->addConvFloatString();
-          builder->addPCall(vm::PCallCode::PrintString);
+          builder->addPCall(vm::PCallCode::ConWriteString);
           builder->addPop();
           builder->addRet();
 
-          builder->addEntryPoint("print");
+          builder->addEntryPoint("prog");
         });
   }
 }

@@ -16,30 +16,30 @@ auto inline pcall(
     EvalStack& evalStack, Allocator* allocator, PlatformInterface& iface, PCallCode code) -> void {
 
   switch (code) {
-  case vm::PCallCode::PrintChar: {
+  case vm::PCallCode::ConWriteChar: {
     auto c = static_cast<char>(evalStack.peek().getInt());
-    iface.print(&c, 1);
+    iface.conWrite(&c, 1);
     return;
   }
-  case vm::PCallCode::PrintString: {
+  case vm::PCallCode::ConWriteString: {
     auto* strRef = getStringRef(evalStack.peek());
-    iface.print(strRef->getDataPtr(), strRef->getSize());
+    iface.conWrite(strRef->getDataPtr(), strRef->getSize());
     return;
   }
-  case vm::PCallCode::PrintStringLine: {
+  case vm::PCallCode::ConWriteStringLine: {
     auto* strRef = getStringRef(evalStack.peek());
-    iface.print(strRef->getDataPtr(), strRef->getSize());
-    iface.print(&newl, 1);
+    iface.conWrite(strRef->getDataPtr(), strRef->getSize());
+    iface.conWrite(&newl, 1);
     return;
   }
-  case vm::PCallCode::ReadChar: {
-    evalStack.push(internal::intValue(iface.read()));
+  case vm::PCallCode::ConReadChar: {
+    evalStack.push(internal::intValue(iface.conRead()));
     return;
   }
-  case vm::PCallCode::ReadStringLine: {
+  case vm::PCallCode::ConReadStringLine: {
     std::string line = {};
     while (true) {
-      const auto c = iface.read();
+      const auto c = iface.conRead();
       if (c == '\0' || c == '\n') {
         break;
       }

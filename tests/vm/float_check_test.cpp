@@ -12,7 +12,7 @@ TEST_CASE("Execute float checks", "[vm]") {
           builder->addLoadLitFloat(-0.1337F); // NOLINT: Magic numbers
           builder->addCheckEqFloat();
           builder->addConvBoolString();
-          builder->addPCall(vm::PCallCode::PrintString);
+          builder->addPCall(vm::PCallCode::ConWriteString);
           builder->addPop();
         },
         "input",
@@ -23,7 +23,7 @@ TEST_CASE("Execute float checks", "[vm]") {
           builder->addLoadLitFloat(0.1337F); // NOLINT: Magic numbers
           builder->addCheckEqFloat();
           builder->addConvBoolString();
-          builder->addPCall(vm::PCallCode::PrintString);
+          builder->addPCall(vm::PCallCode::ConWriteString);
           builder->addPop();
         },
         "input",
@@ -37,7 +37,7 @@ TEST_CASE("Execute float checks", "[vm]") {
           builder->addLoadLitFloat(0.1337F);  // NOLINT: Magic numbers
           builder->addCheckGtFloat();
           builder->addConvBoolString();
-          builder->addPCall(vm::PCallCode::PrintString);
+          builder->addPCall(vm::PCallCode::ConWriteString);
           builder->addPop();
         },
         "input",
@@ -48,7 +48,7 @@ TEST_CASE("Execute float checks", "[vm]") {
           builder->addLoadLitFloat(0.1337F); // NOLINT: Magic numbers
           builder->addCheckGtFloat();
           builder->addConvBoolString();
-          builder->addPCall(vm::PCallCode::PrintString);
+          builder->addPCall(vm::PCallCode::ConWriteString);
           builder->addPop();
         },
         "input",
@@ -62,7 +62,7 @@ TEST_CASE("Execute float checks", "[vm]") {
           builder->addLoadLitFloat(0.1337F); // NOLINT: Magic numbers
           builder->addCheckLeFloat();
           builder->addConvBoolString();
-          builder->addPCall(vm::PCallCode::PrintString);
+          builder->addPCall(vm::PCallCode::ConWriteString);
           builder->addPop();
         },
         "input",
@@ -73,7 +73,7 @@ TEST_CASE("Execute float checks", "[vm]") {
           builder->addLoadLitFloat(0.2337F); // NOLINT: Magic numbers
           builder->addCheckLeFloat();
           builder->addConvBoolString();
-          builder->addPCall(vm::PCallCode::PrintString);
+          builder->addPCall(vm::PCallCode::ConWriteString);
           builder->addPop();
         },
         "input",

@@ -29,11 +29,11 @@ auto MemoryInterface::getStdOut() const noexcept -> const std::vector<std::strin
   return m_stdOut;
 }
 
-auto MemoryInterface::print(const char* data, unsigned int size) -> void {
+auto MemoryInterface::conWrite(const char* data, unsigned int size) -> void {
   m_stdOut.emplace_back(data, size);
 }
 
-auto MemoryInterface::read() -> char {
+auto MemoryInterface::conRead() -> char {
   if (m_stdInPtr == nullptr) {
     if (m_stdIn.data() == nullptr) {
       return '\0';

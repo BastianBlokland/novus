@@ -97,8 +97,8 @@ TEST_CASE("Analyzing user-function definitions", "[frontend]") {
         errNonMatchingFuncReturnType(
             src, "f", "delegate{int}", "delegate{bool}", input::Span{25, 39}));
     CHECK_DIAG(
-        "fun f() -> string print(\"hello world\")",
-        errUndeclaredPureFunc(src, "print", {"string"}, input::Span{18, 37}));
+        "fun f() -> string conWrite(\"hello world\")",
+        errUndeclaredPureFunc(src, "conWrite", {"string"}, input::Span{18, 40}));
 
     SECTION("Infinite recursion") {
       CHECK_DIAG("fun f() f()", errUnableToInferFuncReturnType(src, "f", input::Span{0, 10}));

@@ -13,7 +13,7 @@ TEST_CASE("Execute float operations", "[vm]") {
           builder->addLoadLitFloat(0.1F);    // NOLINT: Magic numbers
           builder->addAddFloat();
           builder->addConvFloatString();
-          builder->addPCall(vm::PCallCode::PrintString);
+          builder->addPCall(vm::PCallCode::ConWriteString);
           builder->addPop();
         },
         "input",
@@ -24,7 +24,7 @@ TEST_CASE("Execute float operations", "[vm]") {
           builder->addLoadLitFloat(1.0F);
           builder->addAddFloat();
           builder->addConvFloatString();
-          builder->addPCall(vm::PCallCode::PrintString);
+          builder->addPCall(vm::PCallCode::ConWriteString);
           builder->addPop();
         },
         "input",
@@ -38,7 +38,7 @@ TEST_CASE("Execute float operations", "[vm]") {
           builder->addLoadLitFloat(0.1F);    // NOLINT: Magic numbers
           builder->addSubFloat();
           builder->addConvFloatString();
-          builder->addPCall(vm::PCallCode::PrintString);
+          builder->addPCall(vm::PCallCode::ConWriteString);
           builder->addPop();
         },
         "input",
@@ -49,7 +49,7 @@ TEST_CASE("Execute float operations", "[vm]") {
           builder->addLoadLitFloat(0.1337F); // NOLINT: Magic numbers
           builder->addSubFloat();
           builder->addConvFloatString();
-          builder->addPCall(vm::PCallCode::PrintString);
+          builder->addPCall(vm::PCallCode::ConWriteString);
           builder->addPop();
         },
         "input",
@@ -63,7 +63,7 @@ TEST_CASE("Execute float operations", "[vm]") {
           builder->addLoadLitFloat(10000.0F); // NOLINT: Magic numbers
           builder->addMulFloat();
           builder->addConvFloatString();
-          builder->addPCall(vm::PCallCode::PrintString);
+          builder->addPCall(vm::PCallCode::ConWriteString);
           builder->addPop();
         },
         "input",
@@ -74,7 +74,7 @@ TEST_CASE("Execute float operations", "[vm]") {
           builder->addLoadLitFloat(0.0001F); // NOLINT: Magic numbers
           builder->addMulFloat();
           builder->addConvFloatString();
-          builder->addPCall(vm::PCallCode::PrintString);
+          builder->addPCall(vm::PCallCode::ConWriteString);
           builder->addPop();
         },
         "input",
@@ -88,7 +88,7 @@ TEST_CASE("Execute float operations", "[vm]") {
           builder->addLoadLitFloat(50.0F); // NOLINT: Magic numbers
           builder->addDivFloat();
           builder->addConvFloatString();
-          builder->addPCall(vm::PCallCode::PrintString);
+          builder->addPCall(vm::PCallCode::ConWriteString);
           builder->addPop();
         },
         "input",
@@ -99,7 +99,7 @@ TEST_CASE("Execute float operations", "[vm]") {
           builder->addLoadLitFloat(0.0F);
           builder->addDivFloat();
           builder->addConvFloatString();
-          builder->addPCall(vm::PCallCode::PrintString);
+          builder->addPCall(vm::PCallCode::ConWriteString);
           builder->addPop();
         },
         "input",
@@ -110,7 +110,7 @@ TEST_CASE("Execute float operations", "[vm]") {
           builder->addLoadLitFloat(0.0F);
           builder->addDivFloat();
           builder->addConvFloatString();
-          builder->addPCall(vm::PCallCode::PrintString);
+          builder->addPCall(vm::PCallCode::ConWriteString);
           builder->addPop();
         },
         "input",
@@ -124,7 +124,7 @@ TEST_CASE("Execute float operations", "[vm]") {
           builder->addLoadLitFloat(1.0F);
           builder->addModFloat();
           builder->addConvFloatString();
-          builder->addPCall(vm::PCallCode::PrintString);
+          builder->addPCall(vm::PCallCode::ConWriteString);
           builder->addPop();
         },
         "input",
@@ -135,7 +135,7 @@ TEST_CASE("Execute float operations", "[vm]") {
           builder->addLoadLitFloat(.25F);  // NOLINT: Magic numbers
           builder->addModFloat();
           builder->addConvFloatString();
-          builder->addPCall(vm::PCallCode::PrintString);
+          builder->addPCall(vm::PCallCode::ConWriteString);
           builder->addPop();
         },
         "input",
@@ -146,7 +146,7 @@ TEST_CASE("Execute float operations", "[vm]") {
           builder->addLoadLitFloat(-1.0F);
           builder->addModFloat();
           builder->addConvFloatString();
-          builder->addPCall(vm::PCallCode::PrintString);
+          builder->addPCall(vm::PCallCode::ConWriteString);
           builder->addPop();
         },
         "input",
@@ -157,7 +157,7 @@ TEST_CASE("Execute float operations", "[vm]") {
           builder->addLoadLitFloat(0.0F);
           builder->addModFloat();
           builder->addConvFloatString();
-          builder->addPCall(vm::PCallCode::PrintString);
+          builder->addPCall(vm::PCallCode::ConWriteString);
           builder->addPop();
         },
         "input",
@@ -171,7 +171,7 @@ TEST_CASE("Execute float operations", "[vm]") {
           builder->addLoadLitFloat(2.0F); // NOLINT: Magic numbers
           builder->addPowFloat();
           builder->addConvFloatString();
-          builder->addPCall(vm::PCallCode::PrintString);
+          builder->addPCall(vm::PCallCode::ConWriteString);
           builder->addPop();
         },
         "input",
@@ -182,7 +182,7 @@ TEST_CASE("Execute float operations", "[vm]") {
           builder->addLoadLitFloat(2.0F); // NOLINT: Magic numbers
           builder->addPowFloat();
           builder->addConvFloatString();
-          builder->addPCall(vm::PCallCode::PrintString);
+          builder->addPCall(vm::PCallCode::ConWriteString);
           builder->addPop();
         },
         "input",
@@ -193,7 +193,7 @@ TEST_CASE("Execute float operations", "[vm]") {
           builder->addLoadLitFloat(4.0F); // NOLINT: Magic numbers
           builder->addPowFloat();
           builder->addConvFloatString();
-          builder->addPCall(vm::PCallCode::PrintString);
+          builder->addPCall(vm::PCallCode::ConWriteString);
           builder->addPop();
         },
         "input",
@@ -204,7 +204,7 @@ TEST_CASE("Execute float operations", "[vm]") {
           builder->addLoadLitFloat(0.0F);
           builder->addPowFloat();
           builder->addConvFloatString();
-          builder->addPCall(vm::PCallCode::PrintString);
+          builder->addPCall(vm::PCallCode::ConWriteString);
           builder->addPop();
         },
         "input",
@@ -215,7 +215,7 @@ TEST_CASE("Execute float operations", "[vm]") {
           builder->addLoadLitFloat(2.0F);  // NOLINT: Magic numbers
           builder->addPowFloat();
           builder->addConvFloatString();
-          builder->addPCall(vm::PCallCode::PrintString);
+          builder->addPCall(vm::PCallCode::ConWriteString);
           builder->addPop();
         },
         "input",
@@ -226,7 +226,7 @@ TEST_CASE("Execute float operations", "[vm]") {
           builder->addLoadLitFloat(-2.0F); // NOLINT: Magic numbers
           builder->addPowFloat();
           builder->addConvFloatString();
-          builder->addPCall(vm::PCallCode::PrintString);
+          builder->addPCall(vm::PCallCode::ConWriteString);
           builder->addPop();
         },
         "input",
@@ -239,7 +239,7 @@ TEST_CASE("Execute float operations", "[vm]") {
           builder->addLoadLitFloat(2.0F); // NOLINT: Magic numbers
           builder->addSqrtFloat();
           builder->addConvFloatString();
-          builder->addPCall(vm::PCallCode::PrintString);
+          builder->addPCall(vm::PCallCode::ConWriteString);
           builder->addPop();
         },
         "input",
@@ -249,7 +249,7 @@ TEST_CASE("Execute float operations", "[vm]") {
           builder->addLoadLitFloat(4.0F); // NOLINT: Magic numbers
           builder->addSqrtFloat();
           builder->addConvFloatString();
-          builder->addPCall(vm::PCallCode::PrintString);
+          builder->addPCall(vm::PCallCode::ConWriteString);
           builder->addPop();
         },
         "input",
@@ -259,7 +259,7 @@ TEST_CASE("Execute float operations", "[vm]") {
           builder->addLoadLitFloat(0.0F);
           builder->addSqrtFloat();
           builder->addConvFloatString();
-          builder->addPCall(vm::PCallCode::PrintString);
+          builder->addPCall(vm::PCallCode::ConWriteString);
           builder->addPop();
         },
         "input",
@@ -269,7 +269,7 @@ TEST_CASE("Execute float operations", "[vm]") {
           builder->addLoadLitFloat(-1.0F); // NOLINT: Magic numbers
           builder->addSqrtFloat();
           builder->addConvFloatString();
-          builder->addPCall(vm::PCallCode::PrintString);
+          builder->addPCall(vm::PCallCode::ConWriteString);
           builder->addPop();
         },
         "input",
@@ -282,7 +282,7 @@ TEST_CASE("Execute float operations", "[vm]") {
           builder->addLoadLitFloat(0.0F);
           builder->addSinFloat();
           builder->addConvFloatString();
-          builder->addPCall(vm::PCallCode::PrintString);
+          builder->addPCall(vm::PCallCode::ConWriteString);
           builder->addPop();
         },
         "input",
@@ -295,7 +295,7 @@ TEST_CASE("Execute float operations", "[vm]") {
           builder->addLoadLitFloat(0.0F);
           builder->addCosFloat();
           builder->addConvFloatString();
-          builder->addPCall(vm::PCallCode::PrintString);
+          builder->addPCall(vm::PCallCode::ConWriteString);
           builder->addPop();
         },
         "input",
@@ -308,7 +308,7 @@ TEST_CASE("Execute float operations", "[vm]") {
           builder->addLoadLitFloat(0.0F);
           builder->addTanFloat();
           builder->addConvFloatString();
-          builder->addPCall(vm::PCallCode::PrintString);
+          builder->addPCall(vm::PCallCode::ConWriteString);
           builder->addPop();
         },
         "input",
@@ -322,7 +322,7 @@ TEST_CASE("Execute float operations", "[vm]") {
           builder->addSinFloat();
           builder->addASinFloat();
           builder->addConvFloatString();
-          builder->addPCall(vm::PCallCode::PrintString);
+          builder->addPCall(vm::PCallCode::ConWriteString);
           builder->addPop();
         },
         "input",
@@ -336,7 +336,7 @@ TEST_CASE("Execute float operations", "[vm]") {
           builder->addCosFloat();
           builder->addACosFloat();
           builder->addConvFloatString();
-          builder->addPCall(vm::PCallCode::PrintString);
+          builder->addPCall(vm::PCallCode::ConWriteString);
           builder->addPop();
         },
         "input",
@@ -350,7 +350,7 @@ TEST_CASE("Execute float operations", "[vm]") {
           builder->addTanFloat();
           builder->addATanFloat();
           builder->addConvFloatString();
-          builder->addPCall(vm::PCallCode::PrintString);
+          builder->addPCall(vm::PCallCode::ConWriteString);
           builder->addPop();
         },
         "input",
@@ -364,7 +364,7 @@ TEST_CASE("Execute float operations", "[vm]") {
           builder->addLoadLitFloat(0.0F);
           builder->addATan2Float();
           builder->addConvFloatString();
-          builder->addPCall(vm::PCallCode::PrintString);
+          builder->addPCall(vm::PCallCode::ConWriteString);
           builder->addPop();
         },
         "input",
@@ -377,7 +377,7 @@ TEST_CASE("Execute float operations", "[vm]") {
           builder->addLoadLitFloat(0.1337F); // NOLINT: Magic numbers
           builder->addNegFloat();
           builder->addConvFloatString();
-          builder->addPCall(vm::PCallCode::PrintString);
+          builder->addPCall(vm::PCallCode::ConWriteString);
           builder->addPop();
         },
         "input",
@@ -387,7 +387,7 @@ TEST_CASE("Execute float operations", "[vm]") {
           builder->addLoadLitFloat(0.0F);
           builder->addNegFloat();
           builder->addConvFloatString();
-          builder->addPCall(vm::PCallCode::PrintString);
+          builder->addPCall(vm::PCallCode::ConWriteString);
           builder->addPop();
         },
         "input",
@@ -398,7 +398,7 @@ TEST_CASE("Execute float operations", "[vm]") {
           builder->addNegFloat();
           builder->addNegFloat();
           builder->addConvFloatString();
-          builder->addPCall(vm::PCallCode::PrintString);
+          builder->addPCall(vm::PCallCode::ConWriteString);
           builder->addPop();
         },
         "input",

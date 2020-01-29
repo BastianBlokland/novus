@@ -128,22 +128,22 @@ TEST_CASE("Analyzing call dynamic expressions", "[frontend]") {
         errNoTypeParamsProvidedToTemplateFunction(src, "f1", input::Span{42, 43}),
         errUndeclaredPureFunc(src, "op", {}, input::Span{46, 49}));
     CHECK_DIAG(
-        "fun f() -> delegate{string, string} print",
-        errUndeclaredConst(src, "print", input::Span{36, 40}));
+        "fun f() -> delegate{string, string} conWrite",
+        errUndeclaredConst(src, "conWrite", input::Span{36, 43}));
     CHECK_DIAG(
-        "fun f() -> string op = print; op(\"hello world\")",
-        errUndeclaredConst(src, "print", input::Span{23, 27}),
-        errUndeclaredPureFunc(src, "op", {"string"}, input::Span{30, 46}));
+        "fun f() -> string op = conWrite; op(\"hello world\")",
+        errUndeclaredConst(src, "conWrite", input::Span{23, 30}),
+        errUndeclaredPureFunc(src, "op", {"string"}, input::Span{33, 49}));
     CHECK_DIAG(
-        "action main() print(\"hello world\") "
+        "action main() conWrite(\"hello world\") "
         "action a() -> string op = main; op()",
-        errUndeclaredConst(src, "main", input::Span{61, 64}),
-        errUndeclaredFuncOrAction(src, "op", {}, input::Span{67, 70}));
+        errUndeclaredConst(src, "main", input::Span{64, 67}),
+        errUndeclaredFuncOrAction(src, "op", {}, input::Span{70, 73}));
     CHECK_DIAG(
-        "action main{T}() print(\"hello world\") "
+        "action main{T}() conWrite(\"hello world\") "
         "action a() -> string op = main{int}; op()",
-        errNoFuncFoundToInstantiate(src, "main", 1, input::Span{64, 72}),
-        errUndeclaredFuncOrAction(src, "op", {}, input::Span{75, 78}));
+        errNoFuncFoundToInstantiate(src, "main", 1, input::Span{67, 75}),
+        errUndeclaredFuncOrAction(src, "op", {}, input::Span{78, 81}));
   }
 }
 

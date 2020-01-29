@@ -8,15 +8,15 @@ TEST_CASE("Execute jump", "[vm]") {
   SECTION("Unconditional Jump") {
     CHECK_EXPR(
         [](backend::Builder* builder) -> void {
-          builder->addJump("print42");
+          builder->addJump("write42");
 
           builder->addLoadLitString("1337");
-          builder->addPCall(vm::PCallCode::PrintString);
+          builder->addPCall(vm::PCallCode::ConWriteString);
           builder->addPop();
 
-          builder->label("print42");
+          builder->label("write42");
           builder->addLoadLitString("42");
-          builder->addPCall(vm::PCallCode::PrintString);
+          builder->addPCall(vm::PCallCode::ConWriteString);
           builder->addPop();
         },
         "input",
@@ -27,7 +27,7 @@ TEST_CASE("Execute jump", "[vm]") {
 
           builder->label("jump3");
           builder->addLoadLitString("1337");
-          builder->addPCall(vm::PCallCode::PrintString);
+          builder->addPCall(vm::PCallCode::ConWriteString);
           builder->addPop();
           builder->addJump("end");
 
@@ -47,15 +47,15 @@ TEST_CASE("Execute jump", "[vm]") {
     CHECK_EXPR(
         [](backend::Builder* builder) -> void {
           builder->addLoadLitInt(0);
-          builder->addJumpIf("print42");
+          builder->addJumpIf("write42");
 
           builder->addLoadLitString("1337");
-          builder->addPCall(vm::PCallCode::PrintString);
+          builder->addPCall(vm::PCallCode::ConWriteString);
           builder->addPop();
 
-          builder->label("print42");
+          builder->label("write42");
           builder->addLoadLitString("42");
-          builder->addPCall(vm::PCallCode::PrintString);
+          builder->addPCall(vm::PCallCode::ConWriteString);
           builder->addPop();
         },
         "input",
@@ -64,15 +64,15 @@ TEST_CASE("Execute jump", "[vm]") {
     CHECK_EXPR(
         [](backend::Builder* builder) -> void {
           builder->addLoadLitInt(1);
-          builder->addJumpIf("print42");
+          builder->addJumpIf("write42");
 
           builder->addLoadLitString("1337");
-          builder->addPCall(vm::PCallCode::PrintString);
+          builder->addPCall(vm::PCallCode::ConWriteString);
           builder->addPop();
 
-          builder->label("print42");
+          builder->label("write42");
           builder->addLoadLitString("42");
-          builder->addPCall(vm::PCallCode::PrintString);
+          builder->addPCall(vm::PCallCode::ConWriteString);
           builder->addPop();
         },
         "input",

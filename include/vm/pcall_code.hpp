@@ -5,12 +5,12 @@
 namespace vm {
 
 enum class PCallCode : uint8_t {
-  PrintChar       = 10,
-  PrintString     = 11,
-  PrintStringLine = 12,
+  ConWriteChar       = 10,
+  ConWriteString     = 11,
+  ConWriteStringLine = 12,
 
-  ReadChar       = 21,
-  ReadStringLine = 22,
+  ConReadChar       = 21,
+  ConReadStringLine = 22,
 
   GetEnvArg      = 30,
   GetEnvArgCount = 31,

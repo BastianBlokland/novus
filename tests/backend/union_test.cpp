@@ -8,7 +8,7 @@ TEST_CASE("Generating assembly for unions", "[backend]") {
   SECTION("Create user union and check for equality") {
     CHECK_PROG(
         "union Val = int, float "
-        "print(string(Val(1) == Val(1.0)))",
+        "conWrite(string(Val(1) == Val(1.0)))",
         [](backend::Builder* builder) -> void {
           // --- Union equality function start.
           builder->label("ValEq");
@@ -75,8 +75,8 @@ TEST_CASE("Generating assembly for unions", "[backend]") {
           builder->addRet();
           // --- Struct equality function end.
 
-          // --- Print statement start.
-          builder->label("print");
+          // --- conWrite statement start.
+          builder->label("prog");
           // Make union with int 'Val(1)'.
           builder->addLoadLitInt(0); // 0 because 'int' is the first type in the union.
           builder->addLoadLitInt(1);
@@ -87,15 +87,15 @@ TEST_CASE("Generating assembly for unions", "[backend]") {
           builder->addLoadLitFloat(1.0F);
           builder->addMakeStruct(2);
 
-          // Call equality function and print the result.
+          // Call equality function and write the result.
           builder->addCall("ValEq", false);
           builder->addConvBoolString();
-          builder->addPCall(vm::PCallCode::PrintString);
+          builder->addPCall(vm::PCallCode::ConWriteString);
           builder->addPop();
           builder->addRet();
-          // --- Print statement end.
+          // --- conWrite statement end.
 
-          builder->addEntryPoint("print");
+          builder->addEntryPoint("prog");
         });
   }
 }

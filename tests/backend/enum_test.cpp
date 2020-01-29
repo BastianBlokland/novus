@@ -8,31 +8,31 @@ TEST_CASE("Generating assembly for enums", "[backend]") {
   SECTION("Create and convert to int") {
     CHECK_PROG(
         "enum E = a : 42 "
-        "print(string(E.a == 1337))",
+        "conWrite(string(E.a == 1337))",
         [](backend::Builder* builder) -> void {
-          // --- Print statement start.
-          builder->label("print");
+          // --- conWite statement start.
+          builder->label("prog");
           builder->addLoadLitInt(42);
           builder->addLoadLitInt(1337);
           builder->addCheckEqInt();
 
           builder->addConvBoolString();
-          builder->addPCall(vm::PCallCode::PrintString);
+          builder->addPCall(vm::PCallCode::ConWriteString);
           builder->addPop();
           builder->addRet();
-          // --- Print statement end.
+          // --- conWite statement end.
 
-          builder->addEntryPoint("print");
+          builder->addEntryPoint("prog");
         });
   }
 
   SECTION("Bitwise ops") {
     CHECK_PROG(
         "enum E = a:0b01, b:0b10, ab:0b11 "
-        "print(string((E.a | E.b) == E.ab))",
+        "conWrite(string((E.a | E.b) == E.ab))",
         [](backend::Builder* builder) -> void {
-          // --- Print statement start.
-          builder->label("print");
+          // --- conWite statement start.
+          builder->label("prog");
           builder->addLoadLitInt(0b01);
           builder->addLoadLitInt(0b10);
           builder->addOrInt();
@@ -41,33 +41,33 @@ TEST_CASE("Generating assembly for enums", "[backend]") {
           builder->addCheckEqInt();
 
           builder->addConvBoolString();
-          builder->addPCall(vm::PCallCode::PrintString);
+          builder->addPCall(vm::PCallCode::ConWriteString);
           builder->addPop();
           builder->addRet();
-          // --- Print statement end.
+          // --- conWite statement end.
 
-          builder->addEntryPoint("print");
+          builder->addEntryPoint("prog");
         });
   }
 
   SECTION("Convert from int") {
     CHECK_PROG(
         "enum E = a "
-        "print(string(E(0) == E.a))",
+        "conWrite(string(E(0) == E.a))",
         [](backend::Builder* builder) -> void {
-          // --- Print statement start.
-          builder->label("print");
+          // --- conWite statement start.
+          builder->label("prog");
           builder->addLoadLitInt(0); // Conversion is a no-op at runtime.
           builder->addLoadLitInt(0);
           builder->addCheckEqInt();
 
           builder->addConvBoolString();
-          builder->addPCall(vm::PCallCode::PrintString);
+          builder->addPCall(vm::PCallCode::ConWriteString);
           builder->addPop();
           builder->addRet();
-          // --- Print statement end.
+          // --- conWite statement end.
 
-          builder->addEntryPoint("print");
+          builder->addEntryPoint("prog");
         });
   }
 }

@@ -11,64 +11,64 @@ namespace backend {
 inline auto buildAssemblyExprInt(const std::function<void(backend::Builder*)>& build)
     -> vm::Assembly {
   auto builder = backend::Builder{};
-  builder.label("print");
+  builder.label("prog");
   build(&builder);
   builder.addConvIntString();
-  builder.addPCall(vm::PCallCode::PrintString);
+  builder.addPCall(vm::PCallCode::ConWriteString);
   builder.addPop();
   builder.addRet();
-  builder.addEntryPoint("print");
+  builder.addEntryPoint("prog");
   return builder.close();
 }
 
 inline auto buildAssemblyExprFloat(const std::function<void(backend::Builder*)>& build)
     -> vm::Assembly {
   auto builder = backend::Builder{};
-  builder.label("print");
+  builder.label("prog");
   build(&builder);
   builder.addConvFloatString();
-  builder.addPCall(vm::PCallCode::PrintString);
+  builder.addPCall(vm::PCallCode::ConWriteString);
   builder.addPop();
   builder.addRet();
-  builder.addEntryPoint("print");
+  builder.addEntryPoint("prog");
   return builder.close();
 }
 
 inline auto buildAssemblyExprBool(const std::function<void(backend::Builder*)>& build)
     -> vm::Assembly {
   auto builder = backend::Builder{};
-  builder.label("print");
+  builder.label("prog");
   build(&builder);
   builder.addConvBoolString();
-  builder.addPCall(vm::PCallCode::PrintString);
+  builder.addPCall(vm::PCallCode::ConWriteString);
   builder.addPop();
   builder.addRet();
-  builder.addEntryPoint("print");
+  builder.addEntryPoint("prog");
   return builder.close();
 }
 
 inline auto buildAssemblyExprString(const std::function<void(backend::Builder*)>& build)
     -> vm::Assembly {
   auto builder = backend::Builder{};
-  builder.label("print");
+  builder.label("prog");
   build(&builder);
-  builder.addPCall(vm::PCallCode::PrintString);
+  builder.addPCall(vm::PCallCode::ConWriteString);
   builder.addPop();
   builder.addRet();
-  builder.addEntryPoint("print");
+  builder.addEntryPoint("prog");
   return builder.close();
 }
 
 inline auto buildAssemblyExprChar(const std::function<void(backend::Builder*)>& build)
     -> vm::Assembly {
   auto builder = backend::Builder{};
-  builder.label("print");
+  builder.label("prog");
   build(&builder);
   builder.addConvCharString();
-  builder.addPCall(vm::PCallCode::PrintString);
+  builder.addPCall(vm::PCallCode::ConWriteString);
   builder.addPop();
   builder.addRet();
-  builder.addEntryPoint("print");
+  builder.addEntryPoint("prog");
   return builder.close();
 }
 
@@ -89,19 +89,23 @@ inline auto buildAssembly(const std::function<void(backend::Builder*)>& build) -
   }
 
 #define CHECK_EXPR_INT(INPUT, BUILD_EXPECTED_ASM)                                                  \
-  CHECK_ASM("print(string(" + std::string(INPUT) + "))", buildAssemblyExprInt(BUILD_EXPECTED_ASM))
+  CHECK_ASM(                                                                                       \
+      "conWrite(string(" + std::string(INPUT) + "))", buildAssemblyExprInt(BUILD_EXPECTED_ASM))
 
 #define CHECK_EXPR_FLOAT(INPUT, BUILD_EXPECTED_ASM)                                                \
-  CHECK_ASM("print(string(" + std::string(INPUT) + "))", buildAssemblyExprFloat(BUILD_EXPECTED_ASM))
+  CHECK_ASM(                                                                                       \
+      "conWrite(string(" + std::string(INPUT) + "))", buildAssemblyExprFloat(BUILD_EXPECTED_ASM))
 
 #define CHECK_EXPR_BOOL(INPUT, BUILD_EXPECTED_ASM)                                                 \
-  CHECK_ASM("print(string(" + std::string(INPUT) + "))", buildAssemblyExprBool(BUILD_EXPECTED_ASM))
+  CHECK_ASM(                                                                                       \
+      "conWrite(string(" + std::string(INPUT) + "))", buildAssemblyExprBool(BUILD_EXPECTED_ASM))
 
 #define CHECK_EXPR_STRING(INPUT, BUILD_EXPECTED_ASM)                                               \
-  CHECK_ASM("print(" + std::string(INPUT) + ")", buildAssemblyExprString(BUILD_EXPECTED_ASM))
+  CHECK_ASM("conWrite(" + std::string(INPUT) + ")", buildAssemblyExprString(BUILD_EXPECTED_ASM))
 
 #define CHECK_EXPR_CHAR(INPUT, BUILD_EXPECTED_ASM)                                                 \
-  CHECK_ASM("print(string(" + std::string(INPUT) + "))", buildAssemblyExprChar(BUILD_EXPECTED_ASM))
+  CHECK_ASM(                                                                                       \
+      "conWrite(string(" + std::string(INPUT) + "))", buildAssemblyExprChar(BUILD_EXPECTED_ASM))
 
 #define CHECK_PROG(INPUT, BUILD_EXPECTED_ASM) CHECK_ASM(INPUT, buildAssembly(BUILD_EXPECTED_ASM))
 

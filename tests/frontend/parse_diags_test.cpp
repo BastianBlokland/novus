@@ -5,7 +5,8 @@ namespace frontend {
 
 TEST_CASE("Analyzing parse diagnostics", "[frontend]") {
 
-  CHECK_DIAG("print(1 + `)", error(src, "Parse error: Invalid character '`'", input::Span{10, 10}));
+  CHECK_DIAG(
+      "conWrite(1 + `)", error(src, "Parse error: Invalid character '`'", input::Span{13, 13}));
 }
 
 } // namespace frontend

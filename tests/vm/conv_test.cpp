@@ -12,7 +12,7 @@ TEST_CASE("Execute conversions", "[vm]") {
           builder->addConvIntFloat();
 
           builder->addConvFloatString();
-          builder->addPCall(vm::PCallCode::PrintString);
+          builder->addPCall(vm::PCallCode::ConWriteString);
           builder->addPop();
         },
         "input",
@@ -23,7 +23,7 @@ TEST_CASE("Execute conversions", "[vm]") {
           builder->addConvIntFloat();
 
           builder->addConvFloatString();
-          builder->addPCall(vm::PCallCode::PrintString);
+          builder->addPCall(vm::PCallCode::ConWriteString);
           builder->addPop();
         },
         "input",
@@ -37,7 +37,7 @@ TEST_CASE("Execute conversions", "[vm]") {
           builder->addConvFloatInt();
 
           builder->addConvIntString();
-          builder->addPCall(vm::PCallCode::PrintString);
+          builder->addPCall(vm::PCallCode::ConWriteString);
           builder->addPop();
         },
         "input",
@@ -48,7 +48,7 @@ TEST_CASE("Execute conversions", "[vm]") {
           builder->addConvFloatInt();
 
           builder->addConvIntString();
-          builder->addPCall(vm::PCallCode::PrintString);
+          builder->addPCall(vm::PCallCode::ConWriteString);
           builder->addPop();
         },
         "input",
@@ -59,7 +59,7 @@ TEST_CASE("Execute conversions", "[vm]") {
           builder->addConvFloatInt();
 
           builder->addConvIntString();
-          builder->addPCall(vm::PCallCode::PrintString);
+          builder->addPCall(vm::PCallCode::ConWriteString);
           builder->addPop();
         },
         "input",
@@ -70,7 +70,7 @@ TEST_CASE("Execute conversions", "[vm]") {
           builder->addConvFloatInt();
 
           builder->addConvIntString();
-          builder->addPCall(vm::PCallCode::PrintString);
+          builder->addPCall(vm::PCallCode::ConWriteString);
           builder->addPop();
         },
         "input",
@@ -82,7 +82,7 @@ TEST_CASE("Execute conversions", "[vm]") {
         [](backend::Builder* builder) -> void {
           builder->addLoadLitInt(0);
           builder->addConvIntString();
-          builder->addPCall(vm::PCallCode::PrintString);
+          builder->addPCall(vm::PCallCode::ConWriteString);
           builder->addPop();
         },
         "input",
@@ -91,7 +91,7 @@ TEST_CASE("Execute conversions", "[vm]") {
         [](backend::Builder* builder) -> void {
           builder->addLoadLitInt(42);
           builder->addConvIntString();
-          builder->addPCall(vm::PCallCode::PrintString);
+          builder->addPCall(vm::PCallCode::ConWriteString);
           builder->addPop();
         },
         "input",
@@ -100,7 +100,7 @@ TEST_CASE("Execute conversions", "[vm]") {
         [](backend::Builder* builder) -> void {
           builder->addLoadLitInt(2147483647);
           builder->addConvIntString();
-          builder->addPCall(vm::PCallCode::PrintString);
+          builder->addPCall(vm::PCallCode::ConWriteString);
           builder->addPop();
         },
         "input",
@@ -109,7 +109,7 @@ TEST_CASE("Execute conversions", "[vm]") {
         [](backend::Builder* builder) -> void {
           builder->addLoadLitInt(-2147483647);
           builder->addConvIntString();
-          builder->addPCall(vm::PCallCode::PrintString);
+          builder->addPCall(vm::PCallCode::ConWriteString);
           builder->addPop();
         },
         "input",
@@ -121,7 +121,7 @@ TEST_CASE("Execute conversions", "[vm]") {
         [](backend::Builder* builder) -> void {
           builder->addLoadLitFloat(0.0F);
           builder->addConvFloatString();
-          builder->addPCall(vm::PCallCode::PrintString);
+          builder->addPCall(vm::PCallCode::ConWriteString);
           builder->addPop();
         },
         "input",
@@ -130,7 +130,7 @@ TEST_CASE("Execute conversions", "[vm]") {
         [](backend::Builder* builder) -> void {
           builder->addLoadLitFloat(42.0F); // NOLINT: Magic numbers
           builder->addConvFloatString();
-          builder->addPCall(vm::PCallCode::PrintString);
+          builder->addPCall(vm::PCallCode::ConWriteString);
           builder->addPop();
         },
         "input",
@@ -139,7 +139,7 @@ TEST_CASE("Execute conversions", "[vm]") {
         [](backend::Builder* builder) -> void {
           builder->addLoadLitFloat(42.1337F); // NOLINT: Magic numbers
           builder->addConvFloatString();
-          builder->addPCall(vm::PCallCode::PrintString);
+          builder->addPCall(vm::PCallCode::ConWriteString);
           builder->addPop();
         },
         "input",
@@ -148,7 +148,7 @@ TEST_CASE("Execute conversions", "[vm]") {
         [](backend::Builder* builder) -> void {
           builder->addLoadLitFloat(0.42F); // NOLINT: Magic numbers
           builder->addConvFloatString();
-          builder->addPCall(vm::PCallCode::PrintString);
+          builder->addPCall(vm::PCallCode::ConWriteString);
           builder->addPop();
         },
         "input",
@@ -157,7 +157,7 @@ TEST_CASE("Execute conversions", "[vm]") {
         [](backend::Builder* builder) -> void {
           builder->addLoadLitFloat(999999.0F); // NOLINT: Magic numbers
           builder->addConvFloatString();
-          builder->addPCall(vm::PCallCode::PrintString);
+          builder->addPCall(vm::PCallCode::ConWriteString);
           builder->addPop();
         },
         "input",
@@ -166,7 +166,7 @@ TEST_CASE("Execute conversions", "[vm]") {
         [](backend::Builder* builder) -> void {
           builder->addLoadLitFloat(99999.1F); // NOLINT: Magic numbers
           builder->addConvFloatString();
-          builder->addPCall(vm::PCallCode::PrintString);
+          builder->addPCall(vm::PCallCode::ConWriteString);
           builder->addPop();
         },
         "input",
@@ -175,7 +175,7 @@ TEST_CASE("Execute conversions", "[vm]") {
         [](backend::Builder* builder) -> void {
           builder->addLoadLitFloat(0.000001F); // NOLINT: Magic numbers
           builder->addConvFloatString();
-          builder->addPCall(vm::PCallCode::PrintString);
+          builder->addPCall(vm::PCallCode::ConWriteString);
           builder->addPop();
         },
         "input",
@@ -184,7 +184,7 @@ TEST_CASE("Execute conversions", "[vm]") {
         [](backend::Builder* builder) -> void {
           builder->addLoadLitFloat(9999999999.0F); // NOLINT: Magic numbers
           builder->addConvFloatString();
-          builder->addPCall(vm::PCallCode::PrintString);
+          builder->addPCall(vm::PCallCode::ConWriteString);
           builder->addPop();
         },
         "input",
@@ -193,7 +193,7 @@ TEST_CASE("Execute conversions", "[vm]") {
         [](backend::Builder* builder) -> void {
           builder->addLoadLitFloat(-0.42F); // NOLINT: Magic numbers
           builder->addConvFloatString();
-          builder->addPCall(vm::PCallCode::PrintString);
+          builder->addPCall(vm::PCallCode::ConWriteString);
           builder->addPop();
         },
         "input",
@@ -202,7 +202,7 @@ TEST_CASE("Execute conversions", "[vm]") {
         [](backend::Builder* builder) -> void {
           builder->addLoadLitFloat(-9999999999.0F); // NOLINT: Magic numbers
           builder->addConvFloatString();
-          builder->addPCall(vm::PCallCode::PrintString);
+          builder->addPCall(vm::PCallCode::ConWriteString);
           builder->addPop();
         },
         "input",
@@ -214,7 +214,7 @@ TEST_CASE("Execute conversions", "[vm]") {
         [](backend::Builder* builder) -> void {
           builder->addLoadLitInt(48);
           builder->addConvCharString();
-          builder->addPCall(vm::PCallCode::PrintString);
+          builder->addPCall(vm::PCallCode::ConWriteString);
           builder->addPop();
         },
         "input",
@@ -223,7 +223,7 @@ TEST_CASE("Execute conversions", "[vm]") {
         [](backend::Builder* builder) -> void {
           builder->addLoadLitInt(10);
           builder->addConvCharString();
-          builder->addPCall(vm::PCallCode::PrintString);
+          builder->addPCall(vm::PCallCode::ConWriteString);
           builder->addPop();
         },
         "input",
@@ -232,7 +232,7 @@ TEST_CASE("Execute conversions", "[vm]") {
         [](backend::Builder* builder) -> void {
           builder->addLoadLitInt(38);
           builder->addConvCharString();
-          builder->addPCall(vm::PCallCode::PrintString);
+          builder->addPCall(vm::PCallCode::ConWriteString);
           builder->addPop();
         },
         "input",
@@ -241,7 +241,7 @@ TEST_CASE("Execute conversions", "[vm]") {
         [](backend::Builder* builder) -> void {
           builder->addLoadLitInt(32);
           builder->addConvCharString();
-          builder->addPCall(vm::PCallCode::PrintString);
+          builder->addPCall(vm::PCallCode::ConWriteString);
           builder->addPop();
         },
         "input",
@@ -255,7 +255,7 @@ TEST_CASE("Execute conversions", "[vm]") {
           builder->addConvIntChar();
 
           builder->addConvIntString();
-          builder->addPCall(vm::PCallCode::PrintString);
+          builder->addPCall(vm::PCallCode::ConWriteString);
           builder->addPop();
         },
         "input",
@@ -266,7 +266,7 @@ TEST_CASE("Execute conversions", "[vm]") {
           builder->addConvIntChar();
 
           builder->addConvIntString();
-          builder->addPCall(vm::PCallCode::PrintString);
+          builder->addPCall(vm::PCallCode::ConWriteString);
           builder->addPop();
         },
         "input",
@@ -277,7 +277,7 @@ TEST_CASE("Execute conversions", "[vm]") {
           builder->addConvIntChar();
 
           builder->addConvIntString();
-          builder->addPCall(vm::PCallCode::PrintString);
+          builder->addPCall(vm::PCallCode::ConWriteString);
           builder->addPop();
         },
         "input",
@@ -288,7 +288,7 @@ TEST_CASE("Execute conversions", "[vm]") {
           builder->addConvIntChar();
 
           builder->addConvIntString();
-          builder->addPCall(vm::PCallCode::PrintString);
+          builder->addPCall(vm::PCallCode::ConWriteString);
           builder->addPop();
         },
         "input",
@@ -299,7 +299,7 @@ TEST_CASE("Execute conversions", "[vm]") {
           builder->addConvIntChar();
 
           builder->addConvIntString();
-          builder->addPCall(vm::PCallCode::PrintString);
+          builder->addPCall(vm::PCallCode::ConWriteString);
           builder->addPop();
         },
         "input",
@@ -310,7 +310,7 @@ TEST_CASE("Execute conversions", "[vm]") {
           builder->addConvIntChar();
 
           builder->addConvIntString();
-          builder->addPCall(vm::PCallCode::PrintString);
+          builder->addPCall(vm::PCallCode::ConWriteString);
           builder->addPop();
         },
         "input",

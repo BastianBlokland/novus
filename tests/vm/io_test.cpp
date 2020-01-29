@@ -6,19 +6,19 @@ namespace vm {
 
 TEST_CASE("Execute input and output", "[vm]") {
 
-  SECTION("PrintChar") {
+  SECTION("ConWriteChar") {
     CHECK_EXPR(
         [](backend::Builder* builder) -> void {
           builder->addLoadLitInt('a');
-          builder->addPCall(vm::PCallCode::PrintChar);
+          builder->addPCall(vm::PCallCode::ConWriteChar);
           builder->addPop();
 
           builder->addLoadLitInt('b');
-          builder->addPCall(vm::PCallCode::PrintChar);
+          builder->addPCall(vm::PCallCode::ConWriteChar);
           builder->addPop();
 
           builder->addLoadLitInt('c');
-          builder->addPCall(vm::PCallCode::PrintChar);
+          builder->addPCall(vm::PCallCode::ConWriteChar);
           builder->addPop();
         },
         "input",
@@ -27,26 +27,26 @@ TEST_CASE("Execute input and output", "[vm]") {
         "c");
   }
 
-  SECTION("PrintString") {
+  SECTION("ConWriteString") {
     CHECK_EXPR(
         [](backend::Builder* builder) -> void {
           builder->addLoadLitString("hello world");
-          builder->addPCall(vm::PCallCode::PrintString);
+          builder->addPCall(vm::PCallCode::ConWriteString);
           builder->addPop();
 
           builder->addLoadLitInt(0);
           builder->addConvBoolString();
-          builder->addPCall(vm::PCallCode::PrintString);
+          builder->addPCall(vm::PCallCode::ConWriteString);
           builder->addPop();
 
           builder->addLoadLitInt(1);
           builder->addConvBoolString();
-          builder->addPCall(vm::PCallCode::PrintString);
+          builder->addPCall(vm::PCallCode::ConWriteString);
           builder->addPop();
 
           builder->addLoadLitInt(-42);
           builder->addConvIntString();
-          builder->addPCall(vm::PCallCode::PrintString);
+          builder->addPCall(vm::PCallCode::ConWriteString);
           builder->addPop();
         },
         "input",
@@ -56,15 +56,15 @@ TEST_CASE("Execute input and output", "[vm]") {
         "-42");
   }
 
-  SECTION("PrintStringLine") {
+  SECTION("ConWriteStringLine") {
     CHECK_EXPR(
         [](backend::Builder* builder) -> void {
           builder->addLoadLitString("hello");
-          builder->addPCall(vm::PCallCode::PrintStringLine);
+          builder->addPCall(vm::PCallCode::ConWriteStringLine);
           builder->addPop();
 
           builder->addLoadLitString("world");
-          builder->addPCall(vm::PCallCode::PrintStringLine);
+          builder->addPCall(vm::PCallCode::ConWriteStringLine);
           builder->addPop();
         },
         "input",
@@ -74,7 +74,7 @@ TEST_CASE("Execute input and output", "[vm]") {
         "\n");
   }
 
-  SECTION("Read char") {
+  SECTION("ConReadChar") {
     CHECK_PROG(
         [](backend::Builder* builder) -> void {
           builder->label("entry");
@@ -82,14 +82,14 @@ TEST_CASE("Execute input and output", "[vm]") {
 
           builder->addLoadLitString("hello: ");
 
-          builder->addPCall(vm::PCallCode::ReadChar);
+          builder->addPCall(vm::PCallCode::ConReadChar);
           builder->addDup();
           builder->addLogicInvInt();
           builder->addJumpIf("end");
 
           builder->addConvCharString();
           builder->addAddString();
-          builder->addPCall(vm::PCallCode::PrintString);
+          builder->addPCall(vm::PCallCode::ConWriteString);
           builder->addPop();
           builder->addJump("entry");
 
@@ -104,7 +104,7 @@ TEST_CASE("Execute input and output", "[vm]") {
         "hello: c");
   }
 
-  SECTION("Read line") {
+  SECTION("ConReadStringLine") {
     CHECK_PROG(
         [](backend::Builder* builder) -> void {
           builder->label("entry");
@@ -112,14 +112,14 @@ TEST_CASE("Execute input and output", "[vm]") {
 
           builder->addLoadLitString("hello: ");
 
-          builder->addPCall(vm::PCallCode::ReadStringLine);
+          builder->addPCall(vm::PCallCode::ConReadStringLine);
           builder->addDup();
           builder->addLengthString();
           builder->addLogicInvInt();
           builder->addJumpIf("end");
 
           builder->addAddString();
-          builder->addPCall(vm::PCallCode::PrintString);
+          builder->addPCall(vm::PCallCode::ConWriteString);
           builder->addPop();
           builder->addJump("entry");
 
@@ -143,12 +143,12 @@ TEST_CASE("Execute input and output", "[vm]") {
 
           builder->addLoadLitString("var1");
           builder->addPCall(vm::PCallCode::GetEnvVar);
-          builder->addPCall(vm::PCallCode::PrintString);
+          builder->addPCall(vm::PCallCode::ConWriteString);
           builder->addPop();
 
           builder->addLoadLitString("var3");
           builder->addPCall(vm::PCallCode::GetEnvVar);
-          builder->addPCall(vm::PCallCode::PrintString);
+          builder->addPCall(vm::PCallCode::ConWriteString);
           builder->addPop();
 
           builder->addRet();
@@ -163,38 +163,38 @@ TEST_CASE("Execute input and output", "[vm]") {
     auto envArgs = std::vector<std::string>{"a", "b", "c"};
     CHECK_PROG_WITH_ENV_ARGS(
         [](backend::Builder* builder) -> void {
-          builder->label("printArgCount");
+          builder->label("writeArgCount");
           builder->addPCall(vm::PCallCode::GetEnvArgCount);
           builder->addConvIntString();
-          builder->addPCall(vm::PCallCode::PrintString);
+          builder->addPCall(vm::PCallCode::ConWriteString);
           builder->addPop();
           builder->addRet();
 
-          builder->label("printArg1");
+          builder->label("writeArg1");
           builder->addLoadLitInt(0);
           builder->addPCall(vm::PCallCode::GetEnvArg);
-          builder->addPCall(vm::PCallCode::PrintString);
+          builder->addPCall(vm::PCallCode::ConWriteString);
           builder->addPop();
           builder->addRet();
 
-          builder->label("printArg3");
+          builder->label("writeArg3");
           builder->addLoadLitInt(2);
           builder->addPCall(vm::PCallCode::GetEnvArg);
-          builder->addPCall(vm::PCallCode::PrintString);
+          builder->addPCall(vm::PCallCode::ConWriteString);
           builder->addPop();
           builder->addRet();
 
-          builder->label("printArg4");
+          builder->label("writeArg4");
           builder->addLoadLitInt(3);
           builder->addPCall(vm::PCallCode::GetEnvArg);
-          builder->addPCall(vm::PCallCode::PrintString);
+          builder->addPCall(vm::PCallCode::ConWriteString);
           builder->addPop();
           builder->addRet();
 
-          builder->addEntryPoint("printArgCount");
-          builder->addEntryPoint("printArg1");
-          builder->addEntryPoint("printArg3");
-          builder->addEntryPoint("printArg4");
+          builder->addEntryPoint("writeArgCount");
+          builder->addEntryPoint("writeArg1");
+          builder->addEntryPoint("writeArg3");
+          builder->addEntryPoint("writeArg4");
         },
         "input",
         envArgs,

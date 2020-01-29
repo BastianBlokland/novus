@@ -8,7 +8,7 @@
       "request": "launch",
       "program": "${workspaceFolder}/bin/eval",
       "args": [
-        "print(1 + 1)"
+        "conWrite(string(1 + 1))"
       ],
       "cwd": "${workspaceFolder}",
       "terminal": "integrated",
@@ -22,7 +22,7 @@
       "program": "${workspaceFolder}/bin/lexdiag",
       "args": [
         "lex",
-        "print(x + 42 * y)"
+        "conWrite(string(x + 42 * y))"
       ],
       "cwd": "${workspaceFolder}",
       "terminal": "integrated",
@@ -36,7 +36,7 @@
       "program": "${workspaceFolder}/bin/parsediag",
       "args": [
         "parse",
-        "print(x + 42 * y)"
+        "conWrite(string(x + 42 * y))"
       ],
       "cwd": "${workspaceFolder}",
       "terminal": "integrated",
@@ -50,7 +50,7 @@
       "program": "${workspaceFolder}/bin/progdiag",
       "args": [
         "analyze",
-        "fun add(int a, int b) -> int a + b print(add(1, 2) == 3)"
+        "fun add(int a, int b) -> int a + b conWrite(string(add(1, 2) == 3))"
       ],
       "cwd": "${workspaceFolder}",
       "terminal": "integrated",
@@ -64,7 +64,7 @@
       "program": "${workspaceFolder}/bin/asmdiag",
       "args": [
         "gen",
-        "fun add(int a, int b) -> int a + b print(add(1, 2) == 3)"
+        "fun add(int a, int b) -> int a + b conWrite(string(add(1, 2) == 3))"
       ],
       "cwd": "${workspaceFolder}",
       "terminal": "integrated",

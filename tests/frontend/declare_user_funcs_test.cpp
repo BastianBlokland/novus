@@ -176,8 +176,8 @@ TEST_CASE("Analyzing user-function declarations", "[frontend]") {
     CHECK_DIAG(
         "fun f{T}(int{T{M}} a) -> int 1", errUndeclaredType(src, "M", 0, input::Span{15, 15}));
     CHECK_DIAG(
-        "fun print(string input) input",
-        errDuplicateFuncDeclaration(src, "print", input::Span{0, 28}));
+        "fun conWrite(string input) input",
+        errDuplicateFuncDeclaration(src, "conWrite", input::Span{0, 31}));
     CHECK_DIAG("action +(int i) i + 1", errNonPureOperatorOverload(src, input::Span{7, 7}));
     CHECK_DIAG("action +{T}(T t) t + 1", errNonPureOperatorOverload(src, input::Span{7, 7}));
     CHECK_DIAG(

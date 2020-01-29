@@ -186,13 +186,15 @@ Program::Program() :
       m_string);
 
   // Register build-in actions.
-  m_funcDecls.registerAction(*this, fk::ActionPrintChar, "print", sym::TypeSet{m_char}, m_char);
   m_funcDecls.registerAction(
-      *this, fk::ActionPrintString, "print", sym::TypeSet{m_string}, m_string);
+      *this, fk::ActionConWriteChar, "conWrite", sym::TypeSet{m_char}, m_char);
   m_funcDecls.registerAction(
-      *this, fk::ActionPrintStringLine, "printl", sym::TypeSet{m_string}, m_string);
-  m_funcDecls.registerAction(*this, fk::ActionReadChar, "read", sym::TypeSet{}, m_char);
-  m_funcDecls.registerAction(*this, fk::ActionReadStringLine, "readl", sym::TypeSet{}, m_string);
+      *this, fk::ActionConWriteString, "conWrite", sym::TypeSet{m_string}, m_string);
+  m_funcDecls.registerAction(
+      *this, fk::ActionConWriteStringLine, "conWriteLine", sym::TypeSet{m_string}, m_string);
+  m_funcDecls.registerAction(*this, fk::ActionConReadChar, "conRead", sym::TypeSet{}, m_char);
+  m_funcDecls.registerAction(
+      *this, fk::ActionConReadStringLine, "conReadLine", sym::TypeSet{}, m_string);
   m_funcDecls.registerAction(
       *this, fk::ActionGetEnvArg, "getEnvArg", sym::TypeSet{m_int}, m_string);
   m_funcDecls.registerAction(
