@@ -34,7 +34,7 @@ fun []{T}(List{T} l, int idx) -> Option{T}
   l.pop(idx).front()
 
 fun []{T}(List{T} l, int startIdx, int endIdx) -> List{T}
-  l.pop(startIdx).take(endIdx - startIdx + 1)
+  l.pop(startIdx).take(endIdx - startIdx)
 
 // Conversions
 
@@ -187,12 +187,14 @@ assert(
 assert(
   l = 1 :: 2 :: 3 :: List{int}();
   l[0, -1] == List{int}() &&
-  l[0, 0] == 1 :: List{int}() &&
-  l[0, 1] == 1 :: 2 :: List{int}() &&
-  l[0, 2] == 1 :: 2 :: 3 :: List{int}() &&
-  l[0, 2] == 1 :: 2 :: 3 :: List{int}() &&
-  l[1, 2] == 2 :: 3 :: List{int}() &&
-  l[2, 1] == List{int}())
+  l[0, 0] == List{int}() &&
+  l[0, 1] == 1 :: List{int}() &&
+  l[0, 2] == 1 :: 2 :: List{int}() &&
+  l[0, 3] == 1 :: 2 :: 3 :: List{int}() &&
+  l[0, 4] == 1 :: 2 :: 3 :: List{int}() &&
+  l[1, 4] == 2 :: 3 :: List{int}() &&
+  l[3, 3] == List{int}() &&
+  l[3, 4] == List{int}())
 
 assert(
   l = 1 :: 2 :: 3 :: List{int}();

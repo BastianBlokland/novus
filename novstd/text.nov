@@ -94,16 +94,13 @@ fun replace(string str, string old, string new)
 fun replaceImpl(string str, int startIdx, string old, string new)
   idx = str.indexOf(startIdx, old, 0);
   if idx < 0  ->  str
-  else        ->  prefix = idx == 0 ? "" : str[0, --idx];
-                  suffix = idx == str.length() - old.length() ? "" :
-                    str[idx + old.length(), --str.length()];
-                  newStr = prefix + new + suffix;
+  else        ->  newStr = str[0, idx] + new + str[idx + old.length(), str.length()];
                   replaceImpl(newStr, idx + new.length(), old, new)
 
 fun insert(string str, int idx, string val)
   if idx == 0             -> val + str
   if idx >= str.length()  -> str + val
-  else                    -> str[0, --idx] + val + str[idx, --str.length()]
+  else                    -> str[0, idx] + val + str[idx, str.length()]
 
 fun fold{T}(string str, delegate{T, char, T} del)
   foldImpl(str, 0, del, T())
@@ -118,10 +115,10 @@ fun split(string str, delegate{char, bool} pred)
   splitImpl(str, --str.length(), --str.length(), pred, List{string}())
 
 fun splitImpl(string str, int startIdx, int endIdx, delegate{char, bool} pred, List{string} result)
-  if startIdx < 0         -> startIdx == endIdx ? result : str[startIdx, endIdx] :: result
+  if startIdx < 0         -> startIdx == endIdx ? result : str[startIdx, ++endIdx] :: result
   if pred(str[startIdx])  -> startIdx == endIdx ?
     splitImpl(str, --startIdx, --endIdx, pred, result) :
-    splitImpl(str, --startIdx, --startIdx, pred, str[++startIdx, endIdx] :: result)
+    splitImpl(str, --startIdx, --startIdx, pred, str[++startIdx, ++endIdx] :: result)
   else                    -> splitImpl(str, --startIdx, endIdx, pred, result)
 
 fun toChars(string str)

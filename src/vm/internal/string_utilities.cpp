@@ -88,9 +88,8 @@ auto indexString(Value target, int32_t idx) -> char {
 auto sliceString(Allocator* allocator, Value target, int32_t start, int32_t end) -> Value {
   auto* strTgt       = getStringRef(target);
   const auto tgtSize = strTgt->getSize();
-  if (tgtSize == 0) {
-    return target;
-  }
+
+  // Check for negative indicies.
   if (start < 0) {
     start = 0;
   }
@@ -98,19 +97,26 @@ auto sliceString(Allocator* allocator, Value target, int32_t start, int32_t end)
     end = 0;
   }
 
-  if (static_cast<unsigned>(end) >= tgtSize - 1) {
-    end = tgtSize - 1;
+  // Check that end does not go past the target string.
+  if (static_cast<unsigned>(end) >= tgtSize) {
+    end = tgtSize;
     // 'Slice' of the entire string.
     if (start == 0) {
       return target;
     }
   }
+
+  // Check for inverted indices.
   if (start > end) {
     start = end;
   }
 
+  if (start == end) {
+    return emptyString(allocator);
+  }
+
   // Copy the slice into a new string.
-  const auto sliceSize = 1 + end - start;
+  const auto sliceSize = end - start;
   const auto result    = allocator->allocStr(sliceSize);
   std::memcpy(result.second, strTgt->getDataPtr() + start, sliceSize);
   return refValue(result.first);

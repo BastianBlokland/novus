@@ -131,7 +131,7 @@ TEST_CASE("Execute string operations", "[vm]") {
         [](backend::Builder* builder) -> void {
           builder->addLoadLitString("hello world");
           builder->addLoadLitInt(0);
-          builder->addLoadLitInt(4);
+          builder->addLoadLitInt(5);
           builder->addSliceString();
           builder->addPCall(vm::PCallCode::PrintString);
           builder->addPop();
@@ -143,6 +143,17 @@ TEST_CASE("Execute string operations", "[vm]") {
           builder->addLoadLitString("hello world");
           builder->addLoadLitInt(4);
           builder->addLoadLitInt(4);
+          builder->addSliceString();
+          builder->addPCall(vm::PCallCode::PrintString);
+          builder->addPop();
+        },
+        "input",
+        "");
+    CHECK_EXPR(
+        [](backend::Builder* builder) -> void {
+          builder->addLoadLitString("hello world");
+          builder->addLoadLitInt(4);
+          builder->addLoadLitInt(5);
           builder->addSliceString();
           builder->addPCall(vm::PCallCode::PrintString);
           builder->addPop();
@@ -153,7 +164,7 @@ TEST_CASE("Execute string operations", "[vm]") {
         [](backend::Builder* builder) -> void {
           builder->addLoadLitString("hello world");
           builder->addLoadLitInt(-99);
-          builder->addLoadLitInt(4);
+          builder->addLoadLitInt(5);
           builder->addSliceString();
           builder->addPCall(vm::PCallCode::PrintString);
           builder->addPop();
@@ -164,7 +175,7 @@ TEST_CASE("Execute string operations", "[vm]") {
         [](backend::Builder* builder) -> void {
           builder->addLoadLitString("hello world");
           builder->addLoadLitInt(6);
-          builder->addLoadLitInt(10);
+          builder->addLoadLitInt(11);
           builder->addSliceString();
           builder->addPCall(vm::PCallCode::PrintString);
           builder->addPop();
@@ -186,7 +197,7 @@ TEST_CASE("Execute string operations", "[vm]") {
         [](backend::Builder* builder) -> void {
           builder->addLoadLitString("hello world");
           builder->addLoadLitInt(2);
-          builder->addLoadLitInt(8);
+          builder->addLoadLitInt(9);
           builder->addSliceString();
           builder->addPCall(vm::PCallCode::PrintString);
           builder->addPop();
@@ -197,18 +208,18 @@ TEST_CASE("Execute string operations", "[vm]") {
         [](backend::Builder* builder) -> void {
           builder->addLoadLitString("hello world");
           builder->addLoadLitInt(8);
-          builder->addLoadLitInt(2);
+          builder->addLoadLitInt(3);
           builder->addSliceString();
           builder->addPCall(vm::PCallCode::PrintString);
           builder->addPop();
         },
         "input",
-        "l");
+        "");
     CHECK_EXPR(
         [](backend::Builder* builder) -> void {
           builder->addLoadLitString("hello world");
           builder->addLoadLitInt(0);
-          builder->addLoadLitInt(10);
+          builder->addLoadLitInt(11);
           builder->addSliceString();
           builder->addPCall(vm::PCallCode::PrintString);
           builder->addPop();
