@@ -1,5 +1,6 @@
 #include "internal/get_expr.hpp"
 #include "frontend/diag_defs.hpp"
+#include "internal/call_modifiers.hpp"
 #include "internal/check_union_exhaustiveness.hpp"
 #include "internal/define_user_funcs.hpp"
 #include "internal/get_identifier.hpp"
@@ -164,19 +165,12 @@ auto GetExpr::visit(const parse::CallExprNode& n) -> void {
     return;
   }
 
-  // Assert has an exception where you are allowed omit the second arg (the message).
-  // TODO(Bastian): Create a general mechanism for these kinds of exceptions.
-  if (getName(nameToken) == "assert" && args->second.getCount() == 1 &&
-      args->second[0] == m_ctx->getProg()->getBool()) {
-    std::ostringstream msgoss;
-    msgoss << m_ctx->getSrc().getId() << " " << m_ctx->getSrc().getTextPos(n.getSpan().getStart());
-    args->first.push_back(prog::expr::litStringNode(*m_ctx->getProg(), msgoss.str()));
-    args->second = args->second.withExtraType(m_ctx->getProg()->getString());
-  }
+  // modifyCall is a mechanism for the frontend to adjust the arguments to create some exceptions,
+  // for example it allows adding extra arguments.
+  modifyCall(m_ctx, nameToken, n, &args.value());
 
   // Actions cannot be called using the 'instance call' syntax.
   const auto exclActions = instance != nullptr;
-
   const auto possibleFuncs =
       getFunctionsInclConversions(nameToken, typeParams, args->second, exclActions);
   const auto func = m_ctx->getProg()->lookupFunc(possibleFuncs, args->second, getOvOptions(-1));
