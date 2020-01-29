@@ -109,17 +109,17 @@ fun rangeList{T}(T start, T end)
   List{T}().pushRange(start, end)
 
 fun fold{T, TResult}(List{T} l, delegate{TResult, T, TResult} del)
-  l.fold(del, TResult())
+  l.foldImpl(del, TResult())
 
-fun fold{T, TResult}(List{T} l, delegate{TResult, T, TResult} del, TResult val)
-  if l as LNode{T} n -> n.next.fold(del, del(val, n.val))
+fun foldImpl{T, TResult}(List{T} l, delegate{TResult, T, TResult} del, TResult val)
+  if l as LNode{T} n -> n.next.foldImpl(del, del(val, n.val))
   if l is LEnd       -> val
 
 fun foldRight{T, TResult}(List{T} l, delegate{TResult, T, TResult} del)
-  l.foldRight(del, TResult())
+  l.foldRightImpl(del, TResult())
 
-fun foldRight{T, TResult}(List{T} l, delegate{TResult, T, TResult} del, TResult val)
-  if l as LNode{T} n -> del(n.next.foldRight(del, val), n.val)
+fun foldRightImpl{T, TResult}(List{T} l, delegate{TResult, T, TResult} del, TResult val)
+  if l as LNode{T} n -> del(n.next.foldRightImpl(del, val), n.val)
   if l is LEnd       -> val
 
 fun filter{T}(List{T} l, delegate{T, bool} pred)
@@ -145,10 +145,6 @@ fun reverse{T}(List{T} l)
 
 fun sort{T}(List{T} l)
   l.fold(insertOrdered{T})
-
-fun contains{T}(List{T} l, T val)
-  if l as LNode{T} n  -> n.val == val || n.next.contains(val)
-  if l is LEnd        -> false
 
 fun count{T}(List{T} l, delegate{T, bool} pred)
   l.fold(lambda (int c, T val) pred(val) ? ++c : c)
@@ -340,10 +336,6 @@ assert(
   l = 42 :: 1337 :: -42 :: -5 :: List{int}();
   l.sort() == -42 :: -5 :: 42 :: 1337 :: List{int}())
 assert(List{int}().sort() == List{int}())
-
-assert(
-  l = 1 :: 2 :: 3 :: List{int}();
-  l.contains(1) && l.contains(2) && l.contains(3) && !l.contains(4))
 
 assert(
   l = 1 :: 2 :: 3 :: List{int}();

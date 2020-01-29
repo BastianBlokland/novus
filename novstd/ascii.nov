@@ -1,0 +1,60 @@
+import "list.nov"
+
+// Functions
+
+fun isDigit(char c)
+  c >= '0' && c <= '9'
+
+fun isLetter(char c)
+  isLower(c) || isUpper(c)
+
+fun isLower(char c)
+  c >= 'a' && c <= 'z'
+
+fun isUpper(char c)
+  c >= 'A' && c <= 'Z'
+
+fun isWhitespace(char c)
+  c == ' ' || c == '\t' || isNewline(c)
+
+fun isNewline(char c)
+  c == '\n' || c == '\r'
+
+fun toUpper(char c)
+  c.isLower() ? char(c ^ 0x20) : c
+
+fun toLower(char c)
+  c.isUpper() ? char(c ^ 0x20) : c
+
+// Tests
+
+assert(
+  rangeList('0', '9').all(isDigit) &&
+  rangeList('a', 'z').none(isDigit))
+
+assert(
+  rangeList('a', 'z').all(isLetter) &&
+  rangeList('A', 'Z').all(isLetter) &&
+  rangeList('0', '9').none(isLetter))
+
+assert(
+  rangeList('a', 'z').all(isLower) &&
+  rangeList('A', 'Z').none(isLower) &&
+  rangeList('0', '9').none(isLower))
+
+assert(
+  rangeList('A', 'Z').all(isUpper) &&
+  rangeList('a', 'z').none(isUpper) &&
+  rangeList('0', '9').none(isUpper))
+
+assert(
+  ' '.isWhitespace() && '\t'.isWhitespace() && '\n'.isWhitespace() &&
+  rangeList('a', 'z').none(isWhitespace) &&
+  rangeList('A', 'Z').none(isWhitespace) &&
+  rangeList('0', '9').none(isWhitespace))
+
+assert('\n'.isNewline() && '\r'.isNewline() && !'\t'.isNewline())
+
+assert(
+  rangeList('a', 'z').map(toUpper) == rangeList('A', 'Z') &&
+  rangeList('A', 'Z').map(toLower) == rangeList('a', 'z'))

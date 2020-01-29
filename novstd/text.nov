@@ -1,40 +1,18 @@
 import "list.nov"
+import "func.nov"
 
 // Operators
 
 fun +{T}(string s, T v)
   s + v.string()
 
-// Char functions
-
-fun isDigit(char c)
-  c >= '0' && c <= '9'
-
-fun isLetter(char c)
-  isLower(c) || isUpper(c)
-
-fun isLower(char c)
-  c >= 'a' && c <= 'z'
-
-fun isUpper(char c)
-  c >= 'A' && c <= 'Z'
-
-fun isWhitespace(char c)
-  c == ' ' || c == '\t' || isNewline(c)
-
-fun isNewline(char c)
-  c == '\n' || c == '\r'
-
-fun toUpper(char c)
-  c.isLower() ? char(c ^ 0x20) : c
-
-fun toLower(char c)
-  c.isUpper() ? char(c ^ 0x20) : c
-
-// String functions
+// Functions
 
 fun isEmpty(string str)
   str.length() == 0
+
+fun appendChar(string str, char c)
+  str + c
 
 fun contains(string str, string subStr)
   str.indexOf(subStr) >= 0
@@ -72,55 +50,55 @@ fun indexOf(string str, int idx, delegate{char, bool} pred)
   else                    -> indexOf(str, ++idx, pred)
 
 fun startsWith(string str, string subStr)
-  startsWith(str, 0, subStr)
+  startsWithImpl(str, 0, subStr)
 
-fun startsWith(string str, int idx, string subStr)
+fun startsWithImpl(string str, int idx, string subStr)
   if idx >= subStr.length()   -> true
   if idx >= str.length()      -> false
   if str[idx] != subStr[idx]  -> false
-  else                        -> startsWith(str, ++idx, subStr)
+  else                        -> startsWithImpl(str, ++idx, subStr)
 
 fun endsWith(string str, string subStr)
-  endsWith(str, 0, subStr)
+  endsWithImpl(str, 0, subStr)
 
-fun endsWith(string str, int revIdx, string subStr)
+fun endsWithImpl(string str, int revIdx, string subStr)
   if revIdx >= subStr.length()                                          -> true
   if revIdx >= str.length()                                             -> false
   if str[--str.length() - revIdx] != subStr[--subStr.length() - revIdx] -> false
-  else -> endsWith(str, ++revIdx, subStr)
+  else -> endsWithImpl(str, ++revIdx, subStr)
 
 fun any(string str, delegate{char, bool} pred)
-  any(str, 0, pred)
+  anyImpl(str, 0, pred)
 
-fun any(string str, int idx, delegate{char, bool} pred)
+fun anyImpl(string str, int idx, delegate{char, bool} pred)
   if idx >= str.length()  -> false
-  else                    -> pred(str[idx]) || any(str, ++idx, pred)
+  else                    -> pred(str[idx]) || anyImpl(str, ++idx, pred)
 
 fun all(string str, delegate{char, bool} pred)
-  all(str, 0, pred)
+  allImpl(str, 0, pred)
 
-fun all(string str, int idx, delegate{char, bool} pred)
+fun allImpl(string str, int idx, delegate{char, bool} pred)
   if idx >= str.length()  -> true
-  else                    -> pred(str[idx]) && all(str, ++idx, pred)
+  else                    -> pred(str[idx]) && allImpl(str, ++idx, pred)
 
 fun none(string str, delegate{char, bool} pred)
-  none(str, 0, pred)
+  noneImpl(str, 0, pred)
 
-fun none(string str, int idx, delegate{char, bool} pred)
+fun noneImpl(string str, int idx, delegate{char, bool} pred)
   if idx >= str.length()  -> true
-  else                    -> !pred(str[idx]) && none(str, ++idx, pred)
+  else                    -> !pred(str[idx]) && noneImpl(str, ++idx, pred)
 
 fun replace(string str, string old, string new)
-  replace(str, 0, old, new)
+  replaceImpl(str, 0, old, new)
 
-fun replace(string str, int startIdx, string old, string new)
+fun replaceImpl(string str, int startIdx, string old, string new)
   idx = str.indexOf(startIdx, old, 0);
   if idx < 0  ->  str
   else        ->  prefix = idx == 0 ? "" : str[0, --idx];
                   suffix = idx == str.length() - old.length() ? "" :
                     str[idx + old.length(), --str.length()];
                   newStr = prefix + new + suffix;
-                  replace(newStr, idx + new.length(), old, new)
+                  replaceImpl(newStr, idx + new.length(), old, new)
 
 fun insert(string str, int idx, string val)
   if idx == 0             -> val + str
@@ -128,69 +106,38 @@ fun insert(string str, int idx, string val)
   else                    -> str[0, --idx] + val + str[idx, --str.length()]
 
 fun fold{T}(string str, delegate{T, char, T} del)
-  fold(str, 0, del, T())
+  foldImpl(str, 0, del, T())
 
-fun fold{T}(string str, int idx, delegate{T, char, T} del, T val)
-  idx >= str.length() ? val : fold(str, ++idx, del, del(val, str[idx]))
+fun foldImpl{T}(string str, int idx, delegate{T, char, T} del, T val)
+  idx >= str.length() ? val : foldImpl(str, ++idx, del, del(val, str[idx]))
 
 fun transform(string str, delegate{char, char} del)
   str.fold(lambda (string res, char c) res + del(c))
 
 fun split(string str, delegate{char, bool} pred)
-  split(str, --str.length(), --str.length(), pred, List{string}())
+  splitImpl(str, --str.length(), --str.length(), pred, List{string}())
 
-fun split(string str, int startIdx, int endIdx, delegate{char, bool} pred, List{string} result)
+fun splitImpl(string str, int startIdx, int endIdx, delegate{char, bool} pred, List{string} result)
   if startIdx < 0         -> startIdx == endIdx ? result : str[startIdx, endIdx] :: result
   if pred(str[startIdx])  -> startIdx == endIdx ?
-    split(str, --startIdx, --endIdx, pred, result) :
-    split(str, --startIdx, --startIdx, pred, str[++startIdx, endIdx] :: result)
-  else                    -> split(str, --startIdx, endIdx, pred, result)
+    splitImpl(str, --startIdx, --endIdx, pred, result) :
+    splitImpl(str, --startIdx, --startIdx, pred, str[++startIdx, endIdx] :: result)
+  else                    -> splitImpl(str, --startIdx, endIdx, pred, result)
 
 fun toChars(string str)
-  toChars(str, --str.length(), List{char}())
+  toCharsImpl(str, --str.length(), List{char}())
 
-fun toChars(string str, int idx, List{char} result)
+fun toCharsImpl(string str, int idx, List{char} result)
   if idx < 0  -> result
-  else        -> toChars(str, --idx, str[idx] :: result)
+  else        -> toCharsImpl(str, --idx, str[idx] :: result)
 
 fun join(List{string} l)
   l.sum()
 
 fun join(List{char} l)
-  l.fold(lambda (string s, char c) s + c)
+  l.fold(appendChar)
 
 // Tests
-
-assert(
-  rangeList('0', '9').all(isDigit) &&
-  rangeList('a', 'z').none(isDigit))
-
-assert(
-  rangeList('a', 'z').all(isLetter) &&
-  rangeList('A', 'Z').all(isLetter) &&
-  rangeList('0', '9').none(isLetter))
-
-assert(
-  rangeList('a', 'z').all(isLower) &&
-  rangeList('A', 'Z').none(isLower) &&
-  rangeList('0', '9').none(isLower))
-
-assert(
-  rangeList('A', 'Z').all(isUpper) &&
-  rangeList('a', 'z').none(isUpper) &&
-  rangeList('0', '9').none(isUpper))
-
-assert(
-  ' '.isWhitespace() && '\t'.isWhitespace() && '\n'.isWhitespace() &&
-  rangeList('a', 'z').none(isWhitespace) &&
-  rangeList('A', 'Z').none(isWhitespace) &&
-  rangeList('0', '9').none(isWhitespace))
-
-assert('\n'.isNewline() && '\r'.isNewline() && !'\t'.isNewline())
-
-assert(
-  rangeList('a', 'z').map(toUpper) == rangeList('A', 'Z') &&
-  rangeList('A', 'Z').map(toLower) == rangeList('a', 'z'))
 
 assert("".isEmpty() && !" ".isEmpty())
 
@@ -231,11 +178,11 @@ assert(
   "wasd wasd".indexOfLast("") == -1)
 
 assert(
-  "hello world".indexOf(isWhitespace) == 5 &&
+  "hello world".indexOf(equals{char}[' ']) == 5 &&
   "hello world".indexOf(lambda (char c) c == 'd') == 10 &&
-  "hello world".indexOf(isLetter) == 0 &&
-  "hello world".indexOf(isDigit) == -1 &&
-  "".indexOf(isLetter) == -1)
+  "hello world".indexOf(equals{char}['h']) == 0 &&
+  "hello world".indexOf(equals{char}['1']) == -1 &&
+  "".indexOf(equals{char}[' ']) == -1)
 
 assert(
   "hello world".startsWith("hello") &&
@@ -260,16 +207,16 @@ assert(
   "".endsWith(""))
 
 assert(
-  "hello world".any(isWhitespace) &&
-  !"hello world".any(isUpper))
+  "hello world".any(equals{char}[' ']) &&
+  !"hello world".any(equals{char}['1']))
 
 assert(
-  "hello".all(isLower) &&
-  !"hello world".all(isLetter))
+  "hello".all(!equals{char}[' ']) &&
+  !"hello world".all(equals{char}[' ']))
 
 assert(
-  "hello world".none(isUpper) &&
-  !"hello world".none(isWhitespace))
+  "hello world".none(equals{char}['1']) &&
+  !"hello world".none(equals{char}[' ']))
 
 assert(
   "hello world".replace("hello", "world") == "world world" &&
@@ -290,18 +237,17 @@ assert(
   "helloworld".insert(5, "_") == "hello_world")
 
 assert(
-  "hello world".transform(toUpper) == "HELLO WORLD" &&
-  "hElLo wORlD".transform(toUpper) == "HELLO WORLD" &&
-  "hElLo wORlD".transform(toLower) == "hello world")
+  "hello".transform(lambda (char c) 'W') == "WWWWW" &&
+  "".transform(lambda (char c) 'W') == "")
 
 assert(
-  "hello world".split(isWhitespace) == "hello" :: "world" :: List{string}() &&
-  "lineA\nlineB\nlineC".split(isNewline) == "lineA" :: "lineB" :: "lineC" :: List{string}() &&
-  "   hello   world   ".split(isWhitespace) == "hello" :: "world" :: List{string}() &&
-  "    ".split(isWhitespace).isEmpty() &&
-  " h e l l o ".split(isWhitespace) == "h" :: "e" :: "l" :: "l" :: "o" :: List{string}() &&
-  "hello-world".split(isWhitespace) == List("hello-world") &&
-  "".split(isWhitespace) == List{string}())
+  "hello world".split(equals{char}[' ']) == "hello" :: "world" :: List{string}() &&
+  "lineA\nlineB\nlineC".split(equals{char}['\n']) == "lineA" :: "lineB" :: "lineC" :: List{string}() &&
+  "   hello   world   ".split(equals{char}[' ']) == "hello" :: "world" :: List{string}() &&
+  "    ".split(equals{char}[' ']).isEmpty() &&
+  " h e l l o ".split(equals{char}[' ']) == "h" :: "e" :: "l" :: "l" :: "o" :: List{string}() &&
+  "hello-world".split(equals{char}[' ']) == List("hello-world") &&
+  "".split(equals{char}[' ']) == List{string}())
 
 assert(
   "h".toChars() == List{char}('h') &&
