@@ -67,11 +67,15 @@ auto FuncTemplate::getRetType(const prog::sym::TypeSet& typeParams)
   }
   auto retType = ::frontend::internal::getRetType(m_ctx, &subTable, *m_parseNode);
   if (!retType) {
+    m_inferStack.pop_front();
     return std::nullopt;
   }
   if (retType->isInfer()) {
-    retType = inferRetType(
-        m_ctx, &subTable, *m_parseNode, *funcInput, nullptr, TypeInferExpr::Flags::Aggressive);
+    auto inferFlags = TypeInferExpr::Flags::Aggressive;
+    if (m_isAction) {
+      inferFlags = inferFlags | TypeInferExpr::Flags::AllowActionCalls;
+    }
+    retType = inferRetType(m_ctx, &subTable, *m_parseNode, *funcInput, nullptr, inferFlags);
   }
 
   m_inferStack.pop_front();
@@ -153,9 +157,14 @@ auto FuncTemplate::setupInstance(FuncTemplateInst* instance) -> void {
     if (isConv && m_ctx->getProg()->lookupType(m_name)) {
       instance->m_retType = m_ctx->getProg()->lookupType(m_name);
     } else {
+      auto inferFlags = TypeInferExpr::Flags::Aggressive;
+      if (m_isAction) {
+        inferFlags = inferFlags | TypeInferExpr::Flags::AllowActionCalls;
+      }
+
       // Otherwise try to infer the return-type.
-      instance->m_retType = inferRetType(
-          m_ctx, &subTable, *m_parseNode, *funcInput, nullptr, TypeInferExpr::Flags::Aggressive);
+      instance->m_retType =
+          inferRetType(m_ctx, &subTable, *m_parseNode, *funcInput, nullptr, inferFlags);
       // We don't produce a diagnostic yet if the inferring failed as that is done by the definition
       // step.
     }
