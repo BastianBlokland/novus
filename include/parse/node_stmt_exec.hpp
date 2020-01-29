@@ -1,17 +1,10 @@
 #pragma once
-#include "lex/token.hpp"
 #include "parse/node.hpp"
-#include <vector>
 
 namespace parse {
 
 class ExecStmtNode final : public Node {
-  friend auto execStmtNode(
-      lex::Token target,
-      lex::Token open,
-      std::vector<NodePtr> args,
-      std::vector<lex::Token> commas,
-      lex::Token close) -> NodePtr;
+  friend auto execStmtNode(NodePtr callExpr) -> NodePtr;
 
 public:
   ExecStmtNode() = delete;
@@ -23,33 +16,17 @@ public:
   [[nodiscard]] auto getChildCount() const -> unsigned int override;
   [[nodiscard]] auto getSpan() const -> input::Span override;
 
-  [[nodiscard]] auto getTarget() const -> const lex::Token&;
-
   auto accept(NodeVisitor* visitor) const -> void override;
 
 private:
-  const lex::Token m_target;
-  const lex::Token m_open;
-  const std::vector<NodePtr> m_args;
-  const std::vector<lex::Token> m_commas;
-  const lex::Token m_close;
+  const NodePtr m_callExpr;
 
-  ExecStmtNode(
-      lex::Token target,
-      lex::Token open,
-      std::vector<NodePtr> args,
-      std::vector<lex::Token> commas,
-      lex::Token close);
+  explicit ExecStmtNode(NodePtr callExpr);
 
   auto print(std::ostream& out) const -> std::ostream& override;
 };
 
 // Factories.
-auto execStmtNode(
-    lex::Token target,
-    lex::Token open,
-    std::vector<NodePtr> args,
-    std::vector<lex::Token> commas,
-    lex::Token close) -> NodePtr;
+auto execStmtNode(NodePtr callExpr) -> NodePtr;
 
 } // namespace parse

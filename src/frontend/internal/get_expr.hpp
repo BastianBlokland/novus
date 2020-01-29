@@ -15,7 +15,8 @@ public:
     // constant) is only valid in a 'CheckedConstsAccess' expression.
     CheckedConstsAccess = 1U << 1U,
 
-    AllowActionCalls = 1U << 2U,
+    AllowPureFuncCalls = 1U << 2U,
+    AllowActionCalls   = 1U << 3U,
   };
 
   GetExpr() = delete;
@@ -26,7 +27,6 @@ public:
       prog::sym::TypeId typeHint,
       Flags flags);
 
-  [[nodiscard]] auto hasErrors() const noexcept -> bool;
   [[nodiscard]] auto getValue() -> prog::expr::NodePtr&;
 
   auto visit(const parse::CommentNode& n) -> void override;
@@ -122,12 +122,16 @@ private:
         static_cast<unsigned int>(F);
   }
 
-  [[nodiscard]] inline auto getOvOptions(int maxConversion) const noexcept {
+  [[nodiscard]] inline auto getOvOptions(int maxImplicitConvs, bool excludeActions = false) const
+      noexcept {
     auto ovFlags = prog::OvFlags::None;
-    if (!hasFlag<Flags::AllowActionCalls>()) {
+    if (!hasFlag<Flags::AllowPureFuncCalls>()) {
+      ovFlags = ovFlags | prog::OvFlags::ExclPureFuncs;
+    }
+    if (!hasFlag<Flags::AllowActionCalls>() || excludeActions) {
       ovFlags = ovFlags | prog::OvFlags::ExclActions;
     }
-    return prog::OvOptions{ovFlags, maxConversion};
+    return prog::OvOptions{ovFlags, maxImplicitConvs};
   }
 };
 

@@ -275,38 +275,6 @@ auto errInvalidStmtEnumDecl(
   return errorNode(oss.str(), std::move(tokens), {});
 }
 
-auto errInvalidStmtExec(
-    lex::Token target,
-    lex::Token open,
-    std::vector<NodePtr> args,
-    std::vector<lex::Token> commas,
-    lex::Token close) -> NodePtr {
-
-  std::ostringstream oss;
-  if (open.getKind() != lex::TokenKind::SepOpenParen &&
-      open.getKind() != lex::TokenKind::OpParenParen) {
-    oss << "Expected opening parentheses '(' but got: '" << open << '\'';
-  } else if (
-      close.getKind() != lex::TokenKind::SepCloseParen &&
-      close.getKind() != lex::TokenKind::OpParenParen) {
-    oss << "Expected closing parentheses ')' but got: '" << close << '\'';
-  } else if (commas.size() != (args.empty() ? 0 : args.size() - 1)) {
-    oss << "Incorrect number of comma's ',' in execute statement";
-  } else {
-    oss << "Invalid execute statement";
-  }
-
-  auto tokens = std::vector<lex::Token>{};
-  tokens.push_back(std::move(target));
-  tokens.push_back(std::move(open));
-  for (auto& comma : commas) {
-    tokens.push_back(std::move(comma));
-  }
-  tokens.push_back(std::move(close));
-
-  return errorNode(oss.str(), std::move(tokens), std::move(args));
-}
-
 auto errInvalidPrimaryExpr(lex::Token token) -> NodePtr {
   if (token.isError()) {
     return errLexError(token);

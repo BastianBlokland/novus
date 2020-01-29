@@ -218,30 +218,7 @@ auto ParserImpl::nextStmtEnumDecl() -> NodePtr {
   return errInvalidStmtEnumDecl(kw, std::move(id), eq, entries, std::move(commas));
 }
 
-auto ParserImpl::nextStmtExec() -> NodePtr {
-  auto target = consumeToken();
-  auto open   = consumeToken();
-  auto empty  = open.getKind() == lex::TokenKind::OpParenParen;
-
-  auto args   = std::vector<NodePtr>{};
-  auto commas = std::vector<lex::Token>{};
-  if (!empty) {
-    while (peekToken(0).getKind() != lex::TokenKind::SepCloseParen && !peekToken(0).isEnd()) {
-      args.push_back(nextExpr(0));
-      if (peekToken(0).getKind() == lex::TokenKind::SepComma) {
-        commas.push_back(consumeToken());
-      }
-    }
-  }
-  auto close = empty ? open : consumeToken();
-
-  const auto idValid     = target.getKind() == lex::TokenKind::Identifier;
-  const auto commasValid = commas.size() == (args.empty() ? 0 : args.size() - 1);
-  if (idValid && validateParentheses(open, close) && commasValid) {
-    return execStmtNode(std::move(target), open, std::move(args), std::move(commas), close);
-  }
-  return errInvalidStmtExec(std::move(target), open, std::move(args), std::move(commas), close);
-}
+auto ParserImpl::nextStmtExec() -> NodePtr { return execStmtNode(nextExprCall(nextExprId())); }
 
 auto ParserImpl::nextExpr(const int minPrecedence) -> NodePtr {
   auto lhs = nextExprLhs();
@@ -327,13 +304,7 @@ auto ParserImpl::nextExprPrimary() -> NodePtr {
       auto eq = consumeToken();
       return constDeclExprNode(std::move(id), eq, nextExpr(assignmentPrecedence));
     }
-    auto typeParams = peekToken(0).getKind() == lex::TokenKind::SepOpenCurly
-        ? std::optional<TypeParamList>{nextTypeParamList()}
-        : std::nullopt;
-    if (!typeParams || typeParams->validate()) {
-      return idExprNode(std::move(id), std::move(typeParams));
-    }
-    return errInvalidIdExpr(std::move(id), std::move(typeParams));
+    return nextExprId(std::move(id));
   }
   case lex::TokenCat::Keyword:
     if (getKw(nextTok) == lex::Keyword::If) {
@@ -349,6 +320,18 @@ auto ParserImpl::nextExprPrimary() -> NodePtr {
     }
     return errInvalidPrimaryExpr(consumeToken());
   }
+}
+
+auto ParserImpl::nextExprId() -> NodePtr { return nextExprId(consumeToken()); }
+
+auto ParserImpl::nextExprId(lex::Token idToken) -> NodePtr {
+  auto typeParams = peekToken(0).getKind() == lex::TokenKind::SepOpenCurly
+      ? std::optional<TypeParamList>{nextTypeParamList()}
+      : std::nullopt;
+  if (idToken.getKind() == lex::TokenKind::Identifier && (!typeParams || typeParams->validate())) {
+    return idExprNode(std::move(idToken), std::move(typeParams));
+  }
+  return errInvalidIdExpr(std::move(idToken), std::move(typeParams));
 }
 
 auto ParserImpl::nextExprField(NodePtr lhs) -> NodePtr {

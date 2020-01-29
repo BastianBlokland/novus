@@ -26,6 +26,8 @@ public:
   [[nodiscard]] auto begin() const -> iterator;
   [[nodiscard]] auto end() const -> iterator;
 
+  [[nodiscard]] auto withExtraType(TypeId type) -> TypeSet;
+
 private:
   std::vector<TypeId> m_val;
 };

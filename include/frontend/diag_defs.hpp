@@ -150,6 +150,12 @@ errUninitializedConst(const Source& src, const std::string& name, input::Span sp
     const std::vector<std::string>& argTypes,
     input::Span span) -> Diag;
 
+[[nodiscard]] auto errUndeclaredAction(
+    const Source& src,
+    const std::string& name,
+    const std::vector<std::string>& argTypes,
+    input::Span span) -> Diag;
+
 [[nodiscard]] auto errUndeclaredFuncOrAction(
     const Source& src,
     const std::string& name,
@@ -203,11 +209,5 @@ errUnsupportedOperator(const Source& src, const std::string& name, input::Span s
 [[nodiscard]] auto errNonExhaustiveSwitchWithoutElse(const Source& src, input::Span span) -> Diag;
 
 [[nodiscard]] auto errNonPureConversion(const Source& src, input::Span span) -> Diag;
-
-[[nodiscard]] auto errInvalidExecStmt(
-    const Source& src,
-    const std::string& name,
-    const std::vector<std::string>& argTypes,
-    input::Span span) -> Diag;
 
 } // namespace frontend

@@ -24,6 +24,12 @@ auto TypeSet::begin() const -> iterator { return m_val.begin(); }
 
 auto TypeSet::end() const -> iterator { return m_val.end(); }
 
+auto TypeSet::withExtraType(TypeId type) -> TypeSet {
+  auto types = m_val;
+  types.push_back(type);
+  return TypeSet{std::move(types)};
+}
+
 auto operator<<(std::ostream& out, const TypeSet& rhs) -> std::ostream& {
   for (auto i = 0U; i < rhs.m_val.size(); ++i) {
     if (i != 0) {

@@ -13,12 +13,6 @@ public:
 
 private:
   Context* m_ctx;
-
-  [[nodiscard]] auto getExpr(
-      const parse::Node& n,
-      prog::sym::ConstDeclTable* consts,
-      std::vector<prog::sym::ConstId>* visibleConsts,
-      prog::sym::TypeId typeHint) -> prog::expr::NodePtr;
 };
 
 } // namespace frontend::internal

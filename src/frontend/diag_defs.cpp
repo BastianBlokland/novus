@@ -337,6 +337,28 @@ auto errUndeclaredPureFunc(
   return error(src, oss.str(), span);
 }
 
+auto errUndeclaredAction(
+    const Source& src,
+    const std::string& name,
+    const std::vector<std::string>& argTypes,
+    input::Span span) -> Diag {
+  std::ostringstream oss;
+  if (argTypes.empty()) {
+    oss << "No overload for an action named '" << name
+        << "' has been declared without any arguments";
+  } else {
+    oss << "No overload for an action named '" << name
+        << "' has been declared with argument types: ";
+    for (auto i = 0U; i < argTypes.size(); ++i) {
+      if (i != 0) {
+        oss << ", ";
+      }
+      oss << '\'' << argTypes[i] << '\'';
+    }
+  }
+  return error(src, oss.str(), span);
+}
+
 auto errUndeclaredFuncOrAction(
     const Source& src,
     const std::string& name,
@@ -482,26 +504,6 @@ auto errNonExhaustiveSwitchWithoutElse(const Source& src, input::Span span) -> D
 auto errNonPureConversion(const Source& src, input::Span span) -> Diag {
   std::ostringstream oss;
   oss << "Type conversion has to be pure ('fun' instead of 'action')";
-  return error(src, oss.str(), span);
-}
-
-auto errInvalidExecStmt(
-    const Source& src,
-    const std::string& name,
-    const std::vector<std::string>& argTypes,
-    input::Span span) -> Diag {
-  std::ostringstream oss;
-  if (argTypes.empty()) {
-    oss << "No action named '" << name << "' has been declared without any arguments";
-  } else {
-    oss << "No action named '" << name << "' has been declared with argument types: ";
-    for (auto i = 0U; i < argTypes.size(); ++i) {
-      if (i != 0) {
-        oss << ", ";
-      }
-      oss << '\'' << argTypes[i] << '\'';
-    }
-  }
   return error(src, oss.str(), span);
 }
 

@@ -47,13 +47,6 @@ errInvalidAnonFuncExpr(lex::Token kw, const ArgumentListDecl& argList, NodePtr b
     const std::vector<EnumDeclStmtNode::EntrySpec>& entries,
     std::vector<lex::Token> commas) -> NodePtr;
 
-[[nodiscard]] auto errInvalidStmtExec(
-    lex::Token target,
-    lex::Token open,
-    std::vector<NodePtr> args,
-    std::vector<lex::Token> commas,
-    lex::Token close) -> NodePtr;
-
 [[nodiscard]] auto errInvalidPrimaryExpr(lex::Token token) -> NodePtr;
 
 [[nodiscard]] auto errInvalidUnaryOp(lex::Token op, NodePtr rhs) -> NodePtr;

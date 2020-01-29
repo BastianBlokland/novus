@@ -29,13 +29,12 @@ auto defineFunc(
   auto allowActionCalls = funcDecl.isAction();
   auto visibleConsts    = consts.getAll();
   auto constBinder      = ConstBinder{&consts, &visibleConsts, nullptr};
+  auto getExprFlags     = GetExpr::Flags::AllowPureFuncCalls;
+  if (allowActionCalls) {
+    getExprFlags = getExprFlags | GetExpr::Flags::AllowActionCalls;
+  }
 
-  auto getExpr =
-      GetExpr{ctx,
-              typeSubTable,
-              &constBinder,
-              funcRetType,
-              allowActionCalls ? GetExpr::Flags::AllowActionCalls : GetExpr::Flags::None};
+  auto getExpr = GetExpr{ctx, typeSubTable, &constBinder, funcRetType, getExprFlags};
   n[0].accept(&getExpr);
   auto expr = std::move(getExpr.getValue());
 

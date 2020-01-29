@@ -56,8 +56,9 @@ auto GetExpr::visit(const parse::AnonFuncExprNode& n) -> void {
   // Analyze the body of the anonymous function.
   auto visibleConsts = consts.getAll();
   auto constBinder   = ConstBinder{&consts, &visibleConsts, m_constBinder};
+  auto getExprFlags  = Flags::AllowPureFuncCalls;
   auto getExpr =
-      GetExpr{m_ctx, m_typeSubTable, &constBinder, prog::sym::TypeId::inferType(), Flags::None};
+      GetExpr{m_ctx, m_typeSubTable, &constBinder, prog::sym::TypeId::inferType(), getExprFlags};
   n[0].accept(&getExpr);
   if (!getExpr.m_expr) {
     assert(m_ctx->hasErrors());
@@ -162,6 +163,17 @@ auto GetExpr::visit(const parse::CallExprNode& n) -> void {
     assert(m_ctx->hasErrors());
     return;
   }
+
+  // Assert has an exception where you are allowed omit the second arg (the message).
+  // TODO(Bastian): Create a general mechanism for these kinds of exceptions.
+  if (getName(nameToken) == "assert" && args->second.getCount() == 1 &&
+      args->second[0] == m_ctx->getProg()->getBool()) {
+    std::ostringstream msgoss;
+    msgoss << m_ctx->getSrc().getId() << " " << m_ctx->getSrc().getTextPos(n.getSpan().getStart());
+    args->first.push_back(prog::expr::litStringNode(*m_ctx->getProg(), msgoss.str()));
+    args->second = args->second.withExtraType(m_ctx->getProg()->getString());
+  }
+
   // Actions cannot be called using the 'instance call' syntax.
   const auto exclActions = instance != nullptr;
 
@@ -190,11 +202,14 @@ auto GetExpr::visit(const parse::CallExprNode& n) -> void {
         m_ctx->reportDiag(
             errUndeclaredTypeOrConversion, getName(nameToken), argTypeNames, n.getSpan());
       } else {
-        if (hasFlag<Flags::AllowActionCalls>() && !exclActions) {
+        if (hasFlag<Flags::AllowPureFuncCalls>() && hasFlag<Flags::AllowActionCalls>() &&
+            !exclActions) {
           m_ctx->reportDiag(
               errUndeclaredFuncOrAction, getName(nameToken), argTypeNames, n.getSpan());
-        } else {
+        } else if (hasFlag<Flags::AllowPureFuncCalls>()) {
           m_ctx->reportDiag(errUndeclaredPureFunc, getName(nameToken), argTypeNames, n.getSpan());
+        } else {
+          m_ctx->reportDiag(errUndeclaredAction, getName(nameToken), argTypeNames, n.getSpan());
         }
       }
     }
@@ -650,8 +665,11 @@ auto GetExpr::getChildExprs(
 auto GetExpr::getSubExpr(const parse::Node& n, prog::sym::TypeId typeHint, bool checkedConstsAccess)
     -> prog::expr::NodePtr {
   // Transfer all flags to the sub-expression except for the 'CheckedConstsAccess'/
-  const auto subExprFlags = checkedConstsAccess ? m_flags | Flags::CheckedConstsAccess
-                                                : m_flags & ~Flags::CheckedConstsAccess;
+  auto subExprFlags = checkedConstsAccess ? m_flags | Flags::CheckedConstsAccess
+                                          : m_flags & ~Flags::CheckedConstsAccess;
+
+  // Pure func calls are allowed on all sub-expressions.
+  subExprFlags = subExprFlags | Flags::AllowPureFuncCalls;
 
   auto visitor = GetExpr{m_ctx, m_typeSubTable, m_constBinder, typeHint, subExprFlags};
   n.accept(&visitor);
@@ -665,8 +683,11 @@ auto GetExpr::getSubExpr(
     bool checkedConstsAccess) -> prog::expr::NodePtr {
 
   // Transfer all flags to the sub-expression except for the 'CheckedConstsAccess'/
-  const auto subExprFlags = checkedConstsAccess ? m_flags | Flags::CheckedConstsAccess
-                                                : m_flags & ~Flags::CheckedConstsAccess;
+  auto subExprFlags = checkedConstsAccess ? m_flags | Flags::CheckedConstsAccess
+                                          : m_flags & ~Flags::CheckedConstsAccess;
+
+  // Pure func calls are allowed on all sub-expressions.
+  subExprFlags = subExprFlags | Flags::AllowPureFuncCalls;
 
   // Override the visible constants for this sub-expression.
   auto* orgVisibleConsts = m_constBinder->getVisibleConsts();
@@ -897,9 +918,7 @@ auto GetExpr::getFunctions(
 
   auto result    = std::vector<prog::sym::FuncId>{};
   auto isValid   = true;
-  auto ovOptions = prog::OvOptions{(hasFlag<Flags::AllowActionCalls>() && !exclActions)
-                                       ? prog::OvFlags::None
-                                       : prog::OvFlags::ExclActions};
+  auto ovOptions = getOvOptions(-1, exclActions);
 
   if (typeParams) {
     // If this is a template call then instantiate the templates.

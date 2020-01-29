@@ -79,15 +79,15 @@ TEST_CASE("Analyzing execute statements", "[frontend]") {
   }
 
   SECTION("Diagnostics") {
-    CHECK_DIAG("things()", errInvalidExecStmt(src, "things", {}, input::Span{0, 7}));
+    CHECK_DIAG("things()", errUndeclaredAction(src, "things", {}, input::Span{0, 7}));
     CHECK_DIAG(
         "conWrite(1, 1)",
-        errInvalidExecStmt(
+        errUndeclaredAction(
             src, "conWrite", std::vector<std::string>{"int", "int"}, input::Span{0, 13}));
     CHECK_DIAG(
         "fun f() -> int 1 "
         "f()",
-        errInvalidExecStmt(src, "f", {}, input::Span{17, 19}));
+        errUndeclaredAction(src, "f", {}, input::Span{17, 19}));
     CHECK_DIAG("conWrite(test())", errUndeclaredFuncOrAction(src, "test", {}, input::Span{9, 14}));
   }
 }
