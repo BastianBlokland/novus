@@ -17,6 +17,7 @@ configure_novstd_file(list)
 configure_novstd_file(math)
 configure_novstd_file(option)
 configure_novstd_file(pair)
+configure_novstd_file(parse)
 configure_novstd_file(print)
 configure_novstd_file(text)
 

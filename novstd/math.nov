@@ -30,6 +30,9 @@ fun negInfinity()
 fun pi()
   3.14159274
 
+fun negate{T}(T v)
+  -v
+
 fun abs{T}(T v)
   v < 0 ? -v : v
 
@@ -94,6 +97,13 @@ assert(
   !isNan(0.0) &&
   !isNan(1.0) &&
   !isNan(1.0 / 0.0))
+
+assert(
+  negate(1) == -1 &&
+  negate(-1) == 1 &&
+  negate(42).negate() == 42 &&
+  negate(1.0) == -1.0 &&
+  negate(-1.0) == 1.0)
 
 assert(
   abs(1) == 1 &&

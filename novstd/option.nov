@@ -25,7 +25,7 @@ fun string{T}(Option{T} opt)
 // Functions
 
 fun map{T, TResult}(Option{T} opt, delegate{T, TResult} del)
-  opt as T val ? del(val) : opt
+  opt as T val ? del(val) : None()
 
 fun filter{T}(Option{T} opt, delegate{T, bool} pred)
   if opt as T val   -> pred(val) ? opt : None()

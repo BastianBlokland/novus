@@ -1,0 +1,109 @@
+import "ascii.nov"
+import "math.nov"
+
+// Functions
+
+fun parseInt(string str)
+  parseIntOffset(str, 0, str.length())
+
+fun parseIntOffset(string str, int start, int end)
+  if start == end       -> None()
+  if str[start] == '-'  -> parseIntImpl(str, ++start, end, 0).map(negate{int})
+  if str[start] == '+'  -> parseIntImpl(str, ++start, end, 0)
+  else                  -> parseIntImpl(str, start, end, 0)
+
+fun parseIntImpl(string str, int idx, int end, int result) -> Option{int}
+  if idx >= end         -> result
+  if str[idx].isDigit() -> parseIntImpl(str, ++idx, end, result * 10 + str[idx] - '0')
+  else                  -> None()
+
+fun parseFloat(string str)
+  parseFloatOffset(str, 0, str.length())
+
+fun parseFloatOffset(string str, int start, int end)
+  if start == end       -> None()
+  if str[start] == '-'  -> parseFloatImpl(str, ++start, end, 0.0, 1.0, false).map(negate{float})
+  if str[start] == '+'  -> parseFloatImpl(str, ++start, end, 0.0, 1.0, false)
+  else                  -> parseFloatImpl(str, start,   end, 0.0, 1.0, false)
+
+fun parseFloatImpl(string str, int idx, int end, float raw, float div, bool dec) -> Option{float}
+  if idx >= end                         -> raw / div
+  if str[idx] == '.' && !dec            -> parseFloatImpl(str, ++idx, end, raw, div, true)
+  if str[idx].isDigit()                 -> newRaw = raw * 10.0 + int(str[idx]) - int('0');
+                                           newDiv = dec ? div * 10.0 : div;
+                                           parseFloatImpl(str, ++idx, end, newRaw, newDiv, dec)
+  if str[idx] == 'e' || str[idx] == 'E' -> parseIntOffset(str, ++idx, end).
+                                            map(lambda (int exp) raw / (div / pow(10.0, exp)))
+  else                                  -> None()
+
+fun parseBool(string str) -> Option{bool}
+  if str == "true" || str == "TRUE" || str == "True"    -> true
+  if str == "false" || str == "FALSE" || str == "False" -> false
+  else                                                  -> None()
+
+// Tests
+
+assert(
+  "1".parseInt() == 1 &&
+  "-1".parseInt() == -1 &&
+  "+1".parseInt() == 1 &&
+  "1337".parseInt() == 1337 &&
+  intMax().string().parseInt() == intMax() &&
+  intMin().string().parseInt() == intMin() &&
+  "2147483648".parseInt() == -2147483647 - 1)
+
+assert(
+  "".parseInt() is None &&
+  "a".parseInt() is None &&
+  "123 ".parseInt() is None &&
+  "123.123".parseInt() is None &&
+  "123a".parseInt() is None &&
+  " 123".parseInt() is None)
+
+assert(
+  "0".parseFloat() == 0.0 &&
+  "1".parseFloat() == 1.0 &&
+  "0001".parseFloat() == 1.0 &&
+  "0e10".parseFloat() == 0.0 &&
+  "0e-10".parseFloat() == 0.0 &&
+  "-1".parseFloat() == -1.0 &&
+  "+1".parseFloat() == 1.0 &&
+  "-1.1".parseFloat() == -1.1 &&
+  "+1.1".parseFloat() == 1.1 &&
+  "-.1".parseFloat() == -0.1 &&
+  "+.1".parseFloat() == 0.1 &&
+  "42e0".parseFloat() == 42.0 &&
+  "42e1".parseFloat() == 420.0 &&
+  "42e2".parseFloat() == 4200.0 &&
+  "42e+0".parseFloat() == 42.0 &&
+  "42e+1".parseFloat() == 420.0 &&
+  "42e+2".parseFloat() == 4200.0 &&
+  "42e-0".parseFloat() == 42.0 &&
+  "42e-1".parseFloat() == 4.2 &&
+  "42e-2".parseFloat() == .42 &&
+  "42.1337".parseFloat() == 42.1337 &&
+  "42.1337e4".parseFloat() == 421337.0 &&
+  "+42.1337E-2".parseFloat() == .421337 &&
+  "-42.1337E-2".parseFloat() == -.421337 &&
+  ("4000000000".parseFloat() ?? -1.0).approx(4000000000.0))
+
+assert(
+  "".parseFloat() is None &&
+  "--1".parseFloat() is None &&
+  "-+1".parseFloat() is None &&
+  "1.0.0".parseFloat() is None &&
+  "1,0".parseFloat() is None &&
+  "1e0e1".parseFloat() is None &&
+  " 1.0".parseFloat() is None &&
+  "1.0 ".parseFloat() is None &&
+  "1. 0 ".parseFloat() is None)
+
+assert(
+  "true".parseBool() == true && "TRUE".parseBool() == true && "True".parseBool() == true &&
+  "false".parseBool() == false && "FALSE".parseBool() == false && "False".parseBool() == false)
+
+assert(
+  "".parseBool() is None &&
+  "tRuE".parseBool() is None &&
+  "fAlSe".parseBool() is None &&
+  "abc".parseBool() is None)
