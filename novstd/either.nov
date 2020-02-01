@@ -1,0 +1,57 @@
+// Types
+
+union Either{T1, T2} = T1, T2
+
+// Conversions
+
+fun string{T1, T2}(Either{T1, T2} e)
+  if e as T1 t1  -> t1.string()
+  if e as T2 t2  -> t2.string()
+
+// Functions
+
+fun map{T1, T2, TResult}(Either{T1, T2} e, delegate{T1, TResult} del)
+  if e as T1 t1 -> Either{TResult, T2}(del(t1))
+  if e as T2 t2 -> Either{TResult, T2}(t2)
+
+fun map{T1, T2, TResult}(Either{T1, T2} e, delegate{T2, TResult} del)
+  if e as T1 t1 -> Either{T1, TResult}(t1)
+  if e as T2 t2 -> Either{T1, TResult}(del(t2))
+
+fun map{T1, T2}(Either{T1, T2} e, delegate{T1, Either{T1, T2}} del)
+  e as T1 t1 ? del(t1) : e
+
+fun map{T1, T2}(Either{T1, T2} e, delegate{T2, Either{T1, T2}} del)
+  e as T2 t2 ? del(t2) : e
+
+// Tests
+
+assert(
+  Either{int, string}(42) == 42 &&
+  Either{int, string}("hello world") == "hello world" &&
+  Either{int, string}(42) != Either{int, string}("hello world"))
+
+assert(Either{int, string}(42).string() == "42")
+assert(Either{int, string}("hello world").string() == "hello world")
+
+assert(
+  Either{int, string}("hello").map(lambda (string str) str == "hello") == true &&
+  Either{int, string}("hello").map(lambda (string str) str + " world") == "hello world" &&
+  Either{int, string}(42).map(lambda (string str) str == "hello") == 42)
+
+assert(
+  Either{int, string}("hello").map(lambda (int i) i * i) == "hello" &&
+  Either{int, string}(42).map(lambda (int i) i == 42) == true &&
+  Either{int, string}(42).map(lambda (int i) i * i) == 42 * 42)
+
+assert(
+  func = (lambda (int i) i == 42 ? Either{int, bool}(true) : Either{int, bool}(i));
+  Either{int, bool}(42).map(func) == true &&
+  Either{int, bool}(41).map(func) == 41 &&
+  Either{int, bool}(false).map(func) == false)
+
+assert(
+  func = (lambda (int i) i == 42 ? Either{bool, int}(true) : Either{bool, int}(i));
+  Either{bool, int}(42).map(func) == true &&
+  Either{bool, int}(41).map(func) == 41 &&
+  Either{bool, int}(false).map(func) == false)

@@ -27,9 +27,8 @@ fun string{T}(Option{T} opt)
 fun map{T, TResult}(Option{T} opt, delegate{T, TResult} del)
   opt as T val ? del(val) : None()
 
-fun filter{T}(Option{T} opt, delegate{T, bool} pred)
-  if opt as T val   -> pred(val) ? opt : None()
-  if opt is None    -> opt
+fun map{T, TResult}(Option{T} opt, delegate{T, Option{TResult}} del)
+  opt as T val ? del(val) : None()
 
 // Tests
 
@@ -48,8 +47,10 @@ assert(Option(42).string() == "42")
 assert(Option{int}().string() == "none")
 
 assert(Option(42).map(lambda (int val) val * 2) == 84)
-assert(Option{int}().map(lambda (int val) val * 2) == None())
+assert(Option{int}().map(lambda (int val) val * 2) is None)
 
-assert(Option(42).filter(lambda (int val) val > 0) == 42)
-assert(Option(-42).filter(lambda (int val) val > 0) == None())
-assert(Option{int}().filter(lambda (int val) val > 0) == None())
+assert(
+  func = (lambda (int val) val > 0 ? Option(val) : None());
+  Option(42).map(func) == 42 &&
+  Option(-42).map(func) is None &&
+  Option{int}().map(func) is None)

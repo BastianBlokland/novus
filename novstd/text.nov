@@ -1,5 +1,5 @@
-import "list.nov"
 import "func.nov"
+import "list.nov"
 
 // Operators
 

@@ -1,0 +1,22 @@
+import "either.nov"
+
+// Types
+
+struct Error = int code, string msg
+
+// Constructors
+
+fun Error(string msg)
+  Error(-1, msg)
+
+fun Error(int errCode)
+  Error(errCode, errCode.string())
+
+// Conversions
+
+fun string(Error err)
+  err.msg
+
+// Tests
+
+assert(Error("Hello").string() == "Hello")
