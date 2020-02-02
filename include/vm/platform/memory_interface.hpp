@@ -7,17 +7,17 @@ namespace vm::platform {
 
 class MemoryInterface final {
 public:
-  MemoryInterface();
+  MemoryInterface() noexcept;
 
-  auto setStdIn(std::string stdIn) -> void;
-  auto setEnvArgs(std::vector<std::string> envArgs) -> void;
-  auto setEnvVars(std::unordered_map<std::string, std::string> envVars) -> void;
+  auto setStdIn(std::string stdIn) noexcept -> bool;
+  auto setEnvArgs(std::vector<std::string> envArgs) noexcept -> void;
+  auto setEnvVars(std::unordered_map<std::string, std::string> envVars) noexcept -> void;
 
-  auto conWrite(const char* data, unsigned int size) -> void;
-  auto conRead() -> char;
-  auto getEnvArg(int idx) -> const char*;
-  auto getEnvArgCount() -> int;
-  auto getEnvVar(const char* name) -> const char*;
+  auto conWrite(const char* data, unsigned int size) noexcept -> void;
+  auto conRead() noexcept -> char;
+  auto getEnvArg(int idx) noexcept -> const char*;
+  auto getEnvArgCount() noexcept -> int;
+  auto getEnvVar(const char* name) noexcept -> const char*;
 
   [[nodiscard]] auto getStdOut() const noexcept -> const std::vector<std::string>&;
 

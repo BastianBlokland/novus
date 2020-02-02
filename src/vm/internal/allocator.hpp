@@ -7,27 +7,27 @@ namespace vm::internal {
 
 class Allocator final {
 public:
-  Allocator();
-  Allocator(const Allocator& rhs)     = delete;
-  Allocator(Allocator&& rhs) noexcept = delete;
-  ~Allocator();
+  Allocator() noexcept;
+  Allocator(const Allocator& rhs) = delete;
+  Allocator(Allocator&& rhs)      = delete;
+  ~Allocator() noexcept;
 
   auto operator=(const Allocator& rhs) -> Allocator& = delete;
-  auto operator=(Allocator&& rhs) noexcept -> Allocator& = delete;
+  auto operator=(Allocator&& rhs) -> Allocator& = delete;
 
-  [[nodiscard]] auto allocStrLit(const std::string& literal) -> StringRef*;
-  [[nodiscard]] auto allocStr(unsigned int size) -> std::pair<StringRef*, char*>;
+  [[nodiscard]] auto allocStrLit(const std::string& literal) noexcept -> StringRef*;
+  [[nodiscard]] auto allocStr(unsigned int size) noexcept -> std::pair<StringRef*, char*>;
 
-  [[nodiscard]] auto allocStruct(uint8_t fieldCount) -> std::pair<StructRef*, Value*>;
+  [[nodiscard]] auto allocStruct(uint8_t fieldCount) noexcept -> std::pair<StructRef*, Value*>;
 
 private:
   Ref* m_firstRef;
   Ref* m_lastRef;
 
-  auto initRef(Ref* ref) -> void;
+  auto initRef(Ref* ref) noexcept -> void;
 
   template <typename ConcreteRef>
-  auto alloc(const unsigned int payloadsize) -> std::pair<void*, void*> {
+  auto alloc(const unsigned int payloadsize) noexcept -> std::pair<void*, void*> {
     // Make a single allocation of the header and the payload.
     const auto refSize = sizeof(ConcreteRef);
     void* refPtr       = std::malloc(refSize + payloadsize); // NOLINT: Manual memory management.

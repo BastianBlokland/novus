@@ -4,6 +4,7 @@
 #include "rang.hpp"
 #include "vm/executor.hpp"
 #include "vm/platform/terminal_interface.hpp"
+#include "vm/result_code.hpp"
 #include <filesystem>
 #include <fstream>
 #include <system_error>
@@ -18,20 +19,19 @@ auto run(
     InputItr inputBegin,
     const InputItr inputEnd,
     int vmEnvArgsCount,
-    char** vmEnvArgs) {
+    char** vmEnvArgs) noexcept {
 
   const auto src = frontend::buildSource(inputId, std::move(inputPath), inputBegin, inputEnd);
   const auto frontendOutput = frontend::analyze(src, searchPaths);
   if (frontendOutput.isSuccess()) {
     const auto assembly = backend::generate(frontendOutput.getProg());
     auto iface          = vm::platform::TerminalInterface{vmEnvArgsCount, vmEnvArgs};
-    try {
-      vm::execute(assembly, iface);
-      return 0;
-    } catch (const std::exception& e) {
-      std::cout << rang::bg::red << "Runtime error: " << e.what() << '\n' << rang::style::reset;
-      return 1;
+    auto res            = vm::execute(assembly, iface);
+    if (res != vm::ResultCode::Ok) {
+      std::cout << rang::style::bold << rang::bg::red << "Runtime error: " << res << '\n'
+                << rang::style::reset;
     }
+    return static_cast<int>(res);
   }
 
   if (!frontendOutput.isSuccess()) {
@@ -45,7 +45,7 @@ auto run(
 
 } // namespace eval
 
-auto getSearchPaths(char** argv) {
+auto getSearchPaths(char** argv) noexcept {
   auto result = std::vector<std::filesystem::path>{};
 
   // Add the path to the binary.
@@ -54,7 +54,7 @@ auto getSearchPaths(char** argv) {
   return result;
 }
 
-auto main(int argc, char** argv) -> int {
+auto main(int argc, char** argv) noexcept -> int {
   if (argc <= 1) {
     std::cout << rang::style::bold << rang::bg::red
               << "Evaluator - Please provide input characters or input file\n"

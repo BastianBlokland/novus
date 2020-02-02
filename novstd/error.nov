@@ -12,6 +12,14 @@ fun Error(string msg)
 fun Error(int errCode)
   Error(errCode, errCode.string())
 
+// Operators
+
+fun ??{T}(Either{T, Error} e, T def)
+  e as T val ? val : def
+
+fun ??{T}(Either{T, Error} e, delegate{T} defFactory)
+  e as T val ? val : defFactory()
+
 // Conversions
 
 fun string(Error err)

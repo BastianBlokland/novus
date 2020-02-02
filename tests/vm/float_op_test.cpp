@@ -1,6 +1,5 @@
 #include "catch2/catch.hpp"
 #include "helpers.hpp"
-#include "vm/exceptions/div_by_zero.hpp"
 
 namespace vm {
 

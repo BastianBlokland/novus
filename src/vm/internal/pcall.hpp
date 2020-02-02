@@ -1,9 +1,8 @@
 #pragma once
 #include "internal/eval_stack.hpp"
 #include "internal/string_utilities.hpp"
-#include "vm/exceptions/assert_failed.hpp"
-#include "vm/exceptions/invalid_assembly.hpp"
 #include "vm/pcall_code.hpp"
+#include "vm/result_code.hpp"
 #include <chrono>
 #include <thread>
 
@@ -12,29 +11,29 @@ namespace vm::internal {
 const auto static newl = '\n';
 
 template <typename EvalStack, typename PlatformInterface>
-auto inline pcall(
-    EvalStack& evalStack, Allocator* allocator, PlatformInterface& iface, PCallCode code) -> void {
+[[nodiscard]] auto inline pcall(
+    EvalStack& evalStack, Allocator* allocator, PlatformInterface& iface, PCallCode code) noexcept
+    -> ResultCode {
 
   switch (code) {
   case vm::PCallCode::ConWriteChar: {
     auto c = static_cast<char>(evalStack.peek().getInt());
     iface.conWrite(&c, 1);
-    return;
+    return ResultCode::Ok;
   }
   case vm::PCallCode::ConWriteString: {
     auto* strRef = getStringRef(evalStack.peek());
     iface.conWrite(strRef->getDataPtr(), strRef->getSize());
-    return;
+    return ResultCode::Ok;
   }
   case vm::PCallCode::ConWriteStringLine: {
     auto* strRef = getStringRef(evalStack.peek());
     iface.conWrite(strRef->getDataPtr(), strRef->getSize());
     iface.conWrite(&newl, 1);
-    return;
+    return ResultCode::Ok;
   }
   case vm::PCallCode::ConReadChar: {
-    evalStack.push(internal::intValue(iface.conRead()));
-    return;
+    return evalStack.push(internal::intValue(iface.conRead()));
   }
   case vm::PCallCode::ConReadStringLine: {
     std::string line = {};
@@ -45,46 +44,42 @@ auto inline pcall(
       }
       line += c;
     }
-    evalStack.push(internal::toString(allocator, line));
-    return;
+    return evalStack.push(internal::toString(allocator, line));
   }
   case vm::PCallCode::GetEnvArg: {
     auto* res = iface.getEnvArg(evalStack.pop().getInt());
     if (res == nullptr) {
-      evalStack.push(internal::emptyString(allocator));
-    } else {
-      evalStack.push(internal::toString(allocator, res));
+      return evalStack.push(internal::emptyString(allocator));
     }
-    return;
+    return evalStack.push(internal::toString(allocator, res));
   }
   case vm::PCallCode::GetEnvArgCount: {
-    evalStack.push(internal::intValue(iface.getEnvArgCount()));
-    return;
+    return evalStack.push(internal::intValue(iface.getEnvArgCount()));
   }
   case vm::PCallCode::GetEnvVar: {
     auto* nameStrRef = getStringRef(evalStack.pop());
     auto* res        = iface.getEnvVar(nameStrRef->getDataPtr());
     if (res == nullptr) {
-      evalStack.push(internal::emptyString(allocator));
-    } else {
-      evalStack.push(internal::toString(allocator, res));
+      return evalStack.push(internal::emptyString(allocator));
     }
-    return;
+    return evalStack.push(internal::toString(allocator, res));
   }
   case vm::PCallCode::Sleep:
     std::this_thread::sleep_for(std::chrono::milliseconds(evalStack.peek().getInt()));
-    return;
+    return ResultCode::Ok;
   case vm::PCallCode::Assert: {
     auto* msg = getStringRef(evalStack.pop());
     auto cond = evalStack.peek().getInt();
     if (cond == 0) {
-      throw exceptions::AssertFailed{"Assert failed: " +
-                                     std::string{msg->getDataPtr(), msg->getSize()}};
+      iface.conWrite("Assertion failed: ", 18);
+      iface.conWrite(msg->getDataPtr(), msg->getSize());
+      iface.conWrite(&newl, 1);
+      return ResultCode::AssertFailed;
     }
-    return;
+    return ResultCode::Ok;
   }
   }
-  throw exceptions::InvalidAssembly{};
+  return ResultCode::InvalidAssembly;
 }
 
 } // namespace vm::internal

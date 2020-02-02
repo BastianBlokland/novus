@@ -5,9 +5,9 @@
 
 namespace vm::internal {
 
-Allocator::Allocator() : m_firstRef{nullptr}, m_lastRef{nullptr} {}
+Allocator::Allocator() noexcept : m_firstRef{nullptr}, m_lastRef{nullptr} {}
 
-Allocator::~Allocator() {
+Allocator::~Allocator() noexcept {
   // Delete all allocations.
   auto* ref = m_firstRef;
   while (ref) {
@@ -17,7 +17,7 @@ Allocator::~Allocator() {
   }
 }
 
-auto Allocator::allocStrLit(const std::string& lit) -> StringRef* {
+auto Allocator::allocStrLit(const std::string& lit) noexcept -> StringRef* {
   auto mem     = alloc<StringRef>(0);
   auto litSize = static_cast<unsigned int>(lit.size());
   auto* refPtr = static_cast<StringRef*>(new (mem.first) StringRef{lit.data(), litSize});
@@ -25,7 +25,7 @@ auto Allocator::allocStrLit(const std::string& lit) -> StringRef* {
   return refPtr;
 }
 
-auto Allocator::allocStr(const unsigned int size) -> std::pair<StringRef*, char*> {
+auto Allocator::allocStr(const unsigned int size) noexcept -> std::pair<StringRef*, char*> {
   auto mem         = alloc<StringRef>(size + 1); // +1 for null-terminator.
   auto payloadPtr  = static_cast<char*>(mem.second);
   payloadPtr[size] = '\0'; // Null-terminate the payload.
@@ -34,7 +34,7 @@ auto Allocator::allocStr(const unsigned int size) -> std::pair<StringRef*, char*
   return {refPtr, payloadPtr};
 }
 
-auto Allocator::allocStruct(uint8_t fieldCount) -> std::pair<StructRef*, Value*> {
+auto Allocator::allocStruct(uint8_t fieldCount) noexcept -> std::pair<StructRef*, Value*> {
   auto mem       = alloc<StructRef>(sizeof(Value) * fieldCount);
   auto fieldsPtr = static_cast<Value*>(mem.second);
   auto* refPtr   = static_cast<StructRef*>(new (mem.first) StructRef{fieldsPtr, fieldCount});
@@ -42,7 +42,7 @@ auto Allocator::allocStruct(uint8_t fieldCount) -> std::pair<StructRef*, Value*>
   return {refPtr, fieldsPtr};
 }
 
-auto Allocator::initRef(Ref* ref) -> void {
+auto Allocator::initRef(Ref* ref) noexcept -> void {
   // Keep track of all allocated references by linking them as a singly linked list.
   if (m_lastRef) {
     m_lastRef->m_next = ref;

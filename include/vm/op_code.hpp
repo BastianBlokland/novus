@@ -87,6 +87,6 @@ enum class OpCode : uint8_t {
   Fail = 255,
 };
 
-auto operator<<(std::ostream& out, const OpCode& rhs) -> std::ostream&;
+auto operator<<(std::ostream& out, const OpCode& rhs) noexcept -> std::ostream&;
 
 } // namespace vm

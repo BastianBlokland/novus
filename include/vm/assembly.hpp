@@ -13,13 +13,13 @@ public:
   Assembly(
       std::vector<std::string> litStrings,
       std::vector<uint8_t> instructions,
-      std::vector<uint32_t> entryPoints);
+      std::vector<uint32_t> entryPoints) noexcept;
   Assembly(const Assembly& rhs)     = delete;
   Assembly(Assembly&& rhs) noexcept = default;
-  ~Assembly()                       = default;
+  ~Assembly() noexcept              = default;
 
   auto operator=(const Assembly& rhs) -> Assembly& = delete;
-  auto operator=(Assembly&& rhs) noexcept -> Assembly& = delete;
+  auto operator=(Assembly&& rhs) -> Assembly& = delete;
 
   auto operator==(const Assembly& rhs) const noexcept -> bool;
   auto operator!=(const Assembly& rhs) const noexcept -> bool;

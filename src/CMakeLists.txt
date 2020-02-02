@@ -186,13 +186,6 @@ target_include_directories(backend PRIVATE backend)
 
 # Virtual Machine.
 add_library(vm STATIC
-  vm/exceptions/assert_failed.cpp
-  vm/exceptions/call_stack_overflow.cpp
-  vm/exceptions/const_stack_overflow.cpp
-  vm/exceptions/div_by_zero.cpp
-  vm/exceptions/eval_stack_not_empty.cpp
-  vm/exceptions/eval_stack_overflow.cpp
-  vm/exceptions/invalid_assembly.cpp
   vm/internal/allocator.cpp
   vm/internal/call_stack.cpp
   vm/internal/const_stack.cpp
@@ -201,9 +194,10 @@ add_library(vm STATIC
   vm/platform/memory_interface.cpp
   vm/assembly.cpp
   vm/executor.cpp
-  vm/opcode.cpp
-  vm/pcall_code.cpp)
+  vm/op_code.cpp
+  vm/pcall_code.cpp
+  vm/result_code.cpp)
 target_compile_features(vm PUBLIC cxx_std_17)
-target_compile_options(vm PRIVATE -Werror -Wall -Wextra)
+target_compile_options(vm PRIVATE -Werror -Wall -Wextra -fno-exceptions)
 target_include_directories(vm PUBLIC ${PROJECT_SOURCE_DIR}/include)
 target_include_directories(vm PRIVATE vm)

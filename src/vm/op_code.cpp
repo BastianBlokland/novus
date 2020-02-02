@@ -1,8 +1,8 @@
-#include "vm/opcode.hpp"
+#include "vm/op_code.hpp"
 
 namespace vm {
 
-auto operator<<(std::ostream& out, const OpCode& rhs) -> std::ostream& {
+auto operator<<(std::ostream& out, const OpCode& rhs) noexcept -> std::ostream& {
   switch (rhs) {
   case OpCode::LoadLitInt:
     out << "load-int";

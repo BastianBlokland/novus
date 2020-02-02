@@ -1,6 +1,6 @@
 #include "catch2/catch.hpp"
 #include "helpers.hpp"
-#include "vm/exceptions/div_by_zero.hpp"
+#include "vm/result_code.hpp"
 
 namespace vm {
 
@@ -93,7 +93,7 @@ TEST_CASE("Execute integer operations", "[vm]") {
         },
         "input",
         "8");
-    CHECK_EXPR_THROWS(
+    CHECK_EXPR_RESULTCODE(
         [](backend::Builder* builder) -> void {
           builder->addLoadLitInt(1);
           builder->addLoadLitInt(0);
@@ -103,7 +103,7 @@ TEST_CASE("Execute integer operations", "[vm]") {
           builder->addPop();
         },
         "input",
-        vm::exceptions::DivByZero);
+        ResultCode::DivByZero);
   }
 
   SECTION("Remainder") {
@@ -118,7 +118,7 @@ TEST_CASE("Execute integer operations", "[vm]") {
         },
         "input",
         "1");
-    CHECK_EXPR_THROWS(
+    CHECK_EXPR_RESULTCODE(
         [](backend::Builder* builder) -> void {
           builder->addLoadLitInt(1);
           builder->addLoadLitInt(0);
@@ -128,7 +128,7 @@ TEST_CASE("Execute integer operations", "[vm]") {
           builder->addPop();
         },
         "input",
-        vm::exceptions::DivByZero);
+        ResultCode::DivByZero);
   }
 
   SECTION("Negate") {

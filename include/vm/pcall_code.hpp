@@ -20,6 +20,6 @@ enum class PCallCode : uint8_t {
   Assert = 241,
 };
 
-auto operator<<(std::ostream& out, const PCallCode& rhs) -> std::ostream&;
+auto operator<<(std::ostream& out, const PCallCode& rhs) noexcept -> std::ostream&;
 
 } // namespace vm

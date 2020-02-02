@@ -2,7 +2,7 @@
 
 namespace vm {
 
-auto operator<<(std::ostream& out, const PCallCode& rhs) -> std::ostream& {
+auto operator<<(std::ostream& out, const PCallCode& rhs) noexcept -> std::ostream& {
   switch (rhs) {
   case PCallCode::ConWriteChar:
     out << "con-write-char";

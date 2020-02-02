@@ -1,6 +1,6 @@
 #pragma once
 #include "vm/assembly.hpp"
-#include "vm/opcode.hpp"
+#include "vm/op_code.hpp"
 #include "vm/pcall_code.hpp"
 #include <string>
 #include <unordered_map>

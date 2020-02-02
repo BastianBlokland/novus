@@ -1,6 +1,6 @@
 #include "catch2/catch.hpp"
 #include "helpers.hpp"
-#include "vm/exceptions/assert_failed.hpp"
+#include "vm/result_code.hpp"
 
 namespace vm {
 
@@ -221,7 +221,7 @@ TEST_CASE("Execute input and output", "[vm]") {
   }
 
   SECTION("Assert") {
-    CHECK_PROG_THROWS(
+    CHECK_PROG_RESULTCODE(
         [](backend::Builder* builder) -> void {
           builder->label("entry");
           builder->addEntryPoint("entry");
@@ -234,7 +234,7 @@ TEST_CASE("Execute input and output", "[vm]") {
           builder->addRet();
         },
         "input",
-        vm::exceptions::AssertFailed);
+        ResultCode::AssertFailed);
     CHECK_PROG(
         [](backend::Builder* builder) -> void {
           builder->label("entry");

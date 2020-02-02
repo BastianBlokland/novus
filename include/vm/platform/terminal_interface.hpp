@@ -8,28 +8,28 @@ namespace vm::platform {
 
 class TerminalInterface final {
 public:
-  TerminalInterface(int envArgsCount, char** envArgs) :
+  TerminalInterface(int envArgsCount, char** envArgs) noexcept :
       m_envArgsCount{envArgsCount}, m_envArgs(envArgs) {}
 
   // NOLINTNEXTLINE: Cannot be static because it needs to match the interface.
-  auto inline conWrite(const char* data, unsigned int size) -> void {
+  auto inline conWrite(const char* data, unsigned int size) noexcept -> void {
     std::fwrite(data, sizeof(char), size, stdout);
   }
 
   // NOLINTNEXTLINE: Cannot be static because it needs to match the interface.
-  auto inline conRead() -> char {
+  auto inline conRead() noexcept -> char {
     auto res = std::getc(stdin);
     return res > 0 ? static_cast<char>(res) : '\0';
   }
 
-  auto inline getEnvArg(int idx) -> const char* {
+  auto inline getEnvArg(int idx) noexcept -> const char* {
     return idx < 0 || idx >= m_envArgsCount ? nullptr : m_envArgs[idx];
   }
 
-  auto inline getEnvArgCount() -> int { return m_envArgsCount; }
+  auto inline getEnvArgCount() noexcept -> int { return m_envArgsCount; }
 
   // NOLINTNEXTLINE: Cannot be static because it needs to match the interface.
-  auto inline getEnvVar(const char* name) -> const char* { return std::getenv(name); }
+  auto inline getEnvVar(const char* name) noexcept -> const char* { return std::getenv(name); }
 
 private:
   int m_envArgsCount;

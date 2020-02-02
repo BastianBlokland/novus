@@ -1,31 +1,27 @@
 #include "catch2/catch.hpp"
 #include "helpers.hpp"
-#include "vm/exceptions/call_stack_overflow.hpp"
-#include "vm/exceptions/const_stack_overflow.hpp"
-#include "vm/exceptions/eval_stack_not_empty.hpp"
-#include "vm/exceptions/eval_stack_overflow.hpp"
-#include "vm/exceptions/invalid_assembly.hpp"
+#include "vm/result_code.hpp"
 
 namespace vm {
 
 TEST_CASE("Runtime errors", "[vm]") {
 
   SECTION("InvalidAssembly") {
-    CHECK_EXPR_THROWS(
+    CHECK_EXPR_RESULTCODE(
         [](backend::Builder* builder) -> void { builder->addFail(); },
         "input",
-        vm::exceptions::InvalidAssembly);
+        ResultCode::InvalidAssembly);
   }
 
   SECTION("Evaluation stack not empty") {
-    CHECK_EXPR_THROWS(
+    CHECK_EXPR_RESULTCODE(
         [](backend::Builder* builder) -> void { builder->addLoadLitInt(1); },
         "input",
-        vm::exceptions::EvalStackNotEmpty);
+        ResultCode::EvalStackNotEmpty);
   }
 
   SECTION("Call stack overflow") {
-    CHECK_PROG_THROWS(
+    CHECK_PROG_RESULTCODE(
         [](backend::Builder* builder) -> void {
           builder->label("func");
           builder->addCall("func", false);
@@ -33,22 +29,22 @@ TEST_CASE("Runtime errors", "[vm]") {
           builder->addEntryPoint("func");
         },
         "input",
-        vm::exceptions::CallStackOverflow);
+        ResultCode::CallStackOverflow);
   }
 
   SECTION("Evaluation stack overflow") {
-    CHECK_EXPR_THROWS(
+    CHECK_EXPR_RESULTCODE(
         [](backend::Builder* builder) -> void {
           builder->label("push1");
           builder->addLoadLitInt(1);
           builder->addJump("push1");
         },
         "input",
-        vm::exceptions::EvalStackOverflow);
+        ResultCode::EvalStackOverflow);
   }
 
   SECTION("Constants stack overflow") {
-    CHECK_PROG_THROWS(
+    CHECK_PROG_RESULTCODE(
         [](backend::Builder* builder) -> void {
           builder->label("func");
           builder->addReserveConsts(10);
@@ -57,7 +53,7 @@ TEST_CASE("Runtime errors", "[vm]") {
           builder->addEntryPoint("func");
         },
         "input",
-        vm::exceptions::ConstStackOverflow);
+        ResultCode::ConstStackOverflow);
   }
 }
 

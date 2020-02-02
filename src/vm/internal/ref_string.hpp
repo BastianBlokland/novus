@@ -9,12 +9,12 @@ class StringRef final : public Ref {
   friend class Allocator;
 
 public:
-  StringRef(const StringRef& rhs)     = delete;
-  StringRef(StringRef&& rhs) noexcept = delete;
-  ~StringRef()                        = default;
+  StringRef(const StringRef& rhs) = delete;
+  StringRef(StringRef&& rhs)      = delete;
+  ~StringRef() noexcept           = default;
 
   auto operator=(const StringRef& rhs) -> StringRef& = delete;
-  auto operator=(StringRef&& rhs) noexcept -> StringRef& = delete;
+  auto operator=(StringRef&& rhs) -> StringRef& = delete;
 
   [[nodiscard]] inline auto getDataPtr() const noexcept { return m_data; }
   [[nodiscard]] inline auto getSize() const noexcept { return m_size; }
@@ -25,7 +25,7 @@ private:
   const char* m_data;
   unsigned int m_size;
 
-  inline explicit StringRef(const char* data, unsigned int size) :
+  inline explicit StringRef(const char* data, unsigned int size) noexcept :
       Ref(RefKind::String), m_data{data}, m_size{size} {}
 };
 

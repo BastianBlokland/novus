@@ -9,12 +9,12 @@ class StructRef final : public Ref {
   friend class Allocator;
 
 public:
-  StructRef(const StructRef& rhs)     = delete;
-  StructRef(StructRef&& rhs) noexcept = delete;
-  ~StructRef()                        = default;
+  StructRef(const StructRef& rhs) = delete;
+  StructRef(StructRef&& rhs)      = delete;
+  ~StructRef() noexcept           = default;
 
   auto operator=(const StructRef& rhs) -> StructRef& = delete;
-  auto operator=(StructRef&& rhs) noexcept -> StructRef& = delete;
+  auto operator=(StructRef&& rhs) -> StructRef& = delete;
 
   [[nodiscard]] inline auto getFieldCount() const noexcept { return m_fieldCount; }
 
@@ -31,7 +31,7 @@ private:
   const Value* m_fields;
   uint8_t m_fieldCount;
 
-  inline explicit StructRef(const Value* fields, uint8_t fieldCount) :
+  inline explicit StructRef(const Value* fields, uint8_t fieldCount) noexcept :
       Ref(RefKind::Struct), m_fields{fields}, m_fieldCount{fieldCount} {}
 };
 

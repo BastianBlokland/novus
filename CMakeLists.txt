@@ -12,6 +12,10 @@ set(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/bin)
 include(CTest)
 enable_testing()
 
+# Global compiler flags.
+set(CMAKE_CXX_FLAGS_DEBUG "-Og")
+set(CMAKE_CXX_FLAGS_RELEASE "-O2")
+
 # Generate a 'compile_commands.json' for use by clangd.
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 

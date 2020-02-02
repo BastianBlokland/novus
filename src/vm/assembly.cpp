@@ -7,7 +7,7 @@ namespace vm {
 Assembly::Assembly(
     std::vector<std::string> litStrings,
     std::vector<uint8_t> instructions,
-    std::vector<uint32_t> entryPoints) :
+    std::vector<uint32_t> entryPoints) noexcept :
     m_litStrings{std::move(litStrings)},
     m_instructions{std::move(instructions)},
     m_entryPoints{std::move(entryPoints)} {}
