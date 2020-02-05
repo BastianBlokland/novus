@@ -13,7 +13,6 @@ TEST_CASE("Execute float operations", "[vm]") {
           builder->addAddFloat();
           builder->addConvFloatString();
           builder->addPCall(vm::PCallCode::ConWriteString);
-          builder->addPop();
         },
         "input",
         "0.2337");
@@ -24,7 +23,6 @@ TEST_CASE("Execute float operations", "[vm]") {
           builder->addAddFloat();
           builder->addConvFloatString();
           builder->addPCall(vm::PCallCode::ConWriteString);
-          builder->addPop();
         },
         "input",
         "10000");
@@ -38,7 +36,6 @@ TEST_CASE("Execute float operations", "[vm]") {
           builder->addSubFloat();
           builder->addConvFloatString();
           builder->addPCall(vm::PCallCode::ConWriteString);
-          builder->addPop();
         },
         "input",
         "0.0337");
@@ -49,7 +46,6 @@ TEST_CASE("Execute float operations", "[vm]") {
           builder->addSubFloat();
           builder->addConvFloatString();
           builder->addPCall(vm::PCallCode::ConWriteString);
-          builder->addPop();
         },
         "input",
         "-0.0337");
@@ -63,7 +59,6 @@ TEST_CASE("Execute float operations", "[vm]") {
           builder->addMulFloat();
           builder->addConvFloatString();
           builder->addPCall(vm::PCallCode::ConWriteString);
-          builder->addPop();
         },
         "input",
         "1337");
@@ -74,7 +69,6 @@ TEST_CASE("Execute float operations", "[vm]") {
           builder->addMulFloat();
           builder->addConvFloatString();
           builder->addPCall(vm::PCallCode::ConWriteString);
-          builder->addPop();
         },
         "input",
         "0.1337");
@@ -88,7 +82,6 @@ TEST_CASE("Execute float operations", "[vm]") {
           builder->addDivFloat();
           builder->addConvFloatString();
           builder->addPCall(vm::PCallCode::ConWriteString);
-          builder->addPop();
         },
         "input",
         "0.02");
@@ -99,7 +92,6 @@ TEST_CASE("Execute float operations", "[vm]") {
           builder->addDivFloat();
           builder->addConvFloatString();
           builder->addPCall(vm::PCallCode::ConWriteString);
-          builder->addPop();
         },
         "input",
         "inf");
@@ -110,7 +102,6 @@ TEST_CASE("Execute float operations", "[vm]") {
           builder->addDivFloat();
           builder->addConvFloatString();
           builder->addPCall(vm::PCallCode::ConWriteString);
-          builder->addPop();
         },
         "input",
         "nan");
@@ -124,7 +115,6 @@ TEST_CASE("Execute float operations", "[vm]") {
           builder->addModFloat();
           builder->addConvFloatString();
           builder->addPCall(vm::PCallCode::ConWriteString);
-          builder->addPop();
         },
         "input",
         "0.3");
@@ -135,7 +125,6 @@ TEST_CASE("Execute float operations", "[vm]") {
           builder->addModFloat();
           builder->addConvFloatString();
           builder->addPCall(vm::PCallCode::ConWriteString);
-          builder->addPop();
         },
         "input",
         "0");
@@ -146,7 +135,6 @@ TEST_CASE("Execute float operations", "[vm]") {
           builder->addModFloat();
           builder->addConvFloatString();
           builder->addPCall(vm::PCallCode::ConWriteString);
-          builder->addPop();
         },
         "input",
         "0.3");
@@ -157,7 +145,6 @@ TEST_CASE("Execute float operations", "[vm]") {
           builder->addModFloat();
           builder->addConvFloatString();
           builder->addPCall(vm::PCallCode::ConWriteString);
-          builder->addPop();
         },
         "input",
         "nan");
@@ -171,7 +158,6 @@ TEST_CASE("Execute float operations", "[vm]") {
           builder->addPowFloat();
           builder->addConvFloatString();
           builder->addPCall(vm::PCallCode::ConWriteString);
-          builder->addPop();
         },
         "input",
         "1");
@@ -182,7 +168,6 @@ TEST_CASE("Execute float operations", "[vm]") {
           builder->addPowFloat();
           builder->addConvFloatString();
           builder->addPCall(vm::PCallCode::ConWriteString);
-          builder->addPop();
         },
         "input",
         "4");
@@ -193,7 +178,6 @@ TEST_CASE("Execute float operations", "[vm]") {
           builder->addPowFloat();
           builder->addConvFloatString();
           builder->addPCall(vm::PCallCode::ConWriteString);
-          builder->addPop();
         },
         "input",
         "256");
@@ -204,7 +188,6 @@ TEST_CASE("Execute float operations", "[vm]") {
           builder->addPowFloat();
           builder->addConvFloatString();
           builder->addPCall(vm::PCallCode::ConWriteString);
-          builder->addPop();
         },
         "input",
         "1");
@@ -215,7 +198,6 @@ TEST_CASE("Execute float operations", "[vm]") {
           builder->addPowFloat();
           builder->addConvFloatString();
           builder->addPCall(vm::PCallCode::ConWriteString);
-          builder->addPop();
         },
         "input",
         "4");
@@ -226,7 +208,6 @@ TEST_CASE("Execute float operations", "[vm]") {
           builder->addPowFloat();
           builder->addConvFloatString();
           builder->addPCall(vm::PCallCode::ConWriteString);
-          builder->addPop();
         },
         "input",
         "0.25");
@@ -239,7 +220,6 @@ TEST_CASE("Execute float operations", "[vm]") {
           builder->addSqrtFloat();
           builder->addConvFloatString();
           builder->addPCall(vm::PCallCode::ConWriteString);
-          builder->addPop();
         },
         "input",
         "1.41421");
@@ -249,7 +229,6 @@ TEST_CASE("Execute float operations", "[vm]") {
           builder->addSqrtFloat();
           builder->addConvFloatString();
           builder->addPCall(vm::PCallCode::ConWriteString);
-          builder->addPop();
         },
         "input",
         "2");
@@ -259,7 +238,6 @@ TEST_CASE("Execute float operations", "[vm]") {
           builder->addSqrtFloat();
           builder->addConvFloatString();
           builder->addPCall(vm::PCallCode::ConWriteString);
-          builder->addPop();
         },
         "input",
         "0");
@@ -269,7 +247,6 @@ TEST_CASE("Execute float operations", "[vm]") {
           builder->addSqrtFloat();
           builder->addConvFloatString();
           builder->addPCall(vm::PCallCode::ConWriteString);
-          builder->addPop();
         },
         "input",
         "nan");
@@ -282,7 +259,6 @@ TEST_CASE("Execute float operations", "[vm]") {
           builder->addSinFloat();
           builder->addConvFloatString();
           builder->addPCall(vm::PCallCode::ConWriteString);
-          builder->addPop();
         },
         "input",
         "0");
@@ -295,7 +271,6 @@ TEST_CASE("Execute float operations", "[vm]") {
           builder->addCosFloat();
           builder->addConvFloatString();
           builder->addPCall(vm::PCallCode::ConWriteString);
-          builder->addPop();
         },
         "input",
         "1");
@@ -308,7 +283,6 @@ TEST_CASE("Execute float operations", "[vm]") {
           builder->addTanFloat();
           builder->addConvFloatString();
           builder->addPCall(vm::PCallCode::ConWriteString);
-          builder->addPop();
         },
         "input",
         "0");
@@ -322,7 +296,6 @@ TEST_CASE("Execute float operations", "[vm]") {
           builder->addASinFloat();
           builder->addConvFloatString();
           builder->addPCall(vm::PCallCode::ConWriteString);
-          builder->addPop();
         },
         "input",
         "1");
@@ -336,7 +309,6 @@ TEST_CASE("Execute float operations", "[vm]") {
           builder->addACosFloat();
           builder->addConvFloatString();
           builder->addPCall(vm::PCallCode::ConWriteString);
-          builder->addPop();
         },
         "input",
         "1");
@@ -350,7 +322,6 @@ TEST_CASE("Execute float operations", "[vm]") {
           builder->addATanFloat();
           builder->addConvFloatString();
           builder->addPCall(vm::PCallCode::ConWriteString);
-          builder->addPop();
         },
         "input",
         "1");
@@ -364,7 +335,6 @@ TEST_CASE("Execute float operations", "[vm]") {
           builder->addATan2Float();
           builder->addConvFloatString();
           builder->addPCall(vm::PCallCode::ConWriteString);
-          builder->addPop();
         },
         "input",
         "0");
@@ -377,7 +347,6 @@ TEST_CASE("Execute float operations", "[vm]") {
           builder->addNegFloat();
           builder->addConvFloatString();
           builder->addPCall(vm::PCallCode::ConWriteString);
-          builder->addPop();
         },
         "input",
         "-0.1337");
@@ -387,7 +356,6 @@ TEST_CASE("Execute float operations", "[vm]") {
           builder->addNegFloat();
           builder->addConvFloatString();
           builder->addPCall(vm::PCallCode::ConWriteString);
-          builder->addPop();
         },
         "input",
         "-0");
@@ -398,7 +366,6 @@ TEST_CASE("Execute float operations", "[vm]") {
           builder->addNegFloat();
           builder->addConvFloatString();
           builder->addPCall(vm::PCallCode::ConWriteString);
-          builder->addPop();
         },
         "input",
         "0.1337");

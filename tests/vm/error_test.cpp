@@ -13,26 +13,19 @@ TEST_CASE("Runtime errors", "[vm]") {
         ResultCode::InvalidAssembly);
   }
 
-  SECTION("Evaluation stack not empty") {
-    CHECK_EXPR_RESULTCODE(
-        [](backend::Builder* builder) -> void { builder->addLoadLitInt(1); },
-        "input",
-        ResultCode::EvalStackNotEmpty);
-  }
-
-  SECTION("Call stack overflow") {
+  SECTION("Stack overflow") {
     CHECK_PROG_RESULTCODE(
         [](backend::Builder* builder) -> void {
           builder->label("func");
-          builder->addCall("func", false);
+          builder->addCall("func", 0, false);
 
           builder->addEntryPoint("func");
         },
         "input",
-        ResultCode::CallStackOverflow);
+        ResultCode::StackOverflow);
   }
 
-  SECTION("Evaluation stack overflow") {
+  SECTION("Stack overflow") {
     CHECK_EXPR_RESULTCODE(
         [](backend::Builder* builder) -> void {
           builder->label("push1");
@@ -40,20 +33,20 @@ TEST_CASE("Runtime errors", "[vm]") {
           builder->addJump("push1");
         },
         "input",
-        ResultCode::EvalStackOverflow);
+        ResultCode::StackOverflow);
   }
 
-  SECTION("Constants stack overflow") {
+  SECTION("Stack overflow") {
     CHECK_PROG_RESULTCODE(
         [](backend::Builder* builder) -> void {
           builder->label("func");
-          builder->addReserveConsts(10);
-          builder->addCall("func", false);
+          builder->addStackAlloc(10);
+          builder->addCall("func", 0, false);
 
           builder->addEntryPoint("func");
         },
         "input",
-        ResultCode::ConstStackOverflow);
+        ResultCode::StackOverflow);
   }
 }
 

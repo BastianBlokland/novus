@@ -12,15 +12,10 @@ TEST_CASE("Generating assembly for unions", "[backend]") {
         [](backend::Builder* builder) -> void {
           // --- Union equality function start.
           builder->label("ValEq");
-          // Store both unions as consts.
-          builder->addReserveConsts(2);
-          builder->addStoreConst(0);
-          builder->addStoreConst(1);
-
           // Check if both unions have the same type (field 0).
-          builder->addLoadConst(0);
+          builder->addStackLoad(0);
           builder->addLoadStructField(0);
-          builder->addLoadConst(1);
+          builder->addStackLoad(1);
           builder->addLoadStructField(0);
           builder->addCheckEqInt();
           builder->addJumpIf("typeEqual");
@@ -31,14 +26,14 @@ TEST_CASE("Generating assembly for unions", "[backend]") {
 
           builder->label("typeEqual");
           // Check if the union type is int.
-          builder->addLoadConst(0);
+          builder->addStackLoad(0);
           builder->addLoadStructField(0);
           builder->addLoadLitInt(0); // 0 because 'int' is the first type in the union.
           builder->addCheckEqInt();
           builder->addJumpIf("int");
 
           // Check if the union type is float.
-          builder->addLoadConst(0);
+          builder->addStackLoad(0);
           builder->addLoadStructField(0);
           builder->addLoadLitInt(1); // 1 because 'float' is the second type in the union.
           builder->addCheckEqInt();
@@ -49,9 +44,9 @@ TEST_CASE("Generating assembly for unions", "[backend]") {
 
           // If type is int then check if the int value (field 1) is the same.
           builder->label("int");
-          builder->addLoadConst(0);
+          builder->addStackLoad(0);
           builder->addLoadStructField(1);
-          builder->addLoadConst(1);
+          builder->addStackLoad(1);
           builder->addLoadStructField(1);
           builder->addCheckEqInt();
           builder->addJumpIf("valueEqual");
@@ -60,9 +55,9 @@ TEST_CASE("Generating assembly for unions", "[backend]") {
 
           // If type is float then check if the float value (field 1) is the same.
           builder->label("float");
-          builder->addLoadConst(0);
+          builder->addStackLoad(0);
           builder->addLoadStructField(1);
-          builder->addLoadConst(1);
+          builder->addStackLoad(1);
           builder->addLoadStructField(1);
           builder->addCheckEqFloat();
           builder->addJumpIf("valueEqual");
@@ -88,10 +83,9 @@ TEST_CASE("Generating assembly for unions", "[backend]") {
           builder->addMakeStruct(2);
 
           // Call equality function and write the result.
-          builder->addCall("ValEq", false);
+          builder->addCall("ValEq", 2, false);
           builder->addConvBoolString();
           builder->addPCall(vm::PCallCode::ConWriteString);
-          builder->addPop();
           builder->addRet();
           // --- conWrite statement end.
 

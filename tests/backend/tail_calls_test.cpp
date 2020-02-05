@@ -11,29 +11,26 @@ TEST_CASE("Generate assembly for tail calls", "[backend]") {
         "conWrite(string(test(42)))",
         [](backend::Builder* builder) -> void {
           builder->label("test");
-          builder->addReserveConsts(1);
-          builder->addStoreConst(0);
-          builder->addLoadConst(0);
+          builder->addStackLoad(0);
           builder->addLoadLitInt(0);
           builder->addCheckGtInt();
           builder->addJumpIf("true");
 
-          builder->addLoadConst(0);
+          builder->addStackLoad(0);
           builder->addJump("false");
 
           builder->label("true");
           builder->addLoadLitInt(0);
-          builder->addCall("test", true);
+          builder->addCall("test", 1, true);
 
           builder->label("false");
           builder->addRet();
 
           builder->label("prog");
           builder->addLoadLitInt(42);
-          builder->addCall("test", false);
+          builder->addCall("test", 1, false);
           builder->addConvIntString();
           builder->addPCall(vm::PCallCode::ConWriteString);
-          builder->addPop();
           builder->addRet();
 
           builder->addEntryPoint("prog");
@@ -47,7 +44,7 @@ TEST_CASE("Generate assembly for tail calls", "[backend]") {
         "conWrite(string(f2()))",
         [](backend::Builder* builder) -> void {
           builder->label("f2");
-          builder->addCall("f1", true);
+          builder->addCall("f1", 0, true);
           builder->addRet();
 
           builder->label("f1");
@@ -55,10 +52,9 @@ TEST_CASE("Generate assembly for tail calls", "[backend]") {
           builder->addRet();
 
           builder->label("prog");
-          builder->addCall("f2", false);
+          builder->addCall("f2", 0, false);
           builder->addConvIntString();
           builder->addPCall(vm::PCallCode::ConWriteString);
-          builder->addPop();
           builder->addRet();
 
           builder->addEntryPoint("prog");
@@ -72,26 +68,23 @@ TEST_CASE("Generate assembly for tail calls", "[backend]") {
         "conWrite(string(f2()))",
         [](backend::Builder* builder) -> void {
           builder->label("f2");
-          builder->addReserveConsts(1);
+          builder->addStackAlloc(1);
           builder->addLoadLitInt(42);
           builder->addDup();
-          builder->addStoreConst(0);
+          builder->addStackStore(0);
           builder->addPop();
-          builder->addLoadConst(0);
-          builder->addCall("f1", true);
+          builder->addStackLoad(0);
+          builder->addCall("f1", 1, true);
           builder->addRet();
 
           builder->label("f1");
-          builder->addReserveConsts(1);
-          builder->addStoreConst(0);
-          builder->addLoadConst(0);
+          builder->addStackLoad(0);
           builder->addRet();
 
           builder->label("prog");
-          builder->addCall("f2", false);
+          builder->addCall("f2", 0, false);
           builder->addConvIntString();
           builder->addPCall(vm::PCallCode::ConWriteString);
-          builder->addPop();
           builder->addRet();
 
           builder->addEntryPoint("prog");
@@ -105,10 +98,8 @@ TEST_CASE("Generate assembly for tail calls", "[backend]") {
         "conWrite(string(f2(f1)))",
         [](backend::Builder* builder) -> void {
           builder->label("f2");
-          builder->addReserveConsts(1);
-          builder->addStoreConst(0);
-          builder->addLoadConst(0);
-          builder->addCallDyn(true);
+          builder->addStackLoad(0);
+          builder->addCallDyn(0, true);
           builder->addRet();
 
           builder->label("f1");
@@ -117,10 +108,9 @@ TEST_CASE("Generate assembly for tail calls", "[backend]") {
 
           builder->label("prog");
           builder->addLoadLitIp("f1");
-          builder->addCall("f2", false);
+          builder->addCall("f2", 1, false);
           builder->addConvIntString();
           builder->addPCall(vm::PCallCode::ConWriteString);
-          builder->addPop();
           builder->addRet();
 
           builder->addEntryPoint("prog");

@@ -22,6 +22,7 @@ public:
   [[nodiscard]] auto operator[](ConstId id) const -> const ConstDecl&;
 
   [[nodiscard]] auto getCount() const -> unsigned int;
+  [[nodiscard]] auto getLocalCount() const -> unsigned int;
 
   [[nodiscard]] auto begin() const -> iterator;
   [[nodiscard]] auto end() const -> iterator;

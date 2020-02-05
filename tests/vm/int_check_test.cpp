@@ -13,7 +13,6 @@ TEST_CASE("Execute integer checks", "[vm]") {
           builder->addCheckEqInt();
           builder->addConvBoolString();
           builder->addPCall(vm::PCallCode::ConWriteString);
-          builder->addPop();
         },
         "input",
         "false");
@@ -24,7 +23,6 @@ TEST_CASE("Execute integer checks", "[vm]") {
           builder->addCheckEqInt();
           builder->addConvBoolString();
           builder->addPCall(vm::PCallCode::ConWriteString);
-          builder->addPop();
         },
         "input",
         "true");
@@ -38,7 +36,6 @@ TEST_CASE("Execute integer checks", "[vm]") {
           builder->addCheckGtInt();
           builder->addConvBoolString();
           builder->addPCall(vm::PCallCode::ConWriteString);
-          builder->addPop();
         },
         "input",
         "false");
@@ -49,7 +46,6 @@ TEST_CASE("Execute integer checks", "[vm]") {
           builder->addCheckGtInt();
           builder->addConvBoolString();
           builder->addPCall(vm::PCallCode::ConWriteString);
-          builder->addPop();
         },
         "input",
         "true");
@@ -63,7 +59,6 @@ TEST_CASE("Execute integer checks", "[vm]") {
           builder->addCheckLeInt();
           builder->addConvBoolString();
           builder->addPCall(vm::PCallCode::ConWriteString);
-          builder->addPop();
         },
         "input",
         "false");
@@ -74,7 +69,6 @@ TEST_CASE("Execute integer checks", "[vm]") {
           builder->addCheckLeInt();
           builder->addConvBoolString();
           builder->addPCall(vm::PCallCode::ConWriteString);
-          builder->addPop();
         },
         "input",
         "true");

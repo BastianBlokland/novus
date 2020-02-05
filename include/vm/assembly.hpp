@@ -33,10 +33,8 @@ public:
   [[nodiscard]] auto getLitString(uint32_t id) const noexcept -> const std::string&;
   [[nodiscard]] auto getInstructions() const noexcept -> const std::vector<uint8_t>&;
   [[nodiscard]] auto getIp(uint32_t ipOffset) const noexcept -> const uint8_t*;
-
-  [[nodiscard]] auto readInt32(uint32_t ipOffset) const noexcept -> int32_t;
-  [[nodiscard]] auto readUInt32(uint32_t ipOffset) const noexcept -> uint32_t;
-  [[nodiscard]] auto readFloat(uint32_t ipOffset) const noexcept -> float;
+  [[nodiscard]] auto getOffset(const uint8_t* ip) const noexcept -> uint32_t;
+  [[nodiscard]] auto isEnd(const uint8_t* ip) const noexcept -> bool;
 
 private:
   std::vector<std::string> m_litStrings;

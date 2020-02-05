@@ -5,29 +5,35 @@
 
 namespace backend::dasm {
 
+template <typename Type>
+inline auto readAsm(const uint8_t** ip) {
+  const Type v = *reinterpret_cast<const Type*>(*ip); // NOLINT: Reinterpret cast
+  *ip += sizeof(Type);
+  return v;
+}
+
 auto disassembleInstructions(const vm::Assembly& assembly) -> std::vector<Instruction> {
   auto result = std::vector<Instruction>{};
 
-  const auto& instrData = assembly.getInstructions();
-  for (auto ipOffset = 0U; ipOffset < instrData.size(); ++ipOffset) {
-    auto opCode = static_cast<vm::OpCode>(instrData[ipOffset]);
+  for (auto* ip = assembly.getIp(0); !assembly.isEnd(ip);) {
+    const auto offset = assembly.getOffset(ip);
+    const auto opCode = readAsm<vm::OpCode>(&ip);
     switch (opCode) {
     case vm::OpCode::LoadLitInt:
-      result.push_back(Instruction(opCode, ipOffset, {assembly.readInt32(ipOffset + 1)}));
-      ipOffset += 4;
+      result.push_back(Instruction(opCode, offset, {readAsm<int32_t>(&ip)}));
       continue;
     case vm::OpCode::LoadLitFloat:
-      result.push_back(Instruction(opCode, ipOffset, {assembly.readFloat(ipOffset + 1)}));
-      ipOffset += 4;
+      result.push_back(Instruction(opCode, offset, {readAsm<float>(&ip)}));
       continue;
     case vm::OpCode::LoadLitIntSmall:
-    case vm::OpCode::ReserveConsts:
-    case vm::OpCode::LoadConst:
-    case vm::OpCode::StoreConst:
+    case vm::OpCode::StackAlloc:
+    case vm::OpCode::StackLoad:
+    case vm::OpCode::StackStore:
     case vm::OpCode::MakeStruct:
     case vm::OpCode::LoadStructField:
-      result.push_back(Instruction(opCode, ipOffset, {instrData[ipOffset + 1]}));
-      ++ipOffset;
+    case vm::OpCode::CallDyn:
+    case vm::OpCode::CallDynTail:
+      result.push_back(Instruction(opCode, offset, {readAsm<uint8_t>(&ip)}));
       continue;
     case vm::OpCode::LoadLitInt0:
     case vm::OpCode::LoadLitInt1:
@@ -78,27 +84,25 @@ auto disassembleInstructions(const vm::Assembly& assembly) -> std::vector<Instru
     case vm::OpCode::ConvFloatString:
     case vm::OpCode::ConvCharString:
     case vm::OpCode::ConvIntChar:
-    case vm::OpCode::CallDyn:
-    case vm::OpCode::CallDynTail:
     case vm::OpCode::Ret:
     case vm::OpCode::Fail:
     case vm::OpCode::Dup:
     case vm::OpCode::Pop:
-      result.push_back(Instruction(opCode, ipOffset, {}));
+      result.push_back(Instruction(opCode, offset, {}));
       continue;
     case vm::OpCode::LoadLitString:
     case vm::OpCode::LoadLitIp:
     case vm::OpCode::Jump:
     case vm::OpCode::JumpIf:
+      result.push_back(Instruction(opCode, offset, {readAsm<uint32_t>(&ip)}));
+      continue;
     case vm::OpCode::Call:
     case vm::OpCode::CallTail:
-      result.push_back(Instruction(opCode, ipOffset, {assembly.readUInt32(ipOffset + 1)}));
-      ipOffset += 4;
+      result.push_back(
+          Instruction(opCode, offset, {readAsm<uint8_t>(&ip), readAsm<uint32_t>(&ip)}));
       continue;
     case vm::OpCode::PCall:
-      result.push_back(
-          Instruction(opCode, ipOffset, {static_cast<vm::PCallCode>(instrData[ipOffset + 1])}));
-      ++ipOffset;
+      result.push_back(Instruction(opCode, offset, {readAsm<vm::PCallCode>(&ip)}));
       continue;
     }
     throw std::logic_error{"Bad assembly"};

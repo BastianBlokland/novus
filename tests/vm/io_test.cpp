@@ -11,15 +11,12 @@ TEST_CASE("Execute input and output", "[vm]") {
         [](backend::Builder* builder) -> void {
           builder->addLoadLitInt('a');
           builder->addPCall(vm::PCallCode::ConWriteChar);
-          builder->addPop();
 
           builder->addLoadLitInt('b');
           builder->addPCall(vm::PCallCode::ConWriteChar);
-          builder->addPop();
 
           builder->addLoadLitInt('c');
           builder->addPCall(vm::PCallCode::ConWriteChar);
-          builder->addPop();
         },
         "input",
         "a",
@@ -32,22 +29,18 @@ TEST_CASE("Execute input and output", "[vm]") {
         [](backend::Builder* builder) -> void {
           builder->addLoadLitString("hello world");
           builder->addPCall(vm::PCallCode::ConWriteString);
-          builder->addPop();
 
           builder->addLoadLitInt(0);
           builder->addConvBoolString();
           builder->addPCall(vm::PCallCode::ConWriteString);
-          builder->addPop();
 
           builder->addLoadLitInt(1);
           builder->addConvBoolString();
           builder->addPCall(vm::PCallCode::ConWriteString);
-          builder->addPop();
 
           builder->addLoadLitInt(-42);
           builder->addConvIntString();
           builder->addPCall(vm::PCallCode::ConWriteString);
-          builder->addPop();
         },
         "input",
         "hello world",
@@ -61,11 +54,9 @@ TEST_CASE("Execute input and output", "[vm]") {
         [](backend::Builder* builder) -> void {
           builder->addLoadLitString("hello");
           builder->addPCall(vm::PCallCode::ConWriteStringLine);
-          builder->addPop();
 
           builder->addLoadLitString("world");
           builder->addPCall(vm::PCallCode::ConWriteStringLine);
-          builder->addPop();
         },
         "input",
         "hello",
@@ -94,7 +85,6 @@ TEST_CASE("Execute input and output", "[vm]") {
           builder->addJump("entry");
 
           builder->label("end");
-          builder->addPop();
           builder->addPop();
           builder->addRet();
         },
@@ -125,7 +115,6 @@ TEST_CASE("Execute input and output", "[vm]") {
 
           builder->label("end");
           builder->addPop();
-          builder->addPop();
           builder->addRet();
         },
         "John Doe\nJane Doe\n",
@@ -149,7 +138,6 @@ TEST_CASE("Execute input and output", "[vm]") {
           builder->addLoadLitString("var3");
           builder->addPCall(vm::PCallCode::GetEnvVar);
           builder->addPCall(vm::PCallCode::ConWriteString);
-          builder->addPop();
 
           builder->addRet();
         },
@@ -167,28 +155,24 @@ TEST_CASE("Execute input and output", "[vm]") {
           builder->addPCall(vm::PCallCode::GetEnvArgCount);
           builder->addConvIntString();
           builder->addPCall(vm::PCallCode::ConWriteString);
-          builder->addPop();
           builder->addRet();
 
           builder->label("writeArg1");
           builder->addLoadLitInt(0);
           builder->addPCall(vm::PCallCode::GetEnvArg);
           builder->addPCall(vm::PCallCode::ConWriteString);
-          builder->addPop();
           builder->addRet();
 
           builder->label("writeArg3");
           builder->addLoadLitInt(2);
           builder->addPCall(vm::PCallCode::GetEnvArg);
           builder->addPCall(vm::PCallCode::ConWriteString);
-          builder->addPop();
           builder->addRet();
 
           builder->label("writeArg4");
           builder->addLoadLitInt(3);
           builder->addPCall(vm::PCallCode::GetEnvArg);
           builder->addPCall(vm::PCallCode::ConWriteString);
-          builder->addPop();
           builder->addRet();
 
           builder->addEntryPoint("writeArgCount");
@@ -213,7 +197,6 @@ TEST_CASE("Execute input and output", "[vm]") {
           // Its hard to test sleep, but at least this tests if the application exits cleanly.
           builder->addLoadLitInt(0); // Sleep for 0 milliseconds.
           builder->addPCall(vm::PCallCode::Sleep);
-          builder->addPop();
 
           builder->addRet();
         },
@@ -229,7 +212,6 @@ TEST_CASE("Execute input and output", "[vm]") {
           builder->addLoadLitInt(0);
           builder->addLoadLitString("Fails");
           builder->addPCall(vm::PCallCode::Assert);
-          builder->addPop();
 
           builder->addRet();
         },
@@ -243,7 +225,6 @@ TEST_CASE("Execute input and output", "[vm]") {
           builder->addLoadLitInt(1);
           builder->addLoadLitString("Does not fail");
           builder->addPCall(vm::PCallCode::Assert);
-          builder->addPop();
 
           builder->addRet();
         },

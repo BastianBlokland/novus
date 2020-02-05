@@ -12,15 +12,10 @@ TEST_CASE("Generating assembly for structs", "[backend]") {
         [](backend::Builder* builder) -> void {
           // --- Struct equality function start.
           builder->label("UserEq");
-          // Store both structs as consts.
-          builder->addReserveConsts(2);
-          builder->addStoreConst(0);
-          builder->addStoreConst(1);
-
           // Check if field 0 is the same.
-          builder->addLoadConst(0);
+          builder->addStackLoad(0);
           builder->addLoadStructField(0);
-          builder->addLoadConst(1);
+          builder->addStackLoad(1);
           builder->addLoadStructField(0);
           builder->addCheckEqString();
 
@@ -31,9 +26,9 @@ TEST_CASE("Generating assembly for structs", "[backend]") {
 
           // Check if field 1 is the same.
           builder->label("field0 equal");
-          builder->addLoadConst(0);
+          builder->addStackLoad(0);
           builder->addLoadStructField(1);
-          builder->addLoadConst(1);
+          builder->addStackLoad(1);
           builder->addLoadStructField(1);
           builder->addCheckEqInt();
 
@@ -61,10 +56,9 @@ TEST_CASE("Generating assembly for structs", "[backend]") {
           builder->addMakeStruct(2);
 
           // Call the equality function and write the result.
-          builder->addCall("UserEq", false);
+          builder->addCall("UserEq", 2, false);
           builder->addConvBoolString();
           builder->addPCall(vm::PCallCode::ConWriteString);
-          builder->addPop();
           builder->addRet();
           // --- conWrite statement end.
 
@@ -79,8 +73,7 @@ TEST_CASE("Generating assembly for structs", "[backend]") {
         [](backend::Builder* builder) -> void {
           // --- Struct equality function start.
           builder->label("UserEq");
-          builder->addPop();
-          builder->addPop();
+
           builder->addLoadLitInt(1); // Empty structs are always equal.
           builder->addRet();
           // --- Struct equality function end.
@@ -94,10 +87,9 @@ TEST_CASE("Generating assembly for structs", "[backend]") {
           builder->addLoadLitInt(0); // Empty struct is represented by '0'.
 
           // Call the equality function and write the result.
-          builder->addCall("UserEq", false);
+          builder->addCall("UserEq", 2, false);
           builder->addConvBoolString();
           builder->addPCall(vm::PCallCode::ConWriteString);
-          builder->addPop();
           builder->addRet();
           // --- conWrite statement end.
 
@@ -112,6 +104,8 @@ TEST_CASE("Generating assembly for structs", "[backend]") {
           [](backend::Builder* builder) -> void {
             // --- Struct equality function start.
             builder->label("UserEq");
+            builder->addStackLoad(0);
+            builder->addStackLoad(1);
             builder->addCheckEqInt(); // Check the field itself.
             builder->addRet();
             // --- Struct equality function end.
@@ -125,10 +119,9 @@ TEST_CASE("Generating assembly for structs", "[backend]") {
             builder->addLoadLitInt(1337); // Struct with 1 field is represented by the field itself.
 
             // Call the equality function and write the result.
-            builder->addCall("UserEq", false);
+            builder->addCall("UserEq", 2, false);
             builder->addConvBoolString();
             builder->addPCall(vm::PCallCode::ConWriteString);
-            builder->addPop();
             builder->addRet();
             // --- conWrite statement 1 end.
 
@@ -139,7 +132,6 @@ TEST_CASE("Generating assembly for structs", "[backend]") {
 
             builder->addConvIntString();
             builder->addPCall(vm::PCallCode::ConWriteString);
-            builder->addPop();
             builder->addRet();
             // --- conWrite statement 2 end.
 

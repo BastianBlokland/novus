@@ -13,6 +13,8 @@ class Value final {
   friend auto intValue(int32_t val) noexcept -> Value;
   friend auto floatValue(float val) noexcept -> Value;
   friend auto refValue(Ref* ref) noexcept -> Value;
+  template <typename Type>
+  friend auto rawPtrValue(Type* ptr) noexcept -> Value;
 
   static_assert(
       sizeof(uintptr_t) <= sizeof(uint64_t)); // Assert we have enough space for a pointer.
@@ -51,6 +53,12 @@ public:
     return reinterpret_cast<Ref*>(m_raw & valMask); // NOLINT: Reinterpret cast
   }
 
+  template <typename Type>
+  [[nodiscard]] inline auto getRawPtr() const noexcept -> Type* {
+    assert(!isRef());
+    return reinterpret_cast<Type*>(m_raw); // NOLINT: Reinterpret cast
+  }
+
 private:
   uint64_t m_raw;
 
@@ -80,6 +88,18 @@ private:
 
   // Then expand to 64 bit and tag it.
   return Value{static_cast<uint64_t>(rawRef) | refTag};
+}
+
+template <typename Type>
+[[nodiscard]] inline auto rawPtrValue(Type* ptr) noexcept -> Value {
+  uintptr_t ptrVal = reinterpret_cast<uintptr_t>(ptr); // NOLINT: Reinterpret cast
+
+  // Assert that the least significant bit is 0, reason is we use that bit to signify that this
+  // value is a vm 'ref'.
+  static_assert(alignof(Type) > 1);
+  assert((ptrVal & refTag) == 0U);
+
+  return Value(ptrVal);
 }
 
 } // namespace vm::internal

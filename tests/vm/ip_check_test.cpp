@@ -15,7 +15,6 @@ TEST_CASE("Execute instruction pointer checks", "[vm]") {
           builder->addCheckEqIp();
           builder->addConvBoolString();
           builder->addPCall(vm::PCallCode::ConWriteString);
-          builder->addPop();
         },
         "input",
         "true");
@@ -31,7 +30,6 @@ TEST_CASE("Execute instruction pointer checks", "[vm]") {
           builder->label("label2");
           builder->addConvBoolString();
           builder->addPCall(vm::PCallCode::ConWriteString);
-          builder->addPop();
         },
         "input",
         "false");
@@ -45,7 +43,6 @@ TEST_CASE("Execute instruction pointer checks", "[vm]") {
           builder->addCheckEqCallDynTgt();
           builder->addConvBoolString();
           builder->addPCall(vm::PCallCode::ConWriteString);
-          builder->addPop();
         },
         "input",
         "true");
@@ -61,7 +58,6 @@ TEST_CASE("Execute instruction pointer checks", "[vm]") {
           builder->label("label2");
           builder->addConvBoolString();
           builder->addPCall(vm::PCallCode::ConWriteString);
-          builder->addPop();
         },
         "input",
         "false");
@@ -84,7 +80,6 @@ TEST_CASE("Execute instruction pointer checks", "[vm]") {
 
           builder->addConvBoolString();
           builder->addPCall(vm::PCallCode::ConWriteString);
-          builder->addPop();
         },
         "input",
         "true");
@@ -108,7 +103,6 @@ TEST_CASE("Execute instruction pointer checks", "[vm]") {
           builder->label("label2");
           builder->addConvBoolString();
           builder->addPCall(vm::PCallCode::ConWriteString);
-          builder->addPop();
         },
         "input",
         "false");
@@ -128,7 +122,6 @@ TEST_CASE("Execute instruction pointer checks", "[vm]") {
 
           builder->addConvBoolString();
           builder->addPCall(vm::PCallCode::ConWriteString);
-          builder->addPop();
         },
         "input",
         "true");
@@ -149,7 +142,6 @@ TEST_CASE("Execute instruction pointer checks", "[vm]") {
           builder->label("label2");
           builder->addConvBoolString();
           builder->addPCall(vm::PCallCode::ConWriteString);
-          builder->addPop();
         },
         "input",
         "false");

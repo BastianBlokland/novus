@@ -56,6 +56,7 @@ auto printInstructions(const vm::Assembly& assembly) -> void {
               << instr.getOp();
     for (const auto& arg : instr.getArgs()) {
       backend::dasm::operator<<(std::cout, arg);
+      std::cout << ' ';
     }
     std::cout << '\n';
   }

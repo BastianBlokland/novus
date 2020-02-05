@@ -12,12 +12,13 @@
 namespace backend {
 
 static auto reserveConsts(Builder* builder, const prog::sym::ConstDeclTable& constTable) {
-  const auto constCount = constTable.getCount();
+  // Allocate space for the locals, note: space for inputs is automatically allocated by the vm.
+  const auto constCount = constTable.getLocalCount();
   if (constCount > 0) {
     if (constCount > std::numeric_limits<uint8_t>::max()) {
       throw std::logic_error{"More then 256 constants in one scope are not supported"};
     }
-    builder->addReserveConsts(static_cast<uint8_t>(constCount));
+    builder->addStackAlloc(static_cast<uint8_t>(constCount));
   }
 }
 
@@ -25,13 +26,6 @@ static auto
 generateFunc(Builder* builder, const prog::Program& program, const prog::sym::FuncDef& func) {
   builder->label(internal::getLabel(func.getId()));
   reserveConsts(builder, func.getConsts());
-
-  const auto inputs = func.getConsts().getInputs();
-  // Its important to read the constants from right to left as that's how they will be on the stack.
-  for (auto itr = inputs.rbegin(); itr != inputs.rend(); ++itr) {
-    const auto constId = internal::getConstId(*itr);
-    builder->addStoreConst(constId);
-  }
 
   // Generate the function body.
   auto genExpr = internal::GenExpr{program, builder, true};
@@ -52,7 +46,6 @@ generateExecStmt(Builder* builder, const prog::Program& program, const prog::sym
   auto genExpr = internal::GenExpr{program, builder, false};
   exec.getExpr().accept(&genExpr);
 
-  builder->addPop(); // Ignore the result.
   builder->addRet();
 }
 
