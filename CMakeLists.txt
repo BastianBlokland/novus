@@ -23,12 +23,17 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 # reason is that 'mingw64-w64' does not respect that file.
 set(CMAKE_CXX_USE_RESPONSE_FILE_FOR_INCLUDES OFF)
 
-# Use the clang-tidy linter if installed.
-find_program(CLANG_TIDY_BIN NAMES "clang-tidy")
-if(CLANG_TIDY_BIN)
-  set(CMAKE_CXX_CLANG_TIDY ${CLANG_TIDY_BIN})
-  message("Enabled clang-tidy.")
-endif()
+string(TOLOWER ${CMAKE_BUILD_TYPE} CMAKE_BUILD_TYPE_LOWER)
+IF(CMAKE_BUILD_TYPE_LOWER STREQUAL "debug")
+  message("Debug build.")
+
+  # Use the clang-tidy linter if installed.
+  find_program(CLANG_TIDY_BIN NAMES "clang-tidy")
+  if(CLANG_TIDY_BIN)
+    set(CMAKE_CXX_CLANG_TIDY ${CLANG_TIDY_BIN})
+    message("Enabled clang-tidy.")
+  endif()
+ENDIF()
 
 # Add child cmake files.
 add_subdirectory(src)
