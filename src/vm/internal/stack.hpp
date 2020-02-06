@@ -33,12 +33,12 @@ public:
   }
 
   inline auto rewindToNext(Value* next) noexcept -> void {
-    assert(next <= getNext()); // Not allows to go forwards.
+    assert(next <= getNext()); // Not allowed to go forwards.
     m_stackNext = next;
   }
 
   inline auto rewindToTop(Value* top) noexcept -> void {
-    assert(top <= getTop()); // Not allows to go forwards.
+    assert(top <= getTop()); // Not allowed to go forwards.
     m_stackNext = top + 1;
   }
 
@@ -49,24 +49,19 @@ public:
   }
 
   [[nodiscard]] inline auto push(Value value) noexcept -> bool {
-    if (m_stackNext == m_stackMax) {
-      return false;
-    }
-    *m_stackNext = value;
-    ++m_stackNext;
-    return true;
+    *m_stackNext++ = value;
+    return m_stackNext < m_stackMax;
   }
 
   inline auto peek() noexcept -> Value { return *getTop(); }
 
   inline auto pop() noexcept -> Value {
     assert(m_stackNext - m_stack.data() != 0);
-    m_stackNext--;
-    return *m_stackNext;
+    return *--m_stackNext;
   }
 
 private:
-  std::array<Value, Capacity> m_stack;
+  std::array<Value, Capacity + 1> m_stack; // + 1 to be able to delay the bounds check.
   Value* m_stackNext;
   Value* m_stackMax;
 };
