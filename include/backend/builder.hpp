@@ -27,9 +27,9 @@ public:
   auto addLoadLitString(const std::string& val) -> void;
   auto addLoadLitIp(std::string label) -> void;
 
-  auto addReserveConsts(uint8_t amount) -> void;
-  auto addStoreConst(uint8_t constId) -> void;
-  auto addLoadConst(uint8_t constId) -> void;
+  auto addStackAlloc(uint8_t amount) -> void;
+  auto addStackStore(uint8_t constId) -> void;
+  auto addStackLoad(uint8_t constId) -> void;
 
   auto addAddInt() -> void;
   auto addAddFloat() -> void;
@@ -88,8 +88,8 @@ public:
   auto addJump(std::string label) -> void;
   auto addJumpIf(std::string label) -> void;
 
-  auto addCall(std::string label, bool tail) -> void;
-  auto addCallDyn(bool tail) -> void;
+  auto addCall(std::string label, uint8_t argCount, bool tail) -> void;
+  auto addCallDyn(uint8_t argCount, bool tail) -> void;
   auto addPCall(vm::PCallCode code) -> void;
   auto addRet() -> void;
 

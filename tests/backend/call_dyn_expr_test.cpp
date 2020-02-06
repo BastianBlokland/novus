@@ -12,30 +12,26 @@ TEST_CASE("Generate assembly for call dynamic expressions", "[backend]") {
         "conWrite(op = test; op(42, 1337).string())",
         [](backend::Builder* builder) -> void {
           builder->label("test");
-          builder->addReserveConsts(2);
-          builder->addStoreConst(1);
-          builder->addStoreConst(0);
-          builder->addLoadConst(0);
-          builder->addLoadConst(1);
+          builder->addStackLoad(0);
+          builder->addStackLoad(1);
           builder->addAddInt();
           builder->addRet();
 
           builder->label("prog");
-          builder->addReserveConsts(1);
+          builder->addStackAlloc(1);
 
           builder->addLoadLitIp("test");
           builder->addDup();
-          builder->addStoreConst(0);
+          builder->addStackStore(0);
           builder->addPop();
 
           builder->addLoadLitInt(42);
           builder->addLoadLitInt(1337);
-          builder->addLoadConst(0);
-          builder->addCallDyn(false);
+          builder->addStackLoad(0);
+          builder->addCallDyn(2, false);
 
           builder->addConvIntString();
           builder->addPCall(vm::PCallCode::ConWriteString);
-          builder->addPop();
           builder->addRet();
 
           builder->addEntryPoint("prog");
@@ -46,29 +42,26 @@ TEST_CASE("Generate assembly for call dynamic expressions", "[backend]") {
     CHECK_PROG(
         "conWrite(i = 1337; (lambda () 42 + i)().string())", [](backend::Builder* builder) -> void {
           builder->label("anon func");
-          builder->addReserveConsts(1);
-          builder->addStoreConst(0);
           builder->addLoadLitInt(42);
-          builder->addLoadConst(0);
+          builder->addStackLoad(0);
           builder->addAddInt();
           builder->addRet();
 
           builder->label("prog");
-          builder->addReserveConsts(1);
+          builder->addStackAlloc(1);
 
           builder->addLoadLitInt(1337);
           builder->addDup();
-          builder->addStoreConst(0);
+          builder->addStackStore(0);
           builder->addPop();
 
-          builder->addLoadConst(0);
+          builder->addStackLoad(0);
           builder->addLoadLitIp("anon func");
           builder->addMakeStruct(2);
 
-          builder->addCallDyn(false);
+          builder->addCallDyn(0, false);
           builder->addConvIntString();
           builder->addPCall(vm::PCallCode::ConWriteString);
-          builder->addPop();
           builder->addRet();
 
           builder->addEntryPoint("prog");
@@ -80,32 +73,28 @@ TEST_CASE("Generate assembly for call dynamic expressions", "[backend]") {
         "conWrite(i = 1337; (lambda (float f) f + i)(.1).string())",
         [](backend::Builder* builder) -> void {
           builder->label("anon func");
-          builder->addReserveConsts(2);
-          builder->addStoreConst(1);
-          builder->addStoreConst(0);
-          builder->addLoadConst(0);
-          builder->addLoadConst(1);
+          builder->addStackLoad(0);
+          builder->addStackLoad(1);
           builder->addConvIntFloat();
           builder->addAddFloat();
           builder->addRet();
 
           builder->label("prog");
-          builder->addReserveConsts(1);
+          builder->addStackAlloc(1);
 
           builder->addLoadLitInt(1337);
           builder->addDup();
-          builder->addStoreConst(0);
+          builder->addStackStore(0);
           builder->addPop();
 
           builder->addLoadLitFloat(.1F); // NOLINT: Magic numbers
-          builder->addLoadConst(0);
+          builder->addStackLoad(0);
           builder->addLoadLitIp("anon func");
           builder->addMakeStruct(2);
 
-          builder->addCallDyn(false);
+          builder->addCallDyn(1, false);
           builder->addConvFloatString();
           builder->addPCall(vm::PCallCode::ConWriteString);
-          builder->addPop();
           builder->addRet();
 
           builder->addEntryPoint("prog");

@@ -1,8 +1,8 @@
 #pragma once
 #include "backend/builder.hpp"
 #include "catch2/catch.hpp"
-#include "vm/executor.hpp"
 #include "vm/platform/memory_interface.hpp"
+#include "vm/vm.hpp"
 #include <functional>
 
 namespace vm {

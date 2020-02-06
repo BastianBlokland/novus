@@ -50,18 +50,18 @@ auto Builder::addLoadLitIp(std::string label) -> void {
   writeIpOffset(std::move(label));
 }
 
-auto Builder::addReserveConsts(uint8_t amount) -> void {
-  writeOpCode(vm::OpCode::ReserveConsts);
+auto Builder::addStackAlloc(uint8_t amount) -> void {
+  writeOpCode(vm::OpCode::StackAlloc);
   writeUInt8(amount);
 }
 
-auto Builder::addStoreConst(uint8_t constId) -> void {
-  writeOpCode(vm::OpCode::StoreConst);
+auto Builder::addStackStore(uint8_t constId) -> void {
+  writeOpCode(vm::OpCode::StackStore);
   writeUInt8(constId);
 }
 
-auto Builder::addLoadConst(uint8_t constId) -> void {
-  writeOpCode(vm::OpCode::LoadConst);
+auto Builder::addStackLoad(uint8_t constId) -> void {
+  writeOpCode(vm::OpCode::StackLoad);
   writeUInt8(constId);
 }
 
@@ -194,13 +194,15 @@ auto Builder::addJumpIf(std::string label) -> void {
   writeIpOffset(std::move(label));
 }
 
-auto Builder::addCall(std::string label, bool tail) -> void {
+auto Builder::addCall(std::string label, uint8_t argCount, bool tail) -> void {
   writeOpCode(tail ? vm::OpCode::CallTail : vm::OpCode::Call);
+  writeUInt8(argCount);
   writeIpOffset(std::move(label));
 }
 
-auto Builder::addCallDyn(bool tail) -> void {
+auto Builder::addCallDyn(uint8_t argCount, bool tail) -> void {
   writeOpCode(tail ? vm::OpCode::CallDynTail : vm::OpCode::CallDyn);
+  writeUInt8(argCount);
 }
 
 auto Builder::addPCall(vm::PCallCode code) -> void {

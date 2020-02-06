@@ -1,0 +1,74 @@
+#pragma once
+#include "internal/value.hpp"
+#include "vm/result_code.hpp"
+#include <array>
+#include <cassert>
+
+namespace vm::internal {
+
+template <unsigned int Capacity>
+class Stack final {
+public:
+  Stack() noexcept :
+      m_stack{}, m_stackNext{m_stack.data()}, m_stackMax{m_stack.data() + Capacity} {}
+  Stack(const Stack& rhs) = delete;
+  Stack(Stack&& rhs)      = delete;
+  ~Stack() noexcept       = default;
+
+  auto operator=(const Stack& rhs) -> Stack& = delete;
+  auto operator=(Stack&& rhs) -> Stack& = delete;
+
+  [[nodiscard]] inline auto getBottom() noexcept -> Value* { return m_stack.data(); }
+
+  [[nodiscard]] inline auto getTop() const noexcept -> Value* { return m_stackNext - 1; }
+
+  [[nodiscard]] inline auto getNext() const noexcept -> Value* { return m_stackNext; }
+
+  [[nodiscard]] inline auto isEmpty() const noexcept -> bool {
+    return m_stackNext == m_stack.data();
+  }
+
+  [[nodiscard]] inline auto getSize() const noexcept -> unsigned int {
+    return m_stackNext - m_stack.data();
+  }
+
+  inline auto rewindToNext(Value* next) noexcept -> void {
+    assert(next <= getNext()); // Not allows to go forwards.
+    m_stackNext = next;
+  }
+
+  inline auto rewindToTop(Value* top) noexcept -> void {
+    assert(top <= getTop()); // Not allows to go forwards.
+    m_stackNext = top + 1;
+  }
+
+  [[nodiscard]] inline auto alloc(unsigned int amount) noexcept -> bool {
+    assert(amount != 0);
+    m_stackNext += amount;
+    return m_stackNext < m_stackMax;
+  }
+
+  [[nodiscard]] inline auto push(Value value) noexcept -> bool {
+    if (m_stackNext == m_stackMax) {
+      return false;
+    }
+    *m_stackNext = value;
+    ++m_stackNext;
+    return true;
+  }
+
+  inline auto peek() noexcept -> Value { return *getTop(); }
+
+  inline auto pop() noexcept -> Value {
+    assert(m_stackNext - m_stack.data() != 0);
+    m_stackNext--;
+    return *m_stackNext;
+  }
+
+private:
+  std::array<Value, Capacity> m_stack;
+  Value* m_stackNext;
+  Value* m_stackMax;
+};
+
+} // namespace vm::internal

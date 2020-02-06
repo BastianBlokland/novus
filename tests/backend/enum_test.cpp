@@ -18,7 +18,6 @@ TEST_CASE("Generating assembly for enums", "[backend]") {
 
           builder->addConvBoolString();
           builder->addPCall(vm::PCallCode::ConWriteString);
-          builder->addPop();
           builder->addRet();
           // --- conWite statement end.
 
@@ -42,7 +41,6 @@ TEST_CASE("Generating assembly for enums", "[backend]") {
 
           builder->addConvBoolString();
           builder->addPCall(vm::PCallCode::ConWriteString);
-          builder->addPop();
           builder->addRet();
           // --- conWite statement end.
 
@@ -63,7 +61,6 @@ TEST_CASE("Generating assembly for enums", "[backend]") {
 
           builder->addConvBoolString();
           builder->addPCall(vm::PCallCode::ConWriteString);
-          builder->addPop();
           builder->addRet();
           // --- conWite statement end.
 

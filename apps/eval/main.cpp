@@ -2,9 +2,9 @@
 #include "frontend/analysis.hpp"
 #include "frontend/source.hpp"
 #include "rang.hpp"
-#include "vm/executor.hpp"
 #include "vm/platform/terminal_interface.hpp"
 #include "vm/result_code.hpp"
+#include "vm/vm.hpp"
 #include <filesystem>
 #include <fstream>
 #include <system_error>

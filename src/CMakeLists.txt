@@ -187,13 +187,10 @@ target_include_directories(backend PRIVATE backend)
 # Virtual Machine.
 add_library(vm STATIC
   vm/internal/allocator.cpp
-  vm/internal/call_stack.cpp
-  vm/internal/const_stack.cpp
-  vm/internal/exec_scope.cpp
-  vm/internal/string_utilities.cpp
+  vm/internal/executor.cpp
   vm/platform/memory_interface.cpp
   vm/assembly.cpp
-  vm/executor.cpp
+  vm/vm.cpp
   vm/op_code.cpp
   vm/pcall_code.cpp
   vm/result_code.cpp)

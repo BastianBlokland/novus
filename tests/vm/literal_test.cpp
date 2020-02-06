@@ -11,7 +11,6 @@ TEST_CASE("Execute literals", "[vm]") {
           builder->addLoadLitInt(42);
           builder->addConvIntString();
           builder->addPCall(vm::PCallCode::ConWriteString);
-          builder->addPop();
         },
         "input",
         "42");
@@ -20,7 +19,6 @@ TEST_CASE("Execute literals", "[vm]") {
           builder->addLoadLitInt(-42);
           builder->addConvIntString();
           builder->addPCall(vm::PCallCode::ConWriteString);
-          builder->addPop();
         },
         "input",
         "-42");
@@ -32,7 +30,6 @@ TEST_CASE("Execute literals", "[vm]") {
           builder->addLoadLitFloat(0.1337F); // NOLINT: Magic numbers
           builder->addConvFloatString();
           builder->addPCall(vm::PCallCode::ConWriteString);
-          builder->addPop();
         },
         "input",
         "0.1337");
@@ -41,7 +38,6 @@ TEST_CASE("Execute literals", "[vm]") {
           builder->addLoadLitFloat(-0.1337F); // NOLINT: Magic numbers
           builder->addConvFloatString();
           builder->addPCall(vm::PCallCode::ConWriteString);
-          builder->addPop();
         },
         "input",
         "-0.1337");
@@ -72,7 +68,6 @@ TEST_CASE("Execute literals", "[vm]") {
 
           builder->addLoadLitString("!");
           builder->addPCall(vm::PCallCode::ConWriteString);
-          builder->addPop();
         },
         "input",
         "",

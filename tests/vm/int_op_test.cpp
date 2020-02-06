@@ -14,7 +14,6 @@ TEST_CASE("Execute integer operations", "[vm]") {
           builder->addAddInt();
           builder->addConvIntString();
           builder->addPCall(vm::PCallCode::ConWriteString);
-          builder->addPop();
         },
         "input",
         "3");
@@ -25,7 +24,6 @@ TEST_CASE("Execute integer operations", "[vm]") {
           builder->addAddInt();
           builder->addConvIntString();
           builder->addPCall(vm::PCallCode::ConWriteString);
-          builder->addPop();
         },
         "input",
         "-2147483648");
@@ -39,7 +37,6 @@ TEST_CASE("Execute integer operations", "[vm]") {
           builder->addSubInt();
           builder->addConvIntString();
           builder->addPCall(vm::PCallCode::ConWriteString);
-          builder->addPop();
         },
         "input",
         "5");
@@ -50,7 +47,6 @@ TEST_CASE("Execute integer operations", "[vm]") {
           builder->addSubInt();
           builder->addConvIntString();
           builder->addPCall(vm::PCallCode::ConWriteString);
-          builder->addPop();
         },
         "input",
         "-10");
@@ -64,7 +60,6 @@ TEST_CASE("Execute integer operations", "[vm]") {
           builder->addMulInt();
           builder->addConvIntString();
           builder->addPCall(vm::PCallCode::ConWriteString);
-          builder->addPop();
         },
         "input",
         "15");
@@ -75,7 +70,6 @@ TEST_CASE("Execute integer operations", "[vm]") {
           builder->addMulInt();
           builder->addConvIntString();
           builder->addPCall(vm::PCallCode::ConWriteString);
-          builder->addPop();
         },
         "input",
         "-15");
@@ -89,7 +83,6 @@ TEST_CASE("Execute integer operations", "[vm]") {
           builder->addDivInt();
           builder->addConvIntString();
           builder->addPCall(vm::PCallCode::ConWriteString);
-          builder->addPop();
         },
         "input",
         "8");
@@ -100,7 +93,6 @@ TEST_CASE("Execute integer operations", "[vm]") {
           builder->addDivInt();
           builder->addConvIntString();
           builder->addPCall(vm::PCallCode::ConWriteString);
-          builder->addPop();
         },
         "input",
         ResultCode::DivByZero);
@@ -114,7 +106,6 @@ TEST_CASE("Execute integer operations", "[vm]") {
           builder->addRemInt();
           builder->addConvIntString();
           builder->addPCall(vm::PCallCode::ConWriteString);
-          builder->addPop();
         },
         "input",
         "1");
@@ -125,7 +116,6 @@ TEST_CASE("Execute integer operations", "[vm]") {
           builder->addRemInt();
           builder->addConvIntString();
           builder->addPCall(vm::PCallCode::ConWriteString);
-          builder->addPop();
         },
         "input",
         ResultCode::DivByZero);
@@ -138,7 +128,6 @@ TEST_CASE("Execute integer operations", "[vm]") {
           builder->addNegInt();
           builder->addConvIntString();
           builder->addPCall(vm::PCallCode::ConWriteString);
-          builder->addPop();
         },
         "input",
         "-42");
@@ -148,7 +137,6 @@ TEST_CASE("Execute integer operations", "[vm]") {
           builder->addNegInt();
           builder->addConvIntString();
           builder->addPCall(vm::PCallCode::ConWriteString);
-          builder->addPop();
         },
         "input",
         "0");
@@ -159,7 +147,6 @@ TEST_CASE("Execute integer operations", "[vm]") {
           builder->addNegInt();
           builder->addConvIntString();
           builder->addPCall(vm::PCallCode::ConWriteString);
-          builder->addPop();
         },
         "input",
         "42");
@@ -172,7 +159,6 @@ TEST_CASE("Execute integer operations", "[vm]") {
           builder->addLogicInvInt();
           builder->addConvIntString();
           builder->addPCall(vm::PCallCode::ConWriteString);
-          builder->addPop();
         },
         "input",
         "1");
@@ -182,7 +168,6 @@ TEST_CASE("Execute integer operations", "[vm]") {
           builder->addLogicInvInt();
           builder->addConvIntString();
           builder->addPCall(vm::PCallCode::ConWriteString);
-          builder->addPop();
         },
         "input",
         "0");
@@ -192,7 +177,6 @@ TEST_CASE("Execute integer operations", "[vm]") {
           builder->addLogicInvInt();
           builder->addConvIntString();
           builder->addPCall(vm::PCallCode::ConWriteString);
-          builder->addPop();
         },
         "input",
         "0");
@@ -206,7 +190,6 @@ TEST_CASE("Execute integer operations", "[vm]") {
           builder->addShiftLeftInt();
           builder->addConvIntString();
           builder->addPCall(vm::PCallCode::ConWriteString);
-          builder->addPop();
         },
         "input",
         "2");
@@ -217,7 +200,6 @@ TEST_CASE("Execute integer operations", "[vm]") {
           builder->addShiftLeftInt();
           builder->addConvIntString();
           builder->addPCall(vm::PCallCode::ConWriteString);
-          builder->addPop();
         },
         "input",
         "8");
@@ -228,7 +210,6 @@ TEST_CASE("Execute integer operations", "[vm]") {
           builder->addShiftLeftInt();
           builder->addConvIntString();
           builder->addPCall(vm::PCallCode::ConWriteString);
-          builder->addPop();
         },
         "input",
         "4");
@@ -239,7 +220,6 @@ TEST_CASE("Execute integer operations", "[vm]") {
           builder->addShiftLeftInt();
           builder->addConvIntString();
           builder->addPCall(vm::PCallCode::ConWriteString);
-          builder->addPop();
         },
         "input",
         "-2147483648");
@@ -253,7 +233,6 @@ TEST_CASE("Execute integer operations", "[vm]") {
           builder->addShiftRightInt();
           builder->addConvIntString();
           builder->addPCall(vm::PCallCode::ConWriteString);
-          builder->addPop();
         },
         "input",
         "0");
@@ -264,7 +243,6 @@ TEST_CASE("Execute integer operations", "[vm]") {
           builder->addShiftRightInt();
           builder->addConvIntString();
           builder->addPCall(vm::PCallCode::ConWriteString);
-          builder->addPop();
         },
         "input",
         "2");
@@ -275,7 +253,6 @@ TEST_CASE("Execute integer operations", "[vm]") {
           builder->addShiftRightInt();
           builder->addConvIntString();
           builder->addPCall(vm::PCallCode::ConWriteString);
-          builder->addPop();
         },
         "input",
         "8");
@@ -286,7 +263,6 @@ TEST_CASE("Execute integer operations", "[vm]") {
           builder->addShiftRightInt();
           builder->addConvIntString();
           builder->addPCall(vm::PCallCode::ConWriteString);
-          builder->addPop();
         },
         "input",
         "0");
@@ -300,7 +276,6 @@ TEST_CASE("Execute integer operations", "[vm]") {
           builder->addAndInt();
           builder->addConvIntString();
           builder->addPCall(vm::PCallCode::ConWriteString);
-          builder->addPop();
         },
         "input",
         "1");
@@ -311,7 +286,6 @@ TEST_CASE("Execute integer operations", "[vm]") {
           builder->addAndInt();
           builder->addConvIntString();
           builder->addPCall(vm::PCallCode::ConWriteString);
-          builder->addPop();
         },
         "input",
         "8");
@@ -322,7 +296,6 @@ TEST_CASE("Execute integer operations", "[vm]") {
           builder->addAndInt();
           builder->addConvIntString();
           builder->addPCall(vm::PCallCode::ConWriteString);
-          builder->addPop();
         },
         "input",
         "-42");
@@ -333,7 +306,6 @@ TEST_CASE("Execute integer operations", "[vm]") {
           builder->addAndInt();
           builder->addConvIntString();
           builder->addPCall(vm::PCallCode::ConWriteString);
-          builder->addPop();
         },
         "input",
         "2");
@@ -347,7 +319,6 @@ TEST_CASE("Execute integer operations", "[vm]") {
           builder->addOrInt();
           builder->addConvIntString();
           builder->addPCall(vm::PCallCode::ConWriteString);
-          builder->addPop();
         },
         "input",
         "1");
@@ -358,7 +329,6 @@ TEST_CASE("Execute integer operations", "[vm]") {
           builder->addOrInt();
           builder->addConvIntString();
           builder->addPCall(vm::PCallCode::ConWriteString);
-          builder->addPop();
         },
         "input",
         "11");
@@ -369,7 +339,6 @@ TEST_CASE("Execute integer operations", "[vm]") {
           builder->addOrInt();
           builder->addConvIntString();
           builder->addPCall(vm::PCallCode::ConWriteString);
-          builder->addPop();
         },
         "input",
         "-42");
@@ -380,7 +349,6 @@ TEST_CASE("Execute integer operations", "[vm]") {
           builder->addOrInt();
           builder->addConvIntString();
           builder->addPCall(vm::PCallCode::ConWriteString);
-          builder->addPop();
         },
         "input",
         "-2");
@@ -394,7 +362,6 @@ TEST_CASE("Execute integer operations", "[vm]") {
           builder->addXorInt();
           builder->addConvIntString();
           builder->addPCall(vm::PCallCode::ConWriteString);
-          builder->addPop();
         },
         "input",
         "0");
@@ -405,7 +372,6 @@ TEST_CASE("Execute integer operations", "[vm]") {
           builder->addXorInt();
           builder->addConvIntString();
           builder->addPCall(vm::PCallCode::ConWriteString);
-          builder->addPop();
         },
         "input",
         "3");
@@ -416,7 +382,6 @@ TEST_CASE("Execute integer operations", "[vm]") {
           builder->addXorInt();
           builder->addConvIntString();
           builder->addPCall(vm::PCallCode::ConWriteString);
-          builder->addPop();
         },
         "input",
         "0");
@@ -427,7 +392,6 @@ TEST_CASE("Execute integer operations", "[vm]") {
           builder->addXorInt();
           builder->addConvIntString();
           builder->addPCall(vm::PCallCode::ConWriteString);
-          builder->addPop();
         },
         "input",
         "-4");
@@ -440,7 +404,6 @@ TEST_CASE("Execute integer operations", "[vm]") {
           builder->addInvInt();
           builder->addConvIntString();
           builder->addPCall(vm::PCallCode::ConWriteString);
-          builder->addPop();
         },
         "input",
         "-1");
@@ -450,7 +413,6 @@ TEST_CASE("Execute integer operations", "[vm]") {
           builder->addInvInt();
           builder->addConvIntString();
           builder->addPCall(vm::PCallCode::ConWriteString);
-          builder->addPop();
         },
         "input",
         "0");
@@ -460,7 +422,6 @@ TEST_CASE("Execute integer operations", "[vm]") {
           builder->addInvInt();
           builder->addConvIntString();
           builder->addPCall(vm::PCallCode::ConWriteString);
-          builder->addPop();
         },
         "input",
         "-65536");

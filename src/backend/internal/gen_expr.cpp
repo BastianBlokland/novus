@@ -18,7 +18,7 @@ auto GenExpr::visit(const prog::expr::AssignExprNode& n) -> void {
 
   // Assign op.
   const auto constId = getConstId(n.getConst());
-  m_builder->addStoreConst(constId);
+  m_builder->addStackStore(constId);
 }
 
 auto GenExpr::visit(const prog::expr::SwitchExprNode& n) -> void {
@@ -82,7 +82,7 @@ auto GenExpr::visit(const prog::expr::CallExprNode& n) -> void {
     }
     break;
   case prog::sym::FuncKind::User:
-    m_builder->addCall(getLabel(funcDecl.getId()), m_tail);
+    m_builder->addCall(getLabel(funcDecl.getId()), funcDecl.getInput().getCount(), m_tail);
     break;
 
   case prog::sym::FuncKind::AddInt:
@@ -337,7 +337,7 @@ auto GenExpr::visit(const prog::expr::CallExprNode& n) -> void {
       throw std::logic_error{"User-type equality function requires args to have the same type"};
     }
     auto invert = funcDecl.getKind() == prog::sym::FuncKind::CheckNEqUserType;
-    m_builder->addCall(getUserTypeEqLabel(lhsType), m_tail && !invert);
+    m_builder->addCall(getUserTypeEqLabel(lhsType), 2, m_tail && !invert);
     if (invert) {
       m_builder->addLogicInvInt();
     }
@@ -388,7 +388,7 @@ auto GenExpr::visit(const prog::expr::CallDynExprNode& n) -> void {
   genSubExpr(n[0], false);
 
   // Invoke the delegate.
-  m_builder->addCallDyn(m_tail);
+  m_builder->addCallDyn(n.getChildCount() - 1, m_tail);
 }
 
 auto GenExpr::visit(const prog::expr::ClosureNode& n) -> void {
@@ -407,7 +407,7 @@ auto GenExpr::visit(const prog::expr::ClosureNode& n) -> void {
 
 auto GenExpr::visit(const prog::expr::ConstExprNode& n) -> void {
   const auto constId = getConstId(n.getId());
-  m_builder->addLoadConst(constId);
+  m_builder->addStackLoad(constId);
 }
 
 auto GenExpr::visit(const prog::expr::FieldExprNode& n) -> void {
@@ -480,7 +480,7 @@ auto GenExpr::visit(const prog::expr::UnionGetExprNode& n) -> void {
   // Store the union value as a const and load 'true' on the stack.
   const auto constId = getConstId(n.getConst());
   m_builder->addLoadStructField(1);
-  m_builder->addStoreConst(constId);
+  m_builder->addStackStore(constId);
 
   m_builder->addLoadLitInt(1); // Load true.
 

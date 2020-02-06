@@ -1,4 +1,5 @@
 #include "prog/sym/const_decl_table.hpp"
+#include <algorithm>
 #include <cassert>
 #include <sstream>
 #include <stdexcept>
@@ -12,6 +13,11 @@ auto ConstDeclTable::operator[](ConstId id) const -> const ConstDecl& {
 }
 
 auto ConstDeclTable::getCount() const -> unsigned int { return m_consts.size(); }
+
+auto ConstDeclTable::getLocalCount() const -> unsigned int {
+  return std::count_if(
+      m_consts.begin(), m_consts.end(), [](const auto& c) { return c.m_kind == ConstKind::Local; });
+}
 
 auto ConstDeclTable::begin() const -> iterator { return m_consts.begin(); }
 

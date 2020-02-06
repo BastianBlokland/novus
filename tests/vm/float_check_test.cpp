@@ -13,7 +13,6 @@ TEST_CASE("Execute float checks", "[vm]") {
           builder->addCheckEqFloat();
           builder->addConvBoolString();
           builder->addPCall(vm::PCallCode::ConWriteString);
-          builder->addPop();
         },
         "input",
         "false");
@@ -24,7 +23,6 @@ TEST_CASE("Execute float checks", "[vm]") {
           builder->addCheckEqFloat();
           builder->addConvBoolString();
           builder->addPCall(vm::PCallCode::ConWriteString);
-          builder->addPop();
         },
         "input",
         "true");
@@ -38,7 +36,6 @@ TEST_CASE("Execute float checks", "[vm]") {
           builder->addCheckGtFloat();
           builder->addConvBoolString();
           builder->addPCall(vm::PCallCode::ConWriteString);
-          builder->addPop();
         },
         "input",
         "false");
@@ -49,7 +46,6 @@ TEST_CASE("Execute float checks", "[vm]") {
           builder->addCheckGtFloat();
           builder->addConvBoolString();
           builder->addPCall(vm::PCallCode::ConWriteString);
-          builder->addPop();
         },
         "input",
         "true");
@@ -63,7 +59,6 @@ TEST_CASE("Execute float checks", "[vm]") {
           builder->addCheckLeFloat();
           builder->addConvBoolString();
           builder->addPCall(vm::PCallCode::ConWriteString);
-          builder->addPop();
         },
         "input",
         "false");
@@ -74,7 +69,6 @@ TEST_CASE("Execute float checks", "[vm]") {
           builder->addCheckLeFloat();
           builder->addConvBoolString();
           builder->addPCall(vm::PCallCode::ConWriteString);
-          builder->addPop();
         },
         "input",
         "true");

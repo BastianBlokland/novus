@@ -47,22 +47,12 @@ auto Assembly::getIp(uint32_t ipOffset) const noexcept -> const uint8_t* {
   return m_instructions.data() + ipOffset;
 }
 
-auto Assembly::readInt32(uint32_t ipOffset) const noexcept -> int32_t {
-  auto raw = readUInt32(ipOffset);
-  return reinterpret_cast<int32_t&>(raw); // NOLINT: Reinterpret cast
+auto Assembly::getOffset(const uint8_t* ip) const noexcept -> uint32_t {
+  return ip - m_instructions.data();
 }
 
-auto Assembly::readUInt32(uint32_t ipOffset) const noexcept -> uint32_t {
-  uint32_t result = 0;
-  for (auto i = ipOffset + 4; i >= ipOffset; --i) {
-    result = (result << 8) + m_instructions[i]; // NOLINT: Signed bitwise operator
-  }
-  return result;
-}
-
-auto Assembly::readFloat(uint32_t ipOffset) const noexcept -> float {
-  auto raw = readUInt32(ipOffset);
-  return reinterpret_cast<float&>(raw); // NOLINT: Reinterpret cast
+auto Assembly::isEnd(const uint8_t* ip) const noexcept -> bool {
+  return ip == m_instructions.data() + m_instructions.size();
 }
 
 } // namespace vm

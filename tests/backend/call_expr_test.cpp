@@ -382,21 +382,17 @@ TEST_CASE("Generate assembly for call expressions", "[backend]") {
         "conWrite(string(test(42, 1337)))",
         [](backend::Builder* builder) -> void {
           builder->label("test");
-          builder->addReserveConsts(2);
-          builder->addStoreConst(1);
-          builder->addStoreConst(0);
-          builder->addLoadConst(0);
-          builder->addLoadConst(1);
+          builder->addStackLoad(0);
+          builder->addStackLoad(1);
           builder->addAddInt();
           builder->addRet();
 
           builder->label("prog");
           builder->addLoadLitInt(42);
           builder->addLoadLitInt(1337);
-          builder->addCall("test", false);
+          builder->addCall("test", 2, false);
           builder->addConvIntString();
           builder->addPCall(vm::PCallCode::ConWriteString);
-          builder->addPop();
           builder->addRet();
 
           builder->addEntryPoint("prog");

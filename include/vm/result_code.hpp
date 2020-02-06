@@ -6,15 +6,10 @@ namespace vm {
 
 enum class ResultCode : uint8_t {
   Ok              = 0,
-  InvalidAssembly = 1,
-
-  CallStackOverflow  = 10,
-  ConstStackOverflow = 11,
-  EvalStackOverflow  = 12,
-  EvalStackNotEmpty  = 13,
-
-  DivByZero    = 20,
-  AssertFailed = 21
+  DivByZero       = 1,
+  StackOverflow   = 2,
+  AssertFailed    = 3,
+  InvalidAssembly = 4,
 };
 
 auto operator<<(std::ostream& out, const ResultCode& rhs) noexcept -> std::ostream&;

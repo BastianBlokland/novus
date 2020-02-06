@@ -14,9 +14,9 @@ enum class OpCode : uint8_t {
 
   LoadLitIp = 20,
 
-  ReserveConsts = 30,
-  StoreConst    = 31,
-  LoadConst     = 32,
+  StackAlloc = 30,
+  StackStore = 31,
+  StackLoad  = 32,
 
   AddInt        = 40,
   AddFloat      = 41,

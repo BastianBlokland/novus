@@ -17,7 +17,6 @@ TEST_CASE("Execute jump", "[vm]") {
           builder->label("write42");
           builder->addLoadLitString("42");
           builder->addPCall(vm::PCallCode::ConWriteString);
-          builder->addPop();
         },
         "input",
         "42");
@@ -28,7 +27,6 @@ TEST_CASE("Execute jump", "[vm]") {
           builder->label("jump3");
           builder->addLoadLitString("1337");
           builder->addPCall(vm::PCallCode::ConWriteString);
-          builder->addPop();
           builder->addJump("end");
 
           builder->label("jump2");
@@ -56,7 +54,6 @@ TEST_CASE("Execute jump", "[vm]") {
           builder->label("write42");
           builder->addLoadLitString("42");
           builder->addPCall(vm::PCallCode::ConWriteString);
-          builder->addPop();
         },
         "input",
         "1337",
@@ -73,7 +70,6 @@ TEST_CASE("Execute jump", "[vm]") {
           builder->label("write42");
           builder->addLoadLitString("42");
           builder->addPCall(vm::PCallCode::ConWriteString);
-          builder->addPop();
         },
         "input",
         "42");
