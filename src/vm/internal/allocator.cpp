@@ -12,6 +12,9 @@ Allocator::~Allocator() noexcept {
   auto* ref = m_firstRef;
   while (ref) {
     auto next = ref->m_next;
+    // Call the (virtual) destructor of Ref.
+    ref->~Ref();
+    // Free the backing memory.
     std::free(ref); // NOLINT: Manual memory management.
     ref = next;
   }

@@ -11,7 +11,7 @@ class StringRef final : public Ref {
 public:
   StringRef(const StringRef& rhs) = delete;
   StringRef(StringRef&& rhs)      = delete;
-  ~StringRef() noexcept           = default;
+  ~StringRef() noexcept override  = default;
 
   auto operator=(const StringRef& rhs) -> StringRef& = delete;
   auto operator=(StringRef&& rhs) -> StringRef& = delete;
