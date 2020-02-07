@@ -56,7 +56,7 @@ TEST_CASE("Generating assembly for structs", "[backend]") {
           builder->addMakeStruct(2);
 
           // Call the equality function and write the result.
-          builder->addCall("UserEq", 2, false);
+          builder->addCall("UserEq", 2, CallMode::Normal);
           builder->addConvBoolString();
           builder->addPCall(vm::PCallCode::ConWriteString);
           builder->addRet();
@@ -87,7 +87,7 @@ TEST_CASE("Generating assembly for structs", "[backend]") {
           builder->addLoadLitInt(0); // Empty struct is represented by '0'.
 
           // Call the equality function and write the result.
-          builder->addCall("UserEq", 2, false);
+          builder->addCall("UserEq", 2, CallMode::Normal);
           builder->addConvBoolString();
           builder->addPCall(vm::PCallCode::ConWriteString);
           builder->addRet();
@@ -119,7 +119,7 @@ TEST_CASE("Generating assembly for structs", "[backend]") {
             builder->addLoadLitInt(1337); // Struct with 1 field is represented by the field itself.
 
             // Call the equality function and write the result.
-            builder->addCall("UserEq", 2, false);
+            builder->addCall("UserEq", 2, CallMode::Normal);
             builder->addConvBoolString();
             builder->addPCall(vm::PCallCode::ConWriteString);
             builder->addRet();

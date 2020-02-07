@@ -7,10 +7,12 @@ namespace vm::internal {
 
 template <typename PlatformInterface>
 auto execute(
+    const Assembly* assembly,
+    PlatformInterface* iface,
     Allocator* allocator,
-    const Assembly& assembly,
-    PlatformInterface& iface,
-    uint32_t entryPoint,
-    Value* execRetVal) noexcept -> ExecState;
+    uint32_t entryIpOffset,
+    uint8_t entryArgCount,
+    Value* entryArgSource,
+    FutureRef* promise) noexcept -> ExecState;
 
 } // namespace vm::internal

@@ -1,4 +1,5 @@
 #pragma once
+#include "internal/ref_future.hpp"
 #include "internal/ref_string.hpp"
 #include "internal/ref_struct.hpp"
 #include <utility>
@@ -19,6 +20,8 @@ public:
   [[nodiscard]] auto allocStr(unsigned int size) noexcept -> std::pair<StringRef*, char*>;
 
   [[nodiscard]] auto allocStruct(uint8_t fieldCount) noexcept -> std::pair<StructRef*, Value*>;
+
+  [[nodiscard]] auto allocFuture() noexcept -> FutureRef*;
 
 private:
   Ref* m_firstRef;

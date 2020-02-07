@@ -47,7 +47,7 @@ public:
     return m_stackNext < m_stackMax;
   }
 
-  [[nodiscard]] inline auto push(Value value) noexcept -> bool {
+  inline auto push(Value value) noexcept -> bool {
     *m_stackNext++ = value;
     return m_stackNext < m_stackMax;
   }

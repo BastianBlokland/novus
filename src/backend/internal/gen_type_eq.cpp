@@ -22,7 +22,7 @@ static auto genTypeEquality(Builder* builder, const prog::sym::TypeDecl& typeDec
     break;
   case prog::sym::TypeKind::Struct:
   case prog::sym::TypeKind::Union:
-    builder->addCall(getUserTypeEqLabel(typeDecl.getId()), 2, false);
+    builder->addCall(getUserTypeEqLabel(typeDecl.getId()), 2, CallMode::Normal);
     break;
   }
 }

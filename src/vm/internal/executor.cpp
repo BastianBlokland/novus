@@ -10,6 +10,7 @@
 #include "vm/platform/memory_interface.hpp"
 #include "vm/platform/terminal_interface.hpp"
 #include <cmath>
+#include <thread>
 
 namespace vm::internal {
 
@@ -23,10 +24,9 @@ inline auto readAsm(const uint8_t** ip) {
   return v;
 }
 
-template <unsigned int StackSize>
 inline auto call(
-    Stack<StackSize>& stack,
-    const Assembly& assembly,
+    const Assembly* assembly,
+    Stack<StackSize>* stack,
     const uint8_t** ip,
     Value** sh,
     uint8_t argCount,
@@ -37,10 +37,10 @@ inline auto call(
 
   const int sfMetaSize = 2; // Return ip and return stack-home.
 
-  auto* newSh = stack.getNext() - argCount + sfMetaSize;
+  auto* newSh = stack->getNext() - argCount + sfMetaSize;
 
   // Allocate space on the stack for the stackframe meta-data.
-  if (!stack.alloc(2)) {
+  if (!stack->alloc(2)) {
     return false;
   }
 
@@ -48,19 +48,18 @@ inline auto call(
   std::memcpy(newSh, newSh - sfMetaSize, sizeof(Value) * argCount);
 
   // Save the return instruction pointer and stack-home.
-  *(newSh - 2) = uintValue(assembly.getOffset(*ip));
+  *(newSh - 2) = uintValue(assembly->getOffset(*ip));
   *(newSh - 1) = rawPtrValue(*sh);
 
   // Setup the ip and stack-home for the new stack frame.
-  *ip = assembly.getIp(tgtIpOffset);
+  *ip = assembly->getIp(tgtIpOffset);
   *sh = newSh;
   return true;
 }
 
-template <unsigned int StackSize>
 inline auto callTail(
-    Stack<StackSize>& stack,
-    const Assembly& assembly,
+    const Assembly* assembly,
+    Stack<StackSize>* stack,
     const uint8_t** ip,
     Value* sh,
     uint8_t argCount,
@@ -70,15 +69,14 @@ inline auto callTail(
   beginning of the current-stack frame and update the ip. */
 
   // Move the arguments to the beginning of the current stack home.
-  std::memcpy(sh, stack.getNext() - argCount, sizeof(Value) * argCount);
+  std::memcpy(sh, stack->getNext() - argCount, sizeof(Value) * argCount);
 
-  stack.rewindToNext(sh + argCount); // Discard any extra values on the stack.
-  *ip = assembly.getIp(tgtIpOffset);
+  stack->rewindToNext(sh + argCount); // Discard any extra values on the stack.
+  *ip = assembly->getIp(tgtIpOffset);
 }
 
-template <unsigned int StackSize>
 inline auto pushClosure(
-    Stack<StackSize>& stack, const Value& closureVal, uint8_t* boundArgCount, uint32_t* ipOffset)
+    Stack<StackSize>* stack, const Value& closureVal, uint8_t* boundArgCount, uint32_t* ipOffset)
     -> bool {
 
   auto* closureStruct = getStructRef(closureVal);
@@ -88,7 +86,7 @@ inline auto pushClosure(
   // Push all bound arguments on the stack.
   bool success = true;
   for (auto i = 0U; i != *boundArgCount; ++i) {
-    success &= stack.push(closureStruct->getField(i));
+    success &= stack->push(closureStruct->getField(i));
   }
 
   *ipOffset = closureStruct->getField(*boundArgCount).getUInt();
@@ -96,15 +94,46 @@ inline auto pushClosure(
 }
 
 template <typename PlatformInterface>
-auto execute(
+inline auto fork(
+    const Assembly* assembly,
+    PlatformInterface* iface,
     Allocator* allocator,
-    const Assembly& assembly,
-    PlatformInterface& iface,
-    uint32_t entryPoint,
-    Value* execRetVal) noexcept -> ExecState {
+    Stack<StackSize>* stack,
+    uint8_t argCount,
+    uint32_t entryIpOffset) -> bool {
 
-  auto stack     = Stack<StackSize>{};
-  auto execState = ExecState::Running;
+  // Create a future object to interact with the fork.
+  auto* future = allocator->allocFuture();
+
+  auto* argSource  = stack->getNext() - argCount;
+  auto* threadFunc = &execute<PlatformInterface>;
+  std::thread(threadFunc, assembly, iface, allocator, entryIpOffset, argCount, argSource, future)
+      .detach();
+
+  // Wait until the fork executor has started.
+  while (!future->getStarted().load(std::memory_order_acquire)) {
+    std::this_thread::yield();
+  }
+
+  /* Note its important to leave the arguments alone until the fork executor has started, as until
+  then the executor might still be reading them. */
+
+  // Remove the arguments from the stack.
+  stack->rewindToNext(stack->getNext() - argCount);
+
+  // Push the future on the stack.
+  return stack->push(refValue(future));
+}
+
+template <typename PlatformInterface>
+auto execute(
+    const Assembly* assembly,
+    PlatformInterface* iface,
+    Allocator* allocator,
+    uint32_t entryIpOffset,
+    uint8_t entryArgCount,
+    Value* entryArgSource,
+    FutureRef* promise) noexcept -> ExecState {
 
 #define READ_BYTE() readAsm<uint8_t>(&ip)
 #define READ_INT() readAsm<int32_t>(&ip)
@@ -112,12 +141,12 @@ auto execute(
 #define READ_FLOAT() readAsm<float>(&ip)
 #define SALLOC(COUNT)                                                                              \
   if (!stack.alloc(COUNT)) {                                                                       \
-    execState = ExecState::StackOverflow;                                                          \
+    state = ExecState::StackOverflow;                                                              \
     goto End;                                                                                      \
   }
 #define PUSH(VAL)                                                                                  \
   if (!stack.push(VAL)) {                                                                          \
-    execState = ExecState::StackOverflow;                                                          \
+    state = ExecState::StackOverflow;                                                              \
     goto End;                                                                                      \
   }
 #define PUSH_UINT(VAL) PUSH(uintValue(VAL))
@@ -125,8 +154,8 @@ auto execute(
 #define PUSH_FLOAT(VAL) PUSH(floatValue(VAL))
 #define PUSH_REF(VAL) PUSH(refValue(VAL))
 #define PUSH_CLOSURE(VAL, RES_BOUND_ARG_COUNT, RES_TGT_IP_OFFSET)                                  \
-  if (!pushClosure(stack, VAL, RES_BOUND_ARG_COUNT, RES_TGT_IP_OFFSET)) {                          \
-    execState = ExecState::StackOverflow;                                                          \
+  if (!pushClosure(&stack, VAL, RES_BOUND_ARG_COUNT, RES_TGT_IP_OFFSET)) {                         \
+    state = ExecState::StackOverflow;                                                              \
     goto End;                                                                                      \
   }
 #define POP() stack.pop()
@@ -134,15 +163,40 @@ auto execute(
 #define POP_INT() POP().getInt()
 #define POP_FLOAT() POP().getFloat()
 #define CALL(ARG_COUNT, TGT_IP)                                                                    \
-  if (!call(stack, assembly, &ip, &sh, ARG_COUNT, TGT_IP)) {                                       \
-    execState = ExecState::StackOverflow; /* Can only fail beccause of a stack-overflow atm. */    \
+  if (!call(assembly, &stack, &ip, &sh, ARG_COUNT, TGT_IP)) {                                      \
+    state = ExecState::StackOverflow;                                                              \
     goto End;                                                                                      \
   }
-#define CALL_TAIL(ARG_COUNT, TGT_IP) callTail(stack, assembly, &ip, sh, ARG_COUNT, TGT_IP);
+#define CALL_TAIL(ARG_COUNT, TGT_IP) callTail(assembly, &stack, &ip, sh, ARG_COUNT, TGT_IP);
+#define CALL_FORKED(ARG_COUNT, TGT_IP) fork(assembly, iface, allocator, &stack, ARG_COUNT, TGT_IP);
 
-  const uint8_t* ip = assembly.getIp(entryPoint);
-  Value* sh =
-      stack.getNext(); // Note: Starts of pointing to an invalid stack entry as its still empty.
+  // Setup state.
+  auto stack = Stack<StackSize>{};
+  auto state = ExecState::Running;
+
+  // If we are given a promise to fill then push it on the stack, its important to be on the stack
+  // so the garbage collector can 'see' it. We place the promise one position before the root
+  // stack-home to make it invisible to the running assembly.
+  if (promise) {
+    stack.push(refValue(promise));
+  }
+  const uint8_t* ip = assembly->getIp(entryIpOffset); // Current instruction-pointer.
+  Value* sh     = stack.getNext(); // Current 'home' for this stack-frame, used to store variables.
+  Value* rootSh = sh;
+
+  // Push the entry args on the stack (if any), these are available at the root stack-home.
+  if (entryArgSource && entryArgCount > 0) {
+    SALLOC(entryArgCount);
+    std::memcpy(sh, entryArgSource, sizeof(Value) * entryArgCount);
+  }
+
+  if (promise) {
+    // Signal that we've started running the promise, this also tells to outside that we are done
+    // with accessing the entry arguments and have properly placed the future on our stack.
+    promise->getStarted().store(true, std::memory_order_release);
+  }
+
+  // Start executing instructions.
   while (true) {
     switch (readAsm<OpCode>(&ip)) {
     case OpCode::LoadLitInt: {
@@ -161,7 +215,7 @@ auto execute(
       PUSH_FLOAT(READ_FLOAT());
     } break;
     case OpCode::LoadLitString: {
-      const auto& litStr = assembly.getLitString(READ_INT());
+      const auto& litStr = assembly->getLitString(READ_INT());
       PUSH_REF(allocator->allocStrLit(litStr));
     } break;
     case OpCode::LoadLitIp: {
@@ -215,7 +269,7 @@ auto execute(
       auto b = POP_INT();
       auto a = POP_INT();
       if (b == 0) {
-        execState = ExecState::DivByZero;
+        state = ExecState::DivByZero;
         goto End;
       }
       PUSH_INT(a / b);
@@ -229,7 +283,7 @@ auto execute(
       auto b = POP_INT();
       auto a = POP_INT();
       if (b == 0) {
-        execState = ExecState::DivByZero;
+        state = ExecState::DivByZero;
         goto End;
       }
       PUSH_INT(a % b);
@@ -405,17 +459,17 @@ auto execute(
     } break;
     case OpCode::LoadStructField: {
       const auto fieldIndex = READ_BYTE();
-      auto s                = getStructRef(POP());
+      auto* s               = getStructRef(POP());
       PUSH(s->getField(fieldIndex));
     } break;
 
     case OpCode::Jump: {
-      ip = assembly.getIp(READ_UINT());
+      ip = assembly->getIp(READ_UINT());
     } break;
     case OpCode::JumpIf: {
       auto ipOffset = READ_UINT();
       if (POP_INT() != 0) {
-        ip = assembly.getIp(ipOffset);
+        ip = assembly->getIp(ipOffset);
       }
     } break;
 
@@ -428,6 +482,11 @@ auto execute(
       const auto argCount    = READ_BYTE();
       const auto tgtIpOffset = READ_UINT();
       CALL_TAIL(argCount, tgtIpOffset);
+    } break;
+    case OpCode::CallForked: {
+      const auto argCount    = READ_BYTE();
+      const auto tgtIpOffset = READ_UINT();
+      CALL_FORKED(argCount, tgtIpOffset);
     } break;
     case OpCode::CallDyn: {
       const auto argCount = READ_BYTE();
@@ -453,36 +512,59 @@ auto execute(
         CALL_TAIL(argCount, tgt.getUInt());
       }
     } break;
+    case OpCode::CallDynForked: {
+      const auto argCount = READ_BYTE();
+      auto tgt            = POP();
+      if (tgt.isRef()) { // Target is a closure containing bound args and a instruction pointer.
+        uint8_t boundArgCount;
+        uint32_t tgtIpOffset;
+        PUSH_CLOSURE(tgt, &boundArgCount, &tgtIpOffset);
+        CALL_FORKED(argCount + boundArgCount, tgtIpOffset);
+      } else { // Target is a instruction pointer only.
+        CALL_FORKED(argCount, tgt.getUInt());
+      }
+    } break;
     case OpCode::PCall: {
-
-      pcall(stack, allocator, iface, readAsm<PCallCode>(&ip), &execState);
-      if (execState != ExecState::Running) {
-        assert(execState != ExecState::Success);
+      pcall(iface, allocator, &stack, &state, readAsm<PCallCode>(&ip));
+      if (state != ExecState::Running) {
+        assert(state != ExecState::Success);
         goto End;
       }
     } break;
     case OpCode::Ret: {
-      /* Restore the previous instruction pointer and stack-home from the stack-frame meta-data. */
+      // Check if this returns from the root-stack frame.
+      if (sh == rootSh) {
+        state = ExecState::Success;
+        goto End;
+      }
+      assert(stack.getSize() >= 3); // Should at least contain a return ip and sh and ret value.
+
       auto retVal = POP();
 
-      if (sh == stack.getBottom()) {
-        *execRetVal = retVal;
-        execState   = ExecState::Success;
-        goto End; // Execution finishes after we returned from the last stack-frame.
-      }
-      assert(stack.getSize() >= 2);
-
-      stack.rewindToNext(sh - 2); // Rewind this entire stack-frame (+ 2 for the meta-data).
+      // Rewind this entire stack-frame (+ 2 for the stack-frame meta-data).
+      stack.rewindToNext(sh - 2);
 
       // Note this assumes that the rewinding does not actually invalidate the memory (which it
       // doesn't).
-      ip = assembly.getIp((sh - 2)->getUInt());
+      ip = assembly->getIp((sh - 2)->getUInt());
       sh = (sh - 1)->getRawPtr<Value>();
 
       // Place the return-value on the stack.
       PUSH(retVal);
     } break;
 
+    case OpCode::WaitFuture: {
+      auto* future     = getFutureRef(POP());
+      auto futureState = future->observe(); // This will block until the future is complete.
+      assert(futureState != ExecState::Running);
+      if (futureState == ExecState::Success) {
+        PUSH(future->getResult());
+      } else {
+        // If the future failed then we fail our executor also.
+        state = futureState;
+        goto End;
+      }
+    } break;
     case OpCode::Dup:
       PUSH(stack.peek());
       break;
@@ -492,10 +574,22 @@ auto execute(
 
     case OpCode::Fail:
     default:
-      execState = ExecState::InvalidAssembly;
+      state = ExecState::InvalidAssembly;
       goto End;
     }
   }
+
+End:
+  // If we are backing a promise then fill-in the results and notify all waiters.
+  if (promise) {
+    auto promiseLock = std::unique_lock<std::mutex>{promise->getMutex()};
+    if (state == ExecState::Success) {
+      promise->setResult(POP());
+    }
+    promise->setState(state);
+    promise->getCondVar().notify_all();
+  }
+  return state;
 
 #undef READ_BYTE
 #undef READ_INT
@@ -514,22 +608,26 @@ auto execute(
 #undef POP_FLOAT
 #undef CALL
 #undef CALL_TAIL
-End:
-  return execState;
+#undef CALL_FORKED
 }
 
 // Explicit instantiations.
 template ExecState execute(
+    const Assembly* assembly,
+    platform::MemoryInterface* iface,
     Allocator* allocator,
-    const Assembly& assembly,
-    platform::MemoryInterface& iface,
-    uint32_t entryPoint,
-    Value* execRetVal) noexcept;
+    uint32_t entryIpOffset,
+    uint8_t entryArgCount,
+    Value* entryArgSource,
+    FutureRef* promise) noexcept;
+
 template ExecState execute(
+    const Assembly* assembly,
+    platform::TerminalInterface* iface,
     Allocator* allocator,
-    const Assembly& assembly,
-    platform::TerminalInterface& iface,
-    uint32_t entryPoint,
-    Value* execRetVal) noexcept;
+    uint32_t entryIpOffset,
+    uint8_t entryArgCount,
+    Value* entryArgSource,
+    FutureRef* promise) noexcept;
 
 } // namespace vm::internal

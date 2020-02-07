@@ -5,6 +5,6 @@
 namespace vm {
 
 template <typename PlatformInterface>
-auto execute(const Assembly& assembly, PlatformInterface& iface) noexcept -> ExecState;
+auto run(const Assembly* assembly, PlatformInterface* iface) noexcept -> ExecState;
 
 } // namespace vm

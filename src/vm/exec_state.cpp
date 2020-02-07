@@ -4,9 +4,6 @@ namespace vm {
 
 auto operator<<(std::ostream& out, const ExecState& rhs) noexcept -> std::ostream& {
   switch (rhs) {
-  case ExecState::Starting:
-    out << "starting";
-    break;
   case ExecState::Running:
     out << "running";
     break;

@@ -5,7 +5,6 @@
 namespace vm {
 
 enum class ExecState : int8_t {
-  Starting        = -2,
   Running         = -1,
   Success         = 0,
   InvalidAssembly = 1,

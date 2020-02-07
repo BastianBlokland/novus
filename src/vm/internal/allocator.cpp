@@ -45,6 +45,13 @@ auto Allocator::allocStruct(uint8_t fieldCount) noexcept -> std::pair<StructRef*
   return {refPtr, fieldsPtr};
 }
 
+auto Allocator::allocFuture() noexcept -> FutureRef* {
+  auto mem     = alloc<FutureRef>(0);
+  auto* refPtr = static_cast<FutureRef*>(new (mem.first) FutureRef{});
+  initRef(refPtr);
+  return refPtr;
+}
+
 auto Allocator::initRef(Ref* ref) noexcept -> void {
   // Keep track of all allocated references by linking them as a singly linked list.
   if (m_lastRef) {

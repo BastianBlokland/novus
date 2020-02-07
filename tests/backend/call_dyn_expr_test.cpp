@@ -28,7 +28,7 @@ TEST_CASE("Generate assembly for call dynamic expressions", "[backend]") {
           builder->addLoadLitInt(42);
           builder->addLoadLitInt(1337);
           builder->addStackLoad(0);
-          builder->addCallDyn(2, false);
+          builder->addCallDyn(2, CallMode::Normal);
 
           builder->addConvIntString();
           builder->addPCall(vm::PCallCode::ConWriteString);
@@ -59,7 +59,7 @@ TEST_CASE("Generate assembly for call dynamic expressions", "[backend]") {
           builder->addLoadLitIp("anon func");
           builder->addMakeStruct(2);
 
-          builder->addCallDyn(0, false);
+          builder->addCallDyn(0, CallMode::Normal);
           builder->addConvIntString();
           builder->addPCall(vm::PCallCode::ConWriteString);
           builder->addRet();
@@ -92,7 +92,7 @@ TEST_CASE("Generate assembly for call dynamic expressions", "[backend]") {
           builder->addLoadLitIp("anon func");
           builder->addMakeStruct(2);
 
-          builder->addCallDyn(1, false);
+          builder->addCallDyn(1, CallMode::Normal);
           builder->addConvFloatString();
           builder->addPCall(vm::PCallCode::ConWriteString);
           builder->addRet();

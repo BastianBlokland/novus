@@ -33,6 +33,7 @@ auto disassembleInstructions(const vm::Assembly& assembly) -> std::vector<Instru
     case vm::OpCode::LoadStructField:
     case vm::OpCode::CallDyn:
     case vm::OpCode::CallDynTail:
+    case vm::OpCode::CallDynForked:
       result.push_back(Instruction(opCode, offset, {readAsm<uint8_t>(&ip)}));
       continue;
     case vm::OpCode::LoadLitInt0:
@@ -86,6 +87,7 @@ auto disassembleInstructions(const vm::Assembly& assembly) -> std::vector<Instru
     case vm::OpCode::ConvIntChar:
     case vm::OpCode::Ret:
     case vm::OpCode::Fail:
+    case vm::OpCode::WaitFuture:
     case vm::OpCode::Dup:
     case vm::OpCode::Pop:
       result.push_back(Instruction(opCode, offset, {}));
@@ -98,6 +100,7 @@ auto disassembleInstructions(const vm::Assembly& assembly) -> std::vector<Instru
       continue;
     case vm::OpCode::Call:
     case vm::OpCode::CallTail:
+    case vm::OpCode::CallForked:
       result.push_back(
           Instruction(opCode, offset, {readAsm<uint8_t>(&ip), readAsm<uint32_t>(&ip)}));
       continue;

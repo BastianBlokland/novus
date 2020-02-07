@@ -21,14 +21,14 @@ TEST_CASE("Generate assembly for tail calls", "[backend]") {
 
           builder->label("true");
           builder->addLoadLitInt(0);
-          builder->addCall("test", 1, true);
+          builder->addCall("test", 1, CallMode::Tail);
 
           builder->label("false");
           builder->addRet();
 
           builder->label("prog");
           builder->addLoadLitInt(42);
-          builder->addCall("test", 1, false);
+          builder->addCall("test", 1, CallMode::Normal);
           builder->addConvIntString();
           builder->addPCall(vm::PCallCode::ConWriteString);
           builder->addRet();
@@ -44,7 +44,7 @@ TEST_CASE("Generate assembly for tail calls", "[backend]") {
         "conWrite(string(f2()))",
         [](backend::Builder* builder) -> void {
           builder->label("f2");
-          builder->addCall("f1", 0, true);
+          builder->addCall("f1", 0, CallMode::Tail);
           builder->addRet();
 
           builder->label("f1");
@@ -52,7 +52,7 @@ TEST_CASE("Generate assembly for tail calls", "[backend]") {
           builder->addRet();
 
           builder->label("prog");
-          builder->addCall("f2", 0, false);
+          builder->addCall("f2", 0, CallMode::Normal);
           builder->addConvIntString();
           builder->addPCall(vm::PCallCode::ConWriteString);
           builder->addRet();
@@ -74,7 +74,7 @@ TEST_CASE("Generate assembly for tail calls", "[backend]") {
           builder->addStackStore(0);
           builder->addPop();
           builder->addStackLoad(0);
-          builder->addCall("f1", 1, true);
+          builder->addCall("f1", 1, CallMode::Tail);
           builder->addRet();
 
           builder->label("f1");
@@ -82,7 +82,7 @@ TEST_CASE("Generate assembly for tail calls", "[backend]") {
           builder->addRet();
 
           builder->label("prog");
-          builder->addCall("f2", 0, false);
+          builder->addCall("f2", 0, CallMode::Normal);
           builder->addConvIntString();
           builder->addPCall(vm::PCallCode::ConWriteString);
           builder->addRet();
@@ -99,7 +99,7 @@ TEST_CASE("Generate assembly for tail calls", "[backend]") {
         [](backend::Builder* builder) -> void {
           builder->label("f2");
           builder->addStackLoad(0);
-          builder->addCallDyn(0, true);
+          builder->addCallDyn(0, CallMode::Tail);
           builder->addRet();
 
           builder->label("f1");
@@ -108,7 +108,7 @@ TEST_CASE("Generate assembly for tail calls", "[backend]") {
 
           builder->label("prog");
           builder->addLoadLitIp("f1");
-          builder->addCall("f2", 1, false);
+          builder->addCall("f2", 1, CallMode::Normal);
           builder->addConvIntString();
           builder->addPCall(vm::PCallCode::ConWriteString);
           builder->addRet();

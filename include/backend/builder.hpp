@@ -1,4 +1,5 @@
 #pragma once
+#include "call_mode.hpp"
 #include "vm/assembly.hpp"
 #include "vm/op_code.hpp"
 #include "vm/pcall_code.hpp"
@@ -88,11 +89,12 @@ public:
   auto addJump(std::string label) -> void;
   auto addJumpIf(std::string label) -> void;
 
-  auto addCall(std::string label, uint8_t argCount, bool tail) -> void;
-  auto addCallDyn(uint8_t argCount, bool tail) -> void;
+  auto addCall(std::string label, uint8_t argCount, CallMode mode) -> void;
+  auto addCallDyn(uint8_t argCount, CallMode mode) -> void;
   auto addPCall(vm::PCallCode code) -> void;
   auto addRet() -> void;
 
+  auto addWaitFuture() -> void;
   auto addDup() -> void;
   auto addPop() -> void;
   auto addFail() -> void;

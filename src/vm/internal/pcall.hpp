@@ -12,44 +12,45 @@ const auto static newl = '\n';
 
 template <unsigned int StackSize, typename PlatformInterface>
 auto inline pcall(
-    Stack<StackSize>& stack,
+    PlatformInterface* iface,
     Allocator* allocator,
-    PlatformInterface& iface,
-    PCallCode code,
-    ExecState* execState) noexcept -> void {
+    Stack<StackSize>* stack,
+    ExecState* state,
+    PCallCode code) noexcept -> void {
+  assert(iface && allocator && stack && state);
 
 #define PUSH(VAL)                                                                                  \
-  if (!stack.push(VAL)) {                                                                          \
-    *execState = ExecState::StackOverflow;                                                         \
+  if (!stack->push(VAL)) {                                                                         \
+    *state = ExecState::StackOverflow;                                                             \
   }
 #define PUSH_REF(VAL) PUSH(refValue(VAL))
 #define PUSH_INT(VAL) PUSH(intValue(VAL))
-#define POP() stack.pop()
+#define POP() stack->pop()
 #define POP_INT() POP().getInt()
-#define PEEK() stack.peek()
+#define PEEK() stack->peek()
 #define PEEK_INT() PEEK().getInt()
 
   switch (code) {
   case vm::PCallCode::ConWriteChar: {
     auto c = static_cast<char>(PEEK_INT());
-    iface.conWrite(&c, 1);
+    iface->conWrite(&c, 1);
   } break;
   case vm::PCallCode::ConWriteString: {
     auto* strRef = getStringRef(PEEK());
-    iface.conWrite(strRef->getDataPtr(), strRef->getSize());
+    iface->conWrite(strRef->getDataPtr(), strRef->getSize());
   } break;
   case vm::PCallCode::ConWriteStringLine: {
     auto* strRef = getStringRef(PEEK());
-    iface.conWrite(strRef->getDataPtr(), strRef->getSize());
-    iface.conWrite(&newl, 1);
+    iface->conWrite(strRef->getDataPtr(), strRef->getSize());
+    iface->conWrite(&newl, 1);
   } break;
   case vm::PCallCode::ConReadChar: {
-    PUSH_INT(iface.conRead());
+    PUSH_INT(iface->conRead());
   } break;
   case vm::PCallCode::ConReadStringLine: {
     std::string line = {};
     while (true) {
-      const auto c = iface.conRead();
+      const auto c = iface->conRead();
       if (c == '\0' || c == '\n') {
         break;
       }
@@ -58,7 +59,7 @@ auto inline pcall(
     PUSH_REF(toString(allocator, line));
   } break;
   case vm::PCallCode::GetEnvArg: {
-    auto* res = iface.getEnvArg(PEEK_INT());
+    auto* res = iface->getEnvArg(PEEK_INT());
     if (res == nullptr) {
       PUSH_REF(allocator->allocStr(0).first);
     } else {
@@ -66,11 +67,11 @@ auto inline pcall(
     }
   } break;
   case vm::PCallCode::GetEnvArgCount: {
-    PUSH_INT(iface.getEnvArgCount());
+    PUSH_INT(iface->getEnvArgCount());
   } break;
   case vm::PCallCode::GetEnvVar: {
-    auto* nameStrRef = getStringRef(stack.pop());
-    auto* res        = iface.getEnvVar(nameStrRef->getDataPtr());
+    auto* nameStrRef = getStringRef(POP());
+    auto* res        = iface->getEnvVar(nameStrRef->getDataPtr());
     if (res == nullptr) {
       PUSH_REF(allocator->allocStr(0).first);
     } else {
@@ -84,14 +85,14 @@ auto inline pcall(
     auto* msg = getStringRef(POP());
     auto cond = PEEK_INT();
     if (cond == 0) {
-      iface.conWrite("Assertion failed: ", 18);
-      iface.conWrite(msg->getDataPtr(), msg->getSize());
-      iface.conWrite(&newl, 1);
-      *execState = ExecState::AssertFailed;
+      iface->conWrite("Assertion failed: ", 18);
+      iface->conWrite(msg->getDataPtr(), msg->getSize());
+      iface->conWrite(&newl, 1);
+      *state = ExecState::AssertFailed;
     }
   } break;
   default:
-    *execState = ExecState::InvalidAssembly;
+    *state = ExecState::InvalidAssembly;
   }
 
 #undef PUSH

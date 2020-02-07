@@ -26,7 +26,7 @@ auto run(
   if (frontendOutput.isSuccess()) {
     const auto assembly = backend::generate(frontendOutput.getProg());
     auto iface          = vm::platform::TerminalInterface{vmEnvArgsCount, vmEnvArgs};
-    auto res            = vm::execute(assembly, iface);
+    auto res            = vm::run(&assembly, &iface);
     if (res != vm::ExecState::Success) {
       std::cout << rang::style::bold << rang::bg::red << "Runtime error: " << res << '\n'
                 << rang::style::reset;

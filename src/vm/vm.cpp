@@ -7,21 +7,24 @@
 namespace vm {
 
 template <typename PlatformInterface>
-auto execute(const Assembly& assembly, PlatformInterface& iface) noexcept -> ExecState {
-  auto allocator = internal::Allocator{};
-  auto execState = ExecState::Success;
-  auto retVal    = internal::Value{};
-  for (auto itr = assembly.beginEntryPoints(); itr != assembly.endEntryPoints(); ++itr) {
-    execState = execute(&allocator, assembly, iface, *itr, &retVal);
-    if (execState != ExecState::Success) {
-      return execState;
+auto run(const Assembly* assembly, PlatformInterface* iface) noexcept -> ExecState {
+
+  auto allocator   = internal::Allocator{};
+  auto resultState = ExecState::Success;
+
+  for (auto itr = assembly->beginEntryPoints(); itr != assembly->endEntryPoints(); ++itr) {
+    auto entryPoint = *itr;
+    resultState     = execute(assembly, iface, &allocator, entryPoint, 0, nullptr, nullptr);
+    if (resultState != ExecState::Success) {
+      return resultState;
     }
   }
-  return execState;
+
+  return resultState;
 }
 
 // Explicit instantiations.
-template ExecState execute(const Assembly& assembly, platform::MemoryInterface& iface);
-template ExecState execute(const Assembly& assembly, platform::TerminalInterface& iface);
+template ExecState run(const Assembly* assembly, platform::MemoryInterface* iface);
+template ExecState run(const Assembly* assembly, platform::TerminalInterface* iface);
 
 } // namespace vm
