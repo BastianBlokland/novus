@@ -1,6 +1,6 @@
 #include "catch2/catch.hpp"
 #include "helpers.hpp"
-#include "vm/result_code.hpp"
+#include "vm/exec_state.hpp"
 
 namespace vm {
 
@@ -95,7 +95,7 @@ TEST_CASE("Execute integer operations", "[vm]") {
           builder->addPCall(vm::PCallCode::ConWriteString);
         },
         "input",
-        ResultCode::DivByZero);
+        ExecState::DivByZero);
   }
 
   SECTION("Remainder") {
@@ -118,7 +118,7 @@ TEST_CASE("Execute integer operations", "[vm]") {
           builder->addPCall(vm::PCallCode::ConWriteString);
         },
         "input",
-        ResultCode::DivByZero);
+        ExecState::DivByZero);
   }
 
   SECTION("Negate") {

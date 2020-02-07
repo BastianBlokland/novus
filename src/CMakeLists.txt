@@ -193,7 +193,7 @@ add_library(vm STATIC
   vm/vm.cpp
   vm/op_code.cpp
   vm/pcall_code.cpp
-  vm/result_code.cpp)
+  vm/exec_state.cpp)
 target_compile_features(vm PUBLIC cxx_std_17)
 target_compile_options(vm PRIVATE -Werror -Wall -Wextra -fno-exceptions)
 target_include_directories(vm PUBLIC ${PROJECT_SOURCE_DIR}/include)

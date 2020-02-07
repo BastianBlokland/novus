@@ -2,8 +2,8 @@
 #include "frontend/analysis.hpp"
 #include "frontend/source.hpp"
 #include "rang.hpp"
+#include "vm/exec_state.hpp"
 #include "vm/platform/terminal_interface.hpp"
-#include "vm/result_code.hpp"
 #include "vm/vm.hpp"
 #include <filesystem>
 #include <fstream>
@@ -27,7 +27,7 @@ auto run(
     const auto assembly = backend::generate(frontendOutput.getProg());
     auto iface          = vm::platform::TerminalInterface{vmEnvArgsCount, vmEnvArgs};
     auto res            = vm::execute(assembly, iface);
-    if (res != vm::ResultCode::Ok) {
+    if (res != vm::ExecState::Success) {
       std::cout << rang::style::bold << rang::bg::red << "Runtime error: " << res << '\n'
                 << rang::style::reset;
     }

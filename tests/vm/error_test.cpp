@@ -1,6 +1,6 @@
 #include "catch2/catch.hpp"
 #include "helpers.hpp"
-#include "vm/result_code.hpp"
+#include "vm/exec_state.hpp"
 
 namespace vm {
 
@@ -10,7 +10,7 @@ TEST_CASE("Runtime errors", "[vm]") {
     CHECK_EXPR_RESULTCODE(
         [](backend::Builder* builder) -> void { builder->addFail(); },
         "input",
-        ResultCode::InvalidAssembly);
+        ExecState::InvalidAssembly);
   }
 
   SECTION("Stack overflow") {
@@ -22,7 +22,7 @@ TEST_CASE("Runtime errors", "[vm]") {
           builder->addEntryPoint("func");
         },
         "input",
-        ResultCode::StackOverflow);
+        ExecState::StackOverflow);
   }
 
   SECTION("Stack overflow") {
@@ -33,7 +33,7 @@ TEST_CASE("Runtime errors", "[vm]") {
           builder->addJump("push1");
         },
         "input",
-        ResultCode::StackOverflow);
+        ExecState::StackOverflow);
   }
 
   SECTION("Stack overflow") {
@@ -46,7 +46,7 @@ TEST_CASE("Runtime errors", "[vm]") {
           builder->addEntryPoint("func");
         },
         "input",
-        ResultCode::StackOverflow);
+        ExecState::StackOverflow);
   }
 }
 

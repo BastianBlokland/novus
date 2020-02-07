@@ -4,11 +4,11 @@
 #include "internal/ref_string.hpp"
 #include "internal/stack.hpp"
 #include "internal/string_utilities.hpp"
+#include "vm/exec_state.hpp"
 #include "vm/op_code.hpp"
 #include "vm/pcall_code.hpp"
 #include "vm/platform/memory_interface.hpp"
 #include "vm/platform/terminal_interface.hpp"
-#include "vm/result_code.hpp"
 #include <cmath>
 
 namespace vm::internal {
@@ -101,10 +101,10 @@ auto execute(
     const Assembly& assembly,
     PlatformInterface& iface,
     uint32_t entryPoint,
-    Value* execRetVal) noexcept -> ResultCode {
+    Value* execRetVal) noexcept -> ExecState {
 
-  auto stack      = Stack<StackSize>{};
-  auto resultCode = ResultCode::Ok;
+  auto stack     = Stack<StackSize>{};
+  auto execState = ExecState::Running;
 
 #define READ_BYTE() readAsm<uint8_t>(&ip)
 #define READ_INT() readAsm<int32_t>(&ip)
@@ -112,12 +112,12 @@ auto execute(
 #define READ_FLOAT() readAsm<float>(&ip)
 #define SALLOC(COUNT)                                                                              \
   if (!stack.alloc(COUNT)) {                                                                       \
-    resultCode = ResultCode::StackOverflow;                                                        \
+    execState = ExecState::StackOverflow;                                                          \
     goto End;                                                                                      \
   }
 #define PUSH(VAL)                                                                                  \
   if (!stack.push(VAL)) {                                                                          \
-    resultCode = ResultCode::StackOverflow;                                                        \
+    execState = ExecState::StackOverflow;                                                          \
     goto End;                                                                                      \
   }
 #define PUSH_UINT(VAL) PUSH(uintValue(VAL))
@@ -126,7 +126,7 @@ auto execute(
 #define PUSH_REF(VAL) PUSH(refValue(VAL))
 #define PUSH_CLOSURE(VAL, RES_BOUND_ARG_COUNT, RES_TGT_IP_OFFSET)                                  \
   if (!pushClosure(stack, VAL, RES_BOUND_ARG_COUNT, RES_TGT_IP_OFFSET)) {                          \
-    resultCode = ResultCode::StackOverflow;                                                        \
+    execState = ExecState::StackOverflow;                                                          \
     goto End;                                                                                      \
   }
 #define POP() stack.pop()
@@ -135,14 +135,14 @@ auto execute(
 #define POP_FLOAT() POP().getFloat()
 #define CALL(ARG_COUNT, TGT_IP)                                                                    \
   if (!call(stack, assembly, &ip, &sh, ARG_COUNT, TGT_IP)) {                                       \
-    resultCode = ResultCode::StackOverflow; /* Can only fail beccause of a stack-overflow atm. */  \
+    execState = ExecState::StackOverflow; /* Can only fail beccause of a stack-overflow atm. */    \
     goto End;                                                                                      \
   }
 #define CALL_TAIL(ARG_COUNT, TGT_IP) callTail(stack, assembly, &ip, sh, ARG_COUNT, TGT_IP);
 
   const uint8_t* ip = assembly.getIp(entryPoint);
   Value* sh =
-      stack.getTop(); // Note: Starts of pointing to an invalid stack entry as its still empty.
+      stack.getNext(); // Note: Starts of pointing to an invalid stack entry as its still empty.
   while (true) {
     switch (readAsm<OpCode>(&ip)) {
     case OpCode::LoadLitInt: {
@@ -215,7 +215,7 @@ auto execute(
       auto b = POP_INT();
       auto a = POP_INT();
       if (b == 0) {
-        resultCode = ResultCode::DivByZero;
+        execState = ExecState::DivByZero;
         goto End;
       }
       PUSH_INT(a / b);
@@ -229,7 +229,7 @@ auto execute(
       auto b = POP_INT();
       auto a = POP_INT();
       if (b == 0) {
-        resultCode = ResultCode::DivByZero;
+        execState = ExecState::DivByZero;
         goto End;
       }
       PUSH_INT(a % b);
@@ -454,8 +454,10 @@ auto execute(
       }
     } break;
     case OpCode::PCall: {
-      pcall(stack, allocator, iface, readAsm<PCallCode>(&ip), &resultCode);
-      if (resultCode != ResultCode::Ok) {
+
+      pcall(stack, allocator, iface, readAsm<PCallCode>(&ip), &execState);
+      if (execState != ExecState::Running) {
+        assert(execState != ExecState::Success);
         goto End;
       }
     } break;
@@ -463,8 +465,9 @@ auto execute(
       /* Restore the previous instruction pointer and stack-home from the stack-frame meta-data. */
       auto retVal = POP();
 
-      if (sh == stack.getBottom() - 1) {
+      if (sh == stack.getBottom()) {
         *execRetVal = retVal;
+        execState   = ExecState::Success;
         goto End; // Execution finishes after we returned from the last stack-frame.
       }
       assert(stack.getSize() >= 2);
@@ -489,7 +492,7 @@ auto execute(
 
     case OpCode::Fail:
     default:
-      resultCode = ResultCode::InvalidAssembly;
+      execState = ExecState::InvalidAssembly;
       goto End;
     }
   }
@@ -512,17 +515,17 @@ auto execute(
 #undef CALL
 #undef CALL_TAIL
 End:
-  return resultCode;
+  return execState;
 }
 
 // Explicit instantiations.
-template ResultCode execute(
+template ExecState execute(
     Allocator* allocator,
     const Assembly& assembly,
     platform::MemoryInterface& iface,
     uint32_t entryPoint,
     Value* execRetVal) noexcept;
-template ResultCode execute(
+template ExecState execute(
     Allocator* allocator,
     const Assembly& assembly,
     platform::TerminalInterface& iface,

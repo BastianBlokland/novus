@@ -1,6 +1,5 @@
 #pragma once
 #include "internal/value.hpp"
-#include "vm/result_code.hpp"
 #include <array>
 #include <cassert>
 

@@ -1,8 +1,8 @@
 #pragma once
 #include "internal/stack.hpp"
 #include "internal/string_utilities.hpp"
+#include "vm/exec_state.hpp"
 #include "vm/pcall_code.hpp"
-#include "vm/result_code.hpp"
 #include <chrono>
 #include <thread>
 
@@ -16,11 +16,11 @@ auto inline pcall(
     Allocator* allocator,
     PlatformInterface& iface,
     PCallCode code,
-    ResultCode* resultCode) noexcept -> void {
+    ExecState* execState) noexcept -> void {
 
 #define PUSH(VAL)                                                                                  \
   if (!stack.push(VAL)) {                                                                          \
-    *resultCode = ResultCode::StackOverflow;                                                       \
+    *execState = ExecState::StackOverflow;                                                         \
   }
 #define PUSH_REF(VAL) PUSH(refValue(VAL))
 #define PUSH_INT(VAL) PUSH(intValue(VAL))
@@ -87,11 +87,11 @@ auto inline pcall(
       iface.conWrite("Assertion failed: ", 18);
       iface.conWrite(msg->getDataPtr(), msg->getSize());
       iface.conWrite(&newl, 1);
-      *resultCode = ResultCode::AssertFailed;
+      *execState = ExecState::AssertFailed;
     }
   } break;
   default:
-    *resultCode = ResultCode::InvalidAssembly;
+    *execState = ExecState::InvalidAssembly;
   }
 
 #undef PUSH
