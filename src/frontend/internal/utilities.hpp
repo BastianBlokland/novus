@@ -91,6 +91,13 @@ template <typename FuncParseNode>
 mangleName(Context* ctx, const std::string& name, const prog::sym::TypeSet& typeParams)
     -> std::string;
 
+[[nodiscard]] auto asFuture(Context* ctx, prog::sym::TypeId type) -> prog::sym::TypeId;
+
+[[nodiscard]] auto funcOutAsFuture(Context* ctx, prog::sym::FuncId func) -> prog::sym::TypeId;
+
+[[nodiscard]] auto delegateOutAsFuture(Context* ctx, prog::sym::TypeId delegate)
+    -> std::optional<prog::sym::TypeId>;
+
 [[nodiscard]] auto isType(Context* ctx, const std::string& name) -> bool;
 
 [[nodiscard]] auto isFuncOrConv(Context* ctx, const std::string& name) -> bool;

@@ -284,6 +284,14 @@ auto Program::isDelegate(sym::TypeId id) const -> bool {
   return typeDecl.getKind() == sym::TypeKind::Delegate;
 }
 
+auto Program::isFuture(sym::TypeId id) const -> bool {
+  if (!id.isConcrete()) {
+    return false;
+  }
+  const auto& typeDecl = getTypeDecl(id);
+  return typeDecl.getKind() == sym::TypeKind::Future;
+}
+
 auto Program::isCallable(sym::FuncId func, const std::vector<expr::NodePtr>& args) const -> bool {
   const auto& funcDecl = getFuncDecl(func);
   return internal::isImplicitConvertible(*this, funcDecl.getInput(), args);
@@ -300,6 +308,17 @@ auto Program::isCallable(sym::TypeId delegate, const std::vector<expr::NodePtr>&
   }
   const auto& delegateDef = std::get<sym::DelegateDef>(getTypeDef(delegate));
   return internal::isImplicitConvertible(*this, delegateDef.getInput(), args);
+}
+
+auto Program::getDelegateRetType(sym::TypeId id) const -> std::optional<sym::TypeId> {
+  if (!id.isConcrete()) {
+    return std::nullopt;
+  }
+  const auto& typeDecl = getTypeDecl(id);
+  if (typeDecl.getKind() != sym::TypeKind::Delegate) {
+    return std::nullopt;
+  }
+  return std::get<sym::DelegateDef>(getTypeDef(id)).getOutput();
 }
 
 auto Program::getTypeDecl(sym::TypeId id) const -> const sym::TypeDecl& { return m_typeDecls[id]; }

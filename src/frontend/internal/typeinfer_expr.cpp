@@ -98,8 +98,8 @@ auto TypeInferExpr::visit(const parse::CallExprNode& n) -> void {
 
   // Check if this is calling a constructor / conversion.
   auto convType = getOrInstType(m_ctx, m_typeSubTable, nameToken, typeParams, argTypeSet);
-  if (convType) {
-    m_type = *convType;
+  if (convType && convType->isConcrete()) {
+    m_type = n.isFork() ? asFuture(m_ctx, *convType) : *convType;
     return;
   }
 
@@ -112,14 +112,17 @@ auto TypeInferExpr::visit(const parse::CallExprNode& n) -> void {
     auto ovOptions = prog::OvOptions{
         hasFlag<Flags::AllowActionCalls>() ? prog::OvFlags::None : prog::OvFlags::ExclActions};
     const auto retType = m_ctx->getFuncTemplates()->getRetType(funcName, *typeSet, ovOptions);
-    if (retType) {
-      m_type = *retType;
+    if (retType && retType->isConcrete()) {
+      m_type = n.isFork() ? asFuture(m_ctx, *retType) : *retType;
     }
     return;
   }
 
   // Regular functions.
-  m_type = inferFuncCall(funcName, argTypeSet);
+  auto result = inferFuncCall(funcName, argTypeSet);
+  if (result.isConcrete()) {
+    m_type = n.isFork() ? asFuture(m_ctx, result) : result;
+  }
 }
 
 auto TypeInferExpr::visit(const parse::ConditionalExprNode& n) -> void {
@@ -365,13 +368,18 @@ auto TypeInferExpr::inferDynCall(const parse::CallExprNode& n) -> prog::sym::Typ
   if (m_ctx->getProg()->isDelegate(argTypes[0])) {
     const auto& delegateDef =
         std::get<prog::sym::DelegateDef>(m_ctx->getProg()->getTypeDef(argTypes[0]));
-    return delegateDef.getOutput();
+    auto result = delegateDef.getOutput();
+    return n.isFork() ? asFuture(m_ctx, result) : result;
   }
 
   // Call to a overloaded call operator.
   const auto argTypeSet = prog::sym::TypeSet{std::move(argTypes)};
   const auto funcName   = prog::getFuncName(prog::Operator::ParenParen);
-  return inferFuncCall(funcName, argTypeSet);
+  auto result           = inferFuncCall(funcName, argTypeSet);
+  if (result.isInfer()) {
+    return prog::sym::TypeId::inferType();
+  }
+  return n.isFork() ? asFuture(m_ctx, result) : result;
 }
 
 auto TypeInferExpr::inferFuncCall(const std::string& funcName, const prog::sym::TypeSet& argTypes)

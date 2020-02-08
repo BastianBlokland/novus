@@ -19,7 +19,7 @@ auto FutureTable::getFuture(Context* ctx, prog::sym::TypeId result) -> prog::sym
 
   // Keep track of some extra information about the type.
   ctx->declareTypeInfo(
-      futureType, TypeInfo{ctx, "future", input::Span{0}, prog::sym::TypeSet{futureType}});
+      futureType, TypeInfo{ctx, "future", input::Span{0}, prog::sym::TypeSet{result}});
 
   m_futures.insert({result, futureType});
   return futureType;

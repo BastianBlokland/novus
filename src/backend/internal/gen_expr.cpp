@@ -85,7 +85,7 @@ auto GenExpr::visit(const prog::expr::CallExprNode& n) -> void {
     m_builder->addCall(
         getLabel(funcDecl.getId()),
         funcDecl.getInput().getCount(),
-        m_tail ? CallMode::Tail : CallMode::Normal);
+        n.isFork() ? CallMode::Forked : (m_tail ? CallMode::Tail : CallMode::Normal));
     break;
 
   case prog::sym::FuncKind::AddInt:
@@ -397,7 +397,9 @@ auto GenExpr::visit(const prog::expr::CallDynExprNode& n) -> void {
   genSubExpr(n[0], false);
 
   // Invoke the delegate.
-  m_builder->addCallDyn(n.getChildCount() - 1, m_tail ? CallMode::Tail : CallMode::Normal);
+  m_builder->addCallDyn(
+      n.getChildCount() - 1,
+      n.isFork() ? CallMode::Forked : (m_tail ? CallMode::Tail : CallMode::Normal));
 }
 
 auto GenExpr::visit(const prog::expr::ClosureNode& n) -> void {

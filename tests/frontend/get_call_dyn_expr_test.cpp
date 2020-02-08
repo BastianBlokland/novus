@@ -105,6 +105,31 @@ TEST_CASE("Analyzing call dynamic expressions", "[frontend]") {
             {}));
   }
 
+  SECTION("Get forked delegate call") {
+    const auto& output = ANALYZE("fun f1() -> int 1 "
+                                 "fun f2(delegate{int} op) -> future{int} fork op() "
+                                 "fun f() -> future{int} f2(f1)");
+    REQUIRE(output.isSuccess());
+    const auto& f2Def = GET_FUNC_DEF(output, "f2", GET_TYPE_ID(output, "__delegate_int"));
+    const auto& fDef  = GET_FUNC_DEF(output, "f");
+
+    CHECK(
+        f2Def.getExpr() ==
+        *prog::expr::callDynExprNode(
+            output.getProg(),
+            prog::expr::constExprNode(f2Def.getConsts(), *f2Def.getConsts().lookup("op")),
+            GET_TYPE_ID(output, "__future_int"),
+            {},
+            true));
+
+    auto fArgs = std::vector<prog::expr::NodePtr>{};
+    fArgs.push_back(prog::expr::litFuncNode(
+        output.getProg(), GET_TYPE_ID(output, "__delegate_int"), GET_FUNC_ID(output, "f1")));
+    CHECK(
+        fDef.getExpr() ==
+        *prog::expr::callExprNode(output.getProg(), f2Def.getId(), std::move(fArgs)));
+  }
+
   SECTION("Diagnostics") {
     CHECK_DIAG(
         "fun f(delegate{int, float, bool} op) -> bool op(false, 1.0)",

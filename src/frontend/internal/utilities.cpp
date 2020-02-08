@@ -495,6 +495,23 @@ auto mangleName(Context* ctx, const std::string& name, const prog::sym::TypeSet&
   return result;
 }
 
+auto asFuture(Context* ctx, prog::sym::TypeId type) -> prog::sym::TypeId {
+  return ctx->getFutures()->getFuture(ctx, type);
+}
+
+auto funcOutAsFuture(Context* ctx, prog::sym::FuncId func) -> prog::sym::TypeId {
+  return asFuture(ctx, ctx->getProg()->getFuncDecl(func).getOutput());
+}
+
+auto delegateOutAsFuture(Context* ctx, prog::sym::TypeId delegate)
+    -> std::optional<prog::sym::TypeId> {
+  const auto delOut = ctx->getProg()->getDelegateRetType(delegate);
+  if (delOut) {
+    return asFuture(ctx, *delOut);
+  }
+  return std::nullopt;
+}
+
 auto isType(Context* ctx, const std::string& name) -> bool {
   return isReservedTypeName(name) || ctx->getProg()->hasType(name) ||
       ctx->getTypeTemplates()->hasType(name);

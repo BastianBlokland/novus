@@ -6,8 +6,9 @@
 
 namespace prog::expr {
 
-CallExprNode::CallExprNode(sym::FuncId func, sym::TypeId resultType, std::vector<NodePtr> args) :
-    m_func{func}, m_resultType{resultType}, m_args{std::move(args)} {}
+CallExprNode::CallExprNode(
+    sym::FuncId func, sym::TypeId resultType, std::vector<NodePtr> args, bool fork) :
+    m_func{func}, m_resultType{resultType}, m_args{std::move(args)}, m_fork{fork} {}
 
 auto CallExprNode::operator==(const Node& rhs) const noexcept -> bool {
   const auto r = dynamic_cast<const CallExprNode*>(&rhs);
@@ -37,14 +38,34 @@ auto CallExprNode::toString() const -> std::string {
 
 auto CallExprNode::getFunc() const noexcept -> sym::FuncId { return m_func; }
 
+auto CallExprNode::isFork() const noexcept -> bool { return m_fork; }
+
 auto CallExprNode::accept(NodeVisitor* visitor) const -> void { visitor->visit(*this); }
 
 // Factories.
 auto callExprNode(const Program& prog, sym::FuncId func, std::vector<NodePtr> args) -> NodePtr {
+  const auto& funcDecl = prog.getFuncDecl(func);
+  return callExprNode(prog, func, funcDecl.getOutput(), std::move(args), false);
+}
+
+auto callExprNode(
+    const Program& prog,
+    sym::FuncId func,
+    sym::TypeId resultType,
+    std::vector<NodePtr> args,
+    bool fork) -> NodePtr {
+
   if (anyNodeNull(args)) {
     throw std::invalid_argument{"Call node cannot contain a null argument"};
   }
-  const auto& funcDecl  = prog.getFuncDecl(func);
+  const auto& funcDecl = prog.getFuncDecl(func);
+  if (fork && funcDecl.getKind() != sym::FuncKind::User) {
+    throw std::invalid_argument{"Only user functions can be forked"};
+  }
+  if (fork && !prog.isFuture(resultType)) {
+    throw std::invalid_argument{"Forks have to return a future type"};
+  }
+
   const auto& funcInput = funcDecl.getInput();
   if (funcInput.getCount() != args.size()) {
     throw std::invalid_argument{"Call node contains incorrect number of arguments"};
@@ -54,7 +75,7 @@ auto callExprNode(const Program& prog, sym::FuncId func, std::vector<NodePtr> ar
   internal::applyImplicitConversions(prog, funcDecl.getInput(), &args);
 
   return std::unique_ptr<CallExprNode>{
-      new CallExprNode{funcDecl.getId(), funcDecl.getOutput(), std::move(args)}};
+      new CallExprNode{funcDecl.getId(), resultType, std::move(args), fork}};
 }
 
 } // namespace prog::expr

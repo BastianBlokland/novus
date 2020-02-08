@@ -209,7 +209,17 @@ auto GetExpr::visit(const parse::CallExprNode& n) -> void {
     }
     return;
   }
-  m_expr = prog::expr::callExprNode(*m_ctx->getProg(), func.value(), std::move(args->first));
+
+  if (n.isFork()) {
+    m_expr = prog::expr::callExprNode(
+        *m_ctx->getProg(),
+        func.value(),
+        funcOutAsFuture(m_ctx, *func),
+        std::move(args->first),
+        true);
+  } else {
+    m_expr = prog::expr::callExprNode(*m_ctx->getProg(), func.value(), std::move(args->first));
+  }
 }
 
 auto GetExpr::visit(const parse::ConditionalExprNode& n) -> void {
@@ -826,6 +836,14 @@ auto GetExpr::getDynCallExpr(const parse::CallExprNode& n) -> prog::expr::NodePt
       m_ctx->reportDiag(errIncorrectArgsToDelegate, n.getSpan());
       return nullptr;
     }
+    if (n.isFork()) {
+      return prog::expr::callDynExprNode(
+          *m_ctx->getProg(),
+          std::move(args->first[0]),
+          *delegateOutAsFuture(m_ctx, args->second[0]),
+          std::move(delArgs),
+          true);
+    }
     return prog::expr::callDynExprNode(
         *m_ctx->getProg(), std::move(args->first[0]), std::move(delArgs));
   }
@@ -843,6 +861,14 @@ auto GetExpr::getDynCallExpr(const parse::CallExprNode& n) -> prog::expr::NodePt
     return nullptr;
   }
 
+  if (n.isFork()) {
+    return prog::expr::callExprNode(
+        *m_ctx->getProg(),
+        func.value(),
+        funcOutAsFuture(m_ctx, *func),
+        std::move(args->first),
+        true);
+  }
   return prog::expr::callExprNode(*m_ctx->getProg(), func.value(), std::move(args->first));
 }
 
