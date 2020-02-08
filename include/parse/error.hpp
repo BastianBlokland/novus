@@ -63,6 +63,7 @@ errInvalidIsExpr(NodePtr lhs, lex::Token kw, const Type& type, std::optional<lex
     -> NodePtr;
 
 [[nodiscard]] auto errInvalidCallExpr(
+    std::vector<lex::Token> modifiers,
     NodePtr lhs,
     lex::Token open,
     std::vector<NodePtr> args,

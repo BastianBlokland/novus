@@ -385,6 +385,7 @@ auto errInvalidIsExpr(NodePtr lhs, lex::Token kw, const Type& type, std::optiona
 }
 
 auto errInvalidCallExpr(
+    std::vector<lex::Token> modifiers,
     NodePtr lhs,
     lex::Token open,
     std::vector<NodePtr> args,
@@ -407,6 +408,9 @@ auto errInvalidCallExpr(
   }
 
   auto tokens = std::vector<lex::Token>{};
+  for (auto& mod : modifiers) {
+    tokens.push_back(std::move(mod));
+  }
   tokens.push_back(std::move(open));
   for (auto& comma : commas) {
     tokens.push_back(std::move(comma));

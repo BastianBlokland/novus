@@ -7,6 +7,7 @@ namespace parse {
 
 class CallExprNode final : public Node {
   friend auto callExprNode(
+      std::vector<lex::Token> modifiers,
       NodePtr lhs,
       lex::Token open,
       std::vector<NodePtr> args,
@@ -23,9 +24,12 @@ public:
   [[nodiscard]] auto getChildCount() const -> unsigned int override;
   [[nodiscard]] auto getSpan() const -> input::Span override;
 
+  [[nodiscard]] auto isFork() const -> bool;
+
   auto accept(NodeVisitor* visitor) const -> void override;
 
 private:
+  const std::vector<lex::Token> m_modifiers;
   const NodePtr m_lhs;
   const lex::Token m_open;
   const std::vector<NodePtr> m_args;
@@ -33,6 +37,7 @@ private:
   const lex::Token m_close;
 
   CallExprNode(
+      std::vector<lex::Token> modifiers,
       NodePtr lhs,
       lex::Token open,
       std::vector<NodePtr> args,
@@ -44,6 +49,7 @@ private:
 
 // Factories.
 auto callExprNode(
+    std::vector<lex::Token> modifiers,
     NodePtr lhs,
     lex::Token open,
     std::vector<NodePtr> args,
