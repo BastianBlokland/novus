@@ -167,6 +167,7 @@ auto isReservedTypeName(const std::string& name) -> bool {
       "string",
       "char",
       "delegate",
+      "future",
   };
   return reservedTypes.find(name) != reservedTypes.end();
 }
@@ -267,6 +268,9 @@ auto instType(
 
   if (typeName == "delegate") {
     return ctx->getDelegates()->getDelegate(ctx, *typeSet);
+  }
+  if (typeName == "future" && typeSet->getCount() == 1) {
+    return ctx->getFutures()->getFuture(ctx, *typeSet->begin());
   }
 
   const auto typeInstantiation = ctx->getTypeTemplates()->instantiate(typeName, *typeSet);

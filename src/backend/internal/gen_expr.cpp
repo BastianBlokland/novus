@@ -332,6 +332,11 @@ auto GenExpr::visit(const prog::expr::CallExprNode& n) -> void {
     break;
   }
 
+  case prog::sym::FuncKind::WaitFuture: {
+    m_builder->addWaitFuture();
+    break;
+  }
+
   case prog::sym::FuncKind::CheckEqUserType:
   case prog::sym::FuncKind::CheckNEqUserType: {
     auto lhsType = n[0].getType();

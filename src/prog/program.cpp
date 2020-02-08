@@ -330,6 +330,10 @@ auto Program::declareDelegate(std::string name) -> sym::TypeId {
   return m_typeDecls.registerType(sym::TypeKind::Delegate, std::move(name));
 }
 
+auto Program::declareFuture(std::string name) -> sym::TypeId {
+  return m_typeDecls.registerType(sym::TypeKind::Future, std::move(name));
+}
+
 auto Program::declarePureFunc(std::string name, sym::TypeSet input, sym::TypeId output)
     -> sym::FuncId {
   return m_funcDecls.registerFunc(
@@ -426,6 +430,14 @@ auto Program::defineEnum(sym::TypeId id, std::unordered_map<std::string, int32_t
 
 auto Program::defineDelegate(sym::TypeId id, sym::TypeSet input, sym::TypeId output) -> void {
   m_typeDefs.registerDelegate(m_typeDecls, id, std::move(input), output);
+}
+
+auto Program::defineFuture(sym::TypeId id, sym::TypeId result) -> void {
+  // Register 'wait' function.
+  m_funcDecls.registerFunc(*this, sym::FuncKind::WaitFuture, "wait", sym::TypeSet{id}, result);
+
+  // Register future definition.
+  m_typeDefs.registerFuture(m_typeDecls, id, result);
 }
 
 auto Program::defineFunc(sym::FuncId id, sym::ConstDeclTable consts, expr::NodePtr expr) -> void {

@@ -9,6 +9,7 @@ Context::Context(
     TypeTemplateTable* typeTemplates,
     FuncTemplateTable* funcTemplates,
     DelegateTable* delegates,
+    FutureTable* futures,
     typeInfoMap* typeInfos,
     std::vector<Diag>* diags) :
     m_src{src},
@@ -16,6 +17,7 @@ Context::Context(
     m_typeTemplates{typeTemplates},
     m_funcTemplates{funcTemplates},
     m_delegates{delegates},
+    m_futures{futures},
     m_typeInfos{typeInfos},
     m_diags{diags} {
 
@@ -30,6 +32,9 @@ Context::Context(
   }
   if (m_delegates == nullptr) {
     throw std::invalid_argument{"DelegateTable cannot be null"};
+  }
+  if (m_futures == nullptr) {
+    throw std::invalid_argument{"FutureTable cannot be null"};
   }
   if (m_typeInfos == nullptr) {
     throw std::invalid_argument{"TypeInfoMap cannot be null"};
@@ -50,6 +55,8 @@ auto Context::getTypeTemplates() const noexcept -> TypeTemplateTable* { return m
 auto Context::getFuncTemplates() const noexcept -> FuncTemplateTable* { return m_funcTemplates; }
 
 auto Context::getDelegates() const noexcept -> DelegateTable* { return m_delegates; }
+
+auto Context::getFutures() const noexcept -> FutureTable* { return m_futures; }
 
 auto Context::getTypeInfo(prog::sym::TypeId typeId) const noexcept -> std::optional<TypeInfo> {
   const auto itr = m_typeInfos->find(typeId);

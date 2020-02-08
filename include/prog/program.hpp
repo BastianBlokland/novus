@@ -103,6 +103,7 @@ public:
   auto declareUnion(std::string name) -> sym::TypeId;
   auto declareEnum(std::string name) -> sym::TypeId;
   auto declareDelegate(std::string name) -> sym::TypeId;
+  auto declareFuture(std::string name) -> sym::TypeId;
   auto declarePureFunc(std::string name, sym::TypeSet input, sym::TypeId output) -> sym::FuncId;
   auto declareAction(std::string name, sym::TypeSet input, sym::TypeId output) -> sym::FuncId;
 
@@ -110,6 +111,7 @@ public:
   auto defineUnion(sym::TypeId id, std::vector<sym::TypeId> types) -> void;
   auto defineEnum(sym::TypeId id, std::unordered_map<std::string, int32_t> entries) -> void;
   auto defineDelegate(sym::TypeId id, sym::TypeSet input, sym::TypeId output) -> void;
+  auto defineFuture(sym::TypeId id, sym::TypeId result) -> void;
   auto defineFunc(sym::FuncId id, sym::ConstDeclTable consts, expr::NodePtr expr) -> void;
 
   auto addExecStmt(sym::ConstDeclTable consts, expr::NodePtr expr) -> void;
