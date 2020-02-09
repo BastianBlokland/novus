@@ -36,11 +36,12 @@ auto analyze(const Source& mainSrc, const std::vector<std::filesystem::path>& se
   auto typeTemplates = internal::TypeTemplateTable{};
   auto funcTemplates = internal::FuncTemplateTable{};
   auto delegates     = internal::DelegateTable{};
+  auto futures       = internal::FutureTable{};
   auto typeInfos     = typeInfoMap{};
   auto diags         = std::vector<Diag>{};
   auto makeCtx       = [&](const Source& src) {
     return internal::Context(
-        src, prog.get(), &typeTemplates, &funcTemplates, &delegates, &typeInfos, &diags);
+        src, prog.get(), &typeTemplates, &funcTemplates, &delegates, &futures, &typeInfos, &diags);
   };
 
   // Resolve all imports.

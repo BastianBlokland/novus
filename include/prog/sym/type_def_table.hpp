@@ -1,6 +1,7 @@
 #pragma once
 #include "prog/sym/delegate_def.hpp"
 #include "prog/sym/enum_def.hpp"
+#include "prog/sym/future_def.hpp"
 #include "prog/sym/struct_def.hpp"
 #include "prog/sym/type_decl_table.hpp"
 #include "prog/sym/type_id_hasher.hpp"
@@ -12,7 +13,7 @@ namespace prog::sym {
 
 class TypeDefTable final {
 public:
-  using typeDef  = typename std::variant<StructDef, UnionDef, EnumDef, DelegateDef>;
+  using typeDef  = typename std::variant<StructDef, UnionDef, EnumDef, DelegateDef, FutureDef>;
   using iterator = typename std::unordered_map<TypeId, typeDef, TypeIdHasher>::const_iterator;
 
   TypeDefTable()                            = default;
@@ -45,6 +46,8 @@ public:
 
   auto registerDelegate(
       const sym::TypeDeclTable& typeTable, sym::TypeId id, TypeSet input, TypeId output) -> void;
+
+  auto registerFuture(const sym::TypeDeclTable& typeTable, sym::TypeId id, TypeId result) -> void;
 
 private:
   std::unordered_map<TypeId, typeDef, TypeIdHasher> m_types;

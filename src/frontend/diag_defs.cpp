@@ -507,4 +507,10 @@ auto errNonPureConversion(const Source& src, input::Span span) -> Diag {
   return error(src, oss.str(), span);
 }
 
+auto errForkedNonUserFunc(const Source& src, input::Span span) -> Diag {
+  std::ostringstream oss;
+  oss << "Only user-defined functions can be forked";
+  return error(src, oss.str(), span);
+}
+
 } // namespace frontend

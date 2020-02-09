@@ -174,6 +174,30 @@ TEST_CASE("Infer return type of user functions", "[frontend]") {
         GET_TYPE_ID(output, "int"));
   }
 
+  SECTION("Forked Call") {
+    const auto& output = ANALYZE("fun f1() false "
+                                 "fun f2() fork f1()");
+    REQUIRE(output.isSuccess());
+    CHECK(GET_FUNC_DECL(output, "f2").getOutput() == GET_TYPE_ID(output, "__future_bool"));
+  }
+
+  SECTION("Forked templated call") {
+    const auto& output = ANALYZE("fun ft{T}(T a) a == a "
+                                 "fun f(int i) fork ft{int}(i)");
+    REQUIRE(output.isSuccess());
+    CHECK(
+        GET_FUNC_DECL(output, "f", GET_TYPE_ID(output, "int")).getOutput() ==
+        GET_TYPE_ID(output, "__future_bool"));
+  }
+
+  SECTION("Future result") {
+    const auto& output = ANALYZE("fun f2(future{int} f) f.wait()");
+    REQUIRE(output.isSuccess());
+    CHECK(
+        GET_FUNC_DECL(output, "f2", GET_TYPE_ID(output, "__future_int")).getOutput() ==
+        GET_TYPE_ID(output, "int"));
+  }
+
   SECTION("Templated constructor") {
     const auto& output = ANALYZE("struct tuple{T1, T2} = T1 a, T2 b "
                                  "fun f(int i) tuple{int, bool}(i, false)");
@@ -208,6 +232,13 @@ TEST_CASE("Infer return type of user functions", "[frontend]") {
     CHECK(GET_FUNC_DECL(output, "f").getOutput() == GET_TYPE_ID(output, "bool"));
   }
 
+  SECTION("Forked call operator") {
+    const auto& output = ANALYZE("fun ()(int i) i != 0 "
+                                 "fun f() fork 42()");
+    REQUIRE(output.isSuccess());
+    CHECK(GET_FUNC_DECL(output, "f").getOutput() == GET_TYPE_ID(output, "__future_bool"));
+  }
+
   SECTION("Instance function call") {
     const auto& output = ANALYZE("fun double(int i) i * 2 "
                                  "fun f() (42).double()");
@@ -237,6 +268,14 @@ TEST_CASE("Infer return type of user functions", "[frontend]") {
     CHECK(
         GET_FUNC_DECL(output, "f", GET_TYPE_ID(output, "S")).getOutput() ==
         GET_TYPE_ID(output, "int"));
+  }
+
+  SECTION("Forked dynamic call") {
+    const auto& output = ANALYZE("fun f(delegate{int, int} op) fork op(1)");
+    REQUIRE(output.isSuccess());
+    CHECK(
+        GET_FUNC_DECL(output, "f", GET_TYPE_ID(output, "__delegate_int_int")).getOutput() ==
+        GET_TYPE_ID(output, "__future_int"));
   }
 
   SECTION("Anonymous function") {

@@ -100,6 +100,7 @@ add_executable(tests
   vm/error_test.cpp
   vm/float_check_test.cpp
   vm/float_op_test.cpp
+  vm/fork_test.cpp
   vm/int_check_test.cpp
   vm/int_op_test.cpp
   vm/io_test.cpp

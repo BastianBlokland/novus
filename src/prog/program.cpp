@@ -284,6 +284,14 @@ auto Program::isDelegate(sym::TypeId id) const -> bool {
   return typeDecl.getKind() == sym::TypeKind::Delegate;
 }
 
+auto Program::isFuture(sym::TypeId id) const -> bool {
+  if (!id.isConcrete()) {
+    return false;
+  }
+  const auto& typeDecl = getTypeDecl(id);
+  return typeDecl.getKind() == sym::TypeKind::Future;
+}
+
 auto Program::isCallable(sym::FuncId func, const std::vector<expr::NodePtr>& args) const -> bool {
   const auto& funcDecl = getFuncDecl(func);
   return internal::isImplicitConvertible(*this, funcDecl.getInput(), args);
@@ -300,6 +308,17 @@ auto Program::isCallable(sym::TypeId delegate, const std::vector<expr::NodePtr>&
   }
   const auto& delegateDef = std::get<sym::DelegateDef>(getTypeDef(delegate));
   return internal::isImplicitConvertible(*this, delegateDef.getInput(), args);
+}
+
+auto Program::getDelegateRetType(sym::TypeId id) const -> std::optional<sym::TypeId> {
+  if (!id.isConcrete()) {
+    return std::nullopt;
+  }
+  const auto& typeDecl = getTypeDecl(id);
+  if (typeDecl.getKind() != sym::TypeKind::Delegate) {
+    return std::nullopt;
+  }
+  return std::get<sym::DelegateDef>(getTypeDef(id)).getOutput();
 }
 
 auto Program::getTypeDecl(sym::TypeId id) const -> const sym::TypeDecl& { return m_typeDecls[id]; }
@@ -328,6 +347,10 @@ auto Program::declareEnum(std::string name) -> sym::TypeId {
 
 auto Program::declareDelegate(std::string name) -> sym::TypeId {
   return m_typeDecls.registerType(sym::TypeKind::Delegate, std::move(name));
+}
+
+auto Program::declareFuture(std::string name) -> sym::TypeId {
+  return m_typeDecls.registerType(sym::TypeKind::Future, std::move(name));
 }
 
 auto Program::declarePureFunc(std::string name, sym::TypeSet input, sym::TypeId output)
@@ -426,6 +449,14 @@ auto Program::defineEnum(sym::TypeId id, std::unordered_map<std::string, int32_t
 
 auto Program::defineDelegate(sym::TypeId id, sym::TypeSet input, sym::TypeId output) -> void {
   m_typeDefs.registerDelegate(m_typeDecls, id, std::move(input), output);
+}
+
+auto Program::defineFuture(sym::TypeId id, sym::TypeId result) -> void {
+  // Register 'wait' function.
+  m_funcDecls.registerFunc(*this, sym::FuncKind::WaitFuture, "wait", sym::TypeSet{id}, result);
+
+  // Register future definition.
+  m_typeDefs.registerFuture(m_typeDecls, id, result);
 }
 
 auto Program::defineFunc(sym::FuncId id, sym::ConstDeclTable consts, expr::NodePtr expr) -> void {

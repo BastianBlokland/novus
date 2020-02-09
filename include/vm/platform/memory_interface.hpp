@@ -13,6 +13,12 @@ public:
   auto setEnvArgs(std::vector<std::string> envArgs) noexcept -> void;
   auto setEnvVars(std::unordered_map<std::string, std::string> envVars) noexcept -> void;
 
+  auto lockConWrite() noexcept -> void {}
+  auto unlockConWrite() noexcept -> void {}
+
+  auto lockConRead() noexcept -> void {}
+  auto unlockConRead() noexcept -> void {}
+
   auto conWrite(const char* data, unsigned int size) noexcept -> void;
   auto conRead() noexcept -> char;
   auto getEnvArg(int idx) noexcept -> const char*;

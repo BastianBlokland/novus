@@ -83,7 +83,7 @@ TEST_CASE("Generating assembly for unions", "[backend]") {
           builder->addMakeStruct(2);
 
           // Call equality function and write the result.
-          builder->addCall("ValEq", 2, false);
+          builder->addCall("ValEq", 2, CallMode::Normal);
           builder->addConvBoolString();
           builder->addPCall(vm::PCallCode::ConWriteString);
           builder->addRet();

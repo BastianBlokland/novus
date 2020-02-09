@@ -24,20 +24,22 @@ inline auto buildAssembly(const std::function<void(backend::Builder*)>& build) -
 
 #define CHECK_ASM(ASM, INPUT, ENV_VARS, ENV_ARG, ...)                                              \
   {                                                                                                \
+    auto assembly     = ASM;                                                                       \
     auto memInterface = platform::MemoryInterface{};                                               \
     memInterface.setStdIn(INPUT);                                                                  \
     memInterface.setEnvVars(ENV_VARS);                                                             \
     memInterface.setEnvArgs(ENV_ARG);                                                              \
-    execute(ASM, memInterface);                                                                    \
+    run(&assembly, &memInterface);                                                                 \
     const std::vector<std::string> expectedOutput = {__VA_ARGS__};                                 \
     CHECK_THAT(memInterface.getStdOut(), Catch::Equals(expectedOutput));                           \
   }
 
 #define CHECK_ASM_RESULTCODE(ASM, INPUT, EXPECTED)                                                 \
   {                                                                                                \
+    auto assembly     = ASM;                                                                       \
     auto memInterface = platform::MemoryInterface{};                                               \
     memInterface.setStdIn(INPUT);                                                                  \
-    CHECK(execute(ASM, memInterface) == (EXPECTED));                                               \
+    CHECK(run(&assembly, &memInterface) == (EXPECTED));                                            \
   }
 
 #define CHECK_EXPR(BUILD, INPUT, ...)                                                              \

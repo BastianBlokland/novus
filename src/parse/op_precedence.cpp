@@ -23,8 +23,9 @@ auto getRhsOpPrecedence(const lex::Token& token) -> int {
   case lex::TokenKind::SepOpenParen:
   case lex::TokenKind::SepOpenSquare:
   case lex::TokenKind::OpQMarkQMark:
-  case lex::TokenKind::OpDot:
     return callPrecedence;
+  case lex::TokenKind::OpDot:
+    return fieldPrecedence;
   case lex::TokenKind::OpStar:
   case lex::TokenKind::OpSlash:
   case lex::TokenKind::OpRem:

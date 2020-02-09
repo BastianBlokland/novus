@@ -9,7 +9,7 @@ class Ref {
 public:
   Ref(const Ref& rhs)     = delete;
   Ref(Ref&& rhs) noexcept = delete;
-  ~Ref() noexcept         = default;
+  virtual ~Ref() noexcept = default;
 
   auto operator=(const Ref& rhs) -> Ref& = delete;
   auto operator=(Ref&& rhs) -> Ref& = delete;

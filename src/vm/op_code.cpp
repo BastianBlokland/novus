@@ -203,11 +203,17 @@ auto operator<<(std::ostream& out, const OpCode& rhs) noexcept -> std::ostream& 
   case OpCode::CallTail:
     out << "call-tail";
     break;
+  case OpCode::CallForked:
+    out << "call-forked";
+    break;
   case OpCode::CallDyn:
     out << "call-dyn";
     break;
   case OpCode::CallDynTail:
     out << "call-dyn-tail";
+    break;
+  case OpCode::CallDynForked:
+    out << "call-dyn-forked";
     break;
   case OpCode::PCall:
     out << "pcall";
@@ -216,6 +222,9 @@ auto operator<<(std::ostream& out, const OpCode& rhs) noexcept -> std::ostream& 
     out << "ret";
     break;
 
+  case OpCode::WaitFuture:
+    out << "wait-future";
+    break;
   case OpCode::Dup:
     out << "dup";
     break;

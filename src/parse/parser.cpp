@@ -220,7 +220,7 @@ auto ParserImpl::nextStmtEnumDecl() -> NodePtr {
 
 auto ParserImpl::nextStmtExec() -> NodePtr { return execStmtNode(nextExprCall(nextExprId())); }
 
-auto ParserImpl::nextExpr(const int minPrecedence) -> NodePtr {
+auto ParserImpl::nextExpr(const int minPrecedence, const int maxPrecedence) -> NodePtr {
   auto lhs = nextExprLhs();
   while (true) {
     // Handle binary operators, precedence controls if we should keep recursing or let the next
@@ -229,7 +229,7 @@ auto ParserImpl::nextExpr(const int minPrecedence) -> NodePtr {
     const auto rhsPrecedence    = getRhsOpPrecedence(nextToken);
     const auto rightAssociative = isRightAssociative(nextToken);
     if (rhsPrecedence == 0 || rhsPrecedence < minPrecedence ||
-        (!rightAssociative && rhsPrecedence == minPrecedence)) {
+        (!rightAssociative && rhsPrecedence == minPrecedence) || rhsPrecedence >= maxPrecedence) {
       break;
     }
 
@@ -313,6 +313,10 @@ auto ParserImpl::nextExprPrimary() -> NodePtr {
     if (getKw(nextTok) == lex::Keyword::Lambda) {
       return nextExprAnonFunc();
     }
+    if (getKw(nextTok) == lex::Keyword::Fork) {
+      auto modifiers = std::vector<lex::Token>{consumeToken()};
+      return nextExprCall(nextExpr(0, callPrecedence), std::move(modifiers));
+    }
     [[fallthrough]];
   default:
     if (nextTok.getKind() == lex::TokenKind::SepOpenParen) {
@@ -360,7 +364,7 @@ auto ParserImpl::nextExprIs(NodePtr lhs) -> NodePtr {
   return errInvalidIsExpr(std::move(lhs), kwTok, type, std::move(id));
 }
 
-auto ParserImpl::nextExprCall(NodePtr lhs) -> NodePtr {
+auto ParserImpl::nextExprCall(NodePtr lhs, std::vector<lex::Token> modifiers) -> NodePtr {
   auto open  = consumeToken();
   auto empty = open.getKind() == lex::TokenKind::OpParenParen;
 
@@ -378,9 +382,11 @@ auto ParserImpl::nextExprCall(NodePtr lhs) -> NodePtr {
 
   const auto commasValid = commas.size() == (args.empty() ? 0 : args.size() - 1);
   if (validateParentheses(open, close) && commasValid) {
-    return callExprNode(std::move(lhs), open, std::move(args), std::move(commas), close);
+    return callExprNode(
+        std::move(modifiers), std::move(lhs), open, std::move(args), std::move(commas), close);
   }
-  return errInvalidCallExpr(std::move(lhs), open, std::move(args), std::move(commas), close);
+  return errInvalidCallExpr(
+      std::move(modifiers), std::move(lhs), open, std::move(args), std::move(commas), close);
 }
 
 auto ParserImpl::nextExprIndex(NodePtr lhs) -> NodePtr {

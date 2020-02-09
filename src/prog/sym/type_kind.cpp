@@ -31,6 +31,9 @@ auto operator<<(std::ostream& out, const TypeKind& rhs) -> std::ostream& {
   case TypeKind::Delegate:
     out << "delegate";
     break;
+  case TypeKind::Future:
+    out << "future";
+    break;
   }
   return out;
 }

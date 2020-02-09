@@ -20,9 +20,15 @@ static auto genTypeEquality(Builder* builder, const prog::sym::TypeDecl& typeDec
   case prog::sym::TypeKind::Delegate:
     builder->addCheckEqCallDynTgt();
     break;
+  case prog::sym::TypeKind::Future:
+    // Futures are not equality checked at the moment. A possible implementation would be to wait
+    // for both futures to complete and then compare the results but a user probably does not expect
+    // a equality check to block.
+    builder->addLoadLitInt(1);
+    break;
   case prog::sym::TypeKind::Struct:
   case prog::sym::TypeKind::Union:
-    builder->addCall(getUserTypeEqLabel(typeDecl.getId()), 2, false);
+    builder->addCall(getUserTypeEqLabel(typeDecl.getId()), 2, CallMode::Normal);
     break;
   }
 }

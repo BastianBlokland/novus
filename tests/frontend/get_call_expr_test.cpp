@@ -83,6 +83,20 @@ TEST_CASE("Analyzing call expressions", "[frontend]") {
             std::move(args)));
   }
 
+  SECTION("Get forked call") {
+    const auto& output = ANALYZE("fun f1() -> int 1 "
+                                 "fun f2() -> future{int} fork f1()");
+    REQUIRE(output.isSuccess());
+    CHECK(
+        GET_FUNC_DEF(output, "f2").getExpr() ==
+        *prog::expr::callExprNode(
+            output.getProg(),
+            GET_FUNC_ID(output, "f1"),
+            GET_TYPE_ID(output, "__future_int"),
+            {},
+            true));
+  }
+
   SECTION("Get call to overloaded call operator on literal") {
     const auto& output = ANALYZE("fun ()(int i) -> int i * i "
                                  "fun f() -> int 1()");

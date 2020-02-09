@@ -1,6 +1,8 @@
 #pragma once
+#include "internal/ref_future.hpp"
 #include "internal/ref_string.hpp"
 #include "internal/ref_struct.hpp"
+#include <atomic>
 #include <utility>
 
 namespace vm::internal {
@@ -20,9 +22,10 @@ public:
 
   [[nodiscard]] auto allocStruct(uint8_t fieldCount) noexcept -> std::pair<StructRef*, Value*>;
 
+  [[nodiscard]] auto allocFuture() noexcept -> FutureRef*;
+
 private:
-  Ref* m_firstRef;
-  Ref* m_lastRef;
+  std::atomic<Ref*> m_head;
 
   auto initRef(Ref* ref) noexcept -> void;
 

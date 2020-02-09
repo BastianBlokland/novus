@@ -13,6 +13,7 @@ enum class TypeKind {
   Union,
   Enum,
   Delegate,
+  Future,
 };
 
 auto operator<<(std::ostream& out, const TypeKind& rhs) -> std::ostream&;

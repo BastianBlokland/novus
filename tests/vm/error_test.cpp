@@ -1,6 +1,6 @@
 #include "catch2/catch.hpp"
 #include "helpers.hpp"
-#include "vm/result_code.hpp"
+#include "vm/exec_state.hpp"
 
 namespace vm {
 
@@ -10,19 +10,19 @@ TEST_CASE("Runtime errors", "[vm]") {
     CHECK_EXPR_RESULTCODE(
         [](backend::Builder* builder) -> void { builder->addFail(); },
         "input",
-        ResultCode::InvalidAssembly);
+        ExecState::InvalidAssembly);
   }
 
   SECTION("Stack overflow") {
     CHECK_PROG_RESULTCODE(
         [](backend::Builder* builder) -> void {
           builder->label("func");
-          builder->addCall("func", 0, false);
+          builder->addCall("func", 0, backend::CallMode::Normal);
 
           builder->addEntryPoint("func");
         },
         "input",
-        ResultCode::StackOverflow);
+        ExecState::StackOverflow);
   }
 
   SECTION("Stack overflow") {
@@ -33,7 +33,7 @@ TEST_CASE("Runtime errors", "[vm]") {
           builder->addJump("push1");
         },
         "input",
-        ResultCode::StackOverflow);
+        ExecState::StackOverflow);
   }
 
   SECTION("Stack overflow") {
@@ -41,12 +41,12 @@ TEST_CASE("Runtime errors", "[vm]") {
         [](backend::Builder* builder) -> void {
           builder->label("func");
           builder->addStackAlloc(10);
-          builder->addCall("func", 0, false);
+          builder->addCall("func", 0, backend::CallMode::Normal);
 
           builder->addEntryPoint("func");
         },
         "input",
-        ResultCode::StackOverflow);
+        ExecState::StackOverflow);
   }
 }
 

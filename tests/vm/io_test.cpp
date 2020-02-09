@@ -1,6 +1,6 @@
 #include "catch2/catch.hpp"
 #include "helpers.hpp"
-#include "vm/result_code.hpp"
+#include "vm/exec_state.hpp"
 
 namespace vm {
 
@@ -216,7 +216,7 @@ TEST_CASE("Execute input and output", "[vm]") {
           builder->addRet();
         },
         "input",
-        ResultCode::AssertFailed);
+        ExecState::AssertFailed);
     CHECK_PROG(
         [](backend::Builder* builder) -> void {
           builder->label("entry");

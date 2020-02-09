@@ -52,6 +52,7 @@ TEST_CASE("Parsing switch expressions", "[parse]") {
   CHECK_EXPR(
       "a(if x -> 1 else -> 2, 3)",
       callExprNode(
+          {},
           ID_EXPR("a"),
           OPAREN,
           NODES(

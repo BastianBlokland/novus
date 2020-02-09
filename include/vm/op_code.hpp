@@ -74,15 +74,18 @@ enum class OpCode : uint8_t {
   Jump   = 220,
   JumpIf = 221,
 
-  Call        = 230,
-  CallTail    = 231,
-  CallDyn     = 232,
-  CallDynTail = 233,
-  PCall       = 234,
-  Ret         = 235,
+  Call          = 230,
+  CallTail      = 231,
+  CallForked    = 232,
+  CallDyn       = 234,
+  CallDynTail   = 235,
+  CallDynForked = 236,
+  PCall         = 237,
+  Ret           = 238,
 
-  Dup = 240,
-  Pop = 241,
+  WaitFuture = 240,
+  Dup        = 241,
+  Pop        = 242,
 
   Fail = 255,
 };

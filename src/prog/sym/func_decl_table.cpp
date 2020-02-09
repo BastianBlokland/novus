@@ -37,6 +37,9 @@ auto FuncDeclTable::lookup(const std::string& name, OverloadOptions options) con
     if (options.hasFlag<OverloadFlags::ExclPureFuncs>() && !m_funcs[f.m_id].isAction()) {
       continue;
     }
+    if (options.hasFlag<OverloadFlags::ExclNonUser>() && m_funcs[f.m_id].m_kind != FuncKind::User) {
+      continue;
+    }
     result.push_back(f);
   }
 

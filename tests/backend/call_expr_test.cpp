@@ -390,7 +390,7 @@ TEST_CASE("Generate assembly for call expressions", "[backend]") {
           builder->label("prog");
           builder->addLoadLitInt(42);
           builder->addLoadLitInt(1337);
-          builder->addCall("test", 2, false);
+          builder->addCall("test", 2, CallMode::Normal);
           builder->addConvIntString();
           builder->addPCall(vm::PCallCode::ConWriteString);
           builder->addRet();

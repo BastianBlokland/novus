@@ -30,7 +30,7 @@ private:
   auto nextStmtEnumDecl() -> NodePtr;
   auto nextStmtExec() -> NodePtr;
 
-  auto nextExpr(int minPrecedence) -> NodePtr;
+  auto nextExpr(int minPrecedence, int maxPrecedence = 99) -> NodePtr;
   auto nextExprLhs() -> NodePtr;
   auto nextExprGroup(NodePtr firstExpr, int precedence) -> NodePtr;
   auto nextExprPrimary() -> NodePtr;
@@ -38,7 +38,7 @@ private:
   auto nextExprId(lex::Token idToken) -> NodePtr;
   auto nextExprField(NodePtr lhs) -> NodePtr;
   auto nextExprIs(NodePtr lhs) -> NodePtr;
-  auto nextExprCall(NodePtr lhs) -> NodePtr;
+  auto nextExprCall(NodePtr lhs, std::vector<lex::Token> modifiers = {}) -> NodePtr;
   auto nextExprIndex(NodePtr lhs) -> NodePtr;
   auto nextExprConditional(NodePtr condExpr) -> NodePtr;
   auto nextExprParen() -> NodePtr;

@@ -6,8 +6,9 @@
 
 namespace prog::expr {
 
-CallDynExprNode::CallDynExprNode(NodePtr lhs, sym::TypeId resultType, std::vector<NodePtr> args) :
-    m_lhs{std::move(lhs)}, m_resultType{resultType}, m_args{std::move(args)} {}
+CallDynExprNode::CallDynExprNode(
+    NodePtr lhs, sym::TypeId resultType, std::vector<NodePtr> args, bool fork) :
+    m_lhs{std::move(lhs)}, m_resultType{resultType}, m_args{std::move(args)}, m_fork{fork} {}
 
 auto CallDynExprNode::operator==(const Node& rhs) const noexcept -> bool {
   const auto r = dynamic_cast<const CallDynExprNode*>(&rhs);
@@ -34,12 +35,28 @@ auto CallDynExprNode::getType() const noexcept -> sym::TypeId { return m_resultT
 
 auto CallDynExprNode::toString() const -> std::string { return "call-dyn"; }
 
+auto CallDynExprNode::isFork() const noexcept -> bool { return m_fork; }
+
 auto CallDynExprNode::accept(NodeVisitor* visitor) const -> void { visitor->visit(*this); }
 
 // Factories.
 auto callDynExprNode(const Program& prog, NodePtr lhs, std::vector<NodePtr> args) -> NodePtr {
+  auto resultType = prog.getDelegateRetType(lhs->getType());
+  if (!resultType) {
+    throw std::invalid_argument{"Lhs expr to dyn call has to be a delegate type"};
+  }
+  return callDynExprNode(prog, std::move(lhs), *resultType, std::move(args), false);
+}
+
+auto callDynExprNode(
+    const Program& prog, NodePtr lhs, sym::TypeId resultType, std::vector<NodePtr> args, bool fork)
+    -> NodePtr {
+
   if (lhs == nullptr) {
     throw std::invalid_argument{"Lhs cannot be null"};
+  }
+  if (fork && !prog.isFuture(resultType)) {
+    throw std::invalid_argument{"Forks have to return a future type"};
   }
   if (anyNodeNull(args)) {
     throw std::invalid_argument{"Call dyn node cannot contain a null argument"};
@@ -58,7 +75,7 @@ auto callDynExprNode(const Program& prog, NodePtr lhs, std::vector<NodePtr> args
   internal::applyImplicitConversions(prog, delegateInput, &args);
 
   return std::unique_ptr<CallDynExprNode>{
-      new CallDynExprNode{std::move(lhs), delegateDef.getOutput(), std::move(args)}};
+      new CallDynExprNode{std::move(lhs), resultType, std::move(args), fork}};
 }
 
 } // namespace prog::expr

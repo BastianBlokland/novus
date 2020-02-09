@@ -194,14 +194,38 @@ auto Builder::addJumpIf(std::string label) -> void {
   writeIpOffset(std::move(label));
 }
 
-auto Builder::addCall(std::string label, uint8_t argCount, bool tail) -> void {
-  writeOpCode(tail ? vm::OpCode::CallTail : vm::OpCode::Call);
+auto Builder::addCall(std::string label, uint8_t argCount, CallMode mode) -> void {
+  switch (mode) {
+  case CallMode::Normal:
+    writeOpCode(vm::OpCode::Call);
+    break;
+  case CallMode::Tail:
+    writeOpCode(vm::OpCode::CallTail);
+    break;
+  case CallMode::Forked:
+    writeOpCode(vm::OpCode::CallForked);
+    break;
+  default:
+    throw std::invalid_argument{"Unsupported call mode"};
+  }
   writeUInt8(argCount);
   writeIpOffset(std::move(label));
 }
 
-auto Builder::addCallDyn(uint8_t argCount, bool tail) -> void {
-  writeOpCode(tail ? vm::OpCode::CallDynTail : vm::OpCode::CallDyn);
+auto Builder::addCallDyn(uint8_t argCount, CallMode mode) -> void {
+  switch (mode) {
+  case CallMode::Normal:
+    writeOpCode(vm::OpCode::CallDyn);
+    break;
+  case CallMode::Tail:
+    writeOpCode(vm::OpCode::CallDynTail);
+    break;
+  case CallMode::Forked:
+    writeOpCode(vm::OpCode::CallDynForked);
+    break;
+  default:
+    throw std::invalid_argument{"Unsupported call mode"};
+  }
   writeUInt8(argCount);
 }
 
@@ -211,6 +235,8 @@ auto Builder::addPCall(vm::PCallCode code) -> void {
 }
 
 auto Builder::addRet() -> void { writeOpCode(vm::OpCode::Ret); }
+
+auto Builder::addWaitFuture() -> void { writeOpCode(vm::OpCode::WaitFuture); }
 
 auto Builder::addDup() -> void { writeOpCode(vm::OpCode::Dup); }
 

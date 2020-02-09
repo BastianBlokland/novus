@@ -17,6 +17,9 @@ auto operator<<(std::ostream& out, const Keyword& rhs) -> std::ostream& {
   case Keyword::Lambda:
     out << "lambda";
     break;
+  case Keyword::Fork:
+    out << "fork";
+    break;
   case Keyword::Struct:
     out << "struct";
     break;
@@ -48,6 +51,7 @@ auto getKeyword(const std::string& str) -> std::optional<Keyword> {
       {"fun", Keyword::Fun},
       {"action", Keyword::Action},
       {"lambda", Keyword::Lambda},
+      {"fork", Keyword::Fork},
       {"struct", Keyword::Struct},
       {"union", Keyword::Union},
       {"enum", Keyword::Enum},

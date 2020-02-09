@@ -1,17 +1,23 @@
 #include "internal/allocator.hpp"
 #include "internal/ref_string.hpp"
+#include <atomic>
 #include <cstdlib>
 #include <new>
 
 namespace vm::internal {
 
-Allocator::Allocator() noexcept : m_firstRef{nullptr}, m_lastRef{nullptr} {}
+Allocator::Allocator() noexcept : m_head{nullptr} {}
 
 Allocator::~Allocator() noexcept {
-  // Delete all allocations.
-  auto* ref = m_firstRef;
+  /* Delete all allocations. Note this assumes no new allocates are being made while we are running
+   * the destructor. */
+
+  auto* ref = m_head.load(std::memory_order_acquire);
   while (ref) {
     auto next = ref->m_next;
+    // Call the (virtual) destructor of Ref.
+    ref->~Ref();
+    // Free the backing memory.
     std::free(ref); // NOLINT: Manual memory management.
     ref = next;
   }
@@ -42,14 +48,18 @@ auto Allocator::allocStruct(uint8_t fieldCount) noexcept -> std::pair<StructRef*
   return {refPtr, fieldsPtr};
 }
 
+auto Allocator::allocFuture() noexcept -> FutureRef* {
+  auto mem     = alloc<FutureRef>(0);
+  auto* refPtr = static_cast<FutureRef*>(new (mem.first) FutureRef{});
+  initRef(refPtr);
+  return refPtr;
+}
+
 auto Allocator::initRef(Ref* ref) noexcept -> void {
   // Keep track of all allocated references by linking them as a singly linked list.
-  if (m_lastRef) {
-    m_lastRef->m_next = ref;
-    m_lastRef         = ref;
-  } else {
-    m_firstRef = ref;
-    m_lastRef  = ref;
+  ref->m_next = m_head.load(std::memory_order_relaxed);
+  while (!m_head.compare_exchange_weak(
+      ref->m_next, ref, std::memory_order_release, std::memory_order_relaxed)) {
   }
 }
 

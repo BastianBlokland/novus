@@ -82,7 +82,10 @@ auto GenExpr::visit(const prog::expr::CallExprNode& n) -> void {
     }
     break;
   case prog::sym::FuncKind::User:
-    m_builder->addCall(getLabel(funcDecl.getId()), funcDecl.getInput().getCount(), m_tail);
+    m_builder->addCall(
+        getLabel(funcDecl.getId()),
+        funcDecl.getInput().getCount(),
+        n.isFork() ? CallMode::Forked : (m_tail ? CallMode::Tail : CallMode::Normal));
     break;
 
   case prog::sym::FuncKind::AddInt:
@@ -329,6 +332,11 @@ auto GenExpr::visit(const prog::expr::CallExprNode& n) -> void {
     break;
   }
 
+  case prog::sym::FuncKind::WaitFuture: {
+    m_builder->addWaitFuture();
+    break;
+  }
+
   case prog::sym::FuncKind::CheckEqUserType:
   case prog::sym::FuncKind::CheckNEqUserType: {
     auto lhsType = n[0].getType();
@@ -337,7 +345,8 @@ auto GenExpr::visit(const prog::expr::CallExprNode& n) -> void {
       throw std::logic_error{"User-type equality function requires args to have the same type"};
     }
     auto invert = funcDecl.getKind() == prog::sym::FuncKind::CheckNEqUserType;
-    m_builder->addCall(getUserTypeEqLabel(lhsType), 2, m_tail && !invert);
+    m_builder->addCall(
+        getUserTypeEqLabel(lhsType), 2, (m_tail && !invert) ? CallMode::Tail : CallMode::Normal);
     if (invert) {
       m_builder->addLogicInvInt();
     }
@@ -388,7 +397,9 @@ auto GenExpr::visit(const prog::expr::CallDynExprNode& n) -> void {
   genSubExpr(n[0], false);
 
   // Invoke the delegate.
-  m_builder->addCallDyn(n.getChildCount() - 1, m_tail);
+  m_builder->addCallDyn(
+      n.getChildCount() - 1,
+      n.isFork() ? CallMode::Forked : (m_tail ? CallMode::Tail : CallMode::Normal));
 }
 
 auto GenExpr::visit(const prog::expr::ClosureNode& n) -> void {

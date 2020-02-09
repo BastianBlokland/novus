@@ -141,6 +141,11 @@ auto printTypeDefs(const prog::Program& prog) -> void {
       std::cout << "  " << rang::fg::yellow << rang::style::bold << std::setw(nameColWidth)
                 << std::left << inputStr.str() << " -> " << delegateDef.getOutput()
                 << rang::style::reset << '\n';
+    } else if (std::holds_alternative<prog::sym::FutureDef>(typeDef)) {
+      const auto& futureDef = std::get<prog::sym::FutureDef>(typeDef);
+      std::cout << "  " << rang::fg::yellow << rang::style::bold << std::setw(nameColWidth)
+                << std::left << "future"
+                << " -> " << futureDef.getResult() << rang::style::reset << '\n';
     }
   }
 }

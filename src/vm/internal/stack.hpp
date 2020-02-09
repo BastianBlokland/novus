@@ -1,6 +1,5 @@
 #pragma once
 #include "internal/value.hpp"
-#include "vm/result_code.hpp"
 #include <array>
 #include <cassert>
 
@@ -48,7 +47,7 @@ public:
     return m_stackNext < m_stackMax;
   }
 
-  [[nodiscard]] inline auto push(Value value) noexcept -> bool {
+  inline auto push(Value value) noexcept -> bool {
     *m_stackNext++ = value;
     return m_stackNext < m_stackMax;
   }
@@ -65,5 +64,7 @@ private:
   Value* m_stackNext;
   Value* m_stackMax;
 };
+
+using BasicStack = Stack<10240>;
 
 } // namespace vm::internal
