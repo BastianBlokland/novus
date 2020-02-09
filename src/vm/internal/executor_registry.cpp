@@ -3,7 +3,7 @@
 
 namespace vm::internal {
 
-ExecutorRegistry::ExecutorRegistry() noexcept : m_mutex{}, m_head{nullptr} {};
+ExecutorRegistry::ExecutorRegistry() noexcept : m_head{nullptr} {};
 
 auto ExecutorRegistry::registerExecutor(ExecutorHandle* handle) noexcept -> void {
   auto lk = std::lock_guard<std::mutex>{m_mutex};
