@@ -105,9 +105,11 @@ auto inline pcall(
     auto* msg = getStringRef(POP());
     auto cond = PEEK_INT();
     if (cond == 0) {
+      iface->lockConWrite();
       iface->conWrite("Assertion failed: ", 18);
       iface->conWrite(msg->getDataPtr(), msg->getSize());
       iface->conWrite(&newl, 1);
+      iface->unlockConWrite();
       execHandle->setState(ExecState::AssertFailed);
     }
   } break;
