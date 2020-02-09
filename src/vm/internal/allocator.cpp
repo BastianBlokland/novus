@@ -1,5 +1,6 @@
 #include "internal/allocator.hpp"
 #include "internal/ref_string.hpp"
+#include <atomic>
 #include <cstdlib>
 #include <new>
 
@@ -8,8 +9,10 @@ namespace vm::internal {
 Allocator::Allocator() noexcept : m_head{nullptr} {}
 
 Allocator::~Allocator() noexcept {
-  // Delete all allocations.
-  auto* ref = m_head;
+  /* Delete all allocations. Note this assumes no new allocates are being made while we are running
+   * the destructor. */
+
+  auto* ref = m_head.load(std::memory_order_acquire);
   while (ref) {
     auto next = ref->m_next;
     // Call the (virtual) destructor of Ref.
@@ -54,8 +57,10 @@ auto Allocator::allocFuture() noexcept -> FutureRef* {
 
 auto Allocator::initRef(Ref* ref) noexcept -> void {
   // Keep track of all allocated references by linking them as a singly linked list.
-  ref->m_next = m_head;
-  m_head      = ref;
+  ref->m_next = m_head.load(std::memory_order_relaxed);
+  while (!m_head.compare_exchange_weak(
+      ref->m_next, ref, std::memory_order_release, std::memory_order_relaxed)) {
+  }
 }
 
 } // namespace vm::internal
