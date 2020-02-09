@@ -311,8 +311,8 @@ auto GetExpr::visit(const parse::IdExprNode& n) -> void {
   }
 
   // Non-templated function literal.
-  const auto funcs =
-      m_ctx->getProg()->lookupFuncs(name, prog::OvOptions{prog::OvFlags::ExclActions});
+  auto funcs = m_ctx->getProg()->lookupFuncs(
+      name, prog::OvOptions{prog::OvFlags::ExclActions | prog::OvFlags::ExclNonUser});
   if (!funcs.empty()) {
     if (funcs.size() != 1) {
       m_ctx->reportDiag(errAmbiguousFunction, name, n.getSpan());

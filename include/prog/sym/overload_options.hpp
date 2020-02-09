@@ -6,6 +6,7 @@ enum class OverloadFlags : unsigned int {
   None          = 0U,
   ExclPureFuncs = 1U << 0U,
   ExclActions   = 1U << 1U,
+  ExclNonUser   = 1U << 2U,
 };
 
 inline auto operator|(OverloadFlags lhs, OverloadFlags rhs) noexcept {
