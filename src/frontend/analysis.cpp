@@ -30,8 +30,7 @@ auto visitAll(std::vector<internal::Context>* ctxs, VisitorArgs&&... visitorArgs
   }
 }
 
-auto analyze(const Source& mainSrc, const std::vector<std::filesystem::path>& searchPaths)
-    -> Output {
+auto analyze(const Source& mainSrc, const std::vector<filesystem::path>& searchPaths) -> Output {
   auto prog          = std::make_unique<prog::Program>();
   auto typeTemplates = internal::TypeTemplateTable{};
   auto funcTemplates = internal::FuncTemplateTable{};

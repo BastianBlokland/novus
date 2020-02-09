@@ -112,7 +112,6 @@ add_executable(tests
   vm/string_op_test.cpp
   vm/struct_op_test.cpp)
 target_compile_features(tests PRIVATE cxx_std_17)
-target_compile_options(tests PRIVATE -Werror -Wall -Wextra)
 target_link_libraries(tests PRIVATE Catch2::Catch2)
 target_link_libraries(tests PRIVATE lex)
 target_link_libraries(tests PRIVATE parse)

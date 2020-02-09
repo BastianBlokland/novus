@@ -1,8 +1,8 @@
 #pragma once
+#include "filesystem.hpp"
 #include "input/info.hpp"
 #include "lex/lexer.hpp"
 #include "parse/parser.hpp"
-#include <filesystem>
 #include <optional>
 #include <string>
 #include <vector>
@@ -12,15 +12,13 @@ namespace frontend {
 class Source final {
   template <typename InputItrBegin, typename InputItrEnd>
   friend auto buildSource(
-      std::string id,
-      std::optional<std::filesystem::path> path,
-      InputItrBegin begin,
-      InputItrEnd end) -> Source;
+      std::string id, std::optional<filesystem::path> path, InputItrBegin begin, InputItrEnd end)
+      -> Source;
 
   friend auto operator<<(std::ostream& out, const Source& rhs) -> std::ostream&;
 
 public:
-  using path     = typename std::filesystem::path;
+  using path     = typename filesystem::path;
   using iterator = typename std::vector<parse::NodePtr>::const_iterator;
 
   Source()                      = delete;
@@ -58,7 +56,7 @@ auto operator<<(std::ostream& out, const Source& rhs) -> std::ostream&;
 
 template <typename InputItrBegin, typename InputItrEnd>
 auto buildSource(
-    std::string id, std::optional<std::filesystem::path> path, InputItrBegin begin, InputItrEnd end)
+    std::string id, std::optional<filesystem::path> path, InputItrBegin begin, InputItrEnd end)
     -> Source {
 
   static_assert(

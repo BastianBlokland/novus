@@ -1,11 +1,11 @@
 #include "backend/generator.hpp"
+#include "filesystem.hpp"
 #include "frontend/analysis.hpp"
 #include "frontend/source.hpp"
 #include "rang.hpp"
 #include "vm/exec_state.hpp"
 #include "vm/platform/terminal_interface.hpp"
 #include "vm/vm.hpp"
-#include <filesystem>
 #include <fstream>
 #include <system_error>
 
@@ -14,8 +14,8 @@ namespace eval {
 template <typename InputItr>
 auto run(
     const std::string& inputId,
-    std::optional<std::filesystem::path> inputPath,
-    const std::vector<std::filesystem::path>& searchPaths,
+    std::optional<filesystem::path> inputPath,
+    const std::vector<filesystem::path>& searchPaths,
     InputItr inputBegin,
     const InputItr inputEnd,
     int vmEnvArgsCount,
@@ -46,10 +46,10 @@ auto run(
 } // namespace eval
 
 auto getSearchPaths(char** argv) noexcept {
-  auto result = std::vector<std::filesystem::path>{};
+  auto result = std::vector<filesystem::path>{};
 
   // Add the path to the binary.
-  result.push_back(std::filesystem::absolute(argv[0]).parent_path());
+  result.push_back(filesystem::absolute(argv[0]).parent_path());
 
   return result;
 }
@@ -65,11 +65,10 @@ auto main(int argc, char** argv) noexcept -> int {
   auto vmEnvArgsCount = argc - 2; // 1 for program path and 1 for source.
   auto vnEnvArgs      = argv + 2;
 
-  auto path = std::filesystem::path{argv[1]};
+  auto path = filesystem::path{argv[1]};
   auto fs   = std::ifstream{path};
   if (fs.good()) {
-    std::error_code getAbsErr;
-    auto absInputPath = std::filesystem::absolute(path, getAbsErr);
+    auto absInputPath = filesystem::absolute(path);
     return eval::run(
         path.filename(),
         absInputPath,

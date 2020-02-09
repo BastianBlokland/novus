@@ -1,8 +1,8 @@
 #pragma once
+#include "filesystem.hpp"
 #include "frontend/diag.hpp"
 #include "frontend/source.hpp"
 #include "parse/node_visitor_optional.hpp"
-#include <filesystem>
 #include <forward_list>
 #include <optional>
 #include <string>
@@ -11,7 +11,7 @@
 namespace frontend::internal {
 
 class ImportSources final : public parse::OptionalNodeVisitor {
-  using path = typename std::filesystem::path;
+  using path = typename filesystem::path;
 
 public:
   ImportSources() = delete;

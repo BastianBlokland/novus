@@ -1,13 +1,9 @@
 #pragma once
+#include "charconv.hpp"
 #include "internal/allocator.hpp"
 #include <cmath>
 #include <cstdio>
 #include <cstring>
-
-#if __has_include(<charconv>)
-#include <charconv>
-#define HAS_CHAR_CONV
-#endif
 
 namespace vm::internal {
 

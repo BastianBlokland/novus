@@ -1,11 +1,11 @@
 #include "CLI/CLI.hpp"
+#include "filesystem.hpp"
 #include "frontend/analysis.hpp"
 #include "frontend/source.hpp"
 #include "get_expr_color.hpp"
 #include "input/char_escape.hpp"
 #include "rang.hpp"
 #include <chrono>
-#include <filesystem>
 
 namespace progdiag {
 
@@ -234,8 +234,8 @@ auto printProgram(const prog::Program& prog) -> void {
 template <typename InputItr>
 auto run(
     const std::string& inputId,
-    std::optional<std::filesystem::path> inputPath,
-    const std::vector<std::filesystem::path>& searchPaths,
+    std::optional<filesystem::path> inputPath,
+    const std::vector<filesystem::path>& searchPaths,
     InputItr inputBegin,
     const InputItr inputEnd,
     const bool outputProgram) {
@@ -291,10 +291,10 @@ auto operator<<(std::ostream& out, const duration& rhs) -> std::ostream& {
 } // namespace progdiag
 
 auto getSearchPaths(char** argv) {
-  auto result = std::vector<std::filesystem::path>{};
+  auto result = std::vector<filesystem::path>{};
 
   // Add the path to the binary.
-  result.push_back(std::filesystem::absolute(argv[0]).parent_path());
+  result.push_back(filesystem::absolute(argv[0]).parent_path());
 
   return result;
 }
@@ -317,10 +317,10 @@ auto main(int argc, char** argv) -> int {
   analyzeCmd->add_option("input", input, "Input characters to analyze")->required();
 
   // Analyze input file.
-  std::filesystem::path filePath;
+  filesystem::path filePath;
   auto analyzeFileCmd =
       app.add_subcommand("analyzefile", "Analyze the provided file")->callback([&]() {
-        auto absFilePath = std::filesystem::absolute(filePath);
+        auto absFilePath = filesystem::absolute(filePath);
         std::ifstream fs{filePath};
         exitcode = progdiag::run(
             filePath.filename(),

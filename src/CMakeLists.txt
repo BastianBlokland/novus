@@ -5,7 +5,6 @@ add_library(input STATIC
   input/span.cpp
   input/textpos.cpp)
 target_compile_features(input PUBLIC cxx_std_17)
-target_compile_options(input PRIVATE -Werror -Wall -Wextra)
 target_include_directories(input PUBLIC ${PROJECT_SOURCE_DIR}/include)
 target_include_directories(input PRIVATE input)
 
@@ -22,7 +21,6 @@ add_library(lex STATIC
   lex/utilities.cpp)
 target_compile_features(lex PUBLIC cxx_std_17)
 target_link_libraries(lex PUBLIC input)
-target_compile_options(lex PRIVATE -Werror -Wall -Wextra)
 target_include_directories(lex PUBLIC ${PROJECT_SOURCE_DIR}/include)
 target_include_directories(lex PRIVATE lex)
 
@@ -64,7 +62,6 @@ add_library(parse STATIC
   parse/utilities.cpp)
 target_compile_features(parse PUBLIC cxx_std_17)
 target_link_libraries(parse PUBLIC lex)
-target_compile_options(parse PRIVATE -Werror -Wall -Wextra)
 target_include_directories(parse PUBLIC ${PROJECT_SOURCE_DIR}/include)
 target_include_directories(parse PRIVATE parse)
 
@@ -124,7 +121,6 @@ add_library(prog STATIC
   prog/operator.cpp
   prog/program.cpp)
 target_compile_features(prog PUBLIC cxx_std_17)
-target_compile_options(prog PRIVATE -Werror -Wall -Wextra)
 target_include_directories(prog PUBLIC ${PROJECT_SOURCE_DIR}/include)
 target_include_directories(prog PRIVATE prog)
 
@@ -166,7 +162,6 @@ add_library(frontend STATIC
 target_compile_features(frontend PUBLIC cxx_std_17)
 target_link_libraries(frontend PUBLIC parse)
 target_link_libraries(frontend PUBLIC prog)
-target_compile_options(frontend PRIVATE -Werror -Wall -Wextra)
 target_include_directories(frontend PUBLIC ${PROJECT_SOURCE_DIR}/include)
 target_include_directories(frontend PRIVATE frontend)
 
@@ -182,7 +177,6 @@ add_library(backend STATIC
 target_compile_features(backend PUBLIC cxx_std_17)
 target_link_libraries(backend PUBLIC prog)
 target_link_libraries(backend PUBLIC vm)
-target_compile_options(backend PRIVATE -Werror -Wall -Wextra)
 target_include_directories(backend PUBLIC ${PROJECT_SOURCE_DIR}/include)
 target_include_directories(backend PRIVATE backend)
 
@@ -198,6 +192,7 @@ add_library(vm STATIC
   vm/pcall_code.cpp
   vm/exec_state.cpp)
 target_compile_features(vm PUBLIC cxx_std_17)
-target_compile_options(vm PRIVATE -Werror -Wall -Wextra -fno-exceptions)
+target_compile_options(vm PRIVATE -fno-exceptions)
+target_link_libraries(vm Threads::Threads)
 target_include_directories(vm PUBLIC ${PROJECT_SOURCE_DIR}/include)
 target_include_directories(vm PRIVATE vm)

@@ -5,7 +5,7 @@ namespace frontend {
 
 Source::Source(
     std::string id,
-    std::optional<std::filesystem::path> path,
+    std::optional<filesystem::path> path,
     std::vector<parse::NodePtr> nodes,
     input::Info info) :
     m_id{std::move(id)},
@@ -19,9 +19,7 @@ auto Source::end() const noexcept -> iterator { return m_nodes.end(); }
 
 auto Source::getId() const noexcept -> const std::string& { return m_id; }
 
-auto Source::getPath() const noexcept -> const std::optional<std::filesystem::path>& {
-  return m_path;
-}
+auto Source::getPath() const noexcept -> const std::optional<filesystem::path>& { return m_path; }
 
 auto Source::getCharCount() const noexcept -> unsigned int { return m_info.getCharCount(); }
 

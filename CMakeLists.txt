@@ -13,8 +13,17 @@ include(CTest)
 enable_testing()
 
 # Global compiler flags.
-set(CMAKE_CXX_FLAGS_DEBUG "-g")
-set(CMAKE_CXX_FLAGS_RELEASE "-O3")
+set(CMAKE_CXX_FLAGS_DEBUG "-g -std=c++17 -Werror -Wall -Wextra")
+set(CMAKE_CXX_FLAGS_RELEASE "-O3 -std=c++17 -Werror -Wall -Wextra")
+
+# Find the threads library.
+set(CMAKE_THREAD_PREFER_PTHREAD On)
+find_package(Threads REQUIRED)
+
+# Some implementations require linking to a special library for file-system support.
+IF(TARGET stdc++fs)
+  target_link_libraries(frontend PRIVATE stdc++fs)
+ENDIF()
 
 # Generate a 'compile_commands.json' for use by clangd.
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
