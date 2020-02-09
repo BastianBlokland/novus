@@ -53,12 +53,15 @@ auto inline pcall(
   } break;
   case vm::PCallCode::ConReadChar: {
     execHandle->setState(ExecState::Paused);
+    iface->lockConRead();
     PUSH_INT(iface->conRead());
+    iface->unlockConRead();
     execHandle->setState(ExecState::Running);
     execHandle->trap();
   } break;
   case vm::PCallCode::ConReadStringLine: {
     execHandle->setState(ExecState::Paused);
+    iface->lockConRead();
     std::string line = {};
     while (true) {
       const auto c = iface->conRead();
@@ -67,6 +70,7 @@ auto inline pcall(
       }
       line += c;
     }
+    iface->unlockConRead();
     execHandle->setState(ExecState::Running);
     execHandle->trap();
     PUSH_REF(toString(allocator, line));
