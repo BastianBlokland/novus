@@ -34,16 +34,22 @@ auto inline pcall(
   switch (code) {
   case vm::PCallCode::ConWriteChar: {
     auto c = static_cast<char>(PEEK_INT());
+    iface->lockConWrite();
     iface->conWrite(&c, 1);
+    iface->unlockConWrite();
   } break;
   case vm::PCallCode::ConWriteString: {
     auto* strRef = getStringRef(PEEK());
+    iface->lockConWrite();
     iface->conWrite(strRef->getDataPtr(), strRef->getSize());
+    iface->unlockConWrite();
   } break;
   case vm::PCallCode::ConWriteStringLine: {
     auto* strRef = getStringRef(PEEK());
+    iface->lockConWrite();
     iface->conWrite(strRef->getDataPtr(), strRef->getSize());
     iface->conWrite(&newl, 1);
+    iface->unlockConWrite();
   } break;
   case vm::PCallCode::ConReadChar: {
     execHandle->setState(ExecState::Paused);
