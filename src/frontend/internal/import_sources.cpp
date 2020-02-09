@@ -3,6 +3,7 @@
 #include "internal/utilities.hpp"
 #include "parse/node_stmt_import.hpp"
 #include <algorithm>
+#include <cassert>
 #include <fstream>
 
 namespace frontend::internal {

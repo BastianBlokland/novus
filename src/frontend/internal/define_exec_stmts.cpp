@@ -3,6 +3,7 @@
 #include "internal/get_expr.hpp"
 #include "internal/utilities.hpp"
 #include "parse/nodes.hpp"
+#include <cassert>
 
 namespace frontend::internal {
 
