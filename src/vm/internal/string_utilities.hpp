@@ -1,5 +1,6 @@
 #pragma once
 #include "internal/allocator.hpp"
+#include <cmath>
 #include <cstdio>
 #include <cstring>
 
@@ -30,6 +31,13 @@ namespace vm::internal {
 }
 
 [[nodiscard]] auto inline toString(Allocator* allocator, float val) noexcept -> StringRef* {
+  // In theory the 'nan' case is already covered by 'snprintf' but it seems some implementations
+  // return '-nan' instead causing an inconsistency between platforms.
+  if (std::isnan(val)) {
+    const static std::string nanStr = "nan";
+    return allocator->allocStrLit(nanStr);
+  }
+
   // NOLINTNEXTLINE: C-style var-arg func.
   const auto charSize    = std::snprintf(nullptr, 0, "%.6g", val) + 1; // +1: null-terminator.
   const auto strRefAlloc = allocator->allocStr(charSize);
