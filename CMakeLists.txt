@@ -15,8 +15,8 @@ include(CTest)
 enable_testing()
 
 # Global compiler flags.
-set(CMAKE_CXX_FLAGS_DEBUG "-g -std=c++17 -stdlib=libc++ -Werror -Wall -Wextra")
-set(CMAKE_CXX_FLAGS_RELEASE "-O3 -std=c++17 -stdlib=libc++ -Werror -Wall -Wextra")
+set(CMAKE_CXX_FLAGS_DEBUG "-g -std=c++17 -stdlib=libc++ -Werror -Wall -Wextra -Wno-c++98-compat")
+set(CMAKE_CXX_FLAGS_RELEASE "-O3 -std=c++17 -stdlib=libc++ -Werror -Wall -Wextra -Wno-c++98-compat")
 
 # Find the threads library.
 set(CMAKE_THREAD_PREFER_PTHREAD On)
