@@ -4,11 +4,17 @@ namespace vm {
 
 auto operator<<(std::ostream& out, const ExecState& rhs) noexcept -> std::ostream& {
   switch (rhs) {
+  case ExecState::Paused:
+    out << "paused";
+    break;
   case ExecState::Running:
     out << "running";
     break;
   case ExecState::Success:
     out << "success";
+    break;
+  case ExecState::Aborted:
+    out << "aborted";
     break;
   case ExecState::InvalidAssembly:
     out << "invalid-assembly";

@@ -189,6 +189,7 @@ target_include_directories(backend PRIVATE backend)
 # Virtual Machine.
 add_library(vm STATIC
   vm/internal/allocator.cpp
+  vm/internal/executor_registry.cpp
   vm/internal/executor.cpp
   vm/platform/memory_interface.cpp
   vm/assembly.cpp

@@ -65,4 +65,6 @@ private:
   Value* m_stackMax;
 };
 
+using BasicStack = Stack<10240>;
+
 } // namespace vm::internal

@@ -1,4 +1,5 @@
 #pragma once
+#include "internal/executor_handle.hpp"
 #include "internal/stack.hpp"
 #include "internal/string_utilities.hpp"
 #include "vm/exec_state.hpp"
@@ -10,18 +11,18 @@ namespace vm::internal {
 
 const auto static newl = '\n';
 
-template <unsigned int StackSize, typename PlatformInterface>
+template <typename PlatformInterface>
 auto inline pcall(
     PlatformInterface* iface,
     Allocator* allocator,
-    Stack<StackSize>* stack,
-    ExecState* state,
+    BasicStack* stack,
+    ExecutorHandle* execHandle,
     PCallCode code) noexcept -> void {
-  assert(iface && allocator && stack && state);
+  assert(iface && allocator && stack && execHandle);
 
 #define PUSH(VAL)                                                                                  \
   if (!stack->push(VAL)) {                                                                         \
-    *state = ExecState::StackOverflow;                                                             \
+    execHandle->setState(ExecState::StackOverflow);                                                \
   }
 #define PUSH_REF(VAL) PUSH(refValue(VAL))
 #define PUSH_INT(VAL) PUSH(intValue(VAL))
@@ -45,9 +46,13 @@ auto inline pcall(
     iface->conWrite(&newl, 1);
   } break;
   case vm::PCallCode::ConReadChar: {
+    execHandle->setState(ExecState::Paused);
     PUSH_INT(iface->conRead());
+    execHandle->setState(ExecState::Running);
+    execHandle->trap();
   } break;
   case vm::PCallCode::ConReadStringLine: {
+    execHandle->setState(ExecState::Paused);
     std::string line = {};
     while (true) {
       const auto c = iface->conRead();
@@ -56,6 +61,8 @@ auto inline pcall(
       }
       line += c;
     }
+    execHandle->setState(ExecState::Running);
+    execHandle->trap();
     PUSH_REF(toString(allocator, line));
   } break;
   case vm::PCallCode::GetEnvArg: {
@@ -79,7 +86,10 @@ auto inline pcall(
     }
   } break;
   case vm::PCallCode::Sleep: {
+    execHandle->setState(ExecState::Paused);
     std::this_thread::sleep_for(std::chrono::milliseconds(PEEK_INT()));
+    execHandle->setState(ExecState::Running);
+    execHandle->trap();
   } break;
   case vm::PCallCode::Assert: {
     auto* msg = getStringRef(POP());
@@ -88,11 +98,11 @@ auto inline pcall(
       iface->conWrite("Assertion failed: ", 18);
       iface->conWrite(msg->getDataPtr(), msg->getSize());
       iface->conWrite(&newl, 1);
-      *state = ExecState::AssertFailed;
+      execHandle->setState(ExecState::AssertFailed);
     }
   } break;
   default:
-    *state = ExecState::InvalidAssembly;
+    execHandle->setState(ExecState::InvalidAssembly);
   }
 
 #undef PUSH

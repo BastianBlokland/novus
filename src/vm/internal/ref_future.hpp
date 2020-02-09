@@ -20,7 +20,7 @@ public:
   auto operator=(const FutureRef& rhs) -> FutureRef& = delete;
   auto operator=(FutureRef&& rhs) -> FutureRef& = delete;
 
-  [[nodiscard]] inline auto observe() noexcept {
+  [[nodiscard]] inline auto wait() noexcept {
     auto lk = std::unique_lock<std::mutex>{m_mutex};
     m_condVar.wait(lk, [this] { return m_state != ExecState::Running; });
     return m_state;

@@ -10,11 +10,10 @@
 #include "vm/platform/memory_interface.hpp"
 #include "vm/platform/terminal_interface.hpp"
 #include <cmath>
+#include <immintrin.h>
 #include <thread>
 
 namespace vm::internal {
-
-static const int StackSize = 10240;
 
 template <typename Type>
 inline auto readAsm(const uint8_t** ip) {
@@ -26,7 +25,7 @@ inline auto readAsm(const uint8_t** ip) {
 
 inline auto call(
     const Assembly* assembly,
-    Stack<StackSize>* stack,
+    BasicStack* stack,
     const uint8_t** ip,
     Value** sh,
     uint8_t argCount,
@@ -59,7 +58,7 @@ inline auto call(
 
 inline auto callTail(
     const Assembly* assembly,
-    Stack<StackSize>* stack,
+    BasicStack* stack,
     const uint8_t** ip,
     Value* sh,
     uint8_t argCount,
@@ -75,8 +74,8 @@ inline auto callTail(
   *ip = assembly->getIp(tgtIpOffset);
 }
 
-inline auto pushClosure(
-    Stack<StackSize>* stack, const Value& closureVal, uint8_t* boundArgCount, uint32_t* ipOffset)
+inline auto
+pushClosure(BasicStack* stack, const Value& closureVal, uint8_t* boundArgCount, uint32_t* ipOffset)
     -> bool {
 
   auto* closureStruct = getStructRef(closureVal);
@@ -97,8 +96,9 @@ template <typename PlatformInterface>
 inline auto fork(
     const Assembly* assembly,
     PlatformInterface* iface,
+    ExecutorRegistry* execRegistry,
     Allocator* allocator,
-    Stack<StackSize>* stack,
+    BasicStack* stack,
     uint8_t argCount,
     uint32_t entryIpOffset) -> bool {
 
@@ -107,12 +107,22 @@ inline auto fork(
 
   auto* argSource  = stack->getNext() - argCount;
   auto* threadFunc = &execute<PlatformInterface>;
-  std::thread(threadFunc, assembly, iface, allocator, entryIpOffset, argCount, argSource, future)
+  std::thread(
+      threadFunc,
+      assembly,
+      iface,
+      execRegistry,
+      allocator,
+      entryIpOffset,
+      argCount,
+      argSource,
+      future)
       .detach();
 
   // Wait until the fork executor has started.
+  std::this_thread::yield();
   while (!future->getStarted().load(std::memory_order_acquire)) {
-    std::this_thread::yield();
+    _mm_pause();
   }
 
   /* Note its important to leave the arguments alone until the fork executor has started, as until
@@ -129,6 +139,7 @@ template <typename PlatformInterface>
 auto execute(
     const Assembly* assembly,
     PlatformInterface* iface,
+    ExecutorRegistry* execRegistry,
     Allocator* allocator,
     uint32_t entryIpOffset,
     uint8_t entryArgCount,
@@ -141,12 +152,12 @@ auto execute(
 #define READ_FLOAT() readAsm<float>(&ip)
 #define SALLOC(COUNT)                                                                              \
   if (!stack.alloc(COUNT)) {                                                                       \
-    state = ExecState::StackOverflow;                                                              \
+    execHandle.setState(ExecState::StackOverflow);                                                 \
     goto End;                                                                                      \
   }
 #define PUSH(VAL)                                                                                  \
   if (!stack.push(VAL)) {                                                                          \
-    state = ExecState::StackOverflow;                                                              \
+    execHandle.setState(ExecState::StackOverflow);                                                 \
     goto End;                                                                                      \
   }
 #define PUSH_UINT(VAL) PUSH(uintValue(VAL))
@@ -155,24 +166,27 @@ auto execute(
 #define PUSH_REF(VAL) PUSH(refValue(VAL))
 #define PUSH_CLOSURE(VAL, RES_BOUND_ARG_COUNT, RES_TGT_IP_OFFSET)                                  \
   if (!pushClosure(&stack, VAL, RES_BOUND_ARG_COUNT, RES_TGT_IP_OFFSET)) {                         \
-    state = ExecState::StackOverflow;                                                              \
+    execHandle.setState(ExecState::StackOverflow);                                                 \
     goto End;                                                                                      \
   }
+#define PEEK() stack.peek()
 #define POP() stack.pop()
 #define POP_UINT() POP().getUInt()
 #define POP_INT() POP().getInt()
 #define POP_FLOAT() POP().getFloat()
 #define CALL(ARG_COUNT, TGT_IP)                                                                    \
   if (!call(assembly, &stack, &ip, &sh, ARG_COUNT, TGT_IP)) {                                      \
-    state = ExecState::StackOverflow;                                                              \
+    execHandle.setState(ExecState::StackOverflow);                                                 \
     goto End;                                                                                      \
   }
-#define CALL_TAIL(ARG_COUNT, TGT_IP) callTail(assembly, &stack, &ip, sh, ARG_COUNT, TGT_IP);
-#define CALL_FORKED(ARG_COUNT, TGT_IP) fork(assembly, iface, allocator, &stack, ARG_COUNT, TGT_IP);
+#define CALL_TAIL(ARG_COUNT, TGT_IP) callTail(assembly, &stack, &ip, sh, ARG_COUNT, TGT_IP)
+#define CALL_FORKED(ARG_COUNT, TGT_IP)                                                             \
+  fork(assembly, iface, execRegistry, allocator, &stack, ARG_COUNT, TGT_IP)
 
   // Setup state.
-  auto stack = Stack<StackSize>{};
-  auto state = ExecState::Running;
+  auto stack      = BasicStack{};
+  auto execHandle = ExecutorHandle{};
+  execRegistry->registerExecutor(&execHandle);
 
   // If we are given a promise to fill then push it on the stack, its important to be on the stack
   // so the garbage collector can 'see' it. We place the promise one position before the root
@@ -269,7 +283,7 @@ auto execute(
       auto b = POP_INT();
       auto a = POP_INT();
       if (b == 0) {
-        state = ExecState::DivByZero;
+        execHandle.setState(ExecState::DivByZero);
         goto End;
       }
       PUSH_INT(a / b);
@@ -283,7 +297,7 @@ auto execute(
       auto b = POP_INT();
       auto a = POP_INT();
       if (b == 0) {
-        state = ExecState::DivByZero;
+        execHandle.setState(ExecState::DivByZero);
         goto End;
       }
       PUSH_INT(a % b);
@@ -479,6 +493,12 @@ auto execute(
       CALL(argCount, tgtIpOffset);
     } break;
     case OpCode::CallTail: {
+      // Place a trap here as with tail-calls is possible to have code that runs for a long time
+      // without ever hitting a 'ret' instruction.
+      if (execHandle.trap()) {
+        goto End;
+      }
+
       const auto argCount    = READ_BYTE();
       const auto tgtIpOffset = READ_UINT();
       CALL_TAIL(argCount, tgtIpOffset);
@@ -501,6 +521,12 @@ auto execute(
       }
     } break;
     case OpCode::CallDynTail: {
+      // Place a trap here as with tail-calls is possible to have code that runs for a long time
+      // without ever hitting a 'ret' instruction.
+      if (execHandle.trap()) {
+        goto End;
+      }
+
       const auto argCount = READ_BYTE();
       auto tgt            = POP();
       if (tgt.isRef()) { // Target is a closure containing bound args and a instruction pointer.
@@ -525,16 +551,20 @@ auto execute(
       }
     } break;
     case OpCode::PCall: {
-      pcall(iface, allocator, &stack, &state, readAsm<PCallCode>(&ip));
-      if (state != ExecState::Running) {
-        assert(state != ExecState::Success);
+      pcall(iface, allocator, &stack, &execHandle, readAsm<PCallCode>(&ip));
+      if (execHandle.getState(std::memory_order_relaxed) != ExecState::Running) {
+        assert(execHandle.getState(std::memory_order_relaxed) != ExecState::Success);
         goto End;
       }
     } break;
     case OpCode::Ret: {
+      if (execHandle.trap()) {
+        goto End;
+      }
+
       // Check if this returns from the root-stack frame.
       if (sh == rootSh) {
-        state = ExecState::Success;
+        execHandle.setState(ExecState::Success);
         goto End;
       }
       assert(stack.getSize() >= 3); // Should at least contain a return ip and sh and ret value.
@@ -554,19 +584,30 @@ auto execute(
     } break;
 
     case OpCode::WaitFuture: {
-      auto* future     = getFutureRef(POP());
-      auto futureState = future->observe(); // This will block until the future is complete.
+      // The the future but leave it on the stack, reason is gc could run while we are blocked.
+      auto* future = getFutureRef(PEEK());
+
+      execHandle.setState(ExecState::Paused);
+
+      auto futureState = future->wait(); // This will block until the future is complete.
+
+      execHandle.setState(ExecState::Running);
+      if (execHandle.trap()) {
+        goto End;
+      }
+
       assert(futureState != ExecState::Running);
       if (futureState == ExecState::Success) {
+        POP(); // Pop the future itself from the stack.
         PUSH(future->getResult());
       } else {
         // If the future failed then we fail our executor also.
-        state = futureState;
+        execHandle.setState(futureState);
         goto End;
       }
     } break;
     case OpCode::Dup:
-      PUSH(stack.peek());
+      PUSH(PEEK());
       break;
     case OpCode::Pop:
       POP();
@@ -574,22 +615,26 @@ auto execute(
 
     case OpCode::Fail:
     default:
-      state = ExecState::InvalidAssembly;
+      execHandle.setState(ExecState::InvalidAssembly);
       goto End;
     }
   }
 
 End:
   // If we are backing a promise then fill-in the results and notify all waiters.
+  auto endState = execHandle.getState(std::memory_order_relaxed);
   if (promise) {
-    auto promiseLock = std::unique_lock<std::mutex>{promise->getMutex()};
-    if (state == ExecState::Success) {
+    if (endState == ExecState::Success) {
       promise->setResult(POP());
     }
-    promise->setState(state);
+    {
+      auto lk = std::lock_guard<std::mutex>{promise->getMutex()};
+      promise->setState(endState);
+    }
     promise->getCondVar().notify_all();
   }
-  return state;
+  execRegistry->unregisterExecutor(&execHandle);
+  return endState;
 
 #undef READ_BYTE
 #undef READ_INT
@@ -602,6 +647,7 @@ End:
 #undef PUSH_FLOAT
 #undef PUSH_REF
 #undef PUSH_CLOSURE
+#undef PEEK
 #undef POP
 #undef POP_UINT
 #undef POP_INT
@@ -615,6 +661,7 @@ End:
 template ExecState execute(
     const Assembly* assembly,
     platform::MemoryInterface* iface,
+    ExecutorRegistry* execRegistry,
     Allocator* allocator,
     uint32_t entryIpOffset,
     uint8_t entryArgCount,
@@ -624,6 +671,7 @@ template ExecState execute(
 template ExecState execute(
     const Assembly* assembly,
     platform::TerminalInterface* iface,
+    ExecutorRegistry* execRegistry,
     Allocator* allocator,
     uint32_t entryIpOffset,
     uint8_t entryArgCount,

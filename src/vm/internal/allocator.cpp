@@ -5,11 +5,11 @@
 
 namespace vm::internal {
 
-Allocator::Allocator() noexcept : m_firstRef{nullptr}, m_lastRef{nullptr} {}
+Allocator::Allocator() noexcept : m_head{nullptr} {}
 
 Allocator::~Allocator() noexcept {
   // Delete all allocations.
-  auto* ref = m_firstRef;
+  auto* ref = m_head;
   while (ref) {
     auto next = ref->m_next;
     // Call the (virtual) destructor of Ref.
@@ -54,13 +54,8 @@ auto Allocator::allocFuture() noexcept -> FutureRef* {
 
 auto Allocator::initRef(Ref* ref) noexcept -> void {
   // Keep track of all allocated references by linking them as a singly linked list.
-  if (m_lastRef) {
-    m_lastRef->m_next = ref;
-    m_lastRef         = ref;
-  } else {
-    m_firstRef = ref;
-    m_lastRef  = ref;
-  }
+  ref->m_next = m_head;
+  m_head      = ref;
 }
 
 } // namespace vm::internal

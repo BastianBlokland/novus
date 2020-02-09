@@ -24,8 +24,7 @@ public:
   [[nodiscard]] auto allocFuture() noexcept -> FutureRef*;
 
 private:
-  Ref* m_firstRef;
-  Ref* m_lastRef;
+  Ref* m_head;
 
   auto initRef(Ref* ref) noexcept -> void;
 

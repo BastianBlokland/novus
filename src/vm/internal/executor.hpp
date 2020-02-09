@@ -1,5 +1,6 @@
 #pragma once
 #include "internal/allocator.hpp"
+#include "internal/executor_registry.hpp"
 #include "vm/assembly.hpp"
 #include "vm/exec_state.hpp"
 
@@ -9,6 +10,7 @@ template <typename PlatformInterface>
 auto execute(
     const Assembly* assembly,
     PlatformInterface* iface,
+    ExecutorRegistry* execRegistry,
     Allocator* allocator,
     uint32_t entryIpOffset,
     uint8_t entryArgCount,
