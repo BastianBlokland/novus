@@ -30,7 +30,7 @@ private:
   auto nextStmtEnumDecl() -> NodePtr;
   auto nextStmtExec() -> NodePtr;
 
-  auto nextExpr(int minPrecedence) -> NodePtr;
+  auto nextExpr(int minPrecedence, int maxPrecedence = 99) -> NodePtr;
   auto nextExprLhs() -> NodePtr;
   auto nextExprGroup(NodePtr firstExpr, int precedence) -> NodePtr;
   auto nextExprPrimary() -> NodePtr;

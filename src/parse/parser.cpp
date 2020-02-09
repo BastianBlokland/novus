@@ -220,7 +220,7 @@ auto ParserImpl::nextStmtEnumDecl() -> NodePtr {
 
 auto ParserImpl::nextStmtExec() -> NodePtr { return execStmtNode(nextExprCall(nextExprId())); }
 
-auto ParserImpl::nextExpr(const int minPrecedence) -> NodePtr {
+auto ParserImpl::nextExpr(const int minPrecedence, const int maxPrecedence) -> NodePtr {
   auto lhs = nextExprLhs();
   while (true) {
     // Handle binary operators, precedence controls if we should keep recursing or let the next
@@ -229,7 +229,7 @@ auto ParserImpl::nextExpr(const int minPrecedence) -> NodePtr {
     const auto rhsPrecedence    = getRhsOpPrecedence(nextToken);
     const auto rightAssociative = isRightAssociative(nextToken);
     if (rhsPrecedence == 0 || rhsPrecedence < minPrecedence ||
-        (!rightAssociative && rhsPrecedence == minPrecedence)) {
+        (!rightAssociative && rhsPrecedence == minPrecedence) || rhsPrecedence >= maxPrecedence) {
       break;
     }
 
@@ -315,7 +315,7 @@ auto ParserImpl::nextExprPrimary() -> NodePtr {
     }
     if (getKw(nextTok) == lex::Keyword::Fork) {
       auto modifiers = std::vector<lex::Token>{consumeToken()};
-      return nextExprCall(nextExpr(callPrecedence), std::move(modifiers));
+      return nextExprCall(nextExpr(0, callPrecedence), std::move(modifiers));
     }
     [[fallthrough]];
   default:
