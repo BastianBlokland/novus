@@ -211,6 +211,10 @@ auto GetExpr::visit(const parse::CallExprNode& n) -> void {
   }
 
   if (n.isFork()) {
+    if (m_ctx->getProg()->getFuncDecl(*func).getKind() != prog::sym::FuncKind::User) {
+      m_ctx->reportDiag(errForkedNonUserFunc, n.getSpan());
+      return;
+    }
     m_expr = prog::expr::callExprNode(
         *m_ctx->getProg(),
         func.value(),
@@ -218,7 +222,7 @@ auto GetExpr::visit(const parse::CallExprNode& n) -> void {
         std::move(args->first),
         true);
   } else {
-    m_expr = prog::expr::callExprNode(*m_ctx->getProg(), func.value(), std::move(args->first));
+    m_expr = prog::expr::callExprNode(*m_ctx->getProg(), *func, std::move(args->first));
   }
 }
 

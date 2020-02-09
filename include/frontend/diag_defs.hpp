@@ -210,4 +210,6 @@ errUnsupportedOperator(const Source& src, const std::string& name, input::Span s
 
 [[nodiscard]] auto errNonPureConversion(const Source& src, input::Span span) -> Diag;
 
+[[nodiscard]] auto errForkedNonUserFunc(const Source& src, input::Span span) -> Diag;
+
 } // namespace frontend
