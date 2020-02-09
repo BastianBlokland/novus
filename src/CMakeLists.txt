@@ -4,7 +4,8 @@ add_library(input STATIC
   input/info.cpp
   input/span.cpp
   input/textpos.cpp)
-target_compile_features(input PUBLIC cxx_std_17)
+target_compile_features(input PRIVATE cxx_std_17)
+target_compile_options(input PRIVATE -fexceptions)
 target_include_directories(input PUBLIC ${PROJECT_SOURCE_DIR}/include)
 target_include_directories(input PRIVATE input)
 
@@ -19,7 +20,8 @@ add_library(lex STATIC
   lex/token_payload_lit_string.cpp
   lex/keyword.cpp
   lex/utilities.cpp)
-target_compile_features(lex PUBLIC cxx_std_17)
+target_compile_features(lex PRIVATE cxx_std_17)
+target_compile_options(lex PRIVATE -fexceptions)
 target_link_libraries(lex PUBLIC input)
 target_include_directories(lex PUBLIC ${PROJECT_SOURCE_DIR}/include)
 target_include_directories(lex PRIVATE lex)
@@ -60,7 +62,8 @@ add_library(parse STATIC
   parse/type_substitution_list.cpp
   parse/type.cpp
   parse/utilities.cpp)
-target_compile_features(parse PUBLIC cxx_std_17)
+target_compile_features(parse PRIVATE cxx_std_17)
+target_compile_options(parse PRIVATE -fexceptions)
 target_link_libraries(parse PUBLIC lex)
 target_include_directories(parse PUBLIC ${PROJECT_SOURCE_DIR}/include)
 target_include_directories(parse PRIVATE parse)
@@ -120,7 +123,8 @@ add_library(prog STATIC
 
   prog/operator.cpp
   prog/program.cpp)
-target_compile_features(prog PUBLIC cxx_std_17)
+target_compile_features(prog PRIVATE cxx_std_17)
+target_compile_options(prog PRIVATE -fexceptions)
 target_include_directories(prog PUBLIC ${PROJECT_SOURCE_DIR}/include)
 target_include_directories(prog PRIVATE prog)
 
@@ -159,7 +163,8 @@ add_library(frontend STATIC
   frontend/diag.cpp
   frontend/output.cpp
   frontend/source.cpp)
-target_compile_features(frontend PUBLIC cxx_std_17)
+target_compile_features(frontend PRIVATE cxx_std_17)
+target_compile_options(frontend PRIVATE -fexceptions)
 target_link_libraries(frontend PUBLIC parse)
 target_link_libraries(frontend PUBLIC prog)
 target_include_directories(frontend PUBLIC ${PROJECT_SOURCE_DIR}/include)
@@ -174,7 +179,8 @@ add_library(backend STATIC
   backend/internal/utilities.cpp
   backend/builder.cpp
   backend/generator.cpp)
-target_compile_features(backend PUBLIC cxx_std_17)
+target_compile_features(backend PRIVATE cxx_std_17)
+target_compile_options(backend PRIVATE -fexceptions)
 target_link_libraries(backend PUBLIC prog)
 target_link_libraries(backend PUBLIC vm)
 target_include_directories(backend PUBLIC ${PROJECT_SOURCE_DIR}/include)
@@ -191,8 +197,8 @@ add_library(vm STATIC
   vm/op_code.cpp
   vm/pcall_code.cpp
   vm/exec_state.cpp)
-target_compile_features(vm PUBLIC cxx_std_17)
-target_compile_options(vm PRIVATE -fno-exceptions)
+target_compile_features(vm PRIVATE cxx_std_17)
+target_compile_options(vm PRIVATE -fno-exceptions -fno-rtti)
 target_link_libraries(vm Threads::Threads)
 target_include_directories(vm PUBLIC ${PROJECT_SOURCE_DIR}/include)
 target_include_directories(vm PRIVATE vm)

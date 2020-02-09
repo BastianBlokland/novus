@@ -15,8 +15,13 @@ include(CTest)
 enable_testing()
 
 # Global compiler flags.
-set(CMAKE_CXX_FLAGS_DEBUG "-g -std=c++17 -stdlib=libc++ -Werror -Wall -Wextra -Wno-c++98-compat")
-set(CMAKE_CXX_FLAGS_RELEASE "-O3 -std=c++17 -stdlib=libc++ -Werror -Wall -Wextra -Wno-c++98-compat")
+if(MSVC)
+  message("Setting msvc compiler flags")
+  set(CMAKE_CXX_FLAGS "-Wall -Wno-c++98-compat")
+else()
+  set(CMAKE_CXX_FLAGS_DEBUG "-g -std=c++17 -stdlib=libc++ -Werror -Wall -Wextra")
+  set(CMAKE_CXX_FLAGS_RELEASE "-O3 -std=c++17 -stdlib=libc++ -Werror -Wall -Wextra")
+endif()
 
 # Find the threads library.
 set(CMAKE_THREAD_PREFER_PTHREAD On)
@@ -29,10 +34,10 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 # reason is that 'mingw64-w64' does not respect that file.
 set(CMAKE_CXX_USE_RESPONSE_FILE_FOR_INCLUDES OFF)
 
-IF(CMAKE_BUILD_TYPE)
+if(CMAKE_BUILD_TYPE)
   string(TOLOWER ${CMAKE_BUILD_TYPE} CMAKE_BUILD_TYPE_LOWER)
-ENDIF()
-IF(CMAKE_BUILD_TYPE_LOWER STREQUAL "debug")
+endif()
+if(CMAKE_BUILD_TYPE_LOWER STREQUAL "debug")
   message("Debug build")
 
   # Use the clang-tidy linter if installed.
@@ -41,7 +46,7 @@ IF(CMAKE_BUILD_TYPE_LOWER STREQUAL "debug")
     set(CMAKE_CXX_CLANG_TIDY ${CLANG_TIDY_BIN})
     message("Enabled clang-tidy")
   endif()
-ENDIF()
+endif()
 
 # Add child cmake files.
 add_subdirectory(src)
