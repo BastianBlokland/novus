@@ -22,7 +22,7 @@ namespace vm::internal {
 #else
   // NOLINTNEXTLINE: C-style var-arg func.
   const auto size = std::snprintf(strRefAlloc.second, maxCharSize + 1, "%d", val);
-  assert(strRefAlloc.first[size] == '\0');
+  assert(strRefAlloc.second[size] == '\0');
   strRefAlloc.first->updateSize(size);
 #endif
 
