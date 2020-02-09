@@ -305,38 +305,38 @@ auto execute(
     case OpCode::ModFloat: {
       auto b = POP_FLOAT();
       auto a = POP_FLOAT();
-      PUSH_FLOAT(std::fmodf(a, b));
+      PUSH_FLOAT(fmodf(a, b));
     } break;
     case OpCode::PowFloat: {
       auto b = POP_FLOAT();
       auto a = POP_FLOAT();
-      PUSH_FLOAT(std::powf(a, b));
+      PUSH_FLOAT(powf(a, b));
     } break;
     case OpCode::SqrtFloat: {
-      PUSH_FLOAT(std::sqrtf(POP_FLOAT()));
+      PUSH_FLOAT(sqrtf(POP_FLOAT()));
     } break;
     case OpCode::SinFloat: {
-      PUSH_FLOAT(std::sinf(POP_FLOAT()));
+      PUSH_FLOAT(sinf(POP_FLOAT()));
     } break;
     case OpCode::CosFloat: {
-      PUSH_FLOAT(std::cosf(POP_FLOAT()));
+      PUSH_FLOAT(cosf(POP_FLOAT()));
     } break;
     case OpCode::TanFloat: {
-      PUSH_FLOAT(std::tanf(POP_FLOAT()));
+      PUSH_FLOAT(tanf(POP_FLOAT()));
     } break;
     case OpCode::ASinFloat: {
-      PUSH_FLOAT(std::asinf(POP_FLOAT()));
+      PUSH_FLOAT(asinf(POP_FLOAT()));
     } break;
     case OpCode::ACosFloat: {
-      PUSH_FLOAT(std::acosf(POP_FLOAT()));
+      PUSH_FLOAT(acosf(POP_FLOAT()));
     } break;
     case OpCode::ATanFloat: {
-      PUSH_FLOAT(std::atanf(POP_FLOAT()));
+      PUSH_FLOAT(atanf(POP_FLOAT()));
     } break;
     case OpCode::ATan2Float: {
       auto b = POP_FLOAT();
       auto a = POP_FLOAT();
-      PUSH_FLOAT(std::atan2f(a, b));
+      PUSH_FLOAT(atan2f(a, b));
     } break;
     case OpCode::NegInt: {
       PUSH_INT(-POP_INT());
