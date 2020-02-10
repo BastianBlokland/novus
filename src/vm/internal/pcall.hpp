@@ -54,10 +54,11 @@ auto inline pcall(
   case vm::PCallCode::ConReadChar: {
     execHandle->setState(ExecState::Paused);
     iface->lockConRead();
-    PUSH_INT(iface->conRead());
+    auto readChar = iface->conRead();
     iface->unlockConRead();
     execHandle->setState(ExecState::Running);
     execHandle->trap();
+    PUSH_INT(readChar);
   } break;
   case vm::PCallCode::ConReadStringLine: {
     execHandle->setState(ExecState::Paused);
