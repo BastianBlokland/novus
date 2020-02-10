@@ -58,19 +58,28 @@ public:
     }
   }
 
-  inline auto requestAbort() noexcept -> void {
+  inline auto requestAbort() noexcept -> bool {
     m_request.store(RequestType::Abort, std::memory_order_release);
+    return m_state.load(std::memory_order_acquire) != ExecState::Running;
   }
 
   inline auto requestPause() noexcept -> bool {
-    if (m_request.load(std::memory_order_relaxed) != RequestType::Pause) {
-      m_request.store(RequestType::Pause, std::memory_order_release);
+    // Set request to 'Pause' in case its currently 'None', reason is we want to leave it alone when
+    // its currently set to 'Abort' to avoid resurrecting aborted executors.
+    auto currentReq = m_request.load(std::memory_order_relaxed);
+    if (currentReq == RequestType::None) {
+      m_request.compare_exchange_strong(
+          currentReq, RequestType::Pause, std::memory_order_release, std::memory_order_relaxed);
     }
     return m_state.load(std::memory_order_acquire) != ExecState::Running;
   }
 
   inline auto resume() noexcept -> void {
-    m_request.store(RequestType::None, std::memory_order_release);
+    auto currentReq = m_request.load(std::memory_order_relaxed);
+    if (currentReq == RequestType::Pause) {
+      m_request.compare_exchange_strong(
+          currentReq, RequestType::None, std::memory_order_release, std::memory_order_relaxed);
+    }
   }
 
 private:
