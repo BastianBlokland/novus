@@ -2,6 +2,7 @@
 #include "internal/value.hpp"
 #include "vm/exec_state.hpp"
 #include <atomic>
+#include <chrono>
 #include <condition_variable>
 #include <mutex>
 
@@ -20,10 +21,16 @@ public:
   auto operator=(const FutureRef& rhs) -> FutureRef& = delete;
   auto operator=(FutureRef&& rhs) -> FutureRef& = delete;
 
-  [[nodiscard]] inline auto wait() noexcept -> ExecState {
+  [[nodiscard]] inline auto block() noexcept -> ExecState {
     auto lk = std::unique_lock<std::mutex>{m_mutex};
     m_condVar.wait(lk, [this] { return m_state != ExecState::Running; });
     return m_state;
+  }
+
+  [[nodiscard]] inline auto wait(int timeout) noexcept -> bool {
+    auto lk = std::unique_lock<std::mutex>{m_mutex};
+    return m_condVar.wait_for(
+        lk, std::chrono::milliseconds(timeout), [this] { return m_state != ExecState::Running; });
   }
 
   [[nodiscard]] inline auto poll() noexcept -> ExecState {

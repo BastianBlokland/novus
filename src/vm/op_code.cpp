@@ -222,11 +222,11 @@ auto operator<<(std::ostream& out, const OpCode& rhs) noexcept -> std::ostream& 
     out << "ret";
     break;
 
+  case OpCode::FutureWait:
+    out << "future-wait";
+    break;
   case OpCode::FutureBlock:
     out << "future-block";
-    break;
-  case OpCode::FuturePoll:
-    out << "future-poll";
     break;
   case OpCode::Dup:
     out << "dup";

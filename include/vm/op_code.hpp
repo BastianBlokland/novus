@@ -83,10 +83,10 @@ enum class OpCode : uint8_t {
   PCall         = 237,
   Ret           = 238,
 
-  FutureBlock = 240,
-  FuturePoll  = 241,
-  Dup         = 242,
-  Pop         = 243,
+  FutureWait  = 240,
+  FutureBlock = 241,
+  Dup         = 243,
+  Pop         = 244,
 
   Fail = 255,
 };

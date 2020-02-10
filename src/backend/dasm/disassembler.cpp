@@ -87,8 +87,8 @@ auto disassembleInstructions(const vm::Assembly& assembly) -> std::vector<Instru
     case vm::OpCode::ConvIntChar:
     case vm::OpCode::Ret:
     case vm::OpCode::Fail:
+    case vm::OpCode::FutureWait:
     case vm::OpCode::FutureBlock:
-    case vm::OpCode::FuturePoll:
     case vm::OpCode::Dup:
     case vm::OpCode::Pop:
       result.push_back(Instruction(opCode, offset, {}));

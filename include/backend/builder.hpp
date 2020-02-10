@@ -94,8 +94,8 @@ public:
   auto addPCall(vm::PCallCode code) -> void;
   auto addRet() -> void;
 
+  auto addFutureWait() -> void;
   auto addFutureBlock() -> void;
-  auto addFuturePoll() -> void;
   auto addDup() -> void;
   auto addPop() -> void;
   auto addFail() -> void;

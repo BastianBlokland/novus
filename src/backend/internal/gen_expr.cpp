@@ -332,12 +332,12 @@ auto GenExpr::visit(const prog::expr::CallExprNode& n) -> void {
     break;
   }
 
-  case prog::sym::FuncKind::FutureBlock: {
-    m_builder->addFutureBlock();
+  case prog::sym::FuncKind::FutureWait: {
+    m_builder->addFutureWait();
     break;
   }
-  case prog::sym::FuncKind::FuturePoll: {
-    m_builder->addFuturePoll();
+  case prog::sym::FuncKind::FutureBlock: {
+    m_builder->addFutureBlock();
     break;
   }
 

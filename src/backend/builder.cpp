@@ -236,9 +236,9 @@ auto Builder::addPCall(vm::PCallCode code) -> void {
 
 auto Builder::addRet() -> void { writeOpCode(vm::OpCode::Ret); }
 
-auto Builder::addFutureBlock() -> void { writeOpCode(vm::OpCode::FutureBlock); }
+auto Builder::addFutureWait() -> void { writeOpCode(vm::OpCode::FutureWait); }
 
-auto Builder::addFuturePoll() -> void { writeOpCode(vm::OpCode::FuturePoll); }
+auto Builder::addFutureBlock() -> void { writeOpCode(vm::OpCode::FutureBlock); }
 
 auto Builder::addDup() -> void { writeOpCode(vm::OpCode::Dup); }
 

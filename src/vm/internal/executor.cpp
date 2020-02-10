@@ -162,6 +162,7 @@ auto execute(
   }
 #define PUSH_UINT(VAL) PUSH(uintValue(VAL))
 #define PUSH_INT(VAL) PUSH(intValue(VAL))
+#define PUSH_BOOL(VAL) PUSH(intValue(VAL))
 #define PUSH_FLOAT(VAL) PUSH(floatValue(VAL))
 #define PUSH_REF(VAL) PUSH(refValue(VAL))
 #define PUSH_CLOSURE(VAL, RES_BOUND_ARG_COUNT, RES_TGT_IP_OFFSET)                                  \
@@ -345,7 +346,7 @@ auto execute(
       PUSH_FLOAT(-POP_FLOAT());
     } break;
     case OpCode::LogicInvInt: {
-      PUSH_INT(POP_INT() == 0 ? 1 : 0);
+      PUSH_BOOL(POP_INT() == 0);
     } break;
     case OpCode::ShiftLeftInt: {
       auto b = POP_INT();
@@ -393,22 +394,22 @@ auto execute(
     case OpCode::CheckEqInt: {
       auto b = POP_INT();
       auto a = POP_INT();
-      PUSH_INT(a == b ? 1 : 0);
+      PUSH_BOOL(a == b);
     } break;
     case OpCode::CheckEqFloat: {
       auto b = POP_FLOAT();
       auto a = POP_FLOAT();
-      PUSH_INT(a == b ? 1 : 0);
+      PUSH_BOOL(a == b);
     } break;
     case OpCode::CheckEqString: {
       auto* b = getStringRef(POP());
       auto* a = getStringRef(POP());
-      PUSH_INT(checkStringEq(a, b) ? 1 : 0);
+      PUSH_BOOL(checkStringEq(a, b));
     } break;
     case OpCode::CheckEqIp: {
       auto b = POP_UINT();
       auto a = POP_UINT();
-      PUSH_INT(a == b ? 1 : 0);
+      PUSH_BOOL(a == b);
     } break;
     case OpCode::CheckEqCallDynTgt: {
       // Compare the target instruction pointers (which for closure structs are stored in the last
@@ -418,27 +419,27 @@ auto execute(
       auto bIp = (b.isRef() ? getStructRef(b)->getLastField() : b).getUInt();
       auto a   = POP();
       auto aIp = (a.isRef() ? getStructRef(a)->getLastField() : a).getUInt();
-      PUSH_INT(aIp == bIp ? 1 : 0);
+      PUSH_BOOL(aIp == bIp);
     } break;
     case OpCode::CheckGtInt: {
       auto b = POP_INT();
       auto a = POP_INT();
-      PUSH_INT(a > b ? 1 : 0);
+      PUSH_BOOL(a > b);
     } break;
     case OpCode::CheckGtFloat: {
       auto b = POP_FLOAT();
       auto a = POP_FLOAT();
-      PUSH_INT(a > b ? 1 : 0);
+      PUSH_BOOL(a > b);
     } break;
     case OpCode::CheckLeInt: {
       auto b = POP_INT();
       auto a = POP_INT();
-      PUSH_INT(a < b ? 1 : 0);
+      PUSH_BOOL(a < b);
     } break;
     case OpCode::CheckLeFloat: {
       auto b = POP_FLOAT();
       auto a = POP_FLOAT();
-      PUSH_INT(a < b ? 1 : 0);
+      PUSH_BOOL(a < b);
     } break;
 
     case OpCode::ConvIntFloat: {
@@ -583,15 +584,36 @@ auto execute(
       PUSH(retVal);
     } break;
 
+    case OpCode::FutureWait: {
+      int timeout = POP_INT();
+      if (timeout <= 0) {
+        auto* future = getFutureRef(POP());
+        PUSH_BOOL(future->poll() != ExecState::Running);
+        break;
+      }
+
+      // Get the future but leave it on the stack, reason is gc could run while we are blocked.
+      auto* future = getFutureRef(PEEK());
+
+      execHandle.setState(ExecState::Paused);
+      auto success = future->wait(timeout);
+      execHandle.setState(ExecState::Running);
+
+      if (execHandle.trap()) {
+        goto End;
+      }
+
+      POP(); // Pop the future itself from the stack.
+      PUSH_BOOL(success);
+    } break;
     case OpCode::FutureBlock: {
       // The the future but leave it on the stack, reason is gc could run while we are blocked.
       auto* future = getFutureRef(PEEK());
 
       execHandle.setState(ExecState::Paused);
-
-      auto futureState = future->wait(); // This will block until the future is complete.
-
+      auto futureState = future->block();
       execHandle.setState(ExecState::Running);
+
       if (execHandle.trap()) {
         goto End;
       }
@@ -605,10 +627,6 @@ auto execute(
         execHandle.setState(futureState);
         goto End;
       }
-    } break;
-    case OpCode::FuturePoll: {
-      auto* future = getFutureRef(POP());
-      PUSH_INT(future->poll() == ExecState::Success ? 1 : 0);
     } break;
     case OpCode::Dup:
       PUSH(PEEK());
@@ -648,6 +666,7 @@ End:
 #undef PUSH
 #undef PUSH_UINT
 #undef PUSH_INT
+#undef PUSH_BOOL
 #undef PUSH_FLOAT
 #undef PUSH_REF
 #undef PUSH_CLOSURE
