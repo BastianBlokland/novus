@@ -583,7 +583,7 @@ auto execute(
       PUSH(retVal);
     } break;
 
-    case OpCode::WaitFuture: {
+    case OpCode::FutureBlock: {
       // The the future but leave it on the stack, reason is gc could run while we are blocked.
       auto* future = getFutureRef(PEEK());
 
@@ -605,6 +605,10 @@ auto execute(
         execHandle.setState(futureState);
         goto End;
       }
+    } break;
+    case OpCode::FuturePoll: {
+      auto* future = getFutureRef(POP());
+      PUSH_INT(future->poll() == ExecState::Success ? 1 : 0);
     } break;
     case OpCode::Dup:
       PUSH(PEEK());

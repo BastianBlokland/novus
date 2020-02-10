@@ -20,9 +20,14 @@ public:
   auto operator=(const FutureRef& rhs) -> FutureRef& = delete;
   auto operator=(FutureRef&& rhs) -> FutureRef& = delete;
 
-  [[nodiscard]] inline auto wait() noexcept {
+  [[nodiscard]] inline auto wait() noexcept -> ExecState {
     auto lk = std::unique_lock<std::mutex>{m_mutex};
     m_condVar.wait(lk, [this] { return m_state != ExecState::Running; });
+    return m_state;
+  }
+
+  [[nodiscard]] inline auto poll() noexcept -> ExecState {
+    auto lk = std::lock_guard<std::mutex>{m_mutex};
     return m_state;
   }
 

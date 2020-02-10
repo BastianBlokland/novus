@@ -81,7 +81,8 @@ enum class FuncKind {
   MakeStruct,
   MakeUnion,
 
-  WaitFuture,
+  FutureBlock,
+  FuturePoll,
 
   CheckEqUserType,
   CheckNEqUserType,
