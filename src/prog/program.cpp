@@ -452,8 +452,11 @@ auto Program::defineDelegate(sym::TypeId id, sym::TypeSet input, sym::TypeId out
 }
 
 auto Program::defineFuture(sym::TypeId id, sym::TypeId result) -> void {
-  // Register 'wait' function.
-  m_funcDecls.registerFunc(*this, sym::FuncKind::WaitFuture, "wait", sym::TypeSet{id}, result);
+  // Register 'result' function.
+  m_funcDecls.registerFunc(*this, sym::FuncKind::FutureBlock, "result", sym::TypeSet{id}, result);
+
+  // Register 'isReady' action.
+  m_funcDecls.registerAction(*this, sym::FuncKind::FuturePoll, "isReady", sym::TypeSet{id}, m_bool);
 
   // Register future definition.
   m_typeDefs.registerFuture(m_typeDecls, id, result);

@@ -24,10 +24,10 @@ TEST_CASE("Execute forks", "[vm]") {
           builder->addCallDyn(0, backend::CallMode::Forked);
 
           // Wait for them to finish.
-          builder->addWaitFuture();
+          builder->addFutureBlock();
           builder->addStackStore(0);
 
-          builder->addWaitFuture();
+          builder->addFutureBlock();
 
           // Add the results together.
           builder->addStackLoad(0);
@@ -74,7 +74,7 @@ TEST_CASE("Execute forks", "[vm]") {
           builder->addCall("fork", 0, backend::CallMode::Forked);
 
           // Wait for it to finish.
-          builder->addWaitFuture();
+          builder->addFutureBlock();
           builder->addRet();
           // --- Main function end.
 
@@ -87,6 +87,41 @@ TEST_CASE("Execute forks", "[vm]") {
         },
         "input",
         ExecState::DivByZero);
+  }
+
+  SECTION("Poll on finished fork returns true") {
+    CHECK_PROG(
+        [](backend::Builder* builder) -> void {
+          builder->addEntryPoint("entry");
+          // --- Main function start.
+          builder->label("entry");
+
+          // Start worker functions as forks.
+          builder->addLoadLitInt(100);
+          builder->addCall("worker", 1, backend::CallMode::Forked);
+          builder->addDup();
+
+          // Wait for fork to finish and discard result.
+          builder->addFutureBlock();
+          builder->addPop();
+
+          // Poll the fork state.
+          builder->addFuturePoll();
+
+          // Print the result.
+          builder->addConvBoolString();
+          builder->addPCall(vm::PCallCode::ConWriteString);
+          builder->addRet();
+          // --- Main function end.
+
+          // --- Worker function start (takes one int arg).
+          builder->label("worker");
+          builder->addStackLoad(0); // Load arg 0.
+          builder->addRet();
+          // --- Worker function end.
+        },
+        "input",
+        "true");
   }
 }
 
