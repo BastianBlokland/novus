@@ -19,7 +19,7 @@ auto run(
     InputItr inputBegin,
     const InputItr inputEnd,
     int vmEnvArgsCount,
-    char** vmEnvArgs) noexcept {
+    char* const* vmEnvArgs) noexcept {
 
   const auto src = frontend::buildSource(inputId, std::move(inputPath), inputBegin, inputEnd);
   const auto frontendOutput = frontend::analyze(src, searchPaths);
@@ -63,7 +63,7 @@ auto main(int argc, char** argv) noexcept -> int {
   }
 
   auto vmEnvArgsCount = argc - 2; // 1 for program path and 1 for source.
-  auto vnEnvArgs      = argv + 2;
+  auto** vnEnvArgs    = argv + 2;
 
   auto path = filesystem::path{argv[1]};
   auto fs   = std::ifstream{path};

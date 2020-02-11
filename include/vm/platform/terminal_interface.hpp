@@ -10,7 +10,7 @@ namespace vm::platform {
 
 class TerminalInterface final {
 public:
-  TerminalInterface(int envArgsCount, char** envArgs) noexcept :
+  TerminalInterface(int envArgsCount, char* const* envArgs) noexcept :
       m_envArgsCount{envArgsCount}, m_envArgs(envArgs) {}
 
   auto lockConWrite() noexcept -> void {
@@ -50,7 +50,7 @@ private:
   std::atomic_flag m_conWriteFlag = ATOMIC_FLAG_INIT;
   std::mutex m_conReadMutex       = {};
   int m_envArgsCount;
-  char** m_envArgs;
+  char* const* m_envArgs;
 };
 
 } // namespace vm::platform
