@@ -11,7 +11,7 @@ template <typename PlatformInterface>
 auto run(const Assembly* assembly, PlatformInterface* iface) noexcept -> ExecState {
 
   auto execRegistry = internal::ExecutorRegistry{};
-  auto allocator    = internal::Allocator{};
+  auto allocator    = internal::Allocator{&execRegistry};
   auto resultState  = ExecState::Success;
 
   for (auto itr = assembly->beginEntryPoints(); itr != assembly->endEntryPoints(); ++itr) {

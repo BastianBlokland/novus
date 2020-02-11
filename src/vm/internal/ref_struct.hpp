@@ -16,29 +16,29 @@ public:
   auto operator=(const StructRef& rhs) -> StructRef& = delete;
   auto operator=(StructRef&& rhs) -> StructRef& = delete;
 
-  [[nodiscard]] inline auto getFieldCount() const noexcept { return m_fieldCount; }
+  [[nodiscard]] constexpr static auto getKind() { return RefKind::Struct; }
+
+  [[nodiscard]] inline auto getFieldsBegin() const noexcept -> const Value* { return m_fields; }
+
+  [[nodiscard]] inline auto getFieldsEnd() const noexcept -> const Value* { return m_fieldsEnd; }
+
+  [[nodiscard]] inline auto getFieldCount() const noexcept { return m_fieldsEnd - m_fields; }
 
   [[nodiscard]] inline auto getField(uint8_t index) const noexcept {
-    assert(index < m_fieldCount);
+    assert(index < getFieldCount());
     return *(m_fields + index);
   }
 
-  [[nodiscard]] inline auto getLastField() const noexcept {
-    return *(m_fields + (m_fieldCount - 1));
-  }
+  [[nodiscard]] inline auto getLastField() const noexcept { return *(m_fieldsEnd - 1); }
 
 private:
   const Value* m_fields;
-  uint8_t m_fieldCount;
+  const Value* m_fieldsEnd;
 
   inline explicit StructRef(const Value* fields, uint8_t fieldCount) noexcept :
-      Ref(RefKind::Struct), m_fields{fields}, m_fieldCount{fieldCount} {}
+      Ref(getKind()), m_fields{fields}, m_fieldsEnd{fields + fieldCount} {}
 };
 
-inline auto getStructRef(const Value& val) noexcept {
-  auto* ref = val.getRef();
-  assert(ref->getKind() == RefKind::Struct);
-  return static_cast<StructRef*>(ref); // NOLINT: Down-cast.
-}
+inline auto getStructRef(const Value& val) noexcept { return val.getDowncastRef<StructRef>(); }
 
 } // namespace vm::internal

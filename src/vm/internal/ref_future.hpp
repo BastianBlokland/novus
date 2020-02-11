@@ -21,6 +21,8 @@ public:
   auto operator=(const FutureRef& rhs) -> FutureRef& = delete;
   auto operator=(FutureRef&& rhs) -> FutureRef& = delete;
 
+  [[nodiscard]] constexpr static auto getKind() { return RefKind::Future; }
+
   [[nodiscard]] inline auto block() noexcept -> ExecState {
     auto lk = std::unique_lock<std::mutex>{m_mutex};
     m_condVar.wait(lk, [this] { return m_state != ExecState::Running; });
@@ -54,7 +56,7 @@ private:
   Value m_result;
 
   inline explicit FutureRef() noexcept :
-      Ref(RefKind::Future),
+      Ref(getKind()),
       m_started{false},
       m_state{ExecState::Running},
       m_mutex{},
@@ -62,10 +64,6 @@ private:
       m_result{} {}
 };
 
-inline auto getFutureRef(const Value& val) noexcept {
-  auto* ref = val.getRef();
-  assert(ref->getKind() == RefKind::Future);
-  return static_cast<FutureRef*>(ref); // NOLINT: Down-cast.
-}
+inline auto getFutureRef(const Value& val) noexcept { return val.getDowncastRef<FutureRef>(); }
 
 } // namespace vm::internal

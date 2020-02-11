@@ -10,10 +10,12 @@ public:
   ExecutorRegistry() noexcept;
   ExecutorRegistry(const ExecutorRegistry& rhs) = delete;
   ExecutorRegistry(ExecutorRegistry&& rhs)      = delete;
-  ~ExecutorRegistry() noexcept                  = default;
+  ~ExecutorRegistry() noexcept;
 
   auto operator=(const ExecutorRegistry& rhs) -> ExecutorRegistry& = delete;
   auto operator=(ExecutorRegistry&& rhs) -> ExecutorRegistry& = delete;
+
+  [[nodiscard]] inline auto getHeadExecutor() noexcept -> ExecutorHandle* { return m_head; }
 
   auto registerExecutor(ExecutorHandle* handle) noexcept -> void;
   auto unregisterExecutor(ExecutorHandle* handle) noexcept -> void;

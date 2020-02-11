@@ -191,6 +191,7 @@ add_library(vm STATIC
   vm/internal/allocator.cpp
   vm/internal/executor_registry.cpp
   vm/internal/executor.cpp
+  vm/internal/garbage_collector.cpp
   vm/platform/memory_interface.cpp
   vm/assembly.cpp
   vm/vm.cpp
