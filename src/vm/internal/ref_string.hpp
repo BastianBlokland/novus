@@ -16,6 +16,8 @@ public:
   auto operator=(const StringRef& rhs) -> StringRef& = delete;
   auto operator=(StringRef&& rhs) -> StringRef& = delete;
 
+  [[nodiscard]] constexpr static auto getKind() { return RefKind::String; }
+
   [[nodiscard]] inline auto getDataPtr() const noexcept { return m_data; }
   [[nodiscard]] inline auto getSize() const noexcept { return m_size; }
 
@@ -26,15 +28,14 @@ private:
   unsigned int m_size;
 
   inline explicit StringRef(const char* data, unsigned int size) noexcept :
-      Ref(RefKind::String), m_data{data}, m_size{size} {}
+      Ref(getKind()), m_data{data}, m_size{size} {}
 };
 
 inline auto getStringRef(const Value& val) noexcept {
-  auto* ref = val.getRef();
-  assert(ref->getKind() == RefKind::String);
-  auto* res = static_cast<StringRef*>(ref);          // NOLINT: Down-cast.
-  assert(res->getDataPtr()[res->getSize()] == '\0'); // Assert that the string is null-terminated.
-  return res;
+  auto* strRef = val.getDowncastRef<StringRef>();
+  // Assert that the string is null-terminated.
+  assert(strRef->getDataPtr()[strRef->getSize()] == '\0');
+  return strRef;
 }
 
 } // namespace vm::internal

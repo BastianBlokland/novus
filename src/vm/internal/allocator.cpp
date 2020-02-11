@@ -6,19 +6,20 @@
 
 namespace vm::internal {
 
-Allocator::Allocator() noexcept : m_head{nullptr} {}
+Allocator::Allocator(ExecutorRegistry* execRegistry) noexcept :
+    m_gc{this, execRegistry}, m_head{nullptr}, m_bytesUntilNextCollection{gcByteInterval} {}
 
 Allocator::~Allocator() noexcept {
-  /* Delete all allocations. Note this assumes no new allocates are being made while we are running
-   * the destructor. */
+  // Shutdown the gc (this makes sure that any ongoing collections are finished).
+  m_gc.terminateCollector();
+
+  /* Delete all allocations. Note this assumes no new allocations are being made while we are
+  running the destructor. */
 
   auto* ref = m_head.load(std::memory_order_acquire);
   while (ref) {
     auto next = ref->m_next;
-    // Call the (virtual) destructor of Ref.
-    ref->~Ref();
-    // Free the backing memory.
-    std::free(ref); // NOLINT: Manual memory management.
+    Allocator::freeUnsafe(ref);
     ref = next;
   }
 }

@@ -162,6 +162,12 @@ auto TypeInferExpr::visit(const parse::ConstDeclExprNode& n) -> void {
 auto TypeInferExpr::visit(const parse::IdExprNode& n) -> void {
   const auto name = getName(n.getId());
 
+  // Check if this is a constant.
+  m_type = inferConstType(n.getId());
+  if (m_type.isConcrete()) {
+    return;
+  }
+
   // Templated function literal.
   if (n.getTypeParams()) {
     const auto typeSet = getTypeSet(m_ctx, m_typeSubTable, n.getTypeParams()->getTypes());
@@ -187,9 +193,6 @@ auto TypeInferExpr::visit(const parse::IdExprNode& n) -> void {
     }
     return;
   }
-
-  // If its not a function literal treat it as a constant.
-  m_type = inferConstType(n.getId());
 }
 
 auto TypeInferExpr::visit(const parse::FieldExprNode& n) -> void {

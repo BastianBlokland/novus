@@ -27,30 +27,35 @@ class Value final {
 public:
   Value() = default;
 
-  [[nodiscard]] inline auto isRef() const noexcept { return (m_raw & refTag) != 0U; }
+  [[nodiscard]] inline auto isRef() const noexcept -> bool { return (m_raw & refTag) != 0U; }
 
-  [[nodiscard]] inline auto getUInt() const noexcept {
+  [[nodiscard]] inline auto getUInt() const noexcept -> uint32_t {
     assert(!isRef());
     return static_cast<uint32_t>(m_raw >> 32U);
   }
 
-  [[nodiscard]] inline auto getInt() const noexcept {
+  [[nodiscard]] inline auto getInt() const noexcept -> int32_t {
     assert(!isRef());
     auto upperRaw = static_cast<uint32_t>(m_raw >> 32U);
     return reinterpret_cast<int32_t&>(upperRaw); // NOLINT: Reinterpret cast
   }
 
-  [[nodiscard]] inline auto getFloat() const noexcept {
+  [[nodiscard]] inline auto getFloat() const noexcept -> float {
     assert(!isRef());
     auto upperRaw = static_cast<uint32_t>(m_raw >> 32U);
     return reinterpret_cast<float&>(upperRaw); // NOLINT: Reinterpret cast
   }
 
-  [[nodiscard]] inline auto getRef() const noexcept {
+  [[nodiscard]] inline auto getRef() const noexcept -> Ref* {
     assert(isRef());
     // Mask of the tag and interpret it as a pointer (works because due to alignment lowest bit is
     // always 0).
     return reinterpret_cast<Ref*>(m_raw & valMask); // NOLINT: Reinterpret cast
+  }
+
+  template <typename RefType>
+  [[nodiscard]] inline auto getDowncastRef() const noexcept -> RefType* {
+    return downcastRef<RefType>(getRef());
   }
 
   template <typename Type>

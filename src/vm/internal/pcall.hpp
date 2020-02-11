@@ -77,7 +77,7 @@ auto inline pcall(
     PUSH_REF(toString(allocator, line));
   } break;
   case vm::PCallCode::GetEnvArg: {
-    auto* res = iface->getEnvArg(PEEK_INT());
+    auto* res = iface->getEnvArg(POP_INT());
     if (res == nullptr) {
       PUSH_REF(allocator->allocStr(0).first);
     } else {

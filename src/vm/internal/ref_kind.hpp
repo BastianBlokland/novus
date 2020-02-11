@@ -1,11 +1,12 @@
 #pragma once
+#include <cstdint>
 
 namespace vm::internal {
 
-enum class RefKind : unsigned int {
-  String = 1,
-  Struct = 2,
-  Future = 3,
+enum class RefKind : uint8_t {
+  String = 0U,
+  Struct = 1U,
+  Future = 2U,
 };
 
 } // namespace vm::internal

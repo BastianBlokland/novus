@@ -186,7 +186,7 @@ auto execute(
 
   // Setup state.
   auto stack      = BasicStack{};
-  auto execHandle = ExecutorHandle{};
+  auto execHandle = ExecutorHandle{&stack};
   execRegistry->registerExecutor(&execHandle);
 
   // If we are given a promise to fill then push it on the stack, its important to be on the stack

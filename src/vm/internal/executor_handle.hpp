@@ -11,21 +11,22 @@ class ExecutorRegistry;
 class ExecutorHandle final {
   friend ExecutorRegistry;
 
-  enum class RequestType : int {
-    None  = 0,
-    Abort = 1,
-    Pause = 2,
-  };
-
 public:
-  explicit ExecutorHandle() noexcept :
-      m_state{ExecState::Running}, m_request{RequestType::None}, m_prev{nullptr}, m_next{nullptr} {}
+  explicit ExecutorHandle(BasicStack* stack) noexcept :
+      m_stack{stack},
+      m_state{ExecState::Running},
+      m_request{RequestType::None},
+      m_prev{nullptr},
+      m_next{nullptr} {}
   ExecutorHandle(const ExecutorHandle& rhs) = delete;
   ExecutorHandle(ExecutorHandle&& rhs)      = delete;
   ~ExecutorHandle() noexcept                = default;
 
   auto operator=(const ExecutorHandle& rhs) -> ExecutorHandle& = delete;
   auto operator=(ExecutorHandle&& rhs) -> ExecutorHandle& = delete;
+
+  [[nodiscard]] inline auto getStack() noexcept -> BasicStack* { return m_stack; }
+  [[nodiscard]] inline auto getNext() noexcept -> ExecutorHandle* { return m_next; }
 
   [[nodiscard]] inline auto
   getState(std::memory_order memOrder = std::memory_order_acquire) noexcept -> ExecState {
@@ -37,6 +38,8 @@ public:
   }
 
   inline auto trap() noexcept -> bool {
+  TrapBegin:
+
     auto req = m_request.load(std::memory_order_acquire);
     switch (req) {
     case RequestType::Abort:
@@ -51,8 +54,11 @@ public:
       if (req == RequestType::Abort) {
         goto Abort;
       }
-      m_state.store(ExecState::Running, std::memory_order_release);
-      [[fallthrough]];
+
+      // Store running with sequential-consistency order and restart the trap check. This is
+      // important because we could be re-paused in between us checking.
+      m_state.store(ExecState::Running, std::memory_order_seq_cst);
+      goto TrapBegin;
     case RequestType::None:
       return false;
     }
@@ -83,6 +89,13 @@ public:
   }
 
 private:
+  enum class RequestType : int {
+    None  = 0,
+    Abort = 1,
+    Pause = 2,
+  };
+
+  BasicStack* m_stack;
   std::atomic<ExecState> m_state;
   std::atomic<RequestType> m_request;
 
