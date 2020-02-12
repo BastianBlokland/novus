@@ -33,15 +33,6 @@ public:
   [[nodiscard]] inline auto getNextAlloc(Ref* ref) noexcept -> Ref* { return ref->m_next; }
 
   // Not thread-safe, should not be called concurrently.
-  inline auto freeHead() noexcept -> Ref* {
-    auto toFree = m_head.load(std::memory_order_acquire);
-    auto next   = toFree->m_next;
-    freeUnsafe(toFree);
-    m_head.store(next, std::memory_order_release);
-    return next;
-  }
-
-  // Not thread-safe, should not be called concurrently.
   inline auto freeNext(Ref* ref) noexcept -> Ref* {
     auto* toFree = ref->m_next;
     if (toFree) {

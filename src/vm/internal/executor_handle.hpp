@@ -2,6 +2,7 @@
 #include "internal/stack.hpp"
 #include "vm/exec_state.hpp"
 #include <atomic>
+#include <immintrin.h>
 #include <thread>
 
 namespace vm::internal {
@@ -48,8 +49,9 @@ public:
       return true;
     case RequestType::Pause:
       m_state.store(ExecState::Paused, std::memory_order_release);
+      std::this_thread::yield();
       while (req = m_request.load(std::memory_order_acquire), req == RequestType::Pause) {
-        std::this_thread::yield();
+        _mm_pause();
       }
       if (req == RequestType::Abort) {
         goto Abort;
