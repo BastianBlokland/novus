@@ -1,10 +1,13 @@
 #pragma once
 #include "internal/executor_registry.hpp"
 #include <thread>
+#include <vector>
 
 namespace vm::internal {
 
 class Allocator;
+
+const auto initialGcMarkQueueSize = 1024;
 
 class GarbageCollector final {
 public:
@@ -28,6 +31,7 @@ private:
 
   Allocator* m_allocator;
   ExecutorRegistry* m_execRegistry;
+  std::vector<Ref*> m_markQueue;
 
   std::thread m_collectorThread;
   RequestType m_requestType;
@@ -36,7 +40,12 @@ private:
 
   auto request(RequestType type) noexcept -> void;
   auto collectorLoop() noexcept -> void;
+
   auto collect() noexcept -> void;
+  auto populateMarkQueue() noexcept -> void;
+  auto populateMarkQueue(BasicStack* stack) noexcept -> void;
+  auto mark() noexcept -> void;
+  auto sweep(Ref* head) noexcept -> void;
 };
 
 } // namespace vm::internal

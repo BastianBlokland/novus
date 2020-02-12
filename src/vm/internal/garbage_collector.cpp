@@ -10,6 +10,8 @@ namespace vm::internal {
 GarbageCollector::GarbageCollector(Allocator* allocator, ExecutorRegistry* execRegistry) noexcept :
     m_allocator{allocator}, m_execRegistry{execRegistry}, m_requestType{RequestType::None} {
 
+  m_markQueue.reserve(initialGcMarkQueueSize);
+
   // Start the garbage-collector thread.
   m_collectorThread = std::thread(&GarbageCollector::collectorLoop, this);
 }
@@ -56,82 +58,102 @@ auto GarbageCollector::collectorLoop() noexcept -> void {
   }
 }
 
-auto mark(ExecutorRegistry* execRegistry) noexcept -> void;
-auto markStack(BasicStack* stack) noexcept -> void;
-auto markRef(Ref* ref) noexcept -> void;
-auto markValue(const Value& val) noexcept -> void;
-auto sweep(Allocator* allocator) noexcept -> void;
-
 auto GarbageCollector::collect() noexcept -> void {
   // Pause all executors. This makes sure that we are free to inspect the stacks of the allocators
   // and no new allocations are being made.
   m_execRegistry->pauseExecutors(); // Will block until all executors have paused.
 
-  // Mark all references that are reachable from the stacks of the executors.
-  mark(m_execRegistry);
+  // Populate mark-queue with the references from the stacks of the executors.
+  populateMarkQueue();
+
+  // Mark all references in the mark-queue.
+  mark();
+
+  // Get the head ref to start the sweep from.
+  Ref* sweepHead = m_allocator->getHeadAlloc();
+
+  // Resume the executors as the sweeping can run concurrently with the program.
+  m_execRegistry->resumeExecutors();
 
   // Remove all non-marked allocations.
-  sweep(m_allocator);
-
-  m_execRegistry->resumeExecutors();
+  sweep(sweepHead);
 }
 
-inline auto mark(ExecutorRegistry* execRegistry) noexcept -> void {
-  auto* execHandle = execRegistry->getHeadExecutor();
+auto GarbageCollector::populateMarkQueue() noexcept -> void {
+  // Go through all the executors and process their stacks.
+  auto* execHandle = m_execRegistry->getHeadExecutor();
   while (execHandle) {
-    markStack(execHandle->getStack());
+    populateMarkQueue(execHandle->getStack());
     execHandle = execHandle->getNext();
   }
 }
 
-inline auto markStack(BasicStack* stack) noexcept -> void {
+auto GarbageCollector::populateMarkQueue(BasicStack* stack) noexcept -> void {
+  // Add all references on the stack to the mark-queue.
   for (auto* sp = stack->getBottom(); sp != stack->getNext(); ++sp) {
     assert(sp < stack->getNext());
-
-    markValue(*sp);
-  }
-}
-
-inline auto markValue(const Value& val) noexcept -> void {
-  if (val.isRef()) {
-    markRef(val.getRef());
-  }
-}
-
-auto markRef(Ref* ref) noexcept -> void {
-  ref->setFlag<RefFlags::GcMarked>();
-  switch (ref->getKind()) {
-  case RefKind::String:
-    break;
-  case RefKind::Struct: {
-    auto* s = downcastRef<StructRef>(ref);
-    for (auto* fP = s->getFieldsBegin(); fP != s->getFieldsEnd(); ++fP) {
-      markValue(*fP);
+    if (sp->isRef()) {
+      m_markQueue.push_back(sp->getRef());
     }
-  } break;
-  case RefKind::Future: {
-    auto* f = downcastRef<FutureRef>(ref);
-    markValue(f->getResult());
-  } break;
   }
 }
 
-inline auto sweep(Allocator* allocator) noexcept -> void {
-  Ref* prevRef = nullptr;
-  Ref* ref     = allocator->getHeadAlloc();
-  while (ref) {
-    if (ref->hasFlag<RefFlags::GcMarked>()) {
+auto GarbageCollector::mark() noexcept -> void {
+  while (!m_markQueue.empty()) {
+    // Take a reference from the queue.
+    Ref* cur = m_markQueue.back();
+    m_markQueue.pop_back();
+
+    // If its allready marked then we ignore it.
+    if (cur->hasFlag<RefFlags::GcMarked>()) {
+      continue;
+    }
+
+    // Mark it.
+    cur->setFlag<RefFlags::GcMarked>();
+
+    // Push any child references it has to the queue.
+    switch (cur->getKind()) {
+    case RefKind::String:
+      break;
+    case RefKind::Struct: {
+      auto* s = downcastRef<StructRef>(cur);
+      for (auto* fP = s->getFieldsBegin(); fP != s->getFieldsEnd(); ++fP) {
+        if (fP->isRef()) {
+          m_markQueue.push_back(fP->getRef());
+        }
+      }
+    } break;
+    case RefKind::Future: {
+      auto* f = downcastRef<FutureRef>(cur);
+      if (f->getResult().isRef()) {
+        m_markQueue.push_back(f->getResult().getRef());
+      }
+    } break;
+    }
+  }
+}
+
+auto GarbageCollector::sweep(Ref* head) noexcept -> void {
+  // Walks the list of allocations, if its marked then its unmarked and if its not marked it is
+  // deleted. This won't ever delete the head node, reason is that would require syncronization as
+  // the running program might change the head.
+
+  if (head == nullptr) {
+    return;
+  }
+
+  Ref* prev = head;
+  Ref* cur  = m_allocator->getNextAlloc(head);
+  while (cur) {
+    if (cur->hasFlag<RefFlags::GcMarked>()) {
       // Still reachable.
-      ref->unsetFlag<RefFlags::GcMarked>();
-      prevRef = ref;
-      ref     = allocator->getNextAlloc(ref);
+      cur->unsetFlag<RefFlags::GcMarked>();
+      prev = cur;
+      cur  = m_allocator->getNextAlloc(cur);
     } else {
       // No longer reachable.
-      if (prevRef == nullptr) {
-        ref = allocator->freeHead();
-      } else {
-        ref = allocator->freeNext(prevRef);
-      }
+      cur = m_allocator->freeNext(prev);
     }
   }
 }
