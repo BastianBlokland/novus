@@ -22,6 +22,9 @@ auto operator<<(std::ostream& out, const ExecState& rhs) noexcept -> std::ostrea
   case ExecState::StackOverflow:
     out << "stack-overflow";
     break;
+  case ExecState::AllocFailed:
+    out << "alloc-failed";
+    break;
   case ExecState::DivByZero:
     out << "div-by-zero";
     break;

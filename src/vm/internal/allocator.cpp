@@ -25,7 +25,11 @@ Allocator::~Allocator() noexcept {
 }
 
 auto Allocator::allocStrLit(const std::string& lit) noexcept -> StringRef* {
-  auto mem     = alloc<StringRef>(0);
+  auto mem = alloc<StringRef>(0);
+  if (mem.first == nullptr) {
+    return nullptr;
+  }
+
   auto litSize = static_cast<unsigned int>(lit.size());
   auto* refPtr = static_cast<StringRef*>(new (mem.first) StringRef{lit.data(), litSize});
   initRef(refPtr);
@@ -33,7 +37,11 @@ auto Allocator::allocStrLit(const std::string& lit) noexcept -> StringRef* {
 }
 
 auto Allocator::allocStr(const unsigned int size) noexcept -> std::pair<StringRef*, char*> {
-  auto mem         = alloc<StringRef>(size + 1); // +1 for null-terminator.
+  auto mem = alloc<StringRef>(size + 1); // +1 for null-terminator.
+  if (mem.first == nullptr) {
+    return {nullptr, nullptr};
+  }
+
   auto payloadPtr  = static_cast<char*>(mem.second);
   payloadPtr[size] = '\0'; // Null-terminate the payload.
   auto* refPtr     = static_cast<StringRef*>(new (mem.first) StringRef{payloadPtr, size});
@@ -42,7 +50,11 @@ auto Allocator::allocStr(const unsigned int size) noexcept -> std::pair<StringRe
 }
 
 auto Allocator::allocStruct(uint8_t fieldCount) noexcept -> std::pair<StructRef*, Value*> {
-  auto mem       = alloc<StructRef>(sizeof(Value) * fieldCount);
+  auto mem = alloc<StructRef>(sizeof(Value) * fieldCount);
+  if (mem.first == nullptr) {
+    return {nullptr, nullptr};
+  }
+
   auto fieldsPtr = static_cast<Value*>(mem.second);
   auto* refPtr   = static_cast<StructRef*>(new (mem.first) StructRef{fieldsPtr, fieldCount});
   initRef(refPtr);
@@ -50,7 +62,11 @@ auto Allocator::allocStruct(uint8_t fieldCount) noexcept -> std::pair<StructRef*
 }
 
 auto Allocator::allocFuture() noexcept -> FutureRef* {
-  auto mem     = alloc<FutureRef>(0);
+  auto mem = alloc<FutureRef>(0);
+  if (mem.first == nullptr) {
+    return nullptr;
+  }
+
   auto* refPtr = static_cast<FutureRef*>(new (mem.first) FutureRef{});
   initRef(refPtr);
   return refPtr;

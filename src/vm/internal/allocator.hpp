@@ -21,9 +21,16 @@ public:
   auto operator=(const Allocator& rhs) -> Allocator& = delete;
   auto operator=(Allocator&& rhs) -> Allocator& = delete;
 
+  // Allocate a string, upon failure returns {nullptr, nullptr}.
   [[nodiscard]] auto allocStr(unsigned int size) noexcept -> std::pair<StringRef*, char*>;
+
+  // Allocate a string from a literal, upon failure returns {nullptr}.
   [[nodiscard]] auto allocStrLit(const std::string& literal) noexcept -> StringRef*;
+
+  // Allocate a struct, upon failure returns {nullptr, nullptr}.
   [[nodiscard]] auto allocStruct(uint8_t fieldCount) noexcept -> std::pair<StructRef*, Value*>;
+
+  // Allocate a future, upon failure returns {nullptr}.
   [[nodiscard]] auto allocFuture() noexcept -> FutureRef*;
 
   [[nodiscard]] inline auto getHeadAlloc() noexcept -> Ref* {
@@ -58,6 +65,8 @@ private:
     const auto allocSize = refSize + payloadsize;
     void* refPtr         = std::malloc(refSize + payloadsize); // NOLINT: Manual memory management.
     void* payloadPtr     = static_cast<char*>(refPtr) + refSize;
+
+    // Note: malloc can fail and in that case this function will return {nullptr, nullptr}.
 
     // Keep track of how many bytes we are still allowed to allocate before running gc.
     if (m_bytesUntilNextCollection.fetch_sub(allocSize, std::memory_order_acq_rel) < 0) {
