@@ -18,6 +18,7 @@ public:
   [[nodiscard]] auto getChildCount() const -> unsigned int override;
   [[nodiscard]] auto getSpan() const -> input::Span override;
 
+  [[nodiscard]] auto isSelf() const -> bool;
   [[nodiscard]] auto getId() const -> const lex::Token&;
   [[nodiscard]] auto getTypeParams() const -> const std::optional<TypeParamList>&;
 
