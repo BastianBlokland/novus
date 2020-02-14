@@ -94,7 +94,7 @@ enum class OpCode : uint8_t {
   Dup         = 243, // [] ()             -> (any)  Duplicate a value on the stack.
   Pop         = 244, // [] (any)          -> ()     Remove a value from the stack.
 
-  Fail = 255, // [] () -> ()
+  Fail = 255, // [] () -> () Terminate the current executor.
 };
 
 auto operator<<(std::ostream& out, const OpCode& rhs) noexcept -> std::ostream&;
