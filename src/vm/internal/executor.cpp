@@ -254,7 +254,7 @@ auto execute(
       PUSH_FLOAT(READ_FLOAT());
     } break;
     case OpCode::LoadLitString: {
-      const auto& litStr = assembly->getLitString(READ_INT());
+      const auto& litStr = assembly->getLitString(READ_UINT());
       PUSH_REF(allocator->allocStrLit(litStr));
     } break;
     case OpCode::LoadLitIp: {

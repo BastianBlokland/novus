@@ -42,7 +42,7 @@ auto Builder::addLoadLitFloat(float val) -> void {
 auto Builder::addLoadLitString(const std::string& val) -> void {
   const auto litId = addLitString(val);
   writeOpCode(vm::OpCode::LoadLitString);
-  writeInt32(litId);
+  writeUInt32(litId);
 }
 
 auto Builder::addLoadLitIp(std::string label) -> void {
