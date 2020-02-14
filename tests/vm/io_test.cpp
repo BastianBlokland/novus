@@ -69,7 +69,7 @@ TEST_CASE("Execute input and output", "[vm]") {
     CHECK_PROG(
         [](backend::Builder* builder) -> void {
           builder->label("entry");
-          builder->addEntryPoint("entry");
+          builder->setEntrypoint("entry");
 
           builder->addLoadLitString("hello: ");
 
@@ -98,7 +98,7 @@ TEST_CASE("Execute input and output", "[vm]") {
     CHECK_PROG(
         [](backend::Builder* builder) -> void {
           builder->label("entry");
-          builder->addEntryPoint("entry");
+          builder->setEntrypoint("entry");
 
           builder->addLoadLitString("hello: ");
 
@@ -128,7 +128,7 @@ TEST_CASE("Execute input and output", "[vm]") {
     CHECK_PROG_WITH_ENV_VARS(
         [](backend::Builder* builder) -> void {
           builder->label("entry");
-          builder->addEntryPoint("entry");
+          builder->setEntrypoint("entry");
 
           builder->addLoadLitString("var1");
           builder->addPCall(vm::PCallCode::GetEnvVar);
@@ -175,10 +175,15 @@ TEST_CASE("Execute input and output", "[vm]") {
           builder->addPCall(vm::PCallCode::ConWriteString);
           builder->addRet();
 
-          builder->addEntryPoint("writeArgCount");
-          builder->addEntryPoint("writeArg1");
-          builder->addEntryPoint("writeArg3");
-          builder->addEntryPoint("writeArg4");
+          // Entrypoint.
+          builder->label("entry");
+          builder->addCall("writeArgCount", 0, backend::CallMode::Normal);
+          builder->addCall("writeArg1", 0, backend::CallMode::Normal);
+          builder->addCall("writeArg3", 0, backend::CallMode::Normal);
+          builder->addCall("writeArg4", 0, backend::CallMode::Normal);
+          builder->addRet();
+
+          builder->setEntrypoint("entry");
         },
         "input",
         envArgs,
@@ -192,7 +197,7 @@ TEST_CASE("Execute input and output", "[vm]") {
     CHECK_PROG(
         [](backend::Builder* builder) -> void {
           builder->label("entry");
-          builder->addEntryPoint("entry");
+          builder->setEntrypoint("entry");
 
           // Its hard to test sleep, but at least this tests if the application exits cleanly.
           builder->addLoadLitInt(0); // Sleep for 0 milliseconds.
@@ -207,7 +212,7 @@ TEST_CASE("Execute input and output", "[vm]") {
     CHECK_PROG_RESULTCODE(
         [](backend::Builder* builder) -> void {
           builder->label("entry");
-          builder->addEntryPoint("entry");
+          builder->setEntrypoint("entry");
 
           builder->addLoadLitInt(0);
           builder->addLoadLitString("Fails");
@@ -220,7 +225,7 @@ TEST_CASE("Execute input and output", "[vm]") {
     CHECK_PROG(
         [](backend::Builder* builder) -> void {
           builder->label("entry");
-          builder->addEntryPoint("entry");
+          builder->setEntrypoint("entry");
 
           builder->addLoadLitInt(1);
           builder->addLoadLitString("Does not fail");

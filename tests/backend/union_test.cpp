@@ -89,7 +89,7 @@ TEST_CASE("Generating assembly for unions", "[backend]") {
           builder->addRet();
           // --- conWrite statement end.
 
-          builder->addEntryPoint("prog");
+          builder->setEntrypoint("prog");
         });
   }
 }

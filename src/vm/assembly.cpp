@@ -5,16 +5,16 @@
 namespace vm {
 
 Assembly::Assembly(
+    uint32_t entrypoint,
     std::vector<std::string> litStrings,
-    std::vector<uint8_t> instructions,
-    std::vector<uint32_t> entryPoints) noexcept :
+    std::vector<uint8_t> instructions) noexcept :
+    m_entrypoint{entrypoint},
     m_litStrings{std::move(litStrings)},
-    m_instructions{std::move(instructions)},
-    m_entryPoints{std::move(entryPoints)} {}
+    m_instructions{std::move(instructions)} {}
 
 auto Assembly::operator==(const Assembly& rhs) const noexcept -> bool {
-  return m_litStrings == rhs.m_litStrings && m_instructions == rhs.m_instructions &&
-      m_entryPoints == rhs.m_entryPoints;
+  return m_entrypoint == rhs.m_entrypoint && m_litStrings == rhs.m_litStrings &&
+      m_instructions == rhs.m_instructions;
 }
 
 auto Assembly::operator!=(const Assembly& rhs) const noexcept -> bool {
@@ -27,11 +27,7 @@ auto Assembly::beginLitStrings() const noexcept -> litStringIterator {
 
 auto Assembly::endLitStrings() const noexcept -> litStringIterator { return m_litStrings.end(); }
 
-auto Assembly::beginEntryPoints() const noexcept -> entryPointIterator {
-  return m_entryPoints.begin();
-}
-
-auto Assembly::endEntryPoints() const noexcept -> entryPointIterator { return m_entryPoints.end(); }
+auto Assembly::getEntrypoint() const noexcept -> uint32_t { return m_entrypoint; }
 
 auto Assembly::getLitString(uint32_t id) const noexcept -> const std::string& {
   assert(id < m_litStrings.size());

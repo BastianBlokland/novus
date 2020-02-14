@@ -21,7 +21,7 @@ TEST_CASE("Generating assembly for enums", "[backend]") {
           builder->addRet();
           // --- conWite statement end.
 
-          builder->addEntryPoint("prog");
+          builder->setEntrypoint("prog");
         });
   }
 
@@ -44,7 +44,7 @@ TEST_CASE("Generating assembly for enums", "[backend]") {
           builder->addRet();
           // --- conWite statement end.
 
-          builder->addEntryPoint("prog");
+          builder->setEntrypoint("prog");
         });
   }
 
@@ -64,7 +64,7 @@ TEST_CASE("Generating assembly for enums", "[backend]") {
           builder->addRet();
           // --- conWite statement end.
 
-          builder->addEntryPoint("prog");
+          builder->setEntrypoint("prog");
         });
   }
 }

@@ -62,7 +62,7 @@ TEST_CASE("Generating assembly for structs", "[backend]") {
           builder->addRet();
           // --- conWrite statement end.
 
-          builder->addEntryPoint("prog");
+          builder->setEntrypoint("prog");
         });
   }
 
@@ -93,7 +93,7 @@ TEST_CASE("Generating assembly for structs", "[backend]") {
           builder->addRet();
           // --- conWrite statement end.
 
-          builder->addEntryPoint("prog");
+          builder->setEntrypoint("prog");
         });
 
     SECTION("Create struct with one field, check for equality and load field") {
@@ -135,8 +135,13 @@ TEST_CASE("Generating assembly for structs", "[backend]") {
             builder->addRet();
             // --- conWrite statement 2 end.
 
-            builder->addEntryPoint("write1");
-            builder->addEntryPoint("write2");
+            // Entry point that calls both writes.
+            builder->label("entry");
+            builder->addCall("write1", 0, CallMode::Normal);
+            builder->addCall("write2", 0, CallMode::Normal);
+            builder->addRet();
+
+            builder->setEntrypoint("entry");
           });
     }
   }

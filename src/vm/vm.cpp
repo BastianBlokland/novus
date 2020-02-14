@@ -12,16 +12,9 @@ auto run(const Assembly* assembly, PlatformInterface* iface) noexcept -> ExecSta
 
   auto execRegistry = internal::ExecutorRegistry{};
   auto allocator    = internal::Allocator{&execRegistry};
-  auto resultState  = ExecState::Success;
 
-  for (auto itr = assembly->beginEntryPoints(); itr != assembly->endEntryPoints(); ++itr) {
-    auto entryPoint = *itr;
-    resultState =
-        execute(assembly, iface, &execRegistry, &allocator, entryPoint, 0, nullptr, nullptr);
-    if (resultState != ExecState::Success) {
-      return resultState;
-    }
-  }
+  auto resultState = execute(
+      assembly, iface, &execRegistry, &allocator, assembly->getEntrypoint(), 0, nullptr, nullptr);
 
   // Abort all executors that are still running.
   execRegistry.abortExecutors();
