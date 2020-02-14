@@ -36,11 +36,9 @@ auto printStringLiterals(const vm::Assembly& assembly) -> void {
   }
 }
 
-auto printEntryPoints(const vm::Assembly& assembly) -> void {
-  std::cout << rang::style::bold << "EntryPoints:\n" << rang::style::reset;
-  for (auto itr = assembly.beginEntryPoints(); itr != assembly.endEntryPoints(); ++itr) {
-    std::cout << "  " << rang::style::bold << *itr << rang::style::reset << '\n';
-  }
+auto printEntrypoint(const vm::Assembly& assembly) -> void {
+  std::cout << rang::style::bold << "Entrypoint: " << assembly.getEntrypoint() << rang::style::reset
+            << '\n';
 }
 
 auto printInstructions(const vm::Assembly& assembly) -> void {
@@ -63,9 +61,9 @@ auto printInstructions(const vm::Assembly& assembly) -> void {
 }
 
 auto printProgram(const vm::Assembly& assembly) -> void {
-  printStringLiterals(assembly);
+  printEntrypoint(assembly);
   std::cout << '\n';
-  printEntryPoints(assembly);
+  printStringLiterals(assembly);
   std::cout << '\n';
   printInstructions(assembly);
 }

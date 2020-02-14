@@ -19,7 +19,7 @@ TEST_CASE("Runtime errors", "[vm]") {
           builder->label("func");
           builder->addCall("func", 0, backend::CallMode::Normal);
 
-          builder->addEntryPoint("func");
+          builder->setEntrypoint("func");
         },
         "input",
         ExecState::StackOverflow);
@@ -43,7 +43,7 @@ TEST_CASE("Runtime errors", "[vm]") {
           builder->addStackAlloc(10);
           builder->addCall("func", 0, backend::CallMode::Normal);
 
-          builder->addEntryPoint("func");
+          builder->setEntrypoint("func");
         },
         "input",
         ExecState::StackOverflow);

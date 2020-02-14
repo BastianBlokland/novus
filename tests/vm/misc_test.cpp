@@ -17,7 +17,7 @@ TEST_CASE("Execute miscellaneous instructions", "[vm]") {
           builder->addPCall(vm::PCallCode::ConWriteString);
           builder->addRet();
 
-          builder->addEntryPoint("start");
+          builder->setEntrypoint("start");
         },
         "input",
         "84");
@@ -35,7 +35,7 @@ TEST_CASE("Execute miscellaneous instructions", "[vm]") {
           builder->addPCall(vm::PCallCode::ConWriteString);
           builder->addRet();
 
-          builder->addEntryPoint("start");
+          builder->setEntrypoint("start");
         },
         "input",
         "42");

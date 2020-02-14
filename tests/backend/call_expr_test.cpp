@@ -395,7 +395,7 @@ TEST_CASE("Generate assembly for call expressions", "[backend]") {
           builder->addPCall(vm::PCallCode::ConWriteString);
           builder->addRet();
 
-          builder->addEntryPoint("prog");
+          builder->setEntrypoint("prog");
         });
   }
 

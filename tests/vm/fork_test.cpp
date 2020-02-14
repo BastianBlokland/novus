@@ -8,7 +8,7 @@ TEST_CASE("Execute forks", "[vm]") {
   SECTION("Waiting for fork results") {
     CHECK_PROG(
         [](backend::Builder* builder) -> void {
-          builder->addEntryPoint("entry");
+          builder->setEntrypoint("entry");
           // --- Main function start.
           builder->label("entry");
           builder->addStackAlloc(1); // Reserve space for a variable.
@@ -65,7 +65,7 @@ TEST_CASE("Execute forks", "[vm]") {
   SECTION("Error in fork is transferred on wait") {
     CHECK_PROG_RESULTCODE(
         [](backend::Builder* builder) -> void {
-          builder->addEntryPoint("entry");
+          builder->setEntrypoint("entry");
           // --- Main function start.
           builder->label("entry");
           builder->addStackAlloc(1); // Reserve space for a variable.
@@ -92,7 +92,7 @@ TEST_CASE("Execute forks", "[vm]") {
   SECTION("Poll on finished fork returns true") {
     CHECK_PROG(
         [](backend::Builder* builder) -> void {
-          builder->addEntryPoint("entry");
+          builder->setEntrypoint("entry");
           // --- Main function start.
           builder->label("entry");
 

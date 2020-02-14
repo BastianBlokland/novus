@@ -23,8 +23,11 @@ static auto reserveConsts(Builder* builder, const prog::sym::ConstDeclTable& con
 }
 
 static auto
-generateFunc(Builder* builder, const prog::Program& program, const prog::sym::FuncDef& func) {
-  builder->label(internal::getLabel(func.getId()));
+generateFunc(Builder* builder, const prog::Program& program, const prog::sym::FuncDef& func)
+    -> std::string {
+
+  const auto label = internal::getLabel(func.getId());
+  builder->label(label);
   reserveConsts(builder, func.getConsts());
 
   // Generate the function body.
@@ -33,13 +36,17 @@ generateFunc(Builder* builder, const prog::Program& program, const prog::sym::Fu
 
   // Note: Due to tail calls this return might never be executed.
   builder->addRet();
+
+  return label;
 }
 
 static auto
-generateExecStmt(Builder* builder, const prog::Program& program, const prog::sym::ExecStmt& exec) {
+generateExecStmt(Builder* builder, const prog::Program& program, const prog::sym::ExecStmt& exec)
+    -> std::string {
+
   const auto label = builder->generateLabel();
   builder->label(label);
-  builder->addEntryPoint(label);
+
   reserveConsts(builder, exec.getConsts());
 
   // Generate the expression.
@@ -47,6 +54,8 @@ generateExecStmt(Builder* builder, const prog::Program& program, const prog::sym
   exec.getExpr().accept(&genExpr);
 
   builder->addRet();
+
+  return label;
 }
 
 auto generate(const prog::Program& program) -> vm::Assembly {
@@ -70,8 +79,27 @@ auto generate(const prog::Program& program) -> vm::Assembly {
   }
 
   // Generate execution statements.
+  std::vector<std::string> execStmtLabels = {};
   for (auto execItr = program.beginExecStmts(); execItr != program.endExecStmts(); ++execItr) {
-    generateExecStmt(&builder, program, *execItr);
+    auto execLabel = generateExecStmt(&builder, program, *execItr);
+    execStmtLabels.push_back(std::move(execLabel));
+  }
+
+  if (execStmtLabels.size() == 1) {
+    // If there is only a single exec-statement we can simply make that the entry-point.
+    builder.setEntrypoint(execStmtLabels[0]);
+  } else {
+    // If there are multiple exec-statements we create a block of code that calls all of them
+    // in-order and make that the entry-point.
+
+    auto entryPointLabel = builder.generateLabel();
+    builder.setEntrypoint(entryPointLabel);
+
+    builder.label(entryPointLabel);
+    for (const auto& execStmtLabel : execStmtLabels) {
+      builder.addCall(execStmtLabel, 0, CallMode::Normal);
+    }
+    builder.addRet(); // Returning from the root stack-frame causes the program to stop.
   }
 
   return builder.close();
