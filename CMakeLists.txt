@@ -17,7 +17,7 @@ enable_testing()
 # Global compiler flags.
 if(MSVC)
   message("Setting msvc compiler flags")
-  set(CMAKE_CXX_FLAGS "/EHec /std:c++17")
+  set(CMAKE_CXX_FLAGS "/std:c++17")
 else()
   set(CMAKE_CXX_FLAGS_DEBUG "-g -std=c++17 -stdlib=libc++ -Werror -Wall -Wextra")
   set(CMAKE_CXX_FLAGS_RELEASE "-O3 -std=c++17 -stdlib=libc++ -Werror -Wall -Wextra")
