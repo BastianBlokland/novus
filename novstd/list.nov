@@ -109,18 +109,18 @@ fun rangeList{T}(T start, T end)
   List{T}().pushRange(start, end)
 
 fun fold{T, TResult}(List{T} l, delegate{TResult, T, TResult} del)
-  l.foldImpl(del, TResult())
-
-fun foldImpl{T, TResult}(List{T} l, delegate{TResult, T, TResult} del, TResult val)
-  if l as LNode{T} n -> n.next.foldImpl(del, del(val, n.val))
-  if l is LEnd       -> val
+  (
+    lambda (List{T} rem, TResult result)
+      if rem as LNode{T} n -> self(n.next, del(result, n.val))
+      if rem is LEnd       -> result
+  )(l, TResult())
 
 fun foldRight{T, TResult}(List{T} l, delegate{TResult, T, TResult} del)
-  l.foldRightImpl(del, TResult())
-
-fun foldRightImpl{T, TResult}(List{T} l, delegate{TResult, T, TResult} del, TResult val)
-  if l as LNode{T} n -> del(n.next.foldRightImpl(del, val), n.val)
-  if l is LEnd       -> val
+  (
+    lambda (List{T} rem, TResult result)
+      if rem as LNode{T} n -> del(self(n.next, result), n.val)
+      if rem is LEnd       -> result
+  )(l, TResult())
 
 fun filter{T}(List{T} l, delegate{T, bool} pred)
   l.foldRight(lambda (List{T} newList, T val) pred(val) ? val :: newList : newList)

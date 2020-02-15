@@ -6,35 +6,39 @@ import "math.nov"
 fun parseInt(string str)
   parseIntOffset(str, 0, str.length())
 
-fun parseIntOffset(string str, int start, int end)
+fun parseIntOffset(string str, int start, int end) -> Option{int}
+  impl =
+  (
+    lambda (int idx, int result)
+      if idx >= end         -> result
+      if str[idx].isDigit() -> self(++idx, result * 10 + str[idx] - '0')
+      else                  -> None()
+  );
   if start == end       -> None()
-  if str[start] == '-'  -> parseIntImpl(str, ++start, end, 0).map(negate{int})
-  if str[start] == '+'  -> parseIntImpl(str, ++start, end, 0)
-  else                  -> parseIntImpl(str, start, end, 0)
-
-fun parseIntImpl(string str, int idx, int end, int result) -> Option{int}
-  if idx >= end         -> result
-  if str[idx].isDigit() -> parseIntImpl(str, ++idx, end, result * 10 + str[idx] - '0')
-  else                  -> None()
+  if str[start] == '-'  -> impl(++start, 0).map(negate{int})
+  if str[start] == '+'  -> impl(++start, 0)
+  else                  -> impl(start, 0)
 
 fun parseFloat(string str)
   parseFloatOffset(str, 0, str.length())
 
-fun parseFloatOffset(string str, int start, int end)
+fun parseFloatOffset(string str, int start, int end) -> Option{float}
+  impl =
+  (
+    lambda (int idx, float raw, float div, bool dec)
+      if idx >= end                         -> raw / div
+      if str[idx] == '.' && !dec            -> self(++idx, raw, div, true)
+      if str[idx].isDigit()                 -> newRaw = raw * 10.0 + int(str[idx]) - int('0');
+                                               newDiv = dec ? div * 10.0 : div;
+                                               self(++idx, newRaw, newDiv, dec)
+      if str[idx] == 'e' || str[idx] == 'E' -> parseIntOffset(str, ++idx, end).
+                                                  map(lambda (int exp) raw / (div / pow(10.0, exp)))
+      else                                  -> None()
+  );
   if start == end       -> None()
-  if str[start] == '-'  -> parseFloatImpl(str, ++start, end, 0.0, 1.0, false).map(negate{float})
-  if str[start] == '+'  -> parseFloatImpl(str, ++start, end, 0.0, 1.0, false)
-  else                  -> parseFloatImpl(str, start,   end, 0.0, 1.0, false)
-
-fun parseFloatImpl(string str, int idx, int end, float raw, float div, bool dec) -> Option{float}
-  if idx >= end                         -> raw / div
-  if str[idx] == '.' && !dec            -> parseFloatImpl(str, ++idx, end, raw, div, true)
-  if str[idx].isDigit()                 -> newRaw = raw * 10.0 + int(str[idx]) - int('0');
-                                           newDiv = dec ? div * 10.0 : div;
-                                           parseFloatImpl(str, ++idx, end, newRaw, newDiv, dec)
-  if str[idx] == 'e' || str[idx] == 'E' -> parseIntOffset(str, ++idx, end).
-                                            map(lambda (int exp) raw / (div / pow(10.0, exp)))
-  else                                  -> None()
+  if str[start] == '-'  -> impl(++start, 0.0, 1.0, false).map(negate{float})
+  if str[start] == '+'  -> impl(++start, 0.0, 1.0, false)
+  else                  -> impl(start,   0.0, 1.0, false)
 
 fun parseBool(string str) -> Option{bool}
   if str == "true" || str == "TRUE" || str == "True"    -> true
