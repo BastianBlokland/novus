@@ -160,15 +160,15 @@ TEST_CASE("Analyzing call dynamic expressions", "[frontend]") {
         errUndeclaredConst(src, "conWrite", input::Span{23, 30}),
         errUndeclaredPureFunc(src, "op", {"string"}, input::Span{33, 49}));
     CHECK_DIAG(
-        "action main() conWrite(\"hello world\") "
-        "action a() -> string op = main; op()",
-        errUndeclaredConst(src, "main", input::Span{64, 67}),
-        errUndeclaredFuncOrAction(src, "op", {}, input::Span{70, 73}));
+        "act main() conWrite(\"hello world\") "
+        "act a() -> string op = main; op()",
+        errUndeclaredConst(src, "main", input::Span{58, 61}),
+        errUndeclaredFuncOrAction(src, "op", {}, input::Span{64, 67}));
     CHECK_DIAG(
-        "action main{T}() conWrite(\"hello world\") "
-        "action a() -> string op = main{int}; op()",
-        errNoFuncFoundToInstantiate(src, "main", 1, input::Span{67, 75}),
-        errUndeclaredFuncOrAction(src, "op", {}, input::Span{78, 81}));
+        "act main{T}() conWrite(\"hello world\") "
+        "act a() -> string op = main{int}; op()",
+        errNoFuncFoundToInstantiate(src, "main", 1, input::Span{61, 69}),
+        errUndeclaredFuncOrAction(src, "op", {}, input::Span{72, 75}));
   }
 }
 

@@ -113,23 +113,23 @@ TEST_CASE("Analyzing user-function declarations", "[frontend]") {
   SECTION("Actions") {
 
     SECTION("Declare basic action") {
-      const auto& output = ANALYZE("action act(int a, bool b) -> bool false");
+      const auto& output = ANALYZE("act a(int a, bool b) -> bool false");
       REQUIRE(output.isSuccess());
       CHECK(
-          GET_FUNC_DECL(output, "act", GET_TYPE_ID(output, "int"), GET_TYPE_ID(output, "bool"))
+          GET_FUNC_DECL(output, "a", GET_TYPE_ID(output, "int"), GET_TYPE_ID(output, "bool"))
               .getOutput() == GET_TYPE_ID(output, "bool"));
     }
 
     SECTION("Declare action template") {
-      const auto& output = ANALYZE("fun act{T}(T a) -> T a "
-                                   "fun f2() -> int act{int}(1) "
-                                   "fun f3() -> float act{float}(1.0)");
+      const auto& output = ANALYZE("act a{T}(T a) -> T a "
+                                   "act f2() -> int a{int}(1) "
+                                   "act f3() -> float a{float}(1.0)");
       REQUIRE(output.isSuccess());
       CHECK(
-          GET_FUNC_DECL(output, "act__int", GET_TYPE_ID(output, "int")).getOutput() ==
+          GET_FUNC_DECL(output, "a__int", GET_TYPE_ID(output, "int")).getOutput() ==
           GET_TYPE_ID(output, "int"));
       CHECK(
-          GET_FUNC_DECL(output, "act__float", GET_TYPE_ID(output, "float")).getOutput() ==
+          GET_FUNC_DECL(output, "a__float", GET_TYPE_ID(output, "float")).getOutput() ==
           GET_TYPE_ID(output, "float"));
     }
   }
@@ -178,19 +178,19 @@ TEST_CASE("Analyzing user-function declarations", "[frontend]") {
     CHECK_DIAG(
         "fun conWrite(string input) input",
         errDuplicateFuncDeclaration(src, "conWrite", input::Span{0, 31}));
-    CHECK_DIAG("action +(int i) i + 1", errNonPureOperatorOverload(src, input::Span{7, 7}));
-    CHECK_DIAG("action +{T}(T t) t + 1", errNonPureOperatorOverload(src, input::Span{7, 7}));
+    CHECK_DIAG("act +(int i) i + 1", errNonPureOperatorOverload(src, input::Span{4, 4}));
+    CHECK_DIAG("act +{T}(T t) t + 1", errNonPureOperatorOverload(src, input::Span{4, 4}));
     CHECK_DIAG(
         "struct S = int i, bool b "
-        "action S() S(0, false)",
-        errNonPureConversion(src, input::Span{32, 32}));
+        "act S() S(0, false)",
+        errNonPureConversion(src, input::Span{29, 29}));
     CHECK_DIAG(
         "struct S{T} = int i, T t "
-        "action S{T}() S{T}(0, T()) "
-        "action act() S{int}()",
-        errNonPureConversion(src, input::Span{25, 50}),
-        errInvalidFuncInstantiation(src, input::Span{65, 65}),
-        errNoTypeOrConversionFoundToInstantiate(src, "S", 1, input::Span{65, 72}));
+        "act S{T}() S{T}(0, T()) "
+        "act a() S{int}()",
+        errNonPureConversion(src, input::Span{25, 47}),
+        errInvalidFuncInstantiation(src, input::Span{57, 57}),
+        errNoTypeOrConversionFoundToInstantiate(src, "S", 1, input::Span{57, 64}));
   }
 }
 

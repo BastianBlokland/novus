@@ -331,7 +331,7 @@ TEST_CASE("Infer return type of user functions", "[frontend]") {
   }
 
   SECTION("Infinite recursing action") {
-    const auto& output = ANALYZE("action main() "
+    const auto& output = ANALYZE("act main() "
                                  " conWrite(\"hello world\"); "
                                  " main()");
     REQUIRE(output.isSuccess());

@@ -173,7 +173,7 @@ auto errNonOverloadableOperator(const Source& src, const std::string& name, inpu
 
 auto errNonPureOperatorOverload(const Source& src, input::Span span) -> Diag {
   std::ostringstream oss;
-  oss << "Operator overloads have to be pure ('fun' instead of 'action')";
+  oss << "Operator overloads have to be pure ('fun' instead of 'act')";
   return error(src, oss.str(), span);
 }
 
@@ -503,7 +503,7 @@ auto errNonExhaustiveSwitchWithoutElse(const Source& src, input::Span span) -> D
 
 auto errNonPureConversion(const Source& src, input::Span span) -> Diag {
   std::ostringstream oss;
-  oss << "Type conversion has to be pure ('fun' instead of 'action')";
+  oss << "Type conversion has to be pure ('fun' instead of 'act')";
   return error(src, oss.str(), span);
 }
 

@@ -22,7 +22,7 @@ auto ParserImpl::nextStmt() -> NodePtr {
     case lex::Keyword::Import:
       return nextImport();
     case lex::Keyword::Fun:
-    case lex::Keyword::Action:
+    case lex::Keyword::Act:
       return nextStmtFuncDecl();
     case lex::Keyword::Struct:
       return nextStmtStructDecl();
@@ -77,7 +77,7 @@ auto ParserImpl::nextStmtFuncDecl() -> NodePtr {
   }
   auto body = nextExpr(0);
 
-  auto kwValid       = kw == lex::Keyword::Fun || kw == lex::Keyword::Action;
+  auto kwValid       = kw == lex::Keyword::Fun || kw == lex::Keyword::Act;
   auto typeSubsValid = !typeSubs || typeSubs->validate();
   auto idValid =
       id.getKind() == lex::TokenKind::Identifier || id.getCat() == lex::TokenCat::Operator;

@@ -50,7 +50,7 @@ namespace parse {
 #define DISCARD lex::basicToken(lex::TokenKind::Discard)
 #define IMPORT lex::keywordToken(lex::Keyword::Import)
 #define FUN lex::keywordToken(lex::Keyword::Fun)
-#define ACTION lex::keywordToken(lex::Keyword::Action)
+#define ACT lex::keywordToken(lex::Keyword::Act)
 #define LAMBDA lex::keywordToken(lex::Keyword::Lambda)
 #define FORK lex::keywordToken(lex::Keyword::Fork)
 #define STRUCT lex::keywordToken(lex::Keyword::Struct)

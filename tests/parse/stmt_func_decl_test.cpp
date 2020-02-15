@@ -132,18 +132,18 @@ TEST_CASE("Parsing function declaration statements", "[parse]") {
 
   SECTION("Actions") {
     CHECK_STMT(
-        "action a() 1",
+        "act a() 1",
         funcDeclStmtNode(
-            ACTION,
+            ACT,
             ID("a"),
             std::nullopt,
             ArgumentListDecl(OPAREN, {}, COMMAS(0), CPAREN),
             std::nullopt,
             INT(1)));
     CHECK_STMT(
-        "action a(int x) -> int 1",
+        "act a(int x) -> int 1",
         funcDeclStmtNode(
-            ACTION,
+            ACT,
             ID("a"),
             std::nullopt,
             ArgumentListDecl(
@@ -151,9 +151,9 @@ TEST_CASE("Parsing function declaration statements", "[parse]") {
             FuncDeclStmtNode::RetTypeSpec{ARROW, TYPE("int")},
             INT(1)));
     CHECK_STMT(
-        "action a{T, U}(T{U} x) x",
+        "act a{T, U}(T{U} x) x",
         funcDeclStmtNode(
-            ACTION,
+            ACT,
             ID("a"),
             TypeSubstitutionList{OCURLY, {ID("T"), ID("U")}, COMMAS(1), CCURLY},
             ArgumentListDecl(

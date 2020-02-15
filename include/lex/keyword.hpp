@@ -5,21 +5,7 @@
 
 namespace lex {
 
-enum class Keyword {
-  Import,
-  Fun,
-  Action,
-  Self,
-  Lambda,
-  Fork,
-  Struct,
-  Union,
-  Enum,
-  If,
-  Else,
-  Is,
-  As
-};
+enum class Keyword { Import, Fun, Act, Self, Lambda, Fork, Struct, Union, Enum, If, Else, Is, As };
 
 auto operator<<(std::ostream& out, const Keyword& rhs) -> std::ostream&;
 

@@ -64,7 +64,7 @@ TEST_CASE("Analyzing execute statements", "[frontend]") {
   }
 
   SECTION("Define exec statement to custom action") {
-    const auto& output = ANALYZE("action main() "
+    const auto& output = ANALYZE("act main() "
                                  " conWrite(\"hello \"); "
                                  " conWrite(\"world\") "
                                  "main()");
