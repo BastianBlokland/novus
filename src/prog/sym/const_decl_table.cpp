@@ -7,7 +7,9 @@
 namespace prog::sym {
 
 auto ConstDeclTable::operator[](ConstId id) const -> const ConstDecl& {
-  const auto index = id.m_id;
+  // Note: if we end up calling this allot it might be better to keep another vector that is
+  // directly indexable by const-id.
+  const auto index = getOffset(id);
   assert(index < this->m_consts.size());
   return m_consts[index];
 }
@@ -21,35 +23,36 @@ auto ConstDeclTable::getLocalCount() const -> unsigned int {
 
 auto ConstDeclTable::begin() const -> iterator { return m_consts.begin(); }
 
+auto ConstDeclTable::begin(const ConstKind kind) const -> iterator {
+  return std::lower_bound(
+      m_consts.begin(), m_consts.end(), kind, [](const ConstDecl& a, const ConstKind& b) {
+        return a.m_kind < b;
+      });
+}
+
 auto ConstDeclTable::end() const -> iterator { return m_consts.end(); }
 
+auto ConstDeclTable::end(const ConstKind kind) const -> iterator {
+  return std::upper_bound(
+      m_consts.begin(), m_consts.end(), kind, [](const ConstKind& a, const ConstDecl& b) {
+        return a < b.m_kind;
+      });
+}
+
 auto ConstDeclTable::getAll() const -> std::vector<ConstId> {
-  auto result = std::vector<ConstId>{};
-  result.reserve(m_consts.size());
-  for (const auto& c : m_consts) {
-    result.push_back(c.m_id);
-  }
-  return result;
+  return getConstIds(ConstKind::Input, ConstKind::Local);
 }
 
 auto ConstDeclTable::getInputs() const -> std::vector<ConstId> {
-  auto result = std::vector<ConstId>{};
+  return getConstIds(ConstKind::Input, ConstKind::Bound);
+}
 
-  // First include all input constants in the order they are registered.
-  for (const auto& c : m_consts) {
-    if (c.m_kind == ConstKind::Input) {
-      result.push_back(c.m_id);
-    }
-  }
+auto ConstDeclTable::getBoundInputs() const -> std::vector<ConstId> {
+  return getConstIds(ConstKind::Bound, ConstKind::Bound);
+}
 
-  // Then include all bound constants in the order they are registered.
-  for (const auto& c : m_consts) {
-    if (c.m_kind == ConstKind::Bound) {
-      result.push_back(c.m_id);
-    }
-  }
-
-  return result;
+auto ConstDeclTable::getNonBoundInputs() const -> std::vector<ConstId> {
+  return getConstIds(ConstKind::Input, ConstKind::Input);
 }
 
 auto ConstDeclTable::lookup(const std::string& name) const -> std::optional<ConstId> {
@@ -58,6 +61,11 @@ auto ConstDeclTable::lookup(const std::string& name) const -> std::optional<Cons
     return std::nullopt;
   }
   return itr->second;
+}
+
+auto ConstDeclTable::getOffset(ConstId id) const -> unsigned int {
+  return std::find_if(begin(), end(), [id](const ConstDecl& decl) { return decl.m_id == id; }) -
+      begin();
 }
 
 auto ConstDeclTable::registerBound(TypeId type) -> ConstId {
@@ -81,10 +89,25 @@ auto ConstDeclTable::registerConst(ConstKind kind, std::string name, TypeId type
 
   auto id = ConstId{static_cast<unsigned int>(m_consts.size())};
   if (m_lookup.insert({name, id}).second) {
-    m_consts.push_back(ConstDecl{id, kind, std::move(name), type});
+    // Keep entries in m_consts sorted by kind.
+    m_consts.insert(end(kind), ConstDecl{id, kind, std::move(name), type});
     return id;
   }
   throw std::logic_error{"Const with an identical name has already been registered"};
+}
+
+auto ConstDeclTable::getConstIds(ConstKind beginKind, ConstKind endKind) const
+    -> std::vector<ConstId> {
+
+  auto beginItr = begin(beginKind);
+  auto endItr   = end(endKind);
+
+  auto result = std::vector<ConstId>{};
+  result.reserve(endItr - beginItr);
+  std::transform(
+      beginItr, endItr, std::back_inserter(result), [](const ConstDecl& c) { return c.m_id; });
+
+  return result;
 }
 
 } // namespace prog::sym

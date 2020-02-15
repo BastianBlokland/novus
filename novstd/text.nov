@@ -50,52 +50,52 @@ fun indexOf(string str, int idx, delegate{char, bool} pred)
   else                    -> indexOf(str, ++idx, pred)
 
 fun startsWith(string str, string subStr)
-  startsWithImpl(str, 0, subStr)
-
-fun startsWithImpl(string str, int idx, string subStr)
-  if idx >= subStr.length()   -> true
-  if idx >= str.length()      -> false
-  if str[idx] != subStr[idx]  -> false
-  else                        -> startsWithImpl(str, ++idx, subStr)
+  (
+    lambda (int idx)
+      if idx >= subStr.length()   -> true
+      if idx >= str.length()      -> false
+      if str[idx] != subStr[idx]  -> false
+      else                        -> self(++idx)
+  )(0)
 
 fun endsWith(string str, string subStr)
-  endsWithImpl(str, 0, subStr)
-
-fun endsWithImpl(string str, int revIdx, string subStr)
-  if revIdx >= subStr.length()                                          -> true
-  if revIdx >= str.length()                                             -> false
-  if str[--str.length() - revIdx] != subStr[--subStr.length() - revIdx] -> false
-  else -> endsWithImpl(str, ++revIdx, subStr)
+  (
+    lambda (int revIdx)
+      if revIdx >= subStr.length()                                          -> true
+      if revIdx >= str.length()                                             -> false
+      if str[--str.length() - revIdx] != subStr[--subStr.length() - revIdx] -> false
+      else                                                                  -> self(++revIdx)
+  )(0)
 
 fun any(string str, delegate{char, bool} pred)
-  anyImpl(str, 0, pred)
-
-fun anyImpl(string str, int idx, delegate{char, bool} pred)
-  if idx >= str.length()  -> false
-  else                    -> pred(str[idx]) || anyImpl(str, ++idx, pred)
+  (
+    lambda (int idx)
+      if idx >= str.length()  -> false
+      else                    -> pred(str[idx]) || self(++idx)
+  )(0)
 
 fun all(string str, delegate{char, bool} pred)
-  allImpl(str, 0, pred)
-
-fun allImpl(string str, int idx, delegate{char, bool} pred)
-  if idx >= str.length()  -> true
-  else                    -> pred(str[idx]) && allImpl(str, ++idx, pred)
+  (
+    lambda (int idx)
+      if idx >= str.length()  -> true
+      else                    -> pred(str[idx]) && self(++idx)
+  )(0)
 
 fun none(string str, delegate{char, bool} pred)
-  noneImpl(str, 0, pred)
-
-fun noneImpl(string str, int idx, delegate{char, bool} pred)
-  if idx >= str.length()  -> true
-  else                    -> !pred(str[idx]) && noneImpl(str, ++idx, pred)
+  (
+    lambda (int idx)
+      if idx >= str.length()  -> true
+      else                    -> !pred(str[idx]) && self(++idx)
+  )(0)
 
 fun replace(string str, string old, string new)
-  replaceImpl(str, 0, old, new)
-
-fun replaceImpl(string str, int startIdx, string old, string new)
-  idx = str.indexOf(startIdx, old, 0);
-  if idx < 0  ->  str
-  else        ->  newStr = str[0, idx] + new + str[idx + old.length(), str.length()];
-                  replaceImpl(newStr, idx + new.length(), old, new)
+  (
+    lambda (string str, int startIdx)
+      idx = str.indexOf(startIdx, old, 0);
+      if idx < 0  ->  str
+      else        ->  newStr = str[0, idx] + new + str[idx + old.length(), str.length()];
+                      self(newStr, idx + new.length())
+  )(str, 0)
 
 fun insert(string str, int idx, string val)
   if idx == 0             -> val + str
@@ -103,30 +103,30 @@ fun insert(string str, int idx, string val)
   else                    -> str[0, idx] + val + str[idx, str.length()]
 
 fun fold{T}(string str, delegate{T, char, T} del)
-  foldImpl(str, 0, del, T())
-
-fun foldImpl{T}(string str, int idx, delegate{T, char, T} del, T val)
-  idx >= str.length() ? val : foldImpl(str, ++idx, del, del(val, str[idx]))
+  (
+    lambda (int idx, T result)
+      idx >= str.length() ? result : self(++idx, del(result, str[idx]))
+  )(0, T())
 
 fun transform(string str, delegate{char, char} del)
   str.fold(lambda (string res, char c) res + del(c))
 
 fun split(string str, delegate{char, bool} pred)
-  splitImpl(str, --str.length(), --str.length(), pred, List{string}())
-
-fun splitImpl(string str, int startIdx, int endIdx, delegate{char, bool} pred, List{string} result)
-  if startIdx < 0         -> startIdx == endIdx ? result : str[startIdx, ++endIdx] :: result
-  if pred(str[startIdx])  -> startIdx == endIdx ?
-    splitImpl(str, --startIdx, --endIdx, pred, result) :
-    splitImpl(str, --startIdx, --startIdx, pred, str[++startIdx, ++endIdx] :: result)
-  else                    -> splitImpl(str, --startIdx, endIdx, pred, result)
+  (
+    lambda (int startIdx, int endIdx, List{string} result)
+      if startIdx < 0         -> startIdx == endIdx ? result : str[startIdx, ++endIdx] :: result
+      if pred(str[startIdx])  -> startIdx == endIdx ?
+        self(--startIdx, --endIdx, result) :
+        self(--startIdx, --startIdx, str[++startIdx, ++endIdx] :: result)
+      else                    -> self(--startIdx, endIdx, result)
+  )(--str.length(), --str.length(), List{string}())
 
 fun toChars(string str)
-  toCharsImpl(str, --str.length(), List{char}())
-
-fun toCharsImpl(string str, int idx, List{char} result)
-  if idx < 0  -> result
-  else        -> toCharsImpl(str, --idx, str[idx] :: result)
+  (
+    lambda (int idx, List{char} result)
+      if idx < 0  -> result
+      else        -> self(--idx, str[idx] :: result)
+  )(--str.length(), List{char}())
 
 fun join(List{string} l)
   l.sum()

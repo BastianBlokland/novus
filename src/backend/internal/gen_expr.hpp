@@ -2,17 +2,24 @@
 #include "backend/builder.hpp"
 #include "prog/expr/node_visitor.hpp"
 #include "prog/program.hpp"
+#include <optional>
 
 namespace backend::internal {
 
 class GenExpr final : public prog::expr::NodeVisitor {
 public:
-  GenExpr(const prog::Program& program, Builder* builder, bool tail);
+  GenExpr(
+      const prog::Program& program,
+      Builder* builder,
+      const prog::sym::ConstDeclTable& constTable,
+      std::optional<prog::sym::FuncId> curFunc,
+      bool tail);
 
   auto visit(const prog::expr::AssignExprNode& n) -> void override;
   auto visit(const prog::expr::SwitchExprNode& n) -> void override;
   auto visit(const prog::expr::CallExprNode& n) -> void override;
   auto visit(const prog::expr::CallDynExprNode& n) -> void override;
+  auto visit(const prog::expr::CallSelfExprNode& n) -> void override;
   auto visit(const prog::expr::ClosureNode& n) -> void override;
   auto visit(const prog::expr::ConstExprNode& n) -> void override;
   auto visit(const prog::expr::FieldExprNode& n) -> void override;
@@ -31,6 +38,8 @@ public:
 private:
   const prog::Program& m_program;
   Builder* m_builder;
+  const prog::sym::ConstDeclTable& m_constTable;
+  std::optional<prog::sym::FuncId> m_curFunc;
   bool m_tail;
 
   auto genSubExpr(const prog::expr::Node& n, bool tail) -> void;

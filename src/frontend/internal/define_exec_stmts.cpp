@@ -22,6 +22,7 @@ auto DefineExecStmts::visit(const parse::ExecStmtNode& n) -> void {
                          nullptr,
                          &constBinder,
                          prog::sym::TypeId::inferType(),
+                         std::nullopt,
                          GetExpr::Flags::AllowActionCalls};
   n[0].accept(&getExpr);
   if (!getExpr.getValue()) {

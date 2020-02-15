@@ -72,6 +72,7 @@ target_include_directories(parse PRIVATE parse)
 add_library(prog STATIC
   prog/expr/node_assign.cpp
   prog/expr/node_call_dyn.cpp
+  prog/expr/node_call_self.cpp
   prog/expr/node_call.cpp
   prog/expr/node_closure.cpp
   prog/expr/node_const.cpp

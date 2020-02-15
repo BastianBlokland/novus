@@ -24,6 +24,10 @@ public:
     m_fg = rang::fg::yellow;
   }
 
+  auto visit(const prog::expr::CallSelfExprNode & /*unused*/) -> void override {
+    m_fg = rang::fg::yellow;
+  }
+
   auto visit(const prog::expr::ClosureNode & /*unused*/) -> void override { m_fg = rang::fg::cyan; }
 
   auto visit(const prog::expr::ConstExprNode & /*unused*/) -> void override {

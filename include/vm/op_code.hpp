@@ -78,7 +78,7 @@ enum class OpCode : uint8_t {
   LoadStructField = 101, // [uint8] (struct)  -> (any)    Get value of field x in structure.
 
   Jump   = 220, // [ip] ()    -> () Jump to an instruction pointer.
-  JumpIf = 221, // [ip] (int) -> () Jump to an instruction if integer is 1.
+  JumpIf = 221, // [ip] (int) -> () Jump to an instruction if integer is not 0.
 
   Call          = 230, // [uint8, ip] (any ...)             -> (any)    Call with x args.
   CallTail      = 231, // [uint8, ip] (any ...)             -> (any)    Tail-call with x args.

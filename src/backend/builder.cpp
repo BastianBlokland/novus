@@ -55,14 +55,14 @@ auto Builder::addStackAlloc(uint8_t amount) -> void {
   writeUInt8(amount);
 }
 
-auto Builder::addStackStore(uint8_t constId) -> void {
+auto Builder::addStackStore(uint8_t offset) -> void {
   writeOpCode(vm::OpCode::StackStore);
-  writeUInt8(constId);
+  writeUInt8(offset);
 }
 
-auto Builder::addStackLoad(uint8_t constId) -> void {
+auto Builder::addStackLoad(uint8_t offset) -> void {
   writeOpCode(vm::OpCode::StackLoad);
-  writeUInt8(constId);
+  writeUInt8(offset);
 }
 
 auto Builder::addAddInt() -> void { writeOpCode(vm::OpCode::AddInt); }
