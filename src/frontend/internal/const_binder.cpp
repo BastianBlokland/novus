@@ -93,4 +93,20 @@ auto ConstBinder::bind(const std::string& name) -> std::optional<prog::sym::Cons
   return boundLocalConst;
 }
 
+auto ConstBinder::getAllConstTypes() -> std::unordered_map<std::string, prog::sym::TypeId> {
+  auto result = std::unordered_map<std::string, prog::sym::TypeId>{};
+
+  ConstBinder* current = this;
+  while (current) {
+    for (const auto visibleConst : *current->m_visibleConsts) {
+      const auto& name = (*current->m_consts)[visibleConst].getName();
+      const auto& type = (*current->m_consts)[visibleConst].getType();
+      result.insert({name, type});
+    }
+    current = current->m_parent;
+  }
+
+  return result;
+}
+
 } // namespace frontend::internal

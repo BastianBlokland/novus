@@ -6,6 +6,7 @@ class AssignExprNode;
 class SwitchExprNode;
 class CallExprNode;
 class CallDynExprNode;
+class CallSelfExprNode;
 class ClosureNode;
 class ConstExprNode;
 class FieldExprNode;
@@ -27,6 +28,7 @@ public:
   virtual auto visit(const SwitchExprNode& n) -> void     = 0;
   virtual auto visit(const CallExprNode& n) -> void       = 0;
   virtual auto visit(const CallDynExprNode& n) -> void    = 0;
+  virtual auto visit(const CallSelfExprNode& n) -> void   = 0;
   virtual auto visit(const ClosureNode& n) -> void        = 0;
   virtual auto visit(const ConstExprNode& n) -> void      = 0;
   virtual auto visit(const FieldExprNode& n) -> void      = 0;

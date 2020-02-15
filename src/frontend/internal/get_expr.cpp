@@ -22,11 +22,13 @@ GetExpr::GetExpr(
     const TypeSubstitutionTable* typeSubTable,
     ConstBinder* constBinder,
     prog::sym::TypeId typeHint,
+    std::optional<Signature> selfSig,
     Flags flags) :
     m_ctx{ctx},
     m_typeSubTable{typeSubTable},
     m_constBinder{constBinder},
     m_typeHint{typeHint},
+    m_selfSig{std::move(selfSig)},
     m_flags{flags} {
 
   if (m_ctx == nullptr) {
@@ -49,29 +51,54 @@ auto GetExpr::visit(const parse::ErrorNode & /*unused*/) -> void {
 
 auto GetExpr::visit(const parse::AnonFuncExprNode& n) -> void {
   auto consts = prog::sym::ConstDeclTable{};
+
+  // Declare the input types in the cost table.
   if (!declareFuncInput(m_ctx, m_typeSubTable, n, &consts)) {
     assert(m_ctx->hasErrors());
     return;
   }
 
+  // Gather the input types for the anonymous function.
+  auto inputTypes = std::vector<prog::sym::TypeId>{};
+  for (const auto constId : consts.getNonBoundInputs()) {
+    inputTypes.push_back(consts[constId].getType());
+  }
+
+  // Infer the return type of the anonymous function.
+  auto parentConstTypes = m_constBinder->getAllConstTypes();
+  auto retType          = inferRetType(
+      m_ctx,
+      m_typeSubTable,
+      n,
+      prog::sym::TypeSet{inputTypes},
+      &parentConstTypes,
+      TypeInferExpr::Flags::Aggressive);
+
+  // Note: We do not fail yet if we failed to infer the type, reason is it would 'hide' many other
+  // errors that would otherwise be reported by analyzing the body.
+
+  // Construct the signature, used to enable self-calls.
+  auto selfSignature = std::make_pair(prog::sym::TypeSet{inputTypes}, retType);
+
   // Analyze the body of the anonymous function.
   auto visibleConsts = consts.getAll();
   auto constBinder   = ConstBinder{&consts, &visibleConsts, m_constBinder};
-  auto getExprFlags  = Flags::AllowPureFuncCalls;
-  auto getExpr =
-      GetExpr{m_ctx, m_typeSubTable, &constBinder, prog::sym::TypeId::inferType(), getExprFlags};
+  auto getExpr       = GetExpr{m_ctx,
+                         m_typeSubTable,
+                         &constBinder,
+                         prog::sym::TypeId::inferType(),
+                         selfSignature,
+                         Flags::AllowPureFuncCalls};
   n[0].accept(&getExpr);
   if (!getExpr.m_expr) {
     assert(m_ctx->hasErrors());
     return;
   }
 
-  // Gather the input types for the function.
-  auto inputTypes = std::vector<prog::sym::TypeId>{};
-  for (const auto constId : consts.getInputs()) {
+  // Add the bound input types for this function.
+  for (const auto constId : consts.getBoundInputs()) {
     inputTypes.push_back(consts[constId].getType());
   }
-  auto inputTypeSet = prog::sym::TypeSet{std::move(inputTypes)};
 
   // Generate a unique function name.
   std::ostringstream nameoss;
@@ -79,7 +106,7 @@ auto GetExpr::visit(const parse::AnonFuncExprNode& n) -> void {
 
   // Declare and define the function in the program.
   const auto funcId = m_ctx->getProg()->declarePureFunc(
-      nameoss.str(), std::move(inputTypeSet), getExpr.m_expr->getType());
+      nameoss.str(), prog::sym::TypeSet{inputTypes}, getExpr.m_expr->getType());
   m_ctx->getProg()->defineFunc(funcId, std::move(consts), std::move(getExpr.m_expr));
 
   // Either create a function literal or a closure, depending on if the anonymous func binds any
@@ -147,10 +174,17 @@ auto GetExpr::visit(const parse::CallExprNode& n) -> void {
   auto typeParams = getIdVisitor.getTypeParams();
 
   /* Check what kind of call this is.
+  - If lhs is 'self': Self call.
   - If lhs is not an identifier (but some other expression): Dynamic call.
   - Lhs is an identifier that matches a constant name: Dynamic call.
   - Lhs has an instance (like a struct) and its (field) name is not a function: Dynamic call.
   - Otherwise: Static call (If there is an lhs instance its treated as the first arg). */
+
+  if (getIdVisitor.isSelf()) {
+    m_expr = getSelfCallExpr(n);
+    return;
+  }
+
   if (!identifier || m_constBinder->canBind(getName(*identifier)) ||
       (instance != nullptr && !isFuncOrConv(m_ctx, getName(*identifier)))) {
 
@@ -679,7 +713,7 @@ auto GetExpr::getSubExpr(const parse::Node& n, prog::sym::TypeId typeHint, bool 
   // Pure func calls are allowed on all sub-expressions.
   subExprFlags = subExprFlags | Flags::AllowPureFuncCalls;
 
-  auto visitor = GetExpr{m_ctx, m_typeSubTable, m_constBinder, typeHint, subExprFlags};
+  auto visitor = GetExpr{m_ctx, m_typeSubTable, m_constBinder, typeHint, m_selfSig, subExprFlags};
   n.accept(&visitor);
   return std::move(visitor.getValue());
 }
@@ -701,7 +735,7 @@ auto GetExpr::getSubExpr(
   auto* orgVisibleConsts = m_constBinder->getVisibleConsts();
   m_constBinder->setVisibleConsts(visibleConsts);
 
-  auto visitor = GetExpr{m_ctx, m_typeSubTable, m_constBinder, typeHint, subExprFlags};
+  auto visitor = GetExpr{m_ctx, m_typeSubTable, m_constBinder, typeHint, m_selfSig, subExprFlags};
   n.accept(&visitor);
 
   m_constBinder->setVisibleConsts(orgVisibleConsts);
@@ -821,6 +855,50 @@ auto GetExpr::getConstExpr(const parse::IdExprNode& n) -> prog::expr::NodePtr {
     m_ctx->reportDiag(errUndeclaredConst, name, n.getSpan());
   }
   return nullptr;
+}
+
+auto GetExpr::getSelfCallExpr(const parse::CallExprNode& n) -> prog::expr::NodePtr {
+  if (n.isFork()) {
+    m_ctx->reportDiag(errForkedSelfCall, n.getSpan());
+    return nullptr;
+  }
+
+  // Verify that there is a 'self' signature we can call.
+  if (!m_selfSig) {
+    m_ctx->reportDiag(errSelfCallInNonFunc, n.getSpan());
+    return nullptr;
+  }
+
+  // Verify that the self-signature has a concrete type.
+  if (!m_selfSig->second.isConcrete()) {
+    m_ctx->reportDiag(errSelfCallWithoutInferredRetType, n.getSpan());
+    return nullptr;
+  }
+
+  auto selfArgCount = m_selfSig->first.getCount();
+  auto argCount     = n.getChildCount() - 1; // -1 because first child is the target not an arg.
+
+  // Verify that correct amount of arguments are provided.
+  if (selfArgCount != argCount) {
+    m_ctx->reportDiag(errIncorrectNumArgsInSelfCall, selfArgCount, argCount, n.getSpan());
+    return nullptr;
+  }
+
+  // Analyze all arguments.
+  auto args = getChildExprs(n, 1U); // Skip 1 because first child is the target not an arg.
+  if (!args) {
+    assert(m_ctx->hasErrors());
+    return nullptr;
+  }
+
+  // Apply implicit conversions (if needed) and fail if types are incompatible.
+  for (auto i = 0U; i != argCount; i++) {
+    if (!applyImplicitConversion(&args->first[i], m_selfSig->first[i], n[i + 1].getSpan())) {
+      return nullptr;
+    }
+  }
+
+  return prog::expr::callSelfExprNode(m_selfSig->second, std::move(args->first));
 }
 
 auto GetExpr::getDynCallExpr(const parse::CallExprNode& n) -> prog::expr::NodePtr {

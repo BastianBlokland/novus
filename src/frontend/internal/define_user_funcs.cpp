@@ -20,6 +20,7 @@ auto defineFunc(
 
   const auto& funcDecl   = ctx->getProg()->getFuncDecl(id);
   const auto funcRetType = funcDecl.getOutput();
+  auto funcSignature     = std::make_pair(funcDecl.getInput(), funcRetType);
 
   auto consts = prog::sym::ConstDeclTable{};
   if (!declareFuncInput(ctx, typeSubTable, n, &consts)) {
@@ -34,7 +35,7 @@ auto defineFunc(
     getExprFlags = getExprFlags | GetExpr::Flags::AllowActionCalls;
   }
 
-  auto getExpr = GetExpr{ctx, typeSubTable, &constBinder, funcRetType, getExprFlags};
+  auto getExpr = GetExpr{ctx, typeSubTable, &constBinder, funcRetType, funcSignature, getExprFlags};
   n[0].accept(&getExpr);
   auto expr = std::move(getExpr.getValue());
 

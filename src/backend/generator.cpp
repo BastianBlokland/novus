@@ -31,7 +31,7 @@ generateFunc(Builder* builder, const prog::Program& program, const prog::sym::Fu
   reserveConsts(builder, func.getConsts());
 
   // Generate the function body.
-  auto genExpr = internal::GenExpr{program, builder, true};
+  auto genExpr = internal::GenExpr{program, builder, func.getConsts(), func.getId(), true};
   func.getExpr().accept(&genExpr);
 
   // Note: Due to tail calls this return might never be executed.
@@ -50,7 +50,7 @@ generateExecStmt(Builder* builder, const prog::Program& program, const prog::sym
   reserveConsts(builder, exec.getConsts());
 
   // Generate the expression.
-  auto genExpr = internal::GenExpr{program, builder, false};
+  auto genExpr = internal::GenExpr{program, builder, exec.getConsts(), std::nullopt, false};
   exec.getExpr().accept(&genExpr);
 
   builder->addRet();

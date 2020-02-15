@@ -33,6 +33,8 @@ public:
 
   [[nodiscard]] auto bind(const std::string& name) -> std::optional<prog::sym::ConstId>;
 
+  [[nodiscard]] auto getAllConstTypes() -> std::unordered_map<std::string, prog::sym::TypeId>;
+
 private:
   prog::sym::ConstDeclTable* m_consts;
   std::vector<prog::sym::ConstId>* m_visibleConsts;

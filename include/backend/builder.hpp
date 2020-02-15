@@ -29,8 +29,8 @@ public:
   auto addLoadLitIp(std::string label) -> void;
 
   auto addStackAlloc(uint8_t amount) -> void;
-  auto addStackStore(uint8_t constId) -> void;
-  auto addStackLoad(uint8_t constId) -> void;
+  auto addStackStore(uint8_t offset) -> void;
+  auto addStackLoad(uint8_t offset) -> void;
 
   auto addAddInt() -> void;
   auto addAddFloat() -> void;

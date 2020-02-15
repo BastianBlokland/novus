@@ -513,4 +513,30 @@ auto errForkedNonUserFunc(const Source& src, input::Span span) -> Diag {
   return error(src, oss.str(), span);
 }
 
+auto errForkedSelfCall(const Source& src, input::Span span) -> Diag {
+  std::ostringstream oss;
+  oss << "Self calls cannot be forked";
+  return error(src, oss.str(), span);
+}
+
+auto errSelfCallInNonFunc(const Source& src, input::Span span) -> Diag {
+  std::ostringstream oss;
+  oss << "Self calls can only be used inside functions or actions";
+  return error(src, oss.str(), span);
+}
+
+auto errSelfCallWithoutInferredRetType(const Source& src, input::Span span) -> Diag {
+  std::ostringstream oss;
+  oss << "Failed to bind self call as return type could not be inferred";
+  return error(src, oss.str(), span);
+}
+
+auto errIncorrectNumArgsInSelfCall(
+    const Source& src, int expectedNumArgs, int actualNumArgs, input::Span span) -> Diag {
+  std::ostringstream oss;
+  oss << "Self call requires '" << expectedNumArgs << "' arguments but got '" << actualNumArgs
+      << "'";
+  return error(src, oss.str(), span);
+}
+
 } // namespace frontend
