@@ -34,7 +34,7 @@ TEST_CASE("Generate assembly for call dynamic expressions", "[backend]") {
           builder->addPCall(vm::PCallCode::ConWriteString);
           builder->addRet();
 
-          builder->addEntryPoint("prog");
+          builder->setEntrypoint("prog");
         });
   }
 
@@ -64,7 +64,7 @@ TEST_CASE("Generate assembly for call dynamic expressions", "[backend]") {
           builder->addPCall(vm::PCallCode::ConWriteString);
           builder->addRet();
 
-          builder->addEntryPoint("prog");
+          builder->setEntrypoint("prog");
         });
   }
 
@@ -97,7 +97,7 @@ TEST_CASE("Generate assembly for call dynamic expressions", "[backend]") {
           builder->addPCall(vm::PCallCode::ConWriteString);
           builder->addRet();
 
-          builder->addEntryPoint("prog");
+          builder->setEntrypoint("prog");
         });
   }
 }

@@ -26,6 +26,7 @@ inline auto readAsm(const uint8_t** ip) {
 inline auto call(
     const Assembly* assembly,
     BasicStack* stack,
+    ExecutorHandle* execHandle,
     const uint8_t** ip,
     Value** sh,
     uint8_t argCount,
@@ -40,6 +41,7 @@ inline auto call(
 
   // Allocate space on the stack for the stackframe meta-data.
   if (!stack->alloc(2)) {
+    execHandle->setState(ExecState::StackOverflow);
     return false;
   }
 
@@ -74,22 +76,27 @@ inline auto callTail(
   *ip = assembly->getIp(tgtIpOffset);
 }
 
-inline auto
-pushClosure(BasicStack* stack, const Value& closureVal, uint8_t* boundArgCount, uint32_t* ipOffset)
-    -> bool {
+inline auto pushClosure(
+    BasicStack* stack,
+    ExecutorHandle* execHandle,
+    const Value& closureVal,
+    uint8_t* boundArgCount,
+    uint32_t* ipOffset) -> bool {
 
   auto* closureStruct = getStructRef(closureVal);
   *boundArgCount      = closureStruct->getFieldCount() - 1U;
   assert(closureStruct->getFieldCount() > 0);
 
   // Push all bound arguments on the stack.
-  bool success = true;
   for (auto i = 0U; i != *boundArgCount; ++i) {
-    success &= stack->push(closureStruct->getField(i));
+    if (!stack->push(closureStruct->getField(i))) {
+      execHandle->setState(ExecState::StackOverflow);
+      return false;
+    }
   }
 
   *ipOffset = closureStruct->getField(*boundArgCount).getUInt();
-  return success;
+  return true;
 }
 
 template <typename PlatformInterface>
@@ -99,11 +106,16 @@ inline auto fork(
     ExecutorRegistry* execRegistry,
     Allocator* allocator,
     BasicStack* stack,
+    ExecutorHandle* execHandle,
     uint8_t argCount,
     uint32_t entryIpOffset) -> bool {
 
   // Create a future object to interact with the fork.
   auto* future = allocator->allocFuture();
+  if (future == nullptr) {
+    execHandle->setState(ExecState::AllocFailed);
+    return false;
+  }
 
   auto* argSource  = stack->getNext() - argCount;
   auto* threadFunc = &execute<PlatformInterface>;
@@ -132,7 +144,11 @@ inline auto fork(
   stack->rewindToNext(stack->getNext() - argCount);
 
   // Push the future on the stack.
-  return stack->push(refValue(future));
+  if (!stack->push(refValue(future))) {
+    execHandle->setState(ExecState::StackOverflow);
+    return false;
+  }
+  return true;
 }
 
 template <typename PlatformInterface>
@@ -164,10 +180,17 @@ auto execute(
 #define PUSH_INT(VAL) PUSH(intValue(VAL))
 #define PUSH_BOOL(VAL) PUSH(intValue(VAL))
 #define PUSH_FLOAT(VAL) PUSH(floatValue(VAL))
-#define PUSH_REF(VAL) PUSH(refValue(VAL))
+#define PUSH_REF(VAL)                                                                              \
+  {                                                                                                \
+    auto* refPtr = VAL;                                                                            \
+    if (refPtr == nullptr) {                                                                       \
+      execHandle.setState(ExecState::AllocFailed);                                                 \
+      goto End;                                                                                    \
+    }                                                                                              \
+    PUSH(refValue(refPtr));                                                                        \
+  }
 #define PUSH_CLOSURE(VAL, RES_BOUND_ARG_COUNT, RES_TGT_IP_OFFSET)                                  \
-  if (!pushClosure(&stack, VAL, RES_BOUND_ARG_COUNT, RES_TGT_IP_OFFSET)) {                         \
-    execHandle.setState(ExecState::StackOverflow);                                                 \
+  if (!pushClosure(&stack, &execHandle, VAL, RES_BOUND_ARG_COUNT, RES_TGT_IP_OFFSET)) {            \
     goto End;                                                                                      \
   }
 #define PEEK() stack.peek()
@@ -176,13 +199,14 @@ auto execute(
 #define POP_INT() POP().getInt()
 #define POP_FLOAT() POP().getFloat()
 #define CALL(ARG_COUNT, TGT_IP)                                                                    \
-  if (!call(assembly, &stack, &ip, &sh, ARG_COUNT, TGT_IP)) {                                      \
-    execHandle.setState(ExecState::StackOverflow);                                                 \
+  if (!call(assembly, &stack, &execHandle, &ip, &sh, ARG_COUNT, TGT_IP)) {                         \
     goto End;                                                                                      \
   }
 #define CALL_TAIL(ARG_COUNT, TGT_IP) callTail(assembly, &stack, &ip, sh, ARG_COUNT, TGT_IP)
 #define CALL_FORKED(ARG_COUNT, TGT_IP)                                                             \
-  fork(assembly, iface, execRegistry, allocator, &stack, ARG_COUNT, TGT_IP)
+  if (!fork(assembly, iface, execRegistry, allocator, &stack, &execHandle, ARG_COUNT, TGT_IP)) {   \
+    goto End;                                                                                      \
+  }
 
   // Setup state.
   auto stack      = BasicStack{};
@@ -230,7 +254,7 @@ auto execute(
       PUSH_FLOAT(READ_FLOAT());
     } break;
     case OpCode::LoadLitString: {
-      const auto& litStr = assembly->getLitString(READ_INT());
+      const auto& litStr = assembly->getLitString(READ_UINT());
       PUSH_REF(allocator->allocStrLit(litStr));
     } break;
     case OpCode::LoadLitIp: {
@@ -466,6 +490,11 @@ auto execute(
       assert(fieldCount > 0);
 
       auto structRefAlloc = allocator->allocStruct(fieldCount);
+      if (structRefAlloc.first == nullptr) {
+        execHandle.setState(ExecState::AllocFailed);
+        goto End;
+      }
+
       // Important to iterate in reverse, as the fields are in reverse order on the stack.
       for (auto fieldIndex = fieldCount; fieldIndex-- > 0;) {
         *(structRefAlloc.second + fieldIndex) = POP();

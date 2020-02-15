@@ -12,7 +12,7 @@ inline auto buildAssemblyExpr(const std::function<void(backend::Builder*)>& buil
   builder.label("entrypoint");
   build(&builder);
   builder.addRet();
-  builder.addEntryPoint("entrypoint");
+  builder.setEntrypoint("entrypoint");
   return builder.close();
 }
 

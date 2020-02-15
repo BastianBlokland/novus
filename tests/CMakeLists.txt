@@ -16,6 +16,7 @@ add_executable(tests
 
   backend/assembly_output.cpp
   backend/call_dyn_expr_test.cpp
+  backend/call_self_expr_test.cpp
   backend/call_expr_test.cpp
   backend/constants_test.cpp
   backend/enum_test.cpp
@@ -35,6 +36,7 @@ add_executable(tests
   frontend/get_binary_expr_test.cpp
   frontend/get_call_dyn_expr_test.cpp
   frontend/get_call_expr_test.cpp
+  frontend/get_call_self_expr_test.cpp
   frontend/get_conditional_expr_test.cpp
   frontend/get_const_expr_test.cpp
   frontend/get_enum_expr_test.cpp

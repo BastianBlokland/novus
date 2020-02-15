@@ -6,8 +6,17 @@
 
 namespace backend::internal {
 
-GenExpr::GenExpr(const prog::Program& program, Builder* builder, bool tail) :
-    m_program{program}, m_builder{builder}, m_tail{tail} {}
+GenExpr::GenExpr(
+    const prog::Program& program,
+    Builder* builder,
+    const prog::sym::ConstDeclTable& constTable,
+    std::optional<prog::sym::FuncId> curFunc,
+    bool tail) :
+    m_program{program},
+    m_builder{builder},
+    m_constTable{constTable},
+    m_curFunc{curFunc},
+    m_tail{tail} {}
 
 auto GenExpr::visit(const prog::expr::AssignExprNode& n) -> void {
   // Expression.
@@ -17,7 +26,7 @@ auto GenExpr::visit(const prog::expr::AssignExprNode& n) -> void {
   m_builder->addDup();
 
   // Assign op.
-  const auto constId = getConstId(n.getConst());
+  const auto constId = getConstOffset(m_constTable, n.getConst());
   m_builder->addStackStore(constId);
 }
 
@@ -406,6 +415,51 @@ auto GenExpr::visit(const prog::expr::CallDynExprNode& n) -> void {
       n.isFork() ? CallMode::Forked : (m_tail ? CallMode::Tail : CallMode::Normal));
 }
 
+auto GenExpr::visit(const prog::expr::CallSelfExprNode& n) -> void {
+  if (!m_curFunc) {
+    throw std::logic_error{"Illegal self-call: Not inside a function"};
+  }
+
+  const auto& funcDecl = m_program.getFuncDecl(*m_curFunc);
+  if (funcDecl.getOutput() != n.getType()) {
+    throw std::logic_error{
+        "Illegal self-call: Result-type does not match the type of the current function"};
+  }
+
+  const auto& funcDef        = m_program.getFuncDef(*m_curFunc);
+  const auto& funcConstTable = funcDef.getConsts();
+
+  const auto nonBoundInputs = funcConstTable.getNonBoundInputs();
+  if (n.getChildCount() != nonBoundInputs.size()) {
+    throw std::logic_error{
+        "Illegal self-call: Number of arguments does not match non-bound argument "
+        "count of current function"};
+  }
+
+  for (auto i = 0U; i != nonBoundInputs.size(); ++i) {
+    if (n[i].getType() != funcConstTable[nonBoundInputs[i]].getType()) {
+      throw std::logic_error{
+          "Illegal self-call: Argument types do not match arguments of current function"};
+    }
+  }
+
+  // Push the arguments on the stack.
+  for (auto i = 0U; i < n.getChildCount(); ++i) {
+    genSubExpr(n[i], false);
+  }
+
+  // Load the same bound arguments (if any) from the current function on the stack.
+  for (const auto& boundInput : funcConstTable.getBoundInputs()) {
+    m_builder->addStackLoad(getConstOffset(m_constTable, boundInput));
+  }
+
+  // Invoke the current function.
+  m_builder->addCall(
+      getLabel(funcDecl.getId()),
+      funcDecl.getInput().getCount(),
+      m_tail ? CallMode::Tail : CallMode::Normal);
+}
+
 auto GenExpr::visit(const prog::expr::ClosureNode& n) -> void {
   // Push the bound arguments on the stack.
   for (auto i = 0U; i < n.getChildCount(); ++i) {
@@ -421,7 +475,7 @@ auto GenExpr::visit(const prog::expr::ClosureNode& n) -> void {
 }
 
 auto GenExpr::visit(const prog::expr::ConstExprNode& n) -> void {
-  const auto constId = getConstId(n.getId());
+  const auto constId = getConstOffset(m_constTable, n.getId());
   m_builder->addStackLoad(constId);
 }
 
@@ -493,7 +547,7 @@ auto GenExpr::visit(const prog::expr::UnionGetExprNode& n) -> void {
   m_builder->label(typeEqLabel);
 
   // Store the union value as a const and load 'true' on the stack.
-  const auto constId = getConstId(n.getConst());
+  const auto constId = getConstOffset(m_constTable, n.getConst());
   m_builder->addLoadStructField(1);
   m_builder->addStackStore(constId);
 
@@ -534,7 +588,7 @@ auto GenExpr::visit(const prog::expr::LitEnumNode& n) -> void {
 }
 
 auto GenExpr::genSubExpr(const prog::expr::Node& n, bool tail) -> void {
-  auto genExpr = GenExpr{m_program, m_builder, tail};
+  auto genExpr = GenExpr{m_program, m_builder, m_constTable, m_curFunc, tail};
   n.accept(&genExpr);
 }
 

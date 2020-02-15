@@ -29,8 +29,8 @@ public:
   auto addLoadLitIp(std::string label) -> void;
 
   auto addStackAlloc(uint8_t amount) -> void;
-  auto addStackStore(uint8_t constId) -> void;
-  auto addStackLoad(uint8_t constId) -> void;
+  auto addStackStore(uint8_t offset) -> void;
+  auto addStackLoad(uint8_t offset) -> void;
 
   auto addAddInt() -> void;
   auto addAddFloat() -> void;
@@ -100,7 +100,7 @@ public:
   auto addPop() -> void;
   auto addFail() -> void;
 
-  auto addEntryPoint(std::string label) -> void;
+  auto setEntrypoint(std::string label) -> void;
 
   auto close() -> vm::Assembly;
 
@@ -110,7 +110,7 @@ private:
   std::unordered_map<std::string, uint32_t> m_litStringLookup;
   std::vector<std::string> m_litStrings;
   std::vector<uint8_t> m_instructions;
-  std::vector<std::string> m_entryPointLabels;
+  std::string m_entrypointLabel;
   std::unordered_map<std::string, uint32_t> m_labels;
   std::vector<std::pair<std::string, unsigned int>> m_labelTargets;
 

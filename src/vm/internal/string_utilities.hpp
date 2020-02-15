@@ -10,6 +10,9 @@ namespace vm::internal {
 [[nodiscard]] auto inline toString(Allocator* allocator, int32_t val) noexcept -> StringRef* {
   static const auto maxCharSize = 11;
   const auto strRefAlloc        = allocator->allocStr(maxCharSize);
+  if (strRefAlloc.first == nullptr) {
+    return nullptr;
+  }
 
 #ifdef HAS_CHAR_CONV
   const auto convRes    = std::to_chars(strRefAlloc.second, strRefAlloc.second + maxCharSize, val);
@@ -37,6 +40,9 @@ namespace vm::internal {
   // NOLINTNEXTLINE: C-style var-arg func.
   const auto charSize    = std::snprintf(nullptr, 0, "%.6g", val) + 1; // +1: null-terminator.
   const auto strRefAlloc = allocator->allocStr(charSize);
+  if (strRefAlloc.first == nullptr) {
+    return nullptr;
+  }
 
   // NOLINTNEXTLINE: C-style var-arg func.
   const auto size = std::snprintf(strRefAlloc.second, charSize, "%.6g", val);
@@ -47,21 +53,22 @@ namespace vm::internal {
 
 [[nodiscard]] auto inline toString(Allocator* allocator, uint8_t val) noexcept -> StringRef* {
   const auto strRefAlloc = allocator->allocStr(1);
-  *strRefAlloc.second    = val;
+  if (strRefAlloc.first == nullptr) {
+    return nullptr;
+  }
+
+  *strRefAlloc.second = val;
   return strRefAlloc.first;
 }
 
 [[nodiscard]] auto inline toString(Allocator* allocator, const std::string& val) noexcept
     -> StringRef* {
   const auto strRefAlloc = allocator->allocStr(val.length());
-  std::memcpy(strRefAlloc.second, val.data(), val.length() + 1); // +1 to cpy the null-terminator.
-  return strRefAlloc.first;
-}
+  if (strRefAlloc.first == nullptr) {
+    return nullptr;
+  }
 
-[[nodiscard]] auto inline toString(Allocator* allocator, const char* val) noexcept -> StringRef* {
-  const auto len         = std::strlen(val);
-  const auto strRefAlloc = allocator->allocStr(len);
-  std::memcpy(strRefAlloc.second, val, len + 1); // +1 to cpy the null-terminator.
+  std::memcpy(strRefAlloc.second, val.data(), val.length() + 1); // +1 to cpy the null-terminator.
   return strRefAlloc.first;
 }
 
@@ -109,21 +116,28 @@ namespace vm::internal {
 
   // Copy the slice into a new string.
   const auto sliceSize = end - start;
-  const auto result    = allocator->allocStr(sliceSize);
-  std::memcpy(result.second, target->getDataPtr() + start, sliceSize);
-  return result.first;
+  const auto alloc     = allocator->allocStr(sliceSize);
+  if (alloc.first == nullptr) {
+    return nullptr;
+  }
+
+  std::memcpy(alloc.second, target->getDataPtr() + start, sliceSize);
+  return alloc.first;
 }
 
 [[nodiscard]] auto inline concatString(Allocator* allocator, StringRef* a, StringRef* b) noexcept
     -> StringRef* {
 
   // Make a new string big enough to fit both and copy both there.
-  auto result = allocator->allocStr(a->getSize() + b->getSize());
+  auto alloc = allocator->allocStr(a->getSize() + b->getSize());
+  if (alloc.first == nullptr) {
+    return nullptr;
+  }
 
-  std::memcpy(result.second, a->getDataPtr(), a->getSize());
-  std::memcpy(result.second + a->getSize(), b->getDataPtr(), b->getSize());
+  std::memcpy(alloc.second, a->getDataPtr(), a->getSize());
+  std::memcpy(alloc.second + a->getSize(), b->getDataPtr(), b->getSize());
 
-  return result.first;
+  return alloc.first;
 }
 
 } // namespace vm::internal

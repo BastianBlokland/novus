@@ -2,8 +2,11 @@
 #include "internal/const_binder.hpp"
 #include "internal/context.hpp"
 #include "internal/type_substitution_table.hpp"
+#include <utility>
 
 namespace frontend::internal {
+
+using Signature = std::pair<prog::sym::TypeSet, prog::sym::TypeId>;
 
 class GetExpr final : public parse::NodeVisitor {
 public:
@@ -25,6 +28,7 @@ public:
       const TypeSubstitutionTable* typeSubTable,
       ConstBinder* constBinder,
       prog::sym::TypeId typeHint,
+      std::optional<Signature> selfSig,
       Flags flags);
 
   [[nodiscard]] auto getValue() -> prog::expr::NodePtr&;
@@ -61,6 +65,7 @@ private:
   const TypeSubstitutionTable* m_typeSubTable;
   ConstBinder* m_constBinder;
   prog::sym::TypeId m_typeHint;
+  std::optional<Signature> m_selfSig;
   Flags m_flags;
 
   prog::expr::NodePtr m_expr;
@@ -95,6 +100,8 @@ private:
       const lex::Token& fieldToken) -> prog::expr::NodePtr;
 
   [[nodiscard]] auto getConstExpr(const parse::IdExprNode& n) -> prog::expr::NodePtr;
+
+  [[nodiscard]] auto getSelfCallExpr(const parse::CallExprNode& n) -> prog::expr::NodePtr;
 
   [[nodiscard]] auto getDynCallExpr(const parse::CallExprNode& n) -> prog::expr::NodePtr;
 

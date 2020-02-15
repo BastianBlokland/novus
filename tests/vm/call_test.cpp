@@ -28,7 +28,7 @@ TEST_CASE("Execute calls", "[vm]") {
         builder->addCall("section2", 1, backend::CallMode::Normal);
         builder->addRet();
 
-        builder->addEntryPoint("section1");
+        builder->setEntrypoint("section1");
       },
       "input",
       "1337");
@@ -54,7 +54,7 @@ TEST_CASE("Execute calls", "[vm]") {
         builder->addLoadLitInt(1);
         builder->addCall("section2", 1, backend::CallMode::Tail);
 
-        builder->addEntryPoint("section1");
+        builder->setEntrypoint("section1");
       },
       "input",
       "1337");
@@ -75,7 +75,7 @@ TEST_CASE("Execute calls", "[vm]") {
         builder->addLoadLitInt(1337);
         builder->addRet();
 
-        builder->addEntryPoint("section1");
+        builder->setEntrypoint("section1");
       },
       "input",
       "1337");
@@ -102,7 +102,7 @@ TEST_CASE("Execute calls", "[vm]") {
         builder->addAddInt();
         builder->addRet();
 
-        builder->addEntryPoint("section1");
+        builder->setEntrypoint("section1");
       },
       "input",
       "2674");
@@ -128,7 +128,7 @@ TEST_CASE("Execute calls", "[vm]") {
         builder->addAddInt();
         builder->addRet();
 
-        builder->addEntryPoint("section1");
+        builder->setEntrypoint("section1");
       },
       "input",
       "1379");
@@ -154,7 +154,7 @@ TEST_CASE("Execute calls", "[vm]") {
         builder->addAddInt();
         builder->addRet();
 
-        builder->addEntryPoint("section1");
+        builder->setEntrypoint("section1");
       },
       "input",
       "1379");

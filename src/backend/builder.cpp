@@ -42,7 +42,7 @@ auto Builder::addLoadLitFloat(float val) -> void {
 auto Builder::addLoadLitString(const std::string& val) -> void {
   const auto litId = addLitString(val);
   writeOpCode(vm::OpCode::LoadLitString);
-  writeInt32(litId);
+  writeUInt32(litId);
 }
 
 auto Builder::addLoadLitIp(std::string label) -> void {
@@ -55,14 +55,14 @@ auto Builder::addStackAlloc(uint8_t amount) -> void {
   writeUInt8(amount);
 }
 
-auto Builder::addStackStore(uint8_t constId) -> void {
+auto Builder::addStackStore(uint8_t offset) -> void {
   writeOpCode(vm::OpCode::StackStore);
-  writeUInt8(constId);
+  writeUInt8(offset);
 }
 
-auto Builder::addStackLoad(uint8_t constId) -> void {
+auto Builder::addStackLoad(uint8_t offset) -> void {
   writeOpCode(vm::OpCode::StackLoad);
-  writeUInt8(constId);
+  writeUInt8(offset);
 }
 
 auto Builder::addAddInt() -> void { writeOpCode(vm::OpCode::AddInt); }
@@ -246,9 +246,7 @@ auto Builder::addPop() -> void { writeOpCode(vm::OpCode::Pop); }
 
 auto Builder::addFail() -> void { writeOpCode(vm::OpCode::Fail); }
 
-auto Builder::addEntryPoint(std::string label) -> void {
-  m_entryPointLabels.push_back(std::move(label));
-}
+auto Builder::setEntrypoint(std::string label) -> void { m_entrypointLabel = std::move(label); }
 
 auto Builder::close() -> vm::Assembly {
   throwIfClosed();
@@ -256,19 +254,14 @@ auto Builder::close() -> vm::Assembly {
   m_closed = true;
   patchLabels();
 
-  auto entryPoints = std::vector<uint32_t>{};
-  entryPoints.reserve(m_entryPointLabels.size());
-  for (const auto& entryPointLabel : m_entryPointLabels) {
-    auto ipOffsetItr = m_labels.find(entryPointLabel);
-    if (ipOffsetItr == m_labels.end()) {
-      std::ostringstream oss;
-      oss << "No declaration for label '" << entryPointLabel << "' found";
-      throw std::logic_error{oss.str()};
-    }
-    entryPoints.push_back(ipOffsetItr->second);
+  auto entrypointItr = m_labels.find(m_entrypointLabel);
+  if (entrypointItr == m_labels.end()) {
+    std::ostringstream oss;
+    oss << "No declaration for entrypoint '" << m_entrypointLabel << "' found";
+    throw std::logic_error{oss.str()};
   }
 
-  return vm::Assembly{std::move(m_litStrings), std::move(m_instructions), std::move(entryPoints)};
+  return vm::Assembly{entrypointItr->second, std::move(m_litStrings), std::move(m_instructions)};
 }
 
 auto Builder::addLitString(const std::string& string) -> uint32_t {

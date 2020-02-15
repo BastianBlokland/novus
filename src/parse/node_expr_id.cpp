@@ -1,4 +1,5 @@
 #include "parse/node_expr_id.hpp"
+#include "lex/keyword.hpp"
 #include "utilities.hpp"
 
 namespace parse {
@@ -28,6 +29,8 @@ auto IdExprNode::getSpan() const -> input::Span {
   return m_id.getSpan();
 }
 
+auto IdExprNode::isSelf() const -> bool { return getKw(m_id) == lex::Keyword::Self; }
+
 auto IdExprNode::getId() const -> const lex::Token& { return m_id; }
 
 auto IdExprNode::getTypeParams() const -> const std::optional<TypeParamList>& {
@@ -37,7 +40,7 @@ auto IdExprNode::getTypeParams() const -> const std::optional<TypeParamList>& {
 auto IdExprNode::accept(NodeVisitor* visitor) const -> void { visitor->visit(*this); }
 
 auto IdExprNode::print(std::ostream& out) const -> std::ostream& {
-  out << ::parse::getId(m_id).value_or("error");
+  out << (isSelf() ? "self" : ::parse::getId(m_id).value_or("error"));
   if (m_typeParams) {
     out << *m_typeParams;
   }

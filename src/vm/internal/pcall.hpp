@@ -23,9 +23,18 @@ auto inline pcall(
 #define PUSH(VAL)                                                                                  \
   if (!stack->push(VAL)) {                                                                         \
     execHandle->setState(ExecState::StackOverflow);                                                \
+    return;                                                                                        \
   }
-#define PUSH_REF(VAL) PUSH(refValue(VAL))
 #define PUSH_INT(VAL) PUSH(intValue(VAL))
+#define PUSH_REF(VAL)                                                                              \
+  {                                                                                                \
+    auto* refPtr = VAL;                                                                            \
+    if (refPtr == nullptr) {                                                                       \
+      execHandle->setState(ExecState::AllocFailed);                                                \
+      return;                                                                                      \
+    }                                                                                              \
+    PUSH(refValue(refPtr));                                                                        \
+  }
 #define POP() stack->pop()
 #define POP_INT() POP().getInt()
 #define PEEK() stack->peek()
@@ -78,11 +87,7 @@ auto inline pcall(
   } break;
   case vm::PCallCode::GetEnvArg: {
     auto* res = iface->getEnvArg(POP_INT());
-    if (res == nullptr) {
-      PUSH_REF(allocator->allocStr(0).first);
-    } else {
-      PUSH_REF(toString(allocator, res));
-    }
+    PUSH_REF(res == nullptr ? allocator->allocStr(0).first : toString(allocator, res));
   } break;
   case vm::PCallCode::GetEnvArgCount: {
     PUSH_INT(iface->getEnvArgCount());
@@ -90,11 +95,7 @@ auto inline pcall(
   case vm::PCallCode::GetEnvVar: {
     auto* nameStrRef = getStringRef(POP());
     auto* res        = iface->getEnvVar(nameStrRef->getDataPtr());
-    if (res == nullptr) {
-      PUSH_REF(allocator->allocStr(0).first);
-    } else {
-      PUSH_REF(toString(allocator, res));
-    }
+    PUSH_REF(res == nullptr ? allocator->allocStr(0).first : toString(allocator, res));
   } break;
   case vm::PCallCode::Sleep: {
     execHandle->setState(ExecState::Paused);
@@ -119,8 +120,8 @@ auto inline pcall(
   }
 
 #undef PUSH
-#undef PUSH_REF
 #undef PUSH_INT
+#undef PUSH_REF
 #undef POP
 #undef POP_INT
 #undef PEEK

@@ -212,4 +212,13 @@ errUnsupportedOperator(const Source& src, const std::string& name, input::Span s
 
 [[nodiscard]] auto errForkedNonUserFunc(const Source& src, input::Span span) -> Diag;
 
+[[nodiscard]] auto errForkedSelfCall(const Source& src, input::Span span) -> Diag;
+
+[[nodiscard]] auto errSelfCallInNonFunc(const Source& src, input::Span span) -> Diag;
+
+[[nodiscard]] auto errSelfCallWithoutInferredRetType(const Source& src, input::Span span) -> Diag;
+
+[[nodiscard]] auto errIncorrectNumArgsInSelfCall(
+    const Source& src, int expectedNumArgs, int actualNumArgs, input::Span span) -> Diag;
+
 } // namespace frontend

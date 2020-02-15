@@ -16,12 +16,12 @@ auto getUserTypeEqLabel(prog::sym::TypeId typeId) -> std::string {
   return oss.str();
 }
 
-auto getConstId(prog::sym::ConstId constId) -> uint8_t {
-  auto constNum = constId.getNum();
-  if (constNum > std::numeric_limits<uint8_t>::max()) {
+auto getConstOffset(const prog::sym::ConstDeclTable& table, prog::sym::ConstId id) -> uint8_t {
+  const auto offset = table.getOffset(id);
+  if (offset > std::numeric_limits<uint8_t>::max()) {
     throw std::logic_error{"More then 256 constants in one scope are not supported"};
   }
-  return static_cast<uint8_t>(constNum);
+  return static_cast<uint8_t>(offset);
 }
 
 auto getFieldId(prog::sym::FieldId fieldId) -> uint8_t {

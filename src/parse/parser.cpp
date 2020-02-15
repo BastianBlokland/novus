@@ -306,18 +306,22 @@ auto ParserImpl::nextExprPrimary() -> NodePtr {
     }
     return nextExprId(std::move(id));
   }
-  case lex::TokenCat::Keyword:
-    if (getKw(nextTok) == lex::Keyword::If) {
+  case lex::TokenCat::Keyword: {
+    switch (*getKw(nextTok)) {
+    case lex::Keyword::If:
       return nextExprSwitch();
-    }
-    if (getKw(nextTok) == lex::Keyword::Lambda) {
+    case lex::Keyword::Lambda:
       return nextExprAnonFunc();
-    }
-    if (getKw(nextTok) == lex::Keyword::Fork) {
+    case lex::Keyword::Fork: {
       auto modifiers = std::vector<lex::Token>{consumeToken()};
       return nextExprCall(nextExpr(0, callPrecedence), std::move(modifiers));
     }
-    [[fallthrough]];
+    case lex::Keyword::Self:
+      return nextExprId(consumeToken());
+    default:
+      return errInvalidPrimaryExpr(consumeToken());
+    }
+  }
   default:
     if (nextTok.getKind() == lex::TokenKind::SepOpenParen) {
       return nextExprParen();
@@ -332,7 +336,11 @@ auto ParserImpl::nextExprId(lex::Token idToken) -> NodePtr {
   auto typeParams = peekToken(0).getKind() == lex::TokenKind::SepOpenCurly
       ? std::optional<TypeParamList>{nextTypeParamList()}
       : std::nullopt;
-  if (idToken.getKind() == lex::TokenKind::Identifier && (!typeParams || typeParams->validate())) {
+
+  auto validId =
+      idToken.getKind() == lex::TokenKind::Identifier || getKw(idToken) == lex::Keyword::Self;
+
+  if (validId && (!typeParams || typeParams->validate())) {
     return idExprNode(std::move(idToken), std::move(typeParams));
   }
   return errInvalidIdExpr(std::move(idToken), std::move(typeParams));
