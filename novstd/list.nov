@@ -80,7 +80,7 @@ fun pop{T}(List{T} l, int amount)
   if l as LNode{T} n  -> amount > 0 ? pop(n.next, --amount) : l
   if l is LEnd        -> l
 
-fun pop{T}(List{T} l, delegate{T, bool} pred)
+fun pop{T}(List{T} l, function{T, bool} pred)
   if l as LNode{T} n  -> pred(n.val) ? pop(n.next, pred) : l
   if l is LEnd        -> l
 
@@ -94,7 +94,7 @@ fun take{T}(List{T} l, int amount)
   if l as LNode{T} n  -> amount > 0 ? List{T}(n.val, take(n.next, --amount)) : List{T}()
   if l is LEnd        -> l
 
-fun take{T}(List{T} l, delegate{T, bool} pred)
+fun take{T}(List{T} l, function{T, bool} pred)
   if l as LNode{T} n  -> pred(n.val) ? List{T}(n.val, take(n.next, pred)) : List{T}()
   if l is LEnd        -> l
 
@@ -108,31 +108,31 @@ fun insertOrdered{T}(List{T} l, T val)
 fun rangeList{T}(T start, T end)
   List{T}().pushRange(start, end)
 
-fun fold{T, TResult}(List{T} l, delegate{TResult, T, TResult} del)
+fun fold{T, TResult}(List{T} l, function{TResult, T, TResult} func)
   (
     lambda (List{T} rem, TResult result)
-      if rem as LNode{T} n -> self(n.next, del(result, n.val))
+      if rem as LNode{T} n -> self(n.next, func(result, n.val))
       if rem is LEnd       -> result
   )(l, TResult())
 
-fun foldRight{T, TResult}(List{T} l, delegate{TResult, T, TResult} del)
+fun foldRight{T, TResult}(List{T} l, function{TResult, T, TResult} func)
   (
     lambda (List{T} rem, TResult result)
-      if rem as LNode{T} n -> del(self(n.next, result), n.val)
+      if rem as LNode{T} n -> func(self(n.next, result), n.val)
       if rem is LEnd       -> result
   )(l, TResult())
 
-fun filter{T}(List{T} l, delegate{T, bool} pred)
+fun filter{T}(List{T} l, function{T, bool} pred)
   l.foldRight(lambda (List{T} newList, T val) pred(val) ? val :: newList : newList)
 
-fun filterReverse{T}(List{T} l, delegate{T, bool} pred)
+fun filterReverse{T}(List{T} l, function{T, bool} pred)
   l.fold(lambda (List{T} newList, T val) pred(val) ? val :: newList : newList)
 
-fun map{T, TResult}(List{T} l, delegate{T, TResult} del)
-  l.foldRight(lambda (List{TResult} newList, T val) del(val) :: newList)
+fun map{T, TResult}(List{T} l, function{T, TResult} func)
+  l.foldRight(lambda (List{TResult} newList, T val) func(val) :: newList)
 
-fun mapReverse{T, TResult}(List{T} l, delegate{T, TResult} del)
-  l.fold(lambda (List{TResult} newList, T val) del(val) :: newList)
+fun mapReverse{T, TResult}(List{T} l, function{T, TResult} func)
+  l.fold(lambda (List{TResult} newList, T val) func(val) :: newList)
 
 fun length{T}(List{T} l)
   l.fold(lambda (int c, T val) c + 1)
@@ -146,18 +146,18 @@ fun reverse{T}(List{T} l)
 fun sort{T}(List{T} l)
   l.fold(insertOrdered{T})
 
-fun count{T}(List{T} l, delegate{T, bool} pred)
+fun count{T}(List{T} l, function{T, bool} pred)
   l.fold(lambda (int c, T val) pred(val) ? ++c : c)
 
-fun any{T}(List{T} l, delegate{T, bool} pred)
+fun any{T}(List{T} l, function{T, bool} pred)
   if l as LNode{T} n  -> pred(n.val) || n.next.any(pred)
   if l is LEnd        -> false
 
-fun all{T}(List{T} l, delegate{T, bool} pred)
+fun all{T}(List{T} l, function{T, bool} pred)
   if l as LNode{T} n  -> pred(n.val) && n.next.any(pred)
   if l is LEnd        -> true
 
-fun none{T}(List{T} l, delegate{T, bool} pred)
+fun none{T}(List{T} l, function{T, bool} pred)
   if l as LNode{T} n  -> !pred(n.val) && n.next.none(pred)
   if l is LEnd        -> true
 
@@ -242,10 +242,10 @@ assert(
 
 assert(
   l = 1 :: 2 :: 3 :: 4 :: List{int}();
-  l.pop(lambda (int i) i == 0) == l &&
-  l.pop(lambda (int i) i > 0) == List{int}() &&
-  l.pop(lambda (int i) i == 1) == 2 :: 3 :: 4 :: List{int}() &&
-  l.pop(lambda (int i) i < 3) == 3 :: 4 :: List{int}())
+  l.pop(pure lambda (int i) i == 0) == l &&
+  l.pop(pure lambda (int i) i > 0) == List{int}() &&
+  l.pop(pure lambda (int i) i == 1) == 2 :: 3 :: 4 :: List{int}() &&
+  l.pop(pure lambda (int i) i < 3) == 3 :: 4 :: List{int}())
 
 assert(
   l = 1 :: 2 :: 3 :: List{int}();
@@ -258,9 +258,9 @@ assert(
 
 assert(
   l = 1 :: 2 :: 3 :: List{int}();
-  l.take(lambda (int i) i == 0) == List{int}() &&
-  l.take(lambda (int i) i > 0) == l &&
-  l.take(lambda (int i) i < 3) == 1 :: 2 :: List{int}())
+  l.take(pure lambda (int i) i == 0) == List{int}() &&
+  l.take(pure lambda (int i) i > 0) == l &&
+  l.take(pure lambda (int i) i < 3) == 1 :: 2 :: List{int}())
 
 assert(
   l = 1 :: 2 :: 3 :: 4 :: List{int}();
@@ -295,23 +295,23 @@ assert(rangeList('a', 'c') == 'a' :: 'b' :: 'c' :: List{char}())
 
 assert(
   l = 1 :: 2 :: 3 :: 4 :: List{int}();
-  l.filter(lambda (int v) v > 2) == 3 :: 4 :: List{int}() &&
-  l.filter(lambda (int v) v < 0) == List{int}())
+  l.filter(pure lambda (int v) v > 2) == 3 :: 4 :: List{int}() &&
+  l.filter(pure lambda (int v) v < 0) == List{int}())
 
 assert(
   l = 1 :: 2 :: 3 :: 4 :: 5 :: List{int}();
-  l.filterReverse(lambda (int v) v > 2) == 5 :: 4 :: 3 :: List{int}() &&
-  l.filterReverse(lambda (int v) v < 0) == List{int}())
+  l.filterReverse(pure lambda (int v) v > 2) == 5 :: 4 :: 3 :: List{int}() &&
+  l.filterReverse(pure lambda (int v) v < 0) == List{int}())
 
 assert(
   l = 1 :: 2 :: 3 :: List{int}();
-  l.map(lambda (int v) v * 2) == 2 :: 4 :: 6 :: List{int}() &&
-  l.map(lambda (int v) v.string()) == "1" :: "2" :: "3" :: List{string}())
+  l.map(pure lambda (int v) v * 2) == 2 :: 4 :: 6 :: List{int}() &&
+  l.map(pure lambda (int v) v.string()) == "1" :: "2" :: "3" :: List{string}())
 
 assert(
   l = 1 :: 2 :: 3 :: List{int}();
-  l.mapReverse(lambda (int v) v * 2) == 6 :: 4 :: 2 :: List{int}() &&
-  l.mapReverse(lambda (int v) v.string()) == "3" :: "2" :: "1" :: List{string}())
+  l.mapReverse(pure lambda (int v) v * 2) == 6 :: 4 :: 2 :: List{int}() &&
+  l.mapReverse(pure lambda (int v) v.string()) == "3" :: "2" :: "1" :: List{string}())
 
 assert(
   l = 1 :: 2 :: 3 :: List{int}();
@@ -341,18 +341,18 @@ assert(List{int}().sort() == List{int}())
 
 assert(
   l = 1 :: 2 :: 3 :: List{int}();
-  l.count(lambda (int v) v > 2) == 1 &&
-  l.count(lambda (int v) v == 0) == 0 &&
-  l.count(lambda (int v) v > 0) == 3)
+  l.count(pure lambda (int v) v > 2) == 1 &&
+  l.count(pure lambda (int v) v == 0) == 0 &&
+  l.count(pure lambda (int v) v > 0) == 3)
 
 assert(
   l = 1 :: 2 :: 3 :: List{int}();
-  l.any(lambda (int v) v > 2) && !l.any(lambda (int v) v < 0))
+  l.any(pure lambda (int v) v > 2) && !l.any(pure lambda (int v) v < 0))
 
 assert(
   l = 1 :: 2 :: 3 :: List{int}();
-  l.all(lambda (int v) v > 0) && !l.all(lambda (int v) v > 1))
+  l.all(pure lambda (int v) v > 0) && !l.all(pure lambda (int v) v > 1))
 
 assert(
   l = 1 :: 2 :: 3 :: List{int}();
-  l.none(lambda (int v) v < 0) && !l.none(lambda (int v) v > 1))
+  l.none(pure lambda (int v) v < 0) && !l.none(pure lambda (int v) v > 1))

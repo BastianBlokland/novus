@@ -1,60 +1,60 @@
 // Operators
 
-fun []{TC, TR}(delegate{TC, TR} del, TC arg)
-  curry(del, arg)
+fun []{TC, TR}(function{TC, TR} func, TC arg)
+  curry(func, arg)
 
-fun []{T1, TC, TR}(delegate{T1, TC, TR} del, TC arg)
-  curry(del, arg)
+fun []{T1, TC, TR}(function{T1, TC, TR} func, TC arg)
+  curry(func, arg)
 
-fun []{T1, T2, TC, TR}(delegate{T1, T2, TC, TR} del, TC arg)
-  curry(del, arg)
+fun []{T1, T2, TC, TR}(function{T1, T2, TC, TR} func, TC arg)
+  curry(func, arg)
 
-fun []{T1, T2, T3, TC, TR}(delegate{T1, T2, T3, TC, TR} del, TC arg)
-  curry(del, arg)
+fun []{T1, T2, T3, TC, TR}(function{T1, T2, T3, TC, TR} func, TC arg)
+  curry(func, arg)
 
-fun &(delegate{bool} predA, delegate{bool} predB)
+fun &(function{bool} predA, function{bool} predB)
   and(predA, predB)
 
-fun &{T1}(delegate{T1, bool} predA, delegate{T1, bool} predB)
+fun &{T1}(function{T1, bool} predA, function{T1, bool} predB)
   and(predA, predB)
 
-fun &{T1, T2}(delegate{T1, T2, bool} predA, delegate{T1, T2, bool} predB)
+fun &{T1, T2}(function{T1, T2, bool} predA, function{T1, T2, bool} predB)
   and(predA, predB)
 
-fun &{T1, T2, T3}(delegate{T1, T2, T3, bool} predA, delegate{T1, T2, T3, bool} predB)
+fun &{T1, T2, T3}(function{T1, T2, T3, bool} predA, function{T1, T2, T3, bool} predB)
   and(predA, predB)
 
-fun &{T1, T2, T3, T4}(delegate{T1, T2, T3, T4, bool} predA, delegate{T1, T2, T3, T4, bool} predB)
+fun &{T1, T2, T3, T4}(function{T1, T2, T3, T4, bool} predA, function{T1, T2, T3, T4, bool} predB)
   and(predA, predB)
 
-fun |(delegate{bool} predA, delegate{bool} predB)
+fun |(function{bool} predA, function{bool} predB)
   or(predA, predB)
 
-fun |{T1}(delegate{T1, bool} predA, delegate{T1, bool} predB)
+fun |{T1}(function{T1, bool} predA, function{T1, bool} predB)
   or(predA, predB)
 
-fun |{T1, T2}(delegate{T1, T2, bool} predA, delegate{T1, T2, bool} predB)
+fun |{T1, T2}(function{T1, T2, bool} predA, function{T1, T2, bool} predB)
   or(predA, predB)
 
-fun |{T1, T2, T3}(delegate{T1, T2, T3, bool} predA, delegate{T1, T2, T3, bool} predB)
+fun |{T1, T2, T3}(function{T1, T2, T3, bool} predA, function{T1, T2, T3, bool} predB)
   or(predA, predB)
 
-fun |{T1, T2, T3, T4}(delegate{T1, T2, T3, T4, bool} predA, delegate{T1, T2, T3, T4, bool} predB)
+fun |{T1, T2, T3, T4}(function{T1, T2, T3, T4, bool} predA, function{T1, T2, T3, T4, bool} predB)
   or(predA, predB)
 
-fun !(delegate{bool} pred)
+fun !(function{bool} pred)
   invert(pred)
 
-fun !{T1}(delegate{T1, bool} pred)
+fun !{T1}(function{T1, bool} pred)
   invert(pred)
 
-fun !{T1, T2}(delegate{T1, T2, bool} pred)
+fun !{T1, T2}(function{T1, T2, bool} pred)
   invert(pred)
 
-fun !{T1, T2, T3}(delegate{T1, T2, T3, bool} pred)
+fun !{T1, T2, T3}(function{T1, T2, T3, bool} pred)
   invert(pred)
 
-fun !{T1, T2, T3, T4}(delegate{T1, T2, T3, T4, bool} pred)
+fun !{T1, T2, T3, T4}(function{T1, T2, T3, T4, bool} pred)
   invert(pred)
 
 // Functions
@@ -62,61 +62,61 @@ fun !{T1, T2, T3, T4}(delegate{T1, T2, T3, T4, bool} pred)
 fun equals{T}(T a, T b)
   a == b
 
-fun curry{TC, TR}(delegate{TC, TR} del, TC arg)
-  lambda () del(arg)
+fun curry{TC, TR}(function{TC, TR} func, TC arg)
+  lambda () func(arg)
 
-fun curry{T1, TC, TR}(delegate{T1, TC, TR} del, TC arg)
-  lambda (T1 a1) del(a1, arg)
+fun curry{T1, TC, TR}(function{T1, TC, TR} func, TC arg)
+  lambda (T1 a1) func(a1, arg)
 
-fun curry{T1, T2, TC, TR}(delegate{T1, T2, TC, TR} del, TC arg)
-  lambda (T1 a1, T2 a2) del(a1, a2, arg)
+fun curry{T1, T2, TC, TR}(function{T1, T2, TC, TR} func, TC arg)
+  lambda (T1 a1, T2 a2) func(a1, a2, arg)
 
-fun curry{T1, T2, T3, TC, TR}(delegate{T1, T2, T3, TC, TR} del, TC arg)
-  lambda (T1 a1, T2 a2, T3 a3) del(a1, a2, a3, arg)
+fun curry{T1, T2, T3, TC, TR}(function{T1, T2, T3, TC, TR} func, TC arg)
+  lambda (T1 a1, T2 a2, T3 a3) func(a1, a2, a3, arg)
 
-fun and(delegate{bool} predA, delegate{bool} predB)
+fun and(function{bool} predA, function{bool} predB)
   lambda () predA() && predB()
 
-fun and{T1}(delegate{T1, bool} predA, delegate{T1, bool} predB)
+fun and{T1}(function{T1, bool} predA, function{T1, bool} predB)
   lambda (T1 a1) predA(a1) && predB(a1)
 
-fun and{T1, T2}(delegate{T1, T2, bool} predA, delegate{T1, T2, bool} predB)
+fun and{T1, T2}(function{T1, T2, bool} predA, function{T1, T2, bool} predB)
   lambda (T1 a1, T2 a2) predA(a1, a2) && predB(a1, a2)
 
-fun and{T1, T2, T3}(delegate{T1, T2, T3, bool} predA, delegate{T1, T2, T3, bool} predB)
+fun and{T1, T2, T3}(function{T1, T2, T3, bool} predA, function{T1, T2, T3, bool} predB)
   lambda (T1 a1, T2 a2, T3 a3) predA(a1, a2, a3) && predB(a1, a2, a3)
 
-fun and{T1, T2, T3, T4}(delegate{T1, T2, T3, T4, bool} predA, delegate{T1, T2, T3, T4, bool} predB)
+fun and{T1, T2, T3, T4}(function{T1, T2, T3, T4, bool} predA, function{T1, T2, T3, T4, bool} predB)
   lambda (T1 a1, T2 a2, T3 a3, T4 a4) predA(a1, a2, a3, a4) && predB(a1, a2, a3, a4)
 
-fun or(delegate{bool} predA, delegate{bool} predB)
+fun or(function{bool} predA, function{bool} predB)
   lambda () predA() || predB()
 
-fun or{T1}(delegate{T1, bool} predA, delegate{T1, bool} predB)
+fun or{T1}(function{T1, bool} predA, function{T1, bool} predB)
   lambda (T1 a1) predA(a1) || predB(a1)
 
-fun or{T1, T2}(delegate{T1, T2, bool} predA, delegate{T1, T2, bool} predB)
+fun or{T1, T2}(function{T1, T2, bool} predA, function{T1, T2, bool} predB)
   lambda (T1 a1, T2 a2) predA(a1, a2) || predB(a1, a2)
 
-fun or{T1, T2, T3}(delegate{T1, T2, T3, bool} predA, delegate{T1, T2, T3, bool} predB)
+fun or{T1, T2, T3}(function{T1, T2, T3, bool} predA, function{T1, T2, T3, bool} predB)
   lambda (T1 a1, T2 a2, T3 a3) predA(a1, a2, a3) || predB(a1, a2, a3)
 
-fun or{T1, T2, T3, T4}(delegate{T1, T2, T3, T4, bool} predA, delegate{T1, T2, T3, T4, bool} predB)
+fun or{T1, T2, T3, T4}(function{T1, T2, T3, T4, bool} predA, function{T1, T2, T3, T4, bool} predB)
   lambda (T1 a1, T2 a2, T3 a3, T4 a4) predA(a1, a2, a3, a4) || predB(a1, a2, a3, a4)
 
-fun invert(delegate{bool} pred)
+fun invert(function{bool} pred)
   lambda () !pred()
 
-fun invert{T1}(delegate{T1, bool} pred)
+fun invert{T1}(function{T1, bool} pred)
   lambda (T1 a1) !pred(a1)
 
-fun invert{T1, T2}(delegate{T1, T2, bool} pred)
+fun invert{T1, T2}(function{T1, T2, bool} pred)
   lambda (T1 a1, T2 a2) !pred(a1, a2)
 
-fun invert{T1, T2, T3}(delegate{T1, T2, T3, bool} pred)
+fun invert{T1, T2, T3}(function{T1, T2, T3, bool} pred)
   lambda (T1 a1, T2 a2, T3 a3) !pred(a1, a2, a3)
 
-fun invert{T1, T2, T3, T4}(delegate{T1, T2, T3, T4, bool} pred)
+fun invert{T1, T2, T3, T4}(function{T1, T2, T3, T4, bool} pred)
   lambda (T1 a1, T2 a2, T3 a3, T4 a4) !pred(a1, a2, a3, a4)
 
 // Tests
@@ -128,105 +128,135 @@ assert(
   eq42(42) && !eq42(43))
 
 assert(
-  funcRet = (lambda (int x) x);
+  funcRet = (pure lambda (int x) x);
   ret42 = funcRet[42];
   ret42() == funcRet(42))
 
 assert(
-  funcPlus = (lambda (int a, int b) a + b);
+  funcPlus = (pure lambda (int a, int b) a + b);
   plus42 = funcPlus[42];
   plus42(1337) == funcPlus(1337, 42))
 
 assert(
-  funcSum = (lambda (int a, int b, int c) a + b + c);
+  funcSum = (pure lambda (int a, int b, int c) a + b + c);
   sumPlus42 = funcSum[42];
   sumPlus42(1, 2) == funcSum(1, 2, 42))
 
 assert(
-  funcSum = (lambda (int a, int b, int c, int d) a + b + c + d);
+  funcSum = (pure lambda (int a, int b, int c, int d) a + b + c + d);
   sumPlus42 = funcSum[42];
   sumPlus42(1, 2, 3) == funcSum(1, 2, 3, 42))
 
 assert(
-  funcTrue = (lambda () true);
-  funcFalse = (lambda () false);
+  funcTrue = (pure lambda () true);
+  funcFalse = (pure lambda () false);
   (funcTrue & funcTrue)() && !(funcTrue & funcFalse)())
 
 assert(
-  isEven = (lambda (int x) x % 2 == 0);
-  isPos = (lambda (int x) x > 0);
+  isEven = (pure lambda (int x) x % 2 == 0);
+  isPos = (pure lambda (int x) x > 0);
   isEvenAndPos = isEven & isPos;
   isEvenAndPos(2) && !isEvenAndPos(3) && !isEvenAndPos(-2))
 
 assert(
-  isEven = (lambda (int x, int y) x % 2 == 0 && y % 2 == 0);
-  isPos = (lambda (int x, int y) x > 0 && y > 0);
+  isEven = (pure lambda (int x, int y) x % 2 == 0 && y % 2 == 0);
+  isPos = (pure lambda (int x, int y) x > 0 && y > 0);
   isEvenAndPos = isEven & isPos;
   isEvenAndPos(2, 4) && !isEvenAndPos(2, 3) && !isEvenAndPos(2, -2))
 
 assert(
-  isEven = (lambda (int x, int y, int z) x % 2 == 0 && y % 2 == 0 && z % 2 == 0);
-  isPos = (lambda (int x, int y, int z) x > 0 && y > 0 && z > 0);
+  isEven = (pure lambda (int x, int y, int z) x % 2 == 0 && y % 2 == 0 && z % 2 == 0);
+  isPos = (pure lambda (int x, int y, int z) x > 0 && y > 0 && z > 0);
   isEvenAndPos = isEven & isPos;
   isEvenAndPos(2, 2, 4) && !isEvenAndPos(2, 2, 3) && !isEvenAndPos(2, 2, -2))
 
 assert(
-  isEven = (lambda (int x, int y, int z, int w) x % 2 == 0 && y % 2 == 0 && z % 2 == 0 && w % 2 == 0);
-  isPos = (lambda (int x, int y, int z, int w) x > 0 && y > 0 && z > 0 && w > 0);
+  isEven = (
+    pure lambda (int x, int y, int z, int w)
+      x % 2 == 0 && y % 2 == 0 && z % 2 == 0 && w % 2 == 0
+  );
+  isPos = (
+    pure lambda (int x, int y, int z, int w)
+      x > 0 && y > 0 && z > 0 && w > 0
+  );
   isEvenAndPos = isEven & isPos;
   isEvenAndPos(2, 2, 2, 4) && !isEvenAndPos(2, 2, 2, 3) && !isEvenAndPos(2, 2, 2, -2))
 
 assert(
-  funcTrue = (lambda () true);
-  funcFalse = (lambda () false);
+  funcTrue = (pure lambda () true);
+  funcFalse = (pure lambda () false);
   (funcTrue | funcFalse)() && (funcFalse | funcTrue)() && !(funcFalse | funcFalse)())
 
 assert(
-  isEven = (lambda (int x) x % 2 == 0);
-  isPos = (lambda (int x) x > 0);
+  isEven = (pure lambda (int x) x % 2 == 0);
+  isPos = (pure lambda (int x) x > 0);
   isEvenOrPos = isEven | isPos;
   isEvenOrPos(2) && isEvenOrPos(1) && isEvenOrPos(-2) && !isEvenOrPos(-1))
 
 assert(
-  isEven = (lambda (int x, int y) x % 2 == 0 && y % 2 == 0);
-  isPos = (lambda (int x, int y) x > 0 && y > 0);
+  isEven = (
+    pure lambda (int x, int y)
+      x % 2 == 0 && y % 2 == 0
+  );
+  isPos = (
+    pure lambda (int x, int y)
+      x > 0 && y > 0
+  );
   isEvenOrPos = isEven | isPos;
   isEvenOrPos(2, 1) && isEvenOrPos(-2, 2) && !isEvenOrPos(-1, -2))
 
 assert(
-  isEven = (lambda (int x, int y, int z) x % 2 == 0 && y % 2 == 0 && z % 2 == 0);
-  isPos = (lambda (int x, int y, int z) x > 0 && y > 0 && z > 0);
+  isEven = (
+    pure lambda (int x, int y, int z)
+      x % 2 == 0 && y % 2 == 0 && z % 2 == 0
+  );
+  isPos = (
+    pure lambda (int x, int y, int z)
+      x > 0 && y > 0 && z > 0
+  );
   isEvenOrPos = isEven | isPos;
   isEvenOrPos(2, 2, 1) && isEvenOrPos(-2, -2, 2) && !isEvenOrPos(-1, -1, -2))
 
 assert(
-  isEven = (lambda (int x, int y, int z, int w) x % 2 == 0 && y % 2 == 0 && z % 2 == 0 && w % 2 == 0);
-  isPos = (lambda (int x, int y, int z, int w) x > 0 && y > 0 && z > 0 && w > 0);
+  isEven = (
+    pure lambda (int x, int y, int z, int w)
+      x % 2 == 0 && y % 2 == 0 && z % 2 == 0 && w % 2 == 0
+  );
+  isPos = (
+    pure lambda (int x, int y, int z, int w)
+      x > 0 && y > 0 && z > 0 && w > 0
+  );
   isEvenOrPos = isEven | isPos;
   isEvenOrPos(2, 2, 2, 1) && isEvenOrPos(-2, -2, -2, 2) && !isEvenOrPos(-1, -1, -1, -2))
 
 assert(
-  funcFalse = (lambda () false);
+  funcFalse = (pure lambda () false);
   funcTrue = !funcFalse;
   funcTrue())
 
 assert(
-  is42 = (lambda (int x) x == 42);
+  is42 = (pure lambda (int x) x == 42);
   isNot42 = !is42;
   isNot42(1337) && !isNot42(42))
 
 assert(
-  eq = (lambda (int x, int y) x == y);
+  eq = (pure lambda (int x, int y) x == y);
   notEq = !eq;
   notEq(42, 1337) && !notEq(42, 42))
 
 assert(
-  eq = (lambda (int x, int y, int z) x == y && y == z);
+  eq = (
+    pure lambda (int x, int y, int z)
+      x == y && y == z
+  );
   notEq = !eq;
   notEq(42, 42, 1337) && !notEq(42, 42, 42))
 
 assert(
-  eq = (lambda (int x, int y, int z, int w) x == y && y == z && z == w);
+  eq = (
+    pure lambda (int x, int y, int z, int w)
+      x == y && y == z && z == w
+  );
   notEq = !eq;
   notEq(42, 42, 42, 1337) && !notEq(42, 42, 42, 42))
 

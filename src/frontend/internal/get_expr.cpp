@@ -64,6 +64,9 @@ auto GetExpr::visit(const parse::AnonFuncExprNode& n) -> void {
     inputTypes.push_back(consts[constId].getType());
   }
 
+  // Lambda's inside actions are themselves actions too unless marked as pure.
+  auto isAction = hasFlag<Flags::AllowActionCalls>() && !n.isPure();
+
   // Infer the return type of the anonymous function.
   auto parentConstTypes = m_constBinder->getAllConstTypes();
   auto retType          = inferRetType(
@@ -72,10 +75,11 @@ auto GetExpr::visit(const parse::AnonFuncExprNode& n) -> void {
       n,
       prog::sym::TypeSet{inputTypes},
       &parentConstTypes,
-      TypeInferExpr::Flags::Aggressive);
+      isAction ? (TypeInferExpr::Flags::AllowActionCalls | TypeInferExpr::Flags::Aggressive)
+               : TypeInferExpr::Flags::Aggressive);
 
-  // Note: We do not fail yet if we failed to infer the type, reason is it would 'hide' many other
-  // errors that would otherwise be reported by analyzing the body.
+  // Note: We do not fail yet if we failed to infer the type, reason is it would 'hide' many
+  // other errors that would otherwise be reported by analyzing the body.
 
   // Construct the signature, used to enable self-calls.
   auto selfSignature = std::make_pair(prog::sym::TypeSet{inputTypes}, retType);
@@ -86,9 +90,10 @@ auto GetExpr::visit(const parse::AnonFuncExprNode& n) -> void {
   auto getExpr       = GetExpr{m_ctx,
                          m_typeSubTable,
                          &constBinder,
-                         prog::sym::TypeId::inferType(),
+                         retType,
                          selfSignature,
-                         Flags::AllowPureFuncCalls};
+                         isAction ? (Flags::AllowActionCalls | Flags::AllowPureFuncCalls)
+                                  : Flags::AllowPureFuncCalls};
   n[0].accept(&getExpr);
   if (!getExpr.m_expr) {
     assert(m_ctx->hasErrors());
@@ -104,9 +109,14 @@ auto GetExpr::visit(const parse::AnonFuncExprNode& n) -> void {
   std::ostringstream nameoss;
   nameoss << "__anon_" << m_ctx->getProg()->getFuncCount();
 
-  // Declare and define the function in the program.
-  const auto funcId = m_ctx->getProg()->declarePureFunc(
-      nameoss.str(), prog::sym::TypeSet{inputTypes}, getExpr.m_expr->getType());
+  // Declare the function in the program.
+  const auto funcId = isAction
+      ? m_ctx->getProg()->declareAction(
+            nameoss.str(), prog::sym::TypeSet{inputTypes}, getExpr.m_expr->getType())
+      : m_ctx->getProg()->declarePureFunc(
+            nameoss.str(), prog::sym::TypeSet{inputTypes}, getExpr.m_expr->getType());
+
+  // Define the function in the program.
   m_ctx->getProg()->defineFunc(funcId, std::move(consts), std::move(getExpr.m_expr));
 
   // Either create a function literal or a closure, depending on if the anonymous func binds any
@@ -151,7 +161,7 @@ auto GetExpr::visit(const parse::BinaryExprNode& n) -> void {
   const auto argTypeSet = prog::sym::TypeSet{{args[0]->getType(), args[1]->getType()}};
   const auto funcName   = prog::getFuncName(op.value());
   const auto possibleFuncs =
-      getFunctions(funcName, std::nullopt, argTypeSet, n.getOperator().getSpan(), true);
+      getFunctions(funcName, std::nullopt, argTypeSet, n.getOperator().getSpan());
   const auto func = m_ctx->getProg()->lookupFunc(possibleFuncs, argTypeSet, getOvOptions(1));
   if (!func) {
     m_ctx->reportDiag(
@@ -203,10 +213,7 @@ auto GetExpr::visit(const parse::CallExprNode& n) -> void {
   // for example it allows adding extra arguments.
   modifyCall(m_ctx, nameToken, n, &args.value());
 
-  // Actions cannot be called using the 'instance call' syntax.
-  const auto exclActions = instance != nullptr;
-  const auto possibleFuncs =
-      getFunctionsInclConversions(nameToken, typeParams, args->second, exclActions);
+  const auto possibleFuncs = getFunctionsInclConversions(nameToken, typeParams, args->second);
   const auto func = m_ctx->getProg()->lookupFunc(possibleFuncs, args->second, getOvOptions(-1));
   if (!func) {
     auto isTypeOrConv = isType(m_ctx, getName(nameToken));
@@ -230,8 +237,7 @@ auto GetExpr::visit(const parse::CallExprNode& n) -> void {
         m_ctx->reportDiag(
             errUndeclaredTypeOrConversion, getName(nameToken), argTypeNames, n.getSpan());
       } else {
-        if (hasFlag<Flags::AllowPureFuncCalls>() && hasFlag<Flags::AllowActionCalls>() &&
-            !exclActions) {
+        if (hasFlag<Flags::AllowPureFuncCalls>() && hasFlag<Flags::AllowActionCalls>()) {
           m_ctx->reportDiag(
               errUndeclaredFuncOrAction, getName(nameToken), argTypeNames, n.getSpan());
         } else if (hasFlag<Flags::AllowPureFuncCalls>()) {
@@ -334,8 +340,7 @@ auto GetExpr::visit(const parse::IdExprNode& n) -> void {
       assert(m_ctx->hasErrors());
       return;
     }
-    const auto instances = m_ctx->getFuncTemplates()->instantiate(
-        name, *typeSet, prog::OvOptions{prog::OvFlags::ExclActions});
+    const auto instances = m_ctx->getFuncTemplates()->instantiate(name, *typeSet, getOvOptions(-1));
     if (instances.empty()) {
       m_ctx->reportDiag(errNoFuncFoundToInstantiate, name, typeSet->getCount(), n.getSpan());
       return;
@@ -349,8 +354,7 @@ auto GetExpr::visit(const parse::IdExprNode& n) -> void {
   }
 
   // Non-templated function literal.
-  auto funcs = m_ctx->getProg()->lookupFuncs(
-      name, prog::OvOptions{prog::OvFlags::ExclActions | prog::OvFlags::ExclNonUser});
+  auto funcs = m_ctx->getProg()->lookupFuncs(name, getOvOptions(-1, true));
   if (!funcs.empty()) {
     if (funcs.size() != 1) {
       m_ctx->reportDiag(errAmbiguousFunction, name, n.getSpan());
@@ -433,7 +437,7 @@ auto GetExpr::visit(const parse::IndexExprNode& n) -> void {
   }
 
   const auto funcName      = prog::getFuncName(prog::Operator::SquareSquare);
-  const auto possibleFuncs = getFunctions(funcName, std::nullopt, args->second, n.getSpan(), true);
+  const auto possibleFuncs = getFunctions(funcName, std::nullopt, args->second, n.getSpan());
   const auto func = m_ctx->getProg()->lookupFunc(possibleFuncs, args->second, getOvOptions(-1));
   if (!func) {
     auto argTypeNames = std::vector<std::string>{};
@@ -623,7 +627,7 @@ auto GetExpr::visit(const parse::UnaryExprNode& n) -> void {
   const auto argTypes = prog::sym::TypeSet{{args[0]->getType()}};
   const auto funcName = prog::getFuncName(op.value());
   const auto possibleFuncs =
-      getFunctions(funcName, std::nullopt, argTypes, n.getOperator().getSpan(), true);
+      getFunctions(funcName, std::nullopt, argTypes, n.getOperator().getSpan());
   const auto func = m_ctx->getProg()->lookupFunc(possibleFuncs, argTypes, getOvOptions(0));
   if (!func) {
     m_ctx->reportDiag(
@@ -908,16 +912,29 @@ auto GetExpr::getDynCallExpr(const parse::CallExprNode& n) -> prog::expr::NodePt
     return nullptr;
   }
 
+  auto ovOptions = getOvOptions(-1);
+
   // Check if this is a call to to a delegate type.
   if (m_ctx->getProg()->isDelegate(args->second[0])) {
+
+    // Get the delegate arguments (skip 0 as thats the delegate itself).
     auto delArgs = std::vector<prog::expr::NodePtr>{};
     for (auto i = 1U; i != args->first.size(); ++i) {
       delArgs.push_back(std::move(args->first[i]));
     }
-    if (!m_ctx->getProg()->isCallable(args->second[0], delArgs)) {
+
+    // Check if we are allowed to call this delegate.
+    if (!m_ctx->getProg()->satisfiesOptions(args->second[0], ovOptions)) {
+      m_ctx->reportDiag(errIllegalDelegateCall, n.getSpan());
+      return nullptr;
+    }
+
+    // Check if our argument types match the delegate input types.
+    if (!m_ctx->getProg()->isCallable(args->second[0], getTypeSet(delArgs), ovOptions)) {
       m_ctx->reportDiag(errIncorrectArgsToDelegate, n.getSpan());
       return nullptr;
     }
+
     if (n.isFork()) {
       return prog::expr::callDynExprNode(
           *m_ctx->getProg(),
@@ -932,8 +949,8 @@ auto GetExpr::getDynCallExpr(const parse::CallExprNode& n) -> prog::expr::NodePt
 
   // Check if this is a call to a overloaded call operator.
   const auto funcName      = prog::getFuncName(prog::Operator::ParenParen);
-  const auto possibleFuncs = getFunctions(funcName, std::nullopt, args->second, n.getSpan(), true);
-  const auto func = m_ctx->getProg()->lookupFunc(possibleFuncs, args->second, getOvOptions(-1));
+  const auto possibleFuncs = getFunctions(funcName, std::nullopt, args->second, n.getSpan());
+  const auto func          = m_ctx->getProg()->lookupFunc(possibleFuncs, args->second, ovOptions);
   if (!func) {
     auto argTypeNames = std::vector<std::string>{};
     for (const auto& argType : args->second) {
@@ -976,12 +993,11 @@ auto GetExpr::isExhaustive(const std::vector<prog::expr::NodePtr>& conditions) c
 auto GetExpr::getFunctionsInclConversions(
     const lex::Token& nameToken,
     const std::optional<parse::TypeParamList>& typeParams,
-    const prog::sym::TypeSet& argTypes,
-    bool exclActions) -> std::vector<prog::sym::FuncId> {
+    const prog::sym::TypeSet& argTypes) -> std::vector<prog::sym::FuncId> {
 
   const auto funcName = getName(nameToken);
-  auto result  = getFunctions(funcName, typeParams, argTypes, nameToken.getSpan(), exclActions);
-  auto isValid = true;
+  auto result         = getFunctions(funcName, typeParams, argTypes, nameToken.getSpan());
+  auto isValid        = true;
 
   // Check if this name + typeParams is a type (or type template) in the program.
   auto convType = getOrInstType(m_ctx, m_typeSubTable, nameToken, typeParams, argTypes);
@@ -1015,12 +1031,11 @@ auto GetExpr::getFunctions(
     const std::string& funcName,
     const std::optional<parse::TypeParamList>& typeParams,
     const prog::sym::TypeSet& argTypes,
-    input::Span span,
-    bool exclActions) -> std::vector<prog::sym::FuncId> {
+    input::Span span) -> std::vector<prog::sym::FuncId> {
 
   auto result    = std::vector<prog::sym::FuncId>{};
   auto isValid   = true;
-  auto ovOptions = getOvOptions(-1, exclActions);
+  auto ovOptions = getOvOptions(-1);
 
   if (typeParams) {
     // If this is a template call then instantiate the templates.

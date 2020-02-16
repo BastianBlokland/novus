@@ -168,8 +168,8 @@ TEST_CASE("Analyzing call expressions", "[frontend]") {
   }
 
   SECTION("Get call to action") {
-    const auto& output = ANALYZE("action a1() -> int 1 "
-                                 "action a2() -> int a1()");
+    const auto& output = ANALYZE("act a1() -> int 1 "
+                                 "act a2() -> int a1()");
     REQUIRE(output.isSuccess());
     CHECK(
         GET_FUNC_DEF(output, "a2").getExpr() ==
@@ -214,17 +214,17 @@ TEST_CASE("Analyzing call expressions", "[frontend]") {
         "fun f() -> int 42()",
         errUndeclaredCallOperator(src, {"int"}, input::Span{50, 53}));
     CHECK_DIAG(
-        "action a() -> int 1 "
+        "act a() -> int 1 "
         "fun f2() -> int a()",
-        errUndeclaredPureFunc(src, "a", {}, input::Span{36, 38}));
+        errUndeclaredPureFunc(src, "a", {}, input::Span{33, 35}));
     CHECK_DIAG(
-        "action a{T}() -> T T() "
+        "act a{T}() -> T T() "
         "fun f2() -> int a{int}()",
-        errNoFuncFoundToInstantiate(src, "a", 1, input::Span{39, 46}));
+        errNoFuncFoundToInstantiate(src, "a", 1, input::Span{36, 43}));
     CHECK_DIAG(
-        "action a(int i) -> int i * 2 "
+        "act a(int i) -> int i * 2 "
         "fun f2(int i) -> int i.a()",
-        errUndeclaredPureFunc(src, "a", {"int"}, input::Span{50, 54}));
+        errUndeclaredPureFunc(src, "a", {"int"}, input::Span{47, 51}));
   }
 }
 

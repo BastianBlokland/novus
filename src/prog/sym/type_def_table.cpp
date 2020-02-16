@@ -64,7 +64,11 @@ auto TypeDefTable::registerEnum(
 }
 
 auto TypeDefTable::registerDelegate(
-    const sym::TypeDeclTable& typeTable, sym::TypeId id, TypeSet input, TypeId output) -> void {
+    const sym::TypeDeclTable& typeTable,
+    sym::TypeId id,
+    bool isAction,
+    TypeSet input,
+    TypeId output) -> void {
 
   if (typeTable[id].getKind() != sym::TypeKind::Delegate) {
     throw std::invalid_argument{"Type has not been declared as being a delegate"};
@@ -73,7 +77,7 @@ auto TypeDefTable::registerDelegate(
   if (itr != m_types.end()) {
     throw std::logic_error{"Type already has a definition registered"};
   }
-  m_types.insert({id, DelegateDef{id, std::move(input), output}});
+  m_types.insert({id, DelegateDef{id, isAction, std::move(input), output}});
 }
 
 auto TypeDefTable::registerFuture(

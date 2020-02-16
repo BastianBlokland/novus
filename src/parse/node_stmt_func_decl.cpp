@@ -57,7 +57,7 @@ auto FuncDeclStmtNode::getSpan() const -> input::Span {
   return input::Span::combine(m_kw.getSpan(), m_body->getSpan());
 }
 
-auto FuncDeclStmtNode::isAction() const -> bool { return getKw(m_kw) == lex::Keyword::Action; }
+auto FuncDeclStmtNode::isAction() const -> bool { return getKw(m_kw) == lex::Keyword::Act; }
 
 auto FuncDeclStmtNode::getId() const -> const lex::Token& { return m_id; }
 

@@ -173,7 +173,7 @@ auto errNonOverloadableOperator(const Source& src, const std::string& name, inpu
 
 auto errNonPureOperatorOverload(const Source& src, input::Span span) -> Diag {
   std::ostringstream oss;
-  oss << "Operator overloads have to be pure ('fun' instead of 'action')";
+  oss << "Operator overloads have to be pure ('fun' instead of 'act')";
   return error(src, oss.str(), span);
 }
 
@@ -418,9 +418,15 @@ auto errAmbiguousTemplateFunction(
   return error(src, oss.str(), span);
 }
 
+auto errIllegalDelegateCall(const Source& src, input::Span span) -> Diag {
+  std::ostringstream oss;
+  oss << "Cannot invoke the delegate, action's cannot be called from pure functions";
+  return error(src, oss.str(), span);
+}
+
 auto errIncorrectArgsToDelegate(const Source& src, input::Span span) -> Diag {
   std::ostringstream oss;
-  oss << "Incorrect arguments provided to function delegate";
+  oss << "Incorrect arguments provided to delegate";
   return error(src, oss.str(), span);
 }
 
@@ -503,7 +509,7 @@ auto errNonExhaustiveSwitchWithoutElse(const Source& src, input::Span span) -> D
 
 auto errNonPureConversion(const Source& src, input::Span span) -> Diag {
   std::ostringstream oss;
-  oss << "Type conversion has to be pure ('fun' instead of 'action')";
+  oss << "Type conversion has to be pure ('fun' instead of 'act')";
   return error(src, oss.str(), span);
 }
 

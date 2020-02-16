@@ -1,4 +1,4 @@
 // Actions
 
-action print{T}(T x)
+act print{T}(T x)
   conWriteLine(x.string())

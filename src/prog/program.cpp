@@ -292,13 +292,7 @@ auto Program::isFuture(sym::TypeId id) const -> bool {
   return typeDecl.getKind() == sym::TypeKind::Future;
 }
 
-auto Program::isCallable(sym::FuncId func, const std::vector<expr::NodePtr>& args) const -> bool {
-  const auto& funcDecl = getFuncDecl(func);
-  return internal::isImplicitConvertible(*this, funcDecl.getInput(), args);
-}
-
-auto Program::isCallable(sym::TypeId delegate, const std::vector<expr::NodePtr>& args) const
-    -> bool {
+auto Program::satisfiesOptions(sym::TypeId delegate, OvOptions options) const -> bool {
   if (!delegate.isConcrete()) {
     return false;
   }
@@ -307,7 +301,34 @@ auto Program::isCallable(sym::TypeId delegate, const std::vector<expr::NodePtr>&
     return false;
   }
   const auto& delegateDef = std::get<sym::DelegateDef>(getTypeDef(delegate));
-  return internal::isImplicitConvertible(*this, delegateDef.getInput(), args);
+  if (options.hasFlag<OvFlags::ExclActions>() && delegateDef.isAction()) {
+    return false;
+  }
+  if (options.hasFlag<OvFlags::ExclPureFuncs>() && !delegateDef.isAction()) {
+    return false;
+  }
+  return true;
+}
+
+auto Program::isCallable(sym::TypeId delegate, const sym::TypeSet& input, OvOptions options) const
+    -> bool {
+
+  if (!delegate.isConcrete()) {
+    return false;
+  }
+  const auto& typeDecl = getTypeDecl(delegate);
+  if (typeDecl.getKind() != sym::TypeKind::Delegate) {
+    return false;
+  }
+  const auto& delegateDef = std::get<sym::DelegateDef>(getTypeDef(delegate));
+  if (options.hasFlag<OvFlags::ExclActions>() && delegateDef.isAction()) {
+    return false;
+  }
+  if (options.hasFlag<OvFlags::ExclPureFuncs>() && !delegateDef.isAction()) {
+    return false;
+  }
+  return internal::isImplicitConvertible(
+      *this, delegateDef.getInput(), input, options.getMaxImplicitConvs());
 }
 
 auto Program::getDelegateRetType(sym::TypeId id) const -> std::optional<sym::TypeId> {
@@ -447,8 +468,9 @@ auto Program::defineEnum(sym::TypeId id, std::unordered_map<std::string, int32_t
   m_typeDefs.registerEnum(m_typeDecls, id, std::move(entries));
 }
 
-auto Program::defineDelegate(sym::TypeId id, sym::TypeSet input, sym::TypeId output) -> void {
-  m_typeDefs.registerDelegate(m_typeDecls, id, std::move(input), output);
+auto Program::defineDelegate(sym::TypeId id, bool isAction, sym::TypeSet input, sym::TypeId output)
+    -> void {
+  m_typeDefs.registerDelegate(m_typeDecls, id, isAction, std::move(input), output);
 }
 
 auto Program::defineFuture(sym::TypeId id, sym::TypeId result) -> void {

@@ -166,7 +166,8 @@ auto isReservedTypeName(const std::string& name) -> bool {
       "bool",
       "string",
       "char",
-      "delegate",
+      "function",
+      "action",
       "future",
   };
   return reservedTypes.find(name) != reservedTypes.end();
@@ -266,8 +267,11 @@ auto instType(
     return std::nullopt;
   }
 
-  if (typeName == "delegate") {
-    return ctx->getDelegates()->getDelegate(ctx, *typeSet);
+  if (typeName == "function") {
+    return ctx->getDelegates()->getFunction(ctx, *typeSet);
+  }
+  if (typeName == "action") {
+    return ctx->getDelegates()->getAction(ctx, *typeSet);
   }
   if (typeName == "future" && typeSet->getCount() == 1) {
     return ctx->getFutures()->getFuture(ctx, *typeSet->begin());
@@ -334,11 +338,18 @@ auto inferRetType(
   return inferBodyType.getInferredType();
 }
 
-auto getLitFunc(Context* ctx, prog::sym::FuncId func) -> prog::expr::NodePtr {
+auto getDelegate(Context* ctx, prog::sym::FuncId func) -> prog::sym::TypeId {
   const auto funcDecl = ctx->getProg()->getFuncDecl(func);
-  const auto delegateType =
-      ctx->getDelegates()->getDelegate(ctx, funcDecl.getInput(), funcDecl.getOutput());
-  return prog::expr::litFuncNode(*ctx->getProg(), delegateType, func);
+  if (funcDecl.getOutput().isInfer()) {
+    return prog::sym::TypeId::inferType();
+  }
+  return funcDecl.isAction()
+      ? ctx->getDelegates()->getAction(ctx, funcDecl.getInput(), funcDecl.getOutput())
+      : ctx->getDelegates()->getFunction(ctx, funcDecl.getInput(), funcDecl.getOutput());
+}
+
+auto getLitFunc(Context* ctx, prog::sym::FuncId func) -> prog::expr::NodePtr {
+  return prog::expr::litFuncNode(*ctx->getProg(), getDelegate(ctx, func), func);
 }
 
 auto getFuncClosure(
@@ -367,8 +378,11 @@ auto getFuncClosure(
     }
   }
 
-  const auto delegateType = ctx->getDelegates()->getDelegate(
-      ctx, prog::sym::TypeSet{std::move(delegateInput)}, funcDecl.getOutput());
+  auto delegateInputTypes = prog::sym::TypeSet{std::move(delegateInput)};
+  const auto delegateType = funcDecl.isAction()
+      ? ctx->getDelegates()->getAction(ctx, delegateInputTypes, funcDecl.getOutput())
+      : ctx->getDelegates()->getFunction(ctx, delegateInputTypes, funcDecl.getOutput());
+
   return prog::expr::closureNode(*ctx->getProg(), delegateType, func, std::move(boundArgs));
 }
 
@@ -460,6 +474,14 @@ auto getTypeSet(
     }
   }
   return isValid ? std::optional{prog::sym::TypeSet{std::move(types)}} : std::nullopt;
+}
+
+auto getTypeSet(const std::vector<prog::expr::NodePtr>& exprs) -> prog::sym::TypeSet {
+  auto types = std::vector<prog::sym::TypeId>{};
+  for (const auto& expr : exprs) {
+    types.push_back(expr->getType());
+  }
+  return prog::sym::TypeSet{std::move(types)};
 }
 
 auto getConstName(

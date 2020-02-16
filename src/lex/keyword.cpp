@@ -11,14 +11,17 @@ auto operator<<(std::ostream& out, const Keyword& rhs) -> std::ostream& {
   case Keyword::Fun:
     out << "fun";
     break;
-  case Keyword::Action:
-    out << "action";
+  case Keyword::Act:
+    out << "act";
     break;
   case Keyword::Self:
     out << "self";
     break;
   case Keyword::Lambda:
     out << "lambda";
+    break;
+  case Keyword::Pure:
+    out << "pure";
     break;
   case Keyword::Fork:
     out << "fork";
@@ -52,9 +55,10 @@ auto getKeyword(const std::string& str) -> std::optional<Keyword> {
   static const std::unordered_map<std::string, Keyword> keywordTable = {
       {"import", Keyword::Import},
       {"fun", Keyword::Fun},
-      {"action", Keyword::Action},
+      {"act", Keyword::Act},
       {"self", Keyword::Self},
       {"lambda", Keyword::Lambda},
+      {"pure", Keyword::Pure},
       {"fork", Keyword::Fork},
       {"struct", Keyword::Struct},
       {"union", Keyword::Union},

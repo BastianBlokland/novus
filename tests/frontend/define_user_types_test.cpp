@@ -106,8 +106,10 @@ TEST_CASE("Analyzing user-type definitions", "[frontend]") {
     CHECK_DIAG(
         "struct s = int int", errFieldNameConflictsWithType(src, "int", input::Span{15, 17}));
     CHECK_DIAG(
-        "struct s = int delegate",
-        errFieldNameConflictsWithType(src, "delegate", input::Span{15, 22}));
+        "struct s = int function",
+        errFieldNameConflictsWithType(src, "function", input::Span{15, 22}));
+    CHECK_DIAG(
+        "struct s = int action", errFieldNameConflictsWithType(src, "action", input::Span{15, 20}));
     CHECK_DIAG("struct s = s i", errCyclicStruct(src, "i", "s", input::Span{0, 13}));
     CHECK_DIAG(
         "struct s1 = s2 a "

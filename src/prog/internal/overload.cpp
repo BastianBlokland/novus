@@ -20,6 +20,19 @@ auto findOverload(
       continue; // Argument count has to match.
     }
 
+    // Check if this overload satisfies the given options.
+    using Flags = sym::OverloadFlags;
+    if (options.hasFlag<Flags::ExclActions>() && declTable[overload].isAction()) {
+      continue;
+    }
+    if (options.hasFlag<Flags::ExclPureFuncs>() && !declTable[overload].isAction()) {
+      continue;
+    }
+    if (options.hasFlag<Flags::ExclNonUser>() &&
+        declTable[overload].getKind() != sym::FuncKind::User) {
+      continue;
+    }
+
     auto convAmount = 0;
     auto valid      = true;
     auto inputItr   = input.begin();

@@ -14,10 +14,10 @@ TEST_CASE("Analyzing call dynamic expressions", "[frontend]") {
 
   SECTION("Get delegate call without args") {
     const auto& output = ANALYZE("fun f1() -> int 1 "
-                                 "fun f2(delegate{int} op) -> int op() "
+                                 "fun f2(function{int} op) -> int op() "
                                  "fun f() -> int f2(f1)");
     REQUIRE(output.isSuccess());
-    const auto& f2Def = GET_FUNC_DEF(output, "f2", GET_TYPE_ID(output, "__delegate_int"));
+    const auto& f2Def = GET_FUNC_DEF(output, "f2", GET_TYPE_ID(output, "__function_int"));
     const auto& fDef  = GET_FUNC_DEF(output, "f");
 
     CHECK(
@@ -29,7 +29,7 @@ TEST_CASE("Analyzing call dynamic expressions", "[frontend]") {
 
     auto fArgs = std::vector<prog::expr::NodePtr>{};
     fArgs.push_back(prog::expr::litFuncNode(
-        output.getProg(), GET_TYPE_ID(output, "__delegate_int"), GET_FUNC_ID(output, "f1")));
+        output.getProg(), GET_TYPE_ID(output, "__function_int"), GET_FUNC_ID(output, "f1")));
     CHECK(
         fDef.getExpr() ==
         *prog::expr::callExprNode(output.getProg(), f2Def.getId(), std::move(fArgs)));
@@ -37,11 +37,11 @@ TEST_CASE("Analyzing call dynamic expressions", "[frontend]") {
 
   SECTION("Get delegate call with args") {
     const auto& output = ANALYZE("fun f1(bool b, float v) -> int b ? 1 : 0 "
-                                 "fun f2(delegate{bool, float, int} op) -> int op(false, 1) "
+                                 "fun f2(function{bool, float, int} op) -> int op(false, 1) "
                                  "fun f() -> int f2(f1)");
     REQUIRE(output.isSuccess());
     const auto& f2Def =
-        GET_FUNC_DEF(output, "f2", GET_TYPE_ID(output, "__delegate_bool_float_int"));
+        GET_FUNC_DEF(output, "f2", GET_TYPE_ID(output, "__function_bool_float_int"));
     const auto& fDef = GET_FUNC_DEF(output, "f");
 
     auto f2Args = std::vector<prog::expr::NodePtr>{};
@@ -57,7 +57,7 @@ TEST_CASE("Analyzing call dynamic expressions", "[frontend]") {
     auto fArgs = std::vector<prog::expr::NodePtr>{};
     fArgs.push_back(prog::expr::litFuncNode(
         output.getProg(),
-        GET_TYPE_ID(output, "__delegate_bool_float_int"),
+        GET_TYPE_ID(output, "__function_bool_float_int"),
         GET_FUNC_ID(output, "f1", GET_TYPE_ID(output, "bool"), GET_TYPE_ID(output, "float"))));
     CHECK(
         fDef.getExpr() ==
@@ -66,10 +66,10 @@ TEST_CASE("Analyzing call dynamic expressions", "[frontend]") {
 
   SECTION("Get delegate call with templated function") {
     const auto& output = ANALYZE("fun f1{T}() -> T T() "
-                                 "fun f2(delegate{int} op) -> int op() "
+                                 "fun f2(function{int} op) -> int op() "
                                  "fun f() -> int f2(f1{int})");
     REQUIRE(output.isSuccess());
-    const auto& f2Def = GET_FUNC_DEF(output, "f2", GET_TYPE_ID(output, "__delegate_int"));
+    const auto& f2Def = GET_FUNC_DEF(output, "f2", GET_TYPE_ID(output, "__function_int"));
     const auto& fDef  = GET_FUNC_DEF(output, "f");
 
     CHECK(
@@ -81,14 +81,14 @@ TEST_CASE("Analyzing call dynamic expressions", "[frontend]") {
 
     auto fArgs = std::vector<prog::expr::NodePtr>{};
     fArgs.push_back(prog::expr::litFuncNode(
-        output.getProg(), GET_TYPE_ID(output, "__delegate_int"), GET_FUNC_ID(output, "f1__int")));
+        output.getProg(), GET_TYPE_ID(output, "__function_int"), GET_FUNC_ID(output, "f1__int")));
     CHECK(
         fDef.getExpr() ==
         *prog::expr::callExprNode(output.getProg(), f2Def.getId(), std::move(fArgs)));
   }
 
   SECTION("Get delegate call on struct") {
-    const auto& output = ANALYZE("struct S = delegate{int} del "
+    const auto& output = ANALYZE("struct S = function{int} del "
                                  "fun f(S s) -> int s.del()");
     REQUIRE(output.isSuccess());
     const auto& sDef = std::get<prog::sym::StructDef>(GET_TYPE_DEF(output, "S"));
@@ -107,10 +107,10 @@ TEST_CASE("Analyzing call dynamic expressions", "[frontend]") {
 
   SECTION("Get forked delegate call") {
     const auto& output = ANALYZE("fun f1() -> int 1 "
-                                 "fun f2(delegate{int} op) -> future{int} fork op() "
+                                 "fun f2(function{int} op) -> future{int} fork op() "
                                  "fun f() -> future{int} f2(f1)");
     REQUIRE(output.isSuccess());
-    const auto& f2Def = GET_FUNC_DEF(output, "f2", GET_TYPE_ID(output, "__delegate_int"));
+    const auto& f2Def = GET_FUNC_DEF(output, "f2", GET_TYPE_ID(output, "__function_int"));
     const auto& fDef  = GET_FUNC_DEF(output, "f");
 
     CHECK(
@@ -124,7 +124,7 @@ TEST_CASE("Analyzing call dynamic expressions", "[frontend]") {
 
     auto fArgs = std::vector<prog::expr::NodePtr>{};
     fArgs.push_back(prog::expr::litFuncNode(
-        output.getProg(), GET_TYPE_ID(output, "__delegate_int"), GET_FUNC_ID(output, "f1")));
+        output.getProg(), GET_TYPE_ID(output, "__function_int"), GET_FUNC_ID(output, "f1")));
     CHECK(
         fDef.getExpr() ==
         *prog::expr::callExprNode(output.getProg(), f2Def.getId(), std::move(fArgs)));
@@ -132,7 +132,7 @@ TEST_CASE("Analyzing call dynamic expressions", "[frontend]") {
 
   SECTION("Diagnostics") {
     CHECK_DIAG(
-        "fun f(delegate{int, float, bool} op) -> bool op(false, 1.0)",
+        "fun f(function{int, float, bool} op) -> bool op(false, 1.0)",
         errIncorrectArgsToDelegate(src, input::Span{45, 58}));
     CHECK_DIAG(
         "fun f1(int v) -> int v "
@@ -153,22 +153,15 @@ TEST_CASE("Analyzing call dynamic expressions", "[frontend]") {
         errNoTypeParamsProvidedToTemplateFunction(src, "f1", input::Span{42, 43}),
         errUndeclaredPureFunc(src, "op", {}, input::Span{46, 49}));
     CHECK_DIAG(
-        "fun f() -> delegate{string, string} conWrite",
+        "fun f() -> function{string, string} conWrite",
         errUndeclaredConst(src, "conWrite", input::Span{36, 43}));
     CHECK_DIAG(
         "fun f() -> string op = conWrite; op(\"hello world\")",
         errUndeclaredConst(src, "conWrite", input::Span{23, 30}),
         errUndeclaredPureFunc(src, "op", {"string"}, input::Span{33, 49}));
+    CHECK_DIAG("fun f(action{int} a) a()", errIllegalDelegateCall(src, input::Span{21, 23}));
     CHECK_DIAG(
-        "action main() conWrite(\"hello world\") "
-        "action a() -> string op = main; op()",
-        errUndeclaredConst(src, "main", input::Span{64, 67}),
-        errUndeclaredFuncOrAction(src, "op", {}, input::Span{70, 73}));
-    CHECK_DIAG(
-        "action main{T}() conWrite(\"hello world\") "
-        "action a() -> string op = main{int}; op()",
-        errNoFuncFoundToInstantiate(src, "main", 1, input::Span{67, 75}),
-        errUndeclaredFuncOrAction(src, "op", {}, input::Span{78, 81}));
+        "fun f(action{int} a) lambda () a()", errIllegalDelegateCall(src, input::Span{31, 33}));
   }
 }
 

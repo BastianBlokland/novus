@@ -40,14 +40,28 @@ TEST_CASE("Infer return type of user functions", "[frontend]") {
     const auto& output = ANALYZE("fun f1(int i) i "
                                  "fun f() f1");
     REQUIRE(output.isSuccess());
-    CHECK(GET_FUNC_DECL(output, "f").getOutput() == GET_TYPE_ID(output, "__delegate_int_int"));
+    CHECK(GET_FUNC_DECL(output, "f").getOutput() == GET_TYPE_ID(output, "__function_int_int"));
+  }
+
+  SECTION("Action literal") {
+    const auto& output = ANALYZE("act a1(int i) i "
+                                 "act a() a1");
+    REQUIRE(output.isSuccess());
+    CHECK(GET_FUNC_DECL(output, "a").getOutput() == GET_TYPE_ID(output, "__action_int_int"));
   }
 
   SECTION("Templated function literal") {
     const auto& output = ANALYZE("fun f1{T}(T t) t "
                                  "fun f() f1{int}");
     REQUIRE(output.isSuccess());
-    CHECK(GET_FUNC_DECL(output, "f").getOutput() == GET_TYPE_ID(output, "__delegate_int_int"));
+    CHECK(GET_FUNC_DECL(output, "f").getOutput() == GET_TYPE_ID(output, "__function_int_int"));
+  }
+
+  SECTION("Templated action literal") {
+    const auto& output = ANALYZE("act a1{T}(T t) t "
+                                 "act a() a1{int}");
+    REQUIRE(output.isSuccess());
+    CHECK(GET_FUNC_DECL(output, "a").getOutput() == GET_TYPE_ID(output, "__action_int_int"));
   }
 
   SECTION("Function argument") {
@@ -254,15 +268,15 @@ TEST_CASE("Infer return type of user functions", "[frontend]") {
   }
 
   SECTION("Dynamic call") {
-    const auto& output = ANALYZE("fun f(delegate{int, int} op) op(1)");
+    const auto& output = ANALYZE("fun f(function{int, int} op) op(1)");
     REQUIRE(output.isSuccess());
     CHECK(
-        GET_FUNC_DECL(output, "f", GET_TYPE_ID(output, "__delegate_int_int")).getOutput() ==
+        GET_FUNC_DECL(output, "f", GET_TYPE_ID(output, "__function_int_int")).getOutput() ==
         GET_TYPE_ID(output, "int"));
   }
 
   SECTION("Dynamic call on struct field") {
-    const auto& output = ANALYZE("struct S = delegate{int} del "
+    const auto& output = ANALYZE("struct S = function{int} del "
                                  "fun f(S s) s.del()");
     REQUIRE(output.isSuccess());
     CHECK(
@@ -271,17 +285,17 @@ TEST_CASE("Infer return type of user functions", "[frontend]") {
   }
 
   SECTION("Forked dynamic call") {
-    const auto& output = ANALYZE("fun f(delegate{int, int} op) fork op(1)");
+    const auto& output = ANALYZE("fun f(function{int, int} op) fork op(1)");
     REQUIRE(output.isSuccess());
     CHECK(
-        GET_FUNC_DECL(output, "f", GET_TYPE_ID(output, "__delegate_int_int")).getOutput() ==
+        GET_FUNC_DECL(output, "f", GET_TYPE_ID(output, "__function_int_int")).getOutput() ==
         GET_TYPE_ID(output, "__future_int"));
   }
 
   SECTION("Anonymous function") {
     const auto& output = ANALYZE("fun f() lambda (int i) i == i");
     REQUIRE(output.isSuccess());
-    CHECK(GET_FUNC_DECL(output, "f").getOutput() == GET_TYPE_ID(output, "__delegate_int_bool"));
+    CHECK(GET_FUNC_DECL(output, "f").getOutput() == GET_TYPE_ID(output, "__function_int_bool"));
   }
 
   SECTION("Anonymous function call") {
@@ -295,7 +309,7 @@ TEST_CASE("Infer return type of user functions", "[frontend]") {
     REQUIRE(output.isSuccess());
     CHECK(
         GET_FUNC_DECL(output, "f", GET_TYPE_ID(output, "float")).getOutput() ==
-        GET_TYPE_ID(output, "__delegate_int_float"));
+        GET_TYPE_ID(output, "__function_int_float"));
   }
 
   SECTION("Anonymous function with nested closure") {
@@ -303,7 +317,7 @@ TEST_CASE("Infer return type of user functions", "[frontend]") {
     REQUIRE(output.isSuccess());
     CHECK(
         GET_FUNC_DECL(output, "f", GET_TYPE_ID(output, "float")).getOutput() ==
-        GET_TYPE_ID(output, "__delegate_int___delegate_float"));
+        GET_TYPE_ID(output, "__function_int___function_float"));
   }
 
   SECTION("Anonymous function call with closure") {
@@ -319,7 +333,19 @@ TEST_CASE("Infer return type of user functions", "[frontend]") {
     REQUIRE(output.isSuccess());
     CHECK(
         GET_FUNC_DECL(output, "f", GET_TYPE_ID(output, "float")).getOutput() ==
-        GET_TYPE_ID(output, "__delegate_float"));
+        GET_TYPE_ID(output, "__function_float"));
+  }
+
+  SECTION("Anonymous action") {
+    const auto& output = ANALYZE("act a() lambda (int i) i == i");
+    REQUIRE(output.isSuccess());
+    CHECK(GET_FUNC_DECL(output, "a").getOutput() == GET_TYPE_ID(output, "__action_int_bool"));
+  }
+
+  SECTION("Anonymous action call") {
+    const auto& output = ANALYZE("act a() (lambda (int i) i == i)(42)");
+    REQUIRE(output.isSuccess());
+    CHECK(GET_FUNC_DECL(output, "a").getOutput() == GET_TYPE_ID(output, "bool"));
   }
 
   SECTION("Templated overloaded call") {
@@ -331,7 +357,7 @@ TEST_CASE("Infer return type of user functions", "[frontend]") {
   }
 
   SECTION("Infinite recursing action") {
-    const auto& output = ANALYZE("action main() "
+    const auto& output = ANALYZE("act main() "
                                  " conWrite(\"hello world\"); "
                                  " main()");
     REQUIRE(output.isSuccess());

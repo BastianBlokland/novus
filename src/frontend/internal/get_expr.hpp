@@ -113,15 +113,13 @@ private:
   [[nodiscard]] auto getFunctionsInclConversions(
       const lex::Token& nameToken,
       const std::optional<parse::TypeParamList>& typeParams,
-      const prog::sym::TypeSet& argTypes,
-      bool exclActions) -> std::vector<prog::sym::FuncId>;
+      const prog::sym::TypeSet& argTypes) -> std::vector<prog::sym::FuncId>;
 
   [[nodiscard]] auto getFunctions(
       const std::string& funcName,
       const std::optional<parse::TypeParamList>& typeParams,
       const prog::sym::TypeSet& argTypes,
-      input::Span span,
-      bool exclActions) -> std::vector<prog::sym::FuncId>;
+      input::Span span) -> std::vector<prog::sym::FuncId>;
 
   template <Flags F>
   [[nodiscard]] inline auto hasFlag() const noexcept {
@@ -129,14 +127,17 @@ private:
         static_cast<unsigned int>(F);
   }
 
-  [[nodiscard]] inline auto getOvOptions(int maxImplicitConvs, bool excludeActions = false) const
+  [[nodiscard]] inline auto getOvOptions(int maxImplicitConvs, bool excludeNonUser = false) const
       noexcept {
     auto ovFlags = prog::OvFlags::None;
     if (!hasFlag<Flags::AllowPureFuncCalls>()) {
       ovFlags = ovFlags | prog::OvFlags::ExclPureFuncs;
     }
-    if (!hasFlag<Flags::AllowActionCalls>() || excludeActions) {
+    if (!hasFlag<Flags::AllowActionCalls>()) {
       ovFlags = ovFlags | prog::OvFlags::ExclActions;
+    }
+    if (excludeNonUser) {
+      ovFlags = ovFlags | prog::OvFlags::ExclNonUser;
     }
     return prog::OvOptions{ovFlags, maxImplicitConvs};
   }

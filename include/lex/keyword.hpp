@@ -8,9 +8,10 @@ namespace lex {
 enum class Keyword {
   Import,
   Fun,
-  Action,
+  Act,
   Self,
   Lambda,
+  Pure,
   Fork,
   Struct,
   Union,

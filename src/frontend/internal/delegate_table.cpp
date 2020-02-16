@@ -3,10 +3,10 @@
 
 namespace frontend::internal {
 
-static auto
-getDelegateName(const Context& ctx, const prog::sym::TypeSet& input, prog::sym::TypeId output)
+static auto getDelegateName(
+    const Context& ctx, bool isAction, const prog::sym::TypeSet& input, prog::sym::TypeId output)
     -> std::string {
-  auto result = std::string{"__delegate"};
+  auto result = std::string{isAction ? "__action" : "__function"};
   for (const auto& type : input) {
     const auto& typeName = getName(ctx, type);
     result += '_' + typeName;
@@ -25,31 +25,58 @@ auto DelegateTable::Hasher::operator()(const signature& id) const -> std::size_t
   return result;
 }
 
-auto DelegateTable::getDelegate(Context* ctx, const prog::sym::TypeSet& types)
+auto DelegateTable::getFunction(Context* ctx, const prog::sym::TypeSet& types)
     -> prog::sym::TypeId {
+  return getDelegate(ctx, &m_functions, false, types);
+}
+
+auto DelegateTable::getAction(Context* ctx, const prog::sym::TypeSet& types) -> prog::sym::TypeId {
+  return getDelegate(ctx, &m_actions, true, types);
+}
+
+auto DelegateTable::getFunction(
+    Context* ctx, const prog::sym::TypeSet& input, prog::sym::TypeId output) -> prog::sym::TypeId {
+  return getDelegate(ctx, &m_functions, false, input, output);
+}
+
+auto DelegateTable::getAction(
+    Context* ctx, const prog::sym::TypeSet& input, prog::sym::TypeId output) -> prog::sym::TypeId {
+  return getDelegate(ctx, &m_actions, true, input, output);
+}
+
+auto DelegateTable::getDelegate(
+    Context* ctx, delegateSet* set, bool isAction, const prog::sym::TypeSet& types)
+    -> prog::sym::TypeId {
+
   auto inputTypes = std::vector<prog::sym::TypeId>{};
   for (auto i = 0U; i != types.getCount() - 1; ++i) {
     inputTypes.push_back(types[i]);
   }
   auto outputType = types[types.getCount() - 1];
-  return getDelegate(ctx, prog::sym::TypeSet{std::move(inputTypes)}, outputType);
+  return getDelegate(ctx, set, isAction, prog::sym::TypeSet{std::move(inputTypes)}, outputType);
 }
 
 auto DelegateTable::getDelegate(
-    Context* ctx, const prog::sym::TypeSet& input, prog::sym::TypeId output) -> prog::sym::TypeId {
+    Context* ctx,
+    delegateSet* set,
+    bool isAction,
+    const prog::sym::TypeSet& input,
+    prog::sym::TypeId output) -> prog::sym::TypeId {
+
   auto sig = std::make_pair(input, output);
 
   // Try to find an existing delegate with the same signature.
-  auto itr = m_delegates.find(sig);
-  if (itr != m_delegates.end()) {
+  auto itr = set->find(sig);
+  if (itr != set->end()) {
     return itr->second;
   }
 
   // Declare a new delegate.
-  const auto delegateType = ctx->getProg()->declareDelegate(getDelegateName(*ctx, input, output));
+  auto delegateName       = getDelegateName(*ctx, isAction, input, output);
+  const auto delegateType = ctx->getProg()->declareDelegate(delegateName);
 
   // Define the delegate.
-  ctx->getProg()->defineDelegate(delegateType, input, output);
+  ctx->getProg()->defineDelegate(delegateType, isAction, input, output);
 
   // Keep track of some extra information about the type.
   auto types = std::vector<prog::sym::TypeId>{};
@@ -57,9 +84,12 @@ auto DelegateTable::getDelegate(
   types.push_back(output);
   ctx->declareTypeInfo(
       delegateType,
-      TypeInfo{ctx, "delegate", input::Span{0}, prog::sym::TypeSet{std::move(types)}});
+      TypeInfo{ctx,
+               isAction ? "action" : "function",
+               input::Span{0},
+               prog::sym::TypeSet{std::move(types)}});
 
-  m_delegates.insert({std::move(sig), delegateType});
+  set->insert({std::move(sig), delegateType});
   return delegateType;
 }
 

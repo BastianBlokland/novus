@@ -14,7 +14,7 @@ fun Option{T}()
 fun ??{T}(Option{T} opt, T def)
   opt as T val ? val : def
 
-fun ??{T}(Option{T} opt, delegate{T} defFactory)
+fun ??{T}(Option{T} opt, function{T} defFactory)
   opt as T val ? val : defFactory()
 
 // Conversions
@@ -24,11 +24,11 @@ fun string{T}(Option{T} opt)
 
 // Functions
 
-fun map{T, TResult}(Option{T} opt, delegate{T, TResult} del)
-  opt as T val ? del(val) : None()
+fun map{T, TResult}(Option{T} opt, function{T, TResult} func)
+  opt as T val ? func(val) : None()
 
-fun map{T, TResult}(Option{T} opt, delegate{T, Option{TResult}} del)
-  opt as T val ? del(val) : None()
+fun map{T, TResult}(Option{T} opt, function{T, Option{TResult}} func)
+  opt as T val ? func(val) : None()
 
 // Tests
 
@@ -40,17 +40,17 @@ assert(Option{int}() == Option{int}())
 assert(Option{int}() ?? 42 == 42)
 assert(Option(1337) ?? 42 == 1337)
 
-assert(Option{int}() ?? (lambda () 42) == 42)
-assert(Option(1337) ?? (lambda () 42) == 1337)
+assert(Option{int}() ?? (pure lambda () 42) == 42)
+assert(Option(1337) ?? (pure lambda () 42) == 1337)
 
 assert(Option(42).string() == "42")
 assert(Option{int}().string() == "none")
 
-assert(Option(42).map(lambda (int val) val * 2) == 84)
-assert(Option{int}().map(lambda (int val) val * 2) is None)
+assert(Option(42).map(pure lambda (int val) val * 2) == 84)
+assert(Option{int}().map(pure lambda (int val) val * 2) is None)
 
 assert(
-  func = (lambda (int val) val > 0 ? Option(val) : None());
+  func = (pure lambda (int val) val > 0 ? Option(val) : None());
   Option(42).map(func) == 42 &&
   Option(-42).map(func) is None &&
   Option{int}().map(func) is None)

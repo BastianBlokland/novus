@@ -22,7 +22,7 @@ auto ParserImpl::nextStmt() -> NodePtr {
     case lex::Keyword::Import:
       return nextImport();
     case lex::Keyword::Fun:
-    case lex::Keyword::Action:
+    case lex::Keyword::Act:
       return nextStmtFuncDecl();
     case lex::Keyword::Struct:
       return nextStmtStructDecl();
@@ -77,7 +77,7 @@ auto ParserImpl::nextStmtFuncDecl() -> NodePtr {
   }
   auto body = nextExpr(0);
 
-  auto kwValid       = kw == lex::Keyword::Fun || kw == lex::Keyword::Action;
+  auto kwValid       = kw == lex::Keyword::Fun || kw == lex::Keyword::Act;
   auto typeSubsValid = !typeSubs || typeSubs->validate();
   auto idValid =
       id.getKind() == lex::TokenKind::Identifier || id.getCat() == lex::TokenCat::Operator;
@@ -310,8 +310,12 @@ auto ParserImpl::nextExprPrimary() -> NodePtr {
     switch (*getKw(nextTok)) {
     case lex::Keyword::If:
       return nextExprSwitch();
+    case lex::Keyword::Pure: {
+      auto modifiers = std::vector<lex::Token>{consumeToken()};
+      return nextExprAnonFunc(std::move(modifiers));
+    }
     case lex::Keyword::Lambda:
-      return nextExprAnonFunc();
+      return nextExprAnonFunc({});
     case lex::Keyword::Fork: {
       auto modifiers = std::vector<lex::Token>{consumeToken()};
       return nextExprCall(nextExpr(0, callPrecedence), std::move(modifiers));
@@ -476,15 +480,15 @@ auto ParserImpl::nextExprSwitchElse() -> NodePtr {
   return errInvalidSwitchElse(kw, arrow, std::move(expr));
 }
 
-auto ParserImpl::nextExprAnonFunc() -> NodePtr {
+auto ParserImpl::nextExprAnonFunc(std::vector<lex::Token> modifiers) -> NodePtr {
   auto kw      = consumeToken();
   auto argList = nextArgDeclList();
   auto body    = nextExpr(0);
 
   if (getKw(kw) == lex::Keyword::Lambda && argList.validate()) {
-    return anonFuncExprNode(kw, std::move(argList), std::move(body));
+    return anonFuncExprNode(std::move(modifiers), kw, std::move(argList), std::move(body));
   }
-  return errInvalidAnonFuncExpr(kw, argList, std::move(body));
+  return errInvalidAnonFuncExpr(std::move(modifiers), kw, argList, std::move(body));
 }
 
 auto ParserImpl::nextType() -> Type {

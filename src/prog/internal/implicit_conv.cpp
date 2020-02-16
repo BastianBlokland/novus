@@ -60,31 +60,31 @@ auto findImplicitConvTypes(const Program& prog, sym::TypeId from) -> std::vector
 }
 
 auto isImplicitConvertible(
-    const Program& prog, const sym::TypeSet& toTypes, const sym::TypeSet& fromTypes) -> bool {
+    const Program& prog,
+    const sym::TypeSet& toTypes,
+    const sym::TypeSet& fromTypes,
+    int maxConversions) -> bool {
+
   if (toTypes.getCount() != fromTypes.getCount()) {
     return false;
   }
+  auto convAmount   = 0;
   auto fromTypesItr = fromTypes.begin();
   auto toTypesItr   = toTypes.begin();
   for (; fromTypesItr != fromTypes.end(); ++fromTypesItr, ++toTypesItr) {
-    if (*fromTypesItr != *toTypesItr && !findImplicitConv(prog, *fromTypesItr, *toTypesItr)) {
+    // Check if types match.
+    if (*fromTypesItr == *toTypesItr) {
+      continue;
+    }
+
+    // Check if this is not requiring too many conversions.
+    if (maxConversions > 0 && convAmount >= maxConversions) {
       return false;
     }
-  }
-  return true;
-}
+    convAmount++;
 
-auto isImplicitConvertible(
-    const Program& prog, const sym::TypeSet& toTypes, const std::vector<expr::NodePtr>& fromArgs)
-    -> bool {
-  if (toTypes.getCount() != fromArgs.size()) {
-    return false;
-  }
-  auto fromArgsItr = fromArgs.begin();
-  auto toTypesItr  = toTypes.begin();
-  for (; fromArgsItr != fromArgs.end(); ++fromArgsItr, ++toTypesItr) {
-    const auto argType = (*fromArgsItr)->getType();
-    if (argType != *toTypesItr && !findImplicitConv(prog, argType, *toTypesItr)) {
+    // Check if an conversion is possible.
+    if (!findImplicitConv(prog, *fromTypesItr, *toTypesItr)) {
       return false;
     }
   }

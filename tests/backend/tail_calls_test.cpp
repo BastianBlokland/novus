@@ -94,7 +94,7 @@ TEST_CASE("Generate assembly for tail calls", "[backend]") {
   SECTION("Dynamic tail call") {
     CHECK_PROG(
         "fun f1() -> int 42 "
-        "fun f2(delegate{int} func) -> int func() "
+        "fun f2(function{int} func) -> int func() "
         "conWrite(string(f2(f1)))",
         [](backend::Builder* builder) -> void {
           builder->label("f2");
