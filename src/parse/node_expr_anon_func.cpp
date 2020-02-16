@@ -36,9 +36,9 @@ auto AnonFuncExprNode::getSpan() const -> input::Span {
   return input::Span::combine(m_kw.getSpan(), m_body->getSpan());
 }
 
-auto AnonFuncExprNode::isPure() const -> bool {
+auto AnonFuncExprNode::isImpure() const -> bool {
   return std::any_of(m_modifiers.begin(), m_modifiers.end(), [](const lex::Token& t) {
-    return getKw(t) == lex::Keyword::Pure;
+    return getKw(t) == lex::Keyword::Impure;
   });
 }
 

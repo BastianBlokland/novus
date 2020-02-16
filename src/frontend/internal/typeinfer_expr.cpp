@@ -41,8 +41,8 @@ auto TypeInferExpr::visit(const parse::AnonFuncExprNode& n) -> void {
     return;
   }
 
-  // Lambda's inside actions are themselves actions too unless marked as pure.
-  auto isAction = hasFlag<Flags::AllowActionCalls>() && !n.isPure();
+  // Impure lambda's produce actions and are allowed to call other actions.
+  auto isAction = n.isImpure();
 
   const auto retType = inferRetType(
       m_ctx,

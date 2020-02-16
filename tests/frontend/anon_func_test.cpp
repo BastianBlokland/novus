@@ -25,7 +25,7 @@ TEST_CASE("Analyzing anonymous functions", "[frontend]") {
 
   SECTION("Return anonymous action") {
     const auto& output = ANALYZE("act f() -> action{int} "
-                                 "  lambda () 42");
+                                 "  impure lambda () 42");
     REQUIRE(output.isSuccess());
 
     CHECK(findAnonFuncDef(output, 0).getExpr() == *prog::expr::litIntNode(output.getProg(), 42));
@@ -37,7 +37,7 @@ TEST_CASE("Analyzing anonymous functions", "[frontend]") {
 
   SECTION("Return anonymous function from action") {
     const auto& output = ANALYZE("act f() -> function{int} "
-                                 "  pure lambda () 42");
+                                 "  lambda () 42");
     REQUIRE(output.isSuccess());
 
     CHECK(findAnonFuncDef(output, 0).getExpr() == *prog::expr::litIntNode(output.getProg(), 42));
@@ -64,7 +64,7 @@ TEST_CASE("Analyzing anonymous functions", "[frontend]") {
 
   SECTION("Invoke anonymous action") {
     const auto& output = ANALYZE("act f() -> int "
-                                 "  (lambda () 1)()");
+                                 "  (impure lambda () 1)()");
     REQUIRE(output.isSuccess());
 
     CHECK(findAnonFuncDef(output, 0).getExpr() == *prog::expr::litIntNode(output.getProg(), 1));
@@ -79,7 +79,7 @@ TEST_CASE("Analyzing anonymous functions", "[frontend]") {
 
   SECTION("Invoke anonymous function from action") {
     const auto& output = ANALYZE("act f() -> int "
-                                 "  (pure lambda () 1)()");
+                                 "  (lambda () 1)()");
     REQUIRE(output.isSuccess());
 
     CHECK(findAnonFuncDef(output, 0).getExpr() == *prog::expr::litIntNode(output.getProg(), 1));
@@ -238,8 +238,8 @@ TEST_CASE("Analyzing anonymous functions", "[frontend]") {
         errUninitializedConst(src, "i", input::Span{35, 35}));
     CHECK_DIAG(
         "act a1() -> int 42 "
-        "act a2() pure lambda () a1()",
-        errUndeclaredPureFunc(src, "a1", {}, input::Span{43, 46}));
+        "act a2() lambda () a1()",
+        errUndeclaredPureFunc(src, "a1", {}, input::Span{38, 41}));
   }
 }
 

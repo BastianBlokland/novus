@@ -310,7 +310,7 @@ auto ParserImpl::nextExprPrimary() -> NodePtr {
     switch (*getKw(nextTok)) {
     case lex::Keyword::If:
       return nextExprSwitch();
-    case lex::Keyword::Pure: {
+    case lex::Keyword::Impure: {
       auto modifiers = std::vector<lex::Token>{consumeToken()};
       return nextExprAnonFunc(std::move(modifiers));
     }

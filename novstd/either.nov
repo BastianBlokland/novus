@@ -35,23 +35,23 @@ assert(Either{int, string}(42).string() == "42")
 assert(Either{int, string}("hello world").string() == "hello world")
 
 assert(
-  Either{int, string}("hello").map(pure lambda (string str) str == "hello") == true &&
-  Either{int, string}("hello").map(pure lambda (string str) str + " world") == "hello world" &&
-  Either{int, string}(42).map(pure lambda (string str) str == "hello") == 42)
+  Either{int, string}("hello").map(lambda (string str) str == "hello") == true &&
+  Either{int, string}("hello").map(lambda (string str) str + " world") == "hello world" &&
+  Either{int, string}(42).map(lambda (string str) str == "hello") == 42)
 
 assert(
-  Either{int, string}("hello").map(pure lambda (int i) i * i) == "hello" &&
-  Either{int, string}(42).map(pure lambda (int i) i == 42) == true &&
-  Either{int, string}(42).map(pure lambda (int i) i * i) == 42 * 42)
+  Either{int, string}("hello").map(lambda (int i) i * i) == "hello" &&
+  Either{int, string}(42).map(lambda (int i) i == 42) == true &&
+  Either{int, string}(42).map(lambda (int i) i * i) == 42 * 42)
 
 assert(
-  func = (pure lambda (int i) i == 42 ? Either{int, bool}(true) : Either{int, bool}(i));
+  func = (lambda (int i) i == 42 ? Either{int, bool}(true) : Either{int, bool}(i));
   Either{int, bool}(42).map(func) == true &&
   Either{int, bool}(41).map(func) == 41 &&
   Either{int, bool}(false).map(func) == false)
 
 assert(
-  func = (pure lambda (int i) i == 42 ? Either{bool, int}(true) : Either{bool, int}(i));
+  func = (lambda (int i) i == 42 ? Either{bool, int}(true) : Either{bool, int}(i));
   Either{bool, int}(42).map(func) == true &&
   Either{bool, int}(41).map(func) == 41 &&
   Either{bool, int}(false).map(func) == false)

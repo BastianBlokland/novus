@@ -337,7 +337,7 @@ TEST_CASE("Infer return type of user functions", "[frontend]") {
   }
 
   SECTION("Anonymous action") {
-    const auto& output = ANALYZE("act a() lambda (int i) i == i");
+    const auto& output = ANALYZE("act a() impure lambda (int i) i == i");
     REQUIRE(output.isSuccess());
     CHECK(GET_FUNC_DECL(output, "a").getOutput() == GET_TYPE_ID(output, "__action_int_bool"));
   }

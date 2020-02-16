@@ -242,10 +242,10 @@ assert(
 
 assert(
   l = 1 :: 2 :: 3 :: 4 :: List{int}();
-  l.pop(pure lambda (int i) i == 0) == l &&
-  l.pop(pure lambda (int i) i > 0) == List{int}() &&
-  l.pop(pure lambda (int i) i == 1) == 2 :: 3 :: 4 :: List{int}() &&
-  l.pop(pure lambda (int i) i < 3) == 3 :: 4 :: List{int}())
+  l.pop(lambda (int i) i == 0) == l &&
+  l.pop(lambda (int i) i > 0) == List{int}() &&
+  l.pop(lambda (int i) i == 1) == 2 :: 3 :: 4 :: List{int}() &&
+  l.pop(lambda (int i) i < 3) == 3 :: 4 :: List{int}())
 
 assert(
   l = 1 :: 2 :: 3 :: List{int}();
@@ -258,9 +258,9 @@ assert(
 
 assert(
   l = 1 :: 2 :: 3 :: List{int}();
-  l.take(pure lambda (int i) i == 0) == List{int}() &&
-  l.take(pure lambda (int i) i > 0) == l &&
-  l.take(pure lambda (int i) i < 3) == 1 :: 2 :: List{int}())
+  l.take(lambda (int i) i == 0) == List{int}() &&
+  l.take(lambda (int i) i > 0) == l &&
+  l.take(lambda (int i) i < 3) == 1 :: 2 :: List{int}())
 
 assert(
   l = 1 :: 2 :: 3 :: 4 :: List{int}();
@@ -295,23 +295,23 @@ assert(rangeList('a', 'c') == 'a' :: 'b' :: 'c' :: List{char}())
 
 assert(
   l = 1 :: 2 :: 3 :: 4 :: List{int}();
-  l.filter(pure lambda (int v) v > 2) == 3 :: 4 :: List{int}() &&
-  l.filter(pure lambda (int v) v < 0) == List{int}())
+  l.filter(lambda (int v) v > 2) == 3 :: 4 :: List{int}() &&
+  l.filter(lambda (int v) v < 0) == List{int}())
 
 assert(
   l = 1 :: 2 :: 3 :: 4 :: 5 :: List{int}();
-  l.filterReverse(pure lambda (int v) v > 2) == 5 :: 4 :: 3 :: List{int}() &&
-  l.filterReverse(pure lambda (int v) v < 0) == List{int}())
+  l.filterReverse(lambda (int v) v > 2) == 5 :: 4 :: 3 :: List{int}() &&
+  l.filterReverse(lambda (int v) v < 0) == List{int}())
 
 assert(
   l = 1 :: 2 :: 3 :: List{int}();
-  l.map(pure lambda (int v) v * 2) == 2 :: 4 :: 6 :: List{int}() &&
-  l.map(pure lambda (int v) v.string()) == "1" :: "2" :: "3" :: List{string}())
+  l.map(lambda (int v) v * 2) == 2 :: 4 :: 6 :: List{int}() &&
+  l.map(lambda (int v) v.string()) == "1" :: "2" :: "3" :: List{string}())
 
 assert(
   l = 1 :: 2 :: 3 :: List{int}();
-  l.mapReverse(pure lambda (int v) v * 2) == 6 :: 4 :: 2 :: List{int}() &&
-  l.mapReverse(pure lambda (int v) v.string()) == "3" :: "2" :: "1" :: List{string}())
+  l.mapReverse(lambda (int v) v * 2) == 6 :: 4 :: 2 :: List{int}() &&
+  l.mapReverse(lambda (int v) v.string()) == "3" :: "2" :: "1" :: List{string}())
 
 assert(
   l = 1 :: 2 :: 3 :: List{int}();
@@ -341,18 +341,18 @@ assert(List{int}().sort() == List{int}())
 
 assert(
   l = 1 :: 2 :: 3 :: List{int}();
-  l.count(pure lambda (int v) v > 2) == 1 &&
-  l.count(pure lambda (int v) v == 0) == 0 &&
-  l.count(pure lambda (int v) v > 0) == 3)
+  l.count(lambda (int v) v > 2) == 1 &&
+  l.count(lambda (int v) v == 0) == 0 &&
+  l.count(lambda (int v) v > 0) == 3)
 
 assert(
   l = 1 :: 2 :: 3 :: List{int}();
-  l.any(pure lambda (int v) v > 2) && !l.any(pure lambda (int v) v < 0))
+  l.any(lambda (int v) v > 2) && !l.any(lambda (int v) v < 0))
 
 assert(
   l = 1 :: 2 :: 3 :: List{int}();
-  l.all(pure lambda (int v) v > 0) && !l.all(pure lambda (int v) v > 1))
+  l.all(lambda (int v) v > 0) && !l.all(lambda (int v) v > 1))
 
 assert(
   l = 1 :: 2 :: 3 :: List{int}();
-  l.none(pure lambda (int v) v < 0) && !l.none(pure lambda (int v) v > 1))
+  l.none(lambda (int v) v < 0) && !l.none(lambda (int v) v > 1))

@@ -21,7 +21,7 @@ public:
   [[nodiscard]] auto getChildCount() const -> unsigned int override;
   [[nodiscard]] auto getSpan() const -> input::Span override;
 
-  [[nodiscard]] auto isPure() const -> bool;
+  [[nodiscard]] auto isImpure() const -> bool;
   [[nodiscard]] auto getArgList() const -> const ArgumentListDecl&;
 
   auto accept(NodeVisitor* visitor) const -> void override;
