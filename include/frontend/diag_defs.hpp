@@ -178,6 +178,8 @@ errAmbiguousFunction(const Source& src, const std::string& name, input::Span spa
     const Source& src, const std::string& name, unsigned int templateParamCount, input::Span span)
     -> Diag;
 
+[[nodiscard]] auto errIllegalDelegateCall(const Source& src, input::Span span) -> Diag;
+
 [[nodiscard]] auto errIncorrectArgsToDelegate(const Source& src, input::Span span) -> Diag;
 
 [[nodiscard]] auto errUndeclaredCallOperator(

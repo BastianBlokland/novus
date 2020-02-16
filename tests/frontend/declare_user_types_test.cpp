@@ -79,7 +79,8 @@ TEST_CASE("Analyzing user-type declarations", "[frontend]") {
     CHECK_DIAG("struct int = bool i", errTypeAlreadyDeclared(src, "int", input::Span{7, 9}));
     CHECK_DIAG("union int = int, bool", errTypeAlreadyDeclared(src, "int", input::Span{6, 8}));
     CHECK_DIAG(
-        "struct delegate = bool i", errTypeNameIsReserved(src, "delegate", input::Span{7, 14}));
+        "struct function = bool i", errTypeNameIsReserved(src, "function", input::Span{7, 14}));
+    CHECK_DIAG("struct action = bool i", errTypeNameIsReserved(src, "action", input::Span{7, 12}));
     CHECK_DIAG(
         "struct conWrite = bool i",
         errTypeNameConflictsWithFunc(src, "conWrite", input::Span{7, 14}));
@@ -107,7 +108,8 @@ TEST_CASE("Analyzing user-type declarations", "[frontend]") {
         "struct s{T} = T t",
         errTypeTemplateAlreadyDeclared(src, "s", input::Span{28, 28}));
     CHECK_DIAG("enum int = a", errTypeAlreadyDeclared(src, "int", input::Span{5, 7}));
-    CHECK_DIAG("enum delegate = a", errTypeNameIsReserved(src, "delegate", input::Span{5, 12}));
+    CHECK_DIAG("enum function = a", errTypeNameIsReserved(src, "function", input::Span{5, 12}));
+    CHECK_DIAG("enum action = a", errTypeNameIsReserved(src, "action", input::Span{5, 10}));
     CHECK_DIAG(
         "enum conWrite = a", errTypeNameConflictsWithFunc(src, "conWrite", input::Span{5, 12}));
   }

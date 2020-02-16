@@ -17,15 +17,17 @@ public:
   auto operator=(DelegateDef&& rhs) noexcept -> DelegateDef& = delete;
 
   [[nodiscard]] auto getId() const noexcept -> const TypeId&;
+  [[nodiscard]] auto isAction() const noexcept -> bool;
   [[nodiscard]] auto getInput() const -> const TypeSet&;
   [[nodiscard]] auto getOutput() const -> TypeId;
 
 private:
   sym::TypeId m_id;
+  bool m_isAction;
   TypeSet m_input;
   TypeId m_output;
 
-  DelegateDef(sym::TypeId id, TypeSet input, TypeId output);
+  DelegateDef(sym::TypeId id, bool isAction, TypeSet input, TypeId output);
 };
 
 } // namespace prog::sym

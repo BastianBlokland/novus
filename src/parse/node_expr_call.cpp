@@ -19,7 +19,8 @@ CallExprNode::CallExprNode(
 
 auto CallExprNode::operator==(const Node& rhs) const noexcept -> bool {
   const auto r = dynamic_cast<const CallExprNode*>(&rhs);
-  return r != nullptr && *m_lhs == *r->m_lhs && nodesEqual(m_args, r->m_args);
+  return r != nullptr && m_modifiers == r->m_modifiers && *m_lhs == *r->m_lhs &&
+      nodesEqual(m_args, r->m_args);
 }
 
 auto CallExprNode::operator!=(const Node& rhs) const noexcept -> bool {

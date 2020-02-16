@@ -45,7 +45,7 @@ private:
   auto nextExprSwitch() -> NodePtr;
   auto nextExprSwitchIf() -> NodePtr;
   auto nextExprSwitchElse() -> NodePtr;
-  auto nextExprAnonFunc() -> NodePtr;
+  auto nextExprAnonFunc(std::vector<lex::Token> modifiers) -> NodePtr;
 
   auto nextType() -> Type;
   auto nextTypeParamList() -> TypeParamList;

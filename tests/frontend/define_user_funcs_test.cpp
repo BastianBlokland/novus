@@ -51,8 +51,11 @@ TEST_CASE("Analyzing user-function definitions", "[frontend]") {
         "fun f(int int) -> int true",
         errConstNameConflictsWithType(src, "int", input::Span{10, 12}));
     CHECK_DIAG(
-        "fun f(int delegate) -> int true",
-        errConstNameConflictsWithType(src, "delegate", input::Span{10, 17}));
+        "fun f(int function) -> int true",
+        errConstNameConflictsWithType(src, "function", input::Span{10, 17}));
+    CHECK_DIAG(
+        "fun f(int action) -> int true",
+        errConstNameConflictsWithType(src, "action", input::Span{10, 15}));
     CHECK_DIAG(
         "fun f(int a, int a) -> int true",
         errConstNameConflictsWithConst(src, "a", input::Span{17, 17}));
@@ -93,9 +96,9 @@ TEST_CASE("Analyzing user-function definitions", "[frontend]") {
         errInvalidFuncInstantiation(src, input::Span{50, 50}),
         errNoFuncFoundToInstantiate(src, "f", 1, input::Span{50, 58}));
     CHECK_DIAG(
-        "fun f() -> delegate{int} lambda () false",
+        "fun f() -> function{int} lambda () false",
         errNonMatchingFuncReturnType(
-            src, "f", "delegate{int}", "delegate{bool}", input::Span{25, 39}));
+            src, "f", "function{int}", "function{bool}", input::Span{25, 39}));
     CHECK_DIAG(
         "fun f() -> string conWrite(\"hello world\")",
         errUndeclaredPureFunc(src, "conWrite", {"string"}, input::Span{18, 40}));

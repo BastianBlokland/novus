@@ -41,9 +41,22 @@ auto TypeInferExpr::visit(const parse::AnonFuncExprNode& n) -> void {
     return;
   }
 
+  // Lambda's inside actions are themselves actions too unless marked as pure.
+  auto isAction = hasFlag<Flags::AllowActionCalls>() && !n.isPure();
+
   const auto retType = inferRetType(
-      m_ctx, m_typeSubTable, n, *funcInput, m_constTypes, TypeInferExpr::Flags::Aggressive);
-  m_type = m_ctx->getDelegates()->getDelegate(m_ctx, *funcInput, retType);
+      m_ctx,
+      m_typeSubTable,
+      n,
+      *funcInput,
+      m_constTypes,
+      isAction ? (TypeInferExpr::Flags::AllowActionCalls | TypeInferExpr::Flags::Aggressive)
+               : TypeInferExpr::Flags::Aggressive);
+
+  if (retType.isConcrete()) {
+    m_type = isAction ? m_ctx->getDelegates()->getAction(m_ctx, *funcInput, retType)
+                      : m_ctx->getDelegates()->getFunction(m_ctx, *funcInput, retType);
+  }
 }
 
 auto TypeInferExpr::visit(const parse::BinaryExprNode& n) -> void {
@@ -174,23 +187,19 @@ auto TypeInferExpr::visit(const parse::IdExprNode& n) -> void {
     if (!typeSet) {
       return;
     }
-    const auto instances = m_ctx->getFuncTemplates()->instantiate(
-        name, *typeSet, prog::OvOptions{prog::OvFlags::ExclActions});
+    const auto instances =
+        m_ctx->getFuncTemplates()->instantiate(name, *typeSet, prog::OvOptions{});
     if (!instances.empty() && !m_ctx->hasErrors()) {
-      const auto funcDecl = m_ctx->getProg()->getFuncDecl(*instances[0]->getFunc());
-      m_type = m_ctx->getDelegates()->getDelegate(m_ctx, funcDecl.getInput(), funcDecl.getOutput());
+      m_type = getDelegate(m_ctx, *instances[0]->getFunc());
     }
     return;
   }
 
   // Non-templated function literal.
   const auto funcs =
-      m_ctx->getProg()->lookupFuncs(name, prog::OvOptions{prog::OvFlags::ExclActions});
+      m_ctx->getProg()->lookupFuncs(name, prog::OvOptions{prog::OvFlags::ExclNonUser});
   if (!funcs.empty() && !m_ctx->hasErrors()) {
-    const auto& funcDecl = m_ctx->getProg()->getFuncDecl(funcs[0]);
-    if (funcDecl.getOutput().isConcrete()) {
-      m_type = m_ctx->getDelegates()->getDelegate(m_ctx, funcDecl.getInput(), funcDecl.getOutput());
-    }
+    m_type = getDelegate(m_ctx, funcs[0]);
     return;
   }
 }

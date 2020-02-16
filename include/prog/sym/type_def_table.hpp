@@ -45,7 +45,11 @@ public:
       std::unordered_map<std::string, int32_t> entries) -> void;
 
   auto registerDelegate(
-      const sym::TypeDeclTable& typeTable, sym::TypeId id, TypeSet input, TypeId output) -> void;
+      const sym::TypeDeclTable& typeTable,
+      sym::TypeId id,
+      bool isAction,
+      TypeSet input,
+      TypeId output) -> void;
 
   auto registerFuture(const sym::TypeDeclTable& typeTable, sym::TypeId id, TypeId result) -> void;
 

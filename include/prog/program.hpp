@@ -89,10 +89,10 @@ public:
 
   [[nodiscard]] auto isFuture(sym::TypeId id) const -> bool;
 
-  [[nodiscard]] auto isCallable(sym::FuncId func, const std::vector<expr::NodePtr>& args) const
-      -> bool;
-  [[nodiscard]] auto isCallable(sym::TypeId delegate, const std::vector<expr::NodePtr>& args) const
-      -> bool;
+  [[nodiscard]] auto satisfiesOptions(sym::TypeId delegate, OvOptions options) const -> bool;
+
+  [[nodiscard]] auto
+  isCallable(sym::TypeId delegate, const sym::TypeSet& input, OvOptions options) const -> bool;
 
   [[nodiscard]] auto getDelegateRetType(sym::TypeId id) const -> std::optional<sym::TypeId>;
 
@@ -114,7 +114,8 @@ public:
   auto defineStruct(sym::TypeId id, sym::FieldDeclTable fields) -> void;
   auto defineUnion(sym::TypeId id, std::vector<sym::TypeId> types) -> void;
   auto defineEnum(sym::TypeId id, std::unordered_map<std::string, int32_t> entries) -> void;
-  auto defineDelegate(sym::TypeId id, sym::TypeSet input, sym::TypeId output) -> void;
+  auto defineDelegate(sym::TypeId id, bool isAction, sym::TypeSet input, sym::TypeId output)
+      -> void;
   auto defineFuture(sym::TypeId id, sym::TypeId result) -> void;
   auto defineFunc(sym::FuncId id, sym::ConstDeclTable consts, expr::NodePtr expr) -> void;
 

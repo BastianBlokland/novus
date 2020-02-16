@@ -129,16 +129,22 @@ auto errInvalidStmtFuncDecl(
   return errorNode(oss.str(), std::move(tokens), std::move(nodes));
 }
 
-auto errInvalidAnonFuncExpr(lex::Token kw, const ArgumentListDecl& argList, NodePtr body)
+auto errInvalidAnonFuncExpr(
+    std::vector<lex::Token> modifiers, lex::Token kw, const ArgumentListDecl& argList, NodePtr body)
     -> NodePtr {
   std::ostringstream oss;
-  if (!argList.validate()) {
+  if (getKw(kw) != lex::Keyword::Lambda) {
+    oss << "Expected keyword 'lambda' but got: '" << kw << '\'';
+  } else if (!argList.validate()) {
     getError(oss, argList);
   } else {
     oss << "Invalid anonymous function";
   }
 
   auto tokens = std::vector<lex::Token>{};
+  for (auto& mod : modifiers) {
+    tokens.push_back(std::move(mod));
+  }
   tokens.push_back(std::move(kw));
   addTokens(argList, &tokens);
 

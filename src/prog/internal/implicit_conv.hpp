@@ -12,12 +12,10 @@ namespace prog::internal {
 
 // Are the fromTypes convertible to the toTypes.
 [[nodiscard]] auto isImplicitConvertible(
-    const Program& prog, const sym::TypeSet& toTypes, const sym::TypeSet& fromTypes) -> bool;
-
-// Are the fromArgs convertible to the toTypes.
-[[nodiscard]] auto isImplicitConvertible(
-    const Program& prog, const sym::TypeSet& toTypes, const std::vector<expr::NodePtr>& fromArgs)
-    -> bool;
+    const Program& prog,
+    const sym::TypeSet& toTypes,
+    const sym::TypeSet& fromTypes,
+    int maxConversions = -1) -> bool;
 
 // Apply conversions to the fromArgs so are matches the toTypes.
 auto applyImplicitConversions(

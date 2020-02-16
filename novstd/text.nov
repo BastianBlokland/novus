@@ -41,10 +41,10 @@ fun indexOfLast(string str, int idx, string subStr, int subStrIdx)
                                           subStr,
                                           --subStr.length())
 
-fun indexOf(string str, delegate{char, bool} pred)
+fun indexOf(string str, function{char, bool} pred)
   indexOf(str, 0, pred)
 
-fun indexOf(string str, int idx, delegate{char, bool} pred)
+fun indexOf(string str, int idx, function{char, bool} pred)
   if idx >= str.length()  -> -1
   if pred(str[idx])       -> idx
   else                    -> indexOf(str, ++idx, pred)
@@ -67,21 +67,21 @@ fun endsWith(string str, string subStr)
       else                                                                  -> self(++revIdx)
   )(0)
 
-fun any(string str, delegate{char, bool} pred)
+fun any(string str, function{char, bool} pred)
   (
     lambda (int idx)
       if idx >= str.length()  -> false
       else                    -> pred(str[idx]) || self(++idx)
   )(0)
 
-fun all(string str, delegate{char, bool} pred)
+fun all(string str, function{char, bool} pred)
   (
     lambda (int idx)
       if idx >= str.length()  -> true
       else                    -> pred(str[idx]) && self(++idx)
   )(0)
 
-fun none(string str, delegate{char, bool} pred)
+fun none(string str, function{char, bool} pred)
   (
     lambda (int idx)
       if idx >= str.length()  -> true
@@ -102,16 +102,16 @@ fun insert(string str, int idx, string val)
   if idx >= str.length()  -> str + val
   else                    -> str[0, idx] + val + str[idx, str.length()]
 
-fun fold{T}(string str, delegate{T, char, T} del)
+fun fold{T}(string str, function{T, char, T} func)
   (
     lambda (int idx, T result)
-      idx >= str.length() ? result : self(++idx, del(result, str[idx]))
+      idx >= str.length() ? result : self(++idx, func(result, str[idx]))
   )(0, T())
 
-fun transform(string str, delegate{char, char} del)
-  str.fold(lambda (string res, char c) res + del(c))
+fun transform(string str, function{char, char} func)
+  str.fold(lambda (string res, char c) res + func(c))
 
-fun split(string str, delegate{char, bool} pred)
+fun split(string str, function{char, bool} pred)
   (
     lambda (int startIdx, int endIdx, List{string} result)
       if startIdx < 0         -> startIdx == endIdx ? result : str[startIdx, ++endIdx] :: result
@@ -176,7 +176,7 @@ assert(
 
 assert(
   "hello world".indexOf(equals{char}[' ']) == 5 &&
-  "hello world".indexOf(lambda (char c) c == 'd') == 10 &&
+  "hello world".indexOf(pure lambda (char c) c == 'd') == 10 &&
   "hello world".indexOf(equals{char}['h']) == 0 &&
   "hello world".indexOf(equals{char}['1']) == -1 &&
   "".indexOf(equals{char}[' ']) == -1)
@@ -234,8 +234,8 @@ assert(
   "helloworld".insert(5, "_") == "hello_world")
 
 assert(
-  "hello".transform(lambda (char c) 'W') == "WWWWW" &&
-  "".transform(lambda (char c) 'W') == "")
+  "hello".transform(pure lambda (char c) 'W') == "WWWWW" &&
+  "".transform(pure lambda (char c) 'W') == "")
 
 assert(
   "hello world".split(equals{char}[' ']) == "hello" :: "world" :: List{string}() &&

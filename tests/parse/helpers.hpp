@@ -52,6 +52,7 @@ namespace parse {
 #define FUN lex::keywordToken(lex::Keyword::Fun)
 #define ACT lex::keywordToken(lex::Keyword::Act)
 #define LAMBDA lex::keywordToken(lex::Keyword::Lambda)
+#define PURE lex::keywordToken(lex::Keyword::Pure)
 #define FORK lex::keywordToken(lex::Keyword::Fork)
 #define STRUCT lex::keywordToken(lex::Keyword::Struct)
 #define UNION lex::keywordToken(lex::Keyword::Union)

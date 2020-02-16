@@ -56,6 +56,8 @@ template <typename FuncParseNode>
     const std::unordered_map<std::string, prog::sym::TypeId>* additionalConstTypes,
     TypeInferExpr::Flags flags) -> prog::sym::TypeId;
 
+[[nodiscard]] auto getDelegate(Context* ctx, prog::sym::FuncId func) -> prog::sym::TypeId;
+
 [[nodiscard]] auto getLitFunc(Context* ctx, prog::sym::FuncId func) -> prog::expr::NodePtr;
 
 [[nodiscard]] auto
@@ -80,6 +82,8 @@ template <typename FuncParseNode>
 [[nodiscard]] auto getTypeSet(
     Context* ctx, const TypeSubstitutionTable* subTable, const std::vector<parse::Type>& parseTypes)
     -> std::optional<prog::sym::TypeSet>;
+
+[[nodiscard]] auto getTypeSet(const std::vector<prog::expr::NodePtr>& exprs) -> prog::sym::TypeSet;
 
 [[nodiscard]] auto getConstName(
     Context* ctx,

@@ -418,9 +418,15 @@ auto errAmbiguousTemplateFunction(
   return error(src, oss.str(), span);
 }
 
+auto errIllegalDelegateCall(const Source& src, input::Span span) -> Diag {
+  std::ostringstream oss;
+  oss << "Cannot invoke the delegate, action's cannot be called from pure functions";
+  return error(src, oss.str(), span);
+}
+
 auto errIncorrectArgsToDelegate(const Source& src, input::Span span) -> Diag {
   std::ostringstream oss;
-  oss << "Incorrect arguments provided to function delegate";
+  oss << "Incorrect arguments provided to delegate";
   return error(src, oss.str(), span);
 }
 

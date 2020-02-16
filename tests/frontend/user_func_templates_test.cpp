@@ -229,7 +229,7 @@ TEST_CASE("Analyzing user-function templates", "[frontend]") {
 
   SECTION("Func templates are ignored when arguments don't match") {
     const auto& output = ANALYZE("fun ft{T}(int i, T v) -> bool false "
-                                 "fun ft{T1, T2}(delegate{T1} d, T2 v) -> bool false "
+                                 "fun ft{T1, T2}(function{T1} d, T2 v) -> bool false "
                                  "fun f() -> bool ft(lambda () 42, 42)");
     REQUIRE(output.isSuccess());
 
