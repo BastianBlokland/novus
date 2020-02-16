@@ -109,6 +109,8 @@ errUnableToInferFuncReturnType(const Source& src, const std::string& name, input
     const std::string& returnedType,
     input::Span span) -> Diag;
 
+[[nodiscard]] auto errUnableToInferLambdaReturnType(const Source& src, input::Span span) -> Diag;
+
 [[nodiscard]] auto
 errConstNameConflictsWithType(const Source& src, const std::string& name, input::Span span) -> Diag;
 

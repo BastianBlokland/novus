@@ -100,6 +100,12 @@ auto GetExpr::visit(const parse::AnonFuncExprNode& n) -> void {
     return;
   }
 
+  // Fail if return type inference failed.
+  if (!retType.isConcrete()) {
+    m_ctx->reportDiag(errUnableToInferLambdaReturnType, n.getSpan());
+    return;
+  }
+
   // Add the bound input types for this function.
   for (const auto constId : consts.getBoundInputs()) {
     inputTypes.push_back(consts[constId].getType());
