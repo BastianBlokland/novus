@@ -11,7 +11,7 @@ enum class Keyword {
   Act,
   Self,
   Lambda,
-  Pure,
+  Impure,
   Fork,
   Struct,
   Union,

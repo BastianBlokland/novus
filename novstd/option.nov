@@ -40,17 +40,17 @@ assert(Option{int}() == Option{int}())
 assert(Option{int}() ?? 42 == 42)
 assert(Option(1337) ?? 42 == 1337)
 
-assert(Option{int}() ?? (pure lambda () 42) == 42)
-assert(Option(1337) ?? (pure lambda () 42) == 1337)
+assert(Option{int}() ?? (lambda () 42) == 42)
+assert(Option(1337) ?? (lambda () 42) == 1337)
 
 assert(Option(42).string() == "42")
 assert(Option{int}().string() == "none")
 
-assert(Option(42).map(pure lambda (int val) val * 2) == 84)
-assert(Option{int}().map(pure lambda (int val) val * 2) is None)
+assert(Option(42).map(lambda (int val) val * 2) == 84)
+assert(Option{int}().map(lambda (int val) val * 2) is None)
 
 assert(
-  func = (pure lambda (int val) val > 0 ? Option(val) : None());
+  func = (lambda (int val) val > 0 ? Option(val) : None());
   Option(42).map(func) == 42 &&
   Option(-42).map(func) is None &&
   Option{int}().map(func) is None)

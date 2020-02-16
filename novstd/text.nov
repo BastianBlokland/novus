@@ -176,7 +176,7 @@ assert(
 
 assert(
   "hello world".indexOf(equals{char}[' ']) == 5 &&
-  "hello world".indexOf(pure lambda (char c) c == 'd') == 10 &&
+  "hello world".indexOf(lambda (char c) c == 'd') == 10 &&
   "hello world".indexOf(equals{char}['h']) == 0 &&
   "hello world".indexOf(equals{char}['1']) == -1 &&
   "".indexOf(equals{char}[' ']) == -1)
@@ -234,8 +234,8 @@ assert(
   "helloworld".insert(5, "_") == "hello_world")
 
 assert(
-  "hello".transform(pure lambda (char c) 'W') == "WWWWW" &&
-  "".transform(pure lambda (char c) 'W') == "")
+  "hello".transform(lambda (char c) 'W') == "WWWWW" &&
+  "".transform(lambda (char c) 'W') == "")
 
 assert(
   "hello world".split(equals{char}[' ']) == "hello" :: "world" :: List{string}() &&

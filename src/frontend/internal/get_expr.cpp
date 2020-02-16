@@ -64,8 +64,8 @@ auto GetExpr::visit(const parse::AnonFuncExprNode& n) -> void {
     inputTypes.push_back(consts[constId].getType());
   }
 
-  // Lambda's inside actions are themselves actions too unless marked as pure.
-  auto isAction = hasFlag<Flags::AllowActionCalls>() && !n.isPure();
+  // Impure lambda's produce actions and are allowed to call other actions.
+  auto isAction = n.isImpure();
 
   // Infer the return type of the anonymous function.
   auto parentConstTypes = m_constBinder->getAllConstTypes();

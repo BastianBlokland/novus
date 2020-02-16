@@ -9,7 +9,7 @@ TEST_CASE("Lexing keywords", "[lex]") {
   CHECK_TOKENS("act", keywordToken(Keyword::Act));
   CHECK_TOKENS("self", keywordToken(Keyword::Self));
   CHECK_TOKENS("lambda", keywordToken(Keyword::Lambda));
-  CHECK_TOKENS("pure", keywordToken(Keyword::Pure));
+  CHECK_TOKENS("impure", keywordToken(Keyword::Impure));
   CHECK_TOKENS("fork", keywordToken(Keyword::Fork));
   CHECK_TOKENS("struct", keywordToken(Keyword::Struct));
   CHECK_TOKENS("union", keywordToken(Keyword::Union));

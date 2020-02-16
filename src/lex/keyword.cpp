@@ -20,8 +20,8 @@ auto operator<<(std::ostream& out, const Keyword& rhs) -> std::ostream& {
   case Keyword::Lambda:
     out << "lambda";
     break;
-  case Keyword::Pure:
-    out << "pure";
+  case Keyword::Impure:
+    out << "impure";
     break;
   case Keyword::Fork:
     out << "fork";
@@ -58,7 +58,7 @@ auto getKeyword(const std::string& str) -> std::optional<Keyword> {
       {"act", Keyword::Act},
       {"self", Keyword::Self},
       {"lambda", Keyword::Lambda},
-      {"pure", Keyword::Pure},
+      {"impure", Keyword::Impure},
       {"fork", Keyword::Fork},
       {"struct", Keyword::Struct},
       {"union", Keyword::Union},

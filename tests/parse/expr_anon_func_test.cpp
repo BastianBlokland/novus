@@ -11,8 +11,8 @@ TEST_CASE("Parsing anonymous functions", "[parse]") {
       "lambda () 1",
       anonFuncExprNode({}, LAMBDA, ArgumentListDecl(OPAREN, {}, COMMAS(0), CPAREN), INT(1)));
   CHECK_EXPR(
-      "pure lambda () 1",
-      anonFuncExprNode({PURE}, LAMBDA, ArgumentListDecl(OPAREN, {}, COMMAS(0), CPAREN), INT(1)));
+      "impure lambda () 1",
+      anonFuncExprNode({IMPURE}, LAMBDA, ArgumentListDecl(OPAREN, {}, COMMAS(0), CPAREN), INT(1)));
   CHECK_EXPR(
       "lambda (int x) 1",
       anonFuncExprNode(
@@ -103,22 +103,25 @@ TEST_CASE("Parsing anonymous functions", "[parse]") {
                 END),
             errInvalidPrimaryExpr(END)));
     CHECK_EXPR(
-        "pure function () 1",
+        "impure function () 1",
         errInvalidAnonFuncExpr(
-            {PURE},
+            {IMPURE},
             ID("function"),
             ArgumentListDecl(PARENPAREN, {}, COMMAS(0), PARENPAREN),
             INT(1)));
     CHECK_EXPR(
-        "pure action () 1",
+        "impure action () 1",
         errInvalidAnonFuncExpr(
-            {PURE}, ID("action"), ArgumentListDecl(PARENPAREN, {}, COMMAS(0), PARENPAREN), INT(1)));
+            {IMPURE},
+            ID("action"),
+            ArgumentListDecl(PARENPAREN, {}, COMMAS(0), PARENPAREN),
+            INT(1)));
   }
 
   SECTION("Spans") {
     CHECK_EXPR_SPAN(" lambda () 1 + 2", input::Span(1, 15));
     CHECK_EXPR_SPAN("lambda (int i) i", input::Span(0, 15));
-    CHECK_EXPR_SPAN("pure lambda (int i) i", input::Span(0, 20));
+    CHECK_EXPR_SPAN("impure lambda (int i) i", input::Span(0, 22));
   }
 }
 
