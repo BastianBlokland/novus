@@ -154,8 +154,8 @@ Program::Program() :
   m_funcDecls.registerFunc(*this, fk::DefString, "string", sym::TypeSet{}, m_string);
 
   // Register build-in implicit conversions.
-  m_funcDecls.registerImplicitConv(*this, fk::NoOp, "int", sym::TypeSet{m_char}, m_int);
-  m_funcDecls.registerImplicitConv(*this, fk::ConvIntFloat, "float", sym::TypeSet{m_int}, m_float);
+  m_funcDecls.registerImplicitConv(*this, fk::NoOp, m_char, m_int);
+  m_funcDecls.registerImplicitConv(*this, fk::ConvIntFloat, m_int, m_float);
 
   // Register build-in identity conversions (turn into no-ops).
   m_funcDecls.registerFunc(*this, fk::NoOp, "int", sym::TypeSet{m_int}, m_int);
@@ -415,10 +415,10 @@ auto Program::defineStruct(sym::TypeId id, sym::FieldDeclTable fields) -> void {
 }
 
 auto Program::defineUnion(sym::TypeId id, std::vector<sym::TypeId> types) -> void {
+
   // Register constructor functions for each type.
-  const auto& name = m_typeDecls[id].getName();
   for (const auto& type : types) {
-    m_funcDecls.registerImplicitConv(*this, sym::FuncKind::MakeUnion, name, sym::TypeSet{type}, id);
+    m_funcDecls.registerImplicitConv(*this, sym::FuncKind::MakeUnion, type, id);
   }
 
   // Register (in)equality functions.
@@ -446,7 +446,7 @@ auto Program::defineEnum(sym::TypeId id, std::unordered_map<std::string, int32_t
   m_funcDecls.registerFunc(*this, sym::FuncKind::NoOp, name, sym::TypeSet{m_int}, id);
 
   // Register implicit conversion to int.
-  m_funcDecls.registerImplicitConv(*this, sym::FuncKind::NoOp, "int", sym::TypeSet{id}, m_int);
+  m_funcDecls.registerImplicitConv(*this, sym::FuncKind::NoOp, id, m_int);
 
   // Register bitwise & and | operators.
   m_funcDecls.registerFunc(
@@ -468,8 +468,27 @@ auto Program::defineEnum(sym::TypeId id, std::unordered_map<std::string, int32_t
   m_typeDefs.registerEnum(m_typeDecls, id, std::move(entries));
 }
 
-auto Program::defineDelegate(sym::TypeId id, bool isAction, sym::TypeSet input, sym::TypeId output)
-    -> void {
+auto Program::defineDelegate(
+    sym::TypeId id,
+    bool isAction,
+    sym::TypeSet input,
+    sym::TypeId output,
+    const std::vector<sym::TypeId>& aliases) -> void {
+
+  // Register implicit conversions to the alias delegates.
+  for (const auto& alias : aliases) {
+    const auto& aliasDecl = getTypeDecl(alias);
+    if (aliasDecl.getKind() != sym::TypeKind::Delegate) {
+      throw std::invalid_argument{"Alias type has to be a delegate"};
+    }
+    const auto& delegateDef = std::get<sym::DelegateDef>(getTypeDef(alias));
+    if (input != delegateDef.getInput() || output != delegateDef.getOutput()) {
+      throw std::invalid_argument{"Delegate signature has to match alias delegate signature"};
+    }
+    m_funcDecls.registerImplicitConv(*this, sym::FuncKind::NoOp, id, alias);
+  }
+
+  // Register delegate definition.
   m_typeDefs.registerDelegate(m_typeDecls, id, isAction, std::move(input), output);
 }
 

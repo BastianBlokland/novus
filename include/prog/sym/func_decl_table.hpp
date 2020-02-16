@@ -43,8 +43,8 @@ public:
       const TypeSet& input,
       OverloadOptions options) const -> std::optional<FuncId>;
 
-  auto registerImplicitConv(
-      const Program& prog, FuncKind kind, std::string name, TypeSet input, TypeId output) -> FuncId;
+  auto registerImplicitConv(const Program& prog, FuncKind kind, TypeId input, TypeId output)
+      -> FuncId;
 
   auto
   registerFunc(const Program& prog, FuncKind kind, std::string name, TypeSet input, TypeId output)

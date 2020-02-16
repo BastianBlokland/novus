@@ -268,10 +268,10 @@ auto instType(
   }
 
   if (typeName == "function") {
-    return ctx->getDelegates()->getFunction(ctx, *typeSet);
+    return ctx->getDelegates()->getDelegate(ctx, false, *typeSet);
   }
   if (typeName == "action") {
-    return ctx->getDelegates()->getAction(ctx, *typeSet);
+    return ctx->getDelegates()->getDelegate(ctx, true, *typeSet);
   }
   if (typeName == "future" && typeSet->getCount() == 1) {
     return ctx->getFutures()->getFuture(ctx, *typeSet->begin());
@@ -343,9 +343,8 @@ auto getDelegate(Context* ctx, prog::sym::FuncId func) -> prog::sym::TypeId {
   if (funcDecl.getOutput().isInfer()) {
     return prog::sym::TypeId::inferType();
   }
-  return funcDecl.isAction()
-      ? ctx->getDelegates()->getAction(ctx, funcDecl.getInput(), funcDecl.getOutput())
-      : ctx->getDelegates()->getFunction(ctx, funcDecl.getInput(), funcDecl.getOutput());
+  return ctx->getDelegates()->getDelegate(
+      ctx, funcDecl.isAction(), funcDecl.getInput(), funcDecl.getOutput());
 }
 
 auto getLitFunc(Context* ctx, prog::sym::FuncId func) -> prog::expr::NodePtr {
@@ -379,9 +378,8 @@ auto getFuncClosure(
   }
 
   auto delegateInputTypes = prog::sym::TypeSet{std::move(delegateInput)};
-  const auto delegateType = funcDecl.isAction()
-      ? ctx->getDelegates()->getAction(ctx, delegateInputTypes, funcDecl.getOutput())
-      : ctx->getDelegates()->getFunction(ctx, delegateInputTypes, funcDecl.getOutput());
+  const auto delegateType = ctx->getDelegates()->getDelegate(
+      ctx, funcDecl.isAction(), delegateInputTypes, funcDecl.getOutput());
 
   return prog::expr::closureNode(*ctx->getProg(), delegateType, func, std::move(boundArgs));
 }

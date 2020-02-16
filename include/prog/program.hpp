@@ -114,8 +114,12 @@ public:
   auto defineStruct(sym::TypeId id, sym::FieldDeclTable fields) -> void;
   auto defineUnion(sym::TypeId id, std::vector<sym::TypeId> types) -> void;
   auto defineEnum(sym::TypeId id, std::unordered_map<std::string, int32_t> entries) -> void;
-  auto defineDelegate(sym::TypeId id, bool isAction, sym::TypeSet input, sym::TypeId output)
-      -> void;
+  auto defineDelegate(
+      sym::TypeId id,
+      bool isAction,
+      sym::TypeSet input,
+      sym::TypeId output,
+      const std::vector<sym::TypeId>& aliases) -> void;
   auto defineFuture(sym::TypeId id, sym::TypeId result) -> void;
   auto defineFunc(sym::FuncId id, sym::ConstDeclTable consts, expr::NodePtr expr) -> void;
 

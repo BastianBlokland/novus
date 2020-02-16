@@ -54,8 +54,7 @@ auto TypeInferExpr::visit(const parse::AnonFuncExprNode& n) -> void {
                : TypeInferExpr::Flags::Aggressive);
 
   if (retType.isConcrete()) {
-    m_type = isAction ? m_ctx->getDelegates()->getAction(m_ctx, *funcInput, retType)
-                      : m_ctx->getDelegates()->getFunction(m_ctx, *funcInput, retType);
+    m_type = m_ctx->getDelegates()->getDelegate(m_ctx, isAction, *funcInput, retType);
   }
 }
 

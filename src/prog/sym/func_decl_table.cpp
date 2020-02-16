@@ -1,5 +1,6 @@
 #include "prog/sym/func_decl_table.hpp"
 #include "internal/overload.hpp"
+#include "prog/program.hpp"
 #include <cassert>
 #include <stdexcept>
 
@@ -55,8 +56,10 @@ auto FuncDeclTable::lookup(
 }
 
 auto FuncDeclTable::registerImplicitConv(
-    const Program& prog, FuncKind kind, std::string name, TypeSet input, TypeId output) -> FuncId {
-  return registerFunc(prog, kind, false, true, std::move(name), std::move(input), output);
+    const Program& prog, FuncKind kind, TypeId input, TypeId output) -> FuncId {
+
+  auto name = prog.getTypeDecl(output).getName();
+  return registerFunc(prog, kind, false, true, std::move(name), TypeSet{input}, output);
 }
 
 auto FuncDeclTable::registerFunc(

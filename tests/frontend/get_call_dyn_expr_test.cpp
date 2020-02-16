@@ -130,6 +130,33 @@ TEST_CASE("Analyzing call dynamic expressions", "[frontend]") {
         *prog::expr::callExprNode(output.getProg(), f2Def.getId(), std::move(fArgs)));
   }
 
+  SECTION("Implicitly convert function to action") {
+    const auto& output = ANALYZE("fun f1() -> int 1 "
+                                 "act a2(action{int} op) -> int op() "
+                                 "act a1() -> int a2(f1)");
+    REQUIRE(output.isSuccess());
+    const auto& a2Def = GET_FUNC_DEF(output, "a2", GET_TYPE_ID(output, "__action_int"));
+    const auto& a1Def = GET_FUNC_DEF(output, "a1");
+
+    CHECK(
+        a2Def.getExpr() ==
+        *prog::expr::callDynExprNode(
+            output.getProg(),
+            prog::expr::constExprNode(a2Def.getConsts(), *a2Def.getConsts().lookup("op")),
+            {}));
+
+    auto fArgs = std::vector<prog::expr::NodePtr>{};
+    fArgs.push_back(applyConv(
+        output,
+        "__function_int",
+        "__action_int",
+        prog::expr::litFuncNode(
+            output.getProg(), GET_TYPE_ID(output, "__function_int"), GET_FUNC_ID(output, "f1"))));
+    CHECK(
+        a1Def.getExpr() ==
+        *prog::expr::callExprNode(output.getProg(), a2Def.getId(), std::move(fArgs)));
+  }
+
   SECTION("Diagnostics") {
     CHECK_DIAG(
         "fun f(function{int, float, bool} op) -> bool op(false, 1.0)",
