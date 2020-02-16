@@ -15,8 +15,6 @@ class DelegateTable final {
     auto operator()(const signature& id) const -> std::size_t;
   };
 
-  using delegateSet = std::unordered_map<signature, prog::sym::TypeId, Hasher>;
-
 public:
   DelegateTable()                             = default;
   DelegateTable(const DelegateTable& rhs)     = delete;
@@ -26,30 +24,17 @@ public:
   auto operator=(const DelegateTable& rhs) -> DelegateTable& = delete;
   auto operator=(DelegateTable&& rhs) noexcept -> DelegateTable& = delete;
 
-  auto getFunction(Context* ctx, const prog::sym::TypeSet& types) -> prog::sym::TypeId;
-
-  auto getAction(Context* ctx, const prog::sym::TypeSet& types) -> prog::sym::TypeId;
-
-  auto getFunction(Context* ctx, const prog::sym::TypeSet& input, prog::sym::TypeId output)
+  auto getDelegate(Context* ctx, bool isAction, const prog::sym::TypeSet& types)
       -> prog::sym::TypeId;
 
-  auto getAction(Context* ctx, const prog::sym::TypeSet& input, prog::sym::TypeId output)
+  auto getDelegate(
+      Context* ctx, bool isAction, const prog::sym::TypeSet& input, prog::sym::TypeId output)
       -> prog::sym::TypeId;
 
 private:
-  delegateSet m_functions;
-  delegateSet m_actions;
-
-  static auto
-  getDelegate(Context* ctx, delegateSet* set, bool isAction, const prog::sym::TypeSet& types)
-      -> prog::sym::TypeId;
-
-  static auto getDelegate(
-      Context* ctx,
-      delegateSet* set,
-      bool isAction,
-      const prog::sym::TypeSet& input,
-      prog::sym::TypeId output) -> prog::sym::TypeId;
+  // For each delegate we keep both a function and an action version.
+  std::unordered_map<signature, std::pair<prog::sym::TypeId, prog::sym::TypeId>, Hasher>
+      m_delegates;
 };
 
 } // namespace frontend::internal

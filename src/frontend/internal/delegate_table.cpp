@@ -25,27 +25,7 @@ auto DelegateTable::Hasher::operator()(const signature& id) const -> std::size_t
   return result;
 }
 
-auto DelegateTable::getFunction(Context* ctx, const prog::sym::TypeSet& types)
-    -> prog::sym::TypeId {
-  return getDelegate(ctx, &m_functions, false, types);
-}
-
-auto DelegateTable::getAction(Context* ctx, const prog::sym::TypeSet& types) -> prog::sym::TypeId {
-  return getDelegate(ctx, &m_actions, true, types);
-}
-
-auto DelegateTable::getFunction(
-    Context* ctx, const prog::sym::TypeSet& input, prog::sym::TypeId output) -> prog::sym::TypeId {
-  return getDelegate(ctx, &m_functions, false, input, output);
-}
-
-auto DelegateTable::getAction(
-    Context* ctx, const prog::sym::TypeSet& input, prog::sym::TypeId output) -> prog::sym::TypeId {
-  return getDelegate(ctx, &m_actions, true, input, output);
-}
-
-auto DelegateTable::getDelegate(
-    Context* ctx, delegateSet* set, bool isAction, const prog::sym::TypeSet& types)
+auto DelegateTable::getDelegate(Context* ctx, bool isAction, const prog::sym::TypeSet& types)
     -> prog::sym::TypeId {
 
   auto inputTypes = std::vector<prog::sym::TypeId>{};
@@ -53,44 +33,51 @@ auto DelegateTable::getDelegate(
     inputTypes.push_back(types[i]);
   }
   auto outputType = types[types.getCount() - 1];
-  return getDelegate(ctx, set, isAction, prog::sym::TypeSet{std::move(inputTypes)}, outputType);
+  return getDelegate(ctx, isAction, prog::sym::TypeSet{std::move(inputTypes)}, outputType);
 }
 
 auto DelegateTable::getDelegate(
-    Context* ctx,
-    delegateSet* set,
-    bool isAction,
-    const prog::sym::TypeSet& input,
-    prog::sym::TypeId output) -> prog::sym::TypeId {
+    Context* ctx, bool isAction, const prog::sym::TypeSet& input, prog::sym::TypeId output)
+    -> prog::sym::TypeId {
+
+  /* This always makes function and action (pure and impure) versions with the same signature,
+  reason is that we can support making the function (pure) version implicitly convertible to the
+  action (impure) version. */
 
   auto sig = std::make_pair(input, output);
 
   // Try to find an existing delegate with the same signature.
-  auto itr = set->find(sig);
-  if (itr != set->end()) {
-    return itr->second;
+  auto itr = m_delegates.find(sig);
+  if (itr != m_delegates.end()) {
+    // We store the function version as the first of the pair and the action as the second.
+    return isAction ? itr->second.second : itr->second.first;
   }
 
-  // Declare a new delegate.
-  auto delegateName       = getDelegateName(*ctx, isAction, input, output);
-  const auto delegateType = ctx->getProg()->declareDelegate(delegateName);
+  // Declare the delegates (both function and action versions).
+  const auto funcDeclType =
+      ctx->getProg()->declareDelegate(getDelegateName(*ctx, false, input, output));
+  const auto actionDeclType =
+      ctx->getProg()->declareDelegate(getDelegateName(*ctx, true, input, output));
 
-  // Define the delegate.
-  ctx->getProg()->defineDelegate(delegateType, isAction, input, output);
+  // Define the action delegate.
+  ctx->getProg()->defineDelegate(actionDeclType, true, input, output, {});
 
-  // Keep track of some extra information about the type.
+  // Define the function delegate, give the action version as a alias so that function delegates are
+  // implicitly convertible to action delegates.
+  ctx->getProg()->defineDelegate(funcDeclType, false, input, output, {actionDeclType});
+
+  // Keep track of some extra information about the types.
   auto types = std::vector<prog::sym::TypeId>{};
   types.insert(types.end(), input.begin(), input.end());
   types.push_back(output);
-  ctx->declareTypeInfo(
-      delegateType,
-      TypeInfo{ctx,
-               isAction ? "action" : "function",
-               input::Span{0},
-               prog::sym::TypeSet{std::move(types)}});
 
-  set->insert({std::move(sig), delegateType});
-  return delegateType;
+  ctx->declareTypeInfo(
+      funcDeclType, TypeInfo{ctx, "function", input::Span{0}, prog::sym::TypeSet{types}});
+  ctx->declareTypeInfo(
+      actionDeclType, TypeInfo{ctx, "action", input::Span{0}, prog::sym::TypeSet{types}});
+
+  m_delegates.insert({std::move(sig), std::make_pair(funcDeclType, actionDeclType)});
+  return isAction ? actionDeclType : funcDeclType;
 }
 
 } // namespace frontend::internal
