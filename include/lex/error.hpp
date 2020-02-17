@@ -7,6 +7,8 @@ namespace lex {
 
 [[nodiscard]] auto errLitIntTooBig(input::Span span = input::Span{0}) -> Token;
 
+[[nodiscard]] auto errLitLongTooBig(input::Span span = input::Span{0}) -> Token;
+
 [[nodiscard]] auto errLitFloatUnrepresentable(input::Span span = input::Span{0}) -> Token;
 
 [[nodiscard]] auto errLitNumberInvalidChar(input::Span span = input::Span{0}) -> Token;

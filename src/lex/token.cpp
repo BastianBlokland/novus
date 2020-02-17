@@ -8,6 +8,7 @@
 #include "lex/token_payload_lit_char.hpp"
 #include "lex/token_payload_lit_float.hpp"
 #include "lex/token_payload_lit_int.hpp"
+#include "lex/token_payload_lit_long.hpp"
 #include "lex/token_payload_lit_string.hpp"
 #include <memory>
 #include <sstream>
@@ -89,6 +90,10 @@ auto errorToken(std::string msg, const input::Span span) -> Token {
 
 auto litIntToken(const int32_t val, const input::Span span) -> Token {
   return Token{TokenKind::LitInt, std::make_unique<LitIntTokenPayload>(val), span};
+}
+
+auto litLongToken(const int64_t val, const input::Span span) -> Token {
+  return Token{TokenKind::LitLong, std::make_unique<LitLongTokenPayload>(val), span};
 }
 
 auto litFloatToken(const float val, const input::Span span) -> Token {

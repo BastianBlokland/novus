@@ -67,6 +67,7 @@ add_executable(tests
   lex/keyword_test.cpp
   lex/litfloat_test.cpp
   lex/litint_test.cpp
+  lex/litlong_test.cpp
   lex/litbool_test.cpp
   lex/litstr_test.cpp
   lex/litchar_test.cpp

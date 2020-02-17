@@ -250,29 +250,32 @@ auto LexerImpl::nextLitNumber(const char mostSignficantChar) -> Token {
 
   auto tooBig              = false;
   auto containsInvalidChar = false;
+  auto isLong              = false;
   uint64_t divider         = 1;
   char curChar             = mostSignficantChar;
   while (!isTokenSeperator(peekChar(0)) || peekChar(0) == '.') {
     curChar = consumeChar();
     if (isDigit(curChar)) {
-      const uint64_t newResult = result * base + (curChar - '0');
-      if (newResult < result) {
+      const auto add = curChar - '0';
+      if (result > (std::numeric_limits<int64_t>::max() / base + add)) {
         tooBig = true;
         continue;
       }
-      result = newResult;
+      result = result * base + add;
       if (passedDecPoint) {
-        const uint64_t newDivider = divider * base;
-        if (newDivider < divider) {
+        if (result > (std::numeric_limits<int64_t>::max() / base)) {
           tooBig = true;
           continue;
         }
-        divider = newDivider;
+        divider = divider * base;
       }
     } else if (curChar == '_') {
       continue; // Ignore underscores as legal digit seperators.
     } else if (!passedDecPoint && curChar == '.') {
       passedDecPoint = true;
+    } else if (!passedDecPoint && (curChar == 'l' || curChar == 'L')) {
+      isLong = true;
+      break;
     } else {
       containsInvalidChar = true;
     }
@@ -301,7 +304,15 @@ auto LexerImpl::nextLitNumber(const char mostSignficantChar) -> Token {
     return litFloatToken(static_cast<float>(result) / static_cast<float>(divider), span);
   }
 
-  // Integer.
+  // Long.
+  if (isLong) {
+    if (tooBig || result > std::numeric_limits<int64_t>::max()) {
+      return errLitLongTooBig(span);
+    }
+    return litLongToken(static_cast<int64_t>(result), span);
+  }
+
+  // Int.
   if (tooBig || result > std::numeric_limits<int32_t>::max()) {
     return errLitIntTooBig(span);
   }

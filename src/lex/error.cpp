@@ -11,6 +11,10 @@ auto errLitIntTooBig(const input::Span span) -> Token {
   return errorToken("Integer literal too big", span);
 }
 
+auto errLitLongTooBig(const input::Span span) -> Token {
+  return errorToken("Long literal too big", span);
+}
+
 auto errLitFloatUnrepresentable(const input::Span span) -> Token {
   return errorToken("Literal not representable by a floating-point number", span);
 }

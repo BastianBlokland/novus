@@ -39,7 +39,7 @@ TEST_CASE("Lexing identifiers", "[lex]") {
   }
 
   SECTION("Errors") {
-    CHECK_TOKENS("1hello", errLitNumberInvalidChar());
+    CHECK_TOKENS("1test", errLitNumberInvalidChar());
     CHECK_TOKENS("h\a_hello", errIdentifierIllegalCharacter());
     CHECK_TOKENS("@", errInvalidChar('@'));
 
