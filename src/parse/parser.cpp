@@ -69,11 +69,9 @@ auto ParserImpl::nextStmtFuncDecl() -> NodePtr {
       ? std::optional<TypeSubstitutionList>{nextTypeSubstitutionList()}
       : std::nullopt;
   auto argList = nextArgDeclList();
-  auto retType = std::optional<FuncDeclStmtNode::RetTypeSpec>{};
+  auto retType = std::optional<RetTypeSpec>{};
   if (peekToken(0).getKind() == lex::TokenKind::SepArrow) {
-    auto arrow = consumeToken();
-    auto type  = nextType();
-    retType    = FuncDeclStmtNode::RetTypeSpec{arrow, std::move(type)};
+    retType = nextRetTypeSpec();
   }
   auto body = nextExpr(0);
 
@@ -81,8 +79,7 @@ auto ParserImpl::nextStmtFuncDecl() -> NodePtr {
   auto typeSubsValid = !typeSubs || typeSubs->validate();
   auto idValid =
       id.getKind() == lex::TokenKind::Identifier || id.getCat() == lex::TokenCat::Operator;
-  auto retTypeValid = !retType ||
-      (retType->getArrow().getKind() == lex::TokenKind::SepArrow && retType->getType().validate());
+  auto retTypeValid = !retType || retType->validate();
 
   if (kwValid && idValid && typeSubsValid && retTypeValid && argList.validate()) {
     return funcDeclStmtNode(
@@ -483,12 +480,19 @@ auto ParserImpl::nextExprSwitchElse() -> NodePtr {
 auto ParserImpl::nextExprAnonFunc(std::vector<lex::Token> modifiers) -> NodePtr {
   auto kw      = consumeToken();
   auto argList = nextArgDeclList();
-  auto body    = nextExpr(0);
-
-  if (getKw(kw) == lex::Keyword::Lambda && argList.validate()) {
-    return anonFuncExprNode(std::move(modifiers), kw, std::move(argList), std::move(body));
+  auto retType = std::optional<RetTypeSpec>{};
+  if (peekToken(0).getKind() == lex::TokenKind::SepArrow) {
+    retType = nextRetTypeSpec();
   }
-  return errInvalidAnonFuncExpr(std::move(modifiers), kw, argList, std::move(body));
+  auto body = nextExpr(0);
+
+  auto retTypeValid = !retType || retType->validate();
+  if (getKw(kw) == lex::Keyword::Lambda && argList.validate() && retTypeValid) {
+    return anonFuncExprNode(
+        std::move(modifiers), kw, std::move(argList), std::move(retType), std::move(body));
+  }
+  return errInvalidAnonFuncExpr(
+      std::move(modifiers), kw, argList, std::move(retType), std::move(body));
 }
 
 auto ParserImpl::nextType() -> Type {
@@ -547,6 +551,12 @@ auto ParserImpl::nextArgDeclList() -> ArgumentListDecl {
   }
   auto close = empty ? open : consumeToken();
   return ArgumentListDecl(open, std::move(args), std::move(commas), close);
+}
+
+auto ParserImpl::nextRetTypeSpec() -> RetTypeSpec {
+  auto arrow = consumeToken();
+  auto type  = nextType();
+  return RetTypeSpec{arrow, std::move(type)};
 }
 
 auto ParserImpl::consumeToken() -> lex::Token {

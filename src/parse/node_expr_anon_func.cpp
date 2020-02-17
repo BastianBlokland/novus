@@ -4,16 +4,21 @@
 namespace parse {
 
 AnonFuncExprNode::AnonFuncExprNode(
-    std::vector<lex::Token> modifiers, lex::Token kw, ArgumentListDecl argList, NodePtr body) :
+    std::vector<lex::Token> modifiers,
+    lex::Token kw,
+    ArgumentListDecl argList,
+    std::optional<RetTypeSpec> retType,
+    NodePtr body) :
     m_modifiers{std::move(modifiers)},
     m_kw{std::move(kw)},
     m_argList{std::move(argList)},
+    m_retType{std::move(retType)},
     m_body{std::move(body)} {}
 
 auto AnonFuncExprNode::operator==(const Node& rhs) const noexcept -> bool {
   const auto r = dynamic_cast<const AnonFuncExprNode*>(&rhs);
   return r != nullptr && m_modifiers == r->m_modifiers && m_argList == r->m_argList &&
-      *m_body == *r->m_body;
+      m_retType == r->m_retType && *m_body == *r->m_body;
 }
 
 auto AnonFuncExprNode::operator!=(const Node& rhs) const noexcept -> bool {
@@ -44,6 +49,8 @@ auto AnonFuncExprNode::isImpure() const -> bool {
 
 auto AnonFuncExprNode::getArgList() const -> const ArgumentListDecl& { return m_argList; }
 
+auto AnonFuncExprNode::getRetType() const -> const std::optional<RetTypeSpec>& { return m_retType; }
+
 auto AnonFuncExprNode::accept(NodeVisitor* visitor) const -> void { visitor->visit(*this); }
 
 auto AnonFuncExprNode::print(std::ostream& out) const -> std::ostream& {
@@ -53,19 +60,28 @@ auto AnonFuncExprNode::print(std::ostream& out) const -> std::ostream& {
       out << *modKw << '-';
     }
   }
-  return out << "anonfun-" << m_argList;
-  ;
+  out << "anonfun-" << m_argList;
+  if (m_retType) {
+    out << *m_retType;
+  }
+  return out;
 }
 
 // Factories.
 auto anonFuncExprNode(
-    std::vector<lex::Token> modifiers, lex::Token kw, ArgumentListDecl argList, NodePtr body)
-    -> NodePtr {
+    std::vector<lex::Token> modifiers,
+    lex::Token kw,
+    ArgumentListDecl argList,
+    std::optional<RetTypeSpec> retType,
+    NodePtr body) -> NodePtr {
   if (body == nullptr) {
     throw std::invalid_argument{"Body cannot be null"};
   }
-  return std::unique_ptr<AnonFuncExprNode>{new AnonFuncExprNode{
-      std::move(modifiers), std::move(kw), std::move(argList), std::move(body)}};
+  return std::unique_ptr<AnonFuncExprNode>{new AnonFuncExprNode{std::move(modifiers),
+                                                                std::move(kw),
+                                                                std::move(argList),
+                                                                std::move(retType),
+                                                                std::move(body)}};
 }
 
 } // namespace parse

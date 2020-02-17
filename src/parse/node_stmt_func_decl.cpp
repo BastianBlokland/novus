@@ -7,19 +7,6 @@ static auto getIdOrErr(const lex::Token& token) {
   return getId(token).value_or(std::string("err"));
 }
 
-FuncDeclStmtNode::RetTypeSpec::RetTypeSpec(lex::Token arrow, Type type) :
-    m_arrow{std::move(arrow)}, m_type{std::move(type)} {}
-
-auto FuncDeclStmtNode::RetTypeSpec::operator==(const RetTypeSpec& rhs) const noexcept -> bool {
-  return m_arrow == rhs.m_arrow && m_type == rhs.m_type;
-}
-
-auto FuncDeclStmtNode::RetTypeSpec::getArrow() const noexcept -> const lex::Token& {
-  return m_arrow;
-}
-
-auto FuncDeclStmtNode::RetTypeSpec::getType() const noexcept -> const Type& { return m_type; }
-
 FuncDeclStmtNode::FuncDeclStmtNode(
     lex::Token kw,
     lex::Token id,
@@ -82,11 +69,8 @@ auto FuncDeclStmtNode::print(std::ostream& out) const -> std::ostream& {
     out << *m_typeSubs;
   }
   out << m_argList;
-  out << "->";
   if (m_retType) {
-    out << m_retType->getType();
-  } else {
-    out << "infer";
+    out << *m_retType;
   }
   return out;
 }
@@ -97,7 +81,7 @@ auto funcDeclStmtNode(
     lex::Token id,
     std::optional<TypeSubstitutionList> typeSubs,
     ArgumentListDecl argList,
-    std::optional<FuncDeclStmtNode::RetTypeSpec> retType,
+    std::optional<RetTypeSpec> retType,
     NodePtr body) -> NodePtr {
 
   if (body == nullptr) {

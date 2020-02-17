@@ -2,6 +2,7 @@
 #include "lex/token.hpp"
 #include "parse/argument_list_decl.hpp"
 #include "parse/node.hpp"
+#include "parse/ret_type_spec.hpp"
 #include "parse/type_substitution_list.hpp"
 #include <utility>
 
@@ -9,20 +10,6 @@ namespace parse {
 
 class FuncDeclStmtNode final : public Node {
 public:
-  class RetTypeSpec final {
-  public:
-    RetTypeSpec(lex::Token arrow, Type type);
-
-    auto operator==(const RetTypeSpec& rhs) const noexcept -> bool;
-
-    [[nodiscard]] auto getArrow() const noexcept -> const lex::Token&;
-    [[nodiscard]] auto getType() const noexcept -> const Type&;
-
-  private:
-    lex::Token m_arrow;
-    Type m_type;
-  };
-
   friend auto funcDeclStmtNode(
       lex::Token kw,
       lex::Token id,
@@ -73,7 +60,7 @@ auto funcDeclStmtNode(
     lex::Token id,
     std::optional<TypeSubstitutionList> typeSubs,
     ArgumentListDecl argList,
-    std::optional<FuncDeclStmtNode::RetTypeSpec> retTypeSpec,
+    std::optional<RetTypeSpec> retTypeSpec,
     NodePtr body) -> NodePtr;
 
 } // namespace parse

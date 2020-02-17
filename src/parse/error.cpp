@@ -93,7 +93,7 @@ auto errInvalidStmtFuncDecl(
     lex::Token id,
     std::optional<TypeSubstitutionList> typeSubs,
     const ArgumentListDecl& argList,
-    std::optional<FuncDeclStmtNode::RetTypeSpec> retType,
+    std::optional<RetTypeSpec> retType,
     NodePtr body) -> NodePtr {
 
   std::ostringstream oss;
@@ -103,10 +103,8 @@ auto errInvalidStmtFuncDecl(
     oss << "Invalid type substitution parameters";
   } else if (!argList.validate()) {
     getError(oss, argList);
-  } else if (retType && retType->getArrow().getKind() != lex::TokenKind::SepArrow) {
-    oss << "Expected return-type seperator (->) but got: '" << retType->getArrow() << '\'';
-  } else if (retType && !retType->getType().validate()) {
-    oss << "Invalid return-type specification: '" << retType->getType() << '\'';
+  } else if (retType && !retType->validate()) {
+    oss << "Invalid return-type specification: '" << *retType << '\'';
   } else {
     oss << "Invalid function declaration";
   }
@@ -130,13 +128,19 @@ auto errInvalidStmtFuncDecl(
 }
 
 auto errInvalidAnonFuncExpr(
-    std::vector<lex::Token> modifiers, lex::Token kw, const ArgumentListDecl& argList, NodePtr body)
-    -> NodePtr {
+    std::vector<lex::Token> modifiers,
+    lex::Token kw,
+    const ArgumentListDecl& argList,
+    std::optional<RetTypeSpec> retType,
+    NodePtr body) -> NodePtr {
+
   std::ostringstream oss;
   if (getKw(kw) != lex::Keyword::Lambda) {
     oss << "Expected keyword 'lambda' but got: '" << kw << '\'';
   } else if (!argList.validate()) {
     getError(oss, argList);
+  } else if (retType && !retType->validate()) {
+    oss << "Invalid return-type specification: '" << *retType << '\'';
   } else {
     oss << "Invalid anonymous function";
   }
@@ -147,6 +151,10 @@ auto errInvalidAnonFuncExpr(
   }
   tokens.push_back(std::move(kw));
   addTokens(argList, &tokens);
+  if (retType) {
+    tokens.push_back(retType->getArrow());
+    addTokens(retType->getType(), &tokens);
+  }
 
   auto nodes = std::vector<std::unique_ptr<Node>>{};
   nodes.push_back(std::move(body));
