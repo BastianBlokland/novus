@@ -66,6 +66,7 @@ add_library(parse STATIC
   parse/node.cpp
   parse/op_precedence.cpp
   parse/parser.cpp
+  parse/ret_type_spec.cpp
   parse/type_param_list.cpp
   parse/type_substitution_list.cpp
   parse/type.cpp

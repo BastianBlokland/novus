@@ -236,7 +236,8 @@ auto errConstNameConflictsWithTypeSubstitution(
 
 auto errUnableToInferLambdaReturnType(const Source& src, input::Span span) -> Diag {
   std::ostringstream oss;
-  oss << "Unable to infer return-type of lambda";
+  oss << "Unable to infer return-type of lambda, please specify return-type using the '-> [TYPE]' "
+         "syntax";
   return error(src, oss.str(), span);
 }
 

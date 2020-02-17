@@ -3,6 +3,7 @@
 #include "parse/argument_list_decl.hpp"
 #include "parse/node.hpp"
 #include "parse/node_itr.hpp"
+#include "parse/ret_type_spec.hpp"
 #include "parse/type.hpp"
 #include "parse/type_substitution_list.hpp"
 #include <deque>
@@ -51,6 +52,7 @@ private:
   auto nextTypeParamList() -> TypeParamList;
   auto nextTypeSubstitutionList() -> TypeSubstitutionList;
   auto nextArgDeclList() -> ArgumentListDecl;
+  auto nextRetTypeSpec() -> RetTypeSpec;
 
   auto consumeToken() -> lex::Token;
   auto peekToken(size_t ahead) -> lex::Token&;

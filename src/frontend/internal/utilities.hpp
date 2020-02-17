@@ -43,9 +43,10 @@ getOrInstType(Context* ctx, const TypeSubstitutionTable* subTable, const parse::
     const lex::Token& nameToken,
     const parse::TypeParamList& typeParams) -> std::optional<prog::sym::TypeId>;
 
-[[nodiscard]] auto
-getRetType(Context* ctx, const TypeSubstitutionTable* subTable, const parse::FuncDeclStmtNode& n)
-    -> std::optional<prog::sym::TypeId>;
+[[nodiscard]] auto getRetType(
+    Context* ctx,
+    const TypeSubstitutionTable* subTable,
+    const std::optional<parse::RetTypeSpec>& spec) -> std::optional<prog::sym::TypeId>;
 
 template <typename FuncParseNode>
 [[nodiscard]] auto inferRetType(

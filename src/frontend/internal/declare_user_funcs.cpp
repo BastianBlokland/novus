@@ -70,7 +70,7 @@ auto DeclareUserFuncs::visit(const parse::FuncDeclStmtNode& n) -> void {
   }
 
   // Get return type.
-  auto retType = getRetType(m_ctx, nullptr, n);
+  auto retType = getRetType(m_ctx, nullptr, n.getRetType());
   if (!retType) {
     return;
   }

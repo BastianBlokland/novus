@@ -67,22 +67,30 @@ auto GetExpr::visit(const parse::AnonFuncExprNode& n) -> void {
   // Impure lambda's produce actions and are allowed to call other actions.
   auto isAction = n.isImpure();
 
-  // Infer the return type of the anonymous function.
-  auto parentConstTypes = m_constBinder->getAllConstTypes();
-  auto retType          = inferRetType(
-      m_ctx,
-      m_typeSubTable,
-      n,
-      prog::sym::TypeSet{inputTypes},
-      &parentConstTypes,
-      isAction ? (TypeInferExpr::Flags::AllowActionCalls | TypeInferExpr::Flags::Aggressive)
-               : TypeInferExpr::Flags::Aggressive);
+  // Find the return-type, either from a explicit specification or inferred.
+  auto retType = getRetType(m_ctx, m_typeSubTable, n.getRetType());
+  if (!retType) {
+    assert(m_ctx->hasErrors());
+    return;
+  }
+  if (retType->isInfer()) {
+    // Infer the return type of the anonymous function.
+    auto parentConstTypes = m_constBinder->getAllConstTypes();
+    retType               = inferRetType(
+        m_ctx,
+        m_typeSubTable,
+        n,
+        prog::sym::TypeSet{inputTypes},
+        &parentConstTypes,
+        isAction ? (TypeInferExpr::Flags::AllowActionCalls | TypeInferExpr::Flags::Aggressive)
+                 : TypeInferExpr::Flags::Aggressive);
 
-  // Note: We do not fail yet if we failed to infer the type, reason is it would 'hide' many
-  // other errors that would otherwise be reported by analyzing the body.
+    // Note: We do not fail yet if we fail to infer the type, reason is it would 'hide' many other
+    // errors that would otherwise be reported by analyzing the body.
+  }
 
   // Construct the signature, used to enable self-calls.
-  auto selfSignature = std::make_pair(prog::sym::TypeSet{inputTypes}, retType);
+  auto selfSignature = std::make_pair(prog::sym::TypeSet{inputTypes}, *retType);
 
   // Analyze the body of the anonymous function.
   auto visibleConsts = consts.getAll();
@@ -90,7 +98,7 @@ auto GetExpr::visit(const parse::AnonFuncExprNode& n) -> void {
   auto getExpr       = GetExpr{m_ctx,
                          m_typeSubTable,
                          &constBinder,
-                         retType,
+                         *retType,
                          selfSignature,
                          isAction ? (Flags::AllowActionCalls | Flags::AllowPureFuncCalls)
                                   : Flags::AllowPureFuncCalls};
@@ -99,10 +107,17 @@ auto GetExpr::visit(const parse::AnonFuncExprNode& n) -> void {
     assert(m_ctx->hasErrors());
     return;
   }
+  auto expr = std::move(getExpr.m_expr);
 
   // Fail if return type inference failed.
-  if (!retType.isConcrete()) {
+  if (!retType->isConcrete()) {
     m_ctx->reportDiag(errUnableToInferLambdaReturnType, n.getSpan());
+    return;
+  }
+
+  // Apply an implicit conversion if neccesary.
+  if (!applyImplicitConversion(&expr, *retType, n.getSpan())) {
+    assert(m_ctx->hasErrors());
     return;
   }
 
@@ -117,13 +132,11 @@ auto GetExpr::visit(const parse::AnonFuncExprNode& n) -> void {
 
   // Declare the function in the program.
   const auto funcId = isAction
-      ? m_ctx->getProg()->declareAction(
-            nameoss.str(), prog::sym::TypeSet{inputTypes}, getExpr.m_expr->getType())
-      : m_ctx->getProg()->declarePureFunc(
-            nameoss.str(), prog::sym::TypeSet{inputTypes}, getExpr.m_expr->getType());
+      ? m_ctx->getProg()->declareAction(nameoss.str(), prog::sym::TypeSet{inputTypes}, *retType)
+      : m_ctx->getProg()->declarePureFunc(nameoss.str(), prog::sym::TypeSet{inputTypes}, *retType);
 
   // Define the function in the program.
-  m_ctx->getProg()->defineFunc(funcId, std::move(consts), std::move(getExpr.m_expr));
+  m_ctx->getProg()->defineFunc(funcId, std::move(consts), std::move(expr));
 
   // Either create a function literal or a closure, depending on if the anonymous func binds any
   // consts from the parent.

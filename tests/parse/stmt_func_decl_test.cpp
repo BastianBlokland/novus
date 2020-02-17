@@ -27,7 +27,7 @@ TEST_CASE("Parsing function declaration statements", "[parse]") {
             ID("a"),
             std::nullopt,
             ArgumentListDecl(OPAREN, {}, COMMAS(0), CPAREN),
-            FuncDeclStmtNode::RetTypeSpec{ARROW, TYPE("int")},
+            RetTypeSpec{ARROW, TYPE("int")},
             INT(1)));
     CHECK_STMT(
         "fun a(int x) -> int 1",
@@ -37,7 +37,7 @@ TEST_CASE("Parsing function declaration statements", "[parse]") {
             std::nullopt,
             ArgumentListDecl(
                 OPAREN, {ArgumentListDecl::ArgSpec(TYPE("int"), ID("x"))}, COMMAS(0), CPAREN),
-            FuncDeclStmtNode::RetTypeSpec{ARROW, TYPE("int")},
+            RetTypeSpec{ARROW, TYPE("int")},
             INT(1)));
     CHECK_STMT(
         "fun a(int x, int y) -> int 1",
@@ -51,7 +51,7 @@ TEST_CASE("Parsing function declaration statements", "[parse]") {
                  ArgumentListDecl::ArgSpec(TYPE("int"), ID("y"))},
                 COMMAS(1),
                 CPAREN),
-            FuncDeclStmtNode::RetTypeSpec{ARROW, TYPE("int")},
+            RetTypeSpec{ARROW, TYPE("int")},
             INT(1)));
     CHECK_STMT(
         "fun a(int x, int y, bool z) -> int x * y",
@@ -66,7 +66,7 @@ TEST_CASE("Parsing function declaration statements", "[parse]") {
                  ArgumentListDecl::ArgSpec(TYPE("bool"), ID("z"))},
                 COMMAS(2),
                 CPAREN),
-            FuncDeclStmtNode::RetTypeSpec{ARROW, TYPE("int")},
+            RetTypeSpec{ARROW, TYPE("int")},
             binaryExprNode(ID_EXPR("x"), STAR, ID_EXPR("y"))));
     CHECK_STMT(
         "fun a{T}() 1",
@@ -94,7 +94,7 @@ TEST_CASE("Parsing function declaration statements", "[parse]") {
             TypeSubstitutionList{OCURLY, {ID("T"), ID("U"), ID("W")}, COMMAS(2), CCURLY},
             ArgumentListDecl(
                 OPAREN, {ArgumentListDecl::ArgSpec(TYPE("T"), ID("x"))}, COMMAS(0), CPAREN),
-            FuncDeclStmtNode::RetTypeSpec{ARROW, TYPE("T")},
+            RetTypeSpec{ARROW, TYPE("T")},
             ID_EXPR("x")));
     CHECK_STMT(
         "fun a() -> List{T{Y}} 1",
@@ -103,7 +103,7 @@ TEST_CASE("Parsing function declaration statements", "[parse]") {
             ID("a"),
             std::nullopt,
             ArgumentListDecl(OPAREN, {}, COMMAS(0), CPAREN),
-            FuncDeclStmtNode::RetTypeSpec{ARROW, TYPE("List", TYPE("T", TYPE("Y")))},
+            RetTypeSpec{ARROW, TYPE("List", TYPE("T", TYPE("Y")))},
             INT(1)));
     CHECK_STMT(
         "fun a{T, U, W}(T x) -> T x",
@@ -113,7 +113,7 @@ TEST_CASE("Parsing function declaration statements", "[parse]") {
             TypeSubstitutionList{OCURLY, {ID("T"), ID("U"), ID("W")}, COMMAS(2), CCURLY},
             ArgumentListDecl(
                 OPAREN, {ArgumentListDecl::ArgSpec(TYPE("T"), ID("x"))}, COMMAS(0), CPAREN),
-            FuncDeclStmtNode::RetTypeSpec{ARROW, TYPE("T")},
+            RetTypeSpec{ARROW, TYPE("T")},
             ID_EXPR("x")));
     CHECK_STMT(
         "fun a{T, U}(T{U} x) x",
@@ -148,7 +148,7 @@ TEST_CASE("Parsing function declaration statements", "[parse]") {
             std::nullopt,
             ArgumentListDecl(
                 OPAREN, {ArgumentListDecl::ArgSpec(TYPE("int"), ID("x"))}, COMMAS(0), CPAREN),
-            FuncDeclStmtNode::RetTypeSpec{ARROW, TYPE("int")},
+            RetTypeSpec{ARROW, TYPE("int")},
             INT(1)));
     CHECK_STMT(
         "act a{T, U}(T{U} x) x",
@@ -173,7 +173,7 @@ TEST_CASE("Parsing function declaration statements", "[parse]") {
             ID("a"),
             std::nullopt,
             ArgumentListDecl(OPAREN, {}, COMMAS(0), CPAREN),
-            FuncDeclStmtNode::RetTypeSpec{ARROW, TYPE("int")},
+            RetTypeSpec{ARROW, TYPE("int")},
             errInvalidPrimaryExpr(END)));
     CHECK_STMT(
         "fun",
@@ -201,7 +201,7 @@ TEST_CASE("Parsing function declaration statements", "[parse]") {
             TypeSubstitutionList{OCURLY, {}, COMMAS(0), CCURLY},
             ArgumentListDecl(
                 OPAREN, {ArgumentListDecl::ArgSpec(TYPE("int"), ID("x"))}, COMMAS(0), CPAREN),
-            FuncDeclStmtNode::RetTypeSpec{ARROW, TYPE("int")},
+            RetTypeSpec{ARROW, TYPE("int")},
             INT(1)));
     CHECK_STMT(
         "fun a{T U}(int x) -> int 1",
@@ -211,7 +211,7 @@ TEST_CASE("Parsing function declaration statements", "[parse]") {
             TypeSubstitutionList{OCURLY, {ID("T"), ID("U")}, COMMAS(0), CCURLY},
             ArgumentListDecl(
                 OPAREN, {ArgumentListDecl::ArgSpec(TYPE("int"), ID("x"))}, COMMAS(0), CPAREN),
-            FuncDeclStmtNode::RetTypeSpec{ARROW, TYPE("int")},
+            RetTypeSpec{ARROW, TYPE("int")},
             INT(1)));
     CHECK_STMT(
         "fun _() 1",
@@ -262,7 +262,7 @@ TEST_CASE("Parsing function declaration statements", "[parse]") {
                  ArgumentListDecl::ArgSpec(TYPE("int"), ID("y"))},
                 COMMAS(0),
                 CPAREN),
-            FuncDeclStmtNode::RetTypeSpec{ARROW, TYPE("x")},
+            RetTypeSpec{ARROW, TYPE("x")},
             errInvalidPrimaryExpr(END)));
     CHECK_STMT(
         "fun a(int x int y) -> int 1",
@@ -276,7 +276,7 @@ TEST_CASE("Parsing function declaration statements", "[parse]") {
                  ArgumentListDecl::ArgSpec(TYPE("int"), ID("y"))},
                 COMMAS(0),
                 CPAREN),
-            FuncDeclStmtNode::RetTypeSpec{ARROW, TYPE("int")},
+            RetTypeSpec{ARROW, TYPE("int")},
             INT(1)));
     CHECK_STMT(
         "fun a(int x,) -> int 1",
@@ -286,7 +286,7 @@ TEST_CASE("Parsing function declaration statements", "[parse]") {
             std::nullopt,
             ArgumentListDecl(
                 OPAREN, {ArgumentListDecl::ArgSpec(TYPE("int"), ID("x"))}, COMMAS(1), CPAREN),
-            FuncDeclStmtNode::RetTypeSpec{ARROW, TYPE("int")},
+            RetTypeSpec{ARROW, TYPE("int")},
             INT(1)));
     CHECK_STMT(
         "fun a(int x,,) -> int",
@@ -309,8 +309,7 @@ TEST_CASE("Parsing function declaration statements", "[parse]") {
             ID("a"),
             std::nullopt,
             ArgumentListDecl(PARENPAREN, {}, COMMAS(0), PARENPAREN),
-            FuncDeclStmtNode::RetTypeSpec{ARROW,
-                                          Type(ID("T"), TypeParamList(OCURLY, {}, {}, CCURLY))},
+            RetTypeSpec{ARROW, Type(ID("T"), TypeParamList(OCURLY, {}, {}, CCURLY))},
             INT(1)));
     CHECK_STMT(
         "fun a{T, U}(T{} x) x",

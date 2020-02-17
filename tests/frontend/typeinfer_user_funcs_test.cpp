@@ -298,6 +298,12 @@ TEST_CASE("Infer return type of user functions", "[frontend]") {
     CHECK(GET_FUNC_DECL(output, "f").getOutput() == GET_TYPE_ID(output, "__function_int_bool"));
   }
 
+  SECTION("Anonymous function with return type spec") {
+    const auto& output = ANALYZE("fun f() lambda (int i) -> float i");
+    REQUIRE(output.isSuccess());
+    CHECK(GET_FUNC_DECL(output, "f").getOutput() == GET_TYPE_ID(output, "__function_int_float"));
+  }
+
   SECTION("Anonymous function call") {
     const auto& output = ANALYZE("fun f() (lambda (int i) i == i)(42)");
     REQUIRE(output.isSuccess());
