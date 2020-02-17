@@ -44,17 +44,20 @@ auto TypeInferExpr::visit(const parse::AnonFuncExprNode& n) -> void {
   // Impure lambda's produce actions and are allowed to call other actions.
   auto isAction = n.isImpure();
 
-  const auto retType = inferRetType(
-      m_ctx,
-      m_typeSubTable,
-      n,
-      *funcInput,
-      m_constTypes,
-      isAction ? (TypeInferExpr::Flags::AllowActionCalls | TypeInferExpr::Flags::Aggressive)
-               : TypeInferExpr::Flags::Aggressive);
+  auto retType = getRetType(m_ctx, m_typeSubTable, n.getRetType());
+  if (retType && retType->isInfer()) {
+    retType = inferRetType(
+        m_ctx,
+        m_typeSubTable,
+        n,
+        *funcInput,
+        m_constTypes,
+        isAction ? (TypeInferExpr::Flags::AllowActionCalls | TypeInferExpr::Flags::Aggressive)
+                 : TypeInferExpr::Flags::Aggressive);
+  }
 
-  if (retType.isConcrete()) {
-    m_type = m_ctx->getDelegates()->getDelegate(m_ctx, isAction, *funcInput, retType);
+  if (retType && retType->isConcrete()) {
+    m_type = m_ctx->getDelegates()->getDelegate(m_ctx, isAction, *funcInput, *retType);
   }
 }
 

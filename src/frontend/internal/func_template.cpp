@@ -65,7 +65,7 @@ auto FuncTemplate::getRetType(const prog::sym::TypeSet& typeParams)
   if (!funcInput) {
     return std::nullopt;
   }
-  auto retType = ::frontend::internal::getRetType(m_ctx, &subTable, *m_parseNode);
+  auto retType = ::frontend::internal::getRetType(m_ctx, &subTable, m_parseNode->getRetType());
   if (!retType) {
     m_inferStack.pop_front();
     return std::nullopt;
@@ -137,7 +137,8 @@ auto FuncTemplate::setupInstance(FuncTemplateInst* instance) -> void {
     return;
   }
 
-  instance->m_retType = ::frontend::internal::getRetType(m_ctx, &subTable, *m_parseNode);
+  instance->m_retType =
+      ::frontend::internal::getRetType(m_ctx, &subTable, m_parseNode->getRetType());
   if (!instance->m_retType) {
     assert(m_ctx->hasErrors());
 

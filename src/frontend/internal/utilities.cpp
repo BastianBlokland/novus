@@ -289,14 +289,14 @@ auto instType(
 }
 
 auto getRetType(
-    Context* ctx, const TypeSubstitutionTable* subTable, const parse::FuncDeclStmtNode& n)
-    -> std::optional<prog::sym::TypeId> {
+    Context* ctx,
+    const TypeSubstitutionTable* subTable,
+    const std::optional<parse::RetTypeSpec>& spec) -> std::optional<prog::sym::TypeId> {
 
-  const auto& retTypeSpec = n.getRetType();
-  if (!retTypeSpec) {
+  if (!spec) {
     return prog::sym::TypeId::inferType();
   }
-  const auto& retParseType = retTypeSpec->getType();
+  const auto& retParseType = spec->getType();
   auto retType             = getOrInstType(ctx, subTable, retParseType);
   if (!retType) {
     ctx->reportDiag(

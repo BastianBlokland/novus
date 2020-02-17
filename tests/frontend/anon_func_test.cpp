@@ -215,8 +215,20 @@ TEST_CASE("Analyzing anonymous functions", "[frontend]") {
             output.getProg(), GET_TYPE_ID(output, "__function_float"), findAnonFunc(output, 1)));
   }
 
+  SECTION("Anonymous function with conversion") {
+    const auto& output = ANALYZE("fun f() lambda () -> float 2");
+    REQUIRE(output.isSuccess());
+    const auto& anonFuncDef = findAnonFuncDef(output, 0);
+
+    CHECK(
+        anonFuncDef.getExpr() ==
+        *applyConv(output, "int", "float", prog::expr::litIntNode(output.getProg(), 2)));
+  }
+
   SECTION("Diagnostics") {
     CHECK_DIAG("fun f() lambda (b c) 1", errUndeclaredType(src, "b", 0, input::Span{16, 16}));
+    CHECK_DIAG(
+        "fun f() lambda (int a) -> b 1", errUndeclaredType(src, "b", 0, input::Span{26, 26}));
     CHECK_DIAG(
         "fun f() lambda (int int) 1",
         errConstNameConflictsWithType(src, "int", input::Span{20, 22}));
@@ -236,6 +248,9 @@ TEST_CASE("Analyzing anonymous functions", "[frontend]") {
     CHECK_DIAG(
         "fun f() false ? i = 1 : (lambda () i)() ",
         errUninitializedConst(src, "i", input::Span{35, 35}));
+    CHECK_DIAG(
+        "fun f() lambda (int a) -> bool a",
+        errNoImplicitConversionFound(src, "int", "bool", input::Span{8, 31}));
     CHECK_DIAG(
         "act a1() -> int 42 "
         "act a2() lambda () a1()",
