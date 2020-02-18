@@ -19,9 +19,8 @@ private:
   std::deque<char> m_readBuffer;
 
   auto nextLitNumber(char mostSignficantChar) -> Token;
-  auto nextLitIntHex() -> Token;
-  auto nextLitIntBinary() -> Token;
-  auto nextLitIntOctal() -> Token;
+  auto nextLitNumberHex() -> Token;
+  auto nextLitNumberBinary() -> Token;
 
   auto nextLitStr() -> Token;
   auto nextLitChar() -> Token;

@@ -198,15 +198,11 @@ auto LexerImpl::next() -> Token {
       case 'x':
       case 'X':
         consumeChar();
-        return nextLitIntHex();
+        return nextLitNumberHex();
       case 'b':
       case 'B':
         consumeChar();
-        return nextLitIntBinary();
-      case 'o':
-      case 'O':
-        consumeChar();
-        return nextLitIntOctal();
+        return nextLitNumberBinary();
       }
       [[fallthrough]];
     case '1':
@@ -257,13 +253,13 @@ auto LexerImpl::nextLitNumber(const char mostSignficantChar) -> Token {
     curChar = consumeChar();
     if (isDigit(curChar)) {
       const auto add = curChar - '0';
-      if (result > ((std::numeric_limits<int64_t>::max() - add) / base)) {
+      if (result > ((std::numeric_limits<uint64_t>::max() - add) / base)) {
         tooBig = true;
         continue;
       }
       result = result * base + add;
       if (passedDecPoint) {
-        if (result > (std::numeric_limits<int64_t>::max() / base)) {
+        if (divider > (std::numeric_limits<uint64_t>::max() / base)) {
           tooBig = true;
           continue;
         }
@@ -319,27 +315,38 @@ auto LexerImpl::nextLitNumber(const char mostSignficantChar) -> Token {
   return litIntToken(static_cast<int32_t>(result), span);
 }
 
-auto LexerImpl::nextLitIntHex() -> Token {
+auto LexerImpl::nextLitNumberHex() -> Token {
   const auto startPos = m_inputPos - 1; // Take the '0x' prefix into account.
 
   uint64_t result          = 0;
   char curChar             = 'x';
   auto containsInvalidChar = false;
+  auto isLong              = false;
+  auto tooBig              = false;
   while (!isTokenSeperator(peekChar(0))) {
-    curChar = consumeChar();
+    curChar        = consumeChar();
+    uint64_t toAdd = 0;
     if (isDigit(curChar)) {
-      result <<= 4U; // Shift up the result by one 'nibble'.
-      result += curChar - '0';
+      toAdd = (curChar - '0');
     } else if (curChar >= 'a' && curChar <= 'f') {
-      result <<= 4U;                  // Shift up the result by one 'nibble'.
-      result += curChar - ('a' - 10); // NOLINT: Magic numbers
+      toAdd = (curChar - ('a' - 10)); // NOLINT: Magic numbers
     } else if (curChar >= 'A' && curChar <= 'F') {
-      result <<= 4U;                  // Shift up the result by one 'nibble'.
-      result += curChar - ('A' - 10); // NOLINT: Magic numbers
+      toAdd = (curChar - ('A' - 10)); // NOLINT: Magic numbers
     } else if (curChar == '_') {
       continue; // Ignore underscores as legal digit seperators.
+    } else if (curChar == 'l' || curChar == 'L') {
+      isLong = true;
+      break;
     } else {
       containsInvalidChar = true;
+    }
+
+    // Check if the result would overflow.
+    if (result > (std::numeric_limits<uint64_t>::max() - toAdd) >> 4U) {
+      tooBig = true;
+    } else {
+      // Shift up the result by one 'nibble' and add the digit.
+      result = (result << 4U) + toAdd;
     }
   }
 
@@ -350,29 +357,44 @@ auto LexerImpl::nextLitIntHex() -> Token {
   if (curChar == '_') {
     return errLitNumberEndsWithSeperator(span);
   }
-  if (result > std::numeric_limits<uint32_t>::max()) {
+
+  // Long.
+  if (isLong) {
+    if (tooBig) {
+      return errLitLongTooBig(span);
+    }
+    // Reinterpret because we support negative hex literals.
+    return litLongToken(reinterpret_cast<int64_t&>(result), span); // NOLINT: Reinterpret cast
+  }
+
+  // Int.
+  if (tooBig || result > std::numeric_limits<uint32_t>::max()) {
     return errLitIntTooBig(span);
   }
   // Reinterpret because we support negative hex literals.
-  int32_t signedResult = reinterpret_cast<int32_t&>(result); // NOLINT: Reinterpret cast
-  return litIntToken(signedResult, span);
+  return litIntToken(reinterpret_cast<int32_t&>(result), span); // NOLINT: Reinterpret cast
 }
 
-auto LexerImpl::nextLitIntBinary() -> Token {
+auto LexerImpl::nextLitNumberBinary() -> Token {
   const auto startPos = m_inputPos - 1; // Take the '0b' prefix into account.
 
   uint64_t result          = 0;
   char curChar             = 'b';
   auto containsInvalidChar = false;
+  auto isLong              = false;
+  auto tooBig              = false;
   while (!isTokenSeperator(peekChar(0))) {
     curChar = consumeChar();
-    if (curChar == '0') {
-      result <<= 1U; // Shift up the result by one bit.
-    } else if (curChar == '1') {
-      result <<= 1U; // Shift up the result by one bit.
-      result += 1;
+    if (curChar == '0' || curChar == '1') {
+      if (result > ((std::numeric_limits<uint64_t>::max() - (curChar - '0')) >> 1U)) {
+        tooBig = true;
+      }
+      result = (result << 1U) + (curChar - '0');
     } else if (curChar == '_') {
       continue; // Ignore underscores as legal digit seperators.
+    } else if (curChar == 'l' || curChar == 'L') {
+      isLong = true;
+      break;
     } else {
       containsInvalidChar = true;
     }
@@ -385,45 +407,22 @@ auto LexerImpl::nextLitIntBinary() -> Token {
   if (curChar == '_') {
     return errLitNumberEndsWithSeperator(span);
   }
-  if (result > std::numeric_limits<uint32_t>::max()) {
+
+  // Long.
+  if (isLong) {
+    if (tooBig) {
+      return errLitLongTooBig(span);
+    }
+    // Reinterpret because we support negative binary literals.
+    return litLongToken(reinterpret_cast<int64_t&>(result), span); // NOLINT: Reinterpret cast
+  }
+
+  // Int.
+  if (tooBig || result > std::numeric_limits<uint32_t>::max()) {
     return errLitIntTooBig(span);
   }
   // Reinterpret because we support negative binary literals.
-  int32_t signedResult = reinterpret_cast<int32_t&>(result); // NOLINT: Reinterpret cast
-  return litIntToken(static_cast<int32_t>(signedResult), span);
-}
-
-auto LexerImpl::nextLitIntOctal() -> Token {
-  const auto startPos = m_inputPos - 1; // Take the '0o' prefix into account.
-
-  uint64_t result          = 0;
-  char curChar             = 'o';
-  auto containsInvalidChar = false;
-  while (!isTokenSeperator(peekChar(0))) {
-    curChar = consumeChar();
-    if (curChar >= '0' && curChar <= '7') {
-      result <<= 3U; // Shift up the result by one 'octal'.
-      result += curChar - '0';
-    } else if (curChar == '_') {
-      continue; // Ignore underscores as legal digit seperators.
-    } else {
-      containsInvalidChar = true;
-    }
-  }
-
-  const auto span = input::Span{startPos, m_inputPos};
-  if (containsInvalidChar) {
-    return errLitOctalInvalidChar(span);
-  }
-  if (curChar == '_') {
-    return errLitNumberEndsWithSeperator(span);
-  }
-  if (result > std::numeric_limits<uint32_t>::max()) {
-    return errLitIntTooBig(span);
-  }
-  // Reinterpret because we support negative octal literals.
-  int32_t signedResult = reinterpret_cast<int32_t&>(result); // NOLINT: Reinterpret cast
-  return litIntToken(static_cast<int32_t>(signedResult), span);
+  return litIntToken(reinterpret_cast<int32_t&>(result), span); // NOLINT: Reinterpret cast
 }
 
 auto LexerImpl::nextLitStr() -> Token {
@@ -541,7 +540,7 @@ auto LexerImpl::nextWordToken(const char startingChar) -> Token {
     return keywordToken(optKw.value(), span);
   }
 
-  // It word is not a literal or a keyword its assumed to be an identifier.
+  // If word is not a literal or a keyword its assumed to be an identifier.
   if (invalidCharacter) {
     return errIdentifierIllegalCharacter(span);
   }
