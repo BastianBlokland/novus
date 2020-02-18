@@ -257,7 +257,7 @@ auto LexerImpl::nextLitNumber(const char mostSignficantChar) -> Token {
     curChar = consumeChar();
     if (isDigit(curChar)) {
       const auto add = curChar - '0';
-      if (result > (std::numeric_limits<int64_t>::max() / base + add)) {
+      if (result > ((std::numeric_limits<int64_t>::max() - add) / base)) {
         tooBig = true;
         continue;
       }
