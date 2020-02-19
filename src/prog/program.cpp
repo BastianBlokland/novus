@@ -67,11 +67,38 @@ Program::Program() :
   m_funcDecls.registerFunc(
       *this, fk::CheckGtEqInt, getFuncName(op::GtEq), sym::TypeSet{m_int, m_int}, m_bool);
 
+  // Register build-in unary long operators.
+  m_funcDecls.registerFunc(
+      *this, fk::NegateLong, getFuncName(op::Minus), sym::TypeSet{m_long}, m_long);
+  m_funcDecls.registerFunc(*this, fk::NoOp, getFuncName(op::Plus), sym::TypeSet{m_long}, m_long);
+  m_funcDecls.registerFunc(
+      *this, fk::IncrementLong, getFuncName(op::PlusPlus), sym::TypeSet{m_long}, m_long);
+  m_funcDecls.registerFunc(
+      *this, fk::DecrementLong, getFuncName(op::MinusMinus), sym::TypeSet{m_long}, m_long);
+
   // Register build-in binary long operators.
+  m_funcDecls.registerFunc(
+      *this, fk::AddLong, getFuncName(op::Plus), sym::TypeSet{m_long, m_long}, m_long);
+  m_funcDecls.registerFunc(
+      *this, fk::SubLong, getFuncName(op::Minus), sym::TypeSet{m_long, m_long}, m_long);
+  m_funcDecls.registerFunc(
+      *this, fk::MulLong, getFuncName(op::Star), sym::TypeSet{m_long, m_long}, m_long);
+  m_funcDecls.registerFunc(
+      *this, fk::DivLong, getFuncName(op::Slash), sym::TypeSet{m_long, m_long}, m_long);
+  m_funcDecls.registerFunc(
+      *this, fk::RemLong, getFuncName(op::Rem), sym::TypeSet{m_long, m_long}, m_long);
   m_funcDecls.registerFunc(
       *this, fk::CheckEqLong, getFuncName(op::EqEq), sym::TypeSet{m_long, m_long}, m_bool);
   m_funcDecls.registerFunc(
       *this, fk::CheckNEqLong, getFuncName(op::BangEq), sym::TypeSet{m_long, m_long}, m_bool);
+  m_funcDecls.registerFunc(
+      *this, fk::CheckLeLong, getFuncName(op::Le), sym::TypeSet{m_long, m_long}, m_bool);
+  m_funcDecls.registerFunc(
+      *this, fk::CheckLeEqLong, getFuncName(op::LeEq), sym::TypeSet{m_long, m_long}, m_bool);
+  m_funcDecls.registerFunc(
+      *this, fk::CheckGtLong, getFuncName(op::Gt), sym::TypeSet{m_long, m_long}, m_bool);
+  m_funcDecls.registerFunc(
+      *this, fk::CheckGtEqLong, getFuncName(op::GtEq), sym::TypeSet{m_long, m_long}, m_bool);
 
   // Register build-in unary float operators.
   m_funcDecls.registerFunc(
@@ -176,7 +203,7 @@ Program::Program() :
   m_funcDecls.registerImplicitConv(*this, fk::NoOp, m_char, m_int);
   m_funcDecls.registerImplicitConv(*this, fk::ConvIntFloat, m_int, m_float);
 
-  // Register build-in identity conversions (turn into no-ops).
+  // Register build-in identity conversions (turns into no-ops).
   m_funcDecls.registerFunc(*this, fk::NoOp, "int", sym::TypeSet{m_int}, m_int);
   m_funcDecls.registerFunc(*this, fk::NoOp, "long", sym::TypeSet{m_long}, m_long);
   m_funcDecls.registerFunc(*this, fk::NoOp, "float", sym::TypeSet{m_float}, m_float);

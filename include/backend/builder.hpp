@@ -34,15 +34,20 @@ public:
   auto addStackLoad(uint8_t offset) -> void;
 
   auto addAddInt() -> void;
+  auto addAddLong() -> void;
   auto addAddFloat() -> void;
   auto addAddString() -> void;
   auto addSubInt() -> void;
+  auto addSubLong() -> void;
   auto addSubFloat() -> void;
   auto addMulInt() -> void;
+  auto addMulLong() -> void;
   auto addMulFloat() -> void;
   auto addDivInt() -> void;
+  auto addDivLong() -> void;
   auto addDivFloat() -> void;
   auto addRemInt() -> void;
+  auto addRemLong() -> void;
   auto addModFloat() -> void;
   auto addPowFloat() -> void;
   auto addSqrtFloat() -> void;
@@ -54,6 +59,7 @@ public:
   auto addATanFloat() -> void;
   auto addATan2Float() -> void;
   auto addNegInt() -> void;
+  auto addNegLong() -> void;
   auto addNegFloat() -> void;
   auto addLogicInvInt() -> void;
   auto addShiftLeftInt() -> void;
@@ -73,8 +79,10 @@ public:
   auto addCheckEqIp() -> void;
   auto addCheckEqCallDynTgt() -> void;
   auto addCheckGtInt() -> void;
+  auto addCheckGtLong() -> void;
   auto addCheckGtFloat() -> void;
   auto addCheckLeInt() -> void;
+  auto addCheckLeLong() -> void;
   auto addCheckLeFloat() -> void;
 
   auto addConvIntFloat() -> void;

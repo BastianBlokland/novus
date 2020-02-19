@@ -111,6 +111,7 @@ add_executable(tests
   vm/jump_test.cpp
   vm/literal_test.cpp
   vm/long_check_test.cpp
+  vm/long_op_test.cpp
   vm/misc_test.cpp
   vm/string_check_test.cpp
   vm/string_op_test.cpp

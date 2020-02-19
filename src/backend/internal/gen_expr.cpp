@@ -145,11 +145,51 @@ auto GenExpr::visit(const prog::expr::CallExprNode& n) -> void {
     m_builder->addLogicInvInt();
     break;
 
+  case prog::sym::FuncKind::AddLong:
+    m_builder->addAddLong();
+    break;
+  case prog::sym::FuncKind::SubLong:
+    m_builder->addSubLong();
+    break;
+  case prog::sym::FuncKind::MulLong:
+    m_builder->addMulLong();
+    break;
+  case prog::sym::FuncKind::DivLong:
+    m_builder->addDivLong();
+    break;
+  case prog::sym::FuncKind::RemLong:
+    m_builder->addRemLong();
+    break;
+  case prog::sym::FuncKind::NegateLong:
+    m_builder->addNegLong();
+    break;
+  case prog::sym::FuncKind::IncrementLong:
+    m_builder->addLoadLitLong(1);
+    m_builder->addAddLong();
+    break;
+  case prog::sym::FuncKind::DecrementLong:
+    m_builder->addLoadLitLong(1);
+    m_builder->addSubLong();
+    break;
   case prog::sym::FuncKind::CheckEqLong:
     m_builder->addCheckEqLong();
     break;
   case prog::sym::FuncKind::CheckNEqLong:
     m_builder->addCheckEqLong();
+    m_builder->addLogicInvInt();
+    break;
+  case prog::sym::FuncKind::CheckLeLong:
+    m_builder->addCheckLeLong();
+    break;
+  case prog::sym::FuncKind::CheckLeEqLong:
+    m_builder->addCheckGtLong();
+    m_builder->addLogicInvInt();
+    break;
+  case prog::sym::FuncKind::CheckGtLong:
+    m_builder->addCheckGtLong();
+    break;
+  case prog::sym::FuncKind::CheckGtEqLong:
+    m_builder->addCheckLeLong();
     m_builder->addLogicInvInt();
     break;
 

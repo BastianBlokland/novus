@@ -42,15 +42,20 @@ auto disassembleInstructions(const vm::Assembly& assembly) -> std::vector<Instru
     case vm::OpCode::LoadLitInt0:
     case vm::OpCode::LoadLitInt1:
     case vm::OpCode::AddInt:
+    case vm::OpCode::AddLong:
     case vm::OpCode::AddFloat:
     case vm::OpCode::AddString:
     case vm::OpCode::SubInt:
+    case vm::OpCode::SubLong:
     case vm::OpCode::SubFloat:
     case vm::OpCode::MulInt:
+    case vm::OpCode::MulLong:
     case vm::OpCode::MulFloat:
     case vm::OpCode::DivInt:
+    case vm::OpCode::DivLong:
     case vm::OpCode::DivFloat:
     case vm::OpCode::RemInt:
+    case vm::OpCode::RemLong:
     case vm::OpCode::ModFloat:
     case vm::OpCode::PowFloat:
     case vm::OpCode::SqrtFloat:
@@ -62,6 +67,7 @@ auto disassembleInstructions(const vm::Assembly& assembly) -> std::vector<Instru
     case vm::OpCode::ATanFloat:
     case vm::OpCode::ATan2Float:
     case vm::OpCode::NegInt:
+    case vm::OpCode::NegLong:
     case vm::OpCode::NegFloat:
     case vm::OpCode::LogicInvInt:
     case vm::OpCode::ShiftLeftInt:
@@ -80,8 +86,10 @@ auto disassembleInstructions(const vm::Assembly& assembly) -> std::vector<Instru
     case vm::OpCode::CheckEqIp:
     case vm::OpCode::CheckEqCallDynTgt:
     case vm::OpCode::CheckGtInt:
+    case vm::OpCode::CheckGtLong:
     case vm::OpCode::CheckGtFloat:
     case vm::OpCode::CheckLeInt:
+    case vm::OpCode::CheckLeLong:
     case vm::OpCode::CheckLeFloat:
     case vm::OpCode::ConvIntFloat:
     case vm::OpCode::ConvFloatInt:

@@ -280,6 +280,10 @@ auto execute(
     case OpCode::AddInt: {
       PUSH_INT(POP_INT() + POP_INT());
     } break;
+    case OpCode::AddLong: {
+      const auto val = getLong(POP()) + getLong(POP());
+      PUSH_REF(allocator->allocLong(val));
+    } break;
     case OpCode::AddFloat: {
       PUSH_FLOAT(POP_FLOAT() + POP_FLOAT());
     } break;
@@ -293,6 +297,11 @@ auto execute(
       auto a = POP_INT();
       PUSH_INT(a - b);
     } break;
+    case OpCode::SubLong: {
+      auto b = getLong(POP());
+      auto a = getLong(POP());
+      PUSH_REF(allocator->allocLong(a - b));
+    } break;
     case OpCode::SubFloat: {
       auto b = POP_FLOAT();
       auto a = POP_FLOAT();
@@ -302,6 +311,11 @@ auto execute(
       auto b = POP_INT();
       auto a = POP_INT();
       PUSH_INT(a * b);
+    } break;
+    case OpCode::MulLong: {
+      auto b = getLong(POP());
+      auto a = getLong(POP());
+      PUSH_REF(allocator->allocLong(a * b));
     } break;
     case OpCode::MulFloat: {
       auto b = POP_FLOAT();
@@ -317,6 +331,15 @@ auto execute(
       }
       PUSH_INT(a / b);
     } break;
+    case OpCode::DivLong: {
+      auto b = getLong(POP());
+      auto a = getLong(POP());
+      if (b == 0) {
+        execHandle.setState(ExecState::DivByZero);
+        goto End;
+      }
+      PUSH_REF(allocator->allocLong(a / b));
+    } break;
     case OpCode::DivFloat: {
       auto b = POP_FLOAT();
       auto a = POP_FLOAT();
@@ -330,6 +353,15 @@ auto execute(
         goto End;
       }
       PUSH_INT(a % b);
+    } break;
+    case OpCode::RemLong: {
+      auto b = getLong(POP());
+      auto a = getLong(POP());
+      if (b == 0) {
+        execHandle.setState(ExecState::DivByZero);
+        goto End;
+      }
+      PUSH_REF(allocator->allocLong(a % b));
     } break;
     case OpCode::ModFloat: {
       auto b = POP_FLOAT();
@@ -369,6 +401,9 @@ auto execute(
     } break;
     case OpCode::NegInt: {
       PUSH_INT(-POP_INT());
+    } break;
+    case OpCode::NegLong: {
+      PUSH_REF(allocator->allocLong(-getLong(POP())));
     } break;
     case OpCode::NegFloat: {
       PUSH_FLOAT(-POP_FLOAT());
@@ -459,6 +494,11 @@ auto execute(
       auto a = POP_INT();
       PUSH_BOOL(a > b);
     } break;
+    case OpCode::CheckGtLong: {
+      auto b = getLong(POP());
+      auto a = getLong(POP());
+      PUSH_BOOL(a > b);
+    } break;
     case OpCode::CheckGtFloat: {
       auto b = POP_FLOAT();
       auto a = POP_FLOAT();
@@ -467,6 +507,11 @@ auto execute(
     case OpCode::CheckLeInt: {
       auto b = POP_INT();
       auto a = POP_INT();
+      PUSH_BOOL(a < b);
+    } break;
+    case OpCode::CheckLeLong: {
+      auto b = getLong(POP());
+      auto a = getLong(POP());
       PUSH_BOOL(a < b);
     } break;
     case OpCode::CheckLeFloat: {

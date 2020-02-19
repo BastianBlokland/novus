@@ -72,23 +72,33 @@ auto Builder::addStackLoad(uint8_t offset) -> void {
 
 auto Builder::addAddInt() -> void { writeOpCode(vm::OpCode::AddInt); }
 
+auto Builder::addAddLong() -> void { writeOpCode(vm::OpCode::AddLong); }
+
 auto Builder::addAddFloat() -> void { writeOpCode(vm::OpCode::AddFloat); }
 
 auto Builder::addAddString() -> void { writeOpCode(vm::OpCode::AddString); }
 
 auto Builder::addSubInt() -> void { writeOpCode(vm::OpCode::SubInt); }
 
+auto Builder::addSubLong() -> void { writeOpCode(vm::OpCode::SubLong); }
+
 auto Builder::addSubFloat() -> void { writeOpCode(vm::OpCode::SubFloat); }
 
 auto Builder::addMulInt() -> void { writeOpCode(vm::OpCode::MulInt); }
+
+auto Builder::addMulLong() -> void { writeOpCode(vm::OpCode::MulLong); }
 
 auto Builder::addMulFloat() -> void { writeOpCode(vm::OpCode::MulFloat); }
 
 auto Builder::addDivInt() -> void { writeOpCode(vm::OpCode::DivInt); }
 
+auto Builder::addDivLong() -> void { writeOpCode(vm::OpCode::DivLong); }
+
 auto Builder::addDivFloat() -> void { writeOpCode(vm::OpCode::DivFloat); }
 
 auto Builder::addRemInt() -> void { writeOpCode(vm::OpCode::RemInt); }
+
+auto Builder::addRemLong() -> void { writeOpCode(vm::OpCode::RemLong); }
 
 auto Builder::addModFloat() -> void { writeOpCode(vm::OpCode::ModFloat); }
 
@@ -111,6 +121,8 @@ auto Builder::addATanFloat() -> void { writeOpCode(vm::OpCode::ATanFloat); }
 auto Builder::addATan2Float() -> void { writeOpCode(vm::OpCode::ATan2Float); }
 
 auto Builder::addNegInt() -> void { writeOpCode(vm::OpCode::NegInt); }
+
+auto Builder::addNegLong() -> void { writeOpCode(vm::OpCode::NegLong); }
 
 auto Builder::addNegFloat() -> void { writeOpCode(vm::OpCode::NegFloat); }
 
@@ -148,9 +160,13 @@ auto Builder::addCheckEqCallDynTgt() -> void { writeOpCode(vm::OpCode::CheckEqCa
 
 auto Builder::addCheckGtInt() -> void { writeOpCode(vm::OpCode::CheckGtInt); }
 
+auto Builder::addCheckGtLong() -> void { writeOpCode(vm::OpCode::CheckGtLong); }
+
 auto Builder::addCheckGtFloat() -> void { writeOpCode(vm::OpCode::CheckGtFloat); }
 
 auto Builder::addCheckLeInt() -> void { writeOpCode(vm::OpCode::CheckLeInt); }
+
+auto Builder::addCheckLeLong() -> void { writeOpCode(vm::OpCode::CheckLeLong); }
 
 auto Builder::addCheckLeFloat() -> void { writeOpCode(vm::OpCode::CheckLeFloat); }
 
