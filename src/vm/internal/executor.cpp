@@ -165,6 +165,7 @@ auto execute(
 #define READ_BYTE() readAsm<uint8_t>(&ip)
 #define READ_INT() readAsm<int32_t>(&ip)
 #define READ_UINT() readAsm<uint32_t>(&ip)
+#define READ_LONG() readAsm<int64_t>(&ip)
 #define READ_FLOAT() readAsm<float>(&ip)
 #define SALLOC(COUNT)                                                                              \
   if (!stack.alloc(COUNT)) {                                                                       \
@@ -250,6 +251,9 @@ auto execute(
     case OpCode::LoadLitInt1: {
       PUSH_INT(1);
     } break;
+    case OpCode::LoadLitLong: {
+      PUSH_REF(allocator->allocLong(READ_LONG()));
+    } break;
     case OpCode::LoadLitFloat: {
       PUSH_FLOAT(READ_FLOAT());
     } break;
@@ -276,6 +280,10 @@ auto execute(
     case OpCode::AddInt: {
       PUSH_INT(POP_INT() + POP_INT());
     } break;
+    case OpCode::AddLong: {
+      const auto val = getLong(POP()) + getLong(POP());
+      PUSH_REF(allocator->allocLong(val));
+    } break;
     case OpCode::AddFloat: {
       PUSH_FLOAT(POP_FLOAT() + POP_FLOAT());
     } break;
@@ -289,6 +297,11 @@ auto execute(
       auto a = POP_INT();
       PUSH_INT(a - b);
     } break;
+    case OpCode::SubLong: {
+      auto b = getLong(POP());
+      auto a = getLong(POP());
+      PUSH_REF(allocator->allocLong(a - b));
+    } break;
     case OpCode::SubFloat: {
       auto b = POP_FLOAT();
       auto a = POP_FLOAT();
@@ -298,6 +311,11 @@ auto execute(
       auto b = POP_INT();
       auto a = POP_INT();
       PUSH_INT(a * b);
+    } break;
+    case OpCode::MulLong: {
+      auto b = getLong(POP());
+      auto a = getLong(POP());
+      PUSH_REF(allocator->allocLong(a * b));
     } break;
     case OpCode::MulFloat: {
       auto b = POP_FLOAT();
@@ -313,6 +331,15 @@ auto execute(
       }
       PUSH_INT(a / b);
     } break;
+    case OpCode::DivLong: {
+      auto b = getLong(POP());
+      auto a = getLong(POP());
+      if (b == 0) {
+        execHandle.setState(ExecState::DivByZero);
+        goto End;
+      }
+      PUSH_REF(allocator->allocLong(a / b));
+    } break;
     case OpCode::DivFloat: {
       auto b = POP_FLOAT();
       auto a = POP_FLOAT();
@@ -326,6 +353,15 @@ auto execute(
         goto End;
       }
       PUSH_INT(a % b);
+    } break;
+    case OpCode::RemLong: {
+      auto b = getLong(POP());
+      auto a = getLong(POP());
+      if (b == 0) {
+        execHandle.setState(ExecState::DivByZero);
+        goto End;
+      }
+      PUSH_REF(allocator->allocLong(a % b));
     } break;
     case OpCode::ModFloat: {
       auto b = POP_FLOAT();
@@ -365,6 +401,9 @@ auto execute(
     } break;
     case OpCode::NegInt: {
       PUSH_INT(-POP_INT());
+    } break;
+    case OpCode::NegLong: {
+      PUSH_REF(allocator->allocLong(-getLong(POP())));
     } break;
     case OpCode::NegFloat: {
       PUSH_FLOAT(-POP_FLOAT());
@@ -420,6 +459,11 @@ auto execute(
       auto a = POP_INT();
       PUSH_BOOL(a == b);
     } break;
+    case OpCode::CheckEqLong: {
+      auto b = getLong(POP());
+      auto a = getLong(POP());
+      PUSH_BOOL(a == b);
+    } break;
     case OpCode::CheckEqFloat: {
       auto b = POP_FLOAT();
       auto a = POP_FLOAT();
@@ -450,6 +494,11 @@ auto execute(
       auto a = POP_INT();
       PUSH_BOOL(a > b);
     } break;
+    case OpCode::CheckGtLong: {
+      auto b = getLong(POP());
+      auto a = getLong(POP());
+      PUSH_BOOL(a > b);
+    } break;
     case OpCode::CheckGtFloat: {
       auto b = POP_FLOAT();
       auto a = POP_FLOAT();
@@ -460,26 +509,40 @@ auto execute(
       auto a = POP_INT();
       PUSH_BOOL(a < b);
     } break;
+    case OpCode::CheckLeLong: {
+      auto b = getLong(POP());
+      auto a = getLong(POP());
+      PUSH_BOOL(a < b);
+    } break;
     case OpCode::CheckLeFloat: {
       auto b = POP_FLOAT();
       auto a = POP_FLOAT();
       PUSH_BOOL(a < b);
     } break;
 
+    case OpCode::ConvIntLong: {
+      PUSH_REF(allocator->allocLong(static_cast<int64_t>(POP_INT())));
+    } break;
     case OpCode::ConvIntFloat: {
       PUSH_FLOAT(static_cast<float>(POP_INT()));
     } break;
+    case OpCode::ConvLongInt: {
+      PUSH_INT(static_cast<int32_t>(getLong(POP())));
+    } break;
     case OpCode::ConvFloatInt: {
-      PUSH_INT(static_cast<int>(POP_FLOAT()));
+      PUSH_INT(static_cast<int32_t>(POP_FLOAT()));
     } break;
     case OpCode::ConvIntString: {
-      PUSH_REF(toString(allocator, POP_INT()));
+      PUSH_REF(intToString(allocator, POP_INT()));
+    } break;
+    case OpCode::ConvLongString: {
+      PUSH_REF(intToString(allocator, getLong(POP())));
     } break;
     case OpCode::ConvFloatString: {
-      PUSH_REF(toString(allocator, POP_FLOAT()));
+      PUSH_REF(floatToString(allocator, POP_FLOAT()));
     } break;
     case OpCode::ConvCharString: {
-      PUSH_REF(toString(allocator, static_cast<uint8_t>(POP_INT())));
+      PUSH_REF(charToString(allocator, static_cast<uint8_t>(POP_INT())));
     } break;
     case OpCode::ConvIntChar: {
       PUSH_INT(static_cast<uint8_t>(POP_INT()));
@@ -690,6 +753,7 @@ End:
 #undef READ_BYTE
 #undef READ_INT
 #undef READ_UINT
+#undef READ_LONG
 #undef READ_FLOAT
 #undef SALLOC
 #undef PUSH

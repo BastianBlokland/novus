@@ -21,6 +21,7 @@ public:
   auto visit(const LitFloatNode & /*unused*/) -> void override {}
   auto visit(const LitFuncNode & /*unused*/) -> void override {}
   auto visit(const LitIntNode & /*unused*/) -> void override {}
+  auto visit(const LitLongNode & /*unused*/) -> void override {}
   auto visit(const LitStringNode & /*unused*/) -> void override {}
   auto visit(const LitCharNode & /*unused*/) -> void override {}
   auto visit(const LitEnumNode & /*unused*/) -> void override {}

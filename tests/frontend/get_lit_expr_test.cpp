@@ -5,6 +5,7 @@
 #include "prog/expr/node_lit_char.hpp"
 #include "prog/expr/node_lit_float.hpp"
 #include "prog/expr/node_lit_int.hpp"
+#include "prog/expr/node_lit_long.hpp"
 #include "prog/expr/node_lit_string.hpp"
 #include "prog/operator.hpp"
 
@@ -16,6 +17,12 @@ TEST_CASE("Analyzing literal expressions", "[frontend]") {
     const auto& output = ANALYZE("fun f() -> int 42");
     REQUIRE(output.isSuccess());
     CHECK(GET_FUNC_DEF(output, "f").getExpr() == *prog::expr::litIntNode(output.getProg(), 42));
+  }
+
+  SECTION("Get long literal expression") {
+    const auto& output = ANALYZE("fun f() -> long 42L");
+    REQUIRE(output.isSuccess());
+    CHECK(GET_FUNC_DEF(output, "f").getExpr() == *prog::expr::litLongNode(output.getProg(), 42L));
   }
 
   SECTION("Get float literal expression") {

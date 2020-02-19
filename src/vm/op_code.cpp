@@ -16,15 +16,15 @@ auto operator<<(std::ostream& out, const OpCode& rhs) noexcept -> std::ostream& 
   case OpCode::LoadLitInt1:
     out << "load-int-1";
     break;
-
+  case OpCode::LoadLitLong:
+    out << "load-long";
+    break;
   case OpCode::LoadLitFloat:
     out << "load-float";
     break;
-
   case OpCode::LoadLitString:
     out << "load-string";
     break;
-
   case OpCode::LoadLitIp:
     out << "load-ip";
     break;
@@ -42,6 +42,9 @@ auto operator<<(std::ostream& out, const OpCode& rhs) noexcept -> std::ostream& 
   case OpCode::AddInt:
     out << "add-int";
     break;
+  case OpCode::AddLong:
+    out << "add-long";
+    break;
   case OpCode::AddFloat:
     out << "add-float";
     break;
@@ -51,11 +54,17 @@ auto operator<<(std::ostream& out, const OpCode& rhs) noexcept -> std::ostream& 
   case OpCode::SubInt:
     out << "sub-int";
     break;
+  case OpCode::SubLong:
+    out << "sub-long";
+    break;
   case OpCode::SubFloat:
     out << "sub-float";
     break;
   case OpCode::MulInt:
     out << "mul-int";
+    break;
+  case OpCode::MulLong:
+    out << "mul-long";
     break;
   case OpCode::MulFloat:
     out << "mul-float";
@@ -63,11 +72,17 @@ auto operator<<(std::ostream& out, const OpCode& rhs) noexcept -> std::ostream& 
   case OpCode::DivInt:
     out << "div-int";
     break;
+  case OpCode::DivLong:
+    out << "div-long";
+    break;
   case OpCode::DivFloat:
     out << "div-float";
     break;
   case OpCode::RemInt:
     out << "rem-int";
+    break;
+  case OpCode::RemLong:
+    out << "rem-long";
     break;
   case OpCode::ModFloat:
     out << "mod-float";
@@ -101,6 +116,9 @@ auto operator<<(std::ostream& out, const OpCode& rhs) noexcept -> std::ostream& 
     break;
   case OpCode::NegInt:
     out << "neg-int";
+    break;
+  case OpCode::NegLong:
+    out << "neg-long";
     break;
   case OpCode::NegFloat:
     out << "neg-float";
@@ -139,6 +157,9 @@ auto operator<<(std::ostream& out, const OpCode& rhs) noexcept -> std::ostream& 
   case OpCode::CheckEqInt:
     out << "check-eq-int";
     break;
+  case OpCode::CheckEqLong:
+    out << "check-eq-long";
+    break;
   case OpCode::CheckEqFloat:
     out << "check-eq-float";
     break;
@@ -154,24 +175,39 @@ auto operator<<(std::ostream& out, const OpCode& rhs) noexcept -> std::ostream& 
   case OpCode::CheckGtInt:
     out << "check-gt-int";
     break;
+  case OpCode::CheckGtLong:
+    out << "check-gt-long";
+    break;
   case OpCode::CheckGtFloat:
     out << "check-gt-float";
     break;
   case OpCode::CheckLeInt:
     out << "check-le-int";
     break;
+  case OpCode::CheckLeLong:
+    out << "check-le-long";
+    break;
   case OpCode::CheckLeFloat:
     out << "check-le-float";
     break;
 
+  case OpCode::ConvIntLong:
+    out << "conv-int-long";
+    break;
   case OpCode::ConvIntFloat:
     out << "conv-int-float";
+    break;
+  case OpCode::ConvLongInt:
+    out << "conv-long-int";
     break;
   case OpCode::ConvFloatInt:
     out << "conv-float-int";
     break;
   case OpCode::ConvIntString:
     out << "conv-int-string";
+    break;
+  case OpCode::ConvLongString:
+    out << "conv-long-string";
     break;
   case OpCode::ConvFloatString:
     out << "conv-float-string";

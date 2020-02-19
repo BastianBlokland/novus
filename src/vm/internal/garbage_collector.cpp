@@ -130,6 +130,8 @@ auto GarbageCollector::mark() noexcept -> void {
         m_markQueue.push_back(f->getResult().getRef());
       }
     } break;
+    case RefKind::Long:
+      break;
     }
   }
 }

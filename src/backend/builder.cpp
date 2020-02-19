@@ -34,6 +34,11 @@ auto Builder::addLoadLitInt(int32_t val) -> void {
   }
 }
 
+auto Builder::addLoadLitLong(int64_t val) -> void {
+  writeOpCode(vm::OpCode::LoadLitLong);
+  writeInt64(val);
+}
+
 auto Builder::addLoadLitFloat(float val) -> void {
   writeOpCode(vm::OpCode::LoadLitFloat);
   writeFloat(val);
@@ -67,23 +72,33 @@ auto Builder::addStackLoad(uint8_t offset) -> void {
 
 auto Builder::addAddInt() -> void { writeOpCode(vm::OpCode::AddInt); }
 
+auto Builder::addAddLong() -> void { writeOpCode(vm::OpCode::AddLong); }
+
 auto Builder::addAddFloat() -> void { writeOpCode(vm::OpCode::AddFloat); }
 
 auto Builder::addAddString() -> void { writeOpCode(vm::OpCode::AddString); }
 
 auto Builder::addSubInt() -> void { writeOpCode(vm::OpCode::SubInt); }
 
+auto Builder::addSubLong() -> void { writeOpCode(vm::OpCode::SubLong); }
+
 auto Builder::addSubFloat() -> void { writeOpCode(vm::OpCode::SubFloat); }
 
 auto Builder::addMulInt() -> void { writeOpCode(vm::OpCode::MulInt); }
+
+auto Builder::addMulLong() -> void { writeOpCode(vm::OpCode::MulLong); }
 
 auto Builder::addMulFloat() -> void { writeOpCode(vm::OpCode::MulFloat); }
 
 auto Builder::addDivInt() -> void { writeOpCode(vm::OpCode::DivInt); }
 
+auto Builder::addDivLong() -> void { writeOpCode(vm::OpCode::DivLong); }
+
 auto Builder::addDivFloat() -> void { writeOpCode(vm::OpCode::DivFloat); }
 
 auto Builder::addRemInt() -> void { writeOpCode(vm::OpCode::RemInt); }
+
+auto Builder::addRemLong() -> void { writeOpCode(vm::OpCode::RemLong); }
 
 auto Builder::addModFloat() -> void { writeOpCode(vm::OpCode::ModFloat); }
 
@@ -106,6 +121,8 @@ auto Builder::addATanFloat() -> void { writeOpCode(vm::OpCode::ATanFloat); }
 auto Builder::addATan2Float() -> void { writeOpCode(vm::OpCode::ATan2Float); }
 
 auto Builder::addNegInt() -> void { writeOpCode(vm::OpCode::NegInt); }
+
+auto Builder::addNegLong() -> void { writeOpCode(vm::OpCode::NegLong); }
 
 auto Builder::addNegFloat() -> void { writeOpCode(vm::OpCode::NegFloat); }
 
@@ -131,6 +148,8 @@ auto Builder::addSliceString() -> void { writeOpCode(vm::OpCode::SliceString); }
 
 auto Builder::addCheckEqInt() -> void { writeOpCode(vm::OpCode::CheckEqInt); }
 
+auto Builder::addCheckEqLong() -> void { writeOpCode(vm::OpCode::CheckEqLong); }
+
 auto Builder::addCheckEqFloat() -> void { writeOpCode(vm::OpCode::CheckEqFloat); }
 
 auto Builder::addCheckEqString() -> void { writeOpCode(vm::OpCode::CheckEqString); }
@@ -141,17 +160,27 @@ auto Builder::addCheckEqCallDynTgt() -> void { writeOpCode(vm::OpCode::CheckEqCa
 
 auto Builder::addCheckGtInt() -> void { writeOpCode(vm::OpCode::CheckGtInt); }
 
+auto Builder::addCheckGtLong() -> void { writeOpCode(vm::OpCode::CheckGtLong); }
+
 auto Builder::addCheckGtFloat() -> void { writeOpCode(vm::OpCode::CheckGtFloat); }
 
 auto Builder::addCheckLeInt() -> void { writeOpCode(vm::OpCode::CheckLeInt); }
 
+auto Builder::addCheckLeLong() -> void { writeOpCode(vm::OpCode::CheckLeLong); }
+
 auto Builder::addCheckLeFloat() -> void { writeOpCode(vm::OpCode::CheckLeFloat); }
 
+auto Builder::addConvIntLong() -> void { writeOpCode(vm::OpCode::ConvIntLong); }
+
 auto Builder::addConvIntFloat() -> void { writeOpCode(vm::OpCode::ConvIntFloat); }
+
+auto Builder::addConvLongInt() -> void { writeOpCode(vm::OpCode::ConvLongInt); }
 
 auto Builder::addConvFloatInt() -> void { writeOpCode(vm::OpCode::ConvFloatInt); }
 
 auto Builder::addConvIntString() -> void { writeOpCode(vm::OpCode::ConvIntString); }
+
+auto Builder::addConvLongString() -> void { writeOpCode(vm::OpCode::ConvLongString); }
 
 auto Builder::addConvFloatString() -> void { writeOpCode(vm::OpCode::ConvFloatString); }
 
@@ -277,10 +306,7 @@ auto Builder::addLitString(const std::string& string) -> uint32_t {
 
 auto Builder::getCurrentIpOffset() -> uint32_t { return m_instructions.size(); }
 
-auto Builder::writeOpCode(vm::OpCode opCode) -> void {
-  throwIfClosed();
-  writeUInt8(static_cast<uint8_t>(opCode));
-}
+auto Builder::writeOpCode(vm::OpCode opCode) -> void { writeUInt8(static_cast<uint8_t>(opCode)); }
 
 auto Builder::writeUInt8(uint8_t val) -> void {
   throwIfClosed();
@@ -288,8 +314,11 @@ auto Builder::writeUInt8(uint8_t val) -> void {
 }
 
 auto Builder::writeInt32(int32_t val) -> void {
-  throwIfClosed();
   writeUInt32(reinterpret_cast<uint32_t&>(val)); // NOLINT: Reinterpret cast
+}
+
+auto Builder::writeInt64(int64_t val) -> void {
+  writeUInt64(reinterpret_cast<uint64_t&>(val)); // NOLINT: Reinterpret cast
 }
 
 auto Builder::writeUInt32(uint32_t val) -> void {
@@ -300,8 +329,19 @@ auto Builder::writeUInt32(uint32_t val) -> void {
   m_instructions.push_back(val >> 24U); // NOLINT: Magic number
 }
 
-auto Builder::writeFloat(float val) -> void {
+auto Builder::writeUInt64(uint64_t val) -> void {
   throwIfClosed();
+  m_instructions.push_back(val);
+  m_instructions.push_back(val >> 8U);  // NOLINT: Magic number
+  m_instructions.push_back(val >> 16U); // NOLINT: Magic number
+  m_instructions.push_back(val >> 24U); // NOLINT: Magic number
+  m_instructions.push_back(val >> 32U); // NOLINT: Magic number
+  m_instructions.push_back(val >> 40U); // NOLINT: Magic number
+  m_instructions.push_back(val >> 48U); // NOLINT: Magic number
+  m_instructions.push_back(val >> 56U); // NOLINT: Magic number
+}
+
+auto Builder::writeFloat(float val) -> void {
   writeUInt32(reinterpret_cast<uint32_t&>(val)); // NOLINT: Reinterpret cast
 }
 

@@ -8,7 +8,7 @@
 
 namespace backend::dasm {
 
-using Arg = typename std::variant<int32_t, uint32_t, float, vm::PCallCode>;
+using Arg = typename std::variant<int32_t, int64_t, uint32_t, float, vm::PCallCode>;
 
 class Instruction final {
   friend auto operator<<(std::ostream& out, const Instruction& rhs) -> std::ostream&;

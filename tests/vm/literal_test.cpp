@@ -24,6 +24,25 @@ TEST_CASE("Execute literals", "[vm]") {
         "-42");
   }
 
+  SECTION("Long literals") {
+    CHECK_EXPR(
+        [](backend::Builder* builder) -> void {
+          builder->addLoadLitLong(4'200'000'000'000L);
+          builder->addConvLongString();
+          builder->addPCall(vm::PCallCode::ConWriteString);
+        },
+        "input",
+        "4200000000000");
+    CHECK_EXPR(
+        [](backend::Builder* builder) -> void {
+          builder->addLoadLitLong(-4'200'000'000'000L);
+          builder->addConvLongString();
+          builder->addPCall(vm::PCallCode::ConWriteString);
+        },
+        "input",
+        "-4200000000000");
+  }
+
   SECTION("Float literals") {
     CHECK_EXPR(
         [](backend::Builder* builder) -> void {

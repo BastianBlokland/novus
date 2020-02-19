@@ -24,6 +24,7 @@ public:
   auto label(std::string label) -> void;
 
   auto addLoadLitInt(int32_t val) -> void;
+  auto addLoadLitLong(int64_t val) -> void;
   auto addLoadLitFloat(float val) -> void;
   auto addLoadLitString(const std::string& val) -> void;
   auto addLoadLitIp(std::string label) -> void;
@@ -33,15 +34,20 @@ public:
   auto addStackLoad(uint8_t offset) -> void;
 
   auto addAddInt() -> void;
+  auto addAddLong() -> void;
   auto addAddFloat() -> void;
   auto addAddString() -> void;
   auto addSubInt() -> void;
+  auto addSubLong() -> void;
   auto addSubFloat() -> void;
   auto addMulInt() -> void;
+  auto addMulLong() -> void;
   auto addMulFloat() -> void;
   auto addDivInt() -> void;
+  auto addDivLong() -> void;
   auto addDivFloat() -> void;
   auto addRemInt() -> void;
+  auto addRemLong() -> void;
   auto addModFloat() -> void;
   auto addPowFloat() -> void;
   auto addSqrtFloat() -> void;
@@ -53,6 +59,7 @@ public:
   auto addATanFloat() -> void;
   auto addATan2Float() -> void;
   auto addNegInt() -> void;
+  auto addNegLong() -> void;
   auto addNegFloat() -> void;
   auto addLogicInvInt() -> void;
   auto addShiftLeftInt() -> void;
@@ -66,18 +73,24 @@ public:
   auto addSliceString() -> void;
 
   auto addCheckEqInt() -> void;
+  auto addCheckEqLong() -> void;
   auto addCheckEqFloat() -> void;
   auto addCheckEqString() -> void;
   auto addCheckEqIp() -> void;
   auto addCheckEqCallDynTgt() -> void;
   auto addCheckGtInt() -> void;
+  auto addCheckGtLong() -> void;
   auto addCheckGtFloat() -> void;
   auto addCheckLeInt() -> void;
+  auto addCheckLeLong() -> void;
   auto addCheckLeFloat() -> void;
 
+  auto addConvIntLong() -> void;
   auto addConvIntFloat() -> void;
+  auto addConvLongInt() -> void;
   auto addConvFloatInt() -> void;
   auto addConvIntString() -> void;
+  auto addConvLongString() -> void;
   auto addConvFloatString() -> void;
   auto addConvBoolString() -> void;
   auto addConvCharString() -> void;
@@ -120,7 +133,9 @@ private:
   auto writeOpCode(vm::OpCode opCode) -> void;
   auto writeUInt8(uint8_t val) -> void;
   auto writeInt32(int32_t val) -> void;
+  auto writeInt64(int64_t val) -> void;
   auto writeUInt32(uint32_t val) -> void;
+  auto writeUInt64(uint64_t val) -> void;
   auto writeFloat(float val) -> void;
   auto writeIpOffset(std::string label) -> void;
 

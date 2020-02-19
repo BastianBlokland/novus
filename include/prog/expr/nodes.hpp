@@ -13,6 +13,7 @@
 #include "prog/expr/node_lit_float.hpp"
 #include "prog/expr/node_lit_func.hpp"
 #include "prog/expr/node_lit_int.hpp"
+#include "prog/expr/node_lit_long.hpp"
 #include "prog/expr/node_lit_string.hpp"
 #include "prog/expr/node_switch.hpp"
 #include "prog/expr/node_union_check.hpp"

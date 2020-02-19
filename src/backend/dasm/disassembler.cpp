@@ -22,6 +22,9 @@ auto disassembleInstructions(const vm::Assembly& assembly) -> std::vector<Instru
     case vm::OpCode::LoadLitInt:
       result.push_back(Instruction(opCode, offset, {readAsm<int32_t>(&ip)}));
       continue;
+    case vm::OpCode::LoadLitLong:
+      result.push_back(Instruction(opCode, offset, {readAsm<int64_t>(&ip)}));
+      continue;
     case vm::OpCode::LoadLitFloat:
       result.push_back(Instruction(opCode, offset, {readAsm<float>(&ip)}));
       continue;
@@ -39,15 +42,20 @@ auto disassembleInstructions(const vm::Assembly& assembly) -> std::vector<Instru
     case vm::OpCode::LoadLitInt0:
     case vm::OpCode::LoadLitInt1:
     case vm::OpCode::AddInt:
+    case vm::OpCode::AddLong:
     case vm::OpCode::AddFloat:
     case vm::OpCode::AddString:
     case vm::OpCode::SubInt:
+    case vm::OpCode::SubLong:
     case vm::OpCode::SubFloat:
     case vm::OpCode::MulInt:
+    case vm::OpCode::MulLong:
     case vm::OpCode::MulFloat:
     case vm::OpCode::DivInt:
+    case vm::OpCode::DivLong:
     case vm::OpCode::DivFloat:
     case vm::OpCode::RemInt:
+    case vm::OpCode::RemLong:
     case vm::OpCode::ModFloat:
     case vm::OpCode::PowFloat:
     case vm::OpCode::SqrtFloat:
@@ -59,6 +67,7 @@ auto disassembleInstructions(const vm::Assembly& assembly) -> std::vector<Instru
     case vm::OpCode::ATanFloat:
     case vm::OpCode::ATan2Float:
     case vm::OpCode::NegInt:
+    case vm::OpCode::NegLong:
     case vm::OpCode::NegFloat:
     case vm::OpCode::LogicInvInt:
     case vm::OpCode::ShiftLeftInt:
@@ -71,17 +80,23 @@ auto disassembleInstructions(const vm::Assembly& assembly) -> std::vector<Instru
     case vm::OpCode::IndexString:
     case vm::OpCode::SliceString:
     case vm::OpCode::CheckEqInt:
+    case vm::OpCode::CheckEqLong:
     case vm::OpCode::CheckEqFloat:
     case vm::OpCode::CheckEqString:
     case vm::OpCode::CheckEqIp:
     case vm::OpCode::CheckEqCallDynTgt:
     case vm::OpCode::CheckGtInt:
+    case vm::OpCode::CheckGtLong:
     case vm::OpCode::CheckGtFloat:
     case vm::OpCode::CheckLeInt:
+    case vm::OpCode::CheckLeLong:
     case vm::OpCode::CheckLeFloat:
+    case vm::OpCode::ConvIntLong:
     case vm::OpCode::ConvIntFloat:
+    case vm::OpCode::ConvLongInt:
     case vm::OpCode::ConvFloatInt:
     case vm::OpCode::ConvIntString:
+    case vm::OpCode::ConvLongString:
     case vm::OpCode::ConvFloatString:
     case vm::OpCode::ConvCharString:
     case vm::OpCode::ConvIntChar:

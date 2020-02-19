@@ -28,6 +28,62 @@ TEST_CASE("Execute conversions", "[vm]") {
         "-2.14748e+09");
   }
 
+  SECTION("Int to long") {
+    CHECK_EXPR(
+        [](backend::Builder* builder) -> void {
+          builder->addLoadLitInt(42);
+          builder->addConvIntLong();
+
+          builder->addConvLongString();
+          builder->addPCall(vm::PCallCode::ConWriteString);
+        },
+        "input",
+        "42");
+    CHECK_EXPR(
+        [](backend::Builder* builder) -> void {
+          builder->addLoadLitInt(-2147483647);
+          builder->addConvIntLong();
+
+          builder->addConvLongString();
+          builder->addPCall(vm::PCallCode::ConWriteString);
+        },
+        "input",
+        "-2147483647");
+  }
+
+  SECTION("Long to int") {
+    CHECK_EXPR(
+        [](backend::Builder* builder) -> void {
+          builder->addLoadLitLong(42);
+          builder->addConvLongInt();
+
+          builder->addConvIntString();
+          builder->addPCall(vm::PCallCode::ConWriteString);
+        },
+        "input",
+        "42");
+    CHECK_EXPR(
+        [](backend::Builder* builder) -> void {
+          builder->addLoadLitLong(-2147483647);
+          builder->addConvLongInt();
+
+          builder->addConvIntString();
+          builder->addPCall(vm::PCallCode::ConWriteString);
+        },
+        "input",
+        "-2147483647");
+    CHECK_EXPR(
+        [](backend::Builder* builder) -> void {
+          builder->addLoadLitLong(9223372036854775807L);
+          builder->addConvLongInt();
+
+          builder->addConvIntString();
+          builder->addPCall(vm::PCallCode::ConWriteString);
+        },
+        "input",
+        "-1");
+  }
+
   SECTION("Float to Int") {
     CHECK_EXPR(
         [](backend::Builder* builder) -> void {
@@ -104,6 +160,57 @@ TEST_CASE("Execute conversions", "[vm]") {
         },
         "input",
         "-2147483647");
+  }
+
+  SECTION("Long to String") {
+    CHECK_EXPR(
+        [](backend::Builder* builder) -> void {
+          builder->addLoadLitLong(0);
+          builder->addConvLongString();
+          builder->addPCall(vm::PCallCode::ConWriteString);
+        },
+        "input",
+        "0");
+    CHECK_EXPR(
+        [](backend::Builder* builder) -> void {
+          builder->addLoadLitLong(42);
+          builder->addConvLongString();
+          builder->addPCall(vm::PCallCode::ConWriteString);
+        },
+        "input",
+        "42");
+    CHECK_EXPR(
+        [](backend::Builder* builder) -> void {
+          builder->addLoadLitLong(2147483647);
+          builder->addConvLongString();
+          builder->addPCall(vm::PCallCode::ConWriteString);
+        },
+        "input",
+        "2147483647");
+    CHECK_EXPR(
+        [](backend::Builder* builder) -> void {
+          builder->addLoadLitLong(-2147483647);
+          builder->addConvLongString();
+          builder->addPCall(vm::PCallCode::ConWriteString);
+        },
+        "input",
+        "-2147483647");
+    CHECK_EXPR(
+        [](backend::Builder* builder) -> void {
+          builder->addLoadLitLong(9223372036854775807L);
+          builder->addConvLongString();
+          builder->addPCall(vm::PCallCode::ConWriteString);
+        },
+        "input",
+        "9223372036854775807");
+    CHECK_EXPR(
+        [](backend::Builder* builder) -> void {
+          builder->addLoadLitLong(-9223372036854775807L);
+          builder->addConvLongString();
+          builder->addPCall(vm::PCallCode::ConWriteString);
+        },
+        "input",
+        "-9223372036854775807");
   }
 
   SECTION("Float to String") {

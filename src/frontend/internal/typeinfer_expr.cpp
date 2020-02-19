@@ -275,6 +275,9 @@ auto TypeInferExpr::visit(const parse::LitExprNode& n) -> void {
   case lex::TokenKind::LitInt:
     m_type = m_ctx->getProg()->getInt();
     break;
+  case lex::TokenKind::LitLong:
+    m_type = m_ctx->getProg()->getLong();
+    break;
   case lex::TokenKind::LitFloat:
     m_type = m_ctx->getProg()->getFloat();
     break;

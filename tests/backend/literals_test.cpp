@@ -9,6 +9,12 @@ TEST_CASE("Generate assembly for literals", "[backend]") {
     CHECK_EXPR_INT("42", [](backend::Builder* builder) -> void { builder->addLoadLitInt(42); });
   }
 
+  SECTION("Long literals") {
+    CHECK_EXPR_LONG("4200000000000L", [](backend::Builder* builder) -> void {
+      builder->addLoadLitLong(4'200'000'000'000L);
+    });
+  }
+
   SECTION("Float literals") {
     CHECK_EXPR_FLOAT(".1337", [](backend::Builder* builder) -> void {
       builder->addLoadLitFloat(0.1337F); // NOLINT: Magic numbers

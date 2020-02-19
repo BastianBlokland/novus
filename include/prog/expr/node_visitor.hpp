@@ -18,6 +18,7 @@ class LitBoolNode;
 class LitFloatNode;
 class LitFuncNode;
 class LitIntNode;
+class LitLongNode;
 class LitStringNode;
 class LitCharNode;
 class LitEnumNode;
@@ -40,6 +41,7 @@ public:
   virtual auto visit(const LitFloatNode& n) -> void       = 0;
   virtual auto visit(const LitFuncNode& n) -> void        = 0;
   virtual auto visit(const LitIntNode& n) -> void         = 0;
+  virtual auto visit(const LitLongNode& n) -> void        = 0;
   virtual auto visit(const LitStringNode& n) -> void      = 0;
   virtual auto visit(const LitCharNode& n) -> void        = 0;
   virtual auto visit(const LitEnumNode& n) -> void        = 0;

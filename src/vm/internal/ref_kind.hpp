@@ -4,9 +4,10 @@
 namespace vm::internal {
 
 enum class RefKind : uint8_t {
-  String = 0U,
-  Struct = 1U,
-  Future = 2U,
+  Struct = 0U,
+  Future = 1U,
+  String = 2U,
+  Long   = 3U,
 };
 
 } // namespace vm::internal

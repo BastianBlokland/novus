@@ -83,11 +83,11 @@ auto inline pcall(
     iface->unlockConRead();
     execHandle->setState(ExecState::Running);
     execHandle->trap();
-    PUSH_REF(toString(allocator, line));
+    PUSH_REF(toStringRef(allocator, line));
   } break;
   case vm::PCallCode::GetEnvArg: {
     auto* res = iface->getEnvArg(POP_INT());
-    PUSH_REF(res == nullptr ? allocator->allocStr(0).first : toString(allocator, res));
+    PUSH_REF(res == nullptr ? allocator->allocStr(0).first : toStringRef(allocator, res));
   } break;
   case vm::PCallCode::GetEnvArgCount: {
     PUSH_INT(iface->getEnvArgCount());
@@ -95,7 +95,7 @@ auto inline pcall(
   case vm::PCallCode::GetEnvVar: {
     auto* nameStrRef = getStringRef(POP());
     auto* res        = iface->getEnvVar(nameStrRef->getDataPtr());
-    PUSH_REF(res == nullptr ? allocator->allocStr(0).first : toString(allocator, res));
+    PUSH_REF(res == nullptr ? allocator->allocStr(0).first : toStringRef(allocator, res));
   } break;
   case vm::PCallCode::Sleep: {
     execHandle->setState(ExecState::Paused);

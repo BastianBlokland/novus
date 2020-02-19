@@ -67,6 +67,7 @@ add_executable(tests
   lex/keyword_test.cpp
   lex/litfloat_test.cpp
   lex/litint_test.cpp
+  lex/litlong_test.cpp
   lex/litbool_test.cpp
   lex/litstr_test.cpp
   lex/litchar_test.cpp
@@ -109,6 +110,8 @@ add_executable(tests
   vm/ip_check_test.cpp
   vm/jump_test.cpp
   vm/literal_test.cpp
+  vm/long_check_test.cpp
+  vm/long_op_test.cpp
   vm/misc_test.cpp
   vm/string_check_test.cpp
   vm/string_op_test.cpp

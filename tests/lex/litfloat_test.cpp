@@ -9,14 +9,13 @@ TEST_CASE("Lexing float literals", "[lex]") {
   SECTION("Single values") {
     CHECK_TOKENS("0.0", litFloatToken(.0F));
     CHECK_TOKENS(".0", litFloatToken(.0F));
-    CHECK_TOKENS("00042.0", litFloatToken(42.0F));        // NOLINT: Magic numbers
-    CHECK_TOKENS("42.000000", litFloatToken(42.0F));      // NOLINT: Magic numbers
-    CHECK_TOKENS(".999999", litFloatToken(.999999F));     // NOLINT: Magic numbers
-    CHECK_TOKENS("999999.0", litFloatToken(999999.0F));   // NOLINT: Magic numbers
-    CHECK_TOKENS("999.9999", litFloatToken(999.9999F));   // NOLINT: Magic numbers
-    CHECK_TOKENS("9999.9999", litFloatToken(9999.9999F)); // NOLINT: Magic numbers
-    CHECK_TOKENS(
-        "1844674407370955161.0", litFloatToken(1844674407370955161.0F)); // NOLINT: Magic numbers
+    CHECK_TOKENS("00042.0", litFloatToken(42.0F));                        // NOLINT: Magic numbers
+    CHECK_TOKENS("42.000000", litFloatToken(42.0F));                      // NOLINT: Magic numbers
+    CHECK_TOKENS(".999999", litFloatToken(.999999F));                     // NOLINT: Magic numbers
+    CHECK_TOKENS("999999.0", litFloatToken(999999.0F));                   // NOLINT: Magic numbers
+    CHECK_TOKENS("999.9999", litFloatToken(999.9999F));                   // NOLINT: Magic numbers
+    CHECK_TOKENS("9999.9999", litFloatToken(9999.9999F));                 // NOLINT: Magic numbers
+    CHECK_TOKENS("184467440737095.0", litFloatToken(184467440737095.0F)); // NOLINT: Magic numbers
     CHECK_TOKENS(
         ".000000000000001337", litFloatToken(.000000000000001337F)); // NOLINT: Magic numbers
   }

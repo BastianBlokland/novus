@@ -10,6 +10,9 @@ auto operator<<(std::ostream& out, const TypeKind& rhs) -> std::ostream& {
   case TypeKind::Int:
     out << "int";
     break;
+  case TypeKind::Long:
+    out << "long";
+    break;
   case TypeKind::Float:
     out << "float";
     break;

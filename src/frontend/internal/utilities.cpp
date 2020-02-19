@@ -162,6 +162,7 @@ auto getText(const prog::Operator& op) -> std::string {
 auto isReservedTypeName(const std::string& name) -> bool {
   static const std::unordered_set<std::string> reservedTypes = {
       "int",
+      "long",
       "float",
       "bool",
       "string",

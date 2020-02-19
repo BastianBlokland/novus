@@ -124,6 +124,9 @@ auto operator<<(std::ostream& out, const TokenKind& rhs) -> std::ostream& {
   case TokenKind::LitInt:
     out << "int";
     break;
+  case TokenKind::LitLong:
+    out << "long";
+    break;
   case TokenKind::LitFloat:
     out << "float";
     break;

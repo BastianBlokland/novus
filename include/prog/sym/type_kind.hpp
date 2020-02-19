@@ -5,6 +5,7 @@ namespace prog::sym {
 
 enum class TypeKind {
   Int,
+  Long,
   Float,
   Bool,
   String,

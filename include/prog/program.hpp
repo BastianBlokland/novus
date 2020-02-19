@@ -56,6 +56,7 @@ public:
   [[nodiscard]] auto endExecStmts() const -> execStmtIterator;
 
   [[nodiscard]] auto getInt() const noexcept -> sym::TypeId;
+  [[nodiscard]] auto getLong() const noexcept -> sym::TypeId;
   [[nodiscard]] auto getFloat() const noexcept -> sym::TypeId;
   [[nodiscard]] auto getBool() const noexcept -> sym::TypeId;
   [[nodiscard]] auto getString() const noexcept -> sym::TypeId;
@@ -135,6 +136,7 @@ private:
   std::vector<sym::ExecStmt> m_execStmts;
 
   sym::TypeId m_int;
+  sym::TypeId m_long;
   sym::TypeId m_float;
   sym::TypeId m_bool;
   sym::TypeId m_string;

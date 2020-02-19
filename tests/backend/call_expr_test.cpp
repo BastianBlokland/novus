@@ -84,6 +84,60 @@ TEST_CASE("Generate assembly for call expressions", "[backend]") {
     });
   }
 
+  SECTION("Long operations") {
+    CHECK_EXPR_LONG("-42L", [](backend::Builder* builder) -> void {
+      builder->addLoadLitLong(42);
+      builder->addNegLong();
+    });
+    CHECK_EXPR_LONG("+42L", [](backend::Builder* builder) -> void { builder->addLoadLitLong(42); });
+    CHECK_EXPR_LONG("- -42L", [](backend::Builder* builder) -> void {
+      builder->addLoadLitLong(42);
+      builder->addNegLong();
+      builder->addNegLong();
+    });
+    CHECK_EXPR_LONG("--42L", [](backend::Builder* builder) -> void {
+      builder->addLoadLitLong(42);
+      builder->addLoadLitLong(1);
+      builder->addSubLong();
+    });
+    CHECK_EXPR_LONG("++42L", [](backend::Builder* builder) -> void {
+      builder->addLoadLitLong(42);
+      builder->addLoadLitLong(1);
+      builder->addAddLong();
+    });
+    CHECK_EXPR_LONG("1L + 3L", [](backend::Builder* builder) -> void {
+      builder->addLoadLitLong(1);
+      builder->addLoadLitLong(3);
+      builder->addAddLong();
+    });
+    CHECK_EXPR_LONG("-1L + 3L", [](backend::Builder* builder) -> void {
+      builder->addLoadLitLong(1);
+      builder->addNegLong();
+      builder->addLoadLitLong(3);
+      builder->addAddLong();
+    });
+    CHECK_EXPR_LONG("1L - 3L", [](backend::Builder* builder) -> void {
+      builder->addLoadLitLong(1);
+      builder->addLoadLitLong(3);
+      builder->addSubLong();
+    });
+    CHECK_EXPR_LONG("1L * 3L", [](backend::Builder* builder) -> void {
+      builder->addLoadLitLong(1);
+      builder->addLoadLitLong(3);
+      builder->addMulLong();
+    });
+    CHECK_EXPR_LONG("1L / 3L", [](backend::Builder* builder) -> void {
+      builder->addLoadLitLong(1);
+      builder->addLoadLitLong(3);
+      builder->addDivLong();
+    });
+    CHECK_EXPR_LONG("1L % 3L", [](backend::Builder* builder) -> void {
+      builder->addLoadLitLong(1);
+      builder->addLoadLitLong(3);
+      builder->addRemLong();
+    });
+  }
+
   SECTION("Float operations") {
     CHECK_EXPR_FLOAT("-.1337", [](backend::Builder* builder) -> void {
       builder->addLoadLitFloat(0.1337F); // NOLINT: Magic numbers
@@ -174,6 +228,48 @@ TEST_CASE("Generate assembly for call expressions", "[backend]") {
       builder->addLoadLitInt(1);
       builder->addLoadLitInt(3);
       builder->addCheckLeInt();
+      builder->addLogicInvInt();
+    });
+  }
+
+  SECTION("Long checks") {
+    CHECK_EXPR_BOOL("1L == 3L", [](backend::Builder* builder) -> void {
+      builder->addLoadLitLong(1);
+      builder->addLoadLitLong(3);
+      builder->addCheckEqLong();
+    });
+    CHECK_EXPR_BOOL("1L == -3L", [](backend::Builder* builder) -> void {
+      builder->addLoadLitLong(1);
+      builder->addLoadLitLong(3);
+      builder->addNegLong();
+      builder->addCheckEqLong();
+    });
+    CHECK_EXPR_BOOL("1L != 3L", [](backend::Builder* builder) -> void {
+      builder->addLoadLitLong(1);
+      builder->addLoadLitLong(3);
+      builder->addCheckEqLong();
+      builder->addLogicInvInt();
+    });
+    CHECK_EXPR_BOOL("1L < 3L", [](backend::Builder* builder) -> void {
+      builder->addLoadLitLong(1);
+      builder->addLoadLitLong(3);
+      builder->addCheckLeLong();
+    });
+    CHECK_EXPR_BOOL("1L <= 3L", [](backend::Builder* builder) -> void {
+      builder->addLoadLitLong(1);
+      builder->addLoadLitLong(3);
+      builder->addCheckGtLong();
+      builder->addLogicInvInt();
+    });
+    CHECK_EXPR_BOOL("1L > 3L", [](backend::Builder* builder) -> void {
+      builder->addLoadLitLong(1);
+      builder->addLoadLitLong(3);
+      builder->addCheckGtLong();
+    });
+    CHECK_EXPR_BOOL("1L >= 3L", [](backend::Builder* builder) -> void {
+      builder->addLoadLitLong(1);
+      builder->addLoadLitLong(3);
+      builder->addCheckLeLong();
       builder->addLogicInvInt();
     });
   }
@@ -349,9 +445,21 @@ TEST_CASE("Generate assembly for call expressions", "[backend]") {
       builder->addLoadLitFloat(42.1337F); // NOLINT: Magic numbers
       builder->addConvFloatInt();
     });
+    CHECK_EXPR_INT("int(42L)", [](backend::Builder* builder) -> void {
+      builder->addLoadLitLong(42); // NOLINT: Magic numbers
+      builder->addConvLongInt();
+    });
+    CHECK_EXPR_LONG("long(42)", [](backend::Builder* builder) -> void {
+      builder->addLoadLitInt(42); // NOLINT: Magic numbers
+      builder->addConvIntLong();
+    });
     CHECK_EXPR_STRING("string(42)", [](backend::Builder* builder) -> void {
       builder->addLoadLitInt(42);
       builder->addConvIntString();
+    });
+    CHECK_EXPR_STRING("string(42L)", [](backend::Builder* builder) -> void {
+      builder->addLoadLitLong(42);
+      builder->addConvLongString();
     });
     CHECK_EXPR_STRING("string(.1337)", [](backend::Builder* builder) -> void {
       builder->addLoadLitFloat(0.1337F); // NOLINT: Magic numbers
@@ -369,6 +477,8 @@ TEST_CASE("Generate assembly for call expressions", "[backend]") {
 
   SECTION("Default constructors") {
     CHECK_EXPR_INT("int()", [](backend::Builder* builder) -> void { builder->addLoadLitInt(0); });
+    CHECK_EXPR_LONG(
+        "long()", [](backend::Builder* builder) -> void { builder->addLoadLitLong(0); });
     CHECK_EXPR_FLOAT(
         "float()", [](backend::Builder* builder) -> void { builder->addLoadLitFloat(.0); });
     CHECK_EXPR_BOOL("bool()", [](backend::Builder* builder) -> void { builder->addLoadLitInt(0); });
@@ -402,6 +512,8 @@ TEST_CASE("Generate assembly for call expressions", "[backend]") {
   SECTION("Identity conversions") {
     CHECK_EXPR_INT(
         "int(42)", [](backend::Builder* builder) -> void { builder->addLoadLitInt(42); });
+    CHECK_EXPR_LONG(
+        "long(42L)", [](backend::Builder* builder) -> void { builder->addLoadLitLong(42); });
     CHECK_EXPR_FLOAT("float(42.1337)", [](backend::Builder* builder) -> void {
       builder->addLoadLitFloat(42.1337F); // NOLINT: Magic numbers
     });

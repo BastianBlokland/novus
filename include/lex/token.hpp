@@ -61,6 +61,8 @@ auto errorToken(std::string msg, input::Span span = input::Span{0}) -> Token;
 
 auto litIntToken(int32_t val, input::Span span = input::Span{0}) -> Token;
 
+auto litLongToken(int64_t val, input::Span span = input::Span{0}) -> Token;
+
 auto litFloatToken(float val, input::Span span = input::Span{0}) -> Token;
 
 auto litBoolToken(bool val, input::Span span = input::Span{0}) -> Token;
