@@ -16,15 +16,15 @@ auto operator<<(std::ostream& out, const OpCode& rhs) noexcept -> std::ostream& 
   case OpCode::LoadLitInt1:
     out << "load-int-1";
     break;
-
+  case OpCode::LoadLitLong:
+    out << "load-long";
+    break;
   case OpCode::LoadLitFloat:
     out << "load-float";
     break;
-
   case OpCode::LoadLitString:
     out << "load-string";
     break;
-
   case OpCode::LoadLitIp:
     out << "load-ip";
     break;
@@ -139,6 +139,9 @@ auto operator<<(std::ostream& out, const OpCode& rhs) noexcept -> std::ostream& 
   case OpCode::CheckEqInt:
     out << "check-eq-int";
     break;
+  case OpCode::CheckEqLong:
+    out << "check-eq-long";
+    break;
   case OpCode::CheckEqFloat:
     out << "check-eq-float";
     break;
@@ -172,6 +175,9 @@ auto operator<<(std::ostream& out, const OpCode& rhs) noexcept -> std::ostream& 
     break;
   case OpCode::ConvIntString:
     out << "conv-int-string";
+    break;
+  case OpCode::ConvLongString:
+    out << "conv-long-string";
     break;
   case OpCode::ConvFloatString:
     out << "conv-float-string";

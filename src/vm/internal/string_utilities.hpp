@@ -7,9 +7,12 @@
 
 namespace vm::internal {
 
-[[nodiscard]] auto inline toString(Allocator* allocator, int32_t val) noexcept -> StringRef* {
-  static const auto maxCharSize = 11;
-  const auto strRefAlloc        = allocator->allocStr(maxCharSize);
+template <typename IntType>
+[[nodiscard]] auto inline intToString(Allocator* allocator, IntType val) noexcept -> StringRef* {
+  static_assert(std::is_same<IntType, int32_t>::value || std::is_same<IntType, int64_t>::value);
+  static const auto maxCharSize = std::is_same<IntType, int32_t>::value ? 11 : 20;
+
+  const auto strRefAlloc = allocator->allocStr(maxCharSize);
   if (strRefAlloc.first == nullptr) {
     return nullptr;
   }
@@ -20,8 +23,9 @@ namespace vm::internal {
   strRefAlloc.second[resultSize] = '\0'; // Null-terminate.
   strRefAlloc.first->updateSize(convRes.ptr - strRefAlloc.second);
 #else
+  const auto format = std::is_same<IntType, int32_t>::value ? "%d" : "%lld";
   // NOLINTNEXTLINE: C-style var-arg func.
-  const auto size = std::snprintf(strRefAlloc.second, maxCharSize + 1, "%d", val);
+  const auto size = std::snprintf(strRefAlloc.second, maxCharSize + 1, format, val);
   assert(strRefAlloc.second[size] == '\0');
   strRefAlloc.first->updateSize(size);
 #endif
@@ -29,7 +33,7 @@ namespace vm::internal {
   return strRefAlloc.first;
 }
 
-[[nodiscard]] auto inline toString(Allocator* allocator, float val) noexcept -> StringRef* {
+[[nodiscard]] auto inline floatToString(Allocator* allocator, float val) noexcept -> StringRef* {
   // In theory the 'nan' case is already covered by 'snprintf' but it seems some implementations
   // return '-nan' instead causing an inconsistency between platforms.
   if (std::isnan(val)) {
@@ -51,7 +55,7 @@ namespace vm::internal {
   return strRefAlloc.first;
 }
 
-[[nodiscard]] auto inline toString(Allocator* allocator, uint8_t val) noexcept -> StringRef* {
+[[nodiscard]] auto inline charToString(Allocator* allocator, uint8_t val) noexcept -> StringRef* {
   const auto strRefAlloc = allocator->allocStr(1);
   if (strRefAlloc.first == nullptr) {
     return nullptr;
@@ -61,7 +65,7 @@ namespace vm::internal {
   return strRefAlloc.first;
 }
 
-[[nodiscard]] auto inline toString(Allocator* allocator, const std::string& val) noexcept
+[[nodiscard]] auto inline toStringRef(Allocator* allocator, const std::string& val) noexcept
     -> StringRef* {
   const auto strRefAlloc = allocator->allocStr(val.length());
   if (strRefAlloc.first == nullptr) {

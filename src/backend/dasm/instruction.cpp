@@ -17,6 +17,8 @@ auto Instruction::getArgs() const noexcept -> const std::vector<Arg>& { return m
 auto operator<<(std::ostream& out, const Arg& rhs) -> std::ostream& {
   if (std::holds_alternative<int32_t>(rhs)) {
     out << std::get<int32_t>(rhs);
+  } else if (std::holds_alternative<int64_t>(rhs)) {
+    out << std::get<int64_t>(rhs);
   } else if (std::holds_alternative<uint32_t>(rhs)) {
     out << std::get<uint32_t>(rhs);
   } else if (std::holds_alternative<float>(rhs)) {

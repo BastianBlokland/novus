@@ -20,6 +20,18 @@ inline auto buildAssemblyExprInt(const std::function<void(backend::Builder*)>& b
   return builder.close();
 }
 
+inline auto buildAssemblyExprLong(const std::function<void(backend::Builder*)>& build)
+    -> vm::Assembly {
+  auto builder = backend::Builder{};
+  builder.label("prog");
+  build(&builder);
+  builder.addConvLongString();
+  builder.addPCall(vm::PCallCode::ConWriteString);
+  builder.addRet();
+  builder.setEntrypoint("prog");
+  return builder.close();
+}
+
 inline auto buildAssemblyExprFloat(const std::function<void(backend::Builder*)>& build)
     -> vm::Assembly {
   auto builder = backend::Builder{};
@@ -86,6 +98,10 @@ inline auto buildAssembly(const std::function<void(backend::Builder*)>& build) -
 #define CHECK_EXPR_INT(INPUT, BUILD_EXPECTED_ASM)                                                  \
   CHECK_ASM(                                                                                       \
       "conWrite(string(" + std::string(INPUT) + "))", buildAssemblyExprInt(BUILD_EXPECTED_ASM))
+
+#define CHECK_EXPR_LONG(INPUT, BUILD_EXPECTED_ASM)                                                 \
+  CHECK_ASM(                                                                                       \
+      "conWrite(string(" + std::string(INPUT) + "))", buildAssemblyExprLong(BUILD_EXPECTED_ASM))
 
 #define CHECK_EXPR_FLOAT(INPUT, BUILD_EXPECTED_ASM)                                                \
   CHECK_ASM(                                                                                       \

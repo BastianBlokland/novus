@@ -165,6 +165,7 @@ auto execute(
 #define READ_BYTE() readAsm<uint8_t>(&ip)
 #define READ_INT() readAsm<int32_t>(&ip)
 #define READ_UINT() readAsm<uint32_t>(&ip)
+#define READ_LONG() readAsm<int64_t>(&ip)
 #define READ_FLOAT() readAsm<float>(&ip)
 #define SALLOC(COUNT)                                                                              \
   if (!stack.alloc(COUNT)) {                                                                       \
@@ -249,6 +250,9 @@ auto execute(
     } break;
     case OpCode::LoadLitInt1: {
       PUSH_INT(1);
+    } break;
+    case OpCode::LoadLitLong: {
+      PUSH_REF(allocator->allocLong(READ_LONG()));
     } break;
     case OpCode::LoadLitFloat: {
       PUSH_FLOAT(READ_FLOAT());
@@ -420,6 +424,11 @@ auto execute(
       auto a = POP_INT();
       PUSH_BOOL(a == b);
     } break;
+    case OpCode::CheckEqLong: {
+      auto b = getLong(POP());
+      auto a = getLong(POP());
+      PUSH_BOOL(a == b);
+    } break;
     case OpCode::CheckEqFloat: {
       auto b = POP_FLOAT();
       auto a = POP_FLOAT();
@@ -473,13 +482,16 @@ auto execute(
       PUSH_INT(static_cast<int>(POP_FLOAT()));
     } break;
     case OpCode::ConvIntString: {
-      PUSH_REF(toString(allocator, POP_INT()));
+      PUSH_REF(intToString(allocator, POP_INT()));
+    } break;
+    case OpCode::ConvLongString: {
+      PUSH_REF(intToString(allocator, getLong(POP())));
     } break;
     case OpCode::ConvFloatString: {
-      PUSH_REF(toString(allocator, POP_FLOAT()));
+      PUSH_REF(floatToString(allocator, POP_FLOAT()));
     } break;
     case OpCode::ConvCharString: {
-      PUSH_REF(toString(allocator, static_cast<uint8_t>(POP_INT())));
+      PUSH_REF(charToString(allocator, static_cast<uint8_t>(POP_INT())));
     } break;
     case OpCode::ConvIntChar: {
       PUSH_INT(static_cast<uint8_t>(POP_INT()));
@@ -690,6 +702,7 @@ End:
 #undef READ_BYTE
 #undef READ_INT
 #undef READ_UINT
+#undef READ_LONG
 #undef READ_FLOAT
 #undef SALLOC
 #undef PUSH

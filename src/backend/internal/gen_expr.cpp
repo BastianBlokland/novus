@@ -145,6 +145,14 @@ auto GenExpr::visit(const prog::expr::CallExprNode& n) -> void {
     m_builder->addLogicInvInt();
     break;
 
+  case prog::sym::FuncKind::CheckEqLong:
+    m_builder->addCheckEqLong();
+    break;
+  case prog::sym::FuncKind::CheckNEqLong:
+    m_builder->addCheckEqLong();
+    m_builder->addLogicInvInt();
+    break;
+
   case prog::sym::FuncKind::AddFloat:
     m_builder->addAddFloat();
     break;
@@ -290,6 +298,9 @@ auto GenExpr::visit(const prog::expr::CallExprNode& n) -> void {
   case prog::sym::FuncKind::ConvIntString:
     m_builder->addConvIntString();
     break;
+  case prog::sym::FuncKind::ConvLongString:
+    m_builder->addConvLongString();
+    break;
   case prog::sym::FuncKind::ConvFloatString:
     m_builder->addConvFloatString();
     break;
@@ -305,6 +316,9 @@ auto GenExpr::visit(const prog::expr::CallExprNode& n) -> void {
 
   case prog::sym::FuncKind::DefInt:
     m_builder->addLoadLitInt(0);
+    break;
+  case prog::sym::FuncKind::DefLong:
+    m_builder->addLoadLitLong(0);
     break;
   case prog::sym::FuncKind::DefFloat:
     m_builder->addLoadLitFloat(.0);
@@ -573,6 +587,10 @@ auto GenExpr::visit(const prog::expr::LitFuncNode& n) -> void {
 
 auto GenExpr::visit(const prog::expr::LitIntNode& n) -> void {
   m_builder->addLoadLitInt(n.getVal());
+}
+
+auto GenExpr::visit(const prog::expr::LitLongNode& n) -> void {
+  m_builder->addLoadLitLong(n.getVal());
 }
 
 auto GenExpr::visit(const prog::expr::LitStringNode& n) -> void {

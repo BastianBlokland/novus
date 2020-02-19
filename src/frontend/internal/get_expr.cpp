@@ -9,6 +9,7 @@
 #include "lex/token_payload_lit_char.hpp"
 #include "lex/token_payload_lit_float.hpp"
 #include "lex/token_payload_lit_int.hpp"
+#include "lex/token_payload_lit_long.hpp"
 #include "lex/token_payload_lit_string.hpp"
 #include "parse/nodes.hpp"
 #include "prog/expr/nodes.hpp"
@@ -529,6 +530,10 @@ auto GetExpr::visit(const parse::LitExprNode& n) -> void {
   case lex::TokenKind::LitInt:
     m_expr = prog::expr::litIntNode(
         *m_ctx->getProg(), n.getVal().getPayload<lex::LitIntTokenPayload>()->getValue());
+    return;
+  case lex::TokenKind::LitLong:
+    m_expr = prog::expr::litLongNode(
+        *m_ctx->getProg(), n.getVal().getPayload<lex::LitLongTokenPayload>()->getValue());
     return;
   case lex::TokenKind::LitFloat:
     m_expr = prog::expr::litFloatNode(

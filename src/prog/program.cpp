@@ -15,6 +15,7 @@ auto getFuncDeclTable(const Program& prog) -> const sym::FuncDeclTable& { return
 
 Program::Program() :
     m_int{m_typeDecls.registerType(sym::TypeKind::Int, "int")},
+    m_long{m_typeDecls.registerType(sym::TypeKind::Long, "long")},
     m_float{m_typeDecls.registerType(sym::TypeKind::Float, "float")},
     m_bool{m_typeDecls.registerType(sym::TypeKind::Bool, "bool")},
     m_string{m_typeDecls.registerType(sym::TypeKind::String, "string")},
@@ -65,6 +66,12 @@ Program::Program() :
       *this, fk::CheckGtInt, getFuncName(op::Gt), sym::TypeSet{m_int, m_int}, m_bool);
   m_funcDecls.registerFunc(
       *this, fk::CheckGtEqInt, getFuncName(op::GtEq), sym::TypeSet{m_int, m_int}, m_bool);
+
+  // Register build-in binary long operators.
+  m_funcDecls.registerFunc(
+      *this, fk::CheckEqLong, getFuncName(op::EqEq), sym::TypeSet{m_long, m_long}, m_bool);
+  m_funcDecls.registerFunc(
+      *this, fk::CheckNEqLong, getFuncName(op::BangEq), sym::TypeSet{m_long, m_long}, m_bool);
 
   // Register build-in unary float operators.
   m_funcDecls.registerFunc(
@@ -127,6 +134,17 @@ Program::Program() :
   m_funcDecls.registerFunc(
       *this, fk::CheckNEqString, getFuncName(op::BangEq), sym::TypeSet{m_string, m_string}, m_bool);
 
+  // Register build-in string functions.
+  m_funcDecls.registerFunc(*this, fk::LengthString, "length", sym::TypeSet{m_string}, m_int);
+  m_funcDecls.registerFunc(
+      *this, fk::IndexString, getFuncName(op::SquareSquare), sym::TypeSet{m_string, m_int}, m_char);
+  m_funcDecls.registerFunc(
+      *this,
+      fk::SliceString,
+      getFuncName(op::SquareSquare),
+      sym::TypeSet{m_string, m_int, m_int},
+      m_string);
+
   // Register build-in unary char operators.
   m_funcDecls.registerFunc(
       *this, fk::IncrementChar, getFuncName(op::PlusPlus), sym::TypeSet{m_char}, m_char);
@@ -149,6 +167,7 @@ Program::Program() :
 
   // Register build-in default constructors.
   m_funcDecls.registerFunc(*this, fk::DefInt, "int", sym::TypeSet{}, m_int);
+  m_funcDecls.registerFunc(*this, fk::DefLong, "long", sym::TypeSet{}, m_long);
   m_funcDecls.registerFunc(*this, fk::DefFloat, "float", sym::TypeSet{}, m_float);
   m_funcDecls.registerFunc(*this, fk::DefBool, "bool", sym::TypeSet{}, m_bool);
   m_funcDecls.registerFunc(*this, fk::DefString, "string", sym::TypeSet{}, m_string);
@@ -159,6 +178,7 @@ Program::Program() :
 
   // Register build-in identity conversions (turn into no-ops).
   m_funcDecls.registerFunc(*this, fk::NoOp, "int", sym::TypeSet{m_int}, m_int);
+  m_funcDecls.registerFunc(*this, fk::NoOp, "long", sym::TypeSet{m_long}, m_long);
   m_funcDecls.registerFunc(*this, fk::NoOp, "float", sym::TypeSet{m_float}, m_float);
   m_funcDecls.registerFunc(*this, fk::NoOp, "bool", sym::TypeSet{m_bool}, m_bool);
   m_funcDecls.registerFunc(*this, fk::NoOp, "string", sym::TypeSet{m_string}, m_string);
@@ -168,22 +188,12 @@ Program::Program() :
   m_funcDecls.registerFunc(*this, fk::ConvFloatInt, "int", sym::TypeSet{m_float}, m_int);
   m_funcDecls.registerFunc(*this, fk::ConvIntChar, "char", sym::TypeSet{m_int}, m_char);
   m_funcDecls.registerFunc(*this, fk::ConvIntString, "string", sym::TypeSet{m_int}, m_string);
+  m_funcDecls.registerFunc(*this, fk::ConvLongString, "string", sym::TypeSet{m_long}, m_string);
   m_funcDecls.registerFunc(*this, fk::ConvFloatString, "string", sym::TypeSet{m_float}, m_string);
   m_funcDecls.registerFunc(*this, fk::ConvBoolString, "string", sym::TypeSet{m_bool}, m_string);
   m_funcDecls.registerFunc(*this, fk::ConvCharString, "string", sym::TypeSet{m_char}, m_string);
   m_funcDecls.registerFunc(*this, fk::NoOp, "asFloat", sym::TypeSet{m_int}, m_float);
   m_funcDecls.registerFunc(*this, fk::NoOp, "asInt", sym::TypeSet{m_float}, m_int);
-
-  // Register build-in functions.
-  m_funcDecls.registerFunc(*this, fk::LengthString, "length", sym::TypeSet{m_string}, m_int);
-  m_funcDecls.registerFunc(
-      *this, fk::IndexString, getFuncName(op::SquareSquare), sym::TypeSet{m_string, m_int}, m_char);
-  m_funcDecls.registerFunc(
-      *this,
-      fk::SliceString,
-      getFuncName(op::SquareSquare),
-      sym::TypeSet{m_string, m_int, m_int},
-      m_string);
 
   // Register build-in actions.
   m_funcDecls.registerAction(
@@ -229,6 +239,8 @@ auto Program::beginExecStmts() const -> execStmtIterator { return m_execStmts.be
 auto Program::endExecStmts() const -> execStmtIterator { return m_execStmts.end(); }
 
 auto Program::getInt() const noexcept -> sym::TypeId { return m_int; }
+
+auto Program::getLong() const noexcept -> sym::TypeId { return m_long; }
 
 auto Program::getFloat() const noexcept -> sym::TypeId { return m_float; }
 

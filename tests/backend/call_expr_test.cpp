@@ -178,6 +178,20 @@ TEST_CASE("Generate assembly for call expressions", "[backend]") {
     });
   }
 
+  SECTION("Long checks") {
+    CHECK_EXPR_BOOL("1L == 3L", [](backend::Builder* builder) -> void {
+      builder->addLoadLitLong(1);
+      builder->addLoadLitLong(3);
+      builder->addCheckEqLong();
+    });
+    CHECK_EXPR_BOOL("1L != 3L", [](backend::Builder* builder) -> void {
+      builder->addLoadLitLong(1);
+      builder->addLoadLitLong(3);
+      builder->addCheckEqLong();
+      builder->addLogicInvInt();
+    });
+  }
+
   SECTION("Float checks") {
     CHECK_EXPR_BOOL("1.42 == 3.42", [](backend::Builder* builder) -> void {
       builder->addLoadLitFloat(1.42F); // NOLINT: Magic numbers
@@ -369,6 +383,8 @@ TEST_CASE("Generate assembly for call expressions", "[backend]") {
 
   SECTION("Default constructors") {
     CHECK_EXPR_INT("int()", [](backend::Builder* builder) -> void { builder->addLoadLitInt(0); });
+    CHECK_EXPR_LONG(
+        "long()", [](backend::Builder* builder) -> void { builder->addLoadLitLong(0); });
     CHECK_EXPR_FLOAT(
         "float()", [](backend::Builder* builder) -> void { builder->addLoadLitFloat(.0); });
     CHECK_EXPR_BOOL("bool()", [](backend::Builder* builder) -> void { builder->addLoadLitInt(0); });
@@ -402,6 +418,8 @@ TEST_CASE("Generate assembly for call expressions", "[backend]") {
   SECTION("Identity conversions") {
     CHECK_EXPR_INT(
         "int(42)", [](backend::Builder* builder) -> void { builder->addLoadLitInt(42); });
+    CHECK_EXPR_LONG(
+        "long(42L)", [](backend::Builder* builder) -> void { builder->addLoadLitLong(42); });
     CHECK_EXPR_FLOAT("float(42.1337)", [](backend::Builder* builder) -> void {
       builder->addLoadLitFloat(42.1337F); // NOLINT: Magic numbers
     });

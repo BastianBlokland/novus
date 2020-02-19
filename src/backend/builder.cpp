@@ -34,6 +34,11 @@ auto Builder::addLoadLitInt(int32_t val) -> void {
   }
 }
 
+auto Builder::addLoadLitLong(int64_t val) -> void {
+  writeOpCode(vm::OpCode::LoadLitLong);
+  writeInt64(val);
+}
+
 auto Builder::addLoadLitFloat(float val) -> void {
   writeOpCode(vm::OpCode::LoadLitFloat);
   writeFloat(val);
@@ -131,6 +136,8 @@ auto Builder::addSliceString() -> void { writeOpCode(vm::OpCode::SliceString); }
 
 auto Builder::addCheckEqInt() -> void { writeOpCode(vm::OpCode::CheckEqInt); }
 
+auto Builder::addCheckEqLong() -> void { writeOpCode(vm::OpCode::CheckEqLong); }
+
 auto Builder::addCheckEqFloat() -> void { writeOpCode(vm::OpCode::CheckEqFloat); }
 
 auto Builder::addCheckEqString() -> void { writeOpCode(vm::OpCode::CheckEqString); }
@@ -152,6 +159,8 @@ auto Builder::addConvIntFloat() -> void { writeOpCode(vm::OpCode::ConvIntFloat);
 auto Builder::addConvFloatInt() -> void { writeOpCode(vm::OpCode::ConvFloatInt); }
 
 auto Builder::addConvIntString() -> void { writeOpCode(vm::OpCode::ConvIntString); }
+
+auto Builder::addConvLongString() -> void { writeOpCode(vm::OpCode::ConvLongString); }
 
 auto Builder::addConvFloatString() -> void { writeOpCode(vm::OpCode::ConvFloatString); }
 
@@ -277,10 +286,7 @@ auto Builder::addLitString(const std::string& string) -> uint32_t {
 
 auto Builder::getCurrentIpOffset() -> uint32_t { return m_instructions.size(); }
 
-auto Builder::writeOpCode(vm::OpCode opCode) -> void {
-  throwIfClosed();
-  writeUInt8(static_cast<uint8_t>(opCode));
-}
+auto Builder::writeOpCode(vm::OpCode opCode) -> void { writeUInt8(static_cast<uint8_t>(opCode)); }
 
 auto Builder::writeUInt8(uint8_t val) -> void {
   throwIfClosed();
@@ -288,8 +294,11 @@ auto Builder::writeUInt8(uint8_t val) -> void {
 }
 
 auto Builder::writeInt32(int32_t val) -> void {
-  throwIfClosed();
   writeUInt32(reinterpret_cast<uint32_t&>(val)); // NOLINT: Reinterpret cast
+}
+
+auto Builder::writeInt64(int64_t val) -> void {
+  writeUInt64(reinterpret_cast<uint64_t&>(val)); // NOLINT: Reinterpret cast
 }
 
 auto Builder::writeUInt32(uint32_t val) -> void {
@@ -300,8 +309,19 @@ auto Builder::writeUInt32(uint32_t val) -> void {
   m_instructions.push_back(val >> 24U); // NOLINT: Magic number
 }
 
-auto Builder::writeFloat(float val) -> void {
+auto Builder::writeUInt64(uint64_t val) -> void {
   throwIfClosed();
+  m_instructions.push_back(val);
+  m_instructions.push_back(val >> 8U);  // NOLINT: Magic number
+  m_instructions.push_back(val >> 16U); // NOLINT: Magic number
+  m_instructions.push_back(val >> 24U); // NOLINT: Magic number
+  m_instructions.push_back(val >> 32U); // NOLINT: Magic number
+  m_instructions.push_back(val >> 40U); // NOLINT: Magic number
+  m_instructions.push_back(val >> 48U); // NOLINT: Magic number
+  m_instructions.push_back(val >> 56U); // NOLINT: Magic number
+}
+
+auto Builder::writeFloat(float val) -> void {
   writeUInt32(reinterpret_cast<uint32_t&>(val)); // NOLINT: Reinterpret cast
 }
 

@@ -27,6 +27,9 @@ enum class FuncKind {
   CheckGtInt,
   CheckGtEqInt,
 
+  CheckEqLong,
+  CheckNEqLong,
+
   AddFloat,
   SubFloat,
   MulFloat,
@@ -68,12 +71,14 @@ enum class FuncKind {
   ConvIntFloat,
   ConvFloatInt,
   ConvIntString,
+  ConvLongString,
   ConvFloatString,
   ConvBoolString,
   ConvCharString,
   ConvIntChar,
 
   DefInt,
+  DefLong,
   DefFloat,
   DefBool,
   DefString,

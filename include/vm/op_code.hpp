@@ -15,8 +15,9 @@ enum class OpCode : uint8_t {
   LoadLitIntSmall = 11, // [uint8]  () -> (int)     Load a small integer literal on the stack.
   LoadLitInt0     = 12, // []       () -> (int)     Load integer 0 on the stack.
   LoadLitInt1     = 13, // []       () -> (int)     Load integer 1 on the stack.
-  LoadLitFloat    = 14, // [float]  () -> (float)   Load a float literal on the stack.
-  LoadLitString   = 15, // [uint32] () -> (string)  Load an item from the string literal table.
+  LoadLitLong     = 14, // [int64]  () -> (long)    Load a long literal on the stack.
+  LoadLitFloat    = 15, // [float]  () -> (float)   Load a float literal on the stack.
+  LoadLitString   = 16, // [uint32] () -> (string)  Load an item from the string literal table.
 
   LoadLitIp = 20, // [uint] () -> (ip) Load an instruction-pointer on the stack.
 
@@ -58,21 +59,23 @@ enum class OpCode : uint8_t {
   SliceString   = 71, // [] (int, int, string)  -> (string) Substring from start to end (exclusive).
 
   CheckEqInt        = 80, // [] (int, int)                -> (int) Check integers equal.
-  CheckEqFloat      = 81, // [] (float, float)            -> (int) Check floats equal.
-  CheckEqString     = 82, // [] (string, string)          -> (int) Check strings equal.
-  CheckEqIp         = 83, // [] (ip, ip)                  -> (int) Check instruction-pointers equal.
-  CheckEqCallDynTgt = 84, // [] (ip/closure, ip/closure)  -> (int) Check ip / closures equal.
-  CheckGtInt        = 85, // [] (int, int)                -> (int) Check integer is greater.
-  CheckGtFloat      = 86, // [] (float, float)            -> (int) Check float is greater.
-  CheckLeInt        = 87, // [] (int, int)                -> (int) Check integer is less.
-  CheckLeFloat      = 88, // [] (float, float)            -> (int) Check float is less.
+  CheckEqLong       = 81, // [] (long, long)              -> (int) Check long equal.
+  CheckEqFloat      = 82, // [] (float, float)            -> (int) Check floats equal.
+  CheckEqString     = 83, // [] (string, string)          -> (int) Check strings equal.
+  CheckEqIp         = 84, // [] (ip, ip)                  -> (int) Check instruction-pointers equal.
+  CheckEqCallDynTgt = 85, // [] (ip/closure, ip/closure)  -> (int) Check ip / closures equal.
+  CheckGtInt        = 86, // [] (int, int)                -> (int) Check integer is greater.
+  CheckGtFloat      = 87, // [] (float, float)            -> (int) Check float is greater.
+  CheckLeInt        = 88, // [] (int, int)                -> (int) Check integer is less.
+  CheckLeFloat      = 89, // [] (float, float)            -> (int) Check float is less.
 
   ConvIntFloat    = 91, // [] (int)   -> (float)    Convert integer to float.
   ConvFloatInt    = 92, // [] (float) -> (int)      Convert float to integer.
   ConvIntString   = 93, // [] (int)   -> (string)   Convert int to string.
-  ConvFloatString = 94, // [] (float) -> (string)   Convert float to string.
-  ConvCharString  = 95, // [] (int)   -> (string)   Convert char to string (ascii).
-  ConvIntChar     = 96, // [] (int)   -> (int)      Convert integer to char (ascii).
+  ConvLongString  = 94, // [] (long)  -> (string)   Convert long to string.
+  ConvFloatString = 95, // [] (float) -> (string)   Convert float to string.
+  ConvCharString  = 96, // [] (int)   -> (string)   Convert char to string (ascii).
+  ConvIntChar     = 97, // [] (int)   -> (int)      Convert integer to char (ascii).
 
   MakeStruct      = 100, // [uint8] (any ...) -> (struct) Create structure containing x values.
   LoadStructField = 101, // [uint8] (struct)  -> (any)    Get value of field x in structure.

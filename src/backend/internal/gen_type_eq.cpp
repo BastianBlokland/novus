@@ -11,6 +11,9 @@ static auto genTypeEquality(Builder* builder, const prog::sym::TypeDecl& typeDec
   case prog::sym::TypeKind::Enum:
     builder->addCheckEqInt();
     break;
+  case prog::sym::TypeKind::Long:
+    builder->addCheckEqLong();
+    break;
   case prog::sym::TypeKind::Float:
     builder->addCheckEqFloat();
     break;

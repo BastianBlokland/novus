@@ -2,6 +2,7 @@
 #include "internal/executor_registry.hpp"
 #include "internal/garbage_collector.hpp"
 #include "internal/ref_future.hpp"
+#include "internal/ref_long.hpp"
 #include "internal/ref_string.hpp"
 #include "internal/ref_struct.hpp"
 #include <atomic>
@@ -32,6 +33,9 @@ public:
 
   // Allocate a future, upon failure returns {nullptr}.
   [[nodiscard]] auto allocFuture() noexcept -> FutureRef*;
+
+  // Allocate a long, upon failure returns {nullptr}.
+  [[nodiscard]] auto allocLong(int64_t val) noexcept -> LongRef*;
 
   [[nodiscard]] inline auto getHeadAlloc() noexcept -> Ref* {
     return m_head.load(std::memory_order_acquire);

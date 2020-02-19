@@ -72,6 +72,17 @@ auto Allocator::allocFuture() noexcept -> FutureRef* {
   return refPtr;
 }
 
+auto Allocator::allocLong(int64_t val) noexcept -> LongRef* {
+  auto mem = alloc<LongRef>(0);
+  if (mem.first == nullptr) {
+    return nullptr;
+  }
+
+  auto* refPtr = static_cast<LongRef*>(new (mem.first) LongRef{val});
+  initRef(refPtr);
+  return refPtr;
+}
+
 auto Allocator::initRef(Ref* ref) noexcept -> void {
   // Keep track of all allocated references by linking them as a singly linked list.
   ref->m_next = m_head.load(std::memory_order_relaxed);

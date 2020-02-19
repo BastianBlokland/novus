@@ -22,6 +22,9 @@ auto disassembleInstructions(const vm::Assembly& assembly) -> std::vector<Instru
     case vm::OpCode::LoadLitInt:
       result.push_back(Instruction(opCode, offset, {readAsm<int32_t>(&ip)}));
       continue;
+    case vm::OpCode::LoadLitLong:
+      result.push_back(Instruction(opCode, offset, {readAsm<int64_t>(&ip)}));
+      continue;
     case vm::OpCode::LoadLitFloat:
       result.push_back(Instruction(opCode, offset, {readAsm<float>(&ip)}));
       continue;
@@ -71,6 +74,7 @@ auto disassembleInstructions(const vm::Assembly& assembly) -> std::vector<Instru
     case vm::OpCode::IndexString:
     case vm::OpCode::SliceString:
     case vm::OpCode::CheckEqInt:
+    case vm::OpCode::CheckEqLong:
     case vm::OpCode::CheckEqFloat:
     case vm::OpCode::CheckEqString:
     case vm::OpCode::CheckEqIp:
@@ -82,6 +86,7 @@ auto disassembleInstructions(const vm::Assembly& assembly) -> std::vector<Instru
     case vm::OpCode::ConvIntFloat:
     case vm::OpCode::ConvFloatInt:
     case vm::OpCode::ConvIntString:
+    case vm::OpCode::ConvLongString:
     case vm::OpCode::ConvFloatString:
     case vm::OpCode::ConvCharString:
     case vm::OpCode::ConvIntChar:
