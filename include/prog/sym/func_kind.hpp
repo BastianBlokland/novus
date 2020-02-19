@@ -80,7 +80,9 @@ enum class FuncKind {
   IncrementChar,
   DecrementChar,
 
+  ConvIntLong,
   ConvIntFloat,
+  ConvLongInt,
   ConvFloatInt,
   ConvIntString,
   ConvLongString,

@@ -329,8 +329,14 @@ auto GenExpr::visit(const prog::expr::CallExprNode& n) -> void {
     m_builder->addConvIntChar();
     break;
 
+  case prog::sym::FuncKind::ConvIntLong:
+    m_builder->addConvIntLong();
+    break;
   case prog::sym::FuncKind::ConvIntFloat:
     m_builder->addConvIntFloat();
+    break;
+  case prog::sym::FuncKind::ConvLongInt:
+    m_builder->addConvLongInt();
     break;
   case prog::sym::FuncKind::ConvFloatInt:
     m_builder->addConvFloatInt();

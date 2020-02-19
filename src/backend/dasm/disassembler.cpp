@@ -91,7 +91,9 @@ auto disassembleInstructions(const vm::Assembly& assembly) -> std::vector<Instru
     case vm::OpCode::CheckLeInt:
     case vm::OpCode::CheckLeLong:
     case vm::OpCode::CheckLeFloat:
+    case vm::OpCode::ConvIntLong:
     case vm::OpCode::ConvIntFloat:
+    case vm::OpCode::ConvLongInt:
     case vm::OpCode::ConvFloatInt:
     case vm::OpCode::ConvIntString:
     case vm::OpCode::ConvLongString:

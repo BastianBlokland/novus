@@ -170,7 +170,11 @@ auto Builder::addCheckLeLong() -> void { writeOpCode(vm::OpCode::CheckLeLong); }
 
 auto Builder::addCheckLeFloat() -> void { writeOpCode(vm::OpCode::CheckLeFloat); }
 
+auto Builder::addConvIntLong() -> void { writeOpCode(vm::OpCode::ConvIntLong); }
+
 auto Builder::addConvIntFloat() -> void { writeOpCode(vm::OpCode::ConvIntFloat); }
+
+auto Builder::addConvLongInt() -> void { writeOpCode(vm::OpCode::ConvLongInt); }
 
 auto Builder::addConvFloatInt() -> void { writeOpCode(vm::OpCode::ConvFloatInt); }
 

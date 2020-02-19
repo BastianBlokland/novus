@@ -191,8 +191,14 @@ auto operator<<(std::ostream& out, const OpCode& rhs) noexcept -> std::ostream& 
     out << "check-le-float";
     break;
 
+  case OpCode::ConvIntLong:
+    out << "conv-int-long";
+    break;
   case OpCode::ConvIntFloat:
     out << "conv-int-float";
+    break;
+  case OpCode::ConvLongInt:
+    out << "conv-long-int";
     break;
   case OpCode::ConvFloatInt:
     out << "conv-float-int";

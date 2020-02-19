@@ -520,11 +520,17 @@ auto execute(
       PUSH_BOOL(a < b);
     } break;
 
+    case OpCode::ConvIntLong: {
+      PUSH_REF(allocator->allocLong(static_cast<int64_t>(POP_INT())));
+    } break;
     case OpCode::ConvIntFloat: {
       PUSH_FLOAT(static_cast<float>(POP_INT()));
     } break;
+    case OpCode::ConvLongInt: {
+      PUSH_INT(static_cast<int32_t>(getLong(POP())));
+    } break;
     case OpCode::ConvFloatInt: {
-      PUSH_INT(static_cast<int>(POP_FLOAT()));
+      PUSH_INT(static_cast<int32_t>(POP_FLOAT()));
     } break;
     case OpCode::ConvIntString: {
       PUSH_REF(intToString(allocator, POP_INT()));

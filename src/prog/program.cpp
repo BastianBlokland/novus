@@ -201,6 +201,7 @@ Program::Program() :
 
   // Register build-in implicit conversions.
   m_funcDecls.registerImplicitConv(*this, fk::NoOp, m_char, m_int);
+  m_funcDecls.registerImplicitConv(*this, fk::ConvIntLong, m_int, m_long);
   m_funcDecls.registerImplicitConv(*this, fk::ConvIntFloat, m_int, m_float);
 
   // Register build-in identity conversions (turns into no-ops).
@@ -213,6 +214,7 @@ Program::Program() :
 
   // Register build-in explicit conversions.
   m_funcDecls.registerFunc(*this, fk::ConvFloatInt, "int", sym::TypeSet{m_float}, m_int);
+  m_funcDecls.registerFunc(*this, fk::ConvLongInt, "int", sym::TypeSet{m_long}, m_int);
   m_funcDecls.registerFunc(*this, fk::ConvIntChar, "char", sym::TypeSet{m_int}, m_char);
   m_funcDecls.registerFunc(*this, fk::ConvIntString, "string", sym::TypeSet{m_int}, m_string);
   m_funcDecls.registerFunc(*this, fk::ConvLongString, "string", sym::TypeSet{m_long}, m_string);

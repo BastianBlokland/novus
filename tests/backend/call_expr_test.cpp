@@ -445,9 +445,21 @@ TEST_CASE("Generate assembly for call expressions", "[backend]") {
       builder->addLoadLitFloat(42.1337F); // NOLINT: Magic numbers
       builder->addConvFloatInt();
     });
+    CHECK_EXPR_INT("int(42L)", [](backend::Builder* builder) -> void {
+      builder->addLoadLitLong(42); // NOLINT: Magic numbers
+      builder->addConvLongInt();
+    });
+    CHECK_EXPR_LONG("long(42)", [](backend::Builder* builder) -> void {
+      builder->addLoadLitInt(42); // NOLINT: Magic numbers
+      builder->addConvIntLong();
+    });
     CHECK_EXPR_STRING("string(42)", [](backend::Builder* builder) -> void {
       builder->addLoadLitInt(42);
       builder->addConvIntString();
+    });
+    CHECK_EXPR_STRING("string(42L)", [](backend::Builder* builder) -> void {
+      builder->addLoadLitLong(42);
+      builder->addConvLongString();
     });
     CHECK_EXPR_STRING("string(.1337)", [](backend::Builder* builder) -> void {
       builder->addLoadLitFloat(0.1337F); // NOLINT: Magic numbers
