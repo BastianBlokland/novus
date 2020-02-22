@@ -1,12 +1,20 @@
 import "func.nov"
 import "list.nov"
 
-// Operators
+// -- Operators
 
 fun +{T}(string s, T v)
   s + v.string()
 
-// Functions
+// -- Conversions
+
+fun string(int i, int minDigits)
+  i.string().padLeft(minDigits, '0')
+
+fun string(long i, int minDigits)
+  i.string().padLeft(minDigits, '0')
+
+// -- Functions
 
 fun isEmpty(string str)
   str.length() == 0
@@ -102,6 +110,10 @@ fun insert(string str, int idx, string val)
   if idx >= str.length()  -> str + val
   else                    -> str[0, idx] + val + str[idx, str.length()]
 
+fun padLeft(string str, int length, char c)
+  if str.length() < length  -> padLeft(c.string() + str, length, c)
+  else                      -> str
+
 fun fold{T}(string str, function{T, char, T} func)
   (
     lambda (int idx, T result)
@@ -134,7 +146,11 @@ fun join(List{string} l)
 fun join(List{char} l)
   l.fold(appendChar)
 
-// Tests
+// -- Tests
+
+assert(
+  string(1, 2) == "01" &&
+  string(42L, 5) == "00042")
 
 assert("".isEmpty() && !" ".isEmpty())
 
@@ -232,6 +248,13 @@ assert(
   "helloworld".insert("helloworld".length(), "_") == "helloworld_" &&
   "helloworld".insert(1, "_") == "h_elloworld" &&
   "helloworld".insert(5, "_") == "hello_world")
+
+assert(
+  "1".padLeft(-1, '0') == "1" &&
+  "1".padLeft(0, '0') == "1" &&
+  "1".padLeft(1, '0') == "1" &&
+  "1".padLeft(2, '0') == "01" &&
+  "1".padLeft(3, '0') == "001")
 
 assert(
   "hello".transform(lambda (char c) 'W') == "WWWWW" &&

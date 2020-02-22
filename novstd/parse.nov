@@ -1,7 +1,7 @@
 import "ascii.nov"
 import "math.nov"
 
-// Functions
+// -- Functions
 
 fun parseInt(string str)
   parseIntOffset(str, 0, str.length())
@@ -45,7 +45,7 @@ fun parseBool(string str) -> Option{bool}
   if str == "false" || str == "FALSE" || str == "False" -> false
   else                                                  -> None()
 
-// Tests
+// -- Tests
 
 assert(
   "1".parseInt() == 1 &&

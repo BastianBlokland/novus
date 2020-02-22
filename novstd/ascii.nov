@@ -1,6 +1,6 @@
 import "list.nov"
 
-// Functions
+// -- Functions
 
 fun isDigit(char c)
   c >= '0' && c <= '9'
@@ -26,7 +26,7 @@ fun toUpper(char c)
 fun toLower(char c)
   c.isUpper() ? char(c ^ 0x20) : c
 
-// Tests
+// -- Tests
 
 assert(
   rangeList('0', '9').all(isDigit) &&
