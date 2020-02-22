@@ -111,9 +111,9 @@ auto inline pcall(
     PUSH_REF(allocator->allocLong(result));
   } break;
 
-  case vm::PCallCode::Sleep: {
+  case vm::PCallCode::SleepNano: {
     execHandle->setState(ExecState::Paused);
-    std::this_thread::sleep_for(std::chrono::milliseconds(PEEK_INT()));
+    std::this_thread::sleep_for(std::chrono::nanoseconds(getLong(PEEK())));
     execHandle->setState(ExecState::Running);
     execHandle->trap();
   } break;

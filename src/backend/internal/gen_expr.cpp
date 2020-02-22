@@ -461,8 +461,8 @@ auto GenExpr::visit(const prog::expr::CallExprNode& n) -> void {
     m_builder->addPCall(vm::PCallCode::ClockNanoSteady);
     break;
 
-  case prog::sym::FuncKind::ActionSleep:
-    m_builder->addPCall(vm::PCallCode::Sleep);
+  case prog::sym::FuncKind::ActionSleepNano:
+    m_builder->addPCall(vm::PCallCode::SleepNano);
     break;
   case prog::sym::FuncKind::ActionAssert:
     m_builder->addPCall(vm::PCallCode::Assert);

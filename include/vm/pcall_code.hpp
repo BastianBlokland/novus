@@ -24,8 +24,8 @@ enum class PCallCode : uint8_t {
   ClockNanoSinceEpoch = 40, // () -> (long) Get the elapsed nanoseconds since unix epoch.
   ClockNanoSteady     = 41, // () -> (long) Get the elapsed nanoseconds in the process steady clock.
 
-  Sleep  = 240, // (int)         -> (int) Sleep the current executor for x ms.
-  Assert = 241, // (string, int) -> (int) Assert the condition is true, otherwise fail with message.
+  SleepNano = 240, // (long)         -> (long) Sleep the current executor for x nanoseconds.
+  Assert    = 241, // (string, int)  -> (int) If condition is false: fail with message.
 };
 
 auto operator<<(std::ostream& out, const PCallCode& rhs) noexcept -> std::ostream&;

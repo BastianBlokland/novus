@@ -29,7 +29,7 @@ TEST_CASE("Analyzing execute statements", "[frontend]") {
 
   SECTION("Define exec statement with conversion") {
     const auto& output = ANALYZE("enum SleepTimes = short : 10, long : 100 "
-                                 "sleep(SleepTimes.short)");
+                                 "sleepNano(SleepTimes.short)");
     REQUIRE(output.isSuccess());
 
     auto execsBegin     = output.getProg().beginExecStmts();
@@ -39,14 +39,14 @@ TEST_CASE("Analyzing execute statements", "[frontend]") {
     args.push_back(applyConv(
         output,
         "SleepTimes",
-        "int",
+        "long",
         prog::expr::litEnumNode(output.getProg(), GET_TYPE_ID(output, "SleepTimes"), "short")));
 
     CHECK(
         execsBegin->getExpr() ==
         *prog::expr::callExprNode(
             output.getProg(),
-            GET_FUNC_ID(output, "sleep", GET_TYPE_ID(output, "int")),
+            GET_FUNC_ID(output, "sleepNano", GET_TYPE_ID(output, "long")),
             std::move(args)));
     REQUIRE(++execsBegin == execsEnd);
   }

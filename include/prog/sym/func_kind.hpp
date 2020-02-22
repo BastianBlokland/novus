@@ -120,7 +120,7 @@ enum class FuncKind {
   ActionClockNanoSinceEpoch,
   ActionClockNanoSteady,
 
-  ActionSleep,
+  ActionSleepNano,
   ActionAssert,
 };
 

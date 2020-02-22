@@ -38,8 +38,8 @@ auto operator<<(std::ostream& out, const PCallCode& rhs) noexcept -> std::ostrea
     out << "clock-nano-steady";
     break;
 
-  case PCallCode::Sleep:
-    out << "sleep";
+  case PCallCode::SleepNano:
+    out << "sleep-nano";
     break;
   case PCallCode::Assert:
     out << "assert";
