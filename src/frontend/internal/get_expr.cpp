@@ -215,7 +215,7 @@ auto GetExpr::visit(const parse::CallExprNode& n) -> void {
     return;
   }
 
-  if (!identifier || m_constBinder->canBind(getName(*identifier)) ||
+  if (!identifier || (instance == nullptr && m_constBinder->canBind(getName(*identifier))) ||
       (instance != nullptr && !isFuncOrConv(m_ctx, getName(*identifier)))) {
 
     m_expr = getDynCallExpr(n);
