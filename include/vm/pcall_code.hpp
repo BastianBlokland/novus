@@ -21,8 +21,8 @@ enum class PCallCode : uint8_t {
   GetEnvArgCount = 31, // ()        -> (int)    Get the amount of environment arguments provided.
   GetEnvVar      = 32, // (string)  -> (string) Get a environment variable by name.
 
-  ClockNanoSinceEpoch = 40, // () -> (long) Get the elapsed nanoseconds since unix epoch.
-  ClockNanoSteady     = 41, // () -> (long) Get the elapsed nanoseconds in the process steady clock.
+  ClockMicroSinceEpoch = 40, // () -> (long) Get the elapsed microseconds since unix epoch.
+  ClockNanoSteady      = 42, // () -> (long) Get process steady clock in nanoseconds.
 
   SleepNano = 240, // (long)         -> (long) Sleep the current executor for x nanoseconds.
   Assert    = 241, // (string, int)  -> (int) If condition is false: fail with message.

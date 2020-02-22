@@ -244,7 +244,7 @@ Program::Program() :
       *this, fk::ActionGetEnvVar, "getEnvVar", sym::TypeSet{m_string}, m_string);
 
   m_funcDecls.registerAction(
-      *this, fk::ActionClockNanoSinceEpoch, "clockNanoSinceEpoch", sym::TypeSet{}, m_long);
+      *this, fk::ActionClockMicroSinceEpoch, "clockMicroSinceEpoch", sym::TypeSet{}, m_long);
   m_funcDecls.registerAction(
       *this, fk::ActionClockNanoSteady, "clockNanoSteady", sym::TypeSet{}, m_long);
 

@@ -117,7 +117,7 @@ enum class FuncKind {
   ActionGetEnvArg,
   ActionGetEnvVar,
 
-  ActionClockNanoSinceEpoch,
+  ActionClockMicroSinceEpoch,
   ActionClockNanoSteady,
 
   ActionSleepNano,

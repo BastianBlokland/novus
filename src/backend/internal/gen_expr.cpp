@@ -454,8 +454,8 @@ auto GenExpr::visit(const prog::expr::CallExprNode& n) -> void {
     m_builder->addPCall(vm::PCallCode::GetEnvVar);
     break;
 
-  case prog::sym::FuncKind::ActionClockNanoSinceEpoch:
-    m_builder->addPCall(vm::PCallCode::ClockNanoSinceEpoch);
+  case prog::sym::FuncKind::ActionClockMicroSinceEpoch:
+    m_builder->addPCall(vm::PCallCode::ClockMicroSinceEpoch);
     break;
   case prog::sym::FuncKind::ActionClockNanoSteady:
     m_builder->addPCall(vm::PCallCode::ClockNanoSteady);

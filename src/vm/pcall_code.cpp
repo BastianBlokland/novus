@@ -31,8 +31,8 @@ auto operator<<(std::ostream& out, const PCallCode& rhs) noexcept -> std::ostrea
     out << "get-env-var";
     break;
 
-  case PCallCode::ClockNanoSinceEpoch:
-    out << "clock-nano-since-epoch";
+  case PCallCode::ClockMicroSinceEpoch:
+    out << "clock-micro-since-epoch";
     break;
   case PCallCode::ClockNanoSteady:
     out << "clock-nano-steady";
