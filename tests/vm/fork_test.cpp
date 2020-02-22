@@ -105,9 +105,9 @@ TEST_CASE("Execute forks", "[vm]") {
           builder->addFutureBlock();
           builder->addPop();
 
-          // Poll the fork state (wait with 0 timeout).
-          builder->addLoadLitInt(0);
-          builder->addFutureWait();
+          // Poll the fork state (wait with 0 ns timeout).
+          builder->addLoadLitLong(0);
+          builder->addFutureWaitNano();
 
           // Print the result.
           builder->addConvBoolString();

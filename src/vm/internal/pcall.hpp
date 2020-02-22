@@ -60,6 +60,7 @@ auto inline pcall(
     iface->conWrite(&newl, 1);
     iface->unlockConWrite();
   } break;
+
   case vm::PCallCode::ConReadChar: {
     execHandle->setState(ExecState::Paused);
     iface->lockConRead();
@@ -85,6 +86,7 @@ auto inline pcall(
     execHandle->trap();
     PUSH_REF(toStringRef(allocator, line));
   } break;
+
   case vm::PCallCode::GetEnvArg: {
     auto* res = iface->getEnvArg(POP_INT());
     PUSH_REF(res == nullptr ? allocator->allocStr(0).first : toStringRef(allocator, res));
@@ -97,9 +99,21 @@ auto inline pcall(
     auto* res        = iface->getEnvVar(nameStrRef->getDataPtr());
     PUSH_REF(res == nullptr ? allocator->allocStr(0).first : toStringRef(allocator, res));
   } break;
-  case vm::PCallCode::Sleep: {
+
+  case vm::PCallCode::ClockMicroSinceEpoch: {
+    const auto now  = std::chrono::system_clock::now().time_since_epoch();
+    uint64_t result = std::chrono::duration_cast<std::chrono::microseconds>(now).count();
+    PUSH_REF(allocator->allocLong(result));
+  } break;
+  case vm::PCallCode::ClockNanoSteady: {
+    auto now        = std::chrono::steady_clock::now().time_since_epoch();
+    uint64_t result = std::chrono::duration_cast<std::chrono::nanoseconds>(now).count();
+    PUSH_REF(allocator->allocLong(result));
+  } break;
+
+  case vm::PCallCode::SleepNano: {
     execHandle->setState(ExecState::Paused);
-    std::this_thread::sleep_for(std::chrono::milliseconds(PEEK_INT()));
+    std::this_thread::sleep_for(std::chrono::nanoseconds(getLong(PEEK())));
     execHandle->setState(ExecState::Running);
     execHandle->trap();
   } break;

@@ -100,7 +100,7 @@ enum class FuncKind {
   MakeStruct,
   MakeUnion,
 
-  FutureWait,
+  FutureWaitNano,
   FutureBlock,
 
   CheckEqUserType,
@@ -109,12 +109,18 @@ enum class FuncKind {
   ActionConWriteChar,
   ActionConWriteString,
   ActionConWriteStringLine,
+
   ActionConReadChar,
   ActionConReadStringLine,
+
   ActionGetEnvArgCount,
   ActionGetEnvArg,
   ActionGetEnvVar,
-  ActionSleep,
+
+  ActionClockMicroSinceEpoch,
+  ActionClockNanoSteady,
+
+  ActionSleepNano,
   ActionAssert,
 };
 

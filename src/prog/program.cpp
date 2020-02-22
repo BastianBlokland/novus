@@ -229,18 +229,26 @@ Program::Program() :
       *this, fk::ActionConWriteChar, "conWrite", sym::TypeSet{m_char}, m_char);
   m_funcDecls.registerAction(
       *this, fk::ActionConWriteString, "conWrite", sym::TypeSet{m_string}, m_string);
+
   m_funcDecls.registerAction(
       *this, fk::ActionConWriteStringLine, "conWriteLine", sym::TypeSet{m_string}, m_string);
   m_funcDecls.registerAction(*this, fk::ActionConReadChar, "conRead", sym::TypeSet{}, m_char);
   m_funcDecls.registerAction(
       *this, fk::ActionConReadStringLine, "conReadLine", sym::TypeSet{}, m_string);
+
   m_funcDecls.registerAction(
       *this, fk::ActionGetEnvArg, "getEnvArg", sym::TypeSet{m_int}, m_string);
   m_funcDecls.registerAction(
       *this, fk::ActionGetEnvArgCount, "getEnvArgCount", sym::TypeSet{}, m_int);
   m_funcDecls.registerAction(
       *this, fk::ActionGetEnvVar, "getEnvVar", sym::TypeSet{m_string}, m_string);
-  m_funcDecls.registerAction(*this, fk::ActionSleep, "sleep", sym::TypeSet{m_int}, m_int);
+
+  m_funcDecls.registerAction(
+      *this, fk::ActionClockMicroSinceEpoch, "clockMicroSinceEpoch", sym::TypeSet{}, m_long);
+  m_funcDecls.registerAction(
+      *this, fk::ActionClockNanoSteady, "clockNanoSteady", sym::TypeSet{}, m_long);
+
+  m_funcDecls.registerAction(*this, fk::ActionSleepNano, "sleepNano", sym::TypeSet{m_long}, m_long);
   m_funcDecls.registerAction(
       *this, fk::ActionAssert, "assert", sym::TypeSet{m_bool, m_string}, m_bool);
 }
@@ -486,8 +494,9 @@ auto Program::defineEnum(sym::TypeId id, std::unordered_map<std::string, int32_t
   // Register explicit conversion from int.
   m_funcDecls.registerFunc(*this, sym::FuncKind::NoOp, name, sym::TypeSet{m_int}, id);
 
-  // Register implicit conversion to int.
+  // Register implicit conversion to int and long.
   m_funcDecls.registerImplicitConv(*this, sym::FuncKind::NoOp, id, m_int);
+  m_funcDecls.registerImplicitConv(*this, sym::FuncKind::ConvIntLong, id, m_long);
 
   // Register bitwise & and | operators.
   m_funcDecls.registerFunc(
@@ -536,7 +545,7 @@ auto Program::defineDelegate(
 auto Program::defineFuture(sym::TypeId id, sym::TypeId result) -> void {
   // Register utility functions and actions.
   m_funcDecls.registerAction(
-      *this, sym::FuncKind::FutureWait, "wait", sym::TypeSet{id, m_int}, m_bool);
+      *this, sym::FuncKind::FutureWaitNano, "waitNano", sym::TypeSet{id, m_long}, m_bool);
   m_funcDecls.registerFunc(*this, sym::FuncKind::FutureBlock, "result", sym::TypeSet{id}, result);
 
   // Register future definition.

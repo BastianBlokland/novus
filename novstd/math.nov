@@ -1,10 +1,16 @@
-// Functions
+// -- Functions
 
 fun intMin()
   0x8000_0000
 
 fun intMax()
   0x7FFF_FFFF
+
+fun longMin()
+  0x8000_0000_0000_0000L
+
+fun longMax()
+  0x7FFF_FFFF_FFFF_FFFFL
 
 fun floatMin()
   asFloat(0xFF7F_FFFF)
@@ -84,7 +90,7 @@ fun degToRad(float deg)
 fun radToDeg(float rad)
   rad * 57.29578
 
-// Tests
+// -- Tests
 
 assert(
   (1.0 / 0.0) == posInfinity() &&

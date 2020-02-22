@@ -215,7 +215,7 @@ auto GetExpr::visit(const parse::CallExprNode& n) -> void {
     return;
   }
 
-  if (!identifier || m_constBinder->canBind(getName(*identifier)) ||
+  if (!identifier || (instance == nullptr && m_constBinder->canBind(getName(*identifier))) ||
       (instance != nullptr && !isFuncOrConv(m_ctx, getName(*identifier)))) {
 
     m_expr = getDynCallExpr(n);
@@ -225,7 +225,6 @@ auto GetExpr::visit(const parse::CallExprNode& n) -> void {
   auto nameToken = *identifier;
   auto args      = getChildExprs(n, instance, 1);
   if (!args) {
-    assert(m_ctx->hasErrors());
     return;
   }
 

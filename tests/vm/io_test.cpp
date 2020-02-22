@@ -193,15 +193,15 @@ TEST_CASE("Execute input and output", "[vm]") {
         "");
   }
 
-  SECTION("Sleep") {
+  SECTION("SleepNano") {
     CHECK_PROG(
         [](backend::Builder* builder) -> void {
           builder->label("entry");
           builder->setEntrypoint("entry");
 
           // Its hard to test sleep, but at least this tests if the application exits cleanly.
-          builder->addLoadLitInt(0); // Sleep for 0 milliseconds.
-          builder->addPCall(vm::PCallCode::Sleep);
+          builder->addLoadLitLong(0); // Sleep for 0 nanoseconds.
+          builder->addPCall(vm::PCallCode::SleepNano);
 
           builder->addRet();
         },

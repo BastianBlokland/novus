@@ -1,10 +1,10 @@
 import "either.nov"
 
-// Types
+// -- Types
 
 struct Error = int code, string msg
 
-// Constructors
+// -- Constructors
 
 fun Error(string msg)
   Error(-1, msg)
@@ -12,7 +12,7 @@ fun Error(string msg)
 fun Error(int errCode)
   Error(errCode, errCode.string())
 
-// Operators
+// -- Operators
 
 fun ??{T}(Either{T, Error} e, T def)
   e as T val ? val : def
@@ -20,11 +20,11 @@ fun ??{T}(Either{T, Error} e, T def)
 fun ??{T}(Either{T, Error} e, function{T} defFactory)
   e as T val ? val : defFactory()
 
-// Conversions
+// -- Conversions
 
 fun string(Error err)
   err.msg
 
-// Tests
+// -- Tests
 
 assert(Error("Hello").string() == "Hello")

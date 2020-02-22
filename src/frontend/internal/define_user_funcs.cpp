@@ -49,7 +49,6 @@ auto defineFunc(
 
   // Bail out if we failed to get an expression for the body.
   if (!expr) {
-    assert(ctx->hasErrors());
     return false;
   }
 

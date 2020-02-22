@@ -102,10 +102,10 @@ enum class OpCode : uint8_t {
   PCall         = 237, // [pcallcode] (any ...)             -> (any)    Execute platform call.
   Ret           = 238, // []          (any)                 -> ()       Return from stack-frame.
 
-  FutureWait  = 240, // [] (int, future)  -> (int)  Wait x ms on future, returns if complete.
-  FutureBlock = 241, // [] (future)       -> (any)  Block and retreive result of future.
-  Dup         = 243, // [] ()             -> (any)  Duplicate a value on the stack.
-  Pop         = 244, // [] (any)          -> ()     Remove a value from the stack.
+  FutureWaitNano = 240, // [] (long, future) -> (int)  Wait x ns on future, returns if complete.
+  FutureBlock    = 241, // [] (future)       -> (any)  Block and retreive result of future.
+  Dup            = 243, // [] ()             -> (any)  Duplicate a value on the stack.
+  Pop            = 244, // [] (any)          -> ()     Remove a value from the stack.
 
   Fail = 255, // [] () -> () Terminate the current executor.
 };

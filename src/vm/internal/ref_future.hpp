@@ -29,10 +29,10 @@ public:
     return m_state;
   }
 
-  [[nodiscard]] inline auto wait(int timeout) noexcept -> bool {
+  [[nodiscard]] inline auto waitNano(int64_t timeout) noexcept -> bool {
     auto lk = std::unique_lock<std::mutex>{m_mutex};
     return m_condVar.wait_for(
-        lk, std::chrono::milliseconds(timeout), [this] { return m_state != ExecState::Running; });
+        lk, std::chrono::nanoseconds(timeout), [this] { return m_state != ExecState::Running; });
   }
 
   [[nodiscard]] inline auto poll() noexcept -> ExecState {

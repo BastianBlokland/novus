@@ -1,15 +1,15 @@
-// Types
+// -- Types
 
 union Option{T} = T, None
 
 struct None
 
-// Constructors
+// -- Constructors
 
 fun Option{T}()
   Option{T}(None())
 
-// Operators
+// -- Operators
 
 fun ??{T}(Option{T} opt, T def)
   opt as T val ? val : def
@@ -17,12 +17,12 @@ fun ??{T}(Option{T} opt, T def)
 fun ??{T}(Option{T} opt, function{T} defFactory)
   opt as T val ? val : defFactory()
 
-// Conversions
+// -- Conversions
 
 fun string{T}(Option{T} opt)
   opt as T val ? val.string() : "none"
 
-// Functions
+// -- Functions
 
 fun map{T, TResult}(Option{T} opt, function{T, TResult} func)
   opt as T val ? func(val) : None()
@@ -30,7 +30,7 @@ fun map{T, TResult}(Option{T} opt, function{T, TResult} func)
 fun map{T, TResult}(Option{T} opt, function{T, Option{TResult}} func)
   opt as T val ? func(val) : None()
 
-// Tests
+// -- Tests
 
 assert(
   o = Option(42);

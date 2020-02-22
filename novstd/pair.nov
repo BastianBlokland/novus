@@ -1,13 +1,13 @@
-// Types
+// -- Types
 
 struct Pair{T1, T2} = T1 first, T2 second
 
-// Conversions
+// -- Conversions
 
 fun string{T1, T2}(Pair{T1, T2} p)
   "(" + p.first.string() + "," + p.second.string() + ")"
 
-// Tests
+// -- Tests
 
 assert(
   p = Pair(42, "hello world");

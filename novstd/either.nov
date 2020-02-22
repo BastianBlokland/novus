@@ -1,14 +1,14 @@
-// Types
+// -- Types
 
 union Either{T1, T2} = T1, T2
 
-// Conversions
+// -- Conversions
 
 fun string{T1, T2}(Either{T1, T2} e)
   if e as T1 t1  -> t1.string()
   if e as T2 t2  -> t2.string()
 
-// Functions
+// -- Functions
 
 fun map{T1, T2, TResult}(Either{T1, T2} e, function{T1, TResult} func)
   if e as T1 t1 -> Either{TResult, T2}(func(t1))
@@ -24,7 +24,7 @@ fun map{T1, T2}(Either{T1, T2} e, function{T1, Either{T1, T2}} func)
 fun map{T1, T2}(Either{T1, T2} e, function{T2, Either{T1, T2}} func)
   e as T2 t2 ? func(t2) : e
 
-// Tests
+// -- Tests
 
 assert(
   Either{int, string}(42) == 42 &&

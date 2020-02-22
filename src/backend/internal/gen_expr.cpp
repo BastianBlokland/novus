@@ -401,8 +401,8 @@ auto GenExpr::visit(const prog::expr::CallExprNode& n) -> void {
     break;
   }
 
-  case prog::sym::FuncKind::FutureWait: {
-    m_builder->addFutureWait();
+  case prog::sym::FuncKind::FutureWaitNano: {
+    m_builder->addFutureWaitNano();
     break;
   }
   case prog::sym::FuncKind::FutureBlock: {
@@ -436,12 +436,14 @@ auto GenExpr::visit(const prog::expr::CallExprNode& n) -> void {
   case prog::sym::FuncKind::ActionConWriteStringLine:
     m_builder->addPCall(vm::PCallCode::ConWriteStringLine);
     break;
+
   case prog::sym::FuncKind::ActionConReadChar:
     m_builder->addPCall(vm::PCallCode::ConReadChar);
     break;
   case prog::sym::FuncKind::ActionConReadStringLine:
     m_builder->addPCall(vm::PCallCode::ConReadStringLine);
     break;
+
   case prog::sym::FuncKind::ActionGetEnvArg:
     m_builder->addPCall(vm::PCallCode::GetEnvArg);
     break;
@@ -451,8 +453,16 @@ auto GenExpr::visit(const prog::expr::CallExprNode& n) -> void {
   case prog::sym::FuncKind::ActionGetEnvVar:
     m_builder->addPCall(vm::PCallCode::GetEnvVar);
     break;
-  case prog::sym::FuncKind::ActionSleep:
-    m_builder->addPCall(vm::PCallCode::Sleep);
+
+  case prog::sym::FuncKind::ActionClockMicroSinceEpoch:
+    m_builder->addPCall(vm::PCallCode::ClockMicroSinceEpoch);
+    break;
+  case prog::sym::FuncKind::ActionClockNanoSteady:
+    m_builder->addPCall(vm::PCallCode::ClockNanoSteady);
+    break;
+
+  case prog::sym::FuncKind::ActionSleepNano:
+    m_builder->addPCall(vm::PCallCode::SleepNano);
     break;
   case prog::sym::FuncKind::ActionAssert:
     m_builder->addPCall(vm::PCallCode::Assert);

@@ -1,13 +1,13 @@
 import "option.nov"
 
-// Types
+// -- Types
 
 union List{T} = LNode{T},  LEnd
 
 struct LNode{T} = T val, List{T} next
 struct LEnd
 
-// Constructors
+// -- Constructors
 
 fun List{T}() -> List{T}
   LEnd()
@@ -18,7 +18,7 @@ fun List{T}(T val) -> List{T}
 fun List{T}(T val, List{T} next) -> List{T}
   LNode(val, next)
 
-// Operators
+// -- Operators
 
 fun ::{T}(T val, List{T} l)
   l.push(val)
@@ -36,7 +36,7 @@ fun []{T}(List{T} l, int idx) -> Option{T}
 fun []{T}(List{T} l, int startIdx, int endIdx) -> List{T}
   l.pop(startIdx).take(endIdx - startIdx)
 
-// Conversions
+// -- Conversions
 
 fun string{T}(List{T} l)
   l.string("[", ",", "]")
@@ -46,7 +46,7 @@ fun string{T}(List{T} l, string start, string sep, string end)
     v.string() :
     prefix + sep + v.string()) + end
 
-// Functions
+// -- Functions
 
 fun isEmpty{T}(List{T} l)
   l is LEnd
@@ -161,7 +161,7 @@ fun none{T}(List{T} l, function{T, bool} pred)
   if l as LNode{T} n  -> !pred(n.val) && n.next.none(pred)
   if l is LEnd        -> true
 
-// Tests
+// -- Tests
 
 assert(List(42) == List(42))
 assert(List(42) != List{int}())
