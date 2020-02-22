@@ -225,7 +225,6 @@ auto GetExpr::visit(const parse::CallExprNode& n) -> void {
   auto nameToken = *identifier;
   auto args      = getChildExprs(n, instance, 1);
   if (!args) {
-    assert(m_ctx->hasErrors());
     return;
   }
 
