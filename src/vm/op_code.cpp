@@ -258,8 +258,8 @@ auto operator<<(std::ostream& out, const OpCode& rhs) noexcept -> std::ostream& 
     out << "ret";
     break;
 
-  case OpCode::FutureWait:
-    out << "future-wait";
+  case OpCode::FutureWaitNano:
+    out << "future-wait-nano";
     break;
   case OpCode::FutureBlock:
     out << "future-block";

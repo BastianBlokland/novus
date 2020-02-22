@@ -545,7 +545,7 @@ auto Program::defineDelegate(
 auto Program::defineFuture(sym::TypeId id, sym::TypeId result) -> void {
   // Register utility functions and actions.
   m_funcDecls.registerAction(
-      *this, sym::FuncKind::FutureWait, "wait", sym::TypeSet{id, m_int}, m_bool);
+      *this, sym::FuncKind::FutureWaitNano, "waitNano", sym::TypeSet{id, m_long}, m_bool);
   m_funcDecls.registerFunc(*this, sym::FuncKind::FutureBlock, "result", sym::TypeSet{id}, result);
 
   // Register future definition.

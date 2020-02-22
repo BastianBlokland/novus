@@ -100,7 +100,7 @@ enum class FuncKind {
   MakeStruct,
   MakeUnion,
 
-  FutureWait,
+  FutureWaitNano,
   FutureBlock,
 
   CheckEqUserType,

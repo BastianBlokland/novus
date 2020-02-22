@@ -676,8 +676,8 @@ auto execute(
       PUSH(retVal);
     } break;
 
-    case OpCode::FutureWait: {
-      int timeout = POP_INT();
+    case OpCode::FutureWaitNano: {
+      int64_t timeout = getLong(POP());
       if (timeout <= 0) {
         auto* future = getFutureRef(POP());
         PUSH_BOOL(future->poll() != ExecState::Running);
@@ -688,7 +688,7 @@ auto execute(
       auto* future = getFutureRef(PEEK());
 
       execHandle.setState(ExecState::Paused);
-      auto success = future->wait(timeout);
+      auto success = future->waitNano(timeout);
       execHandle.setState(ExecState::Running);
 
       if (execHandle.trap()) {

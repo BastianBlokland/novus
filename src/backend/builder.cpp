@@ -265,7 +265,7 @@ auto Builder::addPCall(vm::PCallCode code) -> void {
 
 auto Builder::addRet() -> void { writeOpCode(vm::OpCode::Ret); }
 
-auto Builder::addFutureWait() -> void { writeOpCode(vm::OpCode::FutureWait); }
+auto Builder::addFutureWaitNano() -> void { writeOpCode(vm::OpCode::FutureWaitNano); }
 
 auto Builder::addFutureBlock() -> void { writeOpCode(vm::OpCode::FutureBlock); }
 

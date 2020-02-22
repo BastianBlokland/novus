@@ -107,7 +107,7 @@ public:
   auto addPCall(vm::PCallCode code) -> void;
   auto addRet() -> void;
 
-  auto addFutureWait() -> void;
+  auto addFutureWaitNano() -> void;
   auto addFutureBlock() -> void;
   auto addDup() -> void;
   auto addPop() -> void;
