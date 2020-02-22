@@ -229,17 +229,25 @@ Program::Program() :
       *this, fk::ActionConWriteChar, "conWrite", sym::TypeSet{m_char}, m_char);
   m_funcDecls.registerAction(
       *this, fk::ActionConWriteString, "conWrite", sym::TypeSet{m_string}, m_string);
+
   m_funcDecls.registerAction(
       *this, fk::ActionConWriteStringLine, "conWriteLine", sym::TypeSet{m_string}, m_string);
   m_funcDecls.registerAction(*this, fk::ActionConReadChar, "conRead", sym::TypeSet{}, m_char);
   m_funcDecls.registerAction(
       *this, fk::ActionConReadStringLine, "conReadLine", sym::TypeSet{}, m_string);
+
   m_funcDecls.registerAction(
       *this, fk::ActionGetEnvArg, "getEnvArg", sym::TypeSet{m_int}, m_string);
   m_funcDecls.registerAction(
       *this, fk::ActionGetEnvArgCount, "getEnvArgCount", sym::TypeSet{}, m_int);
   m_funcDecls.registerAction(
       *this, fk::ActionGetEnvVar, "getEnvVar", sym::TypeSet{m_string}, m_string);
+
+  m_funcDecls.registerAction(
+      *this, fk::ActionClockNanoSinceEpoch, "clockNanoSinceEpoch", sym::TypeSet{}, m_long);
+  m_funcDecls.registerAction(
+      *this, fk::ActionClockNanoSteady, "clockNanoSteady", sym::TypeSet{}, m_long);
+
   m_funcDecls.registerAction(*this, fk::ActionSleep, "sleep", sym::TypeSet{m_int}, m_int);
   m_funcDecls.registerAction(
       *this, fk::ActionAssert, "assert", sym::TypeSet{m_bool, m_string}, m_bool);

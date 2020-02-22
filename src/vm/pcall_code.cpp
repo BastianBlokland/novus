@@ -13,12 +13,14 @@ auto operator<<(std::ostream& out, const PCallCode& rhs) noexcept -> std::ostrea
   case PCallCode::ConWriteStringLine:
     out << "con-write-string-line";
     break;
+
   case PCallCode::ConReadChar:
     out << "con-read-char";
     break;
   case PCallCode::ConReadStringLine:
     out << "con-read-string-line";
     break;
+
   case PCallCode::GetEnvArg:
     out << "get-env-arg";
     break;
@@ -28,6 +30,14 @@ auto operator<<(std::ostream& out, const PCallCode& rhs) noexcept -> std::ostrea
   case PCallCode::GetEnvVar:
     out << "get-env-var";
     break;
+
+  case PCallCode::ClockNanoSinceEpoch:
+    out << "clock-nano-since-epoch";
+    break;
+  case PCallCode::ClockNanoSteady:
+    out << "clock-nano-steady";
+    break;
+
   case PCallCode::Sleep:
     out << "sleep";
     break;

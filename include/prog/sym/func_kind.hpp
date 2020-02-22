@@ -109,11 +109,17 @@ enum class FuncKind {
   ActionConWriteChar,
   ActionConWriteString,
   ActionConWriteStringLine,
+
   ActionConReadChar,
   ActionConReadStringLine,
+
   ActionGetEnvArgCount,
   ActionGetEnvArg,
   ActionGetEnvVar,
+
+  ActionClockNanoSinceEpoch,
+  ActionClockNanoSteady,
+
   ActionSleep,
   ActionAssert,
 };
