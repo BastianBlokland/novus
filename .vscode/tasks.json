@@ -4,7 +4,7 @@
     {
       "label": "build debug",
       "type": "shell",
-      "command": "cmake -B build -DCMAKE_BUILD_TYPE=Debug && cd build && make -j 8",
+      "command": "make build.debug",
       "presentation": {
         "echo": true,
         "panel": "shared",
@@ -19,7 +19,7 @@
     {
       "label": "build release",
       "type": "shell",
-      "command": "cmake -B build -DCMAKE_BUILD_TYPE=Release && cd build && make -j 8",
+      "command": "make build.release",
       "presentation": {
         "echo": true,
         "panel": "shared",
@@ -31,7 +31,7 @@
     {
       "label": "test",
       "type": "shell",
-      "command": "cmake -B build -DCMAKE_BUILD_TYPE=Debug && cd build && make tests -j 8 && make test",
+      "command": "make test",
       "presentation": {
         "echo": true,
         "panel": "shared",

@@ -27,11 +27,13 @@ Note this is intented as an academic exercise and not meant for production proje
 
 * Run CMake: `cmake -B build -DCMAKE_BUILD_TYPE=Debug`.
 * Run CTest: `(cd build & ctest)`.
+* Alternatively the root MakeFile has the utility: `make test`.
 
 ## Building
 
 * Run CMake: `cmake -B build -DCMAKE_BUILD_TYPE=Release`.
 * Build with Make: `(cd build && make)`.
+* Alternatively the root MakeFile has the utilities: `make build.debug` / `make build.release`.
 * Executables can be found in the `bin` directory.
 
 ## Ide
