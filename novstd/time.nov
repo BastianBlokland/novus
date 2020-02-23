@@ -54,15 +54,15 @@ fun DateTime(Date d)
 // Construct a Gregorian calendar date from given DateTime.
 // Implementation based on: http://howardhinnant.github.io/date_algorithms.html#civil_from_days
 fun Date(DateTime dt)
-  z               = dt.daysSinceEpoch() + 719_468;
-  era             = (z >= 0 ? z : z - 146_096) / 146_097;
-  dayOfEra        = z - era * 146_097;
-  yearOfEra       = (dayOfEra - dayOfEra / 1_460 + dayOfEra / 36_524 - dayOfEra / 146_096) / 365;
-  year            = yearOfEra + era * 400;
-  dayOfYear       = dayOfEra - (365 * yearOfEra + yearOfEra / 4 - yearOfEra / 100);
-  mp              = (5 * dayOfYear + 2) / 153;
-  day             = dayOfYear - (153 * mp + 2) / 5 + 1;
-  month           = Month(mp + (mp < 10 ? 3 : -9));
+  z          = dt.daysSinceEpoch() + 719_468;
+  era        = (z >= 0 ? z : z - 146_096) / 146_097;
+  dayOfEra   = z - era * 146_097;
+  yearOfEra  = (dayOfEra - dayOfEra / 1_460 + dayOfEra / 36_524 - dayOfEra / 146_096) / 365;
+  year       = yearOfEra + era * 400;
+  dayOfYear  = dayOfEra - (365 * yearOfEra + yearOfEra / 4 - yearOfEra / 100);
+  mp         = (5 * dayOfYear + 2) / 153;
+  day        = dayOfYear - (153 * mp + 2) / 5 + 1;
+  month      = Month(mp + (mp < 10 ? 3 : -9));
   Date(month <= 2 ? ++year : year, month, day)
 
 // Date in iso-8601 format (https://en.wikipedia.org/wiki/ISO_8601).
@@ -153,8 +153,8 @@ fun millisecond() microsecond() * 1_000L
 fun second()      millisecond() * 1_000L
 fun minute()      second()      * 60L
 fun hour()        minute()      * 60L
-fun day()         hour()        * 24
-fun week()        day()         * 7
+fun day()         hour()        * 24L
+fun week()        day()         * 7L
 
 fun nanoseconds(long count)   nanosecond()  * count
 fun microseconds(long count)  microsecond() * count
