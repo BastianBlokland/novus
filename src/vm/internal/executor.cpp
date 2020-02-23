@@ -179,6 +179,15 @@ auto execute(
   }
 #define PUSH_UINT(VAL) PUSH(uintValue(VAL))
 #define PUSH_INT(VAL) PUSH(intValue(VAL))
+#define PUSH_LONG(VAL)                                                                             \
+  {                                                                                                \
+    int64_t v = VAL;                                                                               \
+    if (v > 0) {                                                                                   \
+      PUSH(posLongValue(v));                                                                       \
+    } else {                                                                                       \
+      PUSH_REF(allocator->allocLong(v));                                                           \
+    }                                                                                              \
+  }
 #define PUSH_BOOL(VAL) PUSH(intValue(VAL))
 #define PUSH_FLOAT(VAL) PUSH(floatValue(VAL))
 #define PUSH_REF(VAL)                                                                              \
@@ -252,7 +261,7 @@ auto execute(
       PUSH_INT(1);
     } break;
     case OpCode::LoadLitLong: {
-      PUSH_REF(allocator->allocLong(READ_LONG()));
+      PUSH_LONG(READ_LONG());
     } break;
     case OpCode::LoadLitFloat: {
       PUSH_FLOAT(READ_FLOAT());
@@ -282,7 +291,7 @@ auto execute(
     } break;
     case OpCode::AddLong: {
       const auto val = getLong(POP()) + getLong(POP());
-      PUSH_REF(allocator->allocLong(val));
+      PUSH_LONG(val);
     } break;
     case OpCode::AddFloat: {
       PUSH_FLOAT(POP_FLOAT() + POP_FLOAT());
@@ -300,7 +309,7 @@ auto execute(
     case OpCode::SubLong: {
       auto b = getLong(POP());
       auto a = getLong(POP());
-      PUSH_REF(allocator->allocLong(a - b));
+      PUSH_LONG(a - b);
     } break;
     case OpCode::SubFloat: {
       auto b = POP_FLOAT();
@@ -315,7 +324,7 @@ auto execute(
     case OpCode::MulLong: {
       auto b = getLong(POP());
       auto a = getLong(POP());
-      PUSH_REF(allocator->allocLong(a * b));
+      PUSH_LONG(a * b);
     } break;
     case OpCode::MulFloat: {
       auto b = POP_FLOAT();
@@ -338,7 +347,7 @@ auto execute(
         execHandle.setState(ExecState::DivByZero);
         goto End;
       }
-      PUSH_REF(allocator->allocLong(a / b));
+      PUSH_LONG(a / b);
     } break;
     case OpCode::DivFloat: {
       auto b = POP_FLOAT();
@@ -361,7 +370,7 @@ auto execute(
         execHandle.setState(ExecState::DivByZero);
         goto End;
       }
-      PUSH_REF(allocator->allocLong(a % b));
+      PUSH_LONG(a % b);
     } break;
     case OpCode::ModFloat: {
       auto b = POP_FLOAT();
@@ -403,7 +412,7 @@ auto execute(
       PUSH_INT(-POP_INT());
     } break;
     case OpCode::NegLong: {
-      PUSH_REF(allocator->allocLong(-getLong(POP())));
+      PUSH_LONG(-getLong(POP()));
     } break;
     case OpCode::NegFloat: {
       PUSH_FLOAT(-POP_FLOAT());
@@ -521,7 +530,7 @@ auto execute(
     } break;
 
     case OpCode::ConvIntLong: {
-      PUSH_REF(allocator->allocLong(static_cast<int64_t>(POP_INT())));
+      PUSH_LONG(static_cast<int64_t>(POP_INT()));
     } break;
     case OpCode::ConvIntFloat: {
       PUSH_FLOAT(static_cast<float>(POP_INT()));
@@ -759,6 +768,7 @@ End:
 #undef PUSH
 #undef PUSH_UINT
 #undef PUSH_INT
+#undef PUSH_LONG
 #undef PUSH_BOOL
 #undef PUSH_FLOAT
 #undef PUSH_REF

@@ -27,8 +27,13 @@ private:
 };
 
 inline auto getLong(const Value& val) noexcept {
-  auto* longRef = val.getDowncastRef<LongRef>();
-  return longRef->getVal();
+  // Positive long's (most significant bit always 0) are stored in the value directly, while
+  // negative longs are stored as references.
+  if (val.isRef()) {
+    auto* longRef = val.getDowncastRef<LongRef>();
+    return longRef->getVal();
+  }
+  return val.getPosLong();
 }
 
 } // namespace vm::internal
