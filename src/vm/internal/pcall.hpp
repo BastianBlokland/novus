@@ -26,6 +26,15 @@ auto inline pcall(
     return;                                                                                        \
   }
 #define PUSH_INT(VAL) PUSH(intValue(VAL))
+#define PUSH_LONG(VAL)                                                                             \
+  {                                                                                                \
+    int64_t v = VAL;                                                                               \
+    if (v > 0) {                                                                                   \
+      PUSH(posLongValue(v));                                                                       \
+    } else {                                                                                       \
+      PUSH_REF(allocator->allocLong(v));                                                           \
+    }                                                                                              \
+  }
 #define PUSH_REF(VAL)                                                                              \
   {                                                                                                \
     auto* refPtr = VAL;                                                                            \
@@ -101,14 +110,12 @@ auto inline pcall(
   } break;
 
   case vm::PCallCode::ClockMicroSinceEpoch: {
-    const auto now  = std::chrono::system_clock::now().time_since_epoch();
-    uint64_t result = std::chrono::duration_cast<std::chrono::microseconds>(now).count();
-    PUSH_REF(allocator->allocLong(result));
+    const auto now = std::chrono::system_clock::now().time_since_epoch();
+    PUSH_LONG(std::chrono::duration_cast<std::chrono::microseconds>(now).count());
   } break;
   case vm::PCallCode::ClockNanoSteady: {
-    auto now        = std::chrono::steady_clock::now().time_since_epoch();
-    uint64_t result = std::chrono::duration_cast<std::chrono::nanoseconds>(now).count();
-    PUSH_REF(allocator->allocLong(result));
+    auto now = std::chrono::steady_clock::now().time_since_epoch();
+    PUSH_LONG(std::chrono::duration_cast<std::chrono::nanoseconds>(now).count());
   } break;
 
   case vm::PCallCode::SleepNano: {
@@ -135,6 +142,7 @@ auto inline pcall(
 
 #undef PUSH
 #undef PUSH_INT
+#undef PUSH_LONG
 #undef PUSH_REF
 #undef POP
 #undef POP_INT
