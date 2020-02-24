@@ -1,0 +1,34 @@
+{
+  "name": "novus",
+  "displayName": "novus",
+  "description": "Language support for the Novus language",
+  "version": "0.0.1",
+  "engines": {
+    "vscode": "^1.42.0"
+  },
+  "categories": [
+    "Programming Languages"
+  ],
+  "contributes": {
+    "languages": [
+      {
+        "id": "novus",
+        "aliases": [
+          "Novus",
+          "novus"
+        ],
+        "extensions": [
+          ".nov"
+        ],
+        "configuration": "./language-configuration.json"
+      }
+    ],
+    "grammars": [
+      {
+        "language": "novus",
+        "scopeName": "source.novus",
+        "path": "./syntaxes/novus.tmLanguage.json"
+      }
+    ]
+  }
+}
