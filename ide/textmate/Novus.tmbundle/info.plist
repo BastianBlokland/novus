@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>contactEmailRot13</key>
+	<string>onfgvnaoybxynaq@tznvy.pbz</string>
+	<key>contactName</key>
+	<string>Bastian Blokland</string>
+	<key>description</key>
+	<string>Syntax highlighting for the Novus language.</string>
+	<key>name</key>
+	<string>Novus</string>
+	<key>uuid</key>
+	<string>99E9DED1-A6C2-4EDF-9ED2-5E6377F909BF</string>
+</dict>
+</plist>
