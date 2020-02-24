@@ -107,20 +107,20 @@ auto main(int argc, char** argv) -> int {
 
   // Parse input characters.
   std::string charsInput;
-  auto parseCmd = app.add_subcommand("parse", "Parse the provided characters")->callback([&]() {
+  auto analyzeCmd = app.add_subcommand("analyze", "Parse the provided characters")->callback([&]() {
     parsediag::run(charsInput.begin(), charsInput.end(), printOutput);
   });
-  parseCmd->add_option("input", charsInput, "Input characters to parse")->required();
+  analyzeCmd->add_option("input", charsInput, "Input characters")->required();
 
   // Parse input file.
   std::string filePath;
-  auto parseFileCmd =
-      app.add_subcommand("parsefile", "Parse all characters in a file")->callback([&]() {
+  auto analyzeFileCmd =
+      app.add_subcommand("analyzefile", "Parse all characters in a file")->callback([&]() {
         std::ifstream fs{filePath};
         parsediag::run(
             std::istreambuf_iterator<char>{fs}, std::istreambuf_iterator<char>{}, printOutput);
       });
-  parseFileCmd->add_option("file", filePath, "Path to file to parse")
+  analyzeFileCmd->add_option("file", filePath, "Path to file")
       ->check(CLI::ExistingFile)
       ->required();
 

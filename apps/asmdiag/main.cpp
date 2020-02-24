@@ -139,19 +139,24 @@ auto main(int argc, char** argv) -> int {
   auto printOutput = true;
   app.add_flag("!--skip-output", printOutput, "Skip printing the assembly")->capture_default_str();
 
-  // Generate assembly for input characters.
+  // Analyze assembly for input characters.
   std::string input;
-  auto genCmd =
-      app.add_subcommand("gen", "Generate assembly for the provided characters")->callback([&]() {
-        exitcode = asmdiag::run(
-            "inline", std::nullopt, getSearchPaths(argv), input.begin(), input.end(), printOutput);
-      });
-  genCmd->add_option("input", input, "Input characters to generate assembly for")->required();
+  auto analyzeCmd = app.add_subcommand("analyze", "Analyze assembly for the provided characters")
+                        ->callback([&]() {
+                          exitcode = asmdiag::run(
+                              "inline",
+                              std::nullopt,
+                              getSearchPaths(argv),
+                              input.begin(),
+                              input.end(),
+                              printOutput);
+                        });
+  analyzeCmd->add_option("input", input, "Input characters")->required();
 
-  // Generate assembly  input file.
+  // Analyze assembly for the input file.
   filesystem::path filePath;
-  auto genFileCmd =
-      app.add_subcommand("genfile", "Generate assembly for the provided file")->callback([&]() {
+  auto analyzeFileCmd =
+      app.add_subcommand("analyzefile", "Analyze assembly for the provided file")->callback([&]() {
         auto absFilePath = filesystem::absolute(filePath);
         std::ifstream fs{filePath};
         exitcode = asmdiag::run(
@@ -162,7 +167,7 @@ auto main(int argc, char** argv) -> int {
             std::istreambuf_iterator<char>{},
             printOutput);
       });
-  genFileCmd->add_option("file", filePath, "Path to file to generate assembly for")
+  analyzeFileCmd->add_option("file", filePath, "Path to file")
       ->check(CLI::ExistingFile)
       ->required();
 

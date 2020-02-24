@@ -120,18 +120,20 @@ auto main(int argc, char** argv) -> int {
 
   // Lex input characters.
   std::string charsInput;
-  auto lexCmd = app.add_subcommand("lex", "Lex the provided characters")->callback([&]() {
+  auto analyzeCmd = app.add_subcommand("analyze", "Lex the provided characters")->callback([&]() {
     lexdiag::run(charsInput.begin(), charsInput.end(), printOutput);
   });
-  lexCmd->add_option("input", charsInput, "Input characters to lex")->required();
+  analyzeCmd->add_option("input", charsInput, "Input characters")->required();
 
   // Lex input file.
   std::string filePath;
-  auto lexFileCmd = app.add_subcommand("lexfile", "Lex all characters in a file")->callback([&]() {
-    std::ifstream fs{filePath};
-    lexdiag::run(std::istreambuf_iterator<char>{fs}, std::istreambuf_iterator<char>{}, printOutput);
-  });
-  lexFileCmd->add_option("file", filePath, "Path to file to lex")
+  auto analyzeFileCmd =
+      app.add_subcommand("analyzefile", "Lex all characters in a file")->callback([&]() {
+        std::ifstream fs{filePath};
+        lexdiag::run(
+            std::istreambuf_iterator<char>{fs}, std::istreambuf_iterator<char>{}, printOutput);
+      });
+  analyzeFileCmd->add_option("file", filePath, "Path to file")
       ->check(CLI::ExistingFile)
       ->required();
 
