@@ -41,7 +41,7 @@
 					<key>match</key>
 					<string>\b(int|long|float|bool|string|char|function|action|future)\b</string>
 					<key>name</key>
-					<string>keyword.other.buildin.novus</string>
+					<string>keyword.other.buildin.source.novus</string>
 				</dict>
 			</array>
 		</dict>
@@ -87,13 +87,13 @@
 						<key>1</key>
 						<dict>
 							<key>name</key>
-							<string>punctuation.definition.comment.novus</string>
+							<string>punctuation.definition.comment.source.novus</string>
 						</dict>
 					</dict>
 					<key>end</key>
 					<string>$\n?</string>
 					<key>name</key>
-					<string>comment.line.double-slash.novus</string>
+					<string>comment.line.double-slash.source.novus</string>
 				</dict>
 			</array>
 		</dict>
@@ -105,31 +105,31 @@
 					<key>match</key>
 					<string>\b(true|false)\b</string>
 					<key>name</key>
-					<string>constant.language.novus</string>
+					<string>constant.language.source.novus</string>
 				</dict>
 				<dict>
 					<key>match</key>
 					<string>[0-9_]*\.[0-9_]+\b</string>
 					<key>name</key>
-					<string>constant.numeric.float.novus</string>
+					<string>constant.numeric.float.source.novus</string>
 				</dict>
 				<dict>
 					<key>match</key>
 					<string>\b(([0-9_]+)|(0(x|X)[0-9a-fA-F_]+)|(0(b|B)[01_]*))\b</string>
 					<key>name</key>
-					<string>constant.numeric.int.novus</string>
+					<string>constant.numeric.int.source.novus</string>
 				</dict>
 				<dict>
 					<key>match</key>
 					<string>\b(([0-9_]+(l|L))|(0(x|X)[0-9a-fA-F_]*(l|L))|(0(b|B)[01_]*(l|L)))\b</string>
 					<key>name</key>
-					<string>constant.numeric.long.novus</string>
+					<string>constant.numeric.long.source.novus</string>
 				</dict>
 				<dict>
 					<key>match</key>
 					<string>'\\?.'</string>
 					<key>name</key>
-					<string>constant.character.novus</string>
+					<string>constant.character.source.novus</string>
 				</dict>
 				<dict>
 					<key>begin</key>
@@ -139,7 +139,7 @@
 						<key>0</key>
 						<dict>
 							<key>name</key>
-							<string>punctuation.definition.string.begin.novus</string>
+							<string>punctuation.definition.string.begin.source.novus</string>
 						</dict>
 					</dict>
 					<key>end</key>
@@ -149,18 +149,18 @@
 						<key>0</key>
 						<dict>
 							<key>name</key>
-							<string>punctuation.definition.string.end.novus</string>
+							<string>punctuation.definition.string.end.source.novus</string>
 						</dict>
 					</dict>
 					<key>name</key>
-					<string>string.quoted.double.novus</string>
+					<string>string.quoted.double.source.novus</string>
 					<key>patterns</key>
 					<array>
 						<dict>
 							<key>match</key>
 							<string>\\.</string>
 							<key>name</key>
-							<string>constant.character.escape.novus</string>
+							<string>constant.character.escape.source.novus</string>
 						</dict>
 					</array>
 				</dict>
@@ -178,18 +178,18 @@
 						<key>1</key>
 						<dict>
 							<key>name</key>
-							<string>keyword.other.fork.novus</string>
+							<string>keyword.other.fork.source.novus</string>
 						</dict>
 						<key>2</key>
 						<dict>
 							<key>name</key>
-							<string>support.function.novus</string>
+							<string>support.function.source.novus</string>
 						</dict>
 					</dict>
 					<key>end</key>
 					<string>\)</string>
 					<key>name</key>
-					<string>meta.function.call.novus</string>
+					<string>meta.function.call.source.novus</string>
 					<key>patterns</key>
 					<array>
 						<dict>
@@ -212,18 +212,18 @@
 						<key>1</key>
 						<dict>
 							<key>name</key>
-							<string>keyword.other.function.novus</string>
+							<string>keyword.other.function.source.novus</string>
 						</dict>
 						<key>2</key>
 						<dict>
 							<key>name</key>
-							<string>entity.name.function.novus</string>
+							<string>entity.name.function.source.novus</string>
 						</dict>
 					</dict>
 					<key>end</key>
 					<string>\)</string>
 					<key>name</key>
-					<string>meta.function.declaration.novus</string>
+					<string>meta.function.declaration.source.novus</string>
 					<key>patterns</key>
 					<array>
 						<dict>
@@ -250,7 +250,7 @@
 						<key>0</key>
 						<dict>
 							<key>name</key>
-							<string>keyword.other.novus</string>
+							<string>keyword.other.source.novus</string>
 						</dict>
 					</dict>
 					<key>end</key>
@@ -260,11 +260,11 @@
 						<key>0</key>
 						<dict>
 							<key>name</key>
-							<string>keyword.other.novus</string>
+							<string>keyword.other.source.novus</string>
 						</dict>
 					</dict>
 					<key>name</key>
-					<string>meta.generic_args.novus</string>
+					<string>meta.generic_args.source.novus</string>
 					<key>patterns</key>
 					<array>
 						<dict>
@@ -291,13 +291,13 @@
 						<key>1</key>
 						<dict>
 							<key>name</key>
-							<string>keyword.control.import.novus</string>
+							<string>keyword.control.import.source.novus</string>
 						</dict>
 					</dict>
 					<key>end</key>
 					<string>"</string>
 					<key>name</key>
-					<string>meta.import.novus</string>
+					<string>meta.import.source.novus</string>
 				</dict>
 			</array>
 		</dict>
@@ -309,13 +309,13 @@
 					<key>match</key>
 					<string>(\b(if|else)\b)|(\?(?!\?))|(\:(?!\:))</string>
 					<key>name</key>
-					<string>keyword.control.novus</string>
+					<string>keyword.control.source.novus</string>
 				</dict>
 				<dict>
 					<key>match</key>
 					<string>((\b(is|as)\b)|(\+\+)|(\-\-)|(\&amp;\&amp;)|(\|\|)|(\&lt;\&lt;)|(\&gt;\&gt;)|(\&lt;\=)|(\&gt;\=)|(\=\=)|(\!\=)|(\:\:)|(\?\?)|\+|\-|\*|(\/(?!\/))|\^|\~|\%|\&amp;|\!|\&lt;|\&gt;)</string>
 					<key>name</key>
-					<string>keyword.operator.novus</string>
+					<string>keyword.operator.source.novus</string>
 				</dict>
 			</array>
 		</dict>
@@ -331,18 +331,18 @@
 						<key>1</key>
 						<dict>
 							<key>name</key>
-							<string>keyword.other.impure.novus</string>
+							<string>keyword.other.impure.source.novus</string>
 						</dict>
 						<key>2</key>
 						<dict>
 							<key>name</key>
-							<string>keyword.other.lambda.novus</string>
+							<string>keyword.other.lambda.source.novus</string>
 						</dict>
 					</dict>
 					<key>end</key>
 					<string>\)</string>
 					<key>name</key>
-					<string>meta.lambda.declaration.novus</string>
+					<string>meta.lambda.declaration.source.novus</string>
 					<key>patterns</key>
 					<array>
 						<dict>
@@ -369,18 +369,18 @@
 						<key>1</key>
 						<dict>
 							<key>name</key>
-							<string>keyword.other.type.novus</string>
+							<string>keyword.other.type.source.novus</string>
 						</dict>
 						<key>2</key>
 						<dict>
 							<key>name</key>
-							<string>entity.name.type.novus</string>
+							<string>entity.name.type.source.novus</string>
 						</dict>
 					</dict>
 					<key>end</key>
 					<string>=|$</string>
 					<key>name</key>
-					<string>meta.type.declaration.novus</string>
+					<string>meta.type.declaration.source.novus</string>
 					<key>patterns</key>
 					<array>
 						<dict>
@@ -397,7 +397,7 @@
 		</dict>
 	</dict>
 	<key>scopeName</key>
-	<string>source.nov</string>
+	<string>source.novus</string>
 	<key>uuid</key>
 	<string>4E3F51D5-1E08-48C3-9CA3-84769D3E9EAC</string>
 </dict>
