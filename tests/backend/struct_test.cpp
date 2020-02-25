@@ -9,60 +9,60 @@ TEST_CASE("Generating assembly for structs", "[backend]") {
     CHECK_PROG(
         "struct User = string name, int age "
         "conWrite(string(User(\"hello\", 42) == User(\"world\", 1337)))",
-        [](backend::Builder* builder) -> void {
+        [](novasm::Assembler* asmb) -> void {
           // --- Struct equality function start.
-          builder->label("UserEq");
+          asmb->label("UserEq");
           // Check if field 0 is the same.
-          builder->addStackLoad(0);
-          builder->addLoadStructField(0);
-          builder->addStackLoad(1);
-          builder->addLoadStructField(0);
-          builder->addCheckEqString();
+          asmb->addStackLoad(0);
+          asmb->addLoadStructField(0);
+          asmb->addStackLoad(1);
+          asmb->addLoadStructField(0);
+          asmb->addCheckEqString();
 
-          builder->addJumpIf("field0 equal");
+          asmb->addJumpIf("field0 equal");
           // If not: return false.
-          builder->addLoadLitInt(0);
-          builder->addRet();
+          asmb->addLoadLitInt(0);
+          asmb->addRet();
 
           // Check if field 1 is the same.
-          builder->label("field0 equal");
-          builder->addStackLoad(0);
-          builder->addLoadStructField(1);
-          builder->addStackLoad(1);
-          builder->addLoadStructField(1);
-          builder->addCheckEqInt();
+          asmb->label("field0 equal");
+          asmb->addStackLoad(0);
+          asmb->addLoadStructField(1);
+          asmb->addStackLoad(1);
+          asmb->addLoadStructField(1);
+          asmb->addCheckEqInt();
 
-          builder->addJumpIf("field1 equal");
+          asmb->addJumpIf("field1 equal");
           // If not: return false.
-          builder->addLoadLitInt(0);
-          builder->addRet();
+          asmb->addLoadLitInt(0);
+          asmb->addRet();
 
-          builder->label("field1 equal");
+          asmb->label("field1 equal");
           // If both are equal then return true.
-          builder->addLoadLitInt(1);
-          builder->addRet();
+          asmb->addLoadLitInt(1);
+          asmb->addRet();
           // --- Struct equality function end.
 
           // --- conWrite statement start.
-          builder->label("prog");
+          asmb->label("prog");
           // Make struct 1 'User("hello", 42)'.
-          builder->addLoadLitString("hello");
-          builder->addLoadLitInt(42);
-          builder->addMakeStruct(2);
+          asmb->addLoadLitString("hello");
+          asmb->addLoadLitInt(42);
+          asmb->addMakeStruct(2);
 
           // Make struct 2 'User("world", 1337)'.
-          builder->addLoadLitString("world");
-          builder->addLoadLitInt(1337);
-          builder->addMakeStruct(2);
+          asmb->addLoadLitString("world");
+          asmb->addLoadLitInt(1337);
+          asmb->addMakeStruct(2);
 
           // Call the equality function and write the result.
-          builder->addCall("UserEq", 2, CallMode::Normal);
-          builder->addConvBoolString();
-          builder->addPCall(vm::PCallCode::ConWriteString);
-          builder->addRet();
+          asmb->addCall("UserEq", 2, novasm::CallMode::Normal);
+          asmb->addConvBoolString();
+          asmb->addPCall(novasm::PCallCode::ConWriteString);
+          asmb->addRet();
           // --- conWrite statement end.
 
-          builder->setEntrypoint("prog");
+          asmb->setEntrypoint("prog");
         });
   }
 
@@ -70,30 +70,30 @@ TEST_CASE("Generating assembly for structs", "[backend]") {
     CHECK_PROG(
         "struct Empty "
         "conWrite(string(Empty() == Empty()))",
-        [](backend::Builder* builder) -> void {
+        [](novasm::Assembler* asmb) -> void {
           // --- Struct equality function start.
-          builder->label("UserEq");
+          asmb->label("UserEq");
 
-          builder->addLoadLitInt(1); // Empty structs are always equal.
-          builder->addRet();
+          asmb->addLoadLitInt(1); // Empty structs are always equal.
+          asmb->addRet();
           // --- Struct equality function end.
 
           // --- conWrite statement start.
-          builder->label("prog");
+          asmb->label("prog");
           // Make struct 1 'Empty()'.
-          builder->addLoadLitInt(0); // Empty struct is represented by '0'.
+          asmb->addLoadLitInt(0); // Empty struct is represented by '0'.
 
           // Make struct 2 'Empty()'.
-          builder->addLoadLitInt(0); // Empty struct is represented by '0'.
+          asmb->addLoadLitInt(0); // Empty struct is represented by '0'.
 
           // Call the equality function and write the result.
-          builder->addCall("UserEq", 2, CallMode::Normal);
-          builder->addConvBoolString();
-          builder->addPCall(vm::PCallCode::ConWriteString);
-          builder->addRet();
+          asmb->addCall("UserEq", 2, novasm::CallMode::Normal);
+          asmb->addConvBoolString();
+          asmb->addPCall(novasm::PCallCode::ConWriteString);
+          asmb->addRet();
           // --- conWrite statement end.
 
-          builder->setEntrypoint("prog");
+          asmb->setEntrypoint("prog");
         });
 
     SECTION("Create struct with one field, check for equality and load field") {
@@ -101,47 +101,47 @@ TEST_CASE("Generating assembly for structs", "[backend]") {
           "struct Age = int years "
           "conWrite(string(Age(42) == Age(1337))) "
           "conWrite(string(Age(42).years))",
-          [](backend::Builder* builder) -> void {
+          [](novasm::Assembler* asmb) -> void {
             // --- Struct equality function start.
-            builder->label("UserEq");
-            builder->addStackLoad(0);
-            builder->addStackLoad(1);
-            builder->addCheckEqInt(); // Check the field itself.
-            builder->addRet();
+            asmb->label("UserEq");
+            asmb->addStackLoad(0);
+            asmb->addStackLoad(1);
+            asmb->addCheckEqInt(); // Check the field itself.
+            asmb->addRet();
             // --- Struct equality function end.
 
             // --- conWrite statement 1 start.
-            builder->label("write1");
+            asmb->label("write1");
             // Make struct 1 'Age(42)'.
-            builder->addLoadLitInt(42); // Struct with 1 field is represented by the field itself.
+            asmb->addLoadLitInt(42); // Struct with 1 field is represented by the field itself.
 
             // Make struct 2 'Age(1337)'.
-            builder->addLoadLitInt(1337); // Struct with 1 field is represented by the field itself.
+            asmb->addLoadLitInt(1337); // Struct with 1 field is represented by the field itself.
 
             // Call the equality function and write the result.
-            builder->addCall("UserEq", 2, CallMode::Normal);
-            builder->addConvBoolString();
-            builder->addPCall(vm::PCallCode::ConWriteString);
-            builder->addRet();
+            asmb->addCall("UserEq", 2, novasm::CallMode::Normal);
+            asmb->addConvBoolString();
+            asmb->addPCall(novasm::PCallCode::ConWriteString);
+            asmb->addRet();
             // --- conWrite statement 1 end.
 
             // --- conWrite statement 2 start.
-            builder->label("write2");
+            asmb->label("write2");
             // Make struct 'Age(42)'.
-            builder->addLoadLitInt(42); // Struct with 1 field is represented by the field itself.
+            asmb->addLoadLitInt(42); // Struct with 1 field is represented by the field itself.
 
-            builder->addConvIntString();
-            builder->addPCall(vm::PCallCode::ConWriteString);
-            builder->addRet();
+            asmb->addConvIntString();
+            asmb->addPCall(novasm::PCallCode::ConWriteString);
+            asmb->addRet();
             // --- conWrite statement 2 end.
 
             // Entry point that calls both writes.
-            builder->label("entry");
-            builder->addCall("write1", 0, CallMode::Normal);
-            builder->addCall("write2", 0, CallMode::Normal);
-            builder->addRet();
+            asmb->label("entry");
+            asmb->addCall("write1", 0, novasm::CallMode::Normal);
+            asmb->addCall("write2", 0, novasm::CallMode::Normal);
+            asmb->addRet();
 
-            builder->setEntrypoint("entry");
+            asmb->setEntrypoint("entry");
           });
     }
   }

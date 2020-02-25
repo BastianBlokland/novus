@@ -6,35 +6,35 @@ namespace vm {
 TEST_CASE("Execute constants", "[vm]") {
 
   CHECK_EXPR(
-      [](backend::Builder* builder) -> void {
-        builder->addStackAlloc(1);
-        builder->addLoadLitInt(42);
-        builder->addStackStore(0);
+      [](novasm::Assembler* asmb) -> void {
+        asmb->addStackAlloc(1);
+        asmb->addLoadLitInt(42);
+        asmb->addStackStore(0);
 
-        builder->addStackLoad(0);
-        builder->addConvIntString();
-        builder->addPCall(vm::PCallCode::ConWriteString);
+        asmb->addStackLoad(0);
+        asmb->addConvIntString();
+        asmb->addPCall(novasm::PCallCode::ConWriteString);
       },
       "input",
       "42");
 
   CHECK_EXPR(
-      [](backend::Builder* builder) -> void {
-        builder->addStackAlloc(2);
-        builder->addLoadLitInt(42);
-        builder->addStackStore(0);
+      [](novasm::Assembler* asmb) -> void {
+        asmb->addStackAlloc(2);
+        asmb->addLoadLitInt(42);
+        asmb->addStackStore(0);
 
-        builder->addLoadLitInt(1337);
-        builder->addStackStore(1);
+        asmb->addLoadLitInt(1337);
+        asmb->addStackStore(1);
 
-        builder->addStackLoad(0);
-        builder->addConvIntString();
-        builder->addPCall(vm::PCallCode::ConWriteString);
-        builder->addPop();
+        asmb->addStackLoad(0);
+        asmb->addConvIntString();
+        asmb->addPCall(novasm::PCallCode::ConWriteString);
+        asmb->addPop();
 
-        builder->addStackLoad(1);
-        builder->addConvIntString();
-        builder->addPCall(vm::PCallCode::ConWriteString);
+        asmb->addStackLoad(1);
+        asmb->addConvIntString();
+        asmb->addPCall(novasm::PCallCode::ConWriteString);
       },
       "input",
       "42",

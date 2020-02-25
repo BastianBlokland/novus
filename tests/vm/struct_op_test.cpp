@@ -7,23 +7,23 @@ TEST_CASE("Execute struct operations", "[vm]") {
 
   SECTION("Load field") {
     CHECK_EXPR(
-        [](backend::Builder* builder) -> void {
-          builder->addStackAlloc(1);
+        [](novasm::Assembler* asmb) -> void {
+          asmb->addStackAlloc(1);
 
-          builder->addLoadLitString("hello ");
-          builder->addLoadLitString("world");
-          builder->addMakeStruct(2);
-          builder->addStackStore(0);
+          asmb->addLoadLitString("hello ");
+          asmb->addLoadLitString("world");
+          asmb->addMakeStruct(2);
+          asmb->addStackStore(0);
 
-          builder->addStackLoad(0);
-          builder->addLoadStructField(0);
+          asmb->addStackLoad(0);
+          asmb->addLoadStructField(0);
 
-          builder->addStackLoad(0);
-          builder->addLoadStructField(1);
+          asmb->addStackLoad(0);
+          asmb->addLoadStructField(1);
 
-          builder->addAddString();
-          builder->addPCall(vm::PCallCode::ConWriteString);
-          builder->addPop();
+          asmb->addAddString();
+          asmb->addPCall(novasm::PCallCode::ConWriteString);
+          asmb->addPop();
         },
         "input",
         "hello world");

@@ -1,13 +1,13 @@
 #include "CLI/CLI.hpp"
-#include "backend/dasm/disassembler.hpp"
 #include "backend/generator.hpp"
 #include "filesystem.hpp"
 #include "frontend/analysis.hpp"
 #include "frontend/output.hpp"
 #include "frontend/source.hpp"
 #include "input/char_escape.hpp"
+#include "novasm/assembly.hpp"
+#include "novasm/disassembler.hpp"
 #include "rang.hpp"
-#include "vm/assembly.hpp"
 #include <chrono>
 #include <optional>
 
@@ -18,14 +18,14 @@ using duration              = std::chrono::duration<double>;
 
 auto operator<<(std::ostream& out, const duration& rhs) -> std::ostream&;
 
-static auto genAssembly(const frontend::Output& frontendOutput) -> std::optional<vm::Assembly> {
+static auto genAssembly(const frontend::Output& frontendOutput) -> std::optional<novasm::Assembly> {
   if (!frontendOutput.isSuccess()) {
     return std::nullopt;
   }
   return backend::generate(frontendOutput.getProg());
 }
 
-auto printStringLiterals(const vm::Assembly& assembly) -> void {
+auto printStringLiterals(const novasm::Assembly& assembly) -> void {
   const auto idColWidth = 5;
 
   std::cout << rang::style::bold << "StringLiterals:\n" << rang::style::reset;
@@ -36,31 +36,31 @@ auto printStringLiterals(const vm::Assembly& assembly) -> void {
   }
 }
 
-auto printEntrypoint(const vm::Assembly& assembly) -> void {
+auto printEntrypoint(const novasm::Assembly& assembly) -> void {
   std::cout << rang::style::bold << "Entrypoint: " << assembly.getEntrypoint() << rang::style::reset
             << '\n';
 }
 
-auto printInstructions(const vm::Assembly& assembly) -> void {
+auto printInstructions(const novasm::Assembly& assembly) -> void {
   const auto ipOffsetColWidth = 5;
   const auto opCodeColWidth   = 20;
 
   std::cout << rang::style::bold << "Instructions:\n" << rang::style::reset;
-  auto instructions = backend::dasm::disassembleInstructions(assembly);
+  auto instructions = novasm::disassembleInstructions(assembly);
   for (const auto& instr : instructions) {
 
     std::cout << "  " << rang::style::bold << std::setw(ipOffsetColWidth) << std::left
               << instr.getIpOffset() << rang::style::reset << std::setw(opCodeColWidth) << std::left
               << instr.getOp();
     for (const auto& arg : instr.getArgs()) {
-      backend::dasm::operator<<(std::cout, arg);
+      novasm::dasm::operator<<(std::cout, arg);
       std::cout << ' ';
     }
     std::cout << '\n';
   }
 }
 
-auto printProgram(const vm::Assembly& assembly) -> void {
+auto printProgram(const novasm::Assembly& assembly) -> void {
   printEntrypoint(assembly);
   std::cout << '\n';
   printStringLiterals(assembly);

@@ -1,13 +1,15 @@
 #pragma once
-#include "backend/builder.hpp"
+#include "novasm/assembler.hpp"
 #include "prog/program.hpp"
 
 namespace backend::internal {
 
 auto generateStructEquality(
-    Builder* builder, const prog::Program& program, const prog::sym::StructDef& structDef) -> void;
+    novasm::Assembler* asmb, const prog::Program& program, const prog::sym::StructDef& structDef)
+    -> void;
 
 auto generateUnionEquality(
-    Builder* builder, const prog::Program& program, const prog::sym::UnionDef& unionDef) -> void;
+    novasm::Assembler* asmb, const prog::Program& program, const prog::sym::UnionDef& unionDef)
+    -> void;
 
 } // namespace backend::internal

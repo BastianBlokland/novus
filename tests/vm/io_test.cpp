@@ -8,15 +8,15 @@ TEST_CASE("Execute input and output", "[vm]") {
 
   SECTION("ConWriteChar") {
     CHECK_EXPR(
-        [](backend::Builder* builder) -> void {
-          builder->addLoadLitInt('a');
-          builder->addPCall(vm::PCallCode::ConWriteChar);
+        [](novasm::Assembler* asmb) -> void {
+          asmb->addLoadLitInt('a');
+          asmb->addPCall(novasm::PCallCode::ConWriteChar);
 
-          builder->addLoadLitInt('b');
-          builder->addPCall(vm::PCallCode::ConWriteChar);
+          asmb->addLoadLitInt('b');
+          asmb->addPCall(novasm::PCallCode::ConWriteChar);
 
-          builder->addLoadLitInt('c');
-          builder->addPCall(vm::PCallCode::ConWriteChar);
+          asmb->addLoadLitInt('c');
+          asmb->addPCall(novasm::PCallCode::ConWriteChar);
         },
         "input",
         "a",
@@ -26,21 +26,21 @@ TEST_CASE("Execute input and output", "[vm]") {
 
   SECTION("ConWriteString") {
     CHECK_EXPR(
-        [](backend::Builder* builder) -> void {
-          builder->addLoadLitString("hello world");
-          builder->addPCall(vm::PCallCode::ConWriteString);
+        [](novasm::Assembler* asmb) -> void {
+          asmb->addLoadLitString("hello world");
+          asmb->addPCall(novasm::PCallCode::ConWriteString);
 
-          builder->addLoadLitInt(0);
-          builder->addConvBoolString();
-          builder->addPCall(vm::PCallCode::ConWriteString);
+          asmb->addLoadLitInt(0);
+          asmb->addConvBoolString();
+          asmb->addPCall(novasm::PCallCode::ConWriteString);
 
-          builder->addLoadLitInt(1);
-          builder->addConvBoolString();
-          builder->addPCall(vm::PCallCode::ConWriteString);
+          asmb->addLoadLitInt(1);
+          asmb->addConvBoolString();
+          asmb->addPCall(novasm::PCallCode::ConWriteString);
 
-          builder->addLoadLitInt(-42);
-          builder->addConvIntString();
-          builder->addPCall(vm::PCallCode::ConWriteString);
+          asmb->addLoadLitInt(-42);
+          asmb->addConvIntString();
+          asmb->addPCall(novasm::PCallCode::ConWriteString);
         },
         "input",
         "hello world",
@@ -51,12 +51,12 @@ TEST_CASE("Execute input and output", "[vm]") {
 
   SECTION("ConWriteStringLine") {
     CHECK_EXPR(
-        [](backend::Builder* builder) -> void {
-          builder->addLoadLitString("hello");
-          builder->addPCall(vm::PCallCode::ConWriteStringLine);
+        [](novasm::Assembler* asmb) -> void {
+          asmb->addLoadLitString("hello");
+          asmb->addPCall(novasm::PCallCode::ConWriteStringLine);
 
-          builder->addLoadLitString("world");
-          builder->addPCall(vm::PCallCode::ConWriteStringLine);
+          asmb->addLoadLitString("world");
+          asmb->addPCall(novasm::PCallCode::ConWriteStringLine);
         },
         "input",
         "hello",
@@ -67,26 +67,26 @@ TEST_CASE("Execute input and output", "[vm]") {
 
   SECTION("ConReadChar") {
     CHECK_PROG(
-        [](backend::Builder* builder) -> void {
-          builder->label("entry");
-          builder->setEntrypoint("entry");
+        [](novasm::Assembler* asmb) -> void {
+          asmb->label("entry");
+          asmb->setEntrypoint("entry");
 
-          builder->addLoadLitString("hello: ");
+          asmb->addLoadLitString("hello: ");
 
-          builder->addPCall(vm::PCallCode::ConReadChar);
-          builder->addDup();
-          builder->addLogicInvInt();
-          builder->addJumpIf("end");
+          asmb->addPCall(novasm::PCallCode::ConReadChar);
+          asmb->addDup();
+          asmb->addLogicInvInt();
+          asmb->addJumpIf("end");
 
-          builder->addConvCharString();
-          builder->addAddString();
-          builder->addPCall(vm::PCallCode::ConWriteString);
-          builder->addPop();
-          builder->addJump("entry");
+          asmb->addConvCharString();
+          asmb->addAddString();
+          asmb->addPCall(novasm::PCallCode::ConWriteString);
+          asmb->addPop();
+          asmb->addJump("entry");
 
-          builder->label("end");
-          builder->addPop();
-          builder->addRet();
+          asmb->label("end");
+          asmb->addPop();
+          asmb->addRet();
         },
         "abc",
         "hello: a",
@@ -96,26 +96,26 @@ TEST_CASE("Execute input and output", "[vm]") {
 
   SECTION("ConReadStringLine") {
     CHECK_PROG(
-        [](backend::Builder* builder) -> void {
-          builder->label("entry");
-          builder->setEntrypoint("entry");
+        [](novasm::Assembler* asmb) -> void {
+          asmb->label("entry");
+          asmb->setEntrypoint("entry");
 
-          builder->addLoadLitString("hello: ");
+          asmb->addLoadLitString("hello: ");
 
-          builder->addPCall(vm::PCallCode::ConReadStringLine);
-          builder->addDup();
-          builder->addLengthString();
-          builder->addLogicInvInt();
-          builder->addJumpIf("end");
+          asmb->addPCall(novasm::PCallCode::ConReadStringLine);
+          asmb->addDup();
+          asmb->addLengthString();
+          asmb->addLogicInvInt();
+          asmb->addJumpIf("end");
 
-          builder->addAddString();
-          builder->addPCall(vm::PCallCode::ConWriteString);
-          builder->addPop();
-          builder->addJump("entry");
+          asmb->addAddString();
+          asmb->addPCall(novasm::PCallCode::ConWriteString);
+          asmb->addPop();
+          asmb->addJump("entry");
 
-          builder->label("end");
-          builder->addPop();
-          builder->addRet();
+          asmb->label("end");
+          asmb->addPop();
+          asmb->addRet();
         },
         "John Doe\nJane Doe\n",
         "hello: John Doe",
@@ -126,20 +126,20 @@ TEST_CASE("Execute input and output", "[vm]") {
     auto envVars =
         std::unordered_map<std::string, std::string>{{"var1", "hello world"}, {"var2", "nope"}};
     CHECK_PROG_WITH_ENV_VARS(
-        [](backend::Builder* builder) -> void {
-          builder->label("entry");
-          builder->setEntrypoint("entry");
+        [](novasm::Assembler* asmb) -> void {
+          asmb->label("entry");
+          asmb->setEntrypoint("entry");
 
-          builder->addLoadLitString("var1");
-          builder->addPCall(vm::PCallCode::GetEnvVar);
-          builder->addPCall(vm::PCallCode::ConWriteString);
-          builder->addPop();
+          asmb->addLoadLitString("var1");
+          asmb->addPCall(novasm::PCallCode::GetEnvVar);
+          asmb->addPCall(novasm::PCallCode::ConWriteString);
+          asmb->addPop();
 
-          builder->addLoadLitString("var3");
-          builder->addPCall(vm::PCallCode::GetEnvVar);
-          builder->addPCall(vm::PCallCode::ConWriteString);
+          asmb->addLoadLitString("var3");
+          asmb->addPCall(novasm::PCallCode::GetEnvVar);
+          asmb->addPCall(novasm::PCallCode::ConWriteString);
 
-          builder->addRet();
+          asmb->addRet();
         },
         "input",
         envVars,
@@ -150,40 +150,40 @@ TEST_CASE("Execute input and output", "[vm]") {
   SECTION("GetEnvArg && GetEnvArgCount") {
     auto envArgs = std::vector<std::string>{"a", "b", "c"};
     CHECK_PROG_WITH_ENV_ARGS(
-        [](backend::Builder* builder) -> void {
-          builder->label("writeArgCount");
-          builder->addPCall(vm::PCallCode::GetEnvArgCount);
-          builder->addConvIntString();
-          builder->addPCall(vm::PCallCode::ConWriteString);
-          builder->addRet();
+        [](novasm::Assembler* asmb) -> void {
+          asmb->label("writeArgCount");
+          asmb->addPCall(novasm::PCallCode::GetEnvArgCount);
+          asmb->addConvIntString();
+          asmb->addPCall(novasm::PCallCode::ConWriteString);
+          asmb->addRet();
 
-          builder->label("writeArg1");
-          builder->addLoadLitInt(0);
-          builder->addPCall(vm::PCallCode::GetEnvArg);
-          builder->addPCall(vm::PCallCode::ConWriteString);
-          builder->addRet();
+          asmb->label("writeArg1");
+          asmb->addLoadLitInt(0);
+          asmb->addPCall(novasm::PCallCode::GetEnvArg);
+          asmb->addPCall(novasm::PCallCode::ConWriteString);
+          asmb->addRet();
 
-          builder->label("writeArg3");
-          builder->addLoadLitInt(2);
-          builder->addPCall(vm::PCallCode::GetEnvArg);
-          builder->addPCall(vm::PCallCode::ConWriteString);
-          builder->addRet();
+          asmb->label("writeArg3");
+          asmb->addLoadLitInt(2);
+          asmb->addPCall(novasm::PCallCode::GetEnvArg);
+          asmb->addPCall(novasm::PCallCode::ConWriteString);
+          asmb->addRet();
 
-          builder->label("writeArg4");
-          builder->addLoadLitInt(3);
-          builder->addPCall(vm::PCallCode::GetEnvArg);
-          builder->addPCall(vm::PCallCode::ConWriteString);
-          builder->addRet();
+          asmb->label("writeArg4");
+          asmb->addLoadLitInt(3);
+          asmb->addPCall(novasm::PCallCode::GetEnvArg);
+          asmb->addPCall(novasm::PCallCode::ConWriteString);
+          asmb->addRet();
 
           // Entrypoint.
-          builder->label("entry");
-          builder->addCall("writeArgCount", 0, backend::CallMode::Normal);
-          builder->addCall("writeArg1", 0, backend::CallMode::Normal);
-          builder->addCall("writeArg3", 0, backend::CallMode::Normal);
-          builder->addCall("writeArg4", 0, backend::CallMode::Normal);
-          builder->addRet();
+          asmb->label("entry");
+          asmb->addCall("writeArgCount", 0, novasm::CallMode::Normal);
+          asmb->addCall("writeArg1", 0, novasm::CallMode::Normal);
+          asmb->addCall("writeArg3", 0, novasm::CallMode::Normal);
+          asmb->addCall("writeArg4", 0, novasm::CallMode::Normal);
+          asmb->addRet();
 
-          builder->setEntrypoint("entry");
+          asmb->setEntrypoint("entry");
         },
         "input",
         envArgs,
@@ -195,43 +195,43 @@ TEST_CASE("Execute input and output", "[vm]") {
 
   SECTION("SleepNano") {
     CHECK_PROG(
-        [](backend::Builder* builder) -> void {
-          builder->label("entry");
-          builder->setEntrypoint("entry");
+        [](novasm::Assembler* asmb) -> void {
+          asmb->label("entry");
+          asmb->setEntrypoint("entry");
 
           // Its hard to test sleep, but at least this tests if the application exits cleanly.
-          builder->addLoadLitLong(0); // Sleep for 0 nanoseconds.
-          builder->addPCall(vm::PCallCode::SleepNano);
+          asmb->addLoadLitLong(0); // Sleep for 0 nanoseconds.
+          asmb->addPCall(novasm::PCallCode::SleepNano);
 
-          builder->addRet();
+          asmb->addRet();
         },
         "input");
   }
 
   SECTION("Assert") {
     CHECK_PROG_RESULTCODE(
-        [](backend::Builder* builder) -> void {
-          builder->label("entry");
-          builder->setEntrypoint("entry");
+        [](novasm::Assembler* asmb) -> void {
+          asmb->label("entry");
+          asmb->setEntrypoint("entry");
 
-          builder->addLoadLitInt(0);
-          builder->addLoadLitString("Fails");
-          builder->addPCall(vm::PCallCode::Assert);
+          asmb->addLoadLitInt(0);
+          asmb->addLoadLitString("Fails");
+          asmb->addPCall(novasm::PCallCode::Assert);
 
-          builder->addRet();
+          asmb->addRet();
         },
         "input",
         ExecState::AssertFailed);
     CHECK_PROG(
-        [](backend::Builder* builder) -> void {
-          builder->label("entry");
-          builder->setEntrypoint("entry");
+        [](novasm::Assembler* asmb) -> void {
+          asmb->label("entry");
+          asmb->setEntrypoint("entry");
 
-          builder->addLoadLitInt(1);
-          builder->addLoadLitString("Does not fail");
-          builder->addPCall(vm::PCallCode::Assert);
+          asmb->addLoadLitInt(1);
+          asmb->addLoadLitString("Does not fail");
+          asmb->addPCall(novasm::PCallCode::Assert);
 
-          builder->addRet();
+          asmb->addRet();
         },
         "input");
   }

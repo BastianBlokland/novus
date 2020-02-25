@@ -8,41 +8,41 @@ TEST_CASE("Generating assembly for switch expressions", "[backend]") {
   CHECK_EXPR_INT(
       "if true -> 10 "
       "else    -> 20",
-      [](backend::Builder* builder) -> void {
-        builder->addLoadLitInt(1);
-        builder->addJumpIf("true");
+      [](novasm::Assembler* asmb) -> void {
+        asmb->addLoadLitInt(1);
+        asmb->addJumpIf("true");
 
-        builder->addLoadLitInt(20);
-        builder->addJump("end");
+        asmb->addLoadLitInt(20);
+        asmb->addJump("end");
 
-        builder->label("true");
-        builder->addLoadLitInt(10);
+        asmb->label("true");
+        asmb->addLoadLitInt(10);
 
-        builder->label("end");
+        asmb->label("end");
       });
 
   CHECK_EXPR_INT(
       "if true  -> 10 "
       "if true  -> 20 "
       "else     -> 30",
-      [](backend::Builder* builder) -> void {
-        builder->addLoadLitInt(1);
-        builder->addJumpIf("if1");
+      [](novasm::Assembler* asmb) -> void {
+        asmb->addLoadLitInt(1);
+        asmb->addJumpIf("if1");
 
-        builder->addLoadLitInt(1);
-        builder->addJumpIf("if2");
+        asmb->addLoadLitInt(1);
+        asmb->addJumpIf("if2");
 
-        builder->addLoadLitInt(30);
-        builder->addJump("end");
+        asmb->addLoadLitInt(30);
+        asmb->addJump("end");
 
-        builder->label("if1");
-        builder->addLoadLitInt(10);
-        builder->addJump("end");
+        asmb->label("if1");
+        asmb->addLoadLitInt(10);
+        asmb->addJump("end");
 
-        builder->label("if2");
-        builder->addLoadLitInt(20);
+        asmb->label("if2");
+        asmb->addLoadLitInt(20);
 
-        builder->label("end");
+        asmb->label("end");
       });
 }
 

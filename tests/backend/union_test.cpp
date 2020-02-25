@@ -9,87 +9,87 @@ TEST_CASE("Generating assembly for unions", "[backend]") {
     CHECK_PROG(
         "union Val = int, float "
         "conWrite(string(Val(1) == Val(1.0)))",
-        [](backend::Builder* builder) -> void {
+        [](novasm::Assembler* asmb) -> void {
           // --- Union equality function start.
-          builder->label("ValEq");
+          asmb->label("ValEq");
           // Check if both unions have the same type (field 0).
-          builder->addStackLoad(0);
-          builder->addLoadStructField(0);
-          builder->addStackLoad(1);
-          builder->addLoadStructField(0);
-          builder->addCheckEqInt();
-          builder->addJumpIf("typeEqual");
+          asmb->addStackLoad(0);
+          asmb->addLoadStructField(0);
+          asmb->addStackLoad(1);
+          asmb->addLoadStructField(0);
+          asmb->addCheckEqInt();
+          asmb->addJumpIf("typeEqual");
 
           // If not: return false.
-          builder->addLoadLitInt(0);
-          builder->addRet();
+          asmb->addLoadLitInt(0);
+          asmb->addRet();
 
-          builder->label("typeEqual");
+          asmb->label("typeEqual");
           // Check if the union type is int.
-          builder->addStackLoad(0);
-          builder->addLoadStructField(0);
-          builder->addLoadLitInt(0); // 0 because 'int' is the first type in the union.
-          builder->addCheckEqInt();
-          builder->addJumpIf("int");
+          asmb->addStackLoad(0);
+          asmb->addLoadStructField(0);
+          asmb->addLoadLitInt(0); // 0 because 'int' is the first type in the union.
+          asmb->addCheckEqInt();
+          asmb->addJumpIf("int");
 
           // Check if the union type is float.
-          builder->addStackLoad(0);
-          builder->addLoadStructField(0);
-          builder->addLoadLitInt(1); // 1 because 'float' is the second type in the union.
-          builder->addCheckEqInt();
-          builder->addJumpIf("float");
+          asmb->addStackLoad(0);
+          asmb->addLoadStructField(0);
+          asmb->addLoadLitInt(1); // 1 because 'float' is the second type in the union.
+          asmb->addCheckEqInt();
+          asmb->addJumpIf("float");
 
           // If union type is neither int or float terminate the program.
-          builder->addFail();
+          asmb->addFail();
 
           // If type is int then check if the int value (field 1) is the same.
-          builder->label("int");
-          builder->addStackLoad(0);
-          builder->addLoadStructField(1);
-          builder->addStackLoad(1);
-          builder->addLoadStructField(1);
-          builder->addCheckEqInt();
-          builder->addJumpIf("valueEqual");
-          builder->addLoadLitInt(0);
-          builder->addRet();
+          asmb->label("int");
+          asmb->addStackLoad(0);
+          asmb->addLoadStructField(1);
+          asmb->addStackLoad(1);
+          asmb->addLoadStructField(1);
+          asmb->addCheckEqInt();
+          asmb->addJumpIf("valueEqual");
+          asmb->addLoadLitInt(0);
+          asmb->addRet();
 
           // If type is float then check if the float value (field 1) is the same.
-          builder->label("float");
-          builder->addStackLoad(0);
-          builder->addLoadStructField(1);
-          builder->addStackLoad(1);
-          builder->addLoadStructField(1);
-          builder->addCheckEqFloat();
-          builder->addJumpIf("valueEqual");
-          builder->addLoadLitInt(0);
-          builder->addRet();
+          asmb->label("float");
+          asmb->addStackLoad(0);
+          asmb->addLoadStructField(1);
+          asmb->addStackLoad(1);
+          asmb->addLoadStructField(1);
+          asmb->addCheckEqFloat();
+          asmb->addJumpIf("valueEqual");
+          asmb->addLoadLitInt(0);
+          asmb->addRet();
 
           // If value is the same then return true.
-          builder->label("valueEqual");
-          builder->addLoadLitInt(1);
-          builder->addRet();
+          asmb->label("valueEqual");
+          asmb->addLoadLitInt(1);
+          asmb->addRet();
           // --- Struct equality function end.
 
           // --- conWrite statement start.
-          builder->label("prog");
+          asmb->label("prog");
           // Make union with int 'Val(1)'.
-          builder->addLoadLitInt(0); // 0 because 'int' is the first type in the union.
-          builder->addLoadLitInt(1);
-          builder->addMakeStruct(2);
+          asmb->addLoadLitInt(0); // 0 because 'int' is the first type in the union.
+          asmb->addLoadLitInt(1);
+          asmb->addMakeStruct(2);
 
           // Make union with float 'Val(1.0)'.
-          builder->addLoadLitInt(1); // 1 because 'float' is the second type in the union.
-          builder->addLoadLitFloat(1.0F);
-          builder->addMakeStruct(2);
+          asmb->addLoadLitInt(1); // 1 because 'float' is the second type in the union.
+          asmb->addLoadLitFloat(1.0F);
+          asmb->addMakeStruct(2);
 
           // Call equality function and write the result.
-          builder->addCall("ValEq", 2, CallMode::Normal);
-          builder->addConvBoolString();
-          builder->addPCall(vm::PCallCode::ConWriteString);
-          builder->addRet();
+          asmb->addCall("ValEq", 2, novasm::CallMode::Normal);
+          asmb->addConvBoolString();
+          asmb->addPCall(novasm::PCallCode::ConWriteString);
+          asmb->addRet();
           // --- conWrite statement end.
 
-          builder->setEntrypoint("prog");
+          asmb->setEntrypoint("prog");
         });
   }
 }

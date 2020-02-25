@@ -8,18 +8,18 @@ TEST_CASE("Runtime errors", "[vm]") {
 
   SECTION("InvalidAssembly") {
     CHECK_EXPR_RESULTCODE(
-        [](backend::Builder* builder) -> void { builder->addFail(); },
+        [](novasm::Assembler* asmb) -> void { asmb->addFail(); },
         "input",
         ExecState::InvalidAssembly);
   }
 
   SECTION("Stack overflow") {
     CHECK_PROG_RESULTCODE(
-        [](backend::Builder* builder) -> void {
-          builder->label("func");
-          builder->addCall("func", 0, backend::CallMode::Normal);
+        [](novasm::Assembler* asmb) -> void {
+          asmb->label("func");
+          asmb->addCall("func", 0, novasm::CallMode::Normal);
 
-          builder->setEntrypoint("func");
+          asmb->setEntrypoint("func");
         },
         "input",
         ExecState::StackOverflow);
@@ -27,10 +27,10 @@ TEST_CASE("Runtime errors", "[vm]") {
 
   SECTION("Stack overflow") {
     CHECK_EXPR_RESULTCODE(
-        [](backend::Builder* builder) -> void {
-          builder->label("push1");
-          builder->addLoadLitInt(1);
-          builder->addJump("push1");
+        [](novasm::Assembler* asmb) -> void {
+          asmb->label("push1");
+          asmb->addLoadLitInt(1);
+          asmb->addJump("push1");
         },
         "input",
         ExecState::StackOverflow);
@@ -38,12 +38,12 @@ TEST_CASE("Runtime errors", "[vm]") {
 
   SECTION("Stack overflow") {
     CHECK_PROG_RESULTCODE(
-        [](backend::Builder* builder) -> void {
-          builder->label("func");
-          builder->addStackAlloc(10);
-          builder->addCall("func", 0, backend::CallMode::Normal);
+        [](novasm::Assembler* asmb) -> void {
+          asmb->label("func");
+          asmb->addStackAlloc(10);
+          asmb->addCall("func", 0, novasm::CallMode::Normal);
 
-          builder->setEntrypoint("func");
+          asmb->setEntrypoint("func");
         },
         "input",
         ExecState::StackOverflow);

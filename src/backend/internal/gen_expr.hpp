@@ -1,5 +1,5 @@
 #pragma once
-#include "backend/builder.hpp"
+#include "novasm/assembler.hpp"
 #include "prog/expr/node_visitor.hpp"
 #include "prog/program.hpp"
 #include <optional>
@@ -10,7 +10,7 @@ class GenExpr final : public prog::expr::NodeVisitor {
 public:
   GenExpr(
       const prog::Program& program,
-      Builder* builder,
+      novasm::Assembler* asmb,
       const prog::sym::ConstDeclTable& constTable,
       std::optional<prog::sym::FuncId> curFunc,
       bool tail);
@@ -38,7 +38,7 @@ public:
 
 private:
   const prog::Program& m_program;
-  Builder* m_builder;
+  novasm::Assembler* m_asmb;
   const prog::sym::ConstDeclTable& m_constTable;
   std::optional<prog::sym::FuncId> m_curFunc;
   bool m_tail;

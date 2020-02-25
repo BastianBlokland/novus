@@ -2,7 +2,7 @@
 #include <cstdint>
 #include <iostream>
 
-namespace vm {
+namespace novasm {
 
 /*
   Items in parentheses '()' on the left side of '->' are taken from the stack and on the right side
@@ -30,4 +30,4 @@ enum class PCallCode : uint8_t {
 
 auto operator<<(std::ostream& out, const PCallCode& rhs) noexcept -> std::ostream&;
 
-} // namespace vm
+} // namespace novasm

@@ -1,8 +1,8 @@
-#include "vm/assembly.hpp"
+#include "novasm/assembly.hpp"
 #include <cassert>
 #include <utility>
 
-namespace vm {
+namespace novasm {
 
 Assembly::Assembly(
     uint32_t entrypoint,
@@ -51,4 +51,4 @@ auto Assembly::isEnd(const uint8_t* ip) const noexcept -> bool {
   return ip == m_instructions.data() + m_instructions.size();
 }
 
-} // namespace vm
+} // namespace novasm

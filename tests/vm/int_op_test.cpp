@@ -8,22 +8,22 @@ TEST_CASE("Execute integer operations", "[vm]") {
 
   SECTION("Add") {
     CHECK_EXPR(
-        [](backend::Builder* builder) -> void {
-          builder->addLoadLitInt(1);
-          builder->addLoadLitInt(2);
-          builder->addAddInt();
-          builder->addConvIntString();
-          builder->addPCall(vm::PCallCode::ConWriteString);
+        [](novasm::Assembler* asmb) -> void {
+          asmb->addLoadLitInt(1);
+          asmb->addLoadLitInt(2);
+          asmb->addAddInt();
+          asmb->addConvIntString();
+          asmb->addPCall(novasm::PCallCode::ConWriteString);
         },
         "input",
         "3");
     CHECK_EXPR(
-        [](backend::Builder* builder) -> void {
-          builder->addLoadLitInt(2147483647);
-          builder->addLoadLitInt(1);
-          builder->addAddInt();
-          builder->addConvIntString();
-          builder->addPCall(vm::PCallCode::ConWriteString);
+        [](novasm::Assembler* asmb) -> void {
+          asmb->addLoadLitInt(2147483647);
+          asmb->addLoadLitInt(1);
+          asmb->addAddInt();
+          asmb->addConvIntString();
+          asmb->addPCall(novasm::PCallCode::ConWriteString);
         },
         "input",
         "-2147483648");
@@ -31,22 +31,22 @@ TEST_CASE("Execute integer operations", "[vm]") {
 
   SECTION("Substract") {
     CHECK_EXPR(
-        [](backend::Builder* builder) -> void {
-          builder->addLoadLitInt(10);
-          builder->addLoadLitInt(5);
-          builder->addSubInt();
-          builder->addConvIntString();
-          builder->addPCall(vm::PCallCode::ConWriteString);
+        [](novasm::Assembler* asmb) -> void {
+          asmb->addLoadLitInt(10);
+          asmb->addLoadLitInt(5);
+          asmb->addSubInt();
+          asmb->addConvIntString();
+          asmb->addPCall(novasm::PCallCode::ConWriteString);
         },
         "input",
         "5");
     CHECK_EXPR(
-        [](backend::Builder* builder) -> void {
-          builder->addLoadLitInt(10);
-          builder->addLoadLitInt(20);
-          builder->addSubInt();
-          builder->addConvIntString();
-          builder->addPCall(vm::PCallCode::ConWriteString);
+        [](novasm::Assembler* asmb) -> void {
+          asmb->addLoadLitInt(10);
+          asmb->addLoadLitInt(20);
+          asmb->addSubInt();
+          asmb->addConvIntString();
+          asmb->addPCall(novasm::PCallCode::ConWriteString);
         },
         "input",
         "-10");
@@ -54,22 +54,22 @@ TEST_CASE("Execute integer operations", "[vm]") {
 
   SECTION("Multiply") {
     CHECK_EXPR(
-        [](backend::Builder* builder) -> void {
-          builder->addLoadLitInt(3);
-          builder->addLoadLitInt(5);
-          builder->addMulInt();
-          builder->addConvIntString();
-          builder->addPCall(vm::PCallCode::ConWriteString);
+        [](novasm::Assembler* asmb) -> void {
+          asmb->addLoadLitInt(3);
+          asmb->addLoadLitInt(5);
+          asmb->addMulInt();
+          asmb->addConvIntString();
+          asmb->addPCall(novasm::PCallCode::ConWriteString);
         },
         "input",
         "15");
     CHECK_EXPR(
-        [](backend::Builder* builder) -> void {
-          builder->addLoadLitInt(3);
-          builder->addLoadLitInt(-5);
-          builder->addMulInt();
-          builder->addConvIntString();
-          builder->addPCall(vm::PCallCode::ConWriteString);
+        [](novasm::Assembler* asmb) -> void {
+          asmb->addLoadLitInt(3);
+          asmb->addLoadLitInt(-5);
+          asmb->addMulInt();
+          asmb->addConvIntString();
+          asmb->addPCall(novasm::PCallCode::ConWriteString);
         },
         "input",
         "-15");
@@ -77,22 +77,22 @@ TEST_CASE("Execute integer operations", "[vm]") {
 
   SECTION("Divide") {
     CHECK_EXPR(
-        [](backend::Builder* builder) -> void {
-          builder->addLoadLitInt(33);
-          builder->addLoadLitInt(4);
-          builder->addDivInt();
-          builder->addConvIntString();
-          builder->addPCall(vm::PCallCode::ConWriteString);
+        [](novasm::Assembler* asmb) -> void {
+          asmb->addLoadLitInt(33);
+          asmb->addLoadLitInt(4);
+          asmb->addDivInt();
+          asmb->addConvIntString();
+          asmb->addPCall(novasm::PCallCode::ConWriteString);
         },
         "input",
         "8");
     CHECK_EXPR_RESULTCODE(
-        [](backend::Builder* builder) -> void {
-          builder->addLoadLitInt(1);
-          builder->addLoadLitInt(0);
-          builder->addDivInt();
-          builder->addConvIntString();
-          builder->addPCall(vm::PCallCode::ConWriteString);
+        [](novasm::Assembler* asmb) -> void {
+          asmb->addLoadLitInt(1);
+          asmb->addLoadLitInt(0);
+          asmb->addDivInt();
+          asmb->addConvIntString();
+          asmb->addPCall(novasm::PCallCode::ConWriteString);
         },
         "input",
         ExecState::DivByZero);
@@ -100,22 +100,22 @@ TEST_CASE("Execute integer operations", "[vm]") {
 
   SECTION("Remainder") {
     CHECK_EXPR(
-        [](backend::Builder* builder) -> void {
-          builder->addLoadLitInt(33);
-          builder->addLoadLitInt(4);
-          builder->addRemInt();
-          builder->addConvIntString();
-          builder->addPCall(vm::PCallCode::ConWriteString);
+        [](novasm::Assembler* asmb) -> void {
+          asmb->addLoadLitInt(33);
+          asmb->addLoadLitInt(4);
+          asmb->addRemInt();
+          asmb->addConvIntString();
+          asmb->addPCall(novasm::PCallCode::ConWriteString);
         },
         "input",
         "1");
     CHECK_EXPR_RESULTCODE(
-        [](backend::Builder* builder) -> void {
-          builder->addLoadLitInt(1);
-          builder->addLoadLitInt(0);
-          builder->addRemInt();
-          builder->addConvIntString();
-          builder->addPCall(vm::PCallCode::ConWriteString);
+        [](novasm::Assembler* asmb) -> void {
+          asmb->addLoadLitInt(1);
+          asmb->addLoadLitInt(0);
+          asmb->addRemInt();
+          asmb->addConvIntString();
+          asmb->addPCall(novasm::PCallCode::ConWriteString);
         },
         "input",
         ExecState::DivByZero);
@@ -123,30 +123,30 @@ TEST_CASE("Execute integer operations", "[vm]") {
 
   SECTION("Negate") {
     CHECK_EXPR(
-        [](backend::Builder* builder) -> void {
-          builder->addLoadLitInt(42);
-          builder->addNegInt();
-          builder->addConvIntString();
-          builder->addPCall(vm::PCallCode::ConWriteString);
+        [](novasm::Assembler* asmb) -> void {
+          asmb->addLoadLitInt(42);
+          asmb->addNegInt();
+          asmb->addConvIntString();
+          asmb->addPCall(novasm::PCallCode::ConWriteString);
         },
         "input",
         "-42");
     CHECK_EXPR(
-        [](backend::Builder* builder) -> void {
-          builder->addLoadLitInt(0);
-          builder->addNegInt();
-          builder->addConvIntString();
-          builder->addPCall(vm::PCallCode::ConWriteString);
+        [](novasm::Assembler* asmb) -> void {
+          asmb->addLoadLitInt(0);
+          asmb->addNegInt();
+          asmb->addConvIntString();
+          asmb->addPCall(novasm::PCallCode::ConWriteString);
         },
         "input",
         "0");
     CHECK_EXPR(
-        [](backend::Builder* builder) -> void {
-          builder->addLoadLitInt(42);
-          builder->addNegInt();
-          builder->addNegInt();
-          builder->addConvIntString();
-          builder->addPCall(vm::PCallCode::ConWriteString);
+        [](novasm::Assembler* asmb) -> void {
+          asmb->addLoadLitInt(42);
+          asmb->addNegInt();
+          asmb->addNegInt();
+          asmb->addConvIntString();
+          asmb->addPCall(novasm::PCallCode::ConWriteString);
         },
         "input",
         "42");
@@ -154,29 +154,29 @@ TEST_CASE("Execute integer operations", "[vm]") {
 
   SECTION("Logic invert") {
     CHECK_EXPR(
-        [](backend::Builder* builder) -> void {
-          builder->addLoadLitInt(0);
-          builder->addLogicInvInt();
-          builder->addConvIntString();
-          builder->addPCall(vm::PCallCode::ConWriteString);
+        [](novasm::Assembler* asmb) -> void {
+          asmb->addLoadLitInt(0);
+          asmb->addLogicInvInt();
+          asmb->addConvIntString();
+          asmb->addPCall(novasm::PCallCode::ConWriteString);
         },
         "input",
         "1");
     CHECK_EXPR(
-        [](backend::Builder* builder) -> void {
-          builder->addLoadLitInt(1);
-          builder->addLogicInvInt();
-          builder->addConvIntString();
-          builder->addPCall(vm::PCallCode::ConWriteString);
+        [](novasm::Assembler* asmb) -> void {
+          asmb->addLoadLitInt(1);
+          asmb->addLogicInvInt();
+          asmb->addConvIntString();
+          asmb->addPCall(novasm::PCallCode::ConWriteString);
         },
         "input",
         "0");
     CHECK_EXPR(
-        [](backend::Builder* builder) -> void {
-          builder->addLoadLitInt(2);
-          builder->addLogicInvInt();
-          builder->addConvIntString();
-          builder->addPCall(vm::PCallCode::ConWriteString);
+        [](novasm::Assembler* asmb) -> void {
+          asmb->addLoadLitInt(2);
+          asmb->addLogicInvInt();
+          asmb->addConvIntString();
+          asmb->addPCall(novasm::PCallCode::ConWriteString);
         },
         "input",
         "0");
@@ -184,42 +184,42 @@ TEST_CASE("Execute integer operations", "[vm]") {
 
   SECTION("Shift left") {
     CHECK_EXPR(
-        [](backend::Builder* builder) -> void {
-          builder->addLoadLitInt(1);
-          builder->addLoadLitInt(1);
-          builder->addShiftLeftInt();
-          builder->addConvIntString();
-          builder->addPCall(vm::PCallCode::ConWriteString);
+        [](novasm::Assembler* asmb) -> void {
+          asmb->addLoadLitInt(1);
+          asmb->addLoadLitInt(1);
+          asmb->addShiftLeftInt();
+          asmb->addConvIntString();
+          asmb->addPCall(novasm::PCallCode::ConWriteString);
         },
         "input",
         "2");
     CHECK_EXPR(
-        [](backend::Builder* builder) -> void {
-          builder->addLoadLitInt(2);
-          builder->addLoadLitInt(2);
-          builder->addShiftLeftInt();
-          builder->addConvIntString();
-          builder->addPCall(vm::PCallCode::ConWriteString);
+        [](novasm::Assembler* asmb) -> void {
+          asmb->addLoadLitInt(2);
+          asmb->addLoadLitInt(2);
+          asmb->addShiftLeftInt();
+          asmb->addConvIntString();
+          asmb->addPCall(novasm::PCallCode::ConWriteString);
         },
         "input",
         "8");
     CHECK_EXPR(
-        [](backend::Builder* builder) -> void {
-          builder->addLoadLitInt(4);
-          builder->addLoadLitInt(0);
-          builder->addShiftLeftInt();
-          builder->addConvIntString();
-          builder->addPCall(vm::PCallCode::ConWriteString);
+        [](novasm::Assembler* asmb) -> void {
+          asmb->addLoadLitInt(4);
+          asmb->addLoadLitInt(0);
+          asmb->addShiftLeftInt();
+          asmb->addConvIntString();
+          asmb->addPCall(novasm::PCallCode::ConWriteString);
         },
         "input",
         "4");
     CHECK_EXPR(
-        [](backend::Builder* builder) -> void {
-          builder->addLoadLitInt(2);
-          builder->addLoadLitInt(-2);
-          builder->addShiftLeftInt();
-          builder->addConvIntString();
-          builder->addPCall(vm::PCallCode::ConWriteString);
+        [](novasm::Assembler* asmb) -> void {
+          asmb->addLoadLitInt(2);
+          asmb->addLoadLitInt(-2);
+          asmb->addShiftLeftInt();
+          asmb->addConvIntString();
+          asmb->addPCall(novasm::PCallCode::ConWriteString);
         },
         "input",
         "-2147483648");
@@ -227,42 +227,42 @@ TEST_CASE("Execute integer operations", "[vm]") {
 
   SECTION("Shift right") {
     CHECK_EXPR(
-        [](backend::Builder* builder) -> void {
-          builder->addLoadLitInt(1);
-          builder->addLoadLitInt(1);
-          builder->addShiftRightInt();
-          builder->addConvIntString();
-          builder->addPCall(vm::PCallCode::ConWriteString);
+        [](novasm::Assembler* asmb) -> void {
+          asmb->addLoadLitInt(1);
+          asmb->addLoadLitInt(1);
+          asmb->addShiftRightInt();
+          asmb->addConvIntString();
+          asmb->addPCall(novasm::PCallCode::ConWriteString);
         },
         "input",
         "0");
     CHECK_EXPR(
-        [](backend::Builder* builder) -> void {
-          builder->addLoadLitInt(8);
-          builder->addLoadLitInt(2);
-          builder->addShiftRightInt();
-          builder->addConvIntString();
-          builder->addPCall(vm::PCallCode::ConWriteString);
+        [](novasm::Assembler* asmb) -> void {
+          asmb->addLoadLitInt(8);
+          asmb->addLoadLitInt(2);
+          asmb->addShiftRightInt();
+          asmb->addConvIntString();
+          asmb->addPCall(novasm::PCallCode::ConWriteString);
         },
         "input",
         "2");
     CHECK_EXPR(
-        [](backend::Builder* builder) -> void {
-          builder->addLoadLitInt(8);
-          builder->addLoadLitInt(0);
-          builder->addShiftRightInt();
-          builder->addConvIntString();
-          builder->addPCall(vm::PCallCode::ConWriteString);
+        [](novasm::Assembler* asmb) -> void {
+          asmb->addLoadLitInt(8);
+          asmb->addLoadLitInt(0);
+          asmb->addShiftRightInt();
+          asmb->addConvIntString();
+          asmb->addPCall(novasm::PCallCode::ConWriteString);
         },
         "input",
         "8");
     CHECK_EXPR(
-        [](backend::Builder* builder) -> void {
-          builder->addLoadLitInt(2);
-          builder->addLoadLitInt(-1);
-          builder->addShiftRightInt();
-          builder->addConvIntString();
-          builder->addPCall(vm::PCallCode::ConWriteString);
+        [](novasm::Assembler* asmb) -> void {
+          asmb->addLoadLitInt(2);
+          asmb->addLoadLitInt(-1);
+          asmb->addShiftRightInt();
+          asmb->addConvIntString();
+          asmb->addPCall(novasm::PCallCode::ConWriteString);
         },
         "input",
         "0");
@@ -270,42 +270,42 @@ TEST_CASE("Execute integer operations", "[vm]") {
 
   SECTION("And") {
     CHECK_EXPR(
-        [](backend::Builder* builder) -> void {
-          builder->addLoadLitInt(1);
-          builder->addLoadLitInt(1);
-          builder->addAndInt();
-          builder->addConvIntString();
-          builder->addPCall(vm::PCallCode::ConWriteString);
+        [](novasm::Assembler* asmb) -> void {
+          asmb->addLoadLitInt(1);
+          asmb->addLoadLitInt(1);
+          asmb->addAndInt();
+          asmb->addConvIntString();
+          asmb->addPCall(novasm::PCallCode::ConWriteString);
         },
         "input",
         "1");
     CHECK_EXPR(
-        [](backend::Builder* builder) -> void {
-          builder->addLoadLitInt(10);
-          builder->addLoadLitInt(9);
-          builder->addAndInt();
-          builder->addConvIntString();
-          builder->addPCall(vm::PCallCode::ConWriteString);
+        [](novasm::Assembler* asmb) -> void {
+          asmb->addLoadLitInt(10);
+          asmb->addLoadLitInt(9);
+          asmb->addAndInt();
+          asmb->addConvIntString();
+          asmb->addPCall(novasm::PCallCode::ConWriteString);
         },
         "input",
         "8");
     CHECK_EXPR(
-        [](backend::Builder* builder) -> void {
-          builder->addLoadLitInt(-42);
-          builder->addLoadLitInt(-42);
-          builder->addAndInt();
-          builder->addConvIntString();
-          builder->addPCall(vm::PCallCode::ConWriteString);
+        [](novasm::Assembler* asmb) -> void {
+          asmb->addLoadLitInt(-42);
+          asmb->addLoadLitInt(-42);
+          asmb->addAndInt();
+          asmb->addConvIntString();
+          asmb->addPCall(novasm::PCallCode::ConWriteString);
         },
         "input",
         "-42");
     CHECK_EXPR(
-        [](backend::Builder* builder) -> void {
-          builder->addLoadLitInt(-42);
-          builder->addLoadLitInt(42);
-          builder->addAndInt();
-          builder->addConvIntString();
-          builder->addPCall(vm::PCallCode::ConWriteString);
+        [](novasm::Assembler* asmb) -> void {
+          asmb->addLoadLitInt(-42);
+          asmb->addLoadLitInt(42);
+          asmb->addAndInt();
+          asmb->addConvIntString();
+          asmb->addPCall(novasm::PCallCode::ConWriteString);
         },
         "input",
         "2");
@@ -313,42 +313,42 @@ TEST_CASE("Execute integer operations", "[vm]") {
 
   SECTION("Or") {
     CHECK_EXPR(
-        [](backend::Builder* builder) -> void {
-          builder->addLoadLitInt(1);
-          builder->addLoadLitInt(1);
-          builder->addOrInt();
-          builder->addConvIntString();
-          builder->addPCall(vm::PCallCode::ConWriteString);
+        [](novasm::Assembler* asmb) -> void {
+          asmb->addLoadLitInt(1);
+          asmb->addLoadLitInt(1);
+          asmb->addOrInt();
+          asmb->addConvIntString();
+          asmb->addPCall(novasm::PCallCode::ConWriteString);
         },
         "input",
         "1");
     CHECK_EXPR(
-        [](backend::Builder* builder) -> void {
-          builder->addLoadLitInt(10);
-          builder->addLoadLitInt(9);
-          builder->addOrInt();
-          builder->addConvIntString();
-          builder->addPCall(vm::PCallCode::ConWriteString);
+        [](novasm::Assembler* asmb) -> void {
+          asmb->addLoadLitInt(10);
+          asmb->addLoadLitInt(9);
+          asmb->addOrInt();
+          asmb->addConvIntString();
+          asmb->addPCall(novasm::PCallCode::ConWriteString);
         },
         "input",
         "11");
     CHECK_EXPR(
-        [](backend::Builder* builder) -> void {
-          builder->addLoadLitInt(-42);
-          builder->addLoadLitInt(-42);
-          builder->addOrInt();
-          builder->addConvIntString();
-          builder->addPCall(vm::PCallCode::ConWriteString);
+        [](novasm::Assembler* asmb) -> void {
+          asmb->addLoadLitInt(-42);
+          asmb->addLoadLitInt(-42);
+          asmb->addOrInt();
+          asmb->addConvIntString();
+          asmb->addPCall(novasm::PCallCode::ConWriteString);
         },
         "input",
         "-42");
     CHECK_EXPR(
-        [](backend::Builder* builder) -> void {
-          builder->addLoadLitInt(-42);
-          builder->addLoadLitInt(42);
-          builder->addOrInt();
-          builder->addConvIntString();
-          builder->addPCall(vm::PCallCode::ConWriteString);
+        [](novasm::Assembler* asmb) -> void {
+          asmb->addLoadLitInt(-42);
+          asmb->addLoadLitInt(42);
+          asmb->addOrInt();
+          asmb->addConvIntString();
+          asmb->addPCall(novasm::PCallCode::ConWriteString);
         },
         "input",
         "-2");
@@ -356,42 +356,42 @@ TEST_CASE("Execute integer operations", "[vm]") {
 
   SECTION("Xor") {
     CHECK_EXPR(
-        [](backend::Builder* builder) -> void {
-          builder->addLoadLitInt(1);
-          builder->addLoadLitInt(1);
-          builder->addXorInt();
-          builder->addConvIntString();
-          builder->addPCall(vm::PCallCode::ConWriteString);
+        [](novasm::Assembler* asmb) -> void {
+          asmb->addLoadLitInt(1);
+          asmb->addLoadLitInt(1);
+          asmb->addXorInt();
+          asmb->addConvIntString();
+          asmb->addPCall(novasm::PCallCode::ConWriteString);
         },
         "input",
         "0");
     CHECK_EXPR(
-        [](backend::Builder* builder) -> void {
-          builder->addLoadLitInt(10);
-          builder->addLoadLitInt(9);
-          builder->addXorInt();
-          builder->addConvIntString();
-          builder->addPCall(vm::PCallCode::ConWriteString);
+        [](novasm::Assembler* asmb) -> void {
+          asmb->addLoadLitInt(10);
+          asmb->addLoadLitInt(9);
+          asmb->addXorInt();
+          asmb->addConvIntString();
+          asmb->addPCall(novasm::PCallCode::ConWriteString);
         },
         "input",
         "3");
     CHECK_EXPR(
-        [](backend::Builder* builder) -> void {
-          builder->addLoadLitInt(-42);
-          builder->addLoadLitInt(-42);
-          builder->addXorInt();
-          builder->addConvIntString();
-          builder->addPCall(vm::PCallCode::ConWriteString);
+        [](novasm::Assembler* asmb) -> void {
+          asmb->addLoadLitInt(-42);
+          asmb->addLoadLitInt(-42);
+          asmb->addXorInt();
+          asmb->addConvIntString();
+          asmb->addPCall(novasm::PCallCode::ConWriteString);
         },
         "input",
         "0");
     CHECK_EXPR(
-        [](backend::Builder* builder) -> void {
-          builder->addLoadLitInt(-42);
-          builder->addLoadLitInt(42);
-          builder->addXorInt();
-          builder->addConvIntString();
-          builder->addPCall(vm::PCallCode::ConWriteString);
+        [](novasm::Assembler* asmb) -> void {
+          asmb->addLoadLitInt(-42);
+          asmb->addLoadLitInt(42);
+          asmb->addXorInt();
+          asmb->addConvIntString();
+          asmb->addPCall(novasm::PCallCode::ConWriteString);
         },
         "input",
         "-4");
@@ -399,29 +399,29 @@ TEST_CASE("Execute integer operations", "[vm]") {
 
   SECTION("Inv") {
     CHECK_EXPR(
-        [](backend::Builder* builder) -> void {
-          builder->addLoadLitInt(0);
-          builder->addInvInt();
-          builder->addConvIntString();
-          builder->addPCall(vm::PCallCode::ConWriteString);
+        [](novasm::Assembler* asmb) -> void {
+          asmb->addLoadLitInt(0);
+          asmb->addInvInt();
+          asmb->addConvIntString();
+          asmb->addPCall(novasm::PCallCode::ConWriteString);
         },
         "input",
         "-1");
     CHECK_EXPR(
-        [](backend::Builder* builder) -> void {
-          builder->addLoadLitInt(-1);
-          builder->addInvInt();
-          builder->addConvIntString();
-          builder->addPCall(vm::PCallCode::ConWriteString);
+        [](novasm::Assembler* asmb) -> void {
+          asmb->addLoadLitInt(-1);
+          asmb->addInvInt();
+          asmb->addConvIntString();
+          asmb->addPCall(novasm::PCallCode::ConWriteString);
         },
         "input",
         "0");
     CHECK_EXPR(
-        [](backend::Builder* builder) -> void {
-          builder->addLoadLitInt(0xFFFF);
-          builder->addInvInt();
-          builder->addConvIntString();
-          builder->addPCall(vm::PCallCode::ConWriteString);
+        [](novasm::Assembler* asmb) -> void {
+          asmb->addLoadLitInt(0xFFFF);
+          asmb->addInvInt();
+          asmb->addConvIntString();
+          asmb->addPCall(novasm::PCallCode::ConWriteString);
         },
         "input",
         "-65536");

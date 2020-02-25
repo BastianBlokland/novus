@@ -195,12 +195,9 @@ target_include_directories(frontend PRIVATE frontend)
 
 # Backend (assembly generator).
 add_library(backend STATIC
-  backend/dasm/disassembler.cpp
-  backend/dasm/instruction.cpp
   backend/internal/gen_expr.cpp
   backend/internal/gen_type_eq.cpp
   backend/internal/utilities.cpp
-  backend/builder.cpp
   backend/generator.cpp)
 target_compile_features(backend PRIVATE cxx_std_17)
 if(MSVC)
@@ -209,9 +206,25 @@ else()
   target_compile_options(backend PRIVATE -fexceptions)
 endif()
 target_link_libraries(backend PUBLIC prog)
-target_link_libraries(backend PUBLIC vm)
+target_link_libraries(backend PUBLIC novasm)
 target_include_directories(backend PUBLIC ${PROJECT_SOURCE_DIR}/include)
 target_include_directories(backend PRIVATE backend)
+
+# Novus Assembly.
+add_library(novasm STATIC
+  novasm/assembler.cpp
+  novasm/assembly.cpp
+  novasm/disassembler.cpp
+  novasm/op_code.cpp
+  novasm/pcall_code.cpp)
+target_compile_features(novasm PRIVATE cxx_std_17)
+if(MSVC)
+  target_compile_options(backend PRIVATE /EHsc)
+else()
+  target_compile_options(backend PRIVATE -fexceptions)
+endif()
+target_include_directories(novasm PUBLIC ${PROJECT_SOURCE_DIR}/include)
+target_include_directories(novasm PRIVATE novasm)
 
 # Virtual Machine.
 add_library(vm STATIC
@@ -220,10 +233,7 @@ add_library(vm STATIC
   vm/internal/executor.cpp
   vm/internal/garbage_collector.cpp
   vm/platform/memory_interface.cpp
-  vm/assembly.cpp
   vm/vm.cpp
-  vm/op_code.cpp
-  vm/pcall_code.cpp
   vm/exec_state.cpp)
 target_compile_features(vm PRIVATE cxx_std_17)
 if(MSVC)
@@ -231,6 +241,7 @@ if(MSVC)
 else()
   target_compile_options(vm PRIVATE -fno-exceptions -fno-rtti)
 endif()
-target_link_libraries(vm Threads::Threads)
+target_link_libraries(vm PUBLIC Threads::Threads)
+target_link_libraries(vm PUBLIC novasm)
 target_include_directories(vm PUBLIC ${PROJECT_SOURCE_DIR}/include)
 target_include_directories(vm PRIVATE vm)

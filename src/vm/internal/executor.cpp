@@ -4,9 +4,9 @@
 #include "internal/ref_string.hpp"
 #include "internal/stack.hpp"
 #include "internal/string_utilities.hpp"
+#include "novasm/op_code.hpp"
+#include "novasm/pcall_code.hpp"
 #include "vm/exec_state.hpp"
-#include "vm/op_code.hpp"
-#include "vm/pcall_code.hpp"
 #include "vm/platform/memory_interface.hpp"
 #include "vm/platform/terminal_interface.hpp"
 #include <cmath>
@@ -24,7 +24,7 @@ inline auto readAsm(const uint8_t** ip) {
 }
 
 inline auto call(
-    const Assembly* assembly,
+    const novasm::Assembly* assembly,
     BasicStack* stack,
     ExecutorHandle* execHandle,
     const uint8_t** ip,
@@ -59,7 +59,7 @@ inline auto call(
 }
 
 inline auto callTail(
-    const Assembly* assembly,
+    const novasm::Assembly* assembly,
     BasicStack* stack,
     const uint8_t** ip,
     Value* sh,
@@ -101,7 +101,7 @@ inline auto pushClosure(
 
 template <typename PlatformInterface>
 inline auto fork(
-    const Assembly* assembly,
+    const novasm::Assembly* assembly,
     PlatformInterface* iface,
     ExecutorRegistry* execRegistry,
     Allocator* allocator,
@@ -153,7 +153,7 @@ inline auto fork(
 
 template <typename PlatformInterface>
 auto execute(
-    const Assembly* assembly,
+    const novasm::Assembly* assembly,
     PlatformInterface* iface,
     ExecutorRegistry* execRegistry,
     Allocator* allocator,
@@ -161,6 +161,9 @@ auto execute(
     uint8_t entryArgCount,
     Value* entryArgSource,
     FutureRef* promise) noexcept -> ExecState {
+
+  using OpCode    = novasm::OpCode;
+  using PCallCode = novasm::PCallCode;
 
 #define READ_BYTE() readAsm<uint8_t>(&ip)
 #define READ_INT() readAsm<int32_t>(&ip)
@@ -785,7 +788,7 @@ End:
 
 // Explicit instantiations.
 template ExecState execute(
-    const Assembly* assembly,
+    const novasm::Assembly* assembly,
     platform::MemoryInterface* iface,
     ExecutorRegistry* execRegistry,
     Allocator* allocator,
@@ -795,7 +798,7 @@ template ExecState execute(
     FutureRef* promise) noexcept;
 
 template ExecState execute(
-    const Assembly* assembly,
+    const novasm::Assembly* assembly,
     platform::TerminalInterface* iface,
     ExecutorRegistry* execRegistry,
     Allocator* allocator,

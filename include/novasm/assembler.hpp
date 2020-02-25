@@ -1,23 +1,28 @@
 #pragma once
-#include "call_mode.hpp"
-#include "vm/assembly.hpp"
-#include "vm/op_code.hpp"
-#include "vm/pcall_code.hpp"
+#include "novasm/assembly.hpp"
+#include "novasm/op_code.hpp"
+#include "novasm/pcall_code.hpp"
 #include <string>
 #include <unordered_map>
 #include <utility>
 
-namespace backend {
+namespace novasm {
 
-class Builder final {
+enum class CallMode {
+  Normal,
+  Tail,
+  Forked,
+};
+
+class Assembler final {
 public:
-  Builder();
-  Builder(const Builder& rhs)     = delete;
-  Builder(Builder&& rhs) noexcept = default;
-  ~Builder()                      = default;
+  Assembler();
+  Assembler(const Assembler& rhs)     = delete;
+  Assembler(Assembler&& rhs) noexcept = default;
+  ~Assembler()                        = default;
 
-  auto operator=(const Builder& rhs) -> Builder& = delete;
-  auto operator=(Builder&& rhs) noexcept -> Builder& = delete;
+  auto operator=(const Assembler& rhs) -> Assembler& = delete;
+  auto operator=(Assembler&& rhs) noexcept -> Assembler& = delete;
 
   auto generateLabel() -> std::string;
 
@@ -104,7 +109,7 @@ public:
 
   auto addCall(std::string label, uint8_t argCount, CallMode mode) -> void;
   auto addCallDyn(uint8_t argCount, CallMode mode) -> void;
-  auto addPCall(vm::PCallCode code) -> void;
+  auto addPCall(PCallCode code) -> void;
   auto addRet() -> void;
 
   auto addFutureWaitNano() -> void;
@@ -115,7 +120,7 @@ public:
 
   auto setEntrypoint(std::string label) -> void;
 
-  auto close() -> vm::Assembly;
+  auto close() -> Assembly;
 
 private:
   bool m_closed;
@@ -130,7 +135,7 @@ private:
   [[nodiscard]] auto addLitString(const std::string& string) -> uint32_t;
   [[nodiscard]] auto getCurrentIpOffset() -> uint32_t;
 
-  auto writeOpCode(vm::OpCode opCode) -> void;
+  auto writeOpCode(OpCode opCode) -> void;
   auto writeUInt8(uint8_t val) -> void;
   auto writeInt32(int32_t val) -> void;
   auto writeInt64(int64_t val) -> void;
@@ -143,4 +148,4 @@ private:
   auto throwIfClosed() -> void;
 };
 
-} // namespace backend
+} // namespace novasm

@@ -2,7 +2,7 @@
 #include <cstdint>
 #include <iostream>
 
-namespace vm {
+namespace novasm {
 
 /*
   Items in brackets '[]' are the arguments for instructions.
@@ -112,4 +112,4 @@ enum class OpCode : uint8_t {
 
 auto operator<<(std::ostream& out, const OpCode& rhs) noexcept -> std::ostream&;
 
-} // namespace vm
+} // namespace novasm

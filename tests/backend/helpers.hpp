@@ -1,88 +1,89 @@
 #pragma once
 #include "assembly_output.hpp"
-#include "backend/builder.hpp"
 #include "backend/generator.hpp"
 #include "catch2/catch.hpp"
 #include "frontend/analysis.hpp"
 #include "frontend/source.hpp"
+#include "novasm/assembler.hpp"
 
 namespace backend {
 
-inline auto buildAssemblyExprInt(const std::function<void(backend::Builder*)>& build)
-    -> vm::Assembly {
-  auto builder = backend::Builder{};
-  builder.label("prog");
-  build(&builder);
-  builder.addConvIntString();
-  builder.addPCall(vm::PCallCode::ConWriteString);
-  builder.addRet();
-  builder.setEntrypoint("prog");
-  return builder.close();
+inline auto buildAssemblyExprInt(const std::function<void(novasm::Assembler*)>& build)
+    -> novasm::Assembly {
+  auto asmb = novasm::Assembler{};
+  asmb.label("prog");
+  build(&asmb);
+  asmb.addConvIntString();
+  asmb.addPCall(novasm::PCallCode::ConWriteString);
+  asmb.addRet();
+  asmb.setEntrypoint("prog");
+  return asmb.close();
 }
 
-inline auto buildAssemblyExprLong(const std::function<void(backend::Builder*)>& build)
-    -> vm::Assembly {
-  auto builder = backend::Builder{};
-  builder.label("prog");
-  build(&builder);
-  builder.addConvLongString();
-  builder.addPCall(vm::PCallCode::ConWriteString);
-  builder.addRet();
-  builder.setEntrypoint("prog");
-  return builder.close();
+inline auto buildAssemblyExprLong(const std::function<void(novasm::Assembler*)>& build)
+    -> novasm::Assembly {
+  auto asmb = novasm::Assembler{};
+  asmb.label("prog");
+  build(&asmb);
+  asmb.addConvLongString();
+  asmb.addPCall(novasm::PCallCode::ConWriteString);
+  asmb.addRet();
+  asmb.setEntrypoint("prog");
+  return asmb.close();
 }
 
-inline auto buildAssemblyExprFloat(const std::function<void(backend::Builder*)>& build)
-    -> vm::Assembly {
-  auto builder = backend::Builder{};
-  builder.label("prog");
-  build(&builder);
-  builder.addConvFloatString();
-  builder.addPCall(vm::PCallCode::ConWriteString);
-  builder.addRet();
-  builder.setEntrypoint("prog");
-  return builder.close();
+inline auto buildAssemblyExprFloat(const std::function<void(novasm::Assembler*)>& build)
+    -> novasm::Assembly {
+  auto asmb = novasm::Assembler{};
+  asmb.label("prog");
+  build(&asmb);
+  asmb.addConvFloatString();
+  asmb.addPCall(novasm::PCallCode::ConWriteString);
+  asmb.addRet();
+  asmb.setEntrypoint("prog");
+  return asmb.close();
 }
 
-inline auto buildAssemblyExprBool(const std::function<void(backend::Builder*)>& build)
-    -> vm::Assembly {
-  auto builder = backend::Builder{};
-  builder.label("prog");
-  build(&builder);
-  builder.addConvBoolString();
-  builder.addPCall(vm::PCallCode::ConWriteString);
-  builder.addRet();
-  builder.setEntrypoint("prog");
-  return builder.close();
+inline auto buildAssemblyExprBool(const std::function<void(novasm::Assembler*)>& build)
+    -> novasm::Assembly {
+  auto asmb = novasm::Assembler{};
+  asmb.label("prog");
+  build(&asmb);
+  asmb.addConvBoolString();
+  asmb.addPCall(novasm::PCallCode::ConWriteString);
+  asmb.addRet();
+  asmb.setEntrypoint("prog");
+  return asmb.close();
 }
 
-inline auto buildAssemblyExprString(const std::function<void(backend::Builder*)>& build)
-    -> vm::Assembly {
-  auto builder = backend::Builder{};
-  builder.label("prog");
-  build(&builder);
-  builder.addPCall(vm::PCallCode::ConWriteString);
-  builder.addRet();
-  builder.setEntrypoint("prog");
-  return builder.close();
+inline auto buildAssemblyExprString(const std::function<void(novasm::Assembler*)>& build)
+    -> novasm::Assembly {
+  auto asmb = novasm::Assembler{};
+  asmb.label("prog");
+  build(&asmb);
+  asmb.addPCall(novasm::PCallCode::ConWriteString);
+  asmb.addRet();
+  asmb.setEntrypoint("prog");
+  return asmb.close();
 }
 
-inline auto buildAssemblyExprChar(const std::function<void(backend::Builder*)>& build)
-    -> vm::Assembly {
-  auto builder = backend::Builder{};
-  builder.label("prog");
-  build(&builder);
-  builder.addConvCharString();
-  builder.addPCall(vm::PCallCode::ConWriteString);
-  builder.addRet();
-  builder.setEntrypoint("prog");
-  return builder.close();
+inline auto buildAssemblyExprChar(const std::function<void(novasm::Assembler*)>& build)
+    -> novasm::Assembly {
+  auto asmb = novasm::Assembler{};
+  asmb.label("prog");
+  build(&asmb);
+  asmb.addConvCharString();
+  asmb.addPCall(novasm::PCallCode::ConWriteString);
+  asmb.addRet();
+  asmb.setEntrypoint("prog");
+  return asmb.close();
 }
 
-inline auto buildAssembly(const std::function<void(backend::Builder*)>& build) -> vm::Assembly {
-  auto builder = backend::Builder{};
-  build(&builder);
-  return builder.close();
+inline auto buildAssembly(const std::function<void(novasm::Assembler*)>& build)
+    -> novasm::Assembly {
+  auto asmb = novasm::Assembler{};
+  build(&asmb);
+  return asmb.close();
 }
 
 #define CHECK_ASM(INPUT, EXPECTED_ASM)                                                             \

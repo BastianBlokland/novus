@@ -1,9 +1,9 @@
 #pragma once
-#include "vm/assembly.hpp"
+#include "novasm/assembly.hpp"
 #include <iostream>
 
-namespace vm {
+namespace novasm {
 
-auto operator<<(std::ostream& out, const vm::Assembly& rhs) -> std::ostream&;
+auto operator<<(std::ostream& out, const novasm::Assembly& rhs) -> std::ostream&;
 
-} // namespace vm
+} // namespace novasm

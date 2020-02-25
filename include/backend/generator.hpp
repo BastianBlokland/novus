@@ -1,9 +1,9 @@
 #pragma once
+#include "novasm/assembly.hpp"
 #include "prog/program.hpp"
-#include "vm/assembly.hpp"
 
 namespace backend {
 
-auto generate(const prog::Program& program) -> vm::Assembly;
+auto generate(const prog::Program& program) -> novasm::Assembly;
 
 } // namespace backend

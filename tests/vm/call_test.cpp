@@ -6,155 +6,155 @@ namespace vm {
 TEST_CASE("Execute calls", "[vm]") {
 
   CHECK_PROG(
-      [](backend::Builder* builder) -> void {
-        builder->label("section1");
-        builder->addLoadLitInt(0);
-        builder->addCall("section2", 1, backend::CallMode::Normal);
-        builder->addConvIntString();
-        builder->addPCall(vm::PCallCode::ConWriteString);
-        builder->addRet();
+      [](novasm::Assembler* asmb) -> void {
+        asmb->label("section1");
+        asmb->addLoadLitInt(0);
+        asmb->addCall("section2", 1, novasm::CallMode::Normal);
+        asmb->addConvIntString();
+        asmb->addPCall(novasm::PCallCode::ConWriteString);
+        asmb->addRet();
 
-        builder->label("section2");
-        builder->addJumpIf("section2-true");
-        builder->addCall("section3", 0, backend::CallMode::Normal);
-        builder->addRet();
+        asmb->label("section2");
+        asmb->addJumpIf("section2-true");
+        asmb->addCall("section3", 0, novasm::CallMode::Normal);
+        asmb->addRet();
 
-        builder->label("section2-true");
-        builder->addLoadLitInt(1337);
-        builder->addRet();
+        asmb->label("section2-true");
+        asmb->addLoadLitInt(1337);
+        asmb->addRet();
 
-        builder->label("section3");
-        builder->addLoadLitInt(1);
-        builder->addCall("section2", 1, backend::CallMode::Normal);
-        builder->addRet();
+        asmb->label("section3");
+        asmb->addLoadLitInt(1);
+        asmb->addCall("section2", 1, novasm::CallMode::Normal);
+        asmb->addRet();
 
-        builder->setEntrypoint("section1");
+        asmb->setEntrypoint("section1");
       },
       "input",
       "1337");
 
   CHECK_PROG(
-      [](backend::Builder* builder) -> void {
-        builder->label("section1");
-        builder->addLoadLitInt(0);
-        builder->addCall("section2", 1, backend::CallMode::Normal);
-        builder->addConvIntString();
-        builder->addPCall(vm::PCallCode::ConWriteString);
-        builder->addRet();
+      [](novasm::Assembler* asmb) -> void {
+        asmb->label("section1");
+        asmb->addLoadLitInt(0);
+        asmb->addCall("section2", 1, novasm::CallMode::Normal);
+        asmb->addConvIntString();
+        asmb->addPCall(novasm::PCallCode::ConWriteString);
+        asmb->addRet();
 
-        builder->label("section2");
-        builder->addJumpIf("section2-true");
-        builder->addCall("section3", 0, backend::CallMode::Tail);
+        asmb->label("section2");
+        asmb->addJumpIf("section2-true");
+        asmb->addCall("section3", 0, novasm::CallMode::Tail);
 
-        builder->label("section2-true");
-        builder->addLoadLitInt(1337);
-        builder->addRet();
+        asmb->label("section2-true");
+        asmb->addLoadLitInt(1337);
+        asmb->addRet();
 
-        builder->label("section3");
-        builder->addLoadLitInt(1);
-        builder->addCall("section2", 1, backend::CallMode::Tail);
+        asmb->label("section3");
+        asmb->addLoadLitInt(1);
+        asmb->addCall("section2", 1, novasm::CallMode::Tail);
 
-        builder->setEntrypoint("section1");
+        asmb->setEntrypoint("section1");
       },
       "input",
       "1337");
 
   CHECK_PROG(
-      [](backend::Builder* builder) -> void {
-        builder->label("section1");
+      [](novasm::Assembler* asmb) -> void {
+        asmb->label("section1");
 
         // Call raw instruction pointer.
-        builder->addLoadLitIp("section2");
-        builder->addCallDyn(0, backend::CallMode::Normal);
+        asmb->addLoadLitIp("section2");
+        asmb->addCallDyn(0, novasm::CallMode::Normal);
 
-        builder->addConvIntString();
-        builder->addPCall(vm::PCallCode::ConWriteString);
-        builder->addRet();
+        asmb->addConvIntString();
+        asmb->addPCall(novasm::PCallCode::ConWriteString);
+        asmb->addRet();
 
-        builder->label("section2");
-        builder->addLoadLitInt(1337);
-        builder->addRet();
+        asmb->label("section2");
+        asmb->addLoadLitInt(1337);
+        asmb->addRet();
 
-        builder->setEntrypoint("section1");
+        asmb->setEntrypoint("section1");
       },
       "input",
       "1337");
 
   CHECK_PROG(
-      [](backend::Builder* builder) -> void {
-        builder->label("section1");
+      [](novasm::Assembler* asmb) -> void {
+        asmb->label("section1");
 
         // Call raw instruction pointer.
-        builder->addLoadLitIp("section2");
-        builder->addCallDyn(0, backend::CallMode::Normal);
+        asmb->addLoadLitIp("section2");
+        asmb->addCallDyn(0, novasm::CallMode::Normal);
 
-        builder->addConvIntString();
-        builder->addPCall(vm::PCallCode::ConWriteString);
-        builder->addRet();
+        asmb->addConvIntString();
+        asmb->addPCall(novasm::PCallCode::ConWriteString);
+        asmb->addRet();
 
-        builder->label("section2");
-        builder->addLoadLitInt(1337);
-        builder->addLoadLitIp("section3");
-        builder->addCallDyn(1, backend::CallMode::Tail);
+        asmb->label("section2");
+        asmb->addLoadLitInt(1337);
+        asmb->addLoadLitIp("section3");
+        asmb->addCallDyn(1, novasm::CallMode::Tail);
 
-        builder->label("section3");
-        builder->addLoadLitInt(1337);
-        builder->addAddInt();
-        builder->addRet();
+        asmb->label("section3");
+        asmb->addLoadLitInt(1337);
+        asmb->addAddInt();
+        asmb->addRet();
 
-        builder->setEntrypoint("section1");
+        asmb->setEntrypoint("section1");
       },
       "input",
       "2674");
 
   CHECK_PROG(
-      [](backend::Builder* builder) -> void {
-        builder->label("section1");
-        builder->addCall("section2", 0, backend::CallMode::Normal);
-        builder->addConvIntString();
-        builder->addPCall(vm::PCallCode::ConWriteString);
-        builder->addRet();
+      [](novasm::Assembler* asmb) -> void {
+        asmb->label("section1");
+        asmb->addCall("section2", 0, novasm::CallMode::Normal);
+        asmb->addConvIntString();
+        asmb->addPCall(novasm::PCallCode::ConWriteString);
+        asmb->addRet();
 
-        builder->label("section2");
+        asmb->label("section2");
 
         // Make a closure struct and call it.
-        builder->addLoadLitInt(42);
-        builder->addLoadLitIp("section3");
-        builder->addMakeStruct(2);
-        builder->addCallDyn(0, backend::CallMode::Tail);
+        asmb->addLoadLitInt(42);
+        asmb->addLoadLitIp("section3");
+        asmb->addMakeStruct(2);
+        asmb->addCallDyn(0, novasm::CallMode::Tail);
 
-        builder->label("section3");
-        builder->addLoadLitInt(1337);
-        builder->addAddInt();
-        builder->addRet();
+        asmb->label("section3");
+        asmb->addLoadLitInt(1337);
+        asmb->addAddInt();
+        asmb->addRet();
 
-        builder->setEntrypoint("section1");
+        asmb->setEntrypoint("section1");
       },
       "input",
       "1379");
 
   CHECK_PROG(
-      [](backend::Builder* builder) -> void {
-        builder->label("section1");
+      [](novasm::Assembler* asmb) -> void {
+        asmb->label("section1");
 
         // Make a closure struct.
-        builder->addLoadLitInt(42);
-        builder->addLoadLitIp("section2");
-        builder->addMakeStruct(2);
+        asmb->addLoadLitInt(42);
+        asmb->addLoadLitIp("section2");
+        asmb->addMakeStruct(2);
 
         // Call closure struct.
-        builder->addCallDyn(0, backend::CallMode::Normal);
+        asmb->addCallDyn(0, novasm::CallMode::Normal);
 
-        builder->addConvIntString();
-        builder->addPCall(vm::PCallCode::ConWriteString);
-        builder->addRet();
+        asmb->addConvIntString();
+        asmb->addPCall(novasm::PCallCode::ConWriteString);
+        asmb->addRet();
 
-        builder->label("section2");
-        builder->addLoadLitInt(1337);
-        builder->addAddInt();
-        builder->addRet();
+        asmb->label("section2");
+        asmb->addLoadLitInt(1337);
+        asmb->addAddInt();
+        asmb->addRet();
 
-        builder->setEntrypoint("section1");
+        asmb->setEntrypoint("section1");
       },
       "input",
       "1379");
