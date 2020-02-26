@@ -8,22 +8,22 @@ TEST_CASE("Execute long operations", "[vm]") {
 
   SECTION("Add") {
     CHECK_EXPR(
-        [](backend::Builder* builder) -> void {
-          builder->addLoadLitLong(1);
-          builder->addLoadLitLong(2);
-          builder->addAddLong();
-          builder->addConvLongString();
-          builder->addPCall(vm::PCallCode::ConWriteString);
+        [](novasm::Assembler* asmb) -> void {
+          asmb->addLoadLitLong(1);
+          asmb->addLoadLitLong(2);
+          asmb->addAddLong();
+          asmb->addConvLongString();
+          asmb->addPCall(novasm::PCallCode::ConWriteString);
         },
         "input",
         "3");
     CHECK_EXPR(
-        [](backend::Builder* builder) -> void {
-          builder->addLoadLitLong(9223372036854775807L);
-          builder->addLoadLitLong(1);
-          builder->addAddLong();
-          builder->addConvLongString();
-          builder->addPCall(vm::PCallCode::ConWriteString);
+        [](novasm::Assembler* asmb) -> void {
+          asmb->addLoadLitLong(9223372036854775807L);
+          asmb->addLoadLitLong(1);
+          asmb->addAddLong();
+          asmb->addConvLongString();
+          asmb->addPCall(novasm::PCallCode::ConWriteString);
         },
         "input",
         "-9223372036854775808");
@@ -31,22 +31,22 @@ TEST_CASE("Execute long operations", "[vm]") {
 
   SECTION("Substract") {
     CHECK_EXPR(
-        [](backend::Builder* builder) -> void {
-          builder->addLoadLitLong(10);
-          builder->addLoadLitLong(5);
-          builder->addSubLong();
-          builder->addConvLongString();
-          builder->addPCall(vm::PCallCode::ConWriteString);
+        [](novasm::Assembler* asmb) -> void {
+          asmb->addLoadLitLong(10);
+          asmb->addLoadLitLong(5);
+          asmb->addSubLong();
+          asmb->addConvLongString();
+          asmb->addPCall(novasm::PCallCode::ConWriteString);
         },
         "input",
         "5");
     CHECK_EXPR(
-        [](backend::Builder* builder) -> void {
-          builder->addLoadLitLong(10);
-          builder->addLoadLitLong(20);
-          builder->addSubLong();
-          builder->addConvLongString();
-          builder->addPCall(vm::PCallCode::ConWriteString);
+        [](novasm::Assembler* asmb) -> void {
+          asmb->addLoadLitLong(10);
+          asmb->addLoadLitLong(20);
+          asmb->addSubLong();
+          asmb->addConvLongString();
+          asmb->addPCall(novasm::PCallCode::ConWriteString);
         },
         "input",
         "-10");
@@ -54,22 +54,22 @@ TEST_CASE("Execute long operations", "[vm]") {
 
   SECTION("Multiply") {
     CHECK_EXPR(
-        [](backend::Builder* builder) -> void {
-          builder->addLoadLitLong(3);
-          builder->addLoadLitLong(5);
-          builder->addMulLong();
-          builder->addConvLongString();
-          builder->addPCall(vm::PCallCode::ConWriteString);
+        [](novasm::Assembler* asmb) -> void {
+          asmb->addLoadLitLong(3);
+          asmb->addLoadLitLong(5);
+          asmb->addMulLong();
+          asmb->addConvLongString();
+          asmb->addPCall(novasm::PCallCode::ConWriteString);
         },
         "input",
         "15");
     CHECK_EXPR(
-        [](backend::Builder* builder) -> void {
-          builder->addLoadLitLong(3);
-          builder->addLoadLitLong(-5);
-          builder->addMulLong();
-          builder->addConvLongString();
-          builder->addPCall(vm::PCallCode::ConWriteString);
+        [](novasm::Assembler* asmb) -> void {
+          asmb->addLoadLitLong(3);
+          asmb->addLoadLitLong(-5);
+          asmb->addMulLong();
+          asmb->addConvLongString();
+          asmb->addPCall(novasm::PCallCode::ConWriteString);
         },
         "input",
         "-15");
@@ -77,22 +77,22 @@ TEST_CASE("Execute long operations", "[vm]") {
 
   SECTION("Divide") {
     CHECK_EXPR(
-        [](backend::Builder* builder) -> void {
-          builder->addLoadLitLong(33);
-          builder->addLoadLitLong(4);
-          builder->addDivLong();
-          builder->addConvLongString();
-          builder->addPCall(vm::PCallCode::ConWriteString);
+        [](novasm::Assembler* asmb) -> void {
+          asmb->addLoadLitLong(33);
+          asmb->addLoadLitLong(4);
+          asmb->addDivLong();
+          asmb->addConvLongString();
+          asmb->addPCall(novasm::PCallCode::ConWriteString);
         },
         "input",
         "8");
     CHECK_EXPR_RESULTCODE(
-        [](backend::Builder* builder) -> void {
-          builder->addLoadLitLong(1);
-          builder->addLoadLitLong(0);
-          builder->addDivLong();
-          builder->addConvLongString();
-          builder->addPCall(vm::PCallCode::ConWriteString);
+        [](novasm::Assembler* asmb) -> void {
+          asmb->addLoadLitLong(1);
+          asmb->addLoadLitLong(0);
+          asmb->addDivLong();
+          asmb->addConvLongString();
+          asmb->addPCall(novasm::PCallCode::ConWriteString);
         },
         "input",
         ExecState::DivByZero);
@@ -100,22 +100,22 @@ TEST_CASE("Execute long operations", "[vm]") {
 
   SECTION("Remainder") {
     CHECK_EXPR(
-        [](backend::Builder* builder) -> void {
-          builder->addLoadLitLong(33);
-          builder->addLoadLitLong(4);
-          builder->addRemLong();
-          builder->addConvLongString();
-          builder->addPCall(vm::PCallCode::ConWriteString);
+        [](novasm::Assembler* asmb) -> void {
+          asmb->addLoadLitLong(33);
+          asmb->addLoadLitLong(4);
+          asmb->addRemLong();
+          asmb->addConvLongString();
+          asmb->addPCall(novasm::PCallCode::ConWriteString);
         },
         "input",
         "1");
     CHECK_EXPR_RESULTCODE(
-        [](backend::Builder* builder) -> void {
-          builder->addLoadLitLong(1);
-          builder->addLoadLitLong(0);
-          builder->addRemLong();
-          builder->addConvLongString();
-          builder->addPCall(vm::PCallCode::ConWriteString);
+        [](novasm::Assembler* asmb) -> void {
+          asmb->addLoadLitLong(1);
+          asmb->addLoadLitLong(0);
+          asmb->addRemLong();
+          asmb->addConvLongString();
+          asmb->addPCall(novasm::PCallCode::ConWriteString);
         },
         "input",
         ExecState::DivByZero);
@@ -123,30 +123,30 @@ TEST_CASE("Execute long operations", "[vm]") {
 
   SECTION("Negate") {
     CHECK_EXPR(
-        [](backend::Builder* builder) -> void {
-          builder->addLoadLitLong(42);
-          builder->addNegLong();
-          builder->addConvLongString();
-          builder->addPCall(vm::PCallCode::ConWriteString);
+        [](novasm::Assembler* asmb) -> void {
+          asmb->addLoadLitLong(42);
+          asmb->addNegLong();
+          asmb->addConvLongString();
+          asmb->addPCall(novasm::PCallCode::ConWriteString);
         },
         "input",
         "-42");
     CHECK_EXPR(
-        [](backend::Builder* builder) -> void {
-          builder->addLoadLitLong(0);
-          builder->addNegLong();
-          builder->addConvLongString();
-          builder->addPCall(vm::PCallCode::ConWriteString);
+        [](novasm::Assembler* asmb) -> void {
+          asmb->addLoadLitLong(0);
+          asmb->addNegLong();
+          asmb->addConvLongString();
+          asmb->addPCall(novasm::PCallCode::ConWriteString);
         },
         "input",
         "0");
     CHECK_EXPR(
-        [](backend::Builder* builder) -> void {
-          builder->addLoadLitLong(42);
-          builder->addNegLong();
-          builder->addNegLong();
-          builder->addConvLongString();
-          builder->addPCall(vm::PCallCode::ConWriteString);
+        [](novasm::Assembler* asmb) -> void {
+          asmb->addLoadLitLong(42);
+          asmb->addNegLong();
+          asmb->addNegLong();
+          asmb->addConvLongString();
+          asmb->addPCall(novasm::PCallCode::ConWriteString);
         },
         "input",
         "42");

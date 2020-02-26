@@ -1,6 +1,6 @@
-#include "vm/op_code.hpp"
+#include "novasm/op_code.hpp"
 
-namespace vm {
+namespace novasm {
 
 auto operator<<(std::ostream& out, const OpCode& rhs) noexcept -> std::ostream& {
   switch (rhs) {
@@ -278,4 +278,4 @@ auto operator<<(std::ostream& out, const OpCode& rhs) noexcept -> std::ostream& 
   return out;
 }
 
-} // namespace vm
+} // namespace novasm

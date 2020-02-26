@@ -7,22 +7,22 @@ TEST_CASE("Execute conversions", "[vm]") {
 
   SECTION("Int to Float") {
     CHECK_EXPR(
-        [](backend::Builder* builder) -> void {
-          builder->addLoadLitInt(42);
-          builder->addConvIntFloat();
+        [](novasm::Assembler* asmb) -> void {
+          asmb->addLoadLitInt(42);
+          asmb->addConvIntFloat();
 
-          builder->addConvFloatString();
-          builder->addPCall(vm::PCallCode::ConWriteString);
+          asmb->addConvFloatString();
+          asmb->addPCall(novasm::PCallCode::ConWriteString);
         },
         "input",
         "42");
     CHECK_EXPR(
-        [](backend::Builder* builder) -> void {
-          builder->addLoadLitInt(-2147483647);
-          builder->addConvIntFloat();
+        [](novasm::Assembler* asmb) -> void {
+          asmb->addLoadLitInt(-2147483647);
+          asmb->addConvIntFloat();
 
-          builder->addConvFloatString();
-          builder->addPCall(vm::PCallCode::ConWriteString);
+          asmb->addConvFloatString();
+          asmb->addPCall(novasm::PCallCode::ConWriteString);
         },
         "input",
         "-2.14748e+09");
@@ -30,22 +30,22 @@ TEST_CASE("Execute conversions", "[vm]") {
 
   SECTION("Int to long") {
     CHECK_EXPR(
-        [](backend::Builder* builder) -> void {
-          builder->addLoadLitInt(42);
-          builder->addConvIntLong();
+        [](novasm::Assembler* asmb) -> void {
+          asmb->addLoadLitInt(42);
+          asmb->addConvIntLong();
 
-          builder->addConvLongString();
-          builder->addPCall(vm::PCallCode::ConWriteString);
+          asmb->addConvLongString();
+          asmb->addPCall(novasm::PCallCode::ConWriteString);
         },
         "input",
         "42");
     CHECK_EXPR(
-        [](backend::Builder* builder) -> void {
-          builder->addLoadLitInt(-2147483647);
-          builder->addConvIntLong();
+        [](novasm::Assembler* asmb) -> void {
+          asmb->addLoadLitInt(-2147483647);
+          asmb->addConvIntLong();
 
-          builder->addConvLongString();
-          builder->addPCall(vm::PCallCode::ConWriteString);
+          asmb->addConvLongString();
+          asmb->addPCall(novasm::PCallCode::ConWriteString);
         },
         "input",
         "-2147483647");
@@ -53,32 +53,32 @@ TEST_CASE("Execute conversions", "[vm]") {
 
   SECTION("Long to int") {
     CHECK_EXPR(
-        [](backend::Builder* builder) -> void {
-          builder->addLoadLitLong(42);
-          builder->addConvLongInt();
+        [](novasm::Assembler* asmb) -> void {
+          asmb->addLoadLitLong(42);
+          asmb->addConvLongInt();
 
-          builder->addConvIntString();
-          builder->addPCall(vm::PCallCode::ConWriteString);
+          asmb->addConvIntString();
+          asmb->addPCall(novasm::PCallCode::ConWriteString);
         },
         "input",
         "42");
     CHECK_EXPR(
-        [](backend::Builder* builder) -> void {
-          builder->addLoadLitLong(-2147483647);
-          builder->addConvLongInt();
+        [](novasm::Assembler* asmb) -> void {
+          asmb->addLoadLitLong(-2147483647);
+          asmb->addConvLongInt();
 
-          builder->addConvIntString();
-          builder->addPCall(vm::PCallCode::ConWriteString);
+          asmb->addConvIntString();
+          asmb->addPCall(novasm::PCallCode::ConWriteString);
         },
         "input",
         "-2147483647");
     CHECK_EXPR(
-        [](backend::Builder* builder) -> void {
-          builder->addLoadLitLong(9223372036854775807L);
-          builder->addConvLongInt();
+        [](novasm::Assembler* asmb) -> void {
+          asmb->addLoadLitLong(9223372036854775807L);
+          asmb->addConvLongInt();
 
-          builder->addConvIntString();
-          builder->addPCall(vm::PCallCode::ConWriteString);
+          asmb->addConvIntString();
+          asmb->addPCall(novasm::PCallCode::ConWriteString);
         },
         "input",
         "-1");
@@ -86,42 +86,42 @@ TEST_CASE("Execute conversions", "[vm]") {
 
   SECTION("Float to Int") {
     CHECK_EXPR(
-        [](backend::Builder* builder) -> void {
-          builder->addLoadLitFloat(42.1F); // NOLINT: Magic numbers
-          builder->addConvFloatInt();
+        [](novasm::Assembler* asmb) -> void {
+          asmb->addLoadLitFloat(42.1F); // NOLINT: Magic numbers
+          asmb->addConvFloatInt();
 
-          builder->addConvIntString();
-          builder->addPCall(vm::PCallCode::ConWriteString);
+          asmb->addConvIntString();
+          asmb->addPCall(novasm::PCallCode::ConWriteString);
         },
         "input",
         "42");
     CHECK_EXPR(
-        [](backend::Builder* builder) -> void {
-          builder->addLoadLitFloat(42.9F); // NOLINT: Magic numbers
-          builder->addConvFloatInt();
+        [](novasm::Assembler* asmb) -> void {
+          asmb->addLoadLitFloat(42.9F); // NOLINT: Magic numbers
+          asmb->addConvFloatInt();
 
-          builder->addConvIntString();
-          builder->addPCall(vm::PCallCode::ConWriteString);
+          asmb->addConvIntString();
+          asmb->addPCall(novasm::PCallCode::ConWriteString);
         },
         "input",
         "42");
     CHECK_EXPR(
-        [](backend::Builder* builder) -> void {
-          builder->addLoadLitFloat(0.001F); // NOLINT: Magic numbers
-          builder->addConvFloatInt();
+        [](novasm::Assembler* asmb) -> void {
+          asmb->addLoadLitFloat(0.001F); // NOLINT: Magic numbers
+          asmb->addConvFloatInt();
 
-          builder->addConvIntString();
-          builder->addPCall(vm::PCallCode::ConWriteString);
+          asmb->addConvIntString();
+          asmb->addPCall(novasm::PCallCode::ConWriteString);
         },
         "input",
         "0");
     CHECK_EXPR(
-        [](backend::Builder* builder) -> void {
-          builder->addLoadLitFloat(2147483648.0F); // NOLINT: Magic numbers
-          builder->addConvFloatInt();
+        [](novasm::Assembler* asmb) -> void {
+          asmb->addLoadLitFloat(2147483648.0F); // NOLINT: Magic numbers
+          asmb->addConvFloatInt();
 
-          builder->addConvIntString();
-          builder->addPCall(vm::PCallCode::ConWriteString);
+          asmb->addConvIntString();
+          asmb->addPCall(novasm::PCallCode::ConWriteString);
         },
         "input",
         "-2147483648"); // Unrepresentable by int, high bit 1 all others 0.
@@ -129,34 +129,34 @@ TEST_CASE("Execute conversions", "[vm]") {
 
   SECTION("Int to String") {
     CHECK_EXPR(
-        [](backend::Builder* builder) -> void {
-          builder->addLoadLitInt(0);
-          builder->addConvIntString();
-          builder->addPCall(vm::PCallCode::ConWriteString);
+        [](novasm::Assembler* asmb) -> void {
+          asmb->addLoadLitInt(0);
+          asmb->addConvIntString();
+          asmb->addPCall(novasm::PCallCode::ConWriteString);
         },
         "input",
         "0");
     CHECK_EXPR(
-        [](backend::Builder* builder) -> void {
-          builder->addLoadLitInt(42);
-          builder->addConvIntString();
-          builder->addPCall(vm::PCallCode::ConWriteString);
+        [](novasm::Assembler* asmb) -> void {
+          asmb->addLoadLitInt(42);
+          asmb->addConvIntString();
+          asmb->addPCall(novasm::PCallCode::ConWriteString);
         },
         "input",
         "42");
     CHECK_EXPR(
-        [](backend::Builder* builder) -> void {
-          builder->addLoadLitInt(2147483647);
-          builder->addConvIntString();
-          builder->addPCall(vm::PCallCode::ConWriteString);
+        [](novasm::Assembler* asmb) -> void {
+          asmb->addLoadLitInt(2147483647);
+          asmb->addConvIntString();
+          asmb->addPCall(novasm::PCallCode::ConWriteString);
         },
         "input",
         "2147483647");
     CHECK_EXPR(
-        [](backend::Builder* builder) -> void {
-          builder->addLoadLitInt(-2147483647);
-          builder->addConvIntString();
-          builder->addPCall(vm::PCallCode::ConWriteString);
+        [](novasm::Assembler* asmb) -> void {
+          asmb->addLoadLitInt(-2147483647);
+          asmb->addConvIntString();
+          asmb->addPCall(novasm::PCallCode::ConWriteString);
         },
         "input",
         "-2147483647");
@@ -164,50 +164,50 @@ TEST_CASE("Execute conversions", "[vm]") {
 
   SECTION("Long to String") {
     CHECK_EXPR(
-        [](backend::Builder* builder) -> void {
-          builder->addLoadLitLong(0);
-          builder->addConvLongString();
-          builder->addPCall(vm::PCallCode::ConWriteString);
+        [](novasm::Assembler* asmb) -> void {
+          asmb->addLoadLitLong(0);
+          asmb->addConvLongString();
+          asmb->addPCall(novasm::PCallCode::ConWriteString);
         },
         "input",
         "0");
     CHECK_EXPR(
-        [](backend::Builder* builder) -> void {
-          builder->addLoadLitLong(42);
-          builder->addConvLongString();
-          builder->addPCall(vm::PCallCode::ConWriteString);
+        [](novasm::Assembler* asmb) -> void {
+          asmb->addLoadLitLong(42);
+          asmb->addConvLongString();
+          asmb->addPCall(novasm::PCallCode::ConWriteString);
         },
         "input",
         "42");
     CHECK_EXPR(
-        [](backend::Builder* builder) -> void {
-          builder->addLoadLitLong(2147483647);
-          builder->addConvLongString();
-          builder->addPCall(vm::PCallCode::ConWriteString);
+        [](novasm::Assembler* asmb) -> void {
+          asmb->addLoadLitLong(2147483647);
+          asmb->addConvLongString();
+          asmb->addPCall(novasm::PCallCode::ConWriteString);
         },
         "input",
         "2147483647");
     CHECK_EXPR(
-        [](backend::Builder* builder) -> void {
-          builder->addLoadLitLong(-2147483647);
-          builder->addConvLongString();
-          builder->addPCall(vm::PCallCode::ConWriteString);
+        [](novasm::Assembler* asmb) -> void {
+          asmb->addLoadLitLong(-2147483647);
+          asmb->addConvLongString();
+          asmb->addPCall(novasm::PCallCode::ConWriteString);
         },
         "input",
         "-2147483647");
     CHECK_EXPR(
-        [](backend::Builder* builder) -> void {
-          builder->addLoadLitLong(9223372036854775807L);
-          builder->addConvLongString();
-          builder->addPCall(vm::PCallCode::ConWriteString);
+        [](novasm::Assembler* asmb) -> void {
+          asmb->addLoadLitLong(9223372036854775807L);
+          asmb->addConvLongString();
+          asmb->addPCall(novasm::PCallCode::ConWriteString);
         },
         "input",
         "9223372036854775807");
     CHECK_EXPR(
-        [](backend::Builder* builder) -> void {
-          builder->addLoadLitLong(-9223372036854775807L);
-          builder->addConvLongString();
-          builder->addPCall(vm::PCallCode::ConWriteString);
+        [](novasm::Assembler* asmb) -> void {
+          asmb->addLoadLitLong(-9223372036854775807L);
+          asmb->addConvLongString();
+          asmb->addPCall(novasm::PCallCode::ConWriteString);
         },
         "input",
         "-9223372036854775807");
@@ -215,82 +215,82 @@ TEST_CASE("Execute conversions", "[vm]") {
 
   SECTION("Float to String") {
     CHECK_EXPR(
-        [](backend::Builder* builder) -> void {
-          builder->addLoadLitFloat(0.0F);
-          builder->addConvFloatString();
-          builder->addPCall(vm::PCallCode::ConWriteString);
+        [](novasm::Assembler* asmb) -> void {
+          asmb->addLoadLitFloat(0.0F);
+          asmb->addConvFloatString();
+          asmb->addPCall(novasm::PCallCode::ConWriteString);
         },
         "input",
         "0");
     CHECK_EXPR(
-        [](backend::Builder* builder) -> void {
-          builder->addLoadLitFloat(42.0F); // NOLINT: Magic numbers
-          builder->addConvFloatString();
-          builder->addPCall(vm::PCallCode::ConWriteString);
+        [](novasm::Assembler* asmb) -> void {
+          asmb->addLoadLitFloat(42.0F); // NOLINT: Magic numbers
+          asmb->addConvFloatString();
+          asmb->addPCall(novasm::PCallCode::ConWriteString);
         },
         "input",
         "42");
     CHECK_EXPR(
-        [](backend::Builder* builder) -> void {
-          builder->addLoadLitFloat(42.1337F); // NOLINT: Magic numbers
-          builder->addConvFloatString();
-          builder->addPCall(vm::PCallCode::ConWriteString);
+        [](novasm::Assembler* asmb) -> void {
+          asmb->addLoadLitFloat(42.1337F); // NOLINT: Magic numbers
+          asmb->addConvFloatString();
+          asmb->addPCall(novasm::PCallCode::ConWriteString);
         },
         "input",
         "42.1337");
     CHECK_EXPR(
-        [](backend::Builder* builder) -> void {
-          builder->addLoadLitFloat(0.42F); // NOLINT: Magic numbers
-          builder->addConvFloatString();
-          builder->addPCall(vm::PCallCode::ConWriteString);
+        [](novasm::Assembler* asmb) -> void {
+          asmb->addLoadLitFloat(0.42F); // NOLINT: Magic numbers
+          asmb->addConvFloatString();
+          asmb->addPCall(novasm::PCallCode::ConWriteString);
         },
         "input",
         "0.42");
     CHECK_EXPR(
-        [](backend::Builder* builder) -> void {
-          builder->addLoadLitFloat(999999.0F); // NOLINT: Magic numbers
-          builder->addConvFloatString();
-          builder->addPCall(vm::PCallCode::ConWriteString);
+        [](novasm::Assembler* asmb) -> void {
+          asmb->addLoadLitFloat(999999.0F); // NOLINT: Magic numbers
+          asmb->addConvFloatString();
+          asmb->addPCall(novasm::PCallCode::ConWriteString);
         },
         "input",
         "999999");
     CHECK_EXPR(
-        [](backend::Builder* builder) -> void {
-          builder->addLoadLitFloat(99999.1F); // NOLINT: Magic numbers
-          builder->addConvFloatString();
-          builder->addPCall(vm::PCallCode::ConWriteString);
+        [](novasm::Assembler* asmb) -> void {
+          asmb->addLoadLitFloat(99999.1F); // NOLINT: Magic numbers
+          asmb->addConvFloatString();
+          asmb->addPCall(novasm::PCallCode::ConWriteString);
         },
         "input",
         "99999.1");
     CHECK_EXPR(
-        [](backend::Builder* builder) -> void {
-          builder->addLoadLitFloat(0.000001F); // NOLINT: Magic numbers
-          builder->addConvFloatString();
-          builder->addPCall(vm::PCallCode::ConWriteString);
+        [](novasm::Assembler* asmb) -> void {
+          asmb->addLoadLitFloat(0.000001F); // NOLINT: Magic numbers
+          asmb->addConvFloatString();
+          asmb->addPCall(novasm::PCallCode::ConWriteString);
         },
         "input",
         "1e-06");
     CHECK_EXPR(
-        [](backend::Builder* builder) -> void {
-          builder->addLoadLitFloat(9999999999.0F); // NOLINT: Magic numbers
-          builder->addConvFloatString();
-          builder->addPCall(vm::PCallCode::ConWriteString);
+        [](novasm::Assembler* asmb) -> void {
+          asmb->addLoadLitFloat(9999999999.0F); // NOLINT: Magic numbers
+          asmb->addConvFloatString();
+          asmb->addPCall(novasm::PCallCode::ConWriteString);
         },
         "input",
         "1e+10"); // Rounding error.
     CHECK_EXPR(
-        [](backend::Builder* builder) -> void {
-          builder->addLoadLitFloat(-0.42F); // NOLINT: Magic numbers
-          builder->addConvFloatString();
-          builder->addPCall(vm::PCallCode::ConWriteString);
+        [](novasm::Assembler* asmb) -> void {
+          asmb->addLoadLitFloat(-0.42F); // NOLINT: Magic numbers
+          asmb->addConvFloatString();
+          asmb->addPCall(novasm::PCallCode::ConWriteString);
         },
         "input",
         "-0.42");
     CHECK_EXPR(
-        [](backend::Builder* builder) -> void {
-          builder->addLoadLitFloat(-9999999999.0F); // NOLINT: Magic numbers
-          builder->addConvFloatString();
-          builder->addPCall(vm::PCallCode::ConWriteString);
+        [](novasm::Assembler* asmb) -> void {
+          asmb->addLoadLitFloat(-9999999999.0F); // NOLINT: Magic numbers
+          asmb->addConvFloatString();
+          asmb->addPCall(novasm::PCallCode::ConWriteString);
         },
         "input",
         "-1e+10"); // Rounding error.
@@ -298,34 +298,34 @@ TEST_CASE("Execute conversions", "[vm]") {
 
   SECTION("Char to String") {
     CHECK_EXPR(
-        [](backend::Builder* builder) -> void {
-          builder->addLoadLitInt(48);
-          builder->addConvCharString();
-          builder->addPCall(vm::PCallCode::ConWriteString);
+        [](novasm::Assembler* asmb) -> void {
+          asmb->addLoadLitInt(48);
+          asmb->addConvCharString();
+          asmb->addPCall(novasm::PCallCode::ConWriteString);
         },
         "input",
         "0");
     CHECK_EXPR(
-        [](backend::Builder* builder) -> void {
-          builder->addLoadLitInt(10);
-          builder->addConvCharString();
-          builder->addPCall(vm::PCallCode::ConWriteString);
+        [](novasm::Assembler* asmb) -> void {
+          asmb->addLoadLitInt(10);
+          asmb->addConvCharString();
+          asmb->addPCall(novasm::PCallCode::ConWriteString);
         },
         "input",
         "\n");
     CHECK_EXPR(
-        [](backend::Builder* builder) -> void {
-          builder->addLoadLitInt(38);
-          builder->addConvCharString();
-          builder->addPCall(vm::PCallCode::ConWriteString);
+        [](novasm::Assembler* asmb) -> void {
+          asmb->addLoadLitInt(38);
+          asmb->addConvCharString();
+          asmb->addPCall(novasm::PCallCode::ConWriteString);
         },
         "input",
         "&");
     CHECK_EXPR(
-        [](backend::Builder* builder) -> void {
-          builder->addLoadLitInt(32);
-          builder->addConvCharString();
-          builder->addPCall(vm::PCallCode::ConWriteString);
+        [](novasm::Assembler* asmb) -> void {
+          asmb->addLoadLitInt(32);
+          asmb->addConvCharString();
+          asmb->addPCall(novasm::PCallCode::ConWriteString);
         },
         "input",
         " ");
@@ -333,62 +333,62 @@ TEST_CASE("Execute conversions", "[vm]") {
 
   SECTION("Int to Char") {
     CHECK_EXPR(
-        [](backend::Builder* builder) -> void {
-          builder->addLoadLitInt(0);
-          builder->addConvIntChar();
+        [](novasm::Assembler* asmb) -> void {
+          asmb->addLoadLitInt(0);
+          asmb->addConvIntChar();
 
-          builder->addConvIntString();
-          builder->addPCall(vm::PCallCode::ConWriteString);
+          asmb->addConvIntString();
+          asmb->addPCall(novasm::PCallCode::ConWriteString);
         },
         "input",
         "0");
     CHECK_EXPR(
-        [](backend::Builder* builder) -> void {
-          builder->addLoadLitInt(42);
-          builder->addConvIntChar();
+        [](novasm::Assembler* asmb) -> void {
+          asmb->addLoadLitInt(42);
+          asmb->addConvIntChar();
 
-          builder->addConvIntString();
-          builder->addPCall(vm::PCallCode::ConWriteString);
+          asmb->addConvIntString();
+          asmb->addPCall(novasm::PCallCode::ConWriteString);
         },
         "input",
         "42");
     CHECK_EXPR(
-        [](backend::Builder* builder) -> void {
-          builder->addLoadLitInt(255);
-          builder->addConvIntChar();
+        [](novasm::Assembler* asmb) -> void {
+          asmb->addLoadLitInt(255);
+          asmb->addConvIntChar();
 
-          builder->addConvIntString();
-          builder->addPCall(vm::PCallCode::ConWriteString);
+          asmb->addConvIntString();
+          asmb->addPCall(novasm::PCallCode::ConWriteString);
         },
         "input",
         "255");
     CHECK_EXPR(
-        [](backend::Builder* builder) -> void {
-          builder->addLoadLitInt(256);
-          builder->addConvIntChar();
+        [](novasm::Assembler* asmb) -> void {
+          asmb->addLoadLitInt(256);
+          asmb->addConvIntChar();
 
-          builder->addConvIntString();
-          builder->addPCall(vm::PCallCode::ConWriteString);
+          asmb->addConvIntString();
+          asmb->addPCall(novasm::PCallCode::ConWriteString);
         },
         "input",
         "0");
     CHECK_EXPR(
-        [](backend::Builder* builder) -> void {
-          builder->addLoadLitInt(-1);
-          builder->addConvIntChar();
+        [](novasm::Assembler* asmb) -> void {
+          asmb->addLoadLitInt(-1);
+          asmb->addConvIntChar();
 
-          builder->addConvIntString();
-          builder->addPCall(vm::PCallCode::ConWriteString);
+          asmb->addConvIntString();
+          asmb->addPCall(novasm::PCallCode::ConWriteString);
         },
         "input",
         "255");
     CHECK_EXPR(
-        [](backend::Builder* builder) -> void {
-          builder->addLoadLitInt(1337);
-          builder->addConvIntChar();
+        [](novasm::Assembler* asmb) -> void {
+          asmb->addLoadLitInt(1337);
+          asmb->addConvIntChar();
 
-          builder->addConvIntString();
-          builder->addPCall(vm::PCallCode::ConWriteString);
+          asmb->addConvIntString();
+          asmb->addPCall(novasm::PCallCode::ConWriteString);
         },
         "input",
         "57");

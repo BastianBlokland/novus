@@ -2,8 +2,8 @@
 #include "internal/executor_handle.hpp"
 #include "internal/stack.hpp"
 #include "internal/string_utilities.hpp"
+#include "novasm/pcall_code.hpp"
 #include "vm/exec_state.hpp"
-#include "vm/pcall_code.hpp"
 #include <chrono>
 #include <thread>
 
@@ -17,8 +17,10 @@ auto inline pcall(
     Allocator* allocator,
     BasicStack* stack,
     ExecutorHandle* execHandle,
-    PCallCode code) noexcept -> void {
+    novasm::PCallCode code) noexcept -> void {
   assert(iface && allocator && stack && execHandle);
+
+  using PCallCode = novasm::PCallCode;
 
 #define PUSH(VAL)                                                                                  \
   if (!stack->push(VAL)) {                                                                         \
@@ -50,19 +52,19 @@ auto inline pcall(
 #define PEEK_INT() PEEK().getInt()
 
   switch (code) {
-  case vm::PCallCode::ConWriteChar: {
+  case PCallCode::ConWriteChar: {
     auto c = static_cast<char>(PEEK_INT());
     iface->lockConWrite();
     iface->conWrite(&c, 1);
     iface->unlockConWrite();
   } break;
-  case vm::PCallCode::ConWriteString: {
+  case PCallCode::ConWriteString: {
     auto* strRef = getStringRef(PEEK());
     iface->lockConWrite();
     iface->conWrite(strRef->getDataPtr(), strRef->getSize());
     iface->unlockConWrite();
   } break;
-  case vm::PCallCode::ConWriteStringLine: {
+  case PCallCode::ConWriteStringLine: {
     auto* strRef = getStringRef(PEEK());
     iface->lockConWrite();
     iface->conWrite(strRef->getDataPtr(), strRef->getSize());
@@ -70,7 +72,7 @@ auto inline pcall(
     iface->unlockConWrite();
   } break;
 
-  case vm::PCallCode::ConReadChar: {
+  case PCallCode::ConReadChar: {
     execHandle->setState(ExecState::Paused);
     iface->lockConRead();
     auto readChar = iface->conRead();
@@ -79,7 +81,7 @@ auto inline pcall(
     execHandle->trap();
     PUSH_INT(readChar);
   } break;
-  case vm::PCallCode::ConReadStringLine: {
+  case PCallCode::ConReadStringLine: {
     execHandle->setState(ExecState::Paused);
     iface->lockConRead();
     std::string line = {};
@@ -96,35 +98,35 @@ auto inline pcall(
     PUSH_REF(toStringRef(allocator, line));
   } break;
 
-  case vm::PCallCode::GetEnvArg: {
+  case PCallCode::GetEnvArg: {
     auto* res = iface->getEnvArg(POP_INT());
     PUSH_REF(res == nullptr ? allocator->allocStr(0).first : toStringRef(allocator, res));
   } break;
-  case vm::PCallCode::GetEnvArgCount: {
+  case PCallCode::GetEnvArgCount: {
     PUSH_INT(iface->getEnvArgCount());
   } break;
-  case vm::PCallCode::GetEnvVar: {
+  case PCallCode::GetEnvVar: {
     auto* nameStrRef = getStringRef(POP());
     auto* res        = iface->getEnvVar(nameStrRef->getDataPtr());
     PUSH_REF(res == nullptr ? allocator->allocStr(0).first : toStringRef(allocator, res));
   } break;
 
-  case vm::PCallCode::ClockMicroSinceEpoch: {
+  case PCallCode::ClockMicroSinceEpoch: {
     const auto now = std::chrono::system_clock::now().time_since_epoch();
     PUSH_LONG(std::chrono::duration_cast<std::chrono::microseconds>(now).count());
   } break;
-  case vm::PCallCode::ClockNanoSteady: {
+  case PCallCode::ClockNanoSteady: {
     auto now = std::chrono::steady_clock::now().time_since_epoch();
     PUSH_LONG(std::chrono::duration_cast<std::chrono::nanoseconds>(now).count());
   } break;
 
-  case vm::PCallCode::SleepNano: {
+  case PCallCode::SleepNano: {
     execHandle->setState(ExecState::Paused);
     std::this_thread::sleep_for(std::chrono::nanoseconds(getLong(PEEK())));
     execHandle->setState(ExecState::Running);
     execHandle->trap();
   } break;
-  case vm::PCallCode::Assert: {
+  case PCallCode::Assert: {
     auto* msg = getStringRef(POP());
     auto cond = PEEK_INT();
     if (cond == 0) {

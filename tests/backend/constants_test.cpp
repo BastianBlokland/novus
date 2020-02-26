@@ -5,63 +5,63 @@ namespace backend {
 
 TEST_CASE("Generate assembly for storing and loading constants", "[backend]") {
 
-  CHECK_EXPR_INT("x = 42; x", [](backend::Builder* builder) -> void {
-    builder->addStackAlloc(1);
+  CHECK_EXPR_INT("x = 42; x", [](novasm::Assembler* asmb) -> void {
+    asmb->addStackAlloc(1);
 
-    builder->addLoadLitInt(42);
-    builder->addDup();
-    builder->addStackStore(0);
+    asmb->addLoadLitInt(42);
+    asmb->addDup();
+    asmb->addStackStore(0);
 
-    builder->addPop();
-    builder->addStackLoad(0);
+    asmb->addPop();
+    asmb->addStackLoad(0);
   });
 
-  CHECK_EXPR_INT("x = y = 42; y", [](backend::Builder* builder) -> void {
-    builder->addStackAlloc(2);
+  CHECK_EXPR_INT("x = y = 42; y", [](novasm::Assembler* asmb) -> void {
+    asmb->addStackAlloc(2);
 
-    builder->addLoadLitInt(42);
-    builder->addDup();
-    builder->addStackStore(0);
+    asmb->addLoadLitInt(42);
+    asmb->addDup();
+    asmb->addStackStore(0);
 
-    builder->addDup();
-    builder->addStackStore(1);
+    asmb->addDup();
+    asmb->addStackStore(1);
 
-    builder->addPop();
-    builder->addStackLoad(0);
+    asmb->addPop();
+    asmb->addStackLoad(0);
   });
 
-  CHECK_EXPR_INT("x = 42; y = 1337; x + y", [](backend::Builder* builder) -> void {
-    builder->addStackAlloc(2);
+  CHECK_EXPR_INT("x = 42; y = 1337; x + y", [](novasm::Assembler* asmb) -> void {
+    asmb->addStackAlloc(2);
 
-    builder->addLoadLitInt(42);
-    builder->addDup();
-    builder->addStackStore(0);
+    asmb->addLoadLitInt(42);
+    asmb->addDup();
+    asmb->addStackStore(0);
 
-    builder->addPop();
+    asmb->addPop();
 
-    builder->addLoadLitInt(1337);
-    builder->addDup();
-    builder->addStackStore(1);
+    asmb->addLoadLitInt(1337);
+    asmb->addDup();
+    asmb->addStackStore(1);
 
-    builder->addPop();
+    asmb->addPop();
 
-    builder->addStackLoad(0);
-    builder->addStackLoad(1);
-    builder->addAddInt();
+    asmb->addStackLoad(0);
+    asmb->addStackLoad(1);
+    asmb->addAddInt();
   });
 
-  CHECK_EXPR_INT("x = y = 42; y", [](backend::Builder* builder) -> void {
-    builder->addStackAlloc(2);
+  CHECK_EXPR_INT("x = y = 42; y", [](novasm::Assembler* asmb) -> void {
+    asmb->addStackAlloc(2);
 
-    builder->addLoadLitInt(42);
-    builder->addDup();
-    builder->addStackStore(0);
+    asmb->addLoadLitInt(42);
+    asmb->addDup();
+    asmb->addStackStore(0);
 
-    builder->addDup();
-    builder->addStackStore(1);
+    asmb->addDup();
+    asmb->addStackStore(1);
 
-    builder->addPop();
-    builder->addStackLoad(0);
+    asmb->addPop();
+    asmb->addStackLoad(0);
   });
 }
 

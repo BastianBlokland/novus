@@ -4,15 +4,15 @@
 
 namespace backend::internal {
 
-auto getLabel(prog::sym::FuncId funcId) -> std::string {
+auto getLabel(const prog::Program& prog, prog::sym::FuncId funcId) -> std::string {
   std::ostringstream oss;
-  oss << funcId;
+  oss << "func_" + prog.getFuncDecl(funcId).getName() << "_" << funcId;
   return oss.str();
 }
 
-auto getUserTypeEqLabel(prog::sym::TypeId typeId) -> std::string {
+auto getUserTypeEqLabel(const prog::Program& prog, prog::sym::TypeId typeId) -> std::string {
   std::ostringstream oss;
-  oss << "eq" << typeId;
+  oss << "user_type_equality_" << prog.getTypeDecl(typeId).getName() << "_" << typeId;
   return oss.str();
 }
 

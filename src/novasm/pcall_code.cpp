@@ -1,6 +1,6 @@
-#include "vm/pcall_code.hpp"
+#include "novasm/pcall_code.hpp"
 
-namespace vm {
+namespace novasm {
 
 auto operator<<(std::ostream& out, const PCallCode& rhs) noexcept -> std::ostream& {
   switch (rhs) {
@@ -48,4 +48,4 @@ auto operator<<(std::ostream& out, const PCallCode& rhs) noexcept -> std::ostrea
   return out;
 }
 
-} // namespace vm
+} // namespace novasm

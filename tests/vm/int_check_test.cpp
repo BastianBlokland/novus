@@ -7,22 +7,22 @@ TEST_CASE("Execute integer checks", "[vm]") {
 
   SECTION("Equal") {
     CHECK_EXPR(
-        [](backend::Builder* builder) -> void {
-          builder->addLoadLitInt(1);
-          builder->addLoadLitInt(-2);
-          builder->addCheckEqInt();
-          builder->addConvBoolString();
-          builder->addPCall(vm::PCallCode::ConWriteString);
+        [](novasm::Assembler* asmb) -> void {
+          asmb->addLoadLitInt(1);
+          asmb->addLoadLitInt(-2);
+          asmb->addCheckEqInt();
+          asmb->addConvBoolString();
+          asmb->addPCall(novasm::PCallCode::ConWriteString);
         },
         "input",
         "false");
     CHECK_EXPR(
-        [](backend::Builder* builder) -> void {
-          builder->addLoadLitInt(2);
-          builder->addLoadLitInt(2);
-          builder->addCheckEqInt();
-          builder->addConvBoolString();
-          builder->addPCall(vm::PCallCode::ConWriteString);
+        [](novasm::Assembler* asmb) -> void {
+          asmb->addLoadLitInt(2);
+          asmb->addLoadLitInt(2);
+          asmb->addCheckEqInt();
+          asmb->addConvBoolString();
+          asmb->addPCall(novasm::PCallCode::ConWriteString);
         },
         "input",
         "true");
@@ -30,22 +30,22 @@ TEST_CASE("Execute integer checks", "[vm]") {
 
   SECTION("Greater") {
     CHECK_EXPR(
-        [](backend::Builder* builder) -> void {
-          builder->addLoadLitInt(-1);
-          builder->addLoadLitInt(2);
-          builder->addCheckGtInt();
-          builder->addConvBoolString();
-          builder->addPCall(vm::PCallCode::ConWriteString);
+        [](novasm::Assembler* asmb) -> void {
+          asmb->addLoadLitInt(-1);
+          asmb->addLoadLitInt(2);
+          asmb->addCheckGtInt();
+          asmb->addConvBoolString();
+          asmb->addPCall(novasm::PCallCode::ConWriteString);
         },
         "input",
         "false");
     CHECK_EXPR(
-        [](backend::Builder* builder) -> void {
-          builder->addLoadLitInt(2);
-          builder->addLoadLitInt(1);
-          builder->addCheckGtInt();
-          builder->addConvBoolString();
-          builder->addPCall(vm::PCallCode::ConWriteString);
+        [](novasm::Assembler* asmb) -> void {
+          asmb->addLoadLitInt(2);
+          asmb->addLoadLitInt(1);
+          asmb->addCheckGtInt();
+          asmb->addConvBoolString();
+          asmb->addPCall(novasm::PCallCode::ConWriteString);
         },
         "input",
         "true");
@@ -53,22 +53,22 @@ TEST_CASE("Execute integer checks", "[vm]") {
 
   SECTION("Less") {
     CHECK_EXPR(
-        [](backend::Builder* builder) -> void {
-          builder->addLoadLitInt(3);
-          builder->addLoadLitInt(2);
-          builder->addCheckLeInt();
-          builder->addConvBoolString();
-          builder->addPCall(vm::PCallCode::ConWriteString);
+        [](novasm::Assembler* asmb) -> void {
+          asmb->addLoadLitInt(3);
+          asmb->addLoadLitInt(2);
+          asmb->addCheckLeInt();
+          asmb->addConvBoolString();
+          asmb->addPCall(novasm::PCallCode::ConWriteString);
         },
         "input",
         "false");
     CHECK_EXPR(
-        [](backend::Builder* builder) -> void {
-          builder->addLoadLitInt(2);
-          builder->addLoadLitInt(3);
-          builder->addCheckLeInt();
-          builder->addConvBoolString();
-          builder->addPCall(vm::PCallCode::ConWriteString);
+        [](novasm::Assembler* asmb) -> void {
+          asmb->addLoadLitInt(2);
+          asmb->addLoadLitInt(3);
+          asmb->addCheckLeInt();
+          asmb->addConvBoolString();
+          asmb->addPCall(novasm::PCallCode::ConWriteString);
         },
         "input",
         "true");

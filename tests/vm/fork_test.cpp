@@ -7,55 +7,55 @@ TEST_CASE("Execute forks", "[vm]") {
 
   SECTION("Waiting for fork results") {
     CHECK_PROG(
-        [](backend::Builder* builder) -> void {
-          builder->setEntrypoint("entry");
+        [](novasm::Assembler* asmb) -> void {
+          asmb->setEntrypoint("entry");
           // --- Main function start.
-          builder->label("entry");
-          builder->addStackAlloc(1); // Reserve space for a variable.
+          asmb->label("entry");
+          asmb->addStackAlloc(1); // Reserve space for a variable.
 
           // Start two worker functions as forks.
-          builder->addLoadLitInt(100);
-          builder->addCall("worker", 1, backend::CallMode::Forked);
+          asmb->addLoadLitInt(100);
+          asmb->addCall("worker", 1, novasm::CallMode::Forked);
 
           // Call one as a closure.
-          builder->addLoadLitInt(10);
-          builder->addLoadLitIp("worker");
-          builder->addMakeStruct(2);
-          builder->addCallDyn(0, backend::CallMode::Forked);
+          asmb->addLoadLitInt(10);
+          asmb->addLoadLitIp("worker");
+          asmb->addMakeStruct(2);
+          asmb->addCallDyn(0, novasm::CallMode::Forked);
 
           // Wait for them to finish.
-          builder->addFutureBlock();
-          builder->addStackStore(0);
+          asmb->addFutureBlock();
+          asmb->addStackStore(0);
 
-          builder->addFutureBlock();
+          asmb->addFutureBlock();
 
           // Add the results together.
-          builder->addStackLoad(0);
-          builder->addAddInt();
+          asmb->addStackLoad(0);
+          asmb->addAddInt();
 
           // Print the results.
-          builder->addConvIntString();
-          builder->addPCall(vm::PCallCode::ConWriteString);
-          builder->addRet();
+          asmb->addConvIntString();
+          asmb->addPCall(novasm::PCallCode::ConWriteString);
+          asmb->addRet();
           // --- Main function end.
 
           // --- Worker function start (takes one int arg).
-          builder->label("worker");
+          asmb->label("worker");
           // Loop until the input argument is 0.
-          builder->addStackLoad(0); // Load arg 0.
-          builder->addLoadLitInt(0);
-          builder->addCheckEqInt();
-          builder->addJumpIf("worker-end");
+          asmb->addStackLoad(0); // Load arg 0.
+          asmb->addLoadLitInt(0);
+          asmb->addCheckEqInt();
+          asmb->addJumpIf("worker-end");
 
           // Call itself with 'arg - 1'.
-          builder->addStackLoad(0); // Load arg 0.
-          builder->addLoadLitInt(1);
-          builder->addSubInt();
-          builder->addCall("worker", 1, backend::CallMode::Tail);
+          asmb->addStackLoad(0); // Load arg 0.
+          asmb->addLoadLitInt(1);
+          asmb->addSubInt();
+          asmb->addCall("worker", 1, novasm::CallMode::Tail);
 
-          builder->label("worker-end");
-          builder->addLoadLitInt(42); // Return 42.
-          builder->addRet();
+          asmb->label("worker-end");
+          asmb->addLoadLitInt(42); // Return 42.
+          asmb->addRet();
           // --- Worker function end.
         },
         "input",
@@ -64,25 +64,25 @@ TEST_CASE("Execute forks", "[vm]") {
 
   SECTION("Error in fork is transferred on wait") {
     CHECK_PROG_RESULTCODE(
-        [](backend::Builder* builder) -> void {
-          builder->setEntrypoint("entry");
+        [](novasm::Assembler* asmb) -> void {
+          asmb->setEntrypoint("entry");
           // --- Main function start.
-          builder->label("entry");
-          builder->addStackAlloc(1); // Reserve space for a variable.
+          asmb->label("entry");
+          asmb->addStackAlloc(1); // Reserve space for a variable.
 
           // Start the fark.
-          builder->addCall("fork", 0, backend::CallMode::Forked);
+          asmb->addCall("fork", 0, novasm::CallMode::Forked);
 
           // Wait for it to finish.
-          builder->addFutureBlock();
-          builder->addRet();
+          asmb->addFutureBlock();
+          asmb->addRet();
           // --- Main function end.
 
           // --- Fork function start (Caused div-by-zero runtime error)
-          builder->label("fork");
-          builder->addLoadLitInt(0);
-          builder->addLoadLitInt(0);
-          builder->addDivInt();
+          asmb->label("fork");
+          asmb->addLoadLitInt(0);
+          asmb->addLoadLitInt(0);
+          asmb->addDivInt();
           // --- Fork function end.
         },
         "input",
@@ -91,34 +91,34 @@ TEST_CASE("Execute forks", "[vm]") {
 
   SECTION("Poll on finished fork returns true") {
     CHECK_PROG(
-        [](backend::Builder* builder) -> void {
-          builder->setEntrypoint("entry");
+        [](novasm::Assembler* asmb) -> void {
+          asmb->setEntrypoint("entry");
           // --- Main function start.
-          builder->label("entry");
+          asmb->label("entry");
 
           // Start worker functions as forks.
-          builder->addLoadLitInt(100);
-          builder->addCall("worker", 1, backend::CallMode::Forked);
-          builder->addDup();
+          asmb->addLoadLitInt(100);
+          asmb->addCall("worker", 1, novasm::CallMode::Forked);
+          asmb->addDup();
 
           // Wait for fork to finish and discard result.
-          builder->addFutureBlock();
-          builder->addPop();
+          asmb->addFutureBlock();
+          asmb->addPop();
 
           // Poll the fork state (wait with 0 ns timeout).
-          builder->addLoadLitLong(0);
-          builder->addFutureWaitNano();
+          asmb->addLoadLitLong(0);
+          asmb->addFutureWaitNano();
 
           // Print the result.
-          builder->addConvBoolString();
-          builder->addPCall(vm::PCallCode::ConWriteString);
-          builder->addRet();
+          asmb->addConvBoolString();
+          asmb->addPCall(novasm::PCallCode::ConWriteString);
+          asmb->addRet();
           // --- Main function end.
 
           // --- Worker function start (takes one int arg).
-          builder->label("worker");
-          builder->addStackLoad(0); // Load arg 0.
-          builder->addRet();
+          asmb->label("worker");
+          asmb->addStackLoad(0); // Load arg 0.
+          asmb->addRet();
           // --- Worker function end.
         },
         "input",

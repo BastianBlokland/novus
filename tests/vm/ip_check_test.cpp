@@ -7,141 +7,141 @@ TEST_CASE("Execute instruction pointer checks", "[vm]") {
 
   SECTION("Equal") {
     CHECK_EXPR(
-        [](backend::Builder* builder) -> void {
-          builder->addLoadLitIp("label");
-          builder->addLoadLitIp("label");
+        [](novasm::Assembler* asmb) -> void {
+          asmb->addLoadLitIp("label");
+          asmb->addLoadLitIp("label");
 
-          builder->label("label");
-          builder->addCheckEqIp();
-          builder->addConvBoolString();
-          builder->addPCall(vm::PCallCode::ConWriteString);
+          asmb->label("label");
+          asmb->addCheckEqIp();
+          asmb->addConvBoolString();
+          asmb->addPCall(novasm::PCallCode::ConWriteString);
         },
         "input",
         "true");
 
     CHECK_EXPR(
-        [](backend::Builder* builder) -> void {
-          builder->addLoadLitIp("label1");
-          builder->addLoadLitIp("label2");
+        [](novasm::Assembler* asmb) -> void {
+          asmb->addLoadLitIp("label1");
+          asmb->addLoadLitIp("label2");
 
-          builder->label("label1");
-          builder->addCheckEqIp();
+          asmb->label("label1");
+          asmb->addCheckEqIp();
 
-          builder->label("label2");
-          builder->addConvBoolString();
-          builder->addPCall(vm::PCallCode::ConWriteString);
+          asmb->label("label2");
+          asmb->addConvBoolString();
+          asmb->addPCall(novasm::PCallCode::ConWriteString);
         },
         "input",
         "false");
 
     CHECK_EXPR(
-        [](backend::Builder* builder) -> void {
-          builder->addLoadLitIp("label");
-          builder->addLoadLitIp("label");
+        [](novasm::Assembler* asmb) -> void {
+          asmb->addLoadLitIp("label");
+          asmb->addLoadLitIp("label");
 
-          builder->label("label");
-          builder->addCheckEqCallDynTgt();
-          builder->addConvBoolString();
-          builder->addPCall(vm::PCallCode::ConWriteString);
+          asmb->label("label");
+          asmb->addCheckEqCallDynTgt();
+          asmb->addConvBoolString();
+          asmb->addPCall(novasm::PCallCode::ConWriteString);
         },
         "input",
         "true");
 
     CHECK_EXPR(
-        [](backend::Builder* builder) -> void {
-          builder->addLoadLitIp("label1");
-          builder->addLoadLitIp("label2");
+        [](novasm::Assembler* asmb) -> void {
+          asmb->addLoadLitIp("label1");
+          asmb->addLoadLitIp("label2");
 
-          builder->label("label1");
-          builder->addCheckEqCallDynTgt();
+          asmb->label("label1");
+          asmb->addCheckEqCallDynTgt();
 
-          builder->label("label2");
-          builder->addConvBoolString();
-          builder->addPCall(vm::PCallCode::ConWriteString);
+          asmb->label("label2");
+          asmb->addConvBoolString();
+          asmb->addPCall(novasm::PCallCode::ConWriteString);
         },
         "input",
         "false");
 
     CHECK_EXPR(
-        [](backend::Builder* builder) -> void {
+        [](novasm::Assembler* asmb) -> void {
           // Make a closure struct.
-          builder->addLoadLitInt(42);
-          builder->addLoadLitIp("label");
-          builder->addMakeStruct(2);
+          asmb->addLoadLitInt(42);
+          asmb->addLoadLitIp("label");
+          asmb->addMakeStruct(2);
 
           // Make a closure struct.
-          builder->addLoadLitInt(1337);
-          builder->addLoadLitInt(42);
-          builder->addLoadLitIp("label");
-          builder->addMakeStruct(3);
+          asmb->addLoadLitInt(1337);
+          asmb->addLoadLitInt(42);
+          asmb->addLoadLitIp("label");
+          asmb->addMakeStruct(3);
 
-          builder->label("label");
-          builder->addCheckEqCallDynTgt();
+          asmb->label("label");
+          asmb->addCheckEqCallDynTgt();
 
-          builder->addConvBoolString();
-          builder->addPCall(vm::PCallCode::ConWriteString);
+          asmb->addConvBoolString();
+          asmb->addPCall(novasm::PCallCode::ConWriteString);
         },
         "input",
         "true");
 
     CHECK_EXPR(
-        [](backend::Builder* builder) -> void {
+        [](novasm::Assembler* asmb) -> void {
           // Make a closure struct.
-          builder->addLoadLitInt(42);
-          builder->addLoadLitIp("label1");
-          builder->addMakeStruct(2);
+          asmb->addLoadLitInt(42);
+          asmb->addLoadLitIp("label1");
+          asmb->addMakeStruct(2);
 
           // Make a closure struct.
-          builder->addLoadLitInt(1337);
-          builder->addLoadLitInt(42);
-          builder->addLoadLitIp("label2");
-          builder->addMakeStruct(3);
+          asmb->addLoadLitInt(1337);
+          asmb->addLoadLitInt(42);
+          asmb->addLoadLitIp("label2");
+          asmb->addMakeStruct(3);
 
-          builder->label("label1");
-          builder->addCheckEqCallDynTgt();
+          asmb->label("label1");
+          asmb->addCheckEqCallDynTgt();
 
-          builder->label("label2");
-          builder->addConvBoolString();
-          builder->addPCall(vm::PCallCode::ConWriteString);
+          asmb->label("label2");
+          asmb->addConvBoolString();
+          asmb->addPCall(novasm::PCallCode::ConWriteString);
         },
         "input",
         "false");
 
     CHECK_EXPR(
-        [](backend::Builder* builder) -> void {
+        [](novasm::Assembler* asmb) -> void {
           // Make a closure struct.
-          builder->addLoadLitInt(42);
-          builder->addLoadLitIp("label");
-          builder->addMakeStruct(2);
+          asmb->addLoadLitInt(42);
+          asmb->addLoadLitIp("label");
+          asmb->addMakeStruct(2);
 
           // Make a raw instruction pointer.
-          builder->addLoadLitIp("label");
+          asmb->addLoadLitIp("label");
 
-          builder->label("label");
-          builder->addCheckEqCallDynTgt();
+          asmb->label("label");
+          asmb->addCheckEqCallDynTgt();
 
-          builder->addConvBoolString();
-          builder->addPCall(vm::PCallCode::ConWriteString);
+          asmb->addConvBoolString();
+          asmb->addPCall(novasm::PCallCode::ConWriteString);
         },
         "input",
         "true");
 
     CHECK_EXPR(
-        [](backend::Builder* builder) -> void {
+        [](novasm::Assembler* asmb) -> void {
           // Make a closure struct.
-          builder->addLoadLitInt(42);
-          builder->addLoadLitIp("label1");
-          builder->addMakeStruct(2);
+          asmb->addLoadLitInt(42);
+          asmb->addLoadLitIp("label1");
+          asmb->addMakeStruct(2);
 
           // Make a raw instruction pointer.
-          builder->addLoadLitIp("label2");
+          asmb->addLoadLitIp("label2");
 
-          builder->label("label1");
-          builder->addCheckEqCallDynTgt();
+          asmb->label("label1");
+          asmb->addCheckEqCallDynTgt();
 
-          builder->label("label2");
-          builder->addConvBoolString();
-          builder->addPCall(vm::PCallCode::ConWriteString);
+          asmb->label("label2");
+          asmb->addConvBoolString();
+          asmb->addPCall(novasm::PCallCode::ConWriteString);
         },
         "input",
         "false");

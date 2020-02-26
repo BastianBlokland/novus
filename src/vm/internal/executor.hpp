@@ -1,14 +1,14 @@
 #pragma once
 #include "internal/allocator.hpp"
 #include "internal/executor_registry.hpp"
-#include "vm/assembly.hpp"
+#include "novasm/assembly.hpp"
 #include "vm/exec_state.hpp"
 
 namespace vm::internal {
 
 template <typename PlatformInterface>
 auto execute(
-    const Assembly* assembly,
+    const novasm::Assembly* assembly,
     PlatformInterface* iface,
     ExecutorRegistry* execRegistry,
     Allocator* allocator,

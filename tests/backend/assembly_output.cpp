@@ -1,10 +1,10 @@
 #include "assembly_output.hpp"
-#include "backend/dasm/disassembler.hpp"
+#include "novasm/disassembler.hpp"
 
-namespace vm {
+namespace novasm {
 
-auto operator<<(std::ostream& out, const vm::Assembly& rhs) -> std::ostream& {
-  const auto instructions = backend::dasm::disassembleInstructions(rhs);
+auto operator<<(std::ostream& out, const novasm::Assembly& rhs) -> std::ostream& {
+  const auto instructions = novasm::disassembleInstructions(rhs);
   for (auto i = 0U; i != instructions.size(); ++i) {
     if (i != 0) {
       out << '\n';
@@ -14,4 +14,4 @@ auto operator<<(std::ostream& out, const vm::Assembly& rhs) -> std::ostream& {
   return out;
 }
 
-} // namespace vm
+} // namespace novasm

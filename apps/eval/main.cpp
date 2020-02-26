@@ -24,9 +24,9 @@ auto run(
   const auto src = frontend::buildSource(inputId, std::move(inputPath), inputBegin, inputEnd);
   const auto frontendOutput = frontend::analyze(src, searchPaths);
   if (frontendOutput.isSuccess()) {
-    const auto assembly = backend::generate(frontendOutput.getProg());
-    auto iface          = vm::platform::TerminalInterface{vmEnvArgsCount, vmEnvArgs};
-    auto res            = vm::run(&assembly, &iface);
+    const auto asmOutput = backend::generate(frontendOutput.getProg());
+    auto iface           = vm::platform::TerminalInterface{vmEnvArgsCount, vmEnvArgs};
+    auto res             = vm::run(&asmOutput.first, &iface);
     if (res != vm::ExecState::Success) {
       std::cout << rang::style::bold << rang::bg::red << "Runtime error: " << res << '\n'
                 << rang::style::reset;

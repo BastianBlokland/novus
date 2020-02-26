@@ -7,35 +7,35 @@ TEST_CASE("Execute jump", "[vm]") {
 
   SECTION("Unconditional Jump") {
     CHECK_EXPR(
-        [](backend::Builder* builder) -> void {
-          builder->addJump("write42");
+        [](novasm::Assembler* asmb) -> void {
+          asmb->addJump("write42");
 
-          builder->addLoadLitString("1337");
-          builder->addPCall(vm::PCallCode::ConWriteString);
-          builder->addPop();
+          asmb->addLoadLitString("1337");
+          asmb->addPCall(novasm::PCallCode::ConWriteString);
+          asmb->addPop();
 
-          builder->label("write42");
-          builder->addLoadLitString("42");
-          builder->addPCall(vm::PCallCode::ConWriteString);
+          asmb->label("write42");
+          asmb->addLoadLitString("42");
+          asmb->addPCall(novasm::PCallCode::ConWriteString);
         },
         "input",
         "42");
     CHECK_EXPR(
-        [](backend::Builder* builder) -> void {
-          builder->addJump("jump1");
+        [](novasm::Assembler* asmb) -> void {
+          asmb->addJump("jump1");
 
-          builder->label("jump3");
-          builder->addLoadLitString("1337");
-          builder->addPCall(vm::PCallCode::ConWriteString);
-          builder->addJump("end");
+          asmb->label("jump3");
+          asmb->addLoadLitString("1337");
+          asmb->addPCall(novasm::PCallCode::ConWriteString);
+          asmb->addJump("end");
 
-          builder->label("jump2");
-          builder->addJump("jump3");
+          asmb->label("jump2");
+          asmb->addJump("jump3");
 
-          builder->label("jump1");
-          builder->addJump("jump2");
+          asmb->label("jump1");
+          asmb->addJump("jump2");
 
-          builder->label("end");
+          asmb->label("end");
         },
         "input",
         "1337");
@@ -43,33 +43,33 @@ TEST_CASE("Execute jump", "[vm]") {
 
   SECTION("Conditional Jump") {
     CHECK_EXPR(
-        [](backend::Builder* builder) -> void {
-          builder->addLoadLitInt(0);
-          builder->addJumpIf("write42");
+        [](novasm::Assembler* asmb) -> void {
+          asmb->addLoadLitInt(0);
+          asmb->addJumpIf("write42");
 
-          builder->addLoadLitString("1337");
-          builder->addPCall(vm::PCallCode::ConWriteString);
-          builder->addPop();
+          asmb->addLoadLitString("1337");
+          asmb->addPCall(novasm::PCallCode::ConWriteString);
+          asmb->addPop();
 
-          builder->label("write42");
-          builder->addLoadLitString("42");
-          builder->addPCall(vm::PCallCode::ConWriteString);
+          asmb->label("write42");
+          asmb->addLoadLitString("42");
+          asmb->addPCall(novasm::PCallCode::ConWriteString);
         },
         "input",
         "1337",
         "42");
     CHECK_EXPR(
-        [](backend::Builder* builder) -> void {
-          builder->addLoadLitInt(1);
-          builder->addJumpIf("write42");
+        [](novasm::Assembler* asmb) -> void {
+          asmb->addLoadLitInt(1);
+          asmb->addJumpIf("write42");
 
-          builder->addLoadLitString("1337");
-          builder->addPCall(vm::PCallCode::ConWriteString);
-          builder->addPop();
+          asmb->addLoadLitString("1337");
+          asmb->addPCall(novasm::PCallCode::ConWriteString);
+          asmb->addPop();
 
-          builder->label("write42");
-          builder->addLoadLitString("42");
-          builder->addPCall(vm::PCallCode::ConWriteString);
+          asmb->label("write42");
+          asmb->addLoadLitString("42");
+          asmb->addPCall(novasm::PCallCode::ConWriteString);
         },
         "input",
         "42");

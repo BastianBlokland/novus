@@ -7,13 +7,13 @@ TEST_CASE("Execute string operations", "[vm]") {
 
   SECTION("Add") {
     CHECK_EXPR(
-        [](backend::Builder* builder) -> void {
-          builder->addLoadLitString("hello");
-          builder->addLoadLitString(" ");
-          builder->addAddString();
-          builder->addLoadLitString("world");
-          builder->addAddString();
-          builder->addPCall(vm::PCallCode::ConWriteString);
+        [](novasm::Assembler* asmb) -> void {
+          asmb->addLoadLitString("hello");
+          asmb->addLoadLitString(" ");
+          asmb->addAddString();
+          asmb->addLoadLitString("world");
+          asmb->addAddString();
+          asmb->addPCall(novasm::PCallCode::ConWriteString);
         },
         "input",
         "hello world");
@@ -21,33 +21,33 @@ TEST_CASE("Execute string operations", "[vm]") {
 
   SECTION("Length") {
     CHECK_EXPR(
-        [](backend::Builder* builder) -> void {
-          builder->addLoadLitString("");
-          builder->addLengthString();
-          builder->addConvIntString();
-          builder->addPCall(vm::PCallCode::ConWriteString);
+        [](novasm::Assembler* asmb) -> void {
+          asmb->addLoadLitString("");
+          asmb->addLengthString();
+          asmb->addConvIntString();
+          asmb->addPCall(novasm::PCallCode::ConWriteString);
         },
         "input",
         "0");
     CHECK_EXPR(
-        [](backend::Builder* builder) -> void {
-          builder->addLoadLitString("hello");
-          builder->addLengthString();
-          builder->addConvIntString();
-          builder->addPCall(vm::PCallCode::ConWriteString);
+        [](novasm::Assembler* asmb) -> void {
+          asmb->addLoadLitString("hello");
+          asmb->addLengthString();
+          asmb->addConvIntString();
+          asmb->addPCall(novasm::PCallCode::ConWriteString);
         },
         "input",
         "5");
     CHECK_EXPR(
-        [](backend::Builder* builder) -> void {
-          builder->addLoadLitString("hello");
-          builder->addLoadLitString(" ");
-          builder->addAddString();
-          builder->addLoadLitString("world");
-          builder->addAddString();
-          builder->addLengthString();
-          builder->addConvIntString();
-          builder->addPCall(vm::PCallCode::ConWriteString);
+        [](novasm::Assembler* asmb) -> void {
+          asmb->addLoadLitString("hello");
+          asmb->addLoadLitString(" ");
+          asmb->addAddString();
+          asmb->addLoadLitString("world");
+          asmb->addAddString();
+          asmb->addLengthString();
+          asmb->addConvIntString();
+          asmb->addPCall(novasm::PCallCode::ConWriteString);
         },
         "input",
         "11");
@@ -55,62 +55,62 @@ TEST_CASE("Execute string operations", "[vm]") {
 
   SECTION("Indexing") {
     CHECK_EXPR(
-        [](backend::Builder* builder) -> void {
-          builder->addLoadLitString("hello");
-          builder->addLoadLitInt(0);
-          builder->addIndexString();
-          builder->addConvCharString();
-          builder->addPCall(vm::PCallCode::ConWriteString);
+        [](novasm::Assembler* asmb) -> void {
+          asmb->addLoadLitString("hello");
+          asmb->addLoadLitInt(0);
+          asmb->addIndexString();
+          asmb->addConvCharString();
+          asmb->addPCall(novasm::PCallCode::ConWriteString);
         },
         "input",
         "h");
     CHECK_EXPR(
-        [](backend::Builder* builder) -> void {
-          builder->addLoadLitString("hello");
-          builder->addLoadLitInt(4);
-          builder->addIndexString();
-          builder->addConvCharString();
-          builder->addPCall(vm::PCallCode::ConWriteString);
+        [](novasm::Assembler* asmb) -> void {
+          asmb->addLoadLitString("hello");
+          asmb->addLoadLitInt(4);
+          asmb->addIndexString();
+          asmb->addConvCharString();
+          asmb->addPCall(novasm::PCallCode::ConWriteString);
         },
         "input",
         "o");
     CHECK_EXPR(
-        [](backend::Builder* builder) -> void {
-          builder->addLoadLitString("hello");
-          builder->addLoadLitInt(-1);
-          builder->addIndexString();
-          builder->addConvIntString(); // NOTE: Using int to string conversion, is '\0' char.
-          builder->addPCall(vm::PCallCode::ConWriteString);
+        [](novasm::Assembler* asmb) -> void {
+          asmb->addLoadLitString("hello");
+          asmb->addLoadLitInt(-1);
+          asmb->addIndexString();
+          asmb->addConvIntString(); // NOTE: Using int to string conversion, is '\0' char.
+          asmb->addPCall(novasm::PCallCode::ConWriteString);
         },
         "input",
         "0");
     CHECK_EXPR(
-        [](backend::Builder* builder) -> void {
-          builder->addLoadLitString("hello");
-          builder->addLoadLitInt(5);
-          builder->addIndexString();
-          builder->addConvIntString(); // NOTE: Using int to string conversion, is '\0' char.
-          builder->addPCall(vm::PCallCode::ConWriteString);
+        [](novasm::Assembler* asmb) -> void {
+          asmb->addLoadLitString("hello");
+          asmb->addLoadLitInt(5);
+          asmb->addIndexString();
+          asmb->addConvIntString(); // NOTE: Using int to string conversion, is '\0' char.
+          asmb->addPCall(novasm::PCallCode::ConWriteString);
         },
         "input",
         "0");
     CHECK_EXPR(
-        [](backend::Builder* builder) -> void {
-          builder->addLoadLitString("");
-          builder->addLoadLitInt(0);
-          builder->addIndexString();
-          builder->addConvIntString(); // NOTE: Using int to string conversion, is '\0' char.
-          builder->addPCall(vm::PCallCode::ConWriteString);
+        [](novasm::Assembler* asmb) -> void {
+          asmb->addLoadLitString("");
+          asmb->addLoadLitInt(0);
+          asmb->addIndexString();
+          asmb->addConvIntString(); // NOTE: Using int to string conversion, is '\0' char.
+          asmb->addPCall(novasm::PCallCode::ConWriteString);
         },
         "input",
         "0");
     CHECK_EXPR(
-        [](backend::Builder* builder) -> void {
-          builder->addLoadLitString(".");
-          builder->addLoadLitInt(0);
-          builder->addIndexString();
-          builder->addConvCharString();
-          builder->addPCall(vm::PCallCode::ConWriteString);
+        [](novasm::Assembler* asmb) -> void {
+          asmb->addLoadLitString(".");
+          asmb->addLoadLitInt(0);
+          asmb->addIndexString();
+          asmb->addConvCharString();
+          asmb->addPCall(novasm::PCallCode::ConWriteString);
         },
         "input",
         ".");
@@ -118,112 +118,112 @@ TEST_CASE("Execute string operations", "[vm]") {
 
   SECTION("Slicing") {
     CHECK_EXPR(
-        [](backend::Builder* builder) -> void {
-          builder->addLoadLitString("hello world");
-          builder->addLoadLitInt(0);
-          builder->addLoadLitInt(5);
-          builder->addSliceString();
-          builder->addPCall(vm::PCallCode::ConWriteString);
+        [](novasm::Assembler* asmb) -> void {
+          asmb->addLoadLitString("hello world");
+          asmb->addLoadLitInt(0);
+          asmb->addLoadLitInt(5);
+          asmb->addSliceString();
+          asmb->addPCall(novasm::PCallCode::ConWriteString);
         },
         "input",
         "hello");
     CHECK_EXPR(
-        [](backend::Builder* builder) -> void {
-          builder->addLoadLitString("hello world");
-          builder->addLoadLitInt(4);
-          builder->addLoadLitInt(4);
-          builder->addSliceString();
-          builder->addPCall(vm::PCallCode::ConWriteString);
+        [](novasm::Assembler* asmb) -> void {
+          asmb->addLoadLitString("hello world");
+          asmb->addLoadLitInt(4);
+          asmb->addLoadLitInt(4);
+          asmb->addSliceString();
+          asmb->addPCall(novasm::PCallCode::ConWriteString);
         },
         "input",
         "");
     CHECK_EXPR(
-        [](backend::Builder* builder) -> void {
-          builder->addLoadLitString("hello world");
-          builder->addLoadLitInt(4);
-          builder->addLoadLitInt(5);
-          builder->addSliceString();
-          builder->addPCall(vm::PCallCode::ConWriteString);
+        [](novasm::Assembler* asmb) -> void {
+          asmb->addLoadLitString("hello world");
+          asmb->addLoadLitInt(4);
+          asmb->addLoadLitInt(5);
+          asmb->addSliceString();
+          asmb->addPCall(novasm::PCallCode::ConWriteString);
         },
         "input",
         "o");
     CHECK_EXPR(
-        [](backend::Builder* builder) -> void {
-          builder->addLoadLitString("hello world");
-          builder->addLoadLitInt(-99);
-          builder->addLoadLitInt(5);
-          builder->addSliceString();
-          builder->addPCall(vm::PCallCode::ConWriteString);
+        [](novasm::Assembler* asmb) -> void {
+          asmb->addLoadLitString("hello world");
+          asmb->addLoadLitInt(-99);
+          asmb->addLoadLitInt(5);
+          asmb->addSliceString();
+          asmb->addPCall(novasm::PCallCode::ConWriteString);
         },
         "input",
         "hello");
     CHECK_EXPR(
-        [](backend::Builder* builder) -> void {
-          builder->addLoadLitString("hello world");
-          builder->addLoadLitInt(6);
-          builder->addLoadLitInt(11);
-          builder->addSliceString();
-          builder->addPCall(vm::PCallCode::ConWriteString);
+        [](novasm::Assembler* asmb) -> void {
+          asmb->addLoadLitString("hello world");
+          asmb->addLoadLitInt(6);
+          asmb->addLoadLitInt(11);
+          asmb->addSliceString();
+          asmb->addPCall(novasm::PCallCode::ConWriteString);
         },
         "input",
         "world");
     CHECK_EXPR(
-        [](backend::Builder* builder) -> void {
-          builder->addLoadLitString("hello world");
-          builder->addLoadLitInt(6);
-          builder->addLoadLitInt(99);
-          builder->addSliceString();
-          builder->addPCall(vm::PCallCode::ConWriteString);
+        [](novasm::Assembler* asmb) -> void {
+          asmb->addLoadLitString("hello world");
+          asmb->addLoadLitInt(6);
+          asmb->addLoadLitInt(99);
+          asmb->addSliceString();
+          asmb->addPCall(novasm::PCallCode::ConWriteString);
         },
         "input",
         "world");
     CHECK_EXPR(
-        [](backend::Builder* builder) -> void {
-          builder->addLoadLitString("hello world");
-          builder->addLoadLitInt(2);
-          builder->addLoadLitInt(9);
-          builder->addSliceString();
-          builder->addPCall(vm::PCallCode::ConWriteString);
+        [](novasm::Assembler* asmb) -> void {
+          asmb->addLoadLitString("hello world");
+          asmb->addLoadLitInt(2);
+          asmb->addLoadLitInt(9);
+          asmb->addSliceString();
+          asmb->addPCall(novasm::PCallCode::ConWriteString);
         },
         "input",
         "llo wor");
     CHECK_EXPR(
-        [](backend::Builder* builder) -> void {
-          builder->addLoadLitString("hello world");
-          builder->addLoadLitInt(8);
-          builder->addLoadLitInt(3);
-          builder->addSliceString();
-          builder->addPCall(vm::PCallCode::ConWriteString);
+        [](novasm::Assembler* asmb) -> void {
+          asmb->addLoadLitString("hello world");
+          asmb->addLoadLitInt(8);
+          asmb->addLoadLitInt(3);
+          asmb->addSliceString();
+          asmb->addPCall(novasm::PCallCode::ConWriteString);
         },
         "input",
         "");
     CHECK_EXPR(
-        [](backend::Builder* builder) -> void {
-          builder->addLoadLitString("hello world");
-          builder->addLoadLitInt(0);
-          builder->addLoadLitInt(11);
-          builder->addSliceString();
-          builder->addPCall(vm::PCallCode::ConWriteString);
+        [](novasm::Assembler* asmb) -> void {
+          asmb->addLoadLitString("hello world");
+          asmb->addLoadLitInt(0);
+          asmb->addLoadLitInt(11);
+          asmb->addSliceString();
+          asmb->addPCall(novasm::PCallCode::ConWriteString);
         },
         "input",
         "hello world");
     CHECK_EXPR(
-        [](backend::Builder* builder) -> void {
-          builder->addLoadLitString("hello world");
-          builder->addLoadLitInt(0);
-          builder->addLoadLitInt(99);
-          builder->addSliceString();
-          builder->addPCall(vm::PCallCode::ConWriteString);
+        [](novasm::Assembler* asmb) -> void {
+          asmb->addLoadLitString("hello world");
+          asmb->addLoadLitInt(0);
+          asmb->addLoadLitInt(99);
+          asmb->addSliceString();
+          asmb->addPCall(novasm::PCallCode::ConWriteString);
         },
         "input",
         "hello world");
     CHECK_EXPR(
-        [](backend::Builder* builder) -> void {
-          builder->addLoadLitString("");
-          builder->addLoadLitInt(0);
-          builder->addLoadLitInt(0);
-          builder->addSliceString();
-          builder->addPCall(vm::PCallCode::ConWriteString);
+        [](novasm::Assembler* asmb) -> void {
+          asmb->addLoadLitString("");
+          asmb->addLoadLitInt(0);
+          asmb->addLoadLitInt(0);
+          asmb->addSliceString();
+          asmb->addPCall(novasm::PCallCode::ConWriteString);
         },
         "input",
         "");

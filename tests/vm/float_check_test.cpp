@@ -7,22 +7,22 @@ TEST_CASE("Execute float checks", "[vm]") {
 
   SECTION("Equal") {
     CHECK_EXPR(
-        [](backend::Builder* builder) -> void {
-          builder->addLoadLitFloat(0.1337F);  // NOLINT: Magic numbers
-          builder->addLoadLitFloat(-0.1337F); // NOLINT: Magic numbers
-          builder->addCheckEqFloat();
-          builder->addConvBoolString();
-          builder->addPCall(vm::PCallCode::ConWriteString);
+        [](novasm::Assembler* asmb) -> void {
+          asmb->addLoadLitFloat(0.1337F);  // NOLINT: Magic numbers
+          asmb->addLoadLitFloat(-0.1337F); // NOLINT: Magic numbers
+          asmb->addCheckEqFloat();
+          asmb->addConvBoolString();
+          asmb->addPCall(novasm::PCallCode::ConWriteString);
         },
         "input",
         "false");
     CHECK_EXPR(
-        [](backend::Builder* builder) -> void {
-          builder->addLoadLitFloat(0.1337F); // NOLINT: Magic numbers
-          builder->addLoadLitFloat(0.1337F); // NOLINT: Magic numbers
-          builder->addCheckEqFloat();
-          builder->addConvBoolString();
-          builder->addPCall(vm::PCallCode::ConWriteString);
+        [](novasm::Assembler* asmb) -> void {
+          asmb->addLoadLitFloat(0.1337F); // NOLINT: Magic numbers
+          asmb->addLoadLitFloat(0.1337F); // NOLINT: Magic numbers
+          asmb->addCheckEqFloat();
+          asmb->addConvBoolString();
+          asmb->addPCall(novasm::PCallCode::ConWriteString);
         },
         "input",
         "true");
@@ -30,22 +30,22 @@ TEST_CASE("Execute float checks", "[vm]") {
 
   SECTION("Greater") {
     CHECK_EXPR(
-        [](backend::Builder* builder) -> void {
-          builder->addLoadLitFloat(-0.1337F); // NOLINT: Magic numbers
-          builder->addLoadLitFloat(0.1337F);  // NOLINT: Magic numbers
-          builder->addCheckGtFloat();
-          builder->addConvBoolString();
-          builder->addPCall(vm::PCallCode::ConWriteString);
+        [](novasm::Assembler* asmb) -> void {
+          asmb->addLoadLitFloat(-0.1337F); // NOLINT: Magic numbers
+          asmb->addLoadLitFloat(0.1337F);  // NOLINT: Magic numbers
+          asmb->addCheckGtFloat();
+          asmb->addConvBoolString();
+          asmb->addPCall(novasm::PCallCode::ConWriteString);
         },
         "input",
         "false");
     CHECK_EXPR(
-        [](backend::Builder* builder) -> void {
-          builder->addLoadLitFloat(0.2337F); // NOLINT: Magic numbers
-          builder->addLoadLitFloat(0.1337F); // NOLINT: Magic numbers
-          builder->addCheckGtFloat();
-          builder->addConvBoolString();
-          builder->addPCall(vm::PCallCode::ConWriteString);
+        [](novasm::Assembler* asmb) -> void {
+          asmb->addLoadLitFloat(0.2337F); // NOLINT: Magic numbers
+          asmb->addLoadLitFloat(0.1337F); // NOLINT: Magic numbers
+          asmb->addCheckGtFloat();
+          asmb->addConvBoolString();
+          asmb->addPCall(novasm::PCallCode::ConWriteString);
         },
         "input",
         "true");
@@ -53,22 +53,22 @@ TEST_CASE("Execute float checks", "[vm]") {
 
   SECTION("Less") {
     CHECK_EXPR(
-        [](backend::Builder* builder) -> void {
-          builder->addLoadLitFloat(0.2337F); // NOLINT: Magic numbers
-          builder->addLoadLitFloat(0.1337F); // NOLINT: Magic numbers
-          builder->addCheckLeFloat();
-          builder->addConvBoolString();
-          builder->addPCall(vm::PCallCode::ConWriteString);
+        [](novasm::Assembler* asmb) -> void {
+          asmb->addLoadLitFloat(0.2337F); // NOLINT: Magic numbers
+          asmb->addLoadLitFloat(0.1337F); // NOLINT: Magic numbers
+          asmb->addCheckLeFloat();
+          asmb->addConvBoolString();
+          asmb->addPCall(novasm::PCallCode::ConWriteString);
         },
         "input",
         "false");
     CHECK_EXPR(
-        [](backend::Builder* builder) -> void {
-          builder->addLoadLitFloat(0.1337F); // NOLINT: Magic numbers
-          builder->addLoadLitFloat(0.2337F); // NOLINT: Magic numbers
-          builder->addCheckLeFloat();
-          builder->addConvBoolString();
-          builder->addPCall(vm::PCallCode::ConWriteString);
+        [](novasm::Assembler* asmb) -> void {
+          asmb->addLoadLitFloat(0.1337F); // NOLINT: Magic numbers
+          asmb->addLoadLitFloat(0.2337F); // NOLINT: Magic numbers
+          asmb->addCheckLeFloat();
+          asmb->addConvBoolString();
+          asmb->addPCall(novasm::PCallCode::ConWriteString);
         },
         "input",
         "true");

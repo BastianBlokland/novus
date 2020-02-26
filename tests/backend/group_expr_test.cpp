@@ -5,25 +5,25 @@ namespace backend {
 
 TEST_CASE("Generating assembly for group expressions", "[backend]") {
 
-  CHECK_EXPR_INT("x = 42; x", [](backend::Builder* builder) -> void {
-    builder->addStackAlloc(1);
+  CHECK_EXPR_INT("x = 42; x", [](novasm::Assembler* asmb) -> void {
+    asmb->addStackAlloc(1);
 
-    builder->addLoadLitInt(42);
-    builder->addDup();
-    builder->addStackStore(0);
+    asmb->addLoadLitInt(42);
+    asmb->addDup();
+    asmb->addStackStore(0);
 
-    builder->addPop();
-    builder->addStackLoad(0);
+    asmb->addPop();
+    asmb->addStackLoad(0);
   });
 
-  CHECK_EXPR_INT("1; 2; 3", [](backend::Builder* builder) -> void {
-    builder->addLoadLitInt(1);
-    builder->addPop();
+  CHECK_EXPR_INT("1; 2; 3", [](novasm::Assembler* asmb) -> void {
+    asmb->addLoadLitInt(1);
+    asmb->addPop();
 
-    builder->addLoadLitInt(2);
-    builder->addPop();
+    asmb->addLoadLitInt(2);
+    asmb->addPop();
 
-    builder->addLoadLitInt(3);
+    asmb->addLoadLitInt(3);
   });
 }
 

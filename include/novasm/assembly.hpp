@@ -3,7 +3,7 @@
 #include <string>
 #include <vector>
 
-namespace vm {
+namespace novasm {
 
 class Assembly final {
 public:
@@ -39,4 +39,4 @@ private:
   std::vector<uint8_t> m_instructions;
 };
 
-} // namespace vm
+} // namespace novasm

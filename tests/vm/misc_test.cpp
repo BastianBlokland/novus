@@ -7,17 +7,17 @@ TEST_CASE("Execute miscellaneous instructions", "[vm]") {
 
   SECTION("Dup") {
     CHECK_PROG(
-        [](backend::Builder* builder) -> void {
-          builder->label("start");
-          builder->addLoadLitInt(42);
-          builder->addDup();
+        [](novasm::Assembler* asmb) -> void {
+          asmb->label("start");
+          asmb->addLoadLitInt(42);
+          asmb->addDup();
 
-          builder->addAddInt();
-          builder->addConvIntString();
-          builder->addPCall(vm::PCallCode::ConWriteString);
-          builder->addRet();
+          asmb->addAddInt();
+          asmb->addConvIntString();
+          asmb->addPCall(novasm::PCallCode::ConWriteString);
+          asmb->addRet();
 
-          builder->setEntrypoint("start");
+          asmb->setEntrypoint("start");
         },
         "input",
         "84");
@@ -25,17 +25,17 @@ TEST_CASE("Execute miscellaneous instructions", "[vm]") {
 
   SECTION("Pop") {
     CHECK_PROG(
-        [](backend::Builder* builder) -> void {
-          builder->label("start");
-          builder->addLoadLitInt(42);
-          builder->addLoadLitInt(1337);
-          builder->addPop();
+        [](novasm::Assembler* asmb) -> void {
+          asmb->label("start");
+          asmb->addLoadLitInt(42);
+          asmb->addLoadLitInt(1337);
+          asmb->addPop();
 
-          builder->addConvIntString();
-          builder->addPCall(vm::PCallCode::ConWriteString);
-          builder->addRet();
+          asmb->addConvIntString();
+          asmb->addPCall(novasm::PCallCode::ConWriteString);
+          asmb->addRet();
 
-          builder->setEntrypoint("start");
+          asmb->setEntrypoint("start");
         },
         "input",
         "42");

@@ -1,13 +1,13 @@
 #include "CLI/CLI.hpp"
-#include "backend/dasm/disassembler.hpp"
 #include "backend/generator.hpp"
 #include "filesystem.hpp"
 #include "frontend/analysis.hpp"
 #include "frontend/output.hpp"
 #include "frontend/source.hpp"
 #include "input/char_escape.hpp"
+#include "novasm/assembly.hpp"
+#include "novasm/disassembler.hpp"
 #include "rang.hpp"
-#include "vm/assembly.hpp"
 #include <chrono>
 #include <optional>
 
@@ -18,14 +18,7 @@ using duration              = std::chrono::duration<double>;
 
 auto operator<<(std::ostream& out, const duration& rhs) -> std::ostream&;
 
-static auto genAssembly(const frontend::Output& frontendOutput) -> std::optional<vm::Assembly> {
-  if (!frontendOutput.isSuccess()) {
-    return std::nullopt;
-  }
-  return backend::generate(frontendOutput.getProg());
-}
-
-auto printStringLiterals(const vm::Assembly& assembly) -> void {
+auto printStringLiterals(const novasm::Assembly& assembly) -> void {
   const auto idColWidth = 5;
 
   std::cout << rang::style::bold << "StringLiterals:\n" << rang::style::reset;
@@ -36,36 +29,60 @@ auto printStringLiterals(const vm::Assembly& assembly) -> void {
   }
 }
 
-auto printEntrypoint(const vm::Assembly& assembly) -> void {
+auto printEntrypoint(const novasm::Assembly& assembly) -> void {
   std::cout << rang::style::bold << "Entrypoint: " << assembly.getEntrypoint() << rang::style::reset
             << '\n';
 }
 
-auto printInstructions(const vm::Assembly& assembly) -> void {
-  const auto ipOffsetColWidth = 5;
+auto printInstructions(const novasm::Assembly& assembly, const backend::InstructionLabels& labels)
+    -> void {
+  const auto ipOffsetColWidth = 6;
   const auto opCodeColWidth   = 20;
 
   std::cout << rang::style::bold << "Instructions:\n" << rang::style::reset;
-  auto instructions = backend::dasm::disassembleInstructions(assembly);
+  auto instructions = novasm::disassembleInstructions(assembly, labels);
   for (const auto& instr : instructions) {
+    // Print any labels associated with this instruction.
+    for (const auto& label : instr.getLabels()) {
+      std::cout << rang::style::bold << rang::fg::yellow << label << rang::style::reset << '\n';
+    }
 
-    std::cout << "  " << rang::style::bold << std::setw(ipOffsetColWidth) << std::left
-              << instr.getIpOffset() << rang::style::reset << std::setw(opCodeColWidth) << std::left
-              << instr.getOp();
+    // Print ip offset and op-code.
+    std::cout << "  " << rang::style::dim << std::setw(ipOffsetColWidth) << std::left
+              << instr.getIpOffset() << rang::style::reset << rang::style::bold
+              << std::setw(opCodeColWidth) << std::left << instr.getOp() << rang::style::reset;
+
+    // Print all the arguments.
     for (const auto& arg : instr.getArgs()) {
-      backend::dasm::operator<<(std::cout, arg);
+      // Print argument value.
+      novasm::dasm::operator<<(std::cout, arg);
+      std::cout << ' ';
+
+      // Print argument labels.
+      const auto& argLabels = arg.getLabels();
+      if (!argLabels.empty()) {
+        std::cout << '[';
+        for (auto i = 0U; i != argLabels.size(); ++i) {
+          if (i != 0U) {
+            std::cout << ',';
+          }
+          std::cout << rang::fg::yellow << rang::style::bold << argLabels[i] << rang::style::reset;
+        }
+        std::cout << "]";
+      }
       std::cout << ' ';
     }
-    std::cout << '\n';
+    std::cout << '\n' << rang::style::reset;
   }
 }
 
-auto printProgram(const vm::Assembly& assembly) -> void {
+auto printProgram(const novasm::Assembly& assembly, const backend::InstructionLabels& labels)
+    -> void {
   printEntrypoint(assembly);
   std::cout << '\n';
   printStringLiterals(assembly);
   std::cout << '\n';
-  printInstructions(assembly);
+  printInstructions(assembly, labels);
 }
 
 template <typename InputItr>
@@ -82,28 +99,31 @@ auto run(
   const auto t1  = high_resolution_clock::now();
   const auto src = frontend::buildSource(inputId, std::move(inputPath), inputBegin, inputEnd);
   const auto frontendOutput = frontend::analyze(src, searchPaths);
-  const auto assembly       = genAssembly(frontendOutput);
-  const auto t2             = high_resolution_clock::now();
-  const auto genDur         = std::chrono::duration_cast<duration>(t2 - t1);
+
+  if (!frontendOutput.isSuccess()) {
+    // Print diagnostics.
+    for (auto diagItr = frontendOutput.beginDiags(); diagItr != frontendOutput.endDiags();
+         ++diagItr) {
+      std::cout << rang::style::bold << rang::bg::red << *diagItr << rang::bg::reset << '\n'
+                << rang::style::reset;
+    }
+    return 1;
+  }
+
+  const auto asmOutput = backend::generate(frontendOutput.getProg());
+  const auto t2        = high_resolution_clock::now();
+  const auto genDur    = std::chrono::duration_cast<duration>(t2 - t1);
 
   std::cout << rang::style::dim << rang::style::italic << std::string(width, '-') << '\n'
             << "Generated assembly in " << genDur << '\n'
             << std::string(width, '-') << '\n'
             << rang::style::reset;
 
-  // Print diagnostics.
-  for (auto diagItr = frontendOutput.beginDiags(); diagItr != frontendOutput.endDiags();
-       ++diagItr) {
-    std::cout << rang::style::bold << rang::bg::red << *diagItr << rang::bg::reset << '\n'
-              << rang::style::reset;
-  }
-
-  if (assembly && outputProgram) {
-    printProgram(*assembly);
+  if (outputProgram) {
+    printProgram(asmOutput.first, asmOutput.second);
     std::cout << rang::style::dim << std::string(width, '-') << '\n';
   }
-
-  return assembly ? 0 : 1;
+  return 0;
 }
 
 auto operator<<(std::ostream& out, const duration& rhs) -> std::ostream& {

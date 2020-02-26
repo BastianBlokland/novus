@@ -1,25 +1,27 @@
 #pragma once
-#include "backend/builder.hpp"
 #include "catch2/catch.hpp"
+#include "novasm/assembler.hpp"
 #include "vm/platform/memory_interface.hpp"
 #include "vm/vm.hpp"
 #include <functional>
 
 namespace vm {
 
-inline auto buildAssemblyExpr(const std::function<void(backend::Builder*)>& build) -> vm::Assembly {
-  auto builder = backend::Builder{};
-  builder.label("entrypoint");
-  build(&builder);
-  builder.addRet();
-  builder.setEntrypoint("entrypoint");
-  return builder.close();
+inline auto buildAssemblyExpr(const std::function<void(novasm::Assembler*)>& build)
+    -> novasm::Assembly {
+  auto asmb = novasm::Assembler{};
+  asmb.label("entrypoint");
+  build(&asmb);
+  asmb.addRet();
+  asmb.setEntrypoint("entrypoint");
+  return asmb.close();
 }
 
-inline auto buildAssembly(const std::function<void(backend::Builder*)>& build) -> vm::Assembly {
-  auto builder = backend::Builder{};
-  build(&builder);
-  return builder.close();
+inline auto buildAssembly(const std::function<void(novasm::Assembler*)>& build)
+    -> novasm::Assembly {
+  auto asmb = novasm::Assembler{};
+  build(&asmb);
+  return asmb.close();
 }
 
 #define CHECK_ASM(ASM, INPUT, ENV_VARS, ENV_ARG, ...)                                              \

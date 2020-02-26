@@ -8,7 +8,7 @@
 namespace vm {
 
 template <typename PlatformInterface>
-auto run(const Assembly* assembly, PlatformInterface* iface) noexcept -> ExecState {
+auto run(const novasm::Assembly* assembly, PlatformInterface* iface) noexcept -> ExecState {
 
   auto execRegistry = internal::ExecutorRegistry{};
   auto allocator    = internal::Allocator{&execRegistry};
@@ -22,7 +22,7 @@ auto run(const Assembly* assembly, PlatformInterface* iface) noexcept -> ExecSta
 }
 
 // Explicit instantiations.
-template ExecState run(const Assembly* assembly, platform::MemoryInterface* iface);
-template ExecState run(const Assembly* assembly, platform::TerminalInterface* iface);
+template ExecState run(const novasm::Assembly* assembly, platform::MemoryInterface* iface);
+template ExecState run(const novasm::Assembly* assembly, platform::TerminalInterface* iface);
 
 } // namespace vm

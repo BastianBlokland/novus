@@ -10,94 +10,94 @@ TEST_CASE("Generate assembly for call dynamic expressions", "[backend]") {
     CHECK_PROG(
         "fun test(int a, int b) -> int a + b "
         "conWrite(op = test; op(42, 1337).string())",
-        [](backend::Builder* builder) -> void {
-          builder->label("test");
-          builder->addStackLoad(0);
-          builder->addStackLoad(1);
-          builder->addAddInt();
-          builder->addRet();
+        [](novasm::Assembler* asmb) -> void {
+          asmb->label("test");
+          asmb->addStackLoad(0);
+          asmb->addStackLoad(1);
+          asmb->addAddInt();
+          asmb->addRet();
 
-          builder->label("prog");
-          builder->addStackAlloc(1);
+          asmb->label("prog");
+          asmb->addStackAlloc(1);
 
-          builder->addLoadLitIp("test");
-          builder->addDup();
-          builder->addStackStore(0);
-          builder->addPop();
+          asmb->addLoadLitIp("test");
+          asmb->addDup();
+          asmb->addStackStore(0);
+          asmb->addPop();
 
-          builder->addLoadLitInt(42);
-          builder->addLoadLitInt(1337);
-          builder->addStackLoad(0);
-          builder->addCallDyn(2, CallMode::Normal);
+          asmb->addLoadLitInt(42);
+          asmb->addLoadLitInt(1337);
+          asmb->addStackLoad(0);
+          asmb->addCallDyn(2, novasm::CallMode::Normal);
 
-          builder->addConvIntString();
-          builder->addPCall(vm::PCallCode::ConWriteString);
-          builder->addRet();
+          asmb->addConvIntString();
+          asmb->addPCall(novasm::PCallCode::ConWriteString);
+          asmb->addRet();
 
-          builder->setEntrypoint("prog");
+          asmb->setEntrypoint("prog");
         });
   }
 
   SECTION("Closure") {
     CHECK_PROG(
-        "conWrite(i = 1337; (lambda () 42 + i)().string())", [](backend::Builder* builder) -> void {
-          builder->label("anon func");
-          builder->addLoadLitInt(42);
-          builder->addStackLoad(0);
-          builder->addAddInt();
-          builder->addRet();
+        "conWrite(i = 1337; (lambda () 42 + i)().string())", [](novasm::Assembler* asmb) -> void {
+          asmb->label("anon func");
+          asmb->addLoadLitInt(42);
+          asmb->addStackLoad(0);
+          asmb->addAddInt();
+          asmb->addRet();
 
-          builder->label("prog");
-          builder->addStackAlloc(1);
+          asmb->label("prog");
+          asmb->addStackAlloc(1);
 
-          builder->addLoadLitInt(1337);
-          builder->addDup();
-          builder->addStackStore(0);
-          builder->addPop();
+          asmb->addLoadLitInt(1337);
+          asmb->addDup();
+          asmb->addStackStore(0);
+          asmb->addPop();
 
-          builder->addStackLoad(0);
-          builder->addLoadLitIp("anon func");
-          builder->addMakeStruct(2);
+          asmb->addStackLoad(0);
+          asmb->addLoadLitIp("anon func");
+          asmb->addMakeStruct(2);
 
-          builder->addCallDyn(0, CallMode::Normal);
-          builder->addConvIntString();
-          builder->addPCall(vm::PCallCode::ConWriteString);
-          builder->addRet();
+          asmb->addCallDyn(0, novasm::CallMode::Normal);
+          asmb->addConvIntString();
+          asmb->addPCall(novasm::PCallCode::ConWriteString);
+          asmb->addRet();
 
-          builder->setEntrypoint("prog");
+          asmb->setEntrypoint("prog");
         });
   }
 
   SECTION("Closure") {
     CHECK_PROG(
         "conWrite(i = 1337; (lambda (float f) f + i)(.1).string())",
-        [](backend::Builder* builder) -> void {
-          builder->label("anon func");
-          builder->addStackLoad(0);
-          builder->addStackLoad(1);
-          builder->addConvIntFloat();
-          builder->addAddFloat();
-          builder->addRet();
+        [](novasm::Assembler* asmb) -> void {
+          asmb->label("anon func");
+          asmb->addStackLoad(0);
+          asmb->addStackLoad(1);
+          asmb->addConvIntFloat();
+          asmb->addAddFloat();
+          asmb->addRet();
 
-          builder->label("prog");
-          builder->addStackAlloc(1);
+          asmb->label("prog");
+          asmb->addStackAlloc(1);
 
-          builder->addLoadLitInt(1337);
-          builder->addDup();
-          builder->addStackStore(0);
-          builder->addPop();
+          asmb->addLoadLitInt(1337);
+          asmb->addDup();
+          asmb->addStackStore(0);
+          asmb->addPop();
 
-          builder->addLoadLitFloat(.1F); // NOLINT: Magic numbers
-          builder->addStackLoad(0);
-          builder->addLoadLitIp("anon func");
-          builder->addMakeStruct(2);
+          asmb->addLoadLitFloat(.1F); // NOLINT: Magic numbers
+          asmb->addStackLoad(0);
+          asmb->addLoadLitIp("anon func");
+          asmb->addMakeStruct(2);
 
-          builder->addCallDyn(1, CallMode::Normal);
-          builder->addConvFloatString();
-          builder->addPCall(vm::PCallCode::ConWriteString);
-          builder->addRet();
+          asmb->addCallDyn(1, novasm::CallMode::Normal);
+          asmb->addConvFloatString();
+          asmb->addPCall(novasm::PCallCode::ConWriteString);
+          asmb->addRet();
 
-          builder->setEntrypoint("prog");
+          asmb->setEntrypoint("prog");
         });
   }
 }

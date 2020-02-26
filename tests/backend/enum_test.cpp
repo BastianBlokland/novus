@@ -9,19 +9,19 @@ TEST_CASE("Generating assembly for enums", "[backend]") {
     CHECK_PROG(
         "enum E = a : 42 "
         "conWrite(string(E.a == 1337))",
-        [](backend::Builder* builder) -> void {
+        [](novasm::Assembler* asmb) -> void {
           // --- conWite statement start.
-          builder->label("prog");
-          builder->addLoadLitInt(42);
-          builder->addLoadLitInt(1337);
-          builder->addCheckEqInt();
+          asmb->label("prog");
+          asmb->addLoadLitInt(42);
+          asmb->addLoadLitInt(1337);
+          asmb->addCheckEqInt();
 
-          builder->addConvBoolString();
-          builder->addPCall(vm::PCallCode::ConWriteString);
-          builder->addRet();
+          asmb->addConvBoolString();
+          asmb->addPCall(novasm::PCallCode::ConWriteString);
+          asmb->addRet();
           // --- conWite statement end.
 
-          builder->setEntrypoint("prog");
+          asmb->setEntrypoint("prog");
         });
   }
 
@@ -29,22 +29,22 @@ TEST_CASE("Generating assembly for enums", "[backend]") {
     CHECK_PROG(
         "enum E = a:0b01, b:0b10, ab:0b11 "
         "conWrite(string((E.a | E.b) == E.ab))",
-        [](backend::Builder* builder) -> void {
+        [](novasm::Assembler* asmb) -> void {
           // --- conWite statement start.
-          builder->label("prog");
-          builder->addLoadLitInt(0b01);
-          builder->addLoadLitInt(0b10);
-          builder->addOrInt();
+          asmb->label("prog");
+          asmb->addLoadLitInt(0b01);
+          asmb->addLoadLitInt(0b10);
+          asmb->addOrInt();
 
-          builder->addLoadLitInt(0b11);
-          builder->addCheckEqInt();
+          asmb->addLoadLitInt(0b11);
+          asmb->addCheckEqInt();
 
-          builder->addConvBoolString();
-          builder->addPCall(vm::PCallCode::ConWriteString);
-          builder->addRet();
+          asmb->addConvBoolString();
+          asmb->addPCall(novasm::PCallCode::ConWriteString);
+          asmb->addRet();
           // --- conWite statement end.
 
-          builder->setEntrypoint("prog");
+          asmb->setEntrypoint("prog");
         });
   }
 
@@ -52,19 +52,19 @@ TEST_CASE("Generating assembly for enums", "[backend]") {
     CHECK_PROG(
         "enum E = a "
         "conWrite(string(E(0) == E.a))",
-        [](backend::Builder* builder) -> void {
+        [](novasm::Assembler* asmb) -> void {
           // --- conWite statement start.
-          builder->label("prog");
-          builder->addLoadLitInt(0); // Conversion is a no-op at runtime.
-          builder->addLoadLitInt(0);
-          builder->addCheckEqInt();
+          asmb->label("prog");
+          asmb->addLoadLitInt(0); // Conversion is a no-op at runtime.
+          asmb->addLoadLitInt(0);
+          asmb->addCheckEqInt();
 
-          builder->addConvBoolString();
-          builder->addPCall(vm::PCallCode::ConWriteString);
-          builder->addRet();
+          asmb->addConvBoolString();
+          asmb->addPCall(novasm::PCallCode::ConWriteString);
+          asmb->addRet();
           // --- conWite statement end.
 
-          builder->setEntrypoint("prog");
+          asmb->setEntrypoint("prog");
         });
   }
 }

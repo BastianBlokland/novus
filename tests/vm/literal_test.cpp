@@ -7,18 +7,18 @@ TEST_CASE("Execute literals", "[vm]") {
 
   SECTION("Integer literals") {
     CHECK_EXPR(
-        [](backend::Builder* builder) -> void {
-          builder->addLoadLitInt(42);
-          builder->addConvIntString();
-          builder->addPCall(vm::PCallCode::ConWriteString);
+        [](novasm::Assembler* asmb) -> void {
+          asmb->addLoadLitInt(42);
+          asmb->addConvIntString();
+          asmb->addPCall(novasm::PCallCode::ConWriteString);
         },
         "input",
         "42");
     CHECK_EXPR(
-        [](backend::Builder* builder) -> void {
-          builder->addLoadLitInt(-42);
-          builder->addConvIntString();
-          builder->addPCall(vm::PCallCode::ConWriteString);
+        [](novasm::Assembler* asmb) -> void {
+          asmb->addLoadLitInt(-42);
+          asmb->addConvIntString();
+          asmb->addPCall(novasm::PCallCode::ConWriteString);
         },
         "input",
         "-42");
@@ -26,18 +26,18 @@ TEST_CASE("Execute literals", "[vm]") {
 
   SECTION("Long literals") {
     CHECK_EXPR(
-        [](backend::Builder* builder) -> void {
-          builder->addLoadLitLong(4'200'000'000'000L);
-          builder->addConvLongString();
-          builder->addPCall(vm::PCallCode::ConWriteString);
+        [](novasm::Assembler* asmb) -> void {
+          asmb->addLoadLitLong(4'200'000'000'000L);
+          asmb->addConvLongString();
+          asmb->addPCall(novasm::PCallCode::ConWriteString);
         },
         "input",
         "4200000000000");
     CHECK_EXPR(
-        [](backend::Builder* builder) -> void {
-          builder->addLoadLitLong(-4'200'000'000'000L);
-          builder->addConvLongString();
-          builder->addPCall(vm::PCallCode::ConWriteString);
+        [](novasm::Assembler* asmb) -> void {
+          asmb->addLoadLitLong(-4'200'000'000'000L);
+          asmb->addConvLongString();
+          asmb->addPCall(novasm::PCallCode::ConWriteString);
         },
         "input",
         "-4200000000000");
@@ -45,18 +45,18 @@ TEST_CASE("Execute literals", "[vm]") {
 
   SECTION("Float literals") {
     CHECK_EXPR(
-        [](backend::Builder* builder) -> void {
-          builder->addLoadLitFloat(0.1337F); // NOLINT: Magic numbers
-          builder->addConvFloatString();
-          builder->addPCall(vm::PCallCode::ConWriteString);
+        [](novasm::Assembler* asmb) -> void {
+          asmb->addLoadLitFloat(0.1337F); // NOLINT: Magic numbers
+          asmb->addConvFloatString();
+          asmb->addPCall(novasm::PCallCode::ConWriteString);
         },
         "input",
         "0.1337");
     CHECK_EXPR(
-        [](backend::Builder* builder) -> void {
-          builder->addLoadLitFloat(-0.1337F); // NOLINT: Magic numbers
-          builder->addConvFloatString();
-          builder->addPCall(vm::PCallCode::ConWriteString);
+        [](novasm::Assembler* asmb) -> void {
+          asmb->addLoadLitFloat(-0.1337F); // NOLINT: Magic numbers
+          asmb->addConvFloatString();
+          asmb->addPCall(novasm::PCallCode::ConWriteString);
         },
         "input",
         "-0.1337");
@@ -64,29 +64,29 @@ TEST_CASE("Execute literals", "[vm]") {
 
   SECTION("String literals") {
     CHECK_EXPR(
-        [](backend::Builder* builder) -> void {
-          builder->addLoadLitString("");
-          builder->addPCall(vm::PCallCode::ConWriteString);
-          builder->addPop();
+        [](novasm::Assembler* asmb) -> void {
+          asmb->addLoadLitString("");
+          asmb->addPCall(novasm::PCallCode::ConWriteString);
+          asmb->addPop();
 
-          builder->addLoadLitString("hello");
-          builder->addPCall(vm::PCallCode::ConWriteString);
-          builder->addPop();
+          asmb->addLoadLitString("hello");
+          asmb->addPCall(novasm::PCallCode::ConWriteString);
+          asmb->addPop();
 
-          builder->addLoadLitString(" ");
-          builder->addPCall(vm::PCallCode::ConWriteString);
-          builder->addPop();
+          asmb->addLoadLitString(" ");
+          asmb->addPCall(novasm::PCallCode::ConWriteString);
+          asmb->addPop();
 
-          builder->addLoadLitString("world");
-          builder->addPCall(vm::PCallCode::ConWriteString);
-          builder->addPop();
+          asmb->addLoadLitString("world");
+          asmb->addPCall(novasm::PCallCode::ConWriteString);
+          asmb->addPop();
 
-          builder->addLoadLitString(" ");
-          builder->addPCall(vm::PCallCode::ConWriteString);
-          builder->addPop();
+          asmb->addLoadLitString(" ");
+          asmb->addPCall(novasm::PCallCode::ConWriteString);
+          asmb->addPop();
 
-          builder->addLoadLitString("!");
-          builder->addPCall(vm::PCallCode::ConWriteString);
+          asmb->addLoadLitString("!");
+          asmb->addPCall(novasm::PCallCode::ConWriteString);
         },
         "input",
         "",
