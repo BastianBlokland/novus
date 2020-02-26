@@ -92,8 +92,8 @@ inline auto buildAssembly(const std::function<void(novasm::Assembler*)>& build)
     const auto src = frontend::buildSource("test", std::nullopt, srcText.begin(), srcText.end());  \
     const auto frontendOutput = frontend::analyze(src);                                            \
     REQUIRE(frontendOutput.isSuccess());                                                           \
-    const auto assembly = backend::generate(frontendOutput.getProg());                             \
-    CHECK(assembly == (EXPECTED_ASM));                                                             \
+    const auto asmOutput = backend::generate(frontendOutput.getProg());                            \
+    CHECK(asmOutput.first == (EXPECTED_ASM));                                                      \
   }
 
 #define CHECK_EXPR_INT(INPUT, BUILD_EXPECTED_ASM)                                                  \

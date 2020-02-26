@@ -24,7 +24,7 @@ public:
   auto operator=(const Assembler& rhs) -> Assembler& = delete;
   auto operator=(Assembler&& rhs) noexcept -> Assembler& = delete;
 
-  auto generateLabel() -> std::string;
+  auto generateLabel(const std::string& prefix) -> std::string;
 
   auto label(std::string label) -> void;
 
@@ -120,7 +120,8 @@ public:
 
   auto setEntrypoint(std::string label) -> void;
 
-  auto close() -> Assembly;
+  [[nodiscard]] auto close() -> Assembly;
+  [[nodiscard]] auto getLabels() -> std::unordered_map<uint32_t, std::vector<std::string>>;
 
 private:
   bool m_closed;

@@ -33,9 +33,9 @@ auto GenExpr::visit(const prog::expr::SwitchExprNode& n) -> void {
   // Generate labels for jumping.
   auto condBranchesLabels = std::vector<std::string>{};
   for (auto i = 0U; i < conditions.size(); ++i) {
-    condBranchesLabels.push_back(m_asmb->generateLabel());
+    condBranchesLabels.push_back(m_asmb->generateLabel("switch-if"));
   }
-  const auto endLabel = m_asmb->generateLabel();
+  const auto endLabel = m_asmb->generateLabel("switch-end");
 
   // Jump for the 'if' cases and fall-through for the else cases.
   for (auto i = 0U; i < conditions.size(); ++i) {
@@ -88,7 +88,7 @@ auto GenExpr::visit(const prog::expr::CallExprNode& n) -> void {
     break;
   case prog::sym::FuncKind::User:
     m_asmb->addCall(
-        getLabel(funcDecl.getId()),
+        getLabel(m_program, funcDecl.getId()),
         funcDecl.getInput().getCount(),
         n.isFork() ? novasm::CallMode::Forked
                    : (m_tail ? novasm::CallMode::Tail : novasm::CallMode::Normal));
@@ -416,7 +416,7 @@ auto GenExpr::visit(const prog::expr::CallExprNode& n) -> void {
     }
     auto invert = funcDecl.getKind() == prog::sym::FuncKind::CheckNEqUserType;
     m_asmb->addCall(
-        getUserTypeEqLabel(lhsType),
+        getUserTypeEqLabel(m_program, lhsType),
         2,
         (m_tail && !invert) ? novasm::CallMode::Tail : novasm::CallMode::Normal);
     if (invert) {
@@ -525,7 +525,7 @@ auto GenExpr::visit(const prog::expr::CallSelfExprNode& n) -> void {
 
   // Invoke the current function.
   m_asmb->addCall(
-      getLabel(funcDecl.getId()),
+      getLabel(m_program, funcDecl.getId()),
       funcDecl.getInput().getCount(),
       m_tail ? novasm::CallMode::Tail : novasm::CallMode::Normal);
 }
@@ -538,7 +538,7 @@ auto GenExpr::visit(const prog::expr::ClosureNode& n) -> void {
 
   // Push the function instruction-pointer on the stack.
   const auto funcId = n.getFunc();
-  m_asmb->addLoadLitIp(getLabel(funcId));
+  m_asmb->addLoadLitIp(getLabel(m_program, funcId));
 
   // Create a struct containing both the bound arguments and the function pointer.
   m_asmb->addMakeStruct(n.getChildCount() + 1);
@@ -601,8 +601,8 @@ auto GenExpr::visit(const prog::expr::UnionGetExprNode& n) -> void {
   // We need the union twice on the stack, once for the type check and once for getting the value.
   m_asmb->addDup();
 
-  const auto typeEqLabel = m_asmb->generateLabel();
-  const auto endLabel    = m_asmb->generateLabel();
+  const auto typeEqLabel = m_asmb->generateLabel("union-type-equal");
+  const auto endLabel    = m_asmb->generateLabel("union-get-end");
 
   // Test if the union is the correct type.
   m_asmb->addLoadStructField(0);
@@ -638,7 +638,7 @@ auto GenExpr::visit(const prog::expr::LitFloatNode& n) -> void {
 
 auto GenExpr::visit(const prog::expr::LitFuncNode& n) -> void {
   const auto funcId = n.getFunc();
-  m_asmb->addLoadLitIp(getLabel(funcId));
+  m_asmb->addLoadLitIp(getLabel(m_program, funcId));
 }
 
 auto GenExpr::visit(const prog::expr::LitIntNode& n) -> void { m_asmb->addLoadLitInt(n.getVal()); }

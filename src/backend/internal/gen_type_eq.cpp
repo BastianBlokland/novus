@@ -3,7 +3,9 @@
 
 namespace backend::internal {
 
-static auto genTypeEquality(novasm::Assembler* asmb, const prog::sym::TypeDecl& typeDecl) {
+static auto genTypeEquality(
+    novasm::Assembler* asmb, const prog::Program& program, const prog::sym::TypeDecl& typeDecl) {
+
   switch (typeDecl.getKind()) {
   case prog::sym::TypeKind::Bool:
   case prog::sym::TypeKind::Int:
@@ -31,7 +33,7 @@ static auto genTypeEquality(novasm::Assembler* asmb, const prog::sym::TypeDecl& 
     break;
   case prog::sym::TypeKind::Struct:
   case prog::sym::TypeKind::Union:
-    asmb->addCall(getUserTypeEqLabel(typeDecl.getId()), 2, novasm::CallMode::Normal);
+    asmb->addCall(getUserTypeEqLabel(program, typeDecl.getId()), 2, novasm::CallMode::Normal);
     break;
   }
 }
@@ -39,6 +41,7 @@ static auto genTypeEquality(novasm::Assembler* asmb, const prog::sym::TypeDecl& 
 // This assumes that the structs are stored as consts 0 and 1.
 static auto generateStructFieldEquality(
     novasm::Assembler* asmb,
+    const prog::Program& program,
     uint8_t fieldId,
     const prog::sym::TypeDecl& typeDecl,
     const std::string& eqLabel) {
@@ -50,7 +53,7 @@ static auto generateStructFieldEquality(
   asmb->addLoadStructField(fieldId);
 
   // Check if the field is equal.
-  genTypeEquality(asmb, typeDecl);
+  genTypeEquality(asmb, program, typeDecl);
 
   // Jump to the given label if the fields are equal.
   asmb->addJumpIf(eqLabel);
@@ -59,7 +62,7 @@ static auto generateStructFieldEquality(
 auto generateStructEquality(
     novasm::Assembler* asmb, const prog::Program& program, const prog::sym::StructDef& structDef)
     -> void {
-  asmb->label(getUserTypeEqLabel(structDef.getId()));
+  asmb->label(getUserTypeEqLabel(program, structDef.getId()));
 
   // For empty structs we can just return 'true'.
   if (structDef.getFields().getCount() == 0U) {
@@ -75,7 +78,7 @@ auto generateStructEquality(
     asmb->addStackLoad(1);
 
     const auto& fieldTypeDecl = program.getTypeDecl(structDef.getFields().begin()->getType());
-    genTypeEquality(asmb, fieldTypeDecl);
+    genTypeEquality(asmb, program, fieldTypeDecl);
     asmb->addRet();
     return;
   }
@@ -85,8 +88,8 @@ auto generateStructEquality(
     const auto fieldId        = getFieldId(field.getId());
     const auto& fieldTypeDecl = program.getTypeDecl(field.getType());
 
-    const auto eqLabel = asmb->generateLabel();
-    generateStructFieldEquality(asmb, fieldId, fieldTypeDecl, eqLabel);
+    const auto eqLabel = asmb->generateLabel("struct-field-equal");
+    generateStructFieldEquality(asmb, program, fieldId, fieldTypeDecl, eqLabel);
 
     // If not equal return false.
     asmb->addLoadLitInt(0);
@@ -102,15 +105,16 @@ auto generateStructEquality(
 auto generateUnionEquality(
     novasm::Assembler* asmb, const prog::Program& program, const prog::sym::UnionDef& unionDef)
     -> void {
-  asmb->label(getUserTypeEqLabel(unionDef.getId()));
+  asmb->label(getUserTypeEqLabel(program, unionDef.getId()));
 
   // Generate some labels to use in this function.
-  const auto sameTypeLabel  = asmb->generateLabel();
-  const auto sameValueLabel = asmb->generateLabel();
+  const auto sameTypeLabel  = asmb->generateLabel("union-same-type");
+  const auto sameValueLabel = asmb->generateLabel("union-same-value");
   auto typeLabels           = std::vector<std::string>{};
   typeLabels.reserve(unionDef.getTypes().size());
-  for (auto i = 0U; i != unionDef.getTypes().size(); ++i) {
-    typeLabels.push_back(asmb->generateLabel());
+  for (const auto& unionType : unionDef.getTypes()) {
+    const auto& unionTypeName = program.getTypeDecl(unionType).getName();
+    typeLabels.push_back(asmb->generateLabel("union-type-" + unionTypeName));
   }
 
   // Check if the type (field 0) matches.
@@ -145,7 +149,7 @@ auto generateUnionEquality(
     const auto& typeDecl = program.getTypeDecl(unionDef.getTypes()[i]);
 
     asmb->label(typeLabels[i]);
-    generateStructFieldEquality(asmb, 1, typeDecl, sameValueLabel);
+    generateStructFieldEquality(asmb, program, 1, typeDecl, sameValueLabel);
 
     // If values do not match return false.
     asmb->addLoadLitInt(0);

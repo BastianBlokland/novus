@@ -8,9 +8,9 @@
 
 namespace backend::internal {
 
-auto getLabel(prog::sym::FuncId funcId) -> std::string;
+auto getLabel(const prog::Program& prog, prog::sym::FuncId funcId) -> std::string;
 
-auto getUserTypeEqLabel(prog::sym::TypeId typeId) -> std::string;
+auto getUserTypeEqLabel(const prog::Program& prog, prog::sym::TypeId typeId) -> std::string;
 
 auto getConstOffset(const prog::sym::ConstDeclTable& table, prog::sym::ConstId id) -> uint8_t;
 

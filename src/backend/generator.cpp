@@ -26,8 +26,9 @@ static auto
 generateFunc(novasm::Assembler* asmb, const prog::Program& program, const prog::sym::FuncDef& func)
     -> std::string {
 
-  const auto label = internal::getLabel(func.getId());
+  const auto label = internal::getLabel(program, func.getId());
   asmb->label(label);
+
   reserveConsts(asmb, func.getConsts());
 
   // Generate the function body.
@@ -44,7 +45,7 @@ static auto generateExecStmt(
     novasm::Assembler* asmb, const prog::Program& program, const prog::sym::ExecStmt& exec)
     -> std::string {
 
-  const auto label = asmb->generateLabel();
+  const auto label = asmb->generateLabel("exec-stmt");
   asmb->label(label);
 
   reserveConsts(asmb, exec.getConsts());
@@ -58,7 +59,7 @@ static auto generateExecStmt(
   return label;
 }
 
-auto generate(const prog::Program& program) -> novasm::Assembly {
+auto generate(const prog::Program& program) -> std::pair<novasm::Assembly, InstructionLabels> {
   auto asmb = novasm::Assembler{};
 
   // Generate utility functions for user types.
@@ -92,7 +93,7 @@ auto generate(const prog::Program& program) -> novasm::Assembly {
     // If there are multiple exec-statements we create a block of code that calls all of them
     // in-order and make that the entry-point.
 
-    auto entryPointLabel = asmb.generateLabel();
+    auto entryPointLabel = asmb.generateLabel("entrypoint");
     asmb.setEntrypoint(entryPointLabel);
 
     asmb.label(entryPointLabel);
@@ -102,7 +103,7 @@ auto generate(const prog::Program& program) -> novasm::Assembly {
     asmb.addRet(); // Returning from the root stack-frame causes the program to stop.
   }
 
-  return asmb.close();
+  return std::make_pair(asmb.close(), asmb.getLabels());
 }
 
 } // namespace backend

@@ -7,9 +7,9 @@ namespace novasm {
 
 Assembler::Assembler() : m_closed{false}, m_genLabelCounter{0U} {}
 
-auto Assembler::generateLabel() -> std::string {
+auto Assembler::generateLabel(const std::string& prefix) -> std::string {
   std::ostringstream oss;
-  oss << "__gen_" << m_genLabelCounter++;
+  oss << prefix << "_" << m_genLabelCounter++;
   return oss.str();
 }
 
@@ -186,8 +186,8 @@ auto Assembler::addConvFloatString() -> void { writeOpCode(OpCode::ConvFloatStri
 
 auto Assembler::addConvBoolString() -> void {
   // Implemented on the backend to keep the vm simpler.
-  const auto endLabel  = generateLabel();
-  const auto trueLabel = generateLabel();
+  const auto endLabel  = generateLabel("bool-to-string-end");
+  const auto trueLabel = generateLabel("bool-to-string-true");
   addJumpIf(trueLabel);
 
   addLoadLitString("false");
@@ -291,6 +291,15 @@ auto Assembler::close() -> Assembly {
   }
 
   return Assembly{entrypointItr->second, std::move(m_litStrings), std::move(m_instructions)};
+}
+
+auto Assembler::getLabels() -> std::unordered_map<uint32_t, std::vector<std::string>> {
+  auto result = std::unordered_map<uint32_t, std::vector<std::string>>{};
+  for (const auto& label : m_labels) {
+    const auto resultItr = result.insert({label.second, std::vector<std::string>{}});
+    resultItr.first->second.push_back(label.first);
+  }
+  return result;
 }
 
 auto Assembler::addLitString(const std::string& string) -> uint32_t {

@@ -6,29 +6,51 @@ namespace novasm {
 
 namespace dasm {
 
-Instruction::Instruction(OpCode op, uint32_t ipOffset, std::initializer_list<Arg> args) :
-    m_op{op}, m_ipOffset{ipOffset}, m_args{args} {}
+InstructionArg::InstructionArg(int32_t value, std::vector<std::string> labels) :
+    m_value{value}, m_labels{std::move(labels)} {}
 
-Instruction::Instruction(OpCode op, uint32_t ipOffset, std::vector<Arg> args) :
-    m_op{op}, m_ipOffset{ipOffset}, m_args{std::move(args)} {}
+InstructionArg::InstructionArg(int64_t value, std::vector<std::string> labels) :
+    m_value{value}, m_labels{std::move(labels)} {}
+
+InstructionArg::InstructionArg(uint32_t value, std::vector<std::string> labels) :
+    m_value{value}, m_labels{std::move(labels)} {}
+
+InstructionArg::InstructionArg(float value, std::vector<std::string> labels) :
+    m_value{value}, m_labels{std::move(labels)} {}
+
+InstructionArg::InstructionArg(PCallCode value, std::vector<std::string> labels) :
+    m_value{value}, m_labels{std::move(labels)} {}
+
+auto InstructionArg::getLabels() const noexcept -> const std::vector<std::string>& {
+  return m_labels;
+}
+
+Instruction::Instruction(
+    OpCode op,
+    uint32_t ipOffset,
+    std::vector<InstructionArg> args,
+    std::vector<std::string> labels) :
+    m_op{op}, m_ipOffset{ipOffset}, m_args{std::move(args)}, m_labels{std::move(labels)} {}
 
 auto Instruction::getOp() const noexcept -> OpCode { return m_op; }
 
 auto Instruction::getIpOffset() const noexcept -> uint32_t { return m_ipOffset; }
 
-auto Instruction::getArgs() const noexcept -> const std::vector<Arg>& { return m_args; }
+auto Instruction::getArgs() const noexcept -> const std::vector<InstructionArg>& { return m_args; }
 
-auto operator<<(std::ostream& out, const Arg& rhs) -> std::ostream& {
-  if (std::holds_alternative<int32_t>(rhs)) {
-    out << std::get<int32_t>(rhs);
-  } else if (std::holds_alternative<int64_t>(rhs)) {
-    out << std::get<int64_t>(rhs);
-  } else if (std::holds_alternative<uint32_t>(rhs)) {
-    out << std::get<uint32_t>(rhs);
-  } else if (std::holds_alternative<float>(rhs)) {
-    out << std::get<float>(rhs);
-  } else if (std::holds_alternative<PCallCode>(rhs)) {
-    out << std::get<PCallCode>(rhs);
+auto Instruction::getLabels() const noexcept -> const std::vector<std::string>& { return m_labels; }
+
+auto operator<<(std::ostream& out, const InstructionArg& rhs) -> std::ostream& {
+  if (std::holds_alternative<int32_t>(rhs.m_value)) {
+    out << std::get<int32_t>(rhs.m_value);
+  } else if (std::holds_alternative<int64_t>(rhs.m_value)) {
+    out << std::get<int64_t>(rhs.m_value);
+  } else if (std::holds_alternative<uint32_t>(rhs.m_value)) {
+    out << std::get<uint32_t>(rhs.m_value);
+  } else if (std::holds_alternative<float>(rhs.m_value)) {
+    out << std::get<float>(rhs.m_value);
+  } else if (std::holds_alternative<PCallCode>(rhs.m_value)) {
+    out << std::get<PCallCode>(rhs.m_value);
   } else {
     throw std::logic_error{"Unknown arg type"};
   }
@@ -54,21 +76,38 @@ inline auto readAsm(const uint8_t** ip) {
   return v;
 }
 
-auto disassembleInstructions(const Assembly& assembly) -> std::vector<dasm::Instruction> {
+static auto getLabels(const dasm::InstructionLabels& instrLabels, uint32_t ipOffset)
+    -> std::vector<std::string> {
+
+  const auto itr = instrLabels.find(ipOffset);
+  if (itr == instrLabels.end()) {
+    return {};
+  }
+  return itr->second;
+}
+
+auto disassembleInstructions(const Assembly& assembly, const dasm::InstructionLabels& instrLabels)
+    -> std::vector<dasm::Instruction> {
+
+  using Instr = typename dasm::Instruction;
+  using Arg   = typename dasm::InstructionArg;
+
   auto result = std::vector<dasm::Instruction>{};
 
   for (auto* ip = assembly.getIp(0); !assembly.isEnd(ip);) {
     const auto offset = assembly.getOffset(ip);
     const auto opCode = readAsm<OpCode>(&ip);
+    const auto labels = getLabels(instrLabels, offset);
+
     switch (opCode) {
     case OpCode::LoadLitInt:
-      result.push_back(dasm::Instruction(opCode, offset, {readAsm<int32_t>(&ip)}));
+      result.push_back(Instr{opCode, offset, {Arg{readAsm<int32_t>(&ip)}}, labels});
       continue;
     case OpCode::LoadLitLong:
-      result.push_back(dasm::Instruction(opCode, offset, {readAsm<int64_t>(&ip)}));
+      result.push_back(Instr{opCode, offset, {Arg{readAsm<int64_t>(&ip)}}, labels});
       continue;
     case OpCode::LoadLitFloat:
-      result.push_back(dasm::Instruction(opCode, offset, {readAsm<float>(&ip)}));
+      result.push_back(Instr{opCode, offset, {Arg{readAsm<float>(&ip)}}, labels});
       continue;
     case OpCode::LoadLitIntSmall:
     case OpCode::StackAlloc:
@@ -79,7 +118,7 @@ auto disassembleInstructions(const Assembly& assembly) -> std::vector<dasm::Inst
     case OpCode::CallDyn:
     case OpCode::CallDynTail:
     case OpCode::CallDynForked:
-      result.push_back(dasm::Instruction(opCode, offset, {readAsm<uint8_t>(&ip)}));
+      result.push_back(Instr{opCode, offset, {Arg{readAsm<uint8_t>(&ip)}}, labels});
       continue;
     case OpCode::LoadLitInt0:
     case OpCode::LoadLitInt1:
@@ -147,23 +186,32 @@ auto disassembleInstructions(const Assembly& assembly) -> std::vector<dasm::Inst
     case OpCode::FutureWaitNano:
     case OpCode::FutureBlock:
     case OpCode::Dup:
-    case OpCode::Pop:
-      result.push_back(dasm::Instruction(opCode, offset, {}));
+    case OpCode::Pop: {
+      result.push_back(Instr{opCode, offset, {}});
       continue;
+    }
     case OpCode::LoadLitString:
+      result.push_back(Instr{opCode, offset, {Arg{readAsm<uint32_t>(&ip)}}, labels});
+      continue;
     case OpCode::LoadLitIp:
     case OpCode::Jump:
-    case OpCode::JumpIf:
-      result.push_back(dasm::Instruction(opCode, offset, {readAsm<uint32_t>(&ip)}));
+    case OpCode::JumpIf: {
+      const auto tgtIpOffset = readAsm<uint32_t>(&ip);
+      result.push_back(
+          Instr{opCode, offset, {Arg{tgtIpOffset, getLabels(instrLabels, tgtIpOffset)}}, labels});
       continue;
+    }
     case OpCode::Call:
     case OpCode::CallTail:
-    case OpCode::CallForked:
-      result.push_back(
-          dasm::Instruction(opCode, offset, {readAsm<uint8_t>(&ip), readAsm<uint32_t>(&ip)}));
+    case OpCode::CallForked: {
+      const auto argC     = readAsm<uint8_t>(&ip);
+      const auto ipOffset = readAsm<uint32_t>(&ip);
+      result.push_back(Instr{
+          opCode, offset, {Arg{argC}, Arg{ipOffset, getLabels(instrLabels, ipOffset)}}, labels});
       continue;
+    }
     case OpCode::PCall:
-      result.push_back(dasm::Instruction(opCode, offset, {readAsm<PCallCode>(&ip)}));
+      result.push_back(Instr{opCode, offset, {Arg{readAsm<PCallCode>(&ip)}}, labels});
       continue;
     }
     throw std::logic_error{"Bad assembly"};
