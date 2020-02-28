@@ -21,6 +21,8 @@ public:
   [[nodiscard]] auto getType() const noexcept -> sym::TypeId override;
   [[nodiscard]] auto toString() const -> std::string override;
 
+  [[nodiscard]] auto clone() const -> std::unique_ptr<Node> override;
+
   [[nodiscard]] auto getConditions() const noexcept -> const std::vector<NodePtr>&;
   [[nodiscard]] auto getBranches() const noexcept -> const std::vector<NodePtr>&;
 

@@ -34,6 +34,10 @@ auto AssignExprNode::toString() const -> std::string {
   return oss.str();
 }
 
+auto AssignExprNode::clone() const -> std::unique_ptr<Node> {
+  return std::unique_ptr<AssignExprNode>{new AssignExprNode{m_constId, m_expr->clone()}};
+}
+
 auto AssignExprNode::getConst() const noexcept -> sym::ConstId { return m_constId; }
 
 auto AssignExprNode::accept(NodeVisitor* visitor) const -> void { visitor->visit(*this); }

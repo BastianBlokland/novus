@@ -31,6 +31,10 @@ auto CallSelfExprNode::getType() const noexcept -> sym::TypeId { return m_result
 
 auto CallSelfExprNode::toString() const -> std::string { return "self-call"; }
 
+auto CallSelfExprNode::clone() const -> std::unique_ptr<Node> {
+  return std::unique_ptr<CallSelfExprNode>{new CallSelfExprNode{m_resultType, cloneNodes(m_args)}};
+}
+
 auto CallSelfExprNode::accept(NodeVisitor* visitor) const -> void { visitor->visit(*this); }
 
 // Factories.

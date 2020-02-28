@@ -26,6 +26,8 @@ public:
   [[nodiscard]] virtual auto getType() const noexcept -> sym::TypeId       = 0;
   [[nodiscard]] virtual auto toString() const -> std::string               = 0;
 
+  [[nodiscard]] virtual auto clone() const -> std::unique_ptr<Node> = 0;
+
   virtual auto accept(NodeVisitor* visitor) const -> void = 0;
 
 protected:

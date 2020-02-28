@@ -32,6 +32,10 @@ auto FieldExprNode::toString() const -> std::string {
   return oss.str();
 }
 
+auto FieldExprNode::clone() const -> std::unique_ptr<Node> {
+  return std::unique_ptr<FieldExprNode>{new FieldExprNode{m_lhs->clone(), m_id, m_type}};
+}
+
 auto FieldExprNode::getId() const noexcept -> sym::FieldId { return m_id; }
 
 auto FieldExprNode::accept(NodeVisitor* visitor) const -> void { visitor->visit(*this); }

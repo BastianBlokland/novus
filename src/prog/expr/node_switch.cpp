@@ -38,6 +38,11 @@ auto SwitchExprNode::getType() const noexcept -> sym::TypeId {
 
 auto SwitchExprNode::toString() const -> std::string { return "switch"; }
 
+auto SwitchExprNode::clone() const -> std::unique_ptr<Node> {
+  return std::unique_ptr<SwitchExprNode>{
+      new SwitchExprNode{cloneNodes(m_conditions), cloneNodes(m_branches)}};
+}
+
 auto SwitchExprNode::getConditions() const noexcept -> const std::vector<NodePtr>& {
   return m_conditions;
 }

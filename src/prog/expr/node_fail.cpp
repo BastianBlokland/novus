@@ -23,6 +23,10 @@ auto FailNode::getType() const noexcept -> sym::TypeId { return m_type; }
 
 auto FailNode::toString() const -> std::string { return "fail"; }
 
+auto FailNode::clone() const -> std::unique_ptr<Node> {
+  return std::unique_ptr<FailNode>{new FailNode{m_type}};
+}
+
 auto FailNode::accept(NodeVisitor* visitor) const -> void { visitor->visit(*this); }
 
 // Factories.

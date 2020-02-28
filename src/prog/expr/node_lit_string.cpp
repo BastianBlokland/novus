@@ -30,6 +30,10 @@ auto LitStringNode::toString() const -> std::string {
   return oss.str();
 }
 
+auto LitStringNode::clone() const -> std::unique_ptr<Node> {
+  return std::unique_ptr<LitStringNode>{new LitStringNode{m_type, m_val}};
+}
+
 auto LitStringNode::getVal() const noexcept -> const std::string& { return m_val; }
 
 auto LitStringNode::accept(NodeVisitor* visitor) const -> void { visitor->visit(*this); }

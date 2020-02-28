@@ -29,6 +29,10 @@ auto LitCharNode::toString() const -> std::string {
   return oss.str();
 }
 
+auto LitCharNode::clone() const -> std::unique_ptr<Node> {
+  return std::unique_ptr<LitCharNode>{new LitCharNode{m_type, m_val}};
+}
+
 auto LitCharNode::getVal() const noexcept -> uint8_t { return m_val; }
 
 auto LitCharNode::accept(NodeVisitor* visitor) const -> void { visitor->visit(*this); }
