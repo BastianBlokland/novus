@@ -7,12 +7,11 @@ namespace prog::sym {
 const unsigned int reservedTypesCount = 1;
 
 auto TypeDeclTable::operator[](TypeId id) const -> const TypeDecl& {
-  if (id.m_id < reservedTypesCount) {
-    throw std::invalid_argument{"Given type-id is a reserved type that has no declaration"};
+  const auto itr = m_types.find(id);
+  if (itr == m_types.end()) {
+    throw std::invalid_argument{"No declaration found for given type-id"};
   }
-  const auto index = id.m_id - reservedTypesCount;
-  assert(index < this->m_types.size());
-  return m_types[index];
+  return itr->second;
 }
 
 auto TypeDeclTable::begin() const -> iterator { return m_types.begin(); }
@@ -36,12 +35,30 @@ auto TypeDeclTable::registerType(TypeKind kind, std::string name) -> TypeId {
     throw std::invalid_argument{"Name has to contain aleast 1 char"};
   }
 
-  auto id = TypeId{static_cast<unsigned int>(m_types.size() + reservedTypesCount)};
+  // Assign an id one higher then the current highest, starting from 'reservedTypesCount'.
+  const auto highestKey = m_types.rbegin();
+  const auto id =
+      TypeId{highestKey == m_types.rend() ? reservedTypesCount : highestKey->first.m_id + 1};
+
   if (m_lookup.insert({name, id}).second) {
-    m_types.push_back(TypeDecl{id, kind, std::move(name)});
+    m_types.insert({id, TypeDecl{id, kind, std::move(name)}});
     return id;
   }
   throw std::logic_error{"Type with an identical name has already been registered"};
+}
+
+auto TypeDeclTable::insertType(TypeId id, TypeKind kind, std::string name) -> void {
+  if (name.empty()) {
+    throw std::invalid_argument{"Name has to contain aleast 1 char"};
+  }
+
+  // Insert into types map.
+  if (!m_types.insert({id, TypeDecl{id, kind, name}}).second) {
+    throw std::invalid_argument{"There is already a type registered with the same id"};
+  }
+
+  // Insert into name lookup map.
+  m_lookup.insert({std::move(name), id});
 }
 
 } // namespace prog::sym

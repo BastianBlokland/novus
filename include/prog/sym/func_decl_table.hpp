@@ -4,6 +4,7 @@
 #include "prog/sym/overload_options.hpp"
 #include "prog/sym/type_decl.hpp"
 #include "prog/sym/type_set.hpp"
+#include <map>
 #include <optional>
 #include <string>
 #include <unordered_map>
@@ -17,7 +18,7 @@ namespace sym {
 
 class FuncDeclTable final {
 public:
-  using iterator = typename std::vector<FuncDecl>::const_iterator;
+  using iterator = typename std::map<FuncId, FuncDecl>::const_iterator;
   using id       = typename prog::sym::FuncId;
 
   FuncDeclTable()                             = default;
@@ -54,10 +55,19 @@ public:
   registerAction(const Program& prog, FuncKind kind, std::string name, TypeSet input, TypeId output)
       -> FuncId;
 
+  auto insertFunc(
+      FuncId id,
+      FuncKind kind,
+      bool isAction,
+      bool isImplicitConv,
+      std::string name,
+      TypeSet input,
+      TypeId output) -> void;
+
   auto updateFuncOutput(FuncId id, TypeId newOutput) -> void;
 
 private:
-  std::vector<FuncDecl> m_funcs;
+  std::map<FuncId, FuncDecl> m_funcs;
   std::unordered_map<std::string, std::vector<FuncId>> m_lookup;
 
   auto registerFunc(

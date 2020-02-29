@@ -53,9 +53,10 @@ namespace frontend {
 inline auto findAnonFunc(const Output& output, unsigned int num) -> prog::sym::FuncId {
   for (auto itr = output.getProg().beginFuncDecls(); itr != output.getProg().endFuncDecls();
        ++itr) {
-    const auto isAnon = itr->getName().rfind("__anon_", 0) == 0;
+    const auto& funcDecl = itr->second;
+    const auto isAnon    = funcDecl.getName().rfind("__anon_", 0) == 0;
     if (isAnon && num-- == 0) {
-      return itr->getId();
+      return funcDecl.getId();
     }
   }
   throw std::logic_error{"Unable to find anonymous function"};

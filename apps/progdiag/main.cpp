@@ -57,7 +57,7 @@ auto printTypeDecls(const prog::Program& prog) -> void {
 
   std::cout << rang::style::bold << "Type declarations:\n" << rang::style::reset;
   for (auto typeItr = prog.beginTypeDecls(); typeItr != prog.endTypeDecls(); ++typeItr) {
-    const auto& typeDecl = *typeItr;
+    const auto& typeDecl = typeItr->second;
     std::stringstream idStr;
     idStr << typeDecl.getId();
 
@@ -74,7 +74,7 @@ auto printFuncDecls(const prog::Program& prog) -> void {
 
   std::cout << rang::style::bold << "Function declarations:\n" << rang::style::reset;
   for (auto funcItr = prog.beginFuncDecls(); funcItr != prog.endFuncDecls(); ++funcItr) {
-    const auto& funcDecl = *funcItr;
+    const auto& funcDecl = funcItr->second;
     std::stringstream idStr;
     idStr << funcDecl.getId();
 

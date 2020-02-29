@@ -1,15 +1,15 @@
 #pragma once
 #include "prog/sym/type_decl.hpp"
+#include <map>
 #include <optional>
 #include <string>
 #include <unordered_map>
-#include <vector>
 
 namespace prog::sym {
 
 class TypeDeclTable final {
 public:
-  using iterator = typename std::vector<TypeDecl>::const_iterator;
+  using iterator = typename std::map<TypeId, TypeDecl>::const_iterator;
 
   TypeDeclTable()                             = default;
   TypeDeclTable(const TypeDeclTable& rhs)     = delete;
@@ -29,8 +29,10 @@ public:
 
   auto registerType(TypeKind kind, std::string name) -> TypeId;
 
+  auto insertType(TypeId id, TypeKind kind, std::string name) -> void;
+
 private:
-  std::vector<TypeDecl> m_types;
+  std::map<TypeId, TypeDecl> m_types;
   std::unordered_map<std::string, TypeId> m_lookup;
 };
 

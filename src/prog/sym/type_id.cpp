@@ -12,6 +12,10 @@ auto TypeId::operator!=(const TypeId& rhs) const noexcept -> bool {
   return !TypeId::operator==(rhs);
 }
 
+auto TypeId::operator<(const TypeId& rhs) const noexcept -> bool { return m_id < rhs.m_id; }
+
+auto TypeId::operator>(const TypeId& rhs) const noexcept -> bool { return m_id > rhs.m_id; }
+
 auto TypeId::getNum() const noexcept -> unsigned int { return m_id; }
 
 auto TypeId::isInfer() const noexcept -> bool { return m_id == 0; };

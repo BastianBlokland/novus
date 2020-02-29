@@ -40,7 +40,8 @@ auto findImplicitConvTypes(const Program& prog, sym::TypeId from) -> std::vector
 
   auto result = std::vector<sym::TypeId>{};
 
-  for (const auto& funcDecl : funcTable) {
+  for (const auto& func : funcTable) {
+    const auto& funcDecl = func.second;
     if (!funcDecl.isImplicitConv()) {
       continue;
     }
