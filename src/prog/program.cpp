@@ -506,6 +506,12 @@ auto Program::defineEnum(sym::TypeId id, std::unordered_map<std::string, int32_t
   m_funcDecls.registerImplicitConv(*this, sym::FuncKind::NoOp, id, m_int);
   m_funcDecls.registerImplicitConv(*this, sym::FuncKind::ConvIntLong, id, m_long);
 
+  // Register < and > operators.
+  m_funcDecls.registerFunc(
+      *this, sym::FuncKind::CheckLeInt, getFuncName(Operator::Le), sym::TypeSet{id, id}, m_bool);
+  m_funcDecls.registerFunc(
+      *this, sym::FuncKind::CheckGtInt, getFuncName(Operator::Gt), sym::TypeSet{id, id}, m_bool);
+
   // Register bitwise & and | operators.
   m_funcDecls.registerFunc(
       *this, sym::FuncKind::OrInt, getFuncName(Operator::Pipe), sym::TypeSet{id, id}, id);
