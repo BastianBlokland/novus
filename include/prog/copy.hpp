@@ -3,8 +3,8 @@
 
 namespace prog {
 
-auto copyType(const Program& from, Program* to, sym::TypeId func) -> void;
+auto copyType(const Program& from, Program* to, sym::TypeId id) -> bool;
 
-auto copyUserFunc(const Program& from, Program* to, sym::FuncId func) -> void;
+auto copyFunc(const Program& from, Program* to, sym::FuncId id) -> bool;
 
 } // namespace prog

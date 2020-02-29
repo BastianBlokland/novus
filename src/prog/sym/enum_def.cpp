@@ -15,6 +15,10 @@ auto EnumDef::hasEntry(const std::string& name) const noexcept -> bool {
   return m_entries.find(name) != m_entries.end();
 }
 
+auto EnumDef::getEntries() const noexcept -> const std::unordered_map<std::string, int32_t>& {
+  return m_entries;
+}
+
 auto EnumDef::getValue(const std::string& name) const noexcept -> std::optional<int32_t> {
   const auto itr = m_entries.find(name);
   return itr == m_entries.end() ? std::nullopt : std::optional{itr->second};

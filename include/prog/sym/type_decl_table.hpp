@@ -24,6 +24,7 @@ public:
   [[nodiscard]] auto begin() const -> Iterator;
   [[nodiscard]] auto end() const -> Iterator;
 
+  [[nodiscard]] auto exists(const TypeId& id) const -> bool;
   [[nodiscard]] auto exists(const std::string& name) const -> bool;
   [[nodiscard]] auto lookup(const std::string& name) const -> std::optional<TypeId>;
 

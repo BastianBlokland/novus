@@ -1,9 +1,10 @@
 #include "gen_type_eq.hpp"
 #include "utilities.hpp"
+#include <unordered_set>
 
 namespace backend::internal {
 
-static auto genTypeEquality(
+static auto genTypeEqualityEntry(
     novasm::Assembler* asmb, const prog::Program& program, const prog::sym::TypeDecl& typeDecl) {
 
   switch (typeDecl.getKind()) {
@@ -39,7 +40,7 @@ static auto genTypeEquality(
 }
 
 // This assumes that the structs are stored as consts 0 and 1.
-static auto generateStructFieldEquality(
+static auto genStructFieldEquality(
     novasm::Assembler* asmb,
     const prog::Program& program,
     uint8_t fieldId,
@@ -53,15 +54,14 @@ static auto generateStructFieldEquality(
   asmb->addLoadStructField(fieldId);
 
   // Check if the field is equal.
-  genTypeEquality(asmb, program, typeDecl);
+  genTypeEqualityEntry(asmb, program, typeDecl);
 
   // Jump to the given label if the fields are equal.
   asmb->addJumpIf(eqLabel);
 }
 
-auto generateStructEquality(
-    novasm::Assembler* asmb, const prog::Program& program, const prog::sym::StructDef& structDef)
-    -> void {
+static auto genStructEquality(
+    novasm::Assembler* asmb, const prog::Program& program, const prog::sym::StructDef& structDef) {
   asmb->label(getUserTypeEqLabel(program, structDef.getId()));
 
   // For empty structs we can just return 'true'.
@@ -78,7 +78,7 @@ auto generateStructEquality(
     asmb->addStackLoad(1);
 
     const auto& fieldTypeDecl = program.getTypeDecl(structDef.getFields().begin()->getType());
-    genTypeEquality(asmb, program, fieldTypeDecl);
+    genTypeEqualityEntry(asmb, program, fieldTypeDecl);
     asmb->addRet();
     return;
   }
@@ -89,7 +89,7 @@ auto generateStructEquality(
     const auto& fieldTypeDecl = program.getTypeDecl(field.getType());
 
     const auto eqLabel = asmb->generateLabel("struct-field-equal");
-    generateStructFieldEquality(asmb, program, fieldId, fieldTypeDecl, eqLabel);
+    genStructFieldEquality(asmb, program, fieldId, fieldTypeDecl, eqLabel);
 
     // If not equal return false.
     asmb->addLoadLitInt(0);
@@ -102,9 +102,8 @@ auto generateStructEquality(
   asmb->addRet();
 }
 
-auto generateUnionEquality(
-    novasm::Assembler* asmb, const prog::Program& program, const prog::sym::UnionDef& unionDef)
-    -> void {
+static auto genUnionEquality(
+    novasm::Assembler* asmb, const prog::Program& program, const prog::sym::UnionDef& unionDef) {
   asmb->label(getUserTypeEqLabel(program, unionDef.getId()));
 
   // Generate some labels to use in this function.
@@ -149,7 +148,7 @@ auto generateUnionEquality(
     const auto& typeDecl = program.getTypeDecl(unionDef.getTypes()[i]);
 
     asmb->label(typeLabels[i]);
-    generateStructFieldEquality(asmb, program, 1, typeDecl, sameValueLabel);
+    genStructFieldEquality(asmb, program, 1, typeDecl, sameValueLabel);
 
     // If values do not match return false.
     asmb->addLoadLitInt(0);
@@ -159,6 +158,58 @@ auto generateUnionEquality(
   asmb->label(sameValueLabel);
   asmb->addLoadLitInt(1);
   asmb->addRet();
+}
+
+static auto addTypeAndNestedTypes(
+    const prog::Program& prog,
+    std::unordered_set<prog::sym::TypeId, prog::sym::TypeIdHasher>* set,
+    prog::sym::TypeId id) -> void {
+
+  if (set->insert(id).second) {
+    switch (prog.getTypeDecl(id).getKind()) {
+    case prog::sym::TypeKind::Struct: {
+      for (const auto& f : std::get<prog::sym::StructDef>(prog.getTypeDef(id)).getFields()) {
+        addTypeAndNestedTypes(prog, set, f.getType());
+      }
+    } break;
+    case prog::sym::TypeKind::Union: {
+      for (const auto& t : std::get<prog::sym::UnionDef>(prog.getTypeDef(id)).getTypes()) {
+        addTypeAndNestedTypes(prog, set, t);
+      }
+    } break;
+    default:
+      break;
+    }
+  }
+}
+
+auto generateUserTypeEquality(novasm::Assembler* asmb, const prog::Program& program) -> void {
+  auto types = std::unordered_set<prog::sym::TypeId, prog::sym::TypeIdHasher>{};
+
+  // Gather all types to generate equality functions for.
+  for (auto fItr = program.beginFuncDecls(); fItr != program.endFuncDecls(); ++fItr) {
+    using fk  = typename prog::sym::FuncKind;
+    auto kind = fItr->second.getKind();
+    if (kind == fk::CheckEqUserType || kind == fk::CheckNEqUserType) {
+      addTypeAndNestedTypes(program, &types, *fItr->second.getInput().begin());
+    }
+  }
+
+  // Generate equality functions for supported types.
+  for (auto typeId : types) {
+    switch (program.getTypeDecl(typeId).getKind()) {
+    case prog::sym::TypeKind::Struct: {
+      const auto& structDef = std::get<prog::sym::StructDef>(program.getTypeDef(typeId));
+      genStructEquality(asmb, program, structDef);
+    } break;
+    case prog::sym::TypeKind::Union: {
+      const auto& unionDef = std::get<prog::sym::UnionDef>(program.getTypeDef(typeId));
+      genUnionEquality(asmb, program, unionDef);
+    } break;
+    default:
+      break;
+    }
+  }
 }
 
 } // namespace backend::internal

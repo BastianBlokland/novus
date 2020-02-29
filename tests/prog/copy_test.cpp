@@ -28,27 +28,27 @@ TEST_CASE("Copy", "[prog]") {
   SECTION("Copy function") {
     auto progA    = Program{};
     const auto id = progA.declarePureFunc("test", sym::TypeSet{}, progA.getInt());
-    progA.defineFunc(id, sym::ConstDeclTable{}, expr::litIntNode(progA, 42));
+    progA.defineFunc(id, sym::ConstDeclTable{}, expr::litIntNode(progA, 2));
 
     // Copy to another program.
     auto progB = Program{};
-    copyUserFunc(progA, &progB, id);
+    copyFunc(progA, &progB, id);
 
     // Assert its presence.
     REQUIRE(progB.lookupFunc("test", sym::TypeSet{}, OvOptions{}) == id);
-    REQUIRE(progB.getFuncDef(id).getExpr() == *expr::litIntNode(progB, 42));
+    REQUIRE(progB.getFuncDef(id).getExpr() == *expr::litIntNode(progB, 2));
   }
 
   SECTION("Fail to copy build-in type") {
     auto progA = Program{};
     auto progB = Program{};
-    REQUIRE_THROWS(copyType(progA, &progB, progA.getInt()));
+    REQUIRE(!copyType(progA, &progB, progA.getInt()));
   }
 
   SECTION("Fail to copy build-in function") {
     auto progA = Program{};
     auto progB = Program{};
-    REQUIRE_THROWS(copyUserFunc(
+    REQUIRE(!copyFunc(
         progA, &progB, *progA.lookupFunc("clockNanoSteady", sym::TypeSet{}, OvOptions{})));
   }
 }

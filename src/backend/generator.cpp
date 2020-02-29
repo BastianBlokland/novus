@@ -62,17 +62,8 @@ static auto generateExecStmt(
 auto generate(const prog::Program& program) -> std::pair<novasm::Assembly, InstructionLabels> {
   auto asmb = novasm::Assembler{};
 
-  // Generate utility functions for user types.
-  for (auto tDefItr = program.beginTypeDefs(); tDefItr != program.endTypeDefs(); ++tDefItr) {
-    if (std::holds_alternative<prog::sym::StructDef>(tDefItr->second)) {
-      const auto& structDef = std::get<prog::sym::StructDef>(tDefItr->second);
-      internal::generateStructEquality(&asmb, program, structDef);
-
-    } else if (std::holds_alternative<prog::sym::UnionDef>(tDefItr->second)) {
-      const auto& unionDef = std::get<prog::sym::UnionDef>(tDefItr->second);
-      internal::generateUnionEquality(&asmb, program, unionDef);
-    }
-  }
+  // Generate equality functions for user types (structs and unions).
+  internal::generateUserTypeEquality(&asmb, program);
 
   // Generate function definitons.
   for (auto funcItr = program.beginFuncDefs(); funcItr != program.endFuncDefs(); ++funcItr) {

@@ -18,6 +18,10 @@ auto TypeDeclTable::begin() const -> Iterator { return m_types.begin(); }
 
 auto TypeDeclTable::end() const -> Iterator { return m_types.end(); }
 
+auto TypeDeclTable::exists(const TypeId& id) const -> bool {
+  return m_types.find(id) != m_types.end();
+}
+
 auto TypeDeclTable::exists(const std::string& name) const -> bool {
   return lookup(name).has_value();
 }

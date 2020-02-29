@@ -103,6 +103,7 @@ add_library(prog STATIC
   prog/expr/node_switch.cpp
   prog/expr/node_union_check.cpp
   prog/expr/node_union_get.cpp
+  prog/expr/node_visitor_deep.cpp
   prog/expr/node.cpp
   prog/expr/utilities.cpp
 
@@ -194,6 +195,21 @@ target_link_libraries(frontend PUBLIC prog)
 target_include_directories(frontend PUBLIC ${PROJECT_SOURCE_DIR}/include)
 target_include_directories(frontend PRIVATE frontend)
 
+# Opt (optimiser).
+add_library(opt STATIC
+  opt/internal/find_funcs.cpp
+  opt/internal/find_types.cpp
+  opt/treeshake.cpp)
+target_compile_features(opt PRIVATE cxx_std_17)
+if(MSVC)
+  target_compile_options(opt PRIVATE /EHsc)
+else()
+  target_compile_options(opt PRIVATE -fexceptions)
+endif()
+target_link_libraries(opt PUBLIC prog)
+target_include_directories(opt PUBLIC ${PROJECT_SOURCE_DIR}/include)
+target_include_directories(opt PRIVATE opt)
+
 # Backend (assembly generator).
 add_library(backend STATIC
   backend/internal/gen_expr.cpp
@@ -220,9 +236,9 @@ add_library(novasm STATIC
   novasm/pcall_code.cpp)
 target_compile_features(novasm PRIVATE cxx_std_17)
 if(MSVC)
-  target_compile_options(backend PRIVATE /EHsc)
+  target_compile_options(novasm PRIVATE /EHsc)
 else()
-  target_compile_options(backend PRIVATE -fexceptions)
+  target_compile_options(novasm PRIVATE -fexceptions)
 endif()
 target_include_directories(novasm PUBLIC ${PROJECT_SOURCE_DIR}/include)
 target_include_directories(novasm PRIVATE novasm)

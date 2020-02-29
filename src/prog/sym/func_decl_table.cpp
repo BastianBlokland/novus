@@ -20,6 +20,10 @@ auto FuncDeclTable::begin() const -> Iterator { return m_funcs.begin(); }
 
 auto FuncDeclTable::end() const -> Iterator { return m_funcs.end(); }
 
+auto FuncDeclTable::exists(const FuncId& id) const -> bool {
+  return m_funcs.find(id) != m_funcs.end();
+}
+
 auto FuncDeclTable::exists(const std::string& name) const -> bool {
   return m_lookup.find(name) != m_lookup.end();
 }

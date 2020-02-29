@@ -114,7 +114,7 @@ auto main(int argc, char** argv) -> int {
   app.require_subcommand(1);
 
   auto printOutput = true;
-  app.add_flag("!--skip-output", printOutput, "Skip printing the tokens")->capture_default_str();
+  app.add_flag("!--no-output", printOutput, "Skip printing the tokens")->capture_default_str();
 
   // Lex input characters.
   std::string charsInput;

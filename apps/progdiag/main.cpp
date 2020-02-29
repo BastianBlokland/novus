@@ -4,6 +4,7 @@
 #include "frontend/source.hpp"
 #include "get_expr_color.hpp"
 #include "input/char_escape.hpp"
+#include "opt/opt.hpp"
 #include "rang.hpp"
 #include <chrono>
 
@@ -238,7 +239,8 @@ auto run(
     const std::vector<filesystem::path>& searchPaths,
     InputItr inputBegin,
     const InputItr inputEnd,
-    const bool outputProgram) {
+    const bool outputProgram,
+    const bool treeshake) {
   const auto width = 80;
 
   // Analyze the input and time how long it takes.
@@ -268,7 +270,11 @@ auto run(
   }
 
   if (output.isSuccess() && outputProgram) {
-    printProgram(output.getProg());
+    if (treeshake) {
+      printProgram(opt::treeshake(output.getProg()));
+    } else {
+      printProgram(output.getProg());
+    }
     std::cout << rang::style::dim << std::string(width, '-') << '\n';
   }
   return output.isSuccess() ? 0 : 1;
@@ -305,14 +311,24 @@ auto main(int argc, char** argv) -> int {
   app.require_subcommand(1);
 
   auto printOutput = true;
-  app.add_flag("!--skip-output", printOutput, "Skip printing the program")->capture_default_str();
+  app.add_flag("!--no-output", printOutput, "Skip printing the program")->capture_default_str();
+
+  auto treeshake = true;
+  app.add_flag("!--no-treeshake", treeshake, "Do not remove unused types and functions")
+      ->capture_default_str();
 
   // Analyze input characters.
   std::string input;
   auto analyzeCmd =
       app.add_subcommand("analyze", "Analyze the provided characters")->callback([&]() {
         exitcode = progdiag::run(
-            "inline", std::nullopt, getSearchPaths(argv), input.begin(), input.end(), printOutput);
+            "inline",
+            std::nullopt,
+            getSearchPaths(argv),
+            input.begin(),
+            input.end(),
+            printOutput,
+            treeshake);
       });
   analyzeCmd->add_option("input", input, "Input characters to analyze")->required();
 
@@ -328,7 +344,8 @@ auto main(int argc, char** argv) -> int {
             getSearchPaths(argv),
             std::istreambuf_iterator<char>{fs},
             std::istreambuf_iterator<char>{},
-            printOutput);
+            printOutput,
+            treeshake);
       });
   analyzeFileCmd->add_option("file", filePath, "Path to file to analyze")
       ->check(CLI::ExistingFile)

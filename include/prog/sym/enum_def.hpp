@@ -26,6 +26,7 @@ public:
 
   [[nodiscard]] auto getId() const noexcept -> const TypeId&;
   [[nodiscard]] auto hasEntry(const std::string& name) const noexcept -> bool;
+  [[nodiscard]] auto getEntries() const noexcept -> const std::unordered_map<std::string, int32_t>&;
   [[nodiscard]] auto getValue(const std::string& name) const noexcept -> std::optional<int32_t>;
 
 private:

@@ -17,6 +17,8 @@ enum class TypeKind {
   Future,
 };
 
+[[nodiscard]] auto isPrimitive(const TypeKind& kind) -> bool;
+
 auto operator<<(std::ostream& out, const TypeKind& rhs) -> std::ostream&;
 
 } // namespace prog::sym

@@ -75,6 +75,8 @@ add_executable(tests
   lex/seperators_test.cpp
   lex/utilities_test.cpp
 
+  opt/treeshake_test.cpp
+
   parse/comment_test.cpp
   parse/error_test.cpp
   parse/expr_anon_func_test.cpp
@@ -129,6 +131,8 @@ target_link_libraries(tests PRIVATE lex)
 target_link_libraries(tests PRIVATE parse)
 target_link_libraries(tests PRIVATE frontend)
 target_link_libraries(tests PRIVATE backend)
+target_link_libraries(tests PRIVATE prog)
+target_link_libraries(tests PRIVATE opt)
 target_link_libraries(tests PRIVATE vm)
 
 # Register tests to CTest.
