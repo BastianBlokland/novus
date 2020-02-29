@@ -497,36 +497,36 @@ auto Program::defineUnion(sym::TypeId id, std::vector<sym::TypeId> types) -> voi
 }
 
 auto Program::defineEnum(sym::TypeId id, std::unordered_map<std::string, int32_t> entries) -> void {
+  using fk = typename sym::FuncKind;
+
   const auto& name = m_typeDecls[id].getName();
 
   // Register explicit conversion from int.
-  m_funcDecls.registerFunc(*this, sym::FuncKind::NoOp, name, sym::TypeSet{m_int}, id);
+  m_funcDecls.registerFunc(*this, fk::NoOp, name, sym::TypeSet{m_int}, id);
 
   // Register implicit conversion to int and long.
-  m_funcDecls.registerImplicitConv(*this, sym::FuncKind::NoOp, id, m_int);
-  m_funcDecls.registerImplicitConv(*this, sym::FuncKind::ConvIntLong, id, m_long);
+  m_funcDecls.registerImplicitConv(*this, fk::NoOp, id, m_int);
+  m_funcDecls.registerImplicitConv(*this, fk::ConvIntLong, id, m_long);
 
-  // Register < and > operators.
+  // Register ordering operators (<, <=, >, >=).
   m_funcDecls.registerFunc(
-      *this, sym::FuncKind::CheckLeInt, getFuncName(Operator::Le), sym::TypeSet{id, id}, m_bool);
+      *this, fk::CheckLeInt, getFuncName(Operator::Le), sym::TypeSet{id, id}, m_bool);
   m_funcDecls.registerFunc(
-      *this, sym::FuncKind::CheckGtInt, getFuncName(Operator::Gt), sym::TypeSet{id, id}, m_bool);
+      *this, fk::CheckLeEqInt, getFuncName(Operator::LeEq), sym::TypeSet{id, id}, m_bool);
+  m_funcDecls.registerFunc(
+      *this, fk::CheckGtInt, getFuncName(Operator::Gt), sym::TypeSet{id, id}, m_bool);
+  m_funcDecls.registerFunc(
+      *this, fk::CheckGtEqInt, getFuncName(Operator::GtEq), sym::TypeSet{id, id}, m_bool);
 
   // Register bitwise & and | operators.
-  m_funcDecls.registerFunc(
-      *this, sym::FuncKind::OrInt, getFuncName(Operator::Pipe), sym::TypeSet{id, id}, id);
-  m_funcDecls.registerFunc(
-      *this, sym::FuncKind::AndInt, getFuncName(Operator::Amp), sym::TypeSet{id, id}, id);
+  m_funcDecls.registerFunc(*this, fk::OrInt, getFuncName(Operator::Pipe), sym::TypeSet{id, id}, id);
+  m_funcDecls.registerFunc(*this, fk::AndInt, getFuncName(Operator::Amp), sym::TypeSet{id, id}, id);
 
   // Register (in)equality functions.
   m_funcDecls.registerFunc(
-      *this, sym::FuncKind::CheckEqInt, getFuncName(Operator::EqEq), sym::TypeSet{id, id}, m_bool);
+      *this, fk::CheckEqInt, getFuncName(Operator::EqEq), sym::TypeSet{id, id}, m_bool);
   m_funcDecls.registerFunc(
-      *this,
-      sym::FuncKind::CheckNEqInt,
-      getFuncName(Operator::BangEq),
-      sym::TypeSet{id, id},
-      m_bool);
+      *this, fk::CheckNEqInt, getFuncName(Operator::BangEq), sym::TypeSet{id, id}, m_bool);
 
   // Register enum definition.
   m_typeDefs.registerEnum(m_typeDecls, id, std::move(entries));
