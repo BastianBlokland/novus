@@ -3,13 +3,13 @@
 
 namespace lex {
 
-using vecItr      = std::vector<Token>::iterator;
-using vecConstItr = std::vector<Token>::const_iterator;
-using optTok      = std::optional<Token>;
+using VecItr      = std::vector<Token>::iterator;
+using VecConstItr = std::vector<Token>::const_iterator;
+using OptTok      = std::optional<Token>;
 
 // Explicit instantiations.
-template auto findToken<vecItr>(vecItr begin, vecItr end, unsigned int pos) -> optTok;
-template auto findToken<vecConstItr>(vecConstItr begin, vecConstItr end, unsigned int pos)
-    -> optTok;
+template auto findToken<VecItr>(VecItr begin, VecItr end, unsigned int pos) -> OptTok;
+template auto findToken<VecConstItr>(VecConstItr begin, VecConstItr end, unsigned int pos)
+    -> OptTok;
 
 } // namespace lex

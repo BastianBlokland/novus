@@ -29,6 +29,7 @@ target_include_directories(eval PRIVATE ${rang_SOURCE_DIR}/include)
 target_link_libraries(eval PRIVATE frontend)
 target_link_libraries(eval PRIVATE backend)
 target_link_libraries(eval PRIVATE vm)
+target_link_libraries(eval PRIVATE opt)
 
 # Lexer diagnostic tool.
 add_executable(lexdiag lexdiag/main.cpp)
@@ -65,6 +66,7 @@ endif()
 target_link_libraries(progdiag PRIVATE CLI11::CLI11)
 target_include_directories(progdiag PRIVATE ${rang_SOURCE_DIR}/include)
 target_link_libraries(progdiag PRIVATE frontend)
+target_link_libraries(progdiag PRIVATE opt)
 
 # Assembly diagnostic tool.
 add_executable(asmdiag asmdiag/main.cpp)
@@ -79,3 +81,4 @@ target_include_directories(asmdiag PRIVATE ${rang_SOURCE_DIR}/include)
 target_link_libraries(asmdiag PRIVATE frontend)
 target_link_libraries(asmdiag PRIVATE backend)
 target_link_libraries(asmdiag PRIVATE novasm)
+target_link_libraries(asmdiag PRIVATE opt)

@@ -10,7 +10,7 @@ namespace prog::sym {
 
 class FuncDefTable final {
 public:
-  using iterator = typename std::unordered_map<FuncId, FuncDef, FuncIdHasher>::const_iterator;
+  using Iterator = typename std::unordered_map<FuncId, FuncDef, FuncIdHasher>::const_iterator;
 
   FuncDefTable()                            = default;
   FuncDefTable(const FuncDefTable& rhs)     = delete;
@@ -22,8 +22,8 @@ public:
 
   [[nodiscard]] auto operator[](sym::FuncId id) const -> const FuncDef&;
 
-  [[nodiscard]] auto begin() const -> iterator;
-  [[nodiscard]] auto end() const -> iterator;
+  [[nodiscard]] auto begin() const -> Iterator;
+  [[nodiscard]] auto end() const -> Iterator;
 
   auto registerFunc(
       const sym::FuncDeclTable& funcTable,

@@ -10,7 +10,7 @@ class TypeSet final {
   friend auto operator<<(std::ostream& out, const TypeSet& rhs) -> std::ostream&;
 
 public:
-  using iterator = typename std::vector<TypeId>::const_iterator;
+  using Iterator = typename std::vector<TypeId>::const_iterator;
 
   TypeSet() = default;
   TypeSet(std::initializer_list<TypeId> list);
@@ -23,8 +23,8 @@ public:
 
   [[nodiscard]] auto getCount() const -> unsigned int;
 
-  [[nodiscard]] auto begin() const -> iterator;
-  [[nodiscard]] auto end() const -> iterator;
+  [[nodiscard]] auto begin() const -> Iterator;
+  [[nodiscard]] auto end() const -> Iterator;
 
   [[nodiscard]] auto withExtraType(TypeId type) -> TypeSet;
 

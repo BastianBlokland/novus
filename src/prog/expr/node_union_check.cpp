@@ -34,6 +34,11 @@ auto UnionCheckExprNode::toString() const -> std::string {
   return oss.str();
 }
 
+auto UnionCheckExprNode::clone() const -> std::unique_ptr<Node> {
+  return std::unique_ptr<UnionCheckExprNode>{
+      new UnionCheckExprNode{m_boolType, m_lhs->clone(), m_targetType}};
+}
+
 auto UnionCheckExprNode::getTargetType() const noexcept -> sym::TypeId { return m_targetType; }
 
 auto UnionCheckExprNode::accept(NodeVisitor* visitor) const -> void { visitor->visit(*this); }

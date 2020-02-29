@@ -36,6 +36,11 @@ auto UnionGetExprNode::toString() const -> std::string {
   return oss.str();
 }
 
+auto UnionGetExprNode::clone() const -> std::unique_ptr<Node> {
+  return std::unique_ptr<UnionGetExprNode>{
+      new UnionGetExprNode{m_boolType, m_lhs->clone(), m_targetType, m_constId}};
+}
+
 auto UnionGetExprNode::getConst() const noexcept -> sym::ConstId { return m_constId; }
 
 auto UnionGetExprNode::getTargetType() const noexcept -> sym::TypeId { return m_targetType; }

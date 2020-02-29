@@ -24,6 +24,10 @@ auto LitBoolNode::getType() const noexcept -> sym::TypeId { return m_type; }
 
 auto LitBoolNode::toString() const -> std::string { return m_val ? "true" : "false"; }
 
+auto LitBoolNode::clone() const -> std::unique_ptr<Node> {
+  return std::unique_ptr<LitBoolNode>{new LitBoolNode{m_type, m_val}};
+}
+
 auto LitBoolNode::getVal() const noexcept -> bool { return m_val; }
 
 auto LitBoolNode::accept(NodeVisitor* visitor) const -> void { visitor->visit(*this); }

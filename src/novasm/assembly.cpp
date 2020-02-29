@@ -21,11 +21,11 @@ auto Assembly::operator!=(const Assembly& rhs) const noexcept -> bool {
   return !Assembly::operator==(rhs);
 }
 
-auto Assembly::beginLitStrings() const noexcept -> litStringIterator {
+auto Assembly::beginLitStrings() const noexcept -> LitStringIterator {
   return m_litStrings.begin();
 }
 
-auto Assembly::endLitStrings() const noexcept -> litStringIterator { return m_litStrings.end(); }
+auto Assembly::endLitStrings() const noexcept -> LitStringIterator { return m_litStrings.end(); }
 
 auto Assembly::getEntrypoint() const noexcept -> uint32_t { return m_entrypoint; }
 

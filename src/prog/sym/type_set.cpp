@@ -20,9 +20,9 @@ auto TypeSet::operator!=(const TypeSet& rhs) const noexcept -> bool {
 
 auto TypeSet::getCount() const -> unsigned int { return m_val.size(); }
 
-auto TypeSet::begin() const -> iterator { return m_val.begin(); }
+auto TypeSet::begin() const -> Iterator { return m_val.begin(); }
 
-auto TypeSet::end() const -> iterator { return m_val.end(); }
+auto TypeSet::end() const -> Iterator { return m_val.end(); }
 
 auto TypeSet::withExtraType(TypeId type) -> TypeSet {
   auto types = m_val;

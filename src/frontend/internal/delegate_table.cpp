@@ -15,7 +15,7 @@ static auto getDelegateName(
   return result;
 }
 
-auto DelegateTable::Hasher::operator()(const signature& id) const -> std::size_t {
+auto DelegateTable::Hasher::operator()(const Signature& id) const -> std::size_t {
   std::size_t result = id.first.getCount();
   for (auto& i : id.first) {
     result ^= i.getNum() + 0x9e3779b9 + (result << 6U) + (result >> 2U); // NOLINT: Magic numbers

@@ -24,6 +24,10 @@ auto LitLongNode::getType() const noexcept -> sym::TypeId { return m_type; }
 
 auto LitLongNode::toString() const -> std::string { return std::to_string(m_val); }
 
+auto LitLongNode::clone() const -> std::unique_ptr<Node> {
+  return std::unique_ptr<LitLongNode>{new LitLongNode{m_type, m_val}};
+}
+
 auto LitLongNode::getVal() const noexcept -> int64_t { return m_val; }
 
 auto LitLongNode::accept(NodeVisitor* visitor) const -> void { visitor->visit(*this); }

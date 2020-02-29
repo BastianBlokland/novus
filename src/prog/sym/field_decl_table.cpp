@@ -12,9 +12,9 @@ auto FieldDeclTable::operator[](FieldId id) const -> const FieldDecl& {
 
 auto FieldDeclTable::getCount() const -> unsigned int { return m_fields.size(); }
 
-auto FieldDeclTable::begin() const -> iterator { return m_fields.begin(); }
+auto FieldDeclTable::begin() const -> Iterator { return m_fields.begin(); }
 
-auto FieldDeclTable::end() const -> iterator { return m_fields.end(); }
+auto FieldDeclTable::end() const -> Iterator { return m_fields.end(); }
 
 auto FieldDeclTable::lookup(const std::string& name) const -> std::optional<FieldId> {
   const auto itr = m_lookup.find(name);

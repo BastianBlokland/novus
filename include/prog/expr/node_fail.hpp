@@ -18,6 +18,8 @@ public:
   [[nodiscard]] auto getType() const noexcept -> sym::TypeId override;
   [[nodiscard]] auto toString() const -> std::string override;
 
+  [[nodiscard]] auto clone() const -> std::unique_ptr<Node> override;
+
   auto accept(NodeVisitor* visitor) const -> void override;
 
 private:

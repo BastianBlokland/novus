@@ -2,6 +2,25 @@
 
 namespace prog::sym {
 
+auto isPrimitive(const TypeKind& kind) -> bool {
+  switch (kind) {
+  case TypeKind::Bool:
+  case TypeKind::Int:
+  case TypeKind::Long:
+  case TypeKind::Float:
+  case TypeKind::String:
+  case TypeKind::Char:
+    return true;
+  case TypeKind::Struct:
+  case TypeKind::Union:
+  case TypeKind::Enum:
+  case TypeKind::Delegate:
+  case TypeKind::Future:
+    return false;
+  }
+  throw std::invalid_argument{"Unknown type-kind"};
+}
+
 auto operator<<(std::ostream& out, const TypeKind& rhs) -> std::ostream& {
   switch (rhs) {
   case TypeKind::Bool:

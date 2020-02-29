@@ -10,7 +10,7 @@ Context::Context(
     FuncTemplateTable* funcTemplates,
     DelegateTable* delegates,
     FutureTable* futures,
-    typeInfoMap* typeInfos,
+    TypeInfoMap* typeInfos,
     std::vector<Diag>* diags) :
     m_src{src},
     m_prog{prog},

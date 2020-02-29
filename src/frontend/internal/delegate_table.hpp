@@ -8,11 +8,11 @@ namespace frontend::internal {
 class Context;
 
 class DelegateTable final {
-  using signature = typename std::pair<prog::sym::TypeSet, prog::sym::TypeId>;
+  using Signature = typename std::pair<prog::sym::TypeSet, prog::sym::TypeId>;
 
   class Hasher final {
   public:
-    auto operator()(const signature& id) const -> std::size_t;
+    auto operator()(const Signature& id) const -> std::size_t;
   };
 
 public:
@@ -33,7 +33,7 @@ public:
 
 private:
   // For each delegate we keep both a function and an action version.
-  std::unordered_map<signature, std::pair<prog::sym::TypeId, prog::sym::TypeId>, Hasher>
+  std::unordered_map<Signature, std::pair<prog::sym::TypeId, prog::sym::TypeId>, Hasher>
       m_delegates;
 };
 

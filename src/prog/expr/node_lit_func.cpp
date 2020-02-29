@@ -30,6 +30,10 @@ auto LitFuncNode::toString() const -> std::string {
   return oss.str();
 }
 
+auto LitFuncNode::clone() const -> std::unique_ptr<Node> {
+  return std::unique_ptr<LitFuncNode>{new LitFuncNode{m_type, m_func}};
+}
+
 auto LitFuncNode::getFunc() const noexcept -> sym::FuncId { return m_func; }
 
 auto LitFuncNode::accept(NodeVisitor* visitor) const -> void { visitor->visit(*this); }

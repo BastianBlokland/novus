@@ -18,8 +18,8 @@ class Source final {
   friend auto operator<<(std::ostream& out, const Source& rhs) -> std::ostream&;
 
 public:
-  using path     = typename filesystem::path;
-  using iterator = typename std::vector<parse::NodePtr>::const_iterator;
+  using Path     = typename filesystem::path;
+  using Iterator = typename std::vector<parse::NodePtr>::const_iterator;
 
   Source()                      = delete;
   Source(const Source& rhs)     = delete;
@@ -29,11 +29,11 @@ public:
   auto operator=(const Source& rhs) -> Source& = delete;
   auto operator=(Source&& rhs) noexcept -> Source& = default;
 
-  [[nodiscard]] auto begin() const noexcept -> iterator;
-  [[nodiscard]] auto end() const noexcept -> iterator;
+  [[nodiscard]] auto begin() const noexcept -> Iterator;
+  [[nodiscard]] auto end() const noexcept -> Iterator;
 
   [[nodiscard]] auto getId() const noexcept -> const std::string&;
-  [[nodiscard]] auto getPath() const noexcept -> const std::optional<path>&;
+  [[nodiscard]] auto getPath() const noexcept -> const std::optional<Path>&;
   [[nodiscard]] auto getCharCount() const noexcept -> unsigned int;
   [[nodiscard]] auto getTextPos(unsigned int pos) const noexcept -> input::TextPos;
 
@@ -41,13 +41,13 @@ public:
 
 private:
   std::string m_id;
-  std::optional<path> m_path;
+  std::optional<Path> m_path;
   std::vector<parse::NodePtr> m_nodes;
   input::Info m_info;
 
   Source(
       std::string id,
-      std::optional<path> path,
+      std::optional<Path> path,
       std::vector<parse::NodePtr> nodes,
       input::Info info);
 };

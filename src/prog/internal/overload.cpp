@@ -7,11 +7,11 @@ template <typename DeclTable>
 auto findOverload(
     const Program& prog,
     const DeclTable& declTable,
-    const std::vector<typename DeclTable::id>& overloads,
+    const std::vector<typename DeclTable::Id>& overloads,
     const sym::TypeSet& input,
-    prog::sym::OverloadOptions options) -> std::optional<typename DeclTable::id> {
+    prog::sym::OverloadOptions options) -> std::optional<typename DeclTable::Id> {
 
-  std::optional<typename DeclTable::id> result = std::nullopt;
+  std::optional<typename DeclTable::Id> result = std::nullopt;
   auto resultConvAmount                        = std::numeric_limits<int>::max();
 
   for (const auto& overload : overloads) {
@@ -65,7 +65,7 @@ auto findOverload(
 }
 
 // Explicit instantiations.
-template std::optional<sym::FuncDeclTable::id> findOverload(
+template std::optional<sym::FuncDeclTable::Id> findOverload(
     const Program& prog,
     const sym::FuncDeclTable& declTable,
     const std::vector<sym::FuncId>& overloads,

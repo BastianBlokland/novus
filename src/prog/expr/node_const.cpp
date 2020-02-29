@@ -28,6 +28,10 @@ auto ConstExprNode::toString() const -> std::string {
   return oss.str();
 }
 
+auto ConstExprNode::clone() const -> std::unique_ptr<Node> {
+  return std::unique_ptr<ConstExprNode>{new ConstExprNode{m_id, m_type}};
+}
+
 auto ConstExprNode::getId() const noexcept -> sym::ConstId { return m_id; }
 
 auto ConstExprNode::accept(NodeVisitor* visitor) const -> void { visitor->visit(*this); }

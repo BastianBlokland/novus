@@ -9,10 +9,10 @@ namespace prog::sym {
 
 class ConstDeclTable final {
 public:
-  using iterator = typename std::vector<ConstDecl>::const_iterator;
+  using Iterator = typename std::vector<ConstDecl>::const_iterator;
 
   ConstDeclTable()                              = default;
-  ConstDeclTable(const ConstDeclTable& rhs)     = delete;
+  ConstDeclTable(const ConstDeclTable& rhs)     = default;
   ConstDeclTable(ConstDeclTable&& rhs) noexcept = default;
   ~ConstDeclTable()                             = default;
 
@@ -24,10 +24,10 @@ public:
   [[nodiscard]] auto getCount() const -> unsigned int;
   [[nodiscard]] auto getLocalCount() const -> unsigned int;
 
-  [[nodiscard]] auto begin() const -> iterator;
-  [[nodiscard]] auto begin(ConstKind kind) const -> iterator;
-  [[nodiscard]] auto end() const -> iterator;
-  [[nodiscard]] auto end(ConstKind kind) const -> iterator;
+  [[nodiscard]] auto begin() const -> Iterator;
+  [[nodiscard]] auto begin(ConstKind kind) const -> Iterator;
+  [[nodiscard]] auto end() const -> Iterator;
+  [[nodiscard]] auto end(ConstKind kind) const -> Iterator;
 
   [[nodiscard]] auto getAll() const -> std::vector<ConstId>;
   [[nodiscard]] auto getInputs() const -> std::vector<ConstId>;

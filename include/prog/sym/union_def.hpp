@@ -10,7 +10,7 @@ class UnionDef final {
 
 public:
   UnionDef()                        = delete;
-  UnionDef(const UnionDef& rhs)     = delete;
+  UnionDef(const UnionDef& rhs)     = default;
   UnionDef(UnionDef&& rhs) noexcept = default;
   ~UnionDef()                       = default;
 

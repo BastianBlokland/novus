@@ -18,18 +18,28 @@ namespace internal {
 [[nodiscard]] auto getTypeDeclTable(const Program& prog) -> const sym::TypeDeclTable&;
 [[nodiscard]] auto getFuncDeclTable(const Program& prog) -> const sym::FuncDeclTable&;
 
+[[nodiscard]] auto getTypeDeclTable(Program* prog) -> sym::TypeDeclTable&;
+[[nodiscard]] auto getFuncDeclTable(Program* prog) -> sym::FuncDeclTable&;
+
+[[nodiscard]] auto getTypeDefTable(Program* prog) -> sym::TypeDefTable&;
+[[nodiscard]] auto getFuncDefTable(Program* prog) -> sym::FuncDefTable&;
+
 } // namespace internal
 
 class Program final {
   friend auto internal::getTypeDeclTable(const Program& prog) -> const sym::TypeDeclTable&;
   friend auto internal::getFuncDeclTable(const Program& prog) -> const sym::FuncDeclTable&;
+  friend auto internal::getTypeDeclTable(Program* prog) -> sym::TypeDeclTable&;
+  friend auto internal::getFuncDeclTable(Program* prog) -> sym::FuncDeclTable&;
+  friend auto internal::getTypeDefTable(Program* prog) -> sym::TypeDefTable&;
+  friend auto internal::getFuncDefTable(Program* prog) -> sym::FuncDefTable&;
 
 public:
-  using typeDeclIterator = typename sym::TypeDeclTable::iterator;
-  using funcDeclIterator = typename sym::FuncDeclTable::iterator;
-  using typeDefIterator  = typename sym::TypeDefTable::iterator;
-  using funcDefIterator  = typename sym::FuncDefTable::iterator;
-  using execStmtIterator = typename std::vector<sym::ExecStmt>::const_iterator;
+  using TypeDeclIterator = typename sym::TypeDeclTable::Iterator;
+  using FuncDeclIterator = typename sym::FuncDeclTable::Iterator;
+  using TypeDefIterator  = typename sym::TypeDefTable::Iterator;
+  using FuncDefIterator  = typename sym::FuncDefTable::Iterator;
+  using ExecStmtIterator = typename std::vector<sym::ExecStmt>::const_iterator;
 
   Program();
   Program(const Program& rhs)     = delete;
@@ -39,21 +49,21 @@ public:
   auto operator=(const Program& rhs) -> Program& = delete;
   auto operator=(Program&& rhs) noexcept -> Program& = delete;
 
-  [[nodiscard]] auto beginTypeDecls() const -> typeDeclIterator;
-  [[nodiscard]] auto endTypeDecls() const -> typeDeclIterator;
+  [[nodiscard]] auto beginTypeDecls() const -> TypeDeclIterator;
+  [[nodiscard]] auto endTypeDecls() const -> TypeDeclIterator;
 
   [[nodiscard]] auto getFuncCount() const -> unsigned int;
-  [[nodiscard]] auto beginFuncDecls() const -> funcDeclIterator;
-  [[nodiscard]] auto endFuncDecls() const -> funcDeclIterator;
+  [[nodiscard]] auto beginFuncDecls() const -> FuncDeclIterator;
+  [[nodiscard]] auto endFuncDecls() const -> FuncDeclIterator;
 
-  [[nodiscard]] auto beginTypeDefs() const -> typeDefIterator;
-  [[nodiscard]] auto endTypeDefs() const -> typeDefIterator;
+  [[nodiscard]] auto beginTypeDefs() const -> TypeDefIterator;
+  [[nodiscard]] auto endTypeDefs() const -> TypeDefIterator;
 
-  [[nodiscard]] auto beginFuncDefs() const -> funcDefIterator;
-  [[nodiscard]] auto endFuncDefs() const -> funcDefIterator;
+  [[nodiscard]] auto beginFuncDefs() const -> FuncDefIterator;
+  [[nodiscard]] auto endFuncDefs() const -> FuncDefIterator;
 
-  [[nodiscard]] auto beginExecStmts() const -> execStmtIterator;
-  [[nodiscard]] auto endExecStmts() const -> execStmtIterator;
+  [[nodiscard]] auto beginExecStmts() const -> ExecStmtIterator;
+  [[nodiscard]] auto endExecStmts() const -> ExecStmtIterator;
 
   [[nodiscard]] auto getInt() const noexcept -> sym::TypeId;
   [[nodiscard]] auto getLong() const noexcept -> sym::TypeId;
@@ -101,7 +111,7 @@ public:
   [[nodiscard]] auto getFuncDecl(sym::FuncId id) const -> const sym::FuncDecl&;
 
   [[nodiscard]] auto hasTypeDef(sym::TypeId id) const -> bool;
-  [[nodiscard]] auto getTypeDef(sym::TypeId id) const -> const sym::TypeDefTable::typeDef&;
+  [[nodiscard]] auto getTypeDef(sym::TypeId id) const -> const sym::TypeDefTable::TypeDef&;
   [[nodiscard]] auto getFuncDef(sym::FuncId id) const -> const sym::FuncDef&;
 
   auto declareStruct(std::string name) -> sym::TypeId;

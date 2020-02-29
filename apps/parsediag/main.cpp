@@ -8,10 +8,10 @@
 
 namespace parsediag {
 
-using high_resolution_clock = std::chrono::high_resolution_clock;
-using duration              = std::chrono::duration<double>;
+using Clock    = std::chrono::high_resolution_clock;
+using Duration = std::chrono::duration<double>;
 
-auto operator<<(std::ostream& out, const duration& rhs) -> std::ostream&;
+auto operator<<(std::ostream& out, const Duration& rhs) -> std::ostream&;
 
 auto printNode(
     const parse::Node& n,
@@ -24,12 +24,10 @@ auto printNode(
   const static auto vert   = " │ ";
   const static auto indent = "   ";
 
-  using s  = rang::style;
-  using fg = rang::style;
-  using bg = rang::style;
+  using S = rang::style;
 
   // Print prefix.
-  std::cout << s::dim << prefix;
+  std::cout << S::dim << prefix;
   if (isLastSibling) {
     std::cout << corner;
     prefix += indent;
@@ -37,7 +35,7 @@ auto printNode(
     std::cout << cross;
     prefix += vert;
   }
-  std::cout << s::reset;
+  std::cout << S::reset;
 
   auto nodeCol = GetExprColor{};
   n.accept(&nodeCol);
@@ -45,9 +43,9 @@ auto printNode(
   // Print node.
   auto span  = n.getSpan();
   auto start = inputInfo.getTextPos(span.getStart());
-  std::cout << s::bold << nodeCol.getFgColor() << nodeCol.getBgColor() << n << fg::reset
-            << bg::reset << s::reset << s::dim << s::italic << " " << start << '\n'
-            << s::reset;
+  std::cout << S::bold << nodeCol.getFgColor() << nodeCol.getBgColor() << n << S::reset << S::reset
+            << S::dim << S::italic << " " << start << '\n'
+            << S::reset;
 
   const auto childCount = n.getChildCount();
   for (auto i = 0U; i < childCount; ++i) {
@@ -60,12 +58,12 @@ auto run(InputItr inputBegin, const InputItr inputEnd, const bool outputNodes) {
   const auto width = 80;
 
   // Parse the input and time how long it takes.
-  const auto t1       = high_resolution_clock::now();
+  const auto t1       = Clock::now();
   auto inputInfo      = input::Info{};
   auto lexer          = lex::Lexer{input::InfoItr{inputBegin, &inputInfo}, inputEnd};
   const auto nodes    = parse::parseAll(lexer.begin(), lexer.end());
-  const auto t2       = high_resolution_clock::now();
-  const auto parseDur = std::chrono::duration_cast<duration>(t2 - t1);
+  const auto t2       = Clock::now();
+  const auto parseDur = std::chrono::duration_cast<Duration>(t2 - t1);
 
   std::cout << rang::style::dim << rang::style::italic << std::string(width, '-') << '\n'
             << "Parsed " << nodes.size() << " nodes from " << inputInfo.getCharCount()
@@ -82,7 +80,7 @@ auto run(InputItr inputBegin, const InputItr inputEnd, const bool outputNodes) {
   }
 }
 
-auto operator<<(std::ostream& out, const duration& rhs) -> std::ostream& {
+auto operator<<(std::ostream& out, const Duration& rhs) -> std::ostream& {
   auto s = rhs.count();
   if (s < .000001) {                // NOLINT: Magic numbers
     out << s * 1000000000 << " ns"; // NOLINT: Magic numbers
@@ -103,7 +101,7 @@ auto main(int argc, char** argv) -> int {
   app.require_subcommand(1);
 
   auto printOutput = true;
-  app.add_flag("!--skip-output", printOutput, "Skip printing the nodes")->capture_default_str();
+  app.add_flag("!--no-output", printOutput, "Skip printing the nodes")->capture_default_str();
 
   // Parse input characters.
   std::string charsInput;

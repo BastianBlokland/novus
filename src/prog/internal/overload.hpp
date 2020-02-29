@@ -15,9 +15,9 @@ template <typename DeclTable>
 auto findOverload(
     const Program& prog,
     const DeclTable& declTable,
-    const std::vector<typename DeclTable::id>& overloads,
+    const std::vector<typename DeclTable::Id>& overloads,
     const sym::TypeSet& input,
-    sym::OverloadOptions options) -> std::optional<typename DeclTable::id>;
+    sym::OverloadOptions options) -> std::optional<typename DeclTable::Id>;
 
 } // namespace internal
 

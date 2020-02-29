@@ -35,6 +35,10 @@ auto ClosureNode::toString() const -> std::string {
   return oss.str();
 }
 
+auto ClosureNode::clone() const -> std::unique_ptr<Node> {
+  return std::unique_ptr<ClosureNode>{new ClosureNode{m_type, m_func, cloneNodes(m_boundArgs)}};
+}
+
 auto ClosureNode::getFunc() const noexcept -> sym::FuncId { return m_func; }
 
 auto ClosureNode::accept(NodeVisitor* visitor) const -> void { visitor->visit(*this); }

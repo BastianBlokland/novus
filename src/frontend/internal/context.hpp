@@ -13,7 +13,7 @@
 namespace frontend::internal {
 
 class Context final {
-  using typeInfoMap = std::unordered_map<prog::sym::TypeId, TypeInfo, prog::sym::TypeIdHasher>;
+  using TypeInfoMap = std::unordered_map<prog::sym::TypeId, TypeInfo, prog::sym::TypeIdHasher>;
 
 public:
   Context() = delete;
@@ -24,7 +24,7 @@ public:
       FuncTemplateTable* funcTemplates,
       DelegateTable* delegates,
       FutureTable* futures,
-      typeInfoMap* typeInfos,
+      TypeInfoMap* typeInfos,
       std::vector<Diag>* diags);
 
   [[nodiscard]] auto hasErrors() const noexcept -> bool;
@@ -53,7 +53,7 @@ private:
   FuncTemplateTable* m_funcTemplates;
   DelegateTable* m_delegates;
   FutureTable* m_futures;
-  typeInfoMap* m_typeInfos;
+  TypeInfoMap* m_typeInfos;
   std::vector<Diag>* m_diags;
 };
 

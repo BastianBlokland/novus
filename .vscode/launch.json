@@ -21,7 +21,7 @@
       "request": "launch",
       "program": "${workspaceFolder}/bin/lexdiag",
       "args": [
-        "lex",
+        "analyze",
         "conWrite(string(x + 42 * y))"
       ],
       "cwd": "${workspaceFolder}",
@@ -35,7 +35,7 @@
       "request": "launch",
       "program": "${workspaceFolder}/bin/parsediag",
       "args": [
-        "parse",
+        "analyze",
         "conWrite(string(x + 42 * y))"
       ],
       "cwd": "${workspaceFolder}",
@@ -63,7 +63,7 @@
       "request": "launch",
       "program": "${workspaceFolder}/bin/asmdiag",
       "args": [
-        "gen",
+        "analyze",
         "fun add(int a, int b) -> int a + b conWrite(string(add(1, 2) == 3))"
       ],
       "cwd": "${workspaceFolder}",

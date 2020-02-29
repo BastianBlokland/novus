@@ -13,8 +13,8 @@ namespace prog::sym {
 
 class TypeDefTable final {
 public:
-  using typeDef  = typename std::variant<StructDef, UnionDef, EnumDef, DelegateDef, FutureDef>;
-  using iterator = typename std::unordered_map<TypeId, typeDef, TypeIdHasher>::const_iterator;
+  using TypeDef  = typename std::variant<StructDef, UnionDef, EnumDef, DelegateDef, FutureDef>;
+  using Iterator = typename std::unordered_map<TypeId, TypeDef, TypeIdHasher>::const_iterator;
 
   TypeDefTable()                            = default;
   TypeDefTable(const TypeDefTable& rhs)     = delete;
@@ -24,12 +24,12 @@ public:
   auto operator=(const TypeDefTable& rhs) -> TypeDefTable& = delete;
   auto operator=(TypeDefTable&& rhs) noexcept -> TypeDefTable& = delete;
 
-  [[nodiscard]] auto operator[](sym::TypeId id) const -> const typeDef&;
+  [[nodiscard]] auto operator[](sym::TypeId id) const -> const TypeDef&;
 
   [[nodiscard]] auto hasDef(sym::TypeId id) const -> bool;
 
-  [[nodiscard]] auto begin() const -> iterator;
-  [[nodiscard]] auto end() const -> iterator;
+  [[nodiscard]] auto begin() const -> Iterator;
+  [[nodiscard]] auto end() const -> Iterator;
 
   auto
   registerStruct(const sym::TypeDeclTable& typeTable, sym::TypeId id, sym::FieldDeclTable fields)
@@ -53,8 +53,10 @@ public:
 
   auto registerFuture(const sym::TypeDeclTable& typeTable, sym::TypeId id, TypeId result) -> void;
 
+  auto registerType(sym::TypeId id, TypeDef def) -> void;
+
 private:
-  std::unordered_map<TypeId, typeDef, TypeIdHasher> m_types;
+  std::unordered_map<TypeId, TypeDef, TypeIdHasher> m_types;
 };
 
 } // namespace prog::sym

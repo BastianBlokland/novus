@@ -24,6 +24,10 @@ auto LitFloatNode::getType() const noexcept -> sym::TypeId { return m_type; }
 
 auto LitFloatNode::toString() const -> std::string { return std::to_string(m_val); }
 
+auto LitFloatNode::clone() const -> std::unique_ptr<Node> {
+  return std::unique_ptr<LitFloatNode>{new LitFloatNode{m_type, m_val}};
+}
+
 auto LitFloatNode::getVal() const noexcept -> float { return m_val; }
 
 auto LitFloatNode::accept(NodeVisitor* visitor) const -> void { visitor->visit(*this); }

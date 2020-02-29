@@ -35,6 +35,11 @@ auto CallDynExprNode::getType() const noexcept -> sym::TypeId { return m_resultT
 
 auto CallDynExprNode::toString() const -> std::string { return "call-dyn"; }
 
+auto CallDynExprNode::clone() const -> std::unique_ptr<Node> {
+  return std::unique_ptr<CallDynExprNode>{
+      new CallDynExprNode{m_lhs->clone(), m_resultType, cloneNodes(m_args), m_fork}};
+}
+
 auto CallDynExprNode::isFork() const noexcept -> bool { return m_fork; }
 
 auto CallDynExprNode::accept(NodeVisitor* visitor) const -> void { visitor->visit(*this); }
