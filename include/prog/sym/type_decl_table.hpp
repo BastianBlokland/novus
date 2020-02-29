@@ -9,7 +9,7 @@ namespace prog::sym {
 
 class TypeDeclTable final {
 public:
-  using iterator = typename std::map<TypeId, TypeDecl>::const_iterator;
+  using Iterator = typename std::map<TypeId, TypeDecl>::const_iterator;
 
   TypeDeclTable()                             = default;
   TypeDeclTable(const TypeDeclTable& rhs)     = delete;
@@ -21,8 +21,8 @@ public:
 
   [[nodiscard]] auto operator[](TypeId id) const -> const TypeDecl&;
 
-  [[nodiscard]] auto begin() const -> iterator;
-  [[nodiscard]] auto end() const -> iterator;
+  [[nodiscard]] auto begin() const -> Iterator;
+  [[nodiscard]] auto end() const -> Iterator;
 
   [[nodiscard]] auto exists(const std::string& name) const -> bool;
   [[nodiscard]] auto lookup(const std::string& name) const -> std::optional<TypeId>;

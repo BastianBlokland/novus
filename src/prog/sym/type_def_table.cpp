@@ -3,7 +3,7 @@
 
 namespace prog::sym {
 
-auto TypeDefTable::operator[](sym::TypeId id) const -> const typeDef& {
+auto TypeDefTable::operator[](sym::TypeId id) const -> const TypeDef& {
   auto itr = m_types.find(id);
   if (itr == m_types.end()) {
     throw std::invalid_argument{"No definition has been registered for given type-id"};
@@ -15,9 +15,9 @@ auto TypeDefTable::hasDef(sym::TypeId id) const -> bool {
   return m_types.find(id) != m_types.end();
 }
 
-auto TypeDefTable::begin() const -> iterator { return m_types.begin(); }
+auto TypeDefTable::begin() const -> Iterator { return m_types.begin(); }
 
-auto TypeDefTable::end() const -> iterator { return m_types.end(); }
+auto TypeDefTable::end() const -> Iterator { return m_types.end(); }
 
 auto TypeDefTable::registerStruct(
     const sym::TypeDeclTable& typeTable, sym::TypeId id, sym::FieldDeclTable fields) -> void {

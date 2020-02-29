@@ -9,7 +9,7 @@ class TypeParamList final {
   friend auto operator<<(std::ostream& out, const TypeParamList& rhs) -> std::ostream&;
 
 public:
-  using iterator = typename std::vector<Type>::const_iterator;
+  using Iterator = typename std::vector<Type>::const_iterator;
 
   TypeParamList() = delete;
   TypeParamList(
@@ -22,8 +22,8 @@ public:
 
   [[nodiscard]] auto getCount() const -> unsigned int;
 
-  [[nodiscard]] auto begin() const -> iterator;
-  [[nodiscard]] auto end() const -> iterator;
+  [[nodiscard]] auto begin() const -> Iterator;
+  [[nodiscard]] auto end() const -> Iterator;
 
   [[nodiscard]] auto getSpan() const -> input::Span;
   [[nodiscard]] auto getOpen() const -> const lex::Token&;

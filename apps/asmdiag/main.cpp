@@ -13,10 +13,10 @@
 
 namespace asmdiag {
 
-using high_resolution_clock = std::chrono::high_resolution_clock;
-using duration              = std::chrono::duration<double>;
+using Clock    = std::chrono::high_resolution_clock;
+using Duration = std::chrono::duration<double>;
 
-auto operator<<(std::ostream& out, const duration& rhs) -> std::ostream&;
+auto operator<<(std::ostream& out, const Duration& rhs) -> std::ostream&;
 
 auto printStringLiterals(const novasm::Assembly& assembly) -> void {
   const auto idColWidth = 5;
@@ -96,7 +96,7 @@ auto run(
   const auto width = 80;
 
   // Generate an assembly file and time how long it takes.
-  const auto t1  = high_resolution_clock::now();
+  const auto t1  = Clock::now();
   const auto src = frontend::buildSource(inputId, std::move(inputPath), inputBegin, inputEnd);
   const auto frontendOutput = frontend::analyze(src, searchPaths);
 
@@ -111,8 +111,8 @@ auto run(
   }
 
   const auto asmOutput = backend::generate(frontendOutput.getProg());
-  const auto t2        = high_resolution_clock::now();
-  const auto genDur    = std::chrono::duration_cast<duration>(t2 - t1);
+  const auto t2        = Clock::now();
+  const auto genDur    = std::chrono::duration_cast<Duration>(t2 - t1);
 
   std::cout << rang::style::dim << rang::style::italic << std::string(width, '-') << '\n'
             << "Generated assembly in " << genDur << '\n'
@@ -126,7 +126,7 @@ auto run(
   return 0;
 }
 
-auto operator<<(std::ostream& out, const duration& rhs) -> std::ostream& {
+auto operator<<(std::ostream& out, const Duration& rhs) -> std::ostream& {
   auto s = rhs.count();
   if (s < .000001) {                // NOLINT: Magic numbers
     out << s * 1000000000 << " ns"; // NOLINT: Magic numbers

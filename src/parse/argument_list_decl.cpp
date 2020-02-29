@@ -35,9 +35,9 @@ auto ArgumentListDecl::operator!=(const ArgumentListDecl& rhs) const noexcept ->
   return !ArgumentListDecl::operator==(rhs);
 }
 
-auto ArgumentListDecl::begin() const -> iterator { return m_args.begin(); }
+auto ArgumentListDecl::begin() const -> Iterator { return m_args.begin(); }
 
-auto ArgumentListDecl::end() const -> iterator { return m_args.end(); }
+auto ArgumentListDecl::end() const -> Iterator { return m_args.end(); }
 
 auto ArgumentListDecl::getCount() const -> unsigned int { return m_args.size(); }
 

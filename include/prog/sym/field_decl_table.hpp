@@ -8,7 +8,7 @@ namespace prog::sym {
 
 class FieldDeclTable final {
 public:
-  using iterator = typename std::vector<FieldDecl>::const_iterator;
+  using Iterator = typename std::vector<FieldDecl>::const_iterator;
 
   FieldDeclTable()                              = default;
   FieldDeclTable(const FieldDeclTable& rhs)     = delete;
@@ -22,8 +22,8 @@ public:
 
   [[nodiscard]] auto getCount() const -> unsigned int;
 
-  [[nodiscard]] auto begin() const -> iterator;
-  [[nodiscard]] auto end() const -> iterator;
+  [[nodiscard]] auto begin() const -> Iterator;
+  [[nodiscard]] auto end() const -> Iterator;
 
   [[nodiscard]] auto lookup(const std::string& name) const -> std::optional<FieldId>;
 

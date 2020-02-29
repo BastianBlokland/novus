@@ -5,9 +5,9 @@ namespace prog::sym {
 EnumDef::EnumDef(sym::TypeId id, std::unordered_map<std::string, int32_t> entries) :
     m_id{id}, m_entries{std::move(entries)} {}
 
-auto EnumDef::begin() const -> iterator { return m_entries.begin(); }
+auto EnumDef::begin() const -> Iterator { return m_entries.begin(); }
 
-auto EnumDef::end() const -> iterator { return m_entries.end(); }
+auto EnumDef::end() const -> Iterator { return m_entries.end(); }
 
 auto EnumDef::getId() const noexcept -> const TypeId& { return m_id; }
 

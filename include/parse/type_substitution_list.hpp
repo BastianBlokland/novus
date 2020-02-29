@@ -8,7 +8,7 @@ class TypeSubstitutionList final {
   friend auto operator<<(std::ostream& out, const TypeSubstitutionList& rhs) -> std::ostream&;
 
 public:
-  using iterator = typename std::vector<lex::Token>::const_iterator;
+  using Iterator = typename std::vector<lex::Token>::const_iterator;
 
   TypeSubstitutionList() = delete;
   TypeSubstitutionList(
@@ -20,8 +20,8 @@ public:
   auto operator==(const TypeSubstitutionList& rhs) const noexcept -> bool;
   auto operator!=(const TypeSubstitutionList& rhs) const noexcept -> bool;
 
-  [[nodiscard]] auto begin() const -> iterator;
-  [[nodiscard]] auto end() const -> iterator;
+  [[nodiscard]] auto begin() const -> Iterator;
+  [[nodiscard]] auto end() const -> Iterator;
 
   [[nodiscard]] auto getSpan() const -> input::Span;
   [[nodiscard]] auto getOpen() const -> const lex::Token&;

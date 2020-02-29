@@ -27,9 +27,9 @@ auto TypeParamList::operator[](unsigned int i) const -> const Type& {
 
 auto TypeParamList::getCount() const -> unsigned int { return m_params.size(); }
 
-auto TypeParamList::begin() const -> iterator { return m_params.begin(); }
+auto TypeParamList::begin() const -> Iterator { return m_params.begin(); }
 
-auto TypeParamList::end() const -> iterator { return m_params.end(); }
+auto TypeParamList::end() const -> Iterator { return m_params.end(); }
 
 auto TypeParamList::getSpan() const -> input::Span {
   return input::Span::combine(m_open.getSpan(), m_close.getSpan());

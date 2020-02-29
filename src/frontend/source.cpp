@@ -13,9 +13,9 @@ Source::Source(
     m_nodes{std::move(nodes)},
     m_info{std::move(info)} {};
 
-auto Source::begin() const noexcept -> iterator { return m_nodes.begin(); }
+auto Source::begin() const noexcept -> Iterator { return m_nodes.begin(); }
 
-auto Source::end() const noexcept -> iterator { return m_nodes.end(); }
+auto Source::end() const noexcept -> Iterator { return m_nodes.end(); }
 
 auto Source::getId() const noexcept -> const std::string& { return m_id; }
 

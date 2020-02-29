@@ -7,7 +7,7 @@ namespace novasm {
 
 class Assembly final {
 public:
-  using litStringIterator = typename std::vector<std::string>::const_iterator;
+  using LitStringIterator = typename std::vector<std::string>::const_iterator;
 
   Assembly(
       uint32_t entrypoint,
@@ -23,8 +23,8 @@ public:
   auto operator==(const Assembly& rhs) const noexcept -> bool;
   auto operator!=(const Assembly& rhs) const noexcept -> bool;
 
-  [[nodiscard]] auto beginLitStrings() const noexcept -> litStringIterator;
-  [[nodiscard]] auto endLitStrings() const noexcept -> litStringIterator;
+  [[nodiscard]] auto beginLitStrings() const noexcept -> LitStringIterator;
+  [[nodiscard]] auto endLitStrings() const noexcept -> LitStringIterator;
 
   [[nodiscard]] auto getEntrypoint() const noexcept -> uint32_t;
   [[nodiscard]] auto getLitString(uint32_t id) const noexcept -> const std::string&;

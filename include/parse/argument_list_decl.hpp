@@ -23,7 +23,7 @@ public:
     lex::Token m_identifier;
   };
 
-  using iterator = typename std::vector<ArgSpec>::const_iterator;
+  using Iterator = typename std::vector<ArgSpec>::const_iterator;
 
   ArgumentListDecl() = delete;
   ArgumentListDecl(
@@ -32,8 +32,8 @@ public:
   auto operator==(const ArgumentListDecl& rhs) const noexcept -> bool;
   auto operator!=(const ArgumentListDecl& rhs) const noexcept -> bool;
 
-  [[nodiscard]] auto begin() const -> iterator;
-  [[nodiscard]] auto end() const -> iterator;
+  [[nodiscard]] auto begin() const -> Iterator;
+  [[nodiscard]] auto end() const -> Iterator;
   [[nodiscard]] auto getCount() const -> unsigned int;
 
   [[nodiscard]] auto getSpan() const -> input::Span;

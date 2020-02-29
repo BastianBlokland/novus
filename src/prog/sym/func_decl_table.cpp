@@ -16,9 +16,9 @@ auto FuncDeclTable::operator[](FuncId id) const -> const FuncDecl& {
 
 auto FuncDeclTable::getFuncCount() const -> unsigned int { return m_funcs.size(); }
 
-auto FuncDeclTable::begin() const -> iterator { return m_funcs.begin(); }
+auto FuncDeclTable::begin() const -> Iterator { return m_funcs.begin(); }
 
-auto FuncDeclTable::end() const -> iterator { return m_funcs.end(); }
+auto FuncDeclTable::end() const -> Iterator { return m_funcs.end(); }
 
 auto FuncDeclTable::exists(const std::string& name) const -> bool {
   return m_lookup.find(name) != m_lookup.end();

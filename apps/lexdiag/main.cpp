@@ -5,97 +5,95 @@
 
 namespace lexdiag {
 
-using high_resolution_clock = std::chrono::high_resolution_clock;
-using duration              = std::chrono::duration<double>;
+using Clock    = std::chrono::high_resolution_clock;
+using Duration = std::chrono::duration<double>;
 
 auto getFgColor(const lex::Token& token) -> rang::fg;
 auto getBgColor(const lex::Token& token) -> rang::bg;
 
-auto operator<<(std::ostream& out, const duration& rhs) -> std::ostream&;
+auto operator<<(std::ostream& out, const Duration& rhs) -> std::ostream&;
 
 template <typename InputItr>
 auto run(InputItr inputBegin, const InputItr inputEnd, const bool outputTokens) {
   const auto columnWidth = 20;
   const auto width       = 80;
 
-  using s  = rang::style;
-  using fg = rang::style;
-  using bg = rang::style;
+  using S = rang::style;
 
   // Lex all the tokens and time how long it takes.
-  const auto t1     = high_resolution_clock::now();
+  const auto t1     = Clock::now();
   const auto tokens = lex::lexAll(inputBegin, inputEnd);
-  const auto t2     = high_resolution_clock::now();
-  const auto lexDur = std::chrono::duration_cast<duration>(t2 - t1);
+  const auto t2     = Clock::now();
+  const auto lexDur = std::chrono::duration_cast<Duration>(t2 - t1);
 
-  std::cout << s::dim << s::italic << std::string(width, '-') << '\n'
+  std::cout << S::dim << S::italic << std::string(width, '-') << '\n'
             << "Lexed " << tokens.size() << " tokens in " << lexDur << '\n'
             << std::string(width, '-') << '\n'
-            << s::reset;
+            << S::reset;
 
   if (outputTokens) {
     for (const auto& token : tokens) {
-      std::cout << s::bold << "* " << getFgColor(token) << getBgColor(token)
+      std::cout << S::bold << "* " << getFgColor(token) << getBgColor(token)
                 << std::setw(columnWidth) << std::left << token.getKind();
 
       std::stringstream spanStr;
       spanStr << '(' << token.getSpan().getStart() << " - " << token.getSpan().getEnd() << ')';
 
-      std::cout << s::dim << fg::reset << std::setw(columnWidth) << std::right << spanStr.str()
-                << s::reset;
+      std::cout << S::dim << S::reset << std::setw(columnWidth) << std::right << spanStr.str()
+                << S::reset;
 
       const auto payload = token.getPayload();
       if (payload) {
         std::cout << " > " << *payload;
       }
 
-      std::cout << bg::reset << fg::reset << '\n';
+      std::cout << S::reset << '\n';
     }
-    std::cout << s::dim << std::string(width, '-') << '\n';
+    std::cout << S::dim << std::string(width, '-') << '\n';
   }
 }
 
 auto getFgColor(const lex::Token& token) -> rang::fg {
-  using tc = lex::TokenCat;
+  using Tc = lex::TokenCat;
 
   switch (token.getCat()) {
-  case tc::Operator:
+  case Tc::Operator:
     return rang::fg::cyan;
-  case tc::Seperator:
+  case Tc::Seperator:
     return rang::fg::magenta;
-  case tc::Literal:
+  case Tc::Literal:
     return rang::fg::yellow;
-  case tc::Keyword:
+  case Tc::Keyword:
     return rang::fg::blue;
-  case tc::Identifier:
-  case tc::Comment:
+  case Tc::Identifier:
+  case Tc::Comment:
     return rang::fg::green;
-  case tc::Error:
-  case tc::Unknown:
+  case Tc::Error:
+  case Tc::Unknown:
     return rang::fg::reset;
   }
   return rang::fg::reset;
 }
 
 auto getBgColor(const lex::Token& token) -> rang::bg {
-  using tc = lex::TokenCat;
+  using Tc = lex::TokenCat;
 
   switch (token.getCat()) {
-  case tc::Operator:
-  case tc::Seperator:
-  case tc::Literal:
-  case tc::Keyword:
-  case tc::Identifier:
-  case tc::Comment:
-  case tc::Unknown:
+  case Tc::Operator:
+  case Tc::Seperator:
+  case Tc::Literal:
+  case Tc::Keyword:
+  case Tc::Identifier:
+  case Tc::Comment:
+  case Tc::Unknown:
     return rang::bg::reset;
-  case tc::Error:
+  case Tc::Error:
     return rang::bg::red;
   }
   return rang::bg::reset;
 }
 
-auto operator<<(std::ostream& out, const duration& rhs) -> std::ostream& {
+auto operator<<(std::ostream& out, const Duration& rhs) -> std::ostream& {
   auto s = rhs.count();
   if (s < .000001) {                // NOLINT: Magic numbers
     out << s * 1000000000 << " ns"; // NOLINT: Magic numbers

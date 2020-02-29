@@ -14,7 +14,7 @@ class Output final {
       std::vector<Diag> diags) -> Output;
 
 public:
-  using diagIterator = typename std::vector<Diag>::const_iterator;
+  using DiagIterator = typename std::vector<Diag>::const_iterator;
 
   Output() = delete;
 
@@ -22,8 +22,8 @@ public:
   [[nodiscard]] auto getProg() const noexcept -> const prog::Program&;
   [[nodiscard]] auto getImportedSources() const noexcept -> const std::forward_list<Source>&;
 
-  [[nodiscard]] auto beginDiags() const noexcept -> diagIterator;
-  [[nodiscard]] auto endDiags() const noexcept -> diagIterator;
+  [[nodiscard]] auto beginDiags() const noexcept -> DiagIterator;
+  [[nodiscard]] auto endDiags() const noexcept -> DiagIterator;
 
 private:
   std::unique_ptr<prog::Program> m_prog;

@@ -14,9 +14,9 @@ auto TypeDeclTable::operator[](TypeId id) const -> const TypeDecl& {
   return itr->second;
 }
 
-auto TypeDeclTable::begin() const -> iterator { return m_types.begin(); }
+auto TypeDeclTable::begin() const -> Iterator { return m_types.begin(); }
 
-auto TypeDeclTable::end() const -> iterator { return m_types.end(); }
+auto TypeDeclTable::end() const -> Iterator { return m_types.end(); }
 
 auto TypeDeclTable::exists(const std::string& name) const -> bool {
   return lookup(name).has_value();

@@ -9,10 +9,10 @@
 
 namespace progdiag {
 
-using high_resolution_clock = std::chrono::high_resolution_clock;
-using duration              = std::chrono::duration<double>;
+using Clock    = std::chrono::high_resolution_clock;
+using Duration = std::chrono::duration<double>;
 
-auto operator<<(std::ostream& out, const duration& rhs) -> std::ostream&;
+auto operator<<(std::ostream& out, const Duration& rhs) -> std::ostream&;
 
 auto printExpr(
     const prog::expr::Node& n,
@@ -242,11 +242,11 @@ auto run(
   const auto width = 80;
 
   // Analyze the input and time how long it takes.
-  const auto t1       = high_resolution_clock::now();
+  const auto t1       = Clock::now();
   const auto src      = frontend::buildSource(inputId, std::move(inputPath), inputBegin, inputEnd);
   const auto output   = frontend::analyze(src, searchPaths);
-  const auto t2       = high_resolution_clock::now();
-  const auto parseDur = std::chrono::duration_cast<duration>(t2 - t1);
+  const auto t2       = Clock::now();
+  const auto parseDur = std::chrono::duration_cast<Duration>(t2 - t1);
 
   std::cout << rang::style::dim << rang::style::italic << std::string(width, '-') << '\n'
             << "Analyzed " << src.getCharCount() << " chars in " << parseDur << '\n'
@@ -274,7 +274,7 @@ auto run(
   return output.isSuccess() ? 0 : 1;
 }
 
-auto operator<<(std::ostream& out, const duration& rhs) -> std::ostream& {
+auto operator<<(std::ostream& out, const Duration& rhs) -> std::ostream& {
   auto s = rhs.count();
   if (s < .000001) {                // NOLINT: Magic numbers
     out << s * 1000000000 << " ns"; // NOLINT: Magic numbers

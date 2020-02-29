@@ -11,7 +11,7 @@ class EnumDef final {
   friend class TypeDefTable;
 
 public:
-  using iterator = typename std::unordered_map<std::string, int32_t>::const_iterator;
+  using Iterator = typename std::unordered_map<std::string, int32_t>::const_iterator;
 
   EnumDef()                       = delete;
   EnumDef(const EnumDef& rhs)     = delete;
@@ -21,8 +21,8 @@ public:
   auto operator=(const EnumDef& rhs) -> EnumDef& = delete;
   auto operator=(EnumDef&& rhs) noexcept -> EnumDef& = delete;
 
-  [[nodiscard]] auto begin() const -> iterator;
-  [[nodiscard]] auto end() const -> iterator;
+  [[nodiscard]] auto begin() const -> Iterator;
+  [[nodiscard]] auto end() const -> Iterator;
 
   [[nodiscard]] auto getId() const noexcept -> const TypeId&;
   [[nodiscard]] auto hasEntry(const std::string& name) const noexcept -> bool;

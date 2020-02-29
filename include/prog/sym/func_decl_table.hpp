@@ -18,8 +18,8 @@ namespace sym {
 
 class FuncDeclTable final {
 public:
-  using iterator = typename std::map<FuncId, FuncDecl>::const_iterator;
-  using id       = typename prog::sym::FuncId;
+  using Iterator = typename std::map<FuncId, FuncDecl>::const_iterator;
+  using Id       = typename prog::sym::FuncId;
 
   FuncDeclTable()                             = default;
   FuncDeclTable(const FuncDeclTable& rhs)     = delete;
@@ -32,8 +32,8 @@ public:
   [[nodiscard]] auto operator[](FuncId id) const -> const FuncDecl&;
 
   [[nodiscard]] auto getFuncCount() const -> unsigned int;
-  [[nodiscard]] auto begin() const -> iterator;
-  [[nodiscard]] auto end() const -> iterator;
+  [[nodiscard]] auto begin() const -> Iterator;
+  [[nodiscard]] auto end() const -> Iterator;
 
   [[nodiscard]] auto exists(const std::string& name) const -> bool;
   [[nodiscard]] auto lookup(const std::string& name, OverloadOptions options) const

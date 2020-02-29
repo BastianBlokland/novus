@@ -19,7 +19,7 @@
 
 namespace frontend {
 
-using typeInfoMap =
+using TypeInfoMap =
     std::unordered_map<prog::sym::TypeId, internal::TypeInfo, prog::sym::TypeIdHasher>;
 
 template <typename VisitorType, class... VisitorArgs>
@@ -36,7 +36,7 @@ auto analyze(const Source& mainSrc, const std::vector<filesystem::path>& searchP
   auto funcTemplates = internal::FuncTemplateTable{};
   auto delegates     = internal::DelegateTable{};
   auto futures       = internal::FutureTable{};
-  auto typeInfos     = typeInfoMap{};
+  auto typeInfos     = TypeInfoMap{};
   auto diags         = std::vector<Diag>{};
   auto makeCtx       = [&](const Source& src) {
     return internal::Context(

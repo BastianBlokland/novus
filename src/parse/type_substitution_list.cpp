@@ -25,9 +25,9 @@ auto TypeSubstitutionList::operator!=(const TypeSubstitutionList& rhs) const noe
   return !TypeSubstitutionList::operator==(rhs);
 }
 
-auto TypeSubstitutionList::begin() const -> iterator { return m_subs.begin(); }
+auto TypeSubstitutionList::begin() const -> Iterator { return m_subs.begin(); }
 
-auto TypeSubstitutionList::end() const -> iterator { return m_subs.end(); }
+auto TypeSubstitutionList::end() const -> Iterator { return m_subs.end(); }
 
 auto TypeSubstitutionList::getSpan() const -> input::Span {
   return input::Span::combine(m_open.getSpan(), m_close.getSpan());

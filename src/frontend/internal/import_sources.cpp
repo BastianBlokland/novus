@@ -10,7 +10,7 @@ namespace frontend::internal {
 
 ImportSources::ImportSources(
     const Source& mainSource,
-    const std::vector<path>& searchPaths,
+    const std::vector<Path>& searchPaths,
     std::forward_list<Source>* importedSources,
     std::vector<Diag>* diags) :
     ImportSources(mainSource, mainSource, searchPaths, importedSources, diags) {}
@@ -18,7 +18,7 @@ ImportSources::ImportSources(
 ImportSources::ImportSources(
     const Source& mainSource,
     const Source& currentSource,
-    const std::vector<path>& searchPaths,
+    const std::vector<Path>& searchPaths,
     std::forward_list<Source>* importedSources,
     std::vector<Diag>* diags) :
     m_mainSource{mainSource},
@@ -42,7 +42,7 @@ auto ImportSources::visit(const parse::ImportStmtNode& n) -> void {
   }
 }
 
-auto ImportSources::import(const path& file, input::Span span) const -> bool {
+auto ImportSources::import(const Path& file, input::Span span) const -> bool {
   // Check if this file is same as our main source.
   if (file.filename() == m_mainSource.getPath()->filename()) {
     return true;
@@ -73,7 +73,7 @@ auto ImportSources::import(const path& file, input::Span span) const -> bool {
   return false;
 }
 
-auto ImportSources::importFromDir(const path& searchPath, const path& file) const -> bool {
+auto ImportSources::importFromDir(const Path& searchPath, const Path& file) const -> bool {
   const auto fullPath = searchPath / file;
   auto fs             = std::ifstream{fullPath};
   if (!fs.good()) {

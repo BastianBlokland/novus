@@ -20,9 +20,9 @@ auto Output::getImportedSources() const noexcept -> const std::forward_list<Sour
   return m_importedSources;
 }
 
-auto Output::beginDiags() const noexcept -> diagIterator { return m_diags.begin(); }
+auto Output::beginDiags() const noexcept -> DiagIterator { return m_diags.begin(); }
 
-auto Output::endDiags() const noexcept -> diagIterator { return m_diags.end(); }
+auto Output::endDiags() const noexcept -> DiagIterator { return m_diags.end(); }
 
 auto buildOutput(
     std::unique_ptr<prog::Program> prog,

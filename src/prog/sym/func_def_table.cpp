@@ -11,9 +11,9 @@ auto FuncDefTable::operator[](sym::FuncId id) const -> const FuncDef& {
   return itr->second;
 }
 
-auto FuncDefTable::begin() const -> iterator { return m_funcs.begin(); }
+auto FuncDefTable::begin() const -> Iterator { return m_funcs.begin(); }
 
-auto FuncDefTable::end() const -> iterator { return m_funcs.end(); }
+auto FuncDefTable::end() const -> Iterator { return m_funcs.end(); }
 
 auto FuncDefTable::registerFunc(
     const sym::FuncDeclTable& funcTable,

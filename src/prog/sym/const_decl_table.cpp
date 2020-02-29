@@ -21,18 +21,18 @@ auto ConstDeclTable::getLocalCount() const -> unsigned int {
       m_consts.begin(), m_consts.end(), [](const auto& c) { return c.m_kind == ConstKind::Local; });
 }
 
-auto ConstDeclTable::begin() const -> iterator { return m_consts.begin(); }
+auto ConstDeclTable::begin() const -> Iterator { return m_consts.begin(); }
 
-auto ConstDeclTable::begin(const ConstKind kind) const -> iterator {
+auto ConstDeclTable::begin(const ConstKind kind) const -> Iterator {
   return std::lower_bound(
       m_consts.begin(), m_consts.end(), kind, [](const ConstDecl& a, const ConstKind& b) {
         return a.m_kind < b;
       });
 }
 
-auto ConstDeclTable::end() const -> iterator { return m_consts.end(); }
+auto ConstDeclTable::end() const -> Iterator { return m_consts.end(); }
 
-auto ConstDeclTable::end(const ConstKind kind) const -> iterator {
+auto ConstDeclTable::end(const ConstKind kind) const -> Iterator {
   return std::upper_bound(
       m_consts.begin(), m_consts.end(), kind, [](const ConstKind& a, const ConstDecl& b) {
         return a < b.m_kind;
