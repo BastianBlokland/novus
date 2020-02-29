@@ -53,6 +53,8 @@ public:
 
   auto registerFuture(const sym::TypeDeclTable& typeTable, sym::TypeId id, TypeId result) -> void;
 
+  auto registerType(sym::TypeId id, TypeDef def) -> void;
+
 private:
   std::unordered_map<TypeId, TypeDef, TypeIdHasher> m_types;
 };

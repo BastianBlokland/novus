@@ -24,11 +24,7 @@ auto TypeDefTable::registerStruct(
   if (typeTable[id].getKind() != sym::TypeKind::Struct) {
     throw std::invalid_argument{"Type has not been declared as being a struct"};
   }
-  auto itr = m_types.find(id);
-  if (itr != m_types.end()) {
-    throw std::logic_error{"Type already has a definition registered"};
-  }
-  m_types.insert({id, StructDef{id, std::move(fields)}});
+  registerType(id, StructDef{id, std::move(fields)});
 }
 
 auto TypeDefTable::registerUnion(
@@ -39,11 +35,7 @@ auto TypeDefTable::registerUnion(
   if (types.size() < 2) {
     throw std::invalid_argument{"Union needs at least two types"};
   }
-  auto itr = m_types.find(id);
-  if (itr != m_types.end()) {
-    throw std::logic_error{"Type already has a definition registered"};
-  }
-  m_types.insert({id, UnionDef{id, std::move(types)}});
+  registerType(id, UnionDef{id, std::move(types)});
 }
 
 auto TypeDefTable::registerEnum(
@@ -56,11 +48,7 @@ auto TypeDefTable::registerEnum(
   if (entries.empty()) {
     throw std::invalid_argument{"Enum needs at least one entry"};
   }
-  auto itr = m_types.find(id);
-  if (itr != m_types.end()) {
-    throw std::logic_error{"Type already has a definition registered"};
-  }
-  m_types.insert({id, EnumDef{id, std::move(entries)}});
+  registerType(id, EnumDef{id, std::move(entries)});
 }
 
 auto TypeDefTable::registerDelegate(
@@ -73,11 +61,7 @@ auto TypeDefTable::registerDelegate(
   if (typeTable[id].getKind() != sym::TypeKind::Delegate) {
     throw std::invalid_argument{"Type has not been declared as being a delegate"};
   }
-  auto itr = m_types.find(id);
-  if (itr != m_types.end()) {
-    throw std::logic_error{"Type already has a definition registered"};
-  }
-  m_types.insert({id, DelegateDef{id, isAction, std::move(input), output}});
+  registerType(id, DelegateDef{id, isAction, std::move(input), output});
 }
 
 auto TypeDefTable::registerFuture(
@@ -86,11 +70,15 @@ auto TypeDefTable::registerFuture(
   if (typeTable[id].getKind() != sym::TypeKind::Future) {
     throw std::invalid_argument{"Type has not been declared as being a future"};
   }
+  registerType(id, FutureDef{id, result});
+}
+
+auto TypeDefTable::registerType(sym::TypeId id, TypeDef def) -> void {
   auto itr = m_types.find(id);
   if (itr != m_types.end()) {
     throw std::logic_error{"Type already has a definition registered"};
   }
-  m_types.insert({id, FutureDef{id, result}});
+  m_types.insert({id, std::move(def)});
 }
 
 } // namespace prog::sym

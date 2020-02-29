@@ -11,7 +11,7 @@ public:
   using Iterator = typename std::vector<FieldDecl>::const_iterator;
 
   FieldDeclTable()                              = default;
-  FieldDeclTable(const FieldDeclTable& rhs)     = delete;
+  FieldDeclTable(const FieldDeclTable& rhs)     = default;
   FieldDeclTable(FieldDeclTable&& rhs) noexcept = default;
   ~FieldDeclTable()                             = default;
 

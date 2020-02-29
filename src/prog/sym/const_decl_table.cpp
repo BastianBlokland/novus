@@ -7,8 +7,6 @@
 namespace prog::sym {
 
 auto ConstDeclTable::operator[](ConstId id) const -> const ConstDecl& {
-  // Note: if we end up calling this allot it might be better to keep another vector that is
-  // directly indexable by const-id.
   const auto index = getOffset(id);
   assert(index < this->m_consts.size());
   return m_consts[index];

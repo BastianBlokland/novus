@@ -97,6 +97,8 @@ add_executable(tests
   parse/stmt_struct_decl_test.cpp
   parse/stmt_union_decl_test.cpp
 
+  prog/copy_test.cpp
+
   vm/call_test.cpp
   vm/consts_test.cpp
   vm/conv_test.cpp

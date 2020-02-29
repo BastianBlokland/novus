@@ -11,6 +11,14 @@ auto getTypeDeclTable(const Program& prog) -> const sym::TypeDeclTable& { return
 
 auto getFuncDeclTable(const Program& prog) -> const sym::FuncDeclTable& { return prog.m_funcDecls; }
 
+auto getTypeDeclTable(Program* prog) -> sym::TypeDeclTable& { return prog->m_typeDecls; }
+
+auto getFuncDeclTable(Program* prog) -> sym::FuncDeclTable& { return prog->m_funcDecls; }
+
+auto getTypeDefTable(Program* prog) -> sym::TypeDefTable& { return prog->m_typeDefs; }
+
+auto getFuncDefTable(Program* prog) -> sym::FuncDefTable& { return prog->m_funcDefs; }
+
 } // namespace internal
 
 Program::Program() :

@@ -12,7 +12,7 @@ public:
   using Iterator = typename std::vector<ConstDecl>::const_iterator;
 
   ConstDeclTable()                              = default;
-  ConstDeclTable(const ConstDeclTable& rhs)     = delete;
+  ConstDeclTable(const ConstDeclTable& rhs)     = default;
   ConstDeclTable(ConstDeclTable&& rhs) noexcept = default;
   ~ConstDeclTable()                             = default;
 

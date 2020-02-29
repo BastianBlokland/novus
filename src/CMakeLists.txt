@@ -136,6 +136,7 @@ add_library(prog STATIC
   prog/sym/type_set.cpp
   prog/sym/union_def.cpp
 
+  prog/copy.cpp
   prog/operator.cpp
   prog/program.cpp)
 target_compile_features(prog PRIVATE cxx_std_17)

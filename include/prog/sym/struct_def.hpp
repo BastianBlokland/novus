@@ -11,7 +11,7 @@ class StructDef final {
 
 public:
   StructDef()                         = delete;
-  StructDef(const StructDef& rhs)     = delete;
+  StructDef(const StructDef& rhs)     = default;
   StructDef(StructDef&& rhs) noexcept = default;
   ~StructDef()                        = default;
 

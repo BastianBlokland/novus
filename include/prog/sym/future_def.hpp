@@ -8,7 +8,7 @@ class FutureDef final {
 
 public:
   FutureDef()                         = delete;
-  FutureDef(const FutureDef& rhs)     = delete;
+  FutureDef(const FutureDef& rhs)     = default;
   FutureDef(FutureDef&& rhs) noexcept = default;
   ~FutureDef()                        = default;
 

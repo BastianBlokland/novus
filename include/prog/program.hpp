@@ -18,11 +18,21 @@ namespace internal {
 [[nodiscard]] auto getTypeDeclTable(const Program& prog) -> const sym::TypeDeclTable&;
 [[nodiscard]] auto getFuncDeclTable(const Program& prog) -> const sym::FuncDeclTable&;
 
+[[nodiscard]] auto getTypeDeclTable(Program* prog) -> sym::TypeDeclTable&;
+[[nodiscard]] auto getFuncDeclTable(Program* prog) -> sym::FuncDeclTable&;
+
+[[nodiscard]] auto getTypeDefTable(Program* prog) -> sym::TypeDefTable&;
+[[nodiscard]] auto getFuncDefTable(Program* prog) -> sym::FuncDefTable&;
+
 } // namespace internal
 
 class Program final {
   friend auto internal::getTypeDeclTable(const Program& prog) -> const sym::TypeDeclTable&;
   friend auto internal::getFuncDeclTable(const Program& prog) -> const sym::FuncDeclTable&;
+  friend auto internal::getTypeDeclTable(Program* prog) -> sym::TypeDeclTable&;
+  friend auto internal::getFuncDeclTable(Program* prog) -> sym::FuncDeclTable&;
+  friend auto internal::getTypeDefTable(Program* prog) -> sym::TypeDefTable&;
+  friend auto internal::getFuncDefTable(Program* prog) -> sym::FuncDefTable&;
 
 public:
   using TypeDeclIterator = typename sym::TypeDeclTable::Iterator;

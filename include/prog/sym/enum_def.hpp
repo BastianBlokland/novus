@@ -14,7 +14,7 @@ public:
   using Iterator = typename std::unordered_map<std::string, int32_t>::const_iterator;
 
   EnumDef()                       = delete;
-  EnumDef(const EnumDef& rhs)     = delete;
+  EnumDef(const EnumDef& rhs)     = default;
   EnumDef(EnumDef&& rhs) noexcept = default;
   ~EnumDef()                      = default;
 

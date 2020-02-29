@@ -9,7 +9,7 @@ class DelegateDef final {
 
 public:
   DelegateDef()                           = delete;
-  DelegateDef(const DelegateDef& rhs)     = delete;
+  DelegateDef(const DelegateDef& rhs)     = default;
   DelegateDef(DelegateDef&& rhs) noexcept = default;
   ~DelegateDef()                          = default;
 
