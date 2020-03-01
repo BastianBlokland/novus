@@ -39,7 +39,7 @@
 			<array>
 				<dict>
 					<key>match</key>
-					<string>\b(int|long|float|bool|string|char|function|action|future)\b</string>
+					<string>\b(int|long|float|bool|string|char|stream|function|action|future)\b</string>
 					<key>name</key>
 					<string>keyword.other.buildin.source.novus</string>
 				</dict>

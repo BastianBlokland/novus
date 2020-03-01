@@ -1,0 +1,74 @@
+// -- Path
+// Represents a path on the filesystem.
+
+struct Path = string str
+
+fun +(Path p1, Path p2)   Path(p1.str + p2.str)
+fun ::(Path p1, Path p2)  Path(p1.str + "/" + p2.str)
+
+// -- Actions
+
+enum FileMode = Create : 0, Open, Append
+
+enum FileFlags = None : 0, AutoRemove : 1
+
+act fileOpen(Path p, FileMode m)
+  fileOpen(p, m, FileFlags.None)
+
+act fileOpen(Path p, FileMode m, FileFlags flags)
+  fileOpenStream(p.str, int(m) | flags << 8)
+
+act fileExists(Path p)
+  fileOpen(p, FileMode.Open).streamCheckValid()
+
+act fileRemove(Path p)
+  fileRemove(p.str)
+
+act read(stream s)
+  (
+    impure lambda (string result)
+      read = s.streamRead(512);
+      if read.length() > 0  -> self(result + read)
+      else                  -> result
+  )("")
+
+act write(stream s, string str)
+  if s.streamWrite(str) -> s.streamFlush(); true
+  else                  -> false
+
+act readFile(Path p)
+  fileOpen(p, FileMode.Open).read()
+
+act writeFile(Path p, string str)
+  fileOpen(p, FileMode.Create).write(str)
+
+act appendFile(Path p, string str)
+  fileOpen(p, FileMode.Append).write(str)
+
+// -- Tests
+
+assert(
+  p = Path("file-test1.tmp");
+  f = fileOpen(p, FileMode.Create, FileFlags.AutoRemove);
+  f.write("hello world");
+  readFile(p) == "hello world")
+
+assert(
+  p = Path("file-test2.tmp");
+  f = fileOpen(p, FileMode.Append, FileFlags.AutoRemove);
+  f.write("hello world");
+  f.write("hello world");
+  f.write("hello world");
+  readFile(p) == "hello worldhello worldhello world")
+
+assert(
+  p = Path("file-test3.tmp");
+  f = fileOpen(p, FileMode.Create, FileFlags.AutoRemove);
+  fileExists(p))
+
+assert(
+  p = Path("file-test4.tmp");
+  f = fileOpen(p, FileMode.Create);
+  fileRemove(p);
+  !fileExists(p))
+

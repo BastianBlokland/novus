@@ -246,7 +246,7 @@ Program::Program() :
       *this, Fk::ActionConReadStringLine, "conReadLine", sym::TypeSet{}, m_string);
 
   m_funcDecls.registerAction(
-      *this, Fk::ActionStreamOpenFile, "openFileStream", sym::TypeSet{m_string, m_int}, m_stream);
+      *this, Fk::ActionStreamOpenFile, "fileOpenStream", sym::TypeSet{m_string, m_int}, m_stream);
   m_funcDecls.registerAction(
       *this, Fk::ActionStreamCheckValid, "streamCheckValid", sym::TypeSet{m_stream}, m_bool);
   m_funcDecls.registerAction(
