@@ -49,28 +49,29 @@ public:
   auto operator=(const Program& rhs) -> Program& = delete;
   auto operator=(Program&& rhs) noexcept -> Program& = delete;
 
-  [[nodiscard]] auto beginTypeDecls() const -> TypeDeclIterator;
-  [[nodiscard]] auto endTypeDecls() const -> TypeDeclIterator;
+  [[nodiscard]] auto beginTypeDecls() const -> TypeDeclIterator { return m_typeDecls.begin(); }
+  [[nodiscard]] auto endTypeDecls() const -> TypeDeclIterator { return m_typeDecls.end(); }
 
-  [[nodiscard]] auto getFuncCount() const -> unsigned int;
-  [[nodiscard]] auto beginFuncDecls() const -> FuncDeclIterator;
-  [[nodiscard]] auto endFuncDecls() const -> FuncDeclIterator;
+  [[nodiscard]] auto getFuncCount() const -> unsigned int { return m_funcDecls.getFuncCount(); }
+  [[nodiscard]] auto beginFuncDecls() const -> FuncDeclIterator { return m_funcDecls.begin(); }
+  [[nodiscard]] auto endFuncDecls() const -> FuncDeclIterator { return m_funcDecls.end(); }
 
-  [[nodiscard]] auto beginTypeDefs() const -> TypeDefIterator;
-  [[nodiscard]] auto endTypeDefs() const -> TypeDefIterator;
+  [[nodiscard]] auto beginTypeDefs() const -> TypeDefIterator { return m_typeDefs.begin(); }
+  [[nodiscard]] auto endTypeDefs() const -> TypeDefIterator { return m_typeDefs.end(); }
 
-  [[nodiscard]] auto beginFuncDefs() const -> FuncDefIterator;
-  [[nodiscard]] auto endFuncDefs() const -> FuncDefIterator;
+  [[nodiscard]] auto beginFuncDefs() const -> FuncDefIterator { return m_funcDefs.begin(); }
+  [[nodiscard]] auto endFuncDefs() const -> FuncDefIterator { return m_funcDefs.end(); }
 
-  [[nodiscard]] auto beginExecStmts() const -> ExecStmtIterator;
-  [[nodiscard]] auto endExecStmts() const -> ExecStmtIterator;
+  [[nodiscard]] auto beginExecStmts() const -> ExecStmtIterator { return m_execStmts.begin(); }
+  [[nodiscard]] auto endExecStmts() const -> ExecStmtIterator { return m_execStmts.end(); }
 
-  [[nodiscard]] auto getInt() const noexcept -> sym::TypeId;
-  [[nodiscard]] auto getLong() const noexcept -> sym::TypeId;
-  [[nodiscard]] auto getFloat() const noexcept -> sym::TypeId;
-  [[nodiscard]] auto getBool() const noexcept -> sym::TypeId;
-  [[nodiscard]] auto getString() const noexcept -> sym::TypeId;
-  [[nodiscard]] auto getChar() const noexcept -> sym::TypeId;
+  [[nodiscard]] auto getInt() const noexcept -> sym::TypeId { return m_int; }
+  [[nodiscard]] auto getLong() const noexcept -> sym::TypeId { return m_long; }
+  [[nodiscard]] auto getFloat() const noexcept -> sym::TypeId { return m_float; }
+  [[nodiscard]] auto getBool() const noexcept -> sym::TypeId { return m_bool; }
+  [[nodiscard]] auto getString() const noexcept -> sym::TypeId { return m_string; }
+  [[nodiscard]] auto getChar() const noexcept -> sym::TypeId { return m_char; }
+  [[nodiscard]] auto getStream() const noexcept -> sym::TypeId { return m_stream; }
 
   [[nodiscard]] auto hasType(const std::string& name) const -> bool;
   [[nodiscard]] auto lookupType(const std::string& name) const -> std::optional<sym::TypeId>;
@@ -151,6 +152,7 @@ private:
   sym::TypeId m_bool;
   sym::TypeId m_string;
   sym::TypeId m_char;
+  sym::TypeId m_stream;
 };
 
 } // namespace prog

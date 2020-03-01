@@ -1,5 +1,9 @@
 #include "internal/allocator.hpp"
+#include "internal/ref_future.hpp"
+#include "internal/ref_long.hpp"
+#include "internal/ref_stream.hpp"
 #include "internal/ref_string.hpp"
+#include "internal/ref_struct.hpp"
 #include <atomic>
 #include <cstdlib>
 #include <new>
@@ -59,28 +63,6 @@ auto Allocator::allocStruct(uint8_t fieldCount) noexcept -> std::pair<StructRef*
   auto* refPtr   = static_cast<StructRef*>(new (mem.first) StructRef{fieldsPtr, fieldCount});
   initRef(refPtr);
   return {refPtr, fieldsPtr};
-}
-
-auto Allocator::allocFuture() noexcept -> FutureRef* {
-  auto mem = alloc<FutureRef>(0);
-  if (mem.first == nullptr) {
-    return nullptr;
-  }
-
-  auto* refPtr = static_cast<FutureRef*>(new (mem.first) FutureRef{});
-  initRef(refPtr);
-  return refPtr;
-}
-
-auto Allocator::allocLong(int64_t val) noexcept -> LongRef* {
-  auto mem = alloc<LongRef>(0);
-  if (mem.first == nullptr) {
-    return nullptr;
-  }
-
-  auto* refPtr = static_cast<LongRef*>(new (mem.first) LongRef{val});
-  initRef(refPtr);
-  return refPtr;
 }
 
 auto Allocator::initRef(Ref* ref) noexcept -> void {

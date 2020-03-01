@@ -235,6 +235,127 @@ TEST_CASE("Execute input and output", "[vm]") {
         },
         "input");
   }
+
+  SECTION("Write file") {
+    const auto filePath    = "test.tmp";
+    const auto fileContent = "Test file content";
+    CHECK_PROG(
+        [&](novasm::Assembler* asmb) -> void {
+          asmb->label("entry");
+          asmb->setEntrypoint("entry");
+          asmb->addStackAlloc(1);
+
+          asmb->addLoadLitString(filePath);
+          asmb->addLoadLitInt(0U | (1U << 8U)); // Options, mode 0 (Create) and flag 1 (AutoRemove).
+          asmb->addPCall(novasm::PCallCode::StreamOpenFile);
+          asmb->addStackStore(0); // Store file-stream.
+
+          // Write to file.
+          asmb->addStackLoad(0);               // Load stream.
+          asmb->addLoadLitString(fileContent); // Content.
+          asmb->addPCall(novasm::PCallCode::StreamWrite);
+
+          // Assert that writing succeeded.
+          asmb->addLoadLitString("Write failed");
+          asmb->addPCall(novasm::PCallCode::Assert);
+
+          // Flush file.
+          asmb->addStackLoad(0); // Load stream.
+          asmb->addPCall(novasm::PCallCode::StreamFlush);
+
+          // Open the file again for reading.
+          asmb->addLoadLitString(filePath); // Load stream.
+          asmb->addLoadLitInt(1U);          // Options, mode 1 (Open).
+          asmb->addPCall(novasm::PCallCode::StreamOpenFile);
+          asmb->addStackStore(0); // Store file-stream.
+
+          // Assert that file-stream is valid.
+          asmb->addPCall(novasm::PCallCode::StreamCheckValid);
+          asmb->addLoadLitString("Stream not valid");
+          asmb->addPCall(novasm::PCallCode::Assert);
+
+          // Read file content.
+          asmb->addStackLoad(0);    // Load stream.
+          asmb->addLoadLitInt(64U); // Max chars to load.
+          asmb->addPCall(novasm::PCallCode::StreamRead);
+
+          // Print file content.
+          asmb->addPCall(novasm::PCallCode::ConWriteString);
+          asmb->addRet();
+        },
+        "input",
+        fileContent);
+  }
+
+  SECTION("Non-existing file is not valid") {
+    CHECK_PROG(
+        [](novasm::Assembler* asmb) -> void {
+          asmb->label("entry");
+          asmb->setEntrypoint("entry");
+
+          // Open steam to non existing file.
+          asmb->addLoadLitString("test.tmp"); // Path.
+          asmb->addLoadLitInt(1U);            // Options, mode 1 (Open).
+          asmb->addPCall(novasm::PCallCode::StreamOpenFile);
+
+          // Assert that file-stream is valid.
+          asmb->addPCall(novasm::PCallCode::StreamCheckValid);
+          asmb->addLogicInvInt(); // Invert to check if stream is not valid.
+          asmb->addLoadLitString("Stream not valid");
+          asmb->addPCall(novasm::PCallCode::Assert);
+          asmb->addRet();
+        },
+        "input");
+  }
+
+  SECTION("Read from non-existing file returns empty string") {
+    CHECK_PROG(
+        [](novasm::Assembler* asmb) -> void {
+          asmb->label("entry");
+          asmb->setEntrypoint("entry");
+
+          // Open steam to non existing file.
+          asmb->addLoadLitString("test.tmp"); // Path.
+          asmb->addLoadLitInt(1U);            // Options, mode 1 (Open).
+          asmb->addPCall(novasm::PCallCode::StreamOpenFile);
+
+          // Read file content.
+          asmb->addStackLoad(0);    // Load stream.
+          asmb->addLoadLitInt(64U); // Max chars to load.
+          asmb->addPCall(novasm::PCallCode::StreamRead);
+
+          // Print file content.
+          asmb->addPCall(novasm::PCallCode::ConWriteString);
+          asmb->addRet();
+        },
+        "input",
+        "");
+  }
+
+  SECTION("Write to from non-existing file in open-mode fails") {
+    CHECK_PROG(
+        [](novasm::Assembler* asmb) -> void {
+          asmb->label("entry");
+          asmb->setEntrypoint("entry");
+
+          // Open steam to non existing file.
+          asmb->addLoadLitString("test.tmp"); // Path.
+          asmb->addLoadLitInt(1U);            // Options, mode 1 (Open).
+          asmb->addPCall(novasm::PCallCode::StreamOpenFile);
+
+          // Write to file.
+          asmb->addStackLoad(0);          // Load stream.
+          asmb->addLoadLitString("Test"); // Content.
+          asmb->addPCall(novasm::PCallCode::StreamWrite);
+
+          // Assert that writing failed.
+          asmb->addLogicInvInt(); // Invert to check if writing failed.
+          asmb->addLoadLitString("Write failed");
+          asmb->addPCall(novasm::PCallCode::Assert);
+          asmb->addRet();
+        },
+        "input");
+  }
 }
 
 } // namespace vm

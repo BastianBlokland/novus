@@ -114,8 +114,6 @@ auto GarbageCollector::mark() noexcept -> void {
 
     // Push any child references it has to the queue.
     switch (cur->getKind()) {
-    case RefKind::String:
-      break;
     case RefKind::Struct: {
       auto* s = downcastRef<StructRef>(cur);
       for (auto* fP = s->getFieldsBegin(); fP != s->getFieldsEnd(); ++fP) {
@@ -130,6 +128,8 @@ auto GarbageCollector::mark() noexcept -> void {
         m_markQueue.push_back(f->getResult().getRef());
       }
     } break;
+    case RefKind::String:
+    case RefKind::Stream:
     case RefKind::Long:
       break;
     }

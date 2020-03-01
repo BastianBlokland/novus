@@ -113,6 +113,12 @@ enum class FuncKind {
   ActionConReadChar,
   ActionConReadStringLine,
 
+  ActionStreamOpenFile,
+  ActionStreamCheckValid,
+  ActionStreamRead,
+  ActionStreamWrite,
+  ActionStreamFlush,
+
   ActionGetEnvArgCount,
   ActionGetEnvArg,
   ActionGetEnvVar,
