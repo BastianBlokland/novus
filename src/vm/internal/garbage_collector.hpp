@@ -7,6 +7,7 @@ namespace vm::internal {
 
 class Allocator;
 
+const auto gcMinIntervalSeconds   = 10;
 const auto initialGcMarkQueueSize = 1024;
 
 class GarbageCollector final {

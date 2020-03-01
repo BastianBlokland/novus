@@ -2,6 +2,7 @@
 #include "internal/allocator.hpp"
 #include "internal/ref_future.hpp"
 #include "internal/ref_struct.hpp"
+#include <chrono>
 #include <condition_variable>
 #include <mutex>
 
@@ -43,10 +44,12 @@ auto GarbageCollector::terminateCollector() noexcept -> void {
 
 auto GarbageCollector::collectorLoop() noexcept -> void {
   while (true) {
-    // Wait for a request.
+    // Wait for a request (or timout for a minimum gc interval).
     {
       std::unique_lock<std::mutex> lk(m_requestMutex);
-      m_requestCondVar.wait(lk, [this]() { return m_requestType != RequestType::None; });
+      m_requestCondVar.wait_for(lk, std::chrono::seconds(gcMinIntervalSeconds), [this]() {
+        return m_requestType != RequestType::None;
+      });
       if (m_requestType == RequestType::Terminate) {
         return;
       }
