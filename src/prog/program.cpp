@@ -255,6 +255,8 @@ Program::Program() :
       *this, Fk::ActionStreamWrite, "streamWrite", sym::TypeSet{m_stream, m_string}, m_bool);
   m_funcDecls.registerAction(
       *this, Fk::ActionStreamFlush, "streamFlush", sym::TypeSet{m_stream}, m_stream);
+  m_funcDecls.registerAction(
+      *this, Fk::ActionFileRemove, "fileRemove", sym::TypeSet{m_string}, m_bool);
 
   m_funcDecls.registerAction(
       *this, Fk::ActionGetEnvArg, "getEnvArg", sym::TypeSet{m_int}, m_string);

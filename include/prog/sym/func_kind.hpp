@@ -118,6 +118,7 @@ enum class FuncKind {
   ActionStreamRead,
   ActionStreamWrite,
   ActionStreamFlush,
+  ActionFileRemove,
 
   ActionGetEnvArgCount,
   ActionGetEnvArg,

@@ -86,4 +86,6 @@ inline auto openFileStream(Allocator* alloc, StringRef* path, FileStreamMode m, 
   return alloc->allocPlain<FileStreamRef>(filePtr, filePath, f);
 }
 
+inline auto removeFile(StringRef* path) -> bool { return std::remove(path->getDataPtr()) == 0; }
+
 } // namespace vm::internal

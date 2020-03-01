@@ -22,6 +22,7 @@ enum class PCallCode : uint8_t {
   StreamRead       = 33, // (int, stream)    -> (string)  Read up to x bytes from a stream.
   StreamWrite      = 34, // (string, stream) -> (int)     Write to a stream, returns success.
   StreamFlush      = 35, // (stream)         -> (stream)  Flush any unwritten data to output device.
+  FileRemove       = 36, // (string)         -> (int)     Remove the file at path, returns success.
 
   GetEnvArg      = 40, // (int)     -> (string) Get an environment argument by index.
   GetEnvArgCount = 41, // ()        -> (int)    Get the amount of environment arguments provided.

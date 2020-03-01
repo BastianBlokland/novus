@@ -124,6 +124,10 @@ auto inline pcall(
   case PCallCode::StreamFlush: {
     streamFlush(PEEK());
   } break;
+  case PCallCode::FileRemove: {
+    auto* pathStrRef = getStringRef(POP());
+    PUSH_BOOL(removeFile(pathStrRef));
+  } break;
 
   case PCallCode::GetEnvArg: {
     auto* res = iface->getEnvArg(POP_INT());
