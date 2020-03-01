@@ -1,5 +1,6 @@
 Checks: '*,
     -clang-analyzer-alpha.*,
+    -clang-analyzer-cplusplus.NewDeleteLeaks,
     -fuchsia-*,
     -cppcoreguidelines-pro-bounds-array-to-pointer-decay,
     -cppcoreguidelines-pro-bounds-pointer-arithmetic,
