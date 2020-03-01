@@ -27,7 +27,8 @@ Program::Program() :
     m_float{m_typeDecls.registerType(sym::TypeKind::Float, "float")},
     m_bool{m_typeDecls.registerType(sym::TypeKind::Bool, "bool")},
     m_string{m_typeDecls.registerType(sym::TypeKind::String, "string")},
-    m_char{m_typeDecls.registerType(sym::TypeKind::Char, "char")} {
+    m_char{m_typeDecls.registerType(sym::TypeKind::Char, "char")},
+    m_stream{m_typeDecls.registerType(sym::TypeKind::Stream, "stream")} {
 
   using Fk = typename prog::sym::FuncKind;
   using Op = typename prog::Operator;
@@ -245,6 +246,19 @@ Program::Program() :
       *this, Fk::ActionConReadStringLine, "conReadLine", sym::TypeSet{}, m_string);
 
   m_funcDecls.registerAction(
+      *this, Fk::ActionStreamOpenFile, "fileOpenStream", sym::TypeSet{m_string, m_int}, m_stream);
+  m_funcDecls.registerAction(
+      *this, Fk::ActionStreamCheckValid, "streamCheckValid", sym::TypeSet{m_stream}, m_bool);
+  m_funcDecls.registerAction(
+      *this, Fk::ActionStreamRead, "streamRead", sym::TypeSet{m_stream, m_int}, m_string);
+  m_funcDecls.registerAction(
+      *this, Fk::ActionStreamWrite, "streamWrite", sym::TypeSet{m_stream, m_string}, m_bool);
+  m_funcDecls.registerAction(
+      *this, Fk::ActionStreamFlush, "streamFlush", sym::TypeSet{m_stream}, m_stream);
+  m_funcDecls.registerAction(
+      *this, Fk::ActionFileRemove, "fileRemove", sym::TypeSet{m_string}, m_bool);
+
+  m_funcDecls.registerAction(
       *this, Fk::ActionGetEnvArg, "getEnvArg", sym::TypeSet{m_int}, m_string);
   m_funcDecls.registerAction(
       *this, Fk::ActionGetEnvArgCount, "getEnvArgCount", sym::TypeSet{}, m_int);
@@ -260,40 +274,6 @@ Program::Program() :
   m_funcDecls.registerAction(
       *this, Fk::ActionAssert, "assert", sym::TypeSet{m_bool, m_string}, m_bool);
 }
-
-auto Program::beginTypeDecls() const -> TypeDeclIterator { return m_typeDecls.begin(); }
-
-auto Program::endTypeDecls() const -> TypeDeclIterator { return m_typeDecls.end(); }
-
-auto Program::getFuncCount() const -> unsigned int { return m_funcDecls.getFuncCount(); }
-
-auto Program::beginFuncDecls() const -> FuncDeclIterator { return m_funcDecls.begin(); }
-
-auto Program::endFuncDecls() const -> FuncDeclIterator { return m_funcDecls.end(); }
-
-auto Program::beginTypeDefs() const -> TypeDefIterator { return m_typeDefs.begin(); }
-
-auto Program::endTypeDefs() const -> TypeDefIterator { return m_typeDefs.end(); }
-
-auto Program::beginFuncDefs() const -> FuncDefIterator { return m_funcDefs.begin(); }
-
-auto Program::endFuncDefs() const -> FuncDefIterator { return m_funcDefs.end(); }
-
-auto Program::beginExecStmts() const -> ExecStmtIterator { return m_execStmts.begin(); }
-
-auto Program::endExecStmts() const -> ExecStmtIterator { return m_execStmts.end(); }
-
-auto Program::getInt() const noexcept -> sym::TypeId { return m_int; }
-
-auto Program::getLong() const noexcept -> sym::TypeId { return m_long; }
-
-auto Program::getFloat() const noexcept -> sym::TypeId { return m_float; }
-
-auto Program::getBool() const noexcept -> sym::TypeId { return m_bool; }
-
-auto Program::getString() const noexcept -> sym::TypeId { return m_string; }
-
-auto Program::getChar() const noexcept -> sym::TypeId { return m_char; }
 
 auto Program::hasType(const std::string& name) const -> bool { return m_typeDecls.exists(name); }
 

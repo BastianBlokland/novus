@@ -8,6 +8,7 @@ enum class RefKind : uint8_t {
   Future = 1U,
   String = 2U,
   Long   = 3U,
+  Stream = 4U,
 };
 
 } // namespace vm::internal

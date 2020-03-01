@@ -443,6 +443,25 @@ auto GenExpr::visit(const prog::expr::CallExprNode& n) -> void {
     m_asmb->addPCall(novasm::PCallCode::ConReadStringLine);
     break;
 
+  case prog::sym::FuncKind::ActionStreamOpenFile:
+    m_asmb->addPCall(novasm::PCallCode::StreamOpenFile);
+    break;
+  case prog::sym::FuncKind::ActionStreamCheckValid:
+    m_asmb->addPCall(novasm::PCallCode::StreamCheckValid);
+    break;
+  case prog::sym::FuncKind::ActionStreamRead:
+    m_asmb->addPCall(novasm::PCallCode::StreamRead);
+    break;
+  case prog::sym::FuncKind::ActionStreamWrite:
+    m_asmb->addPCall(novasm::PCallCode::StreamWrite);
+    break;
+  case prog::sym::FuncKind::ActionStreamFlush:
+    m_asmb->addPCall(novasm::PCallCode::StreamFlush);
+    break;
+  case prog::sym::FuncKind::ActionFileRemove:
+    m_asmb->addPCall(novasm::PCallCode::FileRemove);
+    break;
+
   case prog::sym::FuncKind::ActionGetEnvArg:
     m_asmb->addPCall(novasm::PCallCode::GetEnvArg);
     break;

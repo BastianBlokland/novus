@@ -1,16 +1,19 @@
 #pragma once
+#include "gsl.hpp"
 #include "internal/executor_registry.hpp"
 #include "internal/garbage_collector.hpp"
-#include "internal/ref_future.hpp"
-#include "internal/ref_long.hpp"
-#include "internal/ref_string.hpp"
-#include "internal/ref_struct.hpp"
 #include <atomic>
 #include <utility>
 
 namespace vm::internal {
 
 const auto gcByteInterval = 10 * 1024 * 1024; // 10 MiB
+
+class FutureRef;
+class LongRef;
+class StreamRef;
+class StringRef;
+class StructRef;
 
 class Allocator final {
 public:
@@ -31,11 +34,20 @@ public:
   // Allocate a struct, upon failure returns {nullptr, nullptr}.
   [[nodiscard]] auto allocStruct(uint8_t fieldCount) noexcept -> std::pair<StructRef*, Value*>;
 
-  // Allocate a future, upon failure returns {nullptr}.
-  [[nodiscard]] auto allocFuture() noexcept -> FutureRef*;
+  // Allocate a plain ref type, upon failure returns {nullptr}.
+  template <typename RefType, class... ArgTypes>
+  [[nodiscard]] auto allocPlain(ArgTypes&&... args) noexcept -> RefType* {
+    static_assert(std::is_convertible<RefType*, Ref*>());
 
-  // Allocate a long, upon failure returns {nullptr}.
-  [[nodiscard]] auto allocLong(int64_t val) noexcept -> LongRef*;
+    auto mem = alloc<RefType>(0);
+    if (mem.first == nullptr) {
+      return nullptr;
+    }
+
+    auto* refPtr = static_cast<RefType*>(new (mem.first) RefType{std::forward<ArgTypes>(args)...});
+    initRef(refPtr);
+    return refPtr;
+  }
 
   [[nodiscard]] inline auto getHeadAlloc() noexcept -> Ref* {
     return m_head.load(std::memory_order_acquire);

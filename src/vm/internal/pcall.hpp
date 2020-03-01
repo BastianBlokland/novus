@@ -1,5 +1,7 @@
 #pragma once
 #include "internal/executor_handle.hpp"
+#include "internal/ref_long.hpp"
+#include "internal/ref_stream_file.hpp"
 #include "internal/stack.hpp"
 #include "internal/string_utilities.hpp"
 #include "novasm/pcall_code.hpp"
@@ -14,11 +16,11 @@ const auto static newl = '\n';
 template <typename PlatformInterface>
 auto inline pcall(
     PlatformInterface* iface,
-    Allocator* allocator,
+    Allocator* alloc,
     BasicStack* stack,
     ExecutorHandle* execHandle,
     novasm::PCallCode code) noexcept -> void {
-  assert(iface && allocator && stack && execHandle);
+  assert(iface && alloc && stack && execHandle);
 
   using PCallCode = novasm::PCallCode;
 
@@ -28,13 +30,14 @@ auto inline pcall(
     return;                                                                                        \
   }
 #define PUSH_INT(VAL) PUSH(intValue(VAL))
+#define PUSH_BOOL(VAL) PUSH(intValue(VAL))
 #define PUSH_LONG(VAL)                                                                             \
   {                                                                                                \
     int64_t v = VAL;                                                                               \
     if (v > 0) {                                                                                   \
       PUSH(posLongValue(v));                                                                       \
     } else {                                                                                       \
-      PUSH_REF(allocator->allocLong(v));                                                           \
+      PUSH_REF(alloc->allocPlain<LongRef>(v));                                                     \
     }                                                                                              \
   }
 #define PUSH_REF(VAL)                                                                              \
@@ -95,12 +98,40 @@ auto inline pcall(
     iface->unlockConRead();
     execHandle->setState(ExecState::Running);
     execHandle->trap();
-    PUSH_REF(toStringRef(allocator, line));
+    PUSH_REF(toStringRef(alloc, line));
+  } break;
+
+  case PCallCode::StreamOpenFile: {
+    auto options = POP_INT();
+    // Mode is stored in the least significant 8 bits.
+    // Flags is stored in the 8 bits before (more significant) then mode.
+    auto mode        = static_cast<FileStreamMode>(static_cast<uint8_t>(options));
+    auto flags       = static_cast<FileStreamFlags>(static_cast<uint8_t>(options >> 8U));
+    auto* pathStrRef = getStringRef(POP());
+    PUSH_REF(openFileStream(alloc, pathStrRef, mode, flags));
+  } break;
+  case PCallCode::StreamCheckValid: {
+    PUSH_BOOL(streamCheckValid(POP()));
+  } break;
+  case PCallCode::StreamRead: {
+    auto maxChars = POP_INT();
+    PUSH_REF(streamRead(alloc, POP(), maxChars));
+  } break;
+  case PCallCode::StreamWrite: {
+    auto* strRef = getStringRef(POP());
+    PUSH_BOOL(streamWrite(POP(), strRef));
+  } break;
+  case PCallCode::StreamFlush: {
+    streamFlush(PEEK());
+  } break;
+  case PCallCode::FileRemove: {
+    auto* pathStrRef = getStringRef(POP());
+    PUSH_BOOL(removeFile(pathStrRef));
   } break;
 
   case PCallCode::GetEnvArg: {
     auto* res = iface->getEnvArg(POP_INT());
-    PUSH_REF(res == nullptr ? allocator->allocStr(0).first : toStringRef(allocator, res));
+    PUSH_REF(res == nullptr ? alloc->allocStr(0).first : toStringRef(alloc, res));
   } break;
   case PCallCode::GetEnvArgCount: {
     PUSH_INT(iface->getEnvArgCount());
@@ -108,7 +139,7 @@ auto inline pcall(
   case PCallCode::GetEnvVar: {
     auto* nameStrRef = getStringRef(POP());
     auto* res        = iface->getEnvVar(nameStrRef->getDataPtr());
-    PUSH_REF(res == nullptr ? allocator->allocStr(0).first : toStringRef(allocator, res));
+    PUSH_REF(res == nullptr ? alloc->allocStr(0).first : toStringRef(alloc, res));
   } break;
 
   case PCallCode::ClockMicroSinceEpoch: {
@@ -144,6 +175,7 @@ auto inline pcall(
 
 #undef PUSH
 #undef PUSH_INT
+#undef PUSH_BOOL
 #undef PUSH_LONG
 #undef PUSH_REF
 #undef POP

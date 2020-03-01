@@ -21,6 +21,25 @@ auto operator<<(std::ostream& out, const PCallCode& rhs) noexcept -> std::ostrea
     out << "con-read-string-line";
     break;
 
+  case PCallCode::StreamOpenFile:
+    out << "stream-open-file";
+    break;
+  case PCallCode::StreamCheckValid:
+    out << "stream-check-valid";
+    break;
+  case PCallCode::StreamRead:
+    out << "stream-read";
+    break;
+  case PCallCode::StreamWrite:
+    out << "stream-write";
+    break;
+  case PCallCode::StreamFlush:
+    out << "stream-flush";
+    break;
+  case PCallCode::FileRemove:
+    out << "file-remove";
+    break;
+
   case PCallCode::GetEnvArg:
     out << "get-env-arg";
     break;

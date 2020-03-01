@@ -10,6 +10,7 @@ auto isPrimitive(const TypeKind& kind) -> bool {
   case TypeKind::Float:
   case TypeKind::String:
   case TypeKind::Char:
+  case TypeKind::Stream:
     return true;
   case TypeKind::Struct:
   case TypeKind::Union:
@@ -40,6 +41,9 @@ auto operator<<(std::ostream& out, const TypeKind& rhs) -> std::ostream& {
     break;
   case TypeKind::Char:
     out << "char";
+    break;
+  case TypeKind::Stream:
+    out << "stream";
     break;
   case TypeKind::Struct:
     out << "struct";

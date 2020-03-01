@@ -1,7 +1,10 @@
 #include "internal/executor.hpp"
 #include "internal/allocator.hpp"
 #include "internal/pcall.hpp"
+#include "internal/ref_future.hpp"
+#include "internal/ref_long.hpp"
 #include "internal/ref_string.hpp"
+#include "internal/ref_struct.hpp"
 #include "internal/stack.hpp"
 #include "internal/string_utilities.hpp"
 #include "novasm/op_code.hpp"
@@ -111,7 +114,7 @@ inline auto fork(
     uint32_t entryIpOffset) -> bool {
 
   // Create a future object to interact with the fork.
-  auto* future = allocator->allocFuture();
+  auto* future = allocator->allocPlain<FutureRef>();
   if (future == nullptr) {
     execHandle->setState(ExecState::AllocFailed);
     return false;
@@ -188,7 +191,7 @@ auto execute(
     if (v > 0) {                                                                                   \
       PUSH(posLongValue(v));                                                                       \
     } else {                                                                                       \
-      PUSH_REF(allocator->allocLong(v));                                                           \
+      PUSH_REF(allocator->allocPlain<LongRef>(v));                                                 \
     }                                                                                              \
   }
 #define PUSH_BOOL(VAL) PUSH(intValue(VAL))

@@ -1,6 +1,7 @@
 #pragma once
 #include "charconv.hpp"
 #include "internal/allocator.hpp"
+#include "internal/ref_string.hpp"
 #include <cmath>
 #include <cstdio>
 #include <cstring>

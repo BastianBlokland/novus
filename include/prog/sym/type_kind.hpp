@@ -10,6 +10,7 @@ enum class TypeKind {
   Bool,
   String,
   Char,
+  Stream,
   Struct,
   Union,
   Enum,

@@ -50,6 +50,7 @@ auto FindTypes::markType(prog::sym::TypeId type) -> void {
   case prog::sym::TypeKind::Bool:
   case prog::sym::TypeKind::String:
   case prog::sym::TypeKind::Char:
+  case prog::sym::TypeKind::Stream:
     break;
   }
 }
