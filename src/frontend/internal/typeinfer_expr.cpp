@@ -172,6 +172,7 @@ auto TypeInferExpr::visit(const parse::ConditionalExprNode& n) -> void {
 auto TypeInferExpr::visit(const parse::ConstDeclExprNode& n) -> void {
   auto assignmentType = inferSubExpr(n[0]);
   setConstType(n.getId(), assignmentType);
+  m_type = assignmentType;
 }
 
 auto TypeInferExpr::visit(const parse::IdExprNode& n) -> void {
