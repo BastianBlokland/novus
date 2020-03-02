@@ -77,6 +77,7 @@ enum class FuncKind {
   CheckEqString,
   CheckNEqString,
 
+  AddChar,
   IncrementChar,
   DecrementChar,
 

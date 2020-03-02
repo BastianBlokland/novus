@@ -66,6 +66,18 @@ template <typename IntType>
   return strRefAlloc.first;
 }
 
+[[nodiscard]] auto inline charsToString(Allocator* allocator, uint8_t a, uint8_t b) noexcept
+    -> StringRef* {
+  const auto strRefAlloc = allocator->allocStr(2);
+  if (strRefAlloc.first == nullptr) {
+    return nullptr;
+  }
+
+  strRefAlloc.second[0] = a;
+  strRefAlloc.second[1] = b;
+  return strRefAlloc.first;
+}
+
 [[nodiscard]] auto inline toStringRef(Allocator* allocator, const std::string& val) noexcept
     -> StringRef* {
   const auto strRefAlloc = allocator->allocStr(val.length());

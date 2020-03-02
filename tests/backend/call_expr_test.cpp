@@ -311,6 +311,11 @@ TEST_CASE("Generate assembly for call expressions", "[backend]") {
   }
 
   SECTION("Char operations") {
+    CHECK_EXPR_STRING("'a' + 'b'", [](novasm::Assembler* asmb) -> void {
+      asmb->addLoadLitInt('a');
+      asmb->addLoadLitInt('b');
+      asmb->addAddChar();
+    });
     CHECK_EXPR_CHAR("--'a'", [](novasm::Assembler* asmb) -> void {
       asmb->addLoadLitInt('a');
       asmb->addLoadLitInt(1);

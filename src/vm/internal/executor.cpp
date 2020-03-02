@@ -307,6 +307,11 @@ auto execute(
       auto* a = getStringRef(POP());
       PUSH_REF(concatString(allocator, a, b));
     } break;
+    case OpCode::AddChar: {
+      auto b = static_cast<uint8_t>(POP_INT());
+      auto a = static_cast<uint8_t>(POP_INT());
+      PUSH_REF(charsToString(allocator, a, b));
+    } break;
     case OpCode::SubInt: {
       auto b = POP_INT();
       auto a = POP_INT();
