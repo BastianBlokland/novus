@@ -314,7 +314,7 @@ TEST_CASE("Generate assembly for call expressions", "[backend]") {
     CHECK_EXPR_STRING("'a' + 'b'", [](novasm::Assembler* asmb) -> void {
       asmb->addLoadLitInt('a');
       asmb->addLoadLitInt('b');
-      asmb->addAddChar();
+      asmb->addCombineChar();
     });
     CHECK_EXPR_CHAR("--'a'", [](novasm::Assembler* asmb) -> void {
       asmb->addLoadLitInt('a');
@@ -409,6 +409,12 @@ TEST_CASE("Generate assembly for call expressions", "[backend]") {
       asmb->addAddString();
     });
 
+    CHECK_EXPR_STRING("\"hello worl\" + 'd'", [](novasm::Assembler* asmb) -> void {
+      asmb->addLoadLitString("hello worl");
+      asmb->addLoadLitInt('d');
+      asmb->addAppendChar();
+    });
+
     CHECK_EXPR_INT("length(\"hello world\")", [](novasm::Assembler* asmb) -> void {
       asmb->addLoadLitString("hello world");
       asmb->addLengthString();
@@ -478,11 +484,11 @@ TEST_CASE("Generate assembly for call expressions", "[backend]") {
       asmb->addLoadLitInt('a');
       asmb->addConvCharString();
     });
-    CHECK_EXPR_INT("char(42)", [](novasm::Assembler* asmb) -> void {
+    CHECK_EXPR_CHAR("char(42)", [](novasm::Assembler* asmb) -> void {
       asmb->addLoadLitInt(42); // NOLINT: Magic numbers
       asmb->addConvIntChar();
     });
-    CHECK_EXPR_INT("char(42.42)", [](novasm::Assembler* asmb) -> void {
+    CHECK_EXPR_CHAR("char(42.42)", [](novasm::Assembler* asmb) -> void {
       asmb->addLoadLitFloat(42.42F); // NOLINT: Magic numbers
       asmb->addConvFloatChar();
     });

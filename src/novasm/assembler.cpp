@@ -78,7 +78,9 @@ auto Assembler::addAddFloat() -> void { writeOpCode(OpCode::AddFloat); }
 
 auto Assembler::addAddString() -> void { writeOpCode(OpCode::AddString); }
 
-auto Assembler::addAddChar() -> void { writeOpCode(OpCode::AddChar); }
+auto Assembler::addCombineChar() -> void { writeOpCode(OpCode::CombineChar); }
+
+auto Assembler::addAppendChar() -> void { writeOpCode(OpCode::AppendChar); }
 
 auto Assembler::addSubInt() -> void { writeOpCode(OpCode::SubInt); }
 

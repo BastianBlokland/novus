@@ -51,8 +51,11 @@ auto operator<<(std::ostream& out, const OpCode& rhs) noexcept -> std::ostream& 
   case OpCode::AddString:
     out << "add-string";
     break;
-  case OpCode::AddChar:
-    out << "add-char";
+  case OpCode::CombineChar:
+    out << "combine-char";
+    break;
+  case OpCode::AppendChar:
+    out << "append-char";
     break;
   case OpCode::SubInt:
     out << "sub-int";

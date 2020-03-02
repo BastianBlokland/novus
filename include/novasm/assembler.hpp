@@ -42,7 +42,8 @@ public:
   auto addAddLong() -> void;
   auto addAddFloat() -> void;
   auto addAddString() -> void;
-  auto addAddChar() -> void;
+  auto addCombineChar() -> void;
+  auto addAppendChar() -> void;
   auto addSubInt() -> void;
   auto addSubLong() -> void;
   auto addSubFloat() -> void;

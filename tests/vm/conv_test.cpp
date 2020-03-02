@@ -436,29 +436,6 @@ TEST_CASE("Execute conversions", "[vm]") {
         "input",
         "0");
   }
-
-  SECTION("Add chars") {
-    CHECK_EXPR(
-        [](novasm::Assembler* asmb) -> void {
-          asmb->addLoadLitInt('a');
-          asmb->addLoadLitInt('b');
-          asmb->addAddChar();
-
-          asmb->addPCall(novasm::PCallCode::ConWriteString);
-        },
-        "input",
-        "ab");
-    CHECK_EXPR(
-        [](novasm::Assembler* asmb) -> void {
-          asmb->addLoadLitInt(256 + 'a');
-          asmb->addLoadLitInt(256 + 'b');
-          asmb->addAddChar();
-
-          asmb->addPCall(novasm::PCallCode::ConWriteString);
-        },
-        "input",
-        "ab");
-  }
 }
 
 } // namespace vm

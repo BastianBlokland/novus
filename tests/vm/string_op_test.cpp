@@ -19,6 +19,52 @@ TEST_CASE("Execute string operations", "[vm]") {
         "hello world");
   }
 
+  SECTION("Combine chars") {
+    CHECK_EXPR(
+        [](novasm::Assembler* asmb) -> void {
+          asmb->addLoadLitInt('a');
+          asmb->addLoadLitInt('b');
+          asmb->addCombineChar();
+
+          asmb->addPCall(novasm::PCallCode::ConWriteString);
+        },
+        "input",
+        "ab");
+    CHECK_EXPR(
+        [](novasm::Assembler* asmb) -> void {
+          asmb->addLoadLitInt(256 + 'a');
+          asmb->addLoadLitInt(256 + 'b');
+          asmb->addCombineChar();
+
+          asmb->addPCall(novasm::PCallCode::ConWriteString);
+        },
+        "input",
+        "ab");
+  }
+
+  SECTION("Append char") {
+    CHECK_EXPR(
+        [](novasm::Assembler* asmb) -> void {
+          asmb->addLoadLitString("hello worl");
+          asmb->addLoadLitInt('d');
+          asmb->addAppendChar();
+
+          asmb->addPCall(novasm::PCallCode::ConWriteString);
+        },
+        "input",
+        "hello world");
+    CHECK_EXPR(
+        [](novasm::Assembler* asmb) -> void {
+          asmb->addLoadLitString("");
+          asmb->addLoadLitInt('h');
+          asmb->addAppendChar();
+
+          asmb->addPCall(novasm::PCallCode::ConWriteString);
+        },
+        "input",
+        "h");
+  }
+
   SECTION("Length") {
     CHECK_EXPR(
         [](novasm::Assembler* asmb) -> void {

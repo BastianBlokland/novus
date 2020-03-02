@@ -157,4 +157,19 @@ template <typename IntType>
   return alloc.first;
 }
 
+[[nodiscard]] auto inline appendChar(Allocator* allocator, StringRef* a, uint8_t b) noexcept
+    -> StringRef* {
+
+  // Make a new string 1 character bigger and copy the original string + the extra character.
+  auto alloc = allocator->allocStr(a->getSize() + 1);
+  if (alloc.first == nullptr) {
+    return nullptr;
+  }
+
+  std::memcpy(alloc.second, a->getDataPtr(), a->getSize());
+  alloc.second[a->getSize()] = b;
+
+  return alloc.first;
+}
+
 } // namespace vm::internal
