@@ -211,7 +211,7 @@
     "lambda_declaration": {
       "patterns": [
         {
-          "begin": "\\s*\\b(impure\\s+)?(lambda)\\s+\\(",
+          "begin": "\\s*\\b(impure\\s+)?(lambda)\\s*\\(",
           "beginCaptures": {
             "1": {
               "name": "keyword.other.impure.source.novus"

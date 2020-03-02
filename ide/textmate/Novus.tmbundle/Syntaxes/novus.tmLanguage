@@ -325,7 +325,7 @@
 			<array>
 				<dict>
 					<key>begin</key>
-					<string>\s*\b(impure\s+)?(lambda)\s+\(</string>
+					<string>\s*\b(impure\s+)?(lambda)\s*\(</string>
 					<key>beginCaptures</key>
 					<dict>
 						<key>1</key>
