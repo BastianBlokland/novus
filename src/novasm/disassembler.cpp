@@ -182,6 +182,7 @@ auto disassembleInstructions(const Assembly& assembly, const dasm::InstructionLa
     case OpCode::ConvFloatString:
     case OpCode::ConvCharString:
     case OpCode::ConvIntChar:
+    case OpCode::ConvFloatChar:
     case OpCode::Ret:
     case OpCode::Fail:
     case OpCode::FutureWaitNano:

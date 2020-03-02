@@ -87,6 +87,7 @@ enum class OpCode : uint8_t {
   ConvFloatString = 117, // [] (float) -> (string)   Convert float to string.
   ConvCharString  = 118, // [] (int)   -> (string)   Convert char to string (ascii).
   ConvIntChar     = 119, // [] (int)   -> (int)      Convert int to char (ascii).
+  ConvFloatChar   = 120, // [] (float) -> (int)      Convert float to char (ascii).
 
   MakeStruct      = 190, // [uint8] (any ...) -> (struct) Create structure containing x values.
   LoadStructField = 191, // [uint8] (struct)  -> (any)    Get value of field x in structure.

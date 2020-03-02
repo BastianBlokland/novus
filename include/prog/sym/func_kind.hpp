@@ -91,6 +91,7 @@ enum class FuncKind {
   ConvBoolString,
   ConvCharString,
   ConvIntChar,
+  ConvFloatChar,
 
   DefInt,
   DefLong,

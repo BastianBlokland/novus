@@ -101,6 +101,7 @@ public:
   auto addConvBoolString() -> void;
   auto addConvCharString() -> void;
   auto addConvIntChar() -> void;
+  auto addConvFloatChar() -> void;
 
   auto addMakeStruct(uint8_t fieldCount) -> void;
   auto addLoadStructField(uint8_t fieldIndex) -> void;

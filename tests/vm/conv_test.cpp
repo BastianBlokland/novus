@@ -394,6 +394,49 @@ TEST_CASE("Execute conversions", "[vm]") {
         "57");
   }
 
+  SECTION("Float to Char") {
+    CHECK_EXPR(
+        [](novasm::Assembler* asmb) -> void {
+          asmb->addLoadLitFloat(0);
+          asmb->addConvFloatChar();
+
+          asmb->addConvIntString();
+          asmb->addPCall(novasm::PCallCode::ConWriteString);
+        },
+        "input",
+        "0");
+    CHECK_EXPR(
+        [](novasm::Assembler* asmb) -> void {
+          asmb->addLoadLitFloat(42.42F); // NOLINT: Magic numbers
+          asmb->addConvFloatChar();
+
+          asmb->addConvIntString();
+          asmb->addPCall(novasm::PCallCode::ConWriteString);
+        },
+        "input",
+        "42");
+    CHECK_EXPR(
+        [](novasm::Assembler* asmb) -> void {
+          asmb->addLoadLitFloat(257.256); // NOLINT: Magic numbers
+          asmb->addConvFloatChar();
+
+          asmb->addConvIntString();
+          asmb->addPCall(novasm::PCallCode::ConWriteString);
+        },
+        "input",
+        "1");
+    CHECK_EXPR(
+        [](novasm::Assembler* asmb) -> void {
+          asmb->addLoadLitFloat(0.9F); // NOLINT: Magic numbers
+          asmb->addConvFloatChar();
+
+          asmb->addConvIntString();
+          asmb->addPCall(novasm::PCallCode::ConWriteString);
+        },
+        "input",
+        "0");
+  }
+
   SECTION("Add chars") {
     CHECK_EXPR(
         [](novasm::Assembler* asmb) -> void {
