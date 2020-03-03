@@ -20,7 +20,7 @@ if(MSVC)
   set(CMAKE_CXX_FLAGS "/std:c++17")
 else()
   set(CMAKE_CXX_FLAGS_DEBUG "-g -std=c++17 -stdlib=libc++ -Werror -Wall -Wextra")
-  set(CMAKE_CXX_FLAGS_RELEASE "-O3 -std=c++17 -stdlib=libc++ -Werror -Wall -Wextra")
+  set(CMAKE_CXX_FLAGS_RELEASE "-O3 -DNDEBUG -std=c++17 -stdlib=libc++ -Werror -Wall -Wextra")
 endif()
 
 # Find the threads library.
