@@ -148,7 +148,6 @@ auto GarbageCollector::sweep(Ref* head) noexcept -> void {
   // deleted. This won't ever delete the head node, reason is that would require syncronization as
   // the running program might change the head.
 
-  assert(head->hasFlag<RefFlags::GcMarked>());
   head->unsetFlag<RefFlags::GcMarked>();
 
   Ref* prev = head;
