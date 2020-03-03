@@ -140,13 +140,16 @@ auto GarbageCollector::mark() noexcept -> void {
 }
 
 auto GarbageCollector::sweep(Ref* head) noexcept -> void {
+  if (head == nullptr) {
+    return;
+  }
+
   // Walks the list of allocations, if its marked then its unmarked and if its not marked it is
   // deleted. This won't ever delete the head node, reason is that would require syncronization as
   // the running program might change the head.
 
-  if (head == nullptr) {
-    return;
-  }
+  assert(head->hasFlag<RefFlags::GcMarked>());
+  head->unsetFlag<RefFlags::GcMarked>();
 
   Ref* prev = head;
   Ref* cur  = m_allocator->getNextAlloc(head);
