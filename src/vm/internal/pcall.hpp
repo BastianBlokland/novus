@@ -34,7 +34,7 @@ auto inline pcall(
 #define PUSH_LONG(VAL)                                                                             \
   {                                                                                                \
     int64_t v = VAL;                                                                               \
-    if (v > 0) {                                                                                   \
+    if (v >= 0L) {                                                                                 \
       PUSH(posLongValue(v));                                                                       \
     } else {                                                                                       \
       PUSH_REF(alloc->allocPlain<LongRef>(v));                                                     \

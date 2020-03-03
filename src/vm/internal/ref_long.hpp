@@ -26,7 +26,7 @@ private:
   inline explicit LongRef(int64_t val) noexcept : Ref(getKind()), m_val{val} {}
 };
 
-inline auto getLong(const Value& val) noexcept {
+inline auto getLong(const Value& val) noexcept -> int64_t {
   // Positive long's (most significant bit always 0) are stored in the value directly, while
   // negative longs are stored as references.
   if (val.isRef()) {
