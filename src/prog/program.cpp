@@ -255,9 +255,11 @@ Program::Program() :
   m_funcDecls.registerAction(
       *this, Fk::ActionStreamCheckValid, "streamCheckValid", sym::TypeSet{m_stream}, m_bool);
   m_funcDecls.registerAction(
-      *this, Fk::ActionStreamRead, "streamRead", sym::TypeSet{m_stream, m_int}, m_string);
+      *this, Fk::ActionStreamReadString, "streamRead", sym::TypeSet{m_stream, m_int}, m_string);
   m_funcDecls.registerAction(
-      *this, Fk::ActionStreamWrite, "streamWrite", sym::TypeSet{m_stream, m_string}, m_bool);
+      *this, Fk::ActionStreamWriteString, "streamWrite", sym::TypeSet{m_stream, m_string}, m_bool);
+  m_funcDecls.registerAction(
+      *this, Fk::ActionStreamWriteChar, "streamWrite", sym::TypeSet{m_stream, m_char}, m_bool);
   m_funcDecls.registerAction(
       *this, Fk::ActionStreamFlush, "streamFlush", sym::TypeSet{m_stream}, m_stream);
   m_funcDecls.registerAction(

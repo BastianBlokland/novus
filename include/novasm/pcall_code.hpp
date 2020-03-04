@@ -17,19 +17,21 @@ enum class PCallCode : uint8_t {
   ConReadChar       = 21, // () -> (int)    Read a (ascii) char from the console.
   ConReadStringLine = 22, // () -> (string) Read a string from the console.
 
-  StreamOpenFile   = 31, // (int, string)    -> (stream)  Open a file at path with options.
-  StreamCheckValid = 32, // (stream)         -> (int)     Check if given stream is valid.
-  StreamRead       = 33, // (int, stream)    -> (string)  Read up to x bytes from a stream.
-  StreamWrite      = 34, // (string, stream) -> (int)     Write to a stream, returns success.
-  StreamFlush      = 35, // (stream)         -> (stream)  Flush any unwritten data to output device.
-  FileRemove       = 36, // (string)         -> (int)     Remove the file at path, returns success.
+  StreamOpenFile    = 31, // (int, string)    -> (stream)  Open a file at path with options.
+  StreamCheckValid  = 32, // (stream)         -> (int)     Check if given stream is valid.
+  StreamReadString  = 33, // (int, stream)    -> (string)  Read up to x bytes from a stream.
+  StreamWriteString = 34, // (string, stream) -> (int)     Write string, returns success.
+  StreamWriteChar   = 35, // (int, stream)    -> (int)     Write character, returns success.
 
-  GetEnvArg      = 40, // (int)     -> (string) Get an environment argument by index.
-  GetEnvArgCount = 41, // ()        -> (int)    Get the amount of environment arguments provided.
-  GetEnvVar      = 42, // (string)  -> (string) Get a environment variable by name.
+  StreamFlush = 40, // (stream)         -> (stream)  Flush any unwritten data to output device.
+  FileRemove  = 41, // (string)         -> (int)     Remove the file at path, returns success.
 
-  ClockMicroSinceEpoch = 50, // () -> (long) Get the elapsed microseconds since unix epoch.
-  ClockNanoSteady      = 51, // () -> (long) Get process steady clock in nanoseconds.
+  GetEnvArg      = 50, // (int)     -> (string) Get an environment argument by index.
+  GetEnvArgCount = 51, // ()        -> (int)    Get the amount of environment arguments provided.
+  GetEnvVar      = 52, // (string)  -> (string) Get a environment variable by name.
+
+  ClockMicroSinceEpoch = 60, // () -> (long) Get the elapsed microseconds since unix epoch.
+  ClockNanoSteady      = 61, // () -> (long) Get process steady clock in nanoseconds.
 
   SleepNano = 240, // (long)         -> (long) Sleep the current executor for x nanoseconds.
   Assert    = 241, // (string, int)  -> (int) If condition is false: fail with message.

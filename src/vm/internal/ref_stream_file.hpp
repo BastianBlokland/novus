@@ -36,7 +36,7 @@ public:
 
   [[nodiscard]] auto isValid() noexcept -> bool override { return m_filePtr != nullptr; }
 
-  auto read(Allocator* alloc, int32_t max) noexcept -> StringRef* override {
+  auto readString(Allocator* alloc, int32_t max) noexcept -> StringRef* override {
     auto strAlloc              = alloc->allocStr(max); // allocStr already does +1 for null-ter.
     auto bytesRead             = std::fread(strAlloc.second, 1U, max, m_filePtr);
     strAlloc.second[bytesRead] = '\0'; // null-terminate.
@@ -44,8 +44,12 @@ public:
     return strAlloc.first;
   }
 
-  auto write(StringRef* str) noexcept -> bool override {
+  auto writeString(StringRef* str) noexcept -> bool override {
     return std::fwrite(str->getDataPtr(), str->getSize(), 1, m_filePtr) == 1;
+  }
+
+  auto writeChar(uint8_t val) noexcept -> bool override {
+    return std::fputc(val, m_filePtr) == val;
   }
 
   auto flush() noexcept -> void override { std::fflush(m_filePtr); }

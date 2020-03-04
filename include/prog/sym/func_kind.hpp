@@ -118,8 +118,9 @@ enum class FuncKind {
 
   ActionStreamOpenFile,
   ActionStreamCheckValid,
-  ActionStreamRead,
-  ActionStreamWrite,
+  ActionStreamReadString,
+  ActionStreamWriteString,
+  ActionStreamWriteChar,
   ActionStreamFlush,
   ActionFileRemove,
 

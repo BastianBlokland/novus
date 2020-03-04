@@ -458,11 +458,14 @@ auto GenExpr::visit(const prog::expr::CallExprNode& n) -> void {
   case prog::sym::FuncKind::ActionStreamCheckValid:
     m_asmb->addPCall(novasm::PCallCode::StreamCheckValid);
     break;
-  case prog::sym::FuncKind::ActionStreamRead:
-    m_asmb->addPCall(novasm::PCallCode::StreamRead);
+  case prog::sym::FuncKind::ActionStreamReadString:
+    m_asmb->addPCall(novasm::PCallCode::StreamReadString);
     break;
-  case prog::sym::FuncKind::ActionStreamWrite:
-    m_asmb->addPCall(novasm::PCallCode::StreamWrite);
+  case prog::sym::FuncKind::ActionStreamWriteString:
+    m_asmb->addPCall(novasm::PCallCode::StreamWriteString);
+    break;
+  case prog::sym::FuncKind::ActionStreamWriteChar:
+    m_asmb->addPCall(novasm::PCallCode::StreamWriteChar);
     break;
   case prog::sym::FuncKind::ActionStreamFlush:
     m_asmb->addPCall(novasm::PCallCode::StreamFlush);

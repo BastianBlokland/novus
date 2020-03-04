@@ -19,9 +19,10 @@ public:
 
   [[nodiscard]] virtual auto isValid() noexcept -> bool = 0;
 
-  virtual auto read(Allocator* alloc, int32_t max) noexcept -> StringRef* = 0;
-  virtual auto write(StringRef* str) noexcept -> bool                     = 0;
-  virtual auto flush() noexcept -> void                                   = 0;
+  virtual auto readString(Allocator* alloc, int32_t max) noexcept -> StringRef* = 0;
+  virtual auto writeString(StringRef* str) noexcept -> bool                     = 0;
+  virtual auto writeChar(uint8_t val) noexcept -> bool                          = 0;
+  virtual auto flush() noexcept -> void                                         = 0;
 
 protected:
   inline StreamRef() noexcept : Ref(getKind()) {}
@@ -32,20 +33,29 @@ inline auto streamCheckValid(const Value& stream) noexcept -> bool {
   return streamRef->isValid();
 }
 
-inline auto streamRead(Allocator* alloc, const Value& stream, int max) noexcept -> StringRef* {
+inline auto streamReadString(Allocator* alloc, const Value& stream, int max) noexcept
+    -> StringRef* {
   auto* streamRef = stream.getDowncastRef<StreamRef>();
   if (!streamRef->isValid()) {
     return alloc->allocStr(0).first;
   }
-  return streamRef->read(alloc, max);
+  return streamRef->readString(alloc, max);
 }
 
-inline auto streamWrite(const Value& stream, StringRef* str) noexcept -> int32_t {
+inline auto streamWriteString(const Value& stream, StringRef* str) noexcept -> bool {
   auto* streamRef = stream.getDowncastRef<StreamRef>();
   if (!streamRef->isValid()) {
     return 0;
   }
-  return streamRef->write(str);
+  return streamRef->writeString(str);
+}
+
+inline auto streamWriteChar(const Value& stream, uint8_t val) noexcept -> bool {
+  auto* streamRef = stream.getDowncastRef<StreamRef>();
+  if (!streamRef->isValid()) {
+    return 0;
+  }
+  return streamRef->writeChar(val);
 }
 
 inline auto streamFlush(const Value& stream) noexcept -> void {

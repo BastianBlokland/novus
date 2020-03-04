@@ -113,13 +113,17 @@ auto inline pcall(
   case PCallCode::StreamCheckValid: {
     PUSH_BOOL(streamCheckValid(POP()));
   } break;
-  case PCallCode::StreamRead: {
+  case PCallCode::StreamReadString: {
     auto maxChars = POP_INT();
-    PUSH_REF(streamRead(alloc, POP(), maxChars));
+    PUSH_REF(streamReadString(alloc, POP(), maxChars));
   } break;
-  case PCallCode::StreamWrite: {
+  case PCallCode::StreamWriteString: {
     auto* strRef = getStringRef(POP());
-    PUSH_BOOL(streamWrite(POP(), strRef));
+    PUSH_BOOL(streamWriteString(POP(), strRef));
+  } break;
+  case PCallCode::StreamWriteChar: {
+    uint8_t val = static_cast<uint8_t>(POP_INT());
+    PUSH_BOOL(streamWriteChar(POP(), val));
   } break;
   case PCallCode::StreamFlush: {
     streamFlush(PEEK());

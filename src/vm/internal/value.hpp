@@ -88,7 +88,7 @@ private:
 }
 
 [[nodiscard]] inline auto posLongValue(int64_t val) noexcept -> Value {
-  assert(val > 0L);
+  assert(val >= 0L);
 
   // Positive longs (most significant bit is always zero), can be stored in the upper 63 bits.
   return Value{static_cast<uint64_t>(val) << 1U};

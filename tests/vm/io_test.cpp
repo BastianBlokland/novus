@@ -237,8 +237,7 @@ TEST_CASE("Execute input and output", "[vm]") {
   }
 
   SECTION("Write file") {
-    const auto filePath    = "test.tmp";
-    const auto fileContent = "Test file content";
+    const auto filePath = "test.tmp";
     CHECK_PROG(
         [&](novasm::Assembler* asmb) -> void {
           asmb->label("entry");
@@ -250,10 +249,19 @@ TEST_CASE("Execute input and output", "[vm]") {
           asmb->addPCall(novasm::PCallCode::StreamOpenFile);
           asmb->addStackStore(0); // Store file-stream.
 
-          // Write to file.
-          asmb->addStackLoad(0);               // Load stream.
-          asmb->addLoadLitString(fileContent); // Content.
-          asmb->addPCall(novasm::PCallCode::StreamWrite);
+          // Write string to file.
+          asmb->addStackLoad(0);                // Load stream.
+          asmb->addLoadLitString("Hello worl"); // Content.
+          asmb->addPCall(novasm::PCallCode::StreamWriteString);
+
+          // Assert that writing succeeded.
+          asmb->addLoadLitString("Write failed");
+          asmb->addPCall(novasm::PCallCode::Assert);
+
+          // Write character to file.
+          asmb->addStackLoad(0);    // Load stream.
+          asmb->addLoadLitInt('d'); // Content.
+          asmb->addPCall(novasm::PCallCode::StreamWriteChar);
 
           // Assert that writing succeeded.
           asmb->addLoadLitString("Write failed");
@@ -277,14 +285,14 @@ TEST_CASE("Execute input and output", "[vm]") {
           // Read file content.
           asmb->addStackLoad(0);    // Load stream.
           asmb->addLoadLitInt(64U); // Max chars to load.
-          asmb->addPCall(novasm::PCallCode::StreamRead);
+          asmb->addPCall(novasm::PCallCode::StreamReadString);
 
           // Print file content.
           asmb->addPCall(novasm::PCallCode::ConWriteString);
           asmb->addRet();
         },
         "input",
-        fileContent);
+        "Hello world");
   }
 
   SECTION("Non-existing file is not valid") {
@@ -322,7 +330,7 @@ TEST_CASE("Execute input and output", "[vm]") {
           // Read file content.
           asmb->addStackLoad(0);    // Load stream.
           asmb->addLoadLitInt(64U); // Max chars to load.
-          asmb->addPCall(novasm::PCallCode::StreamRead);
+          asmb->addPCall(novasm::PCallCode::StreamReadString);
 
           // Print file content.
           asmb->addPCall(novasm::PCallCode::ConWriteString);
@@ -346,7 +354,7 @@ TEST_CASE("Execute input and output", "[vm]") {
           // Write to file.
           asmb->addStackLoad(0);          // Load stream.
           asmb->addLoadLitString("Test"); // Content.
-          asmb->addPCall(novasm::PCallCode::StreamWrite);
+          asmb->addPCall(novasm::PCallCode::StreamWriteString);
 
           // Assert that writing failed.
           asmb->addLogicInvInt(); // Invert to check if writing failed.
