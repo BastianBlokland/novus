@@ -1,11 +1,12 @@
 #include "gen_type_eq.hpp"
 #include "utilities.hpp"
+#include <algorithm>
 #include <unordered_set>
 
 namespace backend::internal {
 
 static auto genTypeEqualityEntry(
-    novasm::Assembler* asmb, const prog::Program& program, const prog::sym::TypeDecl& typeDecl) {
+    novasm::Assembler* asmb, const prog::Program& prog, const prog::sym::TypeDecl& typeDecl) {
 
   switch (typeDecl.getKind()) {
   case prog::sym::TypeKind::Bool:
@@ -38,7 +39,7 @@ static auto genTypeEqualityEntry(
     break;
   case prog::sym::TypeKind::Struct:
   case prog::sym::TypeKind::Union:
-    asmb->addCall(getUserTypeEqLabel(program, typeDecl.getId()), 2, novasm::CallMode::Normal);
+    asmb->addCall(getUserTypeEqLabel(prog, typeDecl.getId()), 2, novasm::CallMode::Normal);
     break;
   }
 }
@@ -46,27 +47,27 @@ static auto genTypeEqualityEntry(
 // This assumes that the structs are stored as consts 0 and 1.
 static auto genStructFieldEquality(
     novasm::Assembler* asmb,
-    const prog::Program& program,
-    uint8_t fieldId,
+    const prog::Program& prog,
+    uint8_t fieldOffset,
     const prog::sym::TypeDecl& typeDecl,
     const std::string& eqLabel) {
 
   // Load the field for both structs on the stack.
   asmb->addStackLoad(0);
-  asmb->addLoadStructField(fieldId);
+  asmb->addLoadStructField(fieldOffset);
   asmb->addStackLoad(1);
-  asmb->addLoadStructField(fieldId);
+  asmb->addLoadStructField(fieldOffset);
 
   // Check if the field is equal.
-  genTypeEqualityEntry(asmb, program, typeDecl);
+  genTypeEqualityEntry(asmb, prog, typeDecl);
 
   // Jump to the given label if the fields are equal.
   asmb->addJumpIf(eqLabel);
 }
 
 static auto genStructEquality(
-    novasm::Assembler* asmb, const prog::Program& program, const prog::sym::StructDef& structDef) {
-  asmb->label(getUserTypeEqLabel(program, structDef.getId()));
+    novasm::Assembler* asmb, const prog::Program& prog, const prog::sym::StructDef& structDef) {
+  asmb->label(getUserTypeEqLabel(prog, structDef.getId()));
 
   // For empty structs we can just return 'true'.
   if (structDef.getFields().getCount() == 0U) {
@@ -81,19 +82,19 @@ static auto genStructEquality(
     asmb->addStackLoad(0);
     asmb->addStackLoad(1);
 
-    const auto& fieldTypeDecl = program.getTypeDecl(structDef.getFields().begin()->getType());
-    genTypeEqualityEntry(asmb, program, fieldTypeDecl);
+    const auto& fieldTypeDecl = prog.getTypeDecl(structDef.getFields().begin()->getType());
+    genTypeEqualityEntry(asmb, prog, fieldTypeDecl);
     asmb->addRet();
     return;
   }
 
   const auto& fields = structDef.getFields();
   for (const auto& field : fields) {
-    const auto fieldId        = getFieldId(field.getId());
-    const auto& fieldTypeDecl = program.getTypeDecl(field.getType());
+    const auto fieldOffset    = getFieldOffset(field.getId());
+    const auto& fieldTypeDecl = prog.getTypeDecl(field.getType());
 
     const auto eqLabel = asmb->generateLabel("struct-field-equal");
-    genStructFieldEquality(asmb, program, fieldId, fieldTypeDecl, eqLabel);
+    genStructFieldEquality(asmb, prog, fieldOffset, fieldTypeDecl, eqLabel);
 
     // If not equal return false.
     asmb->addLoadLitInt(0);
@@ -106,9 +107,73 @@ static auto genStructEquality(
   asmb->addRet();
 }
 
+static auto genNullableStructUnionEquality(
+    novasm::Assembler* asmb, const prog::Program& prog, const prog::sym::UnionDef& unionDef) {
+
+  /* For nullable-struct unions we check if the values are both null or if the values are equal. */
+
+  const auto& unionTypes = unionDef.getTypes();
+  if (unionTypes.size() != 2) {
+    throw std::logic_error{"Nullable-struct unions need to have 2 types"};
+  }
+
+  // Find the non-tag struct type in the union.
+  const auto structTypeItr =
+      std::find_if_not(unionTypes.begin(), unionTypes.end(), [&prog](const auto& id) {
+        return structIsTagType(prog, id);
+      });
+  if (structTypeItr == unionTypes.end()) {
+    throw std::logic_error{"No non-tag struct found in union"};
+  }
+
+  const auto aNullLabel = asmb->generateLabel("a-null");
+  const auto bNullLabel = asmb->generateLabel("b-null");
+
+  // Check if the first nullable struct is null.
+  asmb->addStackLoad(0);
+  asmb->addCheckStructNull();
+  asmb->addJumpIf(aNullLabel);
+
+  // Check if the second nullable struct is null.
+  asmb->addStackLoad(1);
+  asmb->addCheckStructNull();
+  asmb->addJumpIf(bNullLabel);
+
+  // -- Neither a or b is null, we check if the struct is the same.
+  asmb->addStackLoad(0);
+  asmb->addStackLoad(1);
+  // No need for a ret instruction after this as we do a tail-call.
+  // Note: we can consider 'inlining' the equality check of the struct here, its a trade-off between
+  // code-size and call costs, needs profiling.
+  asmb->addCall(getUserTypeEqLabel(prog, *structTypeItr), 2, novasm::CallMode::Tail);
+
+  // -- A is null.
+  asmb->label(aNullLabel);
+
+  // If b is also null return 'true' if b is not null return 'false'.
+  asmb->addStackLoad(1);
+  asmb->addCheckStructNull();
+  asmb->addRet();
+
+  // -- B is null, meaning not equal as a was not null.
+  asmb->label(bNullLabel);
+  asmb->addLoadLitInt(0);
+  asmb->addRet();
+}
+
 static auto genUnionEquality(
-    novasm::Assembler* asmb, const prog::Program& program, const prog::sym::UnionDef& unionDef) {
-  asmb->label(getUserTypeEqLabel(program, unionDef.getId()));
+    novasm::Assembler* asmb, const prog::Program& prog, const prog::sym::UnionDef& unionDef) {
+  asmb->label(getUserTypeEqLabel(prog, unionDef.getId()));
+
+  if (unionIsNullableStruct(prog, unionDef.getId())) {
+    genNullableStructUnionEquality(asmb, prog, unionDef);
+    return;
+  }
+
+  /*
+  For normal unions we check that the discriminant is the same then we check which of the possible
+  types it is and then use the appropriate equality logic for that type.
+  */
 
   // Generate some labels to use in this function.
   const auto sameTypeLabel  = asmb->generateLabel("union-same-type");
@@ -116,7 +181,7 @@ static auto genUnionEquality(
   auto typeLabels           = std::vector<std::string>{};
   typeLabels.reserve(unionDef.getTypes().size());
   for (const auto& unionType : unionDef.getTypes()) {
-    const auto& unionTypeName = program.getTypeDecl(unionType).getName();
+    const auto& unionTypeName = prog.getTypeDecl(unionType).getName();
     typeLabels.push_back(asmb->generateLabel("union-type-" + unionTypeName));
   }
 
@@ -149,10 +214,10 @@ static auto genUnionEquality(
 
   // Check if the value is equal.
   for (auto i = 0U; i != unionDef.getTypes().size(); ++i) {
-    const auto& typeDecl = program.getTypeDecl(unionDef.getTypes()[i]);
+    const auto& typeDecl = prog.getTypeDecl(unionDef.getTypes()[i]);
 
     asmb->label(typeLabels[i]);
-    genStructFieldEquality(asmb, program, 1, typeDecl, sameValueLabel);
+    genStructFieldEquality(asmb, prog, 1, typeDecl, sameValueLabel);
 
     // If values do not match return false.
     asmb->addLoadLitInt(0);
@@ -187,28 +252,28 @@ static auto addTypeAndNestedTypes(
   }
 }
 
-auto generateUserTypeEquality(novasm::Assembler* asmb, const prog::Program& program) -> void {
+auto generateUserTypeEquality(novasm::Assembler* asmb, const prog::Program& prog) -> void {
   auto types = std::unordered_set<prog::sym::TypeId, prog::sym::TypeIdHasher>{};
 
   // Gather all types to generate equality functions for.
-  for (auto fItr = program.beginFuncDecls(); fItr != program.endFuncDecls(); ++fItr) {
+  for (auto fItr = prog.beginFuncDecls(); fItr != prog.endFuncDecls(); ++fItr) {
     using fk  = typename prog::sym::FuncKind;
     auto kind = fItr->second.getKind();
     if (kind == fk::CheckEqUserType || kind == fk::CheckNEqUserType) {
-      addTypeAndNestedTypes(program, &types, *fItr->second.getInput().begin());
+      addTypeAndNestedTypes(prog, &types, *fItr->second.getInput().begin());
     }
   }
 
   // Generate equality functions for supported types.
   for (auto typeId : types) {
-    switch (program.getTypeDecl(typeId).getKind()) {
+    switch (prog.getTypeDecl(typeId).getKind()) {
     case prog::sym::TypeKind::Struct: {
-      const auto& structDef = std::get<prog::sym::StructDef>(program.getTypeDef(typeId));
-      genStructEquality(asmb, program, structDef);
+      const auto& structDef = std::get<prog::sym::StructDef>(prog.getTypeDef(typeId));
+      genStructEquality(asmb, prog, structDef);
     } break;
     case prog::sym::TypeKind::Union: {
-      const auto& unionDef = std::get<prog::sym::UnionDef>(program.getTypeDef(typeId));
-      genUnionEquality(asmb, program, unionDef);
+      const auto& unionDef = std::get<prog::sym::UnionDef>(prog.getTypeDef(typeId));
+      genUnionEquality(asmb, prog, unionDef);
     } break;
     default:
       break;

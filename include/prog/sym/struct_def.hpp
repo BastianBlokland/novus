@@ -20,6 +20,7 @@ public:
 
   [[nodiscard]] auto getId() const noexcept -> const TypeId&;
   [[nodiscard]] auto getFields() const noexcept -> const sym::FieldDeclTable&;
+  [[nodiscard]] auto isTagType() const noexcept -> bool;
 
 private:
   sym::TypeId m_id;
