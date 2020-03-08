@@ -78,6 +78,7 @@ enum class OpCode : uint8_t {
   CheckLeInt        = 99, //  [] (int, int)               -> (int) Check int is less.
   CheckLeLong       = 100, // [] (long, long)             -> (int) Check int is less.
   CheckLeFloat      = 101, // [] (float, float)           -> (int) Check float is less.
+  CheckStructNull   = 102, // [] (struct)                 -> (int) Check if struct is null.
 
   ConvIntLong     = 111, // [] (int)   -> (long)     Convert int to long.
   ConvIntFloat    = 112, // [] (int)   -> (float)    Convert int to float.
@@ -91,7 +92,8 @@ enum class OpCode : uint8_t {
   ConvFloatChar   = 120, // [] (float) -> (int)      Convert float to char (ascii).
 
   MakeStruct      = 190, // [uint8] (any ...) -> (struct) Create structure containing x values.
-  LoadStructField = 191, // [uint8] (struct)  -> (any)    Get value of field x in structure.
+  MakeNullStruct  = 191, // []      ()        -> struct   Create a struct without fields.
+  LoadStructField = 192, // [uint8] (struct)  -> (any)    Get value of field x in structure.
 
   Jump   = 220, // [ip] ()    -> () Jump to an instruction pointer.
   JumpIf = 221, // [ip] (int) -> () Jump to an instruction if int is not 0.

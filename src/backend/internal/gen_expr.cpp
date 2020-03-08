@@ -385,8 +385,8 @@ auto GenExpr::visit(const prog::expr::CallExprNode& n) -> void {
   case prog::sym::FuncKind::MakeStruct: {
     auto fieldCount = n.getChildCount();
     if (fieldCount == 0U) {
-      // Empty structs are represented by the value 0 (avoids allocation).
-      m_asmb->addLoadLitInt(0);
+      // Empty structs are represented by a null-struct. (avoids allocation).
+      m_asmb->addMakeNullStruct();
       break;
     }
     if (fieldCount == 1U) {

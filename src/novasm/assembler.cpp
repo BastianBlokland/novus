@@ -174,6 +174,8 @@ auto Assembler::addCheckLeLong() -> void { writeOpCode(OpCode::CheckLeLong); }
 
 auto Assembler::addCheckLeFloat() -> void { writeOpCode(OpCode::CheckLeFloat); }
 
+auto Assembler::addCheckStructNull() -> void { writeOpCode(OpCode::CheckStructNull); }
+
 auto Assembler::addConvIntLong() -> void { writeOpCode(OpCode::ConvIntLong); }
 
 auto Assembler::addConvIntFloat() -> void { writeOpCode(OpCode::ConvIntFloat); }
@@ -213,6 +215,8 @@ auto Assembler::addMakeStruct(uint8_t fieldCount) -> void {
   writeOpCode(OpCode::MakeStruct);
   writeUInt8(fieldCount);
 }
+
+auto Assembler::addMakeNullStruct() -> void { writeOpCode(OpCode::MakeNullStruct); }
 
 auto Assembler::addLoadStructField(uint8_t fieldIndex) -> void {
   writeOpCode(OpCode::LoadStructField);

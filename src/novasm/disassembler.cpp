@@ -174,6 +174,7 @@ auto disassembleInstructions(const Assembly& assembly, const dasm::InstructionLa
     case OpCode::CheckLeInt:
     case OpCode::CheckLeLong:
     case OpCode::CheckLeFloat:
+    case OpCode::CheckStructNull:
     case OpCode::ConvIntLong:
     case OpCode::ConvIntFloat:
     case OpCode::ConvLongInt:
@@ -184,6 +185,7 @@ auto disassembleInstructions(const Assembly& assembly, const dasm::InstructionLa
     case OpCode::ConvCharString:
     case OpCode::ConvIntChar:
     case OpCode::ConvFloatChar:
+    case OpCode::MakeNullStruct:
     case OpCode::Ret:
     case OpCode::Fail:
     case OpCode::FutureWaitNano:

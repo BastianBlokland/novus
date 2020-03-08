@@ -81,10 +81,10 @@ TEST_CASE("Generating assembly for structs", "[backend]") {
           // --- conWrite statement start.
           asmb->label("prog");
           // Make struct 1 'Empty()'.
-          asmb->addLoadLitInt(0); // Empty struct is represented by '0'.
+          asmb->addMakeNullStruct(); // Empty struct is represented by a null-struct.
 
           // Make struct 2 'Empty()'.
-          asmb->addLoadLitInt(0); // Empty struct is represented by '0'.
+          asmb->addMakeNullStruct(); // Empty struct is represented by a null-struct.
 
           // Call the equality function and write the result.
           asmb->addCall("UserEq", 2, novasm::CallMode::Normal);

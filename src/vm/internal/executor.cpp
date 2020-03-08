@@ -544,6 +544,9 @@ auto execute(
       auto a = POP_FLOAT();
       PUSH_BOOL(a < b);
     } break;
+    case OpCode::CheckStructNull: {
+      PUSH_BOOL(POP().isNullRef());
+    } break;
 
     case OpCode::ConvIntLong: {
       PUSH_LONG(static_cast<int64_t>(POP_INT()));
@@ -591,6 +594,9 @@ auto execute(
         *(structRefAlloc.second + fieldIndex) = POP();
       }
       PUSH_REF(structRefAlloc.first);
+    } break;
+    case OpCode::MakeNullStruct: {
+      PUSH(nullRefValue());
     } break;
     case OpCode::LoadStructField: {
       const auto fieldIndex = READ_BYTE();
