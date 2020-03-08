@@ -192,7 +192,7 @@ auto disassembleInstructions(const Assembly& assembly, const dasm::InstructionLa
     case OpCode::FutureBlock:
     case OpCode::Dup:
     case OpCode::Pop: {
-      result.push_back(Instr{opCode, offset, {}});
+      result.push_back(Instr{opCode, offset, {}, labels});
       continue;
     }
     case OpCode::LoadLitString:
