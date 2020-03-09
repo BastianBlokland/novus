@@ -7,7 +7,7 @@
 
 namespace vm::internal {
 
-const auto gcByteInterval = 10 * 1024 * 1024; // 10 MiB
+const auto gcByteInterval = 100 * 1024 * 1024; // 100 MiB
 
 class FutureRef;
 class LongRef;
