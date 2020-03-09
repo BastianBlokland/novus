@@ -9,4 +9,6 @@ auto StructDef::getId() const noexcept -> const TypeId& { return m_id; }
 
 auto StructDef::getFields() const noexcept -> const sym::FieldDeclTable& { return m_fields; }
 
+auto StructDef::isTagType() const noexcept -> bool { return m_fields.getCount() == 0; }
+
 } // namespace prog::sym

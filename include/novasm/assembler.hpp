@@ -91,6 +91,7 @@ public:
   auto addCheckLeInt() -> void;
   auto addCheckLeLong() -> void;
   auto addCheckLeFloat() -> void;
+  auto addCheckStructNull() -> void;
 
   auto addConvIntLong() -> void;
   auto addConvIntFloat() -> void;
@@ -105,6 +106,7 @@ public:
   auto addConvFloatChar() -> void;
 
   auto addMakeStruct(uint8_t fieldCount) -> void;
+  auto addMakeNullStruct() -> void;
   auto addLoadStructField(uint8_t fieldIndex) -> void;
 
   auto addJump(std::string label) -> void;

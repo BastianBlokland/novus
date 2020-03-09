@@ -5,7 +5,7 @@ namespace backend {
 
 TEST_CASE("Generating assembly for structs", "[backend]") {
 
-  SECTION("Create user struct and check for equality") {
+  SECTION("Normal struct") {
     CHECK_PROG(
         "struct User = string name, int age "
         "conWrite(string(User(\"hello\", 42) == User(\"world\", 1337)))",
@@ -66,7 +66,7 @@ TEST_CASE("Generating assembly for structs", "[backend]") {
         });
   }
 
-  SECTION("Create empty struct and check for equality") {
+  SECTION("Empty struct (tag type)") {
     CHECK_PROG(
         "struct Empty "
         "conWrite(string(Empty() == Empty()))",
@@ -81,10 +81,10 @@ TEST_CASE("Generating assembly for structs", "[backend]") {
           // --- conWrite statement start.
           asmb->label("prog");
           // Make struct 1 'Empty()'.
-          asmb->addLoadLitInt(0); // Empty struct is represented by '0'.
+          asmb->addMakeNullStruct(); // Empty struct is represented by a null-struct.
 
           // Make struct 2 'Empty()'.
-          asmb->addLoadLitInt(0); // Empty struct is represented by '0'.
+          asmb->addMakeNullStruct(); // Empty struct is represented by a null-struct.
 
           // Call the equality function and write the result.
           asmb->addCall("UserEq", 2, novasm::CallMode::Normal);
@@ -96,7 +96,7 @@ TEST_CASE("Generating assembly for structs", "[backend]") {
           asmb->setEntrypoint("prog");
         });
 
-    SECTION("Create struct with one field, check for equality and load field") {
+    SECTION("One field struct") {
       CHECK_PROG(
           "struct Age = int years "
           "conWrite(string(Age(42) == Age(1337))) "

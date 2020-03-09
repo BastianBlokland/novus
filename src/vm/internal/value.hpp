@@ -14,6 +14,7 @@ class Value final {
   friend auto posLongValue(int64_t val) noexcept -> Value;
   friend auto floatValue(float val) noexcept -> Value;
   friend auto refValue(Ref* ref) noexcept -> Value;
+  friend auto nullRefValue() noexcept -> Value;
   template <typename Type>
   friend auto rawPtrValue(Type* ptr) noexcept -> Value;
 
@@ -57,6 +58,11 @@ public:
     // Mask of the tag and interpret it as a pointer (works because due to alignment lowest bit is
     // always 0).
     return reinterpret_cast<Ref*>(m_raw & valMask); // NOLINT: Reinterpret cast
+  }
+
+  [[nodiscard]] inline auto isNullRef() const noexcept -> bool {
+    assert(isRef());
+    return m_raw == refTag; // Check if all bits other then the ref tag are zero.
   }
 
   template <typename RefType>
@@ -109,6 +115,8 @@ private:
   // Then expand to 64 bit and tag it.
   return Value{static_cast<uint64_t>(rawRef) | refTag};
 }
+
+[[nodiscard]] inline auto nullRefValue() noexcept -> Value { return Value{refTag}; }
 
 template <typename Type>
 [[nodiscard]] inline auto rawPtrValue(Type* ptr) noexcept -> Value {

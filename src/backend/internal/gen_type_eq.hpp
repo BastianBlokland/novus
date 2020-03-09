@@ -4,6 +4,6 @@
 
 namespace backend::internal {
 
-auto generateUserTypeEquality(novasm::Assembler* asmb, const prog::Program& program) -> void;
+auto generateUserTypeEquality(novasm::Assembler* asmb, const prog::Program& prog) -> void;
 
 } // namespace backend::internal

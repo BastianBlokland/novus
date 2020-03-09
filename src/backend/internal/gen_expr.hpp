@@ -37,11 +37,13 @@ public:
   auto visit(const prog::expr::LitEnumNode& n) -> void override;
 
 private:
-  const prog::Program& m_program;
+  const prog::Program& m_prog;
   novasm::Assembler* m_asmb;
   const prog::sym::ConstDeclTable& m_constTable;
   std::optional<prog::sym::FuncId> m_curFunc;
   bool m_tail;
+
+  auto makeUnion(const prog::expr::CallExprNode& n) -> void;
 
   auto genSubExpr(const prog::expr::Node& n, bool tail) -> void;
 };

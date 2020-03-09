@@ -96,7 +96,10 @@ auto GarbageCollector::populateMarkQueue(BasicStack* stack) noexcept -> void {
   for (auto* sp = stack->getBottom(); sp != stack->getNext(); ++sp) {
     assert(sp < stack->getNext());
     if (sp->isRef()) {
-      m_markQueue.push_back(sp->getRef());
+      auto* ref = sp->getRef();
+      if (ref != nullptr) {
+        m_markQueue.push_back(ref);
+      }
     }
   }
 }
@@ -121,7 +124,10 @@ auto GarbageCollector::mark() noexcept -> void {
       auto* s = downcastRef<StructRef>(cur);
       for (auto* fP = s->getFieldsBegin(); fP != s->getFieldsEnd(); ++fP) {
         if (fP->isRef()) {
-          m_markQueue.push_back(fP->getRef());
+          auto* ref = fP->getRef();
+          if (ref != nullptr) {
+            m_markQueue.push_back(ref);
+          }
         }
       }
     } break;

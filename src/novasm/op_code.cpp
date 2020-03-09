@@ -196,6 +196,9 @@ auto operator<<(std::ostream& out, const OpCode& rhs) noexcept -> std::ostream& 
   case OpCode::CheckLeFloat:
     out << "check-le-float";
     break;
+  case OpCode::CheckStructNull:
+    out << "check-struct-null";
+    break;
 
   case OpCode::ConvIntLong:
     out << "conv-int-long";
@@ -230,6 +233,9 @@ auto operator<<(std::ostream& out, const OpCode& rhs) noexcept -> std::ostream& 
 
   case OpCode::MakeStruct:
     out << "make-struct";
+    break;
+  case OpCode::MakeNullStruct:
+    out << "make-null-struct";
     break;
   case OpCode::LoadStructField:
     out << "load-struct-field";

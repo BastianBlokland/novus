@@ -12,7 +12,7 @@ GenExpr::GenExpr(
     const prog::sym::ConstDeclTable& constTable,
     std::optional<prog::sym::FuncId> curFunc,
     bool tail) :
-    m_program{program}, m_asmb{asmb}, m_constTable{constTable}, m_curFunc{curFunc}, m_tail{tail} {}
+    m_prog{program}, m_asmb{asmb}, m_constTable{constTable}, m_curFunc{curFunc}, m_tail{tail} {}
 
 auto GenExpr::visit(const prog::expr::AssignExprNode& n) -> void {
   // Expression.
@@ -22,8 +22,7 @@ auto GenExpr::visit(const prog::expr::AssignExprNode& n) -> void {
   m_asmb->addDup();
 
   // Assign op.
-  const auto constId = getConstOffset(m_constTable, n.getConst());
-  m_asmb->addStackStore(constId);
+  m_asmb->addStackStore(getConstOffset(m_constTable, n.getConst()));
 }
 
 auto GenExpr::visit(const prog::expr::SwitchExprNode& n) -> void {
@@ -62,10 +61,12 @@ auto GenExpr::visit(const prog::expr::SwitchExprNode& n) -> void {
 }
 
 auto GenExpr::visit(const prog::expr::CallExprNode& n) -> void {
-  const auto& funcDecl = m_program.getFuncDecl(n.getFunc());
+  const auto& funcDecl = m_prog.getFuncDecl(n.getFunc());
+
+  // Union type creation needs special handling.
   if (funcDecl.getKind() == prog::sym::FuncKind::MakeUnion) {
-    // Union is an exception where the type-id needs to be on the stack before the argument.
-    m_asmb->addLoadLitInt(getUnionTypeId(m_program, n.getType(), n[0].getType()));
+    makeUnion(n);
+    return;
   }
 
   // Push the arguments on the stack.
@@ -88,7 +89,7 @@ auto GenExpr::visit(const prog::expr::CallExprNode& n) -> void {
     break;
   case prog::sym::FuncKind::User:
     m_asmb->addCall(
-        getLabel(m_program, funcDecl.getId()),
+        getLabel(m_prog, funcDecl.getId()),
         funcDecl.getInput().getCount(),
         n.isFork() ? novasm::CallMode::Forked
                    : (m_tail ? novasm::CallMode::Tail : novasm::CallMode::Normal));
@@ -385,8 +386,8 @@ auto GenExpr::visit(const prog::expr::CallExprNode& n) -> void {
   case prog::sym::FuncKind::MakeStruct: {
     auto fieldCount = n.getChildCount();
     if (fieldCount == 0U) {
-      // Empty structs are represented by the value 0 (avoids allocation).
-      m_asmb->addLoadLitInt(0);
+      // Empty structs are represented by a null-struct. (avoids allocation).
+      m_asmb->addMakeNullStruct();
       break;
     }
     if (fieldCount == 1U) {
@@ -401,10 +402,7 @@ auto GenExpr::visit(const prog::expr::CallExprNode& n) -> void {
     break;
   }
   case prog::sym::FuncKind::MakeUnion: {
-    // Unions are structs with 2 fields, first the type-id and then the value.
-    // Note: The type-id is being pushed on the stack at the top of this function.
-    m_asmb->addMakeStruct(2);
-    break;
+    throw std::logic_error{"Union creation needs specialized handling"};
   }
 
   case prog::sym::FuncKind::FutureWaitNano: {
@@ -425,7 +423,7 @@ auto GenExpr::visit(const prog::expr::CallExprNode& n) -> void {
     }
     auto invert = funcDecl.getKind() == prog::sym::FuncKind::CheckNEqUserType;
     m_asmb->addCall(
-        getUserTypeEqLabel(m_program, lhsType),
+        getUserTypeEqLabel(m_prog, lhsType),
         2,
         (m_tail && !invert) ? novasm::CallMode::Tail : novasm::CallMode::Normal);
     if (invert) {
@@ -521,13 +519,13 @@ auto GenExpr::visit(const prog::expr::CallSelfExprNode& n) -> void {
     throw std::logic_error{"Illegal self-call: Not inside a function"};
   }
 
-  const auto& funcDecl = m_program.getFuncDecl(*m_curFunc);
+  const auto& funcDecl = m_prog.getFuncDecl(*m_curFunc);
   if (funcDecl.getOutput() != n.getType()) {
     throw std::logic_error{
         "Illegal self-call: Result-type does not match the type of the current function"};
   }
 
-  const auto& funcDef        = m_program.getFuncDef(*m_curFunc);
+  const auto& funcDef        = m_prog.getFuncDef(*m_curFunc);
   const auto& funcConstTable = funcDef.getConsts();
 
   const auto nonBoundInputs = funcConstTable.getNonBoundInputs();
@@ -556,7 +554,7 @@ auto GenExpr::visit(const prog::expr::CallSelfExprNode& n) -> void {
 
   // Invoke the current function.
   m_asmb->addCall(
-      getLabel(m_program, funcDecl.getId()),
+      getLabel(m_prog, funcDecl.getId()),
       funcDecl.getInput().getCount(),
       m_tail ? novasm::CallMode::Tail : novasm::CallMode::Normal);
 }
@@ -569,26 +567,25 @@ auto GenExpr::visit(const prog::expr::ClosureNode& n) -> void {
 
   // Push the function instruction-pointer on the stack.
   const auto funcId = n.getFunc();
-  m_asmb->addLoadLitIp(getLabel(m_program, funcId));
+  m_asmb->addLoadLitIp(getLabel(m_prog, funcId));
 
   // Create a struct containing both the bound arguments and the function pointer.
   m_asmb->addMakeStruct(n.getChildCount() + 1);
 }
 
 auto GenExpr::visit(const prog::expr::ConstExprNode& n) -> void {
-  const auto constId = getConstOffset(m_constTable, n.getId());
-  m_asmb->addStackLoad(constId);
+  m_asmb->addStackLoad(getConstOffset(m_constTable, n.getId()));
 }
 
 auto GenExpr::visit(const prog::expr::FieldExprNode& n) -> void {
   // Load the struct.
   genSubExpr(n[0], false);
 
-  const auto& structType = m_program.getTypeDecl(n[0].getType());
+  const auto& structType = m_prog.getTypeDecl(n[0].getType());
   if (structType.getKind() != prog::sym::TypeKind::Struct) {
     throw std::logic_error{"Field expr node only works on struct types"};
   }
-  const auto& structDef = std::get<prog::sym::StructDef>(m_program.getTypeDef(structType.getId()));
+  const auto& structDef = std::get<prog::sym::StructDef>(m_prog.getTypeDef(structType.getId()));
   if (structDef.getFields().getCount() == 0) {
     throw std::logic_error{"Cannot get a field on a struct without fields"};
   }
@@ -599,8 +596,7 @@ auto GenExpr::visit(const prog::expr::FieldExprNode& n) -> void {
   }
 
   // Load the field.
-  const auto fieldId = getFieldId(n.getId());
-  m_asmb->addLoadStructField(fieldId);
+  m_asmb->addLoadStructField(getFieldOffset(n.getId()));
 }
 
 auto GenExpr::visit(const prog::expr::GroupExprNode& n) -> void {
@@ -616,18 +612,54 @@ auto GenExpr::visit(const prog::expr::GroupExprNode& n) -> void {
 }
 
 auto GenExpr::visit(const prog::expr::UnionCheckExprNode& n) -> void {
+  const auto& unionType = n[0].getType();
+
   // Load the union.
   genSubExpr(n[0], false);
 
-  // Test if the union is the correct type.
+  if (unionIsNullableStruct(m_prog, unionType)) {
+    /* For nullable struct unions this turns into a null check or a not-null check. */
+    if (structIsTagType(m_prog, n.getTargetType())) {
+      m_asmb->addCheckStructNull();
+    } else {
+      m_asmb->addCheckStructNull();
+      m_asmb->addLogicInvInt();
+    }
+    return;
+  }
+
+  // For normal unions we test if the discriminants match.
   m_asmb->addLoadStructField(0);
-  m_asmb->addLoadLitInt(getUnionTypeId(m_program, n[0].getType(), n.getTargetType()));
+  m_asmb->addLoadLitInt(getUnionDiscriminant(m_prog, n[0].getType(), n.getTargetType()));
   m_asmb->addCheckEqInt();
 }
 
 auto GenExpr::visit(const prog::expr::UnionGetExprNode& n) -> void {
   // Load the union.
   genSubExpr(n[0], false);
+  const auto& unionType = n[0].getType();
+
+  if (unionIsNullableStruct(m_prog, unionType)) {
+    /* Nullable-struct unions are either a struct or a null-struct. */
+    if (structIsTagType(m_prog, n.getTargetType())) {
+      // For the tag type (null) there is no need to actually assign the constant as there are no
+      // operations you can do on a null struct.
+      m_asmb->addCheckStructNull();
+    } else {
+      // For the non-null case we assign the constant to the union value and check if its not null.
+      m_asmb->addDup();
+      m_asmb->addStackStore(getConstOffset(m_constTable, n.getConst()));
+      m_asmb->addCheckStructNull();
+      m_asmb->addLogicInvInt();
+    }
+    return;
+  }
+
+  /*
+  Normal unions are represented by structs with 2 fields:
+    * Field 0: The discriminant indicating which type the value is.
+    * Field 1: The value.
+  */
 
   // We need the union twice on the stack, once for the type check and once for getting the value.
   m_asmb->addDup();
@@ -637,7 +669,7 @@ auto GenExpr::visit(const prog::expr::UnionGetExprNode& n) -> void {
 
   // Test if the union is the correct type.
   m_asmb->addLoadStructField(0);
-  m_asmb->addLoadLitInt(getUnionTypeId(m_program, n[0].getType(), n.getTargetType()));
+  m_asmb->addLoadLitInt(getUnionDiscriminant(m_prog, n[0].getType(), n.getTargetType()));
   m_asmb->addCheckEqInt();
   m_asmb->addJumpIf(typeEqLabel);
 
@@ -648,9 +680,8 @@ auto GenExpr::visit(const prog::expr::UnionGetExprNode& n) -> void {
   m_asmb->label(typeEqLabel);
 
   // Store the union value as a const and load 'true' on the stack.
-  const auto constId = getConstOffset(m_constTable, n.getConst());
   m_asmb->addLoadStructField(1);
-  m_asmb->addStackStore(constId);
+  m_asmb->addStackStore(getConstOffset(m_constTable, n.getConst()));
 
   m_asmb->addLoadLitInt(1); // Load true.
 
@@ -669,7 +700,7 @@ auto GenExpr::visit(const prog::expr::LitFloatNode& n) -> void {
 
 auto GenExpr::visit(const prog::expr::LitFuncNode& n) -> void {
   const auto funcId = n.getFunc();
-  m_asmb->addLoadLitIp(getLabel(m_program, funcId));
+  m_asmb->addLoadLitIp(getLabel(m_prog, funcId));
 }
 
 auto GenExpr::visit(const prog::expr::LitIntNode& n) -> void { m_asmb->addLoadLitInt(n.getVal()); }
@@ -686,8 +717,36 @@ auto GenExpr::visit(const prog::expr::LitCharNode& n) -> void { m_asmb->addLoadL
 
 auto GenExpr::visit(const prog::expr::LitEnumNode& n) -> void { m_asmb->addLoadLitInt(n.getVal()); }
 
+auto GenExpr::makeUnion(const prog::expr::CallExprNode& n) -> void {
+  if (n.getChildCount() != 1) {
+    throw std::logic_error{"Unions can only be created with one sub-expr"};
+  }
+
+  const auto& unionType  = n.getType();
+  const auto& chosenType = n[0].getType();
+
+  if (unionIsNullableStruct(m_prog, unionType)) {
+    /*
+    Nullable structs are unions that have two structs, one with fields and an empty (tag type)
+    one. For them we can optimize the union away and leaving just the struct or null in case of
+    the tag.
+    */
+    if (structIsTagType(m_prog, chosenType)) {
+      m_asmb->addMakeNullStruct();
+    } else {
+      genSubExpr(n[0], m_tail);
+    }
+    return;
+  }
+
+  // Normal unions are represented by a struct containing the discriminant and the value.
+  m_asmb->addLoadLitInt(getUnionDiscriminant(m_prog, n.getType(), chosenType));
+  genSubExpr(n[0], false);
+  m_asmb->addMakeStruct(2);
+}
+
 auto GenExpr::genSubExpr(const prog::expr::Node& n, bool tail) -> void {
-  auto genExpr = GenExpr{m_program, m_asmb, m_constTable, m_curFunc, tail};
+  auto genExpr = GenExpr{m_prog, m_asmb, m_constTable, m_curFunc, tail};
   n.accept(&genExpr);
 }
 
