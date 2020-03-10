@@ -49,7 +49,7 @@ inline auto call(
   }
 
   // Move the arguments to the beginning of the stack-home for the new stack frame.
-  std::memcpy(newSh, newSh - sfMetaSize, sizeof(Value) * argCount);
+  std::memmove(newSh, newSh - sfMetaSize, sizeof(Value) * argCount);
 
   // Save the return instruction pointer and stack-home.
   *(newSh - 2) = uintValue(assembly->getOffset(*ip));
@@ -73,7 +73,7 @@ inline auto callTail(
   beginning of the current-stack frame and update the ip. */
 
   // Move the arguments to the beginning of the current stack home.
-  std::memcpy(sh, stack->getNext() - argCount, sizeof(Value) * argCount);
+  std::memmove(sh, stack->getNext() - argCount, sizeof(Value) * argCount);
 
   stack->rewindToNext(sh + argCount); // Discard any extra values on the stack.
   *ip = assembly->getIp(tgtIpOffset);
