@@ -21,8 +21,6 @@ auto Source::getId() const noexcept -> const std::string& { return m_id; }
 
 auto Source::getPath() const noexcept -> const std::optional<filesystem::path>& { return m_path; }
 
-auto Source::getCharCount() const noexcept -> unsigned int { return m_info.getCharCount(); }
-
 auto Source::getTextPos(unsigned int pos) const noexcept -> input::TextPos {
   return m_info.getTextPos(pos);
 }

@@ -34,7 +34,6 @@ public:
 
   [[nodiscard]] auto getId() const noexcept -> const std::string&;
   [[nodiscard]] auto getPath() const noexcept -> const std::optional<Path>&;
-  [[nodiscard]] auto getCharCount() const noexcept -> unsigned int;
   [[nodiscard]] auto getTextPos(unsigned int pos) const noexcept -> input::TextPos;
 
   auto accept(parse::NodeVisitor* visitor) const -> void;

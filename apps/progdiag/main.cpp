@@ -251,7 +251,7 @@ auto run(
   const auto parseDur = std::chrono::duration_cast<Duration>(t2 - t1);
 
   std::cout << rang::style::dim << rang::style::italic << std::string(width, '-') << '\n'
-            << "Analyzed " << src.getCharCount() << " chars in " << parseDur << '\n'
+            << "Analyzed in " << parseDur << '\n'
             << std::string(width, '-') << '\n'
             << rang::style::reset;
 

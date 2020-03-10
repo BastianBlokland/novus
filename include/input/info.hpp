@@ -11,7 +11,7 @@ class Info final {
   friend class InfoItr;
 
 public:
-  Info();
+  Info()                    = default;
   Info(const Info& rhs)     = delete;
   Info(Info&& rhs) noexcept = default;
   ~Info()                   = default;
@@ -20,15 +20,12 @@ public:
   auto operator=(Info&& rhs) noexcept -> Info& = default;
 
   [[nodiscard]] auto getLineCount() const noexcept -> unsigned int;
-  [[nodiscard]] auto getCharCount() const noexcept -> unsigned int;
   [[nodiscard]] auto getTextPos(unsigned int pos) const noexcept -> TextPos;
 
 private:
   std::vector<unsigned int> m_lines;
-  unsigned int m_end;
 
   auto markLineEnd(unsigned int pos) -> void;
-  auto markFileEnd(unsigned int pos) -> void;
 };
 
 class InfoItrTraits {
@@ -71,14 +68,12 @@ public:
   }
 
   auto operator++() -> void {
-    ++(*m_source);
-    ++m_pos;
     switch (**m_source) {
     case '\n':
       m_tracker->markLineEnd(m_pos);
-    case '\0':
-      m_tracker->markFileEnd(m_pos);
     }
+    ++(*m_source);
+    ++m_pos;
   }
 
 private:

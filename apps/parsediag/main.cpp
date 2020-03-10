@@ -66,8 +66,7 @@ auto run(InputItr inputBegin, const InputItr inputEnd, const bool outputNodes) {
   const auto parseDur = std::chrono::duration_cast<Duration>(t2 - t1);
 
   std::cout << rang::style::dim << rang::style::italic << std::string(width, '-') << '\n'
-            << "Parsed " << nodes.size() << " nodes from " << inputInfo.getCharCount()
-            << " chars in " << parseDur << '\n'
+            << "Parsed " << nodes.size() << " nodes in " << parseDur << '\n'
             << std::string(width, '-') << '\n'
             << rang::style::reset;
 
