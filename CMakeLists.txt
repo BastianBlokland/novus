@@ -19,8 +19,9 @@ if(MSVC)
   message("Setting msvc compiler flags")
   set(CMAKE_CXX_FLAGS "/std:c++17")
 else()
-  set(CMAKE_CXX_FLAGS_DEBUG "-g -std=c++17 -stdlib=libc++ -Werror -Wall -Wextra")
-  set(CMAKE_CXX_FLAGS_RELEASE "-O3 -DNDEBUG -std=c++17 -stdlib=libc++ -Werror -Wall -Wextra")
+  set(CXX_FLAGS_SHARED "-std=c++17 -stdlib=libc++ -Werror -Wall -Wextra")
+  set(CMAKE_CXX_FLAGS_DEBUG "-O1 -g -fsanitize=address -fno-omit-frame-pointer ${CXX_FLAGS_SHARED}")
+  set(CMAKE_CXX_FLAGS_RELEASE "-O3 -DNDEBUG ${CXX_FLAGS_SHARED}")
 endif()
 
 # Find the threads library.
