@@ -25,7 +25,7 @@ auto inline pcall(
   using PCallCode = novasm::PCallCode;
 
 #define PUSH(VAL)                                                                                  \
-  if (!stack->push(VAL)) {                                                                         \
+  if (unlikely(!stack->push(VAL))) {                                                               \
     execHandle->setState(ExecState::StackOverflow);                                                \
     return;                                                                                        \
   }
@@ -43,7 +43,7 @@ auto inline pcall(
 #define PUSH_REF(VAL)                                                                              \
   {                                                                                                \
     auto* refPtr = VAL;                                                                            \
-    if (refPtr == nullptr) {                                                                       \
+    if (unlikely(refPtr == nullptr)) {                                                             \
       execHandle->setState(ExecState::AllocFailed);                                                \
       return;                                                                                      \
     }                                                                                              \
@@ -164,7 +164,7 @@ auto inline pcall(
   case PCallCode::Assert: {
     auto* msg = getStringRef(POP());
     auto cond = PEEK_INT();
-    if (cond == 0) {
+    if (unlikely(cond == 0)) {
       iface->lockConWrite();
       iface->conWrite("Assertion failed: ", 18);
       iface->conWrite(msg->getDataPtr(), msg->getSize());

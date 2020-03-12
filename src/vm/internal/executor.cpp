@@ -1,5 +1,6 @@
 #include "internal/executor.hpp"
 #include "internal/allocator.hpp"
+#include "internal/likely.hpp"
 #include "internal/pcall.hpp"
 #include "internal/ref_future.hpp"
 #include "internal/ref_long.hpp"
@@ -43,7 +44,7 @@ inline auto call(
   auto* newSh = stack->getNext() - argCount + sfMetaSize;
 
   // Allocate space on the stack for the stackframe meta-data.
-  if (!stack->alloc(2)) {
+  if (unlikely(!stack->alloc(2))) {
     execHandle->setState(ExecState::StackOverflow);
     return false;
   }
@@ -92,7 +93,8 @@ inline auto pushClosure(
 
   // Push all bound arguments on the stack.
   for (auto i = 0U; i != *boundArgCount; ++i) {
-    if (!stack->push(closureStruct->getField(i))) {
+    const auto& arg = closureStruct->getField(i);
+    if (unlikely(!stack->push(arg))) {
       execHandle->setState(ExecState::StackOverflow);
       return false;
     }
@@ -115,7 +117,7 @@ inline auto fork(
 
   // Create a future object to interact with the fork.
   auto* future = allocator->allocPlain<FutureRef>();
-  if (future == nullptr) {
+  if (unlikely(future == nullptr)) {
     execHandle->setState(ExecState::AllocFailed);
     return false;
   }
@@ -147,7 +149,7 @@ inline auto fork(
   stack->rewindToNext(stack->getNext() - argCount);
 
   // Push the future on the stack.
-  if (!stack->push(refValue(future))) {
+  if (unlikely(!stack->push(refValue(future)))) {
     execHandle->setState(ExecState::StackOverflow);
     return false;
   }
@@ -174,12 +176,12 @@ auto execute(
 #define READ_LONG() readAsm<int64_t>(&ip)
 #define READ_FLOAT() readAsm<float>(&ip)
 #define SALLOC(COUNT)                                                                              \
-  if (!stack.alloc(COUNT)) {                                                                       \
+  if (unlikely(!stack.alloc(COUNT))) {                                                             \
     execHandle.setState(ExecState::StackOverflow);                                                 \
     goto End;                                                                                      \
   }
 #define PUSH(VAL)                                                                                  \
-  if (!stack.push(VAL)) {                                                                          \
+  if (unlikely(!stack.push(VAL))) {                                                                \
     execHandle.setState(ExecState::StackOverflow);                                                 \
     goto End;                                                                                      \
   }
@@ -199,14 +201,14 @@ auto execute(
 #define PUSH_REF(VAL)                                                                              \
   {                                                                                                \
     auto* refPtr = VAL;                                                                            \
-    if (refPtr == nullptr) {                                                                       \
+    if (unlikely(refPtr == nullptr)) {                                                             \
       execHandle.setState(ExecState::AllocFailed);                                                 \
       goto End;                                                                                    \
     }                                                                                              \
     PUSH(refValue(refPtr));                                                                        \
   }
 #define PUSH_CLOSURE(VAL, RES_BOUND_ARG_COUNT, RES_TGT_IP_OFFSET)                                  \
-  if (!pushClosure(&stack, &execHandle, VAL, RES_BOUND_ARG_COUNT, RES_TGT_IP_OFFSET)) {            \
+  if (unlikely(!pushClosure(&stack, &execHandle, VAL, RES_BOUND_ARG_COUNT, RES_TGT_IP_OFFSET))) {  \
     goto End;                                                                                      \
   }
 #define PEEK() stack.peek()
@@ -215,12 +217,13 @@ auto execute(
 #define POP_INT() POP().getInt()
 #define POP_FLOAT() POP().getFloat()
 #define CALL(ARG_COUNT, TGT_IP)                                                                    \
-  if (!call(assembly, &stack, &execHandle, &ip, &sh, ARG_COUNT, TGT_IP)) {                         \
+  if (unlikely(!call(assembly, &stack, &execHandle, &ip, &sh, ARG_COUNT, TGT_IP))) {               \
     goto End;                                                                                      \
   }
 #define CALL_TAIL(ARG_COUNT, TGT_IP) callTail(assembly, &stack, &ip, sh, ARG_COUNT, TGT_IP)
 #define CALL_FORKED(ARG_COUNT, TGT_IP)                                                             \
-  if (!fork(assembly, iface, execRegistry, allocator, &stack, &execHandle, ARG_COUNT, TGT_IP)) {   \
+  if (unlikely(!fork(                                                                              \
+          assembly, iface, execRegistry, allocator, &stack, &execHandle, ARG_COUNT, TGT_IP))) {    \
     goto End;                                                                                      \
   }
 
@@ -350,7 +353,7 @@ auto execute(
     case OpCode::DivInt: {
       auto b = POP_INT();
       auto a = POP_INT();
-      if (b == 0) {
+      if (unlikely(b == 0)) {
         execHandle.setState(ExecState::DivByZero);
         goto End;
       }
@@ -359,7 +362,7 @@ auto execute(
     case OpCode::DivLong: {
       auto b = getLong(POP());
       auto a = getLong(POP());
-      if (b == 0) {
+      if (unlikely(b == 0)) {
         execHandle.setState(ExecState::DivByZero);
         goto End;
       }
@@ -373,7 +376,7 @@ auto execute(
     case OpCode::RemInt: {
       auto b = POP_INT();
       auto a = POP_INT();
-      if (b == 0) {
+      if (unlikely(b == 0)) {
         execHandle.setState(ExecState::DivByZero);
         goto End;
       }
@@ -382,7 +385,7 @@ auto execute(
     case OpCode::RemLong: {
       auto b = getLong(POP());
       auto a = getLong(POP());
-      if (b == 0) {
+      if (unlikely(b == 0)) {
         execHandle.setState(ExecState::DivByZero);
         goto End;
       }
@@ -584,7 +587,7 @@ auto execute(
       assert(fieldCount > 0);
 
       auto structRefAlloc = allocator->allocStruct(fieldCount);
-      if (structRefAlloc.first == nullptr) {
+      if (unlikely(structRefAlloc.first == nullptr)) {
         execHandle.setState(ExecState::AllocFailed);
         goto End;
       }
@@ -622,7 +625,7 @@ auto execute(
     case OpCode::CallTail: {
       // Place a trap here as with tail-calls is possible to have code that runs for a long time
       // without ever hitting a 'ret' instruction.
-      if (execHandle.trap()) {
+      if (unlikely(execHandle.trap())) {
         goto End;
       }
 
@@ -650,7 +653,7 @@ auto execute(
     case OpCode::CallDynTail: {
       // Place a trap here as with tail-calls is possible to have code that runs for a long time
       // without ever hitting a 'ret' instruction.
-      if (execHandle.trap()) {
+      if (unlikely(execHandle.trap())) {
         goto End;
       }
 
@@ -679,18 +682,18 @@ auto execute(
     } break;
     case OpCode::PCall: {
       pcall(iface, allocator, &stack, &execHandle, readAsm<PCallCode>(&ip));
-      if (execHandle.getState(std::memory_order_relaxed) != ExecState::Running) {
+      if (unlikely(execHandle.getState(std::memory_order_relaxed) != ExecState::Running)) {
         assert(execHandle.getState(std::memory_order_relaxed) != ExecState::Success);
         goto End;
       }
     } break;
     case OpCode::Ret: {
-      if (execHandle.trap()) {
+      if (unlikely(execHandle.trap())) {
         goto End;
       }
 
       // Check if this returns from the root-stack frame.
-      if (sh == rootSh) {
+      if (unlikely(sh == rootSh)) {
         execHandle.setState(ExecState::Success);
         goto End;
       }
@@ -725,7 +728,7 @@ auto execute(
       auto success = future->waitNano(timeout);
       execHandle.setState(ExecState::Running);
 
-      if (execHandle.trap()) {
+      if (unlikely(execHandle.trap())) {
         goto End;
       }
 
@@ -740,7 +743,7 @@ auto execute(
       auto futureState = future->block();
       execHandle.setState(ExecState::Running);
 
-      if (execHandle.trap()) {
+      if (unlikely(execHandle.trap())) {
         goto End;
       }
 

@@ -1,6 +1,7 @@
 #pragma once
 #include "charconv.hpp"
 #include "internal/allocator.hpp"
+#include "internal/likely.hpp"
 #include "internal/ref_string.hpp"
 #include <cmath>
 #include <cstdio>
@@ -14,7 +15,7 @@ template <typename IntType>
   static const auto maxCharSize = std::is_same<IntType, int32_t>::value ? 11 : 20;
 
   const auto strRefAlloc = allocator->allocStr(maxCharSize);
-  if (strRefAlloc.first == nullptr) {
+  if (unlikely(strRefAlloc.first == nullptr)) {
     return nullptr;
   }
 
@@ -37,7 +38,7 @@ template <typename IntType>
 [[nodiscard]] auto inline floatToString(Allocator* allocator, float val) noexcept -> StringRef* {
   // In theory the 'nan' case is already covered by 'snprintf' but it seems some implementations
   // return '-nan' instead causing an inconsistency between platforms.
-  if (std::isnan(val)) {
+  if (unlikely(std::isnan(val))) {
     const static std::string nanStr = "nan";
     return allocator->allocStrLit(nanStr);
   }
@@ -45,7 +46,7 @@ template <typename IntType>
   // NOLINTNEXTLINE: C-style var-arg func.
   const auto charSize    = std::snprintf(nullptr, 0, "%.6g", val) + 1; // +1: null-terminator.
   const auto strRefAlloc = allocator->allocStr(charSize);
-  if (strRefAlloc.first == nullptr) {
+  if (unlikely(strRefAlloc.first == nullptr)) {
     return nullptr;
   }
 
@@ -58,7 +59,7 @@ template <typename IntType>
 
 [[nodiscard]] auto inline charToString(Allocator* allocator, uint8_t val) noexcept -> StringRef* {
   const auto strRefAlloc = allocator->allocStr(1);
-  if (strRefAlloc.first == nullptr) {
+  if (unlikely(strRefAlloc.first == nullptr)) {
     return nullptr;
   }
 
@@ -69,7 +70,7 @@ template <typename IntType>
 [[nodiscard]] auto inline charsToString(Allocator* allocator, uint8_t a, uint8_t b) noexcept
     -> StringRef* {
   const auto strRefAlloc = allocator->allocStr(2);
-  if (strRefAlloc.first == nullptr) {
+  if (unlikely(strRefAlloc.first == nullptr)) {
     return nullptr;
   }
 
@@ -81,7 +82,7 @@ template <typename IntType>
 [[nodiscard]] auto inline toStringRef(Allocator* allocator, const std::string& val) noexcept
     -> StringRef* {
   const auto strRefAlloc = allocator->allocStr(val.length());
-  if (strRefAlloc.first == nullptr) {
+  if (unlikely(strRefAlloc.first == nullptr)) {
     return nullptr;
   }
 
@@ -147,7 +148,7 @@ template <typename IntType>
 
   // Make a new string big enough to fit both and copy both there.
   auto alloc = allocator->allocStr(a->getSize() + b->getSize());
-  if (alloc.first == nullptr) {
+  if (unlikely(alloc.first == nullptr)) {
     return nullptr;
   }
 
@@ -162,7 +163,7 @@ template <typename IntType>
 
   // Make a new string 1 character bigger and copy the original string + the extra character.
   auto alloc = allocator->allocStr(a->getSize() + 1);
-  if (alloc.first == nullptr) {
+  if (unlikely(alloc.first == nullptr)) {
     return nullptr;
   }
 

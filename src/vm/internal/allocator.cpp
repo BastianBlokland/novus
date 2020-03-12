@@ -30,7 +30,7 @@ Allocator::~Allocator() noexcept {
 
 auto Allocator::allocStrLit(const std::string& lit) noexcept -> StringRef* {
   auto mem = alloc<StringRef>(0);
-  if (mem.first == nullptr) {
+  if (unlikely(mem.first == nullptr)) {
     return nullptr;
   }
 
@@ -42,7 +42,7 @@ auto Allocator::allocStrLit(const std::string& lit) noexcept -> StringRef* {
 
 auto Allocator::allocStr(const unsigned int size) noexcept -> std::pair<StringRef*, char*> {
   auto mem = alloc<StringRef>(size + 1); // +1 for null-terminator.
-  if (mem.first == nullptr) {
+  if (unlikely(mem.first == nullptr)) {
     return {nullptr, nullptr};
   }
 
@@ -55,7 +55,7 @@ auto Allocator::allocStr(const unsigned int size) noexcept -> std::pair<StringRe
 
 auto Allocator::allocStruct(uint8_t fieldCount) noexcept -> std::pair<StructRef*, Value*> {
   auto mem = alloc<StructRef>(sizeof(Value) * fieldCount);
-  if (mem.first == nullptr) {
+  if (unlikely(mem.first == nullptr)) {
     return {nullptr, nullptr};
   }
 

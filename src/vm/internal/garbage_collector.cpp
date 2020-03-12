@@ -22,7 +22,7 @@ GarbageCollector::~GarbageCollector() noexcept { terminateCollector(); }
 auto GarbageCollector::requestCollection() noexcept -> void {
   {
     std::lock_guard<std::mutex> lk(m_requestMutex);
-    if (m_requestType == RequestType::None) {
+    if (likely(m_requestType == RequestType::None)) {
       m_requestType = RequestType::Collect;
     }
   }
@@ -50,7 +50,7 @@ auto GarbageCollector::collectorLoop() noexcept -> void {
       m_requestCondVar.wait_for(lk, std::chrono::seconds(gcMinIntervalSeconds), [this]() {
         return m_requestType != RequestType::None;
       });
-      if (m_requestType == RequestType::Terminate) {
+      if (unlikely(m_requestType == RequestType::Terminate)) {
         return;
       }
       m_requestType = RequestType::None;
@@ -146,7 +146,7 @@ auto GarbageCollector::mark() noexcept -> void {
 }
 
 auto GarbageCollector::sweep(Ref* head) noexcept -> void {
-  if (head == nullptr) {
+  if (unlikely(head == nullptr)) {
     return;
   }
 

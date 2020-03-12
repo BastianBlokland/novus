@@ -1,4 +1,5 @@
 #pragma once
+#include "internal/likely.hpp"
 #include "internal/stack.hpp"
 #include "vm/exec_state.hpp"
 #include <atomic>
@@ -53,7 +54,7 @@ public:
       while (req = m_request.load(std::memory_order_acquire), req == RequestType::Pause) {
         _mm_pause();
       }
-      if (req == RequestType::Abort) {
+      if (unlikely(req == RequestType::Abort)) {
         goto Abort;
       }
 

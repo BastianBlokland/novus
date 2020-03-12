@@ -2,6 +2,7 @@
 #include "gsl.hpp"
 #include "internal/executor_registry.hpp"
 #include "internal/garbage_collector.hpp"
+#include "internal/likely.hpp"
 #include <atomic>
 #include <utility>
 
@@ -40,7 +41,7 @@ public:
     static_assert(std::is_convertible<RefType*, Ref*>());
 
     auto mem = alloc<RefType>(0);
-    if (mem.first == nullptr) {
+    if (unlikely(mem.first == nullptr)) {
       return nullptr;
     }
 
@@ -85,7 +86,7 @@ private:
     // Note: malloc can fail and in that case this function will return {nullptr, nullptr}.
 
     // Keep track of how many bytes we are still allowed to allocate before running gc.
-    if (m_bytesUntilNextCollection.fetch_sub(allocSize, std::memory_order_acq_rel) < 0) {
+    if (unlikely(m_bytesUntilNextCollection.fetch_sub(allocSize, std::memory_order_acq_rel) < 0)) {
       m_bytesUntilNextCollection.store(gcByteInterval, std::memory_order_release);
       m_gc.requestCollection();
     }
