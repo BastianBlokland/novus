@@ -24,7 +24,7 @@ auto LitIntNode::getType() const noexcept -> sym::TypeId { return m_type; }
 
 auto LitIntNode::toString() const -> std::string { return std::to_string(m_val); }
 
-auto LitIntNode::clone() const -> std::unique_ptr<Node> {
+auto LitIntNode::clone(Rewriter* /*rewriter*/) const -> std::unique_ptr<Node> {
   return std::unique_ptr<LitIntNode>{new LitIntNode{m_type, m_val}};
 }
 

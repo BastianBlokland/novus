@@ -24,7 +24,7 @@ auto LitLongNode::getType() const noexcept -> sym::TypeId { return m_type; }
 
 auto LitLongNode::toString() const -> std::string { return std::to_string(m_val); }
 
-auto LitLongNode::clone() const -> std::unique_ptr<Node> {
+auto LitLongNode::clone(Rewriter* /*rewriter*/) const -> std::unique_ptr<Node> {
   return std::unique_ptr<LitLongNode>{new LitLongNode{m_type, m_val}};
 }
 

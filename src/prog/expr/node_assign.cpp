@@ -1,4 +1,5 @@
 #include "prog/expr/node_assign.hpp"
+#include "prog/expr/rewriter.hpp"
 #include "utilities.hpp"
 #include <sstream>
 #include <stdexcept>
@@ -34,8 +35,9 @@ auto AssignExprNode::toString() const -> std::string {
   return oss.str();
 }
 
-auto AssignExprNode::clone() const -> std::unique_ptr<Node> {
-  return std::unique_ptr<AssignExprNode>{new AssignExprNode{m_constId, m_expr->clone()}};
+auto AssignExprNode::clone(Rewriter* rewriter) const -> std::unique_ptr<Node> {
+  return std::unique_ptr<AssignExprNode>{new AssignExprNode{
+      m_constId, rewriter ? rewriter->rewrite(*m_expr) : m_expr->clone(nullptr)}};
 }
 
 auto AssignExprNode::getConst() const noexcept -> sym::ConstId { return m_constId; }

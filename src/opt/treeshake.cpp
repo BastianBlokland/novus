@@ -46,13 +46,13 @@ auto treeshake(const prog::Program& prog) -> prog::Program {
   // Create a new program and copy the used functions, types and the exec statements.
   auto result = prog::Program{};
   for (const auto func : funcs) {
-    prog::copyFunc(prog, &result, func);
+    prog::copyFunc(prog, &result, func, nullptr);
   }
   for (const auto type : types) {
     prog::copyType(prog, &result, type);
   }
   for (auto execItr = prog.beginExecStmts(); execItr != prog.endExecStmts(); ++execItr) {
-    result.addExecStmt(execItr->getConsts(), execItr->getExpr().clone());
+    result.addExecStmt(execItr->getConsts(), execItr->getExpr().clone(nullptr));
   }
   return result;
 }

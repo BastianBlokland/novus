@@ -30,7 +30,7 @@ auto LitFuncNode::toString() const -> std::string {
   return oss.str();
 }
 
-auto LitFuncNode::clone() const -> std::unique_ptr<Node> {
+auto LitFuncNode::clone(Rewriter* /*rewriter*/) const -> std::unique_ptr<Node> {
   return std::unique_ptr<LitFuncNode>{new LitFuncNode{m_type, m_func}};
 }
 

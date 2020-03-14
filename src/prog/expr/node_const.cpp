@@ -28,7 +28,7 @@ auto ConstExprNode::toString() const -> std::string {
   return oss.str();
 }
 
-auto ConstExprNode::clone() const -> std::unique_ptr<Node> {
+auto ConstExprNode::clone(Rewriter* /*rewriter*/) const -> std::unique_ptr<Node> {
   return std::unique_ptr<ConstExprNode>{new ConstExprNode{m_id, m_type}};
 }
 

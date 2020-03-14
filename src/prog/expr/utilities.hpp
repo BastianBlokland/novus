@@ -11,6 +11,7 @@ namespace prog::expr {
 
 [[nodiscard]] auto getType(const std::vector<NodePtr>& nodes) -> std::optional<sym::TypeId>;
 
-[[nodiscard]] auto cloneNodes(const std::vector<NodePtr>& nodes) -> std::vector<NodePtr>;
+[[nodiscard]] auto cloneNodes(const std::vector<NodePtr>& nodes, Rewriter* rewriter)
+    -> std::vector<NodePtr>;
 
 } // namespace prog::expr

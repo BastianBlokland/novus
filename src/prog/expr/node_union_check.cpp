@@ -1,4 +1,5 @@
 #include "prog/expr/node_union_check.hpp"
+#include "prog/expr/rewriter.hpp"
 #include "utilities.hpp"
 #include <sstream>
 #include <stdexcept>
@@ -34,9 +35,9 @@ auto UnionCheckExprNode::toString() const -> std::string {
   return oss.str();
 }
 
-auto UnionCheckExprNode::clone() const -> std::unique_ptr<Node> {
-  return std::unique_ptr<UnionCheckExprNode>{
-      new UnionCheckExprNode{m_boolType, m_lhs->clone(), m_targetType}};
+auto UnionCheckExprNode::clone(Rewriter* rewriter) const -> std::unique_ptr<Node> {
+  return std::unique_ptr<UnionCheckExprNode>{new UnionCheckExprNode{
+      m_boolType, rewriter ? rewriter->rewrite(*m_lhs) : m_lhs->clone(nullptr), m_targetType}};
 }
 
 auto UnionCheckExprNode::getTargetType() const noexcept -> sym::TypeId { return m_targetType; }

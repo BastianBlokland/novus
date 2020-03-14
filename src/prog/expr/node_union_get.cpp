@@ -1,4 +1,5 @@
 #include "prog/expr/node_union_get.hpp"
+#include "prog/expr/rewriter.hpp"
 #include "utilities.hpp"
 #include <sstream>
 #include <stdexcept>
@@ -36,9 +37,12 @@ auto UnionGetExprNode::toString() const -> std::string {
   return oss.str();
 }
 
-auto UnionGetExprNode::clone() const -> std::unique_ptr<Node> {
+auto UnionGetExprNode::clone(Rewriter* rewriter) const -> std::unique_ptr<Node> {
   return std::unique_ptr<UnionGetExprNode>{
-      new UnionGetExprNode{m_boolType, m_lhs->clone(), m_targetType, m_constId}};
+      new UnionGetExprNode{m_boolType,
+                           rewriter ? rewriter->rewrite(*m_lhs) : m_lhs->clone(nullptr),
+                           m_targetType,
+                           m_constId}};
 }
 
 auto UnionGetExprNode::getConst() const noexcept -> sym::ConstId { return m_constId; }

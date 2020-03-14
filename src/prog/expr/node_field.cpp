@@ -1,4 +1,5 @@
 #include "prog/expr/node_field.hpp"
+#include "prog/expr/rewriter.hpp"
 #include <sstream>
 
 namespace prog::expr {
@@ -32,8 +33,9 @@ auto FieldExprNode::toString() const -> std::string {
   return oss.str();
 }
 
-auto FieldExprNode::clone() const -> std::unique_ptr<Node> {
-  return std::unique_ptr<FieldExprNode>{new FieldExprNode{m_lhs->clone(), m_id, m_type}};
+auto FieldExprNode::clone(Rewriter* rewriter) const -> std::unique_ptr<Node> {
+  return std::unique_ptr<FieldExprNode>{new FieldExprNode{
+      rewriter ? rewriter->rewrite(*m_lhs) : m_lhs->clone(nullptr), m_id, m_type}};
 }
 
 auto FieldExprNode::getId() const noexcept -> sym::FieldId { return m_id; }

@@ -24,7 +24,7 @@ auto LitFloatNode::getType() const noexcept -> sym::TypeId { return m_type; }
 
 auto LitFloatNode::toString() const -> std::string { return std::to_string(m_val); }
 
-auto LitFloatNode::clone() const -> std::unique_ptr<Node> {
+auto LitFloatNode::clone(Rewriter* /*rewriter*/) const -> std::unique_ptr<Node> {
   return std::unique_ptr<LitFloatNode>{new LitFloatNode{m_type, m_val}};
 }
 

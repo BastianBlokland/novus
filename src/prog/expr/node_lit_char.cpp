@@ -29,7 +29,7 @@ auto LitCharNode::toString() const -> std::string {
   return oss.str();
 }
 
-auto LitCharNode::clone() const -> std::unique_ptr<Node> {
+auto LitCharNode::clone(Rewriter* /*rewriter*/) const -> std::unique_ptr<Node> {
   return std::unique_ptr<LitCharNode>{new LitCharNode{m_type, m_val}};
 }
 

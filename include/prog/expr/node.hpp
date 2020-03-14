@@ -7,6 +7,8 @@
 
 namespace prog::expr {
 
+class Rewriter;
+
 class Node {
   friend auto operator<<(std::ostream& out, const Node& rhs) -> std::ostream&;
 
@@ -26,7 +28,7 @@ public:
   [[nodiscard]] virtual auto getType() const noexcept -> sym::TypeId       = 0;
   [[nodiscard]] virtual auto toString() const -> std::string               = 0;
 
-  [[nodiscard]] virtual auto clone() const -> std::unique_ptr<Node> = 0;
+  [[nodiscard]] virtual auto clone(Rewriter* rewriter) const -> std::unique_ptr<Node> = 0;
 
   virtual auto accept(NodeVisitor* visitor) const -> void = 0;
 

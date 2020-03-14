@@ -1,4 +1,5 @@
 #include "utilities.hpp"
+#include "prog/expr/rewriter.hpp"
 #include <algorithm>
 
 namespace prog::expr {
@@ -27,11 +28,11 @@ auto getType(const std::vector<NodePtr>& nodes) -> std::optional<sym::TypeId> {
   return type;
 }
 
-auto cloneNodes(const std::vector<NodePtr>& nodes) -> std::vector<NodePtr> {
+auto cloneNodes(const std::vector<NodePtr>& nodes, Rewriter* rewriter) -> std::vector<NodePtr> {
   auto result = std::vector<NodePtr>{};
   result.reserve(nodes.size());
   for (const auto& n : nodes) {
-    result.push_back(n->clone());
+    result.push_back(rewriter ? rewriter->rewrite(*n) : n->clone(nullptr));
   }
   return result;
 }

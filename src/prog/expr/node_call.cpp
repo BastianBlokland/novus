@@ -36,9 +36,9 @@ auto CallExprNode::toString() const -> std::string {
   return oss.str();
 }
 
-auto CallExprNode::clone() const -> std::unique_ptr<Node> {
+auto CallExprNode::clone(Rewriter* rewriter) const -> std::unique_ptr<Node> {
   return std::unique_ptr<CallExprNode>{
-      new CallExprNode{m_func, m_resultType, cloneNodes(m_args), m_fork}};
+      new CallExprNode{m_func, m_resultType, cloneNodes(m_args, rewriter), m_fork}};
 }
 
 auto CallExprNode::getFunc() const noexcept -> sym::FuncId { return m_func; }
