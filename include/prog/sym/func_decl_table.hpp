@@ -27,7 +27,7 @@ public:
   ~FuncDeclTable()                            = default;
 
   auto operator=(const FuncDeclTable& rhs) -> FuncDeclTable& = delete;
-  auto operator=(FuncDeclTable&& rhs) noexcept -> FuncDeclTable& = delete;
+  auto operator=(FuncDeclTable&& rhs) noexcept -> FuncDeclTable& = default;
 
   [[nodiscard]] auto operator[](FuncId id) const -> const FuncDecl&;
 

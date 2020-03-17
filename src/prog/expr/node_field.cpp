@@ -1,10 +1,11 @@
 #include "prog/expr/node_field.hpp"
+#include "prog/expr/rewriter.hpp"
 #include <sstream>
 
 namespace prog::expr {
 
 FieldExprNode::FieldExprNode(NodePtr lhs, sym::FieldId id, sym::TypeId type) :
-    m_lhs{std::move(lhs)}, m_id{id}, m_type{type} {}
+    Node{FieldExprNode::getKind()}, m_lhs{std::move(lhs)}, m_id{id}, m_type{type} {}
 
 auto FieldExprNode::operator==(const Node& rhs) const noexcept -> bool {
   const auto r = dynamic_cast<const FieldExprNode*>(&rhs);
@@ -32,8 +33,9 @@ auto FieldExprNode::toString() const -> std::string {
   return oss.str();
 }
 
-auto FieldExprNode::clone() const -> std::unique_ptr<Node> {
-  return std::unique_ptr<FieldExprNode>{new FieldExprNode{m_lhs->clone(), m_id, m_type}};
+auto FieldExprNode::clone(Rewriter* rewriter) const -> std::unique_ptr<Node> {
+  return std::unique_ptr<FieldExprNode>{new FieldExprNode{
+      rewriter ? rewriter->rewrite(*m_lhs) : m_lhs->clone(nullptr), m_id, m_type}};
 }
 
 auto FieldExprNode::getId() const noexcept -> sym::FieldId { return m_id; }

@@ -15,12 +15,14 @@ public:
   auto operator==(const Node& rhs) const noexcept -> bool override;
   auto operator!=(const Node& rhs) const noexcept -> bool override;
 
+  [[nodiscard]] constexpr static auto getKind() { return NodeKind::UnionGet; }
+
   [[nodiscard]] auto operator[](unsigned int i) const -> const Node& override;
   [[nodiscard]] auto getChildCount() const -> unsigned int override;
   [[nodiscard]] auto getType() const noexcept -> sym::TypeId override;
   [[nodiscard]] auto toString() const -> std::string override;
 
-  [[nodiscard]] auto clone() const -> std::unique_ptr<Node> override;
+  [[nodiscard]] auto clone(Rewriter* rewriter) const -> std::unique_ptr<Node> override;
 
   [[nodiscard]] auto getConst() const noexcept -> sym::ConstId;
   [[nodiscard]] auto getTargetType() const noexcept -> sym::TypeId;

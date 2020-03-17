@@ -5,7 +5,7 @@
 namespace prog::expr {
 
 LitStringNode::LitStringNode(sym::TypeId type, std::string val) :
-    m_type{type}, m_val{std::move(val)} {}
+    Node{LitStringNode::getKind()}, m_type{type}, m_val{std::move(val)} {}
 
 auto LitStringNode::operator==(const Node& rhs) const noexcept -> bool {
   const auto r = dynamic_cast<const LitStringNode*>(&rhs);
@@ -30,7 +30,7 @@ auto LitStringNode::toString() const -> std::string {
   return oss.str();
 }
 
-auto LitStringNode::clone() const -> std::unique_ptr<Node> {
+auto LitStringNode::clone(Rewriter* /*rewriter*/) const -> std::unique_ptr<Node> {
   return std::unique_ptr<LitStringNode>{new LitStringNode{m_type, m_val}};
 }
 

@@ -3,7 +3,8 @@
 
 namespace prog::expr {
 
-ConstExprNode::ConstExprNode(sym::ConstId id, sym::TypeId type) : m_id{id}, m_type{type} {}
+ConstExprNode::ConstExprNode(sym::ConstId id, sym::TypeId type) :
+    Node{ConstExprNode::getKind()}, m_id{id}, m_type{type} {}
 
 auto ConstExprNode::operator==(const Node& rhs) const noexcept -> bool {
   const auto r = dynamic_cast<const ConstExprNode*>(&rhs);
@@ -28,7 +29,7 @@ auto ConstExprNode::toString() const -> std::string {
   return oss.str();
 }
 
-auto ConstExprNode::clone() const -> std::unique_ptr<Node> {
+auto ConstExprNode::clone(Rewriter* /*rewriter*/) const -> std::unique_ptr<Node> {
   return std::unique_ptr<ConstExprNode>{new ConstExprNode{m_id, m_type}};
 }
 

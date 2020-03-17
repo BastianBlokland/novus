@@ -47,7 +47,7 @@ public:
   ~Program()                      = default;
 
   auto operator=(const Program& rhs) -> Program& = delete;
-  auto operator=(Program&& rhs) noexcept -> Program& = delete;
+  auto operator=(Program&& rhs) noexcept -> Program& = default;
 
   [[nodiscard]] auto beginTypeDecls() const -> TypeDeclIterator { return m_typeDecls.begin(); }
   [[nodiscard]] auto endTypeDecls() const -> TypeDeclIterator { return m_typeDecls.end(); }

@@ -3,7 +3,8 @@
 
 namespace prog::expr {
 
-LitBoolNode::LitBoolNode(sym::TypeId type, bool val) : m_type{type}, m_val{val} {}
+LitBoolNode::LitBoolNode(sym::TypeId type, bool val) :
+    Node{LitBoolNode::getKind()}, m_type{type}, m_val{val} {}
 
 auto LitBoolNode::operator==(const Node& rhs) const noexcept -> bool {
   const auto r = dynamic_cast<const LitBoolNode*>(&rhs);
@@ -24,7 +25,7 @@ auto LitBoolNode::getType() const noexcept -> sym::TypeId { return m_type; }
 
 auto LitBoolNode::toString() const -> std::string { return m_val ? "true" : "false"; }
 
-auto LitBoolNode::clone() const -> std::unique_ptr<Node> {
+auto LitBoolNode::clone(Rewriter* /*rewriter*/) const -> std::unique_ptr<Node> {
   return std::unique_ptr<LitBoolNode>{new LitBoolNode{m_type, m_val}};
 }
 

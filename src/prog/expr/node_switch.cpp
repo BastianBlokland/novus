@@ -5,7 +5,9 @@
 namespace prog::expr {
 
 SwitchExprNode::SwitchExprNode(std::vector<NodePtr> conditions, std::vector<NodePtr> branches) :
-    m_conditions{std::move(conditions)}, m_branches{std::move(branches)} {}
+    Node{SwitchExprNode::getKind()},
+    m_conditions{std::move(conditions)},
+    m_branches{std::move(branches)} {}
 
 auto SwitchExprNode::operator==(const Node& rhs) const noexcept -> bool {
   const auto r = dynamic_cast<const SwitchExprNode*>(&rhs);
@@ -38,9 +40,9 @@ auto SwitchExprNode::getType() const noexcept -> sym::TypeId {
 
 auto SwitchExprNode::toString() const -> std::string { return "switch"; }
 
-auto SwitchExprNode::clone() const -> std::unique_ptr<Node> {
+auto SwitchExprNode::clone(Rewriter* rewriter) const -> std::unique_ptr<Node> {
   return std::unique_ptr<SwitchExprNode>{
-      new SwitchExprNode{cloneNodes(m_conditions), cloneNodes(m_branches)}};
+      new SwitchExprNode{cloneNodes(m_conditions, rewriter), cloneNodes(m_branches, rewriter)}};
 }
 
 auto SwitchExprNode::getConditions() const noexcept -> const std::vector<NodePtr>& {

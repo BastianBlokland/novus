@@ -1,4 +1,5 @@
 #include "prog/expr/node_union_check.hpp"
+#include "prog/expr/rewriter.hpp"
 #include "utilities.hpp"
 #include <sstream>
 #include <stdexcept>
@@ -6,7 +7,10 @@
 namespace prog::expr {
 
 UnionCheckExprNode::UnionCheckExprNode(sym::TypeId boolType, NodePtr lhs, sym::TypeId targetType) :
-    m_boolType{boolType}, m_lhs{std::move(lhs)}, m_targetType{targetType} {}
+    Node{UnionCheckExprNode::getKind()},
+    m_boolType{boolType},
+    m_lhs{std::move(lhs)},
+    m_targetType{targetType} {}
 
 auto UnionCheckExprNode::operator==(const Node& rhs) const noexcept -> bool {
   const auto r = dynamic_cast<const UnionCheckExprNode*>(&rhs);
@@ -34,9 +38,9 @@ auto UnionCheckExprNode::toString() const -> std::string {
   return oss.str();
 }
 
-auto UnionCheckExprNode::clone() const -> std::unique_ptr<Node> {
-  return std::unique_ptr<UnionCheckExprNode>{
-      new UnionCheckExprNode{m_boolType, m_lhs->clone(), m_targetType}};
+auto UnionCheckExprNode::clone(Rewriter* rewriter) const -> std::unique_ptr<Node> {
+  return std::unique_ptr<UnionCheckExprNode>{new UnionCheckExprNode{
+      m_boolType, rewriter ? rewriter->rewrite(*m_lhs) : m_lhs->clone(nullptr), m_targetType}};
 }
 
 auto UnionCheckExprNode::getTargetType() const noexcept -> sym::TypeId { return m_targetType; }

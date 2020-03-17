@@ -3,7 +3,7 @@
 
 namespace prog::expr {
 
-FailNode::FailNode(sym::TypeId type) : m_type{type} {}
+FailNode::FailNode(sym::TypeId type) : Node{FailNode::getKind()}, m_type{type} {}
 
 auto FailNode::operator==(const Node& rhs) const noexcept -> bool {
   return dynamic_cast<const FailNode*>(&rhs) != nullptr;
@@ -23,7 +23,7 @@ auto FailNode::getType() const noexcept -> sym::TypeId { return m_type; }
 
 auto FailNode::toString() const -> std::string { return "fail"; }
 
-auto FailNode::clone() const -> std::unique_ptr<Node> {
+auto FailNode::clone(Rewriter* /*rewriter*/) const -> std::unique_ptr<Node> {
   return std::unique_ptr<FailNode>{new FailNode{m_type}};
 }
 

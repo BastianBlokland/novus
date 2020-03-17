@@ -22,7 +22,7 @@ public:
   ~TypeDefTable()                           = default;
 
   auto operator=(const TypeDefTable& rhs) -> TypeDefTable& = delete;
-  auto operator=(TypeDefTable&& rhs) noexcept -> TypeDefTable& = delete;
+  auto operator=(TypeDefTable&& rhs) noexcept -> TypeDefTable& = default;
 
   [[nodiscard]] auto operator[](sym::TypeId id) const -> const TypeDef&;
 

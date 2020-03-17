@@ -94,7 +94,7 @@ auto run(
     InputItr inputBegin,
     const InputItr inputEnd,
     const bool outputProgram,
-    const bool treeshake) {
+    const bool optimize) {
   const auto width = 80;
 
   // Generate an assembly file and time how long it takes.
@@ -112,8 +112,8 @@ auto run(
     return 1;
   }
 
-  const auto asmOutput = treeshake ? backend::generate(opt::treeshake(frontendOutput.getProg()))
-                                   : backend::generate(frontendOutput.getProg());
+  const auto asmOutput = optimize ? backend::generate(opt::optimize(frontendOutput.getProg()))
+                                  : backend::generate(opt::treeshake(frontendOutput.getProg()));
   const auto t2     = Clock::now();
   const auto genDur = std::chrono::duration_cast<Duration>(t2 - t1);
 
@@ -159,17 +159,21 @@ auto main(int argc, char** argv) -> int {
   auto app      = CLI::App{"Assembly diagnostic tool"};
   app.require_subcommand(1);
 
+  auto colorMode   = rang::control::Auto;
   auto printOutput = true;
-  app.add_flag("!--no-output", printOutput, "Skip printing the assembly")->capture_default_str();
+  auto optimize    = false;
 
-  auto treeshake = true;
-  app.add_flag("!--no-treeshake", treeshake, "Do not remove unused types and functions")
-      ->capture_default_str();
+  app.add_flag(
+      "--no-color{0},-c{2},--color{2},--auto-color{1}",
+      colorMode,
+      "Set the color output behaviour");
 
   // Analyze assembly for input characters.
   std::string input;
   auto analyzeCmd = app.add_subcommand("analyze", "Analyze assembly for the provided characters")
                         ->callback([&]() {
+                          rang::setControlMode(colorMode);
+
                           exitcode = asmdiag::run(
                               "inline",
                               std::nullopt,
@@ -177,14 +181,18 @@ auto main(int argc, char** argv) -> int {
                               input.begin(),
                               input.end(),
                               printOutput,
-                              treeshake);
+                              optimize);
                         });
   analyzeCmd->add_option("input", input, "Input characters")->required();
+  analyzeCmd->add_flag("!--no-output", printOutput, "Skip printing the program");
+  analyzeCmd->add_flag("-o,--optimize", optimize, "Optimize program");
 
   // Analyze assembly for the input file.
   filesystem::path filePath;
   auto analyzeFileCmd =
       app.add_subcommand("analyzefile", "Analyze assembly for the provided file")->callback([&]() {
+        rang::setControlMode(colorMode);
+
         auto absFilePath = filesystem::absolute(filePath);
         std::ifstream fs{filePath};
         exitcode = asmdiag::run(
@@ -194,11 +202,13 @@ auto main(int argc, char** argv) -> int {
             std::istreambuf_iterator<char>{fs},
             std::istreambuf_iterator<char>{},
             printOutput,
-            treeshake);
+            optimize);
       });
   analyzeFileCmd->add_option("file", filePath, "Path to file")
       ->check(CLI::ExistingFile)
       ->required();
+  analyzeFileCmd->add_flag("!--no-output", printOutput, "Skip printing the program");
+  analyzeFileCmd->add_flag("-o,--optimize", optimize, "Optimize program");
 
   // Parse arguments and run subcommands.
   std::atexit([]() { std::cout << rang::style::reset; });

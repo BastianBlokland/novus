@@ -5,7 +5,8 @@
 
 namespace prog::expr {
 
-LitFuncNode::LitFuncNode(sym::TypeId type, sym::FuncId func) : m_type{type}, m_func{func} {}
+LitFuncNode::LitFuncNode(sym::TypeId type, sym::FuncId func) :
+    Node{LitFuncNode::getKind()}, m_type{type}, m_func{func} {}
 
 auto LitFuncNode::operator==(const Node& rhs) const noexcept -> bool {
   const auto r = dynamic_cast<const LitFuncNode*>(&rhs);
@@ -30,7 +31,7 @@ auto LitFuncNode::toString() const -> std::string {
   return oss.str();
 }
 
-auto LitFuncNode::clone() const -> std::unique_ptr<Node> {
+auto LitFuncNode::clone(Rewriter* /*rewriter*/) const -> std::unique_ptr<Node> {
   return std::unique_ptr<LitFuncNode>{new LitFuncNode{m_type, m_func}};
 }
 

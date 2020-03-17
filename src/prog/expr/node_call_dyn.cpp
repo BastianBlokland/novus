@@ -1,5 +1,6 @@
 #include "prog/expr/node_call_dyn.hpp"
 #include "internal/implicit_conv.hpp"
+#include "prog/expr/rewriter.hpp"
 #include "utilities.hpp"
 #include <sstream>
 #include <stdexcept>
@@ -8,7 +9,11 @@ namespace prog::expr {
 
 CallDynExprNode::CallDynExprNode(
     NodePtr lhs, sym::TypeId resultType, std::vector<NodePtr> args, bool fork) :
-    m_lhs{std::move(lhs)}, m_resultType{resultType}, m_args{std::move(args)}, m_fork{fork} {}
+    Node{CallDynExprNode::getKind()},
+    m_lhs{std::move(lhs)},
+    m_resultType{resultType},
+    m_args{std::move(args)},
+    m_fork{fork} {}
 
 auto CallDynExprNode::operator==(const Node& rhs) const noexcept -> bool {
   const auto r = dynamic_cast<const CallDynExprNode*>(&rhs);
@@ -35,9 +40,12 @@ auto CallDynExprNode::getType() const noexcept -> sym::TypeId { return m_resultT
 
 auto CallDynExprNode::toString() const -> std::string { return "call-dyn"; }
 
-auto CallDynExprNode::clone() const -> std::unique_ptr<Node> {
+auto CallDynExprNode::clone(Rewriter* rewriter) const -> std::unique_ptr<Node> {
   return std::unique_ptr<CallDynExprNode>{
-      new CallDynExprNode{m_lhs->clone(), m_resultType, cloneNodes(m_args), m_fork}};
+      new CallDynExprNode{rewriter ? rewriter->rewrite(*m_lhs) : m_lhs->clone(nullptr),
+                          m_resultType,
+                          cloneNodes(m_args, rewriter),
+                          m_fork}};
 }
 
 auto CallDynExprNode::isFork() const noexcept -> bool { return m_fork; }

@@ -240,7 +240,8 @@ auto run(
     InputItr inputBegin,
     const InputItr inputEnd,
     const bool outputProgram,
-    const bool treeshake) {
+    const bool treeshake,
+    const bool optimize) {
   const auto width = 80;
 
   // Analyze the input and time how long it takes.
@@ -270,7 +271,9 @@ auto run(
   }
 
   if (output.isSuccess() && outputProgram) {
-    if (treeshake) {
+    if (optimize) {
+      printProgram(opt::optimize(output.getProg()));
+    } else if (treeshake) {
       printProgram(opt::treeshake(output.getProg()));
     } else {
       printProgram(output.getProg());
@@ -310,17 +313,22 @@ auto main(int argc, char** argv) -> int {
   auto app      = CLI::App{"Program diagnostic tool"};
   app.require_subcommand(1);
 
+  auto colorMode   = rang::control::Auto;
   auto printOutput = true;
-  app.add_flag("!--no-output", printOutput, "Skip printing the program")->capture_default_str();
+  auto treeshake   = true;
+  auto optimize    = false;
 
-  auto treeshake = true;
-  app.add_flag("!--no-treeshake", treeshake, "Do not remove unused types and functions")
-      ->capture_default_str();
+  app.add_flag(
+      "--no-color{0},-c{2},--color{2},--auto-color{1}",
+      colorMode,
+      "Set the color output behaviour");
 
   // Analyze input characters.
   std::string input;
   auto analyzeCmd =
       app.add_subcommand("analyze", "Analyze the provided characters")->callback([&]() {
+        rang::setControlMode(colorMode);
+
         exitcode = progdiag::run(
             "inline",
             std::nullopt,
@@ -328,14 +336,20 @@ auto main(int argc, char** argv) -> int {
             input.begin(),
             input.end(),
             printOutput,
-            treeshake);
+            treeshake,
+            optimize);
       });
   analyzeCmd->add_option("input", input, "Input characters to analyze")->required();
+  analyzeCmd->add_flag("!--no-output", printOutput, "Skip printing the program");
+  analyzeCmd->add_flag("!--no-treeshake", treeshake, "Don't remove unused types and functions");
+  analyzeCmd->add_flag("-o,--optimize", optimize, "Optimize program");
 
   // Analyze input file.
   filesystem::path filePath;
   auto analyzeFileCmd =
       app.add_subcommand("analyzefile", "Analyze the provided file")->callback([&]() {
+        rang::setControlMode(colorMode);
+
         auto absFilePath = filesystem::absolute(filePath);
         std::ifstream fs{filePath};
         exitcode = progdiag::run(
@@ -345,11 +359,15 @@ auto main(int argc, char** argv) -> int {
             std::istreambuf_iterator<char>{fs},
             std::istreambuf_iterator<char>{},
             printOutput,
-            treeshake);
+            treeshake,
+            optimize);
       });
   analyzeFileCmd->add_option("file", filePath, "Path to file to analyze")
       ->check(CLI::ExistingFile)
       ->required();
+  analyzeFileCmd->add_flag("!--no-output", printOutput, "Skip printing the program");
+  analyzeFileCmd->add_flag("!--no-treeshake", treeshake, "Don't remove unused types and functions");
+  analyzeFileCmd->add_flag("-o,--optimize", optimize, "Optimize program");
 
   // Parse arguments and run subcommands.
   std::atexit([]() { std::cout << rang::style::reset; });

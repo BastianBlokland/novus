@@ -1,5 +1,5 @@
-#include "internal/find_funcs.hpp"
-#include "internal/find_types.hpp"
+#include "internal/find_used_funcs.hpp"
+#include "internal/find_used_types.hpp"
 #include "opt/opt.hpp"
 #include "prog/copy.hpp"
 #include "prog/sym/func_id_hasher.hpp"
@@ -15,12 +15,12 @@ auto treeshake(const prog::Program& prog) -> prog::Program {
   auto types = std::unordered_set<prog::sym::TypeId, prog::sym::TypeIdHasher>{};
 
   // Find all functions that are called from the execute statements.
-  auto findFuncs = internal::FindFuncs{prog, &funcs};
+  auto findFuncs = internal::FindUsedFuncs{prog, &funcs};
   for (auto itr = prog.beginExecStmts(); itr != prog.endExecStmts(); ++itr) {
     itr->getExpr().accept(&findFuncs);
   }
 
-  auto findTypes = internal::FindTypes{prog, &types};
+  auto findTypes = internal::FindUsedTypes{prog, &types};
 
   // Find all types used in the execute statements.
   for (auto itr = prog.beginExecStmts(); itr != prog.endExecStmts(); ++itr) {
@@ -52,7 +52,7 @@ auto treeshake(const prog::Program& prog) -> prog::Program {
     prog::copyType(prog, &result, type);
   }
   for (auto execItr = prog.beginExecStmts(); execItr != prog.endExecStmts(); ++execItr) {
-    result.addExecStmt(execItr->getConsts(), execItr->getExpr().clone());
+    result.addExecStmt(execItr->getConsts(), execItr->getExpr().clone(nullptr));
   }
   return result;
 }

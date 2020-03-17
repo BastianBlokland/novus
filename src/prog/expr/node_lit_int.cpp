@@ -3,7 +3,8 @@
 
 namespace prog::expr {
 
-LitIntNode::LitIntNode(sym::TypeId type, int32_t val) : m_type{type}, m_val{val} {}
+LitIntNode::LitIntNode(sym::TypeId type, int32_t val) :
+    Node{LitIntNode::getKind()}, m_type{type}, m_val{val} {}
 
 auto LitIntNode::operator==(const Node& rhs) const noexcept -> bool {
   const auto r = dynamic_cast<const LitIntNode*>(&rhs);
@@ -24,7 +25,7 @@ auto LitIntNode::getType() const noexcept -> sym::TypeId { return m_type; }
 
 auto LitIntNode::toString() const -> std::string { return std::to_string(m_val); }
 
-auto LitIntNode::clone() const -> std::unique_ptr<Node> {
+auto LitIntNode::clone(Rewriter* /*rewriter*/) const -> std::unique_ptr<Node> {
   return std::unique_ptr<LitIntNode>{new LitIntNode{m_type, m_val}};
 }
 

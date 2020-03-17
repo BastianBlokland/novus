@@ -1,4 +1,5 @@
 #include "prog/expr/node_union_get.hpp"
+#include "prog/expr/rewriter.hpp"
 #include "utilities.hpp"
 #include <sstream>
 #include <stdexcept>
@@ -7,7 +8,11 @@ namespace prog::expr {
 
 UnionGetExprNode::UnionGetExprNode(
     sym::TypeId boolType, NodePtr lhs, sym::TypeId targetType, sym::ConstId constId) :
-    m_boolType{boolType}, m_lhs{std::move(lhs)}, m_targetType{targetType}, m_constId{constId} {}
+    Node{UnionGetExprNode::getKind()},
+    m_boolType{boolType},
+    m_lhs{std::move(lhs)},
+    m_targetType{targetType},
+    m_constId{constId} {}
 
 auto UnionGetExprNode::operator==(const Node& rhs) const noexcept -> bool {
   const auto r = dynamic_cast<const UnionGetExprNode*>(&rhs);
@@ -36,9 +41,12 @@ auto UnionGetExprNode::toString() const -> std::string {
   return oss.str();
 }
 
-auto UnionGetExprNode::clone() const -> std::unique_ptr<Node> {
+auto UnionGetExprNode::clone(Rewriter* rewriter) const -> std::unique_ptr<Node> {
   return std::unique_ptr<UnionGetExprNode>{
-      new UnionGetExprNode{m_boolType, m_lhs->clone(), m_targetType, m_constId}};
+      new UnionGetExprNode{m_boolType,
+                           rewriter ? rewriter->rewrite(*m_lhs) : m_lhs->clone(nullptr),
+                           m_targetType,
+                           m_constId}};
 }
 
 auto UnionGetExprNode::getConst() const noexcept -> sym::ConstId { return m_constId; }

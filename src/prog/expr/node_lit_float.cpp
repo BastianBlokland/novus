@@ -3,7 +3,8 @@
 
 namespace prog::expr {
 
-LitFloatNode::LitFloatNode(sym::TypeId type, float val) : m_type{type}, m_val{val} {}
+LitFloatNode::LitFloatNode(sym::TypeId type, float val) :
+    Node{LitFloatNode::getKind()}, m_type{type}, m_val{val} {}
 
 auto LitFloatNode::operator==(const Node& rhs) const noexcept -> bool {
   const auto r = dynamic_cast<const LitFloatNode*>(&rhs);
@@ -24,7 +25,7 @@ auto LitFloatNode::getType() const noexcept -> sym::TypeId { return m_type; }
 
 auto LitFloatNode::toString() const -> std::string { return std::to_string(m_val); }
 
-auto LitFloatNode::clone() const -> std::unique_ptr<Node> {
+auto LitFloatNode::clone(Rewriter* /*rewriter*/) const -> std::unique_ptr<Node> {
   return std::unique_ptr<LitFloatNode>{new LitFloatNode{m_type, m_val}};
 }
 

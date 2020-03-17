@@ -17,7 +17,7 @@ public:
   ~TypeDeclTable()                            = default;
 
   auto operator=(const TypeDeclTable& rhs) -> TypeDeclTable& = delete;
-  auto operator=(TypeDeclTable&& rhs) noexcept -> TypeDeclTable& = delete;
+  auto operator=(TypeDeclTable&& rhs) noexcept -> TypeDeclTable& = default;
 
   [[nodiscard]] auto operator[](TypeId id) const -> const TypeDecl&;
 

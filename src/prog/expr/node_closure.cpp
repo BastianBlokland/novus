@@ -7,7 +7,7 @@
 namespace prog::expr {
 
 ClosureNode::ClosureNode(sym::TypeId type, sym::FuncId func, std::vector<NodePtr> boundArgs) :
-    m_type{type}, m_func{func}, m_boundArgs{std::move(boundArgs)} {}
+    Node{ClosureNode::getKind()}, m_type{type}, m_func{func}, m_boundArgs{std::move(boundArgs)} {}
 
 auto ClosureNode::operator==(const Node& rhs) const noexcept -> bool {
   const auto r = dynamic_cast<const ClosureNode*>(&rhs);
@@ -35,8 +35,9 @@ auto ClosureNode::toString() const -> std::string {
   return oss.str();
 }
 
-auto ClosureNode::clone() const -> std::unique_ptr<Node> {
-  return std::unique_ptr<ClosureNode>{new ClosureNode{m_type, m_func, cloneNodes(m_boundArgs)}};
+auto ClosureNode::clone(Rewriter* rewriter) const -> std::unique_ptr<Node> {
+  return std::unique_ptr<ClosureNode>{
+      new ClosureNode{m_type, m_func, cloneNodes(m_boundArgs, rewriter)}};
 }
 
 auto ClosureNode::getFunc() const noexcept -> sym::FuncId { return m_func; }

@@ -6,12 +6,12 @@
 
 namespace opt::internal {
 
-class FindTypes final : public prog::expr::DeepNodeVisitor {
+class FindUsedTypes final : public prog::expr::DeepNodeVisitor {
 
   using TypeSet = typename std::unordered_set<prog::sym::TypeId, prog::sym::TypeIdHasher>;
 
 public:
-  FindTypes(const prog::Program& prog, TypeSet* types);
+  FindUsedTypes(const prog::Program& prog, TypeSet* types);
 
   auto markType(prog::sym::TypeId type) -> void;
 

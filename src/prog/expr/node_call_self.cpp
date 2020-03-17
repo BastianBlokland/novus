@@ -7,7 +7,7 @@
 namespace prog::expr {
 
 CallSelfExprNode::CallSelfExprNode(sym::TypeId resultType, std::vector<NodePtr> args) :
-    m_resultType{resultType}, m_args{std::move(args)} {}
+    Node{CallSelfExprNode::getKind()}, m_resultType{resultType}, m_args{std::move(args)} {}
 
 auto CallSelfExprNode::operator==(const Node& rhs) const noexcept -> bool {
   const auto r = dynamic_cast<const CallSelfExprNode*>(&rhs);
@@ -31,8 +31,9 @@ auto CallSelfExprNode::getType() const noexcept -> sym::TypeId { return m_result
 
 auto CallSelfExprNode::toString() const -> std::string { return "self-call"; }
 
-auto CallSelfExprNode::clone() const -> std::unique_ptr<Node> {
-  return std::unique_ptr<CallSelfExprNode>{new CallSelfExprNode{m_resultType, cloneNodes(m_args)}};
+auto CallSelfExprNode::clone(Rewriter* rewriter) const -> std::unique_ptr<Node> {
+  return std::unique_ptr<CallSelfExprNode>{
+      new CallSelfExprNode{m_resultType, cloneNodes(m_args, rewriter)}};
 }
 
 auto CallSelfExprNode::accept(NodeVisitor* visitor) const -> void { visitor->visit(*this); }

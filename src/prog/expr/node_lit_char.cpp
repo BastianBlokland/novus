@@ -4,7 +4,8 @@
 
 namespace prog::expr {
 
-LitCharNode::LitCharNode(sym::TypeId type, uint8_t val) : m_type{type}, m_val{val} {}
+LitCharNode::LitCharNode(sym::TypeId type, uint8_t val) :
+    Node{LitCharNode::getKind()}, m_type{type}, m_val{val} {}
 
 auto LitCharNode::operator==(const Node& rhs) const noexcept -> bool {
   const auto r = dynamic_cast<const LitCharNode*>(&rhs);
@@ -29,7 +30,7 @@ auto LitCharNode::toString() const -> std::string {
   return oss.str();
 }
 
-auto LitCharNode::clone() const -> std::unique_ptr<Node> {
+auto LitCharNode::clone(Rewriter* /*rewriter*/) const -> std::unique_ptr<Node> {
   return std::unique_ptr<LitCharNode>{new LitCharNode{m_type, m_val}};
 }
 
