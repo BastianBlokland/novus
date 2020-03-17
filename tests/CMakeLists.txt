@@ -75,6 +75,7 @@ add_executable(tests
   lex/seperators_test.cpp
   lex/utilities_test.cpp
 
+  opt/call_inline_test.cpp
   opt/treeshake_test.cpp
 
   parse/comment_test.cpp

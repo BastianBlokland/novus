@@ -12,9 +12,9 @@
 
 namespace opt {
 
-class FuncInlineRewriter final : public prog::expr::Rewriter {
+class CallInlineRewriter final : public prog::expr::Rewriter {
 public:
-  FuncInlineRewriter(
+  CallInlineRewriter(
       const prog::Program& prog, prog::sym::FuncId funcId, prog::sym::ConstDeclTable* consts) :
       m_prog{prog}, m_funcId{funcId}, m_consts{consts} {
 
@@ -111,7 +111,7 @@ auto inlineCalls(const prog::Program& prog) -> prog::Program {
   return internal::rewrite(
       prog,
       [](const prog::Program& prog, prog::sym::FuncId funcId, prog::sym::ConstDeclTable* consts) {
-        return std::make_unique<FuncInlineRewriter>(prog, funcId, consts);
+        return std::make_unique<CallInlineRewriter>(prog, funcId, consts);
       });
 }
 

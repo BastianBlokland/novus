@@ -204,7 +204,7 @@ add_library(opt STATIC
   opt/internal/find_used_types.cpp
   opt/internal/func_matchers.cpp
   opt/internal/prog_rewrite.cpp
-  opt/inline_calls.cpp
+  opt/call_inline.cpp
   opt/optimize.cpp
   opt/treeshake.cpp)
 target_compile_features(opt PRIVATE cxx_std_17)
