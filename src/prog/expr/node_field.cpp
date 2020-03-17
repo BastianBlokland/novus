@@ -5,7 +5,7 @@
 namespace prog::expr {
 
 FieldExprNode::FieldExprNode(NodePtr lhs, sym::FieldId id, sym::TypeId type) :
-    m_lhs{std::move(lhs)}, m_id{id}, m_type{type} {}
+    Node{FieldExprNode::getKind()}, m_lhs{std::move(lhs)}, m_id{id}, m_type{type} {}
 
 auto FieldExprNode::operator==(const Node& rhs) const noexcept -> bool {
   const auto r = dynamic_cast<const FieldExprNode*>(&rhs);

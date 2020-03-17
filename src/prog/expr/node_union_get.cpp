@@ -8,7 +8,11 @@ namespace prog::expr {
 
 UnionGetExprNode::UnionGetExprNode(
     sym::TypeId boolType, NodePtr lhs, sym::TypeId targetType, sym::ConstId constId) :
-    m_boolType{boolType}, m_lhs{std::move(lhs)}, m_targetType{targetType}, m_constId{constId} {}
+    Node{UnionGetExprNode::getKind()},
+    m_boolType{boolType},
+    m_lhs{std::move(lhs)},
+    m_targetType{targetType},
+    m_constId{constId} {}
 
 auto UnionGetExprNode::operator==(const Node& rhs) const noexcept -> bool {
   const auto r = dynamic_cast<const UnionGetExprNode*>(&rhs);

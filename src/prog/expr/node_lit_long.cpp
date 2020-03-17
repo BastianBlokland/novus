@@ -3,7 +3,8 @@
 
 namespace prog::expr {
 
-LitLongNode::LitLongNode(sym::TypeId type, int64_t val) : m_type{type}, m_val{val} {}
+LitLongNode::LitLongNode(sym::TypeId type, int64_t val) :
+    Node{LitLongNode::getKind()}, m_type{type}, m_val{val} {}
 
 auto LitLongNode::operator==(const Node& rhs) const noexcept -> bool {
   const auto r = dynamic_cast<const LitLongNode*>(&rhs);

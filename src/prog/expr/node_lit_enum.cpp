@@ -4,7 +4,7 @@
 namespace prog::expr {
 
 LitEnumNode::LitEnumNode(sym::TypeId type, std::string entryName, int32_t val) :
-    m_type{type}, m_name{std::move(entryName)}, m_val{val} {}
+    Node{LitEnumNode::getKind()}, m_type{type}, m_name{std::move(entryName)}, m_val{val} {}
 
 auto LitEnumNode::operator==(const Node& rhs) const noexcept -> bool {
   const auto r = dynamic_cast<const LitEnumNode*>(&rhs);

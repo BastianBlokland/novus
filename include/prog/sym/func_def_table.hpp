@@ -18,7 +18,7 @@ public:
   ~FuncDefTable()                           = default;
 
   auto operator=(const FuncDefTable& rhs) -> FuncDefTable& = delete;
-  auto operator=(FuncDefTable&& rhs) noexcept -> FuncDefTable& = delete;
+  auto operator=(FuncDefTable&& rhs) noexcept -> FuncDefTable& = default;
 
   [[nodiscard]] auto operator[](sym::FuncId id) const -> const FuncDef&;
 

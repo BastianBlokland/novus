@@ -7,7 +7,7 @@
 namespace prog::expr {
 
 CallSelfExprNode::CallSelfExprNode(sym::TypeId resultType, std::vector<NodePtr> args) :
-    m_resultType{resultType}, m_args{std::move(args)} {}
+    Node{CallSelfExprNode::getKind()}, m_resultType{resultType}, m_args{std::move(args)} {}
 
 auto CallSelfExprNode::operator==(const Node& rhs) const noexcept -> bool {
   const auto r = dynamic_cast<const CallSelfExprNode*>(&rhs);

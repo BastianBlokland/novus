@@ -1,30 +1,21 @@
-#include "find_funcs.hpp"
+#include "find_called_funcs.hpp"
 #include "prog/expr/nodes.hpp"
 
 namespace opt::internal {
 
-FindFuncs::FindFuncs(const prog::Program& prog, FuncSet* funcs) : m_prog{prog}, m_funcs{funcs} {
+FindCalledFuncs::FindCalledFuncs(const prog::Program& prog, FuncSet* funcs) :
+    m_prog{prog}, m_funcs{funcs} {
   if (m_funcs == nullptr) {
     throw std::invalid_argument{"Function set cannot be null"};
   }
 }
 
-auto FindFuncs::visit(const prog::expr::CallExprNode& n) -> void {
+auto FindCalledFuncs::visit(const prog::expr::CallExprNode& n) -> void {
   prog::expr::DeepNodeVisitor::visit(n);
   markFunc(n.getFunc());
 }
 
-auto FindFuncs::visit(const prog::expr::ClosureNode& n) -> void {
-  prog::expr::DeepNodeVisitor::visit(n);
-  markFunc(n.getFunc());
-}
-
-auto FindFuncs::visit(const prog::expr::LitFuncNode& n) -> void {
-  prog::expr::DeepNodeVisitor::visit(n);
-  markFunc(n.getFunc());
-}
-
-auto FindFuncs::markFunc(prog::sym::FuncId func) -> void {
+auto FindCalledFuncs::markFunc(prog::sym::FuncId func) -> void {
   if (!m_funcs->insert(func).second) {
     return;
   }

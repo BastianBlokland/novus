@@ -5,7 +5,7 @@
 namespace prog::expr {
 
 LitStringNode::LitStringNode(sym::TypeId type, std::string val) :
-    m_type{type}, m_val{std::move(val)} {}
+    Node{LitStringNode::getKind()}, m_type{type}, m_val{std::move(val)} {}
 
 auto LitStringNode::operator==(const Node& rhs) const noexcept -> bool {
   const auto r = dynamic_cast<const LitStringNode*>(&rhs);

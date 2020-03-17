@@ -25,10 +25,10 @@ auto run(
   const auto src = frontend::buildSource(inputId, std::move(inputPath), inputBegin, inputEnd);
   const auto frontendOutput = frontend::analyze(src, searchPaths);
   if (frontendOutput.isSuccess()) {
-    const auto shakedProg = opt::treeshake(frontendOutput.getProg());
-    const auto asmOutput  = backend::generate(shakedProg);
-    auto iface            = vm::platform::TerminalInterface{vmEnvArgsCount, vmEnvArgs};
-    auto res              = vm::run(&asmOutput.first, &iface);
+    const auto optProg   = opt::optimize(frontendOutput.getProg());
+    const auto asmOutput = backend::generate(optProg);
+    auto iface           = vm::platform::TerminalInterface{vmEnvArgsCount, vmEnvArgs};
+    auto res             = vm::run(&asmOutput.first, &iface);
     if (res != vm::ExecState::Success) {
       std::cout << rang::style::bold << rang::bg::red << "Runtime error: " << res << '\n'
                 << rang::style::reset;

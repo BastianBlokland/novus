@@ -7,7 +7,10 @@
 namespace prog::expr {
 
 UnionCheckExprNode::UnionCheckExprNode(sym::TypeId boolType, NodePtr lhs, sym::TypeId targetType) :
-    m_boolType{boolType}, m_lhs{std::move(lhs)}, m_targetType{targetType} {}
+    Node{UnionCheckExprNode::getKind()},
+    m_boolType{boolType},
+    m_lhs{std::move(lhs)},
+    m_targetType{targetType} {}
 
 auto UnionCheckExprNode::operator==(const Node& rhs) const noexcept -> bool {
   const auto r = dynamic_cast<const UnionCheckExprNode*>(&rhs);

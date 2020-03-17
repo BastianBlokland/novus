@@ -32,7 +32,7 @@ TEST_CASE("Copy", "[prog]") {
 
     // Copy to another program.
     auto progB = Program{};
-    copyFunc(progA, &progB, id, nullptr);
+    copyFunc(progA, &progB, id);
 
     // Assert its presence.
     REQUIRE(progB.lookupFunc("test", sym::TypeSet{}, OvOptions{}) == id);
@@ -49,7 +49,7 @@ TEST_CASE("Copy", "[prog]") {
     auto progA = Program{};
     auto progB = Program{};
     REQUIRE(!copyFunc(
-        progA, &progB, *progA.lookupFunc("clockNanoSteady", sym::TypeSet{}, OvOptions{}), nullptr));
+        progA, &progB, *progA.lookupFunc("clockNanoSteady", sym::TypeSet{}, OvOptions{})));
   }
 }
 

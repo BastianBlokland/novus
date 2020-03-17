@@ -25,7 +25,8 @@ auto copyType(const Program& from, Program* to, sym::TypeId id) -> bool {
   return true;
 }
 
-auto copyFunc(const Program& from, Program* to, sym::FuncId id, prog::expr::Rewriter* rewriter)
+auto copyFunc(
+    const Program& from, Program* to, sym::FuncId id, const RewriterFactory& rewriterFactory)
     -> bool {
 
   const auto& fromDecl = from.getFuncDecl(id);
@@ -47,11 +48,16 @@ auto copyFunc(const Program& from, Program* to, sym::FuncId id, prog::expr::Rewr
       fromDecl.getInput(),
       fromDecl.getOutput());
 
-  // Define function in the 'to' program.
+  // Define function in the 'to' program, optionally rewriting the expresion.
   if (fromDecl.getKind() == sym::FuncKind::User) {
     auto& fromDef = from.getFuncDef(id);
-    toDefTable.registerFunc(
-        toDeclTable, id, fromDef.getConsts(), fromDef.getExpr().clone(rewriter));
+    auto consts   = fromDef.getConsts();
+    auto rewriter =
+        rewriterFactory ? rewriterFactory(from, id, &consts) : std::unique_ptr<expr::Rewriter>{};
+    auto newExpr =
+        rewriter ? rewriter->rewrite(fromDef.getExpr()) : fromDef.getExpr().clone(nullptr);
+
+    toDefTable.registerFunc(toDeclTable, id, std::move(consts), std::move(newExpr));
   }
   return true;
 }

@@ -7,7 +7,7 @@
 namespace prog::expr {
 
 ClosureNode::ClosureNode(sym::TypeId type, sym::FuncId func, std::vector<NodePtr> boundArgs) :
-    m_type{type}, m_func{func}, m_boundArgs{std::move(boundArgs)} {}
+    Node{ClosureNode::getKind()}, m_type{type}, m_func{func}, m_boundArgs{std::move(boundArgs)} {}
 
 auto ClosureNode::operator==(const Node& rhs) const noexcept -> bool {
   const auto r = dynamic_cast<const ClosureNode*>(&rhs);

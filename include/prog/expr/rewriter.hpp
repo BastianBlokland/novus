@@ -5,6 +5,14 @@ namespace prog::expr {
 
 class Rewriter {
 public:
+  Rewriter()                        = default;
+  Rewriter(const Rewriter& rhs)     = delete;
+  Rewriter(Rewriter&& rhs) noexcept = delete;
+  virtual ~Rewriter()               = default;
+
+  auto operator=(const Rewriter& rhs) -> Rewriter& = delete;
+  auto operator=(Rewriter&& rhs) noexcept -> Rewriter& = delete;
+
   [[nodiscard]] virtual auto rewrite(const Node& expr) -> NodePtr = 0;
 };
 

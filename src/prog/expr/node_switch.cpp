@@ -5,7 +5,9 @@
 namespace prog::expr {
 
 SwitchExprNode::SwitchExprNode(std::vector<NodePtr> conditions, std::vector<NodePtr> branches) :
-    m_conditions{std::move(conditions)}, m_branches{std::move(branches)} {}
+    Node{SwitchExprNode::getKind()},
+    m_conditions{std::move(conditions)},
+    m_branches{std::move(branches)} {}
 
 auto SwitchExprNode::operator==(const Node& rhs) const noexcept -> bool {
   const auto r = dynamic_cast<const SwitchExprNode*>(&rhs);

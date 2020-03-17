@@ -9,7 +9,11 @@ namespace prog::expr {
 
 CallDynExprNode::CallDynExprNode(
     NodePtr lhs, sym::TypeId resultType, std::vector<NodePtr> args, bool fork) :
-    m_lhs{std::move(lhs)}, m_resultType{resultType}, m_args{std::move(args)}, m_fork{fork} {}
+    Node{CallDynExprNode::getKind()},
+    m_lhs{std::move(lhs)},
+    m_resultType{resultType},
+    m_args{std::move(args)},
+    m_fork{fork} {}
 
 auto CallDynExprNode::operator==(const Node& rhs) const noexcept -> bool {
   const auto r = dynamic_cast<const CallDynExprNode*>(&rhs);

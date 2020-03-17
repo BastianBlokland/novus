@@ -1,4 +1,4 @@
-#include "find_types.hpp"
+#include "find_used_types.hpp"
 #include "prog/expr/nodes.hpp"
 #include "prog/sym/delegate_def.hpp"
 #include "prog/sym/struct_def.hpp"
@@ -6,13 +6,14 @@
 
 namespace opt::internal {
 
-FindTypes::FindTypes(const prog::Program& prog, TypeSet* types) : m_prog{prog}, m_types{types} {
+FindUsedTypes::FindUsedTypes(const prog::Program& prog, TypeSet* types) :
+    m_prog{prog}, m_types{types} {
   if (m_types == nullptr) {
     throw std::invalid_argument{"Type set cannot be null"};
   }
 }
 
-auto FindTypes::markType(prog::sym::TypeId type) -> void {
+auto FindUsedTypes::markType(prog::sym::TypeId type) -> void {
   if (!m_types->insert(type).second) {
     return;
   }
@@ -55,7 +56,7 @@ auto FindTypes::markType(prog::sym::TypeId type) -> void {
   }
 }
 
-auto FindTypes::visitNode(const prog::expr::Node* n) -> void {
+auto FindUsedTypes::visitNode(const prog::expr::Node* n) -> void {
   prog::expr::DeepNodeVisitor::visitNode(n);
   markType(n->getType());
 }

@@ -5,6 +5,7 @@ namespace prog::sym {
 
 class ConstId final {
   friend class ConstDeclTable;
+  friend class ConstIdHasher;
   friend auto operator<<(std::ostream& out, const ConstId& rhs) -> std::ostream&;
 
 public:

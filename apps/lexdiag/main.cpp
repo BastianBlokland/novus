@@ -113,20 +113,30 @@ auto main(int argc, char** argv) -> int {
   auto app = CLI::App{"Lexer diagnostic tool"};
   app.require_subcommand(1);
 
+  auto colorMode   = rang::control::Auto;
   auto printOutput = true;
-  app.add_flag("!--no-output", printOutput, "Skip printing the tokens")->capture_default_str();
+
+  app.add_flag(
+      "--no-color{0},-c{2},--color{2},--auto-color{1}",
+      colorMode,
+      "Set the color output behaviour");
 
   // Lex input characters.
   std::string charsInput;
   auto analyzeCmd = app.add_subcommand("analyze", "Lex the provided characters")->callback([&]() {
+    rang::setControlMode(colorMode);
+
     lexdiag::run(charsInput.begin(), charsInput.end(), printOutput);
   });
   analyzeCmd->add_option("input", charsInput, "Input characters")->required();
+  analyzeCmd->add_flag("!--no-output", printOutput, "Skip printing the tokens");
 
   // Lex input file.
   std::string filePath;
   auto analyzeFileCmd =
       app.add_subcommand("analyzefile", "Lex all characters in a file")->callback([&]() {
+        rang::setControlMode(colorMode);
+
         std::ifstream fs{filePath};
         lexdiag::run(
             std::istreambuf_iterator<char>{fs}, std::istreambuf_iterator<char>{}, printOutput);
@@ -134,6 +144,7 @@ auto main(int argc, char** argv) -> int {
   analyzeFileCmd->add_option("file", filePath, "Path to file")
       ->check(CLI::ExistingFile)
       ->required();
+  analyzeFileCmd->add_flag("!--no-output", printOutput, "Skip printing the tokens");
 
   // Parse arguments and run subcommands.
   std::atexit([]() { std::cout << rang::style::reset; });

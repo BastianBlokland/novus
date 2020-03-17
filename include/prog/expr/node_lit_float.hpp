@@ -13,6 +13,8 @@ public:
   auto operator==(const Node& rhs) const noexcept -> bool override;
   auto operator!=(const Node& rhs) const noexcept -> bool override;
 
+  [[nodiscard]] constexpr static auto getKind() { return NodeKind::LitFloat; }
+
   [[nodiscard]] auto operator[](unsigned int i) const -> const Node& override;
   [[nodiscard]] auto getChildCount() const -> unsigned int override;
   [[nodiscard]] auto getType() const noexcept -> sym::TypeId override;

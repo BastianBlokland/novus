@@ -112,6 +112,7 @@ add_library(prog STATIC
 
   prog/sym/const_decl_table.cpp
   prog/sym/const_decl.cpp
+  prog/sym/const_id_hasher.cpp
   prog/sym/const_id.cpp
   prog/sym/const_kind.cpp
   prog/sym/delegate_def.cpp
@@ -197,8 +198,14 @@ target_include_directories(frontend PRIVATE frontend)
 
 # Opt (optimiser).
 add_library(opt STATIC
-  opt/internal/find_funcs.cpp
-  opt/internal/find_types.cpp
+  opt/internal/const_remapper.cpp
+  opt/internal/find_called_funcs.cpp
+  opt/internal/find_used_funcs.cpp
+  opt/internal/find_used_types.cpp
+  opt/internal/func_matchers.cpp
+  opt/internal/prog_rewrite.cpp
+  opt/inline_calls.cpp
+  opt/optimize.cpp
   opt/treeshake.cpp)
 target_compile_features(opt PRIVATE cxx_std_17)
 if(MSVC)

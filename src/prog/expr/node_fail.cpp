@@ -3,7 +3,7 @@
 
 namespace prog::expr {
 
-FailNode::FailNode(sym::TypeId type) : m_type{type} {}
+FailNode::FailNode(sym::TypeId type) : Node{FailNode::getKind()}, m_type{type} {}
 
 auto FailNode::operator==(const Node& rhs) const noexcept -> bool {
   return dynamic_cast<const FailNode*>(&rhs) != nullptr;

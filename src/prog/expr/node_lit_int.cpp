@@ -3,7 +3,8 @@
 
 namespace prog::expr {
 
-LitIntNode::LitIntNode(sym::TypeId type, int32_t val) : m_type{type}, m_val{val} {}
+LitIntNode::LitIntNode(sym::TypeId type, int32_t val) :
+    Node{LitIntNode::getKind()}, m_type{type}, m_val{val} {}
 
 auto LitIntNode::operator==(const Node& rhs) const noexcept -> bool {
   const auto r = dynamic_cast<const LitIntNode*>(&rhs);
