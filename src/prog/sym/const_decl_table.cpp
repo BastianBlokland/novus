@@ -15,8 +15,7 @@ auto ConstDeclTable::operator[](ConstId id) const -> const ConstDecl& {
 auto ConstDeclTable::getCount() const -> unsigned int { return m_consts.size(); }
 
 auto ConstDeclTable::getLocalCount() const -> unsigned int {
-  return std::count_if(
-      m_consts.begin(), m_consts.end(), [](const auto& c) { return c.m_kind == ConstKind::Local; });
+  return end(ConstKind::Local) - begin(ConstKind::Local);
 }
 
 auto ConstDeclTable::begin() const -> Iterator { return m_consts.begin(); }
@@ -62,6 +61,8 @@ auto ConstDeclTable::lookup(const std::string& name) const -> std::optional<Cons
 }
 
 auto ConstDeclTable::getOffset(ConstId id) const -> unsigned int {
+  // Do a linear scan for the constant. If this becomes a performance bottleneck we could keep
+  // a sorted collection. Note: m_consts is kept sorted but its sorted by kind not by id.
   return std::find_if(begin(), end(), [id](const ConstDecl& decl) { return decl.m_id == id; }) -
       begin();
 }
@@ -85,13 +86,36 @@ auto ConstDeclTable::registerConst(ConstKind kind, std::string name, TypeId type
     throw std::invalid_argument{"Name has to contain aleast 1 char"};
   }
 
-  auto id = ConstId{static_cast<unsigned int>(m_consts.size())};
+  // Assign an id one higher then the current highest, starting from 0.
+  auto highestKey = std::max_element(
+      m_consts.begin(),
+      m_consts.end(),
+      [](const prog::sym::ConstDecl& a, const prog::sym::ConstDecl& b) {
+        return a.getId() < b.getId();
+      });
+  const auto id = ConstId{highestKey == m_consts.end() ? 0 : highestKey->getId().m_id + 1};
+
   if (m_lookup.insert({name, id}).second) {
     // Keep entries in m_consts sorted by kind.
     m_consts.insert(end(kind), ConstDecl{id, kind, std::move(name), type});
     return id;
   }
   throw std::logic_error{"Const with an identical name has already been registered"};
+}
+
+auto ConstDeclTable::erase(ConstId id) -> bool {
+  const auto constsItr = std::find_if(
+      m_consts.begin(), m_consts.end(), [id](const auto& decl) { return decl.m_id == id; });
+  if (constsItr == m_consts.end()) {
+    return false;
+  }
+  m_consts.erase(constsItr);
+
+  const auto lookupItr = std::find_if(
+      m_lookup.begin(), m_lookup.end(), [id](const auto& entry) { return entry.second == id; });
+  assert(lookupItr != m_lookup.end());
+  m_lookup.erase(lookupItr);
+  return true;
 }
 
 auto ConstDeclTable::getConstIds(ConstKind beginKind, ConstKind endKind) const

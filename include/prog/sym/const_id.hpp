@@ -12,6 +12,9 @@ public:
   auto operator==(const ConstId& rhs) const noexcept -> bool;
   auto operator!=(const ConstId& rhs) const noexcept -> bool;
 
+  auto operator<(const ConstId& rhs) const noexcept -> bool;
+  auto operator>(const ConstId& rhs) const noexcept -> bool;
+
   [[nodiscard]] auto getNum() const noexcept -> unsigned int;
 
 private:
