@@ -1,0 +1,39 @@
+## Syntax highlighting for the novus language.
+
+syntax "nov" "\.nov$"
+comment "//"
+
+# Keywords.
+color brightblue "\b(import|struct|union|enum|fun|act|lambda|impure|fork)\b"
+color red "(\b(if|else)\b)|(\?|\:)"
+color brightyellow "((\b(is|as)\b)|(\+\+)|(\-\-)|(\&\&)|(\|\|)|(\<\<)|(\>\>)|(\<\=)|(\>\=)|(\=\=)|(\!\=)|\+|\-|\*|(\/)|\^|\~|\%|\&|\!|<|>)"
+
+# Seperators
+color cyan "\(|\)|\,|\;|\=|\{|\}|\."
+
+# Build-in types.
+color green "\b(int|long|float|bool|string|char|stream|function|action|future)\b"
+
+# Constants - Bool.
+color brightmagenta "\b(true|false)\b"
+
+# Constants - Float.
+color brightmagenta "[0-9_]*\.[0-9_]+\b"
+
+# Constants - Int.
+color brightmagenta "\b(([0-9_]+)|(0(x|X)[0-9a-fA-F_]+)|(0(b|B)[01_]*))\b"
+
+# Constants - Long.
+color brightmagenta "\b(([0-9_]+(l|L))|(0(x|X)[0-9a-fA-F_]*(l|L))|(0(b|B)[01_]*(l|L)))\b"
+
+# Constants - Character.
+color brightmagenta "'\\?.'"
+
+# Constants - String.
+color brightyellow ""([^"]|\\")*""
+
+# Comments.
+color brightblack "//.*"
+
+# Trailing whitespace.
+color ,green "[[:space:]]+$"
