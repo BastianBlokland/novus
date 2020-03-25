@@ -199,12 +199,14 @@ target_include_directories(frontend PRIVATE frontend)
 # Opt (optimiser).
 add_library(opt STATIC
   opt/internal/const_remapper.cpp
+  opt/internal/expr_matchers.cpp
   opt/internal/find_called_funcs.cpp
+  opt/internal/find_used_consts.cpp
   opt/internal/find_used_funcs.cpp
   opt/internal/find_used_types.cpp
-  opt/internal/func_matchers.cpp
   opt/internal/prog_rewrite.cpp
   opt/call_inline.cpp
+  opt/const_elimination.cpp
   opt/optimize.cpp
   opt/treeshake.cpp)
 target_compile_features(opt PRIVATE cxx_std_17)

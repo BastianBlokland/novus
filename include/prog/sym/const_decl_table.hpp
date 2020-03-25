@@ -42,6 +42,10 @@ public:
   auto registerInput(std::string name, TypeId type) -> ConstId;
   auto registerLocal(std::string name, TypeId type) -> ConstId;
 
+  // Remove a constant from the table, note: care must be taken to avoid removing a constant that is
+  // still being referenced.
+  auto erase(ConstId id) -> bool;
+
 private:
   std::vector<ConstDecl> m_consts;
   std::unordered_map<std::string, ConstId> m_lookup;
