@@ -9,4 +9,6 @@ auto treeshake(const prog::Program& prog) -> prog::Program;
 
 auto inlineCalls(const prog::Program& prog) -> prog::Program;
 
+auto eliminateConsts(const prog::Program& prog) -> prog::Program;
+
 } // namespace opt

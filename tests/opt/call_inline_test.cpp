@@ -6,7 +6,6 @@
 #include "prog/expr/node_const.hpp"
 #include "prog/expr/node_group.hpp"
 #include "prog/expr/node_lit_int.hpp"
-#include "prog/program.hpp"
 
 namespace opt {
 
