@@ -45,7 +45,7 @@ inline auto streamReadString(Allocator* alloc, const Value& stream, int max) noe
 inline auto streamWriteString(const Value& stream, StringRef* str) noexcept -> bool {
   auto* streamRef = stream.getDowncastRef<StreamRef>();
   if (!streamRef->isValid()) {
-    return 0;
+    return false;
   }
   return streamRef->writeString(str);
 }
@@ -53,7 +53,7 @@ inline auto streamWriteString(const Value& stream, StringRef* str) noexcept -> b
 inline auto streamWriteChar(const Value& stream, uint8_t val) noexcept -> bool {
   auto* streamRef = stream.getDowncastRef<StreamRef>();
   if (!streamRef->isValid()) {
-    return 0;
+    return false;
   }
   return streamRef->writeChar(val);
 }
