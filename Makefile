@@ -26,3 +26,13 @@ test:
 .PHONY: clean
 clean:
 	rm -rf build
+
+# Evaluate nov files when they are written to.
+# Requires 'inotify-tools' to be installed.
+.PHONY: watch.nov
+watch.nov:
+	inotifywait --event close_write -qm --format '%w' **/*.nov \
+		| xargs -I{} -r sh -c \
+		"clear; echo "{}:"; ./bin/eval {}; echo "------""
+
+.SILENT:
