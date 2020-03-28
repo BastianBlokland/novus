@@ -119,16 +119,31 @@ auto inline pcall(
     PUSH_BOOL(streamCheckValid(POP()));
   } break;
   case PCallCode::StreamReadString: {
+    execHandle->setState(ExecState::Paused);
+
     auto maxChars = POP_INT();
     PUSH_REF(streamReadString(alloc, POP(), maxChars));
+
+    execHandle->setState(ExecState::Running);
+    execHandle->trap();
   } break;
   case PCallCode::StreamWriteString: {
+    execHandle->setState(ExecState::Paused);
+
     auto* strRef = getStringRef(POP());
     PUSH_BOOL(streamWriteString(POP(), strRef));
+
+    execHandle->setState(ExecState::Running);
+    execHandle->trap();
   } break;
   case PCallCode::StreamWriteChar: {
+    execHandle->setState(ExecState::Paused);
+
     uint8_t val = static_cast<uint8_t>(POP_INT());
     PUSH_BOOL(streamWriteChar(POP(), val));
+
+    execHandle->setState(ExecState::Running);
+    execHandle->trap();
   } break;
   case PCallCode::StreamFlush: {
     streamFlush(PEEK());
