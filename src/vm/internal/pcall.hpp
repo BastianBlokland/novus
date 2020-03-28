@@ -1,6 +1,7 @@
 #pragma once
 #include "internal/executor_handle.hpp"
 #include "internal/ref_long.hpp"
+#include "internal/ref_stream_console.hpp"
 #include "internal/ref_stream_file.hpp"
 #include "internal/stack.hpp"
 #include "internal/string_utilities.hpp"
@@ -109,6 +110,10 @@ auto inline pcall(
     auto flags       = static_cast<FileStreamFlags>(static_cast<uint8_t>(options >> 8U));
     auto* pathStrRef = getStringRef(POP());
     PUSH_REF(openFileStream(alloc, pathStrRef, mode, flags));
+  } break;
+  case PCallCode::StreamOpenConsole: {
+    auto kind = static_cast<ConsoleStreamKind>(POP_INT());
+    PUSH_REF(openConsoleStream(alloc, kind));
   } break;
   case PCallCode::StreamCheckValid: {
     PUSH_BOOL(streamCheckValid(POP()));

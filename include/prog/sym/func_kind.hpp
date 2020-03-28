@@ -117,6 +117,7 @@ enum class FuncKind {
   ActionConReadStringLine,
 
   ActionStreamOpenFile,
+  ActionStreamOpenConsole,
   ActionStreamCheckValid,
   ActionStreamReadString,
   ActionStreamWriteString,

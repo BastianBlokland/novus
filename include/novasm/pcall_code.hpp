@@ -18,10 +18,11 @@ enum class PCallCode : uint8_t {
   ConReadStringLine = 22, // () -> (string) Read a string from the console.
 
   StreamOpenFile    = 31, // (int, string)    -> (stream)  Open a file at path with options.
-  StreamCheckValid  = 32, // (stream)         -> (int)     Check if given stream is valid.
-  StreamReadString  = 33, // (int, stream)    -> (string)  Read up to x bytes from a stream.
-  StreamWriteString = 34, // (string, stream) -> (int)     Write string, returns success.
-  StreamWriteChar   = 35, // (int, stream)    -> (int)     Write character, returns success.
+  StreamOpenConsole = 32, // (int)            -> (stream)  Get a stream to stdin, stdout or stderr.
+  StreamCheckValid  = 33, // (stream)         -> (int)     Check if given stream is valid.
+  StreamReadString  = 34, // (int, stream)    -> (string)  Read up to x bytes from a stream.
+  StreamWriteString = 35, // (string, stream) -> (int)     Write string, returns success.
+  StreamWriteChar   = 36, // (int, stream)    -> (int)     Write character, returns success.
 
   StreamFlush = 40, // (stream)         -> (stream)  Flush any unwritten data to output device.
   FileRemove  = 41, // (string)         -> (int)     Remove the file at path, returns success.

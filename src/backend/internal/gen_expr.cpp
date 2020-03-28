@@ -453,6 +453,9 @@ auto GenExpr::visit(const prog::expr::CallExprNode& n) -> void {
   case prog::sym::FuncKind::ActionStreamOpenFile:
     m_asmb->addPCall(novasm::PCallCode::StreamOpenFile);
     break;
+  case prog::sym::FuncKind::ActionStreamOpenConsole:
+    m_asmb->addPCall(novasm::PCallCode::StreamOpenConsole);
+    break;
   case prog::sym::FuncKind::ActionStreamCheckValid:
     m_asmb->addPCall(novasm::PCallCode::StreamCheckValid);
     break;

@@ -24,6 +24,9 @@ auto operator<<(std::ostream& out, const PCallCode& rhs) noexcept -> std::ostrea
   case PCallCode::StreamOpenFile:
     out << "stream-open-file";
     break;
+  case PCallCode::StreamOpenConsole:
+    out << "stream-open-console";
+    break;
   case PCallCode::StreamCheckValid:
     out << "stream-check-valid";
     break;

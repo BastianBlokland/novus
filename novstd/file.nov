@@ -1,3 +1,5 @@
+import "stream.nov"
+
 // -- Path
 // Represents a path on the filesystem.
 
@@ -5,6 +7,8 @@ struct Path = string str
 
 fun +(Path p1, Path p2)   Path(p1.str + p2.str)
 fun ::(Path p1, Path p2)  Path(p1.str + "/" + p2.str)
+
+fun string(Path p) p.str
 
 // -- Actions
 
@@ -24,41 +28,35 @@ act fileExists(Path p)
 act fileRemove(Path p)
   fileRemove(p.str)
 
-act read(stream s)
-  (
-    impure lambda (string result)
-      read = s.streamRead(512);
-      if read.length() > 0  -> self(result + read)
-      else                  -> result
-  )("")
-
-act write(stream s, string str)
-  if s.streamWrite(str) -> s.streamFlush(); true
-  else                  -> false
-
 act readFile(Path p)
   fileOpen(p, FileMode.Open).read()
 
 act writeFile(Path p, string str)
-  fileOpen(p, FileMode.Create).write(str)
+  f = fileOpen(p, FileMode.Create);
+  f.streamWrite(str);
+  f.streamFlush()
 
 act appendFile(Path p, string str)
-  fileOpen(p, FileMode.Append).write(str)
+  f = fileOpen(p, FileMode.Append);
+  f.streamWrite(str);
+  f.streamFlush()
 
 // -- Tests
 
 assert(
   p = Path("file-test1.tmp");
   f = fileOpen(p, FileMode.Create, FileFlags.AutoRemove);
-  f.write("hello world");
+  f.streamWrite("hello world");
+  f.streamFlush();
   readFile(p) == "hello world")
 
 assert(
   p = Path("file-test2.tmp");
   f = fileOpen(p, FileMode.Append, FileFlags.AutoRemove);
-  f.write("hello world");
-  f.write("hello world");
-  f.write("hello world");
+  f.streamWrite("hello world");
+  f.streamWrite("hello world");
+  f.streamWrite("hello world");
+  f.streamFlush();
   readFile(p) == "hello worldhello worldhello world")
 
 assert(
