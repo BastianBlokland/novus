@@ -41,6 +41,10 @@ auto findOverload(
       if (*inputItr == *ovInputItr) {
         continue;
       }
+      if (options.hasFlag<Flags::NoConvOnFirstArg>() && inputItr == input.begin()) {
+        valid = false; // No conversions allowed on the first argument.
+        break;
+      }
       if (options.getMaxImplicitConvs() >= 0 && convAmount >= options.getMaxImplicitConvs()) {
         valid = false; // Too many implicit conversions are required for this overload.
         break;

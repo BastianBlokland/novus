@@ -127,8 +127,10 @@ private:
         static_cast<unsigned int>(F);
   }
 
-  [[nodiscard]] inline auto getOvOptions(int maxImplicitConvs, bool excludeNonUser = false) const
+  [[nodiscard]] inline auto getOvOptions(
+      int maxImplicitConvs, bool excludeNonUser = false, bool noConvOnFirstArg = false) const
       noexcept {
+
     auto ovFlags = prog::OvFlags::None;
     if (!hasFlag<Flags::AllowPureFuncCalls>()) {
       ovFlags = ovFlags | prog::OvFlags::ExclPureFuncs;
@@ -138,6 +140,9 @@ private:
     }
     if (excludeNonUser) {
       ovFlags = ovFlags | prog::OvFlags::ExclNonUser;
+    }
+    if (noConvOnFirstArg) {
+      ovFlags = ovFlags | prog::OvFlags::NoConvOnFirstArg;
     }
     return prog::OvOptions{ovFlags, maxImplicitConvs};
   }

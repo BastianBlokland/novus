@@ -233,7 +233,11 @@ auto GetExpr::visit(const parse::CallExprNode& n) -> void {
   modifyCall(m_ctx, nameToken, n, &args.value());
 
   const auto possibleFuncs = getFunctionsInclConversions(nameToken, typeParams, args->second);
-  const auto func = m_ctx->getProg()->lookupFunc(possibleFuncs, args->second, getOvOptions(-1));
+
+  // On instance calls we do not allow (implicit) conversions on the first argument (the instance).
+  const auto noConvFirstArg = instance != nullptr;
+  const auto ovOpts         = getOvOptions(-1, false, noConvFirstArg);
+  const auto func           = m_ctx->getProg()->lookupFunc(possibleFuncs, args->second, ovOpts);
   if (!func) {
     auto isTypeOrConv = isType(m_ctx, getName(nameToken));
     if (typeParams) {
