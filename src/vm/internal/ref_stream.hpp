@@ -20,6 +20,7 @@ public:
   [[nodiscard]] virtual auto isValid() noexcept -> bool = 0;
 
   virtual auto readString(Allocator* alloc, int32_t max) noexcept -> StringRef* = 0;
+  virtual auto readChar() noexcept -> char                                      = 0;
   virtual auto writeString(StringRef* str) noexcept -> bool                     = 0;
   virtual auto writeChar(uint8_t val) noexcept -> bool                          = 0;
   virtual auto flush() noexcept -> void                                         = 0;
@@ -40,6 +41,14 @@ inline auto streamReadString(Allocator* alloc, const Value& stream, int max) noe
     return alloc->allocStr(0).first;
   }
   return streamRef->readString(alloc, max);
+}
+
+inline auto streamReadChar(const Value& stream) noexcept -> char {
+  auto* streamRef = stream.getDowncastRef<StreamRef>();
+  if (!streamRef->isValid()) {
+    return '\0';
+  }
+  return streamRef->readChar();
 }
 
 inline auto streamWriteString(const Value& stream, StringRef* str) noexcept -> bool {

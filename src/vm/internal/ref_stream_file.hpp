@@ -44,6 +44,11 @@ public:
     return strAlloc.first;
   }
 
+  auto readChar() noexcept -> char override {
+    auto res = std::getc(m_filePtr);
+    return res > 0 ? static_cast<char>(res) : '\0';
+  }
+
   auto writeString(StringRef* str) noexcept -> bool override {
     return std::fwrite(str->getDataPtr(), str->getSize(), 1, m_filePtr) == 1;
   }

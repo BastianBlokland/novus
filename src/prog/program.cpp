@@ -259,6 +259,8 @@ Program::Program() :
   m_funcDecls.registerAction(
       *this, Fk::ActionStreamReadString, "streamRead", sym::TypeSet{m_stream, m_int}, m_string);
   m_funcDecls.registerAction(
+      *this, Fk::ActionStreamReadChar, "streamRead", sym::TypeSet{m_stream}, m_char);
+  m_funcDecls.registerAction(
       *this, Fk::ActionStreamWriteString, "streamWrite", sym::TypeSet{m_stream, m_string}, m_bool);
   m_funcDecls.registerAction(
       *this, Fk::ActionStreamWriteChar, "streamWrite", sym::TypeSet{m_stream, m_char}, m_bool);

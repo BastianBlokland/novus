@@ -120,6 +120,7 @@ enum class FuncKind {
   ActionStreamOpenConsole,
   ActionStreamCheckValid,
   ActionStreamReadString,
+  ActionStreamReadChar,
   ActionStreamWriteString,
   ActionStreamWriteChar,
   ActionStreamFlush,

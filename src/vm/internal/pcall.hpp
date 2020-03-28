@@ -119,31 +119,47 @@ auto inline pcall(
     PUSH_BOOL(streamCheckValid(POP()));
   } break;
   case PCallCode::StreamReadString: {
-    execHandle->setState(ExecState::Paused);
-
     auto maxChars = POP_INT();
-    PUSH_REF(streamReadString(alloc, POP(), maxChars));
+    auto stream   = POP();
 
+    execHandle->setState(ExecState::Paused);
+    auto* result = streamReadString(alloc, stream, maxChars);
     execHandle->setState(ExecState::Running);
     execHandle->trap();
+
+    PUSH_REF(result);
+  } break;
+  case PCallCode::StreamReadChar: {
+    auto stream = POP();
+
+    execHandle->setState(ExecState::Paused);
+    auto readChar = streamReadChar(stream);
+    execHandle->setState(ExecState::Running);
+    execHandle->trap();
+
+    PUSH_INT(readChar);
   } break;
   case PCallCode::StreamWriteString: {
-    execHandle->setState(ExecState::Paused);
-
     auto* strRef = getStringRef(POP());
-    PUSH_BOOL(streamWriteString(POP(), strRef));
+    auto stream  = POP();
 
+    execHandle->setState(ExecState::Paused);
+    auto result = streamWriteString(stream, strRef);
     execHandle->setState(ExecState::Running);
     execHandle->trap();
+
+    PUSH_BOOL(result);
   } break;
   case PCallCode::StreamWriteChar: {
-    execHandle->setState(ExecState::Paused);
-
     uint8_t val = static_cast<uint8_t>(POP_INT());
-    PUSH_BOOL(streamWriteChar(POP(), val));
+    auto stream = POP();
 
+    execHandle->setState(ExecState::Paused);
+    auto result = streamWriteChar(stream, val);
     execHandle->setState(ExecState::Running);
     execHandle->trap();
+
+    PUSH_BOOL(result);
   } break;
   case PCallCode::StreamFlush: {
     streamFlush(PEEK());

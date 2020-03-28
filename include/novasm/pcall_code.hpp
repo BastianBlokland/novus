@@ -21,8 +21,9 @@ enum class PCallCode : uint8_t {
   StreamOpenConsole = 32, // (int)            -> (stream)  Get a stream to stdin, stdout or stderr.
   StreamCheckValid  = 33, // (stream)         -> (int)     Check if given stream is valid.
   StreamReadString  = 34, // (int, stream)    -> (string)  Read up to x bytes from a stream.
-  StreamWriteString = 35, // (string, stream) -> (int)     Write string, returns success.
-  StreamWriteChar   = 36, // (int, stream)    -> (int)     Write character, returns success.
+  StreamReadChar    = 35, // (stream)         -> (int)     Read a single character from a stream.
+  StreamWriteString = 36, // (string, stream) -> (int)     Write string, returns success.
+  StreamWriteChar   = 37, // (int, stream)    -> (int)     Write character, returns success.
 
   StreamFlush = 40, // (stream)         -> (stream)  Flush any unwritten data to output device.
   FileRemove  = 41, // (string)         -> (int)     Remove the file at path, returns success.

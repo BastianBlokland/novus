@@ -8,6 +8,14 @@ act read(stream s)
       else                  -> result
   )("")
 
+act readLine(stream s)
+  (
+    impure lambda (string result)
+      c = s.streamRead();
+      if c == '\n' || c == '\0' -> result
+      else                      -> self(result + c)
+  )("")
+
 act copy(stream from, stream to)
   (
     impure lambda(int bytesCopied)
