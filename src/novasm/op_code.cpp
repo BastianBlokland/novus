@@ -285,6 +285,9 @@ auto operator<<(std::ostream& out, const OpCode& rhs) noexcept -> std::ostream& 
   case OpCode::Pop:
     out << "pop";
     break;
+  case OpCode::Swap:
+    out << "swap";
+    break;
 
   case OpCode::Fail:
     out << "fail";

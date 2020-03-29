@@ -108,9 +108,10 @@ enum class OpCode : uint8_t {
   Ret           = 238, // []          (any)                 -> ()       Return from stack-frame.
 
   FutureWaitNano = 240, // [] (long, future) -> (int)  Wait x ns on future, returns if complete.
-  FutureBlock    = 241, // [] (future)       -> (any)  Block and retreive result of future.
-  Dup            = 243, // [] ()             -> (any)  Duplicate a value on the stack.
-  Pop            = 244, // [] (any)          -> ()     Remove a value from the stack.
+  FutureBlock    = 241, // [] (future)       -> (any)       Block and retreive result of future.
+  Dup            = 243, // [] ()             -> (any)       Duplicate a value on the stack.
+  Pop            = 244, // [] (any)          -> ()          Remove a value from the stack.
+  Swap           = 245, // [] (any, any)     -> (any, any)  Swap the top-most two values.
 
   Fail = 255, // [] () -> () Terminate the current executor.
 };

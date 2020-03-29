@@ -121,6 +121,7 @@ public:
   auto addFutureBlock() -> void;
   auto addDup() -> void;
   auto addPop() -> void;
+  auto addSwap() -> void;
   auto addFail() -> void;
 
   auto setEntrypoint(std::string label) -> void;

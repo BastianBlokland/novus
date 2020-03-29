@@ -40,6 +40,25 @@ TEST_CASE("Execute miscellaneous instructions", "[vm]") {
         "input",
         "42");
   }
+
+  SECTION("Swap") {
+    CHECK_PROG(
+        [](novasm::Assembler* asmb) -> void {
+          asmb->label("start");
+          asmb->addLoadLitInt(5);
+          asmb->addLoadLitInt(10);
+          asmb->addSwap();
+          asmb->addDivInt();
+
+          asmb->addConvIntString();
+          asmb->addPCall(novasm::PCallCode::ConWriteString);
+          asmb->addRet();
+
+          asmb->setEntrypoint("start");
+        },
+        "input",
+        "2");
+  }
 }
 
 } // namespace vm

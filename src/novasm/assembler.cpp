@@ -283,6 +283,8 @@ auto Assembler::addDup() -> void { writeOpCode(OpCode::Dup); }
 
 auto Assembler::addPop() -> void { writeOpCode(OpCode::Pop); }
 
+auto Assembler::addSwap() -> void { writeOpCode(OpCode::Swap); }
+
 auto Assembler::addFail() -> void { writeOpCode(OpCode::Fail); }
 
 auto Assembler::setEntrypoint(std::string label) -> void { m_entrypointLabel = std::move(label); }

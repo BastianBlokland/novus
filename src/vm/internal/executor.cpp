@@ -763,6 +763,13 @@ auto execute(
     case OpCode::Pop:
       POP();
       break;
+    case OpCode::Swap: {
+      auto* a  = stack.getTop();
+      auto* b  = a - 1;
+      auto tmp = *a; // Old a.
+      *a       = *b;
+      *b       = tmp;
+    } break;
 
     case OpCode::Fail:
     default:

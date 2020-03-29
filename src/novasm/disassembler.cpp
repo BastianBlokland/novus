@@ -191,7 +191,8 @@ auto disassembleInstructions(const Assembly& assembly, const dasm::InstructionLa
     case OpCode::FutureWaitNano:
     case OpCode::FutureBlock:
     case OpCode::Dup:
-    case OpCode::Pop: {
+    case OpCode::Pop:
+    case OpCode::Swap: {
       result.push_back(Instr{opCode, offset, {}, labels});
       continue;
     }
