@@ -119,7 +119,7 @@ fun foldRight{T, TResult}(List{T} l, function{TResult, T, TResult} func)
   foldRight(l, func, TResult())
 
 fun foldRight{T, TResult}(List{T} l, function{TResult, T, TResult} func, TResult result)
-  if l as LNode{T} n -> func(self(n.next, func, result), n.val)
+  if l as LNode{T} n -> func(foldRight(n.next, func, result), n.val)
   if l is LEnd       -> result
 
 fun filter{T}(List{T} l, function{T, bool} pred)

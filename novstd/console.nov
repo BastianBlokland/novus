@@ -1,0 +1,30 @@
+import "stream.nov"
+
+enum ConsoleKind = StdIn : 0, StdOut, StdErr
+
+// -- Actions
+
+act consoleOpen(ConsoleKind kind)
+  consoleOpenStream(kind)
+
+act writeStdOut(string msg)
+  consoleOpen(ConsoleKind.StdOut).streamWrite(msg)
+
+act writeStdErr(string msg)
+  consoleOpen(ConsoleKind.StdErr).streamWrite(msg)
+
+act readChar()
+  consoleOpen(ConsoleKind.StdIn).streamRead()
+
+act readLine()
+  consoleOpen(ConsoleKind.StdIn).readLine()
+
+act print{T}(T x)
+  s = consoleOpen(ConsoleKind.StdOut);
+  s.streamWrite(x.string());
+  s.streamWrite('\n')
+
+act printErr{T}(T x)
+  s = consoleOpen(ConsoleKind.StdErr);
+  s.streamWrite(x.string());
+  s.streamWrite('\n')

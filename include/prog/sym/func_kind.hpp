@@ -109,16 +109,11 @@ enum class FuncKind {
   CheckEqUserType,
   CheckNEqUserType,
 
-  ActionConWriteChar,
-  ActionConWriteString,
-  ActionConWriteStringLine,
-
-  ActionConReadChar,
-  ActionConReadStringLine,
-
   ActionStreamOpenFile,
+  ActionStreamOpenConsole,
   ActionStreamCheckValid,
   ActionStreamReadString,
+  ActionStreamReadChar,
   ActionStreamWriteString,
   ActionStreamWriteChar,
   ActionStreamFlush,

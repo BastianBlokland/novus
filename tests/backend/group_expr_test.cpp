@@ -5,7 +5,7 @@ namespace backend {
 
 TEST_CASE("Generating assembly for group expressions", "[backend]") {
 
-  CHECK_EXPR_INT("x = 42; x", [](novasm::Assembler* asmb) -> void {
+  CHECK_EXPR("x = 42; x", [](novasm::Assembler* asmb) -> void {
     asmb->addStackAlloc(1);
 
     asmb->addLoadLitInt(42);
@@ -16,7 +16,7 @@ TEST_CASE("Generating assembly for group expressions", "[backend]") {
     asmb->addStackLoad(0);
   });
 
-  CHECK_EXPR_INT("1; 2; 3", [](novasm::Assembler* asmb) -> void {
+  CHECK_EXPR("1; 2; 3", [](novasm::Assembler* asmb) -> void {
     asmb->addLoadLitInt(1);
     asmb->addPop();
 

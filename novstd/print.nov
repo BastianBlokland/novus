@@ -1,4 +1,0 @@
-// -- Actions
-
-act print{T}(T x)
-  conWriteLine(x.string())

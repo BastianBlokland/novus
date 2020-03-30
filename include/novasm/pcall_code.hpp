@@ -10,21 +10,16 @@ namespace novasm {
 */
 
 enum class PCallCode : uint8_t {
-  ConWriteChar       = 10, // (int)     -> (int)      Write a (ascii) char to the console.
-  ConWriteString     = 11, // (string)  -> (string)   Write a string to the console.
-  ConWriteStringLine = 12, // (string)  -> (string)   Write a string followed by newline to console.
+  StreamOpenFile    = 10, // (int, string)    -> (stream)  Open a file at path with options.
+  StreamOpenConsole = 11, // (int)            -> (stream)  Get a stream to stdin, stdout or stderr.
+  StreamCheckValid  = 12, // (stream)         -> (int)     Check if given stream is valid.
+  StreamReadString  = 13, // (int, stream)    -> (string)  Read up to x bytes from a stream.
+  StreamReadChar    = 14, // (stream)         -> (int)     Read a single character from a stream.
+  StreamWriteString = 15, // (string, stream) -> (int)     Write string, returns success.
+  StreamWriteChar   = 16, // (int, stream)    -> (int)     Write character, returns success.
+  StreamFlush       = 17, // (stream)         -> (stream)  Flush any unwritten data to output.
 
-  ConReadChar       = 21, // () -> (int)    Read a (ascii) char from the console.
-  ConReadStringLine = 22, // () -> (string) Read a string from the console.
-
-  StreamOpenFile    = 31, // (int, string)    -> (stream)  Open a file at path with options.
-  StreamCheckValid  = 32, // (stream)         -> (int)     Check if given stream is valid.
-  StreamReadString  = 33, // (int, stream)    -> (string)  Read up to x bytes from a stream.
-  StreamWriteString = 34, // (string, stream) -> (int)     Write string, returns success.
-  StreamWriteChar   = 35, // (int, stream)    -> (int)     Write character, returns success.
-
-  StreamFlush = 40, // (stream)         -> (stream)  Flush any unwritten data to output device.
-  FileRemove  = 41, // (string)         -> (int)     Remove the file at path, returns success.
+  FileRemove = 40, // (string)         -> (int)     Remove the file at path, returns success.
 
   GetEnvArg      = 50, // (int)     -> (string) Get an environment argument by index.
   GetEnvArgCount = 51, // ()        -> (int)    Get the amount of environment arguments provided.

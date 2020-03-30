@@ -8,13 +8,13 @@ TEST_CASE("Generate assembly for call dynamic expressions", "[backend]") {
 
   SECTION("User functions") {
     CHECK_PROG(
-        "fun test(int a, int b) -> int a + b "
-        "conWrite(op = test; op(42, 1337).string())",
+        "fun test(int a, int b) -> bool a == b "
+        "assert(op = test; op(42, 1337), \"test\")",
         [](novasm::Assembler* asmb) -> void {
           asmb->label("test");
           asmb->addStackLoad(0);
           asmb->addStackLoad(1);
-          asmb->addAddInt();
+          asmb->addCheckEqInt();
           asmb->addRet();
 
           asmb->label("prog");
@@ -30,8 +30,8 @@ TEST_CASE("Generate assembly for call dynamic expressions", "[backend]") {
           asmb->addStackLoad(0);
           asmb->addCallDyn(2, novasm::CallMode::Normal);
 
-          asmb->addConvIntString();
-          asmb->addPCall(novasm::PCallCode::ConWriteString);
+          asmb->addLoadLitString("test");
+          asmb->addPCall(novasm::PCallCode::Assert);
           asmb->addRet();
 
           asmb->setEntrypoint("prog");
@@ -40,11 +40,11 @@ TEST_CASE("Generate assembly for call dynamic expressions", "[backend]") {
 
   SECTION("Closure") {
     CHECK_PROG(
-        "conWrite(i = 1337; (lambda () 42 + i)().string())", [](novasm::Assembler* asmb) -> void {
+        "assert(i = 1337; (lambda () i == 42)(), \"test\")", [](novasm::Assembler* asmb) -> void {
           asmb->label("anon func");
-          asmb->addLoadLitInt(42);
           asmb->addStackLoad(0);
-          asmb->addAddInt();
+          asmb->addLoadLitInt(42);
+          asmb->addCheckEqInt();
           asmb->addRet();
 
           asmb->label("prog");
@@ -60,8 +60,8 @@ TEST_CASE("Generate assembly for call dynamic expressions", "[backend]") {
           asmb->addMakeStruct(2);
 
           asmb->addCallDyn(0, novasm::CallMode::Normal);
-          asmb->addConvIntString();
-          asmb->addPCall(novasm::PCallCode::ConWriteString);
+          asmb->addLoadLitString("test");
+          asmb->addPCall(novasm::PCallCode::Assert);
           asmb->addRet();
 
           asmb->setEntrypoint("prog");
@@ -70,13 +70,13 @@ TEST_CASE("Generate assembly for call dynamic expressions", "[backend]") {
 
   SECTION("Closure") {
     CHECK_PROG(
-        "conWrite(i = 1337; (lambda (float f) f + i)(.1).string())",
+        "assert(i = 1337; (lambda (float f) f == i)(.1), \"test\")",
         [](novasm::Assembler* asmb) -> void {
           asmb->label("anon func");
           asmb->addStackLoad(0);
           asmb->addStackLoad(1);
           asmb->addConvIntFloat();
-          asmb->addAddFloat();
+          asmb->addCheckEqFloat();
           asmb->addRet();
 
           asmb->label("prog");
@@ -93,8 +93,8 @@ TEST_CASE("Generate assembly for call dynamic expressions", "[backend]") {
           asmb->addMakeStruct(2);
 
           asmb->addCallDyn(1, novasm::CallMode::Normal);
-          asmb->addConvFloatString();
-          asmb->addPCall(novasm::PCallCode::ConWriteString);
+          asmb->addLoadLitString("test");
+          asmb->addPCall(novasm::PCallCode::Assert);
           asmb->addRet();
 
           asmb->setEntrypoint("prog");

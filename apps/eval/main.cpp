@@ -5,8 +5,9 @@
 #include "opt/opt.hpp"
 #include "rang.hpp"
 #include "vm/exec_state.hpp"
-#include "vm/platform/terminal_interface.hpp"
+#include "vm/platform_interface.hpp"
 #include "vm/vm.hpp"
+#include <cstdio>
 #include <fstream>
 #include <system_error>
 
@@ -27,7 +28,7 @@ auto run(
   if (frontendOutput.isSuccess()) {
     const auto optProg   = opt::optimize(frontendOutput.getProg());
     const auto asmOutput = backend::generate(optProg);
-    auto iface           = vm::platform::TerminalInterface{vmEnvArgsCount, vmEnvArgs};
+    auto iface           = vm::PlatformInterface{vmEnvArgsCount, vmEnvArgs, stdin, stdout, stderr};
     auto res             = vm::run(&asmOutput.first, &iface);
     if (res != vm::ExecState::Success) {
       std::cout << rang::style::bold << rang::bg::red << "Runtime error: " << res << '\n'

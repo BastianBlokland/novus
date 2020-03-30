@@ -1,6 +1,7 @@
 #include "catch2/catch.hpp"
 #include "frontend/diag_defs.hpp"
 #include "helpers.hpp"
+#include "prog/expr/node_lit_bool.hpp"
 #include "prog/expr/node_lit_enum.hpp"
 #include "prog/expr/node_lit_int.hpp"
 #include "prog/expr/node_lit_string.hpp"
@@ -10,19 +11,21 @@ namespace frontend {
 TEST_CASE("Analyzing execute statements", "[frontend]") {
 
   SECTION("Define exec statement") {
-    const auto& output = ANALYZE("conWrite(\"hello world\")");
+    const auto& output = ANALYZE("assert(true, \"hello world\")");
     REQUIRE(output.isSuccess());
     auto execsBegin     = output.getProg().beginExecStmts();
     const auto execsEnd = output.getProg().endExecStmts();
 
     auto args = std::vector<prog::expr::NodePtr>{};
+    args.push_back(prog::expr::litBoolNode(output.getProg(), true));
     args.push_back(prog::expr::litStringNode(output.getProg(), "hello world"));
 
     CHECK(
         execsBegin->getExpr() ==
         *prog::expr::callExprNode(
             output.getProg(),
-            GET_FUNC_ID(output, "conWrite", GET_TYPE_ID(output, "string")),
+            GET_FUNC_ID(
+                output, "assert", GET_TYPE_ID(output, "bool"), GET_TYPE_ID(output, "string")),
             std::move(args)));
     REQUIRE(++execsBegin == execsEnd);
   }
@@ -52,7 +55,7 @@ TEST_CASE("Analyzing execute statements", "[frontend]") {
   }
 
   SECTION("Define exec statement with const") {
-    const auto& output = ANALYZE("conWrite(string(x = 5; x + 1))");
+    const auto& output = ANALYZE("assert(x = 5; x == 1, \"msg\")");
     REQUIRE(output.isSuccess());
     auto execsBegin        = output.getProg().beginExecStmts();
     const auto execsEnd    = output.getProg().endExecStmts();
@@ -65,8 +68,7 @@ TEST_CASE("Analyzing execute statements", "[frontend]") {
 
   SECTION("Define exec statement to custom action") {
     const auto& output = ANALYZE("act main() "
-                                 " conWrite(\"hello \"); "
-                                 " conWrite(\"world\") "
+                                 " assert(true, \"hello \") "
                                  "main()");
     REQUIRE(output.isSuccess());
     auto execsBegin     = output.getProg().beginExecStmts();
@@ -81,14 +83,14 @@ TEST_CASE("Analyzing execute statements", "[frontend]") {
   SECTION("Diagnostics") {
     CHECK_DIAG("things()", errUndeclaredAction(src, "things", {}, input::Span{0, 7}));
     CHECK_DIAG(
-        "conWrite(1, 1)",
+        "assert(1, 1)",
         errUndeclaredAction(
-            src, "conWrite", std::vector<std::string>{"int", "int"}, input::Span{0, 13}));
+            src, "assert", std::vector<std::string>{"int", "int"}, input::Span{0, 11}));
     CHECK_DIAG(
         "fun f() -> int 1 "
         "f()",
         errUndeclaredAction(src, "f", {}, input::Span{17, 19}));
-    CHECK_DIAG("conWrite(test())", errUndeclaredFuncOrAction(src, "test", {}, input::Span{9, 14}));
+    CHECK_DIAG("assert(test())", errUndeclaredFuncOrAction(src, "test", {}, input::Span{7, 12}));
   }
 }
 

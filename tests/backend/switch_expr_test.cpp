@@ -5,7 +5,7 @@ namespace backend {
 
 TEST_CASE("Generating assembly for switch expressions", "[backend]") {
 
-  CHECK_EXPR_INT(
+  CHECK_EXPR(
       "if true -> 10 "
       "else    -> 20",
       [](novasm::Assembler* asmb) -> void {
@@ -21,7 +21,7 @@ TEST_CASE("Generating assembly for switch expressions", "[backend]") {
         asmb->label("end");
       });
 
-  CHECK_EXPR_INT(
+  CHECK_EXPR(
       "if true  -> 10 "
       "if true  -> 20 "
       "else     -> 30",

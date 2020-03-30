@@ -1,0 +1,26 @@
+// -- Actions
+
+act read(stream s)
+  (
+    impure lambda (string result)
+      read = s.streamRead(512);
+      if read.length() > 0  -> self(result + read)
+      else                  -> result
+  )("")
+
+act readLine(stream s)
+  (
+    impure lambda (string result)
+      c = s.streamRead();
+      if c == '\n' || c == '\0' -> result
+      else                      -> self(result + c)
+  )("")
+
+act copy(stream from, stream to)
+  (
+    impure lambda(int bytesCopied)
+      read        = from.streamRead(512);
+      readLength  = read.length();
+      if readLength > 0 -> to.streamWrite(read); self(bytesCopied + readLength)
+      else              -> bytesCopied
+  )(0)

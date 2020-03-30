@@ -12,7 +12,7 @@ TEST_CASE("Execute conversions", "[vm]") {
           asmb->addConvIntFloat();
 
           asmb->addConvFloatString();
-          asmb->addPCall(novasm::PCallCode::ConWriteString);
+          ADD_PRINT(asmb);
         },
         "input",
         "42");
@@ -22,7 +22,7 @@ TEST_CASE("Execute conversions", "[vm]") {
           asmb->addConvIntFloat();
 
           asmb->addConvFloatString();
-          asmb->addPCall(novasm::PCallCode::ConWriteString);
+          ADD_PRINT(asmb);
         },
         "input",
         "-2.14748e+09");
@@ -35,7 +35,7 @@ TEST_CASE("Execute conversions", "[vm]") {
           asmb->addConvIntLong();
 
           asmb->addConvLongString();
-          asmb->addPCall(novasm::PCallCode::ConWriteString);
+          ADD_PRINT(asmb);
         },
         "input",
         "42");
@@ -45,7 +45,7 @@ TEST_CASE("Execute conversions", "[vm]") {
           asmb->addConvIntLong();
 
           asmb->addConvLongString();
-          asmb->addPCall(novasm::PCallCode::ConWriteString);
+          ADD_PRINT(asmb);
         },
         "input",
         "-2147483647");
@@ -58,7 +58,7 @@ TEST_CASE("Execute conversions", "[vm]") {
           asmb->addConvLongInt();
 
           asmb->addConvIntString();
-          asmb->addPCall(novasm::PCallCode::ConWriteString);
+          ADD_PRINT(asmb);
         },
         "input",
         "42");
@@ -68,7 +68,7 @@ TEST_CASE("Execute conversions", "[vm]") {
           asmb->addConvLongInt();
 
           asmb->addConvIntString();
-          asmb->addPCall(novasm::PCallCode::ConWriteString);
+          ADD_PRINT(asmb);
         },
         "input",
         "-2147483647");
@@ -78,7 +78,7 @@ TEST_CASE("Execute conversions", "[vm]") {
           asmb->addConvLongInt();
 
           asmb->addConvIntString();
-          asmb->addPCall(novasm::PCallCode::ConWriteString);
+          ADD_PRINT(asmb);
         },
         "input",
         "-1");
@@ -91,7 +91,7 @@ TEST_CASE("Execute conversions", "[vm]") {
           asmb->addConvFloatInt();
 
           asmb->addConvIntString();
-          asmb->addPCall(novasm::PCallCode::ConWriteString);
+          ADD_PRINT(asmb);
         },
         "input",
         "42");
@@ -101,7 +101,7 @@ TEST_CASE("Execute conversions", "[vm]") {
           asmb->addConvFloatInt();
 
           asmb->addConvIntString();
-          asmb->addPCall(novasm::PCallCode::ConWriteString);
+          ADD_PRINT(asmb);
         },
         "input",
         "42");
@@ -111,7 +111,7 @@ TEST_CASE("Execute conversions", "[vm]") {
           asmb->addConvFloatInt();
 
           asmb->addConvIntString();
-          asmb->addPCall(novasm::PCallCode::ConWriteString);
+          ADD_PRINT(asmb);
         },
         "input",
         "0");
@@ -121,7 +121,7 @@ TEST_CASE("Execute conversions", "[vm]") {
           asmb->addConvFloatInt();
 
           asmb->addConvIntString();
-          asmb->addPCall(novasm::PCallCode::ConWriteString);
+          ADD_PRINT(asmb);
         },
         "input",
         "-2147483648"); // Unrepresentable by int, high bit 1 all others 0.
@@ -132,7 +132,7 @@ TEST_CASE("Execute conversions", "[vm]") {
         [](novasm::Assembler* asmb) -> void {
           asmb->addLoadLitInt(0);
           asmb->addConvIntString();
-          asmb->addPCall(novasm::PCallCode::ConWriteString);
+          ADD_PRINT(asmb);
         },
         "input",
         "0");
@@ -140,7 +140,7 @@ TEST_CASE("Execute conversions", "[vm]") {
         [](novasm::Assembler* asmb) -> void {
           asmb->addLoadLitInt(42);
           asmb->addConvIntString();
-          asmb->addPCall(novasm::PCallCode::ConWriteString);
+          ADD_PRINT(asmb);
         },
         "input",
         "42");
@@ -148,7 +148,7 @@ TEST_CASE("Execute conversions", "[vm]") {
         [](novasm::Assembler* asmb) -> void {
           asmb->addLoadLitInt(2147483647);
           asmb->addConvIntString();
-          asmb->addPCall(novasm::PCallCode::ConWriteString);
+          ADD_PRINT(asmb);
         },
         "input",
         "2147483647");
@@ -156,7 +156,7 @@ TEST_CASE("Execute conversions", "[vm]") {
         [](novasm::Assembler* asmb) -> void {
           asmb->addLoadLitInt(-2147483647);
           asmb->addConvIntString();
-          asmb->addPCall(novasm::PCallCode::ConWriteString);
+          ADD_PRINT(asmb);
         },
         "input",
         "-2147483647");
@@ -167,7 +167,7 @@ TEST_CASE("Execute conversions", "[vm]") {
         [](novasm::Assembler* asmb) -> void {
           asmb->addLoadLitLong(0);
           asmb->addConvLongString();
-          asmb->addPCall(novasm::PCallCode::ConWriteString);
+          ADD_PRINT(asmb);
         },
         "input",
         "0");
@@ -175,7 +175,7 @@ TEST_CASE("Execute conversions", "[vm]") {
         [](novasm::Assembler* asmb) -> void {
           asmb->addLoadLitLong(42);
           asmb->addConvLongString();
-          asmb->addPCall(novasm::PCallCode::ConWriteString);
+          ADD_PRINT(asmb);
         },
         "input",
         "42");
@@ -183,7 +183,7 @@ TEST_CASE("Execute conversions", "[vm]") {
         [](novasm::Assembler* asmb) -> void {
           asmb->addLoadLitLong(2147483647);
           asmb->addConvLongString();
-          asmb->addPCall(novasm::PCallCode::ConWriteString);
+          ADD_PRINT(asmb);
         },
         "input",
         "2147483647");
@@ -191,7 +191,7 @@ TEST_CASE("Execute conversions", "[vm]") {
         [](novasm::Assembler* asmb) -> void {
           asmb->addLoadLitLong(-2147483647);
           asmb->addConvLongString();
-          asmb->addPCall(novasm::PCallCode::ConWriteString);
+          ADD_PRINT(asmb);
         },
         "input",
         "-2147483647");
@@ -199,7 +199,7 @@ TEST_CASE("Execute conversions", "[vm]") {
         [](novasm::Assembler* asmb) -> void {
           asmb->addLoadLitLong(9223372036854775807L);
           asmb->addConvLongString();
-          asmb->addPCall(novasm::PCallCode::ConWriteString);
+          ADD_PRINT(asmb);
         },
         "input",
         "9223372036854775807");
@@ -207,7 +207,7 @@ TEST_CASE("Execute conversions", "[vm]") {
         [](novasm::Assembler* asmb) -> void {
           asmb->addLoadLitLong(-9223372036854775807L);
           asmb->addConvLongString();
-          asmb->addPCall(novasm::PCallCode::ConWriteString);
+          ADD_PRINT(asmb);
         },
         "input",
         "-9223372036854775807");
@@ -218,7 +218,7 @@ TEST_CASE("Execute conversions", "[vm]") {
         [](novasm::Assembler* asmb) -> void {
           asmb->addLoadLitFloat(0.0F);
           asmb->addConvFloatString();
-          asmb->addPCall(novasm::PCallCode::ConWriteString);
+          ADD_PRINT(asmb);
         },
         "input",
         "0");
@@ -226,7 +226,7 @@ TEST_CASE("Execute conversions", "[vm]") {
         [](novasm::Assembler* asmb) -> void {
           asmb->addLoadLitFloat(42.0F); // NOLINT: Magic numbers
           asmb->addConvFloatString();
-          asmb->addPCall(novasm::PCallCode::ConWriteString);
+          ADD_PRINT(asmb);
         },
         "input",
         "42");
@@ -234,7 +234,7 @@ TEST_CASE("Execute conversions", "[vm]") {
         [](novasm::Assembler* asmb) -> void {
           asmb->addLoadLitFloat(42.1337F); // NOLINT: Magic numbers
           asmb->addConvFloatString();
-          asmb->addPCall(novasm::PCallCode::ConWriteString);
+          ADD_PRINT(asmb);
         },
         "input",
         "42.1337");
@@ -242,7 +242,7 @@ TEST_CASE("Execute conversions", "[vm]") {
         [](novasm::Assembler* asmb) -> void {
           asmb->addLoadLitFloat(0.42F); // NOLINT: Magic numbers
           asmb->addConvFloatString();
-          asmb->addPCall(novasm::PCallCode::ConWriteString);
+          ADD_PRINT(asmb);
         },
         "input",
         "0.42");
@@ -250,7 +250,7 @@ TEST_CASE("Execute conversions", "[vm]") {
         [](novasm::Assembler* asmb) -> void {
           asmb->addLoadLitFloat(999999.0F); // NOLINT: Magic numbers
           asmb->addConvFloatString();
-          asmb->addPCall(novasm::PCallCode::ConWriteString);
+          ADD_PRINT(asmb);
         },
         "input",
         "999999");
@@ -258,7 +258,7 @@ TEST_CASE("Execute conversions", "[vm]") {
         [](novasm::Assembler* asmb) -> void {
           asmb->addLoadLitFloat(99999.1F); // NOLINT: Magic numbers
           asmb->addConvFloatString();
-          asmb->addPCall(novasm::PCallCode::ConWriteString);
+          ADD_PRINT(asmb);
         },
         "input",
         "99999.1");
@@ -266,7 +266,7 @@ TEST_CASE("Execute conversions", "[vm]") {
         [](novasm::Assembler* asmb) -> void {
           asmb->addLoadLitFloat(0.000001F); // NOLINT: Magic numbers
           asmb->addConvFloatString();
-          asmb->addPCall(novasm::PCallCode::ConWriteString);
+          ADD_PRINT(asmb);
         },
         "input",
         "1e-06");
@@ -274,7 +274,7 @@ TEST_CASE("Execute conversions", "[vm]") {
         [](novasm::Assembler* asmb) -> void {
           asmb->addLoadLitFloat(9999999999.0F); // NOLINT: Magic numbers
           asmb->addConvFloatString();
-          asmb->addPCall(novasm::PCallCode::ConWriteString);
+          ADD_PRINT(asmb);
         },
         "input",
         "1e+10"); // Rounding error.
@@ -282,7 +282,7 @@ TEST_CASE("Execute conversions", "[vm]") {
         [](novasm::Assembler* asmb) -> void {
           asmb->addLoadLitFloat(-0.42F); // NOLINT: Magic numbers
           asmb->addConvFloatString();
-          asmb->addPCall(novasm::PCallCode::ConWriteString);
+          ADD_PRINT(asmb);
         },
         "input",
         "-0.42");
@@ -290,7 +290,7 @@ TEST_CASE("Execute conversions", "[vm]") {
         [](novasm::Assembler* asmb) -> void {
           asmb->addLoadLitFloat(-9999999999.0F); // NOLINT: Magic numbers
           asmb->addConvFloatString();
-          asmb->addPCall(novasm::PCallCode::ConWriteString);
+          ADD_PRINT(asmb);
         },
         "input",
         "-1e+10"); // Rounding error.
@@ -301,7 +301,7 @@ TEST_CASE("Execute conversions", "[vm]") {
         [](novasm::Assembler* asmb) -> void {
           asmb->addLoadLitInt(48);
           asmb->addConvCharString();
-          asmb->addPCall(novasm::PCallCode::ConWriteString);
+          ADD_PRINT(asmb);
         },
         "input",
         "0");
@@ -309,7 +309,7 @@ TEST_CASE("Execute conversions", "[vm]") {
         [](novasm::Assembler* asmb) -> void {
           asmb->addLoadLitInt(10);
           asmb->addConvCharString();
-          asmb->addPCall(novasm::PCallCode::ConWriteString);
+          ADD_PRINT(asmb);
         },
         "input",
         "\n");
@@ -317,7 +317,7 @@ TEST_CASE("Execute conversions", "[vm]") {
         [](novasm::Assembler* asmb) -> void {
           asmb->addLoadLitInt(38);
           asmb->addConvCharString();
-          asmb->addPCall(novasm::PCallCode::ConWriteString);
+          ADD_PRINT(asmb);
         },
         "input",
         "&");
@@ -325,7 +325,7 @@ TEST_CASE("Execute conversions", "[vm]") {
         [](novasm::Assembler* asmb) -> void {
           asmb->addLoadLitInt(32);
           asmb->addConvCharString();
-          asmb->addPCall(novasm::PCallCode::ConWriteString);
+          ADD_PRINT(asmb);
         },
         "input",
         " ");
@@ -338,7 +338,7 @@ TEST_CASE("Execute conversions", "[vm]") {
           asmb->addConvIntChar();
 
           asmb->addConvIntString();
-          asmb->addPCall(novasm::PCallCode::ConWriteString);
+          ADD_PRINT(asmb);
         },
         "input",
         "0");
@@ -348,7 +348,7 @@ TEST_CASE("Execute conversions", "[vm]") {
           asmb->addConvIntChar();
 
           asmb->addConvIntString();
-          asmb->addPCall(novasm::PCallCode::ConWriteString);
+          ADD_PRINT(asmb);
         },
         "input",
         "42");
@@ -358,7 +358,7 @@ TEST_CASE("Execute conversions", "[vm]") {
           asmb->addConvIntChar();
 
           asmb->addConvIntString();
-          asmb->addPCall(novasm::PCallCode::ConWriteString);
+          ADD_PRINT(asmb);
         },
         "input",
         "255");
@@ -368,7 +368,7 @@ TEST_CASE("Execute conversions", "[vm]") {
           asmb->addConvIntChar();
 
           asmb->addConvIntString();
-          asmb->addPCall(novasm::PCallCode::ConWriteString);
+          ADD_PRINT(asmb);
         },
         "input",
         "0");
@@ -378,7 +378,7 @@ TEST_CASE("Execute conversions", "[vm]") {
           asmb->addConvIntChar();
 
           asmb->addConvIntString();
-          asmb->addPCall(novasm::PCallCode::ConWriteString);
+          ADD_PRINT(asmb);
         },
         "input",
         "255");
@@ -388,7 +388,7 @@ TEST_CASE("Execute conversions", "[vm]") {
           asmb->addConvIntChar();
 
           asmb->addConvIntString();
-          asmb->addPCall(novasm::PCallCode::ConWriteString);
+          ADD_PRINT(asmb);
         },
         "input",
         "57");
@@ -401,7 +401,7 @@ TEST_CASE("Execute conversions", "[vm]") {
           asmb->addConvFloatChar();
 
           asmb->addConvIntString();
-          asmb->addPCall(novasm::PCallCode::ConWriteString);
+          ADD_PRINT(asmb);
         },
         "input",
         "0");
@@ -411,7 +411,7 @@ TEST_CASE("Execute conversions", "[vm]") {
           asmb->addConvFloatChar();
 
           asmb->addConvIntString();
-          asmb->addPCall(novasm::PCallCode::ConWriteString);
+          ADD_PRINT(asmb);
         },
         "input",
         "42");
@@ -421,7 +421,7 @@ TEST_CASE("Execute conversions", "[vm]") {
           asmb->addConvFloatChar();
 
           asmb->addConvIntString();
-          asmb->addPCall(novasm::PCallCode::ConWriteString);
+          ADD_PRINT(asmb);
         },
         "input",
         "1");
@@ -431,7 +431,7 @@ TEST_CASE("Execute conversions", "[vm]") {
           asmb->addConvFloatChar();
 
           asmb->addConvIntString();
-          asmb->addPCall(novasm::PCallCode::ConWriteString);
+          ADD_PRINT(asmb);
         },
         "input",
         "0");

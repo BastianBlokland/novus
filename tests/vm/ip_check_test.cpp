@@ -14,7 +14,7 @@ TEST_CASE("Execute instruction pointer checks", "[vm]") {
           asmb->label("label");
           asmb->addCheckEqIp();
           asmb->addConvBoolString();
-          asmb->addPCall(novasm::PCallCode::ConWriteString);
+          ADD_PRINT(asmb);
         },
         "input",
         "true");
@@ -29,7 +29,7 @@ TEST_CASE("Execute instruction pointer checks", "[vm]") {
 
           asmb->label("label2");
           asmb->addConvBoolString();
-          asmb->addPCall(novasm::PCallCode::ConWriteString);
+          ADD_PRINT(asmb);
         },
         "input",
         "false");
@@ -42,7 +42,7 @@ TEST_CASE("Execute instruction pointer checks", "[vm]") {
           asmb->label("label");
           asmb->addCheckEqCallDynTgt();
           asmb->addConvBoolString();
-          asmb->addPCall(novasm::PCallCode::ConWriteString);
+          ADD_PRINT(asmb);
         },
         "input",
         "true");
@@ -57,7 +57,7 @@ TEST_CASE("Execute instruction pointer checks", "[vm]") {
 
           asmb->label("label2");
           asmb->addConvBoolString();
-          asmb->addPCall(novasm::PCallCode::ConWriteString);
+          ADD_PRINT(asmb);
         },
         "input",
         "false");
@@ -79,7 +79,7 @@ TEST_CASE("Execute instruction pointer checks", "[vm]") {
           asmb->addCheckEqCallDynTgt();
 
           asmb->addConvBoolString();
-          asmb->addPCall(novasm::PCallCode::ConWriteString);
+          ADD_PRINT(asmb);
         },
         "input",
         "true");
@@ -102,7 +102,7 @@ TEST_CASE("Execute instruction pointer checks", "[vm]") {
 
           asmb->label("label2");
           asmb->addConvBoolString();
-          asmb->addPCall(novasm::PCallCode::ConWriteString);
+          ADD_PRINT(asmb);
         },
         "input",
         "false");
@@ -121,7 +121,7 @@ TEST_CASE("Execute instruction pointer checks", "[vm]") {
           asmb->addCheckEqCallDynTgt();
 
           asmb->addConvBoolString();
-          asmb->addPCall(novasm::PCallCode::ConWriteString);
+          ADD_PRINT(asmb);
         },
         "input",
         "true");
@@ -141,7 +141,7 @@ TEST_CASE("Execute instruction pointer checks", "[vm]") {
 
           asmb->label("label2");
           asmb->addConvBoolString();
-          asmb->addPCall(novasm::PCallCode::ConWriteString);
+          ADD_PRINT(asmb);
         },
         "input",
         "false");

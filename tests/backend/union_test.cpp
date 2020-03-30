@@ -8,9 +8,9 @@ TEST_CASE("Generating assembly for unions", "[backend]") {
   SECTION("Normal union") {
     CHECK_PROG(
         "union Val = int, float "
-        "conWrite(string(Val(1) == Val(1.0)))"
-        "conWrite(string(Val(1) is int))"
-        "conWrite(Val(1) as int i ? string(i) : \"not int\")",
+        "assert(Val(1) == Val(1.0), \"test\")"
+        "assert(Val(1) is int, \"test\")"
+        "assert(Val(1) as int i ? (i == 0) : false, \"test\")",
         [](novasm::Assembler* asmb) -> void {
           // --- Union equality function start.
           asmb->label("ValEq");
@@ -72,8 +72,8 @@ TEST_CASE("Generating assembly for unions", "[backend]") {
           asmb->addRet();
           // --- Struct equality function end.
 
-          // --- first conWrite statement start.
-          asmb->label("conWrite1");
+          // --- first assert statement start.
+          asmb->label("assert1");
 
           // Make union with int 'Val(1)'.
           asmb->addLoadLitInt(0); // 0 because 'int' is the first type in the union.
@@ -87,13 +87,13 @@ TEST_CASE("Generating assembly for unions", "[backend]") {
 
           // Call equality function and write the result.
           asmb->addCall("ValEq", 2, novasm::CallMode::Normal);
-          asmb->addConvBoolString();
-          asmb->addPCall(novasm::PCallCode::ConWriteString);
+          asmb->addLoadLitString("test");
+          asmb->addPCall(novasm::PCallCode::Assert);
           asmb->addRet();
-          // --- first conWrite statement end.
+          // --- first assert statement end.
 
-          // --- second conWrite statement start.
-          asmb->label("conWrite2");
+          // --- second assert statement start.
+          asmb->label("assert2");
 
           // Make union with int 'Val(1)'.
           asmb->addLoadLitInt(0); // 0 because 'int' is the first type in the union.
@@ -106,13 +106,13 @@ TEST_CASE("Generating assembly for unions", "[backend]") {
           asmb->addCheckEqInt();
 
           // Write the result.
-          asmb->addConvBoolString();
-          asmb->addPCall(novasm::PCallCode::ConWriteString);
+          asmb->addLoadLitString("test");
+          asmb->addPCall(novasm::PCallCode::Assert);
           asmb->addRet();
-          // --- second conWrite statement end.
+          // --- second assert statement end.
 
-          // --- third conWrite statement start.
-          asmb->label("conWrite3");
+          // --- third assert statement start.
+          asmb->label("assert3");
           asmb->addStackAlloc(1); // Allocate space for constant 'i'.
 
           // Make union with int 'Val(1)'.
@@ -143,23 +143,25 @@ TEST_CASE("Generating assembly for unions", "[backend]") {
           asmb->addJumpIf("as-check-true");
 
           // Not equal.
-          asmb->addLoadLitString("not int");
+          asmb->addLoadLitInt(0); // Load 'false'.
           asmb->addJump("as-check-write-result");
 
           asmb->label("as-check-true");
           asmb->addStackLoad(0); // Load constant 'i'.
-          asmb->addConvIntString();
+          asmb->addLoadLitInt(0);
+          asmb->addCheckEqInt();
 
           // Write the result.
           asmb->label("as-check-write-result");
-          asmb->addPCall(novasm::PCallCode::ConWriteString);
+          asmb->addLoadLitString("test");
+          asmb->addPCall(novasm::PCallCode::Assert);
           asmb->addRet();
-          // --- third conWrite statement end.
+          // --- third assert statement end.
 
           asmb->label("prog");
-          asmb->addCall("conWrite1", 0, novasm::CallMode::Normal);
-          asmb->addCall("conWrite2", 0, novasm::CallMode::Normal);
-          asmb->addCall("conWrite3", 0, novasm::CallMode::Normal);
+          asmb->addCall("assert1", 0, novasm::CallMode::Normal);
+          asmb->addCall("assert2", 0, novasm::CallMode::Normal);
+          asmb->addCall("assert3", 0, novasm::CallMode::Normal);
           asmb->addRet();
 
           asmb->setEntrypoint("prog");
@@ -173,10 +175,10 @@ TEST_CASE("Generating assembly for unions", "[backend]") {
         "struct User = string name, int age "
         "struct Null "
         "union NullableUser = User, Null "
-        "conWrite(string(NullableUser(User(\"John\", 42)) == Null()))"
-        "conWrite(string(NullableUser(User(\"John\", 42)) is Null))"
-        "conWrite(string(NullableUser(User(\"John\", 42)) is User))"
-        "conWrite(NullableUser(User(\"John\", 42))  as User u ? u.name : \"null\")",
+        "assert(NullableUser(User(\"John\", 42)) == Null(), \"test\")"
+        "assert(NullableUser(User(\"John\", 42)) is Null, \"test\")"
+        "assert(NullableUser(User(\"John\", 42)) is User, \"test\")"
+        "assert(NullableUser(User(\"John\", 42)) as User u ? (u.name == \"J\") : false, \"test\")",
         [](novasm::Assembler* asmb) -> void {
           // -- struct 'Null' equality function start.
           asmb->label("null-eq");
@@ -253,8 +255,8 @@ TEST_CASE("Generating assembly for unions", "[backend]") {
           asmb->addRet();
           // -- struct 'User' equality function end.
 
-          // --- first conWrite statement start.
-          asmb->label("conWrite1");
+          // --- first assert statement start.
+          asmb->label("assert1");
 
           // Create user.
           asmb->addLoadLitString("John");
@@ -268,13 +270,13 @@ TEST_CASE("Generating assembly for unions", "[backend]") {
           asmb->addCall("nullableuser-eq", 2, novasm::CallMode::Normal);
 
           // Write the result.
-          asmb->addConvBoolString();
-          asmb->addPCall(novasm::PCallCode::ConWriteString);
+          asmb->addLoadLitString("test");
+          asmb->addPCall(novasm::PCallCode::Assert);
           asmb->addRet();
-          // --- first conWrite statement end.
+          // --- first assert statement end.
 
-          // --- second conWrite statement start.
-          asmb->label("conWrite2");
+          // --- second assert statement start.
+          asmb->label("assert2");
 
           // Create user.
           asmb->addLoadLitString("John");
@@ -285,13 +287,13 @@ TEST_CASE("Generating assembly for unions", "[backend]") {
           asmb->addCheckStructNull();
 
           // Write the result.
-          asmb->addConvBoolString();
-          asmb->addPCall(novasm::PCallCode::ConWriteString);
+          asmb->addLoadLitString("test");
+          asmb->addPCall(novasm::PCallCode::Assert);
           asmb->addRet();
-          // --- second conWrite statement end.
+          // --- second assert statement end.
 
-          // --- third conWrite statement start.
-          asmb->label("conWrite3");
+          // --- third assert statement start.
+          asmb->label("assert3");
 
           // Create user.
           asmb->addLoadLitString("John");
@@ -303,13 +305,13 @@ TEST_CASE("Generating assembly for unions", "[backend]") {
           asmb->addLogicInvInt();
 
           // Write the result.
-          asmb->addConvBoolString();
-          asmb->addPCall(novasm::PCallCode::ConWriteString);
+          asmb->addLoadLitString("test");
+          asmb->addPCall(novasm::PCallCode::Assert);
           asmb->addRet();
-          // --- third conWrite statement end.
+          // --- third assert statement end.
 
-          // --- fourth conWrite statement start.
-          asmb->label("conWrite4");
+          // --- fourth assert statement start.
+          asmb->label("assert4");
           asmb->addStackAlloc(1); // Allocate space for the 'u' constant.
 
           // Create user.
@@ -325,25 +327,30 @@ TEST_CASE("Generating assembly for unions", "[backend]") {
           asmb->addJumpIf("user-is-not-null");
 
           // Is null.
-          asmb->addLoadLitString("null");
-          asmb->addJump("fourth-conwrite-end");
+          asmb->addLoadLitInt(0); // Load 'false'.
+          asmb->addJump("fourth-assert-end");
 
           asmb->label("user-is-not-null");
           // Load name of user.
           asmb->addStackLoad(0);
           asmb->addLoadStructField(0);
 
-          asmb->label("fourth-conwrite-end");
-          // Print the result.
-          asmb->addPCall(novasm::PCallCode::ConWriteString);
+          // Compare to 'J'.
+          asmb->addLoadLitString("J");
+          asmb->addCheckEqString();
+
+          asmb->label("fourth-assert-end");
+          // Assert the result.
+          asmb->addLoadLitString("test");
+          asmb->addPCall(novasm::PCallCode::Assert);
           asmb->addRet();
-          // --- fourth conWrite statement end.
+          // --- fourth assert statement end.
 
           asmb->label("prog");
-          asmb->addCall("conWrite1", 0, novasm::CallMode::Normal);
-          asmb->addCall("conWrite2", 0, novasm::CallMode::Normal);
-          asmb->addCall("conWrite3", 0, novasm::CallMode::Normal);
-          asmb->addCall("conWrite4", 0, novasm::CallMode::Normal);
+          asmb->addCall("assert1", 0, novasm::CallMode::Normal);
+          asmb->addCall("assert2", 0, novasm::CallMode::Normal);
+          asmb->addCall("assert3", 0, novasm::CallMode::Normal);
+          asmb->addCall("assert4", 0, novasm::CallMode::Normal);
           asmb->addRet();
 
           asmb->setEntrypoint("prog");

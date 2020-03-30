@@ -5,7 +5,7 @@ namespace backend {
 
 TEST_CASE("Generate assembly for storing and loading constants", "[backend]") {
 
-  CHECK_EXPR_INT("x = 42; x", [](novasm::Assembler* asmb) -> void {
+  CHECK_EXPR("x = 42; x", [](novasm::Assembler* asmb) -> void {
     asmb->addStackAlloc(1);
 
     asmb->addLoadLitInt(42);
@@ -16,7 +16,7 @@ TEST_CASE("Generate assembly for storing and loading constants", "[backend]") {
     asmb->addStackLoad(0);
   });
 
-  CHECK_EXPR_INT("x = y = 42; y", [](novasm::Assembler* asmb) -> void {
+  CHECK_EXPR("x = y = 42; y", [](novasm::Assembler* asmb) -> void {
     asmb->addStackAlloc(2);
 
     asmb->addLoadLitInt(42);
@@ -30,7 +30,7 @@ TEST_CASE("Generate assembly for storing and loading constants", "[backend]") {
     asmb->addStackLoad(0);
   });
 
-  CHECK_EXPR_INT("x = 42; y = 1337; x + y", [](novasm::Assembler* asmb) -> void {
+  CHECK_EXPR("x = 42; y = 1337; x + y", [](novasm::Assembler* asmb) -> void {
     asmb->addStackAlloc(2);
 
     asmb->addLoadLitInt(42);
@@ -50,7 +50,7 @@ TEST_CASE("Generate assembly for storing and loading constants", "[backend]") {
     asmb->addAddInt();
   });
 
-  CHECK_EXPR_INT("x = y = 42; y", [](novasm::Assembler* asmb) -> void {
+  CHECK_EXPR("x = y = 42; y", [](novasm::Assembler* asmb) -> void {
     asmb->addStackAlloc(2);
 
     asmb->addLoadLitInt(42);

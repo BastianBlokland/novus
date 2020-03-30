@@ -10,7 +10,7 @@ TEST_CASE("Execute literals", "[vm]") {
         [](novasm::Assembler* asmb) -> void {
           asmb->addLoadLitInt(42);
           asmb->addConvIntString();
-          asmb->addPCall(novasm::PCallCode::ConWriteString);
+          ADD_PRINT(asmb);
         },
         "input",
         "42");
@@ -18,7 +18,7 @@ TEST_CASE("Execute literals", "[vm]") {
         [](novasm::Assembler* asmb) -> void {
           asmb->addLoadLitInt(-42);
           asmb->addConvIntString();
-          asmb->addPCall(novasm::PCallCode::ConWriteString);
+          ADD_PRINT(asmb);
         },
         "input",
         "-42");
@@ -29,7 +29,7 @@ TEST_CASE("Execute literals", "[vm]") {
         [](novasm::Assembler* asmb) -> void {
           asmb->addLoadLitLong(4'200'000'000'000L);
           asmb->addConvLongString();
-          asmb->addPCall(novasm::PCallCode::ConWriteString);
+          ADD_PRINT(asmb);
         },
         "input",
         "4200000000000");
@@ -37,7 +37,7 @@ TEST_CASE("Execute literals", "[vm]") {
         [](novasm::Assembler* asmb) -> void {
           asmb->addLoadLitLong(-4'200'000'000'000L);
           asmb->addConvLongString();
-          asmb->addPCall(novasm::PCallCode::ConWriteString);
+          ADD_PRINT(asmb);
         },
         "input",
         "-4200000000000");
@@ -48,7 +48,7 @@ TEST_CASE("Execute literals", "[vm]") {
         [](novasm::Assembler* asmb) -> void {
           asmb->addLoadLitFloat(0.1337F); // NOLINT: Magic numbers
           asmb->addConvFloatString();
-          asmb->addPCall(novasm::PCallCode::ConWriteString);
+          ADD_PRINT(asmb);
         },
         "input",
         "0.1337");
@@ -56,7 +56,7 @@ TEST_CASE("Execute literals", "[vm]") {
         [](novasm::Assembler* asmb) -> void {
           asmb->addLoadLitFloat(-0.1337F); // NOLINT: Magic numbers
           asmb->addConvFloatString();
-          asmb->addPCall(novasm::PCallCode::ConWriteString);
+          ADD_PRINT(asmb);
         },
         "input",
         "-0.1337");
@@ -65,36 +65,27 @@ TEST_CASE("Execute literals", "[vm]") {
   SECTION("String literals") {
     CHECK_EXPR(
         [](novasm::Assembler* asmb) -> void {
-          asmb->addLoadLitString("");
-          asmb->addPCall(novasm::PCallCode::ConWriteString);
-          asmb->addPop();
-
           asmb->addLoadLitString("hello");
-          asmb->addPCall(novasm::PCallCode::ConWriteString);
+          ADD_PRINT(asmb);
           asmb->addPop();
 
           asmb->addLoadLitString(" ");
-          asmb->addPCall(novasm::PCallCode::ConWriteString);
+          ADD_PRINT(asmb);
           asmb->addPop();
 
           asmb->addLoadLitString("world");
-          asmb->addPCall(novasm::PCallCode::ConWriteString);
+          ADD_PRINT(asmb);
           asmb->addPop();
 
           asmb->addLoadLitString(" ");
-          asmb->addPCall(novasm::PCallCode::ConWriteString);
+          ADD_PRINT(asmb);
           asmb->addPop();
 
           asmb->addLoadLitString("!");
-          asmb->addPCall(novasm::PCallCode::ConWriteString);
+          ADD_PRINT(asmb);
         },
         "input",
-        "",
-        "hello",
-        " ",
-        "world",
-        " ",
-        "!");
+        "hello world !");
   }
 }
 

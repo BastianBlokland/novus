@@ -13,7 +13,7 @@ TEST_CASE("Execute integer operations", "[vm]") {
           asmb->addLoadLitInt(2);
           asmb->addAddInt();
           asmb->addConvIntString();
-          asmb->addPCall(novasm::PCallCode::ConWriteString);
+          ADD_PRINT(asmb);
         },
         "input",
         "3");
@@ -23,7 +23,7 @@ TEST_CASE("Execute integer operations", "[vm]") {
           asmb->addLoadLitInt(1);
           asmb->addAddInt();
           asmb->addConvIntString();
-          asmb->addPCall(novasm::PCallCode::ConWriteString);
+          ADD_PRINT(asmb);
         },
         "input",
         "-2147483648");
@@ -36,7 +36,7 @@ TEST_CASE("Execute integer operations", "[vm]") {
           asmb->addLoadLitInt(5);
           asmb->addSubInt();
           asmb->addConvIntString();
-          asmb->addPCall(novasm::PCallCode::ConWriteString);
+          ADD_PRINT(asmb);
         },
         "input",
         "5");
@@ -46,7 +46,7 @@ TEST_CASE("Execute integer operations", "[vm]") {
           asmb->addLoadLitInt(20);
           asmb->addSubInt();
           asmb->addConvIntString();
-          asmb->addPCall(novasm::PCallCode::ConWriteString);
+          ADD_PRINT(asmb);
         },
         "input",
         "-10");
@@ -59,7 +59,7 @@ TEST_CASE("Execute integer operations", "[vm]") {
           asmb->addLoadLitInt(5);
           asmb->addMulInt();
           asmb->addConvIntString();
-          asmb->addPCall(novasm::PCallCode::ConWriteString);
+          ADD_PRINT(asmb);
         },
         "input",
         "15");
@@ -69,7 +69,7 @@ TEST_CASE("Execute integer operations", "[vm]") {
           asmb->addLoadLitInt(-5);
           asmb->addMulInt();
           asmb->addConvIntString();
-          asmb->addPCall(novasm::PCallCode::ConWriteString);
+          ADD_PRINT(asmb);
         },
         "input",
         "-15");
@@ -82,7 +82,7 @@ TEST_CASE("Execute integer operations", "[vm]") {
           asmb->addLoadLitInt(4);
           asmb->addDivInt();
           asmb->addConvIntString();
-          asmb->addPCall(novasm::PCallCode::ConWriteString);
+          ADD_PRINT(asmb);
         },
         "input",
         "8");
@@ -92,7 +92,7 @@ TEST_CASE("Execute integer operations", "[vm]") {
           asmb->addLoadLitInt(0);
           asmb->addDivInt();
           asmb->addConvIntString();
-          asmb->addPCall(novasm::PCallCode::ConWriteString);
+          ADD_PRINT(asmb);
         },
         "input",
         ExecState::DivByZero);
@@ -105,7 +105,7 @@ TEST_CASE("Execute integer operations", "[vm]") {
           asmb->addLoadLitInt(4);
           asmb->addRemInt();
           asmb->addConvIntString();
-          asmb->addPCall(novasm::PCallCode::ConWriteString);
+          ADD_PRINT(asmb);
         },
         "input",
         "1");
@@ -115,7 +115,7 @@ TEST_CASE("Execute integer operations", "[vm]") {
           asmb->addLoadLitInt(0);
           asmb->addRemInt();
           asmb->addConvIntString();
-          asmb->addPCall(novasm::PCallCode::ConWriteString);
+          ADD_PRINT(asmb);
         },
         "input",
         ExecState::DivByZero);
@@ -127,7 +127,7 @@ TEST_CASE("Execute integer operations", "[vm]") {
           asmb->addLoadLitInt(42);
           asmb->addNegInt();
           asmb->addConvIntString();
-          asmb->addPCall(novasm::PCallCode::ConWriteString);
+          ADD_PRINT(asmb);
         },
         "input",
         "-42");
@@ -136,7 +136,7 @@ TEST_CASE("Execute integer operations", "[vm]") {
           asmb->addLoadLitInt(0);
           asmb->addNegInt();
           asmb->addConvIntString();
-          asmb->addPCall(novasm::PCallCode::ConWriteString);
+          ADD_PRINT(asmb);
         },
         "input",
         "0");
@@ -146,7 +146,7 @@ TEST_CASE("Execute integer operations", "[vm]") {
           asmb->addNegInt();
           asmb->addNegInt();
           asmb->addConvIntString();
-          asmb->addPCall(novasm::PCallCode::ConWriteString);
+          ADD_PRINT(asmb);
         },
         "input",
         "42");
@@ -158,7 +158,7 @@ TEST_CASE("Execute integer operations", "[vm]") {
           asmb->addLoadLitInt(0);
           asmb->addLogicInvInt();
           asmb->addConvIntString();
-          asmb->addPCall(novasm::PCallCode::ConWriteString);
+          ADD_PRINT(asmb);
         },
         "input",
         "1");
@@ -167,7 +167,7 @@ TEST_CASE("Execute integer operations", "[vm]") {
           asmb->addLoadLitInt(1);
           asmb->addLogicInvInt();
           asmb->addConvIntString();
-          asmb->addPCall(novasm::PCallCode::ConWriteString);
+          ADD_PRINT(asmb);
         },
         "input",
         "0");
@@ -176,7 +176,7 @@ TEST_CASE("Execute integer operations", "[vm]") {
           asmb->addLoadLitInt(2);
           asmb->addLogicInvInt();
           asmb->addConvIntString();
-          asmb->addPCall(novasm::PCallCode::ConWriteString);
+          ADD_PRINT(asmb);
         },
         "input",
         "0");
@@ -189,7 +189,7 @@ TEST_CASE("Execute integer operations", "[vm]") {
           asmb->addLoadLitInt(1);
           asmb->addShiftLeftInt();
           asmb->addConvIntString();
-          asmb->addPCall(novasm::PCallCode::ConWriteString);
+          ADD_PRINT(asmb);
         },
         "input",
         "2");
@@ -199,7 +199,7 @@ TEST_CASE("Execute integer operations", "[vm]") {
           asmb->addLoadLitInt(2);
           asmb->addShiftLeftInt();
           asmb->addConvIntString();
-          asmb->addPCall(novasm::PCallCode::ConWriteString);
+          ADD_PRINT(asmb);
         },
         "input",
         "8");
@@ -209,7 +209,7 @@ TEST_CASE("Execute integer operations", "[vm]") {
           asmb->addLoadLitInt(0);
           asmb->addShiftLeftInt();
           asmb->addConvIntString();
-          asmb->addPCall(novasm::PCallCode::ConWriteString);
+          ADD_PRINT(asmb);
         },
         "input",
         "4");
@@ -219,7 +219,7 @@ TEST_CASE("Execute integer operations", "[vm]") {
           asmb->addLoadLitInt(-2);
           asmb->addShiftLeftInt();
           asmb->addConvIntString();
-          asmb->addPCall(novasm::PCallCode::ConWriteString);
+          ADD_PRINT(asmb);
         },
         "input",
         "-2147483648");
@@ -232,7 +232,7 @@ TEST_CASE("Execute integer operations", "[vm]") {
           asmb->addLoadLitInt(1);
           asmb->addShiftRightInt();
           asmb->addConvIntString();
-          asmb->addPCall(novasm::PCallCode::ConWriteString);
+          ADD_PRINT(asmb);
         },
         "input",
         "0");
@@ -242,7 +242,7 @@ TEST_CASE("Execute integer operations", "[vm]") {
           asmb->addLoadLitInt(2);
           asmb->addShiftRightInt();
           asmb->addConvIntString();
-          asmb->addPCall(novasm::PCallCode::ConWriteString);
+          ADD_PRINT(asmb);
         },
         "input",
         "2");
@@ -252,7 +252,7 @@ TEST_CASE("Execute integer operations", "[vm]") {
           asmb->addLoadLitInt(0);
           asmb->addShiftRightInt();
           asmb->addConvIntString();
-          asmb->addPCall(novasm::PCallCode::ConWriteString);
+          ADD_PRINT(asmb);
         },
         "input",
         "8");
@@ -262,7 +262,7 @@ TEST_CASE("Execute integer operations", "[vm]") {
           asmb->addLoadLitInt(-1);
           asmb->addShiftRightInt();
           asmb->addConvIntString();
-          asmb->addPCall(novasm::PCallCode::ConWriteString);
+          ADD_PRINT(asmb);
         },
         "input",
         "0");
@@ -275,7 +275,7 @@ TEST_CASE("Execute integer operations", "[vm]") {
           asmb->addLoadLitInt(1);
           asmb->addAndInt();
           asmb->addConvIntString();
-          asmb->addPCall(novasm::PCallCode::ConWriteString);
+          ADD_PRINT(asmb);
         },
         "input",
         "1");
@@ -285,7 +285,7 @@ TEST_CASE("Execute integer operations", "[vm]") {
           asmb->addLoadLitInt(9);
           asmb->addAndInt();
           asmb->addConvIntString();
-          asmb->addPCall(novasm::PCallCode::ConWriteString);
+          ADD_PRINT(asmb);
         },
         "input",
         "8");
@@ -295,7 +295,7 @@ TEST_CASE("Execute integer operations", "[vm]") {
           asmb->addLoadLitInt(-42);
           asmb->addAndInt();
           asmb->addConvIntString();
-          asmb->addPCall(novasm::PCallCode::ConWriteString);
+          ADD_PRINT(asmb);
         },
         "input",
         "-42");
@@ -305,7 +305,7 @@ TEST_CASE("Execute integer operations", "[vm]") {
           asmb->addLoadLitInt(42);
           asmb->addAndInt();
           asmb->addConvIntString();
-          asmb->addPCall(novasm::PCallCode::ConWriteString);
+          ADD_PRINT(asmb);
         },
         "input",
         "2");
@@ -318,7 +318,7 @@ TEST_CASE("Execute integer operations", "[vm]") {
           asmb->addLoadLitInt(1);
           asmb->addOrInt();
           asmb->addConvIntString();
-          asmb->addPCall(novasm::PCallCode::ConWriteString);
+          ADD_PRINT(asmb);
         },
         "input",
         "1");
@@ -328,7 +328,7 @@ TEST_CASE("Execute integer operations", "[vm]") {
           asmb->addLoadLitInt(9);
           asmb->addOrInt();
           asmb->addConvIntString();
-          asmb->addPCall(novasm::PCallCode::ConWriteString);
+          ADD_PRINT(asmb);
         },
         "input",
         "11");
@@ -338,7 +338,7 @@ TEST_CASE("Execute integer operations", "[vm]") {
           asmb->addLoadLitInt(-42);
           asmb->addOrInt();
           asmb->addConvIntString();
-          asmb->addPCall(novasm::PCallCode::ConWriteString);
+          ADD_PRINT(asmb);
         },
         "input",
         "-42");
@@ -348,7 +348,7 @@ TEST_CASE("Execute integer operations", "[vm]") {
           asmb->addLoadLitInt(42);
           asmb->addOrInt();
           asmb->addConvIntString();
-          asmb->addPCall(novasm::PCallCode::ConWriteString);
+          ADD_PRINT(asmb);
         },
         "input",
         "-2");
@@ -361,7 +361,7 @@ TEST_CASE("Execute integer operations", "[vm]") {
           asmb->addLoadLitInt(1);
           asmb->addXorInt();
           asmb->addConvIntString();
-          asmb->addPCall(novasm::PCallCode::ConWriteString);
+          ADD_PRINT(asmb);
         },
         "input",
         "0");
@@ -371,7 +371,7 @@ TEST_CASE("Execute integer operations", "[vm]") {
           asmb->addLoadLitInt(9);
           asmb->addXorInt();
           asmb->addConvIntString();
-          asmb->addPCall(novasm::PCallCode::ConWriteString);
+          ADD_PRINT(asmb);
         },
         "input",
         "3");
@@ -381,7 +381,7 @@ TEST_CASE("Execute integer operations", "[vm]") {
           asmb->addLoadLitInt(-42);
           asmb->addXorInt();
           asmb->addConvIntString();
-          asmb->addPCall(novasm::PCallCode::ConWriteString);
+          ADD_PRINT(asmb);
         },
         "input",
         "0");
@@ -391,7 +391,7 @@ TEST_CASE("Execute integer operations", "[vm]") {
           asmb->addLoadLitInt(42);
           asmb->addXorInt();
           asmb->addConvIntString();
-          asmb->addPCall(novasm::PCallCode::ConWriteString);
+          ADD_PRINT(asmb);
         },
         "input",
         "-4");
@@ -403,7 +403,7 @@ TEST_CASE("Execute integer operations", "[vm]") {
           asmb->addLoadLitInt(0);
           asmb->addInvInt();
           asmb->addConvIntString();
-          asmb->addPCall(novasm::PCallCode::ConWriteString);
+          ADD_PRINT(asmb);
         },
         "input",
         "-1");
@@ -412,7 +412,7 @@ TEST_CASE("Execute integer operations", "[vm]") {
           asmb->addLoadLitInt(-1);
           asmb->addInvInt();
           asmb->addConvIntString();
-          asmb->addPCall(novasm::PCallCode::ConWriteString);
+          ADD_PRINT(asmb);
         },
         "input",
         "0");
@@ -421,7 +421,7 @@ TEST_CASE("Execute integer operations", "[vm]") {
           asmb->addLoadLitInt(0xFFFF);
           asmb->addInvInt();
           asmb->addConvIntString();
-          asmb->addPCall(novasm::PCallCode::ConWriteString);
+          ADD_PRINT(asmb);
         },
         "input",
         "-65536");

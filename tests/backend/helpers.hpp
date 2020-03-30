@@ -8,74 +8,18 @@
 
 namespace backend {
 
-inline auto buildAssemblyExprInt(const std::function<void(novasm::Assembler*)>& build)
+inline auto buildAssemblyExpr(const std::function<void(novasm::Assembler*)>& build)
     -> novasm::Assembly {
   auto asmb = novasm::Assembler{};
-  asmb.label("prog");
   build(&asmb);
-  asmb.addConvIntString();
-  asmb.addPCall(novasm::PCallCode::ConWriteString);
   asmb.addRet();
-  asmb.setEntrypoint("prog");
-  return asmb.close();
-}
 
-inline auto buildAssemblyExprLong(const std::function<void(novasm::Assembler*)>& build)
-    -> novasm::Assembly {
-  auto asmb = novasm::Assembler{};
-  asmb.label("prog");
-  build(&asmb);
-  asmb.addConvLongString();
-  asmb.addPCall(novasm::PCallCode::ConWriteString);
-  asmb.addRet();
-  asmb.setEntrypoint("prog");
-  return asmb.close();
-}
+  // Empty entry-point.
+  auto entryPointLabel = asmb.generateLabel("entrypoint");
+  asmb.setEntrypoint(entryPointLabel);
+  asmb.label(entryPointLabel);
+  asmb.addRet(); // Returning from the root stack-frame causes the program to stop.
 
-inline auto buildAssemblyExprFloat(const std::function<void(novasm::Assembler*)>& build)
-    -> novasm::Assembly {
-  auto asmb = novasm::Assembler{};
-  asmb.label("prog");
-  build(&asmb);
-  asmb.addConvFloatString();
-  asmb.addPCall(novasm::PCallCode::ConWriteString);
-  asmb.addRet();
-  asmb.setEntrypoint("prog");
-  return asmb.close();
-}
-
-inline auto buildAssemblyExprBool(const std::function<void(novasm::Assembler*)>& build)
-    -> novasm::Assembly {
-  auto asmb = novasm::Assembler{};
-  asmb.label("prog");
-  build(&asmb);
-  asmb.addConvBoolString();
-  asmb.addPCall(novasm::PCallCode::ConWriteString);
-  asmb.addRet();
-  asmb.setEntrypoint("prog");
-  return asmb.close();
-}
-
-inline auto buildAssemblyExprString(const std::function<void(novasm::Assembler*)>& build)
-    -> novasm::Assembly {
-  auto asmb = novasm::Assembler{};
-  asmb.label("prog");
-  build(&asmb);
-  asmb.addPCall(novasm::PCallCode::ConWriteString);
-  asmb.addRet();
-  asmb.setEntrypoint("prog");
-  return asmb.close();
-}
-
-inline auto buildAssemblyExprChar(const std::function<void(novasm::Assembler*)>& build)
-    -> novasm::Assembly {
-  auto asmb = novasm::Assembler{};
-  asmb.label("prog");
-  build(&asmb);
-  asmb.addConvCharString();
-  asmb.addPCall(novasm::PCallCode::ConWriteString);
-  asmb.addRet();
-  asmb.setEntrypoint("prog");
   return asmb.close();
 }
 
@@ -96,28 +40,8 @@ inline auto buildAssembly(const std::function<void(novasm::Assembler*)>& build)
     CHECK(asmOutput.first == (EXPECTED_ASM));                                                      \
   }
 
-#define CHECK_EXPR_INT(INPUT, BUILD_EXPECTED_ASM)                                                  \
-  CHECK_ASM(                                                                                       \
-      "conWrite(string(" + std::string(INPUT) + "))", buildAssemblyExprInt(BUILD_EXPECTED_ASM))
-
-#define CHECK_EXPR_LONG(INPUT, BUILD_EXPECTED_ASM)                                                 \
-  CHECK_ASM(                                                                                       \
-      "conWrite(string(" + std::string(INPUT) + "))", buildAssemblyExprLong(BUILD_EXPECTED_ASM))
-
-#define CHECK_EXPR_FLOAT(INPUT, BUILD_EXPECTED_ASM)                                                \
-  CHECK_ASM(                                                                                       \
-      "conWrite(string(" + std::string(INPUT) + "))", buildAssemblyExprFloat(BUILD_EXPECTED_ASM))
-
-#define CHECK_EXPR_BOOL(INPUT, BUILD_EXPECTED_ASM)                                                 \
-  CHECK_ASM(                                                                                       \
-      "conWrite(string(" + std::string(INPUT) + "))", buildAssemblyExprBool(BUILD_EXPECTED_ASM))
-
-#define CHECK_EXPR_STRING(INPUT, BUILD_EXPECTED_ASM)                                               \
-  CHECK_ASM("conWrite(" + std::string(INPUT) + ")", buildAssemblyExprString(BUILD_EXPECTED_ASM))
-
-#define CHECK_EXPR_CHAR(INPUT, BUILD_EXPECTED_ASM)                                                 \
-  CHECK_ASM(                                                                                       \
-      "conWrite(string(" + std::string(INPUT) + "))", buildAssemblyExprChar(BUILD_EXPECTED_ASM))
+#define CHECK_EXPR(INPUT, BUILD_EXPECTED_ASM)                                                      \
+  CHECK_ASM("act test() " + std::string(INPUT), buildAssemblyExpr(BUILD_EXPECTED_ASM))
 
 #define CHECK_PROG(INPUT, BUILD_EXPECTED_ASM) CHECK_ASM(INPUT, buildAssembly(BUILD_EXPECTED_ASM))
 

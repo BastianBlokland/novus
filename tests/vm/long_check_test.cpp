@@ -12,7 +12,7 @@ TEST_CASE("Execute long checks", "[vm]") {
           asmb->addLoadLitLong(-4'200'000'000'000L);
           asmb->addCheckEqLong();
           asmb->addConvBoolString();
-          asmb->addPCall(novasm::PCallCode::ConWriteString);
+          ADD_PRINT(asmb);
         },
         "input",
         "false");
@@ -22,7 +22,7 @@ TEST_CASE("Execute long checks", "[vm]") {
           asmb->addLoadLitLong(4'200'000'000'000L);
           asmb->addCheckEqLong();
           asmb->addConvBoolString();
-          asmb->addPCall(novasm::PCallCode::ConWriteString);
+          ADD_PRINT(asmb);
         },
         "input",
         "true");
@@ -35,7 +35,7 @@ TEST_CASE("Execute long checks", "[vm]") {
           asmb->addLoadLitLong(2);
           asmb->addCheckGtLong();
           asmb->addConvBoolString();
-          asmb->addPCall(novasm::PCallCode::ConWriteString);
+          ADD_PRINT(asmb);
         },
         "input",
         "false");
@@ -45,7 +45,7 @@ TEST_CASE("Execute long checks", "[vm]") {
           asmb->addLoadLitLong(1);
           asmb->addCheckGtLong();
           asmb->addConvBoolString();
-          asmb->addPCall(novasm::PCallCode::ConWriteString);
+          ADD_PRINT(asmb);
         },
         "input",
         "true");
@@ -58,7 +58,7 @@ TEST_CASE("Execute long checks", "[vm]") {
           asmb->addLoadLitLong(2);
           asmb->addCheckLeLong();
           asmb->addConvBoolString();
-          asmb->addPCall(novasm::PCallCode::ConWriteString);
+          ADD_PRINT(asmb);
         },
         "input",
         "false");
@@ -68,7 +68,7 @@ TEST_CASE("Execute long checks", "[vm]") {
           asmb->addLoadLitLong(3);
           asmb->addCheckLeLong();
           asmb->addConvBoolString();
-          asmb->addPCall(novasm::PCallCode::ConWriteString);
+          ADD_PRINT(asmb);
         },
         "input",
         "true");
