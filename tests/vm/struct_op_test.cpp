@@ -19,7 +19,8 @@ TEST_CASE("Execute struct operations", "[vm]") {
           asmb->addLoadLitString("Struct null");
           asmb->addPCall(novasm::PCallCode::Assert);
         },
-        "input");
+        "input",
+        "");
   }
 
   SECTION("Create null struct") {
@@ -33,7 +34,8 @@ TEST_CASE("Execute struct operations", "[vm]") {
           asmb->addLoadLitString("Struct not null");
           asmb->addPCall(novasm::PCallCode::Assert);
         },
-        "input");
+        "input",
+        "");
   }
 
   SECTION("Load field") {
@@ -53,7 +55,7 @@ TEST_CASE("Execute struct operations", "[vm]") {
           asmb->addLoadStructField(1);
 
           asmb->addAddString();
-          asmb->addPCall(novasm::PCallCode::ConWriteString);
+          ADD_PRINT(asmb);
           asmb->addPop();
         },
         "input",

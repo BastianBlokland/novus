@@ -1,6 +1,7 @@
 #pragma once
 #include "gsl.hpp"
 #include "internal/ref_stream.hpp"
+#include "vm/platform_interface.hpp"
 #include <cstdio>
 
 namespace vm::internal {
@@ -53,17 +54,18 @@ private:
   inline explicit ConsoleStreamRef(FILE* filePtr) noexcept : StreamRef{}, m_filePtr{filePtr} {}
 };
 
-inline auto openConsoleStream(Allocator* alloc, ConsoleStreamKind kind) -> StreamRef* {
+inline auto openConsoleStream(PlatformInterface* iface, Allocator* alloc, ConsoleStreamKind kind)
+    -> StreamRef* {
   FILE* file;
   switch (kind) {
   case ConsoleStreamKind::StdIn:
-    file = stdin;
+    file = iface->getStdIn();
     break;
   case ConsoleStreamKind::StdOut:
-    file = stdout;
+    file = iface->getStdOut();
     break;
   case ConsoleStreamKind::StdErr:
-    file = stderr;
+    file = iface->getStdErr();
     break;
   default:
     file = nullptr;

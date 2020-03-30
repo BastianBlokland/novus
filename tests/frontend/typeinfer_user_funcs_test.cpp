@@ -370,7 +370,7 @@ TEST_CASE("Infer return type of user functions", "[frontend]") {
 
   SECTION("Infinite recursing action") {
     const auto& output = ANALYZE("act main() "
-                                 " conWrite(\"hello world\"); "
+                                 " assert(true, \"hello world\"); "
                                  " main()");
     REQUIRE(output.isSuccess());
     CHECK(GET_FUNC_DECL(output, "main").getOutput() == GET_TYPE_ID(output, "int"));

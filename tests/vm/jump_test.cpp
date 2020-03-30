@@ -11,12 +11,12 @@ TEST_CASE("Execute jump", "[vm]") {
           asmb->addJump("write42");
 
           asmb->addLoadLitString("1337");
-          asmb->addPCall(novasm::PCallCode::ConWriteString);
+          ADD_PRINT(asmb);
           asmb->addPop();
 
           asmb->label("write42");
           asmb->addLoadLitString("42");
-          asmb->addPCall(novasm::PCallCode::ConWriteString);
+          ADD_PRINT(asmb);
         },
         "input",
         "42");
@@ -26,7 +26,7 @@ TEST_CASE("Execute jump", "[vm]") {
 
           asmb->label("jump3");
           asmb->addLoadLitString("1337");
-          asmb->addPCall(novasm::PCallCode::ConWriteString);
+          ADD_PRINT(asmb);
           asmb->addJump("end");
 
           asmb->label("jump2");
@@ -48,28 +48,31 @@ TEST_CASE("Execute jump", "[vm]") {
           asmb->addJumpIf("write42");
 
           asmb->addLoadLitString("1337");
-          asmb->addPCall(novasm::PCallCode::ConWriteString);
+          ADD_PRINT(asmb);
+          asmb->addPop();
+
+          asmb->addLoadLitString(" ");
+          ADD_PRINT(asmb);
           asmb->addPop();
 
           asmb->label("write42");
           asmb->addLoadLitString("42");
-          asmb->addPCall(novasm::PCallCode::ConWriteString);
+          ADD_PRINT(asmb);
         },
         "input",
-        "1337",
-        "42");
+        "1337 42");
     CHECK_EXPR(
         [](novasm::Assembler* asmb) -> void {
           asmb->addLoadLitInt(1);
           asmb->addJumpIf("write42");
 
           asmb->addLoadLitString("1337");
-          asmb->addPCall(novasm::PCallCode::ConWriteString);
+          ADD_PRINT(asmb);
           asmb->addPop();
 
           asmb->label("write42");
           asmb->addLoadLitString("42");
-          asmb->addPCall(novasm::PCallCode::ConWriteString);
+          ADD_PRINT(asmb);
         },
         "input",
         "42");

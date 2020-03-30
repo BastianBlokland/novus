@@ -12,7 +12,7 @@ TEST_CASE("Execute integer checks", "[vm]") {
           asmb->addLoadLitInt(-2);
           asmb->addCheckEqInt();
           asmb->addConvBoolString();
-          asmb->addPCall(novasm::PCallCode::ConWriteString);
+          ADD_PRINT(asmb);
         },
         "input",
         "false");
@@ -22,7 +22,7 @@ TEST_CASE("Execute integer checks", "[vm]") {
           asmb->addLoadLitInt(2);
           asmb->addCheckEqInt();
           asmb->addConvBoolString();
-          asmb->addPCall(novasm::PCallCode::ConWriteString);
+          ADD_PRINT(asmb);
         },
         "input",
         "true");
@@ -35,7 +35,7 @@ TEST_CASE("Execute integer checks", "[vm]") {
           asmb->addLoadLitInt(2);
           asmb->addCheckGtInt();
           asmb->addConvBoolString();
-          asmb->addPCall(novasm::PCallCode::ConWriteString);
+          ADD_PRINT(asmb);
         },
         "input",
         "false");
@@ -45,7 +45,7 @@ TEST_CASE("Execute integer checks", "[vm]") {
           asmb->addLoadLitInt(1);
           asmb->addCheckGtInt();
           asmb->addConvBoolString();
-          asmb->addPCall(novasm::PCallCode::ConWriteString);
+          ADD_PRINT(asmb);
         },
         "input",
         "true");
@@ -58,7 +58,7 @@ TEST_CASE("Execute integer checks", "[vm]") {
           asmb->addLoadLitInt(2);
           asmb->addCheckLeInt();
           asmb->addConvBoolString();
-          asmb->addPCall(novasm::PCallCode::ConWriteString);
+          ADD_PRINT(asmb);
         },
         "input",
         "false");
@@ -68,7 +68,7 @@ TEST_CASE("Execute integer checks", "[vm]") {
           asmb->addLoadLitInt(3);
           asmb->addCheckLeInt();
           asmb->addConvBoolString();
-          asmb->addPCall(novasm::PCallCode::ConWriteString);
+          ADD_PRINT(asmb);
         },
         "input",
         "true");

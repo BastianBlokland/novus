@@ -4,23 +4,6 @@ namespace novasm {
 
 auto operator<<(std::ostream& out, const PCallCode& rhs) noexcept -> std::ostream& {
   switch (rhs) {
-  case PCallCode::ConWriteChar:
-    out << "con-write-char";
-    break;
-  case PCallCode::ConWriteString:
-    out << "con-write-string";
-    break;
-  case PCallCode::ConWriteStringLine:
-    out << "con-write-string-line";
-    break;
-
-  case PCallCode::ConReadChar:
-    out << "con-read-char";
-    break;
-  case PCallCode::ConReadStringLine:
-    out << "con-read-string-line";
-    break;
-
   case PCallCode::StreamOpenFile:
     out << "stream-open-file";
     break;

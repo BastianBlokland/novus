@@ -8,7 +8,7 @@ TEST_CASE("Generating assembly for enums", "[backend]") {
   SECTION("Create and convert to int") {
     CHECK_PROG(
         "enum E = a : 42 "
-        "conWrite(string(E.a == 1337))",
+        "assert(E.a == 1337, \"test\")",
         [](novasm::Assembler* asmb) -> void {
           // --- conWite statement start.
           asmb->label("prog");
@@ -16,8 +16,8 @@ TEST_CASE("Generating assembly for enums", "[backend]") {
           asmb->addLoadLitInt(1337);
           asmb->addCheckEqInt();
 
-          asmb->addConvBoolString();
-          asmb->addPCall(novasm::PCallCode::ConWriteString);
+          asmb->addLoadLitString("test");
+          asmb->addPCall(novasm::PCallCode::Assert);
           asmb->addRet();
           // --- conWite statement end.
 
@@ -28,7 +28,7 @@ TEST_CASE("Generating assembly for enums", "[backend]") {
   SECTION("Bitwise ops") {
     CHECK_PROG(
         "enum E = a:0b01, b:0b10, ab:0b11 "
-        "conWrite(string((E.a | E.b) == E.ab))",
+        "assert((E.a | E.b) == E.ab, \"test\")",
         [](novasm::Assembler* asmb) -> void {
           // --- conWite statement start.
           asmb->label("prog");
@@ -39,8 +39,8 @@ TEST_CASE("Generating assembly for enums", "[backend]") {
           asmb->addLoadLitInt(0b11);
           asmb->addCheckEqInt();
 
-          asmb->addConvBoolString();
-          asmb->addPCall(novasm::PCallCode::ConWriteString);
+          asmb->addLoadLitString("test");
+          asmb->addPCall(novasm::PCallCode::Assert);
           asmb->addRet();
           // --- conWite statement end.
 
@@ -51,7 +51,7 @@ TEST_CASE("Generating assembly for enums", "[backend]") {
   SECTION("Convert from int") {
     CHECK_PROG(
         "enum E = a "
-        "conWrite(string(E(0) == E.a))",
+        "assert(E(0) == E.a, \"test\")",
         [](novasm::Assembler* asmb) -> void {
           // --- conWite statement start.
           asmb->label("prog");
@@ -59,8 +59,8 @@ TEST_CASE("Generating assembly for enums", "[backend]") {
           asmb->addLoadLitInt(0);
           asmb->addCheckEqInt();
 
-          asmb->addConvBoolString();
-          asmb->addPCall(novasm::PCallCode::ConWriteString);
+          asmb->addLoadLitString("test");
+          asmb->addPCall(novasm::PCallCode::Assert);
           asmb->addRet();
           // --- conWite statement end.
 

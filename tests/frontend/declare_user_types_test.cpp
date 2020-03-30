@@ -82,11 +82,10 @@ TEST_CASE("Analyzing user-type declarations", "[frontend]") {
         "struct function = bool i", errTypeNameIsReserved(src, "function", input::Span{7, 14}));
     CHECK_DIAG("struct action = bool i", errTypeNameIsReserved(src, "action", input::Span{7, 12}));
     CHECK_DIAG(
-        "struct conWrite = bool i",
-        errTypeNameConflictsWithFunc(src, "conWrite", input::Span{7, 14}));
+        "struct assert = bool i", errTypeNameConflictsWithFunc(src, "assert", input::Span{7, 12}));
     CHECK_DIAG(
-        "union conWrite = int, bool",
-        errTypeNameConflictsWithFunc(src, "conWrite", input::Span{6, 13}));
+        "union assert = int, bool",
+        errTypeNameConflictsWithFunc(src, "assert", input::Span{6, 11}));
     CHECK_DIAG(
         "struct s = int i "
         "struct s = bool b",
@@ -110,8 +109,7 @@ TEST_CASE("Analyzing user-type declarations", "[frontend]") {
     CHECK_DIAG("enum int = a", errTypeAlreadyDeclared(src, "int", input::Span{5, 7}));
     CHECK_DIAG("enum function = a", errTypeNameIsReserved(src, "function", input::Span{5, 12}));
     CHECK_DIAG("enum action = a", errTypeNameIsReserved(src, "action", input::Span{5, 10}));
-    CHECK_DIAG(
-        "enum conWrite = a", errTypeNameConflictsWithFunc(src, "conWrite", input::Span{5, 12}));
+    CHECK_DIAG("enum assert = a", errTypeNameConflictsWithFunc(src, "assert", input::Span{5, 10}));
   }
 }
 

@@ -4,27 +4,27 @@ enum ConsoleKind = StdIn : 0, StdOut, StdErr
 
 // -- Actions
 
-act openConsole(ConsoleKind kind)
+act consoleOpen(ConsoleKind kind)
   consoleOpenStream(kind)
 
 act writeStdOut(string msg)
-  openConsole(ConsoleKind.StdOut).streamWrite(msg)
+  consoleOpen(ConsoleKind.StdOut).streamWrite(msg)
 
 act writeStdErr(string msg)
-  openConsole(ConsoleKind.StdErr).streamWrite(msg)
+  consoleOpen(ConsoleKind.StdErr).streamWrite(msg)
 
 act readChar()
-  openConsole(ConsoleKind.StdIn).streamRead()
+  consoleOpen(ConsoleKind.StdIn).streamRead()
 
 act readLine()
-  openConsole(ConsoleKind.StdIn).readLine()
+  consoleOpen(ConsoleKind.StdIn).readLine()
 
 act print{T}(T x)
-  s = openConsole(ConsoleKind.StdOut);
+  s = consoleOpen(ConsoleKind.StdOut);
   s.streamWrite(x.string());
   s.streamWrite('\n')
 
 act printErr{T}(T x)
-  s = openConsole(ConsoleKind.StdErr);
+  s = consoleOpen(ConsoleKind.StdErr);
   s.streamWrite(x.string());
   s.streamWrite('\n')

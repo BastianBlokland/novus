@@ -11,7 +11,7 @@ TEST_CASE("Execute calls", "[vm]") {
         asmb->addLoadLitInt(0);
         asmb->addCall("section2", 1, novasm::CallMode::Normal);
         asmb->addConvIntString();
-        asmb->addPCall(novasm::PCallCode::ConWriteString);
+        ADD_PRINT(asmb);
         asmb->addRet();
 
         asmb->label("section2");
@@ -39,7 +39,7 @@ TEST_CASE("Execute calls", "[vm]") {
         asmb->addLoadLitInt(0);
         asmb->addCall("section2", 1, novasm::CallMode::Normal);
         asmb->addConvIntString();
-        asmb->addPCall(novasm::PCallCode::ConWriteString);
+        ADD_PRINT(asmb);
         asmb->addRet();
 
         asmb->label("section2");
@@ -68,7 +68,7 @@ TEST_CASE("Execute calls", "[vm]") {
         asmb->addCallDyn(0, novasm::CallMode::Normal);
 
         asmb->addConvIntString();
-        asmb->addPCall(novasm::PCallCode::ConWriteString);
+        ADD_PRINT(asmb);
         asmb->addRet();
 
         asmb->label("section2");
@@ -89,7 +89,7 @@ TEST_CASE("Execute calls", "[vm]") {
         asmb->addCallDyn(0, novasm::CallMode::Normal);
 
         asmb->addConvIntString();
-        asmb->addPCall(novasm::PCallCode::ConWriteString);
+        ADD_PRINT(asmb);
         asmb->addRet();
 
         asmb->label("section2");
@@ -112,7 +112,7 @@ TEST_CASE("Execute calls", "[vm]") {
         asmb->label("section1");
         asmb->addCall("section2", 0, novasm::CallMode::Normal);
         asmb->addConvIntString();
-        asmb->addPCall(novasm::PCallCode::ConWriteString);
+        ADD_PRINT(asmb);
         asmb->addRet();
 
         asmb->label("section2");
@@ -146,7 +146,7 @@ TEST_CASE("Execute calls", "[vm]") {
         asmb->addCallDyn(0, novasm::CallMode::Normal);
 
         asmb->addConvIntString();
-        asmb->addPCall(novasm::PCallCode::ConWriteString);
+        ADD_PRINT(asmb);
         asmb->addRet();
 
         asmb->label("section2");

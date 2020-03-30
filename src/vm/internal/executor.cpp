@@ -11,8 +11,7 @@
 #include "novasm/op_code.hpp"
 #include "novasm/pcall_code.hpp"
 #include "vm/exec_state.hpp"
-#include "vm/platform/memory_interface.hpp"
-#include "vm/platform/terminal_interface.hpp"
+#include "vm/platform_interface.hpp"
 #include <cmath>
 #include <immintrin.h>
 #include <thread>
@@ -104,7 +103,6 @@ inline auto pushClosure(
   return true;
 }
 
-template <typename PlatformInterface>
 inline auto fork(
     const novasm::Assembly* assembly,
     PlatformInterface* iface,
@@ -122,10 +120,9 @@ inline auto fork(
     return false;
   }
 
-  auto* argSource  = stack->getNext() - argCount;
-  auto* threadFunc = &execute<PlatformInterface>;
+  auto* argSource = stack->getNext() - argCount;
   std::thread(
-      threadFunc,
+      &execute,
       assembly,
       iface,
       execRegistry,
@@ -156,7 +153,6 @@ inline auto fork(
   return true;
 }
 
-template <typename PlatformInterface>
 auto execute(
     const novasm::Assembly* assembly,
     PlatformInterface* iface,
@@ -817,26 +813,5 @@ End:
 #undef CALL_TAIL
 #undef CALL_FORKED
 }
-
-// Explicit instantiations.
-template ExecState execute(
-    const novasm::Assembly* assembly,
-    platform::MemoryInterface* iface,
-    ExecutorRegistry* execRegistry,
-    Allocator* allocator,
-    uint32_t entryIpOffset,
-    uint8_t entryArgCount,
-    Value* entryArgSource,
-    FutureRef* promise) noexcept;
-
-template ExecState execute(
-    const novasm::Assembly* assembly,
-    platform::TerminalInterface* iface,
-    ExecutorRegistry* execRegistry,
-    Allocator* allocator,
-    uint32_t entryIpOffset,
-    uint8_t entryArgCount,
-    Value* entryArgSource,
-    FutureRef* promise) noexcept;
 
 } // namespace vm::internal

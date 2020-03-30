@@ -13,7 +13,7 @@ TEST_CASE("Execute constants", "[vm]") {
 
         asmb->addStackLoad(0);
         asmb->addConvIntString();
-        asmb->addPCall(novasm::PCallCode::ConWriteString);
+        ADD_PRINT(asmb);
       },
       "input",
       "42");
@@ -29,16 +29,19 @@ TEST_CASE("Execute constants", "[vm]") {
 
         asmb->addStackLoad(0);
         asmb->addConvIntString();
-        asmb->addPCall(novasm::PCallCode::ConWriteString);
+        ADD_PRINT(asmb);
+        asmb->addPop();
+
+        asmb->addLoadLitString(" ");
+        ADD_PRINT(asmb);
         asmb->addPop();
 
         asmb->addStackLoad(1);
         asmb->addConvIntString();
-        asmb->addPCall(novasm::PCallCode::ConWriteString);
+        ADD_PRINT(asmb);
       },
       "input",
-      "42",
-      "1337");
+      "42 1337");
 }
 
 } // namespace vm

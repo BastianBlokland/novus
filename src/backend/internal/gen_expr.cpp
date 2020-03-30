@@ -433,23 +433,6 @@ auto GenExpr::visit(const prog::expr::CallExprNode& n) -> void {
   }
 
   // Platform actions:
-  case prog::sym::FuncKind::ActionConWriteChar:
-    m_asmb->addPCall(novasm::PCallCode::ConWriteChar);
-    break;
-  case prog::sym::FuncKind::ActionConWriteString:
-    m_asmb->addPCall(novasm::PCallCode::ConWriteString);
-    break;
-  case prog::sym::FuncKind::ActionConWriteStringLine:
-    m_asmb->addPCall(novasm::PCallCode::ConWriteStringLine);
-    break;
-
-  case prog::sym::FuncKind::ActionConReadChar:
-    m_asmb->addPCall(novasm::PCallCode::ConReadChar);
-    break;
-  case prog::sym::FuncKind::ActionConReadStringLine:
-    m_asmb->addPCall(novasm::PCallCode::ConReadStringLine);
-    break;
-
   case prog::sym::FuncKind::ActionStreamOpenFile:
     m_asmb->addPCall(novasm::PCallCode::StreamOpenFile);
     break;

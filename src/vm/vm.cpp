@@ -2,12 +2,10 @@
 #include "internal/allocator.hpp"
 #include "internal/executor.hpp"
 #include "internal/executor_registry.hpp"
-#include "vm/platform/memory_interface.hpp"
-#include "vm/platform/terminal_interface.hpp"
+#include "vm/platform_interface.hpp"
 
 namespace vm {
 
-template <typename PlatformInterface>
 auto run(const novasm::Assembly* assembly, PlatformInterface* iface) noexcept -> ExecState {
 
   auto execRegistry = internal::ExecutorRegistry{};
@@ -20,9 +18,5 @@ auto run(const novasm::Assembly* assembly, PlatformInterface* iface) noexcept ->
   execRegistry.abortExecutors();
   return resultState;
 }
-
-// Explicit instantiations.
-template ExecState run(const novasm::Assembly* assembly, platform::MemoryInterface* iface);
-template ExecState run(const novasm::Assembly* assembly, platform::TerminalInterface* iface);
 
 } // namespace vm

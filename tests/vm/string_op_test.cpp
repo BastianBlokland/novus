@@ -13,7 +13,7 @@ TEST_CASE("Execute string operations", "[vm]") {
           asmb->addAddString();
           asmb->addLoadLitString("world");
           asmb->addAddString();
-          asmb->addPCall(novasm::PCallCode::ConWriteString);
+          ADD_PRINT(asmb);
         },
         "input",
         "hello world");
@@ -26,7 +26,7 @@ TEST_CASE("Execute string operations", "[vm]") {
           asmb->addLoadLitInt('b');
           asmb->addCombineChar();
 
-          asmb->addPCall(novasm::PCallCode::ConWriteString);
+          ADD_PRINT(asmb);
         },
         "input",
         "ab");
@@ -36,7 +36,7 @@ TEST_CASE("Execute string operations", "[vm]") {
           asmb->addLoadLitInt(256 + 'b');
           asmb->addCombineChar();
 
-          asmb->addPCall(novasm::PCallCode::ConWriteString);
+          ADD_PRINT(asmb);
         },
         "input",
         "ab");
@@ -49,7 +49,7 @@ TEST_CASE("Execute string operations", "[vm]") {
           asmb->addLoadLitInt('d');
           asmb->addAppendChar();
 
-          asmb->addPCall(novasm::PCallCode::ConWriteString);
+          ADD_PRINT(asmb);
         },
         "input",
         "hello world");
@@ -59,7 +59,7 @@ TEST_CASE("Execute string operations", "[vm]") {
           asmb->addLoadLitInt('h');
           asmb->addAppendChar();
 
-          asmb->addPCall(novasm::PCallCode::ConWriteString);
+          ADD_PRINT(asmb);
         },
         "input",
         "h");
@@ -71,7 +71,7 @@ TEST_CASE("Execute string operations", "[vm]") {
           asmb->addLoadLitString("");
           asmb->addLengthString();
           asmb->addConvIntString();
-          asmb->addPCall(novasm::PCallCode::ConWriteString);
+          ADD_PRINT(asmb);
         },
         "input",
         "0");
@@ -80,7 +80,7 @@ TEST_CASE("Execute string operations", "[vm]") {
           asmb->addLoadLitString("hello");
           asmb->addLengthString();
           asmb->addConvIntString();
-          asmb->addPCall(novasm::PCallCode::ConWriteString);
+          ADD_PRINT(asmb);
         },
         "input",
         "5");
@@ -93,7 +93,7 @@ TEST_CASE("Execute string operations", "[vm]") {
           asmb->addAddString();
           asmb->addLengthString();
           asmb->addConvIntString();
-          asmb->addPCall(novasm::PCallCode::ConWriteString);
+          ADD_PRINT(asmb);
         },
         "input",
         "11");
@@ -106,7 +106,7 @@ TEST_CASE("Execute string operations", "[vm]") {
           asmb->addLoadLitInt(0);
           asmb->addIndexString();
           asmb->addConvCharString();
-          asmb->addPCall(novasm::PCallCode::ConWriteString);
+          ADD_PRINT(asmb);
         },
         "input",
         "h");
@@ -116,7 +116,7 @@ TEST_CASE("Execute string operations", "[vm]") {
           asmb->addLoadLitInt(4);
           asmb->addIndexString();
           asmb->addConvCharString();
-          asmb->addPCall(novasm::PCallCode::ConWriteString);
+          ADD_PRINT(asmb);
         },
         "input",
         "o");
@@ -126,7 +126,7 @@ TEST_CASE("Execute string operations", "[vm]") {
           asmb->addLoadLitInt(-1);
           asmb->addIndexString();
           asmb->addConvIntString(); // NOTE: Using int to string conversion, is '\0' char.
-          asmb->addPCall(novasm::PCallCode::ConWriteString);
+          ADD_PRINT(asmb);
         },
         "input",
         "0");
@@ -136,7 +136,7 @@ TEST_CASE("Execute string operations", "[vm]") {
           asmb->addLoadLitInt(5);
           asmb->addIndexString();
           asmb->addConvIntString(); // NOTE: Using int to string conversion, is '\0' char.
-          asmb->addPCall(novasm::PCallCode::ConWriteString);
+          ADD_PRINT(asmb);
         },
         "input",
         "0");
@@ -146,7 +146,7 @@ TEST_CASE("Execute string operations", "[vm]") {
           asmb->addLoadLitInt(0);
           asmb->addIndexString();
           asmb->addConvIntString(); // NOTE: Using int to string conversion, is '\0' char.
-          asmb->addPCall(novasm::PCallCode::ConWriteString);
+          ADD_PRINT(asmb);
         },
         "input",
         "0");
@@ -156,7 +156,7 @@ TEST_CASE("Execute string operations", "[vm]") {
           asmb->addLoadLitInt(0);
           asmb->addIndexString();
           asmb->addConvCharString();
-          asmb->addPCall(novasm::PCallCode::ConWriteString);
+          ADD_PRINT(asmb);
         },
         "input",
         ".");
@@ -169,7 +169,7 @@ TEST_CASE("Execute string operations", "[vm]") {
           asmb->addLoadLitInt(0);
           asmb->addLoadLitInt(5);
           asmb->addSliceString();
-          asmb->addPCall(novasm::PCallCode::ConWriteString);
+          ADD_PRINT(asmb);
         },
         "input",
         "hello");
@@ -179,7 +179,7 @@ TEST_CASE("Execute string operations", "[vm]") {
           asmb->addLoadLitInt(4);
           asmb->addLoadLitInt(4);
           asmb->addSliceString();
-          asmb->addPCall(novasm::PCallCode::ConWriteString);
+          ADD_PRINT(asmb);
         },
         "input",
         "");
@@ -189,7 +189,7 @@ TEST_CASE("Execute string operations", "[vm]") {
           asmb->addLoadLitInt(4);
           asmb->addLoadLitInt(5);
           asmb->addSliceString();
-          asmb->addPCall(novasm::PCallCode::ConWriteString);
+          ADD_PRINT(asmb);
         },
         "input",
         "o");
@@ -199,7 +199,7 @@ TEST_CASE("Execute string operations", "[vm]") {
           asmb->addLoadLitInt(-99);
           asmb->addLoadLitInt(5);
           asmb->addSliceString();
-          asmb->addPCall(novasm::PCallCode::ConWriteString);
+          ADD_PRINT(asmb);
         },
         "input",
         "hello");
@@ -209,7 +209,7 @@ TEST_CASE("Execute string operations", "[vm]") {
           asmb->addLoadLitInt(6);
           asmb->addLoadLitInt(11);
           asmb->addSliceString();
-          asmb->addPCall(novasm::PCallCode::ConWriteString);
+          ADD_PRINT(asmb);
         },
         "input",
         "world");
@@ -219,7 +219,7 @@ TEST_CASE("Execute string operations", "[vm]") {
           asmb->addLoadLitInt(6);
           asmb->addLoadLitInt(99);
           asmb->addSliceString();
-          asmb->addPCall(novasm::PCallCode::ConWriteString);
+          ADD_PRINT(asmb);
         },
         "input",
         "world");
@@ -229,7 +229,7 @@ TEST_CASE("Execute string operations", "[vm]") {
           asmb->addLoadLitInt(2);
           asmb->addLoadLitInt(9);
           asmb->addSliceString();
-          asmb->addPCall(novasm::PCallCode::ConWriteString);
+          ADD_PRINT(asmb);
         },
         "input",
         "llo wor");
@@ -239,7 +239,7 @@ TEST_CASE("Execute string operations", "[vm]") {
           asmb->addLoadLitInt(8);
           asmb->addLoadLitInt(3);
           asmb->addSliceString();
-          asmb->addPCall(novasm::PCallCode::ConWriteString);
+          ADD_PRINT(asmb);
         },
         "input",
         "");
@@ -249,7 +249,7 @@ TEST_CASE("Execute string operations", "[vm]") {
           asmb->addLoadLitInt(0);
           asmb->addLoadLitInt(11);
           asmb->addSliceString();
-          asmb->addPCall(novasm::PCallCode::ConWriteString);
+          ADD_PRINT(asmb);
         },
         "input",
         "hello world");
@@ -259,7 +259,7 @@ TEST_CASE("Execute string operations", "[vm]") {
           asmb->addLoadLitInt(0);
           asmb->addLoadLitInt(99);
           asmb->addSliceString();
-          asmb->addPCall(novasm::PCallCode::ConWriteString);
+          ADD_PRINT(asmb);
         },
         "input",
         "hello world");
@@ -269,7 +269,7 @@ TEST_CASE("Execute string operations", "[vm]") {
           asmb->addLoadLitInt(0);
           asmb->addLoadLitInt(0);
           asmb->addSliceString();
-          asmb->addPCall(novasm::PCallCode::ConWriteString);
+          ADD_PRINT(asmb);
         },
         "input",
         "");

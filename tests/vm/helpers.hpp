@@ -1,8 +1,10 @@
 #pragma once
 #include "catch2/catch.hpp"
+#include "gsl.hpp"
 #include "novasm/assembler.hpp"
-#include "vm/platform/memory_interface.hpp"
+#include "vm/platform_interface.hpp"
 #include "vm/vm.hpp"
+#include <cstdio>
 #include <functional>
 
 namespace vm {
@@ -24,41 +26,76 @@ inline auto buildAssembly(const std::function<void(novasm::Assembler*)>& build)
   return asmb.close();
 }
 
-#define CHECK_ASM(ASM, INPUT, ENV_VARS, ENV_ARG, ...)                                              \
+inline auto getString(FILE* file) -> std::string {
+  std::fseek(file, 0, SEEK_END);
+  auto size = std::ftell(file);
+
+  auto result = std::string{};
+  result.resize(size);
+
+  std::rewind(file);
+  std::fread(&result[0], 1, size, file);
+  return result;
+}
+
+#define CHECK_ASM(ASM, INPUT, EXPECTED)                                                            \
   {                                                                                                \
-    auto assembly     = ASM;                                                                       \
-    auto memInterface = platform::MemoryInterface{};                                               \
-    memInterface.setStdIn(INPUT);                                                                  \
-    memInterface.setEnvVars(ENV_VARS);                                                             \
-    memInterface.setEnvArgs(ENV_ARG);                                                              \
-    run(&assembly, &memInterface);                                                                 \
-    const std::vector<std::string> expectedOutput = {__VA_ARGS__};                                 \
-    CHECK_THAT(memInterface.getStdOut(), Catch::Equals(expectedOutput));                           \
+    auto assembly = ASM;                                                                           \
+                                                                                                   \
+    /* Open temporary files to use as stdIn and StdOut. */                                         \
+    gsl::owner<std::FILE*> stdInFile = std::tmpfile();                                             \
+    std::string input                = INPUT;                                                      \
+    std::fwrite(input.data(), input.size(), 1, stdInFile);                                         \
+    std::fflush(stdInFile);                                                                        \
+    std::fseek(stdInFile, 0, SEEK_SET);                                                            \
+                                                                                                   \
+    gsl::owner<std::FILE*> stdOutFile = std::tmpfile();                                            \
+    auto iface = PlatformInterface{0, nullptr, stdInFile, stdOutFile, nullptr};                    \
+                                                                                                   \
+    run(&assembly, &iface);                                                                        \
+                                                                                                   \
+    /* Verify that the correct stdOut output was generated. */                                     \
+    CHECK_THAT(getString(stdOutFile), Catch::Equals(EXPECTED));                                    \
+                                                                                                   \
+    /* Close the temporary files (they will auto destruct). */                                     \
+    std::fclose(stdInFile);                                                                        \
+    std::fclose(stdOutFile);                                                                       \
   }
 
 #define CHECK_ASM_RESULTCODE(ASM, INPUT, EXPECTED)                                                 \
   {                                                                                                \
-    auto assembly     = ASM;                                                                       \
-    auto memInterface = platform::MemoryInterface{};                                               \
-    memInterface.setStdIn(INPUT);                                                                  \
-    CHECK(run(&assembly, &memInterface) == (EXPECTED));                                            \
+    auto assembly = ASM;                                                                           \
+                                                                                                   \
+    /* Open temporary file to use as stdIn. */                                                     \
+    gsl::owner<std::FILE*> stdInFile = std::tmpfile();                                             \
+    std::string input                = INPUT;                                                      \
+    std::fwrite(input.data(), input.size(), 1, stdInFile);                                         \
+    std::fflush(stdInFile);                                                                        \
+    std::fseek(stdInFile, 0, SEEK_SET);                                                            \
+                                                                                                   \
+    auto iface = PlatformInterface{0, nullptr, stdInFile, nullptr, nullptr};                       \
+    CHECK(run(&assembly, &iface) == (EXPECTED));                                                   \
+                                                                                                   \
+    /* Close the temporary file (it will auto destruct). */                                        \
+    std::fclose(stdInFile);                                                                        \
   }
 
-#define CHECK_EXPR(BUILD, INPUT, ...)                                                              \
-  CHECK_ASM(buildAssemblyExpr(BUILD), INPUT, {}, {}, __VA_ARGS__)
+#define CHECK_EXPR(BUILD, INPUT, EXPECTED) CHECK_ASM(buildAssemblyExpr(BUILD), INPUT, EXPECTED)
 
-#define CHECK_EXPR_RESULTCODE(BUILD, INPUT, ...)                                                   \
-  CHECK_ASM_RESULTCODE(buildAssemblyExpr(BUILD), INPUT, __VA_ARGS__)
+#define CHECK_EXPR_RESULTCODE(BUILD, INPUT, EXPECTED)                                              \
+  CHECK_ASM_RESULTCODE(buildAssemblyExpr(BUILD), INPUT, EXPECTED)
 
-#define CHECK_PROG(BUILD, INPUT, ...) CHECK_ASM(buildAssembly(BUILD), INPUT, {}, {}, __VA_ARGS__)
+#define CHECK_PROG(BUILD, INPUT, EXPECTED) CHECK_ASM(buildAssembly(BUILD), INPUT, EXPECTED)
 
-#define CHECK_PROG_WITH_ENV_VARS(BUILD, INPUT, ENV_VAR_SET, ...)                                   \
-  CHECK_ASM(buildAssembly(BUILD), INPUT, ENV_VAR_SET, {}, __VA_ARGS__)
+#define CHECK_PROG_RESULTCODE(BUILD, INPUT, EXPECTED)                                              \
+  CHECK_ASM_RESULTCODE(buildAssembly(BUILD), INPUT, EXPECTED)
 
-#define CHECK_PROG_WITH_ENV_ARGS(BUILD, INPUT, ENV_ARG_SET, ...)                                   \
-  CHECK_ASM(buildAssembly(BUILD), INPUT, {}, ENV_ARG_SET, __VA_ARGS__)
-
-#define CHECK_PROG_RESULTCODE(BUILD, INPUT, ...)                                                   \
-  CHECK_ASM_RESULTCODE(buildAssembly(BUILD), INPUT, __VA_ARGS__)
+#define ADD_PRINT(ASMB)                                                                            \
+  {                                                                                                \
+    (ASMB)->addLoadLitInt(1); /* StdOut. */                                                        \
+    (ASMB)->addPCall(novasm::PCallCode::StreamOpenConsole);                                        \
+    (ASMB)->addSwap(); /* Swap because the stream needs to be on the stack before the string. */   \
+    (ASMB)->addPCall(novasm::PCallCode::StreamWriteString);                                        \
+  }
 
 } // namespace vm

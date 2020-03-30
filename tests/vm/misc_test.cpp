@@ -14,7 +14,7 @@ TEST_CASE("Execute miscellaneous instructions", "[vm]") {
 
           asmb->addAddInt();
           asmb->addConvIntString();
-          asmb->addPCall(novasm::PCallCode::ConWriteString);
+          ADD_PRINT(asmb);
           asmb->addRet();
 
           asmb->setEntrypoint("start");
@@ -32,7 +32,7 @@ TEST_CASE("Execute miscellaneous instructions", "[vm]") {
           asmb->addPop();
 
           asmb->addConvIntString();
-          asmb->addPCall(novasm::PCallCode::ConWriteString);
+          ADD_PRINT(asmb);
           asmb->addRet();
 
           asmb->setEntrypoint("start");
@@ -51,7 +51,7 @@ TEST_CASE("Execute miscellaneous instructions", "[vm]") {
           asmb->addDivInt();
 
           asmb->addConvIntString();
-          asmb->addPCall(novasm::PCallCode::ConWriteString);
+          ADD_PRINT(asmb);
           asmb->addRet();
 
           asmb->setEntrypoint("start");

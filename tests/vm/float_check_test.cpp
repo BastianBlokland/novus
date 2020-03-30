@@ -12,7 +12,7 @@ TEST_CASE("Execute float checks", "[vm]") {
           asmb->addLoadLitFloat(-0.1337F); // NOLINT: Magic numbers
           asmb->addCheckEqFloat();
           asmb->addConvBoolString();
-          asmb->addPCall(novasm::PCallCode::ConWriteString);
+          ADD_PRINT(asmb);
         },
         "input",
         "false");
@@ -22,7 +22,7 @@ TEST_CASE("Execute float checks", "[vm]") {
           asmb->addLoadLitFloat(0.1337F); // NOLINT: Magic numbers
           asmb->addCheckEqFloat();
           asmb->addConvBoolString();
-          asmb->addPCall(novasm::PCallCode::ConWriteString);
+          ADD_PRINT(asmb);
         },
         "input",
         "true");
@@ -35,7 +35,7 @@ TEST_CASE("Execute float checks", "[vm]") {
           asmb->addLoadLitFloat(0.1337F);  // NOLINT: Magic numbers
           asmb->addCheckGtFloat();
           asmb->addConvBoolString();
-          asmb->addPCall(novasm::PCallCode::ConWriteString);
+          ADD_PRINT(asmb);
         },
         "input",
         "false");
@@ -45,7 +45,7 @@ TEST_CASE("Execute float checks", "[vm]") {
           asmb->addLoadLitFloat(0.1337F); // NOLINT: Magic numbers
           asmb->addCheckGtFloat();
           asmb->addConvBoolString();
-          asmb->addPCall(novasm::PCallCode::ConWriteString);
+          ADD_PRINT(asmb);
         },
         "input",
         "true");
@@ -58,7 +58,7 @@ TEST_CASE("Execute float checks", "[vm]") {
           asmb->addLoadLitFloat(0.1337F); // NOLINT: Magic numbers
           asmb->addCheckLeFloat();
           asmb->addConvBoolString();
-          asmb->addPCall(novasm::PCallCode::ConWriteString);
+          ADD_PRINT(asmb);
         },
         "input",
         "false");
@@ -68,7 +68,7 @@ TEST_CASE("Execute float checks", "[vm]") {
           asmb->addLoadLitFloat(0.2337F); // NOLINT: Magic numbers
           asmb->addCheckLeFloat();
           asmb->addConvBoolString();
-          asmb->addPCall(novasm::PCallCode::ConWriteString);
+          ADD_PRINT(asmb);
         },
         "input",
         "true");

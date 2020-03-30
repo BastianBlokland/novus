@@ -12,7 +12,7 @@ TEST_CASE("Execute float operations", "[vm]") {
           asmb->addLoadLitFloat(0.1F);    // NOLINT: Magic numbers
           asmb->addAddFloat();
           asmb->addConvFloatString();
-          asmb->addPCall(novasm::PCallCode::ConWriteString);
+          ADD_PRINT(asmb);
         },
         "input",
         "0.2337");
@@ -22,7 +22,7 @@ TEST_CASE("Execute float operations", "[vm]") {
           asmb->addLoadLitFloat(1.0F);
           asmb->addAddFloat();
           asmb->addConvFloatString();
-          asmb->addPCall(novasm::PCallCode::ConWriteString);
+          ADD_PRINT(asmb);
         },
         "input",
         "10000");
@@ -35,7 +35,7 @@ TEST_CASE("Execute float operations", "[vm]") {
           asmb->addLoadLitFloat(0.1F);    // NOLINT: Magic numbers
           asmb->addSubFloat();
           asmb->addConvFloatString();
-          asmb->addPCall(novasm::PCallCode::ConWriteString);
+          ADD_PRINT(asmb);
         },
         "input",
         "0.0337");
@@ -45,7 +45,7 @@ TEST_CASE("Execute float operations", "[vm]") {
           asmb->addLoadLitFloat(0.1337F); // NOLINT: Magic numbers
           asmb->addSubFloat();
           asmb->addConvFloatString();
-          asmb->addPCall(novasm::PCallCode::ConWriteString);
+          ADD_PRINT(asmb);
         },
         "input",
         "-0.0337");
@@ -58,7 +58,7 @@ TEST_CASE("Execute float operations", "[vm]") {
           asmb->addLoadLitFloat(10000.0F); // NOLINT: Magic numbers
           asmb->addMulFloat();
           asmb->addConvFloatString();
-          asmb->addPCall(novasm::PCallCode::ConWriteString);
+          ADD_PRINT(asmb);
         },
         "input",
         "1337");
@@ -68,7 +68,7 @@ TEST_CASE("Execute float operations", "[vm]") {
           asmb->addLoadLitFloat(0.0001F); // NOLINT: Magic numbers
           asmb->addMulFloat();
           asmb->addConvFloatString();
-          asmb->addPCall(novasm::PCallCode::ConWriteString);
+          ADD_PRINT(asmb);
         },
         "input",
         "0.1337");
@@ -81,7 +81,7 @@ TEST_CASE("Execute float operations", "[vm]") {
           asmb->addLoadLitFloat(50.0F); // NOLINT: Magic numbers
           asmb->addDivFloat();
           asmb->addConvFloatString();
-          asmb->addPCall(novasm::PCallCode::ConWriteString);
+          ADD_PRINT(asmb);
         },
         "input",
         "0.02");
@@ -91,7 +91,7 @@ TEST_CASE("Execute float operations", "[vm]") {
           asmb->addLoadLitFloat(0.0F);
           asmb->addDivFloat();
           asmb->addConvFloatString();
-          asmb->addPCall(novasm::PCallCode::ConWriteString);
+          ADD_PRINT(asmb);
         },
         "input",
         "inf");
@@ -101,7 +101,7 @@ TEST_CASE("Execute float operations", "[vm]") {
           asmb->addLoadLitFloat(0.0F);
           asmb->addDivFloat();
           asmb->addConvFloatString();
-          asmb->addPCall(novasm::PCallCode::ConWriteString);
+          ADD_PRINT(asmb);
         },
         "input",
         "nan");
@@ -114,7 +114,7 @@ TEST_CASE("Execute float operations", "[vm]") {
           asmb->addLoadLitFloat(1.0F);
           asmb->addModFloat();
           asmb->addConvFloatString();
-          asmb->addPCall(novasm::PCallCode::ConWriteString);
+          ADD_PRINT(asmb);
         },
         "input",
         "0.3");
@@ -124,7 +124,7 @@ TEST_CASE("Execute float operations", "[vm]") {
           asmb->addLoadLitFloat(.25F);  // NOLINT: Magic numbers
           asmb->addModFloat();
           asmb->addConvFloatString();
-          asmb->addPCall(novasm::PCallCode::ConWriteString);
+          ADD_PRINT(asmb);
         },
         "input",
         "0");
@@ -134,7 +134,7 @@ TEST_CASE("Execute float operations", "[vm]") {
           asmb->addLoadLitFloat(-1.0F);
           asmb->addModFloat();
           asmb->addConvFloatString();
-          asmb->addPCall(novasm::PCallCode::ConWriteString);
+          ADD_PRINT(asmb);
         },
         "input",
         "0.3");
@@ -144,7 +144,7 @@ TEST_CASE("Execute float operations", "[vm]") {
           asmb->addLoadLitFloat(0.0F);
           asmb->addModFloat();
           asmb->addConvFloatString();
-          asmb->addPCall(novasm::PCallCode::ConWriteString);
+          ADD_PRINT(asmb);
         },
         "input",
         "nan");
@@ -157,7 +157,7 @@ TEST_CASE("Execute float operations", "[vm]") {
           asmb->addLoadLitFloat(2.0F); // NOLINT: Magic numbers
           asmb->addPowFloat();
           asmb->addConvFloatString();
-          asmb->addPCall(novasm::PCallCode::ConWriteString);
+          ADD_PRINT(asmb);
         },
         "input",
         "1");
@@ -167,7 +167,7 @@ TEST_CASE("Execute float operations", "[vm]") {
           asmb->addLoadLitFloat(2.0F); // NOLINT: Magic numbers
           asmb->addPowFloat();
           asmb->addConvFloatString();
-          asmb->addPCall(novasm::PCallCode::ConWriteString);
+          ADD_PRINT(asmb);
         },
         "input",
         "4");
@@ -177,7 +177,7 @@ TEST_CASE("Execute float operations", "[vm]") {
           asmb->addLoadLitFloat(4.0F); // NOLINT: Magic numbers
           asmb->addPowFloat();
           asmb->addConvFloatString();
-          asmb->addPCall(novasm::PCallCode::ConWriteString);
+          ADD_PRINT(asmb);
         },
         "input",
         "256");
@@ -187,7 +187,7 @@ TEST_CASE("Execute float operations", "[vm]") {
           asmb->addLoadLitFloat(0.0F);
           asmb->addPowFloat();
           asmb->addConvFloatString();
-          asmb->addPCall(novasm::PCallCode::ConWriteString);
+          ADD_PRINT(asmb);
         },
         "input",
         "1");
@@ -197,7 +197,7 @@ TEST_CASE("Execute float operations", "[vm]") {
           asmb->addLoadLitFloat(2.0F);  // NOLINT: Magic numbers
           asmb->addPowFloat();
           asmb->addConvFloatString();
-          asmb->addPCall(novasm::PCallCode::ConWriteString);
+          ADD_PRINT(asmb);
         },
         "input",
         "4");
@@ -207,7 +207,7 @@ TEST_CASE("Execute float operations", "[vm]") {
           asmb->addLoadLitFloat(-2.0F); // NOLINT: Magic numbers
           asmb->addPowFloat();
           asmb->addConvFloatString();
-          asmb->addPCall(novasm::PCallCode::ConWriteString);
+          ADD_PRINT(asmb);
         },
         "input",
         "0.25");
@@ -219,7 +219,7 @@ TEST_CASE("Execute float operations", "[vm]") {
           asmb->addLoadLitFloat(2.0F); // NOLINT: Magic numbers
           asmb->addSqrtFloat();
           asmb->addConvFloatString();
-          asmb->addPCall(novasm::PCallCode::ConWriteString);
+          ADD_PRINT(asmb);
         },
         "input",
         "1.41421");
@@ -228,7 +228,7 @@ TEST_CASE("Execute float operations", "[vm]") {
           asmb->addLoadLitFloat(4.0F); // NOLINT: Magic numbers
           asmb->addSqrtFloat();
           asmb->addConvFloatString();
-          asmb->addPCall(novasm::PCallCode::ConWriteString);
+          ADD_PRINT(asmb);
         },
         "input",
         "2");
@@ -237,7 +237,7 @@ TEST_CASE("Execute float operations", "[vm]") {
           asmb->addLoadLitFloat(0.0F);
           asmb->addSqrtFloat();
           asmb->addConvFloatString();
-          asmb->addPCall(novasm::PCallCode::ConWriteString);
+          ADD_PRINT(asmb);
         },
         "input",
         "0");
@@ -246,7 +246,7 @@ TEST_CASE("Execute float operations", "[vm]") {
           asmb->addLoadLitFloat(-1.0F); // NOLINT: Magic numbers
           asmb->addSqrtFloat();
           asmb->addConvFloatString();
-          asmb->addPCall(novasm::PCallCode::ConWriteString);
+          ADD_PRINT(asmb);
         },
         "input",
         "nan");
@@ -258,7 +258,7 @@ TEST_CASE("Execute float operations", "[vm]") {
           asmb->addLoadLitFloat(0.0F);
           asmb->addSinFloat();
           asmb->addConvFloatString();
-          asmb->addPCall(novasm::PCallCode::ConWriteString);
+          ADD_PRINT(asmb);
         },
         "input",
         "0");
@@ -270,7 +270,7 @@ TEST_CASE("Execute float operations", "[vm]") {
           asmb->addLoadLitFloat(0.0F);
           asmb->addCosFloat();
           asmb->addConvFloatString();
-          asmb->addPCall(novasm::PCallCode::ConWriteString);
+          ADD_PRINT(asmb);
         },
         "input",
         "1");
@@ -282,7 +282,7 @@ TEST_CASE("Execute float operations", "[vm]") {
           asmb->addLoadLitFloat(0.0F);
           asmb->addTanFloat();
           asmb->addConvFloatString();
-          asmb->addPCall(novasm::PCallCode::ConWriteString);
+          ADD_PRINT(asmb);
         },
         "input",
         "0");
@@ -295,7 +295,7 @@ TEST_CASE("Execute float operations", "[vm]") {
           asmb->addSinFloat();
           asmb->addASinFloat();
           asmb->addConvFloatString();
-          asmb->addPCall(novasm::PCallCode::ConWriteString);
+          ADD_PRINT(asmb);
         },
         "input",
         "1");
@@ -308,7 +308,7 @@ TEST_CASE("Execute float operations", "[vm]") {
           asmb->addCosFloat();
           asmb->addACosFloat();
           asmb->addConvFloatString();
-          asmb->addPCall(novasm::PCallCode::ConWriteString);
+          ADD_PRINT(asmb);
         },
         "input",
         "1");
@@ -321,7 +321,7 @@ TEST_CASE("Execute float operations", "[vm]") {
           asmb->addTanFloat();
           asmb->addATanFloat();
           asmb->addConvFloatString();
-          asmb->addPCall(novasm::PCallCode::ConWriteString);
+          ADD_PRINT(asmb);
         },
         "input",
         "1");
@@ -334,7 +334,7 @@ TEST_CASE("Execute float operations", "[vm]") {
           asmb->addLoadLitFloat(0.0F);
           asmb->addATan2Float();
           asmb->addConvFloatString();
-          asmb->addPCall(novasm::PCallCode::ConWriteString);
+          ADD_PRINT(asmb);
         },
         "input",
         "0");
@@ -346,7 +346,7 @@ TEST_CASE("Execute float operations", "[vm]") {
           asmb->addLoadLitFloat(0.1337F); // NOLINT: Magic numbers
           asmb->addNegFloat();
           asmb->addConvFloatString();
-          asmb->addPCall(novasm::PCallCode::ConWriteString);
+          ADD_PRINT(asmb);
         },
         "input",
         "-0.1337");
@@ -355,7 +355,7 @@ TEST_CASE("Execute float operations", "[vm]") {
           asmb->addLoadLitFloat(0.0F);
           asmb->addNegFloat();
           asmb->addConvFloatString();
-          asmb->addPCall(novasm::PCallCode::ConWriteString);
+          ADD_PRINT(asmb);
         },
         "input",
         "-0");
@@ -365,7 +365,7 @@ TEST_CASE("Execute float operations", "[vm]") {
           asmb->addNegFloat();
           asmb->addNegFloat();
           asmb->addConvFloatString();
-          asmb->addPCall(novasm::PCallCode::ConWriteString);
+          ADD_PRINT(asmb);
         },
         "input",
         "0.1337");

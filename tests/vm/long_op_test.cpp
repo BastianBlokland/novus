@@ -13,7 +13,7 @@ TEST_CASE("Execute long operations", "[vm]") {
           asmb->addLoadLitLong(2);
           asmb->addAddLong();
           asmb->addConvLongString();
-          asmb->addPCall(novasm::PCallCode::ConWriteString);
+          ADD_PRINT(asmb);
         },
         "input",
         "3");
@@ -23,7 +23,7 @@ TEST_CASE("Execute long operations", "[vm]") {
           asmb->addLoadLitLong(1);
           asmb->addAddLong();
           asmb->addConvLongString();
-          asmb->addPCall(novasm::PCallCode::ConWriteString);
+          ADD_PRINT(asmb);
         },
         "input",
         "-9223372036854775808");
@@ -36,7 +36,7 @@ TEST_CASE("Execute long operations", "[vm]") {
           asmb->addLoadLitLong(5);
           asmb->addSubLong();
           asmb->addConvLongString();
-          asmb->addPCall(novasm::PCallCode::ConWriteString);
+          ADD_PRINT(asmb);
         },
         "input",
         "5");
@@ -46,7 +46,7 @@ TEST_CASE("Execute long operations", "[vm]") {
           asmb->addLoadLitLong(20);
           asmb->addSubLong();
           asmb->addConvLongString();
-          asmb->addPCall(novasm::PCallCode::ConWriteString);
+          ADD_PRINT(asmb);
         },
         "input",
         "-10");
@@ -59,7 +59,7 @@ TEST_CASE("Execute long operations", "[vm]") {
           asmb->addLoadLitLong(5);
           asmb->addMulLong();
           asmb->addConvLongString();
-          asmb->addPCall(novasm::PCallCode::ConWriteString);
+          ADD_PRINT(asmb);
         },
         "input",
         "15");
@@ -69,7 +69,7 @@ TEST_CASE("Execute long operations", "[vm]") {
           asmb->addLoadLitLong(-5);
           asmb->addMulLong();
           asmb->addConvLongString();
-          asmb->addPCall(novasm::PCallCode::ConWriteString);
+          ADD_PRINT(asmb);
         },
         "input",
         "-15");
@@ -82,7 +82,7 @@ TEST_CASE("Execute long operations", "[vm]") {
           asmb->addLoadLitLong(4);
           asmb->addDivLong();
           asmb->addConvLongString();
-          asmb->addPCall(novasm::PCallCode::ConWriteString);
+          ADD_PRINT(asmb);
         },
         "input",
         "8");
@@ -92,7 +92,7 @@ TEST_CASE("Execute long operations", "[vm]") {
           asmb->addLoadLitLong(0);
           asmb->addDivLong();
           asmb->addConvLongString();
-          asmb->addPCall(novasm::PCallCode::ConWriteString);
+          ADD_PRINT(asmb);
         },
         "input",
         ExecState::DivByZero);
@@ -105,7 +105,7 @@ TEST_CASE("Execute long operations", "[vm]") {
           asmb->addLoadLitLong(4);
           asmb->addRemLong();
           asmb->addConvLongString();
-          asmb->addPCall(novasm::PCallCode::ConWriteString);
+          ADD_PRINT(asmb);
         },
         "input",
         "1");
@@ -115,7 +115,7 @@ TEST_CASE("Execute long operations", "[vm]") {
           asmb->addLoadLitLong(0);
           asmb->addRemLong();
           asmb->addConvLongString();
-          asmb->addPCall(novasm::PCallCode::ConWriteString);
+          ADD_PRINT(asmb);
         },
         "input",
         ExecState::DivByZero);
@@ -127,7 +127,7 @@ TEST_CASE("Execute long operations", "[vm]") {
           asmb->addLoadLitLong(42);
           asmb->addNegLong();
           asmb->addConvLongString();
-          asmb->addPCall(novasm::PCallCode::ConWriteString);
+          ADD_PRINT(asmb);
         },
         "input",
         "-42");
@@ -136,7 +136,7 @@ TEST_CASE("Execute long operations", "[vm]") {
           asmb->addLoadLitLong(0);
           asmb->addNegLong();
           asmb->addConvLongString();
-          asmb->addPCall(novasm::PCallCode::ConWriteString);
+          ADD_PRINT(asmb);
         },
         "input",
         "0");
@@ -146,7 +146,7 @@ TEST_CASE("Execute long operations", "[vm]") {
           asmb->addNegLong();
           asmb->addNegLong();
           asmb->addConvLongString();
-          asmb->addPCall(novasm::PCallCode::ConWriteString);
+          ADD_PRINT(asmb);
         },
         "input",
         "42");

@@ -258,7 +258,7 @@ add_library(vm STATIC
   vm/internal/executor_registry.cpp
   vm/internal/executor.cpp
   vm/internal/garbage_collector.cpp
-  vm/platform/memory_interface.cpp
+  vm/platform_interface.cpp
   vm/vm.cpp
   vm/exec_state.cpp)
 target_compile_features(vm PRIVATE cxx_std_17)

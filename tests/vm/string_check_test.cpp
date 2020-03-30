@@ -12,7 +12,7 @@ TEST_CASE("Execute string checks", "[vm]") {
           asmb->addLoadLitString("world");
           asmb->addCheckEqString();
           asmb->addConvBoolString();
-          asmb->addPCall(novasm::PCallCode::ConWriteString);
+          ADD_PRINT(asmb);
         },
         "input",
         "false");
@@ -22,7 +22,7 @@ TEST_CASE("Execute string checks", "[vm]") {
           asmb->addLoadLitString("hello world");
           asmb->addCheckEqString();
           asmb->addConvBoolString();
-          asmb->addPCall(novasm::PCallCode::ConWriteString);
+          ADD_PRINT(asmb);
         },
         "input",
         "true");
@@ -34,7 +34,7 @@ TEST_CASE("Execute string checks", "[vm]") {
           asmb->addAddString();
           asmb->addCheckEqString();
           asmb->addConvBoolString();
-          asmb->addPCall(novasm::PCallCode::ConWriteString);
+          ADD_PRINT(asmb);
         },
         "input",
         "true");

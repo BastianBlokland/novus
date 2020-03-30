@@ -240,17 +240,6 @@ Program::Program() :
 
   // Register build-in actions.
   m_funcDecls.registerAction(
-      *this, Fk::ActionConWriteChar, "conWrite", sym::TypeSet{m_char}, m_char);
-  m_funcDecls.registerAction(
-      *this, Fk::ActionConWriteString, "conWrite", sym::TypeSet{m_string}, m_string);
-
-  m_funcDecls.registerAction(
-      *this, Fk::ActionConWriteStringLine, "conWriteLine", sym::TypeSet{m_string}, m_string);
-  m_funcDecls.registerAction(*this, Fk::ActionConReadChar, "conRead", sym::TypeSet{}, m_char);
-  m_funcDecls.registerAction(
-      *this, Fk::ActionConReadStringLine, "conReadLine", sym::TypeSet{}, m_string);
-
-  m_funcDecls.registerAction(
       *this, Fk::ActionStreamOpenFile, "fileOpenStream", sym::TypeSet{m_string, m_int}, m_stream);
   m_funcDecls.registerAction(
       *this, Fk::ActionStreamOpenConsole, "consoleOpenStream", sym::TypeSet{m_int}, m_stream);

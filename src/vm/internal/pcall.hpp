@@ -7,14 +7,13 @@
 #include "internal/string_utilities.hpp"
 #include "novasm/pcall_code.hpp"
 #include "vm/exec_state.hpp"
+#include "vm/platform_interface.hpp"
 #include <chrono>
+#include <cstdlib>
 #include <thread>
 
 namespace vm::internal {
 
-const auto static newl = '\n';
-
-template <typename PlatformInterface>
 auto inline pcall(
     PlatformInterface* iface,
     Allocator* alloc,
@@ -56,52 +55,6 @@ auto inline pcall(
 #define PEEK_INT() PEEK().getInt()
 
   switch (code) {
-  case PCallCode::ConWriteChar: {
-    auto c = static_cast<char>(PEEK_INT());
-    iface->lockConWrite();
-    iface->conWrite(&c, 1);
-    iface->unlockConWrite();
-  } break;
-  case PCallCode::ConWriteString: {
-    auto* strRef = getStringRef(PEEK());
-    iface->lockConWrite();
-    iface->conWrite(strRef->getDataPtr(), strRef->getSize());
-    iface->unlockConWrite();
-  } break;
-  case PCallCode::ConWriteStringLine: {
-    auto* strRef = getStringRef(PEEK());
-    iface->lockConWrite();
-    iface->conWrite(strRef->getDataPtr(), strRef->getSize());
-    iface->conWrite(&newl, 1);
-    iface->unlockConWrite();
-  } break;
-
-  case PCallCode::ConReadChar: {
-    execHandle->setState(ExecState::Paused);
-    iface->lockConRead();
-    auto readChar = iface->conRead();
-    iface->unlockConRead();
-    execHandle->setState(ExecState::Running);
-    execHandle->trap();
-    PUSH_INT(readChar);
-  } break;
-  case PCallCode::ConReadStringLine: {
-    execHandle->setState(ExecState::Paused);
-    iface->lockConRead();
-    std::string line = {};
-    while (true) {
-      const auto c = iface->conRead();
-      if (c == '\0' || c == '\n') {
-        break;
-      }
-      line += c;
-    }
-    iface->unlockConRead();
-    execHandle->setState(ExecState::Running);
-    execHandle->trap();
-    PUSH_REF(toStringRef(alloc, line));
-  } break;
-
   case PCallCode::StreamOpenFile: {
     auto options = POP_INT();
     // Mode is stored in the least significant 8 bits.
@@ -113,7 +66,7 @@ auto inline pcall(
   } break;
   case PCallCode::StreamOpenConsole: {
     auto kind = static_cast<ConsoleStreamKind>(POP_INT());
-    PUSH_REF(openConsoleStream(alloc, kind));
+    PUSH_REF(openConsoleStream(iface, alloc, kind));
   } break;
   case PCallCode::StreamCheckValid: {
     PUSH_BOOL(streamCheckValid(POP()));
@@ -178,7 +131,7 @@ auto inline pcall(
   } break;
   case PCallCode::GetEnvVar: {
     auto* nameStrRef = getStringRef(POP());
-    auto* res        = iface->getEnvVar(nameStrRef->getDataPtr());
+    auto* res        = std::getenv(nameStrRef->getDataPtr());
     PUSH_REF(res == nullptr ? alloc->allocStr(0).first : toStringRef(alloc, res));
   } break;
 
@@ -201,11 +154,12 @@ auto inline pcall(
     auto* msg = getStringRef(POP());
     auto cond = PEEK_INT();
     if (unlikely(cond == 0)) {
-      iface->lockConWrite();
-      iface->conWrite("Assertion failed: ", 18);
-      iface->conWrite(msg->getDataPtr(), msg->getSize());
-      iface->conWrite(&newl, 1);
-      iface->unlockConWrite();
+      auto* stdErr = iface->getStdErr();
+      if (stdErr != nullptr) {
+        std::fwrite("Assertion failed: ", 18, 1, stdErr);
+        std::fwrite(msg->getDataPtr(), msg->getSize(), 1, stdErr);
+        std::fputc('\n', stdErr);
+      }
       execHandle->setState(ExecState::AssertFailed);
     }
   } break;

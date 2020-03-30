@@ -35,7 +35,7 @@ TEST_CASE("Execute forks", "[vm]") {
 
           // Print the results.
           asmb->addConvIntString();
-          asmb->addPCall(novasm::PCallCode::ConWriteString);
+          ADD_PRINT(asmb);
           asmb->addRet();
           // --- Main function end.
 
@@ -111,7 +111,7 @@ TEST_CASE("Execute forks", "[vm]") {
 
           // Print the result.
           asmb->addConvBoolString();
-          asmb->addPCall(novasm::PCallCode::ConWriteString);
+          ADD_PRINT(asmb);
           asmb->addRet();
           // --- Main function end.
 

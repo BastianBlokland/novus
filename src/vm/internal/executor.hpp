@@ -3,10 +3,10 @@
 #include "internal/executor_registry.hpp"
 #include "novasm/assembly.hpp"
 #include "vm/exec_state.hpp"
+#include "vm/platform_interface.hpp"
 
 namespace vm::internal {
 
-template <typename PlatformInterface>
 auto execute(
     const novasm::Assembly* assembly,
     PlatformInterface* iface,
