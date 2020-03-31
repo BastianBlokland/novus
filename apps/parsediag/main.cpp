@@ -133,11 +133,16 @@ auto main(int argc, char** argv) -> int {
   analyzeFileCmd->add_flag("!--no-output", printOutput, "Skip printing the nodes");
 
   // Parse arguments and run subcommands.
-  std::atexit([]() { std::cout << rang::style::reset; });
+  std::atexit([]() {
+    std::cout << rang::style::reset;
+    std::cerr << rang::style::reset;
+  });
   try {
     app.parse(argc, argv);
   } catch (const CLI::ParseError& e) {
-    std::cout << (e.get_exit_code() == 0 ? rang::fg::green : rang::fg::red);
+    if (e.get_exit_code() != 0) {
+      std::cerr << rang::fg::red;
+    }
     return app.exit(e);
   }
   return 0;

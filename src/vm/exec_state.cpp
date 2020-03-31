@@ -13,6 +13,9 @@ auto operator<<(std::ostream& out, const ExecState& rhs) noexcept -> std::ostrea
   case ExecState::Success:
     out << "success";
     break;
+  case ExecState::Failed:
+    out << "failed";
+    break;
   case ExecState::Aborted:
     out << "aborted";
     break;

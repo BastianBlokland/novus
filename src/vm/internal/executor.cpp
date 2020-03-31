@@ -769,7 +769,7 @@ auto execute(
 
     case OpCode::Fail:
     default:
-      execHandle.setState(ExecState::InvalidAssembly);
+      execHandle.setState(ExecState::Failed);
       goto End;
     }
   }
