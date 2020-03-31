@@ -260,11 +260,11 @@ auto run(
     const auto& diag = *diagItr;
     switch (diag.getSeverity()) {
     case frontend::DiagSeverity::Warning:
-      std::cout << rang::style::bold << rang::bg::yellow << diag << rang::bg::reset << '\n'
+      std::cerr << rang::style::bold << rang::bg::yellow << diag << rang::bg::reset << '\n'
                 << rang::style::reset;
       break;
     case frontend::DiagSeverity::Error:
-      std::cout << rang::style::bold << rang::bg::red << diag << rang::bg::reset << '\n'
+      std::cerr << rang::style::bold << rang::bg::red << diag << rang::bg::reset << '\n'
                 << rang::style::reset;
       break;
     }
@@ -370,11 +370,16 @@ auto main(int argc, char** argv) -> int {
   analyzeFileCmd->add_flag("-o,--optimize", optimize, "Optimize program");
 
   // Parse arguments and run subcommands.
-  std::atexit([]() { std::cout << rang::style::reset; });
+  std::atexit([]() {
+    std::cout << rang::style::reset;
+    std::cerr << rang::style::reset;
+  });
   try {
     app.parse(argc, argv);
   } catch (const CLI::ParseError& e) {
-    std::cout << (e.get_exit_code() == 0 ? rang::fg::green : rang::fg::red);
+    if (e.get_exit_code() != 0) {
+      std::cerr << rang::fg::red;
+    }
     return app.exit(e);
   }
   return exitcode;

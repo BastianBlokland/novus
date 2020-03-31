@@ -6,11 +6,9 @@ namespace vm {
 
 TEST_CASE("Runtime errors", "[vm]") {
 
-  SECTION("InvalidAssembly") {
+  SECTION("Fail") {
     CHECK_EXPR_RESULTCODE(
-        [](novasm::Assembler* asmb) -> void { asmb->addFail(); },
-        "input",
-        ExecState::InvalidAssembly);
+        [](novasm::Assembler* asmb) -> void { asmb->addFail(); }, "input", ExecState::Failed);
   }
 
   SECTION("Stack overflow") {

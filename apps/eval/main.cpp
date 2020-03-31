@@ -3,7 +3,6 @@
 #include "frontend/analysis.hpp"
 #include "frontend/source.hpp"
 #include "opt/opt.hpp"
-#include "rang.hpp"
 #include "vm/exec_state.hpp"
 #include "vm/platform_interface.hpp"
 #include "vm/vm.hpp"
@@ -30,17 +29,13 @@ auto run(
     const auto asmOutput = backend::generate(optProg);
     auto iface           = vm::PlatformInterface{vmEnvArgsCount, vmEnvArgs, stdin, stdout, stderr};
     auto res             = vm::run(&asmOutput.first, &iface);
-    if (res != vm::ExecState::Success) {
-      std::cout << rang::style::bold << rang::bg::red << "Runtime error: " << res << '\n'
-                << rang::style::reset;
-    }
     return static_cast<int>(res);
   }
 
   if (!frontendOutput.isSuccess()) {
     for (auto diagItr = frontendOutput.beginDiags(); diagItr != frontendOutput.endDiags();
          ++diagItr) {
-      std::cout << rang::style::bold << rang::bg::red << *diagItr << '\n' << rang::style::reset;
+      std::cerr << *diagItr << '\n';
     }
   }
   return 1;
@@ -59,9 +54,7 @@ auto getSearchPaths(char** argv) noexcept {
 
 auto main(int argc, char** argv) noexcept -> int {
   if (argc <= 1) {
-    std::cout << rang::style::bold << rang::bg::red
-              << "Evaluator - Please provide input characters or input file\n"
-              << rang::style::reset;
+    std::cerr << "Evaluator - Please provide input characters or input file\n";
     return 1;
   }
 

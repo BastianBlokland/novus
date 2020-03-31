@@ -273,6 +273,7 @@ Program::Program() :
   m_funcDecls.registerAction(*this, Fk::ActionSleepNano, "sleepNano", sym::TypeSet{m_long}, m_long);
   m_funcDecls.registerAction(
       *this, Fk::ActionAssert, "assert", sym::TypeSet{m_bool, m_string}, m_bool);
+  m_funcDecls.registerAction(*this, Fk::ActionFail, "fail", sym::TypeSet{}, m_int);
 }
 
 auto Program::hasType(const std::string& name) const -> bool { return m_typeDecls.exists(name); }

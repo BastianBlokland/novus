@@ -106,7 +106,7 @@ auto run(
     // Print diagnostics.
     for (auto diagItr = frontendOutput.beginDiags(); diagItr != frontendOutput.endDiags();
          ++diagItr) {
-      std::cout << rang::style::bold << rang::bg::red << *diagItr << rang::bg::reset << '\n'
+      std::cerr << rang::style::bold << rang::bg::red << *diagItr << rang::bg::reset << '\n'
                 << rang::style::reset;
     }
     return 1;
@@ -211,11 +211,16 @@ auto main(int argc, char** argv) -> int {
   analyzeFileCmd->add_flag("-o,--optimize", optimize, "Optimize program");
 
   // Parse arguments and run subcommands.
-  std::atexit([]() { std::cout << rang::style::reset; });
+  std::atexit([]() {
+    std::cout << rang::style::reset;
+    std::cerr << rang::style::reset;
+  });
   try {
     app.parse(argc, argv);
   } catch (const CLI::ParseError& e) {
-    std::cout << (e.get_exit_code() == 0 ? rang::fg::green : rang::fg::red);
+    if (e.get_exit_code() != 0) {
+      std::cerr << rang::fg::red;
+    }
     return app.exit(e);
   }
   return exitcode;

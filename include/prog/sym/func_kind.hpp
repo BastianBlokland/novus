@@ -128,6 +128,7 @@ enum class FuncKind {
 
   ActionSleepNano,
   ActionAssert,
+  ActionFail,
 };
 
 } // namespace prog::sym
