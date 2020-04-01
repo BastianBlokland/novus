@@ -20,23 +20,23 @@ public:
 
   [[nodiscard]] auto getSeverity() const noexcept -> DiagSeverity;
   [[nodiscard]] auto getMsg() const noexcept -> std::string;
-  [[nodiscard]] auto getSourceId() const noexcept -> std::string;
-  [[nodiscard]] auto getSourceSpan() const noexcept -> input::Span;
-  [[nodiscard]] auto getSourcePos() const noexcept -> input::TextPos;
+  [[nodiscard]] auto getSourcePath() const noexcept -> std::optional<filesystem::path>;
+  [[nodiscard]] auto getSourceStart() const noexcept -> input::TextPos;
+  [[nodiscard]] auto getSourceEnd() const noexcept -> input::TextPos;
 
 private:
   DiagSeverity m_severity;
   std::string m_msg;
-  std::string m_sourceId;
-  input::Span m_sourceSpan;
-  input::TextPos m_sourcePos;
+  std::optional<filesystem::path> m_sourcePath;
+  input::TextPos m_sourceStart;
+  input::TextPos m_sourceEnd;
 
   Diag(
       DiagSeverity severity,
       std::string msg,
-      std::string sourceId,
-      input::Span sourceSpan,
-      input::TextPos sourcePos);
+      std::optional<filesystem::path> sourcePath,
+      input::TextPos sourceStart,
+      input::TextPos sourceEnd);
 };
 
 auto operator<<(std::ostream& out, const Diag& rhs) -> std::ostream&;

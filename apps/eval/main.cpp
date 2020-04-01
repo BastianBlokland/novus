@@ -3,6 +3,7 @@
 #include "frontend/analysis.hpp"
 #include "frontend/source.hpp"
 #include "opt/opt.hpp"
+#include "rang.hpp"
 #include "vm/exec_state.hpp"
 #include "vm/platform_interface.hpp"
 #include "vm/vm.hpp"
@@ -33,10 +34,12 @@ auto run(
   }
 
   if (!frontendOutput.isSuccess()) {
+    std::cerr << rang::style::bold << rang::bg::red;
     for (auto diagItr = frontendOutput.beginDiags(); diagItr != frontendOutput.endDiags();
          ++diagItr) {
       std::cerr << *diagItr << '\n';
     }
+    std::cerr << rang::style::reset;
   }
   return 1;
 }
@@ -54,7 +57,8 @@ auto getSearchPaths(char** argv) noexcept {
 
 auto main(int argc, char** argv) noexcept -> int {
   if (argc <= 1) {
-    std::cerr << "Evaluator - Please provide input characters or input file\n";
+    std::cerr << rang::fg::red << "Evaluator - Please provide input characters or input file\n"
+              << rang::style::reset;
     return 1;
   }
 
@@ -67,7 +71,7 @@ auto main(int argc, char** argv) noexcept -> int {
     auto absInputPath = filesystem::absolute(path);
     return eval::run(
         path.filename(),
-        absInputPath,
+        filesystem::canonical(absInputPath),
         getSearchPaths(argv),
         std::istreambuf_iterator<char>{fs},
         std::istreambuf_iterator<char>{},

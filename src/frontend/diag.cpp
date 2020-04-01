@@ -6,18 +6,18 @@ namespace frontend {
 Diag::Diag(
     DiagSeverity severity,
     std::string msg,
-    std::string sourceId,
-    input::Span sourceSpan,
-    input::TextPos sourcePos) :
+    std::optional<filesystem::path> sourcePath,
+    input::TextPos sourceStart,
+    input::TextPos sourceEnd) :
     m_severity{severity},
     m_msg{std::move(msg)},
-    m_sourceId{std::move(sourceId)},
-    m_sourceSpan{sourceSpan},
-    m_sourcePos{sourcePos} {};
+    m_sourcePath{std::move(sourcePath)},
+    m_sourceStart{sourceStart},
+    m_sourceEnd{sourceEnd} {};
 
 auto Diag::operator==(const Diag& rhs) const noexcept -> bool {
-  return m_severity == rhs.m_severity && m_msg == rhs.m_msg && m_sourceId == rhs.m_sourceId &&
-      m_sourceSpan == rhs.m_sourceSpan && m_sourcePos == rhs.m_sourcePos;
+  return m_severity == rhs.m_severity && m_msg == rhs.m_msg && m_sourcePath == rhs.m_sourcePath &&
+      m_sourceStart == rhs.m_sourceStart && m_sourceEnd == rhs.m_sourceEnd;
 }
 
 auto Diag::operator!=(const Diag& rhs) const noexcept -> bool { return !Diag::operator==(rhs); }
@@ -26,26 +26,36 @@ auto Diag::getSeverity() const noexcept -> DiagSeverity { return m_severity; }
 
 auto Diag::getMsg() const noexcept -> std::string { return m_msg; }
 
-auto Diag::getSourceId() const noexcept -> std::string { return m_sourceId; }
+auto Diag::getSourcePath() const noexcept -> std::optional<filesystem::path> {
+  return m_sourcePath;
+}
 
-auto Diag::getSourceSpan() const noexcept -> input::Span { return m_sourceSpan; }
+auto Diag::getSourceStart() const noexcept -> input::TextPos { return m_sourceStart; }
 
-auto Diag::getSourcePos() const noexcept -> input::TextPos { return m_sourcePos; }
+auto Diag::getSourceEnd() const noexcept -> input::TextPos { return m_sourceEnd; }
 
 auto operator<<(std::ostream& out, const Diag& rhs) -> std::ostream& {
-  return out << rhs.getSeverity() << " (" << rhs.m_sourceId << " " << rhs.getSourcePos() << ") "
-             << rhs.m_msg;
+  const auto id        = rhs.m_sourcePath ? rhs.m_sourcePath->string() : "inline";
+  const auto startLine = rhs.m_sourceStart.getLine();
+  const auto startCol  = rhs.m_sourceStart.getCol();
+  const auto endLine   = rhs.m_sourceEnd.getLine();
+  const auto endCol = rhs.m_sourceEnd.getCol() + 1; // + 1 because we want to include the last char.
+
+  return out << id << ':' << startLine << ':' << startCol << '-' << endLine << ':' << endCol << ": "
+             << rhs.getSeverity() << ": " << rhs.m_msg;
 }
 
 // Factories.
 auto warning(const Source& src, std::string msg, input::Span span) -> Diag {
-  const auto srcPos = src.getTextPos(span.getStart());
-  return Diag{DiagSeverity::Warning, std::move(msg), src.getId(), span, srcPos};
+  const auto srcStart = src.getTextPos(span.getStart());
+  const auto srcEnd   = src.getTextPos(span.getEnd());
+  return Diag{DiagSeverity::Warning, std::move(msg), src.getId(), srcStart, srcEnd};
 }
 
 auto error(const Source& src, std::string msg, input::Span span) -> Diag {
-  const auto srcPos = src.getTextPos(span.getStart());
-  return Diag{DiagSeverity::Error, std::move(msg), src.getId(), span, srcPos};
+  const auto srcStart = src.getTextPos(span.getStart());
+  const auto srcEnd   = src.getTextPos(span.getEnd());
+  return Diag{DiagSeverity::Error, std::move(msg), src.getPath(), srcStart, srcEnd};
 }
 
 } // namespace frontend
