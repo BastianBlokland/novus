@@ -27,12 +27,10 @@ test:
 clean:
 	rm -rf build
 
-# Evaluate nov files when they are written to.
+# Watch for changes to '.nov' files and automatically evaluate them.
 # Requires 'inotify-tools' to be installed.
 .PHONY: watch.nov
 watch.nov:
-	inotifywait --event close_write -qm --format '%w' **/*.nov \
-		| xargs -I{} -r sh -c \
-		"clear; echo "{}:"; ./bin/eval {}; echo "------""
+	./scripts/watch_nov.sh . ./bin/eval
 
 .SILENT:
