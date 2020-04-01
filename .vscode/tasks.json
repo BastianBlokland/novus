@@ -2,7 +2,7 @@
   "version": "2.0.0",
   "tasks": [
     {
-      "label": "build debug",
+      "label": "build.debug",
       "type": "shell",
       "command": "make build.debug",
       "presentation": {
@@ -17,7 +17,7 @@
       "problemMatcher": []
     },
     {
-      "label": "build release",
+      "label": "build.release",
       "type": "shell",
       "command": "make build.release",
       "presentation": {
@@ -41,6 +41,17 @@
         "kind": "test",
         "isDefault": true
       }
+    },
+    {
+      "label": "watch.nov",
+      "type": "shell",
+      "command": "${workspaceFolder}/scripts/watch_nov.sh",
+      "args": [
+        "${workspaceFolder}",
+        "${workspaceFolder}/bin/eval"
+      ],
+      "isBackground": true,
+      "problemMatcher": "$novus",
     }
   ]
 }
