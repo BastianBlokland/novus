@@ -16,7 +16,7 @@ instructions. Vm is responsible for executing instructions, memory allocation, m
 knowledge about types or functions so there is no runtime type introspection, instead the language
 focusses on making it easier to generate code at compile time (through function and type templates).
 
-Note this is intented as an academic exercise and not meant for production projects.
+Note this is intended as an academic exercise and not meant for production projects.
 
 ## Requirements
 

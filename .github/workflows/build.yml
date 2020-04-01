@@ -25,20 +25,28 @@ jobs:
     steps:
     - uses: actions/checkout@v1
 
-    - name: Create build directory
-      run: cmake -E make_directory ${{runner.workspace}}/build
+    - name: Install
+      run: |
+        # Install latest cmake.
+        wget -O - https://apt.kitware.com/keys/kitware-archive-latest.asc 2>/dev/null \
+          | sudo apt-key add -
+        sudo apt-add-repository 'deb https://apt.kitware.com/ubuntu/ bionic main'
+        sudo apt install cmake
+        cmake --version
+
+        # Install clang-9 and libc++
+        sudo apt-add-repository 'deb http://apt.llvm.org/bionic/ llvm-toolchain-bionic-9 main'
+        sudo apt update
+        sudo apt install clang-9 libc++-9-dev libc++abi-9-dev
+        clang-9 --version
 
     - name: Configure
-      shell: bash
-      working-directory: ${{runner.workspace}}/build
-      run: cmake $GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=$BUILD_TYPE
+      run: cmake -B ${{runner.workspace}}/build -DCMAKE_BUILD_TYPE=$BUILD_TYPE
 
     - name: Build
       working-directory: ${{runner.workspace}}/build
-      shell: bash
-      run: cmake --build . --config $BUILD_TYPE
+      run: cmake --build .
 
     - name: Test
       working-directory: ${{runner.workspace}}/build
-      shell: bash
-      run: ctest --build-config $BUILD_TYPE
+      run: ctest
