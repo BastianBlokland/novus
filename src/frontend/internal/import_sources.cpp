@@ -82,7 +82,7 @@ auto ImportSources::importFromDir(const Path& searchPath, const Path& file) cons
 
   m_importedSources->push_front(frontend::buildSource(
       file.filename(),
-      fullPath,
+      filesystem::canonical(fullPath),
       std::istreambuf_iterator<char>{fs},
       std::istreambuf_iterator<char>{}));
 

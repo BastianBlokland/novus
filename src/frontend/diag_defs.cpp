@@ -11,7 +11,7 @@ auto errUnresolvedImport(const Source& src, const std::string& path, input::Span
 
 auto errParseError(const Source& src, const parse::ErrorNode& n) -> Diag {
   std::ostringstream oss;
-  oss << "Parse error: " << n.getMessage();
+  oss << n.getMessage();
   return error(src, oss.str(), n.getSpan());
 }
 
