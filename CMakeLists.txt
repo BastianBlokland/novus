@@ -20,7 +20,7 @@ if(MSVC)
   set(CMAKE_CXX_FLAGS "/std:c++17")
 else()
   set(CXX_FLAGS_SHARED "-std=c++17 -stdlib=libc++ -Werror -Wall -Wextra")
-  set(CMAKE_CXX_FLAGS_DEBUG "-O1 -g -fsanitize=address -fno-omit-frame-pointer ${CXX_FLAGS_SHARED}")
+  set(CMAKE_CXX_FLAGS_DEBUG "-O1 -g -fno-omit-frame-pointer ${CXX_FLAGS_SHARED}")
   set(CMAKE_CXX_FLAGS_RELEASE "-O3 -DNDEBUG ${CXX_FLAGS_SHARED}")
 endif()
 
