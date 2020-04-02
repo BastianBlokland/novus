@@ -1,5 +1,8 @@
 # Novus
 
+![Build](https://github.com/BastianBlokland/novus/workflows/build-test/badge.svg)
+![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)
+
 **-Work in progress-**
 
 Novus is a statically typed functional programming language, it compiles into instructions for a

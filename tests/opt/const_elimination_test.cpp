@@ -21,8 +21,8 @@ TEST_CASE("Constants elimination", "[opt]") {
         optProg, prog::Operator::Plus, GET_TYPE_ID(optProg, "int"), GET_TYPE_ID(optProg, "int"));
 
     auto args = std::vector<prog::expr::NodePtr>{};
-    args.push_back(prog::expr::litIntNode(output.getProg(), 42));
-    args.push_back(prog::expr::litIntNode(output.getProg(), 1337));
+    args.push_back(prog::expr::litIntNode(output.getProg(), 42));   // NOLINT: Magic numbers
+    args.push_back(prog::expr::litIntNode(output.getProg(), 1337)); // NOLINT: Magic numbers
 
     CHECK(funcDef.getExpr() == *prog::expr::callExprNode(optProg, intAddFunc, std::move(args)));
   }
@@ -40,8 +40,8 @@ TEST_CASE("Constants elimination", "[opt]") {
         optProg, prog::Operator::Plus, GET_TYPE_ID(optProg, "int"), GET_TYPE_ID(optProg, "int"));
 
     auto args = std::vector<prog::expr::NodePtr>{};
-    args.push_back(prog::expr::litIntNode(output.getProg(), 42));
-    args.push_back(prog::expr::litIntNode(output.getProg(), 42));
+    args.push_back(prog::expr::litIntNode(output.getProg(), 42)); // NOLINT: Magic numbers
+    args.push_back(prog::expr::litIntNode(output.getProg(), 42)); // NOLINT: Magic numbers
 
     CHECK(funcDef.getExpr() == *prog::expr::callExprNode(optProg, intAddFunc, std::move(args)));
   }
