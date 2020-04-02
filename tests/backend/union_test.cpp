@@ -180,6 +180,42 @@ TEST_CASE("Generating assembly for unions", "[backend]") {
         "assert(NullableUser(User(\"John\", 42)) is User, \"test\")"
         "assert(NullableUser(User(\"John\", 42)) as User u ? (u.name == \"J\") : false, \"test\")",
         [](novasm::Assembler* asmb) -> void {
+          // -- struct 'User' equality function start.
+          asmb->label("user-eq");
+
+          // Check if field 1 is equal.
+          asmb->addStackLoad(0);
+          asmb->addLoadStructField(0);
+          asmb->addStackLoad(1);
+          asmb->addLoadStructField(0);
+          asmb->addCheckEqString();
+          asmb->addJumpIf("user-eq-field1equal");
+
+          // If field 1 is not equal then return false.
+          asmb->addLoadLitInt(0);
+          asmb->addRet();
+
+          asmb->label("user-eq-field1equal");
+
+          // Check if field 2 is equal.
+          asmb->addStackLoad(0);
+          asmb->addLoadStructField(1);
+          asmb->addStackLoad(1);
+          asmb->addLoadStructField(1);
+          asmb->addCheckEqInt();
+          asmb->addJumpIf("user-eq-field2equal");
+
+          // If field 2 is not equal then return false.
+          asmb->addLoadLitInt(0);
+          asmb->addRet();
+
+          asmb->label("user-eq-field2equal");
+
+          // Both are equal, return true.
+          asmb->addLoadLitInt(1);
+          asmb->addRet();
+          // -- struct 'User' equality function end.
+
           // -- struct 'Null' equality function start.
           asmb->label("null-eq");
           asmb->addLoadLitInt(1); // Always returns true.
@@ -218,42 +254,6 @@ TEST_CASE("Generating assembly for unions", "[backend]") {
           asmb->addLoadLitInt(0);
           asmb->addRet();
           // -- union 'NullableUser' equality function end.
-
-          // -- struct 'User' equality function start.
-          asmb->label("user-eq");
-
-          // Check if field 1 is equal.
-          asmb->addStackLoad(0);
-          asmb->addLoadStructField(0);
-          asmb->addStackLoad(1);
-          asmb->addLoadStructField(0);
-          asmb->addCheckEqString();
-          asmb->addJumpIf("user-eq-field1equal");
-
-          // If field 1 is not equal then return false.
-          asmb->addLoadLitInt(0);
-          asmb->addRet();
-
-          asmb->label("user-eq-field1equal");
-
-          // Check if field 2 is equal.
-          asmb->addStackLoad(0);
-          asmb->addLoadStructField(1);
-          asmb->addStackLoad(1);
-          asmb->addLoadStructField(1);
-          asmb->addCheckEqInt();
-          asmb->addJumpIf("user-eq-field2equal");
-
-          // If field 2 is not equal then return false.
-          asmb->addLoadLitInt(0);
-          asmb->addRet();
-
-          asmb->label("user-eq-field2equal");
-
-          // Both are equal, return true.
-          asmb->addLoadLitInt(1);
-          asmb->addRet();
-          // -- struct 'User' equality function end.
 
           // --- first assert statement start.
           asmb->label("assert1");

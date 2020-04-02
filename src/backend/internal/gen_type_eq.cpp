@@ -1,7 +1,7 @@
 #include "gen_type_eq.hpp"
 #include "utilities.hpp"
 #include <algorithm>
-#include <unordered_set>
+#include <set>
 
 namespace backend::internal {
 
@@ -230,9 +230,7 @@ static auto genUnionEquality(
 }
 
 static auto addTypeAndNestedTypes(
-    const prog::Program& prog,
-    std::unordered_set<prog::sym::TypeId, prog::sym::TypeIdHasher>* set,
-    prog::sym::TypeId id) -> void {
+    const prog::Program& prog, std::set<prog::sym::TypeId>* set, prog::sym::TypeId id) -> void {
 
   if (set->insert(id).second) {
     switch (prog.getTypeDecl(id).getKind()) {
@@ -253,7 +251,7 @@ static auto addTypeAndNestedTypes(
 }
 
 auto generateUserTypeEquality(novasm::Assembler* asmb, const prog::Program& prog) -> void {
-  auto types = std::unordered_set<prog::sym::TypeId, prog::sym::TypeIdHasher>{};
+  auto types = std::set<prog::sym::TypeId>{};
 
   // Gather all types to generate equality functions for.
   for (auto fItr = prog.beginFuncDecls(); fItr != prog.endFuncDecls(); ++fItr) {
