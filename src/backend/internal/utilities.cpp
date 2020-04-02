@@ -1,4 +1,5 @@
 #include "utilities.hpp"
+#include <algorithm>
 #include <limits>
 #include <sstream>
 
