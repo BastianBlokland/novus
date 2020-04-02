@@ -46,12 +46,12 @@ TEST_CASE("Generate assembly for tail calls", "[backend]") {
         "fun f2() -> int f1() "
         "assert(f2() == 0, \"test\")",
         [](novasm::Assembler* asmb) -> void {
-          asmb->label("f2");
-          asmb->addCall("f1", 0, novasm::CallMode::Tail);
-          asmb->addRet();
-
           asmb->label("f1");
           asmb->addLoadLitInt(42);
+          asmb->addRet();
+
+          asmb->label("f2");
+          asmb->addCall("f1", 0, novasm::CallMode::Tail);
           asmb->addRet();
 
           asmb->label("prog");
@@ -73,6 +73,10 @@ TEST_CASE("Generate assembly for tail calls", "[backend]") {
         "fun f2() -> int v = 42; f1(v) "
         "assert(f2() == 0, \"test\")",
         [](novasm::Assembler* asmb) -> void {
+          asmb->label("f1");
+          asmb->addStackLoad(0);
+          asmb->addRet();
+
           asmb->label("f2");
           asmb->addStackAlloc(1);
           asmb->addLoadLitInt(42);
@@ -81,10 +85,6 @@ TEST_CASE("Generate assembly for tail calls", "[backend]") {
           asmb->addPop();
           asmb->addStackLoad(0);
           asmb->addCall("f1", 1, novasm::CallMode::Tail);
-          asmb->addRet();
-
-          asmb->label("f1");
-          asmb->addStackLoad(0);
           asmb->addRet();
 
           asmb->label("prog");
@@ -106,13 +106,13 @@ TEST_CASE("Generate assembly for tail calls", "[backend]") {
         "fun f2(function{int} func) -> int func() "
         "assert(f2(f1) == 0, \"test\")",
         [](novasm::Assembler* asmb) -> void {
+          asmb->label("f1");
+          asmb->addLoadLitInt(42);
+          asmb->addRet();
+
           asmb->label("f2");
           asmb->addStackLoad(0);
           asmb->addCallDyn(0, novasm::CallMode::Tail);
-          asmb->addRet();
-
-          asmb->label("f1");
-          asmb->addLoadLitInt(42);
           asmb->addRet();
 
           asmb->label("prog");

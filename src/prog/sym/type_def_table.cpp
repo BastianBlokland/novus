@@ -4,15 +4,15 @@
 namespace prog::sym {
 
 auto TypeDefTable::operator[](sym::TypeId id) const -> const TypeDef& {
-  auto itr = m_types.find(id);
-  if (itr == m_types.end()) {
+  auto itr = m_typeDefs.find(id);
+  if (itr == m_typeDefs.end()) {
     throw std::invalid_argument{"No definition has been registered for given type-id"};
   }
   return itr->second;
 }
 
 auto TypeDefTable::hasDef(sym::TypeId id) const -> bool {
-  return m_types.find(id) != m_types.end();
+  return m_typeDefs.find(id) != m_typeDefs.end();
 }
 
 auto TypeDefTable::begin() const -> Iterator { return m_types.begin(); }
@@ -74,11 +74,12 @@ auto TypeDefTable::registerFuture(
 }
 
 auto TypeDefTable::registerType(sym::TypeId id, TypeDef def) -> void {
-  auto itr = m_types.find(id);
-  if (itr != m_types.end()) {
+  auto itr = m_typeDefs.find(id);
+  if (itr != m_typeDefs.end()) {
     throw std::logic_error{"Type already has a definition registered"};
   }
-  m_types.insert({id, std::move(def)});
+  m_typeDefs.insert({id, std::move(def)});
+  m_types.insert(id);
 }
 
 } // namespace prog::sym

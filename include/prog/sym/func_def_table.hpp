@@ -3,14 +3,14 @@
 #include "prog/sym/func_def.hpp"
 #include "prog/sym/func_id.hpp"
 #include "prog/sym/func_id_hasher.hpp"
+#include <set>
 #include <unordered_map>
-#include <vector>
 
 namespace prog::sym {
 
 class FuncDefTable final {
 public:
-  using Iterator = typename std::unordered_map<FuncId, FuncDef, FuncIdHasher>::const_iterator;
+  using Iterator = typename std::set<FuncId>::const_iterator;
 
   FuncDefTable()                            = default;
   FuncDefTable(const FuncDefTable& rhs)     = delete;
@@ -32,7 +32,8 @@ public:
       expr::NodePtr expr) -> void;
 
 private:
-  std::unordered_map<FuncId, FuncDef, FuncIdHasher> m_funcs;
+  std::unordered_map<FuncId, FuncDef, FuncIdHasher> m_funcDefs;
+  std::set<FuncId> m_funcs;
 };
 
 } // namespace prog::sym

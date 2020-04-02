@@ -108,9 +108,9 @@ auto printTypeDefs(const prog::Program& prog) -> void {
       std::cout << "\n";
     }
 
-    const auto typeId    = typeItr->first;
+    const auto typeId    = *typeItr;
     const auto& typeDecl = prog.getTypeDecl(typeId);
-    const auto& typeDef  = typeItr->second;
+    const auto& typeDef  = prog.getTypeDef(typeId);
     std::cout << " " << rang::style::bold << typeDecl.getName() << rang::style::dim << " ("
               << typeDecl.getKind() << ") " << typeId << rang::style::reset << "\n";
 
@@ -180,8 +180,8 @@ auto printFuncDefs(const prog::Program& prog) -> void {
       std::cout << "\n";
     }
 
-    const auto funcId    = funcItr->first;
-    const auto& funcDef  = funcItr->second;
+    const auto funcId    = *funcItr;
+    const auto& funcDef  = prog.getFuncDef(funcId);
     const auto& funcDecl = prog.getFuncDecl(funcId);
     const auto& funcName = funcDecl.getName();
     std::cout << (funcDecl.isAction() ? " action " : " ");

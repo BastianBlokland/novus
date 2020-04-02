@@ -67,7 +67,8 @@ auto generate(const prog::Program& program) -> std::pair<novasm::Assembly, Instr
 
   // Generate function definitons.
   for (auto funcItr = program.beginFuncDefs(); funcItr != program.endFuncDefs(); ++funcItr) {
-    generateFunc(&asmb, program, funcItr->second);
+    const auto& funcDef = program.getFuncDef(*funcItr);
+    generateFunc(&asmb, program, funcDef);
   }
 
   // Generate execution statements.
