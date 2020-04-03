@@ -24,7 +24,10 @@ else()
   set(CMAKE_CXX_FLAGS_RELEASE "-O3 -DNDEBUG ${CXX_FLAGS_SHARED}")
 
   # Some platforms requiring linking to the filesystem library explicitly.
-  link_libraries(stdc++fs)
+  find_library(STDCXXFS_LIB stdc++fs)
+  if(STDCXXFS_LIB)
+    link_libraries(stdc++fs)
+  endif()
 endif()
 
 # Find the threads library.
