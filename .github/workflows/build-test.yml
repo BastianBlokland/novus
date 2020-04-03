@@ -46,11 +46,11 @@ jobs:
 
     - name: build
       working-directory: build
-      run: make -j$(nproc)
+      run: make -j$(./scripts/nproc.sh)
 
     - name: test
       working-directory: build
-      run: make test -j$(nproc)
+      run: make test
 
     - name: archive
       uses: actions/upload-artifact@v1
