@@ -2,6 +2,7 @@
 #include "gsl.hpp"
 #include "internal/ref_stream.hpp"
 #include <cstdio>
+#include <cstring>
 
 namespace vm::internal {
 

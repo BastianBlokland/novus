@@ -5,6 +5,7 @@
 #include "prog/expr/rewriter.hpp"
 #include "prog/program.hpp"
 #include "prog/sym/const_id_hasher.hpp"
+#include <cassert>
 
 namespace opt {
 

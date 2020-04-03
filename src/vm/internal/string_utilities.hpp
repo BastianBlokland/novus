@@ -25,7 +25,7 @@ template <typename IntType>
   strRefAlloc.second[resultSize] = '\0'; // Null-terminate.
   strRefAlloc.first->updateSize(convRes.ptr - strRefAlloc.second);
 #else
-  const auto format = std::is_same<IntType, int32_t>::value ? "%d" : "%lld";
+  const auto format = std::is_same<IntType, int32_t>::value ? "%d" : "%ld";
   // NOLINTNEXTLINE: C-style var-arg func.
   const auto size = std::snprintf(strRefAlloc.second, maxCharSize + 1, format, val);
   assert(strRefAlloc.second[size] == '\0');

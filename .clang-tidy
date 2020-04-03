@@ -1,17 +1,4 @@
-Checks: '*,
-    -clang-analyzer-alpha.*,
-    -clang-analyzer-cplusplus.NewDeleteLeaks,
-    -fuchsia-*,
-    -cppcoreguidelines-pro-bounds-array-to-pointer-decay,
-    -cppcoreguidelines-pro-bounds-pointer-arithmetic,
-    -cppcoreguidelines-macro-usage,
-    -cppcoreguidelines-avoid-goto,
-    -bugprone-exception-escape,
-    -hicpp-function-size,
-    -hicpp-no-array-decay,
-    -hicpp-avoid-goto,
-    -google-readability-function-size,
-    -readability-function-size'
-CheckOptions:
-  - key: readability-implicit-bool-conversion.AllowPointerConditions
-    value: '1'
+Checks: '-*,
+  bugprone-*, -bugprone-exception-escape,
+  performance-*, -performance-unnecessary-value-param'
+WarningsAsErrors: '*'

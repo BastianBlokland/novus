@@ -19,9 +19,12 @@ if(MSVC)
   message("Setting msvc compiler flags")
   set(CMAKE_CXX_FLAGS "/std:c++17")
 else()
-  set(CXX_FLAGS_SHARED "-std=c++17 -stdlib=libc++ -Werror -Wall -Wextra")
-  set(CMAKE_CXX_FLAGS_DEBUG "-O1 -g -fsanitize=address -fno-omit-frame-pointer ${CXX_FLAGS_SHARED}")
+  set(CXX_FLAGS_SHARED "-std=c++17 -Werror -Wall -Wextra")
+  set(CMAKE_CXX_FLAGS_DEBUG "-O1 -g -fno-omit-frame-pointer ${CXX_FLAGS_SHARED}")
   set(CMAKE_CXX_FLAGS_RELEASE "-O3 -DNDEBUG ${CXX_FLAGS_SHARED}")
+
+  # Some platforms requiring linking to the filesystem library explicitly.
+  link_libraries(stdc++fs)
 endif()
 
 # Find the threads library.
@@ -35,18 +38,11 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 # reason is that 'mingw64-w64' does not respect that file.
 set(CMAKE_CXX_USE_RESPONSE_FILE_FOR_INCLUDES OFF)
 
-if(CMAKE_BUILD_TYPE)
-  string(TOLOWER ${CMAKE_BUILD_TYPE} CMAKE_BUILD_TYPE_LOWER)
-endif()
-if(CMAKE_BUILD_TYPE_LOWER STREQUAL "debug")
-  message("Debug build")
-
-  # Use the clang-tidy linter if installed.
-  find_program(CLANG_TIDY_BIN NAMES "clang-tidy")
-  if(CLANG_TIDY_BIN)
-    set(CMAKE_CXX_CLANG_TIDY ${CLANG_TIDY_BIN})
-    message("Enabled clang-tidy")
-  endif()
+# Use the clang-tidy linter if installed.
+find_program(CLANG_TIDY_BIN NAMES "clang-tidy" "clang-tidy-9")
+if(CLANG_TIDY_BIN)
+  set(CMAKE_CXX_CLANG_TIDY ${CLANG_TIDY_BIN})
+  message("Enabled clang-tidy")
 endif()
 
 # Add child cmake files.

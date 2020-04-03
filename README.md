@@ -1,5 +1,8 @@
 # Novus
 
+![Build](https://github.com/BastianBlokland/novus/workflows/build-test/badge.svg)
+![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)
+
 **-Work in progress-**
 
 Novus is a statically typed functional programming language, it compiles into instructions for a
@@ -16,7 +19,7 @@ instructions. Vm is responsible for executing instructions, memory allocation, m
 knowledge about types or functions so there is no runtime type introspection, instead the language
 focusses on making it easier to generate code at compile time (through function and type templates).
 
-Note this is intented as an academic exercise and not meant for production projects.
+Note this is intended as an academic exercise and not meant for production projects.
 
 ## Requirements
 

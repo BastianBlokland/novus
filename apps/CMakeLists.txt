@@ -3,7 +3,7 @@ include(FetchContent)
 # Cli11 command line parser.
 FetchContent_Declare(
   cli11
-  GIT_REPOSITORY git@github.com:CLIUtils/CLI11.git
+  GIT_REPOSITORY https://github.com/CLIUtils/CLI11.git
   GIT_TAG v1.8.0
   GIT_SHALLOW TRUE)
 FetchContent_MakeAvailable(cli11)
@@ -11,7 +11,7 @@ FetchContent_MakeAvailable(cli11)
 # Rang library for colored command line output.
 FetchContent_Declare(
   rang
-  GIT_REPOSITORY git@github.com:agauniyal/rang.git
+  GIT_REPOSITORY https://github.com/agauniyal/rang.git
   GIT_TAG v3.1.0
   GIT_SHALLOW TRUE)
 FetchContent_MakeAvailable(rang)

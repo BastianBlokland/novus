@@ -1,5 +1,6 @@
 #pragma once
 #include "internal/executor_registry.hpp"
+#include <condition_variable>
 #include <thread>
 #include <vector>
 
