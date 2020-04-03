@@ -23,7 +23,7 @@ Note this is intended as an academic exercise and not meant for production proje
 
 ## Requirements
 
-* Modern C++ compiler (Tested with `gcc 7` and `clang 9.0.0`).
+* Modern C++ compiler (Tested with `gcc 7`, `clang 9.0.0` and `apple clang 11`).
 * CMake (At least version `3.15`).
 
 ## Testing
