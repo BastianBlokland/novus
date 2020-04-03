@@ -11,7 +11,7 @@
 namespace frontend::internal {
 
 class ImportSources final : public parse::OptionalNodeVisitor {
-  using Path = typename filesystem::path;
+  using Path = filesystem::path;
 
 public:
   ImportSources() = delete;

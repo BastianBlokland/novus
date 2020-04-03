@@ -13,7 +13,7 @@ public:
   ~FuncTemplateTable()                                = default;
 
   auto operator=(const FuncTemplateTable& rhs) -> FuncTemplateTable& = delete;
-  auto operator=(FuncTemplateTable&& rhs) noexcept -> FuncTemplateTable& = delete;
+  auto operator=(FuncTemplateTable&& rhs) noexcept -> FuncTemplateTable& = default;
 
   auto hasFunc(const std::string& name) -> bool;
 

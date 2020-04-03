@@ -255,7 +255,7 @@ auto generateUserTypeEquality(novasm::Assembler* asmb, const prog::Program& prog
 
   // Gather all types to generate equality functions for.
   for (auto fItr = prog.beginFuncDecls(); fItr != prog.endFuncDecls(); ++fItr) {
-    using fk  = typename prog::sym::FuncKind;
+    using fk  = prog::sym::FuncKind;
     auto kind = fItr->second.getKind();
     if (kind == fk::CheckEqUserType || kind == fk::CheckNEqUserType) {
       addTypeAndNestedTypes(prog, &types, *fItr->second.getInput().begin());

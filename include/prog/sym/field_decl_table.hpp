@@ -8,7 +8,7 @@ namespace prog::sym {
 
 class FieldDeclTable final {
 public:
-  using Iterator = typename std::vector<FieldDecl>::const_iterator;
+  using Iterator = std::vector<FieldDecl>::const_iterator;
 
   FieldDeclTable()                              = default;
   FieldDeclTable(const FieldDeclTable& rhs)     = default;

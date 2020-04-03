@@ -9,7 +9,7 @@ namespace prog::sym {
 
 class ConstDeclTable final {
 public:
-  using Iterator = typename std::vector<ConstDecl>::const_iterator;
+  using Iterator = std::vector<ConstDecl>::const_iterator;
 
   ConstDeclTable()                              = default;
   ConstDeclTable(const ConstDeclTable& rhs)     = default;

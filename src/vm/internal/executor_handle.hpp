@@ -65,6 +65,10 @@ public:
     case RequestType::None:
       return false;
     }
+
+    // Unreachable as long as valid request types are used.
+    assert(false);
+    return false;
   }
 
   inline auto requestAbort() noexcept -> bool {
