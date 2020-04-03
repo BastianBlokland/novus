@@ -8,8 +8,8 @@
 
 namespace prog {
 
-using OvFlags   = typename sym::OverloadFlags;
-using OvOptions = typename sym::OverloadOptions;
+using OvFlags   = sym::OverloadFlags;
+using OvOptions = sym::OverloadOptions;
 
 class Program;
 
@@ -35,11 +35,11 @@ class Program final {
   friend auto internal::getFuncDefTable(Program* prog) -> sym::FuncDefTable&;
 
 public:
-  using TypeDeclIterator = typename sym::TypeDeclTable::Iterator;
-  using FuncDeclIterator = typename sym::FuncDeclTable::Iterator;
-  using TypeDefIterator  = typename sym::TypeDefTable::Iterator;
-  using FuncDefIterator  = typename sym::FuncDefTable::Iterator;
-  using ExecStmtIterator = typename std::vector<sym::ExecStmt>::const_iterator;
+  using TypeDeclIterator = sym::TypeDeclTable::Iterator;
+  using FuncDeclIterator = sym::FuncDeclTable::Iterator;
+  using TypeDefIterator  = sym::TypeDefTable::Iterator;
+  using FuncDefIterator  = sym::FuncDefTable::Iterator;
+  using ExecStmtIterator = std::vector<sym::ExecStmt>::const_iterator;
 
   Program();
   Program(const Program& rhs)     = delete;

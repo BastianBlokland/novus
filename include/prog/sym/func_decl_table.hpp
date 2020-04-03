@@ -18,8 +18,8 @@ namespace sym {
 
 class FuncDeclTable final {
 public:
-  using Iterator = typename std::map<FuncId, FuncDecl>::const_iterator;
-  using Id       = typename prog::sym::FuncId;
+  using Iterator = std::map<FuncId, FuncDecl>::const_iterator;
+  using Id       = prog::sym::FuncId;
 
   FuncDeclTable()                             = default;
   FuncDeclTable(const FuncDeclTable& rhs)     = delete;

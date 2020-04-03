@@ -18,8 +18,8 @@ class Source final {
   friend auto operator<<(std::ostream& out, const Source& rhs) -> std::ostream&;
 
 public:
-  using Path     = typename filesystem::path;
-  using Iterator = typename std::vector<parse::NodePtr>::const_iterator;
+  using Path     = filesystem::path;
+  using Iterator = std::vector<parse::NodePtr>::const_iterator;
 
   Source()                      = delete;
   Source(const Source& rhs)     = delete;

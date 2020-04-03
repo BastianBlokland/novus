@@ -19,7 +19,7 @@ if(MSVC)
   message("Setting msvc compiler flags")
   set(CMAKE_CXX_FLAGS "/std:c++17")
 else()
-  set(CXX_FLAGS_SHARED "-std=c++17 -Werror -Wall -Wextra")
+  set(CXX_FLAGS_SHARED "-std=c++17 -Werror -Wall -Wextra -fno-strict-aliasing")
   set(CMAKE_CXX_FLAGS_DEBUG "-O1 -g -fno-omit-frame-pointer ${CXX_FLAGS_SHARED}")
   set(CMAKE_CXX_FLAGS_RELEASE "-O3 -DNDEBUG ${CXX_FLAGS_SHARED}")
 

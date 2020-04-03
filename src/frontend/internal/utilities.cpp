@@ -358,10 +358,11 @@ auto getFuncClosure(
     -> prog::expr::NodePtr {
   const auto funcDecl = ctx->getProg()->getFuncDecl(func);
 
-  const auto nonBoundArgsCount = funcDecl.getInput().getCount() - boundArgs.size();
-  if (nonBoundArgsCount < 0) {
+  const auto funcInputCnt = funcDecl.getInput().getCount();
+  if (boundArgs.size() > funcInputCnt) {
     throw std::logic_error{"More arguments are bound then there are inputs to the function"};
   }
+  const auto nonBoundArgsCount = funcDecl.getInput().getCount() - boundArgs.size();
 
   // Find the input type of the delegate, the bound arguments are not part of the delegate type as
   // they are provided by the closure.

@@ -10,7 +10,7 @@ namespace prog::sym {
 
 class FuncDefTable final {
 public:
-  using Iterator = typename std::set<FuncId>::const_iterator;
+  using Iterator = std::set<FuncId>::const_iterator;
 
   FuncDefTable()                            = default;
   FuncDefTable(const FuncDefTable& rhs)     = delete;

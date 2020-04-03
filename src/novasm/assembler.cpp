@@ -363,6 +363,7 @@ auto Assembler::writeUInt64(uint64_t val) -> void {
 }
 
 auto Assembler::writeFloat(float val) -> void {
+  // Interpret the raw float bytes.
   writeUInt32(reinterpret_cast<uint32_t&>(val)); // NOLINT: Reinterpret cast
 }
 

@@ -34,7 +34,8 @@ inline auto getString(FILE* file) -> std::string {
   result.resize(size);
 
   std::rewind(file);
-  std::fread(&result[0], 1, size, file);
+  const auto readAmt = std::fread(&result[0], 1, size, file);
+  REQUIRE(static_cast<long>(readAmt) == size);
   return result;
 }
 

@@ -30,8 +30,8 @@ Program::Program() :
     m_char{m_typeDecls.registerType(sym::TypeKind::Char, "char")},
     m_stream{m_typeDecls.registerType(sym::TypeKind::Stream, "stream")} {
 
-  using Fk = typename prog::sym::FuncKind;
-  using Op = typename prog::Operator;
+  using Fk = prog::sym::FuncKind;
+  using Op = prog::Operator;
 
   // Register build-in unary int operators.
   m_funcDecls.registerFunc(
@@ -478,7 +478,7 @@ auto Program::defineUnion(sym::TypeId id, std::vector<sym::TypeId> types) -> voi
 }
 
 auto Program::defineEnum(sym::TypeId id, std::unordered_map<std::string, int32_t> entries) -> void {
-  using fk = typename sym::FuncKind;
+  using fk = sym::FuncKind;
 
   const auto& name = m_typeDecls[id].getName();
 

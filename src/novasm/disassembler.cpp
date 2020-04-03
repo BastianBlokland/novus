@@ -89,8 +89,8 @@ static auto getLabels(const dasm::InstructionLabels& instrLabels, uint32_t ipOff
 auto disassembleInstructions(const Assembly& assembly, const dasm::InstructionLabels& instrLabels)
     -> std::vector<dasm::Instruction> {
 
-  using Instr = typename dasm::Instruction;
-  using Arg   = typename dasm::InstructionArg;
+  using Instr = dasm::Instruction;
+  using Arg   = dasm::InstructionArg;
 
   auto result = std::vector<dasm::Instruction>{};
 

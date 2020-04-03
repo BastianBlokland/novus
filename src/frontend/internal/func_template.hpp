@@ -13,9 +13,9 @@ class FuncTemplate final {
   friend class FuncTemplateTable;
 
 public:
-  FuncTemplate(const FuncTemplate& rhs)     = delete;
-  FuncTemplate(FuncTemplate&& rhs) noexcept = default;
-  ~FuncTemplate()                           = default;
+  FuncTemplate(const FuncTemplate& rhs) = delete;
+  FuncTemplate(FuncTemplate&& rhs)      = default;
+  ~FuncTemplate()                       = default;
 
   auto operator=(const FuncTemplate& rhs) -> FuncTemplate& = delete;
   auto operator=(FuncTemplate&& rhs) noexcept -> FuncTemplate& = default;
