@@ -22,12 +22,13 @@ else()
   set(CXX_FLAGS_SHARED "-std=c++17 -Werror -Wall -Wextra -fno-strict-aliasing")
   set(CMAKE_CXX_FLAGS_DEBUG "-O1 -g -fno-omit-frame-pointer ${CXX_FLAGS_SHARED}")
   set(CMAKE_CXX_FLAGS_RELEASE "-O3 -DNDEBUG ${CXX_FLAGS_SHARED}")
+endif()
 
-  # Some platforms requiring linking to the filesystem library explicitly.
-  find_library(STDCXXFS_LIB stdc++fs)
-  if(STDCXXFS_LIB)
-    link_libraries(stdc++fs)
-  endif()
+# Older version of libstdc++ require linking against the <experimental/filesystem> library directly.
+# TODO: Investigate if there is a better way to handle this.
+if(UNIX AND NOT APPLE)
+  message("Add linking to stdc++fs")
+  link_libraries(stdc++fs)
 endif()
 
 # Find the threads library.
