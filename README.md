@@ -1,6 +1,6 @@
 # Novus
 
-![Build](https://github.com/BastianBlokland/novus/workflows/build-test/badge.svg)
+![build-test](https://github.com/BastianBlokland/novus/workflows/build-test/badge.svg)
 ![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)
 
 **-Work in progress-**

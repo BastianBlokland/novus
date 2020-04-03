@@ -1,4 +1,4 @@
-name: Build - Test
+name: build-test
 
 on: [push]
 
@@ -26,7 +26,7 @@ jobs:
     steps:
     - uses: actions/checkout@v1
 
-    - name: Install
+    - name: install
       run: |
         readonly dist=${{matrix.config.dist}}
         echo "Add llvm ppa";                        sudo apt-add-repository \
@@ -35,18 +35,18 @@ jobs:
         echo "clang-9 --version:";                  clang-9 --version
         echo "clang-tidy-9 --version:";             clang-tidy-9 --version
 
-    - name: Configure
+    - name: configure
       run: cmake -B build -DCMAKE_BUILD_TYPE=$BUILD_TYPE
 
-    - name: Build
+    - name: build
       working-directory: build
       run: make -j$(nproc)
 
-    - name: Test
+    - name: test
       working-directory: build
       run: make test -j$(nproc)
 
-    - name: Archive
+    - name: archive
       uses: actions/upload-artifact@v1
       with:
         name: ${{matrix.config.image}}-${{matrix.config.arch}}
