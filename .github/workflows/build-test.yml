@@ -19,7 +19,7 @@ jobs:
             dist: "xenial",
             cc: "gcc-7",
             cxx: "g++-7"
-          },
+          }
         - {
             image: ubuntu-16.04,
             arch: x86_64,
