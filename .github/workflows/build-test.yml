@@ -7,7 +7,7 @@ env:
 
 jobs:
   build:
-    name: ${{matrix.config.image}}-${{matrix.config.arch}}-${{matrix.config.cc}}
+    name: ${{matrix.config.image}}-${{matrix.config.arch}}-${{matrix.config.compiler}}
     runs-on: ${{matrix.config.image}}
     strategy:
       fail-fast: false
@@ -16,16 +16,28 @@ jobs:
         - {
             image: ubuntu-16.04,
             arch: x86_64,
-            dist: "xenial",
-            cc: "gcc-7",
-            cxx: "g++-7"
+            os: ubuntu,
+            dist: xenial,
+            compiler: gcc7,
+            cc: gcc-7,
+            cxx: g++-7
           }
         - {
             image: ubuntu-16.04,
             arch: x86_64,
-            dist: "xenial",
-            cc: "clang-9",
-            cxx: "clang++-9"
+            os: ubuntu,
+            dist: xenial,
+            compiler: clang9,
+            cc: clang-9,
+            cxx: clang++-9
+          }
+        - {
+            image: macos-10.15,
+            arch: x86_64,
+            os: macos,
+            compiler: appleclang,
+            cc: clang,
+            cxx: clang++
           }
     env:
       CC: ${{matrix.config.cc}}
@@ -33,20 +45,29 @@ jobs:
     steps:
     - uses: actions/checkout@v1
 
-    - name: install
+    - name: install-ubuntu
+      if: matrix.config.os == 'ubuntu'
       run: |
         readonly dist=${{matrix.config.dist}}
-        echo "Add llvm ppa";             sudo apt-add-repository \
+        echo "Add llvm ppa";              sudo apt-add-repository \
           "deb http://apt.llvm.org/${dist}/ llvm-toolchain-${dist}-9 main"
-        echo "Installing clang-tidy-9";  sudo apt install clang-tidy-9
-        echo "clang-tidy-9 --version:";  clang-tidy-9 --version
+        echo "Installing clang-tidy-9";   sudo apt install clang-tidy-9
+        echo "clang-tidy-9 --version:";   clang-tidy-9 --version
+
+    - name: install-macos
+      if: matrix.config.os == 'macos'
+      run: |
+        readonly llvm9Path="$(brew --prefix llvm@9)"
+        echo "Symlinking clang-tidy from '${llvm9Path}' to '/usr/local/bin'"
+        ln -s "${llvm9Path}/bin/clang-tidy" "/usr/local/bin/clang-tidy-9"
+        echo "clang-tidy-9 --version:"; clang-tidy-9 --version
 
     - name: configure
       run: cmake -B build -DCMAKE_BUILD_TYPE=$BUILD_TYPE
 
     - name: build
       working-directory: build
-      run: make -j$(./scripts/nproc.sh)
+      run: make -j$(../scripts/nproc.sh)
 
     - name: test
       working-directory: build
@@ -55,5 +76,5 @@ jobs:
     - name: archive
       uses: actions/upload-artifact@v1
       with:
-        name: ${{matrix.config.image}}-${{matrix.config.arch}}-${{matrix.config.cc}}
+        name: ${{matrix.config.image}}-${{matrix.config.arch}}-${{matrix.config.compiler}}
         path: bin
