@@ -1,7 +1,7 @@
 # Novus
 
-![build-test](https://github.com/BastianBlokland/novus/workflows/build-test/badge.svg)
-![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)
+[![build-test](https://img.shields.io/github/workflow/status/bastianblokland/novus/build-test/master)](https://github.com/BastianBlokland/novus/actions?query=workflow%3Abuild-test)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
 **-Work in progress-**
 
@@ -15,7 +15,7 @@ type-safe, no global state, single-assignment only, fully immutable and no conce
 
 The language is designed to run on a custom stack-based vm. The vm is simple with fairly low-level
 instructions. Vm is responsible for executing instructions, memory allocation, memory cleanup
-(garbage collector is in the works) and providing a platform abstraction. Vm has very little
+(mark-sweep garbage collector) and providing a platform abstraction. Vm has very little
 knowledge about types or functions so there is no runtime type introspection, instead the language
 focusses on making it easier to generate code at compile time (through function and type templates).
 
@@ -23,13 +23,13 @@ Note this is intended as an academic exercise and not meant for production proje
 
 ## Requirements
 
-* Modern C++ compiler (Tested with `clang 9.0.0`).
+* Modern C++ compiler (Tested with `gcc 7` and `clang 9.0.0`).
 * CMake (At least version `3.15`).
 
 ## Testing
 
 * Run CMake: `cmake -B build -DCMAKE_BUILD_TYPE=Debug`.
-* Run CTest: `(cd build & ctest)`.
+* Run CTest: `(cd build && ctest)`.
 * Alternatively the root MakeFile has the utility: `make test`.
 
 ## Building
