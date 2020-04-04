@@ -18,6 +18,7 @@ FetchContent_MakeAvailable(rang)
 
 # Evaluator.
 add_executable(nove nove/main.cpp)
+target_compile_features(nove PUBLIC cxx_std_17)
 if(MSVC)
   target_compile_options(nove PUBLIC /EHsc)
 else()
@@ -31,6 +32,7 @@ target_link_libraries(nove PRIVATE opt)
 
 # Lexer diagnostic tool.
 add_executable(novdiag-lex novdiag-lex/main.cpp)
+target_compile_features(novdiag-lex PUBLIC cxx_std_17)
 if(MSVC)
   target_compile_options(novdiag-lex PUBLIC /EHsc)
 else()
@@ -42,6 +44,7 @@ target_link_libraries(novdiag-lex PRIVATE lex)
 
 # Parser diagnostic tool.
 add_executable(novdiag-parse novdiag-parse/main.cpp)
+target_compile_features(novdiag-parse PUBLIC cxx_std_17)
 if(MSVC)
   target_compile_options(novdiag-parse PUBLIC /EHsc)
 else()
@@ -53,6 +56,7 @@ target_link_libraries(novdiag-parse PRIVATE parse)
 
 # Program diagnostic tool.
 add_executable(novdiag-prog novdiag-prog/main.cpp)
+target_compile_features(novdiag-prog PUBLIC cxx_std_17)
 if(MSVC)
   target_compile_options(novdiag-prog PUBLIC /EHsc)
 else()
@@ -65,6 +69,7 @@ target_link_libraries(novdiag-prog PRIVATE opt)
 
 # Assembly diagnostic tool.
 add_executable(novdiag-asm novdiag-asm/main.cpp)
+target_compile_features(novdiag-asm PUBLIC cxx_std_17)
 if(MSVC)
   target_compile_options(novdiag-asm PUBLIC /EHsc)
 else()
