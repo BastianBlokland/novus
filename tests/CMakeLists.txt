@@ -122,11 +122,10 @@ add_executable(novtests
   vm/string_check_test.cpp
   vm/string_op_test.cpp
   vm/struct_op_test.cpp)
-target_compile_features(novtests PRIVATE cxx_std_17)
 if(MSVC)
-  target_compile_options(novtests PRIVATE /EHsc)
+  target_compile_options(novtests PUBLIC /EHsc)
 else()
-  target_compile_options(novtests PRIVATE -fexceptions)
+  target_compile_options(novtests PUBLIC -fexceptions)
 endif()
 target_link_libraries(novtests PRIVATE Catch2::Catch2)
 target_link_libraries(novtests PRIVATE lex)
