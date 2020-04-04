@@ -3,8 +3,6 @@
 #include "rang.hpp"
 #include <chrono>
 
-namespace lexdiag {
-
 using Clock    = std::chrono::high_resolution_clock;
 using Duration = std::chrono::duration<double>;
 
@@ -107,10 +105,8 @@ auto operator<<(std::ostream& out, const Duration& rhs) -> std::ostream& {
   return out;
 }
 
-} // namespace lexdiag
-
 auto main(int argc, char** argv) -> int {
-  auto app = CLI::App{"Lexer diagnostic tool"};
+  auto app = CLI::App{"Novus lexer diagnostic tool"};
   app.require_subcommand(1);
 
   auto colorMode   = rang::control::Auto;
@@ -126,7 +122,7 @@ auto main(int argc, char** argv) -> int {
   auto analyzeCmd = app.add_subcommand("analyze", "Lex the provided characters")->callback([&]() {
     rang::setControlMode(colorMode);
 
-    lexdiag::run(charsInput.begin(), charsInput.end(), printOutput);
+    run(charsInput.begin(), charsInput.end(), printOutput);
   });
   analyzeCmd->add_option("input", charsInput, "Input characters")->required();
   analyzeCmd->add_flag("!--no-output", printOutput, "Skip printing the tokens");
@@ -138,8 +134,7 @@ auto main(int argc, char** argv) -> int {
         rang::setControlMode(colorMode);
 
         std::ifstream fs{filePath};
-        lexdiag::run(
-            std::istreambuf_iterator<char>{fs}, std::istreambuf_iterator<char>{}, printOutput);
+        run(std::istreambuf_iterator<char>{fs}, std::istreambuf_iterator<char>{}, printOutput);
       });
   analyzeFileCmd->add_option("file", filePath, "Path to file")
       ->check(CLI::ExistingFile)

@@ -10,8 +10,8 @@ FetchContent_MakeAvailable(catch2)
 list(APPEND CMAKE_MODULE_PATH ${catch2_SOURCE_DIR}/contrib)
 include(Catch)
 
-# 'tests' executable.
-add_executable(tests
+# 'novtests' executable.
+add_executable(novtests
   main.cpp
 
   backend/assembly_output.cpp
@@ -122,20 +122,20 @@ add_executable(tests
   vm/string_check_test.cpp
   vm/string_op_test.cpp
   vm/struct_op_test.cpp)
-target_compile_features(tests PRIVATE cxx_std_17)
+target_compile_features(novtests PRIVATE cxx_std_17)
 if(MSVC)
-  target_compile_options(tests PRIVATE /EHsc)
+  target_compile_options(novtests PRIVATE /EHsc)
 else()
-  target_compile_options(tests PRIVATE -fexceptions)
+  target_compile_options(novtests PRIVATE -fexceptions)
 endif()
-target_link_libraries(tests PRIVATE Catch2::Catch2)
-target_link_libraries(tests PRIVATE lex)
-target_link_libraries(tests PRIVATE parse)
-target_link_libraries(tests PRIVATE frontend)
-target_link_libraries(tests PRIVATE backend)
-target_link_libraries(tests PRIVATE prog)
-target_link_libraries(tests PRIVATE opt)
-target_link_libraries(tests PRIVATE vm)
+target_link_libraries(novtests PRIVATE Catch2::Catch2)
+target_link_libraries(novtests PRIVATE lex)
+target_link_libraries(novtests PRIVATE parse)
+target_link_libraries(novtests PRIVATE frontend)
+target_link_libraries(novtests PRIVATE backend)
+target_link_libraries(novtests PRIVATE prog)
+target_link_libraries(novtests PRIVATE opt)
+target_link_libraries(novtests PRIVATE vm)
 
-# Register tests to CTest.
-catch_discover_tests(tests)
+# Register novtests to CTest.
+catch_discover_tests(novtests)

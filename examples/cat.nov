@@ -1,0 +1,20 @@
+import "std/console.nov"
+import "std/list.nov"
+import "std/file.nov"
+import "std/env.nov"
+
+act main(List{Path} files)
+  out         = consoleOpen(ConsoleKind.StdOut);
+  writeFiles  = (
+    impure lambda (List{Path} remFiles)
+      f = remFiles.front();
+      if f is None    -> true
+      if f as Path p  ->
+        fs = fileOpen(p, FileMode.Open);
+          if fs.streamCheckValid()  -> copy(fs, out); self(remFiles.pop())
+          else                      -> printErr("Couldn't open file: " + f); fail(); false
+  );
+  writeFiles(files)
+
+main(getEnvArgs().map(lambda (string s) Path(s)))
+

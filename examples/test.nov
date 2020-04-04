@@ -1,0 +1,3 @@
+import "std/console.nov"
+
+print(pow(10, 5) - 1)

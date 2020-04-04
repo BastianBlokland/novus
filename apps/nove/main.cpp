@@ -11,8 +11,6 @@
 #include <fstream>
 #include <system_error>
 
-namespace eval {
-
 template <typename InputItr>
 auto run(
     const std::string& inputId,
@@ -44,8 +42,6 @@ auto run(
   return 1;
 }
 
-} // namespace eval
-
 auto getSearchPaths(char** argv) noexcept {
   auto result = std::vector<filesystem::path>{};
 
@@ -57,7 +53,8 @@ auto getSearchPaths(char** argv) noexcept {
 
 auto main(int argc, char** argv) noexcept -> int {
   if (argc <= 1) {
-    std::cerr << rang::fg::red << "Evaluator - Please provide input characters or input file\n"
+    std::cerr << rang::fg::red
+              << "Novus evaluator - Please provide input characters or input file\n"
               << rang::style::reset;
     return 1;
   }
@@ -69,7 +66,7 @@ auto main(int argc, char** argv) noexcept -> int {
   auto fs   = std::ifstream{path};
   if (fs.good()) {
     auto absInputPath = filesystem::absolute(path);
-    return eval::run(
+    return run(
         path.filename(),
         filesystem::canonical(absInputPath),
         getSearchPaths(argv),
@@ -78,6 +75,6 @@ auto main(int argc, char** argv) noexcept -> int {
         vmEnvArgsCount,
         vnEnvArgs);
   }
-  return eval::run<char*>(
+  return run<char*>(
       "inline", std::nullopt, getSearchPaths(argv), argv[1], nullptr, vmEnvArgsCount, vnEnvArgs);
 }
