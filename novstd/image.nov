@@ -1,0 +1,66 @@
+import "std/math.nov"
+import "std/text.nov"
+
+// -- Types
+
+struct Color = float r, float g, float b, float a
+
+// -- Color presets
+
+fun red()     Color(1.0, 0.0, 0.0, 1.0)
+fun green()   Color(0.0, 1.0, 0.0, 1.0)
+fun blue()    Color(0.0, 0.0, 1.0, 1.0)
+fun yellow()  Color(1.0, 1.0, 0.0, 1.0)
+fun white()   Color(1.0, 1.0, 1.0, 1.0)
+fun black()   Color(0.0, 0.0, 0.0, 1.0)
+fun clear()   Color(0.0, 0.0, 0.0, 0.0)
+
+// -- Functions
+
+fun lerp(Color x, Color y, float t)
+  Color(
+    lerp(x.r, y.r, t),
+    lerp(x.g, y.g, t),
+    lerp(x.b, y.b, t),
+    lerp(x.a, y.a, t))
+
+// -- Conversions
+
+fun string(Color c)
+  "(" + c.r.string() + ',' + c.g.string() + ',' + c.g.string() + ',' + c.a.string() + ')'
+
+// -- Tests
+
+assert(
+  red().string() == "(1,0,0,1)" &&
+  clear().string() == "(0,0,0,0)")
+
+// -- Truevision TGA
+// https://en.wikipedia.org/wiki/Truevision_TGA
+// Support writing 24 or 32 bit uncompressed tga files.
+
+fun makeTgaHeader(int width, int height, bool rle, int pixelDepth)
+  string(char(0), 2) +
+  char(rle ? 10 : 2) +
+  string(char(0), 9) +
+  char(width) + char(width >> 8) +
+  char(height) + char(height >> 8) +
+  char(pixelDepth) +
+  char(0b10_0000)
+
+act writeTga(stream output, int width, int height, bool alpha, function{int, int, Color} getCol)
+  writePixels = (impure lambda (int x, int y)
+      if y == 0 -> true
+      if x == 0 -> self(width, --y)
+      else      ->
+        c = getCol(x - 1, y - 1);
+        if
+          output.streamWrite(char(c.b * 255)) &&
+          output.streamWrite(char(c.g * 255)) &&
+          output.streamWrite(char(c.r * 255)) &&
+          (!alpha || output.streamWrite(char(c.a * 255)))
+              -> self(--x, y)
+        else  -> false
+  );
+  output.streamWrite(makeTgaHeader(width, height, false, alpha ? 32 : 24));
+  writePixels(width, height)
