@@ -2,11 +2,11 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "eval",
+      "name": "nove",
       "preLaunchTask": "build.debug",
       "type": "lldb",
       "request": "launch",
-      "program": "${workspaceFolder}/bin/eval",
+      "program": "${workspaceFolder}/bin/nove",
       "args": [
         "assert(1 + 1 == 2)"
       ],
@@ -15,25 +15,11 @@
       "stopOnEntry": false
     },
     {
-      "name": "lexdiag",
+      "name": "novdiag-lex",
       "preLaunchTask": "build.debug",
       "type": "lldb",
       "request": "launch",
-      "program": "${workspaceFolder}/bin/lexdiag",
-      "args": [
-        "analyze",
-        "assert(1 + 1 == 2)"
-      ],
-      "cwd": "${workspaceFolder}",
-      "terminal": "integrated",
-      "stopOnEntry": false
-    },
-    {
-      "name": "parsediag",
-      "preLaunchTask": "build.debug",
-      "type": "lldb",
-      "request": "launch",
-      "program": "${workspaceFolder}/bin/parsediag",
+      "program": "${workspaceFolder}/bin/novdiag-lex",
       "args": [
         "analyze",
         "assert(1 + 1 == 2)"
@@ -43,11 +29,11 @@
       "stopOnEntry": false
     },
     {
-      "name": "progdiag",
+      "name": "novdiag-parse",
       "preLaunchTask": "build.debug",
       "type": "lldb",
       "request": "launch",
-      "program": "${workspaceFolder}/bin/progdiag",
+      "program": "${workspaceFolder}/bin/novdiag-parse",
       "args": [
         "analyze",
         "assert(1 + 1 == 2)"
@@ -57,11 +43,11 @@
       "stopOnEntry": false
     },
     {
-      "name": "asmdiag",
+      "name": "novdiag-prog",
       "preLaunchTask": "build.debug",
       "type": "lldb",
       "request": "launch",
-      "program": "${workspaceFolder}/bin/asmdiag",
+      "program": "${workspaceFolder}/bin/novdiag-prog",
       "args": [
         "analyze",
         "assert(1 + 1 == 2)"
@@ -71,11 +57,25 @@
       "stopOnEntry": false
     },
     {
-      "name": "tests",
+      "name": "novdiag-asm",
       "preLaunchTask": "build.debug",
       "type": "lldb",
       "request": "launch",
-      "program": "${workspaceFolder}/bin/tests",
+      "program": "${workspaceFolder}/bin/novdiag-asm",
+      "args": [
+        "analyze",
+        "assert(1 + 1 == 2)"
+      ],
+      "cwd": "${workspaceFolder}",
+      "terminal": "integrated",
+      "stopOnEntry": false
+    },
+    {
+      "name": "novtests",
+      "preLaunchTask": "build.debug",
+      "type": "lldb",
+      "request": "launch",
+      "program": "${workspaceFolder}/bin/novtests",
       "cwd": "${workspaceFolder}",
       "terminal": "integrated",
       "stopOnEntry": false

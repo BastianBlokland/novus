@@ -6,7 +6,7 @@ function(configure_novstd_file file)
   configure_file(${srcFile} ${tgtFile} COPYONLY)
 
   # Add a test that evaluates the file.
-  add_test(test_novstd_${file} ${EXECUTABLE_OUTPUT_PATH}/eval ${tgtFile})
+  add_test(test_novstd_${file} ${EXECUTABLE_OUTPUT_PATH}/nove ${tgtFile})
 endfunction(configure_novstd_file)
 
 # Standard nov library.
@@ -26,5 +26,5 @@ configure_novstd_file(stream)
 configure_novstd_file(text)
 configure_novstd_file(time)
 
-# Add a dependency on the 'eval' executable to be able to test the nov files.
-add_dependencies(tests eval)
+# Add a dependency on the 'nove' executable to be able to test the nov files.
+add_dependencies(novtests nove)

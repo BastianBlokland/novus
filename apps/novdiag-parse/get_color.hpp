@@ -2,8 +2,6 @@
 #include "parse/node_visitor.hpp"
 #include "rang.hpp"
 
-namespace parsediag {
-
 class GetExprColor final : public parse::NodeVisitor {
 public:
   [[nodiscard]] auto getFgColor() const noexcept -> rang::fg { return m_fg; }
@@ -134,5 +132,3 @@ private:
   rang::fg m_fg{};
   rang::bg m_bg{};
 };
-
-} // namespace parsediag

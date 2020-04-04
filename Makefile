@@ -33,6 +33,6 @@ clean:
 # Requires 'inotify-tools' to be installed.
 .PHONY: watch.nov
 watch.nov:
-	./scripts/watch_nov.sh . ./bin/eval
+	./scripts/watch_nov.sh . ./bin/nove
 
 .SILENT:

@@ -6,8 +6,6 @@
 #include "rang.hpp"
 #include <chrono>
 
-namespace parsediag {
-
 using Clock    = std::chrono::high_resolution_clock;
 using Duration = std::chrono::duration<double>;
 
@@ -93,10 +91,8 @@ auto operator<<(std::ostream& out, const Duration& rhs) -> std::ostream& {
   return out;
 }
 
-} // namespace parsediag
-
 auto main(int argc, char** argv) -> int {
-  auto app = CLI::App{"Parser diagnostic tool"};
+  auto app = CLI::App{"Novus parser diagnostic tool"};
   app.require_subcommand(1);
 
   auto colorMode   = rang::control::Auto;
@@ -112,7 +108,7 @@ auto main(int argc, char** argv) -> int {
   auto analyzeCmd = app.add_subcommand("analyze", "Parse the provided characters")->callback([&]() {
     rang::setControlMode(colorMode);
 
-    parsediag::run(charsInput.begin(), charsInput.end(), printOutput);
+    run(charsInput.begin(), charsInput.end(), printOutput);
   });
   analyzeCmd->add_option("input", charsInput, "Input characters")->required();
   analyzeCmd->add_flag("!--no-output", printOutput, "Skip printing the nodes");
@@ -124,8 +120,7 @@ auto main(int argc, char** argv) -> int {
         rang::setControlMode(colorMode);
 
         std::ifstream fs{filePath};
-        parsediag::run(
-            std::istreambuf_iterator<char>{fs}, std::istreambuf_iterator<char>{}, printOutput);
+        run(std::istreambuf_iterator<char>{fs}, std::istreambuf_iterator<char>{}, printOutput);
       });
   analyzeFileCmd->add_option("file", filePath, "Path to file")
       ->check(CLI::ExistingFile)

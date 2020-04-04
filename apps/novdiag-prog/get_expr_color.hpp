@@ -2,8 +2,6 @@
 #include "prog/expr/node_visitor.hpp"
 #include "rang.hpp"
 
-namespace progdiag {
-
 class GetExprColor final : public prog::expr::NodeVisitor {
 public:
   [[nodiscard]] auto getFgColor() const noexcept -> rang::fg { return m_fg; }
@@ -75,5 +73,3 @@ public:
 private:
   rang::fg m_fg{};
 };
-
-} // namespace progdiag

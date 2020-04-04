@@ -8,8 +8,6 @@
 #include "rang.hpp"
 #include <chrono>
 
-namespace progdiag {
-
 using Clock    = std::chrono::high_resolution_clock;
 using Duration = std::chrono::duration<double>;
 
@@ -297,8 +295,6 @@ auto operator<<(std::ostream& out, const Duration& rhs) -> std::ostream& {
   return out;
 }
 
-} // namespace progdiag
-
 auto getSearchPaths(char** argv) {
   auto result = std::vector<filesystem::path>{};
 
@@ -310,7 +306,7 @@ auto getSearchPaths(char** argv) {
 
 auto main(int argc, char** argv) -> int {
   auto exitcode = 0;
-  auto app      = CLI::App{"Program diagnostic tool"};
+  auto app      = CLI::App{"Novus program diagnostic tool"};
   app.require_subcommand(1);
 
   auto colorMode   = rang::control::Auto;
@@ -328,16 +324,15 @@ auto main(int argc, char** argv) -> int {
   auto analyzeCmd =
       app.add_subcommand("analyze", "Analyze the provided characters")->callback([&]() {
         rang::setControlMode(colorMode);
-
-        exitcode = progdiag::run(
-            "inline",
-            std::nullopt,
-            getSearchPaths(argv),
-            input.begin(),
-            input.end(),
-            printOutput,
-            treeshake,
-            optimize);
+        exitcode =
+            run("inline",
+                std::nullopt,
+                getSearchPaths(argv),
+                input.begin(),
+                input.end(),
+                printOutput,
+                treeshake,
+                optimize);
       });
   analyzeCmd->add_option("input", input, "Input characters to analyze")->required();
   analyzeCmd->add_flag("!--no-output", printOutput, "Skip printing the program");
@@ -352,15 +347,15 @@ auto main(int argc, char** argv) -> int {
 
         auto absFilePath = filesystem::absolute(filePath);
         std::ifstream fs{filePath};
-        exitcode = progdiag::run(
-            filePath.filename(),
-            absFilePath,
-            getSearchPaths(argv),
-            std::istreambuf_iterator<char>{fs},
-            std::istreambuf_iterator<char>{},
-            printOutput,
-            treeshake,
-            optimize);
+        exitcode =
+            run(filePath.filename(),
+                absFilePath,
+                getSearchPaths(argv),
+                std::istreambuf_iterator<char>{fs},
+                std::istreambuf_iterator<char>{},
+                printOutput,
+                treeshake,
+                optimize);
       });
   analyzeFileCmd->add_option("file", filePath, "Path to file to analyze")
       ->check(CLI::ExistingFile)

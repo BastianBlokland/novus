@@ -46,7 +46,7 @@ Alternatively you can create a task that automatically evaluates files in the ba
       "command": "${workspaceFolder}/scripts/watch_nov.sh",
       "args": [
         "${workspaceFolder}",
-        "${workspaceFolder}/bin/eval"
+        "${workspaceFolder}/bin/nove"
       ],
       "isBackground": true,
       "problemMatcher": "$novus",

@@ -12,8 +12,6 @@
 #include <chrono>
 #include <optional>
 
-namespace asmdiag {
-
 using Clock    = std::chrono::high_resolution_clock;
 using Duration = std::chrono::duration<double>;
 
@@ -143,8 +141,6 @@ auto operator<<(std::ostream& out, const Duration& rhs) -> std::ostream& {
   return out;
 }
 
-} // namespace asmdiag
-
 auto getSearchPaths(char** argv) {
   auto result = std::vector<filesystem::path>{};
 
@@ -156,7 +152,7 @@ auto getSearchPaths(char** argv) {
 
 auto main(int argc, char** argv) -> int {
   auto exitcode = 0;
-  auto app      = CLI::App{"Assembly diagnostic tool"};
+  auto app      = CLI::App{"Novus assembly diagnostic tool"};
   app.require_subcommand(1);
 
   auto colorMode   = rang::control::Auto;
@@ -173,15 +169,14 @@ auto main(int argc, char** argv) -> int {
   auto analyzeCmd = app.add_subcommand("analyze", "Analyze assembly for the provided characters")
                         ->callback([&]() {
                           rang::setControlMode(colorMode);
-
-                          exitcode = asmdiag::run(
-                              "inline",
-                              std::nullopt,
-                              getSearchPaths(argv),
-                              input.begin(),
-                              input.end(),
-                              printOutput,
-                              optimize);
+                          exitcode =
+                              run("inline",
+                                  std::nullopt,
+                                  getSearchPaths(argv),
+                                  input.begin(),
+                                  input.end(),
+                                  printOutput,
+                                  optimize);
                         });
   analyzeCmd->add_option("input", input, "Input characters")->required();
   analyzeCmd->add_flag("!--no-output", printOutput, "Skip printing the program");
@@ -195,14 +190,14 @@ auto main(int argc, char** argv) -> int {
 
         auto absFilePath = filesystem::absolute(filePath);
         std::ifstream fs{filePath};
-        exitcode = asmdiag::run(
-            filePath.filename(),
-            absFilePath,
-            getSearchPaths(argv),
-            std::istreambuf_iterator<char>{fs},
-            std::istreambuf_iterator<char>{},
-            printOutput,
-            optimize);
+        exitcode =
+            run(filePath.filename(),
+                absFilePath,
+                getSearchPaths(argv),
+                std::istreambuf_iterator<char>{fs},
+                std::istreambuf_iterator<char>{},
+                printOutput,
+                optimize);
       });
   analyzeFileCmd->add_option("file", filePath, "Path to file")
       ->check(CLI::ExistingFile)
