@@ -128,6 +128,12 @@ fun filter{T}(List{T} l, function{T, bool} pred)
 fun filterReverse{T}(List{T} l, function{T, bool} pred)
   l.fold(lambda (List{T} newList, T val) pred(val) ? val :: newList : newList)
 
+fun filterNone{T}(List{Option{T}} l)
+  l.foldRight(lambda (List{T} newList, Option{T} val) val as T t ? t :: newList : newList)
+
+fun filterNoneReverse{T}(List{Option{T}} l)
+  l.fold(lambda (List{T} newList, Option{T} val) val as T t ? t :: newList : newList)
+
 fun map{T, TResult}(List{T} l, function{T, TResult} func)
   l.foldRight(lambda (List{TResult} newList, T val) func(val) :: newList)
 
@@ -302,6 +308,14 @@ assert(
   l = 1 :: 2 :: 3 :: 4 :: 5 :: List{int}();
   l.filterReverse(lambda (int v) v > 2) == 5 :: 4 :: 3 :: List{int}() &&
   l.filterReverse(lambda (int v) v < 0) == List{int}())
+
+assert(
+  l = Option(1) :: Option{int}() :: Option(2) :: Option{int}() :: List{Option{int}}();
+  l.filterNone() == 1 :: 2 :: List{int}())
+
+assert(
+  l = Option(1) :: Option{int}() :: Option(2) :: Option{int}() :: List{Option{int}}();
+  l.filterNoneReverse() == 2 :: 1 :: List{int}())
 
 assert(
   l = 1 :: 2 :: 3 :: List{int}();

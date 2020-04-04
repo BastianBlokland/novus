@@ -14,6 +14,13 @@ fun string(int i, int minDigits)
 fun string(long i, int minDigits)
   i.string().padLeft(minDigits, '0')
 
+fun string(char c, int amount)
+  repeat = (lambda (string result, int cnt)
+    if cnt <= 0 -> result
+    else        -> self(result + c, --cnt)
+  );
+  repeat("", amount)
+
 // -- Functions
 
 fun isEmpty(string str)
@@ -151,6 +158,13 @@ fun join(List{char} l)
 assert(
   string(1, 2) == "01" &&
   string(42L, 5) == "00042")
+
+assert(
+  string('0', 1) == "0" &&
+  string('0', 2) == "00" &&
+  string('0', 3) == "000" &&
+  string('0', 0) == "" &&
+  string('0', -1) == "")
 
 assert("".isEmpty() && !" ".isEmpty())
 
