@@ -34,19 +34,20 @@ auto Allocator::allocStrLit(const std::string& lit) noexcept -> StringRef* {
     return nullptr;
   }
 
-  auto litSize = static_cast<unsigned int>(lit.size());
-  auto* refPtr = static_cast<StringRef*>(new (mem.first) StringRef{lit.data(), litSize});
+  auto litSize   = static_cast<unsigned int>(lit.size());
+  auto* charData = reinterpret_cast<const uint8_t*>(lit.data());
+  auto* refPtr   = static_cast<StringRef*>(new (mem.first) StringRef{charData, litSize});
   initRef(refPtr);
   return refPtr;
 }
 
-auto Allocator::allocStr(const unsigned int size) noexcept -> std::pair<StringRef*, char*> {
+auto Allocator::allocStr(const unsigned int size) noexcept -> std::pair<StringRef*, uint8_t*> {
   auto mem = alloc<StringRef>(size + 1); // +1 for null-terminator.
   if (unlikely(mem.first == nullptr)) {
     return {nullptr, nullptr};
   }
 
-  auto payloadPtr  = static_cast<char*>(mem.second);
+  auto payloadPtr  = static_cast<uint8_t*>(mem.second);
   payloadPtr[size] = '\0'; // Null-terminate the payload.
   auto* refPtr     = static_cast<StringRef*>(new (mem.first) StringRef{payloadPtr, size});
   initRef(refPtr);

@@ -27,7 +27,7 @@ public:
   auto operator=(Allocator&& rhs) -> Allocator& = delete;
 
   // Allocate a string, upon failure returns {nullptr, nullptr}.
-  [[nodiscard]] auto allocStr(unsigned int size) noexcept -> std::pair<StringRef*, char*>;
+  [[nodiscard]] auto allocStr(unsigned int size) noexcept -> std::pair<StringRef*, uint8_t*>;
 
   // Allocate a string from a literal, upon failure returns {nullptr}.
   [[nodiscard]] auto allocStrLit(const std::string& literal) noexcept -> StringRef*;

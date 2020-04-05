@@ -131,7 +131,7 @@ auto inline pcall(
   } break;
   case PCallCode::GetEnvVar: {
     auto* nameStrRef = getStringRef(POP());
-    auto* res        = std::getenv(nameStrRef->getDataPtr());
+    auto* res        = std::getenv(nameStrRef->getCharDataPtr());
     PUSH_REF(res == nullptr ? alloc->allocStr(0).first : toStringRef(alloc, res));
   } break;
 

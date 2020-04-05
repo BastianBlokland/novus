@@ -274,5 +274,24 @@ TEST_CASE("Execute string operations", "[vm]") {
         "input",
         "");
   }
+
+  SECTION("Unsigned chars") {
+    CHECK_EXPR(
+        [](novasm::Assembler* asmb) -> void {
+          asmb->addLoadLitInt(128);
+          asmb->addLoadLitInt(137);
+          asmb->addCombineChar();
+
+          asmb->addLoadLitInt(0);
+          asmb->addIndexString();
+
+          // Print as integer.
+          asmb->addConvIntString();
+          ADD_PRINT(asmb);
+        },
+        "input",
+        "128");
+  }
 }
+
 } // namespace vm

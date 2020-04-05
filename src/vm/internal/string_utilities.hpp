@@ -18,17 +18,18 @@ template <typename IntType>
   if (unlikely(strRefAlloc.first == nullptr)) {
     return nullptr;
   }
+  auto* charDataPtr = reinterpret_cast<char*>(strRefAlloc.second);
 
 #ifdef HAS_CHAR_CONV
-  const auto convRes    = std::to_chars(strRefAlloc.second, strRefAlloc.second + maxCharSize, val);
-  const auto resultSize = convRes.ptr - strRefAlloc.second;
-  strRefAlloc.second[resultSize] = '\0'; // Null-terminate.
-  strRefAlloc.first->updateSize(convRes.ptr - strRefAlloc.second);
+  const auto convRes      = std::to_chars(charDataPtr, charDataPtr + maxCharSize, val);
+  const auto resultSize   = convRes.ptr - charDataPtr;
+  charDataPtr[resultSize] = '\0'; // Null-terminate.
+  strRefAlloc.first->updateSize(convRes.ptr - charDataPtr);
 #else
   const auto format = std::is_same<IntType, int32_t>::value ? "%d" : "%ld";
   // NOLINTNEXTLINE: C-style var-arg func.
-  const auto size = std::snprintf(strRefAlloc.second, maxCharSize + 1, format, val);
-  assert(strRefAlloc.second[size] == '\0');
+  const auto size = std::snprintf(charDataPtr, maxCharSize + 1, format, val);
+  assert(charDataPtr[size] == '\0');
   strRefAlloc.first->updateSize(size);
 #endif
 
@@ -49,9 +50,10 @@ template <typename IntType>
   if (unlikely(strRefAlloc.first == nullptr)) {
     return nullptr;
   }
+  auto* charDataPtr = reinterpret_cast<char*>(strRefAlloc.second);
 
   // NOLINTNEXTLINE: C-style var-arg func.
-  const auto size = std::snprintf(strRefAlloc.second, charSize, "%.6g", val);
+  const auto size = std::snprintf(charDataPtr, charSize, "%.6g", val);
   strRefAlloc.first->updateSize(size);
 
   return strRefAlloc.first;
@@ -95,7 +97,7 @@ template <typename IntType>
       std::memcmp(a->getDataPtr(), b->getDataPtr(), a->getSize()) == 0;
 }
 
-[[nodiscard]] auto inline indexString(StringRef* target, int32_t idx) noexcept -> char {
+[[nodiscard]] auto inline indexString(StringRef* target, int32_t idx) noexcept -> uint8_t {
   if (idx < 0 || static_cast<unsigned>(idx) >= target->getSize()) {
     return 0;
   }
