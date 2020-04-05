@@ -1,9 +1,9 @@
 #include "internal/const_remapper.hpp"
 #include "internal/expr_matchers.hpp"
 #include "internal/prog_rewrite.hpp"
+#include "opt/opt.hpp"
 #include "prog/expr/nodes.hpp"
 #include "prog/expr/rewriter.hpp"
-#include "prog/program.hpp"
 #include "prog/sym/const_id_hasher.hpp"
 #include <sstream>
 #include <unordered_set>

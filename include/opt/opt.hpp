@@ -11,4 +11,6 @@ auto inlineCalls(const prog::Program& prog) -> prog::Program;
 
 auto eliminateConsts(const prog::Program& prog) -> prog::Program;
 
+auto precomputeLiterals(const prog::Program& prog) -> prog::Program;
+
 } // namespace opt

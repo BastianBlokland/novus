@@ -13,6 +13,9 @@ auto optimize(const prog::Program& prog) -> prog::Program {
   // Remove any functions that have become unused due to inlining.
   result = treeshake(result);
 
+  // Precompute computations where all arguments are literals.
+  result = precomputeLiterals(result);
+
   // Remove any constants where its cheaper just to 'inline' the expression.
   result = eliminateConsts(result);
 

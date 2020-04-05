@@ -209,6 +209,7 @@ add_library(opt STATIC
   opt/call_inline.cpp
   opt/const_elimination.cpp
   opt/optimize.cpp
+  opt/precompute_literals.cpp
   opt/treeshake.cpp)
 target_compile_features(opt PRIVATE cxx_std_17)
 if(MSVC)

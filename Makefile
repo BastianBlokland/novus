@@ -19,10 +19,8 @@ build.release:
 	make -j$(nproc)
 
 .PHONY: test
-test:
-	cmake -B build -DCMAKE_BUILD_TYPE=Debug && \
+test: build.debug
 	cd build && \
-	make tests -j$(nproc) && \
 	make test
 
 .PHONY: clean

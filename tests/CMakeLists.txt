@@ -77,6 +77,7 @@ add_executable(novtests
 
   opt/call_inline_test.cpp
   opt/const_elimination_test.cpp
+  opt/precompute_literals_test.cpp
   opt/treeshake_test.cpp
 
   parse/comment_test.cpp
