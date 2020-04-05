@@ -4,6 +4,7 @@
 #include "frontend/source.hpp"
 #include "get_expr_color.hpp"
 #include "input/char_escape.hpp"
+#include "input/search_paths.hpp"
 #include "opt/opt.hpp"
 #include "rang.hpp"
 #include <chrono>
@@ -295,19 +296,12 @@ auto operator<<(std::ostream& out, const Duration& rhs) -> std::ostream& {
   return out;
 }
 
-auto getSearchPaths(char** argv) {
-  auto result = std::vector<filesystem::path>{};
-
-  // Add the path to the binary.
-  result.push_back(filesystem::absolute(argv[0]).parent_path());
-
-  return result;
-}
-
 auto main(int argc, char** argv) -> int {
   auto exitcode = 0;
   auto app      = CLI::App{"Novus program diagnostic tool"};
   app.require_subcommand(1);
+
+  const auto searchPaths = input::getSearchPaths(argv);
 
   auto colorMode   = rang::control::Auto;
   auto printOutput = true;
@@ -327,7 +321,7 @@ auto main(int argc, char** argv) -> int {
         exitcode =
             run("inline",
                 std::nullopt,
-                getSearchPaths(argv),
+                searchPaths,
                 input.begin(),
                 input.end(),
                 printOutput,
@@ -350,7 +344,7 @@ auto main(int argc, char** argv) -> int {
         exitcode =
             run(filePath.filename(),
                 absFilePath,
-                getSearchPaths(argv),
+                searchPaths,
                 std::istreambuf_iterator<char>{fs},
                 std::istreambuf_iterator<char>{},
                 printOutput,

@@ -2,6 +2,7 @@
 #include "filesystem.hpp"
 #include "frontend/analysis.hpp"
 #include "frontend/source.hpp"
+#include "input/search_paths.hpp"
 #include "opt/opt.hpp"
 #include "rang.hpp"
 #include "vm/exec_state.hpp"
@@ -42,15 +43,6 @@ auto run(
   return 1;
 }
 
-auto getSearchPaths(char** argv) noexcept {
-  auto result = std::vector<filesystem::path>{};
-
-  // Add the path to the binary.
-  result.push_back(filesystem::absolute(argv[0]).parent_path());
-
-  return result;
-}
-
 auto main(int argc, char** argv) noexcept -> int {
   if (argc <= 1) {
     std::cerr << rang::fg::red
@@ -59,8 +51,9 @@ auto main(int argc, char** argv) noexcept -> int {
     return 1;
   }
 
-  auto vmEnvArgsCount = argc - 2; // 1 for program path and 1 for source.
-  auto** vnEnvArgs    = argv + 2;
+  const auto vmEnvArgsCount = argc - 2; // 1 for program path and 1 for source.
+  auto** const vnEnvArgs    = argv + 2;
+  const auto searchPaths    = input::getSearchPaths(argv);
 
   auto path = filesystem::path{argv[1]};
   auto fs   = std::ifstream{path};
@@ -69,12 +62,12 @@ auto main(int argc, char** argv) noexcept -> int {
     return run(
         path.filename(),
         filesystem::canonical(absInputPath),
-        getSearchPaths(argv),
+        searchPaths,
         std::istreambuf_iterator<char>{fs},
         std::istreambuf_iterator<char>{},
         vmEnvArgsCount,
         vnEnvArgs);
   }
   return run<char*>(
-      "inline", std::nullopt, getSearchPaths(argv), argv[1], nullptr, vmEnvArgsCount, vnEnvArgs);
+      "inline", std::nullopt, searchPaths, argv[1], nullptr, vmEnvArgsCount, vnEnvArgs);
 }

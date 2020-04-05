@@ -2,6 +2,7 @@
 add_library(input STATIC
   input/char_escape.cpp
   input/info.cpp
+  input/search_paths.cpp
   input/span.cpp
   input/textpos.cpp)
 target_compile_features(input PRIVATE cxx_std_17)
