@@ -24,11 +24,7 @@ auto LitStringNode::getChildCount() const -> unsigned int { return 0; }
 
 auto LitStringNode::getType() const noexcept -> sym::TypeId { return m_type; }
 
-auto LitStringNode::toString() const -> std::string {
-  auto oss = std::ostringstream{};
-  oss << '"' << m_val << '"';
-  return oss.str();
-}
+auto LitStringNode::toString() const -> std::string { return m_val; }
 
 auto LitStringNode::clone(Rewriter* /*rewriter*/) const -> std::unique_ptr<Node> {
   return std::unique_ptr<LitStringNode>{new LitStringNode{m_type, m_val}};

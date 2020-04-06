@@ -1,4 +1,7 @@
 #include "input/char_escape.hpp"
+#include <iomanip>
+#include <locale>
+#include <sstream>
 #include <unordered_map>
 
 namespace input {
@@ -63,6 +66,22 @@ auto unescape(const char c) -> std::optional<char> {
   }
 
   return std::nullopt;
+}
+
+auto escapeNonPrintingAsHex(const std::string& str) -> std::string {
+  std::stringstream ss;
+
+  for (auto it = str.begin(); it != str.end(); ++it) {
+    const auto c = *it;
+    if (std::isprint(c)) {
+      ss << c;
+    } else {
+      ss << '\\' << std::setfill('0') << std::setw(2) << std::hex
+         << (0xff & static_cast<unsigned int>(c));
+    }
+  }
+
+  return ss.str();
 }
 
 } // namespace input

@@ -5,8 +5,11 @@
 namespace input {
 
 auto escape(char c) -> std::optional<char>;
+
 auto escape(const std::string& str) -> std::string;
 
 auto unescape(char c) -> std::optional<char>;
+
+auto escapeNonPrintingAsHex(const std::string& str) -> std::string;
 
 } // namespace input

@@ -43,8 +43,9 @@ auto printExpr(
   auto exprCol = GetExprColor{};
   n.accept(&exprCol);
 
-  std::cout << rang::style::bold << exprCol.getFgColor() << input::escape(n.toString()) << ' '
-            << rang::fg::reset << rang::style::dim << n.getType() << rang::style::reset << '\n';
+  std::cout << rang::style::bold << exprCol.getFgColor()
+            << input::escapeNonPrintingAsHex(n.toString()) << ' ' << rang::fg::reset
+            << rang::style::dim << n.getType() << rang::style::reset << '\n';
 
   const auto childCount = n.getChildCount();
   for (auto i = 0U; i < childCount; ++i) {

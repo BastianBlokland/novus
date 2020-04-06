@@ -25,7 +25,7 @@ auto printStringLiterals(const novasm::Assembly& assembly) -> void {
   auto id = 0U;
   for (auto itr = assembly.beginLitStrings(); itr != assembly.endLitStrings(); ++itr, ++id) {
     std::cout << "  " << rang::style::bold << std::setw(idColWidth) << std::left << id
-              << rang::style::reset << " \"" << input::escape(*itr) << '"' << '\n';
+              << rang::style::reset << " \"" << input::escapeNonPrintingAsHex(*itr) << '"' << '\n';
   }
 }
 
