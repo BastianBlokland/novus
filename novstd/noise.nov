@@ -9,7 +9,7 @@ import "math.nov"
 //
 fun perlinNoise3d(float x, float y, float z)
   fade = (
-    lambda(float t)
+    lambda (float t)
       t * t * t * (t * (t * 6 - 15) + 10)
   );
   grad = (
@@ -27,13 +27,10 @@ fun perlinNoise3d(float x, float y, float z)
   b   = p[ix + 1] + iy;         ba  = p[b] + iz;              bb  = p[b + 1] + iz;
   lerp( lerp( lerp( grad(p[aa],     rx,      ry,      rz     ),
                     grad(p[ba],     rx - 1,  ry,      rz     ), u),
-
               lerp( grad(p[ab],     rx,      ry - 1,  rz     ),
                     grad(p[bb],     rx - 1,  ry - 1,  rz     ), u), v),
-
         lerp( lerp( grad(p[aa + 1], rx,      ry,      rz - 1 ),
                     grad(p[ba + 1], rx - 1,  ry,      rz - 1 ), u),
-
               lerp( grad(p[ab + 1], rx,      ry - 1,  rz - 1 ),
                     grad(p[bb + 1], rx - 1,  ry - 1,  rz - 1 ), u), v), w)
 

@@ -112,8 +112,8 @@ fun fold{T, TResult}(List{T} l, function{TResult, T, TResult} func)
   fold(l, func, TResult())
 
 fun fold{T, TResult}(List{T} l, function{TResult, T, TResult} func, TResult result)
-    if l as LNode{T} n -> fold(n.next, func, func(result, n.val))
-    if l is LEnd       -> result
+  if l as LNode{T} n -> fold(n.next, func, func(result, n.val))
+  if l is LEnd       -> result
 
 fun foldRight{T, TResult}(List{T} l, function{TResult, T, TResult} func)
   foldRight(l, func, TResult())
@@ -166,6 +166,28 @@ fun all{T}(List{T} l, function{T, bool} pred)
 fun none{T}(List{T} l, function{T, bool} pred)
   if l as LNode{T} n  -> !pred(n.val) && n.next.none(pred)
   if l is LEnd        -> true
+
+// -- Impure
+
+act fold{T, TResult}(List{T} l, action{TResult, T, TResult} a)
+  fold(l, a, TResult())
+
+act fold{T, TResult}(List{T} l, action{TResult, T, TResult} a, TResult result)
+  if l as LNode{T} n -> fold(n.next, a, a(result, n.val))
+  if l is LEnd       -> result
+
+act foldRight{T, TResult}(List{T} l, action{TResult, T, TResult} a)
+  foldRight(l, a, TResult())
+
+act foldRight{T, TResult}(List{T} l, action{TResult, T, TResult} a, TResult result)
+  if l as LNode{T} n -> a(foldRight(n.next, a, result), n.val)
+  if l is LEnd       -> result
+
+act map{T, TResult}(List{T} l, action{T, TResult} a)
+  l.foldRight(impure lambda (List{TResult} newList, T val) a(val) :: newList)
+
+act mapReverse{T, TResult}(List{T} l, action{T, TResult} a)
+  l.fold(impure lambda (List{TResult} newList, T val) a(val) :: newList)
 
 // -- Tests
 
@@ -370,3 +392,15 @@ assert(
 assert(
   l = 1 :: 2 :: 3 :: List{int}();
   l.none(lambda (int v) v < 0) && !l.none(lambda (int v) v > 1))
+
+// -- Impure Tests
+
+assert(
+  l = 1 :: 2 :: 3 :: List{int}();
+  l.map(impure lambda (int v) v * 2) == 2 :: 4 :: 6 :: List{int}() &&
+  l.map(impure lambda (int v) v.string()) == "1" :: "2" :: "3" :: List{string}())
+
+assert(
+  l = 1 :: 2 :: 3 :: List{int}();
+  l.mapReverse(impure lambda (int v) v * 2) == 6 :: 4 :: 2 :: List{int}() &&
+  l.mapReverse(impure lambda (int v) v.string()) == "3" :: "2" :: "1" :: List{string}())
