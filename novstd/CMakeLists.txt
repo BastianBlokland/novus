@@ -11,6 +11,7 @@ endfunction(configure_novstd_file)
 
 # Standard nov library.
 configure_novstd_file(ascii)
+configure_novstd_file(bench)
 configure_novstd_file(console)
 configure_novstd_file(either)
 configure_novstd_file(env)

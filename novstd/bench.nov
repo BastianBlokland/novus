@@ -32,7 +32,10 @@ act bench{T}(T invokable)
 
 act benchReport{T}(T invokable)
   res = bench(invokable);
-  print("Bench: " + res.avgDur + " (" + res.wallTime + " / " + res.iters + " itrs)")
+  print(
+    "Bench: " + res.avgDur +
+    " (" + res.avgDur.ns + " ns)" +
+    " (" + res.wallTime + " / " + res.iters + " itrs)")
 
 // -- Tests
 
