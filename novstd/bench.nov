@@ -1,0 +1,44 @@
+import "time.nov"
+import "math.nov"
+import "console.nov"
+
+// -- Types
+
+struct BenchResult =
+  Duration  avgDur,
+  Duration  wallTime,
+  int       iters
+
+// -- Actions
+
+act bench{T}(T invokable)
+  exec = ( impure lambda ()
+    ts = timestamp();
+    invokable();
+    timestamp() - ts
+  );
+  execMany = ( impure lambda (int itrsRem, Duration elapsed)
+    if itrsRem <= 0 -> elapsed
+    else            -> self(--itrsRem, elapsed + exec())
+  );
+  minIters  = 32;
+  minTime   = milliseconds(5);
+  warmup    = exec();
+  ballpark  = exec();
+  iters     = max(minIters, int(minTime / ballpark));
+  wallTime  = execMany(iters, Duration(0));
+  avgDur    = wallTime / iters;
+  BenchResult(avgDur, wallTime, iters)
+
+act benchReport{T}(T invokable)
+  res = bench(invokable);
+  print("Bench: " + res.avgDur + " (" + res.wallTime + " / " + res.iters + " itrs)")
+
+// -- Tests
+
+assert(
+  res = bench(lambda () 1 + 1);
+  res.wallTime > millisecond() &&
+  res.avgDur > nanosecond() &&
+  res.avgDur < res.wallTime &&
+  res.iters > 100)
