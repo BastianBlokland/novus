@@ -8,7 +8,8 @@ LitFloatNode::LitFloatNode(sym::TypeId type, float val) :
 
 auto LitFloatNode::operator==(const Node& rhs) const noexcept -> bool {
   const auto r = dynamic_cast<const LitFloatNode*>(&rhs);
-  return r != nullptr && m_val == r->m_val;
+  // Allow for tiny differences in float value due to inaccuracies.
+  return r != nullptr && std::abs(m_val - r->m_val) < .00001;
 }
 
 auto LitFloatNode::operator!=(const Node& rhs) const noexcept -> bool {

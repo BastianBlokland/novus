@@ -19,6 +19,12 @@ auto optimize(const prog::Program& prog) -> prog::Program {
   // Remove any constants where its cheaper just to 'inline' the expression.
   result = eliminateConsts(result);
 
+  // Run another precompute pass as the 'eliminateConsts' pass could have rewritten constants into
+  // literals.
+  // TODO: Consider if we need to keep running 'eliminateConsts' and 'precomputeLiterals' in a loop
+  // until no more rewrites are done.
+  result = precomputeLiterals(result);
+
   return result;
 }
 
