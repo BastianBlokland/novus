@@ -41,6 +41,7 @@ Program::Program() :
       *this, Fk::IncrementInt, getFuncName(Op::PlusPlus), sym::TypeSet{m_int}, m_int);
   m_funcDecls.registerFunc(
       *this, Fk::DecrementInt, getFuncName(Op::MinusMinus), sym::TypeSet{m_int}, m_int);
+  m_funcDecls.registerFunc(*this, Fk::InvInt, getFuncName(Op::Tilde), sym::TypeSet{m_int}, m_int);
 
   // Register build-in binary int operators.
   m_funcDecls.registerFunc(
