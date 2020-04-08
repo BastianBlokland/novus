@@ -128,6 +128,7 @@ namespace opt {
   case prog::sym::FuncKind::AddString:
   case prog::sym::FuncKind::LengthString:
   case prog::sym::FuncKind::IndexString:
+  case prog::sym::FuncKind::SliceString:
   case prog::sym::FuncKind::AppendChar:
   case prog::sym::FuncKind::CheckEqString:
   case prog::sym::FuncKind::CheckNEqString:
@@ -549,6 +550,25 @@ private:
         return prog::expr::litCharNode(m_prog, 0);
       }
       return prog::expr::litCharNode(m_prog, str[idx]);
+    }
+    case prog::sym::FuncKind::SliceString: {
+      assert(args.size() == 3);
+      auto str   = getString(*args[0]);
+      auto start = getInt(*args[1]);
+      auto end   = getInt(*args[2]);
+      if (start < 0) {
+        start = 0;
+      }
+      if (end < 0) {
+        end = 0;
+      }
+      if (static_cast<unsigned>(end) >= str.length()) {
+        end = str.length();
+      }
+      if (start > end) {
+        start = end;
+      }
+      return prog::expr::litStringNode(m_prog, str.substr(start, end - start));
     }
     case prog::sym::FuncKind::AppendChar: {
       assert(args.size() == 2);

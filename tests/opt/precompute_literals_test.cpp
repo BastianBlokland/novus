@@ -113,6 +113,15 @@ TEST_CASE("Precompute literals", "[opt]") {
     ASSERT_EXPR(precomputeLiterals, "\"hello\"[4]", litCharNode(prog, 'o'));
     ASSERT_EXPR(precomputeLiterals, "\"hello\"[-1]", litCharNode(prog, '\0'));
     ASSERT_EXPR(precomputeLiterals, "\"hello\"[5]", litCharNode(prog, '\0'));
+    ASSERT_EXPR(precomputeLiterals, "\"hello world\"[0, 5]", litStringNode(prog, "hello"));
+    ASSERT_EXPR(precomputeLiterals, "\"hello world\"[4, 4]", litStringNode(prog, ""));
+    ASSERT_EXPR(precomputeLiterals, "\"hello world\"[4, 5]", litStringNode(prog, "o"));
+    ASSERT_EXPR(precomputeLiterals, "\"hello world\"[-99, 5]", litStringNode(prog, "hello"));
+    ASSERT_EXPR(precomputeLiterals, "\"hello world\"[6, 11]", litStringNode(prog, "world"));
+    ASSERT_EXPR(precomputeLiterals, "\"hello world\"[6, 99]", litStringNode(prog, "world"));
+    ASSERT_EXPR(precomputeLiterals, "\"hello world\"[2, 9]", litStringNode(prog, "llo wor"));
+    ASSERT_EXPR(precomputeLiterals, "\"hello world\"[8, 3]", litStringNode(prog, ""));
+    ASSERT_EXPR(precomputeLiterals, "\"hello world\"[0, 11]", litStringNode(prog, "hello world"));
     ASSERT_EXPR(
         precomputeLiterals, "\"hello\" + ' ' + \"world\"", litStringNode(prog, "hello world"));
     ASSERT_EXPR(precomputeLiterals, "\"hello\" == \"world\"", litBoolNode(prog, false));
