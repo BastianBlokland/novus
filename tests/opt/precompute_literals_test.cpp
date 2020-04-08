@@ -109,6 +109,10 @@ TEST_CASE("Precompute literals", "[opt]") {
     ASSERT_EXPR(precomputeLiterals, "\"hello\" + \"world\"", litStringNode(prog, "helloworld"));
     ASSERT_EXPR(precomputeLiterals, "\"hello\" + ' '", litStringNode(prog, "hello "));
     ASSERT_EXPR(precomputeLiterals, "length(\"hello\")", litIntNode(prog, 5));
+    ASSERT_EXPR(precomputeLiterals, "\"hello\"[0]", litCharNode(prog, 'h'));
+    ASSERT_EXPR(precomputeLiterals, "\"hello\"[4]", litCharNode(prog, 'o'));
+    ASSERT_EXPR(precomputeLiterals, "\"hello\"[-1]", litCharNode(prog, '\0'));
+    ASSERT_EXPR(precomputeLiterals, "\"hello\"[5]", litCharNode(prog, '\0'));
     ASSERT_EXPR(
         precomputeLiterals, "\"hello\" + ' ' + \"world\"", litStringNode(prog, "hello world"));
     ASSERT_EXPR(precomputeLiterals, "\"hello\" == \"world\"", litBoolNode(prog, false));

@@ -127,6 +127,7 @@ namespace opt {
   // String
   case prog::sym::FuncKind::AddString:
   case prog::sym::FuncKind::LengthString:
+  case prog::sym::FuncKind::IndexString:
   case prog::sym::FuncKind::AppendChar:
   case prog::sym::FuncKind::CheckEqString:
   case prog::sym::FuncKind::CheckNEqString:
@@ -539,6 +540,15 @@ private:
     case prog::sym::FuncKind::LengthString: {
       assert(args.size() == 1);
       return prog::expr::litIntNode(m_prog, static_cast<int32_t>(getString(*args[0]).size()));
+    }
+    case prog::sym::FuncKind::IndexString: {
+      assert(args.size() == 2);
+      auto str = getString(*args[0]);
+      auto idx = getInt(*args[1]);
+      if (idx < 0 || static_cast<unsigned>(idx) >= str.length()) {
+        return prog::expr::litCharNode(m_prog, 0);
+      }
+      return prog::expr::litCharNode(m_prog, str[idx]);
     }
     case prog::sym::FuncKind::AppendChar: {
       assert(args.size() == 2);
