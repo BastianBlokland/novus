@@ -141,6 +141,20 @@ namespace opt {
   }
 }
 
+[[nodiscard]] auto
+rewriteAll(const std::vector<prog::expr::NodePtr>& nodes, prog::expr::Rewriter* rewriter)
+    -> std::vector<prog::expr::NodePtr> {
+
+  auto newNodes = std::vector<prog::expr::NodePtr>{};
+  newNodes.reserve(nodes.size());
+
+  for (auto itr = nodes.begin(); itr != nodes.end(); ++itr) {
+    newNodes.push_back(rewriter->rewrite(**itr));
+  }
+
+  return newNodes;
+}
+
 class PrecomputeRewriter final : public prog::expr::Rewriter {
 public:
   PrecomputeRewriter(
@@ -153,10 +167,11 @@ public:
   }
 
   auto rewrite(const prog::expr::Node& expr) -> prog::expr::NodePtr override {
-    /* Rewrite calls to intrinsic computations (for example integer negation) to which all
-    arguments are literals. */
+    switch (expr.getKind()) {
+    case prog::expr::NodeKind::Call: {
+      /* Rewrite calls to intrinsic computations (for example integer negation) to which all
+      arguments are literals. */
 
-    if (expr.getKind() == prog::expr::NodeKind::Call) {
       const auto* callExpr = expr.downcast<prog::expr::CallExprNode>();
       const auto funcId    = callExpr->getFunc();
       const auto funcKind  = m_prog.getFuncDecl(funcId).getKind();
@@ -166,22 +181,31 @@ public:
         /* Now we need to check if all the arguments are literals, to support precomputing nested
          * calls we rewrite the arguments first. */
 
-        auto newArgs = std::vector<prog::expr::NodePtr>{};
-        newArgs.reserve(expr.getChildCount());
-        for (auto i = 0U; i != expr.getChildCount(); ++i) {
-          newArgs.push_back(rewrite(expr[i]));
-        }
+        auto newArgs = rewriteAll(callExpr->getArgs(), this);
 
         // If all the arguments are literals we can precompute the value.
         if (std::all_of(newArgs.begin(), newArgs.end(), [](const prog::expr::NodePtr& n) {
               return internal::isLiteral(*n);
             })) {
-          return precompute(funcKind, std::move(newArgs));
+          return precomputeIntrinsic(funcKind, std::move(newArgs));
         } else {
           // if we cannot precompute then construct a copy of the call.
           return prog::expr::callExprNode(m_prog, funcId, std::move(newArgs));
         }
       }
+    } break;
+    case prog::expr::NodeKind::Switch: {
+      /* In switch statements the result can be precomputed if the conditions are literals. */
+
+      const auto* switchExpr = expr.downcast<prog::expr::SwitchExprNode>();
+
+      auto newConditions = rewriteAll(switchExpr->getConditions(), this);
+      auto newBranches   = rewriteAll(switchExpr->getBranches(), this);
+      return precomputeSwitch(std::move(newConditions), std::move(newBranches));
+
+    } break;
+    default:
+      break;
     }
 
     // If we don't want to rewrite this expression just make a clone.
@@ -193,7 +217,35 @@ private:
   prog::sym::FuncId m_funcId;
   prog::sym::ConstDeclTable* m_consts;
 
-  [[nodiscard]] auto precompute(prog::sym::FuncKind funcKind, std::vector<prog::expr::NodePtr> args)
+  [[nodiscard]] auto precomputeSwitch(
+      std::vector<prog::expr::NodePtr> conditions, std::vector<prog::expr::NodePtr> branches)
+      -> prog::expr::NodePtr {
+
+    for (auto i = 0U; i != conditions.size(); ++i) {
+      if (conditions[i]->getKind() == prog::expr::NodeKind::LitBool) {
+        // If the condition is 'true' then the switch can be eliminated by just returning the
+        // matching branch.
+        if (getBool(*conditions[i])) {
+          return std::move(branches[i]);
+        } else {
+          // If the condition is 'false', then we can remove both the condition and the branch.
+          conditions.erase(conditions.begin() + i);
+          branches.erase(branches.begin() + i);
+          --i;
+        }
+      }
+    }
+
+    // If no conditions are left then we can eliminate the switch we can return the 'else' branch.
+    if (conditions.empty()) {
+      assert(branches.size() == 1);
+      return std::move(branches[0]);
+    }
+    return prog::expr::switchExprNode(m_prog, std::move(conditions), std::move(branches));
+  }
+
+  [[nodiscard]] auto
+  precomputeIntrinsic(prog::sym::FuncKind funcKind, std::vector<prog::expr::NodePtr> args)
       -> prog::expr::NodePtr {
     switch (funcKind) {
 

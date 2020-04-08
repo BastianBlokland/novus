@@ -47,6 +47,8 @@ auto CallExprNode::clone(Rewriter* rewriter) const -> std::unique_ptr<Node> {
 
 auto CallExprNode::getFunc() const noexcept -> sym::FuncId { return m_func; }
 
+auto CallExprNode::getArgs() const noexcept -> const std::vector<NodePtr>& { return m_args; }
+
 auto CallExprNode::isFork() const noexcept -> bool { return m_fork; }
 
 auto CallExprNode::accept(NodeVisitor* visitor) const -> void { visitor->visit(*this); }

@@ -8,7 +8,54 @@ namespace opt {
 using namespace prog::expr;
 
 TEST_CASE("Precompute literals", "[opt]") {
-  SECTION("int") {
+  SECTION("switch expression") {
+    ASSERT_EXPR(
+        precomputeLiterals,
+        "if 1 > 2 -> 1 "
+        "else     -> 2",
+        litIntNode(prog, 2)); // NOLINT: Magic numbers
+    ASSERT_EXPR(
+        precomputeLiterals,
+        "if 2 > 1 -> 1 "
+        "else     -> 2",
+        litIntNode(prog, 1)); // NOLINT: Magic numbers
+    ASSERT_EXPR(
+        precomputeLiterals,
+        "if 1 < 1 -> 1 "
+        "if 2 > 3 -> 2 "
+        "else     -> 3",
+        litIntNode(prog, 3)); // NOLINT: Magic numbers
+    ASSERT_EXPR(
+        precomputeLiterals,
+        "if 1 < 1 -> 1 "
+        "if 4 > 3 -> 2 "
+        "else     -> 3",
+        litIntNode(prog, 2)); // NOLINT: Magic numbers
+
+    ASSERT_EXPR(
+        precomputeLiterals,
+        "if 1 < 1                 -> 1 "
+        "if getEnvArgCount() > 3  -> 2 "
+        "else                     -> 3",
+        ([&]() {
+          auto args = std::vector<prog::expr::NodePtr>{};
+          args.push_back(callExprNode(prog, GET_FUNC_ID(prog, "getEnvArgCount"), {}));
+          args.push_back(litIntNode(prog, 3));
+
+          auto conditions = std::vector<prog::expr::NodePtr>{};
+          conditions.push_back(prog::expr::callExprNode(
+              prog,
+              GET_OP_FUNC_ID(prog, prog::Operator::Gt, prog.getInt(), prog.getInt()),
+              std::move(args)));
+
+          auto branches = std::vector<prog::expr::NodePtr>{};
+          branches.push_back(litIntNode(prog, 2));
+          branches.push_back(litIntNode(prog, 3));
+          return switchExprNode(prog, std::move(conditions), std::move(branches));
+        })());
+  }
+
+  SECTION("int intrinsics") {
     ASSERT_EXPR(precomputeLiterals, "1 + 2", litIntNode(prog, 3));  // NOLINT: Magic numbers
     ASSERT_EXPR(precomputeLiterals, "1 - 2", litIntNode(prog, -1)); // NOLINT: Magic numbers
     ASSERT_EXPR(precomputeLiterals, "3 * 2", litIntNode(prog, 6));  // NOLINT: Magic numbers
@@ -37,7 +84,7 @@ TEST_CASE("Precompute literals", "[opt]") {
     ASSERT_EXPR(precomputeLiterals, "int()", litIntNode(prog, 0));
   }
 
-  SECTION("float") {
+  SECTION("float intrinsics") {
     ASSERT_EXPR(precomputeLiterals, "1.1 + 1.2", litFloatNode(prog, 2.3));  // NOLINT: Magic numbers
     ASSERT_EXPR(precomputeLiterals, "1.2 - 1.1", litFloatNode(prog, 0.1));  // NOLINT: Magic numbers
     ASSERT_EXPR(precomputeLiterals, "1.1 * 1.2", litFloatNode(prog, 1.32)); // NOLINT: Magic numbers
@@ -71,7 +118,7 @@ TEST_CASE("Precompute literals", "[opt]") {
     ASSERT_EXPR(precomputeLiterals, "float()", litFloatNode(prog, 0.0));
   }
 
-  SECTION("long") {
+  SECTION("long intrinsics") {
     ASSERT_EXPR(precomputeLiterals, "1L + 2L", litLongNode(prog, 3));  // NOLINT: Magic numbers
     ASSERT_EXPR(precomputeLiterals, "1L - 2L", litLongNode(prog, -1)); // NOLINT: Magic numbers
     ASSERT_EXPR(precomputeLiterals, "3L * 2L", litLongNode(prog, 6));  // NOLINT: Magic numbers
@@ -91,21 +138,21 @@ TEST_CASE("Precompute literals", "[opt]") {
     ASSERT_EXPR(precomputeLiterals, "long()", litLongNode(prog, 0));
   }
 
-  SECTION("bool") {
+  SECTION("bool intrinsics") {
     ASSERT_EXPR(precomputeLiterals, "!false", litBoolNode(prog, true));
     ASSERT_EXPR(precomputeLiterals, "false == true", litBoolNode(prog, false));
     ASSERT_EXPR(precomputeLiterals, "false != true", litBoolNode(prog, true));
     ASSERT_EXPR(precomputeLiterals, "bool()", litBoolNode(prog, false));
   }
 
-  SECTION("char") {
+  SECTION("char intrinsics") {
     ASSERT_EXPR(precomputeLiterals, "'h' + 'w'", litStringNode(prog, "hw"));
     ASSERT_EXPR(precomputeLiterals, "string('h')", litStringNode(prog, "h"));
     ASSERT_EXPR(precomputeLiterals, "++'a'", litCharNode(prog, 'b'));
     ASSERT_EXPR(precomputeLiterals, "--'b'", litCharNode(prog, 'a'));
   }
 
-  SECTION("string") {
+  SECTION("string intrinsics") {
     ASSERT_EXPR(precomputeLiterals, "\"hello\" + \"world\"", litStringNode(prog, "helloworld"));
     ASSERT_EXPR(precomputeLiterals, "\"hello\" + ' '", litStringNode(prog, "hello "));
     ASSERT_EXPR(precomputeLiterals, "length(\"hello\")", litIntNode(prog, 5));
