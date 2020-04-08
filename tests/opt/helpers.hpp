@@ -32,10 +32,10 @@ namespace opt {
 
 #define ASSERT_EXPR(OPT, INPUT, EXPECTED_EXPR)                                                     \
   {                                                                                                \
-    const auto& output = ANALYZE("fun testFunc() " INPUT);                                         \
+    const auto& output = ANALYZE("act test() " INPUT);                                             \
     REQUIRE(output.isSuccess());                                                                   \
     const auto prog = OPT(output.getProg());                                                       \
-    CHECK(GET_FUNC_DEF(prog, "testFunc").getExpr() == *(EXPECTED_EXPR));                           \
+    CHECK(GET_FUNC_DEF(prog, "test").getExpr() == *(EXPECTED_EXPR));                               \
   }
 
 } // namespace opt
