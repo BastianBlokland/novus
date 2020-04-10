@@ -17,6 +17,7 @@ auto optimize(const prog::Program& prog) -> prog::Program {
   // anymore.
   bool modified;
   do {
+    modified = false;
 
     // Remove any constants where its cheaper just to 'inline' the expression.
     result = eliminateConsts(result, modified);
