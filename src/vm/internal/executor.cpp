@@ -732,7 +732,7 @@ auto execute(
       PUSH_BOOL(success);
     } break;
     case OpCode::FutureBlock: {
-      // The the future but leave it on the stack, reason is gc could run while we are blocked.
+      // Get the future but leave it on the stack, reason is gc could run while we are blocked.
       auto* future = getFutureRef(PEEK());
 
       execHandle.setState(ExecState::Paused);
