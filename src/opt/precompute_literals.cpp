@@ -235,6 +235,24 @@ public:
 
     } break;
 
+    case prog::expr::NodeKind::Field: {
+      /* If we construct a struct and then immediately load a we can optimize away the struct
+       * creation. */
+
+      const auto* fieldExpr = expr.downcast<prog::expr::FieldExprNode>();
+      const auto fieldIndex = fieldExpr->getId().getNum();
+      const auto& loadExpr  = expr[0];
+
+      if (loadExpr.getKind() == prog::expr::NodeKind::Call) {
+        const auto* loadCallExpr = loadExpr.downcast<prog::expr::CallExprNode>();
+        const auto& loadFuncDecl = m_prog.getFuncDecl(loadCallExpr->getFunc());
+        if (loadFuncDecl.getKind() == prog::sym::FuncKind::MakeStruct) {
+          return rewrite(loadExpr[fieldIndex]);
+        }
+      }
+
+    } break;
+
     default:
       break;
     }
@@ -285,6 +303,7 @@ private:
   [[nodiscard]] auto
   precomputeIntrinsic(prog::sym::FuncKind funcKind, std::vector<prog::expr::NodePtr> args)
       -> prog::expr::NodePtr {
+
     switch (funcKind) {
 
     // Int
