@@ -1,3 +1,13 @@
+# Copy all nov standard library files to the output directory and register ctests to evalute them.
+# Also generate the 'std.nov' wrapper header that imports the entire standard library.
+
+set(stdHeader ${EXECUTABLE_OUTPUT_PATH}/std.nov)
+
+function(add_nov_test filePath)
+  get_filename_component(testName ${filePath} NAME)
+  add_test(test_novstd_${testName} ${EXECUTABLE_OUTPUT_PATH}/nove ${filePath})
+endfunction(add_nov_test)
+
 function(configure_novstd_file file)
   set(srcFile ${file}.nov)
   set(tgtFile ${EXECUTABLE_OUTPUT_PATH}/std/${file}.nov)
@@ -5,9 +15,15 @@ function(configure_novstd_file file)
   # Copy to output dir.
   configure_file(${srcFile} ${tgtFile} COPYONLY)
 
+  # Append an import to the 'std.nov' header.
+  file(APPEND ${stdHeader} "import \"std/${file}.nov\"\n")
+
   # Add a test that evaluates the file.
-  add_test(test_novstd_${file} ${EXECUTABLE_OUTPUT_PATH}/nove ${tgtFile})
+  add_nov_test(${tgtFile})
 endfunction(configure_novstd_file)
+
+# Create an empty 'std.nov' file in the output dir.
+file(WRITE ${stdHeader} "")
 
 # Standard nov library.
 configure_novstd_file(ascii)
@@ -28,6 +44,9 @@ configure_novstd_file(parse)
 configure_novstd_file(stream)
 configure_novstd_file(text)
 configure_novstd_file(time)
+
+# Register a test that evaluates the 'std.nov' header, usefull for detecting name conflics.
+add_nov_test(${stdHeader})
 
 # Add a dependency on the 'nove' executable to be able to test the nov files.
 add_dependencies(novtests nove)
