@@ -71,7 +71,7 @@ jobs:
 
     - name: test
       working-directory: build
-      run: make test
+      run: make CTEST_OUTPUT_ON_FAILURE=1 test
 
     - name: archive
       uses: actions/upload-artifact@v1
