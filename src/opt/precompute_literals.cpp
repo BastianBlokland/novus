@@ -35,7 +35,7 @@ namespace opt {
   return n.downcast<prog::expr::LitStringNode>()->getVal();
 }
 
-[[nodiscard]] static auto isSupported(prog::sym::FuncKind funcKind) -> bool {
+[[nodiscard]] static auto isSupportedIntrinsic(prog::sym::FuncKind funcKind) -> bool {
   switch (funcKind) {
   // Int
   case prog::sym::FuncKind::AddInt:
@@ -168,6 +168,7 @@ public:
 
   auto rewrite(const prog::expr::Node& expr) -> prog::expr::NodePtr override {
     switch (expr.getKind()) {
+
     case prog::expr::NodeKind::Call: {
       /* Rewrite calls to intrinsic computations (for example integer negation) to which all
       arguments are literals. */
@@ -176,8 +177,8 @@ public:
       const auto funcId    = callExpr->getFunc();
       const auto funcKind  = m_prog.getFuncDecl(funcId).getKind();
 
-      // Check if the call is a operation we support.
-      if (isSupported(funcKind)) {
+      // Check if the call is an intrinsic we support.
+      if (isSupportedIntrinsic(funcKind)) {
         /* Now we need to check if all the arguments are literals, to support precomputing nested
          * calls we rewrite the arguments first. */
 
@@ -192,8 +193,34 @@ public:
           // if we cannot precompute then construct a copy of the call.
           return prog::expr::callExprNode(m_prog, funcId, std::move(newArgs));
         }
+
+      } else if (funcKind == prog::sym::FuncKind::NoOp && expr.getChildCount() == 1) {
+        // Single argument 'NoOp' intrinsics are used as reinterpreting conversions, for supported
+        // combinations we can precompute the conversion.
+
+        auto newArg        = rewrite(expr[0]);
+        const auto dstType = callExpr->getType();
+
+        // For identity conversions we can just return the argument.
+        if (newArg->getType() == dstType) {
+          return newArg;
+        }
+
+        if (internal::isLiteral(*newArg)) {
+          // Try precomputing the conversion.
+          auto precomputed = maybePrecomputeReinterpretConv(*newArg, dstType);
+          if (precomputed != nullptr) {
+            return precomputed;
+          }
+        }
+
+        // if we cannot precompute then construct a copy of the call.
+        auto newArgs = std::vector<prog::expr::NodePtr>{};
+        newArgs.push_back(std::move(newArg));
+        return prog::expr::callExprNode(m_prog, funcId, std::move(newArgs));
       }
     } break;
+
     case prog::expr::NodeKind::Switch: {
       /* In switch statements the result can be precomputed if the conditions are literals. */
 
@@ -204,6 +231,7 @@ public:
       return precomputeSwitch(std::move(newConditions), std::move(newBranches));
 
     } break;
+
     default:
       break;
     }
@@ -644,6 +672,39 @@ private:
     default:
       throw std::logic_error{"Unsupported func-kind"};
     }
+  }
+
+  [[nodiscard]] auto
+  maybePrecomputeReinterpretConv(const prog::expr::Node& arg, prog::sym::TypeId dstType)
+      -> prog::expr::NodePtr {
+
+    assert(internal::isLiteral(arg));
+    auto srcTypeDecl = m_prog.getTypeDecl(arg.getType());
+
+    // Char to int.
+    if (srcTypeDecl.getKind() == prog::sym::TypeKind::Char && dstType == m_prog.getInt()) {
+      return prog::expr::litIntNode(m_prog, static_cast<int32_t>(getChar(arg)));
+    }
+
+    // Int as float.
+    if (srcTypeDecl.getKind() == prog::sym::TypeKind::Int && dstType == m_prog.getFloat()) {
+      auto src = getInt(arg);
+      return prog::expr::litFloatNode(m_prog, reinterpret_cast<float&>(src));
+    }
+
+    // Float as int.
+    if (srcTypeDecl.getKind() == prog::sym::TypeKind::Float && dstType == m_prog.getInt()) {
+      auto src = getFloat(arg);
+      return prog::expr::litIntNode(m_prog, reinterpret_cast<int&>(src));
+    }
+
+    // Enum to int.
+    if (srcTypeDecl.getKind() == prog::sym::TypeKind::Enum && dstType == m_prog.getInt()) {
+      const auto val = arg.downcast<prog::expr::LitEnumNode>()->getVal();
+      return prog::expr::litIntNode(m_prog, val);
+    }
+
+    return nullptr;
   }
 };
 

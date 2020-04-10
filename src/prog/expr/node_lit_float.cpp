@@ -1,4 +1,5 @@
 #include "prog/expr/node_lit_float.hpp"
+#include <cmath>
 #include <stdexcept>
 
 namespace prog::expr {
@@ -8,8 +9,16 @@ LitFloatNode::LitFloatNode(sym::TypeId type, float val) :
 
 auto LitFloatNode::operator==(const Node& rhs) const noexcept -> bool {
   const auto r = dynamic_cast<const LitFloatNode*>(&rhs);
+  if (r == nullptr) {
+    return false;
+  }
+
+  if (std::isnan(m_val) && std::isnan(r->m_val)) {
+    return true;
+  }
+
   // Allow for tiny differences in float value due to inaccuracies.
-  return r != nullptr && std::abs(m_val - r->m_val) < .00001;
+  return std::abs(m_val - r->m_val) < .00001;
 }
 
 auto LitFloatNode::operator!=(const Node& rhs) const noexcept -> bool {
@@ -24,7 +33,13 @@ auto LitFloatNode::getChildCount() const -> unsigned int { return 0; }
 
 auto LitFloatNode::getType() const noexcept -> sym::TypeId { return m_type; }
 
-auto LitFloatNode::toString() const -> std::string { return std::to_string(m_val); }
+auto LitFloatNode::toString() const -> std::string {
+  if (std::isnan(m_val)) {
+    // Note: some platforms choose to display -nan, so to be consistent we explicitly use 'nan'.
+    return std::string{"nan"};
+  }
+  return std::to_string(m_val);
+}
 
 auto LitFloatNode::clone(Rewriter* /*rewriter*/) const -> std::unique_ptr<Node> {
   return std::unique_ptr<LitFloatNode>{new LitFloatNode{m_type, m_val}};

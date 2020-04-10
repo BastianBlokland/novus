@@ -176,6 +176,44 @@ TEST_CASE("Precompute literals", "[opt]") {
     ASSERT_EXPR(precomputeLiterals, "\"hello\" != \"world\"", litBoolNode(prog, true));
     ASSERT_EXPR(precomputeLiterals, "string()", litStringNode(prog, ""));
   }
+
+  SECTION("identity conversions") {
+    ASSERT_EXPR(precomputeLiterals, "+42", litIntNode(prog, 42));       // NOLINT: Magic numbers
+    ASSERT_EXPR(precomputeLiterals, "+42.1", litFloatNode(prog, 42.1)); // NOLINT: Magic numbers
+    ASSERT_EXPR(precomputeLiterals, "+42L", litLongNode(prog, 42));     // NOLINT: Magic numbers
+
+    ASSERT_EXPR(precomputeLiterals, "int(42)", litIntNode(prog, 42)); // NOLINT: Magic numbers
+    ASSERT_EXPR(
+        precomputeLiterals, "float(42.1)", litFloatNode(prog, 42.1));    // NOLINT: Magic numbers
+    ASSERT_EXPR(precomputeLiterals, "long(42L)", litLongNode(prog, 42)); // NOLINT: Magic numbers
+    ASSERT_EXPR(precomputeLiterals, "bool(true)", litBoolNode(prog, true));
+    ASSERT_EXPR(precomputeLiterals, "string(\"hello\")", litStringNode(prog, "hello"));
+    ASSERT_EXPR(precomputeLiterals, "char('a')", litCharNode(prog, 'a'));
+  }
+
+  SECTION("reinterpret conversions") {
+    ASSERT_EXPR(precomputeLiterals, "int('a')", litIntNode(prog, 'a'));
+    ASSERT_EXPR(precomputeLiterals, "asFloat(0xFFA0_0000)", litFloatNode(prog, std::nanf("")));
+    ASSERT_EXPR(precomputeLiterals, "asInt(0.0)", litIntNode(prog, 0));
+    ASSERT_EXPR(
+        precomputeLiterals, "asInt(asFloat(42))", litIntNode(prog, 42)); // NOLINT: Magic numbers
+
+    {
+      const auto& output = ANALYZE("enum e = a : 42 "
+                                   "fun f() int(e.a)");
+      REQUIRE(output.isSuccess());
+      const auto prog = precomputeLiterals(output.getProg());
+      CHECK(GET_FUNC_DEF(prog, "f").getExpr() == *litIntNode(prog, 42)); // NOLINT: Magic numbers
+    }
+
+    {
+      const auto& output = ANALYZE("enum e = a : 42 "
+                                   "fun f() int(e.a)");
+      REQUIRE(output.isSuccess());
+      const auto prog = precomputeLiterals(output.getProg());
+      CHECK(GET_FUNC_DEF(prog, "f").getExpr() == *litIntNode(prog, 42)); // NOLINT: Magic numbers
+    }
+  }
 }
 
 } // namespace opt
