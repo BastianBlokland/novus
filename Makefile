@@ -21,7 +21,7 @@ build.release:
 .PHONY: test
 test: build.debug
 	cd build && \
-	make test
+	make CTEST_OUTPUT_ON_FAILURE=1 test
 
 .PHONY: clean
 clean:

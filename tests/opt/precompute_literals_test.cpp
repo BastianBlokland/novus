@@ -214,6 +214,14 @@ TEST_CASE("Precompute literals", "[opt]") {
       CHECK(GET_FUNC_DEF(prog, "f").getExpr() == *litIntNode(prog, 42)); // NOLINT: Magic numbers
     }
   }
+
+  SECTION("temporary structs") {
+    const auto& output = ANALYZE("struct s = int i "
+                                 "fun f() s(42).i");
+    REQUIRE(output.isSuccess());
+    const auto prog = precomputeLiterals(output.getProg());
+    CHECK(GET_FUNC_DEF(prog, "f").getExpr() == *litIntNode(prog, 42)); // NOLINT: Magic numbers
+  }
 }
 
 } // namespace opt
