@@ -11,8 +11,13 @@ using RewriterFactory = typename std::function<std::unique_ptr<expr::Rewriter>(
 
 auto copyType(const Program& from, Program* to, sym::TypeId id) -> bool;
 
+auto copyFunc(const Program& from, Program* to, sym::FuncId id) -> bool;
+
 auto copyFunc(
-    const Program& from, Program* to, sym::FuncId id, const RewriterFactory& rewriterFactory = {})
-    -> bool;
+    const Program& from,
+    Program* to,
+    sym::FuncId id,
+    bool& modified,
+    const RewriterFactory& rewriterFactory) -> bool;
 
 } // namespace prog

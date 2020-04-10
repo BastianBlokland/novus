@@ -25,9 +25,17 @@ auto copyType(const Program& from, Program* to, sym::TypeId id) -> bool {
   return true;
 }
 
+auto copyFunc(const Program& from, Program* to, sym::FuncId id) -> bool {
+  auto modified = false;
+  return copyFunc(from, to, id, modified, {});
+}
+
 auto copyFunc(
-    const Program& from, Program* to, sym::FuncId id, const RewriterFactory& rewriterFactory)
-    -> bool {
+    const Program& from,
+    Program* to,
+    sym::FuncId id,
+    bool& modified,
+    const RewriterFactory& rewriterFactory) -> bool {
 
   const auto& fromDecl = from.getFuncDecl(id);
 
@@ -56,6 +64,7 @@ auto copyFunc(
         rewriterFactory ? rewriterFactory(from, id, &consts) : std::unique_ptr<expr::Rewriter>{};
     auto newExpr =
         rewriter ? rewriter->rewrite(fromDef.getExpr()) : fromDef.getExpr().clone(nullptr);
+    modified = rewriter && rewriter->hasModified();
 
     toDefTable.registerFunc(toDeclTable, id, std::move(consts), std::move(newExpr));
   }

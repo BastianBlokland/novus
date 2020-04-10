@@ -6,22 +6,28 @@ ConstRemapper::ConstRemapper(
     const prog::Program& prog,
     const prog::sym::ConstDeclTable& consts,
     const ConstRemapTable& remapTable) :
-    m_prog{prog}, m_consts{consts}, m_remapTable{remapTable} {}
+    m_prog{prog}, m_consts{consts}, m_remapTable{remapTable}, m_modified{false} {}
 
 auto ConstRemapper::rewrite(const prog::expr::Node& expr) -> prog::expr::NodePtr {
 
   switch (expr.getKind()) {
   case prog::expr::NodeKind::Assign: {
     auto* assignExpr = expr.downcast<prog::expr::AssignExprNode>();
+
+    m_modified = true;
     return prog::expr::assignExprNode(
         m_consts, remap(assignExpr->getConst()), rewrite((*assignExpr)[0]));
   }
   case prog::expr::NodeKind::Const: {
     auto* constExpr = expr.downcast<prog::expr::ConstExprNode>();
+
+    m_modified = true;
     return prog::expr::constExprNode(m_consts, remap(constExpr->getId()));
   }
   case prog::expr::NodeKind::UnionGet: {
     auto* unionGetExpr = expr.downcast<prog::expr::UnionGetExprNode>();
+
+    m_modified = true;
     return prog::expr::unionGetExprNode(
         m_prog, rewrite((*unionGetExpr)[0]), m_consts, remap(unionGetExpr->getConst()));
   }

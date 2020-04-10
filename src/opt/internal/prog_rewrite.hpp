@@ -8,4 +8,8 @@ namespace opt::internal {
 auto rewrite(const prog::Program& prog, const prog::RewriterFactory& rewriterFactory)
     -> prog::Program;
 
+auto rewrite(
+    const prog::Program& prog, const prog::RewriterFactory& rewriterFactory, bool& modified)
+    -> prog::Program;
+
 } // namespace opt::internal

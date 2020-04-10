@@ -14,6 +14,7 @@ public:
   auto operator=(Rewriter&& rhs) noexcept -> Rewriter& = delete;
 
   [[nodiscard]] virtual auto rewrite(const Node& expr) -> NodePtr = 0;
+  [[nodiscard]] virtual auto hasModified() -> bool                = 0;
 };
 
 } // namespace prog::expr

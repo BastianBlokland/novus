@@ -20,10 +20,13 @@ public:
 
   auto rewrite(const prog::expr::Node& expr) -> prog::expr::NodePtr override;
 
+  auto hasModified() -> bool override { return m_modified; }
+
 private:
   const prog::Program& m_prog;
   const prog::sym::ConstDeclTable& m_consts;
   const ConstRemapTable& m_remapTable;
+  bool m_modified;
 
   [[nodiscard]] auto remap(prog::sym::ConstId constId) -> prog::sym::ConstId;
 };

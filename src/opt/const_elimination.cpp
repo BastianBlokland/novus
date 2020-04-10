@@ -22,7 +22,11 @@ public:
       prog::sym::FuncId funcId,
       prog::sym::ConstDeclTable* consts,
       ConstUsageMap usageMap) :
-      m_prog{prog}, m_funcId{funcId}, m_consts{consts}, m_constUsage{std::move(usageMap)} {
+      m_prog{prog},
+      m_funcId{funcId},
+      m_consts{consts},
+      m_constUsage{std::move(usageMap)},
+      m_modified{false} {
 
     if (m_consts == nullptr) {
       throw std::invalid_argument{"Consts table cannot be null"};
@@ -97,12 +101,15 @@ public:
     }
   }
 
+  auto hasModified() -> bool override { return m_modified; }
+
 private:
   const prog::Program& m_prog;
   prog::sym::FuncId m_funcId;
   prog::sym::ConstDeclTable* m_consts;
   ConstUsageMap m_constUsage;
   ConstReplaceMap m_replaceMap;
+  bool m_modified;
 
   [[nodiscard]] auto
   shouldBeEliminated(const prog::sym::ConstId id, const prog::expr::Node& assignExpr) -> bool {
@@ -132,10 +139,17 @@ private:
     // expression itself.
     assert(m_replaceMap.find(id) == m_replaceMap.end());
     m_replaceMap[id] = std::move(assignExpr);
+
+    m_modified = true;
   }
 };
 
 auto eliminateConsts(const prog::Program& prog) -> prog::Program {
+  auto modified = false;
+  return eliminateConsts(prog, modified);
+}
+
+auto eliminateConsts(const prog::Program& prog, bool& modified) -> prog::Program {
   return internal::rewrite(
       prog,
       [](const prog::Program& prog, prog::sym::FuncId funcId, prog::sym::ConstDeclTable* consts) {
@@ -148,7 +162,8 @@ auto eliminateConsts(const prog::Program& prog) -> prog::Program {
 
         return std::make_unique<ConstEliminatorRewriter>(
             prog, funcId, consts, std::move(constUsageMap));
-      });
+      },
+      modified);
 }
 
 } // namespace opt

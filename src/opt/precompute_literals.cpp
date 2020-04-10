@@ -159,7 +159,7 @@ class PrecomputeRewriter final : public prog::expr::Rewriter {
 public:
   PrecomputeRewriter(
       const prog::Program& prog, prog::sym::FuncId funcId, prog::sym::ConstDeclTable* consts) :
-      m_prog{prog}, m_funcId{funcId}, m_consts{consts} {
+      m_prog{prog}, m_funcId{funcId}, m_consts{consts}, m_modified{false} {
 
     if (m_consts == nullptr) {
       throw std::invalid_argument{"Consts table cannot be null"};
@@ -188,6 +188,7 @@ public:
         if (std::all_of(newArgs.begin(), newArgs.end(), [](const prog::expr::NodePtr& n) {
               return internal::isLiteral(*n);
             })) {
+          m_modified = true;
           return precomputeIntrinsic(funcKind, std::move(newArgs));
         } else {
           // if we cannot precompute then construct a copy of the call.
@@ -203,6 +204,7 @@ public:
 
         // For identity conversions we can just return the argument.
         if (newArg->getType() == dstType) {
+          m_modified = true;
           return newArg;
         }
 
@@ -210,6 +212,7 @@ public:
           // Try precomputing the conversion.
           auto precomputed = maybePrecomputeReinterpretConv(*newArg, dstType);
           if (precomputed != nullptr) {
+            m_modified = true;
             return precomputed;
           }
         }
@@ -240,10 +243,13 @@ public:
     return expr.clone(this);
   }
 
+  auto hasModified() -> bool override { return m_modified; }
+
 private:
   const prog::Program& m_prog;
   prog::sym::FuncId m_funcId;
   prog::sym::ConstDeclTable* m_consts;
+  bool m_modified;
 
   [[nodiscard]] auto precomputeSwitch(
       std::vector<prog::expr::NodePtr> conditions, std::vector<prog::expr::NodePtr> branches)
@@ -254,12 +260,16 @@ private:
         // If the condition is 'true' then the switch can be eliminated by just returning the
         // matching branch.
         if (getBool(*conditions[i])) {
+          m_modified = true;
           return std::move(branches[i]);
+
         } else {
           // If the condition is 'false', then we can remove both the condition and the branch.
           conditions.erase(conditions.begin() + i);
           branches.erase(branches.begin() + i);
           --i;
+
+          m_modified = true;
         }
       }
     }
@@ -709,11 +719,17 @@ private:
 };
 
 auto precomputeLiterals(const prog::Program& prog) -> prog::Program {
+  auto modified = false;
+  return precomputeLiterals(prog, modified);
+}
+
+auto precomputeLiterals(const prog::Program& prog, bool& modified) -> prog::Program {
   return internal::rewrite(
       prog,
       [](const prog::Program& prog, prog::sym::FuncId funcId, prog::sym::ConstDeclTable* consts) {
         return std::make_unique<PrecomputeRewriter>(prog, funcId, consts);
-      });
+      },
+      modified);
 }
 
 } // namespace opt

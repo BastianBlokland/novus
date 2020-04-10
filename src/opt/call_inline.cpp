@@ -14,7 +14,7 @@ class CallInlineRewriter final : public prog::expr::Rewriter {
 public:
   CallInlineRewriter(
       const prog::Program& prog, prog::sym::FuncId funcId, prog::sym::ConstDeclTable* consts) :
-      m_prog{prog}, m_funcId{funcId}, m_consts{consts} {
+      m_prog{prog}, m_funcId{funcId}, m_consts{consts}, m_modified{false} {
 
     if (m_consts == nullptr) {
       throw std::invalid_argument{"Consts table cannot be null"};
@@ -47,11 +47,14 @@ public:
     if (expr.getKind() == prog::expr::NodeKind::Call) {
       auto* callExpr = expr.downcast<prog::expr::CallExprNode>();
       if (isInlinable(callExpr)) {
+        m_modified = true;
         return inlineCall(callExpr);
       }
     }
     return expr.clone(this);
   }
+
+  auto hasModified() -> bool override { return m_modified; }
 
   auto inlineCall(const prog::expr::CallExprNode* callExpr) -> prog::expr::NodePtr {
     const auto& tgtFuncId  = callExpr->getFunc();
@@ -103,6 +106,7 @@ private:
   const prog::Program& m_prog;
   prog::sym::FuncId m_funcId;
   prog::sym::ConstDeclTable* m_consts;
+  bool m_modified;
 };
 
 auto inlineCalls(const prog::Program& prog) -> prog::Program {
