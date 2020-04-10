@@ -22,7 +22,7 @@ act bench{T}(T invokable)
     else            -> self(--itrsRem, elapsed + exec())
   );
   minIters  = 32;
-  minTime   = milliseconds(5);
+  minTime   = milliseconds(10);
   warmup    = exec();
   ballpark  = exec();
   iters     = max(minIters, int(minTime / ballpark));
