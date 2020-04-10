@@ -127,7 +127,37 @@ private:
 
     // If its used more often then check if the expression is very cheap, if so we should eliminate
     // it anyway.
-    return internal::isLiteral(assignExpr) || assignExpr.getKind() == prog::expr::NodeKind::Const;
+    return assignExpr.getKind() == prog::expr::NodeKind::Const || isCheapIntrinsic(assignExpr);
+  }
+
+  // Check if the given expression is very cheap (so we can afford removing the constant and just
+  // calling the expression multiple times), or is VERY likely that it will be optimized out by
+  // later optimization passes.
+  auto isCheapIntrinsic(const prog::expr::Node& expr) -> bool {
+
+    if (internal::isLiteral(expr)) {
+      return true;
+    }
+
+    if (expr.getKind() == prog::expr::NodeKind::Call) {
+      const auto* callExpr = expr.downcast<prog::expr::CallExprNode>();
+      const auto& args     = callExpr->getArgs();
+      const auto funcId    = callExpr->getFunc();
+      const auto& funcDecl = m_prog.getFuncDecl(funcId);
+
+      // For the intrinsic to be cheap all of its arguments also have to be cheap.
+      if (!std::all_of(args.begin(), args.end(), [this](const prog::expr::NodePtr& n) {
+            return isCheapIntrinsic(*n);
+          })) {
+        return false;
+      }
+
+      // Note: actions are never 'cheap' because they are impure so its actual cost is unknown, also
+      // moving actions around could change the program behaviour.
+      return !funcDecl.isAction() && funcDecl.getKind() != prog::sym::FuncKind::User;
+    }
+
+    return false;
   }
 
   auto eliminate(const prog::sym::ConstId id, prog::expr::NodePtr assignExpr) -> void {
