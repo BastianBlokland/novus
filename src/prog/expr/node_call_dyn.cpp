@@ -48,6 +48,8 @@ auto CallDynExprNode::clone(Rewriter* rewriter) const -> std::unique_ptr<Node> {
                           m_fork}};
 }
 
+auto CallDynExprNode::getArgs() const noexcept -> const std::vector<NodePtr>& { return m_args; }
+
 auto CallDynExprNode::isFork() const noexcept -> bool { return m_fork; }
 
 auto CallDynExprNode::accept(NodeVisitor* visitor) const -> void { visitor->visit(*this); }

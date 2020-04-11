@@ -224,6 +224,39 @@ public:
       }
     } break;
 
+    case prog::expr::NodeKind::CallDyn: {
+      /* When a dynamic call is made to either a function literal or a closure directly we can
+       * rewrite it to be just a static call. */
+
+      const auto* dynCallExpr = expr.downcast<prog::expr::CallDynExprNode>();
+      const auto& tgtExpr     = expr[0];
+
+      if (tgtExpr.getKind() == prog::expr::NodeKind::LitFunc) {
+
+        const auto* litFuncNode = tgtExpr.downcast<prog::expr::LitFuncNode>();
+        const auto funcId       = litFuncNode->getFunc();
+        auto newArgs            = rewriteAll(dynCallExpr->getArgs(), this);
+        return prog::expr::callExprNode(
+            m_prog, funcId, dynCallExpr->getType(), std::move(newArgs), dynCallExpr->isFork());
+
+      } else if (tgtExpr.getKind() == prog::expr::NodeKind::Closure) {
+
+        const auto* closureNode = tgtExpr.downcast<prog::expr::ClosureNode>();
+        const auto funcId       = closureNode->getFunc();
+
+        // Create the set of arguments for the static call, its a combination of both the dynamic
+        // call arguments and the bound arguments.
+        auto newArgs = rewriteAll(dynCallExpr->getArgs(), this);
+        for (const auto& arg : closureNode->getBoundArgs()) {
+          newArgs.push_back(rewrite(*arg));
+        }
+
+        return prog::expr::callExprNode(
+            m_prog, funcId, dynCallExpr->getType(), std::move(newArgs), dynCallExpr->isFork());
+      }
+
+    } break;
+
     case prog::expr::NodeKind::Switch: {
       /* In switch statements the result can be precomputed if the conditions are literals. */
 

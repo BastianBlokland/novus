@@ -25,6 +25,7 @@ public:
   [[nodiscard]] auto clone(Rewriter* rewriter) const -> std::unique_ptr<Node> override;
 
   [[nodiscard]] auto getFunc() const noexcept -> sym::FuncId;
+  [[nodiscard]] auto getBoundArgs() const noexcept -> const std::vector<NodePtr>&;
 
   auto accept(NodeVisitor* visitor) const -> void override;
 

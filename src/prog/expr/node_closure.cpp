@@ -42,6 +42,10 @@ auto ClosureNode::clone(Rewriter* rewriter) const -> std::unique_ptr<Node> {
 
 auto ClosureNode::getFunc() const noexcept -> sym::FuncId { return m_func; }
 
+auto ClosureNode::getBoundArgs() const noexcept -> const std::vector<NodePtr>& {
+  return m_boundArgs;
+}
+
 auto ClosureNode::accept(NodeVisitor* visitor) const -> void { visitor->visit(*this); }
 
 // Factories.

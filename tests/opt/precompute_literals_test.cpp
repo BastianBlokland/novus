@@ -222,6 +222,41 @@ TEST_CASE("Precompute literals", "[opt]") {
     const auto prog = precomputeLiterals(output.getProg());
     CHECK(GET_FUNC_DEF(prog, "f").getExpr() == *litIntNode(prog, 42)); // NOLINT: Magic numbers
   }
+
+  SECTION("dynamic call to func literal") {
+    const auto& output = ANALYZE("fun f1(int i) i * 42 "
+                                 "fun f2() (f1)(42)");
+    REQUIRE(output.isSuccess());
+    // Check that it originally is a dynamic call.
+    REQUIRE(
+        GET_FUNC_DEF(output.getProg(), "f2").getExpr().getKind() == prog::expr::NodeKind::CallDyn);
+
+    const auto prog = precomputeLiterals(output.getProg());
+
+    // Verify that it was optimized into a normal call.
+    auto args = std::vector<prog::expr::NodePtr>{};
+    args.push_back(litIntNode(prog, 42));
+    CHECK(
+        GET_FUNC_DEF(prog, "f2").getExpr() ==
+        *callExprNode(prog, GET_FUNC_ID(prog, "f1", GET_TYPE_ID(prog, "int")), std::move(args)));
+  }
+
+  SECTION("dynamic call to closure") {
+    const auto& output = ANALYZE("fun f(int x) (lambda (int y) x * y)(42)");
+    REQUIRE(output.isSuccess());
+    // Check that it originally is a dynamic call.
+    REQUIRE(
+        GET_FUNC_DEF(output.getProg(), "f", GET_TYPE_ID(output.getProg(), "int"))
+            .getExpr()
+            .getKind() == prog::expr::NodeKind::CallDyn);
+
+    const auto prog = precomputeLiterals(output.getProg());
+
+    // Verify that it was optimized into a normal call.
+    REQUIRE(
+        GET_FUNC_DEF(prog, "f", GET_TYPE_ID(prog, "int")).getExpr().getKind() ==
+        prog::expr::NodeKind::Call);
+  }
 }
 
 } // namespace opt
