@@ -13,7 +13,11 @@ public:
       novasm::Assembler* asmb,
       const prog::sym::ConstDeclTable& constTable,
       std::optional<prog::sym::FuncId> curFunc,
-      bool tail);
+      bool tail,
+      unsigned int requestedValues);
+
+  [[nodiscard]] auto getRequestedValues() -> unsigned int;
+  [[nodiscard]] auto getValuesProduced() -> unsigned int;
 
   auto visit(const prog::expr::AssignExprNode& n) -> void override;
   auto visit(const prog::expr::SwitchExprNode& n) -> void override;
@@ -42,10 +46,13 @@ private:
   const prog::sym::ConstDeclTable& m_constTable;
   std::optional<prog::sym::FuncId> m_curFunc;
   bool m_tail;
+  unsigned int m_requestedValues;
+  unsigned int m_valuesProduced;
 
   auto makeUnion(const prog::expr::CallExprNode& n) -> void;
 
-  auto genSubExpr(const prog::expr::Node& n, bool tail) -> void;
+  auto genSubExpr(const prog::expr::Node& n, bool tail, unsigned int requestedValues = 1)
+      -> unsigned int;
 };
 
 } // namespace backend::internal

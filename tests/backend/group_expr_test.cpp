@@ -9,10 +9,8 @@ TEST_CASE("Generating assembly for group expressions", "[backend]") {
     asmb->addStackAlloc(1);
 
     asmb->addLoadLitInt(42);
-    asmb->addDup();
     asmb->addStackStore(0);
 
-    asmb->addPop();
     asmb->addStackLoad(0);
   });
 

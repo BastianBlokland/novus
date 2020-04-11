@@ -9,10 +9,8 @@ TEST_CASE("Generate assembly for storing and loading constants", "[backend]") {
     asmb->addStackAlloc(1);
 
     asmb->addLoadLitInt(42);
-    asmb->addDup();
     asmb->addStackStore(0);
 
-    asmb->addPop();
     asmb->addStackLoad(0);
   });
 
@@ -23,10 +21,8 @@ TEST_CASE("Generate assembly for storing and loading constants", "[backend]") {
     asmb->addDup();
     asmb->addStackStore(0);
 
-    asmb->addDup();
     asmb->addStackStore(1);
 
-    asmb->addPop();
     asmb->addStackLoad(0);
   });
 
@@ -34,16 +30,10 @@ TEST_CASE("Generate assembly for storing and loading constants", "[backend]") {
     asmb->addStackAlloc(2);
 
     asmb->addLoadLitInt(42);
-    asmb->addDup();
     asmb->addStackStore(0);
 
-    asmb->addPop();
-
     asmb->addLoadLitInt(1337);
-    asmb->addDup();
     asmb->addStackStore(1);
-
-    asmb->addPop();
 
     asmb->addStackLoad(0);
     asmb->addStackLoad(1);
@@ -57,10 +47,8 @@ TEST_CASE("Generate assembly for storing and loading constants", "[backend]") {
     asmb->addDup();
     asmb->addStackStore(0);
 
-    asmb->addDup();
     asmb->addStackStore(1);
 
-    asmb->addPop();
     asmb->addStackLoad(0);
   });
 }

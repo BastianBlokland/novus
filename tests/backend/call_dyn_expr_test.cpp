@@ -21,9 +21,7 @@ TEST_CASE("Generate assembly for call dynamic expressions", "[backend]") {
           asmb->addStackAlloc(1);
 
           asmb->addLoadLitIp("test");
-          asmb->addDup();
           asmb->addStackStore(0);
-          asmb->addPop();
 
           asmb->addLoadLitInt(42);
           asmb->addLoadLitInt(1337);
@@ -51,9 +49,7 @@ TEST_CASE("Generate assembly for call dynamic expressions", "[backend]") {
           asmb->addStackAlloc(1);
 
           asmb->addLoadLitInt(1337);
-          asmb->addDup();
           asmb->addStackStore(0);
-          asmb->addPop();
 
           asmb->addStackLoad(0);
           asmb->addLoadLitIp("anon func");
@@ -83,9 +79,7 @@ TEST_CASE("Generate assembly for call dynamic expressions", "[backend]") {
           asmb->addStackAlloc(1);
 
           asmb->addLoadLitInt(1337);
-          asmb->addDup();
           asmb->addStackStore(0);
-          asmb->addPop();
 
           asmb->addLoadLitFloat(.1F); // NOLINT: Magic numbers
           asmb->addStackLoad(0);

@@ -7,6 +7,7 @@
 #include "prog/sym/exec_stmt.hpp"
 #include "prog/sym/func_decl.hpp"
 #include "prog/sym/func_id.hpp"
+#include <cassert>
 #include <sstream>
 
 namespace backend {
@@ -32,8 +33,11 @@ generateFunc(novasm::Assembler* asmb, const prog::Program& program, const prog::
   reserveConsts(asmb, func.getConsts());
 
   // Generate the function body.
-  auto genExpr = internal::GenExpr{program, asmb, func.getConsts(), func.getId(), true};
+  auto genExpr = internal::GenExpr{program, asmb, func.getConsts(), func.getId(), true, 1};
   func.getExpr().accept(&genExpr);
+
+  // Root expression always has to produce a single value.
+  assert(genExpr.getValuesProduced() == 1);
 
   // Note: Due to tail calls this return might never be executed.
   asmb->addRet();
@@ -51,8 +55,11 @@ static auto generateExecStmt(
   reserveConsts(asmb, exec.getConsts());
 
   // Generate the expression.
-  auto genExpr = internal::GenExpr{program, asmb, exec.getConsts(), std::nullopt, false};
+  auto genExpr = internal::GenExpr{program, asmb, exec.getConsts(), std::nullopt, false, 1};
   exec.getExpr().accept(&genExpr);
+
+  // TODO: Support root execute statements not producing values.
+  assert(genExpr.getValuesProduced() == 1);
 
   asmb->addRet();
 

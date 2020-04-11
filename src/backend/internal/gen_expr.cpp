@@ -11,15 +11,33 @@ GenExpr::GenExpr(
     novasm::Assembler* asmb,
     const prog::sym::ConstDeclTable& constTable,
     std::optional<prog::sym::FuncId> curFunc,
-    bool tail) :
-    m_prog{program}, m_asmb{asmb}, m_constTable{constTable}, m_curFunc{curFunc}, m_tail{tail} {}
+    bool tail,
+    unsigned int requestedValues) :
+    m_prog{program},
+    m_asmb{asmb},
+    m_constTable{constTable},
+    m_curFunc{curFunc},
+    m_tail{tail},
+    m_requestedValues{requestedValues},
+    m_valuesProduced{1} // Note: Default the values produced to 1 as its so common.
+{}
+
+auto GenExpr::getRequestedValues() -> unsigned int { return m_requestedValues; }
+
+auto GenExpr::getValuesProduced() -> unsigned int { return m_valuesProduced; }
 
 auto GenExpr::visit(const prog::expr::AssignExprNode& n) -> void {
   // Expression.
   genSubExpr(n[0], false);
 
-  // Duplicate the value as the store instruction will consume one.
-  m_asmb->addDup();
+  if (m_requestedValues > 0) {
+    // Duplicate the value as the store instruction will consume one.
+    m_asmb->addDup();
+  } else {
+    // Mark that we didn't produce any value (because the store instruction will consume the value
+    // of the sub-expression).
+    m_valuesProduced = 0;
+  }
 
   // Assign op.
   m_asmb->addStackStore(getConstOffset(m_constTable, n.getConst()));
@@ -593,12 +611,14 @@ auto GenExpr::visit(const prog::expr::FieldExprNode& n) -> void {
 
 auto GenExpr::visit(const prog::expr::GroupExprNode& n) -> void {
   for (auto i = 0U; i < n.getChildCount(); ++i) {
-    const auto last = i == n.getChildCount() - 1;
-    genSubExpr(n[i], m_tail && last);
+    const auto last         = i == n.getChildCount() - 1;
+    const auto valsProduced = genSubExpr(n[i], m_tail && last, last ? 1 : 0);
 
     // For all but the last expression we ignore the result.
     if (!last) {
-      m_asmb->addPop();
+      for (auto v = 0U; v != valsProduced; ++v) {
+        m_asmb->addPop();
+      }
     }
   }
 }
@@ -737,9 +757,12 @@ auto GenExpr::makeUnion(const prog::expr::CallExprNode& n) -> void {
   m_asmb->addMakeStruct(2);
 }
 
-auto GenExpr::genSubExpr(const prog::expr::Node& n, bool tail) -> void {
-  auto genExpr = GenExpr{m_prog, m_asmb, m_constTable, m_curFunc, tail};
+auto GenExpr::genSubExpr(const prog::expr::Node& n, bool tail, unsigned int requestedValues)
+    -> unsigned int {
+
+  auto genExpr = GenExpr{m_prog, m_asmb, m_constTable, m_curFunc, tail, requestedValues};
   n.accept(&genExpr);
+  return genExpr.m_valuesProduced;
 }
 
 } // namespace backend::internal

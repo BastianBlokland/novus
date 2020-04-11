@@ -80,9 +80,9 @@ TEST_CASE("Generate assembly for tail calls", "[backend]") {
           asmb->label("f2");
           asmb->addStackAlloc(1);
           asmb->addLoadLitInt(42);
-          asmb->addDup();
+
           asmb->addStackStore(0);
-          asmb->addPop();
+
           asmb->addStackLoad(0);
           asmb->addCall("f1", 1, novasm::CallMode::Tail);
           asmb->addRet();
