@@ -68,6 +68,15 @@ auto main(int argc, char** argv) noexcept -> int {
         vmEnvArgsCount,
         vnEnvArgs);
   }
-  return run<char*>(
-      "inline", std::nullopt, searchPaths, argv[1], nullptr, vmEnvArgsCount, vnEnvArgs);
+
+  auto progTxt = std::string{argv[1]};
+  progTxt.append(" import \"std.nov\"");
+  return run(
+      "inline",
+      std::nullopt,
+      searchPaths,
+      progTxt.begin(),
+      progTxt.end(),
+      vmEnvArgsCount,
+      vnEnvArgs);
 }

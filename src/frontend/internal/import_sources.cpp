@@ -43,9 +43,12 @@ auto ImportSources::visit(const parse::ImportStmtNode& n) -> void {
 }
 
 auto ImportSources::import(const Path& file, input::Span span) const -> bool {
+
   // Check if this file is same as our main source.
-  if (file.filename() == m_mainSource.getPath()->filename()) {
-    return true;
+  if (m_mainSource.getPath()) {
+    if (file.filename() == m_mainSource.getPath()->filename()) {
+      return true;
+    }
   }
 
   // Check if we've already imported this file.
