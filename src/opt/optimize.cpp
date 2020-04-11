@@ -7,6 +7,12 @@ auto optimize(const prog::Program& prog) -> prog::Program {
   // We start with one pass of treeshaking to avoid inlining unused functions.
   auto result = treeshake(prog);
 
+  // Run a single pass of const elimination and literal precompute before inlining. Reason is
+  // dynamic calls to function literals are simplified to be static calls (which we can then inlined
+  // in the next phase).
+  result = eliminateConsts(result);
+  result = precomputeLiterals(result);
+
   // Inline possible functions.
   result = inlineCalls(result);
 
