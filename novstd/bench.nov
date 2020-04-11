@@ -21,7 +21,7 @@ act bench{T}(T invokable)
     if itrsRem <= 0 -> elapsed
     else            -> self(--itrsRem, elapsed + exec())
   );
-  minIters  = 32;
+  minIters  = 8;
   minTime   = milliseconds(10);
   warmup    = exec();
   ballpark  = exec();
