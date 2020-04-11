@@ -1,0 +1,69 @@
+import "list.nov"
+
+// -- Functions
+
+fun waitAll{T}(List{future{T}} l)
+  l.foldRight(lambda (List{T} result, future{T} f) -> List{T}
+    f.result() :: result)
+
+fun parallelMap{T, TResult}(List{T} l, function{T, TResult} func)
+  l.foldRight(lambda (List{future{TResult}} result, T val) -> List{future{TResult}}
+    fork func(val) :: result).waitAll()
+
+fun parallelMapReverse{T, TResult}(List{T} l, function{T, TResult} func)
+  l.fold(lambda (List{future{TResult}} result, T val) -> List{future{TResult}}
+    fork func(val) :: result).waitAll()
+
+fun parallelFor{T, TResult}(T to, function{T, TResult} func)
+  rangeList(T(), to).parallelMap(func)
+
+fun parallelFor{T, TResult}(T from, T to, function{T, TResult} func)
+  rangeList(from, to).parallelMap(func)
+
+// -- Actions
+
+act parallelMap{T, TResult}(List{T} l, action{T, TResult} a)
+  l.foldRight(impure lambda (List{future{TResult}} result, T val) -> List{future{TResult}}
+    fork a(val) :: result).waitAll()
+
+act parallelMapReserve{T, TResult}(List{T} l, action{T, TResult} a)
+  l.fold(impure lambda (List{future{TResult}} result, T val) -> List{future{TResult}}
+    fork a(val) :: result).waitAll()
+
+act parallelFor{T, TResult}(T to, action{T, TResult} a)
+  rangeList(T(), to).parallelMap(a)
+
+act parallelFor{T, TResult}(T from, T to, action{T, TResult} a)
+  rangeList(from, to).parallelMap(a)
+
+// -- Tests
+
+assert(
+  l = 1 :: 2 :: 3 :: List{int}();
+  l.parallelMap(lambda (int i) i * i) == 1 :: 4 :: 9 :: List{int}())
+
+assert(
+  l = 1 :: 2 :: 3 :: List{int}();
+  l.parallelMapReverse(lambda (int i) i * i) == 9 :: 4 :: 1 :: List{int}())
+
+assert(
+  parallelFor(1, 4, lambda (int i) i * i) == 1 :: 4 :: 9 :: 16 :: List{int}())
+
+assert(
+  parallelFor(4, lambda (int i) i * i) == 0 :: 1 :: 4 :: 9 :: 16 :: List{int}())
+
+// -- Impure tests
+
+assert(
+  l = 1 :: 2 :: 3 :: List{int}();
+  l.parallelMap(impure lambda (int i) i * i) == 1 :: 4 :: 9 :: List{int}())
+
+assert(
+  l = 1 :: 2 :: 3 :: List{int}();
+  l.parallelMapReserve(impure lambda (int i) i * i) == 9 :: 4 :: 1 :: List{int}())
+
+assert(
+  parallelFor(1, 4, impure lambda (int i) i * i) == 1 :: 4 :: 9 :: 16 :: List{int}())
+
+assert(
+  parallelFor(4, impure lambda (int i) i * i) == 0 :: 1 :: 4 :: 9 :: 16 :: List{int}())
