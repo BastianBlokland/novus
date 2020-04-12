@@ -1,0 +1,161 @@
+import "console.nov"
+
+// -- Utilities for interacting with a tty terminal using ANSI escape codes:
+// https://en.wikipedia.org/wiki/ANSI_escape_code
+// At the moment this is all unix specific.
+
+enum TermStyle =
+  Reset           : 0,
+  Bold            : 1,
+  Underline       : 4,
+  Reversed        : 7,
+  FgBlack         : 30,
+  FgRed           : 31,
+  FgGreen         : 32,
+  FgYellow        : 33,
+  FgBlue          : 34,
+  FgMagenta       : 35,
+  FgCyan          : 36,
+  FgWhite         : 37,
+  BgBlack         : 40,
+  BgRed           : 41,
+  BgGreen         : 42,
+  BgYellow        : 43,
+  BgBlue          : 44,
+  BgMagenta       : 45,
+  BgCyan          : 46,
+  BgWhite         : 47,
+  FgBrightBlack   : 90,
+  FgBrightRed     : 91,
+  FgBrightGreen   : 92,
+  FgBrightYellow  : 93,
+  FgBrightBlue    : 94,
+  FgBrightMagenta : 95,
+  FgBrightCyan    : 96,
+  FgBrightWhite   : 97,
+  BgBrightBlack   : 100,
+  BgBrightRed     : 101,
+  BgBrightGreen   : 102,
+  BgBrightYellow  : 103,
+  BgBrightBlue    : 104,
+  BgBrightMagenta : 105,
+  BgBrightCyan    : 106,
+  BgBrightWhite   : 107
+
+enum TermDir = Up, Down, Right, Left
+
+enum TermClearMode =
+  CursorToEnd   : 0,
+  CursorToStart : 1,
+  All           : 2
+
+fun termEsc() char(27)
+
+// -- Update the current style on the terminal.
+
+act termStyle(TermStyle style)
+  termStyle(consoleOpen(ConsoleKind.StdOut), style)
+
+act termStyle(stream s, TermStyle style)
+  s.streamWrite(termEsc());
+  s.streamWrite('[');
+  s.streamWrite(string(style));
+  s.streamWrite('m')
+
+// -- Control the terminal cursor.
+
+act termCursorMove(TermStyle s, TermDir dir, int amount)
+  termCursorMove(consoleOpen(ConsoleKind.StdOut), dir, amount)
+
+act termCursorMove(stream s, TermDir dir, int amount)
+  s.streamWrite(termEsc());
+  s.streamWrite('[');
+  s.streamWrite(string(amount));
+  s.streamWrite(
+    if dir == TermDir.Up    -> 'A'
+    if dir == TermDir.Down  -> 'B'
+    if dir == TermDir.Right -> 'C'
+    else                    -> 'D')
+
+act termCursorCol(int column)
+  termCursorCol(consoleOpen(ConsoleKind.StdOut), column)
+
+act termCursorCol(stream s, int column)
+  s.streamWrite(termEsc());
+  s.streamWrite('[');
+  s.streamWrite(string(column));
+  s.streamWrite('G')
+
+act termCursorPos(int row, int column)
+  termCursorPos(consoleOpen(ConsoleKind.StdOut), row, column)
+
+act termCursorPos(stream s, int row, int column)
+  s.streamWrite(termEsc());
+  s.streamWrite('[');
+  s.streamWrite(string(row));
+  s.streamWrite(';');
+  s.streamWrite(string(column));
+  s.streamWrite('H')
+
+act termCursorShow(bool show)
+  termCursorShow(consoleOpen(ConsoleKind.StdOut), show)
+
+act termCursorShow(stream s, bool show)
+  s.streamWrite(termEsc());
+  s.streamWrite("[?25");
+  s.streamWrite(show ? 'h' : 'l')
+
+// -- Control alternate screen-buffer.
+
+act termAltScreen(bool active)
+  termAltScreen(consoleOpen(ConsoleKind.StdOut), active)
+
+act termAltScreen(stream s, bool active)
+  s.streamWrite(termEsc());
+  s.streamWrite("[?1049");
+  s.streamWrite(active ? 'h' : 'l')
+
+// -- Clear the terminal.
+
+act termClearScreen(TermClearMode mode)
+  termClearScreen(consoleOpen(ConsoleKind.StdOut), mode)
+
+act termClearScreen(stream s, TermClearMode mode)
+  s.streamWrite(termEsc());
+  s.streamWrite('[');
+  s.streamWrite(string(mode));
+  s.streamWrite('J')
+
+act termClearLine(TermClearMode mode)
+  termClearLine(consoleOpen(ConsoleKind.StdOut), mode)
+
+act termClearLine(stream s, TermClearMode mode)
+  s.streamWrite(termEsc());
+  s.streamWrite('[');
+  s.streamWrite(string(mode));
+  s.streamWrite('K')
+
+// -- Reset the terminal.
+
+act termReset()
+  termReset(consoleOpen(ConsoleKind.StdOut))
+
+act termReset(stream s)
+  s.streamWrite(termEsc());
+  s.streamWrite('c')
+
+// -- Convenience overloads for print that set a style before and reset after printing.
+
+act print{T}(T x, TermStyle style)
+  s = consoleOpen(ConsoleKind.StdOut);
+  s.termStyle(style);
+  s.streamWrite(x.string());
+  s.termStyle(TermStyle.Reset);
+  s.streamWrite('\n')
+
+act printErr{T}(T x, TermStyle style)
+  s = consoleOpen(ConsoleKind.StdErr);
+  s.termStyle(style);
+  s.streamWrite(x.string());
+  s.termStyle(TermStyle.Reset);
+  s.streamWrite('\n')
