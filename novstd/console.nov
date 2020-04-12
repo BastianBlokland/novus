@@ -1,4 +1,5 @@
 import "stream.nov"
+import "bits.nov"
 
 enum ConsoleKind = StdIn : 0, StdOut, StdErr
 
@@ -28,3 +29,15 @@ act printErr{T}(T x)
   s = consoleOpen(ConsoleKind.StdErr);
   s.streamWrite(x.string());
   s.streamWrite('\n')
+
+act printBits(int i)
+  print(toBitString(i, false))
+
+act printBits(float f)
+  print(toBitString(asInt(f), false))
+
+act printHex(int i)
+  print(toHexString(i))
+
+act printHex(float f)
+  print(toHexString(asInt(f)))

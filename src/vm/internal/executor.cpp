@@ -436,32 +436,32 @@ auto execute(
       PUSH_BOOL(POP_INT() == 0);
     } break;
     case OpCode::ShiftLeftInt: {
-      auto b = POP_INT();
-      auto a = POP_INT();
-      PUSH_INT(a << b); // NOLINT: Signed bitwise operand
+      auto b = POP_UINT();
+      auto a = POP_UINT();
+      PUSH_UINT(a << b);
     } break;
     case OpCode::ShiftRightInt: {
-      auto b = POP_INT();
-      auto a = POP_INT();
-      PUSH_INT(a >> b); // NOLINT: Signed bitwise operand
+      auto b = POP_UINT();
+      auto a = POP_UINT();
+      PUSH_UINT(a >> b);
     } break;
     case OpCode::AndInt: {
-      auto b = POP_INT();
-      auto a = POP_INT();
-      PUSH_INT(a & b); // NOLINT: Signed bitwise operand
+      auto b = POP_UINT();
+      auto a = POP_UINT();
+      PUSH_UINT(a & b);
     } break;
     case OpCode::OrInt: {
-      auto b = POP_INT();
-      auto a = POP_INT();
-      PUSH_INT(a | b); // NOLINT: Signed bitwise operand
+      auto b = POP_UINT();
+      auto a = POP_UINT();
+      PUSH_UINT(a | b);
     } break;
     case OpCode::XorInt: {
-      auto b = POP_INT();
-      auto a = POP_INT();
-      PUSH_INT(a ^ b); // NOLINT: Signed bitwise operand
+      auto b = POP_UINT();
+      auto a = POP_UINT();
+      PUSH_UINT(a ^ b);
     } break;
     case OpCode::InvInt: {
-      PUSH_INT(~POP_INT()); // NOLINT: Signed bitwise operand
+      PUSH_UINT(~POP_UINT());
     } break;
     case OpCode::LengthString: {
       PUSH_INT(getStringRef(POP())->getSize());
