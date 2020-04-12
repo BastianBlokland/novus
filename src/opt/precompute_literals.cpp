@@ -12,6 +12,9 @@
 namespace opt {
 
 [[nodiscard]] static auto getInt(const prog::expr::Node& n) -> int32_t {
+  if (n.getKind() == prog::expr::NodeKind::LitEnum) {
+    return n.downcast<prog::expr::LitEnumNode>()->getVal();
+  }
   return n.downcast<prog::expr::LitIntNode>()->getVal();
 }
 
