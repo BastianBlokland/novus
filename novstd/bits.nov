@@ -1,0 +1,161 @@
+import "text.nov"
+
+// -- Functions
+
+// Unset the least significant set bit.
+fun unsetLow(int mask)
+  mask & mask - 1
+
+// Clears all but the least significant set bit.
+fun onlyLow(int mask)
+  mask & ~mask + 1
+
+// Unset the most significant set bit.
+fun unsetHigh(int mask)
+  m1 = mask | mask >> 1;
+  m2 = m1   | m1   >> 2;
+  m3 = m2   | m2   >> 4;
+  m4 = m3   | m3   >> 8;
+  m5 = m4   | m4   >> 16;
+  mask & m5 >> 1
+
+// Count how many bits are set.
+fun popCount(int mask)
+  f = ( lambda (int mask, int num)
+    if mask == 0  -> num
+    else          -> self(unsetLow(mask), ++num)
+  ); f(mask, 0)
+
+// Count the trailing zeroes.
+fun trailingZeroes(int mask)
+  if mask == 0  -> 32
+  else          ->
+    f = ( lambda (int mask, int num)
+      if mask == 0 || (mask & 1) != 0 -> num
+      else                            -> self(mask >> 1, ++num)
+    ); f(mask, 0)
+
+// Count the leading zeroes.
+fun leadingZeroes(int mask)
+  if mask == 0  -> 32
+  else          ->
+    f = ( lambda (int mask, int num)
+      if mask < 0 -> num
+      else        -> self(mask << 1, ++num)
+    ); f(mask, 0)
+
+// Returns a new mask with only the Nth least significant set bit still set.
+// Examples:
+// * Mask 10010100 bit 0 = 00000100
+// * Mask 10010100 bit 1 = 00010000
+// * Mask 10010100 bit 2 = 10000000
+fun nthSetBit(int mask, int bit)
+  f = (lambda (int mask, int i)
+    if i >= bit -> onlyLow(mask)
+    else        -> self(unsetLow(mask), ++i)
+  ); f(mask, 0)
+
+// Convert the mask into a binary string with characters '0' and '1'.
+fun toBitString(int mask, bool printLeadingZeroes)
+  if mask == 0  -> string('0', printLeadingZeroes ? 32 : 1)
+  else          ->
+    f = ( lambda (int idx, string result)
+      if idx < 0  -> result
+      else        -> self(--idx, result + ((mask & 1 << idx) == 0 ? '0' : '1'))
+    ); f(printLeadingZeroes ? 31 : 31 - leadingZeroes(mask), "")
+
+// Convert the mask into a hexadecimal string with characters '0'-'9' and 'A'-'F'.
+fun toHexString(int mask)
+  if mask == 0  -> "0"
+  else          ->
+    f = ( lambda (int mask, string result)
+      if mask == 0  -> result
+      else          -> self(
+        mask >> 4,
+        v = mask & 0xF;
+        string(v < 10 ? char('0' + v) : char('A' + v - 10)) + result)
+    ); f(mask, "")
+
+// //FF FF FF FF
+
+// -- Tests
+
+assert(
+  unsetLow(0b111) == 0b110 &&
+  unsetLow(0b110) == 0b100 &&
+  unsetLow(0b11000000) == 0b10000000 &&
+  unsetLow(0) == 0 &&
+  unsetLow(1) == 0)
+
+assert(
+  onlyLow(0) == 0 &&
+  onlyLow(1) == 1 &&
+  onlyLow(-1) == 1 &&
+  onlyLow(0b100) == 0b100 &&
+  onlyLow(0b1010_1000) == 0b1000)
+
+assert(
+  unsetHigh(0) == 0 &&
+  unsetHigh(1) == 0 &&
+  unsetHigh(0b11) == 0b1 &&
+  unsetHigh(0b1101) == 0b101 &&
+  unsetHigh(0b1101001) == 0b101001 &&
+  unsetHigh(0b1001101001) == 0b1101001 &&
+  unsetHigh(-1) == -1 >> 1 &&
+  unsetHigh(0b1000_0000_0000_0000_0000_0000_0100_1000) == 0b100_1000)
+
+assert(
+  popCount(0) == 0 &&
+  popCount(1) == 1 &&
+  popCount(0b0010) == 1 &&
+  popCount(0b101) == 2 &&
+  popCount(0b100101) == 3 &&
+  popCount(0xFFFF_FFFF) == 32 &&
+  popCount(0xEFFF_FFFF) == 31)
+
+assert(
+  trailingZeroes(0) == 32 &&
+  trailingZeroes(-1) == 0 &&
+  trailingZeroes(0b10) == 1 &&
+  trailingZeroes(0b10100) == 2 &&
+  trailingZeroes(0b101001000) == 3)
+
+assert(
+  leadingZeroes(0) == 32 &&
+  leadingZeroes(-1) == 0 &&
+  leadingZeroes(1) == 31 &&
+  leadingZeroes(1 << 30) == 1 &&
+  leadingZeroes(1 << 15) == 16 &&
+  leadingZeroes(0b0000_0100_0101_0101_0110_0101_0100_1000) == 5 &&
+  leadingZeroes(-1) == 0)
+
+assert(
+  nthSetBit(0, -1) == 0 &&
+  nthSetBit(0, 0) == 0 &&
+  nthSetBit(0, 1) == 0 &&
+  nthSetBit(0b1, 0) == 1 &&
+  nthSetBit(0b1, 1) == 0 &&
+  nthSetBit(0b1001_1101, 0) == 1 &&
+  nthSetBit(0b1001_1101, 0) == 1 &&
+  nthSetBit(0b1001_1101, 0) == 1 &&
+  nthSetBit(0b1001_1101, 2) == 0b1000 &&
+  nthSetBit(0b1001_1101, 4) == 0b1000_0000)
+
+assert(
+  toBitString(0, false) == "0" &&
+  toBitString(0, true) == string('0', 32) &&
+  toBitString(-1, false) == string('1', 32) &&
+  toBitString(-1, true) == string('1', 32) &&
+  toBitString(1, false) == "1" &&
+  toBitString(2, false) == "10" &&
+  toBitString(4, false) == "100" &&
+  toBitString(0b1011_1101_1111, false) == "101111011111" &&
+  toBitString(0b0000_0100_0101_0101_0110_0101_0100_1000, true) == "00000100010101010110010101001000")
+
+assert(
+  toHexString(0) == "0" &&
+  toHexString(-1) == "FFFFFFFF" &&
+  toHexString(1) == "1" &&
+  toHexString(0x1A2B3C) == "1A2B3C" &&
+  toHexString(0xABCDEF) == "ABCDEF" &&
+  toHexString(0x123ABC) == "123ABC")
