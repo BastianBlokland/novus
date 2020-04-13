@@ -7,6 +7,7 @@ namespace prog::expr {
 class LitEnumNode final : public Node {
   friend auto litEnumNode(const Program& program, sym::TypeId enumType, std::string name)
       -> NodePtr;
+  friend auto litEnumNode(const Program& program, sym::TypeId enumType, int32_t val) -> NodePtr;
 
 public:
   LitEnumNode() = delete;
@@ -38,5 +39,6 @@ private:
 
 // Factories.
 auto litEnumNode(const Program& prog, sym::TypeId enumType, std::string name) -> NodePtr;
+auto litEnumNode(const Program& prog, sym::TypeId enumType, int32_t val) -> NodePtr;
 
 } // namespace prog::expr

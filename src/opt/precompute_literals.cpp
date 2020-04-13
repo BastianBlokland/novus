@@ -191,12 +191,24 @@ public:
         if (std::all_of(newArgs.begin(), newArgs.end(), [](const prog::expr::NodePtr& n) {
               return internal::isLiteral(*n);
             })) {
-          m_modified = true;
-          return precomputeIntrinsic(funcKind, std::move(newArgs));
-        } else {
-          // if we cannot precompute then construct a copy of the call.
-          return prog::expr::callExprNode(m_prog, funcId, std::move(newArgs));
+
+          auto result = precomputeIntrinsic(funcKind, newArgs);
+          if (result->getType() == callExpr->getType()) {
+            // If precomputed type matches the expected type we can simply use that.
+            m_modified = true;
+            return result;
+          } else {
+            // If precomputed type does not match try to precompute a conversion.
+            auto precomputed = maybePrecomputeReinterpretConv(*result, callExpr->getType());
+            if (precomputed != nullptr) {
+              m_modified = true;
+              return precomputed;
+            }
+          }
         }
+
+        // if we cannot precompute then construct a copy of the call.
+        return prog::expr::callExprNode(m_prog, funcId, std::move(newArgs));
 
       } else if (funcKind == prog::sym::FuncKind::NoOp && expr.getChildCount() == 1) {
         // Single argument 'NoOp' intrinsics are used as reinterpreting conversions, for supported
@@ -337,7 +349,7 @@ private:
   }
 
   [[nodiscard]] auto
-  precomputeIntrinsic(prog::sym::FuncKind funcKind, std::vector<prog::expr::NodePtr> args)
+  precomputeIntrinsic(prog::sym::FuncKind funcKind, const std::vector<prog::expr::NodePtr>& args)
       -> prog::expr::NodePtr {
 
     switch (funcKind) {
@@ -745,28 +757,40 @@ private:
 
     assert(internal::isLiteral(arg));
     auto srcTypeDecl = m_prog.getTypeDecl(arg.getType());
+    auto dstTypeDecl = m_prog.getTypeDecl(dstType);
 
     // Char to int.
-    if (srcTypeDecl.getKind() == prog::sym::TypeKind::Char && dstType == m_prog.getInt()) {
+    if (srcTypeDecl.getKind() == prog::sym::TypeKind::Char &&
+        dstTypeDecl.getKind() == prog::sym::TypeKind::Int) {
       return prog::expr::litIntNode(m_prog, static_cast<int32_t>(getChar(arg)));
     }
 
     // Int as float.
-    if (srcTypeDecl.getKind() == prog::sym::TypeKind::Int && dstType == m_prog.getFloat()) {
+    if (srcTypeDecl.getKind() == prog::sym::TypeKind::Int &&
+        dstTypeDecl.getKind() == prog::sym::TypeKind::Float) {
       auto src = getInt(arg);
       return prog::expr::litFloatNode(m_prog, reinterpret_cast<float&>(src));
     }
 
     // Float as int.
-    if (srcTypeDecl.getKind() == prog::sym::TypeKind::Float && dstType == m_prog.getInt()) {
+    if (srcTypeDecl.getKind() == prog::sym::TypeKind::Float &&
+        dstTypeDecl.getKind() == prog::sym::TypeKind::Int) {
       auto src = getFloat(arg);
       return prog::expr::litIntNode(m_prog, reinterpret_cast<int&>(src));
     }
 
     // Enum to int.
-    if (srcTypeDecl.getKind() == prog::sym::TypeKind::Enum && dstType == m_prog.getInt()) {
+    if (srcTypeDecl.getKind() == prog::sym::TypeKind::Enum &&
+        dstTypeDecl.getKind() == prog::sym::TypeKind::Int) {
       const auto val = arg.downcast<prog::expr::LitEnumNode>()->getVal();
       return prog::expr::litIntNode(m_prog, val);
+    }
+
+    // Int to enum.
+    if (srcTypeDecl.getKind() == prog::sym::TypeKind::Int &&
+        dstTypeDecl.getKind() == prog::sym::TypeKind::Enum) {
+      auto val = getInt(arg);
+      return prog::expr::litEnumNode(m_prog, dstTypeDecl.getId(), val);
     }
 
     return nullptr;

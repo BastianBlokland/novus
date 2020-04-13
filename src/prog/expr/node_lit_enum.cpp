@@ -49,4 +49,12 @@ auto litEnumNode(const Program& prog, sym::TypeId enumType, std::string name) ->
   return std::unique_ptr<LitEnumNode>{new LitEnumNode{enumType, std::move(name), *val}};
 }
 
+auto litEnumNode(const Program& prog, sym::TypeId enumType, int32_t val) -> NodePtr {
+  const auto& enumTypeDecl = prog.getTypeDecl(enumType);
+  if (enumTypeDecl.getKind() != sym::TypeKind::Enum) {
+    throw std::invalid_argument{"Given type is not an enum"};
+  }
+  return std::unique_ptr<LitEnumNode>{new LitEnumNode{enumType, std::to_string(val), val}};
+}
+
 } // namespace prog::expr
