@@ -50,8 +50,8 @@ enum TermClearMode =
   All           : 2
 
 enum TermOptions =
-  Echo      : 0b01,
-  Buffering : 0b10
+  NoEcho    : 0b01,
+  NoBuffer  : 0b10
 
 fun termEsc() char(27)
 
@@ -120,6 +120,12 @@ act termAltScreen(stream s, bool active)
   s.streamWrite(active ? 'h' : 'l')
 
 // -- Clear the terminal.
+
+act termClearScreen()
+  termClearScreen(consoleOpen(ConsoleKind.StdOut), TermClearMode.All)
+
+act termClearScreen(stream s)
+  termClearScreen(s, TermClearMode.All)
 
 act termClearScreen(TermClearMode mode)
   termClearScreen(consoleOpen(ConsoleKind.StdOut), mode)

@@ -123,11 +123,11 @@ auto inline pcall(
     PUSH_BOOL(removeFile(pathStrRef));
   } break;
 
-  case PCallCode::SetTermOptions: {
+  case PCallCode::TermSetOptions: {
     auto options = POP_INT();
     PUSH_BOOL(setTermOpts(static_cast<TermOpts>(options)));
   } break;
-  case PCallCode::UnsetTermOptions: {
+  case PCallCode::TermUnsetOptions: {
     auto options = POP_INT();
     PUSH_BOOL(unsetTermOpts(static_cast<TermOpts>(options)));
   } break;

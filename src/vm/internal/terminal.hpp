@@ -1,11 +1,16 @@
 #pragma once
 #include <cstdint>
+
+#if !defined(_WIN32)
+
 #include <termios.h>
 #include <unistd.h>
 
+#endif
+
 namespace vm::internal {
 
-enum class TermOpts : int32_t { Echo = 1 << 0, Buffering = 1 << 1 };
+enum class TermOpts : int32_t { NoEcho = 1 << 0, NoBuffer = 1 << 1 };
 
 inline auto hasTerminal() -> bool {
 #if defined(_WIN32)
@@ -31,11 +36,11 @@ inline auto setTermOpts(TermOpts opts) -> bool {
     return false;
   }
 
-  if (static_cast<int32_t>(opts) & static_cast<int32_t>(TermOpts::Echo)) {
-    t.c_lflag |= ECHO;
+  if (static_cast<int32_t>(opts) & static_cast<int32_t>(TermOpts::NoEcho)) {
+    t.c_lflag &= ~ECHO;
   }
-  if (static_cast<int32_t>(opts) & static_cast<int32_t>(TermOpts::Buffering)) {
-    t.c_lflag |= ICANON;
+  if (static_cast<int32_t>(opts) & static_cast<int32_t>(TermOpts::NoBuffer)) {
+    t.c_lflag &= ~ICANON;
   }
 
   if (tcsetattr(0, TCSANOW, &t) != 0) {
@@ -60,11 +65,11 @@ inline auto unsetTermOpts(TermOpts opts) -> bool {
     return false;
   }
 
-  if (static_cast<int32_t>(opts) & static_cast<int32_t>(TermOpts::Echo)) {
-    t.c_lflag &= ~ECHO;
+  if (static_cast<int32_t>(opts) & static_cast<int32_t>(TermOpts::NoEcho)) {
+    t.c_lflag |= ECHO;
   }
-  if (static_cast<int32_t>(opts) & static_cast<int32_t>(TermOpts::Buffering)) {
-    t.c_lflag &= ~ICANON;
+  if (static_cast<int32_t>(opts) & static_cast<int32_t>(TermOpts::NoBuffer)) {
+    t.c_lflag |= ICANON;
   }
 
   if (tcsetattr(0, TCSANOW, &t)) {

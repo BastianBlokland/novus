@@ -21,8 +21,8 @@ enum class PCallCode : uint8_t {
 
   FileRemove = 40, // (string)  -> (int)  Remove the file at path, returns success.
 
-  SetTermOptions   = 50, // (int) -> (int)  Set terminal control options, returns success.
-  UnsetTermOptions = 51, // (int) -> (int)  Unset terminal control options, returns success.
+  TermSetOptions   = 50, // (int) -> (int)  Set terminal control options, returns success.
+  TermUnsetOptions = 51, // (int) -> (int)  Unset terminal control options, returns success.
 
   GetEnvArg      = 60, // (int)     -> (string) Get an environment argument by index.
   GetEnvArgCount = 61, // ()        -> (int)    Get the amount of environment arguments provided.

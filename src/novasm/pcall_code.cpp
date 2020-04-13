@@ -33,11 +33,11 @@ auto operator<<(std::ostream& out, const PCallCode& rhs) noexcept -> std::ostrea
     out << "file-remove";
     break;
 
-  case PCallCode::SetTermOptions:
-    out << "set-term-options";
+  case PCallCode::TermSetOptions:
+    out << "term-set-options";
     break;
-  case PCallCode::UnsetTermOptions:
-    out << "unset-term-options";
+  case PCallCode::TermUnsetOptions:
+    out << "term-unset-options";
     break;
 
   case PCallCode::GetEnvArg:
