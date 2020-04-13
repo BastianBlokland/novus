@@ -117,7 +117,15 @@ enum class FuncKind {
   ActionStreamWriteString,
   ActionStreamWriteChar,
   ActionStreamFlush,
+  ActionStreamSetOptions,
+  ActionStreamUnsetOptions,
+
   ActionFileRemove,
+
+  ActionTermSetOptions,
+  ActionTermUnsetOptions,
+  ActionTermGetWidth,
+  ActionTermGetHeight,
 
   ActionGetEnvArgCount,
   ActionGetEnvArg,

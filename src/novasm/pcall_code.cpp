@@ -28,8 +28,28 @@ auto operator<<(std::ostream& out, const PCallCode& rhs) noexcept -> std::ostrea
   case PCallCode::StreamFlush:
     out << "stream-flush";
     break;
+  case PCallCode::StreamSetOptions:
+    out << "stream-set-options";
+    break;
+  case PCallCode::StreamUnsetOptions:
+    out << "stream-unset-options";
+    break;
+
   case PCallCode::FileRemove:
     out << "file-remove";
+    break;
+
+  case PCallCode::TermSetOptions:
+    out << "term-set-options";
+    break;
+  case PCallCode::TermUnsetOptions:
+    out << "term-unset-options";
+    break;
+  case PCallCode::TermGetWidth:
+    out << "term-get-width";
+    break;
+  case PCallCode::TermGetHeight:
+    out << "term-get-height";
     break;
 
   case PCallCode::GetEnvArg:

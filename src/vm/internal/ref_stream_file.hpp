@@ -1,5 +1,6 @@
 #pragma once
 #include "gsl.hpp"
+#include "internal/fd_utilities.hpp"
 #include "internal/ref_stream.hpp"
 #include <cstdio>
 #include <cstring>
@@ -59,6 +60,10 @@ public:
   }
 
   auto flush() noexcept -> void override { std::fflush(m_filePtr); }
+
+  auto setOpts(StreamOpts /*unused*/) noexcept -> bool override { return false; }
+
+  auto unsetOpts(StreamOpts /*unused*/) noexcept -> bool override { return false; }
 
 private:
   gsl::owner<FILE*> m_filePtr;

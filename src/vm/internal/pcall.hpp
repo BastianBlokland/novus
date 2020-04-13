@@ -5,6 +5,7 @@
 #include "internal/ref_stream_file.hpp"
 #include "internal/stack.hpp"
 #include "internal/string_utilities.hpp"
+#include "internal/terminal.hpp"
 #include "novasm/pcall_code.hpp"
 #include "vm/exec_state.hpp"
 #include "vm/platform_interface.hpp"
@@ -117,9 +118,35 @@ auto inline pcall(
   case PCallCode::StreamFlush: {
     streamFlush(PEEK());
   } break;
+  case PCallCode::StreamSetOptions: {
+    auto options = POP_INT();
+    auto stream  = POP();
+    PUSH_BOOL(streamSetOpts(stream, static_cast<StreamOpts>(options)));
+  } break;
+  case PCallCode::StreamUnsetOptions: {
+    auto options = POP_INT();
+    auto stream  = POP();
+    PUSH_BOOL(streamUnsetOpts(stream, static_cast<StreamOpts>(options)));
+  } break;
+
   case PCallCode::FileRemove: {
     auto* pathStrRef = getStringRef(POP());
     PUSH_BOOL(removeFile(pathStrRef));
+  } break;
+
+  case PCallCode::TermSetOptions: {
+    auto options = POP_INT();
+    PUSH_BOOL(termSetOpts(static_cast<TermOpts>(options)));
+  } break;
+  case PCallCode::TermUnsetOptions: {
+    auto options = POP_INT();
+    PUSH_BOOL(termUnsetOpts(static_cast<TermOpts>(options)));
+  } break;
+  case PCallCode::TermGetWidth: {
+    PUSH_INT(termGetWidth());
+  } break;
+  case PCallCode::TermGetHeight: {
+    PUSH_INT(termGetHeight());
   } break;
 
   case PCallCode::GetEnvArg: {

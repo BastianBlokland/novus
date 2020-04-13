@@ -29,6 +29,10 @@ auto run(
     const auto asmOutput = backend::generate(optProg);
     auto iface           = vm::PlatformInterface{vmEnvArgsCount, vmEnvArgs, stdin, stdout, stderr};
     auto res             = vm::run(&asmOutput.first, &iface);
+    if (res > vm::ExecState::Failed) {
+      std::cerr << rang::style::bold << rang::bg::red << "runtime error: " << res << '\n'
+                << rang::style::reset;
+    }
     return static_cast<int>(res);
   }
 

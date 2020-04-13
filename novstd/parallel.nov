@@ -47,10 +47,10 @@ assert(
   l.parallelMapReverse(lambda (int i) i * i) == 9 :: 4 :: 1 :: List{int}())
 
 assert(
-  parallelFor(1, 4, lambda (int i) i * i) == 1 :: 4 :: 9 :: 16 :: List{int}())
+  parallelFor(1, 5, lambda (int i) i * i) == 1 :: 4 :: 9 :: 16 :: List{int}())
 
 assert(
-  parallelFor(4, lambda (int i) i * i) == 0 :: 1 :: 4 :: 9 :: 16 :: List{int}())
+  parallelFor(5, lambda (int i) i * i) == 0 :: 1 :: 4 :: 9 :: 16 :: List{int}())
 
 // -- Impure tests
 
@@ -63,7 +63,7 @@ assert(
   l.parallelMapReserve(impure lambda (int i) i * i) == 9 :: 4 :: 1 :: List{int}())
 
 assert(
-  parallelFor(1, 4, impure lambda (int i) i * i) == 1 :: 4 :: 9 :: 16 :: List{int}())
+  parallelFor(1, 5, impure lambda (int i) i * i) == 1 :: 4 :: 9 :: 16 :: List{int}())
 
 assert(
-  parallelFor(4, impure lambda (int i) i * i) == 0 :: 1 :: 4 :: 9 :: 16 :: List{int}())
+  parallelFor(5, impure lambda (int i) i * i) == 0 :: 1 :: 4 :: 9 :: 16 :: List{int}())

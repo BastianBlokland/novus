@@ -257,7 +257,24 @@ Program::Program() :
   m_funcDecls.registerAction(
       *this, Fk::ActionStreamFlush, "streamFlush", sym::TypeSet{m_stream}, m_stream);
   m_funcDecls.registerAction(
+      *this, Fk::ActionStreamSetOptions, "streamSetOptions", sym::TypeSet{m_stream, m_int}, m_bool);
+  m_funcDecls.registerAction(
+      *this,
+      Fk::ActionStreamUnsetOptions,
+      "streamUnsetOptions",
+      sym::TypeSet{m_stream, m_int},
+      m_bool);
+
+  m_funcDecls.registerAction(
       *this, Fk::ActionFileRemove, "fileRemove", sym::TypeSet{m_string}, m_bool);
+
+  m_funcDecls.registerAction(
+      *this, Fk::ActionTermSetOptions, "termSetOptions", sym::TypeSet{m_int}, m_bool);
+  m_funcDecls.registerAction(
+      *this, Fk::ActionTermUnsetOptions, "termUnsetOptions", sym::TypeSet{m_int}, m_bool);
+  m_funcDecls.registerAction(*this, Fk::ActionTermGetWidth, "termGetWidth", sym::TypeSet{}, m_int);
+  m_funcDecls.registerAction(
+      *this, Fk::ActionTermGetHeight, "termGetHeight", sym::TypeSet{}, m_int);
 
   m_funcDecls.registerAction(
       *this, Fk::ActionGetEnvArg, "getEnvArg", sym::TypeSet{m_int}, m_string);

@@ -44,6 +44,7 @@ configure_novstd_file(pair)
 configure_novstd_file(parallel)
 configure_novstd_file(parse)
 configure_novstd_file(stream)
+configure_novstd_file(terminal)
 configure_novstd_file(text)
 configure_novstd_file(time)
 
