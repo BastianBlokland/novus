@@ -257,6 +257,15 @@ Program::Program() :
   m_funcDecls.registerAction(
       *this, Fk::ActionStreamFlush, "streamFlush", sym::TypeSet{m_stream}, m_stream);
   m_funcDecls.registerAction(
+      *this, Fk::ActionStreamSetOptions, "streamSetOptions", sym::TypeSet{m_stream, m_int}, m_bool);
+  m_funcDecls.registerAction(
+      *this,
+      Fk::ActionStreamUnsetOptions,
+      "streamUnsetOptions",
+      sym::TypeSet{m_stream, m_int},
+      m_bool);
+
+  m_funcDecls.registerAction(
       *this, Fk::ActionFileRemove, "fileRemove", sym::TypeSet{m_string}, m_bool);
 
   m_funcDecls.registerAction(

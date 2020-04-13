@@ -1,5 +1,6 @@
 #pragma once
 #include "gsl.hpp"
+#include "internal/fd_utilities.hpp"
 #include "internal/ref_stream.hpp"
 #include "vm/platform_interface.hpp"
 #include <cstdio>
@@ -47,6 +48,12 @@ public:
   }
 
   auto flush() noexcept -> void override { std::fflush(m_filePtr); }
+
+  auto setOpts(StreamOpts opts) noexcept -> bool override { return setFileOpts(m_filePtr, opts); }
+
+  auto unsetOpts(StreamOpts opts) noexcept -> bool override {
+    return unsetFileOpts(m_filePtr, opts);
+  }
 
 private:
   FILE* m_filePtr;

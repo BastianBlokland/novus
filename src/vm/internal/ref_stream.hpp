@@ -6,6 +6,8 @@
 
 namespace vm::internal {
 
+enum class StreamOpts : int32_t { NoBlock = 1 << 0 };
+
 class StreamRef : public Ref {
 public:
   StreamRef(const StreamRef& rhs) = delete;
@@ -24,6 +26,8 @@ public:
   virtual auto writeString(StringRef* str) noexcept -> bool                     = 0;
   virtual auto writeChar(uint8_t val) noexcept -> bool                          = 0;
   virtual auto flush() noexcept -> void                                         = 0;
+  virtual auto setOpts(StreamOpts opts) noexcept -> bool                        = 0;
+  virtual auto unsetOpts(StreamOpts opts) noexcept -> bool                      = 0;
 
 protected:
   inline StreamRef() noexcept : Ref(getKind()) {}
@@ -72,6 +76,22 @@ inline auto streamFlush(const Value& stream) noexcept -> void {
   if (streamRef->isValid()) {
     streamRef->flush();
   }
+}
+
+inline auto streamSetOpts(const Value& stream, StreamOpts opts) noexcept -> bool {
+  auto* streamRef = stream.getDowncastRef<StreamRef>();
+  if (!streamRef->isValid()) {
+    return false;
+  }
+  return streamRef->setOpts(opts);
+}
+
+inline auto streamUnsetOpts(const Value& stream, StreamOpts opts) noexcept -> bool {
+  auto* streamRef = stream.getDowncastRef<StreamRef>();
+  if (!streamRef->isValid()) {
+    return false;
+  }
+  return streamRef->unsetOpts(opts);
 }
 
 } // namespace vm::internal

@@ -10,14 +10,16 @@ namespace novasm {
 */
 
 enum class PCallCode : uint8_t {
-  StreamOpenFile    = 10, // (int, string)    -> (stream)  Open a file at path with options.
-  StreamOpenConsole = 11, // (int)            -> (stream)  Get a stream to stdin, stdout or stderr.
-  StreamCheckValid  = 12, // (stream)         -> (int)     Check if given stream is valid.
-  StreamReadString  = 13, // (int, stream)    -> (string)  Read up to x bytes from a stream.
-  StreamReadChar    = 14, // (stream)         -> (int)     Read a single character from a stream.
-  StreamWriteString = 15, // (string, stream) -> (int)     Write string, returns success.
-  StreamWriteChar   = 16, // (int, stream)    -> (int)     Write character, returns success.
-  StreamFlush       = 17, // (stream)         -> (stream)  Flush any unwritten data to output.
+  StreamOpenFile     = 10, // (int, string)    -> (stream)  Open a file at path with options.
+  StreamOpenConsole  = 11, // (int)            -> (stream)  Get a stream to stdin, stdout or stderr.
+  StreamCheckValid   = 12, // (stream)         -> (int)     Check if given stream is valid.
+  StreamReadString   = 13, // (int, stream)    -> (string)  Read up to x bytes from a stream.
+  StreamReadChar     = 14, // (stream)         -> (int)     Read a single character from a stream.
+  StreamWriteString  = 15, // (string, stream) -> (int)     Write string, returns success.
+  StreamWriteChar    = 16, // (int, stream)    -> (int)     Write character, returns success.
+  StreamFlush        = 17, // (stream)         -> (stream)  Flush any unwritten data to output.
+  StreamSetOptions   = 18, // (int, stream)    -> (int)     Set options, returns success.
+  StreamUnsetOptions = 19, // (int, stream)    -> (int)     Unset options, returns success.
 
   FileRemove = 40, // (string)  -> (int)  Remove the file at path, returns success.
 

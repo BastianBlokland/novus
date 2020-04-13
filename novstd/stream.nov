@@ -1,4 +1,12 @@
+// -- Types
+
+enum StreamOptions =
+  NoBlock : 0b1
+
 // -- Actions
+
+act setOptions(stream s, StreamOptions opts)
+  s.streamSetOptions(int(opts))
 
 act read(stream s)
   (

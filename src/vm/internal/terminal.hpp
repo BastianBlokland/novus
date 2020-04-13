@@ -21,7 +21,7 @@ inline auto hasTerminal() -> bool {
 #endif
 }
 
-inline auto setTermOpts(TermOpts opts) -> bool {
+inline auto termSetOpts(TermOpts opts) -> bool {
   if (!hasTerminal()) {
     return false;
   }
@@ -50,7 +50,7 @@ inline auto setTermOpts(TermOpts opts) -> bool {
 #endif
 }
 
-inline auto unsetTermOpts(TermOpts opts) -> bool {
+inline auto termUnsetOpts(TermOpts opts) -> bool {
   if (!hasTerminal()) {
     return false;
   }

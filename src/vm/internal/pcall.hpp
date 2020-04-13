@@ -118,6 +118,17 @@ auto inline pcall(
   case PCallCode::StreamFlush: {
     streamFlush(PEEK());
   } break;
+  case PCallCode::StreamSetOptions: {
+    auto options = POP_INT();
+    auto stream  = POP();
+    PUSH_BOOL(streamSetOpts(stream, static_cast<StreamOpts>(options)));
+  } break;
+  case PCallCode::StreamUnsetOptions: {
+    auto options = POP_INT();
+    auto stream  = POP();
+    PUSH_BOOL(streamUnsetOpts(stream, static_cast<StreamOpts>(options)));
+  } break;
+
   case PCallCode::FileRemove: {
     auto* pathStrRef = getStringRef(POP());
     PUSH_BOOL(removeFile(pathStrRef));
@@ -125,11 +136,11 @@ auto inline pcall(
 
   case PCallCode::TermSetOptions: {
     auto options = POP_INT();
-    PUSH_BOOL(setTermOpts(static_cast<TermOpts>(options)));
+    PUSH_BOOL(termSetOpts(static_cast<TermOpts>(options)));
   } break;
   case PCallCode::TermUnsetOptions: {
     auto options = POP_INT();
-    PUSH_BOOL(unsetTermOpts(static_cast<TermOpts>(options)));
+    PUSH_BOOL(termUnsetOpts(static_cast<TermOpts>(options)));
   } break;
 
   case PCallCode::GetEnvArg: {
