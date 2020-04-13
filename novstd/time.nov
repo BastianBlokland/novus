@@ -170,6 +170,12 @@ fun absDuration(Duration d)
   if d == minDuration() -> maxDuration()
   else                  -> Duration(-d.ns)
 
+fun min(Duration a, Duration b)
+  Duration(a.ns < b.ns ? a.ns : b.ns)
+
+fun max(Duration a, Duration b)
+  Duration(a.ns > b.ns ? a.ns : b.ns)
+
 fun nanosecond()  Duration(1L)
 fun microsecond() nanosecond()  * 1_000L
 fun millisecond() microsecond() * 1_000L
@@ -311,8 +317,12 @@ assert(hours(-4).string() == "-4h0m0s")
 assert(days(-4).string() == "-4d0h0m0s")
 assert(weeks(-4).string() == "-4w0d0h0m0s")
 assert((weeks(-5) + days(-4) + hours(-3) + minutes(-2) + seconds(-1)).string() == "-5w4d3h2m1s")
+
 assert(absDuration(weeks(-42)) == weeks(42))
 assert(absDuration(minDuration()) == maxDuration())
+
+assert(min(seconds(2), minutes(3)) == seconds(2))
+assert(max(seconds(2), minutes(3)) == minutes(3))
 
 assert(timeNow() > timeEpoch())
 assert(timestamp() < timestamp())
