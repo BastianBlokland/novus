@@ -49,6 +49,10 @@ enum TermClearMode =
   CursorToStart : 1,
   All           : 2
 
+enum TermOptions =
+  Echo      : 0b01,
+  Buffering : 0b10
+
 fun termEsc() char(27)
 
 // -- Update the current style on the terminal.
@@ -143,6 +147,14 @@ act termReset()
 act termReset(stream s)
   s.streamWrite(termEsc());
   s.streamWrite('c')
+
+// -- Set terminal control options
+
+act termSetOptions(TermOptions opts)
+  termSetOptions(int(opts))
+
+act termUnsetOptions(TermOptions opts)
+  termUnsetOptions(int(opts))
 
 // -- Convenience overloads for print that set a style before and reset after printing.
 

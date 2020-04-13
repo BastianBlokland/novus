@@ -19,14 +19,17 @@ enum class PCallCode : uint8_t {
   StreamWriteChar   = 16, // (int, stream)    -> (int)     Write character, returns success.
   StreamFlush       = 17, // (stream)         -> (stream)  Flush any unwritten data to output.
 
-  FileRemove = 40, // (string)         -> (int)     Remove the file at path, returns success.
+  FileRemove = 40, // (string)  -> (int)  Remove the file at path, returns success.
 
-  GetEnvArg      = 50, // (int)     -> (string) Get an environment argument by index.
-  GetEnvArgCount = 51, // ()        -> (int)    Get the amount of environment arguments provided.
-  GetEnvVar      = 52, // (string)  -> (string) Get a environment variable by name.
+  SetTermOptions   = 50, // (int) -> (int)  Set terminal control options, returns success.
+  UnsetTermOptions = 51, // (int) -> (int)  Unset terminal control options, returns success.
 
-  ClockMicroSinceEpoch = 60, // () -> (long) Get the elapsed microseconds since unix epoch.
-  ClockNanoSteady      = 61, // () -> (long) Get process steady clock in nanoseconds.
+  GetEnvArg      = 60, // (int)     -> (string) Get an environment argument by index.
+  GetEnvArgCount = 61, // ()        -> (int)    Get the amount of environment arguments provided.
+  GetEnvVar      = 62, // (string)  -> (string) Get a environment variable by name.
+
+  ClockMicroSinceEpoch = 70, // () -> (long) Get the elapsed microseconds since unix epoch.
+  ClockNanoSteady      = 71, // () -> (long) Get process steady clock in nanoseconds.
 
   SleepNano = 240, // (long)         -> (long) Sleep the current executor for x nanoseconds.
   Assert    = 241, // (string, int)  -> (int) If condition is false: fail with message.

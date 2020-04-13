@@ -478,6 +478,12 @@ auto GenExpr::visit(const prog::expr::CallExprNode& n) -> void {
   case prog::sym::FuncKind::ActionFileRemove:
     m_asmb->addPCall(novasm::PCallCode::FileRemove);
     break;
+  case prog::sym::FuncKind::ActionSetTermOptions:
+    m_asmb->addPCall(novasm::PCallCode::SetTermOptions);
+    break;
+  case prog::sym::FuncKind::ActionUnsetTermOptions:
+    m_asmb->addPCall(novasm::PCallCode::UnsetTermOptions);
+    break;
 
   case prog::sym::FuncKind::ActionGetEnvArg:
     m_asmb->addPCall(novasm::PCallCode::GetEnvArg);

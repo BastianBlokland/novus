@@ -5,6 +5,7 @@
 #include "internal/ref_stream_file.hpp"
 #include "internal/stack.hpp"
 #include "internal/string_utilities.hpp"
+#include "internal/terminal.hpp"
 #include "novasm/pcall_code.hpp"
 #include "vm/exec_state.hpp"
 #include "vm/platform_interface.hpp"
@@ -120,6 +121,15 @@ auto inline pcall(
   case PCallCode::FileRemove: {
     auto* pathStrRef = getStringRef(POP());
     PUSH_BOOL(removeFile(pathStrRef));
+  } break;
+
+  case PCallCode::SetTermOptions: {
+    auto options = POP_INT();
+    PUSH_BOOL(setTermOpts(static_cast<TermOpts>(options)));
+  } break;
+  case PCallCode::UnsetTermOptions: {
+    auto options = POP_INT();
+    PUSH_BOOL(unsetTermOpts(static_cast<TermOpts>(options)));
   } break;
 
   case PCallCode::GetEnvArg: {

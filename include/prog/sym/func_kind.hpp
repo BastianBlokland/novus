@@ -119,6 +119,9 @@ enum class FuncKind {
   ActionStreamFlush,
   ActionFileRemove,
 
+  ActionSetTermOptions,
+  ActionUnsetTermOptions,
+
   ActionGetEnvArgCount,
   ActionGetEnvArg,
   ActionGetEnvVar,

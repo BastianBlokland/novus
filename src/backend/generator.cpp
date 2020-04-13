@@ -58,7 +58,7 @@ static auto generateExecStmt(
   auto genExpr = internal::GenExpr{program, asmb, exec.getConsts(), std::nullopt, false, 1};
   exec.getExpr().accept(&genExpr);
 
-  // TODO: Support root execute statements not producing values.
+  // TODO(bastian): Support root execute statements not producing values.
   assert(genExpr.getValuesProduced() == 1);
 
   asmb->addRet();

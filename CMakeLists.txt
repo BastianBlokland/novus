@@ -25,7 +25,7 @@ else()
 endif()
 
 # Older version of libstdc++ require linking against the <experimental/filesystem> library directly.
-# TODO: Investigate if there is a better way to handle this.
+# TODO(bastian): Investigate if there is a better way to handle this.
 if(UNIX AND NOT APPLE)
   message("Add linking to stdc++fs")
   link_libraries(stdc++fs)

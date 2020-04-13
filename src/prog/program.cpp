@@ -260,6 +260,11 @@ Program::Program() :
       *this, Fk::ActionFileRemove, "fileRemove", sym::TypeSet{m_string}, m_bool);
 
   m_funcDecls.registerAction(
+      *this, Fk::ActionSetTermOptions, "termSetOptions", sym::TypeSet{m_int}, m_bool);
+  m_funcDecls.registerAction(
+      *this, Fk::ActionUnsetTermOptions, "termUnsetOptions", sym::TypeSet{m_int}, m_bool);
+
+  m_funcDecls.registerAction(
       *this, Fk::ActionGetEnvArg, "getEnvArg", sym::TypeSet{m_int}, m_string);
   m_funcDecls.registerAction(
       *this, Fk::ActionGetEnvArgCount, "getEnvArgCount", sym::TypeSet{}, m_int);
