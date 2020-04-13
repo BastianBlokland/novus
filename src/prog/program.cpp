@@ -272,6 +272,9 @@ Program::Program() :
       *this, Fk::ActionTermSetOptions, "termSetOptions", sym::TypeSet{m_int}, m_bool);
   m_funcDecls.registerAction(
       *this, Fk::ActionTermUnsetOptions, "termUnsetOptions", sym::TypeSet{m_int}, m_bool);
+  m_funcDecls.registerAction(*this, Fk::ActionTermGetWidth, "termGetWidth", sym::TypeSet{}, m_int);
+  m_funcDecls.registerAction(
+      *this, Fk::ActionTermGetHeight, "termGetHeight", sym::TypeSet{}, m_int);
 
   m_funcDecls.registerAction(
       *this, Fk::ActionGetEnvArg, "getEnvArg", sym::TypeSet{m_int}, m_string);

@@ -45,6 +45,12 @@ auto operator<<(std::ostream& out, const PCallCode& rhs) noexcept -> std::ostrea
   case PCallCode::TermUnsetOptions:
     out << "term-unset-options";
     break;
+  case PCallCode::TermGetWidth:
+    out << "term-get-width";
+    break;
+  case PCallCode::TermGetHeight:
+    out << "term-get-height";
+    break;
 
   case PCallCode::GetEnvArg:
     out << "get-env-arg";

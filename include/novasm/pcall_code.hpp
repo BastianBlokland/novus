@@ -25,6 +25,8 @@ enum class PCallCode : uint8_t {
 
   TermSetOptions   = 50, // (int) -> (int)  Set terminal control options, returns success.
   TermUnsetOptions = 51, // (int) -> (int)  Unset terminal control options, returns success.
+  TermGetWidth     = 52, // ()    -> (int)  Get the width (num columns) of the terminal.
+  TermGetHeight    = 53, // ()    -> (int)  Get the height (num rows) of the terminal.
 
   GetEnvArg      = 60, // (int)     -> (string) Get an environment argument by index.
   GetEnvArgCount = 61, // ()        -> (int)    Get the amount of environment arguments provided.

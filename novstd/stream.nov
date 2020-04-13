@@ -8,6 +8,9 @@ enum StreamOptions =
 act setOptions(stream s, StreamOptions opts)
   s.streamSetOptions(int(opts))
 
+act unsetOptions(stream s, StreamOptions opts)
+  s.streamUnsetOptions(int(opts))
+
 act read(stream s)
   (
     impure lambda (string result)

@@ -492,6 +492,12 @@ auto GenExpr::visit(const prog::expr::CallExprNode& n) -> void {
   case prog::sym::FuncKind::ActionTermUnsetOptions:
     m_asmb->addPCall(novasm::PCallCode::TermUnsetOptions);
     break;
+  case prog::sym::FuncKind::ActionTermGetWidth:
+    m_asmb->addPCall(novasm::PCallCode::TermGetWidth);
+    break;
+  case prog::sym::FuncKind::ActionTermGetHeight:
+    m_asmb->addPCall(novasm::PCallCode::TermGetHeight);
+    break;
 
   case prog::sym::FuncKind::ActionGetEnvArg:
     m_asmb->addPCall(novasm::PCallCode::GetEnvArg);

@@ -3,6 +3,7 @@
 
 #if !defined(_WIN32)
 
+#include <sys/ioctl.h>
 #include <termios.h>
 #include <unistd.h>
 
@@ -18,6 +19,40 @@ inline auto hasTerminal() -> bool {
   return false;
 #else
   return isatty(0) == 1;
+#endif
+}
+
+inline auto termGetWidth() -> int32_t {
+  if (!hasTerminal()) {
+    return -1;
+  }
+
+#if defined(_WIN32)
+  // TODO(bastian): Implement terminal get width on windows.
+  return -1;
+#else
+  winsize ws;
+  if (ioctl(0, TIOCGWINSZ, &ws)) {
+    return -1;
+  }
+  return static_cast<int32_t>(ws.ws_col);
+#endif
+}
+
+inline auto termGetHeight() -> int32_t {
+  if (!hasTerminal()) {
+    return -1;
+  }
+
+#if defined(_WIN32)
+  // TODO(bastian): Implement terminal get height on windows.
+  return -1;
+#else
+  winsize ws;
+  if (ioctl(0, TIOCGWINSZ, &ws)) {
+    return -1;
+  }
+  return static_cast<int32_t>(ws.ws_row);
 #endif
 }
 

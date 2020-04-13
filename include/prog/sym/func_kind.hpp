@@ -124,6 +124,8 @@ enum class FuncKind {
 
   ActionTermSetOptions,
   ActionTermUnsetOptions,
+  ActionTermGetWidth,
+  ActionTermGetHeight,
 
   ActionGetEnvArgCount,
   ActionGetEnvArg,

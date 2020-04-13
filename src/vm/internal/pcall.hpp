@@ -142,6 +142,12 @@ auto inline pcall(
     auto options = POP_INT();
     PUSH_BOOL(termUnsetOpts(static_cast<TermOpts>(options)));
   } break;
+  case PCallCode::TermGetWidth: {
+    PUSH_INT(termGetWidth());
+  } break;
+  case PCallCode::TermGetHeight: {
+    PUSH_INT(termGetHeight());
+  } break;
 
   case PCallCode::GetEnvArg: {
     auto* res = iface->getEnvArg(POP_INT());
