@@ -1,0 +1,272 @@
+// --- Simple snake-like commandline game
+
+import "std.nov"
+
+// --- Config
+
+fun pickupsCount()        5
+fun initialPlayerLength() 2
+fun growPerPickup()       5
+fun simInterval()         milliseconds(75)
+
+// --- Misc types
+
+struct  I2  = int x, int y
+struct  Box = I2 origin, I2 size
+enum    Dir = up, down, right, left
+
+fun I2(Dir d)
+  if d == Dir.up    -> I2(0, -1)
+  if d == Dir.down  -> I2(0, +1)
+  if d == Dir.right -> I2(+1, 0)
+  else              -> I2(-1, 0)
+
+fun +(I2 a, I2 b)   I2(a.x + b.x, a.y + b.y)
+fun -(I2 a, I2 b)   I2(a.x - b.x, a.y - b.y)
+fun %(I2 a, I2 b)   I2(a.x % b.x, a.y % b.y)
+fun *(I2 a, int b)  I2(a.x * b, a.y * b)
+fun +(I2 a, int b)  I2(a.x + b, a.y + b)
+fun -(I2 a, int b)  I2(a.x - b, a.y - b)
+fun +(I2 a, Dir b)  a + I2(b)
+fun -(I2 a, Dir b)  a - I2(b)
+
+fun center(Box b)   I2(b.origin.x + b.size.x / 2, b.origin.y + b.size.y / 2)
+fun min(Box b)      b.origin
+fun max(Box b)      b.origin + b.size
+
+fun opposite(Dir dir)
+  if dir == Dir.up    -> Dir.down
+  if dir == Dir.down  -> Dir.up
+  if dir == Dir.right -> Dir.left
+  else                -> Dir.right
+
+// Wrap inside a box, excludes 'edges' of the box.
+fun wrap(Box b, I2 pos)
+  d = (pos - b.origin) % (b.size - 2);
+  I2(
+    d.x <= 0 ? (b.max().x + d.x - 2) : (b.min().x + d.x),
+    d.y <= 0 ? (b.max().y + d.y - 2) : (b.min().y + d.y)
+  )
+
+// --- Game state
+
+struct PlayerState = I2 pos, Dir dir, List{I2} segments, int grow
+struct PickupState = I2 pos, int value
+struct GameState   =
+  PlayerState player,
+  List{PickupState} pickups,
+  int score,
+  bool gameover
+
+fun createPlayerSegs(I2 pos, Dir dir, int length)
+  rangeList(1, length).map(lambda (int i) pos - I2(dir) * i)
+
+fun createPlayer(I2 pos, Dir dir)
+  segs = createPlayerSegs(pos, dir, initialPlayerLength());
+  PlayerState(pos, dir, segs, 0)
+
+fun isSelfColliding(PlayerState player)
+  player.segments.contains(player.pos)
+
+fun getPickups(GameState game, I2 pos)
+  game.pickups.filter(lambda (PickupState p) p.pos == pos)
+
+// --- Input
+
+union   Input = InputNone, InputQuit, InputRestart, InputTurn
+struct  InputNone
+struct  InputQuit
+struct  InputRestart
+struct  InputTurn = Dir dir
+
+fun apply(InputTurn input, Dir cur)
+  if input.dir == cur.opposite()  -> cur
+  else                            -> input.dir
+
+fun getInput(string str) -> Input
+  lastChar = str.last();
+  if lastChar == 'q' -> InputQuit()
+  if lastChar == 'r' -> InputRestart()
+  if lastChar == 'w' -> InputTurn(Dir.up)
+  if lastChar == 's' -> InputTurn(Dir.down)
+  if lastChar == 'd' -> InputTurn(Dir.right)
+  if lastChar == 'a' -> InputTurn(Dir.left)
+  else               -> InputNone()
+
+// --- Simulation
+
+fun simulateGame(GameState game, Box win, Input input)
+  if game.gameover -> game
+  else ->
+    playerSim        = simulatePlayer(game, game.player, win, input);
+    newPlayer        = playerSim.first;
+    collided         = playerSim.second;
+    newScore         = game.score + collided.fold(lambda (int accum, PickupState s) accum + s.value);
+    remainingPickups = (game.pickups.filter(lambda (PickupState p) !collided.contains(p)));
+    gameover         = newPlayer.isSelfColliding();
+    GameState(newPlayer, remainingPickups, newScore, gameover)
+
+fun simulatePlayer(GameState game, PlayerState player, Box win, Input input)
+  newDir      = input as InputTurn turn ? turn.apply(player.dir) : player.dir;
+  newPos      = win.wrap(player.pos + newDir);
+  collided    = game.getPickups(newPos);
+  grow        = player.grow + (collided.isEmpty() ? 0 : growPerPickup());
+  newSegments = player.pos :: (grow == 0 ? player.segments.popBack() : player.segments);
+  newPlayer   = PlayerState(newPos, newDir, newSegments, max(grow - 1, 0));
+  Pair(newPlayer, collided)
+
+// -- Game loop
+
+act loop(stream in, stream out)
+  loop(in, out, initGame(getWindow()))
+
+act loop(stream in, stream out, GameState state)
+  window  = getWindow();
+  input   = getInput(in.read());
+  if input is InputQuit    -> false
+  if input is InputRestart -> loop(in, out)
+  else ->
+    newState = simulateGame(state, window, input).ensurePickups(window);
+    out.drawGame(newState, window);
+    sleep(simInterval());
+    loop(in, out, newState)
+
+// --- Intialization
+
+act initGame(Box window)
+  player    = initPlayer(window);
+  pickups   = initPickups(pickupsCount(), window);
+  GameState(player, pickups, 0, false)
+
+act ensurePickups(GameState game, Box window)
+  missingCount = pickupsCount() - game.pickups.length();
+  GameState(
+    game.player,
+    initPickups(missingCount, window) :: game.pickups,
+    game.score,
+    game.gameover)
+
+act initPlayer(Box window)
+  pos = window.center();
+  dir = diceDir();
+  createPlayer(pos, dir)
+
+act initPickups(int count, Box window)
+  for(count, impure lambda(int i)
+    pos = dicePos(window);
+    PickupState(pos, dice(3) + 1))
+
+act dice(int max)
+  int(clockNanoSteady() % max)
+
+act diceDir()
+  Dir(dice(4))
+
+act dicePos(Box box)
+  I2(
+    box.origin.x + 1 + dice(box.size.x - 2),
+    box.origin.y + 1 + dice(box.size.y - 2))
+
+// --- Draw game state
+
+act drawGame(stream out, GameState game, Box window)
+  out.termClearScreen();
+  out.drawBackground(game, window);
+  out.drawPickups(game.pickups);
+  out.drawPlayer(game.player);
+  out.streamFlush()
+
+act drawBackground(stream out, GameState game, Box window)
+  out.termStyle(TermStyle.FgBrightWhite);
+  out.termStyle(game.gameover ? TermStyle.BgBrightRed : TermStyle.BgGreen);
+  out.drawBox(window);
+  out.drawAt(
+    " Score: " + game.score.string(4) + " -- " +
+    "Quit: q -- " +
+    "Restart: r -- " +
+    "Steering: w, a, s, d ",
+    I2(5, 1));
+  out.termStyle(TermStyle.Reset)
+
+act drawPickups(stream out, List{PickupState} pickups)
+  pickups.map(impure lambda (PickupState p) out.drawPickup(p))
+
+act drawPickup(stream out, PickupState pickup)
+  out.termStyle(
+    if pickup.value == 3 -> TermStyle.FgBrightYellow
+    if pickup.value == 2 -> TermStyle.FgBrightCyan
+    else               -> TermStyle.FgBrightMagenta
+  );
+  out.drawAt("●", pickup.pos);
+  out.termStyle(TermStyle.Reset)
+
+act drawPlayer(stream out, PlayerState player)
+  out.drawAt(
+    if player.dir == Dir.up     -> "▲"
+    if player.dir == Dir.down   -> "▼"
+    if player.dir == Dir.right  -> "►"
+    else                        -> "◄", player.pos);
+  player.segments.map(impure lambda (I2 s) out.drawAt("●", s))
+
+// --- Misc drawing
+
+act drawBox(stream out, Box b)
+  out.drawAt(   "┌",  b.origin);
+  out.drawAt(   "┐",  b.origin + I2(b.size.x,  0));
+  out.drawAt(   "└",  b.origin + I2(0,         b.size.y));
+  out.drawAt(   "┘",  b.origin + I2(b.size.x,  b.size.y));
+  out.drawAtHor("─",  b.origin + I2(1,         0),         b.size.x - 2);
+  out.drawAtHor("─",  b.origin + I2(1,         b.size.y),  b.size.x - 2);
+  out.drawAtVer("│",  b.origin + I2(0,         1),         b.size.y - 2);
+  out.drawAtVer("│",  b.origin + I2(b.size.x,  1),         b.size.y - 2)
+
+act drawAtHor(stream out, string str, I2 pos, int times)
+  drawTimes = ( impure lambda (int times)
+    if times <= 0 -> true
+    else          -> out.streamWrite(str); self(--times)
+  );
+  out.termCursorPos(pos.y, pos.x);
+  drawTimes(times)
+
+act drawAtVer(stream out, string str, I2 pos, int times)
+  drawTimes = ( impure lambda (int i)
+    if i >= times -> true
+    else          ->
+      out.termCursorPos(pos.y + i, pos.x);
+      out.streamWrite(str);
+      self(++i)
+  );
+  drawTimes(0)
+
+act drawAt(stream out, string str, I2 pos)
+  out.termCursorPos(pos.y, pos.x);
+  out.streamWrite(str)
+
+// --- Entry point
+
+act main()
+  in  = consoleOpen(ConsoleKind.StdIn);
+  out = consoleOpen(ConsoleKind.StdOut);
+  setupTerminal(in, out);
+  loop(in, out);
+  resetTerminal(in, out)
+
+main()
+
+// --- Terminal setup
+
+act getWindow()
+  Box(I2(1, 1), I2(termGetWidth(), termGetHeight()))
+
+act setupTerminal(stream in, stream out)
+  termSetOptions(TermOptions.NoEcho | TermOptions.NoBuffer);
+  termAltScreen(out, true);
+  termCursorShow(out, false);
+  setOptions(in, StreamOptions.NoBlock)
+
+act resetTerminal(stream in, stream out)
+  termCursorShow(out, true);
+  termAltScreen(out, false);
+  termUnsetOptions(TermOptions.NoEcho | TermOptions.NoBuffer);
+  streamWrite(out, '\n');
+  unsetOptions(in, StreamOptions.NoBlock)

@@ -26,6 +26,9 @@ fun string(char c, int amount)
 fun isEmpty(string str)
   str.length() == 0
 
+fun last(string str)
+  str[str.length() - 1]
+
 fun appendChar(string str, char c)
   str + c
 
@@ -167,6 +170,11 @@ assert(
   string('0', -1) == "")
 
 assert("".isEmpty() && !" ".isEmpty())
+
+assert(
+  "".last() == '\0' &&
+  "o".last() == 'o' &&
+  "hello".last() == 'o')
 
 assert(
   "hello world".contains("hello") &&
