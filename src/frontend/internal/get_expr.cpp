@@ -416,8 +416,14 @@ auto GetExpr::visit(const parse::FieldExprNode& n) -> void {
     return;
   }
 
-  const auto fieldName    = getName(n.getId());
-  const auto lhsType      = lhsExpr->getType();
+  const auto fieldName = getName(n.getId());
+  const auto lhsType   = lhsExpr->getType();
+  if (!lhsType.isConcrete()) {
+    m_ctx->reportDiag(
+        errFieldNotFoundOnType, fieldName, getDisplayName(*m_ctx, lhsType), n.getSpan());
+    return;
+  }
+
   const auto& lhsTypeDecl = m_ctx->getProg()->getTypeDecl(lhsType);
   if (lhsTypeDecl.getKind() != prog::sym::TypeKind::Struct) {
     m_ctx->reportDiag(
