@@ -41,6 +41,4 @@ act benchReport{T}(T invokable)
 
 assert(
   res = bench(lambda () 1 + 1);
-  res.wallTime > millisecond() &&
-  res.avgDur < res.wallTime &&
-  res.iters > 100)
+  res.avgDur < res.wallTime)
