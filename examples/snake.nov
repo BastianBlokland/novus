@@ -118,18 +118,20 @@ fun simulatePlayer(GameState game, PlayerState player, Box win, Input input)
 // -- Game loop
 
 act loop(stream in, stream out)
-  loop(in, out, initGame(getWindow()))
+  loop(in, out, timestamp(), Duration(0), initGame(getWindow()))
 
-act loop(stream in, stream out, GameState state)
+act loop(stream in, stream out, Timestamp prevTime, Duration prevFrameDur, GameState state)
   window  = getWindow();
   input   = getInput(in.read());
   if input is InputQuit    -> false
   if input is InputRestart -> loop(in, out)
   else ->
-    newState = simulateGame(state, window, input).ensurePickups(window);
-    out.drawGame(newState, window);
-    sleep(simInterval());
-    loop(in, out, newState)
+    newState  = simulateGame(state, window, input).ensurePickups(window);
+    out.drawGame(newState, window, prevFrameDur);
+
+    frameDur  = timestamp() - prevTime;
+    sleep(simInterval() - frameDur);
+    loop(in, out, timestamp(), frameDur, newState)
 
 // --- Intialization
 
@@ -169,14 +171,14 @@ act dicePos(Box box)
 
 // --- Draw game state
 
-act drawGame(stream out, GameState game, Box window)
+act drawGame(stream out, GameState game, Box window, Duration frameDur)
   out.termClearScreen();
-  out.drawBackground(game, window);
+  out.drawBackground(game, window, frameDur);
   out.drawPickups(game.pickups);
   out.drawPlayer(game.player);
   out.streamFlush()
 
-act drawBackground(stream out, GameState game, Box window)
+act drawBackground(stream out, GameState game, Box window, Duration frameDur)
   out.termStyle(TermStyle.FgBrightWhite);
   out.termStyle(game.gameover ? TermStyle.BgBrightRed : TermStyle.BgGreen);
   out.drawBox(window);
@@ -184,7 +186,8 @@ act drawBackground(stream out, GameState game, Box window)
     " Score: " + game.score.string(4) + " ─ " +
     "Quit: q ─ " +
     "Restart: r ─ " +
-    "Steering: w, a, s, d ",
+    "Steering: w, a, s, d ─ " +
+    "FT: " + frameDur + " ",
     I2(5, 1));
   out.termStyle(TermStyle.Reset)
 
