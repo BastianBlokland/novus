@@ -189,7 +189,7 @@ act drawBackground(stream out, GameState game, Box window)
   out.termStyle(TermStyle.Reset)
 
 act drawPickups(stream out, List{PickupState} pickups)
-  pickups.map(impure lambda (PickupState p) out.drawPickup(p))
+  pickups.mapReverse(impure lambda (PickupState p) out.drawPickup(p))
 
 act drawPickup(stream out, PickupState pickup)
   out.termStyle(
@@ -206,7 +206,7 @@ act drawPlayer(stream out, PlayerState player)
     if player.dir == Dir.down   -> "▼"
     if player.dir == Dir.right  -> "►"
     else                        -> "◄", player.pos);
-  player.segments.map(impure lambda (I2 s) out.drawAt("●", s))
+  player.segments.mapReverse(impure lambda (I2 s) out.drawAt("●", s))
 
 // --- Misc drawing
 
