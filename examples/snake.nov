@@ -181,9 +181,9 @@ act drawBackground(stream out, GameState game, Box window)
   out.termStyle(game.gameover ? TermStyle.BgBrightRed : TermStyle.BgGreen);
   out.drawBox(window);
   out.drawAt(
-    " Score: " + game.score.string(4) + " -- " +
-    "Quit: q -- " +
-    "Restart: r -- " +
+    " Score: " + game.score.string(4) + " ─ " +
+    "Quit: q ─ " +
+    "Restart: r ─ " +
     "Steering: w, a, s, d ",
     I2(5, 1));
   out.termStyle(TermStyle.Reset)
