@@ -195,7 +195,7 @@ act drawPickup(stream out, PickupState pickup)
   out.termStyle(
     if pickup.value == 3 -> TermStyle.FgBrightYellow
     if pickup.value == 2 -> TermStyle.FgBrightCyan
-    else               -> TermStyle.FgBrightMagenta
+    else                 -> TermStyle.FgBrightMagenta
   );
   out.drawAt("●", pickup.pos);
   out.termStyle(TermStyle.Reset)
