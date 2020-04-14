@@ -2,6 +2,13 @@
 
 namespace vm {
 
+static int outputBufferSize = 1024;
+
+static auto setupOutputBuffering(std::FILE* file) -> void {
+  // Enable full buffering.
+  setvbuf(file, nullptr, _IOFBF, outputBufferSize);
+}
+
 PlatformInterface::PlatformInterface(
     int envArgsCount,
     char* const* envArgs,
@@ -12,7 +19,15 @@ PlatformInterface::PlatformInterface(
     m_envArgs{envArgs},
     m_stdIn{stdIn},
     m_stdOut{stdOut},
-    m_stdErr{stdErr} {}
+    m_stdErr{stdErr} {
+
+  if (stdOut != nullptr) {
+    setupOutputBuffering(stdOut);
+  }
+  if (stdErr != nullptr) {
+    setupOutputBuffering(stdErr);
+  }
+}
 
 auto PlatformInterface::getEnvArg(int idx) noexcept -> const char* {
   return idx < 0 || idx >= m_envArgsCount ? nullptr : m_envArgs[idx];
