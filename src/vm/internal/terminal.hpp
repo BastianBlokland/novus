@@ -64,7 +64,7 @@ inline auto termSetOpts(TermOpts opts) -> bool {
 #if defined(_WIN32)
   // TODO(bastian): Implement terminal control options for Windows.
 #else
-  /* Update the termios structure for file descriptor 0 (main terminal). */
+  /* Update the termios structure for file descriptor 0 (std-in). */
 
   termios t;
   if (tcgetattr(0, &t) != 0) {
@@ -93,7 +93,7 @@ inline auto termUnsetOpts(TermOpts opts) -> bool {
 #if defined(_WIN32)
   // TODO(bastian): Implement terminal control options for Windows.
 #else
-  /* Update the termios structure for file descriptor 0 (main terminal). */
+  /* Update the termios structure for file descriptor 0 (std-in). */
 
   termios t;
   if (tcgetattr(0, &t)) {
