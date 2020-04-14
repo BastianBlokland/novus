@@ -2,7 +2,7 @@
 
 namespace vm {
 
-static int outputBufferSize = 1024;
+static int outputBufferSize = 512;
 
 static auto setupOutputBuffering(std::FILE* file) -> void {
   // Enable full buffering.
