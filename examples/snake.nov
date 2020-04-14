@@ -215,13 +215,13 @@ act drawPlayer(stream out, PlayerState player)
 
 act drawBox(stream out, Box b)
   out.drawAt(   "┌",  b.origin);
-  out.drawAt(   "┐",  b.origin + I2(b.size.x,  0));
-  out.drawAt(   "└",  b.origin + I2(0,         b.size.y));
-  out.drawAt(   "┘",  b.origin + I2(b.size.x,  b.size.y));
-  out.drawAtHor("─",  b.origin + I2(1,         0),         b.size.x - 2);
-  out.drawAtHor("─",  b.origin + I2(1,         b.size.y),  b.size.x - 2);
-  out.drawAtVer("│",  b.origin + I2(0,         1),         b.size.y - 2);
-  out.drawAtVer("│",  b.origin + I2(b.size.x,  1),         b.size.y - 2)
+  out.drawAt(   "┐",  b.origin + I2(b.size.x - 1, 0));
+  out.drawAt(   "└",  b.origin + I2(0,            b.size.y));
+  out.drawAt(   "┘",  b.origin + I2(b.size.x - 1, b.size.y));
+  out.drawAtHor("─",  b.origin + I2(1,            0),         b.size.x - 2);
+  out.drawAtHor("─",  b.origin + I2(1,            b.size.y),  b.size.x - 2);
+  out.drawAtVer("│",  b.origin + I2(0,            1),         b.size.y - 2);
+  out.drawAtVer("│",  b.origin + I2(b.size.x - 1, 1),         b.size.y - 2)
 
 act drawAtHor(stream out, string str, I2 pos, int times)
   drawTimes = ( impure lambda (int times)
