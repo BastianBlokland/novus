@@ -120,9 +120,10 @@ fun simulatePlayer(GameState game, PlayerState player, Box win, Input input)
 // -- Game loop
 
 act loop(stream in, stream out)
-  loop(in, out, timestamp(), Duration(0), initGame(getWindow()))
+  loop(in, out, Duration(0), initGame(getWindow()))
 
-act loop(stream in, stream out, Timestamp prevTime, Duration prevFrameDur, GameState state)
+act loop(stream in, stream out, Duration prevFrameDur, GameState state)
+  t1      = timestamp();
   window  = getWindow();
   input   = getInput(in.read());
   if input is InputQuit    -> false
@@ -131,9 +132,9 @@ act loop(stream in, stream out, Timestamp prevTime, Duration prevFrameDur, GameS
     newState  = simulateGame(state, window, input).ensurePickups(window);
     out.drawGame(newState, window, prevFrameDur);
 
-    frameDur  = timestamp() - prevTime;
+    frameDur  = timestamp() - t1;
     sleep(simInterval() - frameDur);
-    loop(in, out, timestamp(), frameDur, newState)
+    loop(in, out, frameDur, newState)
 
 // --- Intialization
 
