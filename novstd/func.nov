@@ -12,6 +12,18 @@ fun []{T1, T2, TC, TR}(function{T1, T2, TC, TR} func, TC arg)
 fun []{T1, T2, T3, TC, TR}(function{T1, T2, T3, TC, TR} func, TC arg)
   curry(func, arg)
 
+fun []{TC, TR}(action{TC, TR} a, TC arg)
+  curry(a, arg)
+
+fun []{T1, TC, TR}(action{T1, TC, TR} a, TC arg)
+  curry(a, arg)
+
+fun []{T1, T2, TC, TR}(action{T1, T2, TC, TR} a, TC arg)
+  curry(a, arg)
+
+fun []{T1, T2, T3, TC, TR}(action{T1, T2, T3, TC, TR} a, TC arg)
+  curry(a, arg)
+
 fun &(function{bool} predA, function{bool} predB)
   and(predA, predB)
 
@@ -73,6 +85,18 @@ fun curry{T1, T2, TC, TR}(function{T1, T2, TC, TR} func, TC arg)
 
 fun curry{T1, T2, T3, TC, TR}(function{T1, T2, T3, TC, TR} func, TC arg)
   lambda (T1 a1, T2 a2, T3 a3) func(a1, a2, a3, arg)
+
+fun curry{TC, TR}(action{TC, TR} a, TC arg)
+  impure lambda () a(arg)
+
+fun curry{T1, TC, TR}(action{T1, TC, TR} a, TC arg)
+  impure lambda (T1 a1) a(a1, arg)
+
+fun curry{T1, T2, TC, TR}(action{T1, T2, TC, TR} a, TC arg)
+  impure lambda (T1 a1, T2 a2) a(a1, a2, arg)
+
+fun curry{T1, T2, T3, TC, TR}(action{T1, T2, T3, TC, TR} a, TC arg)
+  impure lambda (T1 a1, T2 a2, T3 a3) a(a1, a2, a3, arg)
 
 fun and(function{bool} predA, function{bool} predB)
   lambda () predA() && predB()
@@ -260,3 +284,24 @@ assert(
   notEq = !eq;
   notEq(42, 42, 42, 1337) && !notEq(42, 42, 42, 42))
 
+// -- Impure tests
+
+assert(
+  actRet = (impure lambda (int x) x);
+  ret42 = actRet[42];
+  ret42() == actRet(42))
+
+assert(
+  actPlus = (impure lambda (int a, int b) a + b);
+  plus42 = actPlus[42];
+  plus42(1337) == actPlus(1337, 42))
+
+assert(
+  actSum = (impure lambda (int a, int b, int c) a + b + c);
+  sumPlus42 = actSum[42];
+  sumPlus42(1, 2) == actSum(1, 2, 42))
+
+assert(
+  actSum = (impure lambda (int a, int b, int c, int d) a + b + c + d);
+  sumPlus42 = actSum[42];
+  sumPlus42(1, 2, 3) == actSum(1, 2, 3, 42))
