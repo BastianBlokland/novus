@@ -83,13 +83,14 @@ enum class OpCode : uint8_t {
   ConvIntLong     = 111, // [] (int)   -> (long)     Convert int to long.
   ConvIntFloat    = 112, // [] (int)   -> (float)    Convert int to float.
   ConvLongInt     = 113, // [] (long)  -> (int)      Convert long to int.
-  ConvFloatInt    = 114, // [] (float) -> (int)      Convert float to int.
-  ConvIntString   = 115, // [] (int)   -> (string)   Convert int to string.
-  ConvLongString  = 116, // [] (long)  -> (string)   Convert long to string.
-  ConvFloatString = 117, // [] (float) -> (string)   Convert float to string.
-  ConvCharString  = 118, // [] (int)   -> (string)   Convert char to string (ascii).
-  ConvIntChar     = 119, // [] (int)   -> (int)      Convert int to char (ascii).
-  ConvFloatChar   = 120, // [] (float) -> (int)      Convert float to char (ascii).
+  ConvLongFloat   = 114, // [] (long)  -> (float)    Convert long to float.
+  ConvFloatInt    = 115, // [] (float) -> (int)      Convert float to int.
+  ConvIntString   = 116, // [] (int)   -> (string)   Convert int to string.
+  ConvLongString  = 117, // [] (long)  -> (string)   Convert long to string.
+  ConvFloatString = 118, // [] (float) -> (string)   Convert float to string.
+  ConvCharString  = 119, // [] (int)   -> (string)   Convert char to string (ascii).
+  ConvIntChar     = 120, // [] (int)   -> (int)      Convert int to char (ascii).
+  ConvFloatChar   = 121, // [] (float) -> (int)      Convert float to char (ascii).
 
   MakeStruct      = 190, // [uint8] (any ...) -> (struct) Create structure containing x values.
   MakeNullStruct  = 191, // []      ()        -> struct   Create a struct without fields.

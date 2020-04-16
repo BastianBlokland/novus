@@ -209,6 +209,9 @@ auto operator<<(std::ostream& out, const OpCode& rhs) noexcept -> std::ostream& 
   case OpCode::ConvLongInt:
     out << "conv-long-int";
     break;
+  case OpCode::ConvLongFloat:
+    out << "conv-long-float";
+    break;
   case OpCode::ConvFloatInt:
     out << "conv-float-int";
     break;

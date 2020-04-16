@@ -182,6 +182,8 @@ auto Assembler::addConvIntFloat() -> void { writeOpCode(OpCode::ConvIntFloat); }
 
 auto Assembler::addConvLongInt() -> void { writeOpCode(OpCode::ConvLongInt); }
 
+auto Assembler::addConvLongFloat() -> void { writeOpCode(OpCode::ConvLongFloat); }
+
 auto Assembler::addConvFloatInt() -> void { writeOpCode(OpCode::ConvFloatInt); }
 
 auto Assembler::addConvIntString() -> void { writeOpCode(OpCode::ConvIntString); }

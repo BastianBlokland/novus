@@ -556,6 +556,9 @@ auto execute(
     case OpCode::ConvLongInt: {
       PUSH_INT(static_cast<int32_t>(getLong(POP())));
     } break;
+    case OpCode::ConvLongFloat: {
+      PUSH_FLOAT(static_cast<float>(getLong(POP())));
+    } break;
     case OpCode::ConvFloatInt: {
       PUSH_INT(static_cast<int32_t>(POP_FLOAT()));
     } break;

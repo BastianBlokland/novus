@@ -112,6 +112,7 @@ namespace opt {
   case prog::sym::FuncKind::CheckGtLong:
   case prog::sym::FuncKind::CheckGtEqLong:
   case prog::sym::FuncKind::ConvLongInt:
+  case prog::sym::FuncKind::ConvLongFloat:
   case prog::sym::FuncKind::ConvLongString:
   case prog::sym::FuncKind::DefLong:
 
@@ -634,6 +635,10 @@ private:
     case prog::sym::FuncKind::ConvLongInt: {
       assert(args.size() == 1);
       return prog::expr::litIntNode(m_prog, static_cast<int32_t>(getLong(*args[0])));
+    }
+    case prog::sym::FuncKind::ConvLongFloat: {
+      assert(args.size() == 1);
+      return prog::expr::litFloatNode(m_prog, static_cast<float>(getLong(*args[0])));
     }
     case prog::sym::FuncKind::ConvLongString: {
       assert(args.size() == 1);

@@ -85,6 +85,7 @@ enum class FuncKind {
   ConvIntLong,
   ConvIntFloat,
   ConvLongInt,
+  ConvLongFloat,
   ConvFloatInt,
   ConvIntString,
   ConvLongString,

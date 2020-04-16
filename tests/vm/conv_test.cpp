@@ -84,6 +84,29 @@ TEST_CASE("Execute conversions", "[vm]") {
         "-1");
   }
 
+  SECTION("Long to Float") {
+    CHECK_EXPR(
+        [](novasm::Assembler* asmb) -> void {
+          asmb->addLoadLitLong(42);
+          asmb->addConvLongFloat();
+
+          asmb->addConvFloatString();
+          ADD_PRINT(asmb);
+        },
+        "input",
+        "42");
+    CHECK_EXPR(
+        [](novasm::Assembler* asmb) -> void {
+          asmb->addLoadLitLong(51474836478);
+          asmb->addConvLongFloat();
+
+          asmb->addConvFloatString();
+          ADD_PRINT(asmb);
+        },
+        "input",
+        "5.14748e+10");
+  }
+
   SECTION("Float to Int") {
     CHECK_EXPR(
         [](novasm::Assembler* asmb) -> void {

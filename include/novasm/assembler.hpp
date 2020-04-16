@@ -96,6 +96,7 @@ public:
   auto addConvIntLong() -> void;
   auto addConvIntFloat() -> void;
   auto addConvLongInt() -> void;
+  auto addConvLongFloat() -> void;
   auto addConvFloatInt() -> void;
   auto addConvIntString() -> void;
   auto addConvLongString() -> void;
