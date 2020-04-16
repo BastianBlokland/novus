@@ -17,7 +17,7 @@ enum class PCallCode : uint8_t {
   StreamReadChar     = 14, // (stream)         -> (int)     Read a single character from a stream.
   StreamWriteString  = 15, // (string, stream) -> (int)     Write string, returns success.
   StreamWriteChar    = 16, // (int, stream)    -> (int)     Write character, returns success.
-  StreamFlush        = 17, // (stream)         -> (stream)  Flush any unwritten data to output.
+  StreamFlush        = 17, // (stream)         -> (int)     Flush any unwritten data, ret success.
   StreamSetOptions   = 18, // (int, stream)    -> (int)     Set options, returns success.
   StreamUnsetOptions = 19, // (int, stream)    -> (int)     Unset options, returns success.
 

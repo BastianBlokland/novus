@@ -59,7 +59,7 @@ public:
     return std::fputc(val, m_filePtr) == val;
   }
 
-  auto flush() noexcept -> void override { std::fflush(m_filePtr); }
+  auto flush() noexcept -> bool override { return std::fflush(m_filePtr) == 0; }
 
   auto setOpts(StreamOpts /*unused*/) noexcept -> bool override { return false; }
 

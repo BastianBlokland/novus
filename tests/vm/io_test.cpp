@@ -103,6 +103,10 @@ TEST_CASE("Execute input and output", "[vm]") {
           asmb->addStackLoad(0); // Load stream.
           asmb->addPCall(novasm::PCallCode::StreamFlush);
 
+          // Assert that flushing succeeded.
+          asmb->addLoadLitString("Flush failed");
+          asmb->addPCall(novasm::PCallCode::Assert);
+
           // Open the file again for reading.
           asmb->addLoadLitString(filePath); // Load stream.
           asmb->addLoadLitInt(1U);          // Options, mode 1 (Open).
@@ -110,6 +114,7 @@ TEST_CASE("Execute input and output", "[vm]") {
           asmb->addStackStore(0); // Store file-stream.
 
           // Assert that file-stream is valid.
+          asmb->addStackLoad(0); // Load stream.
           asmb->addPCall(novasm::PCallCode::StreamCheckValid);
           asmb->addLoadLitString("Stream not valid");
           asmb->addPCall(novasm::PCallCode::Assert);

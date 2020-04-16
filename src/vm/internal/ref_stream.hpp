@@ -25,7 +25,7 @@ public:
   virtual auto readChar() noexcept -> char                                      = 0;
   virtual auto writeString(StringRef* str) noexcept -> bool                     = 0;
   virtual auto writeChar(uint8_t val) noexcept -> bool                          = 0;
-  virtual auto flush() noexcept -> void                                         = 0;
+  virtual auto flush() noexcept -> bool                                         = 0;
   virtual auto setOpts(StreamOpts opts) noexcept -> bool                        = 0;
   virtual auto unsetOpts(StreamOpts opts) noexcept -> bool                      = 0;
 
@@ -71,11 +71,12 @@ inline auto streamWriteChar(const Value& stream, uint8_t val) noexcept -> bool {
   return streamRef->writeChar(val);
 }
 
-inline auto streamFlush(const Value& stream) noexcept -> void {
+inline auto streamFlush(const Value& stream) noexcept -> bool {
   auto* streamRef = stream.getDowncastRef<StreamRef>();
-  if (streamRef->isValid()) {
-    streamRef->flush();
+  if (!streamRef->isValid()) {
+    return false;
   }
+  return streamRef->flush();
 }
 
 inline auto streamSetOpts(const Value& stream, StreamOpts opts) noexcept -> bool {

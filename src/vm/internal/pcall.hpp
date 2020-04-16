@@ -116,7 +116,7 @@ auto inline pcall(
     PUSH_BOOL(result);
   } break;
   case PCallCode::StreamFlush: {
-    streamFlush(PEEK());
+    PUSH_BOOL(streamFlush(POP()));
   } break;
   case PCallCode::StreamSetOptions: {
     auto options = POP_INT();
