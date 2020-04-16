@@ -1,4 +1,5 @@
-import "std/text.nov"
+import "text.nov"
+import "math.nov"
 
 // Gregorian calendar assumed with no leap seconds.
 
@@ -170,6 +171,12 @@ fun absDuration(Duration d)
   if d == minDuration() -> maxDuration()
   else                  -> Duration(-d.ns)
 
+// Conversion to float (seconds with fractions).
+fun float(Duration d)
+  secs = d / second();
+  frac = (d.ns - seconds(secs).ns) / float(second().ns);
+  secs + frac
+
 fun min(Duration a, Duration b)
   Duration(a.ns < b.ns ? a.ns : b.ns)
 
@@ -326,3 +333,6 @@ assert(max(seconds(2), minutes(3)) == minutes(3))
 
 assert(timeNow() > timeEpoch())
 assert(timestamp() < timestamp())
+
+assert(approx(float(seconds(42) + milliseconds(500)), 42.5))
+assert(approx(float(seconds(1337) + millisecond()), 1337.001))
