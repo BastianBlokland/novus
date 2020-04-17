@@ -1,4 +1,5 @@
 import "console.nov"
+import "math.nov"
 
 // -- Utilities for interacting with a tty terminal using ANSI escape codes:
 // https://en.wikipedia.org/wiki/ANSI_escape_code
@@ -64,6 +65,29 @@ act termStyle(stream s, TermStyle style)
   s.streamWrite(termEsc());
   s.streamWrite('[');
   s.streamWrite(string(style));
+  s.streamWrite('m')
+
+// -- Set 8-bit color (if terminal supports it).
+
+act termColor(float r, float g, float b)
+  termColor(consoleOpen(ConsoleKind.StdOut), r, g, b, false)
+
+act termColor(float r, float g, float b, bool background)
+  termColor(consoleOpen(ConsoleKind.StdOut), r, g, b, background)
+
+act termColor(stream s, float r, float g, float b)
+  termColor(s, r, g, b, false)
+
+act termColor(stream s, float r, float g, float b, bool background)
+  toDiscrete = ( lambda (float v)
+    int(clamp(v, 0.0, 1.0) * 5.0 + 0.5)
+  );
+  col = 16 + 36 * toDiscrete(r) + 6 * toDiscrete(g) + toDiscrete(b);
+  s.streamWrite(termEsc());
+  s.streamWrite('[');
+  s.streamWrite(background ? "48" : "38");
+  s.streamWrite(";5;");
+  s.streamWrite(string(col));
   s.streamWrite('m')
 
 // -- Control the terminal cursor.

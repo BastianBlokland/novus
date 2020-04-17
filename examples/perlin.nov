@@ -1,0 +1,112 @@
+// --- Commandline graphics demo using perlin noise.
+// Note: Only works on unix systems at the moment due to usage of ansi escape sequences.
+
+import "std.nov"
+
+struct  I2        = int x, int y
+struct  Box       = I2 origin, I2 size
+struct  Settings  =
+  Duration  drawInterval,
+  int       drawIterations,
+  float     xyScale,
+  float     speed,
+  float     intensityScale,
+  float     bgCutoff,
+  float     redThreshold,
+  float     blueShift,
+  float     fillThreshold
+
+fun +(I2 a, I2 b)
+  I2(a.x + b.x, a.y + b.y)
+
+fun -(I2 a, I2 b)
+  I2(a.x - b.x, a.y - b.y)
+
+fun min(Box b)
+  b.origin
+
+fun max(Box b)
+  b.origin + b.size
+
+act draw(I2 pos, stream out, Settings s, Duration t)
+  n = perlinNoise3d(pos.x * s.xyScale, pos.y * s.xyScale, float(t) * s.speed) * s.intensityScale;
+  out.termCursorPos(pos.y, pos.x);
+  (
+    if n < s.bgCutoff -> out.termColor(0.0, 0.0, 0.0)
+    else              ->
+      r = n < s.redThreshold ? 1 : n;
+      g = n;
+      b = s.blueShift + n * (1.0 - s.blueShift);
+      out.termColor(r, g, b)
+  );
+  out.streamWrite(n < s.fillThreshold ? "○" : "●");
+  out.streamFlush()
+
+act loop(stream in, stream out, Settings s, Timestamp begin, int frame)
+  if in.read().length() != 0 -> false
+  else ->
+    now     = timestamp();
+    elapsed = now - begin;
+    forBox(getWindow(), draw[elapsed][s][out], frame, s.drawIterations);
+
+    frameTime = timestamp() - now;
+    sleep(s.drawInterval - frameTime);
+    loop(in, out, s, begin, ++frame)
+
+// Allow overriding tweak values using environment options. (syntax: --[KEY] [VALUE])
+act getSettings()
+  Settings(
+    milliseconds(getEnvOpt("drawInterval", parseInt)  ?? 20),
+    getEnvOpt("drawIterations", parseInt)             ?? 6,
+    getEnvOpt("xyScale", parseFloat)                  ?? 0.04,
+    getEnvOpt("speed", parseFloat)                    ?? 0.1,
+    getEnvOpt("intensityScale", parseFloat)           ?? 1.2,
+    getEnvOpt("bgCutoff", parseFloat)                 ?? 0.03,
+    getEnvOpt("redThreshold", parseFloat)             ?? 0.15,
+    getEnvOpt("blueShift", parseFloat)                ?? 0.4,
+    getEnvOpt("fillThreshold", parseFloat)            ?? 0.35)
+
+// --- Utilities
+
+// Call the action for each position in the box.
+// Can be spread along multiple frames by specifying more then 1 'numItrs'.
+act forBox(Box box, action{I2, bool} a, int itr, int numItrs)
+  yOffset = itr % numItrs;
+  xMax    = box.max().x;
+  yMax    = box.max().y;
+  for = ( impure lambda (int x, int y)
+    if y >= yMax  -> true
+    if x >= xMax  -> self(0, y + numItrs)
+    else ->
+      if !a(I2(x, y)) -> false
+      else            -> self(++x, y)
+  ); for(box.min().x, box.min().y + yOffset)
+
+// --- Entry point
+
+act main()
+  in  = consoleOpen(ConsoleKind.StdIn);
+  out = consoleOpen(ConsoleKind.StdOut);
+  setupTerminal(in, out);
+  loop(in, out, getSettings(), timestamp(), 0);
+  resetTerminal(in, out)
+
+main()
+
+// --- Terminal setup
+
+act getWindow()
+  Box(I2(1, 1), I2(termGetWidth(), termGetHeight()))
+
+act setupTerminal(stream in, stream out)
+  termSetOptions(TermOptions.NoEcho | TermOptions.NoBuffer);
+  termAltScreen(out, true);
+  termCursorShow(out, false);
+  setOptions(in, StreamOptions.NoBlock)
+
+act resetTerminal(stream in, stream out)
+  termCursorShow(out, true);
+  termAltScreen(out, false);
+  termUnsetOptions(TermOptions.NoEcho | TermOptions.NoBuffer);
+  streamWrite(out, '\n');
+  unsetOptions(in, StreamOptions.NoBlock)
