@@ -1,5 +1,6 @@
 // --- Commandline graphics demo using perlin noise.
 // Note: Only works on unix systems at the moment due to usage of ansi escape sequences.
+// Demo: https://youtu.be/bcD3IsEBXnA
 
 import "std.nov"
 
