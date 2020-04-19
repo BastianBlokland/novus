@@ -153,6 +153,8 @@ fun string(WeekDay d)
 
 struct Duration = long ns
 
+fun Duration() Duration(0)
+
 fun -(Duration d1, Duration d2)   Duration(d1.ns - d2.ns)
 fun +(Duration d1, Duration d2)   Duration(d1.ns + d2.ns)
 fun *(Duration d, long l)         Duration(d.ns * l)

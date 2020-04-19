@@ -57,15 +57,15 @@ act loop(stream in, stream out, Settings s, Timestamp begin, int frame)
 // Allow overriding tweak values using environment options. (syntax: --[KEY] [VALUE])
 act getSettings()
   Settings(
-    milliseconds(getEnvOpt("drawInterval", parseInt)  ?? 20),
-    getEnvOpt("drawIterations", parseInt)             ?? 6,
-    getEnvOpt("xyScale", parseFloat)                  ?? 0.04,
-    getEnvOpt("speed", parseFloat)                    ?? 0.1,
-    getEnvOpt("intensityScale", parseFloat)           ?? 1.2,
-    getEnvOpt("bgCutoff", parseFloat)                 ?? 0.03,
-    getEnvOpt("redThreshold", parseFloat)             ?? 0.15,
-    getEnvOpt("blueShift", parseFloat)                ?? 0.4,
-    getEnvOpt("fillThreshold", parseFloat)            ?? 0.35)
+    milliseconds(getEnvOpt("drawInterval", txtIntParser())  ?? 20),
+    getEnvOpt("drawIterations", txtIntParser())             ?? 6,
+    getEnvOpt("xyScale", txtFloatParser())                  ?? 0.04,
+    getEnvOpt("speed", txtFloatParser())                    ?? 0.1,
+    getEnvOpt("intensityScale", txtFloatParser())           ?? 1.2,
+    getEnvOpt("bgCutoff", txtFloatParser())                 ?? 0.03,
+    getEnvOpt("redThreshold", txtFloatParser())             ?? 0.15,
+    getEnvOpt("blueShift", txtFloatParser())                ?? 0.4,
+    getEnvOpt("fillThreshold", txtFloatParser())            ?? 0.35)
 
 // --- Utilities
 
