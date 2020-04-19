@@ -68,12 +68,15 @@ fun indexOf(string str, int idx, function{char, bool} pred)
   else                    -> indexOf(str, ++idx, pred)
 
 fun startsWith(string str, string subStr)
+  startsWithOffset(str, 0, subStr)
+
+fun startsWithOffset(string str, int idx, string subStr)
   (
-    lambda (int idx)
-      if idx >= subStr.length()   -> true
-      if idx >= str.length()      -> false
-      if str[idx] != subStr[idx]  -> false
-      else                        -> self(++idx)
+    lambda (int subStrIdx)
+      if subStrIdx >= subStr.length()               -> true
+      if subStrIdx >= str.length()                  -> false
+      if str[idx + subStrIdx] != subStr[subStrIdx]  -> false
+      else                                          -> self(++subStrIdx)
   )(0)
 
 fun endsWith(string str, string subStr)
