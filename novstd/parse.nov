@@ -128,6 +128,21 @@ fun matchParser(string str)
     else        -> s.failure(Error("Unmatched: '" + str + "'"))
   )
 
+fun whileParser(function{char, bool} pred)
+  Parser(lambda (ParseState begin)
+    impl =
+    (
+      lambda (ParseState cur, bool valid) -> ParseResult{string}
+        if pred(char(cur))  -> self(++cur, true)
+        else                -> valid  ? cur.success(begin.str[begin.pos, cur.pos])
+                                      : cur.failure(Error("Invalid character"))
+    );
+    impl(begin, false)
+  )
+
+fun whitespaceParser()
+  whileParser(isWhitespace)
+
 fun txtBoolParser()
   Parser(lambda (ParseState s) -> ParseResult{bool}
     if s == "true"  -> (s + 4).success(true)
@@ -185,6 +200,21 @@ assert(
 assert(
   "hello world".parse(matchParser("hello")) == "hello" &&
   "world".parse(matchParser("hello")) is ParseFailure)
+
+assert(
+  "123 123".parse(whileParser(isDigit)) == "123" &&
+  "12345".parse(whileParser(isDigit))   == "12345" &&
+  "1".parse(whileParser(isDigit))       == "1" &&
+  "1abc".parse(whileParser(isDigit))    == "1" &&
+  "abc".parse(whileParser(isDigit))   is ParseFailure &&
+  "".parse(whileParser(isDigit))      is ParseFailure)
+
+assert(
+  "  123".parse(whitespaceParser()) == "  " &&
+  " a".parse(whitespaceParser()) == " " &&
+  " \n\t ".parse(whitespaceParser()) == " \n\t " &&
+  "abc".parse(whitespaceParser())   is ParseFailure &&
+  "".parse(whitespaceParser())      is ParseFailure)
 
 assert(
   "1".parse(txtIntParser())                == 1 &&
