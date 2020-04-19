@@ -373,7 +373,7 @@ TEST_CASE("Infer return type of user functions", "[frontend]") {
                                  " assert(true, \"hello world\"); "
                                  " main()");
     REQUIRE(output.isSuccess());
-    CHECK(GET_FUNC_DECL(output, "main").getOutput() == GET_TYPE_ID(output, "int"));
+    CHECK(GET_FUNC_DECL(output, "main").getOutput() == GET_TYPE_ID(output, "bool"));
   }
 
   SECTION("Diagnostics") {

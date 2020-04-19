@@ -116,13 +116,13 @@ auto analyze(const Source& mainSrc, const std::vector<filesystem::path>& searchP
     firstInferItr = false;
   } while (!inferredAllFuncs);
 
-  // For actions we default to a int return type if we cannot infer it, reason is that its
+  // For actions we default to a bool return type if we cannot infer it, reason is that its
   // common to make infinite recursing actions (for example a 'main' action) and in those cases
   // we cannot infer a return type.
   for (const auto& fDeclInfo : funcDeclInfos) {
     auto& funcDecl = prog->getFuncDecl(fDeclInfo.getId());
     if (funcDecl.isAction() && funcDecl.getOutput().isInfer()) {
-      prog->updateFuncOutput(funcDecl.getId(), prog->getInt());
+      prog->updateFuncOutput(funcDecl.getId(), prog->getBool());
     }
   }
 
