@@ -8,6 +8,8 @@ struct Path = string str
 fun +(Path p1, Path p2)   Path(p1.str + p2.str)
 fun ::(Path p1, Path p2)  Path(p1.str + "/" + p2.str)
 
+fun isEmpty(Path p) p.str.length() == 0
+
 fun string(Path p) p.str
 
 // -- Actions
@@ -42,6 +44,8 @@ act appendFile(Path p, string str)
   f.streamFlush()
 
 // -- Tests
+
+assert(Path("").isEmpty())
 
 assert(
   p = Path("file-test1.tmp");

@@ -27,20 +27,32 @@ fun ==(ParseState s, char c)
 fun ==(ParseState s, string text)
   startsWithOffset(s.str, s.pos, text)
 
+fun !=(ParseState s, char c)
+  s.str[s.pos] != c
+
+fun !=(ParseState s, string text)
+  !startsWithOffset(s.str, s.pos, text)
+
 fun +(ParseState s, int amount)
   ParseState(s.str, s.pos + amount)
+
+fun -(ParseState s, int amount)
+  ParseState(s.str, max(s.pos - amount, 0))
 
 fun ++(ParseState s)
   s + 1
 
+fun --(ParseState s)
+  s - 1
+
 fun &{T1, T2}(Parser{T1} p1, Parser{T2} p2)
   Parser(lambda (ParseState s) -> ParseResult{Pair{T1, T2}}
     r1 = s.parse(p1);
-    if r1 as ParseFailure     f1 -> f1
-    if r1 as ParseSuccess{T1} s1 ->
-      r2 = s1.state.parse(p2);
-      if r2 as ParseFailure     f2 -> f2
-      if r2 as ParseSuccess{T2} s2 -> s2.state.success(Pair(s1.val, s2.val))
+    if r1 as ParseFailure     f1    -> f1
+    if r1 as ParseSuccess{T1} suc1  ->
+      r2 = suc1.state.parse(p2);
+      if r2 as ParseFailure     f2    -> f2
+      if r2 as ParseSuccess{T2} suc2  -> suc2.state.success(Pair(suc1.val, suc2.val))
   )
 
 fun |{T}(Parser{T} p1, Parser{T} p2)
@@ -53,26 +65,32 @@ fun |{T}(Parser{T} p1, Parser{T} p2)
 fun |{T1, T2}(Parser{T1} p1, Parser{T2} p2)
   Parser(lambda (ParseState s) -> ParseResult{Either{T1, T2}}
     r1 = s.parse(p1);
-    if r1 as ParseSuccess{T1} s1 -> s1.state.success(                 Either{T1, T2}(s1.val))
-    if r1 is ParseFailure        -> s.parse(p2).map(lambda (T2 val2)  Either{T1, T2}(val2))
+    if r1 as ParseSuccess{T1} suc1  -> suc1.state.success(               Either{T1, T2}(suc1.val))
+    if r1 is ParseFailure           -> s.parse(p2).map(lambda (T2 val2)  Either{T1, T2}(val2))
   )
 
 fun >>{T1, T2}(Parser{T1} p1, Parser{T2} p2)
   Parser(lambda (ParseState s) -> ParseResult{T2}
     r1 = s.parse(p1);
-    if r1 as ParseFailure     f1 -> f1
-    if r1 as ParseSuccess{T1} c1 -> c1.state.parse(p2)
+    if r1 as ParseFailure     f1    -> f1
+    if r1 as ParseSuccess{T1} suc1  -> suc1.state.parse(p2)
   )
 
 fun <<{T1, T2}(Parser{T1} p1, Parser{T2} p2)
   Parser(lambda (ParseState s) -> ParseResult{T1}
     r1 = s.parse(p1);
-    if r1 as ParseFailure     f1 -> f1
-    if r1 as ParseSuccess{T1} s1 ->
-      r2 = s1.state.parse(p2);
-      if r2 as ParseFailure     f2 -> f2
-      if r2 as ParseSuccess{T2} s2 -> s2.state.success(s1.val)
+    if r1 as ParseFailure     f1    -> f1
+    if r1 as ParseSuccess{T1} suc1  ->
+      r2 = suc1.state.parse(p2);
+      if r2 as ParseFailure     f2    -> f2
+      if r2 as ParseSuccess{T2} suc2  -> suc2.state.success(suc1.val)
   )
+
+fun ::{T}(Parser{T} p1, Parser{T} p2)
+  (p1 & p2).map(lambda (Pair{T, T} p) p.first :: p.second :: List{T}())
+
+fun ::{T}(Parser{T} p1, Parser{List{T}} p2)
+ (p1 & p2).map(lambda (Pair{T, List{T}} p) p.first :: p.second)
 
 fun =={T}(ParseResult{T} result, T val)
   result as ParseSuccess{T} suc && suc.val == val
@@ -89,8 +107,14 @@ fun string(ParseState s)
   s.pos.string()
 
 fun string{T}(ParseResult{T} res)
-  if res as ParseSuccess{T} suc   -> suc.val.string()
-  if res as ParseFailure    fail  -> fail.err.string()
+  if res as ParseSuccess{T} suc   -> suc.string()
+  if res as ParseFailure    fail  -> fail.string()
+
+fun string{T}(ParseSuccess{T} suc)
+  suc.val.string()
+
+fun string(ParseFailure fail)
+  "[" + fail.state.pos.string() + "] " + fail.err.string()
 
 fun char(ParseState s)
   s.str[s.pos]
@@ -109,6 +133,19 @@ fun map{T, TResult}(ParseResult{T} res, function{T, TResult} func)
   if res as ParseSuccess{T} suc   -> suc.state.success(func(suc.val))
   if res as ParseFailure    fail  -> fail
 
+fun map{T, TResult}(Parser{T} p, function{T, TResult} func)
+  Parser(lambda (ParseState s) -> ParseResult{TResult}
+    res = s.parse(p);
+    if res as ParseSuccess{T} suc   -> suc.state.success(func(suc.val))
+    if res as ParseFailure    fail  -> fail
+  )
+
+fun unwrap{T1, T2, TResult}(Parser{Pair{T1, T2}} p, function{T1, T2, TResult} f)
+  p.map(lambda (Pair{T1, T2} pair) f(pair.first, pair.second))
+
+fun unwrap{T1, T2, T3, TResult}(Parser{Pair{Pair{T1, T2}, T3}} p, function{T1, T2, T3, TResult} f)
+  p.map(lambda (Pair{Pair{T1, T2}, T3} pair) f(pair.first.first, pair.first.second, pair.second))
+
 // -- Basic parsers
 
 fun retParser{T}(T val)
@@ -119,29 +156,49 @@ fun retParser{T}(T val)
 fun matchParser(char c)
   Parser(lambda (ParseState s) -> ParseResult{char}
     if s == c -> (s + 1).success(c)
-    else      -> s.failure(Error("Unmatched: '" + c + "'"))
+    else      -> s.failure(Error("Expected: '" + c + "', got: '" + char(s) + "'"))
   )
 
 fun matchParser(string str)
   Parser(lambda (ParseState s) -> ParseResult{string}
     if s == str -> (s + str.length()).success(str)
-    else        -> s.failure(Error("Unmatched: '" + str + "'"))
+    else        -> s.failure(Error("Expected: '" + str + "', got: '" + char(s) + "'"))
   )
 
-fun whileParser(function{char, bool} pred)
+fun whileParser(function{ParseState, bool} pred)
+  whileParser(pred, false)
+
+fun whileParser(function{ParseState, bool} pred, bool allowEmpty)
   Parser(lambda (ParseState begin)
     impl =
     (
       lambda (ParseState cur, bool valid) -> ParseResult{string}
-        if pred(char(cur))  -> self(++cur, true)
-        else                -> valid  ? cur.success(begin.str[begin.pos, cur.pos])
-                                      : cur.failure(Error("Invalid character"))
+        if !cur.isEnd() && pred(cur) -> self(++cur, true)
+        else                         -> valid  ? cur.success(begin.str[begin.pos, cur.pos])
+                                               : cur.failure(Error(
+                                                  "Unexpected character: '" + char(cur) + "'"))
     );
-    impl(begin, false)
+    impl(begin, allowEmpty)
   )
 
+fun whileParser(function{char, bool} pred)
+  whileParser(pred, false)
+
+fun whileParser(function{char, bool} pred, bool allowEmpty)
+  whileParser(lambda (ParseState s) pred(char(s)), allowEmpty)
+
 fun whitespaceParser()
-  whileParser(isWhitespace)
+  whileParser(isWhitespace, false)
+
+fun whitespaceParser(bool optional)
+  whileParser(isWhitespace, optional)
+
+fun lineParser()
+  whileParser(lambda (ParseState s) (s - 1) != '\n', false)
+
+fun quotedStringParser()
+  matchParser('"') >>
+    whileParser(lambda (char c) c != '"' && !c.isNewline(), true) << matchParser('"')
 
 fun txtBoolParser()
   Parser(lambda (ParseState s) -> ParseResult{bool}
@@ -151,7 +208,7 @@ fun txtBoolParser()
     if s == "false" -> (s + 5).success(false)
     if s == "FALSE" -> (s + 5).success(false)
     if s == "False" -> (s + 5).success(false)
-    else            -> s.failure(Error("Invalid boolean"))
+    else            -> s.failure(Error("Expected boolean, got: '" + char(s) + "'"))
   )
 
 fun txtIntParser()
@@ -161,9 +218,10 @@ fun txtIntParser()
       lambda (ParseState s, int res, bool valid) -> ParseResult{int}
         if char(s).isDigit()  -> self(++s, res * 10 + char(s) - '0', true)
         else                  -> valid ?  s.success(res) :
-                                          s.failure(Error("Invalid integer"))
+                                          s.failure(Error(
+                                            "Expected integer, got: '" + char(s) + "'"))
     );
-    if s.isEnd() -> s.failure(Error("Unexpected end of input"))
+    if s.isEnd() -> s.failure(Error("Expected int, got: end of input"))
     if s == '-'  -> impl(++s, 0, false).map(negate{int})
     if s == '+'  -> impl(++s, 0, false)
     else         -> impl(s, 0, false)
@@ -181,12 +239,32 @@ fun txtFloatParser()
         if s == 'e' || s == 'E' -> (s + 1).parse(txtIntParser()).map(lambda (int exp)
                                                                       raw / (div / pow(10.0, exp)))
         else                    -> valid ?  s.success(raw / div) :
-                                            s.failure(Error("Invalid floating-point number"))
+                                            s.failure(Error(
+                                              "Expected float, got: '" + char(s) + "'"))
     );
-    if s.isEnd() -> s.failure(Error("Unexpected end of input"))
+    if s.isEnd() -> s.failure(Error("Expected float, got: end of input"))
     if s == '-'  -> impl(++s, 0.0, 1.0, false, false).map(negate{float})
     if s == '+'  -> impl(++s, 0.0, 1.0, false, false)
     else         -> impl(s,   0.0, 1.0, false, false)
+  )
+
+// -- Combination parsers
+
+fun many{T}(Parser{T} p)
+  many(p, true)
+
+fun many{T}(Parser{T} p, bool toEnd)
+  Parser(lambda (ParseState begin)
+    impl =
+    (
+      lambda (ParseState cur, List{T} result)  -> ParseResult{List{T}}
+        if cur.isEnd() -> cur.success(result)
+        else ->
+          res = cur.parse(p);
+          if res as ParseSuccess{T} suc   -> self(suc.state, suc.val :: result)
+          if res as ParseFailure    fail  -> toEnd ? fail : cur.success(result)
+    );
+    impl(begin, List{T}()).map(reverse{T})
   )
 
 // -- Tests
@@ -202,12 +280,12 @@ assert(
   "world".parse(matchParser("hello")) is ParseFailure)
 
 assert(
-  "123 123".parse(whileParser(isDigit)) == "123" &&
-  "12345".parse(whileParser(isDigit))   == "12345" &&
-  "1".parse(whileParser(isDigit))       == "1" &&
-  "1abc".parse(whileParser(isDigit))    == "1" &&
-  "abc".parse(whileParser(isDigit))   is ParseFailure &&
-  "".parse(whileParser(isDigit))      is ParseFailure)
+  "123 123".parse(whileParser(isDigit, false)) == "123" &&
+  "12345".parse(whileParser(isDigit, false))   == "12345" &&
+  "1".parse(whileParser(isDigit, false))       == "1" &&
+  "1abc".parse(whileParser(isDigit, false))    == "1" &&
+  "abc".parse(whileParser(isDigit, false))   is ParseFailure &&
+  "".parse(whileParser(isDigit, false))      is ParseFailure)
 
 assert(
   "  123".parse(whitespaceParser()) == "  " &&
@@ -215,6 +293,18 @@ assert(
   " \n\t ".parse(whitespaceParser()) == " \n\t " &&
   "abc".parse(whitespaceParser())   is ParseFailure &&
   "".parse(whitespaceParser())      is ParseFailure)
+
+assert(
+  "abc sdf hello world".parse(lineParser()) == "abc sdf hello world" &&
+  "abc sdf\nhello world".parse(lineParser()) == "abc sdf\n" &&
+  "".parse(lineParser()) is ParseFailure)
+
+assert(
+  "\"Hello World\"".parse(quotedStringParser()) == "Hello World" &&
+  "\"Hello\" \"World\"".parse(quotedStringParser()) == "Hello" &&
+  "Hello world".parse(quotedStringParser()) is ParseFailure &&
+  "\"Hello world".parse(quotedStringParser()) is ParseFailure &&
+  "\"Hello world\n\"".parse(quotedStringParser()) is ParseFailure)
 
 assert(
   "1".parse(txtIntParser())                == 1 &&
@@ -303,3 +393,46 @@ assert(
   "Hello".parse(p) is ParseFailure &&
   " World".parse(p) is ParseFailure &&
   "abc".parse(p) is ParseFailure)
+
+assert(
+  p = txtIntParser().map(lambda (int i) i * i);
+  "123".parse(p) == 123 * 123 &&
+  "".parse(p) is ParseFailure)
+
+assert(
+  p = txtIntParser().map(lambda (int i) i == 42);
+  "123".parse(p) == false &&
+  "42".parse(p) == true &&
+  "".parse(p) is ParseFailure)
+
+assert(
+  p = txtBoolParser() :: txtBoolParser() :: txtBoolParser();
+  "truefalsetrue".parse(p) == true :: false :: true :: List{bool}() &&
+  "truefalse".parse(p) is ParseFailure &&
+  "".parse(p) is ParseFailure)
+
+assert(
+  p = (txtBoolParser() & txtBoolParser()).unwrap(lambda (bool a, bool b) a && b);
+  "truefalse".parse(p) == false &&
+  "truetrue".parse(p) == true &&
+  "true".parse(p) is ParseFailure &&
+  "".parse(p) is ParseFailure)
+
+assert(
+  p = (txtBoolParser() & txtBoolParser() & txtBoolParser()).unwrap(
+    lambda (bool a, bool b, bool c) a && b && c);
+  "truefalsetrue".parse(p) == false &&
+  "truetruetrue".parse(p) == true &&
+  "truefalse".parse(p) is ParseFailure &&
+  "".parse(p) is ParseFailure)
+
+assert(
+  p = many(txtBoolParser(), false);
+  "truefalsetruetrue".parse(p) == true :: false :: true :: true :: List{bool}() &&
+  "true".parse(p) == true :: List{bool}() &&
+  "true1".parse(p) == true :: List{bool}() &&
+  "".parse(p) == List{bool}())
+
+assert(
+  p = many(txtBoolParser(), true);
+  "true1true".parse(p) is ParseFailure)
