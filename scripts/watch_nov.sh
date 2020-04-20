@@ -8,16 +8,12 @@ trap interupt SIGINT
 
 info()
 {
-  local green='\033[0;32m'
-  local normal='\033[0m'
-  echo -e "${green}${1}${normal}"
+  echo "${1}"
 }
 
 error()
 {
-  local red='\033[0;31m'
-  local normal='\033[0m'
-  echo -e "${red}ERROR: ${1}${normal}" >&2
+  echo "ERROR: ${1}" >&2
 }
 
 fail()

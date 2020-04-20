@@ -1,27 +1,24 @@
-default: build.debug
+default: build
 
 # --------------------------------------------------------------------------------------------------
 # Convenient development utlitities.
 # --------------------------------------------------------------------------------------------------
 
-nproc := $(shell ./scripts/nproc.sh)
+.PHONY: configure.debug
+configure.debug:
+	./scripts/configure.sh --type Debug
 
-.PHONY: build.debug
-build.debug:
-	cmake -B build -DCMAKE_BUILD_TYPE=Debug && \
-	cd build && \
-	make -j$(nproc)
+.PHONY: configure.release
+configure.release:
+	./scripts/configure.sh --type Release
 
-.PHONY: build.release
-build.release:
-	cmake -B build -DCMAKE_BUILD_TYPE=Release && \
-	cd build && \
-	make -j$(nproc)
+.PHONY: build
+build:
+	./scripts/build.sh
 
 .PHONY: test
-test: build.debug
-	cd build && \
-	make CTEST_OUTPUT_ON_FAILURE=1 test
+test: build
+	./scripts/test.sh
 
 .PHONY: clean
 clean:
