@@ -55,5 +55,6 @@ add_subdirectory(apps)
 add_subdirectory(novstd)
 
 if(BUILD_TESTING)
+  message("Including compiler and vm tests")
   add_subdirectory(tests)
 endif()

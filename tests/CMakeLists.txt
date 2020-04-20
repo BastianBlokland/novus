@@ -140,3 +140,5 @@ target_link_libraries(novtests PRIVATE vm)
 
 # Register novtests to CTest.
 catch_discover_tests(novtests)
+
+message("Registered compiler and vm tests to CTest")
