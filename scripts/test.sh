@@ -39,11 +39,11 @@ testProj()
     fail "No 'Makefile' found in build directory, please run 'configure.sh' first"
 
   # Verify that make is present on path.
-  hasCommand make || fail "'make' not found on path, it is required"
+  hasCommand ctest || fail "'ctest' not found on path, it is required"
 
-  info "Begin testing using make"
+  info "Begin testing using ctest"
 
-  cd "${dir}" && make CTEST_OUTPUT_ON_FAILURE=1 test
+  cd "${dir}" && ctest CTEST_OUTPUT_ON_FAILURE=1 test
 
   info "Succesfully finished testing"
 }
