@@ -5,7 +5,11 @@ project(
   VERSION 0.1
   LANGUAGES CXX)
 
+# Custom options options
+set(LINTING "Off" CACHE BOOL "Should source linting be enabled")
+
 message("Compiler: ${CMAKE_CXX_COMPILER_ID}")
+message("Ouput path: ${PROJECT_SOURCE_DIR}/bin")
 
 # Output executables to bin dir.
 set(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/bin)
@@ -42,11 +46,15 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 # reason is that 'mingw64-w64' does not respect that file.
 set(CMAKE_CXX_USE_RESPONSE_FILE_FOR_INCLUDES OFF)
 
-# Use the clang-tidy linter if installed.
-find_program(CLANG_TIDY_BIN NAMES "clang-tidy" "clang-tidy-9")
-if(CLANG_TIDY_BIN)
-  set(CMAKE_CXX_CLANG_TIDY ${CLANG_TIDY_BIN})
-  message("Enabled clang-tidy")
+if(LINTING)
+  message ("Configuring linting")
+
+  # Use the clang-tidy linter if installed.
+  find_program(CLANG_TIDY_BIN NAMES "clang-tidy" "clang-tidy-9")
+  if(CLANG_TIDY_BIN)
+    set(CMAKE_CXX_CLANG_TIDY ${CLANG_TIDY_BIN})
+    message("Enabled clang-tidy linter")
+  endif()
 endif()
 
 # Add child cmake files.

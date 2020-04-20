@@ -26,29 +26,38 @@ hasCommand()
   [ -x "$(command -v "${1}")" ]
 }
 
+verifyBuildTypeOption()
+{
+  case "${1}" in
+    Debug|Release)
+      ;;
+    *)
+      fail "Unsupported build-type: '${1}'"
+      ;;
+  esac
+}
+
+verifyBoolOption()
+{
+  case "${1}" in
+    On|Off)
+      ;;
+    *)
+      fail "Unsupported bool value: '${1}'"
+      ;;
+  esac
+}
+
 configureProj()
 {
   local type="${1}"
   local dir="${2}"
   local testsMode="${3}"
+  local lintMode="${4}"
 
-  # Verify the type is supported.
-  case "${type}" in
-    Release|Debug)
-      ;;
-    *)
-      fail "Unsupported build-type: '${type}'"
-      ;;
-  esac
-
-  # Verify the tests mode is supported.
-  case "${testsMode}" in
-    On|Off)
-      ;;
-    *)
-      fail "Unsupported tests mode: '${testsMode}'"
-      ;;
-  esac
+  verifyBuildTypeOption "${type}"
+  verifyBoolOption "${testsMode}"
+  verifyBoolOption "${lintMode}"
 
   # Create target directory if it doesn't exist yet.
   test -d "${dir}" || mkdir -p "${dir}"
@@ -58,7 +67,10 @@ configureProj()
 
   info "Begin configuring build directory '${dir}' using cmake"
 
-  cmake -B "${dir}" -DCMAKE_BUILD_TYPE="${type}" -DBUILD_TESTING="${testsMode}"
+  cmake -B "${dir}" \
+    -DCMAKE_BUILD_TYPE="${type}" \
+    -DBUILD_TESTING="${testsMode}" \
+    -DLINTING="${lintMode}"
 
   info "Succesfully configured build directory '${dir}'"
 }
@@ -71,12 +83,14 @@ printUsage()
   echo "-t,--type     Build type, options: Debug, Release (default)"
   echo "-d,--dir      Build directory, default: 'build'"
   echo "--tests       Include compiler and runtime tests"
+  echo "--lint        Enable source linter"
 }
 
 # Defaults.
 buildType="Release"
 buildDir="build"
 testsMode="Off"
+lintMode="Off"
 
 # Parse options.
 while [[ $# -gt 0 ]]
@@ -98,6 +112,10 @@ do
       testsMode="On"
       shift 1
       ;;
+    --lint)
+      lintMode="On"
+      shift 1
+      ;;
     *)
       fail "Unknown option '${1}'"
       ;;
@@ -105,5 +123,5 @@ do
 done
 
 # Run configuration.
-configureProj "${buildType}" "${buildDir}" "${testsMode}"
+configureProj "${buildType}" "${buildDir}" "${testsMode}" "${lintMode}"
 exit 0
