@@ -43,7 +43,7 @@ testProj()
 
   info "Begin testing using ctest"
 
-  cd "${dir}" && ctest CTEST_OUTPUT_ON_FAILURE=1 test
+  cd "${dir}" && ctest --output-on-failure
 
   info "Succesfully finished testing"
 }

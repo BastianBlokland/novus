@@ -63,7 +63,7 @@ jobs:
         echo "clang-tidy-9 --version:"; clang-tidy-9 --version
 
     - name: configure
-      run: ./scripts/configure.sh --type $BUILD_TYPE
+      run: ./scripts/configure.sh --type $BUILD_TYPE --tests
 
     - name: build
       run: ./scripts/build.sh
