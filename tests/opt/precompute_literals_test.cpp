@@ -236,9 +236,10 @@ TEST_CASE("Precompute literals", "[opt]") {
     // Verify that it was optimized into a normal call.
     auto args = std::vector<prog::expr::NodePtr>{};
     args.push_back(litIntNode(prog, 42));
-    CHECK(
-        GET_FUNC_DEF(prog, "f2").getExpr() ==
-        *callExprNode(prog, GET_FUNC_ID(prog, "f1", GET_TYPE_ID(prog, "int")), std::move(args)));
+    auto callExpr =
+        callExprNode(prog, GET_FUNC_ID(prog, "f1", GET_TYPE_ID(prog, "int")), std::move(args));
+
+    CHECK(GET_FUNC_DEF(prog, "f2").getExpr() == *callExpr);
   }
 
   SECTION("dynamic call to closure") {

@@ -22,17 +22,13 @@ TEST_CASE("Analyzing binary expressions", "[frontend]") {
     args.push_back(prog::expr::litIntNode(output.getProg(), 1));
     args.push_back(
         prog::expr::constExprNode(funcDef.getConsts(), funcDef.getConsts().lookup("a").value()));
+    auto callExpr = prog::expr::callExprNode(
+        output.getProg(),
+        GET_OP_ID(
+            output, prog::Operator::Star, GET_TYPE_ID(output, "int"), GET_TYPE_ID(output, "int")),
+        std::move(args));
 
-    CHECK(
-        funcDef.getExpr() ==
-        *prog::expr::callExprNode(
-            output.getProg(),
-            GET_OP_ID(
-                output,
-                prog::Operator::Star,
-                GET_TYPE_ID(output, "int"),
-                GET_TYPE_ID(output, "int")),
-            std::move(args)));
+    CHECK(funcDef.getExpr() == *callExpr);
   }
 
   SECTION("Get binary expression with conversion on lhs") {
@@ -44,17 +40,16 @@ TEST_CASE("Analyzing binary expressions", "[frontend]") {
     args.push_back(applyConv(output, "int", "float", prog::expr::litIntNode(output.getProg(), 2)));
     args.push_back(
         prog::expr::constExprNode(funcDef.getConsts(), funcDef.getConsts().lookup("a").value()));
+    auto callExpr = prog::expr::callExprNode(
+        output.getProg(),
+        GET_OP_ID(
+            output,
+            prog::Operator::Star,
+            GET_TYPE_ID(output, "float"),
+            GET_TYPE_ID(output, "float")),
+        std::move(args));
 
-    CHECK(
-        funcDef.getExpr() ==
-        *prog::expr::callExprNode(
-            output.getProg(),
-            GET_OP_ID(
-                output,
-                prog::Operator::Star,
-                GET_TYPE_ID(output, "float"),
-                GET_TYPE_ID(output, "float")),
-            std::move(args)));
+    CHECK(funcDef.getExpr() == *callExpr);
   }
 
   SECTION("Get binary expression with conversion on rhs") {
@@ -66,17 +61,16 @@ TEST_CASE("Analyzing binary expressions", "[frontend]") {
     args.push_back(
         prog::expr::constExprNode(funcDef.getConsts(), funcDef.getConsts().lookup("a").value()));
     args.push_back(applyConv(output, "int", "float", prog::expr::litIntNode(output.getProg(), 2)));
+    auto callExpr = prog::expr::callExprNode(
+        output.getProg(),
+        GET_OP_ID(
+            output,
+            prog::Operator::Star,
+            GET_TYPE_ID(output, "float"),
+            GET_TYPE_ID(output, "float")),
+        std::move(args));
 
-    CHECK(
-        funcDef.getExpr() ==
-        *prog::expr::callExprNode(
-            output.getProg(),
-            GET_OP_ID(
-                output,
-                prog::Operator::Star,
-                GET_TYPE_ID(output, "float"),
-                GET_TYPE_ID(output, "float")),
-            std::move(args)));
+    CHECK(funcDef.getExpr() == *callExpr);
   }
 
   SECTION("Get logic 'and' expression") {
@@ -92,10 +86,10 @@ TEST_CASE("Analyzing binary expressions", "[frontend]") {
     auto branches = std::vector<prog::expr::NodePtr>{};
     branches.push_back(prog::expr::constExprNode(consts, consts.lookup("b").value()));
     branches.push_back(prog::expr::litBoolNode(output.getProg(), false));
+    auto switchExpr =
+        prog::expr::switchExprNode(output.getProg(), std::move(conditions), std::move(branches));
 
-    CHECK(
-        funcDef.getExpr() ==
-        *prog::expr::switchExprNode(output.getProg(), std::move(conditions), std::move(branches)));
+    CHECK(funcDef.getExpr() == *switchExpr);
   }
 
   SECTION("Chain 'as' checks with binary 'and' in switch") {
@@ -131,11 +125,10 @@ TEST_CASE("Analyzing binary expressions", "[frontend]") {
     auto switchBranches = std::vector<prog::expr::NodePtr>{};
     switchBranches.push_back(prog::expr::constExprNode(consts, consts.lookup("bVal").value()));
     switchBranches.push_back(prog::expr::litIntNode(output.getProg(), 0));
+    auto switchExpr = prog::expr::switchExprNode(
+        output.getProg(), std::move(switchConditions), std::move(switchBranches));
 
-    CHECK(
-        funcDef.getExpr() ==
-        *prog::expr::switchExprNode(
-            output.getProg(), std::move(switchConditions), std::move(switchBranches)));
+    CHECK(funcDef.getExpr() == *switchExpr);
   }
 
   SECTION("Get logic 'or' expression") {
@@ -151,10 +144,10 @@ TEST_CASE("Analyzing binary expressions", "[frontend]") {
     auto branches = std::vector<prog::expr::NodePtr>{};
     branches.push_back(prog::expr::litBoolNode(output.getProg(), true));
     branches.push_back(prog::expr::constExprNode(consts, consts.lookup("b").value()));
+    auto switchExpr =
+        prog::expr::switchExprNode(output.getProg(), std::move(conditions), std::move(branches));
 
-    CHECK(
-        funcDef.getExpr() ==
-        *prog::expr::switchExprNode(output.getProg(), std::move(conditions), std::move(branches)));
+    CHECK(funcDef.getExpr() == *switchExpr);
   }
 
   SECTION("Diagnostics") {

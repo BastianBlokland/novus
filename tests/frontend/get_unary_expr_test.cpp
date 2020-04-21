@@ -17,13 +17,12 @@ TEST_CASE("Analyzing unary expressions", "[frontend]") {
     auto args = std::vector<prog::expr::NodePtr>{};
     args.push_back(
         prog::expr::constExprNode(funcDef.getConsts(), funcDef.getConsts().lookup("a").value()));
+    auto callExpr = prog::expr::callExprNode(
+        output.getProg(),
+        GET_OP_ID(output, prog::Operator::Minus, GET_TYPE_ID(output, "int")),
+        std::move(args));
 
-    CHECK(
-        funcDef.getExpr() ==
-        *prog::expr::callExprNode(
-            output.getProg(),
-            GET_OP_ID(output, prog::Operator::Minus, GET_TYPE_ID(output, "int")),
-            std::move(args)));
+    CHECK(funcDef.getExpr() == *callExpr);
   }
 
   SECTION("Diagnostics") {

@@ -35,8 +35,9 @@ TEST_CASE("Analyzing constant expressions", "[frontend]") {
     exprs.push_back(prog::expr::assignExprNode(
         consts, b.value(), prog::expr::constExprNode(consts, a.value())));
     exprs.push_back(prog::expr::constExprNode(consts, b.value()));
+    auto groupExpr = prog::expr::groupExprNode(std::move(exprs));
 
-    CHECK(funcDef.getExpr() == *prog::expr::groupExprNode(std::move(exprs)));
+    CHECK(funcDef.getExpr() == *groupExpr);
   }
 
   SECTION("Access const in anonymous function") {
@@ -52,8 +53,9 @@ TEST_CASE("Analyzing constant expressions", "[frontend]") {
     exprs.push_back(
         prog::expr::assignExprNode(consts, x.value(), prog::expr::litIntNode(output.getProg(), 1)));
     exprs.push_back(prog::expr::constExprNode(consts, x.value()));
+    auto groupExpr = prog::expr::groupExprNode(std::move(exprs));
 
-    CHECK(anonDef.getExpr() == *prog::expr::groupExprNode(std::move(exprs)));
+    CHECK(anonDef.getExpr() == *groupExpr);
   }
 
   SECTION("Diagnostics") {

@@ -30,9 +30,9 @@ TEST_CASE("Analyzing call dynamic expressions", "[frontend]") {
     auto fArgs = std::vector<prog::expr::NodePtr>{};
     fArgs.push_back(prog::expr::litFuncNode(
         output.getProg(), GET_TYPE_ID(output, "__function_int"), GET_FUNC_ID(output, "f1")));
-    CHECK(
-        fDef.getExpr() ==
-        *prog::expr::callExprNode(output.getProg(), f2Def.getId(), std::move(fArgs)));
+    auto callExpr = prog::expr::callExprNode(output.getProg(), f2Def.getId(), std::move(fArgs));
+
+    CHECK(fDef.getExpr() == *callExpr);
   }
 
   SECTION("Get delegate call with args") {
@@ -47,21 +47,21 @@ TEST_CASE("Analyzing call dynamic expressions", "[frontend]") {
     auto f2Args = std::vector<prog::expr::NodePtr>{};
     f2Args.push_back(prog::expr::litBoolNode(output.getProg(), false));
     f2Args.push_back(prog::expr::litIntNode(output.getProg(), 1));
-    CHECK(
-        f2Def.getExpr() ==
-        *prog::expr::callDynExprNode(
-            output.getProg(),
-            prog::expr::constExprNode(f2Def.getConsts(), *f2Def.getConsts().lookup("op")),
-            std::move(f2Args)));
+    auto callExpr2 = prog::expr::callDynExprNode(
+        output.getProg(),
+        prog::expr::constExprNode(f2Def.getConsts(), *f2Def.getConsts().lookup("op")),
+        std::move(f2Args));
+
+    CHECK(f2Def.getExpr() == *callExpr2);
 
     auto fArgs = std::vector<prog::expr::NodePtr>{};
     fArgs.push_back(prog::expr::litFuncNode(
         output.getProg(),
         GET_TYPE_ID(output, "__function_bool_float_int"),
         GET_FUNC_ID(output, "f1", GET_TYPE_ID(output, "bool"), GET_TYPE_ID(output, "float"))));
-    CHECK(
-        fDef.getExpr() ==
-        *prog::expr::callExprNode(output.getProg(), f2Def.getId(), std::move(fArgs)));
+    auto callExpr1 = prog::expr::callExprNode(output.getProg(), f2Def.getId(), std::move(fArgs));
+
+    CHECK(fDef.getExpr() == *callExpr1);
   }
 
   SECTION("Get delegate call with templated function") {
@@ -82,9 +82,9 @@ TEST_CASE("Analyzing call dynamic expressions", "[frontend]") {
     auto fArgs = std::vector<prog::expr::NodePtr>{};
     fArgs.push_back(prog::expr::litFuncNode(
         output.getProg(), GET_TYPE_ID(output, "__function_int"), GET_FUNC_ID(output, "f1__int")));
-    CHECK(
-        fDef.getExpr() ==
-        *prog::expr::callExprNode(output.getProg(), f2Def.getId(), std::move(fArgs)));
+    auto callExpr = prog::expr::callExprNode(output.getProg(), f2Def.getId(), std::move(fArgs));
+
+    CHECK(fDef.getExpr() == *callExpr);
   }
 
   SECTION("Get delegate call on struct") {
@@ -125,9 +125,9 @@ TEST_CASE("Analyzing call dynamic expressions", "[frontend]") {
     auto fArgs = std::vector<prog::expr::NodePtr>{};
     fArgs.push_back(prog::expr::litFuncNode(
         output.getProg(), GET_TYPE_ID(output, "__function_int"), GET_FUNC_ID(output, "f1")));
-    CHECK(
-        fDef.getExpr() ==
-        *prog::expr::callExprNode(output.getProg(), f2Def.getId(), std::move(fArgs)));
+    auto callExpr = prog::expr::callExprNode(output.getProg(), f2Def.getId(), std::move(fArgs));
+
+    CHECK(fDef.getExpr() == *callExpr);
   }
 
   SECTION("Implicitly convert function to action") {
@@ -152,9 +152,9 @@ TEST_CASE("Analyzing call dynamic expressions", "[frontend]") {
         "__action_int",
         prog::expr::litFuncNode(
             output.getProg(), GET_TYPE_ID(output, "__function_int"), GET_FUNC_ID(output, "f1"))));
-    CHECK(
-        a1Def.getExpr() ==
-        *prog::expr::callExprNode(output.getProg(), a2Def.getId(), std::move(fArgs)));
+    auto callExpr = prog::expr::callExprNode(output.getProg(), a2Def.getId(), std::move(fArgs));
+
+    CHECK(a1Def.getExpr() == *callExpr);
   }
 
   SECTION("Diagnostics") {

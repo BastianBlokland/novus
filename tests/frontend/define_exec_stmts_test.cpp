@@ -19,14 +19,12 @@ TEST_CASE("Analyzing execute statements", "[frontend]") {
     auto args = std::vector<prog::expr::NodePtr>{};
     args.push_back(prog::expr::litBoolNode(output.getProg(), true));
     args.push_back(prog::expr::litStringNode(output.getProg(), "hello world"));
+    auto callExpr = prog::expr::callExprNode(
+        output.getProg(),
+        GET_FUNC_ID(output, "assert", GET_TYPE_ID(output, "bool"), GET_TYPE_ID(output, "string")),
+        std::move(args));
 
-    CHECK(
-        execsBegin->getExpr() ==
-        *prog::expr::callExprNode(
-            output.getProg(),
-            GET_FUNC_ID(
-                output, "assert", GET_TYPE_ID(output, "bool"), GET_TYPE_ID(output, "string")),
-            std::move(args)));
+    CHECK(execsBegin->getExpr() == *callExpr);
     REQUIRE(++execsBegin == execsEnd);
   }
 
@@ -44,13 +42,12 @@ TEST_CASE("Analyzing execute statements", "[frontend]") {
         "SleepTimes",
         "long",
         prog::expr::litEnumNode(output.getProg(), GET_TYPE_ID(output, "SleepTimes"), "short")));
+    auto callExpr = prog::expr::callExprNode(
+        output.getProg(),
+        GET_FUNC_ID(output, "sleepNano", GET_TYPE_ID(output, "long")),
+        std::move(args));
 
-    CHECK(
-        execsBegin->getExpr() ==
-        *prog::expr::callExprNode(
-            output.getProg(),
-            GET_FUNC_ID(output, "sleepNano", GET_TYPE_ID(output, "long")),
-            std::move(args)));
+    CHECK(execsBegin->getExpr() == *callExpr);
     REQUIRE(++execsBegin == execsEnd);
   }
 

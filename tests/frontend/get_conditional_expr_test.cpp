@@ -25,10 +25,10 @@ TEST_CASE("Analyzing conditional expressions", "[frontend]") {
     auto branches = std::vector<prog::expr::NodePtr>{};
     branches.push_back(prog::expr::litIntNode(output.getProg(), 1));
     branches.push_back(prog::expr::litIntNode(output.getProg(), 3));
+    auto switchExpr =
+        prog::expr::switchExprNode(output.getProg(), std::move(conditions), std::move(branches));
 
-    CHECK(
-        funcDef.getExpr() ==
-        *prog::expr::switchExprNode(output.getProg(), std::move(conditions), std::move(branches)));
+    CHECK(funcDef.getExpr() == *switchExpr);
   }
 
   SECTION("Get conditional expression with conversion on the lhs branch") {
@@ -43,10 +43,10 @@ TEST_CASE("Analyzing conditional expressions", "[frontend]") {
     branches.push_back(
         applyConv(output, "int", "float", prog::expr::litIntNode(output.getProg(), 0)));
     branches.push_back(prog::expr::litFloatNode(output.getProg(), 1.0F));
+    auto switchExpr =
+        prog::expr::switchExprNode(output.getProg(), std::move(conditions), std::move(branches));
 
-    CHECK(
-        funcDef.getExpr() ==
-        *prog::expr::switchExprNode(output.getProg(), std::move(conditions), std::move(branches)));
+    CHECK(funcDef.getExpr() == *switchExpr);
   }
 
   SECTION("Get conditional expression with conversion on the rhs branch") {
@@ -61,10 +61,10 @@ TEST_CASE("Analyzing conditional expressions", "[frontend]") {
     branches.push_back(prog::expr::litFloatNode(output.getProg(), 1.0F));
     branches.push_back(
         applyConv(output, "int", "float", prog::expr::litIntNode(output.getProg(), 0)));
+    auto switchExpr =
+        prog::expr::switchExprNode(output.getProg(), std::move(conditions), std::move(branches));
 
-    CHECK(
-        funcDef.getExpr() ==
-        *prog::expr::switchExprNode(output.getProg(), std::move(conditions), std::move(branches)));
+    CHECK(funcDef.getExpr() == *switchExpr);
   }
 
   SECTION("Declare consts in condition expression conditions") {
@@ -85,10 +85,10 @@ TEST_CASE("Analyzing conditional expressions", "[frontend]") {
     auto branches = std::vector<prog::expr::NodePtr>{};
     branches.push_back(prog::expr::constExprNode(consts, consts.lookup("x").value()));
     branches.push_back(prog::expr::litIntNode(output.getProg(), 2));
+    auto switchExpr =
+        prog::expr::switchExprNode(output.getProg(), std::move(conditions), std::move(branches));
 
-    CHECK(
-        funcDef.getExpr() ==
-        *prog::expr::switchExprNode(output.getProg(), std::move(conditions), std::move(branches)));
+    CHECK(funcDef.getExpr() == *switchExpr);
   }
 
   SECTION("Diagnostics") {

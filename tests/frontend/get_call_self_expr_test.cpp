@@ -20,10 +20,10 @@ TEST_CASE("Analyzing self call expressions", "[frontend]") {
     auto branches = std::vector<prog::expr::NodePtr>{};
     branches.push_back(prog::expr::callSelfExprNode(GET_TYPE_ID(output, "int"), {}));
     branches.push_back(prog::expr::litIntNode(output.getProg(), 1));
+    auto switchExpr =
+        prog::expr::switchExprNode(output.getProg(), std::move(conditions), std::move(branches));
 
-    CHECK(
-        GET_FUNC_DEF(output, "f").getExpr() ==
-        *prog::expr::switchExprNode(output.getProg(), std::move(conditions), std::move(branches)));
+    CHECK(GET_FUNC_DEF(output, "f").getExpr() == *switchExpr);
   }
 
   SECTION("Get anonymous function with self call") {
@@ -36,10 +36,10 @@ TEST_CASE("Analyzing self call expressions", "[frontend]") {
     auto branches = std::vector<prog::expr::NodePtr>{};
     branches.push_back(prog::expr::callSelfExprNode(GET_TYPE_ID(output, "int"), {}));
     branches.push_back(prog::expr::litIntNode(output.getProg(), 1));
+    auto switchExpr =
+        prog::expr::switchExprNode(output.getProg(), std::move(conditions), std::move(branches));
 
-    CHECK(
-        findAnonFuncDef(output, 0).getExpr() ==
-        *prog::expr::switchExprNode(output.getProg(), std::move(conditions), std::move(branches)));
+    CHECK(findAnonFuncDef(output, 0).getExpr() == *switchExpr);
   }
 
   SECTION("Diagnostics") {

@@ -23,8 +23,9 @@ TEST_CASE("Constants elimination", "[opt]") {
     auto args = std::vector<prog::expr::NodePtr>{};
     args.push_back(prog::expr::litIntNode(output.getProg(), 42));   // NOLINT: Magic numbers
     args.push_back(prog::expr::litIntNode(output.getProg(), 1337)); // NOLINT: Magic numbers
+    auto callExpr = prog::expr::callExprNode(optProg, intAddFunc, std::move(args));
 
-    CHECK(funcDef.getExpr() == *prog::expr::callExprNode(optProg, intAddFunc, std::move(args)));
+    CHECK(funcDef.getExpr() == *callExpr);
   }
 
   SECTION("Trivial constants are eliminated") {
@@ -42,8 +43,9 @@ TEST_CASE("Constants elimination", "[opt]") {
     auto args = std::vector<prog::expr::NodePtr>{};
     args.push_back(prog::expr::litIntNode(output.getProg(), 42)); // NOLINT: Magic numbers
     args.push_back(prog::expr::litIntNode(output.getProg(), 42)); // NOLINT: Magic numbers
+    auto callExpr = prog::expr::callExprNode(optProg, intAddFunc, std::move(args));
 
-    CHECK(funcDef.getExpr() == *prog::expr::callExprNode(optProg, intAddFunc, std::move(args)));
+    CHECK(funcDef.getExpr() == *callExpr);
   }
 }
 

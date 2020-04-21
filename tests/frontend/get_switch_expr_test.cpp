@@ -32,10 +32,10 @@ TEST_CASE("Analyzing switch expressions", "[frontend]") {
     branches.push_back(prog::expr::litIntNode(output.getProg(), 1));
     branches.push_back(prog::expr::litIntNode(output.getProg(), 2));
     branches.push_back(prog::expr::litIntNode(output.getProg(), 3));
+    auto switchExpr =
+        prog::expr::switchExprNode(output.getProg(), std::move(conditions), std::move(branches));
 
-    CHECK(
-        funcDef.getExpr() ==
-        *prog::expr::switchExprNode(output.getProg(), std::move(conditions), std::move(branches)));
+    CHECK(funcDef.getExpr() == *switchExpr);
   }
 
   SECTION("Get switch expression with conversion on the branches") {
@@ -56,10 +56,10 @@ TEST_CASE("Analyzing switch expressions", "[frontend]") {
     branches.push_back(prog::expr::litFloatNode(output.getProg(), 1.0F));
     branches.push_back(
         applyConv(output, "int", "float", prog::expr::litIntNode(output.getProg(), 3)));
+    auto switchExpr =
+        prog::expr::switchExprNode(output.getProg(), std::move(conditions), std::move(branches));
 
-    CHECK(
-        funcDef.getExpr() ==
-        *prog::expr::switchExprNode(output.getProg(), std::move(conditions), std::move(branches)));
+    CHECK(funcDef.getExpr() == *switchExpr);
   }
 
   SECTION("Declare consts in switch expression conditions") {
@@ -81,10 +81,10 @@ TEST_CASE("Analyzing switch expressions", "[frontend]") {
     auto branches = std::vector<prog::expr::NodePtr>{};
     branches.push_back(prog::expr::constExprNode(consts, consts.lookup("x").value()));
     branches.push_back(prog::expr::litIntNode(output.getProg(), 2));
+    auto switchExpr =
+        prog::expr::switchExprNode(output.getProg(), std::move(conditions), std::move(branches));
 
-    CHECK(
-        funcDef.getExpr() ==
-        *prog::expr::switchExprNode(output.getProg(), std::move(conditions), std::move(branches)));
+    CHECK(funcDef.getExpr() == *switchExpr);
   }
 
   SECTION("Exhaustive union check switch expression") {
@@ -111,10 +111,10 @@ TEST_CASE("Analyzing switch expressions", "[frontend]") {
     branches.push_back(prog::expr::constExprNode(consts, *consts.lookup("i")));
     branches.push_back(prog::expr::litIntNode(output.getProg(), 0));
     branches.push_back(prog::expr::failNode(GET_TYPE_ID(output, "int")));
+    auto switchExpr =
+        prog::expr::switchExprNode(output.getProg(), std::move(conditions), std::move(branches));
 
-    CHECK(
-        funcDef.getExpr() ==
-        *prog::expr::switchExprNode(output.getProg(), std::move(conditions), std::move(branches)));
+    CHECK(funcDef.getExpr() == *switchExpr);
   }
 
   SECTION("Diagnostics") {
