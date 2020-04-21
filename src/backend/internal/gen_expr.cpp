@@ -16,7 +16,7 @@ GenExpr::GenExpr(
     m_prog{program},
     m_asmb{asmb},
     m_constTable{constTable},
-    m_curFunc{curFunc},
+    m_curFunc{std::move(curFunc)}, // NOLINT: Trivially copyable
     m_tail{tail},
     m_requestedValues{requestedValues},
     m_valuesProduced{1} // Note: Default the values produced to 1 as its so common.

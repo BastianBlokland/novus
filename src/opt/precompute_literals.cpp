@@ -152,8 +152,8 @@ rewriteAll(const std::vector<prog::expr::NodePtr>& nodes, prog::expr::Rewriter* 
   auto newNodes = std::vector<prog::expr::NodePtr>{};
   newNodes.reserve(nodes.size());
 
-  for (auto itr = nodes.begin(); itr != nodes.end(); ++itr) {
-    newNodes.push_back(rewriter->rewrite(**itr));
+  for (const auto& node : nodes) {
+    newNodes.push_back(rewriter->rewrite(*node));
   }
 
   return newNodes;
