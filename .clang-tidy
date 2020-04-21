@@ -1,4 +1,5 @@
 Checks: '-*,
+  modernize-*,
   bugprone-*, -bugprone-exception-escape,
   performance-*, -performance-unnecessary-value-param'
 WarningsAsErrors: '*'

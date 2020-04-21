@@ -71,8 +71,7 @@ auto unescape(const char c) -> std::optional<char> {
 auto escapeNonPrintingAsHex(const std::string& str) -> std::string {
   std::stringstream ss;
 
-  for (auto it = str.begin(); it != str.end(); ++it) {
-    const auto c = *it;
+  for (auto c : str) {
     if (std::isprint(c)) {
       ss << c;
     } else {
