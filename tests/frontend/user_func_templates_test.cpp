@@ -19,12 +19,12 @@ TEST_CASE("Analyzing user-function templates", "[frontend]") {
     const auto& fDef = GET_FUNC_DEF(output, "f");
     auto fArgs       = std::vector<prog::expr::NodePtr>{};
     fArgs.push_back(prog::expr::litIntNode(output.getProg(), 1));
-    CHECK(
-        fDef.getExpr() ==
-        *prog::expr::callExprNode(
-            output.getProg(),
-            GET_FUNC_ID(output, "ft__int", GET_TYPE_ID(output, "int")),
-            std::move(fArgs)));
+    auto callExpr = prog::expr::callExprNode(
+        output.getProg(),
+        GET_FUNC_ID(output, "ft__int", GET_TYPE_ID(output, "int")),
+        std::move(fArgs));
+
+    CHECK(fDef.getExpr() == *callExpr);
   }
 
   SECTION("Chained templated call") {
@@ -39,22 +39,22 @@ TEST_CASE("Analyzing user-function templates", "[frontend]") {
         prog::expr::constExprNode(ft2Def.getConsts(), *ft2Def.getConsts().lookup("a")));
     ft2Args.push_back(
         prog::expr::constExprNode(ft2Def.getConsts(), *ft2Def.getConsts().lookup("a")));
-    CHECK(
-        ft2Def.getExpr() ==
-        *prog::expr::callExprNode(
-            output.getProg(),
-            GET_FUNC_ID(output, "ft1__int", GET_TYPE_ID(output, "int"), GET_TYPE_ID(output, "int")),
-            std::move(ft2Args)));
+    auto callExpr2 = prog::expr::callExprNode(
+        output.getProg(),
+        GET_FUNC_ID(output, "ft1__int", GET_TYPE_ID(output, "int"), GET_TYPE_ID(output, "int")),
+        std::move(ft2Args));
+
+    CHECK(ft2Def.getExpr() == *callExpr2);
 
     const auto& fDef = GET_FUNC_DEF(output, "f");
     auto fArgs       = std::vector<prog::expr::NodePtr>{};
     fArgs.push_back(prog::expr::litIntNode(output.getProg(), 1));
-    CHECK(
-        fDef.getExpr() ==
-        *prog::expr::callExprNode(
-            output.getProg(),
-            GET_FUNC_ID(output, "ft2__int", GET_TYPE_ID(output, "int")),
-            std::move(fArgs)));
+    auto callExpr = prog::expr::callExprNode(
+        output.getProg(),
+        GET_FUNC_ID(output, "ft2__int", GET_TYPE_ID(output, "int")),
+        std::move(fArgs));
+
+    CHECK(fDef.getExpr() == *callExpr);
   }
 
   SECTION("Overload templated functions") {
@@ -68,14 +68,12 @@ TEST_CASE("Analyzing user-function templates", "[frontend]") {
     auto args = std::vector<prog::expr::NodePtr>{};
     args.push_back(prog::expr::litFloatNode(output.getProg(), 1.0));
     args.push_back(prog::expr::litIntNode(output.getProg(), 2));
+    auto callExpr = prog::expr::callExprNode(
+        output.getProg(),
+        GET_FUNC_ID(output, "ft__int", GET_TYPE_ID(output, "float"), GET_TYPE_ID(output, "int")),
+        std::move(args));
 
-    CHECK(
-        fDef.getExpr() ==
-        *prog::expr::callExprNode(
-            output.getProg(),
-            GET_FUNC_ID(
-                output, "ft__int", GET_TYPE_ID(output, "float"), GET_TYPE_ID(output, "int")),
-            std::move(args)));
+    CHECK(fDef.getExpr() == *callExpr);
   }
 
   SECTION("Return type as parameter") {
@@ -91,30 +89,30 @@ TEST_CASE("Analyzing user-function templates", "[frontend]") {
 
     auto args1 = std::vector<prog::expr::NodePtr>{};
     args1.push_back(prog::expr::litIntNode(output.getProg(), 1));
-    CHECK(
-        f1Def.getExpr() ==
-        *prog::expr::callExprNode(
-            output.getProg(),
-            GET_FUNC_ID(output, "ft__int", GET_TYPE_ID(output, "int")),
-            std::move(args1)));
+    auto callExpr1 = prog::expr::callExprNode(
+        output.getProg(),
+        GET_FUNC_ID(output, "ft__int", GET_TYPE_ID(output, "int")),
+        std::move(args1));
+
+    CHECK(f1Def.getExpr() == *callExpr1);
 
     auto args2 = std::vector<prog::expr::NodePtr>{};
     args2.push_back(prog::expr::litIntNode(output.getProg(), 1));
-    CHECK(
-        f2Def.getExpr() ==
-        *prog::expr::callExprNode(
-            output.getProg(),
-            GET_FUNC_ID(output, "ft__float", GET_TYPE_ID(output, "int")),
-            std::move(args2)));
+    auto callExpr2 = prog::expr::callExprNode(
+        output.getProg(),
+        GET_FUNC_ID(output, "ft__float", GET_TYPE_ID(output, "int")),
+        std::move(args2));
+
+    CHECK(f2Def.getExpr() == *callExpr2);
 
     auto args3 = std::vector<prog::expr::NodePtr>{};
     args3.push_back(prog::expr::litIntNode(output.getProg(), 1));
-    CHECK(
-        f3Def.getExpr() ==
-        *prog::expr::callExprNode(
-            output.getProg(),
-            GET_FUNC_ID(output, "ft__string", GET_TYPE_ID(output, "int")),
-            std::move(args3)));
+    auto callExpr3 = prog::expr::callExprNode(
+        output.getProg(),
+        GET_FUNC_ID(output, "ft__string", GET_TYPE_ID(output, "int")),
+        std::move(args3));
+
+    CHECK(f3Def.getExpr() == *callExpr3);
   }
 
   SECTION("Substituted constructor") {
@@ -126,12 +124,10 @@ TEST_CASE("Analyzing user-function templates", "[frontend]") {
     const auto& fDef = GET_FUNC_DEF(output, "factory__s", GET_TYPE_ID(output, "int"));
     auto fArgs       = std::vector<prog::expr::NodePtr>{};
     fArgs.push_back(prog::expr::constExprNode(fDef.getConsts(), *fDef.getConsts().lookup("i")));
-    CHECK(
-        fDef.getExpr() ==
-        *prog::expr::callExprNode(
-            output.getProg(),
-            GET_FUNC_ID(output, "s", GET_TYPE_ID(output, "int")),
-            std::move(fArgs)));
+    auto callExpr = prog::expr::callExprNode(
+        output.getProg(), GET_FUNC_ID(output, "s", GET_TYPE_ID(output, "int")), std::move(fArgs));
+
+    CHECK(fDef.getExpr() == *callExpr);
   }
 
   SECTION("Infer type-parameter in templated call") {
@@ -144,13 +140,13 @@ TEST_CASE("Analyzing user-function templates", "[frontend]") {
     auto fArgs       = std::vector<prog::expr::NodePtr>{};
     fArgs.push_back(prog::expr::litIntNode(output.getProg(), 2));
     fArgs.push_back(prog::expr::litFloatNode(output.getProg(), 1.0));
-    CHECK(
-        fDef.getExpr() ==
-        *prog::expr::callExprNode(
-            output.getProg(),
-            GET_FUNC_ID(
-                output, "ft__int_float", GET_TYPE_ID(output, "int"), GET_TYPE_ID(output, "float")),
-            std::move(fArgs)));
+    auto callExpr = prog::expr::callExprNode(
+        output.getProg(),
+        GET_FUNC_ID(
+            output, "ft__int_float", GET_TYPE_ID(output, "int"), GET_TYPE_ID(output, "float")),
+        std::move(fArgs));
+
+    CHECK(fDef.getExpr() == *callExpr);
   }
 
   SECTION("Infer type-parameter in templated call") {
@@ -168,17 +164,16 @@ TEST_CASE("Analyzing user-function templates", "[frontend]") {
         applyConv(output, "int", "Option__int", prog::expr::litIntNode(output.getProg(), 1)));
     fArgs.push_back(
         applyConv(output, "int", "Option__int", prog::expr::litIntNode(output.getProg(), 2)));
+    auto callExpr = prog::expr::callExprNode(
+        output.getProg(),
+        GET_FUNC_ID(
+            output,
+            "ft__int",
+            GET_TYPE_ID(output, "Option__int"),
+            GET_TYPE_ID(output, "Option__int")),
+        std::move(fArgs));
 
-    CHECK(
-        fDef.getExpr() ==
-        *prog::expr::callExprNode(
-            output.getProg(),
-            GET_FUNC_ID(
-                output,
-                "ft__int",
-                GET_TYPE_ID(output, "Option__int"),
-                GET_TYPE_ID(output, "Option__int")),
-            std::move(fArgs)));
+    CHECK(fDef.getExpr() == *callExpr);
   }
 
   SECTION("Templated function with non-matching type-parameters is not instantiated") {
@@ -206,25 +201,25 @@ TEST_CASE("Analyzing user-function templates", "[frontend]") {
     auto f1Args       = std::vector<prog::expr::NodePtr>{};
     f1Args.push_back(prog::expr::litIntNode(output.getProg(), 1));
     f1Args.push_back(prog::expr::litIntNode(output.getProg(), 2));
-    CHECK(
-        f1Def.getExpr() ==
-        *prog::expr::callExprNode(
-            output.getProg(),
-            GET_FUNC_ID(output, "ft__int", GET_TYPE_ID(output, "int"), GET_TYPE_ID(output, "int")),
-            std::move(f1Args)));
+    auto callExpr1 = prog::expr::callExprNode(
+        output.getProg(),
+        GET_FUNC_ID(output, "ft__int", GET_TYPE_ID(output, "int"), GET_TYPE_ID(output, "int")),
+        std::move(f1Args));
+
+    CHECK(f1Def.getExpr() == *callExpr1);
 
     // Check that f2 instantiates the version with two type-parameters.
     const auto& f2Def = GET_FUNC_DEF(output, "f2");
     auto f2Args       = std::vector<prog::expr::NodePtr>{};
     f2Args.push_back(prog::expr::litBoolNode(output.getProg(), false));
     f2Args.push_back(prog::expr::litIntNode(output.getProg(), 2));
-    CHECK(
-        f2Def.getExpr() ==
-        *prog::expr::callExprNode(
-            output.getProg(),
-            GET_FUNC_ID(
-                output, "ft__bool_int", GET_TYPE_ID(output, "bool"), GET_TYPE_ID(output, "int")),
-            std::move(f2Args)));
+    auto callExpr2 = prog::expr::callExprNode(
+        output.getProg(),
+        GET_FUNC_ID(
+            output, "ft__bool_int", GET_TYPE_ID(output, "bool"), GET_TYPE_ID(output, "int")),
+        std::move(f2Args));
+
+    CHECK(f2Def.getExpr() == *callExpr2);
   }
 
   SECTION("Func templates are ignored when arguments don't match") {

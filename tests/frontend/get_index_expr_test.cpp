@@ -21,17 +21,13 @@ TEST_CASE("Analyzing index expressions", "[frontend]") {
     auto args = std::vector<prog::expr::NodePtr>{};
     args.push_back(prog::expr::constExprNode(func.getConsts(), *func.getConsts().lookup("p")));
     args.push_back(prog::expr::litIntNode(output.getProg(), 0));
+    auto callExpr = prog::expr::callExprNode(
+        output.getProg(),
+        GET_FUNC_ID(
+            output, "__op_squaresquare", GET_TYPE_ID(output, "Pair"), GET_TYPE_ID(output, "int")),
+        std::move(args));
 
-    CHECK(
-        func.getExpr() ==
-        *prog::expr::callExprNode(
-            output.getProg(),
-            GET_FUNC_ID(
-                output,
-                "__op_squaresquare",
-                GET_TYPE_ID(output, "Pair"),
-                GET_TYPE_ID(output, "int")),
-            std::move(args)));
+    CHECK(func.getExpr() == *callExpr);
   }
 
   SECTION("Get multi argument index operator") {
@@ -47,18 +43,17 @@ TEST_CASE("Analyzing index expressions", "[frontend]") {
     args.push_back(prog::expr::constExprNode(func.getConsts(), *func.getConsts().lookup("p")));
     args.push_back(prog::expr::litIntNode(output.getProg(), 0));
     args.push_back(prog::expr::litStringNode(output.getProg(), "hello world"));
+    auto callExpr = prog::expr::callExprNode(
+        output.getProg(),
+        GET_FUNC_ID(
+            output,
+            "__op_squaresquare",
+            GET_TYPE_ID(output, "Pair"),
+            GET_TYPE_ID(output, "int"),
+            GET_TYPE_ID(output, "string")),
+        std::move(args));
 
-    CHECK(
-        func.getExpr() ==
-        *prog::expr::callExprNode(
-            output.getProg(),
-            GET_FUNC_ID(
-                output,
-                "__op_squaresquare",
-                GET_TYPE_ID(output, "Pair"),
-                GET_TYPE_ID(output, "int"),
-                GET_TYPE_ID(output, "string")),
-            std::move(args)));
+    CHECK(func.getExpr() == *callExpr);
   }
 
   SECTION("Diagnostics") {

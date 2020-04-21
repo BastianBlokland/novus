@@ -31,10 +31,10 @@ TEST_CASE("Analyzing 'is' / 'as' expressions", "[frontend]") {
     auto branches = std::vector<prog::expr::NodePtr>{};
     branches.push_back(prog::expr::constExprNode(funcConsts, *funcConsts.lookup("i")));
     branches.push_back(prog::expr::litIntNode(output.getProg(), 42)); // NOLINT: Magic numbers
+    auto switchExpr =
+        prog::expr::switchExprNode(output.getProg(), std::move(conditions), std::move(branches));
 
-    CHECK(
-        funcDef.getExpr() ==
-        *prog::expr::switchExprNode(output.getProg(), std::move(conditions), std::move(branches)));
+    CHECK(funcDef.getExpr() == *switchExpr);
   }
 
   SECTION("Check 'is' expression") {

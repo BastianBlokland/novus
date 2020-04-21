@@ -106,15 +106,13 @@ TEST_CASE("Analyzing anonymous functions", "[frontend]") {
     // Check the 'f' function.
     auto args = std::vector<prog::expr::NodePtr>{};
     args.push_back(prog::expr::litIntNode(output.getProg(), 1));
-    CHECK(
-        GET_FUNC_DEF(output, "f").getExpr() ==
-        *prog::expr::callDynExprNode(
-            output.getProg(),
-            prog::expr::litFuncNode(
-                output.getProg(),
-                GET_TYPE_ID(output, "__function_int_int"),
-                findAnonFunc(output, 0)),
-            std::move(args)));
+    auto callExpr = prog::expr::callDynExprNode(
+        output.getProg(),
+        prog::expr::litFuncNode(
+            output.getProg(), GET_TYPE_ID(output, "__function_int_int"), findAnonFunc(output, 0)),
+        std::move(args));
+
+    CHECK(GET_FUNC_DEF(output, "f").getExpr() == *callExpr);
   }
 
   SECTION("Invoke anonymous function with closure") {
@@ -136,16 +134,16 @@ TEST_CASE("Analyzing anonymous functions", "[frontend]") {
 
     auto delArgs = std::vector<prog::expr::NodePtr>{};
     delArgs.push_back(prog::expr::litIntNode(output.getProg(), 1));
-    CHECK(
-        fDef.getExpr() ==
-        *prog::expr::callDynExprNode(
+    auto callExpr = prog::expr::callDynExprNode(
+        output.getProg(),
+        prog::expr::closureNode(
             output.getProg(),
-            prog::expr::closureNode(
-                output.getProg(),
-                GET_TYPE_ID(output, "__function_int_float"),
-                findAnonFunc(output, 0),
-                std::move(closureArgs)),
-            std::move(delArgs)));
+            GET_TYPE_ID(output, "__function_int_float"),
+            findAnonFunc(output, 0),
+            std::move(closureArgs)),
+        std::move(delArgs));
+
+    CHECK(fDef.getExpr() == *callExpr);
   }
 
   SECTION("Invoke anonymous function with nested closure") {
@@ -165,30 +163,29 @@ TEST_CASE("Analyzing anonymous functions", "[frontend]") {
     auto anon1DefClosureArgs = std::vector<prog::expr::NodePtr>{};
     anon1DefClosureArgs.push_back(
         prog::expr::constExprNode(anon1Def.getConsts(), *anon1Def.getConsts().lookup("__bound_0")));
-    CHECK(
-        anon1Def.getExpr() ==
-        *prog::expr::closureNode(
-            output.getProg(),
-            GET_TYPE_ID(output, "__function_float"),
-            findAnonFunc(output, 0),
-            std::move(anon1DefClosureArgs)));
+    auto closureExpr = prog::expr::closureNode(
+        output.getProg(),
+        GET_TYPE_ID(output, "__function_float"),
+        findAnonFunc(output, 0),
+        std::move(anon1DefClosureArgs));
+
+    CHECK(anon1Def.getExpr() == *closureExpr);
 
     // Check the 'f' function.
     const auto& fDef  = GET_FUNC_DEF(output, "f", GET_TYPE_ID(output, "float"));
     auto fClosureArgs = std::vector<prog::expr::NodePtr>{};
     fClosureArgs.push_back(
         prog::expr::constExprNode(fDef.getConsts(), *fDef.getConsts().lookup("v")));
-
-    CHECK(
-        fDef.getExpr() ==
-        *prog::expr::callDynExprNode(
+    auto callExpr = prog::expr::callDynExprNode(
+        output.getProg(),
+        prog::expr::closureNode(
             output.getProg(),
-            prog::expr::closureNode(
-                output.getProg(),
-                GET_TYPE_ID(output, "__function___function_float"),
-                findAnonFunc(output, 1),
-                std::move(fClosureArgs)),
-            {}));
+            GET_TYPE_ID(output, "__function___function_float"),
+            findAnonFunc(output, 1),
+            std::move(fClosureArgs)),
+        {});
+
+    CHECK(fDef.getExpr() == *callExpr);
   }
 
   SECTION("Return templated anonymous function") {

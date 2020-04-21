@@ -19,17 +19,13 @@ TEST_CASE("Analyzing user-type templates", "[frontend]") {
     auto fArgs       = std::vector<prog::expr::NodePtr>{};
     fArgs.push_back(prog::expr::litIntNode(output.getProg(), 1));
     fArgs.push_back(prog::expr::litStringNode(output.getProg(), "hello world"));
+    auto callExpr = prog::expr::callExprNode(
+        output.getProg(),
+        GET_FUNC_ID(
+            output, "tuple__int_string", GET_TYPE_ID(output, "int"), GET_TYPE_ID(output, "string")),
+        std::move(fArgs));
 
-    CHECK(
-        fDef.getExpr() ==
-        *prog::expr::callExprNode(
-            output.getProg(),
-            GET_FUNC_ID(
-                output,
-                "tuple__int_string",
-                GET_TYPE_ID(output, "int"),
-                GET_TYPE_ID(output, "string")),
-            std::move(fArgs)));
+    CHECK(fDef.getExpr() == *callExpr);
   }
 
   SECTION("Construct templated union") {
@@ -41,13 +37,12 @@ TEST_CASE("Analyzing user-type templates", "[frontend]") {
     const auto& fDef = GET_FUNC_DEF(output, "f");
     auto fArgs       = std::vector<prog::expr::NodePtr>{};
     fArgs.push_back(prog::expr::litIntNode(output.getProg(), 1));
+    auto callExpr = prog::expr::callExprNode(
+        output.getProg(),
+        GET_FUNC_ID(output, "opt__int", GET_TYPE_ID(output, "int")),
+        std::move(fArgs));
 
-    CHECK(
-        fDef.getExpr() ==
-        *prog::expr::callExprNode(
-            output.getProg(),
-            GET_FUNC_ID(output, "opt__int", GET_TYPE_ID(output, "int")),
-            std::move(fArgs)));
+    CHECK(fDef.getExpr() == *callExpr);
   }
 
   SECTION("Construct templated struct with inferred type params") {
@@ -59,17 +54,13 @@ TEST_CASE("Analyzing user-type templates", "[frontend]") {
     auto fArgs       = std::vector<prog::expr::NodePtr>{};
     fArgs.push_back(prog::expr::litIntNode(output.getProg(), 1));
     fArgs.push_back(prog::expr::litStringNode(output.getProg(), "hello world"));
+    auto callExpr = prog::expr::callExprNode(
+        output.getProg(),
+        GET_FUNC_ID(
+            output, "tuple__int_string", GET_TYPE_ID(output, "int"), GET_TYPE_ID(output, "string")),
+        std::move(fArgs));
 
-    CHECK(
-        fDef.getExpr() ==
-        *prog::expr::callExprNode(
-            output.getProg(),
-            GET_FUNC_ID(
-                output,
-                "tuple__int_string",
-                GET_TYPE_ID(output, "int"),
-                GET_TYPE_ID(output, "string")),
-            std::move(fArgs)));
+    CHECK(fDef.getExpr() == *callExpr);
   }
 
   SECTION("Construct templated union with inferred type param") {
@@ -81,13 +72,12 @@ TEST_CASE("Analyzing user-type templates", "[frontend]") {
     const auto& fDef = GET_FUNC_DEF(output, "f");
     auto fArgs       = std::vector<prog::expr::NodePtr>{};
     fArgs.push_back(prog::expr::litIntNode(output.getProg(), 1));
+    auto callExpr = prog::expr::callExprNode(
+        output.getProg(),
+        GET_FUNC_ID(output, "opt__int", GET_TYPE_ID(output, "int")),
+        std::move(fArgs));
 
-    CHECK(
-        fDef.getExpr() ==
-        *prog::expr::callExprNode(
-            output.getProg(),
-            GET_FUNC_ID(output, "opt__int", GET_TYPE_ID(output, "int")),
-            std::move(fArgs)));
+    CHECK(fDef.getExpr() == *callExpr);
   }
 
   SECTION("Conversion to templated struct") {
@@ -99,13 +89,12 @@ TEST_CASE("Analyzing user-type templates", "[frontend]") {
     const auto& fDef = GET_FUNC_DEF(output, "f");
     auto fArgs       = std::vector<prog::expr::NodePtr>{};
     fArgs.push_back(prog::expr::litIntNode(output.getProg(), 1));
+    auto callExpr = prog::expr::callExprNode(
+        output.getProg(),
+        GET_FUNC_ID(output, "tuple__int_bool", GET_TYPE_ID(output, "int")),
+        std::move(fArgs));
 
-    CHECK(
-        fDef.getExpr() ==
-        *prog::expr::callExprNode(
-            output.getProg(),
-            GET_FUNC_ID(output, "tuple__int_bool", GET_TYPE_ID(output, "int")),
-            std::move(fArgs)));
+    CHECK(fDef.getExpr() == *callExpr);
   }
 
   SECTION("Templated conversion") {
@@ -120,13 +109,12 @@ TEST_CASE("Analyzing user-type templates", "[frontend]") {
 
     auto fArgs = std::vector<prog::expr::NodePtr>{};
     fArgs.push_back(prog::expr::constExprNode(consts, *consts.lookup("t")));
+    auto callExpr = prog::expr::callExprNode(
+        output.getProg(),
+        GET_FUNC_ID(output, "string", GET_TYPE_ID(output, "tuple__int_float")),
+        std::move(fArgs));
 
-    CHECK(
-        fDef.getExpr() ==
-        *prog::expr::callExprNode(
-            output.getProg(),
-            GET_FUNC_ID(output, "string", GET_TYPE_ID(output, "tuple__int_float")),
-            std::move(fArgs)));
+    CHECK(fDef.getExpr() == *callExpr);
   }
 }
 

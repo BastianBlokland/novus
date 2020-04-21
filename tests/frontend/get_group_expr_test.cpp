@@ -31,8 +31,9 @@ TEST_CASE("Analyzing group expressions", "[frontend]") {
         GET_OP_ID(
             output, prog::Operator::Star, GET_TYPE_ID(output, "int"), GET_TYPE_ID(output, "int")),
         std::move(callArgs)));
+    auto groupExpr = prog::expr::groupExprNode(std::move(exprs));
 
-    CHECK(funcDef.getExpr() == *prog::expr::groupExprNode(std::move(exprs)));
+    CHECK(funcDef.getExpr() == *groupExpr);
   }
 }
 

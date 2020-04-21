@@ -19,17 +19,13 @@ TEST_CASE("Analyzing parenthesized expressions", "[frontend]") {
         prog::expr::constExprNode(funcDef.getConsts(), funcDef.getConsts().lookup("a").value()));
     args.push_back(
         prog::expr::constExprNode(funcDef.getConsts(), funcDef.getConsts().lookup("b").value()));
+    auto callExpr = prog::expr::callExprNode(
+        output.getProg(),
+        GET_OP_ID(
+            output, prog::Operator::Plus, GET_TYPE_ID(output, "int"), GET_TYPE_ID(output, "int")),
+        std::move(args));
 
-    CHECK(
-        funcDef.getExpr() ==
-        *prog::expr::callExprNode(
-            output.getProg(),
-            GET_OP_ID(
-                output,
-                prog::Operator::Plus,
-                GET_TYPE_ID(output, "int"),
-                GET_TYPE_ID(output, "int")),
-            std::move(args)));
+    CHECK(funcDef.getExpr() == *callExpr);
   }
 }
 
