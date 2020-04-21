@@ -17,11 +17,19 @@ indent_style = tab
 # Cmake config.
 [CMakeLists.txt]
 indent_size = 2
+indent_style = space
 
 # Source files.
 [*.{hpp,cpp}]
 indent_size = 2
+indent_style = space
+
+# Script files.
+[*.sh]
+indent_size = 2
+indent_style = space
 
 # Config files.
 [*.{md,json}]
 indent_size = 2
+indent_style = space

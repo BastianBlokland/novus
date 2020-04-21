@@ -12,6 +12,8 @@ function(configure_novstd_file file)
   set(srcFile ${file}.nov)
   set(tgtFile ${EXECUTABLE_OUTPUT_PATH}/std/${file}.nov)
 
+  message(">> Configuring ${file}.nov")
+
   # Copy to output dir.
   configure_file(${srcFile} ${tgtFile} COPYONLY)
 
@@ -50,6 +52,3 @@ configure_novstd_file(time)
 
 # Register a test that evaluates the 'std.nov' header, usefull for detecting name conflics.
 add_nov_test(${stdHeader})
-
-# Add a dependency on the 'nove' executable to be able to test the nov files.
-add_dependencies(novtests nove)

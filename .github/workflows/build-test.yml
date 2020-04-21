@@ -63,15 +63,13 @@ jobs:
         echo "clang-tidy-9 --version:"; clang-tidy-9 --version
 
     - name: configure
-      run: cmake -B build -DCMAKE_BUILD_TYPE=$BUILD_TYPE
+      run: ./scripts/configure.sh --type $BUILD_TYPE --tests --lint
 
     - name: build
-      working-directory: build
-      run: make -j$(../scripts/nproc.sh)
+      run: ./scripts/build.sh
 
     - name: test
-      working-directory: build
-      run: make CTEST_OUTPUT_ON_FAILURE=1 test
+      run: ./scripts/test.sh
 
     - name: archive
       uses: actions/upload-artifact@v1

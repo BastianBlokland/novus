@@ -3,7 +3,7 @@
   "configurations": [
     {
       "name": "nove",
-      "preLaunchTask": "build.debug",
+      "preLaunchTask": "build",
       "type": "lldb",
       "request": "launch",
       "program": "${workspaceFolder}/bin/nove",
@@ -16,7 +16,7 @@
     },
     {
       "name": "novdiag-lex",
-      "preLaunchTask": "build.debug",
+      "preLaunchTask": "build",
       "type": "lldb",
       "request": "launch",
       "program": "${workspaceFolder}/bin/novdiag-lex",
@@ -30,7 +30,7 @@
     },
     {
       "name": "novdiag-parse",
-      "preLaunchTask": "build.debug",
+      "preLaunchTask": "build",
       "type": "lldb",
       "request": "launch",
       "program": "${workspaceFolder}/bin/novdiag-parse",
@@ -44,7 +44,7 @@
     },
     {
       "name": "novdiag-prog",
-      "preLaunchTask": "build.debug",
+      "preLaunchTask": "build",
       "type": "lldb",
       "request": "launch",
       "program": "${workspaceFolder}/bin/novdiag-prog",
@@ -58,7 +58,7 @@
     },
     {
       "name": "novdiag-asm",
-      "preLaunchTask": "build.debug",
+      "preLaunchTask": "build",
       "type": "lldb",
       "request": "launch",
       "program": "${workspaceFolder}/bin/novdiag-asm",
@@ -72,7 +72,7 @@
     },
     {
       "name": "novtests",
-      "preLaunchTask": "build.debug",
+      "preLaunchTask": "build",
       "type": "lldb",
       "request": "launch",
       "program": "${workspaceFolder}/bin/novtests",
