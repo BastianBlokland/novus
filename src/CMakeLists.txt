@@ -1,4 +1,5 @@
 # Input.
+message(">> Configuring input library")
 add_library(input STATIC
   input/char_escape.cpp
   input/info.cpp
@@ -15,6 +16,7 @@ target_include_directories(input PUBLIC ${PROJECT_SOURCE_DIR}/include)
 target_include_directories(input PRIVATE input)
 
 # Lexer.
+message(">> Configuring lex library")
 add_library(lex STATIC
   lex/error.cpp
   lex/lexer.cpp
@@ -36,6 +38,7 @@ target_include_directories(lex PUBLIC ${PROJECT_SOURCE_DIR}/include)
 target_include_directories(lex PRIVATE lex)
 
 # Parser.
+message(">> Configuring parse library")
 add_library(parse STATIC
   parse/argument_list_decl.cpp
   parse/error.cpp
@@ -83,6 +86,7 @@ target_include_directories(parse PUBLIC ${PROJECT_SOURCE_DIR}/include)
 target_include_directories(parse PRIVATE parse)
 
 # Program (internal representation).
+message(">> Configuring prog library")
 add_library(prog STATIC
   prog/expr/node_assign.cpp
   prog/expr/node_call_dyn.cpp
@@ -152,6 +156,7 @@ target_include_directories(prog PUBLIC ${PROJECT_SOURCE_DIR}/include)
 target_include_directories(prog PRIVATE prog)
 
 # Frontend.
+message(">> Configuring frontend library")
 add_library(frontend STATIC
   frontend/internal/call_modifiers.cpp
   frontend/internal/check_inf_recursion.cpp
@@ -198,6 +203,7 @@ target_include_directories(frontend PUBLIC ${PROJECT_SOURCE_DIR}/include)
 target_include_directories(frontend PRIVATE frontend)
 
 # Opt (optimiser).
+message(">> Configuring opt library")
 add_library(opt STATIC
   opt/internal/const_remapper.cpp
   opt/internal/expr_matchers.cpp
@@ -222,6 +228,7 @@ target_include_directories(opt PUBLIC ${PROJECT_SOURCE_DIR}/include)
 target_include_directories(opt PRIVATE opt)
 
 # Backend (assembly generator).
+message(">> Configuring backend library")
 add_library(backend STATIC
   backend/internal/gen_expr.cpp
   backend/internal/gen_type_eq.cpp
@@ -239,6 +246,7 @@ target_include_directories(backend PUBLIC ${PROJECT_SOURCE_DIR}/include)
 target_include_directories(backend PRIVATE backend)
 
 # Novus Assembly.
+message(">> Configuring novasm library")
 add_library(novasm STATIC
   novasm/assembler.cpp
   novasm/assembly.cpp
@@ -255,6 +263,7 @@ target_include_directories(novasm PUBLIC ${PROJECT_SOURCE_DIR}/include)
 target_include_directories(novasm PRIVATE novasm)
 
 # Virtual Machine.
+message(">> Configuring vm library")
 add_library(vm STATIC
   vm/internal/allocator.cpp
   vm/internal/executor_registry.cpp

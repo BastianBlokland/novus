@@ -1,6 +1,7 @@
 include(FetchContent)
 
 # Cli11 command line parser.
+message(">> Fetching dependency: cli11")
 FetchContent_Declare(
   cli11
   GIT_REPOSITORY https://github.com/CLIUtils/CLI11.git
@@ -9,6 +10,7 @@ FetchContent_Declare(
 FetchContent_MakeAvailable(cli11)
 
 # Rang library for colored command line output.
+message(">> Fetching dependency: rang")
 FetchContent_Declare(
   rang
   GIT_REPOSITORY https://github.com/agauniyal/rang.git
@@ -17,6 +19,7 @@ FetchContent_Declare(
 FetchContent_MakeAvailable(rang)
 
 # Evaluator.
+message(">> Configuring nove executable")
 add_executable(nove nove/main.cpp)
 target_compile_features(nove PUBLIC cxx_std_17)
 if(MSVC)
@@ -32,6 +35,7 @@ target_link_libraries(nove PRIVATE vm)
 target_link_libraries(nove PRIVATE opt)
 
 # Lexer diagnostic tool.
+message(">> Configuring novdiag-lex executable")
 add_executable(novdiag-lex novdiag-lex/main.cpp)
 target_compile_features(novdiag-lex PUBLIC cxx_std_17)
 if(MSVC)
@@ -44,6 +48,7 @@ target_include_directories(novdiag-lex PRIVATE ${rang_SOURCE_DIR}/include)
 target_link_libraries(novdiag-lex PRIVATE lex)
 
 # Parser diagnostic tool.
+message(">> Configuring novdiag-parse executable")
 add_executable(novdiag-parse novdiag-parse/main.cpp)
 target_compile_features(novdiag-parse PUBLIC cxx_std_17)
 if(MSVC)
@@ -56,6 +61,7 @@ target_include_directories(novdiag-parse PRIVATE ${rang_SOURCE_DIR}/include)
 target_link_libraries(novdiag-parse PRIVATE parse)
 
 # Program diagnostic tool.
+message(">> Configuring novdiag-prog executable")
 add_executable(novdiag-prog novdiag-prog/main.cpp)
 target_compile_features(novdiag-prog PUBLIC cxx_std_17)
 if(MSVC)
@@ -70,6 +76,7 @@ target_link_libraries(novdiag-prog PRIVATE frontend)
 target_link_libraries(novdiag-prog PRIVATE opt)
 
 # Assembly diagnostic tool.
+message(">> Configuring novdiag-asm executable")
 add_executable(novdiag-asm novdiag-asm/main.cpp)
 target_compile_features(novdiag-asm PUBLIC cxx_std_17)
 if(MSVC)

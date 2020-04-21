@@ -68,6 +68,7 @@ configureProj()
   info "Begin configuring build directory '${dir}' using cmake"
 
   cmake -B "${dir}" \
+    -G "Unix Makefiles" \
     -DCMAKE_BUILD_TYPE="${type}" \
     -DBUILD_TESTING="${testsMode}" \
     -DLINTING="${lintMode}"
