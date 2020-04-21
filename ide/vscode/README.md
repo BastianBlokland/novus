@@ -12,14 +12,14 @@ The extension includes a problem-matcher named `novus` to report problems based 
 from the nov compiler.
 
 Create a task in your `.vscode/tasks.json` file for evaluating a novus file:
-Replace `<<Path to novus eval binary>>` to where the `eval` executable is located.
+Replace `<<Path to novus nove binary>>` to where the `nove` executable is located.
 ```json
 {
   "version": "2.0.0",
   "tasks": [
     {
       "label": "evaluate",
-      "command": "<<Path to novus eval executable>>",
+      "command": "<<Path to novus nove executable>>",
       "type": "shell",
       "args": [
         "${file}"
