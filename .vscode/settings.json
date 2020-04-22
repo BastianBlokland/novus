@@ -9,6 +9,5 @@
   "editor.rulers": [
     100
   ],
-  "cmake.copyCompileCommands": "${workspaceRoot}/compile_commands.json",
   "clangd.semanticHighlighting": true
 }
