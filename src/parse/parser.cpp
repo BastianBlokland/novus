@@ -313,7 +313,8 @@ auto ParserImpl::nextExprPrimary() -> NodePtr {
     }
     case lex::Keyword::Lambda:
       return nextExprAnonFunc({});
-    case lex::Keyword::Fork: {
+    case lex::Keyword::Fork:
+    case lex::Keyword::Lazy: {
       auto modifiers = std::vector<lex::Token>{consumeToken()};
       return nextExprCall(nextExpr(0, callPrecedence), std::move(modifiers));
     }
