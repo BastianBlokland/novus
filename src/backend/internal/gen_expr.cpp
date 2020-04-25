@@ -629,7 +629,7 @@ auto GenExpr::visit(const prog::expr::FieldExprNode& n) -> void {
   }
 
   // Load the field.
-  m_asmb->addLoadStructField(getFieldOffset(n.getId()));
+  m_asmb->addStructLoadField(getFieldOffset(n.getId()));
 }
 
 auto GenExpr::visit(const prog::expr::GroupExprNode& n) -> void {
@@ -664,7 +664,7 @@ auto GenExpr::visit(const prog::expr::UnionCheckExprNode& n) -> void {
   }
 
   // For normal unions we test if the discriminants match.
-  m_asmb->addLoadStructField(0);
+  m_asmb->addStructLoadField(0);
   m_asmb->addLoadLitInt(getUnionDiscriminant(m_prog, n[0].getType(), n.getTargetType()));
   m_asmb->addCheckEqInt();
 }
@@ -703,7 +703,7 @@ auto GenExpr::visit(const prog::expr::UnionGetExprNode& n) -> void {
   const auto endLabel    = m_asmb->generateLabel("union-get-end");
 
   // Test if the union is the correct type.
-  m_asmb->addLoadStructField(0);
+  m_asmb->addStructLoadField(0);
   m_asmb->addLoadLitInt(getUnionDiscriminant(m_prog, n[0].getType(), n.getTargetType()));
   m_asmb->addCheckEqInt();
   m_asmb->addJumpIf(typeEqLabel);
@@ -715,7 +715,7 @@ auto GenExpr::visit(const prog::expr::UnionGetExprNode& n) -> void {
   m_asmb->label(typeEqLabel);
 
   // Store the union value as a const and load 'true' on the stack.
-  m_asmb->addLoadStructField(1);
+  m_asmb->addStructLoadField(1);
   m_asmb->addStackStore(getConstOffset(m_constTable, n.getConst()));
 
   m_asmb->addLoadLitInt(1); // Load true.

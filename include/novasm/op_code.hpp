@@ -92,9 +92,10 @@ enum class OpCode : uint8_t {
   ConvIntChar     = 120, // [] (int)   -> (int)      Convert int to char (ascii).
   ConvFloatChar   = 121, // [] (float) -> (int)      Convert float to char (ascii).
 
-  MakeStruct      = 190, // [uint8] (any ...) -> (struct) Create structure containing x values.
-  MakeNullStruct  = 191, // []      ()        -> struct   Create a struct without fields.
-  LoadStructField = 192, // [uint8] (struct)  -> (any)    Get value of field x in structure.
+  MakeStruct       = 190, // [uint8] (any ...)     -> (struct) Create structure containing x values.
+  MakeNullStruct   = 191, // []      ()            -> struct   Create a struct without fields.
+  StructLoadField  = 192, // [uint8] (struct)      -> (any)    Get value of field x in structure.
+  StructStoreField = 193, // [uint8] (any, struct) -> ()       Store value at field x in structure.
 
   Jump   = 220, // [ip] ()    -> () Jump to an instruction pointer.
   JumpIf = 221, // [ip] (int) -> () Jump to an instruction if int is not 0.

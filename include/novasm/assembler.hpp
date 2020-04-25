@@ -108,7 +108,8 @@ public:
 
   auto addMakeStruct(uint8_t fieldCount) -> void;
   auto addMakeNullStruct() -> void;
-  auto addLoadStructField(uint8_t fieldIndex) -> void;
+  auto addStructLoadField(uint8_t fieldIndex) -> void;
+  auto addStructStoreField(uint8_t fieldIndex) -> void;
 
   auto addJump(std::string label) -> void;
   auto addJumpIf(std::string label) -> void;

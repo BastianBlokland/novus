@@ -240,8 +240,11 @@ auto operator<<(std::ostream& out, const OpCode& rhs) noexcept -> std::ostream& 
   case OpCode::MakeNullStruct:
     out << "make-null-struct";
     break;
-  case OpCode::LoadStructField:
-    out << "load-struct-field";
+  case OpCode::StructLoadField:
+    out << "struct-load-field";
+    break;
+  case OpCode::StructStoreField:
+    out << "struct-store-field";
     break;
 
   case OpCode::Jump:

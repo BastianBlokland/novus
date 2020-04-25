@@ -220,8 +220,13 @@ auto Assembler::addMakeStruct(uint8_t fieldCount) -> void {
 
 auto Assembler::addMakeNullStruct() -> void { writeOpCode(OpCode::MakeNullStruct); }
 
-auto Assembler::addLoadStructField(uint8_t fieldIndex) -> void {
-  writeOpCode(OpCode::LoadStructField);
+auto Assembler::addStructLoadField(uint8_t fieldIndex) -> void {
+  writeOpCode(OpCode::StructLoadField);
+  writeUInt8(fieldIndex);
+}
+
+auto Assembler::addStructStoreField(uint8_t fieldIndex) -> void {
+  writeOpCode(OpCode::StructStoreField);
   writeUInt8(fieldIndex);
 }
 

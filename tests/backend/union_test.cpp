@@ -16,9 +16,9 @@ TEST_CASE("Generating assembly for unions", "[backend]") {
           asmb->label("ValEq");
           // Check if both unions have the same type (field 0).
           asmb->addStackLoad(0);
-          asmb->addLoadStructField(0);
+          asmb->addStructLoadField(0);
           asmb->addStackLoad(1);
-          asmb->addLoadStructField(0);
+          asmb->addStructLoadField(0);
           asmb->addCheckEqInt();
           asmb->addJumpIf("typeEqual");
 
@@ -29,14 +29,14 @@ TEST_CASE("Generating assembly for unions", "[backend]") {
           asmb->label("typeEqual");
           // Check if the union type is int.
           asmb->addStackLoad(0);
-          asmb->addLoadStructField(0);
+          asmb->addStructLoadField(0);
           asmb->addLoadLitInt(0); // 0 because 'int' is the first type in the union.
           asmb->addCheckEqInt();
           asmb->addJumpIf("int");
 
           // Check if the union type is float.
           asmb->addStackLoad(0);
-          asmb->addLoadStructField(0);
+          asmb->addStructLoadField(0);
           asmb->addLoadLitInt(1); // 1 because 'float' is the second type in the union.
           asmb->addCheckEqInt();
           asmb->addJumpIf("float");
@@ -47,9 +47,9 @@ TEST_CASE("Generating assembly for unions", "[backend]") {
           // If type is int then check if the int value (field 1) is the same.
           asmb->label("int");
           asmb->addStackLoad(0);
-          asmb->addLoadStructField(1);
+          asmb->addStructLoadField(1);
           asmb->addStackLoad(1);
-          asmb->addLoadStructField(1);
+          asmb->addStructLoadField(1);
           asmb->addCheckEqInt();
           asmb->addJumpIf("valueEqual");
           asmb->addLoadLitInt(0);
@@ -58,9 +58,9 @@ TEST_CASE("Generating assembly for unions", "[backend]") {
           // If type is float then check if the float value (field 1) is the same.
           asmb->label("float");
           asmb->addStackLoad(0);
-          asmb->addLoadStructField(1);
+          asmb->addStructLoadField(1);
           asmb->addStackLoad(1);
-          asmb->addLoadStructField(1);
+          asmb->addStructLoadField(1);
           asmb->addCheckEqFloat();
           asmb->addJumpIf("valueEqual");
           asmb->addLoadLitInt(0);
@@ -101,7 +101,7 @@ TEST_CASE("Generating assembly for unions", "[backend]") {
           asmb->addMakeStruct(2);
 
           // Check if union as discriminant for type int.
-          asmb->addLoadStructField(0); // Load discriminant.
+          asmb->addStructLoadField(0); // Load discriminant.
           asmb->addLoadLitInt(0);      // int is first type in union so discriminant is 0.
           asmb->addCheckEqInt();
 
@@ -122,7 +122,7 @@ TEST_CASE("Generating assembly for unions", "[backend]") {
 
           // Check if the discriminant is int.
           asmb->addDup();
-          asmb->addLoadStructField(0); // Load discriminant.
+          asmb->addStructLoadField(0); // Load discriminant.
           asmb->addLoadLitInt(0);      // int is first type in union so discriminant is 0.
           asmb->addCheckEqInt();
           asmb->addJumpIf("as-check-type-is-int");
@@ -135,7 +135,7 @@ TEST_CASE("Generating assembly for unions", "[backend]") {
           asmb->label("as-check-type-is-int");
 
           // Store value in constant 'i' and set result to true.
-          asmb->addLoadStructField(1); // Value of union.
+          asmb->addStructLoadField(1); // Value of union.
           asmb->addStackStore(0);      // Assign to constant 'i'.
           asmb->addLoadLitInt(1);      // Load true.
 
@@ -185,9 +185,9 @@ TEST_CASE("Generating assembly for unions", "[backend]") {
 
           // Check if field 1 is equal.
           asmb->addStackLoad(0);
-          asmb->addLoadStructField(0);
+          asmb->addStructLoadField(0);
           asmb->addStackLoad(1);
-          asmb->addLoadStructField(0);
+          asmb->addStructLoadField(0);
           asmb->addCheckEqString();
           asmb->addJumpIf("user-eq-field1equal");
 
@@ -199,9 +199,9 @@ TEST_CASE("Generating assembly for unions", "[backend]") {
 
           // Check if field 2 is equal.
           asmb->addStackLoad(0);
-          asmb->addLoadStructField(1);
+          asmb->addStructLoadField(1);
           asmb->addStackLoad(1);
-          asmb->addLoadStructField(1);
+          asmb->addStructLoadField(1);
           asmb->addCheckEqInt();
           asmb->addJumpIf("user-eq-field2equal");
 
@@ -333,7 +333,7 @@ TEST_CASE("Generating assembly for unions", "[backend]") {
           asmb->label("user-is-not-null");
           // Load name of user.
           asmb->addStackLoad(0);
-          asmb->addLoadStructField(0);
+          asmb->addStructLoadField(0);
 
           // Compare to 'J'.
           asmb->addLoadLitString("J");

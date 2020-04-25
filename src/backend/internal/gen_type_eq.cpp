@@ -54,9 +54,9 @@ static auto genStructFieldEquality(
 
   // Load the field for both structs on the stack.
   asmb->addStackLoad(0);
-  asmb->addLoadStructField(fieldOffset);
+  asmb->addStructLoadField(fieldOffset);
   asmb->addStackLoad(1);
-  asmb->addLoadStructField(fieldOffset);
+  asmb->addStructLoadField(fieldOffset);
 
   // Check if the field is equal.
   genTypeEqualityEntry(asmb, prog, typeDecl);
@@ -187,9 +187,9 @@ static auto genUnionEquality(
 
   // Check if the type (field 0) matches.
   asmb->addStackLoad(0);
-  asmb->addLoadStructField(0);
+  asmb->addStructLoadField(0);
   asmb->addStackLoad(1);
-  asmb->addLoadStructField(0);
+  asmb->addStructLoadField(0);
   asmb->addCheckEqInt();
   asmb->addJumpIf(sameTypeLabel);
 
@@ -201,7 +201,7 @@ static auto genUnionEquality(
   asmb->label(sameTypeLabel);
   for (auto i = 0U; i != unionDef.getTypes().size(); ++i) {
     asmb->addStackLoad(0);
-    asmb->addLoadStructField(0);
+    asmb->addStructLoadField(0);
     asmb->addLoadLitInt(i);
     asmb->addCheckEqInt();
 

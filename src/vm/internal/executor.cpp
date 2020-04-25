@@ -600,10 +600,16 @@ auto execute(
     case OpCode::MakeNullStruct: {
       PUSH(nullRefValue());
     } break;
-    case OpCode::LoadStructField: {
+    case OpCode::StructLoadField: {
       const auto fieldIndex = READ_BYTE();
-      auto* s               = getStructRef(POP());
-      PUSH(s->getField(fieldIndex));
+      auto* structure       = getStructRef(POP());
+      PUSH(structure->getField(fieldIndex));
+    } break;
+    case OpCode::StructStoreField: {
+      const auto fieldIndex               = READ_BYTE();
+      auto val                            = POP();
+      auto* structure                     = getStructRef(POP());
+      *structure->getFieldPtr(fieldIndex) = val;
     } break;
 
     case OpCode::Jump: {
