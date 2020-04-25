@@ -23,12 +23,14 @@ act readLine()
 act print{T}(T x)
   s = consoleOpen(ConsoleKind.StdOut);
   s.streamWrite(x.string());
-  s.streamWrite('\n')
+  s.streamWrite('\n');
+  s.streamFlush()
 
 act printErr{T}(T x)
   s = consoleOpen(ConsoleKind.StdErr);
   s.streamWrite(x.string());
-  s.streamWrite('\n')
+  s.streamWrite('\n');
+  s.streamFlush()
 
 act printBits(int i)
   print(toBitString(i, false))
