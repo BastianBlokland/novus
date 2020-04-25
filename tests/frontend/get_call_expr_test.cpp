@@ -91,6 +91,37 @@ TEST_CASE("Analyzing call expressions", "[frontend]") {
             prog::expr::CallMode::Forked));
   }
 
+  SECTION("Get lazy call") {
+    const auto& output = ANALYZE("fun f1() -> int 1 "
+                                 "fun f2() -> lazy{int} lazy f1()");
+    REQUIRE(output.isSuccess());
+    CHECK(
+        GET_FUNC_DEF(output, "f2").getExpr() ==
+        *prog::expr::callExprNode(
+            output.getProg(),
+            GET_FUNC_ID(output, "f1"),
+            GET_TYPE_ID(output, "__lazy_int"),
+            {},
+            prog::expr::CallMode::Lazy));
+  }
+
+  SECTION("Get lazy call to overloaded call operator on literal") {
+    const auto& output = ANALYZE("fun ()(int i) -> int i * i "
+                                 "fun f() -> lazy{int} lazy 1()");
+    REQUIRE(output.isSuccess());
+
+    auto args = std::vector<prog::expr::NodePtr>{};
+    args.push_back(prog::expr::litIntNode(output.getProg(), 1));
+    auto callExpr = prog::expr::callExprNode(
+        output.getProg(),
+        GET_FUNC_ID(output, "__op_parenparen", GET_TYPE_ID(output, "int")),
+        GET_TYPE_ID(output, "__lazy_int"),
+        std::move(args),
+        prog::expr::CallMode::Lazy);
+
+    CHECK(GET_FUNC_DEF(output, "f").getExpr() == *callExpr);
+  }
+
   SECTION("Get call to overloaded call operator on literal") {
     const auto& output = ANALYZE("fun ()(int i) -> int i * i "
                                  "fun f() -> int 1()");
@@ -217,6 +248,15 @@ TEST_CASE("Analyzing call expressions", "[frontend]") {
         "act a(int i) -> int i * 2 "
         "fun f2(int i) -> int i.a()",
         errUndeclaredPureFunc(src, "a", {"int"}, input::Span{47, 51}));
+    CHECK_DIAG(
+        "fun f(future{int} fi) -> int fork fi.get()",
+        errForkedNonUserFunc(src, input::Span{29, 41}));
+    CHECK_DIAG(
+        "fun f(future{int} fi) -> int lazy fi.get()", errLazyNonUserFunc(src, input::Span{29, 41}));
+    CHECK_DIAG(
+        "act a(int i) -> int i * 2 "
+        "act f2(int i) -> int lazy i.a()",
+        errLazyActionCall(src, input::Span{47, 56}));
   }
 }
 
