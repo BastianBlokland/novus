@@ -77,7 +77,6 @@ buildProj()
 
 printUsage()
 {
-  echo "Novus -- Build"
   echo "Options:"
   echo "-h,--help       Print this usage information"
   echo "-t,--threads    Number of threads to use, defaults to number of processors"
@@ -93,6 +92,7 @@ while [[ $# -gt 0 ]]
 do
   case "${1}" in
     -h|--help)
+      echo "Novus -- Build"
       printUsage
       exit 0
       ;;
@@ -105,7 +105,9 @@ do
       shift 2
       ;;
     *)
-      fail "Unknown option '${1}'"
+      error "Unknown option '${1}'"
+      printUsage
+      exit 1
       ;;
   esac
 done

@@ -78,7 +78,6 @@ configureProj()
 
 printUsage()
 {
-  echo "Novus -- Configure"
   echo "Options:"
   echo "-h,--help     Print this usage information"
   echo "-t,--type     Build type, options: Debug, Release (default)"
@@ -98,6 +97,7 @@ while [[ $# -gt 0 ]]
 do
   case "${1}" in
     -h|--help)
+      echo "Novus -- Configure"
       printUsage
       exit 0
       ;;
@@ -118,7 +118,9 @@ do
       shift 1
       ;;
     *)
-      fail "Unknown option '${1}'"
+      error "Unknown option '${1}'"
+      printUsage
+      exit 1
       ;;
   esac
 done
