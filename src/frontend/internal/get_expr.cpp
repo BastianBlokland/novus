@@ -273,17 +273,24 @@ auto GetExpr::visit(const parse::CallExprNode& n) -> void {
     return;
   }
 
-  if (n.isFork()) {
-    if (m_ctx->getProg()->getFuncDecl(*func).getKind() != prog::sym::FuncKind::User) {
-      m_ctx->reportDiag(errForkedNonUserFunc, n.getSpan());
+  if (n.isFork() || n.isLazy()) {
+    assert(n.isFork() != n.isLazy());
+
+    if (m_ctx->getProg()->getFuncDecl(*func).isAction() && n.isLazy()) {
+      m_ctx->reportDiag(errLazyActionCall, n.getSpan());
       return;
     }
+    if (m_ctx->getProg()->getFuncDecl(*func).getKind() != prog::sym::FuncKind::User) {
+      m_ctx->reportDiag(n.isFork() ? errForkedNonUserFunc : errLazyNonUserFunc, n.getSpan());
+      return;
+    }
+
     m_expr = prog::expr::callExprNode(
         *m_ctx->getProg(),
         func.value(),
-        funcOutAsFuture(m_ctx, *func),
+        n.isFork() ? funcOutAsFuture(m_ctx, *func) : funcOutAsLazy(m_ctx, *func),
         std::move(args->first),
-        true);
+        n.isFork() ? prog::expr::CallMode::Forked : prog::expr::CallMode::Lazy);
   } else {
     m_expr = prog::expr::callExprNode(*m_ctx->getProg(), *func, std::move(args->first));
   }
@@ -899,6 +906,10 @@ auto GetExpr::getSelfCallExpr(const parse::CallExprNode& n) -> prog::expr::NodeP
     m_ctx->reportDiag(errForkedSelfCall, n.getSpan());
     return nullptr;
   }
+  if (n.isLazy()) {
+    m_ctx->reportDiag(errLazySelfCall, n.getSpan());
+    return nullptr;
+  }
 
   // Verify that there is a 'self' signature we can call.
   if (!m_selfSig) {
@@ -968,14 +979,22 @@ auto GetExpr::getDynCallExpr(const parse::CallExprNode& n) -> prog::expr::NodePt
       return nullptr;
     }
 
-    if (n.isFork()) {
+    if (n.isFork() || n.isLazy()) {
+      assert(n.isLazy() != n.isFork());
+
+      if (m_ctx->getProg()->isActionDelegate(args->second[0]) && n.isLazy()) {
+        m_ctx->reportDiag(errLazyActionCall, n.getSpan());
+        return nullptr;
+      }
       return prog::expr::callDynExprNode(
           *m_ctx->getProg(),
           std::move(args->first[0]),
-          *delegateOutAsFuture(m_ctx, args->second[0]),
+          n.isFork() ? *delegateOutAsFuture(m_ctx, args->second[0])
+                     : *delegateOutAsLazy(m_ctx, args->second[0]),
           std::move(delArgs),
-          true);
+          n.isFork() ? prog::expr::CallMode::Forked : prog::expr::CallMode::Lazy);
     }
+
     return prog::expr::callDynExprNode(
         *m_ctx->getProg(), std::move(args->first[0]), std::move(delArgs));
   }
@@ -993,13 +1012,16 @@ auto GetExpr::getDynCallExpr(const parse::CallExprNode& n) -> prog::expr::NodePt
     return nullptr;
   }
 
-  if (n.isFork()) {
+  if (n.isFork() || n.isLazy()) {
+    assert(n.isLazy() != n.isFork());
+    assert(!m_ctx->getProg()->getFuncDecl(*func).isAction()); // Call operators cannot be actions.
+
     return prog::expr::callExprNode(
         *m_ctx->getProg(),
         func.value(),
-        funcOutAsFuture(m_ctx, *func),
+        n.isFork() ? funcOutAsFuture(m_ctx, *func) : funcOutAsLazy(m_ctx, *func),
         std::move(args->first),
-        true);
+        n.isFork() ? prog::expr::CallMode::Forked : prog::expr::CallMode::Lazy);
   }
   return prog::expr::callExprNode(*m_ctx->getProg(), func.value(), std::move(args->first));
 }

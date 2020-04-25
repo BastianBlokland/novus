@@ -1,4 +1,5 @@
 #include "gen_type_eq.hpp"
+#include "gen_lazy.hpp"
 #include "utilities.hpp"
 #include <algorithm>
 #include <set>
@@ -6,7 +7,10 @@
 namespace backend::internal {
 
 static auto genTypeEqualityEntry(
-    novasm::Assembler* asmb, const prog::Program& prog, const prog::sym::TypeDecl& typeDecl) {
+    novasm::Assembler* asmb, const prog::Program& prog, const prog::sym::TypeDecl& typeDecl)
+    -> void {
+
+  /* 2 values to equate are pushed on the stack before calling this. */
 
   switch (typeDecl.getKind()) {
   case prog::sym::TypeKind::Bool:
@@ -31,12 +35,43 @@ static auto genTypeEqualityEntry(
   case prog::sym::TypeKind::Delegate:
     asmb->addCheckEqCallDynTgt();
     break;
-  case prog::sym::TypeKind::Future:
-    // Futures are not equality checked at the moment. A possible implementation would be to wait
-    // for both futures to complete and then compare the results but a user probably does not expect
-    // a equality check to block.
-    asmb->addLoadLitInt(1);
-    break;
+  case prog::sym::TypeKind::Future: {
+    /* To equate future values we block until we get the result of both and then equate the
+    results.*/
+
+    // 'Get' the value for the top-most future.
+    asmb->addFutureBlock();
+
+    // 'Swap' the value we just got from the topmost future with the future below it on the stack.
+    asmb->addSwap();
+
+    // 'Get' the value for the other future (which is now on the top of the stack).
+    asmb->addFutureBlock();
+
+    // At this both values are on the stack, now we can generate the equality check for the result
+    // type of the future.
+    const auto& futureDef = std::get<prog::sym::FutureDef>(prog.getTypeDef(typeDecl.getId()));
+    genTypeEqualityEntry(asmb, prog, prog.getTypeDecl(futureDef.getResult()));
+  } break;
+
+  case prog::sym::TypeKind::Lazy: {
+    /* For lazy values we 'get' the result of both and then equate their values. */
+
+    // 'Get' the value for the top-most lazy.
+    genLazyGet(asmb);
+
+    // 'Swap' the value we just got from the topmost lazy with the lazy below it on the stack.
+    asmb->addSwap();
+
+    // 'Get' the value for the other lazy (which is now on the top of the stack).
+    genLazyGet(asmb);
+
+    // At this both values are on the stack, now we can generate the equality check for the result
+    // type of the lazy.
+    const auto& lazyDef = std::get<prog::sym::LazyDef>(prog.getTypeDef(typeDecl.getId()));
+    genTypeEqualityEntry(asmb, prog, prog.getTypeDecl(lazyDef.getResult()));
+  } break;
+
   case prog::sym::TypeKind::Struct:
   case prog::sym::TypeKind::Union:
     asmb->addCall(getUserTypeEqLabel(prog, typeDecl.getId()), 2, novasm::CallMode::Normal);
@@ -250,7 +285,7 @@ static auto addTypeAndNestedTypes(
   }
 }
 
-auto generateUserTypeEquality(novasm::Assembler* asmb, const prog::Program& prog) -> void {
+auto genUserTypeEquality(novasm::Assembler* asmb, const prog::Program& prog) -> void {
   auto types = std::set<prog::sym::TypeId>{};
 
   // Gather all types to generate equality functions for.

@@ -120,7 +120,7 @@ TEST_CASE("Analyzing call dynamic expressions", "[frontend]") {
             prog::expr::constExprNode(f2Def.getConsts(), *f2Def.getConsts().lookup("op")),
             GET_TYPE_ID(output, "__future_int"),
             {},
-            true));
+            prog::expr::CallMode::Forked));
 
     auto fArgs = std::vector<prog::expr::NodePtr>{};
     fArgs.push_back(prog::expr::litFuncNode(

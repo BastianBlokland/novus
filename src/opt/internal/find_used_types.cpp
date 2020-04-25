@@ -1,6 +1,8 @@
 #include "find_used_types.hpp"
 #include "prog/expr/nodes.hpp"
 #include "prog/sym/delegate_def.hpp"
+#include "prog/sym/future_def.hpp"
+#include "prog/sym/lazy_def.hpp"
 #include "prog/sym/struct_def.hpp"
 #include "prog/sym/union_def.hpp"
 
@@ -43,6 +45,10 @@ auto FindUsedTypes::markType(prog::sym::TypeId type) -> void {
   case prog::sym::TypeKind::Future: {
     const auto& futureDef = std::get<prog::sym::FutureDef>(m_prog.getTypeDef(type));
     markType(futureDef.getResult());
+  } break;
+  case prog::sym::TypeKind::Lazy: {
+    const auto& lazyDef = std::get<prog::sym::LazyDef>(m_prog.getTypeDef(type));
+    markType(lazyDef.getResult());
   } break;
   case prog::sym::TypeKind::Enum:
   case prog::sym::TypeKind::Int:

@@ -73,6 +73,15 @@ auto TypeDefTable::registerFuture(
   registerType(id, FutureDef{id, result});
 }
 
+auto TypeDefTable::registerLazy(const sym::TypeDeclTable& typeTable, sym::TypeId id, TypeId result)
+    -> void {
+
+  if (typeTable[id].getKind() != sym::TypeKind::Lazy) {
+    throw std::invalid_argument{"Type has not been declared as being a lazy type"};
+  }
+  registerType(id, LazyDef{id, result});
+}
+
 auto TypeDefTable::registerType(sym::TypeId id, TypeDef def) -> void {
   auto itr = m_typeDefs.find(id);
   if (itr != m_typeDefs.end()) {

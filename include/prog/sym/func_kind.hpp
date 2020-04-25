@@ -107,6 +107,8 @@ enum class FuncKind {
   FutureWaitNano,
   FutureBlock,
 
+  LazyGet,
+
   CheckEqUserType,
   CheckNEqUserType,
 

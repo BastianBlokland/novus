@@ -4,7 +4,7 @@ import "list.nov"
 
 fun waitAll{T}(List{future{T}} l)
   l.foldRight(lambda (List{T} result, future{T} f) -> List{T}
-    f.result() :: result)
+    f.get() :: result)
 
 fun parallelMap{T, TResult}(List{T} l, function{T, TResult} func)
   l.foldRight(lambda (List{future{TResult}} result, T val) -> List{future{TResult}}

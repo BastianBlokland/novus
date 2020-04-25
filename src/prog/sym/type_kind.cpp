@@ -17,6 +17,7 @@ auto isPrimitive(const TypeKind& kind) -> bool {
   case TypeKind::Enum:
   case TypeKind::Delegate:
   case TypeKind::Future:
+  case TypeKind::Lazy:
     return false;
   }
   throw std::invalid_argument{"Unknown type-kind"};
@@ -59,6 +60,9 @@ auto operator<<(std::ostream& out, const TypeKind& rhs) -> std::ostream& {
     break;
   case TypeKind::Future:
     out << "future";
+    break;
+  case TypeKind::Lazy:
+    out << "lazy";
     break;
   }
   return out;

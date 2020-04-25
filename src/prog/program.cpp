@@ -341,12 +341,28 @@ auto Program::isDelegate(sym::TypeId id) const -> bool {
   return typeDecl.getKind() == sym::TypeKind::Delegate;
 }
 
+auto Program::isActionDelegate(sym::TypeId id) const -> bool {
+  if (!isDelegate(id)) {
+    return false;
+  }
+  const auto& delegateDef = std::get<sym::DelegateDef>(getTypeDef(id));
+  return delegateDef.isAction();
+}
+
 auto Program::isFuture(sym::TypeId id) const -> bool {
   if (!id.isConcrete()) {
     return false;
   }
   const auto& typeDecl = getTypeDecl(id);
   return typeDecl.getKind() == sym::TypeKind::Future;
+}
+
+auto Program::isLazy(sym::TypeId id) const -> bool {
+  if (!id.isConcrete()) {
+    return false;
+  }
+  const auto& typeDecl = getTypeDecl(id);
+  return typeDecl.getKind() == sym::TypeKind::Lazy;
 }
 
 auto Program::satisfiesOptions(sym::TypeId delegate, OvOptions options) const -> bool {
@@ -429,6 +445,10 @@ auto Program::declareDelegate(std::string name) -> sym::TypeId {
 
 auto Program::declareFuture(std::string name) -> sym::TypeId {
   return m_typeDecls.registerType(sym::TypeKind::Future, std::move(name));
+}
+
+auto Program::declareLazy(std::string name) -> sym::TypeId {
+  return m_typeDecls.registerType(sym::TypeKind::Lazy, std::move(name));
 }
 
 auto Program::declarePureFunc(std::string name, sym::TypeSet input, sym::TypeId output)
@@ -560,10 +580,19 @@ auto Program::defineFuture(sym::TypeId id, sym::TypeId result) -> void {
   // Register utility functions and actions.
   m_funcDecls.registerAction(
       *this, sym::FuncKind::FutureWaitNano, "waitNano", sym::TypeSet{id, m_long}, m_bool);
-  m_funcDecls.registerFunc(*this, sym::FuncKind::FutureBlock, "result", sym::TypeSet{id}, result);
+
+  m_funcDecls.registerFunc(*this, sym::FuncKind::FutureBlock, "get", sym::TypeSet{id}, result);
 
   // Register future definition.
   m_typeDefs.registerFuture(m_typeDecls, id, result);
+}
+
+auto Program::defineLazy(sym::TypeId id, sym::TypeId result) -> void {
+  // Register utility functions.
+  m_funcDecls.registerFunc(*this, sym::FuncKind::LazyGet, "get", sym::TypeSet{id}, result);
+
+  // Register lazy definition.
+  m_typeDefs.registerLazy(m_typeDecls, id, result);
 }
 
 auto Program::defineFunc(sym::FuncId id, sym::ConstDeclTable consts, expr::NodePtr expr) -> void {

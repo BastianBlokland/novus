@@ -70,7 +70,7 @@ auto generate(const prog::Program& program) -> std::pair<novasm::Assembly, Instr
   auto asmb = novasm::Assembler{};
 
   // Generate equality functions for user types (structs and unions).
-  internal::generateUserTypeEquality(&asmb, program);
+  internal::genUserTypeEquality(&asmb, program);
 
   // Generate function definitons.
   for (auto funcItr = program.beginFuncDefs(); funcItr != program.endFuncDefs(); ++funcItr) {

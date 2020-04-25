@@ -24,8 +24,9 @@ public:
   auto isInlinable(const prog::expr::CallExprNode* callExpr) {
     const auto funcId = callExpr->getFunc();
 
-    // Forks or non-user funcs are not inlinable.
-    if (callExpr->isFork() || !internal::isUserFunc(m_prog, funcId)) {
+    // Non-normal (fork or lazy) calls or calls to non-user funcs are not inlinable.
+    if (callExpr->getMode() != prog::expr::CallMode::Normal ||
+        !internal::isUserFunc(m_prog, funcId)) {
       return false;
     }
 

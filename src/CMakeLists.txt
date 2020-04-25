@@ -133,6 +133,7 @@ add_library(prog STATIC
   prog/sym/func_id_hasher.cpp
   prog/sym/func_id.cpp
   prog/sym/future_def.cpp
+  prog/sym/lazy_def.cpp
   prog/sym/struct_def.cpp
   prog/sym/type_decl_table.cpp
   prog/sym/type_decl.cpp
@@ -169,6 +170,7 @@ add_library(frontend STATIC
   frontend/internal/define_user_funcs.cpp
   frontend/internal/define_user_types.cpp
   frontend/internal/future_table.cpp
+  frontend/internal/lazy_table.cpp
   frontend/internal/get_expr.cpp
   frontend/internal/import_sources.cpp
   frontend/internal/struct_template.cpp
@@ -231,6 +233,7 @@ target_include_directories(opt PRIVATE opt)
 message(">> Configuring backend library")
 add_library(backend STATIC
   backend/internal/gen_expr.cpp
+  backend/internal/gen_lazy.cpp
   backend/internal/gen_type_eq.cpp
   backend/internal/utilities.cpp
   backend/generator.cpp)

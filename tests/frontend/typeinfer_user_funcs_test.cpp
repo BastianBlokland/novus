@@ -211,7 +211,7 @@ TEST_CASE("Infer return type of user functions", "[frontend]") {
   }
 
   SECTION("Future result") {
-    const auto& output = ANALYZE("fun f2(future{int} f) f.result()");
+    const auto& output = ANALYZE("fun f2(future{int} f) f.get()");
     REQUIRE(output.isSuccess());
     CHECK(
         GET_FUNC_DECL(output, "f2", GET_TYPE_ID(output, "__future_int")).getOutput() ==

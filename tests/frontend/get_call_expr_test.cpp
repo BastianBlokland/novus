@@ -88,7 +88,7 @@ TEST_CASE("Analyzing call expressions", "[frontend]") {
             GET_FUNC_ID(output, "f1"),
             GET_TYPE_ID(output, "__future_int"),
             {},
-            true));
+            prog::expr::CallMode::Forked));
   }
 
   SECTION("Get call to overloaded call operator on literal") {

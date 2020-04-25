@@ -114,7 +114,13 @@ auto TypeInferExpr::visit(const parse::CallExprNode& n) -> void {
   // Check if this is calling a constructor / conversion.
   auto convType = getOrInstType(m_ctx, m_typeSubTable, nameToken, typeParams, argTypeSet);
   if (convType && convType->isConcrete()) {
-    m_type = n.isFork() ? asFuture(m_ctx, *convType) : *convType;
+    if (n.isFork()) {
+      m_type = asFuture(m_ctx, *convType);
+    } else if (n.isLazy()) {
+      m_type = asLazy(m_ctx, *convType);
+    } else {
+      m_type = *convType;
+    }
     return;
   }
 
@@ -128,7 +134,13 @@ auto TypeInferExpr::visit(const parse::CallExprNode& n) -> void {
         hasFlag<Flags::AllowActionCalls>() ? prog::OvFlags::None : prog::OvFlags::ExclActions};
     const auto retType = m_ctx->getFuncTemplates()->getRetType(funcName, *typeSet, ovOptions);
     if (retType && retType->isConcrete()) {
-      m_type = n.isFork() ? asFuture(m_ctx, *retType) : *retType;
+      if (n.isFork()) {
+        m_type = asFuture(m_ctx, *retType);
+      } else if (n.isLazy()) {
+        m_type = asLazy(m_ctx, *retType);
+      } else {
+        m_type = *retType;
+      }
     }
     return;
   }
@@ -136,7 +148,13 @@ auto TypeInferExpr::visit(const parse::CallExprNode& n) -> void {
   // Regular functions.
   auto result = inferFuncCall(funcName, argTypeSet);
   if (result.isConcrete()) {
-    m_type = n.isFork() ? asFuture(m_ctx, result) : result;
+    if (n.isFork()) {
+      m_type = asFuture(m_ctx, result);
+    } else if (n.isLazy()) {
+      m_type = asLazy(m_ctx, result);
+    } else {
+      m_type = result;
+    }
   }
 }
 
@@ -387,7 +405,13 @@ auto TypeInferExpr::inferDynCall(const parse::CallExprNode& n) -> prog::sym::Typ
     const auto& delegateDef =
         std::get<prog::sym::DelegateDef>(m_ctx->getProg()->getTypeDef(argTypes[0]));
     auto result = delegateDef.getOutput();
-    return n.isFork() ? asFuture(m_ctx, result) : result;
+    if (n.isFork()) {
+      return asFuture(m_ctx, result);
+    }
+    if (n.isLazy()) {
+      return asLazy(m_ctx, result);
+    }
+    return result;
   }
 
   // Call to a overloaded call operator.
@@ -397,7 +421,14 @@ auto TypeInferExpr::inferDynCall(const parse::CallExprNode& n) -> prog::sym::Typ
   if (result.isInfer()) {
     return prog::sym::TypeId::inferType();
   }
-  return n.isFork() ? asFuture(m_ctx, result) : result;
+
+  if (n.isFork()) {
+    return asFuture(m_ctx, result);
+  }
+  if (n.isLazy()) {
+    return asLazy(m_ctx, result);
+  }
+  return result;
 }
 
 auto TypeInferExpr::inferFuncCall(const std::string& funcName, const prog::sym::TypeSet& argTypes)

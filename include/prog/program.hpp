@@ -99,7 +99,11 @@ public:
 
   [[nodiscard]] auto isDelegate(sym::TypeId id) const -> bool;
 
+  [[nodiscard]] auto isActionDelegate(sym::TypeId id) const -> bool;
+
   [[nodiscard]] auto isFuture(sym::TypeId id) const -> bool;
+
+  [[nodiscard]] auto isLazy(sym::TypeId id) const -> bool;
 
   [[nodiscard]] auto satisfiesOptions(sym::TypeId delegate, OvOptions options) const -> bool;
 
@@ -120,6 +124,7 @@ public:
   auto declareEnum(std::string name) -> sym::TypeId;
   auto declareDelegate(std::string name) -> sym::TypeId;
   auto declareFuture(std::string name) -> sym::TypeId;
+  auto declareLazy(std::string name) -> sym::TypeId;
   auto declarePureFunc(std::string name, sym::TypeSet input, sym::TypeId output) -> sym::FuncId;
   auto declareAction(std::string name, sym::TypeSet input, sym::TypeId output) -> sym::FuncId;
 
@@ -133,6 +138,7 @@ public:
       sym::TypeId output,
       const std::vector<sym::TypeId>& aliases) -> void;
   auto defineFuture(sym::TypeId id, sym::TypeId result) -> void;
+  auto defineLazy(sym::TypeId id, sym::TypeId result) -> void;
   auto defineFunc(sym::FuncId id, sym::ConstDeclTable consts, expr::NodePtr expr) -> void;
 
   auto addExecStmt(sym::ConstDeclTable consts, expr::NodePtr expr) -> void;
