@@ -57,6 +57,15 @@ TEST_CASE("Parsing struct declaration statements", "[parse]") {
           EQ,
           {StructDeclStmtNode::FieldSpec(TYPE("List", TYPE("T", TYPE("U"))), ID("a"))},
           COMMAS(0)));
+  CHECK_STMT(
+      "struct s = fork f",
+      structDeclStmtNode(
+          STRUCT,
+          ID("s"),
+          std::nullopt,
+          EQ,
+          {StructDeclStmtNode::FieldSpec(Type(FORK), ID("f"))},
+          COMMAS(0)));
 
   SECTION("Errors") {
     CHECK_STMT(

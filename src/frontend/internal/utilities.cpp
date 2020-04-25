@@ -2,6 +2,8 @@
 #include "frontend/diag_defs.hpp"
 #include "internal/context.hpp"
 #include "internal/typeinfer_expr.hpp"
+#include "lex/token_payload_id.hpp"
+#include "lex/token_payload_keyword.hpp"
 #include "parse/node_expr_anon_func.hpp"
 #include "parse/type_param_list.hpp"
 #include "prog/expr/node_closure.hpp"
@@ -14,10 +16,18 @@
 namespace frontend::internal {
 
 auto getName(const lex::Token& token) -> std::string {
-  if (token.getKind() != lex::TokenKind::Identifier) {
-    return "__unknown";
+  switch (token.getKind()) {
+  case lex::TokenKind::Identifier: {
+    return token.getPayload<lex::IdentifierTokenPayload>()->getIdentifier();
   }
-  return token.getPayload<lex::IdentifierTokenPayload>()->getIdentifier();
+  case lex::TokenKind::Keyword: {
+    std::ostringstream oss;
+    oss << token.getPayload<lex::KeywordTokenPayload>()->getKeyword();
+    return oss.str();
+  }
+  default:
+    return std::string("__unknown");
+  }
 }
 
 auto getName(const parse::Type& parseType) -> std::string { return getName(parseType.getId()); }

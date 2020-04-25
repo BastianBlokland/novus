@@ -1,7 +1,6 @@
 #pragma once
 #include "internal/context.hpp"
 #include "internal/typeinfer_expr.hpp"
-#include "lex/token_payload_id.hpp"
 #include "prog/operator.hpp"
 
 namespace frontend::internal {
