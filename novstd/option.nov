@@ -14,8 +14,8 @@ fun Option{T}()
 fun ??{T}(Option{T} opt, T def)
   opt as T val ? val : def
 
-fun ??{T}(Option{T} opt, function{T} defFactory)
-  opt as T val ? val : defFactory()
+fun ??{T}(Option{T} opt, lazy{T} def)
+  opt as T val ? val : def.get()
 
 // -- Conversions
 
@@ -44,8 +44,8 @@ assert(Option{int}() == Option{int}())
 assert(Option{int}() ?? 42 == 42)
 assert(Option(1337) ?? 42 == 1337)
 
-assert(Option{int}() ?? (lambda () 42) == 42)
-assert(Option(1337) ?? (lambda () 42) == 1337)
+assert(Option{int}() ?? lazy (lambda () 42)() == 42)
+assert(Option(1337) ?? lazy (lambda () 42)() == 1337)
 
 assert(Option(42).string() == "42")
 assert(Option{int}().string() == "none")
