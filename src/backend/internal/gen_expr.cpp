@@ -1,6 +1,8 @@
 #include "gen_expr.hpp"
+#include "gen_lazy.hpp"
 #include "prog/expr/nodes.hpp"
 #include "utilities.hpp"
+#include <cassert>
 #include <stdexcept>
 #include <vector>
 
@@ -81,9 +83,16 @@ auto GenExpr::visit(const prog::expr::SwitchExprNode& n) -> void {
 auto GenExpr::visit(const prog::expr::CallExprNode& n) -> void {
   const auto& funcDecl = m_prog.getFuncDecl(n.getFunc());
 
-  // Union type creation needs special handling.
+  // Special handling for union creation.
   if (funcDecl.getKind() == prog::sym::FuncKind::MakeUnion) {
     makeUnion(n);
+    return;
+  }
+
+  // Special handling for lazy calls.
+  if (n.isLazy()) {
+    assert(funcDecl.getKind() == prog::sym::FuncKind::User);
+    makeLazy(getLabel(m_prog, n.getFunc()), n.getArgs());
     return;
   }
 
@@ -434,6 +443,13 @@ auto GenExpr::visit(const prog::expr::CallExprNode& n) -> void {
     m_asmb->addFutureBlock();
     break;
   }
+  case prog::sym::FuncKind::LazyGet: {
+    if (n.getArgs().size() != 1) {
+      throw std::logic_error{"Lazy get requires exactly 1 argument"};
+    }
+    genLazyGet(m_asmb);
+    break;
+  }
 
   case prog::sym::FuncKind::CheckEqUserType:
   case prog::sym::FuncKind::CheckNEqUserType: {
@@ -532,6 +548,12 @@ auto GenExpr::visit(const prog::expr::CallExprNode& n) -> void {
 }
 
 auto GenExpr::visit(const prog::expr::CallDynExprNode& n) -> void {
+  // Special handling for lazy calls.
+  if (n.isLazy()) {
+    makeLazy(n[0], n.getArgs());
+    return;
+  }
+
   // Push the arguments on the stack.
   for (auto i = 1U; i < n.getChildCount(); ++i) {
     genSubExpr(n[i], false);
@@ -593,17 +615,7 @@ auto GenExpr::visit(const prog::expr::CallSelfExprNode& n) -> void {
 }
 
 auto GenExpr::visit(const prog::expr::ClosureNode& n) -> void {
-  // Push the bound arguments on the stack.
-  for (auto i = 0U; i < n.getChildCount(); ++i) {
-    genSubExpr(n[i], false);
-  }
-
-  // Push the function instruction-pointer on the stack.
-  const auto funcId = n.getFunc();
-  m_asmb->addLoadLitIp(getLabel(m_prog, funcId));
-
-  // Create a struct containing both the bound arguments and the function pointer.
-  m_asmb->addMakeStruct(n.getChildCount() + 1);
+  makeClosure(getLabel(m_prog, n.getFunc()), n.getBoundArgs());
 }
 
 auto GenExpr::visit(const prog::expr::ConstExprNode& n) -> void {
@@ -629,7 +641,7 @@ auto GenExpr::visit(const prog::expr::FieldExprNode& n) -> void {
   }
 
   // Load the field.
-  m_asmb->addLoadStructField(getFieldOffset(n.getId()));
+  m_asmb->addStructLoadField(getFieldOffset(n.getId()));
 }
 
 auto GenExpr::visit(const prog::expr::GroupExprNode& n) -> void {
@@ -664,7 +676,7 @@ auto GenExpr::visit(const prog::expr::UnionCheckExprNode& n) -> void {
   }
 
   // For normal unions we test if the discriminants match.
-  m_asmb->addLoadStructField(0);
+  m_asmb->addStructLoadField(0);
   m_asmb->addLoadLitInt(getUnionDiscriminant(m_prog, n[0].getType(), n.getTargetType()));
   m_asmb->addCheckEqInt();
 }
@@ -703,7 +715,7 @@ auto GenExpr::visit(const prog::expr::UnionGetExprNode& n) -> void {
   const auto endLabel    = m_asmb->generateLabel("union-get-end");
 
   // Test if the union is the correct type.
-  m_asmb->addLoadStructField(0);
+  m_asmb->addStructLoadField(0);
   m_asmb->addLoadLitInt(getUnionDiscriminant(m_prog, n[0].getType(), n.getTargetType()));
   m_asmb->addCheckEqInt();
   m_asmb->addJumpIf(typeEqLabel);
@@ -715,7 +727,7 @@ auto GenExpr::visit(const prog::expr::UnionGetExprNode& n) -> void {
   m_asmb->label(typeEqLabel);
 
   // Store the union value as a const and load 'true' on the stack.
-  m_asmb->addLoadStructField(1);
+  m_asmb->addStructLoadField(1);
   m_asmb->addStackStore(getConstOffset(m_constTable, n.getConst()));
 
   m_asmb->addLoadLitInt(1); // Load true.
@@ -751,6 +763,75 @@ auto GenExpr::visit(const prog::expr::LitStringNode& n) -> void {
 auto GenExpr::visit(const prog::expr::LitCharNode& n) -> void { m_asmb->addLoadLitInt(n.getVal()); }
 
 auto GenExpr::visit(const prog::expr::LitEnumNode& n) -> void { m_asmb->addLoadLitInt(n.getVal()); }
+
+template <typename CallTarget>
+auto GenExpr::makeLazy(const CallTarget& tgt, const std::vector<prog::expr::NodePtr>& args)
+    -> void {
+  /* A 'lazy' object is represented by a struct with 3 fields:
+      1: Flag to indicate if the value has been computed.
+      2: Closure to call to compute the value.
+      3: Computed value (or empty)
+    */
+
+  // Push false as the first struct field, to indicate that the value has not been computed yet.
+  m_asmb->addLoadLitInt(0);
+
+  // Push the closure as the second field.
+  makeClosure(tgt, args);
+
+  // Push an 'empty' value as the third field
+  m_asmb->addLoadLitInt(0);
+
+  // Make the struct.
+  m_asmb->addMakeStruct(3);
+}
+
+auto GenExpr::makeClosure(const prog::expr::Node& lhs, const std::vector<prog::expr::NodePtr>& args)
+    -> void {
+
+  /* The vm does not support a closure of a closure at the moment, so to support this we generate a
+  trampoline function that calls the closure its given. We can then create a closure around that
+  function. */
+
+  auto trampolineBeginLabel = m_asmb->generateLabel("trampoline-begin");
+  auto trampolineEndLabel   = m_asmb->generateLabel("trampoline-end");
+
+  // Create a vector containing both the delegate and the arguments.
+  auto closureArgs = std::vector<prog::expr::NodePtr>();
+  for (const auto& arg : args) {
+    closureArgs.push_back(arg->clone(nullptr));
+  }
+  closureArgs.push_back(lhs.clone(nullptr));
+
+  // Create a closure that calls our trampoline.
+  makeClosure(trampolineBeginLabel, closureArgs);
+
+  // Jump over the trampoline function.
+  m_asmb->addJump(trampolineEndLabel);
+
+  // Generate 'trampoline' function, as arguments it will take the delegate (lhs here) and the
+  // arguments. Then it will invoke the delegate with the arguments.
+  m_asmb->label(trampolineBeginLabel);
+  // Note: We make a tail-call so there is no need for a 'ret' instruction here.
+  m_asmb->addCallDyn(args.size(), novasm::CallMode::Tail);
+
+  m_asmb->label(trampolineEndLabel);
+}
+
+auto GenExpr::makeClosure(std::string targetLabel, const std::vector<prog::expr::NodePtr>& args)
+    -> void {
+
+  // Push the bound arguments on the stack.
+  for (const auto& arg : args) {
+    genSubExpr(*arg, false);
+  }
+
+  // Push the function instruction-pointer on the stack.
+  m_asmb->addLoadLitIp(targetLabel);
+
+  // Create a struct containing both the bound arguments and the function pointer.
+  m_asmb->addMakeStruct(args.size() + 1);
+}
 
 auto GenExpr::makeUnion(const prog::expr::CallExprNode& n) -> void {
   if (n.getChildCount() != 1) {

@@ -49,6 +49,14 @@ private:
   unsigned int m_requestedValues;
   unsigned int m_valuesProduced;
 
+  template <typename CallTarget>
+  auto makeLazy(const CallTarget& tgt, const std::vector<prog::expr::NodePtr>& args) -> void;
+
+  auto makeClosure(const prog::expr::Node& lhs, const std::vector<prog::expr::NodePtr>& args)
+      -> void;
+
+  auto makeClosure(std::string targetLabel, const std::vector<prog::expr::NodePtr>& args) -> void;
+
   auto makeUnion(const prog::expr::CallExprNode& n) -> void;
 
   auto genSubExpr(const prog::expr::Node& n, bool tail, unsigned int requestedValues = 1)

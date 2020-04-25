@@ -120,7 +120,32 @@ TEST_CASE("Analyzing call dynamic expressions", "[frontend]") {
             prog::expr::constExprNode(f2Def.getConsts(), *f2Def.getConsts().lookup("op")),
             GET_TYPE_ID(output, "__future_int"),
             {},
-            true));
+            prog::expr::CallMode::Forked));
+
+    auto fArgs = std::vector<prog::expr::NodePtr>{};
+    fArgs.push_back(prog::expr::litFuncNode(
+        output.getProg(), GET_TYPE_ID(output, "__function_int"), GET_FUNC_ID(output, "f1")));
+    auto callExpr = prog::expr::callExprNode(output.getProg(), f2Def.getId(), std::move(fArgs));
+
+    CHECK(fDef.getExpr() == *callExpr);
+  }
+
+  SECTION("Get lazy delegate call") {
+    const auto& output = ANALYZE("fun f1() -> int 1 "
+                                 "fun f2(function{int} op) -> lazy{int} lazy op() "
+                                 "fun f() -> lazy{int} f2(f1)");
+    REQUIRE(output.isSuccess());
+    const auto& f2Def = GET_FUNC_DEF(output, "f2", GET_TYPE_ID(output, "__function_int"));
+    const auto& fDef  = GET_FUNC_DEF(output, "f");
+
+    CHECK(
+        f2Def.getExpr() ==
+        *prog::expr::callDynExprNode(
+            output.getProg(),
+            prog::expr::constExprNode(f2Def.getConsts(), *f2Def.getConsts().lookup("op")),
+            GET_TYPE_ID(output, "__lazy_int"),
+            {},
+            prog::expr::CallMode::Lazy));
 
     auto fArgs = std::vector<prog::expr::NodePtr>{};
     fArgs.push_back(prog::expr::litFuncNode(
@@ -189,6 +214,7 @@ TEST_CASE("Analyzing call dynamic expressions", "[frontend]") {
     CHECK_DIAG("fun f(action{int} a) a()", errIllegalDelegateCall(src, input::Span{21, 23}));
     CHECK_DIAG(
         "fun f(action{int} a) lambda () a()", errIllegalDelegateCall(src, input::Span{31, 33}));
+    CHECK_DIAG("act f(action{int} a) lazy a()", errLazyActionCall(src, input::Span{21, 28}));
   }
 }
 

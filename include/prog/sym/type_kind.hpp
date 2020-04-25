@@ -16,6 +16,7 @@ enum class TypeKind {
   Enum,
   Delegate,
   Future,
+  Lazy,
 };
 
 [[nodiscard]] auto isPrimitive(const TypeKind& kind) -> bool;

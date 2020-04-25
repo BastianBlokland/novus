@@ -253,7 +253,7 @@ public:
         const auto funcId       = litFuncNode->getFunc();
         auto newArgs            = rewriteAll(dynCallExpr->getArgs(), this);
         return prog::expr::callExprNode(
-            m_prog, funcId, dynCallExpr->getType(), std::move(newArgs), dynCallExpr->isFork());
+            m_prog, funcId, dynCallExpr->getType(), std::move(newArgs), dynCallExpr->getMode());
 
       } else if (tgtExpr.getKind() == prog::expr::NodeKind::Closure) {
 
@@ -268,7 +268,7 @@ public:
         }
 
         return prog::expr::callExprNode(
-            m_prog, funcId, dynCallExpr->getType(), std::move(newArgs), dynCallExpr->isFork());
+            m_prog, funcId, dynCallExpr->getType(), std::move(newArgs), dynCallExpr->getMode());
       }
 
     } break;

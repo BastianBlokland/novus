@@ -216,7 +216,13 @@ errUnsupportedOperator(const Source& src, const std::string& name, input::Span s
 
 [[nodiscard]] auto errForkedNonUserFunc(const Source& src, input::Span span) -> Diag;
 
+[[nodiscard]] auto errLazyNonUserFunc(const Source& src, input::Span span) -> Diag;
+
 [[nodiscard]] auto errForkedSelfCall(const Source& src, input::Span span) -> Diag;
+
+[[nodiscard]] auto errLazySelfCall(const Source& src, input::Span span) -> Diag;
+
+[[nodiscard]] auto errLazyActionCall(const Source& src, input::Span span) -> Diag;
 
 [[nodiscard]] auto errSelfCallInNonFunc(const Source& src, input::Span span) -> Diag;
 

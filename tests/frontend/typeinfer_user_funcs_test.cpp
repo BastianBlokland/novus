@@ -194,7 +194,15 @@ TEST_CASE("Infer return type of user functions", "[frontend]") {
         GET_TYPE_ID(output, "int"));
   }
 
-  SECTION("Forked Call") {
+  SECTION("Forked conversion call") {
+    const auto& output = ANALYZE("struct s = int i "
+                                 "fun s(string str) s(str.length()) "
+                                 "fun f2() fork s(\"hello world\")");
+    REQUIRE(output.isSuccess());
+    CHECK(GET_FUNC_DECL(output, "f2").getOutput() == GET_TYPE_ID(output, "__future_s"));
+  }
+
+  SECTION("Forked call") {
     const auto& output = ANALYZE("fun f1() false "
                                  "fun f2() fork f1()");
     REQUIRE(output.isSuccess());
@@ -210,11 +218,43 @@ TEST_CASE("Infer return type of user functions", "[frontend]") {
         GET_TYPE_ID(output, "__future_bool"));
   }
 
+  SECTION("Lazy conversion call") {
+    const auto& output = ANALYZE("struct s = int i "
+                                 "fun s(string str) s(str.length()) "
+                                 "fun f2() lazy s(\"hello world\")");
+    REQUIRE(output.isSuccess());
+    CHECK(GET_FUNC_DECL(output, "f2").getOutput() == GET_TYPE_ID(output, "__lazy_s"));
+  }
+
+  SECTION("Lazy call") {
+    const auto& output = ANALYZE("fun f1(int i) i * i "
+                                 "fun f2() lazy f1(42)");
+    REQUIRE(output.isSuccess());
+    CHECK(GET_FUNC_DECL(output, "f2").getOutput() == GET_TYPE_ID(output, "__lazy_int"));
+  }
+
+  SECTION("Lazy templated call") {
+    const auto& output = ANALYZE("fun ft{T}(T a) a == a "
+                                 "fun f(int i) lazy ft{int}(i)");
+    REQUIRE(output.isSuccess());
+    CHECK(
+        GET_FUNC_DECL(output, "f", GET_TYPE_ID(output, "int")).getOutput() ==
+        GET_TYPE_ID(output, "__lazy_bool"));
+  }
+
   SECTION("Future result") {
-    const auto& output = ANALYZE("fun f2(future{int} f) f.result()");
+    const auto& output = ANALYZE("fun f2(future{int} f) f.get()");
     REQUIRE(output.isSuccess());
     CHECK(
         GET_FUNC_DECL(output, "f2", GET_TYPE_ID(output, "__future_int")).getOutput() ==
+        GET_TYPE_ID(output, "int"));
+  }
+
+  SECTION("Future result") {
+    const auto& output = ANALYZE("fun f2(lazy{int} f) f.get()");
+    REQUIRE(output.isSuccess());
+    CHECK(
+        GET_FUNC_DECL(output, "f2", GET_TYPE_ID(output, "__lazy_int")).getOutput() ==
         GET_TYPE_ID(output, "int"));
   }
 
@@ -259,6 +299,13 @@ TEST_CASE("Infer return type of user functions", "[frontend]") {
     CHECK(GET_FUNC_DECL(output, "f").getOutput() == GET_TYPE_ID(output, "__future_bool"));
   }
 
+  SECTION("Lazy call operator") {
+    const auto& output = ANALYZE("fun ()(int x, int y) x * y "
+                                 "fun f() lazy 42(1337)");
+    REQUIRE(output.isSuccess());
+    CHECK(GET_FUNC_DECL(output, "f").getOutput() == GET_TYPE_ID(output, "__lazy_int"));
+  }
+
   SECTION("Instance function call") {
     const auto& output = ANALYZE("fun double(int i) i * 2 "
                                  "fun f() (42).double()");
@@ -296,6 +343,14 @@ TEST_CASE("Infer return type of user functions", "[frontend]") {
     CHECK(
         GET_FUNC_DECL(output, "f", GET_TYPE_ID(output, "__function_int_int")).getOutput() ==
         GET_TYPE_ID(output, "__future_int"));
+  }
+
+  SECTION("Lazy dynamic call") {
+    const auto& output = ANALYZE("fun f(function{int, int} op) lazy op(1)");
+    REQUIRE(output.isSuccess());
+    CHECK(
+        GET_FUNC_DECL(output, "f", GET_TYPE_ID(output, "__function_int_int")).getOutput() ==
+        GET_TYPE_ID(output, "__lazy_int"));
   }
 
   SECTION("Anonymous function") {

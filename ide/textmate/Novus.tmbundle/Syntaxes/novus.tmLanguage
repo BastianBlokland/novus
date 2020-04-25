@@ -39,7 +39,7 @@
 			<array>
 				<dict>
 					<key>match</key>
-					<string>\b(int|long|float|bool|string|char|stream|function|action|future)\b</string>
+					<string>\b(int|long|float|bool|string|char|stream|function|action|future|lazy)\b</string>
 					<key>name</key>
 					<string>keyword.other.buildin.source.novus</string>
 				</dict>
@@ -172,7 +172,7 @@
 			<array>
 				<dict>
 					<key>begin</key>
-					<string>(fork)?\s*([a-zA-Z0-9_]+)\s*(?=(\{[a-zA-Z0-9_, ]+\})?\s*\()</string>
+					<string>(fork\s+)?(lazy\s+)?([a-zA-Z0-9_]+)\s*(?=(\{[a-zA-Z0-9_, ]+\})?\s*\()</string>
 					<key>beginCaptures</key>
 					<dict>
 						<key>1</key>
@@ -181,6 +181,11 @@
 							<string>keyword.other.fork.source.novus</string>
 						</dict>
 						<key>2</key>
+						<dict>
+							<key>name</key>
+							<string>keyword.other.lazy.source.novus</string>
+						</dict>
+						<key>3</key>
 						<dict>
 							<key>name</key>
 							<string>support.function.source.novus</string>

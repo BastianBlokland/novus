@@ -25,6 +25,7 @@ public:
   [[nodiscard]] auto getSpan() const -> input::Span override;
 
   [[nodiscard]] auto isFork() const -> bool;
+  [[nodiscard]] auto isLazy() const -> bool;
 
   auto accept(NodeVisitor* visitor) const -> void override;
 

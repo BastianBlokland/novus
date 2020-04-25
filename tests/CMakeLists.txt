@@ -23,6 +23,7 @@ add_executable(novtests
   backend/constants_test.cpp
   backend/enum_test.cpp
   backend/group_expr_test.cpp
+  backend/lazy_calls_test.cpp
   backend/literals_test.cpp
   backend/struct_test.cpp
   backend/switch_expr_test.cpp

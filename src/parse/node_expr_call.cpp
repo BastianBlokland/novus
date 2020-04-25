@@ -52,6 +52,12 @@ auto CallExprNode::isFork() const -> bool {
   });
 }
 
+auto CallExprNode::isLazy() const -> bool {
+  return std::any_of(m_modifiers.begin(), m_modifiers.end(), [](const lex::Token& t) {
+    return getKw(t) == lex::Keyword::Lazy;
+  });
+}
+
 auto CallExprNode::accept(NodeVisitor* visitor) const -> void { visitor->visit(*this); }
 
 auto CallExprNode::print(std::ostream& out) const -> std::ostream& {

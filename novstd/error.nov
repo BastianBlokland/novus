@@ -17,8 +17,8 @@ fun Error(int errCode)
 fun ??{T}(Either{T, Error} e, T def)
   e as T val ? val : def
 
-fun ??{T}(Either{T, Error} e, function{T} defFactory)
-  e as T val ? val : defFactory()
+fun ??{T}(Either{T, Error} e, lazy{T} def)
+  e as T val ? val : def.get()
 
 // -- Conversions
 

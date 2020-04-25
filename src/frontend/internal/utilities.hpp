@@ -1,7 +1,6 @@
 #pragma once
 #include "internal/context.hpp"
 #include "internal/typeinfer_expr.hpp"
-#include "lex/token_payload_id.hpp"
 #include "prog/operator.hpp"
 
 namespace frontend::internal {
@@ -101,6 +100,13 @@ mangleName(Context* ctx, const std::string& name, const prog::sym::TypeSet& type
 [[nodiscard]] auto funcOutAsFuture(Context* ctx, prog::sym::FuncId func) -> prog::sym::TypeId;
 
 [[nodiscard]] auto delegateOutAsFuture(Context* ctx, prog::sym::TypeId delegate)
+    -> std::optional<prog::sym::TypeId>;
+
+[[nodiscard]] auto asLazy(Context* ctx, prog::sym::TypeId type) -> prog::sym::TypeId;
+
+[[nodiscard]] auto funcOutAsLazy(Context* ctx, prog::sym::FuncId func) -> prog::sym::TypeId;
+
+[[nodiscard]] auto delegateOutAsLazy(Context* ctx, prog::sym::TypeId delegate)
     -> std::optional<prog::sym::TypeId>;
 
 [[nodiscard]] auto isType(Context* ctx, const std::string& name) -> bool;

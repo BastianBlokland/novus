@@ -3,6 +3,7 @@
 #include "internal/delegate_table.hpp"
 #include "internal/func_template_table.hpp"
 #include "internal/future_table.hpp"
+#include "internal/lazy_table.hpp"
 #include "internal/type_info.hpp"
 #include "internal/type_template_table.hpp"
 #include "prog/program.hpp"
@@ -24,6 +25,7 @@ public:
       FuncTemplateTable* funcTemplates,
       DelegateTable* delegates,
       FutureTable* futures,
+      LazyTable* lazies,
       TypeInfoMap* typeInfos,
       std::vector<Diag>* diags);
 
@@ -35,6 +37,7 @@ public:
   [[nodiscard]] auto getFuncTemplates() const noexcept -> FuncTemplateTable*;
   [[nodiscard]] auto getDelegates() const noexcept -> DelegateTable*;
   [[nodiscard]] auto getFutures() const noexcept -> FutureTable*;
+  [[nodiscard]] auto getLazies() const noexcept -> LazyTable*;
 
   [[nodiscard]] auto getTypeInfo(prog::sym::TypeId typeId) const noexcept
       -> std::optional<TypeInfo>;
@@ -53,6 +56,7 @@ private:
   FuncTemplateTable* m_funcTemplates;
   DelegateTable* m_delegates;
   FutureTable* m_futures;
+  LazyTable* m_lazies;
   TypeInfoMap* m_typeInfos;
   std::vector<Diag>* m_diags;
 };

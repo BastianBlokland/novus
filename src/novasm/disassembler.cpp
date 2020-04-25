@@ -114,7 +114,8 @@ auto disassembleInstructions(const Assembly& assembly, const dasm::InstructionLa
     case OpCode::StackLoad:
     case OpCode::StackStore:
     case OpCode::MakeStruct:
-    case OpCode::LoadStructField:
+    case OpCode::StructLoadField:
+    case OpCode::StructStoreField:
     case OpCode::CallDyn:
     case OpCode::CallDynTail:
     case OpCode::CallDynForked:

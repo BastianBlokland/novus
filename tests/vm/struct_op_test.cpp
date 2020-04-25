@@ -49,10 +49,10 @@ TEST_CASE("Execute struct operations", "[vm]") {
           asmb->addStackStore(0);
 
           asmb->addStackLoad(0);
-          asmb->addLoadStructField(0);
+          asmb->addStructLoadField(0);
 
           asmb->addStackLoad(0);
-          asmb->addLoadStructField(1);
+          asmb->addStructLoadField(1);
 
           asmb->addAddString();
           ADD_PRINT(asmb);
@@ -60,6 +60,35 @@ TEST_CASE("Execute struct operations", "[vm]") {
         },
         "input",
         "hello world");
+  }
+
+  SECTION("Store field") {
+    CHECK_EXPR(
+        [](novasm::Assembler* asmb) -> void {
+          asmb->addStackAlloc(1);
+
+          asmb->addLoadLitString("hello ");
+          asmb->addLoadLitString("world");
+          asmb->addMakeStruct(2);
+          asmb->addStackStore(0);
+
+          asmb->addStackLoad(0);
+          asmb->addLoadLitString("moto");
+          asmb->addStructStoreField(1);
+
+          asmb->addStackLoad(0);
+          asmb->addStructLoadField(0);
+
+          asmb->addStackLoad(0);
+          asmb->addStructLoadField(1);
+
+          asmb->addAddString();
+
+          ADD_PRINT(asmb);
+          asmb->addPop();
+        },
+        "input",
+        "hello moto");
   }
 }
 

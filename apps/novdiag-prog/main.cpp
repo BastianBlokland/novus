@@ -147,6 +147,11 @@ auto printTypeDefs(const prog::Program& prog) -> void {
       std::cout << "  " << rang::fg::yellow << rang::style::bold << std::setw(nameColWidth)
                 << std::left << "future"
                 << " -> " << futureDef.getResult() << rang::style::reset << '\n';
+    } else if (std::holds_alternative<prog::sym::LazyDef>(typeDef)) {
+      const auto& lazyDef = std::get<prog::sym::LazyDef>(typeDef);
+      std::cout << "  " << rang::fg::yellow << rang::style::bold << std::setw(nameColWidth)
+                << std::left << "lazy"
+                << " -> " << lazyDef.getResult() << rang::style::reset << '\n';
     }
   }
 }

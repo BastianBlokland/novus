@@ -526,9 +526,27 @@ auto errForkedNonUserFunc(const Source& src, input::Span span) -> Diag {
   return error(src, oss.str(), span);
 }
 
+auto errLazyNonUserFunc(const Source& src, input::Span span) -> Diag {
+  std::ostringstream oss;
+  oss << "Only user-defined functions can be called lazily";
+  return error(src, oss.str(), span);
+}
+
 auto errForkedSelfCall(const Source& src, input::Span span) -> Diag {
   std::ostringstream oss;
   oss << "Self calls cannot be forked";
+  return error(src, oss.str(), span);
+}
+
+auto errLazySelfCall(const Source& src, input::Span span) -> Diag {
+  std::ostringstream oss;
+  oss << "Self calls cannot be lazy";
+  return error(src, oss.str(), span);
+}
+
+auto errLazyActionCall(const Source& src, input::Span span) -> Diag {
+  std::ostringstream oss;
+  oss << "Lazy calls cannot be made to (impure) actions";
   return error(src, oss.str(), span);
 }
 

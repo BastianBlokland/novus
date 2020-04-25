@@ -1,4 +1,5 @@
 #pragma once
+#include "prog/expr/call_mode.hpp"
 #include "prog/expr/node.hpp"
 #include "prog/program.hpp"
 
@@ -12,7 +13,7 @@ class CallExprNode final : public Node {
       sym::FuncId func,
       sym::TypeId resultType,
       std::vector<NodePtr> args,
-      bool fork) -> NodePtr;
+      CallMode mode) -> NodePtr;
 
 public:
   CallExprNode() = delete;
@@ -31,7 +32,9 @@ public:
 
   [[nodiscard]] auto getFunc() const noexcept -> sym::FuncId;
   [[nodiscard]] auto getArgs() const noexcept -> const std::vector<NodePtr>&;
+  [[nodiscard]] auto getMode() const noexcept -> CallMode;
   [[nodiscard]] auto isFork() const noexcept -> bool;
+  [[nodiscard]] auto isLazy() const noexcept -> bool;
 
   auto accept(NodeVisitor* visitor) const -> void override;
 
@@ -39,9 +42,9 @@ private:
   sym::FuncId m_func;
   sym::TypeId m_resultType;
   std::vector<NodePtr> m_args;
-  bool m_fork;
+  CallMode m_mode;
 
-  CallExprNode(sym::FuncId func, sym::TypeId resultType, std::vector<NodePtr> args, bool fork);
+  CallExprNode(sym::FuncId func, sym::TypeId resultType, std::vector<NodePtr> args, CallMode mode);
 };
 
 // Factories.
@@ -51,6 +54,6 @@ auto callExprNode(
     sym::FuncId func,
     sym::TypeId resultType,
     std::vector<NodePtr> args,
-    bool fork) -> NodePtr;
+    CallMode mode) -> NodePtr;
 
 } // namespace prog::expr

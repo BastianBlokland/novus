@@ -1,11 +1,23 @@
 #include "parse/type.hpp"
 #include "parse/type_param_list.hpp"
 #include "utilities.hpp"
+#include <sstream>
 
 namespace parse {
 
 static auto getIdOrErr(const lex::Token& token) {
-  return getId(token).value_or(std::string("err"));
+  switch (token.getKind()) {
+  case lex::TokenKind::Identifier: {
+    return *getId(token);
+  }
+  case lex::TokenKind::Keyword: {
+    std::ostringstream oss;
+    oss << *getKw(token);
+    return oss.str();
+  }
+  default:
+    return std::string("err");
+  }
 }
 
 Type::Type(lex::Token id) : m_id{std::move(id)}, m_paramList{nullptr} {}
@@ -76,7 +88,7 @@ auto Type::getParamCount() const -> unsigned int {
 }
 
 auto Type::validate() const -> bool {
-  if (m_id.getKind() != lex::TokenKind::Identifier) {
+  if (m_id.getKind() != lex::TokenKind::Identifier && m_id.getKind() != lex::TokenKind::Keyword) {
     return false;
   }
   if (m_paramList && !m_paramList->validate()) {

@@ -2,6 +2,7 @@
 #include "prog/sym/delegate_def.hpp"
 #include "prog/sym/enum_def.hpp"
 #include "prog/sym/future_def.hpp"
+#include "prog/sym/lazy_def.hpp"
 #include "prog/sym/struct_def.hpp"
 #include "prog/sym/type_decl_table.hpp"
 #include "prog/sym/type_id_hasher.hpp"
@@ -14,7 +15,8 @@ namespace prog::sym {
 
 class TypeDefTable final {
 public:
-  using TypeDef  = typename std::variant<StructDef, UnionDef, EnumDef, DelegateDef, FutureDef>;
+  using TypeDef =
+      typename std::variant<StructDef, UnionDef, EnumDef, DelegateDef, FutureDef, LazyDef>;
   using Iterator = typename std::set<TypeId>::const_iterator;
 
   TypeDefTable()                            = default;
@@ -53,6 +55,8 @@ public:
       TypeId output) -> void;
 
   auto registerFuture(const sym::TypeDeclTable& typeTable, sym::TypeId id, TypeId result) -> void;
+
+  auto registerLazy(const sym::TypeDeclTable& typeTable, sym::TypeId id, TypeId result) -> void;
 
   auto registerType(sym::TypeId id, TypeDef def) -> void;
 

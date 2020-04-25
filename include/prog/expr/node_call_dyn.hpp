@@ -1,4 +1,5 @@
 #pragma once
+#include "prog/expr/call_mode.hpp"
 #include "prog/expr/node.hpp"
 #include "prog/program.hpp"
 
@@ -12,7 +13,7 @@ class CallDynExprNode final : public Node {
       NodePtr lhs,
       sym::TypeId resultType,
       std::vector<NodePtr> args,
-      bool fork) -> NodePtr;
+      CallMode mode) -> NodePtr;
 
 public:
   CallDynExprNode() = delete;
@@ -30,7 +31,9 @@ public:
   [[nodiscard]] auto clone(Rewriter* rewriter) const -> std::unique_ptr<Node> override;
 
   [[nodiscard]] auto getArgs() const noexcept -> const std::vector<NodePtr>&;
+  [[nodiscard]] auto getMode() const noexcept -> CallMode;
   [[nodiscard]] auto isFork() const noexcept -> bool;
+  [[nodiscard]] auto isLazy() const noexcept -> bool;
 
   auto accept(NodeVisitor* visitor) const -> void override;
 
@@ -38,15 +41,18 @@ private:
   NodePtr m_lhs;
   sym::TypeId m_resultType;
   std::vector<NodePtr> m_args;
-  bool m_fork;
+  CallMode m_mode;
 
-  CallDynExprNode(NodePtr lhs, sym::TypeId resultType, std::vector<NodePtr> args, bool fork);
+  CallDynExprNode(NodePtr lhs, sym::TypeId resultType, std::vector<NodePtr> args, CallMode mode);
 };
 
 // Factories.
 auto callDynExprNode(const Program& prog, NodePtr lhs, std::vector<NodePtr> args) -> NodePtr;
 auto callDynExprNode(
-    const Program& prog, NodePtr lhs, sym::TypeId resultType, std::vector<NodePtr> args, bool fork)
-    -> NodePtr;
+    const Program& prog,
+    NodePtr lhs,
+    sym::TypeId resultType,
+    std::vector<NodePtr> args,
+    CallMode mode) -> NodePtr;
 
 } // namespace prog::expr

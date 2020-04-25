@@ -14,9 +14,9 @@ TEST_CASE("Generating assembly for structs", "[backend]") {
           asmb->label("UserEq");
           // Check if field 0 is the same.
           asmb->addStackLoad(0);
-          asmb->addLoadStructField(0);
+          asmb->addStructLoadField(0);
           asmb->addStackLoad(1);
-          asmb->addLoadStructField(0);
+          asmb->addStructLoadField(0);
           asmb->addCheckEqString();
 
           asmb->addJumpIf("field0 equal");
@@ -27,9 +27,9 @@ TEST_CASE("Generating assembly for structs", "[backend]") {
           // Check if field 1 is the same.
           asmb->label("field0 equal");
           asmb->addStackLoad(0);
-          asmb->addLoadStructField(1);
+          asmb->addStructLoadField(1);
           asmb->addStackLoad(1);
-          asmb->addLoadStructField(1);
+          asmb->addStructLoadField(1);
           asmb->addCheckEqInt();
 
           asmb->addJumpIf("field1 equal");

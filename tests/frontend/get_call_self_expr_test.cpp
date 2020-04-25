@@ -46,6 +46,7 @@ TEST_CASE("Analyzing self call expressions", "[frontend]") {
     CHECK_DIAG("conWrite(self())", errSelfCallInNonFunc(src, input::Span{9, 14}));
     CHECK_DIAG(
         "fun f(int i) i < 0 ? fork self(0) : i", errForkedSelfCall(src, input::Span{21, 32}));
+    CHECK_DIAG("fun f(int i) i < 0 ? lazy self(0) : i", errLazySelfCall(src, input::Span{21, 32}));
     CHECK_DIAG("fun f() self()", errSelfCallWithoutInferredRetType(src, input::Span{8, 13}));
     CHECK_DIAG(
         "fun f(int i) i < 0 ? self() : i",

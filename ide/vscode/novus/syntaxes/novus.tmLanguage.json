@@ -22,7 +22,7 @@
     "buildin_type": {
       "patterns": [
         {
-          "match": "\\b(int|long|float|bool|string|char|stream|function|action|future)\\b",
+          "match": "\\b(int|long|float|bool|string|char|stream|function|action|future|lazy)\\b",
           "name": "keyword.other.buildin.source.novus"
         }
       ]
@@ -111,12 +111,15 @@
     "function_calls": {
       "patterns": [
         {
-          "begin": "(fork)?\\s*([a-zA-Z0-9_]+)\\s*(?=(\\{[a-zA-Z0-9_, ]+\\})?\\s*\\()",
+          "begin": "(fork\\s+)?(lazy\\s+)?([a-zA-Z0-9_]+)\\s*(?=(\\{[a-zA-Z0-9_, ]+\\})?\\s*\\()",
           "beginCaptures": {
             "1": {
               "name": "keyword.other.fork.source.novus"
             },
             "2": {
+              "name": "keyword.other.lazy.source.novus"
+            },
+            "3": {
               "name": "support.function.source.novus"
             }
           },

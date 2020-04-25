@@ -13,6 +13,7 @@ enum class Keyword {
   Lambda,
   Impure,
   Fork,
+  Lazy,
   Struct,
   Union,
   Enum,

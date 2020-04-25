@@ -28,11 +28,11 @@ TEST_CASE("Parsing is / as expressions", "[parse]") {
   CHECK_EXPR(
       "x is List{T{Y}}",
       isExprNode(ID_EXPR("x"), IS, TYPE("List", TYPE("T", TYPE("Y"))), std::nullopt));
+  CHECK_EXPR("x as fork f", isExprNode(ID_EXPR("x"), AS, Type(FORK), ID("f")));
 
   SECTION("Errors") {
     CHECK_EXPR("x as", errInvalidIsExpr(ID_EXPR("x"), AS, Type(END), END));
     CHECK_EXPR("x as int", errInvalidIsExpr(ID_EXPR("x"), AS, TYPE("int"), END));
-    CHECK_EXPR("x as is i", errInvalidIsExpr(ID_EXPR("x"), AS, Type(IS), ID("i")));
     CHECK_EXPR("x as int is", errInvalidIsExpr(ID_EXPR("x"), AS, TYPE("int"), IS));
     CHECK_EXPR(
         "x as int{} i",

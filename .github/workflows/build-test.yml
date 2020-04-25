@@ -57,6 +57,8 @@ jobs:
     - name: install-macos
       if: matrix.config.os == 'macos'
       run: |
+        echo "Installing llvm-9"
+        brew install llvm@9
         readonly llvm9Path="$(brew --prefix llvm@9)"
         echo "Symlinking clang-tidy from '${llvm9Path}' to '/usr/local/bin'"
         ln -s "${llvm9Path}/bin/clang-tidy" "/usr/local/bin/clang-tidy-9"

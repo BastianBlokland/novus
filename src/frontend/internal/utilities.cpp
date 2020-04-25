@@ -2,6 +2,8 @@
 #include "frontend/diag_defs.hpp"
 #include "internal/context.hpp"
 #include "internal/typeinfer_expr.hpp"
+#include "lex/token_payload_id.hpp"
+#include "lex/token_payload_keyword.hpp"
 #include "parse/node_expr_anon_func.hpp"
 #include "parse/type_param_list.hpp"
 #include "prog/expr/node_closure.hpp"
@@ -14,10 +16,18 @@
 namespace frontend::internal {
 
 auto getName(const lex::Token& token) -> std::string {
-  if (token.getKind() != lex::TokenKind::Identifier) {
-    return "__unknown";
+  switch (token.getKind()) {
+  case lex::TokenKind::Identifier: {
+    return token.getPayload<lex::IdentifierTokenPayload>()->getIdentifier();
   }
-  return token.getPayload<lex::IdentifierTokenPayload>()->getIdentifier();
+  case lex::TokenKind::Keyword: {
+    std::ostringstream oss;
+    oss << token.getPayload<lex::KeywordTokenPayload>()->getKeyword();
+    return oss.str();
+  }
+  default:
+    return std::string("__unknown");
+  }
 }
 
 auto getName(const parse::Type& parseType) -> std::string { return getName(parseType.getId()); }
@@ -171,6 +181,7 @@ auto isReservedTypeName(const std::string& name) -> bool {
       "function",
       "action",
       "future",
+      "lazy",
   };
   return reservedTypes.find(name) != reservedTypes.end();
 }
@@ -277,6 +288,9 @@ auto instType(
   }
   if (typeName == "future" && typeSet->getCount() == 1) {
     return ctx->getFutures()->getFuture(ctx, *typeSet->begin());
+  }
+  if (typeName == "lazy" && typeSet->getCount() == 1) {
+    return ctx->getLazies()->getLazy(ctx, *typeSet->begin());
   }
 
   const auto typeInstantiation = ctx->getTypeTemplates()->instantiate(typeName, *typeSet);
@@ -531,6 +545,23 @@ auto delegateOutAsFuture(Context* ctx, prog::sym::TypeId delegate)
   const auto delOut = ctx->getProg()->getDelegateRetType(delegate);
   if (delOut) {
     return asFuture(ctx, *delOut);
+  }
+  return std::nullopt;
+}
+
+auto asLazy(Context* ctx, prog::sym::TypeId type) -> prog::sym::TypeId {
+  return ctx->getLazies()->getLazy(ctx, type);
+}
+
+auto funcOutAsLazy(Context* ctx, prog::sym::FuncId func) -> prog::sym::TypeId {
+  return asLazy(ctx, ctx->getProg()->getFuncDecl(func).getOutput());
+}
+
+auto delegateOutAsLazy(Context* ctx, prog::sym::TypeId delegate)
+    -> std::optional<prog::sym::TypeId> {
+  const auto delOut = ctx->getProg()->getDelegateRetType(delegate);
+  if (delOut) {
+    return asLazy(ctx, *delOut);
   }
   return std::nullopt;
 }

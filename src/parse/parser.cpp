@@ -105,7 +105,9 @@ auto ParserImpl::nextStmtStructDecl() -> NodePtr {
   auto fields  = std::vector<StructDeclStmtNode::FieldSpec>{};
   auto commas  = std::vector<lex::Token>{};
   if (!isEmpty) {
-    while (peekToken(0).getKind() == lex::TokenKind::Identifier) {
+    while (peekToken(0).getKind() == lex::TokenKind::Identifier ||
+           peekToken(0).getKind() == lex::TokenKind::Keyword) {
+
       auto fieldType = nextType();
       auto fieldId   = consumeToken();
       fields.emplace_back(std::move(fieldType), std::move(fieldId));
@@ -149,7 +151,9 @@ auto ParserImpl::nextStmtUnionDecl() -> NodePtr {
   auto eq     = consumeToken();
   auto types  = std::vector<Type>{};
   auto commas = std::vector<lex::Token>{};
-  while (peekToken(0).getKind() == lex::TokenKind::Identifier) {
+  while (peekToken(0).getKind() == lex::TokenKind::Identifier ||
+         peekToken(0).getKind() == lex::TokenKind::Keyword) {
+
     types.push_back(nextType());
     if (peekToken(0).getKind() == lex::TokenKind::SepComma) {
       commas.push_back(consumeToken());
@@ -313,7 +317,8 @@ auto ParserImpl::nextExprPrimary() -> NodePtr {
     }
     case lex::Keyword::Lambda:
       return nextExprAnonFunc({});
-    case lex::Keyword::Fork: {
+    case lex::Keyword::Fork:
+    case lex::Keyword::Lazy: {
       auto modifiers = std::vector<lex::Token>{consumeToken()};
       return nextExprCall(nextExpr(0, callPrecedence), std::move(modifiers));
     }
@@ -539,8 +544,11 @@ auto ParserImpl::nextArgDeclList() -> ArgumentListDecl {
   auto args   = std::vector<ArgumentListDecl::ArgSpec>{};
   auto commas = std::vector<lex::Token>{};
   if (!empty) {
+
     while (peekToken(0).getKind() == lex::TokenKind::Identifier ||
+           peekToken(0).getKind() == lex::TokenKind::Keyword ||
            peekToken(0).getKind() == lex::TokenKind::SepComma) {
+
       auto argType = nextType();
       auto argId   = consumeToken();
       args.emplace_back(argType, argId);
@@ -549,6 +557,7 @@ auto ParserImpl::nextArgDeclList() -> ArgumentListDecl {
       }
     }
   }
+
   auto close = empty ? open : consumeToken();
   return ArgumentListDecl(open, std::move(args), std::move(commas), close);
 }
