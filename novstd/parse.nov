@@ -15,6 +15,12 @@ struct  Parser{T}       = function{ParseState, ParseResult{T}} func
 
 // -- Operators
 
+fun (){T}(Parser{T} p, string str)
+  p(ParseState(str, 0))
+
+fun (){T}(Parser{T} p, ParseState s)
+  p.func(s)
+
 fun ??{T}(ParseResult{T} res, T def)
   res as ParseSuccess{T} suc ? suc.val : def
 
@@ -47,41 +53,41 @@ fun --(ParseState s)
 
 fun &{T1, T2}(Parser{T1} p1, Parser{T2} p2)
   Parser(lambda (ParseState s) -> ParseResult{Pair{T1, T2}}
-    r1 = s.parse(p1);
+    r1 = p1(s);
     if r1 as ParseFailure     f1    -> f1
     if r1 as ParseSuccess{T1} suc1  ->
-      r2 = suc1.state.parse(p2);
+      r2 = p2(suc1.state);
       if r2 as ParseFailure     f2    -> f2
       if r2 as ParseSuccess{T2} suc2  -> suc2.state.success(Pair(suc1.val, suc2.val))
   )
 
 fun |{T}(Parser{T} p1, Parser{T} p2)
   Parser(lambda (ParseState s) -> ParseResult{T}
-    r1 = s.parse(p1);
+    r1 = p1(s);
     if r1 is ParseSuccess{T} -> r1
-    if r1 is ParseFailure    -> s.parse(p2)
+    if r1 is ParseFailure    -> p2(s)
   )
 
 fun |{T1, T2}(Parser{T1} p1, Parser{T2} p2)
   Parser(lambda (ParseState s) -> ParseResult{Either{T1, T2}}
-    r1 = s.parse(p1);
-    if r1 as ParseSuccess{T1} suc1  -> suc1.state.success(               Either{T1, T2}(suc1.val))
-    if r1 is ParseFailure           -> s.parse(p2).map(lambda (T2 val2)  Either{T1, T2}(val2))
+    r1 = p1(s);
+    if r1 as ParseSuccess{T1} suc1  -> suc1.state.success(         Either{T1, T2}(suc1.val))
+    if r1 is ParseFailure           -> p2(s).map(lambda (T2 val2)  Either{T1, T2}(val2))
   )
 
 fun >>{T1, T2}(Parser{T1} p1, Parser{T2} p2)
   Parser(lambda (ParseState s) -> ParseResult{T2}
-    r1 = s.parse(p1);
+    r1 = p1(s);
     if r1 as ParseFailure     f1    -> f1
-    if r1 as ParseSuccess{T1} suc1  -> suc1.state.parse(p2)
+    if r1 as ParseSuccess{T1} suc1  -> p2(suc1.state)
   )
 
 fun <<{T1, T2}(Parser{T1} p1, Parser{T2} p2)
   Parser(lambda (ParseState s) -> ParseResult{T1}
-    r1 = s.parse(p1);
+    r1 = p1(s);
     if r1 as ParseFailure     f1    -> f1
     if r1 as ParseSuccess{T1} suc1  ->
-      r2 = suc1.state.parse(p2);
+      r2 = p2(suc1.state);
       if r2 as ParseFailure     f2    -> f2
       if r2 as ParseSuccess{T2} suc2  -> suc2.state.success(suc1.val)
   )
@@ -121,9 +127,6 @@ fun char(ParseState s)
 
 // -- Utilities
 
-fun parse{T}(string str, Parser{T} p)     ParseState(str, 0).parse(p)
-fun parse{T}(ParseState s, Parser{T} p)   p.func(s)
-
 fun isEnd(ParseState s)                   s.pos >= s.str.length()
 
 fun success{T}(ParseState s, T val)       ParseSuccess(val, s)
@@ -135,7 +138,7 @@ fun map{T, TResult}(ParseResult{T} res, function{T, TResult} func)
 
 fun map{T, TResult}(Parser{T} p, function{T, TResult} func)
   Parser(lambda (ParseState s) -> ParseResult{TResult}
-    res = s.parse(p);
+    res = p(s);
     if res as ParseSuccess{T} suc   -> suc.state.success(func(suc.val))
     if res as ParseFailure    fail  -> fail
   )
@@ -188,7 +191,7 @@ fun whileParser(function{char, bool} pred, bool allowEmpty)
   whileParser(lambda (ParseState s) pred(char(s)), allowEmpty)
 
 fun whitespaceParser()
-  whileParser(isWhitespace, false)
+  whileParser(isWhitespace, true)
 
 fun whitespaceParser(bool optional)
   whileParser(isWhitespace, optional)
@@ -228,6 +231,7 @@ fun txtIntParser()
   )
 
 fun txtFloatParser()
+  intParser = txtIntParser();
   Parser(lambda (ParseState s)
     impl =
     (
@@ -236,8 +240,8 @@ fun txtFloatParser()
         if char(s).isDigit()    -> newRaw = raw * 10.0 + int(char(s)) - int('0');
                                    newDiv = dec ? div * 10.0 : div;
                                    self(++s, newRaw, newDiv, dec, true)
-        if s == 'e' || s == 'E' -> (s + 1).parse(txtIntParser()).map(lambda (int exp)
-                                                                      raw / (div / pow(10.0, exp)))
+        if s == 'e' || s == 'E' -> intParser(s + 1).map(
+                                                      lambda (int exp) raw / (div / pow(10.0, exp)))
         else                    -> valid ?  s.success(raw / div) :
                                             s.failure(Error(
                                               "Expected float, got: '" + char(s) + "'"))
@@ -250,189 +254,210 @@ fun txtFloatParser()
 
 // -- Combination parsers
 
-fun many{T}(Parser{T} p)
-  many(p, true)
+fun manyParser{T}(Parser{T} p)
+  manyParser(p, false)
 
-fun many{T}(Parser{T} p, bool toEnd)
+fun manyParser{T}(Parser{T} p, bool toEnd)
   Parser(lambda (ParseState begin)
     impl =
     (
-      lambda (ParseState cur, List{T} result)  -> ParseResult{List{T}}
+      lambda (ParseState cur, List{T} result) -> ParseResult{List{T}}
         if cur.isEnd() -> cur.success(result)
         else ->
-          res = cur.parse(p);
+          res = p(cur);
           if res as ParseSuccess{T} suc   -> self(suc.state, suc.val :: result)
           if res as ParseFailure    fail  -> toEnd ? fail : cur.success(result)
     );
     impl(begin, List{T}()).map(reverse{T})
   )
 
+fun manyParser{T1, T2}(Parser{T1} p, Parser{T2} seperator)
+  Parser(lambda (ParseState begin)
+    impl =
+    (
+      lambda (ParseState cur, List{T1} result) -> ParseResult{List{T1}}
+        res1 = p(cur);
+        if res1 as ParseFailure     fail1  -> cur.success(result)
+        if res1 as ParseSuccess{T1} suc1   ->
+          res2 = seperator(suc1.state);
+          if res2 as ParseSuccess{T2} suc2  -> self(suc2.state, suc1.val :: result)
+          if res2 is ParseFailure           -> suc1.state.success(suc1.val :: result)
+    );
+    impl(begin, List{T1}()).map(reverse{T1})
+  )
+
 // -- Tests
 
-assert("".parse(retParser(42)) == 42)
+assert(retParser(42)("") == 42)
 
 assert(
-  "a".parse(matchParser('a')) == 'a' &&
-  "b".parse(matchParser('a')) is ParseFailure)
+  matchParser('a')("a") == 'a' &&
+  matchParser('a')("b") is ParseFailure)
 
 assert(
-  "hello world".parse(matchParser("hello")) == "hello" &&
-  "world".parse(matchParser("hello")) is ParseFailure)
+  matchParser("hello")("hello world") == "hello" &&
+  matchParser("hello")("world") is ParseFailure)
 
 assert(
-  "123 123".parse(whileParser(isDigit, false)) == "123" &&
-  "12345".parse(whileParser(isDigit, false))   == "12345" &&
-  "1".parse(whileParser(isDigit, false))       == "1" &&
-  "1abc".parse(whileParser(isDigit, false))    == "1" &&
-  "abc".parse(whileParser(isDigit, false))   is ParseFailure &&
-  "".parse(whileParser(isDigit, false))      is ParseFailure)
+  whileParser(isDigit, false)("123 123") == "123" &&
+  whileParser(isDigit, false)("12345")   == "12345" &&
+  whileParser(isDigit, false)("1")       == "1" &&
+  whileParser(isDigit, false)("1abc")    == "1" &&
+  whileParser(isDigit, false)("abc")   is ParseFailure &&
+  whileParser(isDigit, false)("")      is ParseFailure)
 
 assert(
-  "  123".parse(whitespaceParser()) == "  " &&
-  " a".parse(whitespaceParser()) == " " &&
-  " \n\t ".parse(whitespaceParser()) == " \n\t " &&
-  "abc".parse(whitespaceParser())   is ParseFailure &&
-  "".parse(whitespaceParser())      is ParseFailure)
+  whitespaceParser()("  123")   == "  " &&
+  whitespaceParser()(" a")      == " " &&
+  whitespaceParser()(" \n\t ")  == " \n\t " &&
+  whitespaceParser()("")        == "" &&
+  whitespaceParser()("abc")     == "")
 
 assert(
-  "abc sdf hello world".parse(lineParser()) == "abc sdf hello world" &&
-  "abc sdf\nhello world".parse(lineParser()) == "abc sdf\n" &&
-  "".parse(lineParser()) is ParseFailure)
+  lineParser()("abc sdf hello world")   == "abc sdf hello world" &&
+  lineParser()("abc sdf\nhello world")  == "abc sdf\n" &&
+  lineParser()("") is ParseFailure)
 
 assert(
-  "\"Hello World\"".parse(quotedStringParser()) == "Hello World" &&
-  "\"Hello\" \"World\"".parse(quotedStringParser()) == "Hello" &&
-  "Hello world".parse(quotedStringParser()) is ParseFailure &&
-  "\"Hello world".parse(quotedStringParser()) is ParseFailure &&
-  "\"Hello world\n\"".parse(quotedStringParser()) is ParseFailure)
+  quotedStringParser()("\"Hello World\"")     == "Hello World" &&
+  quotedStringParser()("\"Hello\" \"World\"") == "Hello" &&
+  quotedStringParser()("Hello world")         is ParseFailure &&
+  quotedStringParser()("\"Hello world")       is ParseFailure &&
+  quotedStringParser()("\"Hello world\n\"")   is ParseFailure)
 
 assert(
-  "1".parse(txtIntParser())                == 1 &&
-  "-1".parse(txtIntParser())               == -1 &&
-  "+1".parse(txtIntParser())               == 1 &&
-  "1337".parse(txtIntParser())             == 1337 &&
-  intMax().string().parse(txtIntParser())  == intMax() &&
-  intMin().string().parse(txtIntParser())  == intMin() &&
-  "2147483648".parse(txtIntParser())       == -2147483647 - 1)
+  txtIntParser()("1")                == 1 &&
+  txtIntParser()("-1")               == -1 &&
+  txtIntParser()("+1")               == 1 &&
+  txtIntParser()("1337")             == 1337 &&
+  txtIntParser()(intMax().string())  == intMax() &&
+  txtIntParser()(intMin().string())  == intMin() &&
+  txtIntParser()("2147483648")       == -2147483647 - 1)
 
 assert(
-  "".parse(txtIntParser())         is ParseFailure &&
-  "a".parse(txtIntParser())        is ParseFailure &&
-  " 123".parse(txtIntParser())     is ParseFailure)
+  txtIntParser()("")         is ParseFailure &&
+  txtIntParser()("a")        is ParseFailure &&
+  txtIntParser()(" 123")     is ParseFailure)
 
 assert(
-  "0".parse(txtFloatParser())            == 0.0 &&
-  "1".parse(txtFloatParser())            == 1.0 &&
-  "0001".parse(txtFloatParser())         == 1.0 &&
-  "0e10".parse(txtFloatParser())         == 0.0 &&
-  "0e-10".parse(txtFloatParser())        == 0.0 &&
-  "-1".parse(txtFloatParser())           == -1.0 &&
-  "+1".parse(txtFloatParser())           == 1.0 &&
-  "-1.1".parse(txtFloatParser())         == -1.1 &&
-  "+1.1".parse(txtFloatParser())         == 1.1 &&
-  "-.1".parse(txtFloatParser())          == -0.1 &&
-  "+.1".parse(txtFloatParser())          == 0.1 &&
-  "42e0".parse(txtFloatParser())         == 42.0 &&
-  "42e1".parse(txtFloatParser())         == 420.0 &&
-  "42e2".parse(txtFloatParser())         == 4200.0 &&
-  "42e+0".parse(txtFloatParser())        == 42.0 &&
-  "42e+1".parse(txtFloatParser())        == 420.0 &&
-  "42e+2".parse(txtFloatParser())        == 4200.0 &&
-  "42e-0".parse(txtFloatParser())        == 42.0 &&
-  "42e-1".parse(txtFloatParser())        == 4.2 &&
-  "42e-2".parse(txtFloatParser())        == .42 &&
-  "42.1337".parse(txtFloatParser())      == 42.1337 &&
-  "42.1337e4".parse(txtFloatParser())    == 421337.0 &&
-  "+42.1337E-2".parse(txtFloatParser())  == .421337 &&
-  "-42.1337E-2".parse(txtFloatParser())  == -.421337 &&
-  ("4000000000".parse(txtFloatParser()) ?? -1.0).approx(4000000000.0))
+  txtFloatParser()("0")            == 0.0 &&
+  txtFloatParser()("1")            == 1.0 &&
+  txtFloatParser()("0001")         == 1.0 &&
+  txtFloatParser()("0e10")         == 0.0 &&
+  txtFloatParser()("0e-10")        == 0.0 &&
+  txtFloatParser()("-1")           == -1.0 &&
+  txtFloatParser()("+1")           == 1.0 &&
+  txtFloatParser()("-1.1")         == -1.1 &&
+  txtFloatParser()("+1.1")         == 1.1 &&
+  txtFloatParser()("-.1")          == -0.1 &&
+  txtFloatParser()("+.1")          == 0.1 &&
+  txtFloatParser()("42e0")         == 42.0 &&
+  txtFloatParser()("42e1")         == 420.0 &&
+  txtFloatParser()("42e2")         == 4200.0 &&
+  txtFloatParser()("42e+0")        == 42.0 &&
+  txtFloatParser()("42e+1")        == 420.0 &&
+  txtFloatParser()("42e+2")        == 4200.0 &&
+  txtFloatParser()("42e-0")        == 42.0 &&
+  txtFloatParser()("42e-1")        == 4.2 &&
+  txtFloatParser()("42e-2")        == .42 &&
+  txtFloatParser()("42.1337")      == 42.1337 &&
+  txtFloatParser()("42.1337e4")    == 421337.0 &&
+  txtFloatParser()("+42.1337E-2")  == .421337 &&
+  txtFloatParser()("-42.1337E-2")  == -.421337 &&
+  (txtFloatParser()("4000000000") ?? -1.0).approx(4000000000.0))
 
 assert(
-  "".parse(txtFloatParser())       is ParseFailure &&
-  "--1".parse(txtFloatParser())    is ParseFailure &&
-  "-+1".parse(txtFloatParser())    is ParseFailure &&
-  " 1.0".parse(txtFloatParser())   is ParseFailure &&
-  "1. 0 ".parse(txtFloatParser())  is ParseFailure)
+  txtFloatParser()("")       is ParseFailure &&
+  txtFloatParser()("--1")    is ParseFailure &&
+  txtFloatParser()("-+1")    is ParseFailure &&
+  txtFloatParser()(" 1.0")   is ParseFailure &&
+  txtFloatParser()("1. 0 ")  is ParseFailure)
 
 assert(
-  "true".parse(txtBoolParser())  == true &&
-  "TRUE".parse(txtBoolParser())  == true &&
-  "True".parse(txtBoolParser())  == true &&
-  "false".parse(txtBoolParser()) == false &&
-  "FALSE".parse(txtBoolParser()) == false &&
-  "False".parse(txtBoolParser()) == false)
+  txtBoolParser()("true")  == true &&
+  txtBoolParser()("TRUE")  == true &&
+  txtBoolParser()("True")  == true &&
+  txtBoolParser()("false") == false &&
+  txtBoolParser()("FALSE") == false &&
+  txtBoolParser()("False") == false)
 
 assert(
-  "".parse(txtBoolParser())      is ParseFailure &&
-  "tRuE".parse(txtBoolParser())  is ParseFailure &&
-  "fAlSe".parse(txtBoolParser()) is ParseFailure &&
-  "abc".parse(txtBoolParser())   is ParseFailure)
+  txtBoolParser()("")      is ParseFailure &&
+  txtBoolParser()("tRuE")  is ParseFailure &&
+  txtBoolParser()("fAlSe") is ParseFailure &&
+  txtBoolParser()("abc")   is ParseFailure)
 
 assert(
   p = (matchParser("Hello ") | matchParser("Greetings ")) & matchParser("World");
-  "Hello World".parse(p) == Pair("Hello ", "World") &&
-  "Greetings World".parse(p) == Pair("Greetings ", "World") &&
-  "HelloWorld".parse(p) is ParseFailure)
+  p("Hello World")      == Pair("Hello ", "World") &&
+  p("Greetings World")  == Pair("Greetings ", "World") &&
+  p("HelloWorld") is ParseFailure)
 
 assert(
   p = txtBoolParser() | txtIntParser();
-  "42".parse(p)   == 42 &&
-  "true".parse(p) == true &&
-  "hello".parse(p) is ParseFailure)
+  p("42")   == 42 &&
+  p("true") == true &&
+  p("hello") is ParseFailure)
 
 assert(
   p = matchParser("Hello ") >> matchParser("World");
-  "Hello World".parse(p) == "World" &&
-  "Hello ".parse(p) is ParseFailure &&
-  "World".parse(p) is ParseFailure &&
-  "abc".parse(p) is ParseFailure)
+  p("Hello World") == "World" &&
+  p("Hello ") is ParseFailure &&
+  p("World")  is ParseFailure &&
+  p("abc")    is ParseFailure)
 
 assert(
   p = matchParser("Hello") << matchParser(" World");
-  "Hello World".parse(p) == "Hello" &&
-  "Hello".parse(p) is ParseFailure &&
-  " World".parse(p) is ParseFailure &&
-  "abc".parse(p) is ParseFailure)
+  p("Hello World") == "Hello" &&
+  p("Hello")  is ParseFailure &&
+  p(" World") is ParseFailure &&
+  p("abc")    is ParseFailure)
 
 assert(
   p = txtIntParser().map(lambda (int i) i * i);
-  "123".parse(p) == 123 * 123 &&
-  "".parse(p) is ParseFailure)
+  p("123") == 123 * 123 &&
+  p("") is ParseFailure)
 
 assert(
   p = txtIntParser().map(lambda (int i) i == 42);
-  "123".parse(p) == false &&
-  "42".parse(p) == true &&
-  "".parse(p) is ParseFailure)
+  p("123")  == false &&
+  p("42")   == true &&
+  p("") is ParseFailure)
 
 assert(
   p = txtBoolParser() :: txtBoolParser() :: txtBoolParser();
-  "truefalsetrue".parse(p) == true :: false :: true :: List{bool}() &&
-  "truefalse".parse(p) is ParseFailure &&
-  "".parse(p) is ParseFailure)
+  p("truefalsetrue") == true :: false :: true :: List{bool}() &&
+  p("truefalse")  is ParseFailure &&
+  p("")           is ParseFailure)
 
 assert(
   p = (txtBoolParser() & txtBoolParser()).unwrap(lambda (bool a, bool b) a && b);
-  "truefalse".parse(p) == false &&
-  "truetrue".parse(p) == true &&
-  "true".parse(p) is ParseFailure &&
-  "".parse(p) is ParseFailure)
+  p("truefalse")  == false &&
+  p("truetrue")   == true &&
+  p("true")   is ParseFailure &&
+  p("")       is ParseFailure)
 
 assert(
   p = (txtBoolParser() & txtBoolParser() & txtBoolParser()).unwrap(
     lambda (bool a, bool b, bool c) a && b && c);
-  "truefalsetrue".parse(p) == false &&
-  "truetruetrue".parse(p) == true &&
-  "truefalse".parse(p) is ParseFailure &&
-  "".parse(p) is ParseFailure)
+  p("truefalsetrue")  == false &&
+  p("truetruetrue")   == true &&
+  p("truefalse")  is ParseFailure &&
+  p("")           is ParseFailure)
 
 assert(
-  p = many(txtBoolParser(), false);
-  "truefalsetruetrue".parse(p) == true :: false :: true :: true :: List{bool}() &&
-  "true".parse(p) == true :: List{bool}() &&
-  "true1".parse(p) == true :: List{bool}() &&
-  "".parse(p) == List{bool}())
+  p = manyParser(txtBoolParser(), false);
+  p("truefalsetruetrue")  == true :: false :: true :: true :: List{bool}() &&
+  p("true")               == true :: List{bool}() &&
+  p("true1")              == true :: List{bool}() &&
+  p("")                   == List{bool}())
 
 assert(
-  p = many(txtBoolParser(), true);
-  "true1true".parse(p) is ParseFailure)
+  p = manyParser(txtBoolParser(), true);
+  p("true1true") is ParseFailure)
+
+assert(
+  p = manyParser(txtIntParser(), matchParser(','));
+  p("42,1337,1,2")  == 42 :: 1337 :: 1 :: 2 :: List{int}() &&
+  p("42")           == 42 :: List{int}() &&
+  p("")             == List{int}())

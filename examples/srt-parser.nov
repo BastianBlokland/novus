@@ -79,7 +79,7 @@ fun subParser() -> Parser{Subtitle}
 
 // Parse a list of subtitles optionally followed by whitespace.
 fun subListParser() -> Parser{List{Subtitle}}
-  many(subParser() << whitespaceParser(true))
+  manyParser(subParser() << whitespaceParser(true), true)
 
 // -- Driver code
 // Example output:
@@ -95,8 +95,9 @@ act main(Path path)
   if path.isEmpty()     -> printErr("Usage: provide path to .srt subtitle file as arg 1."); fail()
   if !path.fileExists() -> printErr("Could not open file: " + path); fail()
   else ->
+    p   = subListParser();
     t1  = timestamp();
-    res = readFile(path).parse(subListParser());
+    res = p(readFile(path));
     dur = timestamp() - t1;
     print("[Parsing took: " + dur + "]\n");
 
