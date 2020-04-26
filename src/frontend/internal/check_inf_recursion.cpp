@@ -28,7 +28,7 @@ auto CheckInfRecursion::visit(const prog::expr::SwitchExprNode& n) -> void {
 }
 
 auto CheckInfRecursion::visit(const prog::expr::CallExprNode& n) -> void {
-  if (n.getFunc() == m_func) {
+  if (n.getFunc() == m_func && !n.isLazy()) {
     m_infRec = true;
   }
   for (auto i = 0U; i != n.getChildCount(); ++i) {
