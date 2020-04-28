@@ -2,6 +2,9 @@ import "list.nov"
 
 // -- Functions
 
+fun isAscii(char c)
+  (c & 0b1000_0000) == 0
+
 fun isDigit(char c)
   c >= '0' && c <= '9'
 
@@ -27,6 +30,10 @@ fun toLower(char c)
   c.isUpper() ? char(c ^ 0x20) : c
 
 // -- Tests
+
+assert(
+  rangeList(char(0),    char(127)).all(isAscii) &&
+  rangeList(char(128),  char(255)).none(isAscii))
 
 assert(
   rangeList('0', '9').all(isDigit) &&

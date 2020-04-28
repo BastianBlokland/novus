@@ -97,7 +97,7 @@ act main(Path path)
   else ->
     p   = subListParser();
     t1  = timestamp();
-    res = p(readFile(path));
+    res = p(fileRead(path));
     dur = timestamp() - t1;
     print("[Parsing took: " + dur + "]\n");
 

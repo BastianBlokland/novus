@@ -1,0 +1,142 @@
+import "unicode.nov"
+import "parse.nov"
+
+// Utilities for encoding / decoding utf8 from / to unicode codepoints.
+
+// -- Functions
+
+fun utf8SingleCharCp()  UnicodePoint(0x7F)
+fun utf8DoubleCharCp()  UnicodePoint(0x7FF)
+fun utf8TripleCharCp()  UnicodePoint(0xFFFF)
+fun utf8QuadCharCp()    maxUnicodePoint()
+
+fun utf8RequiredChars(UnicodePoint cp)
+  if !cp.validUnicodePoint()  -> -1
+  if cp <= utf8SingleCharCp() -> 1
+  if cp <= utf8DoubleCharCp() -> 2
+  if cp <= utf8TripleCharCp() -> 3
+  else                        -> 4
+
+fun toUtf8(UnicodePoint cp)
+  if !cp.validUnicodePoint()  -> char(0xEF) + char(0xBF) + char(0xBD)
+  if cp <= utf8SingleCharCp() -> string(char(cp.val))
+  if cp <= utf8DoubleCharCp() -> char(((  cp.val >> 6)  & 0x1F)   | 0xC0) +
+                                 char((   cp.val        & 0x3F)   | 0x80)
+  if cp <= utf8TripleCharCp() -> char(((  cp.val >> 12) & 0x0F)   | 0xE0) +
+                                 char(((  cp.val >>  6) & 0x3F)   | 0x80) +
+                                 char((   cp.val        & 0x3F)   | 0x80)
+  else                        -> char(((  cp.val >> 18) & 0x07)   | 0xF0) +
+                                 char(((  cp.val >> 12) & 0x3F)   | 0x80) +
+                                 char(((  cp.val >>  6) & 0x3F)   | 0x80) +
+                                 char((   cp.val        & 0x3F)   | 0x80)
+
+fun utf8GetCharCount(char c)
+  if (c & 0b1000_0000) == 0            -> 1
+  if (c & 0b1110_0000) == 0b1100_0000  -> 2
+  if (c & 0b1111_0000) == 0b1110_0000  -> 3
+  if (c & 0b1111_1000) == 0b1111_0000  -> 4
+  else                                 -> -1
+
+fun utf8IsContChar(char c)
+  (c & 0b1100_0000) == 0b1000_0000
+
+fun utf8Validate(string str, int idx)
+  if idx >= str.length() -> true
+  else ->
+    cc = utf8GetCharCount(str[idx]);
+    if cc == 1                          -> utf8Validate(str, idx + 1)
+    if cc == 2 &&
+      utf8IsContChar(str[idx + 1])      -> utf8Validate(str, idx + 2)
+    if cc == 3 &&
+      utf8IsContChar(str[idx + 1]) &&
+      utf8IsContChar(str[idx + 2])      -> utf8Validate(str, idx + 3)
+    if cc == 4 &&
+      utf8IsContChar(str[idx + 1]) &&
+      utf8IsContChar(str[idx + 2]) &&
+      utf8IsContChar(str[idx + 3])      -> utf8Validate(str, idx + 4)
+    else                                -> false
+
+fun utf8CodePointParser()
+  Parser(lambda (ParseState s) -> ParseResult{UnicodePoint}
+    cc = utf8GetCharCount(s[0]);
+    if cc == 1 ->
+      (s + 1).success(UnicodePoint(s[0]))
+
+    if cc == 2 && utf8IsContChar(s[1]) ->
+      (s + 2).success(UnicodePoint(
+        (s[0] & 0b0001_1111) << 6   |
+        (s[1] & 0b0011_1111)))
+
+    if cc == 3 && utf8IsContChar(s[1]) && utf8IsContChar(s[2]) ->
+      (s + 3).success(UnicodePoint(
+        (s[0] & 0b0000_1111) << 12  |
+        (s[1] & 0b0011_1111) << 6   |
+        (s[2] & 0b0011_1111)))
+
+    if cc == 4 && utf8IsContChar(s[1]) && utf8IsContChar(s[2]) && utf8IsContChar(s[3]) ->
+      (s + 4).success(UnicodePoint(
+        (s[0] & 0b0000_0111) << 18  |
+        (s[1] & 0b0011_1111) << 12  |
+        (s[2] & 0b0011_1111) << 6   |
+        (s[3] & 0b0011_1111)))
+
+    else              -> s.failure(Error("Invalid utf8 character"))
+  )
+
+fun utf8Parser(bool convertMalformed)
+  manyParser(
+    convertMalformed ? utf8CodePointParser() | retParser(errorUnicodePoint())
+                     : utf8CodePointParser())
+
+// -- Tests
+
+assert(
+  utf8  = "&";
+  uni   = UnicodePoint(0x26);
+  utf8CodePointParser()(utf8) == uni  &&
+  uni.toUtf8() == utf8                &&
+  uni.utf8RequiredChars() == 1        &&
+  utf8[0].utf8GetCharCount() == 1)
+
+assert(
+  utf8  = "Λ";
+  uni   = UnicodePoint(0x39B);
+  utf8CodePointParser()(utf8) == uni  &&
+  uni.toUtf8() == utf8                &&
+  uni.utf8RequiredChars() == 2        &&
+  utf8[0].utf8GetCharCount() == 2)
+
+assert(
+  utf8  = "฿";
+  uni   = UnicodePoint(0xE3F);
+  utf8CodePointParser()(utf8) == uni  &&
+  uni.toUtf8() == utf8                &&
+  uni.utf8RequiredChars() == 3        &&
+  utf8[0].utf8GetCharCount() == 3)
+
+assert(
+  utf8  = "𝑙";
+  uni   = UnicodePoint(0x1D459);
+  utf8CodePointParser()(utf8) == uni  &&
+  uni.toUtf8() == utf8                &&
+  uni.utf8RequiredChars() == 4        &&
+  utf8[0].utf8GetCharCount() == 4)
+
+assert(
+ testStr  = "STARGΛ̊TE,Hello world,Καλημέρα κόσμε,コンニチハ,⡌⠁⠧⠑ ⠼⠁⠒,ᚻᛖ ᚳᚹᚫᚦ ᚦᚫᛏ,ሰማይ አይታረስ ንጉሥ አይከሰስ።,แผ่นดินฮั่นเสื่อมโทรมแสนสังเวช,Зарегистрируйтесь,გთხოვთ ახლავე გაიაროთ⎪⎢⎜ ⎳aⁱ-bⁱ⎟⎥⎪▁▂▃▄▅▆▇█∀∂∈ℝ∧∪≡∞";
+ utf8Validate(testStr, 0))
+
+assert(
+ testStr  = "STARGΛ̊TE,Hello world,Καλημέρα κόσμε,コンニチハ,⡌⠁⠧⠑ ⠼⠁⠒,ᚻᛖ ᚳᚹᚫᚦ ᚦᚫᛏ,ሰማይ አይታረስ ንጉሥ አይከሰስ።,แผ่นดินฮั่นเสื่อมโทรมแสนสังเวช,Зарегистрируйтесь,გთხოვთ ახლავე გაიაროთ⎪⎢⎜ ⎳aⁱ-bⁱ⎟⎥⎪▁▂▃▄▅▆▇█∀∂∈ℝ∧∪≡∞";
+ parser   = utf8Parser(false);
+ parser(testStr) as ParseSuccess{List{UnicodePoint}} suc && suc.val.map(toUtf8).sum() == testStr)
+
+assert(
+  !utf8Validate(string(char(0b1000_0000)), 0) &&
+  !utf8Validate(string(char(0b1100_0000)), 0) &&
+  !utf8Validate(string(char(0b1110_0000)), 0) &&
+  !utf8Validate(string(char(0b1111_0000)), 0) &&
+  utf8Validate(string(char(0b0000_0001)), 0)  &&
+  utf8Validate(char(0b1100_0000) + char(0b1000_0001), 0) &&
+  utf8Validate(char(0b1110_0000) + char(0b1000_0001) + char(0b1000_0001), 0) &&
+  utf8Validate(char(0b1111_0000) + char(0b1000_0001) + char(0b1000_0001) + char(0b1000_0001), 0))

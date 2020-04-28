@@ -30,15 +30,15 @@ act fileExists(Path p)
 act fileRemove(Path p)
   fileRemove(p.str)
 
-act readFile(Path p)
+act fileRead(Path p)
   fileOpen(p, FileMode.Open).read()
 
-act writeFile(Path p, string str)
+act fileWrite(Path p, string str)
   f = fileOpen(p, FileMode.Create);
   f.streamWrite(str);
   f.streamFlush()
 
-act appendFile(Path p, string str)
+act fileAppend(Path p, string str)
   f = fileOpen(p, FileMode.Append);
   f.streamWrite(str);
   f.streamFlush()
@@ -52,7 +52,7 @@ assert(
   f = fileOpen(p, FileMode.Create, FileFlags.AutoRemove);
   f.streamWrite("hello world");
   f.streamFlush();
-  readFile(p) == "hello world")
+  fileRead(p) == "hello world")
 
 assert(
   p = Path("file-test2.tmp");
@@ -61,7 +61,7 @@ assert(
   f.streamWrite("hello world");
   f.streamWrite("hello world");
   f.streamFlush();
-  readFile(p) == "hello worldhello worldhello world")
+  fileRead(p) == "hello worldhello worldhello world")
 
 assert(
   p = Path("file-test3.tmp");

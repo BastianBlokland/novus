@@ -27,6 +27,9 @@ fun ??{T}(ParseResult{T} res, T def)
 fun ??{T1, T2}(ParseResult{T1} res, T2 def) -> Either{T1, T2}
   res as ParseSuccess{T1} suc ? suc.val : def
 
+fun [](ParseState p, int i)
+  p.str[p.pos + i]
+
 fun ==(ParseState s, char c)
   s.str[s.pos] == c
 
@@ -153,7 +156,7 @@ fun unwrap{T1, T2, T3, TResult}(Parser{Pair{Pair{T1, T2}, T3}} p, function{T1, T
 
 fun retParser{T}(T val)
   Parser(lambda (ParseState s) -> ParseResult{T}
-    s.success(val)
+    (s + 1).success(val)
   )
 
 fun matchParser(char c)
