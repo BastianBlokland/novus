@@ -4,6 +4,7 @@ import "math.nov"
 import "pair.nov"
 import "either.nov"
 import "error.nov"
+import "bits.nov"
 
 // -- Types
 
@@ -125,9 +126,6 @@ fun string{T}(ParseSuccess{T} suc)
 fun string(ParseFailure fail)
   "[" + fail.state.pos.string() + "] " + fail.err.string()
 
-fun char(ParseState s)
-  s.str[s.pos]
-
 // -- Utilities
 
 fun isEnd(ParseState s)                   s.pos >= s.str.length()
@@ -162,13 +160,13 @@ fun retParser{T}(T val)
 fun matchParser(char c)
   Parser(lambda (ParseState s) -> ParseResult{char}
     if s == c -> (s + 1).success(c)
-    else      -> s.failure(Error("Expected: '" + c + "', got: '" + char(s) + "'"))
+    else      -> s.failure(Error("Expected: '" + c + "', got: '" + s[0] + "'"))
   )
 
 fun matchParser(string str)
   Parser(lambda (ParseState s) -> ParseResult{string}
     if s == str -> (s + str.length()).success(str)
-    else        -> s.failure(Error("Expected: '" + str + "', got: '" + char(s) + "'"))
+    else        -> s.failure(Error("Expected: '" + str + "', got: '" + s[0] + "'"))
   )
 
 fun whileParser(function{ParseState, bool} pred)
@@ -182,7 +180,7 @@ fun whileParser(function{ParseState, bool} pred, bool allowEmpty)
         if !cur.isEnd() && pred(cur) -> self(++cur, true)
         else                         -> valid  ? cur.success(begin.str[begin.pos, cur.pos])
                                                : cur.failure(Error(
-                                                  "Unexpected character: '" + char(cur) + "'"))
+                                                  "Unexpected character: '" + cur[0] + "'"))
     );
     impl(begin, allowEmpty)
   )
@@ -191,7 +189,7 @@ fun whileParser(function{char, bool} pred)
   whileParser(pred, false)
 
 fun whileParser(function{char, bool} pred, bool allowEmpty)
-  whileParser(lambda (ParseState s) pred(char(s)), allowEmpty)
+  whileParser(lambda (ParseState s) pred(s[0]), allowEmpty)
 
 fun whitespaceParser()
   whileParser(isWhitespace, true)
@@ -202,10 +200,6 @@ fun whitespaceParser(bool optional)
 fun lineParser()
   whileParser(lambda (ParseState s) (s - 1) != '\n', false)
 
-fun quotedStringParser()
-  matchParser('"') >>
-    whileParser(lambda (char c) c != '"' && !c.isNewline(), true) << matchParser('"')
-
 fun txtBoolParser()
   Parser(lambda (ParseState s) -> ParseResult{bool}
     if s == "true"  -> (s + 4).success(true)
@@ -214,7 +208,7 @@ fun txtBoolParser()
     if s == "false" -> (s + 5).success(false)
     if s == "FALSE" -> (s + 5).success(false)
     if s == "False" -> (s + 5).success(false)
-    else            -> s.failure(Error("Expected boolean, got: '" + char(s) + "'"))
+    else            -> s.failure(Error("Expected boolean, got: '" + s[0] + "'"))
   )
 
 fun txtIntParser()
@@ -222,14 +216,29 @@ fun txtIntParser()
     impl =
     (
       lambda (ParseState s, int res, bool valid) -> ParseResult{int}
-        if char(s).isDigit()  -> self(++s, res * 10 + char(s) - '0', true)
-        else                  -> valid ?  s.success(res) :
-                                          s.failure(Error(
-                                            "Expected integer, got: '" + char(s) + "'"))
+        if s[0].isDigit() -> self(++s, res * 10 + s[0] - '0', true)
+        else              -> valid ?  s.success(res) :
+                                      s.failure(Error("Expected integer, got: '" + s[0] + "'"))
     );
     if s.isEnd() -> s.failure(Error("Expected int, got: end of input"))
     if s == '-'  -> impl(++s, 0, false).map(negate{int})
     if s == '+'  -> impl(++s, 0, false)
+    else         -> impl(s, 0, false)
+  )
+
+fun txtHexParser()
+  Parser(lambda (ParseState s)
+    impl =
+    (
+      lambda (ParseState s, int res, bool valid) -> ParseResult{int}
+        if s[0].isDigit()             -> self(++s, (res << 4) + s[0] - '0',         true)
+        if s[0] >= 'a' && s[0] <= 'f' -> self(++s, (res << 4) + s[0] - ('a' - 10),  true)
+        if s[0] >= 'A' && s[0] <= 'F' -> self(++s, (res << 4) + s[0] - ('A' - 10),  true)
+        else                          -> valid ?  s.success(res) :
+                                                  s.failure(Error(
+                                                    "Expected hex number, got: '" + s[0] + "'"))
+    );
+    if s.isEnd() -> s.failure(Error("Expected hex number, got: end of input"))
     else         -> impl(s, 0, false)
   )
 
@@ -240,14 +249,14 @@ fun txtFloatParser()
     (
       lambda (ParseState s, float raw, float div, bool dec, bool valid) -> ParseResult{float}
         if s == '.' && !dec     -> self(++s, raw, div, true, false)
-        if char(s).isDigit()    -> newRaw = raw * 10.0 + int(char(s)) - int('0');
+        if s[0].isDigit()       -> newRaw = raw * 10.0 + int(s[0]) - int('0');
                                    newDiv = dec ? div * 10.0 : div;
                                    self(++s, newRaw, newDiv, dec, true)
         if s == 'e' || s == 'E' -> intParser(s + 1).map(
                                                       lambda (int exp) raw / (div / pow(10.0, exp)))
         else                    -> valid ?  s.success(raw / div) :
                                             s.failure(Error(
-                                              "Expected float, got: '" + char(s) + "'"))
+                                              "Expected float, got: '" + s[0] + "'"))
     );
     if s.isEnd() -> s.failure(Error("Expected float, got: end of input"))
     if s == '-'  -> impl(++s, 0.0, 1.0, false, false).map(negate{float})
@@ -322,13 +331,6 @@ assert(
   lineParser()("") is ParseFailure)
 
 assert(
-  quotedStringParser()("\"Hello World\"")     == "Hello World" &&
-  quotedStringParser()("\"Hello\" \"World\"") == "Hello" &&
-  quotedStringParser()("Hello world")         is ParseFailure &&
-  quotedStringParser()("\"Hello world")       is ParseFailure &&
-  quotedStringParser()("\"Hello world\n\"")   is ParseFailure)
-
-assert(
   txtIntParser()("1")                == 1 &&
   txtIntParser()("-1")               == -1 &&
   txtIntParser()("+1")               == 1 &&
@@ -341,6 +343,30 @@ assert(
   txtIntParser()("")         is ParseFailure &&
   txtIntParser()("a")        is ParseFailure &&
   txtIntParser()(" 123")     is ParseFailure)
+
+assert(
+  txtHexParser()("0")         == 0x0 &&
+  txtHexParser()("9")         == 0x9 &&
+  txtHexParser()("a")         == 0xA &&
+  txtHexParser()("A")         == 0xA &&
+  txtHexParser()("abcdef")    == 0xABCDEF &&
+  txtHexParser()("ABCDEF")    == 0xABCDEF &&
+  txtHexParser()("7FffFfFF")  == 0x7FFFFFFF &&
+  txtHexParser()("1e240")     == 0x1E240 &&
+  txtHexParser()("12345678")  == 0x12345678 &&
+  txtHexParser()("23456789")  == 0x23456789 &&
+  txtHexParser()("539")       == 0x539)
+
+assert(
+  inputs  = rangeList(0, 1337);
+  hexStrs = inputs.map(toHexString);
+  parser  = txtHexParser();
+  listEqual(hexStrs.map(lambda (string str) parser(str) ?? -1), inputs))
+
+assert(
+  txtHexParser()("")         is ParseFailure &&
+  txtHexParser()("g")        is ParseFailure &&
+  txtHexParser()(" 123")     is ParseFailure)
 
 assert(
   txtFloatParser()("0")            == 0.0 &&
