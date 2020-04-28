@@ -140,3 +140,11 @@ assert(
   utf8Validate(char(0b1100_0000) + char(0b1000_0001), 0) &&
   utf8Validate(char(0b1110_0000) + char(0b1000_0001) + char(0b1000_0001), 0) &&
   utf8Validate(char(0b1111_0000) + char(0b1000_0001) + char(0b1000_0001) + char(0b1000_0001), 0))
+
+assert(
+  allCodePoints   = rangeList(minUnicodePoint(), maxUnicodePoint());
+  allUtf8Strs     = allCodePoints.mapReverse(toUtf8);
+  codePointParser = utf8CodePointParser();
+  listEqual(
+    allUtf8Strs.mapReverse(lambda (string str) codePointParser(str) ?? errorUnicodePoint()),
+    allCodePoints))

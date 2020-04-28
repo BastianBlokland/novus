@@ -12,6 +12,8 @@ fun >(UnicodePoint cp1, UnicodePoint cp2)   cp1.val > cp2.val
 fun >=(UnicodePoint cp1, UnicodePoint cp2)  cp1.val >= cp2.val
 fun <(UnicodePoint cp1, UnicodePoint cp2)   cp1.val < cp2.val
 fun <=(UnicodePoint cp1, UnicodePoint cp2)  cp1.val <= cp2.val
+fun --(UnicodePoint cp)                     UnicodePoint(--cp.val)
+fun ++(UnicodePoint cp)                     UnicodePoint(++cp.val)
 
 // -- Conversions
 

@@ -177,6 +177,14 @@ fun for{T, TResult}(T from, T to, function{T, TResult} func)
 fun for{T, TResult}(T to, function{T, TResult} func)
   rangeList(T(), to).map(func)
 
+// The default equality uses stack size linear with the list length, so for large lists its
+// ineffiecient / impossible to use the default equality. This is an alternative that uses
+// constant stack space.
+fun listEqual{T}(List{T} l1, List{T} l2)
+  if l1 as LNode{T} n1 && l2 as LNode{T} n2 && n1.val == n2.val   -> listEqual(n1.next, n2.next)
+  if l1 is LEnd && l2 is LEnd                                     -> true
+  else                                                            -> false
+
 // -- Impure
 
 act fold{T, TResult}(List{T} l, action{TResult, T, TResult} a)
@@ -420,6 +428,15 @@ assert(
 assert(for(1, 4, lambda (int i) i * i) == 1 :: 4 :: 9 :: List{int}())
 
 assert(for(4, lambda (int i) i * i) == 0 :: 1 :: 4 :: 9 :: List{int}())
+
+assert(
+  l = 0 :: 1 :: 4 :: 9 :: List{int}();
+  listEqual(l, l) &&
+  listEqual(l, 0 :: 1 :: 4 :: 9 :: List{int}()) &&
+  !listEqual(l, 0 :: 1 :: 5 :: 9 :: List{int}()) &&
+  !listEqual(l, 0 :: 1 :: List{int}()) &&
+  !listEqual(l, List{int}()) &&
+  listEqual(List{int}(), List{int}()))
 
 // -- Impure Tests
 
