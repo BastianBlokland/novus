@@ -1,0 +1,284 @@
+import "list.nov"
+import "pair.nov"
+import "parse.nov"
+import "utf8.nov"
+
+// -- Types
+
+union JsonValue =
+  JsonNull,
+  float,
+  bool,
+  string,
+  JsonObject,
+  JsonArray
+
+struct JsonObject =
+  List{Pair{string, JsonValue}} fields
+
+struct JsonArray =
+  List{JsonValue} entries
+
+struct JsonNull
+
+// -- Utilities
+
+fun toJsonVal{T}(T val)
+  JsonValue(val)
+
+fun toJsonObj(List{Pair{string, JsonValue}} fields)
+  JsonObject(fields)
+
+fun toJsonArray(List{JsonValue} values)
+  JsonArray(values)
+
+// -- Conversions
+
+fun string(JsonNull n)
+  "null"
+
+fun string(JsonObject o)
+  o.fields
+    .map(lambda (Pair{string, JsonValue} e) e.first + ": " + e.second.string())
+    .string("{", ",", "}")
+
+fun string(JsonArray a)
+  a.entries.string("[", ",", "]")
+
+fun string(JsonValue v)
+  if v is JsonNull      -> "null"
+  if v as float f       -> f.string()
+  if v as bool b        -> b.string()
+  if v as string s      -> s.string()
+  if v as JsonObject o  -> o.string()
+  if v as JsonArray a   -> a.string()
+
+// -- Parsers
+
+fun jsonNullParser()
+  matchParser("null") >> retParser(JsonNull())
+
+fun jsonNumberParser()
+  txtFloatParser()
+
+fun jsonBoolParser()
+  (matchParser("true")  >> retParser(true)) |
+  (matchParser("false") >> retParser(false))
+
+fun jsonUtf8EscapedCharParser()
+  hexParser = txtHexParser(4);
+  Parser(lambda (ParseState s) -> ParseResult{string}
+    if s[0] == '"'  -> (s + 1).success("\"")
+    if s[0] == '\\' -> (s + 1).success("\\")
+    if s[0] == '/'  -> (s + 1).success("/")
+    if s[0] == 'b'  -> (s + 1).success("\b")
+    if s[0] == 'f'  -> (s + 1).success("\f")
+    if s[0] == 'n'  -> (s + 1).success("\n")
+    if s[0] == 'r'  -> (s + 1).success("\r")
+    if s[0] == 't'  -> (s + 1).success("\t")
+    if s[0] == 'u'  -> hexParser(s + 1).map(lambda (int unicode) toUtf8(UnicodePoint(unicode)))
+    else            -> s.failure(Error("Invalid escape sequence"))
+  )
+
+fun jsonUtf8CharParser()
+  escapedChar = jsonUtf8EscapedCharParser();
+  Parser(lambda (ParseState s)
+    if s[0].isControl()                   -> s.failure(Error("Unexpected control character"))
+    if s[0] == '"'                        -> s.failure(Error("End of string"))
+    if s[0] == '\\'                       -> escapedChar(s + 1)
+    if utf8Validate(s.str, s.pos, false)  -> cc = s[0].utf8GetCharCount();
+                                             (s + cc).success(s.str[s.pos, s.pos + cc])
+    else                                  -> s.failure(Error("Invalid utf8 character"))
+  )
+
+fun jsonStringParser()
+  matchParser('"') >> manyParser(jsonUtf8CharParser()).map(sum{string}) << matchParser('"')
+
+fun jsonObjectParser(Parser{JsonValue} valParser)
+  open      = matchParser('{')    << whitespaceParser();
+  key       = jsonStringParser()  << whitespaceParser();
+  colon     = matchParser(':')    << whitespaceParser();
+  value     = valParser           << whitespaceParser();
+  comma     = matchParser(',')    << whitespaceParser();
+  close     = matchParser('}')    << whitespaceParser();
+  keyValue  = (key << colon) & value;
+  (open >> manyParser(keyValue, comma) << close).map(toJsonObj)
+
+fun jsonArrayParser(Parser{JsonValue} valParser)
+  open  = matchParser('[')    << whitespaceParser();
+  value = valParser           << whitespaceParser();
+  comma = matchParser(',')    << whitespaceParser();
+  close = matchParser(']')    << whitespaceParser();
+  (open >> manyParser(value, comma) << close).map(toJsonArray)
+
+fun jsonValueParser() -> Parser{JsonValue}
+  jsonNullParser().                                       map(toJsonVal{JsonNull})    |
+  jsonNumberParser().                                     map(toJsonVal{float})       |
+  jsonBoolParser().                                       map(toJsonVal{bool})        |
+  jsonStringParser().                                     map(toJsonVal{string})      |
+  jsonObjectParser(lazyParser(lazy jsonValueParser())).   map(toJsonVal{JsonObject})  |
+  jsonArrayParser(lazyParser(lazy jsonValueParser())).    map(toJsonVal{JsonArray})
+
+fun jsonParser()
+  jsonValueParser()
+
+// -- Tests
+
+assert(
+  p = jsonNullParser();
+  p("")     is ParseFailure &&
+  p("null") == JsonNull() &&
+  p("NULL") is ParseFailure)
+
+assert(
+  p = jsonNumberParser();
+  p("")             is ParseFailure &&
+  p("123")          == 123.0 &&
+  p("123.123")      == 123.123 &&
+  p("-1")           == -1.0 &&
+  p("-123.123")     == -123.123 &&
+  p("0.123")        == .123 &&
+  p("0E1")          == 0.0 &&
+  p("0e1")          == 0.0 &&
+  p("1E1")          == 10.0 &&
+  p("1e1")          == 10.0 &&
+  p("1E-3")         == .001 &&
+  p("1e-3")         == .001 &&
+  p("-123.123e-2")  == -1.23123 &&
+  p("-123.123e+2")  == -12312.3 &&
+  p("-123.123e2")   == -12312.3)
+
+assert(
+  p = jsonBoolParser();
+  p("")       is ParseFailure &&
+  p("true")   == true &&
+  p("false")  == false &&
+  p("TRUE")   is ParseFailure &&
+  p("FALSE")  is ParseFailure)
+
+assert(
+  p = jsonUtf8EscapedCharParser();
+  p("\"") == "\"" &&
+  p("\\") == "\\" &&
+  p("/")  == "/" &&
+  p("b")  == "\b" &&
+  p("f")  == "\f" &&
+  p("n")  == "\n" &&
+  p("r")  == "\r" &&
+  p("t")  == "\t" &&
+  p("u0026")  == "&" &&
+  p("u039B")  == "Λ" &&
+  p("u0E3F")  == "฿" &&
+  p("u1D459") == "𝑙")
+
+assert(
+  p = jsonUtf8EscapedCharParser();
+  p("a")      is ParseFailure &&
+  p("ug")     is ParseFailure &&
+  p("u123")   is ParseFailure &&
+  p("u123G")  is ParseFailure &&
+  p("u")      is ParseFailure)
+
+assert(
+  p = jsonUtf8CharParser();
+  p("a")        == "a"  &&
+  p("\\\"")     == "\"" &&
+  p("\\u039B")  == "Λ"  &&
+  p("\\u039b")  == "Λ"  &&
+  p("฿")        == "฿"  &&
+  p("𝑙") == "𝑙")
+
+assert(
+  p = jsonUtf8CharParser();
+  p("\n")                       is ParseFailure &&
+  p("\0")                       is ParseFailure &&
+  p("")                         is ParseFailure &&
+  p("\\u123G")                  is ParseFailure &&
+  p(string(char(0b1000_0000)))  is ParseFailure)
+
+assert(
+  p = jsonStringParser();
+  p("\"\"")                   == "" &&
+  p("\"hello world\"")        == "hello world" &&
+  p("\"hello\\nworld\"")      == "hello\nworld" &&
+  p("\"hello\\u000Aworld\"")  == "hello\nworld")
+
+assert(
+  p = jsonStringParser();
+  testStr = "STARGΛ̊TE,Hello world,Καλημέρα κόσμε,コンニチハ,⡌⠁⠧⠑ ⠼⠁⠒,ᚻᛖ ᚳᚹᚫᚦ ᚦᚫᛏ,ሰማይ አይታረስ ንጉሥ አይከሰስ።,แผ่นดินฮั่นเสื่อมโทรมแสนสังเวช,Зарегистрируйтесь,გთხოვთ ახლავე გაიაროთ⎪⎢⎜ ⎳aⁱ-bⁱ⎟⎥⎪▁▂▃▄▅▆▇█∀∂∈ℝ∧∪≡∞";
+  p("\"" + testStr + "\"") == testStr)
+
+assert(
+  p = jsonStringParser();
+  p("")         is ParseFailure &&
+  p("\"")       is ParseFailure &&
+  p("\"\n\"")   is ParseFailure &&
+  p("hello\\a") is ParseFailure)
+
+assert(
+  p = jsonArrayParser(jsonValueParser());
+  p("[]")           == toJsonArray(List{JsonValue}()) &&
+  p("[    ]")       == toJsonArray(List{JsonValue}()) &&
+  p("[1]")          == toJsonArray(toJsonVal(1.0)   :: List{JsonValue}()) &&
+  p("[ 1]")         == toJsonArray(toJsonVal(1.0)   :: List{JsonValue}()) &&
+  p("[ 1 ]")        == toJsonArray(toJsonVal(1.0)   :: List{JsonValue}()) &&
+  p("[1,2]")        == toJsonArray(toJsonVal(1.0)   :: toJsonVal(2.0) :: List{JsonValue}()) &&
+  p("[ 1 , 2 ]")    == toJsonArray(toJsonVal(1.0)   :: toJsonVal(2.0) :: List{JsonValue}()) &&
+  p("[ true, 2 ]")  == toJsonArray(toJsonVal(true)  :: toJsonVal(2.0) :: List{JsonValue}()) &&
+  p("[ \"true\" , false, 2 ]") ==
+    toJsonArray(
+      toJsonVal("true") ::
+      toJsonVal(false)  ::
+      toJsonVal(2.0)    :: List{JsonValue}()) &&
+  p("[ [1, 2], 2 ]") ==
+    toJsonArray(
+      toJsonVal(toJsonArray(toJsonVal(1.0) :: toJsonVal(2.0) :: List{JsonValue}())) ::
+      toJsonVal(2.0) :: List{JsonValue}()))
+
+assert(
+  p = jsonArrayParser(jsonValueParser());
+  p("")             is ParseFailure &&
+  p("[")            is ParseFailure &&
+  p("[,")           is ParseFailure &&
+  p("[,]")          is ParseFailure &&
+  p("[233 123]")    is ParseFailure &&
+  p("[233,]")       is ParseFailure &&
+  p("[233 ,  ]")    is ParseFailure &&
+  p("[233, 123 ,]") is ParseFailure)
+
+assert(
+  p = jsonObjectParser(jsonValueParser());
+  p("{}")           == toJsonObj(List{Pair{string, JsonValue}}()) &&
+  p("{\"key\":32}") == toJsonObj(Pair("key", toJsonVal(32.0)) :: List{Pair{string, JsonValue}}()) &&
+  p("{ \"key\" : 32 }") == toJsonObj(Pair("key", toJsonVal(32.0)) :: List{Pair{string, JsonValue}}()))
+
+assert(
+  p = jsonObjectParser(jsonValueParser());
+  p("{\"key1\":32,\"key2\":true}") ==
+    toJsonObj(
+      Pair("key1", toJsonVal(32.0)) ::
+      Pair("key2", toJsonVal(true)) :: List{Pair{string, JsonValue}}()))
+
+assert(
+  p = jsonObjectParser(jsonValueParser());
+  p("{\n\"key1\"\n:\n32\n,\n\"key2\"\n:\ntrue\n}") ==
+    toJsonObj(
+      Pair("key1", toJsonVal(32.0)) ::
+      Pair("key2", toJsonVal(true)) :: List{Pair{string, JsonValue}}()))
+
+assert(
+  p = jsonObjectParser(jsonValueParser());
+  p("{\"obj\":{\"k\":true}}") ==
+    toJsonObj(
+      Pair("obj", toJsonVal(toJsonObj(Pair("k", toJsonVal(true)) :: List{Pair{string, JsonValue}}()))) ::
+      List{Pair{string, JsonValue}}()))
+
+assert(
+  p = jsonArrayParser(jsonValueParser());
+  p("")               is ParseFailure &&
+  p("{")              is ParseFailure &&
+  p("{,")             is ParseFailure &&
+  p("{,}")            is ParseFailure &&
+  p("{\"key\" 123}")  is ParseFailure &&
+  p("{\"key\":}")     is ParseFailure &&
+  p("{\"key\":123,}") is ParseFailure)
