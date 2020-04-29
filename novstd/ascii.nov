@@ -8,6 +8,9 @@ fun isAscii(char c)
 fun isDigit(char c)
   c >= '0' && c <= '9'
 
+fun isHexDigit(char c)
+  c.isDigit() || (c >= 'a' && c <= 'f') || (c >= 'A' && c <= 'F')
+
 fun isLetter(char c)
   isLower(c) || isUpper(c)
 
@@ -17,8 +20,11 @@ fun isLower(char c)
 fun isUpper(char c)
   c >= 'A' && c <= 'Z'
 
+fun isControl(char c)
+  (c >= 0x00 && c <= 0x1f) || c == 0x7f
+
 fun isWhitespace(char c)
-  c == ' ' || c == '\t' || isNewline(c)
+  c == ' ' || c == '\t' || (c >= 0x0A && c <= 0x0D)
 
 fun isNewline(char c)
   c == '\n' || c == '\r'
@@ -38,6 +44,12 @@ assert(
 assert(
   rangeList('0', '9').all(isDigit) &&
   rangeList('a', 'z').none(isDigit))
+
+assert(
+  rangeList('0', '9').all(isHexDigit) &&
+  rangeList('a', 'f').all(isHexDigit) &&
+  rangeList('A', 'F').all(isHexDigit) &&
+  rangeList('g', 'z').none(isHexDigit))
 
 assert(
   rangeList('a', 'z').all(isLetter) &&
@@ -61,6 +73,14 @@ assert(
   rangeList('0', '9').none(isWhitespace))
 
 assert('\n'.isNewline() && '\r'.isNewline() && !'\t'.isNewline())
+
+assert(
+  '\0'.isControl() &&
+  '\t'.isControl() &&
+  '\f'.isControl() &&
+  '\v'.isControl() &&
+  '\n'.isControl() &&
+  '\r'.isControl())
 
 assert(
   rangeList('a', 'z').map(toUpper) == rangeList('A', 'Z') &&

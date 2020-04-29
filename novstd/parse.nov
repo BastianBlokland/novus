@@ -128,10 +128,9 @@ fun string(ParseFailure fail)
 
 // -- Utilities
 
-fun isEnd(ParseState s)                   s.pos >= s.str.length()
-
-fun success{T}(ParseState s, T val)       ParseSuccess(val, s)
-fun failure(ParseState s, Error err)      ParseFailure(err, s)
+fun isEnd(ParseState s)               s.pos >= s.str.length()
+fun success{T}(ParseState s, T val)   ParseSuccess(val, s)
+fun failure(ParseState s, Error err)  ParseFailure(err, s)
 
 fun map{T, TResult}(ParseResult{T} res, function{T, TResult} func)
   if res as ParseSuccess{T} suc   -> suc.state.success(func(suc.val))
@@ -154,7 +153,7 @@ fun unwrap{T1, T2, T3, TResult}(Parser{Pair{Pair{T1, T2}, T3}} p, function{T1, T
 
 fun retParser{T}(T val)
   Parser(lambda (ParseState s) -> ParseResult{T}
-    (s + 1).success(val)
+    s.success(val)
   )
 
 fun matchParser(char c)
@@ -227,19 +226,23 @@ fun txtIntParser()
   )
 
 fun txtHexParser()
+  txtHexParser(1)
+
+fun txtHexParser(int minDigits)
   Parser(lambda (ParseState s)
     impl =
     (
-      lambda (ParseState s, int res, bool valid) -> ParseResult{int}
-        if s[0].isDigit()             -> self(++s, (res << 4) + s[0] - '0',         true)
-        if s[0] >= 'a' && s[0] <= 'f' -> self(++s, (res << 4) + s[0] - ('a' - 10),  true)
-        if s[0] >= 'A' && s[0] <= 'F' -> self(++s, (res << 4) + s[0] - ('A' - 10),  true)
-        else                          -> valid ?  s.success(res) :
-                                                  s.failure(Error(
-                                                    "Expected hex number, got: '" + s[0] + "'"))
+      lambda (ParseState s, int res, int digits) -> ParseResult{int}
+        if s[0].isDigit()             -> self(++s, (res << 4) + s[0] - '0',         ++digits)
+        if s[0] >= 'a' && s[0] <= 'f' -> self(++s, (res << 4) + s[0] - ('a' - 10),  ++digits)
+        if s[0] >= 'A' && s[0] <= 'F' -> self(++s, (res << 4) + s[0] - ('A' - 10),  ++digits)
+        else                          -> digits >= minDigits ?
+                                          s.success(res) :
+                                          s.failure(Error(
+                                            "Expected hex number, got: '" + s[0] + "'"))
     );
     if s.isEnd() -> s.failure(Error("Expected hex number, got: end of input"))
-    else         -> impl(s, 0, false)
+    else         -> impl(s, 0, 0)
   )
 
 fun txtFloatParser()
@@ -287,15 +290,20 @@ fun manyParser{T1, T2}(Parser{T1} p, Parser{T2} seperator)
   Parser(lambda (ParseState begin)
     impl =
     (
-      lambda (ParseState cur, List{T1} result) -> ParseResult{List{T1}}
+      lambda (ParseState cur, List{T1} result, bool required) -> ParseResult{List{T1}}
         res1 = p(cur);
-        if res1 as ParseFailure     fail1  -> cur.success(result)
+        if res1 as ParseFailure     fail1  -> required ? fail1 : cur.success(result)
         if res1 as ParseSuccess{T1} suc1   ->
           res2 = seperator(suc1.state);
-          if res2 as ParseSuccess{T2} suc2  -> self(suc2.state, suc1.val :: result)
+          if res2 as ParseSuccess{T2} suc2  -> self(suc2.state, suc1.val :: result, true)
           if res2 is ParseFailure           -> suc1.state.success(suc1.val :: result)
     );
-    impl(begin, List{T1}()).map(reverse{T1})
+    impl(begin, List{T1}(), false).map(reverse{T1})
+  )
+
+fun lazyParser{T}(lazy{Parser{T}} lp)
+  Parser(lambda (ParseState s)
+    get(lp)(s)
   )
 
 // -- Tests
@@ -366,7 +374,9 @@ assert(
 assert(
   txtHexParser()("")         is ParseFailure &&
   txtHexParser()("g")        is ParseFailure &&
-  txtHexParser()(" 123")     is ParseFailure)
+  txtHexParser()(" 123")     is ParseFailure &&
+  txtHexParser(4)("123")     is ParseFailure &&
+  txtHexParser(4)("123G")    is ParseFailure)
 
 assert(
   txtFloatParser()("0")            == 0.0 &&

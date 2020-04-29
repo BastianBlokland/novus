@@ -40,20 +40,20 @@ fun utf8GetCharCount(char c)
 fun utf8IsContChar(char c)
   (c & 0b1100_0000) == 0b1000_0000
 
-fun utf8Validate(string str, int idx)
+fun utf8Validate(string str, int idx, bool toEnd)
   if idx >= str.length() -> true
   else ->
     cc = utf8GetCharCount(str[idx]);
-    if cc == 1                          -> utf8Validate(str, idx + 1)
+    if cc == 1                          -> !toEnd || utf8Validate(str, idx + 1, toEnd)
     if cc == 2 &&
-      utf8IsContChar(str[idx + 1])      -> utf8Validate(str, idx + 2)
+      utf8IsContChar(str[idx + 1])      -> !toEnd || utf8Validate(str, idx + 2, toEnd)
     if cc == 3 &&
       utf8IsContChar(str[idx + 1]) &&
-      utf8IsContChar(str[idx + 2])      -> utf8Validate(str, idx + 3)
+      utf8IsContChar(str[idx + 2])      -> !toEnd || utf8Validate(str, idx + 3, toEnd)
     if cc == 4 &&
       utf8IsContChar(str[idx + 1]) &&
       utf8IsContChar(str[idx + 2]) &&
-      utf8IsContChar(str[idx + 3])      -> utf8Validate(str, idx + 4)
+      utf8IsContChar(str[idx + 3])      -> !toEnd || utf8Validate(str, idx + 4, toEnd)
     else                                -> false
 
 fun utf8CodePointParser()
@@ -83,10 +83,8 @@ fun utf8CodePointParser()
     else              -> s.failure(Error("Invalid utf8 character"))
   )
 
-fun utf8Parser(bool convertMalformed)
-  manyParser(
-    convertMalformed ? utf8CodePointParser() | retParser(errorUnicodePoint())
-                     : utf8CodePointParser())
+fun utf8Parser()
+  manyParser(utf8CodePointParser())
 
 // -- Tests
 
@@ -124,22 +122,22 @@ assert(
 
 assert(
  testStr  = "STARGΛ̊TE,Hello world,Καλημέρα κόσμε,コンニチハ,⡌⠁⠧⠑ ⠼⠁⠒,ᚻᛖ ᚳᚹᚫᚦ ᚦᚫᛏ,ሰማይ አይታረስ ንጉሥ አይከሰስ።,แผ่นดินฮั่นเสื่อมโทรมแสนสังเวช,Зарегистрируйтесь,გთხოვთ ახლავე გაიაროთ⎪⎢⎜ ⎳aⁱ-bⁱ⎟⎥⎪▁▂▃▄▅▆▇█∀∂∈ℝ∧∪≡∞";
- utf8Validate(testStr, 0))
+ utf8Validate(testStr, 0, true))
 
 assert(
  testStr  = "STARGΛ̊TE,Hello world,Καλημέρα κόσμε,コンニチハ,⡌⠁⠧⠑ ⠼⠁⠒,ᚻᛖ ᚳᚹᚫᚦ ᚦᚫᛏ,ሰማይ አይታረስ ንጉሥ አይከሰስ።,แผ่นดินฮั่นเสื่อมโทรมแสนสังเวช,Зарегистрируйтесь,გთხოვთ ახლავე გაიაროთ⎪⎢⎜ ⎳aⁱ-bⁱ⎟⎥⎪▁▂▃▄▅▆▇█∀∂∈ℝ∧∪≡∞";
- parser   = utf8Parser(false);
+ parser   = utf8Parser();
  parser(testStr) as ParseSuccess{List{UnicodePoint}} suc && suc.val.map(toUtf8).sum() == testStr)
 
 assert(
-  !utf8Validate(string(char(0b1000_0000)), 0) &&
-  !utf8Validate(string(char(0b1100_0000)), 0) &&
-  !utf8Validate(string(char(0b1110_0000)), 0) &&
-  !utf8Validate(string(char(0b1111_0000)), 0) &&
-  utf8Validate(string(char(0b0000_0001)), 0)  &&
-  utf8Validate(char(0b1100_0000) + char(0b1000_0001), 0) &&
-  utf8Validate(char(0b1110_0000) + char(0b1000_0001) + char(0b1000_0001), 0) &&
-  utf8Validate(char(0b1111_0000) + char(0b1000_0001) + char(0b1000_0001) + char(0b1000_0001), 0))
+  !utf8Validate(string(char(0b1000_0000)), 0, true) &&
+  !utf8Validate(string(char(0b1100_0000)), 0, true) &&
+  !utf8Validate(string(char(0b1110_0000)), 0, true) &&
+  !utf8Validate(string(char(0b1111_0000)), 0, true) &&
+  utf8Validate(string(char(0b0000_0001)), 0, true)  &&
+  utf8Validate(char(0b1100_0000) + char(0b1000_0001), 0, true) &&
+  utf8Validate(char(0b1110_0000) + char(0b1000_0001) + char(0b1000_0001), 0, true) &&
+  utf8Validate(char(0b1111_0000) + char(0b1000_0001) + char(0b1000_0001) + char(0b1000_0001), 0, true))
 
 assert(
   allCodePoints   = rangeList(minUnicodePoint(), maxUnicodePoint());
