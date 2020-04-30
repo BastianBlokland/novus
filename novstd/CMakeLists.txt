@@ -52,6 +52,7 @@ configure_novstd_file(text)
 configure_novstd_file(time)
 configure_novstd_file(unicode)
 configure_novstd_file(utf8)
+configure_novstd_file(writer)
 
 # Register a test that evaluates the 'std.nov' header, usefull for detecting name conflics.
 add_nov_test(${stdHeader})

@@ -42,9 +42,8 @@ fun string{T}(List{T} l)
   l.string("[", ",", "]")
 
 fun string{T}(List{T} l, string start, string sep, string end)
-  start + l.fold(lambda (string prefix, T v) prefix.length() == 0 ?
-    v.string() :
-    prefix + sep + v.string()) + end
+  start + l.fold(lambda (string prefix, bool last, T v)
+    last ? prefix + v.string() : prefix + v.string() + sep) + end
 
 // -- Functions
 
@@ -113,6 +112,13 @@ fun fold{T, TResult}(List{T} l, function{TResult, T, TResult} func)
 
 fun fold{T, TResult}(List{T} l, function{TResult, T, TResult} func, TResult result)
   if l as LNode{T} n -> fold(n.next, func, func(result, n.val))
+  if l is LEnd       -> result
+
+fun fold{T, TResult}(List{T} l, function{TResult, bool, T, TResult} func)
+  fold(l, func, TResult())
+
+fun fold{T, TResult}(List{T} l, function{TResult, bool, T, TResult} func, TResult result)
+  if l as LNode{T} n -> fold(n.next, func, func(result, n.next is LEnd, n.val))
   if l is LEnd       -> result
 
 fun foldRight{T, TResult}(List{T} l, function{TResult, T, TResult} func)

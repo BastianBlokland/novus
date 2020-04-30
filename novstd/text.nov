@@ -21,6 +21,13 @@ fun string(char c, int amount)
   );
   repeat("", amount)
 
+fun string(string str, int amount)
+  repeat = (lambda (string result, int cnt)
+    if cnt <= 0 -> result
+    else        -> self(result + str, --cnt)
+  );
+  repeat("", amount)
+
 // -- Functions
 
 fun isEmpty(string str)
@@ -133,7 +140,7 @@ fun fold{T}(string str, function{T, char, T} func)
       idx >= str.length() ? result : self(++idx, func(result, str[idx]))
   )(0, T())
 
-fun transform(string str, function{char, char} func)
+fun transform(string str, function{char, string} func)
   str.fold(lambda (string res, char c) res + func(c))
 
 fun split(string str, function{char, bool} pred)
@@ -171,6 +178,13 @@ assert(
   string('0', 3) == "000" &&
   string('0', 0) == "" &&
   string('0', -1) == "")
+
+assert(
+  string("hello", 1)  == "hello" &&
+  string("hello", 2)  == "hellohello" &&
+  string("hello", 3)  == "hellohellohello" &&
+  string("hello", 0)  == "" &&
+  string("hello", -1) == "")
 
 assert("".isEmpty() && !" ".isEmpty())
 
@@ -282,8 +296,8 @@ assert(
   "1".padLeft(3, '0') == "001")
 
 assert(
-  "hello".transform(lambda (char c) 'W') == "WWWWW" &&
-  "".transform(lambda (char c) 'W') == "")
+  "hello".transform(lambda (char c) "W") == "WWWWW" &&
+  "".transform(lambda (char c) "W") == "")
 
 assert(
   "hello world".split(equals{char}[' ']) == "hello" :: "world" :: List{string}() &&
