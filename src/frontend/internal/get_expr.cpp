@@ -1116,6 +1116,12 @@ auto GetExpr::getFunctions(
       result.push_back(f);
     }
 
+    // If there is a direct match (without any implicit conversions) then there is no need to
+    // attempt to instantiate a template.
+    if (m_ctx->getProg()->lookupFunc(result, argTypes, getOvOptions(0))) {
+      return result;
+    }
+
     // Find templated funcs where we can infer the type params based on the argument types.
     const auto instantiations =
         m_ctx->getFuncTemplates()->inferParamsAndInstantiate(funcName, argTypes, ovOptions);
