@@ -76,8 +76,6 @@ fun toHexString(int mask)
         string(v < 10 ? char('0' + v) : char('A' + v - 10)) + result)
     ); f(mask, "")
 
-// //FF FF FF FF
-
 // -- Tests
 
 assert(

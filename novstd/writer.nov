@@ -1,0 +1,267 @@
+import "math.nov"
+import "text.nov"
+import "pair.nov"
+import "option.nov"
+
+// -- Types
+
+enum WriterNewlineMode = Unix, Windows, None
+
+struct WriterState =
+  string            curResult,
+  int               curIndent,
+  string            indentStr,
+  WriterNewlineMode newlineMode
+
+struct Writer{T} = function{WriterState, T, WriterState} func
+
+// -- Constructors
+
+fun WriterState()
+  WriterState("  ")
+
+fun WriterState(string indentStr)
+  WriterState(indentStr, WriterNewlineMode.Unix)
+
+fun WriterState(string indentStr, WriterNewlineMode newlineMode)
+  WriterState("", 0, indentStr, newlineMode)
+
+// -- Operators
+
+fun (){T}(Writer{T} w, WriterState s, T val)
+  w.func(s, val)
+
+fun (){T}(Writer{T} w, T val, string indentStr)
+  w.func(WriterState(indentStr), val)
+
+fun (){T}(Writer{T} w, T val, WriterNewlineMode newlineMode)
+  w.func(WriterState("  ", newlineMode), val)
+
+fun (){T}(Writer{T} w, T val, string indentStr, WriterNewlineMode newlineMode)
+  w.func(WriterState(indentStr, newlineMode), val)
+
+fun (){T}(Writer{T} w, T val)
+  w.func(WriterState(), val)
+
+fun ==(WriterState s, string str)
+  s.curResult == str
+
+fun &(Writer{None} p1, Writer{None} p2)
+  Writer(lambda (WriterState s, None n)
+    p2(p1(s, None()), None())
+  )
+
+fun &{T}(Writer{T} p1, Writer{None} p2)
+  Writer(lambda (WriterState s, T val)
+    p2(p1(s, val), None())
+  )
+
+fun &{T}(Writer{None} p1, Writer{T} p2)
+  Writer(lambda (WriterState s, T val)
+    p2(p1(s, None()), val)
+  )
+
+fun &{T1, T2}(Writer{T1} p1, Writer{T2} p2)
+  Writer(lambda (WriterState s, Pair{T1, T2} val)
+    p2(p1(s, val.first), val.second)
+  )
+
+// -- Conversions
+
+fun string(WriterState s)
+  s.curResult
+
+// -- Utilities
+
+fun write(WriterState s, string txt)
+  WriterState(
+    s.curResult + txt,
+    s.curIndent,
+    s.indentStr,
+    s.newlineMode)
+
+fun write(WriterState s, char c)
+  WriterState(
+    s.curResult + c,
+    s.curIndent,
+    s.indentStr,
+    s.newlineMode)
+
+fun map{T, TResult}(Writer{TResult} w, function{T, TResult} func)
+  Writer(lambda (WriterState s, T v)
+    w(s, func(v))
+  )
+
+// -- Writers
+
+fun litWriter(string lit)
+  Writer(lambda (WriterState s, None n)
+    s.write(lit)
+  )
+
+fun litWriter(char lit)
+  Writer(lambda (WriterState s, None n)
+    s.write(lit)
+  )
+
+fun newlineWriter()
+  Writer(lambda (WriterState s, None n)
+    if s.newlineMode == WriterNewlineMode.Unix    -> s.write('\n')
+    if s.newlineMode == WriterNewlineMode.Windows -> s.write("\r\n")
+    else                                          -> s
+  )
+
+fun indentWriter()
+  Writer(lambda (WriterState s, None n)
+    s.write(string(s.indentStr, s.curIndent))
+  )
+
+fun indent(int amount)
+  Writer(lambda (WriterState s, None n)
+    WriterState(
+      s.curResult,
+      max(0, s.curIndent + amount),
+      s.indentStr,
+      s.newlineMode)
+  )
+
+fun indent{T}(Writer{T} w)
+  indent(1) & w & indent(-1)
+
+fun stringWriter()
+  Writer(lambda (WriterState s, string str)
+    s.write(str)
+  )
+
+fun txtCharWriter()
+  Writer(lambda (WriterState s, char c)
+    s.write(c.string())
+  )
+
+fun txtIntWriter()
+  Writer(lambda (WriterState s, int i)
+    s.write(i.string())
+  )
+
+fun txtFloatWriter()
+  Writer(lambda (WriterState s, float f)
+    s.write(f.string())
+  )
+
+fun txtBoolWriter()
+  Writer(lambda (WriterState s, bool b)
+    s.write(b ? "true" : "false")
+  )
+
+fun listWriter{T}(Writer{T} elemWriter)
+  Writer(lambda (WriterState s, List{T} l)
+    l.fold(elemWriter.func, s)
+  )
+
+fun listWriter{T}(Writer{T} elemWriter, Writer{None} sepWriter)
+  listWriter(elemWriter & sepWriter, elemWriter)
+
+fun listWriter{T}(Writer{T} elemWriter, Writer{T} lastElemWriter)
+  Writer(lambda (WriterState s, List{T} l)
+    l.fold((lambda (WriterState s, bool last, T v)
+      if last -> lastElemWriter(s, v)
+      else    -> elemWriter(s, v)
+    ), s)
+  )
+
+fun indentedListWriter{T}(Writer{T} elemWriter)
+  indent(listWriter(indentWriter() & elemWriter & newlineWriter()))
+
+fun indentedListWriter{T}(Writer{T} elemWriter, Writer{None} sepWriter)
+  elem      = indentWriter() & elemWriter & sepWriter & newlineWriter();
+  lastElem  = indentWriter() & elemWriter & newlineWriter();
+  indent(listWriter(elem, lastElem))
+
+fun lazyWriter{T}(lazy{Writer{T}} lw)
+  Writer(lambda (WriterState s, T v)
+    get(lw)(s, v)
+  )
+
+// -- Tests
+
+assert(
+  w = litWriter("hello world");
+  w(None()) == "hello world")
+
+assert(
+  w = stringWriter();
+  w("hello world") == "hello world")
+
+assert(
+  w = txtCharWriter();
+  w('w') == "w")
+
+assert(
+  w = txtIntWriter();
+  w(42) == "42")
+
+assert(
+  w = txtFloatWriter();
+  w(42.1337) == "42.1337")
+
+assert(
+  w = txtBoolWriter();
+  w(true) == "true" &&
+  w(false) == "false")
+
+assert(
+  w = listWriter(txtIntWriter());
+  w(List{int}()) == "" &&
+  w(42 :: List{int}()) == "42" &&
+  w(1 :: 2 :: 3 :: List{int}()) == "123")
+
+assert(
+  w = listWriter(txtIntWriter(), litWriter(','));
+  w(List{int}()) == "" &&
+  w(42 :: List{int}()) == "42" &&
+  w(1 :: 2 :: 3 :: List{int}()) == "1,2,3")
+
+assert(
+  w = listWriter(stringWriter(), litWriter(',') & litWriter(" "));
+  w(List{string}()) == "" &&
+  w("hello" :: List{string}()) == "hello" &&
+  w("hello" :: "good" :: "world" :: List{string}()) == "hello, good, world")
+
+assert(
+  w = listWriter(stringWriter(), newlineWriter());
+  w(List{string}()) == "" &&
+  w("hello" :: List{string}()) == "hello" &&
+  w("hello" :: "world" :: List{string}()) == "hello\nworld" &&
+  w("hello" :: "world" :: List{string}(), WriterNewlineMode.Windows) == "hello\r\nworld")
+
+assert(
+  w = litWriter('[') & listWriter(stringWriter(), litWriter(',')) & litWriter(']');
+  w(List{string}()) == "[]" &&
+  w("hello" :: List{string}()) == "[hello]" &&
+  w("hello" :: "good" :: "world" :: List{string}()) == "[hello,good,world]")
+
+assert(
+  w = indentedListWriter(txtIntWriter(), litWriter(','));
+  w(List{int}()) == "" &&
+  w(1 :: List{int}()) == "  1\n" &&
+  w(1 :: 2 :: 3 :: List{int}()) == "  1,\n  2,\n  3\n" &&
+  w(List{int}(), "", WriterNewlineMode.None) == "" &&
+  w(1 :: List{int}(), "", WriterNewlineMode.None) == "1" &&
+  w(1 :: 2 :: 3 :: List{int}(), "", WriterNewlineMode.None) == "1,2,3")
+
+assert(
+  w = indentedListWriter(txtIntWriter());
+  w(List{int}()) == "" &&
+  w(1 :: List{int}()) == "  1\n" &&
+  w(1 :: 2 :: 3 :: List{int}()) == "  1\n  2\n  3\n" &&
+  w(List{int}(), "", WriterNewlineMode.None) == "" &&
+  w(1 :: List{int}(), "", WriterNewlineMode.None) == "1" &&
+  w(1 :: 2 :: 3 :: List{int}(), "", WriterNewlineMode.None) == "123")
+
+assert(
+  w = stringWriter() & txtIntWriter();
+  w(Pair("hello", 42)) == "hello42")
+
+assert(
+  w = stringWriter() & litWriter(' ') & txtIntWriter();
+  w(Pair("hello", 42)) == "hello 42")

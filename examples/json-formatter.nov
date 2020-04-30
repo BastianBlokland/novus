@@ -1,0 +1,36 @@
+// --- Example of a small application to format json files
+
+import "std.nov"
+
+act formatJson(Path path, bool pretty)
+  jsonStr = fileRead(path);
+  if jsonStr.isEmpty() -> printErr("Unable to read file at path: " + path); fail()
+  else ->
+    jParser   = jsonParser();
+    parseRes  = jParser(jsonStr);
+    if parseRes as ParseSuccess{JsonValue} s  -> printJson(s.val, pretty)
+    if parseRes as ParseFailure f             -> print("Unable to parse json: " + f)
+
+act printJson(JsonValue v, bool pretty)
+  indent      = pretty ? "  " : "";
+  newlineMode = pretty ? WriterNewlineMode.Unix : WriterNewlineMode.None;
+  str = v.string(indent, newlineMode);
+  print(str)
+
+act printUsage()
+  print("Json formatter");
+  print("Usage: json-formatter.nov --path path/to/file.json --pretty\n");
+  print("Options:");
+  print("  --help     Print this usage information");
+  print("  --path     Path to the json file to format");
+  print("  --pretty   Should the output be pretty formatted (multiple lines)")
+
+act main()
+  if hasEnvOpt("help") -> printUsage()
+  else ->
+    path    = getEnvOpt("path", allParser());
+    pretty  = hasEnvOpt("pretty");
+    if path as string str -> formatJson(Path(str), pretty)
+    else                  -> printErr("'path' option is required"); fail()
+
+main()
