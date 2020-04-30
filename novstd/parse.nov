@@ -168,6 +168,11 @@ fun matchParser(string str)
     else        -> s.failure(Error("Expected: '" + str + "', got: '" + s[0] + "'"))
   )
 
+fun allParser()
+  Parser(lambda (ParseState s) -> ParseResult{string}
+    s.success(s.str[s.pos, s.str.length() - s.pos])
+  )
+
 fun whileParser(function{ParseState, bool} pred)
   whileParser(pred, false)
 
@@ -317,6 +322,10 @@ assert(
 assert(
   matchParser("hello")("hello world") == "hello" &&
   matchParser("hello")("world") is ParseFailure)
+
+assert(
+  allParser()("hello world") == "hello world" &&
+  allParser()("")            == "")
 
 assert(
   whileParser(isDigit, false)("123 123") == "123" &&
