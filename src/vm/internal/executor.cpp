@@ -40,16 +40,17 @@ inline auto call(
 
   const int sfMetaSize = 2; // Return ip and return stack-home.
 
-  auto* newSh = stack->getNext() - argCount + sfMetaSize;
+  auto* argStart = stack->getNext() - argCount;
+  auto* newSh    = argStart + sfMetaSize;
 
   // Allocate space on the stack for the stackframe meta-data.
-  if (unlikely(!stack->alloc(2))) {
+  if (unlikely(!stack->alloc(sfMetaSize))) {
     execHandle->setState(ExecState::StackOverflow);
     return false;
   }
 
   // Move the arguments to the beginning of the stack-home for the new stack frame.
-  std::memmove(newSh, newSh - sfMetaSize, sizeof(Value) * argCount);
+  std::memmove(newSh, argStart, sizeof(Value) * argCount);
 
   // Save the return instruction pointer and stack-home.
   *(newSh - 2) = uintValue(assembly->getOffset(*ip));
@@ -72,8 +73,10 @@ inline auto callTail(
   /* In case of a tail-call we discard our current stack-frame, we copy the arguments to the
   beginning of the current-stack frame and update the ip. */
 
+  auto* argStart = stack->getNext() - argCount;
+
   // Move the arguments to the beginning of the current stack home.
-  std::memmove(sh, stack->getNext() - argCount, sizeof(Value) * argCount);
+  std::memmove(sh, argStart, sizeof(Value) * argCount);
 
   stack->rewindToNext(sh + argCount); // Discard any extra values on the stack.
   *ip = assembly->getIp(tgtIpOffset);
