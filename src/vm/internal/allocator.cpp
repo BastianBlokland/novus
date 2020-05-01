@@ -3,6 +3,7 @@
 #include "internal/ref_long.hpp"
 #include "internal/ref_stream.hpp"
 #include "internal/ref_string.hpp"
+#include "internal/ref_string_link.hpp"
 #include "internal/ref_struct.hpp"
 #include <atomic>
 #include <cstdlib>
@@ -28,6 +29,19 @@ Allocator::~Allocator() noexcept {
   }
 }
 
+auto Allocator::allocStr(const unsigned int size) noexcept -> std::pair<StringRef*, uint8_t*> {
+  auto mem = alloc<StringRef>(size + 1); // +1 for null-terminator.
+  if (unlikely(mem.first == nullptr)) {
+    return {nullptr, nullptr};
+  }
+
+  auto payloadPtr  = static_cast<uint8_t*>(mem.second);
+  payloadPtr[size] = '\0'; // Null-terminate the payload.
+  auto* refPtr     = static_cast<StringRef*>(new (mem.first) StringRef{payloadPtr, size});
+  initRef(refPtr);
+  return {refPtr, payloadPtr};
+}
+
 auto Allocator::allocStrLit(const std::string& lit) noexcept -> StringRef* {
   auto mem = alloc<StringRef>(0);
   if (unlikely(mem.first == nullptr)) {
@@ -41,17 +55,15 @@ auto Allocator::allocStrLit(const std::string& lit) noexcept -> StringRef* {
   return refPtr;
 }
 
-auto Allocator::allocStr(const unsigned int size) noexcept -> std::pair<StringRef*, uint8_t*> {
-  auto mem = alloc<StringRef>(size + 1); // +1 for null-terminator.
+auto Allocator::allocStrLink(Ref* prev, Value val) noexcept -> StringLinkRef* {
+  auto mem = alloc<StringLinkRef>(0);
   if (unlikely(mem.first == nullptr)) {
-    return {nullptr, nullptr};
+    return nullptr;
   }
 
-  auto payloadPtr  = static_cast<uint8_t*>(mem.second);
-  payloadPtr[size] = '\0'; // Null-terminate the payload.
-  auto* refPtr     = static_cast<StringRef*>(new (mem.first) StringRef{payloadPtr, size});
+  auto* refPtr = static_cast<StringLinkRef*>(new (mem.first) StringLinkRef{prev, val});
   initRef(refPtr);
-  return {refPtr, payloadPtr};
+  return refPtr;
 }
 
 auto Allocator::allocStruct(uint8_t fieldCount) noexcept -> std::pair<StructRef*, Value*> {

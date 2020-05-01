@@ -1,7 +1,6 @@
 #pragma once
 #include "internal/ref.hpp"
 #include "internal/value.hpp"
-#include <string>
 
 namespace vm::internal {
 
@@ -35,12 +34,5 @@ private:
   inline explicit StringRef(const uint8_t* data, unsigned int size) noexcept :
       Ref(getKind()), m_data{data}, m_size{size} {}
 };
-
-inline auto getStringRef(const Value& val) noexcept {
-  auto* strRef = val.getDowncastRef<StringRef>();
-  // Assert that the string is null-terminated.
-  assert(strRef->getDataPtr()[strRef->getSize()] == '\0');
-  return strRef;
-}
 
 } // namespace vm::internal

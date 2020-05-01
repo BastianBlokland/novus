@@ -1,6 +1,7 @@
 #include "internal/garbage_collector.hpp"
 #include "internal/allocator.hpp"
 #include "internal/ref_future.hpp"
+#include "internal/ref_string_link.hpp"
 #include "internal/ref_struct.hpp"
 #include <chrono>
 #include <condition_variable>
@@ -135,6 +136,23 @@ auto GarbageCollector::mark() noexcept -> void {
       auto* f = downcastRef<FutureRef>(cur);
       if (f->getResult().isRef()) {
         m_markQueue.push_back(f->getResult().getRef());
+      }
+    } break;
+    case RefKind::StringLink: {
+      auto* l = downcastRef<StringLinkRef>(cur);
+      if (l->isCollapsed()) {
+        m_markQueue.push_back(l->getCollapsed());
+        // If a collapsed representation has been computed we can safely discard the 'link' to the
+        // rest of the chain.
+        l->clearLink();
+      } else {
+        assert(l->getPrev() != nullptr);
+        m_markQueue.push_back(l->getPrev());
+        if (l->getVal().isRef()) {
+          auto* valRef = l->getVal().getRef();
+          assert(valRef != nullptr);
+          m_markQueue.push_back(valRef);
+        }
       }
     } break;
     case RefKind::String:

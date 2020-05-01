@@ -3,8 +3,8 @@
 
 #if !defined(_WIN32)
 
+#include <cstdio>
 #include <fcntl.h>
-#include <stdio.h>
 
 #endif
 

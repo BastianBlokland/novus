@@ -5,6 +5,7 @@
 #include "internal/ref_future.hpp"
 #include "internal/ref_long.hpp"
 #include "internal/ref_string.hpp"
+#include "internal/ref_string_link.hpp"
 #include "internal/ref_struct.hpp"
 #include "internal/stack.hpp"
 #include "internal/string_utilities.hpp"
@@ -169,6 +170,13 @@ auto execute(
   using OpCode    = novasm::OpCode;
   using PCallCode = novasm::PCallCode;
 
+#define CHECK_ALLOC(PTR)                                                                           \
+  {                                                                                                \
+    if (unlikely((PTR) == nullptr)) {                                                              \
+      execHandle.setState(ExecState::AllocFailed);                                                 \
+      goto End;                                                                                    \
+    }                                                                                              \
+  }
 #define READ_BYTE() readAsm<uint8_t>(&ip)
 #define READ_INT() readAsm<int32_t>(&ip)
 #define READ_UINT() readAsm<uint32_t>(&ip)
@@ -200,10 +208,7 @@ auto execute(
 #define PUSH_REF(VAL)                                                                              \
   {                                                                                                \
     auto* refPtr = VAL;                                                                            \
-    if (unlikely(refPtr == nullptr)) {                                                             \
-      execHandle.setState(ExecState::AllocFailed);                                                 \
-      goto End;                                                                                    \
-    }                                                                                              \
+    CHECK_ALLOC(refPtr);                                                                           \
     PUSH(refValue(refPtr));                                                                        \
   }
 #define PUSH_CLOSURE(VAL, RES_BOUND_ARG_COUNT, RES_TGT_IP_OFFSET)                                  \
@@ -305,9 +310,17 @@ auto execute(
       PUSH_FLOAT(POP_FLOAT() + POP_FLOAT());
     } break;
     case OpCode::AddString: {
-      auto* b = getStringRef(POP());
-      auto* a = getStringRef(POP());
-      PUSH_REF(concatString(allocator, a, b));
+      auto* b = getStringRef(allocator, POP());
+      CHECK_ALLOC(b);
+
+      // To optimize building up a string we don't yet create the concatenated string but instead
+      // create a linked list of strings, then only when the string is 'observed' we perform the
+      // actual concatenation.
+      // At the moment this optimization only supports building up the string forwards (so appending
+      // to the end). Support for building up strings backwards is possible but not implemented atm.
+
+      auto* a = getStringOrLinkRef(POP());
+      PUSH_REF(allocator->allocStrLink(a, refValue(b)));
     } break;
     case OpCode::CombineChar: {
       auto b = static_cast<uint8_t>(POP_INT());
@@ -315,9 +328,9 @@ auto execute(
       PUSH_REF(charsToString(allocator, a, b));
     } break;
     case OpCode::AppendChar: {
-      auto b  = static_cast<uint8_t>(POP_INT());
-      auto* a = getStringRef(POP());
-      PUSH_REF(appendChar(allocator, a, b));
+      auto b  = POP_INT();
+      auto* a = getStringOrLinkRef(POP());
+      PUSH_REF(allocator->allocStrLink(a, intValue(b)));
     } break;
     case OpCode::SubInt: {
       auto b = POP_INT();
@@ -467,18 +480,22 @@ auto execute(
       PUSH_UINT(~POP_UINT());
     } break;
     case OpCode::LengthString: {
-      PUSH_INT(getStringRef(POP())->getSize());
+      auto* strRef = getStringRef(allocator, POP());
+      CHECK_ALLOC(strRef);
+      PUSH_INT(strRef->getSize());
     } break;
     case OpCode::IndexString: {
-      auto index = POP_INT();
-      auto* str  = getStringRef(POP());
-      PUSH_INT(indexString(str, index));
+      auto index   = POP_INT();
+      auto* strRef = getStringRef(allocator, POP());
+      CHECK_ALLOC(strRef);
+      PUSH_INT(indexString(strRef, index));
     } break;
     case OpCode::SliceString: {
-      auto end   = POP_INT();
-      auto start = POP_INT();
-      auto* str  = getStringRef(POP());
-      PUSH_REF(sliceString(allocator, str, start, end));
+      auto end     = POP_INT();
+      auto start   = POP_INT();
+      auto* strRef = getStringRef(allocator, POP());
+      CHECK_ALLOC(strRef);
+      PUSH_REF(sliceString(allocator, strRef, start, end));
     } break;
 
     case OpCode::CheckEqInt: {
@@ -497,9 +514,13 @@ auto execute(
       PUSH_BOOL(a == b);
     } break;
     case OpCode::CheckEqString: {
-      auto* b = getStringRef(POP());
-      auto* a = getStringRef(POP());
-      PUSH_BOOL(checkStringEq(a, b));
+      auto* bStrRef = getStringRef(allocator, POP());
+      CHECK_ALLOC(bStrRef);
+
+      auto* aStrRef = getStringRef(allocator, POP());
+      CHECK_ALLOC(aStrRef);
+
+      PUSH_BOOL(checkStringEq(aStrRef, bStrRef));
     } break;
     case OpCode::CheckEqIp: {
       auto b = POP_UINT();
@@ -802,6 +823,7 @@ End:
   execRegistry->unregisterExecutor(&execHandle);
   return endState;
 
+#undef CHECK_ALLOC
 #undef READ_BYTE
 #undef READ_INT
 #undef READ_UINT
