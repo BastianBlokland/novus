@@ -110,7 +110,7 @@ private:
   assert(ref != nullptr);
 
   // First store the pointer in a variable of the native pointer size (might be 32 bit).
-  uintptr_t rawRef = reinterpret_cast<uintptr_t>(ref); // NOLINT: Reinterpret cast
+  auto rawRef = reinterpret_cast<uintptr_t>(ref); // NOLINT: Reinterpret cast
 
   // Then expand to 64 bit and tag it.
   return Value{static_cast<uint64_t>(rawRef) | refTag};
@@ -122,7 +122,7 @@ template <typename Type>
 [[nodiscard]] inline auto rawPtrValue(Type* ptr) noexcept -> Value {
   assert(ptr != nullptr);
 
-  uintptr_t ptrVal = reinterpret_cast<uintptr_t>(ptr); // NOLINT: Reinterpret cast
+  auto ptrVal = reinterpret_cast<uintptr_t>(ptr); // NOLINT: Reinterpret cast
 
   // Assert that the least significant bit is 0, reason is we use that bit to signify that this
   // value is a vm 'ref'.

@@ -25,6 +25,13 @@ auto inline pcall(
 
   using PCallCode = novasm::PCallCode;
 
+#define CHECK_ALLOC(PTR)                                                                           \
+  {                                                                                                \
+    if (unlikely((PTR) == nullptr)) {                                                              \
+      execHandle->setState(ExecState::AllocFailed);                                                \
+      return;                                                                                      \
+    }                                                                                              \
+  }
 #define PUSH(VAL)                                                                                  \
   if (unlikely(!stack->push(VAL))) {                                                               \
     execHandle->setState(ExecState::StackOverflow);                                                \
@@ -44,10 +51,7 @@ auto inline pcall(
 #define PUSH_REF(VAL)                                                                              \
   {                                                                                                \
     auto* refPtr = VAL;                                                                            \
-    if (unlikely(refPtr == nullptr)) {                                                             \
-      execHandle->setState(ExecState::AllocFailed);                                                \
-      return;                                                                                      \
-    }                                                                                              \
+    CHECK_ALLOC(refPtr);                                                                           \
     PUSH(refValue(refPtr));                                                                        \
   }
 #define POP() stack->pop()
@@ -62,7 +66,9 @@ auto inline pcall(
     // Flags is stored in the 8 bits before (more significant) then mode.
     auto mode        = static_cast<FileStreamMode>(static_cast<uint8_t>(options));
     auto flags       = static_cast<FileStreamFlags>(static_cast<uint8_t>(options >> 8U));
-    auto* pathStrRef = getStringRef(POP());
+    auto* pathStrRef = getStringRef(alloc, POP());
+    CHECK_ALLOC(pathStrRef);
+
     PUSH_REF(openFileStream(alloc, pathStrRef, mode, flags));
   } break;
   case PCallCode::StreamOpenConsole: {
@@ -94,8 +100,10 @@ auto inline pcall(
     PUSH_INT(readChar);
   } break;
   case PCallCode::StreamWriteString: {
-    auto* strRef = getStringRef(POP());
-    auto stream  = POP();
+    auto* strRef = getStringRef(alloc, POP());
+    CHECK_ALLOC(strRef);
+
+    auto stream = POP();
 
     execHandle->setState(ExecState::Paused);
     auto result = streamWriteString(stream, strRef);
@@ -130,7 +138,9 @@ auto inline pcall(
   } break;
 
   case PCallCode::FileRemove: {
-    auto* pathStrRef = getStringRef(POP());
+    auto* pathStrRef = getStringRef(alloc, POP());
+    CHECK_ALLOC(pathStrRef);
+
     PUSH_BOOL(removeFile(pathStrRef));
   } break;
 
@@ -157,8 +167,10 @@ auto inline pcall(
     PUSH_INT(iface->getEnvArgCount());
   } break;
   case PCallCode::GetEnvVar: {
-    auto* nameStrRef = getStringRef(POP());
-    auto* res        = std::getenv(nameStrRef->getCharDataPtr());
+    auto* nameStrRef = getStringRef(alloc, POP());
+    CHECK_ALLOC(nameStrRef);
+
+    auto* res = std::getenv(nameStrRef->getCharDataPtr());
     PUSH_REF(res == nullptr ? alloc->allocStr(0).first : toStringRef(alloc, res));
   } break;
 
@@ -178,7 +190,9 @@ auto inline pcall(
     execHandle->trap();
   } break;
   case PCallCode::Assert: {
-    auto* msg = getStringRef(POP());
+    auto* msg = getStringRef(alloc, POP());
+    CHECK_ALLOC(msg);
+
     auto cond = PEEK_INT();
     if (unlikely(cond == 0)) {
       auto* stdErr = iface->getStdErr();
@@ -194,6 +208,7 @@ auto inline pcall(
     execHandle->setState(ExecState::InvalidAssembly);
   }
 
+#undef CHECK_ALLOC
 #undef PUSH
 #undef PUSH_INT
 #undef PUSH_BOOL

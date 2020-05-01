@@ -3,11 +3,31 @@
 #include "internal/allocator.hpp"
 #include "internal/likely.hpp"
 #include "internal/ref_string.hpp"
+#include "internal/string_link_utilities.hpp"
 #include <cmath>
 #include <cstdio>
 #include <cstring>
 
 namespace vm::internal {
+
+// Get a StringRef* from a value. Supports direct StringRef's or StringLinkRefs.
+// Requires a allocator as in-case of a StringLinkRef we might need to allocate a new string.
+inline auto getStringRef(Allocator* allocator, const Value& val) noexcept {
+  auto* ref = val.getRef();
+  if (ref->getKind() == RefKind::String) {
+    auto strRef = downcastRef<StringRef>(ref);
+    // Assert that the string is null-terminated.
+    assert(strRef->getDataPtr()[strRef->getSize()] == '\0');
+    return strRef;
+  }
+
+  // If its not a string we assume its a string-link.
+  assert(ref->getKind() == RefKind::StringLink);
+
+  // Collapse the string-link chain into a normal string.
+  auto* strLinkRef = val.getDowncastRef<StringLinkRef>();
+  return collapseStringLink(allocator, *strLinkRef);
+}
 
 template <typename IntType>
 [[nodiscard]] auto inline intToString(Allocator* allocator, IntType val) noexcept -> StringRef* {

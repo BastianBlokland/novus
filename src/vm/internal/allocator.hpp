@@ -14,6 +14,7 @@ class FutureRef;
 class LongRef;
 class StreamRef;
 class StringRef;
+class StringLinkRef;
 class StructRef;
 
 class Allocator final {
@@ -31,6 +32,9 @@ public:
 
   // Allocate a string from a literal, upon failure returns {nullptr}.
   [[nodiscard]] auto allocStrLit(const std::string& literal) noexcept -> StringRef*;
+
+  // Allocate a string-link, upon failure returns {nullptr}.
+  [[nodiscard]] auto allocStrLink(Ref* prev, Value val) noexcept -> StringLinkRef*;
 
   // Allocate a struct, upon failure returns {nullptr, nullptr}.
   [[nodiscard]] auto allocStruct(uint8_t fieldCount) noexcept -> std::pair<StructRef*, Value*>;
