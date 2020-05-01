@@ -1,4 +1,4 @@
-import "either.nov"
+import "std/either.nov"
 
 // -- Types
 

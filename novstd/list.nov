@@ -1,4 +1,4 @@
-import "option.nov"
+import "std/option.nov"
 
 // -- Types
 

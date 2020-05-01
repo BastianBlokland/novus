@@ -1,8 +1,8 @@
-import "list.nov"
-import "pair.nov"
-import "parse.nov"
-import "utf8.nov"
-import "writer.nov"
+import "std/list.nov"
+import "std/pair.nov"
+import "std/parse.nov"
+import "std/utf8.nov"
+import "std/writer.nov"
 
 // -- Json (JavaScript Object Notation) parser and writer
 // https://www.json.org/json-en.html

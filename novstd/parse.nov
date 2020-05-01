@@ -1,10 +1,10 @@
-import "ascii.nov"
-import "text.nov"
-import "math.nov"
-import "pair.nov"
-import "either.nov"
-import "error.nov"
-import "bits.nov"
+import "std/ascii.nov"
+import "std/text.nov"
+import "std/math.nov"
+import "std/pair.nov"
+import "std/either.nov"
+import "std/error.nov"
+import "std/bits.nov"
 
 // -- Types
 

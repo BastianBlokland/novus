@@ -1,4 +1,4 @@
-import "math.nov"
+import "std/math.nov"
 
 // -- Functions
 

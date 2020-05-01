@@ -1,4 +1,4 @@
-import "stream.nov"
+import "std/stream.nov"
 
 // -- Path
 // Represents a path on the filesystem.

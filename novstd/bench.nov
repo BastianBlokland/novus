@@ -1,6 +1,6 @@
-import "time.nov"
-import "math.nov"
-import "console.nov"
+import "std/time.nov"
+import "std/math.nov"
+import "std/console.nov"
 
 // -- Types
 

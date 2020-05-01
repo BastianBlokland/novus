@@ -1,5 +1,5 @@
-import "text.nov"
-import "math.nov"
+import "std/text.nov"
+import "std/math.nov"
 
 // Gregorian calendar assumed with no leap seconds.
 

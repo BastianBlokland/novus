@@ -1,5 +1,5 @@
-import "console.nov"
-import "math.nov"
+import "std/console.nov"
+import "std/math.nov"
 
 // -- Utilities for interacting with a tty terminal using ANSI escape codes:
 // https://en.wikipedia.org/wiki/ANSI_escape_code

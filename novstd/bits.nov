@@ -1,4 +1,4 @@
-import "text.nov"
+import "std/text.nov"
 
 // -- Functions
 

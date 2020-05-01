@@ -1,4 +1,4 @@
-import "bits.nov"
+import "std/bits.nov"
 
 // Utlities for interacting with unicode text encoding.
 

@@ -1,7 +1,7 @@
-import "math.nov"
-import "text.nov"
-import "pair.nov"
-import "option.nov"
+import "std/math.nov"
+import "std/text.nov"
+import "std/pair.nov"
+import "std/option.nov"
 
 // -- Types
 

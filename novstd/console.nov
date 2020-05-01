@@ -1,5 +1,5 @@
-import "stream.nov"
-import "bits.nov"
+import "std/stream.nov"
+import "std/bits.nov"
 
 enum ConsoleKind = StdIn : 0, StdOut, StdErr
 

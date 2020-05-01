@@ -1,5 +1,5 @@
-import "func.nov"
-import "list.nov"
+import "std/func.nov"
+import "std/list.nov"
 
 // -- Operators
 

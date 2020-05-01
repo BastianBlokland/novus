@@ -1,4 +1,4 @@
-import "list.nov"
+import "std/list.nov"
 
 // -- Functions
 
