@@ -213,6 +213,8 @@ auto Assembler::addConvIntChar() -> void { writeOpCode(OpCode::ConvIntChar); }
 
 auto Assembler::addConvFloatChar() -> void { writeOpCode(OpCode::ConvFloatChar); }
 
+auto Assembler::addConvFloatLong() -> void { writeOpCode(OpCode::ConvFloatLong); }
+
 auto Assembler::addMakeStruct(uint8_t fieldCount) -> void {
   writeOpCode(OpCode::MakeStruct);
   writeUInt8(fieldCount);

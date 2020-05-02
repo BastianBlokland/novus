@@ -94,6 +94,7 @@ namespace opt {
   case prog::sym::FuncKind::ConvFloatInt:
   case prog::sym::FuncKind::ConvFloatString:
   case prog::sym::FuncKind::ConvFloatChar:
+  case prog::sym::FuncKind::ConvFloatLong:
   case prog::sym::FuncKind::DefFloat:
 
   // Long
@@ -569,6 +570,10 @@ private:
     case prog::sym::FuncKind::ConvFloatChar: {
       assert(args.size() == 1);
       return prog::expr::litCharNode(m_prog, static_cast<uint8_t>(getFloat(*args[0])));
+    }
+    case prog::sym::FuncKind::ConvFloatLong: {
+      assert(args.size() == 1);
+      return prog::expr::litLongNode(m_prog, static_cast<int64_t>(getFloat(*args[0])));
     }
     case prog::sym::FuncKind::DefFloat: {
       assert(args.size() == 0);

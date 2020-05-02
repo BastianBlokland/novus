@@ -91,6 +91,7 @@ enum class OpCode : uint8_t {
   ConvCharString  = 119, // [] (int)   -> (string)   Convert char to string (ascii).
   ConvIntChar     = 120, // [] (int)   -> (int)      Convert int to char (ascii).
   ConvFloatChar   = 121, // [] (float) -> (int)      Convert float to char (ascii).
+  ConvFloatLong   = 122, // [] (float) -> (long)     Convert float to long.
 
   MakeStruct       = 190, // [uint8] (any ...)     -> (struct) Create structure containing x values.
   MakeNullStruct   = 191, // []      ()            -> struct   Create a struct without fields.

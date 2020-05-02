@@ -105,6 +105,7 @@ public:
   auto addConvCharString() -> void;
   auto addConvIntChar() -> void;
   auto addConvFloatChar() -> void;
+  auto addConvFloatLong() -> void;
 
   auto addMakeStruct(uint8_t fieldCount) -> void;
   auto addMakeNullStruct() -> void;

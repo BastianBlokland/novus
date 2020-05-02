@@ -115,6 +115,7 @@ TEST_CASE("Precompute literals", "[opt]") {
     ASSERT_EXPR(precomputeLiterals, "string(42.1337)", litStringNode(prog, "42.1337"));
     ASSERT_EXPR(precomputeLiterals, "string(-42.1337)", litStringNode(prog, "-42.1337"));
     ASSERT_EXPR(precomputeLiterals, "char(230.0)", litCharNode(prog, 230)); // NOLINT: Magic numbers
+    ASSERT_EXPR(precomputeLiterals, "long(230.0)", litLongNode(prog, 230)); // NOLINT: Magic numbers
     ASSERT_EXPR(precomputeLiterals, "float()", litFloatNode(prog, 0.0));
   }
 

@@ -604,6 +604,9 @@ auto execute(
     case OpCode::ConvFloatChar: {
       PUSH_INT(static_cast<uint8_t>(POP_FLOAT()));
     } break;
+    case OpCode::ConvFloatLong: {
+      PUSH_LONG(static_cast<int64_t>(POP_FLOAT()));
+    } break;
 
     case OpCode::MakeStruct: {
       const auto fieldCount = READ_BYTE();

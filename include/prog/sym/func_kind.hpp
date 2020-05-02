@@ -94,6 +94,7 @@ enum class FuncKind {
   ConvCharString,
   ConvIntChar,
   ConvFloatChar,
+  ConvFloatLong,
 
   DefInt,
   DefLong,
