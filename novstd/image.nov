@@ -44,24 +44,54 @@ fun string(Color c)
 fun string(Image i)
   "(" + i.width + "x" + i.height + ')'
 
+// -- Portable Pixmap Format
+// https://en.wikipedia.org/wiki/Netpbm
+// Support writing ascii and binary ppm images.
+
+fun ppmAsciiWriter()
+  sizeWriter  = txtIntWriter() & litWriter(' ') & txtIntWriter();
+  colorWriter = Writer(lambda (WriterState s, Color c)
+    s.write(
+      int(char(c.r * 255)).string() + ' ' +
+      int(char(c.g * 255)).string() + ' '+
+      int(char(c.b * 255)).string())
+  );
+  ( litWriter("P3") & newlineWriter()   &
+    sizeWriter & newlineWriter()        &
+    litWriter("255") & newlineWriter()  &
+    listWriter(colorWriter, newlineWriter())
+  ).map(lambda (Image i) Pair(Pair(i.width, i.height), i.pixels))
+
+fun ppmBinaryWriter()
+  sizeWriter  = txtIntWriter() & litWriter(' ') & txtIntWriter();
+  colorWriter = Writer(lambda (WriterState s, Color c)
+    s.write(char(c.r * 255) + char(c.g * 255) + char(c.b * 255))
+  );
+  ( litWriter("P6") & newlineWriter()   &
+    sizeWriter & newlineWriter()        &
+    litWriter("255") & newlineWriter()  &
+    listWriter(colorWriter)
+  ).map(lambda (Image i) Pair(Pair(i.width, i.height), i.pixels))
+
 // -- Truevision TGA
 // https://en.wikipedia.org/wiki/Truevision_TGA
 // Support writing 24 bit uncompressed tga files.
 
 fun tgaWriter()
-  Writer(lambda (WriterState s, Image i)
-    header =  string(char(0), 2) +
-              char(2) +
-              string(char(0), 9) +
-              char(i.width) + char(i.width >> 8) +
-              char(i.height) + char(i.height >> 8) +
-              char(24) +
-              char(0b10_0000);
-    s.write(i.pixels.fold((lambda (string res, Color c)
-        res + char(c.b * 255) + char(c.g * 255) + char(c.r * 255)
-      ), header)
-    )
-  )
+  headerWriter = Writer(lambda (WriterState s, Image i)
+    s.write(
+      string(char(0), 2) +
+      char(2) +
+      string(char(0), 9) +
+      char(i.width) + char(i.width >> 8) +
+      char(i.height) + char(i.height >> 8) +
+      char(24) +
+      char(0b10_0000))
+  );
+  colorWriter = Writer(lambda (WriterState s, Color c)
+    s.write(char(c.b * 255) + char(c.g * 255) + char(c.r * 255))
+  );
+  (headerWriter & listWriter(colorWriter)).map(lambda (Image i) Pair(i, i.pixels))
 
 // -- Tests
 
