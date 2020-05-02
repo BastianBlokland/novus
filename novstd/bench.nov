@@ -37,6 +37,15 @@ act benchReport{T}(T invokable)
     " (" + res.avgDur.ns + " ns)" +
     " (" + res.wallTime + " / " + res.iters + " itrs)")
 
+act benchReportSingle{T}(T invokable)
+  ts = timestamp();
+  invokable();
+  time = timestamp() - ts;
+  print(
+    "Bench: " + time +
+    " (" + time.ns + " ns)" +
+    " (SINGLE iteration)")
+
 // -- Tests
 
 assert(

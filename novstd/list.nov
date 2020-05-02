@@ -1,4 +1,5 @@
 import "std/option.nov"
+import "std/pair.nov"
 
 // -- Types
 
@@ -106,6 +107,22 @@ fun insertOrdered{T}(List{T} l, T val)
 
 fun rangeList{T}(T start, T end)
   List{T}().pushRange(start, end)
+
+fun gridList{T}(T width, T height)
+  makeGrid = (lambda (T x, T y, List{Pair{T, T}} result)
+      if y < T()  -> result
+      if x < T()  -> self(--width, --y, result)
+      else        -> self(--x, y, Pair(x, y) :: result)
+  );
+  makeGrid(--width, --height, List{Pair{T, T}}())
+
+fun gridListReverse{T}(T width, T height)
+  makeGrid = (lambda (T x, T y, List{Pair{T, T}} result)
+      if y >= height  -> result
+      if x >= width   -> self(T(), ++y, result)
+      else            -> self(++x, y, Pair(x, y) :: result)
+  );
+  makeGrid(T(), T(), List{Pair{T, T}}())
 
 fun fold{T, TResult}(List{T} l, function{TResult, T, TResult} func)
   fold(l, func, TResult())
@@ -350,6 +367,28 @@ assert(
 
 assert(rangeList(1, 4) == 1 :: 2 :: 3 :: List{int}())
 assert(rangeList('a', 'd') == 'a' :: 'b' :: 'c' :: List{char}())
+
+assert(gridList(2, 2) == Pair(0, 0) :: Pair(1, 0) ::
+                         Pair(0, 1) :: Pair(1, 1) :: List{Pair{int, int}}())
+
+assert(gridList(3, 3) == Pair(0, 0) :: Pair(1, 0) :: Pair(2, 0) ::
+                         Pair(0, 1) :: Pair(1, 1) :: Pair(2, 1) ::
+                         Pair(0, 2) :: Pair(1, 2) :: Pair(2, 2) :: List{Pair{int, int}}())
+
+assert(
+  gridList(1, 1) == Pair(0, 0) :: List{Pair{int, int}}() &&
+  gridList(0, 0) == List{Pair{int, int}}())
+
+assert(gridListReverse(2, 2) == Pair(1, 1) :: Pair(0, 1) ::
+                                Pair(1, 0) :: Pair(0, 0) :: List{Pair{int, int}}())
+
+assert(gridListReverse(3, 3) == Pair(2, 2) :: Pair(1, 2) :: Pair(0, 2) ::
+                                Pair(2, 1) :: Pair(1, 1) :: Pair(0, 1) ::
+                                Pair(2, 0) :: Pair(1, 0) :: Pair(0, 0) :: List{Pair{int, int}}())
+
+assert(
+  gridListReverse(1, 1) == Pair(0, 0) :: List{Pair{int, int}}() &&
+  gridListReverse(0, 0) == List{Pair{int, int}}())
 
 assert(
   l = 1 :: 2 :: 3 :: 4 :: List{int}();
