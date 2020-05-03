@@ -1,0 +1,135 @@
+import "std.nov"
+import "vec3.nov"
+import "ray3.nov"
+
+// -- Scene definition
+
+struct  Sphere  = Vec3 pos, float radius
+struct  Plane   = Vec3 pos, Vec3 nrm, Vec3 tan
+union   Shape   = Sphere, Plane
+
+struct Material =
+  Color albedo,
+  float reflectivity,
+  float specularity,
+  float specularPower
+
+struct Object =
+  Shape                    shape,
+  function{Vec3, Material} matFunc
+
+struct DirLight =
+  Vec3  dir,
+  Color energy
+
+struct PointLight =
+  Vec3  pos,
+  Color energy
+
+union Light = DirLight, PointLight
+
+struct Scene =
+  List{Object} objects,
+  List{Light}  lights
+
+fun shadowBias()  .0001
+fun reflectBias() .0001
+
+fun backgroundColor(Ray3 r)
+  top     = Color(.1, .4, .7);
+  bottom  = Color(.8, .8, .8);
+  lerp(bottom, top, .5 * (r.dir.y + 1))
+
+fun getColor(Scene s, Ray3 r, int bounce, int maxBounces)
+  if bounce >= maxBounces -> backgroundColor(r)
+  else ->
+    hit = s.raycast(r);
+    if hit is None -> backgroundColor(r)
+    if hit as RaycastHit h ->
+      mat = h.obj.matFunc(h.d.uv);
+      lightEnergy = s.getLights(h.d.pos + h.d.nrm * shadowBias()).map(lambda (Light l)
+        lightDir = l.getLightDir(h.d.pos);
+        diffuse = max(0.0, dot(h.d.nrm, -lightDir));
+        specular = pow(max(0.0, dot(reflect(lightDir, h.d.nrm), -r.dir)), mat.specularPower);
+        l.getLightEnergy(h.d.pos) * lerp(diffuse, specular, mat.specularity)
+      ).sum();
+      reflectRay    = Ray3(h.d.pos + h.d.nrm * reflectBias(), reflect(r.dir, h.d.nrm));
+      reflectColor  = s.getColor(reflectRay, ++bounce, maxBounces);
+      lerp(mat.albedo / pi(), reflectColor, mat.reflectivity) * lightEnergy
+
+fun getLights(Scene s, Vec3 p)
+  s.lights.filter(lambda (Light l)
+    ray = Ray3(p, -l.getLightDir(p));
+    s.raycast(ray, l.getLightDist(p)) is None
+  )
+
+fun getLightDir(Light l, Vec3 p)
+  if l as DirLight    dl -> dl.dir
+  if l as PointLight  pl -> normalize(p - pl.pos)
+
+fun getLightDist(Light l, Vec3 p)
+  if l as DirLight    dl -> posInfinity()
+  if l as PointLight  pl -> magnitude(p - pl.pos)
+
+fun getLightEnergy(Light l, Vec3 p)
+  if l as DirLight    dl -> dl.energy
+  if l as PointLight  pl -> pl.energy / (pi() * 4 * magnitude(p - pl.pos))
+
+// -- Raycasting
+
+struct RaycastHit = Object obj, IntersectData d
+
+fun raycast(Scene s, Ray3 r)
+  s.raycast(r, posInfinity())
+
+fun raycast(Scene s, Ray3 r, float tMax)
+  s.objects.fold(lambda (Option{RaycastHit} maybeBest, Object o)
+    i = intersect(o.shape, r);
+    if i is None            -> maybeBest
+    if i as IntersectData d ->
+      if d.t > tMax                               -> maybeBest
+      if maybeBest as RaycastHit b && b.d.t < d.t -> maybeBest
+      else                                        -> RaycastHit(o, d)
+  )
+
+// -- Intersection
+
+struct IntersectData =
+  float t,
+  Vec3 pos,
+  Vec3 nrm,
+  Vec3 uv
+
+fun intersect(Shape s, Ray3 r)
+  if s as Sphere  sphere  -> intersect(sphere, r)
+  if s as Plane   plane   -> intersect(plane, r)
+
+fun intersect(Sphere s, Ray3 r)
+  sqrRadius     = s.radius * s.radius;
+  toSphere      = s.pos - r.origin;
+  tToSphere     = dot(toSphere, r.dir);
+  sqrRadiusDist = toSphere.sqrMagnitude() - (tToSphere * tToSphere);
+  if sqrRadiusDist > sqrRadius -> none()
+  else ->
+    t = tToSphere - abs(sqrt(sqrRadius - sqrRadiusDist));
+    if t < 0  -> none()
+    else ->
+      pos = r[t];
+      nrm = normalize(pos - s.pos);
+      u   = (1 + atan2(nrm.z, nrm.x) / pi()) * .5;
+      v   = acos(nrm.y) / pi();
+      some(IntersectData(t, pos, nrm, Vec3(u, v, 0.0)))
+
+fun intersect(Plane p, Ray3 r)
+  d = dot(p.nrm, r.dir);
+  if abs(d) <= epsilon() -> none()
+  else ->
+    t = dot(p.pos - r.origin, p.nrm) / d;
+    if t <= epsilon() -> none()
+    else ->
+      pos   = r[t];
+      toHit = pos - p.pos;
+      biNrm = cross(p.nrm, p.tan);
+      u     = dot(toHit, p.tan);
+      v     = dot(toHit, biNrm);
+      some(IntersectData(t, r[t], p.nrm, Vec3(u, v, 0.0)))

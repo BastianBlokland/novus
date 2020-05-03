@@ -1,0 +1,73 @@
+import "std.nov"
+
+// -- Types
+
+struct Vec3 = float x, float y, float z
+
+// -- Presets
+
+fun vec3Zero()  Vec3( 0,     0,      0)
+fun vec3One()   Vec3( 1,     1,      1)
+fun vec3Front() Vec3( 0,     0,      1)
+fun vec3Back()  Vec3( 0,     0,     -1)
+fun vec3Up()    Vec3( 0,     1,      0)
+fun vec3Down()  Vec3( 0,    -1,      0)
+fun vec3Right() Vec3( 1,     0,      0)
+fun vec3Left()  Vec3(-1,     0,      0)
+fun vec3Nan()   Vec3(nan(),  nan(),  nan())
+
+// -- Conversions
+
+fun string(Vec3 v) "(" + v.x + ',' + v.y + ',' + v.z + ')'
+
+// -- Operatators
+
+fun [](Vec3 v, int idx)
+  if idx <= 0 -> v.x
+  if idx == 1 -> v.y
+  else        -> v.z
+
+fun -(Vec3 v)           Vec3(-v.x,      -v.y,       -v.z)
+fun +(Vec3 a, Vec3 b)   Vec3(a.x + b.x, a.y + b.y,  a.z + b.z)
+fun -(Vec3 a, Vec3 b)   Vec3(a.x - b.x, a.y - b.y,  a.z - b.z)
+fun *(Vec3 a, float b)  Vec3(a.x * b,   a.y * b,    a.z * b)
+fun *(float a, Vec3 b)  Vec3(a * b.x,   a * b.y,    a * b.z)
+fun /(Vec3 a, float b)  Vec3(a.x / b,   a.y / b,    a.z / b)
+
+// -- Functions
+
+fun dot(Vec3 a, Vec3 b)
+  a.x * b.x + a.y * b.y + a.z * b.z
+
+fun cross(Vec3 a, Vec3 b)
+  Vec3(
+    a.y * b.z - a.z * b.y,
+    a.z * b.x - a.x * b.z,
+    a.x * b.y - a.y * b.x)
+
+fun sqrMagnitude(Vec3 v)
+  dot(v, v)
+
+fun magnitude(Vec3 v)
+  m = v.sqrMagnitude();
+  m <= 0 ? 0 : sqrt(m)
+
+fun approx(Vec3 a, Vec3 b)
+  a.x.approx(b.x) && a.y.approx(b.y) && a.z.approx(b.z)
+
+fun normalize(Vec3 a)
+  m = a.magnitude();
+  m != 0 ? a / m : vec3Nan()
+
+fun project(Vec3 v, Vec3 n)
+  nSqrMag = n.sqrMagnitude();
+  nSqrMag != 0 ? n * dot(v, n) / nSqrMag : vec3Nan()
+
+fun reflect(Vec3 v, Vec3 n)
+  v - dot(v, n) * n * 2
+
+fun lerp(Vec3 a, Vec3 b, float t)
+  Vec3(
+    lerp(a.x, b.x, t),
+    lerp(a.y, b.y, t),
+    lerp(a.z, b.z, t))

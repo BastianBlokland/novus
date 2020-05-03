@@ -8,6 +8,10 @@ import "std/writer.nov"
 struct Color  = float r, float g, float b
 struct Image  = int width, int height, List{Color} pixels
 
+// -- Constructors
+
+fun Color() black()
+
 // -- Color presets
 
 fun red()     Color(1.0, 0.0, 0.0)
@@ -16,6 +20,14 @@ fun blue()    Color(0.0, 0.0, 1.0)
 fun yellow()  Color(1.0, 1.0, 0.0)
 fun white()   Color(1.0, 1.0, 1.0)
 fun black()   Color(0.0, 0.0, 0.0)
+fun gray()    Color(0.5, 0.5, 0.5)
+
+// -- Operator
+
+fun +(Color a, Color b) Color(a.r + b.r,  a.g + b.g,  a.b + b.b)
+fun *(Color a, Color b) Color(a.r * b.r,  a.g * b.g,  a.b * b.b)
+fun *(Color c, float t) Color(c.r * t,    c.g * t,    c.b * t)
+fun /(Color c, float t) Color(c.r / t,    c.g / t,    c.b / t)
 
 // -- Functions
 
@@ -36,6 +48,13 @@ fun makeColorGrid(int width, int height, function{int, int, Color} getCol)
   );
   makeGrid(width - 1, height - 1, List{Color}())
 
+fun gammaEncode(Color c)
+  Color(
+    pow(c.r, 1.0 / 2.2),
+    pow(c.g, 1.0 / 2.2),
+    pow(c.b, 1.0 / 2.2)
+  )
+
 // -- Conversions
 
 fun string(Color c)
@@ -52,9 +71,9 @@ fun ppmAsciiWriter()
   sizeWriter  = txtIntWriter() & litWriter(' ') & txtIntWriter();
   colorWriter = Writer(lambda (WriterState s, Color c)
     s.write(
-      int(clamp(c.r, 0.0, 1.0) * 255).string() + ' ' +
-      int(clamp(c.g, 0.0, 1.0) * 255).string() + ' '+
-      int(clamp(c.b, 0.0, 1.0) * 255).string())
+      int(clamp(c.r, 0.0, 1.0) * 255 + .5).string() + ' ' +
+      int(clamp(c.g, 0.0, 1.0) * 255 + .5).string() + ' '+
+      int(clamp(c.b, 0.0, 1.0) * 255 + .5).string())
   );
   ( litWriter("P3") & newlineWriter()   &
     sizeWriter & newlineWriter()        &
@@ -65,9 +84,9 @@ fun ppmAsciiWriter()
 fun ppmBinaryWriter()
   sizeWriter  = txtIntWriter() & litWriter(' ') & txtIntWriter();
   colorWriter = Writer(lambda (WriterState s, Color c)
-    s.write(  char(clamp(c.r, 0.0, 1.0) * 255) +
-              char(clamp(c.g, 0.0, 1.0) * 255) +
-              char(clamp(c.b, 0.0, 1.0) * 255))
+    s.write(  char(clamp(c.r, 0.0, 1.0) * 255 + .5) +
+              char(clamp(c.g, 0.0, 1.0) * 255 + .5) +
+              char(clamp(c.b, 0.0, 1.0) * 255 + .5))
   );
   ( litWriter("P6") & newlineWriter()   &
     sizeWriter & newlineWriter()        &
@@ -91,9 +110,9 @@ fun tgaWriter()
       char(0b10_0000))
   );
   colorWriter = Writer(lambda (WriterState s, Color c)
-    s.write(  char(clamp(c.b, 0.0, 1.0) * 255) +
-              char(clamp(c.g, 0.0, 1.0) * 255) +
-              char(clamp(c.r, 0.0, 1.0) * 255))
+    s.write(  char(clamp(c.b, 0.0, 1.0) * 255 + .5) +
+              char(clamp(c.g, 0.0, 1.0) * 255 + .5) +
+              char(clamp(c.r, 0.0, 1.0) * 255 + .5))
   );
   (headerWriter & listWriter(colorWriter)).map(lambda (Image i) Pair(i, i.pixels))
 
