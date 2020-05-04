@@ -200,6 +200,15 @@ fun for{T, TResult}(T from, T to, function{T, TResult} func)
 fun for{T, TResult}(T to, function{T, TResult} func)
   rangeList(T(), to).map(func)
 
+fun zip{T1, T2, TResult}(List{T1} a, List{T2} b, function{TResult, T1, T2, TResult} func)
+  zip(a, b, func, TResult())
+
+fun zip{T1, T2, TResult}(
+  List{T1} a, List{T2} b, function{TResult, T1, T2, TResult} func, TResult result)
+  if a as LNode{T1} nA && b as LNode{T2} nB ->
+    zip(nA.next, nB.next, func, func(result, nA.val, nB.val))
+  else -> result
+
 // The default equality uses stack size linear with the list length, so for large lists its
 // ineffiecient / impossible to use the default equality. This is an alternative that uses
 // constant stack space.
@@ -473,6 +482,18 @@ assert(
 assert(for(1, 4, lambda (int i) i * i) == 1 :: 4 :: 9 :: List{int}())
 
 assert(for(4, lambda (int i) i * i) == 0 :: 1 :: 4 :: 9 :: List{int}())
+
+assert(
+  l1  = "hello" :: "good" :: "world" :: List{string}();
+  l2  = 42 :: 1337 :: 1 :: 2 :: 3 :: List{int}();
+  z   = zip(l1, l2, lambda (List{string} result, string s, int i) (s + i.string()) :: result);
+  z == "world1" :: "good1337" :: "hello42" :: List{string}())
+
+assert(
+  l1  = List{string}();
+  l2  = List{int}();
+  z   = zip(l1, l2, lambda (List{string} result, string s, int i) (s + i.string()) :: result);
+  z == List{string}())
 
 assert(
   l = 0 :: 1 :: 4 :: 9 :: List{int}();
