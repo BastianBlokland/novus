@@ -209,6 +209,19 @@ fun zip{T1, T2, TResult}(
     zip(nA.next, nB.next, func, func(result, nA.val, nB.val))
   else -> result
 
+fun zip{T, TResult}(List{List{T}} l, function{TResult, List{T}, TResult} func)
+  l.zip(func, TResult())
+
+fun zip{T, TResult}(List{List{T}} l, function{TResult, List{T}, TResult} func, TResult result)
+  getFronts = (lambda (List{List{T}} l, List{T} result)
+    if l as LNode{List{T}} n -> n.val as LNode{T} f ? self(n.next, f.val :: result) : List{T}()
+    if l is LEnd             -> result
+  );
+  fronts = getFronts(l, List{T}());
+  if fronts.isEmpty() -> result
+  else                -> nexts = l.map(lambda (List{T} cur) cur.pop(1));
+                         zip(nexts, func, func(result, fronts))
+
 // The default equality uses stack size linear with the list length, so for large lists its
 // ineffiecient / impossible to use the default equality. This is an alternative that uses
 // constant stack space.
@@ -494,6 +507,24 @@ assert(
   l2  = List{int}();
   z   = zip(l1, l2, lambda (List{string} result, string s, int i) (s + i.string()) :: result);
   z == List{string}())
+
+assert(
+  l =
+    ("a1" :: "a2" :: "a3" :: "a4" :: List{string}()) ::
+    ("b1" :: "b2" :: "b3"         :: List{string}()) ::
+    ("c1" :: "c2" :: "c3" :: "d4" :: List{string}()) :: List{List{string}}();
+  l.zip(lambda (string result, List{string} cur) result + " " + cur.sum()) == " c1b1a1 c2b2a2 c3b3a3")
+
+assert(
+  l =
+    ("a1" ::  List{string}()) ::
+    (         List{string}()) ::
+    ("c1" ::  List{string}()) :: List{List{string}}();
+  l.zip(lambda (string result, List{string} cur) result + " " + cur.sum()) == "")
+
+assert(
+  l = List{List{string}}();
+  l.zip(lambda (string result, List{string} cur) result + " " + cur.sum()) == "")
 
 assert(
   l = 0 :: 1 :: 4 :: 9 :: List{int}();
