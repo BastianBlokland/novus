@@ -291,6 +291,11 @@ auto execute(
       const auto amount = READ_BYTE();
       assert(amount > 0);
       SALLOC(amount);
+
+      // Clear the memory we have just 'allocated' on the stack, this is important because we do not
+      // require the program to actually write to this memory. So to avoid the garbage-collector
+      // interpreting random memory (or mem from a previous call) as pointers we need to clear it.
+      std::memset(stack.getNext() - amount, 0, sizeof(Value) * amount);
     } break;
     case OpCode::StackStore: {
       *(sh + READ_BYTE()) = stack.pop();
