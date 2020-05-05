@@ -15,6 +15,9 @@ static auto getCyclicField(
 
   for (const auto& f : fields) {
     const auto fType = f.getType();
+    if (!fType.isConcrete()) {
+      continue;
+    }
     if (visitedTypes.find(fType) != visitedTypes.end()) {
       return f.getId();
     }
