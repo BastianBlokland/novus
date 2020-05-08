@@ -1,4 +1,5 @@
 #include "input/search_paths.hpp"
+#include <array>
 #include <string>
 
 #if defined(__APPLE__)
