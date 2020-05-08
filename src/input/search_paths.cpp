@@ -42,9 +42,9 @@ auto getSearchPaths(char** argv) noexcept -> std::vector<filesystem::path> {
 #elif defined(__APPLE__)
   // On osx we call a os specific api to get the executable path.
   unsigned int pathBufferSize = PATH_MAX;
-  char pathBuffer[pathBufferSize];
-  if (_NSGetExecutablePath(pathBuffer, &pathBufferSize) == 0) {
-    addExecutableParent(filesystem::path{pathBuffer}, &result);
+  auto pathBuffer             = std::array<char, PATH_MAX>{};
+  if (_NSGetExecutablePath(pathBuffer.data(), &pathBufferSize) == 0) {
+    addExecutableParent(filesystem::path{pathBuffer.data()}, &result);
   }
 #endif
 
