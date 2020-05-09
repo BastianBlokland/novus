@@ -69,4 +69,3 @@ assert(
   fileExists(p))
 
 assert(!fileRemove(Path("non-existing-file")))
-

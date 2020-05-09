@@ -6,7 +6,7 @@
 #include "rang.hpp"
 #pragma GCC diagnostic pop
 
-#else
+#else // !__GNUG__ || !_WIN32
 
 #include "rang.hpp"
 
