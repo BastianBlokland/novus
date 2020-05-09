@@ -19,7 +19,7 @@ enum class TermOpts : int32_t { NoEcho = 1 << 0, NoBuffer = 1 << 1 };
 
 inline auto hasTerminal() -> bool {
 #if defined(_WIN32)
-  return GetFileType(GetStdHandle(STD_INPUT_HANDLE)) == FILE_TYPE_CHAR;
+  return GetFileType(GetStdHandle(STD_OUTPUT_HANDLE)) == FILE_TYPE_CHAR;
 #else // !_WIN32
   return isatty(0) == 1;
 #endif
@@ -33,10 +33,10 @@ inline auto termGetWidth() -> int32_t {
 #if defined(_WIN32)
 
   CONSOLE_SCREEN_BUFFER_INFO csbi;
-  if (!GetConsoleScreenBufferInfo(GetStdHandle(STD_INPUT_HANDLE), &csbi)) {
+  if (!GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &csbi)) {
     return -1;
   }
-  return csbi.srWindow.Right - csbi.srWindow.Left;
+  return 1 + csbi.srWindow.Right - csbi.srWindow.Left;
 
 #else // !_WIN32
 
@@ -57,10 +57,10 @@ inline auto termGetHeight() -> int32_t {
 #if defined(_WIN32)
 
   CONSOLE_SCREEN_BUFFER_INFO csbi;
-  if (!GetConsoleScreenBufferInfo(GetStdHandle(STD_INPUT_HANDLE), &csbi)) {
+  if (!GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &csbi)) {
     return -1;
   }
-  return csbi.srWindow.Bottom - csbi.srWindow.Top;
+  return 1 + csbi.srWindow.Bottom - csbi.srWindow.Top;
 
 #else // !_WIN32
 
