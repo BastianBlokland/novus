@@ -8,6 +8,7 @@
 
 namespace input {
 
+#if defined(linux) || defined(__APPLE__)
 static auto addExecutableParent(filesystem::path p, std::vector<filesystem::path>* paths) noexcept {
   if (!filesystem::exists(p)) {
     return;
@@ -21,6 +22,7 @@ static auto addExecutableParent(filesystem::path p, std::vector<filesystem::path
   // Add the parent of the path.
   paths->push_back(p.parent_path());
 }
+#endif
 
 auto getSearchPaths(char** argv) noexcept -> std::vector<filesystem::path> {
   auto result = std::vector<filesystem::path>{};

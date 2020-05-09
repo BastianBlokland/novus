@@ -1,6 +1,10 @@
 #pragma once
+
+// -- Include rang before any os headers.
+#include "../rang_include.hpp"
+// --
+
 #include "prog/expr/node_visitor.hpp"
-#include "rang.hpp"
 
 class GetExprColor final : public prog::expr::NodeVisitor {
 public:

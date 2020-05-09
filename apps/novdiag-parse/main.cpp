@@ -1,9 +1,12 @@
+// -- Include rang before any os headers.
+#include "../rang_include.hpp"
+// --
+
 #include "CLI/CLI.hpp"
 #include "get_color.hpp"
 #include "input/info.hpp"
 #include "lex/lexer.hpp"
 #include "parse/parser.hpp"
-#include "rang.hpp"
 #include <chrono>
 
 using Clock    = std::chrono::high_resolution_clock;

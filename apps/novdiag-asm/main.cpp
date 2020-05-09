@@ -1,3 +1,7 @@
+// -- Include rang before any os headers.
+#include "../rang_include.hpp"
+// --
+
 #include "CLI/CLI.hpp"
 #include "backend/generator.hpp"
 #include "filesystem.hpp"
@@ -9,7 +13,6 @@
 #include "novasm/assembly.hpp"
 #include "novasm/disassembler.hpp"
 #include "opt/opt.hpp"
-#include "rang.hpp"
 #include <chrono>
 #include <optional>
 
@@ -186,7 +189,7 @@ auto main(int argc, char** argv) -> int {
         auto absFilePath = filesystem::absolute(filePath);
         std::ifstream fs{filePath};
         exitcode =
-            run(filePath.filename(),
+            run(filePath.filename().string(),
                 absFilePath,
                 searchPaths,
                 std::istreambuf_iterator<char>{fs},

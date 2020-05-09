@@ -56,14 +56,24 @@ inline auto termGetHeight() -> int32_t {
 #endif
 }
 
+#if defined(_WIN32)
+  // TODO(bastian): Implement terminal control options for Windows.
+inline auto termSetOpts(TermOpts /*unused*/) -> bool {
+  return false;
+}
+
+// TODO(bastian): Implement terminal control options for Windows.
+inline auto termUnsetOpts(TermOpts /*unused*/) -> bool {
+  return false;
+}
+
+#else
+
 inline auto termSetOpts(TermOpts opts) -> bool {
   if (!hasTerminal()) {
     return false;
   }
 
-#if defined(_WIN32)
-  // TODO(bastian): Implement terminal control options for Windows.
-#else
   /* Update the termios structure for file descriptor 0 (std-in). */
 
   termios t;
@@ -82,7 +92,6 @@ inline auto termSetOpts(TermOpts opts) -> bool {
     return false;
   }
   return true;
-#endif
 }
 
 inline auto termUnsetOpts(TermOpts opts) -> bool {
@@ -90,9 +99,6 @@ inline auto termUnsetOpts(TermOpts opts) -> bool {
     return false;
   }
 
-#if defined(_WIN32)
-  // TODO(bastian): Implement terminal control options for Windows.
-#else
   /* Update the termios structure for file descriptor 0 (std-in). */
 
   termios t;
@@ -111,7 +117,8 @@ inline auto termUnsetOpts(TermOpts opts) -> bool {
     return false;
   }
   return true;
-#endif
 }
+
+#endif
 
 } // namespace vm::internal
