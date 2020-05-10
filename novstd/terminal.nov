@@ -3,7 +3,11 @@ import "std/math.nov"
 
 // -- Utilities for interacting with a tty terminal using ANSI escape codes:
 // https://en.wikipedia.org/wiki/ANSI_escape_code
-// At the moment this is all unix specific.
+//
+// This does require your terminal to support ansi escape sequences and support utf8.
+// On unix this means almost any terminal, on windows this means the new
+// 'Windows Terminal': https://github.com/microsoft/terminal and configuring your system to use
+// utf8: https://akr.am/blog/posts/using-utf-8-in-the-windows-terminal
 
 enum TermStyle =
   Reset           : 0,
