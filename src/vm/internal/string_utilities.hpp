@@ -46,7 +46,17 @@ template <typename IntType>
   charDataPtr[resultSize] = '\0'; // Null-terminate.
   strRefAlloc.first->updateSize(convRes.ptr - charDataPtr);
 #else
-  const auto format = std::is_same<IntType, int32_t>::value ? "%d" : "%lld";
+  const char* format;
+  if constexpr (std::is_same<IntType, int>::value) {
+    format = "%d";
+  } else if constexpr (std::is_same<IntType, long>::value) {
+    format = "%ld";
+  } else if constexpr (std::is_same<IntType, long long>::value) {
+    format = "%lld";
+  } else {
+    static_assert(std::is_same<IntType, bool>::value, "Unsupported integer type");
+  }
+
   // NOLINTNEXTLINE: C-style var-arg func.
   const auto size = std::snprintf(charDataPtr, maxCharSize + 1, format, val);
   assert(charDataPtr[size] == '\0');
