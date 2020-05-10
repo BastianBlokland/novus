@@ -85,6 +85,9 @@ After building the project you can run the tests by running `scripts/test.sh` on
 
 Note: To run the compiler and vm tests they have to be enabled and build in the configure step.
 
+Note: On windows compiler and vm tests have to be run as administrator, reason is temporary files
+are created in the system root there and most users don't have access to write there.
+
 ## Ide
 
 For basic ide support when editing `novus` source code check the `ide` directory if there is a

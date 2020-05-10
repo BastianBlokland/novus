@@ -39,18 +39,26 @@ inline auto getString(FILE* file) -> std::string {
   return result;
 }
 
+inline auto makeTmpFile() -> FILE* {
+  gsl::owner<std::FILE*> stdInFile = std::tmpfile();
+  if (stdInFile == nullptr) {
+    throw std::logic_error{"Failed to create temporary file, run tests with admin rights"};
+  }
+  return stdInFile;
+}
+
 #define CHECK_ASM(ASM, INPUT, EXPECTED)                                                            \
   {                                                                                                \
     auto assembly = ASM;                                                                           \
                                                                                                    \
     /* Open temporary files to use as stdIn and StdOut. */                                         \
-    gsl::owner<std::FILE*> stdInFile = std::tmpfile();                                             \
+    gsl::owner<std::FILE*> stdInFile = makeTmpFile();                                              \
     std::string input                = INPUT;                                                      \
     std::fwrite(input.data(), input.size(), 1, stdInFile);                                         \
     std::fflush(stdInFile);                                                                        \
     std::fseek(stdInFile, 0, SEEK_SET);                                                            \
                                                                                                    \
-    gsl::owner<std::FILE*> stdOutFile = std::tmpfile();                                            \
+    gsl::owner<std::FILE*> stdOutFile = makeTmpFile();                                             \
     auto iface = PlatformInterface{0, nullptr, stdInFile, stdOutFile, nullptr};                    \
                                                                                                    \
     run(&assembly, &iface);                                                                        \
@@ -68,7 +76,7 @@ inline auto getString(FILE* file) -> std::string {
     auto assembly = ASM;                                                                           \
                                                                                                    \
     /* Open temporary file to use as stdIn. */                                                     \
-    gsl::owner<std::FILE*> stdInFile = std::tmpfile();                                             \
+    gsl::owner<std::FILE*> stdInFile = makeTmpFile();                                              \
     std::string input                = INPUT;                                                      \
     std::fwrite(input.data(), input.size(), 1, stdInFile);                                         \
     std::fflush(stdInFile);                                                                        \
