@@ -72,19 +72,19 @@ auto ImportSources::import(const Path& file, input::Span span) const -> bool {
     }
   }
 
-  m_diags->push_back(errUnresolvedImport(m_currentSource, file, span));
+  m_diags->push_back(errUnresolvedImport(m_currentSource, file.string(), span));
   return false;
 }
 
 auto ImportSources::importFromDir(const Path& searchPath, const Path& file) const -> bool {
   const auto fullPath = searchPath / file;
-  auto fs             = std::ifstream{fullPath};
+  auto fs             = std::ifstream{fullPath.string()};
   if (!fs.good()) {
     return false;
   }
 
   m_importedSources->push_front(frontend::buildSource(
-      file.filename(),
+      file.filename().string(),
       filesystem::canonical(fullPath),
       std::istreambuf_iterator<char>{fs},
       std::istreambuf_iterator<char>{}));

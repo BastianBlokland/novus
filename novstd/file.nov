@@ -68,9 +68,4 @@ assert(
   f = fileOpen(p, FileMode.Create, FileFlags.AutoRemove);
   fileExists(p))
 
-assert(
-  p = Path("file-test4.tmp");
-  f = fileOpen(p, FileMode.Create);
-  fileRemove(p);
-  !fileExists(p))
-
+assert(!fileRemove(Path("non-existing-file")))

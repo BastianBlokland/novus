@@ -1,6 +1,10 @@
 // --- Simple snake-like commandline game
-// Note: Only works on unix systems at the moment due to usage of ansi escape sequences.
 // Demo: https://youtu.be/3JmnKoCtFiY
+//
+// This does require your terminal to support ansi escape sequences and support utf8.
+// On unix this means almost any terminal, on windows this means the new
+// 'Windows Terminal': https://github.com/microsoft/terminal and configuring your system to use
+// utf8: https://akr.am/blog/posts/using-utf-8-in-the-windows-terminal
 
 import "std.nov"
 
@@ -285,6 +289,7 @@ act setupTerminal(stream in, stream out)
 act resetTerminal(stream in, stream out)
   termCursorShow(out, true);
   termAltScreen(out, false);
+  termStyle(out, TermStyle.Reset);
   termUnsetOptions(TermOptions.NoEcho | TermOptions.NoBuffer);
   streamWrite(out, '\n');
   unsetOptions(in, StreamOptions.NoBlock)

@@ -94,7 +94,7 @@ private:
     }
     auto val = *m_input;
     ++m_input;
-    return std::move(val);
+    return val;
   }
 };
 

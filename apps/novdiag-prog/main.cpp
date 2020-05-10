@@ -1,3 +1,7 @@
+// -- Include rang before any os headers.
+#include "../rang_include.hpp"
+// --
+
 #include "CLI/CLI.hpp"
 #include "filesystem.hpp"
 #include "frontend/analysis.hpp"
@@ -6,7 +10,6 @@
 #include "input/char_escape.hpp"
 #include "input/search_paths.hpp"
 #include "opt/opt.hpp"
-#include "rang.hpp"
 #include <chrono>
 
 using Clock    = std::chrono::high_resolution_clock;
@@ -347,9 +350,9 @@ auto main(int argc, char** argv) -> int {
         rang::setControlMode(colorMode);
 
         auto absFilePath = filesystem::absolute(filePath);
-        std::ifstream fs{filePath};
+        std::ifstream fs{filePath.string()};
         exitcode =
-            run(filePath.filename(),
+            run(filePath.filename().string(),
                 absFilePath,
                 searchPaths,
                 std::istreambuf_iterator<char>{fs},

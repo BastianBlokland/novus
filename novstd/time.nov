@@ -162,7 +162,9 @@ fun /(Duration d1, Duration d2)   d1.ns / d2.ns
 fun /(Duration d1, long l)        Duration(d1.ns / l)
 fun %(Duration d1, Duration d2)   Duration(d1.ns % d2.ns)
 fun <(Duration d1, Duration d2)   d1.ns < d2.ns
+fun <=(Duration d1, Duration d2)  d1.ns <= d2.ns
 fun >(Duration d1, Duration d2)   d1.ns > d2.ns
+fun >=(Duration d1, Duration d2)  d1.ns >= d2.ns
 
 fun minDuration() Duration(0x8000_0000_0000_0000L)
 fun maxDuration() Duration(0x7FFF_FFFF_FFFF_FFFFL)
@@ -241,9 +243,11 @@ fun string(Duration d)
 
 struct Timestamp = long ns
 
-fun -(Timestamp t1, Timestamp t2) nanoseconds(t1.ns - t2.ns)
-fun <(Timestamp t1, Timestamp t2) t1.ns < t2.ns
-fun >(Timestamp t1, Timestamp t2) t1.ns > t2.ns
+fun -(Timestamp t1, Timestamp t2)   nanoseconds(t1.ns - t2.ns)
+fun <(Timestamp t1, Timestamp t2)   t1.ns < t2.ns
+fun <=(Timestamp t1, Timestamp t2)  t1.ns <= t2.ns
+fun >(Timestamp t1, Timestamp t2)   t1.ns > t2.ns
+fun >=(Timestamp t1, Timestamp t2)  t1.ns >= t2.ns
 
 // -- Actions
 
@@ -334,7 +338,7 @@ assert(min(seconds(2), minutes(3)) == seconds(2))
 assert(max(seconds(2), minutes(3)) == minutes(3))
 
 assert(timeNow() > timeEpoch())
-assert(timestamp() < timestamp())
+assert(timestamp() <= timestamp())
 
 assert(approx(float(seconds(42) + milliseconds(500)), 42.5))
 assert(approx(float(seconds(1337) + millisecond()), 1337.001))

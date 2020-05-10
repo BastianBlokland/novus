@@ -1,10 +1,13 @@
+// -- Include rang before any os headers.
+#include "../rang_include.hpp"
+// --
+
 #include "backend/generator.hpp"
 #include "filesystem.hpp"
 #include "frontend/analysis.hpp"
 #include "frontend/source.hpp"
 #include "input/search_paths.hpp"
 #include "opt/opt.hpp"
-#include "rang.hpp"
 #include "vm/exec_state.hpp"
 #include "vm/platform_interface.hpp"
 #include "vm/vm.hpp"
@@ -60,11 +63,11 @@ auto main(int argc, char** argv) noexcept -> int {
   const auto searchPaths    = input::getSearchPaths(argv);
 
   auto path = filesystem::path{argv[1]};
-  auto fs   = std::ifstream{path};
+  auto fs   = std::ifstream{path.string()};
   if (fs.good()) {
     auto absInputPath = filesystem::absolute(path);
     return run(
-        path.filename(),
+        path.filename().string(),
         filesystem::canonical(absInputPath),
         searchPaths,
         std::istreambuf_iterator<char>{fs},

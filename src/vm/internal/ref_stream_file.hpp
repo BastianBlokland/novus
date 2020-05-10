@@ -86,14 +86,14 @@ inline auto openFileStream(Allocator* alloc, StringRef* path, FileStreamMode m, 
   char const* modeStr;
   switch (m) {
   case FileStreamMode::Open:
-    modeStr = "r+be";
+    modeStr = "r+b";
     break;
   case FileStreamMode::Append:
-    modeStr = "a+be";
+    modeStr = "a+b";
     break;
   case FileStreamMode::Create:
   default:
-    modeStr = "w+be";
+    modeStr = "w+b";
     break;
   }
   gsl::owner<FILE*> filePtr = std::fopen(filePath, modeStr);

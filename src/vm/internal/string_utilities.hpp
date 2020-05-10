@@ -46,7 +46,17 @@ template <typename IntType>
   charDataPtr[resultSize] = '\0'; // Null-terminate.
   strRefAlloc.first->updateSize(convRes.ptr - charDataPtr);
 #else
-  const auto format = std::is_same<IntType, int32_t>::value ? "%d" : "%ld";
+  const char* format;
+  if constexpr (std::is_same<IntType, int>::value) {
+    format = "%d";
+  } else if constexpr (std::is_same<IntType, long>::value) {
+    format = "%ld";
+  } else if constexpr (std::is_same<IntType, long long>::value) {
+    format = "%lld";
+  } else {
+    static_assert(std::is_same<IntType, bool>::value, "Unsupported integer type");
+  }
+
   // NOLINTNEXTLINE: C-style var-arg func.
   const auto size = std::snprintf(charDataPtr, maxCharSize + 1, format, val);
   assert(charDataPtr[size] == '\0');
@@ -71,6 +81,12 @@ template <typename IntType>
     return nullptr;
   }
   auto* charDataPtr = reinterpret_cast<char*>(strRefAlloc.second);
+
+#if defined(_WIN32)
+  // By default windows will add a leading zero to pad to 3 digits in the exponent, to be consistent
+  // with unix we enable the 'two digit' mode.
+  _set_output_format(_TWO_DIGIT_EXPONENT);
+#endif
 
   // NOLINTNEXTLINE: C-style var-arg func.
   const auto size = std::snprintf(charDataPtr, charSize, "%.6g", val);

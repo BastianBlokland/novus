@@ -6,7 +6,8 @@
 
 namespace frontend::internal {
 
-using Signature = std::pair<prog::sym::TypeSet, prog::sym::TypeId>;
+using Signature   = std::pair<prog::sym::TypeSet, prog::sym::TypeId>;
+using ExprSetData = std::pair<std::vector<prog::expr::NodePtr>, prog::sym::TypeSet>;
 
 class GetExpr final : public parse::NodeVisitor {
 public:
@@ -71,11 +72,11 @@ private:
   prog::expr::NodePtr m_expr;
 
   [[nodiscard]] auto getChildExprs(const parse::Node& n, unsigned int skipAmount = 0U)
-      -> std::optional<std::pair<std::vector<prog::expr::NodePtr>, prog::sym::TypeSet>>;
+      -> std::unique_ptr<ExprSetData>;
 
   [[nodiscard]] auto getChildExprs(
       const parse::Node& n, const parse::Node* additionalNode, unsigned int skipAmount = 0U)
-      -> std::optional<std::pair<std::vector<prog::expr::NodePtr>, prog::sym::TypeSet>>;
+      -> std::unique_ptr<ExprSetData>;
 
   [[nodiscard]] auto
   getSubExpr(const parse::Node& n, prog::sym::TypeId typeHint, bool checkedConstsAccess = false)

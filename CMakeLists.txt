@@ -42,7 +42,7 @@ endif()
 
 # Older version of libstdc++ require linking against the <experimental/filesystem> library directly.
 # TODO(bastian): Investigate if there is a better way to handle this.
-if(UNIX AND NOT APPLE)
+if((UNIX AND NOT APPLE) OR MINGW)
   message(">> Add linking to stdc++fs (filesystem library)")
   link_libraries(stdc++fs)
 endif()
@@ -56,7 +56,7 @@ find_package(Threads REQUIRED)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 # Instead of a 'includes_CXX.rsp' file just pass the includes,
-# reason is that 'mingw64-w64' does not respect that file.
+# reason is that MinGW does not respect that file.
 set(CMAKE_CXX_USE_RESPONSE_FILE_FOR_INCLUDES OFF)
 
 if(LINTING)
