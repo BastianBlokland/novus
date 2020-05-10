@@ -23,34 +23,42 @@ Note this is intended as an academic exercise and not meant for production proje
 
 ## Requirements
 
-* Modern C++ compiler (Tested with `gcc 7.3.0`, `clang 9.0.0` and `apple clang 11`).
-* CMake (At least version `3.15`).
+### Linux
+
+* [CMake](https://cmake.org/) (At least version `3.15`).
+
+* Modern C++ compiler (at least c++ 17) (Tested with `gcc 7.5.0` and `clang 9.0.0`).
+
+### MacOs
+
+* [CMake](https://cmake.org/) (At least version `3.15`).
+
+* Modern C++ compiler (at least c++ 17) (Tested with `apple clang 11` and `clang 9.0.0`).
+
+### Windows
+
+* [CMake](https://cmake.org/) (At least version `3.15`).
+
+  For example with `chocolatey`: `choco install cmake`.
+
+* [MinGW](http://www.mingw.org/) (or [mingw-w64](http://mingw-w64.org/)).
+
+  Note: Either version `7.x` or `9.x`, version `8.x` has a
+[broken `std::filesystem` library impl](https://sourceforge.net/p/mingw-w64/bugs/737/).
+
+  For example with `chocolatey`: `choco install mingw --version=7.3.0`. Unfortunately `9.x` is at
+  the time of writing not yet on `chocolatey`, but the [nuwen](https://nuwen.net/mingw.html)
+  distribution ships it.
 
 ## Configure
 
-Before building you have to configure the project, either by running `scripts/configure.sh` or
-executing one of the presets in the root Makefile `make configure.debug` or `make configure.release`.
-
-By running the `scripts/configure.sh` script manually you have more control:
-```
-Options:
--t,--type     Build type, options: Debug, Release (default)
--d,--dir      Build directory, default: 'build'
---tests       Include compiler and runtime tests
---lint        Enable source linter
-```
+Before building you have to configure the project, run `scripts/configure.sh` on unix or
+`scripts/configure.ps1` on windows.
 
 ## Building
 
-After configuring the project can be build by running `scripts/build.sh` or by running the preset
-in the root Makefile `make build`.
-
-By running the `scripts/build.sh` script manually you have more control:
-```
-Options:
--t,--threads    Number of threads to use, defaults to number of processors
--d,--dir        Build directory, default: 'build'
-```
+After configuring the project can be build by running `scripts/build.sh` on unix or
+`scripts/build.ps1` on windows.
 
 Build output can be found in the `bin` directory.
 
@@ -74,15 +82,15 @@ While there is no debugger (yet?) for `novus` programs, there are a few diagnost
 
 ## Testing
 
-After building the project you can run the tests by running `scripts/test.sh`, or by running the
-preset in the root Makefile `make test`.
+After building the project you can run the tests by running `scripts/test.sh` on unix or
+`scripts/test.ps1` on windows.
 
 Note: To run the compiler and vm tests they have to be enabled and build in the configure step.
 
 ## Ide
 
-For basic ide support when editing `novus` source code check the `ide` directory if there is a plugin
-for your ide.
+For basic ide support when editing `novus` source code check the `ide` directory if there is a
+plugin for your ide.
 
 For ide support when editing the compiler and vm:
 * Configure the project: `make configure.debug`.
