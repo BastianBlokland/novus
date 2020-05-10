@@ -41,9 +41,7 @@ Note this is intended as an academic exercise and not meant for production proje
 
   For example with `chocolatey`: `choco install cmake`.
 
-* [MinGW](http://www.mingw.org/) (or [mingw-w64](http://mingw-w64.org/)).
-
-  Note: Either version `7.x` or `9.x`, version `8.x` has a
+* [MinGW-w64](http://mingw-w64.org/). Note: Either version `7.x` or `9.x`, version `8.x` has a
 [broken `std::filesystem` library impl](https://sourceforge.net/p/mingw-w64/bugs/737/).
 
   For example with `chocolatey`: `choco install mingw --version=7.3.0`. Unfortunately `9.x` is at

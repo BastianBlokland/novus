@@ -2,9 +2,6 @@ name: build-test
 
 on: [push]
 
-env:
-  BUILD_TYPE: Release
-
 jobs:
   build:
     name: ${{matrix.config.image}}-${{matrix.config.arch}}-${{matrix.config.compiler}}
@@ -39,6 +36,14 @@ jobs:
             cc: clang,
             cxx: clang++
           }
+        - {
+            image: windows-2019,
+            arch: x86_64,
+            os: windows,
+            compiler: mingw-w64-7,
+            cc: gcc,
+            cxx: g++
+          }
     env:
       CC: ${{matrix.config.cc}}
       CXX: ${{matrix.config.cxx}}
@@ -64,14 +69,37 @@ jobs:
         ln -s "${llvm9Path}/bin/clang-tidy" "/usr/local/bin/clang-tidy-9"
         echo "clang-tidy-9 --version:"; clang-tidy-9 --version
 
-    - name: configure
-      run: ./scripts/configure.sh --type $BUILD_TYPE --tests --lint
+    - name: install-windows
+      if: matrix.config.os == 'windows'
+      run: |
+        echo "Installing mingw-w64-7"
+        choco install mingw --version=7.3.0 --force
+        echo "g++.exe --version:"
+        g++.exe --version
 
-    - name: build
+    - name: configure unix
+      if: matrix.config.os != 'windows'
+      run: ./scripts/configure.sh --type Release --tests --lint
+
+    - name: configure windows
+      if: matrix.config.os == 'windows'
+      run: pwsh .\scripts\configure.ps1 -Type Release -Tests
+
+    - name: build unix
+      if: matrix.config.os != 'windows'
       run: ./scripts/build.sh
 
-    - name: test
+    - name: build windows
+      if: matrix.config.os == 'windows'
+      run: pwsh .\scripts\build.ps1
+
+    - name: test unix
+      if: matrix.config.os != 'windows'
       run: ./scripts/test.sh
+
+    - name: test windows
+      if: matrix.config.os == 'windows'
+      run: pwsh .\scripts\test.ps1
 
     - name: archive
       uses: actions/upload-artifact@v1
