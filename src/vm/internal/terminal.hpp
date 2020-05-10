@@ -110,7 +110,7 @@ inline auto termSetOpts(TermOpts opts) -> bool {
     t.c_lflag &= ~ICANON;
   }
 
-  return !tcsetattr(0, TCSANOW, &t) != 0);
+  return !tcsetattr(0, TCSANOW, &t);
 
 #endif
 }
