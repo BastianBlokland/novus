@@ -3,6 +3,7 @@
 // --
 
 #include "CLI/CLI.hpp"
+#include "filesystem.hpp"
 #include "get_color.hpp"
 #include "input/info.hpp"
 #include "lex/lexer.hpp"
@@ -117,12 +118,13 @@ auto main(int argc, char** argv) -> int {
   analyzeCmd->add_flag("!--no-output", printOutput, "Skip printing the nodes");
 
   // Parse input file.
-  std::string filePath;
+  filesystem::path filePath;
   auto analyzeFileCmd =
       app.add_subcommand("analyzefile", "Parse all characters in a file")->callback([&]() {
         rang::setControlMode(colorMode);
 
-        std::ifstream fs{filePath};
+        auto absFilePath = filesystem::absolute(filePath);
+        std::ifstream fs{filePath.string()};
         run(std::istreambuf_iterator<char>{fs}, std::istreambuf_iterator<char>{}, printOutput);
       });
   analyzeFileCmd->add_option("file", filePath, "Path to file")

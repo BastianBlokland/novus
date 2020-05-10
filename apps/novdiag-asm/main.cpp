@@ -187,7 +187,7 @@ auto main(int argc, char** argv) -> int {
         rang::setControlMode(colorMode);
 
         auto absFilePath = filesystem::absolute(filePath);
-        std::ifstream fs{filePath};
+        std::ifstream fs{filePath.string()};
         exitcode =
             run(filePath.filename().string(),
                 absFilePath,

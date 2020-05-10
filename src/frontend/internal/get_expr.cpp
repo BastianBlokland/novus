@@ -230,7 +230,7 @@ auto GetExpr::visit(const parse::CallExprNode& n) -> void {
 
   // modifyCall is a mechanism for the frontend to adjust the arguments to create some exceptions,
   // for example it allows adding extra arguments.
-  modifyCall(m_ctx, nameToken, n, &args.value());
+  modifyCall(m_ctx, nameToken, n, args.get());
 
   const auto possibleFuncs = getFunctionsInclConversions(nameToken, typeParams, args->second);
 
@@ -706,13 +706,14 @@ auto GetExpr::visit(const parse::UnionDeclStmtNode & /*unused*/) -> void {
 }
 
 auto GetExpr::getChildExprs(const parse::Node& n, unsigned int skipAmount)
-    -> std::optional<std::pair<std::vector<prog::expr::NodePtr>, prog::sym::TypeSet>> {
+    -> std::unique_ptr<ExprSetData> {
   return getChildExprs(n, nullptr, skipAmount);
 }
 
 auto GetExpr::getChildExprs(
     const parse::Node& n, const parse::Node* additionalNode, unsigned int skipAmount)
-    -> std::optional<std::pair<std::vector<prog::expr::NodePtr>, prog::sym::TypeSet>> {
+    -> std::unique_ptr<ExprSetData> {
+
   auto isValid  = true;
   auto argTypes = std::vector<prog::sym::TypeId>{};
   auto args     = std::vector<prog::expr::NodePtr>{};
@@ -741,11 +742,11 @@ auto GetExpr::getChildExprs(
     isValid = false;
   }
   if (!isValid) {
-    return std::nullopt;
+    return nullptr;
   }
 
   auto argTypeSet = prog::sym::TypeSet{std::move(argTypes)};
-  return std::make_pair(std::move(args), std::move(argTypeSet));
+  return std::make_unique<ExprSetData>(std::make_pair(std::move(args), std::move(argTypeSet)));
 }
 
 auto GetExpr::getSubExpr(const parse::Node& n, prog::sym::TypeId typeHint, bool checkedConstsAccess)

@@ -63,7 +63,7 @@ auto main(int argc, char** argv) noexcept -> int {
   const auto searchPaths    = input::getSearchPaths(argv);
 
   auto path = filesystem::path{argv[1]};
-  auto fs   = std::ifstream{path};
+  auto fs   = std::ifstream{path.string()};
   if (fs.good()) {
     auto absInputPath = filesystem::absolute(path);
     return run(

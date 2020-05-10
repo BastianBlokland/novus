@@ -78,7 +78,7 @@ auto ImportSources::import(const Path& file, input::Span span) const -> bool {
 
 auto ImportSources::importFromDir(const Path& searchPath, const Path& file) const -> bool {
   const auto fullPath = searchPath / file;
-  auto fs             = std::ifstream{fullPath};
+  auto fs             = std::ifstream{fullPath.string()};
   if (!fs.good()) {
     return false;
   }
