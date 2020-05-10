@@ -10,19 +10,9 @@
 
 namespace vm::internal {
 
-#if defined(_WIN32)
-
-inline auto setFileOpts(FILE* /*unused*/, StreamOpts /*unused*/) noexcept -> bool {
-  // TODO(bastian): Implement stream options for windows.
-  return false;
-}
-
-inline auto unsetFileOpts(FILE* /*unused*/, StreamOpts /*unused*/) noexcept -> bool {
-  // TODO(bastian): Implement stream options for windows.
-  return false;
-}
-
-#else
+// Unfortunately on windows file handles are not as generic as on unix so things
+// like setting them to 'non-blocking' are not possible.
+#if !defined(_WIN32)
 
 inline auto setFileOpts(FILE* filePtr, StreamOpts opts) noexcept -> bool {
   // Get the current options of the file descriptor.
