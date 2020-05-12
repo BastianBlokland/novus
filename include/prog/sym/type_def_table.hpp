@@ -21,7 +21,7 @@ public:
 
   TypeDefTable()                            = default;
   TypeDefTable(const TypeDefTable& rhs)     = delete;
-  TypeDefTable(TypeDefTable&& rhs) noexcept = default;
+  TypeDefTable(TypeDefTable&& rhs)          = default;
   ~TypeDefTable()                           = default;
 
   auto operator=(const TypeDefTable& rhs) -> TypeDefTable& = delete;

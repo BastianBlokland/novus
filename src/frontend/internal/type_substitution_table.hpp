@@ -10,7 +10,7 @@ class TypeSubstitutionTable final {
 public:
   TypeSubstitutionTable()                                     = default;
   TypeSubstitutionTable(const TypeSubstitutionTable& rhs)     = delete;
-  TypeSubstitutionTable(TypeSubstitutionTable&& rhs) noexcept = default;
+  TypeSubstitutionTable(TypeSubstitutionTable&& rhs)          = default;
   ~TypeSubstitutionTable()                                    = default;
 
   auto operator=(const TypeSubstitutionTable& rhs) -> TypeSubstitutionTable& = delete;

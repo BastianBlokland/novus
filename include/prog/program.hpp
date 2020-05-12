@@ -42,9 +42,9 @@ public:
   using ExecStmtIterator = std::vector<sym::ExecStmt>::const_iterator;
 
   Program();
-  Program(const Program& rhs)     = delete;
-  Program(Program&& rhs) noexcept = default;
-  ~Program()                      = default;
+  Program(const Program& rhs) = delete;
+  Program(Program&& rhs)      = default;
+  ~Program()                  = default;
 
   auto operator=(const Program& rhs) -> Program& = delete;
   auto operator=(Program&& rhs) noexcept -> Program& = default;

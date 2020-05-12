@@ -328,7 +328,7 @@ auto Assembler::addLitString(const std::string& string) -> uint32_t {
   if (itr != m_litStringLookup.end()) {
     return itr->second;
   }
-  const auto id = m_litStrings.size();
+  const uint32_t id = m_litStrings.size();
   m_litStrings.push_back(string);
   m_litStringLookup.insert({string, id});
   return id;
@@ -380,7 +380,7 @@ auto Assembler::writeIpOffset(std::string label) -> void {
   throwIfClosed();
   // To allow writing a ipOffset before we've written those instructions we write a dummy offset and
   // save the location so we can patch this later with the real ipOffset.
-  m_labelTargets.emplace_back(std::move(label), m_instructions.size());
+  m_labelTargets.emplace_back(std::move(label), static_cast<uint32_t>(m_instructions.size()));
   m_instructions.insert(m_instructions.end(), 4, std::numeric_limits<uint8_t>::max());
 }
 

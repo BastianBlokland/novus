@@ -9,10 +9,10 @@ class FuncDef final {
   friend class FuncDefTable;
 
 public:
-  FuncDef()                       = delete;
-  FuncDef(const FuncDef& rhs)     = delete;
-  FuncDef(FuncDef&& rhs) noexcept = default;
-  ~FuncDef()                      = default;
+  FuncDef()                   = delete;
+  FuncDef(const FuncDef& rhs) = delete;
+  FuncDef(FuncDef&& rhs)      = default;
+  ~FuncDef()                  = default;
 
   auto operator=(const FuncDef& rhs) -> FuncDef& = delete;
   auto operator=(FuncDef&& rhs) noexcept -> FuncDef& = delete;

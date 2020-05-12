@@ -10,6 +10,10 @@
 #include <windows.h>
 #endif
 
+#if defined(_MSC_VER)
+#define PATH_MAX MAX_PATH 
+#endif
+
 namespace input {
 
 static auto addExecutableParent(filesystem::path p, std::vector<filesystem::path>* paths) noexcept {
