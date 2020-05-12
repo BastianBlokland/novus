@@ -9,6 +9,11 @@
   Build type. Possible values:
   - Debug
   - Release
+.PARAMETER Gen
+  Default: MinGW
+  Build system to generate. Possible values:
+  - MinGW
+  - VS2019
 .PARAMETER Dir
   Default: build
   Build directory.
@@ -21,6 +26,8 @@
 param(
   [ValidateSet("Debug", "Release", IgnoreCase = $true)]
   [string]$Type = "Release",
+  [ValidateSet("MinGW", "VS2019", IgnoreCase = $true)]
+  [string]$Gen = "MinGW",
   [string]$Dir = "build",
   [switch]$Tests,
   [switch]$Lint
@@ -42,7 +49,15 @@ function Fail($str) {
   exit 1
 }
 
-function ConfigureProj([string] $Type, [string] $Dir, [bool] $Tests, [bool] $Lint) {
+function MapToCMakeGen([string] $Gen) {
+  switch ($Gen) {
+    "MinGW" { "MinGW Makefiles"; break }
+    "VS2019" { "Visual Studio 16 2019"; break }
+    default { Fail "Unsupported generator" }
+  }
+}
+
+function ConfigureProj([string] $Type, [string] $Gen, [string] $Dir, [bool] $Tests, [bool] $Lint) {
   if ([string]::IsNullOrEmpty($Dir)) {
     Fail "No target directory provided"
   }
@@ -60,7 +75,7 @@ function ConfigureProj([string] $Type, [string] $Dir, [bool] $Tests, [bool] $Lin
   PInfo "Begin configuring build directory '$Dir' using cmake"
 
   cmake.exe -B "$Dir" `
-    -G "MinGW Makefiles" `
+    -G "$(MapToCMakeGen $Gen)" `
     -DCMAKE_BUILD_TYPE="$Type" `
     -DBUILD_TESTING="$($Tests ? "On" : "Off")" `
     -DLINTING="$($Lint ? "On" : "Off")"
@@ -69,5 +84,5 @@ function ConfigureProj([string] $Type, [string] $Dir, [bool] $Tests, [bool] $Lin
 }
 
 # Run configuration.
-ConfigureProj $Type $Dir $Tests $Lint
+ConfigureProj $Type $Gen $Dir $Tests $Lint
 exit 0
