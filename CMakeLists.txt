@@ -23,6 +23,7 @@ message("-- Generator: ${CMAKE_GENERATOR}")
 
 # Output executables to bin dir.
 set(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/bin)
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY $<1:${PROJECT_SOURCE_DIR}/bin>)
 
 # Enable 'CTest' testing.
 message(">> Enable CTest dependency")
@@ -32,7 +33,7 @@ enable_testing()
 # Global compiler flags.
 if(MSVC)
   message(">> Setting msvc compiler flags")
-  set(CMAKE_CXX_FLAGS "/std:c++17")
+  set(CMAKE_CXX_FLAGS "/std:c++17 /WX /wd4530 /wd26451")
 else()
   message(">> Setting unix compiler flags")
   set(CXX_FLAGS_SHARED "-std=c++17 -Werror -Wall -Wextra -fno-strict-aliasing")

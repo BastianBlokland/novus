@@ -23,7 +23,7 @@ public:
 
   FuncDeclTable()                             = default;
   FuncDeclTable(const FuncDeclTable& rhs)     = delete;
-  FuncDeclTable(FuncDeclTable&& rhs) noexcept = default;
+  FuncDeclTable(FuncDeclTable&& rhs)          = default;
   ~FuncDeclTable()                            = default;
 
   auto operator=(const FuncDeclTable& rhs) -> FuncDeclTable& = delete;

@@ -82,7 +82,7 @@ template <typename IntType>
   }
   auto* charDataPtr = reinterpret_cast<char*>(strRefAlloc.second);
 
-#if defined(_WIN32)
+#if defined(_WIN32) && (!defined(_MSC_VER) || _MSC_VER < 1400)
   // By default windows will add a leading zero to pad to 3 digits in the exponent, to be consistent
   // with unix we enable the 'two digit' mode.
   _set_output_format(_TWO_DIGIT_EXPONENT);

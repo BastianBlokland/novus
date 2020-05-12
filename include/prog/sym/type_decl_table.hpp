@@ -13,7 +13,7 @@ public:
 
   TypeDeclTable()                             = default;
   TypeDeclTable(const TypeDeclTable& rhs)     = delete;
-  TypeDeclTable(TypeDeclTable&& rhs) noexcept = default;
+  TypeDeclTable(TypeDeclTable&& rhs)          = default;
   ~TypeDeclTable()                            = default;
 
   auto operator=(const TypeDeclTable& rhs) -> TypeDeclTable& = delete;

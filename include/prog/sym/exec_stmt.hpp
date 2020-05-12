@@ -14,7 +14,7 @@ class ExecStmt final {
 public:
   ExecStmt()                        = delete;
   ExecStmt(const ExecStmt& rhs)     = delete;
-  ExecStmt(ExecStmt&& rhs) noexcept = default;
+  ExecStmt(ExecStmt&& rhs)          = default;
   ~ExecStmt()                       = default;
 
   auto operator=(const ExecStmt& rhs) -> ExecStmt& = delete;

@@ -14,7 +14,7 @@ public:
 
   FuncDefTable()                            = default;
   FuncDefTable(const FuncDefTable& rhs)     = delete;
-  FuncDefTable(FuncDefTable&& rhs) noexcept = default;
+  FuncDefTable(FuncDefTable&& rhs)          = default;
   ~FuncDefTable()                           = default;
 
   auto operator=(const FuncDefTable& rhs) -> FuncDefTable& = delete;

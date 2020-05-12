@@ -29,18 +29,18 @@ function Fail($str) {
   exit 1
 }
 
-function TestProj([string] $Dir) {
-  if ([string]::IsNullOrEmpty($Dir)) {
+function TestProj([string] $dir) {
+  if ([string]::IsNullOrEmpty($dir)) {
     Fail "No build directory provided"
   }
 
   # Verify the build directory exists.
-  if (!(Test-Path $Dir)) {
+  if (!(Test-Path $dir)) {
     Fail "Build directory is missing, please run 'configure.ps1' first"
   }
 
   # Verify Makefile in build directory exists.
-  if (!(Test-Path $Dir)) {
+  if (!(Test-Path $dir)) {
     Fail "No 'Makefile' found in build directory, please run 'configure.ps1' first"
   }
 
@@ -51,7 +51,7 @@ function TestProj([string] $Dir) {
 
   PInfo "Begin testing using ctest"
 
-  Push-Location "$Dir"
+  Push-Location "$dir"
   ctest.exe --output-on-failure
   Pop-Location
 

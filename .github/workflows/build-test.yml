@@ -41,8 +41,14 @@ jobs:
             arch: x86_64,
             os: windows,
             compiler: mingw-w64-7,
-            cc: gcc,
-            cxx: g++
+            generator: MinGW
+          }
+        - {
+            image: windows-2019,
+            arch: x86_64,
+            os: windows,
+            compiler: vs2019,
+            generator: vs2019
           }
     env:
       CC: ${{matrix.config.cc}}
@@ -69,35 +75,35 @@ jobs:
         ln -s "${llvm9Path}/bin/clang-tidy" "/usr/local/bin/clang-tidy-9"
         echo "clang-tidy-9 --version:"; clang-tidy-9 --version
 
-    - name: install-windows
-      if: matrix.config.os == 'windows'
+    - name: install-windows-mingw
+      if: matrix.config.os == 'windows' && matrix.config.generator == 'MinGW'
       run: |
         echo "Installing mingw-w64-7"
         choco install mingw --version=7.3.0 --force
         echo "g++.exe --version:"
         g++.exe --version
 
-    - name: configure unix
+    - name: configure-unix
       if: matrix.config.os != 'windows'
       run: ./scripts/configure.sh --type Release --tests --lint
 
-    - name: configure windows
+    - name: configure-windows
       if: matrix.config.os == 'windows'
-      run: pwsh .\scripts\configure.ps1 -Type Release -Tests
+      run: pwsh .\scripts\configure.ps1 -Gen ${{matrix.config.generator}} -Type Release -Tests
 
-    - name: build unix
+    - name: build-unix
       if: matrix.config.os != 'windows'
       run: ./scripts/build.sh
 
-    - name: build windows
+    - name: build-windows
       if: matrix.config.os == 'windows'
       run: pwsh .\scripts\build.ps1
 
-    - name: test unix
+    - name: test-unix
       if: matrix.config.os != 'windows'
       run: ./scripts/test.sh
 
-    - name: test windows
+    - name: test-windows
       if: matrix.config.os == 'windows'
       run: pwsh .\scripts\test.ps1
 

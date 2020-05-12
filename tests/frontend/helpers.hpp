@@ -6,8 +6,12 @@
 
 namespace frontend {
 
+inline auto buildSource(std::string input) {
+  return buildSource("test", std::nullopt, input.begin(), input.end());
+}
+
 #define SRC(INPUT)                                                                                 \
-  buildSource("test", std::nullopt, std::string{INPUT}.begin(), std::string{INPUT}.end())
+  buildSource(std::string{INPUT})
 
 #define ANALYZE(INPUT) analyze(SRC(INPUT))
 
