@@ -65,7 +65,7 @@ function BuildProjMSBuild([int] $threads, [string] $dir) {
   PInfo "Begin building using MSBuild on $Threads threads"
 
   Push-Location "$dir"
-  & "$msbuildPath" -noLogo -maxCpuCount:$threads Novus.sln
+  & "$msbuildPath" -noLogo -maxCpuCount:$threads Novus.sln -p:Configuration=Release
   Pop-Location
 
   # Msbuild creates extra empty directores in the output directory, we remove those as it
