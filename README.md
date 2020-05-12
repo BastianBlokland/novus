@@ -41,6 +41,11 @@ Note this is intended as an academic exercise and not meant for production proje
 
   For example with `chocolatey`: `choco install cmake`.
 
+Building can either be done using MinGW (windows port of Gcc and related tooling) or
+Visual Studio (msvc).
+
+#### MinGW
+
 * [MinGW-w64](http://mingw-w64.org/). Note: Either version `7.x` or `9.x`, version `8.x` has a
 [broken `std::filesystem` library impl](https://sourceforge.net/p/mingw-w64/bugs/737/).
 
@@ -48,10 +53,24 @@ Note this is intended as an academic exercise and not meant for production proje
   the time of writing not yet on `chocolatey`, but the [nuwen](https://nuwen.net/mingw.html)
   distribution ships it.
 
+### Visual Studio
+
+* Tested with Visual Studio 2019 (make sure the c++ tooling is installed).
+
+* For command-line building install `vswhere` (https://github.com/microsoft/vswhere).
+
+  For example with `chocolatey`: `choco install vswhere`.
+
 ## Configure
 
 Before building you have to configure the project, run `scripts/configure.sh` on unix or
 `scripts/configure.ps1` on windows.
+
+For Visual Studio run `scripts/configure.ps1 -Gen VS2019`, after which the Visual Studio project
+can be found in the `build` directory.
+
+On unix run `scripts/configure.sh --help` for a listing of options, on windows:
+`Help scripts/configure.ps1`
 
 ## Building
 

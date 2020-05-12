@@ -49,22 +49,22 @@ function Fail($str) {
   exit 1
 }
 
-function MapToCMakeGen([string] $Gen) {
-  switch ($Gen) {
+function MapToCMakeGen([string] $gen) {
+  switch ($gen) {
     "MinGW" { "MinGW Makefiles"; break }
     "VS2019" { "Visual Studio 16 2019"; break }
     default { Fail "Unsupported generator" }
   }
 }
 
-function ConfigureProj([string] $Type, [string] $Gen, [string] $Dir, [bool] $Tests, [bool] $Lint) {
-  if ([string]::IsNullOrEmpty($Dir)) {
+function ConfigureProj([string] $type, [string] $gen, [string] $dir, [bool] $tests, [bool] $lint) {
+  if ([string]::IsNullOrEmpty($dir)) {
     Fail "No target directory provided"
   }
 
   # Create target directory if it doesn't exist yet.
-  if (!(Test-Path $Dir)) {
-    New-Item -ItemType Directory -Path $Dir
+  if (!(Test-Path $dir)) {
+    New-Item -ItemType Directory -Path $dir
   }
 
   # Verify that cmake is present on path.
@@ -72,15 +72,15 @@ function ConfigureProj([string] $Type, [string] $Gen, [string] $Dir, [bool] $Tes
     Fail "'cmake.exe' not found on path, it is required"
   }
 
-  PInfo "Begin configuring build directory '$Dir' using cmake"
+  PInfo "Begin configuring build directory '$dir' using cmake"
 
-  cmake.exe -B "$Dir" `
-    -G "$(MapToCMakeGen $Gen)" `
-    -DCMAKE_BUILD_TYPE="$Type" `
-    -DBUILD_TESTING="$($Tests ? "On" : "Off")" `
-    -DLINTING="$($Lint ? "On" : "Off")"
+  cmake.exe -B "$dir" `
+    -G "$(MapToCMakeGen $gen)" `
+    -DCMAKE_BUILD_TYPE="$type" `
+    -DBUILD_TESTING="$($tests ? "On" : "Off")" `
+    -DLINTING="$($lint ? "On" : "Off")"
 
-  PInfo "Succesfully configured build directory '$Dir'"
+  PInfo "Succesfully configured build directory '$dir'"
 }
 
 # Run configuration.
