@@ -80,8 +80,7 @@ function ConfigureProj([string] $type, [string] $gen, [string] $dir, [bool] $tes
     -DBUILD_TESTING="$($tests ? "On" : "Off")" `
     -DLINTING="$($lint ? "On" : "Off")"
 
-  $cmakeResult = $?
-  if ($cmakeResult -ne 0) {
+  if ($LASTEXITCODE -ne 0) {
     Fail "Configure failed"
   }
 

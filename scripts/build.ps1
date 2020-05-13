@@ -44,7 +44,7 @@ function BuildProjMake([int] $threads, [string] $dir) {
 
   Push-Location "$dir"
   mingw32-make.exe -j "$threads"
-  $makeResult = $?
+  $makeResult = $LASTEXITCODE
   Pop-Location
 
   if ($makeResult -ne 0) {
@@ -71,7 +71,7 @@ function BuildProjMSBuild([int] $threads, [string] $dir) {
 
   Push-Location "$dir"
   & "$msbuildPath" -noLogo -maxCpuCount:$threads Novus.sln -p:Configuration=Release
-  $msbuildResult = $?
+  $msbuildResult = $LASTEXITCODE
   Pop-Location
 
   # Msbuild creates extra empty directores in the output directory, we remove those as it

@@ -53,7 +53,7 @@ function TestProj([string] $dir) {
 
   Push-Location "$dir"
   ctest.exe --output-on-failure
-  $ctestResult = $?
+  $ctestResult = $LASTEXITCODE
   Pop-Location
 
   if ($ctestResult -ne 0) {
