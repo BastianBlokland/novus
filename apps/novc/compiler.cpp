@@ -35,7 +35,7 @@ auto compile(Options options) -> bool {
   // Load the source file.
   const auto absSrcPath = filesystem::canonical(filesystem::absolute(options.srcPath));
   auto srcFilestream    = std::ifstream{absSrcPath.string()};
-  if (srcFilestream.bad()) {
+  if (!srcFilestream.good()) {
     msgHeader(std::cerr) << rang::style::bold << rang::bg::red << "Failed to read source file\n"
                          << rang::style::reset;
     return false;
@@ -45,7 +45,7 @@ auto compile(Options options) -> bool {
 
   // Parse the source.
   const auto src = frontend::buildSource(
-      absSrcPath.filename(),
+      absSrcPath.filename().string(),
       absSrcPath,
       std::istreambuf_iterator<char>{srcFilestream},
       std::istreambuf_iterator<char>{});
@@ -111,8 +111,8 @@ auto compile(Options options) -> bool {
   infHeader(std::cout) << "Instructions: " << asmOutput.first.getInstructions().size() << '\n';
 
   // Write assembly to disk.
-  auto destFilestream = std::ofstream{options.destPath.string()};
-  if (destFilestream.bad()) {
+  auto destFilestream = std::ofstream{options.destPath.string(), std::ios::binary};
+  if (!destFilestream.good()) {
     msgHeader(std::cerr) << rang::style::bold << rang::bg::red << "Failed to write to output path\n"
                          << rang::style::reset;
     return false;

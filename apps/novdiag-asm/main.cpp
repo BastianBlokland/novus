@@ -214,7 +214,7 @@ auto main(int argc, char** argv) -> int {
         rang::setControlMode(colorMode);
 
         auto absFilePath = filesystem::absolute(filePath);
-        std::ifstream fs{filePath.string()};
+        std::ifstream fs{filePath.string(), std::ios::binary};
         if (absFilePath.extension() == ".nova") {
           exitcode = runFromAssembly(
               std::istreambuf_iterator<char>{fs}, std::istreambuf_iterator<char>{}, printOutput);

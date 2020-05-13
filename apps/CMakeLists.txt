@@ -37,6 +37,18 @@ target_link_libraries(novc PRIVATE backend)
 target_link_libraries(novc PRIVATE novasm)
 target_link_libraries(novc PRIVATE opt)
 
+# Runtime.
+message(">> Configuring novrt executable")
+add_executable(novrt novrt/main.cpp)
+target_compile_features(novrt PUBLIC cxx_std_17)
+if(MSVC)
+  target_compile_options(novrt PUBLIC /GR-)
+else()
+  target_compile_options(novrt PUBLIC -fno-exceptions -fno-rtti)
+endif()
+target_link_libraries(novrt PRIVATE vm)
+target_link_libraries(novrt PRIVATE novasm)
+
 # Evaluator.
 message(">> Configuring nove executable")
 add_executable(nove nove/main.cpp)

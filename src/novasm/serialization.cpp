@@ -79,11 +79,11 @@ static auto readUInt16(InputItr& itr, InputEndItr end) -> std::optional<uint16_t
   if (itr == end) {
     return std::nullopt;
   }
-  auto a = *itr++;
+  auto a = static_cast<uint8_t>(*itr++);
   if (itr == end) {
     return std::nullopt;
   }
-  auto b = *itr++;
+  auto b = static_cast<uint8_t>(*itr++);
   return static_cast<uint16_t>(a) | (static_cast<uint16_t>(b) << 8U);
 }
 
@@ -92,19 +92,19 @@ static auto readUInt32(InputItr& itr, InputEndItr end) -> std::optional<uint32_t
   if (itr == end) {
     return std::nullopt;
   }
-  auto a = *itr++;
+  auto a = static_cast<uint8_t>(*itr++);
   if (itr == end) {
     return std::nullopt;
   }
-  auto b = *itr++;
+  auto b = static_cast<uint8_t>(*itr++);
   if (itr == end) {
     return std::nullopt;
   }
-  auto c = *itr++;
+  auto c = static_cast<uint8_t>(*itr++);
   if (itr == end) {
     return std::nullopt;
   }
-  auto d = *itr++;
+  auto d = static_cast<uint8_t>(*itr++);
   return static_cast<uint32_t>(a) | (static_cast<uint32_t>(b) << 8U) |
       (static_cast<uint32_t>(c) << 16U) | (static_cast<uint32_t>(d) << 24U);
 }

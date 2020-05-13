@@ -78,16 +78,29 @@ After configuring the project can be build by running `scripts/build.sh` on unix
 `scripts/build.ps1` on windows.
 
 Build output can be found in the `bin` directory.
+For more convenience you can add the `bin` directory it to your `PATH`.
 
-## Running
+## Building novus source code
 
-To run `novus` source code you can either pass the source straight to the evaluator:
+Novus source (`.nov`) can be compiled into novus assembly (`.nova`) using the `novc` executable.
+
+Example: `./bin/novc examples/fizzbuzz.nov`. The output can be found at `examples/fizzbuzz.nova`.
+
+## Running novus assembly
+
+Novus assembly (`.nova`) can be run in the novus runtime (`novrt`).
+
+Example: `./bin/novrt examples/fizzbuzz.nova`.
+
+## Evaluator
+
+Alternatively you can use the `nove` (novus evaluator) to combine the compilation and running.
+
+You can either pass the source straight to the evaluator:
 `./bin/nove 'print(pow(42, 1.337))'`.
 
 or give a `.nov` source file to the evaluator:
 `./bin/nove examples/fizzbuzz.nov`.
-
-For more convenience you can add the `bin` directory it to your `PATH`.
 
 ## Debugging
 
