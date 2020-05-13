@@ -44,7 +44,12 @@ function BuildProjMake([int] $threads, [string] $dir) {
 
   Push-Location "$dir"
   mingw32-make.exe -j "$threads"
+  $makeResult = $?
   Pop-Location
+
+  if ($makeResult -ne 0) {
+    Fail "Build failed"
+  }
 
   PInfo "Succesfully finished build"
 }
@@ -66,12 +71,17 @@ function BuildProjMSBuild([int] $threads, [string] $dir) {
 
   Push-Location "$dir"
   & "$msbuildPath" -noLogo -maxCpuCount:$threads Novus.sln -p:Configuration=Release
+  $msbuildResult = $?
   Pop-Location
 
   # Msbuild creates extra empty directores in the output directory, we remove those as it
   # just clutters up the output.
   Remove-Item "$dir\..\bin\Debug" -Force -ErrorAction Ignore
   Remove-Item "$dir\..\bin\Release" -Force -ErrorAction Ignore
+
+  if ($msbuildResult -ne 0) {
+    Fail "Build failed"
+  }
 
   PInfo "Succesfully finished build"
 }

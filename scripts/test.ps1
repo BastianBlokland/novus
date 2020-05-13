@@ -53,7 +53,12 @@ function TestProj([string] $dir) {
 
   Push-Location "$dir"
   ctest.exe --output-on-failure
+  $ctestResult = $?
   Pop-Location
+
+  if ($ctestResult -ne 0) {
+    Fail "Test failed"
+  }
 
   PInfo "Succesfully finished testing"
 }
