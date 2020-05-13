@@ -52,7 +52,6 @@ public:
   [[nodiscard]] auto beginTypeDecls() const -> TypeDeclIterator { return m_typeDecls.begin(); }
   [[nodiscard]] auto endTypeDecls() const -> TypeDeclIterator { return m_typeDecls.end(); }
 
-  [[nodiscard]] auto getFuncCount() const -> unsigned int { return m_funcDecls.getFuncCount(); }
   [[nodiscard]] auto beginFuncDecls() const -> FuncDeclIterator { return m_funcDecls.begin(); }
   [[nodiscard]] auto endFuncDecls() const -> FuncDeclIterator { return m_funcDecls.end(); }
 
@@ -64,6 +63,10 @@ public:
 
   [[nodiscard]] auto beginExecStmts() const -> ExecStmtIterator { return m_execStmts.begin(); }
   [[nodiscard]] auto endExecStmts() const -> ExecStmtIterator { return m_execStmts.end(); }
+
+  [[nodiscard]] auto getTypeCount() const -> unsigned int { return m_typeDecls.getCount(); }
+  [[nodiscard]] auto getFuncCount() const -> unsigned int { return m_funcDecls.getCount(); }
+  [[nodiscard]] auto getExecStmtCount() const -> unsigned int { return m_execStmts.size(); }
 
   [[nodiscard]] auto getInt() const noexcept -> sym::TypeId { return m_int; }
   [[nodiscard]] auto getLong() const noexcept -> sym::TypeId { return m_long; }

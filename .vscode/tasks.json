@@ -22,7 +22,7 @@
       "command": "${workspaceFolder}/scripts/watch_nov.sh",
       "args": [
         "${workspaceFolder}",
-        "${workspaceFolder}/bin/nove"
+        "${workspaceFolder}/bin/novc"
       ],
       "isBackground": true,
       "problemMatcher": "$novus",

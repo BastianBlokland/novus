@@ -24,10 +24,10 @@ test: build
 clean:
 	rm -rf build
 
-# Watch for changes to '.nov' files and automatically evaluate them.
+# Watch for changes to '.nov' files and automatically compile them.
 # Requires 'inotify-tools' to be installed.
 .PHONY: watch.nov
 watch.nov:
-	./scripts/watch_nov.sh . ./bin/nove
+	./scripts/watch_nov.sh . ./bin/novc
 
 .SILENT:

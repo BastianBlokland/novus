@@ -11,15 +11,15 @@ At the moment only basic syntax highlighting is supported.
 The extension includes a problem-matcher named `novus` to report problems based on diagnostic output
 from the nov compiler.
 
-Create a task in your `.vscode/tasks.json` file for evaluating a novus file:
-Replace `<<Path to novus nove binary>>` to where the `nove` executable is located.
+Create a task in your `.vscode/tasks.json` file for compiling a novus file:
+Replace `<<Path to novus compiler binary>>` to where the `novc` executable is located.
 ```json
 {
   "version": "2.0.0",
   "tasks": [
     {
-      "label": "evaluate",
-      "command": "<<Path to novus nove executable>>",
+      "label": "compile",
+      "command": "<<Path to novus novc executable>>",
       "type": "shell",
       "args": [
         "${file}"
@@ -35,7 +35,7 @@ Replace `<<Path to novus nove binary>>` to where the `nove` executable is locate
 }
 ```
 
-Alternatively you can create a task that automatically evaluates files in the background:
+Alternatively you can create a task that automatically compiles files in the background:
 ```json
 {
   "version": "2.0.0",
@@ -46,7 +46,7 @@ Alternatively you can create a task that automatically evaluates files in the ba
       "command": "${workspaceFolder}/scripts/watch_nov.sh",
       "args": [
         "${workspaceFolder}",
-        "${workspaceFolder}/bin/nove"
+        "${workspaceFolder}/bin/novc"
       ],
       "isBackground": true,
       "problemMatcher": "$novus",

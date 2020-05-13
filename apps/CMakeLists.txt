@@ -18,6 +18,25 @@ FetchContent_Declare(
   GIT_SHALLOW TRUE)
 FetchContent_MakeAvailable(rang)
 
+# Compiler.
+message(">> Configuring novc executable")
+add_executable(novc
+  novc/compiler.cpp
+  novc/main.cpp)
+target_compile_features(novc PUBLIC cxx_std_17)
+if(MSVC)
+  target_compile_options(novc PUBLIC /EHsc)
+else()
+  target_compile_options(novc PUBLIC -fexceptions)
+endif()
+target_link_libraries(novc PRIVATE CLI11::CLI11)
+target_include_directories(novc PRIVATE ${rang_SOURCE_DIR}/include)
+target_link_libraries(novc PRIVATE input)
+target_link_libraries(novc PRIVATE frontend)
+target_link_libraries(novc PRIVATE backend)
+target_link_libraries(novc PRIVATE novasm)
+target_link_libraries(novc PRIVATE opt)
+
 # Evaluator.
 message(">> Configuring nove executable")
 add_executable(nove nove/main.cpp)

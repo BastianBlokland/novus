@@ -3,7 +3,7 @@ set -e -o pipefail
 trap interupt SIGINT
 
 # --------------------------------------------------------------------------------------------------
-# Watch novus files for changes and automatically evaluate them.
+# Watch novus files for changes and automatically compile them.
 # --------------------------------------------------------------------------------------------------
 
 info()
@@ -56,32 +56,31 @@ watchFiles()
     done
 }
 
-evalNovFile()
+compileNovFile()
 {
-  [ -x "${1}" ] || fail "Provide the novus eval binary path as arg 1"
-  [ -f "${2}" ] || fail "Provide the file to evaluate as arg 2"
+  [ -x "${1}" ] || fail "Provide the novus compiler binary path as arg 1"
+  [ -f "${2}" ] || fail "Provide the file to compile as arg 2"
 
-  local evalBinPath="${1}"
+  local compilerBinPath="${1}"
   local novFilePath="${2}"
 
   clear
-  info "File change detected: '${novFilePath}'. Evaluating:"
+  info "File change detected: '${novFilePath}'. Compiling:"
 
-  # Evaluate the file.
-  # note: pipe empty input into it as we do not want to run interactivly.
-  # note: ignore exit-code because we want to keep listening even if an eval failed.
-  echo "" | "${evalBinPath}" "${novFilePath}" || true
+  # Compile the file.
+  # note: ignore exit-code because we want to keep listening even if a compilation failed.
+  "${compilerBinPath}" "${novFilePath}" --validate-only || true
 
-  info "Evaluation complete. Watching for file changes..."
+  info "Compilation complete. Watching for file changes..."
 }
 
 # Verify env args.
 [ -d "${1}" ] || fail "Provide directory to watch as arg 1"
-[ -x "${2}" ] || fail "Provide novus eval binary path as arg 2"
+[ -x "${2}" ] || fail "Provide novus compiler binary path as arg 2"
 
 readonly watchDir="${1}"
-readonly evalBin="${2}"
+readonly compilerBin="${2}"
 
-# Watch dir for nov file changes and auto evaluate.
-watchFiles "${watchDir}" "nov" evalNovFile "${evalBin}"
+# Watch dir for nov file changes and auto compile them.
+watchFiles "${watchDir}" "nov" compileNovFile "${compilerBin}"
 exit 0

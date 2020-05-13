@@ -11,16 +11,17 @@ class TypeDeclTable final {
 public:
   using Iterator = typename std::map<TypeId, TypeDecl>::const_iterator;
 
-  TypeDeclTable()                             = default;
-  TypeDeclTable(const TypeDeclTable& rhs)     = delete;
-  TypeDeclTable(TypeDeclTable&& rhs)          = default;
-  ~TypeDeclTable()                            = default;
+  TypeDeclTable()                         = default;
+  TypeDeclTable(const TypeDeclTable& rhs) = delete;
+  TypeDeclTable(TypeDeclTable&& rhs)      = default;
+  ~TypeDeclTable()                        = default;
 
   auto operator=(const TypeDeclTable& rhs) -> TypeDeclTable& = delete;
   auto operator=(TypeDeclTable&& rhs) noexcept -> TypeDeclTable& = default;
 
   [[nodiscard]] auto operator[](TypeId id) const -> const TypeDecl&;
 
+  [[nodiscard]] auto getCount() const -> unsigned int;
   [[nodiscard]] auto begin() const -> Iterator;
   [[nodiscard]] auto end() const -> Iterator;
 
