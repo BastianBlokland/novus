@@ -12,6 +12,7 @@
 #include "input/search_paths.hpp"
 #include "novasm/assembly.hpp"
 #include "novasm/disassembler.hpp"
+#include "novasm/serialization.hpp"
 #include "opt/opt.hpp"
 #include <chrono>
 #include <optional>
@@ -89,7 +90,7 @@ auto printAssembly(const novasm::Assembly& assembly, const backend::InstructionL
 }
 
 template <typename InputItr>
-auto run(
+auto runFromSource(
     const std::string& inputId,
     std::optional<filesystem::path> inputPath,
     const std::vector<filesystem::path>& searchPaths,
@@ -131,6 +132,32 @@ auto run(
   return 0;
 }
 
+template <typename InputItr>
+auto runFromAssembly(InputItr inputBegin, const InputItr inputEnd, const bool outputProgram) {
+  const auto width = 80;
+
+  const auto assemblyOutput = novasm::deserialize(inputBegin, inputEnd);
+  if (!assemblyOutput) {
+    std::cerr << rang::style::bold << rang::bg::red << "Failed to deserialize assembly"
+              << rang::bg::reset << '\n'
+              << rang::style::reset;
+    return 1;
+  }
+
+  std::cout << rang::style::dim << rang::style::italic << std::string(width, '-') << '\n'
+            << "Successfully deserialized assembly\n"
+            << std::string(width, '-') << '\n'
+            << rang::style::reset;
+
+  if (outputProgram) {
+    // Note: Labels are not part of the 'nova' format so we cannot display them.
+    auto labels = backend::InstructionLabels{};
+    printAssembly(*assemblyOutput, labels);
+    std::cout << rang::style::dim << std::string(width, '-') << '\n';
+  }
+  return 0;
+}
+
 auto operator<<(std::ostream& out, const Duration& rhs) -> std::ostream& {
   auto s = rhs.count();
   if (s < .000001) {                // NOLINT: Magic numbers
@@ -167,14 +194,14 @@ auto main(int argc, char** argv) -> int {
                         ->callback([&]() {
                           rang::setControlMode(colorMode);
                           input.append(" import \"std.nov\"");
-                          exitcode =
-                              run("inline",
-                                  std::nullopt,
-                                  searchPaths,
-                                  input.begin(),
-                                  input.end(),
-                                  printOutput,
-                                  optimize);
+                          exitcode = runFromSource(
+                              "inline",
+                              std::nullopt,
+                              searchPaths,
+                              input.begin(),
+                              input.end(),
+                              printOutput,
+                              optimize);
                         });
   analyzeCmd->add_option("input", input, "Input characters")->required();
   analyzeCmd->add_flag("!--no-output", printOutput, "Skip printing the program");
@@ -188,14 +215,19 @@ auto main(int argc, char** argv) -> int {
 
         auto absFilePath = filesystem::absolute(filePath);
         std::ifstream fs{filePath.string()};
-        exitcode =
-            run(filePath.filename().string(),
-                absFilePath,
-                searchPaths,
-                std::istreambuf_iterator<char>{fs},
-                std::istreambuf_iterator<char>{},
-                printOutput,
-                optimize);
+        if (absFilePath.extension() == ".nova") {
+          exitcode = runFromAssembly(
+              std::istreambuf_iterator<char>{fs}, std::istreambuf_iterator<char>{}, printOutput);
+        } else {
+          exitcode = runFromSource(
+              filePath.filename().string(),
+              absFilePath,
+              searchPaths,
+              std::istreambuf_iterator<char>{fs},
+              std::istreambuf_iterator<char>{},
+              printOutput,
+              optimize);
+        }
       });
   analyzeFileCmd->add_option("file", filePath, "Path to file")
       ->check(CLI::ExistingFile)
