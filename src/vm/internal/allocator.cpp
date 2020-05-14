@@ -1,7 +1,6 @@
 #include "internal/allocator.hpp"
 #include "internal/ref_future.hpp"
 #include "internal/ref_long.hpp"
-#include "internal/ref_stream.hpp"
 #include "internal/ref_string.hpp"
 #include "internal/ref_string_link.hpp"
 #include "internal/ref_struct.hpp"

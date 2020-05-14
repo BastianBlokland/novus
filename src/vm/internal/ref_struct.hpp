@@ -11,7 +11,7 @@ class StructRef final : public Ref {
 public:
   StructRef(const StructRef& rhs) = delete;
   StructRef(StructRef&& rhs)      = delete;
-  ~StructRef() noexcept override  = default;
+  ~StructRef() noexcept           = default;
 
   auto operator=(const StructRef& rhs) -> StructRef& = delete;
   auto operator=(StructRef&& rhs) -> StructRef& = delete;

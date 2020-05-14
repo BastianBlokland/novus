@@ -1,8 +1,10 @@
 #pragma once
 #include "gsl.hpp"
-#include "internal/terminal.hpp"
+#include "internal/allocator.hpp"
 #include "internal/fd_utilities.hpp"
-#include "internal/ref_stream.hpp"
+#include "internal/ref.hpp"
+#include "internal/ref_string.hpp"
+#include "internal/terminal.hpp"
 #include "vm/platform_interface.hpp"
 #include <cstdio>
 
@@ -20,26 +22,28 @@ enum class ConsoleStreamKind : uint8_t {
   StdErr = 2,
 };
 
-class ConsoleStreamRef final : public StreamRef {
+class ConsoleStreamRef final : public Ref {
   friend class Allocator;
 
 public:
   ConsoleStreamRef(const ConsoleStreamRef& rhs) = delete;
   ConsoleStreamRef(ConsoleStreamRef&& rhs)      = delete;
-  ~ConsoleStreamRef() noexcept override         = default;
+  ~ConsoleStreamRef() noexcept                  = default;
 
   auto operator=(const ConsoleStreamRef& rhs) -> ConsoleStreamRef& = delete;
   auto operator=(ConsoleStreamRef&& rhs) -> ConsoleStreamRef& = delete;
 
-  [[nodiscard]] auto isValid() noexcept -> bool override { return m_filePtr != nullptr; }
+  [[nodiscard]] constexpr static auto getKind() { return RefKind::StreamConsole; }
 
-  auto readString(Allocator* alloc, int32_t max) noexcept -> StringRef* override {
+  [[nodiscard]] auto isValid() noexcept -> bool { return m_filePtr != nullptr; }
+
+  auto readString(Allocator* alloc, int32_t max) noexcept -> StringRef* {
 #if defined(_WIN32)
     // Special case non-blocking terminal read on windows. Unfortunately required as AFAIK there are
     // no non-blocking file-descriptors that can be used for terminal io.
     if (m_nonblockWinTerm) {
       auto strAlloc = alloc->allocStr(max); // allocStr already does +1 for null-ter.
-      auto size = 0;
+      auto size     = 0;
       while (size != max && _kbhit()) {
         strAlloc.second[size] = getch();
         size++;
@@ -57,7 +61,7 @@ public:
     return strAlloc.first;
   }
 
-  auto readChar() noexcept -> char override {
+  auto readChar() noexcept -> char {
 #if defined(_WIN32)
     // Special case non-blocking terminal read on windows. Unfortunately required as AFAIK there are
     // no non-blocking file-descriptors that can be used for terminal io.
@@ -71,17 +75,15 @@ public:
     return res > 0 ? static_cast<char>(res) : '\0';
   }
 
-  auto writeString(StringRef* str) noexcept -> bool override {
+  auto writeString(StringRef* str) noexcept -> bool {
     return std::fwrite(str->getDataPtr(), str->getSize(), 1, m_filePtr) == 1;
   }
 
-  auto writeChar(uint8_t val) noexcept -> bool override {
-    return std::fputc(val, m_filePtr) == val;
-  }
+  auto writeChar(uint8_t val) noexcept -> bool { return std::fputc(val, m_filePtr) == val; }
 
-  auto flush() noexcept -> bool override { return std::fflush(m_filePtr) == 0; }
+  auto flush() noexcept -> bool { return std::fflush(m_filePtr) == 0; }
 
-  auto setOpts(StreamOpts opts) noexcept -> bool override {
+  auto setOpts(StreamOpts opts) noexcept -> bool {
 #if defined(_WIN32)
     if (static_cast<int32_t>(opts) & static_cast<int32_t>(StreamOpts::NoBlock)) {
       if (!hasTerminal()) {
@@ -97,7 +99,7 @@ public:
 #endif
   }
 
-  auto unsetOpts(StreamOpts opts) noexcept -> bool override {
+  auto unsetOpts(StreamOpts opts) noexcept -> bool {
 #if defined(_WIN32)
     if (static_cast<int32_t>(opts) & static_cast<int32_t>(StreamOpts::NoBlock)) {
       m_nonblockWinTerm = false;
@@ -114,11 +116,11 @@ private:
   bool m_nonblockWinTerm = false;
 #endif
 
-  inline explicit ConsoleStreamRef(FILE* filePtr) noexcept : StreamRef{}, m_filePtr{filePtr} {}
+  inline explicit ConsoleStreamRef(FILE* filePtr) noexcept : Ref{getKind()}, m_filePtr{filePtr} {}
 };
 
 inline auto openConsoleStream(PlatformInterface* iface, Allocator* alloc, ConsoleStreamKind kind)
-    -> StreamRef* {
+    -> ConsoleStreamRef* {
   FILE* file;
   switch (kind) {
   case ConsoleStreamKind::StdIn:

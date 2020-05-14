@@ -16,7 +16,7 @@ class FutureRef final : public Ref {
 public:
   FutureRef(const FutureRef& rhs) = delete;
   FutureRef(FutureRef&& rhs)      = delete;
-  ~FutureRef() noexcept override  = default;
+  ~FutureRef() noexcept           = default;
 
   auto operator=(const FutureRef& rhs) -> FutureRef& = delete;
   auto operator=(FutureRef&& rhs) -> FutureRef& = delete;

@@ -11,10 +11,12 @@ class Ref {
 public:
   Ref(const Ref& rhs)     = delete;
   Ref(Ref&& rhs) noexcept = delete;
-  virtual ~Ref() noexcept = default;
+  ~Ref() noexcept         = default;
 
   auto operator=(const Ref& rhs) -> Ref& = delete;
   auto operator=(Ref&& rhs) -> Ref& = delete;
+
+  auto destroy() noexcept -> void;
 
   [[nodiscard]] inline auto getKind() const noexcept { return m_kind; }
 

@@ -9,9 +9,9 @@ class LongRef final : public Ref {
   friend class Allocator;
 
 public:
-  LongRef(const LongRef& rhs)  = delete;
-  LongRef(LongRef&& rhs)       = delete;
-  ~LongRef() noexcept override = default;
+  LongRef(const LongRef& rhs) = delete;
+  LongRef(LongRef&& rhs)      = delete;
+  ~LongRef() noexcept         = default;
 
   auto operator=(const LongRef& rhs) -> LongRef& = delete;
   auto operator=(LongRef&& rhs) -> LongRef& = delete;

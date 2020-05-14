@@ -10,7 +10,7 @@ class StringRef final : public Ref {
 public:
   StringRef(const StringRef& rhs) = delete;
   StringRef(StringRef&& rhs)      = delete;
-  ~StringRef() noexcept override  = default;
+  ~StringRef() noexcept           = default;
 
   auto operator=(const StringRef& rhs) -> StringRef& = delete;
   auto operator=(StringRef&& rhs) -> StringRef& = delete;
