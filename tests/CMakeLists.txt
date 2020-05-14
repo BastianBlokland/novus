@@ -78,6 +78,8 @@ add_executable(novtests
   lex/seperators_test.cpp
   lex/utilities_test.cpp
 
+  novasm/serialization_test.cpp
+
   opt/call_inline_test.cpp
   opt/const_elimination_test.cpp
   opt/precompute_literals_test.cpp

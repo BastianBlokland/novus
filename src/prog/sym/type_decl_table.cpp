@@ -14,6 +14,8 @@ auto TypeDeclTable::operator[](TypeId id) const -> const TypeDecl& {
   return itr->second;
 }
 
+auto TypeDeclTable::getCount() const -> unsigned int { return m_types.size(); }
+
 auto TypeDeclTable::begin() const -> Iterator { return m_types.begin(); }
 
 auto TypeDeclTable::end() const -> Iterator { return m_types.end(); }

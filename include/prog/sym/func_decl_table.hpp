@@ -21,17 +21,17 @@ public:
   using Iterator = std::map<FuncId, FuncDecl>::const_iterator;
   using Id       = prog::sym::FuncId;
 
-  FuncDeclTable()                             = default;
-  FuncDeclTable(const FuncDeclTable& rhs)     = delete;
-  FuncDeclTable(FuncDeclTable&& rhs)          = default;
-  ~FuncDeclTable()                            = default;
+  FuncDeclTable()                         = default;
+  FuncDeclTable(const FuncDeclTable& rhs) = delete;
+  FuncDeclTable(FuncDeclTable&& rhs)      = default;
+  ~FuncDeclTable()                        = default;
 
   auto operator=(const FuncDeclTable& rhs) -> FuncDeclTable& = delete;
   auto operator=(FuncDeclTable&& rhs) noexcept -> FuncDeclTable& = default;
 
   [[nodiscard]] auto operator[](FuncId id) const -> const FuncDecl&;
 
-  [[nodiscard]] auto getFuncCount() const -> unsigned int;
+  [[nodiscard]] auto getCount() const -> unsigned int;
   [[nodiscard]] auto begin() const -> Iterator;
   [[nodiscard]] auto end() const -> Iterator;
 

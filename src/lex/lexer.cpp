@@ -602,5 +602,6 @@ template class Lexer<char*, char*>;
 template class Lexer<std::string::iterator, std::string::iterator>;
 template class Lexer<std::string::const_iterator, std::string::const_iterator>;
 template class Lexer<std::istream_iterator<char>, std::istream_iterator<char>>;
+template class Lexer<std::istreambuf_iterator<char>, std::istreambuf_iterator<char>>;
 
 } // namespace lex

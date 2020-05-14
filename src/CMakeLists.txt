@@ -255,7 +255,8 @@ add_library(novasm STATIC
   novasm/assembly.cpp
   novasm/disassembler.cpp
   novasm/op_code.cpp
-  novasm/pcall_code.cpp)
+  novasm/pcall_code.cpp
+  novasm/serialization.cpp)
 target_compile_features(novasm PRIVATE cxx_std_17)
 if(MSVC)
   target_compile_options(novasm PRIVATE /EHsc)

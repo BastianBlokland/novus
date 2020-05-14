@@ -59,7 +59,7 @@ auto main(int argc, char** argv) noexcept -> int {
   }
 
   const auto vmEnvArgsCount = argc - 2; // 1 for program path and 1 for source.
-  auto** const vnEnvArgs    = argv + 2;
+  auto** const vmEnvArgs    = argv + 2;
   const auto searchPaths    = input::getSearchPaths(argv);
 
   auto path = filesystem::path{argv[1]};
@@ -73,7 +73,7 @@ auto main(int argc, char** argv) noexcept -> int {
         std::istreambuf_iterator<char>{fs},
         std::istreambuf_iterator<char>{},
         vmEnvArgsCount,
-        vnEnvArgs);
+        vmEnvArgs);
   }
 
   auto progTxt = std::string{argv[1]};
@@ -85,5 +85,5 @@ auto main(int argc, char** argv) noexcept -> int {
       progTxt.begin(),
       progTxt.end(),
       vmEnvArgsCount,
-      vnEnvArgs);
+      vmEnvArgs);
 }
