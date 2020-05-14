@@ -20,9 +20,11 @@ public:
 
   [[nodiscard]] inline auto getFieldsBegin() const noexcept -> const Value* { return m_fields; }
 
-  [[nodiscard]] inline auto getFieldsEnd() const noexcept -> const Value* { return m_fieldsEnd; }
+  [[nodiscard]] inline auto getFieldsEnd() const noexcept -> const Value* {
+    return m_fields + m_fieldCount;
+  }
 
-  [[nodiscard]] inline auto getFieldCount() const noexcept { return m_fieldsEnd - m_fields; }
+  [[nodiscard]] inline auto getFieldCount() const noexcept { return m_fieldCount; }
 
   [[nodiscard]] inline auto getField(uint8_t index) const noexcept { return *getFieldPtr(index); }
 
@@ -31,14 +33,14 @@ public:
     return m_fields + index;
   }
 
-  [[nodiscard]] inline auto getLastField() const noexcept { return *(m_fieldsEnd - 1); }
+  [[nodiscard]] inline auto getLastField() const noexcept { return *(m_fields + m_fieldCount - 1); }
 
 private:
+  uint8_t m_fieldCount;
   Value* m_fields;
-  Value* m_fieldsEnd;
 
   inline explicit StructRef(Value* fields, uint8_t fieldCount) noexcept :
-      Ref(getKind()), m_fields{fields}, m_fieldsEnd{fields + fieldCount} {}
+      Ref(getKind()), m_fieldCount{fieldCount}, m_fields{fields} {}
 };
 
 inline auto getStructRef(const Value& val) noexcept { return val.getDowncastRef<StructRef>(); }
