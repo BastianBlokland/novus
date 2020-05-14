@@ -21,6 +21,7 @@ auto main(int argc, char** argv) noexcept -> int {
     }
   }
 
+  // Open a handle to the program assembly file.
   auto fs = std::ifstream{progPath.string(), std::ios::binary};
   if (!fs.good()) {
     if (implicitPath) {
@@ -37,6 +38,9 @@ auto main(int argc, char** argv) noexcept -> int {
     std::cerr << "Novus runtime - Corrupt 'nova' file\n";
     return 1;
   }
+
+  // Close the handle to the program assembly file.
+  fs.close();
 
   const auto consumedArgs   = implicitPath ? 1 : 2; // 1 for executable path and 1 for nova file.
   const auto vmEnvArgsCount = argc - consumedArgs;
