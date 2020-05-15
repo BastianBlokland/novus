@@ -1,6 +1,6 @@
 #pragma once
-#include "internal/allocator.hpp"
 #include "internal/ref.hpp"
+#include "internal/ref_allocator.hpp"
 #include "internal/ref_stream_console.hpp"
 #include "internal/ref_stream_file.hpp"
 #include "internal/ref_string.hpp"
@@ -29,7 +29,7 @@ inline auto streamCheckValid(const Value& stream) noexcept -> bool {
   STREAM_DISPATCH(stream, isValid())
 }
 
-inline auto streamReadString(Allocator* alloc, const Value& stream, int max) noexcept
+inline auto streamReadString(RefAllocator* alloc, const Value& stream, int max) noexcept
     -> StringRef* {
   if (!streamCheckValid(stream)) {
     return alloc->allocStr(0).first;

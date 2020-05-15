@@ -17,15 +17,15 @@ class StringRef;
 class StringLinkRef;
 class StructRef;
 
-class Allocator final {
+class RefAllocator final {
 public:
-  explicit Allocator(ExecutorRegistry* execRegistry) noexcept;
-  Allocator(const Allocator& rhs) = delete;
-  Allocator(Allocator&& rhs)      = delete;
-  ~Allocator() noexcept;
+  explicit RefAllocator(ExecutorRegistry* execRegistry) noexcept;
+  RefAllocator(const RefAllocator& rhs) = delete;
+  RefAllocator(RefAllocator&& rhs)      = delete;
+  ~RefAllocator() noexcept;
 
-  auto operator=(const Allocator& rhs) -> Allocator& = delete;
-  auto operator=(Allocator&& rhs) -> Allocator& = delete;
+  auto operator=(const RefAllocator& rhs) -> RefAllocator& = delete;
+  auto operator=(RefAllocator&& rhs) -> RefAllocator& = delete;
 
   // Allocate a string, upon failure returns {nullptr, nullptr}.
   [[nodiscard]] auto allocStr(unsigned int size) noexcept -> std::pair<StringRef*, uint8_t*>;

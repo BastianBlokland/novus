@@ -1,6 +1,6 @@
 #pragma once
-#include "internal/allocator.hpp"
 #include "internal/executor_registry.hpp"
+#include "internal/ref_allocator.hpp"
 #include "novasm/assembly.hpp"
 #include "vm/exec_state.hpp"
 #include "vm/platform_interface.hpp"
@@ -11,7 +11,7 @@ auto execute(
     const novasm::Assembly* assembly,
     PlatformInterface* iface,
     ExecutorRegistry* execRegistry,
-    Allocator* allocator,
+    RefAllocator* refAlloc,
     uint32_t entryIpOffset,
     uint8_t entryArgCount,
     Value* entryArgSource,

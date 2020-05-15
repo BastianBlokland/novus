@@ -1,6 +1,6 @@
 #pragma once
-#include "internal/allocator.hpp"
 #include "internal/likely.hpp"
+#include "internal/ref_allocator.hpp"
 #include "internal/ref_string.hpp"
 #include "internal/ref_string_link.hpp"
 #include <cstring>
@@ -32,7 +32,7 @@ inline auto getStringLinkSize(StringLinkRef& l) noexcept -> unsigned int {
 }
 
 // Collapse a string-link into a normal string.
-inline auto collapseStringLink(Allocator* allocator, StringLinkRef& l) noexcept -> StringRef* {
+inline auto collapseStringLink(RefAllocator* refAlloc, StringLinkRef& l) noexcept -> StringRef* {
   // If we've collapsed this link before return the previous result.
   if (l.isCollapsed()) {
     return l.getCollapsed();
@@ -40,7 +40,7 @@ inline auto collapseStringLink(Allocator* allocator, StringLinkRef& l) noexcept 
 
   // Allocate a new string big enough to the hold the entire chain.
   auto size        = getStringLinkSize(l);
-  auto strRefAlloc = allocator->allocStr(size);
+  auto strRefAlloc = refAlloc->allocStr(size);
   if (unlikely(strRefAlloc.first == nullptr)) {
     return nullptr;
   }

@@ -1,8 +1,8 @@
 #pragma once
 #include "gsl.hpp"
-#include "internal/allocator.hpp"
 #include "internal/fd_utilities.hpp"
 #include "internal/ref.hpp"
+#include "internal/ref_allocator.hpp"
 #include "internal/ref_string.hpp"
 #include <cstdio>
 #include <cstring>
@@ -20,7 +20,7 @@ enum FileStreamFlags : uint8_t {
 };
 
 class FileStreamRef final : public Ref {
-  friend class Allocator;
+  friend class RefAllocator;
 
 public:
   FileStreamRef(const FileStreamRef& rhs) = delete;
@@ -42,7 +42,7 @@ public:
 
   [[nodiscard]] auto isValid() noexcept -> bool { return m_filePtr != nullptr; }
 
-  auto readString(Allocator* alloc, int32_t max) noexcept -> StringRef* {
+  auto readString(RefAllocator* alloc, int32_t max) noexcept -> StringRef* {
     auto strAlloc              = alloc->allocStr(max); // allocStr already does +1 for null-ter.
     auto bytesRead             = std::fread(strAlloc.second, 1U, max, m_filePtr);
     strAlloc.second[bytesRead] = '\0'; // null-terminate.
@@ -77,7 +77,8 @@ private:
       Ref{getKind()}, m_flags{flags}, m_filePtr{filePtr}, m_filePath{filePath} {}
 };
 
-inline auto openFileStream(Allocator* alloc, StringRef* path, FileStreamMode m, FileStreamFlags f)
+inline auto
+openFileStream(RefAllocator* alloc, StringRef* path, FileStreamMode m, FileStreamFlags f)
     -> FileStreamRef* {
 
   // Make copy of the file-path string to store in the file-stream.

@@ -6,7 +6,7 @@ namespace vm::internal {
 class Value;
 
 class StructRef final : public Ref {
-  friend class Allocator;
+  friend class RefAllocator;
 
 public:
   StructRef(const StructRef& rhs) = delete;

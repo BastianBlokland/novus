@@ -1,5 +1,5 @@
 #include "internal/garbage_collector.hpp"
-#include "internal/allocator.hpp"
+#include "internal/ref_allocator.hpp"
 #include "internal/ref_future.hpp"
 #include "internal/ref_string_link.hpp"
 #include "internal/ref_struct.hpp"
@@ -9,8 +9,9 @@
 
 namespace vm::internal {
 
-GarbageCollector::GarbageCollector(Allocator* allocator, ExecutorRegistry* execRegistry) noexcept :
-    m_allocator{allocator}, m_execRegistry{execRegistry}, m_requestType{RequestType::None} {
+GarbageCollector::GarbageCollector(
+    RefAllocator* refAlloc, ExecutorRegistry* execRegistry) noexcept :
+    m_refAlloc{refAlloc}, m_execRegistry{execRegistry}, m_requestType{RequestType::None} {
 
   m_markQueue.reserve(initialGcMarkQueueSize);
 
@@ -74,7 +75,7 @@ auto GarbageCollector::collect() noexcept -> void {
   mark();
 
   // Get the head ref to start the sweep from.
-  Ref* sweepHead = m_allocator->getHeadAlloc();
+  Ref* sweepHead = m_refAlloc->getHeadAlloc();
 
   // Resume the executors as the sweeping can run concurrently with the program.
   m_execRegistry->resumeExecutors();
@@ -176,16 +177,16 @@ auto GarbageCollector::sweep(Ref* head) noexcept -> void {
   head->unsetFlag<RefFlags::GcMarked>();
 
   Ref* prev = head;
-  Ref* cur  = m_allocator->getNextAlloc(head);
+  Ref* cur  = m_refAlloc->getNextAlloc(head);
   while (cur) {
     if (cur->hasFlag<RefFlags::GcMarked>()) {
       // Still reachable.
       cur->unsetFlag<RefFlags::GcMarked>();
       prev = cur;
-      cur  = m_allocator->getNextAlloc(cur);
+      cur  = m_refAlloc->getNextAlloc(cur);
     } else {
       // No longer reachable.
-      cur = m_allocator->freeNext(prev);
+      cur = m_refAlloc->freeNext(prev);
     }
   }
 }

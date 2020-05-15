@@ -5,7 +5,7 @@
 namespace vm::internal {
 
 class StringRef final : public Ref {
-  friend class Allocator;
+  friend class RefAllocator;
 
 public:
   StringRef(const StringRef& rhs) = delete;

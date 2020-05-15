@@ -6,7 +6,7 @@
 namespace vm::internal {
 
 class Ref {
-  friend class Allocator;
+  friend class RefAllocator;
 
 public:
   Ref(const Ref& rhs)     = delete;

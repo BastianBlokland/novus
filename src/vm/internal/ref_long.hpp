@@ -6,7 +6,7 @@
 namespace vm::internal {
 
 class LongRef final : public Ref {
-  friend class Allocator;
+  friend class RefAllocator;
 
 public:
   LongRef(const LongRef& rhs) = delete;

@@ -11,7 +11,7 @@ namespace vm::internal {
 class Value;
 
 class FutureRef final : public Ref {
-  friend class Allocator;
+  friend class RefAllocator;
 
 public:
   FutureRef(const FutureRef& rhs) = delete;

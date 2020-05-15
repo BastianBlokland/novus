@@ -6,14 +6,14 @@
 
 namespace vm::internal {
 
-class Allocator;
+class RefAllocator;
 
 const auto gcMinIntervalSeconds   = 10;
 const auto initialGcMarkQueueSize = 1024;
 
 class GarbageCollector final {
 public:
-  GarbageCollector(Allocator* allocator, ExecutorRegistry* execRegistry) noexcept;
+  GarbageCollector(RefAllocator* refAlloc, ExecutorRegistry* execRegistry) noexcept;
   GarbageCollector(const GarbageCollector& rhs) = delete;
   GarbageCollector(GarbageCollector&& rhs)      = delete;
   ~GarbageCollector() noexcept;
@@ -31,7 +31,7 @@ private:
     Terminate = 2,
   };
 
-  Allocator* m_allocator;
+  RefAllocator* m_refAlloc;
   ExecutorRegistry* m_execRegistry;
   std::vector<Ref*> m_markQueue;
 

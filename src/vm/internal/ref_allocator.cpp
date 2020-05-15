@@ -1,4 +1,4 @@
-#include "internal/allocator.hpp"
+#include "internal/ref_allocator.hpp"
 #include "internal/ref_future.hpp"
 #include "internal/ref_long.hpp"
 #include "internal/ref_string.hpp"
@@ -10,10 +10,10 @@
 
 namespace vm::internal {
 
-Allocator::Allocator(ExecutorRegistry* execRegistry) noexcept :
+RefAllocator::RefAllocator(ExecutorRegistry* execRegistry) noexcept :
     m_gc{this, execRegistry}, m_head{nullptr}, m_bytesUntilNextCollection{gcByteInterval} {}
 
-Allocator::~Allocator() noexcept {
+RefAllocator::~RefAllocator() noexcept {
   // Shutdown the gc (this makes sure that any ongoing collections are finished).
   m_gc.terminateCollector();
 
@@ -23,12 +23,12 @@ Allocator::~Allocator() noexcept {
   auto* ref = m_head.load(std::memory_order_acquire);
   while (ref) {
     auto next = ref->m_next;
-    Allocator::freeUnsafe(ref);
+    RefAllocator::freeUnsafe(ref);
     ref = next;
   }
 }
 
-auto Allocator::allocStr(const unsigned int size) noexcept -> std::pair<StringRef*, uint8_t*> {
+auto RefAllocator::allocStr(const unsigned int size) noexcept -> std::pair<StringRef*, uint8_t*> {
   auto mem = alloc<StringRef>(size + 1); // +1 for null-terminator.
   if (unlikely(mem.first == nullptr)) {
     return {nullptr, nullptr};
@@ -41,7 +41,7 @@ auto Allocator::allocStr(const unsigned int size) noexcept -> std::pair<StringRe
   return {refPtr, payloadPtr};
 }
 
-auto Allocator::allocStrLit(const std::string& lit) noexcept -> StringRef* {
+auto RefAllocator::allocStrLit(const std::string& lit) noexcept -> StringRef* {
   auto mem = alloc<StringRef>(0);
   if (unlikely(mem.first == nullptr)) {
     return nullptr;
@@ -54,7 +54,7 @@ auto Allocator::allocStrLit(const std::string& lit) noexcept -> StringRef* {
   return refPtr;
 }
 
-auto Allocator::allocStrLink(Ref* prev, Value val) noexcept -> StringLinkRef* {
+auto RefAllocator::allocStrLink(Ref* prev, Value val) noexcept -> StringLinkRef* {
   auto mem = alloc<StringLinkRef>(0);
   if (unlikely(mem.first == nullptr)) {
     return nullptr;
@@ -65,7 +65,7 @@ auto Allocator::allocStrLink(Ref* prev, Value val) noexcept -> StringLinkRef* {
   return refPtr;
 }
 
-auto Allocator::allocStruct(uint8_t fieldCount) noexcept -> std::pair<StructRef*, Value*> {
+auto RefAllocator::allocStruct(uint8_t fieldCount) noexcept -> std::pair<StructRef*, Value*> {
   auto mem = alloc<StructRef>(sizeof(Value) * fieldCount);
   if (unlikely(mem.first == nullptr)) {
     return {nullptr, nullptr};
@@ -77,7 +77,7 @@ auto Allocator::allocStruct(uint8_t fieldCount) noexcept -> std::pair<StructRef*
   return {refPtr, fieldsPtr};
 }
 
-auto Allocator::initRef(Ref* ref) noexcept -> void {
+auto RefAllocator::initRef(Ref* ref) noexcept -> void {
   // Keep track of all allocated references by linking them as a singly linked list.
   ref->m_next = m_head.load(std::memory_order_relaxed);
   while (!m_head.compare_exchange_weak(

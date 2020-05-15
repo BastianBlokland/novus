@@ -1,7 +1,7 @@
 #include "internal/executor.hpp"
-#include "internal/allocator.hpp"
 #include "internal/likely.hpp"
 #include "internal/pcall.hpp"
+#include "internal/ref_allocator.hpp"
 #include "internal/ref_future.hpp"
 #include "internal/ref_long.hpp"
 #include "internal/ref_string.hpp"
@@ -111,14 +111,14 @@ inline auto fork(
     const novasm::Assembly* assembly,
     PlatformInterface* iface,
     ExecutorRegistry* execRegistry,
-    Allocator* allocator,
+    RefAllocator* refAlloc,
     BasicStack* stack,
     ExecutorHandle* execHandle,
     uint8_t argCount,
     uint32_t entryIpOffset) -> bool {
 
   // Create a future object to interact with the fork.
-  auto* future = allocator->allocPlain<FutureRef>();
+  auto* future = refAlloc->allocPlain<FutureRef>();
   if (unlikely(future == nullptr)) {
     execHandle->setState(ExecState::AllocFailed);
     return false;
@@ -126,15 +126,7 @@ inline auto fork(
 
   auto* argSource = stack->getNext() - argCount;
   std::thread(
-      &execute,
-      assembly,
-      iface,
-      execRegistry,
-      allocator,
-      entryIpOffset,
-      argCount,
-      argSource,
-      future)
+      &execute, assembly, iface, execRegistry, refAlloc, entryIpOffset, argCount, argSource, future)
       .detach();
 
   // Wait until the fork executor has started.
@@ -161,7 +153,7 @@ auto execute(
     const novasm::Assembly* assembly,
     PlatformInterface* iface,
     ExecutorRegistry* execRegistry,
-    Allocator* allocator,
+    RefAllocator* refAlloc,
     uint32_t entryIpOffset,
     uint8_t entryArgCount,
     Value* entryArgSource,
@@ -200,7 +192,7 @@ auto execute(
     if (v >= 0L) {                                                                                 \
       PUSH(posLongValue(v));                                                                       \
     } else {                                                                                       \
-      PUSH_REF(allocator->allocPlain<LongRef>(v));                                                 \
+      PUSH_REF(refAlloc->allocPlain<LongRef>(v));                                                  \
     }                                                                                              \
   }
 #define PUSH_BOOL(VAL) PUSH(intValue(VAL))
@@ -227,7 +219,7 @@ auto execute(
 #define CALL_TAIL(ARG_COUNT, TGT_IP) callTail(assembly, &stack, &ip, sh, ARG_COUNT, TGT_IP)
 #define CALL_FORKED(ARG_COUNT, TGT_IP)                                                             \
   if (unlikely(!fork(                                                                              \
-          assembly, iface, execRegistry, allocator, &stack, &execHandle, ARG_COUNT, TGT_IP))) {    \
+          assembly, iface, execRegistry, refAlloc, &stack, &execHandle, ARG_COUNT, TGT_IP))) {     \
     goto End;                                                                                      \
   }
 
@@ -281,7 +273,7 @@ auto execute(
     } break;
     case OpCode::LoadLitString: {
       const auto& litStr = assembly->getLitString(READ_UINT());
-      PUSH_REF(allocator->allocStrLit(litStr));
+      PUSH_REF(refAlloc->allocStrLit(litStr));
     } break;
     case OpCode::LoadLitIp: {
       PUSH_UINT(READ_UINT());
@@ -315,7 +307,7 @@ auto execute(
       PUSH_FLOAT(POP_FLOAT() + POP_FLOAT());
     } break;
     case OpCode::AddString: {
-      auto* b = getStringRef(allocator, POP());
+      auto* b = getStringRef(refAlloc, POP());
       CHECK_ALLOC(b);
 
       // To optimize building up a string we don't yet create the concatenated string but instead
@@ -325,17 +317,17 @@ auto execute(
       // to the end). Support for building up strings backwards is possible but not implemented atm.
 
       auto* a = getStringOrLinkRef(POP());
-      PUSH_REF(allocator->allocStrLink(a, refValue(b)));
+      PUSH_REF(refAlloc->allocStrLink(a, refValue(b)));
     } break;
     case OpCode::CombineChar: {
       auto b = static_cast<uint8_t>(POP_INT());
       auto a = static_cast<uint8_t>(POP_INT());
-      PUSH_REF(charsToString(allocator, a, b));
+      PUSH_REF(charsToString(refAlloc, a, b));
     } break;
     case OpCode::AppendChar: {
       auto b  = POP_INT();
       auto* a = getStringOrLinkRef(POP());
-      PUSH_REF(allocator->allocStrLink(a, intValue(b)));
+      PUSH_REF(refAlloc->allocStrLink(a, intValue(b)));
     } break;
     case OpCode::SubInt: {
       auto b = POP_INT();
@@ -485,22 +477,22 @@ auto execute(
       PUSH_UINT(~POP_UINT());
     } break;
     case OpCode::LengthString: {
-      auto* strRef = getStringRef(allocator, POP());
+      auto* strRef = getStringRef(refAlloc, POP());
       CHECK_ALLOC(strRef);
       PUSH_INT(strRef->getSize());
     } break;
     case OpCode::IndexString: {
       auto index   = POP_INT();
-      auto* strRef = getStringRef(allocator, POP());
+      auto* strRef = getStringRef(refAlloc, POP());
       CHECK_ALLOC(strRef);
       PUSH_INT(indexString(strRef, index));
     } break;
     case OpCode::SliceString: {
       auto end     = POP_INT();
       auto start   = POP_INT();
-      auto* strRef = getStringRef(allocator, POP());
+      auto* strRef = getStringRef(refAlloc, POP());
       CHECK_ALLOC(strRef);
-      PUSH_REF(sliceString(allocator, strRef, start, end));
+      PUSH_REF(sliceString(refAlloc, strRef, start, end));
     } break;
 
     case OpCode::CheckEqInt: {
@@ -519,10 +511,10 @@ auto execute(
       PUSH_BOOL(a == b);
     } break;
     case OpCode::CheckEqString: {
-      auto* bStrRef = getStringRef(allocator, POP());
+      auto* bStrRef = getStringRef(refAlloc, POP());
       CHECK_ALLOC(bStrRef);
 
-      auto* aStrRef = getStringRef(allocator, POP());
+      auto* aStrRef = getStringRef(refAlloc, POP());
       CHECK_ALLOC(aStrRef);
 
       PUSH_BOOL(checkStringEq(aStrRef, bStrRef));
@@ -592,16 +584,16 @@ auto execute(
       PUSH_INT(static_cast<int32_t>(POP_FLOAT()));
     } break;
     case OpCode::ConvIntString: {
-      PUSH_REF(intToString(allocator, POP_INT()));
+      PUSH_REF(intToString(refAlloc, POP_INT()));
     } break;
     case OpCode::ConvLongString: {
-      PUSH_REF(intToString(allocator, getLong(POP())));
+      PUSH_REF(intToString(refAlloc, getLong(POP())));
     } break;
     case OpCode::ConvFloatString: {
-      PUSH_REF(floatToString(allocator, POP_FLOAT()));
+      PUSH_REF(floatToString(refAlloc, POP_FLOAT()));
     } break;
     case OpCode::ConvCharString: {
-      PUSH_REF(charToString(allocator, static_cast<uint8_t>(POP_INT())));
+      PUSH_REF(charToString(refAlloc, static_cast<uint8_t>(POP_INT())));
     } break;
     case OpCode::ConvIntChar: {
       PUSH_INT(static_cast<uint8_t>(POP_INT()));
@@ -617,7 +609,7 @@ auto execute(
       const auto fieldCount = READ_BYTE();
       assert(fieldCount > 0);
 
-      auto structRefAlloc = allocator->allocStruct(fieldCount);
+      auto structRefAlloc = refAlloc->allocStruct(fieldCount);
       if (unlikely(structRefAlloc.first == nullptr)) {
         execHandle.setState(ExecState::AllocFailed);
         goto End;
@@ -718,7 +710,7 @@ auto execute(
       }
     } break;
     case OpCode::PCall: {
-      pcall(iface, allocator, &stack, &execHandle, readAsm<PCallCode>(&ip));
+      pcall(iface, refAlloc, &stack, &execHandle, readAsm<PCallCode>(&ip));
       if (unlikely(execHandle.getState(std::memory_order_relaxed) != ExecState::Running)) {
         assert(execHandle.getState(std::memory_order_relaxed) != ExecState::Success);
         goto End;
