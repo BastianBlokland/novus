@@ -18,29 +18,32 @@ public:
 
   [[nodiscard]] constexpr static auto getKind() { return RefKind::Struct; }
 
-  [[nodiscard]] inline auto getFieldsBegin() const noexcept -> const Value* { return m_fields; }
+  [[nodiscard]] inline auto getFieldsBegin() noexcept -> Value* {
+    return static_cast<Value*>(static_cast<void*>(getPtr() + sizeof(StructRef)));
+  }
 
-  [[nodiscard]] inline auto getFieldsEnd() const noexcept -> const Value* {
-    return m_fields + m_fieldCount;
+  [[nodiscard]] inline auto getFieldsEnd() noexcept -> const Value* {
+    return getFieldsBegin() + m_fieldCount;
   }
 
   [[nodiscard]] inline auto getFieldCount() const noexcept { return m_fieldCount; }
 
-  [[nodiscard]] inline auto getField(uint8_t index) const noexcept { return *getFieldPtr(index); }
+  [[nodiscard]] inline auto getField(uint8_t index) noexcept { return *getFieldPtr(index); }
 
-  [[nodiscard]] inline auto getFieldPtr(uint8_t index) const noexcept -> Value* {
+  [[nodiscard]] inline auto getFieldPtr(uint8_t index) noexcept -> Value* {
     assert(index < getFieldCount());
-    return m_fields + index;
+    return getFieldsBegin() + index;
   }
 
-  [[nodiscard]] inline auto getLastField() const noexcept { return *(m_fields + m_fieldCount - 1); }
+  [[nodiscard]] inline auto getLastField() noexcept {
+    return *(getFieldsBegin() + m_fieldCount - 1);
+  }
 
 private:
   uint8_t m_fieldCount;
-  Value* m_fields;
 
-  inline explicit StructRef(Value* fields, uint8_t fieldCount) noexcept :
-      Ref(getKind()), m_fieldCount{fieldCount}, m_fields{fields} {}
+  inline explicit StructRef(uint8_t fieldCount) noexcept :
+      Ref(getKind()), m_fieldCount{fieldCount} {}
 };
 
 inline auto getStructRef(const Value& val) noexcept { return val.getDowncastRef<StructRef>(); }

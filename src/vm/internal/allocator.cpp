@@ -72,7 +72,7 @@ auto Allocator::allocStruct(uint8_t fieldCount) noexcept -> std::pair<StructRef*
   }
 
   auto fieldsPtr = static_cast<Value*>(mem.second);
-  auto* refPtr   = static_cast<StructRef*>(new (mem.first) StructRef{fieldsPtr, fieldCount});
+  auto* refPtr   = static_cast<StructRef*>(new (mem.first) StructRef{fieldCount});
   initRef(refPtr);
   return {refPtr, fieldsPtr};
 }

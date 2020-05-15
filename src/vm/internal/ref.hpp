@@ -38,6 +38,13 @@ public:
 protected:
   inline explicit Ref(RefKind kind) noexcept : m_next{nullptr}, m_kind{kind}, m_flags{} {}
 
+  // Get a raw pointer to the begining of the Ref struct. Can be used by ref implementations to
+  // calculate their end-pointer.
+  // For obvious reasons this is a dangernous api and care must be taken.
+  [[nodiscard]] inline auto getPtr() noexcept -> uint8_t* {
+    return static_cast<uint8_t*>(static_cast<void*>(&m_next));
+  }
+
 private:
   Ref* m_next;
   RefKind m_kind;
