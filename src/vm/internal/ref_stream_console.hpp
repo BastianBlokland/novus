@@ -111,10 +111,10 @@ public:
   }
 
 private:
-  FILE* m_filePtr;
 #if defined(_WIN32)
   bool m_nonblockWinTerm = false;
 #endif
+  FILE* m_filePtr;
 
   inline explicit ConsoleStreamRef(FILE* filePtr) noexcept : Ref{getKind()}, m_filePtr{filePtr} {}
 };

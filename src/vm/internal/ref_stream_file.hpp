@@ -68,13 +68,13 @@ public:
   auto unsetOpts(StreamOpts /*unused*/) noexcept -> bool { return false; }
 
 private:
+  FileStreamFlags m_flags;
   gsl::owner<FILE*> m_filePtr;
   gsl::owner<char*> m_filePath;
-  FileStreamFlags m_flags;
 
   inline explicit FileStreamRef(
       gsl::owner<FILE*> filePtr, gsl::owner<char*> filePath, FileStreamFlags flags) noexcept :
-      Ref{getKind()}, m_filePtr{filePtr}, m_filePath{filePath}, m_flags{flags} {}
+      Ref{getKind()}, m_flags{flags}, m_filePtr{filePtr}, m_filePath{filePath} {}
 };
 
 inline auto openFileStream(Allocator* alloc, StringRef* path, FileStreamMode m, FileStreamFlags f)

@@ -28,11 +28,11 @@ public:
   inline auto updateSize(unsigned int size) noexcept { m_size = size; }
 
 private:
-  const uint8_t* m_data;
   unsigned int m_size;
+  const uint8_t* m_data;
 
   inline explicit StringRef(const uint8_t* data, unsigned int size) noexcept :
-      Ref(getKind()), m_data{data}, m_size{size} {}
+      Ref(getKind()), m_size{size}, m_data{data} {}
 };
 
 } // namespace vm::internal
