@@ -9,7 +9,8 @@ namespace vm {
 auto run(const novasm::Assembly* assembly, PlatformInterface* iface) noexcept -> ExecState {
 
   auto execRegistry = internal::ExecutorRegistry{};
-  auto refAlloc     = internal::RefAllocator{};
+  auto memAlloc     = internal::MemoryAllocator{};
+  auto refAlloc     = internal::RefAllocator{&memAlloc};
   auto gc           = internal::GarbageCollector{&refAlloc, &execRegistry};
 
   auto resultState = execute(

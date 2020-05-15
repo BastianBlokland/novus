@@ -16,6 +16,8 @@
 
 namespace vm::internal {
 
+// Execute a 'platform' call. Very similar to normal instructions but are interacting with the
+// 'outside' world (for example file io).
 auto inline pcall(
     PlatformInterface* iface,
     RefAllocator* refAlloc,

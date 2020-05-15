@@ -5,6 +5,7 @@
 
 namespace vm::internal {
 
+// Base class for a reference.
 class Ref {
   friend class RefAllocator;
 
@@ -46,7 +47,7 @@ protected:
   }
 
 private:
-  Ref* m_next;
+  Ref* m_next; // Used by the RefAllocator to track all references.
   RefKind m_kind;
   RefFlags m_flags;
 };

@@ -16,9 +16,12 @@ enum class FileStreamMode : uint8_t {
 };
 
 enum FileStreamFlags : uint8_t {
-  AutoRemoveFile = 1,
+  AutoRemoveFile = 1, // File is deleted when the reference to it is freed.
 };
 
+// File implementation of the 'stream' interface.
+// Note: To avoid needing a vtable there is no abstract 'Stream' class but instead there are wrapper
+// functions that dispatch based on the 'RefKind' (see stream_utilities.hpp).
 class FileStreamRef final : public Ref {
   friend class RefAllocator;
 

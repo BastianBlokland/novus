@@ -14,6 +14,7 @@ namespace vm::internal {
 // like setting them to 'non-blocking' are not possible.
 #if !defined(_WIN32)
 
+// Set file-descriptor options.
 inline auto setFileOpts(FILE* filePtr, StreamOpts opts) noexcept -> bool {
   // Get the current options of the file descriptor.
   auto fd      = fileno(filePtr);
@@ -34,6 +35,7 @@ inline auto setFileOpts(FILE* filePtr, StreamOpts opts) noexcept -> bool {
   return true;
 }
 
+// Unset file-descriptor options.
 inline auto unsetFileOpts(FILE* filePtr, StreamOpts opts) noexcept -> bool {
 
   // Get the current options of the file descriptor.

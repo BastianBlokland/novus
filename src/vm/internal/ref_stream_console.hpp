@@ -22,6 +22,9 @@ enum class ConsoleStreamKind : uint8_t {
   StdErr = 2,
 };
 
+// Console implementation of the 'stream' interface.
+// Note: To avoid needing a vtable there is no abstract 'Stream' class but instead there are wrapper
+// functions that dispatch based on the 'RefKind' (see stream_utilities.hpp).
 class ConsoleStreamRef final : public Ref {
   friend class RefAllocator;
 

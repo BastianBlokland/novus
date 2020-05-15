@@ -19,6 +19,7 @@
 
 namespace vm::internal {
 
+// Read a single byte of assembly and increment the given instruction pointer.
 template <typename Type>
 inline auto readAsm(const uint8_t** ip) {
   // TODO(bastian): Handle endianess differences.
@@ -27,6 +28,8 @@ inline auto readAsm(const uint8_t** ip) {
   return v;
 }
 
+// Make a call to a function at a given instruction pointer location. The current
+// instruction-pointer is saved on the stack for returning to when the called function returns.
 inline auto call(
     const novasm::Assembly* assembly,
     BasicStack* stack,
@@ -63,6 +66,8 @@ inline auto call(
   return true;
 }
 
+// Make a tail call to a function at a given instruction pointer location. Execution will NOT be
+// returned to the current function when the called function returns.
 inline auto callTail(
     const novasm::Assembly* assembly,
     BasicStack* stack,
@@ -83,6 +88,8 @@ inline auto callTail(
   *ip = assembly->getIp(tgtIpOffset);
 }
 
+// Push all the arguments of a closure on the stack (in preparation for calling the closure
+// function).
 inline auto pushClosure(
     BasicStack* stack,
     ExecutorHandle* execHandle,
@@ -107,6 +114,8 @@ inline auto pushClosure(
   return true;
 }
 
+// Start executing a call to a function at a given instruction pointer location on a new thread. A
+// promise object for retreiving the results from will be pushed onto the stack.
 inline auto fork(
     const novasm::Assembly* assembly,
     PlatformInterface* iface,

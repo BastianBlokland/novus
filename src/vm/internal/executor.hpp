@@ -7,6 +7,10 @@
 
 namespace vm::internal {
 
+// Execute a specific entrypoint in the assembly until completion.
+//
+// 'entryArgCount', 'entryArgSource', 'promise' are used for sub-executers (forked calls) that take
+// arguments from a parent executor and place their result in the 'promise' object.
 auto execute(
     const novasm::Assembly* assembly,
     PlatformInterface* iface,

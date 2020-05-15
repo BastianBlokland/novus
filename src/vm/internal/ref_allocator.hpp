@@ -3,6 +3,7 @@
 #include "internal/executor_registry.hpp"
 #include "internal/garbage_collector.hpp"
 #include "internal/likely.hpp"
+#include "internal/memory_allocator.hpp"
 #include "internal/ref_alloc_observer.hpp"
 #include <atomic>
 #include <utility>
@@ -16,9 +17,12 @@ class StringRef;
 class StringLinkRef;
 class StructRef;
 
+// Reference Allocator is responsible for acquiring raw memory from the MemoryAllocator and then
+// initialing references in it.
+// Also responsible for keeping track of all live references.
 class RefAllocator final {
 public:
-  RefAllocator() noexcept;
+  RefAllocator(MemoryAllocator* memAlloc) noexcept;
   RefAllocator(const RefAllocator& rhs) = delete;
   RefAllocator(RefAllocator&& rhs)      = delete;
   ~RefAllocator() noexcept;
@@ -57,13 +61,19 @@ public:
     return refPtr;
   }
 
+  // The 'head' allocation is the newest created reference. In combination with the 'getNextAlloc'
+  // allows walking all live references.
   [[nodiscard]] inline auto getHeadAlloc() noexcept -> Ref* {
     return m_head.load(std::memory_order_acquire);
   }
 
+  // Retreive the 'next' references for a given reference, allows walking all live references.
   [[nodiscard]] inline auto getNextAlloc(Ref* ref) noexcept -> Ref* { return ref->m_next; }
 
-  // Not thread-safe, should not be called concurrently.
+  // Free the reference after the given one.
+  // Note: Not thread-safe, should not be called concurrently.
+  // Frees the next one instead of the given one because then we can more efficiently keep our
+  // linked list of references up to date.
   inline auto freeNext(Ref* ref) noexcept -> Ref* {
     auto* toFree = ref->m_next;
     if (toFree) {
@@ -76,17 +86,24 @@ public:
   }
 
 private:
+  MemoryAllocator* m_memAlloc;
   std::atomic<Ref*> m_head;
   std::vector<RefAllocObserver*> m_observers;
 
   auto initRef(Ref* ref) noexcept -> void;
 
+  // Allocate raw memory for a structure + a payload for that structure. When 'payloadsize' is 0
+  // only enough memory to hold the structure is allocated. When 'payloadsize' is 10 then 10
+  // additional bytes are allocated after the structure.
+  // Returns a pair of pointers, first points to the memory for the structure, the second points to
+  // the payload memory.
+  // Note: When memory allocation fails returns {nullptr, nullptr},
   template <typename ConcreteRef>
   auto alloc(const unsigned int payloadsize) noexcept -> std::pair<void*, void*> {
     // Make a single allocation of the header and the payload.
     const auto refSize   = sizeof(ConcreteRef);
     const auto allocSize = refSize + payloadsize;
-    void* refPtr         = std::malloc(allocSize); // NOLINT: Manual memory management.
+    void* refPtr         = m_memAlloc->alloc(allocSize);
     void* payloadPtr     = static_cast<char*>(refPtr) + refSize;
 
     // Note: allocation can fail and in that case this function will return {nullptr, nullptr}.
@@ -100,12 +117,12 @@ private:
   }
 
   // Destruct and free the given ref, unsafe because it doesn't update any of the bookkeeping.
-  inline static auto freeUnsafe(Ref* ref) noexcept -> void {
+  inline auto freeUnsafe(Ref* ref) noexcept -> void {
     // 'Destroy' the reference, which will call the destructor of the implementation.
     // Note: Reason why its not using a virtual destructor is that this way we can avoid the vtable.
     ref->destroy();
     // Free the backing memory.
-    std::free(ref); // NOLINT: Manual memory management.
+    m_memAlloc->free(ref);
   }
 };
 

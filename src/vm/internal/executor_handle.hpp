@@ -10,6 +10,12 @@ namespace vm::internal {
 
 class ExecutorRegistry;
 
+// Handle to an executor, an executor is a single thread that is executing novus assembly.
+// Each executor has its own virtual stack (that is stored on the hardware stack) and a simple
+// api to interact with the executor (to request it to pause for example).
+//
+// Executors have a 'prev' and a 'next' to form a doubly linked list of executors.
+//
 class ExecutorHandle final {
   friend ExecutorRegistry;
 
@@ -39,6 +45,12 @@ public:
     m_state.store(state, std::memory_order_release);
   }
 
+  // Called by the executor at safe-points in the execution, safe meaning that all data is written
+  // back to the stack and the current state is safe to be observed.
+  //
+  // If no pause request has been placed than trap returns immediately, if pause was requested then
+  // trap blocks until its un-paused again.
+  //
   inline auto trap() noexcept -> bool {
   TrapBegin:
 
@@ -50,6 +62,14 @@ public:
       return true;
     case RequestType::Pause:
       m_state.store(ExecState::Paused, std::memory_order_release);
+
+      // TODO(bastian): Might be worth experimenting with different pausing mechanisms. Basically
+      // the longer we pause the slower we are at reacting to a 'resume' but the shorter we pause
+      // the more cpu cycles we waste.
+      //
+      // Current strategy is we do a single longer pause (thread yield) and after returning from
+      // that we do short cpu pauses until we are resumed. This works well if the pause request is
+      // very short, but if its longer it starts to be wastefull.
       std::this_thread::yield();
       while (req = m_request.load(std::memory_order_acquire), req == RequestType::Pause) {
         _mm_pause();
@@ -71,11 +91,15 @@ public:
     return false;
   }
 
+  // Request the executor to abort. Returns immediately with a boolean indicating if the executor
+  // has aborted yet. Common pattern is to keep calling this function until true is returned.
   inline auto requestAbort() noexcept -> bool {
     m_request.store(RequestType::Abort, std::memory_order_release);
     return m_state.load(std::memory_order_acquire) != ExecState::Running;
   }
 
+  // Request the executor to pause. Returns immediately with a boolean indicating if the executor
+  // has paused yet. Common pattern is to keep calling this function until true is returned.
   inline auto requestPause() noexcept -> bool {
     // Set request to 'Pause' in case its currently 'None', reason is we want to leave it alone when
     // its currently set to 'Abort' to avoid resurrecting aborted executors.

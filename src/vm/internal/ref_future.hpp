@@ -10,6 +10,8 @@ namespace vm::internal {
 
 class Value;
 
+// A future is a handle to a forked executor that is asynchronously computing (or has computed) a
+// value.
 class FutureRef final : public Ref {
   friend class RefAllocator;
 
@@ -23,26 +25,33 @@ public:
 
   [[nodiscard]] constexpr static auto getKind() { return RefKind::Future; }
 
+  // Block until the value has been computed (or the executor failed).
   [[nodiscard]] inline auto block() noexcept -> ExecState {
     auto lk = std::unique_lock<std::mutex>{m_mutex};
     m_condVar.wait(lk, [this] { return m_state != ExecState::Running; });
     return m_state;
   }
 
+  // Block until the value has been computed or a timeout occurs.
   [[nodiscard]] inline auto waitNano(int64_t timeout) noexcept -> bool {
     auto lk = std::unique_lock<std::mutex>{m_mutex};
     return m_condVar.wait_for(
         lk, std::chrono::nanoseconds(timeout), [this] { return m_state != ExecState::Running; });
   }
 
+  // Check the state of the executor that is computing the value.
   [[nodiscard]] inline auto poll() noexcept -> ExecState {
     auto lk = std::lock_guard<std::mutex>{m_mutex};
     return m_state;
   }
 
+  // Check if the executor has started computing the value.
   [[nodiscard]] inline auto getStarted() noexcept -> std::atomic_bool& { return m_started; }
+
   [[nodiscard]] inline auto getResult() noexcept -> Value { return m_result; }
+
   [[nodiscard]] inline auto getMutex() noexcept -> std::mutex& { return m_mutex; }
+
   [[nodiscard]] inline auto getCondVar() noexcept -> std::condition_variable& { return m_condVar; }
 
   inline auto setResult(Value result) noexcept { m_result = result; }

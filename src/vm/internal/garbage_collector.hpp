@@ -13,6 +13,17 @@ const auto gcByteInterval         = 100 * 1024 * 1024; // 100 MiB
 const auto gcMinIntervalSeconds   = 10;
 const auto initialGcMarkQueueSize = 1024;
 
+// Garbage collector is responsible for freeing unused references. It uses allocated bytes and
+// elapsed time as heuristics to decide when to run a collection pass.
+//
+// When collecting garbage it performs these steps:
+// * Wake up the collector thread.
+// * Pause all executors ('Stop the world').
+// * Mark all used objects on the stacks of all executors.
+// * Resume all executors ('Resume the world').
+// * Remove all unused references ('Sweep').
+// * Put the collector thread to sleep.
+//
 class GarbageCollector final : public RefAllocObserver {
 public:
   GarbageCollector(RefAllocator* refAlloc, ExecutorRegistry* execRegistry) noexcept;

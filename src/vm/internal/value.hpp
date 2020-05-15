@@ -8,6 +8,7 @@ namespace vm::internal {
 static const uint64_t refTag  = static_cast<uint64_t>(1U);
 static const uint64_t valMask = ~static_cast<uint64_t>(1U);
 
+// Storage for a novus 'value'. Can either store 63 bits of data or a pointer to a reference.
 class Value final {
   friend auto uintValue(uint32_t val) noexcept -> Value;
   friend auto intValue(int32_t val) noexcept -> Value;

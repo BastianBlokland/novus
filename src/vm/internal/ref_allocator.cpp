@@ -5,12 +5,12 @@
 #include "internal/ref_string_link.hpp"
 #include "internal/ref_struct.hpp"
 #include <atomic>
-#include <cstdlib>
 #include <new>
 
 namespace vm::internal {
 
-RefAllocator::RefAllocator() noexcept : m_head{nullptr} {}
+RefAllocator::RefAllocator(MemoryAllocator* memAlloc) noexcept :
+    m_memAlloc(memAlloc), m_head{nullptr} {}
 
 RefAllocator::~RefAllocator() noexcept {
   /* Delete all allocations. Note this assumes no new allocations are being made while we are
