@@ -10,13 +10,9 @@
 
 namespace vm::internal {
 
-RefAllocator::RefAllocator(ExecutorRegistry* execRegistry) noexcept :
-    m_gc{this, execRegistry}, m_head{nullptr}, m_bytesUntilNextCollection{gcByteInterval} {}
+RefAllocator::RefAllocator() noexcept : m_head{nullptr} {}
 
 RefAllocator::~RefAllocator() noexcept {
-  // Shutdown the gc (this makes sure that any ongoing collections are finished).
-  m_gc.terminateCollector();
-
   /* Delete all allocations. Note this assumes no new allocations are being made while we are
   running the destructor. */
 
@@ -26,6 +22,13 @@ RefAllocator::~RefAllocator() noexcept {
     RefAllocator::freeUnsafe(ref);
     ref = next;
   }
+}
+
+auto RefAllocator::subscribe(RefAllocObserver* observer) -> void {
+  // Only allowed to be called before allocating any references.
+  assert(m_head.load(std::memory_order_acquire) == nullptr);
+
+  m_observers.push_back(observer);
 }
 
 auto RefAllocator::allocStr(const unsigned int size) noexcept -> std::pair<StringRef*, uint8_t*> {

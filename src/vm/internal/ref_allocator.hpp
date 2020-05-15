@@ -3,12 +3,11 @@
 #include "internal/executor_registry.hpp"
 #include "internal/garbage_collector.hpp"
 #include "internal/likely.hpp"
+#include "internal/ref_alloc_observer.hpp"
 #include <atomic>
 #include <utility>
 
 namespace vm::internal {
-
-const auto gcByteInterval = 100 * 1024 * 1024; // 100 MiB
 
 class FutureRef;
 class LongRef;
@@ -19,13 +18,17 @@ class StructRef;
 
 class RefAllocator final {
 public:
-  explicit RefAllocator(ExecutorRegistry* execRegistry) noexcept;
+  RefAllocator() noexcept;
   RefAllocator(const RefAllocator& rhs) = delete;
   RefAllocator(RefAllocator&& rhs)      = delete;
   ~RefAllocator() noexcept;
 
   auto operator=(const RefAllocator& rhs) -> RefAllocator& = delete;
   auto operator=(RefAllocator&& rhs) -> RefAllocator& = delete;
+
+  // Observe allocations being made.
+  // Note: NOT synchronized has to be called before the application makes any allocations.
+  auto subscribe(RefAllocObserver* observer) -> void;
 
   // Allocate a string, upon failure returns {nullptr, nullptr}.
   [[nodiscard]] auto allocStr(unsigned int size) noexcept -> std::pair<StringRef*, uint8_t*>;
@@ -73,9 +76,8 @@ public:
   }
 
 private:
-  GarbageCollector m_gc;
   std::atomic<Ref*> m_head;
-  std::atomic<int> m_bytesUntilNextCollection;
+  std::vector<RefAllocObserver*> m_observers;
 
   auto initRef(Ref* ref) noexcept -> void;
 
@@ -84,15 +86,14 @@ private:
     // Make a single allocation of the header and the payload.
     const auto refSize   = sizeof(ConcreteRef);
     const auto allocSize = refSize + payloadsize;
-    void* refPtr         = std::malloc(refSize + payloadsize); // NOLINT: Manual memory management.
+    void* refPtr         = std::malloc(allocSize); // NOLINT: Manual memory management.
     void* payloadPtr     = static_cast<char*>(refPtr) + refSize;
 
-    // Note: malloc can fail and in that case this function will return {nullptr, nullptr}.
+    // Note: allocation can fail and in that case this function will return {nullptr, nullptr}.
 
-    // Keep track of how many bytes we are still allowed to allocate before running gc.
-    if (unlikely(m_bytesUntilNextCollection.fetch_sub(allocSize, std::memory_order_acq_rel) < 0)) {
-      m_bytesUntilNextCollection.store(gcByteInterval, std::memory_order_release);
-      m_gc.requestCollection();
+    // Notify any observers about this allocation.
+    for (auto* observer : m_observers) {
+      observer->notifyAlloc(allocSize);
     }
 
     return {refPtr, payloadPtr};

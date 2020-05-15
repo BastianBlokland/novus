@@ -13,6 +13,9 @@ GarbageCollector::GarbageCollector(
     RefAllocator* refAlloc, ExecutorRegistry* execRegistry) noexcept :
     m_refAlloc{refAlloc}, m_execRegistry{execRegistry}, m_requestType{RequestType::None} {
 
+  // Subscribe to allocation notifications, we can use these to decide when to run a collection.
+  refAlloc->subscribe(this);
+
   m_markQueue.reserve(initialGcMarkQueueSize);
 
   // Start the garbage-collector thread.
@@ -44,6 +47,14 @@ auto GarbageCollector::terminateCollector() noexcept -> void {
   m_collectorThread.join();
 }
 
+auto GarbageCollector::notifyAlloc(unsigned int size) noexcept -> void {
+
+  if (m_bytesUntilNextCollection.fetch_sub(size, std::memory_order_acq_rel) < 0) {
+    m_bytesUntilNextCollection.store(gcByteInterval, std::memory_order_relaxed);
+    requestCollection();
+  }
+}
+
 auto GarbageCollector::collectorLoop() noexcept -> void {
   while (true) {
     // Wait for a request (or timout for a minimum gc interval).
@@ -55,6 +66,10 @@ auto GarbageCollector::collectorLoop() noexcept -> void {
       if (unlikely(m_requestType == RequestType::Terminate)) {
         return;
       }
+
+      // Reset the bytes counter.
+      m_bytesUntilNextCollection.store(gcByteInterval, std::memory_order_release);
+
       m_requestType = RequestType::None;
     }
 

@@ -1,5 +1,6 @@
 #pragma once
 #include "internal/executor_registry.hpp"
+#include "internal/ref_alloc_observer.hpp"
 #include <condition_variable>
 #include <thread>
 #include <vector>
@@ -8,10 +9,11 @@ namespace vm::internal {
 
 class RefAllocator;
 
+const auto gcByteInterval         = 100 * 1024 * 1024; // 100 MiB
 const auto gcMinIntervalSeconds   = 10;
 const auto initialGcMarkQueueSize = 1024;
 
-class GarbageCollector final {
+class GarbageCollector final : public RefAllocObserver {
 public:
   GarbageCollector(RefAllocator* refAlloc, ExecutorRegistry* execRegistry) noexcept;
   GarbageCollector(const GarbageCollector& rhs) = delete;
@@ -34,11 +36,14 @@ private:
   RefAllocator* m_refAlloc;
   ExecutorRegistry* m_execRegistry;
   std::vector<Ref*> m_markQueue;
+  std::atomic<int> m_bytesUntilNextCollection;
 
   std::thread m_collectorThread;
   RequestType m_requestType;
   std::mutex m_requestMutex;
   std::condition_variable m_requestCondVar;
+
+  auto notifyAlloc(unsigned int size) noexcept -> void override;
 
   auto request(RequestType type) noexcept -> void;
   auto collectorLoop() noexcept -> void;
