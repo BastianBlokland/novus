@@ -156,7 +156,8 @@ auto GarbageCollector::mark() noexcept -> void {
       }
     } break;
     case RefKind::String:
-    case RefKind::Stream:
+    case RefKind::StreamFile:
+    case RefKind::StreamConsole:
     case RefKind::Long:
       break;
     }

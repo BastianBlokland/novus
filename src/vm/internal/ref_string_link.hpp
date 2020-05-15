@@ -18,7 +18,7 @@ class StringLinkRef final : public Ref {
 public:
   StringLinkRef(const StringLinkRef& rhs) = delete;
   StringLinkRef(StringLinkRef&& rhs)      = delete;
-  ~StringLinkRef() noexcept override      = default;
+  ~StringLinkRef() noexcept               = default;
 
   auto operator=(const StringLinkRef& rhs) -> StringLinkRef& = delete;
   auto operator=(StringLinkRef&& rhs) -> StringLinkRef& = delete;

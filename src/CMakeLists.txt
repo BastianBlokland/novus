@@ -273,6 +273,7 @@ add_library(vm STATIC
   vm/internal/executor_registry.cpp
   vm/internal/executor.cpp
   vm/internal/garbage_collector.cpp
+  vm/internal/ref.cpp
   vm/platform_interface.cpp
   vm/vm.cpp
   vm/exec_state.cpp)

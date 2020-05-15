@@ -4,6 +4,7 @@
 #include "internal/ref_stream_console.hpp"
 #include "internal/ref_stream_file.hpp"
 #include "internal/stack.hpp"
+#include "internal/stream_utilities.hpp"
 #include "internal/string_utilities.hpp"
 #include "internal/terminal.hpp"
 #include "novasm/pcall_code.hpp"

@@ -100,8 +100,9 @@ private:
 
   // Destruct and free the given ref, unsafe because it doesn't update any of the bookkeeping.
   inline static auto freeUnsafe(Ref* ref) noexcept -> void {
-    // Call the (virtual) destructor.
-    ref->~Ref();
+    // 'Destroy' the reference, which will call the destructor of the implementation.
+    // Note: Reason why its not using a virtual destructor is that this way we can avoid the vtable.
+    ref->destroy();
     // Free the backing memory.
     std::free(ref); // NOLINT: Manual memory management.
   }

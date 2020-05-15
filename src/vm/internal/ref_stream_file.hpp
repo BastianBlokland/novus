@@ -1,7 +1,9 @@
 #pragma once
 #include "gsl.hpp"
+#include "internal/allocator.hpp"
 #include "internal/fd_utilities.hpp"
-#include "internal/ref_stream.hpp"
+#include "internal/ref.hpp"
+#include "internal/ref_string.hpp"
 #include <cstdio>
 #include <cstring>
 
@@ -17,13 +19,13 @@ enum FileStreamFlags : uint8_t {
   AutoRemoveFile = 1,
 };
 
-class FileStreamRef final : public StreamRef {
+class FileStreamRef final : public Ref {
   friend class Allocator;
 
 public:
   FileStreamRef(const FileStreamRef& rhs) = delete;
   FileStreamRef(FileStreamRef&& rhs)      = delete;
-  ~FileStreamRef() noexcept override {
+  ~FileStreamRef() noexcept {
     if (m_filePtr) {
       std::fclose(m_filePtr);
       if ((m_flags & AutoRemoveFile) == AutoRemoveFile) {
@@ -36,9 +38,11 @@ public:
   auto operator=(const FileStreamRef& rhs) -> FileStreamRef& = delete;
   auto operator=(FileStreamRef&& rhs) -> FileStreamRef& = delete;
 
-  [[nodiscard]] auto isValid() noexcept -> bool override { return m_filePtr != nullptr; }
+  [[nodiscard]] constexpr static auto getKind() { return RefKind::StreamFile; }
 
-  auto readString(Allocator* alloc, int32_t max) noexcept -> StringRef* override {
+  [[nodiscard]] auto isValid() noexcept -> bool { return m_filePtr != nullptr; }
+
+  auto readString(Allocator* alloc, int32_t max) noexcept -> StringRef* {
     auto strAlloc              = alloc->allocStr(max); // allocStr already does +1 for null-ter.
     auto bytesRead             = std::fread(strAlloc.second, 1U, max, m_filePtr);
     strAlloc.second[bytesRead] = '\0'; // null-terminate.
@@ -46,40 +50,38 @@ public:
     return strAlloc.first;
   }
 
-  auto readChar() noexcept -> char override {
+  auto readChar() noexcept -> char {
     auto res = std::getc(m_filePtr);
     return res > 0 ? static_cast<char>(res) : '\0';
   }
 
-  auto writeString(StringRef* str) noexcept -> bool override {
+  auto writeString(StringRef* str) noexcept -> bool {
     return std::fwrite(str->getDataPtr(), str->getSize(), 1, m_filePtr) == 1;
   }
 
-  auto writeChar(uint8_t val) noexcept -> bool override {
-    return std::fputc(val, m_filePtr) == val;
-  }
+  auto writeChar(uint8_t val) noexcept -> bool { return std::fputc(val, m_filePtr) == val; }
 
-  auto flush() noexcept -> bool override { return std::fflush(m_filePtr) == 0; }
+  auto flush() noexcept -> bool { return std::fflush(m_filePtr) == 0; }
 
-  auto setOpts(StreamOpts /*unused*/) noexcept -> bool override { return false; }
+  auto setOpts(StreamOpts /*unused*/) noexcept -> bool { return false; }
 
-  auto unsetOpts(StreamOpts /*unused*/) noexcept -> bool override { return false; }
+  auto unsetOpts(StreamOpts /*unused*/) noexcept -> bool { return false; }
 
 private:
+  FileStreamFlags m_flags;
   gsl::owner<FILE*> m_filePtr;
   gsl::owner<char*> m_filePath;
-  FileStreamFlags m_flags;
 
   inline explicit FileStreamRef(
       gsl::owner<FILE*> filePtr, gsl::owner<char*> filePath, FileStreamFlags flags) noexcept :
-      StreamRef{}, m_filePtr{filePtr}, m_filePath{filePath}, m_flags{flags} {}
+      Ref{getKind()}, m_flags{flags}, m_filePtr{filePtr}, m_filePath{filePath} {}
 };
 
 inline auto openFileStream(Allocator* alloc, StringRef* path, FileStreamMode m, FileStreamFlags f)
-    -> StreamRef* {
+    -> FileStreamRef* {
 
   // Make copy of the file-path string to store in the file-stream.
-  gsl::owner<char*> filePath = new char[path->getSize() + 1];     // +1 for null-terminator.
+  auto filePath = new gsl::owner<char>[path->getSize() + 1];      // +1 for null-terminator.
   std::memcpy(filePath, path->getDataPtr(), path->getSize() + 1); // +1 for null-terminator.
 
   // Open the file.

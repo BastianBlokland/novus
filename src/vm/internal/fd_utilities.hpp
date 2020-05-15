@@ -1,5 +1,5 @@
 #pragma once
-#include "internal/ref_stream.hpp"
+#include "internal/stream_opts.hpp"
 
 #if !defined(_WIN32)
 

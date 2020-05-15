@@ -10,7 +10,7 @@ class StringRef final : public Ref {
 public:
   StringRef(const StringRef& rhs) = delete;
   StringRef(StringRef&& rhs)      = delete;
-  ~StringRef() noexcept override  = default;
+  ~StringRef() noexcept           = default;
 
   auto operator=(const StringRef& rhs) -> StringRef& = delete;
   auto operator=(StringRef&& rhs) -> StringRef& = delete;
@@ -28,11 +28,11 @@ public:
   inline auto updateSize(unsigned int size) noexcept { m_size = size; }
 
 private:
-  const uint8_t* m_data;
   unsigned int m_size;
+  const uint8_t* m_data;
 
   inline explicit StringRef(const uint8_t* data, unsigned int size) noexcept :
-      Ref(getKind()), m_data{data}, m_size{size} {}
+      Ref(getKind()), m_size{size}, m_data{data} {}
 };
 
 } // namespace vm::internal
