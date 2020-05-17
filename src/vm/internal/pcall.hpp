@@ -16,13 +16,15 @@
 
 namespace vm::internal {
 
+// Execute a 'platform' call. Very similar to normal instructions but are interacting with the
+// 'outside' world (for example file io).
 auto inline pcall(
     PlatformInterface* iface,
-    Allocator* alloc,
+    RefAllocator* refAlloc,
     BasicStack* stack,
     ExecutorHandle* execHandle,
     novasm::PCallCode code) noexcept -> void {
-  assert(iface && alloc && stack && execHandle);
+  assert(iface && refAlloc && stack && execHandle);
 
   using PCallCode = novasm::PCallCode;
 
@@ -46,7 +48,7 @@ auto inline pcall(
     if (v >= 0L) {                                                                                 \
       PUSH(posLongValue(v));                                                                       \
     } else {                                                                                       \
-      PUSH_REF(alloc->allocPlain<LongRef>(v));                                                     \
+      PUSH_REF(refAlloc->allocPlain<LongRef>(v));                                                  \
     }                                                                                              \
   }
 #define PUSH_REF(VAL)                                                                              \
@@ -67,14 +69,14 @@ auto inline pcall(
     // Flags is stored in the 8 bits before (more significant) then mode.
     auto mode        = static_cast<FileStreamMode>(static_cast<uint8_t>(options));
     auto flags       = static_cast<FileStreamFlags>(static_cast<uint8_t>(options >> 8U));
-    auto* pathStrRef = getStringRef(alloc, POP());
+    auto* pathStrRef = getStringRef(refAlloc, POP());
     CHECK_ALLOC(pathStrRef);
 
-    PUSH_REF(openFileStream(alloc, pathStrRef, mode, flags));
+    PUSH_REF(openFileStream(refAlloc, pathStrRef, mode, flags));
   } break;
   case PCallCode::StreamOpenConsole: {
     auto kind = static_cast<ConsoleStreamKind>(POP_INT());
-    PUSH_REF(openConsoleStream(iface, alloc, kind));
+    PUSH_REF(openConsoleStream(iface, refAlloc, kind));
   } break;
   case PCallCode::StreamCheckValid: {
     PUSH_BOOL(streamCheckValid(POP()));
@@ -84,7 +86,7 @@ auto inline pcall(
     auto stream   = POP();
 
     execHandle->setState(ExecState::Paused);
-    auto* result = streamReadString(alloc, stream, maxChars);
+    auto* result = streamReadString(refAlloc, stream, maxChars);
     execHandle->setState(ExecState::Running);
     execHandle->trap();
 
@@ -101,7 +103,7 @@ auto inline pcall(
     PUSH_INT(readChar);
   } break;
   case PCallCode::StreamWriteString: {
-    auto* strRef = getStringRef(alloc, POP());
+    auto* strRef = getStringRef(refAlloc, POP());
     CHECK_ALLOC(strRef);
 
     auto stream = POP();
@@ -139,7 +141,7 @@ auto inline pcall(
   } break;
 
   case PCallCode::FileRemove: {
-    auto* pathStrRef = getStringRef(alloc, POP());
+    auto* pathStrRef = getStringRef(refAlloc, POP());
     CHECK_ALLOC(pathStrRef);
 
     PUSH_BOOL(removeFile(pathStrRef));
@@ -162,17 +164,17 @@ auto inline pcall(
 
   case PCallCode::GetEnvArg: {
     auto* res = iface->getEnvArg(POP_INT());
-    PUSH_REF(res == nullptr ? alloc->allocStr(0).first : toStringRef(alloc, res));
+    PUSH_REF(res == nullptr ? refAlloc->allocStr(0).first : toStringRef(refAlloc, res));
   } break;
   case PCallCode::GetEnvArgCount: {
     PUSH_INT(iface->getEnvArgCount());
   } break;
   case PCallCode::GetEnvVar: {
-    auto* nameStrRef = getStringRef(alloc, POP());
+    auto* nameStrRef = getStringRef(refAlloc, POP());
     CHECK_ALLOC(nameStrRef);
 
     auto* res = std::getenv(nameStrRef->getCharDataPtr());
-    PUSH_REF(res == nullptr ? alloc->allocStr(0).first : toStringRef(alloc, res));
+    PUSH_REF(res == nullptr ? refAlloc->allocStr(0).first : toStringRef(refAlloc, res));
   } break;
 
   case PCallCode::ClockMicroSinceEpoch: {
@@ -191,7 +193,7 @@ auto inline pcall(
     execHandle->trap();
   } break;
   case PCallCode::Assert: {
-    auto* msg = getStringRef(alloc, POP());
+    auto* msg = getStringRef(refAlloc, POP());
     CHECK_ALLOC(msg);
 
     auto cond = PEEK_INT();

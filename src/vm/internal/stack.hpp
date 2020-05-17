@@ -5,6 +5,9 @@
 
 namespace vm::internal {
 
+// Virtual memory stack used by executors.
+// Note: stored on the hardware stack so capacity x 64 bit needs to fit in the platform's
+// stack-size.
 template <unsigned int Capacity>
 class Stack final {
 public:

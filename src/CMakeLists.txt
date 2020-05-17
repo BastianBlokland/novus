@@ -269,10 +269,11 @@ target_include_directories(novasm PRIVATE novasm)
 # Virtual Machine.
 message(">> Configuring vm library")
 add_library(vm STATIC
-  vm/internal/allocator.cpp
   vm/internal/executor_registry.cpp
   vm/internal/executor.cpp
   vm/internal/garbage_collector.cpp
+  vm/internal/memory_allocator.cpp
+  vm/internal/ref_allocator.cpp
   vm/internal/ref.cpp
   vm/platform_interface.cpp
   vm/vm.cpp

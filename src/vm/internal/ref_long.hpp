@@ -5,8 +5,12 @@
 
 namespace vm::internal {
 
+// Reference to a 64 bit integer value.
+// We cannot store full 64 bit integers in a 'Value' because only 63 bits are available for storage.
+// As an optimization all positive longs (most significant bit being 0) are stored directly in a
+// 'Value' while negative longs are stored as references.
 class LongRef final : public Ref {
-  friend class Allocator;
+  friend class RefAllocator;
 
 public:
   LongRef(const LongRef& rhs) = delete;

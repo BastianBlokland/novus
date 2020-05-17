@@ -5,6 +5,7 @@
 
 namespace vm::internal {
 
+// Registry that keeps track of all executors.
 class ExecutorRegistry final {
 public:
   ExecutorRegistry() noexcept;

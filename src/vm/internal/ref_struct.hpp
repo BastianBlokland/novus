@@ -5,8 +5,10 @@ namespace vm::internal {
 
 class Value;
 
+// Structure containing multiple values.
+// Note: the fields of the struct are allocated right after this class.
 class StructRef final : public Ref {
-  friend class Allocator;
+  friend class RefAllocator;
 
 public:
   StructRef(const StructRef& rhs) = delete;
@@ -18,6 +20,7 @@ public:
 
   [[nodiscard]] constexpr static auto getKind() { return RefKind::Struct; }
 
+  // Get a pointer to the first field (In memory right after this class).
   [[nodiscard]] inline auto getFieldsBegin() noexcept -> Value* {
     return static_cast<Value*>(static_cast<void*>(getPtr() + sizeof(StructRef)));
   }

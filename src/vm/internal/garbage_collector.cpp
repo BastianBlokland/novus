@@ -1,5 +1,5 @@
 #include "internal/garbage_collector.hpp"
-#include "internal/allocator.hpp"
+#include "internal/ref_allocator.hpp"
 #include "internal/ref_future.hpp"
 #include "internal/ref_string_link.hpp"
 #include "internal/ref_struct.hpp"
@@ -9,8 +9,17 @@
 
 namespace vm::internal {
 
-GarbageCollector::GarbageCollector(Allocator* allocator, ExecutorRegistry* execRegistry) noexcept :
-    m_allocator{allocator}, m_execRegistry{execRegistry}, m_requestType{RequestType::None} {
+// To avoid too much contention on the 'm_bytesUntilNextCollection' atomic we first fill a
+// thread-static counter before decreasing the atomic.
+const static auto bytesAllocThreadAccumMax = 1024U * 1024U; // 1 MiB
+thread_local static unsigned int bytesAllocThreadAccum;
+
+GarbageCollector::GarbageCollector(
+    RefAllocator* refAlloc, ExecutorRegistry* execRegistry) noexcept :
+    m_refAlloc{refAlloc}, m_execRegistry{execRegistry}, m_requestType{RequestType::None} {
+
+  // Subscribe to allocation notifications, we can use these to decide when to run a collection.
+  refAlloc->subscribe(this);
 
   m_markQueue.reserve(initialGcMarkQueueSize);
 
@@ -43,6 +52,22 @@ auto GarbageCollector::terminateCollector() noexcept -> void {
   m_collectorThread.join();
 }
 
+auto GarbageCollector::notifyAlloc(unsigned int size) noexcept -> void {
+  // Increase the thread-static counter.
+  bytesAllocThreadAccum += size;
+  if (bytesAllocThreadAccum > bytesAllocThreadAccumMax) {
+
+    // Decrease the bytesUntilNextCollection atomic.
+    if (m_bytesUntilNextCollection.fetch_sub(bytesAllocThreadAccum, std::memory_order_acq_rel) <
+        0) {
+      m_bytesUntilNextCollection.store(gcByteInterval, std::memory_order_release);
+      requestCollection();
+    }
+
+    bytesAllocThreadAccum = 0;
+  }
+}
+
 auto GarbageCollector::collectorLoop() noexcept -> void {
   while (true) {
     // Wait for a request (or timout for a minimum gc interval).
@@ -54,6 +79,10 @@ auto GarbageCollector::collectorLoop() noexcept -> void {
       if (unlikely(m_requestType == RequestType::Terminate)) {
         return;
       }
+
+      // Reset the bytes counter.
+      m_bytesUntilNextCollection.store(gcByteInterval, std::memory_order_release);
+
       m_requestType = RequestType::None;
     }
 
@@ -74,7 +103,7 @@ auto GarbageCollector::collect() noexcept -> void {
   mark();
 
   // Get the head ref to start the sweep from.
-  Ref* sweepHead = m_allocator->getHeadAlloc();
+  Ref* sweepHead = m_refAlloc->getHeadAlloc();
 
   // Resume the executors as the sweeping can run concurrently with the program.
   m_execRegistry->resumeExecutors();
@@ -176,16 +205,16 @@ auto GarbageCollector::sweep(Ref* head) noexcept -> void {
   head->unsetFlag<RefFlags::GcMarked>();
 
   Ref* prev = head;
-  Ref* cur  = m_allocator->getNextAlloc(head);
+  Ref* cur  = m_refAlloc->getNextAlloc(head);
   while (cur) {
     if (cur->hasFlag<RefFlags::GcMarked>()) {
       // Still reachable.
       cur->unsetFlag<RefFlags::GcMarked>();
       prev = cur;
-      cur  = m_allocator->getNextAlloc(cur);
+      cur  = m_refAlloc->getNextAlloc(cur);
     } else {
       // No longer reachable.
-      cur = m_allocator->freeNext(prev);
+      cur = m_refAlloc->freeNext(prev);
     }
   }
 }

@@ -1,8 +1,8 @@
 #pragma once
 #include "gsl.hpp"
-#include "internal/allocator.hpp"
 #include "internal/fd_utilities.hpp"
 #include "internal/ref.hpp"
+#include "internal/ref_allocator.hpp"
 #include "internal/ref_string.hpp"
 #include "internal/terminal.hpp"
 #include "vm/platform_interface.hpp"
@@ -22,8 +22,11 @@ enum class ConsoleStreamKind : uint8_t {
   StdErr = 2,
 };
 
+// Console implementation of the 'stream' interface.
+// Note: To avoid needing a vtable there is no abstract 'Stream' class but instead there are wrapper
+// functions that dispatch based on the 'RefKind' (see stream_utilities.hpp).
 class ConsoleStreamRef final : public Ref {
-  friend class Allocator;
+  friend class RefAllocator;
 
 public:
   ConsoleStreamRef(const ConsoleStreamRef& rhs) = delete;
@@ -37,7 +40,7 @@ public:
 
   [[nodiscard]] auto isValid() noexcept -> bool { return m_filePtr != nullptr; }
 
-  auto readString(Allocator* alloc, int32_t max) noexcept -> StringRef* {
+  auto readString(RefAllocator* alloc, int32_t max) noexcept -> StringRef* {
 #if defined(_WIN32)
     // Special case non-blocking terminal read on windows. Unfortunately required as AFAIK there are
     // no non-blocking file-descriptors that can be used for terminal io.
@@ -119,7 +122,7 @@ private:
   inline explicit ConsoleStreamRef(FILE* filePtr) noexcept : Ref{getKind()}, m_filePtr{filePtr} {}
 };
 
-inline auto openConsoleStream(PlatformInterface* iface, Allocator* alloc, ConsoleStreamKind kind)
+inline auto openConsoleStream(PlatformInterface* iface, RefAllocator* alloc, ConsoleStreamKind kind)
     -> ConsoleStreamRef* {
   FILE* file;
   switch (kind) {

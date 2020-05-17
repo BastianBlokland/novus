@@ -5,7 +5,7 @@
 
 namespace vm::internal {
 
-class Allocator;
+class RefAllocator;
 
 // A 'StringLink' can be used to create a linked list of StringRef's. Used as an optimization when
 // concatenation strings, only when the 'result' is needed is the actual concatenation performed.
@@ -13,7 +13,7 @@ class Allocator;
 // if building a string backwards turns out to be common also we could support a configurable
 // direction.
 class StringLinkRef final : public Ref {
-  friend class Allocator;
+  friend class RefAllocator;
 
 public:
   StringLinkRef(const StringLinkRef& rhs) = delete;

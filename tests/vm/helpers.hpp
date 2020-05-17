@@ -61,7 +61,7 @@ inline auto makeTmpFile() -> FILE* {
     gsl::owner<std::FILE*> stdOutFile = makeTmpFile();                                             \
     auto iface = PlatformInterface{0, nullptr, stdInFile, stdOutFile, nullptr};                    \
                                                                                                    \
-    run(&assembly, &iface);                                                                        \
+    CHECK(run(&assembly, &iface) == ExecState::Success);                                           \
                                                                                                    \
     /* Verify that the correct stdOut output was generated. */                                     \
     CHECK_THAT(getString(stdOutFile), Catch::Equals(EXPECTED));                                    \
