@@ -15,6 +15,17 @@
       "stopOnEntry": false
     },
     {
+      "name": "novrt",
+      "preLaunchTask": "build",
+      "type": "lldb",
+      "request": "launch",
+      "program": "${workspaceFolder}/bin/novrt",
+      "args": [],
+      "cwd": "${workspaceFolder}",
+      "terminal": "integrated",
+      "stopOnEntry": false
+    },
+    {
       "name": "novdiag-lex",
       "preLaunchTask": "build",
       "type": "lldb",

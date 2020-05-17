@@ -1,6 +1,5 @@
 #pragma once
 #include <cstdint>
-#include <cstdlib>
 #include <utility>
 
 namespace vm::internal {
@@ -8,7 +7,7 @@ namespace vm::internal {
 // Responsible for allocating and deallocating raw memory from the system.
 class MemoryAllocator final {
 public:
-  MemoryAllocator() noexcept                  = default;
+  MemoryAllocator() noexcept;
   MemoryAllocator(const MemoryAllocator& rhs) = delete;
   MemoryAllocator(MemoryAllocator&& rhs)      = delete;
   ~MemoryAllocator() noexcept                 = default;
