@@ -9,6 +9,11 @@
 
 namespace vm::internal {
 
+// To avoid too much contention on the 'm_bytesUntilNextCollection' atomic we first fill a
+// thread-static counter before decreasing the atomic.
+const static auto bytesAllocThreadAccumMax = 1024U * 1024U; // 1 MiB
+thread_local static unsigned int bytesAllocThreadAccum;
+
 GarbageCollector::GarbageCollector(
     RefAllocator* refAlloc, ExecutorRegistry* execRegistry) noexcept :
     m_refAlloc{refAlloc}, m_execRegistry{execRegistry}, m_requestType{RequestType::None} {
@@ -48,10 +53,18 @@ auto GarbageCollector::terminateCollector() noexcept -> void {
 }
 
 auto GarbageCollector::notifyAlloc(unsigned int size) noexcept -> void {
+  // Increase the thread-static counter.
+  bytesAllocThreadAccum += size;
+  if (bytesAllocThreadAccum > bytesAllocThreadAccumMax) {
 
-  if (m_bytesUntilNextCollection.fetch_sub(size, std::memory_order_acq_rel) < 0) {
-    m_bytesUntilNextCollection.store(gcByteInterval, std::memory_order_relaxed);
-    requestCollection();
+    // Decrease the bytesUntilNextCollection atomic.
+    if (m_bytesUntilNextCollection.fetch_sub(bytesAllocThreadAccum, std::memory_order_acq_rel) <
+        0) {
+      m_bytesUntilNextCollection.store(gcByteInterval, std::memory_order_release);
+      requestCollection();
+    }
+
+    bytesAllocThreadAccum = 0;
   }
 }
 
