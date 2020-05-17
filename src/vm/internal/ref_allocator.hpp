@@ -52,12 +52,12 @@ public:
     static_assert(std::is_convertible<RefType*, Ref*>());
 
     auto mem = alloc<RefType>(0);
-    if (unlikely(mem.first == nullptr)) {
+    if (unlikely(mem.refPtr == nullptr)) {
       return nullptr;
     }
 
-    auto* refPtr = static_cast<RefType*>(new (mem.first) RefType{std::forward<ArgTypes>(args)...});
-    initRef(refPtr);
+    auto* refPtr = static_cast<RefType*>(new (mem.refPtr) RefType{std::forward<ArgTypes>(args)...});
+    initRef(refPtr, mem.memTag);
     return refPtr;
   }
 
@@ -86,11 +86,17 @@ public:
   }
 
 private:
+  struct Allocation {
+    void* refPtr;
+    void* payloadPtr;
+    uint8_t memTag;
+  };
+
   MemoryAllocator* m_memAlloc;
   std::atomic<Ref*> m_head;
   std::vector<RefAllocObserver*> m_observers;
 
-  auto initRef(Ref* ref) noexcept -> void;
+  auto initRef(Ref* ref, uint8_t memTag) noexcept -> void;
 
   // Allocate raw memory for a structure + a payload for that structure. When 'payloadsize' is 0
   // only enough memory to hold the structure is allocated. When 'payloadsize' is 10 then 10
@@ -99,21 +105,19 @@ private:
   // the payload memory.
   // Note: When memory allocation fails returns {nullptr, nullptr},
   template <typename ConcreteRef>
-  auto alloc(const unsigned int payloadsize) noexcept -> std::pair<void*, void*> {
+  inline auto alloc(const unsigned int payloadsize) noexcept -> Allocation {
     // Make a single allocation of the header and the payload.
     const auto refSize   = sizeof(ConcreteRef);
     const auto allocSize = refSize + payloadsize;
-    void* refPtr         = m_memAlloc->alloc(allocSize);
-    void* payloadPtr     = static_cast<char*>(refPtr) + refSize;
-
-    // Note: allocation can fail and in that case this function will return {nullptr, nullptr}.
+    auto alloc           = m_memAlloc->alloc(allocSize);
+    void* payloadPtr     = static_cast<char*>(alloc.first) + refSize;
 
     // Notify any observers about this allocation.
     for (auto* observer : m_observers) {
       observer->notifyAlloc(allocSize);
     }
 
-    return {refPtr, payloadPtr};
+    return Allocation{alloc.first, payloadPtr, alloc.second};
   }
 
   // Destruct and free the given ref, unsafe because it doesn't update any of the bookkeeping.
@@ -122,7 +126,7 @@ private:
     // Note: Reason why its not using a virtual destructor is that this way we can avoid the vtable.
     ref->destroy();
     // Free the backing memory.
-    m_memAlloc->free(ref);
+    m_memAlloc->free(ref, ref->m_memTag);
   }
 };
 

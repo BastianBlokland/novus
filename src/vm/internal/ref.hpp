@@ -48,6 +48,7 @@ protected:
 
 private:
   Ref* m_next; // Used by the RefAllocator to track all references.
+  uint8_t m_memTag;
   RefKind m_kind;
   RefFlags m_flags;
 };

@@ -33,54 +33,58 @@ auto RefAllocator::subscribe(RefAllocObserver* observer) -> void {
 
 auto RefAllocator::allocStr(const unsigned int size) noexcept -> std::pair<StringRef*, uint8_t*> {
   auto mem = alloc<StringRef>(size + 1); // +1 for null-terminator.
-  if (unlikely(mem.first == nullptr)) {
+  if (unlikely(mem.refPtr == nullptr)) {
     return {nullptr, nullptr};
   }
 
-  auto payloadPtr  = static_cast<uint8_t*>(mem.second);
+  auto payloadPtr  = static_cast<uint8_t*>(mem.payloadPtr);
   payloadPtr[size] = '\0'; // Null-terminate the payload.
-  auto* refPtr     = static_cast<StringRef*>(new (mem.first) StringRef{payloadPtr, size});
-  initRef(refPtr);
+  auto* refPtr     = static_cast<StringRef*>(new (mem.refPtr) StringRef{payloadPtr, size});
+  initRef(refPtr, mem.memTag);
   return {refPtr, payloadPtr};
 }
 
 auto RefAllocator::allocStrLit(const std::string& lit) noexcept -> StringRef* {
   auto mem = alloc<StringRef>(0);
-  if (unlikely(mem.first == nullptr)) {
+  if (unlikely(mem.refPtr == nullptr)) {
     return nullptr;
   }
 
   auto litSize   = static_cast<unsigned int>(lit.size());
   auto* charData = reinterpret_cast<const uint8_t*>(lit.data());
-  auto* refPtr   = static_cast<StringRef*>(new (mem.first) StringRef{charData, litSize});
-  initRef(refPtr);
+  auto* refPtr   = static_cast<StringRef*>(new (mem.refPtr) StringRef{charData, litSize});
+  initRef(refPtr, mem.memTag);
   return refPtr;
 }
 
 auto RefAllocator::allocStrLink(Ref* prev, Value val) noexcept -> StringLinkRef* {
   auto mem = alloc<StringLinkRef>(0);
-  if (unlikely(mem.first == nullptr)) {
+  if (unlikely(mem.refPtr == nullptr)) {
     return nullptr;
   }
 
-  auto* refPtr = static_cast<StringLinkRef*>(new (mem.first) StringLinkRef{prev, val});
-  initRef(refPtr);
+  auto* refPtr = static_cast<StringLinkRef*>(new (mem.refPtr) StringLinkRef{prev, val});
+  initRef(refPtr, mem.memTag);
   return refPtr;
 }
 
 auto RefAllocator::allocStruct(uint8_t fieldCount) noexcept -> std::pair<StructRef*, Value*> {
   auto mem = alloc<StructRef>(sizeof(Value) * fieldCount);
-  if (unlikely(mem.first == nullptr)) {
+  if (unlikely(mem.refPtr == nullptr)) {
     return {nullptr, nullptr};
   }
 
-  auto fieldsPtr = static_cast<Value*>(mem.second);
-  auto* refPtr   = static_cast<StructRef*>(new (mem.first) StructRef{fieldCount});
-  initRef(refPtr);
+  auto fieldsPtr = static_cast<Value*>(mem.payloadPtr);
+  auto* refPtr   = static_cast<StructRef*>(new (mem.refPtr) StructRef{fieldCount});
+  initRef(refPtr, mem.memTag);
   return {refPtr, fieldsPtr};
 }
 
-auto RefAllocator::initRef(Ref* ref) noexcept -> void {
+auto RefAllocator::initRef(Ref* ref, uint8_t memTag) noexcept -> void {
+
+  // Store the memory-tag as we need it when free-ing the memory.
+  ref->m_memTag = memTag;
+
   // Keep track of all allocated references by linking them as a singly linked list.
   ref->m_next = m_head.load(std::memory_order_relaxed);
   while (!m_head.compare_exchange_weak(

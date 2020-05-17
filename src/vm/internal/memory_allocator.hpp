@@ -1,5 +1,7 @@
 #pragma once
+#include <cstdint>
 #include <cstdlib>
+#include <utility>
 
 namespace vm::internal {
 
@@ -14,9 +16,9 @@ public:
   auto operator=(const MemoryAllocator& rhs) -> MemoryAllocator& = delete;
   auto operator=(MemoryAllocator&& rhs) -> MemoryAllocator& = delete;
 
-  [[nodiscard]] auto alloc(unsigned int size) noexcept -> void*;
+  [[nodiscard]] auto alloc(unsigned int size) noexcept -> std::pair<void*, uint8_t>;
 
-  auto free(void* memoryPtr) noexcept -> void;
+  auto free(void* memoryPtr, uint8_t tag) noexcept -> void;
 };
 
 } // namespace vm::internal
