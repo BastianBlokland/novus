@@ -30,4 +30,8 @@ clean:
 watch.nov:
 	./scripts/watch_nov.sh . ./bin/novc
 
+.PHONY: docker.run
+docker.run:
+	sudo docker build -t novus . && sudo docker run --rm -it novus
+
 .SILENT:

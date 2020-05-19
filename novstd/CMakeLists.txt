@@ -12,7 +12,7 @@ function(configure_novstd_file file)
   set(srcFile ${file}.nov)
   set(tgtFile ${EXECUTABLE_OUTPUT_PATH}/std/${file}.nov)
 
-  message(">> Configuring ${file}.nov")
+  message(STATUS "Configuring ${file}.nov")
 
   # Copy to output dir.
   configure_file(${srcFile} ${tgtFile} COPYONLY)
