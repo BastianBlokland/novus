@@ -3,8 +3,6 @@
 [![build-test](https://img.shields.io/github/workflow/status/bastianblokland/novus/build-test/master)](https://github.com/BastianBlokland/novus/actions?query=workflow%3Abuild-test)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
-**-Work in progress-**
-
 Novus is a statically typed functional programming language, it compiles into instructions for a
 stack based vm. Compiler is fully handwritten with a recursive decedent parser, multiple stages
 of syntax analysis and optimizations.
@@ -20,6 +18,15 @@ knowledge about types or functions so there is no runtime type introspection, in
 focusses on making it easier to generate code at compile time (through function and type templates).
 
 Note this is intended as an academic exercise and not meant for production projects.
+
+## Docker
+
+You can quickly try it out using docker.
+Open a interactive container with the compiler, runtime and examples installed:
+`docker run --rm -it bastianblokland/novus bin/sh`
+
+Run an example:
+`nove examples/fizzbuzz.nov`
 
 ## Requirements
 

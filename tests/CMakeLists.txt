@@ -1,7 +1,7 @@
 include(FetchContent)
 
 # 'Catch2' testing framework.
-message(">> Fetching dependency: catch2")
+message(STATUS "Fetching dependency: catch2")
 FetchContent_Declare(
   catch2
   GIT_REPOSITORY https://github.com/catchorg/Catch2.git
@@ -12,7 +12,7 @@ list(APPEND CMAKE_MODULE_PATH ${catch2_SOURCE_DIR}/contrib)
 include(Catch)
 
 # 'novtests' executable.
-message(">> Configuring novtests executable")
+message(STATUS "Configuring novtests executable")
 add_executable(novtests
   main.cpp
 
@@ -144,5 +144,5 @@ target_link_libraries(novtests PRIVATE opt)
 target_link_libraries(novtests PRIVATE vm)
 
 # Register novtests to CTest.
-message(">> Registering tests to CTest")
+message(STATUS "Registering tests to CTest")
 catch_discover_tests(novtests)

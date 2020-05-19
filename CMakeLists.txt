@@ -2,40 +2,43 @@ cmake_minimum_required(VERSION 3.15)
 
 project(
   Novus
-  VERSION 0.1
+  VERSION 0.1.0
   LANGUAGES CXX)
 
 # Custom options options
 set(LINTING "Off" CACHE BOOL "Should source linting be enabled")
 
 # Print some diagnostic information.
-message(">> Configuring Novus")
-message("-- Host system: ${CMAKE_HOST_SYSTEM}")
-message("-- Host processor: ${CMAKE_SYSTEM_PROCESSOR}")
-message("-- CMake version: ${CMAKE_VERSION}")
-message("-- Build type: ${CMAKE_BUILD_TYPE}")
-message("-- Linting: ${LINTING}")
-message("-- Source path: ${PROJECT_SOURCE_DIR}")
-message("-- Build path: ${PROJECT_BINARY_DIR}")
-message("-- Ouput path: ${PROJECT_SOURCE_DIR}/bin")
-message("-- Compiler: ${CMAKE_CXX_COMPILER_ID}")
-message("-- Generator: ${CMAKE_GENERATOR}")
+message(STATUS "Configuring Novus")
+message(STATUS "* Host system: ${CMAKE_HOST_SYSTEM}")
+message(STATUS "* Host processor: ${CMAKE_SYSTEM_PROCESSOR}")
+message(STATUS "* CMake version: ${CMAKE_VERSION}")
+message(STATUS "* Build type: ${CMAKE_BUILD_TYPE}")
+message(STATUS "* Linting: ${LINTING}")
+message(STATUS "* Source path: ${PROJECT_SOURCE_DIR}")
+message(STATUS "* Build path: ${PROJECT_BINARY_DIR}")
+message(STATUS "* Ouput path: ${PROJECT_SOURCE_DIR}/bin")
+message(STATUS "* Compiler: ${CMAKE_CXX_COMPILER_ID}")
+message(STATUS "* Generator: ${CMAKE_GENERATOR}")
 
 # Output executables to bin dir.
 set(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/bin)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY $<1:${PROJECT_SOURCE_DIR}/bin>)
 
+# Write a 'VERSION' file to the bin dir with the cmake project version.
+file(WRITE ${EXECUTABLE_OUTPUT_PATH}/VERSION ${CMAKE_PROJECT_VERSION})
+
 # Enable 'CTest' testing.
-message(">> Enable CTest dependency")
+message(STATUS "Enable CTest dependency")
 include(CTest)
 enable_testing()
 
 # Global compiler flags.
 if(MSVC)
-  message(">> Setting msvc compiler flags")
+  message(STATUS "Setting msvc compiler flags")
   set(CMAKE_CXX_FLAGS "/std:c++17 /WX /wd4530 /wd26451")
 else()
-  message(">> Setting unix compiler flags")
+  message(STATUS "Setting unix compiler flags")
   set(CXX_FLAGS_SHARED "-std=c++17 -Werror -Wall -Wextra -fno-strict-aliasing")
   set(CMAKE_CXX_FLAGS_DEBUG "-O1 -g -fno-omit-frame-pointer ${CXX_FLAGS_SHARED}")
   set(CMAKE_CXX_FLAGS_RELEASE "-O3 -DNDEBUG ${CXX_FLAGS_SHARED}")
@@ -44,12 +47,12 @@ endif()
 # Older version of libstdc++ require linking against the <experimental/filesystem> library directly.
 # TODO(bastian): Investigate if there is a better way to handle this.
 if((UNIX AND NOT APPLE) OR MINGW)
-  message(">> Add linking to stdc++fs (filesystem library)")
+  message(STATUS "Add linking to stdc++fs (filesystem library)")
   link_libraries(stdc++fs)
 endif()
 
 # Find the threads library.
-message(">> Finding threads package")
+message(STATUS "Finding threads package")
 set(CMAKE_THREAD_PREFER_PTHREAD On)
 find_package(Threads REQUIRED)
 
@@ -64,7 +67,7 @@ if(LINTING)
   # Use the clang-tidy linter if installed.
   find_program(CLANG_TIDY_BIN NAMES "clang-tidy" "clang-tidy-9")
   if(CLANG_TIDY_BIN)
-    message(">> Enabling clang-tidy linter")
+    message(STATUS "Enabling clang-tidy linter")
     set(CMAKE_CXX_CLANG_TIDY ${CLANG_TIDY_BIN})
   endif()
 endif()
