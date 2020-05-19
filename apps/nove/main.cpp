@@ -3,6 +3,7 @@
 // --
 
 #include "backend/generator.hpp"
+#include "config.hpp"
 #include "filesystem.hpp"
 #include "frontend/analysis.hpp"
 #include "frontend/source.hpp"
@@ -53,7 +54,8 @@ auto run(
 auto main(int argc, char** argv) noexcept -> int {
   if (argc <= 1) {
     std::cerr << rang::fg::red
-              << "Novus evaluator - Please provide input characters or input file\n"
+              << "Novus evaluator [" PROJECT_VER
+                 "] - Please provide input characters or input file\n"
               << rang::style::reset;
     return 1;
   }

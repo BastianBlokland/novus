@@ -5,9 +5,11 @@
 namespace novasm {
 
 Assembly::Assembly(
+    std::string compilerVersion,
     uint32_t entrypoint,
     std::vector<std::string> litStrings,
     std::vector<uint8_t> instructions) noexcept :
+    m_compilerVersion{std::move(compilerVersion)},
     m_entrypoint{entrypoint},
     m_litStrings{std::move(litStrings)},
     m_instructions{std::move(instructions)} {}
@@ -26,6 +28,10 @@ auto Assembly::beginLitStrings() const noexcept -> LitStringIterator {
 }
 
 auto Assembly::endLitStrings() const noexcept -> LitStringIterator { return m_litStrings.end(); }
+
+auto Assembly::getCompilerVersion() const noexcept -> const std::string& {
+  return m_compilerVersion;
+}
 
 auto Assembly::getEntrypoint() const noexcept -> uint32_t { return m_entrypoint; }
 

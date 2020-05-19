@@ -4,7 +4,7 @@
 
 namespace novasm {
 
-const uint16_t assemblyFormatVersion = 1U;
+const uint16_t assemblyFormatVersion = 2U;
 
 template <typename OutputItr>
 auto serialize(const Assembly& assembly, OutputItr outItr) noexcept -> OutputItr;

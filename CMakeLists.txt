@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.15)
 
 project(
   Novus
-  VERSION 0.1.0
+  VERSION 0.2.0
   LANGUAGES CXX)
 
 # Custom options options
@@ -24,9 +24,6 @@ message(STATUS "* Generator: ${CMAKE_GENERATOR}")
 # Output executables to bin dir.
 set(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/bin)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY $<1:${PROJECT_SOURCE_DIR}/bin>)
-
-# Write a 'VERSION' file to the bin dir with the cmake project version.
-file(WRITE ${EXECUTABLE_OUTPUT_PATH}/VERSION ${CMAKE_PROJECT_VERSION})
 
 # Enable 'CTest' testing.
 message(STATUS "Enable CTest dependency")
@@ -71,6 +68,12 @@ if(LINTING)
     set(CMAKE_CXX_CLANG_TIDY ${CLANG_TIDY_BIN})
   endif()
 endif()
+
+# Write a 'VERSION' file to the bin dir with the cmake project version.
+file(WRITE ${EXECUTABLE_OUTPUT_PATH}/VERSION ${CMAKE_PROJECT_VERSION})
+
+# Replace config variables in the config header.
+configure_file("include/config.hpp.in" "${PROJECT_SOURCE_DIR}/include/config.hpp")
 
 # Add child cmake files.
 add_subdirectory(src)

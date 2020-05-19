@@ -3,6 +3,7 @@
 // --
 
 #include "CLI/CLI.hpp"
+#include "config.hpp"
 #include "filesystem.hpp"
 #include "lex/lexer.hpp"
 #include <chrono>
@@ -110,7 +111,7 @@ auto operator<<(std::ostream& out, const Duration& rhs) -> std::ostream& {
 }
 
 auto main(int argc, char** argv) -> int {
-  auto app = CLI::App{"Novus lexer diagnostic tool"};
+  auto app = CLI::App{"Novus lexer diagnostic tool [" PROJECT_VER "]", "novdiag-lex"};
   app.require_subcommand(1);
 
   auto colorMode   = rang::control::Auto;

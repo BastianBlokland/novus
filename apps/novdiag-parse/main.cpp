@@ -3,6 +3,7 @@
 // --
 
 #include "CLI/CLI.hpp"
+#include "config.hpp"
 #include "filesystem.hpp"
 #include "get_color.hpp"
 #include "input/info.hpp"
@@ -96,7 +97,7 @@ auto operator<<(std::ostream& out, const Duration& rhs) -> std::ostream& {
 }
 
 auto main(int argc, char** argv) -> int {
-  auto app = CLI::App{"Novus parser diagnostic tool"};
+  auto app = CLI::App{"Novus parser diagnostic tool [" PROJECT_VER "]", "novdiag-parse"};
   app.require_subcommand(1);
 
   auto colorMode   = rang::control::Auto;

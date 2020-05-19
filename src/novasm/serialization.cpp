@@ -165,6 +165,9 @@ auto serialize(const Assembly& assembly, OutputItr outItr) noexcept -> OutputItr
   // Format version number.
   writeUInt16(assemblyFormatVersion, outItr);
 
+  // Compiler version.
+  writeString(assembly.getCompilerVersion(), outItr);
+
   // Program entry point.
   writeUInt32(assembly.getEntrypoint(), outItr);
 
@@ -185,6 +188,12 @@ auto deserialize(InputItrBegin itr, InputEndItr end) noexcept -> std::optional<A
   // Format version number.
   auto formatVersionNum = readUInt16(itr, end);
   if (!formatVersionNum) {
+    return std::nullopt;
+  }
+
+  // Compiler version.
+  auto compilerVersion = readString(itr, end);
+  if (!compilerVersion) {
     return std::nullopt;
   }
 
@@ -217,7 +226,10 @@ auto deserialize(InputItrBegin itr, InputEndItr end) noexcept -> std::optional<A
     return std::nullopt;
   }
 
-  return Assembly{*entryPoint, std::move(*stringLiterals), std::move(instructions)};
+  return Assembly{std::move(*compilerVersion),
+                  *entryPoint,
+                  std::move(*stringLiterals),
+                  std::move(instructions)};
 }
 
 // Explicit instantiations.

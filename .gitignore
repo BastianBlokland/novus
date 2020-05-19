@@ -2,6 +2,9 @@
 # Files to ignore in git.
 # --------------------------------------------------------------------------------------------------
 
+# Generated files.
+/include/config.hpp
+
 # Build output.
 /[Bb]uild*
 /[Bb]in*

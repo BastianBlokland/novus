@@ -4,12 +4,13 @@
 
 #include "CLI/CLI.hpp"
 #include "compiler.hpp"
+#include "config.hpp"
 #include "filesystem.hpp"
 #include "input/search_paths.hpp"
 #include <algorithm>
 
 auto main(int argc, char** argv) noexcept -> int {
-  auto app = CLI::App{"Novus compiler"};
+  auto app = CLI::App{"Novus compiler [" PROJECT_VER "]", "novc"};
 
   auto additionalSearchPaths = std::vector<filesystem::path>{};
   auto colorMode             = rang::control::Auto;

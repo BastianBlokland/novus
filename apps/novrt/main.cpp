@@ -1,3 +1,4 @@
+#include "config.hpp"
 #include "filesystem.hpp"
 #include "novasm/serialization.hpp"
 #include "vm/exec_state.hpp"
@@ -25,9 +26,9 @@ auto main(int argc, char** argv) noexcept -> int {
   auto fs = std::ifstream{progPath.string(), std::ios::binary};
   if (!fs.good()) {
     if (implicitPath) {
-      std::cerr << "Novus runtime - Please provide path to a 'nova' file\n";
+      std::cerr << "Novus runtime [" PROJECT_VER "] - Please provide path to a 'nova' file\n";
     } else {
-      std::cerr << "Novus runtime - Failed to open file: " << progPath << '\n';
+      std::cerr << "Novus runtime [" PROJECT_VER "] - Failed to open file: " << progPath << '\n';
     }
     return 1;
   }
@@ -35,7 +36,7 @@ auto main(int argc, char** argv) noexcept -> int {
   const auto asmOutput =
       novasm::deserialize(std::istreambuf_iterator<char>{fs}, std::istreambuf_iterator<char>{});
   if (!asmOutput) {
-    std::cerr << "Novus runtime - Corrupt 'nova' file\n";
+    std::cerr << "Novus runtime [" PROJECT_VER "] - Corrupt or incompatible 'nova' file\n";
     return 1;
   }
 

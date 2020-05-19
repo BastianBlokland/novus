@@ -1,4 +1,5 @@
 #include "novasm/assembler.hpp"
+#include "config.hpp"
 #include <limits>
 #include <sstream>
 #include <stdexcept>
@@ -311,7 +312,11 @@ auto Assembler::close() -> Assembly {
     throw std::logic_error{oss.str()};
   }
 
-  return Assembly{entrypointItr->second, std::move(m_litStrings), std::move(m_instructions)};
+  auto version = std::string{PROJECT_VER};
+  return Assembly{std::move(version),
+                  entrypointItr->second,
+                  std::move(m_litStrings),
+                  std::move(m_instructions)};
 }
 
 auto Assembler::getLabels() -> std::unordered_map<uint32_t, std::vector<std::string>> {

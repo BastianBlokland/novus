@@ -3,6 +3,7 @@
 // --
 
 #include "CLI/CLI.hpp"
+#include "config.hpp"
 #include "filesystem.hpp"
 #include "frontend/analysis.hpp"
 #include "frontend/source.hpp"
@@ -307,7 +308,7 @@ auto operator<<(std::ostream& out, const Duration& rhs) -> std::ostream& {
 
 auto main(int argc, char** argv) -> int {
   auto exitcode = 0;
-  auto app      = CLI::App{"Novus program diagnostic tool"};
+  auto app      = CLI::App{"Novus program diagnostic tool [" PROJECT_VER "]", "novdiag-prog"};
   app.require_subcommand(1);
 
   const auto searchPaths = input::getSearchPaths(argv);

@@ -4,6 +4,7 @@
 
 #include "CLI/CLI.hpp"
 #include "backend/generator.hpp"
+#include "config.hpp"
 #include "filesystem.hpp"
 #include "frontend/analysis.hpp"
 #include "frontend/output.hpp"
@@ -31,6 +32,11 @@ auto printStringLiterals(const novasm::Assembly& assembly) -> void {
     std::cout << "  " << rang::style::bold << std::setw(idColWidth) << std::left << id
               << rang::style::reset << " \"" << input::escapeNonPrintingAsHex(*itr) << '"' << '\n';
   }
+}
+
+auto printCompilerVersion(const novasm::Assembly& assembly) -> void {
+  std::cout << rang::style::bold << "Compiler: " << assembly.getCompilerVersion()
+            << rang::style::reset << '\n';
 }
 
 auto printEntrypoint(const novasm::Assembly& assembly) -> void {
@@ -82,6 +88,8 @@ auto printInstructions(const novasm::Assembly& assembly, const backend::Instruct
 
 auto printAssembly(const novasm::Assembly& assembly, const backend::InstructionLabels& labels)
     -> void {
+  printCompilerVersion(assembly);
+  std::cout << '\n';
   printEntrypoint(assembly);
   std::cout << '\n';
   printStringLiterals(assembly);
@@ -174,7 +182,8 @@ auto operator<<(std::ostream& out, const Duration& rhs) -> std::ostream& {
 
 auto main(int argc, char** argv) -> int {
   auto exitcode = 0;
-  auto app      = CLI::App{"Novus assembly diagnostic tool"};
+  auto app      = CLI::App{"Novus assembly diagnostic tool [" PROJECT_VER "]", "novdiag-asm"};
+
   app.require_subcommand(1);
 
   const auto searchPaths = input::getSearchPaths(argv);
