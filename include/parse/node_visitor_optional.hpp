@@ -3,6 +3,7 @@
 
 namespace parse {
 
+// Optionally visit a node in the parse tree.
 class OptionalNodeVisitor : public NodeVisitor {
 public:
   auto visit(const CommentNode & /*unused*/) -> void override {}

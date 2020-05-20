@@ -4,6 +4,8 @@
 
 namespace parse {
 
+// Else branch of a switch expression.
+// Example in source: 'else -> 42'.
 class SwitchExprElseNode final : public Node {
   friend auto switchExprElseNode(lex::Token kw, lex::Token arrow, NodePtr rhs) -> NodePtr;
 

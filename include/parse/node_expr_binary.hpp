@@ -4,6 +4,8 @@
 
 namespace parse {
 
+// Expression that takes two expressions and an operation.
+// Example in source: '2 + 2' or 'a + b' or 'func(43) / 4'.
 class BinaryExprNode final : public Node {
   friend auto binaryExprNode(NodePtr lhs, lex::Token op, NodePtr rhs) -> NodePtr;
 

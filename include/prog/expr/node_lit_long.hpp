@@ -4,6 +4,7 @@
 
 namespace prog::expr {
 
+// Load a long literal.
 class LitLongNode final : public Node {
   friend auto litLongNode(const Program& program, int64_t val) -> NodePtr;
 

@@ -4,6 +4,8 @@
 
 namespace prog::expr {
 
+// Execute a recursive call to the current function.
+// Note: Can only be used in a function body.
 class CallSelfExprNode final : public Node {
   friend auto callSelfExprNode(sym::TypeId resultType, std::vector<NodePtr> args) -> NodePtr;
 

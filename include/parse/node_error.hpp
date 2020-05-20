@@ -5,6 +5,8 @@
 
 namespace parse {
 
+// Node containing a parse error.
+// Note: Contains all tokens and sub expression that where part of the error.
 class ErrorNode final : public Node {
   friend auto
   errorNode(std::string msg, std::vector<lex::Token> tokens, std::vector<NodePtr> subExprs)

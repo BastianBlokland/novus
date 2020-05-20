@@ -4,6 +4,8 @@
 
 namespace parse {
 
+// If condition and branch combination for a switch expression.
+// Example in source: 'if a > 42 -> "hello world"'.
 class SwitchExprIfNode final : public Node {
   friend auto switchExprIfNode(lex::Token kw, NodePtr cond, lex::Token arrow, NodePtr rhs)
       -> NodePtr;

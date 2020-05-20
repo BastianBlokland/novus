@@ -4,6 +4,8 @@
 
 namespace parse {
 
+// Field access expression.
+// Example in source: 'u.name'.
 class FieldExprNode final : public Node {
   friend auto fieldExprNode(NodePtr lhs, lex::Token dot, lex::Token id) -> NodePtr;
 

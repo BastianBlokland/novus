@@ -6,6 +6,7 @@
 
 namespace prog::sym {
 
+// Struct definition. Contains the fields in the structure.
 class StructDef final {
   friend class TypeDefTable;
 

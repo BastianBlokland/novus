@@ -4,6 +4,8 @@
 
 namespace prog::expr {
 
+// Check if the union holds a value of type 'targetType', if so assign the value of that type to a
+// constant.
 class UnionGetExprNode final : public Node {
   friend auto unionGetExprNode(
       const Program& prog, NodePtr lhs, const sym::ConstDeclTable& constTable, sym::ConstId constId)

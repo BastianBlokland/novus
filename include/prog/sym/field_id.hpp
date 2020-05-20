@@ -3,6 +3,7 @@
 
 namespace prog::sym {
 
+// Identifier for a field, wrapper around an unsigned int.
 class FieldId final {
   friend class FieldDeclTable;
   friend auto operator<<(std::ostream& out, const FieldId& rhs) -> std::ostream&;

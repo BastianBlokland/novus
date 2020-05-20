@@ -3,6 +3,8 @@
 
 namespace prog::sym {
 
+// Definition of a future.
+// Future is a handle to a value that is being computed by another excecutor.
 class FutureDef final {
   friend class TypeDefTable;
 

@@ -35,6 +35,8 @@ private:
 
 } // namespace internal
 
+// Lexer object.
+// Takes a character iterator and provides a token iterator.
 template <typename InputItrBegin, typename InputItrEnd>
 class Lexer final : private internal::LexerImpl {
 
@@ -67,7 +69,7 @@ private:
   }
 };
 
-// Utilities.
+// Lex a list of tokens from a pair of character iterators.
 template <typename InputItrBegin, typename InputItrEnd>
 auto lexAll(InputItrBegin inputBegin, const InputItrEnd inputEnd) {
   auto lexer = Lexer{inputBegin, inputEnd};

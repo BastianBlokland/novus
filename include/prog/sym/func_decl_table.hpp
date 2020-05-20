@@ -16,6 +16,13 @@ class Program;
 
 namespace sym {
 
+// Function declaration table.
+// Table where all functions are declared. Multiple functions with the same name but different
+// signatures are allowed.
+//
+// Note: action indicate the function is 'impure' and non-action indicates the function is pure.
+// Implicit conversions are required to be pure.
+//
 class FuncDeclTable final {
 public:
   using Iterator = std::map<FuncId, FuncDecl>::const_iterator;

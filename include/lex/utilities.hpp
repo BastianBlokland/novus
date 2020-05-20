@@ -5,6 +5,7 @@
 
 namespace lex {
 
+// Find the token at a specific offset into a token-stream.
 template <typename InputItr>
 [[nodiscard]] auto findToken(InputItr begin, const InputItr end, const unsigned int sourcePos)
     -> std::optional<Token> {

@@ -5,6 +5,7 @@
 
 namespace prog::expr {
 
+// Load a field from a struct.
 class FieldExprNode final : public Node {
   friend auto fieldExprNode(const Program& prog, NodePtr lhs, sym::FieldId id) -> NodePtr;
 

@@ -5,6 +5,7 @@
 
 namespace prog::sym {
 
+// Type declaration. Combines the type-identifier, name and the type kind.
 class TypeDecl final {
   friend class TypeDeclTable;
   friend auto operator<<(std::ostream& out, const TypeDecl& rhs) -> std::ostream&;

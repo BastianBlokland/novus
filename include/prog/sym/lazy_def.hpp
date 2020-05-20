@@ -3,6 +3,9 @@
 
 namespace prog::sym {
 
+// Definition of a lazy value.
+// lazy value is a value that is only computed when requested and results are cached for future
+// requests.
 class LazyDef final {
   friend class TypeDefTable;
 

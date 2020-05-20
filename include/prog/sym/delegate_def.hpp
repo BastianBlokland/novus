@@ -4,6 +4,8 @@
 
 namespace prog::sym {
 
+// Definition for a delegate type. Contains the signature of the functions it represents.
+// Note: 'isAction' indicates if this delegate is pure or not.
 class DelegateDef final {
   friend class TypeDefTable;
 

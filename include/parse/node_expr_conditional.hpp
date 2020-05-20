@@ -4,6 +4,8 @@
 
 namespace parse {
 
+// Conditional expression, also known as the 'ternary operator'.
+// Example in source: 'a ? 42 : 43'.
 class ConditionalExprNode final : public Node {
   friend auto conditionalExprNode(
       NodePtr cond, lex::Token qmark, NodePtr ifBranch, lex::Token colon, NodePtr elseBranch)

@@ -5,6 +5,11 @@
 
 namespace prog::expr {
 
+// Execute a dynamic call to the result of an expression.
+// Note: Expression result type has to be a function literal or a closure object.
+// Note: For forked calls the return type has to be a future type.
+// Note: For lazy calls the return type has to be a lazy type.
+//
 class CallDynExprNode final : public Node {
   friend auto callDynExprNode(const Program& prog, NodePtr lhs, std::vector<NodePtr> args)
       -> NodePtr;

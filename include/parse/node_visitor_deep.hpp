@@ -3,6 +3,7 @@
 
 namespace parse {
 
+// Visit all nodes in the parse tree.
 class DeepNodeVisitor : public NodeVisitor {
 public:
   auto visit(const CommentNode& n) -> void override;

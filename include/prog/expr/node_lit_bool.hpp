@@ -4,6 +4,7 @@
 
 namespace prog::expr {
 
+// Load a boolean literal.
 class LitBoolNode final : public Node {
   friend auto litBoolNode(const Program& program, bool val) -> NodePtr;
 

@@ -7,6 +7,8 @@
 
 namespace parse {
 
+// Anonymous function definition.
+// Example in source: 'lambda (int i) -> bool i == 42'.
 class AnonFuncExprNode final : public Node {
 public:
   friend auto anonFuncExprNode(

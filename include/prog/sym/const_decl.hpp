@@ -6,6 +6,7 @@
 
 namespace prog::sym {
 
+// Declaration of a constant, combines a constant-id, name and a type.
 class ConstDecl final {
   friend class ConstDeclTable;
   friend auto operator<<(std::ostream& out, const ConstDecl& rhs) -> std::ostream&;

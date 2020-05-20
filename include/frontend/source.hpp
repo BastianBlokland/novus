@@ -9,6 +9,7 @@
 
 namespace frontend {
 
+// Representation of a single source file.
 class Source final {
   template <typename InputItrBegin, typename InputItrEnd>
   friend auto buildSource(

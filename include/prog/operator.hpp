@@ -3,6 +3,9 @@
 
 namespace prog {
 
+// Supported operators.
+// Note: Operators are just plain functions with a specific name in the program.
+// Use the 'getFuncName' to find the mangled name of an operator.
 enum class Operator {
   Plus,
   PlusPlus,
@@ -30,6 +33,7 @@ enum class Operator {
   QMarkQMark,
 };
 
+// Retrieve the mangled name of an operator.
 auto getFuncName(Operator op) -> std::string;
 
 } // namespace prog

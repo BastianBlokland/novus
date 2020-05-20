@@ -5,6 +5,8 @@
 
 namespace parse {
 
+// Indexer expression.
+// Example in source: 'a[32]' or 'a[1, 2, 3]'.
 class IndexExprNode final : public Node {
   friend auto indexExprNode(
       NodePtr lhs,

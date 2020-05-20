@@ -8,12 +8,14 @@
 
 namespace novasm {
 
+// Different ways of how a call can be executed.
 enum class CallMode {
   Normal,
-  Tail,
-  Forked,
+  Tail, // Tail calls are executed in the same stack frame (doesn't return to the current function).
+  Forked, // Forked calls are ran on a new executor (new thread).
 };
 
+// Builder class to aid in generating novus assembly.
 class Assembler final {
 public:
   Assembler();

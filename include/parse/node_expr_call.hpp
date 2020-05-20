@@ -5,6 +5,8 @@
 
 namespace parse {
 
+// Function call expression node.
+// Example in source: 'func(1, false)', or 'func{int}(2, b)' or 'fork func()'.
 class CallExprNode final : public Node {
   friend auto callExprNode(
       std::vector<lex::Token> modifiers,

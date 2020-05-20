@@ -3,6 +3,7 @@
 
 namespace prog::sym {
 
+// Identifier for a constant, wrapper around an unsigned int.
 class ConstId final {
   friend class ConstDeclTable;
   friend class ConstIdHasher;

@@ -10,6 +10,7 @@ namespace prog::expr {
 
 class Rewriter;
 
+// Base-class for a node in the tree.
 class Node {
   friend auto operator<<(std::ostream& out, const Node& rhs) -> std::ostream&;
 

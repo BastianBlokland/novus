@@ -7,6 +7,7 @@
 
 namespace prog::sym {
 
+// Function declaration. Combines the function-identifier, name and the function signature.
 class FuncDecl final {
   friend class FuncDeclTable;
   friend auto operator<<(std::ostream& out, const FuncDecl& rhs) -> std::ostream&;

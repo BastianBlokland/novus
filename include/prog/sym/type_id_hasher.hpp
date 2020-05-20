@@ -3,6 +3,7 @@
 
 namespace prog::sym {
 
+// Generate a hash for a TypeId.
 class TypeIdHasher final {
 public:
   auto operator()(const TypeId& id) const -> std::size_t;

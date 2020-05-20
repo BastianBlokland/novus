@@ -3,6 +3,11 @@
 
 namespace prog::sym {
 
+// Identifier for a type, wrapper around an unsigned int.
+//
+// TypeId zero is a special sentinel to indicate the type still needs to be inferred.
+// Note: Infer type should only be used internally during the syntax analysis, a final program
+// should never contain a 'Infer' type.
 class TypeId final {
   friend class TypeDeclTable;
   friend class TypeDefTable;

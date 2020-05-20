@@ -5,6 +5,7 @@
 
 namespace prog::sym {
 
+// Field declaration. Combines a field-identifier, name and a type.
 class FieldDecl final {
   friend class FieldDeclTable;
   friend auto operator<<(std::ostream& out, const FieldDecl& rhs) -> std::ostream&;

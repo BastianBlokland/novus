@@ -4,6 +4,7 @@
 
 namespace prog::expr {
 
+// Load the value of a constant.
 class ConstExprNode final : public Node {
   friend auto constExprNode(const sym::ConstDeclTable& constTable, sym::ConstId id) -> NodePtr;
 

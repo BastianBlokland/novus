@@ -3,6 +3,7 @@
 
 namespace prog::sym {
 
+// Identifier for a function, wrapper around an unsigned int.
 class FuncId final {
   friend class FuncDeclTable;
   friend class FuncDefTable;

@@ -4,6 +4,8 @@
 
 namespace parse {
 
+// Literal expression.
+// Example in source: '32' or '1.337' or '"hello world"'.
 class LitExprNode final : public Node {
   friend auto litExprNode(lex::Token val) -> NodePtr;
 

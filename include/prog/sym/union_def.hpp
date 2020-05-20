@@ -5,6 +5,8 @@
 
 namespace prog::sym {
 
+// Definition of an union type. Contains the different types in the union.
+// Note: The order of the values has no meaning.
 class UnionDef final {
   friend class TypeDefTable;
 

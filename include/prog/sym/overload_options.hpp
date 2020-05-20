@@ -4,10 +4,10 @@ namespace prog::sym {
 
 enum class OverloadFlags : unsigned int {
   None             = 0U,
-  ExclPureFuncs    = 1U << 0U,
-  ExclActions      = 1U << 1U,
-  ExclNonUser      = 1U << 2U,
-  NoConvOnFirstArg = 1U << 3U,
+  ExclPureFuncs    = 1U << 0U, // Exclude pure functions (non actions).
+  ExclActions      = 1U << 1U, // Exclude non-pure functions (actions).
+  ExclNonUser      = 1U << 2U, // Exclude build-in functions.
+  NoConvOnFirstArg = 1U << 3U, // Disallow implicit conversions on the first argument.
 };
 
 inline auto operator|(OverloadFlags lhs, OverloadFlags rhs) noexcept {
@@ -20,6 +20,7 @@ inline auto operator&(OverloadFlags lhs, OverloadFlags rhs) noexcept {
       static_cast<unsigned int>(lhs) & static_cast<unsigned int>(rhs));
 }
 
+// Options to use during overload resolution.
 class OverloadOptions final {
 public:
   OverloadOptions() : m_flags{OverloadFlags::None}, m_maxImplicitConvs{-1} {}

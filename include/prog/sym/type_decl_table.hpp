@@ -7,6 +7,7 @@
 
 namespace prog::sym {
 
+// Type declaration table.
 class TypeDeclTable final {
 public:
   using Iterator = typename std::map<TypeId, TypeDecl>::const_iterator;

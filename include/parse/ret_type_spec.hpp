@@ -4,6 +4,8 @@
 
 namespace parse {
 
+// Return type specifier.
+// Example in source: '-> float' or '-> Person{float}'.
 class RetTypeSpec final {
 public:
   RetTypeSpec(lex::Token arrow, Type type);

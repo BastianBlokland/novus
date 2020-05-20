@@ -5,6 +5,8 @@
 
 namespace parse {
 
+// Identifier expression node.
+// Example in source: 'user'.
 class IdExprNode final : public Node {
   friend auto idExprNode(lex::Token id, std::optional<TypeParamList> typeParams) -> NodePtr;
 

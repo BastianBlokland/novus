@@ -4,6 +4,10 @@
 
 namespace parse {
 
+// List of types to substitute in a templated function.
+// Example: '{TIn, TResult}'.
+// Note: Differs from 'TypeParamList' in that value has to be plain identifiers and not nested
+// types.
 class TypeSubstitutionList final {
   friend auto operator<<(std::ostream& out, const TypeSubstitutionList& rhs) -> std::ostream&;
 

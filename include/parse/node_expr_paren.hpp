@@ -4,6 +4,8 @@
 
 namespace parse {
 
+// Parenthesized expression, used to delclare precedence over other operators.
+// Example in source: '(a + b)'.
 class ParenExprNode final : public Node {
   friend auto parenExprNode(lex::Token open, NodePtr expr, lex::Token close) -> NodePtr;
 

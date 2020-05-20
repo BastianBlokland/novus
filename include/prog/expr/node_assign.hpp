@@ -5,6 +5,7 @@
 
 namespace prog::expr {
 
+// Assign the result of an expression to a constant.
 class AssignExprNode final : public Node {
   friend auto
   assignExprNode(const sym::ConstDeclTable& constTable, sym::ConstId constId, NodePtr expr)

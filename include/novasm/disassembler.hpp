@@ -12,6 +12,7 @@ namespace novasm {
 
 namespace dasm {
 
+// Human readable strings to attach to instructions.
 using InstructionLabels = std::unordered_map<uint32_t, std::vector<std::string>>;
 
 class InstructionArg final {
@@ -31,6 +32,7 @@ private:
   std::vector<std::string> m_labels;
 };
 
+// Representation of a disassembled assembly instruction and its arguments.
 class Instruction final {
   friend auto operator<<(std::ostream& out, const Instruction& rhs) -> std::ostream&;
 
@@ -58,6 +60,9 @@ auto operator<<(std::ostream& out, const Instruction& rhs) -> std::ostream&;
 
 } // namespace dasm
 
+// Extract a list of instructions and their arguments from a assembly class.
+// Note: Optionally instruction labels (as created by the assembler) can be provided to add human
+// readable labels to the instructions.
 auto disassembleInstructions(
     const Assembly& assembly, const dasm::InstructionLabels& instrLabels = {})
     -> std::vector<dasm::Instruction>;

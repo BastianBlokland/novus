@@ -4,6 +4,7 @@
 
 namespace prog::expr {
 
+// Load a function literal.
 class LitFuncNode final : public Node {
   friend auto litFuncNode(const Program& program, sym::TypeId type, sym::FuncId func) -> NodePtr;
 

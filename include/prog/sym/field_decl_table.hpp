@@ -6,6 +6,7 @@
 
 namespace prog::sym {
 
+// Field declaration table. Used in the struct definition to store the fields.
 class FieldDeclTable final {
 public:
   using Iterator = std::vector<FieldDecl>::const_iterator;

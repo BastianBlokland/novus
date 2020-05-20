@@ -4,6 +4,9 @@
 
 namespace prog::expr {
 
+// Create a closure.
+// Closure is a combintion of a function and a partial argument list, result is a delegate type
+// minus the arguments that are supplied in the closure.
 class ClosureNode final : public Node {
   friend auto closureNode(
       const Program& program, sym::TypeId type, sym::FuncId func, std::vector<NodePtr> boundArgs)

@@ -11,6 +11,16 @@ namespace prog {
 using OvFlags   = sym::OverloadFlags;
 using OvOptions = sym::OverloadOptions;
 
+// Representation of a full program. All types and references are resolved in this representation.
+// Contains types, functions and execute-statements (top-level function invocations).
+//
+// Types and functions consist of two parts:
+// * The declaration (Containing the name and signature for functions).
+// * The definition (Containing the actual contents of the type or function).
+//
+// Types and functions also come in two types:
+// * Build-in (have no definition, the backend has special handling for what assembly to generate).
+// * User-defined (have a definition containing the content).
 class Program;
 
 namespace internal {

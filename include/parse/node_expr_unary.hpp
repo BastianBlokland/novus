@@ -4,6 +4,8 @@
 
 namespace parse {
 
+// Expression that takes a single expression and an operation.
+// Example in source: '-1' or '~1'.
 class UnaryExprNode final : public Node {
   friend auto unaryExprNode(lex::Token op, NodePtr rhs) -> NodePtr;
 

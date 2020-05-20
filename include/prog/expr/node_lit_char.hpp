@@ -4,6 +4,7 @@
 
 namespace prog::expr {
 
+// Load a character literal.
 class LitCharNode final : public Node {
   friend auto litCharNode(const Program& program, uint8_t val) -> NodePtr;
 

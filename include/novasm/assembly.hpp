@@ -5,6 +5,7 @@
 
 namespace novasm {
 
+// In memory representation of a 'nova' novus assembly file.
 class Assembly final {
 public:
   using LitStringIterator = typename std::vector<std::string>::const_iterator;

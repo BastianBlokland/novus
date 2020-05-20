@@ -3,6 +3,7 @@
 
 namespace prog::expr {
 
+// Optionally visit the given node in the tree.
 class OptionalNodeVisitor : public NodeVisitor {
 public:
   auto visit(const AssignExprNode & /*unused*/) -> void override {}

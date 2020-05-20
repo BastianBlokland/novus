@@ -5,6 +5,8 @@
 
 namespace parse {
 
+// Line comment.
+// Example in source: '// Hello world'.
 class CommentNode final : public Node {
   friend auto commentNode(lex::Token comment) -> NodePtr;
 

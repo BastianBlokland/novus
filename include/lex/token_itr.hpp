@@ -14,6 +14,7 @@ public:
   using iterator_category = std::input_iterator_tag;
 };
 
+// Iterator that wraps a source that provides a token when 'next()' is called.
 template <typename TokenSource>
 class TokenItr final : public TokenItrTraits {
 

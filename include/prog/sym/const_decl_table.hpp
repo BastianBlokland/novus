@@ -7,6 +7,18 @@
 
 namespace prog::sym {
 
+// Constants declaration table.
+//
+// There are 3 kinds of constants:
+// * Bound: Used in closures for constants that are passed from the parent scope.
+// * Input: Used for function inputs.
+// * Local: Normal constants used in a function body for example.
+//
+// To make the backends job easier these are kept in a well defined order:
+// 1: Input
+// 2: Bound
+// 3: Local
+//
 class ConstDeclTable final {
 public:
   using Iterator = std::vector<ConstDecl>::const_iterator;

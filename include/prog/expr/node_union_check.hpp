@@ -4,6 +4,7 @@
 
 namespace prog::expr {
 
+// Check if the union holds a value of type 'targetType'.
 class UnionCheckExprNode final : public Node {
   friend auto unionCheckExprNode(const Program& prog, NodePtr lhs, sym::TypeId targetType)
       -> NodePtr;

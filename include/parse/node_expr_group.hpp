@@ -5,6 +5,8 @@
 
 namespace parse {
 
+// Group expression. Comma seperated list of expressions.
+// Example in source: 'a = 2, b = 3, a + b'.
 class GroupExprNode final : public Node {
   friend auto groupExprNode(std::vector<NodePtr> subExprs, std::vector<lex::Token> semis)
       -> NodePtr;

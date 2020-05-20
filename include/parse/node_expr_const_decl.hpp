@@ -4,6 +4,8 @@
 
 namespace parse {
 
+// Constant declaration.
+// Example in source 'a = 42'.
 class ConstDeclExprNode final : public Node {
   friend auto constDeclExprNode(lex::Token id, lex::Token eq, NodePtr rhs) -> NodePtr;
 

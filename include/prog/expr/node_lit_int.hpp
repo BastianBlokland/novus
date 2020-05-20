@@ -4,6 +4,7 @@
 
 namespace prog::expr {
 
+// Load an integer literal.
 class LitIntNode final : public Node {
   friend auto litIntNode(const Program& program, int32_t val) -> NodePtr;
 

@@ -13,16 +13,17 @@
 
 namespace prog::sym {
 
+// Type definition table. Contains a defintiion for all user-types.
 class TypeDefTable final {
 public:
   using TypeDef =
       typename std::variant<StructDef, UnionDef, EnumDef, DelegateDef, FutureDef, LazyDef>;
   using Iterator = typename std::set<TypeId>::const_iterator;
 
-  TypeDefTable()                            = default;
-  TypeDefTable(const TypeDefTable& rhs)     = delete;
-  TypeDefTable(TypeDefTable&& rhs)          = default;
-  ~TypeDefTable()                           = default;
+  TypeDefTable()                        = default;
+  TypeDefTable(const TypeDefTable& rhs) = delete;
+  TypeDefTable(TypeDefTable&& rhs)      = default;
+  ~TypeDefTable()                       = default;
 
   auto operator=(const TypeDefTable& rhs) -> TypeDefTable& = delete;
   auto operator=(TypeDefTable&& rhs) noexcept -> TypeDefTable& = default;

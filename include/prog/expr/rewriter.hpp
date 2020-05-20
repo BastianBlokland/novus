@@ -3,6 +3,7 @@
 
 namespace prog::expr {
 
+// Optionally rewrite a node in the tree.
 class Rewriter {
 public:
   Rewriter()                        = default;

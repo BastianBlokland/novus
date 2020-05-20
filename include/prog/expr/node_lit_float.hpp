@@ -4,6 +4,7 @@
 
 namespace prog::expr {
 
+// Load a float literal.
 class LitFloatNode final : public Node {
   friend auto litFloatNode(const Program& program, float val) -> NodePtr;
 

@@ -5,6 +5,7 @@
 
 namespace prog::sym {
 
+// Function definition. Contains the body of a user-function.
 class FuncDef final {
   friend class FuncDefTable;
 

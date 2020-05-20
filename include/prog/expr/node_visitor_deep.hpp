@@ -5,6 +5,7 @@ namespace prog::expr {
 
 class Node;
 
+// Visit all expressions in the tree.
 class DeepNodeVisitor : public NodeVisitor {
 public:
   auto visit(const AssignExprNode& n) -> void override;

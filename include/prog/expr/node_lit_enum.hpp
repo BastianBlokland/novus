@@ -4,6 +4,7 @@
 
 namespace prog::expr {
 
+// Load a enum literal value.
 class LitEnumNode final : public Node {
   friend auto litEnumNode(const Program& program, sym::TypeId enumType, std::string name)
       -> NodePtr;

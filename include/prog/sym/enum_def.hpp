@@ -7,6 +7,8 @@
 
 namespace prog::sym {
 
+// Definition of an enum type. Contains a set of values with names.
+// Note: The order of the values has no meaning.
 class EnumDef final {
   friend class TypeDefTable;
 

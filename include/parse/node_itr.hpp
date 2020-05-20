@@ -15,6 +15,7 @@ public:
   using iterator_category = std::input_iterator_tag;
 };
 
+// Iterator that wraps a source that provides a value when 'next()' is called.
 template <typename NodeSource>
 class NodeItr final : public NodeItrTraits {
 

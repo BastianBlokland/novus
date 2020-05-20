@@ -5,6 +5,10 @@
 
 namespace prog::expr {
 
+// Execute a static call to a function.
+// Note: For forked calls the return type has to be a future type.
+// Note: For lazy calls the return type has to be a lazy type.
+//
 class CallExprNode final : public Node {
   friend auto callExprNode(const Program& prog, sym::FuncId func, std::vector<NodePtr> args)
       -> NodePtr;

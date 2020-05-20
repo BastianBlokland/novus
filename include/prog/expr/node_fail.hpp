@@ -4,6 +4,9 @@
 
 namespace prog::expr {
 
+// Fail the current executor. If the current executor is the main executor then the program will
+// exit with exit-code 1. If the current executor is not the main then any executor that waits on
+// the future of this executor will also fail.
 class FailNode final : public Node {
   friend auto failNode(sym::TypeId type) -> NodePtr;
 

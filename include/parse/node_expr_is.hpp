@@ -6,6 +6,8 @@
 
 namespace parse {
 
+// Is expression, to check if a value is of a certain type.
+// Example in a source: 'a is int'.
 class IsExprNode final : public Node {
   friend auto isExprNode(NodePtr lhs, lex::Token kw, Type type, std::optional<lex::Token> id)
       -> NodePtr;

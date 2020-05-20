@@ -62,6 +62,8 @@ private:
 
 } // namespace internal
 
+// Parser object.
+// Takes a token iterator and provides a parse node iterator.
 template <typename InputItrBegin, typename InputItrEnd>
 class Parser final : private internal::ParserImpl {
 
@@ -98,7 +100,7 @@ private:
   }
 };
 
-// Utilities.
+// Parse a list of nodes from a pair of token iterators.
 template <typename InputItrBegin, typename InputItrEnd>
 auto parseAll(InputItrBegin inputBegin, const InputItrEnd inputEnd) {
   auto parser = Parser{inputBegin, inputEnd};

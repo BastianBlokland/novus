@@ -5,6 +5,13 @@
 
 namespace parse {
 
+// Switch expression.
+// Example in source:
+// '
+// if a > 42  -> 1
+// if b < 1   -> 2
+// else       -> 3
+// '
 class SwitchExprNode final : public Node {
   friend auto switchExprNode(std::vector<NodePtr> ifClauses, NodePtr elseClause) -> NodePtr;
 

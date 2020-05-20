@@ -5,6 +5,9 @@
 
 namespace prog::expr {
 
+// Execute condition expressions until a condition returns 'true' if so execute its branch
+// expression. If none of the conditions evaluates to 'true' then execute the last (the else)
+// branch.
 class SwitchExprNode final : public Node {
   friend auto switchExprNode(
       const Program& program, std::vector<NodePtr> conditions, std::vector<NodePtr> branches)

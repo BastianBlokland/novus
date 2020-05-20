@@ -5,6 +5,8 @@
 
 namespace parse {
 
+// Argument list declaration.
+// Example in source: '(int i, float f)'.
 class ArgumentListDecl final {
   friend auto operator<<(std::ostream& out, const ArgumentListDecl& rhs) -> std::ostream&;
 

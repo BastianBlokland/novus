@@ -5,6 +5,8 @@
 
 namespace parse {
 
+// List of type parameters.
+// Example in source: '{int, float}' or '{Person{bool}, Person{Child{int}}}'.
 class TypeParamList final {
   friend auto operator<<(std::ostream& out, const TypeParamList& rhs) -> std::ostream&;
 

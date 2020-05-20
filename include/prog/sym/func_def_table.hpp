@@ -8,14 +8,15 @@
 
 namespace prog::sym {
 
+// Function definition table. Contains a defintiion for all user-functions.
 class FuncDefTable final {
 public:
   using Iterator = std::set<FuncId>::const_iterator;
 
-  FuncDefTable()                            = default;
-  FuncDefTable(const FuncDefTable& rhs)     = delete;
-  FuncDefTable(FuncDefTable&& rhs)          = default;
-  ~FuncDefTable()                           = default;
+  FuncDefTable()                        = default;
+  FuncDefTable(const FuncDefTable& rhs) = delete;
+  FuncDefTable(FuncDefTable&& rhs)      = default;
+  ~FuncDefTable()                       = default;
 
   auto operator=(const FuncDefTable& rhs) -> FuncDefTable& = delete;
   auto operator=(FuncDefTable&& rhs) noexcept -> FuncDefTable& = default;

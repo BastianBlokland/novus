@@ -6,6 +6,7 @@
 
 namespace prog::sym {
 
+// Immutable collection of types.
 class TypeSet final {
   friend auto operator<<(std::ostream& out, const TypeSet& rhs) -> std::ostream&;
 

@@ -4,6 +4,8 @@
 
 namespace prog::expr {
 
+// Execute a group of expressions.
+// Note: Only the result of the last expression is used, the other results are discarded.
 class GroupExprNode final : public Node {
   friend auto groupExprNode(std::vector<NodePtr> exprs) -> NodePtr;
 

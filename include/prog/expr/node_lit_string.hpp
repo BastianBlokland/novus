@@ -4,6 +4,7 @@
 
 namespace prog::expr {
 
+// Load a string literal.
 class LitStringNode final : public Node {
   friend auto litStringNode(const Program& program, std::string val) -> NodePtr;
 
