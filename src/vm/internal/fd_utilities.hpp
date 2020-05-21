@@ -15,9 +15,8 @@ namespace vm::internal {
 #if !defined(_WIN32)
 
 // Set file-descriptor options.
-inline auto setFileOpts(FILE* filePtr, StreamOpts opts) noexcept -> bool {
+inline auto setFileOpts(int fd, StreamOpts opts) noexcept -> bool {
   // Get the current options of the file descriptor.
-  auto fd      = fileno(filePtr);
   int fileOpts = fcntl(fd, F_GETFL);
   if (fileOpts < 0) {
     return false;
@@ -35,11 +34,15 @@ inline auto setFileOpts(FILE* filePtr, StreamOpts opts) noexcept -> bool {
   return true;
 }
 
+// Set file-descriptor options.
+inline auto setFileOpts(FILE* filePtr, StreamOpts opts) noexcept -> bool {
+  return setFileOpts(fileno(filePtr), opts);
+}
+
 // Unset file-descriptor options.
-inline auto unsetFileOpts(FILE* filePtr, StreamOpts opts) noexcept -> bool {
+inline auto unsetFileOpts(int fd, StreamOpts opts) noexcept -> bool {
 
   // Get the current options of the file descriptor.
-  auto fd      = fileno(filePtr);
   int fileOpts = fcntl(fd, F_GETFL);
   if (fileOpts < 0) {
     return false;
@@ -55,6 +58,11 @@ inline auto unsetFileOpts(FILE* filePtr, StreamOpts opts) noexcept -> bool {
     return false;
   }
   return true;
+}
+
+// Unset file-descriptor options.
+inline auto unsetFileOpts(FILE* filePtr, StreamOpts opts) noexcept -> bool {
+  return unsetFileOpts(fileno(filePtr), opts);
 }
 
 #endif

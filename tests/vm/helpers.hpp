@@ -102,7 +102,7 @@ inline auto makeTmpFile() -> FILE* {
 #define ADD_PRINT(ASMB)                                                                            \
   {                                                                                                \
     (ASMB)->addLoadLitInt(1); /* StdOut. */                                                        \
-    (ASMB)->addPCall(novasm::PCallCode::StreamOpenConsole);                                        \
+    (ASMB)->addPCall(novasm::PCallCode::ConsoleOpenStream);                                        \
     (ASMB)->addSwap(); /* Swap because the stream needs to be on the stack before the string. */   \
     (ASMB)->addPCall(novasm::PCallCode::StreamWriteString);                                        \
   }

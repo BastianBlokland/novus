@@ -11,6 +11,12 @@ act setOptions(stream s, StreamOptions opts)
 act unsetOptions(stream s, StreamOptions opts)
   s.streamUnsetOptions(int(opts))
 
+act write(stream s, string str)
+  s.streamWrite(str)
+
+act write(stream s, char c)
+  s.streamWrite(c)
+
 act read(stream s)
   (
     impure lambda (string result)
@@ -19,10 +25,14 @@ act read(stream s)
       else                  -> result
   )("")
 
+act readChar(stream s)
+  s.streamRead()
+
 act readLine(stream s)
   (
     impure lambda (string result)
       c = s.streamRead();
+      if c == '\r'              -> self(result)
       if c == '\n' || c == '\0' -> result
       else                      -> self(result + c)
   )("")

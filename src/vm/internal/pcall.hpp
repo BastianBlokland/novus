@@ -3,6 +3,8 @@
 #include "internal/ref_long.hpp"
 #include "internal/ref_stream_console.hpp"
 #include "internal/ref_stream_file.hpp"
+#include "internal/ref_stream_tcp.hpp"
+#include "internal/settings.hpp"
 #include "internal/stack.hpp"
 #include "internal/stream_utilities.hpp"
 #include "internal/string_utilities.hpp"
@@ -19,6 +21,7 @@ namespace vm::internal {
 // Execute a 'platform' call. Very similar to normal instructions but are interacting with the
 // 'outside' world (for example file io).
 auto inline pcall(
+    const Settings& settings,
     PlatformInterface* iface,
     RefAllocator* refAlloc,
     BasicStack* stack,
@@ -63,21 +66,6 @@ auto inline pcall(
 #define PEEK_INT() PEEK().getInt()
 
   switch (code) {
-  case PCallCode::StreamOpenFile: {
-    auto options = POP_INT();
-    // Mode is stored in the least significant 8 bits.
-    // Flags is stored in the 8 bits before (more significant) then mode.
-    auto mode        = static_cast<FileStreamMode>(static_cast<uint8_t>(options));
-    auto flags       = static_cast<FileStreamFlags>(static_cast<uint8_t>(options >> 8U));
-    auto* pathStrRef = getStringRef(refAlloc, POP());
-    CHECK_ALLOC(pathStrRef);
-
-    PUSH_REF(openFileStream(refAlloc, pathStrRef, mode, flags));
-  } break;
-  case PCallCode::StreamOpenConsole: {
-    auto kind = static_cast<ConsoleStreamKind>(POP_INT());
-    PUSH_REF(openConsoleStream(iface, refAlloc, kind));
-  } break;
   case PCallCode::StreamCheckValid: {
     PUSH_BOOL(streamCheckValid(POP()));
   } break;
@@ -140,11 +128,58 @@ auto inline pcall(
     PUSH_BOOL(streamUnsetOpts(stream, static_cast<StreamOpts>(options)));
   } break;
 
+  case PCallCode::FileOpenStream: {
+    auto options = POP_INT();
+    // Mode is stored in the least significant 8 bits.
+    // Flags is stored in the 8 bits before (more significant) then mode.
+    auto mode        = static_cast<FileStreamMode>(static_cast<uint8_t>(options));
+    auto flags       = static_cast<FileStreamFlags>(static_cast<uint8_t>(options >> 8U));
+    auto* pathStrRef = getStringRef(refAlloc, POP());
+    CHECK_ALLOC(pathStrRef);
+
+    PUSH_REF(openFileStream(refAlloc, pathStrRef, mode, flags));
+  } break;
   case PCallCode::FileRemove: {
     auto* pathStrRef = getStringRef(refAlloc, POP());
     CHECK_ALLOC(pathStrRef);
 
     PUSH_BOOL(removeFile(pathStrRef));
+  } break;
+
+  case PCallCode::TcpOpenCon: {
+    auto port = POP_INT();
+
+    // Note: Keep the 'address' string on the stack while connecting, reason is that garbage
+    // collection could happen while connecting (Because we mark ourselves as 'Paused').
+    auto addr = PEEK();
+
+    execHandle->setState(ExecState::Paused);
+    auto* result = tcpOpenConnection(settings, refAlloc, addr.getDowncastRef<StringRef>(), port);
+    execHandle->setState(ExecState::Running);
+    execHandle->trap();
+
+    POP(); // Pop the 'address' string off the stack.
+    PUSH_REF(result);
+  } break;
+  case PCallCode::TcpStartServer: {
+    auto backlog = POP_INT();
+    auto port    = POP_INT();
+    PUSH_REF(tcpStartServer(settings, refAlloc, port, backlog));
+  } break;
+  case PCallCode::TcpAcceptCon: {
+    auto stream = POP();
+
+    execHandle->setState(ExecState::Paused);
+    auto* result = tcpAcceptConnection(settings, refAlloc, stream);
+    execHandle->setState(ExecState::Running);
+    execHandle->trap();
+
+    PUSH_REF(result);
+  } break;
+
+  case PCallCode::ConsoleOpenStream: {
+    auto kind = static_cast<ConsoleStreamKind>(POP_INT());
+    PUSH_REF(openConsoleStream(iface, refAlloc, kind));
   } break;
 
   case PCallCode::TermSetOptions: {

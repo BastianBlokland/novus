@@ -1,0 +1,56 @@
+import "option.nov"
+import "time.nov"
+
+// -- Types
+
+struct TcpServer =
+  stream socket,
+  int    port
+
+struct TcpConnection =
+  stream socket
+
+// -- Actions
+
+act tcpServer()
+  tcpServer(8080)
+
+act tcpServer(int port)
+  socket = tcpStartServer(port, -1);
+  socket.streamCheckValid() ? some(TcpServer(socket, port)) : none()
+
+act acceptConnection(TcpServer server)
+  socket = tcpAcceptConnection(server.socket);
+  socket.streamCheckValid() ? some(TcpConnection(socket)) : none()
+
+act tcpConnection(string ipAddress)
+  tcpConnection(ipAddress, 8080)
+
+act tcpConnection(string ipAddress, int port)
+  socket = tcpOpenConnection(ipAddress, port);
+  socket.streamCheckValid() ? some(TcpConnection(socket)) : none()
+
+// -- Utilities
+
+act acceptLoop(TcpServer srv, action{TcpConnection, bool} clientHandler)
+  acceptLoop(srv, clientHandler, lambda () false)
+
+act acceptLoop(TcpServer srv, action{TcpConnection, bool} clientHandler, action{bool} stopCondition)
+  loop = (impure lambda (future{Option{TcpConnection}} fCon)
+    if stopCondition()            -> true
+    if fCon.wait(seconds(1))      ->
+      if fCon.get() as TcpConnection c -> fork clientHandler(c); self(fork srv.acceptConnection())
+      else                             -> self(fork srv.acceptConnection())
+    else                          -> self(fCon)
+  );
+  loop(fork srv.acceptConnection())
+
+// -- Tests
+
+assert(
+  tcpServer(4444) as TcpServer s                          &&
+  tcpConnection("127.0.0.1", 4444) as TcpConnection cCon  &&
+  s.acceptConnection() as TcpConnection sCon              &&
+  sCon.socket.streamWrite("Hello world")                  &&
+  cCon.socket.streamRead(11) == "Hello world"
+)

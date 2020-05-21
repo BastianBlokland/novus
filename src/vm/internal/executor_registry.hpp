@@ -11,7 +11,7 @@ public:
   ExecutorRegistry() noexcept;
   ExecutorRegistry(const ExecutorRegistry& rhs) = delete;
   ExecutorRegistry(ExecutorRegistry&& rhs)      = delete;
-  ~ExecutorRegistry() noexcept;
+  ~ExecutorRegistry() noexcept                  = default;
 
   auto operator=(const ExecutorRegistry& rhs) -> ExecutorRegistry& = delete;
   auto operator=(ExecutorRegistry&& rhs) -> ExecutorRegistry& = delete;

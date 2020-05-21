@@ -5,8 +5,6 @@ namespace vm::internal {
 
 ExecutorRegistry::ExecutorRegistry() noexcept : m_head{nullptr} {};
 
-ExecutorRegistry::~ExecutorRegistry() noexcept { abortExecutors(); }
-
 auto ExecutorRegistry::registerExecutor(ExecutorHandle* handle) noexcept -> void {
   auto lk = std::lock_guard<std::mutex>{m_mutex};
 

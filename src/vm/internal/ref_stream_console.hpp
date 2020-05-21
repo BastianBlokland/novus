@@ -5,6 +5,7 @@
 #include "internal/ref_allocator.hpp"
 #include "internal/ref_string.hpp"
 #include "internal/terminal.hpp"
+#include "likely.hpp"
 #include "vm/platform_interface.hpp"
 #include <cstdio>
 
@@ -41,6 +42,10 @@ public:
   [[nodiscard]] auto isValid() noexcept -> bool { return m_filePtr != nullptr; }
 
   auto readString(RefAllocator* alloc, int32_t max) noexcept -> StringRef* {
+    if (unlikely(max < 0)) {
+      return alloc->allocStr(0).first;
+    }
+
 #if defined(_WIN32)
     // Special case non-blocking terminal read on windows. Unfortunately required as AFAIK there are
     // no non-blocking file-descriptors that can be used for terminal io.

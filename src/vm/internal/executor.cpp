@@ -117,6 +117,7 @@ inline auto pushClosure(
 // Start executing a call to a function at a given instruction pointer location on a new thread. A
 // promise object for retreiving the results from will be pushed onto the stack.
 inline auto fork(
+    const Settings& settings,
     const novasm::Assembly* assembly,
     PlatformInterface* iface,
     ExecutorRegistry* execRegistry,
@@ -135,7 +136,16 @@ inline auto fork(
 
   auto* argSource = stack->getNext() - argCount;
   std::thread(
-      &execute, assembly, iface, execRegistry, refAlloc, entryIpOffset, argCount, argSource, future)
+      &execute,
+      settings,
+      assembly,
+      iface,
+      execRegistry,
+      refAlloc,
+      entryIpOffset,
+      argCount,
+      argSource,
+      future)
       .detach();
 
   // Wait until the fork executor has started.
@@ -159,6 +169,7 @@ inline auto fork(
 }
 
 auto execute(
+    const Settings& settings,
     const novasm::Assembly* assembly,
     PlatformInterface* iface,
     ExecutorRegistry* execRegistry,
@@ -228,7 +239,15 @@ auto execute(
 #define CALL_TAIL(ARG_COUNT, TGT_IP) callTail(assembly, &stack, &ip, sh, ARG_COUNT, TGT_IP)
 #define CALL_FORKED(ARG_COUNT, TGT_IP)                                                             \
   if (unlikely(!fork(                                                                              \
-          assembly, iface, execRegistry, refAlloc, &stack, &execHandle, ARG_COUNT, TGT_IP))) {     \
+          settings,                                                                                \
+          assembly,                                                                                \
+          iface,                                                                                   \
+          execRegistry,                                                                            \
+          refAlloc,                                                                                \
+          &stack,                                                                                  \
+          &execHandle,                                                                             \
+          ARG_COUNT,                                                                               \
+          TGT_IP))) {                                                                              \
     goto End;                                                                                      \
   }
 
@@ -719,7 +738,7 @@ auto execute(
       }
     } break;
     case OpCode::PCall: {
-      pcall(iface, refAlloc, &stack, &execHandle, readAsm<PCallCode>(&ip));
+      pcall(settings, iface, refAlloc, &stack, &execHandle, readAsm<PCallCode>(&ip));
       if (unlikely(execHandle.getState(std::memory_order_relaxed) != ExecState::Running)) {
         assert(execHandle.getState(std::memory_order_relaxed) != ExecState::Success);
         goto End;
@@ -819,6 +838,14 @@ auto execute(
 End:
   // If we are backing a promise then fill-in the results and notify all waiters.
   auto endState = execHandle.getState(std::memory_order_relaxed);
+
+  // Note: During program shutdown thread can still be inside blocking system calls, when they
+  // return (and notice that they have been aborted) it is not safe to touch any memory outside
+  // their own stack.
+  if (endState == ExecState::Aborted) {
+    return ExecState::Aborted;
+  }
+
   if (promise) {
     if (endState == ExecState::Success) {
       promise->setResult(POP());

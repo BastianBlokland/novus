@@ -473,12 +473,6 @@ auto GenExpr::visit(const prog::expr::CallExprNode& n) -> void {
   }
 
   // Platform actions:
-  case prog::sym::FuncKind::ActionStreamOpenFile:
-    m_asmb->addPCall(novasm::PCallCode::StreamOpenFile);
-    break;
-  case prog::sym::FuncKind::ActionStreamOpenConsole:
-    m_asmb->addPCall(novasm::PCallCode::StreamOpenConsole);
-    break;
   case prog::sym::FuncKind::ActionStreamCheckValid:
     m_asmb->addPCall(novasm::PCallCode::StreamCheckValid);
     break;
@@ -504,8 +498,25 @@ auto GenExpr::visit(const prog::expr::CallExprNode& n) -> void {
     m_asmb->addPCall(novasm::PCallCode::StreamUnsetOptions);
     break;
 
+  case prog::sym::FuncKind::ActionFileOpenStream:
+    m_asmb->addPCall(novasm::PCallCode::FileOpenStream);
+    break;
   case prog::sym::FuncKind::ActionFileRemove:
     m_asmb->addPCall(novasm::PCallCode::FileRemove);
+    break;
+
+  case prog::sym::FuncKind::ActionTcpOpenCon:
+    m_asmb->addPCall(novasm::PCallCode::TcpOpenCon);
+    break;
+  case prog::sym::FuncKind::ActionTcpStartServer:
+    m_asmb->addPCall(novasm::PCallCode::TcpStartServer);
+    break;
+  case prog::sym::FuncKind::ActionTcpAcceptCon:
+    m_asmb->addPCall(novasm::PCallCode::TcpAcceptCon);
+    break;
+
+  case prog::sym::FuncKind::ActionConsoleOpenStream:
+    m_asmb->addPCall(novasm::PCallCode::ConsoleOpenStream);
     break;
 
   case prog::sym::FuncKind::ActionTermSetOptions:

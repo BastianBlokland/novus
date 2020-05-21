@@ -4,6 +4,7 @@
 #include "internal/ref.hpp"
 #include "internal/ref_allocator.hpp"
 #include "internal/ref_string.hpp"
+#include "likely.hpp"
 #include <cstdio>
 #include <cstring>
 
@@ -46,6 +47,10 @@ public:
   [[nodiscard]] auto isValid() noexcept -> bool { return m_filePtr != nullptr; }
 
   auto readString(RefAllocator* alloc, int32_t max) noexcept -> StringRef* {
+    if (unlikely(max < 0)) {
+      return alloc->allocStr(0).first;
+    }
+
     auto strAlloc              = alloc->allocStr(max); // allocStr already does +1 for null-ter.
     auto bytesRead             = std::fread(strAlloc.second, 1U, max, m_filePtr);
     strAlloc.second[bytesRead] = '\0'; // null-terminate.
