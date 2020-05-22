@@ -53,6 +53,11 @@ message(STATUS "Finding threads package")
 set(CMAKE_THREAD_PREFER_PTHREAD On)
 find_package(Threads REQUIRED)
 
+# On windows link against the 'winsock' library.
+if(WIN32)
+  link_libraries(ws2_32)
+endif()
+
 # Generate a 'compile_commands.json' for use by clangd.
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 

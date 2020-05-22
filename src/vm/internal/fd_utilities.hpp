@@ -1,12 +1,7 @@
 #pragma once
 #include "internal/stream_opts.hpp"
-
-#if !defined(_WIN32)
-
+#include "internal/os_include.hpp"
 #include <cstdio>
-#include <fcntl.h>
-
-#endif
 
 namespace vm::internal {
 

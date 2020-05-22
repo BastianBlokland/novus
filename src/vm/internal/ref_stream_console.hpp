@@ -5,15 +5,10 @@
 #include "internal/ref_allocator.hpp"
 #include "internal/ref_string.hpp"
 #include "internal/terminal.hpp"
+#include "internal/os_include.hpp"
 #include "likely.hpp"
 #include "vm/platform_interface.hpp"
 #include <cstdio>
-
-#if defined(_WIN32)
-
-#include <conio.h>
-
-#endif
 
 namespace vm::internal {
 

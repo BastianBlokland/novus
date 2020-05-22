@@ -63,6 +63,7 @@ auto inline pcall(
 #define POP() stack->pop()
 #define POP_INT() POP().getInt()
 #define PEEK() stack->peek()
+#define PEEK_BEHIND(BEHIND) stack->peek(BEHIND)
 #define PEEK_INT() PEEK().getInt()
 
   switch (code) {
@@ -71,47 +72,67 @@ auto inline pcall(
   } break;
   case PCallCode::StreamReadString: {
     auto maxChars = POP_INT();
-    auto stream   = POP();
+
+    // Note: Keep the stream on the stack, reason is gc could run while we are blocked.
+    auto stream = PEEK();
 
     execHandle->setState(ExecState::Paused);
     auto* result = streamReadString(refAlloc, stream, maxChars);
     execHandle->setState(ExecState::Running);
-    execHandle->trap();
+    if (execHandle->trap()) {
+      return;
+    }
 
+    POP(); // Pop the stream off the stack.
     PUSH_REF(result);
   } break;
   case PCallCode::StreamReadChar: {
-    auto stream = POP();
+    // Note: Keep the stream on the stack, reason is gc could run while we are blocked.
+    auto stream = PEEK();
 
     execHandle->setState(ExecState::Paused);
     auto readChar = streamReadChar(stream);
     execHandle->setState(ExecState::Running);
-    execHandle->trap();
+    if (execHandle->trap()) {
+      return;
+    }
 
+    POP(); // Pop the stream off the stack.
     PUSH_INT(readChar);
   } break;
   case PCallCode::StreamWriteString: {
-    auto* strRef = getStringRef(refAlloc, POP());
+    // Note: Keep the string on the stack, reason is gc could run while we are blocked.
+    auto* strRef = getStringRef(refAlloc, PEEK());
     CHECK_ALLOC(strRef);
 
-    auto stream = POP();
+    // Note: Keep the stream on the stack, reason is gc could run while we are blocked.
+    auto stream = PEEK_BEHIND(1);
 
     execHandle->setState(ExecState::Paused);
     auto result = streamWriteString(stream, strRef);
     execHandle->setState(ExecState::Running);
-    execHandle->trap();
+    if (execHandle->trap()) {
+      return;
+    }
 
+    POP(); // Pop the string off the stack.
+    POP(); // Pop the stream off the stack.
     PUSH_BOOL(result);
   } break;
   case PCallCode::StreamWriteChar: {
     uint8_t val = static_cast<uint8_t>(POP_INT());
-    auto stream = POP();
+
+    // Note: Keep the stream on the stack, reason is gc could run while we are blocked.
+    auto stream = PEEK();
 
     execHandle->setState(ExecState::Paused);
     auto result = streamWriteChar(stream, val);
     execHandle->setState(ExecState::Running);
-    execHandle->trap();
+    if (execHandle->trap()) {
+      return;
+    }
 
+    POP(); // Pop the stream off the stack.
     PUSH_BOOL(result);
   } break;
   case PCallCode::StreamFlush: {
@@ -149,14 +170,15 @@ auto inline pcall(
   case PCallCode::TcpOpenCon: {
     auto port = POP_INT();
 
-    // Note: Keep the 'address' string on the stack while connecting, reason is that garbage
-    // collection could happen while connecting (Because we mark ourselves as 'Paused').
+    // Note: Keep the 'address' string on the stack, reason is gc could run while we are blocked.
     auto addr = PEEK();
 
     execHandle->setState(ExecState::Paused);
     auto* result = tcpOpenConnection(settings, refAlloc, addr.getDowncastRef<StringRef>(), port);
     execHandle->setState(ExecState::Running);
-    execHandle->trap();
+    if (execHandle->trap()) {
+      return;
+    }
 
     POP(); // Pop the 'address' string off the stack.
     PUSH_REF(result);
@@ -167,13 +189,18 @@ auto inline pcall(
     PUSH_REF(tcpStartServer(settings, refAlloc, port, backlog));
   } break;
   case PCallCode::TcpAcceptCon: {
-    auto stream = POP();
+
+    // Note: Keep the stream on the stack, reason is gc could run while we are blocked.
+    auto stream = PEEK();
 
     execHandle->setState(ExecState::Paused);
     auto* result = tcpAcceptConnection(settings, refAlloc, stream);
     execHandle->setState(ExecState::Running);
-    execHandle->trap();
+    if (execHandle->trap()) {
+      return;
+    }
 
+    POP(); // Pop the stream off the stack.
     PUSH_REF(result);
   } break;
 
@@ -222,8 +249,9 @@ auto inline pcall(
   } break;
 
   case PCallCode::SleepNano: {
+    auto sleepTime = std::chrono::nanoseconds(getLong(PEEK()));
     execHandle->setState(ExecState::Paused);
-    std::this_thread::sleep_for(std::chrono::nanoseconds(getLong(PEEK())));
+    std::this_thread::sleep_for(sleepTime);
     execHandle->setState(ExecState::Running);
     execHandle->trap();
   } break;
@@ -255,6 +283,7 @@ auto inline pcall(
 #undef POP
 #undef POP_INT
 #undef PEEK
+#undef PEEK_BEHIND
 #undef PEEK_INT
 }
 

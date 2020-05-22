@@ -57,6 +57,8 @@ public:
 
   inline auto peek() noexcept -> Value { return *getTop(); }
 
+  inline auto peek(unsigned int behind) noexcept -> Value { return *(getTop() - behind); }
+
   inline auto pop() noexcept -> Value {
     assert(m_stackNext - m_stack.data() != 0);
     return *--m_stackNext;
