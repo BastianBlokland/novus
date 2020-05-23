@@ -51,12 +51,15 @@ auto run(
   return 1;
 }
 
+auto printUsage() {
+  std::cerr << rang::fg::red
+            << "Novus evaluator [" PROJECT_VER "] - Please provide input characters or input file\n"
+            << rang::style::reset;
+}
+
 auto main(int argc, char** argv) noexcept -> int {
   if (argc <= 1) {
-    std::cerr << rang::fg::red
-              << "Novus evaluator [" PROJECT_VER
-                 "] - Please provide input characters or input file\n"
-              << rang::style::reset;
+    printUsage();
     return 1;
   }
 
@@ -65,7 +68,12 @@ auto main(int argc, char** argv) noexcept -> int {
   const auto searchPaths    = input::getSearchPaths(argv);
 
   auto path = filesystem::path{argv[1]};
-  auto fs   = std::ifstream{path.string()};
+  if (filesystem::is_directory(path)) {
+    printUsage();
+    return 1;
+  }
+
+  auto fs = std::ifstream{path.string()};
   if (fs.good()) {
     auto absInputPath = filesystem::absolute(path);
     return run(
