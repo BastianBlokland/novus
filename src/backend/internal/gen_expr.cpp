@@ -514,6 +514,9 @@ auto GenExpr::visit(const prog::expr::CallExprNode& n) -> void {
   case prog::sym::FuncKind::ActionTcpAcceptCon:
     m_asmb->addPCall(novasm::PCallCode::TcpAcceptCon);
     break;
+  case prog::sym::FuncKind::ActionIpLookupAddress:
+    m_asmb->addPCall(novasm::PCallCode::IpLookupAddress);
+    break;
 
   case prog::sym::FuncKind::ActionConsoleOpenStream:
     m_asmb->addPCall(novasm::PCallCode::ConsoleOpenStream);

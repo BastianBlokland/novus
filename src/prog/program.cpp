@@ -277,6 +277,8 @@ Program::Program() :
       *this, Fk::ActionTcpStartServer, "tcpStartServer", sym::TypeSet{m_int, m_int}, m_stream);
   m_funcDecls.registerAction(
       *this, Fk::ActionTcpAcceptCon, "tcpAcceptConnection", sym::TypeSet{m_stream}, m_stream);
+  m_funcDecls.registerAction(
+      *this, Fk::ActionIpLookupAddress, "ipLookupAddress", sym::TypeSet{m_string}, m_string);
 
   m_funcDecls.registerAction(
       *this, Fk::ActionTermSetOptions, "termSetOptions", sym::TypeSet{m_int}, m_bool);

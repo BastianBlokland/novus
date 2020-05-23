@@ -351,4 +351,78 @@ inline auto tcpAcceptConnection(
   return tcpStreamRef->acceptConnection(execHandle, alloc);
 }
 
+inline auto ipLookupAddress(
+    const Settings& settings, ExecutorHandle* execHandle, RefAllocator* alloc, StringRef* hostName)
+    -> StringRef* {
+
+  if (!settings.socketsEnabled) {
+    return alloc->allocStr(0);
+  }
+
+  addrinfo hints    = {};
+  hints.ai_family   = AF_INET;
+  hints.ai_socktype = SOCK_STREAM;
+
+  // 'getaddrinfo' call blocks so mark ourselves as paused so the gc can trigger in the mean time.
+  execHandle->setState(ExecState::Paused);
+
+  addrinfo* res = nullptr;
+  auto resCode  = getaddrinfo(hostName->getCharDataPtr(), nullptr, &hints, &res);
+
+  // After resuming check if we should wait for gc (or if we are aborted).
+  execHandle->setState(ExecState::Running);
+  if (execHandle->trap()) {
+
+    // Cleanup the addinfo's incase any where allocated.
+    if (res) {
+      freeaddrinfo(res);
+    }
+    return nullptr;
+  }
+
+  if (resCode != 0 || !res) {
+    return alloc->allocStr(0);
+  }
+
+  // Note: 'getaddrinfo' returns a linked list of addresses sorted by priority, atm we just use the
+  // first one.
+
+  // Note: We only request ipv4 addresses so the following code is technically not required but is
+  // slightly more correct.
+  unsigned int maxSize;
+  void* addr;
+  switch (res->ai_family) {
+  case AF_INET:
+    maxSize = INET_ADDRSTRLEN;
+    addr    = &static_cast<sockaddr_in*>(static_cast<void*>(res->ai_addr))->sin_addr;
+    break;
+  case AF_INET6:
+    maxSize = INET6_ADDRSTRLEN;
+    addr    = &static_cast<sockaddr_in6*>(static_cast<void*>(res->ai_addr))->sin6_addr;
+    break;
+  default:
+    assert(false);
+    return nullptr;
+  }
+
+  auto* str = alloc->allocStr(maxSize);
+
+  // Convert the binary address of the first result into a text representation.
+  if (inet_ntop(res->ai_family, addr, str->getCharDataPtr(), maxSize)) {
+
+    // Update the size of our string to the written size (by looking at the written null term).
+    str->updateSize(std::strlen(str->getCharDataPtr()));
+
+  } else {
+
+    // If it failed return an 'empty' string.
+    str->updateSize(0);
+  }
+
+  // Free the list of addresses received from 'getaddrinfo'.
+  freeaddrinfo(res);
+
+  return str;
+}
+
 } // namespace vm::internal

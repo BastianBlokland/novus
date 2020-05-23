@@ -25,6 +25,7 @@ enum class PCallCode : uint8_t {
   TcpOpenCon     = 40, // (int, string)-> (stream) Open a connect to a remote address and port.
   TcpStartServer = 41, // (int, int)   -> (stream) Start a tcp-server at port with backlog.
   TcpAcceptCon   = 42, // ()           -> (stream) Accept a new connection from a tcp-server stream.
+  IpLookupAddress = 45, // (string)    -> (string) Lookup an ip-address by host-name.
 
   ConsoleOpenStream = 50, // (int) -> (stream)  Get a stream to stdin, stdout or stderr.
 

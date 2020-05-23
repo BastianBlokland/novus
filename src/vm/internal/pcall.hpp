@@ -175,6 +175,16 @@ auto inline pcall(
     POP(); // Pop the stream off the stack.
     PUSH_REF(result);
   } break;
+  case PCallCode::IpLookupAddress: {
+
+    // Note: Keep the 'hostname' string on the stack, reason is gc could run while we are blocked.
+    auto hostname = PEEK();
+    auto* result =
+        ipLookupAddress(settings, execHandle, refAlloc, hostname.getDowncastRef<StringRef>());
+
+    POP(); // Pop the hostname off the stack.
+    PUSH_REF(result);
+  } break;
 
   case PCallCode::ConsoleOpenStream: {
     auto kind = static_cast<ConsoleStreamKind>(POP_INT());
