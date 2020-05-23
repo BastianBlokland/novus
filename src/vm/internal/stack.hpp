@@ -2,6 +2,7 @@
 #include "internal/value.hpp"
 #include <array>
 #include <cassert>
+#include <cstring>
 
 namespace vm::internal {
 
@@ -57,11 +58,25 @@ public:
 
   inline auto peek() noexcept -> Value { return *getTop(); }
 
-  inline auto peek(unsigned int behind) noexcept -> Value { return *(getTop() - behind); }
+  inline auto peek(unsigned int behind) noexcept -> Value {
+    assert(behind < getSize());
+    return *(getTop() - behind);
+  }
 
   inline auto pop() noexcept -> Value {
     assert(m_stackNext - m_stack.data() != 0);
     return *--m_stackNext;
+  }
+
+  inline auto popAt(unsigned int behind) noexcept -> Value {
+    assert(behind < getSize());
+
+    auto* tgtPtr = getTop() - behind;
+    auto result  = *tgtPtr;
+    std::memmove(tgtPtr, tgtPtr + 1, sizeof(Value) * behind);
+
+    --m_stackMax;
+    return result;
   }
 
 private:

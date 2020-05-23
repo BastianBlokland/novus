@@ -46,27 +46,28 @@ public:
 
   [[nodiscard]] auto isValid() noexcept -> bool { return m_filePtr != nullptr; }
 
-  auto readString(RefAllocator* alloc, int32_t max) noexcept -> StringRef* {
-    if (unlikely(max < 0)) {
-      return alloc->allocStr(0);
+  auto readString(ExecutorHandle* /*unused*/, StringRef* str) noexcept -> bool {
+    if (unlikely(str->getSize() == 0)) {
+      return false;
     }
 
-    auto str       = alloc->allocStr(max);
-    auto bytesRead = std::fread(str->getCharDataPtr(), 1U, max, m_filePtr);
+    auto bytesRead = std::fread(str->getCharDataPtr(), 1U, str->getSize(), m_filePtr);
     str->updateSize(bytesRead);
-    return str;
+    return bytesRead > 0;
   }
 
-  auto readChar() noexcept -> char {
+  auto readChar(ExecutorHandle* /*unused*/) noexcept -> char {
     auto res = std::getc(m_filePtr);
     return res > 0 ? static_cast<char>(res) : '\0';
   }
 
-  auto writeString(StringRef* str) noexcept -> bool {
+  auto writeString(ExecutorHandle* /*unused*/, StringRef* str) noexcept -> bool {
     return std::fwrite(str->getDataPtr(), str->getSize(), 1, m_filePtr) == 1;
   }
 
-  auto writeChar(uint8_t val) noexcept -> bool { return std::fputc(val, m_filePtr) == val; }
+  auto writeChar(ExecutorHandle* /*unused*/, uint8_t val) noexcept -> bool {
+    return std::fputc(val, m_filePtr) == val;
+  }
 
   auto flush() noexcept -> bool { return std::fflush(m_filePtr) == 0; }
 

@@ -62,29 +62,53 @@ public:
 
   [[nodiscard]] auto isValid() noexcept -> bool { return SOCKET_VALID(m_socket) && m_err == -1; }
 
-  auto readString(RefAllocator* alloc, int32_t max) noexcept -> StringRef* {
-    if (unlikely(max < 0 || m_type != TcpStreamType::Connection)) {
-      return alloc->allocStr(0);
+  auto readString(ExecutorHandle* execHandle, StringRef* str) noexcept -> bool {
+    if (unlikely(m_type != TcpStreamType::Connection)) {
+      str->updateSize(0);
+      return false;
+    }
+    if (unlikely(str->getSize() == 0)) {
+      return false;
     }
 
-    auto str       = alloc->allocStr(max);
-    auto bytesRead = recv(m_socket, str->getCharDataPtr(), max, 0);
+    // 'recv' call can block so we mark ourselves as paused so the gc can trigger in the mean time.
+    execHandle->setState(ExecState::Paused);
+
+    auto bytesRead = recv(m_socket, str->getCharDataPtr(), str->getSize(), 0);
+
+    // After resuming check if we should wait for gc (or if we are aborted).
+    execHandle->setState(ExecState::Running);
+    if (execHandle->trap()) {
+      return false;
+    }
+
     if (bytesRead < 0) {
       m_err = SOCKET_ERR;
-      return alloc->allocStr(0);
+      str->updateSize(0);
+      return false;
     }
 
     str->updateSize(bytesRead);
-    return str;
+    return bytesRead > 0;
   }
 
-  auto readChar() noexcept -> char {
+  auto readChar(ExecutorHandle* execHandle) noexcept -> char {
     if (unlikely(m_type != TcpStreamType::Connection)) {
       return '\0';
     }
 
+    // 'recv' call can block so we mark ourselves as paused so the gc can trigger in the mean time.
+    execHandle->setState(ExecState::Paused);
+
     char res       = '\0';
     auto bytesRead = recv(m_socket, &res, 1, 0);
+
+    // After resuming check if we should wait for gc (or if we are aborted).
+    execHandle->setState(ExecState::Running);
+    if (execHandle->trap()) {
+      return '\0';
+    }
+
     switch (bytesRead) {
     case -1:
       m_err = SOCKET_ERR;
@@ -96,12 +120,22 @@ public:
     }
   }
 
-  auto writeString(StringRef* str) noexcept -> bool {
+  auto writeString(ExecutorHandle* execHandle, StringRef* str) noexcept -> bool {
     if (unlikely(m_type != TcpStreamType::Connection)) {
       return false;
     }
 
+    // 'send' call can block so we mark ourselves as paused so the gc can trigger in the mean time.
+    execHandle->setState(ExecState::Paused);
+
     auto bytesWritten = send(m_socket, str->getCharDataPtr(), str->getSize(), 0);
+
+    // After resuming check if we should wait for gc (or if we are aborted).
+    execHandle->setState(ExecState::Running);
+    if (execHandle->trap()) {
+      return false;
+    }
+
     if (bytesWritten < 0) {
       m_err = SOCKET_ERR;
       return false;
@@ -109,13 +143,23 @@ public:
     return bytesWritten == static_cast<int>(str->getSize());
   }
 
-  auto writeChar(uint8_t val) noexcept -> bool {
+  auto writeChar(ExecutorHandle* execHandle, uint8_t val) noexcept -> bool {
     if (unlikely(m_type != TcpStreamType::Connection)) {
       return false;
     }
 
+    // 'send' call can block so we mark ourselves as paused so the gc can trigger in the mean time.
+    execHandle->setState(ExecState::Paused);
+
     auto* valChar     = static_cast<char*>(static_cast<void*>(&val));
     auto bytesWritten = send(m_socket, valChar, 1, 0);
+
+    // After resuming check if we should wait for gc (or if we are aborted).
+    execHandle->setState(ExecState::Running);
+    if (execHandle->trap()) {
+      return false;
+    }
+
     if (bytesWritten < 0) {
       m_err = SOCKET_ERR;
       return false;
@@ -139,13 +183,23 @@ public:
     return true;
   }
 
-  auto acceptConnection(RefAllocator* alloc) -> TcpStreamRef* {
+  auto acceptConnection(ExecutorHandle* execHandle, RefAllocator* alloc) -> TcpStreamRef* {
     if (unlikely(m_type != TcpStreamType::Server)) {
       return alloc->allocPlain<TcpStreamRef>(TcpStreamType::Connection, INVALID_SOCKET, -1);
     }
 
+    // 'accept' call blocks so we mark ourselves as paused so the gc can trigger in the mean time.
+    execHandle->setState(ExecState::Paused);
+
     // Accept a new connection from the socket.
     const auto sock = accept(m_socket, nullptr, nullptr);
+
+    // After resuming check if we should wait for gc (or if we are aborted).
+    execHandle->setState(ExecState::Running);
+    if (execHandle->trap()) {
+      return nullptr;
+    }
+
     if (!SOCKET_VALID(sock)) {
       return alloc->allocPlain<TcpStreamRef>(TcpStreamType::Connection, sock, SOCKET_ERR);
     }
@@ -192,9 +246,12 @@ static auto inet_pton(int af, const char* src, void* dst) -> int {
 
 #endif // _WIN32
 
-inline auto
-tcpOpenConnection(const Settings& settings, RefAllocator* alloc, StringRef* address, int32_t port)
-    -> TcpStreamRef* {
+inline auto tcpOpenConnection(
+    const Settings& settings,
+    ExecutorHandle* execHandle,
+    RefAllocator* alloc,
+    StringRef* address,
+    int32_t port) -> TcpStreamRef* {
 
   if (!settings.socketsEnabled) {
     return alloc->allocPlain<TcpStreamRef>(TcpStreamType::Connection, INVALID_SOCKET);
@@ -215,8 +272,19 @@ tcpOpenConnection(const Settings& settings, RefAllocator* alloc, StringRef* addr
     return alloc->allocPlain<TcpStreamRef>(TcpStreamType::Connection, sock, SOCKET_ERR);
   }
 
+  // 'connect' call blocks so we mark ourselves as paused so the gc can trigger in the mean time.
+  execHandle->setState(ExecState::Paused);
+
   // Connect to the remote address.
-  if (connect(sock, static_cast<sockaddr*>(static_cast<void*>(&addr)), sizeof(sockaddr_in)) < 0) {
+  auto res = connect(sock, static_cast<sockaddr*>(static_cast<void*>(&addr)), sizeof(sockaddr_in));
+
+  // After resuming check if we should wait for gc (or if we are aborted).
+  execHandle->setState(ExecState::Running);
+  if (execHandle->trap()) {
+    return nullptr;
+  }
+
+  if (res < 0) {
     return alloc->allocPlain<TcpStreamRef>(TcpStreamType::Connection, sock, SOCKET_ERR);
   }
 
@@ -262,7 +330,8 @@ tcpStartServer(const Settings& settings, RefAllocator* alloc, int32_t port, int3
   return alloc->allocPlain<TcpStreamRef>(TcpStreamType::Server, sock);
 }
 
-inline auto tcpAcceptConnection(const Settings& settings, RefAllocator* alloc, Value stream)
+inline auto tcpAcceptConnection(
+    const Settings& settings, ExecutorHandle* execHandle, RefAllocator* alloc, Value stream)
     -> TcpStreamRef* {
 
   if (!settings.socketsEnabled) {
@@ -279,7 +348,7 @@ inline auto tcpAcceptConnection(const Settings& settings, RefAllocator* alloc, V
     return alloc->allocPlain<TcpStreamRef>(TcpStreamType::Connection, INVALID_SOCKET);
   }
 
-  return tcpStreamRef->acceptConnection(alloc);
+  return tcpStreamRef->acceptConnection(execHandle, alloc);
 }
 
 } // namespace vm::internal

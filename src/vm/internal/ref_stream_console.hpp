@@ -36,33 +36,41 @@ public:
 
   [[nodiscard]] auto isValid() noexcept -> bool { return m_filePtr != nullptr; }
 
-  auto readString(RefAllocator* alloc, int32_t max) noexcept -> StringRef* {
-    if (unlikely(max < 0)) {
-      return alloc->allocStr(0);
+  auto readString(ExecutorHandle* execHandle, StringRef* str) noexcept -> bool {
+    if (unlikely(str->getSize() == 0)) {
+      return false;
     }
 
 #if defined(_WIN32)
     // Special case non-blocking terminal read on windows. Unfortunately required as AFAIK there are
     // no non-blocking file-descriptors that can be used for terminal io.
     if (m_nonblockWinTerm) {
-      auto* str = alloc->allocStr(max);
-      auto size = 0;
-      while (size != max && _kbhit()) {
+      auto size = 0U;
+      while (size != str->getSize() && _kbhit()) {
         str->getCharDataPtr()[size] = getch();
         size++;
       }
       str->updateSize(size);
-      return str;
+      return size > 0;
     }
 #endif
 
-    auto str       = alloc->allocStr(max);
-    auto bytesRead = std::fread(str->getCharDataPtr(), 1U, max, m_filePtr);
+    // Can block so we mark ourselves as paused so the gc can trigger in the mean time.
+    execHandle->setState(ExecState::Paused);
+
+    auto bytesRead = std::fread(str->getCharDataPtr(), 1U, str->getSize(), m_filePtr);
+
+    // After resuming check if we should wait for gc (or if we are aborted).
+    execHandle->setState(ExecState::Running);
+    if (execHandle->trap()) {
+      return false;
+    }
+
     str->updateSize(bytesRead);
-    return str;
+    return bytesRead > 0;
   }
 
-  auto readChar() noexcept -> char {
+  auto readChar(ExecutorHandle* execHandle) noexcept -> char {
 #if defined(_WIN32)
     // Special case non-blocking terminal read on windows. Unfortunately required as AFAIK there are
     // no non-blocking file-descriptors that can be used for terminal io.
@@ -72,15 +80,51 @@ public:
     }
 #endif
 
-    auto res = std::getc(m_filePtr);
+    // Can block so we mark ourselves as paused so the gc can trigger in the mean time.
+    execHandle->setState(ExecState::Paused);
+
+    const auto res = std::getc(m_filePtr);
+
+    // After resuming check if we should wait for gc (or if we are aborted).
+    execHandle->setState(ExecState::Running);
+    if (execHandle->trap()) {
+      return '\0';
+    }
+
     return res > 0 ? static_cast<char>(res) : '\0';
   }
 
-  auto writeString(StringRef* str) noexcept -> bool {
-    return std::fwrite(str->getDataPtr(), str->getSize(), 1, m_filePtr) == 1;
+  auto writeString(ExecutorHandle* execHandle, StringRef* str) noexcept -> bool {
+
+    // Can block so we mark ourselves as paused so the gc can trigger in the mean time.
+    execHandle->setState(ExecState::Paused);
+
+    const auto res = std::fwrite(str->getDataPtr(), str->getSize(), 1, m_filePtr) == 1;
+
+    // After resuming check if we should wait for gc (or if we are aborted).
+    execHandle->setState(ExecState::Running);
+    if (execHandle->trap()) {
+      return false;
+    }
+
+    return res;
   }
 
-  auto writeChar(uint8_t val) noexcept -> bool { return std::fputc(val, m_filePtr) == val; }
+  auto writeChar(ExecutorHandle* execHandle, uint8_t val) noexcept -> bool {
+
+    // Can block so we mark ourselves as paused so the gc can trigger in the mean time.
+    execHandle->setState(ExecState::Paused);
+
+    const auto res = std::fputc(val, m_filePtr) == val;
+
+    // After resuming check if we should wait for gc (or if we are aborted).
+    execHandle->setState(ExecState::Running);
+    if (execHandle->trap()) {
+      return false;
+    }
+
+    return res;
+  }
 
   auto flush() noexcept -> bool { return std::fflush(m_filePtr) == 0; }
 

@@ -34,7 +34,9 @@ auto inline pcall(
 #define CHECK_ALLOC(PTR)                                                                           \
   {                                                                                                \
     if (unlikely((PTR) == nullptr)) {                                                              \
-      execHandle->setState(ExecState::AllocFailed);                                                \
+      if (execHandle->getState() != ExecState::Aborted) {                                          \
+        execHandle->setState(ExecState::AllocFailed);                                              \
+      }                                                                                            \
       return;                                                                                      \
     }                                                                                              \
   }
@@ -60,6 +62,7 @@ auto inline pcall(
     CHECK_ALLOC(refPtr);                                                                           \
     PUSH(refValue(refPtr));                                                                        \
   }
+#define POP_AT(IDX) stack->popAt(IDX)
 #define POP() stack->pop()
 #define POP_INT() POP().getInt()
 #define PEEK() stack->peek()
@@ -75,27 +78,19 @@ auto inline pcall(
 
     // Note: Keep the stream on the stack, reason is gc could run while we are blocked.
     auto stream = PEEK();
+    // Allocate a new string, and push it on the stack (so its already visible to the gc).
+    auto str = refAlloc->allocStr(maxChars <= 0 ? 0U : static_cast<unsigned int>(maxChars));
+    PUSH_REF(str);
 
-    execHandle->setState(ExecState::Paused);
-    auto* result = streamReadString(refAlloc, stream, maxChars);
-    execHandle->setState(ExecState::Running);
-    if (execHandle->trap()) {
-      return;
-    }
+    streamReadString(execHandle, stream, str);
 
-    POP(); // Pop the stream off the stack.
-    PUSH_REF(result);
+    POP_AT(1); // Pop the stream off the stack, 1 because its behind the result string.
   } break;
   case PCallCode::StreamReadChar: {
     // Note: Keep the stream on the stack, reason is gc could run while we are blocked.
     auto stream = PEEK();
 
-    execHandle->setState(ExecState::Paused);
-    auto readChar = streamReadChar(stream);
-    execHandle->setState(ExecState::Running);
-    if (execHandle->trap()) {
-      return;
-    }
+    auto readChar = streamReadChar(execHandle, stream);
 
     POP(); // Pop the stream off the stack.
     PUSH_INT(readChar);
@@ -107,13 +102,7 @@ auto inline pcall(
 
     // Note: Keep the stream on the stack, reason is gc could run while we are blocked.
     auto stream = PEEK_BEHIND(1);
-
-    execHandle->setState(ExecState::Paused);
-    auto result = streamWriteString(stream, strRef);
-    execHandle->setState(ExecState::Running);
-    if (execHandle->trap()) {
-      return;
-    }
+    auto result = streamWriteString(execHandle, stream, strRef);
 
     POP(); // Pop the string off the stack.
     POP(); // Pop the stream off the stack.
@@ -124,13 +113,7 @@ auto inline pcall(
 
     // Note: Keep the stream on the stack, reason is gc could run while we are blocked.
     auto stream = PEEK();
-
-    execHandle->setState(ExecState::Paused);
-    auto result = streamWriteChar(stream, val);
-    execHandle->setState(ExecState::Running);
-    if (execHandle->trap()) {
-      return;
-    }
+    auto result = streamWriteChar(execHandle, stream, val);
 
     POP(); // Pop the stream off the stack.
     PUSH_BOOL(result);
@@ -172,13 +155,8 @@ auto inline pcall(
 
     // Note: Keep the 'address' string on the stack, reason is gc could run while we are blocked.
     auto addr = PEEK();
-
-    execHandle->setState(ExecState::Paused);
-    auto* result = tcpOpenConnection(settings, refAlloc, addr.getDowncastRef<StringRef>(), port);
-    execHandle->setState(ExecState::Running);
-    if (execHandle->trap()) {
-      return;
-    }
+    auto* result =
+        tcpOpenConnection(settings, execHandle, refAlloc, addr.getDowncastRef<StringRef>(), port);
 
     POP(); // Pop the 'address' string off the stack.
     PUSH_REF(result);
@@ -191,14 +169,8 @@ auto inline pcall(
   case PCallCode::TcpAcceptCon: {
 
     // Note: Keep the stream on the stack, reason is gc could run while we are blocked.
-    auto stream = PEEK();
-
-    execHandle->setState(ExecState::Paused);
-    auto* result = tcpAcceptConnection(settings, refAlloc, stream);
-    execHandle->setState(ExecState::Running);
-    if (execHandle->trap()) {
-      return;
-    }
+    auto stream  = PEEK();
+    auto* result = tcpAcceptConnection(settings, execHandle, refAlloc, stream);
 
     POP(); // Pop the stream off the stack.
     PUSH_REF(result);
@@ -253,7 +225,9 @@ auto inline pcall(
     execHandle->setState(ExecState::Paused);
     std::this_thread::sleep_for(sleepTime);
     execHandle->setState(ExecState::Running);
-    execHandle->trap();
+    if (execHandle->trap()) {
+      return;
+    }
   } break;
   case PCallCode::Assert: {
     auto* msg = getStringRef(refAlloc, POP());
