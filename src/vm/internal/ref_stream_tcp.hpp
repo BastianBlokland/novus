@@ -64,20 +64,18 @@ public:
 
   auto readString(RefAllocator* alloc, int32_t max) noexcept -> StringRef* {
     if (unlikely(max < 0 || m_type != TcpStreamType::Connection)) {
-      return alloc->allocStr(0).first;
+      return alloc->allocStr(0);
     }
 
-    auto strAlloc   = alloc->allocStr(max); // allocStr already does +1 for null-ter.
-    auto* tgtBuffer = static_cast<char*>(static_cast<void*>(strAlloc.second));
-    auto bytesRead  = recv(m_socket, tgtBuffer, max, 0);
+    auto str       = alloc->allocStr(max);
+    auto bytesRead = recv(m_socket, str->getCharDataPtr(), max, 0);
     if (bytesRead < 0) {
       m_err = SOCKET_ERR;
-      return alloc->allocStr(0).first;
+      return alloc->allocStr(0);
     }
 
-    strAlloc.second[bytesRead] = '\0'; // null-terminate.
-    strAlloc.first->updateSize(bytesRead);
-    return strAlloc.first;
+    str->updateSize(bytesRead);
+    return str;
   }
 
   auto readChar() noexcept -> char {

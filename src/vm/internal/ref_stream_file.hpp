@@ -48,14 +48,13 @@ public:
 
   auto readString(RefAllocator* alloc, int32_t max) noexcept -> StringRef* {
     if (unlikely(max < 0)) {
-      return alloc->allocStr(0).first;
+      return alloc->allocStr(0);
     }
 
-    auto strAlloc              = alloc->allocStr(max); // allocStr already does +1 for null-ter.
-    auto bytesRead             = std::fread(strAlloc.second, 1U, max, m_filePtr);
-    strAlloc.second[bytesRead] = '\0'; // null-terminate.
-    strAlloc.first->updateSize(bytesRead);
-    return strAlloc.first;
+    auto str       = alloc->allocStr(max);
+    auto bytesRead = std::fread(str->getCharDataPtr(), 1U, max, m_filePtr);
+    str->updateSize(bytesRead);
+    return str;
   }
 
   auto readChar() noexcept -> char {

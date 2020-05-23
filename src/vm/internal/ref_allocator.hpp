@@ -34,19 +34,19 @@ public:
   // Note: NOT synchronized has to be called before the application makes any allocations.
   auto subscribe(RefAllocObserver* observer) -> void;
 
-  // Allocate a string, upon failure returns {nullptr, nullptr}.
-  [[nodiscard]] auto allocStr(unsigned int size) noexcept -> std::pair<StringRef*, uint8_t*>;
+  // Allocate a string, upon failure returns nullptr.
+  [[nodiscard]] auto allocStr(unsigned int size) noexcept -> StringRef*;
 
-  // Allocate a string from a literal, upon failure returns {nullptr}.
+  // Allocate a string from a literal, upon failure returns nullptr.
   [[nodiscard]] auto allocStrLit(const std::string& literal) noexcept -> StringRef*;
 
-  // Allocate a string-link, upon failure returns {nullptr}.
+  // Allocate a string-link, upon failure returns nullptr.
   [[nodiscard]] auto allocStrLink(Ref* prev, Value val) noexcept -> StringLinkRef*;
 
-  // Allocate a struct, upon failure returns {nullptr, nullptr}.
-  [[nodiscard]] auto allocStruct(uint8_t fieldCount) noexcept -> std::pair<StructRef*, Value*>;
+  // Allocate a struct, upon failure returns nullptr.
+  [[nodiscard]] auto allocStruct(uint8_t fieldCount) noexcept -> StructRef*;
 
-  // Allocate a plain ref type, upon failure returns {nullptr}.
+  // Allocate a plain ref type, upon failure returns nullptr.
   template <typename RefType, class... ArgTypes>
   [[nodiscard]] auto allocPlain(ArgTypes&&... args) noexcept -> RefType* {
     static_assert(std::is_convertible<RefType*, Ref*>());

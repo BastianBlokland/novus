@@ -226,7 +226,7 @@ auto inline pcall(
 
   case PCallCode::GetEnvArg: {
     auto* res = iface->getEnvArg(POP_INT());
-    PUSH_REF(res == nullptr ? refAlloc->allocStr(0).first : toStringRef(refAlloc, res));
+    PUSH_REF(res == nullptr ? refAlloc->allocStr(0) : toStringRef(refAlloc, res));
   } break;
   case PCallCode::GetEnvArgCount: {
     PUSH_INT(iface->getEnvArgCount());
@@ -236,7 +236,7 @@ auto inline pcall(
     CHECK_ALLOC(nameStrRef);
 
     auto* res = std::getenv(nameStrRef->getCharDataPtr());
-    PUSH_REF(res == nullptr ? refAlloc->allocStr(0).first : toStringRef(refAlloc, res));
+    PUSH_REF(res == nullptr ? refAlloc->allocStr(0) : toStringRef(refAlloc, res));
   } break;
 
   case PCallCode::ClockMicroSinceEpoch: {

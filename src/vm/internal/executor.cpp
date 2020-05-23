@@ -637,17 +637,17 @@ auto execute(
       const auto fieldCount = READ_BYTE();
       assert(fieldCount > 0);
 
-      auto structRefAlloc = refAlloc->allocStruct(fieldCount);
-      if (unlikely(structRefAlloc.first == nullptr)) {
+      auto structRef = refAlloc->allocStruct(fieldCount);
+      if (unlikely(structRef == nullptr)) {
         execHandle.setState(ExecState::AllocFailed);
         goto End;
       }
 
       // Important to iterate in reverse, as the fields are in reverse order on the stack.
       for (auto fieldIndex = fieldCount; fieldIndex-- > 0;) {
-        *(structRefAlloc.second + fieldIndex) = POP();
+        *structRef->getFieldPtr(fieldIndex) = POP();
       }
-      PUSH_REF(structRefAlloc.first);
+      PUSH_REF(structRef);
     } break;
     case OpCode::MakeNullStruct: {
       PUSH(nullRefValue());

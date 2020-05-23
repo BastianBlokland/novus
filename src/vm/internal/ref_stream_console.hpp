@@ -1,11 +1,11 @@
 #pragma once
 #include "gsl.hpp"
 #include "internal/fd_utilities.hpp"
+#include "internal/os_include.hpp"
 #include "internal/ref.hpp"
 #include "internal/ref_allocator.hpp"
 #include "internal/ref_string.hpp"
 #include "internal/terminal.hpp"
-#include "internal/os_include.hpp"
 #include "likely.hpp"
 #include "vm/platform_interface.hpp"
 #include <cstdio>
@@ -38,30 +38,28 @@ public:
 
   auto readString(RefAllocator* alloc, int32_t max) noexcept -> StringRef* {
     if (unlikely(max < 0)) {
-      return alloc->allocStr(0).first;
+      return alloc->allocStr(0);
     }
 
 #if defined(_WIN32)
     // Special case non-blocking terminal read on windows. Unfortunately required as AFAIK there are
     // no non-blocking file-descriptors that can be used for terminal io.
     if (m_nonblockWinTerm) {
-      auto strAlloc = alloc->allocStr(max); // allocStr already does +1 for null-ter.
-      auto size     = 0;
+      auto* str = alloc->allocStr(max);
+      auto size = 0;
       while (size != max && _kbhit()) {
-        strAlloc.second[size] = getch();
+        str->getCharDataPtr()[size] = getch();
         size++;
       }
-      strAlloc.second[size] = '\0'; // null-terminate.
-      strAlloc.first->updateSize(size);
-      return strAlloc.first;
+      str->updateSize(size);
+      return str;
     }
 #endif
 
-    auto strAlloc              = alloc->allocStr(max); // allocStr already does +1 for null-ter.
-    auto bytesRead             = std::fread(strAlloc.second, 1U, max, m_filePtr);
-    strAlloc.second[bytesRead] = '\0'; // null-terminate.
-    strAlloc.first->updateSize(bytesRead);
-    return strAlloc.first;
+    auto str       = alloc->allocStr(max);
+    auto bytesRead = std::fread(str->getCharDataPtr(), 1U, max, m_filePtr);
+    str->updateSize(bytesRead);
+    return str;
   }
 
   auto readChar() noexcept -> char {

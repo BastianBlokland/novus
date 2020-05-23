@@ -35,7 +35,7 @@ inline auto streamCheckValid(const Value& stream) noexcept -> bool {
 inline auto streamReadString(RefAllocator* alloc, const Value& stream, int max) noexcept
     -> StringRef* {
   if (!streamCheckValid(stream)) {
-    return alloc->allocStr(0).first;
+    return alloc->allocStr(0);
   }
   STREAM_DISPATCH(stream, readString(alloc, max))
 }

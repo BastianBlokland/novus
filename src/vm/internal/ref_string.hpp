@@ -1,6 +1,7 @@
 #pragma once
 #include "internal/ref.hpp"
 #include "internal/value.hpp"
+#include <cassert>
 
 namespace vm::internal {
 
@@ -20,18 +21,25 @@ public:
   [[nodiscard]] inline auto getDataPtr() const noexcept { return m_data; }
 
   [[nodiscard]] inline auto getCharDataPtr() const noexcept {
-    return reinterpret_cast<const char*>(m_data);
+    return reinterpret_cast<char*>(m_data);
   }
 
   [[nodiscard]] inline auto getSize() const noexcept { return m_size; }
 
-  inline auto updateSize(unsigned int size) noexcept { m_size = size; }
+  // Note: Size can only be updated to be less then the original.
+  inline auto updateSize(unsigned int size) noexcept {
+    assert(size <= m_size);
+    m_size = size;
+
+    // Null-terminate.
+    m_data[size] = '\0';
+  }
 
 private:
   unsigned int m_size;
-  const uint8_t* m_data;
+  uint8_t* m_data;
 
-  inline explicit StringRef(const uint8_t* data, unsigned int size) noexcept :
+  inline explicit StringRef(uint8_t* data, unsigned int size) noexcept :
       Ref(getKind()), m_size{size}, m_data{data} {}
 };
 

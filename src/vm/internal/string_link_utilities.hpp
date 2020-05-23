@@ -39,13 +39,13 @@ inline auto collapseStringLink(RefAllocator* refAlloc, StringLinkRef& l) noexcep
   }
 
   // Allocate a new string big enough to the hold the entire chain.
-  auto size        = getStringLinkSize(l);
-  auto strRefAlloc = refAlloc->allocStr(size);
-  if (unlikely(strRefAlloc.first == nullptr)) {
+  auto size = getStringLinkSize(l);
+  auto str  = refAlloc->allocStr(size);
+  if (unlikely(str == nullptr)) {
     return nullptr;
   }
 
-  auto* charDataStartPtr = strRefAlloc.second;
+  auto* charDataStartPtr = str->getDataPtr();
   auto* charDataPtr      = charDataStartPtr + size;
 
   // Utility macro for copying to the end to our string.
@@ -84,9 +84,9 @@ inline auto collapseStringLink(RefAllocator* refAlloc, StringLinkRef& l) noexcep
 
   // Set the new string as the 'collapsed' representation for that link, this caches the value for
   // future requests on the same link.
-  l.setCollapsed(strRefAlloc.first);
+  l.setCollapsed(str);
 
-  return strRefAlloc.first;
+  return str;
 }
 
 } // namespace vm::internal
