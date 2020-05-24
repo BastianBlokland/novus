@@ -8,10 +8,10 @@ namespace frontend::internal {
 
 class TypeSubstitutionTable final {
 public:
-  TypeSubstitutionTable()                                     = default;
-  TypeSubstitutionTable(const TypeSubstitutionTable& rhs)     = delete;
-  TypeSubstitutionTable(TypeSubstitutionTable&& rhs)          = default;
-  ~TypeSubstitutionTable()                                    = default;
+  TypeSubstitutionTable()                                 = default;
+  TypeSubstitutionTable(const TypeSubstitutionTable& rhs) = delete;
+  TypeSubstitutionTable(TypeSubstitutionTable&& rhs)      = default;
+  ~TypeSubstitutionTable()                                = default;
 
   auto operator=(const TypeSubstitutionTable& rhs) -> TypeSubstitutionTable& = delete;
   auto operator=(TypeSubstitutionTable&& rhs) noexcept -> TypeSubstitutionTable& = delete;
@@ -25,6 +25,9 @@ public:
   }
 
   auto declare(std::string name, prog::sym::TypeId type) -> void {
+    if (!type.isConcrete()) {
+      throw std::invalid_argument{"Type has to be a concrete type"};
+    }
     if (name.empty()) {
       throw std::invalid_argument{"Name has to contain aleast 1 char"};
     }

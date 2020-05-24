@@ -23,7 +23,7 @@ auto UnionTemplate::inferTypeParams(const prog::sym::TypeSet& constructorArgType
   auto typeParams = std::vector<prog::sym::TypeId>{};
   for (const auto& typeSub : getTypeSubs()) {
     const auto inferredType = inferSubType(typeSub, constructorArgTypes[0]);
-    if (!inferredType) {
+    if (!inferredType || !inferredType->isConcrete()) {
       return std::nullopt;
     }
     typeParams.push_back(*inferredType);

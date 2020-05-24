@@ -24,7 +24,7 @@ auto StructTemplate::inferTypeParams(const prog::sym::TypeSet& constructorArgTyp
   for (const auto& typeSub : getTypeSubs()) {
     const auto inferredType =
         inferSubTypeFromSpecs(*getCtx(), typeSub, m_parseNode.getFields(), constructorArgTypes);
-    if (!inferredType) {
+    if (!inferredType || !inferredType->isConcrete()) {
       return std::nullopt;
     }
     typeParams.push_back(*inferredType);

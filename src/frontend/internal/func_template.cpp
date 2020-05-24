@@ -91,7 +91,7 @@ auto FuncTemplate::inferTypeParams(const prog::sym::TypeSet& argTypes)
   for (const auto& typeSub : m_typeSubs) {
     const auto inferredType =
         inferSubTypeFromSpecs(*m_ctx, typeSub, m_parseNode->getArgList().getArgs(), argTypes);
-    if (!inferredType) {
+    if (!inferredType || !inferredType->isConcrete()) {
       return std::nullopt;
     }
     typeParams.push_back(*inferredType);
