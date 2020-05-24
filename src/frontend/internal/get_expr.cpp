@@ -494,7 +494,11 @@ auto GetExpr::visit(const parse::IsExprNode& n) -> void {
   }
 
   // Validate lhs is a union type.
-  const auto lhsType      = lhsExpr->getType();
+  const auto lhsType = lhsExpr->getType();
+  if (lhsType.isInfer()) {
+    return;
+  }
+
   const auto& lhsTypeDecl = m_ctx->getProg()->getTypeDecl(lhsType);
   if (lhsTypeDecl.getKind() != prog::sym::TypeKind::Union) {
     m_ctx->reportDiag(errNonUnionIsExpression, n[0].getSpan());

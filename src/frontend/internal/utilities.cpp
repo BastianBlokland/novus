@@ -364,7 +364,11 @@ auto getDelegate(Context* ctx, prog::sym::FuncId func) -> prog::sym::TypeId {
 }
 
 auto getLitFunc(Context* ctx, prog::sym::FuncId func) -> prog::expr::NodePtr {
-  return prog::expr::litFuncNode(*ctx->getProg(), getDelegate(ctx, func), func);
+  const auto delType = getDelegate(ctx, func);
+  if (delType.isInfer()) {
+    return nullptr;
+  }
+  return prog::expr::litFuncNode(*ctx->getProg(), delType, func);
 }
 
 auto getFuncClosure(
