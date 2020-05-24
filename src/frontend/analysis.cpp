@@ -137,14 +137,12 @@ auto analyze(const Source& mainSrc, const std::vector<filesystem::path>& searchP
 
   // Define user functions.
   for (const auto& fDeclInfo : funcDeclInfos) {
-    if (!!diags.empty()) {
-      internal::defineFunc(
-          fDeclInfo.getCtx(),
-          nullptr,
-          fDeclInfo.getId(),
-          fDeclInfo.getDisplayName(),
-          fDeclInfo.getParseNode());
-    }
+    internal::defineFunc(
+        fDeclInfo.getCtx(),
+        nullptr,
+        fDeclInfo.getId(),
+        fDeclInfo.getDisplayName(),
+        fDeclInfo.getParseNode());
   }
   if (!diags.empty()) {
     return buildOutput(nullptr, std::move(importedSources), diags);
