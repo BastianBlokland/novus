@@ -53,9 +53,14 @@ message(STATUS "Finding threads package")
 set(CMAKE_THREAD_PREFER_PTHREAD On)
 find_package(Threads REQUIRED)
 
-# On windows link against the 'winsock' library.
+# Windows speficic settings.
 if(WIN32)
+
+  # On windows link against the 'winsock' library.
   link_libraries(ws2_32)
+
+  # Target windows 'vista', reason is some additional winsock api's became available in vista.
+  add_definitions(-DWINVER=0x0600 -D_WIN32_WINNT=0x0600)
 endif()
 
 # Generate a 'compile_commands.json' for use by clangd.

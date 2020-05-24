@@ -218,34 +218,6 @@ private:
       Ref{getKind()}, m_type{type}, m_socket{sock}, m_err{err} {}
 };
 
-// MinGw headers are missing the 'inet_pton' function, we can wrap the included windows
-// 'WSAStringToAddress' function.
-#if defined(_WIN32) && defined(__MINGW32__)
-
-static auto inet_pton(int af, const char* src, void* dst) -> int {
-  auto sockAddr     = sockaddr_storage{};
-  auto sockAddrPtr  = static_cast<sockaddr*>(static_cast<void*>(&sockAddr));
-  auto sockAddrSize = static_cast<int>(sizeof(sockaddr_storage));
-
-  if (WSAStringToAddress(const_cast<char*>(src), af, nullptr, sockAddrPtr, &sockAddrSize) == 0) {
-    switch (af) {
-    case AF_INET: {
-      auto result = (static_cast<sockaddr_in*>(static_cast<void*>(&sockAddr)))->sin_addr;
-      *static_cast<in_addr*>(dst) = result;
-      return 1;
-    }
-    case AF_INET6: {
-      auto result = (static_cast<sockaddr_in6*>(static_cast<void*>(&sockAddr)))->sin6_addr;
-      *static_cast<in6_addr*>(dst) = result;
-      return 1;
-    }
-    }
-  }
-  return 0;
-}
-
-#endif // _WIN32
-
 inline auto tcpOpenConnection(
     const Settings& settings,
     ExecutorHandle* execHandle,
