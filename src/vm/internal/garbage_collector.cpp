@@ -162,9 +162,13 @@ auto GarbageCollector::mark() noexcept -> void {
       }
     } break;
     case RefKind::Future: {
-      auto* f = downcastRef<FutureRef>(cur);
-      if (f->getResult().isRef()) {
-        m_markQueue.push_back(f->getResult().getRef());
+      auto* f  = downcastRef<FutureRef>(cur);
+      auto res = f->getResult();
+      if (res.isRef()) {
+        auto* ref = res.getRef();
+        if (ref != nullptr) {
+          m_markQueue.push_back(ref);
+        }
       }
     } break;
     case RefKind::StringLink: {
