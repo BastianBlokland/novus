@@ -1,0 +1,102 @@
+<h1 id="novus">Novus</h1>
+<p><a href="https://github.com/BastianBlokland/novus/actions?query=workflow%3Abuild-test"><img src="https://img.shields.io/github/workflow/status/bastianblokland/novus/build-test/master" alt="build-test" /></a>
+<a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-blue.svg" alt="License: MIT" /></a></p>
+<p>Novus is a statically typed functional programming language, it compiles into instructions for a
+stack based vm. Compiler is fully handwritten with a recursive decedent parser, multiple stages
+of syntax analysis and optimizations.</p>
+<p>Design philosophy is to keep the language simple (very little build-in types) and highly extendable
+through operator overloading. Safety is also a major design goal, thats why the language is fully
+type-safe, no global state, single-assignment only, fully immutable and no concept of null.</p>
+<p>The language is designed to run on a custom stack-based vm. The vm is simple with fairly low-level
+instructions. Vm is responsible for executing instructions, memory allocation, memory cleanup
+(mark-sweep garbage collector) and providing a platform abstraction. Vm has very little
+knowledge about types or functions so there is no runtime type introspection, instead the language
+focusses on making it easier to generate code at compile time (through function and type templates).</p>
+<p>Note this is intended as an academic exercise and not meant for production projects.</p>
+<h2 id="docker">Docker</h2>
+<p>You can quickly try it out using docker.
+Open a interactive container with the compiler, runtime and examples installed:
+<code>docker run --rm -it bastianblokland/novus bin/sh</code></p>
+<p>Run an example:
+<code>nove examples/fizzbuzz.nov</code></p>
+<h2 id="requirements">Requirements</h2>
+<h3 id="linux">Linux</h3>
+<ul>
+<li><p><a href="https://cmake.org/">CMake</a> (At least version <code>3.15</code>).</p></li>
+<li><p>Modern C++ compiler (at least c++ 17) (Tested with <code>gcc 7.5.0</code> and <code>clang 9.0.0</code>).</p></li>
+</ul>
+<h3 id="macos">MacOs</h3>
+<ul>
+<li><p><a href="https://cmake.org/">CMake</a> (At least version <code>3.15</code>).</p></li>
+<li><p>Modern C++ compiler (at least c++ 17) (Tested with <code>apple clang 11</code> and <code>clang 9.0.0</code>).</p></li>
+</ul>
+<h3 id="windows">Windows</h3>
+<ul>
+<li><p><a href="https://cmake.org/">CMake</a> (At least version <code>3.15</code>).</p>
+<p>For example with <code>chocolatey</code>: <code>choco install cmake</code>.</p></li>
+</ul>
+<p>Building can either be done using MinGW (windows port of Gcc and related tooling) or
+Visual Studio (msvc).</p>
+<h4 id="mingw">MinGW</h4>
+<ul>
+<li><p><a href="http://mingw-w64.org/">MinGW-w64</a>. Note: Either version <code>7.x</code> or <code>9.x</code>, version <code>8.x</code> has a
+<a href="https://sourceforge.net/p/mingw-w64/bugs/737/">broken <code>std::filesystem</code> library impl</a>.</p>
+<p>For example with <code>chocolatey</code>: <code>choco install mingw --version=7.3.0</code>. Unfortunately <code>9.x</code> is at
+the time of writing not yet on <code>chocolatey</code>, but the <a href="https://nuwen.net/mingw.html">nuwen</a>
+distribution ships it.</p></li>
+</ul>
+<h3 id="visualstudio">Visual Studio</h3>
+<ul>
+<li><p>Tested with Visual Studio 2019 (make sure the c++ tooling is installed).</p></li>
+<li><p>For command-line building install <code>vswhere</code> (https://github.com/microsoft/vswhere).</p>
+<p>For example with <code>chocolatey</code>: <code>choco install vswhere</code>.</p></li>
+</ul>
+<h2 id="configure">Configure</h2>
+<p>Before building you have to configure the project, run <code>scripts/configure.sh</code> on unix or
+<code>scripts/configure.ps1</code> on windows.</p>
+<p>For Visual Studio run <code>scripts/configure.ps1 -Gen VS2019</code>, after which the Visual Studio project
+can be found in the <code>build</code> directory.</p>
+<p>On unix run <code>scripts/configure.sh --help</code> for a listing of options, on windows:
+<code>Help scripts/configure.ps1</code></p>
+<h2 id="building">Building</h2>
+<p>After configuring the project can be build by running <code>scripts/build.sh</code> on unix or
+<code>scripts/build.ps1</code> on windows.</p>
+<p>Build output can be found in the <code>bin</code> directory.
+For more convenience you can add the <code>bin</code> directory it to your <code>PATH</code>.</p>
+<h2 id="buildingnovussourcecode">Building novus source code</h2>
+<p>Novus source (<code>.nov</code>) can be compiled into novus assembly (<code>.nova</code>) using the <code>novc</code> executable.</p>
+<p>Example: <code>./bin/novc examples/fizzbuzz.nov</code>. The output can be found at <code>examples/fizzbuzz.nova</code>.</p>
+<h2 id="runningnovusassembly">Running novus assembly</h2>
+<p>Novus assembly (<code>.nova</code>) can be run in the novus runtime (<code>novrt</code>).</p>
+<p>Example: <code>./bin/novrt examples/fizzbuzz.nova</code>.</p>
+<h2 id="evaluator">Evaluator</h2>
+<p>Alternatively you can use the <code>nove</code> (novus evaluator) to combine the compilation and running.</p>
+<p>You can either pass the source straight to the evaluator:
+<code>./bin/nove 'print(pow(42, 1.337))'</code>.</p>
+<p>or give a <code>.nov</code> source file to the evaluator:
+<code>./bin/nove examples/fizzbuzz.nov</code>.</p>
+<h2 id="debugging">Debugging</h2>
+<p>While there is no debugger (yet?) for <code>novus</code> programs, there are a few diagnostic programs:</p>
+<ul>
+<li><code>novdiag-prog</code> (Show the generated ast, optionally after optimizing)</li>
+<li><code>novdiag-asm</code> (Show the generated nov assembly code)</li>
+<li><code>novdiag-parse</code> (Show the parse-tree output)</li>
+<li><code>novdiag-lex</code> (Show the output tokens of the lexer)</li>
+</ul>
+<h2 id="testing">Testing</h2>
+<p>After building the project you can run the tests by running <code>scripts/test.sh</code> on unix or
+<code>scripts/test.ps1</code> on windows.</p>
+<p>Note: To run the compiler and vm tests they have to be enabled and build in the configure step.</p>
+<p>Note: On windows compiler and vm tests have to be run as administrator, reason is temporary files
+are created in the system root there and most users don't have access to write there.</p>
+<h2 id="ide">Ide</h2>
+<p>For basic ide support when editing <code>novus</code> source code check the <code>ide</code> directory if there is a
+plugin for your ide.</p>
+<p>For ide support when editing the compiler and vm:</p>
+<ul>
+<li>Configure the project: <code>make configure.debug</code>.</li>
+<li>Copy / symlink the file <code>build/compile_commands.json</code> to the root of the project.</li>
+<li>Use a ide extension for <code>cpp</code> support, for example: <code>clangd</code> (vscode ext: <a href="https://marketplace.visualstudio.com/items?itemName=llvm-vs-code-extensions.vscode-clangd">vscode-clangd</a>)</li>
+</ul>
+<h2 id="name">Name</h2>
+<p>Naming things is hard 😅 From the Stargate tv-show: <a href="https://stargate.fandom.com/wiki/Novus">Novus = 'new' in ancient</a>.</p>

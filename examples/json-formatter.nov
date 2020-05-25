@@ -13,7 +13,7 @@ act formatJson(Path path, bool pretty)
 
 act printJson(JsonValue v, bool pretty)
   indent      = pretty ? "  " : "";
-  newlineMode = pretty ? WriterNewlineMode.Unix : WriterNewlineMode.None;
+  newlineMode = pretty ? WriterNewlineMode.Lf : WriterNewlineMode.None;
   str = v.string(indent, newlineMode);
   print(str)
 

@@ -5,8 +5,9 @@ import "std/stream.nov"
 
 struct Path = string str
 
-fun +(Path p1, Path p2)   Path(p1.str + p2.str)
-fun ::(Path p1, Path p2)  Path(p1.str + "/" + p2.str)
+fun +(Path p1, Path p2)     Path(p1.str + p2.str)
+fun ::(Path p1, Path p2)    Path(p1.str + "/" + p2.str)
+fun ::(Path p1, string p2)  Path(p1.str + "/" + p2)
 
 fun isEmpty(Path p) p.str.length() == 0
 
@@ -31,7 +32,7 @@ act fileRemove(Path p)
   fileRemove(p.str)
 
 act fileRead(Path p)
-  fileOpen(p, FileMode.Open).read()
+  fileOpen(p, FileMode.Open).readToEnd()
 
 act fileWrite(Path p, string str)
   f = fileOpen(p, FileMode.Create);

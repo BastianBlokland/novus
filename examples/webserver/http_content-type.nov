@@ -1,0 +1,80 @@
+import "std.nov"
+
+// -- Types
+
+enum HttpContentType =
+  Binary,
+  TextPlain,
+  TextPlainUtf8,
+  TextCss,
+  TextHtml,
+  TextJavascript,
+  TextJson,
+  ImageAPng,
+  ImageBmp,
+  ImageGif,
+  ImageIco,
+  ImageJpeg,
+  ImagePng,
+  ImageSvg,
+  ImageTiff,
+  ImageWebP
+
+// -- Conversions
+
+fun string(HttpContentType t)
+  if t == HttpContentType.Binary          -> "application/octet-stream"
+  if t == HttpContentType.TextPlain       -> "text/plain"
+  if t == HttpContentType.TextPlainUtf8   -> "text/plain; charset=utf-8"
+  if t == HttpContentType.TextCss         -> "text/css"
+  if t == HttpContentType.TextHtml        -> "text/html"
+  if t == HttpContentType.TextJavascript  -> "text/javascript"
+  if t == HttpContentType.TextJson        -> "application/json"
+  if t == HttpContentType.ImageAPng       -> "image/apng"
+  if t == HttpContentType.ImageBmp        -> "image/bmp"
+  if t == HttpContentType.ImageGif        -> "image/gif"
+  if t == HttpContentType.ImageIco        -> "image/x-icon"
+  if t == HttpContentType.ImageJpeg       -> "image/jpeg"
+  if t == HttpContentType.ImagePng        -> "image/png"
+  if t == HttpContentType.ImageSvg        -> "image/svg+xml"
+  if t == HttpContentType.ImageTiff       -> "image/tiff"
+  if t == HttpContentType.ImageWebP       -> "image/webp"
+  else                                    -> ""
+
+// -- Functions
+
+fun findHttpContentType(Path path)
+  findHttpContentType(path.str)
+
+fun findHttpContentType(string fileName)
+  if fileName.endsWith(".txt")    -> HttpContentType.TextPlain
+  if fileName.endsWith(".css")    -> HttpContentType.TextCss
+  if fileName.endsWith(".html")   -> HttpContentType.TextHtml
+  if fileName.endsWith(".htm")    -> HttpContentType.TextHtml
+  if fileName.endsWith(".js")     -> HttpContentType.TextJavascript
+  if fileName.endsWith(".json")   -> HttpContentType.TextJson
+  if fileName.endsWith(".apng")   -> HttpContentType.ImageAPng
+  if fileName.endsWith(".bmp")    -> HttpContentType.ImageBmp
+  if fileName.endsWith(".gif")    -> HttpContentType.ImageGif
+  if fileName.endsWith(".ico")    -> HttpContentType.ImageIco
+  if fileName.endsWith(".cur")    -> HttpContentType.ImageIco
+  if fileName.endsWith(".jpg")    -> HttpContentType.ImageJpeg
+  if fileName.endsWith(".jpeg")   -> HttpContentType.ImageJpeg
+  if fileName.endsWith(".jfif")   -> HttpContentType.ImageJpeg
+  if fileName.endsWith(".pjpeg")  -> HttpContentType.ImageJpeg
+  if fileName.endsWith(".pjp")    -> HttpContentType.ImageJpeg
+  if fileName.endsWith(".png")    -> HttpContentType.ImagePng
+  if fileName.endsWith(".svg")    -> HttpContentType.ImageSvg
+  if fileName.endsWith(".tif")    -> HttpContentType.ImageTiff
+  if fileName.endsWith(".tiff")   -> HttpContentType.ImageTiff
+  if fileName.endsWith(".webp")   -> HttpContentType.ImageWebP
+  else                            -> HttpContentType.Binary
+
+fun isText(HttpContentType t)
+  if t == HttpContentType.TextPlain       -> true
+  if t == HttpContentType.TextPlainUtf8   -> true
+  if t == HttpContentType.TextCss         -> true
+  if t == HttpContentType.TextHtml        -> true
+  if t == HttpContentType.TextJavascript  -> true
+  if t == HttpContentType.TextJson        -> true
+  else                                    -> false

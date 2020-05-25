@@ -23,11 +23,12 @@ act acceptConnection(TcpServer server)
   socket = tcpAcceptConnection(server.socket);
   socket.streamCheckValid() ? some(TcpConnection(socket)) : none()
 
-act tcpConnection(string ipAddress)
-  tcpConnection(ipAddress, 8080)
+act tcpConnection(string host)
+  tcpConnection(host, 8080)
 
-act tcpConnection(string ipAddress, int port)
-  socket = tcpOpenConnection(ipAddress, port);
+act tcpConnection(string host, int port)
+  ipAddr = ipLookupAddress(host);
+  socket = tcpOpenConnection(ipAddr, port);
   socket.streamCheckValid() ? some(TcpConnection(socket)) : none()
 
 // -- Utilities

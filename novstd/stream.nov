@@ -1,9 +1,23 @@
+import "pair.nov"
+import "list.nov"
+import "text.nov"
+
 // -- Types
 
 enum StreamOptions =
   NoBlock : 0b1
 
+struct StreamReadState = string txt, stream src
+
+// -- Constructors
+
+fun StreamReadState(stream src)
+  StreamReadState("", src)
+
 // -- Actions
+
+act isValid(stream s)
+  s.streamCheckValid()
 
 act setOptions(stream s, StreamOptions opts)
   s.streamSetOptions(int(opts))
@@ -17,7 +31,7 @@ act write(stream s, string str)
 act write(stream s, char c)
   s.streamWrite(c)
 
-act read(stream s)
+act readToEnd(stream s)
   (
     impure lambda (string result)
       read = s.streamRead(512);
@@ -45,3 +59,29 @@ act copy(stream from, stream to)
       if readLength > 0 -> to.streamWrite(read); self(bytesCopied + readLength)
       else              -> bytesCopied
   )(0)
+
+act readLine(StreamReadState state)
+  state.readUntil("\n" :: "\r\n" :: List{string}())
+
+act readUntil(StreamReadState state, List{string} patterns)
+  state.readUntil(patterns, true)
+
+act readUntil(StreamReadState state, List{string} patterns, bool consumePattern)
+  (
+    impure lambda (string txt)
+      p = patterns.fold(  ( lambda (Pair{int, string} best, string p)
+                              idx = txt.indexOf(p);
+                              if idx < 0                            -> best
+                              if best.first < 0 || idx < best.first -> Pair(idx, p)
+                              else                                  -> best
+                          ), Pair(-1, ""));
+      idx = p.first;
+      if idx >= 0 ->
+        matchedTxt  = txt[0, idx];
+        remTxt      = txt[consumePattern ? idx + p.second.length() : idx, txt.length()];
+        Pair(matchedTxt, StreamReadState(remTxt, state.src))
+      else        ->
+        read = state.src.streamRead(512);
+        if read.isEmpty() -> Pair("", state)
+        else              -> self(txt + read)
+  )(state.txt)

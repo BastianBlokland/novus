@@ -5,7 +5,7 @@ import "std/option.nov"
 
 // -- Types
 
-enum WriterNewlineMode = Unix, Windows, None
+enum WriterNewlineMode = Lf, CrLf, None
 
 struct WriterState =
   string            curResult,
@@ -21,10 +21,13 @@ fun WriterState()
   WriterState("  ")
 
 fun WriterState(string indentStr)
-  WriterState(indentStr, WriterNewlineMode.Unix)
+  WriterState(indentStr, WriterNewlineMode.Lf)
 
 fun WriterState(string indentStr, WriterNewlineMode newlineMode)
   WriterState("", 0, indentStr, newlineMode)
+
+fun WriterState(WriterNewlineMode newlineMode)
+  WriterState("", 0, "\t", newlineMode)
 
 // -- Operators
 
@@ -106,9 +109,9 @@ fun litWriter(char lit)
 
 fun newlineWriter()
   Writer(lambda (WriterState s, None n)
-    if s.newlineMode == WriterNewlineMode.Unix    -> s.write('\n')
-    if s.newlineMode == WriterNewlineMode.Windows -> s.write("\r\n")
-    else                                          -> s
+    if s.newlineMode == WriterNewlineMode.Lf    -> s.write('\n')
+    if s.newlineMode == WriterNewlineMode.CrLf  -> s.write("\r\n")
+    else                                        -> s
   )
 
 fun indentWriter()
@@ -232,7 +235,7 @@ assert(
   w(List{string}()) == "" &&
   w("hello" :: List{string}()) == "hello" &&
   w("hello" :: "world" :: List{string}()) == "hello\nworld" &&
-  w("hello" :: "world" :: List{string}(), WriterNewlineMode.Windows) == "hello\r\nworld")
+  w("hello" :: "world" :: List{string}(), WriterNewlineMode.CrLf) == "hello\r\nworld")
 
 assert(
   w = litWriter('[') & listWriter(stringWriter(), litWriter(',')) & litWriter(']');

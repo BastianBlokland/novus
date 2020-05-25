@@ -48,7 +48,7 @@ act draw(I2 pos, stream out, Settings s, Duration t)
   out.streamFlush()
 
 act loop(stream in, stream out, Settings s, Timestamp begin, int frame)
-  if in.read().length() != 0 -> false
+  if in.readToEnd().length() != 0 -> false
   else ->
     now     = timestamp();
     elapsed = now - begin;

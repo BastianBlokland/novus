@@ -17,11 +17,6 @@ act writeStdErr(string msg)
 act readChar()
   consoleOpen(ConsoleKind.StdIn).streamRead()
 
-act readCharNoBlock()
-  s = consoleOpen(ConsoleKind.StdIn);
-  s.setOptions(StreamOptions.NoBlock);
-  s.streamRead()
-
 act readLine()
   consoleOpen(ConsoleKind.StdIn).readLine()
 

@@ -1,0 +1,84 @@
+import "std.nov"
+import "http_content-type.nov"
+import "http_method.nov"
+import "http_statuscode.nov"
+
+// -- Types
+
+struct HttpHeaderField  = string key, string value
+
+struct HttpReqHeader    =
+  HttpMethod            method,
+  string                resource,
+  string                httpVersion,
+  List{HttpHeaderField} fields
+
+struct HttpRespHeader   =
+  string                httpVersion,
+  HttpStatusCode        status,
+  List{HttpHeaderField} fields
+
+// -- Parsers
+
+fun httpVersionParser()
+  matchParser("HTTP/") >> whileParser(!isWhitespace)
+
+fun httpHeaderFieldParser()
+  (
+    whileParser(!equals{char}[':']) << matchParser(':') & whitespaceParser() >> lineParser()
+  ).unwrap(lambda (string k, string v) HttpHeaderField(k, v))
+
+fun httpReqHeaderParser()
+  (
+    httpMethodParser()          << whitespaceParser() &
+    whileParser(!isWhitespace)  << whitespaceParser() &
+    httpVersionParser()         << whitespaceParser() &
+    manyParser(httpHeaderFieldParser())
+  ).unwrap(lambda (HttpMethod m, string resource, string v, List{HttpHeaderField} fields)
+      HttpReqHeader(m, resource, v, fields))
+
+// -- Writers
+
+// Example output: 'HTTP/1.1'
+fun httpVersionWriter()
+  litWriter("HTTP/") & stringWriter()
+
+// Example output: 'HTTP/1.1 200 OK'
+fun httpRespStatusLineWriter()
+  (
+    httpVersionWriter() & litWriter(' ') & httpStatusCodeWriter()
+  ).map(lambda (HttpRespHeader h) Pair(h.httpVersion, h.status))
+
+// Example output: 'Host: en.wikipedia.org'.
+fun httpHeaderFieldWriter()
+  (
+    stringWriter() & litWriter(": ") & stringWriter()
+  ).map(lambda (HttpHeaderField f) Pair(f.key, f.value))
+
+// Example output:
+// '
+// HTTP/1.1 200 OK
+// Content-Type: text/html; charset=UTF-8
+// Connection: close
+// '
+fun httpRespHeaderWriter()
+  (
+    httpRespStatusLineWriter() & newlineWriter() &
+    listWriter(httpHeaderFieldWriter(), newlineWriter())
+  ).map(lambda (HttpRespHeader h) Pair(h, h.fields))
+
+// -- Functions
+
+// Date in 'RFC 822' format.
+// Example output: 'Sun, 24 May 2020 15:08:51 GMT'
+fun httpDateStr(DateTime dt)
+  date        = Date(dt);
+  wd          = WeekDay(dt);
+  tSinceEpoch = absDuration(dt - timeEpoch());
+  wd.string(true)                         + ", " +
+  date.day                                + " " +
+  date.month.string(true)                 + " " +
+  date.year                               + " " +
+  (tSinceEpoch.hours() % 24).string(2)    + ":" +
+  (tSinceEpoch.minutes() % 60).string(2)  + ":" +
+  (tSinceEpoch.seconds() % 60).string(2)  + " GMT"
