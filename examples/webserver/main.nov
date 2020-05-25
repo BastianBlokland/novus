@@ -67,7 +67,9 @@ act handleRequest(ClientContext ctx, string txt)
 
   if parse as ParseSuccess{HttpReqHeader} suc  ->
     print("-- Request received: " + suc.val.method + " " + suc.val.resource);
-    resp = ctx.getResponse(suc.val.method, suc.val.resource);
+    resp = suc.val.httpVersion == "1.1" ?
+      ctx.getResponse(suc.val.method, suc.val.resource) :
+      httpRespVersionNotSupported();
     ctx.writeResponse(resp)
 
   if parse as ParseFailure                fail ->

@@ -83,3 +83,11 @@ fun httpRespMethodNotAllowed(List{HttpMethod} allowed)
     HttpContentType.TextPlain,
     HttpHeaderField("Allow",  allowed.string("", ", ", "")) :: List{HttpHeaderField}()
   )
+
+fun httpRespVersionNotSupported()
+  httpResp(
+    HttpStatusCode.HttpVersionNotSupported,
+    "Http version not supported",
+    HttpContentType.TextPlain,
+    List{HttpHeaderField}()
+  )
