@@ -4,6 +4,7 @@
 #include "internal/ref.hpp"
 #include "internal/ref_allocator.hpp"
 #include "internal/ref_string.hpp"
+#include "likely.hpp"
 #include <cstdio>
 #include <cstring>
 
@@ -45,24 +46,28 @@ public:
 
   [[nodiscard]] auto isValid() noexcept -> bool { return m_filePtr != nullptr; }
 
-  auto readString(RefAllocator* alloc, int32_t max) noexcept -> StringRef* {
-    auto strAlloc              = alloc->allocStr(max); // allocStr already does +1 for null-ter.
-    auto bytesRead             = std::fread(strAlloc.second, 1U, max, m_filePtr);
-    strAlloc.second[bytesRead] = '\0'; // null-terminate.
-    strAlloc.first->updateSize(bytesRead);
-    return strAlloc.first;
+  auto readString(ExecutorHandle* /*unused*/, StringRef* str) noexcept -> bool {
+    if (unlikely(str->getSize() == 0)) {
+      return false;
+    }
+
+    auto bytesRead = std::fread(str->getCharDataPtr(), 1U, str->getSize(), m_filePtr);
+    str->updateSize(bytesRead);
+    return bytesRead > 0;
   }
 
-  auto readChar() noexcept -> char {
+  auto readChar(ExecutorHandle* /*unused*/) noexcept -> char {
     auto res = std::getc(m_filePtr);
     return res > 0 ? static_cast<char>(res) : '\0';
   }
 
-  auto writeString(StringRef* str) noexcept -> bool {
+  auto writeString(ExecutorHandle* /*unused*/, StringRef* str) noexcept -> bool {
     return std::fwrite(str->getDataPtr(), str->getSize(), 1, m_filePtr) == 1;
   }
 
-  auto writeChar(uint8_t val) noexcept -> bool { return std::fputc(val, m_filePtr) == val; }
+  auto writeChar(ExecutorHandle* /*unused*/, uint8_t val) noexcept -> bool {
+    return std::fputc(val, m_filePtr) == val;
+  }
 
   auto flush() noexcept -> bool { return std::fflush(m_filePtr) == 0; }
 

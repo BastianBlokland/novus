@@ -1,19 +1,9 @@
 #include "internal/memory_allocator.hpp"
+#include "internal/os_include.hpp"
 #include "likely.hpp"
 #include <cassert>
 #include <mutex>
 #include <vector>
-
-#if defined(_WIN32)
-
-#include <Windows.h>
-
-#else // !_WIN32
-
-#include <sys/mman.h>
-#include <unistd.h>
-
-#endif
 
 namespace vm::internal {
 

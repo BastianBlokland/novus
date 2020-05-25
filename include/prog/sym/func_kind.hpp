@@ -117,8 +117,6 @@ enum class FuncKind {
                     // all user-types.
   CheckNEqUserType, // Check if two user-types are not equal.
 
-  ActionStreamOpenFile,     // Open a file stream.
-  ActionStreamOpenConsole,  // Open a console stream.
   ActionStreamCheckValid,   // Check if a stream is valid.
   ActionStreamReadString,   // Read a string up to size x from a stream.
   ActionStreamReadChar,     // Read a single character from a stream.
@@ -128,7 +126,15 @@ enum class FuncKind {
   ActionStreamSetOptions,   // Set options for a stream.
   ActionStreamUnsetOptions, // Unset options for a stream.
 
-  ActionFileRemove, // Delete a file from the filesystem.
+  ActionFileOpenStream, // Open a file stream.
+  ActionFileRemove,     // Delete a file from the filesystem.
+
+  ActionTcpOpenCon,      // Open a tcp connection to a remote ip address and port.
+  ActionTcpStartServer,  // Start a tcp server.
+  ActionTcpAcceptCon,    // Accept a new connection from a tcp server stream.
+  ActionIpLookupAddress, // Lookup an ip address by hostname.
+
+  ActionConsoleOpenStream, // Open a console stream.
 
   ActionTermSetOptions,   // Set options for the terminal device.
   ActionTermUnsetOptions, // Unset option for the terminal device.

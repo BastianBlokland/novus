@@ -1,0 +1,32 @@
+import "std.nov"
+
+// -- Types
+
+enum HttpMethod = Get, Head, Post, Put, Delete, Trace, Options, Connect, Patch
+
+// -- Conversions
+
+fun string(HttpMethod m)
+  if m == HttpMethod.Get      -> "GET"
+  if m == HttpMethod.Head     -> "HEAD"
+  if m == HttpMethod.Post     -> "POST"
+  if m == HttpMethod.Put      -> "PUT"
+  if m == HttpMethod.Delete   -> "DELETE"
+  if m == HttpMethod.Trace    -> "TRACE"
+  if m == HttpMethod.Options  -> "OPTIONS"
+  if m == HttpMethod.Connect  -> "CONNECT"
+  if m == HttpMethod.Patch    -> "PATCH"
+  else                        -> ""
+
+// -- Parsers
+
+fun httpMethodParser()
+  (matchParser("GET")     >> retParser(HttpMethod.Get))     |
+  (matchParser("HEAD")    >> retParser(HttpMethod.Head))    |
+  (matchParser("POST")    >> retParser(HttpMethod.Post))    |
+  (matchParser("PUT")     >> retParser(HttpMethod.Put))     |
+  (matchParser("DELETE")  >> retParser(HttpMethod.Delete))  |
+  (matchParser("TRACE")   >> retParser(HttpMethod.Trace))   |
+  (matchParser("OPTIONS") >> retParser(HttpMethod.Options)) |
+  (matchParser("CONNECT") >> retParser(HttpMethod.Connect)) |
+  (matchParser("PATH")    >> retParser(HttpMethod.Patch))

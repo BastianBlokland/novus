@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.15)
 
 project(
   Novus
-  VERSION 0.2.0
+  VERSION 0.3.0
   LANGUAGES CXX)
 
 # Custom options options
@@ -52,6 +52,16 @@ endif()
 message(STATUS "Finding threads package")
 set(CMAKE_THREAD_PREFER_PTHREAD On)
 find_package(Threads REQUIRED)
+
+# Windows speficic settings.
+if(WIN32)
+
+  # On windows link against the 'winsock' library.
+  link_libraries(ws2_32)
+
+  # Target windows 'vista', reason is some additional winsock api's became available in vista.
+  add_definitions(-DWINVER=0x0600 -D_WIN32_WINNT=0x0600)
+endif()
 
 # Generate a 'compile_commands.json' for use by clangd.
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)

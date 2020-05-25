@@ -1,17 +1,6 @@
 #pragma once
+#include "internal/os_include.hpp"
 #include <cstdint>
-
-#if defined(_WIN32)
-
-#include <windows.h>
-
-#else // !_WIN32
-
-#include <sys/ioctl.h>
-#include <termios.h>
-#include <unistd.h>
-
-#endif
 
 namespace vm::internal {
 

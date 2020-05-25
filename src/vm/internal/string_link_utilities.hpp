@@ -23,6 +23,11 @@ inline auto getStringLinkSize(StringLinkRef& l) noexcept -> unsigned int {
       break;
     }
     auto* curLink = downcastRef<StringLinkRef>(cur);
+    if (curLink->isCollapsed()) {
+      result += curLink->getCollapsed()->getSize();
+      break;
+    }
+
     result += curLink->getValSize();
     cur = curLink->getPrev();
     assert(cur != nullptr);
@@ -39,26 +44,25 @@ inline auto collapseStringLink(RefAllocator* refAlloc, StringLinkRef& l) noexcep
   }
 
   // Allocate a new string big enough to the hold the entire chain.
-  auto size        = getStringLinkSize(l);
-  auto strRefAlloc = refAlloc->allocStr(size);
-  if (unlikely(strRefAlloc.first == nullptr)) {
+  auto size = getStringLinkSize(l);
+  auto str  = refAlloc->allocStr(size);
+  if (unlikely(str == nullptr)) {
     return nullptr;
   }
 
-  auto* charDataStartPtr = strRefAlloc.second;
+  auto* charDataStartPtr = str->getDataPtr();
   auto* charDataPtr      = charDataStartPtr + size;
 
   // Utility macro for copying to the end to our string.
 #define CPY_STR(STR_SRC)                                                                           \
   {                                                                                                \
-    auto* strSrcPtr = (STR_SRC).getDowncastRef<StringRef>();                                       \
-    charDataPtr -= strSrcPtr->getSize();                                                           \
-    std::memcpy(charDataPtr, strSrcPtr->getDataPtr(), strSrcPtr->getSize());                       \
+    charDataPtr -= (STR_SRC)->getSize();                                                           \
+    std::memcpy(charDataPtr, (STR_SRC)->getDataPtr(), (STR_SRC)->getSize());                       \
   }
 
   // Copy our own value into the string.
   if (l.getVal().isRef()) {
-    CPY_STR(l.getVal());
+    CPY_STR(l.getVal().getDowncastRef<StringRef>());
   } else {
     *--charDataPtr = static_cast<uint8_t>(l.getVal().getInt());
   }
@@ -67,12 +71,17 @@ inline auto collapseStringLink(RefAllocator* refAlloc, StringLinkRef& l) noexcep
   auto* cur = l.getPrev();
   while (true) {
     if (cur->getKind() == RefKind::String) {
-      CPY_STR(refValue(downcastRef<StringRef>(cur)));
+      CPY_STR(downcastRef<StringRef>(cur));
       break;
     }
     auto* curLink = downcastRef<StringLinkRef>(cur);
+    if (curLink->isCollapsed()) {
+      CPY_STR(curLink->getCollapsed());
+      break;
+    }
+
     if (curLink->getVal().isRef()) {
-      CPY_STR(curLink->getVal());
+      CPY_STR(curLink->getVal().getDowncastRef<StringRef>());
     } else {
       *--charDataPtr = static_cast<uint8_t>(curLink->getVal().getInt());
     }
@@ -84,9 +93,9 @@ inline auto collapseStringLink(RefAllocator* refAlloc, StringLinkRef& l) noexcep
 
   // Set the new string as the 'collapsed' representation for that link, this caches the value for
   // future requests on the same link.
-  l.setCollapsed(strRefAlloc.first);
+  l.setCollapsed(str);
 
-  return strRefAlloc.first;
+  return str;
 }
 
 } // namespace vm::internal

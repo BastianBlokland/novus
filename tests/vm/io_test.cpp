@@ -56,7 +56,7 @@ TEST_CASE("Execute input and output", "[vm]") {
         [](novasm::Assembler* asmb) -> void {
           // Open console stdin stream.
           asmb->addLoadLitInt(0); // Stdin.
-          asmb->addPCall(novasm::PCallCode::StreamOpenConsole);
+          asmb->addPCall(novasm::PCallCode::ConsoleOpenStream);
 
           asmb->addLoadLitInt(64); // Max string size.
           asmb->addPCall(novasm::PCallCode::StreamReadString);
@@ -78,7 +78,7 @@ TEST_CASE("Execute input and output", "[vm]") {
 
           asmb->addLoadLitString(filePath);
           asmb->addLoadLitInt(0U | (1U << 8U)); // Options, mode 0 (Create) and flag 1 (AutoRemove).
-          asmb->addPCall(novasm::PCallCode::StreamOpenFile);
+          asmb->addPCall(novasm::PCallCode::FileOpenStream);
           asmb->addStackStore(0); // Store file-stream.
 
           // Write string to file.
@@ -110,7 +110,7 @@ TEST_CASE("Execute input and output", "[vm]") {
           // Open the file again for reading.
           asmb->addLoadLitString(filePath); // Load stream.
           asmb->addLoadLitInt(1U);          // Options, mode 1 (Open).
-          asmb->addPCall(novasm::PCallCode::StreamOpenFile);
+          asmb->addPCall(novasm::PCallCode::FileOpenStream);
           asmb->addStackStore(0); // Store file-stream.
 
           // Assert that file-stream is valid.
@@ -141,7 +141,7 @@ TEST_CASE("Execute input and output", "[vm]") {
           // Open steam to non existing file.
           asmb->addLoadLitString("test.tmp"); // Path.
           asmb->addLoadLitInt(1U);            // Options, mode 1 (Open).
-          asmb->addPCall(novasm::PCallCode::StreamOpenFile);
+          asmb->addPCall(novasm::PCallCode::FileOpenStream);
 
           // Assert that file-stream is valid.
           asmb->addPCall(novasm::PCallCode::StreamCheckValid);
@@ -163,7 +163,7 @@ TEST_CASE("Execute input and output", "[vm]") {
           // Open steam to non existing file.
           asmb->addLoadLitString("test.tmp"); // Path.
           asmb->addLoadLitInt(1U);            // Options, mode 1 (Open).
-          asmb->addPCall(novasm::PCallCode::StreamOpenFile);
+          asmb->addPCall(novasm::PCallCode::FileOpenStream);
 
           // Read file content.
           asmb->addStackLoad(0);    // Load stream.
@@ -187,7 +187,7 @@ TEST_CASE("Execute input and output", "[vm]") {
           // Open steam to non existing file.
           asmb->addLoadLitString("test.tmp"); // Path.
           asmb->addLoadLitInt(1U);            // Options, mode 1 (Open).
-          asmb->addPCall(novasm::PCallCode::StreamOpenFile);
+          asmb->addPCall(novasm::PCallCode::FileOpenStream);
 
           // Write to file.
           asmb->addStackLoad(0);          // Load stream.
@@ -202,6 +202,41 @@ TEST_CASE("Execute input and output", "[vm]") {
         },
         "input",
         "");
+  }
+
+  SECTION("Tcp send and receive message") {
+    CHECK_PROG(
+        [&](novasm::Assembler* asmb) -> void {
+          asmb->label("entry");
+          asmb->setEntrypoint("entry");
+          asmb->addStackAlloc(1);
+
+          // Start server.
+          asmb->addLoadLitInt(8080); // Port.
+          asmb->addLoadLitInt(-1);   // Backlog (-1 uses the default backlog).
+          asmb->addPCall(novasm::PCallCode::TcpStartServer);
+          asmb->addStackStore(0); // Store the server stream.
+
+          // Open connection to server and send message.
+          asmb->addLoadLitString("127.0.0.1"); // Address.
+          asmb->addLoadLitInt(8080);           // Port.
+          asmb->addPCall(novasm::PCallCode::TcpOpenCon);
+          asmb->addLoadLitString("Hello world");
+          asmb->addPCall(novasm::PCallCode::StreamWriteString);
+          asmb->addPop(); // Ignore the write result.
+
+          // Accept the connection on the server and read the message.
+          asmb->addStackLoad(0);
+          asmb->addPCall(novasm::PCallCode::TcpAcceptCon);
+          asmb->addLoadLitInt(11); // Length of 'Hello world'.
+          asmb->addPCall(novasm::PCallCode::StreamReadString);
+
+          // Print the received message.
+          ADD_PRINT(asmb);
+          asmb->addRet();
+        },
+        "input",
+        "Hello world");
   }
 }
 

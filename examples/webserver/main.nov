@@ -1,0 +1,147 @@
+import "std.nov"
+import "http_content-type.nov"
+import "http_header.nov"
+import "http_response.nov"
+import "http_statuscode.nov"
+
+struct Resource =
+  string          url,
+  HttpContentType type,
+  string          content
+
+struct Content =
+  List{Pair{string, string}}  rewrites,
+  List{Resource}              resources
+
+struct Variable = string key, string value
+
+struct ClientContext =
+  Content                content,
+  List{Variable}         variables,
+  TcpConnection          connection,
+  Writer{HttpResp}       respWriter,
+  Parser{HttpReqHeader}  reqParser
+
+fun rewriteUrl(Content c, string url)
+  matchingRules = c.rewrites.filter(lambda (Pair{string, string} r) r.first == url);
+  matchingRules.front() as Pair{string, string} r ? r.second : url
+
+fun getResource(Content c, string url)
+  rewrittenUrl = c.rewriteUrl(url);
+  c.resources.filter(lambda (Resource r) r.url == rewrittenUrl).front()
+
+fun replaceVariables(ClientContext ctx, Resource r)
+  if !r.type.isText() -> r.content
+  else ->
+    ctx.variables.fold((
+      lambda (string txt, Variable v) txt.replace("{{" + v.key + "}}", v.value)
+    ), r.content)
+
+fun getReponse(ClientContext ctx, Resource r, HttpMethod m)
+  txt = ctx.replaceVariables(r);
+  if m == HttpMethod.Get  -> httpResp(    HttpStatusCode.Ok, txt, r.type)
+  if m == HttpMethod.Head -> httpRespHead(HttpStatusCode.Ok, txt, r.type)
+  else ->
+    supportedMethods = HttpMethod.Get :: HttpMethod.Head :: List{HttpMethod}();
+    httpRespMethodNotAllowed(supportedMethods)
+
+fun getResponse(ClientContext ctx, HttpMethod m, string url)
+  resLookup = ctx.content.getResource(url);
+  if resLookup as Resource r  -> ctx.getReponse(r, m)
+  else                        -> httpRespNotFound(url)
+
+act writeResponse(ClientContext ctx, HttpResp resp)
+  extraFields = (
+    HttpHeaderField("Date",               httpDateStr(timeNow())) ::
+    HttpHeaderField("Server",             "Novus")                ::
+    HttpHeaderField("Transfer-Encoding",  "identity")             ::
+    HttpHeaderField("Connection",         "keep-alive")           ::
+    HttpHeaderField("Keep-Alive",         "timeout=10, max=1000") :: List{HttpHeaderField}()
+  );
+  finalResp     = resp.httpRespAddFields(extraFields);
+  finalRespTxt  = ctx.respWriter(WriterState(WriterNewlineMode.CrLf), finalResp).string();
+  ctx.connection.socket.write(finalRespTxt)
+
+act handleRequest(ClientContext ctx, string txt)
+  parse = httpReqHeaderParser()(txt);
+
+  if parse as ParseSuccess{HttpReqHeader} suc  ->
+    print("-- Request received: " + suc.val.method + " " + suc.val.resource);
+    resp = ctx.getResponse(suc.val.method, suc.val.resource);
+    ctx.writeResponse(resp)
+
+  if parse as ParseFailure                fail ->
+    print("-- Bad request received");
+    ctx.writeResponse(httpRespBadReq())
+
+act handleConnection(ClientContext ctx)
+  print("- Client connected");
+
+  loop = (impure lambda(StreamReadState read)
+    r = read.readUntil("\r\n\r\n" :: "\n\n" :: List{string}());
+    if r.first.isEmpty()  -> false
+    else                  -> handleRequest(ctx, r.first); self(r.second)
+  );
+  loop(StreamReadState(ctx.connection.socket));
+
+  print("- Client disconnected")
+
+act main(int port, Content content)
+  srvOpt  = tcpServer(port);
+  if srvOpt is None           -> printErr("Failed to start server"); fail()
+  if srvOpt as TcpServer srv  ->
+    print("Server started (port: " + port + "), press any key to stop");
+
+    inStream = consoleOpen(ConsoleKind.StdIn);
+    inStream.setOptions(StreamOptions.NoBlock);
+
+    startTime   = timeNow();
+    respWriter  = httpRespWriter();
+    reqParser   = httpReqHeaderParser();
+    handleCon   = (
+      impure lambda (TcpConnection con)
+        uptime    = timeNow() - startTime;
+        variables = (
+          Variable("SERVER_UPTIME", uptime.string())          ::
+          Variable("SERVER_DATE",   timeNow().httpDateStr())  :: List{Variable}()
+        );
+        ctx       = ClientContext(content, variables, con, respWriter, reqParser);
+        handleConnection(ctx)
+    );
+    stopCond    = (
+      impure lambda () inStream.readChar() != '\0'
+    );
+    srv.acceptLoop(handleCon, stopCond);
+
+    print("Server stopped")
+
+act loadContent(Path root, List{Pair{string, string}} rewriteUrls, List{string} files)
+  print("Loading resouces (root: '" + root.str + "')");
+
+  resources = files.parallelMap(impure lambda (string file)
+    path        = root.isEmpty() ? Path(file) : (root :: file);
+    contentType = path.findHttpContentType();
+    fileStream  = path.fileOpen(FileMode.Open);
+    if fileStream.isValid() -> some(Resource("/" + file, contentType, fileStream.readToEnd()))
+    else                    -> print("Failed to load content: " + path); none()
+  ).filterNone();
+
+  print("Loaded " + resources.length() + " resources");
+  Content(rewriteUrls, resources)
+
+main(
+  getEnvOpt("port", txtIntParser()) ?? 8080,
+  loadContent(
+    Path(getEnvOpt("root", allParser()) ?? "site"),
+    (
+      Pair("/", "/index.html") :: List{Pair{string, string}}()
+    ),
+    getEnvOpt("files") ?? EnvOpt("files", "index.html"        ::
+                                          "style.css"         ::
+                                          "readme.html"       ::
+                                          "win.jpg"           ::
+                                          "github-logo.png"   ::
+                                          "favicon.ico"       :: List{string}()
+    ).args
+  )
+)

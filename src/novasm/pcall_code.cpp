@@ -4,12 +4,6 @@ namespace novasm {
 
 auto operator<<(std::ostream& out, const PCallCode& rhs) noexcept -> std::ostream& {
   switch (rhs) {
-  case PCallCode::StreamOpenFile:
-    out << "stream-open-file";
-    break;
-  case PCallCode::StreamOpenConsole:
-    out << "stream-open-console";
-    break;
   case PCallCode::StreamCheckValid:
     out << "stream-check-valid";
     break;
@@ -35,8 +29,28 @@ auto operator<<(std::ostream& out, const PCallCode& rhs) noexcept -> std::ostrea
     out << "stream-unset-options";
     break;
 
+  case PCallCode::FileOpenStream:
+    out << "file-open-stream";
+    break;
   case PCallCode::FileRemove:
     out << "file-remove";
+    break;
+
+  case PCallCode::TcpOpenCon:
+    out << "tcp-open-con";
+    break;
+  case PCallCode::TcpStartServer:
+    out << "tcp-start-server";
+    break;
+  case PCallCode::TcpAcceptCon:
+    out << "tcp-accept-con";
+    break;
+  case PCallCode::IpLookupAddress:
+    out << "ip-lookup-address";
+    break;
+
+  case PCallCode::ConsoleOpenStream:
+    out << "console-open-stream";
     break;
 
   case PCallCode::TermSetOptions:

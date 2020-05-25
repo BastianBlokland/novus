@@ -3,6 +3,7 @@
 #include "internal/ref_allocator.hpp"
 #include "internal/ref_stream_console.hpp"
 #include "internal/ref_stream_file.hpp"
+#include "internal/ref_stream_tcp.hpp"
 #include "internal/ref_string.hpp"
 #include "internal/stream_opts.hpp"
 #include "internal/value.hpp"
@@ -19,6 +20,8 @@ namespace vm::internal {
       return downcastRef<FileStreamRef>(ref)->EXPR;                                                \
     case RefKind::StreamConsole:                                                                   \
       return downcastRef<ConsoleStreamRef>(ref)->EXPR;                                             \
+    case RefKind::StreamTcp:                                                                       \
+      return downcastRef<TcpStreamRef>(ref)->EXPR;                                                 \
     default:                                                                                       \
       assert(false);                                                                               \
       return 0;                                                                                    \
@@ -29,33 +32,40 @@ inline auto streamCheckValid(const Value& stream) noexcept -> bool {
   STREAM_DISPATCH(stream, isValid())
 }
 
-inline auto streamReadString(RefAllocator* alloc, const Value& stream, int max) noexcept
-    -> StringRef* {
+inline auto
+streamReadString(ExecutorHandle* execHandle, const Value& stream, StringRef* tgt) noexcept -> bool {
+
   if (!streamCheckValid(stream)) {
-    return alloc->allocStr(0).first;
+    tgt->updateSize(0);
+    return false;
   }
-  STREAM_DISPATCH(stream, readString(alloc, max))
+  STREAM_DISPATCH(stream, readString(execHandle, tgt))
 }
 
-inline auto streamReadChar(const Value& stream) noexcept -> char {
+inline auto streamReadChar(ExecutorHandle* execHandle, const Value& stream) noexcept -> char {
   if (!streamCheckValid(stream)) {
     return '\0';
   }
-  STREAM_DISPATCH(stream, readChar())
+  STREAM_DISPATCH(stream, readChar(execHandle))
 }
 
-inline auto streamWriteString(const Value& stream, StringRef* str) noexcept -> bool {
+inline auto
+streamWriteString(ExecutorHandle* execHandle, const Value& stream, StringRef* str) noexcept
+    -> bool {
+
   if (!streamCheckValid(stream)) {
     return false;
   }
-  STREAM_DISPATCH(stream, writeString(str))
+  STREAM_DISPATCH(stream, writeString(execHandle, str))
 }
 
-inline auto streamWriteChar(const Value& stream, uint8_t val) noexcept -> bool {
+inline auto streamWriteChar(ExecutorHandle* execHandle, const Value& stream, uint8_t val) noexcept
+    -> bool {
+
   if (!streamCheckValid(stream)) {
     return false;
   }
-  STREAM_DISPATCH(stream, writeChar(val))
+  STREAM_DISPATCH(stream, writeChar(execHandle, val))
 }
 
 inline auto streamFlush(const Value& stream) noexcept -> bool {

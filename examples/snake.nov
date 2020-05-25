@@ -177,7 +177,7 @@ act loop(stream in, stream out)
 act loop(stream in, stream out, Duration prevFrameDur, GameState state)
   t1      = timestamp();
   window  = getWindow();
-  input   = getInput(in.read());
+  input   = getInput(in.readToEnd());
   if input is InputQuit    -> false
   if input is InputRestart -> loop(in, out)
   else ->

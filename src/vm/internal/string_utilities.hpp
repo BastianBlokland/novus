@@ -34,17 +34,16 @@ template <typename IntType>
   static_assert(std::is_same<IntType, int32_t>::value || std::is_same<IntType, int64_t>::value);
   static const auto maxCharSize = std::is_same<IntType, int32_t>::value ? 11 : 20;
 
-  const auto strRefAlloc = refAlloc->allocStr(maxCharSize);
-  if (unlikely(strRefAlloc.first == nullptr)) {
+  const auto str = refAlloc->allocStr(maxCharSize);
+  if (unlikely(str == nullptr)) {
     return nullptr;
   }
-  auto* charDataPtr = reinterpret_cast<char*>(strRefAlloc.second);
+  auto* charDataPtr = str->getCharDataPtr();
 
 #ifdef HAS_CHAR_CONV
-  const auto convRes      = std::to_chars(charDataPtr, charDataPtr + maxCharSize, val);
-  const auto resultSize   = convRes.ptr - charDataPtr;
-  charDataPtr[resultSize] = '\0'; // Null-terminate.
-  strRefAlloc.first->updateSize(convRes.ptr - charDataPtr);
+  const auto convRes    = std::to_chars(charDataPtr, charDataPtr + maxCharSize, val);
+  const auto resultSize = convRes.ptr - charDataPtr;
+  str->updateSize(resultSize);
 #else
   const char* format;
   if constexpr (std::is_same<IntType, int>::value) {
@@ -59,11 +58,10 @@ template <typename IntType>
 
   // NOLINTNEXTLINE: C-style var-arg func.
   const auto size = std::snprintf(charDataPtr, maxCharSize + 1, format, val);
-  assert(charDataPtr[size] == '\0');
-  strRefAlloc.first->updateSize(size);
+  str->updateSize(size);
 #endif
 
-  return strRefAlloc.first;
+  return str;
 }
 
 [[nodiscard]] auto inline floatToString(RefAllocator* refAlloc, float val) noexcept -> StringRef* {
@@ -75,12 +73,12 @@ template <typename IntType>
   }
 
   // NOLINTNEXTLINE: C-style var-arg func.
-  const auto charSize    = std::snprintf(nullptr, 0, "%.6g", val) + 1; // +1: null-terminator.
-  const auto strRefAlloc = refAlloc->allocStr(charSize);
-  if (unlikely(strRefAlloc.first == nullptr)) {
+  const auto charSize = std::snprintf(nullptr, 0, "%.6g", val) + 1; // +1: null-terminator.
+  const auto str      = refAlloc->allocStr(charSize);
+  if (unlikely(str == nullptr)) {
     return nullptr;
   }
-  auto* charDataPtr = reinterpret_cast<char*>(strRefAlloc.second);
+  auto* charDataPtr = str->getCharDataPtr();
 
 #if defined(_WIN32) && (!defined(_MSC_VER) || _MSC_VER < 1400)
   // By default windows will add a leading zero to pad to 3 digits in the exponent, to be consistent
@@ -90,42 +88,42 @@ template <typename IntType>
 
   // NOLINTNEXTLINE: C-style var-arg func.
   const auto size = std::snprintf(charDataPtr, charSize, "%.6g", val);
-  strRefAlloc.first->updateSize(size);
+  str->updateSize(size);
 
-  return strRefAlloc.first;
+  return str;
 }
 
 [[nodiscard]] auto inline charToString(RefAllocator* refAlloc, uint8_t val) noexcept -> StringRef* {
-  const auto strRefAlloc = refAlloc->allocStr(1);
-  if (unlikely(strRefAlloc.first == nullptr)) {
+  const auto str = refAlloc->allocStr(1);
+  if (unlikely(str == nullptr)) {
     return nullptr;
   }
 
-  *strRefAlloc.second = val;
-  return strRefAlloc.first;
+  *str->getDataPtr() = val;
+  return str;
 }
 
 [[nodiscard]] auto inline charsToString(RefAllocator* refAlloc, uint8_t a, uint8_t b) noexcept
     -> StringRef* {
-  const auto strRefAlloc = refAlloc->allocStr(2);
-  if (unlikely(strRefAlloc.first == nullptr)) {
+  const auto str = refAlloc->allocStr(2);
+  if (unlikely(str == nullptr)) {
     return nullptr;
   }
 
-  strRefAlloc.second[0] = a;
-  strRefAlloc.second[1] = b;
-  return strRefAlloc.first;
+  str->getDataPtr()[0] = a;
+  str->getDataPtr()[1] = b;
+  return str;
 }
 
 [[nodiscard]] auto inline toStringRef(RefAllocator* refAlloc, const std::string& val) noexcept
     -> StringRef* {
-  const auto strRefAlloc = refAlloc->allocStr(val.length());
-  if (unlikely(strRefAlloc.first == nullptr)) {
+  const auto str = refAlloc->allocStr(val.length());
+  if (unlikely(str == nullptr)) {
     return nullptr;
   }
 
-  std::memcpy(strRefAlloc.second, val.data(), val.length() + 1); // +1 to cpy the null-terminator.
-  return strRefAlloc.first;
+  std::memcpy(str->getDataPtr(), val.data(), val.length() + 1); // +1 to copy the null-terminator.
+  return str;
 }
 
 [[nodiscard]] auto inline checkStringEq(StringRef* a, StringRef* b) noexcept -> bool {
@@ -167,48 +165,48 @@ template <typename IntType>
   }
 
   if (start == end) {
-    return refAlloc->allocStr(0).first;
+    return refAlloc->allocStr(0);
   }
 
   // Copy the slice into a new string.
   const auto sliceSize = end - start;
-  const auto alloc     = refAlloc->allocStr(sliceSize);
-  if (alloc.first == nullptr) {
+  const auto str       = refAlloc->allocStr(sliceSize);
+  if (str == nullptr) {
     return nullptr;
   }
 
-  std::memcpy(alloc.second, target->getDataPtr() + start, sliceSize);
-  return alloc.first;
+  std::memcpy(str->getDataPtr(), target->getDataPtr() + start, sliceSize);
+  return str;
 }
 
 [[nodiscard]] auto inline concatString(RefAllocator* refAlloc, StringRef* a, StringRef* b) noexcept
     -> StringRef* {
 
   // Make a new string big enough to fit both and copy both there.
-  auto alloc = refAlloc->allocStr(a->getSize() + b->getSize());
-  if (unlikely(alloc.first == nullptr)) {
+  auto str = refAlloc->allocStr(a->getSize() + b->getSize());
+  if (unlikely(str == nullptr)) {
     return nullptr;
   }
 
-  std::memcpy(alloc.second, a->getDataPtr(), a->getSize());
-  std::memcpy(alloc.second + a->getSize(), b->getDataPtr(), b->getSize());
+  std::memcpy(str->getDataPtr(), a->getDataPtr(), a->getSize());
+  std::memcpy(str->getDataPtr() + a->getSize(), b->getDataPtr(), b->getSize());
 
-  return alloc.first;
+  return str;
 }
 
 [[nodiscard]] auto inline appendChar(RefAllocator* refAlloc, StringRef* a, uint8_t b) noexcept
     -> StringRef* {
 
   // Make a new string 1 character bigger and copy the original string + the extra character.
-  auto alloc = refAlloc->allocStr(a->getSize() + 1);
-  if (unlikely(alloc.first == nullptr)) {
+  auto str = refAlloc->allocStr(a->getSize() + 1);
+  if (unlikely(str == nullptr)) {
     return nullptr;
   }
 
-  std::memcpy(alloc.second, a->getDataPtr(), a->getSize());
-  alloc.second[a->getSize()] = b;
+  std::memcpy(str->getDataPtr(), a->getDataPtr(), a->getSize());
+  str->getDataPtr()[a->getSize()] = b;
 
-  return alloc.first;
+  return str;
 }
 
 } // namespace vm::internal

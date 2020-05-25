@@ -143,11 +143,24 @@ fun map{T, TResult}(Parser{T} p, function{T, TResult} func)
     if res as ParseFailure    fail  -> fail
   )
 
-fun unwrap{T1, T2, TResult}(Parser{Pair{T1, T2}} p, function{T1, T2, TResult} f)
-  p.map(lambda (Pair{T1, T2} pair) f(pair.first, pair.second))
+fun unwrap{T1, T2, TResult}(
+  Parser{Pair{T1, T2}} p, function{T1, T2, TResult} f)
+  (
+    p.map(lambda (Pair{T1, T2} pair) f(pair.first, pair.second))
+  )
 
-fun unwrap{T1, T2, T3, TResult}(Parser{Pair{Pair{T1, T2}, T3}} p, function{T1, T2, T3, TResult} f)
-  p.map(lambda (Pair{Pair{T1, T2}, T3} pair) f(pair.first.first, pair.first.second, pair.second))
+fun unwrap{T1, T2, T3, TResult}(
+  Parser{Pair{Pair{T1, T2}, T3}} p, function{T1, T2, T3, TResult} f)
+  (
+    p.map(lambda (Pair{Pair{T1, T2}, T3} pair) f(pair.first.first, pair.first.second, pair.second))
+  )
+
+fun unwrap{T1, T2, T3, T4, TResult}(
+  Parser{Pair{Pair{Pair{T1, T2}, T3}, T4}} p, function{T1, T2, T3, T4, TResult} f)
+  (
+    p.map(lambda (Pair{Pair{Pair{T1, T2}, T3}, T4} pair)
+      f(pair.first.first.first, pair.first.first.second, pair.first.second, pair.second))
+  )
 
 // -- Basic parsers
 
@@ -492,6 +505,14 @@ assert(
   p("truetruetrue")   == true &&
   p("truefalse")  is ParseFailure &&
   p("")           is ParseFailure)
+
+assert(
+  p = (txtBoolParser() & txtBoolParser() & txtBoolParser() & txtBoolParser()).unwrap(
+    lambda (bool a, bool b, bool c, bool d) a && b && c && d);
+  p("truefalsetruetrue")  == false &&
+  p("truetruetruetrue")   == true &&
+  p("truefalsetrue")  is ParseFailure &&
+  p("")               is ParseFailure)
 
 assert(
   p = manyParser(txtBoolParser(), false);

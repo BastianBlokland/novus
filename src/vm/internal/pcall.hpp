@@ -3,6 +3,8 @@
 #include "internal/ref_long.hpp"
 #include "internal/ref_stream_console.hpp"
 #include "internal/ref_stream_file.hpp"
+#include "internal/ref_stream_tcp.hpp"
+#include "internal/settings.hpp"
 #include "internal/stack.hpp"
 #include "internal/stream_utilities.hpp"
 #include "internal/string_utilities.hpp"
@@ -19,6 +21,7 @@ namespace vm::internal {
 // Execute a 'platform' call. Very similar to normal instructions but are interacting with the
 // 'outside' world (for example file io).
 auto inline pcall(
+    const Settings& settings,
     PlatformInterface* iface,
     RefAllocator* refAlloc,
     BasicStack* stack,
@@ -31,7 +34,9 @@ auto inline pcall(
 #define CHECK_ALLOC(PTR)                                                                           \
   {                                                                                                \
     if (unlikely((PTR) == nullptr)) {                                                              \
-      execHandle->setState(ExecState::AllocFailed);                                                \
+      if (execHandle->getState() != ExecState::Aborted) {                                          \
+        execHandle->setState(ExecState::AllocFailed);                                              \
+      }                                                                                            \
       return;                                                                                      \
     }                                                                                              \
   }
@@ -57,73 +62,60 @@ auto inline pcall(
     CHECK_ALLOC(refPtr);                                                                           \
     PUSH(refValue(refPtr));                                                                        \
   }
+#define POP_AT(IDX) stack->popAt(IDX)
 #define POP() stack->pop()
 #define POP_INT() POP().getInt()
 #define PEEK() stack->peek()
+#define PEEK_BEHIND(BEHIND) stack->peek(BEHIND)
 #define PEEK_INT() PEEK().getInt()
 
   switch (code) {
-  case PCallCode::StreamOpenFile: {
-    auto options = POP_INT();
-    // Mode is stored in the least significant 8 bits.
-    // Flags is stored in the 8 bits before (more significant) then mode.
-    auto mode        = static_cast<FileStreamMode>(static_cast<uint8_t>(options));
-    auto flags       = static_cast<FileStreamFlags>(static_cast<uint8_t>(options >> 8U));
-    auto* pathStrRef = getStringRef(refAlloc, POP());
-    CHECK_ALLOC(pathStrRef);
-
-    PUSH_REF(openFileStream(refAlloc, pathStrRef, mode, flags));
-  } break;
-  case PCallCode::StreamOpenConsole: {
-    auto kind = static_cast<ConsoleStreamKind>(POP_INT());
-    PUSH_REF(openConsoleStream(iface, refAlloc, kind));
-  } break;
   case PCallCode::StreamCheckValid: {
     PUSH_BOOL(streamCheckValid(POP()));
   } break;
   case PCallCode::StreamReadString: {
     auto maxChars = POP_INT();
-    auto stream   = POP();
 
-    execHandle->setState(ExecState::Paused);
-    auto* result = streamReadString(refAlloc, stream, maxChars);
-    execHandle->setState(ExecState::Running);
-    execHandle->trap();
+    // Note: Keep the stream on the stack, reason is gc could run while we are blocked.
+    auto stream = PEEK();
+    // Allocate a new string, and push it on the stack (so its already visible to the gc).
+    auto str = refAlloc->allocStr(maxChars <= 0 ? 0U : static_cast<unsigned int>(maxChars));
+    PUSH_REF(str);
 
-    PUSH_REF(result);
+    streamReadString(execHandle, stream, str);
+
+    POP_AT(1); // Pop the stream off the stack, 1 because its behind the result string.
   } break;
   case PCallCode::StreamReadChar: {
-    auto stream = POP();
+    // Note: Keep the stream on the stack, reason is gc could run while we are blocked.
+    auto stream = PEEK();
 
-    execHandle->setState(ExecState::Paused);
-    auto readChar = streamReadChar(stream);
-    execHandle->setState(ExecState::Running);
-    execHandle->trap();
+    auto readChar = streamReadChar(execHandle, stream);
 
+    POP(); // Pop the stream off the stack.
     PUSH_INT(readChar);
   } break;
   case PCallCode::StreamWriteString: {
-    auto* strRef = getStringRef(refAlloc, POP());
+    // Note: Keep the string on the stack, reason is gc could run while we are blocked.
+    auto* strRef = getStringRef(refAlloc, PEEK());
     CHECK_ALLOC(strRef);
 
-    auto stream = POP();
+    // Note: Keep the stream on the stack, reason is gc could run while we are blocked.
+    auto stream = PEEK_BEHIND(1);
+    auto result = streamWriteString(execHandle, stream, strRef);
 
-    execHandle->setState(ExecState::Paused);
-    auto result = streamWriteString(stream, strRef);
-    execHandle->setState(ExecState::Running);
-    execHandle->trap();
-
+    POP(); // Pop the string off the stack.
+    POP(); // Pop the stream off the stack.
     PUSH_BOOL(result);
   } break;
   case PCallCode::StreamWriteChar: {
     uint8_t val = static_cast<uint8_t>(POP_INT());
-    auto stream = POP();
 
-    execHandle->setState(ExecState::Paused);
-    auto result = streamWriteChar(stream, val);
-    execHandle->setState(ExecState::Running);
-    execHandle->trap();
+    // Note: Keep the stream on the stack, reason is gc could run while we are blocked.
+    auto stream = PEEK();
+    auto result = streamWriteChar(execHandle, stream, val);
 
+    POP(); // Pop the stream off the stack.
     PUSH_BOOL(result);
   } break;
   case PCallCode::StreamFlush: {
@@ -140,11 +132,63 @@ auto inline pcall(
     PUSH_BOOL(streamUnsetOpts(stream, static_cast<StreamOpts>(options)));
   } break;
 
+  case PCallCode::FileOpenStream: {
+    auto options = POP_INT();
+    // Mode is stored in the least significant 8 bits.
+    // Flags is stored in the 8 bits before (more significant) then mode.
+    auto mode        = static_cast<FileStreamMode>(static_cast<uint8_t>(options));
+    auto flags       = static_cast<FileStreamFlags>(static_cast<uint8_t>(options >> 8U));
+    auto* pathStrRef = getStringRef(refAlloc, POP());
+    CHECK_ALLOC(pathStrRef);
+
+    PUSH_REF(openFileStream(refAlloc, pathStrRef, mode, flags));
+  } break;
   case PCallCode::FileRemove: {
     auto* pathStrRef = getStringRef(refAlloc, POP());
     CHECK_ALLOC(pathStrRef);
 
     PUSH_BOOL(removeFile(pathStrRef));
+  } break;
+
+  case PCallCode::TcpOpenCon: {
+    auto port = POP_INT();
+
+    // Note: Keep the 'address' string on the stack, reason is gc could run while we are blocked.
+    auto addr = PEEK();
+    auto* result =
+        tcpOpenConnection(settings, execHandle, refAlloc, addr.getDowncastRef<StringRef>(), port);
+
+    POP(); // Pop the 'address' string off the stack.
+    PUSH_REF(result);
+  } break;
+  case PCallCode::TcpStartServer: {
+    auto backlog = POP_INT();
+    auto port    = POP_INT();
+    PUSH_REF(tcpStartServer(settings, refAlloc, port, backlog));
+  } break;
+  case PCallCode::TcpAcceptCon: {
+
+    // Note: Keep the stream on the stack, reason is gc could run while we are blocked.
+    auto stream  = PEEK();
+    auto* result = tcpAcceptConnection(settings, execHandle, refAlloc, stream);
+
+    POP(); // Pop the stream off the stack.
+    PUSH_REF(result);
+  } break;
+  case PCallCode::IpLookupAddress: {
+
+    // Note: Keep the 'hostname' string on the stack, reason is gc could run while we are blocked.
+    auto hostname = PEEK();
+    auto* result =
+        ipLookupAddress(settings, execHandle, refAlloc, hostname.getDowncastRef<StringRef>());
+
+    POP(); // Pop the hostname off the stack.
+    PUSH_REF(result);
+  } break;
+
+  case PCallCode::ConsoleOpenStream: {
+    auto kind = static_cast<ConsoleStreamKind>(POP_INT());
+    PUSH_REF(openConsoleStream(iface, refAlloc, kind));
   } break;
 
   case PCallCode::TermSetOptions: {
@@ -164,7 +208,7 @@ auto inline pcall(
 
   case PCallCode::GetEnvArg: {
     auto* res = iface->getEnvArg(POP_INT());
-    PUSH_REF(res == nullptr ? refAlloc->allocStr(0).first : toStringRef(refAlloc, res));
+    PUSH_REF(res == nullptr ? refAlloc->allocStr(0) : toStringRef(refAlloc, res));
   } break;
   case PCallCode::GetEnvArgCount: {
     PUSH_INT(iface->getEnvArgCount());
@@ -174,7 +218,7 @@ auto inline pcall(
     CHECK_ALLOC(nameStrRef);
 
     auto* res = std::getenv(nameStrRef->getCharDataPtr());
-    PUSH_REF(res == nullptr ? refAlloc->allocStr(0).first : toStringRef(refAlloc, res));
+    PUSH_REF(res == nullptr ? refAlloc->allocStr(0) : toStringRef(refAlloc, res));
   } break;
 
   case PCallCode::ClockMicroSinceEpoch: {
@@ -187,10 +231,13 @@ auto inline pcall(
   } break;
 
   case PCallCode::SleepNano: {
+    auto sleepTime = std::chrono::nanoseconds(getLong(PEEK()));
     execHandle->setState(ExecState::Paused);
-    std::this_thread::sleep_for(std::chrono::nanoseconds(getLong(PEEK())));
+    std::this_thread::sleep_for(sleepTime);
     execHandle->setState(ExecState::Running);
-    execHandle->trap();
+    if (execHandle->trap()) {
+      return;
+    }
   } break;
   case PCallCode::Assert: {
     auto* msg = getStringRef(refAlloc, POP());
@@ -220,6 +267,7 @@ auto inline pcall(
 #undef POP
 #undef POP_INT
 #undef PEEK
+#undef PEEK_BEHIND
 #undef PEEK_INT
 }
 

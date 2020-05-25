@@ -106,19 +106,22 @@ enum Month =
   December
 
 fun string(Month m)
-  if m == Month.January   -> "January"
-  if m == Month.February  -> "February"
-  if m == Month.March     -> "March"
-  if m == Month.April     -> "April"
-  if m == Month.May       -> "May"
-  if m == Month.June      -> "June"
-  if m == Month.July      -> "July"
-  if m == Month.August    -> "August"
-  if m == Month.September -> "September"
-  if m == Month.October   -> "October"
-  if m == Month.November  -> "November"
-  if m == Month.December  -> "December"
-  else                    -> "UnknownMonth"
+  string(m, false)
+
+fun string(Month m, bool short)
+  if m == Month.January   -> short ? "Jan" : "January"
+  if m == Month.February  -> short ? "Feb" : "February"
+  if m == Month.March     -> short ? "Mar" : "March"
+  if m == Month.April     -> short ? "Apr" : "April"
+  if m == Month.May       -> short ? "May" : "May"
+  if m == Month.June      -> short ? "Jun" : "June"
+  if m == Month.July      -> short ? "Jul" : "July"
+  if m == Month.August    -> short ? "Aug" : "August"
+  if m == Month.September -> short ? "Sep" : "September"
+  if m == Month.October   -> short ? "Oct" : "October"
+  if m == Month.November  -> short ? "Nov" : "November"
+  if m == Month.December  -> short ? "Dec" : "December"
+  else                    -> ""
 
 // -- Weekday
 // Represents a single day of the week.
@@ -139,14 +142,17 @@ fun WeekDay(DateTime dt)
   WeekDay((dt.daysSinceEpoch() + WeekDay.Thursday) % 7)
 
 fun string(WeekDay d)
-  if d ==  WeekDay.Sunday     -> "Sunday"
-  if d ==  WeekDay.Monday     -> "Monday"
-  if d ==  WeekDay.Tuesday    -> "Tuesday"
-  if d ==  WeekDay.Wednesday  -> "Wednesday"
-  if d ==  WeekDay.Thursday   -> "Thursday"
-  if d ==  WeekDay.Friday     -> "Friday"
-  if d ==  WeekDay.Saturday   -> "Saturday"
-  else                        -> "UnknownWeekDay"
+  string(d, false)
+
+fun string(WeekDay d, bool short)
+  if d ==  WeekDay.Sunday     -> short ? "Sun"  : "Sunday"
+  if d ==  WeekDay.Monday     -> short ? "Mon"  : "Monday"
+  if d ==  WeekDay.Tuesday    -> short ? "Tue"  : "Tuesday"
+  if d ==  WeekDay.Wednesday  -> short ? "Wed"  : "Wednesday"
+  if d ==  WeekDay.Thursday   -> short ? "Thu"  : "Thursday"
+  if d ==  WeekDay.Friday     -> short ? "Fri"  : "Friday"
+  if d ==  WeekDay.Saturday   -> short ? "Sat"  : "Saturday"
+  else                        -> ""
 
 // -- Duration
 // Represents elapsed time, can be negative.

@@ -67,7 +67,7 @@ assert(
   rangeList('0', '9').none(isUpper))
 
 assert(
-  ' '.isWhitespace() && '\t'.isWhitespace() && '\n'.isWhitespace() &&
+  ' '.isWhitespace() && '\t'.isWhitespace() && '\n'.isWhitespace() && '\r'.isWhitespace() &&
   rangeList('a', 'z').none(isWhitespace) &&
   rangeList('A', 'Z').none(isWhitespace) &&
   rangeList('0', '9').none(isWhitespace))

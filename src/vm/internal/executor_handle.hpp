@@ -51,7 +51,7 @@ public:
   // If no pause request has been placed than trap returns immediately, if pause was requested then
   // trap blocks until its un-paused again.
   //
-  inline auto trap() noexcept -> bool {
+  [[nodiscard]] inline auto trap() noexcept -> bool {
   TrapBegin:
 
     auto req = m_request.load(std::memory_order_acquire);
