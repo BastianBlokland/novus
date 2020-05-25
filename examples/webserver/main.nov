@@ -1,3 +1,5 @@
+// --- Example of a simple http server.
+
 import "std.nov"
 import "http_content-type.nov"
 import "http_header.nov"
