@@ -264,7 +264,9 @@ TEST_CASE("Generating assembly for unions", "[backend]") {
           asmb->addMakeStruct(2);
 
           // Create 'null'.
-          asmb->addMakeNullStruct();
+          asmb->addMakeNullStruct(); // Create the 'Null' struct object.
+          asmb->addPop();            // Ignore its results.
+          asmb->addMakeNullStruct(); // Create a null 'NullableUser' instead.
 
           // Call equality function of Nullable-user.
           asmb->addCall("nullableuser-eq", 2, novasm::CallMode::Normal);

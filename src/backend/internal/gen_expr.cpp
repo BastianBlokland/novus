@@ -851,6 +851,17 @@ auto GenExpr::makeUnion(const prog::expr::CallExprNode& n) -> void {
     the tag.
     */
     if (structIsTagType(m_prog, chosenType)) {
+      /*
+      Note: Its important to still generate code for the sub-expression even though we are
+      ignoring the result. Reason is there could be a side-effect in there, for example:
+      'Option(print("Hello World"); None())'.
+      Only exception is if we know we are inside a pure function (non-action).
+      TODO(bastian): Instead check if the expression contains a side-effect.
+      */
+      if (!m_curFunc || m_prog.getFuncDecl(*m_curFunc).isAction()) {
+        genSubExpr(n[0], false);
+        m_asmb->addPop();
+      }
       m_asmb->addMakeNullStruct();
     } else {
       genSubExpr(n[0], m_tail);
