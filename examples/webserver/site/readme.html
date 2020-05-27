@@ -1,24 +1,245 @@
 <h1 id="novus">Novus</h1>
 <p><a href="https://github.com/BastianBlokland/novus/actions?query=workflow%3Abuild-test"><img src="https://img.shields.io/github/workflow/status/bastianblokland/novus/build-test/master" alt="build-test" /></a>
 <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-blue.svg" alt="License: MIT" /></a></p>
-<p>Novus is a statically typed functional programming language, it compiles into instructions for a
-stack based vm. Compiler is fully handwritten with a recursive decedent parser, multiple stages
-of syntax analysis and optimizations.</p>
-<p>Design philosophy is to keep the language simple (very little build-in types) and highly extendable
-through operator overloading. Safety is also a major design goal, thats why the language is fully
-type-safe, no global state, single-assignment only, fully immutable and no concept of null.</p>
-<p>The language is designed to run on a custom stack-based vm. The vm is simple with fairly low-level
-instructions. Vm is responsible for executing instructions, memory allocation, memory cleanup
-(mark-sweep garbage collector) and providing a platform abstraction. Vm has very little
-knowledge about types or functions so there is no runtime type introspection, instead the language
-focusses on making it easier to generate code at compile time (through function and type templates).</p>
-<p>Note this is intended as an academic exercise and not meant for production projects.</p>
+<p>Novus is a general purpose, statically typed, funtional programming language.
+Novus source compiles into instructions for the Novus virtual machine which provides the runtime
+(eg Garbage collection) and platform abstraction (eg io).
+The runtime supports Linux, Mac and Windows at this time.</p>
+<p>Note: This is intended as an academic exercise and not meant for production projects.</p>
+<h1 id="intro">Intro</h1>
+<p>Novus is an expression based pure functional language with eager evaluation. In practice this means
+that all types are immutable, normal functions cannot have side-effects and all functions have to
+produce a value.</p>
+<p>Simplest function:</p>
+<pre><code>fun square(int x) x * x
+</code></pre>
+<p>Input parameters have to be typed manually but the return type is inferred from the expression.</p>
+<p>Advantage of providing type information for the input parameters is that functions can be overloaded:</p>
+<pre><code>fun getTxt(string s)  s
+fun getTxt(bool b)    b ? "true" : "false"
+fun getTxt(User u)    n.name
+</code></pre>
+<p>Expressions can be combined using the group operator ';' (similar to the comma operator in some
+languages). In an expression group the result is the value of the last expression.</p>
+<p>Can be used to define a constant and reuse it in the next expression:</p>
+<pre><code>fun cube(int x)
+  sqr = x * x; sqr * x
+</code></pre>
+<p>Note: All 'variables' are single assignment only, so in the above example <code>sqr</code> cannot be redefined
+to mean something else later.</p>
+<h2 id="controlflow">Control flow</h2>
+<h3 id="conditionaloperator">Conditional operator</h3>
+<p>For simple control-flow the conditional-operator (aka ternary-operator) can be used:</p>
+<pre><code>fun max(int a, int b)
+  a &gt; b ? a : b
+</code></pre>
+<h3 id="switchexpression">Switch expression</h3>
+<p>For more elaborate control-flow there is the switch expression:</p>
+<pre><code class="n language-n">fun fizzbuzz(int i)
+  fizz = i % 3 == 0;
+  buzz = i % 5 == 0;
+  if fizz &amp;&amp; buzz -&gt; "FizzBuzz"
+  if fizz         -&gt; "Fizz"
+  if buzz         -&gt; "Buzz"
+  else            -&gt; string(i)
+</code></pre>
+<p>The switch expression is very similar to 'if' statements in imperative languages, however in
+Novus its an expression so the entire switch has to produce a value of a single type (meaning
+it has to be exhaustive, so an 'else' is required if the compiler cannot guarantee the if conditions
+being exhaustive).</p>
+<p>Note: there are no loops in Novus, instead iterating is done using recursion. When performing tail
+recursion the runtime guarantees to execute it in constant stack space.</p>
+<h2 id="typesystem">Type system</h2>
+<p>The Novus type system contains some basic types build in to the language:</p>
+<ul>
+<li><code>int</code> (32 bit signed integer)</li>
+<li><code>long</code> (64 bit signed integer)</li>
+<li><code>float</code> (32 bit floating point number)</li>
+<li><code>bool</code></li>
+<li><code>string</code></li>
+<li><code>char</code> (8 bit unsigned integer)</li>
+</ul>
+<p>(Plus a few more niche types: <code>stream</code>, <code>function</code>, <code>action</code>, <code>future</code> and <code>lazy</code>).</p>
+<p>Note: These are the types the language itself supports, there are however many more types
+implemented in the <a href="https://github.com/BastianBlokland/novus/tree/master/novstd">standard library</a>.</p>
+<p>And can be extended with three kinds of user defined types:</p>
+<h3 id="structakarecord">Struct (aka record)</h3>
+<pre><code>struct User =
+  string  name,
+  int     age
+
+fun getDefaultUser()
+  User("John doe", 32)
+
+fun getName(User u)
+  u.name
+</code></pre>
+<h3 id="unionakadiscriminatedunionortaggedunion">Union (aka discriminated union or tagged union)</h3>
+<pre><code>union IntOrBool = int, bool
+
+fun getVal(int i)
+  i == 0 ? false : i
+
+fun getNum(IntOrBool ib)
+  if ib as int  i -&gt; i
+  if ib as bool b -&gt; b ? 1 : 0
+</code></pre>
+<p>Note that there is no 'else' in the last switch expression, this is allowed because the compiler
+can guarantee that the if conditions are exhaustive.</p>
+<h3 id="enumakaenumeration">Enum (aka enumeration)</h3>
+<pre><code>enum WeekDay =
+  Monday    : 1,
+  Tuesday   : 2,
+  Wednesday : 3,
+  Thursday,
+  Friday,
+  Saturday,
+  Sunday
+
+fun sunday()
+  WeekDay.Sunday
+
+fun isSunday(WeekDay wd)
+  wd == WeekDay.Sunday
+</code></pre>
+<p>Enum's follow the conventions that most c-like languages have, they are named values. If no value
+is provided the last value is automatically incremented by one (starting from 0).</p>
+<h2 id="genericprogrammingtypeandfunctiontemplates">Generic programming (type and function templates)</h2>
+<p>To aid in generic programming you can create type and function templates
+(similar in spirit to c++ templates). Instead of angle brackets '&lt;&gt;' found in many other
+languages to define a type set, Novus uses curly braces '{}'.</p>
+<h3 id="typetemplate">Type template</h3>
+<pre><code>struct Pair{T1, T2} =
+  T1 first,
+  T2 second
+</code></pre>
+<p>Instantiation of a type template:</p>
+<pre><code>fun sum(float a, float b)
+  sum(Pair(a, b))
+
+fun sum(Pair{float, float} p)
+  p.first + p.second
+</code></pre>
+<p>Note: When constructing a type the type parameters can be inferred from usage.</p>
+<h3 id="functiontemplate">Function template</h3>
+<pre><code>fun sum{T}(T a, T b)
+  a + b
+
+fun onePlusTwo()
+  sum(1, 2)
+</code></pre>
+<p>Note: When calling a templated function most of the time the type parameters can be inferred.</p>
+<h2 id="operatoroverloading">Operator overloading</h2>
+<p>Operators can defined like any other function.</p>
+<pre><code>struct Pair = int first, int second
+
+fun +(Pair a, Pair b)
+  Pair(a.first + b.first, a.second + b.second)
+
+fun [](Pair p, int i)
+  i == 0 ? p.first : p.second
+
+fun sum(Pair a, Pair b)
+  a + b
+
+fun getFirst(Pair p)
+  p[0]
+</code></pre>
+<p>The following list of operators can be overloaded:
+<code>+</code>, <code>++</code>, <code>-</code>, <code>--</code>, <code>*</code>, <code>/</code>, <code>%</code>, <code>&amp;</code>, <code>|</code>, <code>&lt;&lt;</code>, <code>&gt;&gt;</code>, <code>^</code>, <code>~</code>, <code>==</code>, <code>!=</code>, <code>&lt;</code>, <code>&gt;</code>, <code>&lt;=</code>,
+<code>&gt;=</code>, <code>::</code>, <code>[]</code>, <code>()</code>, <code>??</code>.</p>
+<p>Note: All operators are left associative except for the <code>::</code> operator, which makes the <code>::</code> operator
+ideal for creating linked lists.</p>
+<h2 id="firstclassfunctions">First class functions</h2>
+<p>Functions can be passed as values using the build-in <code>function{}</code> type template.
+The last type in the type-set is the return-type, the types before that are the input types.</p>
+<pre><code>fun performOp(int val, function{int, int} op)
+  op(val)
+
+fun square(int v) v * v
+fun cube(int v)   v * v * v
+
+print(performOp(43, cube))
+print(performOp(43, square))
+</code></pre>
+<h3 id="lambdasakaanonymousfunctions">Lambda's (aka anonymous functions)</h3>
+<p>Anonymous functions can be defined using the lambda syntax.</p>
+<pre><code>fun performOp(int val, function{int, int} op)
+  op(val)
+
+print(performOp(43, lambda (int x) x * x))
+</code></pre>
+<h3 id="closures">Closures</h3>
+<p>Lamba's can capture variables from the scope they are defined in.</p>
+<pre><code>fun performOp(int val, function{int, int} op)
+  op(val)
+
+fun makeAdder(int y)
+  lambda (int x) x + y
+
+print(performOp(42, makeAdder(1337))
+</code></pre>
+<h2 id="instancecalls">Instance calls</h2>
+<p>The first argument to a function can optionally be placed in front of the function call.
+This is syntactic sugar only, but can aid in making function 'chains' easier to read.</p>
+<pre><code>fun isEven(int x) (x % 2) == 0
+fun square(int x) x * x
+
+print(rangeList(0, 100).filter(isEven).map(square))
+</code></pre>
+<h2 id="parallelcomputing">Parallel computing</h2>
+<p>Putting the keyword <code>fork</code> in front of any function call runs it on its own executor (thread) and
+returns a <code>future{T}</code> handle to the executor.</p>
+<pre><code>fun fib(int n)
+  n &lt;= 1 ? n : fib(n - 1) + fib(n - 2)
+
+fun calc()
+  a = fork fib(25);
+  b = fork fib(26);
+  a.get() + b.get()
+</code></pre>
+<p>Note this is where a pure functional language shines, its completely safe to any pure function
+in parallel without any need for synchronization.</p>
+<h2 id="actions">Actions</h2>
+<p>As mentioned before functions are pure and cannot have any side-effects, but a program without
+side-effects is not really useful (something about a tree falling in a forest..).</p>
+<p>That's why there are special kind of impure functions which are allowed to perform side-effects.
+Those functions are called 'actions'. An action is allowed to call into a function but not vise
+versa.</p>
+<pre><code>import "std.nov"
+
+act printFile(Path file)
+  in  = fileOpen(file, FileMode.Open);
+  out = consoleOpen(ConsoleKind.StdOut);
+  copy(in, out)
+
+act main()
+  print("Which file do you want to print?");
+  p = Path(readLine());
+  print("Ok, printing: " + p);
+  printFile(p)
+
+main()
+</code></pre>
+<p>Note: To pass an action as a value you use the <code>action{}</code> type template instead of the
+<code>function{}</code> one.</p>
+<p>Note: To create an 'action' lambda you can use the <code>impure</code> keyword in front of the lambda:
+<code>impure lambda (int x) x * x</code></p>
+<h1 id="tryitout">Try it out</h1>
+<h2 id="examples">Examples</h2>
+<p>Several examples can be found in the <a href="https://github.com/BastianBlokland/novus/tree/master/examples">examples</a>
+directory.</p>
 <h2 id="docker">Docker</h2>
 <p>You can quickly try it out using docker.
 Open a interactive container with the compiler, runtime and examples installed:
-<code>docker run --rm -it bastianblokland/novus bin/sh</code></p>
+<code>docker run --rm -it bastianblokland/novus sh</code></p>
 <p>Run an example:
 <code>nove examples/fizzbuzz.nov</code></p>
+<h2 id="installingthecompilerandruntime">Installing the compiler and runtime</h2>
+<p>At this time there are no releases of binary files, however you can try out the binaries produced
+by the <a href="https://github.com/BastianBlokland/novus/actions">ci</a>.</p>
+<p>The best way is to build the compiler and runtime yourself, the process is documented below.</p>
+<h1 id="building">Building</h1>
 <h2 id="requirements">Requirements</h2>
 <h3 id="linux">Linux</h3>
 <ul>
@@ -58,11 +279,11 @@ distribution ships it.</p></li>
 can be found in the <code>build</code> directory.</p>
 <p>On unix run <code>scripts/configure.sh --help</code> for a listing of options, on windows:
 <code>Help scripts/configure.ps1</code></p>
-<h2 id="building">Building</h2>
+<h2 id="building-1">Building</h2>
 <p>After configuring the project can be build by running <code>scripts/build.sh</code> on unix or
 <code>scripts/build.ps1</code> on windows.</p>
 <p>Build output can be found in the <code>bin</code> directory.
-For more convenience you can add the <code>bin</code> directory it to your <code>PATH</code>.</p>
+For more convenience you can add the <code>bin</code> directory to your <code>PATH</code>.</p>
 <h2 id="buildingnovussourcecode">Building novus source code</h2>
 <p>Novus source (<code>.nov</code>) can be compiled into novus assembly (<code>.nova</code>) using the <code>novc</code> executable.</p>
 <p>Example: <code>./bin/novc examples/fizzbuzz.nov</code>. The output can be found at <code>examples/fizzbuzz.nova</code>.</p>

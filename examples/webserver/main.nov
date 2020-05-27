@@ -146,7 +146,6 @@ main(
                                           "readme.html"       ::
                                           "win.jpg"           ::
                                           "github-logo.png"   ::
-                                          "favicon.ico"       :: List{string}()
-    ).args
+                                          "favicon.ico"       :: List{string}()).args
   )
 )

@@ -71,10 +71,9 @@ fun findHttpContentType(string fileName)
   else                            -> HttpContentType.Binary
 
 fun isText(HttpContentType t)
-  if t == HttpContentType.TextPlain       -> true
-  if t == HttpContentType.TextPlainUtf8   -> true
-  if t == HttpContentType.TextCss         -> true
-  if t == HttpContentType.TextHtml        -> true
-  if t == HttpContentType.TextJavascript  -> true
-  if t == HttpContentType.TextJson        -> true
-  else                                    -> false
+  t == HttpContentType.TextPlain      ||
+  t == HttpContentType.TextPlainUtf8  ||
+  t == HttpContentType.TextCss        ||
+  t == HttpContentType.TextHtml       ||
+  t == HttpContentType.TextJavascript ||
+  t == HttpContentType.TextJson
