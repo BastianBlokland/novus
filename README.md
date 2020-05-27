@@ -17,13 +17,13 @@ that all types are immutable, normal functions cannot have side-effects and all 
 produce a value.
 
 Simplest function:
-```
+```n
 fun square(int x) x * x
 ```
 Input parameters have to be typed manually but the return type is inferred from the expression.
 
 Advantage of providing type information for the input parameters is that functions can be overloaded:
-```
+```n
 fun getTxt(string s)  s
 fun getTxt(bool b)    b ? "true" : "false"
 fun getTxt(User u)    n.name
@@ -33,7 +33,7 @@ Expressions can be combined using the group operator ';' (similar to the comma o
 languages). In an expression group the result is the value of the last expression.
 
 Can be used to define a constant and reuse it in the next expression:
-```
+```n
 fun cube(int x)
   sqr = x * x; sqr * x
 ```
@@ -44,7 +44,7 @@ to mean something else later.
 
 ### Conditional operator
 For simple control-flow the conditional-operator (aka ternary-operator) can be used:
-```
+```n
 fun max(int a, int b)
   a > b ? a : b
 ```
@@ -86,7 +86,7 @@ implemented in the [standard library](https://github.com/BastianBlokland/novus/t
 And can be extended with three kinds of user defined types:
 
 ### Struct (aka record)
-```
+```n
 struct User =
   string  name,
   int     age
@@ -99,7 +99,7 @@ fun getName(User u)
 ```
 
 ### Union (aka discriminated union or tagged union)
-```
+```n
 union IntOrBool = int, bool
 
 fun getVal(int i)
@@ -113,7 +113,7 @@ Note that there is no 'else' in the last switch expression, this is allowed beca
 can guarantee that the if conditions are exhaustive.
 
 ### Enum (aka enumeration)
-```
+```n
 enum WeekDay =
   Monday    : 1,
   Tuesday   : 2,
@@ -139,14 +139,14 @@ To aid in generic programming you can create type and function templates
 languages to define a type set, Novus uses curly braces '{}'.
 
 ### Type template
-```
+```n
 struct Pair{T1, T2} =
   T1 first,
   T2 second
 ```
 
 Instantiation of a type template:
-```
+```n
 fun sum(float a, float b)
   sum(Pair(a, b))
 
@@ -156,7 +156,7 @@ fun sum(Pair{float, float} p)
 Note: When constructing a type the type parameters can be inferred from usage.
 
 ### Function template
-```
+```n
 fun sum{T}(T a, T b)
   a + b
 
@@ -168,7 +168,7 @@ Note: When calling a templated function most of the time the type parameters can
 ## Operator overloading
 
 Operators can defined like any other function.
-```
+```n
 struct Pair = int first, int second
 
 fun +(Pair a, Pair b)
@@ -195,7 +195,7 @@ ideal for creating linked lists.
 
 Functions can be passed as values using the build-in `function{}` type template.
 The last type in the type-set is the return-type, the types before that are the input types.
-```
+```n
 fun performOp(int val, function{int, int} op)
   op(val)
 
@@ -209,7 +209,7 @@ print(performOp(43, square))
 ### Lambda's (aka anonymous functions)
 
 Anonymous functions can be defined using the lambda syntax.
-```
+```n
 fun performOp(int val, function{int, int} op)
   op(val)
 
@@ -219,7 +219,7 @@ print(performOp(43, lambda (int x) x * x))
 ### Closures
 
 Lamba's can capture variables from the scope they are defined in.
-```
+```n
 fun performOp(int val, function{int, int} op)
   op(val)
 
@@ -233,7 +233,7 @@ print(performOp(42, makeAdder(1337))
 
 The first argument to a function can optionally be placed in front of the function call.
 This is syntactic sugar only, but can aid in making function 'chains' easier to read.
-```
+```n
 fun isEven(int x) (x % 2) == 0
 fun square(int x) x * x
 
@@ -245,7 +245,7 @@ print(rangeList(0, 100).filter(isEven).map(square))
 Putting the keyword `fork` in front of any function call runs it on its own executor (thread) and
 returns a `future{T}` handle to the executor.
 
-```
+```n
 fun fib(int n)
   n <= 1 ? n : fib(n - 1) + fib(n - 2)
 
@@ -254,7 +254,7 @@ fun calc()
   b = fork fib(26);
   a.get() + b.get()
 ```
-Note this is where a pure functional language shines, its completely safe to any pure function
+Note this is where a pure functional language shines, its completely safe to run any pure function
 in parallel without any need for synchronization.
 
 ## Actions
@@ -265,7 +265,7 @@ That's why there are special kind of impure functions which are allowed to perfo
 Those functions are called 'actions'. An action is allowed to call into a function but not vise
 versa.
 
-```
+```n
 import "std.nov"
 
 act printFile(Path file)
