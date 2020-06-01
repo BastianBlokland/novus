@@ -19,7 +19,7 @@ struct HttpResp =
 //'
 fun httpRespWriter()
   (
-    httpRespHeaderWriter() & newlineWriter() & newlineWriter() & stringWriter() & newlineWriter()
+    httpRespHeaderWriter() & newlineWriter() & newlineWriter() & stringWriter()
   ).map(lambda (HttpResp r) Pair(r.header, r.content))
 
 // -- Functions
@@ -38,8 +38,8 @@ fun httpRespHeader(HttpStatusCode s, string txt, HttpContentType t, List{HttpHea
   HttpRespHeader(
     "1.1",
     s,
-    HttpHeaderField("Content-Type",       t.string())                   ::
-    HttpHeaderField("Content-Length",     (txt.length() + 2).string())  :: fields
+    HttpHeaderField("Content-Type",       t.string())             ::
+    HttpHeaderField("Content-Length",     txt.length().string())  :: fields
   )
 
 fun httpResp(HttpStatusCode s, string txt, HttpContentType t)
