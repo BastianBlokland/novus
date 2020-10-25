@@ -30,13 +30,21 @@ message(STATUS "Enable CTest dependency")
 include(CTest)
 enable_testing()
 
+set(CXX_FLAGS_WIN32 "\
+  -DNOMINMAX \
+  -D_CRT_SECURE_NO_WARNINGS \
+  -D_SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING")
+
 # Global compiler flags.
 if(MSVC)
   message(STATUS "Setting msvc compiler flags")
-  set(CMAKE_CXX_FLAGS "/std:c++17 /WX /wd4530 /wd26451")
+  set(CMAKE_CXX_FLAGS "/std:c++17 /WX /wd4530 /wd26451 ${CXX_FLAGS_WIN32}")
 else()
   message(STATUS "Setting unix compiler flags")
   set(CXX_FLAGS_SHARED "-std=c++17 -Werror -Wall -Wextra -fno-strict-aliasing")
+  if(WIN32)
+    set(CXX_FLAGS_SHARED "${CXX_FLAGS_SHARED} ${CXX_FLAGS_WIN32}")
+  endif()
   set(CMAKE_CXX_FLAGS_DEBUG "-O1 -g -fno-omit-frame-pointer ${CXX_FLAGS_SHARED}")
   set(CMAKE_CXX_FLAGS_RELEASE "-O3 -DNDEBUG ${CXX_FLAGS_SHARED}")
 endif()
