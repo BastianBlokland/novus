@@ -570,7 +570,7 @@ auto ParserImpl::nextRetTypeSpec() -> RetTypeSpec {
 
 auto ParserImpl::consumeToken() -> lex::Token {
   if (!m_readBuffer.empty()) {
-    const auto t = std::move(m_readBuffer.front());
+    auto t = std::move(m_readBuffer.front());
     m_readBuffer.pop_front();
     return t;
   }
