@@ -9,6 +9,7 @@
 #include "internal/stream_utilities.hpp"
 #include "internal/string_utilities.hpp"
 #include "internal/terminal.hpp"
+#include "internal/interupt.hpp"
 #include "novasm/pcall_code.hpp"
 #include "vm/exec_state.hpp"
 #include "vm/platform_interface.hpp"
@@ -219,6 +220,9 @@ auto inline pcall(
 
     auto* res = std::getenv(nameStrRef->getCharDataPtr());
     PUSH_REF(res == nullptr ? refAlloc->allocStr(0) : toStringRef(refAlloc, res));
+  } break;
+  case PCallCode::IsInteruptReq: {
+    PUSH_INT(isInterruptRequested());
   } break;
 
   case PCallCode::ClockMicroSinceEpoch: {

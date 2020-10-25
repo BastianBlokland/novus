@@ -544,6 +544,9 @@ auto GenExpr::visit(const prog::expr::CallExprNode& n) -> void {
   case prog::sym::FuncKind::ActionGetEnvVar:
     m_asmb->addPCall(novasm::PCallCode::GetEnvVar);
     break;
+  case prog::sym::FuncKind::ActionIsInteruptReq:
+    m_asmb->addPCall(novasm::PCallCode::IsInteruptReq);
+    break;
 
   case prog::sym::FuncKind::ActionClockMicroSinceEpoch:
     m_asmb->addPCall(novasm::PCallCode::ClockMicroSinceEpoch);

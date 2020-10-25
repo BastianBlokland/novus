@@ -1,14 +1,11 @@
 #include "vm/vm.hpp"
 #include "internal/executor.hpp"
 #include "internal/executor_registry.hpp"
+#include "internal/interupt.hpp"
 #include "internal/os_include.hpp"
 #include "internal/ref_allocator.hpp"
 #include "vm/platform_interface.hpp"
 #include <csignal>
-
-#if defined(_WIN32)
-#include <windows.h>
-#endif
 
 namespace vm {
 
@@ -45,9 +42,14 @@ static auto enableVTConsoleMode() noexcept {
 static auto setup(internal::Settings* settings) noexcept {
   setupWinsock(settings);
   enableVTConsoleMode();
+
+  if (settings->interceptInterupt) {
+    settings->interceptInterupt = internal::setupInterruptHandler();
+  }
 }
 
 static auto teardown(const internal::Settings* settings) noexcept {
+
   // Cleanup the winsock library.
   if (settings->socketsEnabled) {
     WSACleanup();
@@ -56,9 +58,14 @@ static auto teardown(const internal::Settings* settings) noexcept {
 
 #else // !_WIN32
 
-static auto setup(internal::Settings* /*unused*/) noexcept {
+static auto setup(internal::Settings* settings) noexcept {
+
   // Ignore sig-pipe (we want to handle it on a per call basis instead of globally).
   signal(SIGPIPE, SIG_IGN);
+
+  if (settings->interceptInterupt) {
+    settings->interceptInterupt = internal::setupInterruptHandler();
+  }
 }
 
 static auto teardown(const internal::Settings* /*unused*/) noexcept {}
@@ -67,8 +74,9 @@ static auto teardown(const internal::Settings* /*unused*/) noexcept {}
 
 auto run(const novasm::Assembly* assembly, PlatformInterface* iface) noexcept -> ExecState {
 
-  auto settings           = internal::Settings{};
-  settings.socketsEnabled = true;
+  auto settings              = internal::Settings{};
+  settings.socketsEnabled    = true; // TODO: Make configurable.
+  settings.interceptInterupt = true; // TODO: Make configurable.
 
   setup(&settings);
 

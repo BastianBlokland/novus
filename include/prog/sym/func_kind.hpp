@@ -144,6 +144,7 @@ enum class FuncKind {
   ActionGetEnvArgCount, // Get the amount of environment arguments passed to the application.
   ActionGetEnvArg,      // Get a environment argument string at a specific index.
   ActionGetEnvVar,      // Get a environment variable by name.
+  ActionIsInteruptReq,  // Check if an interupt has been requested.
 
   ActionClockMicroSinceEpoch, // Return a long of the amount of microseconds since epoch
                               // (01-01-1970).

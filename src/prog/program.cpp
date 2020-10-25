@@ -294,6 +294,8 @@ Program::Program() :
       *this, Fk::ActionGetEnvArgCount, "getEnvArgCount", sym::TypeSet{}, m_int);
   m_funcDecls.registerAction(
       *this, Fk::ActionGetEnvVar, "getEnvVar", sym::TypeSet{m_string}, m_string);
+  m_funcDecls.registerAction(
+      *this, Fk::ActionIsInteruptReq, "isInteruptRequested", sym::TypeSet{}, m_bool);
 
   m_funcDecls.registerAction(
       *this, Fk::ActionClockMicroSinceEpoch, "clockMicroSinceEpoch", sym::TypeSet{}, m_long);
