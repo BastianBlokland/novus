@@ -18,7 +18,15 @@ class FutureRef final : public Ref {
 public:
   FutureRef(const FutureRef& rhs) = delete;
   FutureRef(FutureRef&& rhs)      = delete;
-  ~FutureRef() noexcept           = default;
+  ~FutureRef() noexcept {
+    {
+      auto lk = std::lock_guard<std::mutex>{m_mutex};
+      if(m_state == ExecState::Running) {
+        m_state = ExecState::Aborted;
+      }
+    }
+    m_condVar.notify_all();
+  }
 
   auto operator=(const FutureRef& rhs) -> FutureRef& = delete;
   auto operator=(FutureRef&& rhs) -> FutureRef& = delete;
