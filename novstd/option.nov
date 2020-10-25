@@ -34,6 +34,9 @@ fun map{T, TResult}(Option{T} opt, function{T, TResult} func)
 fun map{T, TResult}(Option{T} opt, function{T, Option{TResult}} func)
   opt as T val ? func(val) : None()
 
+fun unwrap{T}(Option{Option{T}} opt) -> Option{T}
+  opt as Option{T} o ? o : none()
+
 // -- Tests
 
 assert(
@@ -58,3 +61,6 @@ assert(
   Option(42).map(func) == 42 &&
   Option(-42).map(func) is None &&
   Option{int}().map(func) is None)
+
+assert( Option{Option{int}}().unwrap() == Option{int}() )
+assert( Option(Option(42)).unwrap() == Option(42) )

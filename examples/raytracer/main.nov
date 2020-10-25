@@ -73,5 +73,6 @@ act driver(int width, int height, int threads, int bounces, float fov, Path outP
   fileWrite(outPath, writer(img).string());
   print("Wrote result to file: " + outPath)
 
-driver(1280, 720, 4, 4, 60, Path("image.ppm"), ppmBinaryWriter())
-// driver(1280, 720, 4, 4, 60, Path("image.tga"), tgaWriter())
+getUntilInterupt(fork driver(1280, 720, 4, 4, 60, Path("image.ppm"), ppmBinaryWriter()))
+// getUntilInterupt(fork driver(1280, 720, 4, 4, 60, Path("image.tga"), tgaWriter()))
+
