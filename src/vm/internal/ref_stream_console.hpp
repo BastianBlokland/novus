@@ -47,7 +47,7 @@ public:
     if (m_nonblockWinTerm) {
       auto size = 0U;
       while (size != str->getSize() && _kbhit()) {
-        str->getCharDataPtr()[size] = getch();
+        str->getCharDataPtr()[size] = static_cast<char>(_getch());
         size++;
       }
       str->updateSize(size);
@@ -75,8 +75,8 @@ public:
     // Special case non-blocking terminal read on windows. Unfortunately required as AFAIK there are
     // no non-blocking file-descriptors that can be used for terminal io.
     if (m_nonblockWinTerm) {
-      auto res = _kbhit() ? getch() : '\0';
-      return res > 0 ? static_cast<char>(res) : '\0';
+      auto res = _kbhit() ? static_cast<char>(_getch()) : '\0';
+      return res > 0 ? res : '\0';
     }
 #endif
 

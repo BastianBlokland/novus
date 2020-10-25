@@ -27,7 +27,7 @@ static auto
 generateFunc(novasm::Assembler* asmb, const prog::Program& program, const prog::sym::FuncDef& func)
     -> std::string {
 
-  const auto label = internal::getLabel(program, func.getId());
+  auto label = internal::getLabel(program, func.getId());
   asmb->label(label);
 
   reserveConsts(asmb, func.getConsts());
@@ -49,7 +49,7 @@ static auto generateExecStmt(
     novasm::Assembler* asmb, const prog::Program& program, const prog::sym::ExecStmt& exec)
     -> std::string {
 
-  const auto label = asmb->generateLabel("exec-stmt");
+  auto label = asmb->generateLabel("exec-stmt");
   asmb->label(label);
 
   reserveConsts(asmb, exec.getConsts());
