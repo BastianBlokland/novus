@@ -1,19 +1,22 @@
 #include "vm/vm.hpp"
 #include "internal/executor.hpp"
 #include "internal/executor_registry.hpp"
-#include "internal/ref_allocator.hpp"
 #include "internal/os_include.hpp"
+#include "internal/ref_allocator.hpp"
 #include "vm/platform_interface.hpp"
 #include <csignal>
+
+#if defined(_WIN32)
+#include <windows.h>
+#endif
 
 namespace vm {
 
 #if defined(_WIN32)
 
-static auto setup(internal::Settings* settings) {
-  // Initialize the winsock library.
+static auto setupWinsock(internal::Settings* settings) noexcept {
   if (settings->socketsEnabled) {
-    auto reqWsaVersion = MAKEWORD(2, 2);
+    const auto reqWsaVersion = MAKEWORD(2, 2);
     WSADATA wsaData;
     if (WSAStartup(reqWsaVersion, &wsaData) != 0) {
       settings->socketsEnabled = false;
@@ -26,7 +29,25 @@ static auto setup(internal::Settings* settings) {
   }
 }
 
-static auto teardown(const internal::Settings* settings) {
+static auto enableVTConsoleMode() noexcept {
+  const auto hOut = GetStdHandle(STD_OUTPUT_HANDLE);
+  if (hOut == INVALID_HANDLE_VALUE) {
+    return false;
+  }
+  DWORD dwMode = 0;
+  if (!GetConsoleMode(hOut, &dwMode)) {
+    return false;
+  }
+  dwMode |= 0x0004; // ENABLE_VIRTUAL_TERMINAL_PROCESSING 0x0004
+  return SetConsoleMode(hOut, dwMode) != 0;
+}
+
+static auto setup(internal::Settings* settings) noexcept {
+  setupWinsock(settings);
+  enableVTConsoleMode();
+}
+
+static auto teardown(const internal::Settings* settings) noexcept {
   // Cleanup the winsock library.
   if (settings->socketsEnabled) {
     WSACleanup();
@@ -35,12 +56,12 @@ static auto teardown(const internal::Settings* settings) {
 
 #else // !_WIN32
 
-static auto setup(internal::Settings* /*unused*/) {
+static auto setup(internal::Settings* /*unused*/) noexcept {
   // Ignore sig-pipe (we want to handle it on a per call basis instead of globally).
   signal(SIGPIPE, SIG_IGN);
 }
 
-static auto teardown(const internal::Settings* /*unused*/) { }
+static auto teardown(const internal::Settings* /*unused*/) noexcept {}
 
 #endif // !_WIN32
 
