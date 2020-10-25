@@ -1,5 +1,5 @@
 import "option.nov"
-import "time.nov"
+import "future.nov"
 
 // -- Types
 

@@ -1,0 +1,26 @@
+import "option.nov"
+import "time.nov"
+
+// -- Actions
+
+act wait{T}(future{T} f, Duration d)
+  waitNano(f, d.ns)
+
+act get{T}(future{T} f, Duration d)
+  f.wait(d) ? some(f.get()) : none()
+
+act get{T}(future{T} f, action{bool} predicate)
+  get(f, predicate, milliseconds(100))
+
+act get{T}(future{T} f, action{bool} predicate, Duration checkInternal)
+  if predicate() -> f.get(checkInternal) as T value ? some(value) : self(f, predicate, checkInternal)
+  else           -> none()
+
+act getUntilInterupt{T}(future{T} f)
+  f.get(impure lambda() !isInteruptRequested())
+
+// -- Tests
+
+assert(get(fork (lambda () 42)(), second()) == 42)
+assert(get(fork (lambda () 42)(), lambda () true) == 42)
+assert(get(fork (lambda () 42)(), lambda () false) == none())
