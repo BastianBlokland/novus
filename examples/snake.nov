@@ -178,8 +178,8 @@ act loop(stream in, stream out, Duration prevFrameDur, GameState state)
   t1      = timestamp();
   window  = getWindow();
   input   = getInput(in.readToEnd());
-  if input is InputQuit    -> false
-  if input is InputRestart -> loop(in, out)
+  if input is InputQuit || isInteruptRequested()  -> false
+  if input is InputRestart                        -> loop(in, out)
   else ->
     newState  = simulateGame(state, window, input);
     out.drawGame(newState, window, prevFrameDur);
