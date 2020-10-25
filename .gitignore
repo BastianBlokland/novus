@@ -17,5 +17,6 @@
 !/.vscode/tasks.json
 !/.vscode/launch.json
 
-# Clangd cache.
+# Ide caches.
 /.clangd/index/*
+/.cache/
