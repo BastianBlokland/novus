@@ -37,6 +37,7 @@ enum class PCallCode : uint8_t {
   GetEnvArg      = 70, // (int)     -> (string) Get an environment argument by index.
   GetEnvArgCount = 71, // ()        -> (int)    Get the amount of environment arguments provided.
   GetEnvVar      = 72, // (string)  -> (string) Get a environment variable by name.
+  IsInteruptReq  = 73, // ()        -> (int)    Check if an interupt has been requested.
 
   ClockMicroSinceEpoch = 80, // () -> (long) Get the elapsed microseconds since unix epoch.
   ClockNanoSteady      = 81, // () -> (long) Get process steady clock in nanoseconds.
