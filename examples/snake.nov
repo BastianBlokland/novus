@@ -171,10 +171,10 @@ fun simulateGameover(GameState g)
 
 // -- Game loop
 
-act loop(stream in, stream out)
+act loop(sys_stream in, sys_stream out)
   loop(in, out, Duration(0), createGame(rngInit(), getWindow()))
 
-act loop(stream in, stream out, Duration prevFrameDur, GameState state)
+act loop(sys_stream in, sys_stream out, Duration prevFrameDur, GameState state)
   t1      = timestamp();
   window  = getWindow();
   input   = getInput(in.readToEnd());
@@ -190,14 +190,14 @@ act loop(stream in, stream out, Duration prevFrameDur, GameState state)
 
 // --- Draw game state
 
-act drawGame(stream out, GameState g, Box window, Duration frameDur)
+act drawGame(sys_stream out, GameState g, Box window, Duration frameDur)
   out.termClearScreen();
   out.drawBackground(g, window, frameDur);
   out.drawPickups(g.pickups);
   out.drawPlayer(g.player);
   out.streamFlush()
 
-act drawBackground(stream out, GameState g, Box window, Duration frameDur)
+act drawBackground(sys_stream out, GameState g, Box window, Duration frameDur)
   out.termStyle(TermStyle.FgBrightWhite);
   out.termStyle(g.gameover ? TermStyle.BgBrightRed : TermStyle.BgGreen);
   out.drawBox(window);
@@ -210,10 +210,10 @@ act drawBackground(stream out, GameState g, Box window, Duration frameDur)
     I2(5, 1));
   out.termStyle(TermStyle.Reset)
 
-act drawPickups(stream out, List{PickupState} pickups)
+act drawPickups(sys_stream out, List{PickupState} pickups)
   pickups.mapReverse(impure lambda (PickupState p) out.drawPickup(p))
 
-act drawPickup(stream out, PickupState pickup)
+act drawPickup(sys_stream out, PickupState pickup)
   out.termStyle(
     if pickup.value == 3 -> TermStyle.FgBrightYellow
     if pickup.value == 2 -> TermStyle.FgBrightCyan
@@ -222,7 +222,7 @@ act drawPickup(stream out, PickupState pickup)
   out.drawAt("●", pickup.pos);
   out.termStyle(TermStyle.Reset)
 
-act drawPlayer(stream out, PlayerState player)
+act drawPlayer(sys_stream out, PlayerState player)
   out.drawAt(
     if player.dir == Dir.up     -> "▲"
     if player.dir == Dir.down   -> "▼"
@@ -232,7 +232,7 @@ act drawPlayer(stream out, PlayerState player)
 
 // --- Misc drawing
 
-act drawBox(stream out, Box b)
+act drawBox(sys_stream out, Box b)
   out.drawAt(   "┌",  b.origin);
   out.drawAt(   "┐",  b.origin + I2(b.size.x - 1, 0));
   out.drawAt(   "└",  b.origin + I2(0,            b.size.y));
@@ -242,7 +242,7 @@ act drawBox(stream out, Box b)
   out.drawAtVer("│",  b.origin + I2(0,            1),         b.size.y - 2);
   out.drawAtVer("│",  b.origin + I2(b.size.x - 1, 1),         b.size.y - 2)
 
-act drawAtHor(stream out, string str, I2 pos, int times)
+act drawAtHor(sys_stream out, string str, I2 pos, int times)
   drawTimes = ( impure lambda (int times)
     if times <= 0 -> true
     else          -> out.streamWrite(str); self(--times)
@@ -250,7 +250,7 @@ act drawAtHor(stream out, string str, I2 pos, int times)
   out.termCursorPos(pos.y, pos.x);
   drawTimes(times)
 
-act drawAtVer(stream out, string str, I2 pos, int times)
+act drawAtVer(sys_stream out, string str, I2 pos, int times)
   drawTimes = ( impure lambda (int i)
     if i >= times -> true
     else          ->
@@ -260,7 +260,7 @@ act drawAtVer(stream out, string str, I2 pos, int times)
   );
   drawTimes(0)
 
-act drawAt(stream out, string str, I2 pos)
+act drawAt(sys_stream out, string str, I2 pos)
   out.termCursorPos(pos.y, pos.x);
   out.streamWrite(str)
 
@@ -280,13 +280,13 @@ main()
 act getWindow()
   Box(I2(1, 1), I2(termGetWidth(), termGetHeight()))
 
-act setupTerminal(stream in, stream out)
+act setupTerminal(sys_stream in, sys_stream out)
   termSetOptions(TermOptions.NoEcho | TermOptions.NoBuffer);
   termAltScreen(out, true);
   termCursorShow(out, false);
   setOptions(in, StreamOptions.NoBlock)
 
-act resetTerminal(stream in, stream out)
+act resetTerminal(sys_stream in, sys_stream out)
   termCursorShow(out, true);
   termAltScreen(out, false);
   termStyle(out, TermStyle.Reset);

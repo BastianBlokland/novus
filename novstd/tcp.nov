@@ -4,11 +4,11 @@ import "future.nov"
 // -- Types
 
 struct TcpServer =
-  stream socket,
+  sys_stream socket,
   int    port
 
 struct TcpConnection =
-  stream socket
+  sys_stream socket
 
 // -- Actions
 

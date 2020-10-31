@@ -177,7 +177,7 @@ auto isReservedTypeName(const std::string& name) -> bool {
       "bool",
       "string",
       "char",
-      "stream",
+      "sys_stream",
       "function",
       "action",
       "future",

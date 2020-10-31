@@ -28,7 +28,7 @@ Program::Program() :
     m_bool{m_typeDecls.registerType(sym::TypeKind::Bool, "bool")},
     m_string{m_typeDecls.registerType(sym::TypeKind::String, "string")},
     m_char{m_typeDecls.registerType(sym::TypeKind::Char, "char")},
-    m_stream{m_typeDecls.registerType(sym::TypeKind::Stream, "stream")} {
+    m_stream{m_typeDecls.registerType(sym::TypeKind::Stream, "sys_stream")} {
 
   using Fk = prog::sym::FuncKind;
   using Op = prog::Operator;
