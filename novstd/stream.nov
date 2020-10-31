@@ -7,31 +7,31 @@ import "text.nov"
 enum StreamOptions =
   NoBlock : 0b1
 
-struct StreamReadState = string txt, stream src
+struct StreamReadState = string txt, sys_stream src
 
 // -- Constructors
 
-fun StreamReadState(stream src)
+fun StreamReadState(sys_stream src)
   StreamReadState("", src)
 
 // -- Actions
 
-act isValid(stream s)
+act isValid(sys_stream s)
   s.streamCheckValid()
 
-act setOptions(stream s, StreamOptions opts)
+act setOptions(sys_stream s, StreamOptions opts)
   s.streamSetOptions(int(opts))
 
-act unsetOptions(stream s, StreamOptions opts)
+act unsetOptions(sys_stream s, StreamOptions opts)
   s.streamUnsetOptions(int(opts))
 
-act write(stream s, string str)
+act write(sys_stream s, string str)
   s.streamWrite(str)
 
-act write(stream s, char c)
+act write(sys_stream s, char c)
   s.streamWrite(c)
 
-act readToEnd(stream s)
+act readToEnd(sys_stream s)
   (
     impure lambda (string result)
       read = s.streamRead(512);
@@ -39,10 +39,10 @@ act readToEnd(stream s)
       else                  -> result
   )("")
 
-act readChar(stream s)
+act readChar(sys_stream s)
   s.streamRead()
 
-act readLine(stream s)
+act readLine(sys_stream s)
   (
     impure lambda (string result)
       c = s.streamRead();
@@ -51,7 +51,7 @@ act readLine(stream s)
       else                      -> self(result + c)
   )("")
 
-act copy(stream from, stream to)
+act copy(sys_stream from, sys_stream to)
   (
     impure lambda(int bytesCopied)
       read        = from.streamRead(512);

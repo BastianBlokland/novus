@@ -33,7 +33,7 @@ fun min(Box b)
 fun max(Box b)
   b.origin + b.size
 
-act draw(I2 pos, stream out, Settings s, Duration t)
+act draw(I2 pos, sys_stream out, Settings s, Duration t)
   n = perlinNoise3d(pos.x * s.xyScale, pos.y * s.xyScale, float(t) * s.speed) * s.intensityScale;
   out.termCursorPos(pos.y, pos.x);
   (
@@ -47,7 +47,7 @@ act draw(I2 pos, stream out, Settings s, Duration t)
   out.streamWrite(n < s.fillThreshold ? "○" : "●");
   out.streamFlush()
 
-act loop(stream in, stream out, Settings s, Timestamp begin, int frame)
+act loop(sys_stream in, sys_stream out, Settings s, Timestamp begin, int frame)
   if in.readToEnd().length() != 0 || isInteruptRequested() -> false
   else ->
     now     = timestamp();
@@ -103,13 +103,13 @@ main()
 act getWindow()
   Box(I2(1, 1), I2(termGetWidth(), termGetHeight()))
 
-act setupTerminal(stream in, stream out)
+act setupTerminal(sys_stream in, sys_stream out)
   termSetOptions(TermOptions.NoEcho | TermOptions.NoBuffer);
   termAltScreen(out, true);
   termCursorShow(out, false);
   setOptions(in, StreamOptions.NoBlock)
 
-act resetTerminal(stream in, stream out)
+act resetTerminal(sys_stream in, sys_stream out)
   termCursorShow(out, true);
   termAltScreen(out, false);
   termStyle(out, TermStyle.Reset);

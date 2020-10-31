@@ -65,7 +65,7 @@ fun termEsc() char(27)
 act termStyle(TermStyle style)
   termStyle(consoleOpen(ConsoleKind.StdOut), style)
 
-act termStyle(stream s, TermStyle style)
+act termStyle(sys_stream s, TermStyle style)
   s.streamWrite(termEsc());
   s.streamWrite('[');
   s.streamWrite(string(style));
@@ -79,10 +79,10 @@ act termColor(float r, float g, float b)
 act termColor(float r, float g, float b, bool background)
   termColor(consoleOpen(ConsoleKind.StdOut), r, g, b, background)
 
-act termColor(stream s, float r, float g, float b)
+act termColor(sys_stream s, float r, float g, float b)
   termColor(s, r, g, b, false)
 
-act termColor(stream s, float r, float g, float b, bool background)
+act termColor(sys_stream s, float r, float g, float b, bool background)
   toDiscrete = ( lambda (float v)
     int(clamp(v, 0.0, 1.0) * 5.0 + 0.5)
   );
@@ -99,7 +99,7 @@ act termColor(stream s, float r, float g, float b, bool background)
 act termCursorMove(TermStyle s, TermDir dir, int amount)
   termCursorMove(consoleOpen(ConsoleKind.StdOut), dir, amount)
 
-act termCursorMove(stream s, TermDir dir, int amount)
+act termCursorMove(sys_stream s, TermDir dir, int amount)
   s.streamWrite(termEsc());
   s.streamWrite('[');
   s.streamWrite(string(amount));
@@ -112,7 +112,7 @@ act termCursorMove(stream s, TermDir dir, int amount)
 act termCursorCol(int column)
   termCursorCol(consoleOpen(ConsoleKind.StdOut), column)
 
-act termCursorCol(stream s, int column)
+act termCursorCol(sys_stream s, int column)
   s.streamWrite(termEsc());
   s.streamWrite('[');
   s.streamWrite(string(column));
@@ -121,7 +121,7 @@ act termCursorCol(stream s, int column)
 act termCursorPos(int row, int column)
   termCursorPos(consoleOpen(ConsoleKind.StdOut), row, column)
 
-act termCursorPos(stream s, int row, int column)
+act termCursorPos(sys_stream s, int row, int column)
   s.streamWrite(termEsc());
   s.streamWrite('[');
   s.streamWrite(string(row));
@@ -132,7 +132,7 @@ act termCursorPos(stream s, int row, int column)
 act termCursorShow(bool show)
   termCursorShow(consoleOpen(ConsoleKind.StdOut), show)
 
-act termCursorShow(stream s, bool show)
+act termCursorShow(sys_stream s, bool show)
   s.streamWrite(termEsc());
   s.streamWrite("[?25");
   s.streamWrite(show ? 'h' : 'l')
@@ -142,7 +142,7 @@ act termCursorShow(stream s, bool show)
 act termAltScreen(bool active)
   termAltScreen(consoleOpen(ConsoleKind.StdOut), active)
 
-act termAltScreen(stream s, bool active)
+act termAltScreen(sys_stream s, bool active)
   s.streamWrite(termEsc());
   s.streamWrite("[?1049");
   s.streamWrite(active ? 'h' : 'l')
@@ -152,13 +152,13 @@ act termAltScreen(stream s, bool active)
 act termClearScreen()
   termClearScreen(consoleOpen(ConsoleKind.StdOut), TermClearMode.All)
 
-act termClearScreen(stream s)
+act termClearScreen(sys_stream s)
   termClearScreen(s, TermClearMode.All)
 
 act termClearScreen(TermClearMode mode)
   termClearScreen(consoleOpen(ConsoleKind.StdOut), mode)
 
-act termClearScreen(stream s, TermClearMode mode)
+act termClearScreen(sys_stream s, TermClearMode mode)
   s.streamWrite(termEsc());
   s.streamWrite('[');
   s.streamWrite(string(mode));
@@ -167,7 +167,7 @@ act termClearScreen(stream s, TermClearMode mode)
 act termClearLine(TermClearMode mode)
   termClearLine(consoleOpen(ConsoleKind.StdOut), mode)
 
-act termClearLine(stream s, TermClearMode mode)
+act termClearLine(sys_stream s, TermClearMode mode)
   s.streamWrite(termEsc());
   s.streamWrite('[');
   s.streamWrite(string(mode));
@@ -178,7 +178,7 @@ act termClearLine(stream s, TermClearMode mode)
 act termReset()
   termReset(consoleOpen(ConsoleKind.StdOut))
 
-act termReset(stream s)
+act termReset(sys_stream s)
   s.streamWrite(termEsc());
   s.streamWrite('c')
 

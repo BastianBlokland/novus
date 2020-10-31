@@ -98,7 +98,7 @@ auto ConstBinder::getAllConstTypes() -> std::unordered_map<std::string, prog::sy
 
   ConstBinder* current = this;
   while (current) {
-    for (const auto visibleConst : *current->m_visibleConsts) {
+    for (const auto& visibleConst : *current->m_visibleConsts) {
       const auto& name = (*current->m_consts)[visibleConst].getName();
       const auto& type = (*current->m_consts)[visibleConst].getType();
       result.insert({name, type});
