@@ -42,11 +42,11 @@ GetExpr::GetExpr(
 
 auto GetExpr::getValue() -> prog::expr::NodePtr& { return m_expr; }
 
-auto GetExpr::visit(const parse::CommentNode & /*unused*/) -> void {
+auto GetExpr::visit(const parse::CommentNode& /*unused*/) -> void {
   throw std::logic_error{"GetExpr is not implemented for this node type"};
 }
 
-auto GetExpr::visit(const parse::ErrorNode & /*unused*/) -> void {
+auto GetExpr::visit(const parse::ErrorNode& /*unused*/) -> void {
   throw std::logic_error{"GetExpr is not implemented for this node type"};
 }
 
@@ -61,7 +61,7 @@ auto GetExpr::visit(const parse::AnonFuncExprNode& n) -> void {
 
   // Gather the input types for the anonymous function.
   auto inputTypes = std::vector<prog::sym::TypeId>{};
-  for (const auto constId : consts.getNonBoundInputs()) {
+  for (const auto& constId : consts.getNonBoundInputs()) {
     inputTypes.push_back(consts[constId].getType());
   }
 
@@ -96,13 +96,13 @@ auto GetExpr::visit(const parse::AnonFuncExprNode& n) -> void {
   // Analyze the body of the anonymous function.
   auto visibleConsts = consts.getAll();
   auto constBinder   = ConstBinder{&consts, &visibleConsts, m_constBinder};
-  auto getExpr       = GetExpr{m_ctx,
-                         m_typeSubTable,
-                         &constBinder,
-                         *retType,
-                         selfSignature,
-                         isAction ? (Flags::AllowActionCalls | Flags::AllowPureFuncCalls)
-                                  : Flags::AllowPureFuncCalls};
+  auto getExpr       = GetExpr{
+      m_ctx,
+      m_typeSubTable,
+      &constBinder,
+      *retType,
+      selfSignature,
+      isAction ? (Flags::AllowActionCalls | Flags::AllowPureFuncCalls) : Flags::AllowPureFuncCalls};
   n[0].accept(&getExpr);
   if (!getExpr.m_expr) {
     assert(m_ctx->hasErrors());
@@ -123,7 +123,7 @@ auto GetExpr::visit(const parse::AnonFuncExprNode& n) -> void {
   }
 
   // Add the bound input types for this function.
-  for (const auto constId : consts.getBoundInputs()) {
+  for (const auto& constId : consts.getBoundInputs()) {
     inputTypes.push_back(consts[constId].getType());
   }
 
@@ -145,7 +145,7 @@ auto GetExpr::visit(const parse::AnonFuncExprNode& n) -> void {
     m_expr = getLitFunc(m_ctx, funcId);
   } else {
     auto boundArgs = std::vector<prog::expr::NodePtr>{};
-    for (const auto parentConstId : constBinder.getBoundParentConsts()) {
+    for (const auto& parentConstId : constBinder.getBoundParentConsts()) {
       boundArgs.push_back(prog::expr::constExprNode(*m_constBinder->getConsts(), parentConstId));
     }
     m_expr = getFuncClosure(m_ctx, funcId, std::move(boundArgs));
@@ -582,11 +582,11 @@ auto GetExpr::visit(const parse::ParenExprNode& n) -> void {
   m_expr = getSubExpr(n[0], m_typeHint, hasFlag<Flags::CheckedConstsAccess>());
 }
 
-auto GetExpr::visit(const parse::SwitchExprElseNode & /*unused*/) -> void {
+auto GetExpr::visit(const parse::SwitchExprElseNode& /*unused*/) -> void {
   throw std::logic_error{"GetExpr is not implemented for this node type"};
 }
 
-auto GetExpr::visit(const parse::SwitchExprIfNode & /*unused*/) -> void {
+auto GetExpr::visit(const parse::SwitchExprIfNode& /*unused*/) -> void {
   throw std::logic_error{"GetExpr is not implemented for this node type"};
 }
 
@@ -685,27 +685,27 @@ auto GetExpr::visit(const parse::UnaryExprNode& n) -> void {
   m_expr = prog::expr::callExprNode(*m_ctx->getProg(), func.value(), std::move(args));
 }
 
-auto GetExpr::visit(const parse::EnumDeclStmtNode & /*unused*/) -> void {
+auto GetExpr::visit(const parse::EnumDeclStmtNode& /*unused*/) -> void {
   throw std::logic_error{"GetExpr is not implemented for this node type"};
 }
 
-auto GetExpr::visit(const parse::ExecStmtNode & /*unused*/) -> void {
+auto GetExpr::visit(const parse::ExecStmtNode& /*unused*/) -> void {
   throw std::logic_error{"GetExpr is not implemented for this node type"};
 }
 
-auto GetExpr::visit(const parse::FuncDeclStmtNode & /*unused*/) -> void {
+auto GetExpr::visit(const parse::FuncDeclStmtNode& /*unused*/) -> void {
   throw std::logic_error{"GetExpr is not implemented for this node type"};
 }
 
-auto GetExpr::visit(const parse::ImportStmtNode & /*unused*/) -> void {
+auto GetExpr::visit(const parse::ImportStmtNode& /*unused*/) -> void {
   throw std::logic_error{"GetExpr is not implemented for this node type"};
 }
 
-auto GetExpr::visit(const parse::StructDeclStmtNode & /*unused*/) -> void {
+auto GetExpr::visit(const parse::StructDeclStmtNode& /*unused*/) -> void {
   throw std::logic_error{"GetExpr is not implemented for this node type"};
 }
 
-auto GetExpr::visit(const parse::UnionDeclStmtNode & /*unused*/) -> void {
+auto GetExpr::visit(const parse::UnionDeclStmtNode& /*unused*/) -> void {
   throw std::logic_error{"GetExpr is not implemented for this node type"};
 }
 

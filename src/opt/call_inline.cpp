@@ -90,7 +90,7 @@ public:
       -> internal::ConstRemapTable {
 
     auto table = internal::ConstRemapTable{};
-    for (const auto tgtConstId : tgtConsts.getAll()) {
+    for (const auto& tgtConstId : tgtConsts.getAll()) {
       const auto& tgtConstDecl = tgtConsts[tgtConstId];
 
       std::ostringstream oss;

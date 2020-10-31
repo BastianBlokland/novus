@@ -31,7 +31,7 @@ auto treeshake(const prog::Program& prog) -> prog::Program {
   }
 
   // Find all types used in user functions.
-  for (const auto funcId : funcs) {
+  for (const auto& funcId : funcs) {
     const auto& decl = prog.getFuncDecl(funcId);
     if (decl.getKind() == prog::sym::FuncKind::User) {
       const auto& def = prog.getFuncDef(funcId);
@@ -45,10 +45,10 @@ auto treeshake(const prog::Program& prog) -> prog::Program {
 
   // Create a new program and copy the used functions, types and the exec statements.
   auto result = prog::Program{};
-  for (const auto func : funcs) {
+  for (const auto& func : funcs) {
     prog::copyFunc(prog, &result, func);
   }
-  for (const auto type : types) {
+  for (const auto& type : types) {
     prog::copyType(prog, &result, type);
   }
   for (auto execItr = prog.beginExecStmts(); execItr != prog.endExecStmts(); ++execItr) {
