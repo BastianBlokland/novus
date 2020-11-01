@@ -29,6 +29,13 @@ auto operator<<(std::ostream& out, const PCallCode& rhs) noexcept -> std::ostrea
     out << "stream-unset-options";
     break;
 
+  case PCallCode::ProcessStart:
+    out << "process-start";
+    break;
+  case PCallCode::ProcessBlock:
+    out << "process-block";
+    break;
+
   case PCallCode::FileOpenStream:
     out << "file-open-stream";
     break;

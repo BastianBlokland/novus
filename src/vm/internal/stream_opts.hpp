@@ -5,4 +5,4 @@ namespace vm::internal {
 
 enum class StreamOpts : int32_t { NoBlock = 1 << 0 };
 
-}
+} // namespace vm::internal

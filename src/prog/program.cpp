@@ -28,7 +28,8 @@ Program::Program() :
     m_bool{m_typeDecls.registerType(sym::TypeKind::Bool, "bool")},
     m_string{m_typeDecls.registerType(sym::TypeKind::String, "string")},
     m_char{m_typeDecls.registerType(sym::TypeKind::Char, "char")},
-    m_stream{m_typeDecls.registerType(sym::TypeKind::Stream, "sys_stream")} {
+    m_stream{m_typeDecls.registerType(sym::TypeKind::Stream, "sys_stream")},
+    m_process{m_typeDecls.registerType(sym::TypeKind::Process, "sys_process")} {
 
   using Fk = prog::sym::FuncKind;
   using Op = prog::Operator;
@@ -263,6 +264,11 @@ Program::Program() :
       "streamUnsetOptions",
       sym::TypeSet{m_stream, m_int},
       m_bool);
+
+  m_funcDecls.registerAction(
+      *this, Fk::ActionProcessStart, "processStart", sym::TypeSet{m_string}, m_process);
+  m_funcDecls.registerAction(
+      *this, Fk::ActionProcessBlock, "block", sym::TypeSet{m_process}, m_int);
 
   m_funcDecls.registerAction(
       *this, Fk::ActionFileOpenStream, "fileOpenStream", sym::TypeSet{m_string, m_int}, m_stream);

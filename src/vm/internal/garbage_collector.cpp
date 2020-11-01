@@ -14,9 +14,8 @@ namespace vm::internal {
 const static auto bytesAllocThreadAccumMax = 1024U * 1024U; // 1 MiB
 thread_local static unsigned int bytesAllocThreadAccum;
 
-GarbageCollector::GarbageCollector(
-    RefAllocator* refAlloc, ExecutorRegistry* execRegistry) noexcept :
-    m_refAlloc{refAlloc}, m_execRegistry{execRegistry}, m_requestType{RequestType::None} {
+GarbageCollector::GarbageCollector(RefAllocator* refAlloc, ExecutorRegistry* execReg) noexcept :
+    m_refAlloc{refAlloc}, m_execRegistry{execReg}, m_requestType{RequestType::None} {
 
   // Subscribe to allocation notifications, we can use these to decide when to run a collection.
   refAlloc->subscribe(this);
@@ -189,10 +188,11 @@ auto GarbageCollector::mark() noexcept -> void {
       }
     } break;
     case RefKind::String:
+    case RefKind::Long:
     case RefKind::StreamFile:
     case RefKind::StreamConsole:
     case RefKind::StreamTcp:
-    case RefKind::Long:
+    case RefKind::Process:
       break;
     }
   }

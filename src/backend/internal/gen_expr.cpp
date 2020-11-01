@@ -499,6 +499,13 @@ auto GenExpr::visit(const prog::expr::CallExprNode& n) -> void {
     m_asmb->addPCall(novasm::PCallCode::StreamUnsetOptions);
     break;
 
+  case prog::sym::FuncKind::ActionProcessStart:
+    m_asmb->addPCall(novasm::PCallCode::ProcessStart);
+    break;
+  case prog::sym::FuncKind::ActionProcessBlock:
+    m_asmb->addPCall(novasm::PCallCode::ProcessBlock);
+    break;
+
   case prog::sym::FuncKind::ActionFileOpenStream:
     m_asmb->addPCall(novasm::PCallCode::FileOpenStream);
     break;
