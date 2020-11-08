@@ -5,6 +5,7 @@
 #include "internal/ref_process.hpp"
 #include "internal/ref_stream_console.hpp"
 #include "internal/ref_stream_file.hpp"
+#include "internal/ref_stream_process.hpp"
 #include "internal/ref_stream_tcp.hpp"
 #include "internal/settings.hpp"
 #include "internal/stack.hpp"
@@ -152,6 +153,11 @@ auto inline pcall(
 
     POP(); // Pop the process of the stack.
     PUSH_INT(exitCode);
+  } break;
+  case PCallCode::ProcessOpenStream: {
+    const auto kind = static_cast<ProcessStreamKind>(POP_INT());
+    auto process    = getProcessRef(POP());
+    PUSH_REF(openProcessStream(process, refAlloc, kind));
   } break;
 
   case PCallCode::FileOpenStream: {

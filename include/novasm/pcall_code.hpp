@@ -21,6 +21,7 @@ enum class PCallCode : uint8_t {
 
   ProcessStart = 20, // (string)  -> (process) Start a new sys process from the given cmdline str.
   ProcessBlock = 21, // (process) -> (int)     Block until the process has exited, returns exitcode.
+  ProcessOpenStream = 22, // (process, int) -> (stream)  Get a stream to stdin, stdout or stderr.
 
   FileOpenStream = 30, // (int, string) -> (stream)  Open a file at path with options.
   FileRemove     = 31, // (string)      -> (int)     Remove the file at path, returns success.

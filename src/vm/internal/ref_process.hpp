@@ -6,6 +6,10 @@
 #include <condition_variable>
 #include <mutex>
 
+#if defined(_WIN32)
+#define fdopen _fdopen
+#endif // _WIN32
+
 namespace vm::internal {
 
 enum class ProcessExitErr : int32_t {
@@ -26,6 +30,26 @@ using ProcessType = PROCESS_INFORMATION;
 using ProcessType = int;
 #endif
 
+inline auto invalidProcess() -> ProcessType {
+#if defined(_WIN32)
+  return PROCESS_INFORMATION{};
+#else // !_WIN32
+  return -1;
+#endif
+};
+
+#if defined(_WIN32)
+template <typename... Handles>
+auto CloseHandle(Handles... handles) {
+  (::CloseHandle(handles), ...);
+}
+#else  // !_WIN32
+template <typename... Descriptors>
+auto close(Descriptors... descriptors) {
+  (::close(descriptors), ...);
+}
+#endif // !_WIN32
+
 class ProcessRef final : public Ref {
   friend class RefAllocator;
 
@@ -33,9 +57,21 @@ public:
   ProcessRef(const ProcessRef& rhs) = delete;
   ProcessRef(ProcessRef&& rhs)      = delete;
   ~ProcessRef() noexcept {
+    // Close our handles to the in / out / err pipes.
+    if (m_stdIn) {
+      std::fclose(m_stdIn);
+    }
+    if (m_stdOut) {
+      std::fclose(m_stdOut);
+    }
+    if (m_stdErr) {
+      std::fclose(m_stdErr);
+    }
+    // Kill the process (if its still running).
     if (isValid() && !isFinished()) {
       killImpl();
     }
+    // Close any handles we have to the process.
 #if defined(_WIN32)
     if (m_process.hThread) {
       CloseHandle(m_process.hThread);
@@ -58,6 +94,10 @@ public:
     return m_process > 0;
 #endif
   }
+
+  [[nodiscard]] auto getStdIn() const noexcept { return m_stdIn; }
+  [[nodiscard]] auto getStdOut() const noexcept { return m_stdOut; }
+  [[nodiscard]] auto getStdErr() const noexcept { return m_stdErr; }
 
   [[nodiscard]] auto isFinished() noexcept -> bool {
     return m_state.load(std::memory_order_acquire) == ProcessState::Finished;
@@ -107,8 +147,34 @@ private:
   std::mutex m_mutex;
   std::condition_variable m_condVar;
 
-  inline explicit ProcessRef(ProcessType process) noexcept :
-      Ref(getKind()), m_process{process}, m_state{ProcessState::Unknown} {}
+  gsl::owner<FILE*> m_stdIn;
+  gsl::owner<FILE*> m_stdOut;
+  gsl::owner<FILE*> m_stdErr;
+
+  ProcessRef(
+      ProcessType process,
+      gsl::owner<FILE*> stdIn,
+      gsl::owner<FILE*> stdOut,
+      gsl::owner<FILE*> stdErr) noexcept :
+      Ref(getKind()),
+      m_process{process},
+      m_state{ProcessState::Unknown},
+      m_stdIn{stdIn},
+      m_stdOut{stdOut},
+      m_stdErr{stdErr} {}
+
+  ProcessRef(ProcessType process, int stdInDesc, int stdOutDesc, int stdErrDesc) noexcept :
+      ProcessRef{
+          process, fdopen(stdInDesc, "a"), fdopen(stdOutDesc, "r"), fdopen(stdErrDesc, "r")} {};
+
+#if defined(_WIN32)
+  ProcessRef(ProcessType process, HANDLE stdIn, HANDLE stdOut, HANDLE stdErr) noexcept :
+      ProcessRef{
+          process,
+          _open_osfhandle(reinterpret_cast<intptr_t>(stdIn), _O_APPEND),
+          _open_osfhandle(reinterpret_cast<intptr_t>(stdOut), _O_RDONLY),
+          _open_osfhandle(reinterpret_cast<intptr_t>(stdErr), _O_RDONLY)} {};
+#endif
 
   auto killImpl() -> void {
 #if defined(_WIN32)
@@ -160,28 +226,76 @@ inline auto processStart(RefAllocator* alloc, const StringRef* cmdLineStr) -> Pr
     }
     break;
   }
-  STARTUPINFO startupInfo         = {};
-  PROCESS_INFORMATION processInfo = {};
-  if (!CreateProcess(
-          nullptr,
-          cmdLineStrItr,
-          nullptr,
-          nullptr,
-          false,
-          NORMAL_PRIORITY_CLASS | CREATE_NO_WINDOW,
-          nullptr,
-          nullptr,
-          &startupInfo,
-          &processInfo)) {
-    // Failed to create process.
-    return alloc->allocPlain<ProcessRef>(PROCESS_INFORMATION{});
+
+  // Create pipes to read from / write to the child process stdIn, stdOut and stdErr streams.
+  SECURITY_ATTRIBUTES saAttr = {};
+  saAttr.nLength             = sizeof(SECURITY_ATTRIBUTES);
+  saAttr.bInheritHandle      = true;
+
+  std::array<HANDLE, 2> pipeStdIn, pipeStdOut, pipeStdErr;
+  if (!CreatePipe(&pipeStdIn[0], &pipeStdIn[1], &saAttr, 0) ||        // Create stdIn pipe.
+      !SetHandleInformation(pipeStdIn[1], HANDLE_FLAG_INHERIT, 0) ||  // Mark parentside noninherit.
+      !CreatePipe(&pipeStdOut[0], &pipeStdOut[1], &saAttr, 0) ||      // Create stdOut pipe.
+      !SetHandleInformation(pipeStdOut[0], HANDLE_FLAG_INHERIT, 0) || // Mark parentside noninherit.
+      !CreatePipe(&pipeStdErr[0], &pipeStdErr[1], &saAttr, 0) ||      // Create stdErr pipe.
+      !SetHandleInformation(pipeStdErr[0], HANDLE_FLAG_INHERIT, 0)    // Mark parentside noninherit.
+  ) {
+    // Failed to create all the pipes, close whichever child pipes where created.
+    CloseHandle(pipeStdIn[0], pipeStdOut[1], pipeStdErr[1]);
+    return alloc->allocPlain<ProcessRef>(
+        invalidProcess(), pipeStdIn[1], pipeStdOut[0], pipeStdErr[0]);
   }
-  return alloc->allocPlain<ProcessRef>(processInfo);
+
+  STARTUPINFO startupInfo = {};
+  startupInfo.cb          = sizeof(STARTUPINFO);
+  startupInfo.hStdInput   = pipeStdIn[0];
+  startupInfo.hStdOutput  = pipeStdOut[1];
+  startupInfo.hStdError   = pipeStdErr[1];
+  startupInfo.dwFlags |= STARTF_USESTDHANDLES;
+
+  PROCESS_INFORMATION processInfo = {};
+
+  bool success = CreateProcess(
+      nullptr,
+      cmdLineStrItr,
+      nullptr,
+      nullptr,
+      true,
+      NORMAL_PRIORITY_CLASS | CREATE_NO_WINDOW,
+      nullptr,
+      nullptr,
+      &startupInfo,
+      &processInfo);
+
+  // Close the child side of the pipes.
+  CloseHandle(pipeStdIn[0], pipeStdOut[1], pipeStdErr[1]);
+  return alloc->allocPlain<ProcessRef>(
+      success ? processInfo : invalidProcess(), pipeStdIn[1], pipeStdOut[0], pipeStdErr[0]);
+
 #else // !_WIN32
+
+  // Create pipes to communicate with the child process.
+  std::array<int, 2> pipeStdIn, pipeStdOut, pipeStdErr;
+  if (pipe(pipeStdIn.data()) || pipe(pipeStdOut.data()) || pipe(pipeStdErr.data())) {
+    // Failed to create all the pipes, close whichever child pipes where created.
+    close(pipeStdIn[0], pipeStdOut[1], pipeStdErr[1]);
+    return alloc->allocPlain<ProcessRef>(
+        invalidProcess(), pipeStdIn[1], pipeStdOut[0], pipeStdErr[0]);
+  }
+
   const auto childPid = fork();
   switch (childPid) {
   case 0: {
     // Executed on child process:
+
+    // Close the parent side of the pipes.
+    close(pipeStdIn[1], pipeStdOut[0], pipeStdErr[0]);
+
+    // Duplicate the child side of the pipes onto the stdIn, stdOut and stdErr of this process.
+    dup2(pipeStdIn[0], 0);
+    dup2(pipeStdOut[1], 1);
+    dup2(pipeStdErr[1], 2);
+
     // Split the given cmdLineStr on whitespace into a null-terminted array of c-strings.
     char* itr = cmdLineStr->getCharDataPtr();
     auto argV = std::vector<char*>{};
@@ -220,8 +334,9 @@ inline auto processStart(RefAllocator* alloc, const StringRef* cmdLineStr) -> Pr
     std::abort();
   }
   default:
-    // Note: Pid is -1 in-case fork fails.
-    return alloc->allocPlain<ProcessRef>(childPid);
+    // Close the child side of the pipes.
+    close(pipeStdIn[0], pipeStdOut[1], pipeStdErr[1]);
+    return alloc->allocPlain<ProcessRef>(childPid, pipeStdIn[1], pipeStdOut[0], pipeStdErr[0]);
   }
 #endif
 }

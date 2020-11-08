@@ -127,8 +127,9 @@ enum class FuncKind {
   ActionStreamSetOptions,   // Set options for a stream.
   ActionStreamUnsetOptions, // Unset options for a stream.
 
-  ActionProcessStart, // Start a new system process from the given cmdline string.
-  ActionProcessBlock, // Block until the process has exited, returns the exitcode.
+  ActionProcessStart,      // Start a new system process from the given cmdline string.
+  ActionProcessBlock,      // Block until the process has exited, returns the exitcode.
+  ActionProcessOpenStream, // Open a stream to stdin / stdout / stderr of the process.
 
   ActionFileOpenStream, // Open a file stream.
   ActionFileRemove,     // Delete a file from the filesystem.

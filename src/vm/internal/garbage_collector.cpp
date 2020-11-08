@@ -1,6 +1,7 @@
 #include "internal/garbage_collector.hpp"
 #include "internal/ref_allocator.hpp"
 #include "internal/ref_future.hpp"
+#include "internal/ref_stream_process.hpp"
 #include "internal/ref_string_link.hpp"
 #include "internal/ref_struct.hpp"
 #include <chrono>
@@ -187,6 +188,9 @@ auto GarbageCollector::mark() noexcept -> void {
         }
       }
     } break;
+    case RefKind::StreamProcess:
+      m_markQueue.push_back(downcastRef<ProcessStreamRef>(cur)->getProcess());
+      break;
     case RefKind::String:
     case RefKind::Long:
     case RefKind::StreamFile:

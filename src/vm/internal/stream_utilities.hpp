@@ -3,6 +3,7 @@
 #include "internal/ref_allocator.hpp"
 #include "internal/ref_stream_console.hpp"
 #include "internal/ref_stream_file.hpp"
+#include "internal/ref_stream_process.hpp"
 #include "internal/ref_stream_tcp.hpp"
 #include "internal/ref_string.hpp"
 #include "internal/stream_opts.hpp"
@@ -22,6 +23,8 @@ namespace vm::internal {
       return downcastRef<ConsoleStreamRef>(ref)->EXPR;                                             \
     case RefKind::StreamTcp:                                                                       \
       return downcastRef<TcpStreamRef>(ref)->EXPR;                                                 \
+    case RefKind::StreamProcess:                                                                   \
+      return downcastRef<ProcessStreamRef>(ref)->EXPR;                                             \
     default:                                                                                       \
       assert(false);                                                                               \
       return 0;                                                                                    \

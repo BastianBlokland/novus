@@ -47,7 +47,7 @@ public:
       if (shutdown(m_socket, SD_BOTH) == 0) {
         closesocket(m_socket);
       }
-#else  // !_WIN32
+#else // !_WIN32
       if (shutdown(m_socket, SHUT_RDWR) == 0) {
         close(m_socket);
       }

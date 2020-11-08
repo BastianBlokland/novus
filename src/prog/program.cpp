@@ -269,6 +269,12 @@ Program::Program() :
       *this, Fk::ActionProcessStart, "processStart", sym::TypeSet{m_string}, m_process);
   m_funcDecls.registerAction(
       *this, Fk::ActionProcessBlock, "block", sym::TypeSet{m_process}, m_int);
+  m_funcDecls.registerAction(
+      *this,
+      Fk::ActionProcessOpenStream,
+      "processOpenStream",
+      sym::TypeSet{m_process, m_int},
+      m_stream);
 
   m_funcDecls.registerAction(
       *this, Fk::ActionFileOpenStream, "fileOpenStream", sym::TypeSet{m_string, m_int}, m_stream);
