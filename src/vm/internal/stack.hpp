@@ -75,7 +75,7 @@ public:
     auto result  = *tgtPtr;
     std::memmove(tgtPtr, tgtPtr + 1, sizeof(Value) * behind);
 
-    --m_stackMax;
+    --m_stackNext;
     return result;
   }
 
