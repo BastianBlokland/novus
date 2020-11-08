@@ -13,9 +13,8 @@
 namespace vm::internal {
 
 enum class ProcessExitErr : int32_t {
-  InvalidProcess    = -1, // Process is not valid.
-  ProcessTerminated = -2, // Process was terminated by a signal.
-  UnknownErr        = -3, // Unknown error occurred while waiting for a process to finnish.
+  InvalidProcess = -1, // Process is not valid or was terminated by a signal.
+  UnknownErr     = -2, // Unknown error occurred while waiting for a process to finnish.
 };
 
 enum class ProcessState : int8_t {
@@ -178,7 +177,7 @@ private:
 
   auto killImpl() -> void {
 #if defined(_WIN32)
-    TerminateProcess(m_process.hProcess, static_cast<UINT>(ProcessExitErr::ProcessTerminated));
+    TerminateProcess(m_process.hProcess, static_cast<UINT>(ProcessExitErr::InvalidProcess));
 #else // !_WIN32
     ::kill(m_process, SIGTERM);
 #endif
@@ -205,7 +204,7 @@ private:
       return WEXITSTATUS(status);
     }
     if (WIFSIGNALED(status)) {
-      return static_cast<int32_t>(ProcessExitErr::ProcessTerminated);
+      return static_cast<int32_t>(ProcessExitErr::InvalidProcess);
     }
     return static_cast<int32_t>(ProcessExitErr::UnknownErr);
 #endif
@@ -214,14 +213,36 @@ private:
 
 inline auto processStart(RefAllocator* alloc, const StringRef* cmdLineStr) -> ProcessRef* {
 #if defined(_WIN32)
-  char* cmdLineStrItr = cmdLineStr->getCharDataPtr();
-  // Skip starting whitespace, reason is to be more consistent with how we handle the input on unix.
-  for (;; ++cmdLineStrItr) {
-    switch (*cmdLineStrItr) {
+  // Make a local copy of the command-line string for preprocessing.
+  // Double the size as we need to escape characters.
+  char* localStr = static_cast<char*>(malloc(cmdLineStr->getSize() * 2));
+  memcpy(localStr, cmdLineStr->getCharDataPtr(), cmdLineStr->getSize() + 1); // +1 for null term.
+
+  char* cmdLineStrStart = nullptr;
+
+  // Preprocess the command-line string:
+  // * Remove starting whitespace.
+  // * Replace single quote by double quotes.
+  // * Escape double quotes by prefixing with a backslash.
+  for (char* itr = localStr;; ++itr) {
+    switch (*itr) {
+    case '\0':
+      break;
     case ' ':
     case '\t':
     case '\n':
     case '\r':
+      continue;
+    default:
+      if (*itr == '"') {
+        memmove(itr + 1, itr, strlen(itr) + 1);
+        *itr++ = '\\';
+      } else if (*itr == '\'') {
+        *itr = '"';
+      }
+      if (!cmdLineStrStart) {
+        cmdLineStrStart = itr;
+      }
       continue;
     }
     break;
@@ -257,7 +278,7 @@ inline auto processStart(RefAllocator* alloc, const StringRef* cmdLineStr) -> Pr
 
   bool success = CreateProcess(
       nullptr,
-      cmdLineStrItr,
+      cmdLineStrStart,
       nullptr,
       nullptr,
       true,
@@ -266,6 +287,7 @@ inline auto processStart(RefAllocator* alloc, const StringRef* cmdLineStr) -> Pr
       nullptr,
       &startupInfo,
       &processInfo);
+  free(localStr); // Free our local copy of the command-line string.
 
   // Close the child side of the pipes.
   CloseHandle(pipeStdIn[0], pipeStdOut[1], pipeStdErr[1]);
@@ -301,6 +323,9 @@ inline auto processStart(RefAllocator* alloc, const StringRef* cmdLineStr) -> Pr
     auto argV = std::vector<char*>{};
     for (bool wordStart = true, quoted = false; *itr; ++itr) {
       switch (*itr) {
+      case '\'':
+        quoted = !quoted;
+        [[fallthrough]];
       case ' ':
       case '\t':
       case '\n':
@@ -310,9 +335,6 @@ inline auto processStart(RefAllocator* alloc, const StringRef* cmdLineStr) -> Pr
           wordStart = true;
         }
         break;
-      case '\'':
-        quoted = !quoted;
-        [[fallthrough]];
       default:
         if (wordStart) {
           argV.push_back(itr);
