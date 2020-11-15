@@ -1,5 +1,6 @@
 #include "catch2/catch.hpp"
 #include "helpers.hpp"
+#include "input/search_paths.hpp"
 #include "novasm/pcall_code.hpp"
 #include "vm/exec_state.hpp"
 
@@ -39,6 +40,8 @@ namespace vm {
 
 TEST_CASE("Execute process platform-calls", "[vm]") {
 
+  auto novePath = (input::getExecutablePath().parent_path() / "nove").string();
+
   SECTION("Block waits until process is finished and produces the exitcode") {
     CHECK_PROG(
         [&](novasm::Assembler* asmb) -> void {
@@ -46,7 +49,7 @@ TEST_CASE("Execute process platform-calls", "[vm]") {
           asmb->setEntrypoint("entry");
 
           // Run a program that exits with code 0.
-          asmb->addLoadLitString("nove assert(true)");
+          asmb->addLoadLitString(novePath + " assert(true)");
           asmb->addPCall(novasm::PCallCode::ProcessStart);
           asmb->addPCall(novasm::PCallCode::ProcessBlock);
 
@@ -55,7 +58,7 @@ TEST_CASE("Execute process platform-calls", "[vm]") {
           ADD_PRINT(asmb);
 
           // Run a program that exits with code 1.
-          asmb->addLoadLitString("nove fail()");
+          asmb->addLoadLitString(novePath + " fail()");
           asmb->addPCall(novasm::PCallCode::ProcessStart);
           asmb->addPCall(novasm::PCallCode::ProcessBlock);
 
@@ -64,7 +67,7 @@ TEST_CASE("Execute process platform-calls", "[vm]") {
           ADD_PRINT(asmb);
 
           // Run a program that exits with code 7.
-          asmb->addLoadLitString("nove assert(false)");
+          asmb->addLoadLitString(novePath + " assert(false)");
           asmb->addPCall(novasm::PCallCode::ProcessStart);
           asmb->addPCall(novasm::PCallCode::ProcessBlock);
 
@@ -85,7 +88,7 @@ TEST_CASE("Execute process platform-calls", "[vm]") {
           asmb->setEntrypoint("entry");
 
           // Run a program that prints to stdOut.
-          asmb->addLoadLitString("nove 'print(\"Hello world\")'");
+          asmb->addLoadLitString(novePath + " 'print(\"Hello world\")'");
           asmb->addPCall(novasm::PCallCode::ProcessStart);
 
           asmb->addDup(); // Duplicate the process.
@@ -115,7 +118,7 @@ TEST_CASE("Execute process platform-calls", "[vm]") {
           asmb->setEntrypoint("entry");
 
           // Run a program that prints to stdErr.
-          asmb->addLoadLitString("nove 'printErr(\"Hello world\")'");
+          asmb->addLoadLitString(novePath + " 'printErr(\"Hello world\")'");
           asmb->addPCall(novasm::PCallCode::ProcessStart);
 
           asmb->addDup(); // Duplicate the process.
@@ -145,7 +148,7 @@ TEST_CASE("Execute process platform-calls", "[vm]") {
           asmb->setEntrypoint("entry");
 
           // Run a program that reads a line from stdIn and write to stdOut.
-          asmb->addLoadLitString("nove 'print(readLine())'");
+          asmb->addLoadLitString(novePath + " 'print(readLine())'");
           asmb->addPCall(novasm::PCallCode::ProcessStart);
           asmb->addDup(); // Duplicate the process.
           asmb->addDup(); // Duplicate the process.
@@ -177,7 +180,8 @@ TEST_CASE("Execute process platform-calls", "[vm]") {
           asmb->setEntrypoint("entry");
 
           // Run a program that prints the number of environment arguments.
-          asmb->addLoadLitString("nove 'print(getEnvArgCount())' a --b -ce hello 'hello world'");
+          asmb->addLoadLitString(
+              novePath + " 'print(getEnvArgCount())' a --b -ce hello 'hello world'");
           asmb->addPCall(novasm::PCallCode::ProcessStart);
 
           asmb->addDup(); // Duplicate the process.
@@ -189,7 +193,7 @@ TEST_CASE("Execute process platform-calls", "[vm]") {
 
           // Run a program that the argument after --test.
           asmb->addLoadLitString(
-              "nove 'print(getEnvOpt(\"test\"))' --something --test 'hello world' else");
+              novePath + " 'print(getEnvOpt(\"test\"))' --something --test 'hello world' else");
           asmb->addPCall(novasm::PCallCode::ProcessStart);
 
           asmb->addDup(); // Duplicate the process.
@@ -231,7 +235,7 @@ TEST_CASE("Execute process platform-calls", "[vm]") {
           asmb->label("entry");
           asmb->setEntrypoint("entry");
 
-          asmb->addLoadLitString(" \t \n \r nove 'print(\"Hello world\")'");
+          asmb->addLoadLitString(" \t \n \r " + novePath + " 'print(\"Hello world\")'");
           asmb->addPCall(novasm::PCallCode::ProcessStart);
           asmb->addPCall(novasm::PCallCode::ProcessBlock);
 
