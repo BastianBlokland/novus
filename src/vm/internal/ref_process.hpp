@@ -103,7 +103,7 @@ public:
   }
 
   [[nodiscard]] auto block() noexcept -> int32_t {
-    // A processes can only be awaited once, so if we are the first executor then we wait for the
+    // A process can only be awaited once, so if we are the first executor then we wait for the
     // process, otherwise we wait for the other executor to finish waiting.
     switch (m_state.load(std::memory_order_relaxed)) {
     case ProcessState::Finished:
@@ -234,11 +234,15 @@ inline auto processStart(RefAllocator* alloc, const StringRef* cmdLineStr) -> Pr
     case '\r':
       continue;
     default:
-      if (*itr == '"') {
+      if (itr[0] == '"') {
         memmove(itr + 1, itr, strlen(itr) + 1);
         *itr++ = '\\';
-      } else if (*itr == '\'') {
+      } else if (itr[0] == '\'') {
         *itr = '"';
+      } else if (itr[0] == '\\' && itr[1] == '\'') {
+        // Treat backslash-quote as a normal quote (remove the backslash).
+        memmove(itr, itr + 1, strlen(itr));
+        ++itr;
       }
       if (!cmdLineStrStart) {
         cmdLineStrStart = itr;
@@ -259,8 +263,8 @@ inline auto processStart(RefAllocator* alloc, const StringRef* cmdLineStr) -> Pr
       !CreatePipe(&pipeStdOut[0], &pipeStdOut[1], &saAttr, 0) ||      // Create stdOut pipe.
       !SetHandleInformation(pipeStdOut[0], HANDLE_FLAG_INHERIT, 0) || // Mark parentside noninherit.
       !CreatePipe(&pipeStdErr[0], &pipeStdErr[1], &saAttr, 0) ||      // Create stdErr pipe.
-      !SetHandleInformation(pipeStdErr[0], HANDLE_FLAG_INHERIT, 0)    // Mark parentside noninherit.
-  ) {
+      !SetHandleInformation(pipeStdErr[0], HANDLE_FLAG_INHERIT, 0))   // Mark parentside noninherit.
+  {
     // Failed to create all the pipes, close whichever child pipes where created.
     CloseHandle(pipeStdIn[0], pipeStdOut[1], pipeStdErr[1]);
     return alloc->allocPlain<ProcessRef>(
@@ -335,6 +339,13 @@ inline auto processStart(RefAllocator* alloc, const StringRef* cmdLineStr) -> Pr
           wordStart = true;
         }
         break;
+      case '\\':
+        if (itr[1] == '\'') {
+          // Treat backslash-quote as a normal quote (remove the backslash).
+          memmove(itr, itr + 1, strlen(itr));
+          ++itr;
+        }
+        [[fallthrough]];
       default:
         if (wordStart) {
           argV.push_back(itr);

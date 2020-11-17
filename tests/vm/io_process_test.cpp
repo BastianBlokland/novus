@@ -209,14 +209,51 @@ TEST_CASE("Execute process platform-calls", "[vm]") {
         "5" STR_NEWLINE "test[hello world,else]" STR_NEWLINE);
   }
 
-  SECTION("Starting a non-existing program returns in exitcode -1") {
+  SECTION("Starting a non-existing program results in exitcode -1") {
     CHECK_PROG(
         [&](novasm::Assembler* asmb) -> void {
           asmb->label("entry");
           asmb->setEntrypoint("entry");
 
-          // Try to start a non-existent program.
           asmb->addLoadLitString("non-existent arg1 arg2");
+          asmb->addPCall(novasm::PCallCode::ProcessStart);
+          asmb->addPCall(novasm::PCallCode::ProcessBlock);
+
+          // Print the exit-code.
+          asmb->addConvIntString();
+          ADD_PRINT(asmb);
+          asmb->addRet();
+        },
+        "input",
+        "-1");
+  }
+
+  SECTION("Empty cmd-line string results in exitcode -1") {
+    CHECK_PROG(
+        [&](novasm::Assembler* asmb) -> void {
+          asmb->label("entry");
+          asmb->setEntrypoint("entry");
+
+          asmb->addLoadLitString("");
+          asmb->addPCall(novasm::PCallCode::ProcessStart);
+          asmb->addPCall(novasm::PCallCode::ProcessBlock);
+
+          // Print the exit-code.
+          asmb->addConvIntString();
+          ADD_PRINT(asmb);
+          asmb->addRet();
+        },
+        "input",
+        "-1");
+  }
+
+  SECTION("Whitespace only cmd-line string results in exitcode -1") {
+    CHECK_PROG(
+        [&](novasm::Assembler* asmb) -> void {
+          asmb->label("entry");
+          asmb->setEntrypoint("entry");
+
+          asmb->addLoadLitString(" ");
           asmb->addPCall(novasm::PCallCode::ProcessStart);
           asmb->addPCall(novasm::PCallCode::ProcessBlock);
 
@@ -245,6 +282,48 @@ TEST_CASE("Execute process platform-calls", "[vm]") {
         },
         "input",
         "0");
+  }
+
+  SECTION("Single quoted string can be passed to process") {
+    CHECK_PROG(
+        [&](novasm::Assembler* asmb) -> void {
+          asmb->label("entry");
+          asmb->setEntrypoint("entry");
+
+          asmb->addLoadLitString(novePath + " 'print(\\'a\\')'");
+          asmb->addPCall(novasm::PCallCode::ProcessStart);
+          asmb->addPCall(novasm::PCallCode::ProcessBlock);
+
+          asmb->addConvIntString();
+          ADD_PRINT(asmb);
+          asmb->addRet();
+        },
+        "input",
+        "0");
+  }
+
+  SECTION("Newline can be passed to process") {
+    CHECK_PROG(
+        [&](novasm::Assembler* asmb) -> void {
+          asmb->label("entry");
+          asmb->setEntrypoint("entry");
+
+          // Run a program that prints to stdOut.
+          asmb->addLoadLitString(novePath + " 'print(\"Hello\\nworld\")'");
+          asmb->addPCall(novasm::PCallCode::ProcessStart);
+
+          asmb->addDup(); // Duplicate the process.
+          asmb->addPCall(novasm::PCallCode::ProcessBlock);
+          asmb->addPop(); // Ignore the exit code.
+
+          READ_STD_OUT(asmb);
+          ADD_PRINT(asmb);
+          asmb->addPop(); // Ignore the success / failure of print.
+
+          asmb->addRet();
+        },
+        "input",
+        "Hello" STR_NEWLINE "world" STR_NEWLINE);
   }
 }
 
