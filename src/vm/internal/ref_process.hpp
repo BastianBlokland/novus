@@ -70,6 +70,8 @@ public:
     if (isValid() && !isFinished()) {
       killImpl();
     }
+    // Wait for the process to stop, this prevents leaking zombie processes.
+    block();
     // Close any handles we have to the process.
 #if defined(_WIN32)
     if (m_process.hThread) {
@@ -102,7 +104,7 @@ public:
     return m_state.load(std::memory_order_acquire) == ProcessState::Finished;
   }
 
-  [[nodiscard]] auto block() noexcept -> int32_t {
+  auto block() noexcept -> int32_t {
     // A process can only be awaited once, so if we are the first executor then we wait for the
     // process, otherwise we wait for the other executor to finish waiting.
     switch (m_state.load(std::memory_order_relaxed)) {

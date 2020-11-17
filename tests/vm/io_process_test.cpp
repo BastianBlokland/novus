@@ -209,6 +209,22 @@ TEST_CASE("Execute process platform-calls", "[vm]") {
         "5" STR_NEWLINE "test[hello world,else]" STR_NEWLINE);
   }
 
+  SECTION("Zombie processes are killed when the vm exists") {
+    CHECK_PROG(
+        [&](novasm::Assembler* asmb) -> void {
+          asmb->label("entry");
+          asmb->setEntrypoint("entry");
+
+          asmb->addLoadLitString(novePath + " 'print(\"Hello world\")'");
+          asmb->addPCall(novasm::PCallCode::ProcessStart);
+
+          asmb->addPop();
+          asmb->addRet();
+        },
+        "input",
+        "");
+  }
+
   SECTION("Starting a non-existing program results in exitcode -1") {
     CHECK_PROG(
         [&](novasm::Assembler* asmb) -> void {
