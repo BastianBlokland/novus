@@ -209,6 +209,28 @@ TEST_CASE("Execute process platform-calls", "[vm]") {
         "5" STR_NEWLINE "test[hello world,else]" STR_NEWLINE);
   }
 
+  SECTION("Process id can be retrieved") {
+    CHECK_PROG(
+        [&](novasm::Assembler* asmb) -> void {
+          asmb->label("entry");
+          asmb->setEntrypoint("entry");
+
+          asmb->addLoadLitString(novePath + " 'print(\"Hello world\")'");
+          asmb->addPCall(novasm::PCallCode::ProcessStart);
+          asmb->addPCall(novasm::PCallCode::ProcessGetId);
+
+          asmb->addLoadLitLong(0);
+          asmb->addCheckGtLong();
+
+          asmb->addLoadLitString("Invalid process id");
+          asmb->addPCall(novasm::PCallCode::Assert);
+
+          asmb->addRet();
+        },
+        "input",
+        "");
+  }
+
   SECTION("Zombie processes are killed when the vm exists") {
     CHECK_PROG(
         [&](novasm::Assembler* asmb) -> void {

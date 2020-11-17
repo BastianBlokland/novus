@@ -38,6 +38,9 @@ auto operator<<(std::ostream& out, const PCallCode& rhs) noexcept -> std::ostrea
   case PCallCode::ProcessOpenStream:
     out << "process-open-stream";
     break;
+  case PCallCode::ProcessGetId:
+    out << "process-get-id";
+    break;
 
   case PCallCode::FileOpenStream:
     out << "file-open-stream";

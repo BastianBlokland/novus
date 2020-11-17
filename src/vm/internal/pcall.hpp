@@ -159,6 +159,10 @@ auto inline pcall(
     auto process    = getProcessRef(POP());
     PUSH_REF(openProcessStream(process, refAlloc, kind));
   } break;
+  case PCallCode::ProcessGetId: {
+    auto process = getProcessRef(POP());
+    PUSH_LONG(processGetId(process));
+  } break;
 
   case PCallCode::FileOpenStream: {
     auto options = POP_INT();

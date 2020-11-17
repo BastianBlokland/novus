@@ -96,6 +96,17 @@ public:
 #endif
   }
 
+  [[nodiscard]] auto getId() noexcept -> int64_t {
+    if (!isValid()) {
+      return -1ul;
+    }
+#if defined(_WIN32)
+    return m_process.dwProcessId;
+#else // !_WIN32
+    return m_process;
+#endif
+  }
+
   [[nodiscard]] auto getStdIn() const noexcept { return m_stdIn; }
   [[nodiscard]] auto getStdOut() const noexcept { return m_stdOut; }
   [[nodiscard]] auto getStdErr() const noexcept { return m_stdErr; }
@@ -382,6 +393,11 @@ inline auto processBlock(ProcessRef* process) {
     return static_cast<int32_t>(ProcessExitErr::InvalidProcess);
   }
   return process->block();
+}
+
+inline auto processGetId(ProcessRef* process) {
+  assert(process);
+  return process->getId();
 }
 
 inline auto getProcessRef(const Value& val) noexcept { return val.getDowncastRef<ProcessRef>(); }

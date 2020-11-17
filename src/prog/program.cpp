@@ -268,13 +268,15 @@ Program::Program() :
   m_funcDecls.registerAction(
       *this, Fk::ActionProcessStart, "processStart", sym::TypeSet{m_string}, m_process);
   m_funcDecls.registerAction(
-      *this, Fk::ActionProcessBlock, "block", sym::TypeSet{m_process}, m_int);
+      *this, Fk::ActionProcessBlock, "processBlock", sym::TypeSet{m_process}, m_int);
   m_funcDecls.registerAction(
       *this,
       Fk::ActionProcessOpenStream,
       "processOpenStream",
       sym::TypeSet{m_process, m_int},
       m_stream);
+  m_funcDecls.registerAction(
+      *this, Fk::ActionProcessGetId, "processGetId", sym::TypeSet{m_process}, m_long);
 
   m_funcDecls.registerAction(
       *this, Fk::ActionFileOpenStream, "fileOpenStream", sym::TypeSet{m_string, m_int}, m_stream);
