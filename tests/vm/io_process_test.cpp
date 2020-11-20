@@ -247,6 +247,75 @@ TEST_CASE("Execute process platform-calls", "[vm]") {
         "");
   }
 
+  SECTION("Process can finish on its own without blocking on it") {
+    CHECK_PROG(
+        [&](novasm::Assembler* asmb) -> void {
+          asmb->label("entry");
+          asmb->setEntrypoint("entry");
+
+          asmb->addLoadLitString(novePath + " 'print(\"Hello world\")'");
+          asmb->addPCall(novasm::PCallCode::ProcessStart);
+
+          // Sleep for 1 second to give the child-process time to finish.
+          asmb->addLoadLitLong(1'000'000'000);
+          asmb->addPCall(novasm::PCallCode::SleepNano);
+
+          asmb->addRet();
+        },
+        "input",
+        "");
+  }
+
+  SECTION("Process can be waited on concurrently") {
+    CHECK_PROG(
+        [&](novasm::Assembler* asmb) -> void {
+          constexpr uint8_t numForks = 15u;
+
+          asmb->setEntrypoint("entry");
+          // --- Main function start.
+          asmb->label("entry");
+          asmb->addStackAlloc(2 + numForks); // Reserve stack space:
+          // Stack var 0:                     process.
+          // Stack var 1:                     loop counter integer.
+          // Stack var 2 - ( numForks + 2 ):  future handles to the forked workers.
+
+          // Start a process and save it in a variable.
+          asmb->addLoadLitString(novePath + " 'print(\"Hello world\")'");
+          asmb->addPCall(novasm::PCallCode::ProcessStart);
+          asmb->addStackStore(0);
+
+          // Start multiple workers functions as forks that block on the process completion.
+          for (auto i = 0u; i != numForks; ++i) {
+            asmb->addStackLoad(0); // Pass the process to the worker.
+            asmb->addCall("worker", 1, novasm::CallMode::Forked);
+            asmb->addStackStore(2u + i); // Store the future to the fork on the stack.
+          }
+
+          // Wait for all workers to complete and assert the result.
+          for (auto i = 0u; i != numForks; ++i) {
+            asmb->addStackLoad(2u + i); // Load the future from the stack.
+            asmb->addFutureBlock();
+
+            // Assert that the exitcode is zero.
+            asmb->addLoadLitInt(0);
+            asmb->addCheckEqInt();
+            asmb->addLoadLitString("Unexpected exitcode");
+            asmb->addPCall(novasm::PCallCode::Assert);
+          }
+          asmb->addRet();
+          // --- Main function end.
+
+          // --- Worker function start (takes one process arg and returns the exitcode).
+          asmb->label("worker");
+          asmb->addStackLoad(0); // Load arg 0.
+          asmb->addPCall(novasm::PCallCode::ProcessBlock);
+          asmb->addRet();
+          // --- Worker function end.
+        },
+        "input",
+        "");
+  }
+
   SECTION("Starting a non-existing program results in exitcode -1") {
     CHECK_PROG(
         [&](novasm::Assembler* asmb) -> void {
