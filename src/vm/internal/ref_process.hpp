@@ -42,7 +42,7 @@ template <typename... Handles>
 auto CloseHandle(Handles... handles) {
   (::CloseHandle(handles), ...);
 }
-#else  // !_WIN32
+#else // !_WIN32
 template <typename... Descriptors>
 auto close(Descriptors... descriptors) {
   (::close(descriptors), ...);
@@ -69,9 +69,9 @@ public:
     // Kill the process (if its still running).
     if (isValid() && !isFinished()) {
       killImpl();
+      // Wait for the process to stop, this prevents leaking zombie processes.
+      block();
     }
-    // Wait for the process to stop, this prevents leaking zombie processes.
-    block();
     // Close any handles we have to the process.
 #if defined(_WIN32)
     if (m_process.hThread) {
@@ -192,7 +192,7 @@ private:
 #if defined(_WIN32)
     TerminateProcess(m_process.hProcess, static_cast<UINT>(ProcessExitErr::InvalidProcess));
 #else // !_WIN32
-    ::kill(m_process, SIGTERM);
+    ::kill(m_process, SIGKILL);
 #endif
   }
 
