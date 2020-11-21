@@ -111,11 +111,17 @@ private:
 };
 
 auto inlineCalls(const prog::Program& prog) -> prog::Program {
+  auto modified = false;
+  return inlineCalls(prog, modified);
+}
+
+auto inlineCalls(const prog::Program& prog, bool& modified) -> prog::Program {
   return internal::rewrite(
       prog,
       [](const prog::Program& prog, prog::sym::FuncId funcId, prog::sym::ConstDeclTable* consts) {
         return std::make_unique<CallInlineRewriter>(prog, funcId, consts);
-      });
+      },
+      modified);
 }
 
 } // namespace opt
