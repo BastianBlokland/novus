@@ -46,7 +46,7 @@ template <typename... Handles>
 auto CloseHandle(Handles... handles) {
   (::CloseHandle(handles), ...);
 }
-#else // !_WIN32
+#else  // !_WIN32
 template <typename... Descriptors>
 auto close(Descriptors... descriptors) {
   (::close(descriptors), ...);
@@ -344,6 +344,14 @@ inline auto processStart(RefAllocator* alloc, const StringRef* cmdLineStr) -> Pr
   switch (childPid) {
   case 0: {
     // Executed on child process:
+
+    // Create a new session for the child process.
+    auto sid = setsid();
+    if (unlikely(sid == -1)) {
+      std::fprintf(stderr, "Failed to create a new session");
+      std::fflush(stderr);
+      std::abort();
+    }
 
     // Close the parent side of the pipes.
     close(pipeStdIn[1], pipeStdOut[0], pipeStdErr[0]);
