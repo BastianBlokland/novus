@@ -49,6 +49,8 @@ public:
   [[nodiscard]] auto lookup(const std::string& name) const -> std::optional<ConstId>;
 
   [[nodiscard]] auto getOffset(ConstId id) const -> unsigned int;
+  [[nodiscard]] auto getHighestConstId() const -> ConstId;
+  [[nodiscard]] auto getNextConstId() const noexcept -> ConstId;
 
   auto registerBound(TypeId type) -> ConstId;
   auto registerInput(std::string name, TypeId type) -> ConstId;

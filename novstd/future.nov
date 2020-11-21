@@ -21,6 +21,6 @@ act getUntilInterupt{T}(future{T} f)
 
 // -- Tests
 
-assert(get(fork (lambda () 42)(), second()) == 42)
-assert(get(fork (lambda () 42)(), lambda () true) == 42)
-assert(get(fork (lambda () 42)(), lambda () false) == none())
+assert(get(fork invoke(lambda () 42), second()) == 42)
+assert(get(fork invoke(lambda () 42), lambda () true) == 42)
+assert(get(fork invoke(lambda () 42), lambda () false) == none())

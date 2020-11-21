@@ -11,6 +11,7 @@ auto treeshake(const prog::Program& prog) -> prog::Program;
 
 // Inline function bodies into the callsites.
 auto inlineCalls(const prog::Program& prog) -> prog::Program;
+auto inlineCalls(const prog::Program& prog, bool& modified) -> prog::Program;
 
 // Remove unneeded constants.
 // * Unused constants are removed.

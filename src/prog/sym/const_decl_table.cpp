@@ -67,6 +67,23 @@ auto ConstDeclTable::getOffset(ConstId id) const -> unsigned int {
       begin();
 }
 
+auto ConstDeclTable::getHighestConstId() const -> ConstId {
+  if (m_consts.empty()) {
+    throw std::logic_error{"No constants have been registered to this table"};
+  }
+  auto highestKey = std::max_element(
+      m_consts.begin(),
+      m_consts.end(),
+      [](const prog::sym::ConstDecl& a, const prog::sym::ConstDecl& b) {
+        return a.getId() < b.getId();
+      });
+  return highestKey->getId();
+}
+
+auto ConstDeclTable::getNextConstId() const noexcept -> ConstId {
+  return m_consts.empty() ? ConstId{0} : ConstId{getHighestConstId().m_id + 1};
+}
+
 auto ConstDeclTable::registerBound(TypeId type) -> ConstId {
   std::ostringstream oss;
   oss << "__bound_" << m_consts.size();
@@ -86,14 +103,7 @@ auto ConstDeclTable::registerConst(ConstKind kind, std::string name, TypeId type
     throw std::invalid_argument{"Name has to contain aleast 1 char"};
   }
 
-  // Assign an id one higher then the current highest, starting from 0.
-  auto highestKey = std::max_element(
-      m_consts.begin(),
-      m_consts.end(),
-      [](const prog::sym::ConstDecl& a, const prog::sym::ConstDecl& b) {
-        return a.getId() < b.getId();
-      });
-  const auto id = ConstId{highestKey == m_consts.end() ? 0 : highestKey->getId().m_id + 1};
+  const auto id = getNextConstId();
 
   if (m_lookup.insert({name, id}).second) {
     // Keep entries in m_consts sorted by kind.

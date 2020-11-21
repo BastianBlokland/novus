@@ -1,3 +1,5 @@
+import "func.nov"
+
 // -- Types
 
 union Option{T} = T, None
@@ -47,8 +49,8 @@ assert(Option{int}() == Option{int}())
 assert(Option{int}() ?? 42 == 42)
 assert(Option(1337) ?? 42 == 1337)
 
-assert(Option{int}() ?? lazy (lambda () 42)() == 42)
-assert(Option(1337) ?? lazy (lambda () 42)() == 1337)
+assert(Option{int}() ?? lazy invoke(lambda () 42) == 42)
+assert(Option(1337) ?? lazy invoke(lambda () 42) == 1337)
 
 assert(Option(42).string() == "42")
 assert(Option{int}().string() == "none")
