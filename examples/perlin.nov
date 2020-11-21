@@ -48,7 +48,7 @@ act draw(I2 pos, sys_stream out, Settings s, Duration t)
   out.streamFlush()
 
 act loop(sys_stream in, sys_stream out, Settings s, Timestamp begin, int frame)
-  if in.readToEnd().length() != 0 || isInteruptRequested() -> false
+  if in.readToEnd().length() != 0 || interuptIsRequested() -> false
   else ->
     now     = timestamp();
     elapsed = now - begin;

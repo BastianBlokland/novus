@@ -2,8 +2,10 @@
 
 namespace vm::internal {
 
-auto setupInterruptHandler() noexcept -> bool;
+auto interruptSetupHandler() noexcept -> bool;
 
-[[nodiscard]] auto isInterruptRequested() noexcept -> bool;
+[[nodiscard]] auto interuptIsRequested() noexcept -> bool;
+
+[[nodiscard]] auto interuptResetRequested() noexcept -> bool;
 
 } // namespace vm::internal

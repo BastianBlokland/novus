@@ -544,8 +544,11 @@ auto GenExpr::visit(const prog::expr::CallExprNode& n) -> void {
   case prog::sym::FuncKind::ActionGetEnvVar:
     m_asmb->addPCall(novasm::PCallCode::GetEnvVar);
     break;
-  case prog::sym::FuncKind::ActionIsInteruptReq:
-    m_asmb->addPCall(novasm::PCallCode::IsInteruptReq);
+  case prog::sym::FuncKind::ActionInteruptIsReq:
+    m_asmb->addPCall(novasm::PCallCode::InteruptIsReq);
+    break;
+  case prog::sym::FuncKind::ActionInteruptResetReq:
+    m_asmb->addPCall(novasm::PCallCode::InteruptResetReq);
     break;
 
   case prog::sym::FuncKind::ActionClockMicroSinceEpoch:
@@ -755,7 +758,7 @@ auto GenExpr::visit(const prog::expr::UnionGetExprNode& n) -> void {
   m_asmb->label(endLabel);
 }
 
-auto GenExpr::visit(const prog::expr::FailNode & /*unused*/) -> void { m_asmb->addFail(); }
+auto GenExpr::visit(const prog::expr::FailNode& /*unused*/) -> void { m_asmb->addFail(); }
 
 auto GenExpr::visit(const prog::expr::LitBoolNode& n) -> void {
   m_asmb->addLoadLitInt(n.getVal() ? 1U : 0U);

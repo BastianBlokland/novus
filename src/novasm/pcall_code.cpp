@@ -75,8 +75,11 @@ auto operator<<(std::ostream& out, const PCallCode& rhs) noexcept -> std::ostrea
   case PCallCode::GetEnvVar:
     out << "get-env-var";
     break;
-  case PCallCode::IsInteruptReq:
-    out << "is-interupt-req";
+  case PCallCode::InteruptIsReq:
+    out << "interupt-is-req";
+    break;
+  case PCallCode::InteruptResetReq:
+    out << "interupt-reset-req";
     break;
 
   case PCallCode::ClockMicroSinceEpoch:

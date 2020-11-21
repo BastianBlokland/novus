@@ -7,8 +7,13 @@ namespace vm::internal {
 
 static std::atomic_bool g_interruptRequested = false;
 
-auto isInterruptRequested() noexcept -> bool {
+auto interuptIsRequested() noexcept -> bool {
   return g_interruptRequested.load(std::memory_order_acquire);
+}
+
+auto interuptResetRequested() noexcept -> bool {
+  g_interruptRequested.store(false, std::memory_order_release);
+  return true; // Atm this cannot fail.
 }
 
 #if defined(_WIN32)
@@ -16,8 +21,9 @@ auto isInterruptRequested() noexcept -> bool {
 auto interruptHandler(DWORD dwCtrlType) noexcept -> int {
   switch (dwCtrlType) {
   case CTRL_C_EVENT:
+    // NOTE: We are treating 'BREAK' also as an interupt because in win32 'CTRL_C' (aka interupt),
+    // is pretty weird and cannot for example be send to other processes.
   case CTRL_BREAK_EVENT:
-  case CTRL_CLOSE_EVENT:
     g_interruptRequested.store(true, std::memory_order_release);
     return true; // Indicate that we have handled the event.
   default:
@@ -25,7 +31,7 @@ auto interruptHandler(DWORD dwCtrlType) noexcept -> int {
   }
 }
 
-auto setupInterruptHandler() noexcept -> bool {
+auto interruptSetupHandler() noexcept -> bool {
   return SetConsoleCtrlHandler(interruptHandler, true);
 }
 
@@ -35,7 +41,7 @@ auto interruptHandler(int /*unused*/) noexcept -> void {
   g_interruptRequested.store(true, std::memory_order_release);
 }
 
-auto setupInterruptHandler() noexcept -> bool {
+auto interruptSetupHandler() noexcept -> bool {
 
   struct sigaction actionInfo = {};
   actionInfo.sa_handler       = interruptHandler;
