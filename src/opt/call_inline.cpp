@@ -94,7 +94,7 @@ public:
       const auto& tgtConstDecl = tgtConsts[tgtConstId];
 
       std::ostringstream oss;
-      oss << "__inlined_" << m_consts->getCount() << '_' << tgtConstDecl.getName();
+      oss << "__inlined_" << m_consts->getNextConstId().getNum() << '_' << tgtConstDecl.getName();
 
       auto remappedConstId = m_consts->registerLocal(oss.str(), tgtConstDecl.getType());
 
@@ -111,11 +111,17 @@ private:
 };
 
 auto inlineCalls(const prog::Program& prog) -> prog::Program {
+  auto modified = false;
+  return inlineCalls(prog, modified);
+}
+
+auto inlineCalls(const prog::Program& prog, bool& modified) -> prog::Program {
   return internal::rewrite(
       prog,
       [](const prog::Program& prog, prog::sym::FuncId funcId, prog::sym::ConstDeclTable* consts) {
         return std::make_unique<CallInlineRewriter>(prog, funcId, consts);
-      });
+      },
+      modified);
 }
 
 } // namespace opt

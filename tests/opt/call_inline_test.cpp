@@ -20,22 +20,22 @@ TEST_CASE("Call inline", "[opt]") {
     auto inlinedProg = inlineCalls(output.getProg());
 
     // Verify that 'funcB' was inlined into 'funcA' as expected.
-    auto funcBId = inlinedProg.lookupFunc("funcA", prog::sym::TypeSet{}, prog::OvOptions{});
-    REQUIRE(funcBId);
+    auto funcAId = inlinedProg.lookupFunc("funcA", prog::sym::TypeSet{}, prog::OvOptions{});
+    REQUIRE(funcAId);
 
-    const auto& inlBDef = inlinedProg.getFuncDef(*funcBId);
-    auto inlBExprs      = std::vector<prog::expr::NodePtr>{};
+    const auto& inlADef = inlinedProg.getFuncDef(*funcAId);
+    auto inlAExprs      = std::vector<prog::expr::NodePtr>{};
 
-    inlBExprs.push_back(prog::expr::assignExprNode(
-        inlBDef.getConsts(),
-        *inlBDef.getConsts().lookup("__inlined_0_i"),
+    inlAExprs.push_back(prog::expr::assignExprNode(
+        inlADef.getConsts(),
+        *inlADef.getConsts().lookup("__inlined_0_i"),
         prog::expr::litIntNode(inlinedProg, 42))); // NOLINT: Magic numbers
 
-    inlBExprs.push_back(prog::expr::constExprNode(
-        inlBDef.getConsts(), *inlBDef.getConsts().lookup("__inlined_0_i")));
-    auto inlBGroupExpr = prog::expr::groupExprNode(std::move(inlBExprs));
+    inlAExprs.push_back(prog::expr::constExprNode(
+        inlADef.getConsts(), *inlADef.getConsts().lookup("__inlined_0_i")));
+    auto inlAGroupExpr = prog::expr::groupExprNode(std::move(inlAExprs));
 
-    CHECK(inlBDef.getExpr() == *inlBGroupExpr);
+    CHECK(inlADef.getExpr() == *inlAGroupExpr);
   }
 
   SECTION("Inline nested call") {
@@ -48,22 +48,22 @@ TEST_CASE("Call inline", "[opt]") {
     auto inlinedProg = inlineCalls(output.getProg());
 
     // Verify that 'funcB' and 'funcC' was inlined into 'funcA' as expected.
-    auto funcBId = inlinedProg.lookupFunc("funcA", prog::sym::TypeSet{}, prog::OvOptions{});
-    REQUIRE(funcBId);
+    auto funcAId = inlinedProg.lookupFunc("funcA", prog::sym::TypeSet{}, prog::OvOptions{});
+    REQUIRE(funcAId);
 
-    const auto& inlBDef = inlinedProg.getFuncDef(*funcBId);
-    auto inlBExprs      = std::vector<prog::expr::NodePtr>{};
+    const auto& inlADef = inlinedProg.getFuncDef(*funcAId);
+    auto inlAExprs      = std::vector<prog::expr::NodePtr>{};
 
-    inlBExprs.push_back(prog::expr::assignExprNode(
-        inlBDef.getConsts(),
-        *inlBDef.getConsts().lookup("__inlined_0_i"),
+    inlAExprs.push_back(prog::expr::assignExprNode(
+        inlADef.getConsts(),
+        *inlADef.getConsts().lookup("__inlined_0_i"),
         prog::expr::litIntNode(inlinedProg, 42))); // NOLINT: Magic numbers
 
-    inlBExprs.push_back(prog::expr::constExprNode(
-        inlBDef.getConsts(), *inlBDef.getConsts().lookup("__inlined_0_i")));
-    auto inlBGroupExpr = prog::expr::groupExprNode(std::move(inlBExprs));
+    inlAExprs.push_back(prog::expr::constExprNode(
+        inlADef.getConsts(), *inlADef.getConsts().lookup("__inlined_0_i")));
+    auto inlAGroupExpr = prog::expr::groupExprNode(std::move(inlAExprs));
 
-    CHECK(inlBDef.getExpr() == *inlBGroupExpr);
+    CHECK(inlADef.getExpr() == *inlAGroupExpr);
   }
 
   SECTION("Inline nested call in arg") {
@@ -76,22 +76,22 @@ TEST_CASE("Call inline", "[opt]") {
     auto inlinedProg = inlineCalls(output.getProg());
 
     // Verify that 'funcB' and 'funcC' was inlined into 'funcA' as expected.
-    auto funcBId = inlinedProg.lookupFunc("funcA", prog::sym::TypeSet{}, prog::OvOptions{});
-    REQUIRE(funcBId);
+    auto funcAId = inlinedProg.lookupFunc("funcA", prog::sym::TypeSet{}, prog::OvOptions{});
+    REQUIRE(funcAId);
 
-    const auto& inlBDef = inlinedProg.getFuncDef(*funcBId);
-    auto inlBExprs      = std::vector<prog::expr::NodePtr>{};
+    const auto& inlADef = inlinedProg.getFuncDef(*funcAId);
+    auto inlAExprs      = std::vector<prog::expr::NodePtr>{};
 
-    inlBExprs.push_back(prog::expr::assignExprNode(
-        inlBDef.getConsts(),
-        *inlBDef.getConsts().lookup("__inlined_0_i"),
+    inlAExprs.push_back(prog::expr::assignExprNode(
+        inlADef.getConsts(),
+        *inlADef.getConsts().lookup("__inlined_0_i"),
         prog::expr::litIntNode(inlinedProg, 42))); // NOLINT: Magic numbers
 
-    inlBExprs.push_back(prog::expr::constExprNode(
-        inlBDef.getConsts(), *inlBDef.getConsts().lookup("__inlined_0_i")));
-    auto inlBGroupExpr = prog::expr::groupExprNode(std::move(inlBExprs));
+    inlAExprs.push_back(prog::expr::constExprNode(
+        inlADef.getConsts(), *inlADef.getConsts().lookup("__inlined_0_i")));
+    auto inlAGroupExpr = prog::expr::groupExprNode(std::move(inlAExprs));
 
-    CHECK(inlBDef.getExpr() == *inlBGroupExpr);
+    CHECK(inlADef.getExpr() == *inlAGroupExpr);
   }
 }
 

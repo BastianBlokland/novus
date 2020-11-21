@@ -143,6 +143,38 @@ fun invert{T1, T2, T3}(function{T1, T2, T3, bool} pred)
 fun invert{T1, T2, T3, T4}(function{T1, T2, T3, T4, bool} pred)
   lambda (T1 a1, T2 a2, T3 a3, T4 a4) !pred(a1, a2, a3, a4)
 
+fun invoke{TR}(function{TR} func)
+  func()
+
+fun invoke{T1, TR}(function{T1, TR} func, T1 a1)
+  func(a1)
+
+fun invoke{T1, T2, TR}(function{T1, T2, TR} func, T1 a1, T2 a2)
+  func(a1, a2)
+
+fun invoke{T1, T2, T3, TR}(function{T1, T2, T3, TR} func, T1 a1, T2 a2, T3 a3)
+  func(a1, a2, a3)
+
+fun invoke{T1, T2, T3, T4, TR}(function{T1, T2, T3, T4, TR} func, T1 a1, T2 a2, T3 a3, T4 a4)
+  func(a1, a2, a3, a4)
+
+// -- Actions
+
+act invoke{TR}(action{TR} func)
+  func()
+
+act invoke{T1, TR}(action{T1, TR} func, T1 a1)
+  func(a1)
+
+act invoke{T1, T2, TR}(action{T1, T2, TR} func, T1 a1, T2 a2)
+  func(a1, a2)
+
+act invoke{T1, T2, T3, TR}(action{T1, T2, T3, TR} func, T1 a1, T2 a2, T3 a3)
+  func(a1, a2, a3)
+
+act invoke{T1, T2, T3, T4, TR}(action{T1, T2, T3, T4, TR} func, T1 a1, T2 a2, T3 a3, T4 a4)
+  func(a1, a2, a3, a4)
+
 // -- Tests
 
 assert(equals(1, 1) && !equals(1, 2))
@@ -284,6 +316,20 @@ assert(
   notEq = !eq;
   notEq(42, 42, 42, 1337) && !notEq(42, 42, 42, 42))
 
+assert(invoke(lambda() 42 + 1337) == 42 + 1337)
+
+assert(invoke(lambda(int x) 42 + x, 1337) == 42 + 1337)
+
+assert(invoke(lambda(int x, float y) string(x) + string(y), 1337, 42.42) == "133742.42")
+
+assert(
+  invoke(lambda(int x, float y, string z) string(x) + " " + string(y) + " " + z,
+    1337, 42.42, "hello world") == "1337 42.42 hello world")
+
+assert(
+  invoke(lambda(int x, float y, string z, long w) string(x) + " " + string(y) + " " + z + " " + string(w),
+    1337, 42.42, "hello world", -4242L) == "1337 42.42 hello world -4242")
+
 // -- Impure tests
 
 assert(
@@ -305,3 +351,17 @@ assert(
   actSum = (impure lambda (int a, int b, int c, int d) a + b + c + d);
   sumPlus42 = actSum[42];
   sumPlus42(1, 2, 3) == actSum(1, 2, 3, 42))
+
+assert(invoke(impure lambda() 42 + 1337) == 42 + 1337)
+
+assert(invoke(impure lambda(int x) 42 + x, 1337) == 42 + 1337)
+
+assert(invoke(impure lambda(int x, float y) string(x) + string(y), 1337, 42.42) == "133742.42")
+
+assert(
+  invoke(impure lambda(int x, float y, string z) string(x) + " " + string(y) + " " + z,
+    1337, 42.42, "hello world") == "1337 42.42 hello world")
+
+assert(
+  invoke(impure lambda(int x, float y, string z, long w) string(x) + " " + string(y) + " " + z + " " + string(w),
+    1337, 42.42, "hello world", -4242L) == "1337 42.42 hello world -4242")
