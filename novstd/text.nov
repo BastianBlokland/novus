@@ -78,52 +78,52 @@ fun startsWith(string str, string subStr)
   startsWithOffset(str, 0, subStr)
 
 fun startsWithOffset(string str, int idx, string subStr)
-  (
+  invoke(
     lambda (int subStrIdx)
       if subStrIdx >= subStr.length()               -> true
       if subStrIdx >= str.length()                  -> false
       if str[idx + subStrIdx] != subStr[subStrIdx]  -> false
       else                                          -> self(++subStrIdx)
-  )(0)
+  , 0)
 
 fun endsWith(string str, string subStr)
-  (
+  invoke(
     lambda (int revIdx)
       if revIdx >= subStr.length()                                          -> true
       if revIdx >= str.length()                                             -> false
       if str[--str.length() - revIdx] != subStr[--subStr.length() - revIdx] -> false
       else                                                                  -> self(++revIdx)
-  )(0)
+  , 0)
 
 fun any(string str, function{char, bool} pred)
-  (
+  invoke(
     lambda (int idx)
       if idx >= str.length()  -> false
       else                    -> pred(str[idx]) || self(++idx)
-  )(0)
+  , 0)
 
 fun all(string str, function{char, bool} pred)
-  (
+  invoke(
     lambda (int idx)
       if idx >= str.length()  -> true
       else                    -> pred(str[idx]) && self(++idx)
-  )(0)
+  , 0)
 
 fun none(string str, function{char, bool} pred)
-  (
+  invoke(
     lambda (int idx)
       if idx >= str.length()  -> true
       else                    -> !pred(str[idx]) && self(++idx)
-  )(0)
+  , 0)
 
 fun replace(string str, string old, string new)
-  (
+  invoke(
     lambda (string str, int startIdx)
       idx = str.indexOf(startIdx, old, 0);
       if idx < 0  ->  str
       else        ->  newStr = str[0, idx] + new + str[idx + old.length(), str.length()];
                       self(newStr, idx + new.length())
-  )(str, 0)
+  , str, 0)
 
 fun insert(string str, int idx, string val)
   if idx == 0             -> val + str
@@ -135,30 +135,30 @@ fun padLeft(string str, int length, char c)
   else                      -> str
 
 fun fold{T}(string str, function{T, char, T} func)
-  (
+  invoke(
     lambda (int idx, T result)
       idx >= str.length() ? result : self(++idx, func(result, str[idx]))
-  )(0, T())
+  , 0, T())
 
 fun transform(string str, function{char, string} func)
   str.fold(lambda (string res, char c) res + func(c))
 
 fun split(string str, function{char, bool} pred)
-  (
+  invoke(
     lambda (int startIdx, int endIdx, List{string} result)
       if startIdx < 0         -> startIdx == endIdx ? result : str[startIdx, ++endIdx] :: result
       if pred(str[startIdx])  -> startIdx == endIdx ?
         self(--startIdx, --endIdx, result) :
         self(--startIdx, --startIdx, str[++startIdx, ++endIdx] :: result)
       else                    -> self(--startIdx, endIdx, result)
-  )(--str.length(), --str.length(), List{string}())
+  , --str.length(), --str.length(), List{string}())
 
 fun toChars(string str)
-  (
+  invoke(
     lambda (int idx, List{char} result)
       if idx < 0  -> result
       else        -> self(--idx, str[idx] :: result)
-  )(--str.length(), List{char}())
+  , --str.length(), List{char}())
 
 fun join(List{string} l)
   l.sum()

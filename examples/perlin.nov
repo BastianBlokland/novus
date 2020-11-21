@@ -79,13 +79,13 @@ act forBox(Box box, action{I2, bool} a, int itr, int numItrs)
   yOffset = itr % numItrs;
   xMax    = box.max().x;
   yMax    = box.max().y;
-  for = ( impure lambda (int x, int y)
+  invoke( impure lambda (int x, int y)
     if y >= yMax  -> true
     if x >= xMax  -> self(0, y + numItrs)
     else ->
       if !a(I2(x, y)) -> false
       else            -> self(++x, y)
-  ); for(box.min().x, box.min().y + yOffset)
+    , box.min().x, box.min().y + yOffset)
 
 // --- Entry point
 
