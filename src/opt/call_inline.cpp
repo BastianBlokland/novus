@@ -94,7 +94,7 @@ public:
       const auto& tgtConstDecl = tgtConsts[tgtConstId];
 
       std::ostringstream oss;
-      oss << "__inlined_" << m_consts->getCount() << '_' << tgtConstDecl.getName();
+      oss << "__inlined_" << m_consts->getNextConstId().getNum() << '_' << tgtConstDecl.getName();
 
       auto remappedConstId = m_consts->registerLocal(oss.str(), tgtConstDecl.getType());
 
