@@ -44,7 +44,7 @@ static auto setup(internal::Settings* settings) noexcept {
   enableVTConsoleMode();
 
   if (settings->interceptInterupt) {
-    settings->interceptInterupt = internal::setupInterruptHandler();
+    settings->interceptInterupt = internal::interruptSetupHandler();
   }
 }
 

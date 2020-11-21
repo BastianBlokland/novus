@@ -21,8 +21,9 @@ auto interuptResetRequested() noexcept -> bool {
 auto interruptHandler(DWORD dwCtrlType) noexcept -> int {
   switch (dwCtrlType) {
   case CTRL_C_EVENT:
+    // NOTE: We are treating 'BREAK' also as an interupt because in win32 'CTRL_C' (aka interupt),
+    // is pretty weird and cannot for example be send to other processes.
   case CTRL_BREAK_EVENT:
-  case CTRL_CLOSE_EVENT:
     g_interruptRequested.store(true, std::memory_order_release);
     return true; // Indicate that we have handled the event.
   default:
