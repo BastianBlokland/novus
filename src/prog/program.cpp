@@ -277,6 +277,12 @@ Program::Program() :
       m_stream);
   m_funcDecls.registerAction(
       *this, Fk::ActionProcessGetId, "processGetId", sym::TypeSet{m_process}, m_long);
+  m_funcDecls.registerAction(
+      *this,
+      Fk::ActionProcessSendSignal,
+      "processSendSignal",
+      sym::TypeSet{m_process, m_int},
+      m_bool);
 
   m_funcDecls.registerAction(
       *this, Fk::ActionFileOpenStream, "fileOpenStream", sym::TypeSet{m_string, m_int}, m_stream);

@@ -163,6 +163,11 @@ auto inline pcall(
     auto process = getProcessRef(POP());
     PUSH_LONG(processGetId(process));
   } break;
+  case PCallCode::ProcessSendSignal: {
+    const auto kind = static_cast<ProcessSignalKind>(POP_INT());
+    auto process    = getProcessRef(POP());
+    PUSH_BOOL(processSendSignal(process, kind));
+  } break;
 
   case PCallCode::FileOpenStream: {
     auto options = POP_INT();

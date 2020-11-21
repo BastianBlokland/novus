@@ -41,6 +41,9 @@ auto operator<<(std::ostream& out, const PCallCode& rhs) noexcept -> std::ostrea
   case PCallCode::ProcessGetId:
     out << "process-get-id";
     break;
+  case PCallCode::ProcessSendSignal:
+    out << "process-send-signal";
+    break;
 
   case PCallCode::FileOpenStream:
     out << "file-open-stream";

@@ -432,6 +432,49 @@ TEST_CASE("Execute process platform-calls", "[vm]") {
         "input",
         "Hello" STR_NEWLINE "world" STR_NEWLINE);
   }
+
+  SECTION("Interupt signal can be send to process") {
+    CHECK_PROG(
+        [&](novasm::Assembler* asmb) -> void {
+          asmb->label("entry");
+          asmb->setEntrypoint("entry");
+
+          // Run a program that waits until its interupted.
+          asmb->addLoadLitString(
+              novePath +
+              " 'print(invoke( "
+              "   impure lambda() "
+              "     if interuptIsRequested() -> \"Received interupt\" "
+              "     else -> sleep(millisecond()); self() ))'");
+          asmb->addPCall(novasm::PCallCode::ProcessStart);
+          asmb->addDup(); // Duplicate the process.
+          asmb->addDup(); // Duplicate the process.
+
+          // Wait for 1s to give the process time to start.
+          asmb->addLoadLitLong(1'000'000'000);
+          asmb->addPCall(novasm::PCallCode::SleepNano);
+          asmb->addPop(); // Ignore sleep return value.
+
+          // Send an interupt signal to the process.
+          asmb->addLoadLitInt(0); // Signal 0: interupt.
+          asmb->addPCall(novasm::PCallCode::ProcessSendSignal);
+          asmb->addLoadLitString("Failed to send signal");
+          asmb->addPCall(novasm::PCallCode::Assert);
+          asmb->addPop(); // Ignore the assert return value.
+
+          // Wait for the child process to finnish.
+          asmb->addPCall(novasm::PCallCode::ProcessBlock);
+          asmb->addPop(); // Ignore the exit code.
+
+          READ_STD_OUT(asmb);
+          ADD_PRINT(asmb);
+          asmb->addPop(); // Ignore the success / failure of print.
+
+          asmb->addRet();
+        },
+        "",
+        "Received interupt" STR_NEWLINE);
+  }
 }
 
 } // namespace vm

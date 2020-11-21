@@ -17,10 +17,14 @@ enum class ProcessExitErr : int32_t {
   UnknownErr     = -2, // Unknown error occurred while waiting for a process to finnish.
 };
 
-enum class ProcessState : int8_t {
+enum class ProcessState : uint8_t {
   Unknown  = 0, // No executor has started waiting for his process.
   Waiting  = 1, // Another executor is already waiting for this process.
   Finished = 2, // Process has finished.
+};
+
+enum class ProcessSignalKind : uint8_t {
+  Interupt = 0, // Request a process to interupt.
 };
 
 #if defined(_WIN32)
@@ -150,6 +154,20 @@ public:
     }
     assert(false);
     return -1;
+  }
+
+  auto sendSignal(ProcessSignalKind kind) const noexcept -> bool {
+    switch (kind) {
+    case ProcessSignalKind::Interupt:
+#if defined(_WIN32)
+      // NOTE: Send 'CTRL_BREAK' instead of 'CTRL_C' because we cannot send ctrl-c to other process
+      // groups (and we don't want to interupt our entire own process-group).
+      return GenerateConsoleCtrlEvent(CTRL_BREAK_EVENT, m_process.dwProcessId);
+#else // !_WIN32
+      return ::kill(m_process, SIGINT) == 0;
+#endif
+    }
+    return false;
   }
 
 private:
@@ -299,7 +317,7 @@ inline auto processStart(RefAllocator* alloc, const StringRef* cmdLineStr) -> Pr
       nullptr,
       nullptr,
       true,
-      NORMAL_PRIORITY_CLASS | CREATE_NO_WINDOW,
+      NORMAL_PRIORITY_CLASS | CREATE_NEW_PROCESS_GROUP,
       nullptr,
       nullptr,
       &startupInfo,
@@ -393,6 +411,11 @@ inline auto processBlock(ProcessRef* process) {
     return static_cast<int32_t>(ProcessExitErr::InvalidProcess);
   }
   return process->block();
+}
+
+inline auto processSendSignal(ProcessRef* process, ProcessSignalKind kind) {
+  assert(process);
+  return process->isValid() && process->sendSignal(kind);
 }
 
 inline auto processGetId(ProcessRef* process) {
