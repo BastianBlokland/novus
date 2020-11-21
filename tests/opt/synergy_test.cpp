@@ -1,10 +1,6 @@
 #include "catch2/catch.hpp"
 #include "helpers.hpp"
 #include "opt/opt.hpp"
-#include "prog/expr/node_assign.hpp"
-#include "prog/expr/node_call.hpp"
-#include "prog/expr/node_const.hpp"
-#include "prog/expr/node_group.hpp"
 #include "prog/expr/node_lit_int.hpp"
 
 namespace opt {
