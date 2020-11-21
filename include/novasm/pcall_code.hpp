@@ -34,10 +34,11 @@ enum class PCallCode : uint8_t {
   TermGetWidth     = 62, // ()    -> (int)  Get the width (num columns) of the terminal.
   TermGetHeight    = 63, // ()    -> (int)  Get the height (num rows) of the terminal.
 
-  GetEnvArg      = 70, // (int)     -> (string) Get an environment argument by index.
-  GetEnvArgCount = 71, // ()        -> (int)    Get the amount of environment arguments provided.
-  GetEnvVar      = 72, // (string)  -> (string) Get a environment variable by name.
-  IsInteruptReq  = 73, // ()        -> (int)    Check if an interupt has been requested.
+  GetEnvArg        = 70, // (int)     -> (string) Get an environment argument by index.
+  GetEnvArgCount   = 71, // ()        -> (int)    Get the amount of environment arguments provided.
+  GetEnvVar        = 72, // (string)  -> (string) Get a environment variable by name.
+  InteruptIsReq    = 73, // ()        -> (int)    Check if an interupt has been requested.
+  InteruptResetReq = 74, // ()        -> (int)    Reset the 'is requested' flag, returns success.
 
   ClockMicroSinceEpoch = 80, // () -> (long) Get the elapsed microseconds since unix epoch.
   ClockNanoSteady      = 81, // () -> (long) Get process steady clock in nanoseconds.

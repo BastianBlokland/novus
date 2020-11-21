@@ -1,5 +1,6 @@
 #pragma once
 #include "internal/executor_handle.hpp"
+#include "internal/interupt.hpp"
 #include "internal/ref_long.hpp"
 #include "internal/ref_stream_console.hpp"
 #include "internal/ref_stream_file.hpp"
@@ -9,7 +10,6 @@
 #include "internal/stream_utilities.hpp"
 #include "internal/string_utilities.hpp"
 #include "internal/terminal.hpp"
-#include "internal/interupt.hpp"
 #include "novasm/pcall_code.hpp"
 #include "vm/exec_state.hpp"
 #include "vm/platform_interface.hpp"
@@ -221,8 +221,11 @@ auto inline pcall(
     auto* res = std::getenv(nameStrRef->getCharDataPtr());
     PUSH_REF(res == nullptr ? refAlloc->allocStr(0) : toStringRef(refAlloc, res));
   } break;
-  case PCallCode::IsInteruptReq: {
-    PUSH_INT(isInterruptRequested());
+  case PCallCode::InteruptIsReq: {
+    PUSH_BOOL(interuptIsRequested());
+  } break;
+  case PCallCode::InteruptResetReq: {
+    PUSH_BOOL(interuptResetRequested());
   } break;
 
   case PCallCode::ClockMicroSinceEpoch: {

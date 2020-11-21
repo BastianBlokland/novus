@@ -17,7 +17,7 @@ act get{T}(future{T} f, action{bool} predicate, Duration checkInternal)
   else           -> none()
 
 act getUntilInterupt{T}(future{T} f)
-  f.get(impure lambda() !isInteruptRequested())
+  f.get(impure lambda() !interuptIsRequested())
 
 // -- Tests
 

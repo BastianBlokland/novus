@@ -141,10 +141,11 @@ enum class FuncKind {
   ActionTermGetWidth,     // Get the width of the terminal device.
   ActionTermGetHeight,    // Get the height of the terminal device.
 
-  ActionGetEnvArgCount, // Get the amount of environment arguments passed to the application.
-  ActionGetEnvArg,      // Get a environment argument string at a specific index.
-  ActionGetEnvVar,      // Get a environment variable by name.
-  ActionIsInteruptReq,  // Check if an interupt has been requested.
+  ActionGetEnvArgCount,   // Get the amount of environment arguments passed to the application.
+  ActionGetEnvArg,        // Get a environment argument string at a specific index.
+  ActionGetEnvVar,        // Get a environment variable by name.
+  ActionInteruptIsReq,    // Check if an interupt has been requested.
+  ActionInteruptResetReq, // Reset the interupt requested flag.
 
   ActionClockMicroSinceEpoch, // Return a long of the amount of microseconds since epoch
                               // (01-01-1970).
