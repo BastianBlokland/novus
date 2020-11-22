@@ -30,6 +30,7 @@ enum class Operator {
   ColonColon,
   SquareSquare,
   ParenParen,
+  QMark,
   QMarkQMark,
 };
 
