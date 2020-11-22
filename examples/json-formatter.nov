@@ -7,9 +7,9 @@ act formatJson(Path path, bool pretty)
   if jsonStr.isEmpty() -> printErr("Unable to read file at path: " + path); fail()
   else ->
     jParser   = jsonParser();
-    parseRes  = jParser(jsonStr);
-    if parseRes as ParseSuccess{JsonValue} s  -> printJson(s.val, pretty)
-    if parseRes as ParseFailure f             -> print("Unable to parse json: " + f)
+    parseRes  = ~jParser(jsonStr);
+    if parseRes as JsonValue v  -> printJson(v, pretty)
+    if parseRes as Error err    -> print("Unable to parse json: " + err)
 
 act printJson(JsonValue v, bool pretty)
   indent      = pretty ? "  " : "";

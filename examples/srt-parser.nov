@@ -100,11 +100,11 @@ act main(Path path)
   else ->
     p   = subListParser();
     t1  = timestamp();
-    res = p(fileRead(path));
+    res = ~p(fileRead(path));
     dur = timestamp() - t1;
     print("[Parsing took: " + dur + "]\n");
 
-    if res as ParseSuccess{List{Subtitle}} pSuc   -> print(string(pSuc.val, "", "\n\n", ""))
-    if res as ParseFailure                 pFail  -> printErr("Failed to parse: " + pFail); fail()
+    if res as List{Subtitle}  subs -> print(string(subs, "", "\n\n", ""))
+    if res as Error           err  -> printErr("Failed to parse: " + err); fail()
 
 main(Path(getEnvArg(0)))
