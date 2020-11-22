@@ -108,6 +108,8 @@ auto getOperator(const lex::Token& token) -> std::optional<prog::Operator> {
     return prog::Operator::SquareSquare;
   case lex::TokenKind::OpParenParen:
     return prog::Operator::ParenParen;
+  case lex::TokenKind::OpQMark:
+    return prog::Operator::QMark;
   case lex::TokenKind::OpQMarkQMark:
     return prog::Operator::QMarkQMark;
   default:
@@ -163,6 +165,8 @@ auto getText(const prog::Operator& op) -> std::string {
     return "[]";
   case prog::Operator::ParenParen:
     return "()";
+  case prog::Operator::QMark:
+    return "?";
   case prog::Operator::QMarkQMark:
     return "??";
   }

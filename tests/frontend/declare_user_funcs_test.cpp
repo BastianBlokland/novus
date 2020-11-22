@@ -152,7 +152,7 @@ TEST_CASE("Analyzing user-function declarations", "[frontend]") {
         errNoTypeOrConversionFoundToInstantiate(src, "s", 1, input::Span{59, 67}));
     CHECK_DIAG(
         "fun -(int i) -> int 1", errDuplicateFuncDeclaration(src, "operator-", input::Span{0, 20}));
-    CHECK_DIAG("fun ?() -> int 1", errNonOverloadableOperator(src, "?", input::Span{4, 4}));
+    CHECK_DIAG("fun &&() -> int 1", errNonOverloadableOperator(src, "&&", input::Span{4, 5}));
     CHECK_DIAG(
         "fun f{int}() -> int 1", errTypeParamNameConflictsWithType(src, "int", input::Span{6, 8}));
     CHECK_DIAG(

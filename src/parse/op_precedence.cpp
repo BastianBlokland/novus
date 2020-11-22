@@ -11,6 +11,7 @@ auto getLhsOpPrecedence(const lex::Token& token) -> int {
   case lex::TokenKind::OpMinusMinus:
   case lex::TokenKind::OpBang:
   case lex::TokenKind::OpTilde:
+  case lex::TokenKind::OpQMark:
     return unaryPrecedence;
   default:
     return 0;

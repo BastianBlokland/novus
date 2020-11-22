@@ -32,6 +32,7 @@ namespace parse {
 #define EQEQ lex::basicToken(lex::TokenKind::OpEqEq)
 #define SEMI lex::basicToken(lex::TokenKind::OpSemi)
 #define QMARK lex::basicToken(lex::TokenKind::OpQMark)
+#define QMARKQMARK lex::basicToken(lex::TokenKind::OpQMarkQMark)
 #define DOT lex::basicToken(lex::TokenKind::OpDot)
 #define COLONCOLON lex::basicToken(lex::TokenKind::OpColonColon)
 #define SQUARESQUARE lex::basicToken(lex::TokenKind::OpSquareSquare)
