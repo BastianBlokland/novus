@@ -163,20 +163,39 @@ fun mapOrErr{T, TResult}(Parser{T} p, function{T, Either{TResult, Error}} func)
 fun unwrap{T1, T2, TResult}(
   Parser{Pair{T1, T2}} p, function{T1, T2, TResult} f)
   (
-    p.map(lambda (Pair{T1, T2} pair) f(pair.first, pair.second))
+    p.map(lambda (Pair{T1, T2} pair)
+      f(pair.first,
+        pair.second))
   )
 
 fun unwrap{T1, T2, T3, TResult}(
   Parser{Pair{Pair{T1, T2}, T3}} p, function{T1, T2, T3, TResult} f)
   (
-    p.map(lambda (Pair{Pair{T1, T2}, T3} pair) f(pair.first.first, pair.first.second, pair.second))
+    p.map(lambda (Pair{Pair{T1, T2}, T3} pair)
+      f(pair.first.first,
+        pair.first.second,
+        pair.second))
   )
 
 fun unwrap{T1, T2, T3, T4, TResult}(
   Parser{Pair{Pair{Pair{T1, T2}, T3}, T4}} p, function{T1, T2, T3, T4, TResult} f)
   (
     p.map(lambda (Pair{Pair{Pair{T1, T2}, T3}, T4} pair)
-      f(pair.first.first.first, pair.first.first.second, pair.first.second, pair.second))
+      f(pair.first.first.first,
+        pair.first.first.second,
+        pair.first.second,
+        pair.second))
+  )
+
+fun unwrap{T1, T2, T3, T4, T5, TResult}(
+  Parser{Pair{Pair{Pair{Pair{T1, T2}, T3}, T4}, T5}} p, function{T1, T2, T3, T4, T5, TResult} f)
+  (
+    p.map(lambda (Pair{Pair{Pair{Pair{T1, T2}, T3}, T4}, T5} pair)
+      f(pair.first.first.first.first,
+        pair.first.first.first.second,
+        pair.first.first.second,
+        pair.first.second,
+        pair.second))
   )
 
 // -- Basic parsers
@@ -576,6 +595,16 @@ assert(
   p("truetruetruetrue")   == true &&
   p("truefalsetrue")  is ParseFailure &&
   p("")               is ParseFailure)
+
+assert(
+  p = (txtBoolParser() & txtBoolParser() & txtBoolParser() & txtBoolParser() & txtBoolParser()).unwrap(
+    lambda (bool a, bool b, bool c, bool d, bool e) a && b && c && d && e);
+  p("truefalsetruetruetrue")  == false &&
+  p("truefalsetruetruetrue")  == false &&
+  p("truetruetruetruetrue")   == true &&
+  p("truefalsetruefalse") is ParseFailure &&
+  p("truefalsetrue")      is ParseFailure &&
+  p("")                   is ParseFailure)
 
 assert(
   p = manyParser(txtBoolParser(), false);
