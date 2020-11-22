@@ -18,6 +18,9 @@ import "std.nov"
 // Parsers can be combined to create more complex parsers,
 // an overview of a few of the ways to combine parsers;
 //
+// - '?Parser{T}' -> Parser{Option{T}}
+//    Makes a parser optional, an option parser always succeeds but doesn't always produce a value.
+//
 // - 'Parser{T1} & Parser{T2}' -> Parser{Pair{T1, T2}}
 //    And combiner, excecutes parser 2 only if parser 1 succeded, both values are returned.
 //

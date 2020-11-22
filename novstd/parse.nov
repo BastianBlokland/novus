@@ -55,6 +55,13 @@ fun ++(ParseState s)
 fun --(ParseState s)
   s - 1
 
+fun ?{T}(Parser{T} p)
+  Parser(lambda (ParseState s) -> ParseResult{Option{T}}
+    r = p(s);
+    if r is ParseFailure          -> s.success(Option{T}())
+    if r as ParseSuccess{T} suc   -> suc.state.success(Option{T}(suc.val))
+  )
+
 fun &{T1, T2}(Parser{T1} p1, Parser{T2} p2)
   Parser(lambda (ParseState s) -> ParseResult{Pair{T1, T2}}
     r1 = p1(s);
@@ -457,6 +464,27 @@ assert(
   txtBoolParser()("tRuE")  is ParseFailure &&
   txtBoolParser()("fAlSe") is ParseFailure &&
   txtBoolParser()("abc")   is ParseFailure)
+
+assert(
+  p = ?txtIntParser();
+  p("")     == Option{int}() &&
+  p("abc")  == Option{int}() &&
+  p("42")   == some(42) &&
+  p("-42")  == some(-42))
+
+assert(
+  p = (?txtIntParser() & ?txtBoolParser()).unwrap(
+    lambda (Option{int} a, Option{bool} b)
+      if b ?? false -> a ?? -1
+      else          -> -42
+  );
+  p("false")      == -42  &&
+  p("")           == -42  &&
+  p("1337")       == -42  &&
+  p("1337false")  == -42  &&
+  p("true")       == -1   &&
+  p("1337true")   == 1337 &&
+  p("0true")      == 0)
 
 assert(
   p = (matchParser("Hello ") | matchParser("Greetings ")) & matchParser("World");
