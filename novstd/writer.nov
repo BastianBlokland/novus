@@ -49,6 +49,12 @@ fun (){T}(Writer{T} w, T val)
 fun ==(WriterState s, string str)
   s.curResult == str
 
+fun ?{T}(Writer{T} p)
+  Writer(lambda (WriterState s, Option{T} optVal)
+    if optVal as T val  -> p(s, val)
+    else                -> s
+  )
+
 fun &(Writer{None} p1, Writer{None} p2)
   Writer(lambda (WriterState s, None n)
     p2(p1(s, None()), None())
@@ -211,6 +217,21 @@ assert(
   w = txtBoolWriter();
   w(true) == "true" &&
   w(false) == "false")
+
+assert(
+  w = ?txtBoolWriter();
+  w(Option{bool}(true))   == "true" &&
+  w(Option{bool}())       == "")
+
+assert(
+  w = ?(litWriter("hello: ") & stringWriter());
+  w(Option{string}("world"))   == "hello: world" &&
+  w(Option{string}())          == "")
+
+assert(
+  w = litWriter("name: ") & stringWriter() & ?(litWriter(", age: ") & txtIntWriter());
+  w(Pair("John", Option{int}()))   == "name: John" &&
+  w(Pair("Jane", Option{int}(42))) == "name: Jane, age: 42")
 
 assert(
   w = listWriter(txtIntWriter());
