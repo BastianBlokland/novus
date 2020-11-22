@@ -1,0 +1,199 @@
+import "std/list.nov"
+import "std/parse.nov"
+import "std/writer.nov"
+
+// Utilities for sem-ver versions.
+// https://semver.org/
+
+// -- Types
+
+struct Version =
+  int           major,
+  int           minor,
+  int           patch,
+  List{string}  prereleaseTags,
+  List{string}  metaTags
+
+// -- Operators
+
+fun >(Version x, Version y)
+  x.major > y.major ||
+  (x.major == y.major && x.minor > y.minor) ||
+  (x.major == y.major && x.minor == y.minor && x.patch > y.patch) ||
+  (x.major == y.major && x.minor == y.minor && x.patch == y.patch && y.isPrerelease())
+
+fun <(Version x, Version y)
+  x.major < y.major ||
+  (x.major == y.major && x.minor < y.minor) ||
+  (x.major == y.major && x.minor == y.minor && x.patch < y.patch) ||
+  (x.major == y.major && x.minor == y.minor && x.patch == y.patch && x.isPrerelease())
+
+// -- Utilities
+
+fun bumpMajor(Version v)
+  Version(++v.major, 0, 0, v.prereleaseTags, v.metaTags)
+
+fun bumpMinor(Version v)
+  Version(v.major, ++v.minor, 0, v.prereleaseTags, v.metaTags)
+
+fun bumpPatch(Version v)
+  Version(v.major, v.minor, ++v.patch, v.prereleaseTags, v.metaTags)
+
+fun isPrerelease(Version v)
+  !v.prereleaseTags.isEmpty()
+
+// -- Conversions
+
+fun Version(int major, int minor)
+  Version(major, minor, 0)
+
+fun Version(int major, int minor, int patch)
+  Version(major, minor, patch, List{string}(), List{string}())
+
+fun Version(int major, int minor, int patch, List{string} prereleaseTags)
+  Version(major, minor, patch, prereleaseTags, List{string}())
+
+fun string(Version v)
+  versionWriter()(v).string()
+
+// -- Parsers
+
+fun versionParser() -> Parser{Version}
+  tagParser = whileParser(lambda (char c) c.isLetter() || c.isDigit() || c == '-');
+  (
+    txtIntParser() & matchParser('.') >> txtIntParser() & ?(matchParser('.') >> txtIntParser()) &
+    ?(matchParser('-') >> manyParser(tagParser, matchParser('.'))) &
+    ?(matchParser('+') >> manyParser(tagParser, matchParser('.')))
+  ).unwrap( lambda (  int major,
+                      int minor,
+                      Option{int} patch,
+                      Option{List{string}} prereleaseTags,
+                      Option{List{string}} meta)
+      Version(major, minor, patch ?? 0, prereleaseTags ?? List{string}(), meta ?? List{string}())
+    )
+
+// -- Writers
+
+fun versionWriter()
+  (
+    txtIntWriter() & litWriter('.') & txtIntWriter() & litWriter('.') & txtIntWriter() &
+    ?(litWriter("-") & listWriter(stringWriter(), litWriter("."))) &
+    ?(litWriter("+") & listWriter(stringWriter(), litWriter(".")))
+  ).map(lambda (Version v)
+      makePair(
+        v.major,
+        v.minor,
+        v.patch,
+        v.prereleaseTags.isEmpty()  ? none() : some(v.prereleaseTags),
+        v.metaTags.isEmpty()        ? none() : some(v.metaTags))
+    )
+
+// -- Tests
+
+assert(
+  isPrerelease(Version(1, 0, 0, "alpha" :: List{string}())) &&
+  !isPrerelease(Version(1, 0, 0))
+)
+
+assert(
+  Version(1, 0, 0)    >   Version(0, 1, 0)                                &&
+  Version(1, 1, 0)    >   Version(1, 0, 0)                                &&
+  Version(1, 1, 2)    >   Version(1, 1, 1)                                &&
+  Version(1, 1, 1)    >   Version(1, 1, 1, "alpha" :: List{string}())     &&
+  Version(2, 0, 0)    >   Version(1, 99, 0)                               &&
+  Version(1, 0, 0)    <   Version(2, 1, 0)                                &&
+  Version(1, 1, 0)    <   Version(1, 2, 0)                                &&
+  Version(1, 1, 2)    <   Version(1, 1, 3)                                &&
+  Version(1, 1, 1)    <   Version(1, 1, 2, "alpha" :: List{string}())
+)
+
+assert(
+  p = versionParser();
+  p("")             is ParseFailure           &&
+  p("0")            is ParseFailure           &&
+  p("0.")           is ParseFailure           &&
+  p("0.a")          is ParseFailure           &&
+  p("0.0")          == Version(0, 0)          &&
+  p("42.1337")      == Version(42, 1337)      &&
+  p("42.1337.123")  == Version(42, 1337, 123) &&
+  p("42.1337.123-") == Version(42, 1337, 123) &&
+  p("42.1337.123+") == Version(42, 1337, 123)
+)
+
+assert(
+  versionParser()("42.1337.123-alpha.fullmoon.wip")
+  ==
+  Version(42, 1337, 123, "alpha" :: "fullmoon" :: "wip" :: List{string}())
+)
+
+assert(
+  versionParser()("42.1337-alpha.fullmoon.wip")
+  ==
+  Version(42, 1337, 0, "alpha" :: "fullmoon" :: "wip" :: List{string}())
+)
+
+assert(
+  versionParser()("1.0.0-x.7.z.92")
+  ==
+  Version(1, 0, 0, "x" :: "7" :: "z" :: "92" :: List{string}())
+)
+
+assert(
+  versionParser()("42.1337+local-machine.europe")
+  ==
+  Version(42, 1337, 0, List{string}(), "local-machine" :: "europe" :: List{string}())
+)
+
+assert(
+  versionParser()("1.0.0-beta+exp.sha.5114f85")
+  ==
+  Version(1, 0, 0, "beta" :: List{string}(), "exp" :: "sha" :: "5114f85" :: List{string}())
+)
+
+assert(
+  versionParser()("42.1337.123-alpha.fullmoon.wip+local-machine.europe")
+  ==
+  Version(42, 1337, 123,
+    "alpha" :: "fullmoon" :: "wip" :: List{string}(),
+    "local-machine" :: "europe" :: List{string}())
+)
+
+assert(
+  versionParser()("42.1337.123+alpha.fullmoon.wip-local-machine.europe")
+  ==
+  Version(42, 1337, 123,
+    List{string}(),
+    "alpha" :: "fullmoon" :: "wip-local-machine" :: "europe" :: List{string}())
+)
+
+assert(
+  w = versionWriter();
+  w(Version(0, 0))          == "0.0.0" &&
+  w(Version(42, 1337, 123)) == "42.1337.123"
+)
+
+assert(
+  versionWriter()(
+    Version(42, 1337, 123,
+      List{string}(),
+      "local-machine" :: "europe" :: List{string}()))
+  ==
+  "42.1337.123+local-machine.europe"
+)
+
+assert(
+  versionWriter()(
+    Version(42, 1337, 123,
+      "alpha" :: "fullmoon" :: "wip" :: List{string}()))
+  ==
+  "42.1337.123-alpha.fullmoon.wip"
+)
+
+assert(
+  versionWriter()(
+    Version(42, 1337, 123,
+      "alpha" :: "fullmoon" :: "wip" :: List{string}(),
+      "local-machine" :: "europe" :: List{string}()))
+  ==
+  "42.1337.123-alpha.fullmoon.wip+local-machine.europe"
+)

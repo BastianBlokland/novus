@@ -18,6 +18,9 @@ import "std.nov"
 // Parsers can be combined to create more complex parsers,
 // an overview of a few of the ways to combine parsers;
 //
+// - '?Parser{T}' -> Parser{Option{T}}
+//    Makes a parser optional, an option parser always succeeds but doesn't always produce a value.
+//
 // - 'Parser{T1} & Parser{T2}' -> Parser{Pair{T1, T2}}
 //    And combiner, excecutes parser 2 only if parser 1 succeded, both values are returned.
 //
@@ -97,11 +100,11 @@ act main(Path path)
   else ->
     p   = subListParser();
     t1  = timestamp();
-    res = p(fileRead(path));
+    res = ~p(fileRead(path));
     dur = timestamp() - t1;
     print("[Parsing took: " + dur + "]\n");
 
-    if res as ParseSuccess{List{Subtitle}} pSuc   -> print(string(pSuc.val, "", "\n\n", ""))
-    if res as ParseFailure                 pFail  -> printErr("Failed to parse: " + pFail); fail()
+    if res as List{Subtitle}  subs -> print(string(subs, "", "\n\n", ""))
+    if res as Error           err  -> printErr("Failed to parse: " + err); fail()
 
 main(Path(getEnvArg(0)))

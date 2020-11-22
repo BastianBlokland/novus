@@ -2,6 +2,23 @@
 
 struct Pair{T1, T2} = T1 first, T2 second
 
+// -- Utilities
+
+fun makePair{T}(T a)
+  Pair(a, a)
+
+fun makePair{T1, T2}(T1 a1, T2 a2)
+  Pair(a1, a2)
+
+fun makePair{T1, T2, T3}(T1 a1, T2 a2, T3 a3)
+  Pair(Pair(a1, a2), a3)
+
+fun makePair{T1, T2, T3, T4}(T1 a1, T2 a2, T3 a3, T4 a4)
+  Pair(Pair(Pair(a1, a2), a3), a4)
+
+fun makePair{T1, T2, T3, T4, T5}(T1 a1, T2 a2, T3 a3, T4 a4, T5 a5)
+  Pair(Pair(Pair(Pair(a1, a2), a3), a4), a5)
+
 // -- Conversions
 
 fun string{T1, T2}(Pair{T1, T2} p)

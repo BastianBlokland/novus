@@ -28,6 +28,10 @@ fun ??{T}(ParseResult{T} res, T def)
 fun ??{T1, T2}(ParseResult{T1} res, T2 def) -> Either{T1, T2}
   res as ParseSuccess{T1} suc ? suc.val : def
 
+fun ~{T}(ParseResult{T} res) -> Either{T, Error}
+  if res as ParseSuccess{T} suc   -> suc.val
+  if res as ParseFailure    fail  -> fail.err
+
 fun [](ParseState p, int i)
   p.str[p.pos + i]
 
@@ -54,6 +58,13 @@ fun ++(ParseState s)
 
 fun --(ParseState s)
   s - 1
+
+fun ?{T}(Parser{T} p)
+  Parser(lambda (ParseState s) -> ParseResult{Option{T}}
+    r = p(s);
+    if r is ParseFailure          -> s.success(Option{T}())
+    if r as ParseSuccess{T} suc   -> suc.state.success(Option{T}(suc.val))
+  )
 
 fun &{T1, T2}(Parser{T1} p1, Parser{T2} p2)
   Parser(lambda (ParseState s) -> ParseResult{Pair{T1, T2}}
@@ -143,23 +154,52 @@ fun map{T, TResult}(Parser{T} p, function{T, TResult} func)
     if res as ParseFailure    fail  -> fail
   )
 
+fun mapOrErr{T, TResult}(Parser{T} p, function{T, Either{TResult, Error}} func)
+  Parser(lambda (ParseState s) -> ParseResult{TResult}
+    pR = p(s);
+    if pR as ParseFailure    parseFail  -> parseFail
+    if pR as ParseSuccess{T} parseSuc   ->
+      mR = func(parseSuc.val);
+      if mR as Error    err -> parseSuc.state.failure(err)
+      if mR as TResult  val -> parseSuc.state.success(val)
+  )
+
 fun unwrap{T1, T2, TResult}(
   Parser{Pair{T1, T2}} p, function{T1, T2, TResult} f)
   (
-    p.map(lambda (Pair{T1, T2} pair) f(pair.first, pair.second))
+    p.map(lambda (Pair{T1, T2} pair)
+      f(pair.first,
+        pair.second))
   )
 
 fun unwrap{T1, T2, T3, TResult}(
   Parser{Pair{Pair{T1, T2}, T3}} p, function{T1, T2, T3, TResult} f)
   (
-    p.map(lambda (Pair{Pair{T1, T2}, T3} pair) f(pair.first.first, pair.first.second, pair.second))
+    p.map(lambda (Pair{Pair{T1, T2}, T3} pair)
+      f(pair.first.first,
+        pair.first.second,
+        pair.second))
   )
 
 fun unwrap{T1, T2, T3, T4, TResult}(
   Parser{Pair{Pair{Pair{T1, T2}, T3}, T4}} p, function{T1, T2, T3, T4, TResult} f)
   (
     p.map(lambda (Pair{Pair{Pair{T1, T2}, T3}, T4} pair)
-      f(pair.first.first.first, pair.first.first.second, pair.first.second, pair.second))
+      f(pair.first.first.first,
+        pair.first.first.second,
+        pair.first.second,
+        pair.second))
+  )
+
+fun unwrap{T1, T2, T3, T4, T5, TResult}(
+  Parser{Pair{Pair{Pair{Pair{T1, T2}, T3}, T4}, T5}} p, function{T1, T2, T3, T4, T5, TResult} f)
+  (
+    p.map(lambda (Pair{Pair{Pair{Pair{T1, T2}, T3}, T4}, T5} pair)
+      f(pair.first.first.first.first,
+        pair.first.first.first.second,
+        pair.first.first.second,
+        pair.first.second,
+        pair.second))
   )
 
 // -- Basic parsers
@@ -449,6 +489,31 @@ assert(
   txtBoolParser()("abc")   is ParseFailure)
 
 assert(
+  ~txtBoolParser()("abc")   is Error &&
+  ~txtBoolParser()("true")  is bool)
+
+assert(
+  p = ?txtIntParser();
+  p("")     == Option{int}() &&
+  p("abc")  == Option{int}() &&
+  p("42")   == some(42) &&
+  p("-42")  == some(-42))
+
+assert(
+  p = (?txtIntParser() & ?txtBoolParser()).unwrap(
+    lambda (Option{int} a, Option{bool} b)
+      if b ?? false -> a ?? -1
+      else          -> -42
+  );
+  p("false")      == -42  &&
+  p("")           == -42  &&
+  p("1337")       == -42  &&
+  p("1337false")  == -42  &&
+  p("true")       == -1   &&
+  p("1337true")   == 1337 &&
+  p("0true")      == 0)
+
+assert(
   p = (matchParser("Hello ") | matchParser("Greetings ")) & matchParser("World");
   p("Hello World")      == Pair("Hello ", "World") &&
   p("Greetings World")  == Pair("Greetings ", "World") &&
@@ -486,6 +551,31 @@ assert(
   p("") is ParseFailure)
 
 assert(
+  err = Error("Value outside of the 100 - 200 range");
+  p = txtIntParser().mapOrErr(lambda (int i) -> Either{int, Error}
+    if i >= 100 && i <= 200 -> i
+    else                    -> err
+  );
+  p("123") == 123 &&
+  p("100") == 100 &&
+  p("200") == 200 &&
+  p("42") is ParseFailure &&
+  p("42") as ParseFailure pf && pf.err == err &&
+  p("201") is ParseFailure &&
+  p("") is ParseFailure)
+
+assert(
+  p = txtIntParser().mapOrErr(lambda (int i) -> Either{string, Error}
+    if i == 42    -> "Meaning of life"
+    if i == 1337  -> "Elite"
+    else          -> Error("No signficiant meaning to: '" + i + "'")
+  );
+  p("42") == "Meaning of life" &&
+  p("1337") == "Elite" &&
+  p("123") is ParseFailure &&
+  p("") is ParseFailure)
+
+assert(
   p = txtBoolParser() :: txtBoolParser() :: txtBoolParser();
   p("truefalsetrue") == true :: false :: true :: List{bool}() &&
   p("truefalse")  is ParseFailure &&
@@ -513,6 +603,16 @@ assert(
   p("truetruetruetrue")   == true &&
   p("truefalsetrue")  is ParseFailure &&
   p("")               is ParseFailure)
+
+assert(
+  p = (txtBoolParser() & txtBoolParser() & txtBoolParser() & txtBoolParser() & txtBoolParser()).unwrap(
+    lambda (bool a, bool b, bool c, bool d, bool e) a && b && c && d && e);
+  p("truefalsetruetruetrue")  == false &&
+  p("truefalsetruetruetrue")  == false &&
+  p("truetruetruetruetrue")   == true &&
+  p("truefalsetruefalse") is ParseFailure &&
+  p("truefalsetrue")      is ParseFailure &&
+  p("")                   is ParseFailure)
 
 assert(
   p = manyParser(txtBoolParser(), false);
