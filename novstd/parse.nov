@@ -143,6 +143,16 @@ fun map{T, TResult}(Parser{T} p, function{T, TResult} func)
     if res as ParseFailure    fail  -> fail
   )
 
+fun mapOrErr{T, TResult}(Parser{T} p, function{T, Either{TResult, Error}} func)
+  Parser(lambda (ParseState s) -> ParseResult{TResult}
+    pR = p(s);
+    if pR as ParseFailure    parseFail  -> parseFail
+    if pR as ParseSuccess{T} parseSuc   ->
+      mR = func(parseSuc.val);
+      if mR as Error    err -> parseSuc.state.failure(err)
+      if mR as TResult  val -> parseSuc.state.success(val)
+  )
+
 fun unwrap{T1, T2, TResult}(
   Parser{Pair{T1, T2}} p, function{T1, T2, TResult} f)
   (
@@ -483,6 +493,31 @@ assert(
   p = txtIntParser().map(lambda (int i) i == 42);
   p("123")  == false &&
   p("42")   == true &&
+  p("") is ParseFailure)
+
+assert(
+  err = Error("Value outside of the 100 - 200 range");
+  p = txtIntParser().mapOrErr(lambda (int i) -> Either{int, Error}
+    if i >= 100 && i <= 200 -> i
+    else                    -> err
+  );
+  p("123") == 123 &&
+  p("100") == 100 &&
+  p("200") == 200 &&
+  p("42") is ParseFailure &&
+  p("42") as ParseFailure pf && pf.err == err &&
+  p("201") is ParseFailure &&
+  p("") is ParseFailure)
+
+assert(
+  p = txtIntParser().mapOrErr(lambda (int i) -> Either{string, Error}
+    if i == 42    -> "Meaning of life"
+    if i == 1337  -> "Elite"
+    else          -> Error("No signficiant meaning to: '" + i + "'")
+  );
+  p("42") == "Meaning of life" &&
+  p("1337") == "Elite" &&
+  p("123") is ParseFailure &&
   p("") is ParseFailure)
 
 assert(
