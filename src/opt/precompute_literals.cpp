@@ -12,10 +12,14 @@
 namespace opt {
 
 [[nodiscard]] static auto getInt(const prog::expr::Node& n) -> int32_t {
-  if (n.getKind() == prog::expr::NodeKind::LitEnum) {
+  switch (n.getKind()) {
+  case prog::expr::NodeKind::LitEnum:
     return n.downcast<prog::expr::LitEnumNode>()->getVal();
+  case prog::expr::NodeKind::LitChar:
+    return static_cast<int32_t>(n.downcast<prog::expr::LitCharNode>()->getVal());
+  default:
+    return n.downcast<prog::expr::LitIntNode>()->getVal();
   }
-  return n.downcast<prog::expr::LitIntNode>()->getVal();
 }
 
 [[nodiscard]] static auto getBool(const prog::expr::Node& n) -> bool {
