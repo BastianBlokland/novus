@@ -268,28 +268,27 @@ fun txtBoolParser()
     else            -> s.failure(Error("Expected boolean, got: '" + s[0] + "'"))
   )
 
-fun txtIntParser()
+fun txtPosIntParser()
   Parser(lambda (ParseState s)
-    impl =
-    (
+    invoke(
       lambda (ParseState s, int res, bool valid) -> ParseResult{int}
         if s[0].isDigit() -> self(++s, res * 10 + s[0] - '0', true)
         else              -> valid ?  s.success(res) :
                                       s.failure(Error("Expected integer, got: '" + s[0] + "'"))
-    );
-    if s.isEnd() -> s.failure(Error("Expected int, got: end of input"))
-    if s == '-'  -> impl(++s, 0, false).map(negate{int})
-    if s == '+'  -> impl(++s, 0, false)
-    else         -> impl(s, 0, false)
+      , s, 0, false)
   )
+
+fun txtIntParser()
+  matchParser('-') >> txtPosIntParser().map(negate{int})  |
+  matchParser('+') >> txtPosIntParser()                   |
+  txtPosIntParser()
 
 fun txtHexParser()
   txtHexParser(1)
 
 fun txtHexParser(int minDigits)
   Parser(lambda (ParseState s)
-    impl =
-    (
+    invoke(
       lambda (ParseState s, int res, int digits) -> ParseResult{int}
         if s[0].isDigit()             -> self(++s, (res << 4) + s[0] - '0',         ++digits)
         if s[0] >= 'a' && s[0] <= 'f' -> self(++s, (res << 4) + s[0] - ('a' - 10),  ++digits)
@@ -298,32 +297,29 @@ fun txtHexParser(int minDigits)
                                           s.success(res) :
                                           s.failure(Error(
                                             "Expected hex number, got: '" + s[0] + "'"))
-    );
-    if s.isEnd() -> s.failure(Error("Expected hex number, got: end of input"))
-    else         -> impl(s, 0, 0)
+      , s, 0, 0)
   )
 
-fun txtFloatParser()
+fun txtPosFloatParser()
   intParser = txtIntParser();
   Parser(lambda (ParseState s)
-    impl =
-    (
+    invoke(
       lambda (ParseState s, float raw, float div, bool dec, bool valid) -> ParseResult{float}
         if s == '.' && !dec     -> self(++s, raw, div, true, false)
         if s[0].isDigit()       -> newRaw = raw * 10.0 + int(s[0]) - int('0');
                                    newDiv = dec ? div * 10.0 : div;
                                    self(++s, newRaw, newDiv, dec, true)
-        if s == 'e' || s == 'E' -> intParser(s + 1).map(
-                                                      lambda (int exp) raw / (div / pow(10.0, exp)))
+        if s == 'e' || s == 'E' -> intParser(s + 1).map(lambda (int exp) raw / (div / pow(10.0, exp)))
         else                    -> valid ?  s.success(raw / div) :
                                             s.failure(Error(
                                               "Expected float, got: '" + s[0] + "'"))
-    );
-    if s.isEnd() -> s.failure(Error("Expected float, got: end of input"))
-    if s == '-'  -> impl(++s, 0.0, 1.0, false, false).map(negate{float})
-    if s == '+'  -> impl(++s, 0.0, 1.0, false, false)
-    else         -> impl(s,   0.0, 1.0, false, false)
-  )
+      , s, 0.0, 1.0, false, false)
+    )
+
+fun txtFloatParser()
+  matchParser('-') >> txtPosFloatParser().map(negate{float})  |
+  matchParser('+') >> txtPosFloatParser()                     |
+  txtPosFloatParser()
 
 // -- Combination parsers
 
@@ -401,6 +397,23 @@ assert(
   lineParser()("") is ParseFailure)
 
 assert(
+  txtPosIntParser()("1")                == 1 &&
+  txtPosIntParser()("1337")             == 1337 &&
+  txtPosIntParser()(intMax().string())  == intMax() &&
+  txtPosIntParser()("2147483648")       == -2147483647 - 1)
+
+assert(
+  txtPosIntParser()("-1")   is ParseFailure &&
+  txtPosIntParser()("+1")   is ParseFailure &&
+  txtPosIntParser()("a")    is ParseFailure &&
+  txtPosIntParser()(" 123") is ParseFailure)
+
+assert(
+  txtIntParser()("")         is ParseFailure &&
+  txtIntParser()("a")        is ParseFailure &&
+  txtIntParser()(" 123")     is ParseFailure)
+
+assert(
   txtIntParser()("1")                == 1 &&
   txtIntParser()("-1")               == -1 &&
   txtIntParser()("+1")               == 1 &&
@@ -439,6 +452,33 @@ assert(
   txtHexParser()(" 123")     is ParseFailure &&
   txtHexParser(4)("123")     is ParseFailure &&
   txtHexParser(4)("123G")    is ParseFailure)
+
+assert(
+  txtPosFloatParser()("0")            == 0.0 &&
+  txtPosFloatParser()("1")            == 1.0 &&
+  txtPosFloatParser()("0001")         == 1.0 &&
+  txtPosFloatParser()("0e10")         == 0.0 &&
+  txtPosFloatParser()("0e-10")        == 0.0 &&
+  txtPosFloatParser()("42e0")         == 42.0 &&
+  txtPosFloatParser()("42e1")         == 420.0 &&
+  txtPosFloatParser()("42e2")         == 4200.0 &&
+  txtPosFloatParser()("42e+0")        == 42.0 &&
+  txtPosFloatParser()("42e+1")        == 420.0 &&
+  txtPosFloatParser()("42e+2")        == 4200.0 &&
+  txtPosFloatParser()("42e-0")        == 42.0 &&
+  txtPosFloatParser()("42e-1")        == 4.2 &&
+  txtPosFloatParser()("42e-2")        == .42 &&
+  txtPosFloatParser()("42.1337")      == 42.1337 &&
+  txtPosFloatParser()("42.1337e4")    == 421337.0 &&
+  (txtPosFloatParser()("4000000000") ?? -1.0).approx(4000000000.0))
+
+assert(
+  txtPosFloatParser()("-1")     is ParseFailure &&
+  txtPosFloatParser()("+1")     is ParseFailure &&
+  txtPosFloatParser()("--1")    is ParseFailure &&
+  txtPosFloatParser()("-+1")    is ParseFailure &&
+  txtPosFloatParser()(" 1.0")   is ParseFailure &&
+  txtPosFloatParser()("1. 0 ")  is ParseFailure)
 
 assert(
   txtFloatParser()("0")            == 0.0 &&
