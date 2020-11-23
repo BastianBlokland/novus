@@ -4,6 +4,11 @@ import "std/writer.nov"
 
 // Utilities for sem-ver versions.
 // https://semver.org/
+//
+// Non-standard extensions:
+// * Omitting the patch number (assumed to be zero), example: '1.42-alpha', will equal: '1.42.0-alpha'.
+// * Using a dot to start the meta tags, example: '1.2.3.42', will equal: '1.2.3+42'.
+//
 
 // -- Types
 
@@ -63,7 +68,7 @@ fun versionParser() -> Parser{Version}
   (
     txtIntParser() & matchParser('.') >> txtIntParser() & ?(matchParser('.') >> txtIntParser()) &
     ?(matchParser('-') >> manyParser(tagParser, matchParser('.'))) &
-    ?(matchParser('+') >> manyParser(tagParser, matchParser('.')))
+    ?((matchParser('+') | matchParser('.')) >> manyParser(tagParser, matchParser('.')))
   ).unwrap( lambda (  int major,
                       int minor,
                       Option{int} patch,
@@ -164,6 +169,18 @@ assert(
   Version(42, 1337, 123,
     List{string}(),
     "alpha" :: "fullmoon" :: "wip-local-machine" :: "europe" :: List{string}())
+)
+
+assert(
+  versionParser()("1.2.3.42")
+  ==
+  Version(1, 2, 3, List{string}(), "42" :: List{string}())
+)
+
+assert(
+  versionParser()("2.29.2.windows.2")
+  ==
+  Version(2, 29, 2, List{string}(), "windows" :: "2" :: List{string}())
 )
 
 assert(
