@@ -66,7 +66,7 @@ fun string(Version v)
 fun versionParser() -> Parser{Version}
   tagParser = whileParser(lambda (char c) c.isLetter() || c.isDigit() || c == '-');
   (
-    txtIntParser() & matchParser('.') >> txtIntParser() & ?(matchParser('.') >> txtIntParser()) &
+    txtPosIntParser() & matchParser('.') >> txtPosIntParser() & ?(matchParser('.') >> txtPosIntParser()) &
     ?(matchParser('-') >> manyParser(tagParser, matchParser('.'))) &
     ?((matchParser('+') | matchParser('.')) >> manyParser(tagParser, matchParser('.')))
   ).unwrap( lambda (  int major,
@@ -101,15 +101,15 @@ assert(
 )
 
 assert(
-  Version(1, 0, 0)    >   Version(0, 1, 0)                                &&
-  Version(1, 1, 0)    >   Version(1, 0, 0)                                &&
-  Version(1, 1, 2)    >   Version(1, 1, 1)                                &&
-  Version(1, 1, 1)    >   Version(1, 1, 1, "alpha" :: List{string}())     &&
-  Version(2, 0, 0)    >   Version(1, 99, 0)                               &&
-  Version(1, 0, 0)    <   Version(2, 1, 0)                                &&
-  Version(1, 1, 0)    <   Version(1, 2, 0)                                &&
-  Version(1, 1, 2)    <   Version(1, 1, 3)                                &&
-  Version(1, 1, 1)    <   Version(1, 1, 2, "alpha" :: List{string}())
+  Version(1, 0, 0) > Version(0, 1, 0)                             &&
+  Version(1, 1, 0) > Version(1, 0, 0)                             &&
+  Version(1, 1, 2) > Version(1, 1, 1)                             &&
+  Version(1, 1, 1) > Version(1, 1, 1, "alpha" :: List{string}())  &&
+  Version(2, 0, 0) > Version(1, 99, 0)                            &&
+  Version(1, 0, 0) < Version(2, 1, 0)                             &&
+  Version(1, 1, 0) < Version(1, 2, 0)                             &&
+  Version(1, 1, 2) < Version(1, 1, 3)                             &&
+  Version(1, 1, 1) < Version(1, 1, 2, "alpha" :: List{string}())
 )
 
 assert(
@@ -118,6 +118,8 @@ assert(
   p("0")            is ParseFailure           &&
   p("0.")           is ParseFailure           &&
   p("0.a")          is ParseFailure           &&
+  p("-1.1")         is ParseFailure           &&
+  p("1.-1")         is ParseFailure           &&
   p("0.0")          == Version(0, 0)          &&
   p("42.1337")      == Version(42, 1337)      &&
   p("42.1337.123")  == Version(42, 1337, 123) &&
