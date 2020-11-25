@@ -186,7 +186,27 @@ TEST_CASE("Analyzing user-function templates", "[frontend]") {
     CHECK(output.getProg().lookupFuncs("ft__int", prog::OvOptions{0}).size() == 1);
   }
 
-  SECTION("Overload func templates based on amount of type-parameters") {
+  SECTION("Overloaded func templates prefer simpler matches") {
+    const auto& output = ANALYZE("struct Null "
+                                 "union Option{T} = T, Null "
+                                 "fun ft{T}(T a) a / \"doesnotwork\" "
+                                 "fun ft{T}(Option{T} a) a "
+                                 "fun f() ft(Option{int}(42))");
+    REQUIRE(output.isSuccess());
+
+    const auto& fDef = GET_FUNC_DEF(output, "f");
+    auto fArgs       = std::vector<prog::expr::NodePtr>{};
+    fArgs.push_back(
+        applyConv(output, "int", "Option__int", prog::expr::litIntNode(output.getProg(), 42)));
+    auto callExpr = prog::expr::callExprNode(
+        output.getProg(),
+        GET_FUNC_ID(output, "ft__int", GET_TYPE_ID(output, "Option__int")),
+        std::move(fArgs));
+
+    CHECK(fDef.getExpr() == *callExpr);
+  }
+
+  SECTION("Overloaded func templates prefer less type-parameters") {
     const auto& output = ANALYZE("union Choice{T1, T2} = T1, T2 "
                                  "fun ft{T1, T2}(T1 a, T2 b) -> Choice{T1, T2} "
                                  "  bool(a) ? a : b "
