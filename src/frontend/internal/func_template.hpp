@@ -13,6 +13,11 @@ class FuncTemplate final {
   friend class FuncTemplateTable;
 
 public:
+  struct InferResult {
+    prog::sym::TypeSet types;
+    int complexity;
+  };
+
   FuncTemplate(const FuncTemplate& rhs) = delete;
   FuncTemplate(FuncTemplate&& rhs)      = default;
   ~FuncTemplate()                       = default;
@@ -28,7 +33,7 @@ public:
       -> std::optional<prog::sym::TypeId>;
 
   [[nodiscard]] auto inferTypeParams(const prog::sym::TypeSet& argTypes)
-      -> std::optional<prog::sym::TypeSet>;
+      -> std::optional<InferResult>;
 
   [[nodiscard]] auto
   isCallable(const prog::sym::TypeSet& typeParams, const prog::sym::TypeSet& argTypes) -> bool;

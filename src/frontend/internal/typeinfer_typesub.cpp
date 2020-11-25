@@ -46,4 +46,20 @@ auto resolvePathToTypeSub(
   return resolvePathToTypeSub(ctx, ++begin, end, params[targetIndex]);
 }
 
+auto getComplexity(const Context& ctx, prog::sym::TypeId type) noexcept -> int {
+  const auto typeInfo = ctx.getTypeInfo(type);
+  if (!typeInfo || !typeInfo->hasParams()) {
+    return 1; // Simple type without type-parameters has a complexity of 1.
+  }
+  return 1 + getComplexity(ctx, *typeInfo->getParams());
+}
+
+auto getComplexity(const Context& ctx, const prog::sym::TypeSet& types) noexcept -> int {
+  auto result = 0;
+  for (const auto& type : types) {
+    result += getComplexity(ctx, type);
+  }
+  return result;
+}
+
 } // namespace frontend::internal

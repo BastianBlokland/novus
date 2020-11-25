@@ -6,6 +6,9 @@ struct Error = int code, string msg
 
 // -- Constructors
 
+fun Error()
+  Error(-1, "Unknown error")
+
 fun Error(string msg)
   Error(-1, msg)
 
@@ -25,6 +28,60 @@ fun ??{T}(Either{T, Error} e, lazy{T} def)
 fun string(Error err)
   err.msg
 
+// -- Functions
+
+fun map{T, TResult}(Either{T, Error} v, function{T, Either{TResult, Error}} f) -> Either{TResult, Error}
+  if v as T      val -> f(val)
+  if v as Error  err -> err
+
+fun map{T, TResult}(Either{T, Error} v, function{T, TResult} f) -> Either{TResult, Error}
+  if v as T      val -> f(val)
+  if v as Error  err -> err
+
+// -- Actions
+
+act map{T, TResult}(Either{T, Error} v, action{T, Either{TResult, Error}} f) -> Either{TResult, Error}
+  if v as T      val -> f(val)
+  if v as Error  err -> err
+
+act map{T, TResult}(Either{T, Error} v, action{T, TResult} f) -> Either{TResult, Error}
+  if v as T      val -> f(val)
+  if v as Error  err -> err
+
 // -- Tests
 
 assert(Error("Hello").string() == "Hello")
+
+assert(
+  v = Either{int, Error}(42);
+  v.map(lambda (int val) val * 2) == 84)
+
+assert(
+  v = Either{int, Error}(Error());
+  v.map(lambda (int val) 42) == Error())
+
+assert(
+  v = Either{int, Error}(42);
+  v.map(lambda (int val) val > 100 ? val : Error("Test")) == Error("Test"))
+
+assert(
+  v = Either{int, Error}(Error());
+  v.map(lambda (int val) val > 100 ? val : Error("Test")) == Error())
+
+// -- Impure Tests
+
+assert(
+  v = Either{int, Error}(42);
+  v.map(impure lambda (int val) val * 2) == 84)
+
+assert(
+  v = Either{int, Error}(Error("Test"));
+  v.map(impure lambda (int val) val) == Error("Test"))
+
+assert(
+  v = Either{int, Error}(42);
+  v.map(impure lambda (int val) val > 100 ? val : Error("Test")) == Error("Test"))
+
+assert(
+  v = Either{int, Error}(Error());
+  v.map(impure lambda (int val) val > 100 ? val : Error("Test")) == Error())

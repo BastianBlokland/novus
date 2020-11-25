@@ -83,7 +83,7 @@ auto FuncTemplate::getRetType(const prog::sym::TypeSet& typeParams)
 }
 
 auto FuncTemplate::inferTypeParams(const prog::sym::TypeSet& argTypes)
-    -> std::optional<prog::sym::TypeSet> {
+    -> std::optional<InferResult> {
   if (argTypes.getCount() != m_parseNode->getArgList().getCount()) {
     return std::nullopt;
   }
@@ -96,7 +96,11 @@ auto FuncTemplate::inferTypeParams(const prog::sym::TypeSet& argTypes)
     }
     typeParams.push_back(*inferredType);
   }
-  return prog::sym::TypeSet{std::move(typeParams)};
+
+  InferResult result;
+  result.types      = prog::sym::TypeSet{std::move(typeParams)};
+  result.complexity = getComplexity(*m_ctx, result.types);
+  return result;
 }
 
 auto FuncTemplate::isCallable(

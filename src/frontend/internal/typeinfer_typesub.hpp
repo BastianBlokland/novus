@@ -51,4 +51,14 @@ template <typename TypeSpec>
   return result;
 }
 
+/* Calculate the complexity of a type, used to prefer simpler types for type inference.
+ * Note: Currently this is based on the amount of type-parameters and their complexity.
+ */
+auto getComplexity(const Context& ctx, prog::sym::TypeId type) noexcept -> int;
+
+/* Calculate the complexity of a set of types, used to prefer simpler types for type inference.
+ * Note: Currently this a sum of the complexity of the types.
+ */
+auto getComplexity(const Context& ctx, const prog::sym::TypeSet& types) noexcept -> int;
+
 } // namespace frontend::internal

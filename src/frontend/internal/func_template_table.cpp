@@ -1,4 +1,5 @@
 #include "func_template_table.hpp"
+#include "typeinfer_typesub.hpp"
 #include <limits>
 
 namespace frontend::internal {
@@ -135,24 +136,25 @@ auto FuncTemplateTable::inferParams(
   }
 
   /* Find the templates where we can successfully infer the type-parameters (and call it with the
-  given argument types), prefer templates with the least amount of type-parameters. Can return
-  multiple templates if they have the same amount of type-parameters. */
+  given argument types), prefer templates with lower complexity type-parameters. Can return
+  multiple templates if they have the same complexity. */
 
-  auto typeParamCount = std::numeric_limits<unsigned int>::max();
-  auto result         = std::vector<std::pair<FuncTemplate*, prog::sym::TypeSet>>{};
+  auto typeParamComplexity = std::numeric_limits<int>::max();
+  auto result              = std::vector<std::pair<FuncTemplate*, prog::sym::TypeSet>>{};
 
   for (auto& funcTemplate : itr->second) {
     if (satisfiesOptions(funcTemplate, options) &&
         funcTemplate.getArgumentCount() == argTypes.getCount()) {
 
-      const auto inferredTypeParams = funcTemplate.inferTypeParams(argTypes);
-      if (inferredTypeParams && funcTemplate.isCallable(*inferredTypeParams, argTypes)) {
-        if (funcTemplate.getTypeParamCount() < typeParamCount) {
+      const auto inferResult = funcTemplate.inferTypeParams(argTypes);
+      if (inferResult && funcTemplate.isCallable(inferResult->types, argTypes)) {
+
+        if (inferResult->complexity < typeParamComplexity) {
           result.clear();
-          result.emplace_back(&funcTemplate, *inferredTypeParams);
-          typeParamCount = funcTemplate.getTypeParamCount();
-        } else if (funcTemplate.getTypeParamCount() == typeParamCount) {
-          result.emplace_back(&funcTemplate, *inferredTypeParams);
+          result.emplace_back(&funcTemplate, inferResult->types);
+          typeParamComplexity = inferResult->complexity;
+        } else if (inferResult->complexity == typeParamComplexity) {
+          result.emplace_back(&funcTemplate, inferResult->types);
         }
       }
     }
