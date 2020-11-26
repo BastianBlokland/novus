@@ -1,3 +1,4 @@
+import "std/ascii.nov"
 import "std/func.nov"
 import "std/list.nov"
 
@@ -153,6 +154,34 @@ fun split(string str, function{char, bool} pred)
       else                    -> self(--startIdx, endIdx, result)
   , --str.length(), --str.length(), List{string}())
 
+fun trimStart(string str)
+  str.trimStart(isWhitespace)
+
+fun trimStart(string str, function{char, bool} pred)
+  invoke(
+    lambda (int idx)
+      c = str[idx];
+      if c != '\0' && pred(c) -> self(++idx)
+      else                    -> str[idx, str.length()]
+  , 0)
+
+fun trimEnd(string str)
+  str.trimEnd(isWhitespace)
+
+fun trimEnd(string str, function{char, bool} pred)
+  invoke(
+    lambda (int idx)
+      c = str[idx];
+      if c != '\0' && pred(c) -> self(--idx)
+      else                    -> str[0, ++idx]
+  , --str.length())
+
+fun trim(string str)
+  str.trim(isWhitespace)
+
+fun trim(string str, function{char, bool} pred)
+  str.trimStart(pred).trimEnd(pred)
+
 fun toChars(string str)
   invoke(
     lambda (int idx, List{char} result)
@@ -307,6 +336,35 @@ assert(
   " h e l l o ".split(equals{char}[' ']) == "h" :: "e" :: "l" :: "l" :: "o" :: List{string}() &&
   "hello-world".split(equals{char}[' ']) == List("hello-world") &&
   "".split(equals{char}[' ']) == List{string}())
+
+assert(
+  "".trimStart()                 == ""          &&
+  " ".trimStart()                == ""          &&
+  " \t\n ".trimStart()           == ""          &&
+  "   hello".trimStart()         == "hello"     &&
+  "hello ".trimStart()           == "hello "    &&
+  "   h e llo".trimStart()       == "h e llo"   &&
+  " hello \t".trimStart()        == "hello \t"  &&
+  "1a2b3c45".trimStart(isDigit)  == "a2b3c45")
+
+assert(
+  "".trimEnd()                 == ""            &&
+  " ".trimEnd()                == ""            &&
+  " \t\n ".trimEnd()           == ""            &&
+  "   hello".trimEnd()         == "   hello"    &&
+  "hello ".trimEnd()           == "hello"       &&
+  "  h e llo \t".trimEnd()      == "  h e llo"  &&
+  "1a2b3c45".trimEnd(isDigit)  == "1a2b3c")
+
+assert(
+  "".trim()                 == ""         &&
+  " ".trim()                == ""         &&
+  " \t\n ".trim()           == ""         &&
+  "   hello".trim()         == "hello"    &&
+  "hello ".trim()           == "hello"    &&
+  "   h e llo".trim()       == "h e llo"  &&
+  " hello \t".trim()        == "hello"    &&
+  "1a2b3c45".trim(isDigit)  == "a2b3c")
 
 assert(
   "h".toChars() == List{char}('h') &&
