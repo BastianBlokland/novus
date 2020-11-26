@@ -223,7 +223,7 @@ fun matchParser(string str)
 
 fun allParser()
   Parser(lambda (ParseState s) -> ParseResult{string}
-    s.success(s.str[s.pos, s.str.length() - s.pos])
+    s.success(s.str[s.pos, s.str.length()])
   )
 
 fun whileParser(function{ParseState, bool} pred)
@@ -374,7 +374,11 @@ assert(
 
 assert(
   allParser()("hello world") == "hello world" &&
-  allParser()("")            == "")
+  allParser()("")            == "" )
+
+assert(
+  p = matchParser("hello ") >> allParser();
+  p("hello world") == "world" )
 
 assert(
   whileParser(isDigit, false)("123 123") == "123" &&
