@@ -6,8 +6,7 @@ act formatJson(Path path, bool pretty)
   jsonStr = fileRead(path);
   if jsonStr.isEmpty() -> printErr("Unable to read file at path: " + path); fail()
   else ->
-    jParser   = jsonParser();
-    parseRes  = ~jParser(jsonStr);
+    parseRes = jsonParser().run(jsonStr);
     if parseRes as JsonValue v  -> printJson(v, pretty)
     if parseRes as Error err    -> print("Unable to parse json: " + err)
 

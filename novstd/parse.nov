@@ -22,15 +22,20 @@ fun (){T}(Parser{T} p, string str)
 fun (){T}(Parser{T} p, ParseState s)
   p.func(s)
 
+fun run{T}(Parser{T} p, string str) -> Either{T, Error}
+  res = p(str);
+  if res as ParseSuccess{T} suc   -> suc.val
+  if res as ParseFailure    fail  -> fail.err
+
+fun build{T}(Parser{T} p) -> function{string, Either{T, Error}}
+  lambda (string str)
+    p.run(str)
+
 fun ??{T}(ParseResult{T} res, T def)
   res as ParseSuccess{T} suc ? suc.val : def
 
 fun ??{T1, T2}(ParseResult{T1} res, T2 def) -> Either{T1, T2}
   res as ParseSuccess{T1} suc ? suc.val : def
-
-fun ~{T}(ParseResult{T} res) -> Either{T, Error}
-  if res as ParseSuccess{T} suc   -> suc.val
-  if res as ParseFailure    fail  -> fail.err
 
 fun [](ParseState p, int i)
   p.str[p.pos + i]
@@ -533,8 +538,12 @@ assert(
   txtBoolParser()("abc")   is ParseFailure)
 
 assert(
-  ~txtBoolParser()("abc")   is Error &&
-  ~txtBoolParser()("true")  is bool)
+  txtBoolParser().run("abc")   is Error &&
+  txtBoolParser().run("true")  is bool)
+
+assert(
+  txtBoolParser().build()("abc")   is Error &&
+  txtBoolParser().build()("true")  is bool)
 
 assert(
   p = ?txtIntParser();
