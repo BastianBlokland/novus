@@ -1,3 +1,4 @@
+import "std/either.nov"
 import "std/option.nov"
 import "std/pair.nov"
 
@@ -64,6 +65,9 @@ fun push{T}(List{T} l, T val)
 fun push{T}(List{T} l, List{T} l2)
   if l2 as LNode{T} n -> List{T}(n.val, push(l, n.next))
   if l2 is LEnd       -> l
+
+fun pushUnique{T}(List{T} l, T val)
+  l.contains(val) ? l : l.push(val)
 
 fun pushRange{T}(List{T} l, T start, T end)
   if start >= end -> l
@@ -175,6 +179,12 @@ fun reverse{T}(List{T} l)
 fun sort{T}(List{T} l)
   l.fold(insertOrdered{T})
 
+fun distinct{T}(List{T} l)
+  l.fold(pushUnique{T}).reverse()
+
+fun distinctReverse{T}(List{T} l)
+  l.fold(pushUnique{T})
+
 fun count{T}(List{T} l, function{T, bool} pred)
   l.fold(lambda (int c, T val) pred(val) ? ++c : c)
 
@@ -221,6 +231,18 @@ fun zip{T, TResult}(List{List{T}} l, function{TResult, List{T}, TResult} func, T
   if fronts.isEmpty() -> result
   else                -> nexts = l.map(lambda (List{T} cur) cur.pop(1));
                          zip(nexts, func, func(result, fronts))
+
+fun split{T1, T2}(List{Either{T1, T2}} l)
+  l.reverse().splitReverse()
+
+fun splitReverse{T1, T2}(List{Either{T1, T2}} l)
+  l.fold(
+    lambda (Pair{List{T1}, List{T2}} res, Either{T1, T2} elem)
+      makePair(
+        elem as T1 t1 ? (t1 :: res.first)   : res.first,
+        elem as T2 t2 ? (t2 :: res.second)  : res.second
+      )
+    , makePair(List{T1}(), List{T2}()))
 
 // The default equality uses stack size linear with the list length, so for large lists its
 // ineffiecient / impossible to use the default equality. This is an alternative that uses
@@ -318,6 +340,14 @@ assert(
   l.push(List(42)) == 42 :: 1 :: 2 :: 3 :: List{int}() &&
   l.push(42 :: 1337 :: List{int}()) == 42 :: 1337 :: 1 :: 2 :: 3 :: List{int}() &&
   l.push(3 :: 2 :: 1 :: List{int}()) == 3 :: 2 :: 1 :: 1 :: 2 :: 3 :: List{int}())
+
+assert(
+  l = 1 :: 2 :: 3 :: List{int}();
+  l.pushUnique(1) == l &&
+  l.pushUnique(2) == l &&
+  l.pushUnique(3) == l &&
+  l.pushUnique(4) == 4 :: l &&
+  l.pushUnique(-1).pushUnique(2).pushUnique(4) == 4 :: -1 :: l)
 
 assert(
   l = 42 :: 1337 :: List{int}();
@@ -468,6 +498,28 @@ assert(List{int}().sort() == List{int}())
 
 assert(
   l = 1 :: 2 :: 3 :: List{int}();
+  l.distinct() == l)
+assert(
+  l = 1 :: 2 :: 2 :: 3 :: List{int}();
+  l.distinct() == 1 :: 2 :: 3 :: List{int}())
+assert(
+  l = 3 :: 1 :: 2 :: 3 :: 2 :: 3 :: 3 :: List{int}();
+  l.distinct() == 3 :: 1 :: 2 :: List{int}())
+assert(List{int}().distinct() == List{int}())
+
+assert(
+  l = 1 :: 2 :: 3 :: List{int}();
+  l.distinctReverse() == 3 :: 2 :: 1 :: List{int}())
+assert(
+  l = 1 :: 2 :: 2 :: 3 :: List{int}();
+  l.distinctReverse() == 3 :: 2 :: 1 :: List{int}())
+assert(
+  l = 1 :: 1 :: 2 :: 2 :: 3 :: 3 :: 3 :: List{int}();
+  l.distinctReverse() == 3 :: 2 :: 1 :: List{int}())
+assert(List{int}().distinctReverse() == List{int}())
+
+assert(
+  l = 1 :: 2 :: 3 :: List{int}();
   l.count(lambda (int v) v > 2) == 1 &&
   l.count(lambda (int v) v == 0) == 0 &&
   l.count(lambda (int v) v > 0) == 3)
@@ -525,6 +577,38 @@ assert(
 assert(
   l = List{List{string}}();
   l.zip(lambda (string result, List{string} cur) result + " " + cur.sum()) == "")
+
+assert(
+  l = List{Either{int, string}}();
+  r = split(l);
+  r.first.isEmpty() && r.second.isEmpty())
+
+assert(
+  eS = (lambda (string s) Either{int, string}(s));
+  eI = (lambda (int i) Either{int, string}(i));
+  l = eI(1) :: eS("hello") :: eI(2) :: eS("world") :: eI(3) :: eI(4) :: List{Either{int, string}}();
+  split(l) == makePair(1 :: 2 :: 3 :: 4 :: List{int}(), "hello" :: "world" :: List{string}()))
+
+assert(
+  eS = (lambda (string s) Either{int, string}(s));
+  l = eS("hello") :: eS("good") :: eS("world") :: List{Either{int, string}}();
+  split(l) == makePair(List{int}(), "hello" :: "good" :: "world" :: List{string}()))
+
+assert(
+  eI = (lambda (int i) Either{int, string}(i));
+  l = eI(1) :: eI(2) :: eI(3) :: List{Either{int, string}}();
+  split(l) == makePair(1 :: 2 :: 3 :: List{int}(), List{string}()))
+
+assert(
+  l = List{Either{int, string}}();
+  r = splitReverse(l);
+  r.first.isEmpty() && r.second.isEmpty())
+
+assert(
+  eS = (lambda (string s) Either{int, string}(s));
+  eI = (lambda (int i) Either{int, string}(i));
+  l = eI(1) :: eS("hello") :: eI(2) :: eS("world") :: eI(3) :: eI(4) :: List{Either{int, string}}();
+  splitReverse(l) == makePair(4 :: 3 :: 2 :: 1 :: List{int}(), "world" :: "hello" :: List{string}()))
 
 assert(
   l = 0 :: 1 :: 4 :: 9 :: List{int}();
