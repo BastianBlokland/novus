@@ -27,7 +27,7 @@ fun WriterState(string indentStr, WriterNewlineMode newlineMode)
   WriterState("", 0, indentStr, newlineMode)
 
 fun WriterState(WriterNewlineMode newlineMode)
-  WriterState("", 0, "\t", newlineMode)
+  WriterState("", 0, "  ", newlineMode)
 
 // -- Operators
 
@@ -102,6 +102,9 @@ fun map{T, TResult}(Writer{TResult} w, function{T, TResult} func)
   )
 
 // -- Writers
+
+fun noneWriter()
+  Writer(lambda (WriterState s, None n) s)
 
 fun litWriter(string lit)
   Writer(lambda (WriterState s, None n)
@@ -192,6 +195,10 @@ fun lazyWriter{T}(lazy{Writer{T}} lw)
   )
 
 // -- Tests
+
+assert(
+  w = noneWriter();
+  w(None()) == "")
 
 assert(
   w = litWriter("hello world");

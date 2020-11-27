@@ -1,8 +1,11 @@
 import "std/either.nov"
+import "std/list.nov"
+import "std/option.nov"
+import "std/writer.nov"
 
 // -- Types
 
-struct Error = int code, string msg
+struct Error = int code, string msg, Option{Error} next
 
 // -- Constructors
 
@@ -12,10 +15,16 @@ fun Error()
 fun Error(string msg)
   Error(-1, msg)
 
-fun Error(int errCode)
-  Error(errCode, errCode.string())
+fun Error(int code)
+  Error(code, code.string())
+
+fun Error(int code, string msg)
+  Error(code, msg, none())
 
 // -- Operators
+
+fun ::(Error a, Error b)
+  Error(a.code, a.msg, a.next as Error n ? n :: b : b)
 
 fun ??{T}(Either{T, Error} e, T def)
   e as T val ? val : def
@@ -26,9 +35,35 @@ fun ??{T}(Either{T, Error} e, lazy{T} def)
 // -- Conversions
 
 fun string(Error err)
-  err.msg
+  err.allErrors().map(lambda (Error err) "'" + err.msg + "'").string()
 
 // -- Functions
+
+fun count(Error err)
+  err.next as Error n ? 1 + n.count() : 1
+
+fun distinct(Error err)
+  err.allErrors().distinct().combine() ?? err
+
+fun allErrors(Error err) -> List{Error}
+  err.next as Error n ? List(Error(err.code, err.msg)) :: allErrors(n) : List(err)
+
+fun combine(List{Error} err) -> Option{Error}
+  err.fold(lambda (Option{Error} result, Error err)
+    result as Error e ? some(e :: err) : some(err)
+  )
+
+fun valueOrError{T}(Pair{T, Option{Error}} p) -> Either{T, Error}
+  valueOrError(p.first, p.second)
+
+fun valueOrError{T}(Pair{T, List{Error}} p) -> Either{T, Error}
+  valueOrError(p.first, p.second)
+
+fun valueOrError{T}(T val, Option{Error} err) -> Either{T, Error}
+  err as Error e ? e : val
+
+fun valueOrError{T}(T val, List{Error} err) -> Either{T, Error}
+  valueOrError(val, combine(err))
 
 fun map{T, TResult}(Either{T, Error} v, function{T, Either{TResult, Error}} f) -> Either{TResult, Error}
   if v as T      val -> f(val)
@@ -37,6 +72,18 @@ fun map{T, TResult}(Either{T, Error} v, function{T, Either{TResult, Error}} f) -
 fun map{T, TResult}(Either{T, Error} v, function{T, TResult} f) -> Either{TResult, Error}
   if v as T      val -> f(val)
   if v as Error  err -> err
+
+// -- Writers
+
+fun errorWriter()
+  errorWriter(noneWriter(), newlineWriter())
+
+fun errorWriter(Writer{None} prefixWriter, Writer{None} sepWriter)
+  listWriter(
+    (
+      prefixWriter & litWriter('[') & txtIntWriter() & litWriter("] ") & stringWriter()
+    ).map(lambda (Error err) makePair(err.code, err.msg))
+  , sepWriter).map(lambda (Error err) err.allErrors())
 
 // -- Actions
 
@@ -50,7 +97,40 @@ act map{T, TResult}(Either{T, Error} v, action{T, TResult} f) -> Either{TResult,
 
 // -- Tests
 
-assert(Error("Hello").string() == "Hello")
+assert(Error("Hello").string() == "['Hello']")
+
+assert((Error("Hello") :: Error("World")).string() == "['Hello','World']")
+
+assert((Error("Hello") :: Error("Good") :: Error("World")).string() == "['Hello','Good','World']")
+
+assert(
+  w = errorWriter();
+  w(Error()).string() == "[-1] Unknown error" &&
+  w(Error(1337, "Hello") :: Error(42, "World")).string() == "[1337] Hello\n[42] World")
+
+assert(
+  w = errorWriter(indentWriter(), litWriter(",")).indent();
+  w(Error()).string() == "  [-1] Unknown error" &&
+  w(Error(1337, "Hello") :: Error(42, "World")).string() == "  [1337] Hello,  [42] World")
+
+assert(
+  Error("Hello").count() == 1 &&
+  (Error("Hello") :: Error("World")).count() == 2 &&
+  (Error("Good") :: Error("Hello") :: Error("World")).count() == 3)
+
+assert(
+  err = Error("Hello") :: Error("Good") :: Error("World");
+  err.allErrors() == Error("Hello") :: Error("Good") :: Error("World") :: List{Error}())
+
+assert(
+  errs = Error("Hello") :: Error("Good") :: Error("World") :: List{Error}();
+  errs.combine() == Error("Hello") :: Error("Good") :: Error("World"))
+
+assert(
+  Error("Hello").distinct() == Error("Hello") &&
+  (Error() :: Error()).distinct() == Error() &&
+  (Error("Hello") :: Error("World")).distinct() == Error("Hello") :: Error("World") &&
+  (Error("Hello") :: Error("World") :: Error("Hello")).distinct() == Error("Hello") :: Error("World"))
 
 assert(
   v = Either{int, Error}(42);
@@ -67,6 +147,15 @@ assert(
 assert(
   v = Either{int, Error}(Error());
   v.map(lambda (int val) val > 100 ? val : Error("Test")) == Error())
+
+assert(
+  valueOrError(42, none())        == 42 &&
+  valueOrError(42, Error("Test")) == Error("Test") )
+
+assert(
+  valueOrError(42, List{Error}())                                     == 42 &&
+  valueOrError(42, Error("Test") :: List{Error}())                    == Error("Test") &&
+  valueOrError(42, Error("Test") :: Error("Test2") :: List{Error}())  == Error("Test") :: Error("Test2") )
 
 // -- Impure Tests
 
