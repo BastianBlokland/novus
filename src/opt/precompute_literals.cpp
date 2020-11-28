@@ -66,6 +66,7 @@ namespace opt {
   case prog::sym::FuncKind::CheckGtInt:
   case prog::sym::FuncKind::CheckGtEqInt:
   case prog::sym::FuncKind::ConvIntLong:
+  case prog::sym::FuncKind::ConvCharLong:
   case prog::sym::FuncKind::ConvIntFloat:
   case prog::sym::FuncKind::ConvIntString:
   case prog::sym::FuncKind::ConvIntChar:
@@ -441,7 +442,8 @@ private:
       assert(args.size() == 2);
       return prog::expr::litBoolNode(m_prog, getInt(*args[0]) >= getInt(*args[1]));
     }
-    case prog::sym::FuncKind::ConvIntLong: {
+    case prog::sym::FuncKind::ConvIntLong:
+    case prog::sym::FuncKind::ConvCharLong: {
       assert(args.size() == 1);
       return prog::expr::litLongNode(m_prog, static_cast<int64_t>(getInt(*args[0])));
     }
