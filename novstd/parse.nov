@@ -504,6 +504,7 @@ assert(
   txtIntParser()("-1")               == -1 &&
   txtIntParser()("+1")               == 1 &&
   txtIntParser()("1337")             == 1337 &&
+  txtIntParser()("+0200")            == 200 &&
   txtIntParser()(intMax().string())  == intMax() &&
   txtIntParser()(intMin().string())  == intMin())
 
