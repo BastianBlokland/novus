@@ -35,6 +35,13 @@ fun toUpper(char c)
 fun toLower(char c)
   c.isUpper() ? char(c ^ 0x20) : c
 
+fun escapeForPrinting(char c)
+  if c == '\n'                -> "\\n"
+  if c == '\r'                -> "\\r"
+  if c == '\t'                -> "\\t"
+  if c.isControl() || c > 127 -> "\\" + int(c).string()
+  else                        -> c.string()
+
 // -- Tests
 
 assert(
@@ -85,3 +92,16 @@ assert(
 assert(
   rangeList('a', 'z').map(toUpper) == rangeList('A', 'Z') &&
   rangeList('A', 'Z').map(toLower) == rangeList('a', 'z'))
+
+assert(
+  '\0'.escapeForPrinting()      == "\\0"    &&
+  '\n'.escapeForPrinting()      == "\\n"    &&
+  '\r'.escapeForPrinting()      == "\\r"    &&
+  '\t'.escapeForPrinting()      == "\\t"    &&
+  '\a'.escapeForPrinting()      == "\\7"    &&
+  '\b'.escapeForPrinting()      == "\\8"    &&
+  ' '.escapeForPrinting()       == " "      &&
+  'a'.escapeForPrinting()       == "a"      &&
+  '+'.escapeForPrinting()       == "+"      &&
+  char(127).escapeForPrinting() == "\\127"  &&
+  char(189).escapeForPrinting() == "\\189")

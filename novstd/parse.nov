@@ -248,8 +248,8 @@ fun whileParser(function{ParseState, bool} pred, ParseFlags flags)
       lambda (ParseState cur, bool valid) -> ParseResult{string}
         if !cur.isEnd() && pred(cur) -> self(++cur, true)
         else                         -> valid  ? cur.success(begin.str[begin.pos, cur.pos])
-                                               : cur.failure(Error(
-                                                  "Unexpected character: '" + cur[0] + "'"))
+                                               : cur.failure(
+          Error("Unexpected character: '" + cur[0].escapeForPrinting() + "'"))
     );
     impl(begin, flags.isOptional())
   )
