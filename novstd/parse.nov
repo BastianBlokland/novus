@@ -234,7 +234,7 @@ fun allParser()
 fun whileParser(function{ParseState, bool} pred)
   whileParser(pred, false)
 
-fun whileParser(function{ParseState, bool} pred, bool allowEmpty)
+fun whileParser(function{ParseState, bool} pred, bool optional)
   Parser(lambda (ParseState begin)
     impl =
     (
@@ -244,14 +244,26 @@ fun whileParser(function{ParseState, bool} pred, bool allowEmpty)
                                                : cur.failure(Error(
                                                   "Unexpected character: '" + cur[0] + "'"))
     );
-    impl(begin, allowEmpty)
+    impl(begin, optional)
   )
 
 fun whileParser(function{char, bool} pred)
   whileParser(pred, false)
 
-fun whileParser(function{char, bool} pred, bool allowEmpty)
-  whileParser(lambda (ParseState s) pred(s[0]), allowEmpty)
+fun whileParser(function{char, bool} pred, bool optional)
+  whileParser(lambda (ParseState s) pred(s[0]), optional)
+
+fun untilParser(function{char, bool} pred)
+  whileParser(!pred)
+
+fun untilParser(function{char, bool} pred, bool optional)
+  whileParser(!pred, optional)
+
+fun untilParser{T}(Parser{T} endParser)
+  untilParser(endParser, false)
+
+fun untilParser{T}(Parser{T} endParser, bool optional)
+  whileParser(lambda (ParseState s) endParser(s) is ParseFailure, optional)
 
 fun whitespaceParser()
   whileParser(isWhitespace, true)
@@ -260,7 +272,13 @@ fun whitespaceParser(bool optional)
   whileParser(isWhitespace, optional)
 
 fun lineParser()
-  whileParser(lambda (ParseState s) (s - 1) != '\n', false)
+  untilParser(isNewline)
+
+fun lineParser(bool optional)
+  untilParser(isNewline, optional)
+
+fun newlineParser()
+  matchParser("\r\n") | matchParser("\n")
 
 fun txtBoolParser()
   Parser(lambda (ParseState s) -> ParseResult{bool}
@@ -394,6 +412,26 @@ assert(
   whileParser(isDigit, false)("")      is ParseFailure)
 
 assert(
+  untilParser(isDigit, true)("abc123")            == "abc" &&
+  untilParser(isDigit, true)("")                  == "" &&
+  untilParser(isDigit, false)("  hello 1 world")  == "  hello " &&
+  untilParser(isDigit, false)("1")                is ParseFailure &&
+  untilParser(isDigit, false)("")                 is ParseFailure)
+
+assert(
+  p = untilParser(matchParser('|'));
+  p("") is ParseFailure &&
+  p("|") is ParseFailure &&
+  p("|| |") is ParseFailure &&
+  p(" |") == " " &&
+  p("hello world| more?") == "hello world")
+
+assert(
+  p = untilParser(matchParser('|'), true);
+  p("") == "" &&
+  p("|") == "")
+
+assert(
   whitespaceParser()("  123")   == "  " &&
   whitespaceParser()(" a")      == " " &&
   whitespaceParser()(" \n\t ")  == " \n\t " &&
@@ -401,9 +439,21 @@ assert(
   whitespaceParser()("abc")     == "")
 
 assert(
-  lineParser()("abc sdf hello world")   == "abc sdf hello world" &&
-  lineParser()("abc sdf\nhello world")  == "abc sdf\n" &&
-  lineParser()("") is ParseFailure)
+  p = lineParser();
+  p("abc sdf hello world")     == "abc sdf hello world" &&
+  p("abc sdf\nhello world")    == "abc sdf" &&
+  p("abc sdf\r\nhello world")  == "abc sdf" &&
+  p("abc sdf\n\nhello world")  == "abc sdf" &&
+  p("") is ParseFailure)
+
+assert(
+  p = newlineParser();
+  p("\n")   == "\n" &&
+  p("\r\n") == "\r\n" &&
+  p("\n\n") == "\n" &&
+  p("\n\r") == "\n" &&
+  p("\r") is ParseFailure &&
+  p("")   is ParseFailure)
 
 assert(
   txtPosIntParser()("1")                == 1 &&

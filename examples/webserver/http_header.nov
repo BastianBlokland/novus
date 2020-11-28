@@ -21,19 +21,19 @@ struct HttpRespHeader   =
 // -- Parsers
 
 fun httpVersionParser()
-  matchParser("HTTP/") >> whileParser(!isWhitespace)
+  matchParser("HTTP/") >> untilParser(isWhitespace)
 
 fun httpHeaderFieldParser()
   (
-    whileParser(!equals{char}[':']) << matchParser(':') & whitespaceParser() >> lineParser()
+    untilParser(matchParser(':')) << matchParser(':') & whitespaceParser() >> lineParser()
   ).unwrap(lambda (string k, string v) HttpHeaderField(k, v))
 
 fun httpReqHeaderParser()
   (
-    httpMethodParser()          << whitespaceParser() &
-    whileParser(!isWhitespace)  << whitespaceParser() &
-    httpVersionParser()         << whitespaceParser() &
-    manyParser(httpHeaderFieldParser())
+    httpMethodParser()        << whitespaceParser() &
+    untilParser(isWhitespace) << whitespaceParser() &
+    httpVersionParser()       << whitespaceParser() &
+    manyParser(httpHeaderFieldParser(), newlineParser())
   ).unwrap(lambda (HttpMethod m, string resource, string v, List{HttpHeaderField} fields)
       HttpReqHeader(m, resource, v, fields))
 
