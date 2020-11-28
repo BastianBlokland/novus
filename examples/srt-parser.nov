@@ -75,14 +75,14 @@ fun subTextParser() -> Parser{string}
 // Parse the sequence number, the timing line and all text belonging to this subtitle, then
 // construct a 'Subtitle' struct.
 fun subParser() -> Parser{Subtitle}
-  seq     = txtIntParser() << lineParser(true) << whitespaceParser();
-  timing  = timingParser() << lineParser(true) << whitespaceParser();
+  seq     = txtIntParser() << lineParser(ParseFlags.Optional) << whitespaceParser();
+  timing  = timingParser() << lineParser(ParseFlags.Optional) << whitespaceParser();
   txt     = subTextParser();
   (seq & timing & txt).unwrap(lambda (int seq, Timing t, string txt) Subtitle(seq, t, txt))
 
 // Parse a list of subtitles optionally followed by whitespace.
 fun subListParser() -> Parser{List{Subtitle}}
-  manyParser(subParser() << whitespaceParser(true), true)
+  manyParser(subParser() << whitespaceParser(), true)
 
 // -- Driver code
 // Example output:
