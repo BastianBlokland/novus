@@ -383,6 +383,14 @@ fun lazyParser{T}(lazy{Parser{T}} lp)
     get(lp)(s)
   )
 
+// -- Parser modifiers
+
+fun trim(Parser{string} p)
+  p.map(lambda (string res) res.trim())
+
+fun trim(Parser{string} p, function{char, bool} pred)
+  p.map(lambda (string res) res.trim(pred))
+
 // -- Tests
 
 assert(retParser(42)("") == 42)
@@ -733,3 +741,20 @@ assert(
   p("42,1337,1,2")  == 42 :: 1337 :: 1 :: 2 :: List{int}() &&
   p("42")           == 42 :: List{int}() &&
   p("")             == List{int}())
+
+assert(
+  p = whileParser(!equals{char}['|']).trim();
+  p("") is ParseFailure &&
+  p(" ") == "" &&
+  p("\t\n\r ") == "" &&
+  p(" abc \t  | hello") == "abc" &&
+  p(" a b c \t  | hello") == "a b c" &&
+  p("\n\r a b c \t  | hello") == "a b c")
+
+assert(
+  p = whileParser(!equals{char}['|']).trim(isDigit);
+  p("") is ParseFailure &&
+  p(" ") == " " &&
+  p("123") == "" &&
+  p(" 123 ") == " 123 " &&
+  p("1abc501| hello") == "abc")
