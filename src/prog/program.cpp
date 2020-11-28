@@ -216,6 +216,7 @@ Program::Program() :
   // Register build-in implicit conversions.
   m_funcDecls.registerImplicitConv(*this, Fk::NoOp, m_char, m_int);
   m_funcDecls.registerImplicitConv(*this, Fk::ConvIntLong, m_int, m_long);
+  m_funcDecls.registerImplicitConv(*this, Fk::ConvCharLong, m_char, m_long);
   m_funcDecls.registerImplicitConv(*this, Fk::ConvIntFloat, m_int, m_float);
   m_funcDecls.registerImplicitConv(*this, Fk::ConvLongFloat, m_long, m_float);
 

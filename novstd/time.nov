@@ -1,5 +1,6 @@
-import "std/text.nov"
 import "std/math.nov"
+import "std/parse.nov"
+import "std/text.nov"
 
 // Gregorian calendar assumed with no leap seconds.
 
@@ -255,6 +256,11 @@ fun <=(Timestamp t1, Timestamp t2)  t1.ns <= t2.ns
 fun >(Timestamp t1, Timestamp t2)   t1.ns > t2.ns
 fun >=(Timestamp t1, Timestamp t2)  t1.ns >= t2.ns
 
+// -- Parsers
+
+fun unixTimeParser()
+  txtPosLongParser().map(lambda (long l) timeEpoch() + seconds(l))
+
 // -- Actions
 
 // Get a DateTime from the current system clock.
@@ -345,3 +351,10 @@ assert(timestamp() <= timestamp())
 
 assert(approx(float(seconds(42) + milliseconds(500)), 42.5))
 assert(approx(float(seconds(1337) + millisecond()), 1337.001))
+
+// -- Parser tests
+
+assert(
+  p = unixTimeParser();
+  p("")           is ParseFailure &&
+  p("1606579701") == (DateTime(2020, Month.November, 28) + hours(16) + minutes(8) + seconds(21)))

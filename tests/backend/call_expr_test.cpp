@@ -464,6 +464,10 @@ TEST_CASE("Generate assembly for call expressions", "[backend]") {
       asmb->addLoadLitInt(42); // NOLINT: Magic numbers
       asmb->addConvIntLong();
     });
+    CHECK_EXPR("long('a')", [](novasm::Assembler* asmb) -> void {
+      asmb->addLoadLitInt('a');
+      asmb->addConvIntLong();
+    });
     CHECK_EXPR("string(42)", [](novasm::Assembler* asmb) -> void {
       asmb->addLoadLitInt(42);
       asmb->addConvIntString();

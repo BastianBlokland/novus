@@ -86,6 +86,7 @@ enum class FuncKind {
   DecrementChar, // Decrement a character.
 
   ConvIntLong,     // Convert a integer to a long.
+  ConvCharLong,    // Convert a character to a long.
   ConvIntFloat,    // Convert a int to a float.
   ConvLongInt,     // Convert a long to an integer.
   ConvLongFloat,   // Convert a long to a float.

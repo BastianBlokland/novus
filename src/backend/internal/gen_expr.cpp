@@ -361,6 +361,7 @@ auto GenExpr::visit(const prog::expr::CallExprNode& n) -> void {
     break;
 
   case prog::sym::FuncKind::ConvIntLong:
+  case prog::sym::FuncKind::ConvCharLong:
     m_asmb->addConvIntLong();
     break;
   case prog::sym::FuncKind::ConvIntFloat:
@@ -758,7 +759,7 @@ auto GenExpr::visit(const prog::expr::UnionGetExprNode& n) -> void {
   m_asmb->label(endLabel);
 }
 
-auto GenExpr::visit(const prog::expr::FailNode& /*unused*/) -> void { m_asmb->addFail(); }
+auto GenExpr::visit(const prog::expr::FailNode & /*unused*/) -> void { m_asmb->addFail(); }
 
 auto GenExpr::visit(const prog::expr::LitBoolNode& n) -> void {
   m_asmb->addLoadLitInt(n.getVal() ? 1U : 0U);
