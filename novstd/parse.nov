@@ -232,6 +232,9 @@ fun retParser{T}(T val)
     s.success(val)
   )
 
+fun nopParser()
+  retParser(true)
+
 fun matchParser(char c)
   Parser(lambda (ParseState s) -> ParseResult{char}
     if s == c -> (s + 1).success(c)
@@ -442,6 +445,8 @@ fun trim(Parser{string} p, function{char, bool} pred)
 // -- Tests
 
 assert(retParser(42)("") == 42)
+
+assert(nopParser()("") == true)
 
 assert(
   matchParser('a')("a") == 'a' &&
