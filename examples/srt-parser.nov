@@ -35,6 +35,9 @@ import "std.nov"
 //
 // - 'Parser{T} :: Parser{T}' -> Parser{List{T}}'
 //    Excecutes both parsers, return a list containing both values.
+//
+// - 'Parser{T} ! Error' -> Parser{T}'
+//    Add a more descriptive error when the given parser fails.
 
 // -- Types
 
@@ -59,14 +62,14 @@ fun timecodeParser() -> Parser{Duration}
     (matchParser(':') >> durationParser(minute()))      ::
     (matchParser(':') >> durationParser(second()))      ::
     (matchParser(',') >> durationParser(millisecond()))
-  ).map(sum{Duration})
+  ).map(sum{Duration}) ! Error("Invalid srt timecode")
 
 // Format of timing: '00:13:59,380 --> 00:14:01,257'
 // Parse two timecodes and construct a 'Timing' struct.
 fun timingParser() -> Parser{Timing}
   (
     timecodeParser() & (matchParser(" --> ") >> timecodeParser())
-  ).unwrap(lambda (Duration a, Duration b) Timing(a, b))
+  ).unwrap(lambda (Duration a, Duration b) Timing(a, b)) ! Error("Invalid srt timing specification")
 
 // Parse all text until a empty line is encountered.
 fun subTextParser() -> Parser{string}
@@ -75,7 +78,7 @@ fun subTextParser() -> Parser{string}
 // Parse the sequence number, the timing line and all text belonging to this subtitle, then
 // construct a 'Subtitle' struct.
 fun subParser() -> Parser{Subtitle}
-  seq     = txtIntParser() << lineParser(ParseFlags.Optional) << whitespaceParser();
+  seq     = txtIntParser() << lineParser(ParseFlags.Optional) << whitespaceParser() ! Error("Invalid sequence number");
   timing  = timingParser() << lineParser(ParseFlags.Optional) << whitespaceParser();
   txt     = subTextParser();
   (seq & timing & txt).unwrap(lambda (int seq, Timing t, string txt) Subtitle(seq, t, txt))
