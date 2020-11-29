@@ -132,11 +132,12 @@ fun =={T1, T2}(ParseResult{Either{T1, T2}} result, T2 val)
   result as ParseSuccess{Either{T1, T2}} suc && suc.val == val
 
 fun !{T}(Parser{T} p, Error newError)
-  Parser(lambda (ParseState s) -> ParseResult{T}
-    pR = p(s);
-    pR as ParseFailure parseFail ? parseFail.state.failure(newError :: parseFail.err) : pR)
+  p !! (lambda (Error oldError) newError :: oldError)
 
-fun !{T}(Parser{T} p, function{Error, Error} errorMutation)
+fun !!{T}(Parser{T} p, Error newError)
+  p !! (lambda (Error oldError) newError)
+
+fun !!{T}(Parser{T} p, function{Error, Error} errorMutation)
   Parser(lambda (ParseState s) -> ParseResult{T}
     pR = p(s);
     pR as ParseFailure parseFail ? parseFail.state.failure(errorMutation(parseFail.err)) : pR)
@@ -718,12 +719,17 @@ assert(
   p.run("Hell") == Error("Did not greet") :: Error("Expected: 'Hello', got: 'Hell'"))
 
 assert(
-  p = (matchParser("Hello") ! lambda (Error err) Error("Did not greet"));
+  p = matchParser("Hello") !! Error("Did not greet");
   p("Hello") == "Hello" &&
   p.run("Hell") == Error("Did not greet"))
 
 assert(
-  p = (matchParser("Hello") ! lambda (Error err) Error("Did not greet") :: err);
+  p = (matchParser("Hello") !! lambda (Error err) Error("Did not greet"));
+  p("Hello") == "Hello" &&
+  p.run("Hell") == Error("Did not greet"))
+
+assert(
+  p = (matchParser("Hello") !! lambda (Error err) Error("Did not greet") :: err);
   p("Hello") == "Hello" &&
   p.run("Hell") == Error("Did not greet") :: Error("Expected: 'Hello', got: 'Hell'"))
 

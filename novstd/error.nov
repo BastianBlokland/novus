@@ -33,9 +33,12 @@ fun ??{T}(Either{T, Error} e, lazy{T} def)
   e as T val ? val : def.get()
 
 fun !{T}(Either{T, Error} e, Error newError)
-  e as Error oldError ? Either{T, Error}(newError :: oldError) : e
+  e !! (lambda (Error oldError) newError :: oldError)
 
-fun !{T}(Either{T, Error} e, function{Error, Error} errorMutation)
+fun !!{T}(Either{T, Error} e, Error newError)
+  e !! (lambda (Error oldError) newError)
+
+fun !!{T}(Either{T, Error} e, function{Error, Error} errorMutation)
   e as Error oldError ? Either{T, Error}(errorMutation(oldError)) : e
 
 // -- Conversions
@@ -164,19 +167,27 @@ assert(
 
 assert(
   v = Either{int, Error}(Error("Low level error"));
-  (v ! lambda (Error oldErr) Error("Better error")) == Error("Better error"))
-
-assert(
-  v = Either{int, Error}(Error("Low level error"));
-  (v ! lambda (Error e) e) == Error("Low level error"))
-
-assert(
-  v = Either{int, Error}(Error("Low level error"));
-  (v ! lambda (Error e) Error("Better error") :: e) == Error("Better error") :: Error("Low level error"))
+  (v !! Error("Better error")) == Error("Better error"))
 
 assert(
   v = Either{int, Error}(42);
-  (v ! lambda (Error e) Error("Better error")) == 42)
+  (v !! Error("Better error")) == 42)
+
+assert(
+  v = Either{int, Error}(Error("Low level error"));
+  (v !! lambda (Error oldErr) Error("Better error")) == Error("Better error"))
+
+assert(
+  v = Either{int, Error}(Error("Low level error"));
+  (v !! lambda (Error e) e) == Error("Low level error"))
+
+assert(
+  v = Either{int, Error}(Error("Low level error"));
+  (v !! lambda (Error e) Error("Better error") :: e) == Error("Better error") :: Error("Low level error"))
+
+assert(
+  v = Either{int, Error}(42);
+  (v !! lambda (Error e) Error("Better error")) == 42)
 
 assert(
   valueOrError(42, none())        == 42 &&
