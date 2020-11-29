@@ -253,6 +253,12 @@ fun allParser()
     s.success(s.str[s.pos, s.str.length()])
   )
 
+fun endParser()
+  Parser(lambda (ParseState s) -> ParseResult{string}
+    s.isEnd() ? s.success("")
+              : s.failure(Error("Expected end of input, got '" + s[0].escapeForPrinting() + "'"))
+  )
+
 fun whileParser(function{ParseState, bool} pred)
   whileParser(pred, ParseFlags.None)
 
@@ -482,6 +488,16 @@ assert(
   p("|") == "")
 
 assert(
+  p = untilParser(endParser(), ParseFlags.Optional);
+  p("Hello world")  == "Hello world" &&
+  p("")             == "")
+
+assert(
+  p = untilParser(endParser());
+  p("Hello world") == "Hello world" &&
+  p("") is ParseFailure)
+
+assert(
   whitespaceParser()("  123")   == "  " &&
   whitespaceParser()(" a")      == " " &&
   whitespaceParser()(" \n\t ")  == " \n\t " &&
@@ -504,6 +520,12 @@ assert(
   p("\n\r") == "\n" &&
   p("\r") is ParseFailure &&
   p("")   is ParseFailure)
+
+assert(
+  p = endParser();
+  p("") == ""               &&
+  p("a") is ParseFailure    &&
+  p(" ") is ParseFailure)
 
 assert(
   txtPosIntParser()("1")                == 1 &&
