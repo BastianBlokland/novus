@@ -23,6 +23,7 @@ enum class TokenKind {
   OpEq,           // =
   OpEqEq,         // ==
   OpBang,         // !
+  OpBangBang,     // !!
   OpBangEq,       // !=
   OpLe,           // <
   OpLeEq,         // <=

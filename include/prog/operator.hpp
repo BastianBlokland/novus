@@ -22,6 +22,7 @@ enum class Operator {
   Tilde,
   EqEq,
   Bang,
+  BangBang,
   BangEq,
   Le,
   LeEq,

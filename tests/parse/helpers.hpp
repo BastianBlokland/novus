@@ -23,6 +23,7 @@ namespace parse {
 #define MINUSMINUS lex::basicToken(lex::TokenKind::OpMinusMinus)
 #define STAR lex::basicToken(lex::TokenKind::OpStar)
 #define BANG lex::basicToken(lex::TokenKind::OpBang)
+#define BANGBANG lex::basicToken(lex::TokenKind::OpBangBang)
 #define AMP lex::basicToken(lex::TokenKind::OpAmp)
 #define AMPAMP lex::basicToken(lex::TokenKind::OpAmpAmp)
 #define PIPE lex::basicToken(lex::TokenKind::OpPipe)

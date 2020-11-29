@@ -16,6 +16,8 @@ TEST_CASE("Parsing binary operators", "[parse]") {
   CHECK_EXPR("1 ! !3", binaryExprNode(INT(1), BANG, unaryExprNode(BANG, INT(3))));
   CHECK_EXPR(
       "!1 ! !3", binaryExprNode(unaryExprNode(BANG, INT(1)), BANG, unaryExprNode(BANG, INT(3))));
+  CHECK_EXPR("1 !! 3", binaryExprNode(INT(1), BANGBANG, INT(3)));
+  CHECK_EXPR("1 !!!3", binaryExprNode(INT(1), BANGBANG, unaryExprNode(BANG, INT(3))));
 
   SECTION("Precedence") {
     CHECK_EXPR("1 + 2 * 5", binaryExprNode(INT(1), PLUS, binaryExprNode(INT(2), STAR, INT(5))));
