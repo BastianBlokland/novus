@@ -131,6 +131,16 @@ fun =={T1, T2}(ParseResult{Either{T1, T2}} result, T1 val)
 fun =={T1, T2}(ParseResult{Either{T1, T2}} result, T2 val)
   result as ParseSuccess{Either{T1, T2}} suc && suc.val == val
 
+fun !{T}(Parser{T} p, Error newError)
+  Parser(lambda (ParseState s) -> ParseResult{T}
+    pR = p(s);
+    pR as ParseFailure parseFail ? parseFail.state.failure(newError :: parseFail.err) : pR)
+
+fun !{T}(Parser{T} p, function{Error, Error} errorMutation)
+  Parser(lambda (ParseState s) -> ParseResult{T}
+    pR = p(s);
+    pR as ParseFailure parseFail ? parseFail.state.failure(errorMutation(parseFail.err)) : pR)
+
 // -- Conversions
 
 fun string(ParseState s)
@@ -230,7 +240,8 @@ fun matchParser(char c)
 fun matchParser(string str)
   Parser(lambda (ParseState s) -> ParseResult{string}
     if s == str -> (s + str.length()).success(str)
-    else        -> s.failure(Error("Expected: '" + str + "', got: '" + s[0] + "'"))
+    else        -> s.failure(
+      Error("Expected: '" + str + "', got: '" + s.str[s.pos, s.pos + str.length()] + "'"))
   )
 
 fun allParser()
@@ -689,6 +700,21 @@ assert(
   p("Hello")  is ParseFailure &&
   p(" World") is ParseFailure &&
   p("abc")    is ParseFailure)
+
+assert(
+  p = matchParser("Hello") ! Error("Did not greet");
+  p("Hello") == "Hello" &&
+  p.run("Hell") == Error("Did not greet") :: Error("Expected: 'Hello', got: 'Hell'"))
+
+assert(
+  p = (matchParser("Hello") ! lambda (Error err) Error("Did not greet"));
+  p("Hello") == "Hello" &&
+  p.run("Hell") == Error("Did not greet"))
+
+assert(
+  p = (matchParser("Hello") ! lambda (Error err) Error("Did not greet") :: err);
+  p("Hello") == "Hello" &&
+  p.run("Hell") == Error("Did not greet") :: Error("Expected: 'Hello', got: 'Hell'"))
 
 assert(
   p = txtIntParser().map(lambda (int i) i * i);
