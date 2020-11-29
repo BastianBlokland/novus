@@ -131,6 +131,15 @@ fun insert(string str, int idx, string val)
   if idx >= str.length()  -> str + val
   else                    -> str[0, idx] + val + str[idx, str.length()]
 
+fun remove(string str, int idx)
+  str.remove(idx, 1)
+
+fun remove(string str, int idx, int amount)
+  if amount <= 0                  -> str
+  if idx == 0                     -> str[amount, str.length()]
+  if idx == str.length() - amount -> str[0, str.length() - amount]
+  else                            -> str[0, idx] + str[idx + amount, str.length()]
+
 fun padLeft(string str, int length, char c)
   if str.length() < length  -> padLeft(c.string() + str, length, c)
   else                      -> str
@@ -316,6 +325,32 @@ assert(
   "helloworld".insert("helloworld".length(), "_") == "helloworld_" &&
   "helloworld".insert(1, "_") == "h_elloworld" &&
   "helloworld".insert(5, "_") == "hello_world")
+
+assert(
+  "".remove(0)            == "" &&
+  "h".remove(0)           == "" &&
+  "helloworld".remove(0)  == "elloworld" &&
+  "helloworld".remove(1)  == "hlloworld" &&
+  "helloworld".remove(2)  == "heloworld" &&
+  "helloworld".remove(8)  == "helloword" &&
+  "helloworld".remove(9)  == "helloworl" &&
+  "helloworld".remove(-1) == "helloworld" &&
+  "helloworld".remove(10) == "helloworld")
+
+assert(
+  "".remove(0, 0)             == ""   &&
+  "".remove(0, 2)             == ""   &&
+  "h".remove(0, 0)            == "h"  &&
+  "h".remove(0, 2)            == ""   &&
+  "helloworld".remove(0, 2)   == "lloworld" &&
+  "helloworld".remove(1, 2)   == "hloworld" &&
+  "helloworld".remove(2, 2)   == "heoworld" &&
+  "helloworld".remove(8, 2)   == "hellowor" &&
+  "helloworld".remove(9, 2)   == "helloworl" &&
+  "helloworld".remove(0, 9)   == "d" &&
+  "helloworld".remove(0, 10)  == "" &&
+  "helloworld".remove(0, -1)  == "helloworld" &&
+  "helloworld".remove(2, -1)  == "helloworld")
 
 assert(
   "1".padLeft(-1, '0') == "1" &&
