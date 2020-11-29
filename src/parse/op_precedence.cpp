@@ -56,6 +56,8 @@ auto getRhsOpPrecedence(const lex::Token& token) -> int {
   case lex::TokenKind::OpPipe:
   case lex::TokenKind::OpPipePipe:
     return orPrecedence;
+  case lex::TokenKind::OpBang:
+    return bangPrecedence;
   case lex::TokenKind::OpQMark:
     return conditionalPrecedence;
   case lex::TokenKind::OpSemi:

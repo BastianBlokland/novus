@@ -16,7 +16,7 @@ TEST_CASE("Parsing unary operators", "[parse]") {
   CHECK_EXPR("-+-1", unaryExprNode(MINUS, unaryExprNode(PLUS, unaryExprNode(MINUS, INT(1)))));
   CHECK_EXPR("+-!1", unaryExprNode(PLUS, unaryExprNode(MINUS, unaryExprNode(BANG, INT(1)))));
   CHECK_EXPR("+?!1", unaryExprNode(PLUS, unaryExprNode(QMARK, unaryExprNode(BANG, INT(1)))));
-  CHECK_EXPR("!42 !true", unaryExprNode(BANG, INT(42)), unaryExprNode(BANG, BOOL(true)));
+  CHECK_EXPR("!42", unaryExprNode(BANG, INT(42)));
 
   SECTION("Errors") {
     CHECK_EXPR("&1", errInvalidUnaryOp(AMP, INT(1)));
