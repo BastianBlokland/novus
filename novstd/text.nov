@@ -2,12 +2,21 @@ import "std/ascii.nov"
 import "std/func.nov"
 import "std/list.nov"
 
+// -- Types
+
+struct TextPos =
+  int line,
+  int column
+
 // -- Operators
 
 fun +{T}(string s, T v)
   s + v.string()
 
 // -- Conversions
+
+fun string(TextPos p)
+  "[ln " + (p.line + 1) + ", c " + (p.column + 1) + "]"
 
 fun string(int i, int minDigits)
   i.string().padLeft(minDigits, '0')
@@ -203,6 +212,11 @@ fun join(List{string} l)
 fun join(List{char} l)
   l.fold(appendChar)
 
+fun getTextPos(string str)
+  line    = str.count(equals{char}['\n']);
+  column  = str.length() - (str.indexOfLast("\n") + 1);
+  TextPos(line, column)
+
 // -- Tests
 
 assert(
@@ -264,7 +278,8 @@ assert(
   "wasd wasd".indexOfLast(" ") == 4 &&
   "wasd wasd".indexOfLast("d w") == 3 &&
   "wasd wasd".indexOfLast("wasdz") == -1 &&
-  "wasd wasd".indexOfLast("") == -1)
+  "wasd wasd".indexOfLast("") == -1 &&
+  "".indexOfLast("d") == -1)
 
 assert(
   "hello world".indexOf(equals{char}[' ']) == 5 &&
@@ -418,3 +433,11 @@ assert(
   join('h' :: 'e' :: 'l' :: 'l' :: 'o' :: List{char}()) == "hello" &&
   List{string}().join() == "" &&
   List{char}().join() == "")
+
+assert(
+  "".getTextPos()           == TextPos(0, 0) &&
+  "a".getTextPos()          == TextPos(0, 1) &&
+  "abc".getTextPos()        == TextPos(0, 3) &&
+  "abc\n".getTextPos()      == TextPos(1, 0) &&
+  "abc\ndef".getTextPos()   == TextPos(1, 3) &&
+  "abc\ndef\n".getTextPos() == TextPos(2, 0))

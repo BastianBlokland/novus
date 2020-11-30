@@ -28,8 +28,10 @@ fun (){T}(Parser{T} p, ParseState s)
 
 fun run{T}(Parser{T} p, string str) -> Either{T, Error}
   res = p(str);
-  if res as ParseSuccess{T} suc   -> suc.val
-  if res as ParseFailure    fail  -> fail.err
+  if res as ParseSuccess{T} suc  -> suc.val
+  if res as ParseFailure    fail ->
+    txtPos = getTextPos(fail.state.str[0, fail.state.pos]);
+    Error("Parsing failed, line: " + (txtPos.line + 1) + ", column: " + (txtPos.column + 1)) :: fail.err
 
 fun build{T}(Parser{T} p) -> function{string, Either{T, Error}}
   lambda (string str)
@@ -483,9 +485,10 @@ assert(retParser(42)("") == 42)
 assert(nopParser()("") == true)
 
 assert(
-  failParser(Error("Hello world"))  .run("")            == Error("Hello world")   &&
-  failParser()                      .run("Hello world") == Error()                &&
-  failParser()                      .run("")            == Error())
+  parseErr = Error("Parsing failed, line: 1, column: 1");
+  failParser(Error("Hello world")).run("")  == parseErr :: Error("Hello world") &&
+  failParser().run("Hello world")           == parseErr :: Error()              &&
+  failParser().run("")                      == parseErr :: Error())
 
 assert(
   matchParser('a')("a") == 'a' &&
@@ -780,24 +783,28 @@ assert(
   p("abc")    is ParseFailure)
 
 assert(
+  parseErr = Error("Parsing failed, line: 1, column: 1");
   p = matchParser("Hello") ! Error("Did not greet");
   p("Hello") == "Hello" &&
-  p.run("Hell") == Error("Did not greet") :: Error("Expected: 'Hello', got: 'Hell'"))
+  p.run("Hell") == parseErr :: Error("Did not greet") :: Error("Expected: 'Hello', got: 'Hell'"))
 
 assert(
+  parseErr = Error("Parsing failed, line: 1, column: 1");
   p = matchParser("Hello") !! Error("Did not greet");
   p("Hello") == "Hello" &&
-  p.run("Hell") == Error("Did not greet"))
+  p.run("Hell") == parseErr :: Error("Did not greet"))
 
 assert(
+  parseErr = Error("Parsing failed, line: 1, column: 1");
   p = (matchParser("Hello") !! lambda (Error err) Error("Did not greet"));
   p("Hello") == "Hello" &&
-  p.run("Hell") == Error("Did not greet"))
+  p.run("Hell") == parseErr :: Error("Did not greet"))
 
 assert(
+  parseErr = Error("Parsing failed, line: 1, column: 1");
   p = (matchParser("Hello") !! lambda (Error err) Error("Did not greet") :: err);
   p("Hello") == "Hello" &&
-  p.run("Hell") == Error("Did not greet") :: Error("Expected: 'Hello', got: 'Hell'"))
+  p.run("Hell") == parseErr :: Error("Did not greet") :: Error("Expected: 'Hello', got: 'Hell'"))
 
 assert(
   p = txtIntParser().map(lambda (int i) i * i);
