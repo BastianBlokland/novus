@@ -104,18 +104,17 @@ fun any(string str, function{char, bool} pred)
   , 0)
 
 fun all(string str, function{char, bool} pred)
-  invoke(
-    lambda (int idx)
-      if idx >= str.length()  -> true
-      else                    -> pred(str[idx]) && self(++idx)
-  , 0)
+  str.count(pred) == str.length()
 
 fun none(string str, function{char, bool} pred)
+  str.count(pred) == 0
+
+fun count(string str, function{char, bool} pred)
   invoke(
-    lambda (int idx)
-      if idx >= str.length()  -> true
-      else                    -> !pred(str[idx]) && self(++idx)
-  , 0)
+    lambda (int idx, int res)
+      if idx >= str.length()  -> res
+      else                    -> self(++idx, pred(str[idx]) ? ++res : res)
+  , 0, 0)
 
 fun replace(string str, string old, string new)
   invoke(
@@ -307,6 +306,13 @@ assert(
 assert(
   "hello world".none(equals{char}['1']) &&
   !"hello world".none(equals{char}[' ']))
+
+assert(
+  "".count(equals{char}[' ']) == 0 &&
+  " ".count(equals{char}[' ']) == 1 &&
+  " hello ".count(equals{char}[' ']) == 2 &&
+  "hello world".count(equals{char}[' ']) == 1 &&
+  "1234567890".count(isDigit) == 10)
 
 assert(
   "hello world".replace("hello", "world") == "world world" &&
