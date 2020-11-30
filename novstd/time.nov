@@ -259,7 +259,7 @@ fun >=(Timestamp t1, Timestamp t2)  t1.ns >= t2.ns
 // -- Parsers
 
 fun unixTimeParser()
-  txtPosLongParser().map(lambda (long l) timeEpoch() + seconds(l))
+  txtPosLongParser().map(lambda (long l) timeEpoch() + seconds(l)) ! Error("Invalid unix timestamp")
 
 // -- Actions
 

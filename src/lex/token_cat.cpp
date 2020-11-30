@@ -52,6 +52,7 @@ auto lookupCat(const TokenKind kind) -> TokenCat {
   case TokenKind::OpEq:
   case TokenKind::OpEqEq:
   case TokenKind::OpBang:
+  case TokenKind::OpBangBang:
   case TokenKind::OpBangEq:
   case TokenKind::OpLe:
   case TokenKind::OpLeEq:

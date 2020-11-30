@@ -26,9 +26,9 @@ fun string{T}(Option{T} opt)
 
 // -- Functions
 
-fun some{T}(T t) Option(t)
-
-fun none() None()
+fun some{T}(T t)  Option(t)
+fun none{T}()     Option{T}(None())
+fun none()        None()
 
 fun map{T, TResult}(Option{T} opt, function{T, TResult} func) -> Option{TResult}
   opt as T val ? func(val) : none()

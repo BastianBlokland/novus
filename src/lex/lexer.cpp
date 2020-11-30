@@ -122,6 +122,10 @@ auto LexerImpl::next() -> Token {
       }
       return basicToken(TokenKind::OpEq, input::Span{m_inputPos});
     case '!':
+      if (peekChar(0) == '!') {
+        consumeChar();
+        return basicToken(TokenKind::OpBangBang, input::Span{m_inputPos - 1, m_inputPos});
+      }
       if (peekChar(0) == '=') {
         consumeChar();
         return basicToken(TokenKind::OpBangEq, input::Span{m_inputPos - 1, m_inputPos});

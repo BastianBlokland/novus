@@ -75,7 +75,7 @@ fun versionParser() -> Parser{Version}
                       Option{List{string}} prereleaseTags,
                       Option{List{string}} meta)
       Version(major, minor, patch ?? 0, prereleaseTags ?? List{string}(), meta ?? List{string}())
-    )
+    ) ! Error("Invalid sem-ver version")
 
 // -- Writers
 

@@ -58,6 +58,9 @@ auto operator<<(std::ostream& out, const TokenKind& rhs) -> std::ostream& {
   case TokenKind::OpBang:
     out << "!";
     break;
+  case TokenKind::OpBangBang:
+    out << "!!";
+    break;
   case TokenKind::OpBangEq:
     out << "!=";
     break;

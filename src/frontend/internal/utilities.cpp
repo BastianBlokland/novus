@@ -92,6 +92,8 @@ auto getOperator(const lex::Token& token) -> std::optional<prog::Operator> {
     return prog::Operator::EqEq;
   case lex::TokenKind::OpBang:
     return prog::Operator::Bang;
+  case lex::TokenKind::OpBangBang:
+    return prog::Operator::BangBang;
   case lex::TokenKind::OpBangEq:
     return prog::Operator::BangEq;
   case lex::TokenKind::OpLe:
@@ -149,6 +151,8 @@ auto getText(const prog::Operator& op) -> std::string {
     return "==";
   case prog::Operator::Bang:
     return "!";
+  case prog::Operator::BangBang:
+    return "!!";
   case prog::Operator::BangEq:
     return "!=";
   case prog::Operator::Le:
