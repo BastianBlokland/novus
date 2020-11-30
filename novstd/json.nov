@@ -77,6 +77,9 @@ fun string(JsonValue v, string indent, WriterNewlineMode newlineMode)
   w = jsonValueWriter();
   w(v, indent, newlineMode).string()
 
+fun string(JsonNull n)
+  "null"
+
 // -- Parsers
 
 fun jsonNullParser()
@@ -86,8 +89,8 @@ fun jsonNumberParser()
   txtFloatParser()
 
 fun jsonBoolParser()
-  (matchParser("true")  >> retParser(true)) |
-  (matchParser("false") >> retParser(false))
+  (matchParser("true")  >> retParser(true))  |
+  (matchParser("false") >> retParser(false)) !! Error("Invalid json boolean")
 
 fun jsonUtf8EscapedCharParser()
   hexParser = txtHexParser(4);
@@ -101,14 +104,14 @@ fun jsonUtf8EscapedCharParser()
     if s[0] == 'r'  -> (s + 1).success("\r")
     if s[0] == 't'  -> (s + 1).success("\t")
     if s[0] == 'u'  -> hexParser(s + 1).map(lambda (int unicode) toUtf8(UnicodePoint(unicode)))
-    else            -> s.failure(Error("Invalid escape sequence"))
+    else            -> s.failure(Error("Invalid json character escape sequence"))
   )
 
 fun jsonUtf8CharParser()
   escapedChar = jsonUtf8EscapedCharParser();
   Parser(lambda (ParseState s)
-    if s[0].isControl()                   -> s.failure(Error("Unexpected control character"))
-    if s[0] == '"'                        -> s.failure(Error("End of string"))
+    if s[0].isControl()                   -> s.failure(Error("Unexpected character: '" + s[0].escapeForPrinting() + "'"))
+    if s[0] == '"'                        -> s.failure(Error("Unexpected end of string"))
     if s[0] == '\\'                       -> escapedChar(s + 1)
     if utf8Validate(s.str, s.pos, false)  -> cc = s[0].utf8GetCharCount();
                                              (s + cc).success(s.str[s.pos, s.pos + cc])
@@ -116,32 +119,48 @@ fun jsonUtf8CharParser()
   )
 
 fun jsonStringParser()
-  matchParser('"') >> manyParser(jsonUtf8CharParser()).map(sum{string}) << matchParser('"')
+  quote = matchParser('"');
+  (
+    quote >> manyUntilParser(jsonUtf8CharParser(), quote).map(sum{string}) << quote
+  ) ! Error("Invalid json string")
 
 fun jsonObjectParser(Parser{JsonValue} valParser)
   open      = matchParser('{')    << whitespaceParser();
-  key       = jsonStringParser()  << whitespaceParser();
+  key       = jsonStringParser()  << whitespaceParser() ! Error("Invalid object key");
   colon     = matchParser(':')    << whitespaceParser();
   value     = valParser           << whitespaceParser();
-  comma     = matchParser(',')    << whitespaceParser();
+  comma     = matchParser(',')    << whitespaceParser() !! Error("Expected comma or end of object");
   close     = matchParser('}')    << whitespaceParser();
   keyValue  = (key << colon) & value;
-  (open >> manyParser(keyValue, comma) << close).map(toJsonObj)
+  (open >> manyUntilParser(keyValue, comma, close) << close).map(toJsonObj)
 
 fun jsonArrayParser(Parser{JsonValue} valParser)
   open  = matchParser('[')    << whitespaceParser();
   value = valParser           << whitespaceParser();
-  comma = matchParser(',')    << whitespaceParser();
+  comma = matchParser(',')    << whitespaceParser() !! Error("Expected comma or end of array");
   close = matchParser(']')    << whitespaceParser();
-  (open >> manyParser(value, comma) << close).map(toJsonArray)
+  (open >> manyUntilParser(value, comma, close) << close).map(toJsonArray)
 
-fun jsonValueParser() -> Parser{JsonValue}
-  jsonNullParser().                                       map(toJsonVal{JsonNull})    |
-  jsonNumberParser().                                     map(toJsonVal{float})       |
-  jsonBoolParser().                                       map(toJsonVal{bool})        |
-  jsonStringParser().                                     map(toJsonVal{string})      |
-  jsonObjectParser(lazyParser(lazy jsonValueParser())).   map(toJsonVal{JsonObject})  |
-  jsonArrayParser(lazyParser(lazy jsonValueParser())).    map(toJsonVal{JsonArray})
+fun jsonValueParser()
+  objectP = jsonObjectParser(lazyParser(lazy jsonValueParser()));
+  arrayP  = jsonArrayParser(lazyParser(lazy jsonValueParser()));
+  stringP = jsonStringParser();
+  nullP   = jsonNullParser();
+  boolP   = jsonBoolParser();
+  numberP = jsonNumberParser();
+  Parser(lambda (ParseState s)
+    if s[0] == '{'    -> objectP(s) .map(toJsonVal{JsonObject})
+    if s[0] == '['    -> arrayP(s)  .map(toJsonVal{JsonArray})
+    if s[0] == '"'    -> stringP(s) .map(toJsonVal{string})
+    if s[0] == 'n'    -> nullP(s)   .map(toJsonVal{JsonNull})
+    if s[0] == 't'    -> boolP(s)   .map(toJsonVal{bool})
+    if s[0] == 'f'    -> boolP(s)   .map(toJsonVal{bool})
+    if s[0].isDigit() -> numberP(s) .map(toJsonVal{float})
+    if s[0] == '-'    -> numberP(s) .map(toJsonVal{float})
+    if s[0] == '\0'   -> s.failure(Error("Missing json value"))
+    else              -> s.failure(
+      Error("Invalid start of json value: '" + s[0].escapeForPrinting() + "'"))
+  )
 
 fun jsonParser()
   jsonValueParser()

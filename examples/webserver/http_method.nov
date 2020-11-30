@@ -29,4 +29,4 @@ fun httpMethodParser()
   (matchParser("TRACE")   >> retParser(HttpMethod.Trace))   |
   (matchParser("OPTIONS") >> retParser(HttpMethod.Options)) |
   (matchParser("CONNECT") >> retParser(HttpMethod.Connect)) |
-  (matchParser("PATH")    >> retParser(HttpMethod.Patch))
+  (matchParser("PATH")    >> retParser(HttpMethod.Patch))   !! Error("Invalid http method")

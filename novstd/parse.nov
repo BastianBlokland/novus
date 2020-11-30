@@ -235,6 +235,14 @@ fun retParser{T}(T val)
 fun nopParser()
   retParser(true)
 
+fun failParser()
+  failParser(Error())
+
+fun failParser(Error error)
+  Parser(lambda (ParseState s) -> ParseResult{bool}
+    s.failure(error)
+  )
+
 fun matchParser(char c)
   Parser(lambda (ParseState s) -> ParseResult{char}
     if s == c -> (s + 1).success(c)
@@ -398,35 +406,61 @@ fun txtFloatParser()
 // -- Combination parsers
 
 fun manyParser{T}(Parser{T} p)
-  manyParser(p, false)
-
-fun manyParser{T}(Parser{T} p, bool toEnd)
   Parser(lambda (ParseState begin)
-    impl =
+    invoke(lambda (ParseState cur, List{T} result) -> ParseResult{List{T}}
     (
-      lambda (ParseState cur, List{T} result) -> ParseResult{List{T}}
         if cur.isEnd() -> cur.success(result)
         else ->
           res = p(cur);
           if res as ParseSuccess{T} suc   -> self(suc.state, suc.val :: result)
-          if res as ParseFailure    fail  -> toEnd ? fail : cur.success(result)
-    );
-    impl(begin, List{T}()).map(reverse{T})
+          if res as ParseFailure    fail  -> cur.success(result)
+    ), begin, List{T}()).map(reverse{T})
   )
 
-fun manyParser{T1, T2}(Parser{T1} p, Parser{T2} seperator)
+fun manyParser{T, SepT}(Parser{T} p, Parser{SepT} seperator)
   Parser(lambda (ParseState begin)
-    impl =
+    invoke(lambda (ParseState cur, List{T} result, bool required) -> ParseResult{List{T}}
     (
-      lambda (ParseState cur, List{T1} result, bool required) -> ParseResult{List{T1}}
-        res1 = p(cur);
-        if res1 as ParseFailure     fail1  -> required ? fail1 : cur.success(result)
-        if res1 as ParseSuccess{T1} suc1   ->
-          res2 = seperator(suc1.state);
-          if res2 as ParseSuccess{T2} suc2  -> self(suc2.state, suc1.val :: result, true)
-          if res2 is ParseFailure           -> suc1.state.success(suc1.val :: result)
-    );
-    impl(begin, List{T1}(), false).map(reverse{T1})
+      res = p(cur);
+      if res as ParseFailure     fail  -> required ? fail : cur.success(result)
+      if res as ParseSuccess{T}  suc   ->
+        sepRes = seperator(suc.state);
+        if sepRes as ParseSuccess{SepT} sepSuc  -> self(sepSuc.state, suc.val :: result, true)
+        if sepRes is ParseFailure               -> suc.state.success(suc.val :: result)
+    ), begin, List{T}(), false).map(reverse{T})
+  )
+
+fun manyUntilParser{T, UntilT}(Parser{T} p, Parser{UntilT} until)
+  Parser(lambda (ParseState begin)
+    invoke(lambda (ParseState cur, List{T} result) -> ParseResult{List{T}}
+    (
+      if until(cur) is ParseSuccess{UntilT} -> cur.success(result)
+      if cur.isEnd()                        -> cur.failure(Error("Unexpected end of input"))
+      else ->
+        res = p(cur);
+        if res as ParseSuccess{T} suc   -> self(suc.state, suc.val :: result)
+        if res as ParseFailure    fail  -> fail
+    ), begin, List{T}()).map(reverse{T})
+  )
+
+fun manyUntilParser{T, SepT, UntilT}(Parser{T} p, Parser{SepT} seperator, Parser{UntilT} until)
+  reachedUntil = (lambda (ParseState s) until(s) is ParseSuccess{UntilT});
+  Parser(lambda (ParseState begin)
+    if reachedUntil(begin) -> begin.success(List{T}())
+    else ->
+      invoke(lambda (ParseState cur, List{T} result) -> ParseResult{List{T}}
+      (
+        if cur.isEnd()  -> cur.failure(Error("Unexpected end of input"))
+        else            ->
+          res = p(cur);
+          if res as ParseFailure    fail  -> fail
+          if res as ParseSuccess{T} suc   ->
+            sepRes = seperator(suc.state);
+            if sepRes as ParseSuccess{SepT} sepSuc  -> self(sepSuc.state, suc.val :: result)
+            if sepRes as ParseFailure       sepFail -> reachedUntil(suc.state)
+                                                          ? suc.state.success(suc.val :: result)
+                                                          : sepFail
+      ), begin, List{T}()).map(reverse{T})
   )
 
 fun lazyParser{T}(lazy{Parser{T}} lp)
@@ -447,6 +481,11 @@ fun trim(Parser{string} p, function{char, bool} pred)
 assert(retParser(42)("") == 42)
 
 assert(nopParser()("") == true)
+
+assert(
+  failParser(Error("Hello world"))  .run("")            == Error("Hello world")   &&
+  failParser()                      .run("Hello world") == Error()                &&
+  failParser()                      .run("")            == Error())
 
 assert(
   matchParser('a')("a") == 'a' &&
@@ -836,21 +875,48 @@ assert(
   p("")                   is ParseFailure)
 
 assert(
-  p = manyParser(txtBoolParser(), false);
+  p = manyParser(txtBoolParser());
   p("truefalsetruetrue")  == true :: false :: true :: true :: List{bool}() &&
   p("true")               == true :: List{bool}() &&
   p("true1")              == true :: List{bool}() &&
   p("")                   == List{bool}())
 
 assert(
-  p = manyParser(txtBoolParser(), true);
-  p("true1true") is ParseFailure)
-
-assert(
   p = manyParser(txtIntParser(), matchParser(','));
   p("42,1337,1,2")  == 42 :: 1337 :: 1 :: 2 :: List{int}() &&
   p("42")           == 42 :: List{int}() &&
   p("")             == List{int}())
+
+assert(
+  p = manyUntilParser(txtBoolParser(), endParser());
+  p("true1true") is ParseFailure)
+
+assert(
+  p = manyUntilParser(txtBoolParser(), newlineParser());
+  p("truefalse\ntrue")   == true :: false :: List{bool}()  &&
+  p("true\n")            == true :: List{bool}()           &&
+  p("false,\n")          is ParseFailure                   &&
+  p("true true\n")       is ParseFailure                   &&
+  p("false")             is ParseFailure                   &&
+  p("")                  is ParseFailure)
+
+assert(
+  p = manyUntilParser(txtIntParser(), matchParser(','), newlineParser());
+  p("42,1337\n1,2")   == 42 :: 1337 :: List{int}()  &&
+  p("42\n")           == 42 :: List{int}()          &&
+  p("42,\n")          is ParseFailure               &&
+  p("42 42\n")        is ParseFailure               &&
+  p("42")             is ParseFailure               &&
+  p("")               is ParseFailure)
+
+assert(
+  p = manyUntilParser(txtBoolParser(), matchParser(','), newlineParser());
+  p("true,false\ntrue")   == true :: false :: List{bool}()  &&
+  p("true\n")             == true :: List{bool}()           &&
+  p("false,\n")           is ParseFailure                   &&
+  p("true true\n")        is ParseFailure                   &&
+  p("false")              is ParseFailure                   &&
+  p("")                   is ParseFailure)
 
 assert(
   p = whileParser(!equals{char}['|']).trim();

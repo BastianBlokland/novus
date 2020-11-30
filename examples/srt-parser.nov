@@ -37,7 +37,10 @@ import "std.nov"
 //    Excecutes both parsers, return a list containing both values.
 //
 // - 'Parser{T} ! Error' -> Parser{T}'
-//    Add a more descriptive error when the given parser fails.
+//    Append a more descriptive error when the given parser fails.
+//
+// - 'Parser{T} !! Error' -> Parser{T}'
+//    Replace the error with a more descriptive error when the given parser fails.
 
 // -- Types
 
@@ -85,7 +88,7 @@ fun subParser() -> Parser{Subtitle}
 
 // Parse a list of subtitles optionally followed by whitespace.
 fun subListParser() -> Parser{List{Subtitle}}
-  manyParser(subParser() << whitespaceParser(), true)
+  manyUntilParser(subParser() << whitespaceParser(), endParser())
 
 // -- Driver code
 // Example output:
