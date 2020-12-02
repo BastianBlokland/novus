@@ -45,7 +45,7 @@ fun getReponse(ClientContext ctx, Resource r, HttpMethod m)
   if m == HttpMethod.Get  -> httpResp(    HttpStatusCode.Ok, txt, r.type)
   if m == HttpMethod.Head -> httpRespHead(HttpStatusCode.Ok, txt, r.type)
   else ->
-    supportedMethods = HttpMethod.Get :: HttpMethod.Head :: List{HttpMethod}();
+    supportedMethods = HttpMethod.Get :: HttpMethod.Head;
     httpRespMethodNotAllowed(supportedMethods)
 
 fun getResponse(ClientContext ctx, HttpMethod m, string url)
@@ -59,7 +59,7 @@ act writeResponse(ClientContext ctx, HttpResp resp)
     HttpHeaderField("Server",             "Novus")                ::
     HttpHeaderField("Transfer-Encoding",  "identity")             ::
     HttpHeaderField("Connection",         "keep-alive")           ::
-    HttpHeaderField("Keep-Alive",         "timeout=10, max=1000") :: List{HttpHeaderField}()
+    HttpHeaderField("Keep-Alive",         "timeout=10, max=1000")
   );
   finalResp     = resp.httpRespAddFields(extraFields);
   finalRespTxt  = ctx.respWriter(WriterState(WriterNewlineMode.CrLf), finalResp).string();
@@ -83,7 +83,7 @@ act handleConnection(ClientContext ctx)
   print("- Client connected");
 
   loop = (impure lambda(StreamReadState read)
-    r = read.readUntil("\r\n\r\n" :: "\n\n" :: List{string}());
+    r = read.readUntil("\r\n\r\n" :: "\n\n");
     if r.first.isEmpty()  -> false
     else                  -> handleRequest(ctx, r.first); self(r.second)
   );
@@ -107,8 +107,8 @@ act main(int port, Content content)
       impure lambda (TcpConnection con)
         uptime    = timeNow() - startTime;
         variables = (
-          Variable("SERVER_UPTIME", uptime.string())          ::
-          Variable("SERVER_DATE",   timeNow().httpDateStr())  :: List{Variable}()
+          Variable("SERVER_UPTIME", uptime.string()) ::
+          Variable("SERVER_DATE",   timeNow().httpDateStr())
         );
         ctx       = ClientContext(content, variables, con, respWriter, reqParser);
         handleConnection(ctx)
@@ -146,6 +146,6 @@ main(
                                           "readme.html"       ::
                                           "win.jpg"           ::
                                           "github-logo.png"   ::
-                                          "favicon.ico"       :: List{string}()).args
+                                          "favicon.ico").args
   )
 )

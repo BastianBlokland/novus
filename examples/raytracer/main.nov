@@ -61,8 +61,8 @@ fun createScene()
   sun           = Light(DirLight(normalize(Vec3(.3, -.2, -.5)), white() * 2.0));
   redLight      = Light(PointLight(Vec3(3.0, .05, -4), Color(800, 0.0, 0.0)));
   Scene(
-    ground :: s1 :: s2 :: s3 :: s4 :: s5 :: s6 :: s7 :: List{Object}(),
-    sun :: redLight :: List{Light}())
+    ground :: s1 :: s2 :: s3 :: s4 :: s5 :: s6 :: s7,
+    sun :: redLight)
 
 act driver(int width, int height, int threads, int bounces, float fov, Path outPath, Writer{Image} writer)
   print("Begin rendering...");

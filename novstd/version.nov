@@ -130,39 +130,39 @@ assert(
 assert(
   versionParser()("42.1337.123-alpha.fullmoon.wip")
   ==
-  Version(42, 1337, 123, "alpha" :: "fullmoon" :: "wip" :: List{string}())
+  Version(42, 1337, 123, "alpha" :: "fullmoon" :: "wip")
 )
 
 assert(
   versionParser()("42.1337-alpha.fullmoon.wip")
   ==
-  Version(42, 1337, 0, "alpha" :: "fullmoon" :: "wip" :: List{string}())
+  Version(42, 1337, 0, "alpha" :: "fullmoon" :: "wip")
 )
 
 assert(
   versionParser()("1.0.0-x.7.z.92")
   ==
-  Version(1, 0, 0, "x" :: "7" :: "z" :: "92" :: List{string}())
+  Version(1, 0, 0, "x" :: "7" :: "z" :: "92")
 )
 
 assert(
   versionParser()("42.1337+local-machine.europe")
   ==
-  Version(42, 1337, 0, List{string}(), "local-machine" :: "europe" :: List{string}())
+  Version(42, 1337, 0, List{string}(), "local-machine" :: "europe")
 )
 
 assert(
   versionParser()("1.0.0-beta+exp.sha.5114f85")
   ==
-  Version(1, 0, 0, "beta" :: List{string}(), "exp" :: "sha" :: "5114f85" :: List{string}())
+  Version(1, 0, 0, "beta" :: List{string}(), "exp" :: "sha" :: "5114f85")
 )
 
 assert(
   versionParser()("42.1337.123-alpha.fullmoon.wip+local-machine.europe")
   ==
   Version(42, 1337, 123,
-    "alpha" :: "fullmoon" :: "wip" :: List{string}(),
-    "local-machine" :: "europe" :: List{string}())
+    "alpha" :: "fullmoon" :: "wip",
+    "local-machine" :: "europe")
 )
 
 assert(
@@ -170,7 +170,7 @@ assert(
   ==
   Version(42, 1337, 123,
     List{string}(),
-    "alpha" :: "fullmoon" :: "wip-local-machine" :: "europe" :: List{string}())
+    "alpha" :: "fullmoon" :: "wip-local-machine" :: "europe")
 )
 
 assert(
@@ -182,7 +182,7 @@ assert(
 assert(
   versionParser()("2.29.2.windows.2")
   ==
-  Version(2, 29, 2, List{string}(), "windows" :: "2" :: List{string}())
+  Version(2, 29, 2, List{string}(), "windows" :: "2")
 )
 
 assert(
@@ -195,7 +195,7 @@ assert(
   versionWriter()(
     Version(42, 1337, 123,
       List{string}(),
-      "local-machine" :: "europe" :: List{string}()))
+      "local-machine" :: "europe"))
   ==
   "42.1337.123+local-machine.europe"
 )
@@ -203,7 +203,7 @@ assert(
 assert(
   versionWriter()(
     Version(42, 1337, 123,
-      "alpha" :: "fullmoon" :: "wip" :: List{string}()))
+      "alpha" :: "fullmoon" :: "wip"))
   ==
   "42.1337.123-alpha.fullmoon.wip"
 )
@@ -211,8 +211,8 @@ assert(
 assert(
   versionWriter()(
     Version(42, 1337, 123,
-      "alpha" :: "fullmoon" :: "wip" :: List{string}(),
-      "local-machine" :: "europe" :: List{string}()))
+      "alpha" :: "fullmoon" :: "wip",
+      "local-machine" :: "europe"))
   ==
   "42.1337.123-alpha.fullmoon.wip+local-machine.europe"
 )

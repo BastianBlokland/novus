@@ -61,7 +61,7 @@ act copy(sys_stream from, sys_stream to)
   , 0)
 
 act readLine(StreamReadState state)
-  state.readUntil("\n" :: "\r\n" :: List{string}())
+  state.readUntil("\n" :: "\r\n")
 
 act readUntil(StreamReadState state, List{string} patterns)
   state.readUntil(patterns, true)

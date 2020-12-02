@@ -244,50 +244,50 @@ assert(
   w = listWriter(txtIntWriter());
   w(List{int}()) == "" &&
   w(42 :: List{int}()) == "42" &&
-  w(1 :: 2 :: 3 :: List{int}()) == "123")
+  w(1 :: 2 :: 3) == "123")
 
 assert(
   w = listWriter(txtIntWriter(), litWriter(','));
   w(List{int}()) == "" &&
   w(42 :: List{int}()) == "42" &&
-  w(1 :: 2 :: 3 :: List{int}()) == "1,2,3")
+  w(1 :: 2 :: 3) == "1,2,3")
 
 assert(
   w = listWriter(stringWriter(), litWriter(',') & litWriter(" "));
   w(List{string}()) == "" &&
   w("hello" :: List{string}()) == "hello" &&
-  w("hello" :: "good" :: "world" :: List{string}()) == "hello, good, world")
+  w("hello" :: "good" :: "world") == "hello, good, world")
 
 assert(
   w = listWriter(stringWriter(), newlineWriter());
   w(List{string}()) == "" &&
   w("hello" :: List{string}()) == "hello" &&
-  w("hello" :: "world" :: List{string}()) == "hello\nworld" &&
-  w("hello" :: "world" :: List{string}(), WriterNewlineMode.CrLf) == "hello\r\nworld")
+  w("hello" :: "world") == "hello\nworld" &&
+  w("hello" :: "world", WriterNewlineMode.CrLf) == "hello\r\nworld")
 
 assert(
   w = litWriter('[') & listWriter(stringWriter(), litWriter(',')) & litWriter(']');
   w(List{string}()) == "[]" &&
   w("hello" :: List{string}()) == "[hello]" &&
-  w("hello" :: "good" :: "world" :: List{string}()) == "[hello,good,world]")
+  w("hello" :: "good" :: "world") == "[hello,good,world]")
 
 assert(
   w = indentedListWriter(txtIntWriter(), litWriter(','));
   w(List{int}()) == "" &&
   w(1 :: List{int}()) == "  1\n" &&
-  w(1 :: 2 :: 3 :: List{int}()) == "  1,\n  2,\n  3\n" &&
+  w(1 :: 2 :: 3) == "  1,\n  2,\n  3\n" &&
   w(List{int}(), "", WriterNewlineMode.None) == "" &&
   w(1 :: List{int}(), "", WriterNewlineMode.None) == "1" &&
-  w(1 :: 2 :: 3 :: List{int}(), "", WriterNewlineMode.None) == "1,2,3")
+  w(1 :: 2 :: 3, "", WriterNewlineMode.None) == "1,2,3")
 
 assert(
   w = indentedListWriter(txtIntWriter());
   w(List{int}()) == "" &&
   w(1 :: List{int}()) == "  1\n" &&
-  w(1 :: 2 :: 3 :: List{int}()) == "  1\n  2\n  3\n" &&
+  w(1 :: 2 :: 3) == "  1\n  2\n  3\n" &&
   w(List{int}(), "", WriterNewlineMode.None) == "" &&
   w(1 :: List{int}(), "", WriterNewlineMode.None) == "1" &&
-  w(1 :: 2 :: 3 :: List{int}(), "", WriterNewlineMode.None) == "123")
+  w(1 :: 2 :: 3, "", WriterNewlineMode.None) == "123")
 
 assert(
   w = stringWriter() & txtIntWriter();

@@ -124,6 +124,6 @@ assert(
   hellos > 450 && worlds > 450)
 
 assert(
-  l     = "hello" :: "great" :: "world" :: List{string}();
+  l     = "hello" :: "great" :: "world";
   elem  = rngInit(42).rngElem(l).val ?? "";
   l.contains(elem))

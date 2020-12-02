@@ -124,4 +124,4 @@ assert(
 
 assert(
   g = makeColorGrid(2, 2, lambda (int x, int y) y == 0 ? red() : blue());
-  g == red() :: red() :: blue() :: blue() :: List{Color}())
+  g == red() :: red() :: blue() :: blue())
