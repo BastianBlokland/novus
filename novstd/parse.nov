@@ -478,6 +478,18 @@ fun trim(Parser{string} p)
 fun trim(Parser{string} p, function{char, bool} pred)
   p.map(lambda (string res) res.trim(pred))
 
+fun repeat{T}(Parser{T} p, int count)
+  Parser(lambda (ParseState begin)
+    invoke(lambda (ParseState cur, int i, List{T} result) -> ParseResult{List{T}}
+    (
+      if i <= 0 -> cur.success(result.reverse())
+      else      ->
+        res = p(cur);
+        if res as ParseFailure    fail  -> fail
+        if res as ParseSuccess{T} suc   -> self(suc.state, --i, suc.val :: result)
+    ), begin, count, List{T}())
+  )
+
 // -- Tests
 
 assert(retParser(42)("") == 42)
@@ -941,3 +953,18 @@ assert(
   p("123") == "" &&
   p(" 123 ") == " 123 " &&
   p("1abc501| hello") == "abc")
+
+assert(
+  p = txtBoolParser().repeat(2);
+  p("") is ParseFailure &&
+  p(" ") is ParseFailure &&
+  p("true") is ParseFailure &&
+  p("truefalse") == true :: false &&
+  p("truefalsefalse") == true :: false)
+
+assert(
+  txtBoolParser().repeat(-1)("") == List{bool}() &&
+  txtBoolParser().repeat(0)("") == List{bool}() &&
+  txtBoolParser().repeat(0)(" ") == List{bool}() &&
+  txtBoolParser().repeat(0)("true") == List{bool}() &&
+  txtBoolParser().repeat(1)("true") == true :: List{bool}())
