@@ -326,6 +326,9 @@ fun newlineParser()
       Error("Expected a newline, got: '" + s[0].escapeForPrinting() + "'"))
   )
 
+fun multiLineParser(int count)
+  (lineParser() << newlineParser()).repeat(count)
+
 fun txtBoolParser()
   Parser(lambda (ParseState s) -> ParseResult{bool}
     if s == "true"  -> (s + 4).success(true)
@@ -478,6 +481,18 @@ fun trim(Parser{string} p)
 fun trim(Parser{string} p, function{char, bool} pred)
   p.map(lambda (string res) res.trim(pred))
 
+fun repeat{T}(Parser{T} p, int count)
+  Parser(lambda (ParseState begin)
+    invoke(lambda (ParseState cur, int i, List{T} result) -> ParseResult{List{T}}
+    (
+      if i <= 0 -> cur.success(result.reverse())
+      else      ->
+        res = p(cur);
+        if res as ParseFailure    fail  -> fail
+        if res as ParseSuccess{T} suc   -> self(suc.state, --i, suc.val :: result)
+    ), begin, count, List{T}())
+  )
+
 // -- Tests
 
 assert(retParser(42)("") == 42)
@@ -567,6 +582,16 @@ assert(
   p("\n\r") == "\n" &&
   p("\r") is ParseFailure &&
   p("")   is ParseFailure)
+
+assert(
+  p = multiLineParser(2);
+  p("First line\nSecond line\n") == "First line" :: "Second line" &&
+  p("First line\r\nSecond line\r\n") == "First line" :: "Second line" &&
+  p("First line\r\nSecond line\n") == "First line" :: "Second line" &&
+  p("") is ParseFailure &&
+  p("First line") is ParseFailure &&
+  p("First line\nSecond line") is ParseFailure &&
+  p("First line\nSecond line\r") is ParseFailure)
 
 assert(
   p = endParser();
@@ -941,3 +966,18 @@ assert(
   p("123") == "" &&
   p(" 123 ") == " 123 " &&
   p("1abc501| hello") == "abc")
+
+assert(
+  p = txtBoolParser().repeat(2);
+  p("") is ParseFailure &&
+  p(" ") is ParseFailure &&
+  p("true") is ParseFailure &&
+  p("truefalse") == true :: false &&
+  p("truefalsefalse") == true :: false)
+
+assert(
+  txtBoolParser().repeat(-1)("") == List{bool}() &&
+  txtBoolParser().repeat(0)("") == List{bool}() &&
+  txtBoolParser().repeat(0)(" ") == List{bool}() &&
+  txtBoolParser().repeat(0)("true") == List{bool}() &&
+  txtBoolParser().repeat(1)("true") == true :: List{bool}())
