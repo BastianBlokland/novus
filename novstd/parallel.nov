@@ -26,7 +26,7 @@ act parallelMap{T, TResult}(List{T} l, action{T, TResult} a)
   l.foldRight(impure lambda (List{future{TResult}} result, T val) -> List{future{TResult}}
     fork a(val) :: result).waitAll()
 
-act parallelMapReserve{T, TResult}(List{T} l, action{T, TResult} a)
+act parallelMapReverse{T, TResult}(List{T} l, action{T, TResult} a)
   l.fold(impure lambda (List{future{TResult}} result, T val) -> List{future{TResult}}
     fork a(val) :: result).waitAll()
 
@@ -60,7 +60,7 @@ assert(
 
 assert(
   l = 1 :: 2 :: 3;
-  l.parallelMapReserve(impure lambda (int i) i * i) == 9 :: 4 :: 1)
+  l.parallelMapReverse(impure lambda (int i) i * i) == 9 :: 4 :: 1)
 
 assert(
   parallelFor(1, 5, impure lambda (int i) i * i) == 1 :: 4 :: 9 :: 16)
