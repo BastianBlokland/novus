@@ -326,6 +326,9 @@ fun newlineParser()
       Error("Expected a newline, got: '" + s[0].escapeForPrinting() + "'"))
   )
 
+fun multiLineParser(int count)
+  (lineParser() << newlineParser()).repeat(count)
+
 fun txtBoolParser()
   Parser(lambda (ParseState s) -> ParseResult{bool}
     if s == "true"  -> (s + 4).success(true)
@@ -579,6 +582,16 @@ assert(
   p("\n\r") == "\n" &&
   p("\r") is ParseFailure &&
   p("")   is ParseFailure)
+
+assert(
+  p = multiLineParser(2);
+  p("First line\nSecond line\n") == "First line" :: "Second line" &&
+  p("First line\r\nSecond line\r\n") == "First line" :: "Second line" &&
+  p("First line\r\nSecond line\n") == "First line" :: "Second line" &&
+  p("") is ParseFailure &&
+  p("First line") is ParseFailure &&
+  p("First line\nSecond line") is ParseFailure &&
+  p("First line\nSecond line\r") is ParseFailure)
 
 assert(
   p = endParser();
