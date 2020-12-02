@@ -326,6 +326,9 @@ fun newlineParser()
       Error("Expected a newline, got: '" + s[0].escapeForPrinting() + "'"))
   )
 
+fun emptyLineParser()
+  matchParser("\r\n\r\n") | matchParser("\n\n") ! Error("Expected an empty line")
+
 fun multiLineParser(int count)
   (lineParser() << newlineParser()).repeat(count)
 
@@ -582,6 +585,17 @@ assert(
   p("\n\r") == "\n" &&
   p("\r") is ParseFailure &&
   p("")   is ParseFailure)
+
+assert(
+  p = emptyLineParser();
+  p("\n\n")     == "\n\n" &&
+  p("\r\n\r\n") == "\r\n\r\n" &&
+  p("")         is ParseFailure &&
+  p("\n")       is ParseFailure &&
+  p("\n \n")    is ParseFailure &&
+  p("\nabc\n")  is ParseFailure &&
+  p("\r\n")     is ParseFailure &&
+  p("\r\n\n")   is ParseFailure)
 
 assert(
   p = multiLineParser(2);
