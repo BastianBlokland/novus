@@ -39,31 +39,31 @@ act parallelFor{T, TResult}(T from, T to, action{T, TResult} a)
 // -- Tests
 
 assert(
-  l = 1 :: 2 :: 3 :: List{int}();
-  l.parallelMap(lambda (int i) i * i) == 1 :: 4 :: 9 :: List{int}())
+  l = 1 :: 2 :: 3;
+  l.parallelMap(lambda (int i) i * i) == 1 :: 4 :: 9)
 
 assert(
-  l = 1 :: 2 :: 3 :: List{int}();
-  l.parallelMapReverse(lambda (int i) i * i) == 9 :: 4 :: 1 :: List{int}())
+  l = 1 :: 2 :: 3;
+  l.parallelMapReverse(lambda (int i) i * i) == 9 :: 4 :: 1)
 
 assert(
-  parallelFor(1, 5, lambda (int i) i * i) == 1 :: 4 :: 9 :: 16 :: List{int}())
+  parallelFor(1, 5, lambda (int i) i * i) == 1 :: 4 :: 9 :: 16)
 
 assert(
-  parallelFor(5, lambda (int i) i * i) == 0 :: 1 :: 4 :: 9 :: 16 :: List{int}())
+  parallelFor(5, lambda (int i) i * i) == 0 :: 1 :: 4 :: 9 :: 16)
 
 // -- Impure tests
 
 assert(
-  l = 1 :: 2 :: 3 :: List{int}();
-  l.parallelMap(impure lambda (int i) i * i) == 1 :: 4 :: 9 :: List{int}())
+  l = 1 :: 2 :: 3;
+  l.parallelMap(impure lambda (int i) i * i) == 1 :: 4 :: 9)
 
 assert(
-  l = 1 :: 2 :: 3 :: List{int}();
-  l.parallelMapReserve(impure lambda (int i) i * i) == 9 :: 4 :: 1 :: List{int}())
+  l = 1 :: 2 :: 3;
+  l.parallelMapReserve(impure lambda (int i) i * i) == 9 :: 4 :: 1)
 
 assert(
-  parallelFor(1, 5, impure lambda (int i) i * i) == 1 :: 4 :: 9 :: 16 :: List{int}())
+  parallelFor(1, 5, impure lambda (int i) i * i) == 1 :: 4 :: 9 :: 16)
 
 assert(
-  parallelFor(5, impure lambda (int i) i * i) == 0 :: 1 :: 4 :: 9 :: 16 :: List{int}())
+  parallelFor(5, impure lambda (int i) i * i) == 0 :: 1 :: 4 :: 9 :: 16)

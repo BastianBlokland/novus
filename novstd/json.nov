@@ -310,9 +310,9 @@ assert(
   p("[1]")          == toJsonArray(toJsonVal(1.0)   :: List{JsonValue}()) &&
   p("[ 1]")         == toJsonArray(toJsonVal(1.0)   :: List{JsonValue}()) &&
   p("[ 1 ]")        == toJsonArray(toJsonVal(1.0)   :: List{JsonValue}()) &&
-  p("[1,2]")        == toJsonArray(toJsonVal(1.0)   :: toJsonVal(2.0) :: List{JsonValue}()) &&
-  p("[ 1 , 2 ]")    == toJsonArray(toJsonVal(1.0)   :: toJsonVal(2.0) :: List{JsonValue}()) &&
-  p("[ true, 2 ]")  == toJsonArray(toJsonVal(true)  :: toJsonVal(2.0) :: List{JsonValue}()) &&
+  p("[1,2]")        == toJsonArray(toJsonVal(1.0)   :: toJsonVal(2.0)) &&
+  p("[ 1 , 2 ]")    == toJsonArray(toJsonVal(1.0)   :: toJsonVal(2.0)) &&
+  p("[ true, 2 ]")  == toJsonArray(toJsonVal(true)  :: toJsonVal(2.0)) &&
   p("[ \"true\" , false, 2 ]") ==
     toJsonArray(
       toJsonVal("true") ::
@@ -320,7 +320,7 @@ assert(
       toJsonVal(2.0)    :: List{JsonValue}()) &&
   p("[ [1, 2], 2 ]") ==
     toJsonArray(
-      toJsonVal(toJsonArray(toJsonVal(1.0) :: toJsonVal(2.0) :: List{JsonValue}())) ::
+      toJsonVal(toJsonArray(toJsonVal(1.0) :: toJsonVal(2.0))) ::
       toJsonVal(2.0) :: List{JsonValue}()))
 
 assert(
@@ -396,7 +396,7 @@ assert(
   w = jsonArrayWriter(jsonValueWriter());
   w(toJsonArray(List{JsonValue}())) == "[\n]" &&
   w(toJsonArray(toJsonVal(1.0) :: List{JsonValue}())) == "[\n  1\n]" &&
-  w(toJsonArray(toJsonVal(1.0) :: toJsonVal(true) :: List{JsonValue}())) == "[\n  1,\n  true\n]")
+  w(toJsonArray(toJsonVal(1.0) :: toJsonVal(true))) == "[\n  1,\n  true\n]")
 
 assert(
   w = jsonValueWriter();

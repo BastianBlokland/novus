@@ -385,11 +385,11 @@ assert(
   "".transform(lambda (char c) "W") == "")
 
 assert(
-  "hello world".split(equals{char}[' ']) == "hello" :: "world" :: List{string}() &&
-  "lineA\nlineB\nlineC".split(equals{char}['\n']) == "lineA" :: "lineB" :: "lineC" :: List{string}() &&
-  "   hello   world   ".split(equals{char}[' ']) == "hello" :: "world" :: List{string}() &&
+  "hello world".split(equals{char}[' ']) == "hello" :: "world" &&
+  "lineA\nlineB\nlineC".split(equals{char}['\n']) == "lineA" :: "lineB" :: "lineC" &&
+  "   hello   world   ".split(equals{char}[' ']) == "hello" :: "world" &&
   "    ".split(equals{char}[' ']).isEmpty() &&
-  " h e l l o ".split(equals{char}[' ']) == "h" :: "e" :: "l" :: "l" :: "o" :: List{string}() &&
+  " h e l l o ".split(equals{char}[' ']) == "h" :: "e" :: "l" :: "l" :: "o" &&
   "hello-world".split(equals{char}[' ']) == List("hello-world") &&
   "".split(equals{char}[' ']) == List{string}())
 
@@ -424,13 +424,13 @@ assert(
 
 assert(
   "h".toChars() == List{char}('h') &&
-  "hello".toChars() == 'h' :: 'e' :: 'l' :: 'l' :: 'o' :: List{char}() &&
+  "hello".toChars() == 'h' :: 'e' :: 'l' :: 'l' :: 'o' &&
   "1337".toChars().join() == "1337" &&
   "".toChars() == List{char}())
 
 assert(
-  join("hello" :: " " :: "world" :: List{string}()) == "hello world" &&
-  join('h' :: 'e' :: 'l' :: 'l' :: 'o' :: List{char}()) == "hello" &&
+  join("hello" :: " " :: "world") == "hello world" &&
+  join('h' :: 'e' :: 'l' :: 'l' :: 'o') == "hello" &&
   List{string}().join() == "" &&
   List{char}().join() == "")
 

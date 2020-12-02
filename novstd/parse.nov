@@ -844,7 +844,7 @@ assert(
 
 assert(
   p = txtBoolParser() :: txtBoolParser() :: txtBoolParser();
-  p("truefalsetrue") == true :: false :: true :: List{bool}() &&
+  p("truefalsetrue") == true :: false :: true &&
   p("truefalse")  is ParseFailure &&
   p("")           is ParseFailure)
 
@@ -883,14 +883,14 @@ assert(
 
 assert(
   p = manyParser(txtBoolParser());
-  p("truefalsetruetrue")  == true :: false :: true :: true :: List{bool}() &&
+  p("truefalsetruetrue")  == true :: false :: true :: true &&
   p("true")               == true :: List{bool}() &&
   p("true1")              == true :: List{bool}() &&
   p("")                   == List{bool}())
 
 assert(
   p = manyParser(txtIntParser(), matchParser(','));
-  p("42,1337,1,2")  == 42 :: 1337 :: 1 :: 2 :: List{int}() &&
+  p("42,1337,1,2")  == 42 :: 1337 :: 1 :: 2  &&
   p("42")           == 42 :: List{int}() &&
   p("")             == List{int}())
 
@@ -900,7 +900,7 @@ assert(
 
 assert(
   p = manyUntilParser(txtBoolParser(), newlineParser());
-  p("truefalse\ntrue")   == true :: false :: List{bool}()  &&
+  p("truefalse\ntrue")   == true :: false  &&
   p("true\n")            == true :: List{bool}()           &&
   p("false,\n")          is ParseFailure                   &&
   p("true true\n")       is ParseFailure                   &&
@@ -918,11 +918,11 @@ assert(
 
 assert(
   p = manyUntilParser(txtBoolParser(), matchParser(','), newlineParser());
-  p("true,false\ntrue")   == true :: false :: List{bool}()  &&
-  p("true\n")             == true :: List{bool}()           &&
-  p("false,\n")           is ParseFailure                   &&
-  p("true true\n")        is ParseFailure                   &&
-  p("false")              is ParseFailure                   &&
+  p("true,false\ntrue")   == true :: false          &&
+  p("true\n")             == true :: List{bool}()   &&
+  p("false,\n")           is ParseFailure           &&
+  p("true true\n")        is ParseFailure           &&
+  p("false")              is ParseFailure           &&
   p("")                   is ParseFailure)
 
 assert(
