@@ -185,8 +185,8 @@ fun getFirst(Pair p)
 ```
 
 The following list of operators can be overloaded:
-`+`, `++`, `-`, `--`, `*`, `/`, `%`, `&`, `|`, `<<`, `>>`, `^`, `~`, `==`, `!=`, `<`, `>`, `<=`,
-`>=`, `::`, `[]`, `()`, `??`.
+`+`, `++`, `-`, `--`, `*`, `/`, `%`, `&`, `|`, `!`, `!!`, `<<`, `>>`, `^`, `~`, `==`, `!=`, `<`, `>`,
+`<=`, `>=`, `::`, `[]`, `()`, `?`, `??`.
 
 Note: All operators are left associative except for the `::` operator, which makes the `::` operator
 ideal for creating linked lists.
