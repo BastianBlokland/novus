@@ -1,6 +1,7 @@
 #include "internal/garbage_collector.hpp"
 #include "internal/ref_allocator.hpp"
 #include "internal/ref_future.hpp"
+#include "internal/ref_stream_process.hpp"
 #include "internal/ref_string_link.hpp"
 #include "internal/ref_struct.hpp"
 #include <chrono>
@@ -14,9 +15,8 @@ namespace vm::internal {
 const static auto bytesAllocThreadAccumMax = 1024U * 1024U; // 1 MiB
 thread_local static unsigned int bytesAllocThreadAccum;
 
-GarbageCollector::GarbageCollector(
-    RefAllocator* refAlloc, ExecutorRegistry* execRegistry) noexcept :
-    m_refAlloc{refAlloc}, m_execRegistry{execRegistry}, m_requestType{RequestType::None} {
+GarbageCollector::GarbageCollector(RefAllocator* refAlloc, ExecutorRegistry* execReg) noexcept :
+    m_refAlloc{refAlloc}, m_execRegistry{execReg}, m_requestType{RequestType::None} {
 
   // Subscribe to allocation notifications, we can use these to decide when to run a collection.
   refAlloc->subscribe(this);
@@ -188,11 +188,15 @@ auto GarbageCollector::mark() noexcept -> void {
         }
       }
     } break;
+    case RefKind::StreamProcess:
+      m_markQueue.push_back(downcastRef<ProcessStreamRef>(cur)->getProcess());
+      break;
     case RefKind::String:
+    case RefKind::Long:
     case RefKind::StreamFile:
     case RefKind::StreamConsole:
     case RefKind::StreamTcp:
-    case RefKind::Long:
+    case RefKind::Process:
       break;
     }
   }

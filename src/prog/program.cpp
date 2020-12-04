@@ -28,7 +28,8 @@ Program::Program() :
     m_bool{m_typeDecls.registerType(sym::TypeKind::Bool, "bool")},
     m_string{m_typeDecls.registerType(sym::TypeKind::String, "string")},
     m_char{m_typeDecls.registerType(sym::TypeKind::Char, "char")},
-    m_stream{m_typeDecls.registerType(sym::TypeKind::Stream, "sys_stream")} {
+    m_stream{m_typeDecls.registerType(sym::TypeKind::Stream, "sys_stream")},
+    m_process{m_typeDecls.registerType(sym::TypeKind::Process, "sys_process")} {
 
   using Fk = prog::sym::FuncKind;
   using Op = prog::Operator;
@@ -262,6 +263,25 @@ Program::Program() :
       Fk::ActionStreamUnsetOptions,
       "streamUnsetOptions",
       sym::TypeSet{m_stream, m_int},
+      m_bool);
+
+  m_funcDecls.registerAction(
+      *this, Fk::ActionProcessStart, "processStart", sym::TypeSet{m_string}, m_process);
+  m_funcDecls.registerAction(
+      *this, Fk::ActionProcessBlock, "processBlock", sym::TypeSet{m_process}, m_int);
+  m_funcDecls.registerAction(
+      *this,
+      Fk::ActionProcessOpenStream,
+      "processOpenStream",
+      sym::TypeSet{m_process, m_int},
+      m_stream);
+  m_funcDecls.registerAction(
+      *this, Fk::ActionProcessGetId, "processGetId", sym::TypeSet{m_process}, m_long);
+  m_funcDecls.registerAction(
+      *this,
+      Fk::ActionProcessSendSignal,
+      "processSendSignal",
+      sym::TypeSet{m_process, m_int},
       m_bool);
 
   m_funcDecls.registerAction(

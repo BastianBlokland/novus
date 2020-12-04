@@ -12,6 +12,8 @@ enum class RefKind : uint8_t {
   StreamFile    = 5U,
   StreamConsole = 6U,
   StreamTcp     = 7U,
+  StreamProcess = 8U,
+  Process       = 9U,
 };
 
 } // namespace vm::internal

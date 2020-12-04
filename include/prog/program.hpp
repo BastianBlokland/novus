@@ -85,6 +85,7 @@ public:
   [[nodiscard]] auto getString() const noexcept -> sym::TypeId { return m_string; }
   [[nodiscard]] auto getChar() const noexcept -> sym::TypeId { return m_char; }
   [[nodiscard]] auto getStream() const noexcept -> sym::TypeId { return m_stream; }
+  [[nodiscard]] auto getProcess() const noexcept -> sym::TypeId { return m_process; }
 
   [[nodiscard]] auto hasType(const std::string& name) const -> bool;
   [[nodiscard]] auto lookupType(const std::string& name) const -> std::optional<sym::TypeId>;
@@ -172,6 +173,7 @@ private:
   sym::TypeId m_string;
   sym::TypeId m_char;
   sym::TypeId m_stream;
+  sym::TypeId m_process;
 };
 
 } // namespace prog

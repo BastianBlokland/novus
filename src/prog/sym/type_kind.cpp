@@ -11,6 +11,7 @@ auto isPrimitive(const TypeKind& kind) -> bool {
   case TypeKind::String:
   case TypeKind::Char:
   case TypeKind::Stream:
+  case TypeKind::Process:
     return true;
   case TypeKind::Struct:
   case TypeKind::Union:
@@ -63,6 +64,9 @@ auto operator<<(std::ostream& out, const TypeKind& rhs) -> std::ostream& {
     break;
   case TypeKind::Lazy:
     out << "lazy";
+    break;
+  case TypeKind::Process:
+    out << "process";
     break;
   }
   return out;

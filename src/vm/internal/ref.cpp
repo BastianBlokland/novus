@@ -1,8 +1,10 @@
 #include "internal/ref.hpp"
 #include "internal/ref_future.hpp"
 #include "internal/ref_long.hpp"
+#include "internal/ref_process.hpp"
 #include "internal/ref_stream_console.hpp"
 #include "internal/ref_stream_file.hpp"
+#include "internal/ref_stream_process.hpp"
 #include "internal/ref_stream_tcp.hpp"
 #include "internal/ref_string.hpp"
 #include "internal/ref_string_link.hpp"
@@ -40,6 +42,12 @@ auto Ref::destroy() noexcept -> void {
     break;
   case RefKind::StreamTcp:
     downcastRef<TcpStreamRef>(this)->~TcpStreamRef();
+    break;
+  case RefKind::StreamProcess:
+    downcastRef<ProcessStreamRef>(this)->~ProcessStreamRef();
+    break;
+  case RefKind::Process:
+    downcastRef<ProcessRef>(this)->~ProcessRef();
     break;
   }
 }

@@ -107,4 +107,10 @@ inline auto makeTmpFile() -> FILE* {
     (ASMB)->addPCall(novasm::PCallCode::StreamWriteString);                                        \
   }
 
+#if defined(_WIN32)
+#define STR_NEWLINE "\r\n"
+#else // !_WIN32
+#define STR_NEWLINE "\n"
+#endif
+
 } // namespace vm

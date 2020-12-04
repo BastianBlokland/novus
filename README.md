@@ -78,7 +78,7 @@ The Novus type system contains some basic types build in to the language:
 * `string`
 * `char` (8 bit unsigned integer)
 
-(Plus a few more niche types: `sys_stream`, `function`, `action`, `future` and `lazy`).
+(Plus a few more niche types: `sys_stream`, `sys_process`, `function`, `action`, `future` and `lazy`).
 
 Note: These are the types the language itself supports, there are however many more types
 implemented in the [standard library](https://github.com/BastianBlokland/novus/tree/master/novstd).

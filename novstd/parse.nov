@@ -15,8 +15,9 @@ union   ParseResult{T}  = ParseSuccess{T}, ParseFailure
 struct  Parser{T}       = function{ParseState, ParseResult{T}} func
 
 enum ParseFlags =
-  None      : 0b0,
-  Optional  : 0b1
+  None            : 0b00,
+  Optional        : 0b01,
+  NoWrapperError  : 0b10
 
 // -- Operators
 
@@ -26,16 +27,24 @@ fun (){T}(Parser{T} p, string str)
 fun (){T}(Parser{T} p, ParseState s)
   p.func(s)
 
-fun run{T}(Parser{T} p, string str) -> Either{T, Error}
+fun run{T}(Parser{T} p, string str)
+  p.run(str, ParseFlags.None)
+
+fun run{T}(Parser{T} p, string str, ParseFlags flags) -> Either{T, Error}
   res = p(str);
   if res as ParseSuccess{T} suc  -> suc.val
   if res as ParseFailure    fail ->
+    if (flags & ParseFlags.NoWrapperError) != 0 -> fail.err
+    else ->
     txtPos = getTextPos(fail.state.str[0, fail.state.pos]);
     Error("Parsing failed, line: " + (txtPos.line + 1) + ", column: " + (txtPos.column + 1)) :: fail.err
 
-fun build{T}(Parser{T} p) -> function{string, Either{T, Error}}
+fun build{T}(Parser{T} p)
+  p.build(ParseFlags.None)
+
+fun build{T}(Parser{T} p, ParseFlags flags) -> function{string, Either{T, Error}}
   lambda (string str)
-    p.run(str)
+    p.run(str, flags)
 
 fun ??{T}(ParseResult{T} res, T def)
   res as ParseSuccess{T} suc ? suc.val : def
@@ -507,6 +516,12 @@ assert(
   failParser(Error("Hello world")).run("")  == parseErr :: Error("Hello world") &&
   failParser().run("Hello world")           == parseErr :: Error()              &&
   failParser().run("")                      == parseErr :: Error())
+
+assert(
+  f = ParseFlags.NoWrapperError;
+  failParser(Error("Hello world")).run("", f)  == Error("Hello world") &&
+  failParser().run("Hello world", f)           == Error()              &&
+  failParser().run("", f)                      == Error())
 
 assert(
   matchParser('a')("a") == 'a' &&

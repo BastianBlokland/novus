@@ -45,6 +45,7 @@ auto interruptSetupHandler() noexcept -> bool {
 
   struct sigaction actionInfo = {};
   actionInfo.sa_handler       = interruptHandler;
+  actionInfo.sa_flags = SA_RESTART; // Restart interuptable system calls on receiving a signal.
   sigemptyset(&actionInfo.sa_mask);
 
   return sigaction(SIGINT, &actionInfo, nullptr) == 0;

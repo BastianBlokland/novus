@@ -119,6 +119,7 @@ add_executable(novtests
   vm/fork_test.cpp
   vm/int_check_test.cpp
   vm/int_op_test.cpp
+  vm/io_process_test.cpp
   vm/io_test.cpp
   vm/ip_check_test.cpp
   vm/jump_test.cpp

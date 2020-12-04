@@ -2,8 +2,10 @@
 #include "internal/executor_handle.hpp"
 #include "internal/interupt.hpp"
 #include "internal/ref_long.hpp"
+#include "internal/ref_process.hpp"
 #include "internal/ref_stream_console.hpp"
 #include "internal/ref_stream_file.hpp"
+#include "internal/ref_stream_process.hpp"
 #include "internal/ref_stream_tcp.hpp"
 #include "internal/settings.hpp"
 #include "internal/stack.hpp"
@@ -131,6 +133,40 @@ auto inline pcall(
     auto options = POP_INT();
     auto stream  = POP();
     PUSH_BOOL(streamUnsetOpts(stream, static_cast<StreamOpts>(options)));
+  } break;
+
+  case PCallCode::ProcessStart: {
+    auto* cmdLineStrRef = getStringRef(refAlloc, POP());
+    CHECK_ALLOC(cmdLineStrRef);
+    PUSH_REF(processStart(refAlloc, cmdLineStrRef));
+  } break;
+  case PCallCode::ProcessBlock: {
+    // Note: Keep the process on the stack, reason is gc could run while we are blocked.
+    auto process = PEEK();
+
+    execHandle->setState(ExecState::Paused);
+    int exitCode = processBlock(getProcessRef(process));
+    execHandle->setState(ExecState::Running);
+    if (execHandle->trap()) {
+      return;
+    }
+
+    POP(); // Pop the process of the stack.
+    PUSH_INT(exitCode);
+  } break;
+  case PCallCode::ProcessOpenStream: {
+    const auto kind = static_cast<ProcessStreamKind>(POP_INT());
+    auto process    = getProcessRef(POP());
+    PUSH_REF(openProcessStream(process, refAlloc, kind));
+  } break;
+  case PCallCode::ProcessGetId: {
+    auto process = getProcessRef(POP());
+    PUSH_LONG(processGetId(process));
+  } break;
+  case PCallCode::ProcessSendSignal: {
+    const auto kind = static_cast<ProcessSignalKind>(POP_INT());
+    auto process    = getProcessRef(POP());
+    PUSH_BOOL(processSendSignal(process, kind));
   } break;
 
   case PCallCode::FileOpenStream: {

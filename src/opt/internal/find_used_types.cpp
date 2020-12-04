@@ -58,6 +58,7 @@ auto FindUsedTypes::markType(prog::sym::TypeId type) -> void {
   case prog::sym::TypeKind::String:
   case prog::sym::TypeKind::Char:
   case prog::sym::TypeKind::Stream:
+  case prog::sym::TypeKind::Process:
     break;
   }
 }

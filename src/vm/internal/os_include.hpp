@@ -8,6 +8,8 @@
 #include <conio.h>
 #include <winsock2.h>
 #include <ws2tcpip.h>
+#include <fcntl.h>
+#include <io.h>
 #include <windows.h>
 
 #else // !_WIN32
@@ -20,8 +22,10 @@
 #include <sys/mman.h>
 #include <sys/socket.h>
 #include <sys/types.h>
+#include <sys/wait.h>
 #include <termios.h>
 #include <unistd.h>
+#include <csignal>
 
 #endif // !_WIN32
 // clang-format on
