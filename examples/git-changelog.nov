@@ -1,0 +1,111 @@
+// --- Commandline utility to gather a nicely formatted changelog from git history.
+
+import "std.nov"
+
+// -- Types
+
+struct Commit =
+  string    title,
+  string    message,
+  User      user,
+  DateTime  time
+
+struct User =
+  string name,
+  string email
+
+// -- Utilities
+
+fun toUser(string name, string email)
+  User(name, email)
+
+fun toCommit(User user, DateTime time, string title, string message)
+  Commit(title, message, user, time)
+
+// -- Parsers
+
+// Input example:
+// '
+// John Doe <john@gmail.com>
+// '
+fun userParser()
+  emailStart  = matchParser('<');
+  emailEnd    = matchParser('>');
+  (
+    untilParser(emailStart).trim() & emailStart >> untilParser(emailEnd) << emailEnd
+  ).unwrap(toUser)
+
+// Input example:
+// '
+// tree 190bb9d6857cd5a37e40672da110c6c2a0ac7ca3
+// parent 891050cb69c822e5c8b59292540fef2776aa8ed8
+// author Bastian Blokland <bastianblokland@gmail.com> 1605977674 +0200
+// committer Bastian Blokland <bastianblokland@gmail.com> 1606947186 +0200
+//
+// Add api to send an interupt signal to a process
+// '
+fun commitParser()
+  (
+    untilParser(matchParser("author")) >> matchParser("author") >> userParser()       &
+    whitespaceParser()                                          >> unixTimeParser()   &
+    untilParser(emptyLineParser()) >> emptyLineParser()         >> lineParser()       &
+    whitespaceParser()                                          >> allParser().trim()
+  ).unwrap(toCommit)
+
+// -- Actions
+
+act runGit(List{string} args) -> Either{string, Error}
+  r = run("git", args).wait();
+  if r.isSuccess() -> r.stdOut
+  else             -> Error("Failed to run git: " + r.stdErr.trim())
+
+act runGit{T}(List{string} args, Parser{T} parser) -> Either{T, Error}
+  runGit(args).map(parser.build(ParseFlags.NoWrapperError))
+
+act getCommit(string sha) -> Either{Commit, Error}
+  args   = "cat-file" :: "commit" :: sha;
+  parser = commitParser();
+  runGit(args, parser) ! Error("Failed to get commit: " + sha)
+
+act getCommits(List{string} shas) -> Either{List{Commit}, Error}
+  shas.parallelMapReverse(getCommit).split().valueOrError()
+
+act getCommitsBetween(string from, string to) -> Either{List{Commit}, Error}
+  args   = "rev-list" :: "--no-merges" :: (from + ".." + to);
+  parser = manyParser(lineParser() << newlineParser());
+  runGit(args, parser).map(getCommits)
+
+act getCommitsFrom(string from)
+  getCommitsBetween(from, "HEAD")
+
+act getShaByTagPattern(string pattern) -> Either{string, Error}
+   args   = "tag" :: "-l" :: "--format" :: "%(objectname)" :: "--sort=-creatordate" :: pattern;
+   parser = lineParser() !! Error("No commit found matching pattern: '" + pattern + "'");
+   runGit(args, parser)
+
+act printChangeLog(List{Commit} commits)
+  headerWriter  = litWriter("Changes (") & txtIntWriter() & litWriter(" commits):");
+  commitWriter  = litWriter("* ") & stringWriter().map(lambda (Commit c) c.title);
+  writer        = headerWriter & newlineWriter() & listWriter(commitWriter, newlineWriter());
+  print(writer(makePair(commits.length(), commits)))
+
+act printError(Error error)
+  writer = litWriter("Failed to generate:") & newlineWriter() & errorWriter(litWriter("- "), newlineWriter());
+  printErr(writer(error))
+
+act printUsage()
+  print("Changelog generator");
+  print("Usage: git-changelog.nov --tag 'v0.*'\n");
+  print("Options:");
+  print("  --help   Print this usage information");
+  print("  --tag    Glob tag pattern for the base commit")
+
+act main()
+  if hasEnvOpt("help") -> printUsage()
+  else ->
+    tagPattern    = getEnvOpt("tag", allParser()) ?? "*";
+    commitsResult = getShaByTagPattern(tagPattern).map(getCommitsFrom);
+    if commitsResult as Error         err     -> printError(err); fail()
+    if commitsResult as List{Commit}  commits -> printChangeLog(commits)
+
+main()
