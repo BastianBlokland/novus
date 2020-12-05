@@ -49,6 +49,9 @@ enum class PCallCode : uint8_t {
   ClockMicroSinceEpoch = 80, // () -> (long) Get the elapsed microseconds since unix epoch.
   ClockNanoSteady      = 81, // () -> (long) Get process steady clock in nanoseconds.
 
+  VersionRt       = 90, // () -> (string) Version of the runtime.
+  VersionCompiler = 91, // () -> (string) Version of the compiler that created this assembly.
+
   SleepNano = 240, // (long)         -> (long) Sleep the current executor for x nanoseconds.
   Assert    = 241, // (string, int)  -> (int) If condition is false: fail with message.
 };

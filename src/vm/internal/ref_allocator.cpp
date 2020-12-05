@@ -45,6 +45,14 @@ auto RefAllocator::allocStr(const unsigned int size) noexcept -> StringRef* {
 }
 
 auto RefAllocator::allocStrLit(const std::string& lit) noexcept -> StringRef* {
+  return allocStrLit(lit.data(), lit.size());
+}
+
+auto RefAllocator::allocStrLit(const char* literal) noexcept -> StringRef* {
+  return allocStrLit(literal, strlen(literal));
+}
+
+auto RefAllocator::allocStrLit(const char* literal, size_t literalLength) noexcept -> StringRef* {
   auto mem = alloc<StringRef>(0);
   if (unlikely(mem.refPtr == nullptr)) {
     return nullptr;
@@ -54,8 +62,8 @@ auto RefAllocator::allocStrLit(const std::string& lit) noexcept -> StringRef* {
   // obvious reasons this is dangerous. Its up to the caller to make sure not to change string
   // backed by literals.
 
-  auto litSize   = static_cast<unsigned int>(lit.size());
-  auto* charData = const_cast<uint8_t*>(reinterpret_cast<const uint8_t*>(lit.data()));
+  auto litSize   = static_cast<unsigned int>(literalLength);
+  auto* charData = const_cast<uint8_t*>(reinterpret_cast<const uint8_t*>(literal));
   auto* refPtr   = static_cast<StringRef*>(new (mem.refPtr) StringRef{charData, litSize});
   initRef(refPtr, mem.memTag);
   return refPtr;

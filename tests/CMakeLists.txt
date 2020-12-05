@@ -126,6 +126,7 @@ add_executable(novtests
   vm/literal_test.cpp
   vm/long_check_test.cpp
   vm/long_op_test.cpp
+  vm/misc_pcall_test.cpp
   vm/misc_test.cpp
   vm/string_check_test.cpp
   vm/string_op_test.cpp

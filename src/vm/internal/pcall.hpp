@@ -1,4 +1,5 @@
 #pragma once
+#include "config.hpp"
 #include "internal/executor_handle.hpp"
 #include "internal/interupt.hpp"
 #include "internal/ref_long.hpp"
@@ -12,6 +13,7 @@
 #include "internal/stream_utilities.hpp"
 #include "internal/string_utilities.hpp"
 #include "internal/terminal.hpp"
+#include "novasm/assembly.hpp"
 #include "novasm/pcall_code.hpp"
 #include "vm/exec_state.hpp"
 #include "vm/platform_interface.hpp"
@@ -25,6 +27,7 @@ namespace vm::internal {
 // 'outside' world (for example file io).
 auto inline pcall(
     const Settings& settings,
+    const novasm::Assembly* assembly,
     PlatformInterface* iface,
     RefAllocator* refAlloc,
     BasicStack* stack,
@@ -271,6 +274,13 @@ auto inline pcall(
   case PCallCode::ClockNanoSteady: {
     auto now = std::chrono::steady_clock::now().time_since_epoch();
     PUSH_LONG(std::chrono::duration_cast<std::chrono::nanoseconds>(now).count());
+  } break;
+
+  case PCallCode::VersionRt: {
+    PUSH_REF(refAlloc->allocStrLit(PROJECT_VER));
+  } break;
+  case PCallCode::VersionCompiler: {
+    PUSH_REF(refAlloc->allocStrLit(assembly->getCompilerVersion()));
   } break;
 
   case PCallCode::SleepNano: {

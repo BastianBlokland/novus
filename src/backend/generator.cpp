@@ -1,4 +1,5 @@
 #include "backend/generator.hpp"
+#include "config.hpp"
 #include "internal/gen_expr.hpp"
 #include "internal/gen_type_eq.hpp"
 #include "internal/utilities.hpp"
@@ -67,7 +68,8 @@ static auto generateExecStmt(
 }
 
 auto generate(const prog::Program& program) -> std::pair<novasm::Assembly, InstructionLabels> {
-  auto asmb = novasm::Assembler{};
+  auto compilerVersion = std::string{PROJECT_VER};
+  auto asmb            = novasm::Assembler{std::move(compilerVersion)};
 
   // Generate equality functions for user types (structs and unions).
   internal::genUserTypeEquality(&asmb, program);

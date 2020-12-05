@@ -10,7 +10,8 @@ namespace backend {
 
 inline auto buildAssemblyExpr(const std::function<void(novasm::Assembler*)>& build)
     -> novasm::Assembly {
-  auto asmb = novasm::Assembler{};
+  auto compilerVersion = std::string{"0.42.1337"};
+  auto asmb            = novasm::Assembler{std::move(compilerVersion)};
   build(&asmb);
   asmb.addRet();
 
@@ -25,7 +26,8 @@ inline auto buildAssemblyExpr(const std::function<void(novasm::Assembler*)>& bui
 
 inline auto buildAssembly(const std::function<void(novasm::Assembler*)>& build)
     -> novasm::Assembly {
-  auto asmb = novasm::Assembler{};
+  auto compilerVersion = std::string{"0.42.1337"};
+  auto asmb            = novasm::Assembler{std::move(compilerVersion)};
   build(&asmb);
   return asmb.close();
 }

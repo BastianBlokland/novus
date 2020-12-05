@@ -105,6 +105,13 @@ auto operator<<(std::ostream& out, const PCallCode& rhs) noexcept -> std::ostrea
     out << "clock-nano-steady";
     break;
 
+  case PCallCode::VersionRt:
+    out << "version-rt";
+    break;
+  case PCallCode::VersionCompiler:
+    out << "version-compiler";
+    break;
+
   case PCallCode::SleepNano:
     out << "sleep-nano";
     break;

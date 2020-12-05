@@ -40,6 +40,12 @@ public:
   // Allocate a string from a literal, upon failure returns nullptr.
   [[nodiscard]] auto allocStrLit(const std::string& literal) noexcept -> StringRef*;
 
+  // Allocate a string from a literal, upon failure returns nullptr.
+  [[nodiscard]] auto allocStrLit(const char* literal) noexcept -> StringRef*;
+
+  // Allocate a string from a literal, upon failure returns nullptr.
+  [[nodiscard]] auto allocStrLit(const char* literal, size_t literalLength) noexcept -> StringRef*;
+
   // Allocate a string-link, upon failure returns nullptr.
   [[nodiscard]] auto allocStrLink(Ref* prev, Value val) noexcept -> StringLinkRef*;
 

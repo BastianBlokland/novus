@@ -738,7 +738,7 @@ auto execute(
       }
     } break;
     case OpCode::PCall: {
-      pcall(settings, iface, refAlloc, &stack, &execHandle, readAsm<PCallCode>(&ip));
+      pcall(settings, assembly, iface, refAlloc, &stack, &execHandle, readAsm<PCallCode>(&ip));
       if (unlikely(execHandle.getState(std::memory_order_relaxed) != ExecState::Running)) {
         assert(execHandle.getState(std::memory_order_relaxed) != ExecState::Success);
         goto End;
