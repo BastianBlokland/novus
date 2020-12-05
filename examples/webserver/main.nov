@@ -109,6 +109,7 @@ act main(int port, Content content)
         variables = (
           Variable("SERVER_UPTIME",           uptime.string())              ::
           Variable("SERVER_DATE",             timeNow().httpDateStr())      ::
+          Variable("SERVER_PLATFORM",         getPlatform().string())       ::
           Variable("SERVER_RUNTIME_VERSION",  getRuntimeVersion().string())
         );
         ctx       = ClientContext(content, variables, con, respWriter, reqParser);
