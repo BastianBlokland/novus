@@ -82,14 +82,14 @@ auto operator<<(std::ostream& out, const PCallCode& rhs) noexcept -> std::ostrea
     out << "term-get-height";
     break;
 
-  case PCallCode::GetEnvArg:
-    out << "get-env-arg";
+  case PCallCode::EnvGetArg:
+    out << "env-get-arg";
     break;
-  case PCallCode::GetEnvArgCount:
-    out << "get-env-arg-count";
+  case PCallCode::EnvGetArgCount:
+    out << "env-get-arg-count";
     break;
-  case PCallCode::GetEnvVar:
-    out << "get-env-var";
+  case PCallCode::EnvGetVar:
+    out << "env-get-var";
     break;
   case PCallCode::InteruptIsReq:
     out << "interupt-is-req";

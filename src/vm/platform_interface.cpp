@@ -29,10 +29,10 @@ PlatformInterface::PlatformInterface(
   }
 }
 
-auto PlatformInterface::getEnvArg(int idx) noexcept -> const char* {
+auto PlatformInterface::envGetArg(int idx) noexcept -> const char* {
   return idx < 0 || idx >= m_envArgsCount ? nullptr : m_envArgs[idx];
 }
 
-auto PlatformInterface::getEnvArgCount() noexcept -> int { return m_envArgsCount; }
+auto PlatformInterface::envGetArgCount() noexcept -> int { return m_envArgsCount; }
 
 } // namespace vm

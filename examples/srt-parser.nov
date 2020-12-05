@@ -112,4 +112,4 @@ act main(Path path)
     if res as List{Subtitle}  subs -> print(string(subs, "", "\n\n", ""))
     if res as Error           err  -> printErr("Failed to parse: " + err); fail()
 
-main(Path(getEnvArg(0)))
+main(Path(envGetArg(0)))

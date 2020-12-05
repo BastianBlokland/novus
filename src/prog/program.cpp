@@ -310,11 +310,11 @@ Program::Program() :
       *this, Fk::ActionTermGetHeight, "termGetHeight", sym::TypeSet{}, m_int);
 
   m_funcDecls.registerAction(
-      *this, Fk::ActionGetEnvArg, "getEnvArg", sym::TypeSet{m_int}, m_string);
+      *this, Fk::ActionEnvGetArg, "envGetArg", sym::TypeSet{m_int}, m_string);
   m_funcDecls.registerAction(
-      *this, Fk::ActionGetEnvArgCount, "getEnvArgCount", sym::TypeSet{}, m_int);
+      *this, Fk::ActionEnvGetArgCount, "envGetArgCount", sym::TypeSet{}, m_int);
   m_funcDecls.registerAction(
-      *this, Fk::ActionGetEnvVar, "getEnvVar", sym::TypeSet{m_string}, m_string);
+      *this, Fk::ActionEnvGetVar, "envGetVar", sym::TypeSet{m_string}, m_string);
   m_funcDecls.registerAction(
       *this, Fk::ActionInteruptIsReq, "interuptIsRequested", sym::TypeSet{}, m_bool);
   m_funcDecls.registerAction(

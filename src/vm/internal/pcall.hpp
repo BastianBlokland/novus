@@ -246,14 +246,14 @@ auto inline pcall(
     PUSH_INT(termGetHeight());
   } break;
 
-  case PCallCode::GetEnvArg: {
-    auto* res = iface->getEnvArg(POP_INT());
+  case PCallCode::EnvGetArg: {
+    auto* res = iface->envGetArg(POP_INT());
     PUSH_REF(res == nullptr ? refAlloc->allocStr(0) : toStringRef(refAlloc, res));
   } break;
-  case PCallCode::GetEnvArgCount: {
-    PUSH_INT(iface->getEnvArgCount());
+  case PCallCode::EnvGetArgCount: {
+    PUSH_INT(iface->envGetArgCount());
   } break;
-  case PCallCode::GetEnvVar: {
+  case PCallCode::EnvGetVar: {
     auto* nameStrRef = getStringRef(refAlloc, POP());
     CHECK_ALLOC(nameStrRef);
 

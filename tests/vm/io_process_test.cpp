@@ -181,7 +181,7 @@ TEST_CASE("Execute process platform-calls", "[vm]") {
 
           // Run a program that prints the number of environment arguments.
           asmb->addLoadLitString(
-              novePath + " 'print(getEnvArgCount())' a --b -ce hello 'hello world'");
+              novePath + " 'print(envGetArgCount())' a --b -ce hello 'hello world'");
           asmb->addPCall(novasm::PCallCode::ProcessStart);
 
           asmb->addDup(); // Duplicate the process.

@@ -552,14 +552,14 @@ auto GenExpr::visit(const prog::expr::CallExprNode& n) -> void {
     m_asmb->addPCall(novasm::PCallCode::TermGetHeight);
     break;
 
-  case prog::sym::FuncKind::ActionGetEnvArg:
-    m_asmb->addPCall(novasm::PCallCode::GetEnvArg);
+  case prog::sym::FuncKind::ActionEnvGetArg:
+    m_asmb->addPCall(novasm::PCallCode::EnvGetArg);
     break;
-  case prog::sym::FuncKind::ActionGetEnvArgCount:
-    m_asmb->addPCall(novasm::PCallCode::GetEnvArgCount);
+  case prog::sym::FuncKind::ActionEnvGetArgCount:
+    m_asmb->addPCall(novasm::PCallCode::EnvGetArgCount);
     break;
-  case prog::sym::FuncKind::ActionGetEnvVar:
-    m_asmb->addPCall(novasm::PCallCode::GetEnvVar);
+  case prog::sym::FuncKind::ActionEnvGetVar:
+    m_asmb->addPCall(novasm::PCallCode::EnvGetVar);
     break;
   case prog::sym::FuncKind::ActionInteruptIsReq:
     m_asmb->addPCall(novasm::PCallCode::InteruptIsReq);

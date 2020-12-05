@@ -24,10 +24,10 @@ public:
   auto getStdErr() noexcept { return m_stdErr != nullptr ? m_stdErr : m_stdOut; }
 
   // Retreive the null terminated c-style string of the environment argument at the specified index.
-  auto getEnvArg(int idx) noexcept -> const char*;
+  auto envGetArg(int idx) noexcept -> const char*;
 
   // Retrieve how many environment arguments are passed to the program.
-  auto getEnvArgCount() noexcept -> int;
+  auto envGetArgCount() noexcept -> int;
 
 private:
   int m_envArgsCount;

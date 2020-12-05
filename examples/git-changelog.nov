@@ -84,10 +84,12 @@ act getShaByTagPattern(string pattern) -> Either{string, Error}
    runGit(args, parser)
 
 act printChangeLog(List{Commit} commits)
-  headerWriter  = litWriter("Changes (") & txtIntWriter() & litWriter(" commits):");
-  commitWriter  = litWriter("* ") & stringWriter().map(lambda (Commit c) c.title);
-  writer        = headerWriter & newlineWriter() & listWriter(commitWriter, newlineWriter());
-  print(writer(makePair(commits.length(), commits)))
+  if commits.isEmpty()  -> print("No changes")
+  else                  ->
+    headerWriter  = litWriter("Changes (") & txtIntWriter() & litWriter(" commits):");
+    commitWriter  = litWriter("* ") & stringWriter().map(lambda (Commit c) c.title);
+    writer        = headerWriter & newlineWriter() & listWriter(commitWriter, newlineWriter());
+    print(writer(makePair(commits.length(), commits)))
 
 act printError(Error error)
   writer = litWriter("Failed to generate:") & newlineWriter() & errorWriter(litWriter("- "), newlineWriter());
