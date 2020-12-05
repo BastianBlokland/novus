@@ -1,0 +1,15 @@
+import "std/version.nov"
+
+// -- Actions
+
+act getRuntimeVersion()
+  versionParser().run(runtimeVersionString()) ?? Version(0, 0, 0)
+
+act getCompilerVersion()
+  versionParser().run(compilerVersionString()) ?? Version(0, 0, 0)
+
+// -- Tests
+
+assert(getRuntimeVersion() >= Version(0, 5, 0))
+
+assert(getCompilerVersion() >= Version(0, 5, 0))

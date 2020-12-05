@@ -325,6 +325,11 @@ Program::Program() :
   m_funcDecls.registerAction(
       *this, Fk::ActionClockNanoSteady, "clockNanoSteady", sym::TypeSet{}, m_long);
 
+  m_funcDecls.registerAction(
+      *this, Fk::ActionVersionRt, "runtimeVersionString", sym::TypeSet{}, m_string);
+  m_funcDecls.registerAction(
+      *this, Fk::ActionVersionCompiler, "compilerVersionString", sym::TypeSet{}, m_string);
+
   m_funcDecls.registerAction(*this, Fk::ActionSleepNano, "sleepNano", sym::TypeSet{m_long}, m_long);
   m_funcDecls.registerAction(
       *this, Fk::ActionAssert, "assert", sym::TypeSet{m_bool, m_string}, m_bool);

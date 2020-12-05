@@ -158,6 +158,9 @@ enum class FuncKind {
                               // (01-01-1970).
   ActionClockNanoSteady,      // Return a long of the amount of nanoseconds on the steady clock.
 
+  ActionVersionRt,       // Get the version of the runtime.
+  ActionVersionCompiler, // Get the version of the compiler that created this assembly.
+
   ActionSleepNano, // Sleep the executor for x nanoseconds.
   ActionAssert,    // Assert a condition to be true (and fail the executor if it isn't).
   ActionFail,      // Fail the current executor (will return exit-code 1 from the application).
