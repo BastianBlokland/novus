@@ -41,7 +41,7 @@ TEST_CASE("Execute miscellaneous pcalls", "[vm]") {
 #elif defined(__APPLE__) // !linux
     const auto expectedResult = "2";
 #elif defined(_WIN32)    // !linux && !__APPLE__
-    const auto expectedResult = "2";
+    const auto expectedResult = "3";
 #endif
     CHECK_PROG(
         [](novasm::Assembler* asmb) -> void {
