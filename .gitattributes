@@ -1,0 +1,11 @@
+# --------------------------------------------------------------------------------------------------
+# Special file attributes for git.
+# --------------------------------------------------------------------------------------------------
+
+# Use unix line-ending for all text files.
+* text eol=lf
+
+# Mark novus sourcefiles as being 'C' so we get some basic syntax highlighting on GitHub.
+# Linguist does not support repository-local syntax highlighting (and probably never will) and adding
+# support for a toy-language like Novus to Linguist seems unlikly.
+*.nov linguist-language=C
