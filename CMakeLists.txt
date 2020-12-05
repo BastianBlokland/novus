@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.15)
 
 project(
   Novus
-  VERSION 0.5.0
+  VERSION 0.5.1
   LANGUAGES CXX)
 
 # Custom options options
