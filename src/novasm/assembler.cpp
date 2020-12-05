@@ -1,12 +1,12 @@
 #include "novasm/assembler.hpp"
-#include "config.hpp"
 #include <limits>
 #include <sstream>
 #include <stdexcept>
 
 namespace novasm {
 
-Assembler::Assembler() : m_closed{false}, m_genLabelCounter{0U} {}
+Assembler::Assembler(std::string compilerVersion) :
+    m_compilerVersion{std::move(compilerVersion)}, m_closed{false}, m_genLabelCounter{0U} {}
 
 auto Assembler::generateLabel(const std::string& prefix) -> std::string {
   std::ostringstream oss;
@@ -312,11 +312,8 @@ auto Assembler::close() -> Assembly {
     throw std::logic_error{oss.str()};
   }
 
-  auto version = std::string{PROJECT_VER};
-  return Assembly{std::move(version),
-                  entrypointItr->second,
-                  std::move(m_litStrings),
-                  std::move(m_instructions)};
+  return Assembly{
+      m_compilerVersion, entrypointItr->second, std::move(m_litStrings), std::move(m_instructions)};
 }
 
 auto Assembler::getLabels() -> std::unordered_map<uint32_t, std::vector<std::string>> {

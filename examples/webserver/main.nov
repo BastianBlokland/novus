@@ -107,8 +107,9 @@ act main(int port, Content content)
       impure lambda (TcpConnection con)
         uptime    = timeNow() - startTime;
         variables = (
-          Variable("SERVER_UPTIME", uptime.string()) ::
-          Variable("SERVER_DATE",   timeNow().httpDateStr())
+          Variable("SERVER_UPTIME",           uptime.string())              ::
+          Variable("SERVER_DATE",             timeNow().httpDateStr())      ::
+          Variable("SERVER_RUNTIME_VERSION",  getRuntimeVersion().string())
         );
         ctx       = ClientContext(content, variables, con, respWriter, reqParser);
         handleConnection(ctx)

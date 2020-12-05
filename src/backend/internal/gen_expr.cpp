@@ -575,6 +575,13 @@ auto GenExpr::visit(const prog::expr::CallExprNode& n) -> void {
     m_asmb->addPCall(novasm::PCallCode::ClockNanoSteady);
     break;
 
+  case prog::sym::FuncKind::ActionVersionRt:
+    m_asmb->addPCall(novasm::PCallCode::VersionRt);
+    break;
+  case prog::sym::FuncKind::ActionVersionCompiler:
+    m_asmb->addPCall(novasm::PCallCode::VersionCompiler);
+    break;
+
   case prog::sym::FuncKind::ActionSleepNano:
     m_asmb->addPCall(novasm::PCallCode::SleepNano);
     break;
@@ -775,7 +782,7 @@ auto GenExpr::visit(const prog::expr::UnionGetExprNode& n) -> void {
   m_asmb->label(endLabel);
 }
 
-auto GenExpr::visit(const prog::expr::FailNode & /*unused*/) -> void { m_asmb->addFail(); }
+auto GenExpr::visit(const prog::expr::FailNode& /*unused*/) -> void { m_asmb->addFail(); }
 
 auto GenExpr::visit(const prog::expr::LitBoolNode& n) -> void {
   m_asmb->addLoadLitInt(n.getVal() ? 1U : 0U);

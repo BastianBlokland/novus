@@ -18,7 +18,7 @@ enum class CallMode {
 // Builder class to aid in generating novus assembly.
 class Assembler final {
 public:
-  Assembler();
+  Assembler(std::string compilerVersion);
   Assembler(const Assembler& rhs)     = delete;
   Assembler(Assembler&& rhs) noexcept = default;
   ~Assembler()                        = default;
@@ -135,6 +135,8 @@ public:
   [[nodiscard]] auto getLabels() -> std::unordered_map<uint32_t, std::vector<std::string>>;
 
 private:
+  std::string m_compilerVersion;
+
   bool m_closed;
   unsigned int m_genLabelCounter;
   std::unordered_map<std::string, uint32_t> m_litStringLookup;
