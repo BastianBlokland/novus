@@ -112,6 +112,10 @@ auto operator<<(std::ostream& out, const PCallCode& rhs) noexcept -> std::ostrea
     out << "version-compiler";
     break;
 
+  case PCallCode::PlatformCode:
+    out << "platform-code";
+    break;
+
   case PCallCode::SleepNano:
     out << "sleep-nano";
     break;

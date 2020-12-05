@@ -52,6 +52,8 @@ enum class PCallCode : uint8_t {
   VersionRt       = 90, // () -> (string) Version of the runtime.
   VersionCompiler = 91, // () -> (string) Version of the compiler that created this assembly.
 
+  PlatformCode = 100, // () -> (int) Platform identifier: Linux: 1, MacOs: 2, Windows: 3.
+
   SleepNano = 240, // (long)         -> (long) Sleep the current executor for x nanoseconds.
   Assert    = 241, // (string, int)  -> (int) If condition is false: fail with message.
 };
