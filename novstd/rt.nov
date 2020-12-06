@@ -25,6 +25,11 @@ act getRuntimeVersion()
 act getCompilerVersion()
   versionParser().run(compilerVersionString()) ?? Version(0, 0, 0)
 
+act atInterupt{T}(action{T} delegate) -> future{T}
+  fork invoke(impure lambda () -> T
+    if interuptIsRequested() -> delegate()
+    else                     -> sleep(milliseconds(100)); self())
+
 // -- Tests
 
 assert(
