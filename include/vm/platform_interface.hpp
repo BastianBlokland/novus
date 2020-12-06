@@ -1,5 +1,6 @@
 #pragma once
 #include <cstdio>
+#include <string>
 
 namespace vm {
 
@@ -7,16 +8,16 @@ namespace vm {
 class PlatformInterface final {
 public:
   PlatformInterface(
-      const char* programPath,
+      std::string programPath,
       int envArgsCount,
       char* const* envArgs,
       std::FILE* stdIn,
       std::FILE* stdOut,
       std::FILE* stdErr) noexcept;
 
-  // Null-terminated c-style string containing the absolute path to the currently running program.
-  // Note: Can be null if the program only exists in memory (For example: inline exec by nove).
-  auto getProgramPath() noexcept { return m_programPath; }
+  // String containing the absolute path to the currently running program.
+  // Note: Can be empty if the program only exists in memory (For example: inline exec by nove).
+  auto getProgramPath() noexcept -> const std::string& { return m_programPath; }
 
   // Retreive the null terminated c-style string of the environment argument at the specified index.
   auto envGetArg(int idx) noexcept -> const char*;
@@ -35,7 +36,7 @@ public:
   auto getStdErr() noexcept { return m_stdErr != nullptr ? m_stdErr : m_stdOut; }
 
 private:
-  const char* m_programPath;
+  std::string m_programPath;
   int m_envArgsCount;
   char* const* m_envArgs;
   std::FILE* m_stdIn;

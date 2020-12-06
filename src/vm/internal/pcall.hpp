@@ -289,13 +289,13 @@ auto inline pcall(
     PUSH_INT(1);
 #elif defined(__APPLE__) // !linux
     PUSH_INT(2);
-#elif defined(_WIN32)    // !linux && !__APPLE__
+#elif defined(_WIN32) // !linux && !__APPLE__
     PUSH_INT(3);
 #endif
   } break;
   case PCallCode::ProgramPath: {
-    auto* path = iface->getProgramPath();
-    PUSH_REF(path == nullptr ? refAlloc->allocStr(0) : refAlloc->allocStrLit(path));
+    const auto& path = iface->getProgramPath();
+    PUSH_REF(refAlloc->allocStrLit(path.data(), path.length()));
   } break;
 
   case PCallCode::SleepNano: {

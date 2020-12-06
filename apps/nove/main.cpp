@@ -34,9 +34,10 @@ auto run(
     const auto optProg   = opt::optimize(frontendOutput.getProg());
     const auto asmOutput = backend::generate(optProg);
 
-    const auto progPath = inputPath ? inputPath->c_str() : nullptr;
-    auto iface = vm::PlatformInterface{progPath, vmEnvArgsCount, vmEnvArgs, stdin, stdout, stderr};
-    auto res   = vm::run(&asmOutput.first, &iface);
+    auto progPath = inputPath ? inputPath->string() : std::string{};
+    auto iface    = vm::PlatformInterface{
+        std::move(progPath), vmEnvArgsCount, vmEnvArgs, stdin, stdout, stderr};
+    auto res = vm::run(&asmOutput.first, &iface);
 
     if (res > vm::ExecState::Failed) {
       std::cerr << rang::style::bold << rang::bg::red << "runtime error: " << res << '\n'
