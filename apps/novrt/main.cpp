@@ -43,12 +43,14 @@ auto main(int argc, char** argv) noexcept -> int {
   // Close the handle to the program assembly file.
   fs.close();
 
-  const auto consumedArgs   = implicitPath ? 1 : 2; // 1 for executable path and 1 for nova file.
-  const auto vmEnvArgsCount = argc - consumedArgs;
-  auto** const vmEnvArgs    = argv + consumedArgs;
+  const auto consumedArgs      = implicitPath ? 1 : 2; // 1 for executable path and 1 for nova file.
+  const auto vmEnvArgsCount    = argc - consumedArgs;
+  auto** const vmEnvArgs       = argv + consumedArgs;
+  const auto canonicalProgPath = filesystem::canonical(progPath);
 
-  auto iface = vm::PlatformInterface{vmEnvArgsCount, vmEnvArgs, stdin, stdout, stderr};
-  auto res   = vm::run(&asmOutput.value(), &iface);
+  auto iface = vm::PlatformInterface{
+      canonicalProgPath.c_str(), vmEnvArgsCount, vmEnvArgs, stdin, stdout, stderr};
+  auto res = vm::run(&asmOutput.value(), &iface);
   if (res > vm::ExecState::Failed) {
     std::cerr << "runtime error: " << res << '\n';
   }

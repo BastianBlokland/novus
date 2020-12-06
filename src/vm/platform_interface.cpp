@@ -10,11 +10,13 @@ static auto setupOutputBuffering(std::FILE* file) -> void {
 }
 
 PlatformInterface::PlatformInterface(
+    const char* programPath,
     int envArgsCount,
     char* const* envArgs,
     std::FILE* stdIn,
     std::FILE* stdOut,
     std::FILE* stdErr) noexcept :
+    m_programPath{programPath},
     m_envArgsCount{envArgsCount},
     m_envArgs{envArgs},
     m_stdIn{stdIn},

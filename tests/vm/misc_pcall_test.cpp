@@ -56,6 +56,21 @@ TEST_CASE("Execute miscellaneous pcalls", "[vm]") {
         "input",
         expectedResult);
   }
+
+  SECTION("ProgramPath") {
+    // Because we execute the tests with inline programs, ProgramPath should return an empty string.
+    CHECK_PROG(
+        [](novasm::Assembler* asmb) -> void {
+          asmb->label("start");
+          asmb->addPCall(novasm::PCallCode::ProgramPath);
+          ADD_PRINT(asmb);
+          asmb->addRet();
+
+          asmb->setEntrypoint("start");
+        },
+        "input",
+        "");
+  }
 }
 
 } // namespace vm

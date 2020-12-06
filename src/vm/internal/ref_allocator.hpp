@@ -38,10 +38,7 @@ public:
   [[nodiscard]] auto allocStr(unsigned int size) noexcept -> StringRef*;
 
   // Allocate a string from a literal, upon failure returns nullptr.
-  [[nodiscard]] auto allocStrLit(const std::string& literal) noexcept -> StringRef*;
-
-  // Allocate a string from a literal, upon failure returns nullptr.
-  [[nodiscard]] auto allocStrLit(const char* literal) noexcept -> StringRef*;
+  [[nodiscard]] auto allocStrLit(const char* literalCStr) noexcept -> StringRef*;
 
   // Allocate a string from a literal, upon failure returns nullptr.
   [[nodiscard]] auto allocStrLit(const char* literal, size_t literalLength) noexcept -> StringRef*;

@@ -301,7 +301,7 @@ auto execute(
     } break;
     case OpCode::LoadLitString: {
       const auto& litStr = assembly->getLitString(READ_UINT());
-      PUSH_REF(refAlloc->allocStrLit(litStr));
+      PUSH_REF(refAlloc->allocStrLit(litStr.data(), litStr.length()));
     } break;
     case OpCode::LoadLitIp: {
       PUSH_UINT(READ_UINT());

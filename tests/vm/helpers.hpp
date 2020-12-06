@@ -61,7 +61,7 @@ inline auto makeTmpFile() -> FILE* {
     std::fseek(stdInFile, 0, SEEK_SET);                                                            \
                                                                                                    \
     gsl::owner<std::FILE*> stdOutFile = makeTmpFile();                                             \
-    auto iface = PlatformInterface{0, nullptr, stdInFile, stdOutFile, nullptr};                    \
+    auto iface = PlatformInterface{nullptr, 0, nullptr, stdInFile, stdOutFile, nullptr};           \
                                                                                                    \
     CHECK(run(&assembly, &iface) == ExecState::Success);                                           \
                                                                                                    \
@@ -84,7 +84,7 @@ inline auto makeTmpFile() -> FILE* {
     std::fflush(stdInFile);                                                                        \
     std::fseek(stdInFile, 0, SEEK_SET);                                                            \
                                                                                                    \
-    auto iface = PlatformInterface{0, nullptr, stdInFile, nullptr, nullptr};                       \
+    auto iface = PlatformInterface{nullptr, 0, nullptr, stdInFile, nullptr, nullptr};              \
     CHECK(run(&assembly, &iface) == (EXPECTED));                                                   \
                                                                                                    \
     /* Close the temporary file (it will auto destruct). */                                        \

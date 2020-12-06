@@ -248,7 +248,7 @@ auto inline pcall(
 
   case PCallCode::EnvGetArg: {
     auto* res = iface->envGetArg(POP_INT());
-    PUSH_REF(res == nullptr ? refAlloc->allocStr(0) : toStringRef(refAlloc, res));
+    PUSH_REF(res == nullptr ? refAlloc->allocStr(0) : refAlloc->allocStrLit(res));
   } break;
   case PCallCode::EnvGetArgCount: {
     PUSH_INT(iface->envGetArgCount());
@@ -280,7 +280,8 @@ auto inline pcall(
     PUSH_REF(refAlloc->allocStrLit(PROJECT_VER));
   } break;
   case PCallCode::VersionCompiler: {
-    PUSH_REF(refAlloc->allocStrLit(assembly->getCompilerVersion()));
+    const auto& version = assembly->getCompilerVersion();
+    PUSH_REF(refAlloc->allocStrLit(version.data(), version.length()));
   } break;
 
   case PCallCode::PlatformCode: {
@@ -291,6 +292,10 @@ auto inline pcall(
 #elif defined(_WIN32)    // !linux && !__APPLE__
     PUSH_INT(3);
 #endif
+  } break;
+  case PCallCode::ProgramPath: {
+    auto* path = iface->getProgramPath();
+    PUSH_REF(path == nullptr ? refAlloc->allocStr(0) : refAlloc->allocStrLit(path));
   } break;
 
   case PCallCode::SleepNano: {

@@ -44,12 +44,8 @@ auto RefAllocator::allocStr(const unsigned int size) noexcept -> StringRef* {
   return refPtr;
 }
 
-auto RefAllocator::allocStrLit(const std::string& lit) noexcept -> StringRef* {
-  return allocStrLit(lit.data(), lit.size());
-}
-
-auto RefAllocator::allocStrLit(const char* literal) noexcept -> StringRef* {
-  return allocStrLit(literal, strlen(literal));
+auto RefAllocator::allocStrLit(const char* literalCStr) noexcept -> StringRef* {
+  return allocStrLit(literalCStr, std::strlen(literalCStr));
 }
 
 auto RefAllocator::allocStrLit(const char* literal, size_t literalLength) noexcept -> StringRef* {
