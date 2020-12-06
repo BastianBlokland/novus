@@ -1,0 +1,23 @@
+
+// -- Types
+
+struct Path = string str
+
+// -- Operators
+
+fun +(Path p1, Path p2)     Path(p1.str + p2.str)
+fun ::(Path p1, Path p2)    Path(p1.str + "/" + p2.str)
+fun ::(Path p1, string p2)  Path(p1.str + "/" + p2)
+
+// -- Conversions
+
+fun string(Path p) p.str
+
+// -- Functions
+
+fun isEmpty(Path p) p.str.length() == 0
+
+
+// -- Tests
+
+assert(Path("").isEmpty())

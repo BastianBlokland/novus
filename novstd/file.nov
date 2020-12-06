@@ -1,17 +1,5 @@
+import "std/path.nov"
 import "std/stream.nov"
-
-// -- Path
-// Represents a path on the filesystem.
-
-struct Path = string str
-
-fun +(Path p1, Path p2)     Path(p1.str + p2.str)
-fun ::(Path p1, Path p2)    Path(p1.str + "/" + p2.str)
-fun ::(Path p1, string p2)  Path(p1.str + "/" + p2)
-
-fun isEmpty(Path p) p.str.length() == 0
-
-fun string(Path p) p.str
 
 // -- Actions
 
@@ -45,8 +33,6 @@ act fileAppend(Path p, string str)
   f.streamFlush()
 
 // -- Tests
-
-assert(Path("").isEmpty())
 
 assert(
   p = Path("file-test1.tmp");
