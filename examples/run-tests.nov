@@ -1,0 +1,50 @@
+// --- Example program that runs a platform specific process.
+// In the future we can consider actually replacing 'scripts/test.sh' and 'scripts/test.ps1' by a
+// novus program that invokes ctest directly.
+
+import "std.nov"
+
+// -- Types
+
+struct TestRun =
+  DateTime  startTime,
+  Process   process
+
+struct TestResult =
+  bool      success,
+  Duration  duration
+
+// -- Actions
+
+act runBash(string file, List{string} args) -> Process
+  run("bash", file :: args)
+
+act runPowerShell(string file, List{string} args) -> Process
+  run("pwsh", "-NoLogo" :: "-NonInteractive" :: file :: args)
+
+act startTests()
+  process = (
+    if getPlatform() == Platform.Windows  -> runPowerShell( "scripts/test.ps1", "-Dir"  :: "build")
+    else                                  -> runBash(       "scripts/test.sh",  "--dir" :: "build")
+  );
+  atInterupt(impure lambda () process.sendInterupt());
+  TestRun(timeNow(), process)
+
+act printOutput(TestRun run)
+  out = fork copy(run.process.stdOut, consoleOpen(ConsoleKind.StdOut));
+  err = fork copy(run.process.stdErr, consoleOpen(ConsoleKind.StdErr));
+  waitAll(out :: err)
+
+act getResult(TestRun run)
+  res = run.process.wait();
+  TestResult(res.isSuccess(), timeNow() - run.startTime)
+
+act main()
+  print("-- Starting tests");
+  run = startTests();
+  printOutput(run);
+  result = run.getResult();
+  if result.success -> print(   "-- Tests finished in " + result.duration)
+  else              -> printErr("-- Tests failed in "   + result.duration)
+
+main()

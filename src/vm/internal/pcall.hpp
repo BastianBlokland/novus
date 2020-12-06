@@ -283,6 +283,16 @@ auto inline pcall(
     PUSH_REF(refAlloc->allocStrLit(assembly->getCompilerVersion()));
   } break;
 
+  case PCallCode::PlatformCode: {
+#if defined(linux)
+    PUSH_INT(1);
+#elif defined(__APPLE__) // !linux
+    PUSH_INT(2);
+#elif defined(_WIN32)    // !linux && !__APPLE__
+    PUSH_INT(3);
+#endif
+  } break;
+
   case PCallCode::SleepNano: {
     auto sleepTime = std::chrono::nanoseconds(getLong(PEEK()));
     execHandle->setState(ExecState::Paused);

@@ -164,7 +164,7 @@ public:
       // groups (and we don't want to interupt our entire own process-group).
       return GenerateConsoleCtrlEvent(CTRL_BREAK_EVENT, m_process.dwProcessId);
 #else // !_WIN32
-      return ::kill(m_process, SIGINT) == 0;
+      return ::killpg(m_process, SIGINT) == 0;
 #endif
     }
     return false;
@@ -210,7 +210,7 @@ private:
 #if defined(_WIN32)
     TerminateProcess(m_process.hProcess, static_cast<UINT>(ProcessExitErr::InvalidProcess));
 #else // !_WIN32
-    ::kill(m_process, SIGKILL);
+    ::killpg(m_process, SIGKILL);
 #endif
   }
 

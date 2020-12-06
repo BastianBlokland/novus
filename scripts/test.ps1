@@ -52,7 +52,7 @@ function TestProj([string] $dir) {
   PInfo "Begin testing using ctest"
 
   Push-Location "$dir"
-  ctest.exe --output-on-failure
+  & ctest.exe --output-on-failure
   $ctestResult = $LASTEXITCODE
   Pop-Location
 

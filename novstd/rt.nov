@@ -1,6 +1,23 @@
 import "std/version.nov"
 
+// -- Types
+
+enum Platform =
+  Linux   : 1,
+  MacOs   : 2,
+  Windows : 3
+
+// -- Conversions
+
+fun string(Platform p)
+  if p == Platform.Linux    -> "Linux"
+  if p == Platform.MacOs    -> "MacOs"
+  if p == Platform.Windows  -> "Windows"
+  else                      -> "Unknown"
+
 // -- Actions
+
+act getPlatform() Platform(platformCode())
 
 act getRuntimeVersion()
   versionParser().run(runtimeVersionString()) ?? Version(0, 0, 0)
@@ -8,7 +25,16 @@ act getRuntimeVersion()
 act getCompilerVersion()
   versionParser().run(compilerVersionString()) ?? Version(0, 0, 0)
 
+act atInterupt{T}(action{T} delegate) -> future{T}
+  fork invoke(impure lambda () -> T
+    if interuptIsRequested() -> delegate()
+    else                     -> sleep(milliseconds(100)); self())
+
 // -- Tests
+
+assert(
+  p = getPlatform();
+  p == Platform.Linux || p == Platform.MacOs || p == Platform.Windows)
 
 assert(getRuntimeVersion() >= Version(0, 5, 0))
 

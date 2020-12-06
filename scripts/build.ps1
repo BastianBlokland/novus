@@ -43,7 +43,7 @@ function BuildProjMake([int] $threads, [string] $dir) {
   PInfo "Begin building using make on $threads threads"
 
   Push-Location "$dir"
-  mingw32-make.exe -j "$threads"
+  & mingw32-make.exe -j "$threads"
   $makeResult = $LASTEXITCODE
   Pop-Location
 

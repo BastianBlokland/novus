@@ -74,7 +74,7 @@ function ConfigureProj([string] $type, [string] $gen, [string] $dir, [bool] $tes
 
   PInfo "Begin configuring build directory '$dir' using cmake"
 
-  cmake.exe -B "$dir" `
+  & cmake.exe -B "$dir" `
     -G "$(MapToCMakeGen $gen)" `
     -DCMAKE_BUILD_TYPE="$type" `
     -DBUILD_TESTING="$($tests ? "On" : "Off")" `

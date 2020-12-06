@@ -330,6 +330,8 @@ Program::Program() :
   m_funcDecls.registerAction(
       *this, Fk::ActionVersionCompiler, "compilerVersionString", sym::TypeSet{}, m_string);
 
+  m_funcDecls.registerAction(*this, Fk::ActionPlatformCode, "platformCode", sym::TypeSet{}, m_int);
+
   m_funcDecls.registerAction(*this, Fk::ActionSleepNano, "sleepNano", sym::TypeSet{m_long}, m_long);
   m_funcDecls.registerAction(
       *this, Fk::ActionAssert, "assert", sym::TypeSet{m_bool, m_string}, m_bool);
