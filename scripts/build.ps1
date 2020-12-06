@@ -51,7 +51,7 @@ function BuildProjMake([int] $threads, [string] $dir) {
     Fail "Build failed"
   }
 
-  PInfo "Succesfully finished build"
+  PInfo "Successfully finished build"
 }
 
 function BuildProjMSBuild([int] $threads, [string] $dir) {
@@ -83,7 +83,7 @@ function BuildProjMSBuild([int] $threads, [string] $dir) {
     Fail "Build failed"
   }
 
-  PInfo "Succesfully finished build"
+  PInfo "Successfully finished build"
 }
 
 function BuildProj([int] $threads, [string] $dir) {

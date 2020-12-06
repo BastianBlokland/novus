@@ -60,7 +60,7 @@ function TestProj([string] $dir) {
     Fail "Test failed"
   }
 
-  PInfo "Succesfully finished testing"
+  PInfo "Successfully finished testing"
 }
 
 # Run test.

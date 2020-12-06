@@ -72,7 +72,7 @@ buildProj()
 
   cd "${dir}" && make -j "${threads}"
 
-  info "Succesfully finished build"
+  info "Successfully finished build"
 }
 
 printUsage()

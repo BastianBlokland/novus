@@ -84,7 +84,7 @@ function ConfigureProj([string] $type, [string] $gen, [string] $dir, [bool] $tes
     Fail "Configure failed"
   }
 
-  PInfo "Succesfully configured build directory '$dir'"
+  PInfo "Successfully configured build directory '$dir'"
 }
 
 # Run configuration.

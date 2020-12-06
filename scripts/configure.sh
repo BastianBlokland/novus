@@ -73,7 +73,7 @@ configureProj()
     -DBUILD_TESTING="${testsMode}" \
     -DLINTING="${lintMode}"
 
-  info "Succesfully configured build directory '${dir}'"
+  info "Successfully configured build directory '${dir}'"
 }
 
 printUsage()

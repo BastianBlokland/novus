@@ -45,7 +45,7 @@ testProj()
 
   cd "${dir}" && ctest --output-on-failure
 
-  info "Succesfully finished testing"
+  info "Successfully finished testing"
 }
 
 printUsage()
