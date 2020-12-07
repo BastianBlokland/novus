@@ -115,6 +115,9 @@ auto operator<<(std::ostream& out, const PCallCode& rhs) noexcept -> std::ostrea
   case PCallCode::PlatformCode:
     out << "platform-code";
     break;
+  case PCallCode::WorkingDirPath:
+    out << "working-dir-path";
+    break;
   case PCallCode::ProgramPath:
     out << "program-path";
     break;

@@ -26,6 +26,8 @@ act getRuntimeVersion()
 act getCompilerVersion()
   versionParser().run(compilerVersionString()) ?? Version(0, 0, 0)
 
+act getWorkingDirectoryPath() Path(workingDirectoryPathString())
+
 act getProgramPath() Path(programPathString())
 
 act atInterupt{T}(action{T} delegate) -> future{T}
@@ -42,5 +44,7 @@ assert(
 assert(getRuntimeVersion() >= Version(0, 5, 0))
 
 assert(getCompilerVersion() >= Version(0, 5, 0))
+
+assert(!getWorkingDirectoryPath().isEmpty())
 
 assert(!getProgramPath().isEmpty())

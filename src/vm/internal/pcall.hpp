@@ -2,6 +2,7 @@
 #include "config.hpp"
 #include "internal/executor_handle.hpp"
 #include "internal/interupt.hpp"
+#include "internal/path_utilities.hpp"
 #include "internal/ref_long.hpp"
 #include "internal/ref_process.hpp"
 #include "internal/ref_stream_console.hpp"
@@ -289,9 +290,12 @@ auto inline pcall(
     PUSH_INT(1);
 #elif defined(__APPLE__) // !linux
     PUSH_INT(2);
-#elif defined(_WIN32) // !linux && !__APPLE__
+#elif defined(_WIN32)    // !linux && !__APPLE__
     PUSH_INT(3);
 #endif
+  } break;
+  case PCallCode::WorkingDirPath: {
+    PUSH_REF(getWorkingDirPath(refAlloc));
   } break;
   case PCallCode::ProgramPath: {
     const auto& path = iface->getProgramPath();

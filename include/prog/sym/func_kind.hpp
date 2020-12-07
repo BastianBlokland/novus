@@ -161,8 +161,9 @@ enum class FuncKind {
   ActionVersionRt,       // Get the version of the runtime.
   ActionVersionCompiler, // Get the version of the compiler that created this assembly.
 
-  ActionPlatformCode, // Get the platform identifier: Linux: 1, MacOs: 2, Windows: 3.
-  ActionProgramPath,  // Get the path of the currently executing program.
+  ActionPlatformCode,   // Get the platform identifier: Linux: 1, MacOs: 2, Windows: 3.
+  ActionWorkingDirPath, // Get the current working directory.
+  ActionProgramPath,    // Get the path of the currently executing program.
 
   ActionSleepNano, // Sleep the executor for x nanoseconds.
   ActionAssert,    // Assert a condition to be true (and fail the executor if it isn't).
