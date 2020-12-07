@@ -334,6 +334,8 @@ Program::Program() :
   m_funcDecls.registerAction(
       *this, Fk::ActionWorkingDirPath, "workingDirectoryPathString", sym::TypeSet{}, m_string);
   m_funcDecls.registerAction(
+      *this, Fk::ActionRtPath, "runtimePathString", sym::TypeSet{}, m_string);
+  m_funcDecls.registerAction(
       *this, Fk::ActionProgramPath, "programPathString", sym::TypeSet{}, m_string);
 
   m_funcDecls.registerAction(*this, Fk::ActionSleepNano, "sleepNano", sym::TypeSet{m_long}, m_long);

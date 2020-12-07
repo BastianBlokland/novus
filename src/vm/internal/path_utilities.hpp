@@ -6,4 +6,6 @@ namespace vm::internal {
 
 [[nodiscard]] auto getWorkingDirPath(RefAllocator* refAlloc) noexcept -> StringRef*;
 
+[[nodiscard]] auto getExecPath(RefAllocator* refAlloc) noexcept -> StringRef*;
+
 } // namespace vm::internal

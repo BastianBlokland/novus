@@ -163,6 +163,7 @@ enum class FuncKind {
 
   ActionPlatformCode,   // Get the platform identifier: Linux: 1, MacOs: 2, Windows: 3.
   ActionWorkingDirPath, // Get the current working directory.
+  ActionRtPath,         // Get the path of the runtime executable.
   ActionProgramPath,    // Get the path of the currently executing program.
 
   ActionSleepNano, // Sleep the executor for x nanoseconds.

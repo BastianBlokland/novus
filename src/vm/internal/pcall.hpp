@@ -297,6 +297,9 @@ auto inline pcall(
   case PCallCode::WorkingDirPath: {
     PUSH_REF(getWorkingDirPath(refAlloc));
   } break;
+  case PCallCode::RtPath: {
+    PUSH_REF(getExecPath(refAlloc));
+  } break;
   case PCallCode::ProgramPath: {
     const auto& path = iface->getProgramPath();
     PUSH_REF(refAlloc->allocStrLit(path.data(), path.length()));

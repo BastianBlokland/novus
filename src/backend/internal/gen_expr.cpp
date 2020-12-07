@@ -588,6 +588,9 @@ auto GenExpr::visit(const prog::expr::CallExprNode& n) -> void {
   case prog::sym::FuncKind::ActionWorkingDirPath:
     m_asmb->addPCall(novasm::PCallCode::WorkingDirPath);
     break;
+  case prog::sym::FuncKind::ActionRtPath:
+    m_asmb->addPCall(novasm::PCallCode::RtPath);
+    break;
   case prog::sym::FuncKind::ActionProgramPath:
     m_asmb->addPCall(novasm::PCallCode::ProgramPath);
     break;

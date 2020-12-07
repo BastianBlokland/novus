@@ -54,7 +54,8 @@ enum class PCallCode : uint8_t {
 
   PlatformCode   = 100, // () -> (int)    Platform id: Linux: 1, MacOs: 2, Windows: 3.
   WorkingDirPath = 101, // () -> (string) Get the path of the current working directory.
-  ProgramPath    = 102, // () -> (string) Get the path of the currently running program.
+  RtPath         = 102, // () -> (string) Get the path of the runtime executable.
+  ProgramPath    = 103, // () -> (string) Get the path of the currently running program.
 
   SleepNano = 240, // (long)         -> (long) Sleep the current executor for x nanoseconds.
   Assert    = 241, // (string, int)  -> (int) If condition is false: fail with message.

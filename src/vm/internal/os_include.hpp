@@ -36,4 +36,10 @@
 
 #endif // linux
 
+#if defined(__APPLE__)
+
+#include <mach-o/dyld.h>
+
+#endif // __APPLE__
+
 // clang-format on
