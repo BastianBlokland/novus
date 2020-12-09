@@ -43,7 +43,7 @@ template <typename TypeSpec>
       }
       if (!result) {
         result = inferredType;
-      } else if (result != inferredType) {
+      } else if (!ctx.getProg()->isImplicitConvertible(*inferredType, *result)) {
         return std::nullopt;
       }
     }

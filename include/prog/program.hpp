@@ -105,6 +105,8 @@ public:
   [[nodiscard]] auto lookupImplicitConv(sym::TypeId from, sym::TypeId to) const
       -> std::optional<sym::FuncId>;
 
+  [[nodiscard]] auto isImplicitConvertible(sym::TypeId from, sym::TypeId to) const -> bool;
+
   [[nodiscard]] auto
   isImplicitConvertible(const sym::TypeSet& toTypes, const sym::TypeSet& fromTypes) const -> bool;
 

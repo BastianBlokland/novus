@@ -149,6 +149,25 @@ TEST_CASE("Analyzing user-function templates", "[frontend]") {
     CHECK(fDef.getExpr() == *callExpr);
   }
 
+  SECTION("Infer type-parameter supports implicit conversion") {
+    const auto& output = ANALYZE("fun ft{T}(T a, T b) "
+                                 "  a + b "
+                                 "fun f() ft(1.0, 2)");
+    REQUIRE(output.isSuccess());
+
+    const auto& fDef = GET_FUNC_DEF(output, "f");
+    auto fArgs       = std::vector<prog::expr::NodePtr>{};
+    fArgs.push_back(prog::expr::litFloatNode(output.getProg(), 1.0));
+    fArgs.push_back(prog::expr::litIntNode(output.getProg(), 2));
+    auto callExpr = prog::expr::callExprNode(
+        output.getProg(),
+        GET_FUNC_ID(
+            output, "ft__float", GET_TYPE_ID(output, "float"), GET_TYPE_ID(output, "float")),
+        std::move(fArgs));
+
+    CHECK(fDef.getExpr() == *callExpr);
+  }
+
   SECTION("Infer type-parameter in templated call") {
     const auto& output = ANALYZE("struct Null "
                                  "union Option{T} = T, Null "
