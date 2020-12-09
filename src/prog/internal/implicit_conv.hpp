@@ -10,6 +10,10 @@ namespace prog::internal {
 [[nodiscard]] auto findImplicitConvTypes(const Program& prog, sym::TypeId from)
     -> std::vector<sym::TypeId>;
 
+// Is the from type implicitly convertible to the to type.
+[[nodiscard]] auto isImplicitConvertible(const Program& prog, sym::TypeId from, sym::TypeId to)
+    -> bool;
+
 // Are the fromTypes convertible to the toTypes.
 [[nodiscard]] auto isImplicitConvertible(
     const Program& prog,

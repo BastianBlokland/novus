@@ -367,6 +367,10 @@ auto Program::lookupImplicitConv(sym::TypeId from, sym::TypeId to) const
   return internal::findImplicitConv(*this, from, to);
 }
 
+auto Program::isImplicitConvertible(sym::TypeId from, sym::TypeId to) const -> bool {
+  return internal::isImplicitConvertible(*this, from, to);
+}
+
 auto Program::isImplicitConvertible(
     const sym::TypeSet& toTypes, const sym::TypeSet& fromTypes) const -> bool {
   return internal::isImplicitConvertible(*this, toTypes, fromTypes);

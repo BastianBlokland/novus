@@ -60,6 +60,13 @@ auto findImplicitConvTypes(const Program& prog, sym::TypeId from) -> std::vector
   return result;
 }
 
+auto isImplicitConvertible(const Program& prog, sym::TypeId from, sym::TypeId to) -> bool {
+  if (from == to) {
+    return true;
+  }
+  return findImplicitConv(prog, from, to).has_value();
+}
+
 auto isImplicitConvertible(
     const Program& prog,
     const sym::TypeSet& toTypes,
