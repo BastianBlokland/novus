@@ -44,31 +44,31 @@ fun string(HttpContentType t)
 // -- Functions
 
 fun findHttpContentType(Path path)
-  findHttpContentType(path.str)
+  findHttpContentType(path.extension() ?? "bin")
 
-fun findHttpContentType(string fileName)
-  if fileName.endsWith(".txt")    -> HttpContentType.TextPlain
-  if fileName.endsWith(".css")    -> HttpContentType.TextCss
-  if fileName.endsWith(".html")   -> HttpContentType.TextHtml
-  if fileName.endsWith(".htm")    -> HttpContentType.TextHtml
-  if fileName.endsWith(".js")     -> HttpContentType.TextJavascript
-  if fileName.endsWith(".json")   -> HttpContentType.TextJson
-  if fileName.endsWith(".apng")   -> HttpContentType.ImageAPng
-  if fileName.endsWith(".bmp")    -> HttpContentType.ImageBmp
-  if fileName.endsWith(".gif")    -> HttpContentType.ImageGif
-  if fileName.endsWith(".ico")    -> HttpContentType.ImageIco
-  if fileName.endsWith(".cur")    -> HttpContentType.ImageIco
-  if fileName.endsWith(".jpg")    -> HttpContentType.ImageJpeg
-  if fileName.endsWith(".jpeg")   -> HttpContentType.ImageJpeg
-  if fileName.endsWith(".jfif")   -> HttpContentType.ImageJpeg
-  if fileName.endsWith(".pjpeg")  -> HttpContentType.ImageJpeg
-  if fileName.endsWith(".pjp")    -> HttpContentType.ImageJpeg
-  if fileName.endsWith(".png")    -> HttpContentType.ImagePng
-  if fileName.endsWith(".svg")    -> HttpContentType.ImageSvg
-  if fileName.endsWith(".tif")    -> HttpContentType.ImageTiff
-  if fileName.endsWith(".tiff")   -> HttpContentType.ImageTiff
-  if fileName.endsWith(".webp")   -> HttpContentType.ImageWebP
-  else                            -> HttpContentType.Binary
+fun findHttpContentType(string extension)
+  if extension == "txt"    -> HttpContentType.TextPlain
+  if extension == "css"    -> HttpContentType.TextCss
+  if extension == "html"   -> HttpContentType.TextHtml
+  if extension == "htm"    -> HttpContentType.TextHtml
+  if extension == "js"     -> HttpContentType.TextJavascript
+  if extension == "json"   -> HttpContentType.TextJson
+  if extension == "apng"   -> HttpContentType.ImageAPng
+  if extension == "bmp"    -> HttpContentType.ImageBmp
+  if extension == "gif"    -> HttpContentType.ImageGif
+  if extension == "ico"    -> HttpContentType.ImageIco
+  if extension == "cur"    -> HttpContentType.ImageIco
+  if extension == "jpg"    -> HttpContentType.ImageJpeg
+  if extension == "jpeg"   -> HttpContentType.ImageJpeg
+  if extension == "jfif"   -> HttpContentType.ImageJpeg
+  if extension == "pjpeg"  -> HttpContentType.ImageJpeg
+  if extension == "pjp"    -> HttpContentType.ImageJpeg
+  if extension == "png"    -> HttpContentType.ImagePng
+  if extension == "svg"    -> HttpContentType.ImageSvg
+  if extension == "tif"    -> HttpContentType.ImageTiff
+  if extension == "tiff"   -> HttpContentType.ImageTiff
+  if extension == "webp"   -> HttpContentType.ImageWebP
+  else                     -> HttpContentType.Binary
 
 fun isText(HttpContentType t)
   t == HttpContentType.TextPlain      ||

@@ -27,9 +27,9 @@ act printUsage()
 act main()
   if hasEnvOpt("help") -> printUsage()
   else ->
-    path    = getEnvOpt("path", allParser());
-    pretty  = hasEnvOpt("pretty");
-    if path as string str -> formatJson(Path(str), pretty)
-    else                  -> printErr("'path' option is required"); fail()
+    pathOrErr = getEnvOpt("path", pathParser());
+    pretty    = hasEnvOpt("pretty");
+    if pathOrErr as Path path -> formatJson(path, pretty)
+    else                      -> printErr("'path' option is required"); fail()
 
 main()

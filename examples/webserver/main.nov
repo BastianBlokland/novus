@@ -123,10 +123,10 @@ act main(int port, Content content)
     print("Server stopped")
 
 act loadContent(Path root, List{Pair{string, string}} rewriteUrls, List{string} files)
-  print("Loading resouces (root: '" + root.str + "')");
+  print("Loading resouces (root: '" + root.string() + "')");
 
   resources = files.parallelMap(impure lambda (string file)
-    path        = root.isEmpty() ? Path(file) : (root :: file);
+    path        = root / file;
     contentType = path.findHttpContentType();
     fileStream  = path.fileOpen(FileMode.Open);
     if fileStream.isValid() -> some(Resource("/" + file, contentType, fileStream.readToEnd()))
@@ -139,7 +139,7 @@ act loadContent(Path root, List{Pair{string, string}} rewriteUrls, List{string} 
 main(
   getEnvOpt("port", txtIntParser()) ?? 8080,
   loadContent(
-    Path(getEnvOpt("root", allParser()) ?? "site"),
+    getEnvOpt("root", pathParser()) ?? getPathProgram().parent() / "site",
     (
       Pair("/", "/index.html") :: List{Pair{string, string}}()
     ),

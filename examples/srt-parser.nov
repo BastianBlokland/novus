@@ -100,8 +100,7 @@ fun subListParser() -> Parser{List{Subtitle}}
 // - We're stuck.
 // - No we're not!
 
-act main(Path path)
-  if path.isEmpty()     -> printErr("Usage: provide path to .srt subtitle file as arg 1."); fail()
+act parseSrt(Path path)
   if !path.fileExists() -> printErr("Could not open file: " + path); fail()
   else ->
     t1  = timestamp();
@@ -112,4 +111,18 @@ act main(Path path)
     if res as List{Subtitle}  subs -> print(string(subs, "", "\n\n", ""))
     if res as Error           err  -> printErr("Failed to parse: " + err); fail()
 
-main(Path(envGetArg(0)))
+act printUsage()
+  print("Srt parser");
+  print("Usage: srt-parser.nov --path path/to/file.srt\n");
+  print("Options:");
+  print("  --help   Print this usage information");
+  print("  --path   Path to the srt file")
+
+act main()
+  if hasEnvOpt("help") -> printUsage()
+  else ->
+    pathOrErr = getEnvOpt("path", pathParser());
+    if pathOrErr as Path path -> parseSrt(path)
+    else                      -> printErr("'path' option is required"); fail()
+
+main()
