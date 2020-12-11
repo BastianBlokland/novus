@@ -52,7 +52,10 @@ enum class PCallCode : uint8_t {
   VersionRt       = 90, // () -> (string) Version of the runtime.
   VersionCompiler = 91, // () -> (string) Version of the compiler that created this assembly.
 
-  PlatformCode = 100, // () -> (int) Platform identifier: Linux: 1, MacOs: 2, Windows: 3.
+  PlatformCode   = 100, // () -> (int)    Platform id: Linux: 1, MacOs: 2, Windows: 3.
+  WorkingDirPath = 101, // () -> (string) Get the path of the current working directory.
+  RtPath         = 102, // () -> (string) Get the path of the runtime executable.
+  ProgramPath    = 103, // () -> (string) Get the path of the currently running program.
 
   SleepNano = 240, // (long)         -> (long) Sleep the current executor for x nanoseconds.
   Assert    = 241, // (string, int)  -> (int) If condition is false: fail with message.

@@ -585,6 +585,15 @@ auto GenExpr::visit(const prog::expr::CallExprNode& n) -> void {
   case prog::sym::FuncKind::ActionPlatformCode:
     m_asmb->addPCall(novasm::PCallCode::PlatformCode);
     break;
+  case prog::sym::FuncKind::ActionWorkingDirPath:
+    m_asmb->addPCall(novasm::PCallCode::WorkingDirPath);
+    break;
+  case prog::sym::FuncKind::ActionRtPath:
+    m_asmb->addPCall(novasm::PCallCode::RtPath);
+    break;
+  case prog::sym::FuncKind::ActionProgramPath:
+    m_asmb->addPCall(novasm::PCallCode::ProgramPath);
+    break;
 
   case prog::sym::FuncKind::ActionSleepNano:
     m_asmb->addPCall(novasm::PCallCode::SleepNano);
@@ -786,7 +795,7 @@ auto GenExpr::visit(const prog::expr::UnionGetExprNode& n) -> void {
   m_asmb->label(endLabel);
 }
 
-auto GenExpr::visit(const prog::expr::FailNode & /*unused*/) -> void { m_asmb->addFail(); }
+auto GenExpr::visit(const prog::expr::FailNode& /*unused*/) -> void { m_asmb->addFail(); }
 
 auto GenExpr::visit(const prog::expr::LitBoolNode& n) -> void {
   m_asmb->addLoadLitInt(n.getVal() ? 1U : 0U);

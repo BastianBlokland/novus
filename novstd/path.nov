@@ -1,0 +1,330 @@
+import "parse.nov"
+import "rt.nov"
+import "writer.nov"
+
+// -- Types
+
+struct PathRelative =
+  List{string} segments
+
+struct PathAbsolute =
+  string        root,
+  PathRelative  path
+
+union Path = PathRelative, PathAbsolute
+
+// -- Operators
+
+fun /(PathRelative l, PathRelative r)
+  PathRelative(l.segments :: r.segments)
+
+fun /(PathRelative l, string segment)
+  PathRelative(l.segments :: segment)
+
+fun /(PathAbsolute l, PathRelative r)
+  PathAbsolute(l.root, l.path / r)
+
+fun /(PathAbsolute l, string r)
+  PathAbsolute(l.root, l.path / r)
+
+fun /(Path p, string r)
+  p / PathRelative(r :: List{string}())
+
+fun /(Path p, PathRelative r)
+  if p as PathAbsolute abs -> abs / r
+  if p as PathRelative rel -> rel / r
+
+// -- Conversions
+
+fun string(Path p)
+  pathWriter()(p).string()
+
+fun string(PathRelative p)
+  pathRelWriter()(p).string()
+
+fun string(PathAbsolute p)
+  pathAbsWriter()(p).string()
+
+// -- Utilities
+
+fun pathAbs(string root)
+  PathAbsolute(root, pathRel())
+
+fun pathAbs(string root, List{string} segments)
+  PathAbsolute(root, pathRel(segments))
+
+fun pathRel(List{string} segments)
+  PathRelative(segments)
+
+fun pathRel()
+  PathRelative(List{string}())
+
+fun pathDefaultRootUnix()
+  pathAbs("/")
+
+fun pathDefaultRootWindows()
+  pathAbs("c:/")
+
+fun filename(PathAbsolute abs) -> Option{string}
+  abs.path.filename()
+
+fun filename(PathRelative rel) -> Option{string}
+  rel.segments.back()
+
+fun filename(Path p)
+  if p as PathAbsolute abs -> abs.filename()
+  if p as PathRelative rel -> rel.filename()
+
+fun stem(PathAbsolute abs) -> Option{string}
+  abs.path.stem()
+
+fun stem(PathRelative rel) -> Option{string}
+  rel.segments.back().map(lambda (string filename)
+    idx = filename.indexOfLast(".");
+    idx > 0 && idx != (filename.length() - 1) ? filename[0, idx] : filename
+  )
+
+fun stem(Path p)
+  if p as PathAbsolute abs -> abs.stem()
+  if p as PathRelative rel -> rel.stem()
+
+fun extension(PathAbsolute abs) -> Option{string}
+  abs.path.extension()
+
+fun extension(PathRelative rel) -> Option{string}
+  rel.segments.back().map(lambda (string filename)
+    idx = filename.indexOfLast(".");
+    idx > 0 && idx != (filename.length() - 1) ? filename[idx + 1, filename.length()] : none()
+  )
+
+fun extension(Path p)
+  if p as PathAbsolute abs -> abs.extension()
+  if p as PathRelative rel -> rel.extension()
+
+fun parent(PathAbsolute abs) -> PathAbsolute
+  PathAbsolute(abs.root, abs.path.parent())
+
+fun parent(PathRelative rel) -> PathRelative
+  PathRelative(rel.segments.popBack())
+
+fun parent(Path p)
+  if p as PathAbsolute abs -> abs.parent()
+  if p as PathRelative rel -> rel.parent()
+
+// -- Parsers
+
+fun pathRelParser() -> Parser{PathRelative}
+  pathRelParser(endParser())
+
+fun pathRelParser{UntilT}(Parser{UntilT} until) -> Parser{PathRelative}
+  sepParser     = matchParser('/') | matchParser('\\');
+  validateSeg   = (
+    lambda (string s) !s.startsWith(" ") && !s.endsWith(" ") && !s.any(isControl)
+  );
+  segParser     = untilParser(sepParser | until).map(
+    lambda (string s) -> Either{string, Error}
+      if validateSeg(s) -> s
+      else              -> Error("Invalid path segment")
+  );
+  flags         = ParseFlags.AllowTrailingSeperator;
+  manyUntilParser(segParser, sepParser, until, flags).map(lambda (List{string} l) PathRelative(l))
+
+fun pathAbsParser() -> Parser{PathAbsolute}
+  pathAbsParser(endParser())
+
+fun pathAbsParser{UntilT}(Parser{UntilT} until) -> Parser{PathAbsolute}
+  unixRoot    = matchParser("/");
+  windowsRoot = (txtCharParser() << (matchParser(":\\") | matchParser(":/")))
+    .map(lambda (char drive) drive.toLower().string() + ":/");
+  (
+    (unixRoot | windowsRoot) & pathRelParser(until)
+  ).unwrap(lambda (string root, PathRelative p) PathAbsolute(root, p))
+
+fun pathParser() -> Parser{Path}
+  pathParser(endParser())
+
+fun pathParser{UntilT}(Parser{UntilT} until) -> Parser{Path}
+  pathAbsParser(until).map(lambda (PathAbsolute a) Path(a)) |
+  pathRelParser(until).map(lambda (PathRelative r) Path(r)) ! Error("Invalid path")
+
+// -- Writers
+
+fun pathRelWriter() -> Writer{PathRelative}
+  listWriter(stringWriter(), litWriter('/')).map(lambda (PathRelative p) p.segments)
+
+fun pathAbsWriter() -> Writer{PathAbsolute}
+  (
+    stringWriter() & pathRelWriter()
+  ).map(lambda (PathAbsolute p) makePair(p.root, p.path))
+
+fun pathWriter() -> Writer{Path}
+  absWriter = pathAbsWriter();
+  relWriter = pathRelWriter();
+  Writer(lambda (WriterState s, Path p)
+    if p as PathAbsolute a -> absWriter(s, a)
+    if p as PathRelative r -> relWriter(s, r)
+  )
+
+// -- Actions
+
+act getPathDefaultRoot()
+  if getPlatform() == Platform.Windows  -> pathDefaultRootWindows()
+  else                                  -> pathDefaultRootUnix()
+
+act getPathAbsolute(PathRelative rel)
+  getPathCurrent() / rel
+
+// -- Tests
+
+assert(
+  (pathRel() / "hello.txt").filename()                == "hello.txt"    &&
+  (pathRel() / "hello" / "world").filename()          == "world"        &&
+  (pathRel() / "hello" / "world.nov").filename()      == "world.nov"    &&
+  (pathDefaultRootWindows() / "world.nov").filename() == "world.nov"    &&
+  pathRel().filename()                                is None           &&
+  pathDefaultRootUnix().filename()                    is None           &&
+  pathDefaultRootWindows().filename()                 is None
+)
+
+assert(
+  (pathRel() / "hello.txt").stem()                     == "hello"       &&
+  (pathRel() / "hello.c").stem()                       == "hello"       &&
+  (pathRel() / "hello.world").stem()                   == "hello"       &&
+  (pathRel() / "hello.world.nov").stem()               == "hello.world" &&
+  (pathRel() / ".profile").stem()                      == ".profile"    &&
+  (pathRel() / "hello" / "world" / ".profile").stem()  == ".profile"    &&
+  (pathRel() / "hello").stem()                         == "hello"       &&
+  (pathRel() / "hello.").stem()                        == "hello."      &&
+  (pathRel() / "hello" / "world").stem()               == "world"       &&
+  pathDefaultRootUnix().stem()                         is None          &&
+  pathDefaultRootWindows().stem()                      is None
+)
+
+assert(
+  (pathRel() / "hello.txt").extension()                     == "txt"    &&
+  (pathRel() / "hello.c").extension()                       == "c"      &&
+  (pathRel() / "hello.world").extension()                   == "world"  &&
+  (pathRel() / "hello.world.nov").extension()               == "nov"    &&
+  (pathRel() / ".profile").extension()                      is None     &&
+  (pathRel() / "hello" / "world" / ".profile").extension()  is None     &&
+  (pathRel() / "hello").extension()                         is None     &&
+  (pathRel() / "hello.").extension()                        is None     &&
+  (pathRel() / "hello" / "world").extension()               is None     &&
+  pathDefaultRootUnix().extension()                         is None     &&
+  pathDefaultRootWindows().extension()                      is None
+)
+
+assert(
+  (pathRel() / "hello.txt").parent()              == pathRel()                    &&
+  (pathRel() / "hello" / "world.txt").parent()    == pathRel() / "hello"          &&
+  (pathDefaultRootUnix() / "hello.txt").parent()  == pathDefaultRootUnix()        &&
+  pathRel().parent()                              == pathRel()                    &&
+  pathDefaultRootUnix().parent()                  == pathDefaultRootUnix()        &&
+  pathDefaultRootWindows().parent()               == pathDefaultRootWindows())
+
+assert(
+  p = pathAbsParser();
+  p.run("/")        == pathAbs("/")     &&
+  p.run("c:\\")     == pathAbs("c:/")   &&
+  p.run("c:/")      == pathAbs("c:/")   &&
+  p.run("C:/")      == pathAbs("c:/")   &&
+  p.run("z:\\")     == pathAbs("z:/")   &&
+  p.run("\\")       is Error            &&
+  p.run("hello")    is Error            &&
+  p.run("c:hello")  is Error
+)
+
+assert(
+  p = pathRelParser();
+  p.run("test.txt")               == pathRel("test.txt" :: List{string}())                  &&
+  p.run("hello/test.txt")         == pathRel("hello" :: "test.txt")                         &&
+  p.run("hello")                  == pathRel("hello" :: List{string}())                     &&
+  p.run("你好，世界")               == pathRel("你好，世界" :: List{string}())                  &&
+  p.run("hello/world")            == pathRel("hello" :: "world")                            &&
+  p.run("hello/world/")           == pathRel("hello" :: "world")                            &&
+  p.run("hello world")            == pathRel("hello world" :: List{string}())               &&
+  p.run("h/e/l/l/o/w/")           == pathRel("h" :: "e" :: "l" :: "l" :: "o" :: "w")        &&
+  p.run("hello/../world")         == pathRel("hello" :: ".." :: "world")                    &&
+  p.run("hello/..")               == pathRel("hello" :: "..")                               &&
+  p.run("hello/../")              == pathRel("hello" :: "..")                               &&
+  p.run("hello/./world")          == pathRel("hello" :: "." :: "world")                     &&
+  p.run("hello/.")                == pathRel("hello" :: ".")                                &&
+  p.run("hello/./")               == pathRel("hello" :: ".")                                &&
+  p.run("hello\\test.txt")        == pathRel("hello" :: "test.txt")                         &&
+  p.run("hello\\world")           == pathRel("hello" :: "world")                            &&
+  p.run("hello\\world\\")         == pathRel("hello" :: "world")                            &&
+  p.run("hello\\..\\world")       == pathRel("hello" :: ".." :: "world")                    &&
+  p.run("hello\\..")              == pathRel("hello" :: "..")                               &&
+  p.run("hello/..\\")             == pathRel("hello" :: "..")                               &&
+  p.run("hello\\./world")         == pathRel("hello" :: "." :: "world")                     &&
+  p.run(".")                      == pathRel("." :: List{string}())                         &&
+  p.run("/")                      is Error                                                  &&
+  p.run("\\")                     is Error                                                  &&
+  p.run("/hello")                 is Error                                                  &&
+  p.run("hello//")                is Error                                                  &&
+  p.run(" ")                      is Error                                                  &&
+  p.run(" hello")                 is Error                                                  &&
+  p.run("hello  ")                is Error                                                  &&
+  p.run("hello\tworld")           is Error                                                  &&
+  p.run("hello/ world")           is Error                                                  &&
+  p.run("hello\\\\")              is Error                                                  &&
+  p.run("hello//world")           is Error
+)
+
+assert(
+  p = pathParser();
+  p.run("test.txt")         == Path(pathRel("test.txt" :: List{string}()))          &&
+  p.run("hello/test.txt")   == Path(pathRel("hello" :: "test.txt"))                 &&
+  p.run("/hello")           == Path(pathAbs("/",    "hello" :: List{string}()))     &&
+  p.run("c:\\hello")        == Path(pathAbs("c:/",  "hello" :: List{string}()))     &&
+  p.run("c:/hello")         == Path(pathAbs("c:/",  "hello" :: List{string}()))     &&
+  p.run("\\")               is Error                                                &&
+  p.run("//")               is Error
+)
+
+assert(
+  p = pathParser(newlineParser());
+  p.run("hello\nworld")           == Path(pathRel("hello" :: List{string}()))          &&
+  p.run("hello.txt\nworld")       == Path(pathRel("hello.txt" :: List{string}()))      &&
+  p.run("hello/world.txt\nworld") == Path(pathRel("hello" :: "world.txt"))             &&
+  p.run("c:\\win\\dows\r\nhello") == Path(pathAbs("c:/", "win" :: "dows"))             &&
+  p.run("你好，世界.txt\nworld")    == Path(pathRel("你好，世界.txt" :: List{string}()))
+)
+
+assert(
+  w = pathWriter();
+  w(pathDefaultRootUnix())                                == "/"                      &&
+  w(pathDefaultRootWindows())                             == "c:/"                    &&
+  w(pathDefaultRootWindows())                             == "c:/"                    &&
+  w(pathAbs("z:/"))                                       == "z:/"                    &&
+  w(pathDefaultRootWindows() / "hello")                   == "c:/hello"               &&
+  w(pathDefaultRootUnix() / "hello")                      == "/hello"                 &&
+  w(pathDefaultRootUnix() / "hello" / "world")            == "/hello/world"           &&
+  w(pathDefaultRootUnix() / "hello world")                == "/hello world"           &&
+  w(pathDefaultRootUnix() / "hello world" / "e l i t e")  == "/hello world/e l i t e"
+)
+
+assert(
+  w = pathWriter();
+  w(pathRel() / "hello")                     == "hello"                  &&
+  w(pathRel() / "hello" / "world")           == "hello/world"            &&
+  w(pathRel() / "你好，世界" / "world")        == "你好，世界/world"        &&
+  w(pathRel() / "hello world")               == "hello world"            &&
+  w(pathRel() / "hello world" / "e l i t e") == "hello world/e l i t e"
+)
+
+assert(
+  w   = pathWriter();
+  p1  = pathRel() / "elite";
+  p2  = pathRel() / "hello world";
+  w(p1)           == "elite"                          &&
+  w(p1 / p2)      == "elite/hello world"              &&
+  w(p1 / p1 / p2) == "elite/elite/hello world"        &&
+  w(p2 / p2)      == "hello world/hello world"        &&
+  w(p2 / p2 / p1) == "hello world/hello world/elite"
+)
+
+assert(
+  getPathAbsolute(pathRel() / "hello.txt").parent()    == getPathCurrent() &&
+  getPathAbsolute(pathRel() / "hello.txt").extension() == "txt"
+)

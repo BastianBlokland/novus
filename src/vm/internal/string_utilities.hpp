@@ -68,8 +68,7 @@ template <typename IntType>
   // In theory the 'nan' case is already covered by 'snprintf' but it seems some implementations
   // return '-nan' instead causing an inconsistency between platforms.
   if (unlikely(std::isnan(val))) {
-    const static std::string nanStr = "nan";
-    return refAlloc->allocStrLit(nanStr);
+    return refAlloc->allocStrLit("nan", 3);
   }
 
   // NOLINTNEXTLINE: C-style var-arg func.
@@ -115,15 +114,20 @@ template <typename IntType>
   return str;
 }
 
-[[nodiscard]] auto inline toStringRef(RefAllocator* refAlloc, const std::string& val) noexcept
-    -> StringRef* {
-  const auto str = refAlloc->allocStr(val.length());
+[[nodiscard]] auto inline toStringRef(
+    RefAllocator* refAlloc, const char* data, size_t length) noexcept -> StringRef* {
+  const auto str = refAlloc->allocStr(length);
   if (unlikely(str == nullptr)) {
     return nullptr;
   }
 
-  std::memcpy(str->getDataPtr(), val.data(), val.length() + 1); // +1 to copy the null-terminator.
+  std::memcpy(str->getDataPtr(), data, length);
   return str;
+}
+
+[[nodiscard]] auto inline toStringRef(RefAllocator* refAlloc, const char* cstr) noexcept
+    -> StringRef* {
+  return toStringRef(refAlloc, cstr, std::strlen(cstr));
 }
 
 [[nodiscard]] auto inline checkStringEq(StringRef* a, StringRef* b) noexcept -> bool {

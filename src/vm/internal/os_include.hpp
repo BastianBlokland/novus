@@ -10,6 +10,7 @@
 #include <ws2tcpip.h>
 #include <fcntl.h>
 #include <io.h>
+#include <direct.h>
 #include <windows.h>
 
 #else // !_WIN32
@@ -28,4 +29,17 @@
 #include <csignal>
 
 #endif // !_WIN32
+
+#if defined(linux)
+
+#include <linux/limits.h>
+
+#endif // linux
+
+#if defined(__APPLE__)
+
+#include <mach-o/dyld.h>
+
+#endif // __APPLE__
+
 // clang-format on

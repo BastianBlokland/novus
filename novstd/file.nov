@@ -1,17 +1,5 @@
+import "std/path.nov"
 import "std/stream.nov"
-
-// -- Path
-// Represents a path on the filesystem.
-
-struct Path = string str
-
-fun +(Path p1, Path p2)     Path(p1.str + p2.str)
-fun ::(Path p1, Path p2)    Path(p1.str + "/" + p2.str)
-fun ::(Path p1, string p2)  Path(p1.str + "/" + p2)
-
-fun isEmpty(Path p) p.str.length() == 0
-
-fun string(Path p) p.str
 
 // -- Actions
 
@@ -23,13 +11,13 @@ act fileOpen(Path p, FileMode m)
   fileOpen(p, m, FileFlags.None)
 
 act fileOpen(Path p, FileMode m, FileFlags flags)
-  fileOpenStream(p.str, int(m) | flags << 8)
+  fileOpenStream(p.string(), int(m) | flags << 8)
 
 act fileExists(Path p)
   fileOpen(p, FileMode.Open).streamCheckValid()
 
 act fileRemove(Path p)
-  fileRemove(p.str)
+  fileRemove(p.string())
 
 act fileRead(Path p)
   fileOpen(p, FileMode.Open).readToEnd()
@@ -46,17 +34,15 @@ act fileAppend(Path p, string str)
 
 // -- Tests
 
-assert(Path("").isEmpty())
-
 assert(
-  p = Path("file-test1.tmp");
+  p = getPathCurrent() / "file-test1.tmp";
   f = fileOpen(p, FileMode.Create, FileFlags.AutoRemove);
   f.streamWrite("hello world");
   f.streamFlush();
   fileRead(p) == "hello world")
 
 assert(
-  p = Path("file-test2.tmp");
+  p = getPathCurrent() / "file-test2.tmp";
   f = fileOpen(p, FileMode.Append, FileFlags.AutoRemove);
   f.streamWrite("hello world");
   f.streamWrite("hello world");
@@ -65,8 +51,8 @@ assert(
   fileRead(p) == "hello worldhello worldhello world")
 
 assert(
-  p = Path("file-test3.tmp");
+  p = getPathCurrent() / "file-test3.tmp";
   f = fileOpen(p, FileMode.Create, FileFlags.AutoRemove);
   fileExists(p))
 
-assert(!fileRemove(Path("non-existing-file")))
+assert(!fileRemove(getPathCurrent() / "non-existing-file"))

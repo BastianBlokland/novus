@@ -2,6 +2,7 @@
 #include "config.hpp"
 #include "internal/executor_handle.hpp"
 #include "internal/interupt.hpp"
+#include "internal/path_utilities.hpp"
 #include "internal/ref_long.hpp"
 #include "internal/ref_process.hpp"
 #include "internal/ref_stream_console.hpp"
@@ -248,7 +249,7 @@ auto inline pcall(
 
   case PCallCode::EnvGetArg: {
     auto* res = iface->envGetArg(POP_INT());
-    PUSH_REF(res == nullptr ? refAlloc->allocStr(0) : toStringRef(refAlloc, res));
+    PUSH_REF(res == nullptr ? refAlloc->allocStr(0) : refAlloc->allocStrLit(res));
   } break;
   case PCallCode::EnvGetArgCount: {
     PUSH_INT(iface->envGetArgCount());
@@ -280,7 +281,8 @@ auto inline pcall(
     PUSH_REF(refAlloc->allocStrLit(PROJECT_VER));
   } break;
   case PCallCode::VersionCompiler: {
-    PUSH_REF(refAlloc->allocStrLit(assembly->getCompilerVersion()));
+    const auto& version = assembly->getCompilerVersion();
+    PUSH_REF(refAlloc->allocStrLit(version.data(), version.length()));
   } break;
 
   case PCallCode::PlatformCode: {
@@ -291,6 +293,16 @@ auto inline pcall(
 #elif defined(_WIN32)    // !linux && !__APPLE__
     PUSH_INT(3);
 #endif
+  } break;
+  case PCallCode::WorkingDirPath: {
+    PUSH_REF(getWorkingDirPath(refAlloc));
+  } break;
+  case PCallCode::RtPath: {
+    PUSH_REF(getExecPath(refAlloc));
+  } break;
+  case PCallCode::ProgramPath: {
+    const auto& path = iface->getProgramPath();
+    PUSH_REF(refAlloc->allocStrLit(path.data(), path.length()));
   } break;
 
   case PCallCode::SleepNano: {

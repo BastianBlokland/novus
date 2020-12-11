@@ -13,22 +13,22 @@ auto main(int argc, char** argv) noexcept -> int {
    * in current working directory. */
 
   auto implicitPath = true;
-  auto progPath     = filesystem::path{"prog.nova"};
+  auto relProgPath  = filesystem::path{"prog.nova"};
   if (argc >= 2) {
     auto arg1Path = filesystem::path(std::string(argv[1]));
     if (arg1Path.extension() == ".nova") {
-      progPath     = std::move(arg1Path);
+      relProgPath  = std::move(arg1Path);
       implicitPath = false;
     }
   }
 
   // Open a handle to the program assembly file.
-  auto fs = std::ifstream{progPath.string(), std::ios::binary};
+  auto fs = std::ifstream{relProgPath.string(), std::ios::binary};
   if (!fs.good()) {
     if (implicitPath) {
       std::cerr << "Novus runtime [" PROJECT_VER "] - Please provide path to a 'nova' file\n";
     } else {
-      std::cerr << "Novus runtime [" PROJECT_VER "] - Failed to open file: " << progPath << '\n';
+      std::cerr << "Novus runtime [" PROJECT_VER "] - Failed to open file: " << relProgPath << '\n';
     }
     return 1;
   }
@@ -46,9 +46,11 @@ auto main(int argc, char** argv) noexcept -> int {
   const auto consumedArgs   = implicitPath ? 1 : 2; // 1 for executable path and 1 for nova file.
   const auto vmEnvArgsCount = argc - consumedArgs;
   auto** const vmEnvArgs    = argv + consumedArgs;
+  auto absProgPath          = filesystem::canonical(relProgPath).string();
 
-  auto iface = vm::PlatformInterface{vmEnvArgsCount, vmEnvArgs, stdin, stdout, stderr};
-  auto res   = vm::run(&asmOutput.value(), &iface);
+  auto iface = vm::PlatformInterface{
+      std::move(absProgPath), vmEnvArgsCount, vmEnvArgs, stdin, stdout, stderr};
+  auto res = vm::run(&asmOutput.value(), &iface);
   if (res > vm::ExecState::Failed) {
     std::cerr << "runtime error: " << res << '\n';
   }

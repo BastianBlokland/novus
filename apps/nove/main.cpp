@@ -26,13 +26,19 @@ auto run(
     int vmEnvArgsCount,
     char* const* vmEnvArgs) noexcept {
 
-  const auto src = frontend::buildSource(inputId, std::move(inputPath), inputBegin, inputEnd);
+  const auto src            = frontend::buildSource(inputId, inputPath, inputBegin, inputEnd);
   const auto frontendOutput = frontend::analyze(src, searchPaths);
+
   if (frontendOutput.isSuccess()) {
+
     const auto optProg   = opt::optimize(frontendOutput.getProg());
     const auto asmOutput = backend::generate(optProg);
-    auto iface           = vm::PlatformInterface{vmEnvArgsCount, vmEnvArgs, stdin, stdout, stderr};
-    auto res             = vm::run(&asmOutput.first, &iface);
+
+    auto progPath = inputPath ? inputPath->string() : std::string{};
+    auto iface    = vm::PlatformInterface{
+        std::move(progPath), vmEnvArgsCount, vmEnvArgs, stdin, stdout, stderr};
+    auto res = vm::run(&asmOutput.first, &iface);
+
     if (res > vm::ExecState::Failed) {
       std::cerr << rang::style::bold << rang::bg::red << "runtime error: " << res << '\n'
                 << rang::style::reset;
@@ -75,10 +81,9 @@ auto main(int argc, char** argv) noexcept -> int {
 
   auto fs = std::ifstream{path.string()};
   if (fs.good()) {
-    auto absInputPath = filesystem::absolute(path);
     return run(
         path.filename().string(),
-        filesystem::canonical(absInputPath),
+        filesystem::canonical(path),
         searchPaths,
         std::istreambuf_iterator<char>{fs},
         std::istreambuf_iterator<char>{},
