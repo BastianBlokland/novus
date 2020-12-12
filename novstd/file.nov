@@ -25,10 +25,11 @@ act fileOpen(Path p, FileMode m) -> Either{File, Error}
   fileOpen(p, m, FileFlags.None)
 
 act fileOpen(Path p, FileMode m, FileFlags flags) -> Either{File, Error}
-  pathStr = p.string();
-  stream  = fileOpenStream(pathStr, int(m) | flags << 8);
-  if stream.streamCheckValid()  -> File(p, m, flags, stream)
-  else                          -> Error("Failed to open file: '" + pathStr + "'")
+  absPath     = p.getPathAbsolute();
+  absPathStr  = absPath.string();
+  stream      = fileOpenStream(absPathStr, int(m) | flags << 8);
+  if stream.streamCheckValid()  -> File(absPath, m, flags, stream)
+  else                          -> Error("Failed to open file: '" + absPathStr + "'")
 
 act readToEnd(File f) -> string
   f.stream.readToEnd()
@@ -63,9 +64,11 @@ act fileAppend{T}(Path p, Writer{T} writer, T val) -> Option{Error}
   p.fileOpen(FileMode.Append).map(impure lambda (File f) f.write(writer, val))
 
 act fileRemove(Path p) -> Option{Error}
-  fileRemove(p.string())
+  absPath     = p.getPathAbsolute();
+  absPathStr  = absPath.string();
+  fileRemove(absPathStr)
     ? none()
-    : some(Error("Failed to remove file"))
+    : some(Error("Failed to remove file: '" + absPathStr + "'"))
 
 // -- Tests
 
