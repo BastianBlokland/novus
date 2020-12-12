@@ -1,4 +1,4 @@
-import "parse.nov"
+import "parser.nov"
 import "rt.nov"
 import "writer.nov"
 

@@ -1,5 +1,5 @@
 import "std/list.nov"
-import "std/parse.nov"
+import "std/parser.nov"
 import "std/writer.nov"
 
 // Utilities for sem-ver versions.

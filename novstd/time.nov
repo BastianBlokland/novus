@@ -1,5 +1,5 @@
 import "std/math.nov"
-import "std/parse.nov"
+import "std/parser.nov"
 import "std/text.nov"
 
 // Gregorian calendar assumed with no leap seconds.
