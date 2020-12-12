@@ -19,6 +19,29 @@ fun makePair{T1, T2, T3, T4}(T1 a1, T2 a2, T3 a3, T4 a4)
 fun makePair{T1, T2, T3, T4, T5}(T1 a1, T2 a2, T3 a3, T4 a4, T5 a5)
   Pair(Pair(Pair(Pair(a1, a2), a3), a4), a5)
 
+fun map{T1, T2, TResult}(Pair{T1, T2} p, function{T1, T2, TResult} f)
+  f(p.first,
+    p.second)
+
+fun map{T1, T2, T3, TResult}(Pair{Pair{T1, T2}, T3} p, function{T1, T2, T3, TResult} f)
+  f(p.first.first,
+    p.first.second,
+    p.second)
+
+fun map{T1, T2, T3, T4, TResult}(Pair{Pair{Pair{T1, T2}, T3}, T4} p, function{T1, T2, T3, T4, TResult} f)
+  f(p.first.first.first,
+    p.first.first.second,
+    p.first.second,
+    p.second)
+
+fun map{T1, T2, T3, T4, T5, TResult}(Pair{Pair{Pair{Pair{T1, T2}, T3}, T4}, T5} p, function{T1, T2, T3, T4, T5, TResult} f)
+  f(p.first.first.first.first,
+    p.first.first.first.second,
+    p.first.first.second,
+    p.first.second,
+    p.second)
+
+
 // -- Conversions
 
 fun string{T1, T2}(Pair{T1, T2} p)

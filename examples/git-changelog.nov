@@ -33,7 +33,7 @@ fun userParser()
   emailEnd    = matchParser('>');
   (
     untilParser(emailStart).trim() & emailStart >> untilParser(emailEnd) << emailEnd
-  ).unwrap(toUser)
+  ).map(toUser)
 
 // Input example:
 // '
@@ -50,7 +50,7 @@ fun commitParser()
     whitespaceParser()                                          >> unixTimeParser()   &
     untilParser(emptyLineParser()) >> emptyLineParser()         >> lineParser()       &
     whitespaceParser()                                          >> allParser().trim()
-  ).unwrap(toCommit)
+  ).map(toCommit)
 
 // -- Actions
 

@@ -26,7 +26,7 @@ fun httpVersionParser()
 fun httpHeaderFieldParser()
   (
     untilParser(matchParser(':')) << matchParser(':') & whitespaceParser() >> lineParser()
-  ).unwrap(lambda (string k, string v) HttpHeaderField(k, v))
+  ).map(lambda (string k, string v) HttpHeaderField(k, v))
 
 fun httpReqHeaderParser()
   (
@@ -34,7 +34,7 @@ fun httpReqHeaderParser()
     untilParser(isWhitespace) << whitespaceParser() &
     httpVersionParser()       << whitespaceParser() &
     manyParser(httpHeaderFieldParser(), newlineParser())
-  ).unwrap(lambda (HttpMethod m, string resource, string v, List{HttpHeaderField} fields)
+  ).map(lambda (HttpMethod m, string resource, string v, List{HttpHeaderField} fields)
       HttpReqHeader(m, resource, v, fields)) ! Error("Invalid http request header")
 
 // -- Writers

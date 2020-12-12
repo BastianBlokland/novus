@@ -1,5 +1,5 @@
 import "std/unicode.nov"
-import "std/parse.nov"
+import "std/parser.nov"
 
 // Utilities for encoding / decoding utf8 from / to unicode codepoints.
 

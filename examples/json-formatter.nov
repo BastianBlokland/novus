@@ -3,12 +3,9 @@
 import "std.nov"
 
 act formatJson(Path path, bool pretty)
-  jsonStr = fileRead(path);
-  if jsonStr.isEmpty() -> printErr("Unable to read file at path: " + path); fail()
-  else ->
-    parseRes = jsonParser().run(jsonStr);
-    if parseRes as JsonValue v  -> printJson(v, pretty)
-    if parseRes as Error err    -> print("Unable to parse json: " + err)
+  parseRes = path.fileRead(jsonParser());
+  if parseRes as JsonValue v  -> printJson(v, pretty)
+  if parseRes as Error err    -> print("Unable to parse json: " + err)
 
 act printJson(JsonValue v, bool pretty)
   indent      = pretty ? "  " : "";

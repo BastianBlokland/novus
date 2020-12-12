@@ -72,7 +72,7 @@ fun timecodeParser() -> Parser{Duration}
 fun timingParser() -> Parser{Timing}
   (
     timecodeParser() & (matchParser(" --> ") >> timecodeParser())
-  ).unwrap(lambda (Duration a, Duration b) Timing(a, b)) ! Error("Invalid srt timing specification")
+  ).map(lambda (Duration a, Duration b) Timing(a, b)) ! Error("Invalid srt timing specification")
 
 // Parse all text until a empty line is encountered.
 fun subTextParser() -> Parser{string}
@@ -84,7 +84,7 @@ fun subParser() -> Parser{Subtitle}
   seq     = txtIntParser() << lineParser(ParseFlags.Optional) << whitespaceParser() ! Error("Invalid sequence number");
   timing  = timingParser() << lineParser(ParseFlags.Optional) << whitespaceParser();
   txt     = subTextParser();
-  (seq & timing & txt).unwrap(lambda (int seq, Timing t, string txt) Subtitle(seq, t, txt))
+  (seq & timing & txt).map(lambda (int seq, Timing t, string txt) Subtitle(seq, t, txt))
 
 // Parse a list of subtitles optionally followed by whitespace.
 fun subListParser() -> Parser{List{Subtitle}}
@@ -101,15 +101,13 @@ fun subListParser() -> Parser{List{Subtitle}}
 // - No we're not!
 
 act parseSrt(Path path)
-  if !path.fileExists() -> printErr("Could not open file: " + path); fail()
-  else ->
-    t1  = timestamp();
-    res = subListParser().run(fileRead(path));
-    dur = timestamp() - t1;
-    print("[Parsing took: " + dur + "]\n");
+  t1  = timestamp();
+  res = fileRead(path, subListParser());
+  dur = timestamp() - t1;
+  print("[Parsing took: " + dur + "]\n");
 
-    if res as List{Subtitle}  subs -> print(string(subs, "", "\n\n", ""))
-    if res as Error           err  -> printErr("Failed to parse: " + err); fail()
+  if res as List{Subtitle}  subs -> print(string(subs, "", "\n\n", ""))
+  if res as Error           err  -> printErr("Failed to parse: " + err); fail()
 
 act printUsage()
   print("Srt parser");

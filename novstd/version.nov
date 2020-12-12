@@ -1,5 +1,5 @@
 import "std/list.nov"
-import "std/parse.nov"
+import "std/parser.nov"
 import "std/writer.nov"
 
 // Utilities for sem-ver versions.
@@ -75,7 +75,7 @@ fun versionParser() -> Parser{Version}
     txtPosIntParser() & matchParser('.') >> txtPosIntParser() & ?(matchParser('.') >> txtPosIntParser()) &
     ?(matchParser('-') >> manyParser(tagParser, matchParser('.'))) &
     ?((matchParser('+') | matchParser('.')) >> manyParser(tagParser, matchParser('.')))
-  ).unwrap( lambda (  int major,
+  ).map( lambda (  int major,
                       int minor,
                       Option{int} patch,
                       Option{List{string}} prereleaseTags,
