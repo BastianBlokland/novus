@@ -110,6 +110,10 @@ act map{T, TResult}(Either{T, Error} v, action{T, Either{TResult, Error}} f) -> 
   if v as T      val -> f(val)
   if v as Error  err -> err
 
+act map{T}(Either{T, Error} v, action{T, Option{Error}} f) -> Option{Error}
+  if v as T      val -> f(val)
+  if v as Error  err -> err
+
 act map{T, TResult}(Either{T, Error} v, action{T, TResult} f) -> Either{TResult, Error}
   if v as T      val -> f(val)
   if v as Error  err -> err
@@ -231,6 +235,11 @@ assert(
 assert(
   v = Either{int, Error}(42);
   v.map(impure lambda (int val) val > 100 ? val : Error("Test")) == Error("Test"))
+
+assert(
+  v = Either{int, Error}(42);
+  v.map(impure lambda (int val) val > 100 ? some(Error("Test")) : none())  is None &&
+  v.map(impure lambda (int val) val > 30 ? some(Error("Test")) : none())   == Error("Test"))
 
 assert(
   v = Either{int, Error}(Error());

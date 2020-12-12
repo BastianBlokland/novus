@@ -70,7 +70,7 @@ act driver(int width, int height, int threads, int bounces, float fov, Path outP
   img     = Image(width, height, render(width, height, threads, bounces, fov));
   print("Finished render: " + img.width + "x" + img.height + " (" + (timestamp() - tStart) + ")");
   print("Writing result to file...");
-  fileWrite(outPath, writer(img).string());
+  outPath.fileWrite(writer, img);
   print("Wrote result to file: " + outPath)
 
 getUntilInterupt(fork driver(1280, 720, 4, 4, 60, getPathCurrent() / "image.ppm", ppmBinaryWriter()))

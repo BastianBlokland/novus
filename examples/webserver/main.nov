@@ -128,9 +128,9 @@ act loadContent(Path root, List{Pair{string, string}} rewriteUrls, List{string} 
   resources = files.parallelMap(impure lambda (string file)
     path        = root / file;
     contentType = path.findHttpContentType();
-    fileStream  = path.fileOpen(FileMode.Open);
-    if fileStream.isValid() -> some(Resource("/" + file, contentType, fileStream.readToEnd()))
-    else                    -> print("Failed to load content: " + path); none()
+    content     = path.fileRead();
+    if content as string s  -> some(Resource("/" + file, contentType, s))
+    if content as Error e   -> print("Failed to load content: " + e); none()
   ).filterNone();
 
   print("Loaded " + resources.length() + " resources");

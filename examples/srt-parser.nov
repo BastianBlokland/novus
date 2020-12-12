@@ -101,15 +101,13 @@ fun subListParser() -> Parser{List{Subtitle}}
 // - No we're not!
 
 act parseSrt(Path path)
-  if !path.fileExists() -> printErr("Could not open file: " + path); fail()
-  else ->
-    t1  = timestamp();
-    res = subListParser().run(fileRead(path));
-    dur = timestamp() - t1;
-    print("[Parsing took: " + dur + "]\n");
+  t1  = timestamp();
+  res = fileRead(path, subListParser());
+  dur = timestamp() - t1;
+  print("[Parsing took: " + dur + "]\n");
 
-    if res as List{Subtitle}  subs -> print(string(subs, "", "\n\n", ""))
-    if res as Error           err  -> printErr("Failed to parse: " + err); fail()
+  if res as List{Subtitle}  subs -> print(string(subs, "", "\n\n", ""))
+  if res as Error           err  -> printErr("Failed to parse: " + err); fail()
 
 act printUsage()
   print("Srt parser");
