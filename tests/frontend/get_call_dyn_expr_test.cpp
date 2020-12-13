@@ -198,7 +198,10 @@ TEST_CASE("Analyzing call dynamic expressions", "[frontend]") {
         "fun f2() -> int op = f1{int}; op(1)",
         errAmbiguousTemplateFunction(src, "f1", 1, input::Span{75, 81}),
         errUndeclaredPureFunc(src, "op", {"int"}, input::Span{84, 88}));
-    CHECK_DIAG("fun f() f1{float}", errNoFuncFoundToInstantiate(src, "f1", 1, input::Span{8, 16}));
+    CHECK_DIAG(
+        "fun f() f1{float}", errNoPureFuncFoundToInstantiate(src, "f1", 1, input::Span{8, 16}));
+    CHECK_DIAG(
+        "act a() f1{float}", errNoFuncOrActionFoundToInstantiate(src, "f1", 1, input::Span{8, 16}));
     CHECK_DIAG(
         "fun f1{T}() -> T T() "
         "fun f2() -> int op = f1; op()",

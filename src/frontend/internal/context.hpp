@@ -1,6 +1,7 @@
 #pragma once
 #include "frontend/diag.hpp"
 #include "internal/delegate_table.hpp"
+#include "internal/fail_table.hpp"
 #include "internal/func_template_table.hpp"
 #include "internal/future_table.hpp"
 #include "internal/lazy_table.hpp"
@@ -26,6 +27,7 @@ public:
       DelegateTable* delegates,
       FutureTable* futures,
       LazyTable* lazies,
+      FailTable* fails,
       TypeInfoMap* typeInfos,
       std::vector<Diag>* diags);
 
@@ -38,6 +40,7 @@ public:
   [[nodiscard]] auto getDelegates() const noexcept -> DelegateTable*;
   [[nodiscard]] auto getFutures() const noexcept -> FutureTable*;
   [[nodiscard]] auto getLazies() const noexcept -> LazyTable*;
+  [[nodiscard]] auto getFails() const noexcept -> FailTable*;
 
   [[nodiscard]] auto getTypeInfo(prog::sym::TypeId typeId) const noexcept
       -> std::optional<TypeInfo>;
@@ -57,6 +60,8 @@ private:
   DelegateTable* m_delegates;
   FutureTable* m_futures;
   LazyTable* m_lazies;
+  FailTable* m_fails;
+
   TypeInfoMap* m_typeInfos;
   std::vector<Diag>* m_diags;
 };

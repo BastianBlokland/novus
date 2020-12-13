@@ -228,11 +228,16 @@ auto GetExpr::visit(const parse::CallExprNode& n) -> void {
     return;
   }
 
-  // modifyCall is a mechanism for the frontend to adjust the arguments to create some exceptions,
-  // for example it allows adding extra arguments.
-  modifyCall(m_ctx, nameToken, n, args.get());
+  // modifyCallArgs is a mechanism for the frontend to adjust the arguments of a call, for example
+  // it allows adding extra arguments.
+  modifyCallArgs(m_ctx, m_typeSubTable, nameToken, typeParams, n, *args.get());
 
-  const auto possibleFuncs = getFunctionsInclConversions(nameToken, typeParams, args->second);
+  auto possibleFuncs = getFunctionsInclConversions(nameToken, typeParams, args->second);
+
+  // modifyCallPossibleFuncs allows modifying the list of considered functions before overload
+  // resolution, this allows injecting other possible-functions or excluding some functions.
+  modifyCallPossibleFuncs(
+      m_ctx, m_typeSubTable, nameToken, typeParams, n, *args.get(), possibleFuncs);
 
   // On instance calls we do not allow (implicit) conversions on the first argument (the instance).
   const auto noConvFirstArg = instance != nullptr;
@@ -248,8 +253,25 @@ auto GetExpr::visit(const parse::CallExprNode& n) -> void {
             typeParams->getCount(),
             n.getSpan());
       } else {
-        m_ctx->reportDiag(
-            errNoFuncFoundToInstantiate, getName(nameToken), typeParams->getCount(), n.getSpan());
+        if (hasFlag<Flags::AllowPureFuncCalls>() && hasFlag<Flags::AllowActionCalls>()) {
+          m_ctx->reportDiag(
+              errNoFuncOrActionFoundToInstantiate,
+              getName(nameToken),
+              typeParams->getCount(),
+              n.getSpan());
+        } else if (hasFlag<Flags::AllowPureFuncCalls>()) {
+          m_ctx->reportDiag(
+              errNoPureFuncFoundToInstantiate,
+              getName(nameToken),
+              typeParams->getCount(),
+              n.getSpan());
+        } else {
+          m_ctx->reportDiag(
+              errNoActionFoundToInstantiate,
+              getName(nameToken),
+              typeParams->getCount(),
+              n.getSpan());
+        }
       }
     } else {
       auto argTypeNames = std::vector<std::string>{};
@@ -372,7 +394,14 @@ auto GetExpr::visit(const parse::IdExprNode& n) -> void {
     }
     const auto instances = m_ctx->getFuncTemplates()->instantiate(name, *typeSet, getOvOptions(-1));
     if (instances.empty()) {
-      m_ctx->reportDiag(errNoFuncFoundToInstantiate, name, typeSet->getCount(), n.getSpan());
+      if (hasFlag<Flags::AllowPureFuncCalls>() && hasFlag<Flags::AllowActionCalls>()) {
+        m_ctx->reportDiag(
+            errNoFuncOrActionFoundToInstantiate, name, typeSet->getCount(), n.getSpan());
+      } else if (hasFlag<Flags::AllowPureFuncCalls>()) {
+        m_ctx->reportDiag(errNoPureFuncFoundToInstantiate, name, typeSet->getCount(), n.getSpan());
+      } else {
+        m_ctx->reportDiag(errNoActionFoundToInstantiate, name, typeSet->getCount(), n.getSpan());
+      }
       return;
     }
     if (instances.size() != 1) {

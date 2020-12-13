@@ -166,7 +166,15 @@ errUninitializedConst(const Source& src, const std::string& name, input::Span sp
 
 [[nodiscard]] auto errPureFuncInfRecursion(const Source& src, input::Span span) -> Diag;
 
-[[nodiscard]] auto errNoFuncFoundToInstantiate(
+[[nodiscard]] auto errNoPureFuncFoundToInstantiate(
+    const Source& src, const std::string& name, unsigned int templateParamCount, input::Span span)
+    -> Diag;
+
+[[nodiscard]] auto errNoActionFoundToInstantiate(
+    const Source& src, const std::string& name, unsigned int templateParamCount, input::Span span)
+    -> Diag;
+
+[[nodiscard]] auto errNoFuncOrActionFoundToInstantiate(
     const Source& src, const std::string& name, unsigned int templateParamCount, input::Span span)
     -> Diag;
 
@@ -229,6 +237,10 @@ errUnsupportedOperator(const Source& src, const std::string& name, input::Span s
 [[nodiscard]] auto errSelfCallWithoutInferredRetType(const Source& src, input::Span span) -> Diag;
 
 [[nodiscard]] auto errIncorrectNumArgsInSelfCall(
-    const Source& src, int expectedNumArgs, int actualNumArgs, input::Span span) -> Diag;
+    const Source& src, unsigned int expectedNumArgs, unsigned int actualNumArgs, input::Span span)
+    -> Diag;
+
+[[nodiscard]] auto errInvalidFailCall(
+    const Source& src, unsigned int typeParams, unsigned int argCount, input::Span span) -> Diag;
 
 } // namespace frontend

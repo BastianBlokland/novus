@@ -214,6 +214,16 @@ TEST_CASE("Analyzing call expressions", "[frontend]") {
     CHECK(GET_FUNC_DEF(output, "a2").getExpr() == *callExpr);
   }
 
+  SECTION("Get fail action call") {
+    const auto& output = ANALYZE("act a() -> int fail{int}()");
+    REQUIRE(output.isSuccess());
+
+    auto callExpr = prog::expr::callExprNode(
+        output.getProg(), GET_FUNC_ID(output, "__fail_int"), std::vector<prog::expr::NodePtr>{});
+
+    CHECK(GET_FUNC_DEF(output, "a").getExpr() == *callExpr);
+  }
+
   SECTION("Diagnostics") {
     CHECK_DIAG(
         "fun f1() -> int 1 "
@@ -243,7 +253,7 @@ TEST_CASE("Analyzing call expressions", "[frontend]") {
     CHECK_DIAG(
         "act a{T}() -> T T() "
         "fun f2() -> int a{int}()",
-        errNoFuncFoundToInstantiate(src, "a", 1, input::Span{36, 43}));
+        errNoPureFuncFoundToInstantiate(src, "a", 1, input::Span{36, 43}));
     CHECK_DIAG(
         "act a(int i) -> int i * 2 "
         "fun f2(int i) -> int i.a()",
@@ -257,6 +267,21 @@ TEST_CASE("Analyzing call expressions", "[frontend]") {
         "act a(int i) -> int i * 2 "
         "act f2(int i) -> int lazy i.a()",
         errLazyActionCall(src, input::Span{47, 56}));
+    CHECK_DIAG(
+        "fun f() -> int fail{int}()",
+        errNoPureFuncFoundToInstantiate(src, "fail", 1, input::Span{15, 25}));
+    CHECK_DIAG(
+        "act f() -> int fail()",
+        errInvalidFailCall(src, 0, 0, input::Span{15, 20}),
+        errUndeclaredFuncOrAction(src, "fail", {}, input::Span{15, 20}));
+    CHECK_DIAG(
+        "act f() -> int fail(1)",
+        errInvalidFailCall(src, 0, 1, input::Span{15, 21}),
+        errUndeclaredFuncOrAction(src, "fail", {"int"}, input::Span{15, 21}));
+    CHECK_DIAG(
+        "act f() -> int fail{int}(1.0)",
+        errInvalidFailCall(src, 1, 1, input::Span{15, 28}),
+        errNoFuncOrActionFoundToInstantiate(src, "fail", 1, input::Span{15, 28}));
   }
 }
 

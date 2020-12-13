@@ -67,34 +67,39 @@ TEST_CASE("Analyzing user-function definitions", "[frontend]") {
         "fun f() -> int int{float}()",
         errNoTypeOrConversionFoundToInstantiate(src, "int", 1, input::Span{15, 26}));
     CHECK_DIAG(
-        "fun f2() -> int f{int}(1)", errNoFuncFoundToInstantiate(src, "f", 1, input::Span{16, 24}));
+        "fun f2() -> int f{int}(1)",
+        errNoPureFuncFoundToInstantiate(src, "f", 1, input::Span{16, 24}));
+    CHECK_DIAG(
+        "act a() -> int f{int}()",
+        errNoFuncOrActionFoundToInstantiate(src, "f", 1, input::Span{15, 22}));
+    CHECK_DIAG("f{int}()", errNoActionFoundToInstantiate(src, "f", 1, input::Span{0, 7}));
     CHECK_DIAG(
         "fun f1() -> int 1 "
         "fun f2() -> int f1{int}()",
-        errNoFuncFoundToInstantiate(src, "f1", 1, input::Span{34, 42}));
+        errNoPureFuncFoundToInstantiate(src, "f1", 1, input::Span{34, 42}));
     CHECK_DIAG(
         "fun f{T}(T t) t "
         "fun f2() -> int f{int, float}(1)",
-        errNoFuncFoundToInstantiate(src, "f", 2, input::Span{32, 47}));
+        errNoPureFuncFoundToInstantiate(src, "f", 2, input::Span{32, 47}));
     CHECK_DIAG(
         "fun f{T}(T T) -> T T "
         "fun f2() -> int f{int}(1)",
         errConstNameConflictsWithTypeSubstitution(src, "T", input::Span{11, 11}),
         errInvalidFuncInstantiation(src, input::Span{37, 37}),
-        errNoFuncFoundToInstantiate(src, "f", 1, input::Span{37, 45}));
+        errNoPureFuncFoundToInstantiate(src, "f", 1, input::Span{37, 45}));
     CHECK_DIAG(
         "fun f{T}(T T) -> T T "
         "fun f2() f{int}(1)",
         errConstNameConflictsWithTypeSubstitution(src, "T", input::Span{11, 11}),
         errInvalidFuncInstantiation(src, input::Span{30, 30}),
-        errNoFuncFoundToInstantiate(src, "f", 1, input::Span{30, 38}));
+        errNoPureFuncFoundToInstantiate(src, "f", 1, input::Span{30, 38}));
     CHECK_DIAG(
         "fun f{T}(T i) -> T "
         "  T = i * 2; i "
         "fun f2() -> int f{int}(1)",
         errConstNameConflictsWithTypeSubstitution(src, "T", input::Span{21, 21}),
         errInvalidFuncInstantiation(src, input::Span{50, 50}),
-        errNoFuncFoundToInstantiate(src, "f", 1, input::Span{50, 58}));
+        errNoPureFuncFoundToInstantiate(src, "f", 1, input::Span{50, 58}));
     CHECK_DIAG(
         "fun f() -> function{int} lambda () false",
         errNonMatchingFuncReturnType(

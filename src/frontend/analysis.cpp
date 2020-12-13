@@ -37,6 +37,7 @@ auto analyze(const Source& mainSrc, const std::vector<filesystem::path>& searchP
   auto delegates     = internal::DelegateTable{};
   auto futures       = internal::FutureTable{};
   auto lazies        = internal::LazyTable{};
+  auto fails         = internal::FailTable{};
   auto typeInfos     = TypeInfoMap{};
   auto diags         = std::vector<Diag>{};
   auto makeCtx       = [&](const Source& src) {
@@ -48,6 +49,7 @@ auto analyze(const Source& mainSrc, const std::vector<filesystem::path>& searchP
         &delegates,
         &futures,
         &lazies,
+        &fails,
         &typeInfos,
         &diags);
   };
