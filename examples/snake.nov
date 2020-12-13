@@ -171,107 +171,106 @@ fun simulateGameover(GameState g)
 
 // -- Game loop
 
-act loop(sys_stream in, sys_stream out)
-  loop(in, out, Duration(0), createGame(rngInit(), getWindow()))
+act loop(Console c)
+  loop(c, Duration(0), createGame(rngInit(), getWindow()))
 
-act loop(sys_stream in, sys_stream out, Duration prevFrameDur, GameState state)
+act loop(Console c, Duration prevFrameDur, GameState state)
   t1      = timestamp();
   window  = getWindow();
-  input   = getInput(in.readToEnd());
+  input   = getInput(c.readToEnd());
   if input is InputQuit || interuptIsRequested()  -> false
-  if input is InputRestart                        -> loop(in, out)
+  if input is InputRestart                        -> loop(c)
   else ->
     newState  = simulateGame(state, window, input);
-    out.drawGame(newState, window, prevFrameDur);
+    c.drawGame(newState, window, prevFrameDur);
 
     frameDur  = timestamp() - t1;
     sleep(simInterval() - frameDur);
-    loop(in, out, frameDur, newState)
+    loop(c, frameDur, newState)
 
 // --- Draw game state
 
-act drawGame(sys_stream out, GameState g, Box window, Duration frameDur)
-  out.termClearScreen();
-  out.drawBackground(g, window, frameDur);
-  out.drawPickups(g.pickups);
-  out.drawPlayer(g.player);
-  out.streamFlush()
+act drawGame(Console c, GameState g, Box window, Duration frameDur)
+  c.termClearScreen();
+  c.drawBackground(g, window, frameDur);
+  c.drawPickups(g.pickups);
+  c.drawPlayer(g.player);
+  c.flushOut()
 
-act drawBackground(sys_stream out, GameState g, Box window, Duration frameDur)
-  out.termStyle(TermStyle.FgBrightWhite);
-  out.termStyle(g.gameover ? TermStyle.BgBrightRed : TermStyle.BgGreen);
-  out.drawBox(window);
-  out.drawAt(
+act drawBackground(Console c, GameState g, Box window, Duration frameDur)
+  c.termStyle(TermStyle.FgBrightWhite);
+  c.termStyle(g.gameover ? TermStyle.BgBrightRed : TermStyle.BgGreen);
+  c.drawBox(window);
+  c.drawAt(
     " Score: " + g.score.string(4) + " ─ " +
     "Quit: q ─ " +
     "Restart: r ─ " +
     "Steering: w, a, s, d ─ " +
     "FT: " + frameDur + " ",
     I2(5, 1));
-  out.termStyle(TermStyle.Reset)
+  c.termStyle(TermStyle.Reset)
 
-act drawPickups(sys_stream out, List{PickupState} pickups)
-  pickups.mapReverse(impure lambda (PickupState p) out.drawPickup(p))
+act drawPickups(Console c, List{PickupState} pickups)
+  pickups.mapReverse(impure lambda (PickupState p) c.drawPickup(p))
 
-act drawPickup(sys_stream out, PickupState pickup)
-  out.termStyle(
+act drawPickup(Console c, PickupState pickup)
+  c.termStyle(
     if pickup.value == 3 -> TermStyle.FgBrightYellow
     if pickup.value == 2 -> TermStyle.FgBrightCyan
     else                 -> TermStyle.FgBrightMagenta
   );
-  out.drawAt("●", pickup.pos);
-  out.termStyle(TermStyle.Reset)
+  c.drawAt("●", pickup.pos);
+  c.termStyle(TermStyle.Reset)
 
-act drawPlayer(sys_stream out, PlayerState player)
-  out.drawAt(
+act drawPlayer(Console c, PlayerState player)
+  c.drawAt(
     if player.dir == Dir.up     -> "▲"
     if player.dir == Dir.down   -> "▼"
     if player.dir == Dir.right  -> "►"
     else                        -> "◄", player.pos);
-  player.segments.mapReverse(impure lambda (I2 s) out.drawAt("●", s))
+  player.segments.mapReverse(impure lambda (I2 s) c.drawAt("●", s))
 
 // --- Misc drawing
 
-act drawBox(sys_stream out, Box b)
-  out.drawAt(   "┌",  b.origin);
-  out.drawAt(   "┐",  b.origin + I2(b.size.x - 1, 0));
-  out.drawAt(   "└",  b.origin + I2(0,            b.size.y));
-  out.drawAt(   "┘",  b.origin + I2(b.size.x - 1, b.size.y));
-  out.drawAtHor("─",  b.origin + I2(1,            0),         b.size.x - 2);
-  out.drawAtHor("─",  b.origin + I2(1,            b.size.y),  b.size.x - 2);
-  out.drawAtVer("│",  b.origin + I2(0,            1),         b.size.y - 2);
-  out.drawAtVer("│",  b.origin + I2(b.size.x - 1, 1),         b.size.y - 2)
+act drawBox(Console c, Box b)
+  c.drawAt(   "┌",  b.origin);
+  c.drawAt(   "┐",  b.origin + I2(b.size.x - 1, 0));
+  c.drawAt(   "└",  b.origin + I2(0,            b.size.y));
+  c.drawAt(   "┘",  b.origin + I2(b.size.x - 1, b.size.y));
+  c.drawAtHor("─",  b.origin + I2(1,            0),         b.size.x - 2);
+  c.drawAtHor("─",  b.origin + I2(1,            b.size.y),  b.size.x - 2);
+  c.drawAtVer("│",  b.origin + I2(0,            1),         b.size.y - 2);
+  c.drawAtVer("│",  b.origin + I2(b.size.x - 1, 1),         b.size.y - 2)
 
-act drawAtHor(sys_stream out, string str, I2 pos, int times)
+act drawAtHor(Console c, string str, I2 pos, int times)
   drawTimes = ( impure lambda (int times)
     if times <= 0 -> true
-    else          -> out.streamWrite(str); self(--times)
+    else          -> c.writeOut(str); self(--times)
   );
-  out.termCursorPos(pos.y, pos.x);
+  c.termCursorPos(pos.y, pos.x);
   drawTimes(times)
 
-act drawAtVer(sys_stream out, string str, I2 pos, int times)
+act drawAtVer(Console c, string str, I2 pos, int times)
   drawTimes = ( impure lambda (int i)
     if i >= times -> true
     else          ->
-      out.termCursorPos(pos.y + i, pos.x);
-      out.streamWrite(str);
+      c.termCursorPos(pos.y + i, pos.x);
+      c.writeOut(str);
       self(++i)
   );
   drawTimes(0)
 
-act drawAt(sys_stream out, string str, I2 pos)
-  out.termCursorPos(pos.y, pos.x);
-  out.streamWrite(str)
+act drawAt(Console c, string str, I2 pos)
+  c.termCursorPos(pos.y, pos.x);
+  c.writeOut(str)
 
 // --- Entry point
 
 act main()
-  in  = consoleOpen(ConsoleKind.StdIn);
-  out = consoleOpen(ConsoleKind.StdOut);
-  setupTerminal(in, out);
-  loop(in, out);
-  resetTerminal(in, out)
+  console = consoleOpen().failOnError();
+  setupTerminal(console);
+  loop(console);
+  resetTerminal(console)
 
 main()
 
@@ -280,16 +279,16 @@ main()
 act getWindow()
   Box(I2(1, 1), I2(termGetWidth(), termGetHeight()))
 
-act setupTerminal(sys_stream in, sys_stream out)
-  termSetOptions(TermOptions.NoEcho | TermOptions.NoBuffer);
-  termAltScreen(out, true);
-  termCursorShow(out, false);
-  setOptions(in, StreamOptions.NoBlock)
+act setupTerminal(Console c)
+  c.termSetOptions(TermOptions.NoEcho | TermOptions.NoBuffer);
+  c.termAltScreen(true);
+  c.termCursorShow(false);
+  c.setNoBlockInput()
 
-act resetTerminal(sys_stream in, sys_stream out)
-  termCursorShow(out, true);
-  termAltScreen(out, false);
-  termStyle(out, TermStyle.Reset);
-  termUnsetOptions(TermOptions.NoEcho | TermOptions.NoBuffer);
-  streamWrite(out, '\n');
-  unsetOptions(in, StreamOptions.NoBlock)
+act resetTerminal(Console c)
+  c.termCursorShow(true);
+  c.termAltScreen(false);
+  c.termStyle(TermStyle.Reset);
+  c.termUnsetOptions(TermOptions.NoEcho | TermOptions.NoBuffer);
+  c.writeOut('\n');
+  c.unsetNoBlockInput()

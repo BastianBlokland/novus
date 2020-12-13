@@ -1,3 +1,4 @@
+import "std/console.nov"
 import "std/path.nov"
 import "std/version.nov"
 
@@ -16,29 +17,44 @@ fun string(Platform p)
   if p == Platform.Windows  -> "Windows"
   else                      -> "Unknown"
 
-// -- Actions
+// -- Platform
 
 act getPlatform() Platform(platformCode())
 
+// -- Versions
+
 act getRuntimeVersion() -> Version
-  versionParser().run(runtimeVersionString()) ?? Version(0, 0, 0)
+  versionParser().run(runtimeVersionString()).failOnError()
 
 act getCompilerVersion() -> Version
-  versionParser().run(compilerVersionString()) ?? Version(0, 0, 0)
+  versionParser().run(compilerVersionString()).failOnError()
+
+// -- Paths
 
 act getPathCurrent() -> PathAbsolute
-  pathAbsParser().run(workingDirectoryPathString()) ?? getPathDefaultRoot()
+  pathAbsParser().run(workingDirectoryPathString()).failOnError()
 
 act getPathRuntime() -> PathAbsolute
-  pathAbsParser().run(runtimePathString()) ?? getPathDefaultRoot()
+  pathAbsParser().run(runtimePathString()).failOnError()
 
 act getPathProgram() -> PathAbsolute
-  pathAbsParser().run(programPathString()) ?? getPathDefaultRoot()
+  pathAbsParser().run(programPathString()).failOnError()
+
+// -- Interupt
 
 act atInterupt{T}(action{T} delegate) -> future{T}
   fork invoke(impure lambda () -> T
     if interuptIsRequested() -> delegate()
     else                     -> sleep(milliseconds(100)); self())
+
+// -- Failure
+
+act fail(string msg) -> Option{Error}
+  fail{Option{Error}}(msg)
+
+act fail{TResult}(string msg) -> TResult
+  printErr(msg);
+  failfast{TResult}()
 
 // -- Tests
 

@@ -93,12 +93,12 @@ act handleConnection(ClientContext ctx)
 
 act main(int port, Content content)
   srvOpt  = tcpServer(port);
-  if srvOpt is None           -> printErr("Failed to start server"); failfast{bool}()
+  if srvOpt is None           -> fail("Failed to start server")
   if srvOpt as TcpServer srv  ->
     print("Server started (port: " + port + "), press any key to stop");
 
-    inStream = consoleOpen(ConsoleKind.StdIn);
-    inStream.setOptions(StreamOptions.NoBlock);
+    console = consoleOpen().failOnError();
+    console.setNoBlockInput();
 
     startTime   = timeNow();
     respWriter  = httpRespWriter();
@@ -116,7 +116,7 @@ act main(int port, Content content)
         handleConnection(ctx)
     );
     stopCond    = (
-      impure lambda () inStream.readChar() != '\0' || interuptIsRequested()
+      impure lambda () console.readChar() != '\0' || interuptIsRequested()
     );
     srv.acceptLoop(handleCon, stopCond);
 
