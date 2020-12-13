@@ -59,21 +59,12 @@ act run(string cmdLine)
     cmdLine,
     handle,
     ProcessId(processGetId(handle)),
-    consoleOpen(handle, ConsoleKind.StdIn),
-    consoleOpen(handle, ConsoleKind.StdOut),
-    consoleOpen(handle, ConsoleKind.StdErr))
+    processOpenStream(handle, 0),
+    processOpenStream(handle, 1),
+    processOpenStream(handle, 2))
 
 act sendInterupt(Process p)         processSendSignal(p.handle, Signal.Interupt)
 act sendSignal(Process p, Signal s) processSendSignal(p.handle, s)
-
-act consoleOpen(Process p, ConsoleKind kind)
-  if kind == ConsoleKind.StdIn  -> p.stdIn
-  if kind == ConsoleKind.StdOut -> p.stdOut
-  if kind == ConsoleKind.StdErr -> p.stdErr
-  else                          -> p.stdErr
-
-act consoleOpen(sys_process handle, ConsoleKind kind)
-  processOpenStream(handle, kind)
 
 act wait(Process p)
   ProcessResult(

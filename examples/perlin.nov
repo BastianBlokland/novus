@@ -33,30 +33,30 @@ fun min(Box b)
 fun max(Box b)
   b.origin + b.size
 
-act draw(I2 pos, Console out, Settings s, Duration t)
+act draw(I2 pos, Console c, Settings s, Duration t)
   n = perlinNoise3d(pos.x * s.xyScale, pos.y * s.xyScale, float(t) * s.speed) * s.intensityScale;
-  out.termCursorPos(pos.y, pos.x);
+  c.termCursorPos(pos.y, pos.x);
   (
-    if n < s.bgCutoff -> out.termColor(0.0, 0.0, 0.0)
+    if n < s.bgCutoff -> c.termColor(0.0, 0.0, 0.0)
     else              ->
       r = n < s.redThreshold ? 1 : n;
       g = n;
       b = s.blueShift + n * (1.0 - s.blueShift);
-      out.termColor(r, g, b)
+      c.termColor(r, g, b)
   );
-  out.write(n < s.fillThreshold ? "○" : "●");
-  out.flush()
+  c.writeOut(n < s.fillThreshold ? "○" : "●");
+  c.flushOut()
 
-act loop(Console in, Console out, Settings s, Timestamp begin, int frame)
-  if in.readToEnd().length() != 0 || interuptIsRequested() -> false
+act loop(Console c, Settings s, Timestamp begin, int frame)
+  if c.readToEnd().length() != 0 || interuptIsRequested() -> false
   else ->
     now     = timestamp();
     elapsed = now - begin;
-    forBox(getWindow(), draw[elapsed][s][out], frame, s.drawIterations);
+    forBox(getWindow(), draw[elapsed][s][c], frame, s.drawIterations);
 
     frameTime = timestamp() - now;
     sleep(s.drawInterval - frameTime);
-    loop(in, out, s, begin, ++frame)
+    loop(c, s, begin, ++frame)
 
 // Allow overriding tweak values using environment options. (syntax: --[KEY] [VALUE])
 act getSettings()
@@ -90,11 +90,10 @@ act forBox(Box box, action{I2, bool} a, int itr, int numItrs)
 // --- Entry point
 
 act main()
-  in  = consoleOpen(ConsoleKind.StdIn).failOnError();
-  out = consoleOpen(ConsoleKind.StdOut).failOnError();
-  setupTerminal(in, out);
-  loop(in, out, getSettings(), timestamp(), 0);
-  resetTerminal(in, out)
+  console = consoleOpen().failOnError();
+  setupTerminal(console);
+  loop(console, getSettings(), timestamp(), 0);
+  resetTerminal(console)
 
 main()
 
@@ -103,16 +102,16 @@ main()
 act getWindow()
   Box(I2(1, 1), I2(termGetWidth(), termGetHeight()))
 
-act setupTerminal(Console in, Console out)
-  termSetOptions(TermOptions.NoEcho | TermOptions.NoBuffer);
-  out.termAltScreen(true);
-  out.termCursorShow(false);
-  in.setOptions(StreamOptions.NoBlock)
+act setupTerminal(Console c)
+  c.termSetOptions(TermOptions.NoEcho | TermOptions.NoBuffer);
+  c.termAltScreen(true);
+  c.termCursorShow(false);
+  c.setNoBlockInput()
 
-act resetTerminal(Console in, Console out)
-  out.termCursorShow(true);
-  out.termAltScreen(false);
-  out.termStyle(TermStyle.Reset);
-  termUnsetOptions(TermOptions.NoEcho | TermOptions.NoBuffer);
-  out.write('\n');
-  in.unsetOptions(StreamOptions.NoBlock)
+act resetTerminal(Console c)
+  c.termCursorShow(true);
+  c.termAltScreen(false);
+  c.termStyle(TermStyle.Reset);
+  c.termUnsetOptions(TermOptions.NoEcho | TermOptions.NoBuffer);
+  c.writeOut('\n');
+  c.unsetNoBlockInput()

@@ -5,91 +5,91 @@ import "std/stream.nov"
 
 // -- Types
 
-enum ConsoleKind =
-  StdIn : 0,
-  StdOut,
-  StdErr
-
 struct Console =
-  ConsoleKind kind,
-  sys_stream  stream
-
-// -- Conversions
-
-fun string(ConsoleKind k)
-  if k == ConsoleKind.StdIn   -> "StdIn"
-  if k == ConsoleKind.StdOut  -> "StdOut"
-  if k == ConsoleKind.StdErr  -> "StdErr"
-  else                        -> "Unkown"
+  sys_stream  stdIn,
+  sys_stream  stdOut,
+  sys_stream  stdErr
 
 // -- Actions
 
-act consoleOpen(ConsoleKind kind) -> Either{Console, Error}
-  stream = consoleOpenStream(kind);
-  if stream.streamCheckValid()  -> Console(kind, stream)
-  else                          -> Error("Failed to open console: '" + kind.string() + "'")
+act consoleOpen() -> Either{Console, Error}
+  stdIn   = consoleOpenStream(0);
+  stdOut  = consoleOpenStream(1);
+  stdErr  = consoleOpenStream(2);
+  if stdIn.streamCheckValid() && stdOut.streamCheckValid() && stdErr.streamCheckValid() ->
+    Console(stdIn, stdOut, stdErr)
+  else ->
+    Error("Failed to open console")
 
-act setOptions(Console c, StreamOptions opts) -> bool
-  c.stream.setOptions(opts)
+act setNoBlockInput(Console c) -> bool
+  c.stdIn.setOptions(StreamOptions.NoBlock)
 
-act unsetOptions(Console c, StreamOptions opts) -> bool
-  c.stream.unsetOptions(opts)
+act unsetNoBlockInput(Console c) -> bool
+  c.stdIn.unsetOptions(StreamOptions.NoBlock)
 
 act readChar(Console c) -> char
-  c.stream.readChar()
+  c.stdIn.readChar()
 
 act readLine(Console c) -> string
-  c.stream.readLine()
+  c.stdIn.readLine()
 
 act readToEnd(Console c) -> string
-  c.stream.readToEnd()
+  c.stdIn.readToEnd()
 
 act readToEnd{T}(Console c, Parser{T} parser) -> Either{T, Error}
   parser.run(c.readToEnd())
 
-act readChar() -> Either{char, Error}
-  consoleOpen(ConsoleKind.StdIn).map(impure lambda (Console c) c.readChar())
+act readChar() -> char
+  consoleOpen().failOnError().readChar()
 
-act readLine() -> Either{string, Error}
-  consoleOpen(ConsoleKind.StdIn).map(impure lambda (Console c) c.readLine())
+act readLine() -> string
+  consoleOpen().failOnError().readLine()
 
-act write(Console c, string str) -> Option{Error}
-  c.stream.write(str)
+act writeOut(Console c, string str) -> Option{Error}
+  c.stdOut.write(str)
     ? none()
-    : Error("Failed to write to console")
+    : Error("Failed to write to the stdOut stream of the console")
 
-act write(Console c, char ch) -> Option{Error}
-  c.stream.write(ch)
+act writeOut(Console c, char ch) -> Option{Error}
+  c.stdOut.write(ch)
     ? none()
-    : Error("Failed to write to console")
+    : Error("Failed to write to the stdOut stream of the console")
 
-act write{T}(Console c, Writer{T} writer, T val) -> Option{Error}
+act writeOut{T}(Console c, Writer{T} writer, T val) -> Option{Error}
   c.write(writer(val).string())
 
-act flush(Console c)
-  c.stream.streamFlush()
+act writeErr(Console c, string str) -> Option{Error}
+  c.stdErr.write(str)
+    ? none()
+    : Error("Failed to write to the stdErr stream of the console")
 
-act writeStdOut(string str) -> Option{Error}
-  consoleOpen(ConsoleKind.StdOut).map(impure lambda (Console c) c.write(str))
+act writeErr(Console c, char ch) -> Option{Error}
+  c.stdErr.write(ch)
+    ? none()
+    : Error("Failed to write to the stdErr stream of the console")
 
-act writeStdErr(string str) -> Option{Error}
-  consoleOpen(ConsoleKind.StdErr).map(impure lambda (Console c) c.write(str))
+act writeErr{T}(Console c, Writer{T} writer, T val) -> Option{Error}
+  c.write(writer(val).string())
+
+act flushOut(Console c)
+  c.stdOut.streamFlush()
+
+act flushErr(Console c)
+  c.stdErr.streamFlush()
 
 act print{T}(T x) -> Option{Error}
-  consoleOpen(ConsoleKind.StdOut).map(impure lambda (Console c)
-    success =   c.stream.streamWrite(x.string()) &&
-                c.stream.streamWrite('\n')       &&
-                c.stream.streamFlush();
-    success ? none() : Error("Failed to write to console")
-  )
+  c       = consoleOpen().failOnError();
+  success =   c.stdOut.streamWrite(x.string()) &&
+              c.stdOut.streamWrite('\n')       &&
+              c.stdOut.streamFlush();
+  success ? none() : Error("Failed to write to the stdOut stream of the console")
 
 act printErr{T}(T x) -> Option{Error}
-  consoleOpen(ConsoleKind.StdErr).map(impure lambda (Console c)
-    success =   c.stream.streamWrite(x.string()) &&
-                c.stream.streamWrite('\n')       &&
-                c.stream.streamFlush();
-    success ? none() : Error("Failed to write to console")
-  )
+  c       = consoleOpen().failOnError();
+  success =   c.stdOut.streamWrite(x.string()) &&
+              c.stdOut.streamWrite('\n')       &&
+              c.stdOut.streamFlush();
+  success ? none() : Error("Failed to write to the stdErr stream of the console")
 
 act printBits(int i) -> Option{Error}
   print(toBitString(i, false))
