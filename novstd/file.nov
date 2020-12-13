@@ -40,7 +40,7 @@ act readToEnd{T}(File f, Parser{T} parser) -> Either{T, Error}
 act write(File f, string str) -> Option{Error}
   f.stream.streamWrite(str) && f.stream.streamFlush()
     ? none()
-    : some(Error("Failed to write to file"))
+    : Error("Failed to write to file")
 
 act write{T}(File f, Writer{T} writer, T val) -> Option{Error}
   f.write(writer(val).string())
@@ -68,7 +68,7 @@ act fileRemove(Path p) -> Option{Error}
   absPathStr  = absPath.string();
   fileRemove(absPathStr)
     ? none()
-    : some(Error("Failed to remove file: '" + absPathStr + "'"))
+    : Error("Failed to remove file: '" + absPathStr + "'")
 
 // -- Tests
 

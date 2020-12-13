@@ -31,8 +31,8 @@ act startTests()
   TestRun(timeNow(), process)
 
 act printOutput(TestRun run)
-  out = fork copyLines(run.process.stdOut, consoleOpen(ConsoleKind.StdOut));
-  err = fork copyLines(run.process.stdErr, consoleOpen(ConsoleKind.StdErr));
+  out = fork copyLines(run.process.stdOut, consoleOpen(ConsoleKind.StdOut).failOnError().stream);
+  err = fork copyLines(run.process.stdErr, consoleOpen(ConsoleKind.StdErr).failOnError().stream);
   waitAll(out :: err)
 
 act getResult(TestRun run)

@@ -91,10 +91,6 @@ act printChangeLog(List{Commit} commits)
     writer        = headerWriter & newlineWriter() & listWriter(commitWriter, newlineWriter());
     print(writer(makePair(commits.length(), commits)))
 
-act printError(Error error)
-  writer = litWriter("Failed to generate:") & newlineWriter() & errorWriter(litWriter("- "), newlineWriter());
-  printErr(writer(error))
-
 act printUsage()
   print("Changelog generator");
   print("Usage: git-changelog.nov --tag 'v0.*'\n");
@@ -105,9 +101,8 @@ act printUsage()
 act main()
   if hasEnvOpt("help") -> printUsage()
   else ->
-    tagPattern    = getEnvOpt("tag", allParser()) ?? "*";
-    commitsResult = getShaByTagPattern(tagPattern).map(getCommitsFrom);
-    if commitsResult as Error         err     -> printError(err); failfast{bool}()
-    if commitsResult as List{Commit}  commits -> printChangeLog(commits)
+    tagPattern  = getEnvOpt("tag", allParser()) ?? "*";
+    commits     = getShaByTagPattern(tagPattern).map(getCommitsFrom).failOnError();
+    printChangeLog(commits)
 
 main()

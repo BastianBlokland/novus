@@ -33,7 +33,7 @@ fun min(Box b)
 fun max(Box b)
   b.origin + b.size
 
-act draw(I2 pos, sys_stream out, Settings s, Duration t)
+act draw(I2 pos, Console out, Settings s, Duration t)
   n = perlinNoise3d(pos.x * s.xyScale, pos.y * s.xyScale, float(t) * s.speed) * s.intensityScale;
   out.termCursorPos(pos.y, pos.x);
   (
@@ -44,10 +44,10 @@ act draw(I2 pos, sys_stream out, Settings s, Duration t)
       b = s.blueShift + n * (1.0 - s.blueShift);
       out.termColor(r, g, b)
   );
-  out.streamWrite(n < s.fillThreshold ? "○" : "●");
-  out.streamFlush()
+  out.write(n < s.fillThreshold ? "○" : "●");
+  out.flush()
 
-act loop(sys_stream in, sys_stream out, Settings s, Timestamp begin, int frame)
+act loop(Console in, Console out, Settings s, Timestamp begin, int frame)
   if in.readToEnd().length() != 0 || interuptIsRequested() -> false
   else ->
     now     = timestamp();
@@ -90,8 +90,8 @@ act forBox(Box box, action{I2, bool} a, int itr, int numItrs)
 // --- Entry point
 
 act main()
-  in  = consoleOpen(ConsoleKind.StdIn);
-  out = consoleOpen(ConsoleKind.StdOut);
+  in  = consoleOpen(ConsoleKind.StdIn).failOnError();
+  out = consoleOpen(ConsoleKind.StdOut).failOnError();
   setupTerminal(in, out);
   loop(in, out, getSettings(), timestamp(), 0);
   resetTerminal(in, out)
@@ -103,16 +103,16 @@ main()
 act getWindow()
   Box(I2(1, 1), I2(termGetWidth(), termGetHeight()))
 
-act setupTerminal(sys_stream in, sys_stream out)
+act setupTerminal(Console in, Console out)
   termSetOptions(TermOptions.NoEcho | TermOptions.NoBuffer);
-  termAltScreen(out, true);
-  termCursorShow(out, false);
-  setOptions(in, StreamOptions.NoBlock)
+  out.termAltScreen(true);
+  out.termCursorShow(false);
+  in.setOptions(StreamOptions.NoBlock)
 
-act resetTerminal(sys_stream in, sys_stream out)
-  termCursorShow(out, true);
-  termAltScreen(out, false);
-  termStyle(out, TermStyle.Reset);
+act resetTerminal(Console in, Console out)
+  out.termCursorShow(true);
+  out.termAltScreen(false);
+  out.termStyle(TermStyle.Reset);
   termUnsetOptions(TermOptions.NoEcho | TermOptions.NoBuffer);
-  streamWrite(out, '\n');
-  unsetOptions(in, StreamOptions.NoBlock)
+  out.write('\n');
+  in.unsetOptions(StreamOptions.NoBlock)

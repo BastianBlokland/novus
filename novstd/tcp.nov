@@ -33,10 +33,10 @@ act tcpConnection(string host, int port)
 
 // -- Utilities
 
-act acceptLoop(TcpServer srv, action{TcpConnection, bool} clientHandler)
+act acceptLoop(TcpServer srv, action{TcpConnection, Option{Error}} clientHandler)
   acceptLoop(srv, clientHandler, lambda () false)
 
-act acceptLoop(TcpServer srv, action{TcpConnection, bool} clientHandler, action{bool} stopCondition)
+act acceptLoop(TcpServer srv, action{TcpConnection, Option{Error}} clientHandler, action{bool} stopCondition)
   loop = (impure lambda (future{Option{TcpConnection}} fCon)
     if stopCondition()            -> true
     if fCon.wait(seconds(1))      ->

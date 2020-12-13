@@ -1,6 +1,7 @@
 import "std/either.nov"
 import "std/list.nov"
 import "std/option.nov"
+import "std/rt.nov"
 import "std/writer.nov"
 
 // -- Types
@@ -117,6 +118,16 @@ act map{T}(Either{T, Error} v, action{T, Option{Error}} f) -> Option{Error}
 act map{T, TResult}(Either{T, Error} v, action{T, TResult} f) -> Either{TResult, Error}
   if v as T      val -> f(val)
   if v as Error  err -> err
+
+act fail(Error err) -> Option{Error}
+  fail{Option{Error}}(err)
+
+act fail{TResult}(Error err) -> TResult
+  fail{TResult}(err.string())
+
+act failOnError{T}(Either{T, Error} v) -> T
+  if v as T      val -> val
+  if v as Error  err -> fail{T}(err)
 
 // -- Tests
 

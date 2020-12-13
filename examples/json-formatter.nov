@@ -24,9 +24,8 @@ act printUsage()
 act main()
   if hasEnvOpt("help") -> printUsage()
   else ->
-    pathOrErr = getEnvOpt("path", pathParser());
-    pretty    = hasEnvOpt("pretty");
-    if pathOrErr as Path path -> formatJson(path, pretty)
-    else                      -> printErr("'path' option is required"); failfast{bool}()
+    path    = getEnvOpt("path", pathParser()).failOnError();
+    pretty  = hasEnvOpt("pretty");
+    formatJson(path, pretty)
 
 main()

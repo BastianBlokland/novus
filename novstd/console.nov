@@ -1,45 +1,104 @@
-import "std/stream.nov"
 import "std/bits.nov"
+import "std/error.nov"
+import "std/parser.nov"
+import "std/stream.nov"
 
-enum ConsoleKind = StdIn : 0, StdOut, StdErr
+// -- Types
+
+enum ConsoleKind =
+  StdIn : 0,
+  StdOut,
+  StdErr
+
+struct Console =
+  ConsoleKind kind,
+  sys_stream  stream
+
+// -- Conversions
+
+fun string(ConsoleKind k)
+  if k == ConsoleKind.StdIn   -> "StdIn"
+  if k == ConsoleKind.StdOut  -> "StdOut"
+  if k == ConsoleKind.StdErr  -> "StdErr"
+  else                        -> "Unkown"
 
 // -- Actions
 
-act consoleOpen(ConsoleKind kind)
-  consoleOpenStream(kind)
+act consoleOpen(ConsoleKind kind) -> Either{Console, Error}
+  stream = consoleOpenStream(kind);
+  if stream.streamCheckValid()  -> Console(kind, stream)
+  else                          -> Error("Failed to open console: '" + kind.string() + "'")
 
-act writeStdOut(string msg)
-  consoleOpen(ConsoleKind.StdOut).streamWrite(msg)
+act setOptions(Console c, StreamOptions opts) -> bool
+  c.stream.setOptions(opts)
 
-act writeStdErr(string msg)
-  consoleOpen(ConsoleKind.StdErr).streamWrite(msg)
+act unsetOptions(Console c, StreamOptions opts) -> bool
+  c.stream.unsetOptions(opts)
 
-act readChar()
-  consoleOpen(ConsoleKind.StdIn).streamRead()
+act readChar(Console c) -> char
+  c.stream.readChar()
 
-act readLine()
-  consoleOpen(ConsoleKind.StdIn).readLine()
+act readLine(Console c) -> string
+  c.stream.readLine()
 
-act print{T}(T x)
-  s = consoleOpen(ConsoleKind.StdOut);
-  s.streamWrite(x.string());
-  s.streamWrite('\n');
-  s.streamFlush()
+act readToEnd(Console c) -> string
+  c.stream.readToEnd()
 
-act printErr{T}(T x)
-  s = consoleOpen(ConsoleKind.StdErr);
-  s.streamWrite(x.string());
-  s.streamWrite('\n');
-  s.streamFlush()
+act readToEnd{T}(Console c, Parser{T} parser) -> Either{T, Error}
+  parser.run(c.readToEnd())
 
-act printBits(int i)
+act readChar() -> Either{char, Error}
+  consoleOpen(ConsoleKind.StdIn).map(impure lambda (Console c) c.readChar())
+
+act readLine() -> Either{string, Error}
+  consoleOpen(ConsoleKind.StdIn).map(impure lambda (Console c) c.readLine())
+
+act write(Console c, string str) -> Option{Error}
+  c.stream.write(str)
+    ? none()
+    : Error("Failed to write to console")
+
+act write(Console c, char ch) -> Option{Error}
+  c.stream.write(ch)
+    ? none()
+    : Error("Failed to write to console")
+
+act write{T}(Console c, Writer{T} writer, T val) -> Option{Error}
+  c.write(writer(val).string())
+
+act flush(Console c)
+  c.stream.streamFlush()
+
+act writeStdOut(string str) -> Option{Error}
+  consoleOpen(ConsoleKind.StdOut).map(impure lambda (Console c) c.write(str))
+
+act writeStdErr(string str) -> Option{Error}
+  consoleOpen(ConsoleKind.StdErr).map(impure lambda (Console c) c.write(str))
+
+act print{T}(T x) -> Option{Error}
+  consoleOpen(ConsoleKind.StdOut).map(impure lambda (Console c)
+    success =   c.stream.streamWrite(x.string()) &&
+                c.stream.streamWrite('\n')       &&
+                c.stream.streamFlush();
+    success ? none() : Error("Failed to write to console")
+  )
+
+act printErr{T}(T x) -> Option{Error}
+  consoleOpen(ConsoleKind.StdErr).map(impure lambda (Console c)
+    success =   c.stream.streamWrite(x.string()) &&
+                c.stream.streamWrite('\n')       &&
+                c.stream.streamFlush();
+    success ? none() : Error("Failed to write to console")
+  )
+
+act printBits(int i) -> Option{Error}
   print(toBitString(i, false))
 
-act printBits(float f)
+act printBits(float f) -> Option{Error}
   print(toBitString(asInt(f), false))
 
-act printHex(int i)
+act printHex(int i) -> Option{Error}
   print(toHexString(i))
 
-act printHex(float f)
+act printHex(float f) -> Option{Error}
   print(toHexString(asInt(f)))

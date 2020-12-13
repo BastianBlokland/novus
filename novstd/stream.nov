@@ -16,22 +16,19 @@ fun StreamReadState(sys_stream src)
 
 // -- Actions
 
-act isValid(sys_stream s)
-  s.streamCheckValid()
-
-act setOptions(sys_stream s, StreamOptions opts)
+act setOptions(sys_stream s, StreamOptions opts) -> bool
   s.streamSetOptions(int(opts))
 
-act unsetOptions(sys_stream s, StreamOptions opts)
+act unsetOptions(sys_stream s, StreamOptions opts) -> bool
   s.streamUnsetOptions(int(opts))
 
-act write(sys_stream s, string str)
+act write(sys_stream s, string str) -> bool
   s.streamWrite(str)
 
-act write(sys_stream s, char c)
+act write(sys_stream s, char c) -> bool
   s.streamWrite(c)
 
-act readToEnd(sys_stream s)
+act readToEnd(sys_stream s) -> string
   invoke(
     impure lambda (string result)
       read = s.streamRead(512);
@@ -39,10 +36,10 @@ act readToEnd(sys_stream s)
       else                  -> result
     , "")
 
-act readChar(sys_stream s)
+act readChar(sys_stream s) -> char
   s.streamRead()
 
-act readLine(sys_stream s)
+act readLine(sys_stream s) -> string
   invoke(
     impure lambda (string result)
       c = s.streamRead();
@@ -51,7 +48,7 @@ act readLine(sys_stream s)
       else                      -> self(result + c)
   , "")
 
-act copy(sys_stream from, sys_stream to)
+act copy(sys_stream from, sys_stream to) -> int
   bytesCopied = invoke(
     impure lambda(int bytesCopied)
       read        = from.streamRead(512);
@@ -61,7 +58,7 @@ act copy(sys_stream from, sys_stream to)
   , 0);
   to.streamFlush(); bytesCopied
 
-act copyLines(sys_stream from, sys_stream to)
+act copyLines(sys_stream from, sys_stream to) -> int
   invoke(impure lambda (StreamReadState state, int lines)
   (
     res = state.readLine();
@@ -73,10 +70,10 @@ act copyLines(sys_stream from, sys_stream to)
       self(res.second, ++lines)
   ), StreamReadState(from), 0)
 
-act readLine(StreamReadState state)
+act readLine(StreamReadState state) -> Pair{string, StreamReadState}
   state.readUntil("\n" :: "\r\n")
 
-act readUntil(StreamReadState state, List{string} patterns)
+act readUntil(StreamReadState state, List{string} patterns) -> Pair{string, StreamReadState}
   invoke(
     impure lambda (string txt)
       p = patterns.fold(  ( lambda (Pair{int, string} best, string p)
