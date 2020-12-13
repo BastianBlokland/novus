@@ -107,7 +107,7 @@ act main()
   else ->
     tagPattern    = getEnvOpt("tag", allParser()) ?? "*";
     commitsResult = getShaByTagPattern(tagPattern).map(getCommitsFrom);
-    if commitsResult as Error         err     -> printError(err); fail{bool}()
+    if commitsResult as Error         err     -> printError(err); failfast{bool}()
     if commitsResult as List{Commit}  commits -> printChangeLog(commits)
 
 main()

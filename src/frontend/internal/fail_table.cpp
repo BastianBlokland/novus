@@ -11,7 +11,7 @@ auto FailTable::getActionFail(Context* ctx, prog::sym::TypeId result) -> prog::s
   }
 
   // Declare a new fail action.
-  auto name       = std::string{"__fail_"} + getName(*ctx, result);
+  auto name       = std::string{"__failfast_"} + getName(*ctx, result);
   auto failAction = ctx->getProg()->declareActionFail(std::move(name), result);
 
   m_fails.insert({result, failAction});

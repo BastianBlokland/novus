@@ -215,11 +215,13 @@ TEST_CASE("Analyzing call expressions", "[frontend]") {
   }
 
   SECTION("Get fail action call") {
-    const auto& output = ANALYZE("act a() -> int fail{int}()");
+    const auto& output = ANALYZE("act a() -> int failfast{int}()");
     REQUIRE(output.isSuccess());
 
     auto callExpr = prog::expr::callExprNode(
-        output.getProg(), GET_FUNC_ID(output, "__fail_int"), std::vector<prog::expr::NodePtr>{});
+        output.getProg(),
+        GET_FUNC_ID(output, "__failfast_int"),
+        std::vector<prog::expr::NodePtr>{});
 
     CHECK(GET_FUNC_DEF(output, "a").getExpr() == *callExpr);
   }
@@ -268,20 +270,20 @@ TEST_CASE("Analyzing call expressions", "[frontend]") {
         "act f2(int i) -> int lazy i.a()",
         errLazyActionCall(src, input::Span{47, 56}));
     CHECK_DIAG(
-        "fun f() -> int fail{int}()",
-        errNoPureFuncFoundToInstantiate(src, "fail", 1, input::Span{15, 25}));
+        "fun f() -> int failfast{int}()",
+        errNoPureFuncFoundToInstantiate(src, "failfast", 1, input::Span{15, 29}));
     CHECK_DIAG(
-        "act f() -> int fail()",
-        errInvalidFailCall(src, 0, 0, input::Span{15, 20}),
-        errUndeclaredFuncOrAction(src, "fail", {}, input::Span{15, 20}));
+        "act f() -> int failfast()",
+        errInvalidFailCall(src, 0, 0, input::Span{15, 24}),
+        errUndeclaredFuncOrAction(src, "failfast", {}, input::Span{15, 24}));
     CHECK_DIAG(
-        "act f() -> int fail(1)",
-        errInvalidFailCall(src, 0, 1, input::Span{15, 21}),
-        errUndeclaredFuncOrAction(src, "fail", {"int"}, input::Span{15, 21}));
+        "act f() -> int failfast(1)",
+        errInvalidFailCall(src, 0, 1, input::Span{15, 25}),
+        errUndeclaredFuncOrAction(src, "failfast", {"int"}, input::Span{15, 25}));
     CHECK_DIAG(
-        "act f() -> int fail{int}(1.0)",
-        errInvalidFailCall(src, 1, 1, input::Span{15, 28}),
-        errNoFuncOrActionFoundToInstantiate(src, "fail", 1, input::Span{15, 28}));
+        "act f() -> int failfast{int}(1.0)",
+        errInvalidFailCall(src, 1, 1, input::Span{15, 32}),
+        errNoFuncOrActionFoundToInstantiate(src, "failfast", 1, input::Span{15, 32}));
   }
 }
 

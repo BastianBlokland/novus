@@ -52,7 +52,7 @@ auto modifyCallPossibleFuncs(
 
   assert(ctx);
 
-  if (getName(nameToken) == "fail") {
+  if (getName(nameToken) == "failfast") {
     if (typeParams && typeParams->getCount() == 1 && args.first.size() == 0) {
       const auto resultType = getOrInstType(ctx, subTable, (*typeParams)[0]);
       if (resultType) {

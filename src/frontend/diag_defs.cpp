@@ -592,7 +592,7 @@ auto errIncorrectNumArgsInSelfCall(
 auto errInvalidFailCall(
     const Source& src, unsigned int typeParams, unsigned int argCount, input::Span span) -> Diag {
   std::ostringstream oss;
-  oss << "Invalid fail action call";
+  oss << "Invalid failfast action call";
   if (typeParams != 1) {
     oss << ", requires '1' type parameter but got '" << typeParams << "'";
   }
