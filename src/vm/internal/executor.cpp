@@ -190,6 +190,7 @@ auto execute(
     }                                                                                              \
   }
 #define READ_BYTE() readAsm<uint8_t>(&ip)
+#define READ_UHALF() readAsm<uint16_t>(&ip)
 #define READ_INT() readAsm<int32_t>(&ip)
 #define READ_UINT() readAsm<uint32_t>(&ip)
 #define READ_LONG() readAsm<int64_t>(&ip)
@@ -199,6 +200,12 @@ auto execute(
     execHandle.setState(ExecState::StackOverflow);                                                 \
     goto End;                                                                                      \
   }
+#define SALLOC_CLEAR(COUNT)                                                                        \
+  {                                                                                                \
+    SALLOC(COUNT);                                                                                 \
+    std::memset(stack.getNext() - (COUNT), 0, sizeof(Value) * (COUNT));                            \
+  }
+
 #define PUSH(VAL)                                                                                  \
   if (unlikely(!stack.push(VAL))) {                                                                \
     execHandle.setState(ExecState::StackOverflow);                                                 \
@@ -308,19 +315,25 @@ auto execute(
     } break;
 
     case OpCode::StackAlloc: {
+      const auto amount = READ_UHALF();
+      assert(amount > 0);
+      SALLOC_CLEAR(amount);
+    } break;
+    case OpCode::StackAllocSmall: {
       const auto amount = READ_BYTE();
       assert(amount > 0);
-      SALLOC(amount);
-
-      // Clear the memory we have just 'allocated' on the stack, this is important because we do not
-      // require the program to actually write to this memory. So to avoid the garbage-collector
-      // interpreting random memory (or mem from a previous call) as pointers we need to clear it.
-      std::memset(stack.getNext() - amount, 0, sizeof(Value) * amount);
+      SALLOC_CLEAR(amount);
     } break;
     case OpCode::StackStore: {
+      *(sh + READ_UHALF()) = stack.pop();
+    } break;
+    case OpCode::StackStoreSmall: {
       *(sh + READ_BYTE()) = stack.pop();
     } break;
     case OpCode::StackLoad: {
+      PUSH(*(sh + READ_UHALF()));
+    } break;
+    case OpCode::StackLoadSmall: {
       PUSH(*(sh + READ_BYTE()));
     } break;
 
@@ -860,12 +873,14 @@ End:
   return endState;
 
 #undef CHECK_ALLOC
+#undef READ_UHALF
 #undef READ_BYTE
 #undef READ_INT
 #undef READ_UINT
 #undef READ_LONG
 #undef READ_FLOAT
 #undef SALLOC
+#undef SALLOC_CLEAR
 #undef PUSH
 #undef PUSH_UINT
 #undef PUSH_INT

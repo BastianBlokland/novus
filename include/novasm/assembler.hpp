@@ -36,9 +36,9 @@ public:
   auto addLoadLitString(const std::string& val) -> void;
   auto addLoadLitIp(std::string label) -> void;
 
-  auto addStackAlloc(uint8_t amount) -> void;
-  auto addStackStore(uint8_t offset) -> void;
-  auto addStackLoad(uint8_t offset) -> void;
+  auto addStackAlloc(uint16_t amount) -> void;
+  auto addStackStore(uint16_t offset) -> void;
+  auto addStackLoad(uint16_t offset) -> void;
 
   auto addAddInt() -> void;
   auto addAddLong() -> void;
@@ -151,6 +151,7 @@ private:
 
   auto writeOpCode(OpCode opCode) -> void;
   auto writeUInt8(uint8_t val) -> void;
+  auto writeUInt16(uint16_t val) -> void;
   auto writeInt32(int32_t val) -> void;
   auto writeInt64(int64_t val) -> void;
   auto writeUInt32(uint32_t val) -> void;

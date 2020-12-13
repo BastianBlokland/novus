@@ -15,7 +15,7 @@ auto getLabel(const prog::Program& prog, prog::sym::FuncId funcId) -> std::strin
 auto getUserTypeEqLabel(const prog::Program& prog, prog::sym::TypeId typeId) -> std::string;
 
 // Get the offset in the constant-table for the constant.
-auto getConstOffset(const prog::sym::ConstDeclTable& table, prog::sym::ConstId id) -> uint8_t;
+auto getConstOffset(const prog::sym::ConstDeclTable& table, prog::sym::ConstId id) -> uint16_t;
 
 // Get the offset the field has in the struct.
 auto getFieldOffset(prog::sym::FieldId fieldId) -> uint8_t;

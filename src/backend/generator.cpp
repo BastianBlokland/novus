@@ -17,10 +17,10 @@ static auto reserveConsts(novasm::Assembler* asmb, const prog::sym::ConstDeclTab
   // Allocate space for the locals, note: space for inputs is automatically allocated by the vm.
   const auto constCount = constTable.getLocalCount();
   if (constCount > 0) {
-    if (constCount > std::numeric_limits<uint8_t>::max()) {
-      throw std::logic_error{"More then 256 constants in one scope are not supported"};
+    if (constCount > std::numeric_limits<uint16_t>::max()) {
+      throw std::logic_error{"More then 65535 constants in one scope are not supported"};
     }
-    asmb->addStackAlloc(static_cast<uint8_t>(constCount));
+    asmb->addStackAlloc(static_cast<uint16_t>(constCount));
   }
 }
 

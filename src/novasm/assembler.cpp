@@ -56,19 +56,34 @@ auto Assembler::addLoadLitIp(std::string label) -> void {
   writeIpOffset(std::move(label));
 }
 
-auto Assembler::addStackAlloc(uint8_t amount) -> void {
-  writeOpCode(OpCode::StackAlloc);
-  writeUInt8(amount);
+auto Assembler::addStackAlloc(uint16_t amount) -> void {
+  if (amount <= std::numeric_limits<uint8_t>::max()) {
+    writeOpCode(OpCode::StackAllocSmall);
+    writeUInt8(static_cast<uint8_t>(amount));
+  } else {
+    writeOpCode(OpCode::StackAlloc);
+    writeUInt16(amount);
+  }
 }
 
-auto Assembler::addStackStore(uint8_t offset) -> void {
-  writeOpCode(OpCode::StackStore);
-  writeUInt8(offset);
+auto Assembler::addStackStore(uint16_t offset) -> void {
+  if (offset <= std::numeric_limits<uint8_t>::max()) {
+    writeOpCode(OpCode::StackStoreSmall);
+    writeUInt8(static_cast<uint8_t>(offset));
+  } else {
+    writeOpCode(OpCode::StackStore);
+    writeUInt16(offset);
+  }
 }
 
-auto Assembler::addStackLoad(uint8_t offset) -> void {
-  writeOpCode(OpCode::StackLoad);
-  writeUInt8(offset);
+auto Assembler::addStackLoad(uint16_t offset) -> void {
+  if (offset <= std::numeric_limits<uint8_t>::max()) {
+    writeOpCode(OpCode::StackLoadSmall);
+    writeUInt8(static_cast<uint8_t>(offset));
+  } else {
+    writeOpCode(OpCode::StackLoad);
+    writeUInt16(offset);
+  }
 }
 
 auto Assembler::addAddInt() -> void { writeOpCode(OpCode::AddInt); }
@@ -343,6 +358,12 @@ auto Assembler::writeOpCode(OpCode opCode) -> void { writeUInt8(static_cast<uint
 auto Assembler::writeUInt8(uint8_t val) -> void {
   throwIfClosed();
   m_instructions.push_back(val);
+}
+
+auto Assembler::writeUInt16(uint16_t val) -> void {
+  throwIfClosed();
+  m_instructions.push_back(val);
+  m_instructions.push_back(val >> 8U); // NOLINT: Magic number
 }
 
 auto Assembler::writeInt32(int32_t val) -> void {
