@@ -394,12 +394,30 @@ auto errPureFuncInfRecursion(const Source& src, input::Span span) -> Diag {
   return error(src, oss.str(), span);
 }
 
-auto errNoFuncFoundToInstantiate(
+auto errNoPureFuncFoundToInstantiate(
     const Source& src, const std::string& name, unsigned int templateParamCount, input::Span span)
     -> Diag {
   std::ostringstream oss;
-  oss << "No templated function '" << name << "' has been declared with '" << templateParamCount
+  oss << "No templated pure function '" << name << "' has been declared with '"
+      << templateParamCount << "' type parameters";
+  return error(src, oss.str(), span);
+}
+
+auto errNoActionFoundToInstantiate(
+    const Source& src, const std::string& name, unsigned int templateParamCount, input::Span span)
+    -> Diag {
+  std::ostringstream oss;
+  oss << "No templated action '" << name << "' has been declared with '" << templateParamCount
       << "' type parameters";
+  return error(src, oss.str(), span);
+}
+
+auto errNoFuncOrActionFoundToInstantiate(
+    const Source& src, const std::string& name, unsigned int templateParamCount, input::Span span)
+    -> Diag {
+  std::ostringstream oss;
+  oss << "No templated function or action '" << name << "' has been declared with '"
+      << templateParamCount << "' type parameters";
   return error(src, oss.str(), span);
 }
 
@@ -563,10 +581,24 @@ auto errSelfCallWithoutInferredRetType(const Source& src, input::Span span) -> D
 }
 
 auto errIncorrectNumArgsInSelfCall(
-    const Source& src, int expectedNumArgs, int actualNumArgs, input::Span span) -> Diag {
+    const Source& src, unsigned int expectedNumArgs, unsigned int actualNumArgs, input::Span span)
+    -> Diag {
   std::ostringstream oss;
   oss << "Self call requires '" << expectedNumArgs << "' arguments but got '" << actualNumArgs
       << "'";
+  return error(src, oss.str(), span);
+}
+
+auto errInvalidFailCall(
+    const Source& src, unsigned int typeParams, unsigned int argCount, input::Span span) -> Diag {
+  std::ostringstream oss;
+  oss << "Invalid failfast action call";
+  if (typeParams != 1) {
+    oss << ", requires '1' type parameter but got '" << typeParams << "'";
+  }
+  if (argCount != 0) {
+    oss << ", requires '0' arguments but got '" << argCount << "'";
+  }
   return error(src, oss.str(), span);
 }
 

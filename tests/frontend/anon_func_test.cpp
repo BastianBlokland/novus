@@ -237,7 +237,7 @@ TEST_CASE("Analyzing anonymous functions", "[frontend]") {
         "fun f() f{int}()",
         errConstNameConflictsWithTypeSubstitution(src, "T", input::Span{23, 23}),
         errInvalidFuncInstantiation(src, input::Span{36, 36}),
-        errNoFuncFoundToInstantiate(src, "f", 1, input::Span{36, 43}));
+        errNoPureFuncFoundToInstantiate(src, "f", 1, input::Span{36, 43}));
     CHECK_DIAG("fun f() lambda () b", errUndeclaredConst(src, "b", input::Span{18, 18}));
     CHECK_DIAG(
         "fun f() lambda () false ? i = 1 : i ",

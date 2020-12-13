@@ -27,6 +27,6 @@ act main()
     pathOrErr = getEnvOpt("path", pathParser());
     pretty    = hasEnvOpt("pretty");
     if pathOrErr as Path path -> formatJson(path, pretty)
-    else                      -> printErr("'path' option is required"); fail()
+    else                      -> printErr("'path' option is required"); failfast{bool}()
 
 main()

@@ -165,7 +165,7 @@ TEST_CASE("Analyzing user-function declarations", "[frontend]") {
         "fun f() f{int}(1)",
         errUndeclaredConst(src, "b", input::Span{14, 14}),
         errInvalidFuncInstantiation(src, input::Span{24, 24}),
-        errNoFuncFoundToInstantiate(src, "f", 1, input::Span{24, 32}));
+        errNoPureFuncFoundToInstantiate(src, "f", 1, input::Span{24, 32}));
     CHECK_DIAG(
         "fun +() -> int i", errOperatorOverloadWithoutArgs(src, "operator+", input::Span{4, 4}));
     CHECK_DIAG(

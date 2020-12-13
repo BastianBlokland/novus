@@ -107,7 +107,7 @@ act parseSrt(Path path)
   print("[Parsing took: " + dur + "]\n");
 
   if res as List{Subtitle}  subs -> print(string(subs, "", "\n\n", ""))
-  if res as Error           err  -> printErr("Failed to parse: " + err); fail()
+  if res as Error           err  -> printErr("Failed to parse: " + err); failfast{bool}()
 
 act printUsage()
   print("Srt parser");
@@ -121,6 +121,6 @@ act main()
   else ->
     pathOrErr = getEnvOpt("path", pathParser());
     if pathOrErr as Path path -> parseSrt(path)
-    else                      -> printErr("'path' option is required"); fail()
+    else                      -> printErr("'path' option is required"); failfast{bool}()
 
 main()

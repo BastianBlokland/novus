@@ -177,6 +177,7 @@ add_library(frontend STATIC
   frontend/internal/type_template_base.cpp
   frontend/internal/type_template_table.cpp
   frontend/internal/delegate_table.cpp
+  frontend/internal/fail_table.cpp
   frontend/internal/func_template_inst.cpp
   frontend/internal/func_template_table.cpp
   frontend/internal/func_template.cpp

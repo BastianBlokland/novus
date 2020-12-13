@@ -11,6 +11,7 @@ Context::Context(
     DelegateTable* delegates,
     FutureTable* futures,
     LazyTable* lazies,
+    FailTable* fails,
     TypeInfoMap* typeInfos,
     std::vector<Diag>* diags) :
     m_src{src},
@@ -20,6 +21,7 @@ Context::Context(
     m_delegates{delegates},
     m_futures{futures},
     m_lazies{lazies},
+    m_fails{fails},
     m_typeInfos{typeInfos},
     m_diags{diags} {
 
@@ -40,6 +42,9 @@ Context::Context(
   }
   if (m_lazies == nullptr) {
     throw std::invalid_argument{"LazyTable cannot be null"};
+  }
+  if (m_fails == nullptr) {
+    throw std::invalid_argument{"FailTable cannot be null"};
   }
   if (m_typeInfos == nullptr) {
     throw std::invalid_argument{"TypeInfoMap cannot be null"};
@@ -64,6 +69,8 @@ auto Context::getDelegates() const noexcept -> DelegateTable* { return m_delegat
 auto Context::getFutures() const noexcept -> FutureTable* { return m_futures; }
 
 auto Context::getLazies() const noexcept -> LazyTable* { return m_lazies; }
+
+auto Context::getFails() const noexcept -> FailTable* { return m_fails; }
 
 auto Context::getTypeInfo(prog::sym::TypeId typeId) const noexcept -> std::optional<TypeInfo> {
   const auto itr = m_typeInfos->find(typeId);

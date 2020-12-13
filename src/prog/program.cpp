@@ -341,7 +341,6 @@ Program::Program() :
   m_funcDecls.registerAction(*this, Fk::ActionSleepNano, "sleepNano", sym::TypeSet{m_long}, m_long);
   m_funcDecls.registerAction(
       *this, Fk::ActionAssert, "assert", sym::TypeSet{m_bool, m_string}, m_bool);
-  m_funcDecls.registerAction(*this, Fk::ActionFail, "fail", sym::TypeSet{}, m_bool);
 }
 
 auto Program::hasType(const std::string& name) const -> bool { return m_typeDecls.exists(name); }
@@ -514,6 +513,11 @@ auto Program::declareAction(std::string name, sym::TypeSet input, sym::TypeId ou
     -> sym::FuncId {
   return m_funcDecls.registerAction(
       *this, sym::FuncKind::User, std::move(name), std::move(input), output);
+}
+
+auto Program::declareActionFail(std::string name, sym::TypeId output) -> sym::FuncId {
+  return m_funcDecls.registerAction(
+      *this, sym::FuncKind::ActionFail, std::move(name), sym::TypeSet{}, output);
 }
 
 auto Program::defineStruct(sym::TypeId id, sym::FieldDeclTable fields) -> void {
