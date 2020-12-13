@@ -32,11 +32,20 @@ auto operator<<(std::ostream& out, const OpCode& rhs) noexcept -> std::ostream& 
   case OpCode::StackAlloc:
     out << "stack-alloc";
     break;
+  case OpCode::StackAllocSmall:
+    out << "stack-alloc-small";
+    break;
   case OpCode::StackStore:
     out << "stack-store";
     break;
+  case OpCode::StackStoreSmall:
+    out << "stack-store-small";
+    break;
   case OpCode::StackLoad:
     out << "stack-load";
+    break;
+  case OpCode::StackLoadSmall:
+    out << "stack-load-small";
     break;
 
   case OpCode::AddInt:

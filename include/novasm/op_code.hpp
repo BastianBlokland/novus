@@ -21,9 +21,12 @@ enum class OpCode : uint8_t {
 
   LoadLitIp = 20, // [uint] () -> (ip) Load an instruction-pointer on the stack.
 
-  StackAlloc = 30, // [uint8] ()    -> ()     Allocate space on the current stack-frame.
-  StackStore = 31, // [uint8] (any) -> ()     Store at a offset from the stack-frame start.
-  StackLoad  = 32, // [uint8] ()    -> (any)  Load from a offset from the stack-frame start.
+  StackAlloc      = 30, // [uint16] ()    -> ()     Allocate space on the current stack-frame.
+  StackAllocSmall = 31, // [uint8 ] ()    -> ()     Allocate space on the current stack-frame.
+  StackStore      = 32, // [uint16] (any) -> ()     Store at a offset from the stack-frame start.
+  StackStoreSmall = 33, // [uint8 ] (any) -> ()     Store at a offset from the stack-frame start.
+  StackLoad       = 34, // [uint16] ()    -> (any)  Load from a offset from the stack-frame start.
+  StackLoadSmall  = 35, // [uint8 ] ()    -> (any)  Load from a offset from the stack-frame start.
 
   AddInt        = 40, // [] (int, int)          -> (int)    Add two ints.
   AddLong       = 41, // [] (long, long)        -> (long)   Add two longs.

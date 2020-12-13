@@ -109,10 +109,15 @@ auto disassembleInstructions(const Assembly& assembly, const dasm::InstructionLa
     case OpCode::LoadLitFloat:
       result.push_back(Instr{opCode, offset, {Arg{readAsm<float>(&ip)}}, labels});
       continue;
-    case OpCode::LoadLitIntSmall:
     case OpCode::StackAlloc:
     case OpCode::StackLoad:
     case OpCode::StackStore:
+      result.push_back(Instr{opCode, offset, {Arg{readAsm<uint16_t>(&ip)}}, labels});
+      continue;
+    case OpCode::LoadLitIntSmall:
+    case OpCode::StackAllocSmall:
+    case OpCode::StackLoadSmall:
+    case OpCode::StackStoreSmall:
     case OpCode::MakeStruct:
     case OpCode::StructLoadField:
     case OpCode::StructStoreField:
