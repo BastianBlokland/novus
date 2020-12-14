@@ -2,21 +2,23 @@ import "option.nov"
 import "time.nov"
 
 // -- Actions
+act poll{T}(future{T} f) -> Option{T}
+  waitNano(f, 0) ? some(f.get()) : none()
 
-act wait{T}(future{T} f, Duration d)
+act wait{T}(future{T} f, Duration d) -> bool
   waitNano(f, d.ns)
 
-act get{T}(future{T} f, Duration d)
+act get{T}(future{T} f, Duration d) -> Option{T}
   f.wait(d) ? some(f.get()) : none()
 
-act get{T}(future{T} f, action{bool} predicate)
+act get{T}(future{T} f, action{bool} predicate) -> Option{T}
   get(f, predicate, milliseconds(100))
 
-act get{T}(future{T} f, action{bool} predicate, Duration checkInternal)
+act get{T}(future{T} f, action{bool} predicate, Duration checkInternal) -> Option{T}
   if predicate() -> f.get(checkInternal) as T value ? some(value) : self(f, predicate, checkInternal)
   else           -> none()
 
-act getUntilInterupt{T}(future{T} f)
+act getUntilInterupt{T}(future{T} f) -> Option{T}
   f.get(impure lambda() !interuptIsRequested())
 
 // -- Tests

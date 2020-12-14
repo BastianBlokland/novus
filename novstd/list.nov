@@ -173,6 +173,18 @@ fun map{T, TResult}(List{T} l, function{T, TResult} func)
 fun mapReverse{T, TResult}(List{T} l, function{T, TResult} func)
   l.fold(lambda (List{TResult} newList, T val) func(val) :: newList)
 
+fun map{T, TResult}(List{T} l, function{T, Option{TResult}} a)
+  l.foldRight(lambda (List{TResult} newList, T val)
+    if a(val) as TResult res -> res :: newList
+    else                     -> newList
+  )
+
+fun mapReverse{T, TResult}(List{T} l, function{T, Option{TResult}} a)
+  l.fold(lambda (List{TResult} newList, T val)
+    if a(val) as TResult res -> res :: newList
+    else                     -> newList
+  )
+
 fun length{T}(List{T} l)
   l.fold(lambda (int c, T val) c + 1)
 
@@ -198,9 +210,17 @@ fun any{T}(List{T} l, function{T, bool} pred)
   if l as LNode{T} n  -> pred(n.val) || n.next.any(pred)
   if l is LEnd        -> false
 
+fun any(List{bool} l)
+  if l as LNode{bool} n -> n.val || n.next.any()
+  if l is LEnd          -> false
+
 fun all{T}(List{T} l, function{T, bool} pred)
-  if l as LNode{T} n  -> pred(n.val) && n.next.any(pred)
+  if l as LNode{T} n  -> pred(n.val) && n.next.all(pred)
   if l is LEnd        -> true
+
+fun all(List{bool} l)
+  if l as LNode{bool} n -> n.val && n.next.all()
+  if l is LEnd          -> true
 
 fun none{T}(List{T} l, function{T, bool} pred)
   if l as LNode{T} n  -> !pred(n.val) && n.next.none(pred)
@@ -274,11 +294,29 @@ act foldRight{T, TResult}(List{T} l, action{TResult, T, TResult} a, TResult resu
   if l as LNode{T} n -> a(foldRight(n.next, a, result), n.val)
   if l is LEnd       -> result
 
+act filter{T}(List{T} l, action{T, bool} pred)
+  l.foldRight(impure lambda (List{T} newList, T val) pred(val) ? val :: newList : newList)
+
+act filterReverse{T}(List{T} l, action{T, bool} pred)
+  l.fold(impure lambda (List{T} newList, T val) pred(val) ? val :: newList : newList)
+
 act map{T, TResult}(List{T} l, action{T, TResult} a)
   l.foldRight(impure lambda (List{TResult} newList, T val) a(val) :: newList)
 
 act mapReverse{T, TResult}(List{T} l, action{T, TResult} a)
   l.fold(impure lambda (List{TResult} newList, T val) a(val) :: newList)
+
+act map{T, TResult}(List{T} l, action{T, Option{TResult}} a)
+  l.foldRight(impure lambda (List{TResult} newList, T val)
+    if a(val) as TResult res -> res :: newList
+    else                     -> newList
+  )
+
+act mapReverse{T, TResult}(List{T} l, action{T, Option{TResult}} a)
+  l.fold(impure lambda (List{TResult} newList, T val)
+    if a(val) as TResult res -> res :: newList
+    else                     -> newList
+  )
 
 act for{T, TResult}(T from, T to, action{T, TResult} a)
   rangeList(from, to).map(a)
@@ -477,6 +515,18 @@ assert(
   l.mapReverse(lambda (int v) v.string()) == "3" :: "2" :: "1")
 
 assert(
+  l = 1 :: 2 :: 3 :: 4;
+  l.map(lambda (int v) some(v * 2))                   == 2 :: 4 :: 6 :: 8   &&
+  l.map(lambda (int v) Option{int}())                 == List{int}()        &&
+  l.map(lambda (int v) v > 2 ? some(v * 2) : none())  == 6 :: 8)
+
+assert(
+  l = 1 :: 2 :: 3 :: 4;
+  l.mapReverse(lambda (int v) some(v * 2))                   == 8 :: 6 :: 4 :: 2   &&
+  l.mapReverse(lambda (int v) Option{int}())                 == List{int}()        &&
+  l.mapReverse(lambda (int v) v > 2 ? some(v * 2) : none())  == 8 :: 6)
+
+assert(
   l = 1 :: 2 :: 3;
   l.length() == 3)
 assert(length(List{int}()) == 0)
@@ -535,8 +585,19 @@ assert(
   l.any(lambda (int v) v > 2) && !l.any(lambda (int v) v < 0))
 
 assert(
+  !(false :: false :: false).any()  &&
+  (true :: false :: true)   .any()  &&
+  (true :: true :: true)    .any()  &&
+  !List{bool}()             .any())
+
+assert(
   l = 1 :: 2 :: 3;
   l.all(lambda (int v) v > 0) && !l.all(lambda (int v) v > 1))
+
+assert(
+  !(true :: false :: true)  .all()  &&
+  (true :: true :: true)    .all()  &&
+  List{bool}()              .all())
 
 assert(
   l = 1 :: 2 :: 3;
@@ -628,6 +689,16 @@ assert(
 // -- Impure Tests
 
 assert(
+  l = 1 :: 2 :: 3 :: 4;
+  l.filter(impure lambda (int v) v > 2) == 3 :: 4 &&
+  l.filter(impure lambda (int v) v < 0) == List{int}())
+
+assert(
+  l = 1 :: 2 :: 3 :: 4 :: 5;
+  l.filterReverse(impure lambda (int v) v > 2) == 5 :: 4 :: 3 &&
+  l.filterReverse(impure lambda (int v) v < 0) == List{int}())
+
+assert(
   l = 1 :: 2 :: 3;
   l.map(impure lambda (int v) v * 2) == 2 :: 4 :: 6 &&
   l.map(impure lambda (int v) v.string()) == "1" :: "2" :: "3")
@@ -636,6 +707,18 @@ assert(
   l = 1 :: 2 :: 3;
   l.mapReverse(impure lambda (int v) v * 2) == 6 :: 4 :: 2 &&
   l.mapReverse(impure lambda (int v) v.string()) == "3" :: "2" :: "1")
+
+assert(
+  l = 1 :: 2 :: 3 :: 4;
+  l.map(impure lambda (int v) some(v * 2))                   == 2 :: 4 :: 6 :: 8   &&
+  l.map(impure lambda (int v) Option{int}())                 == List{int}()        &&
+  l.map(impure lambda (int v) v > 2 ? some(v * 2) : none())  == 6 :: 8)
+
+assert(
+  l = 1 :: 2 :: 3 :: 4;
+  l.mapReverse(impure lambda (int v) some(v * 2))                   == 8 :: 6 :: 4 :: 2   &&
+  l.mapReverse(impure lambda (int v) Option{int}())                 == List{int}()        &&
+  l.mapReverse(impure lambda (int v) v > 2 ? some(v * 2) : none())  == 8 :: 6)
 
 assert(for(1, 4, impure lambda (int i) i * i) == 1 :: 4 :: 9)
 

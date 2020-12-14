@@ -1,57 +1,149 @@
-import "option.nov"
 import "future.nov"
+import "option.nov"
+import "parallel.nov"
 
 // -- Types
+
+struct TcpConnection =
+  sys_stream socket
 
 struct TcpServer =
   sys_stream  socket,
   int         port
 
-struct TcpConnection =
-  sys_stream socket
+struct TcpServerLoopContext =
+  action{TcpConnection, Option{Error}}  clientHandler,
+  action{bool}                          predicate
 
-// -- Actions
+// -- Constructors
 
-act tcpServer()
-  tcpServer(8080)
+fun TcpServerLoopContext(action{TcpConnection, Option{Error}} clientHandler)
+  TcpServerLoopContext(
+    clientHandler,
+    impure lambda () !interuptIsRequested()
+  )
 
-act tcpServer(int port)
-  socket = tcpStartServer(port, -1);
-  socket.streamCheckValid() ? some(TcpServer(socket, port)) : none()
+// -- Connection
 
-act acceptConnection(TcpServer server)
-  socket = tcpAcceptConnection(server.socket);
-  socket.streamCheckValid() ? some(TcpConnection(socket)) : none()
+act write(TcpConnection c, string str) -> Option{Error}
+  c.socket.write(str)
+    ? none()
+    : Error("Failed to write to the socket")
 
-act tcpConnection(string host)
+act write(TcpConnection c, char ch) -> Option{Error}
+  c.socket.write(ch)
+    ? none()
+    : Error("Failed to write to the socket")
+
+act write{T}(TcpConnection c, Writer{T} writer, T val) -> Option{Error}
+  c.write(writer(val).string())
+
+// -- Client
+
+act tcpConnection(string host) -> Either{TcpConnection, Error}
   tcpConnection(host, 8080)
 
-act tcpConnection(string host, int port)
+act tcpConnectionAsync(string host) -> future{Either{TcpConnection, Error}}
+  fork tcpConnection(host)
+
+act tcpConnection(string host, int port) -> Either{TcpConnection, Error}
   ipAddr = ipLookupAddress(host);
   socket = tcpOpenConnection(ipAddr, port);
-  socket.streamCheckValid() ? some(TcpConnection(socket)) : none()
+  if socket.streamCheckValid()  -> TcpConnection(socket)
+  else                          -> Error("Failed to open connection to: '" + host + ":" + port + "'")
 
-// -- Utilities
+act tcpConnectionAsync(string host, int port) -> future{Either{TcpConnection, Error}}
+  fork tcpConnection(host, port)
 
-act acceptLoop(TcpServer srv, action{TcpConnection, Option{Error}} clientHandler)
-  acceptLoop(srv, clientHandler, lambda () false)
+// -- Server
 
-act acceptLoop(TcpServer srv, action{TcpConnection, Option{Error}} clientHandler, action{bool} stopCondition)
-  loop = (impure lambda (future{Option{TcpConnection}} fCon)
-    if stopCondition()            -> true
-    if fCon.wait(seconds(1))      ->
-      if fCon.get() as TcpConnection c -> fork clientHandler(c); self(fork srv.acceptConnection())
-      else                             -> self(fork srv.acceptConnection())
-    else                          -> self(fCon)
+act tcpServer() -> Either{TcpServer, Error}
+  tcpServer(8080)
+
+act tcpServer(int port) -> Either{TcpServer, Error}
+  socket = tcpStartServer(port, -1);
+  if socket.streamCheckValid() -> TcpServer(socket, port)
+  else                         -> Error("Failed to start tcp-server")
+
+act tcpAcceptConnection(TcpServer server) -> Either{TcpConnection, Error}
+  socket = tcpAcceptConnection(server.socket);
+  if socket.streamCheckValid()  -> TcpConnection(socket)
+  else                          -> Error("Failed to accept new connection")
+
+act tcpAcceptConnectionAsync(TcpServer server) -> future{Either{TcpConnection, Error}}
+  fork server.tcpAcceptConnection()
+
+act tcpServerLoop(int port, TcpServerLoopContext ctx) -> Option{Error}
+  tcpServer(port).map(impure lambda (TcpServer svr) svr.tcpServerLoop(ctx))
+
+act tcpServerLoop(TcpServer svr, TcpServerLoopContext ctx) -> Option{Error}
+  loop = (impure lambda (
+    future{Either{TcpConnection, Error}} futureConnection,
+    List{future{Option{Error}}}          connections)
+
+      if futureConnection.get(milliseconds(100)) as Either{TcpConnection, Error} newConnection ->
+      (
+        if newConnection as Error          err  -> err
+        if newConnection as TcpConnection  c    ->
+          self(svr.tcpAcceptConnectionAsync(), fork ctx.clientHandler(c) :: connections)
+      )
+      else ->
+      (
+        conErrOpt = connections.map(    impure lambda (future{Option{Error}} c) c.poll().unwrap()).combine();
+        remCons   = connections.filter( impure lambda (future{Option{Error}} c) c.poll() is None);
+        if conErrOpt as Error conErr  -> conErr
+        if ctx.predicate()            -> self(futureConnection, remCons)
+        else                          -> none()
+      )
   );
-  loop(fork srv.acceptConnection())
+  loop(
+    svr.tcpAcceptConnectionAsync(),
+    List{future{Option{Error}}}())
 
 // -- Tests
 
 assert(
-  tcpServer(4444) as TcpServer s                          &&
-  tcpConnection("127.0.0.1", 4444) as TcpConnection cCon  &&
-  s.acceptConnection() as TcpConnection sCon              &&
-  sCon.socket.streamWrite("Hello world")                  &&
-  cCon.socket.streamRead(11) == "Hello world"
+  server    = tcpServer(5000).failOnError();
+  client    = tcpConnection("127.0.0.1", 5000).failOnError();
+  serverCon = server.tcpAcceptConnection().failOnError();
+
+  serverCon.write("Hello world\n").failOnError();
+  client.socket.readLine() == "Hello world"
+)
+
+assert(
+  fork tcpServerLoop(5001, TcpServerLoopContext(impure lambda(TcpConnection c)
+    c.write(c.socket.readLine() + '\n')
+  ));
+  client = (impure lambda(string message)
+    c = tcpConnection("127.0.0.1", 5001).failOnError();
+    c.write(message + '\n').failOnError();
+    c.socket.readLine()
+  );
+  parallelFor(250, impure lambda (int i)
+    msg = string("Hello from the network", i);
+    client(msg) == msg
+  ).all()
+)
+
+assert(
+  server = tcpServer(5002).failOnError();
+  client = tcpConnection("127.0.0.1", 5002).failOnError();
+
+  res = tcpServerLoop(server, TcpServerLoopContext(impure lambda(TcpConnection c)
+    some(Error("Did not go well"))
+  ));
+  res == Error("Did not go well")
+)
+
+assert(
+  server = tcpServer(5003).failOnError();
+  client = tcpConnection("127.0.0.1", 5003).failOnError();
+
+  clientHandler = (impure lambda (TcpConnection c)
+    c.write("hello")
+  );
+  predicate = (impure lambda () false
+  );
+  tcpServerLoop(server, TcpServerLoopContext(clientHandler, predicate)) is None
 )

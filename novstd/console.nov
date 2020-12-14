@@ -79,15 +79,13 @@ act flushErr(Console c)
 
 act print{T}(T x) -> Option{Error}
   c       = consoleOpen().failOnError();
-  success =   c.stdOut.streamWrite(x.string()) &&
-              c.stdOut.streamWrite('\n')       &&
+  success =   c.stdOut.streamWrite(x.string() + '\n') &&
               c.stdOut.streamFlush();
   success ? none() : Error("Failed to write to the stdOut stream of the console")
 
 act printErr{T}(T x) -> Option{Error}
   c       = consoleOpen().failOnError();
-  success =   c.stdOut.streamWrite(x.string()) &&
-              c.stdOut.streamWrite('\n')       &&
+  success =   c.stdOut.streamWrite(x.string() + '\n') &&
               c.stdOut.streamFlush();
   success ? none() : Error("Failed to write to the stdErr stream of the console")
 
