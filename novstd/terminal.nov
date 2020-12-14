@@ -220,18 +220,16 @@ act termUnsetOptions(Console c, TermOptions opts) -> Option{Error}
 
 act print{T}(T x, TermStyle style) -> Option{Error}
   c       = consoleOpen().failOnError();
-  success =   c.stdOut.termStyle(style)            &&
-              c.stdOut.streamWrite(x.string())     &&
-              c.stdOut.termStyle(TermStyle.Reset)  &&
-              c.stdOut.streamWrite('\n')           &&
+  success =   c.stdOut.termStyle(style)               &&
+              c.stdOut.streamWrite(x.string() + '\n') &&
+              c.stdOut.termStyle(TermStyle.Reset)     &&
               c.stdOut.streamFlush();
   success ? none() : Error("Failed to write to the stdOut stream of the console")
 
 act printErr{T}(T x, TermStyle style) -> Option{Error}
   c       = consoleOpen().failOnError();
-  success =   c.stdErr.termStyle(style)            &&
-              c.stdErr.streamWrite(x.string())     &&
-              c.stdErr.termStyle(TermStyle.Reset)  &&
-              c.stdErr.streamWrite('\n')           &&
+  success =   c.stdErr.termStyle(style)               &&
+              c.stdErr.streamWrite(x.string() + '\n') &&
+              c.stdErr.termStyle(TermStyle.Reset)     &&
               c.stdErr.streamFlush();
   success ? none() : Error("Failed to write to the stdErr stream of the console")

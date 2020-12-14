@@ -123,11 +123,16 @@ act fail(Error err) -> Option{Error}
   fail{Option{Error}}(err)
 
 act fail{TResult}(Error err) -> TResult
-  fail{TResult}(err.string())
+  writer = litWriter("Failed:\n") & errorWriter(litWriter("- "), newlineWriter());
+  fail{TResult}(writer(err).string())
 
 act failOnError{T}(Either{T, Error} v) -> T
   if v as T      val -> val
   if v as Error  err -> fail{T}(err)
+
+act failOnError(Option{Error} v) -> None
+  if v as Error  err -> fail{None}(err)
+  else               -> None()
 
 // -- Tests
 

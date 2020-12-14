@@ -12,9 +12,13 @@ struct Resource =
   HttpContentType type,
   string          content
 
+struct RewriteRule =
+  string source,
+  string replacement
+
 struct Content =
-  List{Pair{string, string}}  rewrites,
-  List{Resource}              resources
+  List{RewriteRule} rewrites,
+  List{Resource}    resources
 
 struct Variable = string key, string value
 
@@ -25,22 +29,22 @@ struct ClientContext =
   Writer{HttpResp}       respWriter,
   Parser{HttpReqHeader}  reqParser
 
-fun rewriteUrl(Content c, string url)
-  matchingRules = c.rewrites.filter(lambda (Pair{string, string} r) r.first == url);
-  matchingRules.front() as Pair{string, string} r ? r.second : url
+fun rewriteUrl(Content c, string url) -> string
+  rewriten = c.rewrites.map(lambda (RewriteRule r) r.source == url ? some(r.replacement) : none());
+  rewriten.front() ?? url
 
-fun getResource(Content c, string url)
+fun getResource(Content c, string url) -> Option{Resource}
   rewrittenUrl = c.rewriteUrl(url);
   c.resources.filter(lambda (Resource r) r.url == rewrittenUrl).front()
 
-fun replaceVariables(ClientContext ctx, Resource r)
+fun replaceVariables(ClientContext ctx, Resource r) -> string
   if !r.type.isText() -> r.content
   else ->
     ctx.variables.fold((
       lambda (string txt, Variable v) txt.replace("{{" + v.key + "}}", v.value)
     ), r.content)
 
-fun getReponse(ClientContext ctx, Resource r, HttpMethod m)
+fun getReponse(ClientContext ctx, Resource r, HttpMethod m) -> HttpResp
   txt = ctx.replaceVariables(r);
   if m == HttpMethod.Get  -> httpResp(    HttpStatusCode.Ok, txt, r.type)
   if m == HttpMethod.Head -> httpRespHead(HttpStatusCode.Ok, txt, r.type)
@@ -48,12 +52,12 @@ fun getReponse(ClientContext ctx, Resource r, HttpMethod m)
     supportedMethods = HttpMethod.Get :: HttpMethod.Head;
     httpRespMethodNotAllowed(supportedMethods)
 
-fun getResponse(ClientContext ctx, HttpMethod m, string url)
+fun getResponse(ClientContext ctx, HttpMethod m, string url) -> HttpResp
   resLookup = ctx.content.getResource(url);
   if resLookup as Resource r  -> ctx.getReponse(r, m)
   else                        -> httpRespNotFound(url)
 
-act writeResponse(ClientContext ctx, HttpResp resp)
+act writeResponse(ClientContext ctx, HttpResp resp) -> Option{Error}
   extraFields = (
     HttpHeaderField("Date",               httpDateStr(timeNow())) ::
     HttpHeaderField("Server",             "Novus")                ::
@@ -63,9 +67,9 @@ act writeResponse(ClientContext ctx, HttpResp resp)
   );
   finalResp     = resp.httpRespAddFields(extraFields);
   finalRespTxt  = ctx.respWriter(WriterState(WriterNewlineMode.CrLf), finalResp).string();
-  ctx.connection.socket.write(finalRespTxt)
+  ctx.connection.write(finalRespTxt)
 
-act handleRequest(ClientContext ctx, string txt)
+act handleRequest(ClientContext ctx, string txt) -> Option{Error}
   parse = httpReqHeaderParser()(txt);
 
   if parse as ParseSuccess{HttpReqHeader} suc  ->
@@ -84,70 +88,61 @@ act handleConnection(ClientContext ctx)
 
   loop = (impure lambda(StreamReadState read)
     r = read.readUntil("\r\n\r\n" :: "\n\n");
-    if r.first.isEmpty()  -> false
-    else                  -> handleRequest(ctx, r.first); self(r.second)
+    if r.first.isEmpty() -> none()
+    else ->
+      handleRequest(ctx, r.first) as Error err ? some(err) : self(r.second)
   );
-  loop(StreamReadState(ctx.connection.socket));
-
-  print("- Client disconnected")
+  if loop(StreamReadState(ctx.connection.socket)) as Error err  -> err
+  else                                                          -> print("- Client disconnected")
 
 act main(int port, Content content)
-  srvOpt  = tcpServer(port);
-  if srvOpt is None           -> fail("Failed to start server")
-  if srvOpt as TcpServer srv  ->
-    print("Server started (port: " + port + "), press any key to stop");
+  print("Starting server (port: " + port + "), press any key to stop");
 
-    console = consoleOpen().failOnError();
-    console.setNoBlockInput();
+  startTime   = timeNow();
+  respWriter  = httpRespWriter();
+  reqParser   = httpReqHeaderParser();
+  handleCon   = (
+    impure lambda (TcpConnection con)
+      uptime    = timeNow() - startTime;
+      variables = (
+        Variable("SERVER_UPTIME",           uptime.string())              ::
+        Variable("SERVER_DATE",             timeNow().httpDateStr())      ::
+        Variable("SERVER_PLATFORM",         getPlatform().string())       ::
+        Variable("SERVER_RUNTIME_VERSION",  getRuntimeVersion().string())
+      );
+      ctx       = ClientContext(content, variables, con, respWriter, reqParser);
+      handleConnection(ctx)
+  );
+  tcpServerLoop(port, TcpServerLoopContext(handleCon)).failOnError();
 
-    startTime   = timeNow();
-    respWriter  = httpRespWriter();
-    reqParser   = httpReqHeaderParser();
-    handleCon   = (
-      impure lambda (TcpConnection con)
-        uptime    = timeNow() - startTime;
-        variables = (
-          Variable("SERVER_UPTIME",           uptime.string())              ::
-          Variable("SERVER_DATE",             timeNow().httpDateStr())      ::
-          Variable("SERVER_PLATFORM",         getPlatform().string())       ::
-          Variable("SERVER_RUNTIME_VERSION",  getRuntimeVersion().string())
-        );
-        ctx       = ClientContext(content, variables, con, respWriter, reqParser);
-        handleConnection(ctx)
-    );
-    stopCond    = (
-      impure lambda () console.readChar() != '\0' || interuptIsRequested()
-    );
-    srv.acceptLoop(handleCon, stopCond);
+  print("Server stopped")
 
-    print("Server stopped")
-
-act loadContent(Path root, List{Pair{string, string}} rewriteUrls, List{string} files)
+act loadContent(Path root, List{RewriteRule} rewriteUrls, List{string} files)
   print("Loading resouces (root: '" + root.string() + "')");
 
   resources = files.parallelMap(impure lambda (string file)
     path        = root / file;
     contentType = path.findHttpContentType();
-    content     = path.fileRead();
-    if content as string s  -> some(Resource("/" + file, contentType, s))
-    if content as Error e   -> print("Failed to load content: " + e); none()
-  ).filterNone();
+    content     = path.fileRead().failOnError();
+    Resource("/" + file, contentType, content)
+  );
 
   print("Loaded " + resources.length() + " resources");
   Content(rewriteUrls, resources)
 
 main(
-  getEnvOpt("port", txtIntParser()) ?? 8080,
-  loadContent(
-    getEnvOpt("root", pathParser()) ?? getPathProgram().parent() / "site",
-    (
-      Pair("/", "/index.html") :: List{Pair{string, string}}()
-    ),
-    getEnvOpt("files") ?? EnvOpt("files", "index.html"        ::
-                                          "style.css"         ::
-                                          "readme.html"       ::
-                                          "win.jpg"           ::
-                                          "github-logo.png"   ::
-                                          "favicon.ico").args
-  )
+  port = getEnvOpt("port", txtIntParser()) ?? 8080;
+  rootPath = getEnvOpt("root", pathParser()) ?? getPathProgram().parent() / "site";
+  rewriteUrls =
+  (
+    RewriteRule("/", "/index.html") :: List{RewriteRule}()
+  );
+  files = getEnvOpt("files") ?? EnvOpt( "files",  "index.html"        ::
+                                                  "style.css"         ::
+                                                  "readme.html"       ::
+                                                  "win.jpg"           ::
+                                                  "github-logo.png"   ::
+                                                  "favicon.ico").args;
+  port,
+  loadContent(rootPath, rewriteUrls, files)
 )
