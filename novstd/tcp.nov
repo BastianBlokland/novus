@@ -112,6 +112,11 @@ assert(
 )
 
 assert(
+  tcpServer(-1) is Error &&
+  tcpServer(65536) is Error
+)
+
+assert(
   fork tcpServerLoop(5001, TcpServerLoopContext(impure lambda(TcpConnection c)
     c.write(c.socket.readLine() + '\n')
   ));
@@ -120,7 +125,7 @@ assert(
     c.write(message + '\n').failOnError();
     c.socket.readLine()
   );
-  parallelFor(250, impure lambda (int i)
+  parallelFor(100, impure lambda (int i)
     msg = string("Hello from the network", i);
     client(msg) == msg
   ).all()

@@ -229,6 +229,11 @@ inline auto tcpOpenConnection(
     return alloc->allocPlain<TcpStreamRef>(TcpStreamType::Connection, INVALID_SOCKET);
   }
 
+  if (port < 0 || port > std::numeric_limits<uint16_t>::max()) {
+    // TODO: Add error code that user code call query.
+    return alloc->allocPlain<TcpStreamRef>(TcpStreamType::Connection, INVALID_SOCKET);
+  }
+
   // Open a socket.
   const auto sock = socket(AF_INET, SOCK_STREAM, 0);
   if (!SOCKET_VALID(sock)) {
@@ -269,6 +274,11 @@ tcpStartServer(const Settings& settings, RefAllocator* alloc, int32_t port, int3
     -> TcpStreamRef* {
 
   if (!settings.socketsEnabled) {
+    return alloc->allocPlain<TcpStreamRef>(TcpStreamType::Server, INVALID_SOCKET);
+  }
+
+  if (port < 0 || port > std::numeric_limits<uint16_t>::max()) {
+    // TODO: Add error code that user code call query.
     return alloc->allocPlain<TcpStreamRef>(TcpStreamType::Server, INVALID_SOCKET);
   }
 
