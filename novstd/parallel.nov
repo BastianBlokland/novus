@@ -2,38 +2,34 @@ import "std/list.nov"
 
 // -- Functions
 
-fun waitAll{T}(List{future{T}} l)
+fun waitAll{T}(List{future{T}} l) -> List{T}
   l.foldRight(lambda (List{T} result, future{T} f) -> List{T}
     f.get() :: result)
 
-fun parallelMap{T, TResult}(List{T} l, function{T, TResult} func)
-  l.foldRight(lambda (List{future{TResult}} result, T val) -> List{future{TResult}}
-    fork func(val) :: result).waitAll()
+fun waitAllReverse{T}(List{future{T}} l) -> List{T}
+  l.fold(lambda (List{T} result, future{T} f) -> List{T}
+    f.get() :: result)
 
-fun parallelMapReverse{T, TResult}(List{T} l, function{T, TResult} func)
+fun parallelMap{T, TResult}(List{T} l, function{T, TResult} func) -> List{TResult}
   l.fold(lambda (List{future{TResult}} result, T val) -> List{future{TResult}}
-    fork func(val) :: result).waitAll()
+    fork func(val) :: result).waitAllReverse()
 
-fun parallelFor{T, TResult}(T to, function{T, TResult} func)
+fun parallelFor{T, TResult}(T to, function{T, TResult} func) -> List{TResult}
   rangeList(T(), to).parallelMap(func)
 
-fun parallelFor{T, TResult}(T from, T to, function{T, TResult} func)
+fun parallelFor{T, TResult}(T from, T to, function{T, TResult} func) -> List{TResult}
   rangeList(from, to).parallelMap(func)
 
 // -- Actions
 
-act parallelMap{T, TResult}(List{T} l, action{T, TResult} a)
-  l.foldRight(impure lambda (List{future{TResult}} result, T val) -> List{future{TResult}}
-    fork a(val) :: result).waitAll()
-
-act parallelMapReverse{T, TResult}(List{T} l, action{T, TResult} a)
+act parallelMap{T, TResult}(List{T} l, action{T, TResult} a) -> List{TResult}
   l.fold(impure lambda (List{future{TResult}} result, T val) -> List{future{TResult}}
-    fork a(val) :: result).waitAll()
+    fork a(val) :: result).waitAllReverse()
 
-act parallelFor{T, TResult}(T to, action{T, TResult} a)
+act parallelFor{T, TResult}(T to, action{T, TResult} a) -> List{TResult}
   rangeList(T(), to).parallelMap(a)
 
-act parallelFor{T, TResult}(T from, T to, action{T, TResult} a)
+act parallelFor{T, TResult}(T from, T to, action{T, TResult} a) -> List{TResult}
   rangeList(from, to).parallelMap(a)
 
 // -- Tests
@@ -43,14 +39,14 @@ assert(
   l.parallelMap(lambda (int i) i * i) == 1 :: 4 :: 9)
 
 assert(
-  l = 1 :: 2 :: 3;
-  l.parallelMapReverse(lambda (int i) i * i) == 9 :: 4 :: 1)
-
-assert(
   parallelFor(1, 5, lambda (int i) i * i) == 1 :: 4 :: 9 :: 16)
 
 assert(
   parallelFor(5, lambda (int i) i * i) == 0 :: 1 :: 4 :: 9 :: 16)
+
+assert(
+  op = (lambda (int i) i + i);
+  parallelFor(2000, op) == rangeListReverse(0, 2000).mapReverse(op))
 
 // -- Impure tests
 
@@ -59,11 +55,11 @@ assert(
   l.parallelMap(impure lambda (int i) i * i) == 1 :: 4 :: 9)
 
 assert(
-  l = 1 :: 2 :: 3;
-  l.parallelMapReverse(impure lambda (int i) i * i) == 9 :: 4 :: 1)
-
-assert(
   parallelFor(1, 5, impure lambda (int i) i * i) == 1 :: 4 :: 9 :: 16)
 
 assert(
   parallelFor(5, impure lambda (int i) i * i) == 0 :: 1 :: 4 :: 9 :: 16)
+
+assert(
+  op = (impure lambda (int i) i + i);
+  parallelFor(2000, op) == rangeListReverse(0, 2000).mapReverse(op))

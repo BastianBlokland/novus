@@ -79,6 +79,10 @@ fun pushRange{T}(List{T} l, T start, T end)
   if start >= end -> l
   else            -> pushRange(--end :: l, start, --end)
 
+fun pushRangeReverse{T}(List{T} l, T start, T end)
+  if start >= end -> l
+  else            -> pushRangeReverse(start :: l, ++start, end)
+
 fun pushBack{T}(List{T} l, T val)
   if l as LNode{T} n  -> List(n.val, n.next.pushBack(val))
   if l is LEnd        -> List(val)
@@ -117,6 +121,9 @@ fun insertOrdered{T}(List{T} l, T val)
 
 fun rangeList{T}(T start, T end)
   List{T}().pushRange(start, end)
+
+fun rangeListReverse{T}(T start, T end)
+  List{T}().pushRangeReverse(start, end)
 
 fun gridList{T}(T width, T height)
   makeGrid = (lambda (T x, T y, List{Pair{T, T}} result)
@@ -395,7 +402,11 @@ assert(
 
 assert(
   l = 42 :: 1337;
-  l.pushRange(1, 3) == 1 :: 2 :: 42 :: 1337)
+  l.pushRange(1, 4) == 1 :: 2 :: 3 :: 42 :: 1337)
+
+assert(
+  l = 42 :: 1337;
+  l.pushRangeReverse(1, 4) == 3 :: 2 :: 1 :: 42 :: 1337)
 
 assert(pushBack(List{int}(), 42) == List(42))
 assert(pushBack(1 :: 2, 3) == 1 :: 2 :: 3)
@@ -463,6 +474,9 @@ assert(
 
 assert(rangeList(1, 4) == 1 :: 2 :: 3)
 assert(rangeList('a', 'd') == 'a' :: 'b' :: 'c')
+
+assert(rangeListReverse(1, 4) == 3 :: 2 :: 1)
+assert(rangeListReverse('a', 'd') == 'c' :: 'b' :: 'a')
 
 assert(gridList(2, 2) == Pair(0, 0) :: Pair(1, 0) ::
                          Pair(0, 1) :: Pair(1, 1))
