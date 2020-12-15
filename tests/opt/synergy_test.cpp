@@ -1,7 +1,6 @@
 #include "catch2/catch.hpp"
 #include "helpers.hpp"
 #include "opt/opt.hpp"
-#include "prog/expr/node_lit_int.hpp"
 
 namespace opt {
 

@@ -56,11 +56,23 @@ TEST_CASE("Precompute literals", "[opt]") {
   }
 
   SECTION("int intrinsics") {
-    ASSERT_EXPR(precomputeLiterals, "1 + 2", litIntNode(prog, 3));  // NOLINT: Magic numbers
-    ASSERT_EXPR(precomputeLiterals, "1 - 2", litIntNode(prog, -1)); // NOLINT: Magic numbers
-    ASSERT_EXPR(precomputeLiterals, "3 * 2", litIntNode(prog, 6));  // NOLINT: Magic numbers
-    ASSERT_EXPR(precomputeLiterals, "4 / 2", litIntNode(prog, 2));  // NOLINT: Magic numbers
+    ASSERT_EXPR(precomputeLiterals, "1 + 2", litIntNode(prog, 3));   // NOLINT: Magic numbers
+    ASSERT_EXPR(precomputeLiterals, "1 - 2", litIntNode(prog, -1));  // NOLINT: Magic numbers
+    ASSERT_EXPR(precomputeLiterals, "3 * 2", litIntNode(prog, 6));   // NOLINT: Magic numbers
+    ASSERT_EXPR(precomputeLiterals, "4 / 2", litIntNode(prog, 2));   // NOLINT: Magic numbers
+    ASSERT_EXPR(precomputeLiterals, "4 / -2", litIntNode(prog, -2)); // NOLINT: Magic numbers
+    ASSERT_EXPR(
+        precomputeLiterals,
+        "4 / 0",
+        getIntBinaryOpExpr(prog, prog::Operator::Slash, 4, 0)); // NOLINT: Magic numbers
+    ASSERT_EXPR(precomputeLiterals, "0 / 0", getIntBinaryOpExpr(prog, prog::Operator::Slash, 0, 0));
     ASSERT_EXPR(precomputeLiterals, "4 % 3", litIntNode(prog, 1));  // NOLINT: Magic numbers
+    ASSERT_EXPR(precomputeLiterals, "4 % -3", litIntNode(prog, 1)); // NOLINT: Magic numbers
+    ASSERT_EXPR(
+        precomputeLiterals,
+        "4 % 0",
+        getIntBinaryOpExpr(prog, prog::Operator::Rem, 4, 0)); // NOLINT: Magic numbers
+    ASSERT_EXPR(precomputeLiterals, "0 % 0", getIntBinaryOpExpr(prog, prog::Operator::Rem, 0, 0));
     ASSERT_EXPR(precomputeLiterals, "-42", litIntNode(prog, -42));  // NOLINT: Magic numbers
     ASSERT_EXPR(precomputeLiterals, "++1", litIntNode(prog, 2));    // NOLINT: Magic numbers
     ASSERT_EXPR(precomputeLiterals, "--2", litIntNode(prog, 1));    // NOLINT: Magic numbers
@@ -120,14 +132,28 @@ TEST_CASE("Precompute literals", "[opt]") {
   }
 
   SECTION("long intrinsics") {
-    ASSERT_EXPR(precomputeLiterals, "1L + 2L", litLongNode(prog, 3));  // NOLINT: Magic numbers
-    ASSERT_EXPR(precomputeLiterals, "1L - 2L", litLongNode(prog, -1)); // NOLINT: Magic numbers
-    ASSERT_EXPR(precomputeLiterals, "3L * 2L", litLongNode(prog, 6));  // NOLINT: Magic numbers
-    ASSERT_EXPR(precomputeLiterals, "4L / 2L", litLongNode(prog, 2));  // NOLINT: Magic numbers
+    ASSERT_EXPR(precomputeLiterals, "1L + 2L", litLongNode(prog, 3));   // NOLINT: Magic numbers
+    ASSERT_EXPR(precomputeLiterals, "1L - 2L", litLongNode(prog, -1));  // NOLINT: Magic numbers
+    ASSERT_EXPR(precomputeLiterals, "3L * 2L", litLongNode(prog, 6));   // NOLINT: Magic numbers
+    ASSERT_EXPR(precomputeLiterals, "4L / 2L", litLongNode(prog, 2));   // NOLINT: Magic numbers
+    ASSERT_EXPR(precomputeLiterals, "4L / -2L", litLongNode(prog, -2)); // NOLINT: Magic numbers
+    ASSERT_EXPR(
+        precomputeLiterals,
+        "4L / 0L",
+        getLongBinaryOpExpr(prog, prog::Operator::Slash, 4, 0)); // NOLINT: Magic numbers
+    ASSERT_EXPR(
+        precomputeLiterals, "0L / 0L", getLongBinaryOpExpr(prog, prog::Operator::Slash, 0, 0));
     ASSERT_EXPR(precomputeLiterals, "4L % 3L", litLongNode(prog, 1));  // NOLINT: Magic numbers
-    ASSERT_EXPR(precomputeLiterals, "-42L", litLongNode(prog, -42));   // NOLINT: Magic numbers
-    ASSERT_EXPR(precomputeLiterals, "++1L", litLongNode(prog, 2));     // NOLINT: Magic numbers
-    ASSERT_EXPR(precomputeLiterals, "--2L", litLongNode(prog, 1));     // NOLINT: Magic numbers
+    ASSERT_EXPR(precomputeLiterals, "4L % -3L", litLongNode(prog, 1)); // NOLINT: Magic numbers
+    ASSERT_EXPR(
+        precomputeLiterals,
+        "4L % 0L",
+        getLongBinaryOpExpr(prog, prog::Operator::Rem, 4, 0)); // NOLINT: Magic numbers
+    ASSERT_EXPR(
+        precomputeLiterals, "0L % 0L", getLongBinaryOpExpr(prog, prog::Operator::Rem, 0, 0));
+    ASSERT_EXPR(precomputeLiterals, "-42L", litLongNode(prog, -42)); // NOLINT: Magic numbers
+    ASSERT_EXPR(precomputeLiterals, "++1L", litLongNode(prog, 2));   // NOLINT: Magic numbers
+    ASSERT_EXPR(precomputeLiterals, "--2L", litLongNode(prog, 1));   // NOLINT: Magic numbers
     ASSERT_EXPR(precomputeLiterals, "1L == 2L", litBoolNode(prog, false));
     ASSERT_EXPR(precomputeLiterals, "1L != 2L", litBoolNode(prog, true));
     ASSERT_EXPR(precomputeLiterals, "1L < 2L", litBoolNode(prog, true));
