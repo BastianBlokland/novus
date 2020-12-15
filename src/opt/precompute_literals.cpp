@@ -194,22 +194,23 @@ public:
 
         auto newArgs = rewriteAll(callExpr->getArgs(), this);
 
-        // If all the arguments are literals we can precompute the value.
+        // If all the arguments are literals we can try to precompute the value.
         if (std::all_of(newArgs.begin(), newArgs.end(), [](const prog::expr::NodePtr& n) {
               return internal::isLiteral(*n);
             })) {
 
-          auto result = precomputeIntrinsic(funcKind, newArgs);
-          if (result->getType() == callExpr->getType()) {
-            // If precomputed type matches the expected type we can simply use that.
-            m_modified = true;
-            return result;
-          } else {
-            // If precomputed type does not match try to precompute a conversion.
-            auto precomputed = maybePrecomputeReinterpretConv(*result, callExpr->getType());
-            if (precomputed != nullptr) {
+          if (auto result = precomputeIntrinsic(funcKind, newArgs)) {
+
+            if (result->getType() == callExpr->getType()) {
+              // If precomputed type matches the expected type we can simply use that.
               m_modified = true;
-              return precomputed;
+              return result;
+            } else {
+              // If precomputed type does not match try to precompute a conversion.
+              if (auto precomputed = maybePrecomputeReinterpretConv(*result, callExpr->getType())) {
+                m_modified = true;
+                return precomputed;
+              }
             }
           }
         }
@@ -376,11 +377,21 @@ private:
     }
     case prog::sym::FuncKind::DivInt: {
       assert(args.size() == 2);
-      return prog::expr::litIntNode(m_prog, getInt(*args[0]) / getInt(*args[1]));
+      const int32_t lhs = getInt(*args[0]);
+      const int32_t rhs = getInt(*args[1]);
+      if (rhs == 0) {
+        return nullptr;
+      }
+      return prog::expr::litIntNode(m_prog, lhs / rhs);
     }
     case prog::sym::FuncKind::RemInt: {
       assert(args.size() == 2);
-      return prog::expr::litIntNode(m_prog, getInt(*args[0]) % getInt(*args[1]));
+      const int32_t lhs = getInt(*args[0]);
+      const int32_t rhs = getInt(*args[1]);
+      if (rhs == 0) {
+        return nullptr;
+      }
+      return prog::expr::litIntNode(m_prog, lhs % rhs);
     }
     case prog::sym::FuncKind::NegateInt: {
       assert(args.size() == 1);
@@ -601,11 +612,21 @@ private:
     }
     case prog::sym::FuncKind::DivLong: {
       assert(args.size() == 2);
-      return prog::expr::litLongNode(m_prog, getLong(*args[0]) / getLong(*args[1]));
+      const int64_t lhs = getLong(*args[0]);
+      const int64_t rhs = getLong(*args[1]);
+      if (rhs == 0) {
+        return nullptr;
+      }
+      return prog::expr::litLongNode(m_prog, lhs / rhs);
     }
     case prog::sym::FuncKind::RemLong: {
       assert(args.size() == 2);
-      return prog::expr::litLongNode(m_prog, getLong(*args[0]) % getLong(*args[1]));
+      const int64_t lhs = getLong(*args[0]);
+      const int64_t rhs = getLong(*args[1]);
+      if (rhs == 0) {
+        return nullptr;
+      }
+      return prog::expr::litLongNode(m_prog, lhs % rhs);
     }
     case prog::sym::FuncKind::NegateLong: {
       assert(args.size() == 1);

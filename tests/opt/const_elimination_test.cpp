@@ -1,8 +1,6 @@
 #include "catch2/catch.hpp"
 #include "helpers.hpp"
 #include "opt/opt.hpp"
-#include "prog/expr/node_call.hpp"
-#include "prog/expr/node_lit_int.hpp"
 
 namespace opt {
 
@@ -16,16 +14,9 @@ TEST_CASE("Constants elimination", "[opt]") {
     auto optProg = eliminateConsts(output.getProg());
 
     // Verify that both constants are removed.
-    const auto& funcDef   = GET_FUNC_DEF(optProg, "func");
-    const auto intAddFunc = GET_OP_FUNC_ID(
-        optProg, prog::Operator::Plus, GET_TYPE_ID(optProg, "int"), GET_TYPE_ID(optProg, "int"));
+    const auto& funcDef = GET_FUNC_DEF(optProg, "func");
 
-    auto args = std::vector<prog::expr::NodePtr>{};
-    args.push_back(prog::expr::litIntNode(output.getProg(), 42));   // NOLINT: Magic numbers
-    args.push_back(prog::expr::litIntNode(output.getProg(), 1337)); // NOLINT: Magic numbers
-    auto callExpr = prog::expr::callExprNode(optProg, intAddFunc, std::move(args));
-
-    CHECK(funcDef.getExpr() == *callExpr);
+    CHECK(funcDef.getExpr() == *getIntBinaryOpExpr(optProg, prog::Operator::Plus, 42, 1337));
   }
 
   SECTION("Trivial constants are eliminated") {
@@ -36,16 +27,9 @@ TEST_CASE("Constants elimination", "[opt]") {
     auto optProg = eliminateConsts(output.getProg());
 
     // Verify that both constants are removed.
-    const auto& funcDef   = GET_FUNC_DEF(optProg, "func");
-    const auto intAddFunc = GET_OP_FUNC_ID(
-        optProg, prog::Operator::Plus, GET_TYPE_ID(optProg, "int"), GET_TYPE_ID(optProg, "int"));
+    const auto& funcDef = GET_FUNC_DEF(optProg, "func");
 
-    auto args = std::vector<prog::expr::NodePtr>{};
-    args.push_back(prog::expr::litIntNode(output.getProg(), 42)); // NOLINT: Magic numbers
-    args.push_back(prog::expr::litIntNode(output.getProg(), 42)); // NOLINT: Magic numbers
-    auto callExpr = prog::expr::callExprNode(optProg, intAddFunc, std::move(args));
-
-    CHECK(funcDef.getExpr() == *callExpr);
+    CHECK(funcDef.getExpr() == *getIntBinaryOpExpr(optProg, prog::Operator::Plus, 42, 42));
   }
 }
 
