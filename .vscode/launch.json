@@ -15,6 +15,13 @@
       "stopOnEntry": false
     },
     {
+      "name": "nove_attach",
+      "type": "lldb",
+      "request": "attach",
+      "program": "${workspaceFolder}/bin/nove",
+      "pid": "${command:pickProcess}"
+    },
+    {
       "name": "novrt",
       "preLaunchTask": "build",
       "type": "lldb",
@@ -24,6 +31,13 @@
       "cwd": "${workspaceFolder}",
       "terminal": "integrated",
       "stopOnEntry": false
+    },
+    {
+      "name": "novrt_attach",
+      "type": "lldb",
+      "request": "attach",
+      "program": "${workspaceFolder}/bin/novrt",
+      "pid": "${command:pickProcess}"
     },
     {
       "name": "novdiag-lex",
