@@ -137,8 +137,9 @@ public:
         return false;
       }
       m_nonblockWinTerm = true;
+      return true;
     }
-    return true;
+    return false;
 #else //!_WIN32
     return setFileOpts(m_filePtr, opts);
 #endif
@@ -148,8 +149,9 @@ public:
 #if defined(_WIN32)
     if (static_cast<int32_t>(opts) & static_cast<int32_t>(StreamOpts::NoBlock)) {
       m_nonblockWinTerm = false;
+      return true;
     }
-    return true;
+    return false;
 #else //!_WIN32
     return unsetFileOpts(m_filePtr, opts);
 #endif
