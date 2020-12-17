@@ -26,11 +26,14 @@
 namespace vm::internal {
 
 constexpr int32_t defaultConnectionBacklog = 64;
+constexpr int32_t receiveTimeoutSeconds    = 15;
 
 enum class TcpStreamType : uint8_t {
   Server     = 0, // Server cannot be used for sending or receiving but can accept new connections.
   Connection = 1, // Connections are be used for sending and receiving.
 };
+
+auto configureSocket(SOCKET sock) noexcept -> void;
 
 // Tcp implementation of the 'stream' interface.
 // Note: To avoid needing a vtable there is no abstract 'Stream' class but instead there are wrapper
@@ -175,12 +178,12 @@ public:
 
   auto setOpts(StreamOpts /*unused*/) noexcept -> bool {
     // TODO(bastian): Support non-blocking sockets.
-    return true;
+    return false;
   }
 
   auto unsetOpts(StreamOpts /*unused*/) noexcept -> bool {
     // TODO(bastian): Support non-blocking sockets.
-    return true;
+    return false;
   }
 
   auto acceptConnection(ExecutorHandle* execHandle, RefAllocator* alloc) -> TcpStreamRef* {
@@ -191,8 +194,26 @@ public:
     // 'accept' call blocks so we mark ourselves as paused so the gc can trigger in the mean time.
     execHandle->setState(ExecState::Paused);
 
-    // Accept a new connection from the socket.
-    const auto sock = accept(m_socket, nullptr, nullptr);
+    SOCKET sock;
+    while (true) {
+      // Accept a new connection from the socket.
+      sock = accept(m_socket, nullptr, nullptr);
+
+      // Retry the accept for certain errors.
+      if (!SOCKET_VALID(sock)) {
+#if defined(_WIN32)
+        if (SOCKET_ERR == WSAEWOULDBLOCK || SOCKET_ERR == WSAECONNRESET) {
+          continue; // Retry.
+        }
+#else // !_WIN32
+        if (SOCKET_ERR == EAGAIN || SOCKET_ERR == EWOULDBLOCK || SOCKET_ERR == ECONNABORTED) {
+          continue; // Retry.
+        }
+#endif // !_WIN32
+      }
+
+      break; // Stop trying to accept a new connection.
+    }
 
     // After resuming check if we should wait for gc (or if we are aborted).
     execHandle->setState(ExecState::Running);
@@ -203,6 +224,8 @@ public:
     if (!SOCKET_VALID(sock)) {
       return alloc->allocPlain<TcpStreamRef>(TcpStreamType::Connection, sock, SOCKET_ERR);
     }
+
+    configureSocket(sock);
     return alloc->allocPlain<TcpStreamRef>(TcpStreamType::Connection, sock);
   }
 
@@ -218,12 +241,30 @@ private:
       Ref{getKind()}, m_type{type}, m_socket{sock}, m_err{err} {}
 };
 
+inline auto configureSocket(SOCKET sock) noexcept -> void {
+  // Allow reusing the address, allows stopping and restarting the server without waiting for the
+  // socket's wait-time to expire.
+  int optVal = 1;
+  setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, reinterpret_cast<char*>(&optVal), sizeof(int));
+
+  // Configure the receive timeout;
+#if defined(_WIN32)
+  int timeout = receiveTimeoutSeconds * 1'000;
+  setsockopt(sock, SOL_SOCKET, SO_RCVTIMEO, reinterpret_cast<char*>(&timeout), sizeof(timeout));
+#else // !_WIN32
+  auto timeout = timeval{};
+  timeout.tv_sec = receiveTimeoutSeconds;
+  timeout.tv_usec = 0;
+  setsockopt(sock, SOL_SOCKET, SO_RCVTIMEO, reinterpret_cast<char*>(&timeout), sizeof(timeout));
+#endif // !_WIN32
+}
+
 inline auto tcpOpenConnection(
     const Settings& settings,
     ExecutorHandle* execHandle,
     RefAllocator* alloc,
     StringRef* address,
-    int32_t port) -> TcpStreamRef* {
+    int32_t port) noexcept -> TcpStreamRef* {
 
   if (!settings.socketsEnabled) {
     return alloc->allocPlain<TcpStreamRef>(TcpStreamType::Connection, INVALID_SOCKET);
@@ -239,6 +280,8 @@ inline auto tcpOpenConnection(
   if (!SOCKET_VALID(sock)) {
     return alloc->allocPlain<TcpStreamRef>(TcpStreamType::Connection, sock, SOCKET_ERR);
   }
+
+  configureSocket(sock);
 
   sockaddr_in addr = {};
   addr.sin_family  = AF_INET;
@@ -269,8 +312,8 @@ inline auto tcpOpenConnection(
   return alloc->allocPlain<TcpStreamRef>(TcpStreamType::Connection, sock);
 }
 
-inline auto
-tcpStartServer(const Settings& settings, RefAllocator* alloc, int32_t port, int32_t backlog)
+inline auto tcpStartServer(
+    const Settings& settings, RefAllocator* alloc, int32_t port, int32_t backlog) noexcept
     -> TcpStreamRef* {
 
   if (!settings.socketsEnabled) {
@@ -278,7 +321,7 @@ tcpStartServer(const Settings& settings, RefAllocator* alloc, int32_t port, int3
   }
 
   if (port < 0 || port > std::numeric_limits<uint16_t>::max()) {
-    // TODO: Add error code that user code call query.
+    // TODO: Add error code that user code can query.
     return alloc->allocPlain<TcpStreamRef>(TcpStreamType::Server, INVALID_SOCKET);
   }
 
@@ -288,11 +331,7 @@ tcpStartServer(const Settings& settings, RefAllocator* alloc, int32_t port, int3
     return alloc->allocPlain<TcpStreamRef>(TcpStreamType::Server, sock, SOCKET_ERR);
   }
 
-  // Allow reusing the address, allows stopping and restarting the server without waiting for the
-  // socket's wait-time to expire.
-  int optVal = 1;
-  setsockopt(
-      sock, SOL_SOCKET, SO_REUSEADDR, static_cast<char*>(static_cast<void*>(&optVal)), sizeof(int));
+  configureSocket(sock);
 
   // Bind the socket to any ip address at the given port.
   sockaddr_in addr;
@@ -313,8 +352,10 @@ tcpStartServer(const Settings& settings, RefAllocator* alloc, int32_t port, int3
 }
 
 inline auto tcpAcceptConnection(
-    const Settings& settings, ExecutorHandle* execHandle, RefAllocator* alloc, Value stream)
-    -> TcpStreamRef* {
+    const Settings& settings,
+    ExecutorHandle* execHandle,
+    RefAllocator* alloc,
+    Value stream) noexcept -> TcpStreamRef* {
 
   if (!settings.socketsEnabled) {
     return alloc->allocPlain<TcpStreamRef>(TcpStreamType::Connection, INVALID_SOCKET);
@@ -334,8 +375,10 @@ inline auto tcpAcceptConnection(
 }
 
 inline auto ipLookupAddress(
-    const Settings& settings, ExecutorHandle* execHandle, RefAllocator* alloc, StringRef* hostName)
-    -> StringRef* {
+    const Settings& settings,
+    ExecutorHandle* execHandle,
+    RefAllocator* alloc,
+    StringRef* hostName) noexcept -> StringRef* {
 
   if (!settings.socketsEnabled) {
     return alloc->allocStr(0);
@@ -369,18 +412,16 @@ inline auto ipLookupAddress(
   // Note: 'getaddrinfo' returns a linked list of addresses sorted by priority, atm we just use the
   // first one.
 
-  // Note: We only request ipv4 addresses so the following code is technically not required but is
-  // slightly more correct.
   unsigned int maxSize;
   void* addr;
   switch (res->ai_family) {
   case AF_INET:
     maxSize = INET_ADDRSTRLEN;
-    addr    = &static_cast<sockaddr_in*>(static_cast<void*>(res->ai_addr))->sin_addr;
+    addr    = &reinterpret_cast<sockaddr_in*>(res->ai_addr)->sin_addr;
     break;
   case AF_INET6:
     maxSize = INET6_ADDRSTRLEN;
-    addr    = &static_cast<sockaddr_in6*>(static_cast<void*>(res->ai_addr))->sin6_addr;
+    addr    = &reinterpret_cast<sockaddr_in6*>(res->ai_addr)->sin6_addr;
     break;
   default:
     assert(false);

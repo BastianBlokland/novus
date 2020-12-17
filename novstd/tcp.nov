@@ -8,6 +8,7 @@ struct TcpConnection =
   sys_stream socket
 
 struct TcpServer =
+  int         maxBacklog,
   sys_stream  socket,
   int         port
 
@@ -61,8 +62,11 @@ act tcpServer() -> Either{TcpServer, Error}
   tcpServer(8080)
 
 act tcpServer(int port) -> Either{TcpServer, Error}
-  socket = tcpStartServer(port, -1);
-  if socket.streamCheckValid() -> TcpServer(socket, port)
+  tcpServer(port, 64)
+
+act tcpServer(int port, int maxBacklog) -> Either{TcpServer, Error}
+  socket = tcpStartServer(port, maxBacklog);
+  if socket.streamCheckValid() -> TcpServer(maxBacklog, socket, port)
   else                         -> Error("Failed to start tcp-server")
 
 act tcpAcceptConnection(TcpServer server) -> Either{TcpConnection, Error}
@@ -75,6 +79,9 @@ act tcpAcceptConnectionAsync(TcpServer server) -> future{Either{TcpConnection, E
 
 act tcpServerLoop(int port, TcpServerLoopContext ctx) -> Option{Error}
   tcpServer(port).map(impure lambda (TcpServer svr) svr.tcpServerLoop(ctx))
+
+act tcpServerLoop(int port, int maxBacklog, TcpServerLoopContext ctx) -> Option{Error}
+  tcpServer(port, maxBacklog).map(impure lambda (TcpServer svr) svr.tcpServerLoop(ctx))
 
 act tcpServerLoop(TcpServer svr, TcpServerLoopContext ctx) -> Option{Error}
   loop = (impure lambda (
@@ -103,8 +110,19 @@ act tcpServerLoop(TcpServer svr, TcpServerLoopContext ctx) -> Option{Error}
 // -- Tests
 
 assert(
-  server    = tcpServer(5000).failOnError();
-  client    = tcpConnection("127.0.0.1", 5000).failOnError();
+  tcpServer(-1)       is Error  &&
+  tcpServer(65536)    is Error  &&
+  tcpServer(intMax()) is Error
+)
+
+assert(
+  maxBacklog  = intMax();
+  tcpServer(5000, maxBacklog) is TcpServer
+)
+
+assert(
+  server    = tcpServer(5001).failOnError();
+  client    = tcpConnection("127.0.0.1", 5001).failOnError();
   serverCon = server.tcpAcceptConnection().failOnError();
 
   serverCon.write("Hello world\n").failOnError();
@@ -112,16 +130,11 @@ assert(
 )
 
 assert(
-  tcpServer(-1) is Error &&
-  tcpServer(65536) is Error
-)
-
-assert(
-  fork tcpServerLoop(5001, TcpServerLoopContext(impure lambda(TcpConnection c)
+  fork tcpServerLoop(5002, TcpServerLoopContext(impure lambda(TcpConnection c)
     c.write(c.socket.readLine() + '\n')
   ));
   client = (impure lambda(string message)
-    c = tcpConnection("127.0.0.1", 5001).failOnError();
+    c = tcpConnection("127.0.0.1", 5002).failOnError();
     c.write(message + '\n').failOnError();
     c.socket.readLine()
   );
@@ -132,8 +145,8 @@ assert(
 )
 
 assert(
-  server = tcpServer(5002).failOnError();
-  client = tcpConnection("127.0.0.1", 5002).failOnError();
+  server = tcpServer(5003).failOnError();
+  client = tcpConnection("127.0.0.1", 5003).failOnError();
 
   res = tcpServerLoop(server, TcpServerLoopContext(impure lambda(TcpConnection c)
     some(Error("Did not go well"))
@@ -142,8 +155,8 @@ assert(
 )
 
 assert(
-  server = tcpServer(5003).failOnError();
-  client = tcpConnection("127.0.0.1", 5003).failOnError();
+  server = tcpServer(5004).failOnError();
+  client = tcpConnection("127.0.0.1", 5004).failOnError();
 
   clientHandler = (impure lambda (TcpConnection c)
     c.write("hello")

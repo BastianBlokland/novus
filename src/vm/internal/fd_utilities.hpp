@@ -1,6 +1,6 @@
 #pragma once
-#include "internal/stream_opts.hpp"
 #include "internal/os_include.hpp"
+#include "internal/stream_opts.hpp"
 #include <cstdio>
 
 namespace vm::internal {
@@ -11,22 +11,26 @@ namespace vm::internal {
 
 // Set file-descriptor options.
 inline auto setFileOpts(int fd, StreamOpts opts) noexcept -> bool {
+
   // Get the current options of the file descriptor.
   int fileOpts = fcntl(fd, F_GETFL);
   if (fileOpts < 0) {
     return false;
   }
 
+  auto updatedOptions = false;
+
   // Update the options.
   if (static_cast<int32_t>(opts) & static_cast<int32_t>(StreamOpts::NoBlock)) {
     fileOpts |= O_NONBLOCK;
+    updatedOptions = true;
   }
 
   // Set the file options.
   if (fcntl(fd, F_SETFL, fileOpts) < 0) {
     return false;
   }
-  return true;
+  return updatedOptions;
 }
 
 // Set file-descriptor options.
@@ -43,16 +47,19 @@ inline auto unsetFileOpts(int fd, StreamOpts opts) noexcept -> bool {
     return false;
   }
 
+  auto updatedOptions = false;
+
   // Update the options.
   if (static_cast<int32_t>(opts) & static_cast<int32_t>(StreamOpts::NoBlock)) {
     fileOpts &= ~O_NONBLOCK;
+    updatedOptions = true;
   }
 
   // Set the file options.
   if (fcntl(fd, F_SETFL, fileOpts) < 0) {
     return false;
   }
-  return true;
+  return updatedOptions;
 }
 
 // Unset file-descriptor options.
