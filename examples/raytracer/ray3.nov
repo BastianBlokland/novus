@@ -11,10 +11,10 @@ fun string(Ray3 r) "[" + r.origin.string() + "->" + r.dir.string() + ']'
 
 // -- Operators
 
-fun [](Ray3 r, float t)
+fun [](Ray3 r, float t) -> Vec3
   r.origin + r.dir * t
 
 // -- Functions
 
-fun distOnRay(Ray3 r, Vec3 p)
+fun distOnRay(Ray3 r, Vec3 p) -> float
   dot(p - r.origin, r.dir)

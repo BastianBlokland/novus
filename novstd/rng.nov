@@ -45,6 +45,9 @@ fun rngNext{T}(RngResult{T} r)
 fun map{T, TResult}(RngResult{T} r, function{T, TResult} func)
   RngResult(r.rng, func(r.val))
 
+fun map{T1, T2, TResult}(RngResult{Pair{T1, T2}} r, function{T1, T2, TResult} func)
+  RngResult(r.rng, func(r.val.first, r.val.second))
+
 // Returns a random value between min (inclusive) and max (exclusive).
 fun rngNext{T}(Rng r, T min, T max)
   r.rngNext().map(lambda (float f) min >= max ? min : min + T(f * (max - min)))

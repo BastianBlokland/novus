@@ -281,7 +281,7 @@ fun splitReverse{T1, T2}(List{Either{T1, T2}} l)
 // ineffiecient / impossible to use the default equality. This is an alternative that uses
 // constant stack space.
 fun listEqual{T}(List{T} l1, List{T} l2)
-  if l1 as LNode{T} n1 && l2 as LNode{T} n2 && n1.val == n2.val   -> listEqual(n1.next, n2.next)
+  if l1 as LNode{T} n1 && l2 as LNode{T} n2 && n1.val == n2.val   -> self(n1.next, n2.next)
   if l1 is LEnd && l2 is LEnd                                     -> true
   else                                                            -> false
 
@@ -530,15 +530,15 @@ assert(
 
 assert(
   l = 1 :: 2 :: 3 :: 4;
-  l.map(lambda (int v) some(v * 2))                   == 2 :: 4 :: 6 :: 8   &&
-  l.map(lambda (int v) Option{int}())                 == List{int}()        &&
-  l.map(lambda (int v) v > 2 ? some(v * 2) : none())  == 6 :: 8)
+  l.map(lambda (int v) Option(v * 2))                   == 2 :: 4 :: 6 :: 8   &&
+  l.map(lambda (int v) Option{int}())                   == List{int}()        &&
+  l.map(lambda (int v) v > 2 ? Option(v * 2) : None())  == 6 :: 8)
 
 assert(
   l = 1 :: 2 :: 3 :: 4;
-  l.mapReverse(lambda (int v) some(v * 2))                   == 8 :: 6 :: 4 :: 2   &&
-  l.mapReverse(lambda (int v) Option{int}())                 == List{int}()        &&
-  l.mapReverse(lambda (int v) v > 2 ? some(v * 2) : none())  == 8 :: 6)
+  l.mapReverse(lambda (int v) Option(v * 2))                   == 8 :: 6 :: 4 :: 2   &&
+  l.mapReverse(lambda (int v) Option{int}())                   == List{int}()        &&
+  l.mapReverse(lambda (int v) v > 2 ? Option(v * 2) : None())  == 8 :: 6)
 
 assert(
   l = 1 :: 2 :: 3;
@@ -724,15 +724,15 @@ assert(
 
 assert(
   l = 1 :: 2 :: 3 :: 4;
-  l.map(impure lambda (int v) some(v * 2))                   == 2 :: 4 :: 6 :: 8   &&
-  l.map(impure lambda (int v) Option{int}())                 == List{int}()        &&
-  l.map(impure lambda (int v) v > 2 ? some(v * 2) : none())  == 6 :: 8)
+  l.map(impure lambda (int v) Option(v * 2))                   == 2 :: 4 :: 6 :: 8   &&
+  l.map(impure lambda (int v) Option{int}())                   == List{int}()        &&
+  l.map(impure lambda (int v) v > 2 ? Option(v * 2) : None())  == 6 :: 8)
 
 assert(
   l = 1 :: 2 :: 3 :: 4;
-  l.mapReverse(impure lambda (int v) some(v * 2))                   == 8 :: 6 :: 4 :: 2   &&
-  l.mapReverse(impure lambda (int v) Option{int}())                 == List{int}()        &&
-  l.mapReverse(impure lambda (int v) v > 2 ? some(v * 2) : none())  == 8 :: 6)
+  l.mapReverse(impure lambda (int v) Option(v * 2))                   == 8 :: 6 :: 4 :: 2   &&
+  l.mapReverse(impure lambda (int v) Option{int}())                   == List{int}()        &&
+  l.mapReverse(impure lambda (int v) v > 2 ? Option(v * 2) : None())  == 8 :: 6)
 
 assert(for(1, 4, impure lambda (int i) i * i) == 1 :: 4 :: 9)
 

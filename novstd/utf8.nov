@@ -10,14 +10,14 @@ fun utf8DoubleCharCp()  UnicodePoint(0x7FF)
 fun utf8TripleCharCp()  UnicodePoint(0xFFFF)
 fun utf8QuadCharCp()    maxUnicodePoint()
 
-fun utf8RequiredChars(UnicodePoint cp)
+fun utf8RequiredChars(UnicodePoint cp) -> int
   if !cp.validUnicodePoint()  -> -1
   if cp <= utf8SingleCharCp() -> 1
   if cp <= utf8DoubleCharCp() -> 2
   if cp <= utf8TripleCharCp() -> 3
   else                        -> 4
 
-fun toUtf8(UnicodePoint cp)
+fun toUtf8(UnicodePoint cp) -> string
   if !cp.validUnicodePoint()  -> char(0xEF) + char(0xBF) + char(0xBD)
   if cp <= utf8SingleCharCp() -> string(char(cp.val))
   if cp <= utf8DoubleCharCp() -> char(((  cp.val >> 6)  & 0x1F)   | 0xC0) +
@@ -80,7 +80,7 @@ fun utf8CodePointParser()
         (s[2] & 0b0011_1111) << 6   |
         (s[3] & 0b0011_1111)))
 
-    else              -> s.failure(Error("Invalid utf8 character"))
+    else -> s.failure(Error("Invalid utf8 character"))
   )
 
 fun utf8Parser()

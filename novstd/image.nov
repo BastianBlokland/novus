@@ -40,7 +40,7 @@ fun lerp(Color x, Color y, float t)
 fun makeImage(int width, int height, function{int, int, Color} getCol)
   Image(width, height, makeColorGrid(width, height, getCol))
 
-fun makeColorGrid(int width, int height, function{int, int, Color} getCol)
+fun makeColorGrid(int width, int height, function{int, int, Color} getCol) -> List{Color}
   makeGrid = (lambda (int x, int y, List{Color} result)
       if y < 0  -> result
       if x < 0  -> self(width - 1, --y, result)

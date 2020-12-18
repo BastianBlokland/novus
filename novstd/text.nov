@@ -283,7 +283,7 @@ assert(
 
 assert(
   "hello world".indexOf(equals{char}[' ']) == 5 &&
-  "hello world".indexOf(lambda (char c) c == 'd') == 10 &&
+  "hello world".indexOf(equals{char}['d']) == 10 &&
   "hello world".indexOf(equals{char}['h']) == 0 &&
   "hello world".indexOf(equals{char}['1']) == -1 &&
   "".indexOf(equals{char}[' ']) == -1)

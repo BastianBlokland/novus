@@ -38,7 +38,7 @@ fun string(ProcessResult r)
 
 // -- Functions
 
-fun toCmdLine(string prog, List{string} args)
+fun toCmdLine(string prog, List{string} args) -> string
   escapeSingleQuotes = (lambda (string s) s.replace("'", "\\'"));
   (prog :: args).map(escapeSingleQuotes).string("'", "' '", "'")
 
@@ -50,10 +50,10 @@ fun isSuccess(ProcessResult r)
 
 // -- Actions
 
-act run(string prog, List{string} args)
+act run(string prog, List{string} args) -> Process
   run(toCmdLine(prog, args))
 
-act run(string cmdLine)
+act run(string cmdLine) -> Process
   handle = processStart(cmdLine);
   Process(
     cmdLine,
@@ -66,13 +66,13 @@ act run(string cmdLine)
 act sendInterupt(Process p)         processSendSignal(p.handle, Signal.Interupt)
 act sendSignal(Process p, Signal s) processSendSignal(p.handle, s)
 
-act wait(Process p)
+act wait(Process p) -> ProcessResult
   ProcessResult(
     p.stdOut.readToEnd(),
     p.stdErr.readToEnd(),
     ExitCode(processBlock(p.handle)))
 
-act waitAsync(Process p)
+act waitAsync(Process p) -> future{ProcessResult}
   fork p.wait()
 
 // -- Tests

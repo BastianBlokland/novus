@@ -106,8 +106,7 @@ fun createPlayer(Rng r, Box window)
   )
 
 fun createPickup(Rng r, Box window)
-  r.rngInside(window).rngNext(1, 4).map(lambda (Pair{I2, int} roll)
-    PickupState(roll.first, roll.second))
+  r.rngInside(window).rngNext(1, 4).map(construct{I2, int, PickupState})
 
 fun createPickups(Rng r, Box window, int count)
   r.rngList(count, createPickup[window])
@@ -172,9 +171,9 @@ fun simulateGameover(GameState g)
 // -- Game loop
 
 act loop(Console c)
-  loop(c, Duration(0), createGame(rngInit(), getWindow()))
+  loop(Duration(0), createGame(rngInit(), getWindow()), c)
 
-act loop(Console c, Duration prevFrameDur, GameState state)
+act loop(Duration prevFrameDur, GameState state, Console c)
   t1      = timestamp();
   window  = getWindow();
   input   = getInput(c.readToEnd());
@@ -182,67 +181,67 @@ act loop(Console c, Duration prevFrameDur, GameState state)
   if input is InputRestart                        -> loop(c)
   else ->
     newState  = simulateGame(state, window, input);
-    c.drawGame(newState, window, prevFrameDur);
+    drawGame(newState, window, prevFrameDur, c);
 
     frameDur  = timestamp() - t1;
     sleep(simInterval() - frameDur);
-    loop(c, frameDur, newState)
+    loop(frameDur, newState, c)
 
 // --- Draw game state
 
-act drawGame(Console c, GameState g, Box window, Duration frameDur)
+act drawGame(GameState g, Box window, Duration frameDur, Console c)
   c.termClearScreen();
-  c.drawBackground(g, window, frameDur);
-  c.drawPickups(g.pickups);
-  c.drawPlayer(g.player);
+  drawBackground(g, window, frameDur, c);
+  drawPickups(g.pickups, c);
+  drawPlayer(g.player, c);
   c.flushOut()
 
-act drawBackground(Console c, GameState g, Box window, Duration frameDur)
+act drawBackground(GameState g, Box window, Duration frameDur, Console c)
   c.termStyle(TermStyle.FgBrightWhite);
   c.termStyle(g.gameover ? TermStyle.BgBrightRed : TermStyle.BgGreen);
-  c.drawBox(window);
-  c.drawAt(
+  drawBox(window, c);
+  drawAt(I2(5, 1),
     " Score: " + g.score.string(4) + " ─ " +
     "Quit: q ─ " +
     "Restart: r ─ " +
     "Steering: w, a, s, d ─ " +
     "FT: " + frameDur + " ",
-    I2(5, 1));
+    c);
   c.termStyle(TermStyle.Reset)
 
-act drawPickups(Console c, List{PickupState} pickups)
-  pickups.mapReverse(impure lambda (PickupState p) c.drawPickup(p))
+act drawPickups(List{PickupState} pickups, Console c)
+  pickups.mapReverse(drawPickup[c])
 
-act drawPickup(Console c, PickupState pickup)
+act drawPickup(PickupState pickup, Console c)
   c.termStyle(
     if pickup.value == 3 -> TermStyle.FgBrightYellow
     if pickup.value == 2 -> TermStyle.FgBrightCyan
     else                 -> TermStyle.FgBrightMagenta
   );
-  c.drawAt("●", pickup.pos);
+  drawAt(pickup.pos, "●", c);
   c.termStyle(TermStyle.Reset)
 
-act drawPlayer(Console c, PlayerState player)
-  c.drawAt(
+act drawPlayer(PlayerState player, Console c)
+  drawAt(player.pos,
     if player.dir == Dir.up     -> "▲"
     if player.dir == Dir.down   -> "▼"
     if player.dir == Dir.right  -> "►"
-    else                        -> "◄", player.pos);
-  player.segments.mapReverse(impure lambda (I2 s) c.drawAt("●", s))
+    else                        -> "◄", c);
+  player.segments.mapReverse(drawAt[c]["●"])
 
 // --- Misc drawing
 
-act drawBox(Console c, Box b)
-  c.drawAt(   "┌",  b.origin);
-  c.drawAt(   "┐",  b.origin + I2(b.size.x - 1, 0));
-  c.drawAt(   "└",  b.origin + I2(0,            b.size.y));
-  c.drawAt(   "┘",  b.origin + I2(b.size.x - 1, b.size.y));
-  c.drawAtHor("─",  b.origin + I2(1,            0),         b.size.x - 2);
-  c.drawAtHor("─",  b.origin + I2(1,            b.size.y),  b.size.x - 2);
-  c.drawAtVer("│",  b.origin + I2(0,            1),         b.size.y - 2);
-  c.drawAtVer("│",  b.origin + I2(b.size.x - 1, 1),         b.size.y - 2)
+act drawBox(Box b, Console c)
+  drawAt(     b.origin,                                             "┌", c);
+  drawAt(     b.origin + I2(b.size.x - 1, 0),                       "┐", c);
+  drawAt(     b.origin + I2(0,            b.size.y),                "└", c);
+  drawAt(     b.origin + I2(b.size.x - 1, b.size.y),                "┘", c);
+  drawAtHor(  b.origin + I2(1,            0),         b.size.x - 2, "─", c);
+  drawAtHor(  b.origin + I2(1,            b.size.y),  b.size.x - 2, "─", c);
+  drawAtVer(  b.origin + I2(0,            1),         b.size.y - 2, "│", c);
+  drawAtVer(  b.origin + I2(b.size.x - 1, 1),         b.size.y - 2, "│", c)
 
-act drawAtHor(Console c, string str, I2 pos, int times)
+act drawAtHor(I2 pos, int times, string str, Console c)
   drawTimes = ( impure lambda (int times)
     if times <= 0 -> true
     else          -> c.writeOut(str); self(--times)
@@ -250,7 +249,7 @@ act drawAtHor(Console c, string str, I2 pos, int times)
   c.termCursorPos(pos.y, pos.x);
   drawTimes(times)
 
-act drawAtVer(Console c, string str, I2 pos, int times)
+act drawAtVer(I2 pos, int times, string str, Console c)
   drawTimes = ( impure lambda (int i)
     if i >= times -> true
     else          ->
@@ -260,7 +259,7 @@ act drawAtVer(Console c, string str, I2 pos, int times)
   );
   drawTimes(0)
 
-act drawAt(Console c, string str, I2 pos)
+act drawAt(I2 pos, string str, Console c)
   c.termCursorPos(pos.y, pos.x);
   c.writeOut(str)
 

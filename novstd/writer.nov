@@ -31,46 +31,46 @@ fun WriterState(WriterNewlineMode newlineMode)
 
 // -- Operators
 
-fun (){T}(Writer{T} w, WriterState s, T val)
+fun (){T}(Writer{T} w, WriterState s, T val) -> WriterState
   w.func(s, val)
 
-fun (){T}(Writer{T} w, T val, string indentStr)
+fun (){T}(Writer{T} w, T val, string indentStr) -> WriterState
   w.func(WriterState(indentStr), val)
 
-fun (){T}(Writer{T} w, T val, WriterNewlineMode newlineMode)
+fun (){T}(Writer{T} w, T val, WriterNewlineMode newlineMode) -> WriterState
   w.func(WriterState("  ", newlineMode), val)
 
-fun (){T}(Writer{T} w, T val, string indentStr, WriterNewlineMode newlineMode)
+fun (){T}(Writer{T} w, T val, string indentStr, WriterNewlineMode newlineMode) -> WriterState
   w.func(WriterState(indentStr, newlineMode), val)
 
-fun (){T}(Writer{T} w, T val)
+fun (){T}(Writer{T} w, T val) -> WriterState
   w.func(WriterState(), val)
 
 fun ==(WriterState s, string str)
   s.curResult == str
 
-fun ?{T}(Writer{T} p)
+fun ?{T}(Writer{T} p) -> Writer{Option{T}}
   Writer(lambda (WriterState s, Option{T} optVal)
     if optVal as T val  -> p(s, val)
     else                -> s
   )
 
-fun &(Writer{None} p1, Writer{None} p2)
+fun &(Writer{None} p1, Writer{None} p2) -> Writer{None}
   Writer(lambda (WriterState s, None n)
     p2(p1(s, None()), None())
   )
 
-fun &{T}(Writer{T} p1, Writer{None} p2)
+fun &{T}(Writer{T} p1, Writer{None} p2) -> Writer{T}
   Writer(lambda (WriterState s, T val)
     p2(p1(s, val), None())
   )
 
-fun &{T}(Writer{None} p1, Writer{T} p2)
+fun &{T}(Writer{None} p1, Writer{T} p2) -> Writer{T}
   Writer(lambda (WriterState s, T val)
     p2(p1(s, None()), val)
   )
 
-fun &{T1, T2}(Writer{T1} p1, Writer{T2} p2)
+fun &{T1, T2}(Writer{T1} p1, Writer{T2} p2) -> Writer{Pair{T1, T2}}
   Writer(lambda (WriterState s, Pair{T1, T2} val)
     p2(p1(s, val.first), val.second)
   )

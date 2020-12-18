@@ -22,13 +22,13 @@ enum ParseFlags =
 
 // -- Operators
 
-fun (){T}(Parser{T} p, string str)
+fun (){T}(Parser{T} p, string str) -> ParseResult{T}
   p(ParseState(str, 0))
 
-fun (){T}(Parser{T} p, ParseState s)
+fun (){T}(Parser{T} p, ParseState s) -> ParseResult{T}
   p.func(s)
 
-fun run{T}(Parser{T} p, string str)
+fun run{T}(Parser{T} p, string str) -> Either{T, Error}
   p.run(str, ParseFlags.None)
 
 fun run{T}(Parser{T} p, string str, ParseFlags flags) -> Either{T, Error}
@@ -40,20 +40,20 @@ fun run{T}(Parser{T} p, string str, ParseFlags flags) -> Either{T, Error}
     txtPos = getTextPos(fail.state.str[0, fail.state.pos]);
     Error("Parsing failed, line: " + (txtPos.line + 1) + ", column: " + (txtPos.column + 1)) :: fail.err
 
-fun build{T}(Parser{T} p)
+fun build{T}(Parser{T} p) -> function{string, Either{T, Error}}
   p.build(ParseFlags.None)
 
 fun build{T}(Parser{T} p, ParseFlags flags) -> function{string, Either{T, Error}}
   lambda (string str)
     p.run(str, flags)
 
-fun ??{T}(ParseResult{T} res, T def)
+fun ??{T}(ParseResult{T} res, T def) -> T
   res as ParseSuccess{T} suc ? suc.val : def
 
 fun ??{T1, T2}(ParseResult{T1} res, T2 def) -> Either{T1, T2}
   res as ParseSuccess{T1} suc ? suc.val : def
 
-fun [](ParseState p, int i)
+fun [](ParseState p, int i) -> char
   p.str[p.pos + i]
 
 fun ==(ParseState s, char c)
@@ -822,8 +822,8 @@ assert(
   p = ?txtIntParser();
   p("")     == Option{int}() &&
   p("abc")  == Option{int}() &&
-  p("42")   == some(42) &&
-  p("-42")  == some(-42))
+  p("42")   == Option(42) &&
+  p("-42")  == Option(-42))
 
 assert(
   p = (?txtIntParser() & ?txtBoolParser()).map(
