@@ -56,13 +56,13 @@ fun nthSetBit(int mask, int bit)
   ); f(mask, 0)
 
 // Convert the mask into a binary string with characters '0' and '1'.
-fun toBitString(int mask, bool printLeadingZeroes)
-  if mask == 0  -> string('0', printLeadingZeroes ? 32 : 1)
+fun toBitString(int mask, bool includeLeadingZeroes)
+  if mask == 0  -> string('0', includeLeadingZeroes ? 32 : 1)
   else          ->
     f = ( lambda (int idx, string result)
       if idx < 0  -> result
       else        -> self(--idx, result + ((mask & 1 << idx) == 0 ? '0' : '1'))
-    ); f(printLeadingZeroes ? 31 : 31 - leadingZeroes(mask), "")
+    ); f(includeLeadingZeroes ? 31 : 31 - leadingZeroes(mask), "")
 
 // Convert the mask into a hexadecimal string with characters '0'-'9' and 'A'-'F'.
 fun toHexString(int mask)

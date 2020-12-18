@@ -30,7 +30,7 @@ struct ClientContext =
   Parser{HttpReqHeader}  reqParser
 
 fun rewriteUrl(Content c, string url) -> string
-  rewriten = c.rewrites.map(lambda (RewriteRule r) r.source == url ? some(r.replacement) : none());
+  rewriten = c.rewrites.map(lambda (RewriteRule r) r.source == url ? Option(r.replacement) : None());
   rewriten.front() ?? url
 
 fun getResource(Content c, string url) -> Option{Resource}
@@ -40,8 +40,10 @@ fun getResource(Content c, string url) -> Option{Resource}
 fun replaceVariables(ClientContext ctx, Resource r) -> string
   if !r.type.isText() -> r.content
   else ->
-    ctx.variables.fold((
-      lambda (string txt, Variable v) txt.replace("{{" + v.key + "}}", v.value)
+    ctx.variables.fold(
+    (
+      lambda (string txt, Variable v)
+        txt.replace("{{" + v.key + "}}", v.value)
     ), r.content)
 
 fun getReponse(ClientContext ctx, Resource r, HttpMethod m) -> HttpResp
@@ -70,16 +72,15 @@ act writeResponse(ClientContext ctx, HttpResp resp) -> Option{Error}
   ctx.connection.write(finalRespTxt)
 
 act handleRequest(ClientContext ctx, string txt) -> Option{Error}
-  parse = httpReqHeaderParser()(txt);
+  parse = ctx.reqParser(txt);
 
-  if parse as ParseSuccess{HttpReqHeader} suc  ->
+  if parse as ParseSuccess{HttpReqHeader} suc ->
     print("-- Request received: " + suc.val.method + " " + suc.val.resource);
-    resp = suc.val.httpVersion == "1.1" ?
-      ctx.getResponse(suc.val.method, suc.val.resource) :
-      httpRespVersionNotSupported();
-    ctx.writeResponse(resp)
+    ctx.writeResponse(suc.val.httpVersion == "1.1"
+      ? ctx.getResponse(suc.val.method, suc.val.resource)
+      : httpRespVersionNotSupported())
 
-  if parse as ParseFailure                fail ->
+  if parse as ParseFailure fail ->
     print("-- Bad request received");
     ctx.writeResponse(httpRespBadReq())
 
@@ -88,15 +89,15 @@ act handleConnection(ClientContext ctx)
 
   loop = (impure lambda(StreamReadState read)
     r = read.readUntil("\r\n\r\n" :: "\n\n");
-    if r.first.isEmpty() -> none()
+    if r.first.isEmpty() -> None()
     else ->
-      handleRequest(ctx, r.first) as Error err ? some(err) : self(r.second)
+      handleRequest(ctx, r.first) as Error err ? Option(err) : self(r.second)
   );
   if loop(StreamReadState(ctx.connection.socket)) as Error err  -> err
   else                                                          -> print("- Client disconnected")
 
 act main(int port, Content content)
-  print("Starting server (port: " + port + "), press any key to stop");
+  print("Starting server (port: " + port + ")");
 
   startTime   = timeNow();
   respWriter  = httpRespWriter();

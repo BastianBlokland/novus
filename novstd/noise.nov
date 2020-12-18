@@ -7,7 +7,7 @@ import "std/math.nov"
 // Port of the Java implementation by Ken Perlin:
 // https://mrl.nyu.edu/~perlin/noise/
 //
-fun perlinNoise3d(float x, float y, float z)
+fun perlinNoise3d(float x, float y, float z) -> float
   fade = (
     lambda (float t)
       t * t * t * (t * (t * 6 - 15) + 10)
@@ -34,7 +34,7 @@ fun perlinNoise3d(float x, float y, float z)
               lerp( grad(p[ab + 1], rx,      ry - 1,  rz - 1 ),
                     grad(p[bb + 1], rx - 1,  ry - 1,  rz - 1 ), u), v), w)
 
-fun perlinPermutation()
+fun perlinPermutation() -> string
   p =
     char(151) + char(160) + char(137) + char(91)  + char(90)  + char(15)  + char(131) + char(13)  +
     char(201) + char(95)  + char(96)  + char(53)  + char(194) + char(233) + char(7)   + char(225) +

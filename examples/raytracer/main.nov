@@ -5,33 +5,35 @@ import "std.nov"
 import "scene.nov"
 import "cam.nov"
 
-fun render(int width, int height, int threads, int bounces, float degVerFov)
+fun render(int width, int height, int threads, int bounces, float degVerFov) -> List{Color}
   scene             = createScene();
   aspect            = width / float(height);
   radVerFov         = degToRad(degVerFov);
   cam               = camFromAspectAndFov(aspect, radVerFov);
   yPixelsPerThread  = height / threads;
   parallelFor(threads, lambda (int i)
+  (
     yStart        = yPixelsPerThread * i;
     lastThread    = (i == threads - 1);
     threadHeight  = lastThread ? (height - yPixelsPerThread * i) : yPixelsPerThread;
     makeColorGrid(width, threadHeight, lambda (int x, int y)
+    (
       u = float(width - x + .5) / width;
       v = float(yStart + threadHeight - y + .5) / height;
       scene.getColor(cam.getRay(u, v), 0, bounces).gammaEncode()
-    )
-  ).foldRight(combinePixels)
+    ))
+  )).foldRight(combinePixels)
 
-fun combinePixels(List{Color} result, List{Color} toAdd)
+fun combinePixels(List{Color} result, List{Color} toAdd) -> List{Color}
   toAdd.fold((lambda (List{Color} result, Color c)
     c :: result
   ), result)
 
-fun constMat(Color albedo, float reflectivity, float specularity, float specularPower)
+fun constMat(Color albedo, float reflectivity, float specularity, float specularPower) -> function{Vec3, Material}
   mat = Material(albedo, reflectivity, specularity, specularPower);
   lambda (Vec3 uv) mat
 
-fun groundMat()
+fun groundMat() -> function{Vec3, Material}
   lambda (Vec3 uv)
     p1  = perlinNoise3d(uv.x * 5.0, uv.y * 5.0, 1.0);
     p2  = perlinNoise3d(uv.x * 20.0, uv.y * 20.0, 1.0);
@@ -65,14 +67,14 @@ fun createScene()
     sun :: redLight)
 
 act driver(int width, int height, int threads, int bounces, float fov, Path outPath, Writer{Image} writer)
-  print("Begin rendering...");
-  tStart  = timestamp();
-  img     = Image(width, height, render(width, height, threads, bounces, fov));
-  print("Finished render: " + img.width + "x" + img.height + " (" + (timestamp() - tStart) + ")");
-  print("Writing result to file...");
-  outPath.fileWrite(writer, img);
+  print("Begin rendering (" + width + "x" + height + ", threads: " + threads + " bounches: " + bounces + ")");
+
+  res = bench(impure lambda () render(width, height, threads, bounces, fov));
+  print("Finished rendering in " + res.dur);
+
+  outPath.fileWrite(writer, Image(width, height, res.value)).failOnError();
   print("Wrote result to file: " + outPath)
 
 getUntilInterupt(fork driver(1280, 720, 4, 4, 60, getPathCurrent() / "image.ppm", ppmBinaryWriter()))
-// getUntilInterupt(fork driver(1280, 720, 4, 4, 60, getPathCurrent() / "image.ppm", tgaWriter()))
+//getUntilInterupt(fork driver(1280, 720, 4, 4, 60, getPathCurrent() / "image.tga", tgaWriter()))
 

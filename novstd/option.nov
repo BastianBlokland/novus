@@ -13,10 +13,10 @@ fun Option{T}()
 
 // -- Operators
 
-fun ??{T}(Option{T} opt, T def)
+fun ??{T}(Option{T} opt, T def) -> T
   opt as T val ? val : def
 
-fun ??{T}(Option{T} opt, lazy{T} def)
+fun ??{T}(Option{T} opt, lazy{T} def) -> T
   opt as T val ? val : def.get()
 
 // -- Conversions
@@ -26,26 +26,22 @@ fun string{T}(Option{T} opt)
 
 // -- Functions
 
-fun some{T}(T t)  Option(t)
-fun none{T}()     Option{T}(None())
-fun none()        None()
-
 fun map{T, TResult}(Option{T} opt, function{T, TResult} func) -> Option{TResult}
-  opt as T val ? func(val) : none()
+  opt as T val ? func(val) : None()
 
 fun map{T, TResult}(Option{T} opt, function{T, Option{TResult}} func) -> Option{TResult}
-  opt as T val ? func(val) : none()
+  opt as T val ? func(val) : None()
 
 fun unwrap{T}(Option{Option{T}} opt) -> Option{T}
-  opt as Option{T} o ? o : none()
+  opt as Option{T} o ? o : None()
 
 // -- Actions
 
 act map{T, TResult}(Option{T} opt, action{T, TResult} func) -> Option{TResult}
-  opt as T val ? func(val) : none()
+  opt as T val ? func(val) : None()
 
 act map{T, TResult}(Option{T} opt, action{T, Option{TResult}} func) -> Option{TResult}
-  opt as T val ? func(val) : none()
+  opt as T val ? func(val) : None()
 
 // -- Tests
 

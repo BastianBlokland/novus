@@ -5,22 +5,14 @@ import "std.nov"
 // -- Types
 
 struct Commit =
-  string    title,
-  string    message,
   User      user,
-  DateTime  time
+  DateTime  time,
+  string    title,
+  string    message
 
 struct User =
   string name,
   string email
-
-// -- Utilities
-
-fun toUser(string name, string email)
-  User(name, email)
-
-fun toCommit(User user, DateTime time, string title, string message)
-  Commit(title, message, user, time)
 
 // -- Parsers
 
@@ -33,7 +25,7 @@ fun userParser()
   emailEnd    = matchParser('>');
   (
     untilParser(emailStart).trim() & emailStart >> untilParser(emailEnd) << emailEnd
-  ).map(toUser)
+  ).map(construct{string, string, User})
 
 // Input example:
 // '
@@ -50,7 +42,7 @@ fun commitParser()
     whitespaceParser()                                          >> unixTimeParser()   &
     untilParser(emptyLineParser()) >> emptyLineParser()         >> lineParser()       &
     whitespaceParser()                                          >> allParser().trim()
-  ).map(toCommit)
+  ).map(construct{User, DateTime, string, string, Commit})
 
 // -- Actions
 
@@ -68,7 +60,7 @@ act getCommit(string sha) -> Either{Commit, Error}
   runGit(args, parser) ! Error("Failed to get commit: " + sha)
 
 act getCommits(List{string} shas) -> Either{List{Commit}, Error}
-  shas.parallelMapReverse(getCommit).split().valueOrError()
+  shas.parallelMap(getCommit).split().valueOrError()
 
 act getCommitsBetween(string from, string to) -> Either{List{Commit}, Error}
   args   = "rev-list" :: "--no-merges" :: (from + ".." + to);

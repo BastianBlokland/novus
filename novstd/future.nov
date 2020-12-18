@@ -3,20 +3,20 @@ import "time.nov"
 
 // -- Actions
 act poll{T}(future{T} f) -> Option{T}
-  waitNano(f, 0) ? some(f.get()) : none()
+  waitNano(f, 0) ? Option(f.get()) : None()
 
 act wait{T}(future{T} f, Duration d) -> bool
   waitNano(f, d.ns)
 
 act get{T}(future{T} f, Duration d) -> Option{T}
-  f.wait(d) ? some(f.get()) : none()
+  f.wait(d) ? Option(f.get()) : None()
 
 act get{T}(future{T} f, action{bool} predicate) -> Option{T}
   get(f, predicate, milliseconds(100))
 
 act get{T}(future{T} f, action{bool} predicate, Duration checkInternal) -> Option{T}
-  if predicate() -> f.get(checkInternal) as T value ? some(value) : self(f, predicate, checkInternal)
-  else           -> none()
+  if predicate() -> f.get(checkInternal) as T value ? Option(value) : self(f, predicate, checkInternal)
+  else           -> None()
 
 act getUntilInterupt{T}(future{T} f) -> Option{T}
   f.get(impure lambda() !interuptIsRequested())
@@ -25,4 +25,4 @@ act getUntilInterupt{T}(future{T} f) -> Option{T}
 
 assert(get(fork invoke(lambda () 42), second()) == 42)
 assert(get(fork invoke(lambda () 42), lambda () true) == 42)
-assert(get(fork invoke(lambda () 42), lambda () false) == none())
+assert(get(fork invoke(lambda () 42), lambda () false) == None())

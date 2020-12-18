@@ -94,7 +94,7 @@ fun extension(PathAbsolute abs) -> Option{string}
 fun extension(PathRelative rel) -> Option{string}
   rel.segments.back().map(lambda (string filename)
     idx = filename.indexOfLast(".");
-    idx > 0 && idx != (filename.length() - 1) ? filename[idx + 1, filename.length()] : none()
+    idx > 0 && idx != (filename.length() - 1) ? filename[idx + 1, filename.length()] : None()
   )
 
 fun extension(Path p)
@@ -127,7 +127,7 @@ fun pathRelParser{UntilT}(Parser{UntilT} until) -> Parser{PathRelative}
       else              -> Error("Invalid path segment")
   );
   flags         = ParseFlags.AllowTrailingSeperator;
-  manyUntilParser(segParser, sepParser, until, flags).map(lambda (List{string} l) PathRelative(l))
+  manyUntilParser(segParser, sepParser, until, flags).map(construct{List{string}, PathRelative})
 
 fun pathAbsParser() -> Parser{PathAbsolute}
   pathAbsParser(endParser())
@@ -138,14 +138,14 @@ fun pathAbsParser{UntilT}(Parser{UntilT} until) -> Parser{PathAbsolute}
     .map(lambda (char drive) drive.toLower().string() + ":/");
   (
     (unixRoot | windowsRoot) & pathRelParser(until)
-  ).map(lambda (string root, PathRelative p) PathAbsolute(root, p))
+  ).map(construct{string, PathRelative, PathAbsolute})
 
 fun pathParser() -> Parser{Path}
   pathParser(endParser())
 
 fun pathParser{UntilT}(Parser{UntilT} until) -> Parser{Path}
-  pathAbsParser(until).map(lambda (PathAbsolute a) Path(a)) |
-  pathRelParser(until).map(lambda (PathRelative r) Path(r)) ! Error("Invalid path")
+  pathAbsParser(until).map(construct{PathAbsolute, Path}) |
+  pathRelParser(until).map(construct{PathRelative, Path}) ! Error("Invalid path")
 
 // -- Writers
 

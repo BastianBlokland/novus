@@ -21,8 +21,8 @@ assert(approx(  getArea(Circle(4.2)),           55.4177))
 assert(         getArea(RightTriangle(3, 8)) == 12)
 
 fun getHypotenuse(Shape s)
-  if s as RightTriangle triangle -> some(getHypotenuse(triangle))
-  else                           -> none()
+  if s as RightTriangle triangle -> Option(getHypotenuse(triangle))
+  else                           -> None()
 
 fun getHypotenuse(RightTriangle triangle)
   sqrt(triangle.legA * triangle.legA + triangle.legB * triangle.legB)
@@ -31,7 +31,7 @@ fun getHypotenuse(RightTriangle triangle)
 
 assert(approx(getHypotenuse(RightTriangle(3, 8)), 8.544))
 assert(getHypotenuse(Circle(42)) is None)
-assert(getHypotenuse(Circle(42)) == none())
+assert(getHypotenuse(Circle(42)) == None())
 
 fun getPerimeter(Shape s)
   if s as Square square           -> square.size * 4

@@ -986,7 +986,6 @@ auto GetExpr::getSelfCallExpr(const parse::CallExprNode& n) -> prog::expr::NodeP
 auto GetExpr::getDynCallExpr(const parse::CallExprNode& n) -> prog::expr::NodePtr {
   auto args = getChildExprs(n);
   if (!args) {
-    assert(m_ctx->hasErrors());
     return nullptr;
   }
 

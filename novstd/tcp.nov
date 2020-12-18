@@ -28,12 +28,12 @@ fun TcpServerLoopContext(action{TcpConnection, Option{Error}} clientHandler)
 
 act write(TcpConnection c, string str) -> Option{Error}
   c.socket.write(str)
-    ? none()
+    ? None()
     : Error("Failed to write to the socket")
 
 act write(TcpConnection c, char ch) -> Option{Error}
   c.socket.write(ch)
-    ? none()
+    ? None()
     : Error("Failed to write to the socket")
 
 act write{T}(TcpConnection c, Writer{T} writer, T val) -> Option{Error}
@@ -100,7 +100,7 @@ act tcpServerLoop(TcpServer svr, TcpServerLoopContext ctx) -> Option{Error}
         remCons   = connections.filter( impure lambda (future{Option{Error}} c) c.poll() is None);
         if conErrOpt as Error conErr  -> conErr
         if ctx.predicate()            -> self(futureConnection, remCons)
-        else                          -> none()
+        else                          -> None()
       )
   );
   loop(
@@ -149,7 +149,7 @@ assert(
   client = tcpConnection("127.0.0.1", 5003).failOnError();
 
   res = tcpServerLoop(server, TcpServerLoopContext(impure lambda(TcpConnection c)
-    some(Error("Did not go well"))
+    Option(Error("Did not go well"))
   ));
   res == Error("Did not go well")
 )

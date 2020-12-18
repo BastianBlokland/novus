@@ -22,7 +22,7 @@ fun string(Vec3 v) "(" + v.x + ',' + v.y + ',' + v.z + ')'
 
 // -- Operatators
 
-fun [](Vec3 v, int idx)
+fun [](Vec3 v, int idx) -> float
   if idx <= 0 -> v.x
   if idx == 1 -> v.y
   else        -> v.z

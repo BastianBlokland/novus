@@ -27,21 +27,6 @@ struct JsonNull
 
 // -- Utilities
 
-fun toJsonVal{T}(T val)
-  JsonValue(val)
-
-fun toJsonObj(List{Pair{string, JsonValue}} fields)
-  JsonObject(fields)
-
-fun toJsonObjFields(JsonObject obj)
-  obj.fields
-
-fun toJsonArray(List{JsonValue} entries)
-  JsonArray(entries)
-
-fun toJsonArrayEntries(JsonArray a)
-  a.entries
-
 fun jsonStringEscape(string str)
   str.transform(lambda (char c)
     if c == '"'   -> "\\\""
@@ -82,17 +67,17 @@ fun string(JsonNull n)
 
 // -- Parsers
 
-fun jsonNullParser()
+fun jsonNullParser() -> Parser{JsonNull}
   matchParser("null") >> retParser(JsonNull())
 
-fun jsonNumberParser()
+fun jsonNumberParser() -> Parser{float}
   txtFloatParser()
 
-fun jsonBoolParser()
+fun jsonBoolParser() -> Parser{bool}
   (matchParser("true")  >> retParser(true))  |
   (matchParser("false") >> retParser(false)) !! Error("Invalid json boolean")
 
-fun jsonUtf8EscapedCharParser()
+fun jsonUtf8EscapedCharParser() -> Parser{string}
   hexParser = txtHexParser(4);
   Parser(lambda (ParseState s) -> ParseResult{string}
     if s[0] == '"'  -> (s + 1).success("\"")
@@ -107,7 +92,7 @@ fun jsonUtf8EscapedCharParser()
     else            -> s.failure(Error("Invalid json character escape sequence"))
   )
 
-fun jsonUtf8CharParser()
+fun jsonUtf8CharParser() -> Parser{string}
   escapedChar = jsonUtf8EscapedCharParser();
   Parser(lambda (ParseState s)
     if s[0].isControl()                   -> s.failure(Error("Unexpected character: '" + s[0].escapeForPrinting() + "'"))
@@ -118,7 +103,7 @@ fun jsonUtf8CharParser()
     else                                  -> s.failure(Error("Invalid utf8 character"))
   )
 
-fun jsonStringParser()
+fun jsonStringParser() -> Parser{string}
   quote = matchParser('"');
   (
     quote >> manyUntilParser(jsonUtf8CharParser(), quote).map(sum{string}) << quote
@@ -132,14 +117,14 @@ fun jsonObjectParser(Parser{JsonValue} valParser)
   comma     = matchParser(',')    << whitespaceParser() !! Error("Expected comma or end of object");
   close     = matchParser('}')    << whitespaceParser();
   keyValue  = (key << colon) & value;
-  (open >> manyUntilParser(keyValue, comma, close) << close).map(toJsonObj)
+  (open >> manyUntilParser(keyValue, comma, close) << close).map(construct{List{Pair{string, JsonValue}}, JsonObject})
 
 fun jsonArrayParser(Parser{JsonValue} valParser)
   open  = matchParser('[')    << whitespaceParser();
   value = valParser           << whitespaceParser();
   comma = matchParser(',')    << whitespaceParser() !! Error("Expected comma or end of array");
   close = matchParser(']')    << whitespaceParser();
-  (open >> manyUntilParser(value, comma, close) << close).map(toJsonArray)
+  (open >> manyUntilParser(value, comma, close) << close).map(construct{List{JsonValue}, JsonArray})
 
 fun jsonValueParser()
   objectP = jsonObjectParser(lazyParser(lazy jsonValueParser()));
@@ -149,14 +134,14 @@ fun jsonValueParser()
   boolP   = jsonBoolParser();
   numberP = jsonNumberParser();
   Parser(lambda (ParseState s)
-    if s[0] == '{'    -> objectP(s) .map(toJsonVal{JsonObject})
-    if s[0] == '['    -> arrayP(s)  .map(toJsonVal{JsonArray})
-    if s[0] == '"'    -> stringP(s) .map(toJsonVal{string})
-    if s[0] == 'n'    -> nullP(s)   .map(toJsonVal{JsonNull})
-    if s[0] == 't'    -> boolP(s)   .map(toJsonVal{bool})
-    if s[0] == 'f'    -> boolP(s)   .map(toJsonVal{bool})
-    if s[0].isDigit() -> numberP(s) .map(toJsonVal{float})
-    if s[0] == '-'    -> numberP(s) .map(toJsonVal{float})
+    if s[0] == '{'    -> objectP(s) .map(construct{JsonObject, JsonValue})
+    if s[0] == '['    -> arrayP(s)  .map(construct{JsonArray, JsonValue})
+    if s[0] == '"'    -> stringP(s) .map(construct{string, JsonValue})
+    if s[0] == 'n'    -> nullP(s)   .map(construct{JsonNull, JsonValue})
+    if s[0] == 't'    -> boolP(s)   .map(construct{bool, JsonValue})
+    if s[0] == 'f'    -> boolP(s)   .map(construct{bool, JsonValue})
+    if s[0].isDigit() -> numberP(s) .map(construct{float, JsonValue})
+    if s[0] == '-'    -> numberP(s) .map(construct{float, JsonValue})
     if s[0] == '\0'   -> s.failure(Error("Missing json value"))
     else              -> s.failure(
       Error("Invalid start of json value: '" + s[0].escapeForPrinting() + "'"))
@@ -177,7 +162,7 @@ fun jsonObjectWriter(Writer{JsonValue} valWriter)
     newlineWriter()                               &
     indentedListWriter(keyValue, litWriter(','))  &
     indentWriter() & litWriter('}')
-  ).map(toJsonObjFields)
+  ).map(lambda (JsonObject v) v.fields)
 
 fun jsonArrayWriter(Writer{JsonValue} valWriter)
   (
@@ -185,7 +170,7 @@ fun jsonArrayWriter(Writer{JsonValue} valWriter)
     newlineWriter()                               &
     indentedListWriter(valWriter, litWriter(',')) &
     indentWriter() & litWriter(']')
-  ).map(toJsonArrayEntries)
+  ).map(lambda (JsonArray a) a.entries)
 
 fun jsonValueWriter()
   numWriter   = txtFloatWriter();
@@ -305,23 +290,23 @@ assert(
 
 assert(
   p = jsonArrayParser(jsonValueParser());
-  p("[]")           == toJsonArray(List{JsonValue}()) &&
-  p("[    ]")       == toJsonArray(List{JsonValue}()) &&
-  p("[1]")          == toJsonArray(toJsonVal(1.0)   :: List{JsonValue}()) &&
-  p("[ 1]")         == toJsonArray(toJsonVal(1.0)   :: List{JsonValue}()) &&
-  p("[ 1 ]")        == toJsonArray(toJsonVal(1.0)   :: List{JsonValue}()) &&
-  p("[1,2]")        == toJsonArray(toJsonVal(1.0)   :: toJsonVal(2.0)) &&
-  p("[ 1 , 2 ]")    == toJsonArray(toJsonVal(1.0)   :: toJsonVal(2.0)) &&
-  p("[ true, 2 ]")  == toJsonArray(toJsonVal(true)  :: toJsonVal(2.0)) &&
+  p("[]")           == JsonArray(List{JsonValue}()) &&
+  p("[    ]")       == JsonArray(List{JsonValue}()) &&
+  p("[1]")          == JsonArray(JsonValue(1.0)   :: List{JsonValue}()) &&
+  p("[ 1]")         == JsonArray(JsonValue(1.0)   :: List{JsonValue}()) &&
+  p("[ 1 ]")        == JsonArray(JsonValue(1.0)   :: List{JsonValue}()) &&
+  p("[1,2]")        == JsonArray(JsonValue(1.0)   :: JsonValue(2.0)) &&
+  p("[ 1 , 2 ]")    == JsonArray(JsonValue(1.0)   :: JsonValue(2.0)) &&
+  p("[ true, 2 ]")  == JsonArray(JsonValue(true)  :: JsonValue(2.0)) &&
   p("[ \"true\" , false, 2 ]") ==
-    toJsonArray(
-      toJsonVal("true") ::
-      toJsonVal(false)  ::
-      toJsonVal(2.0)    :: List{JsonValue}()) &&
+    JsonArray(
+      JsonValue("true") ::
+      JsonValue(false)  ::
+      JsonValue(2.0)    :: List{JsonValue}()) &&
   p("[ [1, 2], 2 ]") ==
-    toJsonArray(
-      toJsonVal(toJsonArray(toJsonVal(1.0) :: toJsonVal(2.0))) ::
-      toJsonVal(2.0) :: List{JsonValue}()))
+    JsonArray(
+      JsonValue(JsonArray(JsonValue(1.0) :: JsonValue(2.0))) ::
+      JsonValue(2.0) :: List{JsonValue}()))
 
 assert(
   p = jsonArrayParser(jsonValueParser());
@@ -336,29 +321,29 @@ assert(
 
 assert(
   p = jsonObjectParser(jsonValueParser());
-  p("{}")           == toJsonObj(List{Pair{string, JsonValue}}()) &&
-  p("{\"key\":32}") == toJsonObj(Pair("key", toJsonVal(32.0)) :: List{Pair{string, JsonValue}}()) &&
-  p("{ \"key\" : 32 }") == toJsonObj(Pair("key", toJsonVal(32.0)) :: List{Pair{string, JsonValue}}()))
+  p("{}")           == JsonObject(List{Pair{string, JsonValue}}()) &&
+  p("{\"key\":32}") == JsonObject(Pair("key", JsonValue(32.0)) :: List{Pair{string, JsonValue}}()) &&
+  p("{ \"key\" : 32 }") == JsonObject(Pair("key", JsonValue(32.0)) :: List{Pair{string, JsonValue}}()))
 
 assert(
   p = jsonObjectParser(jsonValueParser());
   p("{\"key1\":32,\"key2\":true}") ==
-    toJsonObj(
-      Pair("key1", toJsonVal(32.0)) ::
-      Pair("key2", toJsonVal(true)) :: List{Pair{string, JsonValue}}()))
+    JsonObject(
+      Pair("key1", JsonValue(32.0)) ::
+      Pair("key2", JsonValue(true)) :: List{Pair{string, JsonValue}}()))
 
 assert(
   p = jsonObjectParser(jsonValueParser());
   p("{\n\"key1\"\n:\n32\n,\n\"key2\"\n:\ntrue\n}") ==
-    toJsonObj(
-      Pair("key1", toJsonVal(32.0)) ::
-      Pair("key2", toJsonVal(true)) :: List{Pair{string, JsonValue}}()))
+    JsonObject(
+      Pair("key1", JsonValue(32.0)) ::
+      Pair("key2", JsonValue(true)) :: List{Pair{string, JsonValue}}()))
 
 assert(
   p = jsonObjectParser(jsonValueParser());
   p("{\"obj\":{\"k\":true}}") ==
-    toJsonObj(
-      Pair("obj", toJsonVal(toJsonObj(Pair("k", toJsonVal(true)) :: List{Pair{string, JsonValue}}()))) ::
+    JsonObject(
+      Pair("obj", JsonValue(JsonObject(Pair("k", JsonValue(true)) :: List{Pair{string, JsonValue}}()))) ::
       List{Pair{string, JsonValue}}()))
 
 assert(
@@ -380,31 +365,31 @@ assert(
 
 assert(
   w = jsonObjectWriter(jsonValueWriter());
-  w(toJsonObj(
-      Pair("key1", toJsonVal(32.0)) ::
-      Pair("key2", toJsonVal(true)) :: List{Pair{string, JsonValue}}())) ==
+  w(JsonObject(
+      Pair("key1", JsonValue(32.0)) ::
+      Pair("key2", JsonValue(true)) :: List{Pair{string, JsonValue}}())) ==
   "{\n  \"key1\": 32,\n  \"key2\": true\n}")
 
 assert(
   w = jsonObjectWriter(jsonValueWriter());
-  w(toJsonObj(
-      Pair("obj", toJsonVal(toJsonObj(Pair("k", toJsonVal(true)) :: List{Pair{string, JsonValue}}()))) ::
+  w(JsonObject(
+      Pair("obj", JsonValue(JsonObject(Pair("k", JsonValue(true)) :: List{Pair{string, JsonValue}}()))) ::
       List{Pair{string, JsonValue}}())) ==
   "{\n  \"obj\": {\n    \"k\": true\n  }\n}")
 
 assert(
   w = jsonArrayWriter(jsonValueWriter());
-  w(toJsonArray(List{JsonValue}())) == "[\n]" &&
-  w(toJsonArray(toJsonVal(1.0) :: List{JsonValue}())) == "[\n  1\n]" &&
-  w(toJsonArray(toJsonVal(1.0) :: toJsonVal(true))) == "[\n  1,\n  true\n]")
+  w(JsonArray(List{JsonValue}())) == "[\n]" &&
+  w(JsonArray(JsonValue(1.0) :: List{JsonValue}())) == "[\n  1\n]" &&
+  w(JsonArray(JsonValue(1.0) :: JsonValue(true))) == "[\n  1,\n  true\n]")
 
 assert(
   w = jsonValueWriter();
-  w(toJsonVal(JsonNull()))    == "null"   &&
-  w(toJsonVal(1.0))           == "1"      &&
-  w(toJsonVal(1.1337))        == "1.1337" &&
-  w(toJsonVal(true))          == "true"   &&
-  w(toJsonVal("hello world")) == "\"hello world\"")
+  w(JsonValue(JsonNull()))    == "null"   &&
+  w(JsonValue(1.0))           == "1"      &&
+  w(JsonValue(1.1337))        == "1.1337" &&
+  w(JsonValue(true))          == "true"   &&
+  w(JsonValue("hello world")) == "\"hello world\"")
 
 // -- Combination Tests
 

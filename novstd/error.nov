@@ -24,26 +24,26 @@ fun Error(int code)
   Error(code, code.string())
 
 fun Error(int code, string msg)
-  Error(code, msg, none())
+  Error(code, msg, None())
 
 // -- Operators
 
-fun ::(Error a, Error b)
+fun ::(Error a, Error b) -> Error
   Error(a.code, a.msg, a.next as Error n ? n :: b : b)
 
-fun ??{T}(Either{T, Error} e, T def)
+fun ??{T}(Either{T, Error} e, T def) -> T
   e as T val ? val : def
 
-fun ??{T}(Either{T, Error} e, lazy{T} def)
+fun ??{T}(Either{T, Error} e, lazy{T} def) -> T
   e as T val ? val : def.get()
 
-fun !{T}(Either{T, Error} e, Error newError)
+fun !{T}(Either{T, Error} e, Error newError) -> Either{T, Error}
   e !! (lambda (Error oldError) newError :: oldError)
 
-fun !!{T}(Either{T, Error} e, Error newError)
+fun !!{T}(Either{T, Error} e, Error newError) -> Either{T, Error}
   e !! (lambda (Error oldError) newError)
 
-fun !!{T}(Either{T, Error} e, function{Error, Error} errorMutation)
+fun !!{T}(Either{T, Error} e, function{Error, Error} errorMutation) -> Either{T, Error}
   e as Error oldError ? Either{T, Error}(errorMutation(oldError)) : e
 
 // -- Conversions
@@ -53,10 +53,10 @@ fun string(Error err)
 
 // -- Functions
 
-fun count(Error err)
+fun count(Error err) -> int
   err.next as Error n ? 1 + n.count() : 1
 
-fun distinct(Error err)
+fun distinct(Error err) -> Error
   err.allErrors().distinct().combine() ?? err
 
 fun allErrors(Error err) -> List{Error}
@@ -64,7 +64,7 @@ fun allErrors(Error err) -> List{Error}
 
 fun combine(List{Error} err) -> Option{Error}
   err.fold(lambda (Option{Error} result, Error err)
-    result as Error e ? some(e :: err) : some(err)
+    result as Error e ? Option(e :: err) : Option(err)
   )
 
 fun valueOrError{T}(Pair{T, Option{Error}} p) -> Either{T, Error}
@@ -230,7 +230,7 @@ assert(
   (v !! lambda (Error e) Error("Better error")) == 42)
 
 assert(
-  valueOrError(42, none())        == 42 &&
+  valueOrError(42, None())        == 42 &&
   valueOrError(42, Error("Test")) == Error("Test") )
 
 assert(
@@ -254,8 +254,8 @@ assert(
 
 assert(
   v = Either{int, Error}(42);
-  v.map(impure lambda (int val) val > 100 ? some(Error("Test")) : none())  is None &&
-  v.map(impure lambda (int val) val > 30 ? some(Error("Test")) : none())   == Error("Test"))
+  v.map(impure lambda (int val) val > 100 ? Option(Error("Test")) : None())  is None &&
+  v.map(impure lambda (int val) val > 30 ? Option(Error("Test")) : None())   == Error("Test"))
 
 assert(
   v = Either{int, Error}(Error());

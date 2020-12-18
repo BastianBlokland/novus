@@ -4,50 +4,56 @@ import "std/console.nov"
 
 // -- Types
 
-struct BenchResult =
+struct BenchResult{T} =
+  T         value,
+  Duration  dur
+
+struct BenchResultAverage{T} =
+  T         value,
   Duration  avgDur,
   Duration  wallTime,
   int       iters
 
 // -- Actions
 
-act bench{T}(T invokable)
-  exec = ( impure lambda ()
-    ts = timestamp();
-    invokable();
-    timestamp() - ts
-  );
-  execMany = ( impure lambda (int itrsRem, Duration elapsed)
+act bench{T}(action{T} invokable) -> BenchResult{T}
+  start  = timestamp();
+  result = invokable();
+  end    = timestamp();
+  BenchResult(result, end - start)
+
+act benchAverage{T}(action{T} invokable) -> BenchResultAverage{T}
+  runItrs = ( impure lambda (int itrsRem, Duration elapsed)
     if itrsRem <= 0 -> elapsed
-    else            -> self(--itrsRem, elapsed + exec())
+    else            -> self(--itrsRem, elapsed + bench(invokable).dur)
   );
   minIters  = 8;
   minTime   = milliseconds(10);
-  warmup    = exec();
-  ballpark  = exec();
-  iters     = max(minIters, int(minTime / max(ballpark, nanoseconds(5))));
-  wallTime  = execMany(iters, Duration(0));
+  ballpark  = bench(invokable);
+  iters     = max(minIters, int(minTime / max(ballpark.dur, nanoseconds(5))));
+  wallTime  = runItrs(iters, Duration(0));
   avgDur    = wallTime / iters;
-  BenchResult(avgDur, wallTime, iters)
+  BenchResultAverage(ballpark.value, avgDur, wallTime, iters)
 
-act benchReport{T}(T invokable)
-  res = bench(invokable);
-  print(
-    "Bench: " + res.avgDur +
-    " (" + res.avgDur.ns + " ns)" +
-    " (" + res.wallTime + " / " + res.iters + " itrs)")
+act printBench{T}(action{T} invokable) -> T
+  b = bench(invokable);
+  print("[Elapsed: " + b.dur + "]");
+  b.value
 
-act benchReportSingle{T}(T invokable)
-  ts = timestamp();
-  invokable();
-  time = timestamp() - ts;
+act printBenchAverage{T}(action{T} invokable) -> T
+  b = benchAverage(invokable);
   print(
-    "Bench: " + time +
-    " (" + time.ns + " ns)" +
-    " (SINGLE iteration)")
+    "[Elapsed: " + b.avgDur +
+    " (" + b.avgDur.ns + " ns)" +
+    " (" + b.wallTime + " / " + b.iters + " itrs)]");
+  b.value
 
 // -- Tests
 
 assert(
-  res = bench(lambda () 1 + 1);
+  res = bench(impure lambda () 1 + 1);
+  res.dur >= nanosecond())
+
+assert(
+  res = benchAverage(impure lambda () 1 + 1);
   res.avgDur < res.wallTime)

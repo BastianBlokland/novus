@@ -39,7 +39,7 @@ act readToEnd{T}(File f, Parser{T} parser) -> Either{T, Error}
 
 act write(File f, string str) -> Option{Error}
   f.stream.streamWrite(str) && f.stream.streamFlush()
-    ? none()
+    ? None()
     : Error("Failed to write to file")
 
 act write{T}(File f, Writer{T} writer, T val) -> Option{Error}
@@ -67,7 +67,7 @@ act fileRemove(Path p) -> Option{Error}
   absPath     = p.getPathAbsolute();
   absPathStr  = absPath.string();
   fileRemove(absPathStr)
-    ? none()
+    ? None()
     : Error("Failed to remove file: '" + absPathStr + "'")
 
 // -- Tests
@@ -91,7 +91,7 @@ assert(
   fileRead(p) == "hello worldhello worldhello world")
 
 assert(
-  json  = JsonValue(toJsonArray(toJsonVal(true) :: toJsonVal(2.0)));
+  json  = JsonValue(JsonArray(JsonValue(true) :: JsonValue(2.0)));
   p     = getPathCurrent() / "file-test3.tmp";
   f     = fileOpen(p, FileMode.Create, FileFlags.AutoRemove).map(
     impure lambda (File f)
