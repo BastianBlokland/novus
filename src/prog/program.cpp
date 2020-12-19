@@ -245,6 +245,9 @@ Program::Program() :
 
   // Register build-in actions.
   m_funcDecls.registerAction(
+      *this, Fk::ActionEndiannessNative, "endiannessNativeCode", sym::TypeSet{}, m_int);
+
+  m_funcDecls.registerAction(
       *this, Fk::ActionStreamCheckValid, "streamCheckValid", sym::TypeSet{m_stream}, m_bool);
   m_funcDecls.registerAction(
       *this, Fk::ActionStreamReadString, "streamRead", sym::TypeSet{m_stream, m_int}, m_string);

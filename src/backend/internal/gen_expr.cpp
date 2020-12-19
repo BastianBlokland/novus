@@ -474,6 +474,10 @@ auto GenExpr::visit(const prog::expr::CallExprNode& n) -> void {
   }
 
   // Platform actions:
+  case prog::sym::FuncKind::ActionEndiannessNative:
+    m_asmb->addPCall(novasm::PCallCode::EndiannessNative);
+    break;
+
   case prog::sym::FuncKind::ActionStreamCheckValid:
     m_asmb->addPCall(novasm::PCallCode::StreamCheckValid);
     break;

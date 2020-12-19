@@ -10,6 +10,8 @@ namespace novasm {
 */
 
 enum class PCallCode : uint8_t {
+  EndiannessNative = 1, // () -> (int) Get the native endianness of the platform.
+
   StreamCheckValid   = 10, // (stream)         -> (int)     Check if given stream is valid.
   StreamReadString   = 11, // (int, stream)    -> (string)  Read up to x bytes from a stream.
   StreamReadChar     = 12, // (stream)         -> (int)     Read a single character from a stream.

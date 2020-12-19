@@ -1,5 +1,18 @@
 import "std/text.nov"
 
+// -- Types
+
+enum Endianness =
+  Little  : 0,
+  Big     : 1
+
+// -- Conversions
+
+fun string(Endianness e)
+  if e == Endianness.Little -> "LittleEndian"
+  if e == Endianness.Big    -> "BigEndian"
+  else                      -> "Unknown"
+
 // -- Functions
 
 // Unset the least significant set bit.
@@ -75,6 +88,10 @@ fun toHexString(int mask)
         v = mask & 0xF;
         string(v < 10 ? char('0' + v) : char('A' + v - 10)) + result)
     ); f(mask, "")
+
+// -- Actions
+
+act endiannessNative() Endianness(endiannessNativeCode())
 
 // -- Tests
 
@@ -157,3 +174,7 @@ assert(
   toHexString(0x1A2B3C) == "1A2B3C" &&
   toHexString(0xABCDEF) == "ABCDEF" &&
   toHexString(0x123ABC) == "123ABC")
+
+// This test is left here for the first person running this on a BigEndian system, needs thorough
+// testing as none of this code has ever been run on a BigEndian system.
+assert(endiannessNative() == Endianness.Little)

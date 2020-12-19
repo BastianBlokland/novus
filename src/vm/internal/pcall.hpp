@@ -3,6 +3,7 @@
 #include "internal/executor_handle.hpp"
 #include "internal/interupt.hpp"
 #include "internal/path_utilities.hpp"
+#include "internal/platform_utilities.hpp"
 #include "internal/ref_long.hpp"
 #include "internal/ref_process.hpp"
 #include "internal/ref_stream_console.hpp"
@@ -77,6 +78,10 @@ auto inline pcall(
 #define PEEK_INT() PEEK().getInt()
 
   switch (code) {
+  case PCallCode::EndiannessNative: {
+    PUSH_INT(static_cast<uint32_t>(getEndianness()));
+  } break;
+
   case PCallCode::StreamCheckValid: {
     PUSH_BOOL(streamCheckValid(POP()));
   } break;

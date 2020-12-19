@@ -276,6 +276,7 @@ add_library(vm STATIC
   vm/internal/interupt.cpp
   vm/internal/memory_allocator.cpp
   vm/internal/path_utilities.cpp
+  vm/internal/platform_utilities.cpp
   vm/internal/ref_allocator.cpp
   vm/internal/ref.cpp
   vm/platform_interface.cpp
