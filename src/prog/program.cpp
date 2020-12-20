@@ -231,7 +231,6 @@ Program::Program() :
   m_funcDecls.registerImplicitConv(*this, Fk::ConvIntLong, m_int, m_long);
   m_funcDecls.registerImplicitConv(*this, Fk::ConvCharLong, m_char, m_long);
   m_funcDecls.registerImplicitConv(*this, Fk::ConvIntFloat, m_int, m_float);
-  m_funcDecls.registerImplicitConv(*this, Fk::ConvLongFloat, m_long, m_float);
 
   // Register build-in identity conversions (turns into no-ops).
   m_funcDecls.registerFunc(*this, Fk::NoOp, "int", sym::TypeSet{m_int}, m_int);
@@ -247,6 +246,7 @@ Program::Program() :
   m_funcDecls.registerFunc(*this, Fk::ConvIntChar, "char", sym::TypeSet{m_int}, m_char);
   m_funcDecls.registerFunc(*this, Fk::ConvFloatChar, "char", sym::TypeSet{m_float}, m_char);
   m_funcDecls.registerFunc(*this, Fk::ConvFloatLong, "long", sym::TypeSet{m_float}, m_long);
+  m_funcDecls.registerFunc(*this, Fk::ConvLongFloat, "float", sym::TypeSet{m_long}, m_float);
   m_funcDecls.registerFunc(*this, Fk::ConvIntString, "string", sym::TypeSet{m_int}, m_string);
   m_funcDecls.registerFunc(*this, Fk::ConvLongString, "string", sym::TypeSet{m_long}, m_string);
   m_funcDecls.registerFunc(*this, Fk::ConvFloatString, "string", sym::TypeSet{m_float}, m_string);
