@@ -145,9 +145,9 @@ fun stringWriter()
     s.write(str)
   )
 
-fun txtCharWriter()
+fun charWriter()
   Writer(lambda (WriterState s, char c)
-    s.write(c.string())
+    s.write(c)
   )
 
 fun txtIntWriter()
@@ -209,7 +209,7 @@ assert(
   w("hello world") == "hello world")
 
 assert(
-  w = txtCharWriter();
+  w = charWriter();
   w('w') == "w")
 
 assert(

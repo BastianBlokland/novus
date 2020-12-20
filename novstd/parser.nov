@@ -331,7 +331,7 @@ fun emptyLineParser()
 fun multiLineParser(int count)
   (lineParser() << newlineParser()).repeat(count)
 
-fun txtCharParser()
+fun charParser()
   Parser(lambda (ParseState s) -> ParseResult{char}
     if s.isEnd()  -> s.failure(Error("Unexpected end of input"))
     else          -> (s + 1).success(s[0])
@@ -791,10 +791,10 @@ assert(
   txtFloatParser()("1. 0 ")  is ParseFailure)
 
 assert(
-  txtCharParser()("a")                            == 'a' &&
-  txtCharParser()("hello")                        == 'h' &&
-  (txtCharParser() :: txtCharParser())("hello")   == 'h' :: 'e' &&
-  txtCharParser()("")                             is ParseFailure)
+  charParser()("a")                            == 'a' &&
+  charParser()("hello")                        == 'h' &&
+  (charParser() :: charParser())("hello")   == 'h' :: 'e' &&
+  charParser()("")                             is ParseFailure)
 
 assert(
   txtBoolParser()("true")  == true &&

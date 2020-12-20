@@ -1,4 +1,6 @@
+import "std/parser.nov"
 import "std/text.nov"
+import "std/writer.nov"
 
 // -- Types
 
@@ -13,7 +15,7 @@ fun string(Endianness e)
   if e == Endianness.Big    -> "BigEndian"
   else                      -> "Unknown"
 
-// -- Functions
+// -- Utilities
 
 // Unset the least significant set bit.
 fun unsetLow(int mask)
@@ -88,6 +90,71 @@ fun toHexString(int mask)
         v = mask & 0xF;
         string(v < 10 ? char('0' + v) : char('A' + v - 10)) + result)
     ); f(mask, "")
+
+fun signExtend16To32(int val)
+  (0xffff & val ^ 0x8000) - 0x8000
+
+// -- Parsers
+
+fun bitInt8Parser() -> Parser{char}
+  charParser()
+
+fun bitInt16Parser(Endianness e) -> Parser{int}
+  takeParser(2).map(lambda (string s)
+    if e == Endianness.Little -> signExtend16To32((int(s[0]) << 0) | (int(s[1]) << 8))
+    else                      -> signExtend16To32((int(s[0]) << 8) | (int(s[1]) << 0))
+  )
+
+fun bitInt32Parser(Endianness e) -> Parser{int}
+  takeParser(4).map(lambda (string s)
+    if e == Endianness.Little ->
+      (int(s[0]) << 0)  | (int(s[1]) << 8)  | (int(s[2]) << 16) | (int(s[3]) << 24)
+    else                      ->
+      (int(s[0]) << 24) | (int(s[1]) << 16) | (int(s[2]) << 8)  | (int(s[3]) << 0)
+  )
+
+fun bitInt64Parser(Endianness e) -> Parser{long}
+  takeParser(8).map(lambda (string s)
+    if e == Endianness.Little ->
+      (long(s[0]) << 0)  | (long(s[1]) << 8)  | (long(s[2]) << 16) | (long(s[3]) << 24) |
+      (long(s[4]) << 32) | (long(s[5]) << 40) | (long(s[6]) << 48) | (long(s[7]) << 56)
+    else                      ->
+      (long(s[0]) << 56) | (long(s[1]) << 48) | (long(s[2]) << 40) | (long(s[3]) << 32) |
+      (long(s[4]) << 24) | (long(s[5]) << 16) | (long(s[6]) << 8)  | (long(s[7]) << 0)
+  )
+
+// -- Writers
+
+fun bitInt8Writer() -> Writer{char}
+  charWriter()
+
+fun bitInt16Writer(Endianness e) -> Writer{int}
+  Writer(lambda (WriterState s, int i)
+    if e == Endianness.Little ->
+      s.write(char(i >> 0) + char(i >> 8))
+    else                      ->
+      s.write(char(i >> 8) + char(i >> 0))
+  )
+
+fun bitInt32Writer(Endianness e) -> Writer{int}
+  Writer(lambda (WriterState s, int i)
+    if e == Endianness.Little ->
+      s.write(char(i >> 0) + char(i >> 8) + char(i >> 16) + char(i >> 24))
+    else                      ->
+      s.write(char(i >> 24) + char(i >> 16) + char(i >> 8) + char(i >> 0))
+  )
+
+fun bitInt64Writer(Endianness e) -> Writer{long}
+  Writer(lambda (WriterState s, long l)
+    if e == Endianness.Little ->
+      s.write(
+        char(l >> 0)  + char(l >> 8)  + char(l >> 16) + char(l >> 24) +
+        char(l >> 32) + char(l >> 40) + char(l >> 48) + char(l >> 56))
+    else                      ->
+      s.write(
+        char(l >> 56) + char(l >> 48) + char(l >> 40) + char(l >> 32) +
+        char(l >> 24) + char(l >> 16) + char(l >> 8)  + char(l >> 0))
+  )
 
 // -- Actions
 
@@ -174,6 +241,125 @@ assert(
   toHexString(0x1A2B3C) == "1A2B3C" &&
   toHexString(0xABCDEF) == "ABCDEF" &&
   toHexString(0x123ABC) == "123ABC")
+
+assert(bitInt8Writer()('a') == "a")
+
+assert(
+  w = bitInt8Writer();
+  p = bitInt8Parser();
+  p(w(char(0)).string())    == char(0)    &&
+  p(w(char(1)).string())    == char(1)    &&
+  p(w(char(-1)).string())   == char(-1)   &&
+  p(w(char(42)).string())   == char(42)   &&
+  p(w(char(-42)).string())  == char(-42)  &&
+  p(w(char(240)).string())  == char(240)  &&
+  p(w(char(256)).string())  == char(256))
+
+assert(
+  w = bitInt16Writer(Endianness.Little);
+  p = bitInt16Parser(Endianness.Little);
+  w(1337)                 == char(57) + char(5) &&
+  p(w(0).string())        == 0                  &&
+  p(w(1).string())        == 1                  &&
+  p(w(-1).string())       == -1                 &&
+  p(w(42).string())       == 42                 &&
+  p(w(-42).string())      == -42                &&
+  p(w(1337).string())     == 1337               &&
+  p(w(-1337).string())    == -1337              &&
+  p(w(32_767).string())   == 32_767             &&
+  p(w(-32_768).string())  == -32_768)
+
+assert(
+  w = bitInt16Writer(Endianness.Big);
+  p = bitInt16Parser(Endianness.Big);
+  w(1337)                 == char(5) + char(57) &&
+  p(w(0).string())        == 0                  &&
+  p(w(1).string())        == 1                  &&
+  p(w(-1).string())       == -1                 &&
+  p(w(42).string())       == 42                 &&
+  p(w(-42).string())      == -42                &&
+  p(w(1337).string())     == 1337               &&
+  p(w(-1337).string())    == -1337              &&
+  p(w(32_767).string())   == 32_767             &&
+  p(w(-32_768).string())  == -32_768)
+
+assert(
+  w = bitInt32Writer(Endianness.Little);
+  p = bitInt32Parser(Endianness.Little);
+  w(13371337)             == char(201) + char(7) + char(204) + char(0)  &&
+  p(w(0).string())        == 0                                          &&
+  p(w(1).string())        == 1                                          &&
+  p(w(-1).string())       == -1                                         &&
+  p(w(42).string())       == 42                                         &&
+  p(w(-42).string())      == -42                                        &&
+  p(w(1337).string())     == 1337                                       &&
+  p(w(-1337).string())    == -1337                                      &&
+  p(w(32_767).string())   == 32_767                                     &&
+  p(w(-32_768).string())  == -32_768                                    &&
+  p(w(100_000).string())  == 100_000                                    &&
+  p(w(-100_000).string()) == -100_000                                   &&
+  p(w(intMax()).string()) == intMax()                                   &&
+  p(w(intMin()).string()) == intMin())
+
+assert(
+  w = bitInt32Writer(Endianness.Big);
+  p = bitInt32Parser(Endianness.Big);
+  w(13371337)             == char(0) + char(204) + char(7) + char(201)  &&
+  p(w(0).string())        == 0                                          &&
+  p(w(1).string())        == 1                                          &&
+  p(w(-1).string())       == -1                                         &&
+  p(w(42).string())       == 42                                         &&
+  p(w(-42).string())      == -42                                        &&
+  p(w(1337).string())     == 1337                                       &&
+  p(w(-1337).string())    == -1337                                      &&
+  p(w(32_767).string())   == 32_767                                     &&
+  p(w(-32_768).string())  == -32_768                                    &&
+  p(w(100_000).string())  == 100_000                                    &&
+  p(w(-100_000).string()) == -100_000                                   &&
+  p(w(intMax()).string()) == intMax()                                   &&
+  p(w(intMin()).string()) == intMin())
+
+assert(
+  w = bitInt64Writer(Endianness.Little);
+  p = bitInt64Parser(Endianness.Little);
+  w(1337133713371337L)                        ==
+    char(201) + char(176) + char(0) + char(180) + char(29) + char(192) + char(4) + char(0) &&
+  p(w(0L).string())                           == 0L                                        &&
+  p(w(1L).string())                           == 1L                                        &&
+  p(w(-1L).string())                          == -1L                                       &&
+  p(w(42L).string())                          == 42L                                       &&
+  p(w(-42L).string())                         == -42L                                      &&
+  p(w(1337L).string())                        == 1337L                                     &&
+  p(w(-1337L).string())                       == -1337L                                    &&
+  p(w(32_767L).string())                      == 32_767L                                   &&
+  p(w(-32_768L).string())                     == -32_768L                                  &&
+  p(w(100_000L).string())                     == 100_000L                                  &&
+  p(w(-100_000L).string())                    == -100_000L                                 &&
+  p(w(2_147_483_647L).string())               == 2_147_483_647L                            &&
+  p(w(-2_147_483_648L).string())              == -2_147_483_648L                           &&
+  p(w(9_223_372_036_854_775_807L).string())   == 9_223_372_036_854_775_807L                &&
+  p(w(longMin()).string())                    == longMin() )
+
+assert(
+  w = bitInt64Writer(Endianness.Big);
+  p = bitInt64Parser(Endianness.Big);
+  w(1337133713371337L)                        ==
+    char(0) + char(4) + char(192) + char(29) + char(180) + char(0) + char(176) + char(201)  &&
+  p(w(0L).string())                           == 0L                                         &&
+  p(w(1L).string())                           == 1L                                         &&
+  p(w(-1L).string())                          == -1L                                        &&
+  p(w(42L).string())                          == 42L                                        &&
+  p(w(-42L).string())                         == -42L                                       &&
+  p(w(1337L).string())                        == 1337L                                      &&
+  p(w(-1337L).string())                       == -1337L                                     &&
+  p(w(32_767L).string())                      == 32_767L                                    &&
+  p(w(-32_768L).string())                     == -32_768L                                   &&
+  p(w(100_000L).string())                     == 100_000L                                   &&
+  p(w(-100_000L).string())                    == -100_000L                                  &&
+  p(w(2_147_483_647L).string())               == 2_147_483_647L                             &&
+  p(w(-2_147_483_648L).string())              == -2_147_483_648L                            &&
+  p(w(9_223_372_036_854_775_807L).string())   == 9_223_372_036_854_775_807L                 &&
+  p(w(longMin()).string())                    == longMin() )
 
 // This test is left here for the first person running this on a BigEndian system, needs thorough
 // testing as none of this code has ever been run on a BigEndian system.

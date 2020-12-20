@@ -134,7 +134,7 @@ fun pathAbsParser() -> Parser{PathAbsolute}
 
 fun pathAbsParser{UntilT}(Parser{UntilT} until) -> Parser{PathAbsolute}
   unixRoot    = matchParser("/");
-  windowsRoot = (txtCharParser() << (matchParser(":\\") | matchParser(":/")))
+  windowsRoot = (charParser() << (matchParser(":\\") | matchParser(":/")))
     .map(lambda (char drive) drive.toLower().string() + ":/");
   (
     (unixRoot | windowsRoot) & pathRelParser(until)
