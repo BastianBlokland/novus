@@ -197,6 +197,7 @@ auto disassembleInstructions(const Assembly& assembly, const dasm::InstructionLa
     case OpCode::ConvFloatString:
     case OpCode::ConvCharString:
     case OpCode::ConvIntChar:
+    case OpCode::ConvLongChar:
     case OpCode::ConvFloatChar:
     case OpCode::ConvFloatLong:
     case OpCode::MakeNullStruct:

@@ -257,6 +257,9 @@ auto operator<<(std::ostream& out, const OpCode& rhs) noexcept -> std::ostream& 
   case OpCode::ConvIntChar:
     out << "conv-int-char";
     break;
+  case OpCode::ConvLongChar:
+    out << "conv-long-char";
+    break;
   case OpCode::ConvFloatChar:
     out << "conv-float-char";
     break;

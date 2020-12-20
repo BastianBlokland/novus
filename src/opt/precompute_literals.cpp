@@ -127,6 +127,7 @@ namespace opt {
   case prog::sym::FuncKind::ConvLongFloat:
   case prog::sym::FuncKind::ConvLongString:
   case prog::sym::FuncKind::DefLong:
+  case prog::sym::FuncKind::ConvLongChar:
 
   // Bool
   case prog::sym::FuncKind::InvBool:
@@ -711,6 +712,10 @@ private:
     case prog::sym::FuncKind::DefLong: {
       assert(args.size() == 0);
       return prog::expr::litLongNode(m_prog, 0);
+    }
+    case prog::sym::FuncKind::ConvLongChar: {
+      assert(args.size() == 1);
+      return prog::expr::litCharNode(m_prog, static_cast<uint8_t>(getLong(*args[0])));
     }
 
     // Bool

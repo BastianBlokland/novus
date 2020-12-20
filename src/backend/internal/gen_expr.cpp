@@ -414,6 +414,9 @@ auto GenExpr::visit(const prog::expr::CallExprNode& n) -> void {
   case prog::sym::FuncKind::ConvIntChar:
     m_asmb->addConvIntChar();
     break;
+  case prog::sym::FuncKind::ConvLongChar:
+    m_asmb->addConvLongChar();
+    break;
   case prog::sym::FuncKind::ConvFloatChar:
     m_asmb->addConvFloatChar();
     break;

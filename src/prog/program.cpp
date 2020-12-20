@@ -244,6 +244,7 @@ Program::Program() :
   m_funcDecls.registerFunc(*this, Fk::ConvFloatInt, "int", sym::TypeSet{m_float}, m_int);
   m_funcDecls.registerFunc(*this, Fk::ConvLongInt, "int", sym::TypeSet{m_long}, m_int);
   m_funcDecls.registerFunc(*this, Fk::ConvIntChar, "char", sym::TypeSet{m_int}, m_char);
+  m_funcDecls.registerFunc(*this, Fk::ConvLongChar, "char", sym::TypeSet{m_long}, m_char);
   m_funcDecls.registerFunc(*this, Fk::ConvFloatChar, "char", sym::TypeSet{m_float}, m_char);
   m_funcDecls.registerFunc(*this, Fk::ConvFloatLong, "long", sym::TypeSet{m_float}, m_long);
   m_funcDecls.registerFunc(*this, Fk::ConvLongFloat, "float", sym::TypeSet{m_long}, m_float);

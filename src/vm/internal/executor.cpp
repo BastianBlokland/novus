@@ -667,6 +667,9 @@ auto execute(
     case OpCode::ConvIntChar: {
       PUSH_INT(static_cast<uint8_t>(POP_INT()));
     } break;
+    case OpCode::ConvLongChar: {
+      PUSH_INT(static_cast<uint8_t>(getLong(POP())));
+    } break;
     case OpCode::ConvFloatChar: {
       PUSH_INT(static_cast<uint8_t>(POP_FLOAT()));
     } break;

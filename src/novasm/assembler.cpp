@@ -239,6 +239,8 @@ auto Assembler::addConvCharString() -> void { writeOpCode(OpCode::ConvCharString
 
 auto Assembler::addConvIntChar() -> void { writeOpCode(OpCode::ConvIntChar); }
 
+auto Assembler::addConvLongChar() -> void { writeOpCode(OpCode::ConvLongChar); }
+
 auto Assembler::addConvFloatChar() -> void { writeOpCode(OpCode::ConvFloatChar); }
 
 auto Assembler::addConvFloatLong() -> void { writeOpCode(OpCode::ConvFloatLong); }
