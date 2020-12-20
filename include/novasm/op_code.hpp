@@ -64,12 +64,16 @@ enum class OpCode : uint8_t {
   ShiftRightInt  = 73, // [] (int, int)         -> (int)    Bitwise shift an int x to right.
   ShiftRightLong = 74, // [] (int, long)        -> (int)    Bitwise shift an long x to right.
   AndInt         = 75, // [] (int, int)         -> (int)    Bitwise and two ints.
-  OrInt          = 76, // [] (int, int)         -> (int)    Bitwise or two ints.
-  XorInt         = 77, // [] (int, int)         -> (int)    Bitwise exclusive-or two ints.
-  InvInt         = 78, // [] (int)              -> (int)    Bitwise invert an int.
-  LengthString   = 79, // [] (string)           -> (int)    Calc length of a string.
-  IndexString    = 80, // [] (int, string)      -> (int)    Get char at index in string (ascii).
-  SliceString    = 81, // [] (int, int, string) -> (string) Substring from start to end (exclusive).
+  AndLong        = 76, // [] (long, long)       -> (long)   Bitwise and two longs.
+  OrInt          = 77, // [] (int, int)         -> (int)    Bitwise or two ints.
+  OrLong         = 78, // [] (long, long)       -> (long)   Bitwise or two longs.
+  XorInt         = 79, // [] (int, int)         -> (int)    Bitwise exclusive-or two ints.
+  XorLong        = 80, // [] (long, long)       -> (long)   Bitwise exclusive-or two longs.
+  InvInt         = 81, // [] (int)              -> (int)    Bitwise invert an int.
+  InvLong        = 82, // [] (long)             -> (long)   Bitwise invert an long.
+  LengthString   = 83, // [] (string)           -> (int)    Calc length of a string.
+  IndexString    = 84, // [] (int, string)      -> (int)    Get char at index in string (ascii).
+  SliceString    = 85, // [] (int, int, string) -> (string) Substring from start to end (exclusive).
 
   CheckEqInt        = 90, //  [] (int, int)               -> (int) Check ints equal.
   CheckEqLong       = 91, //  [] (long, long)             -> (int) Check long equal.

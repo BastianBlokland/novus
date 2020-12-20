@@ -148,6 +148,25 @@ auto GenExpr::visit(const prog::expr::CallExprNode& n) -> void {
     m_asmb->addLoadLitInt(1);
     m_asmb->addSubInt();
     break;
+  case prog::sym::FuncKind::ShiftLeftInt:
+    m_asmb->addShiftLeftInt();
+    break;
+  case prog::sym::FuncKind::ShiftRightInt:
+    m_asmb->addShiftRightInt();
+    break;
+  case prog::sym::FuncKind::AndInt:
+    m_asmb->addAndInt();
+    break;
+  case prog::sym::FuncKind::OrInt:
+    m_asmb->addOrInt();
+    break;
+  case prog::sym::FuncKind::XorInt:
+    m_asmb->addXorInt();
+    break;
+  case prog::sym::FuncKind::InvInt:
+    m_asmb->addInvInt();
+    break;
+
   case prog::sym::FuncKind::CheckEqInt:
     m_asmb->addCheckEqInt();
     break;
@@ -196,6 +215,25 @@ auto GenExpr::visit(const prog::expr::CallExprNode& n) -> void {
     m_asmb->addLoadLitLong(1);
     m_asmb->addSubLong();
     break;
+  case prog::sym::FuncKind::ShiftLeftLong:
+    m_asmb->addShiftLeftLong();
+    break;
+  case prog::sym::FuncKind::ShiftRightLong:
+    m_asmb->addShiftRightLong();
+    break;
+  case prog::sym::FuncKind::AndLong:
+    m_asmb->addAndLong();
+    break;
+  case prog::sym::FuncKind::OrLong:
+    m_asmb->addOrLong();
+    break;
+  case prog::sym::FuncKind::XorLong:
+    m_asmb->addXorLong();
+    break;
+  case prog::sym::FuncKind::InvLong:
+    m_asmb->addInvLong();
+    break;
+
   case prog::sym::FuncKind::CheckEqLong:
     m_asmb->addCheckEqLong();
     break;
@@ -270,30 +308,6 @@ auto GenExpr::visit(const prog::expr::CallExprNode& n) -> void {
   case prog::sym::FuncKind::DecrementFloat:
     m_asmb->addLoadLitFloat(1.0F);
     m_asmb->addSubFloat();
-    break;
-  case prog::sym::FuncKind::ShiftLeftInt:
-    m_asmb->addShiftLeftInt();
-    break;
-  case prog::sym::FuncKind::ShiftLeftLong:
-    m_asmb->addShiftLeftLong();
-    break;
-  case prog::sym::FuncKind::ShiftRightInt:
-    m_asmb->addShiftRightInt();
-    break;
-  case prog::sym::FuncKind::ShiftRightLong:
-    m_asmb->addShiftRightLong();
-    break;
-  case prog::sym::FuncKind::AndInt:
-    m_asmb->addAndInt();
-    break;
-  case prog::sym::FuncKind::OrInt:
-    m_asmb->addOrInt();
-    break;
-  case prog::sym::FuncKind::XorInt:
-    m_asmb->addXorInt();
-    break;
-  case prog::sym::FuncKind::InvInt:
-    m_asmb->addInvInt();
     break;
 
   case prog::sym::FuncKind::CheckEqFloat:

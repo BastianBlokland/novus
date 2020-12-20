@@ -514,18 +514,36 @@ auto execute(
       auto a = POP_UINT();
       PUSH_UINT(a & b);
     } break;
+    case OpCode::AndLong: {
+      auto b = getLong(POP());
+      auto a = getLong(POP());
+      PUSH_LONG(a & b);
+    } break;
     case OpCode::OrInt: {
       auto b = POP_UINT();
       auto a = POP_UINT();
       PUSH_UINT(a | b);
+    } break;
+    case OpCode::OrLong: {
+      auto b = getLong(POP());
+      auto a = getLong(POP());
+      PUSH_LONG(a | b);
     } break;
     case OpCode::XorInt: {
       auto b = POP_UINT();
       auto a = POP_UINT();
       PUSH_UINT(a ^ b);
     } break;
+    case OpCode::XorLong: {
+      auto b = getLong(POP());
+      auto a = getLong(POP());
+      PUSH_LONG(a ^ b);
+    } break;
     case OpCode::InvInt: {
       PUSH_UINT(~POP_UINT());
+    } break;
+    case OpCode::InvLong: {
+      PUSH_LONG(~getLong(POP()));
     } break;
     case OpCode::LengthString: {
       auto* strRef = getStringRef(refAlloc, POP());

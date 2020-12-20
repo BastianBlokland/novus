@@ -277,5 +277,165 @@ TEST_CASE("Execute long operations", "[vm]") {
         "input",
         "1");
   }
+
+  SECTION("And") {
+    CHECK_EXPR(
+        [](novasm::Assembler* asmb) -> void {
+          asmb->addLoadLitLong(1);
+          asmb->addLoadLitLong(1);
+          asmb->addAndLong();
+          asmb->addConvLongString();
+          ADD_PRINT(asmb);
+        },
+        "input",
+        "1");
+    CHECK_EXPR(
+        [](novasm::Assembler* asmb) -> void {
+          asmb->addLoadLitLong(10);
+          asmb->addLoadLitLong(9);
+          asmb->addAndLong();
+          asmb->addConvLongString();
+          ADD_PRINT(asmb);
+        },
+        "input",
+        "8");
+    CHECK_EXPR(
+        [](novasm::Assembler* asmb) -> void {
+          asmb->addLoadLitLong(-42);
+          asmb->addLoadLitLong(-42);
+          asmb->addAndLong();
+          asmb->addConvLongString();
+          ADD_PRINT(asmb);
+        },
+        "input",
+        "-42");
+    CHECK_EXPR(
+        [](novasm::Assembler* asmb) -> void {
+          asmb->addLoadLitLong(-42);
+          asmb->addLoadLitLong(42);
+          asmb->addAndLong();
+          asmb->addConvLongString();
+          ADD_PRINT(asmb);
+        },
+        "input",
+        "2");
+  }
+
+  SECTION("Or") {
+    CHECK_EXPR(
+        [](novasm::Assembler* asmb) -> void {
+          asmb->addLoadLitLong(1);
+          asmb->addLoadLitLong(1);
+          asmb->addOrLong();
+          asmb->addConvLongString();
+          ADD_PRINT(asmb);
+        },
+        "input",
+        "1");
+    CHECK_EXPR(
+        [](novasm::Assembler* asmb) -> void {
+          asmb->addLoadLitLong(10);
+          asmb->addLoadLitLong(9);
+          asmb->addOrLong();
+          asmb->addConvLongString();
+          ADD_PRINT(asmb);
+        },
+        "input",
+        "11");
+    CHECK_EXPR(
+        [](novasm::Assembler* asmb) -> void {
+          asmb->addLoadLitLong(-42);
+          asmb->addLoadLitLong(-42);
+          asmb->addOrLong();
+          asmb->addConvLongString();
+          ADD_PRINT(asmb);
+        },
+        "input",
+        "-42");
+    CHECK_EXPR(
+        [](novasm::Assembler* asmb) -> void {
+          asmb->addLoadLitLong(-42);
+          asmb->addLoadLitLong(42);
+          asmb->addOrLong();
+          asmb->addConvLongString();
+          ADD_PRINT(asmb);
+        },
+        "input",
+        "-2");
+  }
+
+  SECTION("Xor") {
+    CHECK_EXPR(
+        [](novasm::Assembler* asmb) -> void {
+          asmb->addLoadLitLong(1);
+          asmb->addLoadLitLong(1);
+          asmb->addXorLong();
+          asmb->addConvLongString();
+          ADD_PRINT(asmb);
+        },
+        "input",
+        "0");
+    CHECK_EXPR(
+        [](novasm::Assembler* asmb) -> void {
+          asmb->addLoadLitLong(10);
+          asmb->addLoadLitLong(9);
+          asmb->addXorLong();
+          asmb->addConvLongString();
+          ADD_PRINT(asmb);
+        },
+        "input",
+        "3");
+    CHECK_EXPR(
+        [](novasm::Assembler* asmb) -> void {
+          asmb->addLoadLitLong(-42);
+          asmb->addLoadLitLong(-42);
+          asmb->addXorLong();
+          asmb->addConvLongString();
+          ADD_PRINT(asmb);
+        },
+        "input",
+        "0");
+    CHECK_EXPR(
+        [](novasm::Assembler* asmb) -> void {
+          asmb->addLoadLitLong(-42);
+          asmb->addLoadLitLong(42);
+          asmb->addXorLong();
+          asmb->addConvLongString();
+          ADD_PRINT(asmb);
+        },
+        "input",
+        "-4");
+  }
+
+  SECTION("Inv") {
+    CHECK_EXPR(
+        [](novasm::Assembler* asmb) -> void {
+          asmb->addLoadLitLong(0);
+          asmb->addInvLong();
+          asmb->addConvLongString();
+          ADD_PRINT(asmb);
+        },
+        "input",
+        "-1");
+    CHECK_EXPR(
+        [](novasm::Assembler* asmb) -> void {
+          asmb->addLoadLitLong(-1);
+          asmb->addInvLong();
+          asmb->addConvLongString();
+          ADD_PRINT(asmb);
+        },
+        "input",
+        "0");
+    CHECK_EXPR(
+        [](novasm::Assembler* asmb) -> void {
+          asmb->addLoadLitLong(0xFFFF);
+          asmb->addInvLong();
+          asmb->addConvLongString();
+          ADD_PRINT(asmb);
+        },
+        "input",
+        "-65536");
+  }
 }
+
 } // namespace vm

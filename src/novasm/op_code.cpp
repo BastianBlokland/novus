@@ -156,14 +156,26 @@ auto operator<<(std::ostream& out, const OpCode& rhs) noexcept -> std::ostream& 
   case OpCode::AndInt:
     out << "and-int";
     break;
+  case OpCode::AndLong:
+    out << "and-long";
+    break;
   case OpCode::OrInt:
     out << "or-int";
+    break;
+  case OpCode::OrLong:
+    out << "or-long";
     break;
   case OpCode::XorInt:
     out << "xor-int";
     break;
+  case OpCode::XorLong:
+    out << "xor-long";
+    break;
   case OpCode::InvInt:
     out << "inv-int";
+    break;
+  case OpCode::InvLong:
+    out << "inv-long";
     break;
   case OpCode::LengthString:
     out << "length-string";

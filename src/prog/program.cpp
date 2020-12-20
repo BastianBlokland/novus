@@ -86,6 +86,8 @@ Program::Program() :
       *this, Fk::IncrementLong, getFuncName(Op::PlusPlus), sym::TypeSet{m_long}, m_long);
   m_funcDecls.registerFunc(
       *this, Fk::DecrementLong, getFuncName(Op::MinusMinus), sym::TypeSet{m_long}, m_long);
+  m_funcDecls.registerFunc(
+      *this, Fk::InvLong, getFuncName(Op::Tilde), sym::TypeSet{m_long}, m_long);
 
   // Register build-in binary long operators.
   m_funcDecls.registerFunc(
@@ -102,6 +104,12 @@ Program::Program() :
       *this, Fk::ShiftLeftLong, getFuncName(Op::ShiftL), sym::TypeSet{m_long, m_int}, m_long);
   m_funcDecls.registerFunc(
       *this, Fk::ShiftRightLong, getFuncName(Op::ShiftR), sym::TypeSet{m_long, m_int}, m_long);
+  m_funcDecls.registerFunc(
+      *this, Fk::AndLong, getFuncName(Op::Amp), sym::TypeSet{m_long, m_long}, m_long);
+  m_funcDecls.registerFunc(
+      *this, Fk::OrLong, getFuncName(Op::Pipe), sym::TypeSet{m_long, m_long}, m_long);
+  m_funcDecls.registerFunc(
+      *this, Fk::XorLong, getFuncName(Op::Hat), sym::TypeSet{m_long, m_long}, m_long);
   m_funcDecls.registerFunc(
       *this, Fk::CheckEqLong, getFuncName(Op::EqEq), sym::TypeSet{m_long, m_long}, m_bool);
   m_funcDecls.registerFunc(

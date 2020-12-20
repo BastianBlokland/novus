@@ -40,6 +40,10 @@ enum class FuncKind {
   DecrementLong,  // Decrement a long value.
   ShiftLeftLong,  // Shift bits of an long to the left.
   ShiftRightLong, // Shift bits of an long to the right.
+  AndLong,        // Bitwise and two longs.
+  OrLong,         // Bitwise or two longs.
+  XorLong,        // Bitwise xor two longs.
+  InvLong,        // Bitwise invert an long.
   CheckEqLong,    // Check if two longs are equal.
   CheckNEqLong,   // Check if two longs are not equal.
   CheckLeLong,    // Check if a long is less then another long.

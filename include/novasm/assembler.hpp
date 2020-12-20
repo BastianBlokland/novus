@@ -76,9 +76,13 @@ public:
   auto addShiftRightInt() -> void;
   auto addShiftRightLong() -> void;
   auto addAndInt() -> void;
+  auto addAndLong() -> void;
   auto addOrInt() -> void;
+  auto addOrLong() -> void;
   auto addXorInt() -> void;
+  auto addXorLong() -> void;
   auto addInvInt() -> void;
+  auto addInvLong() -> void;
   auto addLengthString() -> void;
   auto addIndexString() -> void;
   auto addSliceString() -> void;

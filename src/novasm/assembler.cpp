@@ -158,11 +158,19 @@ auto Assembler::addShiftRightLong() -> void { writeOpCode(OpCode::ShiftRightLong
 
 auto Assembler::addAndInt() -> void { writeOpCode(OpCode::AndInt); }
 
+auto Assembler::addAndLong() -> void { writeOpCode(OpCode::AndLong); }
+
 auto Assembler::addOrInt() -> void { writeOpCode(OpCode::OrInt); }
+
+auto Assembler::addOrLong() -> void { writeOpCode(OpCode::OrLong); }
 
 auto Assembler::addXorInt() -> void { writeOpCode(OpCode::XorInt); }
 
+auto Assembler::addXorLong() -> void { writeOpCode(OpCode::XorLong); }
+
 auto Assembler::addInvInt() -> void { writeOpCode(OpCode::InvInt); }
+
+auto Assembler::addInvLong() -> void { writeOpCode(OpCode::InvLong); }
 
 auto Assembler::addLengthString() -> void { writeOpCode(OpCode::LengthString); }
 
