@@ -136,6 +136,16 @@ TEST_CASE("Generate assembly for call expressions", "[backend]") {
       asmb->addLoadLitLong(3);
       asmb->addRemLong();
     });
+    CHECK_EXPR("1L << 3", [](novasm::Assembler* asmb) -> void {
+      asmb->addLoadLitLong(1);
+      asmb->addLoadLitInt(3);
+      asmb->addShiftLeftLong();
+    });
+    CHECK_EXPR("1L >> 3", [](novasm::Assembler* asmb) -> void {
+      asmb->addLoadLitLong(1);
+      asmb->addLoadLitInt(3);
+      asmb->addShiftRightLong();
+    });
   }
 
   SECTION("Float operations") {

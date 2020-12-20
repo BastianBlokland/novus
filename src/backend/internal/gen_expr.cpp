@@ -274,8 +274,14 @@ auto GenExpr::visit(const prog::expr::CallExprNode& n) -> void {
   case prog::sym::FuncKind::ShiftLeftInt:
     m_asmb->addShiftLeftInt();
     break;
+  case prog::sym::FuncKind::ShiftLeftLong:
+    m_asmb->addShiftLeftLong();
+    break;
   case prog::sym::FuncKind::ShiftRightInt:
     m_asmb->addShiftRightInt();
+    break;
+  case prog::sym::FuncKind::ShiftRightLong:
+    m_asmb->addShiftRightLong();
     break;
   case prog::sym::FuncKind::AndInt:
     m_asmb->addAndInt();

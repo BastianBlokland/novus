@@ -72,7 +72,9 @@ public:
   auto addNegFloat() -> void;
   auto addLogicInvInt() -> void;
   auto addShiftLeftInt() -> void;
+  auto addShiftLeftLong() -> void;
   auto addShiftRightInt() -> void;
+  auto addShiftRightLong() -> void;
   auto addAndInt() -> void;
   auto addOrInt() -> void;
   auto addXorInt() -> void;

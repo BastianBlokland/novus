@@ -494,10 +494,20 @@ auto execute(
       auto a = POP_UINT();
       PUSH_UINT(a << b);
     } break;
+    case OpCode::ShiftLeftLong: {
+      auto b = POP_UINT();
+      auto a = getLong(POP());
+      PUSH_LONG(a << b);
+    } break;
     case OpCode::ShiftRightInt: {
       auto b = POP_UINT();
       auto a = POP_UINT();
       PUSH_UINT(a >> b);
+    } break;
+    case OpCode::ShiftRightLong: {
+      auto b = POP_UINT();
+      auto a = getLong(POP());
+      PUSH_LONG(a >> b);
     } break;
     case OpCode::AndInt: {
       auto b = POP_UINT();

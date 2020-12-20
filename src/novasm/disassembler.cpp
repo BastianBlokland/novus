@@ -160,7 +160,9 @@ auto disassembleInstructions(const Assembly& assembly, const dasm::InstructionLa
     case OpCode::NegFloat:
     case OpCode::LogicInvInt:
     case OpCode::ShiftLeftInt:
+    case OpCode::ShiftLeftLong:
     case OpCode::ShiftRightInt:
+    case OpCode::ShiftRightLong:
     case OpCode::AndInt:
     case OpCode::OrInt:
     case OpCode::XorInt:

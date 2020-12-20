@@ -151,5 +151,131 @@ TEST_CASE("Execute long operations", "[vm]") {
         "input",
         "42");
   }
+
+  SECTION("Shift left") {
+    CHECK_EXPR(
+        [](novasm::Assembler* asmb) -> void {
+          asmb->addLoadLitLong(1);
+          asmb->addLoadLitInt(1);
+          asmb->addShiftLeftLong();
+          asmb->addConvLongString();
+          ADD_PRINT(asmb);
+        },
+        "input",
+        "2");
+    CHECK_EXPR(
+        [](novasm::Assembler* asmb) -> void {
+          asmb->addLoadLitLong(2);
+          asmb->addLoadLitInt(2);
+          asmb->addShiftLeftLong();
+          asmb->addConvLongString();
+          ADD_PRINT(asmb);
+        },
+        "input",
+        "8");
+    CHECK_EXPR(
+        [](novasm::Assembler* asmb) -> void {
+          asmb->addLoadLitLong(4);
+          asmb->addLoadLitInt(0);
+          asmb->addShiftLeftLong();
+          asmb->addConvLongString();
+          ADD_PRINT(asmb);
+        },
+        "input",
+        "4");
+    CHECK_EXPR(
+        [](novasm::Assembler* asmb) -> void {
+          asmb->addLoadLitLong(1);
+          asmb->addLoadLitInt(32);
+          asmb->addShiftLeftLong();
+          asmb->addConvLongString();
+          ADD_PRINT(asmb);
+        },
+        "input",
+        "4294967296");
+    CHECK_EXPR(
+        [](novasm::Assembler* asmb) -> void {
+          asmb->addLoadLitLong(1);
+          asmb->addLoadLitInt(40);
+          asmb->addShiftLeftLong();
+          asmb->addConvLongString();
+          ADD_PRINT(asmb);
+        },
+        "input",
+        "1099511627776");
+    CHECK_EXPR(
+        [](novasm::Assembler* asmb) -> void {
+          asmb->addLoadLitLong(1);
+          asmb->addLoadLitInt(64);
+          asmb->addShiftLeftLong();
+          asmb->addConvLongString();
+          ADD_PRINT(asmb);
+        },
+        "input",
+        "1");
+    CHECK_EXPR(
+        [](novasm::Assembler* asmb) -> void {
+          asmb->addLoadLitLong(2);
+          asmb->addLoadLitInt(-2);
+          asmb->addShiftLeftLong();
+          asmb->addConvLongString();
+          ADD_PRINT(asmb);
+        },
+        "input",
+        "-9223372036854775808");
+  }
+
+  SECTION("Shift right") {
+    CHECK_EXPR(
+        [](novasm::Assembler* asmb) -> void {
+          asmb->addLoadLitLong(1);
+          asmb->addLoadLitInt(1);
+          asmb->addShiftRightLong();
+          asmb->addConvLongString();
+          ADD_PRINT(asmb);
+        },
+        "input",
+        "0");
+    CHECK_EXPR(
+        [](novasm::Assembler* asmb) -> void {
+          asmb->addLoadLitLong(8);
+          asmb->addLoadLitInt(2);
+          asmb->addShiftRightLong();
+          asmb->addConvLongString();
+          ADD_PRINT(asmb);
+        },
+        "input",
+        "2");
+    CHECK_EXPR(
+        [](novasm::Assembler* asmb) -> void {
+          asmb->addLoadLitLong(8);
+          asmb->addLoadLitInt(0);
+          asmb->addShiftRightLong();
+          asmb->addConvLongString();
+          ADD_PRINT(asmb);
+        },
+        "input",
+        "8");
+    CHECK_EXPR(
+        [](novasm::Assembler* asmb) -> void {
+          asmb->addLoadLitLong(2);
+          asmb->addLoadLitInt(-1);
+          asmb->addShiftRightLong();
+          asmb->addConvLongString();
+          ADD_PRINT(asmb);
+        },
+        "input",
+        "0");
+    CHECK_EXPR(
+        [](novasm::Assembler* asmb) -> void {
+          asmb->addLoadLitLong(1099511627776L);
+          asmb->addLoadLitInt(40);
+          asmb->addShiftRightLong();
+          asmb->addConvLongString();
+          ADD_PRINT(asmb);
+        },
+        "input",
+        "1");
+  }
 }
 } // namespace vm

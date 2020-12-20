@@ -111,6 +111,8 @@ namespace opt {
   case prog::sym::FuncKind::NegateLong:
   case prog::sym::FuncKind::IncrementLong:
   case prog::sym::FuncKind::DecrementLong:
+  case prog::sym::FuncKind::ShiftLeftLong:
+  case prog::sym::FuncKind::ShiftRightLong:
   case prog::sym::FuncKind::CheckEqLong:
   case prog::sym::FuncKind::CheckNEqLong:
   case prog::sym::FuncKind::CheckLeLong:
@@ -640,6 +642,14 @@ private:
       assert(args.size() == 1);
       return prog::expr::litLongNode(m_prog, getLong(*args[0]) - 1);
     }
+    case prog::sym::FuncKind::ShiftLeftLong: {
+      assert(args.size() == 2);
+      return prog::expr::litLongNode(m_prog, getLong(*args[0]) << getInt(*args[1]));
+    }
+    case prog::sym::FuncKind::ShiftRightLong: {
+      assert(args.size() == 2);
+      return prog::expr::litLongNode(m_prog, getLong(*args[0]) >> getInt(*args[1]));
+    }
     case prog::sym::FuncKind::CheckEqLong: {
       assert(args.size() == 2);
       return prog::expr::litBoolNode(m_prog, getLong(*args[0]) == getLong(*args[1]));
@@ -683,7 +693,7 @@ private:
       return prog::expr::litLongNode(m_prog, 0);
     }
 
-    // Char
+    // Bool
     case prog::sym::FuncKind::InvBool: {
       assert(args.size() == 1);
       return prog::expr::litBoolNode(m_prog, !getBool(*args[0]));

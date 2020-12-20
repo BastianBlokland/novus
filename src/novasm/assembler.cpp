@@ -150,7 +150,11 @@ auto Assembler::addLogicInvInt() -> void { writeOpCode(OpCode::LogicInvInt); }
 
 auto Assembler::addShiftLeftInt() -> void { writeOpCode(OpCode::ShiftLeftInt); }
 
+auto Assembler::addShiftLeftLong() -> void { writeOpCode(OpCode::ShiftLeftLong); }
+
 auto Assembler::addShiftRightInt() -> void { writeOpCode(OpCode::ShiftRightInt); }
+
+auto Assembler::addShiftRightLong() -> void { writeOpCode(OpCode::ShiftRightLong); }
 
 auto Assembler::addAndInt() -> void { writeOpCode(OpCode::AndInt); }
 

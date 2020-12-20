@@ -144,8 +144,14 @@ auto operator<<(std::ostream& out, const OpCode& rhs) noexcept -> std::ostream& 
   case OpCode::ShiftLeftInt:
     out << "shiftleft-int";
     break;
+  case OpCode::ShiftLeftLong:
+    out << "shiftleft-long";
+    break;
   case OpCode::ShiftRightInt:
     out << "shiftright-int";
+    break;
+  case OpCode::ShiftRightLong:
+    out << "shiftright-long";
     break;
   case OpCode::AndInt:
     out << "and-int";

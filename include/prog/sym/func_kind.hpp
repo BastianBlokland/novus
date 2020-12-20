@@ -30,20 +30,22 @@ enum class FuncKind {
   CheckGtInt,    // Check if an integer is greater then another integer.
   CheckGtEqInt,  // Check if an integer is greater then or equal to another integer.
 
-  AddLong,       // Add two longs.
-  SubLong,       // Substract two longs.
-  MulLong,       // Multiply two longs.
-  DivLong,       // Divide two longs.
-  RemLong,       // Return division remainder of two longs.
-  NegateLong,    // Negate a long value.
-  IncrementLong, // Increment a long value.
-  DecrementLong, // Decrement a long value.
-  CheckEqLong,   // Check if two longs are equal.
-  CheckNEqLong,  // Check if two longs are not equal.
-  CheckLeLong,   // Check if a long is less then another long.
-  CheckLeEqLong, // Check if a long is less then or equal to another long.
-  CheckGtLong,   // Check if a long is greater then another long.
-  CheckGtEqLong, // CHeck if a long is greater then or equal to another long.
+  AddLong,        // Add two longs.
+  SubLong,        // Substract two longs.
+  MulLong,        // Multiply two longs.
+  DivLong,        // Divide two longs.
+  RemLong,        // Return division remainder of two longs.
+  NegateLong,     // Negate a long value.
+  IncrementLong,  // Increment a long value.
+  DecrementLong,  // Decrement a long value.
+  ShiftLeftLong,  // Shift bits of an long to the left.
+  ShiftRightLong, // Shift bits of an long to the right.
+  CheckEqLong,    // Check if two longs are equal.
+  CheckNEqLong,   // Check if two longs are not equal.
+  CheckLeLong,    // Check if a long is less then another long.
+  CheckLeEqLong,  // Check if a long is less then or equal to another long.
+  CheckGtLong,    // Check if a long is greater then another long.
+  CheckGtEqLong,  // CHeck if a long is greater then or equal to another long.
 
   AddFloat,       // Add two floats.
   SubFloat,       // Substract two floats.

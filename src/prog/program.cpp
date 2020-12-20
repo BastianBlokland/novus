@@ -99,6 +99,10 @@ Program::Program() :
   m_funcDecls.registerFunc(
       *this, Fk::RemLong, getFuncName(Op::Rem), sym::TypeSet{m_long, m_long}, m_long);
   m_funcDecls.registerFunc(
+      *this, Fk::ShiftLeftLong, getFuncName(Op::ShiftL), sym::TypeSet{m_long, m_int}, m_long);
+  m_funcDecls.registerFunc(
+      *this, Fk::ShiftRightLong, getFuncName(Op::ShiftR), sym::TypeSet{m_long, m_int}, m_long);
+  m_funcDecls.registerFunc(
       *this, Fk::CheckEqLong, getFuncName(Op::EqEq), sym::TypeSet{m_long, m_long}, m_bool);
   m_funcDecls.registerFunc(
       *this, Fk::CheckNEqLong, getFuncName(Op::BangEq), sym::TypeSet{m_long, m_long}, m_bool);
