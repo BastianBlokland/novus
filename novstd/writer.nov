@@ -1,7 +1,8 @@
+import "std/bits.nov"
 import "std/math.nov"
-import "std/text.nov"
-import "std/pair.nov"
 import "std/option.nov"
+import "std/pair.nov"
+import "std/text.nov"
 
 // -- Types
 
@@ -155,6 +156,15 @@ fun txtIntWriter()
     s.write(i.string())
   )
 
+fun txtHexWriter()
+  txtHexWriter(0)
+
+fun txtHexWriter(int minDigits)
+  Writer(lambda (WriterState s, int i)
+    str = i.toHexString();
+    s.write(string('0', minDigits - str.length()) + str)
+  )
+
 fun txtFloatWriter()
   Writer(lambda (WriterState s, float f)
     s.write(f.string())
@@ -215,6 +225,24 @@ assert(
 assert(
   w = txtIntWriter();
   w(42) == "42")
+
+assert(
+  w = txtHexWriter();
+  w(0)        == "0"        &&
+  w(1)        == "1"        &&
+  w(-1)       == "FFFFFFFF" &&
+  w(42)       == "2A"       &&
+  w(1337)     == "539"      &&
+  w(13371337) == "CC07C9")
+
+assert(
+  w = txtHexWriter(4);
+  w(0)        == "0000"     &&
+  w(1)        == "0001"     &&
+  w(1)        == "0001"     &&
+  w(-1)       == "FFFFFFFF" &&
+  w(42)       == "002A"     &&
+  w(1337)     == "0539")
 
 assert(
   w = txtFloatWriter();
