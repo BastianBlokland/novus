@@ -1,6 +1,6 @@
-import "pair.nov"
-import "list.nov"
-import "text.nov"
+import "std/pair.nov"
+import "std/list.nov"
+import "std/text.nov"
 
 // -- Types
 

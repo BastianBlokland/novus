@@ -1,4 +1,4 @@
-import "func.nov"
+import "std/func.nov"
 
 // -- Types
 

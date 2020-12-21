@@ -1,6 +1,6 @@
-import "parser.nov"
-import "rt.nov"
-import "writer.nov"
+import "std/parser.nov"
+import "std/rt.nov"
+import "std/writer.nov"
 
 // -- Types
 

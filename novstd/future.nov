@@ -1,5 +1,5 @@
-import "option.nov"
-import "time.nov"
+import "std/option.nov"
+import "std/time.nov"
 
 // -- Actions
 act poll{T}(future{T} f) -> Option{T}
