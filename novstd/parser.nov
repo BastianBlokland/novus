@@ -331,7 +331,7 @@ fun emptyLineParser()
 fun multiLineParser(int count)
   (lineParser() << newlineParser()).repeat(count)
 
-fun txtCharParser()
+fun charParser()
   Parser(lambda (ParseState s) -> ParseResult{char}
     if s.isEnd()  -> s.failure(Error("Unexpected end of input"))
     else          -> (s + 1).success(s[0])
@@ -422,11 +422,11 @@ fun manyParser{T}(Parser{T} p)
   Parser(lambda (ParseState begin)
     invoke(lambda (ParseState cur, List{T} result) -> ParseResult{List{T}}
     (
-        if cur.isEnd() -> cur.success(result)
-        else ->
-          res = p(cur);
-          if res as ParseSuccess{T} suc   -> self(suc.state, suc.val :: result)
-          if res as ParseFailure    fail  -> cur.success(result)
+      if cur.isEnd() -> cur.success(result)
+      else ->
+        res = p(cur);
+        if res as ParseSuccess{T} suc   -> self(suc.state, suc.val :: result)
+        if res as ParseFailure    fail  -> cur.success(result)
     ), begin, List{T}()).map(reverse{T})
   )
 
@@ -706,6 +706,7 @@ assert(
 assert(
   txtHexParser()("0")         == 0x0 &&
   txtHexParser()("9")         == 0x9 &&
+  txtHexParser()("009")       == 0x9 &&
   txtHexParser()("a")         == 0xA &&
   txtHexParser()("A")         == 0xA &&
   txtHexParser()("abcdef")    == 0xABCDEF &&
@@ -791,10 +792,10 @@ assert(
   txtFloatParser()("1. 0 ")  is ParseFailure)
 
 assert(
-  txtCharParser()("a")                            == 'a' &&
-  txtCharParser()("hello")                        == 'h' &&
-  (txtCharParser() :: txtCharParser())("hello")   == 'h' :: 'e' &&
-  txtCharParser()("")                             is ParseFailure)
+  charParser()("a")                            == 'a' &&
+  charParser()("hello")                        == 'h' &&
+  (charParser() :: charParser())("hello")   == 'h' :: 'e' &&
+  charParser()("")                             is ParseFailure)
 
 assert(
   txtBoolParser()("true")  == true &&

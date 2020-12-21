@@ -111,6 +111,12 @@ namespace opt {
   case prog::sym::FuncKind::NegateLong:
   case prog::sym::FuncKind::IncrementLong:
   case prog::sym::FuncKind::DecrementLong:
+  case prog::sym::FuncKind::ShiftLeftLong:
+  case prog::sym::FuncKind::ShiftRightLong:
+  case prog::sym::FuncKind::AndLong:
+  case prog::sym::FuncKind::OrLong:
+  case prog::sym::FuncKind::XorLong:
+  case prog::sym::FuncKind::InvLong:
   case prog::sym::FuncKind::CheckEqLong:
   case prog::sym::FuncKind::CheckNEqLong:
   case prog::sym::FuncKind::CheckLeLong:
@@ -121,6 +127,7 @@ namespace opt {
   case prog::sym::FuncKind::ConvLongFloat:
   case prog::sym::FuncKind::ConvLongString:
   case prog::sym::FuncKind::DefLong:
+  case prog::sym::FuncKind::ConvLongChar:
 
   // Bool
   case prog::sym::FuncKind::InvBool:
@@ -640,6 +647,30 @@ private:
       assert(args.size() == 1);
       return prog::expr::litLongNode(m_prog, getLong(*args[0]) - 1);
     }
+    case prog::sym::FuncKind::ShiftLeftLong: {
+      assert(args.size() == 2);
+      return prog::expr::litLongNode(m_prog, getLong(*args[0]) << getInt(*args[1]));
+    }
+    case prog::sym::FuncKind::ShiftRightLong: {
+      assert(args.size() == 2);
+      return prog::expr::litLongNode(m_prog, getLong(*args[0]) >> getInt(*args[1]));
+    }
+    case prog::sym::FuncKind::AndLong: {
+      assert(args.size() == 2);
+      return prog::expr::litLongNode(m_prog, getLong(*args[0]) & getLong(*args[1]));
+    }
+    case prog::sym::FuncKind::OrLong: {
+      assert(args.size() == 2);
+      return prog::expr::litLongNode(m_prog, getLong(*args[0]) | getLong(*args[1]));
+    }
+    case prog::sym::FuncKind::XorLong: {
+      assert(args.size() == 2);
+      return prog::expr::litLongNode(m_prog, getLong(*args[0]) ^ getLong(*args[1]));
+    }
+    case prog::sym::FuncKind::InvLong: {
+      assert(args.size() == 1);
+      return prog::expr::litLongNode(m_prog, ~getLong(*args[0]));
+    }
     case prog::sym::FuncKind::CheckEqLong: {
       assert(args.size() == 2);
       return prog::expr::litBoolNode(m_prog, getLong(*args[0]) == getLong(*args[1]));
@@ -682,8 +713,12 @@ private:
       assert(args.size() == 0);
       return prog::expr::litLongNode(m_prog, 0);
     }
+    case prog::sym::FuncKind::ConvLongChar: {
+      assert(args.size() == 1);
+      return prog::expr::litCharNode(m_prog, static_cast<uint8_t>(getLong(*args[0])));
+    }
 
-    // Char
+    // Bool
     case prog::sym::FuncKind::InvBool: {
       assert(args.size() == 1);
       return prog::expr::litBoolNode(m_prog, !getBool(*args[0]));

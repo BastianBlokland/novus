@@ -33,6 +33,40 @@ enum class TcpStreamType : uint8_t {
   Connection = 1, // Connections are be used for sending and receiving.
 };
 
+enum class IpAddressFamily : uint8_t {
+  IpV4 = 0,
+  IpV6 = 1,
+};
+
+inline auto isIpFamilyValid(IpAddressFamily family) noexcept {
+  switch (family) {
+  case IpAddressFamily::IpV4:
+  case IpAddressFamily::IpV6:
+    return true;
+  }
+  return false;
+}
+
+inline auto getIpFamilyCode(IpAddressFamily family) noexcept {
+  switch (family) {
+  case IpAddressFamily::IpV4:
+    return AF_INET;
+  case IpAddressFamily::IpV6:
+    return AF_INET6;
+  }
+  return AF_UNSPEC;
+}
+
+inline auto getIpAddressSize(IpAddressFamily family) noexcept -> size_t {
+  switch (family) {
+  case IpAddressFamily::IpV4:
+    return 4u;
+  case IpAddressFamily::IpV6:
+    return 16u;
+  }
+  return 0u;
+}
+
 auto configureSocket(SOCKET sock) noexcept -> void;
 
 // Tcp implementation of the 'stream' interface.
@@ -264,39 +298,57 @@ inline auto tcpOpenConnection(
     ExecutorHandle* execHandle,
     RefAllocator* alloc,
     StringRef* address,
+    IpAddressFamily family,
     int32_t port) noexcept -> TcpStreamRef* {
 
   if (!settings.socketsEnabled) {
+    // Sockets are not enabled on this runtime.
     return alloc->allocPlain<TcpStreamRef>(TcpStreamType::Connection, INVALID_SOCKET);
   }
 
   if (port < 0 || port > std::numeric_limits<uint16_t>::max()) {
-    // TODO: Add error code that user code call query.
+    // Invalid port number.
+    return alloc->allocPlain<TcpStreamRef>(TcpStreamType::Connection, INVALID_SOCKET);
+  }
+
+  if (!isIpFamilyValid(family)) {
+    // Invalid address family.
+    return alloc->allocPlain<TcpStreamRef>(TcpStreamType::Connection, INVALID_SOCKET);
+  }
+
+  if (address->getSize() != getIpAddressSize(family)) {
+    // Invalid address size.
     return alloc->allocPlain<TcpStreamRef>(TcpStreamType::Connection, INVALID_SOCKET);
   }
 
   // Open a socket.
-  const auto sock = socket(AF_INET, SOCK_STREAM, 0);
+  const auto sock = socket(getIpFamilyCode(family), SOCK_STREAM, 0);
   if (!SOCKET_VALID(sock)) {
     return alloc->allocPlain<TcpStreamRef>(TcpStreamType::Connection, sock, SOCKET_ERR);
   }
 
   configureSocket(sock);
 
-  sockaddr_in addr = {};
-  addr.sin_family  = AF_INET;
-  addr.sin_port    = htons(static_cast<uint16_t>(port));
-
-  // Convert the ip address to binary form.
-  if (inet_pton(AF_INET, address->getCharDataPtr(), &addr.sin_addr) != 1) {
-    return alloc->allocPlain<TcpStreamRef>(TcpStreamType::Connection, sock, SOCKET_ERR);
-  }
-
   // 'connect' call blocks so we mark ourselves as paused so the gc can trigger in the mean time.
   execHandle->setState(ExecState::Paused);
 
-  // Connect to the remote address.
-  auto res = connect(sock, static_cast<sockaddr*>(static_cast<void*>(&addr)), sizeof(sockaddr_in));
+  int res = -1;
+  switch (family) {
+  case IpAddressFamily::IpV4: {
+    sockaddr_in addr = {};
+    addr.sin_family  = AF_INET;
+    addr.sin_port    = htons(static_cast<uint16_t>(port));
+    std::memcpy(&addr.sin_addr, address->getCharDataPtr(), 4u);
+    res = connect(sock, reinterpret_cast<sockaddr*>(&addr), sizeof(sockaddr_in));
+  } break;
+  case IpAddressFamily::IpV6: {
+    sockaddr_in6 addr = {};
+    addr.sin6_family  = AF_INET6;
+    addr.sin6_port    = htons(static_cast<uint16_t>(port));
+    std::memcpy(&addr.sin6_addr, address->getCharDataPtr(), 16u);
+    res = connect(sock, reinterpret_cast<sockaddr*>(&addr), sizeof(sockaddr_in6));
+  } break;
+  }
 
   // After resuming check if we should wait for gc (or if we are aborted).
   execHandle->setState(ExecState::Running);
@@ -313,20 +365,34 @@ inline auto tcpOpenConnection(
 }
 
 inline auto tcpStartServer(
-    const Settings& settings, RefAllocator* alloc, int32_t port, int32_t backlog) noexcept
-    -> TcpStreamRef* {
+    const Settings& settings,
+    RefAllocator* alloc,
+    IpAddressFamily family,
+    int32_t port,
+    int32_t backlog) noexcept -> TcpStreamRef* {
 
   if (!settings.socketsEnabled) {
+    // Sockets are not enabled on this runtime.
     return alloc->allocPlain<TcpStreamRef>(TcpStreamType::Server, INVALID_SOCKET);
   }
 
   if (port < 0 || port > std::numeric_limits<uint16_t>::max()) {
-    // TODO: Add error code that user code can query.
+    // Invalid port number.
     return alloc->allocPlain<TcpStreamRef>(TcpStreamType::Server, INVALID_SOCKET);
   }
 
+  if (backlog > std::numeric_limits<int16_t>::max()) {
+    // Invalid backlog.
+    return alloc->allocPlain<TcpStreamRef>(TcpStreamType::Server, INVALID_SOCKET);
+  }
+
+  if (!isIpFamilyValid(family)) {
+    // Invalid address family.
+    return alloc->allocPlain<TcpStreamRef>(TcpStreamType::Connection, INVALID_SOCKET);
+  }
+
   // Open a socket.
-  const auto sock = socket(AF_INET, SOCK_STREAM, 0);
+  const auto sock = socket(getIpFamilyCode(family), SOCK_STREAM, 0);
   if (!SOCKET_VALID(sock)) {
     return alloc->allocPlain<TcpStreamRef>(TcpStreamType::Server, sock, SOCKET_ERR);
   }
@@ -334,11 +400,26 @@ inline auto tcpStartServer(
   configureSocket(sock);
 
   // Bind the socket to any ip address at the given port.
-  sockaddr_in addr;
-  addr.sin_family      = AF_INET;
-  addr.sin_port        = htons(static_cast<uint16_t>(port));
-  addr.sin_addr.s_addr = INADDR_ANY;
-  if (bind(sock, static_cast<sockaddr*>(static_cast<void*>(&addr)), sizeof(sockaddr_in)) < 0) {
+  int res = -1;
+  switch (family) {
+  case IpAddressFamily::IpV4: {
+    sockaddr_in addr     = {};
+    addr.sin_family      = AF_INET;
+    addr.sin_port        = htons(static_cast<uint16_t>(port));
+    addr.sin_addr.s_addr = INADDR_ANY;
+    res                  = bind(sock, reinterpret_cast<sockaddr*>(&addr), sizeof(sockaddr_in));
+  } break;
+  case IpAddressFamily::IpV6: {
+    sockaddr_in6 addr = {};
+    addr.sin6_family  = AF_INET6;
+    addr.sin6_port    = htons(static_cast<uint16_t>(port));
+    addr.sin6_addr    = in6addr_any;
+    res               = bind(sock, reinterpret_cast<sockaddr*>(&addr), sizeof(sockaddr_in6));
+  } break;
+  }
+
+  if (res < 0) {
+    // Failed to bind socket to port.
     return alloc->allocPlain<TcpStreamRef>(TcpStreamType::Server, sock, SOCKET_ERR);
   }
 
@@ -358,6 +439,7 @@ inline auto tcpAcceptConnection(
     Value stream) noexcept -> TcpStreamRef* {
 
   if (!settings.socketsEnabled) {
+    // Sockets are not enabled on this runtime.
     return alloc->allocPlain<TcpStreamRef>(TcpStreamType::Connection, INVALID_SOCKET);
   }
 
@@ -378,14 +460,21 @@ inline auto ipLookupAddress(
     const Settings& settings,
     ExecutorHandle* execHandle,
     RefAllocator* alloc,
-    StringRef* hostName) noexcept -> StringRef* {
+    StringRef* hostName,
+    IpAddressFamily family) noexcept -> StringRef* {
 
   if (!settings.socketsEnabled) {
+    // Sockets are not enabled on this runtime.
+    return alloc->allocStr(0);
+  }
+
+  if (!isIpFamilyValid(family)) {
+    // Invalid address family.
     return alloc->allocStr(0);
   }
 
   addrinfo hints    = {};
-  hints.ai_family   = AF_INET;
+  hints.ai_family   = getIpFamilyCode(family);
   hints.ai_socktype = SOCK_STREAM;
 
   // 'getaddrinfo' call blocks so mark ourselves as paused so the gc can trigger in the mean time.
@@ -409,43 +498,29 @@ inline auto ipLookupAddress(
     return alloc->allocStr(0);
   }
 
-  // Note: 'getaddrinfo' returns a linked list of addresses sorted by priority, atm we just use the
-  // first one.
+  // Note: 'getaddrinfo' returns a linked list of addresses sorted by priority, we return the first
+  // from the requested family.
+  do {
+    if (res->ai_family == hints.ai_family) {
+      void* addrData = nullptr;
+      switch (family) {
+      case IpAddressFamily::IpV4:
+        addrData = &reinterpret_cast<sockaddr_in*>(res->ai_addr)->sin_addr;
+        break;
+      case IpAddressFamily::IpV6:
+        addrData = &reinterpret_cast<sockaddr_in6*>(res->ai_addr)->sin6_addr;
+        break;
+      }
+      auto* str = alloc->allocStr(getIpAddressSize(family));
+      std::memcpy(str->getCharDataPtr(), addrData, str->getSize());
 
-  unsigned int maxSize;
-  void* addr;
-  switch (res->ai_family) {
-  case AF_INET:
-    maxSize = INET_ADDRSTRLEN;
-    addr    = &reinterpret_cast<sockaddr_in*>(res->ai_addr)->sin_addr;
-    break;
-  case AF_INET6:
-    maxSize = INET6_ADDRSTRLEN;
-    addr    = &reinterpret_cast<sockaddr_in6*>(res->ai_addr)->sin6_addr;
-    break;
-  default:
-    assert(false);
-    return nullptr;
-  }
+      freeaddrinfo(res); // Free the list of addresses received from 'getaddrinfo'.
+      return str;
+    }
+  } while ((res = res->ai_next));
 
-  auto* str = alloc->allocStr(maxSize);
-
-  // Convert the binary address of the first result into a text representation.
-  if (inet_ntop(res->ai_family, addr, str->getCharDataPtr(), maxSize)) {
-
-    // Update the size of our string to the written size (by looking at the written null term).
-    str->updateSize(std::strlen(str->getCharDataPtr()));
-
-  } else {
-
-    // If it failed return an 'empty' string.
-    str->updateSize(0);
-  }
-
-  // Free the list of addresses received from 'getaddrinfo'.
-  freeaddrinfo(res);
-
-  return str;
+  freeaddrinfo(res); // Free the list of addresses received from 'getaddrinfo'.
+  return alloc->allocStr(0);
 }
 
 } // namespace vm::internal

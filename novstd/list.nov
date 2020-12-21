@@ -68,6 +68,10 @@ fun back{T}(List{T} l) -> Option{T}
 fun push{T}(List{T} l, T val)
   List(val, l)
 
+fun push{T}(List{T} l, T val, int times)
+  if times <= 0 -> l
+  else          -> self(l.push(val), val, --times)
+
 fun push{T}(List{T} l, List{T} l2)
   if l2 as LNode{T} n -> List{T}(n.val, push(l, n.next))
   if l2 is LEnd       -> l
@@ -391,6 +395,12 @@ assert(
   l.push(List(42)) == 42 :: 1 :: 2 :: 3 &&
   l.push(42 :: 1337) == 42 :: 1337 :: 1 :: 2 :: 3 &&
   l.push(3 :: 2 :: 1) == 3 :: 2 :: 1 :: 1 :: 2 :: 3)
+
+assert(
+  List{int}().push(42, 0)   == List{int}()        &&
+  List{int}().push(42, -1)  == List{int}()        &&
+  List{int}().push(42, 1)   == 42 :: List{int}()  &&
+  List{int}().push(42, 3)   == 42 :: 42 :: 42)
 
 assert(
   l = 1 :: 2 :: 3;

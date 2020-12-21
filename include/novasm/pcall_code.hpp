@@ -10,6 +10,8 @@ namespace novasm {
 */
 
 enum class PCallCode : uint8_t {
+  EndiannessNative = 1, // () -> (int) Get the native endianness of the platform.
+
   StreamCheckValid   = 10, // (stream)         -> (int)     Check if given stream is valid.
   StreamReadString   = 11, // (int, stream)    -> (string)  Read up to x bytes from a stream.
   StreamReadChar     = 12, // (stream)         -> (int)     Read a single character from a stream.
@@ -28,10 +30,10 @@ enum class PCallCode : uint8_t {
   FileOpenStream = 30, // (int, string) -> (stream)  Open a file at path with options.
   FileRemove     = 31, // (string)      -> (int)     Remove the file at path, returns success.
 
-  TcpOpenCon     = 40, // (int, string)-> (stream) Open a connect to a remote address and port.
-  TcpStartServer = 41, // (int, int)   -> (stream) Start a tcp-server at port with backlog.
-  TcpAcceptCon   = 42, // ()           -> (stream) Accept a new connection from a tcp-server stream.
-  IpLookupAddress = 45, // (string)    -> (string) Lookup an ip-address by host-name.
+  TcpOpenCon      = 40, // (int, int, string) -> (stream) Open a connect to a remote addr and port.
+  TcpStartServer  = 41, // (int, int, int)    -> (stream) Start a tcp-server at port.
+  TcpAcceptCon    = 42, // ()            -> (stream) Accept a new connection from a tcp-server.
+  IpLookupAddress = 45, // (int, string) -> (string) Lookup an ip-address by host-name.
 
   ConsoleOpenStream = 50, // (int) -> (stream)  Get a stream to stdin, stdout or stderr.
 

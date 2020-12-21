@@ -72,11 +72,17 @@ public:
   auto addNegFloat() -> void;
   auto addLogicInvInt() -> void;
   auto addShiftLeftInt() -> void;
+  auto addShiftLeftLong() -> void;
   auto addShiftRightInt() -> void;
+  auto addShiftRightLong() -> void;
   auto addAndInt() -> void;
+  auto addAndLong() -> void;
   auto addOrInt() -> void;
+  auto addOrLong() -> void;
   auto addXorInt() -> void;
+  auto addXorLong() -> void;
   auto addInvInt() -> void;
+  auto addInvLong() -> void;
   auto addLengthString() -> void;
   auto addIndexString() -> void;
   auto addSliceString() -> void;
@@ -106,6 +112,7 @@ public:
   auto addConvBoolString() -> void;
   auto addConvCharString() -> void;
   auto addConvIntChar() -> void;
+  auto addConvLongChar() -> void;
   auto addConvFloatChar() -> void;
   auto addConvFloatLong() -> void;
 

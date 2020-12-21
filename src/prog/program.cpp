@@ -86,6 +86,8 @@ Program::Program() :
       *this, Fk::IncrementLong, getFuncName(Op::PlusPlus), sym::TypeSet{m_long}, m_long);
   m_funcDecls.registerFunc(
       *this, Fk::DecrementLong, getFuncName(Op::MinusMinus), sym::TypeSet{m_long}, m_long);
+  m_funcDecls.registerFunc(
+      *this, Fk::InvLong, getFuncName(Op::Tilde), sym::TypeSet{m_long}, m_long);
 
   // Register build-in binary long operators.
   m_funcDecls.registerFunc(
@@ -98,6 +100,16 @@ Program::Program() :
       *this, Fk::DivLong, getFuncName(Op::Slash), sym::TypeSet{m_long, m_long}, m_long);
   m_funcDecls.registerFunc(
       *this, Fk::RemLong, getFuncName(Op::Rem), sym::TypeSet{m_long, m_long}, m_long);
+  m_funcDecls.registerFunc(
+      *this, Fk::ShiftLeftLong, getFuncName(Op::ShiftL), sym::TypeSet{m_long, m_int}, m_long);
+  m_funcDecls.registerFunc(
+      *this, Fk::ShiftRightLong, getFuncName(Op::ShiftR), sym::TypeSet{m_long, m_int}, m_long);
+  m_funcDecls.registerFunc(
+      *this, Fk::AndLong, getFuncName(Op::Amp), sym::TypeSet{m_long, m_long}, m_long);
+  m_funcDecls.registerFunc(
+      *this, Fk::OrLong, getFuncName(Op::Pipe), sym::TypeSet{m_long, m_long}, m_long);
+  m_funcDecls.registerFunc(
+      *this, Fk::XorLong, getFuncName(Op::Hat), sym::TypeSet{m_long, m_long}, m_long);
   m_funcDecls.registerFunc(
       *this, Fk::CheckEqLong, getFuncName(Op::EqEq), sym::TypeSet{m_long, m_long}, m_bool);
   m_funcDecls.registerFunc(
@@ -219,7 +231,6 @@ Program::Program() :
   m_funcDecls.registerImplicitConv(*this, Fk::ConvIntLong, m_int, m_long);
   m_funcDecls.registerImplicitConv(*this, Fk::ConvCharLong, m_char, m_long);
   m_funcDecls.registerImplicitConv(*this, Fk::ConvIntFloat, m_int, m_float);
-  m_funcDecls.registerImplicitConv(*this, Fk::ConvLongFloat, m_long, m_float);
 
   // Register build-in identity conversions (turns into no-ops).
   m_funcDecls.registerFunc(*this, Fk::NoOp, "int", sym::TypeSet{m_int}, m_int);
@@ -233,8 +244,10 @@ Program::Program() :
   m_funcDecls.registerFunc(*this, Fk::ConvFloatInt, "int", sym::TypeSet{m_float}, m_int);
   m_funcDecls.registerFunc(*this, Fk::ConvLongInt, "int", sym::TypeSet{m_long}, m_int);
   m_funcDecls.registerFunc(*this, Fk::ConvIntChar, "char", sym::TypeSet{m_int}, m_char);
+  m_funcDecls.registerFunc(*this, Fk::ConvLongChar, "char", sym::TypeSet{m_long}, m_char);
   m_funcDecls.registerFunc(*this, Fk::ConvFloatChar, "char", sym::TypeSet{m_float}, m_char);
   m_funcDecls.registerFunc(*this, Fk::ConvFloatLong, "long", sym::TypeSet{m_float}, m_long);
+  m_funcDecls.registerFunc(*this, Fk::ConvLongFloat, "float", sym::TypeSet{m_long}, m_float);
   m_funcDecls.registerFunc(*this, Fk::ConvIntString, "string", sym::TypeSet{m_int}, m_string);
   m_funcDecls.registerFunc(*this, Fk::ConvLongString, "string", sym::TypeSet{m_long}, m_string);
   m_funcDecls.registerFunc(*this, Fk::ConvFloatString, "string", sym::TypeSet{m_float}, m_string);
@@ -244,6 +257,9 @@ Program::Program() :
   m_funcDecls.registerFunc(*this, Fk::NoOp, "asInt", sym::TypeSet{m_float}, m_int);
 
   // Register build-in actions.
+  m_funcDecls.registerAction(
+      *this, Fk::ActionEndiannessNative, "endiannessNativeCode", sym::TypeSet{}, m_int);
+
   m_funcDecls.registerAction(
       *this, Fk::ActionStreamCheckValid, "streamCheckValid", sym::TypeSet{m_stream}, m_bool);
   m_funcDecls.registerAction(
@@ -293,13 +309,21 @@ Program::Program() :
       *this, Fk::ActionConsoleOpenStream, "consoleOpenStream", sym::TypeSet{m_int}, m_stream);
 
   m_funcDecls.registerAction(
-      *this, Fk::ActionTcpOpenCon, "tcpOpenConnection", sym::TypeSet{m_string, m_int}, m_stream);
+      *this,
+      Fk::ActionTcpOpenCon,
+      "tcpOpenConnection",
+      sym::TypeSet{m_string, m_int, m_int},
+      m_stream);
   m_funcDecls.registerAction(
-      *this, Fk::ActionTcpStartServer, "tcpStartServer", sym::TypeSet{m_int, m_int}, m_stream);
+      *this,
+      Fk::ActionTcpStartServer,
+      "tcpStartServer",
+      sym::TypeSet{m_int, m_int, m_int},
+      m_stream);
   m_funcDecls.registerAction(
       *this, Fk::ActionTcpAcceptCon, "tcpAcceptConnection", sym::TypeSet{m_stream}, m_stream);
   m_funcDecls.registerAction(
-      *this, Fk::ActionIpLookupAddress, "ipLookupAddress", sym::TypeSet{m_string}, m_string);
+      *this, Fk::ActionIpLookupAddress, "ipLookupAddress", sym::TypeSet{m_string, m_int}, m_string);
 
   m_funcDecls.registerAction(
       *this, Fk::ActionTermSetOptions, "termSetOptions", sym::TypeSet{m_int}, m_bool);

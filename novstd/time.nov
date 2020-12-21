@@ -185,8 +185,8 @@ fun absDuration(Duration d)
 // Conversion to float (seconds with fractions).
 fun float(Duration d)
   secs = d / second();
-  frac = (d.ns - seconds(secs).ns) / float(second().ns);
-  secs + frac
+  frac = float(d.ns - seconds(secs).ns) / float(second().ns);
+  float(secs) + frac
 
 fun min(Duration a, Duration b)
   Duration(a.ns < b.ns ? a.ns : b.ns)

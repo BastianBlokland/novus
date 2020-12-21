@@ -4,6 +4,10 @@ namespace novasm {
 
 auto operator<<(std::ostream& out, const PCallCode& rhs) noexcept -> std::ostream& {
   switch (rhs) {
+  case PCallCode::EndiannessNative:
+    out << "endianness-native";
+    break;
+
   case PCallCode::StreamCheckValid:
     out << "stream-check-valid";
     break;

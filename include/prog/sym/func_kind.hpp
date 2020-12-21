@@ -30,20 +30,26 @@ enum class FuncKind {
   CheckGtInt,    // Check if an integer is greater then another integer.
   CheckGtEqInt,  // Check if an integer is greater then or equal to another integer.
 
-  AddLong,       // Add two longs.
-  SubLong,       // Substract two longs.
-  MulLong,       // Multiply two longs.
-  DivLong,       // Divide two longs.
-  RemLong,       // Return division remainder of two longs.
-  NegateLong,    // Negate a long value.
-  IncrementLong, // Increment a long value.
-  DecrementLong, // Decrement a long value.
-  CheckEqLong,   // Check if two longs are equal.
-  CheckNEqLong,  // Check if two longs are not equal.
-  CheckLeLong,   // Check if a long is less then another long.
-  CheckLeEqLong, // Check if a long is less then or equal to another long.
-  CheckGtLong,   // Check if a long is greater then another long.
-  CheckGtEqLong, // CHeck if a long is greater then or equal to another long.
+  AddLong,        // Add two longs.
+  SubLong,        // Substract two longs.
+  MulLong,        // Multiply two longs.
+  DivLong,        // Divide two longs.
+  RemLong,        // Return division remainder of two longs.
+  NegateLong,     // Negate a long value.
+  IncrementLong,  // Increment a long value.
+  DecrementLong,  // Decrement a long value.
+  ShiftLeftLong,  // Shift bits of an long to the left.
+  ShiftRightLong, // Shift bits of an long to the right.
+  AndLong,        // Bitwise and two longs.
+  OrLong,         // Bitwise or two longs.
+  XorLong,        // Bitwise xor two longs.
+  InvLong,        // Bitwise invert an long.
+  CheckEqLong,    // Check if two longs are equal.
+  CheckNEqLong,   // Check if two longs are not equal.
+  CheckLeLong,    // Check if a long is less then another long.
+  CheckLeEqLong,  // Check if a long is less then or equal to another long.
+  CheckGtLong,    // Check if a long is greater then another long.
+  CheckGtEqLong,  // CHeck if a long is greater then or equal to another long.
 
   AddFloat,       // Add two floats.
   SubFloat,       // Substract two floats.
@@ -97,6 +103,7 @@ enum class FuncKind {
   ConvBoolString,  // Convert a boolean to a string.
   ConvCharString,  // Convert a character to a string.
   ConvIntChar,     // Convert a integer to a character.
+  ConvLongChar,    // Convert a long to a character.
   ConvFloatChar,   // Convert a float to a character.
   ConvFloatLong,   // Convert a float to long.
 
@@ -117,6 +124,8 @@ enum class FuncKind {
   CheckEqUserType,  // Check if two user types are equal. Note: Backend will generate equality for
                     // all user-types.
   CheckNEqUserType, // Check if two user-types are not equal.
+
+  ActionEndiannessNative, // Get the native endianness of the system: Little: 0, Big: 1.
 
   ActionStreamCheckValid,   // Check if a stream is valid.
   ActionStreamReadString,   // Read a string up to size x from a stream.
@@ -139,7 +148,7 @@ enum class FuncKind {
   ActionTcpOpenCon,      // Open a tcp connection to a remote ip address and port.
   ActionTcpStartServer,  // Start a tcp server.
   ActionTcpAcceptCon,    // Accept a new connection from a tcp server stream.
-  ActionIpLookupAddress, // Lookup an ip address by hostname.
+  ActionIpLookupAddress, // Lookup an ip address by hostname for a given address family.
 
   ActionConsoleOpenStream, // Open a console stream.
 

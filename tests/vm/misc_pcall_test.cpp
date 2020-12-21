@@ -8,6 +8,26 @@ namespace vm {
 
 TEST_CASE("Execute miscellaneous pcalls", "[vm]") {
 
+  SECTION("Endianness") {
+    /* This test is left for the first person to try to run this on a big-endian machine :)
+     * In most places endianness is somewhat taken into account but has definitively never been run
+     * on a big-endian machine so will probably blow up in epic ways.
+     */
+    auto expectedEndianness = "0"; // LittleEndian
+    CHECK_PROG(
+        [](novasm::Assembler* asmb) -> void {
+          asmb->label("start");
+          asmb->addPCall(novasm::PCallCode::EndiannessNative);
+          asmb->addConvIntString();
+          ADD_PRINT(asmb);
+          asmb->addRet();
+
+          asmb->setEntrypoint("start");
+        },
+        "input",
+        expectedEndianness);
+  }
+
   SECTION("RtVersion") {
     CHECK_PROG(
         [](novasm::Assembler* asmb) -> void {

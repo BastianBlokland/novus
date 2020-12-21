@@ -203,41 +203,6 @@ TEST_CASE("Execute input and output", "[vm]") {
         "input",
         "");
   }
-
-  SECTION("Tcp send and receive message") {
-    CHECK_PROG(
-        [&](novasm::Assembler* asmb) -> void {
-          asmb->label("entry");
-          asmb->setEntrypoint("entry");
-          asmb->addStackAlloc(1);
-
-          // Start server.
-          asmb->addLoadLitInt(8080); // Port.
-          asmb->addLoadLitInt(-1);   // Backlog (-1 uses the default backlog).
-          asmb->addPCall(novasm::PCallCode::TcpStartServer);
-          asmb->addStackStore(0); // Store the server stream.
-
-          // Open connection to server and send message.
-          asmb->addLoadLitString("127.0.0.1"); // Address.
-          asmb->addLoadLitInt(8080);           // Port.
-          asmb->addPCall(novasm::PCallCode::TcpOpenCon);
-          asmb->addLoadLitString("Hello world");
-          asmb->addPCall(novasm::PCallCode::StreamWriteString);
-          asmb->addPop(); // Ignore the write result.
-
-          // Accept the connection on the server and read the message.
-          asmb->addStackLoad(0);
-          asmb->addPCall(novasm::PCallCode::TcpAcceptCon);
-          asmb->addLoadLitInt(11); // Length of 'Hello world'.
-          asmb->addPCall(novasm::PCallCode::StreamReadString);
-
-          // Print the received message.
-          ADD_PRINT(asmb);
-          asmb->addRet();
-        },
-        "input",
-        "Hello world");
-  }
 }
 
 } // namespace vm

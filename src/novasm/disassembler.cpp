@@ -160,11 +160,17 @@ auto disassembleInstructions(const Assembly& assembly, const dasm::InstructionLa
     case OpCode::NegFloat:
     case OpCode::LogicInvInt:
     case OpCode::ShiftLeftInt:
+    case OpCode::ShiftLeftLong:
     case OpCode::ShiftRightInt:
+    case OpCode::ShiftRightLong:
     case OpCode::AndInt:
+    case OpCode::AndLong:
     case OpCode::OrInt:
+    case OpCode::OrLong:
     case OpCode::XorInt:
+    case OpCode::XorLong:
     case OpCode::InvInt:
+    case OpCode::InvLong:
     case OpCode::LengthString:
     case OpCode::IndexString:
     case OpCode::SliceString:
@@ -191,6 +197,7 @@ auto disassembleInstructions(const Assembly& assembly, const dasm::InstructionLa
     case OpCode::ConvFloatString:
     case OpCode::ConvCharString:
     case OpCode::ConvIntChar:
+    case OpCode::ConvLongChar:
     case OpCode::ConvFloatChar:
     case OpCode::ConvFloatLong:
     case OpCode::MakeNullStruct:

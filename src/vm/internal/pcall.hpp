@@ -3,6 +3,7 @@
 #include "internal/executor_handle.hpp"
 #include "internal/interupt.hpp"
 #include "internal/path_utilities.hpp"
+#include "internal/platform_utilities.hpp"
 #include "internal/ref_long.hpp"
 #include "internal/ref_process.hpp"
 #include "internal/ref_stream_console.hpp"
@@ -77,6 +78,10 @@ auto inline pcall(
 #define PEEK_INT() PEEK().getInt()
 
   switch (code) {
+  case PCallCode::EndiannessNative: {
+    PUSH_INT(static_cast<uint32_t>(getEndianness()));
+  } break;
+
   case PCallCode::StreamCheckValid: {
     PUSH_BOOL(streamCheckValid(POP()));
   } break;
@@ -192,20 +197,24 @@ auto inline pcall(
   } break;
 
   case PCallCode::TcpOpenCon: {
-    auto port = POP_INT();
+    const auto port         = POP_INT();
+    const auto ipAddrFamily = static_cast<IpAddressFamily>(POP_INT());
 
     // Note: Keep the 'address' string on the stack, reason is gc could run while we are blocked.
-    auto addr = PEEK();
-    auto* result =
-        tcpOpenConnection(settings, execHandle, refAlloc, addr.getDowncastRef<StringRef>(), port);
+    auto addr     = PEEK();
+    auto* addrStr = getStringRef(refAlloc, addr);
+    CHECK_ALLOC(addrStr);
+
+    auto* result = tcpOpenConnection(settings, execHandle, refAlloc, addrStr, ipAddrFamily, port);
 
     POP(); // Pop the 'address' string off the stack.
     PUSH_REF(result);
   } break;
   case PCallCode::TcpStartServer: {
-    auto backlog = POP_INT();
-    auto port    = POP_INT();
-    PUSH_REF(tcpStartServer(settings, refAlloc, port, backlog));
+    const auto backlog      = POP_INT();
+    const auto port         = POP_INT();
+    const auto ipAddrFamily = static_cast<IpAddressFamily>(POP_INT());
+    PUSH_REF(tcpStartServer(settings, refAlloc, ipAddrFamily, port, backlog));
   } break;
   case PCallCode::TcpAcceptCon: {
 
@@ -218,10 +227,13 @@ auto inline pcall(
   } break;
   case PCallCode::IpLookupAddress: {
 
+    const auto ipAddrFamily = static_cast<IpAddressFamily>(POP_INT());
+
     // Note: Keep the 'hostname' string on the stack, reason is gc could run while we are blocked.
-    auto hostname = PEEK();
-    auto* result =
-        ipLookupAddress(settings, execHandle, refAlloc, hostname.getDowncastRef<StringRef>());
+    auto hostname     = PEEK();
+    auto* hostnameStr = getStringRef(refAlloc, hostname);
+    CHECK_ALLOC(hostnameStr);
+    auto* result = ipLookupAddress(settings, execHandle, refAlloc, hostnameStr, ipAddrFamily);
 
     POP(); // Pop the hostname off the stack.
     PUSH_REF(result);

@@ -16,6 +16,10 @@ TEST_CASE("Generate assembly for call expressions", "[backend]") {
       asmb->addNegInt();
       asmb->addNegInt();
     });
+    CHECK_EXPR("~42", [](novasm::Assembler* asmb) -> void {
+      asmb->addLoadLitInt(42);
+      asmb->addInvInt();
+    });
     CHECK_EXPR("--42", [](novasm::Assembler* asmb) -> void {
       asmb->addLoadLitInt(42);
       asmb->addLoadLitInt(1);
@@ -95,6 +99,10 @@ TEST_CASE("Generate assembly for call expressions", "[backend]") {
       asmb->addNegLong();
       asmb->addNegLong();
     });
+    CHECK_EXPR("~42L", [](novasm::Assembler* asmb) -> void {
+      asmb->addLoadLitLong(42);
+      asmb->addInvLong();
+    });
     CHECK_EXPR("--42L", [](novasm::Assembler* asmb) -> void {
       asmb->addLoadLitLong(42);
       asmb->addLoadLitLong(1);
@@ -135,6 +143,31 @@ TEST_CASE("Generate assembly for call expressions", "[backend]") {
       asmb->addLoadLitLong(1);
       asmb->addLoadLitLong(3);
       asmb->addRemLong();
+    });
+    CHECK_EXPR("1L << 3", [](novasm::Assembler* asmb) -> void {
+      asmb->addLoadLitLong(1);
+      asmb->addLoadLitInt(3);
+      asmb->addShiftLeftLong();
+    });
+    CHECK_EXPR("1L >> 3", [](novasm::Assembler* asmb) -> void {
+      asmb->addLoadLitLong(1);
+      asmb->addLoadLitInt(3);
+      asmb->addShiftRightLong();
+    });
+    CHECK_EXPR("1L & 3L", [](novasm::Assembler* asmb) -> void {
+      asmb->addLoadLitLong(1);
+      asmb->addLoadLitLong(3);
+      asmb->addAndLong();
+    });
+    CHECK_EXPR("1L | 3L", [](novasm::Assembler* asmb) -> void {
+      asmb->addLoadLitLong(1);
+      asmb->addLoadLitLong(3);
+      asmb->addOrLong();
+    });
+    CHECK_EXPR("1L ^ 3L", [](novasm::Assembler* asmb) -> void {
+      asmb->addLoadLitLong(1);
+      asmb->addLoadLitLong(3);
+      asmb->addXorLong();
     });
   }
 
@@ -491,6 +524,10 @@ TEST_CASE("Generate assembly for call expressions", "[backend]") {
     CHECK_EXPR("char(42)", [](novasm::Assembler* asmb) -> void {
       asmb->addLoadLitInt(42); // NOLINT: Magic numbers
       asmb->addConvIntChar();
+    });
+    CHECK_EXPR("char(42L)", [](novasm::Assembler* asmb) -> void {
+      asmb->addLoadLitLong(42); // NOLINT: Magic numbers
+      asmb->addConvLongChar();
     });
     CHECK_EXPR("char(42.42)", [](novasm::Assembler* asmb) -> void {
       asmb->addLoadLitFloat(42.42F); // NOLINT: Magic numbers

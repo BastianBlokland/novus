@@ -417,6 +417,79 @@ TEST_CASE("Execute conversions", "[vm]") {
         "57");
   }
 
+  SECTION("Long to Char") {
+    CHECK_EXPR(
+        [](novasm::Assembler* asmb) -> void {
+          asmb->addLoadLitLong(0);
+          asmb->addConvLongChar();
+
+          asmb->addConvIntString();
+          ADD_PRINT(asmb);
+        },
+        "input",
+        "0");
+    CHECK_EXPR(
+        [](novasm::Assembler* asmb) -> void {
+          asmb->addLoadLitLong(42);
+          asmb->addConvLongChar();
+
+          asmb->addConvIntString();
+          ADD_PRINT(asmb);
+        },
+        "input",
+        "42");
+    CHECK_EXPR(
+        [](novasm::Assembler* asmb) -> void {
+          asmb->addLoadLitLong(255);
+          asmb->addConvLongChar();
+
+          asmb->addConvIntString();
+          ADD_PRINT(asmb);
+        },
+        "input",
+        "255");
+    CHECK_EXPR(
+        [](novasm::Assembler* asmb) -> void {
+          asmb->addLoadLitLong(256);
+          asmb->addConvLongChar();
+
+          asmb->addConvIntString();
+          ADD_PRINT(asmb);
+        },
+        "input",
+        "0");
+    CHECK_EXPR(
+        [](novasm::Assembler* asmb) -> void {
+          asmb->addLoadLitLong(-1);
+          asmb->addConvLongChar();
+
+          asmb->addConvIntString();
+          ADD_PRINT(asmb);
+        },
+        "input",
+        "255");
+    CHECK_EXPR(
+        [](novasm::Assembler* asmb) -> void {
+          asmb->addLoadLitLong(1337);
+          asmb->addConvLongChar();
+
+          asmb->addConvIntString();
+          ADD_PRINT(asmb);
+        },
+        "input",
+        "57");
+    CHECK_EXPR(
+        [](novasm::Assembler* asmb) -> void {
+          asmb->addLoadLitLong(9223372036854775807L);
+          asmb->addConvLongChar();
+
+          asmb->addConvIntString();
+          ADD_PRINT(asmb);
+        },
+        "input",
+        "255");
+  }
+
   SECTION("Float to Char") {
     CHECK_EXPR(
         [](novasm::Assembler* asmb) -> void {
