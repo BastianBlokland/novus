@@ -1,6 +1,7 @@
-import "future.nov"
-import "option.nov"
-import "parallel.nov"
+import "std/future.nov"
+import "std/ip.nov"
+import "std/option.nov"
+import "std/parallel.nov"
 
 // -- Types
 
@@ -41,31 +42,31 @@ act write{T}(TcpConnection c, Writer{T} writer, T val) -> Option{Error}
 
 // -- Client
 
-act tcpConnection(string host) -> Either{TcpConnection, Error}
-  tcpConnection(host, 8080)
+act tcpConnection(IpAddress addr) -> Either{TcpConnection, Error}
+  tcpConnection(addr, 8080)
 
-act tcpConnectionAsync(string host) -> future{Either{TcpConnection, Error}}
-  fork tcpConnection(host)
+act tcpConnectionAsync(IpAddress addr) -> future{Either{TcpConnection, Error}}
+  fork tcpConnection(addr)
 
-act tcpConnection(string host, int port) -> Either{TcpConnection, Error}
-  ipAddr = ipLookupAddress(host);
-  socket = tcpOpenConnection(ipAddr, port);
+act tcpConnection(IpAddress addr, int port) -> Either{TcpConnection, Error}
+  binAddr = ipBinWriter().run(addr);
+  socket  = tcpOpenConnection(binAddr, IpFamily(addr).int(), port);
   if socket.streamCheckValid()  -> TcpConnection(socket)
-  else                          -> Error("Failed to open connection to: '" + host + ":" + port + "'")
+  else                          -> Error("Failed to open connection to: '" + addr.string() + " [" + port + "]")
 
-act tcpConnectionAsync(string host, int port) -> future{Either{TcpConnection, Error}}
-  fork tcpConnection(host, port)
+act tcpConnectionAsync(IpAddress addr, int port) -> future{Either{TcpConnection, Error}}
+  fork tcpConnection(addr, port)
 
 // -- Server
 
-act tcpServer() -> Either{TcpServer, Error}
-  tcpServer(8080)
+act tcpServer(IpFamily family) -> Either{TcpServer, Error}
+  tcpServer(family, 8080)
 
-act tcpServer(int port) -> Either{TcpServer, Error}
-  tcpServer(port, 64)
+act tcpServer(IpFamily family, int port) -> Either{TcpServer, Error}
+  tcpServer(family, port, 64)
 
-act tcpServer(int port, int maxBacklog) -> Either{TcpServer, Error}
-  socket = tcpStartServer(port, maxBacklog);
+act tcpServer(IpFamily family, int port, int maxBacklog) -> Either{TcpServer, Error}
+  socket = tcpStartServer(family.int(), port, maxBacklog);
   if socket.streamCheckValid() -> TcpServer(maxBacklog, socket, port)
   else                         -> Error("Failed to start tcp-server")
 
@@ -77,11 +78,11 @@ act tcpAcceptConnection(TcpServer server) -> Either{TcpConnection, Error}
 act tcpAcceptConnectionAsync(TcpServer server) -> future{Either{TcpConnection, Error}}
   fork server.tcpAcceptConnection()
 
-act tcpServerLoop(int port, TcpServerLoopContext ctx) -> Option{Error}
-  tcpServer(port).map(impure lambda (TcpServer svr) svr.tcpServerLoop(ctx))
+act tcpServerLoop(IpFamily family, int port, TcpServerLoopContext ctx) -> Option{Error}
+  tcpServer(family, port).map(impure lambda (TcpServer svr) svr.tcpServerLoop(ctx))
 
-act tcpServerLoop(int port, int maxBacklog, TcpServerLoopContext ctx) -> Option{Error}
-  tcpServer(port, maxBacklog).map(impure lambda (TcpServer svr) svr.tcpServerLoop(ctx))
+act tcpServerLoop(IpFamily family, int port, int maxBacklog, TcpServerLoopContext ctx) -> Option{Error}
+  tcpServer(family, port, maxBacklog).map(impure lambda (TcpServer svr) svr.tcpServerLoop(ctx))
 
 act tcpServerLoop(TcpServer svr, TcpServerLoopContext ctx) -> Option{Error}
   loop = (impure lambda (
@@ -110,19 +111,19 @@ act tcpServerLoop(TcpServer svr, TcpServerLoopContext ctx) -> Option{Error}
 // -- Tests
 
 assert(
-  tcpServer(-1)       is Error  &&
-  tcpServer(65536)    is Error  &&
-  tcpServer(intMax()) is Error
+  tcpServer(IpFamily.V4, -1)              is Error  &&
+  tcpServer(IpFamily.V4, 65536)           is Error  &&
+  tcpServer(IpFamily.V4, intMax())        is Error  &&
+  tcpServer(IpFamily.V4, 5000, intMax())  is Error  &&
+  tcpServer(IpFamily.V6, -1)              is Error  &&
+  tcpServer(IpFamily.V6, 65536)           is Error  &&
+  tcpServer(IpFamily.V6, intMax())        is Error  &&
+  tcpServer(IpFamily.V6, 5000, intMax())  is Error
 )
 
 assert(
-  maxBacklog  = intMax();
-  tcpServer(5000, maxBacklog) is TcpServer
-)
-
-assert(
-  server    = tcpServer(5001).failOnError();
-  client    = tcpConnection("127.0.0.1", 5001).failOnError();
+  server    = tcpServer(IpFamily.V4, 5001).failOnError();
+  client    = tcpConnection(ipV4Loopback(), 5001).failOnError();
   serverCon = server.tcpAcceptConnection().failOnError();
 
   serverCon.write("Hello world\n").failOnError();
@@ -130,11 +131,20 @@ assert(
 )
 
 assert(
-  fork tcpServerLoop(5002, TcpServerLoopContext(impure lambda(TcpConnection c)
+  server    = tcpServer(IpFamily.V6, 5002).failOnError();
+  client    = tcpConnection(ipV6Loopback(), 5002).failOnError();
+  serverCon = server.tcpAcceptConnection().failOnError();
+
+  serverCon.write("Hello world\n").failOnError();
+  client.socket.readLine() == "Hello world"
+)
+
+assert(
+  fork tcpServerLoop(IpFamily.V6, 5003, TcpServerLoopContext(impure lambda(TcpConnection c)
     c.write(c.socket.readLine() + '\n')
   ));
   client = (impure lambda(string message)
-    c = tcpConnection("127.0.0.1", 5002).failOnError();
+    c = tcpConnection(ipV6Loopback(), 5003).failOnError();
     c.write(message + '\n').failOnError();
     c.socket.readLine()
   );
@@ -145,8 +155,8 @@ assert(
 )
 
 assert(
-  server = tcpServer(5003).failOnError();
-  client = tcpConnection("127.0.0.1", 5003).failOnError();
+  server = tcpServer(IpFamily.V6, 5004).failOnError();
+  client = tcpConnection(ipV6Loopback(), 5004).failOnError();
 
   res = tcpServerLoop(server, TcpServerLoopContext(impure lambda(TcpConnection c)
     Option(Error("Did not go well"))
@@ -155,13 +165,14 @@ assert(
 )
 
 assert(
-  server = tcpServer(5004).failOnError();
-  client = tcpConnection("127.0.0.1", 5004).failOnError();
+  server = tcpServer(IpFamily.V6, 5005).failOnError();
+  client = tcpConnection(ipV6Loopback(), 5005).failOnError();
 
   clientHandler = (impure lambda (TcpConnection c)
     c.write("hello")
   );
-  predicate = (impure lambda () false
+  predicate = (impure lambda ()
+    false
   );
   tcpServerLoop(server, TcpServerLoopContext(clientHandler, predicate)) is None
 )

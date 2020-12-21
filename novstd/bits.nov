@@ -94,34 +94,42 @@ fun toHexString(int mask)
 fun signExtend16To32(int val)
   (0xffff & val ^ 0x8000) - 0x8000
 
+fun parseInt16(Endianness en, char a, char b) -> int
+  if en == Endianness.Little -> (int(a) << 0) | (int(b) << 8)
+  else                       -> (int(a) << 8) | (int(b) << 0)
+
+fun parseSInt16(Endianness en, char a, char b) -> int
+  if en == Endianness.Little -> signExtend16To32((int(a) << 0) | (int(b) << 8))
+  else                       -> signExtend16To32((int(a) << 8) | (int(b) << 0))
+
+fun parseInt32(Endianness en, char a, char b, char c, char d) -> int
+  if en == Endianness.Little -> (int(a) << 0)  | (int(b) << 8)  | (int(c) << 16) | (int(d) << 24)
+  else                       -> (int(a) << 24) | (int(b) << 16) | (int(c) << 8)  | (int(d) << 0)
+
+fun parseInt64(Endianness en, char a, char b, char c, char d, char e, char f, char g, char h) -> long
+  if en == Endianness.Little ->
+    (long(a) << 0)  | (long(b) << 8)  | (long(c) << 16) | (long(d) << 24) |
+    (long(e) << 32) | (long(f) << 40) | (long(g) << 48) | (long(h) << 56)
+  else                       ->
+    (long(a) << 56) | (long(b) << 48) | (long(c) << 40) | (long(d) << 32) |
+    (long(e) << 24) | (long(f) << 16) | (long(g) << 8)  | (long(h) << 0)
+
 // -- Parsers
 
 fun bitInt8Parser() -> Parser{char}
   charParser()
 
 fun bitInt16Parser(Endianness e) -> Parser{int}
-  takeParser(2).map(lambda (string s)
-    if e == Endianness.Little -> signExtend16To32((int(s[0]) << 0) | (int(s[1]) << 8))
-    else                      -> signExtend16To32((int(s[0]) << 8) | (int(s[1]) << 0))
-  )
+  takeParser(2).map(lambda (string s) parseInt16(e, s[0], s[1]))
+
+fun bitSInt16Parser(Endianness e) -> Parser{int}
+  takeParser(2).map(lambda (string s) parseSInt16(e, s[0], s[1]))
 
 fun bitInt32Parser(Endianness e) -> Parser{int}
-  takeParser(4).map(lambda (string s)
-    if e == Endianness.Little ->
-      (int(s[0]) << 0)  | (int(s[1]) << 8)  | (int(s[2]) << 16) | (int(s[3]) << 24)
-    else                      ->
-      (int(s[0]) << 24) | (int(s[1]) << 16) | (int(s[2]) << 8)  | (int(s[3]) << 0)
-  )
+  takeParser(4).map(lambda (string s) parseInt32(e, s[0], s[1], s[2], s[3]))
 
 fun bitInt64Parser(Endianness e) -> Parser{long}
-  takeParser(8).map(lambda (string s)
-    if e == Endianness.Little ->
-      (long(s[0]) << 0)  | (long(s[1]) << 8)  | (long(s[2]) << 16) | (long(s[3]) << 24) |
-      (long(s[4]) << 32) | (long(s[5]) << 40) | (long(s[6]) << 48) | (long(s[7]) << 56)
-    else                      ->
-      (long(s[0]) << 56) | (long(s[1]) << 48) | (long(s[2]) << 40) | (long(s[3]) << 32) |
-      (long(s[4]) << 24) | (long(s[5]) << 16) | (long(s[6]) << 8)  | (long(s[7]) << 0)
-  )
+  takeParser(8).map(lambda (string s) parseInt64(e, s[0], s[1], s[2], s[3], s[4], s[5], s[6], s[7]))
 
 // -- Writers
 
@@ -257,7 +265,7 @@ assert(
 
 assert(
   w = bitInt16Writer(Endianness.Little);
-  p = bitInt16Parser(Endianness.Little);
+  p = bitSInt16Parser(Endianness.Little);
   w(1337)                 == char(57) + char(5) &&
   p(w(0).string())        == 0                  &&
   p(w(1).string())        == 1                  &&
@@ -271,7 +279,7 @@ assert(
 
 assert(
   w = bitInt16Writer(Endianness.Big);
-  p = bitInt16Parser(Endianness.Big);
+  p = bitSInt16Parser(Endianness.Big);
   w(1337)                 == char(5) + char(57) &&
   p(w(0).string())        == 0                  &&
   p(w(1).string())        == 1                  &&

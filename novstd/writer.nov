@@ -83,6 +83,9 @@ fun string(WriterState s)
 
 // -- Utilities
 
+fun run{T}(Writer{T} w, T val) -> string
+  w(val).string()
+
 fun write(WriterState s, string txt)
   WriterState(
     s.curResult + txt,

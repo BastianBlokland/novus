@@ -114,7 +114,7 @@ act main(int port, Content content)
       ctx       = ClientContext(content, variables, con, respWriter, reqParser);
       handleConnection(ctx)
   );
-  tcpServerLoop(port, TcpServerLoopContext(handleCon)).failOnError();
+  tcpServerLoop(IpFamily.V4, port, TcpServerLoopContext(handleCon)).failOnError();
 
   print("Server stopped")
 
