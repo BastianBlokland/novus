@@ -8,22 +8,31 @@ import "std/parallel.nov"
 struct TcpConnection =
   sys_stream socket
 
-struct TcpServer =
-  int         maxBacklog,
-  sys_stream  socket,
-  int         port
+struct TcpServerState =
+  int connectionCounter
 
-struct TcpServerLoopContext =
-  action{TcpConnection, Option{Error}}  clientHandler,
-  action{bool}                          predicate
+struct TcpServerSettings =
+  IpFamily                                              family,
+  int                                                   port,
+  int                                                   maxBacklog,
+  action{TcpConnection, TcpServerState, Option{Error}}  clientHandler,
+  action{TcpServerState, bool}                          cancelPredicate
 
 // -- Constructors
 
-fun TcpServerLoopContext(action{TcpConnection, Option{Error}} clientHandler)
-  TcpServerLoopContext(
+fun TcpServerSettings(int port, action{TcpConnection, TcpServerState, Option{Error}} clientHandler)
+  TcpServerSettings(IpFamily.V4, port, clientHandler)
+
+fun TcpServerSettings(IpFamily family, int port, action{TcpConnection, TcpServerState, Option{Error}} clientHandler)
+  TcpServerSettings(family, port, 64, clientHandler)
+
+fun TcpServerSettings(IpFamily family, int port, int maxBacklog, action{TcpConnection, TcpServerState, Option{Error}} clientHandler)
+  TcpServerSettings(
+    family,
+    port,
+    maxBacklog,
     clientHandler,
-    impure lambda () !interuptIsRequested()
-  )
+    impure lambda (TcpServerState state) interuptIsRequested())
 
 // -- Connection
 
@@ -45,106 +54,73 @@ act write{T}(TcpConnection c, Writer{T} writer, T val) -> Option{Error}
 act tcpConnection(IpAddress addr) -> Either{TcpConnection, Error}
   tcpConnection(addr, 8080)
 
-act tcpConnectionAsync(IpAddress addr) -> future{Either{TcpConnection, Error}}
-  fork tcpConnection(addr)
-
 act tcpConnection(IpAddress addr, int port) -> Either{TcpConnection, Error}
   binAddr = ipBinWriter().run(addr);
   socket  = tcpOpenConnection(binAddr, IpFamily(addr).int(), port);
   if socket.streamCheckValid()  -> TcpConnection(socket)
   else                          -> Error("Failed to open connection to: '" + addr.string() + " [" + port + "]")
 
+act tcpConnectionAsync(IpAddress addr) -> future{Either{TcpConnection, Error}}
+  fork tcpConnection(addr)
+
 act tcpConnectionAsync(IpAddress addr, int port) -> future{Either{TcpConnection, Error}}
   fork tcpConnection(addr, port)
 
 // -- Server
 
-act tcpServer(IpFamily family) -> Either{TcpServer, Error}
-  tcpServer(family, 8080)
+act tcpServer(TcpServerSettings settings) -> Either{TcpServerState, Error}
+  serverSocket = tcpStartServer(settings.family.int(), settings.port, settings.maxBacklog);
+  if !serverSocket.streamCheckValid() -> Error("Failed to start tcp-server")
+  else ->
+    acceptCon = (impure lambda () -> Either{TcpConnection, Error}
+      socket = tcpAcceptConnection(serverSocket);
+      if socket.streamCheckValid()  -> TcpConnection(socket)
+      else                          -> Error("Failed to accept new connection")
+    );
+    loop = (impure lambda (
+      future{Either{TcpConnection, Error}} futureConnection,
+      List{future{Option{Error}}}          connections,
+      TcpServerState                       state)
 
-act tcpServer(IpFamily family, int port) -> Either{TcpServer, Error}
-  tcpServer(family, port, 64)
-
-act tcpServer(IpFamily family, int port, int maxBacklog) -> Either{TcpServer, Error}
-  socket = tcpStartServer(family.int(), port, maxBacklog);
-  if socket.streamCheckValid() -> TcpServer(maxBacklog, socket, port)
-  else                         -> Error("Failed to start tcp-server")
-
-act tcpAcceptConnection(TcpServer server) -> Either{TcpConnection, Error}
-  socket = tcpAcceptConnection(server.socket);
-  if socket.streamCheckValid()  -> TcpConnection(socket)
-  else                          -> Error("Failed to accept new connection")
-
-act tcpAcceptConnectionAsync(TcpServer server) -> future{Either{TcpConnection, Error}}
-  fork server.tcpAcceptConnection()
-
-act tcpServerLoop(IpFamily family, int port, TcpServerLoopContext ctx) -> Option{Error}
-  tcpServer(family, port).map(impure lambda (TcpServer svr) svr.tcpServerLoop(ctx))
-
-act tcpServerLoop(IpFamily family, int port, int maxBacklog, TcpServerLoopContext ctx) -> Option{Error}
-  tcpServer(family, port, maxBacklog).map(impure lambda (TcpServer svr) svr.tcpServerLoop(ctx))
-
-act tcpServerLoop(TcpServer svr, TcpServerLoopContext ctx) -> Option{Error}
-  loop = (impure lambda (
-    future{Either{TcpConnection, Error}} futureConnection,
-    List{future{Option{Error}}}          connections)
-
-      if futureConnection.get(milliseconds(100)) as Either{TcpConnection, Error} newConnection ->
-      (
-        if newConnection as Error          err  -> err
-        if newConnection as TcpConnection  c    ->
-          self(svr.tcpAcceptConnectionAsync(), fork ctx.clientHandler(c) :: connections)
-      )
-      else ->
-      (
-        conErrOpt = connections.map(    impure lambda (future{Option{Error}} c) c.poll().unwrap()).combine();
-        remCons   = connections.filter( impure lambda (future{Option{Error}} c) c.poll() is None);
-        if conErrOpt as Error conErr  -> conErr
-        if ctx.predicate()            -> self(futureConnection, remCons)
-        else                          -> None()
-      )
-  );
-  loop(
-    svr.tcpAcceptConnectionAsync(),
-    List{future{Option{Error}}}())
+        if futureConnection.get(milliseconds(100)) as Either{TcpConnection, Error} newConnection ->
+        (
+          if newConnection as Error          err  -> err
+          if newConnection as TcpConnection  c    ->
+            newState = TcpServerState(state.connectionCounter + 1);
+            self(fork acceptCon(), fork settings.clientHandler(c, newState) :: connections, newState)
+        )
+        else ->
+        (
+          conErrOpt = connections.map(    impure lambda (future{Option{Error}} c) c.poll().unwrap()).combine();
+          remCons   = connections.filter( impure lambda (future{Option{Error}} c) c.poll() is None);
+          if conErrOpt as Error conErr        -> conErr
+          if !settings.cancelPredicate(state) -> self(futureConnection, remCons, state)
+          else                                -> state
+        )
+    );
+    loop(fork acceptCon(), List{future{Option{Error}}}(), TcpServerState(0))
 
 // -- Tests
 
 assert(
-  tcpServer(IpFamily.V4, -1)              is Error  &&
-  tcpServer(IpFamily.V4, 65536)           is Error  &&
-  tcpServer(IpFamily.V4, intMax())        is Error  &&
-  tcpServer(IpFamily.V4, 5000, intMax())  is Error  &&
-  tcpServer(IpFamily.V6, -1)              is Error  &&
-  tcpServer(IpFamily.V6, 65536)           is Error  &&
-  tcpServer(IpFamily.V6, intMax())        is Error  &&
-  tcpServer(IpFamily.V6, 5000, intMax())  is Error
+  clientHandler = (impure lambda (TcpConnection c, TcpServerState state) Option{Error}());
+  tcpServer(TcpServerSettings(IpFamily.V4, -1, 64, clientHandler))          is Error  &&
+  tcpServer(TcpServerSettings(IpFamily.V4, 65536, 64, clientHandler))       is Error  &&
+  tcpServer(TcpServerSettings(IpFamily.V4, intMax(), 64, clientHandler))    is Error  &&
+  tcpServer(TcpServerSettings(IpFamily.V4, 5000, intMax(), clientHandler))  is Error  &&
+  tcpServer(TcpServerSettings(IpFamily.V6, -1, 64, clientHandler))          is Error  &&
+  tcpServer(TcpServerSettings(IpFamily.V6, 65536, 64, clientHandler))       is Error  &&
+  tcpServer(TcpServerSettings(IpFamily.V6, intMax(), 64, clientHandler))    is Error  &&
+  tcpServer(TcpServerSettings(IpFamily.V6, 5000, intMax(), clientHandler))  is Error
 )
 
 assert(
-  server    = tcpServer(IpFamily.V4, 5001).failOnError();
-  client    = tcpConnection(ipV4Loopback(), 5001).failOnError();
-  serverCon = server.tcpAcceptConnection().failOnError();
-
-  serverCon.write("Hello world\n").failOnError();
-  client.socket.readLine() == "Hello world"
-)
-
-assert(
-  server    = tcpServer(IpFamily.V6, 5002).failOnError();
-  client    = tcpConnection(ipV6Loopback(), 5002).failOnError();
-  serverCon = server.tcpAcceptConnection().failOnError();
-
-  serverCon.write("Hello world\n").failOnError();
-  client.socket.readLine() == "Hello world"
-)
-
-assert(
-  fork tcpServerLoop(IpFamily.V6, 5003, TcpServerLoopContext(impure lambda(TcpConnection c)
+  clientHandler = (impure lambda (TcpConnection c, TcpServerState state)
     c.write(c.socket.readLine() + '\n')
-  ));
+  );
+  fork tcpServer(TcpServerSettings(IpFamily.V4, 5001, clientHandler));
   client = (impure lambda(string message)
-    c = tcpConnection(ipV6Loopback(), 5003).failOnError();
+    c = tcpConnection(ipV4Loopback(), 5001).failOnError();
     c.write(message + '\n').failOnError();
     c.socket.readLine()
   );
@@ -155,24 +131,50 @@ assert(
 )
 
 assert(
-  server = tcpServer(IpFamily.V6, 5004).failOnError();
-  client = tcpConnection(ipV6Loopback(), 5004).failOnError();
-
-  res = tcpServerLoop(server, TcpServerLoopContext(impure lambda(TcpConnection c)
-    Option(Error("Did not go well"))
-  ));
-  res == Error("Did not go well")
+  clientHandler = (impure lambda (TcpConnection c, TcpServerState state)
+    c.write(c.socket.readLine() + '\n')
+  );
+  fork tcpServer(TcpServerSettings(IpFamily.V6, 5002, clientHandler));
+  client = (impure lambda(string message)
+    c = tcpConnection(ipV6Loopback(), 5002).failOnError();
+    c.write(message + '\n').failOnError();
+    c.socket.readLine()
+  );
+  parallelFor(100, impure lambda (int i)
+    msg = string("Hello from the network", i);
+    client(msg) == msg
+  ).all()
 )
 
 assert(
-  server = tcpServer(IpFamily.V6, 5005).failOnError();
-  client = tcpConnection(ipV6Loopback(), 5005).failOnError();
+  clientHandler = (impure lambda (TcpConnection c, TcpServerState state)
+    Option(Error("Did not go well"))
+  );
+  res = fork tcpServer(TcpServerSettings(IpFamily.V6, 5003, clientHandler));
+  client = tcpConnection(ipV6Loopback(), 5003).failOnError();
+  res.get() == Error("Did not go well")
+)
 
-  clientHandler = (impure lambda (TcpConnection c)
+assert(
+  clientHandler = (impure lambda (TcpConnection c, TcpServerState state)
     c.write("hello")
   );
-  predicate = (impure lambda ()
-    false
+  cancelPredicate = (impure lambda (TcpServerState state)
+    true
   );
-  tcpServerLoop(server, TcpServerLoopContext(clientHandler, predicate)) is None
+  tcpServer(TcpServerSettings(IpFamily.V6, 5004, 64, clientHandler, cancelPredicate)) == TcpServerState(0)
+)
+
+assert(
+  cancelPredicate = (impure lambda (TcpServerState state)
+    state.connectionCounter == 100
+  );
+  clientHandler = (impure lambda (TcpConnection c, TcpServerState state)
+    c.write("Hello\n")
+  );
+  server = fork tcpServer(TcpServerSettings(IpFamily.V6, 5005, 64, clientHandler, cancelPredicate));
+  parallelFor(100, impure lambda (int i)
+    tcpConnection(ipV6Loopback(), 5005)
+  );
+  server.get() == TcpServerState(100)
 )

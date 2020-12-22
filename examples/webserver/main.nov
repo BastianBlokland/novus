@@ -103,18 +103,19 @@ act main(int port, Content content)
   respWriter  = httpRespWriter();
   reqParser   = httpReqHeaderParser();
   handleCon   = (
-    impure lambda (TcpConnection con)
+    impure lambda (TcpConnection con, TcpServerState state)
       uptime    = timeNow() - startTime;
       variables = (
-        Variable("SERVER_UPTIME",           uptime.string())              ::
-        Variable("SERVER_DATE",             timeNow().httpDateStr())      ::
-        Variable("SERVER_PLATFORM",         getPlatform().string())       ::
-        Variable("SERVER_RUNTIME_VERSION",  getRuntimeVersion().string())
+        Variable("SERVER_UPTIME",             uptime.string())                  ::
+        Variable("SERVER_DATE",               timeNow().httpDateStr())          ::
+        Variable("SERVER_PLATFORM",           getPlatform().string())           ::
+        Variable("SERVER_RUNTIME_VERSION",    getRuntimeVersion().string())     ::
+        Variable("SERVER_CONNECTION_COUNTER", state.connectionCounter.string())
       );
       ctx       = ClientContext(content, variables, con, respWriter, reqParser);
       handleConnection(ctx)
   );
-  tcpServerLoop(IpFamily.V4, port, TcpServerLoopContext(handleCon)).failOnError();
+  tcpServer(TcpServerSettings(IpFamily.V4, port, handleCon)).failOnError();
 
   print("Server stopped")
 
