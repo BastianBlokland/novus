@@ -68,7 +68,7 @@ act writeResponse(ClientContext ctx, HttpResp resp) -> Option{Error}
     HttpHeaderField("Keep-Alive",         "timeout=5, max=1000")
   );
   finalResp     = resp.httpRespAddFields(extraFields);
-  finalRespTxt  = ctx.respWriter(WriterState(WriterNewlineMode.CrLf), finalResp).string();
+  finalRespTxt  = ctx.respWriter.run(finalResp, WriterNewlineMode.CrLf);
   ctx.connection.write(finalRespTxt)
 
 act handleRequest(ClientContext ctx, string txt) -> Option{Error}

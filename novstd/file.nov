@@ -43,7 +43,7 @@ act write(File f, string str) -> Option{Error}
     : Error("Failed to write to file")
 
 act write{T}(File f, Writer{T} writer, T val) -> Option{Error}
-  f.write(writer(val).string())
+  f.write(writer.run(val))
 
 act fileRead(Path p) -> Either{string, Error}
   p.fileOpen(FileMode.Open).map(impure lambda (File f) f.readToEnd())

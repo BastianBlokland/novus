@@ -124,7 +124,7 @@ act fail(Error err) -> Option{Error}
 
 act fail{TResult}(Error err) -> TResult
   writer = litWriter("Failed:\n") & errorWriter(litWriter("- "), newlineWriter());
-  fail{TResult}(writer(err).string())
+  fail{TResult}(writer.run(err))
 
 act failOnError{T}(Either{T, Error} v) -> T
   if v as T      val -> val

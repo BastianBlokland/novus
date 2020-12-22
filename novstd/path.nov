@@ -37,13 +37,13 @@ fun /(Path p, PathRelative r)
 // -- Conversions
 
 fun string(Path p)
-  pathWriter()(p).string()
+  pathWriter().run(p)
 
 fun string(PathRelative p)
-  pathRelWriter()(p).string()
+  pathRelWriter().run(p)
 
 fun string(PathAbsolute p)
-  pathAbsWriter()(p).string()
+  pathAbsWriter().run(p)
 
 // -- Utilities
 

@@ -56,7 +56,7 @@ act writeOut(Console c, char ch) -> Option{Error}
     : Error("Failed to write to the stdOut stream of the console")
 
 act writeOut{T}(Console c, Writer{T} writer, T val) -> Option{Error}
-  c.write(writer(val).string())
+  c.write(writer.run(val))
 
 act writeErr(Console c, string str) -> Option{Error}
   c.stdErr.write(str)
@@ -69,7 +69,7 @@ act writeErr(Console c, char ch) -> Option{Error}
     : Error("Failed to write to the stdErr stream of the console")
 
 act writeErr{T}(Console c, Writer{T} writer, T val) -> Option{Error}
-  c.write(writer(val).string())
+  c.write(writer.run(val))
 
 act flushOut(Console c)
   c.stdOut.streamFlush()

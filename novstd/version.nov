@@ -65,7 +65,7 @@ fun Version(int major, int minor, int patch, List{string} prereleaseTags)
   Version(major, minor, patch, prereleaseTags, List{string}())
 
 fun string(Version v)
-  versionWriter()(v).string()
+  versionWriter().run(v)
 
 // -- Parsers
 
