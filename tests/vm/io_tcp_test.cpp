@@ -84,6 +84,53 @@ TEST_CASE("Execute tcp platform-calls", "[vm]") {
         "Hello world");
   }
 
+  SECTION("Second accept-connection call fails") {
+    CHECK_PROG(
+        [&](novasm::Assembler* asmb) -> void {
+          asmb->setEntrypoint("entry");
+
+          // --- Main function start.
+          asmb->label("entry");
+
+          // Start server.
+          asmb->addLoadLitInt(0);    // Address family: IpV4.
+          asmb->addLoadLitInt(8080); // Port.
+          asmb->addLoadLitInt(-1);   // Backlog (-1 uses the default backlog).
+          asmb->addPCall(novasm::PCallCode::TcpStartServer);
+          asmb->addDup(); // Place the server twice on the stack.
+
+          // Start a background worker that accepts a client connection.
+          asmb->addCall("worker", 1, novasm::CallMode::Forked);
+
+          // Sleep for 100 milli-seconds to give the worker time to start.
+          asmb->addLoadLitLong(100'000'000);
+          asmb->addPCall(novasm::PCallCode::SleepNano);
+          asmb->addPop(); // Ignore the return value of sleep.
+
+          // Attemp to accept a new connection (while the background-worker is still accepting a
+          // connection).
+          asmb->addPCall(novasm::PCallCode::TcpAcceptCon);
+
+          // And assert that it fails.
+          asmb->addPCall(novasm::PCallCode::StreamCheckValid);
+          asmb->addLogicInvInt();
+          asmb->addLoadLitString("Expected second accept-connection to fail");
+          asmb->addPCall(novasm::PCallCode::Assert);
+
+          asmb->addRet();
+          // --- Main function end.
+
+          // --- Worker function start (takes one tcp-server-stream arg).
+          asmb->label("worker");
+          asmb->addStackLoad(0); // Load arg 0.
+          asmb->addPCall(novasm::PCallCode::TcpAcceptCon);
+          asmb->addRet();
+          // --- Worker function end.
+        },
+        "input",
+        "");
+  }
+
   SECTION("Lookup address IpV4") {
     CHECK_PROG(
         [&](novasm::Assembler* asmb) -> void {
