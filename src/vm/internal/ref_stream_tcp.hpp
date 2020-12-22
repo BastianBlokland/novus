@@ -81,13 +81,9 @@ public:
   ~TcpStreamRef() noexcept {
     if (SOCKET_VALID(m_socket)) {
 #if defined(_WIN32)
-      if (shutdown(m_socket, SD_BOTH) == 0) {
-        closesocket(m_socket);
-      }
-#else // !_WIN32
-      if (shutdown(m_socket, SHUT_RDWR) == 0) {
-        close(m_socket);
-      }
+      closesocket(m_socket);
+#else  // !_WIN32
+      close(m_socket);
 #endif // !_WIN32
     }
   }
@@ -98,6 +94,14 @@ public:
   [[nodiscard]] constexpr static auto getKind() { return RefKind::StreamTcp; }
 
   [[nodiscard]] auto isValid() noexcept -> bool { return SOCKET_VALID(m_socket) && m_err == -1; }
+
+  auto shutdown() noexcept -> bool {
+#if defined(_WIN32)
+    return ::shutdown(m_socket, SD_BOTH) == 0;
+#else  // !_WIN32
+    return ::shutdown(m_socket, SHUT_RDWR) == 0;
+#endif // !_WIN32
+  }
 
   auto readString(ExecutorHandle* execHandle, StringRef* str) noexcept -> bool {
     if (unlikely(m_type != TcpStreamType::Connection)) {
@@ -239,7 +243,7 @@ public:
         if (SOCKET_ERR == WSAEWOULDBLOCK || SOCKET_ERR == WSAECONNRESET) {
           continue; // Retry.
         }
-#else // !_WIN32
+#else  // !_WIN32
         if (SOCKET_ERR == EAGAIN || SOCKET_ERR == EWOULDBLOCK || SOCKET_ERR == ECONNABORTED) {
           continue; // Retry.
         }
@@ -285,7 +289,7 @@ inline auto configureSocket(SOCKET sock) noexcept -> void {
 #if defined(_WIN32)
   int timeout = receiveTimeoutSeconds * 1'000;
   setsockopt(sock, SOL_SOCKET, SO_RCVTIMEO, reinterpret_cast<char*>(&timeout), sizeof(timeout));
-#else // !_WIN32
+#else  // !_WIN32
   auto timeout = timeval{};
   timeout.tv_sec = receiveTimeoutSeconds;
   timeout.tv_usec = 0;
@@ -432,28 +436,30 @@ inline auto tcpStartServer(
   return alloc->allocPlain<TcpStreamRef>(TcpStreamType::Server, sock);
 }
 
-inline auto tcpAcceptConnection(
-    const Settings& settings,
-    ExecutorHandle* execHandle,
-    RefAllocator* alloc,
-    Value stream) noexcept -> TcpStreamRef* {
-
-  if (!settings.socketsEnabled) {
-    // Sockets are not enabled on this runtime.
-    return alloc->allocPlain<TcpStreamRef>(TcpStreamType::Connection, INVALID_SOCKET);
-  }
-
+inline auto
+tcpAcceptConnection(ExecutorHandle* execHandle, RefAllocator* alloc, Value stream) noexcept
+    -> TcpStreamRef* {
   auto* streamRef = stream.getRef();
   if (streamRef->getKind() != RefKind::StreamTcp) {
     return alloc->allocPlain<TcpStreamRef>(TcpStreamType::Connection, INVALID_SOCKET);
   }
-
   auto* tcpStreamRef = static_cast<TcpStreamRef*>(streamRef);
   if (!tcpStreamRef->isValid()) {
     return alloc->allocPlain<TcpStreamRef>(TcpStreamType::Connection, INVALID_SOCKET);
   }
-
   return tcpStreamRef->acceptConnection(execHandle, alloc);
+}
+
+inline auto tcpShutdown(Value stream) noexcept -> bool {
+  auto* streamRef = stream.getRef();
+  if (streamRef->getKind() != RefKind::StreamTcp) {
+    return false;
+  }
+  auto* tcpStreamRef = static_cast<TcpStreamRef*>(streamRef);
+  if (!tcpStreamRef->isValid()) {
+    return false;
+  }
+  return tcpStreamRef->shutdown();
 }
 
 inline auto ipLookupAddress(

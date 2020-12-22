@@ -72,10 +72,13 @@ act tcpServer(TcpServerSettings settings) -> Either{TcpServerState, Error}
   serverSocket = tcpStartServer(settings.family.int(), settings.port, settings.maxBacklog);
   if !serverSocket.streamCheckValid() -> Error("Failed to start tcp-server")
   else ->
+    teardown = (impure lambda ()
+      serverSocket.tcpShutdown()
+    );
     acceptCon = (impure lambda () -> Either{TcpConnection, Error}
       socket = tcpAcceptConnection(serverSocket);
       if socket.streamCheckValid()  -> TcpConnection(socket)
-      else                          -> Error("Failed to accept new connection")
+      else                          -> teardown(); Error("Failed to accept new connection")
     );
     loop = (impure lambda (
       future{Either{TcpConnection, Error}} futureConnection,
@@ -84,7 +87,7 @@ act tcpServer(TcpServerSettings settings) -> Either{TcpServerState, Error}
 
         if futureConnection.get(milliseconds(100)) as Either{TcpConnection, Error} newConnection ->
         (
-          if newConnection as Error          err  -> err
+          if newConnection as Error          err  -> teardown(); err
           if newConnection as TcpConnection  c    ->
             newState = TcpServerState(state.connectionCounter + 1);
             self(fork acceptCon(), fork settings.clientHandler(c, newState) :: connections, newState)
@@ -93,9 +96,9 @@ act tcpServer(TcpServerSettings settings) -> Either{TcpServerState, Error}
         (
           conErrOpt = connections.map(    impure lambda (future{Option{Error}} c) c.poll().unwrap()).combine();
           remCons   = connections.filter( impure lambda (future{Option{Error}} c) c.poll() is None);
-          if conErrOpt as Error conErr        -> conErr
+          if conErrOpt as Error conErr        -> teardown(); conErr
           if !settings.cancelPredicate(state) -> self(futureConnection, remCons, state)
-          else                                -> state
+          else                                -> teardown(); state
         )
     );
     loop(fork acceptCon(), List{future{Option{Error}}}(), TcpServerState(0))

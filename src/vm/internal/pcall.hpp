@@ -220,10 +220,13 @@ auto inline pcall(
 
     // Note: Keep the stream on the stack, reason is gc could run while we are blocked.
     auto stream  = PEEK();
-    auto* result = tcpAcceptConnection(settings, execHandle, refAlloc, stream);
+    auto* result = tcpAcceptConnection(execHandle, refAlloc, stream);
 
     POP(); // Pop the stream off the stack.
     PUSH_REF(result);
+  } break;
+  case PCallCode::TcpShutdown: {
+    PUSH_BOOL(tcpShutdown(POP()));
   } break;
   case PCallCode::IpLookupAddress: {
 
