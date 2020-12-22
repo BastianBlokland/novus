@@ -97,8 +97,14 @@ public:
 
   auto shutdown() noexcept -> bool {
 #if defined(_WIN32)
+    switch (m_type) {
+    case TcpStreamType::Server:
+      return closesocket(m_socket) == 0;
+    case TcpStreamType::Connection:
     return ::shutdown(m_socket, SD_BOTH) == 0;
-#else  // !_WIN32
+    }
+    return false;
+#else // !_WIN32
     return ::shutdown(m_socket, SHUT_RDWR) == 0;
 #endif // !_WIN32
   }
