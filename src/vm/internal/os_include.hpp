@@ -27,14 +27,9 @@
 #include <termios.h>
 #include <unistd.h>
 #include <csignal>
+#include <climits>
 
 #endif // !_WIN32
-
-#if defined(linux)
-
-#include <linux/limits.h>
-
-#endif // linux
 
 #if defined(__APPLE__)
 
