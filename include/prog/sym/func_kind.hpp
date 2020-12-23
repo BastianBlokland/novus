@@ -148,6 +148,7 @@ enum class FuncKind {
   ActionTcpOpenCon,      // Open a tcp connection to a remote ip address and port.
   ActionTcpStartServer,  // Start a tcp server.
   ActionTcpAcceptCon,    // Accept a new connection from a tcp server stream.
+  ActionTcpShutdown,     // Shutdown a tcp connection or server.
   ActionIpLookupAddress, // Lookup an ip address by hostname for a given address family.
 
   ActionConsoleOpenStream, // Open a console stream.

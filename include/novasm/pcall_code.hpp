@@ -32,8 +32,9 @@ enum class PCallCode : uint8_t {
 
   TcpOpenCon      = 40, // (int, int, string) -> (stream) Open a connect to a remote addr and port.
   TcpStartServer  = 41, // (int, int, int)    -> (stream) Start a tcp-server at port.
-  TcpAcceptCon    = 42, // ()            -> (stream) Accept a new connection from a tcp-server.
-  IpLookupAddress = 45, // (int, string) -> (string) Lookup an ip-address by host-name.
+  TcpAcceptCon    = 42, // (stream)           -> (stream) Accept a new connection from a tcp-server.
+  TcpShutdown     = 43, // (stream)           -> (int) Shutdown tcp conn or server, returns success.
+  IpLookupAddress = 45, // (int, string)      -> (string) Lookup an ip-address by host-name.
 
   ConsoleOpenStream = 50, // (int) -> (stream)  Get a stream to stdin, stdout or stderr.
 

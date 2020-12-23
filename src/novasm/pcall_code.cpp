@@ -65,6 +65,9 @@ auto operator<<(std::ostream& out, const PCallCode& rhs) noexcept -> std::ostrea
   case PCallCode::TcpAcceptCon:
     out << "tcp-accept-con";
     break;
+  case PCallCode::TcpShutdown:
+    out << "tcp-shutdown";
+    break;
   case PCallCode::IpLookupAddress:
     out << "ip-lookup-address";
     break;

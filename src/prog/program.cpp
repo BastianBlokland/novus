@@ -323,6 +323,8 @@ Program::Program() :
   m_funcDecls.registerAction(
       *this, Fk::ActionTcpAcceptCon, "tcpAcceptConnection", sym::TypeSet{m_stream}, m_stream);
   m_funcDecls.registerAction(
+      *this, Fk::ActionTcpShutdown, "tcpShutdown", sym::TypeSet{m_stream}, m_bool);
+  m_funcDecls.registerAction(
       *this, Fk::ActionIpLookupAddress, "ipLookupAddress", sym::TypeSet{m_string, m_int}, m_string);
 
   m_funcDecls.registerAction(
