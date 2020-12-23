@@ -81,9 +81,9 @@ public:
   ~TcpStreamRef() noexcept {
     if (SOCKET_VALID(m_socket)) {
 #if defined(_WIN32)
-      closesocket(m_socket);
+      ::closesocket(m_socket);
 #else  // !_WIN32
-      close(m_socket);
+      ::close(m_socket);
 #endif // !_WIN32
     }
   }
@@ -96,17 +96,25 @@ public:
   [[nodiscard]] auto isValid() noexcept -> bool { return SOCKET_VALID(m_socket) && m_err == -1; }
 
   auto shutdown() noexcept -> bool {
-#if defined(_WIN32)
+#if defined(__APPLE__)
     switch (m_type) {
     case TcpStreamType::Server:
-      return closesocket(m_socket) == 0;
+      return ::close(m_socket) == 0;
     case TcpStreamType::Connection:
-    return ::shutdown(m_socket, SD_BOTH) == 0;
+      return ::shutdown(m_socket, SHUT_RDWR) == 0;
     }
     return false;
-#else // !_WIN32
+#elif defined(_WIN32) // !__APPLE__
+    switch (m_type) {
+    case TcpStreamType::Server:
+      return ::closesocket(m_socket) == 0;
+    case TcpStreamType::Connection:
+      return ::shutdown(m_socket, SD_BOTH) == 0;
+    }
+    return false;
+#else                 // !_WIN32 && !__APPLE__
     return ::shutdown(m_socket, SHUT_RDWR) == 0;
-#endif // !_WIN32
+#endif                // !_WIN32 && !__APPLE__
   }
 
   auto readString(ExecutorHandle* execHandle, StringRef* str) noexcept -> bool {
@@ -121,7 +129,7 @@ public:
     // 'recv' call can block so we mark ourselves as paused so the gc can trigger in the mean time.
     execHandle->setState(ExecState::Paused);
 
-    auto bytesRead = recv(m_socket, str->getCharDataPtr(), str->getSize(), 0);
+    auto bytesRead = ::recv(m_socket, str->getCharDataPtr(), str->getSize(), 0);
 
     // After resuming check if we should wait for gc (or if we are aborted).
     execHandle->setState(ExecState::Running);
@@ -148,7 +156,7 @@ public:
     execHandle->setState(ExecState::Paused);
 
     char res       = '\0';
-    auto bytesRead = recv(m_socket, &res, 1, 0);
+    auto bytesRead = ::recv(m_socket, &res, 1, 0);
 
     // After resuming check if we should wait for gc (or if we are aborted).
     execHandle->setState(ExecState::Running);
@@ -175,7 +183,7 @@ public:
     // 'send' call can block so we mark ourselves as paused so the gc can trigger in the mean time.
     execHandle->setState(ExecState::Paused);
 
-    auto bytesWritten = send(m_socket, str->getCharDataPtr(), str->getSize(), 0);
+    auto bytesWritten = ::send(m_socket, str->getCharDataPtr(), str->getSize(), 0);
 
     // After resuming check if we should wait for gc (or if we are aborted).
     execHandle->setState(ExecState::Running);
@@ -199,7 +207,7 @@ public:
     execHandle->setState(ExecState::Paused);
 
     auto* valChar     = static_cast<char*>(static_cast<void*>(&val));
-    auto bytesWritten = send(m_socket, valChar, 1, 0);
+    auto bytesWritten = ::send(m_socket, valChar, 1, 0);
 
     // After resuming check if we should wait for gc (or if we are aborted).
     execHandle->setState(ExecState::Running);
@@ -241,7 +249,7 @@ public:
     SOCKET sock;
     while (true) {
       // Accept a new connection from the socket.
-      sock = accept(m_socket, nullptr, nullptr);
+      sock = ::accept(m_socket, nullptr, nullptr);
 
       // Retry the accept for certain errors.
       if (!SOCKET_VALID(sock)) {
@@ -289,17 +297,17 @@ inline auto configureSocket(SOCKET sock) noexcept -> void {
   // Allow reusing the address, allows stopping and restarting the server without waiting for the
   // socket's wait-time to expire.
   int optVal = 1;
-  setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, reinterpret_cast<char*>(&optVal), sizeof(int));
+  ::setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, reinterpret_cast<char*>(&optVal), sizeof(int));
 
   // Configure the receive timeout;
 #if defined(_WIN32)
   int timeout = receiveTimeoutSeconds * 1'000;
-  setsockopt(sock, SOL_SOCKET, SO_RCVTIMEO, reinterpret_cast<char*>(&timeout), sizeof(timeout));
+  ::setsockopt(sock, SOL_SOCKET, SO_RCVTIMEO, reinterpret_cast<char*>(&timeout), sizeof(timeout));
 #else  // !_WIN32
   auto timeout = timeval{};
   timeout.tv_sec = receiveTimeoutSeconds;
   timeout.tv_usec = 0;
-  setsockopt(sock, SOL_SOCKET, SO_RCVTIMEO, reinterpret_cast<char*>(&timeout), sizeof(timeout));
+  ::setsockopt(sock, SOL_SOCKET, SO_RCVTIMEO, reinterpret_cast<char*>(&timeout), sizeof(timeout));
 #endif // !_WIN32
 }
 
@@ -349,14 +357,14 @@ inline auto tcpOpenConnection(
     addr.sin_family  = AF_INET;
     addr.sin_port    = htons(static_cast<uint16_t>(port));
     std::memcpy(&addr.sin_addr, address->getCharDataPtr(), 4u);
-    res = connect(sock, reinterpret_cast<sockaddr*>(&addr), sizeof(sockaddr_in));
+    res = ::connect(sock, reinterpret_cast<sockaddr*>(&addr), sizeof(sockaddr_in));
   } break;
   case IpAddressFamily::IpV6: {
     sockaddr_in6 addr = {};
     addr.sin6_family  = AF_INET6;
     addr.sin6_port    = htons(static_cast<uint16_t>(port));
     std::memcpy(&addr.sin6_addr, address->getCharDataPtr(), 16u);
-    res = connect(sock, reinterpret_cast<sockaddr*>(&addr), sizeof(sockaddr_in6));
+    res = ::connect(sock, reinterpret_cast<sockaddr*>(&addr), sizeof(sockaddr_in6));
   } break;
   }
 
@@ -402,7 +410,7 @@ inline auto tcpStartServer(
   }
 
   // Open a socket.
-  const auto sock = socket(getIpFamilyCode(family), SOCK_STREAM, 0);
+  const auto sock = ::socket(getIpFamilyCode(family), SOCK_STREAM, 0);
   if (!SOCKET_VALID(sock)) {
     return alloc->allocPlain<TcpStreamRef>(TcpStreamType::Server, sock, SOCKET_ERR);
   }
@@ -417,14 +425,14 @@ inline auto tcpStartServer(
     addr.sin_family      = AF_INET;
     addr.sin_port        = htons(static_cast<uint16_t>(port));
     addr.sin_addr.s_addr = INADDR_ANY;
-    res                  = bind(sock, reinterpret_cast<sockaddr*>(&addr), sizeof(sockaddr_in));
+    res                  = ::bind(sock, reinterpret_cast<sockaddr*>(&addr), sizeof(sockaddr_in));
   } break;
   case IpAddressFamily::IpV6: {
     sockaddr_in6 addr = {};
     addr.sin6_family  = AF_INET6;
     addr.sin6_port    = htons(static_cast<uint16_t>(port));
     addr.sin6_addr    = in6addr_any;
-    res               = bind(sock, reinterpret_cast<sockaddr*>(&addr), sizeof(sockaddr_in6));
+    res               = ::bind(sock, reinterpret_cast<sockaddr*>(&addr), sizeof(sockaddr_in6));
   } break;
   }
 
@@ -493,7 +501,7 @@ inline auto ipLookupAddress(
   execHandle->setState(ExecState::Paused);
 
   addrinfo* res = nullptr;
-  auto resCode  = getaddrinfo(hostName->getCharDataPtr(), nullptr, &hints, &res);
+  auto resCode  = ::getaddrinfo(hostName->getCharDataPtr(), nullptr, &hints, &res);
 
   // After resuming check if we should wait for gc (or if we are aborted).
   execHandle->setState(ExecState::Running);
@@ -501,7 +509,7 @@ inline auto ipLookupAddress(
 
     // Cleanup the addinfo's incase any where allocated.
     if (res) {
-      freeaddrinfo(res);
+      ::freeaddrinfo(res);
     }
     return nullptr;
   }
@@ -526,12 +534,12 @@ inline auto ipLookupAddress(
       auto* str = alloc->allocStr(getIpAddressSize(family));
       std::memcpy(str->getCharDataPtr(), addrData, str->getSize());
 
-      freeaddrinfo(res); // Free the list of addresses received from 'getaddrinfo'.
+      ::freeaddrinfo(res); // Free the list of addresses received from 'getaddrinfo'.
       return str;
     }
   } while ((res = res->ai_next));
 
-  freeaddrinfo(res); // Free the list of addresses received from 'getaddrinfo'.
+  ::freeaddrinfo(res); // Free the list of addresses received from 'getaddrinfo'.
   return alloc->allocStr(0);
 }
 

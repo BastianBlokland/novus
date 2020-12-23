@@ -114,20 +114,20 @@ assert(
   tcpServer(TcpServerSettings(IpFamily.V6, -1, 64, clientHandler))          is Error  &&
   tcpServer(TcpServerSettings(IpFamily.V6, 65536, 64, clientHandler))       is Error  &&
   tcpServer(TcpServerSettings(IpFamily.V6, intMax(), 64, clientHandler))    is Error  &&
-  tcpServer(TcpServerSettings(IpFamily.V6, 5000, intMax(), clientHandler))  is Error
+  tcpServer(TcpServerSettings(IpFamily.V6, 5010, intMax(), clientHandler))  is Error
 )
 
 assert(
   clientHandler = (impure lambda (TcpConnection c, TcpServerState state)
     c.write(c.socket.readLine() + '\n')
   );
-  fork tcpServer(TcpServerSettings(IpFamily.V4, 5001, clientHandler));
+  fork tcpServer(TcpServerSettings(IpFamily.V4, 5011, clientHandler));
   client = (impure lambda(string message)
-    c = tcpConnection(ipV4Loopback(), 5001).failOnError();
+    c = tcpConnection(ipV4Loopback(), 5011).failOnError();
     c.write(message + '\n').failOnError();
     c.socket.readLine()
   );
-  parallelFor(100, impure lambda (int i)
+  parallelFor(25, impure lambda (int i)
     msg = string("Hello from the network", i);
     client(msg) == msg
   ).all()
@@ -137,13 +137,13 @@ assert(
   clientHandler = (impure lambda (TcpConnection c, TcpServerState state)
     c.write(c.socket.readLine() + '\n')
   );
-  fork tcpServer(TcpServerSettings(IpFamily.V6, 5002, clientHandler));
+  fork tcpServer(TcpServerSettings(IpFamily.V6, 5012, clientHandler));
   client = (impure lambda(string message)
-    c = tcpConnection(ipV6Loopback(), 5002).failOnError();
+    c = tcpConnection(ipV6Loopback(), 5012).failOnError();
     c.write(message + '\n').failOnError();
     c.socket.readLine()
   );
-  parallelFor(100, impure lambda (int i)
+  parallelFor(25, impure lambda (int i)
     msg = string("Hello from the network", i);
     client(msg) == msg
   ).all()
@@ -153,8 +153,8 @@ assert(
   clientHandler = (impure lambda (TcpConnection c, TcpServerState state)
     Option(Error("Did not go well"))
   );
-  res = fork tcpServer(TcpServerSettings(IpFamily.V6, 5003, clientHandler));
-  client = tcpConnection(ipV6Loopback(), 5003).failOnError();
+  res = fork tcpServer(TcpServerSettings(IpFamily.V6, 5013, clientHandler));
+  client = tcpConnection(ipV6Loopback(), 5013).failOnError();
   res.get() == Error("Did not go well")
 )
 
@@ -165,19 +165,19 @@ assert(
   cancelPredicate = (impure lambda (TcpServerState state)
     true
   );
-  tcpServer(TcpServerSettings(IpFamily.V6, 5004, 64, clientHandler, cancelPredicate)) == TcpServerState(0)
+  tcpServer(TcpServerSettings(IpFamily.V6, 5014, 64, clientHandler, cancelPredicate)) == TcpServerState(0)
 )
 
 assert(
   cancelPredicate = (impure lambda (TcpServerState state)
-    state.connectionCounter == 100
+    state.connectionCounter == 25
   );
   clientHandler = (impure lambda (TcpConnection c, TcpServerState state)
     c.write("Hello\n")
   );
-  server = fork tcpServer(TcpServerSettings(IpFamily.V6, 5005, 64, clientHandler, cancelPredicate));
-  parallelFor(100, impure lambda (int i)
-    tcpConnection(ipV6Loopback(), 5005)
+  server = fork tcpServer(TcpServerSettings(IpFamily.V6, 5015, 64, clientHandler, cancelPredicate));
+  parallelFor(25, impure lambda (int i)
+    tcpConnection(ipV6Loopback(), 5015)
   );
-  server.get() == TcpServerState(100)
+  server.get() == TcpServerState(25)
 )
