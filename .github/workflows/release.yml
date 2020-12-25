@@ -1,4 +1,4 @@
-name: build-test
+name: release
 
 on: [push]
 
@@ -59,37 +59,29 @@ jobs:
     - name: install-ubuntu
       if: matrix.config.os == 'ubuntu'
       run: |
-        readonly dist=${{matrix.config.dist}}
-        echo "Add llvm ppa";              sudo apt-add-repository \
-          "deb http://apt.llvm.org/${dist}/ llvm-toolchain-${dist}-9 main"
-        echo "Installing clang-tidy-9";   sudo apt install clang-tidy-9
-        echo "clang-tidy-9 --version:";   clang-tidy-9 --version
+        echo "clang++-9 --version:"; clang++-9 --version
 
     - name: install-macos
       if: matrix.config.os == 'macos'
       run: |
         echo "Installing llvm-9"
         brew install llvm@9
-        readonly llvm9Path="$(brew --prefix llvm@9)"
-        echo "Symlinking clang-tidy from '${llvm9Path}' to '/usr/local/bin'"
-        ln -s "${llvm9Path}/bin/clang-tidy" "/usr/local/bin/clang-tidy-9"
-        echo "clang-tidy-9 --version:"; clang-tidy-9 --version
+        echo "clang++-9 --version:"; clang++-9 --version
 
     - name: install-windows-mingw
       if: matrix.config.os == 'windows' && matrix.config.generator == 'MinGW'
       run: |
         echo "Installing mingw-w64-7"
         choco install mingw --version=7.3.0 --force
-        echo "g++.exe --version:"
-        g++.exe --version
+        echo "g++.exe --version:"; g++.exe --version
 
     - name: configure-unix
       if: matrix.config.os != 'windows'
-      run: ./scripts/configure.sh --type Release --tests --lint
+      run: ./scripts/configure.sh --type Release --tests
 
     - name: configure-windows
       if: matrix.config.os == 'windows'
-      run: pwsh .\scripts\configure.ps1 -Gen ${{matrix.config.generator}} -Type Release -Tests
+      run: pwsh .\scripts\configure.ps1 -Gen ${{matrix.config.generator}} -Type Release
 
     - name: build-unix
       if: matrix.config.os != 'windows'
