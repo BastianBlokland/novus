@@ -6,7 +6,10 @@ project(
   LANGUAGES CXX)
 
 # Custom options options
-set(LINTING "Off" CACHE BOOL "Should source linting be enabled")
+set(BUILD_TESTING "Off" CACHE BOOL "Should test targets be build")
+set(LINTING       "Off" CACHE BOOL "Should source linting be enabled")
+set(SANITISE      "Off" CACHE BOOL "Should santiser instrumentation be included in targets")
+set(COVERAGE      "Off" CACHE BOOL "Should coverage instrumentation be included in targets")
 
 # Print some diagnostic information.
 message(STATUS "Configuring Novus")
@@ -14,7 +17,10 @@ message(STATUS "* Host system: ${CMAKE_HOST_SYSTEM}")
 message(STATUS "* Host processor: ${CMAKE_SYSTEM_PROCESSOR}")
 message(STATUS "* CMake version: ${CMAKE_VERSION}")
 message(STATUS "* Build type: ${CMAKE_BUILD_TYPE}")
+message(STATUS "* Build tests: ${BUILD_TESTING}")
 message(STATUS "* Linting: ${LINTING}")
+message(STATUS "* Sanitise: ${SANITISE}")
+message(STATUS "* Coverage: ${COVERAGE}")
 message(STATUS "* Source path: ${PROJECT_SOURCE_DIR}")
 message(STATUS "* Build path: ${PROJECT_BINARY_DIR}")
 message(STATUS "* Ouput path: ${PROJECT_SOURCE_DIR}/bin")
@@ -30,26 +36,46 @@ message(STATUS "Enable CTest dependency")
 include(CTest)
 enable_testing()
 
-set(CXX_FLAGS_WIN32 "\
-  -DNOMINMAX \
-  -D_CRT_SECURE_NO_WARNINGS \
-  -D_SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING")
-
-# Global compiler flags.
-if(MSVC)
-  message(STATUS "Setting msvc compiler flags")
-  set(CMAKE_CXX_FLAGS "/std:c++17 /WX /wd4530 /wd26451 ${CXX_FLAGS_WIN32}")
-else()
-  message(STATUS "Setting unix compiler flags")
-  set(CXX_FLAGS_SHARED "-std=c++17 -Werror -Wall -Wextra -fno-strict-aliasing")
-  if(WIN32)
-    set(CXX_FLAGS_SHARED "${CXX_FLAGS_SHARED} ${CXX_FLAGS_WIN32}")
+# Setup global compiler and linker flags.
+set(CXX_FLAGS_SHARED "")
+set(LINKER_FLAGS_SHARED "")
+if(SANITISE)
+  if(NOT ${CMAKE_CXX_COMPILER_ID} MATCHES "Clang")
+    message(FATAL_ERROR "Sanitiser instrumentation is only supported with the clang compiler")
   endif()
-  set(CMAKE_CXX_FLAGS_DEBUG "-O1 -g -fno-omit-frame-pointer ${CXX_FLAGS_SHARED}")
-  set(CMAKE_CXX_FLAGS_RELEASE "-O3 -DNDEBUG ${CXX_FLAGS_SHARED}")
+  message(STATUS "Enabling sanitizer instrumentation")
+  set(SANITIZERS "address,alignment,bool,builtin,bounds,enum,function,integer-divide-by-zero,object-size,return,unreachable")
+  set(CXX_FLAGS_SHARED "${CXX_FLAGS_SHARED} -fsanitize=${SANITIZERS}")
+  set(LINKER_FLAGS_SHARED "${LINKER_FLAGS_SHARED} -fsanitize=${SANITIZERS}")
 endif()
 
-# Older version of libstdc++ require linking against the <experimental/filesystem> library directly.
+if(COVERAGE)
+  if(NOT ${CMAKE_CXX_COMPILER_ID} MATCHES "Clang")
+    message(FATAL_ERROR "Coverage instrumentation is only supported with the clang compiler")
+  endif()
+  message(STATUS "Enabling coverage instrumentation")
+  set(CXX_FLAGS_SHARED "${CXX_FLAGS_SHARED} -fprofile-instr-generate -fcoverage-mapping")
+  set(LINKER_FLAGS_SHARED "${LINKER_FLAGS_SHARED} -fprofile-instr-generate")
+endif()
+
+if(WIN32)
+  message(STATUS "Enabling windows specific defines")
+  set(CXX_FLAGS_SHARED "${CXX_FLAGS_SHARED} -DNOMINMAX -D_CRT_SECURE_NO_WARNINGS -D_SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING")
+endif()
+
+if(MSVC)
+  message(STATUS "Setting msvc compiler flags")
+  set(CMAKE_CXX_FLAGS "/std:c++17 /WX /wd4530 /wd26451 ${CXX_FLAGS_SHARED}")
+  set(CMAKE_EXE_LINKER_FLAGS "${LINKER_FLAGS_SHARED}")
+else()
+  message(STATUS "Setting unix compiler flags")
+  set(CXX_FLAGS_SHARED "${CXX_FLAGS_SHARED} -std=c++17 -Werror -Wall -Wextra -fno-strict-aliasing")
+  set(CMAKE_CXX_FLAGS_DEBUG "-O1 -g -fno-omit-frame-pointer ${CXX_FLAGS_SHARED}")
+  set(CMAKE_CXX_FLAGS_RELEASE "-O3 -DNDEBUG ${CXX_FLAGS_SHARED}")
+  set(CMAKE_EXE_LINKER_FLAGS "${LINKER_FLAGS_SHARED}")
+  endif()
+
+# (Older versions of?) libstdc++ require linking against the filesystem library explicitly.
 # TODO(bastian): Investigate if there is a better way to handle this.
 if((UNIX AND NOT APPLE) OR MINGW)
   message(STATUS "Add linking to stdc++fs (filesystem library)")
