@@ -1,0 +1,21 @@
+name: test
+
+on: [push]
+
+jobs:
+  test:
+    runs-on: ubuntu-20.04
+    env:
+      CC: clang-10
+      CXX: clang++-10
+    steps:
+    - uses: actions/checkout@v1
+
+    - name: configure
+      run: ./scripts/configure.sh --type Debug --sanitize --coverage --tests --lint
+
+    - name: build
+      run: ./scripts/build.sh
+
+    - name: test
+      run: ./scripts/test.sh

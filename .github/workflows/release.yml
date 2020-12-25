@@ -3,8 +3,8 @@ name: release
 on: [push]
 
 jobs:
-  build:
-    name: ${{matrix.config.image}}-${{matrix.config.arch}}-${{matrix.config.compiler}}
+  release:
+    name: ${{matrix.config.image}}-${{matrix.config.arch}}-${{matrix.config.compiler}}-release
     runs-on: ${{matrix.config.image}}
     strategy:
       fail-fast: false
@@ -14,7 +14,6 @@ jobs:
             image: ubuntu-16.04,
             arch: x86_64,
             os: ubuntu,
-            dist: xenial,
             compiler: gcc7,
             cc: gcc-7,
             cxx: g++-7
@@ -23,7 +22,6 @@ jobs:
             image: ubuntu-16.04,
             arch: x86_64,
             os: ubuntu,
-            dist: xenial,
             compiler: clang9,
             cc: clang-9,
             cxx: clang++-9
