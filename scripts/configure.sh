@@ -54,13 +54,13 @@ configureProj()
   local dir="${2}"
   local testsMode="${3}"
   local lintMode="${4}"
-  local sanitiseMode="${5}"
+  local sanitizeMode="${5}"
   local coverageMode="${6}"
 
   verifyBuildTypeOption "${type}"
   verifyBoolOption "${testsMode}"
   verifyBoolOption "${lintMode}"
-  verifyBoolOption "${sanitiseMode}"
+  verifyBoolOption "${sanitizeMode}"
   verifyBoolOption "${coverageMode}"
 
   # Create target directory if it doesn't exist yet.
@@ -76,7 +76,7 @@ configureProj()
     -DCMAKE_BUILD_TYPE="${type}" \
     -DBUILD_TESTING="${testsMode}" \
     -DLINTING="${lintMode}" \
-    -DSANITISE="${sanitiseMode}" \
+    -DSANITIZE="${sanitizeMode}" \
     -DCOVERAGE="${coverageMode}"
 
   info "Successfully configured build directory '${dir}'"
@@ -90,7 +90,7 @@ printUsage()
   echo "-d,--dir      Build directory, default: 'build'"
   echo "--tests       Include compiler and runtime tests"
   echo "--lint        Enable source linter"
-  echo "--sanitise    Should santiser instrumentation be included in targets"
+  echo "--sanitize    Should santiser instrumentation be included in targets"
   echo "--coverage    Should coverage instrumentation be included in targets"
 }
 
@@ -99,7 +99,7 @@ buildType="Release"
 buildDir="build"
 testsMode="Off"
 lintMode="Off"
-sanitiseMode="Off"
+sanitizeMode="Off"
 coverageMode="Off"
 
 # Parse options.
@@ -127,8 +127,8 @@ do
       lintMode="On"
       shift 1
       ;;
-    --sanitise)
-      sanitiseMode="On"
+    --sanitize)
+      sanitizeMode="On"
       shift 1
       ;;
     --coverage)
@@ -149,6 +149,6 @@ configureProj \
   "${buildDir}" \
   "${testsMode}" \
   "${lintMode}" \
-  "${sanitiseMode}" \
+  "${sanitizeMode}" \
   "${coverageMode}"
 exit 0

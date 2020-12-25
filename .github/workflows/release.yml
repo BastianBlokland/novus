@@ -56,18 +56,6 @@ jobs:
     steps:
     - uses: actions/checkout@v1
 
-    - name: install-ubuntu
-      if: matrix.config.os == 'ubuntu'
-      run: |
-        echo "clang++-9 --version:"; clang++-9 --version
-
-    - name: install-macos
-      if: matrix.config.os == 'macos'
-      run: |
-        echo "Installing llvm-9"
-        brew install llvm@9
-        echo "clang++-9 --version:"; clang++-9 --version
-
     - name: install-windows-mingw
       if: matrix.config.os == 'windows' && matrix.config.generator == 'MinGW'
       run: |
@@ -81,7 +69,7 @@ jobs:
 
     - name: configure-windows
       if: matrix.config.os == 'windows'
-      run: pwsh .\scripts\configure.ps1 -Gen ${{matrix.config.generator}} -Type Release
+      run: pwsh .\scripts\configure.ps1 -Gen ${{matrix.config.generator}} -Type Release -Tests
 
     - name: build-unix
       if: matrix.config.os != 'windows'

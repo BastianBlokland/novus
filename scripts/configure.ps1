@@ -69,7 +69,7 @@ function ConfigureProj(
   [string] $dir,
   [bool] $tests,
   [bool] $lint,
-  [bool] $sanitizers,
+  [bool] $sanitize,
   [bool] $coverage) {
 
   if ([string]::IsNullOrEmpty($dir)) {
@@ -93,7 +93,7 @@ function ConfigureProj(
     -DCMAKE_BUILD_TYPE="$type" `
     -DBUILD_TESTING="$($tests ? "On" : "Off")" `
     -DLINTING="$($lint ? "On" : "Off")" `
-    -DSANITISE="$($sanitise ? "On" : "Off")" `
+    -DSANITIZE="$($sanitize ? "On" : "Off")" `
     -DCOVERAGE="$($coverage ? "On" : "Off")"
 
   if ($LASTEXITCODE -ne 0) {
