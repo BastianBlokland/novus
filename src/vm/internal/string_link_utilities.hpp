@@ -1,5 +1,5 @@
 #pragma once
-#include "internal/likely.hpp"
+#include "internal/intrinsics.hpp"
 #include "internal/ref_allocator.hpp"
 #include "internal/ref_string.hpp"
 #include "internal/ref_string_link.hpp"

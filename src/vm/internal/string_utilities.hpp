@@ -1,6 +1,6 @@
 #pragma once
 #include "charconv.hpp"
-#include "internal/likely.hpp"
+#include "internal/intrinsics.hpp"
 #include "internal/ref_allocator.hpp"
 #include "internal/ref_string.hpp"
 #include "internal/string_link_utilities.hpp"

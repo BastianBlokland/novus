@@ -2,7 +2,7 @@
 #include "gsl.hpp"
 #include "internal/executor_registry.hpp"
 #include "internal/garbage_collector.hpp"
-#include "internal/likely.hpp"
+#include "internal/intrinsics.hpp"
 #include "internal/memory_allocator.hpp"
 #include "internal/ref_alloc_observer.hpp"
 #include <atomic>

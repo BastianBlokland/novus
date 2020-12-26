@@ -1,5 +1,5 @@
 #include "internal/executor.hpp"
-#include "internal/likely.hpp"
+#include "internal/intrinsics.hpp"
 #include "internal/pcall.hpp"
 #include "internal/ref_allocator.hpp"
 #include "internal/ref_future.hpp"
@@ -19,10 +19,16 @@
 
 namespace vm::internal {
 
-// Read a single byte of assembly and increment the given instruction pointer.
+// Read a value from the assembly file and increment the given instruction pointer.
 template <typename Type>
+NO_SANITIZE(alignment)
 inline auto readAsm(const uint8_t** ip) {
-  // TODO(bastian): Handle endianess differences.
+  /* At the moment this function assumes that the host machine uses little-endian byte order, two's
+  compliment signed integers, IEEE 754 floats and supports unalinged loads. So technically this is
+  not conforming to the c++ spec. But unfortunately not all compiler can see through more portable
+  implementations of this code (and thus performance suffers). So when we want to add support for a
+  platform where one of these assumptions does not hold true we should specialize this function. */
+
   const Type v = *reinterpret_cast<const Type*>(*ip); // NOLINT: Reinterpret cast
   *ip += sizeof(Type);
   return v;

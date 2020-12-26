@@ -1,6 +1,6 @@
 #include "internal/memory_allocator.hpp"
 #include "internal/os_include.hpp"
-#include "likely.hpp"
+#include "intrinsics.hpp"
 #include <cassert>
 #include <mutex>
 #include <vector>
