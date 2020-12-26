@@ -5,7 +5,7 @@ project(
   VERSION 0.6.1
   LANGUAGES CXX)
 
-# Custom options options
+# Custom options options.
 set(BUILD_TESTING "Off" CACHE BOOL "Should test targets be build")
 set(LINTING       "Off" CACHE BOOL "Should source linting be enabled")
 set(SANITIZE      "Off" CACHE BOOL "Should santiser instrumentation be included in targets")

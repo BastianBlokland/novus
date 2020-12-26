@@ -11,6 +11,11 @@ jobs:
     steps:
     - uses: actions/checkout@v1
 
+    - name: install
+      run: |
+        echo "Installing clang-tidy-10"; sudo apt install clang-tidy-10
+        echo "clang-tidy-10 --version:"; clang-tidy-10 --version
+
     - name: configure
       run: ./scripts/configure.sh --type Debug --sanitize --coverage --tests --lint
 
