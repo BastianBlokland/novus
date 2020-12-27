@@ -106,7 +106,7 @@ set(CMAKE_CXX_USE_RESPONSE_FILE_FOR_INCLUDES OFF)
 
 if(LINTING)
   # Use the clang-tidy linter if installed.
-  find_program(CLANG_TIDY_BIN NAMES "clang-tidy" "clang-tidy-9" "clang-tidy-10")
+  find_program(CLANG_TIDY_BIN NAMES "clang-tidy")
   if(CLANG_TIDY_BIN)
     message(STATUS "Enabling clang-tidy linter")
     set(CMAKE_CXX_CLANG_TIDY ${CLANG_TIDY_BIN})
