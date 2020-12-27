@@ -31,10 +31,6 @@ auto errLitBinaryInvalidChar(const input::Span span) -> Token {
   return errorToken("Binary integer literal contains an invalid character", span);
 }
 
-auto errLitOctalInvalidChar(const input::Span span) -> Token {
-  return errorToken("Octal integer literal contains an invalid character", span);
-}
-
 auto errLitNumberEndsWithSeperator(const input::Span span) -> Token {
   return errorToken("Number literal ends with a seperator character", span);
 }
