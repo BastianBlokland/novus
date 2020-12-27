@@ -1,10 +1,56 @@
-name: build-test
+name: build
 
 on: [push]
 
 jobs:
-  build:
-    name: ${{matrix.config.image}}-${{matrix.config.arch}}-${{matrix.config.compiler}}
+
+  debug:
+    name: debug-${{matrix.config.image}}-${{matrix.config.arch}}-${{matrix.config.compiler}}
+    runs-on: ${{matrix.config.image}}
+    strategy:
+      fail-fast: false
+      matrix:
+        config:
+        - {
+            image: ubuntu-20.04,
+            arch: x86_64,
+            os: ubuntu,
+            compiler: clang10,
+            cc: clang-10,
+            cxx: clang++-10
+          }
+    env:
+      CC: ${{matrix.config.cc}}
+      CXX: ${{matrix.config.cxx}}
+    steps:
+    - uses: actions/checkout@v2
+      with:
+        fetch-depth: 0
+
+    - name: install
+      run: |
+        echo "Installing llvm-10"; sudo apt install llvm-10
+        echo "Installing clang-tidy-10"; sudo apt install clang-tidy-10
+        sudo ln -s /usr/bin/clang-tidy-10 /usr/bin/clang-tidy
+        sudo ln -s /usr/bin/llvm-cov-10 /usr/bin/llvm-cov
+        sudo ln -s /usr/bin/llvm-profdata-10 /usr/bin/llvm-profdata
+
+    - name: configure
+      run: ./scripts/configure.sh --type Debug --sanitize --coverage --tests --lint
+
+    - name: build
+      run: ./scripts/build.sh
+
+    - name: test
+      run: ./scripts/test.sh
+
+    - name: upload-coverage
+      env:
+        CODECOV_TOKEN: ${{secrets.CODECOV_TOKEN}}
+      run: ./scripts/upload_coverage.sh --token "${CODECOV_TOKEN}"
+
+  release:
+    name: release-${{matrix.config.image}}-${{matrix.config.arch}}-${{matrix.config.compiler}}
     runs-on: ${{matrix.config.image}}
     strategy:
       fail-fast: false
@@ -14,7 +60,6 @@ jobs:
             image: ubuntu-16.04,
             arch: x86_64,
             os: ubuntu,
-            dist: xenial,
             compiler: gcc7,
             cc: gcc-7,
             cxx: g++-7
@@ -23,7 +68,6 @@ jobs:
             image: ubuntu-16.04,
             arch: x86_64,
             os: ubuntu,
-            dist: xenial,
             compiler: clang9,
             cc: clang-9,
             cxx: clang++-9
@@ -54,38 +98,18 @@ jobs:
       CC: ${{matrix.config.cc}}
       CXX: ${{matrix.config.cxx}}
     steps:
-    - uses: actions/checkout@v1
-
-    - name: install-ubuntu
-      if: matrix.config.os == 'ubuntu'
-      run: |
-        readonly dist=${{matrix.config.dist}}
-        echo "Add llvm ppa";              sudo apt-add-repository \
-          "deb http://apt.llvm.org/${dist}/ llvm-toolchain-${dist}-9 main"
-        echo "Installing clang-tidy-9";   sudo apt install clang-tidy-9
-        echo "clang-tidy-9 --version:";   clang-tidy-9 --version
-
-    - name: install-macos
-      if: matrix.config.os == 'macos'
-      run: |
-        echo "Installing llvm-9"
-        brew install llvm@9
-        readonly llvm9Path="$(brew --prefix llvm@9)"
-        echo "Symlinking clang-tidy from '${llvm9Path}' to '/usr/local/bin'"
-        ln -s "${llvm9Path}/bin/clang-tidy" "/usr/local/bin/clang-tidy-9"
-        echo "clang-tidy-9 --version:"; clang-tidy-9 --version
+    - uses: actions/checkout@v2
 
     - name: install-windows-mingw
       if: matrix.config.os == 'windows' && matrix.config.generator == 'MinGW'
       run: |
         echo "Installing mingw-w64-7"
         choco install mingw --version=7.3.0 --force
-        echo "g++.exe --version:"
-        g++.exe --version
+        echo "g++.exe --version:"; g++.exe --version
 
     - name: configure-unix
       if: matrix.config.os != 'windows'
-      run: ./scripts/configure.sh --type Release --tests --lint
+      run: ./scripts/configure.sh --type Release --tests
 
     - name: configure-windows
       if: matrix.config.os == 'windows'
@@ -108,7 +132,7 @@ jobs:
       run: pwsh .\scripts\test.ps1
 
     - name: archive
-      uses: actions/upload-artifact@v1
+      uses: actions/upload-artifact@v2
       with:
-        name: ${{matrix.config.image}}-${{matrix.config.arch}}-${{matrix.config.compiler}}
+        name: novus-release-${{matrix.config.image}}-${{matrix.config.arch}}-${{matrix.config.compiler}}
         path: bin

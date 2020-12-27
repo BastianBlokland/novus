@@ -6,7 +6,7 @@
 #include "internal/ref_allocator.hpp"
 #include "internal/ref_string.hpp"
 #include "internal/terminal.hpp"
-#include "likely.hpp"
+#include "intrinsics.hpp"
 #include "vm/platform_interface.hpp"
 #include <cstdio>
 

@@ -5,7 +5,7 @@
 #include "internal/ref_allocator.hpp"
 #include "internal/ref_string.hpp"
 #include "internal/settings.hpp"
-#include "likely.hpp"
+#include "intrinsics.hpp"
 #include <cerrno>
 #include <cstring>
 

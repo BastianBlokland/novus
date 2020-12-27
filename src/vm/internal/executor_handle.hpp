@@ -1,5 +1,5 @@
 #pragma once
-#include "internal/likely.hpp"
+#include "internal/intrinsics.hpp"
 #include "internal/stack.hpp"
 #include "vm/exec_state.hpp"
 #include <atomic>

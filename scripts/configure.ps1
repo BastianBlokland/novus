@@ -21,6 +21,10 @@
   Include compiler and runtime tests.
 .PARAMETER Lint
   Enable source linter.
+.PARAMETER Sanitize
+  Should santiser instrumentation be included in targets.
+.PARAMETER Coverage
+  Should coverage instrumentation be included in targets.
 #>
 [cmdletbinding()]
 param(
@@ -30,7 +34,9 @@ param(
   [string]$Gen = "MinGW",
   [string]$Dir = "build",
   [switch]$Tests,
-  [switch]$Lint
+  [switch]$Lint,
+  [switch]$Sanitize,
+  [switch]$Coverage
 )
 
 Set-StrictMode -Version Latest
@@ -57,7 +63,15 @@ function MapToCMakeGen([string] $gen) {
   }
 }
 
-function ConfigureProj([string] $type, [string] $gen, [string] $dir, [bool] $tests, [bool] $lint) {
+function ConfigureProj(
+  [string] $type,
+  [string] $gen,
+  [string] $dir,
+  [bool] $tests,
+  [bool] $lint,
+  [bool] $sanitize,
+  [bool] $coverage) {
+
   if ([string]::IsNullOrEmpty($dir)) {
     Fail "No target directory provided"
   }
@@ -78,7 +92,9 @@ function ConfigureProj([string] $type, [string] $gen, [string] $dir, [bool] $tes
     -G "$(MapToCMakeGen $gen)" `
     -DCMAKE_BUILD_TYPE="$type" `
     -DBUILD_TESTING="$($tests ? "On" : "Off")" `
-    -DLINTING="$($lint ? "On" : "Off")"
+    -DLINTING="$($lint ? "On" : "Off")" `
+    -DSANITIZE="$($sanitize ? "On" : "Off")" `
+    -DCOVERAGE="$($coverage ? "On" : "Off")"
 
   if ($LASTEXITCODE -ne 0) {
     Fail "Configure failed"
@@ -88,5 +104,5 @@ function ConfigureProj([string] $type, [string] $gen, [string] $dir, [bool] $tes
 }
 
 # Run configuration.
-ConfigureProj $Type $Gen $Dir $Tests $Lint
+ConfigureProj $Type $Gen $Dir $Tests $Lint $Sanitize $Coverage
 exit 0

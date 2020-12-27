@@ -9,6 +9,7 @@
 /[Bb]uild*
 /[Bb]in*
 /compile_commands.json
+/test_coverage.lcov
 
 # User settings (Except portable common settings).
 /.vscode/*
