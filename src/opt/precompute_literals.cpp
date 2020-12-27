@@ -134,6 +134,7 @@ namespace opt {
   case prog::sym::FuncKind::CheckEqBool:
   case prog::sym::FuncKind::CheckNEqBool:
   case prog::sym::FuncKind::DefBool:
+  case prog::sym::FuncKind::ConvBoolString:
 
   // Char
   case prog::sym::FuncKind::CombineChar:

@@ -183,34 +183,4 @@ template <typename IntType>
   return str;
 }
 
-[[nodiscard]] auto inline concatString(RefAllocator* refAlloc, StringRef* a, StringRef* b) noexcept
-    -> StringRef* {
-
-  // Make a new string big enough to fit both and copy both there.
-  auto str = refAlloc->allocStr(a->getSize() + b->getSize());
-  if (unlikely(str == nullptr)) {
-    return nullptr;
-  }
-
-  std::memcpy(str->getDataPtr(), a->getDataPtr(), a->getSize());
-  std::memcpy(str->getDataPtr() + a->getSize(), b->getDataPtr(), b->getSize());
-
-  return str;
-}
-
-[[nodiscard]] auto inline appendChar(RefAllocator* refAlloc, StringRef* a, uint8_t b) noexcept
-    -> StringRef* {
-
-  // Make a new string 1 character bigger and copy the original string + the extra character.
-  auto str = refAlloc->allocStr(a->getSize() + 1);
-  if (unlikely(str == nullptr)) {
-    return nullptr;
-  }
-
-  std::memcpy(str->getDataPtr(), a->getDataPtr(), a->getSize());
-  str->getDataPtr()[a->getSize()] = b;
-
-  return str;
-}
-
 } // namespace vm::internal

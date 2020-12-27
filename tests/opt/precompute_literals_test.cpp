@@ -151,9 +151,15 @@ TEST_CASE("Precompute literals", "[opt]") {
         getLongBinaryOpExpr(prog, prog::Operator::Rem, 4, 0)); // NOLINT: Magic numbers
     ASSERT_EXPR(
         precomputeLiterals, "0L % 0L", getLongBinaryOpExpr(prog, prog::Operator::Rem, 0, 0));
-    ASSERT_EXPR(precomputeLiterals, "-42L", litLongNode(prog, -42)); // NOLINT: Magic numbers
-    ASSERT_EXPR(precomputeLiterals, "++1L", litLongNode(prog, 2));   // NOLINT: Magic numbers
-    ASSERT_EXPR(precomputeLiterals, "--2L", litLongNode(prog, 1));   // NOLINT: Magic numbers
+    ASSERT_EXPR(precomputeLiterals, "-42L", litLongNode(prog, -42));  // NOLINT: Magic numbers
+    ASSERT_EXPR(precomputeLiterals, "++1L", litLongNode(prog, 2));    // NOLINT: Magic numbers
+    ASSERT_EXPR(precomputeLiterals, "--2L", litLongNode(prog, 1));    // NOLINT: Magic numbers
+    ASSERT_EXPR(precomputeLiterals, "2L << 1", litLongNode(prog, 4)); // NOLINT: Magic numbers
+    ASSERT_EXPR(precomputeLiterals, "4L >> 1", litLongNode(prog, 2)); // NOLINT: Magic numbers
+    ASSERT_EXPR(precomputeLiterals, "3L & 1L", litLongNode(prog, 1)); // NOLINT: Magic numbers
+    ASSERT_EXPR(precomputeLiterals, "2L | 1L", litLongNode(prog, 3)); // NOLINT: Magic numbers
+    ASSERT_EXPR(precomputeLiterals, "3L ^ 1L", litLongNode(prog, 2)); // NOLINT: Magic numbers
+    ASSERT_EXPR(precomputeLiterals, "~1L", litLongNode(prog, -2));    // NOLINT: Magic numbers
     ASSERT_EXPR(precomputeLiterals, "1L == 2L", litBoolNode(prog, false));
     ASSERT_EXPR(precomputeLiterals, "1L != 2L", litBoolNode(prog, true));
     ASSERT_EXPR(precomputeLiterals, "1L < 2L", litBoolNode(prog, true));
@@ -162,6 +168,7 @@ TEST_CASE("Precompute literals", "[opt]") {
     ASSERT_EXPR(precomputeLiterals, "1L >= 2L", litBoolNode(prog, false));
     ASSERT_EXPR(precomputeLiterals, "int(137L)", litIntNode(prog, 137)); // NOLINT: Magic numbers
     ASSERT_EXPR(precomputeLiterals, "string(1337L)", litStringNode(prog, "1337"));
+    ASSERT_EXPR(precomputeLiterals, "char(137L)", litCharNode(prog, 137)); // NOLINT: Magic numbers
     ASSERT_EXPR(precomputeLiterals, "long()", litLongNode(prog, 0));
   }
 
@@ -170,6 +177,8 @@ TEST_CASE("Precompute literals", "[opt]") {
     ASSERT_EXPR(precomputeLiterals, "false == true", litBoolNode(prog, false));
     ASSERT_EXPR(precomputeLiterals, "false != true", litBoolNode(prog, true));
     ASSERT_EXPR(precomputeLiterals, "bool()", litBoolNode(prog, false));
+    ASSERT_EXPR(precomputeLiterals, "string(true)", litStringNode(prog, "true"));
+    ASSERT_EXPR(precomputeLiterals, "string(false)", litStringNode(prog, "false"));
   }
 
   SECTION("char intrinsics") {

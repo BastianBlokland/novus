@@ -4,6 +4,7 @@
 #include "novasm/assembler.hpp"
 #include "vm/platform_interface.hpp"
 #include "vm/vm.hpp"
+#include <array>
 #include <cstdio>
 #include <functional>
 
@@ -61,7 +62,10 @@ inline auto makeTmpFile() -> FILE* {
     std::fseek(stdInFile, 0, SEEK_SET);                                                            \
                                                                                                    \
     gsl::owner<std::FILE*> stdOutFile = makeTmpFile();                                             \
-    auto iface = PlatformInterface{std::string{}, 0, nullptr, stdInFile, stdOutFile, nullptr};     \
+                                                                                                   \
+    std::array<const char*, 2> envArgs = {"Test argument 1", "Test argument 2"};                   \
+    auto iface =                                                                                   \
+        PlatformInterface{std::string{}, 2, envArgs.data(), stdInFile, stdOutFile, nullptr};       \
                                                                                                    \
     CHECK(run(&assembly, &iface) == ExecState::Success);                                           \
                                                                                                    \
@@ -84,7 +88,8 @@ inline auto makeTmpFile() -> FILE* {
     std::fflush(stdInFile);                                                                        \
     std::fseek(stdInFile, 0, SEEK_SET);                                                            \
                                                                                                    \
-    auto iface = PlatformInterface{std::string{}, 0, nullptr, stdInFile, nullptr, nullptr};        \
+    std::array<const char*, 2> envArgs = {"Test argument 1", "Test argument 2"};                   \
+    auto iface = PlatformInterface{std::string{}, 2, envArgs.data(), stdInFile, nullptr, nullptr}; \
     CHECK(run(&assembly, &iface) == (EXPECTED));                                                   \
                                                                                                    \
     /* Close the temporary file (it will auto destruct). */                                        \
@@ -107,6 +112,14 @@ inline auto makeTmpFile() -> FILE* {
     (ASMB)->addPCall(novasm::PCallCode::ConsoleOpenStream);                                        \
     (ASMB)->addSwap(); /* Swap because the stream needs to be on the stack before the string. */   \
     (ASMB)->addPCall(novasm::PCallCode::StreamWriteString);                                        \
+  }
+
+#define ADD_PRINT_CHAR(ASMB)                                                                       \
+  {                                                                                                \
+    (ASMB)->addLoadLitInt(1); /* StdOut. */                                                        \
+    (ASMB)->addPCall(novasm::PCallCode::ConsoleOpenStream);                                        \
+    (ASMB)->addSwap(); /* Swap because the stream needs to be on the stack before the char. */     \
+    (ASMB)->addPCall(novasm::PCallCode::StreamWriteChar);                                          \
   }
 
 #if defined(_WIN32)

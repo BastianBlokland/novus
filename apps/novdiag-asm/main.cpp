@@ -180,7 +180,7 @@ auto operator<<(std::ostream& out, const Duration& rhs) -> std::ostream& {
   return out;
 }
 
-auto main(int argc, char** argv) -> int {
+auto main(int argc, const char** argv) -> int {
   auto exitcode = 0;
   auto app      = CLI::App{"Novus assembly diagnostic tool [" PROJECT_VER "]", "novdiag-asm"};
 

@@ -51,7 +51,7 @@ TEST_CASE("Execute input and output", "[vm]") {
         "");
   }
 
-  SECTION("Read from console") {
+  SECTION("Read string from console") {
     CHECK_EXPR(
         [](novasm::Assembler* asmb) -> void {
           // Open console stdin stream.
@@ -68,7 +68,28 @@ TEST_CASE("Execute input and output", "[vm]") {
         "Hello world");
   }
 
-  SECTION("Write file") {
+  SECTION("Read characters from console") {
+    CHECK_EXPR(
+        [](novasm::Assembler* asmb) -> void {
+          // Open console stdin stream.
+          asmb->addLoadLitInt(0); // Stdin.
+          asmb->addPCall(novasm::PCallCode::ConsoleOpenStream);
+          asmb->addDup(); // Duplicate the stream on the stack.
+
+          // Read and print the first character.
+          asmb->addPCall(novasm::PCallCode::StreamReadChar);
+          ADD_PRINT_CHAR(asmb);
+          asmb->addPop(); // Ignore the result of printing.
+
+          // Read and print the second character.
+          asmb->addPCall(novasm::PCallCode::StreamReadChar);
+          ADD_PRINT_CHAR(asmb);
+        },
+        "Hello world",
+        "He");
+  }
+
+  SECTION("Write and read file") {
     const auto filePath = "test.tmp";
     CHECK_PROG(
         [&](novasm::Assembler* asmb) -> void {
@@ -119,13 +140,18 @@ TEST_CASE("Execute input and output", "[vm]") {
           asmb->addLoadLitString("Stream not valid");
           asmb->addPCall(novasm::PCallCode::Assert);
 
-          // Read file content.
+          // Read and print the first character.
+          asmb->addStackLoad(0); // Load stream.
+          asmb->addPCall(novasm::PCallCode::StreamReadChar);
+          ADD_PRINT_CHAR(asmb);
+          asmb->addPop(); // Ignore the result of printing.
+
+          // Read and print the remaining characters.
           asmb->addStackLoad(0);    // Load stream.
           asmb->addLoadLitInt(64U); // Max chars to load.
           asmb->addPCall(novasm::PCallCode::StreamReadString);
-
-          // Print file content.
           ADD_PRINT(asmb);
+
           asmb->addRet();
         },
         "input",
@@ -198,6 +224,107 @@ TEST_CASE("Execute input and output", "[vm]") {
           asmb->addLogicInvInt(); // Invert to check if writing failed.
           asmb->addLoadLitString("Write failed");
           asmb->addPCall(novasm::PCallCode::Assert);
+          asmb->addRet();
+        },
+        "input",
+        "");
+  }
+
+  SECTION("Environment arguments can be retrieved") {
+    CHECK_PROG(
+        [](novasm::Assembler* asmb) -> void {
+          asmb->label("entry");
+          asmb->setEntrypoint("entry");
+
+          // Print number of environment arguments.
+          asmb->addPCall(novasm::PCallCode::EnvGetArgCount);
+          asmb->addConvIntString();
+          ADD_PRINT(asmb);
+          asmb->addPop(); // Ignore the result of printing.
+
+          // Print environment argument 0.
+          asmb->addLoadLitInt(0);
+          asmb->addPCall(novasm::PCallCode::EnvGetArg);
+          ADD_PRINT(asmb);
+          asmb->addPop(); // Ignore the result of printing.
+
+          // Print environment argument 1.
+          asmb->addLoadLitInt(1);
+          asmb->addPCall(novasm::PCallCode::EnvGetArg);
+          ADD_PRINT(asmb);
+
+          asmb->addRet();
+        },
+        "input",
+        "2"
+        "Test argument 1"
+        "Test argument 2");
+  }
+
+  SECTION("non-existing environment argument returns empty string") {
+    CHECK_PROG(
+        [](novasm::Assembler* asmb) -> void {
+          asmb->label("entry");
+          asmb->setEntrypoint("entry");
+
+          // Print a non-existing environment argument.
+          asmb->addLoadLitInt(99);
+          asmb->addPCall(novasm::PCallCode::EnvGetArg);
+          ADD_PRINT(asmb);
+          asmb->addPop(); // Ignore the result of printing.
+
+          // Print a non-existing environment argument.
+          asmb->addLoadLitInt(-1);
+          asmb->addPCall(novasm::PCallCode::EnvGetArg);
+          ADD_PRINT(asmb);
+
+          asmb->addRet();
+        },
+        "input",
+        "");
+  }
+
+  SECTION("Environment variable 'PATH' can be retrieved") {
+    CHECK_PROG(
+        [](novasm::Assembler* asmb) -> void {
+          asmb->label("entry");
+          asmb->setEntrypoint("entry");
+
+          // Print a non existing environment variable.
+          asmb->addLoadLitString("PATH"); // Var name.
+          asmb->addPCall(novasm::PCallCode::EnvGetVar);
+
+          // Check that the resulting string is not empty.
+          asmb->addLengthString();
+          asmb->addLoadLitInt(0);
+          asmb->addCheckGtInt();
+
+          asmb->addLoadLitString("Environment variable 'PATH' not found");
+          asmb->addPCall(novasm::PCallCode::Assert);
+
+          asmb->addRet();
+        },
+        "input",
+        "");
+  }
+
+  SECTION("Non-existing environment variable returns empty string") {
+    CHECK_PROG(
+        [](novasm::Assembler* asmb) -> void {
+          asmb->label("entry");
+          asmb->setEntrypoint("entry");
+
+          // Print a non existing environment variable.
+          asmb->addLoadLitString("ENVIRONMENT_VARIABLE_THAT_SHOULD_REALLY_NOT_EXIST"); // Var name.
+          asmb->addPCall(novasm::PCallCode::EnvGetVar);
+          ADD_PRINT(asmb);
+          asmb->addPop(); // Ignore the result of printing.
+
+          // Print a non existing environment variable.
+          asmb->addLoadLitString(""); // Var name.
+          asmb->addPCall(novasm::PCallCode::EnvGetVar);
+          ADD_PRINT(asmb);
+
           asmb->addRet();
         },
         "input",

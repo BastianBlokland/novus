@@ -119,6 +119,11 @@ TEST_CASE("Analyzing switch expressions", "[frontend]") {
 
   SECTION("Diagnostics") {
     CHECK_DIAG(
+        "fun f(bool a) "
+        "  if a   -> 1 "
+        "  else   -> true",
+        errBranchesHaveNoCommonType(src, input::Span{16, 43}));
+    CHECK_DIAG(
         "fun f(int a) -> int "
         "  if a   -> 1 "
         "  else   -> 2",

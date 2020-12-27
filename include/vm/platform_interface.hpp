@@ -10,7 +10,7 @@ public:
   PlatformInterface(
       std::string programPath,
       int envArgsCount,
-      char* const* envArgs,
+      const char** envArgs,
       std::FILE* stdIn,
       std::FILE* stdOut,
       std::FILE* stdErr) noexcept;
@@ -38,7 +38,7 @@ public:
 private:
   std::string m_programPath;
   int m_envArgsCount;
-  char* const* m_envArgs;
+  const char** m_envArgs;
   std::FILE* m_stdIn;
   std::FILE* m_stdOut;
   std::FILE* m_stdErr;

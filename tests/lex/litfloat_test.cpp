@@ -50,6 +50,7 @@ TEST_CASE("Lexing float literals", "[lex]") {
     CHECK_TOKENS("0a.0", errLitNumberInvalidChar());
     CHECK_TOKENS(".0_", errLitNumberEndsWithSeperator());
     CHECK_TOKENS(".0.0", errLitNumberInvalidChar());
+    CHECK_TOKENS("0.", errLitNumberEndsWithDecimalPoint());
   }
 
   SECTION("Spans") {

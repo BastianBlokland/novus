@@ -73,10 +73,6 @@ private:
   }
 };
 
-inline auto getStringLinkRef(const Value& val) noexcept {
-  return val.getDowncastRef<StringLinkRef>();
-}
-
 inline auto getStringOrLinkRef(const Value& val) noexcept {
   auto* ref = val.getRef();
   assert(ref->getKind() == RefKind::String || ref->getKind() == RefKind::StringLink);
