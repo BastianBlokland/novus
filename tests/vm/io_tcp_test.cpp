@@ -66,22 +66,21 @@ TEST_CASE("Execute tcp platform-calls", "[vm]") {
           asmb->addLoadLitInt(1);    // Address family: IpV6.
           asmb->addLoadLitInt(5001); // Port.
           asmb->addPCall(novasm::PCallCode::TcpOpenCon);
-          asmb->addLoadLitString("Hello world");
-          asmb->addPCall(novasm::PCallCode::StreamWriteString);
+          asmb->addLoadLitInt('!');
+          asmb->addPCall(novasm::PCallCode::StreamWriteChar);
           asmb->addPop(); // Ignore the write result.
 
           // Accept the connection on the server and read the message.
           asmb->addStackLoad(0);
           asmb->addPCall(novasm::PCallCode::TcpAcceptCon);
-          asmb->addLoadLitInt(11); // Length of 'Hello world'.
-          asmb->addPCall(novasm::PCallCode::StreamReadString);
+          asmb->addPCall(novasm::PCallCode::StreamReadChar);
 
           // Print the received message.
-          ADD_PRINT(asmb);
+          ADD_PRINT_CHAR(asmb);
           asmb->addRet();
         },
         "input",
-        "Hello world");
+        "!");
   }
 
   SECTION("Server shutdown cancels open-connection request") {

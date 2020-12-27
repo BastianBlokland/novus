@@ -4,6 +4,7 @@
 #include "novasm/assembler.hpp"
 #include "vm/platform_interface.hpp"
 #include "vm/vm.hpp"
+#include <array>
 #include <cstdio>
 #include <functional>
 
@@ -111,6 +112,14 @@ inline auto makeTmpFile() -> FILE* {
     (ASMB)->addPCall(novasm::PCallCode::ConsoleOpenStream);                                        \
     (ASMB)->addSwap(); /* Swap because the stream needs to be on the stack before the string. */   \
     (ASMB)->addPCall(novasm::PCallCode::StreamWriteString);                                        \
+  }
+
+#define ADD_PRINT_CHAR(ASMB)                                                                       \
+  {                                                                                                \
+    (ASMB)->addLoadLitInt(1); /* StdOut. */                                                        \
+    (ASMB)->addPCall(novasm::PCallCode::ConsoleOpenStream);                                        \
+    (ASMB)->addSwap(); /* Swap because the stream needs to be on the stack before the char. */     \
+    (ASMB)->addPCall(novasm::PCallCode::StreamWriteChar);                                          \
   }
 
 #if defined(_WIN32)
