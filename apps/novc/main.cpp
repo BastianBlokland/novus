@@ -9,7 +9,7 @@
 #include "input/search_paths.hpp"
 #include <algorithm>
 
-auto main(int argc, char** argv) noexcept -> int {
+auto main(int argc, const char** argv) noexcept -> int {
   auto app = CLI::App{"Novus compiler [" PROJECT_VER "]", "novc"};
 
   auto additionalSearchPaths = std::vector<filesystem::path>{};

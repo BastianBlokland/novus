@@ -24,7 +24,7 @@ auto run(
     InputItr inputBegin,
     const InputItr inputEnd,
     int vmEnvArgsCount,
-    char* const* vmEnvArgs) noexcept {
+    const char** vmEnvArgs) noexcept {
 
   const auto src            = frontend::buildSource(inputId, inputPath, inputBegin, inputEnd);
   const auto frontendOutput = frontend::analyze(src, searchPaths);
@@ -63,7 +63,7 @@ auto printUsage() {
             << rang::style::reset;
 }
 
-auto main(int argc, char** argv) noexcept -> int {
+auto main(int argc, const char** argv) noexcept -> int {
   if (argc <= 1) {
     printUsage();
     return 1;

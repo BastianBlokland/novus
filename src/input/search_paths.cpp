@@ -26,7 +26,7 @@ auto errorExit(const char* msg) {
 
 namespace input {
 
-auto getSearchPaths(char** argv) noexcept -> std::vector<filesystem::path> {
+auto getSearchPaths(const char** argv) noexcept -> std::vector<filesystem::path> {
   auto result = std::vector<filesystem::path>{};
 
   // If the executable was started with a path add it as a search-path.

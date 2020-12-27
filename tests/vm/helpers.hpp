@@ -61,7 +61,10 @@ inline auto makeTmpFile() -> FILE* {
     std::fseek(stdInFile, 0, SEEK_SET);                                                            \
                                                                                                    \
     gsl::owner<std::FILE*> stdOutFile = makeTmpFile();                                             \
-    auto iface = PlatformInterface{std::string{}, 0, nullptr, stdInFile, stdOutFile, nullptr};     \
+                                                                                                   \
+    std::array<const char*, 2> envArgs = {"Test argument 1", "Test argument 2"};                   \
+    auto iface =                                                                                   \
+        PlatformInterface{std::string{}, 2, envArgs.data(), stdInFile, stdOutFile, nullptr};       \
                                                                                                    \
     CHECK(run(&assembly, &iface) == ExecState::Success);                                           \
                                                                                                    \
@@ -84,7 +87,8 @@ inline auto makeTmpFile() -> FILE* {
     std::fflush(stdInFile);                                                                        \
     std::fseek(stdInFile, 0, SEEK_SET);                                                            \
                                                                                                    \
-    auto iface = PlatformInterface{std::string{}, 0, nullptr, stdInFile, nullptr, nullptr};        \
+    std::array<const char*, 2> envArgs = {"Test argument 1", "Test argument 2"};                   \
+    auto iface = PlatformInterface{std::string{}, 2, envArgs.data(), stdInFile, nullptr, nullptr}; \
     CHECK(run(&assembly, &iface) == (EXPECTED));                                                   \
                                                                                                    \
     /* Close the temporary file (it will auto destruct). */                                        \

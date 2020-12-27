@@ -4,7 +4,7 @@
 
 namespace input {
 
-auto getSearchPaths(char** argv) noexcept -> std::vector<filesystem::path>;
+auto getSearchPaths(const char** argv) noexcept -> std::vector<filesystem::path>;
 
 auto getExecutablePath() noexcept -> filesystem::path;
 

@@ -203,6 +203,103 @@ TEST_CASE("Execute input and output", "[vm]") {
         "input",
         "");
   }
+
+  SECTION("Environment arguments can be retrieved") {
+    CHECK_PROG(
+        [](novasm::Assembler* asmb) -> void {
+          asmb->label("entry");
+          asmb->setEntrypoint("entry");
+
+          // Print number of environment arguments.
+          asmb->addPCall(novasm::PCallCode::EnvGetArgCount);
+          asmb->addConvIntString();
+          ADD_PRINT(asmb);
+
+          // Print environment argument 0.
+          asmb->addLoadLitInt(0);
+          asmb->addPCall(novasm::PCallCode::EnvGetArg);
+          ADD_PRINT(asmb);
+
+          // Print environment argument 1.
+          asmb->addLoadLitInt(1);
+          asmb->addPCall(novasm::PCallCode::EnvGetArg);
+          ADD_PRINT(asmb);
+
+          asmb->addRet();
+        },
+        "input",
+        "2"
+        "Test argument 1"
+        "Test argument 2");
+  }
+
+  SECTION("non-existing environment argument returns empty string") {
+    CHECK_PROG(
+        [](novasm::Assembler* asmb) -> void {
+          asmb->label("entry");
+          asmb->setEntrypoint("entry");
+
+          // Print a non-existing environment argument.
+          asmb->addLoadLitInt(99);
+          asmb->addPCall(novasm::PCallCode::EnvGetArg);
+          ADD_PRINT(asmb);
+
+          // Print a non-existing environment argument.
+          asmb->addLoadLitInt(-1);
+          asmb->addPCall(novasm::PCallCode::EnvGetArg);
+          ADD_PRINT(asmb);
+
+          asmb->addRet();
+        },
+        "input",
+        "");
+  }
+
+  SECTION("Environment variable 'PATH' can be retrieved") {
+    CHECK_PROG(
+        [](novasm::Assembler* asmb) -> void {
+          asmb->label("entry");
+          asmb->setEntrypoint("entry");
+
+          // Print a non existing environment variable.
+          asmb->addLoadLitString("PATH"); // Var name.
+          asmb->addPCall(novasm::PCallCode::EnvGetVar);
+
+          // Check that the resulting string is not empty.
+          asmb->addLengthString();
+          asmb->addLoadLitInt(0);
+          asmb->addCheckGtInt();
+
+          asmb->addLoadLitString("Environment variable 'PATH' not found");
+          asmb->addPCall(novasm::PCallCode::Assert);
+
+          asmb->addRet();
+        },
+        "input",
+        "");
+  }
+
+  SECTION("Non-existing environment variable returns empty string") {
+    CHECK_PROG(
+        [](novasm::Assembler* asmb) -> void {
+          asmb->label("entry");
+          asmb->setEntrypoint("entry");
+
+          // Print a non existing environment variable.
+          asmb->addLoadLitString("ENVIRONMENT_VARIABLE_THAT_SHOULD_REALLY_NOT_EXIST"); // Var name.
+          asmb->addPCall(novasm::PCallCode::EnvGetVar);
+          ADD_PRINT(asmb);
+
+          // Print a non existing environment variable.
+          asmb->addLoadLitString(""); // Var name.
+          asmb->addPCall(novasm::PCallCode::EnvGetVar);
+          ADD_PRINT(asmb);
+
+          asmb->addRet();
+        },
+        "input",
+        "");
+  }
 }
 
 } // namespace vm

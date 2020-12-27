@@ -7,7 +7,7 @@
 #include <cstdio>
 #include <fstream>
 
-auto main(int argc, char** argv) noexcept -> int {
+auto main(int argc, const char** argv) noexcept -> int {
 
   /* Note: Supports either reading a 'nova' assembly file as argment 1 or looking for a 'prog.nova'
    * in current working directory. */
@@ -45,7 +45,7 @@ auto main(int argc, char** argv) noexcept -> int {
 
   const auto consumedArgs   = implicitPath ? 1 : 2; // 1 for executable path and 1 for nova file.
   const auto vmEnvArgsCount = argc - consumedArgs;
-  auto** const vmEnvArgs    = argv + consumedArgs;
+  const char** vmEnvArgs    = argv + consumedArgs;
   auto absProgPath          = filesystem::canonical(relProgPath).string();
 
   auto iface = vm::PlatformInterface{
