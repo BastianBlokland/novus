@@ -221,6 +221,40 @@ TEST_CASE("Generate assembly for call expressions", "[backend]") {
       asmb->addLoadLitFloat(2.0F); // NOLINT: Magic numbers
       asmb->addDivFloat();
     });
+    CHECK_EXPR("6.0 % 2.0", [](novasm::Assembler* asmb) -> void {
+      asmb->addLoadLitFloat(6.0F); // NOLINT: Magic numbers
+      asmb->addLoadLitFloat(2.0F); // NOLINT: Magic numbers
+      asmb->addModFloat();
+    });
+    CHECK_EXPR("sin(2.0)", [](novasm::Assembler* asmb) -> void {
+      asmb->addLoadLitFloat(2.0F); // NOLINT: Magic numbers
+      asmb->addSinFloat();
+    });
+    CHECK_EXPR("cos(2.0)", [](novasm::Assembler* asmb) -> void {
+      asmb->addLoadLitFloat(2.0F); // NOLINT: Magic numbers
+      asmb->addCosFloat();
+    });
+    CHECK_EXPR("tan(2.0)", [](novasm::Assembler* asmb) -> void {
+      asmb->addLoadLitFloat(2.0F); // NOLINT: Magic numbers
+      asmb->addTanFloat();
+    });
+    CHECK_EXPR("asin(2.0)", [](novasm::Assembler* asmb) -> void {
+      asmb->addLoadLitFloat(2.0F); // NOLINT: Magic numbers
+      asmb->addASinFloat();
+    });
+    CHECK_EXPR("acos(2.0)", [](novasm::Assembler* asmb) -> void {
+      asmb->addLoadLitFloat(2.0F); // NOLINT: Magic numbers
+      asmb->addACosFloat();
+    });
+    CHECK_EXPR("atan(2.0)", [](novasm::Assembler* asmb) -> void {
+      asmb->addLoadLitFloat(2.0F); // NOLINT: Magic numbers
+      asmb->addATanFloat();
+    });
+    CHECK_EXPR("atan2(6.0, 2.0)", [](novasm::Assembler* asmb) -> void {
+      asmb->addLoadLitFloat(6.0F); // NOLINT: Magic numbers
+      asmb->addLoadLitFloat(2.0F); // NOLINT: Magic numbers
+      asmb->addATan2Float();
+    });
   }
 
   SECTION("Int checks") {
@@ -532,6 +566,10 @@ TEST_CASE("Generate assembly for call expressions", "[backend]") {
     CHECK_EXPR("char(42.42)", [](novasm::Assembler* asmb) -> void {
       asmb->addLoadLitFloat(42.42F); // NOLINT: Magic numbers
       asmb->addConvFloatChar();
+    });
+    CHECK_EXPR("long(42.42)", [](novasm::Assembler* asmb) -> void {
+      asmb->addLoadLitFloat(42.42F); // NOLINT: Magic numbers
+      asmb->addConvFloatLong();
     });
   }
 
