@@ -23,7 +23,9 @@ jobs:
       CC: ${{matrix.config.cc}}
       CXX: ${{matrix.config.cxx}}
     steps:
-    - uses: actions/checkout@v1
+    - uses: actions/checkout@v2
+      with:
+        fetch-depth: 0
 
     - name: install
       run: |
@@ -41,6 +43,11 @@ jobs:
 
     - name: test
       run: ./scripts/test.sh
+
+    - name: upload-coverage
+      env:
+        CODECOV_TOKEN: ${{secrets.CODECOV_TOKEN}}
+      run: ./scripts/upload_coverage.sh --token "${CODECOV_TOKEN}"
 
   release:
     name: release-${{matrix.config.image}}-${{matrix.config.arch}}-${{matrix.config.compiler}}
@@ -91,7 +98,7 @@ jobs:
       CC: ${{matrix.config.cc}}
       CXX: ${{matrix.config.cxx}}
     steps:
-    - uses: actions/checkout@v1
+    - uses: actions/checkout@v2
 
     - name: install-windows-mingw
       if: matrix.config.os == 'windows' && matrix.config.generator == 'MinGW'
@@ -125,7 +132,7 @@ jobs:
       run: pwsh .\scripts\test.ps1
 
     - name: archive
-      uses: actions/upload-artifact@v1
+      uses: actions/upload-artifact@v2
       with:
-        name: ${{matrix.config.image}}-${{matrix.config.arch}}-${{matrix.config.compiler}}
+        name: novus-release-${{matrix.config.image}}-${{matrix.config.arch}}-${{matrix.config.compiler}}
         path: bin
