@@ -206,6 +206,16 @@ TEST_CASE("Execute string operations", "[vm]") {
     CHECK_EXPR(
         [](novasm::Assembler* asmb) -> void {
           asmb->addLoadLitString("hello world");
+          asmb->addLoadLitInt(1);
+          asmb->addLoadLitInt(-1);
+          asmb->addSliceString();
+          ADD_PRINT(asmb);
+        },
+        "input",
+        "");
+    CHECK_EXPR(
+        [](novasm::Assembler* asmb) -> void {
+          asmb->addLoadLitString("hello world");
           asmb->addLoadLitInt(6);
           asmb->addLoadLitInt(11);
           asmb->addSliceString();
