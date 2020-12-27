@@ -1,6 +1,6 @@
 # Novus
 
-[![build-test](https://img.shields.io/github/workflow/status/bastianblokland/novus/build-test/master)](https://github.com/BastianBlokland/novus/actions?query=workflow%3Abuild-test)
+[![build](https://img.shields.io/github/workflow/status/bastianblokland/novus/build/master)](https://github.com/BastianBlokland/novus/actions?query=workflow%3Abuild)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
 Novus is a general purpose, statically typed, functional programming language.
