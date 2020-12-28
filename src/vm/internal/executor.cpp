@@ -900,12 +900,8 @@ End:
     if (endState == ExecState::Success) {
       promise->setResult(POP());
     }
-    {
-      auto lk = std::lock_guard<std::mutex>{promise->getMutex()};
       promise->setState(endState);
     }
-    promise->getCondVar().notify_all();
-  }
   execRegistry->unregisterExecutor(&execHandle);
   return endState;
 

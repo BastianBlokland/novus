@@ -4,6 +4,7 @@
 #include <atomic>
 #include <chrono>
 #include <condition_variable>
+#include <immintrin.h>
 #include <mutex>
 
 namespace vm::internal {
@@ -21,11 +22,16 @@ public:
   ~FutureRef() noexcept {
     {
       auto lk = std::lock_guard<std::mutex>{m_mutex};
-      if(m_state == ExecState::Running) {
+      if (m_state == ExecState::Running) {
         m_state = ExecState::Aborted;
       }
+      m_condVar.notify_all();
     }
-    m_condVar.notify_all();
+
+    // Wait until all waiters have received the abort message.
+    while (m_waitersCount.load(std::memory_order_acquire)) {
+      _mm_pause();
+    }
   }
 
   auto operator=(const FutureRef& rhs) -> FutureRef& = delete;
@@ -35,16 +41,25 @@ public:
 
   // Block until the value has been computed (or the executor failed).
   [[nodiscard]] inline auto block() noexcept -> ExecState {
+    m_waitersCount.fetch_add(1, std::memory_order_release);
+
     auto lk = std::unique_lock<std::mutex>{m_mutex};
     m_condVar.wait(lk, [this] { return m_state != ExecState::Running; });
+
+    m_waitersCount.fetch_sub(1, std::memory_order_release);
     return m_state;
   }
 
   // Block until the value has been computed or a timeout occurs.
   [[nodiscard]] inline auto waitNano(int64_t timeout) noexcept -> bool {
-    auto lk = std::unique_lock<std::mutex>{m_mutex};
-    return m_condVar.wait_for(
+    m_waitersCount.fetch_add(1, std::memory_order_release);
+
+    auto lk        = std::unique_lock<std::mutex>{m_mutex};
+    const auto res = m_condVar.wait_for(
         lk, std::chrono::nanoseconds(timeout), [this] { return m_state != ExecState::Running; });
+
+    m_waitersCount.fetch_sub(1, std::memory_order_release);
+    return res;
   }
 
   // Check the state of the executor that is computing the value.
@@ -58,18 +73,20 @@ public:
 
   [[nodiscard]] inline auto getResult() noexcept -> Value { return m_result; }
 
-  [[nodiscard]] inline auto getMutex() noexcept -> std::mutex& { return m_mutex; }
-
-  [[nodiscard]] inline auto getCondVar() noexcept -> std::condition_variable& { return m_condVar; }
-
   inline auto setResult(Value result) noexcept { m_result = result; }
-  inline auto setState(ExecState state) noexcept { m_state = state; }
+
+  inline auto setState(ExecState state) noexcept {
+    auto lk = std::lock_guard<std::mutex>{m_mutex};
+    m_state = state;
+    m_condVar.notify_all();
+  }
 
 private:
   std::atomic_bool m_started;
   ExecState m_state;
   std::mutex m_mutex;
   std::condition_variable m_condVar;
+  std::atomic<uint32_t> m_waitersCount;
   Value m_result;
 
   inline explicit FutureRef() noexcept :
@@ -78,6 +95,7 @@ private:
       m_state{ExecState::Running},
       m_mutex{},
       m_condVar{},
+      m_waitersCount{0},
       m_result{} {}
 };
 
