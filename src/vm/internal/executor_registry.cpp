@@ -32,21 +32,22 @@ auto ExecutorRegistry::unregisterExecutor(ExecutorHandle* handle) noexcept -> vo
 }
 
 auto ExecutorRegistry::abortExecutors() noexcept -> void {
-  /* Keep looping over all executors and requesting abort until all of them have aborted. */
-  while (true) {
-    bool done = true;
-    {
-      auto lk    = std::lock_guard<std::mutex>{m_mutex};
-      auto* exec = m_head;
-      while (exec) {
-        done &= exec->requestAbort();
-        exec = exec->m_next;
-      }
+  // First pause all the executors to they are either trapped or still inside a blocking call (but
+  // will trap as soon as the blocking call is done).
+  pauseExecutors();
+
+  // Then request all executors to abort.
+  // NOTE: After aborting executors its unsafe to access any memory memory belonging to that
+  // executor (including the handle).
+  // NOTE: Aborted executors will not unregister themselves.
+  {
+    auto lk    = std::lock_guard<std::mutex>{m_mutex};
+    auto* exec = m_head;
+    while (exec) {
+      exec->requestAbort();
+      exec = exec->m_next;
     }
-    if (done) {
-      break;
-    }
-    std::this_thread::yield();
+    m_head = nullptr;
   }
 }
 

@@ -96,11 +96,13 @@ auto run(const novasm::Assembly* assembly, PlatformInterface* iface) noexcept ->
       nullptr,
       nullptr);
 
-  // Abort all executors that are still running.
-  execRegistry.abortExecutors();
-
   // Terminate the garbage-collector (finishes any ongoing collections).
   gc.terminateCollector();
+
+  // Abort all executors that are still running.
+  // NOTE: First terminate the garbage collector as that might attempt to pause / resume executors
+  // while we are trying to abort them.
+  execRegistry.abortExecutors();
 
   teardown(&settings);
 
