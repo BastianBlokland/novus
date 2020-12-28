@@ -91,11 +91,13 @@ public:
     return false;
   }
 
-  // Request the executor to abort. Returns immediately with a boolean indicating if the executor
-  // has aborted yet. Common pattern is to keep calling this function until true is returned.
-  inline auto requestAbort() noexcept -> bool {
+  // Request the executor to abort.
+  // NOTE: After requesting an abort it is unsafe to access the executor_handle anymore, as it can
+  // destroy itself at any point after that.
+  // NOTE: An aborted executor will NOT unregister itself anymore from the registry upon shutdown,
+  // it is up to the caller to unregister it.
+  inline auto requestAbort() noexcept {
     m_request.store(RequestType::Abort, std::memory_order_release);
-    return m_state.load(std::memory_order_acquire) != ExecState::Running;
   }
 
   // Request the executor to pause. Returns immediately with a boolean indicating if the executor

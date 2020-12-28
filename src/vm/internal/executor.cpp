@@ -889,9 +889,8 @@ End:
   // If we are backing a promise then fill-in the results and notify all waiters.
   auto endState = execHandle.getState(std::memory_order_relaxed);
 
-  // Note: During program shutdown thread can still be inside blocking system calls, when they
-  // return (and notice that they have been aborted) it is not safe to touch any memory outside
-  // their own stack.
+  // NOTE: When an executor is aborted it is unsafe to access any memory that is not local to the
+  // executor. So the registry and any references are off limits.
   if (endState == ExecState::Aborted) {
     return ExecState::Aborted;
   }
@@ -900,8 +899,8 @@ End:
     if (endState == ExecState::Success) {
       promise->setResult(POP());
     }
-      promise->setState(endState);
-    }
+    promise->setState(endState);
+  }
   execRegistry->unregisterExecutor(&execHandle);
   return endState;
 
