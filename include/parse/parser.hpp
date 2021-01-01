@@ -14,7 +14,8 @@ namespace internal {
 
 class ParserImpl {
 protected:
-  ParserImpl() : m_readBuffer{} {}
+  ParserImpl() noexcept : m_readBuffer{}, m_exprRecursionDepth{0} {}
+  ~ParserImpl() noexcept;
 
   auto next() -> NodePtr;
   auto nextStmt() -> NodePtr;
@@ -22,6 +23,7 @@ protected:
 
 private:
   std::deque<lex::Token> m_readBuffer;
+  size_t m_exprRecursionDepth;
 
   auto nextComment() -> NodePtr;
   auto nextImport() -> NodePtr;

@@ -16,6 +16,12 @@ auto errLexError(lex::Token errToken) -> NodePtr {
   return errorNode(msg, std::move(errToken));
 }
 
+auto errMaxExprRecursionDepthReached(lex::Token token) -> NodePtr {
+  std::ostringstream oss;
+  oss << "Maximum expression recursion depth reached, token: '" << token << '\'';
+  return errorNode(oss.str(), std::move(token));
+}
+
 static auto addTokens(const TypeParamList& paramList, std::vector<lex::Token>* tokens) -> void {
   tokens->push_back(paramList.getOpen());
   for (const auto& type : paramList.getTypes()) {
