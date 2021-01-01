@@ -23,7 +23,7 @@ Token::Token(const TokenKind kind, std::unique_ptr<TokenPayload> payload, const 
 
 Token::Token(const Token& rhs) :
     m_kind{rhs.m_kind},
-    m_payload{!rhs.m_payload ? nullptr : rhs.m_payload->clone()},
+    m_payload{rhs.m_payload ? rhs.m_payload->clone() : nullptr},
     m_span{rhs.m_span} {}
 
 Token::Token(Token&& rhs) noexcept :

@@ -74,7 +74,7 @@ class Parser final : private internal::ParserImpl {
 public:
   Parser() = delete;
   Parser(InputItrBegin inputBegin, const InputItrEnd inputEnd) :
-      m_input{inputBegin}, m_inputEnd(inputEnd) {}
+      m_input{inputBegin}, m_inputEnd{inputEnd}, m_lastTokenSpan{input::Span{0}} {}
 
   [[nodiscard]] auto next() -> NodePtr { return internal::ParserImpl::next(); }
 
@@ -89,13 +89,15 @@ public:
 private:
   InputItrBegin m_input;
   const InputItrEnd m_inputEnd;
+  input::Span m_lastTokenSpan;
 
   auto getFromInput() -> lex::Token override {
     if (m_input == m_inputEnd) {
-      return *m_input;
+      return lex::endToken(m_lastTokenSpan);
     }
     auto val = *m_input;
     ++m_input;
+    m_lastTokenSpan = val.getSpan();
     return val;
   }
 };
