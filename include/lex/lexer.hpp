@@ -51,7 +51,7 @@ public:
 
   [[nodiscard]] auto next() -> Token { return LexerImpl::next(); }
 
-  [[nodiscard]] auto begin() -> TokenItr<Lexer> { return TokenItr{*this}; }
+  [[nodiscard]] auto begin() -> TokenItr<Lexer> { return TokenItr{this}; }
 
   [[nodiscard]] auto end() -> TokenItr<Lexer> { return TokenItr<Lexer>{}; }
 

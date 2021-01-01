@@ -82,7 +82,7 @@ public:
 
   [[nodiscard]] auto nextExpr() -> NodePtr { return internal::ParserImpl::nextExpr(); }
 
-  [[nodiscard]] auto begin() -> NodeItr<Parser> { return NodeItr{*this}; }
+  [[nodiscard]] auto begin() -> NodeItr<Parser> { return NodeItr{this}; }
 
   [[nodiscard]] auto end() -> NodeItr<Parser> { return NodeItr<Parser>{}; }
 

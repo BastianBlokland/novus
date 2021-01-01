@@ -1,6 +1,7 @@
 #pragma once
 #include "lex/token.hpp"
 #include <iterator>
+#include <stdexcept>
 #include <utility>
 
 namespace lex {
@@ -19,26 +20,26 @@ template <typename TokenSource>
 class TokenItr final : public TokenItrTraits {
 
   static_assert(
-      std::is_same<decltype(std::declval<TokenSource&>().next()), Token>::value,
+      std::is_same<decltype(std::declval<TokenSource>().next()), Token>::value,
       "TokenSource has to have a 'next' function returning a token.");
 
 public:
   TokenItr() : m_source{nullptr}, m_current{} {}
 
-  explicit TokenItr(TokenSource& tokenSource) : m_source{&tokenSource} {
-    // Set the initial value.
-    m_current = tokenSource.next();
+  explicit TokenItr(TokenSource* tokenSource) : m_source{tokenSource} {
+    if (!tokenSource) {
+      throw std::invalid_argument{"Token source cannot be null"};
+    }
+    m_current = tokenSource->next();
   }
 
   auto operator*() -> Token&& { return std::move(m_current); }
 
-  auto operator-> () -> Token* { return &m_current; }
+  auto operator==(const TokenItr& rhs) noexcept { return m_current == rhs.m_current; }
 
-  auto operator==(const TokenItr& rhs) noexcept -> bool { return m_current == rhs.m_current; }
+  auto operator!=(const TokenItr& rhs) noexcept { return m_current != rhs.m_current; }
 
-  auto operator!=(const TokenItr& rhs) noexcept -> bool { return m_current != rhs.m_current; }
-
-  auto operator++() -> void { m_current = getToken(); }
+  auto operator++() { m_current = getToken(); }
 
 private:
   TokenSource* m_source;

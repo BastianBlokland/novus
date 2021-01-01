@@ -20,30 +20,26 @@ template <typename NodeSource>
 class NodeItr final : public NodeItrTraits {
 
   static_assert(
-      std::is_same<decltype(std::declval<NodeSource&>().next()), NodePtr>::value,
+      std::is_same<decltype(std::declval<NodeSource>().next()), NodePtr>::value,
       "NodeSource has to have a 'next' function returning a unique_ptr<Node>.");
 
 public:
   NodeItr() : m_source{nullptr}, m_current{nullptr} {}
 
-  explicit NodeItr(NodeSource& nodeSource) : m_source{&nodeSource} {
-    // Set the initial value.
-    m_current = nodeSource.next();
+  explicit NodeItr(NodeSource* nodeSource) : m_source{nodeSource} {
+    if (!nodeSource) {
+      throw std::invalid_argument{"Node source cannot be null"};
+    }
+    m_current = nodeSource->next();
   }
 
   auto operator*() -> NodePtr&& { return std::move(m_current); }
 
-  auto operator-> () -> NodePtr* { return &m_current; }
+  auto operator==(const NodeItr& rhs) noexcept { return m_current.get() == rhs.m_current.get(); }
 
-  auto operator==(const NodeItr& rhs) noexcept -> bool {
-    return m_current.get() == rhs.m_current.get();
-  }
+  auto operator!=(const NodeItr& rhs) noexcept { return m_current.get() != rhs.m_current.get(); }
 
-  auto operator!=(const NodeItr& rhs) noexcept -> bool {
-    return m_current.get() != rhs.m_current.get();
-  }
-
-  auto operator++() -> void { m_current = getNode(); }
+  auto operator++() { m_current = getNode(); }
 
 private:
   NodeSource* m_source;
