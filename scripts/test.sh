@@ -32,7 +32,7 @@ testProj()
   local coverageExecutable="${2}"
   local coverageIgnoreRegex="${3}"
   local coverageReportPath="${4}"
-  local rawCoverageDir="$(pwd)/${dir}/tests/raw_coverage/"
+  local rawCoverageDir="$(pwd)/${dir}/tests/test_rawcoverage/"
   local indexedCoveragePath="$(pwd)/${dir}/tests/test_coverage.profdata"
 
   # Verify build directory exists.
@@ -58,11 +58,10 @@ testProj()
 
   if test -d ${rawCoverageDir}
   then
-    info "Found raw coverage data"
+    info "Found raw coverage data, indexing..."
     hasCommand llvm-profdata || fail "'llvm-profdata' not found on path, it is required to create coverage data"
     hasCommand llvm-cov || fail "'llvm-cov' not found on path, it is required to create coverage reports"
 
-    info "Indexing coverage profile"
     llvm-profdata merge -sparse "${rawCoverageDir}"/* -o "${indexedCoveragePath}"
     info "Generating coverage report"
     llvm-cov export "${coverageExecutable}" \
@@ -122,6 +121,5 @@ do
   esac
 done
 
-# Run test.
 testProj "${buildDir}" "${coverageExecutable}" "${coverageIgnoreRegex}" "${coverageReportPath}"
 exit 0

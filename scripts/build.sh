@@ -112,6 +112,5 @@ do
   esac
 done
 
-# Run build.
 buildProj "${numThreads}" "${buildDir}"
 exit 0
