@@ -53,6 +53,7 @@ fuzz()
   "${executablePath}" "${corpusPath}" \
     -max_total_time=${duration} \
     -jobs=${numJobs} \
+    -workers=${numJobs} \
     -print_final_stats=1 \
     -print_pcs=1
 

@@ -36,13 +36,25 @@ jobs:
         sudo ln -s /usr/bin/llvm-profdata-10 /usr/bin/llvm-profdata
 
     - name: configure
-      run: ./scripts/configure.sh --type Debug --sanitize --coverage --tests --lint
+      run: ./scripts/configure.sh --type Debug --sanitize --coverage --tests --fuzz --lint
 
     - name: build
       run: ./scripts/build.sh
 
     - name: test
       run: ./scripts/test.sh
+
+    - name: fuzz-corpus-cache
+      uses: actions/cache@v2
+      with:
+        path: ./fuzz/corpus
+        key: fuzz-corpus
+
+    - name: fuzz-lex
+      run: ./scripts/fuzz.sh --path bin/novfuzz-lex --duration 60
+
+    - name: fuzz-parse
+      run: ./scripts/fuzz.sh --path bin/novfuzz-parse --duration 60
 
     - name: upload-coverage
       env:
