@@ -7,6 +7,7 @@ project(
 
 # Custom options options.
 set(BUILD_TESTING "Off" CACHE BOOL "Should test targets be build")
+set(BUILD_FUZZING "Off" CACHE BOOL "Should fuzzing targets be build")
 set(LINTING       "Off" CACHE BOOL "Should source linting be enabled")
 set(SANITIZE      "Off" CACHE BOOL "Should santiser instrumentation be included in targets")
 set(COVERAGE      "Off" CACHE BOOL "Should coverage instrumentation be included in targets")
@@ -18,6 +19,7 @@ message(STATUS "* Host processor: ${CMAKE_SYSTEM_PROCESSOR}")
 message(STATUS "* CMake version: ${CMAKE_VERSION}")
 message(STATUS "* Build type: ${CMAKE_BUILD_TYPE}")
 message(STATUS "* Build tests: ${BUILD_TESTING}")
+message(STATUS "* Build fuzzing: ${BUILD_FUZZING}")
 message(STATUS "* Linting: ${LINTING}")
 message(STATUS "* Sanitize: ${SANITIZE}")
 message(STATUS "* Coverage: ${COVERAGE}")
@@ -127,6 +129,10 @@ add_subdirectory(apps)
 
 if(BUILD_TESTING)
   add_subdirectory(tests)
+endif()
+
+if(BUILD_FUZZING)
+  add_subdirectory(fuzz)
 endif()
 
 add_subdirectory(novstd)

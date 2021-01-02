@@ -19,6 +19,8 @@
   Build directory.
 .PARAMETER Tests
   Include compiler and runtime tests.
+.PARAMETER Fuzz
+  Include fuzz targets
 .PARAMETER Lint
   Enable source linter.
 .PARAMETER Sanitize
@@ -34,6 +36,7 @@ param(
   [string]$Gen = "MinGW",
   [string]$Dir = "build",
   [switch]$Tests,
+  [switch]$Fuzz,
   [switch]$Lint,
   [switch]$Sanitize,
   [switch]$Coverage
@@ -68,6 +71,7 @@ function ConfigureProj(
   [string] $gen,
   [string] $dir,
   [bool] $tests,
+  [bool] $fuzz,
   [bool] $lint,
   [bool] $sanitize,
   [bool] $coverage) {
@@ -92,6 +96,7 @@ function ConfigureProj(
     -G "$(MapToCMakeGen $gen)" `
     -DCMAKE_BUILD_TYPE="$type" `
     -DBUILD_TESTING="$($tests ? "On" : "Off")" `
+    -DBUILD_FUZZING="$($fuzz ? "On" : "Off")" `
     -DLINTING="$($lint ? "On" : "Off")" `
     -DSANITIZE="$($sanitize ? "On" : "Off")" `
     -DCOVERAGE="$($coverage ? "On" : "Off")"
@@ -104,5 +109,5 @@ function ConfigureProj(
 }
 
 # Run configuration.
-ConfigureProj $Type $Gen $Dir $Tests $Lint $Sanitize $Coverage
+ConfigureProj $Type $Gen $Dir $Tests $Fuzz $Lint $Sanitize $Coverage
 exit 0

@@ -291,6 +291,12 @@ auto execute(
     promise->getStarted().store(true, std::memory_order_release);
   }
 
+  // NOTE: There is an edgecase where an executor is started while the registry is in the process of
+  // being paused, in this case we should trap the executor immediately.
+  if (unlikely(execHandle.trap())) {
+    goto End;
+  }
+
   // Start executing instructions.
   while (true) {
     switch (readAsm<OpCode>(&ip)) {
@@ -887,7 +893,7 @@ auto execute(
 
 End:
   // If we are backing a promise then fill-in the results and notify all waiters.
-  auto endState = execHandle.getState(std::memory_order_relaxed);
+  const auto endState = execHandle.getState(std::memory_order_relaxed);
 
   // NOTE: When an executor is aborted it is unsafe to access any memory that is not local to the
   // executor. So the registry and any references are off limits.

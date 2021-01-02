@@ -96,6 +96,7 @@ add_executable(novtests
   parse/expr_group_test.cpp
   parse/expr_index_test.cpp
   parse/expr_is_test.cpp
+  parse/expr_misc_test.cpp
   parse/expr_paren_test.cpp
   parse/expr_primary_test.cpp
   parse/expr_switch_test.cpp

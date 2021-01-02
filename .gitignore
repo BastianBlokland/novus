@@ -11,6 +11,9 @@
 /compile_commands.json
 /test_coverage.lcov
 
+# Logs
+/*.log
+
 # User settings (Except portable common settings).
 /.vscode/*
 !/.vscode/settings.json
@@ -21,3 +24,14 @@
 # Ide caches.
 /.clangd/index/*
 /.cache/
+
+# Coverage files
+**/*.profraw
+**/*.profdata
+
+# Analyzer crash reports
+/crash-*
+
+# Fuzz corpus
+/fuzz/corpus
+/fuzz_rawcoverage

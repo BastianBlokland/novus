@@ -3,11 +3,21 @@
 #include "parse/error.hpp"
 #include "parse/nodes.hpp"
 #include "utilities.hpp"
+#include <cassert>
 #include <vector>
+
+namespace {
+
+// Maximum depth that expressions are allowed to be nested.
+constexpr size_t g_maxRecursionDepth = 100;
+
+} // namespace
 
 namespace parse {
 
 namespace internal {
+
+ParserImpl::~ParserImpl() noexcept { assert(m_exprRecursionDepth == 0); }
 
 auto ParserImpl::next() -> NodePtr { return nextStmt(); }
 
@@ -222,6 +232,11 @@ auto ParserImpl::nextStmtEnumDecl() -> NodePtr {
 auto ParserImpl::nextStmtExec() -> NodePtr { return execStmtNode(nextExprCall(nextExprId())); }
 
 auto ParserImpl::nextExpr(const int minPrecedence, const int maxPrecedence) -> NodePtr {
+  if (++m_exprRecursionDepth >= g_maxRecursionDepth) {
+    --m_exprRecursionDepth;
+    return errMaxExprRecursionDepthReached(consumeToken());
+  }
+
   auto lhs = nextExprLhs();
   while (true) {
     // Handle binary operators, precedence controls if we should keep recursing or let the next
@@ -264,6 +279,7 @@ auto ParserImpl::nextExpr(const int minPrecedence, const int maxPrecedence) -> N
       break;
     }
   }
+  --m_exprRecursionDepth;
   return lhs;
 }
 

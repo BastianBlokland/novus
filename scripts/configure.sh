@@ -53,12 +53,14 @@ configureProj()
   local type="${1}"
   local dir="${2}"
   local testsMode="${3}"
-  local lintMode="${4}"
-  local sanitizeMode="${5}"
-  local coverageMode="${6}"
+  local fuzzMode="${4}"
+  local lintMode="${5}"
+  local sanitizeMode="${6}"
+  local coverageMode="${7}"
 
   verifyBuildTypeOption "${type}"
   verifyBoolOption "${testsMode}"
+  verifyBoolOption "${fuzzMode}"
   verifyBoolOption "${lintMode}"
   verifyBoolOption "${sanitizeMode}"
   verifyBoolOption "${coverageMode}"
@@ -75,6 +77,7 @@ configureProj()
     -G "Unix Makefiles" \
     -DCMAKE_BUILD_TYPE="${type}" \
     -DBUILD_TESTING="${testsMode}" \
+    -DBUILD_FUZZING="${fuzzMode}" \
     -DLINTING="${lintMode}" \
     -DSANITIZE="${sanitizeMode}" \
     -DCOVERAGE="${coverageMode}"
@@ -89,6 +92,7 @@ printUsage()
   echo "-t,--type     Build type, options: Debug, Release (default)"
   echo "-d,--dir      Build directory, default: 'build'"
   echo "--tests       Include compiler and runtime tests"
+  echo "--fuzz        Include fuzz targets"
   echo "--lint        Enable source linter"
   echo "--sanitize    Should santiser instrumentation be included in targets"
   echo "--coverage    Should coverage instrumentation be included in targets"
@@ -98,6 +102,7 @@ printUsage()
 buildType="Release"
 buildDir="build"
 testsMode="Off"
+fuzzMode="Off"
 lintMode="Off"
 sanitizeMode="Off"
 coverageMode="Off"
@@ -123,6 +128,10 @@ do
       testsMode="On"
       shift 1
       ;;
+    --fuzz)
+      fuzzMode="On"
+      shift 1
+      ;;
     --lint)
       lintMode="On"
       shift 1
@@ -143,11 +152,11 @@ do
   esac
 done
 
-# Run configuration.
 configureProj \
   "${buildType}" \
   "${buildDir}" \
   "${testsMode}" \
+  "${fuzzMode}" \
   "${lintMode}" \
   "${sanitizeMode}" \
   "${coverageMode}"

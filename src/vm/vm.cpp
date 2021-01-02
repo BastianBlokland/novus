@@ -85,6 +85,8 @@ auto run(const novasm::Assembly* assembly, PlatformInterface* iface) noexcept ->
   auto refAlloc     = internal::RefAllocator{&memAlloc};
   auto gc           = internal::GarbageCollector{&refAlloc, &execRegistry};
 
+  assert(execRegistry.isRunning());
+
   auto resultState = execute(
       settings,
       assembly,
@@ -103,6 +105,8 @@ auto run(const novasm::Assembly* assembly, PlatformInterface* iface) noexcept ->
   // NOTE: First terminate the garbage collector as that might attempt to pause / resume executors
   // while we are trying to abort them.
   execRegistry.abortExecutors();
+
+  assert(execRegistry.isAborted());
 
   teardown(&settings);
 
