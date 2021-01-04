@@ -76,7 +76,7 @@ public:
 
 private:
   std::map<FuncId, FuncDecl> m_funcs;
-  std::unordered_map<std::string, std::vector<FuncId>> m_lookup;
+  std::unordered_multimap<std::string, FuncId> m_lookup;
 
   auto registerFunc(
       const Program& prog,

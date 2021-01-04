@@ -30,15 +30,14 @@ auto FuncDeclTable::exists(const std::string& name) const -> bool {
 
 auto FuncDeclTable::lookup(const std::string& name, OverloadOptions options) const
     -> std::vector<FuncId> {
-  const auto itr = m_lookup.find(name);
-  if (itr == m_lookup.end()) {
-    return {};
-  }
+  const auto mapRange = m_lookup.equal_range(name);
 
   auto result = std::vector<FuncId>{};
-  result.reserve(itr->second.size());
-  for (const auto& f : itr->second) {
-    const auto& decl = m_funcs.find(f)->second;
+  result.reserve(std::distance(mapRange.first, mapRange.second));
+
+  for (auto itr = mapRange.first; itr != mapRange.second; ++itr) {
+    const auto funcId = itr->second;
+    const auto& decl  = m_funcs.find(funcId)->second;
     if (options.hasFlag<OverloadFlags::ExclActions>() && decl.isAction()) {
       continue;
     }
@@ -48,7 +47,7 @@ auto FuncDeclTable::lookup(const std::string& name, OverloadOptions options) con
     if (options.hasFlag<OverloadFlags::ExclNonUser>() && decl.m_kind != FuncKind::User) {
       continue;
     }
-    result.push_back(f);
+    result.push_back(funcId);
   }
 
   return result;
@@ -101,11 +100,7 @@ auto FuncDeclTable::insertFunc(
   }
 
   // Insert into name loopup map.
-  auto itr = m_lookup.find(name);
-  if (itr == m_lookup.end()) {
-    itr = m_lookup.insert({std::move(name), std::vector<FuncId>{}}).first;
-  }
-  itr->second.push_back(id);
+  m_lookup.insert({std::move(name), id});
 }
 
 auto FuncDeclTable::updateFuncOutput(FuncId id, TypeId newOutput) -> void {
@@ -137,11 +132,7 @@ auto FuncDeclTable::registerFunc(
   const auto highestKey = m_funcs.rbegin();
   const auto id         = FuncId{highestKey == m_funcs.rend() ? 0 : highestKey->first.m_id + 1};
 
-  auto itr = m_lookup.find(name);
-  if (itr == m_lookup.end()) {
-    itr = m_lookup.insert({name, std::vector<FuncId>{}}).first;
-  }
-  itr->second.push_back(id);
+  m_lookup.insert({name, id});
   m_funcs.insert(
       {id,
        FuncDecl{id, kind, isAction, isImplicitConv, std::move(name), std::move(input), output}});
