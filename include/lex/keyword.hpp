@@ -6,6 +6,7 @@
 namespace lex {
 
 enum class Keyword {
+  Intrinsic,
   Import,
   Fun,
   Act,
