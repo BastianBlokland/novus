@@ -609,7 +609,6 @@ auto Program::defineEnum(sym::TypeId id, std::unordered_map<std::string, int32_t
 
   // Register implicit conversion to int and long.
   m_funcDecls.registerImplicitConv(*this, fk::NoOp, id, m_int);
-  m_funcDecls.registerImplicitConv(*this, fk::ConvIntLong, id, m_long);
 
   // Register ordering operators (<, <=, >, >=).
   m_funcDecls.registerFunc(
