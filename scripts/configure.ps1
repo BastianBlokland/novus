@@ -117,9 +117,11 @@ function ConfigureProj(
     Fail "Configure failed"
   }
 
+  # Save a file to remember what build-type is this.
+  Set-Content -Path "$dir/build_type" -Value "$type"
+
   PInfo "Successfully configured build directory '$dir'"
 }
 
-# Run configuration.
 ConfigureProj $Type $Gen $Dir $Tests $Fuzz $Lint $Sanitize $Coverage
 exit 0
