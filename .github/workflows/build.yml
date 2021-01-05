@@ -106,6 +106,13 @@ jobs:
             compiler: vs2019,
             generator: vs2019
           }
+        - {
+            image: windows-2019,
+            arch: x86_64,
+            os: windows,
+            compiler: vs2019-clang,
+            generator: vs2019-clang
+          }
     env:
       CC: ${{matrix.config.cc}}
       CXX: ${{matrix.config.cxx}}

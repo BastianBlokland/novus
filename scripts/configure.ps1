@@ -14,6 +14,7 @@
   Build system to generate. Possible values:
   - MinGW
   - VS2019
+  - VS2019-Clang
 .PARAMETER Dir
   Default: build
   Build directory.
@@ -32,7 +33,7 @@
 param(
   [ValidateSet("Debug", "Release", IgnoreCase = $true)]
   [string]$Type = "Release",
-  [ValidateSet("MinGW", "VS2019", IgnoreCase = $true)]
+  [ValidateSet("MinGW", "VS2019", "VS2019-Clang", IgnoreCase = $true)]
   [string]$Gen = "MinGW",
   [string]$Dir = "build",
   [switch]$Tests,
@@ -62,6 +63,16 @@ function MapToCMakeGen([string] $gen) {
   switch ($gen) {
     "MinGW" { "MinGW Makefiles"; break }
     "VS2019" { "Visual Studio 16 2019"; break }
+    "VS2019-Clang" { "Visual Studio 16 2019"; break }
+    default { Fail "Unsupported generator" }
+  }
+}
+
+function GetToolsetArg([string] $gen) {
+  switch ($gen) {
+    "MinGW" { ""; break }
+    "VS2019" { ""; break }
+    "VS2019-Clang" { "-TClangCL"; break }
     default { Fail "Unsupported generator" }
   }
 }
@@ -99,7 +110,8 @@ function ConfigureProj(
     -DBUILD_FUZZING="$($fuzz ? "On" : "Off")" `
     -DLINTING="$($lint ? "On" : "Off")" `
     -DSANITIZE="$($sanitize ? "On" : "Off")" `
-    -DCOVERAGE="$($coverage ? "On" : "Off")"
+    -DCOVERAGE="$($coverage ? "On" : "Off")" `
+    "$(GetToolsetArg $gen)"
 
   if ($LASTEXITCODE -ne 0) {
     Fail "Configure failed"
