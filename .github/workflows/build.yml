@@ -19,6 +19,13 @@ jobs:
             cc: clang-10,
             cxx: clang++-10
           }
+        - {
+            image: windows-2019,
+            arch: x86_64,
+            os: windows,
+            compiler: vs2019,
+            generator: vs2019
+          }
     env:
       CC: ${{matrix.config.cc}}
       CXX: ${{matrix.config.cxx}}
@@ -27,7 +34,8 @@ jobs:
       with:
         fetch-depth: 0
 
-    - name: install
+    - name: install-unix
+      if: matrix.config.os != 'windows'
       run: |
         echo "Installing llvm-10"; sudo apt install llvm-10
         echo "Installing clang-tidy-10"; sudo apt install clang-tidy-10
@@ -35,28 +43,47 @@ jobs:
         sudo ln -s /usr/bin/llvm-cov-10 /usr/bin/llvm-cov
         sudo ln -s /usr/bin/llvm-profdata-10 /usr/bin/llvm-profdata
 
-    - name: configure
+    - name: configure-unix
+      if: matrix.config.os != 'windows'
       run: ./scripts/configure.sh --type Debug --sanitize --coverage --tests --fuzz --lint
 
-    - name: build
+    - name: configure-windows
+      if: matrix.config.os == 'windows'
+      run: pwsh .\scripts\configure.ps1 -Gen ${{matrix.config.generator}} -Type Debug -Tests
+
+    - name: build-unix
+      if: matrix.config.os != 'windows'
       run: ./scripts/build.sh
 
-    - name: test
+    - name: build-windows
+      if: matrix.config.os == 'windows'
+      run: pwsh .\scripts\build.ps1
+
+    - name: test-unix
+      if: matrix.config.os != 'windows'
       run: ./scripts/test.sh
 
+    - name: test-windows
+      if: matrix.config.os == 'windows'
+      run: pwsh .\scripts\test.ps1
+
     - name: fuzz-corpus-cache
+      if: matrix.config.os != 'windows'
       uses: actions/cache@v2
       with:
         path: ./fuzz/corpus
         key: fuzz-corpus
 
     - name: fuzz-lex
+      if: matrix.config.os != 'windows'
       run: ./scripts/fuzz.sh --path bin/novfuzz-lex --duration 60
 
     - name: fuzz-parse
+      if: matrix.config.os != 'windows'
       run: ./scripts/fuzz.sh --path bin/novfuzz-parse --duration 60
 
     - name: upload-coverage
+      if: matrix.config.os != 'windows'
       env:
         CODECOV_TOKEN: ${{secrets.CODECOV_TOKEN}}
       run: ./scripts/upload_coverage.sh --token "${CODECOV_TOKEN}"

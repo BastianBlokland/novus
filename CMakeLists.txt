@@ -32,6 +32,7 @@ message(STATUS "* Generator: ${CMAKE_GENERATOR}")
 # Output executables to bin dir.
 set(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/bin)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY $<1:${PROJECT_SOURCE_DIR}/bin>)
+file(MAKE_DIRECTORY ${EXECUTABLE_OUTPUT_PATH})
 
 # Enable 'CTest' testing.
 message(STATUS "Enable CTest dependency")
