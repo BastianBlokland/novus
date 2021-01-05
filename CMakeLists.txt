@@ -118,6 +118,10 @@ if(LINTING)
   if(CLANG_TIDY_BIN)
     message(STATUS "Enabling clang-tidy linter")
     set(CMAKE_CXX_CLANG_TIDY ${CLANG_TIDY_BIN})
+    set(CMAKE_VS_GLOBALS
+      "RunCodeAnalysis=true"
+      "EnableClangTidyCodeAnalysis=true"
+      "ClangTidyToolExe=${CLANG_TIDY_BIN}")
   else()
     message(FATAL_ERROR "Linting was enabled but the clang-tidy linter could not be found")
   endif()
