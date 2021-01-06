@@ -165,7 +165,9 @@ assert(
   cancelPredicate = (impure lambda (TcpServerState state)
     true
   );
-  tcpServer(TcpServerSettings(IpFamily.V6, 5014, 64, clientHandler, cancelPredicate)) == TcpServerState(0)
+  res = tcpServer(TcpServerSettings(IpFamily.V6, 5014, 64, clientHandler, cancelPredicate));
+  if res as Error          err  -> printErr(err); false
+  if res as TcpServerState s    -> s == TcpServerState(0)
 )
 
 assert(
@@ -179,5 +181,6 @@ assert(
   parallelFor(25, impure lambda (int i)
     tcpConnection(ipV6Loopback(), 5015)
   );
-  server.get() == TcpServerState(25)
+  if server.get() as Error          err  -> printErr(err); false
+  if server.get() as TcpServerState s    -> s == TcpServerState(25)
 )
