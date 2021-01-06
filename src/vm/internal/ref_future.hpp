@@ -43,8 +43,10 @@ public:
   [[nodiscard]] inline auto block() noexcept -> ExecState {
     m_waitersCount.fetch_add(1, std::memory_order_release);
 
-    auto lk = std::unique_lock<std::mutex>{m_mutex};
-    m_condVar.wait(lk, [this] { return m_state != ExecState::Running; });
+    {
+      auto lk = std::unique_lock<std::mutex>{m_mutex};
+      m_condVar.wait(lk, [this] { return m_state != ExecState::Running; });
+    }
 
     m_waitersCount.fetch_sub(1, std::memory_order_release);
     return m_state;
@@ -54,9 +56,12 @@ public:
   [[nodiscard]] inline auto waitNano(int64_t timeout) noexcept -> bool {
     m_waitersCount.fetch_add(1, std::memory_order_release);
 
-    auto lk        = std::unique_lock<std::mutex>{m_mutex};
-    const auto res = m_condVar.wait_for(
+    bool res;
+    {
+      auto lk        = std::unique_lock<std::mutex>{m_mutex};
+      res = m_condVar.wait_for(
         lk, std::chrono::nanoseconds(timeout), [this] { return m_state != ExecState::Running; });
+    }
 
     m_waitersCount.fetch_sub(1, std::memory_order_release);
     return res;
