@@ -3,6 +3,7 @@
 #include "internal/ref_allocator.hpp"
 #include "internal/ref_string.hpp"
 #include <atomic>
+#include <cassert>
 #include <condition_variable>
 #include <mutex>
 
@@ -223,6 +224,7 @@ private:
     if (!GetExitCodeProcess(m_process.hProcess, &exitCode)) {
       return static_cast<int32_t>(ProcessExitErr::UnknownErr);
     }
+    assert(exitCode != STILL_ACTIVE);
     return static_cast<int32_t>(exitCode);
 #else // !_WIN32
     int status;
@@ -243,6 +245,11 @@ private:
 };
 
 inline auto processStart(RefAllocator* alloc, const StringRef* cmdLineStr) -> ProcessRef* {
+  if(cmdLineStr->getSize() == 0) {
+    FILE* nullFile = nullptr;
+    return alloc->allocPlain<ProcessRef>(invalidProcess(), nullFile, nullFile, nullFile);
+  }
+
 #if defined(_WIN32)
   // Make a local copy of the command-line string for preprocessing.
   // Double the size as we need to escape characters.
@@ -326,8 +333,14 @@ inline auto processStart(RefAllocator* alloc, const StringRef* cmdLineStr) -> Pr
 
   // Close the child side of the pipes.
   CloseHandle(pipeStdIn[0], pipeStdOut[1], pipeStdErr[1]);
-  return alloc->allocPlain<ProcessRef>(
-      success ? processInfo : invalidProcess(), pipeStdIn[1], pipeStdOut[0], pipeStdErr[0]);
+
+  if (!success) {
+    CloseHandle(processInfo.hThread);
+    CloseHandle(processInfo.hProcess);
+    return alloc->allocPlain<ProcessRef>(
+      invalidProcess(), pipeStdIn[1], pipeStdOut[0], pipeStdErr[0]);
+  }
+  return alloc->allocPlain<ProcessRef>(processInfo, pipeStdIn[1], pipeStdOut[0], pipeStdErr[0]);
 
 #else // !_WIN32
 

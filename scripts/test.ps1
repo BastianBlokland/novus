@@ -63,6 +63,5 @@ function TestProj([string] $dir) {
   PInfo "Successfully finished testing"
 }
 
-# Run test.
 TestProj $Dir
 exit 0

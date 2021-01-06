@@ -55,6 +55,12 @@ function BuildProjMake([int] $threads, [string] $dir) {
 }
 
 function BuildProjMSBuild([int] $threads, [string] $dir) {
+  # Find out what type of configuration this is (Debug or Release).
+  $buildType = Get-Content "$dir/build_type" -First 1
+  if ($buildType -ne "Debug" -and $buildType -ne "Release") {
+    Fail "Unexpected build-type: '$buildType'"
+  }
+
   # Verify that vswhere is present on path.
   if (!(Get-Command "vswhere.exe" -ErrorAction SilentlyContinue)) {
     Fail "'vswhere.exe' not found on path, please install it and add its bin dir to path"
@@ -70,7 +76,7 @@ function BuildProjMSBuild([int] $threads, [string] $dir) {
   PInfo "Begin building using MSBuild on $Threads threads"
 
   Push-Location "$dir"
-  & "$msbuildPath" -noLogo -maxCpuCount:$threads Novus.sln -p:Configuration=Release
+  & "$msbuildPath" -noLogo -maxCpuCount:$threads Novus.sln -p:Configuration=$buildType
   $msbuildResult = $LASTEXITCODE
   Pop-Location
 
@@ -112,6 +118,5 @@ function BuildProj([int] $threads, [string] $dir) {
   }
 }
 
-# Run build.
 BuildProj $Threads $Dir
 exit 0

@@ -32,18 +32,27 @@ message(STATUS "* Generator: ${CMAKE_GENERATOR}")
 # Output executables to bin dir.
 set(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/bin)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY $<1:${PROJECT_SOURCE_DIR}/bin>)
+file(MAKE_DIRECTORY ${EXECUTABLE_OUTPUT_PATH})
 
 # Enable 'CTest' testing.
 message(STATUS "Enable CTest dependency")
 include(CTest)
 enable_testing()
 
+if("${CMAKE_GENERATOR}" MATCHES "Visual Studio")
+  message(STATUS "Configuring Visual Studio generator")
+  SET(CMAKE_CONFIGURATION_TYPES "Debug;Release" CACHE STRING "" FORCE)
+endif()
+
 # Setup global compiler and linker flags.
 set(CXX_FLAGS_SHARED "")
 set(LINKER_FLAGS_SHARED "")
 if(SANITIZE)
-  if(NOT ${CMAKE_CXX_COMPILER_ID} MATCHES "Clang")
+  if(NOT "${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")
     message(FATAL_ERROR "Sanitizer instrumentation is only supported with the clang compiler")
+  endif()
+  if(WIN32)
+    message(FATAL_ERROR "Sanitizer instrumentation is not supported on windows")
   endif()
   message(STATUS "Enabling sanitizer instrumentation")
   set(SANITIZERS "address,alignment,bool,builtin,bounds,enum,function,integer-divide-by-zero,object-size,return,unreachable")
@@ -52,8 +61,11 @@ if(SANITIZE)
 endif()
 
 if(COVERAGE)
-  if(NOT ${CMAKE_CXX_COMPILER_ID} MATCHES "Clang")
+  if(NOT "${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")
     message(FATAL_ERROR "Coverage instrumentation is only supported with the clang compiler")
+  endif()
+  if(WIN32)
+    message(FATAL_ERROR "Coverage instrumentation is not supported on windows")
   endif()
   message(STATUS "Enabling coverage instrumentation")
   set(CXX_FLAGS_SHARED "${CXX_FLAGS_SHARED} -fprofile-instr-generate -fcoverage-mapping")
@@ -62,12 +74,17 @@ endif()
 
 if(WIN32)
   message(STATUS "Enabling windows specific defines")
-  set(CXX_FLAGS_SHARED "${CXX_FLAGS_SHARED} -DNOMINMAX -D_CRT_SECURE_NO_WARNINGS -D_SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING")
+  set(CXX_FLAGS_SHARED "${CXX_FLAGS_SHARED} \
+    -DNOMINMAX \
+    -D_CRT_SECURE_NO_WARNINGS \
+    -D_SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING")
 endif()
 
 if(MSVC)
   message(STATUS "Setting msvc compiler flags")
-  set(CMAKE_CXX_FLAGS "/std:c++17 /WX /wd4530 /wd26451 ${CXX_FLAGS_SHARED}")
+  set(CXX_FLAGS_SHARED "${CXX_FLAGS_SHARED} /std:c++17 /O2 /WX /wd4530 /wd26451")
+  set(CMAKE_CXX_FLAGS_DEBUG "/Zi ${CXX_FLAGS_SHARED}")
+  set(CMAKE_CXX_FLAGS_RELEASE "/DNDEBUG ${CXX_FLAGS_SHARED}")
   set(CMAKE_EXE_LINKER_FLAGS "${LINKER_FLAGS_SHARED}")
 else()
   message(STATUS "Setting unix compiler flags")
@@ -75,7 +92,7 @@ else()
   set(CMAKE_CXX_FLAGS_DEBUG "-O1 -g -fno-omit-frame-pointer ${CXX_FLAGS_SHARED}")
   set(CMAKE_CXX_FLAGS_RELEASE "-O3 -DNDEBUG ${CXX_FLAGS_SHARED}")
   set(CMAKE_EXE_LINKER_FLAGS "${LINKER_FLAGS_SHARED}")
-  endif()
+endif()
 
 # (Older versions of?) libstdc++ require linking against the filesystem library explicitly.
 # TODO(bastian): Investigate if there is a better way to handle this.
@@ -112,6 +129,10 @@ if(LINTING)
   if(CLANG_TIDY_BIN)
     message(STATUS "Enabling clang-tidy linter")
     set(CMAKE_CXX_CLANG_TIDY ${CLANG_TIDY_BIN})
+    set(CMAKE_VS_GLOBALS
+      "RunCodeAnalysis=true"
+      "EnableClangTidyCodeAnalysis=true"
+      "ClangTidyToolExe=${CLANG_TIDY_BIN}")
   else()
     message(FATAL_ERROR "Linting was enabled but the clang-tidy linter could not be found")
   endif()

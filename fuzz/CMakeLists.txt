@@ -1,7 +1,10 @@
 # Configure fuzz executables using llvm libfuzzer (https://llvm.org/docs/LibFuzzer.html).
 
-if(NOT ${CMAKE_CXX_COMPILER_ID} MATCHES "Clang")
+if(NOT "${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")
   message(FATAL_ERROR "Fuzzing is only supported with the clang compiler")
+endif()
+if(WIN32)
+  message(FATAL_ERROR "Fuzzing is not supported on windows")
 endif()
 
 # 'novfuzz-lex' executable.
