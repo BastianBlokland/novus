@@ -13,6 +13,15 @@ coverage:
   precision: 2
   round: down
   range: "70...100"
+  status:
+    patch:
+      default:
+        target: 70%
+        threshold: 10%
+    project:
+      default:
+        target: 70%
+        threshold: 10%
 
 comment:
   layout: "reach,diff,flags,files,footer"
