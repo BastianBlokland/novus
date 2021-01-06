@@ -35,8 +35,10 @@ auto ExecutorRegistry::registerExecutor(ExecutorHandle* handle) noexcept -> void
 auto ExecutorRegistry::unregisterExecutor(ExecutorHandle* handle) noexcept -> void {
   auto lk = std::lock_guard<std::mutex>{m_mutex};
 
-  assert(handle == m_head || handle->m_prev);
   assert(m_state.load(std::memory_order_acquire) == RegistryState::Running);
+  assert(m_head);
+  assert(handle == m_head || handle->m_prev);
+
   if (handle == m_head) {
     m_head = handle->m_next;
   } else {
