@@ -245,6 +245,11 @@ private:
 };
 
 inline auto processStart(RefAllocator* alloc, const StringRef* cmdLineStr) -> ProcessRef* {
+  if(cmdLineStr->getSize() == 0) {
+    FILE* nullFile = nullptr;
+    return alloc->allocPlain<ProcessRef>(invalidProcess(), nullFile, nullFile, nullFile);
+  }
+
 #if defined(_WIN32)
   // Make a local copy of the command-line string for preprocessing.
   // Double the size as we need to escape characters.
