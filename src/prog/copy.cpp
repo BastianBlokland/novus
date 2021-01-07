@@ -51,6 +51,7 @@ auto copyFunc(
       id,
       fromDecl.getKind(),
       fromDecl.isAction(),
+      fromDecl.isIntrinsic(),
       fromDecl.isImplicitConv(),
       fromDecl.getName(),
       fromDecl.getInput(),
