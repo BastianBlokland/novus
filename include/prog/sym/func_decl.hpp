@@ -21,6 +21,7 @@ public:
   [[nodiscard]] auto getId() const -> const FuncId&;
   [[nodiscard]] auto getKind() const -> const FuncKind&;
   [[nodiscard]] auto isAction() const -> bool;
+  [[nodiscard]] auto isIntrinsic() const -> bool;
   [[nodiscard]] auto isImplicitConv() const -> bool;
   [[nodiscard]] auto getName() const -> const std::string&;
   [[nodiscard]] auto getInput() const -> const TypeSet&;
@@ -32,6 +33,7 @@ private:
   FuncId m_id;
   FuncKind m_kind;
   bool m_isAction;
+  bool m_isIntrinsic;
   bool m_isImplicitConv;
   std::string m_name;
   TypeSet m_input;
@@ -41,6 +43,7 @@ private:
       FuncId id,
       FuncKind kind,
       bool isAction,
+      bool isIntrinsic,
       bool isImplicitConv,
       std::string name,
       TypeSet input,

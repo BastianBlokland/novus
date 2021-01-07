@@ -242,12 +242,13 @@ TEST_CASE("Analyzing call expressions", "[frontend]") {
         "fun f1(int i) -> int i.f2()",
         errFieldNotFoundOnType(src, "f2", "int", input::Span{21, 24}));
     CHECK_DIAG(
+        "act length(string str) -> int intrinsic{string_length}(str) "
         "fun f() -> int (42).length()",
-        errUndeclaredPureFunc(src, "length", {"int"}, input::Span{15, 27}));
+        errUndeclaredPureFunc(src, "length", {"int"}, input::Span{75, 87}));
     CHECK_DIAG(
-        "fun ()(string s) -> int s.length() "
+        "fun ()(string s) -> int intrinsic{string_length}(s) "
         "fun f() -> int 42()",
-        errUndeclaredCallOperator(src, {"int"}, input::Span{50, 53}));
+        errUndeclaredCallOperator(src, {"int"}, input::Span{67, 70}));
     CHECK_DIAG(
         "act a() -> int 1 "
         "fun f2() -> int a()",

@@ -29,8 +29,8 @@ TEST_CASE("Analyzing execute statements", "[frontend]") {
   }
 
   SECTION("Define exec statement with conversion") {
-    const auto& output = ANALYZE("enum SleepTimes = short : 10, long : 100 "
-                                 "sleepNano(SleepTimes.short)");
+    const auto& output = ANALYZE("enum ConsoleKind = StdIn, StdOut, StdErr "
+                                 "consoleOpenStream(ConsoleKind.StdOut)");
     REQUIRE(output.isSuccess());
 
     auto execsBegin     = output.getProg().beginExecStmts();
@@ -39,12 +39,12 @@ TEST_CASE("Analyzing execute statements", "[frontend]") {
     auto args = std::vector<prog::expr::NodePtr>{};
     args.push_back(applyConv(
         output,
-        "SleepTimes",
-        "long",
-        prog::expr::litEnumNode(output.getProg(), GET_TYPE_ID(output, "SleepTimes"), "short")));
+        "ConsoleKind",
+        "int",
+        prog::expr::litEnumNode(output.getProg(), GET_TYPE_ID(output, "ConsoleKind"), "StdOut")));
     auto callExpr = prog::expr::callExprNode(
         output.getProg(),
-        GET_FUNC_ID(output, "sleepNano", GET_TYPE_ID(output, "long")),
+        GET_FUNC_ID(output, "consoleOpenStream", GET_TYPE_ID(output, "int")),
         std::move(args));
 
     CHECK(execsBegin->getExpr() == *callExpr);

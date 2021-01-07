@@ -4,7 +4,7 @@
 
 namespace {
 
-const std::array<lex::Token, 65> fuzzTokens = {
+const std::array<lex::Token, 66> fuzzTokens = {
     lex::basicToken(lex::TokenKind::OpPlus),
     lex::basicToken(lex::TokenKind::OpPlusPlus),
     lex::basicToken(lex::TokenKind::OpMinus),
@@ -51,6 +51,7 @@ const std::array<lex::Token, 65> fuzzTokens = {
     lex::litBoolToken(false),
     lex::litStrToken("Hello World"),
     lex::litCharToken('!'),
+    lex::keywordToken(lex::Keyword::Intrinsic),
     lex::keywordToken(lex::Keyword::Import),
     lex::keywordToken(lex::Keyword::Fun),
     lex::keywordToken(lex::Keyword::Act),

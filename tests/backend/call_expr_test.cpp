@@ -226,31 +226,31 @@ TEST_CASE("Generate assembly for call expressions", "[backend]") {
       asmb->addLoadLitFloat(2.0F); // NOLINT: Magic numbers
       asmb->addModFloat();
     });
-    CHECK_EXPR("sin(2.0)", [](novasm::Assembler* asmb) -> void {
+    CHECK_EXPR("float(intrinsic{float_sin}(2.0))", [](novasm::Assembler* asmb) -> void {
       asmb->addLoadLitFloat(2.0F); // NOLINT: Magic numbers
       asmb->addSinFloat();
     });
-    CHECK_EXPR("cos(2.0)", [](novasm::Assembler* asmb) -> void {
+    CHECK_EXPR("float(intrinsic{float_cos}(2.0))", [](novasm::Assembler* asmb) -> void {
       asmb->addLoadLitFloat(2.0F); // NOLINT: Magic numbers
       asmb->addCosFloat();
     });
-    CHECK_EXPR("tan(2.0)", [](novasm::Assembler* asmb) -> void {
+    CHECK_EXPR("float(intrinsic{float_tan}(2.0))", [](novasm::Assembler* asmb) -> void {
       asmb->addLoadLitFloat(2.0F); // NOLINT: Magic numbers
       asmb->addTanFloat();
     });
-    CHECK_EXPR("asin(2.0)", [](novasm::Assembler* asmb) -> void {
+    CHECK_EXPR("float(intrinsic{float_asin}(2.0))", [](novasm::Assembler* asmb) -> void {
       asmb->addLoadLitFloat(2.0F); // NOLINT: Magic numbers
       asmb->addASinFloat();
     });
-    CHECK_EXPR("acos(2.0)", [](novasm::Assembler* asmb) -> void {
+    CHECK_EXPR("float(intrinsic{float_acos}(2.0))", [](novasm::Assembler* asmb) -> void {
       asmb->addLoadLitFloat(2.0F); // NOLINT: Magic numbers
       asmb->addACosFloat();
     });
-    CHECK_EXPR("atan(2.0)", [](novasm::Assembler* asmb) -> void {
+    CHECK_EXPR("float(intrinsic{float_atan}(2.0))", [](novasm::Assembler* asmb) -> void {
       asmb->addLoadLitFloat(2.0F); // NOLINT: Magic numbers
       asmb->addATanFloat();
     });
-    CHECK_EXPR("atan2(6.0, 2.0)", [](novasm::Assembler* asmb) -> void {
+    CHECK_EXPR("float(intrinsic{float_atan2}(6.0, 2.0))", [](novasm::Assembler* asmb) -> void {
       asmb->addLoadLitFloat(6.0F); // NOLINT: Magic numbers
       asmb->addLoadLitFloat(2.0F); // NOLINT: Magic numbers
       asmb->addATan2Float();
@@ -482,10 +482,11 @@ TEST_CASE("Generate assembly for call expressions", "[backend]") {
       asmb->addAppendChar();
     });
 
-    CHECK_EXPR("length(\"hello world\")", [](novasm::Assembler* asmb) -> void {
-      asmb->addLoadLitString("hello world");
-      asmb->addLengthString();
-    });
+    CHECK_EXPR(
+        "int(intrinsic{string_length}(\"hello world\"))", [](novasm::Assembler* asmb) -> void {
+          asmb->addLoadLitString("hello world");
+          asmb->addLengthString();
+        });
 
     CHECK_EXPR("\"hello world\"[6]", [](novasm::Assembler* asmb) -> void {
       asmb->addLoadLitString("hello world");

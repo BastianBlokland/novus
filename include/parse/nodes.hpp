@@ -9,6 +9,7 @@
 #include "parse/node_expr_group.hpp"
 #include "parse/node_expr_id.hpp"
 #include "parse/node_expr_index.hpp"
+#include "parse/node_expr_intrinsic.hpp"
 #include "parse/node_expr_is.hpp"
 #include "parse/node_expr_lit.hpp"
 #include "parse/node_expr_paren.hpp"

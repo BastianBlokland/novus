@@ -97,7 +97,7 @@ act handleConnection(ClientContext ctx)
   else                                                          -> print("- Client disconnected")
 
 act main(int port, Content content)
-  print("Starting server (port: " + port + ")");
+  print("Starting server (url: http://localhost:" + port + ")");
 
   startTime   = timeNow();
   respWriter  = httpRespWriter();

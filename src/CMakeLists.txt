@@ -53,6 +53,7 @@ add_library(parse STATIC
   parse/node_expr_group.cpp
   parse/node_expr_id.cpp
   parse/node_expr_index.cpp
+  parse/node_expr_intrinsic.cpp
   parse/node_expr_is.cpp
   parse/node_expr_lit.cpp
   parse/node_expr_paren.cpp

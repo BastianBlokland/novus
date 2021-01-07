@@ -45,6 +45,7 @@ public:
   auto visit(const parse::FieldExprNode& n) -> void override;
   auto visit(const parse::GroupExprNode& n) -> void override;
   auto visit(const parse::IndexExprNode& n) -> void override;
+  auto visit(const parse::IntrinsicExprNode& n) -> void override;
   auto visit(const parse::IsExprNode& n) -> void override;
   auto visit(const parse::LitExprNode& n) -> void override;
   auto visit(const parse::ParenExprNode& n) -> void override;
@@ -129,8 +130,9 @@ private:
   }
 
   [[nodiscard]] inline auto getOvOptions(
-      int maxImplicitConvs, bool excludeNonUser = false, bool noConvOnFirstArg = false) const
-      noexcept {
+      int maxImplicitConvs,
+      bool excludeNonUser   = false,
+      bool noConvOnFirstArg = false) const noexcept {
 
     auto ovFlags = prog::OvFlags::None;
     if (!hasFlag<Flags::AllowPureFuncCalls>()) {

@@ -5,6 +5,9 @@ namespace lex {
 
 auto operator<<(std::ostream& out, const Keyword& rhs) -> std::ostream& {
   switch (rhs) {
+  case Keyword::Intrinsic:
+    out << "intrinsic";
+    break;
   case Keyword::Import:
     out << "import";
     break;
@@ -56,6 +59,7 @@ auto operator<<(std::ostream& out, const Keyword& rhs) -> std::ostream& {
 
 auto getKeyword(const std::string& str) -> std::optional<Keyword> {
   static const std::unordered_map<std::string, Keyword> keywordTable = {
+      {"intrinsic", Keyword::Intrinsic},
       {"import", Keyword::Import},
       {"fun", Keyword::Fun},
       {"act", Keyword::Act},

@@ -202,7 +202,7 @@ TEST_CASE("Analyzing user-function templates", "[frontend]") {
                                  "fun ft{T}(B{T} b) b.v2 "
                                  "fun f() ft(B(42, false))");
     REQUIRE(output.isSuccess());
-    CHECK(output.getProg().lookupFuncs("ft__int", prog::OvOptions{0}).size() == 1);
+    CHECK(output.getProg().lookupFunc("ft__int", prog::OvOptions{0}).size() == 1);
   }
 
   SECTION("Overloaded func templates prefer simpler matches") {

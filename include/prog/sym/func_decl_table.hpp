@@ -44,9 +44,18 @@ public:
 
   [[nodiscard]] auto exists(const FuncId& id) const -> bool;
   [[nodiscard]] auto exists(const std::string& name) const -> bool;
+
   [[nodiscard]] auto lookup(const std::string& name, OverloadOptions options) const
       -> std::vector<FuncId>;
   [[nodiscard]] auto lookup(
+      const Program& prog,
+      const std::string& name,
+      const TypeSet& input,
+      OverloadOptions options) const -> std::optional<FuncId>;
+
+  [[nodiscard]] auto lookupIntrinsic(const std::string& name, OverloadOptions options) const
+      -> std::vector<FuncId>;
+  [[nodiscard]] auto lookupIntrinsic(
       const Program& prog,
       const std::string& name,
       const TypeSet& input,
@@ -63,10 +72,17 @@ public:
   registerAction(const Program& prog, FuncKind kind, std::string name, TypeSet input, TypeId output)
       -> FuncId;
 
+  auto registerIntrinsic(
+      const Program& prog, FuncKind kind, std::string name, TypeSet input, TypeId output) -> FuncId;
+
+  auto registerIntrinsicAction(
+      const Program& prog, FuncKind kind, std::string name, TypeSet input, TypeId output) -> FuncId;
+
   auto insertFunc(
       FuncId id,
       FuncKind kind,
       bool isAction,
+      bool isIntrinsic,
       bool isImplicitConv,
       std::string name,
       TypeSet input,
@@ -76,12 +92,18 @@ public:
 
 private:
   std::map<FuncId, FuncDecl> m_funcs;
-  std::unordered_map<std::string, std::vector<FuncId>> m_lookup;
+  std::unordered_multimap<std::string, FuncId> m_normalLookup;
+  std::unordered_multimap<std::string, FuncId> m_intrinsicLookup;
+
+  [[nodiscard]] auto
+  lookupByName(const std::string& name, bool intrinsic, OverloadOptions options) const
+      -> std::vector<FuncId>;
 
   auto registerFunc(
       const Program& prog,
       FuncKind kind,
       bool isAction,
+      bool isIntrinsic,
       bool isImplicitConv,
       std::string name,
       TypeSet input,

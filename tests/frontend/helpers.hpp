@@ -10,8 +10,7 @@ inline auto buildSource(std::string input) {
   return buildSource("test", std::nullopt, input.begin(), input.end());
 }
 
-#define SRC(INPUT)                                                                                 \
-  buildSource(std::string{INPUT})
+#define SRC(INPUT) buildSource(std::string{INPUT})
 
 #define ANALYZE(INPUT) analyze(SRC(INPUT))
 
@@ -24,6 +23,12 @@ inline auto buildSource(std::string input) {
 #define GET_FUNC_ID(OUTPUT, FUNCNAME, ...)                                                         \
   OUTPUT.getProg()                                                                                 \
       .lookupFunc(FUNCNAME, prog::sym::TypeSet{__VA_ARGS__}, prog::sym::OverloadOptions{0})        \
+      .value()
+
+#define GET_INTRINSIC_ID(OUTPUT, INTRINSIC_NAME, ...)                                              \
+  OUTPUT.getProg()                                                                                 \
+      .lookupIntrinsic(                                                                            \
+          INTRINSIC_NAME, prog::sym::TypeSet{__VA_ARGS__}, prog::sym::OverloadOptions{0})          \
       .value()
 
 #define GET_OP_ID(OUTPUT, OP, ...) GET_FUNC_ID(OUTPUT, getFuncName(OP), __VA_ARGS__)

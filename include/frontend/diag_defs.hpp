@@ -164,6 +164,13 @@ errUninitializedConst(const Source& src, const std::string& name, input::Span sp
     const std::vector<std::string>& argTypes,
     input::Span span) -> Diag;
 
+[[nodiscard]] auto errUnknownIntrinsic(
+    const Source& src,
+    const std::string& name,
+    bool pureOnly,
+    const std::vector<std::string>& argTypes,
+    input::Span span) -> Diag;
+
 [[nodiscard]] auto errPureFuncInfRecursion(const Source& src, input::Span span) -> Diag;
 
 [[nodiscard]] auto errNoPureFuncFoundToInstantiate(
@@ -242,5 +249,7 @@ errUnsupportedOperator(const Source& src, const std::string& name, input::Span s
 
 [[nodiscard]] auto errInvalidFailCall(
     const Source& src, unsigned int typeParams, unsigned int argCount, input::Span span) -> Diag;
+
+[[nodiscard]] auto errIntrinsicFuncLiteral(const Source& src, input::Span span) -> Diag;
 
 } // namespace frontend
