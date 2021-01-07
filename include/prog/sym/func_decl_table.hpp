@@ -72,7 +72,7 @@ public:
   registerAction(const Program& prog, FuncKind kind, std::string name, TypeSet input, TypeId output)
       -> FuncId;
 
-  auto registerIntrinsicFunc(
+  auto registerIntrinsic(
       const Program& prog, FuncKind kind, std::string name, TypeSet input, TypeId output) -> FuncId;
 
   auto registerIntrinsicAction(

@@ -103,19 +103,44 @@ TEST_CASE("Precompute literals", "[opt]") {
     ASSERT_EXPR(precomputeLiterals, "3.3 / 1.1", litFloatNode(prog, 3.0));  // NOLINT: Magic numbers
     ASSERT_EXPR(precomputeLiterals, "5.2 % 2.2", litFloatNode(prog, 0.8));  // NOLINT: Magic numbers
     ASSERT_EXPR(
-        precomputeLiterals, "pow(1.1, 2.0)", litFloatNode(prog, 1.21));    // NOLINT: Magic numbers
-    ASSERT_EXPR(precomputeLiterals, "sqrt(4.0)", litFloatNode(prog, 2.0)); // NOLINT: Magic numbers
-    ASSERT_EXPR(precomputeLiterals, "sin(0.0)", litFloatNode(prog, 0.0));  // NOLINT: Magic numbers
-    ASSERT_EXPR(precomputeLiterals, "cos(0.0)", litFloatNode(prog, 1.0));  // NOLINT: Magic numbers
-    ASSERT_EXPR(precomputeLiterals, "tan(0.0)", litFloatNode(prog, 0.0));  // NOLINT: Magic numbers
-    ASSERT_EXPR(precomputeLiterals, "asin(0.0)", litFloatNode(prog, 0.0)); // NOLINT: Magic numbers
-    ASSERT_EXPR(precomputeLiterals, "acos(1.0)", litFloatNode(prog, 0.0)); // NOLINT: Magic numbers
-    ASSERT_EXPR(precomputeLiterals, "atan(0.0)", litFloatNode(prog, 0.0)); // NOLINT: Magic numbers
+        precomputeLiterals,
+        "float(intrinsic{float_pow}(1.1, 2.0))",
+        litFloatNode(prog, 1.21)); // NOLINT: Magic numbers
     ASSERT_EXPR(
-        precomputeLiterals, "atan2(0.0, 0.0)", litFloatNode(prog, 0.0)); // NOLINT: Magic numbers
-    ASSERT_EXPR(precomputeLiterals, "-1.1", litFloatNode(prog, -1.1));   // NOLINT: Magic numbers
-    ASSERT_EXPR(precomputeLiterals, "--1.1", litFloatNode(prog, 0.1));   // NOLINT: Magic numbers
-    ASSERT_EXPR(precomputeLiterals, "++1.1", litFloatNode(prog, 2.1));   // NOLINT: Magic numbers
+        precomputeLiterals,
+        "float(intrinsic{float_sqrt}(4.0))",
+        litFloatNode(prog, 2.0)); // NOLINT: Magic numbers
+    ASSERT_EXPR(
+        precomputeLiterals,
+        "float(intrinsic{float_sin}(0.0))",
+        litFloatNode(prog, 0.0)); // NOLINT: Magic numbers
+    ASSERT_EXPR(
+        precomputeLiterals,
+        "float(intrinsic{float_cos}(0.0))",
+        litFloatNode(prog, 1.0)); // NOLINT: Magic numbers
+    ASSERT_EXPR(
+        precomputeLiterals,
+        "float(intrinsic{float_tan}(0.0))",
+        litFloatNode(prog, 0.0)); // NOLINT: Magic numbers
+    ASSERT_EXPR(
+        precomputeLiterals,
+        "float(intrinsic{float_asin}(0.0))",
+        litFloatNode(prog, 0.0)); // NOLINT: Magic numbers
+    ASSERT_EXPR(
+        precomputeLiterals,
+        "float(intrinsic{float_acos}(1.0))",
+        litFloatNode(prog, 0.0)); // NOLINT: Magic numbers
+    ASSERT_EXPR(
+        precomputeLiterals,
+        "float(intrinsic{float_atan}(0.0))",
+        litFloatNode(prog, 0.0)); // NOLINT: Magic numbers
+    ASSERT_EXPR(
+        precomputeLiterals,
+        "float(intrinsic{float_atan2}(0.0, 0.0))",
+        litFloatNode(prog, 0.0));                                      // NOLINT: Magic numbers
+    ASSERT_EXPR(precomputeLiterals, "-1.1", litFloatNode(prog, -1.1)); // NOLINT: Magic numbers
+    ASSERT_EXPR(precomputeLiterals, "--1.1", litFloatNode(prog, 0.1)); // NOLINT: Magic numbers
+    ASSERT_EXPR(precomputeLiterals, "++1.1", litFloatNode(prog, 2.1)); // NOLINT: Magic numbers
     ASSERT_EXPR(precomputeLiterals, "1.1 == 1.2", litBoolNode(prog, false));
     ASSERT_EXPR(precomputeLiterals, "1.1 != 1.2", litBoolNode(prog, true));
     ASSERT_EXPR(precomputeLiterals, "1.1 < 1.2", litBoolNode(prog, true));
@@ -205,7 +230,8 @@ TEST_CASE("Precompute literals", "[opt]") {
   SECTION("string intrinsics") {
     ASSERT_EXPR(precomputeLiterals, "\"hello\" + \"world\"", litStringNode(prog, "helloworld"));
     ASSERT_EXPR(precomputeLiterals, "\"hello\" + ' '", litStringNode(prog, "hello "));
-    ASSERT_EXPR(precomputeLiterals, "length(\"hello\")", litIntNode(prog, 5));
+    ASSERT_EXPR(
+        precomputeLiterals, "int(intrinsic{string_length}(\"hello\"))", litIntNode(prog, 5));
     ASSERT_EXPR(precomputeLiterals, "\"hello\"[0]", litCharNode(prog, 'h'));
     ASSERT_EXPR(precomputeLiterals, "\"hello\"[4]", litCharNode(prog, 'o'));
     ASSERT_EXPR(precomputeLiterals, "\"hello\"[-1]", litCharNode(prog, '\0'));

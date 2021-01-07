@@ -42,11 +42,11 @@ GetExpr::GetExpr(
 
 auto GetExpr::getValue() -> prog::expr::NodePtr& { return m_expr; }
 
-auto GetExpr::visit(const parse::CommentNode& /*unused*/) -> void {
+auto GetExpr::visit(const parse::CommentNode & /*unused*/) -> void {
   throw std::logic_error{"GetExpr is not implemented for this node type"};
 }
 
-auto GetExpr::visit(const parse::ErrorNode& /*unused*/) -> void {
+auto GetExpr::visit(const parse::ErrorNode & /*unused*/) -> void {
   throw std::logic_error{"GetExpr is not implemented for this node type"};
 }
 
@@ -205,6 +205,7 @@ auto GetExpr::visit(const parse::CallExprNode& n) -> void {
 
   /* Check what kind of call this is.
   - If lhs is 'self': Self call.
+  - If lhs is an intrinsic: Static call to intrinsic.
   - If lhs is not an identifier (but some other expression): Dynamic call.
   - Lhs is an identifier that matches a constant name: Dynamic call.
   - Lhs has an instance (like a struct) and its (field) name is not a function: Dynamic call.
@@ -215,15 +216,23 @@ auto GetExpr::visit(const parse::CallExprNode& n) -> void {
     return;
   }
 
-  if (!identifier || (instance == nullptr && m_constBinder->canBind(getName(*identifier))) ||
-      (instance != nullptr && !isFuncOrConv(m_ctx, getName(*identifier)))) {
+  const auto isBindableConstant =
+      identifier && !getIdVisitor.isIntrinsic() && m_constBinder->canBind(getName(*identifier));
+  // NOTE: Is used to choose between a 'instance' call or a call to a delegate field on a struct.
+  const auto isFuncOrConvName =
+      identifier && !getIdVisitor.isIntrinsic() && isFuncOrConv(m_ctx, getName(*identifier));
 
+  if (!identifier || (instance == nullptr && isBindableConstant) ||
+      (instance != nullptr && !isFuncOrConvName)) {
     m_expr = getDynCallExpr(n);
     return;
   }
 
-  auto nameToken = *identifier;
-  auto args      = getChildExprs(n, instance, 1);
+  assert(identifier);
+
+  auto nameToken  = *identifier;
+  auto nameString = getName(nameToken);
+  auto args       = getChildExprs(n, instance, 1);
   if (!args) {
     return;
   }
@@ -232,7 +241,9 @@ auto GetExpr::visit(const parse::CallExprNode& n) -> void {
   // it allows adding extra arguments.
   modifyCallArgs(m_ctx, m_typeSubTable, nameToken, typeParams, n, *args.get());
 
-  auto possibleFuncs = getFunctionsInclConversions(nameToken, typeParams, args->second);
+  auto possibleFuncs = getIdVisitor.isIntrinsic()
+      ? m_ctx->getProg()->lookupIntrinsic(getName(nameToken), getOvOptions(0))
+      : getFunctionsInclConversions(nameToken, typeParams, args->second);
 
   // modifyCallPossibleFuncs allows modifying the list of considered functions before overload
   // resolution, this allows injecting other possible-functions or excluding some functions.
@@ -244,33 +255,24 @@ auto GetExpr::visit(const parse::CallExprNode& n) -> void {
   const auto ovOpts         = getOvOptions(-1, false, noConvFirstArg);
   const auto func           = m_ctx->getProg()->lookupFunc(possibleFuncs, args->second, ovOpts);
   if (!func) {
-    auto isTypeOrConv = isType(m_ctx, getName(nameToken));
+    auto isTypeOrConv = !getIdVisitor.isIntrinsic() && isType(m_ctx, nameString);
     if (typeParams) {
       if (isTypeOrConv) {
         m_ctx->reportDiag(
             errNoTypeOrConversionFoundToInstantiate,
-            getName(nameToken),
+            nameString,
             typeParams->getCount(),
             n.getSpan());
       } else {
         if (hasFlag<Flags::AllowPureFuncCalls>() && hasFlag<Flags::AllowActionCalls>()) {
           m_ctx->reportDiag(
-              errNoFuncOrActionFoundToInstantiate,
-              getName(nameToken),
-              typeParams->getCount(),
-              n.getSpan());
+              errNoFuncOrActionFoundToInstantiate, nameString, typeParams->getCount(), n.getSpan());
         } else if (hasFlag<Flags::AllowPureFuncCalls>()) {
           m_ctx->reportDiag(
-              errNoPureFuncFoundToInstantiate,
-              getName(nameToken),
-              typeParams->getCount(),
-              n.getSpan());
+              errNoPureFuncFoundToInstantiate, nameString, typeParams->getCount(), n.getSpan());
         } else {
           m_ctx->reportDiag(
-              errNoActionFoundToInstantiate,
-              getName(nameToken),
-              typeParams->getCount(),
-              n.getSpan());
+              errNoActionFoundToInstantiate, nameString, typeParams->getCount(), n.getSpan());
         }
       }
     } else {
@@ -279,16 +281,19 @@ auto GetExpr::visit(const parse::CallExprNode& n) -> void {
         argTypeNames.push_back(getDisplayName(*m_ctx, argType));
       }
       if (isTypeOrConv) {
-        m_ctx->reportDiag(
-            errUndeclaredTypeOrConversion, getName(nameToken), argTypeNames, n.getSpan());
+        m_ctx->reportDiag(errUndeclaredTypeOrConversion, nameString, argTypeNames, n.getSpan());
       } else {
-        if (hasFlag<Flags::AllowPureFuncCalls>() && hasFlag<Flags::AllowActionCalls>()) {
+        const bool allowPureFunc = hasFlag<Flags::AllowPureFuncCalls>();
+        const bool allowAction   = hasFlag<Flags::AllowActionCalls>();
+        if (getIdVisitor.isIntrinsic()) {
           m_ctx->reportDiag(
-              errUndeclaredFuncOrAction, getName(nameToken), argTypeNames, n.getSpan());
-        } else if (hasFlag<Flags::AllowPureFuncCalls>()) {
-          m_ctx->reportDiag(errUndeclaredPureFunc, getName(nameToken), argTypeNames, n.getSpan());
+              errUnknownIntrinsic, nameString, !allowAction, argTypeNames, n.getSpan());
+        } else if (allowPureFunc && allowAction) {
+          m_ctx->reportDiag(errUndeclaredFuncOrAction, nameString, argTypeNames, n.getSpan());
+        } else if (allowPureFunc) {
+          m_ctx->reportDiag(errUndeclaredPureFunc, nameString, argTypeNames, n.getSpan());
         } else {
-          m_ctx->reportDiag(errUndeclaredAction, getName(nameToken), argTypeNames, n.getSpan());
+          m_ctx->reportDiag(errUndeclaredAction, nameString, argTypeNames, n.getSpan());
         }
       }
     }
@@ -413,7 +418,7 @@ auto GetExpr::visit(const parse::IdExprNode& n) -> void {
   }
 
   // Non-templated function literal.
-  auto funcs = m_ctx->getProg()->lookupFuncs(name, getOvOptions(-1, true));
+  auto funcs = m_ctx->getProg()->lookupFunc(name, getOvOptions(-1, true));
   if (!funcs.empty()) {
     if (funcs.size() != 1) {
       m_ctx->reportDiag(errAmbiguousFunction, name, n.getSpan());
@@ -441,7 +446,7 @@ auto GetExpr::visit(const parse::FieldExprNode& n) -> void {
   auto getIdVisitor = GetIdentifier{false};
   n[0].accept(&getIdVisitor);
   auto identifier = getIdVisitor.getIdentifier();
-  if (identifier && isType(m_ctx, getName(*identifier))) {
+  if (identifier && !getIdVisitor.isIntrinsic() && isType(m_ctx, getName(*identifier))) {
     m_expr = getStaticFieldExpr(*identifier, getIdVisitor.getTypeParams(), n.getId());
     return;
   }
@@ -616,11 +621,11 @@ auto GetExpr::visit(const parse::ParenExprNode& n) -> void {
   m_expr = getSubExpr(n[0], m_typeHint, hasFlag<Flags::CheckedConstsAccess>());
 }
 
-auto GetExpr::visit(const parse::SwitchExprElseNode& /*unused*/) -> void {
+auto GetExpr::visit(const parse::SwitchExprElseNode & /*unused*/) -> void {
   throw std::logic_error{"GetExpr is not implemented for this node type"};
 }
 
-auto GetExpr::visit(const parse::SwitchExprIfNode& /*unused*/) -> void {
+auto GetExpr::visit(const parse::SwitchExprIfNode & /*unused*/) -> void {
   throw std::logic_error{"GetExpr is not implemented for this node type"};
 }
 
@@ -719,27 +724,27 @@ auto GetExpr::visit(const parse::UnaryExprNode& n) -> void {
   m_expr = prog::expr::callExprNode(*m_ctx->getProg(), func.value(), std::move(args));
 }
 
-auto GetExpr::visit(const parse::EnumDeclStmtNode& /*unused*/) -> void {
+auto GetExpr::visit(const parse::EnumDeclStmtNode & /*unused*/) -> void {
   throw std::logic_error{"GetExpr is not implemented for this node type"};
 }
 
-auto GetExpr::visit(const parse::ExecStmtNode& /*unused*/) -> void {
+auto GetExpr::visit(const parse::ExecStmtNode & /*unused*/) -> void {
   throw std::logic_error{"GetExpr is not implemented for this node type"};
 }
 
-auto GetExpr::visit(const parse::FuncDeclStmtNode& /*unused*/) -> void {
+auto GetExpr::visit(const parse::FuncDeclStmtNode & /*unused*/) -> void {
   throw std::logic_error{"GetExpr is not implemented for this node type"};
 }
 
-auto GetExpr::visit(const parse::ImportStmtNode& /*unused*/) -> void {
+auto GetExpr::visit(const parse::ImportStmtNode & /*unused*/) -> void {
   throw std::logic_error{"GetExpr is not implemented for this node type"};
 }
 
-auto GetExpr::visit(const parse::StructDeclStmtNode& /*unused*/) -> void {
+auto GetExpr::visit(const parse::StructDeclStmtNode & /*unused*/) -> void {
   throw std::logic_error{"GetExpr is not implemented for this node type"};
 }
 
-auto GetExpr::visit(const parse::UnionDeclStmtNode& /*unused*/) -> void {
+auto GetExpr::visit(const parse::UnionDeclStmtNode & /*unused*/) -> void {
   throw std::logic_error{"GetExpr is not implemented for this node type"};
 }
 
@@ -1098,7 +1103,7 @@ auto GetExpr::getFunctionsInclConversions(
     // Check if there is a constructor / conversion function for this type in the program.
     const auto typeName = getName(*m_ctx, *convType);
     const auto funcs =
-        m_ctx->getProg()->lookupFuncs(typeName, prog::OvOptions{prog::OvFlags::ExclActions});
+        m_ctx->getProg()->lookupFunc(typeName, prog::OvOptions{prog::OvFlags::ExclActions});
     result.insert(result.end(), funcs.begin(), funcs.end());
 
     // Check if there is a function template we can instantiate for this type.
@@ -1150,9 +1155,7 @@ auto GetExpr::getFunctions(
   } else { // no type params.
 
     // Find all non-templated funcs.
-    for (const auto& f : m_ctx->getProg()->lookupFuncs(funcName, ovOptions)) {
-      result.push_back(f);
-    }
+    result = m_ctx->getProg()->lookupFunc(funcName, ovOptions);
 
     // If there is a direct match (without any implicit conversions) then there is no need to
     // attempt to instantiate a template.

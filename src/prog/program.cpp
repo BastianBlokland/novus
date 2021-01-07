@@ -157,15 +157,17 @@ Program::Program() :
       *this, Fk::CheckGtEqFloat, getFuncName(Op::GtEq), sym::TypeSet{m_float, m_float}, m_bool);
 
   // Register build-in float functions.
-  m_funcDecls.registerFunc(*this, Fk::PowFloat, "pow", sym::TypeSet{m_float, m_float}, m_float);
-  m_funcDecls.registerFunc(*this, Fk::SqrtFloat, "sqrt", sym::TypeSet{m_float}, m_float);
-  m_funcDecls.registerFunc(*this, Fk::SinFloat, "sin", sym::TypeSet{m_float}, m_float);
-  m_funcDecls.registerFunc(*this, Fk::CosFloat, "cos", sym::TypeSet{m_float}, m_float);
-  m_funcDecls.registerFunc(*this, Fk::TanFloat, "tan", sym::TypeSet{m_float}, m_float);
-  m_funcDecls.registerFunc(*this, Fk::ASinFloat, "asin", sym::TypeSet{m_float}, m_float);
-  m_funcDecls.registerFunc(*this, Fk::ACosFloat, "acos", sym::TypeSet{m_float}, m_float);
-  m_funcDecls.registerFunc(*this, Fk::ATanFloat, "atan", sym::TypeSet{m_float}, m_float);
-  m_funcDecls.registerFunc(*this, Fk::ATan2Float, "atan2", sym::TypeSet{m_float, m_float}, m_float);
+  m_funcDecls.registerIntrinsic(
+      *this, Fk::PowFloat, "float_pow", sym::TypeSet{m_float, m_float}, m_float);
+  m_funcDecls.registerIntrinsic(*this, Fk::SqrtFloat, "float_sqrt", sym::TypeSet{m_float}, m_float);
+  m_funcDecls.registerIntrinsic(*this, Fk::SinFloat, "float_sin", sym::TypeSet{m_float}, m_float);
+  m_funcDecls.registerIntrinsic(*this, Fk::CosFloat, "float_cos", sym::TypeSet{m_float}, m_float);
+  m_funcDecls.registerIntrinsic(*this, Fk::TanFloat, "float_tan", sym::TypeSet{m_float}, m_float);
+  m_funcDecls.registerIntrinsic(*this, Fk::ASinFloat, "float_asin", sym::TypeSet{m_float}, m_float);
+  m_funcDecls.registerIntrinsic(*this, Fk::ACosFloat, "float_acos", sym::TypeSet{m_float}, m_float);
+  m_funcDecls.registerIntrinsic(*this, Fk::ATanFloat, "float_atan", sym::TypeSet{m_float}, m_float);
+  m_funcDecls.registerIntrinsic(
+      *this, Fk::ATan2Float, "float_atan2", sym::TypeSet{m_float, m_float}, m_float);
 
   // Register build-in unary bool operators.
   m_funcDecls.registerFunc(*this, Fk::InvBool, getFuncName(Op::Bang), sym::TypeSet{m_bool}, m_bool);
@@ -187,7 +189,8 @@ Program::Program() :
       *this, Fk::CheckNEqString, getFuncName(Op::BangEq), sym::TypeSet{m_string, m_string}, m_bool);
 
   // Register build-in string functions.
-  m_funcDecls.registerFunc(*this, Fk::LengthString, "length", sym::TypeSet{m_string}, m_int);
+  m_funcDecls.registerIntrinsic(
+      *this, Fk::LengthString, "string_length", sym::TypeSet{m_string}, m_int);
   m_funcDecls.registerFunc(
       *this, Fk::IndexString, getFuncName(Op::SquareSquare), sym::TypeSet{m_string, m_int}, m_char);
   m_funcDecls.registerFunc(
@@ -257,8 +260,8 @@ Program::Program() :
   m_funcDecls.registerFunc(*this, Fk::NoOp, "asInt", sym::TypeSet{m_float}, m_int);
 
   // Register build-in actions.
-  m_funcDecls.registerAction(
-      *this, Fk::ActionEndiannessNative, "endiannessNativeCode", sym::TypeSet{}, m_int);
+  m_funcDecls.registerIntrinsicAction(
+      *this, Fk::ActionEndiannessNative, "platform_endianness_native", sym::TypeSet{}, m_int);
 
   m_funcDecls.registerAction(
       *this, Fk::ActionStreamCheckValid, "streamCheckValid", sym::TypeSet{m_stream}, m_bool);
@@ -388,9 +391,19 @@ auto Program::lookupFunc(
   return internal::findOverload(*this, m_funcDecls, funcs, input, options);
 }
 
-auto Program::lookupFuncs(const std::string& name, OvOptions options) const
+auto Program::lookupFunc(const std::string& name, OvOptions options) const
     -> std::vector<sym::FuncId> {
   return m_funcDecls.lookup(name, options);
+}
+
+auto Program::lookupIntrinsic(const std::string& name, const sym::TypeSet& input, OvOptions options)
+    const -> std::optional<sym::FuncId> {
+  return m_funcDecls.lookupIntrinsic(*this, name, input, options);
+}
+
+auto Program::lookupIntrinsic(const std::string& name, OvOptions options) const
+    -> std::vector<sym::FuncId> {
+  return m_funcDecls.lookupIntrinsic(name, options);
 }
 
 auto Program::lookupImplicitConv(sym::TypeId from, sym::TypeId to) const

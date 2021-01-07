@@ -382,6 +382,28 @@ auto errUndeclaredFuncOrAction(
   return error(src, oss.str(), span);
 }
 
+auto errUnknownIntrinsic(
+    const Source& src,
+    const std::string& name,
+    bool pureOnly,
+    const std::vector<std::string>& argTypes,
+    input::Span span) -> Diag {
+  std::ostringstream oss;
+  oss << "No " << (pureOnly ? "pure " : "") << "compiler intrinsic called: '" << name << "' ";
+  if (argTypes.empty()) {
+    oss << "found without arguments";
+  } else {
+    oss << "found with argument types: ";
+    for (auto i = 0U; i < argTypes.size(); ++i) {
+      if (i != 0) {
+        oss << ", ";
+      }
+      oss << '\'' << argTypes[i] << '\'';
+    }
+  }
+  return error(src, oss.str(), span);
+}
+
 auto errPureFuncInfRecursion(const Source& src, input::Span span) -> Diag {
   std::ostringstream oss;
   oss << "Pure function recurses infinitely";

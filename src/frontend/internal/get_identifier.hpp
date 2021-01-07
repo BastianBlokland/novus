@@ -3,6 +3,7 @@
 #include "parse/node.hpp"
 #include "parse/node_expr_field.hpp"
 #include "parse/node_expr_id.hpp"
+#include "parse/node_expr_intrinsic.hpp"
 #include "parse/node_visitor_optional.hpp"
 #include "parse/type_param_list.hpp"
 #include "prog/program.hpp"
@@ -16,11 +17,13 @@ public:
       m_includeInstances{includeInstances},
       m_instance{nullptr},
       m_isSelf{false},
+      m_isIntrinsic{false},
       m_identifier{std::nullopt},
       m_typeParams{std::nullopt} {}
 
   [[nodiscard]] auto getInstance() const noexcept -> const parse::Node* { return m_instance; }
   [[nodiscard]] auto isSelf() const noexcept -> bool { return m_isSelf; }
+  [[nodiscard]] auto isIntrinsic() const noexcept -> bool { return m_isIntrinsic; }
   [[nodiscard]] auto getIdentifier() const noexcept -> const std::optional<lex::Token>& {
     return m_identifier;
   }
@@ -41,10 +44,16 @@ public:
     }
   }
 
+  auto visit(const parse::IntrinsicExprNode& n) -> void override {
+    m_identifier  = n.getIntrinsic();
+    m_isIntrinsic = true;
+  }
+
 private:
   bool m_includeInstances;
   const parse::Node* m_instance;
   bool m_isSelf;
+  bool m_isIntrinsic;
   std::optional<lex::Token> m_identifier;
   std::optional<parse::TypeParamList> m_typeParams;
 };

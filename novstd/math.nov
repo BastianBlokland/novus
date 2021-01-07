@@ -90,6 +90,33 @@ fun degToRad(float deg)
 fun radToDeg(float rad)
   rad * 57.29578
 
+fun pow(float base, float exponent) -> float
+  intrinsic{float_pow}(base, exponent)
+
+fun sqrt(float x) -> float
+  intrinsic{float_sqrt}(x)
+
+fun sin(float x) -> float
+  intrinsic{float_sin}(x)
+
+fun cos(float x) -> float
+  intrinsic{float_cos}(x)
+
+fun tan(float x) -> float
+  intrinsic{float_tan}(x)
+
+fun asin(float x) -> float
+  intrinsic{float_asin}(x)
+
+fun acos(float x) -> float
+  intrinsic{float_acos}(x)
+
+fun atan(float x) -> float
+  intrinsic{float_atan}(x)
+
+fun atan2(float x, float y) -> float
+  intrinsic{float_atan2}(x, y)
+
 // -- Tests
 
 assert(

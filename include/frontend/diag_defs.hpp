@@ -164,6 +164,13 @@ errUninitializedConst(const Source& src, const std::string& name, input::Span sp
     const std::vector<std::string>& argTypes,
     input::Span span) -> Diag;
 
+[[nodiscard]] auto errUnknownIntrinsic(
+    const Source& src,
+    const std::string& name,
+    bool pureOnly,
+    const std::vector<std::string>& argTypes,
+    input::Span span) -> Diag;
+
 [[nodiscard]] auto errPureFuncInfRecursion(const Source& src, input::Span span) -> Diag;
 
 [[nodiscard]] auto errNoPureFuncFoundToInstantiate(

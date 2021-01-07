@@ -92,6 +92,10 @@ auto TypeInferExpr::visit(const parse::CallExprNode& n) -> void {
   auto identifier = getIdVisitor.getIdentifier();
   auto typeParams = getIdVisitor.getTypeParams();
 
+  if (getIdVisitor.isIntrinsic()) {
+    return;
+  }
+
   // Dynamic call.
   if (!identifier || m_constTypes->find(getName(*identifier)) != m_constTypes->end() ||
       (instance != nullptr && !isFuncOrConv(m_ctx, getName(*identifier)))) {
@@ -218,7 +222,7 @@ auto TypeInferExpr::visit(const parse::IdExprNode& n) -> void {
 
   // Non-templated function literal.
   const auto funcs =
-      m_ctx->getProg()->lookupFuncs(name, prog::OvOptions{prog::OvFlags::ExclNonUser});
+      m_ctx->getProg()->lookupFunc(name, prog::OvOptions{prog::OvFlags::ExclNonUser});
   if (!funcs.empty() && !m_ctx->hasErrors()) {
     m_type = getDelegate(m_ctx, funcs[0]);
     return;
@@ -230,7 +234,7 @@ auto TypeInferExpr::visit(const parse::FieldExprNode& n) -> void {
   auto getIdVisitor = GetIdentifier{false};
   n[0].accept(&getIdVisitor);
   auto identifier = getIdVisitor.getIdentifier();
-  if (identifier && isType(m_ctx, getName(*identifier))) {
+  if (identifier && !getIdVisitor.isIntrinsic() && isType(m_ctx, getName(*identifier))) {
     const auto type =
         getOrInstType(m_ctx, m_typeSubTable, *identifier, getIdVisitor.getTypeParams());
     // If the type is an enum then any field on that enum will have that type.

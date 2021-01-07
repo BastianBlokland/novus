@@ -52,6 +52,9 @@ fun appendChar(string str, char c)
 fun contains(string str, string subStr)
   str.indexOf(subStr) >= 0
 
+fun length(string str) -> int
+  intrinsic{string_length}(str)
+
 fun indexOf(string str, string subStr)
   indexOf(str, 0, subStr, 0)
 

@@ -71,7 +71,7 @@ auto FuncDeclTable::registerAction(
   return registerFunc(prog, kind, true, false, false, std::move(name), std::move(input), output);
 }
 
-auto FuncDeclTable::registerIntrinsicFunc(
+auto FuncDeclTable::registerIntrinsic(
     const Program& prog, FuncKind kind, std::string name, TypeSet input, TypeId output) -> FuncId {
   return registerFunc(prog, kind, false, true, false, std::move(name), std::move(input), output);
 }

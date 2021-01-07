@@ -166,7 +166,7 @@ fun bitInt64Writer(Endianness e) -> Writer{long}
 
 // -- Actions
 
-act endiannessNative() Endianness(endiannessNativeCode())
+act endiannessNative() Endianness(intrinsic{platform_endianness_native}())
 
 // -- Tests
 

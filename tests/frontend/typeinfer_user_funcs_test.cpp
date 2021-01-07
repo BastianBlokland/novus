@@ -196,7 +196,7 @@ TEST_CASE("Infer return type of user functions", "[frontend]") {
 
   SECTION("Forked conversion call") {
     const auto& output = ANALYZE("struct s = int i "
-                                 "fun s(string str) s(str.length()) "
+                                 "fun s(string str) s(intrinsic{string_length}(str)) "
                                  "fun f2() fork s(\"hello world\")");
     REQUIRE(output.isSuccess());
     CHECK(GET_FUNC_DECL(output, "f2").getOutput() == GET_TYPE_ID(output, "__future_s"));
@@ -220,7 +220,7 @@ TEST_CASE("Infer return type of user functions", "[frontend]") {
 
   SECTION("Lazy conversion call") {
     const auto& output = ANALYZE("struct s = int i "
-                                 "fun s(string str) s(str.length()) "
+                                 "fun s(string str) s(intrinsic{string_length}(str)) "
                                  "fun f2() lazy s(\"hello world\")");
     REQUIRE(output.isSuccess());
     CHECK(GET_FUNC_DECL(output, "f2").getOutput() == GET_TYPE_ID(output, "__lazy_s"));
