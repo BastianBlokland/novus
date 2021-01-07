@@ -596,4 +596,10 @@ auto errInvalidFailCall(
   return error(src, oss.str(), span);
 }
 
+auto errIntrinsicFuncLiteral(const Source& src, input::Span span) -> Diag {
+  std::ostringstream oss;
+  oss << "Compiler intrinsic cannot be used as a function literal";
+  return error(src, oss.str(), span);
+}
+
 } // namespace frontend

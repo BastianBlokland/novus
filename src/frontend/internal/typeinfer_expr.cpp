@@ -276,9 +276,7 @@ auto TypeInferExpr::visit(const parse::IndexExprNode& n) -> void {
   m_type                = inferFuncCall(funcName, argTypeSet);
 }
 
-auto TypeInferExpr::visit(const parse::IntrinsicExprNode& /*ununsed*/) -> void {
-  throw std::logic_error{"TypeInferExpr is not implemented for this node type"};
-}
+auto TypeInferExpr::visit(const parse::IntrinsicExprNode& /*ununsed*/) -> void {}
 
 auto TypeInferExpr::visit(const parse::IsExprNode& n) -> void {
   if (n.hasId()) {

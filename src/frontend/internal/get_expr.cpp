@@ -516,8 +516,9 @@ auto GetExpr::visit(const parse::IndexExprNode& n) -> void {
   m_expr = prog::expr::callExprNode(*m_ctx->getProg(), func.value(), std::move(args->first));
 }
 
-auto GetExpr::visit(const parse::IntrinsicExprNode& /*unused*/) -> void {
-  throw std::logic_error{"GetExpr is not implemented for this node type"};
+auto GetExpr::visit(const parse::IntrinsicExprNode& n) -> void {
+  // Compiler intrinsics are only callable, they are not valid as function literals.
+  m_ctx->reportDiag(errIntrinsicFuncLiteral, n.getSpan());
 }
 
 auto GetExpr::visit(const parse::IsExprNode& n) -> void {

@@ -243,4 +243,6 @@ errUnsupportedOperator(const Source& src, const std::string& name, input::Span s
 [[nodiscard]] auto errInvalidFailCall(
     const Source& src, unsigned int typeParams, unsigned int argCount, input::Span span) -> Diag;
 
+[[nodiscard]] auto errIntrinsicFuncLiteral(const Source& src, input::Span span) -> Diag;
+
 } // namespace frontend
