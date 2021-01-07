@@ -65,6 +65,10 @@ namespace parse {
     -> NodePtr;
 
 [[nodiscard]] auto
+errInvalidIntrinsicExpr(lex::Token kw, lex::Token open, lex::Token intrinsic, lex::Token close)
+    -> NodePtr;
+
+[[nodiscard]] auto
 errInvalidIsExpr(NodePtr lhs, lex::Token kw, const Type& type, std::optional<lex::Token> id)
     -> NodePtr;
 

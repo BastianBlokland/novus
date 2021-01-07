@@ -374,6 +374,28 @@ auto errInvalidIdExpr(lex::Token id, std::optional<TypeParamList> typeParams) ->
   return errorNode(oss.str(), std::move(tokens), {});
 }
 
+auto errInvalidIntrinsicExpr(lex::Token kw, lex::Token open, lex::Token intrinsic, lex::Token close)
+    -> NodePtr {
+  std::ostringstream oss;
+  if (open.getKind() != lex::TokenKind::SepOpenCurly) {
+    oss << "Expected opening curly-brace '{' but got: '" << open << '\'';
+  } else if (intrinsic.getKind() != lex::TokenKind::Identifier) {
+    oss << "Expected an identifier but got: '" << intrinsic << '\'';
+  } else if (close.getKind() != lex::TokenKind::SepCloseCurly) {
+    oss << "Expected closing curly-brace '}' but got: '" << close << '\'';
+  } else {
+    oss << "Invalid intrinsic";
+  }
+
+  auto tokens = std::vector<lex::Token>{};
+  tokens.push_back(std::move(kw));
+  tokens.push_back(std::move(open));
+  tokens.push_back(std::move(intrinsic));
+  tokens.push_back(std::move(close));
+
+  return errorNode(oss.str(), std::move(tokens), {});
+}
+
 auto errInvalidIsExpr(NodePtr lhs, lex::Token kw, const Type& type, std::optional<lex::Token> id)
     -> NodePtr {
   std::ostringstream oss;

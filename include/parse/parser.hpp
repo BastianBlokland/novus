@@ -39,6 +39,7 @@ private:
   auto nextExprPrimary() -> NodePtr;
   auto nextExprId() -> NodePtr;
   auto nextExprId(lex::Token idToken) -> NodePtr;
+  auto nextExprIntrinsic() -> NodePtr;
   auto nextExprField(NodePtr lhs) -> NodePtr;
   auto nextExprIs(NodePtr lhs) -> NodePtr;
   auto nextExprCall(NodePtr lhs, std::vector<lex::Token> modifiers = {}) -> NodePtr;

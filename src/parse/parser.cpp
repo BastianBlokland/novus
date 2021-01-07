@@ -325,6 +325,8 @@ auto ParserImpl::nextExprPrimary() -> NodePtr {
   }
   case lex::TokenCat::Keyword: {
     switch (*getKw(nextTok)) {
+    case lex::Keyword::Intrinsic:
+      return nextExprIntrinsic();
     case lex::Keyword::If:
       return nextExprSwitch();
     case lex::Keyword::Impure: {
@@ -366,6 +368,22 @@ auto ParserImpl::nextExprId(lex::Token idToken) -> NodePtr {
     return idExprNode(std::move(idToken), std::move(typeParams));
   }
   return errInvalidIdExpr(std::move(idToken), std::move(typeParams));
+}
+
+auto ParserImpl::nextExprIntrinsic() -> NodePtr {
+  auto kw        = consumeToken();
+  auto open      = consumeToken();
+  auto intrinsic = consumeToken();
+  auto close     = consumeToken();
+
+  auto validIntrinsic = intrinsic.getKind() == lex::TokenKind::Identifier;
+  if (getKw(kw) == lex::Keyword::Intrinsic && open.getKind() == lex::TokenKind::SepOpenCurly &&
+      validIntrinsic && close.getKind() == lex::TokenKind::SepCloseCurly) {
+    return intrinsicExprNode(
+        std::move(kw), std::move(open), std::move(intrinsic), std::move(close));
+  }
+  return errInvalidIntrinsicExpr(
+      std::move(kw), std::move(open), std::move(intrinsic), std::move(close));
 }
 
 auto ParserImpl::nextExprField(NodePtr lhs) -> NodePtr {

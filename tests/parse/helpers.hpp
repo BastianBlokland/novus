@@ -51,6 +51,7 @@ namespace parse {
 #define ARROW lex::basicToken(lex::TokenKind::SepArrow)
 #define DISCARD lex::basicToken(lex::TokenKind::Discard)
 #define IMPORT lex::keywordToken(lex::Keyword::Import)
+#define INTRINSIC lex::keywordToken(lex::Keyword::Intrinsic)
 #define FUN lex::keywordToken(lex::Keyword::Fun)
 #define ACT lex::keywordToken(lex::Keyword::Act)
 #define LAMBDA lex::keywordToken(lex::Keyword::Lambda)

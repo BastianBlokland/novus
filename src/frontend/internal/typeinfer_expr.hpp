@@ -36,6 +36,7 @@ public:
   auto visit(const parse::FieldExprNode& n) -> void override;
   auto visit(const parse::GroupExprNode& n) -> void override;
   auto visit(const parse::IndexExprNode& n) -> void override;
+  auto visit(const parse::IntrinsicExprNode& n) -> void override;
   auto visit(const parse::IsExprNode& n) -> void override;
   auto visit(const parse::LitExprNode& n) -> void override;
   auto visit(const parse::ParenExprNode& n) -> void override;

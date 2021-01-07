@@ -26,11 +26,11 @@ TypeInferExpr::TypeInferExpr(
 
 auto TypeInferExpr::getInferredType() const noexcept -> prog::sym::TypeId { return m_type; }
 
-auto TypeInferExpr::visit(const parse::CommentNode & /*unused*/) -> void {
+auto TypeInferExpr::visit(const parse::CommentNode& /*unused*/) -> void {
   throw std::logic_error{"TypeInferExpr is not implemented for this node type"};
 }
 
-auto TypeInferExpr::visit(const parse::ErrorNode & /*unused*/) -> void {
+auto TypeInferExpr::visit(const parse::ErrorNode& /*unused*/) -> void {
   throw std::logic_error{"TypeInferExpr is not implemented for this node type"};
 }
 
@@ -276,6 +276,10 @@ auto TypeInferExpr::visit(const parse::IndexExprNode& n) -> void {
   m_type                = inferFuncCall(funcName, argTypeSet);
 }
 
+auto TypeInferExpr::visit(const parse::IntrinsicExprNode& /*ununsed*/) -> void {
+  throw std::logic_error{"TypeInferExpr is not implemented for this node type"};
+}
+
 auto TypeInferExpr::visit(const parse::IsExprNode& n) -> void {
   if (n.hasId()) {
     // Register the type of the constant this declares.
@@ -316,11 +320,11 @@ auto TypeInferExpr::visit(const parse::LitExprNode& n) -> void {
 
 auto TypeInferExpr::visit(const parse::ParenExprNode& n) -> void { m_type = inferSubExpr(n[0]); }
 
-auto TypeInferExpr::visit(const parse::SwitchExprElseNode & /*unused*/) -> void {
+auto TypeInferExpr::visit(const parse::SwitchExprElseNode& /*unused*/) -> void {
   throw std::logic_error{"TypeInferExpr is not implemented for this node type"};
 }
 
-auto TypeInferExpr::visit(const parse::SwitchExprIfNode & /*unused*/) -> void {
+auto TypeInferExpr::visit(const parse::SwitchExprIfNode& /*unused*/) -> void {
   throw std::logic_error{"TypeInferExpr is not implemented for this node type"};
 }
 
@@ -363,27 +367,27 @@ auto TypeInferExpr::visit(const parse::UnaryExprNode& n) -> void {
   m_type       = inferFuncCall(prog::getFuncName(*op), {argType});
 }
 
-auto TypeInferExpr::visit(const parse::EnumDeclStmtNode & /*unused*/) -> void {
+auto TypeInferExpr::visit(const parse::EnumDeclStmtNode& /*unused*/) -> void {
   throw std::logic_error{"TypeInferExpr is not implemented for this node type"};
 }
 
-auto TypeInferExpr::visit(const parse::ExecStmtNode & /*unused*/) -> void {
+auto TypeInferExpr::visit(const parse::ExecStmtNode& /*unused*/) -> void {
   throw std::logic_error{"TypeInferExpr is not implemented for this node type"};
 }
 
-auto TypeInferExpr::visit(const parse::FuncDeclStmtNode & /*unused*/) -> void {
+auto TypeInferExpr::visit(const parse::FuncDeclStmtNode& /*unused*/) -> void {
   throw std::logic_error{"TypeInferExpr is not implemented for this node type"};
 }
 
-auto TypeInferExpr::visit(const parse::ImportStmtNode & /*unused*/) -> void {
+auto TypeInferExpr::visit(const parse::ImportStmtNode& /*unused*/) -> void {
   throw std::logic_error{"TypeInferExpr is not implemented for this node type"};
 }
 
-auto TypeInferExpr::visit(const parse::StructDeclStmtNode & /*unused*/) -> void {
+auto TypeInferExpr::visit(const parse::StructDeclStmtNode& /*unused*/) -> void {
   throw std::logic_error{"TypeInferExpr is not implemented for this node type"};
 }
 
-auto TypeInferExpr::visit(const parse::UnionDeclStmtNode & /*unused*/) -> void {
+auto TypeInferExpr::visit(const parse::UnionDeclStmtNode& /*unused*/) -> void {
   throw std::logic_error{"TypeInferExpr is not implemented for this node type"};
 }
 
