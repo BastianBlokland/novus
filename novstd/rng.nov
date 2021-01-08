@@ -81,7 +81,7 @@ fun rngElem{T}(Rng r, List{T} l)
 // -- Impure utlities
 
 act rngInit()
-  rngInit(int(clockNanoSteady() % intMax()))
+  rngInit(int(intrinsic{clock_nanosteady}() % intMax()))
 
 // -- Tests
 

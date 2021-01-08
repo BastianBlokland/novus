@@ -1,12 +1,18 @@
 import "std/option.nov"
 import "std/time.nov"
 
+// -- Functions
+
+fun get{T}(future{T} f) -> T
+  intrinsic{future_get}(f)
+
 // -- Actions
+
 act poll{T}(future{T} f) -> Option{T}
-  waitNano(f, 0) ? Option(f.get()) : None()
+  intrinsic{future_waitnano}(f, 0) ? Option(f.get()) : None()
 
 act wait{T}(future{T} f, Duration d) -> bool
-  waitNano(f, d.ns)
+  intrinsic{future_waitnano}(f, d.ns)
 
 act get{T}(future{T} f, Duration d) -> Option{T}
   f.wait(d) ? Option(f.get()) : None()

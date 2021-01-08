@@ -1,3 +1,4 @@
+import "std/future.nov"
 import "std/list.nov"
 
 // -- Functions

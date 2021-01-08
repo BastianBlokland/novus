@@ -34,12 +34,12 @@ TEST_CASE("Precompute literals", "[opt]") {
 
     ASSERT_EXPR(
         precomputeLiterals,
-        "if 1 < 1                 -> 1 "
-        "if envGetArgCount() > 3  -> 2 "
-        "else                     -> 3",
+        "if 1 < 1                               -> 1 "
+        "if intrinsic{env_argument_count}() > 3 -> 2 "
+        "else                                   -> 3",
         ([&]() {
           auto args = std::vector<prog::expr::NodePtr>{};
-          args.push_back(callExprNode(prog, GET_FUNC_ID(prog, "envGetArgCount"), {}));
+          args.push_back(callExprNode(prog, GET_INTRINSIC_ID(prog, "env_argument_count"), {}));
           args.push_back(litIntNode(prog, 3));
 
           auto conditions = std::vector<prog::expr::NodePtr>{};

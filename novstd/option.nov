@@ -1,4 +1,5 @@
 import "std/func.nov"
+import "std/lazy.nov"
 
 // -- Types
 

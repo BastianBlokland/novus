@@ -359,36 +359,40 @@ Program::Program() :
   m_funcDecls.registerIntrinsicAction(
       *this, Fk::ActionTermGetHeight, "term_getheight", sym::TypeSet{}, m_int);
 
-  m_funcDecls.registerAction(
-      *this, Fk::ActionEnvGetArg, "envGetArg", sym::TypeSet{m_int}, m_string);
-  m_funcDecls.registerAction(
-      *this, Fk::ActionEnvGetArgCount, "envGetArgCount", sym::TypeSet{}, m_int);
-  m_funcDecls.registerAction(
-      *this, Fk::ActionEnvGetVar, "envGetVar", sym::TypeSet{m_string}, m_string);
-  m_funcDecls.registerAction(
-      *this, Fk::ActionInteruptIsReq, "interuptIsRequested", sym::TypeSet{}, m_bool);
-  m_funcDecls.registerAction(
-      *this, Fk::ActionInteruptResetReq, "interuptResetRequested", sym::TypeSet{}, m_bool);
+  m_funcDecls.registerIntrinsicAction(
+      *this, Fk::ActionEnvGetArg, "env_argument", sym::TypeSet{m_int}, m_string);
+  m_funcDecls.registerIntrinsicAction(
+      *this, Fk::ActionEnvGetArgCount, "env_argument_count", sym::TypeSet{}, m_int);
+  m_funcDecls.registerIntrinsicAction(
+      *this, Fk::ActionEnvGetVar, "env_variable", sym::TypeSet{m_string}, m_string);
 
-  m_funcDecls.registerAction(
-      *this, Fk::ActionClockMicroSinceEpoch, "clockMicroSinceEpoch", sym::TypeSet{}, m_long);
-  m_funcDecls.registerAction(
-      *this, Fk::ActionClockNanoSteady, "clockNanoSteady", sym::TypeSet{}, m_long);
+  m_funcDecls.registerIntrinsicAction(
+      *this, Fk::ActionInteruptIsReq, "interupt_isrequested", sym::TypeSet{}, m_bool);
+  m_funcDecls.registerIntrinsicAction(
+      *this, Fk::ActionInteruptResetReq, "interupt_reset", sym::TypeSet{}, m_bool);
 
-  m_funcDecls.registerAction(
-      *this, Fk::ActionVersionRt, "runtimeVersionString", sym::TypeSet{}, m_string);
-  m_funcDecls.registerAction(
-      *this, Fk::ActionVersionCompiler, "compilerVersionString", sym::TypeSet{}, m_string);
+  m_funcDecls.registerIntrinsicAction(
+      *this, Fk::ActionClockMicroSinceEpoch, "clock_microsinceepoch", sym::TypeSet{}, m_long);
+  m_funcDecls.registerIntrinsicAction(
+      *this, Fk::ActionClockNanoSteady, "clock_nanosteady", sym::TypeSet{}, m_long);
 
-  m_funcDecls.registerAction(*this, Fk::ActionPlatformCode, "platformCode", sym::TypeSet{}, m_int);
-  m_funcDecls.registerAction(
-      *this, Fk::ActionWorkingDirPath, "workingDirectoryPathString", sym::TypeSet{}, m_string);
-  m_funcDecls.registerAction(
-      *this, Fk::ActionRtPath, "runtimePathString", sym::TypeSet{}, m_string);
-  m_funcDecls.registerAction(
-      *this, Fk::ActionProgramPath, "programPathString", sym::TypeSet{}, m_string);
+  m_funcDecls.registerIntrinsicAction(
+      *this, Fk::ActionVersionRt, "version_runtime", sym::TypeSet{}, m_string);
+  m_funcDecls.registerIntrinsicAction(
+      *this, Fk::ActionVersionCompiler, "version_compiler", sym::TypeSet{}, m_string);
 
-  m_funcDecls.registerAction(*this, Fk::ActionSleepNano, "sleepNano", sym::TypeSet{m_long}, m_long);
+  m_funcDecls.registerIntrinsicAction(
+      *this, Fk::ActionPlatformCode, "runtime_platform", sym::TypeSet{}, m_int);
+  m_funcDecls.registerIntrinsicAction(
+      *this, Fk::ActionWorkingDirPath, "path_workingdirectory", sym::TypeSet{}, m_string);
+  m_funcDecls.registerIntrinsicAction(
+      *this, Fk::ActionRtPath, "path_runtime", sym::TypeSet{}, m_string);
+  m_funcDecls.registerIntrinsicAction(
+      *this, Fk::ActionProgramPath, "path_program", sym::TypeSet{}, m_string);
+
+  m_funcDecls.registerIntrinsicAction(
+      *this, Fk::ActionSleepNano, "sleep_nano", sym::TypeSet{m_long}, m_long);
+
   m_funcDecls.registerAction(
       *this, Fk::ActionAssert, "assert", sym::TypeSet{m_bool, m_string}, m_bool);
 }
@@ -693,19 +697,20 @@ auto Program::defineDelegate(
 }
 
 auto Program::defineFuture(sym::TypeId id, sym::TypeId result) -> void {
-  // Register utility functions and actions.
-  m_funcDecls.registerAction(
-      *this, sym::FuncKind::FutureWaitNano, "waitNano", sym::TypeSet{id, m_long}, m_bool);
-
-  m_funcDecls.registerFunc(*this, sym::FuncKind::FutureBlock, "get", sym::TypeSet{id}, result);
+  // Register utility intrinsics.
+  m_funcDecls.registerIntrinsic(
+      *this, sym::FuncKind::FutureBlock, "future_get", sym::TypeSet{id}, result);
+  m_funcDecls.registerIntrinsicAction(
+      *this, sym::FuncKind::FutureWaitNano, "future_waitnano", sym::TypeSet{id, m_long}, m_bool);
 
   // Register future definition.
   m_typeDefs.registerFuture(m_typeDecls, id, result);
 }
 
 auto Program::defineLazy(sym::TypeId id, sym::TypeId result) -> void {
-  // Register utility functions.
-  m_funcDecls.registerFunc(*this, sym::FuncKind::LazyGet, "get", sym::TypeSet{id}, result);
+  // Register utility intrinsics.
+  m_funcDecls.registerIntrinsic(
+      *this, sym::FuncKind::LazyGet, "lazy_get", sym::TypeSet{id}, result);
 
   // Register lazy definition.
   m_typeDefs.registerLazy(m_typeDecls, id, result);
