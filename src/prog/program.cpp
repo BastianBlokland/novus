@@ -319,10 +319,10 @@ Program::Program() :
       sym::TypeSet{m_process, m_int},
       m_bool);
 
-  m_funcDecls.registerAction(
-      *this, Fk::ActionFileOpenStream, "fileOpenStream", sym::TypeSet{m_string, m_int}, m_stream);
-  m_funcDecls.registerAction(
-      *this, Fk::ActionFileRemove, "fileRemove", sym::TypeSet{m_string}, m_bool);
+  m_funcDecls.registerIntrinsicAction(
+      *this, Fk::ActionFileOpenStream, "file_openstream", sym::TypeSet{m_string, m_int}, m_stream);
+  m_funcDecls.registerIntrinsicAction(
+      *this, Fk::ActionFileRemove, "file_remove", sym::TypeSet{m_string}, m_bool);
 
   m_funcDecls.registerAction(
       *this, Fk::ActionConsoleOpenStream, "consoleOpenStream", sym::TypeSet{m_int}, m_stream);
