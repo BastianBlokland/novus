@@ -56,7 +56,7 @@ act tcpConnection(IpAddress addr) -> Either{TcpConnection, Error}
 
 act tcpConnection(IpAddress addr, int port) -> Either{TcpConnection, Error}
   binAddr = ipBinWriter().run(addr);
-  socket  = tcpOpenConnection(binAddr, IpFamily(addr).int(), port);
+  socket  = intrinsic{tcp_connection_open}(binAddr, IpFamily(addr).int(), port);
   if socket.isValid() -> TcpConnection(socket)
   else                -> Error("Failed to open connection to: '" + addr.string() + " [" + port + "]")
 
@@ -69,14 +69,14 @@ act tcpConnectionAsync(IpAddress addr, int port) -> future{Either{TcpConnection,
 // -- Server
 
 act tcpServer(TcpServerSettings settings) -> Either{TcpServerState, Error}
-  serverSocket = tcpStartServer(settings.family.int(), settings.port, settings.maxBacklog);
+  serverSocket = intrinsic{tcp_server_start}(settings.family.int(), settings.port, settings.maxBacklog);
   if !serverSocket.isValid() -> Error("Failed to start tcp-server")
   else ->
-    teardown = (impure lambda ()
-      serverSocket.tcpShutdown()
+    teardown = (impure lambda () -> bool
+      intrinsic{tcp_shutdown}(serverSocket)
     );
     acceptCon = (impure lambda () -> Either{TcpConnection, Error}
-      socket = tcpAcceptConnection(serverSocket);
+      socket = intrinsic{tcp_server_accept}(serverSocket);
       if socket.isValid() -> TcpConnection(socket)
       else                -> teardown(); Error("Failed to accept new connection")
     );

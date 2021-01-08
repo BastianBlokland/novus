@@ -327,24 +327,28 @@ Program::Program() :
   m_funcDecls.registerIntrinsicAction(
       *this, Fk::ActionConsoleOpenStream, "console_openstream", sym::TypeSet{m_int}, m_stream);
 
-  m_funcDecls.registerAction(
+  m_funcDecls.registerIntrinsicAction(
       *this,
       Fk::ActionTcpOpenCon,
-      "tcpOpenConnection",
+      "tcp_connection_open",
       sym::TypeSet{m_string, m_int, m_int},
       m_stream);
-  m_funcDecls.registerAction(
+  m_funcDecls.registerIntrinsicAction(
       *this,
       Fk::ActionTcpStartServer,
-      "tcpStartServer",
+      "tcp_server_start",
       sym::TypeSet{m_int, m_int, m_int},
       m_stream);
-  m_funcDecls.registerAction(
-      *this, Fk::ActionTcpAcceptCon, "tcpAcceptConnection", sym::TypeSet{m_stream}, m_stream);
-  m_funcDecls.registerAction(
-      *this, Fk::ActionTcpShutdown, "tcpShutdown", sym::TypeSet{m_stream}, m_bool);
-  m_funcDecls.registerAction(
-      *this, Fk::ActionIpLookupAddress, "ipLookupAddress", sym::TypeSet{m_string, m_int}, m_string);
+  m_funcDecls.registerIntrinsicAction(
+      *this, Fk::ActionTcpAcceptCon, "tcp_server_accept", sym::TypeSet{m_stream}, m_stream);
+  m_funcDecls.registerIntrinsicAction(
+      *this, Fk::ActionTcpShutdown, "tcp_shutdown", sym::TypeSet{m_stream}, m_bool);
+  m_funcDecls.registerIntrinsicAction(
+      *this,
+      Fk::ActionIpLookupAddress,
+      "ip_lookupaddress",
+      sym::TypeSet{m_string, m_int},
+      m_string);
 
   m_funcDecls.registerAction(
       *this, Fk::ActionTermSetOptions, "termSetOptions", sym::TypeSet{m_int}, m_bool);
