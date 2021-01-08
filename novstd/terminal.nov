@@ -72,10 +72,10 @@ act termStyle(TermStyle style) -> Option{Error}
   consoleOpen().failOnError().termStyle(style)
 
 act termStyle(Console c, TermStyle style) -> Option{Error}
-  success = c.stdOut.streamWrite(termEsc())      &&
-            c.stdOut.streamWrite('[')            &&
-            c.stdOut.streamWrite(string(style))  &&
-            c.stdOut.streamWrite('m');
+  success = c.stdOut.write(termEsc())      &&
+            c.stdOut.write('[')            &&
+            c.stdOut.write(string(style))  &&
+            c.stdOut.write('m');
   success ? None() : Error("Failed to set terminal style")
 
 
@@ -95,12 +95,12 @@ act termColor(Console c, float r, float g, float b, bool background) -> Option{E
     int(clamp(v, 0.0, 1.0) * 5.0 + 0.5)
   );
   col = 16 + 36 * toDiscrete(r) + 6 * toDiscrete(g) + toDiscrete(b);
-  success = c.stdOut.streamWrite(termEsc())                  &&
-            c.stdOut.streamWrite('[')                        &&
-            c.stdOut.streamWrite(background ? "48" : "38")   &&
-            c.stdOut.streamWrite(";5;")                      &&
-            c.stdOut.streamWrite(string(col))                &&
-            c.stdOut.streamWrite('m');
+  success = c.stdOut.write(termEsc())                  &&
+            c.stdOut.write('[')                        &&
+            c.stdOut.write(background ? "48" : "38")   &&
+            c.stdOut.write(";5;")                      &&
+            c.stdOut.write(string(col))                &&
+            c.stdOut.write('m');
   success ? None() : Error("Failed to set terminal color")
 
 // -- Control the terminal cursor.
@@ -109,10 +109,10 @@ act termCursorMove(TermStyle s, TermDir dir, int amount) -> Option{Error}
   consoleOpen().failOnError().termCursorMove(dir, amount)
 
 act termCursorMove(Console c, TermDir dir, int amount) -> Option{Error}
-  success = c.stdOut.streamWrite(termEsc())       &&
-            c.stdOut.streamWrite('[')             &&
-            c.stdOut.streamWrite(string(amount))  &&
-            c.stdOut.streamWrite(
+  success = c.stdOut.write(termEsc())       &&
+            c.stdOut.write('[')             &&
+            c.stdOut.write(string(amount))  &&
+            c.stdOut.write(
               if dir == TermDir.Up    -> 'A'
               if dir == TermDir.Down  -> 'B'
               if dir == TermDir.Right -> 'C'
@@ -123,31 +123,31 @@ act termCursorCol(int column) -> Option{Error}
   consoleOpen().failOnError().termCursorCol(column)
 
 act termCursorCol(Console c, int column) -> Option{Error}
-  success = c.stdOut.streamWrite(termEsc())      &&
-            c.stdOut.streamWrite('[')            &&
-            c.stdOut.streamWrite(string(column)) &&
-            c.stdOut.streamWrite('G');
+  success = c.stdOut.write(termEsc())      &&
+            c.stdOut.write('[')            &&
+            c.stdOut.write(string(column)) &&
+            c.stdOut.write('G');
   success ? None() : Error("Failed to set terminal cursor column")
 
 act termCursorPos(int row, int column) -> Option{Error}
   consoleOpen().failOnError().termCursorPos(row, column)
 
 act termCursorPos(Console c, int row, int column) -> Option{Error}
-  success = c.stdOut.streamWrite(termEsc())       &&
-            c.stdOut.streamWrite('[')             &&
-            c.stdOut.streamWrite(string(row))     &&
-            c.stdOut.streamWrite(';')             &&
-            c.stdOut.streamWrite(string(column))  &&
-            c.stdOut.streamWrite('H');
+  success = c.stdOut.write(termEsc())       &&
+            c.stdOut.write('[')             &&
+            c.stdOut.write(string(row))     &&
+            c.stdOut.write(';')             &&
+            c.stdOut.write(string(column))  &&
+            c.stdOut.write('H');
   success ? None() : Error("Failed to set terminal cursor position")
 
 act termCursorShow(bool show) -> Option{Error}
   consoleOpen().failOnError().termCursorShow(show)
 
 act termCursorShow(Console c, bool show) -> Option{Error}
-  success = c.stdOut.streamWrite(termEsc())         &&
-            c.stdOut.streamWrite("[?25")            &&
-            c.stdOut.streamWrite(show ? 'h' : 'l');
+  success = c.stdOut.write(termEsc())         &&
+            c.stdOut.write("[?25")            &&
+            c.stdOut.write(show ? 'h' : 'l');
   success ? None() : Error(show ? "Failed to show terminal cursor" : "Failed to hide terminal cursor")
 
 // -- Control alternate screen-buffer.
@@ -156,9 +156,9 @@ act termAltScreen(bool active) -> Option{Error}
   consoleOpen().failOnError().termAltScreen(active)
 
 act termAltScreen(Console c, bool active) -> Option{Error}
-  success = c.stdOut.streamWrite(termEsc())          &&
-            c.stdOut.streamWrite("[?1049")           &&
-            c.stdOut.streamWrite(active ? 'h' : 'l');
+  success = c.stdOut.write(termEsc())          &&
+            c.stdOut.write("[?1049")           &&
+            c.stdOut.write(active ? 'h' : 'l');
   success ? None() : Error(active ? "Failed to activate terminal alternative-screen"
                                   : "Failed to disable terminal alternative-screen")
 
@@ -174,20 +174,20 @@ act termClearScreen(TermClearMode mode) -> Option{Error}
   consoleOpen().failOnError().termClearScreen(mode)
 
 act termClearScreen(Console c, TermClearMode mode) -> Option{Error}
-  success = c.stdOut.streamWrite(termEsc())      &&
-            c.stdOut.streamWrite('[')            &&
-            c.stdOut.streamWrite(string(mode))   &&
-            c.stdOut.streamWrite('J');
+  success = c.stdOut.write(termEsc())      &&
+            c.stdOut.write('[')            &&
+            c.stdOut.write(string(mode))   &&
+            c.stdOut.write('J');
   success ? None() : Error("Failed to clear the terminal screen")
 
 act termClearLine(TermClearMode mode) -> Option{Error}
   consoleOpen().failOnError().termClearLine(mode)
 
 act termClearLine(Console c, TermClearMode mode) -> Option{Error}
-  success = c.stdOut.streamWrite(termEsc())      &&
-            c.stdOut.streamWrite('[')            &&
-            c.stdOut.streamWrite(string(mode))   &&
-            c.stdOut.streamWrite('K');
+  success = c.stdOut.write(termEsc())      &&
+            c.stdOut.write('[')            &&
+            c.stdOut.write(string(mode))   &&
+            c.stdOut.write('K');
   success ? None() : Error("Failed to clear the terminal line")
 
 // -- Reset the terminal.
@@ -196,8 +196,8 @@ act termReset() -> Option{Error}
   consoleOpen().failOnError().termReset()
 
 act termReset(Console c) -> Option{Error}
-  success = c.stdOut.streamWrite(termEsc()) &&
-            c.stdOut.streamWrite('c');
+  success = c.stdOut.write(termEsc()) &&
+            c.stdOut.write('c');
   success ? None() : Error("Failed to reset the terminal")
 
 // -- Set terminal control options
@@ -221,7 +221,7 @@ act termUnsetOptions(Console c, TermOptions opts) -> Option{Error}
 act print{T}(T x, TermStyle style) -> Option{Error}
   c       = consoleOpen().failOnError();
   success =   c.stdOut.termStyle(style)               &&
-              c.stdOut.streamWrite(x.string() + '\n') &&
+              c.stdOut.write(x.string() + '\n') &&
               c.stdOut.termStyle(TermStyle.Reset)     &&
               c.stdOut.streamFlush();
   success ? None() : Error("Failed to write to the stdOut stream of the console")
@@ -229,7 +229,7 @@ act print{T}(T x, TermStyle style) -> Option{Error}
 act printErr{T}(T x, TermStyle style) -> Option{Error}
   c       = consoleOpen().failOnError();
   success =   c.stdErr.termStyle(style)               &&
-              c.stdErr.streamWrite(x.string() + '\n') &&
+              c.stdErr.write(x.string() + '\n') &&
               c.stdErr.termStyle(TermStyle.Reset)     &&
               c.stdErr.streamFlush();
   success ? None() : Error("Failed to write to the stdErr stream of the console")

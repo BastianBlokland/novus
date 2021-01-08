@@ -263,24 +263,40 @@ Program::Program() :
   m_funcDecls.registerIntrinsicAction(
       *this, Fk::ActionEndiannessNative, "platform_endianness_native", sym::TypeSet{}, m_int);
 
-  m_funcDecls.registerAction(
-      *this, Fk::ActionStreamCheckValid, "streamCheckValid", sym::TypeSet{m_stream}, m_bool);
-  m_funcDecls.registerAction(
-      *this, Fk::ActionStreamReadString, "streamRead", sym::TypeSet{m_stream, m_int}, m_string);
-  m_funcDecls.registerAction(
-      *this, Fk::ActionStreamReadChar, "streamRead", sym::TypeSet{m_stream}, m_char);
-  m_funcDecls.registerAction(
-      *this, Fk::ActionStreamWriteString, "streamWrite", sym::TypeSet{m_stream, m_string}, m_bool);
-  m_funcDecls.registerAction(
-      *this, Fk::ActionStreamWriteChar, "streamWrite", sym::TypeSet{m_stream, m_char}, m_bool);
-  m_funcDecls.registerAction(
-      *this, Fk::ActionStreamFlush, "streamFlush", sym::TypeSet{m_stream}, m_bool);
-  m_funcDecls.registerAction(
-      *this, Fk::ActionStreamSetOptions, "streamSetOptions", sym::TypeSet{m_stream, m_int}, m_bool);
-  m_funcDecls.registerAction(
+  m_funcDecls.registerIntrinsicAction(
+      *this, Fk::ActionStreamCheckValid, "stream_checkvalid", sym::TypeSet{m_stream}, m_bool);
+  m_funcDecls.registerIntrinsicAction(
+      *this,
+      Fk::ActionStreamReadString,
+      "stream_read_string",
+      sym::TypeSet{m_stream, m_int},
+      m_string);
+  m_funcDecls.registerIntrinsicAction(
+      *this, Fk::ActionStreamReadChar, "stream_read_char", sym::TypeSet{m_stream}, m_char);
+  m_funcDecls.registerIntrinsicAction(
+      *this,
+      Fk::ActionStreamWriteString,
+      "stream_write_string",
+      sym::TypeSet{m_stream, m_string},
+      m_bool);
+  m_funcDecls.registerIntrinsicAction(
+      *this,
+      Fk::ActionStreamWriteChar,
+      "stream_write_char",
+      sym::TypeSet{m_stream, m_char},
+      m_bool);
+  m_funcDecls.registerIntrinsicAction(
+      *this, Fk::ActionStreamFlush, "stream_flush", sym::TypeSet{m_stream}, m_bool);
+  m_funcDecls.registerIntrinsicAction(
+      *this,
+      Fk::ActionStreamSetOptions,
+      "stream_setoptions",
+      sym::TypeSet{m_stream, m_int},
+      m_bool);
+  m_funcDecls.registerIntrinsicAction(
       *this,
       Fk::ActionStreamUnsetOptions,
-      "streamUnsetOptions",
+      "stream_unsetoptions",
       sym::TypeSet{m_stream, m_int},
       m_bool);
 

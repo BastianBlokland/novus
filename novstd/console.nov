@@ -16,7 +16,7 @@ act consoleOpen() -> Either{Console, Error}
   stdIn   = consoleOpenStream(0);
   stdOut  = consoleOpenStream(1);
   stdErr  = consoleOpenStream(2);
-  if stdIn.streamCheckValid() && stdOut.streamCheckValid() && stdErr.streamCheckValid() ->
+  if stdIn.isValid() && stdOut.isValid() && stdErr.isValid() ->
     Console(stdIn, stdOut, stdErr)
   else ->
     Error("Failed to open console")
@@ -27,8 +27,8 @@ act setNoBlockInput(Console c) -> bool
 act unsetNoBlockInput(Console c) -> bool
   c.stdIn.unsetOptions(StreamOptions.NoBlock)
 
-act readChar(Console c) -> char
-  c.stdIn.readChar()
+act read(Console c) -> char
+  c.stdIn.read()
 
 act readLine(Console c) -> string
   c.stdIn.readLine()
@@ -39,8 +39,8 @@ act readToEnd(Console c) -> string
 act readToEnd{T}(Console c, Parser{T} parser) -> Either{T, Error}
   parser.run(c.readToEnd())
 
-act readChar() -> char
-  consoleOpen().failOnError().readChar()
+act read() -> char
+  consoleOpen().failOnError().read()
 
 act readLine() -> string
   consoleOpen().failOnError().readLine()
@@ -72,21 +72,21 @@ act writeErr{T}(Console c, Writer{T} writer, T val) -> Option{Error}
   c.write(writer.run(val))
 
 act flushOut(Console c)
-  c.stdOut.streamFlush()
+  c.stdOut.flush()
 
 act flushErr(Console c)
-  c.stdErr.streamFlush()
+  c.stdErr.flush()
 
 act print{T}(T x) -> Option{Error}
   c       = consoleOpen().failOnError();
-  success =   c.stdOut.streamWrite(x.string() + '\n') &&
-              c.stdOut.streamFlush();
+  success =   c.stdOut.write(x.string() + '\n') &&
+              c.stdOut.flush();
   success ? None() : Error("Failed to write to the stdOut stream of the console")
 
 act printErr{T}(T x) -> Option{Error}
   c       = consoleOpen().failOnError();
-  success =   c.stdOut.streamWrite(x.string() + '\n') &&
-              c.stdOut.streamFlush();
+  success =   c.stdOut.write(x.string() + '\n') &&
+              c.stdOut.flush();
   success ? None() : Error("Failed to write to the stdErr stream of the console")
 
 act printBits(int i) -> Option{Error}

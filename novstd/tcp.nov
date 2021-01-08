@@ -57,8 +57,8 @@ act tcpConnection(IpAddress addr) -> Either{TcpConnection, Error}
 act tcpConnection(IpAddress addr, int port) -> Either{TcpConnection, Error}
   binAddr = ipBinWriter().run(addr);
   socket  = tcpOpenConnection(binAddr, IpFamily(addr).int(), port);
-  if socket.streamCheckValid()  -> TcpConnection(socket)
-  else                          -> Error("Failed to open connection to: '" + addr.string() + " [" + port + "]")
+  if socket.isValid() -> TcpConnection(socket)
+  else                -> Error("Failed to open connection to: '" + addr.string() + " [" + port + "]")
 
 act tcpConnectionAsync(IpAddress addr) -> future{Either{TcpConnection, Error}}
   fork tcpConnection(addr)
@@ -70,15 +70,15 @@ act tcpConnectionAsync(IpAddress addr, int port) -> future{Either{TcpConnection,
 
 act tcpServer(TcpServerSettings settings) -> Either{TcpServerState, Error}
   serverSocket = tcpStartServer(settings.family.int(), settings.port, settings.maxBacklog);
-  if !serverSocket.streamCheckValid() -> Error("Failed to start tcp-server")
+  if !serverSocket.isValid() -> Error("Failed to start tcp-server")
   else ->
     teardown = (impure lambda ()
       serverSocket.tcpShutdown()
     );
     acceptCon = (impure lambda () -> Either{TcpConnection, Error}
       socket = tcpAcceptConnection(serverSocket);
-      if socket.streamCheckValid()  -> TcpConnection(socket)
-      else                          -> teardown(); Error("Failed to accept new connection")
+      if socket.isValid() -> TcpConnection(socket)
+      else                -> teardown(); Error("Failed to accept new connection")
     );
     loop = (impure lambda (
       future{Either{TcpConnection, Error}} futureConnection,
