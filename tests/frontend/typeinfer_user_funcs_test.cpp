@@ -242,22 +242,6 @@ TEST_CASE("Infer return type of user functions", "[frontend]") {
         GET_TYPE_ID(output, "__lazy_bool"));
   }
 
-  SECTION("Future result") {
-    const auto& output = ANALYZE("fun f2(future{int} f) f.get()");
-    REQUIRE(output.isSuccess());
-    CHECK(
-        GET_FUNC_DECL(output, "f2", GET_TYPE_ID(output, "__future_int")).getOutput() ==
-        GET_TYPE_ID(output, "int"));
-  }
-
-  SECTION("Future result") {
-    const auto& output = ANALYZE("fun f2(lazy{int} f) f.get()");
-    REQUIRE(output.isSuccess());
-    CHECK(
-        GET_FUNC_DECL(output, "f2", GET_TYPE_ID(output, "__lazy_int")).getOutput() ==
-        GET_TYPE_ID(output, "int"));
-  }
-
   SECTION("Templated constructor") {
     const auto& output = ANALYZE("struct tuple{T1, T2} = T1 a, T2 b "
                                  "fun f(int i) tuple{int, bool}(i, false)");

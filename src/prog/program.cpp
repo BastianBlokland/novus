@@ -697,19 +697,20 @@ auto Program::defineDelegate(
 }
 
 auto Program::defineFuture(sym::TypeId id, sym::TypeId result) -> void {
-  // Register utility functions and actions.
-  m_funcDecls.registerAction(
-      *this, sym::FuncKind::FutureWaitNano, "waitNano", sym::TypeSet{id, m_long}, m_bool);
-
-  m_funcDecls.registerFunc(*this, sym::FuncKind::FutureBlock, "get", sym::TypeSet{id}, result);
+  // Register utility intrinsics.
+  m_funcDecls.registerIntrinsic(
+      *this, sym::FuncKind::FutureBlock, "future_get", sym::TypeSet{id}, result);
+  m_funcDecls.registerIntrinsicAction(
+      *this, sym::FuncKind::FutureWaitNano, "future_waitnano", sym::TypeSet{id, m_long}, m_bool);
 
   // Register future definition.
   m_typeDefs.registerFuture(m_typeDecls, id, result);
 }
 
 auto Program::defineLazy(sym::TypeId id, sym::TypeId result) -> void {
-  // Register utility functions.
-  m_funcDecls.registerFunc(*this, sym::FuncKind::LazyGet, "get", sym::TypeSet{id}, result);
+  // Register utility intrinsics.
+  m_funcDecls.registerIntrinsic(
+      *this, sym::FuncKind::LazyGet, "lazy_get", sym::TypeSet{id}, result);
 
   // Register lazy definition.
   m_typeDefs.registerLazy(m_typeDecls, id, result);

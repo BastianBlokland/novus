@@ -1,0 +1,11 @@
+import "std/option.nov"
+import "std/time.nov"
+
+// -- Functions
+
+fun get{T}(lazy{T} f) -> T
+  intrinsic{lazy_get}(f)
+
+// -- Tests
+
+assert((lazy invoke(lambda () 42)).get() == 42)

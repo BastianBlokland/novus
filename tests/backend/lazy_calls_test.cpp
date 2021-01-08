@@ -74,44 +74,45 @@ TEST_CASE("Generate assembly for lazy calls", "[backend]") {
   }
 
   SECTION("Lazy get") {
-    CHECK_PROG("fun f(lazy{int} l) -> int l.get()", [](novasm::Assembler* asmb) -> void {
-      asmb->label("f");
+    CHECK_PROG(
+        "fun f(lazy{int} l) -> int intrinsic{lazy_get}(l)", [](novasm::Assembler* asmb) -> void {
+          asmb->label("f");
 
-      // Load the lazy 'l' input constant.
-      asmb->addStackLoad(0);
-      asmb->addDup();
+          // Load the lazy 'l' input constant.
+          asmb->addStackLoad(0);
+          asmb->addDup();
 
-      // Check if a value has already been computed.
-      asmb->addStructLoadField(0);
-      asmb->addJumpIf("already-computed");
+          // Check if a value has already been computed.
+          asmb->addStructLoadField(0);
+          asmb->addJumpIf("already-computed");
 
-      // Duplicate the lazy a few times for the following accesses.
-      asmb->addDup();
-      asmb->addDup();
-      asmb->addDup();
+          // Duplicate the lazy a few times for the following accesses.
+          asmb->addDup();
+          asmb->addDup();
+          asmb->addDup();
 
-      // Compute the value.
-      asmb->addStructLoadField(1);
-      asmb->addCallDyn(0, novasm::CallMode::Normal);
+          // Compute the value.
+          asmb->addStructLoadField(1);
+          asmb->addCallDyn(0, novasm::CallMode::Normal);
 
-      // Store the computed value.
-      asmb->addStructStoreField(2);
+          // Store the computed value.
+          asmb->addStructStoreField(2);
 
-      // Set the 'computed' flag to true.
-      asmb->addLoadLitInt(1);
-      asmb->addStructStoreField(0);
+          // Set the 'computed' flag to true.
+          asmb->addLoadLitInt(1);
+          asmb->addStructStoreField(0);
 
-      // Load the already computed value.
-      asmb->label("already-computed");
-      asmb->addStructLoadField(2);
+          // Load the already computed value.
+          asmb->label("already-computed");
+          asmb->addStructLoadField(2);
 
-      asmb->addRet();
+          asmb->addRet();
 
-      asmb->label("entry");
-      asmb->addRet();
+          asmb->label("entry");
+          asmb->addRet();
 
-      asmb->setEntrypoint("entry");
-    });
+          asmb->setEntrypoint("entry");
+        });
   }
 }
 

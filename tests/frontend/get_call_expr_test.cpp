@@ -262,10 +262,11 @@ TEST_CASE("Analyzing call expressions", "[frontend]") {
         "fun f2(int i) -> int i.a()",
         errUndeclaredPureFunc(src, "a", {"int"}, input::Span{47, 51}));
     CHECK_DIAG(
-        "fun f(future{int} fi) -> int fork fi.get()",
-        errForkedNonUserFunc(src, input::Span{29, 41}));
+        "fun f(future{int} fi) -> int fork intrinsic{future_get}(fi)",
+        errForkedNonUserFunc(src, input::Span{29, 58}));
     CHECK_DIAG(
-        "fun f(future{int} fi) -> int lazy fi.get()", errLazyNonUserFunc(src, input::Span{29, 41}));
+        "fun f(future{int} fi) -> int lazy intrinsic{future_get}(fi)",
+        errLazyNonUserFunc(src, input::Span{29, 58}));
     CHECK_DIAG(
         "act a(int i) -> int i * 2 "
         "act f2(int i) -> int lazy i.a()",
