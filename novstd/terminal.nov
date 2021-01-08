@@ -66,6 +66,14 @@ fun string(TermOptions o)
   ((o & TermOptions.NoEcho)   != 0 ? "[NoEcho]"   : "") +
   ((o & TermOptions.NoBuffer) != 0 ? "[NoBuffer]" : "")
 
+// -- Get terminal size
+
+act termGetWidth() -> int
+  intrinsic{term_getwidth}()
+
+act termGetHeight() -> int
+  intrinsic{term_getheight}()
+
 // -- Update the current style on the terminal.
 
 act termStyle(TermStyle style) -> Option{Error}
@@ -206,14 +214,14 @@ act termSetOptions(TermOptions opts) -> Option{Error}
   consoleOpen().failOnError().termSetOptions(opts)
 
 act termSetOptions(Console c, TermOptions opts) -> Option{Error}
-  success = termSetOptions(int(opts));
+  success = intrinsic{term_setoptions}(int(opts));
   success ? None() : Error("Failed to set terminal options: " + opts.string())
 
 act termUnsetOptions(TermOptions opts) -> Option{Error}
   consoleOpen().failOnError().termUnsetOptions(opts)
 
 act termUnsetOptions(Console c, TermOptions opts) -> Option{Error}
-  success = termUnsetOptions(int(opts));
+  success = intrinsic{term_unsetoptions}(int(opts));
   success ? None() : Error("Failed to clear terminal options: " + opts.string())
 
 // -- Convenience overloads for print that set a style before and reset after printing.

@@ -325,9 +325,6 @@ Program::Program() :
       *this, Fk::ActionFileRemove, "file_remove", sym::TypeSet{m_string}, m_bool);
 
   m_funcDecls.registerIntrinsicAction(
-      *this, Fk::ActionConsoleOpenStream, "console_openstream", sym::TypeSet{m_int}, m_stream);
-
-  m_funcDecls.registerIntrinsicAction(
       *this,
       Fk::ActionTcpOpenCon,
       "tcp_connection_open",
@@ -350,13 +347,17 @@ Program::Program() :
       sym::TypeSet{m_string, m_int},
       m_string);
 
-  m_funcDecls.registerAction(
-      *this, Fk::ActionTermSetOptions, "termSetOptions", sym::TypeSet{m_int}, m_bool);
-  m_funcDecls.registerAction(
-      *this, Fk::ActionTermUnsetOptions, "termUnsetOptions", sym::TypeSet{m_int}, m_bool);
-  m_funcDecls.registerAction(*this, Fk::ActionTermGetWidth, "termGetWidth", sym::TypeSet{}, m_int);
-  m_funcDecls.registerAction(
-      *this, Fk::ActionTermGetHeight, "termGetHeight", sym::TypeSet{}, m_int);
+  m_funcDecls.registerIntrinsicAction(
+      *this, Fk::ActionConsoleOpenStream, "console_openstream", sym::TypeSet{m_int}, m_stream);
+
+  m_funcDecls.registerIntrinsicAction(
+      *this, Fk::ActionTermSetOptions, "term_setoptions", sym::TypeSet{m_int}, m_bool);
+  m_funcDecls.registerIntrinsicAction(
+      *this, Fk::ActionTermUnsetOptions, "term_unsetoptions", sym::TypeSet{m_int}, m_bool);
+  m_funcDecls.registerIntrinsicAction(
+      *this, Fk::ActionTermGetWidth, "term_getwidth", sym::TypeSet{}, m_int);
+  m_funcDecls.registerIntrinsicAction(
+      *this, Fk::ActionTermGetHeight, "term_getheight", sym::TypeSet{}, m_int);
 
   m_funcDecls.registerAction(
       *this, Fk::ActionEnvGetArg, "envGetArg", sym::TypeSet{m_int}, m_string);
