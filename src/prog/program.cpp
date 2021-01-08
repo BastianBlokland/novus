@@ -324,8 +324,8 @@ Program::Program() :
   m_funcDecls.registerIntrinsicAction(
       *this, Fk::ActionFileRemove, "file_remove", sym::TypeSet{m_string}, m_bool);
 
-  m_funcDecls.registerAction(
-      *this, Fk::ActionConsoleOpenStream, "consoleOpenStream", sym::TypeSet{m_int}, m_stream);
+  m_funcDecls.registerIntrinsicAction(
+      *this, Fk::ActionConsoleOpenStream, "console_openstream", sym::TypeSet{m_int}, m_stream);
 
   m_funcDecls.registerAction(
       *this,

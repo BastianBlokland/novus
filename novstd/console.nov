@@ -13,9 +13,9 @@ struct Console =
 // -- Actions
 
 act consoleOpen() -> Either{Console, Error}
-  stdIn   = consoleOpenStream(0);
-  stdOut  = consoleOpenStream(1);
-  stdErr  = consoleOpenStream(2);
+  stdIn   = intrinsic{console_openstream}(0);
+  stdOut  = intrinsic{console_openstream}(1);
+  stdErr  = intrinsic{console_openstream}(2);
   if stdIn.isValid() && stdOut.isValid() && stdErr.isValid() ->
     Console(stdIn, stdOut, stdErr)
   else ->
