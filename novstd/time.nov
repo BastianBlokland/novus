@@ -270,12 +270,6 @@ act timeNow() DateTime(intrinsic{clock_microsinceepoch}())
 // (even if system clock changes) and is more precise then 'timeNow()'.
 act timestamp() Timestamp(intrinsic{clock_nanosteady}())
 
-// -- Wrappers
-// User friendly wrappers around build-in actions.
-
-act sleep(Duration d)
-  sleepNano(d.ns)
-
 // -- Tests
 
 assert(Date(1970, Month.January, 1) == Date(timeEpoch()))

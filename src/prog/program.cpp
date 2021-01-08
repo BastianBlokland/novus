@@ -365,30 +365,34 @@ Program::Program() :
       *this, Fk::ActionEnvGetArgCount, "envGetArgCount", sym::TypeSet{}, m_int);
   m_funcDecls.registerAction(
       *this, Fk::ActionEnvGetVar, "envGetVar", sym::TypeSet{m_string}, m_string);
-  m_funcDecls.registerAction(
-      *this, Fk::ActionInteruptIsReq, "interuptIsRequested", sym::TypeSet{}, m_bool);
-  m_funcDecls.registerAction(
-      *this, Fk::ActionInteruptResetReq, "interuptResetRequested", sym::TypeSet{}, m_bool);
+
+  m_funcDecls.registerIntrinsicAction(
+      *this, Fk::ActionInteruptIsReq, "interupt_isrequested", sym::TypeSet{}, m_bool);
+  m_funcDecls.registerIntrinsicAction(
+      *this, Fk::ActionInteruptResetReq, "interupt_reset", sym::TypeSet{}, m_bool);
 
   m_funcDecls.registerIntrinsicAction(
       *this, Fk::ActionClockMicroSinceEpoch, "clock_microsinceepoch", sym::TypeSet{}, m_long);
   m_funcDecls.registerIntrinsicAction(
       *this, Fk::ActionClockNanoSteady, "clock_nanosteady", sym::TypeSet{}, m_long);
 
-  m_funcDecls.registerAction(
-      *this, Fk::ActionVersionRt, "runtimeVersionString", sym::TypeSet{}, m_string);
-  m_funcDecls.registerAction(
-      *this, Fk::ActionVersionCompiler, "compilerVersionString", sym::TypeSet{}, m_string);
+  m_funcDecls.registerIntrinsicAction(
+      *this, Fk::ActionVersionRt, "version_runtime", sym::TypeSet{}, m_string);
+  m_funcDecls.registerIntrinsicAction(
+      *this, Fk::ActionVersionCompiler, "version_compiler", sym::TypeSet{}, m_string);
 
-  m_funcDecls.registerAction(*this, Fk::ActionPlatformCode, "platformCode", sym::TypeSet{}, m_int);
-  m_funcDecls.registerAction(
-      *this, Fk::ActionWorkingDirPath, "workingDirectoryPathString", sym::TypeSet{}, m_string);
-  m_funcDecls.registerAction(
-      *this, Fk::ActionRtPath, "runtimePathString", sym::TypeSet{}, m_string);
-  m_funcDecls.registerAction(
-      *this, Fk::ActionProgramPath, "programPathString", sym::TypeSet{}, m_string);
+  m_funcDecls.registerIntrinsicAction(
+      *this, Fk::ActionPlatformCode, "runtime_platform", sym::TypeSet{}, m_int);
+  m_funcDecls.registerIntrinsicAction(
+      *this, Fk::ActionWorkingDirPath, "path_workingdirectory", sym::TypeSet{}, m_string);
+  m_funcDecls.registerIntrinsicAction(
+      *this, Fk::ActionRtPath, "path_runtime", sym::TypeSet{}, m_string);
+  m_funcDecls.registerIntrinsicAction(
+      *this, Fk::ActionProgramPath, "path_program", sym::TypeSet{}, m_string);
 
-  m_funcDecls.registerAction(*this, Fk::ActionSleepNano, "sleepNano", sym::TypeSet{m_long}, m_long);
+  m_funcDecls.registerIntrinsicAction(
+      *this, Fk::ActionSleepNano, "sleep_nano", sym::TypeSet{m_long}, m_long);
+
   m_funcDecls.registerAction(
       *this, Fk::ActionAssert, "assert", sym::TypeSet{m_bool, m_string}, m_bool);
 }

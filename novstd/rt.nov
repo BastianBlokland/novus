@@ -1,5 +1,6 @@
 import "std/console.nov"
 import "std/path.nov"
+import "std/time.nov"
 import "std/version.nov"
 
 // -- Types
@@ -19,33 +20,44 @@ fun string(Platform p)
 
 // -- Platform
 
-act getPlatform() Platform(platformCode())
+act getPlatform() Platform(intrinsic{runtime_platform}())
 
 // -- Versions
 
 act getRuntimeVersion() -> Version
-  versionParser().run(runtimeVersionString()).failOnError()
+  versionParser().run(intrinsic{version_runtime}()).failOnError()
 
 act getCompilerVersion() -> Version
-  versionParser().run(compilerVersionString()).failOnError()
+  versionParser().run(intrinsic{version_compiler}()).failOnError()
 
 // -- Paths
 
 act getPathCurrent() -> PathAbsolute
-  pathAbsParser().run(workingDirectoryPathString()).failOnError()
+  pathAbsParser().run(intrinsic{path_workingdirectory}()).failOnError()
 
 act getPathRuntime() -> PathAbsolute
-  pathAbsParser().run(runtimePathString()).failOnError()
+  pathAbsParser().run(intrinsic{path_runtime}()).failOnError()
 
 act getPathProgram() -> PathAbsolute
-  pathAbsParser().run(programPathString()).failOnError()
+  pathAbsParser().run(intrinsic{path_program}()).failOnError()
 
 // -- Interupt
+
+act interuptIsRequested() -> bool
+  intrinsic{interupt_isrequested}()
+
+act interuptReset() -> bool
+  intrinsic{interupt_reset}()
 
 act atInterupt{T}(action{T} delegate) -> future{T}
   fork invoke(impure lambda () -> T
     if interuptIsRequested() -> delegate()
     else                     -> sleep(milliseconds(100)); self())
+
+// -- Misc
+
+act sleep(Duration d)
+  Duration(intrinsic{sleep_nano}(d.ns))
 
 // -- Failure
 
