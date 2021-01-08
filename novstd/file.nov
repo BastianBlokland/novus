@@ -27,9 +27,9 @@ act fileOpen(Path p, FileMode m) -> Either{File, Error}
 act fileOpen(Path p, FileMode m, FileFlags flags) -> Either{File, Error}
   absPath     = p.getPathAbsolute();
   absPathStr  = absPath.string();
-  stream      = fileOpenStream(absPathStr, int(m) | flags << 8);
-  if stream.streamCheckValid()  -> File(absPath, m, flags, stream)
-  else                          -> Error("Failed to open file: '" + absPathStr + "'")
+  stream      = intrinsic{file_openstream}(absPathStr, int(m) | flags << 8);
+  if stream.isValid() -> File(absPath, m, flags, stream)
+  else                -> Error("Failed to open file: '" + absPathStr + "'")
 
 act readToEnd(File f) -> string
   f.stream.readToEnd()
@@ -38,7 +38,7 @@ act readToEnd{T}(File f, Parser{T} parser) -> Either{T, Error}
   parser.run(f.readToEnd())
 
 act write(File f, string str) -> Option{Error}
-  f.stream.streamWrite(str) && f.stream.streamFlush()
+  f.stream.write(str) && f.stream.flush()
     ? None()
     : Error("Failed to write to file")
 
@@ -66,7 +66,7 @@ act fileAppend{T}(Path p, Writer{T} writer, T val) -> Option{Error}
 act fileRemove(Path p) -> Option{Error}
   absPath     = p.getPathAbsolute();
   absPathStr  = absPath.string();
-  fileRemove(absPathStr)
+  intrinsic{file_remove}(absPathStr)
     ? None()
     : Error("Failed to remove file: '" + absPathStr + "'")
 

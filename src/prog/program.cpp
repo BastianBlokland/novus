@@ -263,80 +263,101 @@ Program::Program() :
   m_funcDecls.registerIntrinsicAction(
       *this, Fk::ActionEndiannessNative, "platform_endianness_native", sym::TypeSet{}, m_int);
 
-  m_funcDecls.registerAction(
-      *this, Fk::ActionStreamCheckValid, "streamCheckValid", sym::TypeSet{m_stream}, m_bool);
-  m_funcDecls.registerAction(
-      *this, Fk::ActionStreamReadString, "streamRead", sym::TypeSet{m_stream, m_int}, m_string);
-  m_funcDecls.registerAction(
-      *this, Fk::ActionStreamReadChar, "streamRead", sym::TypeSet{m_stream}, m_char);
-  m_funcDecls.registerAction(
-      *this, Fk::ActionStreamWriteString, "streamWrite", sym::TypeSet{m_stream, m_string}, m_bool);
-  m_funcDecls.registerAction(
-      *this, Fk::ActionStreamWriteChar, "streamWrite", sym::TypeSet{m_stream, m_char}, m_bool);
-  m_funcDecls.registerAction(
-      *this, Fk::ActionStreamFlush, "streamFlush", sym::TypeSet{m_stream}, m_bool);
-  m_funcDecls.registerAction(
-      *this, Fk::ActionStreamSetOptions, "streamSetOptions", sym::TypeSet{m_stream, m_int}, m_bool);
-  m_funcDecls.registerAction(
+  m_funcDecls.registerIntrinsicAction(
+      *this, Fk::ActionStreamCheckValid, "stream_checkvalid", sym::TypeSet{m_stream}, m_bool);
+  m_funcDecls.registerIntrinsicAction(
+      *this,
+      Fk::ActionStreamReadString,
+      "stream_read_string",
+      sym::TypeSet{m_stream, m_int},
+      m_string);
+  m_funcDecls.registerIntrinsicAction(
+      *this, Fk::ActionStreamReadChar, "stream_read_char", sym::TypeSet{m_stream}, m_char);
+  m_funcDecls.registerIntrinsicAction(
+      *this,
+      Fk::ActionStreamWriteString,
+      "stream_write_string",
+      sym::TypeSet{m_stream, m_string},
+      m_bool);
+  m_funcDecls.registerIntrinsicAction(
+      *this,
+      Fk::ActionStreamWriteChar,
+      "stream_write_char",
+      sym::TypeSet{m_stream, m_char},
+      m_bool);
+  m_funcDecls.registerIntrinsicAction(
+      *this, Fk::ActionStreamFlush, "stream_flush", sym::TypeSet{m_stream}, m_bool);
+  m_funcDecls.registerIntrinsicAction(
+      *this,
+      Fk::ActionStreamSetOptions,
+      "stream_setoptions",
+      sym::TypeSet{m_stream, m_int},
+      m_bool);
+  m_funcDecls.registerIntrinsicAction(
       *this,
       Fk::ActionStreamUnsetOptions,
-      "streamUnsetOptions",
+      "stream_unsetoptions",
       sym::TypeSet{m_stream, m_int},
       m_bool);
 
-  m_funcDecls.registerAction(
-      *this, Fk::ActionProcessStart, "processStart", sym::TypeSet{m_string}, m_process);
-  m_funcDecls.registerAction(
-      *this, Fk::ActionProcessBlock, "processBlock", sym::TypeSet{m_process}, m_int);
-  m_funcDecls.registerAction(
+  m_funcDecls.registerIntrinsicAction(
+      *this, Fk::ActionProcessStart, "process_start", sym::TypeSet{m_string}, m_process);
+  m_funcDecls.registerIntrinsicAction(
+      *this, Fk::ActionProcessBlock, "process_block", sym::TypeSet{m_process}, m_int);
+  m_funcDecls.registerIntrinsicAction(
       *this,
       Fk::ActionProcessOpenStream,
-      "processOpenStream",
+      "process_openstream",
       sym::TypeSet{m_process, m_int},
       m_stream);
-  m_funcDecls.registerAction(
-      *this, Fk::ActionProcessGetId, "processGetId", sym::TypeSet{m_process}, m_long);
-  m_funcDecls.registerAction(
+  m_funcDecls.registerIntrinsicAction(
+      *this, Fk::ActionProcessGetId, "process_getid", sym::TypeSet{m_process}, m_long);
+  m_funcDecls.registerIntrinsicAction(
       *this,
       Fk::ActionProcessSendSignal,
-      "processSendSignal",
+      "process_sendsignal",
       sym::TypeSet{m_process, m_int},
       m_bool);
 
-  m_funcDecls.registerAction(
-      *this, Fk::ActionFileOpenStream, "fileOpenStream", sym::TypeSet{m_string, m_int}, m_stream);
-  m_funcDecls.registerAction(
-      *this, Fk::ActionFileRemove, "fileRemove", sym::TypeSet{m_string}, m_bool);
+  m_funcDecls.registerIntrinsicAction(
+      *this, Fk::ActionFileOpenStream, "file_openstream", sym::TypeSet{m_string, m_int}, m_stream);
+  m_funcDecls.registerIntrinsicAction(
+      *this, Fk::ActionFileRemove, "file_remove", sym::TypeSet{m_string}, m_bool);
 
-  m_funcDecls.registerAction(
-      *this, Fk::ActionConsoleOpenStream, "consoleOpenStream", sym::TypeSet{m_int}, m_stream);
-
-  m_funcDecls.registerAction(
+  m_funcDecls.registerIntrinsicAction(
       *this,
       Fk::ActionTcpOpenCon,
-      "tcpOpenConnection",
+      "tcp_connection_open",
       sym::TypeSet{m_string, m_int, m_int},
       m_stream);
-  m_funcDecls.registerAction(
+  m_funcDecls.registerIntrinsicAction(
       *this,
       Fk::ActionTcpStartServer,
-      "tcpStartServer",
+      "tcp_server_start",
       sym::TypeSet{m_int, m_int, m_int},
       m_stream);
-  m_funcDecls.registerAction(
-      *this, Fk::ActionTcpAcceptCon, "tcpAcceptConnection", sym::TypeSet{m_stream}, m_stream);
-  m_funcDecls.registerAction(
-      *this, Fk::ActionTcpShutdown, "tcpShutdown", sym::TypeSet{m_stream}, m_bool);
-  m_funcDecls.registerAction(
-      *this, Fk::ActionIpLookupAddress, "ipLookupAddress", sym::TypeSet{m_string, m_int}, m_string);
+  m_funcDecls.registerIntrinsicAction(
+      *this, Fk::ActionTcpAcceptCon, "tcp_server_accept", sym::TypeSet{m_stream}, m_stream);
+  m_funcDecls.registerIntrinsicAction(
+      *this, Fk::ActionTcpShutdown, "tcp_shutdown", sym::TypeSet{m_stream}, m_bool);
+  m_funcDecls.registerIntrinsicAction(
+      *this,
+      Fk::ActionIpLookupAddress,
+      "ip_lookupaddress",
+      sym::TypeSet{m_string, m_int},
+      m_string);
 
-  m_funcDecls.registerAction(
-      *this, Fk::ActionTermSetOptions, "termSetOptions", sym::TypeSet{m_int}, m_bool);
-  m_funcDecls.registerAction(
-      *this, Fk::ActionTermUnsetOptions, "termUnsetOptions", sym::TypeSet{m_int}, m_bool);
-  m_funcDecls.registerAction(*this, Fk::ActionTermGetWidth, "termGetWidth", sym::TypeSet{}, m_int);
-  m_funcDecls.registerAction(
-      *this, Fk::ActionTermGetHeight, "termGetHeight", sym::TypeSet{}, m_int);
+  m_funcDecls.registerIntrinsicAction(
+      *this, Fk::ActionConsoleOpenStream, "console_openstream", sym::TypeSet{m_int}, m_stream);
+
+  m_funcDecls.registerIntrinsicAction(
+      *this, Fk::ActionTermSetOptions, "term_setoptions", sym::TypeSet{m_int}, m_bool);
+  m_funcDecls.registerIntrinsicAction(
+      *this, Fk::ActionTermUnsetOptions, "term_unsetoptions", sym::TypeSet{m_int}, m_bool);
+  m_funcDecls.registerIntrinsicAction(
+      *this, Fk::ActionTermGetWidth, "term_getwidth", sym::TypeSet{}, m_int);
+  m_funcDecls.registerIntrinsicAction(
+      *this, Fk::ActionTermGetHeight, "term_getheight", sym::TypeSet{}, m_int);
 
   m_funcDecls.registerAction(
       *this, Fk::ActionEnvGetArg, "envGetArg", sym::TypeSet{m_int}, m_string);

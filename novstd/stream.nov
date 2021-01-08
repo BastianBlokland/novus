@@ -19,59 +19,42 @@ fun StreamReadState(sys_stream src)
 
 // -- Actions
 
+act isValid(sys_stream s) -> bool
+  intrinsic{stream_checkvalid}(s)
+
+act flush(sys_stream s) -> bool
+  intrinsic{stream_flush}(s)
+
 act setOptions(sys_stream s, StreamOptions opts) -> bool
-  s.streamSetOptions(int(opts))
+  intrinsic{stream_setoptions}(s, int(opts))
 
 act unsetOptions(sys_stream s, StreamOptions opts) -> bool
-  s.streamUnsetOptions(int(opts))
+  intrinsic{stream_unsetoptions}(s, int(opts))
 
-act write(sys_stream s, string str) -> bool
-  s.streamWrite(str)
+// -- Reading actions
 
-act write(sys_stream s, char c) -> bool
-  s.streamWrite(c)
+act read(sys_stream s, int maxChars) -> string
+  intrinsic{stream_read_string}(s, maxChars)
+
+act read(sys_stream s) -> char
+  intrinsic{stream_read_char}(s)
 
 act readToEnd(sys_stream s) -> string
   invoke(
     impure lambda (string result)
-      read = s.streamRead(512);
+      read = s.read(512);
       if read.length() > 0  -> self(result + read)
       else                  -> result
     , "")
 
-act readChar(sys_stream s) -> char
-  s.streamRead()
-
 act readLine(sys_stream s) -> string
   invoke(
     impure lambda (string result)
-      c = s.streamRead();
+      c = s.read();
       if c == '\r'              -> self(result)
       if c == '\n' || c == '\0' -> result
       else                      -> self(result + c)
   , "")
-
-act copy(sys_stream from, sys_stream to) -> int
-  bytesCopied = invoke(
-    impure lambda(int bytesCopied)
-      read        = from.streamRead(512);
-      readLength  = read.length();
-      if readLength > 0 -> to.streamWrite(read); self(bytesCopied + readLength)
-      else              -> bytesCopied
-  , 0);
-  to.streamFlush(); bytesCopied
-
-act copyLines(sys_stream from, sys_stream to) -> int
-  invoke(impure lambda (StreamReadState state, int lines)
-  (
-    res = state.readLine();
-    if res.second.reachedEnd  -> lines
-    else                      ->
-      to.write(res.first);
-      to.write('\n');
-      to.streamFlush();
-      self(res.second, ++lines)
-  ), StreamReadState(from), 0)
 
 act readLine(StreamReadState state) -> Pair{string, StreamReadState}
   state.readUntil("\n" :: "\r\n")
@@ -91,7 +74,38 @@ act readUntil(StreamReadState state, List{string} patterns) -> Pair{string, Stre
         remTxt      = txt[idx + p.second.length(), txt.length()];
         Pair(matchedTxt, StreamReadState(remTxt, false, state.src))
       else        ->
-        read = state.src.streamRead(512);
+        read = state.src.read(512);
         if read.isEmpty() -> Pair("", StreamReadState(txt, true, state.src))
         else              -> self(txt + read)
   , state.txt)
+
+
+// -- Writing actions
+
+act write(sys_stream s, string str) -> bool
+  intrinsic{stream_write_string}(s, str)
+
+act write(sys_stream s, char c) -> bool
+  intrinsic{stream_write_char}(s, c)
+
+act copy(sys_stream from, sys_stream to) -> int
+  bytesCopied = invoke(
+    impure lambda(int bytesCopied)
+      read        = from.read(512);
+      readLength  = read.length();
+      if readLength > 0 -> to.write(read); self(bytesCopied + readLength)
+      else              -> bytesCopied
+  , 0);
+  to.flush(); bytesCopied
+
+act copyLines(sys_stream from, sys_stream to) -> int
+  invoke(impure lambda (StreamReadState state, int lines)
+  (
+    res = state.readLine();
+    if res.second.reachedEnd  -> lines
+    else                      ->
+      to.write(res.first);
+      to.write('\n');
+      to.flush();
+      self(res.second, ++lines)
+  ), StreamReadState(from), 0)

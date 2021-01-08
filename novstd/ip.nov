@@ -142,11 +142,11 @@ fun ipBinWriter() -> Writer{IpAddress}
 // -- Actions
 
 act ipLookupV4Address(string hostname) -> Either{IpV4Address, Error}
-  ipV4BinParser().run(ipLookupAddress(hostname, IpFamily.V4.int()))
+  ipV4BinParser().run(intrinsic{ip_lookupaddress}(hostname, IpFamily.V4.int()))
   !! Error("Failed to lookup ipv4 address for hostname: '" + hostname + "'")
 
 act ipLookupV6Address(string hostname) -> Either{IpV6Address, Error}
-  ipV6BinParser().run(ipLookupAddress(hostname, IpFamily.V6.int()))
+  ipV6BinParser().run(intrinsic{ip_lookupaddress}(hostname, IpFamily.V6.int()))
   !! Error("Failed to lookup ipv6 address for hostname: '" + hostname + "'")
 
 act ipLookupAddress(string hostname) -> Either{IpAddress, Error}

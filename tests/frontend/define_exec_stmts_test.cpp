@@ -30,7 +30,9 @@ TEST_CASE("Analyzing execute statements", "[frontend]") {
 
   SECTION("Define exec statement with conversion") {
     const auto& output = ANALYZE("enum ConsoleKind = StdIn, StdOut, StdErr "
-                                 "consoleOpenStream(ConsoleKind.StdOut)");
+                                 "act openConsole(int i) -> sys_stream "
+                                 "  intrinsic{console_openstream}(i)"
+                                 "openConsole(ConsoleKind.StdOut)");
     REQUIRE(output.isSuccess());
 
     auto execsBegin     = output.getProg().beginExecStmts();
@@ -44,7 +46,7 @@ TEST_CASE("Analyzing execute statements", "[frontend]") {
         prog::expr::litEnumNode(output.getProg(), GET_TYPE_ID(output, "ConsoleKind"), "StdOut")));
     auto callExpr = prog::expr::callExprNode(
         output.getProg(),
-        GET_FUNC_ID(output, "consoleOpenStream", GET_TYPE_ID(output, "int")),
+        GET_FUNC_ID(output, "openConsole", GET_TYPE_ID(output, "int")),
         std::move(args));
 
     CHECK(execsBegin->getExpr() == *callExpr);
