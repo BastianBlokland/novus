@@ -264,11 +264,11 @@ fun unixTimeParser()
 // -- Actions
 
 // Get a DateTime from the current system clock.
-act timeNow() DateTime(clockMicroSinceEpoch())
+act timeNow() DateTime(intrinsic{clock_microsinceepoch}())
 
 // Get a timestamp based on the process steady clock, guaranteed to go forward
 // (even if system clock changes) and is more precise then 'timeNow()'.
-act timestamp() Timestamp(clockNanoSteady())
+act timestamp() Timestamp(intrinsic{clock_nanosteady}())
 
 // -- Wrappers
 // User friendly wrappers around build-in actions.

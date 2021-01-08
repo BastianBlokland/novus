@@ -370,10 +370,10 @@ Program::Program() :
   m_funcDecls.registerAction(
       *this, Fk::ActionInteruptResetReq, "interuptResetRequested", sym::TypeSet{}, m_bool);
 
-  m_funcDecls.registerAction(
-      *this, Fk::ActionClockMicroSinceEpoch, "clockMicroSinceEpoch", sym::TypeSet{}, m_long);
-  m_funcDecls.registerAction(
-      *this, Fk::ActionClockNanoSteady, "clockNanoSteady", sym::TypeSet{}, m_long);
+  m_funcDecls.registerIntrinsicAction(
+      *this, Fk::ActionClockMicroSinceEpoch, "clock_microsinceepoch", sym::TypeSet{}, m_long);
+  m_funcDecls.registerIntrinsicAction(
+      *this, Fk::ActionClockNanoSteady, "clock_nanosteady", sym::TypeSet{}, m_long);
 
   m_funcDecls.registerAction(
       *this, Fk::ActionVersionRt, "runtimeVersionString", sym::TypeSet{}, m_string);
