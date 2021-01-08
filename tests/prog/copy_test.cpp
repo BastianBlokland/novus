@@ -45,11 +45,12 @@ TEST_CASE("Copy", "[prog]") {
     REQUIRE(!copyType(progA, &progB, progA.getInt()));
   }
 
-  SECTION("Fail to copy build-in function") {
-    auto progA = Program{};
-    auto progB = Program{};
-    REQUIRE(!copyFunc(
-        progA, &progB, *progA.lookupFunc("clockNanoSteady", sym::TypeSet{}, OvOptions{})));
+  SECTION("Fail to copy intrinsic") {
+    auto progA     = Program{};
+    auto progB     = Program{};
+    auto intrinsic = progA.lookupIntrinsic("clock_nanosteady", sym::TypeSet{}, OvOptions{});
+    REQUIRE(intrinsic);
+    REQUIRE(!copyFunc(progA, &progB, *intrinsic));
   }
 }
 
