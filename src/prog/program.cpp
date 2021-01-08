@@ -359,12 +359,12 @@ Program::Program() :
   m_funcDecls.registerIntrinsicAction(
       *this, Fk::ActionTermGetHeight, "term_getheight", sym::TypeSet{}, m_int);
 
-  m_funcDecls.registerAction(
-      *this, Fk::ActionEnvGetArg, "envGetArg", sym::TypeSet{m_int}, m_string);
-  m_funcDecls.registerAction(
-      *this, Fk::ActionEnvGetArgCount, "envGetArgCount", sym::TypeSet{}, m_int);
-  m_funcDecls.registerAction(
-      *this, Fk::ActionEnvGetVar, "envGetVar", sym::TypeSet{m_string}, m_string);
+  m_funcDecls.registerIntrinsicAction(
+      *this, Fk::ActionEnvGetArg, "env_argument", sym::TypeSet{m_int}, m_string);
+  m_funcDecls.registerIntrinsicAction(
+      *this, Fk::ActionEnvGetArgCount, "env_argument_count", sym::TypeSet{}, m_int);
+  m_funcDecls.registerIntrinsicAction(
+      *this, Fk::ActionEnvGetVar, "env_variable", sym::TypeSet{m_string}, m_string);
 
   m_funcDecls.registerIntrinsicAction(
       *this, Fk::ActionInteruptIsReq, "interupt_isrequested", sym::TypeSet{}, m_bool);

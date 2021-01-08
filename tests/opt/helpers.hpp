@@ -30,6 +30,11 @@ inline auto buildSource(std::string input) {
 #define GET_FUNC_ID(PROG, FUNCNAME, ...)                                                           \
   PROG.lookupFunc(FUNCNAME, prog::sym::TypeSet{__VA_ARGS__}, prog::sym::OverloadOptions{0}).value()
 
+#define GET_INTRINSIC_ID(PROG, INTRINSIC_NAME, ...)                                                \
+  PROG.lookupIntrinsic(                                                                            \
+          INTRINSIC_NAME, prog::sym::TypeSet{__VA_ARGS__}, prog::sym::OverloadOptions{0})          \
+      .value()
+
 #define GET_FUNC_DECL(PROG, FUNCNAME, ...)                                                         \
   PROG.getFuncDecl(GET_FUNC_ID(PROG, FUNCNAME, __VA_ARGS__))
 
