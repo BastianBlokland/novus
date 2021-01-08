@@ -54,23 +54,26 @@ act run(string prog, List{string} args) -> Process
   run(toCmdLine(prog, args))
 
 act run(string cmdLine) -> Process
-  handle = processStart(cmdLine);
+  handle = intrinsic{process_start}(cmdLine);
   Process(
     cmdLine,
     handle,
-    ProcessId(processGetId(handle)),
-    processOpenStream(handle, 0),
-    processOpenStream(handle, 1),
-    processOpenStream(handle, 2))
+    ProcessId(intrinsic{process_getid}(handle)),
+    intrinsic{process_openstream}(handle, 0),
+    intrinsic{process_openstream}(handle, 1),
+    intrinsic{process_openstream}(handle, 2))
 
-act sendInterupt(Process p)         processSendSignal(p.handle, Signal.Interupt)
-act sendSignal(Process p, Signal s) processSendSignal(p.handle, s)
+act sendInterupt(Process p) -> bool
+  p.sendSignal(Signal.Interupt)
+
+act sendSignal(Process p, Signal s) -> bool
+  intrinsic{process_sendsignal}(p.handle, int(s))
 
 act wait(Process p) -> ProcessResult
   ProcessResult(
     p.stdOut.readToEnd(),
     p.stdErr.readToEnd(),
-    ExitCode(processBlock(p.handle)))
+    ExitCode(intrinsic{process_block}(p.handle)))
 
 act waitAsync(Process p) -> future{ProcessResult}
   fork p.wait()

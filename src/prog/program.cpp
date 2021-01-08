@@ -300,22 +300,22 @@ Program::Program() :
       sym::TypeSet{m_stream, m_int},
       m_bool);
 
-  m_funcDecls.registerAction(
-      *this, Fk::ActionProcessStart, "processStart", sym::TypeSet{m_string}, m_process);
-  m_funcDecls.registerAction(
-      *this, Fk::ActionProcessBlock, "processBlock", sym::TypeSet{m_process}, m_int);
-  m_funcDecls.registerAction(
+  m_funcDecls.registerIntrinsicAction(
+      *this, Fk::ActionProcessStart, "process_start", sym::TypeSet{m_string}, m_process);
+  m_funcDecls.registerIntrinsicAction(
+      *this, Fk::ActionProcessBlock, "process_block", sym::TypeSet{m_process}, m_int);
+  m_funcDecls.registerIntrinsicAction(
       *this,
       Fk::ActionProcessOpenStream,
-      "processOpenStream",
+      "process_openstream",
       sym::TypeSet{m_process, m_int},
       m_stream);
-  m_funcDecls.registerAction(
-      *this, Fk::ActionProcessGetId, "processGetId", sym::TypeSet{m_process}, m_long);
-  m_funcDecls.registerAction(
+  m_funcDecls.registerIntrinsicAction(
+      *this, Fk::ActionProcessGetId, "process_getid", sym::TypeSet{m_process}, m_long);
+  m_funcDecls.registerIntrinsicAction(
       *this,
       Fk::ActionProcessSendSignal,
-      "processSendSignal",
+      "process_sendsignal",
       sym::TypeSet{m_process, m_int},
       m_bool);
 
