@@ -6,7 +6,7 @@
 
 namespace parse {
 
-TEST_CASE("Parsing index expressions", "[parse]") {
+TEST_CASE("[parse] Parsing index expressions", "parse") {
 
   CHECK_EXPR("a[1]", indexExprNode(ID_EXPR("a"), OSQUARE, NODES(INT(1)), COMMAS(0), CSQUARE));
   CHECK_EXPR(

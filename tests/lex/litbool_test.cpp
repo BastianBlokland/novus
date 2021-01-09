@@ -3,7 +3,7 @@
 
 namespace lex {
 
-TEST_CASE("Lexing boolean literals", "[lex]") {
+TEST_CASE("[lex] Lexing boolean literals", "lex") {
 
   SECTION("Single values") {
     CHECK_TOKENS("true", litBoolToken(true));

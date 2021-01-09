@@ -3,7 +3,7 @@
 
 namespace backend {
 
-TEST_CASE("Generating assembly for enums", "[backend]") {
+TEST_CASE("[backend] Generate assembly for enums", "backend") {
 
   SECTION("Create and convert to int") {
     CHECK_PROG(

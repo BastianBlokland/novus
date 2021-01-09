@@ -6,7 +6,7 @@
 
 namespace frontend {
 
-TEST_CASE("Analyzing user-function definitions", "[frontend]") {
+TEST_CASE("[frontend] Analyzing user-function definitions", "frontend") {
 
   SECTION("Define basic function") {
     const auto& output = ANALYZE("fun f(int a) -> int 42");

@@ -16,7 +16,7 @@ auto nestedInvalidParenExpr(int depth, parse::NodePtr node) -> parse::NodePtr {
 
 namespace parse {
 
-TEST_CASE("Parsing miscellaneous expressions", "[parse]") {
+TEST_CASE("[parse] Parsing miscellaneous expressions", "parse") {
 
   SECTION("Max recursion depth") {
     CHECK_EXPR(

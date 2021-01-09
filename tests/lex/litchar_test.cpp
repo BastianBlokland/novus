@@ -4,7 +4,7 @@
 
 namespace lex {
 
-TEST_CASE("Lexing character literals", "[lex]") {
+TEST_CASE("[lex] Lexing character literals", "lex") {
 
   SECTION("Single values") {
     CHECK_TOKENS("'a'", litCharToken('a'));

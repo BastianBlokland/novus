@@ -4,8 +4,9 @@
 set(stdHeader ${EXECUTABLE_OUTPUT_PATH}/std.nov)
 
 function(add_nov_test filePath)
-  get_filename_component(testName ${filePath} NAME)
-  add_test(test_novstd_${testName} ${EXECUTABLE_OUTPUT_PATH}/nove ${filePath})
+  get_filename_component(fileName ${filePath} NAME)
+  set(testName "[novstd]\\ ${fileName}")
+  add_test("${testName}" ${EXECUTABLE_OUTPUT_PATH}/nove ${filePath})
 endfunction(add_nov_test)
 
 function(configure_novstd_file file)

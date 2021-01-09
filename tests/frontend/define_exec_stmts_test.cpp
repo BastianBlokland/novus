@@ -8,7 +8,7 @@
 
 namespace frontend {
 
-TEST_CASE("Analyzing execute statements", "[frontend]") {
+TEST_CASE("[frontend] Analyzing execute statements", "frontend") {
 
   SECTION("Define exec statement") {
     const auto& output = ANALYZE("assert(true, \"hello world\")");

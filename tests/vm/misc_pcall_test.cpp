@@ -6,7 +6,7 @@
 
 namespace vm {
 
-TEST_CASE("Execute miscellaneous pcalls", "[vm]") {
+TEST_CASE("[vm] Execute miscellaneous pcalls", "vm") {
 
   SECTION("Endianness") {
     /* This test is left for the first person to try to run this on a big-endian machine :)

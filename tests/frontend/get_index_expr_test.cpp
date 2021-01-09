@@ -7,7 +7,7 @@
 
 namespace frontend {
 
-TEST_CASE("Analyzing index expressions", "[frontend]") {
+TEST_CASE("[frontend] Analyzing index expressions", "frontend") {
 
   SECTION("Get single argument index operator") {
     const auto& output = ANALYZE("struct Pair = int a, int b "

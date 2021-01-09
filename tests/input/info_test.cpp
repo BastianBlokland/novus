@@ -5,7 +5,7 @@
 
 namespace input {
 
-TEST_CASE("Input info", "[input]") {
+TEST_CASE("[input] Input info", "input") {
 
   SECTION("Find text pos (lf)") {
     const auto input = std::string{"Hello\nBeautifull\nworld"};

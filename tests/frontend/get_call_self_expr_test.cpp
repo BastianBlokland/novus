@@ -8,7 +8,7 @@
 
 namespace frontend {
 
-TEST_CASE("Analyzing self call expressions", "[frontend]") {
+TEST_CASE("[frontend] Analyzing self call expressions", "frontend") {
 
   SECTION("Get basic self call") {
     const auto& output = ANALYZE("fun f() false ? self() : 1 ");

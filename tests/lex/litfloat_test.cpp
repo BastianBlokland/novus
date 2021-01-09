@@ -4,7 +4,7 @@
 
 namespace lex {
 
-TEST_CASE("Lexing float literals", "[lex]") {
+TEST_CASE("[lex] Lexing float literals", "lex") {
 
   SECTION("Single values") {
     CHECK_TOKENS("0.0", litFloatToken(.0F));

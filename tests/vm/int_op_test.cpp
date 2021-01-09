@@ -4,7 +4,7 @@
 
 namespace vm {
 
-TEST_CASE("Execute integer operations", "[vm]") {
+TEST_CASE("[vm] Execute integer operations", "vm") {
 
   SECTION("Add") {
     CHECK_EXPR(

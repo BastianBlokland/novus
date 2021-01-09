@@ -3,7 +3,7 @@
 
 namespace vm {
 
-TEST_CASE("Execute forks", "[vm]") {
+TEST_CASE("[vm] Execute forks", "vm") {
 
   SECTION("Waiting for fork results") {
     CHECK_PROG(

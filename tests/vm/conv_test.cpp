@@ -3,7 +3,7 @@
 
 namespace vm {
 
-TEST_CASE("Execute conversions", "[vm]") {
+TEST_CASE("[vm] Execute conversions", "vm") {
 
   SECTION("Int to Float") {
     CHECK_EXPR(

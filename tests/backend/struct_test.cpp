@@ -3,7 +3,7 @@
 
 namespace backend {
 
-TEST_CASE("Generating assembly for structs", "[backend]") {
+TEST_CASE("[backend] Generate assembly for structs", "backend") {
 
   SECTION("Normal struct") {
     CHECK_PROG(

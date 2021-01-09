@@ -14,7 +14,7 @@
 
 namespace frontend {
 
-TEST_CASE("Analyzing switch expressions", "[frontend]") {
+TEST_CASE("[frontend] Analyzing switch expressions", "frontend") {
 
   SECTION("Get basic switch expression") {
     const auto& output = ANALYZE("fun f() -> int "

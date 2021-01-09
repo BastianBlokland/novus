@@ -4,7 +4,7 @@
 
 namespace input {
 
-TEST_CASE("Input span utilities", "[input]") {
+TEST_CASE("[input] Input span utilities", "input") {
 
   SECTION("Combine spans") {
     // NOLINTNEXTLINE: Magic numbers

@@ -3,7 +3,7 @@
 
 namespace vm {
 
-TEST_CASE("Execute instruction pointer checks", "[vm]") {
+TEST_CASE("[vm] Execute instruction pointer checks", "vm") {
 
   SECTION("Equal") {
     CHECK_EXPR(

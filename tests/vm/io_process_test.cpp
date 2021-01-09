@@ -38,7 +38,7 @@ namespace vm {
     (ASMB)->addPCall(novasm::PCallCode::StreamReadString);                                         \
   }
 
-TEST_CASE("Execute process platform-calls", "[vm]") {
+TEST_CASE("[vm] Execute process platform-calls", "vm") {
 
   auto novePath = (input::getExecutablePath().parent_path() / "nove").string();
 

@@ -3,7 +3,7 @@
 
 namespace backend {
 
-TEST_CASE("Generating assembly for group expressions", "[backend]") {
+TEST_CASE("[backend] Generate assembly for group expressions", "backend") {
 
   CHECK_EXPR("x = 42; x", [](novasm::Assembler* asmb) -> void {
     asmb->addStackAlloc(1);

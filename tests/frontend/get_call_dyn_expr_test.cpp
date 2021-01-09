@@ -10,7 +10,7 @@
 
 namespace frontend {
 
-TEST_CASE("Analyzing call dynamic expressions", "[frontend]") {
+TEST_CASE("[frontend] Analyzing call dynamic expressions", "frontend") {
 
   SECTION("Get delegate call without args") {
     const auto& output = ANALYZE("fun f1() -> int 1 "

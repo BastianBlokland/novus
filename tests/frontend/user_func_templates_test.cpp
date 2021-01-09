@@ -9,7 +9,7 @@
 
 namespace frontend {
 
-TEST_CASE("Analyzing user-function templates", "[frontend]") {
+TEST_CASE("[frontend] Analyzing user-function templates", "frontend") {
 
   SECTION("Recursive templated call") {
     const auto& output = ANALYZE("fun ft{T}(T a) -> T a != 0 ? ft{T}(a) : a "

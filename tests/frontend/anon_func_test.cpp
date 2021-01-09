@@ -9,7 +9,7 @@
 
 namespace frontend {
 
-TEST_CASE("Analyzing anonymous functions", "[frontend]") {
+TEST_CASE("[frontend] Analyzing anonymous functions", "frontend") {
 
   SECTION("Return anonymous function") {
     const auto& output = ANALYZE("fun f() -> function{int} "

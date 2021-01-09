@@ -6,7 +6,7 @@
 
 namespace parse {
 
-TEST_CASE("Parsing intrinsic expressions", "[parse]") {
+TEST_CASE("[parse] Parsing intrinsic expressions", "parse") {
 
   CHECK_EXPR("intrinsic{test}", intrinsicExprNode(INTRINSIC, OCURLY, ID("test"), CCURLY));
   CHECK_EXPR("intrinsic {test}", intrinsicExprNode(INTRINSIC, OCURLY, ID("test"), CCURLY));

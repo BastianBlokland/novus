@@ -29,9 +29,10 @@ hasCommand()
 testProj()
 {
   local dir="${1}"
-  local coverageExecutable="${2}"
-  local coverageIgnoreRegex="${3}"
-  local coverageReportPath="${4}"
+  local filter="${2}"
+  local coverageExecutable="${3}"
+  local coverageIgnoreRegex="${4}"
+  local coverageReportPath="${5}"
   local rawCoverageDir="$(pwd)/${dir}/tests/test_rawcoverage/"
   local indexedCoveragePath="$(pwd)/${dir}/tests/test_coverage.profdata"
 
@@ -46,17 +47,20 @@ testProj()
   # Verify that make is present on path.
   hasCommand ctest || fail "'ctest' not found on path, it is required"
 
-  info "Begin testing using ctest"
+  info "Begin testing using ctest (filter: ${filter})"
 
   # Remove previous coverage outputs (if they exist)
   rm -rf "${coverageReportPath}" "${rawCoverageDir}" "${indexedCoveragePath}"
 
   # Run all tests using ctest.
-  (cd "${dir}" && LLVM_PROFILE_FILE="${rawCoverageDir}/%p.profraw" ctest --output-on-failure)
+  (
+    cd "${dir}" && LLVM_PROFILE_FILE="${rawCoverageDir}/%p.profraw" \
+    ctest --tests-regex "${filter}" --output-on-failure
+  )
 
   info "Successfully finished testing"
 
-  if test -d ${rawCoverageDir}
+  if test -d "${rawCoverageDir}"
   then
     info "Found raw coverage data, indexing..."
     hasCommand llvm-profdata || fail "'llvm-profdata' not found on path, it is required to create coverage data"
@@ -77,6 +81,7 @@ printUsage()
   echo "Options:"
   echo "-h,--help               Print this usage information"
   echo "-d,--dir                Build directory, default: 'build'"
+  echo "-f,--filter             Regex pattern to select the tests to run, default: '.+'"
   echo "--coverage-executable   Path to exeutable to collect coverage for, default: 'bin/novtests'"
   echo "--coverage-ignore-regex Skip coverage for files that match this regex, default: 'tests/'"
   echo "--coverage-report-path  Output path for the coverage file, default: 'test_coverage.lcov'"
@@ -84,6 +89,7 @@ printUsage()
 
 # Defaults.
 buildDir="build"
+filter=".+"
 coverageExecutable="bin/novtests"
 coverageIgnoreRegex="tests/"
 coverageReportPath="test_coverage.lcov"
@@ -99,6 +105,10 @@ do
       ;;
     -d|--dir)
       buildDir="${2}"
+      shift 2
+      ;;
+    -f|--filter)
+      filter="${2}"
       shift 2
       ;;
     --coverage-executable)
@@ -121,5 +131,9 @@ do
   esac
 done
 
-testProj "${buildDir}" "${coverageExecutable}" "${coverageIgnoreRegex}" "${coverageReportPath}"
+testProj "${buildDir}" \
+         "${filter}" \
+         "${coverageExecutable}" \
+         "${coverageIgnoreRegex}" \
+         "${coverageReportPath}"
 exit 0

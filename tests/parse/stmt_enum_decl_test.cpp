@@ -6,7 +6,7 @@
 
 namespace parse {
 
-TEST_CASE("Parsing enum declaration statements", "[parse]") {
+TEST_CASE("[parse] Parsing enum declaration statements", "parse") {
 
   CHECK_STMT(
       "enum e = a",
@@ -78,8 +78,8 @@ TEST_CASE("Parsing enum declaration statements", "[parse]") {
           ENUM,
           ID("e"),
           EQ,
-          {EnumDeclStmtNode::EntrySpec{ID("a"),
-                                       EnumDeclStmtNode::ValueSpec{COLON, MINUS, INT_TOK(1)}},
+          {EnumDeclStmtNode::EntrySpec{
+               ID("a"), EnumDeclStmtNode::ValueSpec{COLON, MINUS, INT_TOK(1)}},
            EnumDeclStmtNode::EntrySpec{ID("b"), std::nullopt}},
           COMMAS(1)));
   CHECK_STMT(
@@ -88,10 +88,10 @@ TEST_CASE("Parsing enum declaration statements", "[parse]") {
           ENUM,
           ID("e"),
           EQ,
-          {EnumDeclStmtNode::EntrySpec{ID("a"),
-                                       EnumDeclStmtNode::ValueSpec{COLON, MINUS, INT_TOK(1)}},
-           EnumDeclStmtNode::EntrySpec{ID("b"),
-                                       EnumDeclStmtNode::ValueSpec{COLON, MINUS, INT_TOK(999)}}},
+          {EnumDeclStmtNode::EntrySpec{
+               ID("a"), EnumDeclStmtNode::ValueSpec{COLON, MINUS, INT_TOK(1)}},
+           EnumDeclStmtNode::EntrySpec{
+               ID("b"), EnumDeclStmtNode::ValueSpec{COLON, MINUS, INT_TOK(999)}}},
           COMMAS(1)));
 
   SECTION("Errors") {
@@ -108,8 +108,8 @@ TEST_CASE("Parsing enum declaration statements", "[parse]") {
             ENUM,
             ID("e"),
             EQ,
-            {EnumDeclStmtNode::EntrySpec{ID("a"),
-                                         EnumDeclStmtNode::ValueSpec{COLON, std::nullopt, END}}},
+            {EnumDeclStmtNode::EntrySpec{
+                ID("a"), EnumDeclStmtNode::ValueSpec{COLON, std::nullopt, END}}},
             COMMAS(0)));
     CHECK_STMT(
         "enum e = a : 1, b :",
@@ -119,8 +119,8 @@ TEST_CASE("Parsing enum declaration statements", "[parse]") {
             EQ,
             {EnumDeclStmtNode::EntrySpec{
                  ID("a"), EnumDeclStmtNode::ValueSpec{COLON, std::nullopt, INT_TOK(1)}},
-             EnumDeclStmtNode::EntrySpec{ID("b"),
-                                         EnumDeclStmtNode::ValueSpec{COLON, std::nullopt, END}}},
+             EnumDeclStmtNode::EntrySpec{
+                 ID("b"), EnumDeclStmtNode::ValueSpec{COLON, std::nullopt, END}}},
             COMMAS(1)));
   }
 

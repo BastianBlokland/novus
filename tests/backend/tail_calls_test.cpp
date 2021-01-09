@@ -3,7 +3,7 @@
 
 namespace backend {
 
-TEST_CASE("Generate assembly for tail calls", "[backend]") {
+TEST_CASE("[backend] Generate assembly for tail calls", "backend") {
 
   SECTION("Tail recursion") {
     CHECK_PROG(

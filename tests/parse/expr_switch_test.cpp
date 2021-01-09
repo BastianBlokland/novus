@@ -9,7 +9,7 @@
 
 namespace parse {
 
-TEST_CASE("Parsing switch expressions", "[parse]") {
+TEST_CASE("[parse] Parsing switch expressions", "parse") {
 
   CHECK_EXPR(
       "if x -> 1 "

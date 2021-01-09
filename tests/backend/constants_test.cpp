@@ -3,7 +3,7 @@
 
 namespace backend {
 
-TEST_CASE("Generate assembly for storing and loading constants", "[backend]") {
+TEST_CASE("[backend] Generate assembly for storing and loading constants", "backend") {
 
   CHECK_EXPR("x = 42; x", [](novasm::Assembler* asmb) -> void {
     asmb->addStackAlloc(1);

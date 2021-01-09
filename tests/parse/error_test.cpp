@@ -5,7 +5,7 @@
 
 namespace parse {
 
-TEST_CASE("Parsing errors", "[parse]") {
+TEST_CASE("[parse] Parsing errors", "parse") {
 
   CHECK_EXPR("123a", errLexError(lex::errLitNumberInvalidChar()));
   CHECK_EXPR("123a.", errLexError(lex::errLitNumberInvalidChar()));

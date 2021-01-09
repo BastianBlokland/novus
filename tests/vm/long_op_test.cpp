@@ -4,7 +4,7 @@
 
 namespace vm {
 
-TEST_CASE("Execute long operations", "[vm]") {
+TEST_CASE("[vm] Execute long operations", "vm") {
 
   SECTION("Add") {
     CHECK_EXPR(

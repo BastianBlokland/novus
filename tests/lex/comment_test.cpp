@@ -4,7 +4,7 @@
 
 namespace lex {
 
-TEST_CASE("Lexing comments", "[lex]") {
+TEST_CASE("[lex] Lexing comments", "lex") {
 
   SECTION("Valid") {
     CHECK_TOKENS("//hello world", lineCommentToken("hello world"));

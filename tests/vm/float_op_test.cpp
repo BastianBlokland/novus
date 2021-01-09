@@ -3,7 +3,7 @@
 
 namespace vm {
 
-TEST_CASE("Execute float operations", "[vm]") {
+TEST_CASE("[vm] Execute float operations", "vm") {
 
   SECTION("Add") {
     CHECK_EXPR(

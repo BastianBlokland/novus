@@ -6,7 +6,7 @@
 
 namespace opt {
 
-TEST_CASE("Treeshake", "[opt]") {
+TEST_CASE("[opt] Treeshake", "opt") {
 
   SECTION("Unused func") {
     auto prog   = prog::Program{};

@@ -5,7 +5,7 @@
 
 namespace vm {
 
-TEST_CASE("Execute tcp platform-calls", "[vm]") {
+TEST_CASE("[vm] Execute tcp platform-calls", "vm") {
 
   auto loopbackAddrIpV4 = std::string{127, 0, 0, 1};
   auto loopbackAddrIpV6 = std::string{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1};

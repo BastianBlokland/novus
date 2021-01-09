@@ -7,7 +7,7 @@
 
 namespace opt {
 
-TEST_CASE("Call inline", "[opt]") {
+TEST_CASE("[opt] Call inline", "opt") {
 
   SECTION("Inline basic call") {
 

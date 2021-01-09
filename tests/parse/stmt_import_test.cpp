@@ -5,7 +5,7 @@
 
 namespace parse {
 
-TEST_CASE("Parsing import statements", "[parse]") {
+TEST_CASE("[parse] Parsing import statements", "parse") {
 
   CHECK_STMT("import \"test.nov\"", importStmtNode(IMPORT, STR_TOK("test.nov")));
   CHECK_STMT("import \"std/test.nov\"", importStmtNode(IMPORT, STR_TOK("std/test.nov")));

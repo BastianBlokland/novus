@@ -7,10 +7,14 @@
 .PARAMETER Dir
   Default: build
   Build directory.
+.PARAMETER Filter
+  Default: '.+'
+  Regex pattern to select the tests to run.
 #>
 [cmdletbinding()]
 param(
-  [string]$Dir = "build"
+  [string]$Dir = "build",
+  [string]$Filter = ".+"
 )
 
 Set-StrictMode -Version Latest
@@ -49,10 +53,10 @@ function TestProj([string] $dir) {
     Fail "'ctest.exe' not found on path, please install cmake (https://cmake.org)"
   }
 
-  PInfo "Begin testing using ctest"
+  PInfo "Begin testing using ctest (filter: ${filter})"
 
   Push-Location "$dir"
-  & ctest.exe --output-on-failure
+  & ctest.exe --tests-regex "$filter" --output-on-failure
   $ctestResult = $LASTEXITCODE
   Pop-Location
 

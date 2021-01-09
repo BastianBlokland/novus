@@ -4,7 +4,7 @@
 
 namespace opt {
 
-TEST_CASE("Optimization synergy", "[opt]") {
+TEST_CASE("[opt] Optimization synergy", "opt") {
 
   SECTION("Dynamic calls to function literals are inlined") {
 

@@ -5,7 +5,7 @@
 
 namespace parse {
 
-TEST_CASE("Parsing struct declaration statements", "[parse]") {
+TEST_CASE("[parse] Parsing struct declaration statements", "parse") {
 
   CHECK_STMT(
       "struct s = int a",

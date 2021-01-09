@@ -5,7 +5,7 @@
 
 namespace parse {
 
-TEST_CASE("Parsing comments", "[parse]") {
+TEST_CASE("[parse] Parsing comments", "parse") {
 
   CHECK_STMT("// Hello world", commentNode(COMMENT(" Hello world")));
   CHECK_STMT(

@@ -3,7 +3,7 @@
 
 namespace lex {
 
-TEST_CASE("Lexing keywords", "[lex]") {
+TEST_CASE("[lex] Lexing keywords", "lex") {
   CHECK_TOKENS("intrinsic", keywordToken(Keyword::Intrinsic));
   CHECK_TOKENS("import", keywordToken(Keyword::Import));
   CHECK_TOKENS("fun", keywordToken(Keyword::Fun));

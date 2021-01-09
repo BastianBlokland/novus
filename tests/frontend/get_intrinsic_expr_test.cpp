@@ -5,7 +5,7 @@
 
 namespace frontend {
 
-TEST_CASE("Analyzing intrinsic expressions", "[frontend]") {
+TEST_CASE("[frontend] Analyzing intrinsic expressions", "frontend") {
 
   SECTION("Call intrinsic expression") {
     const auto& output = ANALYZE("fun f() -> float intrinsic{float_sin}(42.0)");

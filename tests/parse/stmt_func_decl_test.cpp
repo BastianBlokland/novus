@@ -8,7 +8,7 @@
 
 namespace parse {
 
-TEST_CASE("Parsing function declaration statements", "[parse]") {
+TEST_CASE("[parse] Parsing function declaration statements", "parse") {
 
   SECTION("Pure functions") {
     CHECK_STMT(

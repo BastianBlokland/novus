@@ -3,7 +3,7 @@
 
 namespace backend {
 
-TEST_CASE("Generate assembly for call expressions", "[backend]") {
+TEST_CASE("[backend] Generate assembly for call expressions", "backend") {
 
   SECTION("Int operations") {
     CHECK_EXPR("-42", [](novasm::Assembler* asmb) -> void {

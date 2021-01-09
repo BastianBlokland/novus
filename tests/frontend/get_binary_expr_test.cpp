@@ -11,7 +11,7 @@
 
 namespace frontend {
 
-TEST_CASE("Analyzing binary expressions", "[frontend]") {
+TEST_CASE("[frontend] Analyzing binary expressions", "frontend") {
 
   SECTION("Get basic binary expression") {
     const auto& output = ANALYZE("fun f(int a) -> int 1 * a");

@@ -4,7 +4,7 @@
 
 namespace frontend {
 
-TEST_CASE("Analyzing user-type definitions", "[frontend]") {
+TEST_CASE("[frontend] Analyzing user-type definitions", "frontend") {
 
   SECTION("Define struct") {
     const auto& output = ANALYZE("struct s = int a, bool b");

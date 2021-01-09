@@ -5,7 +5,7 @@
 
 namespace parse {
 
-TEST_CASE("Parsing anonymous functions", "[parse]") {
+TEST_CASE("[parse] Parsing anonymous functions", "parse") {
 
   CHECK_EXPR(
       "lambda () 1",

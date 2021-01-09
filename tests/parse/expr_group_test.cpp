@@ -5,7 +5,7 @@
 
 namespace parse {
 
-TEST_CASE("Parsing group expressions", "[parse]") {
+TEST_CASE("[parse] Parsing group expressions", "parse") {
 
   CHECK_EXPR("1;2;3", groupExprNode(NODES(INT(1), INT(2), INT(3)), SEMIS(2)));
   CHECK_EXPR(
