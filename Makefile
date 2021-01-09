@@ -20,6 +20,34 @@ build:
 test: build
 	./scripts/test.sh
 
+.PHONY: test.lex
+test.lex: build
+	./scripts/test.sh --filter "^\[lex\]"
+
+.PHONY: test.parse
+test.parse: build
+	./scripts/test.sh --filter "^\[parse\]"
+
+.PHONY: test.frontend
+test.frontend: build
+	./scripts/test.sh --filter "^\[frontend\]"
+
+.PHONY: test.backend
+test.backend: build
+	./scripts/test.sh --filter "^\[backend\]"
+
+.PHONY: test.opt
+test.opt: build
+	./scripts/test.sh --filter "^\[opt\]"
+
+.PHONY: test.vm
+test.vm: build
+	./scripts/test.sh --filter "^\[vm\]"
+
+.PHONY: test.novstd
+test.novstd: build
+	./scripts/test.sh --filter "^\[novstd\]"
+
 .PHONY: clean
 clean:
 	rm -rf build
