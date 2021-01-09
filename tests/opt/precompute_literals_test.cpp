@@ -7,7 +7,7 @@ namespace opt {
 
 using namespace prog::expr;
 
-TEST_CASE("Precompute literals", "[opt]") {
+TEST_CASE("[opt] Precompute literals", "opt") {
   SECTION("switch expression") {
     ASSERT_EXPR(
         precomputeLiterals,

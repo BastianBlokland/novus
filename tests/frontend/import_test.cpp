@@ -4,7 +4,7 @@
 
 namespace frontend {
 
-TEST_CASE("Analyzing import statements", "[frontend]") {
+TEST_CASE("[frontend] Analyzing import statements", "frontend") {
 
   SECTION("Diagnostics") {
     CHECK_DIAG(

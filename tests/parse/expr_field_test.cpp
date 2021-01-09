@@ -8,7 +8,7 @@
 
 namespace parse {
 
-TEST_CASE("Parsing field expressions", "[parse]") {
+TEST_CASE("[parse] Parsing field expressions", "parse") {
 
   CHECK_EXPR("x.a", fieldExprNode(ID_EXPR("x"), DOT, ID("a")));
   CHECK_EXPR("-x.a", unaryExprNode(MINUS, fieldExprNode(ID_EXPR("x"), DOT, ID("a"))));

@@ -8,7 +8,7 @@
 
 namespace parse {
 
-TEST_CASE("Parsing is / as expressions", "[parse]") {
+TEST_CASE("[parse] Parsing is / as expressions", "parse") {
 
   CHECK_EXPR("x as int i", isExprNode(ID_EXPR("x"), AS, TYPE("int"), ID("i")));
   CHECK_EXPR("x as int _", isExprNode(ID_EXPR("x"), AS, TYPE("int"), DISCARD));

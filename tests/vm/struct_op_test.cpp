@@ -3,7 +3,7 @@
 
 namespace vm {
 
-TEST_CASE("Execute struct operations", "[vm]") {
+TEST_CASE("[vm] Execute struct operations", "vm") {
 
   SECTION("Create struct") {
     CHECK_EXPR(

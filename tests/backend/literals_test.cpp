@@ -3,7 +3,7 @@
 
 namespace backend {
 
-TEST_CASE("Generate assembly for literals", "[backend]") {
+TEST_CASE("[backend] Generate assembly for literals", "backend") {
 
   SECTION("Int literals") {
     CHECK_EXPR("42", [](novasm::Assembler* asmb) -> void { asmb->addLoadLitInt(42); });

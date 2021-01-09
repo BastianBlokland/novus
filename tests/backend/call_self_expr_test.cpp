@@ -3,7 +3,7 @@
 
 namespace backend {
 
-TEST_CASE("Generate assembly for self call expressions", "[backend]") {
+TEST_CASE("[backend] Generate assembly for self call expressions", "backend") {
 
   SECTION("Function") {
     CHECK_PROG("fun f(int i) i < 0 ? self(0) : i ", [](novasm::Assembler* asmb) -> void {

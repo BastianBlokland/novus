@@ -3,7 +3,7 @@
 
 namespace vm {
 
-TEST_CASE("Execute miscellaneous instructions", "[vm]") {
+TEST_CASE("[vm] Execute miscellaneous instructions", "vm") {
 
   SECTION("Dup") {
     CHECK_PROG(

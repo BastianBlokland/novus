@@ -17,7 +17,7 @@ static auto testSerializeAndDeserializeAsm(Assembly a) {
   CHECK(*deserializedAssembly == a);
 }
 
-TEST_CASE("Assembly serialization", "[novasm]") {
+TEST_CASE("[novasm] Assembly serialization", "novasm") {
 
   SECTION("Basic program") {
     testSerializeAndDeserializeAsm(GEN_ASM("act main(int i, float f) -> float"

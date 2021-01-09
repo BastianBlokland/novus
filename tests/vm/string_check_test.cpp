@@ -3,7 +3,7 @@
 
 namespace vm {
 
-TEST_CASE("Execute string checks", "[vm]") {
+TEST_CASE("[vm] Execute string checks", "vm") {
 
   SECTION("Equal") {
     CHECK_EXPR(

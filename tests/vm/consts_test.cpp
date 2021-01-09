@@ -3,7 +3,7 @@
 
 namespace vm {
 
-TEST_CASE("Execute constants", "[vm]") {
+TEST_CASE("[vm] Execute constants", "vm") {
 
   SECTION("Small stack counts") {
     CHECK_EXPR(

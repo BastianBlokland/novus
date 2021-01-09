@@ -4,7 +4,7 @@
 
 namespace frontend {
 
-TEST_CASE("Infer return type of user functions", "[frontend]") {
+TEST_CASE("[frontend] Infer return type of user functions", "frontend") {
 
   SECTION("Int literal") {
     const auto& output = ANALYZE("fun f() 1");

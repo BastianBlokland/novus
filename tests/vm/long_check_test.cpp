@@ -3,7 +3,7 @@
 
 namespace vm {
 
-TEST_CASE("Execute long checks", "[vm]") {
+TEST_CASE("[vm] Execute long checks", "vm") {
 
   SECTION("Equal") {
     CHECK_EXPR(

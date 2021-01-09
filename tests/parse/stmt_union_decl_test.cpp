@@ -5,7 +5,7 @@
 
 namespace parse {
 
-TEST_CASE("Parsing union declaration statements", "[parse]") {
+TEST_CASE("[parse] Parsing union declaration statements", "parse") {
 
   CHECK_STMT(
       "union u = int, float",

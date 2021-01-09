@@ -4,7 +4,7 @@
 
 namespace parse {
 
-TEST_CASE("Parsing unary operators", "[parse]") {
+TEST_CASE("[parse] Parsing unary operators", "parse") {
 
   CHECK_EXPR("-1", unaryExprNode(MINUS, INT(1)));
   CHECK_EXPR("+1", unaryExprNode(PLUS, INT(1)));

@@ -3,7 +3,7 @@
 
 namespace backend {
 
-TEST_CASE("Generating assembly for unions", "[backend]") {
+TEST_CASE("[backend] Generate assembly for unions", "backend") {
 
   SECTION("Normal union") {
     CHECK_PROG(

@@ -4,7 +4,7 @@
 
 namespace parse {
 
-TEST_CASE("Parsing binary operators", "[parse]") {
+TEST_CASE("[parse] Parsing binary operators", "parse") {
 
   CHECK_EXPR("-1 + 2", binaryExprNode(unaryExprNode(MINUS, INT(1)), PLUS, INT(2)));
   CHECK_EXPR("y == false", binaryExprNode(ID_EXPR("y"), EQEQ, BOOL(false)));

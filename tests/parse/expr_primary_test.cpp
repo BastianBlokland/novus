@@ -5,7 +5,7 @@
 
 namespace parse {
 
-TEST_CASE("Parsing primary expressions", "[parse]") {
+TEST_CASE("[parse] Parsing primary expressions", "parse") {
 
   CHECK_EXPR("1 true \"hello world\" 42", INT(1), BOOL(true), STR("hello world"), INT(42));
   CHECK_EXPR("x y z", ID_EXPR("x"), ID_EXPR("y"), ID_EXPR("z"));

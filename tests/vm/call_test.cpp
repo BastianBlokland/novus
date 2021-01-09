@@ -3,7 +3,7 @@
 
 namespace vm {
 
-TEST_CASE("Execute calls", "[vm]") {
+TEST_CASE("[vm] Execute calls", "vm") {
 
   CHECK_PROG(
       [](novasm::Assembler* asmb) -> void {

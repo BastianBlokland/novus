@@ -4,7 +4,7 @@
 
 namespace vm {
 
-TEST_CASE("Runtime errors", "[vm]") {
+TEST_CASE("[vm] Runtime errors", "vm") {
 
   SECTION("Fail") {
     CHECK_EXPR_RESULTCODE(

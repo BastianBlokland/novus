@@ -6,7 +6,7 @@
 
 namespace prog {
 
-TEST_CASE("Copy", "[prog]") {
+TEST_CASE("[prog] Copy", "prog") {
 
   SECTION("Copy type") {
     auto progA         = Program{};

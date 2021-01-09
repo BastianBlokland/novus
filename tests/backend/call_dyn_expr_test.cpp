@@ -4,7 +4,7 @@
 
 namespace backend {
 
-TEST_CASE("Generate assembly for call dynamic expressions", "[backend]") {
+TEST_CASE("[backend] Generate assembly for dynamic call expressions", "backend") {
 
   SECTION("User functions") {
     CHECK_PROG(

@@ -3,7 +3,7 @@
 
 namespace backend {
 
-TEST_CASE("Generate assembly for lazy calls", "[backend]") {
+TEST_CASE("[backend] Generate assembly for lazy calls", "backend") {
 
   SECTION("Lazy call to static function") {
     CHECK_PROG(

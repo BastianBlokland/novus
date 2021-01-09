@@ -4,7 +4,7 @@
 
 namespace vm {
 
-TEST_CASE("Execute input and output", "[vm]") {
+TEST_CASE("[vm] Execute input and output", "vm") {
 
   SECTION("SleepNano") {
     CHECK_PROG(

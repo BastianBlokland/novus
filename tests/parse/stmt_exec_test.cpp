@@ -7,7 +7,7 @@
 
 namespace parse {
 
-TEST_CASE("Parsing execute statements", "[parse]") {
+TEST_CASE("[parse] Parsing execute statements", "parse") {
 
   CHECK_STMT(
       "exec()",

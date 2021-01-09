@@ -5,7 +5,7 @@
 
 namespace frontend {
 
-TEST_CASE("Source representation", "[frontend]") {
+TEST_CASE("[frontend] Source representation", "frontend") {
 
   SECTION("Build") {
     const auto input = std::string{"conWrite(1)\nconWrite(2)"};

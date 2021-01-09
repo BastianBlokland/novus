@@ -4,7 +4,7 @@
 
 namespace parse {
 
-TEST_CASE("Parsing parenthesized expressions", "[parse]") {
+TEST_CASE("[parse] Parsing parenthesized expressions", "parse") {
 
   CHECK_EXPR(
       "-(-1)", unaryExprNode(MINUS, parenExprNode(OPAREN, unaryExprNode(MINUS, INT(1)), CPAREN)));

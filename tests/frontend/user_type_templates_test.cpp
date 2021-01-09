@@ -8,7 +8,7 @@
 
 namespace frontend {
 
-TEST_CASE("Analyzing user-type templates", "[frontend]") {
+TEST_CASE("[frontend] Analyzing user-type templates", "frontend") {
 
   SECTION("Construct templated struct") {
     const auto& output = ANALYZE("struct tuple{T1, T2} = T1 a, T2 b "

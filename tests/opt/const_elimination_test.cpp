@@ -4,7 +4,7 @@
 
 namespace opt {
 
-TEST_CASE("Constants elimination", "[opt]") {
+TEST_CASE("[opt] Constants elimination", "opt") {
 
   SECTION("Eliminate one-time use constants") {
 

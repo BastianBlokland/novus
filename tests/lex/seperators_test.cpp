@@ -3,7 +3,7 @@
 
 namespace lex {
 
-TEST_CASE("Lexing seperators", "[lex]") {
+TEST_CASE("[lex] Lexing seperators", "lex") {
   CHECK_TOKENS("(", basicToken(TokenKind::SepOpenParen));
   CHECK_TOKENS(")", basicToken(TokenKind::SepCloseParen));
   CHECK_TOKENS("{", basicToken(TokenKind::SepOpenCurly));

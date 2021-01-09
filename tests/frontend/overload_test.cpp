@@ -3,7 +3,7 @@
 
 namespace frontend {
 
-TEST_CASE("Analyzing overloads", "[frontend]") {
+TEST_CASE("[frontend] Analyzing overloads", "frontend") {
 
   SECTION("Allow conversion") {
     const auto& output = ANALYZE("fun f1(float a, float b) a + b "

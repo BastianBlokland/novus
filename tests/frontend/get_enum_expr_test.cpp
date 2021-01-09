@@ -5,7 +5,7 @@
 
 namespace frontend {
 
-TEST_CASE("Analyzing enum expressions", "[frontend]") {
+TEST_CASE("[frontend] Analyzing enum expressions", "frontend") {
 
   SECTION("Get enum entry") {
     const auto& output = ANALYZE("enum E = a, b "

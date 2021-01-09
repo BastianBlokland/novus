@@ -6,7 +6,7 @@
 
 namespace parse {
 
-TEST_CASE("Parsing conditional expressions", "[parse]") {
+TEST_CASE("[parse] Parsing conditional expressions", "parse") {
 
   CHECK_EXPR(
       "x ? y : z", conditionalExprNode(ID_EXPR("x"), QMARK, ID_EXPR("y"), COLON, ID_EXPR("z")));

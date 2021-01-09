@@ -7,7 +7,7 @@
 
 namespace frontend {
 
-TEST_CASE("Analyzing user-function declarations", "[frontend]") {
+TEST_CASE("[frontend] Analyzing user-function declarations", "frontend") {
 
   SECTION("Pure functions") {
 

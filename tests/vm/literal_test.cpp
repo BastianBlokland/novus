@@ -3,7 +3,7 @@
 
 namespace vm {
 
-TEST_CASE("Execute literals", "[vm]") {
+TEST_CASE("[vm] Execute literals", "vm") {
 
   SECTION("Integer literals") {
     CHECK_EXPR(

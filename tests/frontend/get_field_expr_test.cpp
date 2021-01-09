@@ -7,7 +7,7 @@
 
 namespace frontend {
 
-TEST_CASE("Analyzing field expressions", "[frontend]") {
+TEST_CASE("[frontend] Analyzing field expressions", "frontend") {
 
   SECTION("Get basic field expression") {
     const auto& output = ANALYZE("struct S = int a, bool b "

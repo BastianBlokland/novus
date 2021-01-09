@@ -9,7 +9,7 @@
 
 namespace frontend {
 
-TEST_CASE("Analyzing 'is' / 'as' expressions", "[frontend]") {
+TEST_CASE("[frontend] Analyzing 'is' / 'as' expressions", "frontend") {
 
   SECTION("Get 'as' expression") {
     const auto& output = ANALYZE("union Val = int, bool "

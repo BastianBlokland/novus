@@ -3,7 +3,7 @@
 
 namespace vm {
 
-TEST_CASE("Execute jump", "[vm]") {
+TEST_CASE("[vm] Execute jump", "vm") {
 
   SECTION("Unconditional Jump") {
     CHECK_EXPR(

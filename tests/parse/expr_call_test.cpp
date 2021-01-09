@@ -8,7 +8,7 @@
 
 namespace parse {
 
-TEST_CASE("Parsing call expressions", "[parse]") {
+TEST_CASE("[parse] Parsing call expressions", "parse") {
 
   CHECK_EXPR("a()", callExprNode({}, ID_EXPR("a"), OPAREN, NODES(), COMMAS(0), CPAREN));
   CHECK_EXPR("1()", callExprNode({}, INT(1), OPAREN, NODES(), COMMAS(0), CPAREN));
