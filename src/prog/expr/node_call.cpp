@@ -90,11 +90,16 @@ auto callExprNode(
       throw std::invalid_argument{"Only user functions can be lazy"};
     }
     if (funcDecl.isAction()) {
-      throw std::invalid_argument{"Lazy calls cannot be made to actions (impure)"};
+      if (!prog.isLazyAction(resultType)) {
+        throw std::invalid_argument{
+            "Lazy call to impure function has to return a lazy-action type"};
+      }
+    } else {
+      if (!prog.isLazy(resultType)) {
+        throw std::invalid_argument{"Lazy call to pure function has to return a lazy type"};
+      }
     }
-    if (!prog.isLazy(resultType)) {
-      throw std::invalid_argument{"Lazy calls have to return a lazy type"};
-    }
+    break;
   case CallMode::Normal:
     break;
   }

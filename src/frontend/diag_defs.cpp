@@ -578,12 +578,6 @@ auto errLazySelfCall(const Source& src, input::Span span) -> Diag {
   return error(src, oss.str(), span);
 }
 
-auto errLazyActionCall(const Source& src, input::Span span) -> Diag {
-  std::ostringstream oss;
-  oss << "Lazy calls cannot be made to (impure) actions";
-  return error(src, oss.str(), span);
-}
-
 auto errSelfCallInNonFunc(const Source& src, input::Span span) -> Diag {
   std::ostringstream oss;
   oss << "Self calls can only be used inside functions or actions";

@@ -73,13 +73,12 @@ auto TypeDefTable::registerFuture(
   registerType(id, FutureDef{id, result});
 }
 
-auto TypeDefTable::registerLazy(const sym::TypeDeclTable& typeTable, sym::TypeId id, TypeId result)
-    -> void {
-
+auto TypeDefTable::registerLazy(
+    const sym::TypeDeclTable& typeTable, sym::TypeId id, TypeId result, bool isAction) -> void {
   if (typeTable[id].getKind() != sym::TypeKind::Lazy) {
-    throw std::invalid_argument{"Type has not been declared as being a lazy type"};
+    throw std::invalid_argument{"Type has not been declared as being a lazy or lazy-action type"};
   }
-  registerType(id, LazyDef{id, result});
+  registerType(id, LazyDef{id, result, isAction});
 }
 
 auto TypeDefTable::registerType(sym::TypeId id, TypeDef def) -> void {

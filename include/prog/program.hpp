@@ -128,6 +128,8 @@ public:
 
   [[nodiscard]] auto isLazy(sym::TypeId id) const -> bool;
 
+  [[nodiscard]] auto isLazyAction(sym::TypeId id) const -> bool;
+
   [[nodiscard]] auto satisfiesOptions(sym::TypeId delegate, OvOptions options) const -> bool;
 
   [[nodiscard]] auto
@@ -162,7 +164,7 @@ public:
       sym::TypeId output,
       const std::vector<sym::TypeId>& aliases) -> void;
   auto defineFuture(sym::TypeId id, sym::TypeId result) -> void;
-  auto defineLazy(sym::TypeId id, sym::TypeId result) -> void;
+  auto defineLazy(sym::TypeId id, sym::TypeId result, bool isAction) -> void;
   auto defineFunc(sym::FuncId id, sym::ConstDeclTable consts, expr::NodePtr expr) -> void;
 
   auto addExecStmt(sym::ConstDeclTable consts, expr::NodePtr expr) -> void;

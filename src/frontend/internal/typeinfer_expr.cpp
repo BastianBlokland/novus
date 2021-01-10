@@ -121,7 +121,9 @@ auto TypeInferExpr::visit(const parse::CallExprNode& n) -> void {
     if (n.isFork()) {
       m_type = asFuture(m_ctx, *convType);
     } else if (n.isLazy()) {
-      m_type = asLazy(m_ctx, *convType);
+      // Contructors and conversions are required to be pure so we know this will be a 'lazy' and
+      // not an 'lazy_action'.
+      m_type = asLazy(m_ctx, *convType, false);
     } else {
       m_type = *convType;
     }
@@ -141,7 +143,9 @@ auto TypeInferExpr::visit(const parse::CallExprNode& n) -> void {
       if (n.isFork()) {
         m_type = asFuture(m_ctx, *retType);
       } else if (n.isLazy()) {
-        m_type = asLazy(m_ctx, *retType);
+        // TODO: infer the type for lazy calls, the problem is that at the moment we don't track if
+        // we are calling a pure or impure function, so we don't know if the type should be 'lazy'
+        // or 'lazy_action".
       } else {
         m_type = *retType;
       }
@@ -155,7 +159,9 @@ auto TypeInferExpr::visit(const parse::CallExprNode& n) -> void {
     if (n.isFork()) {
       m_type = asFuture(m_ctx, result);
     } else if (n.isLazy()) {
-      m_type = asLazy(m_ctx, result);
+      // TODO: infer the type for lazy calls, the problem is that at the moment we don't track if
+      // we are calling a pure or impure function, so we don't know if the type should be 'lazy'
+      // or 'lazy_action".
     } else {
       m_type = result;
     }
@@ -415,7 +421,7 @@ auto TypeInferExpr::inferDynCall(const parse::CallExprNode& n) -> prog::sym::Typ
       return asFuture(m_ctx, result);
     }
     if (n.isLazy()) {
-      return asLazy(m_ctx, result);
+      return asLazy(m_ctx, result, delegateDef.isAction());
     }
     return result;
   }
@@ -432,7 +438,8 @@ auto TypeInferExpr::inferDynCall(const parse::CallExprNode& n) -> prog::sym::Typ
     return asFuture(m_ctx, result);
   }
   if (n.isLazy()) {
-    return asLazy(m_ctx, result);
+    // Operators are required to be pure so we know this will be a 'lazy' and not an 'lazy_action'.
+    return asLazy(m_ctx, result, false);
   }
   return result;
 }

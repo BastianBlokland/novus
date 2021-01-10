@@ -41,11 +41,11 @@ auto CallDynExprNode::getType() const noexcept -> sym::TypeId { return m_resultT
 auto CallDynExprNode::toString() const -> std::string { return "call-dyn"; }
 
 auto CallDynExprNode::clone(Rewriter* rewriter) const -> std::unique_ptr<Node> {
-  return std::unique_ptr<CallDynExprNode>{
-      new CallDynExprNode{rewriter ? rewriter->rewrite(*m_lhs) : m_lhs->clone(nullptr),
-                          m_resultType,
-                          cloneNodes(m_args, rewriter),
-                          m_mode}};
+  return std::unique_ptr<CallDynExprNode>{new CallDynExprNode{
+      rewriter ? rewriter->rewrite(*m_lhs) : m_lhs->clone(nullptr),
+      m_resultType,
+      cloneNodes(m_args, rewriter),
+      m_mode}};
 }
 
 auto CallDynExprNode::getArgs() const noexcept -> const std::vector<NodePtr>& { return m_args; }
@@ -78,6 +78,12 @@ auto callDynExprNode(
     throw std::invalid_argument{"Lhs cannot be null"};
   }
 
+  const auto& typeDecl = prog.getTypeDecl(lhs->getType());
+  if (typeDecl.getKind() != sym::TypeKind::Delegate) {
+    throw std::invalid_argument{"Lhs expr to dyn call has to be a delegate type"};
+  }
+  const auto& delegateDef = std::get<sym::DelegateDef>(prog.getTypeDef(lhs->getType()));
+
   // Validate mode.
   switch (mode) {
   case CallMode::Forked:
@@ -86,8 +92,15 @@ auto callDynExprNode(
     }
     break;
   case CallMode::Lazy:
-    if (!prog.isLazy(resultType)) {
-      throw std::invalid_argument{"Lazy calls have to return a lazy type"};
+    if (delegateDef.isAction()) {
+      if (!prog.isLazyAction(resultType)) {
+        throw std::invalid_argument{
+            "Lazy call to impure delegate has to return a lazy-action type"};
+      }
+    } else {
+      if (!prog.isLazy(resultType)) {
+        throw std::invalid_argument{"Lazy call to pure delegate has to return a lazy type"};
+      }
     }
   case CallMode::Normal:
     break;
@@ -97,18 +110,9 @@ auto callDynExprNode(
   if (anyNodeNull(args)) {
     throw std::invalid_argument{"Call dyn node cannot contain a null argument"};
   }
-  const auto& typeDecl = prog.getTypeDecl(lhs->getType());
-  if (typeDecl.getKind() != sym::TypeKind::Delegate) {
-    throw std::invalid_argument{"Lhs expr to dyn call has to be a delegate type"};
-  }
-  const auto& delegateDef   = std::get<sym::DelegateDef>(prog.getTypeDef(lhs->getType()));
   const auto& delegateInput = delegateDef.getInput();
   if (delegateInput.getCount() != args.size()) {
     throw std::invalid_argument{"Call node contains incorrect number of arguments"};
-  }
-
-  if (mode == CallMode::Lazy && delegateDef.isAction()) {
-    throw std::invalid_argument{"Lazy calls cannot be made to actions (impure)"};
   }
 
   // Apply implicit conversions if necessary (and throw if types are incompatible).

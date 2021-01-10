@@ -16,10 +16,13 @@ public:
   auto operator=(const LazyTable& rhs) -> LazyTable& = delete;
   auto operator=(LazyTable&& rhs) noexcept -> LazyTable& = delete;
 
-  auto getLazy(Context* ctx, prog::sym::TypeId result) -> prog::sym::TypeId;
+  auto getLazy(Context* ctx, prog::sym::TypeId result, bool isAction) -> prog::sym::TypeId;
 
 private:
-  std::unordered_map<prog::sym::TypeId, prog::sym::TypeId, prog::sym::TypeIdHasher> m_lazies;
+  using LazyMap = std::unordered_map<prog::sym::TypeId, prog::sym::TypeId, prog::sym::TypeIdHasher>;
+
+  LazyMap m_lazies;
+  LazyMap m_lazyActions;
 };
 
 } // namespace frontend::internal

@@ -18,16 +18,16 @@ public:
   auto operator==(const FuncDecl& rhs) const noexcept -> bool;
   auto operator!=(const FuncDecl& rhs) const noexcept -> bool;
 
-  [[nodiscard]] auto getId() const -> const FuncId&;
-  [[nodiscard]] auto getKind() const -> const FuncKind&;
-  [[nodiscard]] auto isAction() const -> bool;
-  [[nodiscard]] auto isIntrinsic() const -> bool;
-  [[nodiscard]] auto isImplicitConv() const -> bool;
-  [[nodiscard]] auto getName() const -> const std::string&;
-  [[nodiscard]] auto getInput() const -> const TypeSet&;
-  [[nodiscard]] auto getOutput() const -> TypeId;
+  [[nodiscard]] auto getId() const noexcept -> const FuncId&;
+  [[nodiscard]] auto getKind() const noexcept -> const FuncKind&;
+  [[nodiscard]] auto isAction() const noexcept -> bool;
+  [[nodiscard]] auto isIntrinsic() const noexcept -> bool;
+  [[nodiscard]] auto isImplicitConv() const noexcept -> bool;
+  [[nodiscard]] auto getName() const noexcept -> const std::string&;
+  [[nodiscard]] auto getInput() const noexcept -> const TypeSet&;
+  [[nodiscard]] auto getOutput() const noexcept -> TypeId;
 
-  auto updateOutput(TypeId newOutput) -> void;
+  auto updateOutput(TypeId newOutput) noexcept -> void;
 
 private:
   FuncId m_id;

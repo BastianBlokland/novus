@@ -450,35 +450,23 @@ auto Program::findCommonType(const std::vector<sym::TypeId>& types) -> std::opti
 }
 
 auto Program::isDelegate(sym::TypeId id) const -> bool {
-  if (!id.isConcrete()) {
-    return false;
-  }
-  const auto& typeDecl = getTypeDecl(id);
-  return typeDecl.getKind() == sym::TypeKind::Delegate;
+  return id.isConcrete() && getTypeDecl(id).getKind() == sym::TypeKind::Delegate;
 }
 
 auto Program::isActionDelegate(sym::TypeId id) const -> bool {
-  if (!isDelegate(id)) {
-    return false;
-  }
-  const auto& delegateDef = std::get<sym::DelegateDef>(getTypeDef(id));
-  return delegateDef.isAction();
+  return isDelegate(id) && std::get<sym::DelegateDef>(getTypeDef(id)).isAction();
 }
 
 auto Program::isFuture(sym::TypeId id) const -> bool {
-  if (!id.isConcrete()) {
-    return false;
-  }
-  const auto& typeDecl = getTypeDecl(id);
-  return typeDecl.getKind() == sym::TypeKind::Future;
+  return id.isConcrete() && getTypeDecl(id).getKind() == sym::TypeKind::Future;
 }
 
 auto Program::isLazy(sym::TypeId id) const -> bool {
-  if (!id.isConcrete()) {
-    return false;
-  }
-  const auto& typeDecl = getTypeDecl(id);
-  return typeDecl.getKind() == sym::TypeKind::Lazy;
+  return id.isConcrete() && getTypeDecl(id).getKind() == sym::TypeKind::Lazy;
+}
+
+auto Program::isLazyAction(sym::TypeId id) const -> bool {
+  return isLazy(id) && std::get<sym::LazyDef>(getTypeDef(id)).isAction();
 }
 
 auto Program::satisfiesOptions(sym::TypeId delegate, OvOptions options) const -> bool {
@@ -707,13 +695,18 @@ auto Program::defineFuture(sym::TypeId id, sym::TypeId result) -> void {
   m_typeDefs.registerFuture(m_typeDecls, id, result);
 }
 
-auto Program::defineLazy(sym::TypeId id, sym::TypeId result) -> void {
+auto Program::defineLazy(sym::TypeId id, sym::TypeId result, bool isAction) -> void {
   // Register utility intrinsics.
-  m_funcDecls.registerIntrinsic(
-      *this, sym::FuncKind::LazyGet, "lazy_get", sym::TypeSet{id}, result);
+  if (isAction) {
+    m_funcDecls.registerIntrinsicAction(
+        *this, sym::FuncKind::LazyGet, "lazy_action_get", sym::TypeSet{id}, result);
+  } else {
+    m_funcDecls.registerIntrinsic(
+        *this, sym::FuncKind::LazyGet, "lazy_get", sym::TypeSet{id}, result);
+  }
 
   // Register lazy definition.
-  m_typeDefs.registerLazy(m_typeDecls, id, result);
+  m_typeDefs.registerLazy(m_typeDecls, id, result, isAction);
 }
 
 auto Program::defineFunc(sym::FuncId id, sym::ConstDeclTable consts, expr::NodePtr expr) -> void {

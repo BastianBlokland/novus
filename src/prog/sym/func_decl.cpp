@@ -26,23 +26,23 @@ auto FuncDecl::operator!=(const FuncDecl& rhs) const noexcept -> bool {
   return !FuncDecl::operator==(rhs);
 }
 
-auto FuncDecl::getId() const -> const FuncId& { return m_id; }
+auto FuncDecl::getId() const noexcept -> const FuncId& { return m_id; }
 
-auto FuncDecl::getKind() const -> const FuncKind& { return m_kind; }
+auto FuncDecl::getKind() const noexcept -> const FuncKind& { return m_kind; }
 
-auto FuncDecl::isAction() const -> bool { return m_isAction; }
+auto FuncDecl::isAction() const noexcept -> bool { return m_isAction; }
 
-auto FuncDecl::isIntrinsic() const -> bool { return m_isIntrinsic; }
+auto FuncDecl::isIntrinsic() const noexcept -> bool { return m_isIntrinsic; }
 
-auto FuncDecl::isImplicitConv() const -> bool { return m_isImplicitConv; }
+auto FuncDecl::isImplicitConv() const noexcept -> bool { return m_isImplicitConv; }
 
-auto FuncDecl::getName() const -> const std::string& { return m_name; }
+auto FuncDecl::getName() const noexcept -> const std::string& { return m_name; }
 
-auto FuncDecl::getInput() const -> const TypeSet& { return m_input; }
+auto FuncDecl::getInput() const noexcept -> const TypeSet& { return m_input; }
 
-auto FuncDecl::getOutput() const -> TypeId { return m_output; }
+auto FuncDecl::getOutput() const noexcept -> TypeId { return m_output; }
 
-auto FuncDecl::updateOutput(TypeId newOutput) -> void { m_output = newOutput; }
+auto FuncDecl::updateOutput(TypeId newOutput) noexcept -> void { m_output = newOutput; }
 
 auto operator<<(std::ostream& out, const FuncDecl& rhs) -> std::ostream& {
   return out << '[' << rhs.m_id << "]-'" << rhs.m_name << "'-" << '(' << rhs.m_input << ")->"

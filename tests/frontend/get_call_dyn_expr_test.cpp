@@ -155,6 +155,31 @@ TEST_CASE("[frontend] Analyzing call dynamic expressions", "frontend") {
     CHECK(fDef.getExpr() == *callExpr);
   }
 
+  SECTION("Get lazy action delegate call") {
+    const auto& output = ANALYZE("act a1() -> int 1 "
+                                 "act a2(action{int} op) -> lazy_action{int} lazy op() "
+                                 "act a() -> lazy_action{int} a2(a1)");
+    REQUIRE(output.isSuccess());
+    const auto& a2Def = GET_FUNC_DEF(output, "a2", GET_TYPE_ID(output, "__action_int"));
+    const auto& aDef  = GET_FUNC_DEF(output, "a");
+
+    CHECK(
+        a2Def.getExpr() ==
+        *prog::expr::callDynExprNode(
+            output.getProg(),
+            prog::expr::constExprNode(a2Def.getConsts(), *a2Def.getConsts().lookup("op")),
+            GET_TYPE_ID(output, "__lazy_action_int"),
+            {},
+            prog::expr::CallMode::Lazy));
+
+    auto fArgs = std::vector<prog::expr::NodePtr>{};
+    fArgs.push_back(prog::expr::litFuncNode(
+        output.getProg(), GET_TYPE_ID(output, "__action_int"), GET_FUNC_ID(output, "a1")));
+    auto callExpr = prog::expr::callExprNode(output.getProg(), a2Def.getId(), std::move(fArgs));
+
+    CHECK(aDef.getExpr() == *callExpr);
+  }
+
   SECTION("Implicitly convert function to action") {
     const auto& output = ANALYZE("fun f1() -> int 1 "
                                  "act a2(action{int} op) -> int op() "
@@ -217,7 +242,6 @@ TEST_CASE("[frontend] Analyzing call dynamic expressions", "frontend") {
     CHECK_DIAG("fun f(action{int} a) a()", errIllegalDelegateCall(src, input::Span{21, 23}));
     CHECK_DIAG(
         "fun f(action{int} a) lambda () a()", errIllegalDelegateCall(src, input::Span{31, 33}));
-    CHECK_DIAG("act f(action{int} a) lazy a()", errLazyActionCall(src, input::Span{21, 28}));
   }
 }
 
