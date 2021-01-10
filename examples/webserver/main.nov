@@ -69,36 +69,37 @@ act writeResponse(ClientContext ctx, HttpResp resp) -> Option{Error}
   );
   finalResp     = resp.httpRespAddFields(extraFields);
   finalRespTxt  = ctx.respWriter.run(finalResp, WriterNewlineMode.CrLf);
-  ctx.connection.write(finalRespTxt)
+  actSeq(
+    lazy print("-- Writing response: http-" + resp.header.httpVersion + ":" + resp.header.status) ::
+    lazy ctx.connection.write(finalRespTxt)
+  )
 
 act handleRequest(ClientContext ctx, string txt) -> Option{Error}
   parse = ctx.reqParser(txt);
-
+  if parse as ParseFailure fail               -> ctx.writeResponse(httpRespBadReq())
   if parse as ParseSuccess{HttpReqHeader} suc ->
-    print("-- Request received: " + suc.val.method + " " + suc.val.resource);
-    ctx.writeResponse(suc.val.httpVersion == "1.1"
-      ? ctx.getResponse(suc.val.method, suc.val.resource)
-      : httpRespVersionNotSupported())
-
-  if parse as ParseFailure fail ->
-    print("-- Bad request received");
-    ctx.writeResponse(httpRespBadReq())
+    actSeq(
+      lazy print("-- Request received: " + suc.val.method + " " + suc.val.resource) ::
+      lazy ctx.writeResponse(suc.val.httpVersion == "1.1"
+        ? ctx.getResponse(suc.val.method, suc.val.resource)
+        : httpRespVersionNotSupported())
+    )
 
 act handleConnection(ClientContext ctx)
-  print("- Client connected");
-
-  loop = (impure lambda(StreamReadState read)
-    r = read.readUntil("\r\n\r\n" :: "\n\n");
-    if r.first.isEmpty() -> None()
-    else ->
-      handleRequest(ctx, r.first) as Error err ? Option(err) : self(r.second)
-  );
-  if loop(StreamReadState(ctx.connection.socket)) as Error err  -> err
-  else                                                          -> print("- Client disconnected")
+  actSeq(
+    lazy print("- Client connected") ::
+    lazy invoke(impure lambda(StreamReadState read)
+    (
+        r = read.readUntil("\r\n\r\n" :: "\n\n");
+        if r.first.isEmpty() -> None()
+        else ->
+          handleRequest(ctx, r.first) as Error err ? err : self(r.second)
+    ), StreamReadState(ctx.connection.socket)) ::
+    lazy print("- Client disconnected")
+  )
 
 act main(int port, Content content)
   print("Starting server (url: http://localhost:" + port + ")");
-
   startTime   = timeNow();
   respWriter  = httpRespWriter();
   reqParser   = httpReqHeaderParser();
@@ -116,19 +117,16 @@ act main(int port, Content content)
       handleConnection(ctx)
   );
   tcpServer(TcpServerSettings(IpFamily.V4, port, handleCon)).failOnError();
-
   print("Server stopped")
 
 act loadContent(Path root, List{RewriteRule} rewriteUrls, List{string} files)
   print("Loading resouces (root: '" + root.string() + "')");
-
   resources = files.parallelMap(impure lambda (string file)
     path        = root / file;
     contentType = path.findHttpContentType();
     content     = path.fileRead().failOnError();
     Resource("/" + file, contentType, content)
   );
-
   print("Loaded " + resources.length() + " resources");
   Content(rewriteUrls, resources)
 

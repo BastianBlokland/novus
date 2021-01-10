@@ -1,3 +1,4 @@
+import "std/list.nov"
 import "std/option.nov"
 import "std/time.nov"
 
@@ -6,6 +7,57 @@ import "std/time.nov"
 fun get{T}(lazy{T} f) -> T
   intrinsic{lazy_get}(f)
 
+fun first{T}(List{lazy{Option{T}}} l) -> Option{T}
+  if l is LEnd                      -> None()
+  if l as LNode{lazy{Option{T}}} n  ->
+    if n.val.get() as T val -> val
+    else                    -> first(n.next)
+
+// -- Actions
+
+act get{T}(lazy_action{T} l) -> T
+  intrinsic{lazy_action_get}(l)
+
+act actSeq{T}(List{lazy_action{Option{T}}} l) -> Option{T}
+  if l is LEnd                            -> None()
+  if l as LNode{lazy_action{Option{T}}} n ->
+    if n.val.get() as T val -> val
+    else                    -> actSeq(n.next)
+
+act actIf{T1, T2}(Either{T1, T2} e, lazy_action{Option{T2}} a) -> Either{T1, T2}
+  if e as T1 et1 -> a.get() as T2 at2 ? at2 : et1
+  else           -> e
+
 // -- Tests
 
-assert((lazy invoke(lambda () 42)).get() == 42)
+assert(
+  f = (lambda () 42);
+  lazyF = lazy f();
+  lazyF.get() == 42)
+
+assert(
+  f1 = (lambda () Option{int}());
+  f2 = (lambda () Option(42));
+  first(lazy f1() :: lazy f2()) == 42)
+
+assert(
+  f1 = (lambda () Option{int}());
+  f2 = (lambda () Option{int}());
+  first(lazy f1() :: lazy f2()) == None())
+
+// -- Impure Tests
+
+assert(
+  a = (impure lambda () 42);
+  lazyA = lazy a();
+  lazyA.get() == 42)
+
+assert(
+  a1 = (impure lambda () Option{int}());
+  a2 = (impure lambda () Option(42));
+  actSeq(lazy a1() :: lazy a2()) == 42)
+
+assert(
+  a1 = (impure lambda () Option{int}());
+  a2 = (impure lambda () Option{int}());
+  actSeq(lazy a1() :: lazy a2()) == None())

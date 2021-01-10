@@ -35,28 +35,26 @@ fun max(Box b)
 
 act draw(I2 pos, Console c, Settings s, Duration t)
   n = perlinNoise3d(pos.x * s.xyScale, pos.y * s.xyScale, float(t) * s.speed) * s.intensityScale;
-  c.termCursorPos(pos.y, pos.x);
-  (
-    if n < s.bgCutoff -> c.termColor(0.0, 0.0, 0.0)
-    else              ->
-      r = n < s.redThreshold ? 1 : n;
-      g = n;
-      b = s.blueShift + n * (1.0 - s.blueShift);
-      c.termColor(r, g, b)
-  );
-  c.writeOut(n < s.fillThreshold ? "○" : "●");
-  c.flushOut()
+  color = n < s.bgCutoff
+    ? black()
+    : Color(n < s.redThreshold ? 1 : n, n, s.blueShift + n * (1.0 - s.blueShift));
+  actSeq(
+    lazy c.termCursorPos(pos.y, pos.x)                  ::
+    lazy c.termColor(color)                             ::
+    lazy c.writeOut(n < s.fillThreshold ? "○" : "●")    ::
+    lazy c.flushOut()
+  )
 
-act loop(Console c, Settings s, Timestamp begin, int frame)
-  if c.readToEnd().length() != 0 || interuptIsRequested() -> false
+act loop(Console c, Settings s, Timestamp begin, int frame) -> Option{Error}
+  if c.readToEnd().length() != 0 || interuptIsRequested() -> None()
   else ->
     now     = timestamp();
     elapsed = now - begin;
-    forBox(getWindow(), draw[elapsed][s][c], frame, s.drawIterations);
-
-    frameTime = timestamp() - now;
-    sleep(s.drawInterval - frameTime);
-    loop(c, s, begin, ++frame)
+    actSeq(
+      lazy forBox(getWindow(), draw[elapsed][s][c], frame, s.drawIterations) ::
+      lazy sleep(s.drawInterval)
+    ) as Error e ? e
+                 : self(c, s, begin, ++frame)
 
 // Allow overriding tweak values using environment options. (syntax: --[KEY] [VALUE])
 act getSettings()
@@ -75,25 +73,27 @@ act getSettings()
 
 // Call the action for each position in the box.
 // Can be spread along multiple frames by specifying more then 1 'numItrs'.
-act forBox(Box box, action{I2, bool} a, int itr, int numItrs)
+act forBox(Box box, action{I2, Option{Error}} a, int itr, int numItrs)
   yOffset = itr % numItrs;
   xMax    = box.max().x;
   yMax    = box.max().y;
-  invoke( impure lambda (int x, int y)
-    if y >= yMax  -> true
+  invoke( impure lambda (int x, int y) -> Option{Error}
+    if y >= yMax  -> None()
     if x >= xMax  -> self(0, y + numItrs)
     else ->
-      if !a(I2(x, y)) -> false
-      else            -> self(++x, y)
+      a(I2(x, y)) as Error e ? e : self(++x, y)
     , box.min().x, box.min().y + yOffset)
 
 // --- Entry point
 
 act main()
-  console = consoleOpen().failOnError();
-  setupTerminal(console);
-  loop(console, getSettings(), timestamp(), 0);
-  resetTerminal(console)
+  consoleOpen().map(impure lambda (Console c)
+    res = actSeq(
+      lazy setupTerminal(c)                       ::
+      lazy loop(c, getSettings(), timestamp(), 0)
+    );
+    resetTerminal(c); res
+  ).failOnError()
 
 main()
 
@@ -103,15 +103,20 @@ act getWindow()
   Box(I2(1, 1), I2(termGetWidth(), termGetHeight()))
 
 act setupTerminal(Console c)
-  c.termSetOptions(TermOptions.NoEcho | TermOptions.NoBuffer);
-  c.termAltScreen(true);
-  c.termCursorShow(false);
-  c.setNoBlockInput()
+  actSeq(
+    lazy c.termSetOptions(TermOptions.NoEcho | TermOptions.NoBuffer)  ::
+    lazy c.termAltScreen(true)                                        ::
+    lazy c.termCursorShow(false)                                      ::
+    lazy c.setNoBlockInput()
+  )
 
 act resetTerminal(Console c)
-  c.termCursorShow(true);
-  c.termAltScreen(false);
-  c.termStyle(TermStyle.Reset);
-  c.termUnsetOptions(TermOptions.NoEcho | TermOptions.NoBuffer);
-  c.writeOut('\n');
-  c.unsetNoBlockInput()
+  actSeq(
+    lazy c.termCursorShow(true)                                           ::
+    lazy c.termAltScreen(false)                                           ::
+    lazy c.termStyle(TermStyle.Reset)                                     ::
+    lazy c.termUnsetOptions(TermOptions.NoEcho | TermOptions.NoBuffer)    ::
+    lazy c.writeOut('\n')                                                 ::
+    lazy c.unsetNoBlockInput()
+  )
+

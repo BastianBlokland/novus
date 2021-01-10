@@ -22,14 +22,20 @@ fun StreamReadState(sys_stream src)
 act isValid(sys_stream s) -> bool
   intrinsic{stream_checkvalid}(s)
 
-act flush(sys_stream s) -> bool
+act flush(sys_stream s) -> Option{Error}
   intrinsic{stream_flush}(s)
+    ? None()
+    : Error("Failed to flush stream ---")
 
-act setOptions(sys_stream s, StreamOptions opts) -> bool
+act setOptions(sys_stream s, StreamOptions opts) -> Option{Error}
   intrinsic{stream_setoptions}(s, int(opts))
+    ? None()
+    : Error("Failed to set stream options")
 
-act unsetOptions(sys_stream s, StreamOptions opts) -> bool
+act unsetOptions(sys_stream s, StreamOptions opts) -> Option{Error}
   intrinsic{stream_unsetoptions}(s, int(opts))
+    ? None()
+    : Error("Failed to unset stream options")
 
 // -- Reading actions
 
@@ -79,33 +85,36 @@ act readUntil(StreamReadState state, List{string} patterns) -> Pair{string, Stre
         else              -> self(txt + read)
   , state.txt)
 
-
 // -- Writing actions
 
-act write(sys_stream s, string str) -> bool
+act write(sys_stream s, string str) -> Option{Error}
   intrinsic{stream_write_string}(s, str)
+    ? None()
+    : Error("Failed to write to stream")
 
-act write(sys_stream s, char c) -> bool
+act write(sys_stream s, char c) -> Option{Error}
   intrinsic{stream_write_char}(s, c)
+    ? None()
+    : Error("Failed to write to stream")
 
-act copy(sys_stream from, sys_stream to) -> int
-  bytesCopied = invoke(
-    impure lambda(int bytesCopied)
+act copy(sys_stream from, sys_stream to) -> Either{int, Error}
+  invoke(
+    impure lambda(int bytesCopied) -> Either{int, Error}
       read        = from.read(512);
       readLength  = read.length();
-      if readLength > 0 -> to.write(read); self(bytesCopied + readLength)
+      if readLength > 0 -> to.write(read) as Error e ? e : self(bytesCopied + readLength)
       else              -> bytesCopied
-  , 0);
-  to.flush(); bytesCopied
+  , 0).actIf(lazy to.flush())
 
-act copyLines(sys_stream from, sys_stream to) -> int
+act copyLines(sys_stream from, sys_stream to) -> Either{int, Error}
   invoke(impure lambda (StreamReadState state, int lines)
   (
     res = state.readLine();
     if res.second.reachedEnd  -> lines
     else                      ->
-      to.write(res.first);
-      to.write('\n');
-      to.flush();
-      self(res.second, ++lines)
+      actSeq(
+        lazy to.write(res.first) ::
+        lazy to.write('\n')      ::
+        lazy to.flush()
+       ) as Error e ? e : self(res.second, ++lines)
   ), StreamReadState(from), 0)

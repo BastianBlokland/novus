@@ -1,7 +1,6 @@
 import "std/either.nov"
 import "std/list.nov"
 import "std/option.nov"
-import "std/rt.nov"
 import "std/writer.nov"
 
 // -- Types
@@ -38,13 +37,16 @@ fun ??{T}(Either{T, Error} e, lazy{T} def) -> T
   e as T val ? val : def.get()
 
 fun !{T}(Either{T, Error} e, Error newError) -> Either{T, Error}
-  e !! (lambda (Error oldError) newError :: oldError)
+  e.map(lambda (Error oldError) newError :: oldError)
+
+fun !(Option{Error} e, Error newError) -> Option{Error}
+  e.map(lambda (Error oldError) newError :: oldError)
 
 fun !!{T}(Either{T, Error} e, Error newError) -> Either{T, Error}
-  e !! (lambda (Error oldError) newError)
+  e.map(lambda (Error oldError) newError)
 
-fun !!{T}(Either{T, Error} e, function{Error, Error} errorMutation) -> Either{T, Error}
-  e as Error oldError ? Either{T, Error}(errorMutation(oldError)) : e
+fun !!(Option{Error} e, Error newError) -> Option{Error}
+  e.map(lambda (Error oldError) newError)
 
 // -- Conversions
 
@@ -119,21 +121,6 @@ act map{T, TResult}(Either{T, Error} v, action{T, TResult} f) -> Either{TResult,
   if v as T      val -> f(val)
   if v as Error  err -> err
 
-act fail(Error err) -> Option{Error}
-  fail{Option{Error}}(err)
-
-act fail{TResult}(Error err) -> TResult
-  writer = litWriter("Failed:\n") & errorWriter(litWriter("- "), newlineWriter());
-  fail{TResult}(writer.run(err))
-
-act failOnError{T}(Either{T, Error} v) -> T
-  if v as T      val -> val
-  if v as Error  err -> fail{T}(err)
-
-act failOnError(Option{Error} v) -> None
-  if v as Error  err -> fail{None}(err)
-  else               -> None()
-
 // -- Tests
 
 assert(Error("Hello").string() == "['Hello']")
@@ -206,6 +193,14 @@ assert(
   (v ! Error("Better error")) == 42)
 
 assert(
+  v = Option(Error("Low level error"));
+  (v ! Error("Better error")) == Error("Better error") :: Error("Low level error"))
+
+assert(
+  v = Option{Error}();
+  (v ! Error("Better error")) == None())
+
+assert(
   v = Either{int, Error}(Error("Low level error"));
   (v !! Error("Better error")) == Error("Better error"))
 
@@ -214,20 +209,12 @@ assert(
   (v !! Error("Better error")) == 42)
 
 assert(
-  v = Either{int, Error}(Error("Low level error"));
-  (v !! lambda (Error oldErr) Error("Better error")) == Error("Better error"))
+  v = Option(Error("Low level error"));
+  (v !! Error("Better error")) == Error("Better error"))
 
 assert(
-  v = Either{int, Error}(Error("Low level error"));
-  (v !! lambda (Error e) e) == Error("Low level error"))
-
-assert(
-  v = Either{int, Error}(Error("Low level error"));
-  (v !! lambda (Error e) Error("Better error") :: e) == Error("Better error") :: Error("Low level error"))
-
-assert(
-  v = Either{int, Error}(42);
-  (v !! lambda (Error e) Error("Better error")) == 42)
+  v = Option{Error}();
+  (v !! Error("Better error")) == None())
 
 assert(
   valueOrError(42, None())        == 42 &&
