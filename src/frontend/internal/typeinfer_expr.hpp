@@ -52,6 +52,11 @@ public:
   auto visit(const parse::UnionDeclStmtNode& n) -> void override;
 
 private:
+  struct CallInfo {
+    prog::sym::TypeId resultType;
+    bool isAction;
+  };
+
   Context* m_ctx;
   const TypeSubstitutionTable* m_typeSubTable;
   std::unordered_map<std::string, prog::sym::TypeId>* m_constTypes;
@@ -61,7 +66,7 @@ private:
   auto inferSubExpr(const parse::Node& n) -> prog::sym::TypeId;
   [[nodiscard]] auto inferDynCall(const parse::CallExprNode& n) -> prog::sym::TypeId;
   [[nodiscard]] auto inferFuncCall(const std::string& funcName, const prog::sym::TypeSet& argTypes)
-      -> prog::sym::TypeId;
+      -> std::optional<CallInfo>;
 
   auto setConstType(const lex::Token& constId, prog::sym::TypeId type) -> void;
   [[nodiscard]] auto inferConstType(const lex::Token& constId) -> prog::sym::TypeId;

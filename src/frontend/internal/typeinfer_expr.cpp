@@ -5,6 +5,7 @@
 #include "internal/utilities.hpp"
 #include "parse/nodes.hpp"
 #include <cassert>
+#include <optional>
 
 namespace frontend::internal {
 
@@ -82,7 +83,9 @@ auto TypeInferExpr::visit(const parse::BinaryExprNode& n) -> void {
     argTypes.push_back(inferSubExpr(n[i]));
   }
   const auto argTypeSet = prog::sym::TypeSet{std::move(argTypes)};
-  m_type                = inferFuncCall(prog::getFuncName(*op), argTypeSet);
+  if (const auto callInfo = inferFuncCall(prog::getFuncName(*op), argTypeSet)) {
+    m_type = callInfo->resultType;
+  }
 }
 
 auto TypeInferExpr::visit(const parse::CallExprNode& n) -> void {
@@ -138,32 +141,27 @@ auto TypeInferExpr::visit(const parse::CallExprNode& n) -> void {
     }
     auto ovOptions = prog::OvOptions{
         hasFlag<Flags::AllowActionCalls>() ? prog::OvFlags::None : prog::OvFlags::ExclActions};
-    const auto retType = m_ctx->getFuncTemplates()->getRetType(funcName, *typeSet, ovOptions);
-    if (retType && retType->isConcrete()) {
+    if (const auto callInfo =
+            m_ctx->getFuncTemplates()->getCallInfo(funcName, *typeSet, ovOptions)) {
       if (n.isFork()) {
-        m_type = asFuture(m_ctx, *retType);
+        m_type = asFuture(m_ctx, callInfo->resultType);
       } else if (n.isLazy()) {
-        // TODO: infer the type for lazy calls, the problem is that at the moment we don't track if
-        // we are calling a pure or impure function, so we don't know if the type should be 'lazy'
-        // or 'lazy_action".
+        m_type = asLazy(m_ctx, callInfo->resultType, callInfo->isAction);
       } else {
-        m_type = *retType;
+        m_type = callInfo->resultType;
       }
     }
     return;
   }
 
   // Regular functions.
-  auto result = inferFuncCall(funcName, argTypeSet);
-  if (result.isConcrete()) {
+  if (const auto callInfo = inferFuncCall(funcName, argTypeSet)) {
     if (n.isFork()) {
-      m_type = asFuture(m_ctx, result);
+      m_type = asFuture(m_ctx, callInfo->resultType);
     } else if (n.isLazy()) {
-      // TODO: infer the type for lazy calls, the problem is that at the moment we don't track if
-      // we are calling a pure or impure function, so we don't know if the type should be 'lazy'
-      // or 'lazy_action".
+      m_type = asLazy(m_ctx, callInfo->resultType, callInfo->isAction);
     } else {
-      m_type = result;
+      m_type = callInfo->resultType;
     }
   }
 }
@@ -283,7 +281,9 @@ auto TypeInferExpr::visit(const parse::IndexExprNode& n) -> void {
   }
   const auto argTypeSet = prog::sym::TypeSet{std::move(argTypes)};
   const auto funcName   = prog::getFuncName(prog::Operator::SquareSquare);
-  m_type                = inferFuncCall(funcName, argTypeSet);
+  if (const auto callInfo = inferFuncCall(funcName, argTypeSet)) {
+    m_type = callInfo->resultType;
+  }
 }
 
 auto TypeInferExpr::visit(const parse::IntrinsicExprNode& /*ununsed*/) -> void {}
@@ -372,7 +372,9 @@ auto TypeInferExpr::visit(const parse::UnaryExprNode& n) -> void {
     return;
   }
   auto argType = inferSubExpr(n[0]);
-  m_type       = inferFuncCall(prog::getFuncName(*op), {argType});
+  if (const auto callInfo = inferFuncCall(prog::getFuncName(*op), {argType})) {
+    m_type = callInfo->resultType;
+  }
 }
 
 auto TypeInferExpr::visit(const parse::EnumDeclStmtNode& /*unused*/) -> void {
@@ -429,27 +431,26 @@ auto TypeInferExpr::inferDynCall(const parse::CallExprNode& n) -> prog::sym::Typ
   // Call to a overloaded call operator.
   const auto argTypeSet = prog::sym::TypeSet{std::move(argTypes)};
   const auto funcName   = prog::getFuncName(prog::Operator::ParenParen);
-  auto result           = inferFuncCall(funcName, argTypeSet);
-  if (result.isInfer()) {
+  auto funcCallInfo     = inferFuncCall(funcName, argTypeSet);
+  if (!funcCallInfo) {
     return prog::sym::TypeId::inferType();
   }
 
   if (n.isFork()) {
-    return asFuture(m_ctx, result);
+    return asFuture(m_ctx, funcCallInfo->resultType);
   }
   if (n.isLazy()) {
-    // Operators are required to be pure so we know this will be a 'lazy' and not an 'lazy_action'.
-    return asLazy(m_ctx, result, false);
+    return asLazy(m_ctx, funcCallInfo->resultType, funcCallInfo->isAction);
   }
-  return result;
+  return funcCallInfo->resultType;
 }
 
 auto TypeInferExpr::inferFuncCall(const std::string& funcName, const prog::sym::TypeSet& argTypes)
-    -> prog::sym::TypeId {
+    -> std::optional<CallInfo> {
 
   for (const auto& argType : argTypes) {
     if (argType.isInfer()) {
-      return prog::sym::TypeId::inferType();
+      return std::nullopt;
     }
   }
 
@@ -461,17 +462,21 @@ auto TypeInferExpr::inferFuncCall(const std::string& funcName, const prog::sym::
   // Attempt to get a return-type for a non-templated function.
   auto func = m_ctx->getProg()->lookupFunc(funcName, argTypes, prog::OvOptions{ovFlags});
   if (func) {
-    return m_ctx->getProg()->getFuncDecl(*func).getOutput();
+    const auto& funcDecl = m_ctx->getProg()->getFuncDecl(*func);
+    if (funcDecl.getOutput().isInfer()) {
+      return std::nullopt;
+    }
+    return CallInfo{funcDecl.getOutput(), funcDecl.isAction()};
   }
 
   // Attempt to get a return-type for a inferred templated function.
-  auto retTypeForInferredTemplFunc = m_ctx->getFuncTemplates()->inferParamsAndGetRetType(
+  auto inferredTemplFuncCallInfo = m_ctx->getFuncTemplates()->inferParamsAndGetCallInfo(
       funcName, argTypes, prog::OvOptions{ovFlags});
-  if (retTypeForInferredTemplFunc) {
-    return *retTypeForInferredTemplFunc;
+  if (inferredTemplFuncCallInfo) {
+    return CallInfo{inferredTemplFuncCallInfo->resultType, inferredTemplFuncCallInfo->isAction};
   }
 
-  return prog::sym::TypeId::inferType();
+  return std::nullopt;
 }
 
 auto TypeInferExpr::setConstType(const lex::Token& constId, prog::sym::TypeId type) -> void {
