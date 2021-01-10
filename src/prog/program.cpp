@@ -695,7 +695,22 @@ auto Program::defineFuture(sym::TypeId id, sym::TypeId result) -> void {
   m_typeDefs.registerFuture(m_typeDecls, id, result);
 }
 
-auto Program::defineLazy(sym::TypeId id, sym::TypeId result, bool isAction) -> void {
+auto Program::defineLazy(
+    sym::TypeId id, sym::TypeId result, bool isAction, const std::vector<sym::TypeId>& aliases)
+    -> void {
+  // Register implicit conversions to the alias lazies.
+  for (const auto& alias : aliases) {
+    const auto& aliasDecl = getTypeDecl(alias);
+    if (aliasDecl.getKind() != sym::TypeKind::Lazy) {
+      throw std::invalid_argument{"Alias type has to be a lazy type"};
+    }
+    const auto& lazyDef = std::get<sym::LazyDef>(getTypeDef(alias));
+    if (lazyDef.getResult() != result) {
+      throw std::invalid_argument{"Lazy result type has to match alias lazy result type"};
+    }
+    m_funcDecls.registerImplicitConv(*this, sym::FuncKind::NoOp, id, alias);
+  }
+
   // Register utility intrinsics.
   if (isAction) {
     m_funcDecls.registerIntrinsicAction(

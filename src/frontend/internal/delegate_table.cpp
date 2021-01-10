@@ -49,8 +49,7 @@ auto DelegateTable::getDelegate(
   // Try to find an existing delegate with the same signature.
   auto itr = m_delegates.find(sig);
   if (itr != m_delegates.end()) {
-    // We store the function version as the first of the pair and the action as the second.
-    return isAction ? itr->second.second : itr->second.first;
+    return isAction ? itr->second.action : itr->second.function;
   }
 
   // Declare the delegates (both function and action versions).
@@ -76,7 +75,7 @@ auto DelegateTable::getDelegate(
   ctx->declareTypeInfo(
       actionDeclType, TypeInfo{ctx, "action", input::Span{0}, prog::sym::TypeSet{types}});
 
-  m_delegates.insert({std::move(sig), std::make_pair(funcDeclType, actionDeclType)});
+  m_delegates.insert({std::move(sig), DelegateInfo{funcDeclType, actionDeclType}});
   return isAction ? actionDeclType : funcDeclType;
 }
 

@@ -164,7 +164,9 @@ public:
       sym::TypeId output,
       const std::vector<sym::TypeId>& aliases) -> void;
   auto defineFuture(sym::TypeId id, sym::TypeId result) -> void;
-  auto defineLazy(sym::TypeId id, sym::TypeId result, bool isAction) -> void;
+  auto defineLazy(
+      sym::TypeId id, sym::TypeId result, bool isAction, const std::vector<sym::TypeId>& aliases)
+      -> void;
   auto defineFunc(sym::FuncId id, sym::ConstDeclTable consts, expr::NodePtr expr) -> void;
 
   auto addExecStmt(sym::ConstDeclTable consts, expr::NodePtr expr) -> void;

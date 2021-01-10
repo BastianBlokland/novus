@@ -15,6 +15,12 @@ class DelegateTable final {
     auto operator()(const Signature& id) const -> std::size_t;
   };
 
+  // For each delegate we keep both a function and an action version.
+  struct DelegateInfo {
+    prog::sym::TypeId function;
+    prog::sym::TypeId action;
+  };
+
 public:
   DelegateTable()                             = default;
   DelegateTable(const DelegateTable& rhs)     = delete;
@@ -32,9 +38,7 @@ public:
       -> prog::sym::TypeId;
 
 private:
-  // For each delegate we keep both a function and an action version.
-  std::unordered_map<Signature, std::pair<prog::sym::TypeId, prog::sym::TypeId>, Hasher>
-      m_delegates;
+  std::unordered_map<Signature, DelegateInfo, Hasher> m_delegates;
 };
 
 } // namespace frontend::internal
