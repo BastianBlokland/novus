@@ -126,7 +126,17 @@ public:
     return res;
   }
 
-  auto flush() noexcept -> bool { return std::fflush(m_filePtr) == 0; }
+  auto flush() noexcept -> bool {
+    if (std::fflush(m_filePtr) != 0) {
+#if !defined(_WIN32)
+      if (errno == EAGAIN) {
+        return true;
+      }
+#endif // !_WIN32
+      return false;
+    }
+    return true;
+  }
 
   auto setOpts(StreamOpts opts) noexcept -> bool {
 #if defined(_WIN32)
