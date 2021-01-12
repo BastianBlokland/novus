@@ -25,7 +25,7 @@ act isValid(sys_stream s) -> bool
 act flush(sys_stream s) -> Option{Error}
   intrinsic{stream_flush}(s)
     ? None()
-    : Error("Failed to flush stream ---")
+    : Error("Failed to flush stream")
 
 act setOptions(sys_stream s, StreamOptions opts) -> Option{Error}
   intrinsic{stream_setoptions}(s, int(opts))
