@@ -10,9 +10,6 @@
 
 namespace vm::internal {
 
-class FutureRef;
-class LongRef;
-class StreamRef;
 class StringRef;
 class StringLinkRef;
 class StructRef;

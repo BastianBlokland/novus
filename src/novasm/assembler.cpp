@@ -245,6 +245,24 @@ auto Assembler::addConvFloatChar() -> void { writeOpCode(OpCode::ConvFloatChar);
 
 auto Assembler::addConvFloatLong() -> void { writeOpCode(OpCode::ConvFloatLong); }
 
+auto Assembler::addMakeAtomic(int32_t val) -> void {
+  writeOpCode(OpCode::MakeAtomic);
+  writeInt32(val);
+}
+
+auto Assembler::addAtomicLoad() -> void { writeOpCode(OpCode::AtomicLoad); }
+
+auto Assembler::addAtomicCompareSwap(int32_t expected, int32_t desired) -> void {
+  writeOpCode(OpCode::AtomicCompareSwap);
+  writeInt32(expected);
+  writeInt32(desired);
+}
+
+auto Assembler::addAtomicBlock(int32_t expected) -> void {
+  writeOpCode(OpCode::AtomicBlock);
+  writeInt32(expected);
+}
+
 auto Assembler::addMakeStruct(uint8_t fieldCount) -> void {
   writeOpCode(OpCode::MakeStruct);
   writeUInt8(fieldCount);

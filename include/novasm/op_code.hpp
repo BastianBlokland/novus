@@ -103,6 +103,11 @@ enum class OpCode : uint8_t {
   ConvFloatChar   = 122, // [] (float) -> (int)      Convert float to char (8 bit).
   ConvFloatLong   = 123, // [] (float) -> (long)     Convert float to long.
 
+  MakeAtomic        = 180, // [int32]        ()       -> (atomic) Create a new atomic value.
+  AtomicLoad        = 181, // []             (atomic) -> (int)    Load the value of the atomic.
+  AtomicCompareSwap = 182, // [int32, int32] (atomic) -> (int)    Compare and swap, return old val.
+  AtomicBlock       = 183, // [int32]        (atomic) -> ()       Block until expected val.
+
   MakeStruct       = 190, // [uint8] (any ...)     -> (struct) Create structure containing x values.
   MakeNullStruct   = 191, // []      ()            -> struct   Create a struct without fields.
   StructLoadField  = 192, // [uint8] (struct)      -> (any)    Get value of field x in structure.

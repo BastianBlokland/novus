@@ -191,6 +191,7 @@ auto GarbageCollector::mark() noexcept -> void {
     case RefKind::StreamProcess:
       m_markQueue.push_back(downcastRef<ProcessStreamRef>(cur)->getProcess());
       break;
+    case RefKind::Atomic:
     case RefKind::String:
     case RefKind::Long:
     case RefKind::StreamFile:

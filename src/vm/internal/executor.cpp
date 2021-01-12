@@ -2,6 +2,7 @@
 #include "internal/intrinsics.hpp"
 #include "internal/pcall.hpp"
 #include "internal/ref_allocator.hpp"
+#include "internal/ref_atomic.hpp"
 #include "internal/ref_future.hpp"
 #include "internal/ref_long.hpp"
 #include "internal/ref_string.hpp"
@@ -689,6 +690,30 @@ auto execute(
       PUSH_LONG(static_cast<int64_t>(POP_FLOAT()));
     } break;
 
+    case OpCode::MakeAtomic: {
+      PUSH_REF(refAlloc->allocPlain<AtomicRef>(READ_INT()));
+    } break;
+    case OpCode::AtomicLoad: {
+      const auto* atomic = getAtomic(POP());
+      PUSH_INT(atomic->load());
+    } break;
+    case OpCode::AtomicCompareSwap: {
+      const int32_t expected = READ_INT();
+      const int32_t desired  = READ_INT();
+      auto* atomic           = getAtomic(POP());
+      PUSH_INT(atomic->compareAndSwap(expected, desired));
+    } break;
+    case OpCode::AtomicBlock: {
+      const int32_t expected = READ_INT();
+      const auto* atomic     = getAtomic(POP());
+      while (atomic->load() != expected) {
+        if (unlikely(execHandle.trap())) {
+          goto End;
+        }
+        std::this_thread::yield();
+      }
+    } break;
+
     case OpCode::MakeStruct: {
       const auto fieldCount = READ_BYTE();
       assert(fieldCount > 0);
@@ -703,7 +728,7 @@ auto execute(
       for (auto fieldIndex = fieldCount; fieldIndex-- > 0;) {
         *structRef->getFieldPtr(fieldIndex) = POP();
       }
-      PUSH_REF(structRef);
+      PUSH(refValue(structRef));
     } break;
     case OpCode::MakeNullStruct: {
       PUSH(nullRefValue());

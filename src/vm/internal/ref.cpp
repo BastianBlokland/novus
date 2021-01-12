@@ -1,4 +1,5 @@
 #include "internal/ref.hpp"
+#include "internal/ref_atomic.hpp"
 #include "internal/ref_future.hpp"
 #include "internal/ref_long.hpp"
 #include "internal/ref_process.hpp"
@@ -19,6 +20,9 @@ auto Ref::destroy() noexcept -> void {
   the vtable pointer takes. */
 
   switch (m_kind) {
+  case RefKind::Atomic:
+    downcastRef<AtomicRef>(this)->~AtomicRef();
+    break;
   case RefKind::Struct:
     downcastRef<StructRef>(this)->~StructRef();
     break;

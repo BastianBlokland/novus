@@ -267,6 +267,19 @@ auto operator<<(std::ostream& out, const OpCode& rhs) noexcept -> std::ostream& 
     out << "conv-float-long";
     break;
 
+  case OpCode::MakeAtomic:
+    out << "make-atomic";
+    break;
+  case OpCode::AtomicLoad:
+    out << "atomic-load";
+    break;
+  case OpCode::AtomicCompareSwap:
+    out << "atomic-compare-swap";
+    break;
+  case OpCode::AtomicBlock:
+    out << "atomic-block";
+    break;
+
   case OpCode::MakeStruct:
     out << "make-struct";
     break;

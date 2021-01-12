@@ -101,6 +101,8 @@ auto disassembleInstructions(const Assembly& assembly, const dasm::InstructionLa
 
     switch (opCode) {
     case OpCode::LoadLitInt:
+    case OpCode::MakeAtomic:
+    case OpCode::AtomicBlock:
       result.push_back(Instr{opCode, offset, {Arg{readAsm<int32_t>(&ip)}}, labels});
       continue;
     case OpCode::LoadLitLong:
@@ -200,6 +202,7 @@ auto disassembleInstructions(const Assembly& assembly, const dasm::InstructionLa
     case OpCode::ConvLongChar:
     case OpCode::ConvFloatChar:
     case OpCode::ConvFloatLong:
+    case OpCode::AtomicLoad:
     case OpCode::MakeNullStruct:
     case OpCode::Ret:
     case OpCode::Fail:
@@ -214,6 +217,12 @@ auto disassembleInstructions(const Assembly& assembly, const dasm::InstructionLa
     case OpCode::LoadLitString:
       result.push_back(Instr{opCode, offset, {Arg{readAsm<uint32_t>(&ip)}}, labels});
       continue;
+    case OpCode::AtomicCompareSwap: {
+      const auto a = readAsm<int32_t>(&ip);
+      const auto b = readAsm<int32_t>(&ip);
+      result.push_back(Instr{opCode, offset, {Arg{a}, Arg{b}}, labels});
+      continue;
+    }
     case OpCode::LoadLitIp:
     case OpCode::Jump:
     case OpCode::JumpIf: {

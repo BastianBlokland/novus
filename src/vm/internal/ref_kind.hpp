@@ -4,16 +4,17 @@
 namespace vm::internal {
 
 enum class RefKind : uint8_t {
-  Struct        = 0U,
-  Future        = 1U,
-  String        = 2U,
-  StringLink    = 3U,
-  Long          = 4U,
-  StreamFile    = 5U,
-  StreamConsole = 6U,
-  StreamTcp     = 7U,
-  StreamProcess = 8U,
-  Process       = 9U,
+  Atomic        = 0u,
+  Struct        = 1U,
+  Future        = 2U,
+  String        = 3U,
+  StringLink    = 4U,
+  Long          = 5U,
+  StreamFile    = 6U,
+  StreamConsole = 7U,
+  StreamTcp     = 8U,
+  StreamProcess = 9U,
+  Process       = 10U,
 };
 
 } // namespace vm::internal
