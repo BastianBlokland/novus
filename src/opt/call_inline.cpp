@@ -21,87 +21,16 @@ public:
     }
   }
 
-  auto isInlinable(const prog::expr::CallExprNode* callExpr) {
-    const auto funcId = callExpr->getFunc();
+  [[nodiscard]] auto isInlinable(const prog::expr::CallExprNode* callExpr) -> bool;
 
-    // Non-normal (fork or lazy) calls or calls to non-user funcs are not inlinable.
-    if (callExpr->getMode() != prog::expr::CallMode::Normal ||
-        !internal::isUserFunc(m_prog, funcId)) {
-      return false;
-    }
+  auto rewrite(const prog::expr::Node& expr) -> prog::expr::NodePtr override;
 
-    // Recursive calls cannot be inlined.
-    if (funcId == m_funcId) {
-      return false;
-    }
+  [[nodiscard]] auto hasModified() -> bool override { return m_modified; }
 
-    // Recursive functions are not inlined.
-    if (internal::isRecursive(m_prog, funcId)) {
-      return false;
-    }
+  [[nodiscard]] auto inlineCall(const prog::expr::CallExprNode* callExpr) -> prog::expr::NodePtr;
 
-    // TODO(bastian): Consider adding size constraints to the functions we inline.
-    return true;
-  }
-
-  auto rewrite(const prog::expr::Node& expr) -> prog::expr::NodePtr override {
-    if (expr.getKind() == prog::expr::NodeKind::Call) {
-      auto* callExpr = expr.downcast<prog::expr::CallExprNode>();
-      if (isInlinable(callExpr)) {
-        m_modified = true;
-        return inlineCall(callExpr);
-      }
-    }
-    return expr.clone(this);
-  }
-
-  auto hasModified() -> bool override { return m_modified; }
-
-  auto inlineCall(const prog::expr::CallExprNode* callExpr) -> prog::expr::NodePtr {
-    const auto& tgtFuncId  = callExpr->getFunc();
-    const auto& tgtFuncDef = m_prog.getFuncDef(tgtFuncId);
-    const auto& tgtConsts  = tgtFuncDef.getConsts();
-
-    // Register all the consts of the target function into this function.
-    auto constMapping = registerTargetConsts(tgtConsts);
-
-    auto tgtInputs = tgtConsts.getInputs();
-    auto exprs     = std::vector<prog::expr::NodePtr>{};
-    exprs.reserve(tgtInputs.size() + 1);
-
-    // Create expressions to assign the constants that used to be inputs to the target function.
-    for (auto i = 0U; i != tgtInputs.size(); ++i) {
-      exprs.push_back(prog::expr::assignExprNode(
-          *m_consts, constMapping.find(tgtInputs[i])->second, rewrite((*callExpr)[i])));
-    }
-
-    // Remap the constants to point to the newly registered constants.
-    auto remapper     = internal::ConstRemapper{m_prog, *m_consts, constMapping};
-    auto remappedExpr = remapper.rewrite(tgtFuncDef.getExpr());
-
-    // Run another 'rewrite' pass on the remapped expression so we can also inline calls inside the
-    // inlined function body.
-    exprs.push_back(rewrite(*remappedExpr));
-
-    return exprs.size() > 1 ? prog::expr::groupExprNode(std::move(exprs)) : std::move(exprs[0]);
-  }
-
-  auto registerTargetConsts(const prog::sym::ConstDeclTable& tgtConsts)
-      -> internal::ConstRemapTable {
-
-    auto table = internal::ConstRemapTable{};
-    for (const auto& tgtConstId : tgtConsts.getAll()) {
-      const auto& tgtConstDecl = tgtConsts[tgtConstId];
-
-      std::ostringstream oss;
-      oss << "__inlined_" << m_consts->getNextConstId().getNum() << '_' << tgtConstDecl.getName();
-
-      auto remappedConstId = m_consts->registerLocal(oss.str(), tgtConstDecl.getType());
-
-      table.insert({tgtConstId, remappedConstId});
-    }
-    return table;
-  }
+  [[nodiscard]] auto registerTargetConsts(const prog::sym::ConstDeclTable& tgtConsts)
+      -> internal::ConstRemapTable;
 
 private:
   const prog::Program& m_prog;
@@ -122,6 +51,87 @@ auto inlineCalls(const prog::Program& prog, bool& modified) -> prog::Program {
         return std::make_unique<CallInlineRewriter>(prog, funcId, consts);
       },
       modified);
+}
+
+auto CallInlineRewriter::isInlinable(const prog::expr::CallExprNode* callExpr) -> bool {
+  const auto funcId = callExpr->getFunc();
+
+  // Non-normal (fork or lazy) calls or calls to non-user funcs are not inlinable.
+  if (callExpr->getMode() != prog::expr::CallMode::Normal ||
+      !internal::isUserFunc(m_prog, funcId)) {
+    return false;
+  }
+
+  // Recursive calls cannot be inlined.
+  if (funcId == m_funcId) {
+    return false;
+  }
+
+  // Recursive functions are not inlined.
+  if (internal::isRecursive(m_prog, funcId)) {
+    return false;
+  }
+
+  // TODO(bastian): Consider adding size constraints to the functions we inline.
+  return true;
+}
+
+auto CallInlineRewriter::rewrite(const prog::expr::Node& expr) -> prog::expr::NodePtr {
+  if (expr.getKind() == prog::expr::NodeKind::Call) {
+    auto* callExpr = expr.downcast<prog::expr::CallExprNode>();
+    if (isInlinable(callExpr)) {
+      m_modified = true;
+      return inlineCall(callExpr);
+    }
+  }
+  return expr.clone(this);
+}
+
+auto CallInlineRewriter::inlineCall(const prog::expr::CallExprNode* callExpr)
+    -> prog::expr::NodePtr {
+  const auto& tgtFuncId  = callExpr->getFunc();
+  const auto& tgtFuncDef = m_prog.getFuncDef(tgtFuncId);
+  const auto& tgtConsts  = tgtFuncDef.getConsts();
+
+  // Register all the consts of the target function into this function.
+  auto constMapping = registerTargetConsts(tgtConsts);
+
+  auto tgtInputs = tgtConsts.getInputs();
+  auto exprs     = std::vector<prog::expr::NodePtr>{};
+  exprs.reserve(tgtInputs.size() + 1);
+
+  // Create expressions to assign the constants that used to be inputs to the target function.
+  for (auto i = 0U; i != tgtInputs.size(); ++i) {
+    exprs.push_back(prog::expr::assignExprNode(
+        *m_consts, constMapping.find(tgtInputs[i])->second, rewrite((*callExpr)[i])));
+  }
+
+  // Remap the constants to point to the newly registered constants.
+  auto remapper     = internal::ConstRemapper{m_prog, *m_consts, constMapping};
+  auto remappedExpr = remapper.rewrite(tgtFuncDef.getExpr());
+
+  // Run another 'rewrite' pass on the remapped expression so we can also inline calls inside the
+  // inlined function body.
+  exprs.push_back(rewrite(*remappedExpr));
+
+  return exprs.size() > 1 ? prog::expr::groupExprNode(std::move(exprs)) : std::move(exprs[0]);
+}
+
+auto CallInlineRewriter::registerTargetConsts(const prog::sym::ConstDeclTable& tgtConsts)
+    -> internal::ConstRemapTable {
+
+  auto table = internal::ConstRemapTable{};
+  for (const auto& tgtConstId : tgtConsts.getAll()) {
+    const auto& tgtConstDecl = tgtConsts[tgtConstId];
+
+    std::ostringstream oss;
+    oss << "__inlined_" << m_consts->getNextConstId().getNum() << '_' << tgtConstDecl.getName();
+
+    auto remappedConstId = m_consts->registerLocal(oss.str(), tgtConstDecl.getType());
+
+    table.insert({tgtConstId, remappedConstId});
+  }
+  return table;
 }
 
 } // namespace opt
