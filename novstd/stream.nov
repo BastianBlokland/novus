@@ -1,5 +1,6 @@
-import "std/pair.nov"
+import "std/lazy.nov"
 import "std/list.nov"
+import "std/pair.nov"
 import "std/text.nov"
 
 // -- Types
@@ -104,7 +105,7 @@ act copy(sys_stream from, sys_stream to) -> Either{int, Error}
       readLength  = read.length();
       if readLength > 0 -> to.write(read) as Error e ? e : self(bytesCopied + readLength)
       else              -> bytesCopied
-  , 0).actIf(lazy to.flush())
+  , 0).actIf(impure lambda (int bytesCopied) to.flush() as Error e ? e : bytesCopied)
 
 act copyLines(sys_stream from, sys_stream to) -> Either{int, Error}
   invoke(impure lambda (StreamReadState state, int lines)
@@ -113,8 +114,8 @@ act copyLines(sys_stream from, sys_stream to) -> Either{int, Error}
     if res.second.reachedEnd  -> lines
     else                      ->
       actSeq(
-        lazy to.write(res.first) ::
-        lazy to.write('\n')      ::
+        lazy to.write(res.first),
+        lazy to.write('\n'),
         lazy to.flush()
        ) as Error e ? e : self(res.second, ++lines)
   ), StreamReadState(from), 0)

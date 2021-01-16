@@ -39,9 +39,9 @@ act draw(I2 pos, Console c, Settings s, Duration t)
     ? black()
     : Color(n < s.redThreshold ? 1 : n, n, s.blueShift + n * (1.0 - s.blueShift));
   actSeq(
-    lazy c.termCursorPos(pos.y, pos.x)                  ::
-    lazy c.termColor(color)                             ::
-    lazy c.writeOut(n < s.fillThreshold ? "○" : "●")    ::
+    lazy c.termCursorPos(pos.y, pos.x),
+    lazy c.termColor(color),
+    lazy c.writeOut(n < s.fillThreshold ? "○" : "●"),
     lazy c.flushOut()
   )
 
@@ -51,7 +51,7 @@ act loop(Console c, Settings s, Timestamp begin, int frame) -> Option{Error}
     now     = timestamp();
     elapsed = now - begin;
     actSeq(
-      lazy forBox(getWindow(), draw[elapsed][s][c], frame, s.drawIterations) ::
+      lazy forBox(getWindow(), draw[elapsed][s][c], frame, s.drawIterations),
       lazy sleep(s.drawInterval)
     ) as Error e ? e
                  : self(c, s, begin, ++frame)
@@ -89,7 +89,7 @@ act forBox(Box box, action{I2, Option{Error}} a, int itr, int numItrs)
 act main()
   consoleOpen().map(impure lambda (Console c)
     res = actSeq(
-      lazy setupTerminal(c)                       ::
+      lazy setupTerminal(c),
       lazy loop(c, getSettings(), timestamp(), 0)
     );
     resetTerminal(c); res
@@ -104,19 +104,19 @@ act getWindow()
 
 act setupTerminal(Console c)
   actSeq(
-    lazy c.termSetOptions(TermOptions.NoEcho | TermOptions.NoBuffer)  ::
-    lazy c.termAltScreen(true)                                        ::
-    lazy c.termCursorShow(false)                                      ::
+    lazy c.termSetOptions(TermOptions.NoEcho | TermOptions.NoBuffer),
+    lazy c.termAltScreen(true),
+    lazy c.termCursorShow(false),
     lazy c.setNoBlockInput()
   )
 
 act resetTerminal(Console c)
   actSeq(
-    lazy c.termCursorShow(true)                                           ::
-    lazy c.termAltScreen(false)                                           ::
-    lazy c.termStyle(TermStyle.Reset)                                     ::
-    lazy c.termUnsetOptions(TermOptions.NoEcho | TermOptions.NoBuffer)    ::
-    lazy c.writeOut('\n')                                                 ::
+    lazy c.termCursorShow(true),
+    lazy c.termAltScreen(false),
+    lazy c.termStyle(TermStyle.Reset),
+    lazy c.termUnsetOptions(TermOptions.NoEcho | TermOptions.NoBuffer),
+    lazy c.writeOut('\n'),
     lazy c.unsetNoBlockInput()
   )
 

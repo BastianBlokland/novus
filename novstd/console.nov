@@ -72,17 +72,16 @@ act flushErr(Console c) -> Option{Error}
 act print{T}(T x) -> Option{Error}
   consoleOpen().map(impure lambda (Console c) -> Option{Error}
     actSeq(
-      lazy c.stdOut.write(x.string() + '\n') ::
+      lazy c.stdOut.write(x.string() + '\n'),
       lazy c.stdOut.flush()
     )
   )
 
-// TODO: Set stream back to stdErr
 act printErr{T}(T x) -> Option{Error}
   consoleOpen().map(impure lambda (Console c) -> Option{Error}
     actSeq(
-      lazy c.stdOut.write(x.string() + '\n') ::
-      lazy c.stdOut.flush()
+      lazy c.stdErr.write(x.string() + '\n'),
+      lazy c.stdErr.flush()
     )
   )
 

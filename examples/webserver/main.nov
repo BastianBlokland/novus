@@ -70,7 +70,7 @@ act writeResponse(ClientContext ctx, HttpResp resp) -> Option{Error}
   finalResp     = resp.httpRespAddFields(extraFields);
   finalRespTxt  = ctx.respWriter.run(finalResp, WriterNewlineMode.CrLf);
   actSeq(
-    lazy print("-- Writing response: http-" + resp.header.httpVersion + ":" + resp.header.status) ::
+    lazy print("-- Writing response: http-" + resp.header.httpVersion + ":" + resp.header.status),
     lazy ctx.connection.write(finalRespTxt)
   )
 
@@ -79,7 +79,7 @@ act handleRequest(ClientContext ctx, string txt) -> Option{Error}
   if parse as ParseFailure fail               -> ctx.writeResponse(httpRespBadReq())
   if parse as ParseSuccess{HttpReqHeader} suc ->
     actSeq(
-      lazy print("-- Request received: " + suc.val.method + " " + suc.val.resource) ::
+      lazy print("-- Request received: " + suc.val.method + " " + suc.val.resource),
       lazy ctx.writeResponse(suc.val.httpVersion == "1.1"
         ? ctx.getResponse(suc.val.method, suc.val.resource)
         : httpRespVersionNotSupported())
@@ -87,14 +87,14 @@ act handleRequest(ClientContext ctx, string txt) -> Option{Error}
 
 act handleConnection(ClientContext ctx)
   actSeq(
-    lazy print("- Client connected") ::
+    lazy print("- Client connected"),
     lazy invoke(impure lambda(StreamReadState read)
     (
         r = read.readUntil("\r\n\r\n" :: "\n\n");
         if r.first.isEmpty() -> None()
         else ->
           handleRequest(ctx, r.first) as Error err ? err : self(r.second)
-    ), StreamReadState(ctx.connection.socket)) ::
+    ), StreamReadState(ctx.connection.socket)),
     lazy print("- Client disconnected")
   )
 

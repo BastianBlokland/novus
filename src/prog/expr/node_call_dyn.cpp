@@ -2,6 +2,7 @@
 #include "internal/implicit_conv.hpp"
 #include "prog/expr/rewriter.hpp"
 #include "utilities.hpp"
+#include <cassert>
 #include <sstream>
 #include <stdexcept>
 
@@ -47,6 +48,8 @@ auto CallDynExprNode::toString() const -> std::string {
   case CallMode::Normal:
     return "call-dyn";
   }
+  assert(false);
+  return "";
 }
 
 auto CallDynExprNode::clone(Rewriter* rewriter) const -> std::unique_ptr<Node> {

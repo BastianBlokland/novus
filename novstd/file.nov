@@ -39,7 +39,7 @@ act readToEnd{T}(File f, Parser{T} parser) -> Either{T, Error}
 
 act write(File f, string str) -> Option{Error}
   actSeq(
-    lazy f.stream.write(str) ::
+    lazy f.stream.write(str),
     lazy f.stream.flush()
   )
 
