@@ -85,6 +85,16 @@ auto precomputeLiterals(const prog::Program& prog, bool& modified) -> prog::Prog
 auto PrecomputeRewriter::precomputeCall(const prog::expr::CallExprNode& callExpr)
     -> prog::expr::NodePtr {
 
+  if (callExpr.isFork()) {
+    // Unable to precompute forked calls.
+    return callExpr.clone(this);
+  }
+  if (callExpr.isLazy()) {
+    // Unable to precompute lazy calls.
+    return callExpr.clone(this);
+  }
+  assert(callExpr.getMode() == prog::expr::CallMode::Normal);
+
   const auto funcKind = m_prog.getFuncDecl(callExpr.getFunc()).getKind();
 
   if (internal::isPrecomputableIntrinsic(funcKind)) {
@@ -101,6 +111,8 @@ auto PrecomputeRewriter::precomputeCall(const prog::expr::CallExprNode& callExpr
 
 auto PrecomputeRewriter::precomputeReinterpretConvCall(const prog::expr::CallExprNode& callExpr)
     -> prog::expr::NodePtr {
+
+  assert(callExpr.getMode() == prog::expr::CallMode::Normal);
 
   // Single argument 'NoOp' intrinsics are used as reinterpreting conversions, for supported
   // combinations we can precompute the conversion.
@@ -131,6 +143,9 @@ auto PrecomputeRewriter::precomputeReinterpretConvCall(const prog::expr::CallExp
 
 auto PrecomputeRewriter::precomputeIntrinsicCall(
     const prog::expr::CallExprNode& callExpr, prog::sym::FuncKind funcKind) -> prog::expr::NodePtr {
+
+  assert(callExpr.getMode() == prog::expr::CallMode::Normal);
+
   /* Check if all the arguments are literals, to support precomputing nested calls we rewrite the
    * arguments first. */
 
@@ -164,6 +179,16 @@ auto PrecomputeRewriter::precomputeIntrinsicCall(
 
 auto PrecomputeRewriter::precomputeCallDyn(const prog::expr::CallDynExprNode& callDynExpr)
     -> prog::expr::NodePtr {
+
+  if (callDynExpr.isFork()) {
+    // Unable to precompute forked calls.
+    return callDynExpr.clone(this);
+  }
+  if (callDynExpr.isLazy()) {
+    // Unable to precompute lazy calls.
+    return callDynExpr.clone(this);
+  }
+  assert(callExpr.getMode() == prog::expr::CallMode::Normal);
 
   /* When a dynamic call is made to either a function literal or a closure directly we can
    * rewrite it to be just a static call. */
