@@ -334,6 +334,50 @@ TEST_CASE("[opt] Precompute literals", "opt") {
         GET_FUNC_DEF(prog, "f", GET_TYPE_ID(prog, "int")).getExpr().getKind() ==
         prog::expr::NodeKind::Call);
   }
+
+  SECTION("Lazy get to normal lazy call") {
+    const auto& output = ANALYZE("fun f1(int a, int b) a + b "
+                                 "fun f2() -> int intrinsic{lazy_get}(lazy f1(1, 2))");
+    REQUIRE(output.isSuccess());
+    // Check that it originally call lazy-get.
+    auto& orgCall =
+        *GET_FUNC_DEF(output.getProg(), "f2").getExpr().downcast<prog::expr::CallExprNode>();
+    REQUIRE(
+        output.getProg().getFuncDecl(orgCall.getFunc()).getKind() == prog::sym::FuncKind::LazyGet);
+
+    const auto prog = precomputeLiterals(output.getProg());
+
+    // Verify that it was optimized to call f1 directly.
+    auto& optCall = *GET_FUNC_DEF(prog, "f2").getExpr().downcast<prog::expr::CallExprNode>();
+    CHECK(
+        optCall.getFunc() ==
+        GET_FUNC_ID(
+            prog,
+            "f1",
+            GET_TYPE_ID(output.getProg(), "int"),
+            GET_TYPE_ID(output.getProg(), "int")));
+  }
+
+  SECTION("Lazy get to dynamic lazy call") {
+    const auto& output = ANALYZE("fun f2(function{int, int, int} f) -> int "
+                                 "  intrinsic{lazy_get}(lazy f(1, 2))");
+    REQUIRE(output.isSuccess());
+    // Check that it originally call lazy-get.
+    auto& orgCall =
+        *GET_FUNC_DEF(
+             output.getProg(), "f2", GET_TYPE_ID(output.getProg(), "__function_int_int_int"))
+             .getExpr()
+             .downcast<prog::expr::CallExprNode>();
+    REQUIRE(
+        output.getProg().getFuncDecl(orgCall.getFunc()).getKind() == prog::sym::FuncKind::LazyGet);
+
+    const auto prog = precomputeLiterals(output.getProg());
+
+    // Verify that it was optimized to call the delegate directly.
+    auto& optCall =
+        GET_FUNC_DEF(prog, "f2", GET_TYPE_ID(output.getProg(), "__function_int_int_int")).getExpr();
+    CHECK(optCall.getKind() == prog::expr::NodeKind::CallDyn);
+  }
 }
 
 } // namespace opt

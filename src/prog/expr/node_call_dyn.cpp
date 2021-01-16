@@ -38,7 +38,16 @@ auto CallDynExprNode::getChildCount() const -> unsigned int { return m_args.size
 
 auto CallDynExprNode::getType() const noexcept -> sym::TypeId { return m_resultType; }
 
-auto CallDynExprNode::toString() const -> std::string { return "call-dyn"; }
+auto CallDynExprNode::toString() const -> std::string {
+  switch (m_mode) {
+  case CallMode::Forked:
+    return "forked-call-dyn";
+  case CallMode::Lazy:
+    return "lazy-call-dyn";
+  case CallMode::Normal:
+    return "call-dyn";
+  }
+}
 
 auto CallDynExprNode::clone(Rewriter* rewriter) const -> std::unique_ptr<Node> {
   return std::unique_ptr<CallDynExprNode>{new CallDynExprNode{

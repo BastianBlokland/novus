@@ -36,7 +36,17 @@ auto CallExprNode::getType() const noexcept -> sym::TypeId { return m_resultType
 
 auto CallExprNode::toString() const -> std::string {
   auto oss = std::ostringstream{};
-  oss << "call-" << m_func;
+  switch (m_mode) {
+  case CallMode::Forked:
+    oss << "forked-call-" << m_func;
+    break;
+  case CallMode::Lazy:
+    oss << "lazy-call-" << m_func;
+    break;
+  case CallMode::Normal:
+    oss << "call-" << m_func;
+    break;
+  }
   return oss.str();
 }
 

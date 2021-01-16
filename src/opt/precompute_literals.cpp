@@ -58,6 +58,9 @@ private:
   [[nodiscard]] auto precomputeReinterpretConvCall(const prog::expr::CallExprNode& callExpr)
       -> prog::expr::NodePtr;
 
+  [[nodiscard]] auto precomputeLazyGetCall(const prog::expr::CallExprNode& callExpr)
+      -> prog::expr::NodePtr;
+
   [[nodiscard]] auto precomputeCallDyn(const prog::expr::CallDynExprNode& callDynExpr)
       -> prog::expr::NodePtr;
 
@@ -100,9 +103,13 @@ auto PrecomputeRewriter::precomputeCall(const prog::expr::CallExprNode& callExpr
   if (internal::isPrecomputableIntrinsic(funcKind)) {
     // Precompute intrinsic call (like integer addition).
     return precomputeIntrinsicCall(callExpr, funcKind);
-  } else if (funcKind == prog::sym::FuncKind::NoOp && callExpr.getChildCount() == 1) {
+  }
+  if (funcKind == prog::sym::FuncKind::NoOp && callExpr.getChildCount() == 1) {
     // Precompute reinterpreting conversions (like enum to int).
     return precomputeReinterpretConvCall(callExpr);
+  }
+  if (funcKind == prog::sym::FuncKind::LazyGet) {
+    return precomputeLazyGetCall(callExpr);
   }
 
   // Unable to precompute this call, just make a clone.
@@ -177,6 +184,38 @@ auto PrecomputeRewriter::precomputeIntrinsicCall(
   return prog::expr::callExprNode(m_prog, callExpr.getFunc(), std::move(newArgs));
 }
 
+auto PrecomputeRewriter::precomputeLazyGetCall(const prog::expr::CallExprNode& callExpr)
+    -> prog::expr::NodePtr {
+
+  assert(callExpr.getMode() == prog::expr::CallMode::Normal);
+  assert(callExpr.getArgs().size() == 1);
+  assert(m_prog.getFuncDecl(callExpr.getFunc()).getKind() == prog::sym::FuncKind::LazyGet);
+
+  /* If the argument is directly a lazy-call, we can remove the lazy-get entirely and transform it
+   * into a direct call. */
+
+  const auto& arg     = *callExpr.getArgs()[0];
+  const auto funcKind = arg.getKind();
+
+  if (funcKind == prog::expr::NodeKind::Call &&
+      arg.downcast<prog::expr::CallExprNode>()->isLazy()) {
+    const auto& orgCall = *arg.downcast<prog::expr::CallExprNode>();
+    auto newArgs        = internal::rewriteAll(orgCall.getArgs(), this);
+    // NOTE: Is an identical call to the original argment expect now its not a lazy call.
+    return prog::expr::callExprNode(m_prog, orgCall.getFunc(), std::move(newArgs));
+  }
+  if (funcKind == prog::expr::NodeKind::CallDyn &&
+      arg.downcast<prog::expr::CallDynExprNode>()->isLazy()) {
+    const auto& orgCall = *arg.downcast<prog::expr::CallDynExprNode>();
+    auto newLhs         = orgCall[0].clone(this);
+    auto newArgs        = internal::rewriteAll(orgCall.getArgs(), this);
+    return prog::expr::callDynExprNode(m_prog, std::move(newLhs), std::move(newArgs));
+  }
+
+  // Unable to precompute this lazy-get call, just make a clone.
+  return callExpr.clone(this);
+}
+
 auto PrecomputeRewriter::precomputeCallDyn(const prog::expr::CallDynExprNode& callDynExpr)
     -> prog::expr::NodePtr {
 
@@ -188,7 +227,7 @@ auto PrecomputeRewriter::precomputeCallDyn(const prog::expr::CallDynExprNode& ca
     // Unable to precompute lazy calls.
     return callDynExpr.clone(this);
   }
-  assert(callExpr.getMode() == prog::expr::CallMode::Normal);
+  assert(callDynExpr.getMode() == prog::expr::CallMode::Normal);
 
   /* When a dynamic call is made to either a function literal or a closure directly we can
    * rewrite it to be just a static call. */
@@ -202,8 +241,9 @@ auto PrecomputeRewriter::precomputeCallDyn(const prog::expr::CallDynExprNode& ca
     auto newArgs            = internal::rewriteAll(callDynExpr.getArgs(), this);
     return prog::expr::callExprNode(
         m_prog, funcId, callDynExpr.getType(), std::move(newArgs), callDynExpr.getMode());
+  }
 
-  } else if (tgtExpr.getKind() == prog::expr::NodeKind::Closure) {
+  if (tgtExpr.getKind() == prog::expr::NodeKind::Closure) {
 
     const auto* closureNode = tgtExpr.downcast<prog::expr::ClosureNode>();
     const auto funcId       = closureNode->getFunc();

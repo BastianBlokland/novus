@@ -24,6 +24,28 @@ TEST_CASE("[opt] Optimization synergy", "opt") {
 
     CHECK(inlADef.getExpr() == *prog::expr::litIntNode(optimizedProg, 42));
   }
+
+  SECTION("One time used lazy calls are optimized out") {
+
+    const auto& output = ANALYZE("act get{T}(lazy_action{T} a) -> T intrinsic{lazy_action_get}(a) "
+                                 "act getNonZero(lazy_action{int} a, lazy_action{int} b) "
+                                 " v = a.get(); v > 0 ? v : b.get() "
+                                 "act produceA() -1337 "
+                                 "act produceB(int multiplier) 42 * multiplier "
+                                 "act main() getNonZero(lazy produceA(), lazy produceB(2)) "
+                                 "main()");
+    REQUIRE(output.isSuccess());
+
+    auto optimizedProg = optimize(output.getProg());
+
+    // Verify that everything was precomputed and main just returns a integer literal.
+    auto mainId = optimizedProg.lookupFunc("main", prog::sym::TypeSet{}, prog::OvOptions{});
+    REQUIRE(mainId);
+
+    const auto& mainDef = optimizedProg.getFuncDef(*mainId);
+
+    CHECK(mainDef.getExpr() == *prog::expr::litIntNode(optimizedProg, 42 * 2));
+  }
 }
 
 } // namespace opt
