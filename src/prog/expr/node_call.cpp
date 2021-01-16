@@ -36,7 +36,17 @@ auto CallExprNode::getType() const noexcept -> sym::TypeId { return m_resultType
 
 auto CallExprNode::toString() const -> std::string {
   auto oss = std::ostringstream{};
-  oss << "call-" << m_func;
+  switch (m_mode) {
+  case CallMode::Forked:
+    oss << "forked-call-" << m_func;
+    break;
+  case CallMode::Lazy:
+    oss << "lazy-call-" << m_func;
+    break;
+  case CallMode::Normal:
+    oss << "call-" << m_func;
+    break;
+  }
   return oss.str();
 }
 
@@ -90,11 +100,16 @@ auto callExprNode(
       throw std::invalid_argument{"Only user functions can be lazy"};
     }
     if (funcDecl.isAction()) {
-      throw std::invalid_argument{"Lazy calls cannot be made to actions (impure)"};
+      if (!prog.isLazyAction(resultType)) {
+        throw std::invalid_argument{
+            "Lazy call to impure function has to return a lazy-action type"};
+      }
+    } else {
+      if (!prog.isLazy(resultType)) {
+        throw std::invalid_argument{"Lazy call to pure function has to return a lazy type"};
+      }
     }
-    if (!prog.isLazy(resultType)) {
-      throw std::invalid_argument{"Lazy calls have to return a lazy type"};
-    }
+    break;
   case CallMode::Normal:
     break;
   }

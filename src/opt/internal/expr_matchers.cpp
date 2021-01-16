@@ -39,8 +39,13 @@ auto hasSideEffect(const prog::Program& prog, const prog::expr::Node& expr) -> b
   auto matcher = ExprMatcher{[&prog](const prog::expr::Node& n) {
     switch (n.getKind()) {
     case prog::expr::NodeKind::Call: {
-      // Calls have side-effects if they are calling actions.
       const auto* callNode = n.downcast<prog::expr::CallExprNode>();
+      if (callNode->isLazy()) {
+        // Lazy calls have no side-effects (as they do nothing until 'get' is called on the lazy
+        // objects).
+        return false;
+      }
+      // Normal or forked calls have side-effects if they are calling actions.
       return prog.getFuncDecl(callNode->getFunc()).isAction();
     }
     case prog::expr::NodeKind::CallDyn: {

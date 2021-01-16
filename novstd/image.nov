@@ -1,41 +1,12 @@
+import "std/color.nov"
+import "std/list.nov"
 import "std/math.nov"
 import "std/text.nov"
-import "std/list.nov"
 import "std/writer.nov"
 
 // -- Types
 
-struct Color  = float r, float g, float b
-struct Image  = int width, int height, List{Color} pixels
-
-// -- Constructors
-
-fun Color() black()
-
-// -- Color presets
-
-fun red()     Color(1.0, 0.0, 0.0)
-fun green()   Color(0.0, 1.0, 0.0)
-fun blue()    Color(0.0, 0.0, 1.0)
-fun yellow()  Color(1.0, 1.0, 0.0)
-fun white()   Color(1.0, 1.0, 1.0)
-fun black()   Color(0.0, 0.0, 0.0)
-fun gray()    Color(0.5, 0.5, 0.5)
-
-// -- Operator
-
-fun +(Color a, Color b) Color(a.r + b.r,  a.g + b.g,  a.b + b.b)
-fun *(Color a, Color b) Color(a.r * b.r,  a.g * b.g,  a.b * b.b)
-fun *(Color c, float t) Color(c.r * t,    c.g * t,    c.b * t)
-fun /(Color c, float t) Color(c.r / t,    c.g / t,    c.b / t)
-
-// -- Functions
-
-fun lerp(Color x, Color y, float t)
-  Color(
-    lerp(x.r, y.r, t),
-    lerp(x.g, y.g, t),
-    lerp(x.b, y.b, t))
+struct Image = int width, int height, List{Color} pixels
 
 fun makeImage(int width, int height, function{int, int, Color} getCol)
   Image(width, height, makeColorGrid(width, height, getCol))
@@ -48,17 +19,7 @@ fun makeColorGrid(int width, int height, function{int, int, Color} getCol) -> Li
   );
   makeGrid(width - 1, height - 1, List{Color}())
 
-fun gammaEncode(Color c)
-  Color(
-    pow(c.r, 1.0 / 2.2),
-    pow(c.g, 1.0 / 2.2),
-    pow(c.b, 1.0 / 2.2)
-  )
-
 // -- Conversions
-
-fun string(Color c)
-  "(" + c.r.string() + ',' + c.g.string() + ',' + c.b.string() + ')'
 
 fun string(Image i)
   "(" + i.width + "x" + i.height + ')'
@@ -117,10 +78,6 @@ fun tgaWriter()
   (headerWriter & listWriter(colorWriter)).map(lambda (Image i) Pair(i, i.pixels))
 
 // -- Tests
-
-assert(
-  red().string() == "(1,0,0)" &&
-  white().string() == "(1,1,1)")
 
 assert(
   g = makeColorGrid(2, 2, lambda (int x, int y) y == 0 ? red() : blue());

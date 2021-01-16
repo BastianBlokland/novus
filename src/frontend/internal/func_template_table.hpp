@@ -7,6 +7,11 @@ namespace frontend::internal {
 
 class FuncTemplateTable final {
 public:
+  struct CallInfo {
+    prog::sym::TypeId resultType;
+    bool isAction;
+  };
+
   FuncTemplateTable()                                 = default;
   FuncTemplateTable(const FuncTemplateTable& rhs)     = delete;
   FuncTemplateTable(FuncTemplateTable&& rhs) noexcept = default;
@@ -37,13 +42,13 @@ public:
       const std::string& name, const prog::sym::TypeSet& argTypes, prog::OvOptions options)
       -> std::vector<const FuncTemplateInst*>;
 
-  [[nodiscard]] auto
-  getRetType(const std::string& name, const prog::sym::TypeSet& typeParams, prog::OvOptions options)
-      -> std::optional<prog::sym::TypeId>;
+  [[nodiscard]] auto getCallInfo(
+      const std::string& name, const prog::sym::TypeSet& typeParams, prog::OvOptions options)
+      -> std::optional<CallInfo>;
 
-  [[nodiscard]] auto inferParamsAndGetRetType(
+  [[nodiscard]] auto inferParamsAndGetCallInfo(
       const std::string& name, const prog::sym::TypeSet& argTypes, prog::OvOptions options)
-      -> std::optional<prog::sym::TypeId>;
+      -> std::optional<CallInfo>;
 
 private:
   std::unordered_map<std::string, std::vector<FuncTemplate>> m_templates;

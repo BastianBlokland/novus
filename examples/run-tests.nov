@@ -45,7 +45,7 @@ act main()
   run = startTests();
   printOutput(run);
   result = run.getResult();
-  if result.success -> print(   "-- Tests finished in " + result.duration)
-  else              -> printErr("-- Tests failed in "   + result.duration)
+  if result.success -> print(   "-- Tests succeeded in " + result.duration, TermStyle.FgGreen)
+  else              -> printErr("-- Tests failed in "   + result.duration, TermStyle.FgRed)
 
 main()

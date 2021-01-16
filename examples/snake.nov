@@ -177,99 +177,116 @@ act loop(Duration prevFrameDur, GameState state, Console c)
   t1      = timestamp();
   window  = getWindow();
   input   = getInput(c.readToEnd());
-  if input is InputQuit || interuptIsRequested()  -> false
+  if input is InputQuit || interuptIsRequested()  -> None()
   if input is InputRestart                        -> loop(c)
   else ->
-    newState  = simulateGame(state, window, input);
-    drawGame(newState, window, prevFrameDur, c);
-
-    frameDur  = timestamp() - t1;
-    sleep(simInterval() - frameDur);
-    loop(frameDur, newState, c)
+    newState = simulateGame(state, window, input);
+    if drawGame(newState, window, prevFrameDur, c) as Error drawErr -> drawErr
+    else ->
+      frameDur  = timestamp() - t1;
+      sleep(simInterval() - frameDur);
+      loop(frameDur, newState, c)
 
 // --- Draw game state
 
 act drawGame(GameState g, Box window, Duration frameDur, Console c)
-  c.termClearScreen();
-  drawBackground(g, window, frameDur, c);
-  drawPickups(g.pickups, c);
-  drawPlayer(g.player, c);
-  c.flushOut()
+  actSeq(
+    lazy c.termClearScreen(),
+    lazy drawBackground(g, window, frameDur, c),
+    lazy drawPickups(g.pickups, c),
+    lazy drawPlayer(g.player, c),
+    lazy c.flushOut()
+  )
 
 act drawBackground(GameState g, Box window, Duration frameDur, Console c)
-  c.termStyle(TermStyle.FgBrightWhite);
-  c.termStyle(g.gameover ? TermStyle.BgBrightRed : TermStyle.BgGreen);
-  drawBox(window, c);
-  drawAt(I2(5, 1),
-    " Score: " + g.score.string(4) + " ─ " +
-    "Quit: q ─ " +
-    "Restart: r ─ " +
-    "Steering: w, a, s, d ─ " +
-    "FT: " + frameDur + " ",
-    c);
-  c.termStyle(TermStyle.Reset)
+  actSeq(
+    lazy c.termStyle(TermStyle.FgBrightWhite),
+    lazy c.termStyle(g.gameover ? TermStyle.BgBrightRed : TermStyle.BgGreen),
+    lazy drawBox(window, c),
+    lazy drawAt(I2(5, 1),
+      " Score: " + g.score.string(4) + " ─ " +
+      "Quit: q ─ " +
+      "Restart: r ─ " +
+      "Steering: w, a, s, d ─ " +
+      "FT: " + frameDur + " ", c),
+    lazy c.termStyle(TermStyle.Reset)
+  )
 
 act drawPickups(List{PickupState} pickups, Console c)
-  pickups.mapReverse(drawPickup[c])
+  pickups.mapReverse(drawPickup[c]).combine()
 
 act drawPickup(PickupState pickup, Console c)
-  c.termStyle(
-    if pickup.value == 3 -> TermStyle.FgBrightYellow
-    if pickup.value == 2 -> TermStyle.FgBrightCyan
-    else                 -> TermStyle.FgBrightMagenta
-  );
-  drawAt(pickup.pos, "●", c);
-  c.termStyle(TermStyle.Reset)
+  actSeq(
+    lazy c.termStyle(
+      if pickup.value == 3 -> TermStyle.FgBrightYellow
+      if pickup.value == 2 -> TermStyle.FgBrightCyan
+      else                 -> TermStyle.FgBrightMagenta
+    ),
+    lazy drawAt(pickup.pos, "●", c),
+    lazy c.termStyle(TermStyle.Reset)
+  )
 
 act drawPlayer(PlayerState player, Console c)
-  drawAt(player.pos,
-    if player.dir == Dir.up     -> "▲"
-    if player.dir == Dir.down   -> "▼"
-    if player.dir == Dir.right  -> "►"
-    else                        -> "◄", c);
-  player.segments.mapReverse(drawAt[c]["●"])
+  actSeq(
+    lazy drawAt(player.pos,
+      if player.dir == Dir.up     -> "▲"
+      if player.dir == Dir.down   -> "▼"
+      if player.dir == Dir.right  -> "►"
+      else                        -> "◄", c),
+    lazy invoke(impure lambda ()
+      player.segments.mapReverse(drawAt[c]["●"]).combine()
+    )
+  )
 
 // --- Misc drawing
 
 act drawBox(Box b, Console c)
-  drawAt(     b.origin,                                             "┌", c);
-  drawAt(     b.origin + I2(b.size.x - 1, 0),                       "┐", c);
-  drawAt(     b.origin + I2(0,            b.size.y),                "└", c);
-  drawAt(     b.origin + I2(b.size.x - 1, b.size.y),                "┘", c);
-  drawAtHor(  b.origin + I2(1,            0),         b.size.x - 2, "─", c);
-  drawAtHor(  b.origin + I2(1,            b.size.y),  b.size.x - 2, "─", c);
-  drawAtVer(  b.origin + I2(0,            1),         b.size.y - 2, "│", c);
-  drawAtVer(  b.origin + I2(b.size.x - 1, 1),         b.size.y - 2, "│", c)
+  actSeq(
+    lazy drawAt(     b.origin,                                             "┌", c),
+    lazy drawAt(     b.origin + I2(b.size.x - 1, 0),                       "┐", c),
+    lazy drawAt(     b.origin + I2(0,            b.size.y),                "└", c),
+    lazy drawAt(     b.origin + I2(b.size.x - 1, b.size.y),                "┘", c),
+    lazy drawAtHor(  b.origin + I2(1,            0),         b.size.x - 2, "─", c),
+    lazy drawAtHor(  b.origin + I2(1,            b.size.y),  b.size.x - 2, "─", c),
+    lazy drawAtVer(  b.origin + I2(0,            1),         b.size.y - 2, "│", c),
+    lazy drawAtVer(  b.origin + I2(b.size.x - 1, 1),         b.size.y - 2, "│", c)
+  )
 
 act drawAtHor(I2 pos, int times, string str, Console c)
   drawTimes = ( impure lambda (int times)
-    if times <= 0 -> true
-    else          -> c.writeOut(str); self(--times)
+    if times <= 0 -> None()
+    else          -> c.writeOut(str) as Error e ? e : self(--times)
   );
-  c.termCursorPos(pos.y, pos.x);
-  drawTimes(times)
+  actSeq(
+    lazy c.termCursorPos(pos.y, pos.x),
+    lazy drawTimes(times)
+  )
 
 act drawAtVer(I2 pos, int times, string str, Console c)
   drawTimes = ( impure lambda (int i)
-    if i >= times -> true
+    if i >= times -> None()
     else          ->
-      c.termCursorPos(pos.y + i, pos.x);
-      c.writeOut(str);
-      self(++i)
+      actSeq(
+        lazy c.termCursorPos(pos.y + i, pos.x),
+        lazy c.writeOut(str)
+      ) as Error e ? e
+                   : self(++i)
   );
   drawTimes(0)
 
 act drawAt(I2 pos, string str, Console c)
-  c.termCursorPos(pos.y, pos.x);
-  c.writeOut(str)
+  actSeq(
+    lazy c.termCursorPos(pos.y, pos.x),
+    lazy c.writeOut(str)
+  )
 
 // --- Entry point
 
 act main()
-  console = consoleOpen().failOnError();
-  setupTerminal(console);
-  loop(console);
-  resetTerminal(console)
+  consoleOpen().map(impure lambda (Console c)
+    res = actSeq(lazy setupTerminal(c), lazy loop(c));
+    resetTerminal(c); res
+  ).failOnError()
 
 main()
 
@@ -279,15 +296,20 @@ act getWindow()
   Box(I2(1, 1), I2(termGetWidth(), termGetHeight()))
 
 act setupTerminal(Console c)
-  c.termSetOptions(TermOptions.NoEcho | TermOptions.NoBuffer);
-  c.termAltScreen(true);
-  c.termCursorShow(false);
-  c.setNoBlockInput()
+  actSeq(
+    lazy c.termSetOptions(TermOptions.NoEcho | TermOptions.NoBuffer),
+    lazy c.termAltScreen(true),
+    lazy c.termCursorShow(false),
+    lazy c.setNoBlockInput()
+  )
 
 act resetTerminal(Console c)
-  c.termCursorShow(true);
-  c.termAltScreen(false);
-  c.termStyle(TermStyle.Reset);
-  c.termUnsetOptions(TermOptions.NoEcho | TermOptions.NoBuffer);
-  c.writeOut('\n');
-  c.unsetNoBlockInput()
+  actSeq(
+    lazy c.termCursorShow(true),
+    lazy c.termAltScreen(false),
+    lazy c.termStyle(TermStyle.Reset),
+    lazy c.termUnsetOptions(TermOptions.NoEcho | TermOptions.NoBuffer),
+    lazy c.writeOut('\n'),
+    lazy c.unsetNoBlockInput()
+  )
+

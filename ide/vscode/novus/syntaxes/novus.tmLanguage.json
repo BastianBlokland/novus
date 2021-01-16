@@ -22,7 +22,7 @@
     "buildin_type": {
       "patterns": [
         {
-          "match": "\\b(int|long|float|bool|string|char|sys_stream|sys_process|function|action|future|lazy)\\b",
+          "match": "\\b(int|long|float|bool|string|char|sys_stream|sys_process|function|action|future|lazy|lazy_action)\\b",
           "name": "keyword.other.buildin.source.novus"
         }
       ]

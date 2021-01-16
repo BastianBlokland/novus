@@ -857,23 +857,19 @@ auto GenExpr::visit(const prog::expr::LitEnumNode& n) -> void { m_asmb->addLoadL
 template <typename CallTarget>
 auto GenExpr::makeLazy(const CallTarget& tgt, const std::vector<prog::expr::NodePtr>& args)
     -> void {
-  /* A 'lazy' object is represented by a struct with 3 fields:
-      1: Flag to indicate if the value has been computed.
-      2: Closure to call to compute the value.
-      3: Computed value (or empty)
-    */
+  /* A 'lazy' object is represented by a struct with 2 fields:
+      1: Atomic, 0 = val not computed; 1 = value is being computed; 2 = value is computed.
+      2: Closure to call to compute the value or the computed value.
+   */
 
-  // Push false as the first struct field, to indicate that the value has not been computed yet.
-  m_asmb->addLoadLitInt(0);
+  // Atomic flag of value 0 as the initial state.
+  m_asmb->addMakeAtomic(0);
 
   // Push the closure as the second field.
   makeClosure(tgt, args);
 
-  // Push an 'empty' value as the third field
-  m_asmb->addLoadLitInt(0);
-
   // Make the struct.
-  m_asmb->addMakeStruct(3);
+  m_asmb->addMakeStruct(2);
 }
 
 auto GenExpr::makeClosure(const prog::expr::Node& lhs, const std::vector<prog::expr::NodePtr>& args)

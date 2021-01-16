@@ -113,6 +113,7 @@ add_executable(novtests
 
   prog/copy_test.cpp
 
+  vm/atomic_op_test.cpp
   vm/call_test.cpp
   vm/consts_test.cpp
   vm/conv_test.cpp

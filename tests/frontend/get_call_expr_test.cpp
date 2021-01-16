@@ -199,9 +199,63 @@ TEST_CASE("[frontend] Analyzing call expressions", "frontend") {
         *prog::expr::callExprNode(output.getProg(), GET_FUNC_ID(output, "a1"), {}));
   }
 
+  SECTION("Get lazy call to action") {
+    const auto& output = ANALYZE("act a1() -> int 1 "
+                                 "act a2() -> lazy_action{int} lazy a1()");
+    REQUIRE(output.isSuccess());
+    CHECK(
+        GET_FUNC_DEF(output, "a2").getExpr() ==
+        *prog::expr::callExprNode(
+            output.getProg(),
+            GET_FUNC_ID(output, "a1"),
+            GET_TYPE_ID(output, "__lazy_action_int"),
+            {},
+            prog::expr::CallMode::Lazy));
+  }
+
+  SECTION("Lazy implicitly converts to lazy-action") {
+    const auto& output = ANALYZE("fun f1() 1 "
+                                 "fun a1(lazy_action{int} la) 1 "
+                                 "fun f2() a1(lazy f1())");
+    REQUIRE(output.isSuccess());
+
+    auto args = std::vector<prog::expr::NodePtr>{};
+    args.push_back(applyConv(
+        output,
+        "__lazy_int",
+        "__lazy_action_int",
+        prog::expr::callExprNode(
+            output.getProg(),
+            GET_FUNC_ID(output, "f1"),
+            GET_TYPE_ID(output, "__lazy_int"),
+            {},
+            prog::expr::CallMode::Lazy)));
+    auto callExpr = prog::expr::callExprNode(
+        output.getProg(),
+        GET_FUNC_ID(output, "a1", GET_TYPE_ID(output, "__lazy_action_int")),
+        std::move(args));
+
+    CHECK(GET_FUNC_DEF(output, "f2").getExpr() == *callExpr);
+  }
+
   SECTION("Get call to templated action") {
-    const auto& output = ANALYZE("fun a1{T}(T t) -> T t "
-                                 "fun a2() -> int a1{int}(1)");
+    const auto& output = ANALYZE("act a1{T}(T t) -> T t "
+                                 "act a2() -> int a1{int}(1)");
+    REQUIRE(output.isSuccess());
+
+    auto args = std::vector<prog::expr::NodePtr>{};
+    args.push_back(prog::expr::litIntNode(output.getProg(), 1));
+    auto callExpr = prog::expr::callExprNode(
+        output.getProg(),
+        GET_FUNC_ID(output, "a1__int", GET_TYPE_ID(output, "int")),
+        std::move(args));
+
+    CHECK(GET_FUNC_DEF(output, "a2").getExpr() == *callExpr);
+  }
+
+  SECTION("Get lazy call to templated action") {
+    const auto& output = ANALYZE("act a1{T}(T t) -> T t "
+                                 "act a2() -> lazy_action{int} lazy a1{int}(1)");
     REQUIRE(output.isSuccess());
 
     auto args = std::vector<prog::expr::NodePtr>{};
@@ -267,10 +321,6 @@ TEST_CASE("[frontend] Analyzing call expressions", "frontend") {
     CHECK_DIAG(
         "fun f(future{int} fi) -> int lazy intrinsic{future_get}(fi)",
         errLazyNonUserFunc(src, input::Span{29, 58}));
-    CHECK_DIAG(
-        "act a(int i) -> int i * 2 "
-        "act f2(int i) -> int lazy i.a()",
-        errLazyActionCall(src, input::Span{47, 56}));
     CHECK_DIAG(
         "fun f() -> int failfast{int}()",
         errNoPureFuncFoundToInstantiate(src, "failfast", 1, input::Span{15, 29}));

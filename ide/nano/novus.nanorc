@@ -12,7 +12,7 @@ color brightyellow "((\b(is|as)\b)|(\+\+)|(\-\-)|(\&\&)|(\|\|)|(\<\<)|(\>\>)|(\<
 color cyan "\(|\)|\,|\;|\=|\{|\}|\."
 
 # Build-in types.
-color green "\b(int|long|float|bool|string|char|sys_stream|sys_process|function|action|future|lazy)\b"
+color green "\b(int|long|float|bool|string|char|sys_stream|sys_process|function|action|future|lazy|lazy_action)\b"
 
 # Constants - Bool.
 color brightmagenta "\b(true|false)\b"

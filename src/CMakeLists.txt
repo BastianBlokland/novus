@@ -215,7 +215,9 @@ add_library(opt STATIC
   opt/internal/find_used_consts.cpp
   opt/internal/find_used_funcs.cpp
   opt/internal/find_used_types.cpp
+  opt/internal/intrinsics.cpp
   opt/internal/prog_rewrite.cpp
+  opt/internal/utilities.cpp
   opt/call_inline.cpp
   opt/const_elimination.cpp
   opt/optimize.cpp

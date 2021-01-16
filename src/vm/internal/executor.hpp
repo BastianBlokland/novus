@@ -8,6 +8,8 @@
 
 namespace vm::internal {
 
+class FutureRef;
+
 // Execute a specific entrypoint in the assembly until completion.
 //
 // 'entryArgCount', 'entryArgSource', 'promise' are used for sub-executers (forked calls) that take

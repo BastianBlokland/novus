@@ -7,6 +7,12 @@ namespace frontend::internal {
 class Context;
 
 class LazyTable final {
+  // For each lazy we keep a pure and an impure version.
+  struct LazyInfo {
+    prog::sym::TypeId lazy;
+    prog::sym::TypeId lazyAction;
+  };
+
 public:
   LazyTable()                         = default;
   LazyTable(const LazyTable& rhs)     = delete;
@@ -16,10 +22,12 @@ public:
   auto operator=(const LazyTable& rhs) -> LazyTable& = delete;
   auto operator=(LazyTable&& rhs) noexcept -> LazyTable& = delete;
 
-  auto getLazy(Context* ctx, prog::sym::TypeId result) -> prog::sym::TypeId;
+  auto getLazy(Context* ctx, prog::sym::TypeId result, bool isAction) -> prog::sym::TypeId;
 
 private:
-  std::unordered_map<prog::sym::TypeId, prog::sym::TypeId, prog::sym::TypeIdHasher> m_lazies;
+  using LazyMap = std::unordered_map<prog::sym::TypeId, LazyInfo, prog::sym::TypeIdHasher>;
+
+  LazyMap m_map;
 };
 
 } // namespace frontend::internal

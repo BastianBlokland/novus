@@ -17,9 +17,6 @@ fun Option{T}()
 fun ??{T}(Option{T} opt, T def) -> T
   opt as T val ? val : def
 
-fun ??{T}(Option{T} opt, lazy{T} def) -> T
-  opt as T val ? val : def.get()
-
 // -- Conversions
 
 fun string{T}(Option{T} opt)

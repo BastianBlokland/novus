@@ -116,6 +116,11 @@ public:
   auto addConvFloatChar() -> void;
   auto addConvFloatLong() -> void;
 
+  auto addMakeAtomic(int32_t val) -> void;
+  auto addAtomicLoad() -> void;
+  auto addAtomicCompareSwap(int32_t expected, int32_t desired) -> void;
+  auto addAtomicBlock(int32_t expected) -> void;
+
   auto addMakeStruct(uint8_t fieldCount) -> void;
   auto addMakeNullStruct() -> void;
   auto addStructLoadField(uint8_t fieldIndex) -> void;

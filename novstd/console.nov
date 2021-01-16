@@ -21,10 +21,10 @@ act consoleOpen() -> Either{Console, Error}
   else ->
     Error("Failed to open console")
 
-act setNoBlockInput(Console c) -> bool
+act setNoBlockInput(Console c) -> Option{Error}
   c.stdIn.setOptions(StreamOptions.NoBlock)
 
-act unsetNoBlockInput(Console c) -> bool
+act unsetNoBlockInput(Console c) -> Option{Error}
   c.stdIn.unsetOptions(StreamOptions.NoBlock)
 
 act read(Console c) -> char
@@ -40,54 +40,50 @@ act readToEnd{T}(Console c, Parser{T} parser) -> Either{T, Error}
   parser.run(c.readToEnd())
 
 act read() -> char
-  consoleOpen().failOnError().read()
+  consoleOpen() as Console c ? c.read() : '\0'
 
 act readLine() -> string
-  consoleOpen().failOnError().readLine()
+  consoleOpen() as Console c ? c.readLine() : ""
 
 act writeOut(Console c, string str) -> Option{Error}
   c.stdOut.write(str)
-    ? None()
-    : Error("Failed to write to the stdOut stream of the console")
 
 act writeOut(Console c, char ch) -> Option{Error}
   c.stdOut.write(ch)
-    ? None()
-    : Error("Failed to write to the stdOut stream of the console")
 
 act writeOut{T}(Console c, Writer{T} writer, T val) -> Option{Error}
   c.write(writer.run(val))
 
 act writeErr(Console c, string str) -> Option{Error}
   c.stdErr.write(str)
-    ? None()
-    : Error("Failed to write to the stdErr stream of the console")
 
 act writeErr(Console c, char ch) -> Option{Error}
   c.stdErr.write(ch)
-    ? None()
-    : Error("Failed to write to the stdErr stream of the console")
 
 act writeErr{T}(Console c, Writer{T} writer, T val) -> Option{Error}
   c.write(writer.run(val))
 
-act flushOut(Console c)
+act flushOut(Console c) -> Option{Error}
   c.stdOut.flush()
 
-act flushErr(Console c)
+act flushErr(Console c) -> Option{Error}
   c.stdErr.flush()
 
 act print{T}(T x) -> Option{Error}
-  c       = consoleOpen().failOnError();
-  success =   c.stdOut.write(x.string() + '\n') &&
-              c.stdOut.flush();
-  success ? None() : Error("Failed to write to the stdOut stream of the console")
+  consoleOpen().map(impure lambda (Console c) -> Option{Error}
+    actSeq(
+      lazy c.stdOut.write(x.string() + '\n'),
+      lazy c.stdOut.flush()
+    )
+  )
 
 act printErr{T}(T x) -> Option{Error}
-  c       = consoleOpen().failOnError();
-  success =   c.stdOut.write(x.string() + '\n') &&
-              c.stdOut.flush();
-  success ? None() : Error("Failed to write to the stdErr stream of the console")
+  consoleOpen().map(impure lambda (Console c) -> Option{Error}
+    actSeq(
+      lazy c.stdErr.write(x.string() + '\n'),
+      lazy c.stdErr.flush()
+    )
+  )
 
 act printBits(int i) -> Option{Error}
   print(toBitString(i, false))

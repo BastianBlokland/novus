@@ -303,10 +303,6 @@ auto GetExpr::visit(const parse::CallExprNode& n) -> void {
   if (n.isFork() || n.isLazy()) {
     assert(n.isFork() != n.isLazy());
 
-    if (m_ctx->getProg()->getFuncDecl(*func).isAction() && n.isLazy()) {
-      m_ctx->reportDiag(errLazyActionCall, n.getSpan());
-      return;
-    }
     if (m_ctx->getProg()->getFuncDecl(*func).getKind() != prog::sym::FuncKind::User) {
       m_ctx->reportDiag(n.isFork() ? errForkedNonUserFunc : errLazyNonUserFunc, n.getSpan());
       return;
@@ -1025,10 +1021,6 @@ auto GetExpr::getDynCallExpr(const parse::CallExprNode& n) -> prog::expr::NodePt
     if (n.isFork() || n.isLazy()) {
       assert(n.isLazy() != n.isFork());
 
-      if (m_ctx->getProg()->isActionDelegate(args->second[0]) && n.isLazy()) {
-        m_ctx->reportDiag(errLazyActionCall, n.getSpan());
-        return nullptr;
-      }
       return prog::expr::callDynExprNode(
           *m_ctx->getProg(),
           std::move(args->first[0]),

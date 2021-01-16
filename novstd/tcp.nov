@@ -2,6 +2,7 @@ import "std/future.nov"
 import "std/ip.nov"
 import "std/option.nov"
 import "std/parallel.nov"
+import "std/rt.nov"
 
 // -- Types
 
@@ -38,13 +39,9 @@ fun TcpServerSettings(IpFamily family, int port, int maxBacklog, action{TcpConne
 
 act write(TcpConnection c, string str) -> Option{Error}
   c.socket.write(str)
-    ? None()
-    : Error("Failed to write to the socket")
 
 act write(TcpConnection c, char ch) -> Option{Error}
   c.socket.write(ch)
-    ? None()
-    : Error("Failed to write to the socket")
 
 act write{T}(TcpConnection c, Writer{T} writer, T val) -> Option{Error}
   c.write(writer.run(val))

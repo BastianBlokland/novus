@@ -56,17 +56,32 @@ act atInterupt{T}(action{T} delegate) -> future{T}
 
 // -- Misc
 
-act sleep(Duration d)
-  Duration(intrinsic{sleep_nano}(d.ns))
+act sleep(Duration d) -> Option{Error}
+  intrinsic{sleep_nano}(d.ns); None()
 
 // -- Failure
 
 act fail(string msg) -> Option{Error}
   fail{Option{Error}}(msg)
 
+act fail(Error err) -> Option{Error}
+  fail{Option{Error}}(err)
+
 act fail{TResult}(string msg) -> TResult
   printErr(msg);
   failfast{TResult}()
+
+act fail{TResult}(Error err) -> TResult
+  writer = litWriter("Failed:\n") & errorWriter(litWriter("- "), newlineWriter());
+  fail{TResult}(writer.run(err))
+
+act failOnError{T}(Either{T, Error} v) -> T
+  if v as T      val -> val
+  if v as Error  err -> fail{T}(err)
+
+act failOnError(Option{Error} v) -> None
+  if v as Error  err -> fail{None}(err)
+  else               -> None()
 
 // -- Tests
 

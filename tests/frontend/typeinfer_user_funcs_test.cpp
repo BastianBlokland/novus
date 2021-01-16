@@ -233,6 +233,13 @@ TEST_CASE("[frontend] Infer return type of user functions", "frontend") {
     CHECK(GET_FUNC_DECL(output, "f2").getOutput() == GET_TYPE_ID(output, "__lazy_int"));
   }
 
+  SECTION("Lazy action call") {
+    const auto& output = ANALYZE("act a1(int i) i * i "
+                                 "act a2() lazy a1(42)");
+    REQUIRE(output.isSuccess());
+    CHECK(GET_FUNC_DECL(output, "a2").getOutput() == GET_TYPE_ID(output, "__lazy_action_int"));
+  }
+
   SECTION("Lazy templated call") {
     const auto& output = ANALYZE("fun ft{T}(T a) a == a "
                                  "fun f(int i) lazy ft{int}(i)");
@@ -240,6 +247,15 @@ TEST_CASE("[frontend] Infer return type of user functions", "frontend") {
     CHECK(
         GET_FUNC_DECL(output, "f", GET_TYPE_ID(output, "int")).getOutput() ==
         GET_TYPE_ID(output, "__lazy_bool"));
+  }
+
+  SECTION("Lazy templated action call") {
+    const auto& output = ANALYZE("act at{T}(T a) a == a "
+                                 "act a(int i) lazy at{int}(i)");
+    REQUIRE(output.isSuccess());
+    CHECK(
+        GET_FUNC_DECL(output, "a", GET_TYPE_ID(output, "int")).getOutput() ==
+        GET_TYPE_ID(output, "__lazy_action_bool"));
   }
 
   SECTION("Templated constructor") {
@@ -335,6 +351,14 @@ TEST_CASE("[frontend] Infer return type of user functions", "frontend") {
     CHECK(
         GET_FUNC_DECL(output, "f", GET_TYPE_ID(output, "__function_int_int")).getOutput() ==
         GET_TYPE_ID(output, "__lazy_int"));
+  }
+
+  SECTION("Lazy dynamic action call") {
+    const auto& output = ANALYZE("act a(action{int, int} op) lazy op(1)");
+    REQUIRE(output.isSuccess());
+    CHECK(
+        GET_FUNC_DECL(output, "a", GET_TYPE_ID(output, "__action_int_int")).getOutput() ==
+        GET_TYPE_ID(output, "__lazy_action_int"));
   }
 
   SECTION("Anonymous function") {

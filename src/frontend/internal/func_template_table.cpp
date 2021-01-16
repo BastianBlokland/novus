@@ -64,27 +64,28 @@ auto FuncTemplateTable::inferParamsAndInstantiate(
   return result;
 }
 
-auto FuncTemplateTable::getRetType(
+auto FuncTemplateTable::getCallInfo(
     const std::string& name, const prog::sym::TypeSet& typeParams, prog::OvOptions options)
-    -> std::optional<prog::sym::TypeId> {
+    -> std::optional<CallInfo> {
   auto itr = m_templates.find(name);
   if (itr == m_templates.end()) {
     return std::nullopt;
   }
 
-  // Only return a value if all overloads agree on the result-type.
-  std::optional<prog::sym::TypeId> result = std::nullopt;
+  // Only return a value if all overloads agree on the info.
+  std::optional<CallInfo> result = std::nullopt;
   for (auto& funcTemplate : itr->second) {
     if (satisfiesOptions(funcTemplate, options) &&
         funcTemplate.getTypeParamCount() == typeParams.getCount()) {
 
-      const auto retType = funcTemplate.getRetType(typeParams);
-      if (!retType) {
+      const auto retType  = funcTemplate.getRetType(typeParams);
+      const auto isAction = funcTemplate.isAction();
+      if (!retType || retType->isInfer()) {
         continue;
       }
       if (!result) {
-        result = retType;
-      } else if (*result != *retType) {
+        result = {*retType, isAction};
+      } else if (result->resultType != *retType || result->isAction != isAction) {
         return std::nullopt;
       }
     }
@@ -92,20 +93,21 @@ auto FuncTemplateTable::getRetType(
   return result;
 }
 
-auto FuncTemplateTable::inferParamsAndGetRetType(
+auto FuncTemplateTable::inferParamsAndGetCallInfo(
     const std::string& name, const prog::sym::TypeSet& argTypes, prog::OvOptions options)
-    -> std::optional<prog::sym::TypeId> {
+    -> std::optional<CallInfo> {
 
-  // Only return a value if all templates agree on the result-type.
-  std::optional<prog::sym::TypeId> result = std::nullopt;
+  // Only return a value if all templates agree on the info.
+  std::optional<CallInfo> result = std::nullopt;
   for (const auto& funcTemplAndParams : inferParams(name, argTypes, options)) {
-    const auto retType = funcTemplAndParams.first->getRetType(funcTemplAndParams.second);
+    const auto retType  = funcTemplAndParams.first->getRetType(funcTemplAndParams.second);
+    const auto isAction = funcTemplAndParams.first->isAction();
     if (!retType || retType->isInfer()) {
       continue;
     }
     if (!result) {
-      result = retType;
-    } else if (*result != *retType) {
+      result = {*retType, isAction};
+    } else if (result->resultType != *retType || result->isAction != isAction) {
       return std::nullopt;
     }
   }

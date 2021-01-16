@@ -17,16 +17,14 @@ TEST_CASE("[backend] Generate assembly for lazy calls", "backend") {
           asmb->label("f2");
 
           // >>> Create lazy object.
-          asmb->addLoadLitInt(0); // 0 to indicate that the values has not been computed.
+          asmb->addMakeAtomic(0); // 0 to indicate that the values has not been computed.
 
           // Create closure struct pointing to f1.
           asmb->addLoadLitIp("f1");
           asmb->addMakeStruct(1);
 
-          asmb->addLoadLitInt(0); // Set 0 as an 'empty' computed value.
-
-          // Create the lazy struct containing the 3 fields we've just created.
-          asmb->addMakeStruct(3);
+          // Create the lazy struct containing the 2 fields we've just created.
+          asmb->addMakeStruct(2);
           // <<< Create lazy object.
 
           asmb->addRet();
@@ -44,7 +42,7 @@ TEST_CASE("[backend] Generate assembly for lazy calls", "backend") {
           asmb->label("f");
 
           // >>> Create lazy object.
-          asmb->addLoadLitInt(0); // 0 to indicate that the values has not been computed.
+          asmb->addMakeAtomic(0); // 0 to indicate that the values has not been computed.
 
           // Create closure struct pointing to a 'trampoline' function that will the 'func'
           // delegate.
@@ -58,10 +56,7 @@ TEST_CASE("[backend] Generate assembly for lazy calls", "backend") {
           asmb->addCallDyn(0, novasm::CallMode::Tail);
           asmb->label("trampoline-end");
 
-          asmb->addLoadLitInt(0); // Set 0 as an 'empty' computed value.
-
-          // Create the lazy struct containing the 3 fields we've just created.
-          asmb->addMakeStruct(3);
+          asmb->addMakeStruct(2);
           // <<< Create lazy object.
 
           asmb->addRet();
@@ -80,31 +75,38 @@ TEST_CASE("[backend] Generate assembly for lazy calls", "backend") {
 
           // Load the lazy 'l' input constant.
           asmb->addStackLoad(0);
+          asmb->addDup(); // Duplicate the lazy struct for the following accesses.
           asmb->addDup();
 
-          // Check if a value has already been computed.
+          // Attempt to set the atomic from 0 to 1, if the original value was not 0: jump.
           asmb->addStructLoadField(0);
-          asmb->addJumpIf("already-computed");
+          asmb->addAtomicCompareSwap(0, 1);
+          asmb->addJumpIf("not-idle");
 
-          // Duplicate the lazy a few times for the following accesses.
-          asmb->addDup();
-          asmb->addDup();
+          asmb->addDup(); // Duplicate the lazy struct for the following accesses.
           asmb->addDup();
 
-          // Compute the value.
+          // Execute the closure and store the result.
           asmb->addStructLoadField(1);
           asmb->addCallDyn(0, novasm::CallMode::Normal);
+          asmb->addStructStoreField(1);
 
-          // Store the computed value.
-          asmb->addStructStoreField(2);
+          // Set the atomic to 2 and jump to the end.
+          asmb->addStructLoadField(0);
+          asmb->addAtomicCompareSwap(1, 2);
+          asmb->addPop(); // Ignore the result of the compare and swap.
+          asmb->addJump("return-result");
 
-          // Set the 'computed' flag to true.
-          asmb->addLoadLitInt(1);
-          asmb->addStructStoreField(0);
+          // Getting here was that the value is already computed or is being computed.
+          asmb->label("not-idle");
 
-          // Load the already computed value.
-          asmb->label("already-computed");
-          asmb->addStructLoadField(2);
+          // Wait for the atomic to have the value 2.
+          asmb->addStructLoadField(0);
+          asmb->addAtomicBlock(2);
+
+          // Return.
+          asmb->label("return-result");
+          asmb->addStructLoadField(1); // Load the computed value.
 
           asmb->addRet();
 

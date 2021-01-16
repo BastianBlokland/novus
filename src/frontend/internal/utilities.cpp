@@ -191,6 +191,7 @@ auto isReservedTypeName(const std::string& name) -> bool {
       "action",
       "future",
       "lazy",
+      "lazy_action",
   };
   return reservedTypes.find(name) != reservedTypes.end();
 }
@@ -299,7 +300,10 @@ auto instType(
     return ctx->getFutures()->getFuture(ctx, *typeSet->begin());
   }
   if (typeName == "lazy" && typeSet->getCount() == 1) {
-    return ctx->getLazies()->getLazy(ctx, *typeSet->begin());
+    return ctx->getLazies()->getLazy(ctx, *typeSet->begin(), false);
+  }
+  if (typeName == "lazy_action" && typeSet->getCount() == 1) {
+    return ctx->getLazies()->getLazy(ctx, *typeSet->begin(), true);
   }
 
   const auto typeInstantiation = ctx->getTypeTemplates()->instantiate(typeName, *typeSet);
@@ -562,19 +566,20 @@ auto delegateOutAsFuture(Context* ctx, prog::sym::TypeId delegate)
   return std::nullopt;
 }
 
-auto asLazy(Context* ctx, prog::sym::TypeId type) -> prog::sym::TypeId {
-  return ctx->getLazies()->getLazy(ctx, type);
+auto asLazy(Context* ctx, prog::sym::TypeId type, bool isAction) -> prog::sym::TypeId {
+  return ctx->getLazies()->getLazy(ctx, type, isAction);
 }
 
 auto funcOutAsLazy(Context* ctx, prog::sym::FuncId func) -> prog::sym::TypeId {
-  return asLazy(ctx, ctx->getProg()->getFuncDecl(func).getOutput());
+  const auto& funcDecl = ctx->getProg()->getFuncDecl(func);
+  return asLazy(ctx, funcDecl.getOutput(), funcDecl.isAction());
 }
 
 auto delegateOutAsLazy(Context* ctx, prog::sym::TypeId delegate)
     -> std::optional<prog::sym::TypeId> {
   const auto delOut = ctx->getProg()->getDelegateRetType(delegate);
   if (delOut) {
-    return asLazy(ctx, *delOut);
+    return asLazy(ctx, *delOut, ctx->getProg()->isActionDelegate(delegate));
   }
   return std::nullopt;
 }

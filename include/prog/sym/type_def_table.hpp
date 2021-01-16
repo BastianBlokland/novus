@@ -57,7 +57,9 @@ public:
 
   auto registerFuture(const sym::TypeDeclTable& typeTable, sym::TypeId id, TypeId result) -> void;
 
-  auto registerLazy(const sym::TypeDeclTable& typeTable, sym::TypeId id, TypeId result) -> void;
+  auto
+  registerLazy(const sym::TypeDeclTable& typeTable, sym::TypeId id, TypeId result, bool isAction)
+      -> void;
 
   auto registerType(sym::TypeId id, TypeDef def) -> void;
 

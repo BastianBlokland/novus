@@ -104,7 +104,7 @@ auto printFuncDecls(const prog::Program& prog) -> void {
 }
 
 auto printTypeDefs(const prog::Program& prog) -> void {
-  const auto nameColWidth = 15;
+  const auto nameColWidth = 35;
 
   std::cout << rang::style::bold << "Type definitions:\n" << rang::style::reset;
   for (auto typeItr = prog.beginTypeDefs(); typeItr != prog.endTypeDefs(); ++typeItr) {
@@ -154,8 +154,8 @@ auto printTypeDefs(const prog::Program& prog) -> void {
     } else if (std::holds_alternative<prog::sym::LazyDef>(typeDef)) {
       const auto& lazyDef = std::get<prog::sym::LazyDef>(typeDef);
       std::cout << "  " << rang::fg::yellow << rang::style::bold << std::setw(nameColWidth)
-                << std::left << "lazy"
-                << " -> " << lazyDef.getResult() << rang::style::reset << '\n';
+                << std::left << (lazyDef.isAction() ? "lazy_action" : "lazy") << " -> "
+                << lazyDef.getResult() << rang::style::reset << '\n';
     }
   }
 }
