@@ -6,11 +6,12 @@
 namespace parse {
 
 TEST_CASE("[parse] Iterating the parser", "parse") {
-  const std::string input = "conWrite(1) conWrite(x * y)";
-  auto lexer              = lex::Lexer{input.begin(), input.end()};
-  auto parser             = parse::Parser{lexer.begin(), lexer.end()};
+  const std::string input = "print(1) print(x * y)";
 
   SECTION("Range for") {
+    auto lexer  = lex::Lexer{input.begin(), input.end()};
+    auto parser = parse::Parser{lexer.begin(), lexer.end()};
+
     std::vector<NodePtr> nodes;
     for (auto&& node : parser) {
       nodes.push_back(std::move(node));
@@ -19,6 +20,9 @@ TEST_CASE("[parse] Iterating the parser", "parse") {
   }
 
   SECTION("While loop") {
+    auto lexer  = lex::Lexer{input.begin(), input.end()};
+    auto parser = parse::Parser{lexer.begin(), lexer.end()};
+
     auto i = 0;
     while (parser.next() != nullptr) {
       ++i;
@@ -27,6 +31,9 @@ TEST_CASE("[parse] Iterating the parser", "parse") {
   }
 
   SECTION("Iterator") {
+    auto lexer  = lex::Lexer{input.begin(), input.end()};
+    auto parser = parse::Parser{lexer.begin(), lexer.end()};
+
     auto i       = 0;
     auto nodeItr = parser.begin();
     auto endItr  = parser.end();
@@ -37,6 +44,8 @@ TEST_CASE("[parse] Iterating the parser", "parse") {
   }
 
   SECTION("ParseAll") {
+    auto lexer = lex::Lexer{input.begin(), input.end()};
+
     auto vec = parseAll(lexer.begin(), lexer.end());
     REQUIRE(vec.size() == 2);
   }

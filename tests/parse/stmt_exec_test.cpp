@@ -3,6 +3,7 @@
 #include "parse/error.hpp"
 #include "parse/node_expr_call.hpp"
 #include "parse/node_expr_group.hpp"
+#include "parse/node_expr_intrinsic.hpp"
 #include "parse/node_stmt_exec.hpp"
 
 namespace parse {
@@ -12,6 +13,15 @@ TEST_CASE("[parse] Parsing execute statements", "parse") {
   CHECK_STMT(
       "exec()",
       execStmtNode(callExprNode({}, ID_EXPR("exec"), OPAREN, NODES(), COMMAS(0), CPAREN)));
+  CHECK_STMT(
+      "intrinsic{exec}()",
+      execStmtNode(callExprNode(
+          {},
+          intrinsicExprNode(INTRINSIC, OCURLY, ID("exec"), CCURLY),
+          OPAREN,
+          NODES(),
+          COMMAS(0),
+          CPAREN)));
   CHECK_STMT(
       "exec(1,2)",
       execStmtNode(
@@ -54,6 +64,11 @@ TEST_CASE("[parse] Parsing execute statements", "parse") {
           NODES(),
           COMMAS(0),
           CPAREN)));
+  CHECK_STMT(
+      "(exec)()",
+      execStmtNode(callExprNode(
+          {}, parenExprNode(OPAREN, ID_EXPR("exec"), CPAREN), OPAREN, NODES(), COMMAS(0), CPAREN)));
+  CHECK_STMT("1()", execStmtNode(callExprNode({}, INT(1), OPAREN, NODES(), COMMAS(0), CPAREN)));
 
   SECTION("Errors") {
     CHECK_STMT(
