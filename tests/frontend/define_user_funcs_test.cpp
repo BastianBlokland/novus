@@ -72,7 +72,7 @@ TEST_CASE("[frontend] Analyzing user-function definitions", "frontend") {
     CHECK_DIAG(
         "act a() -> int f{int}()",
         errNoFuncOrActionFoundToInstantiate(src, "f", 1, input::Span{15, 22}));
-    CHECK_DIAG("f{int}()", errNoActionFoundToInstantiate(src, "f", 1, input::Span{0, 7}));
+    CHECK_DIAG("f{int}()", errNoFuncOrActionFoundToInstantiate(src, "f", 1, input::Span{0, 7}));
     CHECK_DIAG(
         "fun f1() -> int 1 "
         "fun f2() -> int f1{int}()",

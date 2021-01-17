@@ -18,12 +18,13 @@ auto DefineExecStmts::visit(const parse::ExecStmtNode& n) -> void {
   auto visibleConsts = std::vector<prog::sym::ConstId>{};
 
   auto constBinder = ConstBinder{&consts, &visibleConsts, nullptr};
-  auto getExpr     = GetExpr{m_ctx,
-                         nullptr,
-                         &constBinder,
-                         prog::sym::TypeId::inferType(),
-                         std::nullopt,
-                         GetExpr::Flags::AllowActionCalls};
+  auto getExpr     = GetExpr{
+      m_ctx,
+      nullptr,
+      &constBinder,
+      prog::sym::TypeId::inferType(),
+      std::nullopt,
+      GetExpr::Flags::AllowPureFuncCalls | GetExpr::Flags::AllowActionCalls};
   n[0].accept(&getExpr);
   if (!getExpr.getValue()) {
     assert(m_ctx->hasErrors());
