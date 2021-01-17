@@ -268,13 +268,13 @@ TEST_CASE("[frontend] Analyzing call expressions", "frontend") {
     CHECK(GET_FUNC_DEF(output, "a2").getExpr() == *callExpr);
   }
 
-  SECTION("Get fail action call") {
-    const auto& output = ANALYZE("act a() -> int failfast{int}()");
+  SECTION("Get fail intrinsic action call") {
+    const auto& output = ANALYZE("act a() -> int intrinsic{fail}{int}()");
     REQUIRE(output.isSuccess());
 
     auto callExpr = prog::expr::callExprNode(
         output.getProg(),
-        GET_FUNC_ID(output, "__failfast_int"),
+        GET_INTRINSIC_ID(output, "__fail_int"),
         std::vector<prog::expr::NodePtr>{});
 
     CHECK(GET_FUNC_DEF(output, "a").getExpr() == *callExpr);
@@ -322,20 +322,16 @@ TEST_CASE("[frontend] Analyzing call expressions", "frontend") {
         "fun f(future{int} fi) -> int lazy intrinsic{future_get}(fi)",
         errLazyNonUserFunc(src, input::Span{29, 58}));
     CHECK_DIAG(
-        "fun f() -> int failfast{int}()",
-        errNoPureFuncFoundToInstantiate(src, "failfast", 1, input::Span{15, 29}));
+        "fun f() -> int fail{int}()",
+        errNoPureFuncFoundToInstantiate(src, "fail", 1, input::Span{15, 25}));
     CHECK_DIAG(
-        "act f() -> int failfast()",
-        errInvalidFailCall(src, 0, 0, input::Span{15, 24}),
-        errUndeclaredFuncOrAction(src, "failfast", {}, input::Span{15, 24}));
+        "act f() -> int intrinsic{fail}()",
+        errInvalidFailIntrinsicCall(src, 0, 0, input::Span{15, 31}),
+        errUnknownIntrinsic(src, "fail", false, {}, input::Span{15, 31}));
     CHECK_DIAG(
-        "act f() -> int failfast(1)",
-        errInvalidFailCall(src, 0, 1, input::Span{15, 25}),
-        errUndeclaredFuncOrAction(src, "failfast", {"int"}, input::Span{15, 25}));
-    CHECK_DIAG(
-        "act f() -> int failfast{int}(1.0)",
-        errInvalidFailCall(src, 1, 1, input::Span{15, 32}),
-        errNoFuncOrActionFoundToInstantiate(src, "failfast", 1, input::Span{15, 32}));
+        "act f() -> int intrinsic{fail}(1)",
+        errInvalidFailIntrinsicCall(src, 0, 1, input::Span{15, 32}),
+        errUnknownIntrinsic(src, "fail", false, {"int"}, input::Span{15, 32}));
   }
 }
 

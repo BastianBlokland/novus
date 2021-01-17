@@ -567,8 +567,8 @@ auto Program::declareAction(std::string name, sym::TypeSet input, sym::TypeId ou
       *this, sym::FuncKind::User, std::move(name), std::move(input), output);
 }
 
-auto Program::declareActionFail(std::string name, sym::TypeId output) -> sym::FuncId {
-  return m_funcDecls.registerAction(
+auto Program::declareFailIntrinsic(std::string name, sym::TypeId output) -> sym::FuncId {
+  return m_funcDecls.registerIntrinsicAction(
       *this, sym::FuncKind::ActionFail, std::move(name), sym::TypeSet{}, output);
 }
 

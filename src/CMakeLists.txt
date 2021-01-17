@@ -171,6 +171,7 @@ add_library(frontend STATIC
   frontend/internal/define_user_funcs.cpp
   frontend/internal/define_user_types.cpp
   frontend/internal/future_table.cpp
+  frontend/internal/intrinsic_call_hooks.cpp
   frontend/internal/lazy_table.cpp
   frontend/internal/get_expr.cpp
   frontend/internal/import_sources.cpp

@@ -69,7 +69,7 @@ act fail(Error err) -> Option{Error}
 
 act fail{TResult}(string msg) -> TResult
   printErr(msg);
-  failfast{TResult}()
+  intrinsic{fail}{TResult}()
 
 act fail{TResult}(Error err) -> TResult
   writer = litWriter("Failed:\n") & errorWriter(litWriter("- "), newlineWriter());

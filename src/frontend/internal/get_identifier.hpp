@@ -45,8 +45,9 @@ public:
   }
 
   auto visit(const parse::IntrinsicExprNode& n) -> void override {
-    m_identifier  = n.getIntrinsic();
     m_isIntrinsic = true;
+    m_identifier  = n.getIntrinsic();
+    m_typeParams  = n.getTypeParams();
   }
 
 private:

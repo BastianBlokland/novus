@@ -17,7 +17,7 @@ TEST_CASE("[parse] Parsing execute statements", "parse") {
       "intrinsic{exec}()",
       execStmtNode(callExprNode(
           {},
-          intrinsicExprNode(INTRINSIC, OCURLY, ID("exec"), CCURLY),
+          intrinsicExprNode(INTRINSIC, OCURLY, ID("exec"), CCURLY, std::nullopt),
           OPAREN,
           NODES(),
           COMMAS(0),

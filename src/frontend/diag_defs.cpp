@@ -599,10 +599,10 @@ auto errIncorrectNumArgsInSelfCall(
   return error(src, oss.str(), span);
 }
 
-auto errInvalidFailCall(
+auto errInvalidFailIntrinsicCall(
     const Source& src, unsigned int typeParams, unsigned int argCount, input::Span span) -> Diag {
   std::ostringstream oss;
-  oss << "Invalid failfast action call";
+  oss << "Invalid fail intrinsic action call";
   if (typeParams != 1) {
     oss << ", requires '1' type parameter but got '" << typeParams << "'";
   }
