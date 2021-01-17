@@ -105,20 +105,21 @@ public:
   inline auto requestPause() noexcept -> bool {
     // Set request to 'Pause' in case its currently 'None', reason is we want to leave it alone when
     // its currently set to 'Abort' to avoid resurrecting aborted executors.
-    auto currentReq = m_request.load(std::memory_order_relaxed);
-    if (currentReq == RequestType::None) {
-      m_request.compare_exchange_strong(
-          currentReq, RequestType::Pause, std::memory_order_release, std::memory_order_relaxed);
-    }
+    auto expectedReq = RequestType::None;
+    m_request.compare_exchange_strong(
+        expectedReq, RequestType::Pause, std::memory_order_acq_rel, std::memory_order_relaxed);
     return m_state.load(std::memory_order_acquire) != ExecState::Running;
   }
 
   inline auto resume() noexcept -> void {
-    auto currentReq = m_request.load(std::memory_order_relaxed);
-    if (currentReq == RequestType::Pause) {
-      m_request.compare_exchange_strong(
-          currentReq, RequestType::None, std::memory_order_release, std::memory_order_relaxed);
-    }
+    // Set request to 'None' in case its currently 'Pause', reason is we want to leave it alone when
+    // its currently set to 'Abort' to avoid resurrecting aborted executors.
+    auto expectedReq = RequestType::Pause;
+    m_request.compare_exchange_strong(
+        expectedReq, RequestType::None, std::memory_order_acq_rel, std::memory_order_relaxed);
+
+    // Double check that we did not try to resume a non-paused executor.
+    assert(expectedReq != RequestType::None);
   }
 
 private:
