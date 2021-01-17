@@ -152,7 +152,7 @@ public:
   auto declareLazy(std::string name) -> sym::TypeId;
   auto declarePureFunc(std::string name, sym::TypeSet input, sym::TypeId output) -> sym::FuncId;
   auto declareAction(std::string name, sym::TypeSet input, sym::TypeId output) -> sym::FuncId;
-  auto declareActionFail(std::string name, sym::TypeId output) -> sym::FuncId;
+  auto declareFailIntrinsic(std::string name, sym::TypeId output) -> sym::FuncId;
 
   auto defineStruct(sym::TypeId id, sym::FieldDeclTable fields) -> void;
   auto defineUnion(sym::TypeId id, std::vector<sym::TypeId> types) -> void;

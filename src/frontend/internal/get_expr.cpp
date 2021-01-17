@@ -4,6 +4,7 @@
 #include "internal/check_union_exhaustiveness.hpp"
 #include "internal/define_user_funcs.hpp"
 #include "internal/get_identifier.hpp"
+#include "internal/intrinsic_call_hooks.hpp"
 #include "internal/utilities.hpp"
 #include "lex/token_payload_lit_bool.hpp"
 #include "lex/token_payload_lit_char.hpp"
@@ -245,10 +246,10 @@ auto GetExpr::visit(const parse::CallExprNode& n) -> void {
       ? m_ctx->getProg()->lookupIntrinsic(getName(nameToken), getOvOptions(0))
       : getFunctionsInclConversions(nameToken, typeParams, args->second);
 
-  // modifyCallPossibleFuncs allows modifying the list of considered functions before overload
-  // resolution, this allows injecting other possible-functions or excluding some functions.
-  modifyCallPossibleFuncs(
-      m_ctx, m_typeSubTable, nameToken, typeParams, n, *args.get(), possibleFuncs);
+  if (getIdVisitor.isIntrinsic()) {
+    injectPossibleIntrinsicFunctions(
+        m_ctx, m_typeSubTable, nameToken, n.getSpan(), typeParams, *args.get(), possibleFuncs);
+  }
 
   // On instance calls we do not allow (implicit) conversions on the first argument (the instance).
   const auto noConvFirstArg = instance != nullptr;

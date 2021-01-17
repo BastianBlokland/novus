@@ -16,7 +16,7 @@ public:
   auto operator=(const FailTable& rhs) -> FailTable& = delete;
   auto operator=(FailTable&& rhs) noexcept -> FailTable& = delete;
 
-  auto getActionFail(Context* ctx, prog::sym::TypeId result) -> prog::sym::FuncId;
+  auto getFailIntrinsic(Context* ctx, prog::sym::TypeId result) -> prog::sym::FuncId;
 
 private:
   std::unordered_map<prog::sym::TypeId, prog::sym::FuncId, prog::sym::TypeIdHasher> m_fails;

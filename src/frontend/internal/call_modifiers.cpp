@@ -41,31 +41,4 @@ auto modifyCallArgs(
   }
 }
 
-auto modifyCallPossibleFuncs(
-    Context* ctx,
-    const TypeSubstitutionTable* subTable,
-    const lex::Token& nameToken,
-    std::optional<parse::TypeParamList> typeParams,
-    const parse::CallExprNode& node,
-    const std::pair<std::vector<prog::expr::NodePtr>, prog::sym::TypeSet>& args,
-    std::vector<prog::sym::FuncId>& possibleFuncs) -> void {
-
-  assert(ctx);
-
-  if (getName(nameToken) == "failfast") {
-    if (typeParams && typeParams->getCount() == 1 && args.first.size() == 0) {
-      const auto resultType = getOrInstType(ctx, subTable, (*typeParams)[0]);
-      if (resultType) {
-        possibleFuncs.push_back(ctx->getFails()->getActionFail(ctx, *resultType));
-      }
-    } else {
-      ctx->reportDiag(
-          errInvalidFailCall,
-          typeParams ? typeParams->getCount() : 0u,
-          args.first.size(),
-          node.getSpan());
-    }
-  }
-}
-
 } // namespace frontend::internal

@@ -374,8 +374,12 @@ auto errInvalidIdExpr(lex::Token id, std::optional<TypeParamList> typeParams) ->
   return errorNode(oss.str(), std::move(tokens), {});
 }
 
-auto errInvalidIntrinsicExpr(lex::Token kw, lex::Token open, lex::Token intrinsic, lex::Token close)
-    -> NodePtr {
+auto errInvalidIntrinsicExpr(
+    lex::Token kw,
+    lex::Token open,
+    lex::Token intrinsic,
+    lex::Token close,
+    std::optional<TypeParamList> typeParams) -> NodePtr {
   std::ostringstream oss;
   if (open.getKind() != lex::TokenKind::SepOpenCurly) {
     oss << "Expected opening curly-brace '{' but got: '" << open << '\'';
@@ -383,6 +387,8 @@ auto errInvalidIntrinsicExpr(lex::Token kw, lex::Token open, lex::Token intrinsi
     oss << "Expected an identifier but got: '" << intrinsic << '\'';
   } else if (close.getKind() != lex::TokenKind::SepCloseCurly) {
     oss << "Expected closing curly-brace '}' but got: '" << close << '\'';
+  } else if (typeParams && !typeParams->validate()) {
+    oss << "Invalid type parameters";
   } else {
     oss << "Invalid intrinsic";
   }
@@ -392,6 +398,9 @@ auto errInvalidIntrinsicExpr(lex::Token kw, lex::Token open, lex::Token intrinsi
   tokens.push_back(std::move(open));
   tokens.push_back(std::move(intrinsic));
   tokens.push_back(std::move(close));
+  if (typeParams) {
+    addTokens(*typeParams, &tokens);
+  }
 
   return errorNode(oss.str(), std::move(tokens), {});
 }

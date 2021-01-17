@@ -106,7 +106,7 @@ TEST_CASE("[parse] Parsing call expressions", "parse") {
       "intrinsic{a}()",
       callExprNode(
           {},
-          intrinsicExprNode(INTRINSIC, OCURLY, ID("a"), CCURLY),
+          intrinsicExprNode(INTRINSIC, OCURLY, ID("a"), CCURLY, std::nullopt),
           OPAREN,
           NODES(),
           COMMAS(0),
