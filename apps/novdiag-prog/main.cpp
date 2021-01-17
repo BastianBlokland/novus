@@ -72,7 +72,7 @@ auto printTypeDecls(const prog::Program& prog) -> void {
   }
 }
 
-auto printFuncDecls(const prog::Program& prog) -> void {
+auto printFuncDecls(const prog::Program& prog, bool includeIntrinsics) -> void {
   const auto idColWidth    = 10;
   const auto nameColWidth  = 30;
   const auto inputColWidth = 25;
@@ -80,6 +80,10 @@ auto printFuncDecls(const prog::Program& prog) -> void {
   std::cout << rang::style::bold << "Function declarations:\n" << rang::style::reset;
   for (auto funcItr = prog.beginFuncDecls(); funcItr != prog.endFuncDecls(); ++funcItr) {
     const auto& funcDecl = funcItr->second;
+    if (funcDecl.isIntrinsic() && !includeIntrinsics) {
+      continue;
+    }
+
     std::stringstream idStr;
     idStr << funcDecl.getId();
 
@@ -223,10 +227,10 @@ auto printExecStmts(const prog::Program& prog) -> void {
   }
 }
 
-auto printProgram(const prog::Program& prog) -> void {
+auto printProgram(const prog::Program& prog, bool includeIntrinsics) -> void {
   printTypeDecls(prog);
   std::cout << '\n';
-  printFuncDecls(prog);
+  printFuncDecls(prog, includeIntrinsics);
   if (prog.beginTypeDefs() != prog.endTypeDefs()) {
     std::cout << '\n';
     printTypeDefs(prog);
@@ -250,7 +254,8 @@ auto run(
     const InputItr inputEnd,
     const bool outputProgram,
     const bool treeshake,
-    const bool optimize) {
+    const bool optimize,
+    const bool includeIntrinsics) {
   const auto width = 80;
 
   // Analyze the input and time how long it takes.
@@ -281,11 +286,11 @@ auto run(
 
   if (output.isSuccess() && outputProgram) {
     if (optimize) {
-      printProgram(opt::optimize(output.getProg()));
+      printProgram(opt::optimize(output.getProg()), includeIntrinsics);
     } else if (treeshake) {
-      printProgram(opt::treeshake(output.getProg()));
+      printProgram(opt::treeshake(output.getProg()), includeIntrinsics);
     } else {
-      printProgram(output.getProg());
+      printProgram(output.getProg(), includeIntrinsics);
     }
     std::cout << rang::style::dim << std::string(width, '-') << '\n';
   }
@@ -313,10 +318,11 @@ auto main(int argc, const char** argv) -> int {
 
   const auto searchPaths = input::getSearchPaths(argv);
 
-  auto colorMode   = rang::control::Auto;
-  auto printOutput = true;
-  auto treeshake   = true;
-  auto optimize    = false;
+  auto colorMode         = rang::control::Auto;
+  auto printOutput       = true;
+  auto treeshake         = true;
+  auto optimize          = false;
+  auto includeIntrinsics = false;
 
   app.add_flag(
       "--no-color{0},-c{2},--color{2},--auto-color{1}",
@@ -337,12 +343,14 @@ auto main(int argc, const char** argv) -> int {
                 input.end(),
                 printOutput,
                 treeshake,
-                optimize);
+                optimize,
+                includeIntrinsics);
       });
   analyzeCmd->add_option("input", input, "Input characters to analyze")->required();
   analyzeCmd->add_flag("!--no-output", printOutput, "Skip printing the program");
   analyzeCmd->add_flag("!--no-treeshake", treeshake, "Don't remove unused types and functions");
   analyzeCmd->add_flag("-o,--optimize", optimize, "Optimize program");
+  analyzeCmd->add_flag("-i,--intrinsics", includeIntrinsics, "Include compiler intrinsics");
 
   // Analyze input file.
   filesystem::path filePath;
@@ -360,7 +368,8 @@ auto main(int argc, const char** argv) -> int {
                 std::istreambuf_iterator<char>{},
                 printOutput,
                 treeshake,
-                optimize);
+                optimize,
+                includeIntrinsics);
       });
   analyzeFileCmd->add_option("file", filePath, "Path to file to analyze")
       ->check(CLI::ExistingFile)
@@ -368,6 +377,7 @@ auto main(int argc, const char** argv) -> int {
   analyzeFileCmd->add_flag("!--no-output", printOutput, "Skip printing the program");
   analyzeFileCmd->add_flag("!--no-treeshake", treeshake, "Don't remove unused types and functions");
   analyzeFileCmd->add_flag("-o,--optimize", optimize, "Optimize program");
+  analyzeFileCmd->add_flag("-i,--intrinsics", includeIntrinsics, "Include compiler intrinsics");
 
   // Parse arguments and run subcommands.
   std::atexit([]() {
