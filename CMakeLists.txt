@@ -8,7 +8,7 @@ endif()
 
 project(
   Novus
-  VERSION 0.6.2
+  VERSION 0.7.0
   LANGUAGES CXX)
 
 # Custom options options.
