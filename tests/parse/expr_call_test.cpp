@@ -3,6 +3,7 @@
 #include "parse/error.hpp"
 #include "parse/node_expr_call.hpp"
 #include "parse/node_expr_group.hpp"
+#include "parse/node_expr_intrinsic.hpp"
 #include "parse/type_param_list.hpp"
 #include <optional>
 
@@ -97,6 +98,15 @@ TEST_CASE("[parse] Parsing call expressions", "parse") {
           {},
           ID_EXPR_PARAM(
               "a", TypeParamList(OCURLY, {TYPE("T"), TYPE("U"), TYPE("W")}, COMMAS(2), CCURLY)),
+          OPAREN,
+          NODES(),
+          COMMAS(0),
+          CPAREN));
+  CHECK_EXPR(
+      "intrinsic{a}()",
+      callExprNode(
+          {},
+          intrinsicExprNode(INTRINSIC, OCURLY, ID("a"), CCURLY),
           OPAREN,
           NODES(),
           COMMAS(0),

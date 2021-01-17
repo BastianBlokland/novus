@@ -229,7 +229,7 @@ auto ParserImpl::nextStmtEnumDecl() -> NodePtr {
   return errInvalidStmtEnumDecl(kw, std::move(id), eq, entries, std::move(commas));
 }
 
-auto ParserImpl::nextStmtExec() -> NodePtr { return execStmtNode(nextExprCall(nextExprId())); }
+auto ParserImpl::nextStmtExec() -> NodePtr { return execStmtNode(nextExprCall(nextExprPrimary())); }
 
 auto ParserImpl::nextExpr(const int minPrecedence, const int maxPrecedence) -> NodePtr {
   if (++m_exprRecursionDepth >= g_maxRecursionDepth) {

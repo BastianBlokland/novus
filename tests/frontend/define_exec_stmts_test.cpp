@@ -80,15 +80,11 @@ TEST_CASE("[frontend] Analyzing execute statements", "frontend") {
   }
 
   SECTION("Diagnostics") {
-    CHECK_DIAG("things()", errUndeclaredAction(src, "things", {}, input::Span{0, 7}));
+    CHECK_DIAG("things()", errUndeclaredFuncOrAction(src, "things", {}, input::Span{0, 7}));
     CHECK_DIAG(
         "assert(1, 1)",
-        errUndeclaredAction(
+        errUndeclaredFuncOrAction(
             src, "assert", std::vector<std::string>{"int", "int"}, input::Span{0, 11}));
-    CHECK_DIAG(
-        "fun f() -> int 1 "
-        "f()",
-        errUndeclaredAction(src, "f", {}, input::Span{17, 19}));
     CHECK_DIAG("assert(test())", errUndeclaredFuncOrAction(src, "test", {}, input::Span{7, 12}));
   }
 }

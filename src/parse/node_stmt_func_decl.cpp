@@ -59,7 +59,7 @@ auto FuncDeclStmtNode::getRetType() const -> const std::optional<RetTypeSpec>& {
 auto FuncDeclStmtNode::accept(NodeVisitor* visitor) const -> void { visitor->visit(*this); }
 
 auto FuncDeclStmtNode::print(std::ostream& out) const -> std::ostream& {
-  out << "fun-";
+  out << (isAction() ? "act-" : "fun-");
   if (m_id.getKind() == lex::TokenKind::Identifier) {
     out << getIdOrErr(m_id);
   } else {
@@ -87,12 +87,13 @@ auto funcDeclStmtNode(
   if (body == nullptr) {
     throw std::invalid_argument{"Body cannot be null"};
   }
-  return std::unique_ptr<FuncDeclStmtNode>{new FuncDeclStmtNode{std::move(kw),
-                                                                std::move(id),
-                                                                std::move(typeSubs),
-                                                                std::move(argList),
-                                                                std::move(retType),
-                                                                std::move(body)}};
+  return std::unique_ptr<FuncDeclStmtNode>{new FuncDeclStmtNode{
+      std::move(kw),
+      std::move(id),
+      std::move(typeSubs),
+      std::move(argList),
+      std::move(retType),
+      std::move(body)}};
 }
 
 } // namespace parse

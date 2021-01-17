@@ -151,7 +151,7 @@ auto analyze(const Source& mainSrc, const std::vector<filesystem::path>& searchP
   }
 
   // Define execute statements from the main-source.
-  auto defineExecStmts = internal::DefineExecStmts{&allContexts[0]};
+  auto defineExecStmts = internal::DefineExecStmts{allContexts.data()};
   mainSrc.accept(&defineExecStmts);
   if (!diags.empty()) {
     return buildOutput(nullptr, std::move(importedSources), diags);
