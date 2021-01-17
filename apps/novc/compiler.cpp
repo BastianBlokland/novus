@@ -4,6 +4,7 @@
 
 #include "backend/generator.hpp"
 #include "compiler.hpp"
+#include "config.hpp"
 #include "frontend/analysis.hpp"
 #include "frontend/source.hpp"
 #include "novasm/serialization.hpp"
@@ -23,7 +24,8 @@ static auto infHeader(std::ostream& out) -> std::ostream&;
 
 auto compile(Options options) -> bool {
 
-  std::cout << rang::style::bold << "--- Novus compiler ---\n" << rang::style::reset;
+  std::cout << rang::style::bold << "--- Novus compiler [" PROJECT_VER "] ---\n"
+            << rang::style::reset;
 
   auto validateOnly = options.destPath.empty();
   if (validateOnly) {
