@@ -252,6 +252,9 @@ TEST_CASE("[frontend] Analyzing anonymous functions", "frontend") {
         "act a1() -> int 42 "
         "act a2() lambda () a1()",
         errUndeclaredPureFunc(src, "a1", {}, input::Span{38, 41}));
+    CHECK_DIAG(
+        "fun f() lambda (int i = 0) i",
+        errUnsupportedArgInitializer(src, "i", input::Span{16, 24}));
   }
 }
 

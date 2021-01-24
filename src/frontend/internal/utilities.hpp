@@ -74,7 +74,8 @@ template <typename FuncParseNode>
     Context* ctx,
     const TypeSubstitutionTable* subTable,
     const FuncParseNode& n,
-    prog::sym::ConstDeclTable* consts) -> bool;
+    prog::sym::ConstDeclTable* consts,
+    bool allowArgInitializer) -> bool;
 
 [[nodiscard]] auto getSubstitutionParams(Context* ctx, const parse::TypeSubstitutionList& subList)
     -> std::optional<std::vector<std::string>>;

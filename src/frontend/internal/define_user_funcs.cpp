@@ -23,7 +23,7 @@ auto defineFunc(
   auto funcSignature     = std::make_pair(funcDecl.getInput(), funcRetType);
 
   auto consts = prog::sym::ConstDeclTable{};
-  if (!declareFuncInput(ctx, typeSubTable, n, &consts)) {
+  if (!declareFuncInput(ctx, typeSubTable, n, &consts, false)) {
     return false;
   }
 

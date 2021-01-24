@@ -447,11 +447,17 @@ auto declareFuncInput(
     Context* ctx,
     const TypeSubstitutionTable* subTable,
     const FuncParseNode& n,
-    prog::sym::ConstDeclTable* consts) -> bool {
+    prog::sym::ConstDeclTable* consts,
+    bool allowArgInitializer) -> bool {
   bool isValid = true;
   for (const auto& arg : n.getArgList()) {
     const auto constName = getConstName(ctx, subTable, *consts, arg.getIdentifier());
     if (!constName) {
+      isValid = false;
+      continue;
+    }
+    if (arg.hasInitializer() && !allowArgInitializer) {
+      ctx->reportDiag(errUnsupportedArgInitializer, *constName, arg.getSpan());
       isValid = false;
       continue;
     }
@@ -625,11 +631,13 @@ template bool declareFuncInput(
     Context* ctx,
     const TypeSubstitutionTable* subTable,
     const parse::FuncDeclStmtNode& n,
-    prog::sym::ConstDeclTable* consts);
+    prog::sym::ConstDeclTable* consts,
+    bool allowArgInitializer);
 template bool declareFuncInput(
     Context* ctx,
     const TypeSubstitutionTable* subTable,
     const parse::AnonFuncExprNode& n,
-    prog::sym::ConstDeclTable* consts);
+    prog::sym::ConstDeclTable* consts,
+    bool allowArgInitializer);
 
 } // namespace frontend::internal

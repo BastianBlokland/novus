@@ -618,4 +618,11 @@ auto errIntrinsicFuncLiteral(const Source& src, input::Span span) -> Diag {
   return error(src, oss.str(), span);
 }
 
+auto errUnsupportedArgInitializer(const Source& src, const std::string& name, input::Span span)
+    -> Diag {
+  std::ostringstream oss;
+  oss << "Initializer for input argument '" << name << "' is unsupported in the current context";
+  return error(src, oss.str(), span);
+}
+
 } // namespace frontend

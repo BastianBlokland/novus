@@ -40,6 +40,7 @@ public:
 
     auto operator==(const ArgSpec& rhs) const noexcept -> bool;
 
+    [[nodiscard]] auto getSpan() const -> input::Span;
     [[nodiscard]] auto getType() const noexcept -> const Type&;
     [[nodiscard]] auto getIdentifier() const noexcept -> const lex::Token&;
     [[nodiscard]] auto hasInitializer() const noexcept -> bool;

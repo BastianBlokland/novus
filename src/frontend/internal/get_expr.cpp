@@ -55,7 +55,7 @@ auto GetExpr::visit(const parse::AnonFuncExprNode& n) -> void {
   auto consts = prog::sym::ConstDeclTable{};
 
   // Declare the input types in the cost table.
-  if (!declareFuncInput(m_ctx, m_typeSubTable, n, &consts)) {
+  if (!declareFuncInput(m_ctx, m_typeSubTable, n, &consts, false)) {
     assert(m_ctx->hasErrors());
     return;
   }

@@ -37,6 +37,13 @@ auto ArgumentListDecl::ArgSpec::operator==(const ArgSpec& rhs) const noexcept ->
   return m_type == rhs.m_type && m_identifier == rhs.m_identifier;
 }
 
+auto ArgumentListDecl::ArgSpec::getSpan() const -> input::Span {
+  if (m_initializer) {
+    return input::Span::combine(m_type.getSpan(), m_initializer->getExpr().getSpan());
+  }
+  return input::Span::combine(m_type.getSpan(), m_identifier.getSpan());
+}
+
 auto ArgumentListDecl::ArgSpec::getType() const noexcept -> const Type& { return m_type; }
 
 auto ArgumentListDecl::ArgSpec::getIdentifier() const noexcept -> const lex::Token& {
