@@ -1,4 +1,5 @@
 #include "prog/sym/func_def_table.hpp"
+#include "expr/utilities.hpp"
 #include <stdexcept>
 
 namespace prog::sym {
@@ -19,18 +20,36 @@ auto FuncDefTable::registerFunc(
     const sym::FuncDeclTable& funcTable,
     sym::FuncId id,
     sym::ConstDeclTable consts,
-    expr::NodePtr expr) -> void {
-  if (expr == nullptr) {
-    throw std::invalid_argument{"Function expresion cannot be null"};
+    expr::NodePtr body,
+    std::vector<expr::NodePtr> optArgInitializers) -> void {
+
+  if (body == nullptr) {
+    throw std::invalid_argument{"Function body expresion cannot be null"};
   }
-  if (expr->getType() != funcTable[id].getOutput()) {
-    throw std::invalid_argument{"Type of expresion does not match function output type"};
+  if (body->getType() != funcTable[id].getOutput()) {
+    throw std::invalid_argument{"Type of body expresion does not match function output type"};
   }
+
+  if (expr::anyNodeNull(optArgInitializers)) {
+    throw std::invalid_argument{"Optional argument intializer cannot be null"};
+  }
+  if (optArgInitializers.size() != funcTable[id].getNumOptArgs()) {
+    throw std::invalid_argument{"Incorrect number of optional argument initializers provided"};
+  }
+  const auto inputConsts = consts.getInputs();
+  for (auto i = 0u; i != optArgInitializers.size(); ++i) {
+    const auto inputConstId = inputConsts[inputConsts.size() - i];
+    if (consts[inputConstId].getType() != optArgInitializers[i]->getType()) {
+      throw std::invalid_argument{"Optional argument initializer returns an incorrext type"};
+    }
+  }
+
   auto itr = m_funcDefs.find(id);
   if (itr != m_funcDefs.end()) {
     throw std::logic_error{"Function already has a definition registered"};
   }
-  m_funcDefs.insert({id, FuncDef{id, std::move(consts), std::move(expr)}});
+  m_funcDefs.insert(
+      {id, FuncDef{id, std::move(consts), std::move(body), std::move(optArgInitializers)}});
   m_funcs.insert(id);
 }
 

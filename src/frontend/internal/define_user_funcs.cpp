@@ -35,9 +35,10 @@ auto defineFunc(
     getExprFlags = getExprFlags | GetExpr::Flags::AllowActionCalls;
   }
 
-  auto getExpr = GetExpr{ctx, typeSubTable, &constBinder, funcRetType, funcSignature, getExprFlags};
-  n.getBody().accept(&getExpr);
-  auto expr = std::move(getExpr.getValue());
+  auto getExprBody =
+      GetExpr{ctx, typeSubTable, &constBinder, funcRetType, funcSignature, getExprFlags};
+  n.getBody().accept(&getExprBody);
+  auto bodyExpr = std::move(getExprBody.getValue());
 
   // Report this diagnostic after processing the body so other errors have priority over this.
   if (funcRetType.isInfer()) {
@@ -47,34 +48,38 @@ auto defineFunc(
     return false;
   }
 
-  // Bail out if we failed to get an expression for the body.
-  if (!expr) {
-    return false;
+  if (!bodyExpr) {
+    return false; // Bail out if we failed to get an expression for the body.
   }
+
+  // TODO: Define optional argument intializers.
+  auto optArgInitializers = std::vector<prog::expr::NodePtr>{};
 
   // Check if a pure functions contains infinite recursion.
   if (!funcDecl.isAction()) {
     auto checkInfRec = CheckInfRecursion{*ctx, id};
-    expr->accept(&checkInfRec);
+    bodyExpr->accept(&checkInfRec);
     if (checkInfRec.isInfRecursion()) {
       ctx->reportDiag(errPureFuncInfRecursion, n.getBody().getSpan());
       return false;
     }
   }
 
-  if (expr->getType() == funcRetType) {
-    ctx->getProg()->defineFunc(id, std::move(consts), std::move(expr));
+  if (bodyExpr->getType() == funcRetType) {
+    ctx->getProg()->defineFunc(
+        id, std::move(consts), std::move(bodyExpr), std::move(optArgInitializers));
     return true;
   }
 
-  const auto conv = ctx->getProg()->lookupImplicitConv(expr->getType(), funcRetType);
+  const auto conv = ctx->getProg()->lookupImplicitConv(bodyExpr->getType(), funcRetType);
   if (conv && *conv != id) {
     auto convArgs = std::vector<prog::expr::NodePtr>{};
-    convArgs.push_back(std::move(expr));
+    convArgs.push_back(std::move(bodyExpr));
     ctx->getProg()->defineFunc(
         id,
         std::move(consts),
-        prog::expr::callExprNode(*ctx->getProg(), *conv, std::move(convArgs)));
+        prog::expr::callExprNode(*ctx->getProg(), *conv, std::move(convArgs)),
+        std::move(optArgInitializers));
     return true;
   }
 
@@ -82,7 +87,7 @@ auto defineFunc(
       errNonMatchingFuncReturnType,
       funcDisplayName,
       getDisplayName(*ctx, funcRetType),
-      getDisplayName(*ctx, expr->getType()),
+      getDisplayName(*ctx, bodyExpr->getType()),
       n.getBody().getSpan());
   return false;
 }

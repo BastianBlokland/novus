@@ -27,7 +27,7 @@ TEST_CASE("[frontend] Analyzing index expressions", "frontend") {
             output, "__op_squaresquare", GET_TYPE_ID(output, "Pair"), GET_TYPE_ID(output, "int")),
         std::move(args));
 
-    CHECK(func.getExpr() == *callExpr);
+    CHECK(func.getBody() == *callExpr);
   }
 
   SECTION("Get multi argument index operator") {
@@ -53,7 +53,7 @@ TEST_CASE("[frontend] Analyzing index expressions", "frontend") {
             GET_TYPE_ID(output, "string")),
         std::move(args));
 
-    CHECK(func.getExpr() == *callExpr);
+    CHECK(func.getBody() == *callExpr);
   }
 
   SECTION("Diagnostics") {

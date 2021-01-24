@@ -34,7 +34,7 @@ TEST_CASE("[frontend] Analyzing 'is' / 'as' expressions", "frontend") {
     auto switchExpr =
         prog::expr::switchExprNode(output.getProg(), std::move(conditions), std::move(branches));
 
-    CHECK(funcDef.getExpr() == *switchExpr);
+    CHECK(funcDef.getBody() == *switchExpr);
   }
 
   SECTION("Check 'is' expression") {
@@ -46,7 +46,7 @@ TEST_CASE("[frontend] Analyzing 'is' / 'as' expressions", "frontend") {
     const auto& funcConsts = funcDef.getConsts();
 
     CHECK(
-        funcDef.getExpr() ==
+        funcDef.getBody() ==
         *prog::expr::unionCheckExprNode(
             output.getProg(),
             prog::expr::constExprNode(funcConsts, *funcConsts.lookup("v")),
@@ -62,7 +62,7 @@ TEST_CASE("[frontend] Analyzing 'is' / 'as' expressions", "frontend") {
     const auto& funcConsts = funcDef.getConsts();
 
     CHECK(
-        funcDef.getExpr() ==
+        funcDef.getBody() ==
         *prog::expr::unionCheckExprNode(
             output.getProg(),
             prog::expr::constExprNode(funcConsts, *funcConsts.lookup("v")),

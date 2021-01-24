@@ -13,7 +13,7 @@ TEST_CASE("[frontend] Analyzing enum expressions", "frontend") {
     REQUIRE(output.isSuccess());
 
     CHECK(
-        GET_FUNC_DEF(output, "f").getExpr() ==
+        GET_FUNC_DEF(output, "f").getBody() ==
         *prog::expr::litEnumNode(output.getProg(), GET_TYPE_ID(output, "E"), "a"));
   }
 

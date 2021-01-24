@@ -24,7 +24,7 @@ TEST_CASE("[frontend] Analyzing user-function templates", "frontend") {
         GET_FUNC_ID(output, "ft__int", GET_TYPE_ID(output, "int")),
         std::move(fArgs));
 
-    CHECK(fDef.getExpr() == *callExpr);
+    CHECK(fDef.getBody() == *callExpr);
   }
 
   SECTION("Chained templated call") {
@@ -44,7 +44,7 @@ TEST_CASE("[frontend] Analyzing user-function templates", "frontend") {
         GET_FUNC_ID(output, "ft1__int", GET_TYPE_ID(output, "int"), GET_TYPE_ID(output, "int")),
         std::move(ft2Args));
 
-    CHECK(ft2Def.getExpr() == *callExpr2);
+    CHECK(ft2Def.getBody() == *callExpr2);
 
     const auto& fDef = GET_FUNC_DEF(output, "f");
     auto fArgs       = std::vector<prog::expr::NodePtr>{};
@@ -54,7 +54,7 @@ TEST_CASE("[frontend] Analyzing user-function templates", "frontend") {
         GET_FUNC_ID(output, "ft2__int", GET_TYPE_ID(output, "int")),
         std::move(fArgs));
 
-    CHECK(fDef.getExpr() == *callExpr);
+    CHECK(fDef.getBody() == *callExpr);
   }
 
   SECTION("Overload templated functions") {
@@ -73,7 +73,7 @@ TEST_CASE("[frontend] Analyzing user-function templates", "frontend") {
         GET_FUNC_ID(output, "ft__int", GET_TYPE_ID(output, "float"), GET_TYPE_ID(output, "int")),
         std::move(args));
 
-    CHECK(fDef.getExpr() == *callExpr);
+    CHECK(fDef.getBody() == *callExpr);
   }
 
   SECTION("Return type as parameter") {
@@ -94,7 +94,7 @@ TEST_CASE("[frontend] Analyzing user-function templates", "frontend") {
         GET_FUNC_ID(output, "ft__int", GET_TYPE_ID(output, "int")),
         std::move(args1));
 
-    CHECK(f1Def.getExpr() == *callExpr1);
+    CHECK(f1Def.getBody() == *callExpr1);
 
     auto args2 = std::vector<prog::expr::NodePtr>{};
     args2.push_back(prog::expr::litIntNode(output.getProg(), 1));
@@ -103,7 +103,7 @@ TEST_CASE("[frontend] Analyzing user-function templates", "frontend") {
         GET_FUNC_ID(output, "ft__float", GET_TYPE_ID(output, "int")),
         std::move(args2));
 
-    CHECK(f2Def.getExpr() == *callExpr2);
+    CHECK(f2Def.getBody() == *callExpr2);
 
     auto args3 = std::vector<prog::expr::NodePtr>{};
     args3.push_back(prog::expr::litIntNode(output.getProg(), 1));
@@ -112,7 +112,7 @@ TEST_CASE("[frontend] Analyzing user-function templates", "frontend") {
         GET_FUNC_ID(output, "ft__string", GET_TYPE_ID(output, "int")),
         std::move(args3));
 
-    CHECK(f3Def.getExpr() == *callExpr3);
+    CHECK(f3Def.getBody() == *callExpr3);
   }
 
   SECTION("Substituted constructor") {
@@ -127,7 +127,7 @@ TEST_CASE("[frontend] Analyzing user-function templates", "frontend") {
     auto callExpr = prog::expr::callExprNode(
         output.getProg(), GET_FUNC_ID(output, "s", GET_TYPE_ID(output, "int")), std::move(fArgs));
 
-    CHECK(fDef.getExpr() == *callExpr);
+    CHECK(fDef.getBody() == *callExpr);
   }
 
   SECTION("Infer type-parameter in templated call") {
@@ -146,7 +146,7 @@ TEST_CASE("[frontend] Analyzing user-function templates", "frontend") {
             output, "ft__int_float", GET_TYPE_ID(output, "int"), GET_TYPE_ID(output, "float")),
         std::move(fArgs));
 
-    CHECK(fDef.getExpr() == *callExpr);
+    CHECK(fDef.getBody() == *callExpr);
   }
 
   SECTION("Infer type-parameter supports implicit conversion") {
@@ -165,7 +165,7 @@ TEST_CASE("[frontend] Analyzing user-function templates", "frontend") {
             output, "ft__float", GET_TYPE_ID(output, "float"), GET_TYPE_ID(output, "float")),
         std::move(fArgs));
 
-    CHECK(fDef.getExpr() == *callExpr);
+    CHECK(fDef.getBody() == *callExpr);
   }
 
   SECTION("Infer type-parameter in templated call") {
@@ -192,7 +192,7 @@ TEST_CASE("[frontend] Analyzing user-function templates", "frontend") {
             GET_TYPE_ID(output, "Option__int")),
         std::move(fArgs));
 
-    CHECK(fDef.getExpr() == *callExpr);
+    CHECK(fDef.getBody() == *callExpr);
   }
 
   SECTION("Templated function with non-matching type-parameters is not instantiated") {
@@ -222,7 +222,7 @@ TEST_CASE("[frontend] Analyzing user-function templates", "frontend") {
         GET_FUNC_ID(output, "ft__int", GET_TYPE_ID(output, "Option__int")),
         std::move(fArgs));
 
-    CHECK(fDef.getExpr() == *callExpr);
+    CHECK(fDef.getBody() == *callExpr);
   }
 
   SECTION("Overloaded func templates prefer less type-parameters") {
@@ -245,7 +245,7 @@ TEST_CASE("[frontend] Analyzing user-function templates", "frontend") {
         GET_FUNC_ID(output, "ft__int", GET_TYPE_ID(output, "int"), GET_TYPE_ID(output, "int")),
         std::move(f1Args));
 
-    CHECK(f1Def.getExpr() == *callExpr1);
+    CHECK(f1Def.getBody() == *callExpr1);
 
     // Check that f2 instantiates the version with two type-parameters.
     const auto& f2Def = GET_FUNC_DEF(output, "f2");
@@ -258,7 +258,7 @@ TEST_CASE("[frontend] Analyzing user-function templates", "frontend") {
             output, "ft__bool_int", GET_TYPE_ID(output, "bool"), GET_TYPE_ID(output, "int")),
         std::move(f2Args));
 
-    CHECK(f2Def.getExpr() == *callExpr2);
+    CHECK(f2Def.getBody() == *callExpr2);
   }
 
   SECTION("Func templates are ignored when arguments don't match") {
@@ -283,7 +283,7 @@ TEST_CASE("[frontend] Analyzing user-function templates", "frontend") {
 
     const auto& factoryDef = GET_FUNC_DEF(output, "factory__Test__int");
     CHECK(
-        factoryDef.getExpr() ==
+        factoryDef.getBody() ==
         *prog::expr::callExprNode(output.getProg(), GET_FUNC_ID(output, "Test__int"), {}));
   }
 

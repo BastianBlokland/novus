@@ -726,8 +726,13 @@ auto Program::defineLazy(
   m_typeDefs.registerLazy(m_typeDecls, id, result, isAction);
 }
 
-auto Program::defineFunc(sym::FuncId id, sym::ConstDeclTable consts, expr::NodePtr expr) -> void {
-  m_funcDefs.registerFunc(m_funcDecls, id, std::move(consts), std::move(expr));
+auto Program::defineFunc(
+    sym::FuncId id,
+    sym::ConstDeclTable consts,
+    expr::NodePtr body,
+    std::vector<expr::NodePtr> optArgInitializers) -> void {
+  m_funcDefs.registerFunc(
+      m_funcDecls, id, std::move(consts), std::move(body), std::move(optArgInitializers));
 }
 
 auto Program::addExecStmt(sym::ConstDeclTable consts, expr::NodePtr expr) -> void {

@@ -15,7 +15,7 @@ TEST_CASE("[frontend] Analyzing constant expressions", "frontend") {
     REQUIRE(output.isSuccess());
     const auto& funcDef = GET_FUNC_DEF(output, "f", GET_TYPE_ID(output, "int"));
     const auto& consts  = funcDef.getConsts();
-    CHECK(funcDef.getExpr() == *prog::expr::constExprNode(consts, consts.lookup("a").value()));
+    CHECK(funcDef.getBody() == *prog::expr::constExprNode(consts, consts.lookup("a").value()));
   }
 
   SECTION("Declare and access local const") {
@@ -37,7 +37,7 @@ TEST_CASE("[frontend] Analyzing constant expressions", "frontend") {
     exprs.push_back(prog::expr::constExprNode(consts, b.value()));
     auto groupExpr = prog::expr::groupExprNode(std::move(exprs));
 
-    CHECK(funcDef.getExpr() == *groupExpr);
+    CHECK(funcDef.getBody() == *groupExpr);
   }
 
   SECTION("Access const in anonymous function") {
@@ -55,7 +55,7 @@ TEST_CASE("[frontend] Analyzing constant expressions", "frontend") {
     exprs.push_back(prog::expr::constExprNode(consts, x.value()));
     auto groupExpr = prog::expr::groupExprNode(std::move(exprs));
 
-    CHECK(anonDef.getExpr() == *groupExpr);
+    CHECK(anonDef.getBody() == *groupExpr);
   }
 
   SECTION("Diagnostics") {

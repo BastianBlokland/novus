@@ -105,7 +105,7 @@ TEST_CASE("[frontend] Analyzing user-function declarations", "frontend") {
           std::move(args));
 
       const auto& funcDef = GET_FUNC_DEF(output, "f");
-      CHECK(funcDef.getExpr() == *callExpr);
+      CHECK(funcDef.getBody() == *callExpr);
     }
 
     SECTION("Declare function with optional argument") {

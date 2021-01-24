@@ -35,7 +35,7 @@ TEST_CASE("[frontend] Analyzing switch expressions", "frontend") {
     auto switchExpr =
         prog::expr::switchExprNode(output.getProg(), std::move(conditions), std::move(branches));
 
-    CHECK(funcDef.getExpr() == *switchExpr);
+    CHECK(funcDef.getBody() == *switchExpr);
   }
 
   SECTION("Get switch expression with conversion on the branches") {
@@ -59,7 +59,7 @@ TEST_CASE("[frontend] Analyzing switch expressions", "frontend") {
     auto switchExpr =
         prog::expr::switchExprNode(output.getProg(), std::move(conditions), std::move(branches));
 
-    CHECK(funcDef.getExpr() == *switchExpr);
+    CHECK(funcDef.getBody() == *switchExpr);
   }
 
   SECTION("Declare consts in switch expression conditions") {
@@ -84,7 +84,7 @@ TEST_CASE("[frontend] Analyzing switch expressions", "frontend") {
     auto switchExpr =
         prog::expr::switchExprNode(output.getProg(), std::move(conditions), std::move(branches));
 
-    CHECK(funcDef.getExpr() == *switchExpr);
+    CHECK(funcDef.getBody() == *switchExpr);
   }
 
   SECTION("Exhaustive union check switch expression") {
@@ -114,7 +114,7 @@ TEST_CASE("[frontend] Analyzing switch expressions", "frontend") {
     auto switchExpr =
         prog::expr::switchExprNode(output.getProg(), std::move(conditions), std::move(branches));
 
-    CHECK(funcDef.getExpr() == *switchExpr);
+    CHECK(funcDef.getBody() == *switchExpr);
   }
 
   SECTION("Diagnostics") {

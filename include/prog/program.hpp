@@ -171,7 +171,11 @@ public:
   auto defineLazy(
       sym::TypeId id, sym::TypeId result, bool isAction, const std::vector<sym::TypeId>& aliases)
       -> void;
-  auto defineFunc(sym::FuncId id, sym::ConstDeclTable consts, expr::NodePtr expr) -> void;
+  auto defineFunc(
+      sym::FuncId id,
+      sym::ConstDeclTable consts,
+      expr::NodePtr body,
+      std::vector<expr::NodePtr> optArgInitializers) -> void;
 
   auto addExecStmt(sym::ConstDeclTable consts, expr::NodePtr expr) -> void;
 

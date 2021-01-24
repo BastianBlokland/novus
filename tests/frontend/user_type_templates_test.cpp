@@ -25,7 +25,7 @@ TEST_CASE("[frontend] Analyzing user-type templates", "frontend") {
             output, "tuple__int_string", GET_TYPE_ID(output, "int"), GET_TYPE_ID(output, "string")),
         std::move(fArgs));
 
-    CHECK(fDef.getExpr() == *callExpr);
+    CHECK(fDef.getBody() == *callExpr);
   }
 
   SECTION("Construct templated union") {
@@ -42,7 +42,7 @@ TEST_CASE("[frontend] Analyzing user-type templates", "frontend") {
         GET_FUNC_ID(output, "opt__int", GET_TYPE_ID(output, "int")),
         std::move(fArgs));
 
-    CHECK(fDef.getExpr() == *callExpr);
+    CHECK(fDef.getBody() == *callExpr);
   }
 
   SECTION("Construct templated struct with inferred type params") {
@@ -60,7 +60,7 @@ TEST_CASE("[frontend] Analyzing user-type templates", "frontend") {
             output, "tuple__int_string", GET_TYPE_ID(output, "int"), GET_TYPE_ID(output, "string")),
         std::move(fArgs));
 
-    CHECK(fDef.getExpr() == *callExpr);
+    CHECK(fDef.getBody() == *callExpr);
   }
 
   SECTION("Construct templated union with inferred type param") {
@@ -77,7 +77,7 @@ TEST_CASE("[frontend] Analyzing user-type templates", "frontend") {
         GET_FUNC_ID(output, "opt__int", GET_TYPE_ID(output, "int")),
         std::move(fArgs));
 
-    CHECK(fDef.getExpr() == *callExpr);
+    CHECK(fDef.getBody() == *callExpr);
   }
 
   SECTION("Conversion to templated struct") {
@@ -94,7 +94,7 @@ TEST_CASE("[frontend] Analyzing user-type templates", "frontend") {
         GET_FUNC_ID(output, "tuple__int_bool", GET_TYPE_ID(output, "int")),
         std::move(fArgs));
 
-    CHECK(fDef.getExpr() == *callExpr);
+    CHECK(fDef.getBody() == *callExpr);
   }
 
   SECTION("Templated conversion") {
@@ -114,7 +114,7 @@ TEST_CASE("[frontend] Analyzing user-type templates", "frontend") {
         GET_FUNC_ID(output, "string", GET_TYPE_ID(output, "tuple__int_float")),
         std::move(fArgs));
 
-    CHECK(fDef.getExpr() == *callExpr);
+    CHECK(fDef.getBody() == *callExpr);
   }
 }
 

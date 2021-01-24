@@ -25,7 +25,7 @@ TEST_CASE("[frontend] Analyzing parenthesized expressions", "frontend") {
             output, prog::Operator::Plus, GET_TYPE_ID(output, "int"), GET_TYPE_ID(output, "int")),
         std::move(args));
 
-    CHECK(funcDef.getExpr() == *callExpr);
+    CHECK(funcDef.getBody() == *callExpr);
   }
 }
 

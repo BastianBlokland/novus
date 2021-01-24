@@ -39,7 +39,7 @@ auto treeshake(const prog::Program& prog) -> prog::Program {
       for (const auto& constDecl : def.getConsts()) {
         findTypes.markType(constDecl.getType());
       }
-      def.getExpr().accept(&findTypes);
+      def.getBody().accept(&findTypes);
     }
   }
 

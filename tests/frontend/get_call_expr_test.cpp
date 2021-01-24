@@ -16,7 +16,7 @@ TEST_CASE("[frontend] Analyzing call expressions", "frontend") {
                                  "fun f2() -> int f1()");
     REQUIRE(output.isSuccess());
     CHECK(
-        GET_FUNC_DEF(output, "f2").getExpr() ==
+        GET_FUNC_DEF(output, "f2").getBody() ==
         *prog::expr::callExprNode(output.getProg(), GET_FUNC_ID(output, "f1"), {}));
   }
 
@@ -30,7 +30,7 @@ TEST_CASE("[frontend] Analyzing call expressions", "frontend") {
     auto callExpr = prog::expr::callExprNode(
         output.getProg(), GET_FUNC_ID(output, "f1", GET_TYPE_ID(output, "int")), std::move(args));
 
-    CHECK(GET_FUNC_DEF(output, "f2").getExpr() == *callExpr);
+    CHECK(GET_FUNC_DEF(output, "f2").getBody() == *callExpr);
   }
 
   SECTION("Get recursive call") {
@@ -46,7 +46,7 @@ TEST_CASE("[frontend] Analyzing call expressions", "frontend") {
     auto switchExpr =
         prog::expr::switchExprNode(output.getProg(), std::move(conditions), std::move(branches));
 
-    CHECK(GET_FUNC_DEF(output, "f").getExpr() == *switchExpr);
+    CHECK(GET_FUNC_DEF(output, "f").getBody() == *switchExpr);
   }
 
   SECTION("Get call with conversion") {
@@ -59,7 +59,7 @@ TEST_CASE("[frontend] Analyzing call expressions", "frontend") {
     auto callExpr = prog::expr::callExprNode(
         output.getProg(), GET_FUNC_ID(output, "f1", GET_TYPE_ID(output, "float")), std::move(args));
 
-    CHECK(GET_FUNC_DEF(output, "f2").getExpr() == *callExpr);
+    CHECK(GET_FUNC_DEF(output, "f2").getBody() == *callExpr);
   }
 
   SECTION("Get templated call") {
@@ -74,7 +74,7 @@ TEST_CASE("[frontend] Analyzing call expressions", "frontend") {
         GET_FUNC_ID(output, "f1__int", GET_TYPE_ID(output, "int")),
         std::move(args));
 
-    CHECK(GET_FUNC_DEF(output, "f2").getExpr() == *callExpr);
+    CHECK(GET_FUNC_DEF(output, "f2").getBody() == *callExpr);
   }
 
   SECTION("Get forked call") {
@@ -82,7 +82,7 @@ TEST_CASE("[frontend] Analyzing call expressions", "frontend") {
                                  "fun f2() -> future{int} fork f1()");
     REQUIRE(output.isSuccess());
     CHECK(
-        GET_FUNC_DEF(output, "f2").getExpr() ==
+        GET_FUNC_DEF(output, "f2").getBody() ==
         *prog::expr::callExprNode(
             output.getProg(),
             GET_FUNC_ID(output, "f1"),
@@ -96,7 +96,7 @@ TEST_CASE("[frontend] Analyzing call expressions", "frontend") {
                                  "fun f2() -> lazy{int} lazy f1()");
     REQUIRE(output.isSuccess());
     CHECK(
-        GET_FUNC_DEF(output, "f2").getExpr() ==
+        GET_FUNC_DEF(output, "f2").getBody() ==
         *prog::expr::callExprNode(
             output.getProg(),
             GET_FUNC_ID(output, "f1"),
@@ -119,7 +119,7 @@ TEST_CASE("[frontend] Analyzing call expressions", "frontend") {
         std::move(args),
         prog::expr::CallMode::Lazy);
 
-    CHECK(GET_FUNC_DEF(output, "f").getExpr() == *callExpr);
+    CHECK(GET_FUNC_DEF(output, "f").getBody() == *callExpr);
   }
 
   SECTION("Get call to overloaded call operator on literal") {
@@ -134,7 +134,7 @@ TEST_CASE("[frontend] Analyzing call expressions", "frontend") {
         GET_FUNC_ID(output, "__op_parenparen", GET_TYPE_ID(output, "int")),
         std::move(args));
 
-    CHECK(GET_FUNC_DEF(output, "f").getExpr() == *callExpr);
+    CHECK(GET_FUNC_DEF(output, "f").getBody() == *callExpr);
   }
 
   SECTION("Get call to overloaded call operator on const") {
@@ -152,7 +152,7 @@ TEST_CASE("[frontend] Analyzing call expressions", "frontend") {
         GET_FUNC_ID(output, "__op_parenparen", GET_TYPE_ID(output, "int")),
         std::move(args));
 
-    CHECK(fDef.getExpr() == *callExpr);
+    CHECK(fDef.getBody() == *callExpr);
   }
 
   SECTION("Get instance call") {
@@ -168,7 +168,7 @@ TEST_CASE("[frontend] Analyzing call expressions", "frontend") {
     auto callExpr = prog::expr::callExprNode(
         output.getProg(), GET_FUNC_ID(output, "f1", GET_TYPE_ID(output, "int")), std::move(args));
 
-    CHECK(fDef.getExpr() == *callExpr);
+    CHECK(fDef.getBody() == *callExpr);
   }
 
   SECTION("Get instance call with args") {
@@ -187,7 +187,7 @@ TEST_CASE("[frontend] Analyzing call expressions", "frontend") {
         GET_FUNC_ID(output, "f1", GET_TYPE_ID(output, "int"), GET_TYPE_ID(output, "string")),
         std::move(args));
 
-    CHECK(fDef.getExpr() == *callExpr);
+    CHECK(fDef.getBody() == *callExpr);
   }
 
   SECTION("Get call to action") {
@@ -195,7 +195,7 @@ TEST_CASE("[frontend] Analyzing call expressions", "frontend") {
                                  "act a2() -> int a1()");
     REQUIRE(output.isSuccess());
     CHECK(
-        GET_FUNC_DEF(output, "a2").getExpr() ==
+        GET_FUNC_DEF(output, "a2").getBody() ==
         *prog::expr::callExprNode(output.getProg(), GET_FUNC_ID(output, "a1"), {}));
   }
 
@@ -204,7 +204,7 @@ TEST_CASE("[frontend] Analyzing call expressions", "frontend") {
                                  "act a2() -> lazy_action{int} lazy a1()");
     REQUIRE(output.isSuccess());
     CHECK(
-        GET_FUNC_DEF(output, "a2").getExpr() ==
+        GET_FUNC_DEF(output, "a2").getBody() ==
         *prog::expr::callExprNode(
             output.getProg(),
             GET_FUNC_ID(output, "a1"),
@@ -235,7 +235,7 @@ TEST_CASE("[frontend] Analyzing call expressions", "frontend") {
         GET_FUNC_ID(output, "a1", GET_TYPE_ID(output, "__lazy_action_int")),
         std::move(args));
 
-    CHECK(GET_FUNC_DEF(output, "f2").getExpr() == *callExpr);
+    CHECK(GET_FUNC_DEF(output, "f2").getBody() == *callExpr);
   }
 
   SECTION("Get call to templated action") {
@@ -250,7 +250,7 @@ TEST_CASE("[frontend] Analyzing call expressions", "frontend") {
         GET_FUNC_ID(output, "a1__int", GET_TYPE_ID(output, "int")),
         std::move(args));
 
-    CHECK(GET_FUNC_DEF(output, "a2").getExpr() == *callExpr);
+    CHECK(GET_FUNC_DEF(output, "a2").getBody() == *callExpr);
   }
 
   SECTION("Get lazy call to templated action") {
@@ -265,7 +265,7 @@ TEST_CASE("[frontend] Analyzing call expressions", "frontend") {
         GET_FUNC_ID(output, "a1__int", GET_TYPE_ID(output, "int")),
         std::move(args));
 
-    CHECK(GET_FUNC_DEF(output, "a2").getExpr() == *callExpr);
+    CHECK(GET_FUNC_DEF(output, "a2").getBody() == *callExpr);
   }
 
   SECTION("Get fail intrinsic action call") {
@@ -277,7 +277,7 @@ TEST_CASE("[frontend] Analyzing call expressions", "frontend") {
         GET_INTRINSIC_ID(output, "__fail_int"),
         std::vector<prog::expr::NodePtr>{});
 
-    CHECK(GET_FUNC_DEF(output, "a").getExpr() == *callExpr);
+    CHECK(GET_FUNC_DEF(output, "a").getBody() == *callExpr);
   }
 
   SECTION("Diagnostics") {

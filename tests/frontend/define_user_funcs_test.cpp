@@ -17,7 +17,7 @@ TEST_CASE("[frontend] Analyzing user-function definitions", "frontend") {
     REQUIRE(a);
     CHECK(consts[a.value()].getKind() == prog::sym::ConstKind::Input);
     CHECK(consts[a.value()].getType() == GET_TYPE_ID(output, "int"));
-    CHECK(funcDef.getExpr() == *prog::expr::litIntNode(output.getProg(), 42));
+    CHECK(funcDef.getBody() == *prog::expr::litIntNode(output.getProg(), 42));
   }
 
   SECTION("Define function with conversion") {
@@ -26,7 +26,7 @@ TEST_CASE("[frontend] Analyzing user-function definitions", "frontend") {
     const auto& funcDef = GET_FUNC_DEF(output, "f");
 
     CHECK(
-        funcDef.getExpr() ==
+        funcDef.getBody() ==
         *applyConv(output, "int", "float", prog::expr::litIntNode(output.getProg(), 2)));
   }
 
@@ -40,7 +40,7 @@ TEST_CASE("[frontend] Analyzing user-function definitions", "frontend") {
     REQUIRE(a);
     CHECK(consts[a.value()].getKind() == prog::sym::ConstKind::Input);
     CHECK(consts[a.value()].getType() == GET_TYPE_ID(output, "int"));
-    CHECK(funcDef.getExpr() == *prog::expr::constExprNode(consts, *a));
+    CHECK(funcDef.getBody() == *prog::expr::constExprNode(consts, *a));
   }
 
   SECTION("Diagnostics") {

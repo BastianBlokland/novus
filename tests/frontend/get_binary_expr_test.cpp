@@ -28,7 +28,7 @@ TEST_CASE("[frontend] Analyzing binary expressions", "frontend") {
             output, prog::Operator::Star, GET_TYPE_ID(output, "int"), GET_TYPE_ID(output, "int")),
         std::move(args));
 
-    CHECK(funcDef.getExpr() == *callExpr);
+    CHECK(funcDef.getBody() == *callExpr);
   }
 
   SECTION("Get binary expression with conversion on lhs") {
@@ -49,7 +49,7 @@ TEST_CASE("[frontend] Analyzing binary expressions", "frontend") {
             GET_TYPE_ID(output, "float")),
         std::move(args));
 
-    CHECK(funcDef.getExpr() == *callExpr);
+    CHECK(funcDef.getBody() == *callExpr);
   }
 
   SECTION("Get binary expression with conversion on rhs") {
@@ -70,7 +70,7 @@ TEST_CASE("[frontend] Analyzing binary expressions", "frontend") {
             GET_TYPE_ID(output, "float")),
         std::move(args));
 
-    CHECK(funcDef.getExpr() == *callExpr);
+    CHECK(funcDef.getBody() == *callExpr);
   }
 
   SECTION("Get logic 'and' expression") {
@@ -89,7 +89,7 @@ TEST_CASE("[frontend] Analyzing binary expressions", "frontend") {
     auto switchExpr =
         prog::expr::switchExprNode(output.getProg(), std::move(conditions), std::move(branches));
 
-    CHECK(funcDef.getExpr() == *switchExpr);
+    CHECK(funcDef.getBody() == *switchExpr);
   }
 
   SECTION("Chain 'as' checks with binary 'and' in switch") {
@@ -128,7 +128,7 @@ TEST_CASE("[frontend] Analyzing binary expressions", "frontend") {
     auto switchExpr = prog::expr::switchExprNode(
         output.getProg(), std::move(switchConditions), std::move(switchBranches));
 
-    CHECK(funcDef.getExpr() == *switchExpr);
+    CHECK(funcDef.getBody() == *switchExpr);
   }
 
   SECTION("Get logic 'or' expression") {
@@ -147,7 +147,7 @@ TEST_CASE("[frontend] Analyzing binary expressions", "frontend") {
     auto switchExpr =
         prog::expr::switchExprNode(output.getProg(), std::move(conditions), std::move(branches));
 
-    CHECK(funcDef.getExpr() == *switchExpr);
+    CHECK(funcDef.getBody() == *switchExpr);
   }
 
   SECTION("Diagnostics") {

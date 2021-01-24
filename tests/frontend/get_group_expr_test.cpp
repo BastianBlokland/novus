@@ -33,7 +33,7 @@ TEST_CASE("[frontend] Analyzing group expressions", "frontend") {
         std::move(callArgs)));
     auto groupExpr = prog::expr::groupExprNode(std::move(exprs));
 
-    CHECK(funcDef.getExpr() == *groupExpr);
+    CHECK(funcDef.getBody() == *groupExpr);
   }
 }
 

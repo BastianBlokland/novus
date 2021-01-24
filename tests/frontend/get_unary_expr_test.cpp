@@ -22,7 +22,7 @@ TEST_CASE("[frontend] Analyzing unary expressions", "frontend") {
         GET_OP_ID(output, prog::Operator::Minus, GET_TYPE_ID(output, "int")),
         std::move(args));
 
-    CHECK(funcDef.getExpr() == *callExpr);
+    CHECK(funcDef.getBody() == *callExpr);
   }
 
   SECTION("Diagnostics") {

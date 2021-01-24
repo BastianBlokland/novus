@@ -23,7 +23,7 @@ TEST_CASE("[frontend] Analyzing self call expressions", "frontend") {
     auto switchExpr =
         prog::expr::switchExprNode(output.getProg(), std::move(conditions), std::move(branches));
 
-    CHECK(GET_FUNC_DEF(output, "f").getExpr() == *switchExpr);
+    CHECK(GET_FUNC_DEF(output, "f").getBody() == *switchExpr);
   }
 
   SECTION("Get anonymous function with self call") {
@@ -39,7 +39,7 @@ TEST_CASE("[frontend] Analyzing self call expressions", "frontend") {
     auto switchExpr =
         prog::expr::switchExprNode(output.getProg(), std::move(conditions), std::move(branches));
 
-    CHECK(findAnonFuncDef(output, 0).getExpr() == *switchExpr);
+    CHECK(findAnonFuncDef(output, 0).getBody() == *switchExpr);
   }
 
   SECTION("Diagnostics") {

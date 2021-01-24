@@ -208,7 +208,7 @@ auto printFuncDefs(const prog::Program& prog) -> void {
     }
 
     std::cout << rang::style::italic << "  Body:\n" << rang::style::reset;
-    printExpr(funcDef.getExpr(), "   ");
+    printExpr(funcDef.getBody(), "   ");
   }
 }
 

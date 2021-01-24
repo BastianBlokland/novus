@@ -108,7 +108,7 @@ auto CallInlineRewriter::inlineCall(const prog::expr::CallExprNode* callExpr)
 
   // Remap the constants to point to the newly registered constants.
   auto remapper     = internal::ConstRemapper{m_prog, *m_consts, constMapping};
-  auto remappedExpr = remapper.rewrite(tgtFuncDef.getExpr());
+  auto remappedExpr = remapper.rewrite(tgtFuncDef.getBody());
 
   // Run another 'rewrite' pass on the remapped expression so we can also inline calls inside the
   // inlined function body.

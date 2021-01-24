@@ -28,7 +28,7 @@ TEST_CASE("[frontend] Analyzing conditional expressions", "frontend") {
     auto switchExpr =
         prog::expr::switchExprNode(output.getProg(), std::move(conditions), std::move(branches));
 
-    CHECK(funcDef.getExpr() == *switchExpr);
+    CHECK(funcDef.getBody() == *switchExpr);
   }
 
   SECTION("Get conditional expression with conversion on the lhs branch") {
@@ -46,7 +46,7 @@ TEST_CASE("[frontend] Analyzing conditional expressions", "frontend") {
     auto switchExpr =
         prog::expr::switchExprNode(output.getProg(), std::move(conditions), std::move(branches));
 
-    CHECK(funcDef.getExpr() == *switchExpr);
+    CHECK(funcDef.getBody() == *switchExpr);
   }
 
   SECTION("Get conditional expression with conversion on the rhs branch") {
@@ -64,7 +64,7 @@ TEST_CASE("[frontend] Analyzing conditional expressions", "frontend") {
     auto switchExpr =
         prog::expr::switchExprNode(output.getProg(), std::move(conditions), std::move(branches));
 
-    CHECK(funcDef.getExpr() == *switchExpr);
+    CHECK(funcDef.getBody() == *switchExpr);
   }
 
   SECTION("Declare consts in condition expression conditions") {
@@ -88,7 +88,7 @@ TEST_CASE("[frontend] Analyzing conditional expressions", "frontend") {
     auto switchExpr =
         prog::expr::switchExprNode(output.getProg(), std::move(conditions), std::move(branches));
 
-    CHECK(funcDef.getExpr() == *switchExpr);
+    CHECK(funcDef.getBody() == *switchExpr);
   }
 
   SECTION("Diagnostics") {
