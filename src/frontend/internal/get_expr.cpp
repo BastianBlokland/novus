@@ -104,7 +104,7 @@ auto GetExpr::visit(const parse::AnonFuncExprNode& n) -> void {
       *retType,
       selfSignature,
       isAction ? (Flags::AllowActionCalls | Flags::AllowPureFuncCalls) : Flags::AllowPureFuncCalls};
-  n[0].accept(&getExpr);
+  n.getBody().accept(&getExpr);
   if (!getExpr.m_expr) {
     assert(m_ctx->hasErrors());
     return;

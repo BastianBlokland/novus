@@ -36,7 +36,7 @@ auto defineFunc(
   }
 
   auto getExpr = GetExpr{ctx, typeSubTable, &constBinder, funcRetType, funcSignature, getExprFlags};
-  n[0].accept(&getExpr);
+  n.getBody().accept(&getExpr);
   auto expr = std::move(getExpr.getValue());
 
   // Report this diagnostic after processing the body so other errors have priority over this.
@@ -57,7 +57,7 @@ auto defineFunc(
     auto checkInfRec = CheckInfRecursion{*ctx, id};
     expr->accept(&checkInfRec);
     if (checkInfRec.isInfRecursion()) {
-      ctx->reportDiag(errPureFuncInfRecursion, n[0].getSpan());
+      ctx->reportDiag(errPureFuncInfRecursion, n.getBody().getSpan());
       return false;
     }
   }
@@ -83,7 +83,7 @@ auto defineFunc(
       funcDisplayName,
       getDisplayName(*ctx, funcRetType),
       getDisplayName(*ctx, expr->getType()),
-      n[0].getSpan());
+      n.getBody().getSpan());
   return false;
 }
 

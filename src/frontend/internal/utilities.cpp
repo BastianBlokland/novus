@@ -363,7 +363,7 @@ auto inferRetType(
   }
 
   auto inferBodyType = TypeInferExpr{ctx, subTable, &constTypes, flags};
-  parseNode[0].accept(&inferBodyType);
+  parseNode.getBody().accept(&inferBodyType);
   return inferBodyType.getInferredType();
 }
 

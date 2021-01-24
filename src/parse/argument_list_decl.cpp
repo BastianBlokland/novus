@@ -1,5 +1,7 @@
 #include "parse/argument_list_decl.hpp"
 #include "utilities.hpp"
+#include <algorithm>
+#include <cassert>
 
 namespace parse {
 
@@ -7,8 +9,29 @@ static auto getIdOrErr(const lex::Token& token) {
   return getId(token).value_or(std::string("err"));
 }
 
-ArgumentListDecl::ArgSpec::ArgSpec(Type type, lex::Token identifier) :
-    m_type{std::move(type)}, m_identifier{std::move(identifier)} {}
+ArgumentListDecl::ArgInitializer::ArgInitializer(lex::Token eq, NodePtr expr) :
+    m_eq{std::move(eq)}, m_expr{std::move(expr)} {}
+
+auto ArgumentListDecl::ArgInitializer::operator==(const ArgInitializer& rhs) const noexcept
+    -> bool {
+  return *m_expr == *rhs.m_expr;
+}
+
+auto ArgumentListDecl::ArgInitializer::getEq() const noexcept -> const lex::Token& { return m_eq; }
+
+auto ArgumentListDecl::ArgInitializer::getExpr() const noexcept -> const Node& { return *m_expr; }
+
+auto ArgumentListDecl::ArgInitializer::takeExpr() noexcept -> NodePtr { return std::move(m_expr); }
+
+auto ArgumentListDecl::ArgInitializer::validate() const -> bool {
+  return m_eq.getKind() == lex::TokenKind::OpEq && m_expr;
+}
+
+ArgumentListDecl::ArgSpec::ArgSpec(
+    Type type, lex::Token identifier, std::optional<ArgInitializer> initializer) :
+    m_type{std::move(type)},
+    m_identifier{std::move(identifier)},
+    m_initializer{std::move(initializer)} {}
 
 auto ArgumentListDecl::ArgSpec::operator==(const ArgSpec& rhs) const noexcept -> bool {
   return m_type == rhs.m_type && m_identifier == rhs.m_identifier;
@@ -18,6 +41,33 @@ auto ArgumentListDecl::ArgSpec::getType() const noexcept -> const Type& { return
 
 auto ArgumentListDecl::ArgSpec::getIdentifier() const noexcept -> const lex::Token& {
   return m_identifier;
+}
+
+auto ArgumentListDecl::ArgSpec::hasInitializer() const noexcept -> bool {
+  return m_initializer.has_value();
+}
+
+auto ArgumentListDecl::ArgSpec::getInitializer() const noexcept -> const ArgInitializer& {
+  assert(hasInitializer());
+  return *m_initializer;
+}
+
+auto ArgumentListDecl::ArgSpec::getInitializer() noexcept -> ArgInitializer& {
+  assert(hasInitializer());
+  return *m_initializer;
+}
+
+auto ArgumentListDecl::ArgSpec::validate() const -> bool {
+  if (m_identifier.getKind() != lex::TokenKind::Identifier) {
+    return false;
+  }
+  if (!m_type.validate()) {
+    return false;
+  }
+  if (m_initializer && !m_initializer->validate()) {
+    return false;
+  }
+  return true;
 }
 
 ArgumentListDecl::ArgumentListDecl(
@@ -41,6 +91,33 @@ auto ArgumentListDecl::end() const -> Iterator { return m_args.end(); }
 
 auto ArgumentListDecl::getCount() const -> unsigned int { return m_args.size(); }
 
+auto ArgumentListDecl::getInitializerCount() const -> unsigned int {
+  return std::count_if(
+      m_args.begin(), m_args.end(), [](const auto& a) { return a.hasInitializer(); });
+}
+
+auto ArgumentListDecl::getInitializer(unsigned int i) const -> const Node& {
+  for (const auto& arg : m_args) {
+    if (arg.hasInitializer()) {
+      if (i-- == 0) {
+        return arg.getInitializer().getExpr();
+      }
+    }
+  }
+  throw std::out_of_range{"No initializer at given index"};
+}
+
+auto ArgumentListDecl::takeInitializer(unsigned int i) -> NodePtr {
+  for (auto& arg : m_args) {
+    if (arg.hasInitializer()) {
+      if (i-- == 0) {
+        return arg.getInitializer().takeExpr();
+      }
+    }
+  }
+  throw std::out_of_range{"No initializer at given index"};
+}
+
 auto ArgumentListDecl::getSpan() const -> input::Span {
   return input::Span::combine(m_open.getSpan(), m_close.getSpan());
 }
@@ -57,9 +134,7 @@ auto ArgumentListDecl::validate() const -> bool {
   if (!validateParentheses(m_open, m_close)) {
     return false;
   }
-  if (!std::all_of(m_args.begin(), m_args.end(), [](const auto& a) {
-        return a.getIdentifier().getKind() == lex::TokenKind::Identifier && a.getType().validate();
-      })) {
+  if (!std::all_of(m_args.begin(), m_args.end(), [](const auto& a) { return a.validate(); })) {
     return false;
   }
   if (m_commas.size() != (m_args.empty() ? 0 : m_args.size() - 1)) {
@@ -75,6 +150,9 @@ auto operator<<(std::ostream& out, const ArgumentListDecl& rhs) -> std::ostream&
       out << ',';
     }
     out << rhs.m_args[i].getType() << '-' << getIdOrErr(rhs.m_args[i].getIdentifier());
+    if (rhs.m_args[i].hasInitializer()) {
+      out << "-opt";
+    }
   }
   return out << ')';
 }

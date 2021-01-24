@@ -32,13 +32,19 @@ auto FuncDeclStmtNode::operator!=(const Node& rhs) const noexcept -> bool {
 }
 
 auto FuncDeclStmtNode::operator[](unsigned int i) const -> const Node& {
-  if (i == 0) {
+  const auto initializerCount = m_argList.getInitializerCount();
+  if (i < initializerCount) {
+    return m_argList.getInitializer(i);
+  }
+  if (i == initializerCount) {
     return *m_body;
   }
   throw std::out_of_range{"No child at given index"};
 }
 
-auto FuncDeclStmtNode::getChildCount() const -> unsigned int { return 1; }
+auto FuncDeclStmtNode::getChildCount() const -> unsigned int {
+  return m_argList.getInitializerCount() + 1;
+}
 
 auto FuncDeclStmtNode::getSpan() const -> input::Span {
   return input::Span::combine(m_kw.getSpan(), m_body->getSpan());
@@ -55,6 +61,8 @@ auto FuncDeclStmtNode::getTypeSubs() const -> const std::optional<TypeSubstituti
 auto FuncDeclStmtNode::getArgList() const -> const ArgumentListDecl& { return m_argList; }
 
 auto FuncDeclStmtNode::getRetType() const -> const std::optional<RetTypeSpec>& { return m_retType; }
+
+auto FuncDeclStmtNode::getBody() const -> const Node& { return *m_body; }
 
 auto FuncDeclStmtNode::accept(NodeVisitor* visitor) const -> void { visitor->visit(*this); }
 

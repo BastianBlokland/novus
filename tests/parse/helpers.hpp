@@ -148,4 +148,7 @@ inline auto arrayMoveToVec(Array c) {
 
 #define NODES(...) arrayMoveToVec<std::array<NodePtr, NUM_ARGS(__VA_ARGS__)>>({__VA_ARGS__})
 
+#define ARGS(...)                                                                                  \
+  arrayMoveToVec<std::array<ArgumentListDecl::ArgSpec, NUM_ARGS(__VA_ARGS__)>>({__VA_ARGS__})
+
 } // namespace parse

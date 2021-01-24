@@ -30,6 +30,7 @@ public:
   [[nodiscard]] auto isImpure() const -> bool;
   [[nodiscard]] auto getArgList() const -> const ArgumentListDecl&;
   [[nodiscard]] auto getRetType() const -> const std::optional<RetTypeSpec>&;
+  [[nodiscard]] auto getBody() const -> const Node&;
 
   auto accept(NodeVisitor* visitor) const -> void override;
 

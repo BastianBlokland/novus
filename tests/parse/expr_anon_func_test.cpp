@@ -10,26 +10,30 @@ TEST_CASE("[parse] Parsing anonymous functions", "parse") {
   CHECK_EXPR(
       "lambda () 1",
       anonFuncExprNode(
-          {}, LAMBDA, ArgumentListDecl(OPAREN, {}, COMMAS(0), CPAREN), std::nullopt, INT(1)));
+          {}, LAMBDA, ArgumentListDecl(OPAREN, ARGS(), COMMAS(0), CPAREN), std::nullopt, INT(1)));
   CHECK_EXPR(
       "lambda () -> int 1",
       anonFuncExprNode(
           {},
           LAMBDA,
-          ArgumentListDecl(OPAREN, {}, COMMAS(0), CPAREN),
+          ArgumentListDecl(OPAREN, ARGS(), COMMAS(0), CPAREN),
           RetTypeSpec{ARROW, TYPE("int")},
           INT(1)));
   CHECK_EXPR(
       "impure lambda () 1",
       anonFuncExprNode(
-          {IMPURE}, LAMBDA, ArgumentListDecl(OPAREN, {}, COMMAS(0), CPAREN), std::nullopt, INT(1)));
+          {IMPURE},
+          LAMBDA,
+          ArgumentListDecl(OPAREN, ARGS(), COMMAS(0), CPAREN),
+          std::nullopt,
+          INT(1)));
   CHECK_EXPR(
       "lambda (int x) 1",
       anonFuncExprNode(
           {},
           LAMBDA,
           ArgumentListDecl(
-              OPAREN, {ArgumentListDecl::ArgSpec(TYPE("int"), ID("x"))}, COMMAS(0), CPAREN),
+              OPAREN, ARGS(ArgumentListDecl::ArgSpec(TYPE("int"), ID("x"))), COMMAS(0), CPAREN),
           std::nullopt,
           INT(1)));
   CHECK_EXPR(
@@ -39,8 +43,9 @@ TEST_CASE("[parse] Parsing anonymous functions", "parse") {
           LAMBDA,
           ArgumentListDecl(
               OPAREN,
-              {ArgumentListDecl::ArgSpec(TYPE("int"), ID("x")),
-               ArgumentListDecl::ArgSpec(TYPE("int"), ID("y"))},
+              ARGS(
+                  ArgumentListDecl::ArgSpec(TYPE("int"), ID("x")),
+                  ArgumentListDecl::ArgSpec(TYPE("int"), ID("y"))),
               COMMAS(1),
               CPAREN),
           std::nullopt,
@@ -52,13 +57,27 @@ TEST_CASE("[parse] Parsing anonymous functions", "parse") {
           LAMBDA,
           ArgumentListDecl(
               OPAREN,
-              {ArgumentListDecl::ArgSpec(TYPE("int"), ID("x")),
-               ArgumentListDecl::ArgSpec(TYPE("int"), ID("y")),
-               ArgumentListDecl::ArgSpec(TYPE("bool"), ID("z"))},
+              ARGS(
+                  ArgumentListDecl::ArgSpec(TYPE("int"), ID("x")),
+                  ArgumentListDecl::ArgSpec(TYPE("int"), ID("y")),
+                  ArgumentListDecl::ArgSpec(TYPE("bool"), ID("z"))),
               COMMAS(2),
               CPAREN),
           std::nullopt,
           binaryExprNode(ID_EXPR("x"), STAR, ID_EXPR("y"))));
+  CHECK_EXPR(
+      "lambda (int x = 1) 1",
+      anonFuncExprNode(
+          {},
+          LAMBDA,
+          ArgumentListDecl(
+              OPAREN,
+              ARGS(ArgumentListDecl::ArgSpec(
+                  TYPE("int"), ID("x"), ArgumentListDecl::ArgInitializer(EQ, INT(1)))),
+              COMMAS(0),
+              CPAREN),
+          std::nullopt,
+          INT(1)));
 
   SECTION("Errors") {
     CHECK_EXPR(
@@ -66,7 +85,7 @@ TEST_CASE("[parse] Parsing anonymous functions", "parse") {
         anonFuncExprNode(
             {},
             LAMBDA,
-            ArgumentListDecl(PARENPAREN, {}, COMMAS(0), PARENPAREN),
+            ArgumentListDecl(PARENPAREN, ARGS(), COMMAS(0), PARENPAREN),
             std::nullopt,
             errInvalidPrimaryExpr(END)));
     CHECK_EXPR(
@@ -74,7 +93,7 @@ TEST_CASE("[parse] Parsing anonymous functions", "parse") {
         errInvalidAnonFuncExpr(
             {},
             LAMBDA,
-            ArgumentListDecl(END, {}, COMMAS(0), END),
+            ArgumentListDecl(END, ARGS(), COMMAS(0), END),
             std::nullopt,
             errInvalidPrimaryExpr(END)));
     CHECK_EXPR(
@@ -82,7 +101,7 @@ TEST_CASE("[parse] Parsing anonymous functions", "parse") {
         errInvalidAnonFuncExpr(
             {},
             LAMBDA,
-            ArgumentListDecl(OPAREN, {}, COMMAS(0), END),
+            ArgumentListDecl(OPAREN, ARGS(), COMMAS(0), END),
             std::nullopt,
             errInvalidPrimaryExpr(END)));
     CHECK_EXPR(
@@ -91,7 +110,7 @@ TEST_CASE("[parse] Parsing anonymous functions", "parse") {
             {},
             LAMBDA,
             ArgumentListDecl(
-                OPAREN, {ArgumentListDecl::ArgSpec(TYPE("int"), ID("x"))}, COMMAS(0), END),
+                OPAREN, ARGS(ArgumentListDecl::ArgSpec(TYPE("int"), ID("x"))), COMMAS(0), END),
             std::nullopt,
             errInvalidPrimaryExpr(END)));
     CHECK_EXPR(
@@ -99,7 +118,8 @@ TEST_CASE("[parse] Parsing anonymous functions", "parse") {
         errInvalidAnonFuncExpr(
             {},
             LAMBDA,
-            ArgumentListDecl(OPAREN, {ArgumentListDecl::ArgSpec(TYPE("int"), END)}, COMMAS(0), END),
+            ArgumentListDecl(
+                OPAREN, ARGS(ArgumentListDecl::ArgSpec(TYPE("int"), END)), COMMAS(0), END),
             std::nullopt,
             errInvalidPrimaryExpr(END)));
     CHECK_EXPR(
@@ -109,8 +129,9 @@ TEST_CASE("[parse] Parsing anonymous functions", "parse") {
             LAMBDA,
             ArgumentListDecl(
                 OPAREN,
-                {ArgumentListDecl::ArgSpec(TYPE("int"), ID("x")),
-                 ArgumentListDecl::ArgSpec(TYPE("int"), ID("y"))},
+                ARGS(
+                    ArgumentListDecl::ArgSpec(TYPE("int"), ID("x")),
+                    ArgumentListDecl::ArgSpec(TYPE("int"), ID("y"))),
                 COMMAS(0),
                 CPAREN),
             std::nullopt,
@@ -122,8 +143,9 @@ TEST_CASE("[parse] Parsing anonymous functions", "parse") {
             LAMBDA,
             ArgumentListDecl(
                 OPAREN,
-                {ArgumentListDecl::ArgSpec(TYPE("int"), ID("x")),
-                 ArgumentListDecl::ArgSpec(Type(COMMA), CPAREN)},
+                ARGS(
+                    ArgumentListDecl::ArgSpec(TYPE("int"), ID("x")),
+                    ArgumentListDecl::ArgSpec(Type(COMMA), CPAREN)),
                 COMMAS(1),
                 END),
             std::nullopt,
@@ -133,7 +155,7 @@ TEST_CASE("[parse] Parsing anonymous functions", "parse") {
         errInvalidAnonFuncExpr(
             {IMPURE},
             ID("function"),
-            ArgumentListDecl(PARENPAREN, {}, COMMAS(0), PARENPAREN),
+            ArgumentListDecl(PARENPAREN, ARGS(), COMMAS(0), PARENPAREN),
             std::nullopt,
             INT(1)));
     CHECK_EXPR(
@@ -141,7 +163,7 @@ TEST_CASE("[parse] Parsing anonymous functions", "parse") {
         errInvalidAnonFuncExpr(
             {IMPURE},
             ID("action"),
-            ArgumentListDecl(PARENPAREN, {}, COMMAS(0), PARENPAREN),
+            ArgumentListDecl(PARENPAREN, ARGS(), COMMAS(0), PARENPAREN),
             std::nullopt,
             INT(1)));
     CHECK_EXPR(
@@ -149,7 +171,7 @@ TEST_CASE("[parse] Parsing anonymous functions", "parse") {
         errInvalidAnonFuncExpr(
             {},
             LAMBDA,
-            ArgumentListDecl(PARENPAREN, {}, COMMAS(0), PARENPAREN),
+            ArgumentListDecl(PARENPAREN, ARGS(), COMMAS(0), PARENPAREN),
             RetTypeSpec{ARROW, parse::Type{END}},
             errInvalidPrimaryExpr(END)));
     CHECK_EXPR(
@@ -157,9 +179,22 @@ TEST_CASE("[parse] Parsing anonymous functions", "parse") {
         errInvalidAnonFuncExpr(
             {},
             LAMBDA,
-            ArgumentListDecl(PARENPAREN, {}, COMMAS(0), PARENPAREN),
+            ArgumentListDecl(PARENPAREN, ARGS(), COMMAS(0), PARENPAREN),
             RetTypeSpec{ARROW, parse::Type{INT_TOK(1)}},
             errInvalidPrimaryExpr(END)));
+    CHECK_EXPR(
+        "lambda (int x =) -> int 1",
+        errInvalidAnonFuncExpr(
+            {},
+            LAMBDA,
+            ArgumentListDecl(
+                OPAREN,
+                ARGS(ArgumentListDecl::ArgSpec(
+                    TYPE("int"), ID("x"), ArgumentListDecl::ArgInitializer(EQ, nullptr))),
+                COMMAS(0),
+                CPAREN),
+            RetTypeSpec{ARROW, TYPE("int")},
+            INT(1)));
   }
 
   SECTION("Spans") {

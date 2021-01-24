@@ -19,14 +19,14 @@ namespace parse {
     lex::Token kw,
     lex::Token id,
     std::optional<TypeSubstitutionList> typeSubs,
-    const ArgumentListDecl& argList,
+    ArgumentListDecl argList,
     std::optional<RetTypeSpec> retType,
     NodePtr body) -> NodePtr;
 
 [[nodiscard]] auto errInvalidAnonFuncExpr(
     std::vector<lex::Token> modifiers,
     lex::Token kw,
-    const ArgumentListDecl& argList,
+    ArgumentListDecl argList,
     std::optional<RetTypeSpec> retType,
     NodePtr body) -> NodePtr;
 
