@@ -128,6 +128,13 @@ TEST_CASE("[frontend] Analyzing user-function definitions", "frontend") {
           " if a > b  -> f(a, 0) "
           " else      -> f(0, b)",
           errPureFuncInfRecursion(src, input::Span{28, 69}));
+      CHECK_DIAG("fun f(int a = a) a", errUndeclaredConst(src, "a", input::Span{14, 14}));
+      CHECK_DIAG("fun f(int a = b = 42) a", errConstDeclareNotSupported(src, input::Span{14, 19}));
+      CHECK_DIAG(
+          "union U = int, bool "
+          "fun getU() U(42) "
+          "fun f(int a = getU() as int i ? i : 0) a",
+          errConstDeclareNotSupported(src, input::Span{51, 65}));
     }
   }
 }

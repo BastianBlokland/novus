@@ -221,6 +221,17 @@ auto errNonMatchingFuncReturnType(
   return error(src, oss.str(), span);
 }
 
+auto errNonMatchingInitializerType(
+    const Source& src,
+    const std::string& declaredType,
+    const std::string& initializerType,
+    input::Span span) -> Diag {
+  std::ostringstream oss;
+  oss << "Initializer returns value of type '" << initializerType
+      << "' which is incompatible with the declared type '" << declaredType << "'";
+  return error(src, oss.str(), span);
+}
+
 auto errConstNameConflictsWithTypeSubstitution(
     const Source& src, const std::string& name, input::Span span) -> Diag {
   std::ostringstream oss;
@@ -247,6 +258,12 @@ auto errConstNameConflictsWithConst(const Source& src, const std::string& name, 
   std::ostringstream oss;
   oss << "Constant name '" << name
       << "' conflicts with an already declared constant in the same scope";
+  return error(src, oss.str(), span);
+}
+
+auto errConstDeclareNotSupported(const Source& src, input::Span span) -> Diag {
+  std::ostringstream oss;
+  oss << "Declaring constants is not supported in this context";
   return error(src, oss.str(), span);
 }
 

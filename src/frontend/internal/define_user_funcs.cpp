@@ -11,6 +11,60 @@
 namespace frontend::internal {
 
 template <typename FuncParseNode>
+static auto getOptArgInitializers(
+    Context* ctx,
+    const TypeSubstitutionTable* typeSubTable,
+    prog::sym::FuncId funcId,
+    const FuncParseNode& n) -> std::vector<prog::expr::NodePtr> {
+
+  const auto& funcDecl = ctx->getProg()->getFuncDecl(funcId);
+
+  auto result = std::vector<prog::expr::NodePtr>{};
+  result.reserve(funcDecl.getNumOptArgs());
+
+  auto getExprFlags = GetExpr::Flags::AllowPureFuncCalls;
+  if (funcDecl.isAction()) {
+    getExprFlags = getExprFlags | GetExpr::Flags::AllowActionCalls;
+  }
+
+  const auto totalArgsCount  = funcDecl.getInput().getCount();
+  const auto nonOptArgsCount = totalArgsCount - funcDecl.getNumOptArgs();
+  for (auto i = 0u; i != funcDecl.getNumOptArgs(); ++i) {
+    const auto type = funcDecl.getInput()[nonOptArgsCount + i];
+
+    auto getExpr = GetExpr{ctx, typeSubTable, nullptr, type, std::nullopt, getExprFlags};
+    n[i].accept(&getExpr);
+    auto initializerExpr = std::move(getExpr.getValue());
+
+    if (!initializerExpr) {
+      assert(ctx->hasErrors());
+      return {}; // Bail out if we failed to get an expression for the initializer.
+    }
+
+    if (initializerExpr->getType() == type) {
+      result.push_back(std::move(initializerExpr));
+      continue;
+    }
+
+    const auto conv = ctx->getProg()->lookupImplicitConv(initializerExpr->getType(), type);
+    if (conv && *conv != funcId) {
+      auto convArgs = std::vector<prog::expr::NodePtr>{};
+      convArgs.push_back(std::move(initializerExpr));
+      result.push_back(prog::expr::callExprNode(*ctx->getProg(), *conv, std::move(convArgs)));
+      continue;
+    }
+
+    ctx->reportDiag(
+        errNonMatchingInitializerType,
+        getDisplayName(*ctx, type),
+        getDisplayName(*ctx, initializerExpr->getType()),
+        n[i].getSpan());
+  }
+
+  return result;
+}
+
+template <typename FuncParseNode>
 auto defineFunc(
     Context* ctx,
     const TypeSubstitutionTable* typeSubTable,
@@ -52,9 +106,6 @@ auto defineFunc(
     return false; // Bail out if we failed to get an expression for the body.
   }
 
-  // TODO: Define optional argument intializers.
-  auto optArgInitializers = std::vector<prog::expr::NodePtr>{};
-
   // Check if a pure functions contains infinite recursion.
   if (!funcDecl.isAction()) {
     auto checkInfRec = CheckInfRecursion{*ctx, id};
@@ -63,6 +114,13 @@ auto defineFunc(
       ctx->reportDiag(errPureFuncInfRecursion, n.getBody().getSpan());
       return false;
     }
+  }
+
+  // Define the initializers for the optional arguments.
+  auto optArgInitializers = getOptArgInitializers(ctx, typeSubTable, id, n);
+  if (optArgInitializers.size() != funcDecl.getNumOptArgs()) {
+    assert(ctx->hasErrors());
+    return false;
   }
 
   if (bodyExpr->getType() == funcRetType) {

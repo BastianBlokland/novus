@@ -72,6 +72,10 @@ private:
 
   prog::expr::NodePtr m_expr;
 
+  [[nodiscard]] auto getVisibleConsts() -> std::vector<prog::sym::ConstId>*;
+
+  [[nodiscard]] auto getVisibleConstsCopy() -> std::vector<prog::sym::ConstId>;
+
   [[nodiscard]] auto getChildExprs(const parse::Node& n, unsigned int skipAmount = 0U)
       -> std::unique_ptr<ExprSetData>;
 

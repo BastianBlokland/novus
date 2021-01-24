@@ -109,6 +109,12 @@ errUnableToInferFuncReturnType(const Source& src, const std::string& name, input
     const std::string& returnedType,
     input::Span span) -> Diag;
 
+[[nodiscard]] auto errNonMatchingInitializerType(
+    const Source& src,
+    const std::string& declaredType,
+    const std::string& intializerType,
+    input::Span span) -> Diag;
+
 [[nodiscard]] auto errUnableToInferLambdaReturnType(const Source& src, input::Span span) -> Diag;
 
 [[nodiscard]] auto
@@ -120,6 +126,8 @@ errConstNameConflictsWithType(const Source& src, const std::string& name, input:
 [[nodiscard]] auto
 errConstNameConflictsWithConst(const Source& src, const std::string& name, input::Span span)
     -> Diag;
+
+[[nodiscard]] auto errConstDeclareNotSupported(const Source& src, input::Span span) -> Diag;
 
 [[nodiscard]] auto errUndeclaredType(
     const Source& src, const std::string& name, unsigned int typeParams, input::Span span) -> Diag;

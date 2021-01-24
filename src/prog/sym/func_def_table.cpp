@@ -36,9 +36,10 @@ auto FuncDefTable::registerFunc(
   if (optArgInitializers.size() != funcTable[id].getNumOptArgs()) {
     throw std::invalid_argument{"Incorrect number of optional argument initializers provided"};
   }
-  const auto inputConsts = consts.getInputs();
+  const auto inputConsts      = consts.getInputs();
+  const auto nonOptInputCount = inputConsts.size() - funcTable[id].getNumOptArgs();
   for (auto i = 0u; i != optArgInitializers.size(); ++i) {
-    const auto inputConstId = inputConsts[inputConsts.size() - i];
+    const auto inputConstId = inputConsts[nonOptInputCount + i];
     if (consts[inputConstId].getType() != optArgInitializers[i]->getType()) {
       throw std::invalid_argument{"Optional argument initializer returns an incorrext type"};
     }
