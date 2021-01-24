@@ -134,8 +134,9 @@ auto GetExpr::visit(const parse::AnonFuncExprNode& n) -> void {
 
   // Declare the function in the program.
   const auto funcId = isAction
-      ? m_ctx->getProg()->declareAction(nameoss.str(), prog::sym::TypeSet{inputTypes}, *retType)
-      : m_ctx->getProg()->declarePureFunc(nameoss.str(), prog::sym::TypeSet{inputTypes}, *retType);
+      ? m_ctx->getProg()->declareAction(nameoss.str(), prog::sym::TypeSet{inputTypes}, *retType, 0u)
+      : m_ctx->getProg()->declarePureFunc(
+            nameoss.str(), prog::sym::TypeSet{inputTypes}, *retType, 0u);
 
   // Define the function in the program.
   m_ctx->getProg()->defineFunc(funcId, std::move(consts), std::move(expr));

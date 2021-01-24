@@ -26,6 +26,7 @@ public:
   [[nodiscard]] auto getName() const noexcept -> const std::string&;
   [[nodiscard]] auto getInput() const noexcept -> const TypeSet&;
   [[nodiscard]] auto getOutput() const noexcept -> TypeId;
+  [[nodiscard]] auto getNumOptArgs() const noexcept -> unsigned int;
 
   auto updateOutput(TypeId newOutput) noexcept -> void;
 
@@ -38,6 +39,7 @@ private:
   std::string m_name;
   TypeSet m_input;
   TypeId m_output;
+  unsigned int m_numOptArgs;
 
   FuncDecl(
       FuncId id,
@@ -47,7 +49,8 @@ private:
       bool isImplicitConv,
       std::string name,
       TypeSet input,
-      TypeId output);
+      TypeId output,
+      unsigned int m_numOptArgs);
 };
 
 auto operator<<(std::ostream& out, const FuncDecl& rhs) -> std::ostream&;

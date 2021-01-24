@@ -107,6 +107,15 @@ TEST_CASE("[frontend] Analyzing user-function declarations", "frontend") {
       const auto& funcDef = GET_FUNC_DEF(output, "f");
       CHECK(funcDef.getExpr() == *callExpr);
     }
+
+    SECTION("Declare function with optional argument") {
+      const auto& output = ANALYZE("fun f(int a, bool b = false) -> bool false");
+      REQUIRE(output.isSuccess());
+      const auto& funcDecl =
+          GET_FUNC_DECL(output, "f", GET_TYPE_ID(output, "int"), GET_TYPE_ID(output, "bool"));
+      CHECK(funcDecl.getNumOptArgs() == 1);
+      CHECK(funcDecl.getOutput() == GET_TYPE_ID(output, "bool"));
+    }
   }
 
   SECTION("Actions") {

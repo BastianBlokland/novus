@@ -555,16 +555,18 @@ auto Program::declareLazy(std::string name) -> sym::TypeId {
   return m_typeDecls.registerType(sym::TypeKind::Lazy, std::move(name));
 }
 
-auto Program::declarePureFunc(std::string name, sym::TypeSet input, sym::TypeId output)
+auto Program::declarePureFunc(
+    std::string name, sym::TypeSet input, sym::TypeId output, unsigned int numOptArgs)
     -> sym::FuncId {
   return m_funcDecls.registerFunc(
-      *this, sym::FuncKind::User, std::move(name), std::move(input), output);
+      *this, sym::FuncKind::User, std::move(name), std::move(input), output, numOptArgs);
 }
 
-auto Program::declareAction(std::string name, sym::TypeSet input, sym::TypeId output)
+auto Program::declareAction(
+    std::string name, sym::TypeSet input, sym::TypeId output, unsigned int numOptArgs)
     -> sym::FuncId {
   return m_funcDecls.registerAction(
-      *this, sym::FuncKind::User, std::move(name), std::move(input), output);
+      *this, sym::FuncKind::User, std::move(name), std::move(input), output, numOptArgs);
 }
 
 auto Program::declareFailIntrinsic(std::string name, sym::TypeId output) -> sym::FuncId {

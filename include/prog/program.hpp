@@ -150,8 +150,12 @@ public:
   auto declareDelegate(std::string name) -> sym::TypeId;
   auto declareFuture(std::string name) -> sym::TypeId;
   auto declareLazy(std::string name) -> sym::TypeId;
-  auto declarePureFunc(std::string name, sym::TypeSet input, sym::TypeId output) -> sym::FuncId;
-  auto declareAction(std::string name, sym::TypeSet input, sym::TypeId output) -> sym::FuncId;
+  auto
+  declarePureFunc(std::string name, sym::TypeSet input, sym::TypeId output, unsigned int numOptArgs)
+      -> sym::FuncId;
+  auto
+  declareAction(std::string name, sym::TypeSet input, sym::TypeId output, unsigned int numOptArgs)
+      -> sym::FuncId;
   auto declareFailIntrinsic(std::string name, sym::TypeId output) -> sym::FuncId;
 
   auto defineStruct(sym::TypeId id, sym::FieldDeclTable fields) -> void;

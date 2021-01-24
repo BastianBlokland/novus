@@ -27,7 +27,7 @@ TEST_CASE("[prog] Copy", "prog") {
 
   SECTION("Copy function") {
     auto progA    = Program{};
-    const auto id = progA.declarePureFunc("test", sym::TypeSet{}, progA.getInt());
+    const auto id = progA.declarePureFunc("test", sym::TypeSet{}, progA.getInt(), 0u);
     progA.defineFunc(id, sym::ConstDeclTable{}, expr::litIntNode(progA, 2));
 
     // Copy to another program.

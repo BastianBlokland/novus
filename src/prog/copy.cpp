@@ -55,7 +55,8 @@ auto copyFunc(
       fromDecl.isImplicitConv(),
       fromDecl.getName(),
       fromDecl.getInput(),
-      fromDecl.getOutput());
+      fromDecl.getOutput(),
+      fromDecl.getNumOptArgs());
 
   // Define function in the 'to' program, optionally rewriting the expresion.
   if (fromDecl.getKind() == sym::FuncKind::User) {

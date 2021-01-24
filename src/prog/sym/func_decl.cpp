@@ -10,7 +10,8 @@ FuncDecl::FuncDecl(
     bool isImplicitConv,
     std::string name,
     TypeSet input,
-    TypeId output) :
+    TypeId output,
+    unsigned int numOptArgs) :
     m_id{id},
     m_kind{kind},
     m_isAction{isAction},
@@ -18,7 +19,8 @@ FuncDecl::FuncDecl(
     m_isImplicitConv{isImplicitConv},
     m_name{std::move(name)},
     m_input{std::move(input)},
-    m_output{output} {}
+    m_output{output},
+    m_numOptArgs{numOptArgs} {}
 
 auto FuncDecl::operator==(const FuncDecl& rhs) const noexcept -> bool { return m_id == rhs.m_id; }
 
@@ -39,6 +41,8 @@ auto FuncDecl::isImplicitConv() const noexcept -> bool { return m_isImplicitConv
 auto FuncDecl::getName() const noexcept -> const std::string& { return m_name; }
 
 auto FuncDecl::getInput() const noexcept -> const TypeSet& { return m_input; }
+
+auto FuncDecl::getNumOptArgs() const noexcept -> unsigned int { return m_numOptArgs; }
 
 auto FuncDecl::getOutput() const noexcept -> TypeId { return m_output; }
 

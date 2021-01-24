@@ -140,7 +140,6 @@ auto FuncTemplate::setupInstance(FuncTemplateInst* instance) -> void {
     return;
   }
   const auto numOptArgs = getNumOptionalArgs(m_ctx, *m_parseNode);
-  (void)numOptArgs;
 
   instance->m_retType =
       ::frontend::internal::getRetType(m_ctx, &subTable, m_parseNode->getRetType());
@@ -219,8 +218,10 @@ auto FuncTemplate::setupInstance(FuncTemplateInst* instance) -> void {
 
   // Declare the function in the program.
   instance->m_func = m_isAction
-      ? m_ctx->getProg()->declareAction(funcName, std::move(*funcInput), *instance->m_retType)
-      : m_ctx->getProg()->declarePureFunc(funcName, std::move(*funcInput), *instance->m_retType);
+      ? m_ctx->getProg()->declareAction(
+            funcName, std::move(*funcInput), *instance->m_retType, numOptArgs)
+      : m_ctx->getProg()->declarePureFunc(
+            funcName, std::move(*funcInput), *instance->m_retType, numOptArgs);
 
   // Define the function.
   instance->m_success = defineFunc(

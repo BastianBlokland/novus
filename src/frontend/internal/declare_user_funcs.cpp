@@ -63,7 +63,6 @@ auto DeclareUserFuncs::visit(const parse::FuncDeclStmtNode& n) -> void {
     return;
   }
   const auto numOptArgs = getNumOptionalArgs(m_ctx, n);
-  (void)numOptArgs;
 
   // Verify that this is not a duplicate declaration.
   if (m_ctx->getProg()->lookupFunc(name, input.value(), prog::OvOptions{0})) {
@@ -125,8 +124,8 @@ auto DeclareUserFuncs::visit(const parse::FuncDeclStmtNode& n) -> void {
   // Declare the function in the program.
   const auto funcName = isConv ? getName(*m_ctx, *retType) : name;
   auto funcId         = n.isAction()
-      ? m_ctx->getProg()->declareAction(funcName, input.value(), retType.value())
-      : m_ctx->getProg()->declarePureFunc(funcName, input.value(), retType.value());
+      ? m_ctx->getProg()->declareAction(funcName, input.value(), retType.value(), numOptArgs)
+      : m_ctx->getProg()->declarePureFunc(funcName, input.value(), retType.value(), numOptArgs);
   m_funcDecls->emplace_back(funcId, m_ctx, name, n);
 }
 
