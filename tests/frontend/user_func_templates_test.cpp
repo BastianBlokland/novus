@@ -286,6 +286,13 @@ TEST_CASE("[frontend] Analyzing user-function templates", "frontend") {
         factoryDef.getExpr() ==
         *prog::expr::callExprNode(output.getProg(), GET_FUNC_ID(output, "Test__int"), {}));
   }
+
+  SECTION("Diagnostics") {
+    CHECK_DIAG(
+        "fun ft{T}(T a = T(), T b) a * b "
+        "fun f() ft(1, 2)",
+        errNonOptArgFollowingOpt(src, input::Span{21, 23}));
+  }
 }
 
 } // namespace frontend

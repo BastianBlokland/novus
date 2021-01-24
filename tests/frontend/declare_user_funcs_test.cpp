@@ -190,6 +190,7 @@ TEST_CASE("[frontend] Analyzing user-function declarations", "frontend") {
         errNonPureConversion(src, input::Span{25, 47}),
         errInvalidFuncInstantiation(src, input::Span{57, 57}),
         errNoTypeOrConversionFoundToInstantiate(src, "S", 1, input::Span{57, 64}));
+    CHECK_DIAG("fun f(int a = 0, int b) a * b", errNonOptArgFollowingOpt(src, input::Span{17, 21}));
   }
 }
 

@@ -62,6 +62,8 @@ auto DeclareUserFuncs::visit(const parse::FuncDeclStmtNode& n) -> void {
   if (!input) {
     return;
   }
+  const auto numOptArgs = getNumOptionalArgs(m_ctx, n);
+  (void)numOptArgs;
 
   // Verify that this is not a duplicate declaration.
   if (m_ctx->getProg()->lookupFunc(name, input.value(), prog::OvOptions{0})) {

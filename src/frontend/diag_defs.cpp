@@ -625,4 +625,10 @@ auto errUnsupportedArgInitializer(const Source& src, const std::string& name, in
   return error(src, oss.str(), span);
 }
 
+auto errNonOptArgFollowingOpt(const Source& src, input::Span span) -> Diag {
+  std::ostringstream oss;
+  oss << "Required argument cannot follow an optional argument";
+  return error(src, oss.str(), span);
+}
+
 } // namespace frontend

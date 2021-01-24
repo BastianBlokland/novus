@@ -70,6 +70,9 @@ getFuncInput(Context* ctx, const TypeSubstitutionTable* subTable, const FuncPars
     -> std::optional<prog::sym::TypeSet>;
 
 template <typename FuncParseNode>
+[[nodiscard]] auto getNumOptionalArgs(Context* ctx, const FuncParseNode& parseNode) -> unsigned int;
+
+template <typename FuncParseNode>
 [[nodiscard]] auto declareFuncInput(
     Context* ctx,
     const TypeSubstitutionTable* subTable,

@@ -253,4 +253,6 @@ errUnsupportedOperator(const Source& src, const std::string& name, input::Span s
 [[nodiscard]] auto
 errUnsupportedArgInitializer(const Source& src, const std::string& name, input::Span span) -> Diag;
 
+[[nodiscard]] auto errNonOptArgFollowingOpt(const Source& src, input::Span span) -> Diag;
+
 } // namespace frontend

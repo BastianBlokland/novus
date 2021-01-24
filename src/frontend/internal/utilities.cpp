@@ -443,6 +443,22 @@ auto getFuncInput(
 }
 
 template <typename FuncParseNode>
+auto getNumOptionalArgs(Context* ctx, const FuncParseNode& parseNode) -> unsigned int {
+  auto result = 0u;
+  for (const auto& arg : parseNode.getArgList()) {
+    if (arg.hasInitializer()) {
+      ++result;
+      continue;
+    }
+    if (result) {
+      ctx->reportDiag(errNonOptArgFollowingOpt, arg.getSpan());
+      return 0u;
+    }
+  }
+  return result;
+}
+
+template <typename FuncParseNode>
 auto declareFuncInput(
     Context* ctx,
     const TypeSubstitutionTable* subTable,
@@ -626,6 +642,9 @@ template std::optional<prog::sym::TypeSet>
 getFuncInput(Context* ctx, const TypeSubstitutionTable* subTable, const parse::FuncDeclStmtNode& n);
 template std::optional<prog::sym::TypeSet>
 getFuncInput(Context* ctx, const TypeSubstitutionTable* subTable, const parse::AnonFuncExprNode& n);
+
+template unsigned int getNumOptionalArgs(Context* ctx, const parse::FuncDeclStmtNode& n);
+template unsigned int getNumOptionalArgs(Context* ctx, const parse::AnonFuncExprNode& n);
 
 template bool declareFuncInput(
     Context* ctx,

@@ -136,16 +136,16 @@ auto FuncTemplate::setupInstance(FuncTemplateInst* instance) -> void {
   auto funcInput      = getFuncInput(m_ctx, &subTable, *m_parseNode);
   if (!funcInput) {
     assert(m_ctx->hasErrors());
-
     instance->m_success = false;
     return;
   }
+  const auto numOptArgs = getNumOptionalArgs(m_ctx, *m_parseNode);
+  (void)numOptArgs;
 
   instance->m_retType =
       ::frontend::internal::getRetType(m_ctx, &subTable, m_parseNode->getRetType());
   if (!instance->m_retType) {
     assert(m_ctx->hasErrors());
-
     instance->m_success = false;
     return;
   }
