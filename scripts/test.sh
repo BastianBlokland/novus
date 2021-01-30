@@ -21,20 +21,47 @@ fail()
   exit 1
 }
 
+isMacos()
+{
+  [[ "$(uname -s)" = Darwin* ]]
+}
+
 hasCommand()
 {
   [ -x "$(command -v "${1}")" ]
 }
 
+numProcessors()
+{
+  if hasCommand nproc
+  then
+    nproc
+  elif isMacos
+  then
+    sysctl -n hw.ncpu
+  else
+    # Default to 1 processor.
+    echo "1"
+  fi
+}
+
 testProj()
 {
-  local dir="${1}"
-  local filter="${2}"
-  local coverageExecutable="${3}"
-  local coverageIgnoreRegex="${4}"
-  local coverageReportPath="${5}"
+  local threads="${1}"
+  local dir="${2}"
+  local filter="${3}"
+  local coverageExecutable="${4}"
+  local coverageIgnoreRegex="${5}"
+  local coverageReportPath="${6}"
   local rawCoverageDir="$(pwd)/${dir}/tests/test_rawcoverage/"
   local indexedCoveragePath="$(pwd)/${dir}/tests/test_coverage.profdata"
+
+  # Verify threads is a number.
+  case "${threads}" in
+    ''|*[!0-9]*)
+      fail "Invalid number of threads '${threads}', has to be number"
+      ;;
+  esac
 
   # Verify build directory exists.
   test -d "${dir}" || \
@@ -47,7 +74,7 @@ testProj()
   # Verify that make is present on path.
   hasCommand ctest || fail "'ctest' not found on path, it is required"
 
-  info "Begin testing using ctest (filter: ${filter})"
+  info "Begin testing using ctest (filter: ${filter}) on ${threads} threads"
 
   # Remove previous coverage outputs (if they exist)
   rm -rf "${coverageReportPath}" "${rawCoverageDir}" "${indexedCoveragePath}"
@@ -55,7 +82,7 @@ testProj()
   # Run all tests using ctest.
   (
     cd "${dir}" && LLVM_PROFILE_FILE="${rawCoverageDir}/%p.profraw" \
-    ctest --tests-regex "${filter}" --output-on-failure
+    ctest --tests-regex "${filter}" --output-on-failure -j "${threads}"
   )
 
   info "Successfully finished testing"
@@ -80,6 +107,7 @@ printUsage()
 {
   echo "Options:"
   echo "-h,--help               Print this usage information"
+  echo "-t,--threads            Number of threads to use, defaults to number of processors"
   echo "-d,--dir                Build directory, default: 'build'"
   echo "-f,--filter             Regex pattern to select the tests to run, default: '.+'"
   echo "--coverage-executable   Path to exeutable to collect coverage for, default: 'bin/novtests'"
@@ -88,6 +116,7 @@ printUsage()
 }
 
 # Defaults.
+numThreads="$(numProcessors)"
 buildDir="build"
 filter=".+"
 coverageExecutable="bin/novtests"
@@ -102,6 +131,10 @@ do
       echo "Novus -- Test"
       printUsage
       exit 0
+      ;;
+    -t|--threads)
+      numThreads="${2}"
+      shift 2
       ;;
     -d|--dir)
       buildDir="${2}"
@@ -131,7 +164,8 @@ do
   esac
 done
 
-testProj "${buildDir}" \
+testProj "${numThreads}" \
+         "${buildDir}" \
          "${filter}" \
          "${coverageExecutable}" \
          "${coverageIgnoreRegex}" \
