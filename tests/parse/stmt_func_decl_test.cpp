@@ -18,7 +18,7 @@ TEST_CASE("[parse] Parsing function declaration statements", "parse") {
             FUN,
             ID("a"),
             std::nullopt,
-            ArgumentListDecl(OPAREN, ARGS(), COMMAS(0), CPAREN),
+            ArgumentListDecl(OPAREN, NO_ARGS, COMMAS(0), CPAREN),
             std::nullopt,
             INT(1)));
     CHECK_STMT(
@@ -27,7 +27,7 @@ TEST_CASE("[parse] Parsing function declaration statements", "parse") {
             FUN,
             ID("a"),
             std::nullopt,
-            ArgumentListDecl(OPAREN, ARGS(), COMMAS(0), CPAREN),
+            ArgumentListDecl(OPAREN, NO_ARGS, COMMAS(0), CPAREN),
             RetTypeSpec{ARROW, TYPE("int")},
             INT(1)));
     CHECK_STMT(
@@ -93,7 +93,7 @@ TEST_CASE("[parse] Parsing function declaration statements", "parse") {
             FUN,
             ID("a"),
             TypeSubstitutionList{OCURLY, {ID("T")}, COMMAS(0), CCURLY},
-            ArgumentListDecl(OPAREN, ARGS(), COMMAS(0), CPAREN),
+            ArgumentListDecl(OPAREN, NO_ARGS, COMMAS(0), CPAREN),
             std::nullopt,
             INT(1)));
     CHECK_STMT(
@@ -102,7 +102,7 @@ TEST_CASE("[parse] Parsing function declaration statements", "parse") {
             FUN,
             ID("a"),
             TypeSubstitutionList{OCURLY, {ID("T"), ID("U")}, COMMAS(1), CCURLY},
-            ArgumentListDecl(OPAREN, ARGS(), COMMAS(0), CPAREN),
+            ArgumentListDecl(OPAREN, NO_ARGS, COMMAS(0), CPAREN),
             std::nullopt,
             INT(1)));
     CHECK_STMT(
@@ -121,7 +121,7 @@ TEST_CASE("[parse] Parsing function declaration statements", "parse") {
             FUN,
             ID("a"),
             std::nullopt,
-            ArgumentListDecl(OPAREN, ARGS(), COMMAS(0), CPAREN),
+            ArgumentListDecl(OPAREN, NO_ARGS, COMMAS(0), CPAREN),
             RetTypeSpec{ARROW, TYPE("List", TYPE("T", TYPE("Y")))},
             INT(1)));
     CHECK_STMT(
@@ -165,7 +165,7 @@ TEST_CASE("[parse] Parsing function declaration statements", "parse") {
                             ID_EXPR_PARAM(
                                 "T", TypeParamList(OCURLY, {TYPE("U")}, COMMAS(1), CCURLY)),
                             OPAREN,
-                            NODES(),
+                            NO_NODES,
                             COMMAS(0),
                             CPAREN)))),
                 COMMAS(0),
@@ -181,7 +181,7 @@ TEST_CASE("[parse] Parsing function declaration statements", "parse") {
             ACT,
             ID("a"),
             std::nullopt,
-            ArgumentListDecl(OPAREN, ARGS(), COMMAS(0), CPAREN),
+            ArgumentListDecl(OPAREN, NO_ARGS, COMMAS(0), CPAREN),
             std::nullopt,
             INT(1)));
     CHECK_STMT(
@@ -230,7 +230,7 @@ TEST_CASE("[parse] Parsing function declaration statements", "parse") {
             FUN,
             ID("a"),
             std::nullopt,
-            ArgumentListDecl(OPAREN, ARGS(), COMMAS(0), CPAREN),
+            ArgumentListDecl(OPAREN, NO_ARGS, COMMAS(0), CPAREN),
             RetTypeSpec{ARROW, TYPE("int")},
             errInvalidPrimaryExpr(END)));
     CHECK_STMT(
@@ -239,7 +239,7 @@ TEST_CASE("[parse] Parsing function declaration statements", "parse") {
             FUN,
             END,
             std::nullopt,
-            ArgumentListDecl(END, ARGS(), COMMAS(0), END),
+            ArgumentListDecl(END, NO_ARGS, COMMAS(0), END),
             std::nullopt,
             errInvalidPrimaryExpr(END)));
     CHECK_STMT(
@@ -248,7 +248,7 @@ TEST_CASE("[parse] Parsing function declaration statements", "parse") {
             FUN,
             ID("a"),
             TypeSubstitutionList{OCURLY, {}, COMMAS(0), END},
-            ArgumentListDecl(END, ARGS(), COMMAS(0), END),
+            ArgumentListDecl(END, NO_ARGS, COMMAS(0), END),
             std::nullopt,
             errInvalidPrimaryExpr(END)));
     CHECK_STMT(
@@ -277,7 +277,7 @@ TEST_CASE("[parse] Parsing function declaration statements", "parse") {
             FUN,
             DISCARD,
             std::nullopt,
-            ArgumentListDecl(PARENPAREN, ARGS(), COMMAS(0), PARENPAREN),
+            ArgumentListDecl(PARENPAREN, NO_ARGS, COMMAS(0), PARENPAREN),
             std::nullopt,
             INT(1)));
     CHECK_STMT(
@@ -286,7 +286,7 @@ TEST_CASE("[parse] Parsing function declaration statements", "parse") {
             FUN,
             ID("a"),
             std::nullopt,
-            ArgumentListDecl(OPAREN, ARGS(), COMMAS(0), END),
+            ArgumentListDecl(OPAREN, NO_ARGS, COMMAS(0), END),
             std::nullopt,
             errInvalidPrimaryExpr(END)));
     CHECK_STMT(
@@ -370,7 +370,7 @@ TEST_CASE("[parse] Parsing function declaration statements", "parse") {
             FUN,
             ID("a"),
             std::nullopt,
-            ArgumentListDecl(PARENPAREN, ARGS(), COMMAS(0), PARENPAREN),
+            ArgumentListDecl(PARENPAREN, NO_ARGS, COMMAS(0), PARENPAREN),
             RetTypeSpec{ARROW, Type(ID("T"), TypeParamList(OCURLY, {}, {}, CCURLY))},
             INT(1)));
     CHECK_STMT(

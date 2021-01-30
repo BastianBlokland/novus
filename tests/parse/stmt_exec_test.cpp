@@ -12,14 +12,14 @@ TEST_CASE("[parse] Parsing execute statements", "parse") {
 
   CHECK_STMT(
       "exec()",
-      execStmtNode(callExprNode({}, ID_EXPR("exec"), OPAREN, NODES(), COMMAS(0), CPAREN)));
+      execStmtNode(callExprNode({}, ID_EXPR("exec"), OPAREN, NO_NODES, COMMAS(0), CPAREN)));
   CHECK_STMT(
       "intrinsic{exec}()",
       execStmtNode(callExprNode(
           {},
           intrinsicExprNode(INTRINSIC, OCURLY, ID("exec"), CCURLY, std::nullopt),
           OPAREN,
-          NODES(),
+          NO_NODES,
           COMMAS(0),
           CPAREN)));
   CHECK_STMT(
@@ -52,7 +52,7 @@ TEST_CASE("[parse] Parsing execute statements", "parse") {
           {},
           ID_EXPR("exec"),
           OPAREN,
-          NODES(callExprNode({}, ID_EXPR("a"), OPAREN, NODES(), COMMAS(0), CPAREN)),
+          NODES(callExprNode({}, ID_EXPR("a"), OPAREN, NO_NODES, COMMAS(0), CPAREN)),
           COMMAS(0),
           CPAREN)));
   CHECK_STMT(
@@ -61,14 +61,14 @@ TEST_CASE("[parse] Parsing execute statements", "parse") {
           {},
           ID_EXPR_PARAM("exec", TypeParamList(OCURLY, {TYPE("int")}, COMMAS(0), CCURLY)),
           OPAREN,
-          NODES(),
+          NO_NODES,
           COMMAS(0),
           CPAREN)));
   CHECK_STMT(
       "(exec)()",
       execStmtNode(callExprNode(
-          {}, parenExprNode(OPAREN, ID_EXPR("exec"), CPAREN), OPAREN, NODES(), COMMAS(0), CPAREN)));
-  CHECK_STMT("1()", execStmtNode(callExprNode({}, INT(1), OPAREN, NODES(), COMMAS(0), CPAREN)));
+          {}, parenExprNode(OPAREN, ID_EXPR("exec"), CPAREN), OPAREN, NO_NODES, COMMAS(0), CPAREN)));
+  CHECK_STMT("1()", execStmtNode(callExprNode({}, INT(1), OPAREN, NO_NODES, COMMAS(0), CPAREN)));
 
   SECTION("Errors") {
     CHECK_STMT(
@@ -76,7 +76,7 @@ TEST_CASE("[parse] Parsing execute statements", "parse") {
         execStmtNode(errInvalidCallExpr(
             {}, ID_EXPR("a"), OPAREN, NODES(INT(1), INT(1)), COMMAS(0), CPAREN)));
     CHECK_STMT(
-        "a(", execStmtNode(errInvalidCallExpr({}, ID_EXPR("a"), OPAREN, NODES(), COMMAS(0), END)));
+        "a(", execStmtNode(errInvalidCallExpr({}, ID_EXPR("a"), OPAREN, NO_NODES, COMMAS(0), END)));
     CHECK_STMT(
         "a(,",
         execStmtNode(errInvalidCallExpr(
