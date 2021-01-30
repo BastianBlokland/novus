@@ -106,10 +106,7 @@ enum Month =
   November,
   December
 
-fun string(Month m)
-  string(m, false)
-
-fun string(Month m, bool short)
+fun string(Month m, bool short = false)
   if m == Month.January   -> short ? "Jan" : "January"
   if m == Month.February  -> short ? "Feb" : "February"
   if m == Month.March     -> short ? "Mar" : "March"
@@ -142,10 +139,7 @@ fun WeekDay(Date e)
 fun WeekDay(DateTime dt)
   WeekDay((dt.daysSinceEpoch() + WeekDay.Thursday) % 7)
 
-fun string(WeekDay d)
-  string(d, false)
-
-fun string(WeekDay d, bool short)
+fun string(WeekDay d, bool short = false)
   if d ==  WeekDay.Sunday     -> short ? "Sun"  : "Sunday"
   if d ==  WeekDay.Monday     -> short ? "Mon"  : "Monday"
   if d ==  WeekDay.Tuesday    -> short ? "Tue"  : "Tuesday"

@@ -93,22 +93,13 @@ act termStyle(sys_stream s, TermStyle style) -> Option{Error}
 
 // -- Set 8-bit color (if terminal supports it).
 
-act termColor(Color color) -> Option{Error}
-  termColor(color, false)
-
-act termColor(Color color, bool background) -> Option{Error}
+act termColor(Color color, bool background = false) -> Option{Error}
   consoleOpen().map(impure lambda (Console c) c.stdOut.termColor(color, background))
 
-act termColor(Console c, Color color) -> Option{Error}
-  c.stdOut.termColor(color, false)
-
-act termColor(Console c, Color color, bool background) -> Option{Error}
+act termColor(Console c, Color color, bool background = false) -> Option{Error}
   c.stdOut.termColor(color, background)
 
-act termColor(sys_stream s, Color color) -> Option{Error}
-  s.termColor(color, false)
-
-act termColor(sys_stream s, Color color, bool background) -> Option{Error}
+act termColor(sys_stream s, Color color, bool background = false) -> Option{Error}
   toDiscrete = ( lambda (float v)
     int(clamp(v, 0.0, 1.0) * 5.0 + 0.5)
   );
@@ -188,16 +179,10 @@ act termAltScreen(Console c, bool active) -> Option{Error}
 
 // -- Clear the terminal.
 
-act termClearScreen() -> Option{Error}
-  termClearScreen(TermClearMode.All)
-
-act termClearScreen(Console c) -> Option{Error}
-  termClearScreen(c, TermClearMode.All)
-
-act termClearScreen(TermClearMode mode) -> Option{Error}
+act termClearScreen(TermClearMode mode = TermClearMode.All) -> Option{Error}
   consoleOpen().map(impure lambda (Console c) c.termClearScreen(mode))
 
-act termClearScreen(Console c, TermClearMode mode) -> Option{Error}
+act termClearScreen(Console c, TermClearMode mode = TermClearMode.All) -> Option{Error}
   actSeq(
     lazy c.stdOut.write(termEsc()),
     lazy c.stdOut.write('['),
@@ -205,10 +190,10 @@ act termClearScreen(Console c, TermClearMode mode) -> Option{Error}
     lazy c.stdOut.write('J')
   ) ! Error("Failed to clear the terminal screen")
 
-act termClearLine(TermClearMode mode) -> Option{Error}
+act termClearLine(TermClearMode mode = TermClearMode.All) -> Option{Error}
   consoleOpen().map(impure lambda (Console c) c.termClearLine(mode))
 
-act termClearLine(Console c, TermClearMode mode) -> Option{Error}
+act termClearLine(Console c, TermClearMode mode = TermClearMode.All) -> Option{Error}
   actSeq(
     lazy c.stdOut.write(termEsc()),
     lazy c.stdOut.write('['),
