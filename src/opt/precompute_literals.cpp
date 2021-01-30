@@ -88,6 +88,12 @@ auto precomputeLiterals(const prog::Program& prog, bool& modified) -> prog::Prog
 auto PrecomputeRewriter::precomputeCall(const prog::expr::CallExprNode& callExpr)
     -> prog::expr::NodePtr {
 
+  if (callExpr.needsPatching()) {
+    // This is not a valid state and means the frontend had an internal error and the backend will
+    // crash when trying to genenerate assembly.
+    return callExpr.clone(this);
+  }
+
   if (callExpr.isFork()) {
     // Unable to precompute forked calls.
     return callExpr.clone(this);

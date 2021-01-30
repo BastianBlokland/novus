@@ -40,11 +40,11 @@ GetExpr::GetExpr(
 
 auto GetExpr::getValue() -> prog::expr::NodePtr& { return m_expr; }
 
-auto GetExpr::visit(const parse::CommentNode & /*unused*/) -> void {
+auto GetExpr::visit(const parse::CommentNode& /*unused*/) -> void {
   throw std::logic_error{"GetExpr is not implemented for this node type"};
 }
 
-auto GetExpr::visit(const parse::ErrorNode & /*unused*/) -> void {
+auto GetExpr::visit(const parse::ErrorNode& /*unused*/) -> void {
   throw std::logic_error{"GetExpr is not implemented for this node type"};
 }
 
@@ -222,8 +222,8 @@ auto GetExpr::visit(const parse::CallExprNode& n) -> void {
   const auto isBindableConstant = m_constBinder && identifier && !getIdVisitor.isIntrinsic() &&
       m_constBinder->canBind(getName(*identifier));
   // NOTE: Is used to choose between a 'instance' call or a call to a delegate field on a struct.
-  const auto isFuncOrConvName =
-      identifier && !getIdVisitor.isIntrinsic() && isFuncOrConv(m_ctx, getName(*identifier));
+  const auto isFuncOrConvName = identifier && !getIdVisitor.isIntrinsic() &&
+      isFuncOrConv(m_ctx, m_typeSubTable, getName(*identifier));
 
   if (!identifier || (instance == nullptr && isBindableConstant) ||
       (instance != nullptr && !isFuncOrConvName)) {
@@ -258,47 +258,58 @@ auto GetExpr::visit(const parse::CallExprNode& n) -> void {
   const auto ovOpts         = getOvOptions(-1, false, noConvFirstArg);
   const auto func           = m_ctx->getProg()->lookupFunc(possibleFuncs, args->second, ovOpts);
   if (!func) {
-    auto isTypeOrConv = !getIdVisitor.isIntrinsic() && isType(m_ctx, nameString);
-    if (typeParams) {
-      if (isTypeOrConv) {
+    auto argTypeNames = std::vector<std::string>{};
+    for (const auto& argType : args->second) {
+      argTypeNames.push_back(getDisplayName(*m_ctx, argType));
+    }
+
+    if (auto type = getOrInstType(m_ctx, m_typeSubTable, nameToken, typeParams)) {
+      m_ctx->reportDiag(
+          errUndeclaredTypeOrConversion, getDisplayName(*m_ctx, *type), argTypeNames, n.getSpan());
+      return;
+    }
+    if (isType(m_ctx, m_typeSubTable, nameString)) {
+      // Tried to call a constructor but we do not know which type (probably because the user
+      // provided incorrect type-params or we could not infer the type-params).
+      if (typeParams) {
+        // TODO: Include the type-names for the type-parameters in the diagnostic.
+        // TODO: Include the type-names for the arguments in the diagnostic.
         m_ctx->reportDiag(
             errNoTypeOrConversionFoundToInstantiate,
             nameString,
             typeParams->getCount(),
             n.getSpan());
       } else {
-        if (hasFlag<Flags::AllowPureFuncCalls>() && hasFlag<Flags::AllowActionCalls>()) {
-          m_ctx->reportDiag(
-              errNoFuncOrActionFoundToInstantiate, nameString, typeParams->getCount(), n.getSpan());
-        } else if (hasFlag<Flags::AllowPureFuncCalls>()) {
-          m_ctx->reportDiag(
-              errNoPureFuncFoundToInstantiate, nameString, typeParams->getCount(), n.getSpan());
-        } else {
-          m_ctx->reportDiag(
-              errNoActionFoundToInstantiate, nameString, typeParams->getCount(), n.getSpan());
-        }
-      }
-    } else {
-      auto argTypeNames = std::vector<std::string>{};
-      for (const auto& argType : args->second) {
-        argTypeNames.push_back(getDisplayName(*m_ctx, argType));
-      }
-      if (isTypeOrConv) {
         m_ctx->reportDiag(errUndeclaredTypeOrConversion, nameString, argTypeNames, n.getSpan());
-      } else {
-        const bool allowPureFunc = hasFlag<Flags::AllowPureFuncCalls>();
-        const bool allowAction   = hasFlag<Flags::AllowActionCalls>();
-        if (getIdVisitor.isIntrinsic()) {
-          m_ctx->reportDiag(
-              errUnknownIntrinsic, nameString, !allowAction, argTypeNames, n.getSpan());
-        } else if (allowPureFunc && allowAction) {
-          m_ctx->reportDiag(errUndeclaredFuncOrAction, nameString, argTypeNames, n.getSpan());
-        } else if (allowPureFunc) {
-          m_ctx->reportDiag(errUndeclaredPureFunc, nameString, argTypeNames, n.getSpan());
-        } else {
-          m_ctx->reportDiag(errUndeclaredAction, nameString, argTypeNames, n.getSpan());
-        }
       }
+      return;
+    }
+
+    const bool allowPureFunc = hasFlag<Flags::AllowPureFuncCalls>();
+    const bool allowAction   = hasFlag<Flags::AllowActionCalls>();
+    if (typeParams) {
+      // TODO: Include the type-names for the type-parameters in the diagnostic.
+      // TODO: Include the type-names for the arguments in the diagnostic.
+      if (allowPureFunc && allowAction) {
+        m_ctx->reportDiag(
+            errNoFuncOrActionFoundToInstantiate, nameString, typeParams->getCount(), n.getSpan());
+      } else if (allowPureFunc) {
+        m_ctx->reportDiag(
+            errNoPureFuncFoundToInstantiate, nameString, typeParams->getCount(), n.getSpan());
+      } else {
+        m_ctx->reportDiag(
+            errNoActionFoundToInstantiate, nameString, typeParams->getCount(), n.getSpan());
+      }
+      return;
+    }
+    if (getIdVisitor.isIntrinsic()) {
+      m_ctx->reportDiag(errUnknownIntrinsic, nameString, !allowAction, argTypeNames, n.getSpan());
+    } else if (allowPureFunc && allowAction) {
+      m_ctx->reportDiag(errUndeclaredFuncOrAction, nameString, argTypeNames, n.getSpan());
+    } else if (allowPureFunc) {
+      m_ctx->reportDiag(errUndeclaredPureFunc, nameString, argTypeNames, n.getSpan());
+    } else {
+      m_ctx->reportDiag(errUndeclaredAction, nameString, argTypeNames, n.getSpan());
     }
     return;
   }
@@ -450,7 +461,8 @@ auto GetExpr::visit(const parse::FieldExprNode& n) -> void {
   auto getIdVisitor = GetIdentifier{false};
   n[0].accept(&getIdVisitor);
   auto identifier = getIdVisitor.getIdentifier();
-  if (identifier && !getIdVisitor.isIntrinsic() && isType(m_ctx, getName(*identifier))) {
+  if (identifier && !getIdVisitor.isIntrinsic() &&
+      isType(m_ctx, m_typeSubTable, getName(*identifier))) {
     m_expr = getStaticFieldExpr(*identifier, getIdVisitor.getTypeParams(), n.getId());
     return;
   }
@@ -630,11 +642,11 @@ auto GetExpr::visit(const parse::ParenExprNode& n) -> void {
   m_expr = getSubExpr(n[0], m_typeHint, hasFlag<Flags::CheckedConstsAccess>());
 }
 
-auto GetExpr::visit(const parse::SwitchExprElseNode & /*unused*/) -> void {
+auto GetExpr::visit(const parse::SwitchExprElseNode& /*unused*/) -> void {
   throw std::logic_error{"GetExpr is not implemented for this node type"};
 }
 
-auto GetExpr::visit(const parse::SwitchExprIfNode & /*unused*/) -> void {
+auto GetExpr::visit(const parse::SwitchExprIfNode& /*unused*/) -> void {
   throw std::logic_error{"GetExpr is not implemented for this node type"};
 }
 
@@ -733,27 +745,27 @@ auto GetExpr::visit(const parse::UnaryExprNode& n) -> void {
   m_expr = prog::expr::callExprNode(*m_ctx->getProg(), func.value(), std::move(args));
 }
 
-auto GetExpr::visit(const parse::EnumDeclStmtNode & /*unused*/) -> void {
+auto GetExpr::visit(const parse::EnumDeclStmtNode& /*unused*/) -> void {
   throw std::logic_error{"GetExpr is not implemented for this node type"};
 }
 
-auto GetExpr::visit(const parse::ExecStmtNode & /*unused*/) -> void {
+auto GetExpr::visit(const parse::ExecStmtNode& /*unused*/) -> void {
   throw std::logic_error{"GetExpr is not implemented for this node type"};
 }
 
-auto GetExpr::visit(const parse::FuncDeclStmtNode & /*unused*/) -> void {
+auto GetExpr::visit(const parse::FuncDeclStmtNode& /*unused*/) -> void {
   throw std::logic_error{"GetExpr is not implemented for this node type"};
 }
 
-auto GetExpr::visit(const parse::ImportStmtNode & /*unused*/) -> void {
+auto GetExpr::visit(const parse::ImportStmtNode& /*unused*/) -> void {
   throw std::logic_error{"GetExpr is not implemented for this node type"};
 }
 
-auto GetExpr::visit(const parse::StructDeclStmtNode & /*unused*/) -> void {
+auto GetExpr::visit(const parse::StructDeclStmtNode& /*unused*/) -> void {
   throw std::logic_error{"GetExpr is not implemented for this node type"};
 }
 
-auto GetExpr::visit(const parse::UnionDeclStmtNode & /*unused*/) -> void {
+auto GetExpr::visit(const parse::UnionDeclStmtNode& /*unused*/) -> void {
   throw std::logic_error{"GetExpr is not implemented for this node type"};
 }
 

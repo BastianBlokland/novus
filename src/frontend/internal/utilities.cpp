@@ -208,7 +208,7 @@ auto getOrInstType(
   if (subTable != nullptr && subTable->lookupType(typeName)) {
     return subTable->lookupType(typeName);
   }
-  if (!isType(ctx, typeName)) {
+  if (!isType(ctx, nullptr, typeName)) {
     return std::nullopt;
   }
 
@@ -443,7 +443,7 @@ auto getFuncInput(
 }
 
 template <typename FuncParseNode>
-auto getNumOptionalArgs(Context* ctx, const FuncParseNode& parseNode) -> unsigned int {
+auto getNumOptInputs(Context* ctx, const FuncParseNode& parseNode) -> unsigned int {
   auto result = 0u;
   for (const auto& arg : parseNode.getArgList()) {
     if (arg.hasInitializer()) {
@@ -501,7 +501,7 @@ auto getSubstitutionParams(Context* ctx, const parse::TypeSubstitutionList& subL
   auto isValid    = true;
   for (const auto& typeSubToken : subList) {
     const auto typeParamName = getName(typeSubToken);
-    if (isType(ctx, typeParamName)) {
+    if (isType(ctx, nullptr, typeParamName)) {
       ctx->reportDiag(errTypeParamNameConflictsWithType, typeParamName, typeSubToken.getSpan());
       isValid = false;
     } else {
@@ -549,7 +549,7 @@ auto getConstName(
     ctx->reportDiag(errConstNameConflictsWithTypeSubstitution, name, nameToken.getSpan());
     return std::nullopt;
   }
-  if (isType(ctx, name)) {
+  if (isType(ctx, nullptr, name)) {
     ctx->reportDiag(errConstNameConflictsWithType, name, nameToken.getSpan());
     return std::nullopt;
   }
@@ -606,13 +606,14 @@ auto delegateOutAsLazy(Context* ctx, prog::sym::TypeId delegate)
   return std::nullopt;
 }
 
-auto isType(Context* ctx, const std::string& name) -> bool {
+auto isType(Context* ctx, const TypeSubstitutionTable* subTable, const std::string& name) -> bool {
   return isReservedTypeName(name) || ctx->getProg()->hasType(name) ||
-      ctx->getTypeTemplates()->hasType(name);
+      ctx->getTypeTemplates()->hasType(name) || (subTable && subTable->lookupType(name));
 }
 
-auto isFuncOrConv(Context* ctx, const std::string& name) -> bool {
-  return isType(ctx, name) || ctx->getProg()->hasFunc(name) ||
+auto isFuncOrConv(Context* ctx, const TypeSubstitutionTable* subTable, const std::string& name)
+    -> bool {
+  return isType(ctx, subTable, name) || ctx->getProg()->hasFunc(name) ||
       ctx->getFuncTemplates()->hasFunc(name);
 }
 
@@ -643,8 +644,8 @@ getFuncInput(Context* ctx, const TypeSubstitutionTable* subTable, const parse::F
 template std::optional<prog::sym::TypeSet>
 getFuncInput(Context* ctx, const TypeSubstitutionTable* subTable, const parse::AnonFuncExprNode& n);
 
-template unsigned int getNumOptionalArgs(Context* ctx, const parse::FuncDeclStmtNode& n);
-template unsigned int getNumOptionalArgs(Context* ctx, const parse::AnonFuncExprNode& n);
+template unsigned int getNumOptInputs(Context* ctx, const parse::FuncDeclStmtNode& n);
+template unsigned int getNumOptInputs(Context* ctx, const parse::AnonFuncExprNode& n);
 
 template bool declareFuncInput(
     Context* ctx,

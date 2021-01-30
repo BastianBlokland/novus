@@ -70,7 +70,7 @@ public:
       std::string name,
       TypeSet input,
       TypeId output,
-      unsigned int numOptArgs = 0u) -> FuncId;
+      unsigned int numOptInputs = 0u) -> FuncId;
 
   auto registerAction(
       const Program& prog,
@@ -78,7 +78,7 @@ public:
       std::string name,
       TypeSet input,
       TypeId output,
-      unsigned int numOptArgs = 0u) -> FuncId;
+      unsigned int numOptInputs = 0u) -> FuncId;
 
   auto registerIntrinsic(
       const Program& prog, FuncKind kind, std::string name, TypeSet input, TypeId output) -> FuncId;
@@ -95,7 +95,7 @@ public:
       std::string name,
       TypeSet input,
       TypeId output,
-      unsigned int numOptArgs) -> void;
+      unsigned int numOptInputs) -> void;
 
   auto updateFuncOutput(FuncId id, TypeId newOutput) -> void;
 
@@ -117,7 +117,7 @@ private:
       std::string name,
       TypeSet input,
       TypeId output,
-      unsigned int numOptArgs) -> FuncId;
+      unsigned int numOptInputs) -> FuncId;
 };
 
 } // namespace sym

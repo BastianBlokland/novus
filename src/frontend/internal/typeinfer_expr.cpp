@@ -100,8 +100,11 @@ auto TypeInferExpr::visit(const parse::CallExprNode& n) -> void {
   }
 
   // Dynamic call.
-  if (!identifier || m_constTypes->find(getName(*identifier)) != m_constTypes->end() ||
-      (instance != nullptr && !isFuncOrConv(m_ctx, getName(*identifier)))) {
+  const auto isConst =
+      m_constTypes && m_constTypes->find(getName(*identifier)) != m_constTypes->end();
+  const auto isPotentialFieldCall =
+      instance && !isFuncOrConv(m_ctx, m_typeSubTable, getName(*identifier));
+  if (!identifier || isConst || isPotentialFieldCall) {
     m_type = inferDynCall(n);
     return;
   }
@@ -238,7 +241,8 @@ auto TypeInferExpr::visit(const parse::FieldExprNode& n) -> void {
   auto getIdVisitor = GetIdentifier{false};
   n[0].accept(&getIdVisitor);
   auto identifier = getIdVisitor.getIdentifier();
-  if (identifier && !getIdVisitor.isIntrinsic() && isType(m_ctx, getName(*identifier))) {
+  if (identifier && !getIdVisitor.isIntrinsic() &&
+      isType(m_ctx, m_typeSubTable, getName(*identifier))) {
     const auto type =
         getOrInstType(m_ctx, m_typeSubTable, *identifier, getIdVisitor.getTypeParams());
     // If the type is an enum then any field on that enum will have that type.
@@ -480,11 +484,16 @@ auto TypeInferExpr::inferFuncCall(const std::string& funcName, const prog::sym::
 }
 
 auto TypeInferExpr::setConstType(const lex::Token& constId, prog::sym::TypeId type) -> void {
-  auto name = getName(constId);
-  m_constTypes->insert({name, type});
+  if (m_constTypes) {
+    auto name = getName(constId);
+    m_constTypes->insert({name, type});
+  }
 }
 
 auto TypeInferExpr::inferConstType(const lex::Token& constId) -> prog::sym::TypeId {
+  if (!m_constTypes) {
+    return prog::sym::TypeId::inferType();
+  }
   const auto itr = m_constTypes->find(getName(constId));
   if (itr == m_constTypes->end()) {
     return prog::sym::TypeId::inferType();

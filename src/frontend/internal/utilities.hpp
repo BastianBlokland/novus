@@ -70,7 +70,7 @@ getFuncInput(Context* ctx, const TypeSubstitutionTable* subTable, const FuncPars
     -> std::optional<prog::sym::TypeSet>;
 
 template <typename FuncParseNode>
-[[nodiscard]] auto getNumOptionalArgs(Context* ctx, const FuncParseNode& parseNode) -> unsigned int;
+[[nodiscard]] auto getNumOptInputs(Context* ctx, const FuncParseNode& parseNode) -> unsigned int;
 
 template <typename FuncParseNode>
 [[nodiscard]] auto declareFuncInput(
@@ -113,9 +113,11 @@ mangleName(Context* ctx, const std::string& name, const prog::sym::TypeSet& type
 [[nodiscard]] auto delegateOutAsLazy(Context* ctx, prog::sym::TypeId delegate)
     -> std::optional<prog::sym::TypeId>;
 
-[[nodiscard]] auto isType(Context* ctx, const std::string& name) -> bool;
+[[nodiscard]] auto
+isType(Context* ctx, const TypeSubstitutionTable* subTable, const std::string& name) -> bool;
 
-[[nodiscard]] auto isFuncOrConv(Context* ctx, const std::string& name) -> bool;
+[[nodiscard]] auto
+isFuncOrConv(Context* ctx, const TypeSubstitutionTable* subTable, const std::string& name) -> bool;
 
 [[nodiscard]] auto isPure(const Context* ctx, prog::sym::FuncId func) -> bool;
 

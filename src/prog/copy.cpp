@@ -46,9 +46,9 @@ auto copyFunc(
 
   auto& toDefTable = internal::getFuncDefTable(to);
 
-  // NOTE: Optional arguments are not copied at this time.
-  const auto numOptArgs   = 0u;
-  auto optArgInitializers = std::vector<expr::NodePtr>{};
+  // NOTE: Optional input initializers are not copied at this time.
+  const auto numOptInputs   = 0u;
+  auto optInputInitializers = std::vector<expr::NodePtr>{};
 
   // Declare function in the 'to' program.
   toDeclTable.insertFunc(
@@ -60,7 +60,7 @@ auto copyFunc(
       fromDecl.getName(),
       fromDecl.getInput(),
       fromDecl.getOutput(),
-      numOptArgs);
+      numOptInputs);
 
   // Define function in the 'to' program, optionally rewriting the expresion.
   if (fromDecl.getKind() == sym::FuncKind::User) {
@@ -73,7 +73,7 @@ auto copyFunc(
     modified = rewriter && rewriter->hasModified();
 
     toDefTable.registerFunc(
-        toDeclTable, id, std::move(consts), std::move(newBody), std::move(optArgInitializers));
+        toDeclTable, id, std::move(consts), std::move(newBody), std::move(optInputInitializers));
   }
   return true;
 }

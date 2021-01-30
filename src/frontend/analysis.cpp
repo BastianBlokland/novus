@@ -155,6 +155,9 @@ auto analyze(const Source& mainSrc, const std::vector<filesystem::path>& searchP
     return buildOutput(nullptr, std::move(importedSources), diags);
   }
 
+  // Patch all call expressions to apply the optional arguments if they didn't supply overrides.
+  prog->applyOptCallArgs();
+
   return buildOutput(std::move(prog), std::move(importedSources), {});
 }
 

@@ -21,6 +21,7 @@ public:
 
     AllowPureFuncCalls = 1U << 2U,
     AllowActionCalls   = 1U << 3U,
+    NoOptArgs          = 1U << 4U, // Disallow optional arguments (requires passing all args).
   };
 
   GetExpr() = delete;
@@ -144,6 +145,9 @@ private:
     }
     if (!hasFlag<Flags::AllowActionCalls>()) {
       ovFlags = ovFlags | prog::OvFlags::ExclActions;
+    }
+    if (hasFlag<Flags::NoOptArgs>()) {
+      ovFlags = ovFlags | prog::OvFlags::NoOptArgs;
     }
     if (excludeNonUser) {
       ovFlags = ovFlags | prog::OvFlags::ExclNonUser;

@@ -22,6 +22,7 @@ public:
   [[nodiscard]] auto getId() const noexcept -> const FuncId&;
   [[nodiscard]] auto getConsts() const noexcept -> const sym::ConstDeclTable&;
   [[nodiscard]] auto getBody() const noexcept -> const expr::Node&;
+  [[nodiscard]] auto getOptArgInitializer(unsigned int i) const -> expr::NodePtr;
 
 private:
   sym::FuncId m_id;

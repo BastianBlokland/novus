@@ -113,7 +113,7 @@ TEST_CASE("[frontend] Analyzing user-function declarations", "frontend") {
       REQUIRE(output.isSuccess());
       const auto& funcDecl =
           GET_FUNC_DECL(output, "f", GET_TYPE_ID(output, "int"), GET_TYPE_ID(output, "bool"));
-      CHECK(funcDecl.getNumOptArgs() == 1);
+      CHECK(funcDecl.getNumOptInputs() == 1);
       CHECK(funcDecl.getOutput() == GET_TYPE_ID(output, "bool"));
     }
   }
@@ -198,7 +198,7 @@ TEST_CASE("[frontend] Analyzing user-function declarations", "frontend") {
         "act a() S{int}()",
         errNonPureConversion(src, input::Span{25, 47}),
         errInvalidFuncInstantiation(src, input::Span{57, 57}),
-        errNoTypeOrConversionFoundToInstantiate(src, "S", 1, input::Span{57, 64}));
+        errUndeclaredTypeOrConversion(src, "S{int}", {}, input::Span{57, 64}));
     CHECK_DIAG("fun f(int a = 0, int b) a * b", errNonOptArgFollowingOpt(src, input::Span{17, 21}));
   }
 }

@@ -11,7 +11,7 @@
 namespace frontend::internal {
 
 template <typename FuncParseNode>
-static auto getOptArgInitializers(
+static auto getOptInputInitializers(
     Context* ctx,
     const TypeSubstitutionTable* typeSubTable,
     prog::sym::FuncId funcId,
@@ -20,17 +20,17 @@ static auto getOptArgInitializers(
   const auto& funcDecl = ctx->getProg()->getFuncDecl(funcId);
 
   auto result = std::vector<prog::expr::NodePtr>{};
-  result.reserve(funcDecl.getNumOptArgs());
+  result.reserve(funcDecl.getNumOptInputs());
 
-  auto getExprFlags = GetExpr::Flags::AllowPureFuncCalls;
+  auto getExprFlags = GetExpr::Flags::AllowPureFuncCalls | GetExpr::Flags::NoOptArgs;
   if (funcDecl.isAction()) {
     getExprFlags = getExprFlags | GetExpr::Flags::AllowActionCalls;
   }
 
-  const auto totalArgsCount  = funcDecl.getInput().getCount();
-  const auto nonOptArgsCount = totalArgsCount - funcDecl.getNumOptArgs();
-  for (auto i = 0u; i != funcDecl.getNumOptArgs(); ++i) {
-    const auto type = funcDecl.getInput()[nonOptArgsCount + i];
+  const auto totalInputs       = funcDecl.getInput().getCount();
+  const auto nonOptInputsCount = totalInputs - funcDecl.getNumOptInputs();
+  for (auto i = 0u; i != funcDecl.getNumOptInputs(); ++i) {
+    const auto type = funcDecl.getInput()[nonOptInputsCount + i];
 
     auto getExpr = GetExpr{ctx, typeSubTable, nullptr, type, std::nullopt, getExprFlags};
     n[i].accept(&getExpr);
@@ -117,15 +117,15 @@ auto defineFunc(
   }
 
   // Define the initializers for the optional arguments.
-  auto optArgInitializers = getOptArgInitializers(ctx, typeSubTable, id, n);
-  if (optArgInitializers.size() != funcDecl.getNumOptArgs()) {
+  auto optInputInitializers = getOptInputInitializers(ctx, typeSubTable, id, n);
+  if (optInputInitializers.size() != funcDecl.getNumOptInputs()) {
     assert(ctx->hasErrors());
     return false;
   }
 
   if (bodyExpr->getType() == funcRetType) {
     ctx->getProg()->defineFunc(
-        id, std::move(consts), std::move(bodyExpr), std::move(optArgInitializers));
+        id, std::move(consts), std::move(bodyExpr), std::move(optInputInitializers));
     return true;
   }
 
@@ -137,7 +137,7 @@ auto defineFunc(
         id,
         std::move(consts),
         prog::expr::callExprNode(*ctx->getProg(), *conv, std::move(convArgs)),
-        std::move(optArgInitializers));
+        std::move(optInputInitializers));
     return true;
   }
 

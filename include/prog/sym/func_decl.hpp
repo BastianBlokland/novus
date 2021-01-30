@@ -26,7 +26,8 @@ public:
   [[nodiscard]] auto getName() const noexcept -> const std::string&;
   [[nodiscard]] auto getInput() const noexcept -> const TypeSet&;
   [[nodiscard]] auto getOutput() const noexcept -> TypeId;
-  [[nodiscard]] auto getNumOptArgs() const noexcept -> unsigned int;
+  [[nodiscard]] auto getMinInputCount() const noexcept -> unsigned int;
+  [[nodiscard]] auto getNumOptInputs() const noexcept -> unsigned int;
 
   auto updateOutput(TypeId newOutput) noexcept -> void;
 
@@ -39,7 +40,7 @@ private:
   std::string m_name;
   TypeSet m_input;
   TypeId m_output;
-  unsigned int m_numOptArgs;
+  unsigned int m_numOptInputs;
 
   FuncDecl(
       FuncId id,
@@ -50,7 +51,7 @@ private:
       std::string name,
       TypeSet input,
       TypeId output,
-      unsigned int m_numOptArgs);
+      unsigned int m_numOptInputs);
 };
 
 auto operator<<(std::ostream& out, const FuncDecl& rhs) -> std::ostream&;

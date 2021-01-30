@@ -15,9 +15,10 @@ auto findOverload(
   auto resultConvAmount                        = std::numeric_limits<int>::max();
 
   for (const auto& overload : overloads) {
-    const auto ovInput = declTable[overload].getInput();
-    if (ovInput.getCount() != input.getCount()) {
-      continue; // Argument count has to match.
+    const auto& overloadDecl = declTable[overload];
+    if (input.getCount() < overloadDecl.getMinInputCount() ||
+        input.getCount() > overloadDecl.getInput().getCount()) {
+      continue;
     }
 
     // Check if this overload satisfies the given options.
@@ -32,11 +33,15 @@ auto findOverload(
         declTable[overload].getKind() != sym::FuncKind::User) {
       continue;
     }
+    if (options.hasFlag<Flags::NoOptArgs>() &&
+        input.getCount() != overloadDecl.getInput().getCount()) {
+      continue;
+    }
 
     auto convAmount = 0;
     auto valid      = true;
     auto inputItr   = input.begin();
-    auto ovInputItr = ovInput.begin();
+    auto ovInputItr = overloadDecl.getInput().begin();
     for (; inputItr != input.end(); ++inputItr, ++ovInputItr) {
       if (*inputItr == *ovInputItr) {
         continue;

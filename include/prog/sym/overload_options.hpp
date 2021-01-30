@@ -8,6 +8,7 @@ enum class OverloadFlags : unsigned int {
   ExclActions      = 1U << 1U, // Exclude non-pure functions (actions).
   ExclNonUser      = 1U << 2U, // Exclude build-in functions.
   NoConvOnFirstArg = 1U << 3U, // Disallow implicit conversions on the first argument.
+  NoOptArgs        = 1U << 4U, // Disallow optional arguments (requires passing all args).
 };
 
 inline auto operator|(OverloadFlags lhs, OverloadFlags rhs) noexcept {

@@ -28,7 +28,11 @@ public:
   [[nodiscard]] auto getTemplateName() const -> const std::string&;
   [[nodiscard]] auto isAction() const -> bool;
   [[nodiscard]] auto getTypeParamCount() const -> unsigned int;
+
+  [[nodiscard]] auto getNumOptArgs() const -> unsigned int;
+  [[nodiscard]] auto getMinArgumentCount() const -> unsigned int;
   [[nodiscard]] auto getArgumentCount() const -> unsigned int;
+
   [[nodiscard]] auto getRetType(const prog::sym::TypeSet& typeParams)
       -> std::optional<prog::sym::TypeId>;
 
@@ -62,6 +66,9 @@ private:
 
   [[nodiscard]] auto createSubTable(const prog::sym::TypeSet& typeParams) const
       -> TypeSubstitutionTable;
+
+  [[nodiscard]] auto getInputTypes(const prog::sym::TypeSet& argTypes)
+      -> std::optional<prog::sym::TypeSet>;
 };
 
 } // namespace frontend::internal

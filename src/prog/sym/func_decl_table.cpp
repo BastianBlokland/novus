@@ -68,9 +68,9 @@ auto FuncDeclTable::registerFunc(
     std::string name,
     TypeSet input,
     TypeId output,
-    unsigned int numOptArgs) -> FuncId {
+    unsigned int numOptInputs) -> FuncId {
   return registerFunc(
-      prog, kind, false, false, false, std::move(name), std::move(input), output, numOptArgs);
+      prog, kind, false, false, false, std::move(name), std::move(input), output, numOptInputs);
 }
 
 auto FuncDeclTable::registerAction(
@@ -79,9 +79,9 @@ auto FuncDeclTable::registerAction(
     std::string name,
     TypeSet input,
     TypeId output,
-    unsigned int numOptArgs) -> FuncId {
+    unsigned int numOptInputs) -> FuncId {
   return registerFunc(
-      prog, kind, true, false, false, std::move(name), std::move(input), output, numOptArgs);
+      prog, kind, true, false, false, std::move(name), std::move(input), output, numOptInputs);
 }
 
 auto FuncDeclTable::registerIntrinsic(
@@ -104,7 +104,7 @@ auto FuncDeclTable::insertFunc(
     std::string name,
     TypeSet input,
     TypeId output,
-    unsigned int numOptArgs) -> void {
+    unsigned int numOptInputs) -> void {
 
   if (name.empty()) {
     throw std::invalid_argument{"Name has to contain aleast 1 char"};
@@ -112,7 +112,15 @@ auto FuncDeclTable::insertFunc(
 
   // Insert into function map.
   auto funcDecl = FuncDecl{
-      id, kind, isAction, isIntrinsic, isImplicitConv, name, std::move(input), output, numOptArgs};
+      id,
+      kind,
+      isAction,
+      isIntrinsic,
+      isImplicitConv,
+      name,
+      std::move(input),
+      output,
+      numOptInputs};
   if (!m_funcs.insert({id, std::move(funcDecl)}).second) {
     throw std::invalid_argument{"There is already a function registered with the same id"};
   }
@@ -163,7 +171,7 @@ auto FuncDeclTable::registerFunc(
     std::string name,
     TypeSet input,
     TypeId output,
-    unsigned int numOptArgs) -> FuncId {
+    unsigned int numOptInputs) -> FuncId {
 
   if (name.empty()) {
     throw std::invalid_argument{"Name has to contain aleast 1 char"};
@@ -192,7 +200,7 @@ auto FuncDeclTable::registerFunc(
       std::move(name),
       std::move(input),
       output,
-      numOptArgs};
+      numOptInputs};
   m_funcs.insert({id, std::move(funcDecl)});
   return id;
 }
