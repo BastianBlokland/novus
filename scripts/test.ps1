@@ -4,6 +4,9 @@
 .DESCRIPTION
   Test the project as configured using ctest.
   Dependencies: CMake atleast version 3.15: https://cmake.org
+.PARAMETER Threads
+  Default: -1 (As many as there are cores in the machine)
+  Number of threads to use for testing.
 .PARAMETER Dir
   Default: build
   Build directory.
@@ -13,6 +16,7 @@
 #>
 [cmdletbinding()]
 param(
+  [int]$Threads = -1,
   [string]$Dir = "build",
   [string]$Filter = ".+"
 )
@@ -33,9 +37,14 @@ function Fail($str) {
   exit 1
 }
 
-function TestProj([string] $dir) {
+function TestProj([int] $threads, [string] $dir) {
   if ([string]::IsNullOrEmpty($dir)) {
     Fail "No build directory provided"
+  }
+
+  # If no threads number is provided default to number of cores.
+  if ($threads -le 0) {
+    $threads = $(Get-CimInstance Win32_ComputerSystem).NumberOfLogicalProcessors
   }
 
   # Verify the build directory exists.
@@ -53,10 +62,10 @@ function TestProj([string] $dir) {
     Fail "'ctest.exe' not found on path, please install cmake (https://cmake.org)"
   }
 
-  PInfo "Begin testing using ctest (filter: ${filter})"
+  PInfo "Begin testing using ctest (filter: ${filter}) on $threads threads"
 
   Push-Location "$dir"
-  & ctest.exe --tests-regex "$filter" --output-on-failure
+  & ctest.exe --tests-regex "$filter" --output-on-failure -j "$threads"
   $ctestResult = $LASTEXITCODE
   Pop-Location
 
@@ -67,5 +76,5 @@ function TestProj([string] $dir) {
   PInfo "Successfully finished testing"
 }
 
-TestProj $Dir
+TestProj $Threads $Dir
 exit 0
