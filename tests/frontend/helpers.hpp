@@ -3,6 +3,8 @@
 #include "frontend/analysis.hpp"
 #include "frontend/source.hpp"
 #include "prog/expr/node_call.hpp"
+#include <array>
+#include <vector>
 
 namespace frontend {
 
