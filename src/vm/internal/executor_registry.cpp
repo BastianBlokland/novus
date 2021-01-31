@@ -29,7 +29,7 @@ auto ExecutorRegistry::unregisterExecutor(ExecutorHandle* handle) noexcept -> vo
 
   // Double check that its still running after aquiring the lock.
   assert(m_state.load(std::memory_order_acquire) == RegistryState::Running);
-
+  
   assert(m_head);
   assert(handle == m_head || handle->m_prev);
 
