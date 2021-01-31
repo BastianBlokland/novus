@@ -8,6 +8,7 @@
 #include "internal/terminal.hpp"
 #include "intrinsics.hpp"
 #include "vm/platform_interface.hpp"
+#include <cerrno>
 #include <cstdio>
 
 namespace vm::internal {
@@ -99,7 +100,10 @@ public:
     // Can block so we mark ourselves as paused so the gc can trigger in the mean time.
     execHandle->setState(ExecState::Paused);
 
-    const auto res = std::fwrite(str->getDataPtr(), str->getSize(), 1, m_filePtr) == 1;
+    size_t itemsWritten;
+    do {
+      itemsWritten = std::fwrite(str->getDataPtr(), str->getSize(), 1, m_filePtr);
+    } while (itemsWritten != 1u && errno == EAGAIN);
 
     // After resuming check if we should wait for gc (or if we are aborted).
     execHandle->setState(ExecState::Running);
@@ -107,7 +111,7 @@ public:
       return false;
     }
 
-    return res;
+    return itemsWritten == 1u;
   }
 
   auto writeChar(ExecutorHandle* execHandle, uint8_t val) noexcept -> bool {
@@ -115,7 +119,10 @@ public:
     // Can block so we mark ourselves as paused so the gc can trigger in the mean time.
     execHandle->setState(ExecState::Paused);
 
-    const auto res = std::fputc(val, m_filePtr) == val;
+    int charWritten;
+    do {
+      charWritten = std::fputc(val, m_filePtr);
+    } while (charWritten != val && errno == EAGAIN);
 
     // After resuming check if we should wait for gc (or if we are aborted).
     execHandle->setState(ExecState::Running);
@@ -123,7 +130,7 @@ public:
       return false;
     }
 
-    return res;
+    return charWritten == val;
   }
 
   auto flush() noexcept -> bool {
