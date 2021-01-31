@@ -108,7 +108,7 @@ public:
     auto expectedReq = RequestType::None;
     m_request.compare_exchange_strong(
         expectedReq, RequestType::Pause, std::memory_order_acq_rel, std::memory_order_relaxed);
-    return m_state.load(std::memory_order_acquire) != ExecState::Running;
+    return m_state.load(std::memory_order_acquire) == ExecState::Paused;
   }
 
   inline auto resume() noexcept -> void {
