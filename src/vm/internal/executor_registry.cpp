@@ -12,6 +12,9 @@ auto ExecutorRegistry::registerExecutor(ExecutorHandle* handle) noexcept -> void
 
   auto lk = std::lock_guard<std::mutex>{m_mutex};
 
+  // Double check that its still running after aquiring the lock.
+  assert(m_state.load(std::memory_order_acquire) == RegistryState::Running);
+
   if (m_head) {
     m_head->m_prev = handle;
     handle->m_next = m_head;
@@ -23,6 +26,9 @@ auto ExecutorRegistry::unregisterExecutor(ExecutorHandle* handle) noexcept -> vo
   assert(m_state.load(std::memory_order_acquire) == RegistryState::Running);
 
   auto lk = std::lock_guard<std::mutex>{m_mutex};
+
+  // Double check that its still running after aquiring the lock.
+  assert(m_state.load(std::memory_order_acquire) == RegistryState::Running);
 
   assert(m_head);
   assert(handle == m_head || handle->m_prev);
