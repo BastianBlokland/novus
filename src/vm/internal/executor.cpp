@@ -292,8 +292,7 @@ auto execute(
     promise->getStarted().store(true, std::memory_order_release);
   }
 
-  // NOTE: There is an edgecase where an executor is started while the registry is in the process of
-  // being paused, in this case we should trap the executor immediately.
+  // Trap incase the registry is in the process of being paused.
   if (unlikely(execHandle.trap())) {
     goto End;
   }
