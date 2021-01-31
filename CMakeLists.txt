@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.15)
 
-if(${CMAKE_VERSION} VERSION_GREATER "3.18")
+if(${CMAKE_VERSION} VERSION_GREATER_EQUAL "3.19")
   # Note: Eventually we want to opt into the new behaviour for test names, but because thats only
   # introduced in 3.19 we stick to the old behaviour until that is commonly available.
   cmake_policy(SET CMP0110 OLD)
