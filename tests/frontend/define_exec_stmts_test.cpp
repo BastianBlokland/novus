@@ -16,13 +16,12 @@ TEST_CASE("[frontend] Analyzing execute statements", "frontend") {
     auto execsBegin     = output.getProg().beginExecStmts();
     const auto execsEnd = output.getProg().endExecStmts();
 
-    auto args = std::vector<prog::expr::NodePtr>{};
-    args.push_back(prog::expr::litBoolNode(output.getProg(), true));
-    args.push_back(prog::expr::litStringNode(output.getProg(), "hello world"));
     auto callExpr = prog::expr::callExprNode(
         output.getProg(),
         GET_FUNC_ID(output, "assert", GET_TYPE_ID(output, "bool"), GET_TYPE_ID(output, "string")),
-        std::move(args));
+        EXPRS(
+            prog::expr::litBoolNode(output.getProg(), true),
+            prog::expr::litStringNode(output.getProg(), "hello world")));
 
     CHECK(execsBegin->getExpr() == *callExpr);
     REQUIRE(++execsBegin == execsEnd);
@@ -38,16 +37,15 @@ TEST_CASE("[frontend] Analyzing execute statements", "frontend") {
     auto execsBegin     = output.getProg().beginExecStmts();
     const auto execsEnd = output.getProg().endExecStmts();
 
-    auto args = std::vector<prog::expr::NodePtr>{};
-    args.push_back(applyConv(
-        output,
-        "ConsoleKind",
-        "int",
-        prog::expr::litEnumNode(output.getProg(), GET_TYPE_ID(output, "ConsoleKind"), "StdOut")));
     auto callExpr = prog::expr::callExprNode(
         output.getProg(),
         GET_FUNC_ID(output, "openConsole", GET_TYPE_ID(output, "int")),
-        std::move(args));
+        EXPRS(applyConv(
+            output,
+            "ConsoleKind",
+            "int",
+            prog::expr::litEnumNode(
+                output.getProg(), GET_TYPE_ID(output, "ConsoleKind"), "StdOut"))));
 
     CHECK(execsBegin->getExpr() == *callExpr);
     REQUIRE(++execsBegin == execsEnd);

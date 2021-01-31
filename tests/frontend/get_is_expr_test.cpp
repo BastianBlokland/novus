@@ -21,18 +21,16 @@ TEST_CASE("[frontend] Analyzing 'is' / 'as' expressions", "frontend") {
     const auto& funcDef    = GET_FUNC_DEF(output, "f", GET_TYPE_ID(output, "Val"));
     const auto& funcConsts = funcDef.getConsts();
 
-    auto conditions = std::vector<prog::expr::NodePtr>{};
-    conditions.push_back(prog::expr::unionGetExprNode(
+    auto switchExpr = prog::expr::switchExprNode(
         output.getProg(),
-        prog::expr::constExprNode(funcConsts, *funcConsts.lookup("v")),
-        funcConsts,
-        *funcConsts.lookup("i")));
-
-    auto branches = std::vector<prog::expr::NodePtr>{};
-    branches.push_back(prog::expr::constExprNode(funcConsts, *funcConsts.lookup("i")));
-    branches.push_back(prog::expr::litIntNode(output.getProg(), 42)); // NOLINT: Magic numbers
-    auto switchExpr =
-        prog::expr::switchExprNode(output.getProg(), std::move(conditions), std::move(branches));
+        EXPRS(prog::expr::unionGetExprNode(
+            output.getProg(),
+            prog::expr::constExprNode(funcConsts, *funcConsts.lookup("v")),
+            funcConsts,
+            *funcConsts.lookup("i"))),
+        EXPRS(
+            prog::expr::constExprNode(funcConsts, *funcConsts.lookup("i")),
+            prog::expr::litIntNode(output.getProg(), 42)));
 
     CHECK(funcDef.getBody() == *switchExpr);
   }

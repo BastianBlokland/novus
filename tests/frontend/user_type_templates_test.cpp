@@ -16,14 +16,13 @@ TEST_CASE("[frontend] Analyzing user-type templates", "frontend") {
     REQUIRE(output.isSuccess());
 
     const auto& fDef = GET_FUNC_DEF(output, "f");
-    auto fArgs       = std::vector<prog::expr::NodePtr>{};
-    fArgs.push_back(prog::expr::litIntNode(output.getProg(), 1));
-    fArgs.push_back(prog::expr::litStringNode(output.getProg(), "hello world"));
-    auto callExpr = prog::expr::callExprNode(
+    auto callExpr    = prog::expr::callExprNode(
         output.getProg(),
         GET_FUNC_ID(
             output, "tuple__int_string", GET_TYPE_ID(output, "int"), GET_TYPE_ID(output, "string")),
-        std::move(fArgs));
+        EXPRS(
+            prog::expr::litIntNode(output.getProg(), 1),
+            prog::expr::litStringNode(output.getProg(), "hello world")));
 
     CHECK(fDef.getBody() == *callExpr);
   }
@@ -35,12 +34,10 @@ TEST_CASE("[frontend] Analyzing user-type templates", "frontend") {
     REQUIRE(output.isSuccess());
 
     const auto& fDef = GET_FUNC_DEF(output, "f");
-    auto fArgs       = std::vector<prog::expr::NodePtr>{};
-    fArgs.push_back(prog::expr::litIntNode(output.getProg(), 1));
-    auto callExpr = prog::expr::callExprNode(
+    auto callExpr    = prog::expr::callExprNode(
         output.getProg(),
         GET_FUNC_ID(output, "opt__int", GET_TYPE_ID(output, "int")),
-        std::move(fArgs));
+        EXPRS(prog::expr::litIntNode(output.getProg(), 1)));
 
     CHECK(fDef.getBody() == *callExpr);
   }
@@ -51,14 +48,13 @@ TEST_CASE("[frontend] Analyzing user-type templates", "frontend") {
     REQUIRE(output.isSuccess());
 
     const auto& fDef = GET_FUNC_DEF(output, "f");
-    auto fArgs       = std::vector<prog::expr::NodePtr>{};
-    fArgs.push_back(prog::expr::litIntNode(output.getProg(), 1));
-    fArgs.push_back(prog::expr::litStringNode(output.getProg(), "hello world"));
-    auto callExpr = prog::expr::callExprNode(
+    auto callExpr    = prog::expr::callExprNode(
         output.getProg(),
         GET_FUNC_ID(
             output, "tuple__int_string", GET_TYPE_ID(output, "int"), GET_TYPE_ID(output, "string")),
-        std::move(fArgs));
+        EXPRS(
+            prog::expr::litIntNode(output.getProg(), 1),
+            prog::expr::litStringNode(output.getProg(), "hello world")));
 
     CHECK(fDef.getBody() == *callExpr);
   }
@@ -70,12 +66,10 @@ TEST_CASE("[frontend] Analyzing user-type templates", "frontend") {
     REQUIRE(output.isSuccess());
 
     const auto& fDef = GET_FUNC_DEF(output, "f");
-    auto fArgs       = std::vector<prog::expr::NodePtr>{};
-    fArgs.push_back(prog::expr::litIntNode(output.getProg(), 1));
-    auto callExpr = prog::expr::callExprNode(
+    auto callExpr    = prog::expr::callExprNode(
         output.getProg(),
         GET_FUNC_ID(output, "opt__int", GET_TYPE_ID(output, "int")),
-        std::move(fArgs));
+        EXPRS(prog::expr::litIntNode(output.getProg(), 1)));
 
     CHECK(fDef.getBody() == *callExpr);
   }
@@ -87,12 +81,10 @@ TEST_CASE("[frontend] Analyzing user-type templates", "frontend") {
     REQUIRE(output.isSuccess());
 
     const auto& fDef = GET_FUNC_DEF(output, "f");
-    auto fArgs       = std::vector<prog::expr::NodePtr>{};
-    fArgs.push_back(prog::expr::litIntNode(output.getProg(), 1));
-    auto callExpr = prog::expr::callExprNode(
+    auto callExpr    = prog::expr::callExprNode(
         output.getProg(),
         GET_FUNC_ID(output, "tuple__int_bool", GET_TYPE_ID(output, "int")),
-        std::move(fArgs));
+        EXPRS(prog::expr::litIntNode(output.getProg(), 1)));
 
     CHECK(fDef.getBody() == *callExpr);
   }
@@ -107,12 +99,10 @@ TEST_CASE("[frontend] Analyzing user-type templates", "frontend") {
     const auto& fDef   = GET_FUNC_DEF(output, "f", GET_TYPE_ID(output, "tuple__int_float"));
     const auto& consts = fDef.getConsts();
 
-    auto fArgs = std::vector<prog::expr::NodePtr>{};
-    fArgs.push_back(prog::expr::constExprNode(consts, *consts.lookup("t")));
     auto callExpr = prog::expr::callExprNode(
         output.getProg(),
         GET_FUNC_ID(output, "string", GET_TYPE_ID(output, "tuple__int_float")),
-        std::move(fArgs));
+        EXPRS(prog::expr::constExprNode(consts, *consts.lookup("t"))));
 
     CHECK(fDef.getBody() == *callExpr);
   }

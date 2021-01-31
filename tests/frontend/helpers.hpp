@@ -6,6 +6,8 @@
 
 namespace frontend {
 
+#define NUM_ARGS(...) std::tuple_size<decltype(std::make_tuple(__VA_ARGS__))>::value
+
 inline auto buildSource(std::string input) {
   return buildSource("test", std::nullopt, input.begin(), input.end());
 }
@@ -86,5 +88,20 @@ inline auto applyConv(
 
   return prog::expr::callExprNode(output.getProg(), *conv, std::move(convArgs));
 }
+
+template <typename Array>
+inline auto arrayMoveToVec(Array c) {
+  auto result = std::vector<typename Array::value_type>{};
+  for (auto& elem : c) {
+    result.push_back(std::move(elem));
+  }
+  return result;
+}
+
+#define EXPRS(...)                                                                                 \
+  arrayMoveToVec<std::array<prog::expr::NodePtr, NUM_ARGS(__VA_ARGS__)>>({__VA_ARGS__})
+
+#define NO_EXPRS                                                                                   \
+  std::vector<prog::expr::NodePtr> {}
 
 } // namespace frontend

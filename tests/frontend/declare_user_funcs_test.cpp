@@ -97,15 +97,13 @@ TEST_CASE("[frontend] Analyzing user-function declarations", "frontend") {
                                    "fun f() -false");
       REQUIRE(output.isSuccess());
 
-      auto args = std::vector<prog::expr::NodePtr>{};
-      args.push_back(prog::expr::litBoolNode(output.getProg(), false));
-      auto callExpr = prog::expr::callExprNode(
-          output.getProg(),
-          GET_OP_ID(output, prog::Operator::Minus, GET_TYPE_ID(output, "bool")),
-          std::move(args));
-
       const auto& funcDef = GET_FUNC_DEF(output, "f");
-      CHECK(funcDef.getBody() == *callExpr);
+      CHECK(
+          funcDef.getBody() ==
+          *prog::expr::callExprNode(
+              output.getProg(),
+              GET_OP_ID(output, prog::Operator::Minus, GET_TYPE_ID(output, "bool")),
+              EXPRS(prog::expr::litBoolNode(output.getProg(), false))));
     }
 
     SECTION("Declare function with optional argument") {

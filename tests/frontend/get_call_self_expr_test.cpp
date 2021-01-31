@@ -14,14 +14,12 @@ TEST_CASE("[frontend] Analyzing self call expressions", "frontend") {
     const auto& output = ANALYZE("fun f() false ? self() : 1 ");
     REQUIRE(output.isSuccess());
 
-    auto conditions = std::vector<prog::expr::NodePtr>{};
-    conditions.push_back(prog::expr::litBoolNode(output.getProg(), false));
-
-    auto branches = std::vector<prog::expr::NodePtr>{};
-    branches.push_back(prog::expr::callSelfExprNode(GET_TYPE_ID(output, "int"), {}));
-    branches.push_back(prog::expr::litIntNode(output.getProg(), 1));
-    auto switchExpr =
-        prog::expr::switchExprNode(output.getProg(), std::move(conditions), std::move(branches));
+    auto switchExpr = prog::expr::switchExprNode(
+        output.getProg(),
+        EXPRS(prog::expr::litBoolNode(output.getProg(), false)),
+        EXPRS(
+            prog::expr::callSelfExprNode(GET_TYPE_ID(output, "int"), {}),
+            prog::expr::litIntNode(output.getProg(), 1)));
 
     CHECK(GET_FUNC_DEF(output, "f").getBody() == *switchExpr);
   }
@@ -30,14 +28,12 @@ TEST_CASE("[frontend] Analyzing self call expressions", "frontend") {
     const auto& output = ANALYZE("fun f() lambda () false ? self() : 1 ");
     REQUIRE(output.isSuccess());
 
-    auto conditions = std::vector<prog::expr::NodePtr>{};
-    conditions.push_back(prog::expr::litBoolNode(output.getProg(), false));
-
-    auto branches = std::vector<prog::expr::NodePtr>{};
-    branches.push_back(prog::expr::callSelfExprNode(GET_TYPE_ID(output, "int"), {}));
-    branches.push_back(prog::expr::litIntNode(output.getProg(), 1));
-    auto switchExpr =
-        prog::expr::switchExprNode(output.getProg(), std::move(conditions), std::move(branches));
+    auto switchExpr = prog::expr::switchExprNode(
+        output.getProg(),
+        EXPRS(prog::expr::litBoolNode(output.getProg(), false)),
+        EXPRS(
+            prog::expr::callSelfExprNode(GET_TYPE_ID(output, "int"), {}),
+            prog::expr::litIntNode(output.getProg(), 1)));
 
     CHECK(findAnonFuncDef(output, 0).getBody() == *switchExpr);
   }

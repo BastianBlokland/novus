@@ -19,14 +19,12 @@ TEST_CASE("[frontend] Analyzing conditional expressions", "frontend") {
     REQUIRE(output.isSuccess());
     const auto& funcDef = GET_FUNC_DEF(output, "f");
 
-    auto conditions = std::vector<prog::expr::NodePtr>{};
-    conditions.push_back(prog::expr::litBoolNode(output.getProg(), true));
-
-    auto branches = std::vector<prog::expr::NodePtr>{};
-    branches.push_back(prog::expr::litIntNode(output.getProg(), 1));
-    branches.push_back(prog::expr::litIntNode(output.getProg(), 3));
-    auto switchExpr =
-        prog::expr::switchExprNode(output.getProg(), std::move(conditions), std::move(branches));
+    auto switchExpr = prog::expr::switchExprNode(
+        output.getProg(),
+        EXPRS(prog::expr::litBoolNode(output.getProg(), true)),
+        EXPRS(
+            prog::expr::litIntNode(output.getProg(), 1),
+            prog::expr::litIntNode(output.getProg(), 3)));
 
     CHECK(funcDef.getBody() == *switchExpr);
   }
@@ -36,15 +34,12 @@ TEST_CASE("[frontend] Analyzing conditional expressions", "frontend") {
     REQUIRE(output.isSuccess());
     const auto& funcDef = GET_FUNC_DEF(output, "f");
 
-    auto conditions = std::vector<prog::expr::NodePtr>{};
-    conditions.push_back(prog::expr::litBoolNode(output.getProg(), true));
-
-    auto branches = std::vector<prog::expr::NodePtr>{};
-    branches.push_back(
-        applyConv(output, "int", "float", prog::expr::litIntNode(output.getProg(), 0)));
-    branches.push_back(prog::expr::litFloatNode(output.getProg(), 1.0F));
-    auto switchExpr =
-        prog::expr::switchExprNode(output.getProg(), std::move(conditions), std::move(branches));
+    auto switchExpr = prog::expr::switchExprNode(
+        output.getProg(),
+        EXPRS(prog::expr::litBoolNode(output.getProg(), true)),
+        EXPRS(
+            applyConv(output, "int", "float", prog::expr::litIntNode(output.getProg(), 0)),
+            prog::expr::litFloatNode(output.getProg(), 1.0F)));
 
     CHECK(funcDef.getBody() == *switchExpr);
   }
@@ -54,15 +49,12 @@ TEST_CASE("[frontend] Analyzing conditional expressions", "frontend") {
     REQUIRE(output.isSuccess());
     const auto& funcDef = GET_FUNC_DEF(output, "f");
 
-    auto conditions = std::vector<prog::expr::NodePtr>{};
-    conditions.push_back(prog::expr::litBoolNode(output.getProg(), true));
-
-    auto branches = std::vector<prog::expr::NodePtr>{};
-    branches.push_back(prog::expr::litFloatNode(output.getProg(), 1.0F));
-    branches.push_back(
-        applyConv(output, "int", "float", prog::expr::litIntNode(output.getProg(), 0)));
-    auto switchExpr =
-        prog::expr::switchExprNode(output.getProg(), std::move(conditions), std::move(branches));
+    auto switchExpr = prog::expr::switchExprNode(
+        output.getProg(),
+        EXPRS(prog::expr::litBoolNode(output.getProg(), true)),
+        EXPRS(
+            prog::expr::litFloatNode(output.getProg(), 1.0F),
+            applyConv(output, "int", "float", prog::expr::litIntNode(output.getProg(), 0))));
 
     CHECK(funcDef.getBody() == *switchExpr);
   }
@@ -74,19 +66,15 @@ TEST_CASE("[frontend] Analyzing conditional expressions", "frontend") {
     const auto& funcDef = GET_FUNC_DEF(output, "f");
     const auto& consts  = funcDef.getConsts();
 
-    auto condSubExprs = std::vector<prog::expr::NodePtr>{};
-    condSubExprs.push_back(prog::expr::assignExprNode(
-        consts, consts.lookup("x").value(), prog::expr::litIntNode(output.getProg(), 1)));
-    condSubExprs.push_back(prog::expr::litBoolNode(output.getProg(), true));
-
-    auto conditions = std::vector<prog::expr::NodePtr>{};
-    conditions.push_back(prog::expr::groupExprNode(std::move(condSubExprs)));
-
-    auto branches = std::vector<prog::expr::NodePtr>{};
-    branches.push_back(prog::expr::constExprNode(consts, consts.lookup("x").value()));
-    branches.push_back(prog::expr::litIntNode(output.getProg(), 2));
-    auto switchExpr =
-        prog::expr::switchExprNode(output.getProg(), std::move(conditions), std::move(branches));
+    auto switchExpr = prog::expr::switchExprNode(
+        output.getProg(),
+        EXPRS(prog::expr::groupExprNode(EXPRS(
+            prog::expr::assignExprNode(
+                consts, consts.lookup("x").value(), prog::expr::litIntNode(output.getProg(), 1)),
+            prog::expr::litBoolNode(output.getProg(), true)))),
+        EXPRS(
+            prog::expr::constExprNode(consts, consts.lookup("x").value()),
+            prog::expr::litIntNode(output.getProg(), 2)));
 
     CHECK(funcDef.getBody() == *switchExpr);
   }

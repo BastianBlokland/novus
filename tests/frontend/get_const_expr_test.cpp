@@ -29,13 +29,10 @@ TEST_CASE("[frontend] Analyzing constant expressions", "frontend") {
     const auto b = consts.lookup("b");
     REQUIRE(b);
 
-    auto exprs = std::vector<prog::expr::NodePtr>{};
-    exprs.push_back(
-        prog::expr::assignExprNode(consts, a.value(), prog::expr::litIntNode(output.getProg(), 1)));
-    exprs.push_back(prog::expr::assignExprNode(
-        consts, b.value(), prog::expr::constExprNode(consts, a.value())));
-    exprs.push_back(prog::expr::constExprNode(consts, b.value()));
-    auto groupExpr = prog::expr::groupExprNode(std::move(exprs));
+    auto groupExpr = prog::expr::groupExprNode(EXPRS(
+        prog::expr::assignExprNode(consts, a.value(), prog::expr::litIntNode(output.getProg(), 1)),
+        prog::expr::assignExprNode(consts, b.value(), prog::expr::constExprNode(consts, a.value())),
+        prog::expr::constExprNode(consts, b.value())));
 
     CHECK(funcDef.getBody() == *groupExpr);
   }
@@ -49,11 +46,9 @@ TEST_CASE("[frontend] Analyzing constant expressions", "frontend") {
     const auto x = consts.lookup("x");
     REQUIRE(x);
 
-    auto exprs = std::vector<prog::expr::NodePtr>{};
-    exprs.push_back(
-        prog::expr::assignExprNode(consts, x.value(), prog::expr::litIntNode(output.getProg(), 1)));
-    exprs.push_back(prog::expr::constExprNode(consts, x.value()));
-    auto groupExpr = prog::expr::groupExprNode(std::move(exprs));
+    auto groupExpr = prog::expr::groupExprNode(EXPRS(
+        prog::expr::assignExprNode(consts, x.value(), prog::expr::litIntNode(output.getProg(), 1)),
+        prog::expr::constExprNode(consts, x.value())));
 
     CHECK(anonDef.getBody() == *groupExpr);
   }

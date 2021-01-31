@@ -14,13 +14,11 @@ TEST_CASE("[frontend] Analyzing unary expressions", "frontend") {
     REQUIRE(output.isSuccess());
     const auto& funcDef = GET_FUNC_DEF(output, "f", GET_TYPE_ID(output, "int"));
 
-    auto args = std::vector<prog::expr::NodePtr>{};
-    args.push_back(
-        prog::expr::constExprNode(funcDef.getConsts(), funcDef.getConsts().lookup("a").value()));
     auto callExpr = prog::expr::callExprNode(
         output.getProg(),
         GET_OP_ID(output, prog::Operator::Minus, GET_TYPE_ID(output, "int")),
-        std::move(args));
+        EXPRS(prog::expr::constExprNode(
+            funcDef.getConsts(), funcDef.getConsts().lookup("a").value())));
 
     CHECK(funcDef.getBody() == *callExpr);
   }

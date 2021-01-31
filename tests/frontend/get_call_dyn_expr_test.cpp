@@ -27,10 +27,11 @@ TEST_CASE("[frontend] Analyzing call dynamic expressions", "frontend") {
             prog::expr::constExprNode(f2Def.getConsts(), *f2Def.getConsts().lookup("op")),
             {}));
 
-    auto fArgs = std::vector<prog::expr::NodePtr>{};
-    fArgs.push_back(prog::expr::litFuncNode(
-        output.getProg(), GET_TYPE_ID(output, "__function_int"), GET_FUNC_ID(output, "f1")));
-    auto callExpr = prog::expr::callExprNode(output.getProg(), f2Def.getId(), std::move(fArgs));
+    auto callExpr = prog::expr::callExprNode(
+        output.getProg(),
+        f2Def.getId(),
+        EXPRS(prog::expr::litFuncNode(
+            output.getProg(), GET_TYPE_ID(output, "__function_int"), GET_FUNC_ID(output, "f1"))));
 
     CHECK(fDef.getBody() == *callExpr);
   }
@@ -44,22 +45,22 @@ TEST_CASE("[frontend] Analyzing call dynamic expressions", "frontend") {
         GET_FUNC_DEF(output, "f2", GET_TYPE_ID(output, "__function_bool_float_int"));
     const auto& fDef = GET_FUNC_DEF(output, "f");
 
-    auto f2Args = std::vector<prog::expr::NodePtr>{};
-    f2Args.push_back(prog::expr::litBoolNode(output.getProg(), false));
-    f2Args.push_back(prog::expr::litIntNode(output.getProg(), 1));
     auto callExpr2 = prog::expr::callDynExprNode(
         output.getProg(),
         prog::expr::constExprNode(f2Def.getConsts(), *f2Def.getConsts().lookup("op")),
-        std::move(f2Args));
+        EXPRS(
+            prog::expr::litBoolNode(output.getProg(), false),
+            prog::expr::litIntNode(output.getProg(), 1)));
 
     CHECK(f2Def.getBody() == *callExpr2);
 
-    auto fArgs = std::vector<prog::expr::NodePtr>{};
-    fArgs.push_back(prog::expr::litFuncNode(
+    auto callExpr1 = prog::expr::callExprNode(
         output.getProg(),
-        GET_TYPE_ID(output, "__function_bool_float_int"),
-        GET_FUNC_ID(output, "f1", GET_TYPE_ID(output, "bool"), GET_TYPE_ID(output, "float"))));
-    auto callExpr1 = prog::expr::callExprNode(output.getProg(), f2Def.getId(), std::move(fArgs));
+        f2Def.getId(),
+        EXPRS(prog::expr::litFuncNode(
+            output.getProg(),
+            GET_TYPE_ID(output, "__function_bool_float_int"),
+            GET_FUNC_ID(output, "f1", GET_TYPE_ID(output, "bool"), GET_TYPE_ID(output, "float")))));
 
     CHECK(fDef.getBody() == *callExpr1);
   }
@@ -79,10 +80,13 @@ TEST_CASE("[frontend] Analyzing call dynamic expressions", "frontend") {
             prog::expr::constExprNode(f2Def.getConsts(), *f2Def.getConsts().lookup("op")),
             {}));
 
-    auto fArgs = std::vector<prog::expr::NodePtr>{};
-    fArgs.push_back(prog::expr::litFuncNode(
-        output.getProg(), GET_TYPE_ID(output, "__function_int"), GET_FUNC_ID(output, "f1__int")));
-    auto callExpr = prog::expr::callExprNode(output.getProg(), f2Def.getId(), std::move(fArgs));
+    auto callExpr = prog::expr::callExprNode(
+        output.getProg(),
+        f2Def.getId(),
+        EXPRS(prog::expr::litFuncNode(
+            output.getProg(),
+            GET_TYPE_ID(output, "__function_int"),
+            GET_FUNC_ID(output, "f1__int"))));
 
     CHECK(fDef.getBody() == *callExpr);
   }
@@ -122,10 +126,11 @@ TEST_CASE("[frontend] Analyzing call dynamic expressions", "frontend") {
             {},
             prog::expr::CallMode::Forked));
 
-    auto fArgs = std::vector<prog::expr::NodePtr>{};
-    fArgs.push_back(prog::expr::litFuncNode(
-        output.getProg(), GET_TYPE_ID(output, "__function_int"), GET_FUNC_ID(output, "f1")));
-    auto callExpr = prog::expr::callExprNode(output.getProg(), f2Def.getId(), std::move(fArgs));
+    auto callExpr = prog::expr::callExprNode(
+        output.getProg(),
+        f2Def.getId(),
+        EXPRS(prog::expr::litFuncNode(
+            output.getProg(), GET_TYPE_ID(output, "__function_int"), GET_FUNC_ID(output, "f1"))));
 
     CHECK(fDef.getBody() == *callExpr);
   }
@@ -147,10 +152,11 @@ TEST_CASE("[frontend] Analyzing call dynamic expressions", "frontend") {
             {},
             prog::expr::CallMode::Lazy));
 
-    auto fArgs = std::vector<prog::expr::NodePtr>{};
-    fArgs.push_back(prog::expr::litFuncNode(
-        output.getProg(), GET_TYPE_ID(output, "__function_int"), GET_FUNC_ID(output, "f1")));
-    auto callExpr = prog::expr::callExprNode(output.getProg(), f2Def.getId(), std::move(fArgs));
+    auto callExpr = prog::expr::callExprNode(
+        output.getProg(),
+        f2Def.getId(),
+        EXPRS(prog::expr::litFuncNode(
+            output.getProg(), GET_TYPE_ID(output, "__function_int"), GET_FUNC_ID(output, "f1"))));
 
     CHECK(fDef.getBody() == *callExpr);
   }
@@ -172,10 +178,11 @@ TEST_CASE("[frontend] Analyzing call dynamic expressions", "frontend") {
             {},
             prog::expr::CallMode::Lazy));
 
-    auto fArgs = std::vector<prog::expr::NodePtr>{};
-    fArgs.push_back(prog::expr::litFuncNode(
-        output.getProg(), GET_TYPE_ID(output, "__action_int"), GET_FUNC_ID(output, "a1")));
-    auto callExpr = prog::expr::callExprNode(output.getProg(), a2Def.getId(), std::move(fArgs));
+    auto callExpr = prog::expr::callExprNode(
+        output.getProg(),
+        a2Def.getId(),
+        EXPRS(prog::expr::litFuncNode(
+            output.getProg(), GET_TYPE_ID(output, "__action_int"), GET_FUNC_ID(output, "a1"))));
 
     CHECK(aDef.getBody() == *callExpr);
   }
@@ -195,14 +202,17 @@ TEST_CASE("[frontend] Analyzing call dynamic expressions", "frontend") {
             prog::expr::constExprNode(a2Def.getConsts(), *a2Def.getConsts().lookup("op")),
             {}));
 
-    auto fArgs = std::vector<prog::expr::NodePtr>{};
-    fArgs.push_back(applyConv(
-        output,
-        "__function_int",
-        "__action_int",
-        prog::expr::litFuncNode(
-            output.getProg(), GET_TYPE_ID(output, "__function_int"), GET_FUNC_ID(output, "f1"))));
-    auto callExpr = prog::expr::callExprNode(output.getProg(), a2Def.getId(), std::move(fArgs));
+    auto callExpr = prog::expr::callExprNode(
+        output.getProg(),
+        a2Def.getId(),
+        EXPRS(applyConv(
+            output,
+            "__function_int",
+            "__action_int",
+            prog::expr::litFuncNode(
+                output.getProg(),
+                GET_TYPE_ID(output, "__function_int"),
+                GET_FUNC_ID(output, "f1")))));
 
     CHECK(a1Def.getBody() == *callExpr);
   }
