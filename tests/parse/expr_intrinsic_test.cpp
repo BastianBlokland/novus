@@ -34,7 +34,7 @@ TEST_CASE("[parse] Parsing intrinsic expressions", "parse") {
           {},
           intrinsicExprNode(INTRINSIC, OCURLY, ID("test"), CCURLY, std::nullopt),
           OPAREN,
-          NODES(),
+          NO_NODES,
           COMMAS(0),
           CPAREN));
   CHECK_EXPR(

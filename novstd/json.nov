@@ -41,24 +41,15 @@ fun jsonStringEscape(string str)
 
 // -- Conversions
 
-fun string(JsonObject o)
-  o.string("", WriterNewlineMode.None)
-
-fun string(JsonObject o, string indent, WriterNewlineMode newlineMode)
+fun string(JsonObject o, string indent = "", WriterNewlineMode newlineMode = WriterNewlineMode.None)
   w = jsonObjectWriter(jsonValueWriter());
   w(o, indent, newlineMode).string()
 
-fun string(JsonArray a)
-  a.string("", WriterNewlineMode.None)
-
-fun string(JsonArray a, string indent, WriterNewlineMode newlineMode)
+fun string(JsonArray a, string indent = "", WriterNewlineMode newlineMode = WriterNewlineMode.None)
   w = jsonArrayWriter(jsonValueWriter());
   w(a, indent, newlineMode).string()
 
-fun string(JsonValue v)
-  v.string("", WriterNewlineMode.None)
-
-fun string(JsonValue v, string indent, WriterNewlineMode newlineMode)
+fun string(JsonValue v, string indent = "", WriterNewlineMode newlineMode = WriterNewlineMode.None)
   w = jsonValueWriter();
   w(v, indent, newlineMode).string()
 
@@ -109,7 +100,7 @@ fun jsonStringParser() -> Parser{string}
     quote >> manyUntilParser(jsonUtf8CharParser(), quote).map(sum{string}) << quote
   ) ! Error("Invalid json string")
 
-fun jsonObjectParser(Parser{JsonValue} valParser)
+fun jsonObjectParser(Parser{JsonValue} valParser = lazyParser(lazy jsonValueParser()))
   open      = matchParser('{')    << whitespaceParser();
   key       = jsonStringParser()  << whitespaceParser() ! Error("Invalid object key");
   colon     = matchParser(':')    << whitespaceParser();
@@ -119,7 +110,7 @@ fun jsonObjectParser(Parser{JsonValue} valParser)
   keyValue  = (key << colon) & value;
   (open >> manyUntilParser(keyValue, comma, close) << close).map(construct{List{Pair{string, JsonValue}}, JsonObject})
 
-fun jsonArrayParser(Parser{JsonValue} valParser)
+fun jsonArrayParser(Parser{JsonValue} valParser = lazyParser(lazy jsonValueParser()))
   open  = matchParser('[')    << whitespaceParser();
   value = valParser           << whitespaceParser();
   comma = matchParser(',')    << whitespaceParser() !! Error("Expected comma or end of array");
@@ -127,8 +118,8 @@ fun jsonArrayParser(Parser{JsonValue} valParser)
   (open >> manyUntilParser(value, comma, close) << close).map(construct{List{JsonValue}, JsonArray})
 
 fun jsonValueParser()
-  objectP = jsonObjectParser(lazyParser(lazy jsonValueParser()));
-  arrayP  = jsonArrayParser(lazyParser(lazy jsonValueParser()));
+  objectP = jsonObjectParser();
+  arrayP  = jsonArrayParser();
   stringP = jsonStringParser();
   nullP   = jsonNullParser();
   boolP   = jsonBoolParser();

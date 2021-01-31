@@ -12,14 +12,12 @@ TEST_CASE("[frontend] Analyzing intrinsic expressions", "frontend") {
     REQUIRE(output.isSuccess());
     const auto& func = GET_FUNC_DEF(output, "f");
 
-    auto args = std::vector<prog::expr::NodePtr>{};
-    args.push_back(prog::expr::litFloatNode(output.getProg(), 42.0f));
     auto callExpr = prog::expr::callExprNode(
         output.getProg(),
         GET_INTRINSIC_ID(output, "float_sin", GET_TYPE_ID(output, "float")),
-        std::move(args));
+        EXPRS(prog::expr::litFloatNode(output.getProg(), 42.0f)));
 
-    CHECK(func.getExpr() == *callExpr);
+    CHECK(func.getBody() == *callExpr);
   }
 
   SECTION("Call impure intrinsic expression") {
@@ -30,7 +28,7 @@ TEST_CASE("[frontend] Analyzing intrinsic expressions", "frontend") {
     auto callExpr = prog::expr::callExprNode(
         output.getProg(), GET_INTRINSIC_ID(output, "platform_endianness_native"), {});
 
-    CHECK(func.getExpr() == *callExpr);
+    CHECK(func.getBody() == *callExpr);
   }
 
   SECTION("Diagnostics") {

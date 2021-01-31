@@ -10,7 +10,8 @@ FuncDecl::FuncDecl(
     bool isImplicitConv,
     std::string name,
     TypeSet input,
-    TypeId output) :
+    TypeId output,
+    unsigned int numOptInputs) :
     m_id{id},
     m_kind{kind},
     m_isAction{isAction},
@@ -18,7 +19,8 @@ FuncDecl::FuncDecl(
     m_isImplicitConv{isImplicitConv},
     m_name{std::move(name)},
     m_input{std::move(input)},
-    m_output{output} {}
+    m_output{output},
+    m_numOptInputs{numOptInputs} {}
 
 auto FuncDecl::operator==(const FuncDecl& rhs) const noexcept -> bool { return m_id == rhs.m_id; }
 
@@ -41,6 +43,12 @@ auto FuncDecl::getName() const noexcept -> const std::string& { return m_name; }
 auto FuncDecl::getInput() const noexcept -> const TypeSet& { return m_input; }
 
 auto FuncDecl::getOutput() const noexcept -> TypeId { return m_output; }
+
+auto FuncDecl::getNumOptInputs() const noexcept -> unsigned int { return m_numOptInputs; }
+
+auto FuncDecl::getMinInputCount() const noexcept -> unsigned int {
+  return m_input.getCount() - m_numOptInputs;
+}
 
 auto FuncDecl::updateOutput(TypeId newOutput) noexcept -> void { m_output = newOutput; }
 

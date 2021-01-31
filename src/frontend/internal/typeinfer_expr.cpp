@@ -27,11 +27,11 @@ TypeInferExpr::TypeInferExpr(
 
 auto TypeInferExpr::getInferredType() const noexcept -> prog::sym::TypeId { return m_type; }
 
-auto TypeInferExpr::visit(const parse::CommentNode& /*unused*/) -> void {
+auto TypeInferExpr::visit(const parse::CommentNode & /*unused*/) -> void {
   throw std::logic_error{"TypeInferExpr is not implemented for this node type"};
 }
 
-auto TypeInferExpr::visit(const parse::ErrorNode& /*unused*/) -> void {
+auto TypeInferExpr::visit(const parse::ErrorNode & /*unused*/) -> void {
   throw std::logic_error{"TypeInferExpr is not implemented for this node type"};
 }
 
@@ -100,8 +100,11 @@ auto TypeInferExpr::visit(const parse::CallExprNode& n) -> void {
   }
 
   // Dynamic call.
-  if (!identifier || m_constTypes->find(getName(*identifier)) != m_constTypes->end() ||
-      (instance != nullptr && !isFuncOrConv(m_ctx, getName(*identifier)))) {
+  const auto isConst =
+      m_constTypes && m_constTypes->find(getName(*identifier)) != m_constTypes->end();
+  const auto isPotentialFieldCall =
+      instance && !isFuncOrConv(m_ctx, m_typeSubTable, getName(*identifier));
+  if (!identifier || isConst || isPotentialFieldCall) {
     m_type = inferDynCall(n);
     return;
   }
@@ -139,10 +142,8 @@ auto TypeInferExpr::visit(const parse::CallExprNode& n) -> void {
     if (!typeSet) {
       return;
     }
-    auto ovOptions = prog::OvOptions{
-        hasFlag<Flags::AllowActionCalls>() ? prog::OvFlags::None : prog::OvFlags::ExclActions};
     if (const auto callInfo =
-            m_ctx->getFuncTemplates()->getCallInfo(funcName, *typeSet, ovOptions)) {
+            m_ctx->getFuncTemplates()->getCallInfo(funcName, *typeSet, getOvOptions())) {
       if (n.isFork()) {
         m_type = asFuture(m_ctx, callInfo->resultType);
       } else if (n.isLazy()) {
@@ -216,8 +217,7 @@ auto TypeInferExpr::visit(const parse::IdExprNode& n) -> void {
     if (!typeSet) {
       return;
     }
-    const auto instances =
-        m_ctx->getFuncTemplates()->instantiate(name, *typeSet, prog::OvOptions{});
+    const auto instances = m_ctx->getFuncTemplates()->instantiate(name, *typeSet, getOvOptions());
     if (!instances.empty() && !m_ctx->hasErrors()) {
       m_type = getDelegate(m_ctx, *instances[0]->getFunc());
     }
@@ -225,8 +225,7 @@ auto TypeInferExpr::visit(const parse::IdExprNode& n) -> void {
   }
 
   // Non-templated function literal.
-  const auto funcs =
-      m_ctx->getProg()->lookupFunc(name, prog::OvOptions{prog::OvFlags::ExclNonUser});
+  const auto funcs = m_ctx->getProg()->lookupFunc(name, getOvOptions(true));
   if (!funcs.empty() && !m_ctx->hasErrors()) {
     m_type = getDelegate(m_ctx, funcs[0]);
     return;
@@ -238,7 +237,8 @@ auto TypeInferExpr::visit(const parse::FieldExprNode& n) -> void {
   auto getIdVisitor = GetIdentifier{false};
   n[0].accept(&getIdVisitor);
   auto identifier = getIdVisitor.getIdentifier();
-  if (identifier && !getIdVisitor.isIntrinsic() && isType(m_ctx, getName(*identifier))) {
+  if (identifier && !getIdVisitor.isIntrinsic() &&
+      isType(m_ctx, m_typeSubTable, getName(*identifier))) {
     const auto type =
         getOrInstType(m_ctx, m_typeSubTable, *identifier, getIdVisitor.getTypeParams());
     // If the type is an enum then any field on that enum will have that type.
@@ -286,7 +286,7 @@ auto TypeInferExpr::visit(const parse::IndexExprNode& n) -> void {
   }
 }
 
-auto TypeInferExpr::visit(const parse::IntrinsicExprNode& /*ununsed*/) -> void {}
+auto TypeInferExpr::visit(const parse::IntrinsicExprNode & /*ununsed*/) -> void {}
 
 auto TypeInferExpr::visit(const parse::IsExprNode& n) -> void {
   if (n.hasId()) {
@@ -328,11 +328,11 @@ auto TypeInferExpr::visit(const parse::LitExprNode& n) -> void {
 
 auto TypeInferExpr::visit(const parse::ParenExprNode& n) -> void { m_type = inferSubExpr(n[0]); }
 
-auto TypeInferExpr::visit(const parse::SwitchExprElseNode& /*unused*/) -> void {
+auto TypeInferExpr::visit(const parse::SwitchExprElseNode & /*unused*/) -> void {
   throw std::logic_error{"TypeInferExpr is not implemented for this node type"};
 }
 
-auto TypeInferExpr::visit(const parse::SwitchExprIfNode& /*unused*/) -> void {
+auto TypeInferExpr::visit(const parse::SwitchExprIfNode & /*unused*/) -> void {
   throw std::logic_error{"TypeInferExpr is not implemented for this node type"};
 }
 
@@ -377,27 +377,27 @@ auto TypeInferExpr::visit(const parse::UnaryExprNode& n) -> void {
   }
 }
 
-auto TypeInferExpr::visit(const parse::EnumDeclStmtNode& /*unused*/) -> void {
+auto TypeInferExpr::visit(const parse::EnumDeclStmtNode & /*unused*/) -> void {
   throw std::logic_error{"TypeInferExpr is not implemented for this node type"};
 }
 
-auto TypeInferExpr::visit(const parse::ExecStmtNode& /*unused*/) -> void {
+auto TypeInferExpr::visit(const parse::ExecStmtNode & /*unused*/) -> void {
   throw std::logic_error{"TypeInferExpr is not implemented for this node type"};
 }
 
-auto TypeInferExpr::visit(const parse::FuncDeclStmtNode& /*unused*/) -> void {
+auto TypeInferExpr::visit(const parse::FuncDeclStmtNode & /*unused*/) -> void {
   throw std::logic_error{"TypeInferExpr is not implemented for this node type"};
 }
 
-auto TypeInferExpr::visit(const parse::ImportStmtNode& /*unused*/) -> void {
+auto TypeInferExpr::visit(const parse::ImportStmtNode & /*unused*/) -> void {
   throw std::logic_error{"TypeInferExpr is not implemented for this node type"};
 }
 
-auto TypeInferExpr::visit(const parse::StructDeclStmtNode& /*unused*/) -> void {
+auto TypeInferExpr::visit(const parse::StructDeclStmtNode & /*unused*/) -> void {
   throw std::logic_error{"TypeInferExpr is not implemented for this node type"};
 }
 
-auto TypeInferExpr::visit(const parse::UnionDeclStmtNode& /*unused*/) -> void {
+auto TypeInferExpr::visit(const parse::UnionDeclStmtNode & /*unused*/) -> void {
   throw std::logic_error{"TypeInferExpr is not implemented for this node type"};
 }
 
@@ -454,13 +454,8 @@ auto TypeInferExpr::inferFuncCall(const std::string& funcName, const prog::sym::
     }
   }
 
-  auto ovFlags = prog::OvFlags::None;
-  if (!hasFlag<Flags::AllowActionCalls>()) {
-    ovFlags = ovFlags | prog::OvFlags::ExclActions;
-  }
-
   // Attempt to get a return-type for a non-templated function.
-  auto func = m_ctx->getProg()->lookupFunc(funcName, argTypes, prog::OvOptions{ovFlags});
+  auto func = m_ctx->getProg()->lookupFunc(funcName, argTypes, getOvOptions());
   if (func) {
     const auto& funcDecl = m_ctx->getProg()->getFuncDecl(*func);
     if (funcDecl.getOutput().isInfer()) {
@@ -470,8 +465,8 @@ auto TypeInferExpr::inferFuncCall(const std::string& funcName, const prog::sym::
   }
 
   // Attempt to get a return-type for a inferred templated function.
-  auto inferredTemplFuncCallInfo = m_ctx->getFuncTemplates()->inferParamsAndGetCallInfo(
-      funcName, argTypes, prog::OvOptions{ovFlags});
+  auto inferredTemplFuncCallInfo =
+      m_ctx->getFuncTemplates()->inferParamsAndGetCallInfo(funcName, argTypes, getOvOptions());
   if (inferredTemplFuncCallInfo) {
     return CallInfo{inferredTemplFuncCallInfo->resultType, inferredTemplFuncCallInfo->isAction};
   }
@@ -480,11 +475,16 @@ auto TypeInferExpr::inferFuncCall(const std::string& funcName, const prog::sym::
 }
 
 auto TypeInferExpr::setConstType(const lex::Token& constId, prog::sym::TypeId type) -> void {
-  auto name = getName(constId);
-  m_constTypes->insert({name, type});
+  if (m_constTypes) {
+    auto name = getName(constId);
+    m_constTypes->insert({name, type});
+  }
 }
 
 auto TypeInferExpr::inferConstType(const lex::Token& constId) -> prog::sym::TypeId {
+  if (!m_constTypes) {
+    return prog::sym::TypeId::inferType();
+  }
   const auto itr = m_constTypes->find(getName(constId));
   if (itr == m_constTypes->end()) {
     return prog::sym::TypeId::inferType();

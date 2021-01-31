@@ -56,6 +56,12 @@ auto inlineCalls(const prog::Program& prog, bool& modified) -> prog::Program {
 auto CallInlineRewriter::isInlinable(const prog::expr::CallExprNode* callExpr) -> bool {
   const auto funcId = callExpr->getFunc();
 
+  if (callExpr->needsPatching()) {
+    // This is not a valid state and means the frontend had an internal error and the backend will
+    // crash when trying to genenerate assembly.
+    return false;
+  }
+
   // Non-normal (fork or lazy) calls or calls to non-user funcs are not inlinable.
   if (callExpr->getMode() != prog::expr::CallMode::Normal ||
       !internal::isUserFunc(m_prog, funcId)) {
@@ -108,7 +114,7 @@ auto CallInlineRewriter::inlineCall(const prog::expr::CallExprNode* callExpr)
 
   // Remap the constants to point to the newly registered constants.
   auto remapper     = internal::ConstRemapper{m_prog, *m_consts, constMapping};
-  auto remappedExpr = remapper.rewrite(tgtFuncDef.getExpr());
+  auto remappedExpr = remapper.rewrite(tgtFuncDef.getBody());
 
   // Run another 'rewrite' pass on the remapped expression so we can also inline calls inside the
   // inlined function body.

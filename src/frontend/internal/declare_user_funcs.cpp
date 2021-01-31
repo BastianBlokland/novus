@@ -62,6 +62,7 @@ auto DeclareUserFuncs::visit(const parse::FuncDeclStmtNode& n) -> void {
   if (!input) {
     return;
   }
+  const auto numOptInputs = getNumOptInputs(m_ctx, n);
 
   // Verify that this is not a duplicate declaration.
   if (m_ctx->getProg()->lookupFunc(name, input.value(), prog::OvOptions{0})) {
@@ -75,7 +76,7 @@ auto DeclareUserFuncs::visit(const parse::FuncDeclStmtNode& n) -> void {
     return;
   }
 
-  const auto isConv = isType(m_ctx, name);
+  const auto isConv = isType(m_ctx, nullptr, name);
   if (isConv && n.isAction()) {
     if (n.isAction()) {
       m_ctx->reportDiag(errNonPureConversion, n.getId().getSpan());
@@ -123,8 +124,8 @@ auto DeclareUserFuncs::visit(const parse::FuncDeclStmtNode& n) -> void {
   // Declare the function in the program.
   const auto funcName = isConv ? getName(*m_ctx, *retType) : name;
   auto funcId         = n.isAction()
-      ? m_ctx->getProg()->declareAction(funcName, input.value(), retType.value())
-      : m_ctx->getProg()->declarePureFunc(funcName, input.value(), retType.value());
+      ? m_ctx->getProg()->declareAction(funcName, input.value(), retType.value(), numOptInputs)
+      : m_ctx->getProg()->declarePureFunc(funcName, input.value(), retType.value(), numOptInputs);
   m_funcDecls->emplace_back(funcId, m_ctx, name, n);
 }
 
@@ -143,7 +144,7 @@ auto DeclareUserFuncs::validateType(
 
   auto isValid    = true;
   const auto name = getName(type.getId());
-  if (!isType(m_ctx, name) &&
+  if (!isType(m_ctx, nullptr, name) &&
       std::find(typeSubParams.begin(), typeSubParams.end(), name) == typeSubParams.end()) {
 
     m_ctx->reportDiag(errUndeclaredType, name, type.getParamCount(), type.getSpan());

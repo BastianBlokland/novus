@@ -16,7 +16,7 @@ TEST_CASE("[opt] Constants elimination", "opt") {
     // Verify that both constants are removed.
     const auto& funcDef = GET_FUNC_DEF(optProg, "func");
 
-    CHECK(funcDef.getExpr() == *getIntBinaryOpExpr(optProg, prog::Operator::Plus, 42, 1337));
+    CHECK(funcDef.getBody() == *getIntBinaryOpExpr(optProg, prog::Operator::Plus, 42, 1337));
   }
 
   SECTION("Trivial constants are eliminated") {
@@ -29,7 +29,7 @@ TEST_CASE("[opt] Constants elimination", "opt") {
     // Verify that both constants are removed.
     const auto& funcDef = GET_FUNC_DEF(optProg, "func");
 
-    CHECK(funcDef.getExpr() == *getIntBinaryOpExpr(optProg, prog::Operator::Plus, 42, 42));
+    CHECK(funcDef.getBody() == *getIntBinaryOpExpr(optProg, prog::Operator::Plus, 42, 42));
   }
 }
 

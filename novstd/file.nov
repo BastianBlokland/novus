@@ -21,10 +21,7 @@ struct File =
 
 // -- Actions
 
-act fileOpen(Path p, FileMode m) -> Either{File, Error}
-  fileOpen(p, m, FileFlags.None)
-
-act fileOpen(Path p, FileMode m, FileFlags flags) -> Either{File, Error}
+act fileOpen(Path p, FileMode m, FileFlags flags = FileFlags.None) -> Either{File, Error}
   absPath     = p.getPathAbsolute();
   absPathStr  = absPath.string();
   stream      = intrinsic{file_openstream}(absPathStr, int(m) | flags << 8);

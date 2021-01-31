@@ -39,16 +39,28 @@ public:
   [[nodiscard]] auto getMode() const noexcept -> CallMode;
   [[nodiscard]] auto isFork() const noexcept -> bool;
   [[nodiscard]] auto isLazy() const noexcept -> bool;
+  [[nodiscard]] auto needsPatching() const noexcept -> bool;
+
+  auto applyPatches(const Program& prog) const -> void;
 
   auto accept(NodeVisitor* visitor) const -> void override;
 
 private:
   sym::FuncId m_func;
   sym::TypeId m_resultType;
-  std::vector<NodePtr> m_args;
   CallMode m_mode;
 
-  CallExprNode(sym::FuncId func, sym::TypeId resultType, std::vector<NodePtr> args, CallMode mode);
+  // NOTE: The arguments are mutable because optional arguments are applied in a separate phase
+  // after all functions have been defined.
+  mutable std::vector<NodePtr> m_args;
+  mutable bool m_needsPatching;
+
+  CallExprNode(
+      sym::FuncId func,
+      sym::TypeId resultType,
+      std::vector<NodePtr> args,
+      CallMode mode,
+      bool needsPatching);
 };
 
 // Factories.

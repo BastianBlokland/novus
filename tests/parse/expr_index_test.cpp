@@ -41,11 +41,11 @@ TEST_CASE("[parse] Parsing index expressions", "parse") {
   SECTION("Errors") {
     // Note: The error on '[]' is an unfortunate side-effect of how we lex '[]' vs '[ ]'.
     CHECK_EXPR("a[]", ID_EXPR("a"), errInvalidUnaryOp(SQUARESQUARE, errInvalidPrimaryExpr(END)));
-    CHECK_EXPR("a[ ]", errInvalidIndexExpr(ID_EXPR("a"), OSQUARE, NODES(), COMMAS(0), CSQUARE));
+    CHECK_EXPR("a[ ]", errInvalidIndexExpr(ID_EXPR("a"), OSQUARE, NO_NODES, COMMAS(0), CSQUARE));
     CHECK_EXPR(
         "a[1 1]",
         errInvalidIndexExpr(ID_EXPR("a"), OSQUARE, NODES(INT(1), INT(1)), COMMAS(0), CSQUARE));
-    CHECK_EXPR("a[", errInvalidIndexExpr(ID_EXPR("a"), OSQUARE, NODES(), COMMAS(0), END));
+    CHECK_EXPR("a[", errInvalidIndexExpr(ID_EXPR("a"), OSQUARE, NO_NODES, COMMAS(0), END));
     CHECK_EXPR(
         "a[,",
         errInvalidIndexExpr(

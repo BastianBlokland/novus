@@ -6,6 +6,10 @@
 
 namespace parse {
 
+static auto getIdOrUnkown(const lex::Token& token) {
+  return getId(token).value_or(std::string("?"));
+}
+
 static auto addTokens(const Type& type, std::vector<lex::Token>* tokens) -> void;
 
 auto errLexError(lex::Token errToken) -> NodePtr {
@@ -55,8 +59,13 @@ static auto addTokens(const TypeSubstitutionList& subList, std::vector<lex::Toke
 static auto addTokens(const ArgumentListDecl& argList, std::vector<lex::Token>* tokens) -> void {
   tokens->push_back(argList.getOpen());
   for (const auto& argToken : argList.getArgs()) {
+
     addTokens(argToken.getType(), tokens);
     tokens->push_back(argToken.getIdentifier());
+
+    if (argToken.hasInitializer()) {
+      tokens->push_back(argToken.getInitializer().getEq());
+    }
   }
   for (const auto& comma : argList.getCommas()) {
     tokens->push_back(comma);
@@ -65,18 +74,32 @@ static auto addTokens(const ArgumentListDecl& argList, std::vector<lex::Token>* 
 }
 
 static auto getError(std::ostream& out, const ArgumentListDecl& argList) -> void {
+
   if (argList.getOpen().getKind() != lex::TokenKind::SepOpenParen &&
       argList.getOpen().getKind() != lex::TokenKind::OpParenParen) {
     out << "Expected opening parentheses '(' but got: '" << argList.getOpen() << '\'';
-  } else if (argList.getCommas().size() != (argList.getCount() == 0 ? 0 : argList.getCount() - 1)) {
+    return;
+  }
+
+  if (argList.getCommas().size() != (argList.getCount() == 0 ? 0 : argList.getCount() - 1)) {
     out << "Incorrect number of comma's ',' in function declaration";
-  } else if (
-      argList.getClose().getKind() != lex::TokenKind::SepCloseParen &&
+    return;
+  }
+
+  if (argList.getClose().getKind() != lex::TokenKind::SepCloseParen &&
       argList.getClose().getKind() != lex::TokenKind::OpParenParen) {
     out << "Expected closing parentheses ')' but got: '" << argList.getClose() << '\'';
-  } else {
-    out << "Invalid argument list";
+    return;
   }
+
+  for (const auto& arg : argList.getArgs()) {
+    if (arg.hasInitializer() && !arg.getInitializer().validate()) {
+      out << "Invalid initializer for argument '" << getIdOrUnkown(arg.getIdentifier()) << "'";
+      return;
+    }
+  }
+
+  out << "Invalid argument list";
 }
 
 auto errInvalidStmtImport(lex::Token kw, lex::Token path) -> NodePtr {
@@ -98,7 +121,7 @@ auto errInvalidStmtFuncDecl(
     lex::Token kw,
     lex::Token id,
     std::optional<TypeSubstitutionList> typeSubs,
-    const ArgumentListDecl& argList,
+    ArgumentListDecl argList,
     std::optional<RetTypeSpec> retType,
     NodePtr body) -> NodePtr {
 
@@ -128,6 +151,12 @@ auto errInvalidStmtFuncDecl(
   }
 
   auto nodes = std::vector<std::unique_ptr<Node>>{};
+  for (auto i = 0u; i != argList.getInitializerCount(); ++i) {
+    auto initializer = argList.takeInitializer(i);
+    if (initializer) {
+      nodes.push_back(std::move(initializer));
+    }
+  }
   nodes.push_back(std::move(body));
 
   return errorNode(oss.str(), std::move(tokens), std::move(nodes));
@@ -136,7 +165,7 @@ auto errInvalidStmtFuncDecl(
 auto errInvalidAnonFuncExpr(
     std::vector<lex::Token> modifiers,
     lex::Token kw,
-    const ArgumentListDecl& argList,
+    ArgumentListDecl argList,
     std::optional<RetTypeSpec> retType,
     NodePtr body) -> NodePtr {
 
@@ -163,6 +192,12 @@ auto errInvalidAnonFuncExpr(
   }
 
   auto nodes = std::vector<std::unique_ptr<Node>>{};
+  for (auto i = 0u; i != argList.getInitializerCount(); ++i) {
+    auto initializer = argList.takeInitializer(i);
+    if (initializer) {
+      nodes.push_back(std::move(initializer));
+    }
+  }
   nodes.push_back(std::move(body));
 
   return errorNode(oss.str(), std::move(tokens), std::move(nodes));

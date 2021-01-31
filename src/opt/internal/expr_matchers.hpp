@@ -38,7 +38,7 @@ auto matchesExpr(const prog::Program& prog, prog::sym::FuncId funcId, UnaryPredi
 
   const auto& funcDef = prog.getFuncDef(funcId);
   auto matcher        = ExprMatcher{predicate};
-  funcDef.getExpr().accept(&matcher);
+  funcDef.getBody().accept(&matcher);
 
   return matcher.isFound();
 }

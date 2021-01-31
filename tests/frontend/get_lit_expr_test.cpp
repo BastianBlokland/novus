@@ -16,41 +16,41 @@ TEST_CASE("[frontend] Analyzing literal expressions", "frontend") {
   SECTION("Get int literal expression") {
     const auto& output = ANALYZE("fun f() -> int 42");
     REQUIRE(output.isSuccess());
-    CHECK(GET_FUNC_DEF(output, "f").getExpr() == *prog::expr::litIntNode(output.getProg(), 42));
+    CHECK(GET_FUNC_DEF(output, "f").getBody() == *prog::expr::litIntNode(output.getProg(), 42));
   }
 
   SECTION("Get long literal expression") {
     const auto& output = ANALYZE("fun f() -> long 42L");
     REQUIRE(output.isSuccess());
-    CHECK(GET_FUNC_DEF(output, "f").getExpr() == *prog::expr::litLongNode(output.getProg(), 42L));
+    CHECK(GET_FUNC_DEF(output, "f").getBody() == *prog::expr::litLongNode(output.getProg(), 42L));
   }
 
   SECTION("Get float literal expression") {
     const auto& output = ANALYZE("fun f() -> float 42.0");
     REQUIRE(output.isSuccess());
     CHECK(
-        GET_FUNC_DEF(output, "f").getExpr() ==
+        GET_FUNC_DEF(output, "f").getBody() ==
         *prog::expr::litFloatNode(output.getProg(), 42.0F)); // NOLINT: Magic numbers
   }
 
   SECTION("Get bool literal expression") {
     const auto& output = ANALYZE("fun f() -> bool true");
     REQUIRE(output.isSuccess());
-    CHECK(GET_FUNC_DEF(output, "f").getExpr() == *prog::expr::litBoolNode(output.getProg(), true));
+    CHECK(GET_FUNC_DEF(output, "f").getBody() == *prog::expr::litBoolNode(output.getProg(), true));
   }
 
   SECTION("Get string literal expression") {
     const auto& output = ANALYZE("fun f() -> string \"hello world\"");
     REQUIRE(output.isSuccess());
     CHECK(
-        GET_FUNC_DEF(output, "f").getExpr() ==
+        GET_FUNC_DEF(output, "f").getBody() ==
         *prog::expr::litStringNode(output.getProg(), "hello world"));
   }
 
   SECTION("Get character literal expression") {
     const auto& output = ANALYZE("fun f() -> char \'a\'");
     REQUIRE(output.isSuccess());
-    CHECK(GET_FUNC_DEF(output, "f").getExpr() == *prog::expr::litCharNode(output.getProg(), 'a'));
+    CHECK(GET_FUNC_DEF(output, "f").getBody() == *prog::expr::litCharNode(output.getProg(), 'a'));
   }
 }
 

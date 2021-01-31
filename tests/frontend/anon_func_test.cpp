@@ -16,9 +16,9 @@ TEST_CASE("[frontend] Analyzing anonymous functions", "frontend") {
                                  "  lambda () 42");
     REQUIRE(output.isSuccess());
 
-    CHECK(findAnonFuncDef(output, 0).getExpr() == *prog::expr::litIntNode(output.getProg(), 42));
+    CHECK(findAnonFuncDef(output, 0).getBody() == *prog::expr::litIntNode(output.getProg(), 42));
     CHECK(
-        GET_FUNC_DEF(output, "f").getExpr() ==
+        GET_FUNC_DEF(output, "f").getBody() ==
         *prog::expr::litFuncNode(
             output.getProg(), GET_TYPE_ID(output, "__function_int"), findAnonFunc(output, 0)));
   }
@@ -28,9 +28,9 @@ TEST_CASE("[frontend] Analyzing anonymous functions", "frontend") {
                                  "  impure lambda () 42");
     REQUIRE(output.isSuccess());
 
-    CHECK(findAnonFuncDef(output, 0).getExpr() == *prog::expr::litIntNode(output.getProg(), 42));
+    CHECK(findAnonFuncDef(output, 0).getBody() == *prog::expr::litIntNode(output.getProg(), 42));
     CHECK(
-        GET_FUNC_DEF(output, "f").getExpr() ==
+        GET_FUNC_DEF(output, "f").getBody() ==
         *prog::expr::litFuncNode(
             output.getProg(), GET_TYPE_ID(output, "__action_int"), findAnonFunc(output, 0)));
   }
@@ -40,9 +40,9 @@ TEST_CASE("[frontend] Analyzing anonymous functions", "frontend") {
                                  "  lambda () 42");
     REQUIRE(output.isSuccess());
 
-    CHECK(findAnonFuncDef(output, 0).getExpr() == *prog::expr::litIntNode(output.getProg(), 42));
+    CHECK(findAnonFuncDef(output, 0).getBody() == *prog::expr::litIntNode(output.getProg(), 42));
     CHECK(
-        GET_FUNC_DEF(output, "f").getExpr() ==
+        GET_FUNC_DEF(output, "f").getBody() ==
         *prog::expr::litFuncNode(
             output.getProg(), GET_TYPE_ID(output, "__function_int"), findAnonFunc(output, 0)));
   }
@@ -52,9 +52,9 @@ TEST_CASE("[frontend] Analyzing anonymous functions", "frontend") {
                                  "  (lambda () 1)()");
     REQUIRE(output.isSuccess());
 
-    CHECK(findAnonFuncDef(output, 0).getExpr() == *prog::expr::litIntNode(output.getProg(), 1));
+    CHECK(findAnonFuncDef(output, 0).getBody() == *prog::expr::litIntNode(output.getProg(), 1));
     CHECK(
-        GET_FUNC_DEF(output, "f").getExpr() ==
+        GET_FUNC_DEF(output, "f").getBody() ==
         *prog::expr::callDynExprNode(
             output.getProg(),
             prog::expr::litFuncNode(
@@ -67,9 +67,9 @@ TEST_CASE("[frontend] Analyzing anonymous functions", "frontend") {
                                  "  (impure lambda () 1)()");
     REQUIRE(output.isSuccess());
 
-    CHECK(findAnonFuncDef(output, 0).getExpr() == *prog::expr::litIntNode(output.getProg(), 1));
+    CHECK(findAnonFuncDef(output, 0).getBody() == *prog::expr::litIntNode(output.getProg(), 1));
     CHECK(
-        GET_FUNC_DEF(output, "f").getExpr() ==
+        GET_FUNC_DEF(output, "f").getBody() ==
         *prog::expr::callDynExprNode(
             output.getProg(),
             prog::expr::litFuncNode(
@@ -82,9 +82,9 @@ TEST_CASE("[frontend] Analyzing anonymous functions", "frontend") {
                                  "  (lambda () 1)()");
     REQUIRE(output.isSuccess());
 
-    CHECK(findAnonFuncDef(output, 0).getExpr() == *prog::expr::litIntNode(output.getProg(), 1));
+    CHECK(findAnonFuncDef(output, 0).getBody() == *prog::expr::litIntNode(output.getProg(), 1));
     CHECK(
-        GET_FUNC_DEF(output, "f").getExpr() ==
+        GET_FUNC_DEF(output, "f").getBody() ==
         *prog::expr::callDynExprNode(
             output.getProg(),
             prog::expr::litFuncNode(
@@ -100,19 +100,19 @@ TEST_CASE("[frontend] Analyzing anonymous functions", "frontend") {
     // Check the anonymous function.
     const auto& anonDef = findAnonFuncDef(output, 0);
     CHECK(
-        anonDef.getExpr() ==
+        anonDef.getBody() ==
         *prog::expr::constExprNode(anonDef.getConsts(), *anonDef.getConsts().lookup("i")));
 
     // Check the 'f' function.
-    auto args = std::vector<prog::expr::NodePtr>{};
-    args.push_back(prog::expr::litIntNode(output.getProg(), 1));
-    auto callExpr = prog::expr::callDynExprNode(
-        output.getProg(),
-        prog::expr::litFuncNode(
-            output.getProg(), GET_TYPE_ID(output, "__function_int_int"), findAnonFunc(output, 0)),
-        std::move(args));
-
-    CHECK(GET_FUNC_DEF(output, "f").getExpr() == *callExpr);
+    CHECK(
+        GET_FUNC_DEF(output, "f").getBody() ==
+        *prog::expr::callDynExprNode(
+            output.getProg(),
+            prog::expr::litFuncNode(
+                output.getProg(),
+                GET_TYPE_ID(output, "__function_int_int"),
+                findAnonFunc(output, 0)),
+            EXPRS(prog::expr::litIntNode(output.getProg(), 1))));
   }
 
   SECTION("Invoke anonymous function with closure") {
@@ -123,27 +123,21 @@ TEST_CASE("[frontend] Analyzing anonymous functions", "frontend") {
     // Check the anonymous function.
     const auto& anonDef = findAnonFuncDef(output, 0);
     CHECK(
-        anonDef.getExpr() ==
+        anonDef.getBody() ==
         *prog::expr::constExprNode(anonDef.getConsts(), *anonDef.getConsts().lookup("__bound_1")));
 
     // Check the 'f' function.
     const auto& fDef = GET_FUNC_DEF(output, "f", GET_TYPE_ID(output, "float"));
-    auto closureArgs = std::vector<prog::expr::NodePtr>{};
-    closureArgs.push_back(
-        prog::expr::constExprNode(fDef.getConsts(), *fDef.getConsts().lookup("v")));
-
-    auto delArgs = std::vector<prog::expr::NodePtr>{};
-    delArgs.push_back(prog::expr::litIntNode(output.getProg(), 1));
-    auto callExpr = prog::expr::callDynExprNode(
-        output.getProg(),
-        prog::expr::closureNode(
+    CHECK(
+        fDef.getBody() ==
+        *prog::expr::callDynExprNode(
             output.getProg(),
-            GET_TYPE_ID(output, "__function_int_float"),
-            findAnonFunc(output, 0),
-            std::move(closureArgs)),
-        std::move(delArgs));
-
-    CHECK(fDef.getExpr() == *callExpr);
+            prog::expr::closureNode(
+                output.getProg(),
+                GET_TYPE_ID(output, "__function_int_float"),
+                findAnonFunc(output, 0),
+                EXPRS(prog::expr::constExprNode(fDef.getConsts(), *fDef.getConsts().lookup("v")))),
+            EXPRS(prog::expr::litIntNode(output.getProg(), 1))));
   }
 
   SECTION("Invoke anonymous function with nested closure") {
@@ -154,38 +148,33 @@ TEST_CASE("[frontend] Analyzing anonymous functions", "frontend") {
     // Check the most nested anonymous function.
     const auto& anon0Def = findAnonFuncDef(output, 0);
     CHECK(
-        anon0Def.getExpr() ==
+        anon0Def.getBody() ==
         *prog::expr::constExprNode(
             anon0Def.getConsts(), *anon0Def.getConsts().lookup("__bound_0")));
 
     // Check the other anonymous function.
-    const auto& anon1Def     = findAnonFuncDef(output, 1);
-    auto anon1DefClosureArgs = std::vector<prog::expr::NodePtr>{};
-    anon1DefClosureArgs.push_back(
-        prog::expr::constExprNode(anon1Def.getConsts(), *anon1Def.getConsts().lookup("__bound_0")));
-    auto closureExpr = prog::expr::closureNode(
-        output.getProg(),
-        GET_TYPE_ID(output, "__function_float"),
-        findAnonFunc(output, 0),
-        std::move(anon1DefClosureArgs));
-
-    CHECK(anon1Def.getExpr() == *closureExpr);
+    const auto& anon1Def = findAnonFuncDef(output, 1);
+    CHECK(
+        anon1Def.getBody() ==
+        *prog::expr::closureNode(
+            output.getProg(),
+            GET_TYPE_ID(output, "__function_float"),
+            findAnonFunc(output, 0),
+            EXPRS(prog::expr::constExprNode(
+                anon1Def.getConsts(), *anon1Def.getConsts().lookup("__bound_0")))));
 
     // Check the 'f' function.
-    const auto& fDef  = GET_FUNC_DEF(output, "f", GET_TYPE_ID(output, "float"));
-    auto fClosureArgs = std::vector<prog::expr::NodePtr>{};
-    fClosureArgs.push_back(
-        prog::expr::constExprNode(fDef.getConsts(), *fDef.getConsts().lookup("v")));
-    auto callExpr = prog::expr::callDynExprNode(
-        output.getProg(),
-        prog::expr::closureNode(
+    const auto& fDef = GET_FUNC_DEF(output, "f", GET_TYPE_ID(output, "float"));
+    CHECK(
+        fDef.getBody() ==
+        *prog::expr::callDynExprNode(
             output.getProg(),
-            GET_TYPE_ID(output, "__function___function_float"),
-            findAnonFunc(output, 1),
-            std::move(fClosureArgs)),
-        {});
-
-    CHECK(fDef.getExpr() == *callExpr);
+            prog::expr::closureNode(
+                output.getProg(),
+                GET_TYPE_ID(output, "__function___function_float"),
+                findAnonFunc(output, 1),
+                EXPRS(prog::expr::constExprNode(fDef.getConsts(), *fDef.getConsts().lookup("v")))),
+            {}));
   }
 
   SECTION("Return templated anonymous function") {
@@ -196,18 +185,18 @@ TEST_CASE("[frontend] Analyzing anonymous functions", "frontend") {
     REQUIRE(output.isSuccess());
 
     CHECK(
-        findAnonFuncDef(output, 0).getExpr() ==
+        findAnonFuncDef(output, 0).getBody() ==
         *prog::expr::callExprNode(output.getProg(), GET_FUNC_ID(output, "int"), {}));
     CHECK(
-        findAnonFuncDef(output, 1).getExpr() ==
+        findAnonFuncDef(output, 1).getBody() ==
         *prog::expr::callExprNode(output.getProg(), GET_FUNC_ID(output, "float"), {}));
 
     CHECK(
-        GET_FUNC_DEF(output, "f1__int").getExpr() ==
+        GET_FUNC_DEF(output, "f1__int").getBody() ==
         *prog::expr::litFuncNode(
             output.getProg(), GET_TYPE_ID(output, "__function_int"), findAnonFunc(output, 0)));
     CHECK(
-        GET_FUNC_DEF(output, "f1__float").getExpr() ==
+        GET_FUNC_DEF(output, "f1__float").getBody() ==
         *prog::expr::litFuncNode(
             output.getProg(), GET_TYPE_ID(output, "__function_float"), findAnonFunc(output, 1)));
   }
@@ -218,7 +207,7 @@ TEST_CASE("[frontend] Analyzing anonymous functions", "frontend") {
     const auto& anonFuncDef = findAnonFuncDef(output, 0);
 
     CHECK(
-        anonFuncDef.getExpr() ==
+        anonFuncDef.getBody() ==
         *applyConv(output, "int", "float", prog::expr::litIntNode(output.getProg(), 2)));
   }
 
@@ -252,6 +241,9 @@ TEST_CASE("[frontend] Analyzing anonymous functions", "frontend") {
         "act a1() -> int 42 "
         "act a2() lambda () a1()",
         errUndeclaredPureFunc(src, "a1", {}, input::Span{38, 41}));
+    CHECK_DIAG(
+        "fun f() lambda (int i = 0) i",
+        errUnsupportedArgInitializer(src, "i", input::Span{16, 24}));
   }
 }
 

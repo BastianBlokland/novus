@@ -116,7 +116,7 @@ act main(int port, Content content)
       ctx       = ClientContext(content, variables, con, respWriter, reqParser);
       handleConnection(ctx)
   );
-  tcpServer(TcpServerSettings(IpFamily.V4, port, handleCon)).failOnError();
+  tcpServer(TcpServerSettings(handleCon, port)).failOnError();
   print("Server stopped")
 
 act loadContent(Path root, List{RewriteRule} rewriteUrls, List{string} files)

@@ -97,15 +97,22 @@ TEST_CASE("[frontend] Analyzing user-function declarations", "frontend") {
                                    "fun f() -false");
       REQUIRE(output.isSuccess());
 
-      auto args = std::vector<prog::expr::NodePtr>{};
-      args.push_back(prog::expr::litBoolNode(output.getProg(), false));
-      auto callExpr = prog::expr::callExprNode(
-          output.getProg(),
-          GET_OP_ID(output, prog::Operator::Minus, GET_TYPE_ID(output, "bool")),
-          std::move(args));
-
       const auto& funcDef = GET_FUNC_DEF(output, "f");
-      CHECK(funcDef.getExpr() == *callExpr);
+      CHECK(
+          funcDef.getBody() ==
+          *prog::expr::callExprNode(
+              output.getProg(),
+              GET_OP_ID(output, prog::Operator::Minus, GET_TYPE_ID(output, "bool")),
+              EXPRS(prog::expr::litBoolNode(output.getProg(), false))));
+    }
+
+    SECTION("Declare function with optional argument") {
+      const auto& output = ANALYZE("fun f(int a, bool b = false) -> bool false");
+      REQUIRE(output.isSuccess());
+      const auto& funcDecl =
+          GET_FUNC_DECL(output, "f", GET_TYPE_ID(output, "int"), GET_TYPE_ID(output, "bool"));
+      CHECK(funcDecl.getNumOptInputs() == 1);
+      CHECK(funcDecl.getOutput() == GET_TYPE_ID(output, "bool"));
     }
   }
 
@@ -189,7 +196,8 @@ TEST_CASE("[frontend] Analyzing user-function declarations", "frontend") {
         "act a() S{int}()",
         errNonPureConversion(src, input::Span{25, 47}),
         errInvalidFuncInstantiation(src, input::Span{57, 57}),
-        errNoTypeOrConversionFoundToInstantiate(src, "S", 1, input::Span{57, 64}));
+        errUndeclaredTypeOrConversion(src, "S{int}", {}, input::Span{57, 64}));
+    CHECK_DIAG("fun f(int a = 0, int b) a * b", errNonOptArgFollowingOpt(src, input::Span{17, 21}));
   }
 }
 

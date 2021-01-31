@@ -36,18 +36,15 @@ GetExpr::GetExpr(
   if (m_ctx == nullptr) {
     throw std::invalid_argument{"Context cannot be null"};
   }
-  if (m_constBinder == nullptr) {
-    throw std::invalid_argument{"Constant binder cannot be null"};
-  }
 }
 
 auto GetExpr::getValue() -> prog::expr::NodePtr& { return m_expr; }
 
-auto GetExpr::visit(const parse::CommentNode & /*unused*/) -> void {
+auto GetExpr::visit(const parse::CommentNode& /*unused*/) -> void {
   throw std::logic_error{"GetExpr is not implemented for this node type"};
 }
 
-auto GetExpr::visit(const parse::ErrorNode & /*unused*/) -> void {
+auto GetExpr::visit(const parse::ErrorNode& /*unused*/) -> void {
   throw std::logic_error{"GetExpr is not implemented for this node type"};
 }
 
@@ -55,7 +52,7 @@ auto GetExpr::visit(const parse::AnonFuncExprNode& n) -> void {
   auto consts = prog::sym::ConstDeclTable{};
 
   // Declare the input types in the cost table.
-  if (!declareFuncInput(m_ctx, m_typeSubTable, n, &consts)) {
+  if (!declareFuncInput(m_ctx, m_typeSubTable, n, &consts, false)) {
     assert(m_ctx->hasErrors());
     return;
   }
@@ -77,8 +74,9 @@ auto GetExpr::visit(const parse::AnonFuncExprNode& n) -> void {
   }
   if (retType->isInfer()) {
     // Infer the return type of the anonymous function.
-    auto parentConstTypes = m_constBinder->getAllConstTypes();
-    retType               = inferRetType(
+    auto parentConstTypes = m_constBinder ? m_constBinder->getAllConstTypes()
+                                          : std::unordered_map<std::string, prog::sym::TypeId>{};
+    retType = inferRetType(
         m_ctx,
         m_typeSubTable,
         n,
@@ -104,7 +102,7 @@ auto GetExpr::visit(const parse::AnonFuncExprNode& n) -> void {
       *retType,
       selfSignature,
       isAction ? (Flags::AllowActionCalls | Flags::AllowPureFuncCalls) : Flags::AllowPureFuncCalls};
-  n[0].accept(&getExpr);
+  n.getBody().accept(&getExpr);
   if (!getExpr.m_expr) {
     assert(m_ctx->hasErrors());
     return;
@@ -134,11 +132,12 @@ auto GetExpr::visit(const parse::AnonFuncExprNode& n) -> void {
 
   // Declare the function in the program.
   const auto funcId = isAction
-      ? m_ctx->getProg()->declareAction(nameoss.str(), prog::sym::TypeSet{inputTypes}, *retType)
-      : m_ctx->getProg()->declarePureFunc(nameoss.str(), prog::sym::TypeSet{inputTypes}, *retType);
+      ? m_ctx->getProg()->declareAction(nameoss.str(), prog::sym::TypeSet{inputTypes}, *retType, 0u)
+      : m_ctx->getProg()->declarePureFunc(
+            nameoss.str(), prog::sym::TypeSet{inputTypes}, *retType, 0u);
 
   // Define the function in the program.
-  m_ctx->getProg()->defineFunc(funcId, std::move(consts), std::move(expr));
+  m_ctx->getProg()->defineFunc(funcId, std::move(consts), std::move(expr), {});
 
   // Either create a function literal or a closure, depending on if the anonymous func binds any
   // consts from the parent.
@@ -146,8 +145,11 @@ auto GetExpr::visit(const parse::AnonFuncExprNode& n) -> void {
     m_expr = getLitFunc(m_ctx, funcId);
   } else {
     auto boundArgs = std::vector<prog::expr::NodePtr>{};
-    for (const auto& parentConstId : constBinder.getBoundParentConsts()) {
-      boundArgs.push_back(prog::expr::constExprNode(*m_constBinder->getConsts(), parentConstId));
+    if (m_constBinder) {
+      // Collect any bound arguments.
+      for (const auto& parentConstId : constBinder.getBoundParentConsts()) {
+        boundArgs.push_back(prog::expr::constExprNode(*m_constBinder->getConsts(), parentConstId));
+      }
     }
     m_expr = getFuncClosure(m_ctx, funcId, std::move(boundArgs));
   }
@@ -217,11 +219,11 @@ auto GetExpr::visit(const parse::CallExprNode& n) -> void {
     return;
   }
 
-  const auto isBindableConstant =
-      identifier && !getIdVisitor.isIntrinsic() && m_constBinder->canBind(getName(*identifier));
+  const auto isBindableConstant = m_constBinder && identifier && !getIdVisitor.isIntrinsic() &&
+      m_constBinder->canBind(getName(*identifier));
   // NOTE: Is used to choose between a 'instance' call or a call to a delegate field on a struct.
-  const auto isFuncOrConvName =
-      identifier && !getIdVisitor.isIntrinsic() && isFuncOrConv(m_ctx, getName(*identifier));
+  const auto isFuncOrConvName = identifier && !getIdVisitor.isIntrinsic() &&
+      isFuncOrConv(m_ctx, m_typeSubTable, getName(*identifier));
 
   if (!identifier || (instance == nullptr && isBindableConstant) ||
       (instance != nullptr && !isFuncOrConvName)) {
@@ -256,47 +258,58 @@ auto GetExpr::visit(const parse::CallExprNode& n) -> void {
   const auto ovOpts         = getOvOptions(-1, false, noConvFirstArg);
   const auto func           = m_ctx->getProg()->lookupFunc(possibleFuncs, args->second, ovOpts);
   if (!func) {
-    auto isTypeOrConv = !getIdVisitor.isIntrinsic() && isType(m_ctx, nameString);
-    if (typeParams) {
-      if (isTypeOrConv) {
+    auto argTypeNames = std::vector<std::string>{};
+    for (const auto& argType : args->second) {
+      argTypeNames.push_back(getDisplayName(*m_ctx, argType));
+    }
+
+    if (auto type = getOrInstType(m_ctx, m_typeSubTable, nameToken, typeParams)) {
+      m_ctx->reportDiag(
+          errUndeclaredTypeOrConversion, getDisplayName(*m_ctx, *type), argTypeNames, n.getSpan());
+      return;
+    }
+    if (isType(m_ctx, m_typeSubTable, nameString)) {
+      // Tried to call a constructor but we do not know which type (probably because the user
+      // provided incorrect type-params or we could not infer the type-params).
+      if (typeParams) {
+        // TODO: Include the type-names for the type-parameters in the diagnostic.
+        // TODO: Include the type-names for the arguments in the diagnostic.
         m_ctx->reportDiag(
             errNoTypeOrConversionFoundToInstantiate,
             nameString,
             typeParams->getCount(),
             n.getSpan());
       } else {
-        if (hasFlag<Flags::AllowPureFuncCalls>() && hasFlag<Flags::AllowActionCalls>()) {
-          m_ctx->reportDiag(
-              errNoFuncOrActionFoundToInstantiate, nameString, typeParams->getCount(), n.getSpan());
-        } else if (hasFlag<Flags::AllowPureFuncCalls>()) {
-          m_ctx->reportDiag(
-              errNoPureFuncFoundToInstantiate, nameString, typeParams->getCount(), n.getSpan());
-        } else {
-          m_ctx->reportDiag(
-              errNoActionFoundToInstantiate, nameString, typeParams->getCount(), n.getSpan());
-        }
-      }
-    } else {
-      auto argTypeNames = std::vector<std::string>{};
-      for (const auto& argType : args->second) {
-        argTypeNames.push_back(getDisplayName(*m_ctx, argType));
-      }
-      if (isTypeOrConv) {
         m_ctx->reportDiag(errUndeclaredTypeOrConversion, nameString, argTypeNames, n.getSpan());
-      } else {
-        const bool allowPureFunc = hasFlag<Flags::AllowPureFuncCalls>();
-        const bool allowAction   = hasFlag<Flags::AllowActionCalls>();
-        if (getIdVisitor.isIntrinsic()) {
-          m_ctx->reportDiag(
-              errUnknownIntrinsic, nameString, !allowAction, argTypeNames, n.getSpan());
-        } else if (allowPureFunc && allowAction) {
-          m_ctx->reportDiag(errUndeclaredFuncOrAction, nameString, argTypeNames, n.getSpan());
-        } else if (allowPureFunc) {
-          m_ctx->reportDiag(errUndeclaredPureFunc, nameString, argTypeNames, n.getSpan());
-        } else {
-          m_ctx->reportDiag(errUndeclaredAction, nameString, argTypeNames, n.getSpan());
-        }
       }
+      return;
+    }
+
+    const bool allowPureFunc = hasFlag<Flags::AllowPureFuncCalls>();
+    const bool allowAction   = hasFlag<Flags::AllowActionCalls>();
+    if (typeParams) {
+      // TODO: Include the type-names for the type-parameters in the diagnostic.
+      // TODO: Include the type-names for the arguments in the diagnostic.
+      if (allowPureFunc && allowAction) {
+        m_ctx->reportDiag(
+            errNoFuncOrActionFoundToInstantiate, nameString, typeParams->getCount(), n.getSpan());
+      } else if (allowPureFunc) {
+        m_ctx->reportDiag(
+            errNoPureFuncFoundToInstantiate, nameString, typeParams->getCount(), n.getSpan());
+      } else {
+        m_ctx->reportDiag(
+            errNoActionFoundToInstantiate, nameString, typeParams->getCount(), n.getSpan());
+      }
+      return;
+    }
+    if (getIdVisitor.isIntrinsic()) {
+      m_ctx->reportDiag(errUnknownIntrinsic, nameString, !allowAction, argTypeNames, n.getSpan());
+    } else if (allowPureFunc && allowAction) {
+      m_ctx->reportDiag(errUndeclaredFuncOrAction, nameString, argTypeNames, n.getSpan());
+    } else if (allowPureFunc) {
+      m_ctx->reportDiag(errUndeclaredPureFunc, nameString, argTypeNames, n.getSpan());
+    } else {
+      m_ctx->reportDiag(errUndeclaredAction, nameString, argTypeNames, n.getSpan());
     }
     return;
   }
@@ -331,12 +344,12 @@ auto GetExpr::visit(const parse::ConditionalExprNode& n) -> void {
     return;
   }
 
-  // Make a copy of the visible constants, constants should not be visible outside.
-  auto ifBranchConsts = *m_constBinder->getVisibleConsts();
+  // Make a copy of the visible constants, newly declared constants should not be visible outside.
+  auto ifBranchConsts = getVisibleConstsCopy();
   branches.push_back(getSubExpr(n[1], &ifBranchConsts, m_typeHint));
 
-  // Make a copy of the visible constants, constants should not be visible outside.
-  auto elseBranchConsts = *m_constBinder->getVisibleConsts();
+  // Make a copy of the visible constants, newly declared constants should not be visible outside.
+  auto elseBranchConsts = getVisibleConstsCopy();
   branches.push_back(getSubExpr(n[2], &elseBranchConsts, m_typeHint));
 
   if (!branches[0] || !branches[1]) {
@@ -367,6 +380,11 @@ auto GetExpr::visit(const parse::ConditionalExprNode& n) -> void {
 }
 
 auto GetExpr::visit(const parse::ConstDeclExprNode& n) -> void {
+  if (!m_constBinder) {
+    m_ctx->reportDiag(errConstDeclareNotSupported, n.getSpan());
+    return;
+  }
+
   auto assignExpr = getSubExpr(n[0], prog::sym::TypeId::inferType());
   if (assignExpr == nullptr) {
     return;
@@ -381,7 +399,7 @@ auto GetExpr::visit(const parse::ConstDeclExprNode& n) -> void {
 auto GetExpr::visit(const parse::IdExprNode& n) -> void {
   const auto name = getName(n.getId());
   // Check if this is a constant, if so bind to it.
-  if (m_constBinder->canBind(name)) {
+  if (m_constBinder && m_constBinder->canBind(name)) {
     m_expr = getConstExpr(n);
     assert(m_expr != nullptr || m_ctx->hasErrors());
     return;
@@ -443,7 +461,8 @@ auto GetExpr::visit(const parse::FieldExprNode& n) -> void {
   auto getIdVisitor = GetIdentifier{false};
   n[0].accept(&getIdVisitor);
   auto identifier = getIdVisitor.getIdentifier();
-  if (identifier && !getIdVisitor.isIntrinsic() && isType(m_ctx, getName(*identifier))) {
+  if (identifier && !getIdVisitor.isIntrinsic() &&
+      isType(m_ctx, m_typeSubTable, getName(*identifier))) {
     m_expr = getStaticFieldExpr(*identifier, getIdVisitor.getTypeParams(), n.getId());
     return;
   }
@@ -566,6 +585,11 @@ auto GetExpr::visit(const parse::IsExprNode& n) -> void {
     return;
   }
 
+  if (!m_constBinder) {
+    m_ctx->reportDiag(errConstDeclareNotSupported, n.getSpan());
+    return;
+  }
+
   // Validate that this expression is part of a checked context, meaning the const is only
   // accessed when the expression evaluates to 'true'.
   if (!hasFlag<Flags::CheckedConstsAccess>()) {
@@ -618,11 +642,11 @@ auto GetExpr::visit(const parse::ParenExprNode& n) -> void {
   m_expr = getSubExpr(n[0], m_typeHint, hasFlag<Flags::CheckedConstsAccess>());
 }
 
-auto GetExpr::visit(const parse::SwitchExprElseNode & /*unused*/) -> void {
+auto GetExpr::visit(const parse::SwitchExprElseNode& /*unused*/) -> void {
   throw std::logic_error{"GetExpr is not implemented for this node type"};
 }
 
-auto GetExpr::visit(const parse::SwitchExprIfNode & /*unused*/) -> void {
+auto GetExpr::visit(const parse::SwitchExprIfNode& /*unused*/) -> void {
   throw std::logic_error{"GetExpr is not implemented for this node type"};
 }
 
@@ -637,7 +661,7 @@ auto GetExpr::visit(const parse::SwitchExprNode& n) -> void {
 
     // Keep a separate set of visible constants, because consts declared in 1 branch should not
     // be allowed to be accessed from another branch or after the switch.
-    auto branchConsts = *m_constBinder->getVisibleConsts();
+    auto branchConsts = getVisibleConstsCopy();
     if (!isElseClause) {
       auto condition = getSubExpr(n[i][0], &branchConsts, m_ctx->getProg()->getBool(), true);
       if (!condition) {
@@ -721,28 +745,37 @@ auto GetExpr::visit(const parse::UnaryExprNode& n) -> void {
   m_expr = prog::expr::callExprNode(*m_ctx->getProg(), func.value(), std::move(args));
 }
 
-auto GetExpr::visit(const parse::EnumDeclStmtNode & /*unused*/) -> void {
+auto GetExpr::visit(const parse::EnumDeclStmtNode& /*unused*/) -> void {
   throw std::logic_error{"GetExpr is not implemented for this node type"};
 }
 
-auto GetExpr::visit(const parse::ExecStmtNode & /*unused*/) -> void {
+auto GetExpr::visit(const parse::ExecStmtNode& /*unused*/) -> void {
   throw std::logic_error{"GetExpr is not implemented for this node type"};
 }
 
-auto GetExpr::visit(const parse::FuncDeclStmtNode & /*unused*/) -> void {
+auto GetExpr::visit(const parse::FuncDeclStmtNode& /*unused*/) -> void {
   throw std::logic_error{"GetExpr is not implemented for this node type"};
 }
 
-auto GetExpr::visit(const parse::ImportStmtNode & /*unused*/) -> void {
+auto GetExpr::visit(const parse::ImportStmtNode& /*unused*/) -> void {
   throw std::logic_error{"GetExpr is not implemented for this node type"};
 }
 
-auto GetExpr::visit(const parse::StructDeclStmtNode & /*unused*/) -> void {
+auto GetExpr::visit(const parse::StructDeclStmtNode& /*unused*/) -> void {
   throw std::logic_error{"GetExpr is not implemented for this node type"};
 }
 
-auto GetExpr::visit(const parse::UnionDeclStmtNode & /*unused*/) -> void {
+auto GetExpr::visit(const parse::UnionDeclStmtNode& /*unused*/) -> void {
   throw std::logic_error{"GetExpr is not implemented for this node type"};
+}
+
+auto GetExpr::getVisibleConsts() -> std::vector<prog::sym::ConstId>* {
+  return m_constBinder ? m_constBinder->getVisibleConsts() : nullptr;
+}
+
+auto GetExpr::getVisibleConstsCopy() -> std::vector<prog::sym::ConstId> {
+  auto* visibleConsts = getVisibleConsts();
+  return visibleConsts ? *visibleConsts : std::vector<prog::sym::ConstId>{};
 }
 
 auto GetExpr::getChildExprs(const parse::Node& n, unsigned int skipAmount)
@@ -817,13 +850,17 @@ auto GetExpr::getSubExpr(
   subExprFlags = subExprFlags | Flags::AllowPureFuncCalls;
 
   // Override the visible constants for this sub-expression.
-  auto* orgVisibleConsts = m_constBinder->getVisibleConsts();
-  m_constBinder->setVisibleConsts(visibleConsts);
+  auto* orgVisibleConsts = getVisibleConsts();
+  if (m_constBinder) {
+    m_constBinder->setVisibleConsts(visibleConsts);
+  }
 
   auto visitor = GetExpr{m_ctx, m_typeSubTable, m_constBinder, typeHint, m_selfSig, subExprFlags};
   n.accept(&visitor);
 
-  m_constBinder->setVisibleConsts(orgVisibleConsts);
+  if (m_constBinder) {
+    m_constBinder->setVisibleConsts(orgVisibleConsts);
+  }
   return std::move(visitor.getValue());
 }
 
@@ -862,12 +899,10 @@ auto GetExpr::getBinLogicOpExpr(const parse::BinaryExprNode& n, BinLogicOp op)
   // Rhs might not get executed, so we only expose constants when 'checkedConstsAccess' is 'true'
   // for this expression (meaning that the constants are only observed when both lfs and rhs
   // evaluate to 'true')
-  auto rhsConstantsCopy = hasFlag<Flags::CheckedConstsAccess>()
-      ? nullptr
-      : std::make_unique<std::vector<prog::sym::ConstId>>(*m_constBinder->getVisibleConsts());
-  auto rhs = getSubExpr(
+  auto rhsConstantsCopy = getVisibleConstsCopy();
+  auto rhs              = getSubExpr(
       n[1],
-      rhsConstantsCopy ? rhsConstantsCopy.get() : m_constBinder->getVisibleConsts(),
+      hasFlag<Flags::CheckedConstsAccess>() ? getVisibleConsts() : &rhsConstantsCopy,
       m_ctx->getProg()->getBool(),
       hasFlag<Flags::CheckedConstsAccess>() && op == BinLogicOp::And);
   if (!lhs || !rhs) {
@@ -928,7 +963,12 @@ auto GetExpr::getStaticFieldExpr(
 }
 
 auto GetExpr::getConstExpr(const parse::IdExprNode& n) -> prog::expr::NodePtr {
-  const auto name       = getName(n.getId());
+  const auto name = getName(n.getId());
+  if (!m_constBinder) {
+    m_ctx->reportDiag(errUndeclaredConst, name, n.getSpan());
+    return nullptr;
+  }
+
   const auto boundConst = m_constBinder->bind(name);
   if (boundConst) {
     return prog::expr::constExprNode(*m_constBinder->getConsts(), *boundConst);
@@ -1064,6 +1104,10 @@ auto GetExpr::getDynCallExpr(const parse::CallExprNode& n) -> prog::expr::NodePt
 
 auto GetExpr::declareConst(const lex::Token& nameToken, prog::sym::TypeId type)
     -> std::optional<prog::sym::ConstId> {
+  if (!m_constBinder) {
+    throw std::logic_error{"Constant cannot be declared in this context"};
+  }
+
   const auto constName =
       getConstName(m_ctx, m_typeSubTable, *m_constBinder->getConsts(), nameToken);
   if (!constName) {

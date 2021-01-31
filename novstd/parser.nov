@@ -29,10 +29,7 @@ fun (){T}(Parser{T} p, string str) -> ParseResult{T}
 fun (){T}(Parser{T} p, ParseState s) -> ParseResult{T}
   p.func(s)
 
-fun run{T}(Parser{T} p, string str) -> Either{T, Error}
-  p.run(str, ParseFlags.None)
-
-fun run{T}(Parser{T} p, string str, ParseFlags flags) -> Either{T, Error}
+fun run{T}(Parser{T} p, string str, ParseFlags flags = ParseFlags.None) -> Either{T, Error}
   res = p(str);
   if res as ParseSuccess{T} suc  -> suc.val
   if res as ParseFailure    fail ->
@@ -41,10 +38,7 @@ fun run{T}(Parser{T} p, string str, ParseFlags flags) -> Either{T, Error}
     txtPos = getTextPos(fail.state.str[0, fail.state.pos]);
     Error("Parsing failed, line: " + (txtPos.line + 1) + ", column: " + (txtPos.column + 1)) :: fail.err
 
-fun build{T}(Parser{T} p) -> function{string, Either{T, Error}}
-  p.build(ParseFlags.None)
-
-fun build{T}(Parser{T} p, ParseFlags flags) -> function{string, Either{T, Error}}
+fun build{T}(Parser{T} p, ParseFlags flags = ParseFlags.None) -> function{string, Either{T, Error}}
   lambda (string str)
     p.run(str, flags)
 
@@ -61,13 +55,13 @@ fun ==(ParseState s, char c)
   s.str[s.pos] == c
 
 fun ==(ParseState s, string text)
-  startsWithOffset(s.str, s.pos, text)
+  startsWith(s.str, text, s.pos)
 
 fun !=(ParseState s, char c)
   s.str[s.pos] != c
 
 fun !=(ParseState s, string text)
-  !startsWithOffset(s.str, s.pos, text)
+  !startsWith(s.str, text, s.pos)
 
 fun +(ParseState s, int amount)
   ParseState(s.str, s.pos + amount)
@@ -229,10 +223,7 @@ fun retParser{T}(T val)
 fun nopParser()
   retParser(true)
 
-fun failParser()
-  failParser(Error())
-
-fun failParser(Error error)
+fun failParser(Error error = Error())
   Parser(lambda (ParseState s) -> ParseResult{bool}
     s.failure(error)
   )
@@ -272,10 +263,7 @@ fun takeParser(int chars)
     else            -> s.failure(Error("Not enough characters remaining"))
   )
 
-fun whileParser(function{ParseState, bool} pred)
-  whileParser(pred, ParseFlags.None)
-
-fun whileParser(function{ParseState, bool} pred, ParseFlags flags)
+fun whileParser(function{ParseState, bool} pred, ParseFlags flags = ParseFlags.None)
   Parser(lambda (ParseState begin)
     impl =
     (
@@ -288,34 +276,19 @@ fun whileParser(function{ParseState, bool} pred, ParseFlags flags)
     impl(begin, flags.isOptional())
   )
 
-fun whileParser(function{char, bool} pred)
-  whileParser(pred, ParseFlags.None)
-
-fun whileParser(function{char, bool} pred, ParseFlags flags)
+fun whileParser(function{char, bool} pred, ParseFlags flags = ParseFlags.None)
   whileParser(lambda (ParseState s) pred(s[0]), flags)
 
-fun untilParser(function{char, bool} pred)
-  whileParser(!pred)
-
-fun untilParser(function{char, bool} pred, ParseFlags flags)
+fun untilParser(function{char, bool} pred, ParseFlags flags = ParseFlags.None)
   whileParser(!pred, flags)
 
-fun untilParser{T}(Parser{T} endParser)
-  untilParser(endParser, ParseFlags.None)
-
-fun untilParser{T}(Parser{T} endParser, ParseFlags flags)
+fun untilParser{T}(Parser{T} endParser, ParseFlags flags = ParseFlags.None)
   whileParser(lambda (ParseState s) endParser(s) is ParseFailure, flags)
 
-fun whitespaceParser()
-  whileParser(isWhitespace, ParseFlags.Optional)
-
-fun whitespaceParser(ParseFlags flags)
+fun whitespaceParser(ParseFlags flags = ParseFlags.Optional)
   whileParser(isWhitespace, flags)
 
-fun lineParser()
-  untilParser(isNewline)
-
-fun lineParser(ParseFlags flags)
+fun lineParser(ParseFlags flags = ParseFlags.None)
   untilParser(isNewline, flags)
 
 fun newlineParser()
@@ -378,10 +351,7 @@ fun txtIntParser()
     else            -> int(l)
   )
 
-fun txtHexParser()
-  txtHexParser(1)
-
-fun txtHexParser(int minDigits)
+fun txtHexParser(int minDigits = 1)
   Parser(lambda (ParseState s)
     invoke(
       lambda (ParseState s, int res, int digits) -> ParseResult{int}
@@ -431,10 +401,7 @@ fun manyParser{T}(Parser{T} p)
     ), begin, List{T}()).map(reverse{T})
   )
 
-fun manyParser{T, SepT}(Parser{T} p, Parser{SepT} seperator)
-  manyParser(p, seperator, ParseFlags.None)
-
-fun manyParser{T, SepT}(Parser{T} p, Parser{SepT} seperator, ParseFlags flags)
+fun manyParser{T, SepT}(Parser{T} p, Parser{SepT} seperator, ParseFlags flags = ParseFlags.None)
   Parser(lambda (ParseState begin)
     invoke(lambda (ParseState cur, List{T} result, bool required) -> ParseResult{List{T}}
     (
@@ -461,10 +428,7 @@ fun manyUntilParser{T, UntilT}(Parser{T} p, Parser{UntilT} until)
     ), begin, List{T}()).map(reverse{T})
   )
 
-fun manyUntilParser{T, SepT, UntilT}(Parser{T} p, Parser{SepT} seperator, Parser{UntilT} until)
-  manyUntilParser(p, seperator, until, ParseFlags.None)
-
-fun manyUntilParser{T, SepT, UntilT}(Parser{T} p, Parser{SepT} seperator, Parser{UntilT} until, ParseFlags flags)
+fun manyUntilParser{T, SepT, UntilT}(Parser{T} p, Parser{SepT} seperator, Parser{UntilT} until, ParseFlags flags = ParseFlags.None)
   reachedUntil = (lambda (ParseState s) until(s) is ParseSuccess{UntilT});
   Parser(lambda (ParseState begin)
     invoke(lambda (ParseState cur, List{T} result, bool required) -> ParseResult{List{T}}

@@ -24,7 +24,7 @@ auto FindCalledFuncs::markFunc(prog::sym::FuncId func) -> void {
   const auto& funcDecl = m_prog.getFuncDecl(func);
   if (funcDecl.getKind() == prog::sym::FuncKind::User) {
     const auto& funcDef = m_prog.getFuncDef(func);
-    funcDef.getExpr().accept(this);
+    funcDef.getBody().accept(this);
   }
 }
 

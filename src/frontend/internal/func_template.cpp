@@ -6,6 +6,7 @@
 #include "internal/utilities.hpp"
 #include "parse/type_param_list.hpp"
 #include <cassert>
+#include <optional>
 
 namespace frontend::internal {
 
@@ -34,6 +35,14 @@ auto FuncTemplate::getTemplateName() const -> const std::string& { return m_name
 auto FuncTemplate::isAction() const -> bool { return m_isAction; }
 
 auto FuncTemplate::getTypeParamCount() const -> unsigned int { return m_typeSubs.size(); }
+
+auto FuncTemplate::getNumOptArgs() const -> unsigned int {
+  return m_parseNode->getArgList().getInitializerCount();
+}
+
+auto FuncTemplate::getMinArgumentCount() const -> unsigned int {
+  return getArgumentCount() - getNumOptArgs();
+}
 
 auto FuncTemplate::getArgumentCount() const -> unsigned int {
   return m_parseNode->getArgList().getCount();
@@ -84,13 +93,16 @@ auto FuncTemplate::getRetType(const prog::sym::TypeSet& typeParams)
 
 auto FuncTemplate::inferTypeParams(const prog::sym::TypeSet& argTypes)
     -> std::optional<InferResult> {
-  if (argTypes.getCount() != m_parseNode->getArgList().getCount()) {
+
+  auto inputTypes = getInputTypes(argTypes);
+  if (!inputTypes) {
     return std::nullopt;
   }
+
   auto typeParams = std::vector<prog::sym::TypeId>{};
   for (const auto& typeSub : m_typeSubs) {
     const auto inferredType =
-        inferSubTypeFromSpecs(*m_ctx, typeSub, m_parseNode->getArgList().getArgs(), argTypes);
+        inferSubTypeFromSpecs(*m_ctx, typeSub, m_parseNode->getArgList().getArgs(), *inputTypes);
     if (!inferredType || !inferredType->isConcrete()) {
       return std::nullopt;
     }
@@ -107,7 +119,8 @@ auto FuncTemplate::isCallable(
     const prog::sym::TypeSet& typeParams, const prog::sym::TypeSet& argTypes) -> bool {
   const auto subTable = createSubTable(typeParams);
   auto funcInput      = getFuncInput(m_ctx, &subTable, *m_parseNode);
-  return funcInput && m_ctx->getProg()->isImplicitConvertible(*funcInput, argTypes);
+  return funcInput &&
+      m_ctx->getProg()->isImplicitConvertible(*funcInput, argTypes, getNumOptArgs());
 }
 
 auto FuncTemplate::instantiate(const prog::sym::TypeSet& typeParams) -> const FuncTemplateInst* {
@@ -136,21 +149,20 @@ auto FuncTemplate::setupInstance(FuncTemplateInst* instance) -> void {
   auto funcInput      = getFuncInput(m_ctx, &subTable, *m_parseNode);
   if (!funcInput) {
     assert(m_ctx->hasErrors());
-
     instance->m_success = false;
     return;
   }
+  const auto numOptInputs = getNumOptInputs(m_ctx, *m_parseNode);
 
   instance->m_retType =
       ::frontend::internal::getRetType(m_ctx, &subTable, m_parseNode->getRetType());
   if (!instance->m_retType) {
     assert(m_ctx->hasErrors());
-
     instance->m_success = false;
     return;
   }
 
-  const auto isConv = isType(m_ctx, m_name);
+  const auto isConv = isType(m_ctx, nullptr, m_name);
   if (isConv && m_isAction) {
     m_ctx->reportDiag(errNonPureConversion, m_parseNode->getSpan());
     instance->m_success = false;
@@ -219,8 +231,10 @@ auto FuncTemplate::setupInstance(FuncTemplateInst* instance) -> void {
 
   // Declare the function in the program.
   instance->m_func = m_isAction
-      ? m_ctx->getProg()->declareAction(funcName, std::move(*funcInput), *instance->m_retType)
-      : m_ctx->getProg()->declarePureFunc(funcName, std::move(*funcInput), *instance->m_retType);
+      ? m_ctx->getProg()->declareAction(
+            funcName, std::move(*funcInput), *instance->m_retType, numOptInputs)
+      : m_ctx->getProg()->declarePureFunc(
+            funcName, std::move(*funcInput), *instance->m_retType, numOptInputs);
 
   // Define the function.
   instance->m_success = defineFunc(
@@ -239,6 +253,45 @@ auto FuncTemplate::createSubTable(const prog::sym::TypeSet& typeParams) const
     subTable.declare(m_typeSubs[i], typeParams[i]);
   }
   return subTable;
+}
+
+auto FuncTemplate::getInputTypes(const prog::sym::TypeSet& argTypes)
+    -> std::optional<prog::sym::TypeSet> {
+
+  const auto maxInputs    = m_parseNode->getArgList().getCount();
+  const auto numOptInputs = getNumOptInputs(m_ctx, *m_parseNode);
+  const auto minInputs    = maxInputs - numOptInputs;
+
+  if (argTypes.getCount() < minInputs || argTypes.getCount() > maxInputs) {
+    return std::nullopt;
+  }
+
+  auto inputTypes = std::vector<prog::sym::TypeId>{};
+  inputTypes.reserve(maxInputs);
+
+  // Add the provided inputs.
+  for (auto argType : argTypes) {
+    inputTypes.push_back(argType);
+  }
+
+  // Add the types for the optional inputs.
+  // TODO: These initializer types could be cached.
+  for (auto i = argTypes.getCount() - minInputs; i != numOptInputs; ++i) {
+
+    // Infer the type of the optional arg initializer.
+    // NOTE: Will only work if the initializer does not depend on any of the type parameters.
+    auto inferFlags = TypeInferExpr::Flags::NoOptArgs;
+    if (m_isAction) {
+      inferFlags = inferFlags | TypeInferExpr::Flags::AllowActionCalls;
+    }
+    auto inferInitializerType = TypeInferExpr{m_ctx, nullptr, nullptr, inferFlags};
+    m_parseNode->operator[](i).accept(&inferInitializerType);
+
+    // NOTE: Can fail to infer the type, in which case the type is 'inferType'.
+    inputTypes.push_back(inferInitializerType.getInferredType());
+  }
+
+  return prog::sym::TypeSet{std::move(inputTypes)};
 }
 
 } // namespace frontend::internal

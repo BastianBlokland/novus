@@ -19,7 +19,8 @@ namespace prog::internal {
     const Program& prog,
     const sym::TypeSet& toTypes,
     const sym::TypeSet& fromTypes,
-    int maxConversions = -1) -> bool;
+    int maxConversions         = -1,
+    unsigned int numOptToTypes = 0U) -> bool;
 
 // Apply conversions to the fromArgs so are matches the toTypes.
 auto applyImplicitConversions(

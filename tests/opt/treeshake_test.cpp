@@ -9,9 +9,10 @@ namespace opt {
 TEST_CASE("[opt] Treeshake", "opt") {
 
   SECTION("Unused func") {
-    auto prog   = prog::Program{};
-    auto funcId = prog.declarePureFunc("unused", prog::sym::TypeSet{prog.getInt()}, prog.getBool());
-    prog.defineFunc(funcId, prog::sym::ConstDeclTable{}, prog::expr::litBoolNode(prog, false));
+    auto prog = prog::Program{};
+    auto funcId =
+        prog.declarePureFunc("unused", prog::sym::TypeSet{prog.getInt()}, prog.getBool(), 0u);
+    prog.defineFunc(funcId, prog::sym::ConstDeclTable{}, prog::expr::litBoolNode(prog, false), {});
 
     auto shakedProg = treeshake(prog);
     CHECK(prog.lookupFunc("unused", prog::sym::TypeSet{prog.getInt()}, prog::OvOptions{}));
@@ -20,8 +21,8 @@ TEST_CASE("[opt] Treeshake", "opt") {
 
   SECTION("Used func") {
     auto prog   = prog::Program{};
-    auto funcId = prog.declarePureFunc("used", prog::sym::TypeSet{}, prog.getBool());
-    prog.defineFunc(funcId, prog::sym::ConstDeclTable{}, prog::expr::litBoolNode(prog, false));
+    auto funcId = prog.declarePureFunc("used", prog::sym::TypeSet{}, prog.getBool(), 0u);
+    prog.defineFunc(funcId, prog::sym::ConstDeclTable{}, prog::expr::litBoolNode(prog, false), {});
     prog.addExecStmt(prog::sym::ConstDeclTable{}, prog::expr::callExprNode(prog, funcId, {}));
 
     auto shakedProg = treeshake(prog);

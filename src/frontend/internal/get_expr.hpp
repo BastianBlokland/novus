@@ -21,6 +21,7 @@ public:
 
     AllowPureFuncCalls = 1U << 2U,
     AllowActionCalls   = 1U << 3U,
+    NoOptArgs          = 1U << 4U, // Disallow optional arguments (requires passing all args).
   };
 
   GetExpr() = delete;
@@ -71,6 +72,10 @@ private:
   Flags m_flags;
 
   prog::expr::NodePtr m_expr;
+
+  [[nodiscard]] auto getVisibleConsts() -> std::vector<prog::sym::ConstId>*;
+
+  [[nodiscard]] auto getVisibleConstsCopy() -> std::vector<prog::sym::ConstId>;
 
   [[nodiscard]] auto getChildExprs(const parse::Node& n, unsigned int skipAmount = 0U)
       -> std::unique_ptr<ExprSetData>;
@@ -140,6 +145,9 @@ private:
     }
     if (!hasFlag<Flags::AllowActionCalls>()) {
       ovFlags = ovFlags | prog::OvFlags::ExclActions;
+    }
+    if (hasFlag<Flags::NoOptArgs>()) {
+      ovFlags = ovFlags | prog::OvFlags::NoOptArgs;
     }
     if (excludeNonUser) {
       ovFlags = ovFlags | prog::OvFlags::ExclNonUser;

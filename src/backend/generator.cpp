@@ -35,7 +35,7 @@ generateFunc(novasm::Assembler* asmb, const prog::Program& program, const prog::
 
   // Generate the function body.
   auto genExpr = internal::GenExpr{program, asmb, func.getConsts(), func.getId(), true, 1};
-  func.getExpr().accept(&genExpr);
+  func.getBody().accept(&genExpr);
 
   // Root expression always has to produce a single value.
   assert(genExpr.getValuesProduced() == 1);

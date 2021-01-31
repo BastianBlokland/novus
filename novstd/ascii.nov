@@ -50,7 +50,7 @@ fun escapeForPrinting(string str)
   invoke(lambda (int idx, string str)
     if idx >= str.length()      -> str
     if !str[idx].isPrintable()  -> replace = str[idx].escapeForPrinting();
-                                   self(idx + replace.length(), str.remove(idx).insert(idx, replace))
+                                   self(idx + replace.length(), str.remove(idx).insert(replace, idx))
     else                        -> self(++idx, str)
   , 0, str)
 

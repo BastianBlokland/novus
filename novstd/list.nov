@@ -46,10 +46,7 @@ fun []{T}(List{T} l, int startIdx, int endIdx) -> List{T}
 
 // -- Conversions
 
-fun string{T}(List{T} l)
-  l.string("[", ",", "]")
-
-fun string{T}(List{T} l, string start, string sep, string end)
+fun string{T}(List{T} l, string start = "[", string sep = ",", string end = "]")
   start + l.fold(lambda (string prefix, bool last, T v)
     last ? prefix + v.string() : prefix + v.string() + sep) + end
 
@@ -91,10 +88,7 @@ fun pushBack{T}(List{T} l, T val)
   if l as LNode{T} n  -> List(n.val, n.next.pushBack(val))
   if l is LEnd        -> List(val)
 
-fun pop{T}(List{T} l)
-  pop(l, 1)
-
-fun pop{T}(List{T} l, int amount)
+fun pop{T}(List{T} l, int amount = 1)
   if l as LNode{T} n  -> amount > 0 ? pop(n.next, --amount) : l
   if l is LEnd        -> l
 
@@ -102,10 +96,7 @@ fun pop{T}(List{T} l, function{T, bool} pred)
   if l as LNode{T} n  -> pred(n.val) ? pop(n.next, pred) : l
   if l is LEnd        -> l
 
-fun popBack{T}(List{T} l)
-  popBack(l, 1)
-
-fun popBack{T}(List{T} l, int amount)
+fun popBack{T}(List{T} l, int amount = 1)
   l.take(l.length() - amount)
 
 fun take{T}(List{T} l, int amount)

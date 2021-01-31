@@ -71,7 +71,7 @@ auto eliminateConsts(const prog::Program& prog, bool& modified) -> prog::Program
         // Create a map of how many times constants are used.
         auto constUsageMap  = ConstUsageMap{};
         auto findUsedConsts = internal::FindUsedConsts{&constUsageMap};
-        funcDef.getExpr().accept(&findUsedConsts);
+        funcDef.getBody().accept(&findUsedConsts);
 
         return std::make_unique<ConstEliminatorRewriter>(
             prog, funcId, consts, std::move(constUsageMap));

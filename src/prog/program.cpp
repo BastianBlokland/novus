@@ -1,5 +1,6 @@
 #include "prog/program.hpp"
 #include "internal/implicit_conv.hpp"
+#include "internal/opt_args.hpp"
 #include "internal/overload.hpp"
 #include "prog/operator.hpp"
 
@@ -441,8 +442,9 @@ auto Program::isImplicitConvertible(sym::TypeId from, sym::TypeId to) const -> b
 }
 
 auto Program::isImplicitConvertible(
-    const sym::TypeSet& toTypes, const sym::TypeSet& fromTypes) const -> bool {
-  return internal::isImplicitConvertible(*this, toTypes, fromTypes);
+    const sym::TypeSet& toTypes, const sym::TypeSet& fromTypes, unsigned int numOptToTypes) const
+    -> bool {
+  return internal::isImplicitConvertible(*this, toTypes, fromTypes, -1, numOptToTypes);
 }
 
 auto Program::findCommonType(const std::vector<sym::TypeId>& types) -> std::optional<sym::TypeId> {
@@ -555,16 +557,18 @@ auto Program::declareLazy(std::string name) -> sym::TypeId {
   return m_typeDecls.registerType(sym::TypeKind::Lazy, std::move(name));
 }
 
-auto Program::declarePureFunc(std::string name, sym::TypeSet input, sym::TypeId output)
+auto Program::declarePureFunc(
+    std::string name, sym::TypeSet input, sym::TypeId output, unsigned int numOptInputs)
     -> sym::FuncId {
   return m_funcDecls.registerFunc(
-      *this, sym::FuncKind::User, std::move(name), std::move(input), output);
+      *this, sym::FuncKind::User, std::move(name), std::move(input), output, numOptInputs);
 }
 
-auto Program::declareAction(std::string name, sym::TypeSet input, sym::TypeId output)
+auto Program::declareAction(
+    std::string name, sym::TypeSet input, sym::TypeId output, unsigned int numOptInputs)
     -> sym::FuncId {
   return m_funcDecls.registerAction(
-      *this, sym::FuncKind::User, std::move(name), std::move(input), output);
+      *this, sym::FuncKind::User, std::move(name), std::move(input), output, numOptInputs);
 }
 
 auto Program::declareFailIntrinsic(std::string name, sym::TypeId output) -> sym::FuncId {
@@ -724,8 +728,13 @@ auto Program::defineLazy(
   m_typeDefs.registerLazy(m_typeDecls, id, result, isAction);
 }
 
-auto Program::defineFunc(sym::FuncId id, sym::ConstDeclTable consts, expr::NodePtr expr) -> void {
-  m_funcDefs.registerFunc(m_funcDecls, id, std::move(consts), std::move(expr));
+auto Program::defineFunc(
+    sym::FuncId id,
+    sym::ConstDeclTable consts,
+    expr::NodePtr body,
+    std::vector<expr::NodePtr> optArgInitializers) -> void {
+  m_funcDefs.registerFunc(
+      m_funcDecls, id, std::move(consts), std::move(body), std::move(optArgInitializers));
 }
 
 auto Program::addExecStmt(sym::ConstDeclTable consts, expr::NodePtr expr) -> void {
@@ -735,5 +744,7 @@ auto Program::addExecStmt(sym::ConstDeclTable consts, expr::NodePtr expr) -> voi
 auto Program::updateFuncOutput(sym::FuncId funcId, sym::TypeId newOutput) -> void {
   m_funcDecls.updateFuncOutput(funcId, newOutput);
 }
+
+auto Program::applyOptCallArgs() -> void { internal::applyOptArgIntializers(*this); }
 
 } // namespace prog

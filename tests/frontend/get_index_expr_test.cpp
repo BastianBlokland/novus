@@ -18,16 +18,15 @@ TEST_CASE("[frontend] Analyzing index expressions", "frontend") {
     REQUIRE(output.isSuccess());
     const auto& func = GET_FUNC_DEF(output, "f", GET_TYPE_ID(output, "Pair"));
 
-    auto args = std::vector<prog::expr::NodePtr>{};
-    args.push_back(prog::expr::constExprNode(func.getConsts(), *func.getConsts().lookup("p")));
-    args.push_back(prog::expr::litIntNode(output.getProg(), 0));
     auto callExpr = prog::expr::callExprNode(
         output.getProg(),
         GET_FUNC_ID(
             output, "__op_squaresquare", GET_TYPE_ID(output, "Pair"), GET_TYPE_ID(output, "int")),
-        std::move(args));
+        EXPRS(
+            prog::expr::constExprNode(func.getConsts(), *func.getConsts().lookup("p")),
+            prog::expr::litIntNode(output.getProg(), 0)));
 
-    CHECK(func.getExpr() == *callExpr);
+    CHECK(func.getBody() == *callExpr);
   }
 
   SECTION("Get multi argument index operator") {
@@ -39,10 +38,6 @@ TEST_CASE("[frontend] Analyzing index expressions", "frontend") {
     REQUIRE(output.isSuccess());
     const auto& func = GET_FUNC_DEF(output, "f", GET_TYPE_ID(output, "Pair"));
 
-    auto args = std::vector<prog::expr::NodePtr>{};
-    args.push_back(prog::expr::constExprNode(func.getConsts(), *func.getConsts().lookup("p")));
-    args.push_back(prog::expr::litIntNode(output.getProg(), 0));
-    args.push_back(prog::expr::litStringNode(output.getProg(), "hello world"));
     auto callExpr = prog::expr::callExprNode(
         output.getProg(),
         GET_FUNC_ID(
@@ -51,9 +46,12 @@ TEST_CASE("[frontend] Analyzing index expressions", "frontend") {
             GET_TYPE_ID(output, "Pair"),
             GET_TYPE_ID(output, "int"),
             GET_TYPE_ID(output, "string")),
-        std::move(args));
+        EXPRS(
+            prog::expr::constExprNode(func.getConsts(), *func.getConsts().lookup("p")),
+            prog::expr::litIntNode(output.getProg(), 0),
+            prog::expr::litStringNode(output.getProg(), "hello world")));
 
-    CHECK(func.getExpr() == *callExpr);
+    CHECK(func.getBody() == *callExpr);
   }
 
   SECTION("Diagnostics") {

@@ -13,26 +13,25 @@ struct TcpServerState =
   int connectionCounter
 
 struct TcpServerSettings =
-  IpFamily                                              family,
-  int                                                   port,
-  int                                                   maxBacklog,
   action{TcpConnection, TcpServerState, Option{Error}}  clientHandler,
+  int                                                   port,
+  IpFamily                                              family,
+  int                                                   maxBacklog,
   action{TcpServerState, bool}                          cancelPredicate
 
 // -- Constructors
 
-fun TcpServerSettings(int port, action{TcpConnection, TcpServerState, Option{Error}} clientHandler)
-  TcpServerSettings(IpFamily.V4, port, clientHandler)
-
-fun TcpServerSettings(IpFamily family, int port, action{TcpConnection, TcpServerState, Option{Error}} clientHandler)
-  TcpServerSettings(family, port, 64, clientHandler)
-
-fun TcpServerSettings(IpFamily family, int port, int maxBacklog, action{TcpConnection, TcpServerState, Option{Error}} clientHandler)
+fun TcpServerSettings(
+    action{TcpConnection, TcpServerState, Option{Error}}  clientHandler,
+    int                                                   port            = 8080,
+    IpFamily                                              family          = IpFamily.V6,
+    int                                                   maxBacklog      = 64
+  )
   TcpServerSettings(
-    family,
-    port,
-    maxBacklog,
     clientHandler,
+    port,
+    family,
+    maxBacklog,
     impure lambda (TcpServerState state) interuptIsRequested())
 
 // -- Connection
@@ -104,21 +103,21 @@ act tcpServer(TcpServerSettings settings) -> Either{TcpServerState, Error}
 
 assert(
   clientHandler = (impure lambda (TcpConnection c, TcpServerState state) Option{Error}());
-  tcpServer(TcpServerSettings(IpFamily.V4, -1, 64, clientHandler))          is Error  &&
-  tcpServer(TcpServerSettings(IpFamily.V4, 65536, 64, clientHandler))       is Error  &&
-  tcpServer(TcpServerSettings(IpFamily.V4, intMax(), 64, clientHandler))    is Error  &&
-  tcpServer(TcpServerSettings(IpFamily.V4, 5000, intMax(), clientHandler))  is Error  &&
-  tcpServer(TcpServerSettings(IpFamily.V6, -1, 64, clientHandler))          is Error  &&
-  tcpServer(TcpServerSettings(IpFamily.V6, 65536, 64, clientHandler))       is Error  &&
-  tcpServer(TcpServerSettings(IpFamily.V6, intMax(), 64, clientHandler))    is Error  &&
-  tcpServer(TcpServerSettings(IpFamily.V6, 5010, intMax(), clientHandler))  is Error
+  tcpServer(TcpServerSettings(clientHandler, -1,        IpFamily.V4, 64))       is Error  &&
+  tcpServer(TcpServerSettings(clientHandler, 65536,     IpFamily.V4, 64))       is Error  &&
+  tcpServer(TcpServerSettings(clientHandler, intMax(),  IpFamily.V4, 64))       is Error  &&
+  tcpServer(TcpServerSettings(clientHandler, 5000,      IpFamily.V4, intMax())) is Error  &&
+  tcpServer(TcpServerSettings(clientHandler, -1,        IpFamily.V6, 64))       is Error  &&
+  tcpServer(TcpServerSettings(clientHandler, 65536,     IpFamily.V6, 64))       is Error  &&
+  tcpServer(TcpServerSettings(clientHandler, intMax(),  IpFamily.V6, 64))       is Error  &&
+  tcpServer(TcpServerSettings(clientHandler, 5010,      IpFamily.V6, intMax())) is Error
 )
 
 assert(
   clientHandler = (impure lambda (TcpConnection c, TcpServerState state)
     c.write(c.socket.readLine() + '\n')
   );
-  fork tcpServer(TcpServerSettings(IpFamily.V4, 5011, clientHandler));
+  fork tcpServer(TcpServerSettings(clientHandler, 5011, IpFamily.V4));
   client = (impure lambda(string message)
     c = tcpConnection(ipV4Loopback(), 5011).failOnError();
     c.write(message + '\n').failOnError();
@@ -134,7 +133,7 @@ assert(
   clientHandler = (impure lambda (TcpConnection c, TcpServerState state)
     c.write(c.socket.readLine() + '\n')
   );
-  fork tcpServer(TcpServerSettings(IpFamily.V6, 5012, clientHandler));
+  fork tcpServer(TcpServerSettings(clientHandler, 5012));
   client = (impure lambda(string message)
     c = tcpConnection(ipV6Loopback(), 5012).failOnError();
     c.write(message + '\n').failOnError();
@@ -150,7 +149,7 @@ assert(
   clientHandler = (impure lambda (TcpConnection c, TcpServerState state)
     Option(Error("Did not go well"))
   );
-  res = fork tcpServer(TcpServerSettings(IpFamily.V6, 5013, clientHandler));
+  res = fork tcpServer(TcpServerSettings(clientHandler, 5013));
   client = tcpConnection(ipV6Loopback(), 5013).failOnError();
   res.get() == Error("Did not go well")
 )
@@ -162,7 +161,7 @@ assert(
   cancelPredicate = (impure lambda (TcpServerState state)
     true
   );
-  res = tcpServer(TcpServerSettings(IpFamily.V6, 5014, 64, clientHandler, cancelPredicate));
+  res = tcpServer(TcpServerSettings(clientHandler, 5014, IpFamily.V6, 64, cancelPredicate));
   if res as Error          err  -> printErr(err); false
   if res as TcpServerState s    -> s == TcpServerState(0)
 )
@@ -174,7 +173,7 @@ assert(
   clientHandler = (impure lambda (TcpConnection c, TcpServerState state)
     c.write("Hello\n")
   );
-  server = fork tcpServer(TcpServerSettings(IpFamily.V6, 5015, 64, clientHandler, cancelPredicate));
+  server = fork tcpServer(TcpServerSettings(clientHandler, 5015, IpFamily.V6, 64, cancelPredicate));
   parallelFor(25, impure lambda (int i)
     tcpConnection(ipV6Loopback(), 5015)
   );

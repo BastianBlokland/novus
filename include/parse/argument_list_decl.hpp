@@ -1,28 +1,58 @@
 #pragma once
 #include "lex/token.hpp"
+#include "parse/node.hpp"
 #include "parse/type.hpp"
 #include <vector>
 
 namespace parse {
 
 // Argument list declaration.
-// Example in source: '(int i, float f)'.
+// Example in source: '(int i, float f = 42.0)'.
 class ArgumentListDecl final {
   friend auto operator<<(std::ostream& out, const ArgumentListDecl& rhs) -> std::ostream&;
 
 public:
+  // Argument initializer.
+  // Example in source: '= 42'.
+  class ArgInitializer final {
+  public:
+    ArgInitializer(lex::Token eq, NodePtr expr);
+
+    auto operator==(const ArgInitializer& rhs) const noexcept -> bool;
+
+    [[nodiscard]] auto getEq() const noexcept -> const lex::Token&;
+    [[nodiscard]] auto getExpr() const noexcept -> const Node&;
+    [[nodiscard]] auto takeExpr() noexcept -> NodePtr;
+
+    [[nodiscard]] auto validate() const -> bool;
+
+  private:
+    lex::Token m_eq;
+    NodePtr m_expr;
+  };
+
+  // Argument specification.
+  // Example in source: 'int i = 42'.
   class ArgSpec final {
   public:
-    ArgSpec(Type type, lex::Token identifier);
+    ArgSpec(
+        Type type, lex::Token identifier, std::optional<ArgInitializer> initializer = std::nullopt);
 
     auto operator==(const ArgSpec& rhs) const noexcept -> bool;
 
+    [[nodiscard]] auto getSpan() const -> input::Span;
     [[nodiscard]] auto getType() const noexcept -> const Type&;
     [[nodiscard]] auto getIdentifier() const noexcept -> const lex::Token&;
+    [[nodiscard]] auto hasInitializer() const noexcept -> bool;
+    [[nodiscard]] auto getInitializer() const noexcept -> const ArgInitializer&;
+    [[nodiscard]] auto getInitializer() noexcept -> ArgInitializer&;
+
+    [[nodiscard]] auto validate() const -> bool;
 
   private:
     Type m_type;
     lex::Token m_identifier;
+    std::optional<ArgInitializer> m_initializer;
   };
 
   using Iterator = typename std::vector<ArgSpec>::const_iterator;
@@ -37,6 +67,9 @@ public:
   [[nodiscard]] auto begin() const -> Iterator;
   [[nodiscard]] auto end() const -> Iterator;
   [[nodiscard]] auto getCount() const -> unsigned int;
+  [[nodiscard]] auto getInitializerCount() const -> unsigned int;
+  [[nodiscard]] auto getInitializer(unsigned int i) const -> const Node&;
+  [[nodiscard]] auto takeInitializer(unsigned int i) -> NodePtr;
 
   [[nodiscard]] auto getSpan() const -> input::Span;
   [[nodiscard]] auto getOpen() const -> const lex::Token&;

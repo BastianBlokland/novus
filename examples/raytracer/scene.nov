@@ -82,10 +82,7 @@ fun getLightEnergy(Light l, Vec3 p) -> Color
 
 struct RaycastHit = Object obj, IntersectData d
 
-fun raycast(Scene s, Ray3 r) -> Option{RaycastHit}
-  s.raycast(r, posInfinity())
-
-fun raycast(Scene s, Ray3 r, float tMax) -> Option{RaycastHit}
+fun raycast(Scene s, Ray3 r, float tMax = posInfinity()) -> Option{RaycastHit}
   s.objects.fold(lambda (Option{RaycastHit} maybeBest, Object o)
     i = intersect(o.shape, r);
     if i is None            -> maybeBest

@@ -145,8 +145,16 @@ auto FuncTemplateTable::inferParams(
   auto result              = std::vector<std::pair<FuncTemplate*, prog::sym::TypeSet>>{};
 
   for (auto& funcTemplate : itr->second) {
-    if (satisfiesOptions(funcTemplate, options) &&
-        funcTemplate.getArgumentCount() == argTypes.getCount()) {
+    if (argTypes.getCount() < funcTemplate.getMinArgumentCount() ||
+        argTypes.getCount() > funcTemplate.getArgumentCount()) {
+      continue;
+    }
+    if (options.hasFlag<prog::OvFlags::NoOptArgs>() &&
+        argTypes.getCount() != funcTemplate.getArgumentCount()) {
+      continue;
+    }
+
+    if (satisfiesOptions(funcTemplate, options)) {
 
       const auto inferResult = funcTemplate.inferTypeParams(argTypes);
       if (inferResult && funcTemplate.isCallable(inferResult->types, argTypes)) {
