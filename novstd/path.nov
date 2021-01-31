@@ -113,10 +113,7 @@ fun parent(Path p)
 
 // -- Parsers
 
-fun pathRelParser() -> Parser{PathRelative}
-  pathRelParser(endParser())
-
-fun pathRelParser{UntilT}(Parser{UntilT} until) -> Parser{PathRelative}
+fun pathRelParser{UntilT}(Parser{UntilT} until = endParser()) -> Parser{PathRelative}
   sepParser     = matchParser('/') | matchParser('\\');
   validateSeg   = (
     lambda (string s) !s.startsWith(" ") && !s.endsWith(" ") && !s.any(isControl)
@@ -129,10 +126,7 @@ fun pathRelParser{UntilT}(Parser{UntilT} until) -> Parser{PathRelative}
   flags         = ParseFlags.AllowTrailingSeperator;
   manyUntilParser(segParser, sepParser, until, flags).map(construct{List{string}, PathRelative})
 
-fun pathAbsParser() -> Parser{PathAbsolute}
-  pathAbsParser(endParser())
-
-fun pathAbsParser{UntilT}(Parser{UntilT} until) -> Parser{PathAbsolute}
+fun pathAbsParser{UntilT}(Parser{UntilT} until = endParser()) -> Parser{PathAbsolute}
   unixRoot    = matchParser("/");
   windowsRoot = (charParser() << (matchParser(":\\") | matchParser(":/")))
     .map(lambda (char drive) drive.toLower().string() + ":/");
@@ -140,10 +134,7 @@ fun pathAbsParser{UntilT}(Parser{UntilT} until) -> Parser{PathAbsolute}
     (unixRoot | windowsRoot) & pathRelParser(until)
   ).map(construct{string, PathRelative, PathAbsolute})
 
-fun pathParser() -> Parser{Path}
-  pathParser(endParser())
-
-fun pathParser{UntilT}(Parser{UntilT} until) -> Parser{Path}
+fun pathParser{UntilT}(Parser{UntilT} until = endParser()) -> Parser{Path}
   pathAbsParser(until).map(construct{PathAbsolute, Path}) |
   pathRelParser(until).map(construct{PathRelative, Path}) ! Error("Invalid path")
 

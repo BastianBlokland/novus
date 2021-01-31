@@ -42,19 +42,13 @@ fun httpRespHeader(HttpStatusCode s, string txt, HttpContentType t, List{HttpHea
     HttpHeaderField("Content-Length",     txt.length().string())  :: fields
   )
 
-fun httpResp(HttpStatusCode s, string txt, HttpContentType t)
-  httpResp(s, txt, t, List{HttpHeaderField}())
-
-fun httpResp(HttpStatusCode s, string txt, HttpContentType t, List{HttpHeaderField} fields)
+fun httpResp(HttpStatusCode s, string txt, HttpContentType t, List{HttpHeaderField} fields = List{HttpHeaderField}())
   HttpResp(
     httpRespHeader(s, txt, t, fields),
     txt
   )
 
-fun httpRespHead(HttpStatusCode s, string txt, HttpContentType t)
-  httpRespHead(s, txt, t, List{HttpHeaderField}())
-
-fun httpRespHead(HttpStatusCode s, string txt, HttpContentType t, List{HttpHeaderField} fields)
+fun httpRespHead(HttpStatusCode s, string txt, HttpContentType t, List{HttpHeaderField} fields = List{HttpHeaderField}())
   HttpResp(
     httpRespHeader(s, txt, t, fields),
     ""

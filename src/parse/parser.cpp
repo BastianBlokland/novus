@@ -78,8 +78,8 @@ auto ParserImpl::nextStmtFuncDecl() -> NodePtr {
   auto typeSubs = peekToken(0).getKind() == lex::TokenKind::SepOpenCurly
       ? std::optional<TypeSubstitutionList>{nextTypeSubstitutionList()}
       : std::nullopt;
-  auto argList  = nextArgDeclList();
-  auto retType  = std::optional<RetTypeSpec>{};
+  auto argList = nextArgDeclList();
+  auto retType = std::optional<RetTypeSpec>{};
   if (peekToken(0).getKind() == lex::TokenKind::SepArrow) {
     retType = nextRetTypeSpec();
   }
@@ -101,7 +101,12 @@ auto ParserImpl::nextStmtFuncDecl() -> NodePtr {
         std::move(body));
   }
   return errInvalidStmtFuncDecl(
-      kwTok, std::move(id), std::move(typeSubs), argList, std::move(retType), std::move(body));
+      kwTok,
+      std::move(id),
+      std::move(typeSubs),
+      std::move(argList),
+      std::move(retType),
+      std::move(body));
 }
 
 auto ParserImpl::nextStmtStructDecl() -> NodePtr {
@@ -110,10 +115,10 @@ auto ParserImpl::nextStmtStructDecl() -> NodePtr {
   auto typeSubs = peekToken(0).getKind() == lex::TokenKind::SepOpenCurly
       ? std::optional<TypeSubstitutionList>{nextTypeSubstitutionList()}
       : std::nullopt;
-  auto isEmpty  = peekToken(0).getKind() != lex::TokenKind::OpEq;
-  auto eq       = isEmpty ? std::nullopt : std::optional{consumeToken()};
-  auto fields   = std::vector<StructDeclStmtNode::FieldSpec>{};
-  auto commas   = std::vector<lex::Token>{};
+  auto isEmpty = peekToken(0).getKind() != lex::TokenKind::OpEq;
+  auto eq      = isEmpty ? std::nullopt : std::optional{consumeToken()};
+  auto fields  = std::vector<StructDeclStmtNode::FieldSpec>{};
+  auto commas  = std::vector<lex::Token>{};
   if (!isEmpty) {
     while (peekToken(0).getKind() == lex::TokenKind::Identifier ||
            peekToken(0).getKind() == lex::TokenKind::Keyword) {
@@ -158,9 +163,9 @@ auto ParserImpl::nextStmtUnionDecl() -> NodePtr {
   auto typeSubs = peekToken(0).getKind() == lex::TokenKind::SepOpenCurly
       ? std::optional<TypeSubstitutionList>{nextTypeSubstitutionList()}
       : std::nullopt;
-  auto eq       = consumeToken();
-  auto types    = std::vector<Type>{};
-  auto commas   = std::vector<lex::Token>{};
+  auto eq     = consumeToken();
+  auto types  = std::vector<Type>{};
+  auto commas = std::vector<lex::Token>{};
   while (peekToken(0).getKind() == lex::TokenKind::Identifier ||
          peekToken(0).getKind() == lex::TokenKind::Keyword) {
 
@@ -545,7 +550,7 @@ auto ParserImpl::nextExprAnonFunc(std::vector<lex::Token> modifiers) -> NodePtr 
         std::move(modifiers), kw, std::move(argList), std::move(retType), std::move(body));
   }
   return errInvalidAnonFuncExpr(
-      std::move(modifiers), kw, argList, std::move(retType), std::move(body));
+      std::move(modifiers), kw, std::move(argList), std::move(retType), std::move(body));
 }
 
 auto ParserImpl::nextType() -> Type {
@@ -597,9 +602,21 @@ auto ParserImpl::nextArgDeclList() -> ArgumentListDecl {
            peekToken(0).getKind() == lex::TokenKind::Keyword ||
            peekToken(0).getKind() == lex::TokenKind::SepComma) {
 
-      auto argType = nextType();
-      auto argId   = consumeToken();
-      args.emplace_back(argType, argId);
+      auto argType        = nextType();
+      auto argId          = consumeToken();
+      auto argInitializer = std::optional<ArgumentListDecl::ArgInitializer>{};
+      if (peekToken(0).getKind() == lex::TokenKind::OpEq) {
+        auto eq                 = consumeToken();
+        NodePtr initializerExpr = nullptr;
+        if (peekToken(0).getKind() != lex::TokenKind::SepComma &&
+            peekToken(0).getKind() != lex::TokenKind::SepCloseParen) {
+          initializerExpr = nextExpr(assignmentPrecedence);
+        }
+        argInitializer =
+            ArgumentListDecl::ArgInitializer{std::move(eq), std::move(initializerExpr)};
+      }
+      args.emplace_back(argType, argId, std::move(argInitializer));
+
       if (peekToken(0).getKind() == lex::TokenKind::SepComma) {
         commas.push_back(consumeToken());
       }

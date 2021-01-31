@@ -22,7 +22,7 @@ TEST_CASE("[opt] Optimization synergy", "opt") {
 
     const auto& inlADef = optimizedProg.getFuncDef(*actAId);
 
-    CHECK(inlADef.getExpr() == *prog::expr::litIntNode(optimizedProg, 42));
+    CHECK(inlADef.getBody() == *prog::expr::litIntNode(optimizedProg, 42));
   }
 
   SECTION("One time used lazy calls are optimized out") {
@@ -44,7 +44,7 @@ TEST_CASE("[opt] Optimization synergy", "opt") {
 
     const auto& mainDef = optimizedProg.getFuncDef(*mainId);
 
-    CHECK(mainDef.getExpr() == *prog::expr::litIntNode(optimizedProg, 42 * 2));
+    CHECK(mainDef.getBody() == *prog::expr::litIntNode(optimizedProg, 42 * 2));
   }
 }
 

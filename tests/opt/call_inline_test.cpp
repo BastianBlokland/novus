@@ -33,7 +33,7 @@ TEST_CASE("[opt] Call inline", "opt") {
         inlADef.getConsts(), *inlADef.getConsts().lookup("__inlined_0_i")));
     auto inlAGroupExpr = prog::expr::groupExprNode(std::move(inlAExprs));
 
-    CHECK(inlADef.getExpr() == *inlAGroupExpr);
+    CHECK(inlADef.getBody() == *inlAGroupExpr);
   }
 
   SECTION("Inline nested call") {
@@ -61,7 +61,7 @@ TEST_CASE("[opt] Call inline", "opt") {
         inlADef.getConsts(), *inlADef.getConsts().lookup("__inlined_0_i")));
     auto inlAGroupExpr = prog::expr::groupExprNode(std::move(inlAExprs));
 
-    CHECK(inlADef.getExpr() == *inlAGroupExpr);
+    CHECK(inlADef.getBody() == *inlAGroupExpr);
   }
 
   SECTION("Inline nested call in arg") {
@@ -89,7 +89,7 @@ TEST_CASE("[opt] Call inline", "opt") {
         inlADef.getConsts(), *inlADef.getConsts().lookup("__inlined_0_i")));
     auto inlAGroupExpr = prog::expr::groupExprNode(std::move(inlAExprs));
 
-    CHECK(inlADef.getExpr() == *inlAGroupExpr);
+    CHECK(inlADef.getBody() == *inlAGroupExpr);
   }
 }
 

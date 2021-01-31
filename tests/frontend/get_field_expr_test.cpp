@@ -19,7 +19,7 @@ TEST_CASE("[frontend] Analyzing field expressions", "frontend") {
     const auto& funcConsts = funcDef.getConsts();
 
     CHECK(
-        funcDef.getExpr() ==
+        funcDef.getBody() ==
         *prog::expr::fieldExprNode(
             output.getProg(),
             prog::expr::constExprNode(funcConsts, funcConsts.lookup("s").value()),
@@ -38,7 +38,7 @@ TEST_CASE("[frontend] Analyzing field expressions", "frontend") {
     const auto& funcConsts = funcDef.getConsts();
 
     CHECK(
-        funcDef.getExpr() ==
+        funcDef.getBody() ==
         *prog::expr::fieldExprNode(
             output.getProg(),
             prog::expr::fieldExprNode(

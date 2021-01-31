@@ -17,10 +17,7 @@ act wait{T}(future{T} f, Duration d) -> bool
 act get{T}(future{T} f, Duration d) -> Option{T}
   f.wait(d) ? Option(f.get()) : None()
 
-act get{T}(future{T} f, action{bool} predicate) -> Option{T}
-  get(f, predicate, milliseconds(100))
-
-act get{T}(future{T} f, action{bool} predicate, Duration checkInternal) -> Option{T}
+act get{T}(future{T} f, action{bool} predicate, Duration checkInternal = milliseconds(100)) -> Option{T}
   if predicate() -> f.get(checkInternal) as T value ? Option(value) : self(f, predicate, checkInternal)
   else           -> None()
 

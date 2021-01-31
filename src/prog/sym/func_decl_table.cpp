@@ -54,31 +54,45 @@ auto FuncDeclTable::lookupIntrinsic(
     OverloadOptions options) const -> std::optional<FuncId> {
   return internal::findOverload(prog, *this, lookupByName(name, true, options), input, options);
 }
+
 auto FuncDeclTable::registerImplicitConv(
     const Program& prog, FuncKind kind, TypeId input, TypeId output) -> FuncId {
 
   auto name = prog.getTypeDecl(output).getName();
-  return registerFunc(prog, kind, false, false, true, std::move(name), TypeSet{input}, output);
+  return registerFunc(prog, kind, false, false, true, std::move(name), TypeSet{input}, output, 0u);
 }
 
 auto FuncDeclTable::registerFunc(
-    const Program& prog, FuncKind kind, std::string name, TypeSet input, TypeId output) -> FuncId {
-  return registerFunc(prog, kind, false, false, false, std::move(name), std::move(input), output);
+    const Program& prog,
+    FuncKind kind,
+    std::string name,
+    TypeSet input,
+    TypeId output,
+    unsigned int numOptInputs) -> FuncId {
+  return registerFunc(
+      prog, kind, false, false, false, std::move(name), std::move(input), output, numOptInputs);
 }
 
 auto FuncDeclTable::registerAction(
-    const Program& prog, FuncKind kind, std::string name, TypeSet input, TypeId output) -> FuncId {
-  return registerFunc(prog, kind, true, false, false, std::move(name), std::move(input), output);
+    const Program& prog,
+    FuncKind kind,
+    std::string name,
+    TypeSet input,
+    TypeId output,
+    unsigned int numOptInputs) -> FuncId {
+  return registerFunc(
+      prog, kind, true, false, false, std::move(name), std::move(input), output, numOptInputs);
 }
 
 auto FuncDeclTable::registerIntrinsic(
     const Program& prog, FuncKind kind, std::string name, TypeSet input, TypeId output) -> FuncId {
-  return registerFunc(prog, kind, false, true, false, std::move(name), std::move(input), output);
+  return registerFunc(
+      prog, kind, false, true, false, std::move(name), std::move(input), output, 0u);
 }
 
 auto FuncDeclTable::registerIntrinsicAction(
     const Program& prog, FuncKind kind, std::string name, TypeSet input, TypeId output) -> FuncId {
-  return registerFunc(prog, kind, true, true, false, std::move(name), std::move(input), output);
+  return registerFunc(prog, kind, true, true, false, std::move(name), std::move(input), output, 0u);
 }
 
 auto FuncDeclTable::insertFunc(
@@ -89,15 +103,24 @@ auto FuncDeclTable::insertFunc(
     bool isImplicitConv,
     std::string name,
     TypeSet input,
-    TypeId output) -> void {
+    TypeId output,
+    unsigned int numOptInputs) -> void {
 
   if (name.empty()) {
     throw std::invalid_argument{"Name has to contain aleast 1 char"};
   }
 
   // Insert into function map.
-  auto funcDecl =
-      FuncDecl{id, kind, isAction, isIntrinsic, isImplicitConv, name, std::move(input), output};
+  auto funcDecl = FuncDecl{
+      id,
+      kind,
+      isAction,
+      isIntrinsic,
+      isImplicitConv,
+      name,
+      std::move(input),
+      output,
+      numOptInputs};
   if (!m_funcs.insert({id, std::move(funcDecl)}).second) {
     throw std::invalid_argument{"There is already a function registered with the same id"};
   }
@@ -147,7 +170,8 @@ auto FuncDeclTable::registerFunc(
     bool isImplicitConv,
     std::string name,
     TypeSet input,
-    TypeId output) -> FuncId {
+    TypeId output,
+    unsigned int numOptInputs) -> FuncId {
 
   if (name.empty()) {
     throw std::invalid_argument{"Name has to contain aleast 1 char"};
@@ -168,7 +192,15 @@ auto FuncDeclTable::registerFunc(
   (isIntrinsic ? m_intrinsicLookup : m_normalLookup).insert({name, id});
 
   auto funcDecl = FuncDecl{
-      id, kind, isAction, isIntrinsic, isImplicitConv, std::move(name), std::move(input), output};
+      id,
+      kind,
+      isAction,
+      isIntrinsic,
+      isImplicitConv,
+      std::move(name),
+      std::move(input),
+      output,
+      numOptInputs};
   m_funcs.insert({id, std::move(funcDecl)});
   return id;
 }

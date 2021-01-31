@@ -64,13 +64,21 @@ public:
   auto registerImplicitConv(const Program& prog, FuncKind kind, TypeId input, TypeId output)
       -> FuncId;
 
-  auto
-  registerFunc(const Program& prog, FuncKind kind, std::string name, TypeSet input, TypeId output)
-      -> FuncId;
+  auto registerFunc(
+      const Program& prog,
+      FuncKind kind,
+      std::string name,
+      TypeSet input,
+      TypeId output,
+      unsigned int numOptInputs = 0u) -> FuncId;
 
-  auto
-  registerAction(const Program& prog, FuncKind kind, std::string name, TypeSet input, TypeId output)
-      -> FuncId;
+  auto registerAction(
+      const Program& prog,
+      FuncKind kind,
+      std::string name,
+      TypeSet input,
+      TypeId output,
+      unsigned int numOptInputs = 0u) -> FuncId;
 
   auto registerIntrinsic(
       const Program& prog, FuncKind kind, std::string name, TypeSet input, TypeId output) -> FuncId;
@@ -86,7 +94,8 @@ public:
       bool isImplicitConv,
       std::string name,
       TypeSet input,
-      TypeId output) -> void;
+      TypeId output,
+      unsigned int numOptInputs) -> void;
 
   auto updateFuncOutput(FuncId id, TypeId newOutput) -> void;
 
@@ -107,7 +116,8 @@ private:
       bool isImplicitConv,
       std::string name,
       TypeSet input,
-      TypeId output) -> FuncId;
+      TypeId output,
+      unsigned int numOptInputs) -> FuncId;
 };
 
 } // namespace sym

@@ -67,12 +67,12 @@ auto compile(Options options) -> bool {
     return false;
   }
 
+  const auto numFiles = 1u +
+      std::distance(frontendOut.getImportedSources().begin(),
+                    frontendOut.getImportedSources().end());
+
   msgHeader(std::cout) << "Analyzed program in: " << compileDur << '\n';
-  infHeader(std::cout) << "Files: "
-                       << std::distance(
-                              frontendOut.getImportedSources().begin(),
-                              frontendOut.getImportedSources().end())
-                       << '\n';
+  infHeader(std::cout) << "Files: " << numFiles << '\n';
   infHeader(std::cout) << "Types: " << frontendOut.getProg().getTypeCount() << '\n';
   infHeader(std::cout) << "Functions: " << frontendOut.getProg().getFuncCount() << '\n';
   infHeader(std::cout) << "Execute statements: " << frontendOut.getProg().getExecStmtCount()

@@ -19,6 +19,25 @@
     }
   ],
   "repository": {
+    "arg_initializer": {
+      "patterns": [
+        {
+          "begin": "= ",
+          "beginCaptures": {
+            "0": {
+              "name": "keyword.other.source.novus"
+            }
+          },
+          "end": "(?=\\,|\\))",
+          "name": "meta.initializer.source.novus",
+          "patterns": [
+            {
+              "include": "#code"
+            }
+          ]
+        }
+      ]
+    },
     "buildin_type": {
       "patterns": [
         {
@@ -153,6 +172,9 @@
             },
             {
               "include": "#buildin_type"
+            },
+            {
+              "include": "#arg_initializer"
             }
           ]
         }
@@ -262,5 +284,6 @@
       ]
     }
   },
-  "scopeName": "source.novus"
+  "scopeName": "source.novus",
+  "uuid": "4E3F51D5-1E08-48C3-9CA3-84769D3E9EAC"
 }

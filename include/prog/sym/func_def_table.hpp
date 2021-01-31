@@ -5,6 +5,7 @@
 #include "prog/sym/func_id_hasher.hpp"
 #include <set>
 #include <unordered_map>
+#include <vector>
 
 namespace prog::sym {
 
@@ -30,7 +31,8 @@ public:
       const sym::FuncDeclTable& funcTable,
       sym::FuncId id,
       sym::ConstDeclTable consts,
-      expr::NodePtr expr) -> void;
+      expr::NodePtr body,
+      std::vector<expr::NodePtr> optArgInitializers) -> void;
 
 private:
   std::unordered_map<FuncId, FuncDef, FuncIdHasher> m_funcDefs;

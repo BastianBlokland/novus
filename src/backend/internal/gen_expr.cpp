@@ -81,6 +81,10 @@ auto GenExpr::visit(const prog::expr::SwitchExprNode& n) -> void {
 }
 
 auto GenExpr::visit(const prog::expr::CallExprNode& n) -> void {
+  if (n.needsPatching()) {
+    throw std::logic_error{"Call expression needs to be patched first"};
+  }
+
   const auto& funcDecl = m_prog.getFuncDecl(n.getFunc());
 
   // Special handling for union creation.

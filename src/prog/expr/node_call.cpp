@@ -1,5 +1,6 @@
 #include "prog/expr/node_call.hpp"
 #include "internal/implicit_conv.hpp"
+#include "internal/opt_args.hpp"
 #include "utilities.hpp"
 #include <sstream>
 #include <stdexcept>
@@ -7,12 +8,17 @@
 namespace prog::expr {
 
 CallExprNode::CallExprNode(
-    sym::FuncId func, sym::TypeId resultType, std::vector<NodePtr> args, CallMode mode) :
+    sym::FuncId func,
+    sym::TypeId resultType,
+    std::vector<NodePtr> args,
+    CallMode mode,
+    bool needsPatching) :
     Node{CallExprNode::getKind()},
     m_func{func},
     m_resultType{resultType},
+    m_mode{mode},
     m_args{std::move(args)},
-    m_mode{mode} {}
+    m_needsPatching{needsPatching} {}
 
 auto CallExprNode::operator==(const Node& rhs) const noexcept -> bool {
   const auto r = dynamic_cast<const CallExprNode*>(&rhs);
@@ -51,8 +57,8 @@ auto CallExprNode::toString() const -> std::string {
 }
 
 auto CallExprNode::clone(Rewriter* rewriter) const -> std::unique_ptr<Node> {
-  return std::unique_ptr<CallExprNode>{
-      new CallExprNode{m_func, m_resultType, cloneNodes(m_args, rewriter), m_mode}};
+  return std::unique_ptr<CallExprNode>{new CallExprNode{
+      m_func, m_resultType, cloneNodes(m_args, rewriter), m_mode, m_needsPatching}};
 }
 
 auto CallExprNode::getFunc() const noexcept -> sym::FuncId { return m_func; }
@@ -64,6 +70,15 @@ auto CallExprNode::getMode() const noexcept -> CallMode { return m_mode; }
 auto CallExprNode::isFork() const noexcept -> bool { return m_mode == CallMode::Forked; }
 
 auto CallExprNode::isLazy() const noexcept -> bool { return m_mode == CallMode::Lazy; }
+
+auto CallExprNode::needsPatching() const noexcept -> bool { return m_needsPatching; }
+
+auto CallExprNode::applyPatches(const Program& prog) const -> void {
+  if (m_needsPatching) {
+    internal::applyOptArgIntializers(prog, m_func, &m_args);
+    m_needsPatching = false;
+  }
+}
 
 auto CallExprNode::accept(NodeVisitor* visitor) const -> void { visitor->visit(*this); }
 
@@ -115,16 +130,19 @@ auto callExprNode(
   }
 
   // Validate arguments.
-  const auto& funcInput = funcDecl.getInput();
-  if (funcInput.getCount() != args.size()) {
+  if (args.size() < funcDecl.getMinInputCount() || args.size() > funcDecl.getInput().getCount()) {
     throw std::invalid_argument{"Call node contains incorrect number of arguments"};
   }
 
   // Apply implicit conversions if necessary (and throw if types are incompatible).
   internal::applyImplicitConversions(prog, funcDecl.getInput(), &args);
 
+  // For calls that do not supply overrides for optional arguments we need to patch the optional
+  // arguments later after all functions have been defined.
+  const bool needsPatching = args.size() < funcDecl.getInput().getCount();
+
   return std::unique_ptr<CallExprNode>{
-      new CallExprNode{funcDecl.getId(), resultType, std::move(args), mode}};
+      new CallExprNode{funcDecl.getId(), resultType, std::move(args), mode, needsPatching}};
 }
 
 } // namespace prog::expr

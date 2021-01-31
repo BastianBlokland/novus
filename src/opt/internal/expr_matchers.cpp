@@ -29,7 +29,7 @@ auto isRecursive(const prog::Program& prog, prog::sym::FuncId funcId) -> bool {
   // Gather all the functions this function (indirectly) calls.
   auto calledFuncs     = std::unordered_set<prog::sym::FuncId, prog::sym::FuncIdHasher>{};
   auto findCalledFuncs = FindCalledFuncs{prog, &calledFuncs};
-  funcDef.getExpr().accept(&findCalledFuncs);
+  funcDef.getBody().accept(&findCalledFuncs);
 
   // Check if this function ever (indirectly) calls itself.
   return calledFuncs.find(funcId) != calledFuncs.end();

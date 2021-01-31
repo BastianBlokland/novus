@@ -91,16 +91,14 @@ fun map{T, TResult}(Either{T, Error} v, function{T, TResult} f) -> Either{TResul
 
 // -- Writers
 
-fun errorWriter()
-  errorWriter(ErrorWriteFlags.None)
-
 fun errorWriter(ErrorWriteFlags flags)
   errorWriter(noneWriter(), newlineWriter(), flags)
 
-fun errorWriter(Writer{None} prefixWriter, Writer{None} sepWriter)
-  errorWriter(prefixWriter, sepWriter, ErrorWriteFlags.None)
-
-fun errorWriter(Writer{None} prefixWriter, Writer{None} sepWriter, ErrorWriteFlags flags)
+fun errorWriter(
+    Writer{None}    prefixWriter  = noneWriter(),
+    Writer{None}    sepWriter     = newlineWriter(),
+    ErrorWriteFlags flags         = ErrorWriteFlags.None
+  )
   includeCodes  = (flags & ErrorWriteFlags.IncludeCodes) != 0;
   codeWriter    = litWriter('[') & txtIntWriter() & litWriter("] ");
   writer        = includeCodes  ? (codeWriter & stringWriter()) .map(lambda (Error err) makePair(err.code, err.msg))

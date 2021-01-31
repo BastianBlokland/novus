@@ -18,17 +18,14 @@ struct Writer{T} = function{WriterState, T, WriterState} func
 
 // -- Constructors
 
-fun WriterState()
-  WriterState("  ")
-
-fun WriterState(string indentStr)
+fun WriterState(string indentStr = "  ")
   WriterState(indentStr, WriterNewlineMode.Lf)
+
+fun WriterState(WriterNewlineMode newlineMode)
+  WriterState("  ", newlineMode)
 
 fun WriterState(string indentStr, WriterNewlineMode newlineMode)
   WriterState("", 0, indentStr, newlineMode)
-
-fun WriterState(WriterNewlineMode newlineMode)
-  WriterState("", 0, "  ", newlineMode)
 
 // -- Operators
 
@@ -162,10 +159,7 @@ fun txtIntWriter()
     s.write(i.string())
   )
 
-fun txtHexWriter()
-  txtHexWriter(0)
-
-fun txtHexWriter(int minDigits)
+fun txtHexWriter(int minDigits = 0)
   Writer(lambda (WriterState s, int i)
     str = i.toHexString();
     s.write(string('0', minDigits - str.length()) + str)

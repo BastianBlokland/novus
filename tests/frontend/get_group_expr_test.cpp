@@ -17,23 +17,23 @@ TEST_CASE("[frontend] Analyzing group expressions", "frontend") {
     const auto& funcDef = GET_FUNC_DEF(output, "f");
     const auto& consts  = funcDef.getConsts();
 
-    auto callArgs = std::vector<prog::expr::NodePtr>{};
-    callArgs.push_back(prog::expr::constExprNode(consts, consts.lookup("b").value()));
-    callArgs.push_back(prog::expr::constExprNode(consts, consts.lookup("c").value()));
+    auto groupExpr = prog::expr::groupExprNode(EXPRS(
+        prog::expr::assignExprNode(
+            consts, consts.lookup("b").value(), prog::expr::litIntNode(output.getProg(), 1)),
+        prog::expr::assignExprNode(
+            consts, consts.lookup("c").value(), prog::expr::litIntNode(output.getProg(), 2)),
+        prog::expr::callExprNode(
+            output.getProg(),
+            GET_OP_ID(
+                output,
+                prog::Operator::Star,
+                GET_TYPE_ID(output, "int"),
+                GET_TYPE_ID(output, "int")),
+            EXPRS(
+                prog::expr::constExprNode(consts, consts.lookup("b").value()),
+                prog::expr::constExprNode(consts, consts.lookup("c").value())))));
 
-    auto exprs = std::vector<prog::expr::NodePtr>{};
-    exprs.push_back(prog::expr::assignExprNode(
-        consts, consts.lookup("b").value(), prog::expr::litIntNode(output.getProg(), 1)));
-    exprs.push_back(prog::expr::assignExprNode(
-        consts, consts.lookup("c").value(), prog::expr::litIntNode(output.getProg(), 2)));
-    exprs.push_back(prog::expr::callExprNode(
-        output.getProg(),
-        GET_OP_ID(
-            output, prog::Operator::Star, GET_TYPE_ID(output, "int"), GET_TYPE_ID(output, "int")),
-        std::move(callArgs)));
-    auto groupExpr = prog::expr::groupExprNode(std::move(exprs));
-
-    CHECK(funcDef.getExpr() == *groupExpr);
+    CHECK(funcDef.getBody() == *groupExpr);
   }
 }
 

@@ -9,7 +9,7 @@ TEST_CASE("[frontend] Analyzing overloads", "frontend") {
     const auto& output = ANALYZE("fun f1(float a, float b) a + b "
                                  "fun f2() f1(42, 1337)");
     REQUIRE(output.isSuccess());
-    CHECK(GET_FUNC_DEF(output, "f2").getExpr().getType() == GET_TYPE_ID(output, "float"));
+    CHECK(GET_FUNC_DEF(output, "f2").getBody().getType() == GET_TYPE_ID(output, "float"));
   }
 
   SECTION("Prefer overload with no conversion") {
@@ -17,7 +17,7 @@ TEST_CASE("[frontend] Analyzing overloads", "frontend") {
                                  "fun f1(int i) i "
                                  "fun f2() f1(1337)");
     REQUIRE(output.isSuccess());
-    CHECK(GET_FUNC_DEF(output, "f2").getExpr().getType() == GET_TYPE_ID(output, "int"));
+    CHECK(GET_FUNC_DEF(output, "f2").getBody().getType() == GET_TYPE_ID(output, "int"));
   }
 
   SECTION("Prefer overload with less conversions") {
@@ -25,7 +25,7 @@ TEST_CASE("[frontend] Analyzing overloads", "frontend") {
                                  "fun f1(float a, int b) b "
                                  "fun f2() f1(42, 1337)");
     REQUIRE(output.isSuccess());
-    CHECK(GET_FUNC_DEF(output, "f2").getExpr().getType() == GET_TYPE_ID(output, "int"));
+    CHECK(GET_FUNC_DEF(output, "f2").getBody().getType() == GET_TYPE_ID(output, "int"));
   }
 
   SECTION("Allow conversion in binary operator") {

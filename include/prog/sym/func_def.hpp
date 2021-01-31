@@ -2,6 +2,7 @@
 #include "prog/expr/node.hpp"
 #include "prog/sym/const_decl_table.hpp"
 #include "prog/sym/func_decl_table.hpp"
+#include <vector>
 
 namespace prog::sym {
 
@@ -20,14 +21,20 @@ public:
 
   [[nodiscard]] auto getId() const noexcept -> const FuncId&;
   [[nodiscard]] auto getConsts() const noexcept -> const sym::ConstDeclTable&;
-  [[nodiscard]] auto getExpr() const noexcept -> const expr::Node&;
+  [[nodiscard]] auto getBody() const noexcept -> const expr::Node&;
+  [[nodiscard]] auto getOptArgInitializer(unsigned int i) const -> expr::NodePtr;
 
 private:
   sym::FuncId m_id;
   sym::ConstDeclTable m_consts;
-  expr::NodePtr m_expr;
+  expr::NodePtr m_body;
+  std::vector<expr::NodePtr> m_optArgInitializers;
 
-  FuncDef(sym::FuncId id, sym::ConstDeclTable consts, expr::NodePtr expr);
+  FuncDef(
+      sym::FuncId id,
+      sym::ConstDeclTable consts,
+      expr::NodePtr body,
+      std::vector<expr::NodePtr> optArgInitializers);
 };
 
 } // namespace prog::sym

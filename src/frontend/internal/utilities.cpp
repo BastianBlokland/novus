@@ -208,7 +208,7 @@ auto getOrInstType(
   if (subTable != nullptr && subTable->lookupType(typeName)) {
     return subTable->lookupType(typeName);
   }
-  if (!isType(ctx, typeName)) {
+  if (!isType(ctx, nullptr, typeName)) {
     return std::nullopt;
   }
 
@@ -363,7 +363,7 @@ auto inferRetType(
   }
 
   auto inferBodyType = TypeInferExpr{ctx, subTable, &constTypes, flags};
-  parseNode[0].accept(&inferBodyType);
+  parseNode.getBody().accept(&inferBodyType);
   return inferBodyType.getInferredType();
 }
 
@@ -443,15 +443,37 @@ auto getFuncInput(
 }
 
 template <typename FuncParseNode>
+auto getNumOptInputs(Context* ctx, const FuncParseNode& parseNode) -> unsigned int {
+  auto result = 0u;
+  for (const auto& arg : parseNode.getArgList()) {
+    if (arg.hasInitializer()) {
+      ++result;
+      continue;
+    }
+    if (result) {
+      ctx->reportDiag(errNonOptArgFollowingOpt, arg.getSpan());
+      return 0u;
+    }
+  }
+  return result;
+}
+
+template <typename FuncParseNode>
 auto declareFuncInput(
     Context* ctx,
     const TypeSubstitutionTable* subTable,
     const FuncParseNode& n,
-    prog::sym::ConstDeclTable* consts) -> bool {
+    prog::sym::ConstDeclTable* consts,
+    bool allowArgInitializer) -> bool {
   bool isValid = true;
   for (const auto& arg : n.getArgList()) {
     const auto constName = getConstName(ctx, subTable, *consts, arg.getIdentifier());
     if (!constName) {
+      isValid = false;
+      continue;
+    }
+    if (arg.hasInitializer() && !allowArgInitializer) {
+      ctx->reportDiag(errUnsupportedArgInitializer, *constName, arg.getSpan());
       isValid = false;
       continue;
     }
@@ -479,7 +501,7 @@ auto getSubstitutionParams(Context* ctx, const parse::TypeSubstitutionList& subL
   auto isValid    = true;
   for (const auto& typeSubToken : subList) {
     const auto typeParamName = getName(typeSubToken);
-    if (isType(ctx, typeParamName)) {
+    if (isType(ctx, nullptr, typeParamName)) {
       ctx->reportDiag(errTypeParamNameConflictsWithType, typeParamName, typeSubToken.getSpan());
       isValid = false;
     } else {
@@ -527,7 +549,7 @@ auto getConstName(
     ctx->reportDiag(errConstNameConflictsWithTypeSubstitution, name, nameToken.getSpan());
     return std::nullopt;
   }
-  if (isType(ctx, name)) {
+  if (isType(ctx, nullptr, name)) {
     ctx->reportDiag(errConstNameConflictsWithType, name, nameToken.getSpan());
     return std::nullopt;
   }
@@ -584,13 +606,14 @@ auto delegateOutAsLazy(Context* ctx, prog::sym::TypeId delegate)
   return std::nullopt;
 }
 
-auto isType(Context* ctx, const std::string& name) -> bool {
+auto isType(Context* ctx, const TypeSubstitutionTable* subTable, const std::string& name) -> bool {
   return isReservedTypeName(name) || ctx->getProg()->hasType(name) ||
-      ctx->getTypeTemplates()->hasType(name);
+      ctx->getTypeTemplates()->hasType(name) || (subTable && subTable->lookupType(name));
 }
 
-auto isFuncOrConv(Context* ctx, const std::string& name) -> bool {
-  return isType(ctx, name) || ctx->getProg()->hasFunc(name) ||
+auto isFuncOrConv(Context* ctx, const TypeSubstitutionTable* subTable, const std::string& name)
+    -> bool {
+  return isType(ctx, subTable, name) || ctx->getProg()->hasFunc(name) ||
       ctx->getFuncTemplates()->hasFunc(name);
 }
 
@@ -621,15 +644,20 @@ getFuncInput(Context* ctx, const TypeSubstitutionTable* subTable, const parse::F
 template std::optional<prog::sym::TypeSet>
 getFuncInput(Context* ctx, const TypeSubstitutionTable* subTable, const parse::AnonFuncExprNode& n);
 
+template unsigned int getNumOptInputs(Context* ctx, const parse::FuncDeclStmtNode& n);
+template unsigned int getNumOptInputs(Context* ctx, const parse::AnonFuncExprNode& n);
+
 template bool declareFuncInput(
     Context* ctx,
     const TypeSubstitutionTable* subTable,
     const parse::FuncDeclStmtNode& n,
-    prog::sym::ConstDeclTable* consts);
+    prog::sym::ConstDeclTable* consts,
+    bool allowArgInitializer);
 template bool declareFuncInput(
     Context* ctx,
     const TypeSubstitutionTable* subTable,
     const parse::AnonFuncExprNode& n,
-    prog::sym::ConstDeclTable* consts);
+    prog::sym::ConstDeclTable* consts,
+    bool allowArgInitializer);
 
 } // namespace frontend::internal

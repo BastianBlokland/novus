@@ -17,7 +17,7 @@ TEST_CASE("[frontend] Analyzing user-function definitions", "frontend") {
     REQUIRE(a);
     CHECK(consts[a.value()].getKind() == prog::sym::ConstKind::Input);
     CHECK(consts[a.value()].getType() == GET_TYPE_ID(output, "int"));
-    CHECK(funcDef.getExpr() == *prog::expr::litIntNode(output.getProg(), 42));
+    CHECK(funcDef.getBody() == *prog::expr::litIntNode(output.getProg(), 42));
   }
 
   SECTION("Define function with conversion") {
@@ -26,7 +26,7 @@ TEST_CASE("[frontend] Analyzing user-function definitions", "frontend") {
     const auto& funcDef = GET_FUNC_DEF(output, "f");
 
     CHECK(
-        funcDef.getExpr() ==
+        funcDef.getBody() ==
         *applyConv(output, "int", "float", prog::expr::litIntNode(output.getProg(), 2)));
   }
 
@@ -40,7 +40,7 @@ TEST_CASE("[frontend] Analyzing user-function definitions", "frontend") {
     REQUIRE(a);
     CHECK(consts[a.value()].getKind() == prog::sym::ConstKind::Input);
     CHECK(consts[a.value()].getType() == GET_TYPE_ID(output, "int"));
-    CHECK(funcDef.getExpr() == *prog::expr::constExprNode(consts, *a));
+    CHECK(funcDef.getBody() == *prog::expr::constExprNode(consts, *a));
   }
 
   SECTION("Diagnostics") {
@@ -128,6 +128,13 @@ TEST_CASE("[frontend] Analyzing user-function definitions", "frontend") {
           " if a > b  -> f(a, 0) "
           " else      -> f(0, b)",
           errPureFuncInfRecursion(src, input::Span{28, 69}));
+      CHECK_DIAG("fun f(int a = a) a", errUndeclaredConst(src, "a", input::Span{14, 14}));
+      CHECK_DIAG("fun f(int a = b = 42) a", errConstDeclareNotSupported(src, input::Span{14, 19}));
+      CHECK_DIAG(
+          "union U = int, bool "
+          "fun getU() U(42) "
+          "fun f(int a = getU() as int i ? i : 0) a",
+          errConstDeclareNotSupported(src, input::Span{51, 65}));
     }
   }
 }

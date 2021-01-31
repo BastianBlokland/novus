@@ -46,7 +46,7 @@ inline auto buildSource(std::string input) {
     const auto& output = ANALYZE("act test() " INPUT);                                             \
     REQUIRE(output.isSuccess());                                                                   \
     const auto prog = OPT(output.getProg());                                                       \
-    CHECK(GET_FUNC_DEF(prog, "test").getExpr() == *(EXPECTED_EXPR));                               \
+    CHECK(GET_FUNC_DEF(prog, "test").getBody() == *(EXPECTED_EXPR));                               \
   }
 
 inline auto

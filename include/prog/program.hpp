@@ -114,8 +114,10 @@ public:
 
   [[nodiscard]] auto isImplicitConvertible(sym::TypeId from, sym::TypeId to) const -> bool;
 
-  [[nodiscard]] auto
-  isImplicitConvertible(const sym::TypeSet& toTypes, const sym::TypeSet& fromTypes) const -> bool;
+  [[nodiscard]] auto isImplicitConvertible(
+      const sym::TypeSet& toTypes,
+      const sym::TypeSet& fromTypes,
+      unsigned int numOptToTypes = 0u) const -> bool;
 
   [[nodiscard]] auto findCommonType(const std::vector<sym::TypeId>& types)
       -> std::optional<sym::TypeId>;
@@ -150,8 +152,12 @@ public:
   auto declareDelegate(std::string name) -> sym::TypeId;
   auto declareFuture(std::string name) -> sym::TypeId;
   auto declareLazy(std::string name) -> sym::TypeId;
-  auto declarePureFunc(std::string name, sym::TypeSet input, sym::TypeId output) -> sym::FuncId;
-  auto declareAction(std::string name, sym::TypeSet input, sym::TypeId output) -> sym::FuncId;
+  auto declarePureFunc(
+      std::string name, sym::TypeSet input, sym::TypeId output, unsigned int numOptInputs)
+      -> sym::FuncId;
+  auto
+  declareAction(std::string name, sym::TypeSet input, sym::TypeId output, unsigned int numOptInputs)
+      -> sym::FuncId;
   auto declareFailIntrinsic(std::string name, sym::TypeId output) -> sym::FuncId;
 
   auto defineStruct(sym::TypeId id, sym::FieldDeclTable fields) -> void;
@@ -167,11 +173,19 @@ public:
   auto defineLazy(
       sym::TypeId id, sym::TypeId result, bool isAction, const std::vector<sym::TypeId>& aliases)
       -> void;
-  auto defineFunc(sym::FuncId id, sym::ConstDeclTable consts, expr::NodePtr expr) -> void;
+  auto defineFunc(
+      sym::FuncId id,
+      sym::ConstDeclTable consts,
+      expr::NodePtr body,
+      std::vector<expr::NodePtr> optArgInitializers) -> void;
 
   auto addExecStmt(sym::ConstDeclTable consts, expr::NodePtr expr) -> void;
 
   auto updateFuncOutput(sym::FuncId funcId, sym::TypeId newOutput) -> void;
+
+  // Patch call expressions to apply the not-provided optional arguments.
+  // Should be called after all functions have been defined.
+  auto applyOptCallArgs() -> void;
 
 private:
   sym::TypeDeclTable m_typeDecls;

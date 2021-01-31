@@ -55,13 +55,7 @@ fun isPrerelease(Version v)
 
 // -- Conversions
 
-fun Version(int major, int minor)
-  Version(major, minor, 0)
-
-fun Version(int major, int minor, int patch)
-  Version(major, minor, patch, List{string}(), List{string}())
-
-fun Version(int major, int minor, int patch, List{string} prereleaseTags)
+fun Version(int major, int minor, int patch = 0, List{string} prereleaseTags = List{string}())
   Version(major, minor, patch, prereleaseTags, List{string}())
 
 fun string(Version v)

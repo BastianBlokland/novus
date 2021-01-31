@@ -71,9 +71,11 @@ auto isImplicitConvertible(
     const Program& prog,
     const sym::TypeSet& toTypes,
     const sym::TypeSet& fromTypes,
-    int maxConversions) -> bool {
+    int maxConversions,
+    unsigned int numOptToTypes) -> bool {
 
-  if (toTypes.getCount() != fromTypes.getCount()) {
+  const auto minToTypesCount = toTypes.getCount() - numOptToTypes;
+  if (fromTypes.getCount() < minToTypesCount || fromTypes.getCount() > toTypes.getCount()) {
     return false;
   }
   auto convAmount   = 0;
@@ -105,9 +107,12 @@ auto applyImplicitConversions(
   if (!fromArgs) {
     throw std::invalid_argument{"Null fromArgs pointer provided"};
   }
-  if (toTypes.getCount() != fromArgs->size()) {
-    throw std::invalid_argument{"Number of arguments does not match toTypes argument count"};
+  if (fromArgs->size() > toTypes.getCount()) {
+    throw std::invalid_argument{"Too many arguments provided"};
   }
+
+  // Note: Its a valid scenario to pass less arguments then there are types in 'toTypes', reason is
+  // the other types could be for optional arguments.
 
   auto fromArgsItr = fromArgs->begin();
   auto toTypesItr  = toTypes.begin();

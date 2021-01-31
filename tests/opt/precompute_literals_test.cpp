@@ -279,7 +279,7 @@ TEST_CASE("[opt] Precompute literals", "opt") {
                                    "fun f() int(e.a)");
       REQUIRE(output.isSuccess());
       const auto prog = precomputeLiterals(output.getProg());
-      CHECK(GET_FUNC_DEF(prog, "f").getExpr() == *litIntNode(prog, 42)); // NOLINT: Magic numbers
+      CHECK(GET_FUNC_DEF(prog, "f").getBody() == *litIntNode(prog, 42)); // NOLINT: Magic numbers
     }
 
     {
@@ -287,7 +287,7 @@ TEST_CASE("[opt] Precompute literals", "opt") {
                                    "fun f() int(e.a)");
       REQUIRE(output.isSuccess());
       const auto prog = precomputeLiterals(output.getProg());
-      CHECK(GET_FUNC_DEF(prog, "f").getExpr() == *litIntNode(prog, 42)); // NOLINT: Magic numbers
+      CHECK(GET_FUNC_DEF(prog, "f").getBody() == *litIntNode(prog, 42)); // NOLINT: Magic numbers
     }
   }
 
@@ -296,7 +296,7 @@ TEST_CASE("[opt] Precompute literals", "opt") {
                                  "fun f() s(42).i");
     REQUIRE(output.isSuccess());
     const auto prog = precomputeLiterals(output.getProg());
-    CHECK(GET_FUNC_DEF(prog, "f").getExpr() == *litIntNode(prog, 42)); // NOLINT: Magic numbers
+    CHECK(GET_FUNC_DEF(prog, "f").getBody() == *litIntNode(prog, 42)); // NOLINT: Magic numbers
   }
 
   SECTION("dynamic call to func literal") {
@@ -305,7 +305,7 @@ TEST_CASE("[opt] Precompute literals", "opt") {
     REQUIRE(output.isSuccess());
     // Check that it originally is a dynamic call.
     REQUIRE(
-        GET_FUNC_DEF(output.getProg(), "f2").getExpr().getKind() == prog::expr::NodeKind::CallDyn);
+        GET_FUNC_DEF(output.getProg(), "f2").getBody().getKind() == prog::expr::NodeKind::CallDyn);
 
     const auto prog = precomputeLiterals(output.getProg());
 
@@ -315,7 +315,7 @@ TEST_CASE("[opt] Precompute literals", "opt") {
     auto callExpr =
         callExprNode(prog, GET_FUNC_ID(prog, "f1", GET_TYPE_ID(prog, "int")), std::move(args));
 
-    CHECK(GET_FUNC_DEF(prog, "f2").getExpr() == *callExpr);
+    CHECK(GET_FUNC_DEF(prog, "f2").getBody() == *callExpr);
   }
 
   SECTION("dynamic call to closure") {
@@ -324,14 +324,14 @@ TEST_CASE("[opt] Precompute literals", "opt") {
     // Check that it originally is a dynamic call.
     REQUIRE(
         GET_FUNC_DEF(output.getProg(), "f", GET_TYPE_ID(output.getProg(), "int"))
-            .getExpr()
+            .getBody()
             .getKind() == prog::expr::NodeKind::CallDyn);
 
     const auto prog = precomputeLiterals(output.getProg());
 
     // Verify that it was optimized into a normal call.
     REQUIRE(
-        GET_FUNC_DEF(prog, "f", GET_TYPE_ID(prog, "int")).getExpr().getKind() ==
+        GET_FUNC_DEF(prog, "f", GET_TYPE_ID(prog, "int")).getBody().getKind() ==
         prog::expr::NodeKind::Call);
   }
 
@@ -341,14 +341,14 @@ TEST_CASE("[opt] Precompute literals", "opt") {
     REQUIRE(output.isSuccess());
     // Check that it originally call lazy-get.
     auto& orgCall =
-        *GET_FUNC_DEF(output.getProg(), "f2").getExpr().downcast<prog::expr::CallExprNode>();
+        *GET_FUNC_DEF(output.getProg(), "f2").getBody().downcast<prog::expr::CallExprNode>();
     REQUIRE(
         output.getProg().getFuncDecl(orgCall.getFunc()).getKind() == prog::sym::FuncKind::LazyGet);
 
     const auto prog = precomputeLiterals(output.getProg());
 
     // Verify that it was optimized to call f1 directly.
-    auto& optCall = *GET_FUNC_DEF(prog, "f2").getExpr().downcast<prog::expr::CallExprNode>();
+    auto& optCall = *GET_FUNC_DEF(prog, "f2").getBody().downcast<prog::expr::CallExprNode>();
     CHECK(
         optCall.getFunc() ==
         GET_FUNC_ID(
@@ -366,7 +366,7 @@ TEST_CASE("[opt] Precompute literals", "opt") {
     auto& orgCall =
         *GET_FUNC_DEF(
              output.getProg(), "f2", GET_TYPE_ID(output.getProg(), "__function_int_int_int"))
-             .getExpr()
+             .getBody()
              .downcast<prog::expr::CallExprNode>();
     REQUIRE(
         output.getProg().getFuncDecl(orgCall.getFunc()).getKind() == prog::sym::FuncKind::LazyGet);
@@ -375,7 +375,7 @@ TEST_CASE("[opt] Precompute literals", "opt") {
 
     // Verify that it was optimized to call the delegate directly.
     auto& optCall =
-        GET_FUNC_DEF(prog, "f2", GET_TYPE_ID(output.getProg(), "__function_int_int_int")).getExpr();
+        GET_FUNC_DEF(prog, "f2", GET_TYPE_ID(output.getProg(), "__function_int_int_int")).getBody();
     CHECK(optCall.getKind() == prog::expr::NodeKind::CallDyn);
   }
 }
