@@ -33,6 +33,35 @@
 	</array>
 	<key>repository</key>
 	<dict>
+		<key>arg_initializer</key>
+		<dict>
+			<key>patterns</key>
+			<array>
+				<dict>
+					<key>begin</key>
+					<string>= </string>
+					<key>beginCaptures</key>
+					<dict>
+						<key>0</key>
+						<dict>
+							<key>name</key>
+							<string>keyword.other.source.novus</string>
+						</dict>
+					</dict>
+					<key>end</key>
+					<string>(?=\,|\))</string>
+					<key>name</key>
+					<string>meta.initializer.source.novus</string>
+					<key>patterns</key>
+					<array>
+						<dict>
+							<key>include</key>
+							<string>#code</string>
+						</dict>
+					</array>
+				</dict>
+			</array>
+		</dict>
 		<key>buildin_type</key>
 		<dict>
 			<key>patterns</key>
@@ -238,6 +267,10 @@
 						<dict>
 							<key>include</key>
 							<string>#buildin_type</string>
+						</dict>
+						<dict>
+							<key>include</key>
+							<string>#arg_initializer</string>
 						</dict>
 					</array>
 				</dict>
