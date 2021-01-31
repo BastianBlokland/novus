@@ -280,8 +280,10 @@ auto FuncTemplate::getInputTypes(const prog::sym::TypeSet& argTypes)
 
     // Infer the type of the optional arg initializer.
     // NOTE: Will only work if the initializer does not depend on any of the type parameters.
-    const auto inferFlags =
-        m_isAction ? TypeInferExpr::Flags::AllowActionCalls : TypeInferExpr::Flags::None;
+    auto inferFlags = TypeInferExpr::Flags::NoOptArgs;
+    if (m_isAction) {
+      inferFlags = inferFlags | TypeInferExpr::Flags::AllowActionCalls;
+    }
     auto inferInitializerType = TypeInferExpr{m_ctx, nullptr, nullptr, inferFlags};
     m_parseNode->operator[](i).accept(&inferInitializerType);
 

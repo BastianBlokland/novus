@@ -149,6 +149,10 @@ auto FuncTemplateTable::inferParams(
         argTypes.getCount() > funcTemplate.getArgumentCount()) {
       continue;
     }
+    if (options.hasFlag<prog::OvFlags::NoOptArgs>() &&
+        argTypes.getCount() != funcTemplate.getArgumentCount()) {
+      continue;
+    }
 
     if (satisfiesOptions(funcTemplate, options)) {
 

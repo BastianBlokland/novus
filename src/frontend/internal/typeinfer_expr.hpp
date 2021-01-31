@@ -14,6 +14,7 @@ public:
     Aggressive = 1U << 1U,
 
     AllowActionCalls = 1U << 2U,
+    NoOptArgs        = 1U << 3U, // Disallow optional arguments (requires passing all args).
   };
 
   TypeInferExpr() = delete;
@@ -75,6 +76,20 @@ private:
   [[nodiscard]] inline auto hasFlag() const noexcept {
     return (static_cast<unsigned int>(m_flags) & static_cast<unsigned int>(F)) ==
         static_cast<unsigned int>(F);
+  }
+
+  [[nodiscard]] inline auto getOvOptions(bool excludeNonUser = false) const noexcept {
+    auto ovFlags = prog::OvFlags::None;
+    if (!hasFlag<Flags::AllowActionCalls>()) {
+      ovFlags = ovFlags | prog::OvFlags::ExclActions;
+    }
+    if (hasFlag<Flags::NoOptArgs>()) {
+      ovFlags = ovFlags | prog::OvFlags::NoOptArgs;
+    }
+    if (excludeNonUser) {
+      ovFlags = ovFlags | prog::OvFlags::ExclNonUser;
+    }
+    return prog::OvOptions{ovFlags};
   }
 };
 
