@@ -6,36 +6,24 @@ namespace vm::internal {
 ExecutorRegistry::ExecutorRegistry() noexcept : m_head{nullptr}, m_state{RegistryState::Running} {};
 
 auto ExecutorRegistry::registerExecutor(ExecutorHandle* handle) noexcept -> void {
-  auto lk = std::lock_guard<std::mutex>{m_mutex};
-
+  assert(m_state.load(std::memory_order_acquire) == RegistryState::Running);
   assert(handle->m_prev == nullptr);
   assert(handle->m_next == nullptr);
+
+  auto lk = std::lock_guard<std::mutex>{m_mutex};
+
   if (m_head) {
     m_head->m_prev = handle;
     handle->m_next = m_head;
   }
   m_head = handle;
-
-  /* NOTE: There is an edge case where a new executor can be started while the registry is in the
-   * process of being paused. Because of this we allow registring a new executor while the registry
-   * is paused, the executor will then immediately pause itself.
-   */
-  switch (m_state.load(std::memory_order_acquire)) {
-  case RegistryState::Running:
-    break;
-  case RegistryState::Paused:
-    handle->requestPause();
-    break;
-  case RegistryState::Aborted:
-    handle->requestAbort();
-    break;
-  }
 }
 
 auto ExecutorRegistry::unregisterExecutor(ExecutorHandle* handle) noexcept -> void {
+  assert(m_state.load(std::memory_order_acquire) == RegistryState::Running);
+
   auto lk = std::lock_guard<std::mutex>{m_mutex};
 
-  assert(m_state.load(std::memory_order_acquire) == RegistryState::Running);
   assert(m_head);
   assert(handle == m_head || handle->m_prev);
 
@@ -50,6 +38,9 @@ auto ExecutorRegistry::unregisterExecutor(ExecutorHandle* handle) noexcept -> vo
 }
 
 auto ExecutorRegistry::abortExecutors() noexcept -> void {
+
+  assert(m_state.load(std::memory_order_acquire) == RegistryState::Running);
+
   // First pause all the executors to they are either trapped or still inside a blocking call (but
   // will trap as soon as the blocking call is done).
   pauseExecutors();
@@ -68,8 +59,8 @@ auto ExecutorRegistry::abortExecutors() noexcept -> void {
       exec = exec->m_next;
     }
     m_head = nullptr;
-    m_state.store(RegistryState::Aborted, std::memory_order_release);
   }
+  m_state.store(RegistryState::Aborted, std::memory_order_release);
 }
 
 auto ExecutorRegistry::pauseExecutors() noexcept -> void {
@@ -86,16 +77,19 @@ auto ExecutorRegistry::pauseExecutors() noexcept -> void {
         exec = exec->m_next;
       }
       if (done) {
-        m_state.store(RegistryState::Paused, std::memory_order_release);
         break;
       }
     }
     std::this_thread::yield();
   }
+
+  m_state.store(RegistryState::Paused, std::memory_order_release);
 }
 
 auto ExecutorRegistry::resumeExecutors() noexcept -> void {
   assert(m_state.load(std::memory_order_acquire) == RegistryState::Paused);
+
+  m_state.store(RegistryState::Running, std::memory_order_release);
 
   /* Unset the pause flag on all executors. */
   auto lk    = std::lock_guard<std::mutex>{m_mutex};
@@ -104,7 +98,6 @@ auto ExecutorRegistry::resumeExecutors() noexcept -> void {
     exec->resume();
     exec = exec->m_next;
   }
-  m_state.store(RegistryState::Running, std::memory_order_release);
 }
 
 } // namespace vm::internal
