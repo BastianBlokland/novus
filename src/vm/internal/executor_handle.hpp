@@ -1,10 +1,9 @@
 #pragma once
 #include "internal/intrinsics.hpp"
 #include "internal/stack.hpp"
+#include "internal/thread.hpp"
 #include "vm/exec_state.hpp"
 #include <atomic>
-#include <immintrin.h>
-#include <thread>
 
 namespace vm::internal {
 
@@ -70,9 +69,9 @@ public:
       // Current strategy is we do a single longer pause (thread yield) and after returning from
       // that we do short cpu pauses until we are resumed. This works well if the pause request is
       // very short, but if its longer it starts to be wastefull.
-      std::this_thread::yield();
+      threadYield();
       while (req = m_request.load(std::memory_order_acquire), req == RequestType::Pause) {
-        _mm_pause();
+        threadPause();
       }
       if (unlikely(req == RequestType::Abort)) {
         goto Abort;

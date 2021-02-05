@@ -15,7 +15,7 @@ class FutureRef;
 // 'entryArgCount', 'entryArgSource', 'promise' are used for sub-executers (forked calls) that take
 // arguments from a parent executor and place their result in the 'promise' object.
 auto execute(
-    const Settings& settings,
+    const Settings* settings,
     const novasm::Assembly* assembly,
     PlatformInterface* iface,
     ExecutorRegistry* execRegistry,

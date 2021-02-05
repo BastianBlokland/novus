@@ -28,6 +28,7 @@
 #include <unistd.h>
 #include <csignal>
 #include <climits>
+#include <pthread.h>
 
 #endif // !_WIN32
 

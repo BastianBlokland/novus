@@ -1,5 +1,5 @@
 #include "internal/executor_registry.hpp"
-#include <thread>
+#include "internal/thread.hpp"
 
 namespace vm::internal {
 
@@ -29,7 +29,7 @@ auto ExecutorRegistry::unregisterExecutor(ExecutorHandle* handle) noexcept -> vo
 
   // Double check that its still running after aquiring the lock.
   assert(m_state.load(std::memory_order_acquire) == RegistryState::Running);
-  
+
   assert(m_head);
   assert(handle == m_head || handle->m_prev);
 
@@ -86,7 +86,7 @@ auto ExecutorRegistry::pauseExecutors() noexcept -> void {
         break;
       }
     }
-    std::this_thread::yield();
+    threadYield();
   }
 
   m_state.store(RegistryState::Paused, std::memory_order_release);

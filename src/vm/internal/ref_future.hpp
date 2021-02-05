@@ -1,10 +1,10 @@
 #pragma once
+#include "internal/thread.hpp"
 #include "internal/value.hpp"
 #include "vm/exec_state.hpp"
 #include <atomic>
 #include <chrono>
 #include <condition_variable>
-#include <immintrin.h>
 #include <mutex>
 
 namespace vm::internal {
@@ -30,7 +30,7 @@ public:
 
     // Wait until all waiters have received the abort message.
     while (m_waitersCount.load(std::memory_order_acquire)) {
-      _mm_pause();
+      threadPause();
     }
   }
 
@@ -58,9 +58,9 @@ public:
 
     bool res;
     {
-      auto lk        = std::unique_lock<std::mutex>{m_mutex};
-      res = m_condVar.wait_for(
-        lk, std::chrono::nanoseconds(timeout), [this] { return m_state != ExecState::Running; });
+      auto lk = std::unique_lock<std::mutex>{m_mutex};
+      res     = m_condVar.wait_for(
+          lk, std::chrono::nanoseconds(timeout), [this] { return m_state != ExecState::Running; });
     }
 
     m_waitersCount.fetch_sub(1, std::memory_order_release);

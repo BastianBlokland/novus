@@ -78,7 +78,7 @@ TEST_CASE("[vm] Execute process platform-calls", "vm") {
           asmb->addRet();
         },
         "input",
-        "017");
+        "012");
   }
 
   SECTION("StdOut can be read from a child-process") {

@@ -284,6 +284,7 @@ add_library(vm STATIC
   vm/internal/platform_utilities.cpp
   vm/internal/ref_allocator.cpp
   vm/internal/ref.cpp
+  vm/internal/thread.cpp
   vm/platform_interface.cpp
   vm/vm.cpp
   vm/exec_state.cpp)
