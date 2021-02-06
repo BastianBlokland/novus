@@ -46,10 +46,8 @@ auto threadStart(ThreadRoutineRaw routine, void* arg) noexcept -> ThreadStartRes
 auto threadYield() noexcept -> void {
 #if defined(_WIN32)
   SwitchToThread();
-#elif defined(__APPLE__) // !_WIN32
+#else // !_WIN32
   sched_yield();
-#else // !_WIN32 && !__APPLE__
-  pthread_yield();
 #endif
 }
 
