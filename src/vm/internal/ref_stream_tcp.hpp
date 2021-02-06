@@ -8,8 +8,12 @@
 #include "internal/settings.hpp"
 #include "internal/thread.hpp"
 #include "intrinsics.hpp"
+#include <atomic>
 #include <cerrno>
 #include <cstring>
+
+// TODO REmove
+#include <cstdio>
 
 #if defined(_WIN32)
 
@@ -38,6 +42,7 @@ enum class TcpStreamType : uint8_t {
 enum class TcpStreamState : uint8_t {
   Valid  = 0,
   Failed = 1,
+  Closed = 2,
 };
 
 enum class IpAddressFamily : uint8_t {
@@ -88,7 +93,9 @@ public:
   TcpStreamRef(const TcpStreamRef& rhs) = delete;
   TcpStreamRef(TcpStreamRef&& rhs)      = delete;
   ~TcpStreamRef() noexcept {
-    if (SOCKET_VALID(m_socket)) {
+    // Close the socket if its still open.
+    const bool isClosed = m_state.load(std::memory_order_acquire) == TcpStreamState::Closed;
+    if (SOCKET_VALID(m_socket) && !isClosed) {
 #if defined(_WIN32)
       ::closesocket(m_socket);
 #else  // !_WIN32
@@ -107,25 +114,27 @@ public:
   }
 
   auto shutdown() noexcept -> bool {
+    if (m_type == TcpStreamType::Connection) {
+      // Connection sockets we shutdown.
 #if defined(__APPLE__)
-    switch (m_type) {
-    case TcpStreamType::Server:
-      return ::close(m_socket) == 0;
-    case TcpStreamType::Connection:
       return ::shutdown(m_socket, SHUT_RDWR) == 0;
-    }
-    return false;
 #elif defined(_WIN32) // !__APPLE__
-    switch (m_type) {
-    case TcpStreamType::Server:
-      return ::closesocket(m_socket) == 0;
-    case TcpStreamType::Connection:
       return ::shutdown(m_socket, SD_BOTH) == 0;
-    }
-    return false;
 #else                 // !_WIN32 && !__APPLE__
-    return ::shutdown(m_socket, SHUT_RDWR) == 0;
+      return ::shutdown(m_socket, SHUT_RDWR) == 0;
 #endif                // !_WIN32 && !__APPLE__
+    }
+
+    // For server sockets there is no such thing so we already close the socket.
+    const auto prevState = m_state.exchange(TcpStreamState::Closed, std::memory_order_acq_rel);
+    if (SOCKET_VALID(m_socket) && prevState != TcpStreamState::Closed) {
+#if defined(_WIN32)
+      return ::closesocket(m_socket) == 0;
+#else  // !_WIN32
+      return ::close(m_socket) == 0;
+#endif // !_WIN32
+    }
+    return false; // Already closed before.
   }
 
   auto readString(ExecutorHandle* execHandle, PlatformError* pErr, StringRef* str) noexcept
@@ -140,7 +149,8 @@ public:
       return false;
     }
 
-    // 'recv' call can block so we mark ourselves as paused so the gc can trigger in the mean time.
+    // 'recv' call can block so we mark ourselves as paused so the gc can trigger in the mean
+    // time.
     execHandle->setState(ExecState::Paused);
 
     auto bytesRead = ::recv(m_socket, str->getCharDataPtr(), str->getSize(), 0);
@@ -172,7 +182,8 @@ public:
       return '\0';
     }
 
-    // 'recv' call can block so we mark ourselves as paused so the gc can trigger in the mean time.
+    // 'recv' call can block so we mark ourselves as paused so the gc can trigger in the mean
+    // time.
     execHandle->setState(ExecState::Paused);
 
     char res       = '\0';
@@ -207,7 +218,8 @@ public:
       return false;
     }
 
-    // 'send' call can block so we mark ourselves as paused so the gc can trigger in the mean time.
+    // 'send' call can block so we mark ourselves as paused so the gc can trigger in the mean
+    // time.
     execHandle->setState(ExecState::Paused);
 
     auto bytesWritten = ::send(m_socket, str->getCharDataPtr(), str->getSize(), 0);
@@ -232,7 +244,8 @@ public:
       return false;
     }
 
-    // 'send' call can block so we mark ourselves as paused so the gc can trigger in the mean time.
+    // 'send' call can block so we mark ourselves as paused so the gc can trigger in the mean
+    // time.
     execHandle->setState(ExecState::Paused);
 
     auto* valChar     = static_cast<char*>(static_cast<void*>(&val));
@@ -333,7 +346,7 @@ public:
 
 private:
   TcpStreamType m_type;
-  TcpStreamState m_state;
+  std::atomic<TcpStreamState> m_state;
   SOCKET m_socket;
   int m_numCons = 0;
 
@@ -596,8 +609,8 @@ inline auto ipLookupAddress(
     return alloc->allocStr(0);
   }
 
-  // Note: 'getaddrinfo' returns a linked list of addresses sorted by priority, we return the first
-  // from the requested family.
+  // Note: 'getaddrinfo' returns a linked list of addresses sorted by priority, we return the
+  // first from the requested family.
   do {
     if (res->ai_family == hints.ai_family) {
       void* addrData = nullptr;
