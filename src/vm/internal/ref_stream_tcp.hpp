@@ -12,9 +12,6 @@
 #include <cerrno>
 #include <cstring>
 
-// TODO REmove
-#include <cstdio>
-
 #if defined(_WIN32)
 
 #define SOCKET_VALID(SOCK) (SOCK != INVALID_SOCKET)
@@ -110,7 +107,8 @@ public:
   [[nodiscard]] constexpr static auto getKind() { return RefKind::StreamTcp; }
 
   [[nodiscard]] auto isValid() noexcept -> bool {
-    return SOCKET_VALID(m_socket) && m_state == TcpStreamState::Valid;
+    return SOCKET_VALID(m_socket) &&
+        m_state.load(std::memory_order_acquire) == TcpStreamState::Valid;
   }
 
   auto shutdown() noexcept -> bool {
@@ -153,12 +151,29 @@ public:
     // time.
     execHandle->setState(ExecState::Paused);
 
-    auto bytesRead = ::recv(m_socket, str->getCharDataPtr(), str->getSize(), 0);
+    int bytesRead = -1;
+    while (m_state.load(std::memory_order_acquire) == TcpStreamState::Valid) {
+      bytesRead = ::recv(m_socket, str->getCharDataPtr(), str->getSize(), 0);
+      if (bytesRead >= 0) {
+        break; // No error while reading.
+      }
+
+      // Retry the send for certain errors.
+#if defined(_WIN32)
+      const bool shouldRetry = SOCKET_ERR == WSAEINTR;
+#else  // !_WIN32
+      const bool shouldRetry = SOCKET_ERR == EINTR;
+#endif // !_WIN32
+      if (!shouldRetry) {
+        break;
+      }
+      threadYield(); // Yield between retries.
+    }
 
     // After resuming check if we should wait for gc (or if we are aborted).
     execHandle->setState(ExecState::Running);
     if (execHandle->trap()) {
-      return false;
+      return false; // Aborted.
     }
 
     if (bytesRead < 0) {
@@ -168,12 +183,16 @@ public:
         *pErr = getPlatformError();
       }
       str->updateSize(0);
-      m_state = TcpStreamState::Failed;
+      m_state.store(TcpStreamState::Failed, std::memory_order_release);
       return false;
     }
-
+    if (bytesRead == 0) {
+      *pErr = PlatformError::StreamNoDataAvailable;
+      str->updateSize(0);
+      return false;
+    }
     str->updateSize(bytesRead);
-    return bytesRead > 0;
+    return true;
   }
 
   auto readChar(ExecutorHandle* execHandle, PlatformError* pErr) noexcept -> char {
@@ -182,33 +201,49 @@ public:
       return '\0';
     }
 
-    // 'recv' call can block so we mark ourselves as paused so the gc can trigger in the mean
-    // time.
+    // 'recv' call can block so we mark ourselves as paused so the gc can trigger in the mean time.
     execHandle->setState(ExecState::Paused);
 
-    char res       = '\0';
-    auto bytesRead = ::recv(m_socket, &res, 1, 0);
+    char res      = '\0';
+    int bytesRead = -1;
+    while (m_state.load(std::memory_order_acquire) == TcpStreamState::Valid) {
+      bytesRead = ::recv(m_socket, &res, 1, 0);
+      if (bytesRead >= 0) {
+        break; // No error while reading.
+      }
+
+      // Retry the send for certain errors.
+#if defined(_WIN32)
+      const bool shouldRetry = SOCKET_ERR == WSAEINTR;
+#else  // !_WIN32
+      const bool shouldRetry = SOCKET_ERR == EINTR;
+#endif // !_WIN32
+      if (!shouldRetry) {
+        break;
+      }
+      threadYield(); // Yield between retries.
+    }
 
     // After resuming check if we should wait for gc (or if we are aborted).
     execHandle->setState(ExecState::Running);
     if (execHandle->trap()) {
-      return '\0';
+      return '\0'; // Aborted.
     }
 
-    switch (bytesRead) {
-    case -1:
+    if (bytesRead < 0) {
       if (errno == EAGAIN) {
         *pErr = PlatformError::TcpTimeout;
       } else {
         *pErr = getPlatformError();
       }
-      m_state = TcpStreamState::Failed;
-      [[fallthrough]];
-    case 0:
+      m_state.store(TcpStreamState::Failed, std::memory_order_release);
       return '\0';
-    default:
-      return res;
     }
+    if (bytesRead == 0) {
+      *pErr = PlatformError::StreamNoDataAvailable;
+      return '\0';
+    }
+    return res;
   }
 
   auto writeString(ExecutorHandle* execHandle, PlatformError* pErr, StringRef* str) noexcept
@@ -222,20 +257,41 @@ public:
     // time.
     execHandle->setState(ExecState::Paused);
 
-    auto bytesWritten = ::send(m_socket, str->getCharDataPtr(), str->getSize(), 0);
+    int bytesWritten = -1;
+    while (m_state.load(std::memory_order_acquire) == TcpStreamState::Valid) {
+      bytesWritten = ::send(m_socket, str->getCharDataPtr(), str->getSize(), 0);
+      if (bytesWritten >= 0) {
+        break; // No error while writing.
+      }
+
+      // Retry the send for certain errors.
+#if defined(_WIN32)
+      const bool shouldRetry = SOCKET_ERR == WSAEINTR;
+#else  // !_WIN32
+      const bool shouldRetry = SOCKET_ERR == EINTR;
+#endif // !_WIN32
+      if (!shouldRetry) {
+        break;
+      }
+      threadYield(); // Yield between retries.
+    }
 
     // After resuming check if we should wait for gc (or if we are aborted).
     execHandle->setState(ExecState::Running);
     if (execHandle->trap()) {
-      return false;
+      return false; // Aborted.
     }
 
     if (bytesWritten < 0) {
-      *pErr   = getPlatformError();
-      m_state = TcpStreamState::Failed;
+      *pErr = getPlatformError();
+      m_state.store(TcpStreamState::Failed, std::memory_order_release);
       return false;
     }
-    return bytesWritten == static_cast<int>(str->getSize());
+    if (bytesWritten != static_cast<int>(str->getSize())) {
+      *pErr = PlatformError::TcpUnknownError;
+      return false;
+    }
+    return true;
   }
 
   auto writeChar(ExecutorHandle* execHandle, PlatformError* pErr, uint8_t val) noexcept -> bool {
@@ -248,8 +304,25 @@ public:
     // time.
     execHandle->setState(ExecState::Paused);
 
-    auto* valChar     = static_cast<char*>(static_cast<void*>(&val));
-    auto bytesWritten = ::send(m_socket, valChar, 1, 0);
+    auto* valChar    = static_cast<char*>(static_cast<void*>(&val));
+    int bytesWritten = -1;
+    while (m_state.load(std::memory_order_acquire) == TcpStreamState::Valid) {
+      bytesWritten = ::send(m_socket, valChar, 1, 0);
+      if (bytesWritten >= 0) {
+        break; // No error while writing.
+      }
+
+      // Retry the send for certain errors.
+#if defined(_WIN32)
+      const bool shouldRetry = SOCKET_ERR == WSAEINTR;
+#else  // !_WIN32
+      const bool shouldRetry = SOCKET_ERR == EINTR;
+#endif // !_WIN32
+      if (!shouldRetry) {
+        break;
+      }
+      threadYield(); // Yield between retries.
+    }
 
     // After resuming check if we should wait for gc (or if we are aborted).
     execHandle->setState(ExecState::Running);
@@ -259,12 +332,14 @@ public:
 
     if (bytesWritten < 0) {
       *pErr = getPlatformError();
-      if (errno == EAGAIN) {
-      }
-      m_state = TcpStreamState::Failed;
+      m_state.store(TcpStreamState::Failed, std::memory_order_release);
       return false;
     }
-    return bytesWritten == 1;
+    if (bytesWritten == 0) {
+      *pErr = PlatformError::TcpUnknownError;
+      return false;
+    }
+    return true;
   }
 
   auto flush() noexcept -> bool {
@@ -295,22 +370,21 @@ public:
     // 'accept' call blocks so we mark ourselves as paused so the gc can trigger in the mean time.
     execHandle->setState(ExecState::Paused);
 
-    SOCKET sock;
-    while (true) {
+    SOCKET sock = INVALID_SOCKET;
+    while (m_state.load(std::memory_order_acquire) == TcpStreamState::Valid) {
       // Accept a new connection from the socket.
       sock = ::accept(m_socket, nullptr, nullptr);
       if (SOCKET_VALID(sock)) {
-        ++m_numCons;
         break; // Valid connection accepted.
       }
 
       // Retry the accept for certain errors.
 #if defined(_WIN32)
       const bool shouldRetry =
-          SOCKET_ERR == WSAEWOULDBLOCK || SOCKET_ERR == WSAECONNRESET || SOCKET_ERR == WSAEINTR;
+          SOCKET_ERR == WSAEINTR || SOCKET_ERR == WSAEWOULDBLOCK || SOCKET_ERR == WSAECONNRESET;
 #else  // !_WIN32
-      const bool shouldRetry =
-          SOCKET_ERR == EAGAIN || SOCKET_ERR == EWOULDBLOCK || SOCKET_ERR == ECONNABORTED;
+      const bool shouldRetry = SOCKET_ERR == EINTR || SOCKET_ERR == EAGAIN ||
+          SOCKET_ERR == EWOULDBLOCK || SOCKET_ERR == ECONNABORTED;
 #endif // !_WIN32
       if (!shouldRetry) {
         break;
@@ -321,21 +395,11 @@ public:
     // After resuming check if we should wait for gc (or if we are aborted).
     execHandle->setState(ExecState::Running);
     if (execHandle->trap()) {
-      return nullptr;
+      return nullptr; // Aborted.
     }
 
     if (!SOCKET_VALID(sock)) {
-#if defined(_WIN32)
-      const bool isDead = SOCKET_ERR == WSAENOTSOCK;
-#else  // !_WIN32
-      const bool isDead = SOCKET_ERR == EINVAL || SOCKET_ERR == EBADF;
-#endif // !_WIN32
-
-      if (isDead) {
-        *pErr = PlatformError::TcpSocketIsDead;
-      } else {
-        *pErr = getPlatformError();
-      }
+      *pErr = getPlatformError();
       return alloc->allocPlain<TcpStreamRef>(
           TcpStreamType::Connection, sock, TcpStreamState::Failed);
     }
@@ -348,7 +412,6 @@ private:
   TcpStreamType m_type;
   std::atomic<TcpStreamState> m_state;
   SOCKET m_socket;
-  int m_numCons = 0;
 
   inline explicit TcpStreamRef(TcpStreamType type, SOCKET sock) noexcept :
       Ref{getKind()}, m_type{type}, m_state{TcpStreamState::Valid}, m_socket{sock} {}
@@ -440,7 +503,7 @@ inline auto tcpOpenConnection(
 #if defined(_WIN32)
     const bool shouldRetry = SOCKET_ERR == WSAEINTR;
 #else  // !_WIN32
-    const bool shouldRetry = SOCKET_ERR == EAGAIN;
+    const bool shouldRetry = SOCKET_ERR == EINTR || SOCKET_ERR == EAGAIN;
 #endif // !_WIN32
     if (!shouldRetry) {
       break; // Not an error we should retry.
@@ -537,6 +600,7 @@ inline auto tcpStartServer(
 inline auto tcpAcceptConnection(
     ExecutorHandle* execHandle, RefAllocator* alloc, PlatformError* pErr, Value stream) noexcept
     -> TcpStreamRef* {
+
   auto* streamRef = stream.getRef();
   if (streamRef->getKind() != RefKind::StreamTcp) {
     *pErr = PlatformError::TcpInvalidSocket;
@@ -551,6 +615,7 @@ inline auto tcpAcceptConnection(
 }
 
 inline auto tcpShutdown(PlatformError* pErr, Value stream) noexcept -> bool {
+
   auto* streamRef = stream.getRef();
   if (streamRef->getKind() != RefKind::StreamTcp) {
     *pErr = PlatformError::TcpInvalidSocket;
@@ -561,8 +626,7 @@ inline auto tcpShutdown(PlatformError* pErr, Value stream) noexcept -> bool {
     *pErr = PlatformError::TcpInvalidSocket;
     return false;
   }
-  tcpStreamRef->shutdown();
-  return true;
+  return tcpStreamRef->shutdown();
 }
 
 inline auto ipLookupAddress(
@@ -601,7 +665,7 @@ inline auto ipLookupAddress(
     if (res) {
       ::freeaddrinfo(res);
     }
-    return nullptr;
+    return nullptr; // Aborted.
   }
 
   if (resCode != 0 || !res) {
@@ -663,6 +727,7 @@ inline auto getPlatformError() noexcept -> PlatformError {
   case WSAECONNRESET:
     return PlatformError::TcpRemoteResetConnection;
   case WSAESHUTDOWN:
+  case WSAENOTSOCK:
     return PlatformError::TcpSocketIsDead;
   }
 #else  // !_WIN32
@@ -694,12 +759,14 @@ inline auto getPlatformError() noexcept -> PlatformError {
     return PlatformError::TcpTimeout;
   case ECONNRESET:
     return PlatformError::TcpRemoteResetConnection;
+  case EPIPE:
+  case EPROTOTYPE:
+  case EBADF:
+  case EINVAL:
+    return PlatformError::TcpSocketIsDead;
   }
 #endif // !_WIN32
-  fprintf(stderr, "-- tcp error: %i\n", SOCKET_ERR);
-  fflush(stderr);
-  return static_cast<PlatformError>(SOCKET_ERR);
-  // return PlatformError::Unknown;
+  return PlatformError::TcpUnknownError;
 }
 
 } // namespace vm::internal

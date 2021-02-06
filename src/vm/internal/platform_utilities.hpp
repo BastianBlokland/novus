@@ -17,6 +17,7 @@ enum class PlatformError : uint32_t {
   FeatureNetworkNotEnabled = 100,
 
   StreamOptionsNotSupported = 200,
+  StreamNoDataAvailable     = 201,
 
   TcpUnknownError              = 300,
   TcpInvalidSocket             = 301,

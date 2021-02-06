@@ -14,6 +14,7 @@ enum PlatformError =
   Unknown                       : 001,
   FeatureNetworkNotEnabled      : 100,
   StreamOptionsNotSupported     : 200,
+  StreamNoDataAvailable         : 201,
   TcpUknownError                : 300,
   TcpInvalidSocket              : 301,
   TcpInvalidConnectionSocket    : 302,
@@ -48,6 +49,7 @@ fun string(PlatformError err)
   if err == PlatformError.Unknown                       -> "Unknown"
   if err == PlatformError.FeatureNetworkNotEnabled      -> "Network feature not enabled"
   if err == PlatformError.StreamOptionsNotSupported     -> "Stream does not support the given options"
+  if err == PlatformError.StreamNoDataAvailable         -> "No data available"
   if err == PlatformError.TcpUknownError                -> "Uknown Tcp error occured"
   if err == PlatformError.TcpInvalidSocket              -> "Invalid Tcp socket"
   if err == PlatformError.TcpInvalidConnectionSocket    -> "Invalid Tcp connection socket"
