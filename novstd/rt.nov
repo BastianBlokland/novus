@@ -26,14 +26,15 @@ enum PlatformError =
   TcpInvalidAddressFamily       : 309,
   TcpNoAccess                   : 310,
   TcpAddressInUse               : 311,
-  TcpInvalidAddress             : 312,
-  TcpNetworkUnreachable         : 313,
-  TcpAddressFamiliyNotSupported : 314,
-  TcpConnectionRefused          : 315,
-  TcpTimeout                    : 316,
-  TcpAddressNotFound            : 317,
-  TcpRemoteResetConnection      : 318,
-  TcpSocketIsDead               : 319
+  TcpAddressUnavailable         : 312,
+  TcpInvalidAddress             : 313,
+  TcpNetworkUnreachable         : 314,
+  TcpAddressFamiliyNotSupported : 315,
+  TcpConnectionRefused          : 316,
+  TcpTimeout                    : 317,
+  TcpAddressNotFound            : 318,
+  TcpRemoteResetConnection      : 319,
+  TcpSocketIsDead               : 320
 
 // -- Conversions
 
@@ -59,6 +60,7 @@ fun string(PlatformError err)
   if err == PlatformError.TcpInvalidAddressFamily       -> "Invalid Tcp address-family"
   if err == PlatformError.TcpNoAccess                   -> "Tcp access denied"
   if err == PlatformError.TcpAddressInUse               -> "Tcp address already in use"
+  if err == PlatformError.TcpAddressUnavailable         -> "Tcp address cannot be assigned"
   if err == PlatformError.TcpInvalidAddress             -> "Invalid Tcp address"
   if err == PlatformError.TcpNetworkUnreachable         -> "Tcp network unreachable"
   if err == PlatformError.TcpAddressFamiliyNotSupported -> "Tcp address family not supported"

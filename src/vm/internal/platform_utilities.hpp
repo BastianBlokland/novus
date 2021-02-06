@@ -30,14 +30,15 @@ enum class PlatformError : uint32_t {
   TcpInvalidAddressFamily      = 309,
   TcpNoAccess                  = 310,
   TcpAddressInUse              = 311,
-  TcpInvalidAddress            = 312,
-  TcpNetworkUnreachable        = 313,
-  TcpAddressFamilyNotSupported = 314,
-  TcpConnectionRefused         = 315,
-  TcpTimeout                   = 316,
-  TcpAddressNotFound           = 317,
-  TcpRemoteResetConnection     = 318,
-  TcpSocketIsDead              = 319,
+  TcpAddressUnavailable        = 312,
+  TcpInvalidAddress            = 313,
+  TcpNetworkUnreachable        = 314,
+  TcpAddressFamilyNotSupported = 315,
+  TcpConnectionRefused         = 316,
+  TcpTimeout                   = 317,
+  TcpAddressNotFound           = 318,
+  TcpRemoteResetConnection     = 319,
+  TcpSocketIsDead              = 320,
 };
 
 } // namespace vm::internal

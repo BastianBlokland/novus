@@ -684,6 +684,8 @@ inline auto getPlatformError() noexcept -> PlatformError {
     return PlatformError::TcpNoAccess;
   case EADDRINUSE:
     return PlatformError::TcpAddressInUse;
+  case EADDRNOTAVAIL:
+    return PlatformError::TcpAddressUnavailable;
   case EAFNOSUPPORT:
     return PlatformError::TcpAddressFamilyNotSupported;
   case ECONNREFUSED:
