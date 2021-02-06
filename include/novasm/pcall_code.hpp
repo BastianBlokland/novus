@@ -5,12 +5,13 @@
 namespace novasm {
 
 /*
-  Items in parentheses '()' on the left side of '->' are taken from the stack and on the right side
-  are pushed onto the stack.
-*/
+ * Items in parentheses '()' on the left side of '->' are taken from the stack and on the right side
+ * are pushed onto the stack.
+ */
 
 enum class PCallCode : uint8_t {
-  EndiannessNative = 1, // () -> (int) Get the native endianness of the platform.
+  EndiannessNative  = 1, // () -> (int) Get the native endianness of the platform.
+  PlatformErrorCode = 2, // () -> (int) Get the last platform error, see notes at bottom of file.
 
   StreamCheckValid   = 10, // (stream)         -> (int)     Check if given stream is valid.
   StreamReadString   = 11, // (int, stream)    -> (string)  Read up to x bytes from a stream.
@@ -63,6 +64,15 @@ enum class PCallCode : uint8_t {
   SleepNano = 240, // (long)         -> (long) Sleep the current executor for x nanoseconds.
   Assert    = 241, // (string, int)  -> (int) If condition is false: fail with message.
 };
+
+/* Platform errors
+ * The following calls will set the error code that is returned from 'PlatformErrorCode':
+ * - TcpOpenCon, error is set when an invalid stream is returned.
+ * - TcpStartServer, error is set when an invalid stream is returned.
+ * - TcpAcceptCon, error is set when an invalid stream is returned.
+ * - TcpShutdown, error is set when false is returned.
+ * - IpLookupAddress, error is set when empty string is returned.
+ */
 
 auto operator<<(std::ostream& out, const PCallCode& rhs) noexcept -> std::ostream&;
 

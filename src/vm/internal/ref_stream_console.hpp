@@ -2,10 +2,12 @@
 #include "gsl.hpp"
 #include "internal/fd_utilities.hpp"
 #include "internal/os_include.hpp"
+#include "internal/platform_utilities.hpp"
 #include "internal/ref.hpp"
 #include "internal/ref_allocator.hpp"
 #include "internal/ref_string.hpp"
 #include "internal/terminal.hpp"
+#include "internal/thread.hpp"
 #include "intrinsics.hpp"
 #include "vm/platform_interface.hpp"
 #include <cerrno>
@@ -37,7 +39,8 @@ public:
 
   [[nodiscard]] auto isValid() noexcept -> bool { return m_filePtr != nullptr; }
 
-  auto readString(ExecutorHandle* execHandle, StringRef* str) noexcept -> bool {
+  auto readString(ExecutorHandle* execHandle, PlatformError* /*unused*/, StringRef* str) noexcept
+      -> bool {
     if (unlikely(str->getSize() == 0)) {
       return false;
     }
@@ -71,7 +74,7 @@ public:
     return bytesRead > 0;
   }
 
-  auto readChar(ExecutorHandle* execHandle) noexcept -> char {
+  auto readChar(ExecutorHandle* execHandle, PlatformError* /*unused*/) noexcept -> char {
 #if defined(_WIN32)
     // Special case non-blocking terminal read on windows. Unfortunately required as AFAIK there are
     // no non-blocking file-descriptors that can be used for terminal io.
@@ -95,15 +98,24 @@ public:
     return res > 0 ? static_cast<char>(res) : '\0';
   }
 
-  auto writeString(ExecutorHandle* execHandle, StringRef* str) noexcept -> bool {
+  auto writeString(ExecutorHandle* execHandle, PlatformError* /*unused*/, StringRef* str) noexcept
+      -> bool {
 
     // Can block so we mark ourselves as paused so the gc can trigger in the mean time.
     execHandle->setState(ExecState::Paused);
 
     size_t itemsWritten;
-    do {
+    while (true) {
       itemsWritten = std::fwrite(str->getDataPtr(), str->getSize(), 1, m_filePtr);
-    } while (itemsWritten != 1u && errno == EAGAIN);
+      if (itemsWritten == 1u) {
+        break; // Success.
+      }
+      const bool shouldRetry = errno == EAGAIN;
+      if (!shouldRetry) {
+        break; // Not an error we should retry.
+      }
+      threadYield(); // Yield between retries.
+    }
 
     // After resuming check if we should wait for gc (or if we are aborted).
     execHandle->setState(ExecState::Running);
@@ -114,15 +126,24 @@ public:
     return itemsWritten == 1u;
   }
 
-  auto writeChar(ExecutorHandle* execHandle, uint8_t val) noexcept -> bool {
+  auto writeChar(ExecutorHandle* execHandle, PlatformError* /*unused*/, uint8_t val) noexcept
+      -> bool {
 
     // Can block so we mark ourselves as paused so the gc can trigger in the mean time.
     execHandle->setState(ExecState::Paused);
 
     int charWritten;
-    do {
+    while (true) {
       charWritten = std::fputc(val, m_filePtr);
-    } while (charWritten != val && errno == EAGAIN);
+      if (charWritten == val) {
+        break; // Success.
+      }
+      const bool shouldRetry = errno == EAGAIN;
+      if (!shouldRetry) {
+        break; // Not an error we should retry.
+      }
+      threadYield(); // Yield between retries.
+    }
 
     // After resuming check if we should wait for gc (or if we are aborted).
     execHandle->setState(ExecState::Running);
@@ -145,7 +166,7 @@ public:
     return true;
   }
 
-  auto setOpts(StreamOpts opts) noexcept -> bool {
+  auto setOpts(PlatformError* /*unused*/, StreamOpts opts) noexcept -> bool {
 #if defined(_WIN32)
     if (static_cast<int32_t>(opts) & static_cast<int32_t>(StreamOpts::NoBlock)) {
       if (!hasTerminal()) {
@@ -162,7 +183,7 @@ public:
 #endif
   }
 
-  auto unsetOpts(StreamOpts opts) noexcept -> bool {
+  auto unsetOpts(PlatformError* /*unused*/, StreamOpts opts) noexcept -> bool {
 #if defined(_WIN32)
     if (static_cast<int32_t>(opts) & static_cast<int32_t>(StreamOpts::NoBlock)) {
       m_nonblockWinTerm = false;

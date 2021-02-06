@@ -47,26 +47,20 @@ act write{T}(TcpConnection c, Writer{T} writer, T val) -> Option{Error}
 
 // -- Client
 
-act tcpConnection(IpAddress addr) -> Either{TcpConnection, Error}
-  tcpConnection(addr, 8080)
-
-act tcpConnection(IpAddress addr, int port) -> Either{TcpConnection, Error}
+act tcpConnect(IpAddress addr, int port = 8080) -> Either{TcpConnection, Error}
   binAddr = ipBinWriter().run(addr);
   socket  = intrinsic{tcp_connection_open}(binAddr, IpFamily(addr).int(), port);
   if socket.isValid() -> TcpConnection(socket)
-  else                -> Error("Failed to open connection to: '" + addr.string() + " [" + port + "]")
+  else                -> getPlatformError()
 
-act tcpConnectionAsync(IpAddress addr) -> future{Either{TcpConnection, Error}}
-  fork tcpConnection(addr)
-
-act tcpConnectionAsync(IpAddress addr, int port) -> future{Either{TcpConnection, Error}}
-  fork tcpConnection(addr, port)
+act tcpConnectAsync(IpAddress addr, int port = 8080) -> future{Either{TcpConnection, Error}}
+  fork tcpConnect(addr, port)
 
 // -- Server
 
 act tcpServer(TcpServerSettings settings) -> Either{TcpServerState, Error}
   serverSocket = intrinsic{tcp_server_start}(settings.family.int(), settings.port, settings.maxBacklog);
-  if !serverSocket.isValid() -> Error("Failed to start tcp-server")
+  if !serverSocket.isValid() -> getPlatformError()
   else ->
     teardown = (impure lambda () -> bool
       intrinsic{tcp_shutdown}(serverSocket)
@@ -74,7 +68,7 @@ act tcpServer(TcpServerSettings settings) -> Either{TcpServerState, Error}
     acceptCon = (impure lambda () -> Either{TcpConnection, Error}
       socket = intrinsic{tcp_server_accept}(serverSocket);
       if socket.isValid() -> TcpConnection(socket)
-      else                -> teardown(); Error("Failed to accept new connection")
+      else                -> getPlatformError()
     );
     loop = (impure lambda (
       future{Either{TcpConnection, Error}} futureConnection,
@@ -119,7 +113,7 @@ assert(
   );
   fork tcpServer(TcpServerSettings(clientHandler, 5011, IpFamily.V4));
   client = (impure lambda(string message)
-    c = tcpConnection(ipV4Loopback(), 5011).failOnError();
+    c = tcpConnect(ipV4Loopback(), 5011).failOnError();
     c.write(message + '\n').failOnError();
     c.socket.readLine()
   );
@@ -135,7 +129,7 @@ assert(
   );
   fork tcpServer(TcpServerSettings(clientHandler, 5012));
   client = (impure lambda(string message)
-    c = tcpConnection(ipV6Loopback(), 5012).failOnError();
+    c = tcpConnect(ipV6Loopback(), 5012).failOnError();
     c.write(message + '\n').failOnError();
     c.socket.readLine()
   );
@@ -150,7 +144,7 @@ assert(
     Option(Error("Did not go well"))
   );
   res = fork tcpServer(TcpServerSettings(clientHandler, 5013));
-  client = tcpConnection(ipV6Loopback(), 5013).failOnError();
+  client = tcpConnect(ipV6Loopback(), 5013).failOnError();
   res.get() == Error("Did not go well")
 )
 
@@ -175,7 +169,8 @@ assert(
   );
   server = fork tcpServer(TcpServerSettings(clientHandler, 5015, IpFamily.V6, 64, cancelPredicate));
   parallelFor(25, impure lambda (int i)
-    tcpConnection(ipV6Loopback(), 5015)
+    c = tcpConnect(ipV6Loopback(), 5015).failOnError();
+    c.socket.readLine()
   );
   if server.get() as Error          err  -> printErr(err); false
   if server.get() as TcpServerState s    -> s == TcpServerState(25)

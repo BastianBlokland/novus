@@ -35,40 +35,44 @@ inline auto streamCheckValid(const Value& stream) noexcept -> bool {
   STREAM_DISPATCH(stream, isValid())
 }
 
-inline auto
-streamReadString(ExecutorHandle* execHandle, const Value& stream, StringRef* tgt) noexcept -> bool {
+inline auto streamReadString(
+    ExecutorHandle* execHandle, PlatformError* pErr, const Value& stream, StringRef* tgt) noexcept
+    -> bool {
 
   if (!streamCheckValid(stream)) {
     tgt->updateSize(0);
     return false;
   }
-  STREAM_DISPATCH(stream, readString(execHandle, tgt))
-}
-
-inline auto streamReadChar(ExecutorHandle* execHandle, const Value& stream) noexcept -> char {
-  if (!streamCheckValid(stream)) {
-    return '\0';
-  }
-  STREAM_DISPATCH(stream, readChar(execHandle))
+  STREAM_DISPATCH(stream, readString(execHandle, pErr, tgt))
 }
 
 inline auto
-streamWriteString(ExecutorHandle* execHandle, const Value& stream, StringRef* str) noexcept
-    -> bool {
-
+streamReadChar(ExecutorHandle* execHandle, PlatformError* pErr, const Value& stream) noexcept
+    -> char {
   if (!streamCheckValid(stream)) {
-    return false;
+    return '\0';
   }
-  STREAM_DISPATCH(stream, writeString(execHandle, str))
+  STREAM_DISPATCH(stream, readChar(execHandle, pErr))
 }
 
-inline auto streamWriteChar(ExecutorHandle* execHandle, const Value& stream, uint8_t val) noexcept
+inline auto streamWriteString(
+    ExecutorHandle* execHandle, PlatformError* pErr, const Value& stream, StringRef* str) noexcept
     -> bool {
 
   if (!streamCheckValid(stream)) {
     return false;
   }
-  STREAM_DISPATCH(stream, writeChar(execHandle, val))
+  STREAM_DISPATCH(stream, writeString(execHandle, pErr, str))
+}
+
+inline auto streamWriteChar(
+    ExecutorHandle* execHandle, PlatformError* pErr, const Value& stream, uint8_t val) noexcept
+    -> bool {
+
+  if (!streamCheckValid(stream)) {
+    return false;
+  }
+  STREAM_DISPATCH(stream, writeChar(execHandle, pErr, val))
 }
 
 inline auto streamFlush(const Value& stream) noexcept -> bool {
@@ -78,18 +82,20 @@ inline auto streamFlush(const Value& stream) noexcept -> bool {
   STREAM_DISPATCH(stream, flush())
 }
 
-inline auto streamSetOpts(const Value& stream, StreamOpts opts) noexcept -> bool {
+inline auto streamSetOpts(PlatformError* pErr, const Value& stream, StreamOpts opts) noexcept
+    -> bool {
   if (!streamCheckValid(stream)) {
     return false;
   }
-  STREAM_DISPATCH(stream, setOpts(opts))
+  STREAM_DISPATCH(stream, setOpts(pErr, opts))
 }
 
-inline auto streamUnsetOpts(const Value& stream, StreamOpts opts) noexcept -> bool {
+inline auto streamUnsetOpts(PlatformError* pErr, const Value& stream, StreamOpts opts) noexcept
+    -> bool {
   if (!streamCheckValid(stream)) {
     return false;
   }
-  STREAM_DISPATCH(stream, unsetOpts(opts))
+  STREAM_DISPATCH(stream, unsetOpts(pErr, opts))
 }
 
 #undef STREAM_DISPATCH

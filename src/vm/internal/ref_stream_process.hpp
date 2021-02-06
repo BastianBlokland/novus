@@ -1,4 +1,5 @@
 #pragma once
+#include "internal/platform_utilities.hpp"
 #include "internal/ref_process.hpp"
 #include "internal/stream_opts.hpp"
 
@@ -30,7 +31,8 @@ public:
 
   [[nodiscard]] auto isValid() noexcept -> bool { return getFile() != nullptr; }
 
-  auto readString(ExecutorHandle* execHandle, StringRef* str) noexcept -> bool {
+  auto readString(ExecutorHandle* execHandle, PlatformError* /*unused*/, StringRef* str) noexcept
+      -> bool {
     if (unlikely(str->getSize() == 0)) {
       return false;
     }
@@ -50,7 +52,7 @@ public:
     return bytesRead > 0;
   }
 
-  auto readChar(ExecutorHandle* execHandle) noexcept -> char {
+  auto readChar(ExecutorHandle* execHandle, PlatformError* /*unused*/) noexcept -> char {
     // Can block so we mark ourselves as paused so the gc can trigger in the mean time.
     execHandle->setState(ExecState::Paused);
 
@@ -65,7 +67,8 @@ public:
     return res > 0 ? static_cast<char>(res) : '\0';
   }
 
-  auto writeString(ExecutorHandle* execHandle, StringRef* str) noexcept -> bool {
+  auto writeString(ExecutorHandle* execHandle, PlatformError* /*unused*/, StringRef* str) noexcept
+      -> bool {
     // Can block so we mark ourselves as paused so the gc can trigger in the mean time.
     execHandle->setState(ExecState::Paused);
 
@@ -80,7 +83,8 @@ public:
     return res;
   }
 
-  auto writeChar(ExecutorHandle* execHandle, uint8_t val) noexcept -> bool {
+  auto writeChar(ExecutorHandle* execHandle, PlatformError* /*unused*/, uint8_t val) noexcept
+      -> bool {
     // Can block so we mark ourselves as paused so the gc can trigger in the mean time.
     execHandle->setState(ExecState::Paused);
 
@@ -97,13 +101,15 @@ public:
 
   auto flush() noexcept -> bool { return std::fflush(getFile()) == 0; }
 
-  auto setOpts(StreamOpts /*unused*/) noexcept -> bool {
+  auto setOpts(PlatformError* /*unused*/, StreamOpts /*unused*/) noexcept -> bool {
     // On unix we could implement non-blocking by setting the file-descriptor to be non-blocking,
     // but this is not something we can implement on windows.
     return false;
   }
 
-  auto unsetOpts(StreamOpts /*unused*/) noexcept -> bool { return false; }
+  auto unsetOpts(PlatformError* /*unused*/, StreamOpts /*unused*/) noexcept -> bool {
+    return false;
+  }
 
 private:
   ProcessRef* m_process;

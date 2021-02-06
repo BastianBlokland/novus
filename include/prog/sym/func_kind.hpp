@@ -125,7 +125,8 @@ enum class FuncKind {
                     // all user-types.
   CheckNEqUserType, // Check if two user-types are not equal.
 
-  ActionEndiannessNative, // Get the native endianness of the system: Little: 0, Big: 1.
+  ActionEndiannessNative,  // Get the native endianness of the system: Little: 0, Big: 1.
+  ActionPlatformErrorCode, // Get the last plaform error.
 
   ActionStreamCheckValid,   // Check if a stream is valid.
   ActionStreamReadString,   // Read a string up to size x from a stream.

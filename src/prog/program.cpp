@@ -263,6 +263,8 @@ Program::Program() :
   // Register build-in actions.
   m_funcDecls.registerIntrinsicAction(
       *this, Fk::ActionEndiannessNative, "platform_endianness_native", sym::TypeSet{}, m_int);
+  m_funcDecls.registerIntrinsicAction(
+      *this, Fk::ActionPlatformErrorCode, "platform_error_code", sym::TypeSet{}, m_int);
 
   m_funcDecls.registerIntrinsicAction(
       *this, Fk::ActionStreamCheckValid, "stream_checkvalid", sym::TypeSet{m_stream}, m_bool);

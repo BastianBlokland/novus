@@ -33,6 +33,7 @@ auto inline pcall(
     RefAllocator* refAlloc,
     BasicStack* stack,
     ExecutorHandle* execHandle,
+    PlatformError* pErr,
     novasm::PCallCode code) noexcept -> void {
   assert(iface && refAlloc && stack && execHandle);
 
@@ -80,6 +81,9 @@ auto inline pcall(
   case PCallCode::EndiannessNative: {
     PUSH_INT(static_cast<uint32_t>(getEndianness()));
   } break;
+  case PCallCode::PlatformErrorCode: {
+    PUSH_INT(static_cast<uint32_t>(*pErr));
+  } break;
 
   case PCallCode::StreamCheckValid: {
     PUSH_BOOL(streamCheckValid(POP()));
@@ -93,7 +97,7 @@ auto inline pcall(
     auto str = refAlloc->allocStr(maxChars <= 0 ? 0U : static_cast<unsigned int>(maxChars));
     PUSH_REF(str);
 
-    streamReadString(execHandle, stream, str);
+    streamReadString(execHandle, pErr, stream, str);
 
     POP_AT(1); // Pop the stream off the stack, 1 because its behind the result string.
   } break;
@@ -101,7 +105,7 @@ auto inline pcall(
     // Note: Keep the stream on the stack, reason is gc could run while we are blocked.
     auto stream = PEEK();
 
-    auto readChar = streamReadChar(execHandle, stream);
+    auto readChar = streamReadChar(execHandle, pErr, stream);
 
     POP(); // Pop the stream off the stack.
     PUSH_INT(readChar);
@@ -113,7 +117,7 @@ auto inline pcall(
 
     // Note: Keep the stream on the stack, reason is gc could run while we are blocked.
     auto stream = PEEK_BEHIND(1);
-    auto result = streamWriteString(execHandle, stream, strRef);
+    auto result = streamWriteString(execHandle, pErr, stream, strRef);
 
     POP(); // Pop the string off the stack.
     POP(); // Pop the stream off the stack.
@@ -124,7 +128,7 @@ auto inline pcall(
 
     // Note: Keep the stream on the stack, reason is gc could run while we are blocked.
     auto stream = PEEK();
-    auto result = streamWriteChar(execHandle, stream, val);
+    auto result = streamWriteChar(execHandle, pErr, stream, val);
 
     POP(); // Pop the stream off the stack.
     PUSH_BOOL(result);
@@ -135,12 +139,12 @@ auto inline pcall(
   case PCallCode::StreamSetOptions: {
     auto options = POP_INT();
     auto stream  = POP();
-    PUSH_BOOL(streamSetOpts(stream, static_cast<StreamOpts>(options)));
+    PUSH_BOOL(streamSetOpts(pErr, stream, static_cast<StreamOpts>(options)));
   } break;
   case PCallCode::StreamUnsetOptions: {
     auto options = POP_INT();
     auto stream  = POP();
-    PUSH_BOOL(streamUnsetOpts(stream, static_cast<StreamOpts>(options)));
+    PUSH_BOOL(streamUnsetOpts(pErr, stream, static_cast<StreamOpts>(options)));
   } break;
 
   case PCallCode::ProcessStart: {
@@ -204,7 +208,8 @@ auto inline pcall(
     auto* addrStr = getStringRef(refAlloc, addr);
     CHECK_ALLOC(addrStr);
 
-    auto* result = tcpOpenConnection(settings, execHandle, refAlloc, addrStr, ipAddrFamily, port);
+    auto* result =
+        tcpOpenConnection(settings, execHandle, refAlloc, pErr, addrStr, ipAddrFamily, port);
 
     POP(); // Pop the 'address' string off the stack.
     PUSH_REF(result);
@@ -213,19 +218,19 @@ auto inline pcall(
     const auto backlog      = POP_INT();
     const auto port         = POP_INT();
     const auto ipAddrFamily = static_cast<IpAddressFamily>(POP_INT());
-    PUSH_REF(tcpStartServer(settings, refAlloc, ipAddrFamily, port, backlog));
+    PUSH_REF(tcpStartServer(settings, refAlloc, pErr, ipAddrFamily, port, backlog));
   } break;
   case PCallCode::TcpAcceptCon: {
 
     // Note: Keep the stream on the stack, reason is gc could run while we are blocked.
     auto stream  = PEEK();
-    auto* result = tcpAcceptConnection(execHandle, refAlloc, stream);
+    auto* result = tcpAcceptConnection(execHandle, refAlloc, pErr, stream);
 
     POP(); // Pop the stream off the stack.
     PUSH_REF(result);
   } break;
   case PCallCode::TcpShutdown: {
-    PUSH_BOOL(tcpShutdown(POP()));
+    PUSH_BOOL(tcpShutdown(pErr, POP()));
   } break;
   case PCallCode::IpLookupAddress: {
 
@@ -235,7 +240,7 @@ auto inline pcall(
     auto hostname     = PEEK();
     auto* hostnameStr = getStringRef(refAlloc, hostname);
     CHECK_ALLOC(hostnameStr);
-    auto* result = ipLookupAddress(settings, execHandle, refAlloc, hostnameStr, ipAddrFamily);
+    auto* result = ipLookupAddress(settings, execHandle, refAlloc, pErr, hostnameStr, ipAddrFamily);
 
     POP(); // Pop the hostname off the stack.
     PUSH_REF(result);

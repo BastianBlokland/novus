@@ -274,6 +274,7 @@ auto execute(
   // Setup state.
   auto stack      = BasicStack{};
   auto execHandle = ExecutorHandle{&stack};
+  auto pErr       = PlatformError::None;
   execRegistry->registerExecutor(&execHandle);
 
   // If we are given a promise to fill then push it on the stack, its important to be on the stack
@@ -824,7 +825,8 @@ auto execute(
       }
     } break;
     case OpCode::PCall: {
-      pcall(settings, assembly, iface, refAlloc, &stack, &execHandle, readAsm<PCallCode>(&ip));
+      pcall(
+          settings, assembly, iface, refAlloc, &stack, &execHandle, &pErr, readAsm<PCallCode>(&ip));
       if (unlikely(execHandle.getState(std::memory_order_relaxed) != ExecState::Running)) {
         assert(execHandle.getState(std::memory_order_relaxed) != ExecState::Success);
         goto End;

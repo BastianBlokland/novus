@@ -10,6 +10,31 @@ enum Platform =
   MacOs   : 2,
   Windows : 3
 
+enum PlatformError =
+  Unknown                       : 001,
+  FeatureNetworkNotEnabled      : 100,
+  StreamOptionsNotSupported     : 200,
+  TcpUknownError                : 300,
+  TcpInvalidSocket              : 301,
+  TcpInvalidConnectionSocket    : 302,
+  TcpInvalidServerSocket        : 303,
+  TcpAlreadyInProcess           : 304,
+  TcpNetworkDown                : 305,
+  TcpSocketCouldNotBeAllocated  : 306,
+  TcpInvalidPort                : 307,
+  TcpInvalidBacklog             : 308,
+  TcpInvalidAddressFamily       : 309,
+  TcpNoAccess                   : 310,
+  TcpAddressInUse               : 311,
+  TcpInvalidAddress             : 312,
+  TcpNetworkUnreachable         : 313,
+  TcpAddressFamiliyNotSupported : 314,
+  TcpConnectionRefused          : 315,
+  TcpTimeout                    : 316,
+  TcpAddressNotFound            : 317,
+  TcpRemoteResetConnection      : 318,
+  TcpSocketIsDead               : 319
+
 // -- Conversions
 
 fun string(Platform p)
@@ -18,9 +43,39 @@ fun string(Platform p)
   if p == Platform.Windows  -> "Windows"
   else                      -> "Unknown"
 
+fun string(PlatformError err)
+  if err == PlatformError.Unknown                       -> "Unknown"
+  if err == PlatformError.FeatureNetworkNotEnabled      -> "Network feature not enabled"
+  if err == PlatformError.StreamOptionsNotSupported     -> "Stream does not support the given options"
+  if err == PlatformError.TcpUknownError                -> "Uknown Tcp error occured"
+  if err == PlatformError.TcpInvalidSocket              -> "Invalid Tcp socket"
+  if err == PlatformError.TcpInvalidConnectionSocket    -> "Invalid Tcp connection socket"
+  if err == PlatformError.TcpInvalidServerSocket        -> "Invalid Tcp server socket"
+  if err == PlatformError.TcpAlreadyInProcess           -> "Tcp operation already in progess"
+  if err == PlatformError.TcpNetworkDown                -> "Tcp network down"
+  if err == PlatformError.TcpSocketCouldNotBeAllocated  -> "New Tcp socket could not be allocated"
+  if err == PlatformError.TcpInvalidPort                -> "Invalid Tcp port"
+  if err == PlatformError.TcpInvalidBacklog             -> "Invalid Tcp backlog"
+  if err == PlatformError.TcpInvalidAddressFamily       -> "Invalid Tcp address-family"
+  if err == PlatformError.TcpNoAccess                   -> "Tcp access denied"
+  if err == PlatformError.TcpAddressInUse               -> "Tcp address already in use"
+  if err == PlatformError.TcpInvalidAddress             -> "Invalid Tcp address"
+  if err == PlatformError.TcpNetworkUnreachable         -> "Tcp network unreachable"
+  if err == PlatformError.TcpAddressFamiliyNotSupported -> "Tcp address family not supported"
+  if err == PlatformError.TcpConnectionRefused          -> "Tcp connection refused"
+  if err == PlatformError.TcpTimeout                    -> "Tcp timeout occured"
+  if err == PlatformError.TcpAddressNotFound            -> "Tcp address not found"
+  if err == PlatformError.TcpRemoteResetConnection      -> "Tcp connection reset by remote"
+  if err == PlatformError.TcpSocketIsDead               -> "Tcp socket is dead"
+  else                                                  -> "Unrecognized platform error '" + int(err) + "'"
+
 // -- Platform
 
 act getPlatform() Platform(intrinsic{runtime_platform}())
+
+act getPlatformErrorCode() PlatformError(intrinsic{platform_error_code}())
+
+act getPlatformError() Error(getPlatformErrorCode(), getPlatformErrorCode().string())
 
 // -- Versions
 
