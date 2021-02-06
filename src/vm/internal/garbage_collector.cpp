@@ -4,6 +4,8 @@
 #include "internal/ref_stream_process.hpp"
 #include "internal/ref_string_link.hpp"
 #include "internal/ref_struct.hpp"
+#include "internal/thread.hpp"
+#include <cassert>
 #include <chrono>
 #include <condition_variable>
 #include <mutex>
@@ -16,20 +18,38 @@ const static auto bytesAllocThreadAccumMax = 1024U * 1024U; // 1 MiB
 thread_local static unsigned int bytesAllocThreadAccum;
 
 GarbageCollector::GarbageCollector(RefAllocator* refAlloc, ExecutorRegistry* execReg) noexcept :
-    m_refAlloc{refAlloc}, m_execRegistry{execReg}, m_requestType{RequestType::None} {
+    m_refAlloc{refAlloc},
+    m_execRegistry{execReg},
+    m_collectorStatus{CollectorStatus::NotRunning},
+    m_requestType{RequestType::None} {
+
+  assert(refAlloc && execReg);
 
   // Subscribe to allocation notifications, we can use these to decide when to run a collection.
   refAlloc->subscribe(this);
 
   m_markQueue.reserve(initialGcMarkQueueSize);
-
-  // Start the garbage-collector thread.
-  m_collectorThread = std::thread(&GarbageCollector::collectorLoop, this);
 }
 
 GarbageCollector::~GarbageCollector() noexcept { terminateCollector(); }
 
+auto GarbageCollector::startCollector() noexcept -> CollectorStartResult {
+  assert(m_collectorStatus.load(std::memory_order_acquire) == CollectorStatus::NotRunning);
+
+  m_collectorStatus.store(CollectorStatus::Running, std::memory_order_release);
+
+  auto collectorThread = +[](GarbageCollector* collector) noexcept { collector->collectorLoop(); };
+  const auto startRes  = threadStart(collectorThread, this);
+
+  if (unlikely(startRes != ThreadStartResult::Success)) {
+    return CollectorStartResult::Failure;
+  }
+  return CollectorStartResult::Success;
+}
+
 auto GarbageCollector::requestCollection() noexcept -> void {
+  assert(m_collectorStatus.load(std::memory_order_acquire) == CollectorStatus::Running);
+
   {
     std::lock_guard<std::mutex> lk(m_requestMutex);
     if (likely(m_requestType == RequestType::None)) {
@@ -40,16 +60,17 @@ auto GarbageCollector::requestCollection() noexcept -> void {
 }
 
 auto GarbageCollector::terminateCollector() noexcept -> void {
-  // If the collector-thread is already joined then early out.
-  if (!m_collectorThread.joinable()) {
-    return;
+  if (m_collectorStatus.load(std::memory_order_acquire) == CollectorStatus::Running) {
+    {
+      std::lock_guard<std::mutex> lk(m_requestMutex);
+      m_requestType = RequestType::Terminate;
+    }
+    m_requestCondVar.notify_one();
+
+    while (m_collectorStatus.load(std::memory_order_acquire) != CollectorStatus::Terminated) {
+      threadYield();
+    }
   }
-  {
-    std::lock_guard<std::mutex> lk(m_requestMutex);
-    m_requestType = RequestType::Terminate;
-  }
-  m_requestCondVar.notify_one();
-  m_collectorThread.join();
 }
 
 auto GarbageCollector::notifyAlloc(unsigned int size) noexcept -> void {
@@ -77,7 +98,7 @@ auto GarbageCollector::collectorLoop() noexcept -> void {
         return m_requestType != RequestType::None;
       });
       if (unlikely(m_requestType == RequestType::Terminate)) {
-        return;
+        break;
       }
 
       // Reset the bytes counter.
@@ -89,6 +110,8 @@ auto GarbageCollector::collectorLoop() noexcept -> void {
     // Collect garbage.
     collect();
   }
+
+  m_collectorStatus.store(CollectorStatus::Terminated, std::memory_order_release);
 }
 
 auto GarbageCollector::collect() noexcept -> void {

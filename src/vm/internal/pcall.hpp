@@ -21,14 +21,13 @@
 #include "vm/platform_interface.hpp"
 #include <chrono>
 #include <cstdlib>
-#include <thread>
 
 namespace vm::internal {
 
 // Execute a 'platform' call. Very similar to normal instructions but are interacting with the
 // 'outside' world (for example file io).
 auto inline pcall(
-    const Settings& settings,
+    const Settings* settings,
     const novasm::Assembly* assembly,
     PlatformInterface* iface,
     RefAllocator* refAlloc,
@@ -321,9 +320,9 @@ auto inline pcall(
   } break;
 
   case PCallCode::SleepNano: {
-    auto sleepTime = std::chrono::nanoseconds(getLong(PEEK()));
+    auto sleepTime = getLong(PEEK());
     execHandle->setState(ExecState::Paused);
-    std::this_thread::sleep_for(sleepTime);
+    threadSleepNano(sleepTime);
     execHandle->setState(ExecState::Running);
     if (execHandle->trap()) {
       return;

@@ -2,7 +2,6 @@
 #include "internal/executor_registry.hpp"
 #include "internal/ref_alloc_observer.hpp"
 #include <condition_variable>
-#include <thread>
 #include <vector>
 
 namespace vm::internal {
@@ -26,6 +25,11 @@ const auto initialGcMarkQueueSize = 1024U;
 //
 class GarbageCollector final : public RefAllocObserver {
 public:
+  enum class CollectorStartResult {
+    Success = 0,
+    Failure = 1,
+  };
+
   GarbageCollector(RefAllocator* refAlloc, ExecutorRegistry* execRegistry) noexcept;
   GarbageCollector(const GarbageCollector& rhs) = delete;
   GarbageCollector(GarbageCollector&& rhs)      = delete;
@@ -34,7 +38,10 @@ public:
   auto operator=(const GarbageCollector& rhs) -> GarbageCollector& = delete;
   auto operator=(GarbageCollector&& rhs) -> GarbageCollector& = delete;
 
+  [[nodiscard]] auto startCollector() noexcept -> CollectorStartResult;
+
   auto requestCollection() noexcept -> void;
+
   auto terminateCollector() noexcept -> void;
 
 private:
@@ -44,12 +51,18 @@ private:
     Terminate = 2,
   };
 
+  enum class CollectorStatus : int {
+    NotRunning = 0,
+    Running    = 1,
+    Terminated = 2,
+  };
+
   RefAllocator* m_refAlloc;
   ExecutorRegistry* m_execRegistry;
   std::vector<Ref*> m_markQueue;
   std::atomic<int> m_bytesUntilNextCollection;
 
-  std::thread m_collectorThread;
+  std::atomic<CollectorStatus> m_collectorStatus;
   RequestType m_requestType;
   std::mutex m_requestMutex;
   std::condition_variable m_requestCondVar;

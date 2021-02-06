@@ -74,21 +74,23 @@ static auto teardown(const internal::Settings* /*unused*/) noexcept {}
 
 auto run(const novasm::Assembly* assembly, PlatformInterface* iface) noexcept -> ExecState {
 
+  auto execRegistry = internal::ExecutorRegistry{};
+  auto memAlloc     = internal::MemoryAllocator{};
+  auto refAlloc     = internal::RefAllocator{&memAlloc};
+  auto gc           = internal::GarbageCollector{&refAlloc, &execRegistry};
+
+  if (unlikely(gc.startCollector() == internal::GarbageCollector::CollectorStartResult::Failure)) {
+    return ExecState::VmInitFailed;
+  }
+
   auto settings              = internal::Settings{};
   settings.socketsEnabled    = true; // TODO: Make configurable.
   settings.interceptInterupt = true; // TODO: Make configurable.
 
   setup(&settings);
 
-  auto execRegistry = internal::ExecutorRegistry{};
-  auto memAlloc     = internal::MemoryAllocator{};
-  auto refAlloc     = internal::RefAllocator{&memAlloc};
-  auto gc           = internal::GarbageCollector{&refAlloc, &execRegistry};
-
-  assert(execRegistry.isRunning());
-
   auto resultState = execute(
-      settings,
+      &settings,
       assembly,
       iface,
       &execRegistry,

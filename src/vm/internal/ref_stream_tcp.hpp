@@ -312,14 +312,14 @@ inline auto configureSocket(SOCKET sock) noexcept -> void {
 }
 
 inline auto tcpOpenConnection(
-    const Settings& settings,
+    const Settings* settings,
     ExecutorHandle* execHandle,
     RefAllocator* alloc,
     StringRef* address,
     IpAddressFamily family,
     int32_t port) noexcept -> TcpStreamRef* {
 
-  if (!settings.socketsEnabled) {
+  if (!settings->socketsEnabled) {
     // Sockets are not enabled on this runtime.
     return alloc->allocPlain<TcpStreamRef>(TcpStreamType::Connection, INVALID_SOCKET);
   }
@@ -383,13 +383,13 @@ inline auto tcpOpenConnection(
 }
 
 inline auto tcpStartServer(
-    const Settings& settings,
+    const Settings* settings,
     RefAllocator* alloc,
     IpAddressFamily family,
     int32_t port,
     int32_t backlog) noexcept -> TcpStreamRef* {
 
-  if (!settings.socketsEnabled) {
+  if (!settings->socketsEnabled) {
     // Sockets are not enabled on this runtime.
     return alloc->allocPlain<TcpStreamRef>(TcpStreamType::Server, INVALID_SOCKET);
   }
@@ -477,13 +477,13 @@ inline auto tcpShutdown(Value stream) noexcept -> bool {
 }
 
 inline auto ipLookupAddress(
-    const Settings& settings,
+    const Settings* settings,
     ExecutorHandle* execHandle,
     RefAllocator* alloc,
     StringRef* hostName,
     IpAddressFamily family) noexcept -> StringRef* {
 
-  if (!settings.socketsEnabled) {
+  if (!settings->socketsEnabled) {
     // Sockets are not enabled on this runtime.
     return alloc->allocStr(0);
   }

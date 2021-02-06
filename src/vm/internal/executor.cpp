@@ -10,13 +10,12 @@
 #include "internal/ref_struct.hpp"
 #include "internal/stack.hpp"
 #include "internal/string_utilities.hpp"
+#include "internal/thread.hpp"
 #include "novasm/op_code.hpp"
 #include "novasm/pcall_code.hpp"
 #include "vm/exec_state.hpp"
 #include "vm/platform_interface.hpp"
 #include <cmath>
-#include <immintrin.h>
-#include <thread>
 
 namespace vm::internal {
 
@@ -124,7 +123,7 @@ inline auto pushClosure(
 // Start executing a call to a function at a given instruction pointer location on a new thread. A
 // promise object for retreiving the results from will be pushed onto the stack.
 inline auto fork(
-    const Settings& settings,
+    const Settings* settings,
     const novasm::Assembly* assembly,
     PlatformInterface* iface,
     ExecutorRegistry* execRegistry,
@@ -142,7 +141,8 @@ inline auto fork(
   }
 
   auto* argSource = stack->getNext() - argCount;
-  std::thread(
+
+  const auto startRes = threadStart(
       &execute,
       settings,
       assembly,
@@ -152,13 +152,17 @@ inline auto fork(
       entryIpOffset,
       argCount,
       argSource,
-      future)
-      .detach();
+      future);
+
+  if (unlikely(startRes != ThreadStartResult::Success)) {
+    execHandle->setState(ExecState::ForkFailed);
+    return false;
+  }
 
   // Wait until the fork executor has started.
-  std::this_thread::yield();
+  threadYield();
   while (!future->getStarted().load(std::memory_order_acquire)) {
-    _mm_pause();
+    threadPause();
   }
 
   /* Note its important to leave the arguments alone until the fork executor has started, as until
@@ -176,7 +180,7 @@ inline auto fork(
 }
 
 auto execute(
-    const Settings& settings,
+    const Settings* settings,
     const novasm::Assembly* assembly,
     PlatformInterface* iface,
     ExecutorRegistry* execRegistry,
@@ -185,6 +189,8 @@ auto execute(
     uint8_t entryArgCount,
     Value* entryArgSource,
     FutureRef* promise) noexcept -> ExecState {
+
+  assert(settings && assembly && iface && execRegistry && refAlloc);
 
   using OpCode    = novasm::OpCode;
   using PCallCode = novasm::PCallCode;
@@ -709,7 +715,7 @@ auto execute(
         if (unlikely(execHandle.trap())) {
           goto End;
         }
-        std::this_thread::yield();
+        threadYield();
       }
     } break;
 
