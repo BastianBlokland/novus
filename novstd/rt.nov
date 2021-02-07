@@ -35,7 +35,8 @@ enum PlatformError =
   TcpTimeout                    : 317,
   TcpAddressNotFound            : 318,
   TcpRemoteResetConnection      : 319,
-  TcpSocketIsDead               : 320
+  TcpSocketIsDead               : 320,
+  SleepFailed                   : 400
 
 // -- Conversions
 
@@ -71,6 +72,7 @@ fun string(PlatformError err)
   if err == PlatformError.TcpAddressNotFound            -> "Tcp address not found"
   if err == PlatformError.TcpRemoteResetConnection      -> "Tcp connection reset by remote"
   if err == PlatformError.TcpSocketIsDead               -> "Tcp socket is dead"
+  if err == PlatformError.SleepFailed                   -> "Sleep failed"
   else                                                  -> "Unrecognized platform error '" + int(err) + "'"
 
 // -- Platform
@@ -79,9 +81,9 @@ act getPlatform() Platform(intrinsic{runtime_platform}())
 
 act getPlatformErrorCode() PlatformError(intrinsic{platform_error_code}())
 
-act getPlatformError(string message)
+act getPlatformError(string message = "")
   code = getPlatformErrorCode();
-  Error(code, message + ": " + code.string())
+  Error(code, message.isEmpty() ? code.string() : message + ": " + code.string())
 
 // -- Versions
 
@@ -118,7 +120,7 @@ act atInterupt{T}(action{T} delegate) -> future{T}
 // -- Misc
 
 act sleep(Duration d) -> Option{Error}
-  intrinsic{sleep_nano}(d.ns); None()
+  intrinsic{sleep_nano}(d.ns) ? None() : getPlatformError()
 
 // -- Failure
 

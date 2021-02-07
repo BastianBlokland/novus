@@ -40,6 +40,8 @@ enum class PlatformError : uint32_t {
   TcpAddressNotFound           = 318,
   TcpRemoteResetConnection     = 319,
   TcpSocketIsDead              = 320,
+
+  SleepFailed = 400,
 };
 
 } // namespace vm::internal

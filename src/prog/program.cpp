@@ -394,7 +394,7 @@ Program::Program() :
       *this, Fk::ActionProgramPath, "path_program", sym::TypeSet{}, m_string);
 
   m_funcDecls.registerIntrinsicAction(
-      *this, Fk::ActionSleepNano, "sleep_nano", sym::TypeSet{m_long}, m_long);
+      *this, Fk::ActionSleepNano, "sleep_nano", sym::TypeSet{m_long}, m_bool);
 
   m_funcDecls.registerAction(
       *this, Fk::ActionAssert, "assert", sym::TypeSet{m_bool, m_string}, m_bool);

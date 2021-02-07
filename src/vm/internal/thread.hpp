@@ -74,7 +74,7 @@ template <typename RetT, typename... TArgs>
 auto threadYield() noexcept -> void;
 
 // Sleep the current thread for the given amount of nanaseconds.
-auto threadSleepNano(int64_t time) noexcept -> void;
+auto threadSleepNano(int64_t time) noexcept -> bool;
 
 // Emit a cpu pause instruction.
 inline auto threadPause() noexcept -> void { _mm_pause(); }

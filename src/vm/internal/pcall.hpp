@@ -73,6 +73,7 @@ auto inline pcall(
 #define POP_AT(IDX) stack->popAt(IDX)
 #define POP() stack->pop()
 #define POP_INT() POP().getInt()
+#define POP_LONG() getLong(POP())
 #define PEEK() stack->peek()
 #define PEEK_BEHIND(BEHIND) stack->peek(BEHIND)
 #define PEEK_INT() PEEK().getInt()
@@ -325,13 +326,17 @@ auto inline pcall(
   } break;
 
   case PCallCode::SleepNano: {
-    auto sleepTime = getLong(PEEK());
+    auto sleepTime = POP_LONG();
     execHandle->setState(ExecState::Paused);
-    threadSleepNano(sleepTime);
+    const bool res = threadSleepNano(sleepTime);
     execHandle->setState(ExecState::Running);
     if (execHandle->trap()) {
       return;
     }
+    if (!res) {
+      *pErr = PlatformError::SleepFailed;
+    }
+    PUSH_BOOL(res);
   } break;
   case PCallCode::Assert: {
     auto* msg = getStringRef(refAlloc, POP());
@@ -360,6 +365,7 @@ auto inline pcall(
 #undef PUSH_REF
 #undef POP
 #undef POP_INT
+#undef POP_LONG
 #undef PEEK
 #undef PEEK_BEHIND
 #undef PEEK_INT
