@@ -154,7 +154,7 @@ public:
     return charWritten == val;
   }
 
-  auto flush() noexcept -> bool {
+  auto flush(PlatformError* /*unused*/) noexcept -> bool {
     if (std::fflush(m_filePtr) != 0) {
 #if !defined(_WIN32)
       if (errno == EAGAIN) {

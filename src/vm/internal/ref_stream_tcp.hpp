@@ -14,15 +14,17 @@
 
 #if defined(_WIN32)
 
-#define SOCKET_VALID(SOCK) (SOCK != INVALID_SOCKET)
-#define SOCKET_ERR WSAGetLastError()
+#define OS_SOCKET SOCKET
+#define OS_SOCKET_VALID(SOCK) (SOCK != INVALID_SOCKET)
+#define OS_INVALID_SOCKET INVALID_SOCKET
+#define OS_SOCKET_ERR WSAGetLastError()
 
 #else // !_WIN32
 
-#define SOCKET int
-#define SOCKET_VALID(SOCK) (SOCK >= 0)
-#define INVALID_SOCKET -1
-#define SOCKET_ERR errno
+#define OS_SOCKET int
+#define OS_SOCKET_VALID(SOCK) (SOCK >= 0)
+#define OS_INVALID_SOCKET -1
+#define OS_SOCKET_ERR errno
 
 #endif // !_WIN32
 
@@ -76,9 +78,9 @@ inline auto getIpAddressSize(IpAddressFamily family) noexcept -> size_t {
   return 0u;
 }
 
-auto configureSocket(SOCKET sock) noexcept -> void;
+auto configureSocket(OS_SOCKET sock) noexcept -> void;
 
-auto getPlatformError() noexcept -> PlatformError;
+auto getTcpPlatformError() noexcept -> PlatformError;
 
 // Tcp implementation of the 'stream' interface.
 // Note: To avoid needing a vtable there is no abstract 'Stream' class but instead there are wrapper
@@ -92,10 +94,10 @@ public:
   ~TcpStreamRef() noexcept {
     // Close the socket if its still open.
     const bool isClosed = m_state.load(std::memory_order_acquire) == TcpStreamState::Closed;
-    if (SOCKET_VALID(m_socket) && !isClosed) {
+    if (OS_SOCKET_VALID(m_socket) && !isClosed) {
 #if defined(_WIN32)
       ::closesocket(m_socket);
-#else  // !_WIN32
+#else // !_WIN32
       ::close(m_socket);
 #endif // !_WIN32
     }
@@ -107,7 +109,7 @@ public:
   [[nodiscard]] constexpr static auto getKind() { return RefKind::StreamTcp; }
 
   [[nodiscard]] auto isValid() noexcept -> bool {
-    return SOCKET_VALID(m_socket) &&
+    return OS_SOCKET_VALID(m_socket) &&
         m_state.load(std::memory_order_acquire) == TcpStreamState::Valid;
   }
 
@@ -118,17 +120,17 @@ public:
       return ::shutdown(m_socket, SHUT_RDWR) == 0;
 #elif defined(_WIN32) // !__APPLE__
       return ::shutdown(m_socket, SD_BOTH) == 0;
-#else                 // !_WIN32 && !__APPLE__
+#else // !_WIN32 && !__APPLE__
       return ::shutdown(m_socket, SHUT_RDWR) == 0;
-#endif                // !_WIN32 && !__APPLE__
+#endif // !_WIN32 && !__APPLE__
     }
 
     // For server sockets there is no such thing so we already close the socket.
     const auto prevState = m_state.exchange(TcpStreamState::Closed, std::memory_order_acq_rel);
-    if (SOCKET_VALID(m_socket) && prevState != TcpStreamState::Closed) {
+    if (OS_SOCKET_VALID(m_socket) && prevState != TcpStreamState::Closed) {
 #if defined(_WIN32)
       return ::closesocket(m_socket) == 0;
-#else  // !_WIN32
+#else // !_WIN32
       return ::close(m_socket) == 0;
 #endif // !_WIN32
     }
@@ -143,12 +145,9 @@ public:
       return false;
     }
     if (unlikely(str->getSize() == 0)) {
-      *pErr = PlatformError::Unknown; // TODO: Add error type for invalid argument.
-      return false;
+      return true;
     }
 
-    // 'recv' call can block so we mark ourselves as paused so the gc can trigger in the mean
-    // time.
     execHandle->setState(ExecState::Paused);
 
     int bytesRead = -1;
@@ -160,9 +159,9 @@ public:
 
       // Retry the send for certain errors.
 #if defined(_WIN32)
-      const bool shouldRetry = SOCKET_ERR == WSAEINTR;
-#else  // !_WIN32
-      const bool shouldRetry = SOCKET_ERR == EINTR;
+      const bool shouldRetry = OS_SOCKET_ERR == WSAEINTR;
+#else // !_WIN32
+      const bool shouldRetry = OS_SOCKET_ERR == EINTR;
 #endif // !_WIN32
       if (!shouldRetry) {
         break;
@@ -170,7 +169,6 @@ public:
       threadYield(); // Yield between retries.
     }
 
-    // After resuming check if we should wait for gc (or if we are aborted).
     execHandle->setState(ExecState::Running);
     if (execHandle->trap()) {
       return false; // Aborted.
@@ -180,7 +178,7 @@ public:
       if (errno == EAGAIN) {
         *pErr = PlatformError::TcpTimeout;
       } else {
-        *pErr = getPlatformError();
+        *pErr = getTcpPlatformError();
       }
       str->updateSize(0);
       m_state.store(TcpStreamState::Failed, std::memory_order_release);
@@ -201,7 +199,6 @@ public:
       return '\0';
     }
 
-    // 'recv' call can block so we mark ourselves as paused so the gc can trigger in the mean time.
     execHandle->setState(ExecState::Paused);
 
     char res      = '\0';
@@ -214,9 +211,9 @@ public:
 
       // Retry the send for certain errors.
 #if defined(_WIN32)
-      const bool shouldRetry = SOCKET_ERR == WSAEINTR;
-#else  // !_WIN32
-      const bool shouldRetry = SOCKET_ERR == EINTR;
+      const bool shouldRetry = OS_SOCKET_ERR == WSAEINTR;
+#else // !_WIN32
+      const bool shouldRetry = OS_SOCKET_ERR == EINTR;
 #endif // !_WIN32
       if (!shouldRetry) {
         break;
@@ -224,7 +221,6 @@ public:
       threadYield(); // Yield between retries.
     }
 
-    // After resuming check if we should wait for gc (or if we are aborted).
     execHandle->setState(ExecState::Running);
     if (execHandle->trap()) {
       return '\0'; // Aborted.
@@ -234,7 +230,7 @@ public:
       if (errno == EAGAIN) {
         *pErr = PlatformError::TcpTimeout;
       } else {
-        *pErr = getPlatformError();
+        *pErr = getTcpPlatformError();
       }
       m_state.store(TcpStreamState::Failed, std::memory_order_release);
       return '\0';
@@ -252,9 +248,10 @@ public:
       *pErr = PlatformError::TcpInvalidConnectionSocket;
       return false;
     }
+    if (str->getSize() == 0) {
+      return true;
+    }
 
-    // 'send' call can block so we mark ourselves as paused so the gc can trigger in the mean
-    // time.
     execHandle->setState(ExecState::Paused);
 
     int bytesWritten = -1;
@@ -266,9 +263,9 @@ public:
 
       // Retry the send for certain errors.
 #if defined(_WIN32)
-      const bool shouldRetry = SOCKET_ERR == WSAEINTR;
-#else  // !_WIN32
-      const bool shouldRetry = SOCKET_ERR == EINTR;
+      const bool shouldRetry = OS_SOCKET_ERR == WSAEINTR;
+#else // !_WIN32
+      const bool shouldRetry = OS_SOCKET_ERR == EINTR;
 #endif // !_WIN32
       if (!shouldRetry) {
         break;
@@ -276,14 +273,13 @@ public:
       threadYield(); // Yield between retries.
     }
 
-    // After resuming check if we should wait for gc (or if we are aborted).
     execHandle->setState(ExecState::Running);
     if (execHandle->trap()) {
       return false; // Aborted.
     }
 
     if (bytesWritten < 0) {
-      *pErr = getPlatformError();
+      *pErr = getTcpPlatformError();
       m_state.store(TcpStreamState::Failed, std::memory_order_release);
       return false;
     }
@@ -300,8 +296,6 @@ public:
       return false;
     }
 
-    // 'send' call can block so we mark ourselves as paused so the gc can trigger in the mean
-    // time.
     execHandle->setState(ExecState::Paused);
 
     auto* valChar    = static_cast<char*>(static_cast<void*>(&val));
@@ -314,9 +308,9 @@ public:
 
       // Retry the send for certain errors.
 #if defined(_WIN32)
-      const bool shouldRetry = SOCKET_ERR == WSAEINTR;
-#else  // !_WIN32
-      const bool shouldRetry = SOCKET_ERR == EINTR;
+      const bool shouldRetry = OS_SOCKET_ERR == WSAEINTR;
+#else // !_WIN32
+      const bool shouldRetry = OS_SOCKET_ERR == EINTR;
 #endif // !_WIN32
       if (!shouldRetry) {
         break;
@@ -324,14 +318,13 @@ public:
       threadYield(); // Yield between retries.
     }
 
-    // After resuming check if we should wait for gc (or if we are aborted).
     execHandle->setState(ExecState::Running);
     if (execHandle->trap()) {
       return false;
     }
 
     if (bytesWritten < 0) {
-      *pErr = getPlatformError();
+      *pErr = getTcpPlatformError();
       m_state.store(TcpStreamState::Failed, std::memory_order_release);
       return false;
     }
@@ -342,9 +335,9 @@ public:
     return true;
   }
 
-  auto flush() noexcept -> bool {
-    // No way to 'flush' tcp sockets, we could consider temporary disabling the nagle algo
-    // (TCP_NODELAY).
+  auto flush(PlatformError* /*unused*/) noexcept -> bool {
+    // Is a no-op at the moment, in the future we can considering asking the os to actually send the
+    // data. Perhaps by temporary disabling the nagle algorithm (TCP_NODELAY)?
     return true;
   }
 
@@ -364,27 +357,27 @@ public:
       -> TcpStreamRef* {
     if (unlikely(m_type != TcpStreamType::Server)) {
       *pErr = PlatformError::TcpInvalidServerSocket;
-      return alloc->allocPlain<TcpStreamRef>(TcpStreamType::Connection, INVALID_SOCKET);
+      return alloc->allocPlain<TcpStreamRef>(TcpStreamType::Connection, OS_INVALID_SOCKET);
     }
 
     // 'accept' call blocks so we mark ourselves as paused so the gc can trigger in the mean time.
     execHandle->setState(ExecState::Paused);
 
-    SOCKET sock = INVALID_SOCKET;
+    OS_SOCKET sock = OS_INVALID_SOCKET;
     while (m_state.load(std::memory_order_acquire) == TcpStreamState::Valid) {
       // Accept a new connection from the socket.
       sock = ::accept(m_socket, nullptr, nullptr);
-      if (SOCKET_VALID(sock)) {
+      if (OS_SOCKET_VALID(sock)) {
         break; // Valid connection accepted.
       }
 
       // Retry the accept for certain errors.
 #if defined(_WIN32)
-      const bool shouldRetry =
-          SOCKET_ERR == WSAEINTR || SOCKET_ERR == WSAEWOULDBLOCK || SOCKET_ERR == WSAECONNRESET;
-#else  // !_WIN32
-      const bool shouldRetry = SOCKET_ERR == EINTR || SOCKET_ERR == EAGAIN ||
-          SOCKET_ERR == EWOULDBLOCK || SOCKET_ERR == ECONNABORTED;
+      const bool shouldRetry = OS_SOCKET_ERR == WSAEINTR || OS_SOCKET_ERR == WSAEWOULDBLOCK ||
+          OS_SOCKET_ERR == WSAECONNRESET;
+#else // !_WIN32
+      const bool shouldRetry = OS_SOCKET_ERR == EINTR || OS_SOCKET_ERR == EAGAIN ||
+          OS_SOCKET_ERR == EWOULDBLOCK || OS_SOCKET_ERR == ECONNABORTED;
 #endif // !_WIN32
       if (!shouldRetry) {
         break;
@@ -398,8 +391,8 @@ public:
       return nullptr; // Aborted.
     }
 
-    if (!SOCKET_VALID(sock)) {
-      *pErr = getPlatformError();
+    if (!OS_SOCKET_VALID(sock)) {
+      *pErr = getTcpPlatformError();
       return alloc->allocPlain<TcpStreamRef>(
           TcpStreamType::Connection, sock, TcpStreamState::Failed);
     }
@@ -411,16 +404,16 @@ public:
 private:
   TcpStreamType m_type;
   std::atomic<TcpStreamState> m_state;
-  SOCKET m_socket;
+  OS_SOCKET m_socket;
 
-  inline explicit TcpStreamRef(TcpStreamType type, SOCKET sock) noexcept :
+  inline explicit TcpStreamRef(TcpStreamType type, OS_SOCKET sock) noexcept :
       Ref{getKind()}, m_type{type}, m_state{TcpStreamState::Valid}, m_socket{sock} {}
 
-  inline TcpStreamRef(TcpStreamType type, SOCKET sock, TcpStreamState state) noexcept :
+  inline TcpStreamRef(TcpStreamType type, OS_SOCKET sock, TcpStreamState state) noexcept :
       Ref{getKind()}, m_type{type}, m_state{state}, m_socket{sock} {}
 };
 
-inline auto configureSocket(SOCKET sock) noexcept -> void {
+inline auto configureSocket(OS_SOCKET sock) noexcept -> void {
   // Allow reusing the address, allows stopping and restarting the server without waiting for the
   // socket's wait-time to expire.
   int optVal = 1;
@@ -430,7 +423,7 @@ inline auto configureSocket(SOCKET sock) noexcept -> void {
 #if defined(_WIN32)
   int timeout = receiveTimeoutSeconds * 1'000;
   ::setsockopt(sock, SOL_SOCKET, SO_RCVTIMEO, reinterpret_cast<char*>(&timeout), sizeof(timeout));
-#else  // !_WIN32
+#else // !_WIN32
   auto timeout = timeval{};
   timeout.tv_sec = receiveTimeoutSeconds;
   timeout.tv_usec = 0;
@@ -449,28 +442,28 @@ inline auto tcpOpenConnection(
 
   if (!settings->socketsEnabled) {
     *pErr = PlatformError::FeatureNetworkNotEnabled;
-    return alloc->allocPlain<TcpStreamRef>(TcpStreamType::Connection, INVALID_SOCKET);
+    return alloc->allocPlain<TcpStreamRef>(TcpStreamType::Connection, OS_INVALID_SOCKET);
   }
 
   if (port < 0 || port > std::numeric_limits<uint16_t>::max()) {
     *pErr = PlatformError::TcpInvalidPort;
-    return alloc->allocPlain<TcpStreamRef>(TcpStreamType::Connection, INVALID_SOCKET);
+    return alloc->allocPlain<TcpStreamRef>(TcpStreamType::Connection, OS_INVALID_SOCKET);
   }
 
   if (!isIpFamilyValid(family)) {
     *pErr = PlatformError::TcpInvalidAddressFamily;
-    return alloc->allocPlain<TcpStreamRef>(TcpStreamType::Connection, INVALID_SOCKET);
+    return alloc->allocPlain<TcpStreamRef>(TcpStreamType::Connection, OS_INVALID_SOCKET);
   }
 
   if (address->getSize() != getIpAddressSize(family)) {
     *pErr = PlatformError::TcpInvalidAddress;
-    return alloc->allocPlain<TcpStreamRef>(TcpStreamType::Connection, INVALID_SOCKET);
+    return alloc->allocPlain<TcpStreamRef>(TcpStreamType::Connection, OS_INVALID_SOCKET);
   }
 
   // Open a socket.
   const auto sock = socket(getIpFamilyCode(family), SOCK_STREAM, 0);
-  if (!SOCKET_VALID(sock)) {
-    *pErr = getPlatformError();
+  if (!OS_SOCKET_VALID(sock)) {
+    *pErr = getTcpPlatformError();
     return alloc->allocPlain<TcpStreamRef>(TcpStreamType::Connection, sock, TcpStreamState::Failed);
   }
 
@@ -501,9 +494,9 @@ inline auto tcpOpenConnection(
       break; // Success.
     }
 #if defined(_WIN32)
-    const bool shouldRetry = SOCKET_ERR == WSAEINTR;
-#else  // !_WIN32
-    const bool shouldRetry = SOCKET_ERR == EINTR || SOCKET_ERR == EAGAIN;
+    const bool shouldRetry = OS_SOCKET_ERR == WSAEINTR;
+#else // !_WIN32
+    const bool shouldRetry = OS_SOCKET_ERR == EINTR || OS_SOCKET_ERR == EAGAIN;
 #endif // !_WIN32
     if (!shouldRetry) {
       break; // Not an error we should retry.
@@ -518,7 +511,7 @@ inline auto tcpOpenConnection(
   }
 
   if (res < 0) {
-    *pErr = getPlatformError();
+    *pErr = getTcpPlatformError();
     return alloc->allocPlain<TcpStreamRef>(TcpStreamType::Connection, sock, TcpStreamState::Failed);
   }
 
@@ -536,27 +529,27 @@ inline auto tcpStartServer(
 
   if (!settings->socketsEnabled) {
     *pErr = PlatformError::FeatureNetworkNotEnabled;
-    return alloc->allocPlain<TcpStreamRef>(TcpStreamType::Server, INVALID_SOCKET);
+    return alloc->allocPlain<TcpStreamRef>(TcpStreamType::Server, OS_INVALID_SOCKET);
   }
 
   if (port < 0 || port > std::numeric_limits<uint16_t>::max()) {
     *pErr = PlatformError::TcpInvalidPort;
-    return alloc->allocPlain<TcpStreamRef>(TcpStreamType::Server, INVALID_SOCKET);
+    return alloc->allocPlain<TcpStreamRef>(TcpStreamType::Server, OS_INVALID_SOCKET);
   }
 
   if (backlog > std::numeric_limits<int16_t>::max()) {
     *pErr = PlatformError::TcpInvalidBacklog;
-    return alloc->allocPlain<TcpStreamRef>(TcpStreamType::Server, INVALID_SOCKET);
+    return alloc->allocPlain<TcpStreamRef>(TcpStreamType::Server, OS_INVALID_SOCKET);
   }
 
   if (!isIpFamilyValid(family)) {
     *pErr = PlatformError::TcpInvalidAddressFamily;
-    return alloc->allocPlain<TcpStreamRef>(TcpStreamType::Connection, INVALID_SOCKET);
+    return alloc->allocPlain<TcpStreamRef>(TcpStreamType::Connection, OS_INVALID_SOCKET);
   }
 
   // Open a socket.
   const auto sock = ::socket(getIpFamilyCode(family), SOCK_STREAM, 0);
-  if (!SOCKET_VALID(sock)) {
+  if (!OS_SOCKET_VALID(sock)) {
     *pErr = PlatformError::TcpSocketCouldNotBeAllocated;
     return alloc->allocPlain<TcpStreamRef>(TcpStreamType::Server, sock, TcpStreamState::Failed);
   }
@@ -583,13 +576,13 @@ inline auto tcpStartServer(
   }
 
   if (res < 0) {
-    *pErr = getPlatformError();
+    *pErr = getTcpPlatformError();
     return alloc->allocPlain<TcpStreamRef>(TcpStreamType::Server, sock, TcpStreamState::Failed);
   }
 
   // Start listening for new connections.
   if (listen(sock, backlog < 0 ? defaultConnectionBacklog : backlog) < 0) {
-    *pErr = getPlatformError();
+    *pErr = getTcpPlatformError();
     return alloc->allocPlain<TcpStreamRef>(TcpStreamType::Server, sock, TcpStreamState::Failed);
   }
 
@@ -604,12 +597,12 @@ inline auto tcpAcceptConnection(
   auto* streamRef = stream.getRef();
   if (streamRef->getKind() != RefKind::StreamTcp) {
     *pErr = PlatformError::TcpInvalidSocket;
-    return alloc->allocPlain<TcpStreamRef>(TcpStreamType::Connection, INVALID_SOCKET);
+    return alloc->allocPlain<TcpStreamRef>(TcpStreamType::Connection, OS_INVALID_SOCKET);
   }
   auto* tcpStreamRef = static_cast<TcpStreamRef*>(streamRef);
   if (!tcpStreamRef->isValid()) {
     *pErr = PlatformError::TcpInvalidSocket;
-    return alloc->allocPlain<TcpStreamRef>(TcpStreamType::Connection, INVALID_SOCKET);
+    return alloc->allocPlain<TcpStreamRef>(TcpStreamType::Connection, OS_INVALID_SOCKET);
   }
   return tcpStreamRef->acceptConnection(execHandle, alloc, pErr);
 }
@@ -707,9 +700,9 @@ inline auto ipLookupAddress(
   return alloc->allocStr(0);
 }
 
-inline auto getPlatformError() noexcept -> PlatformError {
+inline auto getTcpPlatformError() noexcept -> PlatformError {
 #if defined(_WIN32)
-  switch (SOCKET_ERR) {
+  switch (OS_SOCKET_ERR) {
   case WSAEINPROGRESS:
     return PlatformError::TcpAlreadyInProcess;
   case WSAENETDOWN:
@@ -738,8 +731,8 @@ inline auto getPlatformError() noexcept -> PlatformError {
   case WSAENOTSOCK:
     return PlatformError::TcpSocketIsDead;
   }
-#else  // !_WIN32
-  switch (SOCKET_ERR) {
+#else // !_WIN32
+  switch (OS_SOCKET_ERR) {
   case EALREADY:
     return PlatformError::TcpAlreadyInProcess;
   case ENETDOWN:

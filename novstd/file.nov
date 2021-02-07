@@ -26,7 +26,7 @@ act fileOpen(Path p, FileMode m, FileFlags flags = FileFlags.None) -> Either{Fil
   absPathStr  = absPath.string();
   stream      = intrinsic{file_openstream}(absPathStr, int(m) | flags << 8);
   if stream.isValid() -> File(absPath, m, flags, stream)
-  else                -> Error("Failed to open file: '" + absPathStr + "'")
+  else                -> getPlatformError("Failed to open file: '" + absPathStr + "'")
 
 act readToEnd(File f) -> string
   f.stream.readToEnd()
@@ -66,7 +66,7 @@ act fileRemove(Path p) -> Option{Error}
   absPathStr  = absPath.string();
   intrinsic{file_remove}(absPathStr)
     ? None()
-    : Error("Failed to remove file: '" + absPathStr + "'")
+    : getPlatformError("Failed to remove file: '" + absPathStr + "'")
 
 // -- Tests
 
@@ -107,6 +107,6 @@ assert(
 
 assert(
   p = getPathCurrent() / "file-test6.tmp";
-  fileOpen(p, FileMode.Append, FileFlags.AutoRemove) is File)
+  fileOpen(p, FileMode.Append, FileFlags.AutoRemove) is Error)
 
 assert(fileRemove(getPathCurrent() / "non-existing-file") is Error)

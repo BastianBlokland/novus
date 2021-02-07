@@ -75,11 +75,11 @@ inline auto streamWriteChar(
   STREAM_DISPATCH(stream, writeChar(execHandle, pErr, val))
 }
 
-inline auto streamFlush(const Value& stream) noexcept -> bool {
+inline auto streamFlush(PlatformError* pErr, const Value& stream) noexcept -> bool {
   if (!streamCheckValid(stream)) {
     return false;
   }
-  STREAM_DISPATCH(stream, flush())
+  STREAM_DISPATCH(stream, flush(pErr))
 }
 
 inline auto streamSetOpts(PlatformError* pErr, const Value& stream, StreamOpts opts) noexcept

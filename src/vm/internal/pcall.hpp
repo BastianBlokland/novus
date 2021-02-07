@@ -135,7 +135,7 @@ auto inline pcall(
     PUSH_BOOL(result);
   } break;
   case PCallCode::StreamFlush: {
-    PUSH_BOOL(streamFlush(POP()));
+    PUSH_BOOL(streamFlush(pErr, POP()));
   } break;
   case PCallCode::StreamSetOptions: {
     auto options = POP_INT();
@@ -191,13 +191,12 @@ auto inline pcall(
     auto* pathStrRef = getStringRef(refAlloc, POP());
     CHECK_ALLOC(pathStrRef);
 
-    PUSH_REF(openFileStream(refAlloc, pathStrRef, mode, flags));
+    PUSH_REF(openFileStream(refAlloc, pErr, pathStrRef, mode, flags));
   } break;
   case PCallCode::FileRemove: {
     auto* pathStrRef = getStringRef(refAlloc, POP());
     CHECK_ALLOC(pathStrRef);
-
-    PUSH_BOOL(removeFile(pathStrRef));
+    PUSH_BOOL(removeFile(pErr, pathStrRef));
   } break;
 
   case PCallCode::TcpOpenCon: {

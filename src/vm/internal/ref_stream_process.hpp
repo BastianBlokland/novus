@@ -99,7 +99,7 @@ public:
     return res;
   }
 
-  auto flush() noexcept -> bool { return std::fflush(getFile()) == 0; }
+  auto flush(PlatformError* /*unused*/) noexcept -> bool { return std::fflush(getFile()) == 0; }
 
   auto setOpts(PlatformError* /*unused*/, StreamOpts /*unused*/) noexcept -> bool {
     // On unix we could implement non-blocking by setting the file-descriptor to be non-blocking,

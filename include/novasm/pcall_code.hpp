@@ -67,6 +67,8 @@ enum class PCallCode : uint8_t {
 
 /* Platform errors
  * The following calls will set the error code that is returned from 'PlatformErrorCode':
+ * - FileOpenStream, error is set when an invalid stream is returned.
+ * - FileRemove, error is set when false is returned.
  * - TcpOpenCon, error is set when an invalid stream is returned.
  * - TcpStartServer, error is set when an invalid stream is returned.
  * - TcpAcceptCon, error is set when an invalid stream is returned.
