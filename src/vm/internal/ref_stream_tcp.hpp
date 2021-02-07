@@ -660,7 +660,6 @@ inline auto ipLookupAddress(
   // After resuming check if we should wait for gc (or if we are aborted).
   execHandle->setState(ExecState::Running);
   if (execHandle->trap()) {
-
     // Cleanup the addinfo's incase any where allocated.
     if (res) {
       ::freeaddrinfo(res);
@@ -669,7 +668,16 @@ inline auto ipLookupAddress(
   }
 
   if (resCode != 0 || !res) {
-    *pErr = getPlatformError();
+    switch (resCode) {
+    case EAI_FAMILY:
+    case EAI_FAIL:
+    case EAI_NONAME:
+      *pErr = PlatformError::TcpAddressNotFound;
+      break;
+    default:
+      *pErr = PlatformError::TcpUnknownError;
+      break;
+    }
     return alloc->allocStr(0);
   }
 

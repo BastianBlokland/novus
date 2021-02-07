@@ -51,7 +51,7 @@ act tcpConnect(IpAddress addr, int port = 8080) -> Either{TcpConnection, Error}
   binAddr = ipBinWriter().run(addr);
   socket  = intrinsic{tcp_connection_open}(binAddr, IpFamily(addr).int(), port);
   if socket.isValid() -> TcpConnection(socket)
-  else                -> getPlatformError()
+  else                -> getPlatformError("Failed to connect to '" + addr + ":" + port + "'")
 
 act tcpConnectAsync(IpAddress addr, int port = 8080) -> future{Either{TcpConnection, Error}}
   fork tcpConnect(addr, port)
@@ -60,7 +60,7 @@ act tcpConnectAsync(IpAddress addr, int port = 8080) -> future{Either{TcpConnect
 
 act tcpServer(TcpServerSettings settings) -> Either{TcpServerState, Error}
   serverSocket = intrinsic{tcp_server_start}(settings.family.int(), settings.port, settings.maxBacklog);
-  if !serverSocket.isValid() -> getPlatformError()
+  if !serverSocket.isValid() -> getPlatformError("Failed to start tcp-server")
   else ->
     teardown = (impure lambda () -> bool
       intrinsic{tcp_shutdown}(serverSocket)
@@ -68,7 +68,7 @@ act tcpServer(TcpServerSettings settings) -> Either{TcpServerState, Error}
     acceptCon = (impure lambda () -> Either{TcpConnection, Error}
       socket = intrinsic{tcp_server_accept}(serverSocket);
       if socket.isValid() -> TcpConnection(socket)
-      else                -> getPlatformError()
+      else                -> getPlatformError("Failed to accept new connection")
     );
     loop = (impure lambda (
       future{Either{TcpConnection, Error}} futureConnection,

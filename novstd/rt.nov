@@ -79,7 +79,9 @@ act getPlatform() Platform(intrinsic{runtime_platform}())
 
 act getPlatformErrorCode() PlatformError(intrinsic{platform_error_code}())
 
-act getPlatformError() Error(getPlatformErrorCode(), getPlatformErrorCode().string())
+act getPlatformError(string message)
+  code = getPlatformErrorCode();
+  Error(code, message + ": " + code.string())
 
 // -- Versions
 
