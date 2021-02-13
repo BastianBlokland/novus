@@ -248,7 +248,7 @@ auto inline pcall(
 
   case PCallCode::ConsoleOpenStream: {
     auto kind = static_cast<ConsoleStreamKind>(POP_INT());
-    PUSH_REF(openConsoleStream(iface, refAlloc, kind));
+    PUSH_REF(openConsoleStream(iface, refAlloc, pErr, kind));
   } break;
 
   case PCallCode::TermSetOptions: {
@@ -343,11 +343,11 @@ auto inline pcall(
 
     auto cond = PEEK_INT();
     if (unlikely(cond == 0)) {
-      auto* stdErr = iface->getStdErr();
-      if (stdErr != nullptr) {
-        std::fwrite("Assertion failed: ", 18, 1, stdErr);
-        std::fwrite(msg->getDataPtr(), msg->getSize(), 1, stdErr);
-        std::fputc('\n', stdErr);
+      auto stdErrHandle = iface->getStdErr();
+      if (fileIsValid(stdErrHandle)) {
+        fileWrite(stdErrHandle, "Assertion failed: ", 18);
+        fileWrite(stdErrHandle, msg->getCharDataPtr(), msg->getSize());
+        fileWrite(stdErrHandle, "\n", 1);
       }
       execHandle->setState(ExecState::AssertFailed);
     }

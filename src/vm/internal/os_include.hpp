@@ -25,10 +25,12 @@
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <termios.h>
+#include <pthread.h>
 #include <unistd.h>
 #include <csignal>
 #include <climits>
-#include <pthread.h>
+#include <cerrno>
+#include <cstdlib>
 
 #endif // !_WIN32
 

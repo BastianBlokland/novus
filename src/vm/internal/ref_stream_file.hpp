@@ -1,24 +1,13 @@
 #pragma once
 #include "gsl.hpp"
-#include "internal/fd_utilities.hpp"
 #include "internal/os_include.hpp"
 #include "internal/platform_utilities.hpp"
 #include "internal/ref.hpp"
 #include "internal/ref_allocator.hpp"
 #include "internal/ref_string.hpp"
+#include "internal/stream_opts.hpp"
 #include "intrinsics.hpp"
-
-#if defined(_WIN32)
-
-#define OS_FILE HANDLE
-#define OS_INVALID_FILE INVALID_HANDLE_VALUE
-
-#else // !_WIN32
-
-#define OS_FILE int
-#define OS_INVALID_FILE -1
-
-#endif // !_WIN32
+#include "vm/file.hpp"
 
 namespace vm::internal {
 
@@ -44,12 +33,8 @@ public:
   FileStreamRef(const FileStreamRef& rhs) = delete;
   FileStreamRef(FileStreamRef&& rhs)      = delete;
   ~FileStreamRef() noexcept {
-    if (m_fileHandle != OS_INVALID_FILE) {
-#if defined(_WIN32)
-      ::CloseHandle(m_fileHandle);
-#else //!_WIN32
-      ::close(m_fileHandle);
-#endif //!_WIN32
+    if (fileIsValid(m_fileHandle)) {
+      fileClose(m_fileHandle);
     }
     if ((m_flags & AutoRemoveFile) == AutoRemoveFile) {
 #if defined(_WIN32)
@@ -66,7 +51,7 @@ public:
 
   [[nodiscard]] constexpr static auto getKind() { return RefKind::StreamFile; }
 
-  [[nodiscard]] auto isValid() noexcept -> bool { return m_fileHandle != OS_INVALID_FILE; }
+  [[nodiscard]] auto isValid() noexcept -> bool { return fileIsValid(m_fileHandle); }
 
   auto readString(ExecutorHandle* execHandle, PlatformError* pErr, StringRef* str) noexcept
       -> bool {
@@ -76,14 +61,7 @@ public:
 
     execHandle->setState(ExecState::Paused);
 
-#if defined(_WIN32)
-    DWORD winBytesRead;
-    const bool success =
-        ::ReadFile(m_fileHandle, str->getCharDataPtr(), str->getSize(), &winBytesRead, nullptr);
-    const int bytesRead = success ? static_cast<int>(winBytesRead) : -1;
-#else //!_WIN32
-    const int bytesRead = ::read(m_fileHandle, str->getCharDataPtr(), str->getSize());
-#endif //!_WIN32
+    const int bytesRead = fileRead(m_fileHandle, str->getCharDataPtr(), str->getSize());
 
     execHandle->setState(ExecState::Running);
     if (execHandle->trap()) {
@@ -105,16 +83,11 @@ public:
   }
 
   auto readChar(ExecutorHandle* execHandle, PlatformError* pErr) noexcept -> char {
+
     execHandle->setState(ExecState::Paused);
 
     char res;
-#if defined(_WIN32)
-    DWORD winBytesRead;
-    const bool success  = ::ReadFile(m_fileHandle, &res, 1, &winBytesRead, nullptr);
-    const int bytesRead = success ? static_cast<int>(winBytesRead) : -1;
-#else //!_WIN32
-    const int bytesRead = ::read(m_fileHandle, &res, 1);
-#endif //!_WIN32
+    const int bytesRead = fileRead(m_fileHandle, &res, 1);
 
     execHandle->setState(ExecState::Running);
     if (execHandle->trap()) {
@@ -141,14 +114,7 @@ public:
 
     execHandle->setState(ExecState::Paused);
 
-#if defined(_WIN32)
-    DWORD winBytesWritten;
-    const bool success =
-        ::WriteFile(m_fileHandle, str->getCharDataPtr(), str->getSize(), &winBytesWritten, nullptr);
-    const int bytesWritten = success ? static_cast<int>(winBytesWritten) : -1;
-#else //!_WIN32
-    const int bytesWritten = ::write(m_fileHandle, str->getCharDataPtr(), str->getSize());
-#endif //!_WIN32
+    const int bytesWritten = fileWrite(m_fileHandle, str->getCharDataPtr(), str->getSize());
 
     execHandle->setState(ExecState::Running);
     if (execHandle->trap()) {
@@ -166,15 +132,8 @@ public:
 
     execHandle->setState(ExecState::Paused);
 
-    auto* valChar = static_cast<char*>(static_cast<void*>(&val));
-
-#if defined(_WIN32)
-    DWORD winBytesWritten;
-    const bool success     = ::WriteFile(m_fileHandle, valChar, 1, &winBytesWritten, nullptr);
-    const int bytesWritten = success ? static_cast<int>(winBytesWritten) : -1;
-#else //!_WIN32
-    const int bytesWritten = ::write(m_fileHandle, valChar, 1);
-#endif //!_WIN32
+    auto* valChar          = static_cast<char*>(static_cast<void*>(&val));
+    const int bytesWritten = fileWrite(m_fileHandle, valChar, 1);
 
     execHandle->setState(ExecState::Running);
     if (execHandle->trap()) {
@@ -209,11 +168,11 @@ public:
 
 private:
   FileStreamFlags m_flags;
-  OS_FILE m_fileHandle;
+  FileHandle m_fileHandle;
   gsl::owner<char*> m_filePath;
 
   inline explicit FileStreamRef(
-      OS_FILE fileHandle, gsl::owner<char*> filePath, FileStreamFlags flags) noexcept :
+      FileHandle fileHandle, gsl::owner<char*> filePath, FileStreamFlags flags) noexcept :
       Ref{getKind()}, m_flags{flags}, m_fileHandle{fileHandle}, m_filePath{filePath} {}
 };
 
@@ -234,21 +193,21 @@ inline auto openFileStream(
   default:
   case FileStreamMode::Open:
     desiredAccess |= GENERIC_READ | GENERIC_WRITE;
-    creationDisposition |= OPEN_EXISTING;
+    creationDisposition = OPEN_EXISTING;
     break;
   case FileStreamMode::Append:
     desiredAccess |= FILE_APPEND_DATA;
-    creationDisposition |= OPEN_EXISTING;
+    creationDisposition = OPEN_EXISTING;
     break;
   case FileStreamMode::Create:
     desiredAccess |= GENERIC_READ | GENERIC_WRITE;
-    creationDisposition |= CREATE_ALWAYS;
+    creationDisposition = CREATE_ALWAYS;
     break;
   }
 
-  const OS_FILE file = ::CreateFileA(
+  const FileHandle file = ::CreateFileA(
       filePath, desiredAccess, shareMode, nullptr, creationDisposition, flags, nullptr);
-  if (file == OS_INVALID_FILE) {
+  if (!fileIsValid(file)) {
     switch (::GetLastError()) {
     case ERROR_ACCESS_DENIED:
       *pErr = PlatformError::FileNoAccess;
@@ -290,8 +249,8 @@ inline auto openFileStream(
     break;
   }
   const int newFilePerms = S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH; // RW for owner, and R for others.
-  const OS_FILE file = ::open(filePath, flags, newFilePerms);
-  if (file == OS_INVALID_FILE) {
+  const FileHandle file = ::open(filePath, flags, newFilePerms);
+  if (!fileIsValid(file)) {
     switch (errno) {
     case EPERM:
     case EACCES:

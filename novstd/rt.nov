@@ -15,35 +15,38 @@ enum PlatformError =
   FeatureNetworkNotEnabled      : 100,
   StreamOptionsNotSupported     : 200,
   StreamNoDataAvailable         : 201,
-  FileUnknownError              : 300,
-  FileNoAccess                  : 301,
-  FileNotFound                  : 302,
-  FileInvalidFileName           : 303,
-  FilePathTooLong               : 304,
-  FileDiskFull                  : 305,
-  FileLocked                    : 306,
-  TcpUnknownError               : 400,
-  TcpInvalidSocket              : 401,
-  TcpInvalidConnectionSocket    : 402,
-  TcpInvalidServerSocket        : 403,
-  TcpAlreadyInProcess           : 404,
-  TcpNetworkDown                : 405,
-  TcpSocketCouldNotBeAllocated  : 406,
-  TcpInvalidPort                : 407,
-  TcpInvalidBacklog             : 408,
-  TcpInvalidAddressFamily       : 409,
-  TcpNoAccess                   : 410,
-  TcpAddressInUse               : 411,
-  TcpAddressUnavailable         : 412,
-  TcpInvalidAddress             : 413,
-  TcpNetworkUnreachable         : 414,
-  TcpAddressFamiliyNotSupported : 415,
-  TcpConnectionRefused          : 416,
-  TcpTimeout                    : 417,
-  TcpAddressNotFound            : 418,
-  TcpRemoteResetConnection      : 419,
-  TcpSocketIsDead               : 420,
-  SleepFailed                   : 500
+  StreamReadNotSupported        : 202,
+  StreamWriteNotSupported       : 203,
+  ConsoleUnknownError           : 300,
+  ConsoleNotPresent             : 301,
+  FileUnknownError              : 400,
+  FileNoAccess                  : 401,
+  FileNotFound                  : 402,
+  FileInvalidFileName           : 403,
+  FilePathTooLong               : 404,
+  FileDiskFull                  : 405,
+  FileLocked                    : 406,
+  TcpUnknownError               : 500,
+  TcpInvalidSocket              : 501,
+  TcpInvalidServerSocket        : 502,
+  TcpAlreadyInProcess           : 503,
+  TcpNetworkDown                : 504,
+  TcpSocketCouldNotBeAllocated  : 505,
+  TcpInvalidPort                : 506,
+  TcpInvalidBacklog             : 507,
+  TcpInvalidAddressFamily       : 508,
+  TcpNoAccess                   : 509,
+  TcpAddressInUse               : 510,
+  TcpAddressUnavailable         : 511,
+  TcpInvalidAddress             : 512,
+  TcpNetworkUnreachable         : 513,
+  TcpAddressFamiliyNotSupported : 514,
+  TcpConnectionRefused          : 515,
+  TcpTimeout                    : 516,
+  TcpAddressNotFound            : 517,
+  TcpRemoteResetConnection      : 518,
+  TcpSocketIsDead               : 519,
+  SleepFailed                   : 600
 
 // -- Conversions
 
@@ -58,6 +61,10 @@ fun string(PlatformError err)
   if err == PlatformError.FeatureNetworkNotEnabled      -> "Network feature not enabled"
   if err == PlatformError.StreamOptionsNotSupported     -> "Stream does not support the given options"
   if err == PlatformError.StreamNoDataAvailable         -> "No data available"
+  if err == PlatformError.StreamReadNotSupported        -> "Stream does not support reading"
+  if err == PlatformError.StreamWriteNotSupported       -> "Stream does not support writing"
+  if err == PlatformError.ConsoleUnknownError           -> "Unknown console error occured"
+  if err == PlatformError.ConsoleNotPresent             -> "Console not present"
   if err == PlatformError.FileUnknownError              -> "Unknown file error occured"
   if err == PlatformError.FileNoAccess                  -> "File access denied"
   if err == PlatformError.FileNotFound                  -> "File not found"
@@ -67,7 +74,6 @@ fun string(PlatformError err)
   if err == PlatformError.FileLocked                    -> "File is locked"
   if err == PlatformError.TcpUnknownError               -> "Unknown Tcp error occured"
   if err == PlatformError.TcpInvalidSocket              -> "Invalid Tcp socket"
-  if err == PlatformError.TcpInvalidConnectionSocket    -> "Invalid Tcp connection socket"
   if err == PlatformError.TcpInvalidServerSocket        -> "Invalid Tcp server socket"
   if err == PlatformError.TcpAlreadyInProcess           -> "Tcp operation already in progess"
   if err == PlatformError.TcpNetworkDown                -> "Tcp network down"

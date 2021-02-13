@@ -108,7 +108,7 @@ TEST_CASE("[vm] Execute process platform-calls", "vm") {
           asmb->addRet();
         },
         "input",
-        "Hello world" STR_NEWLINE);
+        "Hello world\n");
   }
 
   SECTION("StdErr can be read from a child-process") {
@@ -138,7 +138,7 @@ TEST_CASE("[vm] Execute process platform-calls", "vm") {
           asmb->addRet();
         },
         "input",
-        "Hello world" STR_NEWLINE);
+        "Hello world\n");
   }
 
   SECTION("StdIn of a child-process can be written to") {
@@ -170,7 +170,7 @@ TEST_CASE("[vm] Execute process platform-calls", "vm") {
           asmb->addRet();
         },
         "input",
-        "Hello from your parent" STR_NEWLINE);
+        "Hello from your parent\n");
   }
 
   SECTION("Arguments are passed to child process") {
@@ -206,7 +206,7 @@ TEST_CASE("[vm] Execute process platform-calls", "vm") {
           asmb->addRet();
         },
         "input",
-        "5" STR_NEWLINE "test[hello world,else]" STR_NEWLINE);
+        "5\ntest[hello world,else]\n");
   }
 
   SECTION("Process id can be retrieved") {
@@ -430,7 +430,7 @@ TEST_CASE("[vm] Execute process platform-calls", "vm") {
           asmb->addRet();
         },
         "input",
-        "Hello" STR_NEWLINE "world" STR_NEWLINE);
+        "Hello\nworld\n");
   }
 
   SECTION("Interupt signal can be send to process") {
@@ -473,7 +473,7 @@ TEST_CASE("[vm] Execute process platform-calls", "vm") {
           asmb->addRet();
         },
         "",
-        "Received interupt" STR_NEWLINE);
+        "Received interupt\n");
   }
 }
 
