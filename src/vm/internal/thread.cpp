@@ -52,6 +52,9 @@ auto threadYield() noexcept -> void {
 }
 
 auto threadSleepNano(int64_t time) noexcept -> bool {
+  if (time < 0) {
+    return false;
+  }
 #if defined(_WIN32)
 
   // TODO: This only has milliseconds resolution, investigate win32 alternatives with better
