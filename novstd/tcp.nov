@@ -109,7 +109,7 @@ assert(
 
 assert(
   clientHandler = (impure lambda (TcpConnection c, TcpServerState state)
-    c.write(c.socket.readLine() + '\n')
+    c.write(c.socket.readLine() ?? "" + '\n')
   );
   fork tcpServer(TcpServerSettings(clientHandler, 5011, IpFamily.V4));
   client = (impure lambda(string message)

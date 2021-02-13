@@ -28,17 +28,14 @@ act fileOpen(Path p, FileMode m, FileFlags flags = FileFlags.None) -> Either{Fil
   if stream.isValid() -> File(absPath, m, flags, stream)
   else                -> getPlatformError("Failed to open file: '" + absPathStr + "'")
 
-act readToEnd(File f) -> string
+act readToEnd(File f) -> Either{string, Error}
   f.stream.readToEnd()
 
 act readToEnd{T}(File f, Parser{T} parser) -> Either{T, Error}
-  parser.run(f.readToEnd())
+  f.readToEnd().map(impure lambda (string s) parser.run(s))
 
 act write(File f, string str) -> Option{Error}
-  actSeq(
-    lazy f.stream.write(str),
-    lazy f.stream.flush()
-  )
+  f.stream.write(str)
 
 act write{T}(File f, Writer{T} writer, T val) -> Option{Error}
   f.write(writer.run(val))

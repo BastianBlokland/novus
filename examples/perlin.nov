@@ -46,7 +46,7 @@ act draw(I2 pos, Console c, Settings s, Duration t)
   )
 
 act loop(Console c, Settings s, Timestamp begin, int frame) -> Option{Error}
-  if c.readToEnd().length() != 0 || interuptIsRequested() -> None()
+  if (c.readToEnd() ?? "").length() != 0 || interuptIsRequested() -> None()
   else ->
     now     = timestamp();
     elapsed = now - begin;

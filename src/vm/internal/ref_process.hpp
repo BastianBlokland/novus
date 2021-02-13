@@ -2,14 +2,11 @@
 #include "internal/os_include.hpp"
 #include "internal/ref_allocator.hpp"
 #include "internal/ref_string.hpp"
+#include "vm/file.hpp"
 #include <atomic>
 #include <cassert>
 #include <condition_variable>
 #include <mutex>
-
-#if defined(_WIN32)
-#define fdopen _fdopen
-#endif // _WIN32
 
 namespace vm::internal {
 
@@ -62,14 +59,14 @@ public:
   ProcessRef(ProcessRef&& rhs)      = delete;
   ~ProcessRef() noexcept {
     // Close our handles to the in / out / err pipes.
-    if (m_stdIn) {
-      std::fclose(m_stdIn);
+    if (fileIsValid(m_stdIn)) {
+      fileClose(m_stdIn);
     }
-    if (m_stdOut) {
-      std::fclose(m_stdOut);
+    if (fileIsValid(m_stdOut)) {
+      fileClose(m_stdOut);
     }
-    if (m_stdErr) {
-      std::fclose(m_stdErr);
+    if (fileIsValid(m_stdErr)) {
+      fileClose(m_stdErr);
     }
     // Kill the process (if its still running).
     if (isValid() && !isFinished()) {
@@ -157,7 +154,7 @@ public:
     return -1;
   }
 
-  auto sendSignal(ProcessSignalKind kind) const noexcept -> bool {
+  [[nodiscard]] auto sendSignal(ProcessSignalKind kind) const noexcept -> bool {
     switch (kind) {
     case ProcessSignalKind::Interupt:
 #if defined(_WIN32)
@@ -178,34 +175,17 @@ private:
   std::mutex m_mutex;
   std::condition_variable m_condVar;
 
-  gsl::owner<FILE*> m_stdIn;
-  gsl::owner<FILE*> m_stdOut;
-  gsl::owner<FILE*> m_stdErr;
+  FileHandle m_stdIn;
+  FileHandle m_stdOut;
+  FileHandle m_stdErr;
 
-  ProcessRef(
-      ProcessType process,
-      gsl::owner<FILE*> stdIn,
-      gsl::owner<FILE*> stdOut,
-      gsl::owner<FILE*> stdErr) noexcept :
+  ProcessRef(ProcessType process, FileHandle stdIn, FileHandle stdOut, FileHandle stdErr) noexcept :
       Ref(getKind()),
       m_process{process},
       m_state{ProcessState::Unknown},
       m_stdIn{stdIn},
       m_stdOut{stdOut},
       m_stdErr{stdErr} {}
-
-  ProcessRef(ProcessType process, int stdInDesc, int stdOutDesc, int stdErrDesc) noexcept :
-      ProcessRef{
-          process, fdopen(stdInDesc, "a"), fdopen(stdOutDesc, "r"), fdopen(stdErrDesc, "r")} {};
-
-#if defined(_WIN32)
-  ProcessRef(ProcessType process, HANDLE stdIn, HANDLE stdOut, HANDLE stdErr) noexcept :
-      ProcessRef{
-          process,
-          _open_osfhandle(reinterpret_cast<intptr_t>(stdIn), _O_APPEND),
-          _open_osfhandle(reinterpret_cast<intptr_t>(stdOut), _O_RDONLY),
-          _open_osfhandle(reinterpret_cast<intptr_t>(stdErr), _O_RDONLY)} {};
-#endif
 
   auto killImpl() -> void {
 #if defined(_WIN32)
@@ -245,9 +225,9 @@ private:
 };
 
 inline auto processStart(RefAllocator* alloc, const StringRef* cmdLineStr) -> ProcessRef* {
-  if(cmdLineStr->getSize() == 0) {
-    FILE* nullFile = nullptr;
-    return alloc->allocPlain<ProcessRef>(invalidProcess(), nullFile, nullFile, nullFile);
+  if (cmdLineStr->getSize() == 0) {
+    return alloc->allocPlain<ProcessRef>(
+        invalidProcess(), fileInvalid(), fileInvalid(), fileInvalid());
   }
 
 #if defined(_WIN32)
@@ -338,7 +318,7 @@ inline auto processStart(RefAllocator* alloc, const StringRef* cmdLineStr) -> Pr
     CloseHandle(processInfo.hThread);
     CloseHandle(processInfo.hProcess);
     return alloc->allocPlain<ProcessRef>(
-      invalidProcess(), pipeStdIn[1], pipeStdOut[0], pipeStdErr[0]);
+        invalidProcess(), pipeStdIn[1], pipeStdOut[0], pipeStdErr[0]);
   }
   return alloc->allocPlain<ProcessRef>(processInfo, pipeStdIn[1], pipeStdOut[0], pipeStdErr[0]);
 

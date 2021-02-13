@@ -69,13 +69,18 @@ act sendInterupt(Process p) -> bool
 act sendSignal(Process p, Signal s) -> bool
   intrinsic{process_sendsignal}(p.handle, int(s))
 
-act wait(Process p) -> ProcessResult
-  ProcessResult(
-    p.stdOut.readToEnd(),
-    p.stdErr.readToEnd(),
-    ExitCode(intrinsic{process_block}(p.handle)))
+act wait(Process p) -> Either{ProcessResult, Error}
+  stdOutRes = p.stdOut.readToEnd();
+  stdErrRes = p.stdErr.readToEnd();
+  if stdOutRes as Error outErr -> outErr
+  if stdErrRes as Error errErr -> errErr
+  else ->
+    ProcessResult(
+      stdOutRes ?? "",
+      stdErrRes ?? "",
+      ExitCode(intrinsic{process_block}(p.handle)))
 
-act waitAsync(Process p) -> future{ProcessResult}
+act waitAsync(Process p) -> future{Either{ProcessResult, Error}}
   fork p.wait()
 
 // -- Tests
@@ -86,19 +91,19 @@ assert(
   p.cmdLine == "'cmake' '-E' 'echo' 'Hello world'")
 
 assert(
-  r = run("cmake", "-E" :: "echo" :: "Hello world").wait();
+  r = run("cmake", "-E" :: "echo" :: "Hello world").wait().failOnError();
   r.stdOut.startsWith("Hello world") &&
   r.stdErr.isEmpty() &&
   r.exitCode == ExitCode(0))
 
 assert(
-  r = run("cmake", "--version" :: List{string}()).wait();
+  r = run("cmake", "--version" :: List{string}()).wait().failOnError();
   r.stdOut.startsWith("cmake version") &&
   r.stdErr.isEmpty() &&
   r.exitCode == ExitCode(0))
 
 assert(
-  r = run("cmake", "--invalid" :: List{string}()).wait();
+  r = run("cmake", "--invalid" :: List{string}()).wait().failOnError();
   r.stdOut.isEmpty() &&
   r.stdErr.startsWith("CMake Error") &&
   r.exitCode == ExitCode(1))

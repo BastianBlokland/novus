@@ -67,6 +67,13 @@ enum class PCallCode : uint8_t {
 
 /* Platform errors
  * The following calls will set the error code that is returned from 'PlatformErrorCode':
+ * - StreamReadString, error is set when an empty string is returned.
+ * - StreamReadChar, error is set when a null character is returned.
+ * - StreamWriteString, error is set when false is returned.
+ * - StreamWriteChar, error is set when false is returned.
+ * - StreamFlush, error is set when false is returned.
+ * - StreamSetOptions, error is set when false is returned.
+ * - StreamUnsetOptions, error is set when false is returned.
  * - FileOpenStream, error is set when an invalid stream is returned.
  * - FileRemove, error is set when false is returned.
  * - TcpOpenCon, error is set when an invalid stream is returned.

@@ -47,9 +47,9 @@ fun commitParser()
 // -- Actions
 
 act runGit(List{string} args) -> Either{string, Error}
-  r = run("git", args).wait();
-  if r.isSuccess() -> r.stdOut
-  else             -> Error("Failed to run git: " + r.stdErr.trim())
+  run("git", args).wait().map(impure lambda (ProcessResult r)
+    r.isSuccess() ? r.stdOut : Error("Failed to run git: " + r.stdErr.trim())
+  )
 
 act runGit{T}(List{string} args, Parser{T} parser) -> Either{T, Error}
   runGit(args).map(parser.build(ParseFlags.NoWrapperError))

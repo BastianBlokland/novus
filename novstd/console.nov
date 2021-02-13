@@ -27,23 +27,23 @@ act setNoBlockInput(Console c) -> Option{Error}
 act unsetNoBlockInput(Console c) -> Option{Error}
   c.stdIn.unsetOptions(StreamOptions.NoBlock)
 
-act read(Console c) -> char
+act read(Console c) -> Either{char, Error}
   c.stdIn.read()
 
-act readLine(Console c) -> string
+act readLine(Console c) -> Either{string, Error}
   c.stdIn.readLine()
 
-act readToEnd(Console c) -> string
+act readToEnd(Console c) -> Either{string, Error}
   c.stdIn.readToEnd()
 
 act readToEnd{T}(Console c, Parser{T} parser) -> Either{T, Error}
-  parser.run(c.readToEnd())
+  c.readToEnd().map(impure lambda (string s) parser.run(s))
 
-act read() -> char
-  consoleOpen() as Console c ? c.read() : '\0'
+act read() -> Either{char, Error}
+  consoleOpen().map(impure lambda (Console c) c.read())
 
-act readLine() -> string
-  consoleOpen() as Console c ? c.readLine() : ""
+act readLine() -> Either{string, Error}
+  consoleOpen().map(impure lambda (Console c) c.readLine())
 
 act writeOut(Console c, string str) -> Option{Error}
   c.stdOut.write(str)

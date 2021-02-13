@@ -176,7 +176,7 @@ act loop(Console c)
 act loop(Duration prevFrameDur, GameState state, Console c)
   t1      = timestamp();
   window  = c.getWindow();
-  input   = getInput(c.readToEnd());
+  input   = getInput(c.readToEnd() ?? "");
   if input is InputQuit || interuptIsRequested()  -> None()
   if input is InputRestart                        -> loop(c)
   else ->
