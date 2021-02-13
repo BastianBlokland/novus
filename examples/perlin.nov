@@ -51,7 +51,7 @@ act loop(Console c, Settings s, Timestamp begin, int frame) -> Option{Error}
     now     = timestamp();
     elapsed = now - begin;
     actSeq(
-      lazy forBox(getWindow(), draw[elapsed][s][c], frame, s.drawIterations),
+      lazy forBox(c.getWindow(), draw[elapsed][s][c], frame, s.drawIterations),
       lazy sleep(s.drawInterval)
     ) as Error e ? e
                  : self(c, s, begin, ++frame)
@@ -99,8 +99,8 @@ main()
 
 // --- Terminal setup
 
-act getWindow()
-  Box(I2(1, 1), I2(termGetWidth(), termGetHeight()))
+act getWindow(Console c)
+  Box(I2(1, 1), I2(c.termGetWidth().failOnError(), c.termGetHeight().failOnError()))
 
 act setupTerminal(Console c)
   actSeq(

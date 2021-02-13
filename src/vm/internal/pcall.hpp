@@ -14,7 +14,6 @@
 #include "internal/stack.hpp"
 #include "internal/stream_utilities.hpp"
 #include "internal/string_utilities.hpp"
-#include "internal/terminal.hpp"
 #include "novasm/assembly.hpp"
 #include "novasm/pcall_code.hpp"
 #include "vm/exec_state.hpp"
@@ -253,17 +252,21 @@ auto inline pcall(
 
   case PCallCode::TermSetOptions: {
     auto options = POP_INT();
-    PUSH_BOOL(termSetOpts(static_cast<TermOpts>(options)));
+    auto stream  = POP();
+    PUSH_BOOL(termSetOpts(pErr, stream, static_cast<TermOpts>(options)));
   } break;
   case PCallCode::TermUnsetOptions: {
     auto options = POP_INT();
-    PUSH_BOOL(termUnsetOpts(static_cast<TermOpts>(options)));
+    auto stream  = POP();
+    PUSH_BOOL(termUnsetOpts(pErr, stream, static_cast<TermOpts>(options)));
   } break;
   case PCallCode::TermGetWidth: {
-    PUSH_INT(termGetWidth());
+    auto stream = POP();
+    PUSH_INT(termGetWidth(pErr, stream));
   } break;
   case PCallCode::TermGetHeight: {
-    PUSH_INT(termGetHeight());
+    auto stream = POP();
+    PUSH_INT(termGetHeight(pErr, stream));
   } break;
 
   case PCallCode::EnvGetArg: {

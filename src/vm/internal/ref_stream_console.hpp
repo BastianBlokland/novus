@@ -18,6 +18,11 @@ enum class ConsoleStreamKind : uint8_t {
   StdErr = 2,
 };
 
+enum class TermOpts : int32_t {
+  NoEcho   = 1 << 0,
+  NoBuffer = 1 << 1,
+};
+
 auto getConsolePlatformError() noexcept -> PlatformError;
 
 #if !defined(_WIN32)
@@ -109,7 +114,7 @@ public:
     } else {
       bytesRead = fileRead(m_consoleHandle, &res, 1);
     }
-#else //!_WIN32
+#else  //!_WIN32
     bytesRead = fileRead(m_consoleHandle, &res, 1);
 #endif //!_WIN32
 
@@ -192,7 +197,7 @@ public:
         return true;
       }
     }
-#else //!_WIN32
+#else  //!_WIN32
     if (setFileDescriptorOpts(m_consoleHandle, opts)) {
       return true;
     }
@@ -207,13 +212,139 @@ public:
       m_nonblockWinTerm = false;
       return true;
     }
-#else //!_WIN32
+#else  //!_WIN32
     if (unsetFileDescriptorOpts(m_consoleHandle, opts)) {
       return true;
     }
 #endif //!_WIN32
     *pErr = PlatformError::StreamOptionsNotSupported;
     return false;
+  }
+
+  [[nodiscard]] auto getTermWidth(PlatformError* pErr) const noexcept -> int32_t {
+    if (!isTerminal()) {
+      *pErr = PlatformError::ConsoleNoTerminal;
+      return -1;
+    }
+#if defined(_WIN32)
+    CONSOLE_SCREEN_BUFFER_INFO csbi;
+    if (!::GetConsoleScreenBufferInfo(m_consoleHandle, &csbi)) {
+      *pErr = PlatformError::ConsoleFailedToGetTermInfo;
+      return -1;
+    }
+    return 1 + csbi.srWindow.Right - csbi.srWindow.Left;
+#else // !_WIN32
+    winsize ws;
+    if (::ioctl(m_consoleHandle, TIOCGWINSZ, &ws)) {
+      *pErr = PlatformError::ConsoleFailedToGetTermInfo;
+      return -1;
+    }
+    return static_cast<int32_t>(ws.ws_col);
+#endif
+  }
+
+  [[nodiscard]] auto getTermHeight(PlatformError* pErr) const noexcept -> int32_t {
+    if (!isTerminal()) {
+      *pErr = PlatformError::ConsoleNoTerminal;
+      return -1;
+    }
+#if defined(_WIN32)
+    CONSOLE_SCREEN_BUFFER_INFO csbi;
+    if (!::GetConsoleScreenBufferInfo(m_consoleHandle, &csbi)) {
+      *pErr = PlatformError::ConsoleFailedToGetTermInfo;
+      return -1;
+    }
+    return 1 + csbi.srWindow.Bottom - csbi.srWindow.Top;
+#else // !_WIN32
+    winsize ws;
+    if (::ioctl(m_consoleHandle, TIOCGWINSZ, &ws)) {
+      *pErr = PlatformError::ConsoleFailedToGetTermInfo;
+      return -1;
+    }
+    return static_cast<int32_t>(ws.ws_row);
+#endif
+  }
+
+  [[nodiscard]] auto setTermOpts(PlatformError* pErr, TermOpts opts) const noexcept -> bool {
+    if (!isTerminal()) {
+      *pErr = PlatformError::ConsoleNoTerminal;
+      return false;
+    }
+#if defined(_WIN32)
+    DWORD mode = 0;
+    if (!::GetConsoleMode(m_consoleHandle, &mode)) {
+      *pErr = PlatformError::ConsoleFailedToGetTermInfo;
+      return false;
+    }
+    if (static_cast<int32_t>(opts) & static_cast<int32_t>(TermOpts::NoEcho)) {
+      mode &= ~ENABLE_ECHO_INPUT;
+    }
+    if (static_cast<int32_t>(opts) & static_cast<int32_t>(TermOpts::NoBuffer)) {
+      mode &= ~ENABLE_LINE_INPUT;
+    }
+    if (!::SetConsoleMode(m_consoleHandle, mode)) {
+      *pErr = PlatformError::ConsoleFailedToUpdateTermInfo;
+      return false;
+    }
+#else // !_WIN32
+    termios t;
+    if (::tcgetattr(m_consoleHandle, &t)) {
+      *pErr = PlatformError::ConsoleFailedToGetTermInfo;
+      return false;
+    }
+    if (static_cast<int32_t>(opts) & static_cast<int32_t>(TermOpts::NoEcho)) {
+      t.c_lflag &= ~ECHO;
+    }
+    if (static_cast<int32_t>(opts) & static_cast<int32_t>(TermOpts::NoBuffer)) {
+      t.c_lflag &= ~ICANON;
+    }
+    if (::tcsetattr(m_consoleHandle, TCSANOW, &t)) {
+      *pErr = PlatformError::ConsoleFailedToUpdateTermInfo;
+      return false;
+    }
+#endif
+    return true;
+  }
+
+  [[nodiscard]] auto unsetTermOpts(PlatformError* pErr, TermOpts opts) const noexcept -> bool {
+    if (!isTerminal()) {
+      *pErr = PlatformError::ConsoleNoTerminal;
+      return false;
+    }
+#if defined(_WIN32)
+    DWORD mode = 0;
+    if (!::GetConsoleMode(m_consoleHandle, &mode)) {
+      *pErr = PlatformError::ConsoleFailedToGetTermInfo;
+      return false;
+    }
+    if (static_cast<int32_t>(opts) & static_cast<int32_t>(TermOpts::NoEcho)) {
+      mode |= ENABLE_ECHO_INPUT;
+    }
+    if (static_cast<int32_t>(opts) & static_cast<int32_t>(TermOpts::NoBuffer)) {
+      mode |= ENABLE_LINE_INPUT;
+    }
+    if (!::SetConsoleMode(m_consoleHandle, mode)) {
+      *pErr = PlatformError::ConsoleFailedToUpdateTermInfo;
+      return false;
+    }
+#else // !_WIN32
+    termios t;
+    if (::tcgetattr(m_consoleHandle, &t)) {
+      *pErr = PlatformError::ConsoleFailedToGetTermInfo;
+      return false;
+    }
+    if (static_cast<int32_t>(opts) & static_cast<int32_t>(TermOpts::NoEcho)) {
+      t.c_lflag |= ECHO;
+    }
+    if (static_cast<int32_t>(opts) & static_cast<int32_t>(TermOpts::NoBuffer)) {
+      t.c_lflag |= ICANON;
+    }
+    if (::tcsetattr(m_consoleHandle, TCSANOW, &t)) {
+      *pErr = PlatformError::ConsoleFailedToUpdateTermInfo;
+      return false;
+    }
+#endif
+    return true;
   }
 
 private:
@@ -256,6 +387,40 @@ inline auto openConsoleStream(
     *pErr = PlatformError::ConsoleNotPresent;
   }
   return alloc->allocPlain<ConsoleStreamRef>(con, kind);
+}
+
+inline auto getConsoleStream(PlatformError* pErr, Value stream) noexcept -> ConsoleStreamRef* {
+  auto* streamRef = stream.getRef();
+  if (streamRef->getKind() != RefKind::StreamConsole) {
+    *pErr = PlatformError::ConsoleNoTerminal;
+    return nullptr;
+  }
+  auto* consoleStreamRef = static_cast<ConsoleStreamRef*>(streamRef);
+  if (!consoleStreamRef->isValid()) {
+    *pErr = PlatformError::ConsoleNoTerminal;
+    return nullptr;
+  }
+  return consoleStreamRef;
+}
+
+inline auto termGetWidth(PlatformError* pErr, Value stream) noexcept -> int32_t {
+  auto* consoleStreamRef = getConsoleStream(pErr, stream);
+  return consoleStreamRef ? consoleStreamRef->getTermWidth(pErr) : -1;
+}
+
+inline auto termGetHeight(PlatformError* pErr, Value stream) noexcept -> int32_t {
+  auto* consoleStreamRef = getConsoleStream(pErr, stream);
+  return consoleStreamRef ? consoleStreamRef->getTermHeight(pErr) : -1;
+}
+
+inline auto termSetOpts(PlatformError* pErr, Value stream, TermOpts opts) noexcept -> bool {
+  auto* consoleStreamRef = getConsoleStream(pErr, stream);
+  return consoleStreamRef && consoleStreamRef->setTermOpts(pErr, opts);
+}
+
+inline auto termUnsetOpts(PlatformError* pErr, Value stream, TermOpts opts) noexcept -> bool {
+  auto* consoleStreamRef = getConsoleStream(pErr, stream);
+  return consoleStreamRef && consoleStreamRef->unsetTermOpts(pErr, opts);
 }
 
 #if !defined(_WIN32)

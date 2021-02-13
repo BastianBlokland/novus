@@ -21,8 +21,11 @@ enum class PlatformError : uint32_t {
   StreamReadNotSupported    = 202,
   StreamWriteNotSupported   = 203,
 
-  ConsoleUnknownError = 300,
-  ConsoleNotPresent   = 301,
+  ConsoleUnknownError           = 300,
+  ConsoleNotPresent             = 301,
+  ConsoleNoTerminal             = 302,
+  ConsoleFailedToGetTermInfo    = 303,
+  ConsoleFailedToUpdateTermInfo = 304,
 
   FileUnknownError    = 400,
   FileNoAccess        = 401,

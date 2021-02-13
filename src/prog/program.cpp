@@ -354,13 +354,17 @@ Program::Program() :
       *this, Fk::ActionConsoleOpenStream, "console_openstream", sym::TypeSet{m_int}, m_stream);
 
   m_funcDecls.registerIntrinsicAction(
-      *this, Fk::ActionTermSetOptions, "term_setoptions", sym::TypeSet{m_int}, m_bool);
+      *this, Fk::ActionTermSetOptions, "term_setoptions", sym::TypeSet{m_stream, m_int}, m_bool);
   m_funcDecls.registerIntrinsicAction(
-      *this, Fk::ActionTermUnsetOptions, "term_unsetoptions", sym::TypeSet{m_int}, m_bool);
+      *this,
+      Fk::ActionTermUnsetOptions,
+      "term_unsetoptions",
+      sym::TypeSet{m_stream, m_int},
+      m_bool);
   m_funcDecls.registerIntrinsicAction(
-      *this, Fk::ActionTermGetWidth, "term_getwidth", sym::TypeSet{}, m_int);
+      *this, Fk::ActionTermGetWidth, "term_getwidth", sym::TypeSet{m_stream}, m_int);
   m_funcDecls.registerIntrinsicAction(
-      *this, Fk::ActionTermGetHeight, "term_getheight", sym::TypeSet{}, m_int);
+      *this, Fk::ActionTermGetHeight, "term_getheight", sym::TypeSet{m_stream}, m_int);
 
   m_funcDecls.registerIntrinsicAction(
       *this, Fk::ActionEnvGetArg, "env_argument", sym::TypeSet{m_int}, m_string);

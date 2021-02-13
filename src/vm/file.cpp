@@ -96,9 +96,9 @@ auto fileRead(FileHandle file, char* buffer, size_t bufferSize) noexcept -> int 
     }
     bool shouldRetry = false;
     switch (errno) {
-    case EAGAIN:
     case EINTR:
       shouldRetry = true;
+      break;
     }
     if (!shouldRetry) {
       break; // Not an error we should retry.
@@ -120,6 +120,7 @@ auto fileWrite(FileHandle file, const char* buffer, size_t bufferSize) noexcept 
     case EAGAIN:
     case EINTR:
       shouldRetry = true;
+      break;
     }
     if (!shouldRetry) {
       break; // Not an error we should retry.

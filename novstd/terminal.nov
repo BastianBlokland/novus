@@ -1,6 +1,7 @@
 import "std/color.nov"
 import "std/console.nov"
 import "std/math.nov"
+import "std/rt.nov"
 
 // -- Utilities for interacting with a tty terminal using ANSI escape codes:
 // https://en.wikipedia.org/wiki/ANSI_escape_code
@@ -69,11 +70,13 @@ fun string(TermOptions o)
 
 // -- Get terminal size
 
-act termGetWidth() -> int
-  intrinsic{term_getwidth}()
+act termGetWidth(Console c) -> Either{int, Error}
+  w = intrinsic{term_getwidth}(c.stdOut);
+  w >= 0 ? w : getPlatformError("Failed to get the terminal width")
 
-act termGetHeight() -> int
-  intrinsic{term_getheight}()
+act termGetHeight(Console c) -> Either{int, Error}
+  h = intrinsic{term_getheight}(c.stdOut);
+  h >= 0 ? h : getPlatformError("Failed to get the terminal height")
 
 // -- Update the current style on the terminal.
 
@@ -218,17 +221,17 @@ act termSetOptions(TermOptions opts) -> Option{Error}
   consoleOpen().map(impure lambda (Console c) c.termSetOptions(opts))
 
 act termSetOptions(Console c, TermOptions opts) -> Option{Error}
-  intrinsic{term_setoptions}(int(opts))
+  intrinsic{term_setoptions}(c.stdIn, int(opts))
     ? None()
-    : Error("Failed to set terminal options: " + opts.string())
+    : getPlatformError("Failed to set terminal options: " + opts.string())
 
 act termUnsetOptions(TermOptions opts) -> Option{Error}
   consoleOpen().map(impure lambda (Console c) c.termUnsetOptions(opts))
 
 act termUnsetOptions(Console c, TermOptions opts) -> Option{Error}
-  intrinsic{term_unsetoptions}(int(opts))
+  intrinsic{term_unsetoptions}(c.stdIn, int(opts))
     ? None()
-    : Error("Failed to clear terminal options: " + opts.string())
+    : getPlatformError("Failed to unset terminal options: " + opts.string())
 
 // -- Convenience overloads for print that set a style before and reset after printing.
 

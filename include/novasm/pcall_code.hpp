@@ -39,10 +39,10 @@ enum class PCallCode : uint8_t {
 
   ConsoleOpenStream = 50, // (int) -> (stream)  Get a stream to stdin, stdout or stderr.
 
-  TermSetOptions   = 60, // (int) -> (int)  Set terminal control options, returns success.
-  TermUnsetOptions = 61, // (int) -> (int)  Unset terminal control options, returns success.
-  TermGetWidth     = 62, // ()    -> (int)  Get the width (num columns) of the terminal.
-  TermGetHeight    = 63, // ()    -> (int)  Get the height (num rows) of the terminal.
+  TermSetOptions   = 60, // (int, stream) -> (int)  Set terminal control options, returns success.
+  TermUnsetOptions = 61, // (int, stream) -> (int)  Unset terminal control options, returns success.
+  TermGetWidth     = 62, // (stream)      -> (int)  Get the width (num columns) of the terminal.
+  TermGetHeight    = 63, // (stream)      -> (int)  Get the height (num rows) of the terminal.
 
   EnvGetArg        = 70, // (int)     -> (string) Get an environment argument by index.
   EnvGetArgCount   = 71, // ()        -> (int)    Get the amount of environment arguments provided.
@@ -75,6 +75,10 @@ enum class PCallCode : uint8_t {
  * - TcpShutdown, error is set when false is returned.
  * - IpLookupAddress, error is set when empty string is returned.
  * - SleepNano, error is set when false is returned.
+ * - TermSetOptions, error is set when false is returned.
+ * - TermUnsetOptions, error is set when false is returned.
+ * - TermGetWidth, error is set when -1 is returned.
+ * - TermGetHeight, error is set when -1 is returned.
  */
 
 auto operator<<(std::ostream& out, const PCallCode& rhs) noexcept -> std::ostream&;

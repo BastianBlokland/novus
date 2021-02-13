@@ -19,6 +19,9 @@ enum PlatformError =
   StreamWriteNotSupported       : 203,
   ConsoleUnknownError           : 300,
   ConsoleNotPresent             : 301,
+  ConsoleNoTerminal             : 302,
+  ConsoleFailedToGetTermInfo    : 303,
+  ConsoleFailedToUpdateTermInfo : 304,
   FileUnknownError              : 400,
   FileNoAccess                  : 401,
   FileNotFound                  : 402,
@@ -65,6 +68,9 @@ fun string(PlatformError err)
   if err == PlatformError.StreamWriteNotSupported       -> "Stream does not support writing"
   if err == PlatformError.ConsoleUnknownError           -> "Unknown console error occured"
   if err == PlatformError.ConsoleNotPresent             -> "Console not present"
+  if err == PlatformError.ConsoleNoTerminal             -> "Given stream is not a terminal"
+  if err == PlatformError.ConsoleFailedToGetTermInfo    -> "Failed to retreive terminal info for stream"
+  if err == PlatformError.ConsoleFailedToUpdateTermInfo -> "Failed to update terminal info for stream"
   if err == PlatformError.FileUnknownError              -> "Unknown file error occured"
   if err == PlatformError.FileNoAccess                  -> "File access denied"
   if err == PlatformError.FileNotFound                  -> "File not found"
