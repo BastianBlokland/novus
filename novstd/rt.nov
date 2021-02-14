@@ -31,6 +31,7 @@ enum PlatformError =
   ConsoleNoTerminal             : 402,
   ConsoleFailedToGetTermInfo    : 403,
   ConsoleFailedToUpdateTermInfo : 404,
+  ConsoleNoLongerAvailable      : 405,
   FileUnknownError              : 500,
   FileNoAccess                  : 501,
   FileNotFound                  : 502,
@@ -89,6 +90,7 @@ fun string(PlatformError err)
   if err == PlatformError.ConsoleNoTerminal             -> "Given stream is not a terminal"
   if err == PlatformError.ConsoleFailedToGetTermInfo    -> "Failed to retreive terminal info for stream"
   if err == PlatformError.ConsoleFailedToUpdateTermInfo -> "Failed to update terminal info for stream"
+  if err == PlatformError.ConsoleNoLongerAvailable      -> "Console is no longer available"
   if err == PlatformError.FileUnknownError              -> "Unknown file error occured"
   if err == PlatformError.FileNoAccess                  -> "File access denied"
   if err == PlatformError.FileNotFound                  -> "File not found"

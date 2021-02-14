@@ -36,6 +36,7 @@ enum class PlatformError : uint32_t {
   ConsoleNoTerminal             = 402,
   ConsoleFailedToGetTermInfo    = 403,
   ConsoleFailedToUpdateTermInfo = 404,
+  ConsoleNoLongerAvailable      = 405,
 
   FileUnknownError    = 500,
   FileNoAccess        = 501,
