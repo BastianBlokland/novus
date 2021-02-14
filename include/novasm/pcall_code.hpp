@@ -83,6 +83,7 @@ enum class PCallCode : uint8_t {
  * - TcpAcceptCon, error is set when an invalid stream is returned.
  * - TcpShutdown, error is set when false is returned.
  * - IpLookupAddress, error is set when empty string is returned.
+ * - ConsoleOpenStream, error is set when an invalid stream is returned.
  * - SleepNano, error is set when false is returned.
  * - TermSetOptions, error is set when false is returned.
  * - TermUnsetOptions, error is set when false is returned.

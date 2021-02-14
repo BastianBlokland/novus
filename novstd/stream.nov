@@ -14,6 +14,10 @@ struct StreamReadState =
   bool        reachedEnd,
   sys_stream  src
 
+// -- Constants
+
+fun streamReadBlockSize() 1024
+
 // -- Constructors
 
 fun StreamReadState(sys_stream src)
@@ -23,11 +27,6 @@ fun StreamReadState(sys_stream src)
 
 act isValid(sys_stream s) -> bool
   intrinsic{stream_checkvalid}(s)
-
-act flush(sys_stream s) -> Option{Error}
-  intrinsic{stream_flush}(s)
-    ? None()
-    : getPlatformError("Failed to flush stream")
 
 act setOptions(sys_stream s, StreamOptions opts) -> Option{Error}
   intrinsic{stream_setoptions}(s, int(opts))
@@ -56,7 +55,7 @@ act read(sys_stream s) -> Either{char, Error}
 act readToEnd(sys_stream s) -> Either{string, Error}
   invoke(
     impure lambda (string result)
-      readRes = s.read(512);
+      readRes = s.read(streamReadBlockSize());
       if readRes as Error   e                         -> e
       if readRes as string  read && read.length() > 0 -> self(result + read)
       else                                            -> result
@@ -91,7 +90,7 @@ act readUntil(StreamReadState state, List{string} patterns) -> Either{Pair{strin
         remTxt      = txt[idx + p.second.length(), txt.length()];
         Pair(matchedTxt, StreamReadState(remTxt, false, state.src))
       else        ->
-        readRes = state.src.read(512);
+        readRes = state.src.read(streamReadBlockSize());
         if readRes as Error   e                           -> e
         if readRes as string  read && read.length() > 0   -> self(txt + read)
         else                                              -> Pair("", StreamReadState(txt, true, state.src))
@@ -112,7 +111,7 @@ act write(sys_stream s, char c) -> Option{Error}
 act copy(sys_stream from, sys_stream to) -> Either{int, Error}
   invoke(
     impure lambda(int bytesCopied) -> Either{int, Error}
-      readRes     = from.read(512);
+      readRes     = from.read(streamReadBlockSize());
       if readRes as Error   readErr                   -> readErr
       if readRes as string  read && read.length() > 0 -> to.write(read) as Error writeErr
                                                           ? writeErr

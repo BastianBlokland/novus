@@ -463,6 +463,9 @@ inline auto getConsolePlatformError() noexcept -> PlatformError {
   switch (errno) {
   case EAGAIN:
     return PlatformError::StreamNoDataAvailable;
+  case ENOENT:
+  case ETIMEDOUT:
+    return PlatformError::ConsoleNoLongerAvailable;
   }
 #endif
   return PlatformError::ConsoleUnknownError;

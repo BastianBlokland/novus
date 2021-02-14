@@ -109,11 +109,12 @@ auto fileRead(FileHandle file, char* buffer, size_t bufferSize) noexcept -> int 
 }
 
 auto fileWrite(FileHandle file, const char* buffer, size_t bufferSize) noexcept -> int {
-  int bytesWritten;
-  while (true) {
-    bytesWritten = ::write(file, buffer, bufferSize);
-    if (bytesWritten == static_cast<int>(bufferSize)) {
-      break; // Success.
+  size_t bytesWritten = 0;
+  while (bytesWritten != bufferSize) {
+    const int writeRes = ::write(file, buffer + bytesWritten, bufferSize - bytesWritten);
+    if (writeRes > 0) {
+      bytesWritten += static_cast<size_t>(writeRes);
+      continue; // Success.
     }
     bool shouldRetry = false;
     switch (errno) {
@@ -123,11 +124,10 @@ auto fileWrite(FileHandle file, const char* buffer, size_t bufferSize) noexcept 
       break;
     }
     if (!shouldRetry) {
-      break; // Not an error we should retry.
+      return writeRes; // Not an error we should retry.
     }
-    internal::threadYield(); // Yield between retries.
   }
-  return bytesWritten;
+  return static_cast<int>(bytesWritten);
 }
 
 auto fileSeek(FileHandle file, size_t position) noexcept -> bool {

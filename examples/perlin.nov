@@ -1,16 +1,9 @@
 // --- Commandline graphics demo using perlin noise.
 // Demo: https://youtu.be/bcD3IsEBXnA
-//
-// This does require your terminal to support ansi escape sequences and support utf8.
-// On unix this means almost any terminal, on windows this means the new
-// 'Windows Terminal': https://github.com/microsoft/terminal and configuring your system to use
-// utf8: https://akr.am/blog/posts/using-utf-8-in-the-windows-terminal
 
 import "std.nov"
 
-struct  I2        = int x, int y
-struct  Box       = I2 origin, I2 size
-struct  Settings  =
+struct Settings =
   Duration  drawInterval,
   int       drawIterations,
   float     xyScale,
@@ -21,46 +14,88 @@ struct  Settings  =
   float     blueShift,
   float     fillThreshold
 
-fun +(I2 a, I2 b)
-  I2(a.x + b.x, a.y + b.y)
+struct Size = int width, int height
 
-fun -(I2 a, I2 b)
-  I2(a.x - b.x, a.y - b.y)
+struct CellContent =
+  TtyColor  color,
+  string    text
 
-fun min(Box b)
-  b.origin
+struct RowContent =
+  int               row,
+  List{CellContent} cells
 
-fun max(Box b)
-  b.origin + b.size
+struct ScreenContent =
+  List{RowContent} rows
 
-act draw(I2 pos, Console c, Settings s, Duration t)
-  n = perlinNoise3d(pos.x * s.xyScale, pos.y * s.xyScale, float(t) * s.speed) * s.intensityScale;
-  color = n < s.bgCutoff
-    ? black()
-    : Color(n < s.redThreshold ? 1 : n, n, s.blueShift + n * (1.0 - s.blueShift));
-  actSeq(
-    lazy c.termCursorPos(pos.y, pos.x),
-    lazy c.termColor(color),
-    lazy c.writeOut(n < s.fillThreshold ? "○" : "●"),
-    lazy c.flushOut()
+// -- Content
+
+fun getCell(int row, int col, Duration t, Settings s) -> CellContent
+  n = perlinNoise3d(col * s.xyScale, row * s.xyScale, float(t) * s.speed) * s.intensityScale;
+  CellContent(
+    n < s.bgCutoff
+      ? TtyColor(black())
+      : TtyColor(Color(n < s.redThreshold ? 1 : n, n, s.blueShift + n * (1.0 - s.blueShift))),
+    n < s.fillThreshold ? "○" : "●"
   )
 
-act loop(Console c, Settings s, Timestamp begin, int frame) -> Option{Error}
-  if (c.readToEnd() ?? "").length() != 0 || interuptIsRequested() -> None()
+fun getRow(int row, Size size, Duration t, Settings s) -> RowContent
+  RowContent(
+    row,
+    for(1, size.width + 1, lambda (int col) getCell(row, col, t, s))
+  )
+
+// Can be spread along multiple frames by specifying more then 1 'numItrs'.
+fun getContent(Size size, int itr, int numItrs, Duration t, Settings s) -> ScreenContent
+  yOffset = itr % numItrs;
+  ScreenContent(
+    invoke(lambda (int row, List{RowContent} result)
+      if row > size.height  -> result
+      else                  -> self(row + numItrs, getRow(row, size, t, s) :: result)
+    , (itr % numItrs) + 1, List{RowContent}())
+  )
+
+// -- Writers
+
+fun cellWriter() -> Writer{CellContent}
+  (
+    ttyStyleFgColorWriter() & stringWriter()
+  ).map(lambda (CellContent cc) makePair(cc.color, cc.text))
+
+fun rowWriter() -> Writer{RowContent}
+  (
+    ttyCursorPosWriter() & listWriter(cellWriter())
+  ).map(lambda (RowContent rc) makePair(TtyCursorPos(rc.row, 0), rc.cells))
+
+fun screenWriter() -> Writer{ScreenContent}
+  (
+    listWriter(rowWriter())
+  ).map(lambda (ScreenContent sc) sc.rows)
+
+// -- Driver code
+
+act loop( Console               c,
+          Settings              s,
+          Writer{ScreenContent} writer  = screenWriter(),
+          Timestamp             begin   = timestamp(),
+          int                   frame   = 0) -> Option{Error}
+  if interuptIsRequested() -> None()
   else ->
     now     = timestamp();
     elapsed = now - begin;
-    actSeq(
-      lazy forBox(c.getWindow(), draw[elapsed][s][c], frame, s.drawIterations),
+    size    = getSize(c);
+    content = getContent(size, frame, s.drawIterations, elapsed, s);
+    res     = actSeq(
+      lazy c.writeOut(writer, content),
       lazy sleep(s.drawInterval)
-    ) as Error e ? e
-                 : self(c, s, begin, ++frame)
+    );
+    if res as Error e -> e.code == PlatformError.ConsoleNoLongerAvailable ? None() : e
+    else              -> self(c, s, writer, begin, ++frame)
 
 // Allow overriding tweak values using environment options. (syntax: --[KEY] [VALUE])
 act getSettings()
   Settings(
-    milliseconds(getEnvOpt("drawInterval", txtIntParser())  ?? 20),
-    getEnvOpt("drawIterations", txtIntParser())             ?? 6,
+    milliseconds(getEnvOpt("drawInterval", txtIntParser())  ?? 15),
+    getEnvOpt("drawIterations", txtIntParser())             ?? 4,
     getEnvOpt("xyScale", txtFloatParser())                  ?? 0.04,
     getEnvOpt("speed", txtFloatParser())                    ?? 0.1,
     getEnvOpt("intensityScale", txtFloatParser())           ?? 1.2,
@@ -69,54 +104,33 @@ act getSettings()
     getEnvOpt("blueShift", txtFloatParser())                ?? 0.4,
     getEnvOpt("fillThreshold", txtFloatParser())            ?? 0.35)
 
-// --- Utilities
-
-// Call the action for each position in the box.
-// Can be spread along multiple frames by specifying more then 1 'numItrs'.
-act forBox(Box box, action{I2, Option{Error}} a, int itr, int numItrs)
-  yOffset = itr % numItrs;
-  xMax    = box.max().x;
-  yMax    = box.max().y;
-  invoke( impure lambda (int x, int y) -> Option{Error}
-    if y >= yMax  -> None()
-    if x >= xMax  -> self(0, y + numItrs)
-    else ->
-      a(I2(x, y)) as Error e ? e : self(++x, y)
-    , box.min().x, box.min().y + yOffset)
-
 // --- Entry point
 
 act main()
-  consoleOpen().map(impure lambda (Console c)
-    res = actSeq(
-      lazy setupTerminal(c),
-      lazy loop(c, getSettings(), timestamp(), 0)
-    );
-    resetTerminal(c); res
-  ).failOnError()
+  c = consoleOpen().failOnError();
+  setupTerminal(c).failOnError();
+  res = loop(c, getSettings());
+  resetTerminal(c).failOnError();
+  res.failOnError()
 
 main()
 
 // --- Terminal setup
 
-act getWindow(Console c)
-  Box(I2(1, 1), I2(c.termGetWidth().failOnError(), c.termGetHeight().failOnError()))
+act getSize(Console c)
+  Size(
+    c.termGetWidth().failOnError(),
+    c.termGetHeight().failOnError()
+  )
 
 act setupTerminal(Console c)
-  actSeq(
-    lazy c.termSetOptions(TermOptions.NoEcho | TermOptions.NoBuffer),
-    lazy c.termAltScreen(true),
-    lazy c.termCursorShow(false),
-    lazy c.setNoBlockInput()
-  )
+  c.writeOut(
+    ttyLitCursorShowWriter(false)         &
+    ttyLitAltScreenWriter(true)           &
+    ttyLitClearWriter(TtyClearMode.All))
 
 act resetTerminal(Console c)
-  actSeq(
-    lazy c.termCursorShow(true),
-    lazy c.termAltScreen(false),
-    lazy c.termStyle(TermStyle.Reset),
-    lazy c.termUnsetOptions(TermOptions.NoEcho | TermOptions.NoBuffer),
-    lazy c.writeOut('\n'),
-    lazy c.unsetNoBlockInput()
-  )
-
+  c.writeOut(
+    ttyLitCursorShowWriter(true)          &
+    ttyLitClearWriter(TtyClearMode.All)   &
+    ttyLitAltScreenWriter(false))

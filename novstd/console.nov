@@ -2,6 +2,7 @@ import "std/bits.nov"
 import "std/error.nov"
 import "std/parser.nov"
 import "std/stream.nov"
+import "std/tty.nov"
 
 // -- Types
 
@@ -10,22 +11,26 @@ struct Console =
   sys_stream  stdOut,
   sys_stream  stdErr
 
+enum TerminalOptions =
+  NoEcho    : 0b01,
+  NoBuffer  : 0b10
+
+// -- Conversions
+
+fun string(TerminalOptions o)
+  ((o & TerminalOptions.NoEcho)   != 0 ? "[NoEcho]"   : "") +
+  ((o & TerminalOptions.NoBuffer) != 0 ? "[NoBuffer]" : "")
+
 // -- Actions
 
 act consoleOpen() -> Either{Console, Error}
   stdIn   = intrinsic{console_openstream}(0);
   stdOut  = intrinsic{console_openstream}(1);
   stdErr  = intrinsic{console_openstream}(2);
-  if stdIn.isValid() && stdOut.isValid() && stdErr.isValid() ->
-    Console(stdIn, stdOut, stdErr)
-  else ->
-    Error("Failed to open console")
+  if stdIn.isValid() && stdOut.isValid() && stdErr.isValid()  -> Console(stdIn, stdOut, stdErr)
+  else                                                        -> getPlatformError("Failed to open console")
 
-act setNoBlockInput(Console c) -> Option{Error}
-  c.stdIn.setOptions(StreamOptions.NoBlock)
-
-act unsetNoBlockInput(Console c) -> Option{Error}
-  c.stdIn.unsetOptions(StreamOptions.NoBlock)
+// -- Read
 
 act read(Console c) -> Either{char, Error}
   c.stdIn.read()
@@ -45,6 +50,8 @@ act read() -> Either{char, Error}
 act readLine() -> Either{string, Error}
   consoleOpen().map(impure lambda (Console c) c.readLine())
 
+// -- Write
+
 act writeOut(Console c, string str) -> Option{Error}
   c.stdOut.write(str)
 
@@ -52,7 +59,10 @@ act writeOut(Console c, char ch) -> Option{Error}
   c.stdOut.write(ch)
 
 act writeOut{T}(Console c, Writer{T} writer, T val) -> Option{Error}
-  c.write(writer.run(val))
+  c.writeOut(writer.run(val))
+
+act writeOut(Console c, Writer{None} writer) -> Option{Error}
+  c.writeOut(writer.run(None()))
 
 act writeErr(Console c, string str) -> Option{Error}
   c.stdErr.write(str)
@@ -61,28 +71,31 @@ act writeErr(Console c, char ch) -> Option{Error}
   c.stdErr.write(ch)
 
 act writeErr{T}(Console c, Writer{T} writer, T val) -> Option{Error}
-  c.write(writer.run(val))
+  c.writeErr(writer.run(val))
 
-act flushOut(Console c) -> Option{Error}
-  c.stdOut.flush()
+act writeErr(Console c, Writer{None} writer) -> Option{Error}
+  c.writeErr(writer.run(None()))
 
-act flushErr(Console c) -> Option{Error}
-  c.stdErr.flush()
+// -- Print
 
 act print{T}(T x) -> Option{Error}
-  consoleOpen().map(impure lambda (Console c) -> Option{Error}
-    actSeq(
-      lazy c.stdOut.write(x.string() + '\n'),
-      lazy c.stdOut.flush()
-    )
+  consoleOpen().map(impure lambda (Console c) c.writeOut(x.string() + '\n'))
+
+act print{T}(T x, TtyStyle style) -> Option{Error}
+  styledWriter = ttyStyledTextWriter(style);
+  consoleOpen().map(impure lambda (Console c)
+    c.writeOut(styledWriter, x.string() + '\n')
   )
 
 act printErr{T}(T x) -> Option{Error}
-  consoleOpen().map(impure lambda (Console c) -> Option{Error}
-    actSeq(
-      lazy c.stdErr.write(x.string() + '\n'),
-      lazy c.stdErr.flush()
-    )
+  consoleOpen().map(impure lambda (Console c)
+    c.writeErr(x.string() + '\n')
+  )
+
+act printErr{T}(T x, TtyStyle style) -> Option{Error}
+  styledWriter = ttyStyledTextWriter(style);
+  consoleOpen().map(impure lambda (Console c)
+    c.writeErr(styledWriter, x.string() + '\n')
   )
 
 act printBits(int i) -> Option{Error}
@@ -96,3 +109,29 @@ act printHex(int i) -> Option{Error}
 
 act printHex(float f) -> Option{Error}
   print(toHexString(asInt(f)))
+
+// -- Meta
+
+act setNoBlockInput(Console c) -> Option{Error}
+  c.stdIn.setOptions(StreamOptions.NoBlock)
+
+act unsetNoBlockInput(Console c) -> Option{Error}
+  c.stdIn.unsetOptions(StreamOptions.NoBlock)
+
+act termGetWidth(Console c) -> Either{int, Error}
+  w = intrinsic{term_getwidth}(c.stdOut);
+  w >= 0 ? w : getPlatformError("Failed to get the terminal width")
+
+act termGetHeight(Console c) -> Either{int, Error}
+  h = intrinsic{term_getheight}(c.stdOut);
+  h >= 0 ? h : getPlatformError("Failed to get the terminal height")
+
+act termSetOptions(Console c, TerminalOptions opts) -> Option{Error}
+  intrinsic{term_setoptions}(c.stdIn, int(opts))
+    ? None()
+    : getPlatformError("Failed to set terminal options: " + opts.string())
+
+act termUnsetOptions(Console c, TerminalOptions opts) -> Option{Error}
+  intrinsic{term_unsetoptions}(c.stdIn, int(opts))
+    ? None()
+    : getPlatformError("Failed to unset terminal options: " + opts.string())
