@@ -1,5 +1,6 @@
 import "std/error.nov"
 import "std/parser.nov"
+import "std/rt.nov"
 import "std/writer.nov"
 
 // -- Types
@@ -155,7 +156,7 @@ act ipLookupAddress(string hostname) -> Either{IpAddress, Error}
   else                        ->
     v6 = ipLookupV4Address(hostname);
     if v6 as IpV4Address v6Addr -> IpAddress(v6Addr)
-    else                        -> Error("Failed to lookup ip address for hostname: '" + hostname + "'")
+    else                        -> getPlatformError("Failed to lookup ip address for hostname: '" + hostname + "'")
 
 // -- Tests
 

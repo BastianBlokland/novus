@@ -49,7 +49,12 @@ auto main(int argc, const char** argv) noexcept -> int {
   auto absProgPath          = filesystem::canonical(relProgPath).string();
 
   auto iface = vm::PlatformInterface{
-      std::move(absProgPath), vmEnvArgsCount, vmEnvArgs, stdin, stdout, stderr};
+      std::move(absProgPath),
+      vmEnvArgsCount,
+      vmEnvArgs,
+      vm::fileStdIn(),
+      vm::fileStdOut(),
+      vm::fileStdErr()};
   auto res = vm::run(&asmOutput.value(), &iface);
   if (res > vm::ExecState::Failed) {
     std::cerr << "runtime error: " << res << '\n';

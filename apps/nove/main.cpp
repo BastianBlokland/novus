@@ -36,7 +36,12 @@ auto run(
 
     auto progPath = inputPath ? inputPath->string() : std::string{};
     auto iface    = vm::PlatformInterface{
-        std::move(progPath), vmEnvArgsCount, vmEnvArgs, stdin, stdout, stderr};
+        std::move(progPath),
+        vmEnvArgsCount,
+        vmEnvArgs,
+        vm::fileStdIn(),
+        vm::fileStdOut(),
+        vm::fileStdErr()};
     auto res = vm::run(&asmOutput.first, &iface);
 
     if (res > vm::ExecState::Failed) {

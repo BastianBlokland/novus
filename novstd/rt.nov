@@ -10,6 +10,56 @@ enum Platform =
   MacOs   : 2,
   Windows : 3
 
+enum PlatformError =
+  Unknown                       : 001,
+  FeatureNetworkNotEnabled      : 100,
+  StreamOptionsNotSupported     : 200,
+  StreamNoDataAvailable         : 201,
+  StreamReadNotSupported        : 202,
+  StreamWriteNotSupported       : 203,
+  ProcessUnknownError           : 300,
+  ProcessInvalid                : 301,
+  ProcessInvalidCmdLine         : 302,
+  ProcessFailedToCreatePipes    : 303,
+  ProcessNoAccess               : 304,
+  ProcessExecutableNotFound     : 305,
+  ProcessExecutableInvalid      : 306,
+  ProcessLimitReached           : 307,
+  ProcessInvalidSignal          : 308,
+  ConsoleUnknownError           : 400,
+  ConsoleNotPresent             : 401,
+  ConsoleNoTerminal             : 402,
+  ConsoleFailedToGetTermInfo    : 403,
+  ConsoleFailedToUpdateTermInfo : 404,
+  FileUnknownError              : 500,
+  FileNoAccess                  : 501,
+  FileNotFound                  : 502,
+  FileInvalidFileName           : 503,
+  FilePathTooLong               : 504,
+  FileDiskFull                  : 505,
+  FileLocked                    : 506,
+  TcpUnknownError               : 600,
+  TcpInvalidSocket              : 601,
+  TcpInvalidServerSocket        : 602,
+  TcpAlreadyInProcess           : 603,
+  TcpNetworkDown                : 604,
+  TcpSocketCouldNotBeAllocated  : 605,
+  TcpInvalidPort                : 606,
+  TcpInvalidBacklog             : 607,
+  TcpInvalidAddressFamily       : 608,
+  TcpNoAccess                   : 609,
+  TcpAddressInUse               : 610,
+  TcpAddressUnavailable         : 611,
+  TcpInvalidAddress             : 612,
+  TcpNetworkUnreachable         : 613,
+  TcpAddressFamiliyNotSupported : 614,
+  TcpConnectionRefused          : 615,
+  TcpTimeout                    : 616,
+  TcpAddressNotFound            : 617,
+  TcpRemoteResetConnection      : 618,
+  TcpSocketIsDead               : 619,
+  SleepFailed                   : 700
+
 // -- Conversions
 
 fun string(Platform p)
@@ -18,9 +68,66 @@ fun string(Platform p)
   if p == Platform.Windows  -> "Windows"
   else                      -> "Unknown"
 
+fun string(PlatformError err)
+  if err == PlatformError.Unknown                       -> "Unknown"
+  if err == PlatformError.FeatureNetworkNotEnabled      -> "Network feature not enabled"
+  if err == PlatformError.StreamOptionsNotSupported     -> "Stream does not support the given options"
+  if err == PlatformError.StreamNoDataAvailable         -> "No data available"
+  if err == PlatformError.StreamReadNotSupported        -> "Stream does not support reading"
+  if err == PlatformError.StreamWriteNotSupported       -> "Stream does not support writing"
+  if err == PlatformError.ProcessUnknownError           -> "Unknown process error occured"
+  if err == PlatformError.ProcessInvalid                -> "Invalid process"
+  if err == PlatformError.ProcessInvalidCmdLine         -> "Invalid commandline string"
+  if err == PlatformError.ProcessFailedToCreatePipes    -> "Failed to create pipes for child process"
+  if err == PlatformError.ProcessNoAccess               -> "Access to executable is denied"
+  if err == PlatformError.ProcessExecutableNotFound     -> "Executable not found"
+  if err == PlatformError.ProcessExecutableInvalid      -> "Executable is invalid"
+  if err == PlatformError.ProcessLimitReached           -> "Process limit reached"
+  if err == PlatformError.ProcessInvalidSignal          -> "Invalid process signal"
+  if err == PlatformError.ConsoleUnknownError           -> "Unknown console error occured"
+  if err == PlatformError.ConsoleNotPresent             -> "Console not present"
+  if err == PlatformError.ConsoleNoTerminal             -> "Given stream is not a terminal"
+  if err == PlatformError.ConsoleFailedToGetTermInfo    -> "Failed to retreive terminal info for stream"
+  if err == PlatformError.ConsoleFailedToUpdateTermInfo -> "Failed to update terminal info for stream"
+  if err == PlatformError.FileUnknownError              -> "Unknown file error occured"
+  if err == PlatformError.FileNoAccess                  -> "File access denied"
+  if err == PlatformError.FileNotFound                  -> "File not found"
+  if err == PlatformError.FileInvalidFileName           -> "File name is not valid for the underlying filesystem"
+  if err == PlatformError.FilePathTooLong               -> "File path is too long for the underlying filesystem"
+  if err == PlatformError.FileDiskFull                  -> "Not enough space left on the underlying filesystem"
+  if err == PlatformError.FileLocked                    -> "File is locked"
+  if err == PlatformError.TcpUnknownError               -> "Unknown Tcp error occured"
+  if err == PlatformError.TcpInvalidSocket              -> "Invalid Tcp socket"
+  if err == PlatformError.TcpInvalidServerSocket        -> "Invalid Tcp server socket"
+  if err == PlatformError.TcpAlreadyInProcess           -> "Tcp operation already in progess"
+  if err == PlatformError.TcpNetworkDown                -> "Tcp network down"
+  if err == PlatformError.TcpSocketCouldNotBeAllocated  -> "New Tcp socket could not be allocated"
+  if err == PlatformError.TcpInvalidPort                -> "Invalid Tcp port"
+  if err == PlatformError.TcpInvalidBacklog             -> "Invalid Tcp backlog"
+  if err == PlatformError.TcpInvalidAddressFamily       -> "Invalid Tcp address-family"
+  if err == PlatformError.TcpNoAccess                   -> "Tcp access denied"
+  if err == PlatformError.TcpAddressInUse               -> "Tcp address already in use"
+  if err == PlatformError.TcpAddressUnavailable         -> "Tcp address cannot be assigned"
+  if err == PlatformError.TcpInvalidAddress             -> "Invalid Tcp address"
+  if err == PlatformError.TcpNetworkUnreachable         -> "Tcp network unreachable"
+  if err == PlatformError.TcpAddressFamiliyNotSupported -> "Tcp address family not supported"
+  if err == PlatformError.TcpConnectionRefused          -> "Tcp connection refused"
+  if err == PlatformError.TcpTimeout                    -> "Tcp timeout occured"
+  if err == PlatformError.TcpAddressNotFound            -> "Tcp address not found"
+  if err == PlatformError.TcpRemoteResetConnection      -> "Tcp connection reset by remote"
+  if err == PlatformError.TcpSocketIsDead               -> "Tcp socket is dead"
+  if err == PlatformError.SleepFailed                   -> "Sleep failed"
+  else                                                  -> "Unrecognized platform error '" + int(err) + "'"
+
 // -- Platform
 
 act getPlatform() Platform(intrinsic{runtime_platform}())
+
+act getPlatformErrorCode() PlatformError(intrinsic{platform_error_code}())
+
+act getPlatformError(string message = "")
+  code = getPlatformErrorCode();
+  Error(code, message.isEmpty() ? code.string() : message + ": " + code.string())
 
 // -- Versions
 
@@ -57,7 +164,7 @@ act atInterupt{T}(action{T} delegate) -> future{T}
 // -- Misc
 
 act sleep(Duration d) -> Option{Error}
-  intrinsic{sleep_nano}(d.ns); None()
+  intrinsic{sleep_nano}(d.ns) ? None() : getPlatformError()
 
 // -- Failure
 

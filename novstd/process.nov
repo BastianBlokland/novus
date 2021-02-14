@@ -27,6 +27,10 @@ struct ProcessResult =
 fun string(ProcessId p)
   "[" + p.id + "]"
 
+fun string(Signal s)
+  if s == Signal.Interupt -> "Interupt"
+  else                    -> "Unknown signal"
+
 fun string(ExitCode p)
   p.code.string()
 
@@ -50,55 +54,66 @@ fun isSuccess(ProcessResult r)
 
 // -- Actions
 
-act run(string prog, List{string} args) -> Process
+act run(string prog, List{string} args) -> Either{Process, Error}
   run(toCmdLine(prog, args))
 
-act run(string cmdLine) -> Process
-  handle = intrinsic{process_start}(cmdLine);
-  Process(
-    cmdLine,
-    handle,
-    ProcessId(intrinsic{process_getid}(handle)),
-    intrinsic{process_openstream}(handle, 0),
-    intrinsic{process_openstream}(handle, 1),
-    intrinsic{process_openstream}(handle, 2))
+act run(string cmdLine) -> Either{Process, Error}
+  handle  = intrinsic{process_start}(cmdLine);
+  pid     = ProcessId(intrinsic{process_getid}(handle));
+  if pid.id < 0 -> getPlatformError("Failed to run: '" + cmdLine + "'")
+  else          ->
+    Process(
+      cmdLine, handle, pid,
+      intrinsic{process_openstream}(handle, 0),
+      intrinsic{process_openstream}(handle, 1),
+      intrinsic{process_openstream}(handle, 2))
 
-act sendInterupt(Process p) -> bool
+act sendInterupt(Process p) -> Option{Error}
   p.sendSignal(Signal.Interupt)
 
-act sendSignal(Process p, Signal s) -> bool
+act sendSignal(Process p, Signal s) -> Option{Error}
   intrinsic{process_sendsignal}(p.handle, int(s))
+    ? None()
+    : Error("Failed to send signal: '" + s + "'")
 
-act wait(Process p) -> ProcessResult
-  ProcessResult(
-    p.stdOut.readToEnd(),
-    p.stdErr.readToEnd(),
-    ExitCode(intrinsic{process_block}(p.handle)))
+act wait(Either{Process, Error} pOrErr) -> Either{ProcessResult, Error}
+  pOrErr.map(impure lambda (Process p) p.wait())
 
-act waitAsync(Process p) -> future{ProcessResult}
+act wait(Process p) -> Either{ProcessResult, Error}
+  stdOutRes = p.stdOut.readToEnd();
+  stdErrRes = p.stdErr.readToEnd();
+  if stdOutRes as Error outErr -> outErr
+  if stdErrRes as Error errErr -> errErr
+  else ->
+    ProcessResult(
+      stdOutRes ?? "",
+      stdErrRes ?? "",
+      ExitCode(intrinsic{process_block}(p.handle)))
+
+act waitAsync(Process p) -> future{Either{ProcessResult, Error}}
   fork p.wait()
 
 // -- Tests
 
 assert(
-  p = run("cmake", "-E" :: "echo" :: "Hello world" :: List{string}());
+  p = run("cmake", "-E" :: "echo" :: "Hello world" :: List{string}()).failOnError();
   p.id.id > 0 &&
   p.cmdLine == "'cmake' '-E' 'echo' 'Hello world'")
 
 assert(
-  r = run("cmake", "-E" :: "echo" :: "Hello world").wait();
+  r = run("cmake", "-E" :: "echo" :: "Hello world").wait().failOnError();
   r.stdOut.startsWith("Hello world") &&
   r.stdErr.isEmpty() &&
   r.exitCode == ExitCode(0))
 
 assert(
-  r = run("cmake", "--version" :: List{string}()).wait();
+  r = run("cmake", "--version" :: List{string}()).wait().failOnError();
   r.stdOut.startsWith("cmake version") &&
   r.stdErr.isEmpty() &&
   r.exitCode == ExitCode(0))
 
 assert(
-  r = run("cmake", "--invalid" :: List{string}()).wait();
+  r = run("cmake", "--invalid" :: List{string}()).wait().failOnError();
   r.stdOut.isEmpty() &&
   r.stdErr.startsWith("CMake Error") &&
   r.exitCode == ExitCode(1))

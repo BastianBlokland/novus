@@ -46,27 +46,30 @@ auto threadStart(ThreadRoutineRaw routine, void* arg) noexcept -> ThreadStartRes
 auto threadYield() noexcept -> void {
 #if defined(_WIN32)
   SwitchToThread();
-#elif defined(__APPLE__) // !_WIN32
+#else // !_WIN32
   sched_yield();
-#else // !_WIN32 && !__APPLE__
-  pthread_yield();
 #endif
 }
 
-auto threadSleepNano(int64_t time) noexcept -> void {
+auto threadSleepNano(int64_t time) noexcept -> bool {
+  if (time < 0) {
+    return false;
+  }
 #if defined(_WIN32)
 
   // TODO: This only has milliseconds resolution, investigate win32 alternatives with better
   // resolution.
   unsigned long timeMilli = static_cast<unsigned long>(time) / 1'000'000;
   Sleep(timeMilli > 0 ? timeMilli : 1);
+  return true; // The win32 sleep api cannot fail.
 
 #else // !_WIN32
 
   timespec ts = {time / 1'000'000'000, time % 1'000'000'000};
-  while (nanosleep(&ts, &ts) == -1 && errno == EINTR) // Resume waiting after interupt.
+  int res     = 0;
+  while ((res = nanosleep(&ts, &ts)) == -1 && errno == EINTR) // Resume waiting after interupt.
     ;
-
+  return res == 0;
 #endif
 }
 

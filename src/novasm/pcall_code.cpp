@@ -7,6 +7,9 @@ auto operator<<(std::ostream& out, const PCallCode& rhs) noexcept -> std::ostrea
   case PCallCode::EndiannessNative:
     out << "endianness-native";
     break;
+  case PCallCode::PlatformErrorCode:
+    out << "platform-error-code";
+    break;
 
   case PCallCode::StreamCheckValid:
     out << "stream-check-valid";

@@ -171,12 +171,12 @@ fun simulateGameover(GameState g)
 // -- Game loop
 
 act loop(Console c)
-  loop(Duration(0), createGame(rngInit(), getWindow()), c)
+  loop(Duration(0), createGame(rngInit(), c.getWindow()), c)
 
 act loop(Duration prevFrameDur, GameState state, Console c)
   t1      = timestamp();
-  window  = getWindow();
-  input   = getInput(c.readToEnd());
+  window  = c.getWindow();
+  input   = getInput(c.readToEnd() ?? "");
   if input is InputQuit || interuptIsRequested()  -> None()
   if input is InputRestart                        -> loop(c)
   else ->
@@ -292,8 +292,8 @@ main()
 
 // --- Terminal setup
 
-act getWindow()
-  Box(I2(1, 1), I2(termGetWidth(), termGetHeight()))
+act getWindow(Console c)
+  Box(I2(1, 1), I2(c.termGetWidth().failOnError(), c.termGetHeight().failOnError()))
 
 act setupTerminal(Console c)
   actSeq(

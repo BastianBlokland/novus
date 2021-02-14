@@ -14,7 +14,6 @@
 #include "internal/stack.hpp"
 #include "internal/stream_utilities.hpp"
 #include "internal/string_utilities.hpp"
-#include "internal/terminal.hpp"
 #include "novasm/assembly.hpp"
 #include "novasm/pcall_code.hpp"
 #include "vm/exec_state.hpp"
@@ -33,6 +32,7 @@ auto inline pcall(
     RefAllocator* refAlloc,
     BasicStack* stack,
     ExecutorHandle* execHandle,
+    PlatformError* pErr,
     novasm::PCallCode code) noexcept -> void {
   assert(iface && refAlloc && stack && execHandle);
 
@@ -72,6 +72,7 @@ auto inline pcall(
 #define POP_AT(IDX) stack->popAt(IDX)
 #define POP() stack->pop()
 #define POP_INT() POP().getInt()
+#define POP_LONG() getLong(POP())
 #define PEEK() stack->peek()
 #define PEEK_BEHIND(BEHIND) stack->peek(BEHIND)
 #define PEEK_INT() PEEK().getInt()
@@ -79,6 +80,9 @@ auto inline pcall(
   switch (code) {
   case PCallCode::EndiannessNative: {
     PUSH_INT(static_cast<uint32_t>(getEndianness()));
+  } break;
+  case PCallCode::PlatformErrorCode: {
+    PUSH_INT(static_cast<uint32_t>(*pErr));
   } break;
 
   case PCallCode::StreamCheckValid: {
@@ -93,7 +97,7 @@ auto inline pcall(
     auto str = refAlloc->allocStr(maxChars <= 0 ? 0U : static_cast<unsigned int>(maxChars));
     PUSH_REF(str);
 
-    streamReadString(execHandle, stream, str);
+    streamReadString(execHandle, pErr, stream, str);
 
     POP_AT(1); // Pop the stream off the stack, 1 because its behind the result string.
   } break;
@@ -101,7 +105,7 @@ auto inline pcall(
     // Note: Keep the stream on the stack, reason is gc could run while we are blocked.
     auto stream = PEEK();
 
-    auto readChar = streamReadChar(execHandle, stream);
+    auto readChar = streamReadChar(execHandle, pErr, stream);
 
     POP(); // Pop the stream off the stack.
     PUSH_INT(readChar);
@@ -113,7 +117,7 @@ auto inline pcall(
 
     // Note: Keep the stream on the stack, reason is gc could run while we are blocked.
     auto stream = PEEK_BEHIND(1);
-    auto result = streamWriteString(execHandle, stream, strRef);
+    auto result = streamWriteString(execHandle, pErr, stream, strRef);
 
     POP(); // Pop the string off the stack.
     POP(); // Pop the stream off the stack.
@@ -124,29 +128,29 @@ auto inline pcall(
 
     // Note: Keep the stream on the stack, reason is gc could run while we are blocked.
     auto stream = PEEK();
-    auto result = streamWriteChar(execHandle, stream, val);
+    auto result = streamWriteChar(execHandle, pErr, stream, val);
 
     POP(); // Pop the stream off the stack.
     PUSH_BOOL(result);
   } break;
   case PCallCode::StreamFlush: {
-    PUSH_BOOL(streamFlush(POP()));
+    PUSH_BOOL(streamFlush(pErr, POP()));
   } break;
   case PCallCode::StreamSetOptions: {
     auto options = POP_INT();
     auto stream  = POP();
-    PUSH_BOOL(streamSetOpts(stream, static_cast<StreamOpts>(options)));
+    PUSH_BOOL(streamSetOpts(pErr, stream, static_cast<StreamOpts>(options)));
   } break;
   case PCallCode::StreamUnsetOptions: {
     auto options = POP_INT();
     auto stream  = POP();
-    PUSH_BOOL(streamUnsetOpts(stream, static_cast<StreamOpts>(options)));
+    PUSH_BOOL(streamUnsetOpts(pErr, stream, static_cast<StreamOpts>(options)));
   } break;
 
   case PCallCode::ProcessStart: {
     auto* cmdLineStrRef = getStringRef(refAlloc, POP());
     CHECK_ALLOC(cmdLineStrRef);
-    PUSH_REF(processStart(refAlloc, cmdLineStrRef));
+    PUSH_REF(processStart(refAlloc, pErr, cmdLineStrRef));
   } break;
   case PCallCode::ProcessBlock: {
     // Note: Keep the process on the stack, reason is gc could run while we are blocked.
@@ -174,7 +178,7 @@ auto inline pcall(
   case PCallCode::ProcessSendSignal: {
     const auto kind = static_cast<ProcessSignalKind>(POP_INT());
     auto process    = getProcessRef(POP());
-    PUSH_BOOL(processSendSignal(process, kind));
+    PUSH_BOOL(processSendSignal(process, pErr, kind));
   } break;
 
   case PCallCode::FileOpenStream: {
@@ -186,13 +190,12 @@ auto inline pcall(
     auto* pathStrRef = getStringRef(refAlloc, POP());
     CHECK_ALLOC(pathStrRef);
 
-    PUSH_REF(openFileStream(refAlloc, pathStrRef, mode, flags));
+    PUSH_REF(openFileStream(refAlloc, pErr, pathStrRef, mode, flags));
   } break;
   case PCallCode::FileRemove: {
     auto* pathStrRef = getStringRef(refAlloc, POP());
     CHECK_ALLOC(pathStrRef);
-
-    PUSH_BOOL(removeFile(pathStrRef));
+    PUSH_BOOL(removeFile(pErr, pathStrRef));
   } break;
 
   case PCallCode::TcpOpenCon: {
@@ -204,7 +207,8 @@ auto inline pcall(
     auto* addrStr = getStringRef(refAlloc, addr);
     CHECK_ALLOC(addrStr);
 
-    auto* result = tcpOpenConnection(settings, execHandle, refAlloc, addrStr, ipAddrFamily, port);
+    auto* result =
+        tcpOpenConnection(settings, execHandle, refAlloc, pErr, addrStr, ipAddrFamily, port);
 
     POP(); // Pop the 'address' string off the stack.
     PUSH_REF(result);
@@ -213,19 +217,19 @@ auto inline pcall(
     const auto backlog      = POP_INT();
     const auto port         = POP_INT();
     const auto ipAddrFamily = static_cast<IpAddressFamily>(POP_INT());
-    PUSH_REF(tcpStartServer(settings, refAlloc, ipAddrFamily, port, backlog));
+    PUSH_REF(tcpStartServer(settings, refAlloc, pErr, ipAddrFamily, port, backlog));
   } break;
   case PCallCode::TcpAcceptCon: {
 
     // Note: Keep the stream on the stack, reason is gc could run while we are blocked.
     auto stream  = PEEK();
-    auto* result = tcpAcceptConnection(execHandle, refAlloc, stream);
+    auto* result = tcpAcceptConnection(execHandle, refAlloc, pErr, stream);
 
     POP(); // Pop the stream off the stack.
     PUSH_REF(result);
   } break;
   case PCallCode::TcpShutdown: {
-    PUSH_BOOL(tcpShutdown(POP()));
+    PUSH_BOOL(tcpShutdown(pErr, POP()));
   } break;
   case PCallCode::IpLookupAddress: {
 
@@ -235,7 +239,7 @@ auto inline pcall(
     auto hostname     = PEEK();
     auto* hostnameStr = getStringRef(refAlloc, hostname);
     CHECK_ALLOC(hostnameStr);
-    auto* result = ipLookupAddress(settings, execHandle, refAlloc, hostnameStr, ipAddrFamily);
+    auto* result = ipLookupAddress(settings, execHandle, refAlloc, pErr, hostnameStr, ipAddrFamily);
 
     POP(); // Pop the hostname off the stack.
     PUSH_REF(result);
@@ -243,22 +247,26 @@ auto inline pcall(
 
   case PCallCode::ConsoleOpenStream: {
     auto kind = static_cast<ConsoleStreamKind>(POP_INT());
-    PUSH_REF(openConsoleStream(iface, refAlloc, kind));
+    PUSH_REF(openConsoleStream(iface, refAlloc, pErr, kind));
   } break;
 
   case PCallCode::TermSetOptions: {
     auto options = POP_INT();
-    PUSH_BOOL(termSetOpts(static_cast<TermOpts>(options)));
+    auto stream  = POP();
+    PUSH_BOOL(termSetOpts(pErr, stream, static_cast<TermOpts>(options)));
   } break;
   case PCallCode::TermUnsetOptions: {
     auto options = POP_INT();
-    PUSH_BOOL(termUnsetOpts(static_cast<TermOpts>(options)));
+    auto stream  = POP();
+    PUSH_BOOL(termUnsetOpts(pErr, stream, static_cast<TermOpts>(options)));
   } break;
   case PCallCode::TermGetWidth: {
-    PUSH_INT(termGetWidth());
+    auto stream = POP();
+    PUSH_INT(termGetWidth(pErr, stream));
   } break;
   case PCallCode::TermGetHeight: {
-    PUSH_INT(termGetHeight());
+    auto stream = POP();
+    PUSH_INT(termGetHeight(pErr, stream));
   } break;
 
   case PCallCode::EnvGetArg: {
@@ -320,13 +328,17 @@ auto inline pcall(
   } break;
 
   case PCallCode::SleepNano: {
-    auto sleepTime = getLong(PEEK());
+    auto sleepTime = POP_LONG();
     execHandle->setState(ExecState::Paused);
-    threadSleepNano(sleepTime);
+    const bool res = threadSleepNano(sleepTime);
     execHandle->setState(ExecState::Running);
     if (execHandle->trap()) {
       return;
     }
+    if (!res) {
+      *pErr = PlatformError::SleepFailed;
+    }
+    PUSH_BOOL(res);
   } break;
   case PCallCode::Assert: {
     auto* msg = getStringRef(refAlloc, POP());
@@ -334,11 +346,11 @@ auto inline pcall(
 
     auto cond = PEEK_INT();
     if (unlikely(cond == 0)) {
-      auto* stdErr = iface->getStdErr();
-      if (stdErr != nullptr) {
-        std::fwrite("Assertion failed: ", 18, 1, stdErr);
-        std::fwrite(msg->getDataPtr(), msg->getSize(), 1, stdErr);
-        std::fputc('\n', stdErr);
+      auto stdErrHandle = iface->getStdErr();
+      if (fileIsValid(stdErrHandle)) {
+        fileWrite(stdErrHandle, "Assertion failed: ", 18);
+        fileWrite(stdErrHandle, msg->getCharDataPtr(), msg->getSize());
+        fileWrite(stdErrHandle, "\n", 1);
       }
       execHandle->setState(ExecState::AssertFailed);
     }
@@ -355,6 +367,7 @@ auto inline pcall(
 #undef PUSH_REF
 #undef POP
 #undef POP_INT
+#undef POP_LONG
 #undef PEEK
 #undef PEEK_BEHIND
 #undef PEEK_INT

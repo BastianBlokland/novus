@@ -1,6 +1,7 @@
 import "std/lazy.nov"
 import "std/list.nov"
 import "std/pair.nov"
+import "std/rt.nov"
 import "std/text.nov"
 
 // -- Types
@@ -26,47 +27,56 @@ act isValid(sys_stream s) -> bool
 act flush(sys_stream s) -> Option{Error}
   intrinsic{stream_flush}(s)
     ? None()
-    : Error("Failed to flush stream")
+    : getPlatformError("Failed to flush stream")
 
 act setOptions(sys_stream s, StreamOptions opts) -> Option{Error}
   intrinsic{stream_setoptions}(s, int(opts))
     ? None()
-    : Error("Failed to set stream options")
+    : getPlatformError("Failed to set stream options")
 
 act unsetOptions(sys_stream s, StreamOptions opts) -> Option{Error}
   intrinsic{stream_unsetoptions}(s, int(opts))
     ? None()
-    : Error("Failed to unset stream options")
+    : getPlatformError("Failed to unset stream options")
 
 // -- Reading actions
 
-act read(sys_stream s, int maxChars) -> string
-  intrinsic{stream_read_string}(s, maxChars)
+act read(sys_stream s, int maxChars) -> Either{string, Error}
+  res = intrinsic{stream_read_string}(s, maxChars);
+  res.isEmpty() && getPlatformErrorCode() != PlatformError.StreamNoDataAvailable
+    ? getPlatformError("Failed to read from stream")
+    : res
 
-act read(sys_stream s) -> char
-  intrinsic{stream_read_char}(s)
+act read(sys_stream s) -> Either{char, Error}
+  res = intrinsic{stream_read_char}(s);
+  res == '\0' && getPlatformErrorCode() != PlatformError.StreamNoDataAvailable
+    ? getPlatformError("Failed to read from stream")
+    : res
 
-act readToEnd(sys_stream s) -> string
+act readToEnd(sys_stream s) -> Either{string, Error}
   invoke(
     impure lambda (string result)
-      read = s.read(512);
-      if read.length() > 0  -> self(result + read)
-      else                  -> result
+      readRes = s.read(512);
+      if readRes as Error   e                         -> e
+      if readRes as string  read && read.length() > 0 -> self(result + read)
+      else                                            -> result
     , "")
 
-act readLine(sys_stream s) -> string
+act readLine(sys_stream s) -> Either{string, Error}
   invoke(
     impure lambda (string result)
-      c = s.read();
-      if c == '\r'              -> self(result)
-      if c == '\n' || c == '\0' -> result
-      else                      -> self(result + c)
+      readRes = s.read();
+      if readRes as Error e -> e
+      if readRes as char  c ->
+        if c == '\r'              -> self(result)
+        if c == '\n' || c == '\0' -> result
+        else                      -> self(result + c)
   , "")
 
-act readLine(StreamReadState state) -> Pair{string, StreamReadState}
+act readLine(StreamReadState state) -> Either{Pair{string, StreamReadState}, Error}
   state.readUntil("\n" :: "\r\n")
 
-act readUntil(StreamReadState state, List{string} patterns) -> Pair{string, StreamReadState}
+act readUntil(StreamReadState state, List{string} patterns) -> Either{Pair{string, StreamReadState}, Error}
   invoke(
     impure lambda (string txt)
       p = patterns.fold(  ( lambda (Pair{int, string} best, string p)
@@ -81,9 +91,10 @@ act readUntil(StreamReadState state, List{string} patterns) -> Pair{string, Stre
         remTxt      = txt[idx + p.second.length(), txt.length()];
         Pair(matchedTxt, StreamReadState(remTxt, false, state.src))
       else        ->
-        read = state.src.read(512);
-        if read.isEmpty() -> Pair("", StreamReadState(txt, true, state.src))
-        else              -> self(txt + read)
+        readRes = state.src.read(512);
+        if readRes as Error   e                           -> e
+        if readRes as string  read && read.length() > 0   -> self(txt + read)
+        else                                              -> Pair("", StreamReadState(txt, true, state.src))
   , state.txt)
 
 // -- Writing actions
@@ -91,31 +102,20 @@ act readUntil(StreamReadState state, List{string} patterns) -> Pair{string, Stre
 act write(sys_stream s, string str) -> Option{Error}
   intrinsic{stream_write_string}(s, str)
     ? None()
-    : Error("Failed to write to stream")
+    : getPlatformError("Failed to write to stream")
 
 act write(sys_stream s, char c) -> Option{Error}
   intrinsic{stream_write_char}(s, c)
     ? None()
-    : Error("Failed to write to stream")
+    : getPlatformError("Failed to write to stream")
 
 act copy(sys_stream from, sys_stream to) -> Either{int, Error}
   invoke(
     impure lambda(int bytesCopied) -> Either{int, Error}
-      read        = from.read(512);
-      readLength  = read.length();
-      if readLength > 0 -> to.write(read) as Error e ? e : self(bytesCopied + readLength)
-      else              -> bytesCopied
-  , 0).actIf(impure lambda (int bytesCopied) to.flush() as Error e ? e : bytesCopied)
-
-act copyLines(sys_stream from, sys_stream to) -> Either{int, Error}
-  invoke(impure lambda (StreamReadState state, int lines)
-  (
-    res = state.readLine();
-    if res.second.reachedEnd  -> lines
-    else                      ->
-      actSeq(
-        lazy to.write(res.first),
-        lazy to.write('\n'),
-        lazy to.flush()
-       ) as Error e ? e : self(res.second, ++lines)
-  ), StreamReadState(from), 0)
+      readRes     = from.read(512);
+      if readRes as Error   readErr                   -> readErr
+      if readRes as string  read && read.length() > 0 -> to.write(read) as Error writeErr
+                                                          ? writeErr
+                                                          : self(bytesCopied + read.length())
+      else                                            -> bytesCopied
+  , 0)

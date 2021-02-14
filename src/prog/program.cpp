@@ -263,6 +263,8 @@ Program::Program() :
   // Register build-in actions.
   m_funcDecls.registerIntrinsicAction(
       *this, Fk::ActionEndiannessNative, "platform_endianness_native", sym::TypeSet{}, m_int);
+  m_funcDecls.registerIntrinsicAction(
+      *this, Fk::ActionPlatformErrorCode, "platform_error_code", sym::TypeSet{}, m_int);
 
   m_funcDecls.registerIntrinsicAction(
       *this, Fk::ActionStreamCheckValid, "stream_checkvalid", sym::TypeSet{m_stream}, m_bool);
@@ -352,13 +354,17 @@ Program::Program() :
       *this, Fk::ActionConsoleOpenStream, "console_openstream", sym::TypeSet{m_int}, m_stream);
 
   m_funcDecls.registerIntrinsicAction(
-      *this, Fk::ActionTermSetOptions, "term_setoptions", sym::TypeSet{m_int}, m_bool);
+      *this, Fk::ActionTermSetOptions, "term_setoptions", sym::TypeSet{m_stream, m_int}, m_bool);
   m_funcDecls.registerIntrinsicAction(
-      *this, Fk::ActionTermUnsetOptions, "term_unsetoptions", sym::TypeSet{m_int}, m_bool);
+      *this,
+      Fk::ActionTermUnsetOptions,
+      "term_unsetoptions",
+      sym::TypeSet{m_stream, m_int},
+      m_bool);
   m_funcDecls.registerIntrinsicAction(
-      *this, Fk::ActionTermGetWidth, "term_getwidth", sym::TypeSet{}, m_int);
+      *this, Fk::ActionTermGetWidth, "term_getwidth", sym::TypeSet{m_stream}, m_int);
   m_funcDecls.registerIntrinsicAction(
-      *this, Fk::ActionTermGetHeight, "term_getheight", sym::TypeSet{}, m_int);
+      *this, Fk::ActionTermGetHeight, "term_getheight", sym::TypeSet{m_stream}, m_int);
 
   m_funcDecls.registerIntrinsicAction(
       *this, Fk::ActionEnvGetArg, "env_argument", sym::TypeSet{m_int}, m_string);
@@ -392,7 +398,7 @@ Program::Program() :
       *this, Fk::ActionProgramPath, "path_program", sym::TypeSet{}, m_string);
 
   m_funcDecls.registerIntrinsicAction(
-      *this, Fk::ActionSleepNano, "sleep_nano", sym::TypeSet{m_long}, m_long);
+      *this, Fk::ActionSleepNano, "sleep_nano", sym::TypeSet{m_long}, m_bool);
 
   m_funcDecls.registerAction(
       *this, Fk::ActionAssert, "assert", sym::TypeSet{m_bool, m_string}, m_bool);

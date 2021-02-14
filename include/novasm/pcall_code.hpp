@@ -5,12 +5,13 @@
 namespace novasm {
 
 /*
-  Items in parentheses '()' on the left side of '->' are taken from the stack and on the right side
-  are pushed onto the stack.
-*/
+ * Items in parentheses '()' on the left side of '->' are taken from the stack and on the right side
+ * are pushed onto the stack.
+ */
 
 enum class PCallCode : uint8_t {
-  EndiannessNative = 1, // () -> (int) Get the native endianness of the platform.
+  EndiannessNative  = 1, // () -> (int) Get the native endianness of the platform.
+  PlatformErrorCode = 2, // () -> (int) Get the last platform error, see notes at bottom of file.
 
   StreamCheckValid   = 10, // (stream)         -> (int)     Check if given stream is valid.
   StreamReadString   = 11, // (int, stream)    -> (string)  Read up to x bytes from a stream.
@@ -38,10 +39,10 @@ enum class PCallCode : uint8_t {
 
   ConsoleOpenStream = 50, // (int) -> (stream)  Get a stream to stdin, stdout or stderr.
 
-  TermSetOptions   = 60, // (int) -> (int)  Set terminal control options, returns success.
-  TermUnsetOptions = 61, // (int) -> (int)  Unset terminal control options, returns success.
-  TermGetWidth     = 62, // ()    -> (int)  Get the width (num columns) of the terminal.
-  TermGetHeight    = 63, // ()    -> (int)  Get the height (num rows) of the terminal.
+  TermSetOptions   = 60, // (int, stream) -> (int)  Set terminal control options, returns success.
+  TermUnsetOptions = 61, // (int, stream) -> (int)  Unset terminal control options, returns success.
+  TermGetWidth     = 62, // (stream)      -> (int)  Get the width (num columns) of the terminal.
+  TermGetHeight    = 63, // (stream)      -> (int)  Get the height (num rows) of the terminal.
 
   EnvGetArg        = 70, // (int)     -> (string) Get an environment argument by index.
   EnvGetArgCount   = 71, // ()        -> (int)    Get the amount of environment arguments provided.
@@ -60,9 +61,34 @@ enum class PCallCode : uint8_t {
   RtPath         = 102, // () -> (string) Get the path of the runtime executable.
   ProgramPath    = 103, // () -> (string) Get the path of the currently running program.
 
-  SleepNano = 240, // (long)         -> (long) Sleep the current executor for x nanoseconds.
+  SleepNano = 240, // (long)         -> (int) Sleep the current executor for x nanoseconds.
   Assert    = 241, // (string, int)  -> (int) If condition is false: fail with message.
 };
+
+/* Platform errors
+ * The following calls will set the error code that is returned from 'PlatformErrorCode':
+ * - StreamReadString, error is set when an empty string is returned.
+ * - StreamReadChar, error is set when a null character is returned.
+ * - StreamWriteString, error is set when false is returned.
+ * - StreamWriteChar, error is set when false is returned.
+ * - StreamFlush, error is set when false is returned.
+ * - StreamSetOptions, error is set when false is returned.
+ * - StreamUnsetOptions, error is set when false is returned.
+ * - ProcessStart, error is set when an process with id -1 is returned.
+ * - ProcessSendSignal, error is set when false is returned.
+ * - FileOpenStream, error is set when an invalid stream is returned.
+ * - FileRemove, error is set when false is returned.
+ * - TcpOpenCon, error is set when an invalid stream is returned.
+ * - TcpStartServer, error is set when an invalid stream is returned.
+ * - TcpAcceptCon, error is set when an invalid stream is returned.
+ * - TcpShutdown, error is set when false is returned.
+ * - IpLookupAddress, error is set when empty string is returned.
+ * - SleepNano, error is set when false is returned.
+ * - TermSetOptions, error is set when false is returned.
+ * - TermUnsetOptions, error is set when false is returned.
+ * - TermGetWidth, error is set when -1 is returned.
+ * - TermGetHeight, error is set when -1 is returned.
+ */
 
 auto operator<<(std::ostream& out, const PCallCode& rhs) noexcept -> std::ostream&;
 

@@ -1,4 +1,5 @@
 #pragma once
+#include "internal/platform_utilities.hpp"
 #include "internal/ref_process.hpp"
 #include "internal/stream_opts.hpp"
 
@@ -9,6 +10,8 @@ enum class ProcessStreamKind : uint8_t {
   StdOut = 1,
   StdErr = 2,
 };
+
+auto getProcessStreamPlatformError() noexcept -> PlatformError;
 
 // Implementation of the 'stream' interface that reads / writes to streams from other processes.
 // Note: To avoid needing a vtable there is no abstract 'Stream' class but instead there are wrapper
@@ -28,82 +31,134 @@ public:
 
   [[nodiscard]] auto getProcess() noexcept { return m_process; }
 
-  [[nodiscard]] auto isValid() noexcept -> bool { return getFile() != nullptr; }
+  [[nodiscard]] auto isValid() noexcept -> bool { return fileIsValid(getFile()); }
 
-  auto readString(ExecutorHandle* execHandle, StringRef* str) noexcept -> bool {
-    if (unlikely(str->getSize() == 0)) {
+  auto readString(ExecutorHandle* execHandle, PlatformError* pErr, StringRef* str) noexcept
+      -> bool {
+    if (unlikely(m_streamKind == ProcessStreamKind::StdIn)) {
+      *pErr = PlatformError::StreamReadNotSupported;
       return false;
     }
 
-    // Can block so we mark ourselves as paused so the gc can trigger in the mean time.
+    if (unlikely(str->getSize() == 0)) {
+      return true;
+    }
+
     execHandle->setState(ExecState::Paused);
 
-    const auto bytesRead = std::fread(str->getCharDataPtr(), 1U, str->getSize(), getFile());
+    const int bytesRead = fileRead(getFile(), str->getCharDataPtr(), str->getSize());
 
-    // After resuming check if we should wait for gc (or if we are aborted).
     execHandle->setState(ExecState::Running);
     if (execHandle->trap()) {
-      return false;
+      return false; // Aborted.
     }
 
+    if (bytesRead < 0) {
+      *pErr = getProcessStreamPlatformError();
+      str->updateSize(0);
+      return false;
+    }
+    if (bytesRead == 0) {
+      *pErr = PlatformError::StreamNoDataAvailable;
+      str->updateSize(0);
+      return false;
+    }
     str->updateSize(bytesRead);
     return bytesRead > 0;
   }
 
-  auto readChar(ExecutorHandle* execHandle) noexcept -> char {
+  auto readChar(ExecutorHandle* execHandle, PlatformError* pErr) noexcept -> char {
+    if (unlikely(m_streamKind == ProcessStreamKind::StdIn)) {
+      *pErr = PlatformError::StreamReadNotSupported;
+      return false;
+    }
+
     // Can block so we mark ourselves as paused so the gc can trigger in the mean time.
     execHandle->setState(ExecState::Paused);
 
-    const auto res = std::getc(getFile());
+    char res;
+    const int bytesRead = fileRead(getFile(), &res, 1);
 
-    // After resuming check if we should wait for gc (or if we are aborted).
     execHandle->setState(ExecState::Running);
     if (execHandle->trap()) {
+      return '\0'; // Aborted.
+    }
+
+    if (bytesRead != 1) {
+      *pErr = getProcessStreamPlatformError();
       return '\0';
     }
-
-    return res > 0 ? static_cast<char>(res) : '\0';
-  }
-
-  auto writeString(ExecutorHandle* execHandle, StringRef* str) noexcept -> bool {
-    // Can block so we mark ourselves as paused so the gc can trigger in the mean time.
-    execHandle->setState(ExecState::Paused);
-
-    const auto res = std::fwrite(str->getDataPtr(), str->getSize(), 1, getFile()) == 1;
-
-    // After resuming check if we should wait for gc (or if we are aborted).
-    execHandle->setState(ExecState::Running);
-    if (execHandle->trap()) {
-      return false;
+    if (bytesRead == 0) {
+      *pErr = PlatformError::StreamNoDataAvailable;
+      return '\0';
     }
-
     return res;
   }
 
-  auto writeChar(ExecutorHandle* execHandle, uint8_t val) noexcept -> bool {
-    // Can block so we mark ourselves as paused so the gc can trigger in the mean time.
-    execHandle->setState(ExecState::Paused);
-
-    const auto res = std::fputc(val, getFile()) == val;
-
-    // After resuming check if we should wait for gc (or if we are aborted).
-    execHandle->setState(ExecState::Running);
-    if (execHandle->trap()) {
+  auto writeString(ExecutorHandle* execHandle, PlatformError* pErr, StringRef* str) noexcept
+      -> bool {
+    if (unlikely(m_streamKind != ProcessStreamKind::StdIn)) {
+      *pErr = PlatformError::StreamWriteNotSupported;
       return false;
     }
 
-    return res;
+    execHandle->setState(ExecState::Paused);
+
+    const int bytesWritten = fileWrite(getFile(), str->getCharDataPtr(), str->getSize());
+
+    execHandle->setState(ExecState::Running);
+    if (execHandle->trap()) {
+      return false; // Aborted.
+    }
+
+    if (bytesWritten != static_cast<int>(str->getSize())) {
+      *pErr = getProcessStreamPlatformError();
+      return false;
+    }
+    return true;
   }
 
-  auto flush() noexcept -> bool { return std::fflush(getFile()) == 0; }
+  auto writeChar(ExecutorHandle* execHandle, PlatformError* pErr, uint8_t val) noexcept -> bool {
+    if (unlikely(m_streamKind != ProcessStreamKind::StdIn)) {
+      *pErr = PlatformError::StreamWriteNotSupported;
+      return false;
+    }
 
-  auto setOpts(StreamOpts /*unused*/) noexcept -> bool {
+    // Can block so we mark ourselves as paused so the gc can trigger in the mean time.
+    execHandle->setState(ExecState::Paused);
+
+    auto* valChar          = static_cast<char*>(static_cast<void*>(&val));
+    const int bytesWritten = fileWrite(getFile(), valChar, 1);
+
+    execHandle->setState(ExecState::Running);
+    if (execHandle->trap()) {
+      return false; // Aborted.
+    }
+
+    if (bytesWritten != 1) {
+      *pErr = getProcessStreamPlatformError();
+      return false;
+    }
+    return true;
+  }
+
+  auto flush(PlatformError* /*unused*/) noexcept -> bool {
+    // At the moment this is a no-op, in the future we can consider adding additional buffering to
+    // console streams (so flush would write to the handle).
+    return true;
+  }
+
+  auto setOpts(PlatformError* pErr, StreamOpts /*unused*/) noexcept -> bool {
     // On unix we could implement non-blocking by setting the file-descriptor to be non-blocking,
     // but this is not something we can implement on windows.
+    *pErr = PlatformError::StreamOptionsNotSupported;
     return false;
   }
 
-  auto unsetOpts(StreamOpts /*unused*/) noexcept -> bool { return false; }
+  auto unsetOpts(PlatformError* pErr, StreamOpts /*unused*/) noexcept -> bool {
+    *pErr = PlatformError::StreamOptionsNotSupported;
+    return false;
+  }
 
 private:
   ProcessRef* m_process;
@@ -112,7 +167,7 @@ private:
   ProcessStreamRef(ProcessRef* process, ProcessStreamKind streamKind) noexcept :
       Ref{getKind()}, m_process{process}, m_streamKind{streamKind} {}
 
-  [[nodiscard]] auto getFile() noexcept -> FILE* {
+  [[nodiscard]] auto getFile() noexcept -> FileHandle {
     switch (m_streamKind) {
     case ProcessStreamKind::StdIn:
       return m_process->getStdIn();
@@ -121,13 +176,28 @@ private:
     case ProcessStreamKind::StdErr:
       return m_process->getStdErr();
     }
-    return nullptr;
+    return fileInvalid();
   }
 };
 
 inline auto openProcessStream(ProcessRef* process, RefAllocator* alloc, ProcessStreamKind kind)
     -> ProcessStreamRef* {
   return alloc->allocPlain<ProcessStreamRef>(process, kind);
+}
+
+inline auto getProcessStreamPlatformError() noexcept -> PlatformError {
+#if defined(_WIN32)
+  switch (::GetLastError()) {
+  case ERROR_BROKEN_PIPE:
+    return PlatformError::StreamNoDataAvailable;
+  }
+#else // !(_WIN32
+  switch (errno) {
+  case EPIPE:
+    return PlatformError::StreamNoDataAvailable;
+  }
+#endif
+  return PlatformError::ConsoleUnknownError;
 }
 
 } // namespace vm::internal

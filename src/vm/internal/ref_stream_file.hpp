@@ -1,12 +1,13 @@
 #pragma once
 #include "gsl.hpp"
-#include "internal/fd_utilities.hpp"
+#include "internal/os_include.hpp"
+#include "internal/platform_utilities.hpp"
 #include "internal/ref.hpp"
 #include "internal/ref_allocator.hpp"
 #include "internal/ref_string.hpp"
+#include "internal/stream_opts.hpp"
 #include "intrinsics.hpp"
-#include <cstdio>
-#include <cstring>
+#include "vm/file.hpp"
 
 namespace vm::internal {
 
@@ -20,6 +21,8 @@ enum FileStreamFlags : uint8_t {
   AutoRemoveFile = 1, // File is deleted when the reference to it is freed.
 };
 
+auto getFilePlatformError() noexcept -> PlatformError;
+
 // File implementation of the 'stream' interface.
 // Note: To avoid needing a vtable there is no abstract 'Stream' class but instead there are wrapper
 // functions that dispatch based on the 'RefKind' (see stream_utilities.hpp).
@@ -30,11 +33,15 @@ public:
   FileStreamRef(const FileStreamRef& rhs) = delete;
   FileStreamRef(FileStreamRef&& rhs)      = delete;
   ~FileStreamRef() noexcept {
-    if (m_filePtr) {
-      std::fclose(m_filePtr);
-      if ((m_flags & AutoRemoveFile) == AutoRemoveFile) {
-        std::remove(m_filePath);
-      }
+    if (fileIsValid(m_fileHandle)) {
+      fileClose(m_fileHandle);
+    }
+    if ((m_flags & AutoRemoveFile) == AutoRemoveFile) {
+#if defined(_WIN32)
+      ::DeleteFileA(m_filePath);
+#else //!_WIN32
+      ::unlink(m_filePath);
+#endif //!_WIN32
     }
     delete[] m_filePath;
   }
@@ -44,74 +51,293 @@ public:
 
   [[nodiscard]] constexpr static auto getKind() { return RefKind::StreamFile; }
 
-  [[nodiscard]] auto isValid() noexcept -> bool { return m_filePtr != nullptr; }
+  [[nodiscard]] auto isValid() noexcept -> bool { return fileIsValid(m_fileHandle); }
 
-  auto readString(ExecutorHandle* /*unused*/, StringRef* str) noexcept -> bool {
+  auto readString(ExecutorHandle* execHandle, PlatformError* pErr, StringRef* str) noexcept
+      -> bool {
     if (unlikely(str->getSize() == 0)) {
-      return false;
+      return true;
     }
 
-    auto bytesRead = std::fread(str->getCharDataPtr(), 1U, str->getSize(), m_filePtr);
+    execHandle->setState(ExecState::Paused);
+
+    const int bytesRead = fileRead(m_fileHandle, str->getCharDataPtr(), str->getSize());
+
+    execHandle->setState(ExecState::Running);
+    if (execHandle->trap()) {
+      return false; // Aborted.
+    }
+
+    if (bytesRead < 0) {
+      *pErr = getFilePlatformError();
+      str->updateSize(0);
+      return false;
+    }
+    if (bytesRead == 0) {
+      *pErr = PlatformError::StreamNoDataAvailable;
+      str->updateSize(0);
+      return false;
+    }
     str->updateSize(bytesRead);
     return bytesRead > 0;
   }
 
-  auto readChar(ExecutorHandle* /*unused*/) noexcept -> char {
-    auto res = std::getc(m_filePtr);
-    return res > 0 ? static_cast<char>(res) : '\0';
+  auto readChar(ExecutorHandle* execHandle, PlatformError* pErr) noexcept -> char {
+
+    execHandle->setState(ExecState::Paused);
+
+    char res;
+    const int bytesRead = fileRead(m_fileHandle, &res, 1);
+
+    execHandle->setState(ExecState::Running);
+    if (execHandle->trap()) {
+      return '\0'; // Aborted.
+    }
+
+    if (bytesRead != 1) {
+      *pErr = getFilePlatformError();
+      return '\0';
+    }
+    if (bytesRead == 0) {
+      *pErr = PlatformError::StreamNoDataAvailable;
+      return '\0';
+    }
+    return res;
   }
 
-  auto writeString(ExecutorHandle* /*unused*/, StringRef* str) noexcept -> bool {
-    return std::fwrite(str->getDataPtr(), str->getSize(), 1, m_filePtr) == 1;
+  auto writeString(ExecutorHandle* execHandle, PlatformError* pErr, StringRef* str) noexcept
+      -> bool {
+
+    if (unlikely(str->getSize() == 0)) {
+      return true;
+    }
+
+    execHandle->setState(ExecState::Paused);
+
+    const int bytesWritten = fileWrite(m_fileHandle, str->getCharDataPtr(), str->getSize());
+
+    execHandle->setState(ExecState::Running);
+    if (execHandle->trap()) {
+      return false;
+    }
+
+    if (bytesWritten != static_cast<int>(str->getSize())) {
+      *pErr = getFilePlatformError();
+      return false;
+    }
+    return true;
   }
 
-  auto writeChar(ExecutorHandle* /*unused*/, uint8_t val) noexcept -> bool {
-    return std::fputc(val, m_filePtr) == val;
+  auto writeChar(ExecutorHandle* execHandle, PlatformError* pErr, uint8_t val) noexcept -> bool {
+
+    execHandle->setState(ExecState::Paused);
+
+    auto* valChar          = static_cast<char*>(static_cast<void*>(&val));
+    const int bytesWritten = fileWrite(m_fileHandle, valChar, 1);
+
+    execHandle->setState(ExecState::Running);
+    if (execHandle->trap()) {
+      return false;
+    }
+
+    if (bytesWritten != 1) {
+      *pErr = getFilePlatformError();
+      return false;
+    }
+    return true;
   }
 
-  auto flush() noexcept -> bool { return std::fflush(m_filePtr) == 0; }
+  auto flush(PlatformError* /*unused*/) noexcept -> bool {
+    // At the moment this is a no-op, in the future we can consider adding additional buffering to
+    // file streams (so flush would write to the file handle). Or alternatively flush could ask the
+    // os to actually write the data to disk, on linux with 'syncfs' or example.
+    return true;
+  }
 
-  auto setOpts(StreamOpts /*unused*/) noexcept -> bool { return false; }
+  auto setOpts(PlatformError* pErr, StreamOpts /*unused*/) noexcept -> bool {
+    // TODO: Support non-blocking file handles.
+    *pErr = PlatformError::StreamOptionsNotSupported;
+    return false;
+  }
 
-  auto unsetOpts(StreamOpts /*unused*/) noexcept -> bool { return false; }
+  auto unsetOpts(PlatformError* pErr, StreamOpts /*unused*/) noexcept -> bool {
+    // TODO: Support non-blocking file handles.
+    *pErr = PlatformError::StreamOptionsNotSupported;
+    return false;
+  }
 
 private:
   FileStreamFlags m_flags;
-  gsl::owner<FILE*> m_filePtr;
+  FileHandle m_fileHandle;
   gsl::owner<char*> m_filePath;
 
   inline explicit FileStreamRef(
-      gsl::owner<FILE*> filePtr, gsl::owner<char*> filePath, FileStreamFlags flags) noexcept :
-      Ref{getKind()}, m_flags{flags}, m_filePtr{filePtr}, m_filePath{filePath} {}
+      FileHandle fileHandle, gsl::owner<char*> filePath, FileStreamFlags flags) noexcept :
+      Ref{getKind()}, m_flags{flags}, m_fileHandle{fileHandle}, m_filePath{filePath} {}
 };
 
-inline auto
-openFileStream(RefAllocator* alloc, StringRef* path, FileStreamMode m, FileStreamFlags f)
+inline auto openFileStream(
+    RefAllocator* alloc, PlatformError* pErr, StringRef* path, FileStreamMode m, FileStreamFlags f)
     -> FileStreamRef* {
 
   // Make copy of the file-path string to store in the file-stream.
-  auto filePath = new gsl::owner<char>[path->getSize() + 1];      // +1 for null-terminator.
-  std::memcpy(filePath, path->getDataPtr(), path->getSize() + 1); // +1 for null-terminator.
+  auto filePath = new gsl::owner<char>[path->getSize() + 1];   // +1 for null-terminator.
+  ::memcpy(filePath, path->getDataPtr(), path->getSize() + 1); // +1 for null-terminator.
 
-  // Open the file.
-  char const* modeStr;
+#if defined(_WIN32)
+  DWORD desiredAccess       = 0;
+  DWORD shareMode           = FILE_SHARE_READ | FILE_SHARE_WRITE; // TODO: Should we limit this?
+  DWORD creationDisposition = 0;
+  DWORD flags               = FILE_ATTRIBUTE_NORMAL | FILE_FLAG_POSIX_SEMANTICS;
   switch (m) {
+  default:
   case FileStreamMode::Open:
-    modeStr = "r+b";
+    desiredAccess |= GENERIC_READ | GENERIC_WRITE;
+    creationDisposition = OPEN_EXISTING;
     break;
   case FileStreamMode::Append:
-    modeStr = "a+b";
+    desiredAccess |= FILE_APPEND_DATA;
+    creationDisposition = OPEN_EXISTING;
     break;
   case FileStreamMode::Create:
-  default:
-    modeStr = "w+b";
+    desiredAccess |= GENERIC_READ | GENERIC_WRITE;
+    creationDisposition = CREATE_ALWAYS;
     break;
   }
-  gsl::owner<FILE*> filePtr = std::fopen(filePath, modeStr);
 
-  return alloc->allocPlain<FileStreamRef>(filePtr, filePath, f);
+  const FileHandle file = ::CreateFileA(
+      filePath, desiredAccess, shareMode, nullptr, creationDisposition, flags, nullptr);
+  if (!fileIsValid(file)) {
+    switch (::GetLastError()) {
+    case ERROR_ACCESS_DENIED:
+      *pErr = PlatformError::FileNoAccess;
+      break;
+    case ERROR_FILE_NOT_FOUND:
+    case ERROR_PATH_NOT_FOUND:
+    case ERROR_INVALID_DRIVE:
+      *pErr = PlatformError::FileNotFound;
+      break;
+    case ERROR_INVALID_NAME:
+    case ERROR_BAD_PATHNAME:
+      *pErr = PlatformError::FileInvalidFileName;
+      break;
+    case ERROR_BUFFER_OVERFLOW:
+      *pErr = PlatformError::FilePathTooLong;
+      break;
+    case ERROR_SHARING_VIOLATION:
+      *pErr = PlatformError::FileLocked;
+      break;
+    default:
+      *pErr = PlatformError::FileUnknownError;
+      break;
+    }
+  }
+  return alloc->allocPlain<FileStreamRef>(file, filePath, f);
+
+#else //!_WIN32
+
+  int flags = O_RDWR | O_NOCTTY;
+  switch (m) {
+  default:
+  case FileStreamMode::Open:
+    break;
+  case FileStreamMode::Append:
+    flags |= O_APPEND;
+    break;
+  case FileStreamMode::Create:
+    flags |= O_CREAT | O_TRUNC;
+    break;
+  }
+  const int newFilePerms = S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH; // RW for owner, and R for others.
+  const FileHandle file = ::open(filePath, flags, newFilePerms);
+  if (!fileIsValid(file)) {
+    switch (errno) {
+    case EPERM:
+    case EACCES:
+      *pErr = PlatformError::FileNoAccess;
+      break;
+    case EINVAL:
+      *pErr = PlatformError::FileInvalidFileName;
+      break;
+    case ENAMETOOLONG:
+      *pErr = PlatformError::FilePathTooLong;
+      break;
+    case ENOENT:
+    case ENOTDIR:
+      *pErr = PlatformError::FileNotFound;
+      break;
+    default:
+      *pErr = PlatformError::FileUnknownError;
+      break;
+    }
+  }
+  return alloc->allocPlain<FileStreamRef>(file, filePath, f);
+
+#endif
 }
 
-inline auto removeFile(StringRef* path) -> bool { return std::remove(path->getCharDataPtr()) == 0; }
+inline auto removeFile(PlatformError* pErr, StringRef* path) -> bool {
+#if defined(_WIN32)
+
+  const bool success = ::DeleteFileA(path->getCharDataPtr());
+  if (!success) {
+    switch (::GetLastError()) {
+    case ERROR_ACCESS_DENIED:
+      *pErr = PlatformError::FileNoAccess;
+      break;
+    case ERROR_FILE_NOT_FOUND:
+    case ERROR_PATH_NOT_FOUND:
+    case ERROR_INVALID_DRIVE:
+      *pErr = PlatformError::FileNotFound;
+      break;
+    default:
+      *pErr = PlatformError::FileUnknownError;
+      break;
+    }
+  }
+  return success;
+
+#else // !_WIN32
+
+  const int res = ::unlink(path->getCharDataPtr());
+  if (res != 0) {
+    switch (errno) {
+    case EACCES:
+    case EPERM:
+    case EROFS:
+      *pErr = PlatformError::FileNoAccess;
+      break;
+    case ENOENT:
+    case ENOTDIR:
+      *pErr = PlatformError::FileNotFound;
+      break;
+    default:
+      *pErr = PlatformError::FileUnknownError;
+      break;
+    }
+  }
+  return res == 0;
+
+#endif // !_WIN32
+}
+
+inline auto getFilePlatformError() noexcept -> PlatformError {
+#if defined(_WIN32)
+
+  switch (::GetLastError()) {
+  case ERROR_DISK_FULL:
+    return PlatformError::FileDiskFull;
+  }
+
+#else // !_WIN32
+
+  switch (errno) {
+  case EDQUOT:
+    return PlatformError::FileDiskFull;
+  }
+
+#endif // !_WIN32
+  return PlatformError::FileUnknownError;
+}
 
 } // namespace vm::internal

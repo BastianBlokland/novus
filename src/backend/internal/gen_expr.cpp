@@ -504,6 +504,9 @@ auto GenExpr::visit(const prog::expr::CallExprNode& n) -> void {
   case prog::sym::FuncKind::ActionEndiannessNative:
     m_asmb->addPCall(novasm::PCallCode::EndiannessNative);
     break;
+  case prog::sym::FuncKind::ActionPlatformErrorCode:
+    m_asmb->addPCall(novasm::PCallCode::PlatformErrorCode);
+    break;
 
   case prog::sym::FuncKind::ActionStreamCheckValid:
     m_asmb->addPCall(novasm::PCallCode::StreamCheckValid);
@@ -829,7 +832,7 @@ auto GenExpr::visit(const prog::expr::UnionGetExprNode& n) -> void {
   m_asmb->label(endLabel);
 }
 
-auto GenExpr::visit(const prog::expr::FailNode& /*unused*/) -> void { m_asmb->addFail(); }
+auto GenExpr::visit(const prog::expr::FailNode & /*unused*/) -> void { m_asmb->addFail(); }
 
 auto GenExpr::visit(const prog::expr::LitBoolNode& n) -> void {
   m_asmb->addLoadLitInt(n.getVal() ? 1U : 0U);

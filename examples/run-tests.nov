@@ -17,10 +17,10 @@ struct TestResult =
 // -- Actions
 
 act runBash(string file, List{string} args) -> Process
-  run("bash", file :: args)
+  run("bash", file :: args).failOnError()
 
 act runPowerShell(string file, List{string} args) -> Process
-  run("pwsh", "-NoLogo" :: "-NonInteractive" :: file :: args)
+  run("pwsh", "-NoLogo" :: "-NonInteractive" :: file :: args).failOnError()
 
 act startTests()
   process = (
@@ -32,12 +32,12 @@ act startTests()
 
 act printOutput(TestRun run)
   c   = consoleOpen().failOnError();
-  out = fork copyLines(run.process.stdOut, c.stdOut);
-  err = fork copyLines(run.process.stdErr, c.stdErr);
+  out = fork copy(run.process.stdOut, c.stdOut);
+  err = fork copy(run.process.stdErr, c.stdErr);
   waitAll(out :: err)
 
 act getResult(TestRun run)
-  res = run.process.wait();
+  res = run.process.wait().failOnError();
   TestResult(res.isSuccess(), timeNow() - run.startTime)
 
 act main()

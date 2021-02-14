@@ -5,7 +5,6 @@
 #include "vm/platform_interface.hpp"
 #include "vm/vm.hpp"
 #include <array>
-#include <cstdio>
 #include <functional>
 
 namespace vm {
@@ -29,23 +28,36 @@ inline auto buildAssembly(const std::function<void(novasm::Assembler*)>& build)
   return asmb.close();
 }
 
-inline auto getString(FILE* file) -> std::string {
-  std::fseek(file, 0, SEEK_END);
-  auto size = std::ftell(file);
-
-  auto result = std::string{};
-  result.resize(size);
-
-  std::rewind(file);
-  const auto readAmt = std::fread(&result[0], 1, size, file);
-  REQUIRE(static_cast<long>(readAmt) == size);
+inline auto getString(FileHandle file) -> std::string {
+  constexpr size_t maxFileSize = 1024 * 1024;
+  auto result                  = std::string{};
+  result.resize(maxFileSize);
+  if (!fileSeek(file, 0)) {
+    throw std::logic_error{"Failed to seek file"};
+  }
+  const int bytesRead = fileRead(file, result.data(), maxFileSize);
+  if (bytesRead < 0) {
+    throw std::logic_error{"Failed to read file"};
+  }
+  result.resize(static_cast<size_t>(bytesRead));
   return result;
 }
 
-inline auto makeTmpFile() -> FILE* {
-  gsl::owner<std::FILE*> stdInFile = std::tmpfile();
-  if (stdInFile == nullptr) {
-    throw std::logic_error{"Failed to create temporary file, run tests with admin rights"};
+inline auto getTempFile() -> FileHandle {
+  const FileHandle file = fileTemp();
+  if (!fileIsValid(file)) {
+    throw std::logic_error{"Failed to create temp file"};
+  }
+  return file;
+}
+
+inline auto prepareStdIn(std::string input) -> FileHandle {
+  const FileHandle stdInFile = getTempFile();
+  if (fileWrite(stdInFile, input.data(), input.size()) != static_cast<int>(input.size())) {
+    throw std::logic_error{"Failed to write stdin file"};
+  }
+  if (!fileSeek(stdInFile, 0)) {
+    throw std::logic_error{"Failed to seek stdin file"};
   }
   return stdInFile;
 }
@@ -54,46 +66,34 @@ inline auto makeTmpFile() -> FILE* {
   {                                                                                                \
     auto assembly = ASM;                                                                           \
                                                                                                    \
-    /* Open temporary files to use as stdIn and StdOut. */                                         \
-    gsl::owner<std::FILE*> stdInFile = makeTmpFile();                                              \
-    std::string input                = INPUT;                                                      \
-    std::fwrite(input.data(), input.size(), 1, stdInFile);                                         \
-    std::fflush(stdInFile);                                                                        \
-    std::fseek(stdInFile, 0, SEEK_SET);                                                            \
-                                                                                                   \
-    gsl::owner<std::FILE*> stdOutFile = makeTmpFile();                                             \
+    const FileHandle stdInFile  = prepareStdIn(std::string{INPUT});                                \
+    const FileHandle stdOutFile = getTempFile();                                                   \
                                                                                                    \
     std::array<const char*, 2> envArgs = {"Test argument 1", "Test argument 2"};                   \
     auto iface =                                                                                   \
-        PlatformInterface{std::string{}, 2, envArgs.data(), stdInFile, stdOutFile, nullptr};       \
+        PlatformInterface{std::string{}, 2, envArgs.data(), stdInFile, stdOutFile, stdOutFile};    \
                                                                                                    \
     CHECK(run(&assembly, &iface) == ExecState::Success);                                           \
                                                                                                    \
-    /* Verify that the correct stdOut output was generated. */                                     \
     CHECK_THAT(getString(stdOutFile), Catch::Equals(EXPECTED));                                    \
                                                                                                    \
-    /* Close the temporary files (they will auto destruct). */                                     \
-    std::fclose(stdInFile);                                                                        \
-    std::fclose(stdOutFile);                                                                       \
+    fileClose(stdInFile);                                                                          \
+    fileClose(stdOutFile);                                                                         \
   }
 
 #define CHECK_ASM_RESULTCODE(ASM, INPUT, EXPECTED)                                                 \
   {                                                                                                \
     auto assembly = ASM;                                                                           \
                                                                                                    \
-    /* Open temporary file to use as stdIn. */                                                     \
-    gsl::owner<std::FILE*> stdInFile = makeTmpFile();                                              \
-    std::string input                = INPUT;                                                      \
-    std::fwrite(input.data(), input.size(), 1, stdInFile);                                         \
-    std::fflush(stdInFile);                                                                        \
-    std::fseek(stdInFile, 0, SEEK_SET);                                                            \
+    const FileHandle stdInFile  = prepareStdIn(std::string{INPUT});                                \
+    const FileHandle stdOutFile = fileInvalid();                                                   \
                                                                                                    \
     std::array<const char*, 2> envArgs = {"Test argument 1", "Test argument 2"};                   \
-    auto iface = PlatformInterface{std::string{}, 2, envArgs.data(), stdInFile, nullptr, nullptr}; \
+    auto iface =                                                                                   \
+        PlatformInterface{std::string{}, 2, envArgs.data(), stdInFile, stdOutFile, stdOutFile};    \
     CHECK(run(&assembly, &iface) == (EXPECTED));                                                   \
                                                                                                    \
-    /* Close the temporary file (it will auto destruct). */                                        \
-    std::fclose(stdInFile);                                                                        \
+    fileClose(stdInFile);                                                                          \
   }
 
 #define CHECK_EXPR(BUILD, INPUT, EXPECTED) CHECK_ASM(buildAssemblyExpr(BUILD), INPUT, EXPECTED)
@@ -121,11 +121,5 @@ inline auto makeTmpFile() -> FILE* {
     (ASMB)->addSwap(); /* Swap because the stream needs to be on the stack before the char. */     \
     (ASMB)->addPCall(novasm::PCallCode::StreamWriteChar);                                          \
   }
-
-#if defined(_WIN32)
-#define STR_NEWLINE "\r\n"
-#else // !_WIN32
-#define STR_NEWLINE "\n"
-#endif
 
 } // namespace vm

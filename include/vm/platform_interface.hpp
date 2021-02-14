@@ -1,5 +1,5 @@
 #pragma once
-#include <cstdio>
+#include "vm/file.hpp"
 #include <string>
 
 namespace vm {
@@ -11,9 +11,9 @@ public:
       std::string programPath,
       int envArgsCount,
       const char** envArgs,
-      std::FILE* stdIn,
-      std::FILE* stdOut,
-      std::FILE* stdErr) noexcept;
+      FileHandle stdIn,
+      FileHandle stdOut,
+      FileHandle stdErr) noexcept;
 
   // String containing the absolute path to the currently running program.
   // Note: Can be empty if the program only exists in memory (For example: inline exec by nove).
@@ -32,16 +32,15 @@ public:
   auto getStdOut() noexcept { return m_stdOut; }
 
   // Filehandle that is used when a user program opens an error console-stream.
-  // Note: if stdErr is null then stdOut is used instead.
-  auto getStdErr() noexcept { return m_stdErr != nullptr ? m_stdErr : m_stdOut; }
+  auto getStdErr() noexcept { return m_stdErr; }
 
 private:
   std::string m_programPath;
   int m_envArgsCount;
   const char** m_envArgs;
-  std::FILE* m_stdIn;
-  std::FILE* m_stdOut;
-  std::FILE* m_stdErr;
+  FileHandle m_stdIn;
+  FileHandle m_stdOut;
+  FileHandle m_stdErr;
 };
 
 } // namespace vm
