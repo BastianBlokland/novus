@@ -23,12 +23,6 @@ auto operator<<(std::ostream& out, const PCallCode& rhs) noexcept -> std::ostrea
   case PCallCode::StreamWriteString:
     out << "stream-write-string";
     break;
-  case PCallCode::StreamWriteChar:
-    out << "stream-write-char";
-    break;
-  case PCallCode::StreamFlush:
-    out << "stream-flush";
-    break;
   case PCallCode::StreamSetOptions:
     out << "stream-set-options";
     break;

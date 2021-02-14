@@ -116,10 +116,11 @@ inline auto prepareStdIn(std::string input) -> FileHandle {
 
 #define ADD_PRINT_CHAR(ASMB)                                                                       \
   {                                                                                                \
+    (ASMB)->addConvCharString();                                                                   \
     (ASMB)->addLoadLitInt(1); /* StdOut. */                                                        \
     (ASMB)->addPCall(novasm::PCallCode::ConsoleOpenStream);                                        \
     (ASMB)->addSwap(); /* Swap because the stream needs to be on the stack before the char. */     \
-    (ASMB)->addPCall(novasm::PCallCode::StreamWriteChar);                                          \
+    (ASMB)->addPCall(novasm::PCallCode::StreamWriteString);                                        \
   }
 
 } // namespace vm

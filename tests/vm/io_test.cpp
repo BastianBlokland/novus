@@ -112,20 +112,12 @@ TEST_CASE("[vm] Execute input and output", "vm") {
           asmb->addPCall(novasm::PCallCode::Assert);
 
           // Write character to file.
-          asmb->addStackLoad(0);    // Load stream.
-          asmb->addLoadLitInt('d'); // Content.
-          asmb->addPCall(novasm::PCallCode::StreamWriteChar);
+          asmb->addStackLoad(0);       // Load stream.
+          asmb->addLoadLitString("d"); // Content.
+          asmb->addPCall(novasm::PCallCode::StreamWriteString);
 
           // Assert that writing succeeded.
           asmb->addLoadLitString("Write failed");
-          asmb->addPCall(novasm::PCallCode::Assert);
-
-          // Flush file.
-          asmb->addStackLoad(0); // Load stream.
-          asmb->addPCall(novasm::PCallCode::StreamFlush);
-
-          // Assert that flushing succeeded.
-          asmb->addLoadLitString("Flush failed");
           asmb->addPCall(novasm::PCallCode::Assert);
 
           // Open the file again for reading.

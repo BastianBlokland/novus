@@ -103,11 +103,6 @@ act write(sys_stream s, string str) -> Option{Error}
     ? None()
     : getPlatformError("Failed to write to stream")
 
-act write(sys_stream s, char c) -> Option{Error}
-  intrinsic{stream_write_char}(s, c)
-    ? None()
-    : getPlatformError("Failed to write to stream")
-
 act copy(sys_stream from, sys_stream to) -> Either{int, Error}
   invoke(
     impure lambda(int bytesCopied) -> Either{int, Error}

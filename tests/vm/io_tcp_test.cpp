@@ -66,8 +66,8 @@ TEST_CASE("[vm] Execute tcp platform-calls", "vm") {
           asmb->addLoadLitInt(1);    // Address family: IpV6.
           asmb->addLoadLitInt(5001); // Port.
           asmb->addPCall(novasm::PCallCode::TcpOpenCon);
-          asmb->addLoadLitInt('!');
-          asmb->addPCall(novasm::PCallCode::StreamWriteChar);
+          asmb->addLoadLitString("!");
+          asmb->addPCall(novasm::PCallCode::StreamWriteString);
           asmb->addPop(); // Ignore the write result.
 
           // Accept the connection on the server and read the message.

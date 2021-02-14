@@ -118,36 +118,6 @@ public:
     return true;
   }
 
-  auto writeChar(ExecutorHandle* execHandle, PlatformError* pErr, uint8_t val) noexcept -> bool {
-    if (unlikely(m_streamKind != ProcessStreamKind::StdIn)) {
-      *pErr = PlatformError::StreamWriteNotSupported;
-      return false;
-    }
-
-    // Can block so we mark ourselves as paused so the gc can trigger in the mean time.
-    execHandle->setState(ExecState::Paused);
-
-    auto* valChar          = static_cast<char*>(static_cast<void*>(&val));
-    const int bytesWritten = fileWrite(getFile(), valChar, 1);
-
-    execHandle->setState(ExecState::Running);
-    if (execHandle->trap()) {
-      return false; // Aborted.
-    }
-
-    if (bytesWritten != 1) {
-      *pErr = getProcessStreamPlatformError();
-      return false;
-    }
-    return true;
-  }
-
-  auto flush(PlatformError* /*unused*/) noexcept -> bool {
-    // At the moment this is a no-op, in the future we can consider adding additional buffering to
-    // console streams (so flush would write to the handle).
-    return true;
-  }
-
   auto setOpts(PlatformError* pErr, StreamOpts /*unused*/) noexcept -> bool {
     // On unix we could implement non-blocking by setting the file-descriptor to be non-blocking,
     // but this is not something we can implement on windows.

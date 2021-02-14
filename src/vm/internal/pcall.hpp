@@ -123,19 +123,6 @@ auto inline pcall(
     POP(); // Pop the stream off the stack.
     PUSH_BOOL(result);
   } break;
-  case PCallCode::StreamWriteChar: {
-    uint8_t val = static_cast<uint8_t>(POP_INT());
-
-    // Note: Keep the stream on the stack, reason is gc could run while we are blocked.
-    auto stream = PEEK();
-    auto result = streamWriteChar(execHandle, pErr, stream, val);
-
-    POP(); // Pop the stream off the stack.
-    PUSH_BOOL(result);
-  } break;
-  case PCallCode::StreamFlush: {
-    PUSH_BOOL(streamFlush(pErr, POP()));
-  } break;
   case PCallCode::StreamSetOptions: {
     auto options = POP_INT();
     auto stream  = POP();

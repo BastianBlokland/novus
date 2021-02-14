@@ -65,23 +65,6 @@ inline auto streamWriteString(
   STREAM_DISPATCH(stream, writeString(execHandle, pErr, str))
 }
 
-inline auto streamWriteChar(
-    ExecutorHandle* execHandle, PlatformError* pErr, const Value& stream, uint8_t val) noexcept
-    -> bool {
-
-  if (!streamCheckValid(stream)) {
-    return false;
-  }
-  STREAM_DISPATCH(stream, writeChar(execHandle, pErr, val))
-}
-
-inline auto streamFlush(PlatformError* pErr, const Value& stream) noexcept -> bool {
-  if (!streamCheckValid(stream)) {
-    return false;
-  }
-  STREAM_DISPATCH(stream, flush(pErr))
-}
-
 inline auto streamSetOpts(PlatformError* pErr, const Value& stream, StreamOpts opts) noexcept
     -> bool {
   if (!streamCheckValid(stream)) {
