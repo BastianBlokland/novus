@@ -1,5 +1,6 @@
 #pragma once
 #include "internal/os_include.hpp"
+#include "internal/platform_utilities.hpp"
 #include "internal/ref_allocator.hpp"
 #include "internal/ref_string.hpp"
 #include "vm/file.hpp"
@@ -100,7 +101,7 @@ public:
 
   [[nodiscard]] auto getId() noexcept -> int64_t {
     if (!isValid()) {
-      return -1ul;
+      return -1l;
     }
 #if defined(_WIN32)
     return m_process.dwProcessId;
@@ -154,17 +155,26 @@ public:
     return -1;
   }
 
-  [[nodiscard]] auto sendSignal(ProcessSignalKind kind) const noexcept -> bool {
+  [[nodiscard]] auto sendSignal(PlatformError* pErr, ProcessSignalKind kind) const noexcept
+      -> bool {
     switch (kind) {
     case ProcessSignalKind::Interupt:
 #if defined(_WIN32)
       // NOTE: Send 'CTRL_BREAK' instead of 'CTRL_C' because we cannot send ctrl-c to other process
       // groups (and we don't want to interupt our entire own process-group).
-      return GenerateConsoleCtrlEvent(CTRL_BREAK_EVENT, m_process.dwProcessId);
+      if (!GenerateConsoleCtrlEvent(CTRL_BREAK_EVENT, m_process.dwProcessId)) {
+        *pErr = PlatformError::ProcessUnknownError;
+        return false;
+      }
 #else // !_WIN32
-      return ::killpg(m_process, SIGINT) == 0;
+      if (::killpg(m_process, SIGINT)) {
+        *pErr = PlatformError::ProcessUnknownError;
+        return false;
+      }
 #endif
+      return true;
     }
+    *pErr = PlatformError::ProcessInvalidSignal;
     return false;
   }
 
@@ -224,8 +234,10 @@ private:
   }
 };
 
-inline auto processStart(RefAllocator* alloc, const StringRef* cmdLineStr) -> ProcessRef* {
+inline auto processStart(RefAllocator* alloc, PlatformError* pErr, const StringRef* cmdLineStr)
+    -> ProcessRef* {
   if (cmdLineStr->getSize() == 0) {
+    *pErr = PlatformError::ProcessInvalidCmdLine;
     return alloc->allocPlain<ProcessRef>(
         invalidProcess(), fileInvalid(), fileInvalid(), fileInvalid());
   }
@@ -233,8 +245,8 @@ inline auto processStart(RefAllocator* alloc, const StringRef* cmdLineStr) -> Pr
 #if defined(_WIN32)
   // Make a local copy of the command-line string for preprocessing.
   // Double the size as we need to escape characters.
-  char* localStr = static_cast<char*>(malloc(cmdLineStr->getSize() * 2));
-  memcpy(localStr, cmdLineStr->getCharDataPtr(), cmdLineStr->getSize() + 1); // +1 for null term.
+  char* localStr = static_cast<char*>(::malloc(cmdLineStr->getSize() * 2));
+  ::memcpy(localStr, cmdLineStr->getCharDataPtr(), cmdLineStr->getSize() + 1); // +1 for null term.
 
   char* cmdLineStrStart = nullptr;
 
@@ -253,13 +265,13 @@ inline auto processStart(RefAllocator* alloc, const StringRef* cmdLineStr) -> Pr
       continue;
     default:
       if (itr[0] == '"') {
-        memmove(itr + 1, itr, strlen(itr) + 1);
+        ::memmove(itr + 1, itr, ::strlen(itr) + 1);
         *itr++ = '\\';
       } else if (itr[0] == '\'') {
         *itr = '"';
       } else if (itr[0] == '\\' && itr[1] == '\'') {
         // Treat backslash-quote as a normal quote (remove the backslash).
-        memmove(itr, itr + 1, strlen(itr));
+        ::memmove(itr, itr + 1, ::strlen(itr));
         ++itr;
       }
       if (!cmdLineStrStart) {
@@ -285,6 +297,8 @@ inline auto processStart(RefAllocator* alloc, const StringRef* cmdLineStr) -> Pr
   {
     // Failed to create all the pipes, close whichever child pipes where created.
     CloseHandle(pipeStdIn[0], pipeStdOut[1], pipeStdErr[1]);
+
+    *pErr = PlatformError::ProcessFailedToCreatePipes;
     return alloc->allocPlain<ProcessRef>(
         invalidProcess(), pipeStdIn[1], pipeStdOut[0], pipeStdErr[0]);
   }
@@ -298,7 +312,7 @@ inline auto processStart(RefAllocator* alloc, const StringRef* cmdLineStr) -> Pr
 
   PROCESS_INFORMATION processInfo = {};
 
-  bool success = CreateProcess(
+  const bool success = ::CreateProcess(
       nullptr,
       cmdLineStrStart,
       nullptr,
@@ -309,7 +323,30 @@ inline auto processStart(RefAllocator* alloc, const StringRef* cmdLineStr) -> Pr
       nullptr,
       &startupInfo,
       &processInfo);
-  free(localStr); // Free our local copy of the command-line string.
+
+  if (!success) {
+    switch (::GetLastError()) {
+    case ERROR_NOACCESS:
+      *pErr = PlatformError::ProcessNoAccess;
+      break;
+    case ERROR_FILE_NOT_FOUND:
+      *pErr = PlatformError::ProcessExecutableNotFound;
+      break;
+    case ERROR_INVALID_STARTING_CODESEG:
+    case ERROR_INVALID_STACKSEG:
+    case ERROR_INVALID_MODULETYPE:
+    case ERROR_INVALID_EXE_SIGNATURE:
+    case ERROR_EXE_MARKED_INVALID:
+    case ERROR_BAD_EXE_FORMAT:
+      *pErr = PlatformError::ProcessExecutableInvalid;
+      break;
+    default:
+      *pErr = PlatformError::ProcessUnknownError;
+      break;
+    }
+  }
+
+  ::free(localStr); // Free our local copy of the command-line string.
 
   // Close the child side of the pipes.
   CloseHandle(pipeStdIn[0], pipeStdOut[1], pipeStdErr[1]);
@@ -329,6 +366,8 @@ inline auto processStart(RefAllocator* alloc, const StringRef* cmdLineStr) -> Pr
   if (pipe(pipeStdIn.data()) || pipe(pipeStdOut.data()) || pipe(pipeStdErr.data())) {
     // Failed to create all the pipes, close whichever child pipes where created.
     close(pipeStdIn[0], pipeStdOut[1], pipeStdErr[1]);
+
+    *pErr = PlatformError::ProcessFailedToCreatePipes;
     return alloc->allocPlain<ProcessRef>(
         invalidProcess(), pipeStdIn[1], pipeStdOut[0], pipeStdErr[0]);
   }
@@ -341,18 +380,26 @@ inline auto processStart(RefAllocator* alloc, const StringRef* cmdLineStr) -> Pr
     // Create a new session for the child process.
     auto sid = setsid();
     if (unlikely(sid == -1)) {
-      std::fprintf(stderr, "Failed to create a new session");
-      std::fflush(stderr);
-      std::abort();
+      const char* setSidFailedMsg = "[err_1] Failed to create a new session";
+      const int writeRes          = ::write(2, setSidFailedMsg, ::strlen(setSidFailedMsg));
+      (void)writeRes;
+      ::abort();
     }
 
     // Close the parent side of the pipes.
     close(pipeStdIn[1], pipeStdOut[0], pipeStdErr[0]);
 
     // Duplicate the child side of the pipes onto the stdIn, stdOut and stdErr of this process.
-    dup2(pipeStdIn[0], 0);
-    dup2(pipeStdOut[1], 1);
-    dup2(pipeStdErr[1], 2);
+    bool dupSuccess = true;
+    dupSuccess &= dup2(pipeStdIn[0], 0) != -1;
+    dupSuccess &= dup2(pipeStdOut[1], 1) != -1;
+    dupSuccess &= dup2(pipeStdErr[1], 2) != -1;
+    if (unlikely(!dupSuccess)) {
+      const char* dupFailedMsg = "[err_2] Failed to setup input and output pipes";
+      const int writeRes       = ::write(2, dupFailedMsg, ::strlen(dupFailedMsg));
+      (void)writeRes;
+      ::abort();
+    }
 
     // Split the given cmdLineStr on whitespace into a null-terminted array of c-strings.
     char* itr = cmdLineStr->getCharDataPtr();
@@ -374,7 +421,7 @@ inline auto processStart(RefAllocator* alloc, const StringRef* cmdLineStr) -> Pr
       case '\\':
         if (itr[1] == '\'') {
           // Treat backslash-quote as a normal quote (remove the backslash).
-          memmove(itr, itr + 1, strlen(itr));
+          ::memmove(itr, itr + 1, ::strlen(itr));
           ++itr;
         }
         [[fallthrough]];
@@ -394,11 +441,43 @@ inline auto processStart(RefAllocator* alloc, const StringRef* cmdLineStr) -> Pr
     }
 
     // Only reachable when exec failed.
-    std::fprintf(stderr, "Failed to start process: '%s'\n", argV[0] ? argV[0] : "");
-    std::fflush(stderr);
-    std::abort();
+    const char* execFailedMsg;
+    switch (errno) {
+    case ENOENT:
+      execFailedMsg = "[err_3] Executable not found: ";
+      break;
+    case EACCES:
+      execFailedMsg = "[err_4] Access to executable denied: ";
+      break;
+    case EINVAL:
+      execFailedMsg = "[err_5] Unsupported executable: ";
+      break;
+    case ENOMEM:
+      execFailedMsg = "[err_6] Not enough memory for executable: ";
+      break;
+    default:
+      execFailedMsg = "[err_7] Unknown error while executing: ";
+      break;
+    }
+    const int msgRes = ::write(2, execFailedMsg, ::strlen(execFailedMsg));
+    (void)msgRes;
+    if (argV[0]) {
+      const int execNameRes = ::write(2, argV[0], ::strlen(argV[0]));
+      (void)execNameRes;
+    }
+    ::abort();
   }
   default:
+    if (childPid < 0) {
+      switch (errno) {
+      case EAGAIN:
+        *pErr = PlatformError::ProcessLimitReached;
+        break;
+      default:
+        *pErr = PlatformError::ProcessUnknownError;
+        break;
+      }
+    }
     // Close the child side of the pipes.
     close(pipeStdIn[0], pipeStdOut[1], pipeStdErr[1]);
     return alloc->allocPlain<ProcessRef>(childPid, pipeStdIn[1], pipeStdOut[0], pipeStdErr[0]);
@@ -414,9 +493,13 @@ inline auto processBlock(ProcessRef* process) {
   return process->block();
 }
 
-inline auto processSendSignal(ProcessRef* process, ProcessSignalKind kind) {
+inline auto processSendSignal(ProcessRef* process, PlatformError* pErr, ProcessSignalKind kind) {
   assert(process);
-  return process->isValid() && process->sendSignal(kind);
+  if (!process->isValid()) {
+    *pErr = PlatformError::ProcessInvalid;
+    return false;
+  }
+  return process->sendSignal(pErr, kind);
 }
 
 inline auto processGetId(ProcessRef* process) {

@@ -150,7 +150,7 @@ auto inline pcall(
   case PCallCode::ProcessStart: {
     auto* cmdLineStrRef = getStringRef(refAlloc, POP());
     CHECK_ALLOC(cmdLineStrRef);
-    PUSH_REF(processStart(refAlloc, cmdLineStrRef));
+    PUSH_REF(processStart(refAlloc, pErr, cmdLineStrRef));
   } break;
   case PCallCode::ProcessBlock: {
     // Note: Keep the process on the stack, reason is gc could run while we are blocked.
@@ -178,7 +178,7 @@ auto inline pcall(
   case PCallCode::ProcessSendSignal: {
     const auto kind = static_cast<ProcessSignalKind>(POP_INT());
     auto process    = getProcessRef(POP());
-    PUSH_BOOL(processSendSignal(process, kind));
+    PUSH_BOOL(processSendSignal(process, pErr, kind));
   } break;
 
   case PCallCode::FileOpenStream: {

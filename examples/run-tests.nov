@@ -17,10 +17,10 @@ struct TestResult =
 // -- Actions
 
 act runBash(string file, List{string} args) -> Process
-  run("bash", file :: args)
+  run("bash", file :: args).failOnError()
 
 act runPowerShell(string file, List{string} args) -> Process
-  run("pwsh", "-NoLogo" :: "-NonInteractive" :: file :: args)
+  run("pwsh", "-NoLogo" :: "-NonInteractive" :: file :: args).failOnError()
 
 act startTests()
   process = (

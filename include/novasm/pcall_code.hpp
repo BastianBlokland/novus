@@ -74,6 +74,8 @@ enum class PCallCode : uint8_t {
  * - StreamFlush, error is set when false is returned.
  * - StreamSetOptions, error is set when false is returned.
  * - StreamUnsetOptions, error is set when false is returned.
+ * - ProcessStart, error is set when an process with id -1 is returned.
+ * - ProcessSendSignal, error is set when false is returned.
  * - FileOpenStream, error is set when an invalid stream is returned.
  * - FileRemove, error is set when false is returned.
  * - TcpOpenCon, error is set when an invalid stream is returned.
