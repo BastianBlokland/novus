@@ -190,55 +190,6 @@ public:
     return true;
   }
 
-  auto readChar(ExecutorHandle* execHandle, PlatformError* pErr) noexcept -> char {
-    if (unlikely(m_type != TcpStreamType::Connection)) {
-      *pErr = PlatformError::StreamReadNotSupported;
-      return '\0';
-    }
-
-    execHandle->setState(ExecState::Paused);
-
-    char res      = '\0';
-    int bytesRead = -1;
-    while (m_state.load(std::memory_order_acquire) == TcpStreamState::Valid) {
-      bytesRead = ::recv(m_socket, &res, 1, 0);
-      if (bytesRead >= 0) {
-        break; // No error while reading.
-      }
-
-      // Retry the send for certain errors.
-#if defined(_WIN32)
-      const bool shouldRetry = WSAGetLastError() == WSAEINTR;
-#else  // !_WIN32
-      const bool shouldRetry = errno == EINTR;
-#endif // !_WIN32
-      if (!shouldRetry) {
-        break;
-      }
-      threadYield(); // Yield between retries.
-    }
-
-    execHandle->setState(ExecState::Running);
-    if (execHandle->trap()) {
-      return '\0'; // Aborted.
-    }
-
-    if (bytesRead < 0) {
-      if (errno == EAGAIN) {
-        *pErr = PlatformError::TcpTimeout;
-      } else {
-        *pErr = getTcpPlatformError();
-      }
-      m_state.store(TcpStreamState::Failed, std::memory_order_release);
-      return '\0';
-    }
-    if (bytesRead == 0) {
-      *pErr = PlatformError::StreamNoDataAvailable;
-      return '\0';
-    }
-    return res;
-  }
-
   auto writeString(ExecutorHandle* execHandle, PlatformError* pErr, StringRef* str) noexcept
       -> bool {
     if (unlikely(m_type != TcpStreamType::Connection)) {

@@ -73,10 +73,11 @@ TEST_CASE("[vm] Execute tcp platform-calls", "vm") {
           // Accept the connection on the server and read the message.
           asmb->addStackLoad(0);
           asmb->addPCall(novasm::PCallCode::TcpAcceptCon);
-          asmb->addPCall(novasm::PCallCode::StreamReadChar);
+          asmb->addLoadLitInt(1); // Read a single character.
+          asmb->addPCall(novasm::PCallCode::StreamReadString);
 
           // Print the received message.
-          ADD_PRINT_CHAR(asmb);
+          ADD_PRINT(asmb);
           asmb->addRet();
         },
         "input",

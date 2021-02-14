@@ -15,10 +15,9 @@ enum class PCallCode : uint8_t {
 
   StreamCheckValid   = 10, // (stream)         -> (int)     Check if given stream is valid.
   StreamReadString   = 11, // (int, stream)    -> (string)  Read up to x bytes from a stream.
-  StreamReadChar     = 12, // (stream)         -> (int)     Read a single character from a stream.
-  StreamWriteString  = 13, // (string, stream) -> (int)     Write string, returns success.
-  StreamSetOptions   = 14, // (int, stream)    -> (int)     Set options, returns success.
-  StreamUnsetOptions = 15, // (int, stream)    -> (int)     Unset options, returns success.
+  StreamWriteString  = 12, // (string, stream) -> (int)     Write string, returns success.
+  StreamSetOptions   = 13, // (int, stream)    -> (int)     Set options, returns success.
+  StreamUnsetOptions = 14, // (int, stream)    -> (int)     Unset options, returns success.
 
   ProcessStart = 20, // (string)  -> (process) Start a new sys process from the given cmdline str.
   ProcessBlock = 21, // (process) -> (int)     Block until the process has exited, returns exitcode.
@@ -66,7 +65,6 @@ enum class PCallCode : uint8_t {
 /* Platform errors
  * The following calls will set the error code that is returned from 'PlatformErrorCode':
  * - StreamReadString, error is set when an empty string is returned.
- * - StreamReadChar, error is set when a null character is returned.
  * - StreamWriteString, error is set when false is returned.
  * - StreamSetOptions, error is set when false is returned.
  * - StreamUnsetOptions, error is set when false is returned.

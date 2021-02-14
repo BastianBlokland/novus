@@ -46,15 +46,6 @@ inline auto streamReadString(
   STREAM_DISPATCH(stream, readString(execHandle, pErr, tgt))
 }
 
-inline auto
-streamReadChar(ExecutorHandle* execHandle, PlatformError* pErr, const Value& stream) noexcept
-    -> char {
-  if (!streamCheckValid(stream)) {
-    return '\0';
-  }
-  STREAM_DISPATCH(stream, readChar(execHandle, pErr))
-}
-
 inline auto streamWriteString(
     ExecutorHandle* execHandle, PlatformError* pErr, const Value& stream, StringRef* str) noexcept
     -> bool {

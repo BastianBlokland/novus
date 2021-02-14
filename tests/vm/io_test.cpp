@@ -77,13 +77,15 @@ TEST_CASE("[vm] Execute input and output", "vm") {
           asmb->addDup(); // Duplicate the stream on the stack.
 
           // Read and print the first character.
-          asmb->addPCall(novasm::PCallCode::StreamReadChar);
-          ADD_PRINT_CHAR(asmb);
+          asmb->addLoadLitInt(1); // Read a single character.
+          asmb->addPCall(novasm::PCallCode::StreamReadString);
+          ADD_PRINT(asmb);
           asmb->addPop(); // Ignore the result of printing.
 
           // Read and print the second character.
-          asmb->addPCall(novasm::PCallCode::StreamReadChar);
-          ADD_PRINT_CHAR(asmb);
+          asmb->addLoadLitInt(1); // Read a single character.
+          asmb->addPCall(novasm::PCallCode::StreamReadString);
+          ADD_PRINT(asmb);
         },
         "Hello world",
         "He");
@@ -133,9 +135,10 @@ TEST_CASE("[vm] Execute input and output", "vm") {
           asmb->addPCall(novasm::PCallCode::Assert);
 
           // Read and print the first character.
-          asmb->addStackLoad(0); // Load stream.
-          asmb->addPCall(novasm::PCallCode::StreamReadChar);
-          ADD_PRINT_CHAR(asmb);
+          asmb->addStackLoad(0);  // Load stream.
+          asmb->addLoadLitInt(1); // Read a single character.
+          asmb->addPCall(novasm::PCallCode::StreamReadString);
+          ADD_PRINT(asmb);
           asmb->addPop(); // Ignore the result of printing.
 
           // Read and print the remaining characters.

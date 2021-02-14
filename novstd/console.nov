@@ -32,8 +32,8 @@ act consoleOpen() -> Either{Console, Error}
 
 // -- Read
 
-act read(Console c) -> Either{char, Error}
-  c.stdIn.read()
+act read(Console c, int maxChars) -> Either{string, Error}
+  c.stdIn.read(maxChars)
 
 act readLine(Console c) -> Either{string, Error}
   c.stdIn.readLine()
@@ -44,8 +44,8 @@ act readToEnd(Console c) -> Either{string, Error}
 act readToEnd{T}(Console c, Parser{T} parser) -> Either{T, Error}
   c.readToEnd().map(impure lambda (string s) parser.run(s))
 
-act read() -> Either{char, Error}
-  consoleOpen().map(impure lambda (Console c) c.read())
+act read(int maxChars) -> Either{string, Error}
+  consoleOpen().map(impure lambda (Console c) c.read(maxChars))
 
 act readLine() -> Either{string, Error}
   consoleOpen().map(impure lambda (Console c) c.readLine())

@@ -101,15 +101,6 @@ auto inline pcall(
 
     POP_AT(1); // Pop the stream off the stack, 1 because its behind the result string.
   } break;
-  case PCallCode::StreamReadChar: {
-    // Note: Keep the stream on the stack, reason is gc could run while we are blocked.
-    auto stream = PEEK();
-
-    auto readChar = streamReadChar(execHandle, pErr, stream);
-
-    POP(); // Pop the stream off the stack.
-    PUSH_INT(readChar);
-  } break;
   case PCallCode::StreamWriteString: {
     // Note: Keep the string on the stack, reason is gc could run while we are blocked.
     auto* strRef = getStringRef(refAlloc, PEEK());

@@ -94,46 +94,6 @@ public:
     return bytesRead > 0;
   }
 
-  auto readChar(ExecutorHandle* execHandle, PlatformError* pErr) noexcept -> char {
-    if (unlikely(m_kind != ConsoleStreamKind::StdIn)) {
-      *pErr = PlatformError::StreamReadNotSupported;
-      return false;
-    }
-
-    execHandle->setState(ExecState::Paused);
-
-    char res;
-    int bytesRead = 0;
-#if defined(_WIN32)
-    // TODO: Refactor this to use ReadConsoleInput for non-blocking input on windows.
-    if (m_nonblockWinTerm) {
-      if (_kbhit()) {
-        res       = static_cast<char>(_getch());
-        bytesRead = 1;
-      }
-    } else {
-      bytesRead = fileRead(m_consoleHandle, &res, 1);
-    }
-#else  //!_WIN32
-    bytesRead = fileRead(m_consoleHandle, &res, 1);
-#endif //!_WIN32
-
-    execHandle->setState(ExecState::Running);
-    if (execHandle->trap()) {
-      return '\0'; // Aborted.
-    }
-
-    if (bytesRead != 1) {
-      *pErr = getConsolePlatformError();
-      return '\0';
-    }
-    if (bytesRead == 0) {
-      *pErr = PlatformError::StreamNoDataAvailable;
-      return '\0';
-    }
-    return res;
-  }
-
   auto writeString(ExecutorHandle* execHandle, PlatformError* pErr, StringRef* str) noexcept
       -> bool {
     if (unlikely(m_kind == ConsoleStreamKind::StdIn)) {

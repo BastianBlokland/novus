@@ -46,12 +46,6 @@ act read(sys_stream s, int maxChars) -> Either{string, Error}
     ? getPlatformError("Failed to read from stream")
     : res
 
-act read(sys_stream s) -> Either{char, Error}
-  res = intrinsic{stream_read_char}(s);
-  res == '\0' && getPlatformErrorCode() != PlatformError.StreamNoDataAvailable
-    ? getPlatformError("Failed to read from stream")
-    : res
-
 act readToEnd(sys_stream s) -> Either{string, Error}
   invoke(
     impure lambda (string result)
@@ -64,12 +58,12 @@ act readToEnd(sys_stream s) -> Either{string, Error}
 act readLine(sys_stream s) -> Either{string, Error}
   invoke(
     impure lambda (string result)
-      readRes = s.read();
-      if readRes as Error e -> e
-      if readRes as char  c ->
-        if c == '\r'              -> self(result)
-        if c == '\n' || c == '\0' -> result
-        else                      -> self(result + c)
+      readRes = s.read(1);
+      if readRes as Error   e -> e
+      if readRes as string  s ->
+        if s == "\r"              -> self(result)
+        if s == "\n" || s == "\0" -> result
+        else                      -> self(result + s)
   , "")
 
 act readLine(StreamReadState state) -> Either{Pair{string, StreamReadState}, Error}
