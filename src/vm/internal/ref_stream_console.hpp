@@ -94,46 +94,6 @@ public:
     return bytesRead > 0;
   }
 
-  auto readChar(ExecutorHandle* execHandle, PlatformError* pErr) noexcept -> char {
-    if (unlikely(m_kind != ConsoleStreamKind::StdIn)) {
-      *pErr = PlatformError::StreamReadNotSupported;
-      return false;
-    }
-
-    execHandle->setState(ExecState::Paused);
-
-    char res;
-    int bytesRead = 0;
-#if defined(_WIN32)
-    // TODO: Refactor this to use ReadConsoleInput for non-blocking input on windows.
-    if (m_nonblockWinTerm) {
-      if (_kbhit()) {
-        res       = static_cast<char>(_getch());
-        bytesRead = 1;
-      }
-    } else {
-      bytesRead = fileRead(m_consoleHandle, &res, 1);
-    }
-#else  //!_WIN32
-    bytesRead = fileRead(m_consoleHandle, &res, 1);
-#endif //!_WIN32
-
-    execHandle->setState(ExecState::Running);
-    if (execHandle->trap()) {
-      return '\0'; // Aborted.
-    }
-
-    if (bytesRead != 1) {
-      *pErr = getConsolePlatformError();
-      return '\0';
-    }
-    if (bytesRead == 0) {
-      *pErr = PlatformError::StreamNoDataAvailable;
-      return '\0';
-    }
-    return res;
-  }
-
   auto writeString(ExecutorHandle* execHandle, PlatformError* pErr, StringRef* str) noexcept
       -> bool {
     if (unlikely(m_kind == ConsoleStreamKind::StdIn)) {
@@ -158,35 +118,6 @@ public:
       *pErr = getConsolePlatformError();
       return false;
     }
-    return true;
-  }
-
-  auto writeChar(ExecutorHandle* execHandle, PlatformError* pErr, uint8_t val) noexcept -> bool {
-    if (unlikely(m_kind == ConsoleStreamKind::StdIn)) {
-      *pErr = PlatformError::StreamWriteNotSupported;
-      return false;
-    }
-
-    execHandle->setState(ExecState::Paused);
-
-    auto* valChar          = static_cast<char*>(static_cast<void*>(&val));
-    const int bytesWritten = fileWrite(m_consoleHandle, valChar, 1);
-
-    execHandle->setState(ExecState::Running);
-    if (execHandle->trap()) {
-      return false; // Aborted.
-    }
-
-    if (bytesWritten != 1) {
-      *pErr = getConsolePlatformError();
-      return false;
-    }
-    return true;
-  }
-
-  auto flush(PlatformError* /*unused*/) noexcept -> bool {
-    // At the moment this is a no-op, in the future we can consider adding additional buffering to
-    // console streams (so flush would write to the handle).
     return true;
   }
 

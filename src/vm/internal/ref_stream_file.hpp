@@ -39,7 +39,7 @@ public:
     if ((m_flags & AutoRemoveFile) == AutoRemoveFile) {
 #if defined(_WIN32)
       ::DeleteFileA(m_filePath);
-#else //!_WIN32
+#else  //!_WIN32
       ::unlink(m_filePath);
 #endif //!_WIN32
     }
@@ -82,29 +82,6 @@ public:
     return bytesRead > 0;
   }
 
-  auto readChar(ExecutorHandle* execHandle, PlatformError* pErr) noexcept -> char {
-
-    execHandle->setState(ExecState::Paused);
-
-    char res;
-    const int bytesRead = fileRead(m_fileHandle, &res, 1);
-
-    execHandle->setState(ExecState::Running);
-    if (execHandle->trap()) {
-      return '\0'; // Aborted.
-    }
-
-    if (bytesRead != 1) {
-      *pErr = getFilePlatformError();
-      return '\0';
-    }
-    if (bytesRead == 0) {
-      *pErr = PlatformError::StreamNoDataAvailable;
-      return '\0';
-    }
-    return res;
-  }
-
   auto writeString(ExecutorHandle* execHandle, PlatformError* pErr, StringRef* str) noexcept
       -> bool {
 
@@ -125,32 +102,6 @@ public:
       *pErr = getFilePlatformError();
       return false;
     }
-    return true;
-  }
-
-  auto writeChar(ExecutorHandle* execHandle, PlatformError* pErr, uint8_t val) noexcept -> bool {
-
-    execHandle->setState(ExecState::Paused);
-
-    auto* valChar          = static_cast<char*>(static_cast<void*>(&val));
-    const int bytesWritten = fileWrite(m_fileHandle, valChar, 1);
-
-    execHandle->setState(ExecState::Running);
-    if (execHandle->trap()) {
-      return false;
-    }
-
-    if (bytesWritten != 1) {
-      *pErr = getFilePlatformError();
-      return false;
-    }
-    return true;
-  }
-
-  auto flush(PlatformError* /*unused*/) noexcept -> bool {
-    // At the moment this is a no-op, in the future we can consider adding additional buffering to
-    // file streams (so flush would write to the file handle). Or alternatively flush could ask the
-    // os to actually write the data to disk, on linux with 'syncfs' or example.
     return true;
   }
 

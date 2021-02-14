@@ -275,21 +275,11 @@ Program::Program() :
       sym::TypeSet{m_stream, m_int},
       m_string);
   m_funcDecls.registerIntrinsicAction(
-      *this, Fk::ActionStreamReadChar, "stream_read_char", sym::TypeSet{m_stream}, m_char);
-  m_funcDecls.registerIntrinsicAction(
       *this,
       Fk::ActionStreamWriteString,
       "stream_write_string",
       sym::TypeSet{m_stream, m_string},
       m_bool);
-  m_funcDecls.registerIntrinsicAction(
-      *this,
-      Fk::ActionStreamWriteChar,
-      "stream_write_char",
-      sym::TypeSet{m_stream, m_char},
-      m_bool);
-  m_funcDecls.registerIntrinsicAction(
-      *this, Fk::ActionStreamFlush, "stream_flush", sym::TypeSet{m_stream}, m_bool);
   m_funcDecls.registerIntrinsicAction(
       *this,
       Fk::ActionStreamSetOptions,

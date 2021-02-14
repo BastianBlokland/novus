@@ -130,10 +130,7 @@ enum class FuncKind {
 
   ActionStreamCheckValid,   // Check if a stream is valid.
   ActionStreamReadString,   // Read a string up to size x from a stream.
-  ActionStreamReadChar,     // Read a single character from a stream.
   ActionStreamWriteString,  // Write a string to a stream.
-  ActionStreamWriteChar,    // Write a single character to a stream.
-  ActionStreamFlush,        // Flush a stream to the underlying device.
   ActionStreamSetOptions,   // Set options for a stream.
   ActionStreamUnsetOptions, // Unset options for a stream.
 

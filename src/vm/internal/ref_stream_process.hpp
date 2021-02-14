@@ -67,34 +67,6 @@ public:
     return bytesRead > 0;
   }
 
-  auto readChar(ExecutorHandle* execHandle, PlatformError* pErr) noexcept -> char {
-    if (unlikely(m_streamKind == ProcessStreamKind::StdIn)) {
-      *pErr = PlatformError::StreamReadNotSupported;
-      return false;
-    }
-
-    // Can block so we mark ourselves as paused so the gc can trigger in the mean time.
-    execHandle->setState(ExecState::Paused);
-
-    char res;
-    const int bytesRead = fileRead(getFile(), &res, 1);
-
-    execHandle->setState(ExecState::Running);
-    if (execHandle->trap()) {
-      return '\0'; // Aborted.
-    }
-
-    if (bytesRead != 1) {
-      *pErr = getProcessStreamPlatformError();
-      return '\0';
-    }
-    if (bytesRead == 0) {
-      *pErr = PlatformError::StreamNoDataAvailable;
-      return '\0';
-    }
-    return res;
-  }
-
   auto writeString(ExecutorHandle* execHandle, PlatformError* pErr, StringRef* str) noexcept
       -> bool {
     if (unlikely(m_streamKind != ProcessStreamKind::StdIn)) {
@@ -115,36 +87,6 @@ public:
       *pErr = getProcessStreamPlatformError();
       return false;
     }
-    return true;
-  }
-
-  auto writeChar(ExecutorHandle* execHandle, PlatformError* pErr, uint8_t val) noexcept -> bool {
-    if (unlikely(m_streamKind != ProcessStreamKind::StdIn)) {
-      *pErr = PlatformError::StreamWriteNotSupported;
-      return false;
-    }
-
-    // Can block so we mark ourselves as paused so the gc can trigger in the mean time.
-    execHandle->setState(ExecState::Paused);
-
-    auto* valChar          = static_cast<char*>(static_cast<void*>(&val));
-    const int bytesWritten = fileWrite(getFile(), valChar, 1);
-
-    execHandle->setState(ExecState::Running);
-    if (execHandle->trap()) {
-      return false; // Aborted.
-    }
-
-    if (bytesWritten != 1) {
-      *pErr = getProcessStreamPlatformError();
-      return false;
-    }
-    return true;
-  }
-
-  auto flush(PlatformError* /*unused*/) noexcept -> bool {
-    // At the moment this is a no-op, in the future we can consider adding additional buffering to
-    // console streams (so flush would write to the handle).
     return true;
   }
 

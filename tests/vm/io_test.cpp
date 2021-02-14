@@ -77,13 +77,15 @@ TEST_CASE("[vm] Execute input and output", "vm") {
           asmb->addDup(); // Duplicate the stream on the stack.
 
           // Read and print the first character.
-          asmb->addPCall(novasm::PCallCode::StreamReadChar);
-          ADD_PRINT_CHAR(asmb);
+          asmb->addLoadLitInt(1); // Read a single character.
+          asmb->addPCall(novasm::PCallCode::StreamReadString);
+          ADD_PRINT(asmb);
           asmb->addPop(); // Ignore the result of printing.
 
           // Read and print the second character.
-          asmb->addPCall(novasm::PCallCode::StreamReadChar);
-          ADD_PRINT_CHAR(asmb);
+          asmb->addLoadLitInt(1); // Read a single character.
+          asmb->addPCall(novasm::PCallCode::StreamReadString);
+          ADD_PRINT(asmb);
         },
         "Hello world",
         "He");
@@ -112,20 +114,12 @@ TEST_CASE("[vm] Execute input and output", "vm") {
           asmb->addPCall(novasm::PCallCode::Assert);
 
           // Write character to file.
-          asmb->addStackLoad(0);    // Load stream.
-          asmb->addLoadLitInt('d'); // Content.
-          asmb->addPCall(novasm::PCallCode::StreamWriteChar);
+          asmb->addStackLoad(0);       // Load stream.
+          asmb->addLoadLitString("d"); // Content.
+          asmb->addPCall(novasm::PCallCode::StreamWriteString);
 
           // Assert that writing succeeded.
           asmb->addLoadLitString("Write failed");
-          asmb->addPCall(novasm::PCallCode::Assert);
-
-          // Flush file.
-          asmb->addStackLoad(0); // Load stream.
-          asmb->addPCall(novasm::PCallCode::StreamFlush);
-
-          // Assert that flushing succeeded.
-          asmb->addLoadLitString("Flush failed");
           asmb->addPCall(novasm::PCallCode::Assert);
 
           // Open the file again for reading.
@@ -141,9 +135,10 @@ TEST_CASE("[vm] Execute input and output", "vm") {
           asmb->addPCall(novasm::PCallCode::Assert);
 
           // Read and print the first character.
-          asmb->addStackLoad(0); // Load stream.
-          asmb->addPCall(novasm::PCallCode::StreamReadChar);
-          ADD_PRINT_CHAR(asmb);
+          asmb->addStackLoad(0);  // Load stream.
+          asmb->addLoadLitInt(1); // Read a single character.
+          asmb->addPCall(novasm::PCallCode::StreamReadString);
+          ADD_PRINT(asmb);
           asmb->addPop(); // Ignore the result of printing.
 
           // Read and print the remaining characters.

@@ -15,13 +15,6 @@ namespace vm {
     (ASMB)->addPCall(novasm::PCallCode::StreamWriteString);                                        \
   }
 
-#define FLUSH_STD_IN(ASMB)                                                                         \
-  {                                                                                                \
-    (ASMB)->addLoadLitInt(0); /* StdIn. */                                                         \
-    (ASMB)->addPCall(novasm::PCallCode::ProcessOpenStream);                                        \
-    (ASMB)->addPCall(novasm::PCallCode::StreamFlush);                                              \
-  }
-
 #define READ_STD_OUT(ASMB)                                                                         \
   {                                                                                                \
     (ASMB)->addLoadLitInt(1); /* StdOut. */                                                        \
@@ -157,8 +150,6 @@ TEST_CASE("[vm] Execute process platform-calls", "vm") {
           asmb->addLoadLitString("Hello from your parent\n");
           WRITE_STD_IN(asmb);
           asmb->addPop(); // Ignore the success / failure of the write.
-          FLUSH_STD_IN(asmb);
-          asmb->addPop(); // Ignore the success / failure of the flush.
 
           asmb->addDup(); // Duplicate the process.
           asmb->addPCall(novasm::PCallCode::ProcessBlock);
