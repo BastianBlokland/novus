@@ -45,9 +45,9 @@ fun ppmAsciiWriter()
 fun ppmBinaryWriter()
   sizeWriter  = txtIntWriter() & litWriter(' ') & txtIntWriter();
   colorWriter = Writer(lambda (WriterState s, Color c)
-    s.write(  char(clamp(c.r, 0.0, 1.0) * 255 + .5) +
-              char(clamp(c.g, 0.0, 1.0) * 255 + .5) +
-              char(clamp(c.b, 0.0, 1.0) * 255 + .5))
+    s.write(string( char(clamp(c.r, 0.0, 1.0) * 255 + .5),
+                    char(clamp(c.g, 0.0, 1.0) * 255 + .5),
+                    char(clamp(c.b, 0.0, 1.0) * 255 + .5)))
   );
   ( litWriter("P6") & newlineWriter()   &
     sizeWriter & newlineWriter()        &
@@ -71,9 +71,9 @@ fun tgaWriter()
       char(0b10_0000))
   );
   colorWriter = Writer(lambda (WriterState s, Color c)
-    s.write(  char(clamp(c.b, 0.0, 1.0) * 255 + .5) +
-              char(clamp(c.g, 0.0, 1.0) * 255 + .5) +
-              char(clamp(c.r, 0.0, 1.0) * 255 + .5))
+    s.write(string( char(clamp(c.b, 0.0, 1.0) * 255 + .5),
+                    char(clamp(c.g, 0.0, 1.0) * 255 + .5),
+                    char(clamp(c.r, 0.0, 1.0) * 255 + .5)))
   );
   (headerWriter & listWriter(colorWriter)).map(lambda (Image i) Pair(i, i.pixels))
 

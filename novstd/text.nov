@@ -13,6 +13,14 @@ struct TextPos =
 fun +{T}(string s, T v)
   s + v.string()
 
+fun string(char a, char b) string(a) + b
+fun string(char a, char b, char c) string(a, b) + c
+fun string(char a, char b, char c, char d) string(a, b, c) + d
+fun string(char a, char b, char c, char d, char e) string(a, b, c, d) + e
+fun string(char a, char b, char c, char d, char e, char f)  string(a, b, c, d, e) + f
+fun string(char a, char b, char c, char d, char e, char f, char g)  string(a, b, c, d, e, f) + g
+fun string(char a, char b, char c, char d, char e, char f, char g, char h)  string(a, b, c, d, e, f, g) + h
+
 // -- Conversions
 
 fun string(TextPos p)

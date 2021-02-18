@@ -379,11 +379,6 @@ auto execute(
       auto* a = getStringOrLinkRef(POP());
       PUSH_REF(refAlloc->allocStrLink(a, refValue(b)));
     } break;
-    case OpCode::CombineChar: {
-      auto b = static_cast<uint8_t>(POP_INT());
-      auto a = static_cast<uint8_t>(POP_INT());
-      PUSH_REF(charsToString(refAlloc, a, b));
-    } break;
     case OpCode::AppendChar: {
       auto b  = POP_INT();
       auto* a = getStringOrLinkRef(POP());

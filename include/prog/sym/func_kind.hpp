@@ -86,7 +86,6 @@ enum class FuncKind {
   CheckEqString,  // Check if two strings are equal.
   CheckNEqString, // Check if two strings are not equal.
 
-  CombineChar,   // Combine two characters into a string.
   AppendChar,    // Append a character to a string.
   IncrementChar, // Increment a character.
   DecrementChar, // Decrement a character.

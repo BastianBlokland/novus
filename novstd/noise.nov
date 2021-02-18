@@ -35,7 +35,7 @@ fun perlinNoise3d(float x, float y, float z) -> float
                     grad(p[bb + 1], rx - 1,  ry - 1,  rz - 1 ), u), v), w)
 
 fun perlinPermutation() -> string
-  p =
+  p = "" +
     char(151) + char(160) + char(137) + char(91)  + char(90)  + char(15)  + char(131) + char(13)  +
     char(201) + char(95)  + char(96)  + char(53)  + char(194) + char(233) + char(7)   + char(225) +
     char(140) + char(36)  + char(103) + char(30)  + char(69)  + char(142) + char(8)   + char(99)  +

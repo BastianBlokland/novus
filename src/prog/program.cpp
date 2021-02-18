@@ -209,8 +209,6 @@ Program::Program() :
 
   // Register build-in binary char operators.
   m_funcDecls.registerFunc(
-      *this, Fk::CombineChar, getFuncName(Op::Plus), sym::TypeSet{m_char, m_char}, m_string);
-  m_funcDecls.registerFunc(
       *this, Fk::CheckEqInt, getFuncName(Op::EqEq), sym::TypeSet{m_char, m_char}, m_bool);
   m_funcDecls.registerFunc(
       *this, Fk::CheckNEqInt, getFuncName(Op::BangEq), sym::TypeSet{m_char, m_char}, m_bool);

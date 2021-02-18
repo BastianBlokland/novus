@@ -367,9 +367,6 @@ auto GenExpr::visit(const prog::expr::CallExprNode& n) -> void {
     m_asmb->addLogicInvInt();
     break;
 
-  case prog::sym::FuncKind::CombineChar:
-    m_asmb->addCombineChar();
-    break;
   case prog::sym::FuncKind::AppendChar:
     m_asmb->addAppendChar();
     break;

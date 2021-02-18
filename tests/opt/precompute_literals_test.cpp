@@ -207,7 +207,6 @@ TEST_CASE("[opt] Precompute literals", "opt") {
   }
 
   SECTION("char intrinsics") {
-    ASSERT_EXPR(precomputeLiterals, "'h' + 'w'", litStringNode(prog, "hw"));
     ASSERT_EXPR(precomputeLiterals, "string('h')", litStringNode(prog, "h"));
     ASSERT_EXPR(precomputeLiterals, "++'a'", litCharNode(prog, 'b'));
     ASSERT_EXPR(precomputeLiterals, "--'b'", litCharNode(prog, 'a'));
