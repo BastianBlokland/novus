@@ -125,7 +125,7 @@ fun ipTxtWriter() -> Writer{IpAddress}
 
 fun ipV4BinWriter() -> Writer{IpV4Address}
   Writer(lambda (WriterState s, IpV4Address addr)
-    s.write(addr.a + addr.b + addr.c + addr.d)
+    s.write(string(addr.a, addr.b, addr.c, addr.d))
   )
 
 fun ipV6BinWriter() -> Writer{IpV6Address}
@@ -213,15 +213,15 @@ assert(
 
 assert(
   w = ipV4BinWriter();
-  w(IpV4Address(char(1), char(2), char(3), char(4))) == char(1) + char(2) + char(3) + char(4))
+  w(IpV4Address(char(1), char(2), char(3), char(4))) == string(char(1), char(2), char(3), char(4)))
 
 assert(
   w = ipV4BinWriter();
-  w(IpV4Address(char(127), char(0), char(0), char(1))) == char(127) + char(0) + char(0) + char(1))
+  w(IpV4Address(char(127), char(0), char(0), char(1))) == string(char(127), char(0), char(0), char(1)))
 
 assert(
   w = ipV4BinWriter();
-  w(IpV4Address(char(255), char(255), char(255), char(255))) == char(255) + char(255) + char(255) + char(255))
+  w(IpV4Address(char(255), char(255), char(255), char(255))) == string(char(255), char(255), char(255), char(255)))
 
 assert(
   w = ipTxtWriter();
@@ -230,10 +230,10 @@ assert(
 
 assert(
   w = ipBinWriter();
-  w(ipV4Loopback()) == char(127) + char(0) + char(0) + char(1) &&
+  w(ipV4Loopback()) == string(char(127), char(0), char(0), char(1)) &&
   w(ipV6Loopback()) ==
-    char(0) + char(0) + char(0) + char(0) + char(0) + char(0) + char(0) + char(0) +
-    char(0) + char(0) + char(0) + char(0) + char(0) + char(0) + char(0) + char(1))
+    string(char(0), char(0), char(0), char(0), char(0), char(0), char(0), char(0)) +
+    string(char(0), char(0), char(0), char(0), char(0), char(0), char(0), char(1)))
 
 assert(ipLookupV4Address("localhost") == ipV4Loopback())
 

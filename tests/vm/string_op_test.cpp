@@ -19,29 +19,6 @@ TEST_CASE("[vm] Execute string operations", "vm") {
         "hello world");
   }
 
-  SECTION("Combine chars") {
-    CHECK_EXPR(
-        [](novasm::Assembler* asmb) -> void {
-          asmb->addLoadLitInt('a');
-          asmb->addLoadLitInt('b');
-          asmb->addCombineChar();
-
-          ADD_PRINT(asmb);
-        },
-        "input",
-        "ab");
-    CHECK_EXPR(
-        [](novasm::Assembler* asmb) -> void {
-          asmb->addLoadLitInt(256 + 'a');
-          asmb->addLoadLitInt(256 + 'b');
-          asmb->addCombineChar();
-
-          ADD_PRINT(asmb);
-        },
-        "input",
-        "ab");
-  }
-
   SECTION("Append char") {
     CHECK_EXPR(
         [](novasm::Assembler* asmb) -> void {
@@ -283,24 +260,6 @@ TEST_CASE("[vm] Execute string operations", "vm") {
         },
         "input",
         "");
-  }
-
-  SECTION("Unsigned chars") {
-    CHECK_EXPR(
-        [](novasm::Assembler* asmb) -> void {
-          asmb->addLoadLitInt(128);
-          asmb->addLoadLitInt(137);
-          asmb->addCombineChar();
-
-          asmb->addLoadLitInt(0);
-          asmb->addIndexString();
-
-          // Print as integer.
-          asmb->addConvIntString();
-          ADD_PRINT(asmb);
-        },
-        "input",
-        "128");
   }
 }
 

@@ -102,18 +102,6 @@ template <typename IntType>
   return str;
 }
 
-[[nodiscard]] auto inline charsToString(RefAllocator* refAlloc, uint8_t a, uint8_t b) noexcept
-    -> StringRef* {
-  const auto str = refAlloc->allocStr(2);
-  if (unlikely(str == nullptr)) {
-    return nullptr;
-  }
-
-  str->getDataPtr()[0] = a;
-  str->getDataPtr()[1] = b;
-  return str;
-}
-
 [[nodiscard]] auto inline toStringRef(
     RefAllocator* refAlloc, const char* data, size_t length) noexcept -> StringRef* {
   const auto str = refAlloc->allocStr(length);

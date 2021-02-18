@@ -18,17 +18,17 @@ fun utf8RequiredChars(UnicodePoint cp) -> int
   else                        -> 4
 
 fun toUtf8(UnicodePoint cp) -> string
-  if !cp.validUnicodePoint()  -> char(0xEF) + char(0xBF) + char(0xBD)
+  if !cp.validUnicodePoint()  -> string(char(0xEF), char(0xBF), char(0xBD))
   if cp <= utf8SingleCharCp() -> string(char(cp.val))
-  if cp <= utf8DoubleCharCp() -> char(((  cp.val >> 6)  & 0x1F)   | 0xC0) +
-                                 char((   cp.val        & 0x3F)   | 0x80)
-  if cp <= utf8TripleCharCp() -> char(((  cp.val >> 12) & 0x0F)   | 0xE0) +
-                                 char(((  cp.val >>  6) & 0x3F)   | 0x80) +
-                                 char((   cp.val        & 0x3F)   | 0x80)
-  else                        -> char(((  cp.val >> 18) & 0x07)   | 0xF0) +
-                                 char(((  cp.val >> 12) & 0x3F)   | 0x80) +
-                                 char(((  cp.val >>  6) & 0x3F)   | 0x80) +
-                                 char((   cp.val        & 0x3F)   | 0x80)
+  if cp <= utf8DoubleCharCp() -> string(char(((  cp.val >> 6)  & 0x1F)   | 0xC0),
+                                        char((   cp.val        & 0x3F)   | 0x80))
+  if cp <= utf8TripleCharCp() -> string(char(((  cp.val >> 12) & 0x0F)   | 0xE0),
+                                        char(((  cp.val >>  6) & 0x3F)   | 0x80),
+                                        char((   cp.val        & 0x3F)   | 0x80))
+  else                        -> string(char(((  cp.val >> 18) & 0x07)   | 0xF0),
+                                        char(((  cp.val >> 12) & 0x3F)   | 0x80),
+                                        char(((  cp.val >>  6) & 0x3F)   | 0x80),
+                                        char((   cp.val        & 0x3F)   | 0x80))
 
 fun utf8GetCharCount(char c)
   if (c & 0b1000_0000) == 0            -> 1
@@ -135,9 +135,9 @@ assert(
   !utf8Validate(string(char(0b1110_0000)), 0, true) &&
   !utf8Validate(string(char(0b1111_0000)), 0, true) &&
   utf8Validate(string(char(0b0000_0001)), 0, true)  &&
-  utf8Validate(char(0b1100_0000) + char(0b1000_0001), 0, true) &&
-  utf8Validate(char(0b1110_0000) + char(0b1000_0001) + char(0b1000_0001), 0, true) &&
-  utf8Validate(char(0b1111_0000) + char(0b1000_0001) + char(0b1000_0001) + char(0b1000_0001), 0, true))
+  utf8Validate(string(char(0b1100_0000), char(0b1000_0001)), 0, true) &&
+  utf8Validate(string(char(0b1110_0000), char(0b1000_0001), char(0b1000_0001)), 0, true) &&
+  utf8Validate(string(char(0b1111_0000), char(0b1000_0001), char(0b1000_0001), char(0b1000_0001)), 0, true))
 
 assert(
   allCodePoints   = rangeList(minUnicodePoint(), maxUnicodePoint());

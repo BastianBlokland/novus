@@ -134,7 +134,6 @@ auto disassembleInstructions(const Assembly& assembly, const dasm::InstructionLa
     case OpCode::AddLong:
     case OpCode::AddFloat:
     case OpCode::AddString:
-    case OpCode::CombineChar:
     case OpCode::AppendChar:
     case OpCode::SubInt:
     case OpCode::SubLong:
