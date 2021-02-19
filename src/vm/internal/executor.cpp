@@ -4,10 +4,10 @@
 #include "internal/ref_allocator.hpp"
 #include "internal/ref_atomic.hpp"
 #include "internal/ref_future.hpp"
-#include "internal/ref_long.hpp"
 #include "internal/ref_string.hpp"
 #include "internal/ref_string_link.hpp"
 #include "internal/ref_struct.hpp"
+#include "internal/ref_ulong.hpp"
 #include "internal/stack.hpp"
 #include "internal/string_utilities.hpp"
 #include "internal/thread.hpp"
@@ -226,14 +226,19 @@ auto execute(
   }
 #define PUSH_UINT(VAL) PUSH(uintValue(VAL))
 #define PUSH_INT(VAL) PUSH(intValue(VAL))
+#define PUSH_ULONG(VAL)                                                                            \
+  {                                                                                                \
+    const uint64_t ulongVal = VAL;                                                                 \
+    if (ulongVal & (1ULL << 63)) {                                                                 \
+      PUSH_REF(refAlloc->allocPlain<ULongRef>(ulongVal));                                          \
+    } else {                                                                                       \
+      PUSH(smallULongValue(ulongVal));                                                             \
+    }                                                                                              \
+  }
 #define PUSH_LONG(VAL)                                                                             \
   {                                                                                                \
-    int64_t v = VAL;                                                                               \
-    if (v >= 0L) {                                                                                 \
-      PUSH(posLongValue(v));                                                                       \
-    } else {                                                                                       \
-      PUSH_REF(refAlloc->allocPlain<LongRef>(v));                                                  \
-    }                                                                                              \
+    const int64_t longVal = VAL;                                                                   \
+    PUSH_ULONG(reinterpret_cast<const uint64_t&>(longVal));                                        \
   }
 #define PUSH_BOOL(VAL) PUSH(intValue(VAL))
 #define PUSH_FLOAT(VAL) PUSH(floatValue(VAL))
@@ -510,8 +515,8 @@ auto execute(
     } break;
     case OpCode::ShiftLeftLong: {
       auto b = POP_UINT();
-      auto a = getLong(POP());
-      PUSH_LONG(a << b);
+      auto a = getULong(POP());
+      PUSH_ULONG(a << b);
     } break;
     case OpCode::ShiftRightInt: {
       auto b = POP_UINT();
@@ -520,8 +525,8 @@ auto execute(
     } break;
     case OpCode::ShiftRightLong: {
       auto b = POP_UINT();
-      auto a = getLong(POP());
-      PUSH_LONG(a >> b);
+      auto a = getULong(POP());
+      PUSH_ULONG(a >> b);
     } break;
     case OpCode::AndInt: {
       auto b = POP_UINT();
@@ -529,9 +534,9 @@ auto execute(
       PUSH_UINT(a & b);
     } break;
     case OpCode::AndLong: {
-      auto b = getLong(POP());
-      auto a = getLong(POP());
-      PUSH_LONG(a & b);
+      auto b = getULong(POP());
+      auto a = getULong(POP());
+      PUSH_ULONG(a & b);
     } break;
     case OpCode::OrInt: {
       auto b = POP_UINT();
@@ -539,9 +544,9 @@ auto execute(
       PUSH_UINT(a | b);
     } break;
     case OpCode::OrLong: {
-      auto b = getLong(POP());
-      auto a = getLong(POP());
-      PUSH_LONG(a | b);
+      auto b = getULong(POP());
+      auto a = getULong(POP());
+      PUSH_ULONG(a | b);
     } break;
     case OpCode::XorInt: {
       auto b = POP_UINT();
@@ -549,15 +554,15 @@ auto execute(
       PUSH_UINT(a ^ b);
     } break;
     case OpCode::XorLong: {
-      auto b = getLong(POP());
-      auto a = getLong(POP());
-      PUSH_LONG(a ^ b);
+      auto b = getULong(POP());
+      auto a = getULong(POP());
+      PUSH_ULONG(a ^ b);
     } break;
     case OpCode::InvInt: {
       PUSH_UINT(~POP_UINT());
     } break;
     case OpCode::InvLong: {
-      PUSH_LONG(~getLong(POP()));
+      PUSH_ULONG(~getULong(POP()));
     } break;
     case OpCode::LengthString: {
       auto* strRef = getStringRef(refAlloc, POP());
@@ -854,7 +859,7 @@ auto execute(
     } break;
 
     case OpCode::FutureWaitNano: {
-      int64_t timeout = getLong(POP());
+      const int64_t timeout = getLong(POP());
       if (timeout <= 0) {
         auto* future = getFutureRef(POP());
         PUSH_BOOL(future->poll() != ExecState::Running);
@@ -949,6 +954,7 @@ End:
 #undef PUSH
 #undef PUSH_UINT
 #undef PUSH_INT
+#undef PUSH_ULONG
 #undef PUSH_LONG
 #undef PUSH_BOOL
 #undef PUSH_FLOAT

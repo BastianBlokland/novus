@@ -12,7 +12,7 @@ static const uint64_t valMask = ~static_cast<uint64_t>(1U);
 class Value final {
   friend auto uintValue(uint32_t val) noexcept -> Value;
   friend auto intValue(int32_t val) noexcept -> Value;
-  friend auto posLongValue(int64_t val) noexcept -> Value;
+  friend auto smallULongValue(uint64_t val) noexcept -> Value;
   friend auto floatValue(float val) noexcept -> Value;
   friend auto refValue(Ref* ref) noexcept -> Value;
   friend auto nullRefValue() noexcept -> Value;
@@ -43,9 +43,9 @@ public:
     return reinterpret_cast<int32_t&>(upperRaw); // NOLINT: Reinterpret cast
   }
 
-  [[nodiscard]] inline auto getPosLong() const noexcept -> int64_t {
+  [[nodiscard]] inline auto getSmallULong() const noexcept -> uint64_t {
     assert(!isRef());
-    return static_cast<int64_t>(m_raw >> 1U);
+    return m_raw >> 1U;
   }
 
   [[nodiscard]] inline auto getFloat() const noexcept -> float {
@@ -94,11 +94,11 @@ private:
   return Value{static_cast<uint64_t>(upperRaw) << 32U};
 }
 
-[[nodiscard]] inline auto posLongValue(int64_t val) noexcept -> Value {
-  assert(val >= 0L);
+[[nodiscard]] inline auto smallULongValue(uint64_t val) noexcept -> Value {
+  assert((val & (1ULL << 63)) == 0);
 
-  // Positive longs (most significant bit is always zero), can be stored in the upper 63 bits.
-  return Value{static_cast<uint64_t>(val) << 1U};
+  // ULongs with the most significant bit set to zero, can be stored in the upper 63 bits.
+  return Value{val << 1U};
 }
 
 [[nodiscard]] inline auto floatValue(float val) noexcept -> Value {

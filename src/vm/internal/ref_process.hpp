@@ -502,7 +502,7 @@ inline auto processSendSignal(ProcessRef* process, PlatformError* pErr, ProcessS
   return process->sendSignal(pErr, kind);
 }
 
-inline auto processGetId(ProcessRef* process) {
+inline auto processGetId(ProcessRef* process) -> int64_t {
   assert(process);
   return process->getId();
 }

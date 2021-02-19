@@ -1,7 +1,6 @@
 #include "internal/ref.hpp"
 #include "internal/ref_atomic.hpp"
 #include "internal/ref_future.hpp"
-#include "internal/ref_long.hpp"
 #include "internal/ref_process.hpp"
 #include "internal/ref_stream_console.hpp"
 #include "internal/ref_stream_file.hpp"
@@ -10,6 +9,7 @@
 #include "internal/ref_string.hpp"
 #include "internal/ref_string_link.hpp"
 #include "internal/ref_struct.hpp"
+#include "internal/ref_ulong.hpp"
 
 namespace vm::internal {
 
@@ -35,8 +35,8 @@ auto Ref::destroy() noexcept -> void {
   case RefKind::StringLink:
     downcastRef<StringLinkRef>(this)->~StringLinkRef();
     break;
-  case RefKind::Long:
-    downcastRef<LongRef>(this)->~LongRef();
+  case RefKind::ULong:
+    downcastRef<ULongRef>(this)->~ULongRef();
     break;
   case RefKind::StreamConsole:
     downcastRef<ConsoleStreamRef>(this)->~ConsoleStreamRef();

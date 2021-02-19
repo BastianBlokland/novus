@@ -9,7 +9,7 @@ enum class RefKind : uint8_t {
   Future        = 2U,
   String        = 3U,
   StringLink    = 4U,
-  Long          = 5U,
+  ULong         = 5U,
   StreamFile    = 6U,
   StreamConsole = 7U,
   StreamTcp     = 8U,
