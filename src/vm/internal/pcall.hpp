@@ -4,12 +4,12 @@
 #include "internal/interupt.hpp"
 #include "internal/path_utilities.hpp"
 #include "internal/platform_utilities.hpp"
-#include "internal/ref_long.hpp"
 #include "internal/ref_process.hpp"
 #include "internal/ref_stream_console.hpp"
 #include "internal/ref_stream_file.hpp"
 #include "internal/ref_stream_process.hpp"
 #include "internal/ref_stream_tcp.hpp"
+#include "internal/ref_ulong.hpp"
 #include "internal/settings.hpp"
 #include "internal/stack.hpp"
 #include "internal/stream_utilities.hpp"
@@ -54,14 +54,19 @@ auto inline pcall(
   }
 #define PUSH_INT(VAL) PUSH(intValue(VAL))
 #define PUSH_BOOL(VAL) PUSH(intValue(VAL))
+#define PUSH_ULONG(VAL)                                                                            \
+  {                                                                                                \
+    const uint64_t ulongVal = VAL;                                                                 \
+    if (ulongVal & (1ULL << 63)) {                                                                 \
+      PUSH_REF(refAlloc->allocPlain<ULongRef>(ulongVal));                                          \
+    } else {                                                                                       \
+      PUSH(smallULongValue(ulongVal));                                                             \
+    }                                                                                              \
+  }
 #define PUSH_LONG(VAL)                                                                             \
   {                                                                                                \
-    int64_t v = VAL;                                                                               \
-    if (v >= 0L) {                                                                                 \
-      PUSH(posLongValue(v));                                                                       \
-    } else {                                                                                       \
-      PUSH_REF(refAlloc->allocPlain<LongRef>(v));                                                  \
-    }                                                                                              \
+    const int64_t longVal = VAL;                                                                   \
+    PUSH_ULONG(reinterpret_cast<const uint64_t&>(longVal));                                        \
   }
 #define PUSH_REF(VAL)                                                                              \
   {                                                                                                \
@@ -341,6 +346,7 @@ auto inline pcall(
 #undef PUSH
 #undef PUSH_INT
 #undef PUSH_BOOL
+#undef PUSH_ULONG
 #undef PUSH_LONG
 #undef PUSH_REF
 #undef POP

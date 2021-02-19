@@ -276,6 +276,16 @@ TEST_CASE("[vm] Execute long operations", "vm") {
         },
         "input",
         "1");
+    CHECK_EXPR(
+        [](novasm::Assembler* asmb) -> void {
+          asmb->addLoadLitLong(~0L);
+          asmb->addLoadLitInt(1);
+          asmb->addShiftRightLong();
+          asmb->addConvLongString();
+          ADD_PRINT(asmb);
+        },
+        "input",
+        "9223372036854775807");
   }
 
   SECTION("And") {

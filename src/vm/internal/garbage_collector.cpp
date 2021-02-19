@@ -216,7 +216,7 @@ auto GarbageCollector::mark() noexcept -> void {
       break;
     case RefKind::Atomic:
     case RefKind::String:
-    case RefKind::Long:
+    case RefKind::ULong:
     case RefKind::StreamFile:
     case RefKind::StreamConsole:
     case RefKind::StreamTcp:
