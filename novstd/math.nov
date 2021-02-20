@@ -1,23 +1,5 @@
 // -- Functions
 
-fun intMin()
-  0x8000_0000
-
-fun intMax()
-  0x7FFF_FFFF
-
-fun longMin()
-  0x8000_0000_0000_0000L
-
-fun longMax()
-  0x7FFF_FFFF_FFFF_FFFFL
-
-fun floatMin()
-  asFloat(0xFF7F_FFFF)
-
-fun floatMax()
-  asFloat(0x7F7F_FFFF)
-
 fun nan()
   asFloat(0xFFA0_0000)
 
@@ -45,7 +27,7 @@ fun abs{T}(T v)
 fun sign{T}(T v)
   v < 0 ? -1 : 1
 
-fun isEven(int v)
+fun isEven{T}(T v)
   v % 2 == 0
 
 fun min{T}(T a, T b)
@@ -159,6 +141,9 @@ assert(
   isEven(-4) &&
   !isEven(1) &&
   !isEven(-1))
+
+assert(isEven('b'))
+assert(isEven(~1L))
 
 assert(
   min(1, 2) == 1 &&

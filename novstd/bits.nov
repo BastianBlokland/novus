@@ -1,5 +1,6 @@
 import "std/parser.nov"
 import "std/text.nov"
+import "std/type.nov"
 import "std/writer.nov"
 
 // -- Types
@@ -18,45 +19,44 @@ fun string(Endianness e)
 // -- Utilities
 
 // Unset the least significant set bit.
-fun unsetLow(int mask)
-  mask & mask - 1
+fun unsetLow{T}(T mask) -> T
+  mask & mask - T(1)
 
 // Clears all but the least significant set bit.
-fun onlyLow(int mask)
-  mask & ~mask + 1
+fun onlyLow{T}(T mask) -> T
+  mask & ~mask + T(1)
+
+fun onlyHigh{T}(T mask) -> T
+  T(1) << (bitSize{T}() - leadingZeroes(mask) - 1)
 
 // Unset the most significant set bit.
-fun unsetHigh(int mask)
-  m1 = mask | mask >> 1;
-  m2 = m1   | m1   >> 2;
-  m3 = m2   | m2   >> 4;
-  m4 = m3   | m3   >> 8;
-  m5 = m4   | m4   >> 16;
-  mask & m5 >> 1
+fun unsetHigh{T}(T mask) -> T
+  msb = T(1) << (bitSize{T}() - leadingZeroes(mask) - 1);
+  mask & ~msb
 
 // Count how many bits are set.
-fun popCount(int mask)
-  f = ( lambda (int mask, int num)
+fun popCount{T}(T mask) -> int
+  f = ( lambda (T mask, int num)
     if mask == 0  -> num
     else          -> self(unsetLow(mask), ++num)
   ); f(mask, 0)
 
 // Count the trailing zeroes.
-fun trailingZeroes(int mask)
-  if mask == 0  -> 32
+fun trailingZeroes{T}(T mask) -> int
+  if mask == 0  -> bitSize{T}()
   else          ->
-    f = ( lambda (int mask, int num)
+    f = ( lambda (T mask, int num)
       if mask == 0 || (mask & 1) != 0 -> num
       else                            -> self(mask >> 1, ++num)
     ); f(mask, 0)
 
 // Count the leading zeroes.
-fun leadingZeroes(int mask)
-  if mask == 0  -> 32
+fun leadingZeroes{T}(T mask) -> int
+  if mask == 0  -> bitSize{T}()
   else          ->
-    f = ( lambda (int mask, int num)
-      if mask < 0 -> num
-      else        -> self(mask << 1, ++num)
+    f = ( lambda (T mask, int num)
+      if (mask & highBit{T}()) != 0 -> num
+      else                          -> self(mask << 1, ++num)
     ); f(mask, 0)
 
 // Returns a new mask with only the Nth least significant set bit still set.
@@ -64,34 +64,34 @@ fun leadingZeroes(int mask)
 // * Mask 10010100 bit 0 = 00000100
 // * Mask 10010100 bit 1 = 00010000
 // * Mask 10010100 bit 2 = 10000000
-fun nthSetBit(int mask, int bit)
-  f = (lambda (int mask, int i)
+fun nthSetBit{T}(T mask, int bit) -> T
+  f = (lambda (T mask, int i)
     if i >= bit -> onlyLow(mask)
     else        -> self(unsetLow(mask), ++i)
   ); f(mask, 0)
 
 // Convert the mask into a binary string with characters '0' and '1'.
-fun toBitString(int mask, bool includeLeadingZeroes)
-  if mask == 0  -> string('0', includeLeadingZeroes ? 32 : 1)
-  else          ->
+fun toBitString{T}(T mask, bool includeLeadingZeroes = false) -> string
+  if mask == 0 -> string('0', includeLeadingZeroes ? bitSize{T}() : 1)
+  else         ->
     f = ( lambda (int idx, string result)
       if idx < 0  -> result
-      else        -> self(--idx, result + ((mask & 1 << idx) == 0 ? '0' : '1'))
-    ); f(includeLeadingZeroes ? 31 : 31 - leadingZeroes(mask), "")
+      else        -> self(--idx, result + ((mask & T(1) << idx) == 0 ? '0' : '1'))
+    ); f(bitSize{T}() - (includeLeadingZeroes ? 1 : leadingZeroes(mask) + 1), "")
 
 // Convert the mask into a hexadecimal string with characters '0'-'9' and 'A'-'F'.
-fun toHexString(int mask)
-  if mask == 0  -> "0"
+fun toHexString{T}(T mask, bool includeLeadingZeroes = false) -> string
+  if mask == 0  -> string('0', includeLeadingZeroes ? nibbleSize{T}() : 1)
   else          ->
-    f = ( lambda (int mask, string result)
+    f = ( lambda (T mask, string result)
       if mask == 0  -> result
       else          -> self(
         mask >> 4,
-        v = mask & 0xF;
+        v = mask & T(0xF);
         string(v < 10 ? char('0' + v) : char('A' + v - 10)) + result)
-    ); f(mask, "")
+    ); string('0', includeLeadingZeroes ? (leadingZeroes(mask) / 4) : 0) + f(mask, "")
 
-fun signExtend16To32(int val)
+fun signExtend16To32(int val) -> int
   (0xffff & val ^ 0x8000) - 0x8000
 
 fun parseInt16(Endianness en, char a, char b) -> int
@@ -193,11 +193,29 @@ assert(
   unsetLow(1) == 0)
 
 assert(
+  unsetLow(char(0b111)) == 0b110 &&
+  unsetLow(char(0b110)) == 0b100 &&
+  unsetLow(char(0b11000000)) == 0b10000000)
+
+assert(
+  unsetLow(0xFFFF_FFFF_FFFF0L) == 0xFFFF_FFFF_FFFE0L &&
+  unsetLow(0xFFFF_FFFF_FFFFL) == 0xFFFF_FFFF_FFFEL)
+
+assert(
   onlyLow(0) == 0 &&
   onlyLow(1) == 1 &&
   onlyLow(-1) == 1 &&
   onlyLow(0b100) == 0b100 &&
   onlyLow(0b1010_1000) == 0b1000)
+
+assert(
+  onlyLow(char(0xFF)) == char(1) &&
+  onlyLow(char(0b100)) == char(0b100) &&
+  onlyLow(char(0b1010_1000)) == char(0b1000))
+
+assert(
+  onlyLow(0xFFFF_FFFF_FFFF0L) == 0x10L &&
+  onlyLow(0xFFFF_FFFF_FFFFL) == 0x1L)
 
 assert(
   unsetHigh(0) == 0 &&
@@ -210,6 +228,15 @@ assert(
   unsetHigh(0b1000_0000_0000_0000_0000_0000_0100_1000) == 0b100_1000)
 
 assert(
+  unsetHigh(char(0b11)) == char(0b1) &&
+  unsetHigh(char(0b1101)) == char(0b101) &&
+  unsetHigh(char(0b1101001)) == char(0b101001))
+
+assert(
+  unsetHigh(0xFFFF_FFFF_FFFFL) == 0x7FFF_FFFF_FFFFL &&
+  unsetHigh(0xFFFF_FFFF_FFFF_FFFFL) == 0x7FFF_FFFF_FFFF_FFFFL)
+
+assert(
   popCount(0) == 0 &&
   popCount(1) == 1 &&
   popCount(0b0010) == 1 &&
@@ -219,11 +246,31 @@ assert(
   popCount(0xEFFF_FFFF) == 31)
 
 assert(
+  popCount(char(0b100101)) == 3 &&
+  popCount(char(0xFF)) == 8)
+
+assert(
+  popCount(0xFFFF_F0FF_FFFFL) == 44 &&
+  popCount(0xFFFF_FFFF_FFFFL) == 48 &&
+  popCount(0xFFFF_FFFF_FFFF_FFFFL) == 64)
+
+assert(
   trailingZeroes(0) == 32 &&
   trailingZeroes(-1) == 0 &&
   trailingZeroes(0b10) == 1 &&
   trailingZeroes(0b10100) == 2 &&
   trailingZeroes(0b101001000) == 3)
+
+assert(
+  trailingZeroes(char(0b100100)) == 2 &&
+  trailingZeroes(char(0xFF)) == 0 &&
+  trailingZeroes(char(0)) == 8)
+
+assert(
+  trailingZeroes(0xFFFF_FFFF_FFFF_FFFFL) == 0 &&
+  trailingZeroes(0xFFFF_0000L) == 16 &&
+  trailingZeroes(0x1000_0000_0000_0000L) == 60 &&
+  trailingZeroes(0L) == 64)
 
 assert(
   leadingZeroes(0) == 32 &&
@@ -233,6 +280,17 @@ assert(
   leadingZeroes(1 << 15) == 16 &&
   leadingZeroes(0b0000_0100_0101_0101_0110_0101_0100_1000) == 5 &&
   leadingZeroes(-1) == 0)
+
+assert(
+  leadingZeroes(char(0)) == 8 &&
+  leadingZeroes(char(0b1)) == 7 &&
+  leadingZeroes(char(0xFF)) == 0)
+
+assert(
+  leadingZeroes(0xFFFF_FFFF_FFFF_FFFFL) == 0 &&
+  leadingZeroes(0xF0F0_F0F0L) == 32 &&
+  leadingZeroes(0x1000_0000_0000_0000L) == 3 &&
+  leadingZeroes(0L) == 64)
 
 assert(
   nthSetBit(0, -1) == 0 &&
@@ -247,15 +305,37 @@ assert(
   nthSetBit(0b1001_1101, 4) == 0b1000_0000)
 
 assert(
-  toBitString(0, false) == "0" &&
+  nthSetBit(char(0b1), 0)   == 1 &&
+  nthSetBit(char(0b1001_1101), 0) == 1 &&
+  nthSetBit(char(0b1001_1101), 2) == 0b1000 &&
+  nthSetBit(char(0b1001_1101), 4) == 0b1000_0000)
+
+assert(
+  nthSetBit(0b1L, 0)   == 1 &&
+  nthSetBit(0b1001_1101L, 0) == 1 &&
+  nthSetBit(0xFFFF_FFFF_FFFF_FFFFL, 0) == 1 &&
+  nthSetBit(0xFFFF_FFFF_FFFF_1010L, 1) == 0x1000L)
+
+assert(
+  toBitString(0) == "0" &&
   toBitString(0, true) == string('0', 32) &&
-  toBitString(-1, false) == string('1', 32) &&
+  toBitString(-1) == string('1', 32) &&
   toBitString(-1, true) == string('1', 32) &&
-  toBitString(1, false) == "1" &&
-  toBitString(2, false) == "10" &&
-  toBitString(4, false) == "100" &&
-  toBitString(0b1011_1101_1111, false) == "101111011111" &&
+  toBitString(1) == "1" &&
+  toBitString(2) == "10" &&
+  toBitString(4) == "100" &&
+  toBitString(0b1011_1101_1111) == "101111011111" &&
   toBitString(0b0000_0100_0101_0101_0110_0101_0100_1000, true) == "00000100010101010110010101001000")
+
+assert(
+  toBitString(char(0)) == "0" &&
+  toBitString(char(0), true) == string('0', 8) &&
+  toBitString(char(0b0101_0101), true) == "01010101")
+
+assert(
+  toBitString(0L) == "0" &&
+  toBitString(0L, true) == string('0', 64) &&
+  toBitString(~0L) == string('1', 64))
 
 assert(
   toHexString(0) == "0" &&
@@ -264,6 +344,32 @@ assert(
   toHexString(0x1A2B3C) == "1A2B3C" &&
   toHexString(0xABCDEF) == "ABCDEF" &&
   toHexString(0x123ABC) == "123ABC")
+
+assert(
+  toHexString(0, true) == "00000000" &&
+  toHexString(-1, true) == "FFFFFFFF" &&
+  toHexString(1, true) == "00000001" &&
+  toHexString(0x0ABCDEF0, true) == "0ABCDEF0")
+
+assert(
+  toHexString(char(0)) == "0" &&
+  toHexString(char(0xE)) == "E" &&
+  toHexString(char(0xFA)) == "FA")
+
+assert(
+  toHexString(char(0), true) == "00" &&
+  toHexString(char(0xE), true) == "0E" &&
+  toHexString(char(0xFA), true) == "FA")
+
+assert(
+  toHexString(0L) == "0" &&
+  toHexString(0xFFFF_FFFF_FFFFL) == "FFFFFFFFFFFF" &&
+  toHexString(0x1234_ABCD_EF99L) == "1234ABCDEF99")
+
+assert(
+  toHexString(0L, true) == "0000000000000000" &&
+  toHexString(~0L, true) == "FFFFFFFFFFFFFFFF" &&
+  toHexString(0x00AB_CDEF_1234_FFFFL, true) == "00ABCDEF1234FFFF")
 
 assert(bitInt8Writer()('a') == "a")
 
@@ -309,38 +415,38 @@ assert(
 assert(
   w = bitInt32Writer(Endianness.Little);
   p = bitInt32Parser(Endianness.Little);
-  w(13371337)             == string(char(201), char(7), char(204), char(0)) &&
-  p(w(0).string())        == 0                                              &&
-  p(w(1).string())        == 1                                              &&
-  p(w(-1).string())       == -1                                             &&
-  p(w(42).string())       == 42                                             &&
-  p(w(-42).string())      == -42                                            &&
-  p(w(1337).string())     == 1337                                           &&
-  p(w(-1337).string())    == -1337                                          &&
-  p(w(32_767).string())   == 32_767                                         &&
-  p(w(-32_768).string())  == -32_768                                        &&
-  p(w(100_000).string())  == 100_000                                        &&
-  p(w(-100_000).string()) == -100_000                                       &&
-  p(w(intMax()).string()) == intMax()                                       &&
-  p(w(intMin()).string()) == intMin())
+  w(13371337)                   == string(char(201), char(7), char(204), char(0)) &&
+  p(w(0).string())              == 0                                              &&
+  p(w(1).string())              == 1                                              &&
+  p(w(-1).string())             == -1                                             &&
+  p(w(42).string())             == 42                                             &&
+  p(w(-42).string())            == -42                                            &&
+  p(w(1337).string())           == 1337                                           &&
+  p(w(-1337).string())          == -1337                                          &&
+  p(w(32_767).string())         == 32_767                                         &&
+  p(w(-32_768).string())        == -32_768                                        &&
+  p(w(100_000).string())        == 100_000                                        &&
+  p(w(-100_000).string())       == -100_000                                       &&
+  p(w(maxVal{int}()).string())  == maxVal{int}()                                  &&
+  p(w(minVal{int}()).string())  == minVal{int}())
 
 assert(
   w = bitInt32Writer(Endianness.Big);
   p = bitInt32Parser(Endianness.Big);
-  w(13371337)             == string(char(0), char(204), char(7), char(201)) &&
-  p(w(0).string())        == 0                                              &&
-  p(w(1).string())        == 1                                              &&
-  p(w(-1).string())       == -1                                             &&
-  p(w(42).string())       == 42                                             &&
-  p(w(-42).string())      == -42                                            &&
-  p(w(1337).string())     == 1337                                           &&
-  p(w(-1337).string())    == -1337                                          &&
-  p(w(32_767).string())   == 32_767                                         &&
-  p(w(-32_768).string())  == -32_768                                        &&
-  p(w(100_000).string())  == 100_000                                        &&
-  p(w(-100_000).string()) == -100_000                                       &&
-  p(w(intMax()).string()) == intMax()                                       &&
-  p(w(intMin()).string()) == intMin())
+  w(13371337)                   == string(char(0), char(204), char(7), char(201)) &&
+  p(w(0).string())              == 0                                              &&
+  p(w(1).string())              == 1                                              &&
+  p(w(-1).string())             == -1                                             &&
+  p(w(42).string())             == 42                                             &&
+  p(w(-42).string())            == -42                                            &&
+  p(w(1337).string())           == 1337                                           &&
+  p(w(-1337).string())          == -1337                                          &&
+  p(w(32_767).string())         == 32_767                                         &&
+  p(w(-32_768).string())        == -32_768                                        &&
+  p(w(100_000).string())        == 100_000                                        &&
+  p(w(-100_000).string())       == -100_000                                       &&
+  p(w(maxVal{int}()).string())  == maxVal{int}()                                  &&
+  p(w(minVal{int}()).string())  == minVal{int}())
 
 assert(
   w = bitInt64Writer(Endianness.Little);
@@ -361,7 +467,7 @@ assert(
   p(w(2_147_483_647L).string())               == 2_147_483_647L                             &&
   p(w(-2_147_483_648L).string())              == -2_147_483_648L                            &&
   p(w(9_223_372_036_854_775_807L).string())   == 9_223_372_036_854_775_807L                 &&
-  p(w(longMin()).string())                    == longMin() )
+  p(w(minVal{long}()).string())               == minVal{long}() )
 
 assert(
   w = bitInt64Writer(Endianness.Big);
@@ -382,7 +488,7 @@ assert(
   p(w(2_147_483_647L).string())               == 2_147_483_647L                             &&
   p(w(-2_147_483_648L).string())              == -2_147_483_648L                            &&
   p(w(9_223_372_036_854_775_807L).string())   == 9_223_372_036_854_775_807L                 &&
-  p(w(longMin()).string())                    == longMin() )
+  p(w(minVal{long}()).string())               == minVal{long}() )
 
 // This test is left here for the first person running this on a BigEndian system, needs thorough
 // testing as none of this code has ever been run on a BigEndian system.

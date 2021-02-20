@@ -1,0 +1,89 @@
+
+// -- Operators
+
+fun <<(char x, int y)
+  char(int(x) << y)
+
+fun >>(char x, int y)
+  char(int(x) >> y)
+
+fun &(char x, char y)
+  char(int(x) & int(y))
+
+fun |(char x, char y)
+  char(int(x) | int(y))
+
+fun ~(char x)
+  char(~int(x))
+
+fun +(char x, char y)
+  char(int(x) + int(y))
+
+fun -(char x, char y)
+  char(int(x) - char(y))
+
+fun ==(char x, char y)
+  int(x) == int(y)
+
+fun !=(char x, char y)
+  int(x) != int(y)
+
+fun <(char x, char y)
+  int(x) < int(y)
+
+fun <=(char x, char y)
+  int(x) <= int(y)
+
+fun >(char x, char y)
+  int(x) > int(y)
+
+fun >=(char x, char y)
+  int(x) >= int(y)
+
+fun ++(char x)
+  char(int(x) + 1)
+
+fun --(char x)
+  char(int(x) - 1)
+
+// -- Tests
+
+assert((char(0b1) << 0) == char(0b1))
+assert((char(0b1) << 1) == char(0b10))
+assert((char(0b1) << 2) == char(0b100))
+assert((char(0b0101) << 2) == char(0b010100))
+assert((char(0b1) << 7) == char(0b1000_0000))
+
+assert((char(0b1) >> 0) == char(0b1))
+assert((char(0b10) >> 1) == char(0b1))
+assert((char(0b100) >> 2) == char(0b1))
+assert((char(0b0101) >> 1) == char(0b010))
+assert((char(0b1000_0000) >> 7) == char(0b1))
+
+assert((char(0b1) & char(0b0)) == char(0b0))
+assert((char(0b111) & char(0b101)) == char(0b101))
+assert((char(0b011) & char(0b101)) == char(0b001))
+
+assert((char(0b0) | char(0b0)) == char(0b0))
+assert((char(0b1) | char(0b0)) == char(0b1))
+assert((char(0b111) | char(0b101)) == char(0b111))
+assert((char(0b011) | char(0b001)) == char(0b011))
+
+assert(~char(0b0) == char(0xFF))
+assert(~char(0xFF) == char(0))
+assert(~char(0b1010_1010) == char(0b0101_0101))
+
+assert(char(42) + char(1) == char(43))
+assert(char(42) + char(255) == char(41))
+
+assert(char(42) - char(1) == char(41))
+assert(char(42) - char(255) == char(43))
+
+assert('a' == 'a')
+assert('a' != 'b')
+assert('a' < 'b')
+assert('b' > 'a')
+assert('a' <= 'a')
+assert('a' >= 'a')
+assert(++'a' == 'b')
+assert(--'b' == 'a')
