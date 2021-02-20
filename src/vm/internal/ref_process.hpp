@@ -24,6 +24,7 @@ enum class ProcessState : uint8_t {
 
 enum class ProcessSignalKind : uint8_t {
   Interupt = 0, // Request a process to interupt.
+  Kill     = 1, // Request a process to die.
 };
 
 #if defined(_WIN32)
@@ -45,7 +46,7 @@ template <typename... Handles>
 auto CloseHandle(Handles... handles) {
   (::CloseHandle(handles), ...);
 }
-#else  // !_WIN32
+#else // !_WIN32
 template <typename... Descriptors>
 auto close(Descriptors... descriptors) {
   (::close(descriptors), ...);
@@ -155,8 +156,7 @@ public:
     return -1;
   }
 
-  [[nodiscard]] auto sendSignal(PlatformError* pErr, ProcessSignalKind kind) const noexcept
-      -> bool {
+  [[nodiscard]] auto sendSignal(PlatformError* pErr, ProcessSignalKind kind) noexcept -> bool {
     switch (kind) {
     case ProcessSignalKind::Interupt:
 #if defined(_WIN32)
@@ -172,6 +172,12 @@ public:
         return false;
       }
 #endif
+      return true;
+    case ProcessSignalKind::Kill:
+      if (!killImpl()) {
+        *pErr = PlatformError::ProcessUnknownError;
+        return false;
+      }
       return true;
     }
     *pErr = PlatformError::ProcessInvalidSignal;
@@ -197,11 +203,11 @@ private:
       m_stdOut{stdOut},
       m_stdErr{stdErr} {}
 
-  auto killImpl() -> void {
+  auto killImpl() noexcept -> bool {
 #if defined(_WIN32)
-    TerminateProcess(m_process.hProcess, static_cast<UINT>(ProcessExitErr::InvalidProcess));
+    return TerminateProcess(m_process.hProcess, 9999); // TODO: Decide what exitcode to use here.
 #else // !_WIN32
-    ::killpg(m_process, SIGKILL);
+    return ::killpg(m_process, SIGKILL) == 0;
 #endif
   }
 
