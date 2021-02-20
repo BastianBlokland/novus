@@ -7,7 +7,8 @@ struct ProcessId  = long id
 struct ExitCode   = int code
 
 enum Signal =
-  Interupt : 0
+  Interupt  : 0,
+  Kill      : 1
 
 struct Process =
   string      cmdLine,
@@ -29,6 +30,7 @@ fun string(ProcessId p)
 
 fun string(Signal s)
   if s == Signal.Interupt -> "Interupt"
+  if s == Signal.Kill     -> "Kill"
   else                    -> "Unknown signal"
 
 fun string(ExitCode p)
@@ -70,6 +72,9 @@ act run(string cmdLine) -> Either{Process, Error}
 
 act sendInterupt(Process p) -> Option{Error}
   p.sendSignal(Signal.Interupt)
+
+act sendKill(Process p) -> Option{Error}
+  p.sendSignal(Signal.Kill)
 
 act sendSignal(Process p, Signal s) -> Option{Error}
   intrinsic{process_sendsignal}(p.handle, int(s))

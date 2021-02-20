@@ -27,7 +27,7 @@ act startTests()
     if getPlatform() == Platform.Windows  -> runPowerShell( "scripts/test.ps1", "-Dir"  :: "build")
     else                                  -> runBash(       "scripts/test.sh",  "--dir" :: "build")
   );
-  atInterupt(sendInterupt[process]);
+  atInterupt(sendKill[process]);
   TestRun(timeNow(), process)
 
 act printOutput(TestRun run)
