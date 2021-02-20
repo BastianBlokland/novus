@@ -36,6 +36,9 @@ public:
   [[nodiscard]] auto getRetType(const prog::sym::TypeSet& typeParams)
       -> std::optional<prog::sym::TypeId>;
 
+  [[nodiscard]] auto getArgumentTypes(const prog::sym::TypeSet& typeParams)
+      -> std::optional<prog::sym::TypeSet>;
+
   [[nodiscard]] auto inferTypeParams(const prog::sym::TypeSet& argTypes)
       -> std::optional<InferResult>;
 
@@ -67,7 +70,9 @@ private:
   [[nodiscard]] auto createSubTable(const prog::sym::TypeSet& typeParams) const
       -> TypeSubstitutionTable;
 
-  [[nodiscard]] auto getInputTypes(const prog::sym::TypeSet& argTypes)
+  // Given a set of argument types, try to infer the types of the remaining (optional) arguments.
+  // Returns the full set of arguments (including the given ones) or nullopt.
+  [[nodiscard]] auto inferOptArgs(const prog::sym::TypeSet& argTypes)
       -> std::optional<prog::sym::TypeSet>;
 };
 

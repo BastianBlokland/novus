@@ -78,13 +78,17 @@ auto FuncTemplateTable::getCallInfo(
     if (satisfiesOptions(funcTemplate, options) &&
         funcTemplate.getTypeParamCount() == typeParams.getCount()) {
 
-      const auto retType  = funcTemplate.getRetType(typeParams);
-      const auto isAction = funcTemplate.isAction();
+      auto argumentTypes = funcTemplate.getArgumentTypes(typeParams);
+      if (!argumentTypes) {
+        continue;
+      }
+      const auto retType = funcTemplate.getRetType(typeParams);
       if (!retType || retType->isInfer()) {
         continue;
       }
+      const auto isAction = funcTemplate.isAction();
       if (!result) {
-        result = {*retType, isAction};
+        result = {std::move(*argumentTypes), *retType, isAction};
       } else if (result->resultType != *retType || result->isAction != isAction) {
         return std::nullopt;
       }
@@ -100,13 +104,18 @@ auto FuncTemplateTable::inferParamsAndGetCallInfo(
   // Only return a value if all templates agree on the info.
   std::optional<CallInfo> result = std::nullopt;
   for (const auto& funcTemplAndParams : inferParams(name, argTypes, options)) {
-    const auto retType  = funcTemplAndParams.first->getRetType(funcTemplAndParams.second);
-    const auto isAction = funcTemplAndParams.first->isAction();
+
+    auto argumentTypes = funcTemplAndParams.first->getArgumentTypes(funcTemplAndParams.second);
+    if (!argumentTypes) {
+      continue;
+    }
+    const auto retType = funcTemplAndParams.first->getRetType(funcTemplAndParams.second);
     if (!retType || retType->isInfer()) {
       continue;
     }
+    const auto isAction = funcTemplAndParams.first->isAction();
     if (!result) {
-      result = {*retType, isAction};
+      result = {std::move(*argumentTypes), *retType, isAction};
     } else if (result->resultType != *retType || result->isAction != isAction) {
       return std::nullopt;
     }
