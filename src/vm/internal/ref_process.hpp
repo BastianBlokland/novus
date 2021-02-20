@@ -46,7 +46,7 @@ template <typename... Handles>
 auto CloseHandle(Handles... handles) {
   (::CloseHandle(handles), ...);
 }
-#else  // !_WIN32
+#else // !_WIN32
 template <typename... Descriptors>
 auto close(Descriptors... descriptors) {
   (::close(descriptors), ...);
@@ -205,7 +205,7 @@ private:
 
   auto killImpl() noexcept -> bool {
 #if defined(_WIN32)
-    return TerminateProcess(m_process.hProcess, static_cast<UINT>(ProcessExitErr::InvalidProcess));
+    return TerminateProcess(m_process.hProcess, 9999); // TODO: Decide what exitcode to use here.
 #else // !_WIN32
     return ::killpg(m_process, SIGKILL) == 0;
 #endif
