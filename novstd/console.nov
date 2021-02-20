@@ -92,17 +92,17 @@ act printErr{T}(T x, TtyStyle style) -> Option{Error}
     c.writeErr(styledWriter, x.string() + '\n')
   )
 
-act printBits(int i) -> Option{Error}
-  print(toBitString(i, false))
+act printBits{T}(T mask, bool includeLeadingZeroes = false) -> Option{Error}
+  print(toBitString(mask, includeLeadingZeroes))
 
-act printBits(float f) -> Option{Error}
-  print(toBitString(asInt(f), false))
+act printBits(float f, bool includeLeadingZeroes = false) -> Option{Error}
+  print(toBitString(asInt(f), includeLeadingZeroes))
 
-act printHex(int i) -> Option{Error}
-  print(toHexString(i))
+act printHex{T}(T mask, bool includeLeadingZeroes = false) -> Option{Error}
+  print(toHexString(mask, includeLeadingZeroes))
 
-act printHex(float f) -> Option{Error}
-  print(toHexString(asInt(f)))
+act printHex(float f, bool includeLeadingZeroes = false) -> Option{Error}
+  print(toHexString(asInt(f), includeLeadingZeroes))
 
 // -- Meta
 

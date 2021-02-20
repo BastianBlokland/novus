@@ -377,57 +377,6 @@ TEST_CASE("[backend] Generate assembly for call expressions", "backend") {
     });
   }
 
-  SECTION("Char operations") {
-    CHECK_EXPR("--'a'", [](novasm::Assembler* asmb) -> void {
-      asmb->addLoadLitInt('a');
-      asmb->addLoadLitInt(1);
-      asmb->addSubInt();
-      asmb->addConvIntChar();
-    });
-    CHECK_EXPR("++'a'", [](novasm::Assembler* asmb) -> void {
-      asmb->addLoadLitInt('a');
-      asmb->addLoadLitInt(1);
-      asmb->addAddInt();
-      asmb->addConvIntChar();
-    });
-  }
-
-  SECTION("Char checks") {
-    CHECK_EXPR("'1' == '3'", [](novasm::Assembler* asmb) -> void {
-      asmb->addLoadLitInt('1');
-      asmb->addLoadLitInt('3');
-      asmb->addCheckEqInt();
-    });
-    CHECK_EXPR("'1' != '3'", [](novasm::Assembler* asmb) -> void {
-      asmb->addLoadLitInt('1');
-      asmb->addLoadLitInt('3');
-      asmb->addCheckEqInt();
-      asmb->addLogicInvInt();
-    });
-    CHECK_EXPR("'1' < '3'", [](novasm::Assembler* asmb) -> void {
-      asmb->addLoadLitInt('1');
-      asmb->addLoadLitInt('3');
-      asmb->addCheckLeInt();
-    });
-    CHECK_EXPR("'1' <= '3'", [](novasm::Assembler* asmb) -> void {
-      asmb->addLoadLitInt('1');
-      asmb->addLoadLitInt('3');
-      asmb->addCheckGtInt();
-      asmb->addLogicInvInt();
-    });
-    CHECK_EXPR("'1' > '3'", [](novasm::Assembler* asmb) -> void {
-      asmb->addLoadLitInt('1');
-      asmb->addLoadLitInt('3');
-      asmb->addCheckGtInt();
-    });
-    CHECK_EXPR("'1' >= '3'", [](novasm::Assembler* asmb) -> void {
-      asmb->addLoadLitInt('1');
-      asmb->addLoadLitInt('3');
-      asmb->addCheckLeInt();
-      asmb->addLogicInvInt();
-    });
-  }
-
   SECTION("Bool operations") {
     CHECK_EXPR("!false", [](novasm::Assembler* asmb) -> void {
       asmb->addLoadLitInt(0);

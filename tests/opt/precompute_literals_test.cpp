@@ -208,22 +208,6 @@ TEST_CASE("[opt] Precompute literals", "opt") {
 
   SECTION("char intrinsics") {
     ASSERT_EXPR(precomputeLiterals, "string('h')", litStringNode(prog, "h"));
-    ASSERT_EXPR(precomputeLiterals, "++'a'", litCharNode(prog, 'b'));
-    ASSERT_EXPR(precomputeLiterals, "--'b'", litCharNode(prog, 'a'));
-    ASSERT_EXPR(precomputeLiterals, "'b' == 'c'", litBoolNode(prog, false));
-    ASSERT_EXPR(precomputeLiterals, "'b' == 'b'", litBoolNode(prog, true));
-    ASSERT_EXPR(precomputeLiterals, "'b' != 'c'", litBoolNode(prog, true));
-    ASSERT_EXPR(precomputeLiterals, "'b' != 'b'", litBoolNode(prog, false));
-    ASSERT_EXPR(precomputeLiterals, "'a' < 'b'", litBoolNode(prog, true));
-    ASSERT_EXPR(precomputeLiterals, "'b' < 'a'", litBoolNode(prog, false));
-    ASSERT_EXPR(precomputeLiterals, "'a' <= 'b'", litBoolNode(prog, true));
-    ASSERT_EXPR(precomputeLiterals, "'a' <= 'a'", litBoolNode(prog, true));
-    ASSERT_EXPR(precomputeLiterals, "'b' <= 'a'", litBoolNode(prog, false));
-    ASSERT_EXPR(precomputeLiterals, "'a' > 'b'", litBoolNode(prog, false));
-    ASSERT_EXPR(precomputeLiterals, "'b' > 'a'", litBoolNode(prog, true));
-    ASSERT_EXPR(precomputeLiterals, "'a' >= 'b'", litBoolNode(prog, false));
-    ASSERT_EXPR(precomputeLiterals, "'a' >= 'a'", litBoolNode(prog, true));
-    ASSERT_EXPR(precomputeLiterals, "'b' >= 'a'", litBoolNode(prog, true))
   }
 
   SECTION("string intrinsics") {

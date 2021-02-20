@@ -370,16 +370,6 @@ auto GenExpr::visit(const prog::expr::CallExprNode& n) -> void {
   case prog::sym::FuncKind::AppendChar:
     m_asmb->addAppendChar();
     break;
-  case prog::sym::FuncKind::IncrementChar:
-    m_asmb->addLoadLitInt(1);
-    m_asmb->addAddInt();
-    m_asmb->addConvIntChar();
-    break;
-  case prog::sym::FuncKind::DecrementChar:
-    m_asmb->addLoadLitInt(1);
-    m_asmb->addSubInt();
-    m_asmb->addConvIntChar();
-    break;
 
   case prog::sym::FuncKind::ConvIntLong:
   case prog::sym::FuncKind::ConvCharLong:

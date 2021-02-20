@@ -201,26 +201,6 @@ Program::Program() :
       sym::TypeSet{m_string, m_int, m_int},
       m_string);
 
-  // Register build-in unary char operators.
-  m_funcDecls.registerFunc(
-      *this, Fk::IncrementChar, getFuncName(Op::PlusPlus), sym::TypeSet{m_char}, m_char);
-  m_funcDecls.registerFunc(
-      *this, Fk::DecrementChar, getFuncName(Op::MinusMinus), sym::TypeSet{m_char}, m_char);
-
-  // Register build-in binary char operators.
-  m_funcDecls.registerFunc(
-      *this, Fk::CheckEqInt, getFuncName(Op::EqEq), sym::TypeSet{m_char, m_char}, m_bool);
-  m_funcDecls.registerFunc(
-      *this, Fk::CheckNEqInt, getFuncName(Op::BangEq), sym::TypeSet{m_char, m_char}, m_bool);
-  m_funcDecls.registerFunc(
-      *this, Fk::CheckLeInt, getFuncName(Op::Le), sym::TypeSet{m_char, m_char}, m_bool);
-  m_funcDecls.registerFunc(
-      *this, Fk::CheckLeEqInt, getFuncName(Op::LeEq), sym::TypeSet{m_char, m_char}, m_bool);
-  m_funcDecls.registerFunc(
-      *this, Fk::CheckGtInt, getFuncName(Op::Gt), sym::TypeSet{m_char, m_char}, m_bool);
-  m_funcDecls.registerFunc(
-      *this, Fk::CheckGtEqInt, getFuncName(Op::GtEq), sym::TypeSet{m_char, m_char}, m_bool);
-
   // Register build-in default constructors.
   m_funcDecls.registerFunc(*this, Fk::DefInt, "int", sym::TypeSet{}, m_int);
   m_funcDecls.registerFunc(*this, Fk::DefLong, "long", sym::TypeSet{}, m_long);
