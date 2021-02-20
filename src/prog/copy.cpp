@@ -73,7 +73,12 @@ auto copyFunc(
     modified = rewriter && rewriter->hasModified();
 
     toDefTable.registerFunc(
-        toDeclTable, id, std::move(consts), std::move(newBody), std::move(optInputInitializers));
+        toDeclTable,
+        id,
+        std::move(consts),
+        std::move(newBody),
+        std::move(optInputInitializers),
+        fromDef.getFlags());
   }
   return true;
 }

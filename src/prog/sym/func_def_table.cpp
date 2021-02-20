@@ -21,7 +21,8 @@ auto FuncDefTable::registerFunc(
     sym::FuncId id,
     sym::ConstDeclTable consts,
     expr::NodePtr body,
-    std::vector<expr::NodePtr> optArgInitializers) -> void {
+    std::vector<expr::NodePtr> optArgInitializers,
+    FuncDef::Flags flags) -> void {
 
   if (body == nullptr) {
     throw std::invalid_argument{"Function body expresion cannot be null"};
@@ -50,7 +51,7 @@ auto FuncDefTable::registerFunc(
     throw std::logic_error{"Function already has a definition registered"};
   }
   m_funcDefs.insert(
-      {id, FuncDef{id, std::move(consts), std::move(body), std::move(optArgInitializers)}});
+      {id, FuncDef{id, std::move(consts), std::move(body), std::move(optArgInitializers), flags}});
   m_funcs.insert(id);
 }
 

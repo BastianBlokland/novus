@@ -177,7 +177,8 @@ public:
       sym::FuncId id,
       sym::ConstDeclTable consts,
       expr::NodePtr body,
-      std::vector<expr::NodePtr> optArgInitializers) -> void;
+      std::vector<expr::NodePtr> optArgInitializers,
+      sym::FuncDef::Flags flags = sym::FuncDef::Flags::None) -> void;
 
   auto addExecStmt(sym::ConstDeclTable consts, expr::NodePtr expr) -> void;
 

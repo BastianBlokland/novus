@@ -32,7 +32,8 @@ public:
       sym::FuncId id,
       sym::ConstDeclTable consts,
       expr::NodePtr body,
-      std::vector<expr::NodePtr> optArgInitializers) -> void;
+      std::vector<expr::NodePtr> optArgInitializers,
+      FuncDef::Flags flags) -> void;
 
 private:
   std::unordered_map<FuncId, FuncDef, FuncIdHasher> m_funcDefs;

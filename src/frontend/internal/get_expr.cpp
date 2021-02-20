@@ -136,8 +136,11 @@ auto GetExpr::visit(const parse::AnonFuncExprNode& n) -> void {
       : m_ctx->getProg()->declarePureFunc(
             nameoss.str(), prog::sym::TypeSet{inputTypes}, *retType, 0u);
 
+  const auto funcDefFlags =
+      n.isNoinline() ? prog::sym::FuncDef::Flags::NoInline : prog::sym::FuncDef::Flags::None;
+
   // Define the function in the program.
-  m_ctx->getProg()->defineFunc(funcId, std::move(consts), std::move(expr), {});
+  m_ctx->getProg()->defineFunc(funcId, std::move(consts), std::move(expr), {}, funcDefFlags);
 
   // Either create a function literal or a closure, depending on if the anonymous func binds any
   // consts from the parent.

@@ -123,9 +123,12 @@ auto defineFunc(
     return false;
   }
 
+  const auto funcDefFlags =
+      n.isNoinline() ? prog::sym::FuncDef::Flags::NoInline : prog::sym::FuncDef::Flags::None;
+
   if (bodyExpr->getType() == funcRetType) {
     ctx->getProg()->defineFunc(
-        id, std::move(consts), std::move(bodyExpr), std::move(optInputInitializers));
+        id, std::move(consts), std::move(bodyExpr), std::move(optInputInitializers), funcDefFlags);
     return true;
   }
 
@@ -137,7 +140,8 @@ auto defineFunc(
         id,
         std::move(consts),
         prog::expr::callExprNode(*ctx->getProg(), *conv, std::move(convArgs)),
-        std::move(optInputInitializers));
+        std::move(optInputInitializers),
+        funcDefFlags);
     return true;
   }
 
