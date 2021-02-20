@@ -19,6 +19,7 @@ TEST_CASE("[lex] Lexing keywords", "lex") {
   CHECK_TOKENS("else", keywordToken(Keyword::Else));
   CHECK_TOKENS("is", keywordToken(Keyword::Is));
   CHECK_TOKENS("as", keywordToken(Keyword::As));
+  CHECK_TOKENS("noinline", keywordToken(Keyword::Noinline));
 }
 
 } // namespace lex
