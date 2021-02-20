@@ -18,6 +18,7 @@ coverage:
       default:
         target: 70%
         threshold: 10%
+        informational: true
     project:
       default:
         target: 70%
