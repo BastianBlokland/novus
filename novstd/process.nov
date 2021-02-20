@@ -1,4 +1,5 @@
 import "std/console.nov"
+import "std/future.nov"
 import "std/list.nov"
 
 // -- Types
@@ -73,9 +74,6 @@ act run(string cmdLine) -> Either{Process, Error}
 act sendInterupt(Process p) -> Option{Error}
   p.sendSignal(Signal.Interupt)
 
-act sendKill(Process p) -> Option{Error}
-  p.sendSignal(Signal.Kill)
-
 act sendSignal(Process p, Signal s) -> Option{Error}
   intrinsic{process_sendsignal}(p.handle, int(s))
     ? None()
@@ -97,6 +95,15 @@ act wait(Process p) -> Either{ProcessResult, Error}
 
 act waitAsync(Process p) -> future{Either{ProcessResult, Error}}
   fork p.wait()
+
+act shutdown(Process p) -> Either{ProcessResult, Error}
+  result = p.waitAsync();
+  if p.sendSignal(Signal.Interupt) as Error interuptErr -> interuptErr
+  else ->
+  if result.get(seconds(1)) as Either{ProcessResult, Error} processRes -> processRes
+  else ->
+  if p.sendSignal(Signal.Kill) as Error killErr -> killErr
+  else -> result.get()
 
 // -- Tests
 
