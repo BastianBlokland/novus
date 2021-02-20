@@ -466,6 +466,41 @@ TEST_CASE("[vm] Execute process platform-calls", "vm") {
         "",
         "Received interupt\n");
   }
+
+  SECTION("Kill signal can be send to process") {
+    CHECK_PROG(
+        [&](novasm::Assembler* asmb) -> void {
+          asmb->label("entry");
+          asmb->setEntrypoint("entry");
+
+          // Run a program that runs an infinite loop.
+          asmb->addLoadLitString(
+              novePath + " 'invoke(impure lambda() -> bool sleep(millisecond()); self())'");
+          asmb->addPCall(novasm::PCallCode::ProcessStart);
+          asmb->addDup(); // Duplicate the process.
+          asmb->addDup(); // Duplicate the process.
+
+          // Wait a few seconds to give the process time to start.
+          asmb->addLoadLitLong(3'000'000'000);
+          asmb->addPCall(novasm::PCallCode::SleepNano);
+          asmb->addPop(); // Ignore sleep return value.
+
+          // Send a kill signal to the process.
+          asmb->addLoadLitInt(1); // Signal 1: kill.
+          asmb->addPCall(novasm::PCallCode::ProcessSendSignal);
+          asmb->addLoadLitString("Failed to send signal");
+          asmb->addPCall(novasm::PCallCode::Assert);
+          asmb->addPop(); // Ignore the assert return value.
+
+          // Wait for the child process to finnish.
+          asmb->addPCall(novasm::PCallCode::ProcessBlock);
+          asmb->addPop(); // Ignore the exit code.
+
+          asmb->addRet();
+        },
+        "",
+        "");
+  }
 }
 
 } // namespace vm
