@@ -1,5 +1,5 @@
 // --- Example of a simple http server.
-// Demo: http://bastian.tech/novus-webserver
+// Demo: https://www.bastian.tech/novus-webserver
 
 import "std.nov"
 import "http_content-type.nov"

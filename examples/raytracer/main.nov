@@ -1,5 +1,5 @@
 // --- Example of a software raytracer.
-// Output: https://bastian.tech/media/novus_raytracer.png
+// Output: https://www.bastian.tech/media/novus_raytracer.png
 
 import "std.nov"
 import "scene.nov"
