@@ -47,6 +47,9 @@ auto isUserFunc(const prog::Program& prog, prog::sym::FuncId funcId) -> bool;
 
 auto isRecursive(const prog::Program& prog, prog::sym::FuncId funcId) -> bool;
 
+auto hasFuncDefFlags(
+    const prog::Program& prog, prog::sym::FuncId funcId, prog::sym::FuncDef::Flags flags) -> bool;
+
 auto hasSideEffect(const prog::Program& prog, const prog::expr::Node& expr) -> bool;
 
 auto isLiteral(const prog::expr::Node& expr) -> bool;

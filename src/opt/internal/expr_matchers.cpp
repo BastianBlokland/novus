@@ -35,6 +35,15 @@ auto isRecursive(const prog::Program& prog, prog::sym::FuncId funcId) -> bool {
   return calledFuncs.find(funcId) != calledFuncs.end();
 }
 
+auto hasFuncDefFlags(
+    const prog::Program& prog, prog::sym::FuncId funcId, prog::sym::FuncDef::Flags flags) -> bool {
+  const auto& funcDecl = prog.getFuncDecl(funcId);
+  if (funcDecl.getKind() != prog::sym::FuncKind::User) {
+    return false;
+  }
+  return prog.getFuncDef(funcId).hasFlags(flags);
+}
+
 auto hasSideEffect(const prog::Program& prog, const prog::expr::Node& expr) -> bool {
   auto matcher = ExprMatcher{[&prog](const prog::expr::Node& n) {
     switch (n.getKind()) {

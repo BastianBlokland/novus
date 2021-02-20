@@ -73,6 +73,10 @@ auto CallInlineRewriter::isInlinable(const prog::expr::CallExprNode* callExpr) -
     return false;
   }
 
+  if (internal::hasFuncDefFlags(m_prog, funcId, prog::sym::FuncDef::Flags::NoInline)) {
+    return false;
+  }
+
   // Recursive functions are not inlined.
   if (internal::isRecursive(m_prog, funcId)) {
     return false;
