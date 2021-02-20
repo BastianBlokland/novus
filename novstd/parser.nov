@@ -341,13 +341,13 @@ fun txtLongParser()
 
 fun txtPosIntParser()
    txtPosLongParser().map(lambda (long l) -> Either{int, Error}
-    l > intMax() ? Error("Integer too big") : int(l)
+    l > maxVal{int}() ? Error("Integer too big") : int(l)
   )
 
 fun txtIntParser()
   txtLongParser().map(lambda (long l) -> Either{int, Error}
-    if l > intMax() -> Error("Integer too big")
-    if l < intMin() -> Error("Integer too small")
+    if l > maxVal{int}() -> Error("Integer too big")
+    if l < minVal{int}() -> Error("Integer too small")
     else            -> int(l)
   )
 
@@ -617,9 +617,9 @@ assert(
   p(" ") is ParseFailure)
 
 assert(
-  txtPosIntParser()("1")                == 1 &&
-  txtPosIntParser()("1337")             == 1337 &&
-  txtPosIntParser()(intMax().string())  == intMax())
+  txtPosIntParser()("1")                    == 1 &&
+  txtPosIntParser()("1337")                 == 1337 &&
+  txtPosIntParser()(maxVal{int}().string()) == maxVal{int}())
 
 assert(
   txtPosIntParser()("-1")         is ParseFailure &&
@@ -634,13 +634,13 @@ assert(
   txtIntParser()(" 123")     is ParseFailure)
 
 assert(
-  txtIntParser()("1")                == 1 &&
-  txtIntParser()("-1")               == -1 &&
-  txtIntParser()("+1")               == 1 &&
-  txtIntParser()("1337")             == 1337 &&
-  txtIntParser()("+0200")            == 200 &&
-  txtIntParser()(intMax().string())  == intMax() &&
-  txtIntParser()(intMin().string())  == intMin())
+  txtIntParser()("1")                     == 1 &&
+  txtIntParser()("-1")                    == -1 &&
+  txtIntParser()("+1")                    == 1 &&
+  txtIntParser()("1337")                  == 1337 &&
+  txtIntParser()("+0200")                 == 200 &&
+  txtIntParser()(maxVal{int}().string())  == maxVal{int}() &&
+  txtIntParser()(minVal{int}().string())  == minVal{int}())
 
 assert(
   txtIntParser()("")            is ParseFailure &&
@@ -652,8 +652,8 @@ assert(
 assert(
   txtPosLongParser()("1")                   == 1L &&
   txtPosLongParser()("1337")                == 1337L &&
-  txtPosLongParser()(intMax().string())     == long(intMax()) &&
-  txtPosLongParser()(longMax().string())    == longMax() &&
+  txtPosLongParser()(maxVal{int}().string())     == long(maxVal{int}()) &&
+  txtPosLongParser()(maxVal{long}().string())    == maxVal{long}() &&
   txtPosLongParser()("7223372036854775807") == 7223372036854775807L &&
   txtPosLongParser()("9223372036854775808") == -9223372036854775807L - 1L)
 
@@ -663,10 +663,10 @@ assert(
   txtPosLongParser()("a")  is ParseFailure)
 
 assert(
-  txtLongParser()("1")                == 1L &&
-  txtLongParser()("-1")               == -1L &&
-  txtLongParser()("+1")               == 1L &&
-  txtLongParser()(longMax().string()) == longMax())
+  txtLongParser()("1")                      == 1L &&
+  txtLongParser()("-1")                     == -1L &&
+  txtLongParser()("+1")                     == 1L &&
+  txtLongParser()(maxVal{long}().string())  == maxVal{long}())
 
 assert(
   txtHexParser()("0")         == 0x0 &&
@@ -684,7 +684,7 @@ assert(
 
 assert(
   inputs  = rangeList(0, 1337);
-  hexStrs = inputs.map(toHexString);
+  hexStrs = inputs.map(lambda (int i) toHexString(i));
   parser  = txtHexParser();
   listEqual(hexStrs.map(lambda (string str) parser(str) ?? -1), inputs))
 

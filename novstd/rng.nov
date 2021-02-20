@@ -34,7 +34,7 @@ fun rngNext(Rng r)
   x2  = x1   ^ (x1 << 1);
   x3  = x2   ^ (r.a ^ (r.a << 4));
   cnt = r.cnt + 362437;
-  val = abs(x3 + cnt) / (float(intMax()) + 1.0);
+  val = abs(x3 + cnt) / (float(maxVal{int}()) + 1.0);
   RngResult(Rng(x3, r.a, r.b, r.c, cnt), val)
 
 fun rngNext{T}(RngResult{T} r)
@@ -81,7 +81,7 @@ fun rngElem{T}(Rng r, List{T} l)
 // -- Impure utlities
 
 act rngInit()
-  rngInit(int(intrinsic{clock_nanosteady}() % intMax()))
+  rngInit(int(intrinsic{clock_nanosteady}() % maxVal{int}()))
 
 // -- Tests
 

@@ -94,14 +94,14 @@ act tcpServer(TcpServerSettings settings) -> Either{TcpServerState, Error}
 
 assert(
   clientHandler = (impure lambda (TcpConnection c, TcpServerState state) Option{Error}());
-  tcpServer(TcpServerSettings(clientHandler, -1,        IpFamily.V4, 64))       is Error  &&
-  tcpServer(TcpServerSettings(clientHandler, 65536,     IpFamily.V4, 64))       is Error  &&
-  tcpServer(TcpServerSettings(clientHandler, intMax(),  IpFamily.V4, 64))       is Error  &&
-  tcpServer(TcpServerSettings(clientHandler, 5000,      IpFamily.V4, intMax())) is Error  &&
-  tcpServer(TcpServerSettings(clientHandler, -1,        IpFamily.V6, 64))       is Error  &&
-  tcpServer(TcpServerSettings(clientHandler, 65536,     IpFamily.V6, 64))       is Error  &&
-  tcpServer(TcpServerSettings(clientHandler, intMax(),  IpFamily.V6, 64))       is Error  &&
-  tcpServer(TcpServerSettings(clientHandler, 5010,      IpFamily.V6, intMax())) is Error
+  tcpServer(TcpServerSettings(clientHandler, -1,            IpFamily.V4, 64))             is Error  &&
+  tcpServer(TcpServerSettings(clientHandler, 65536,         IpFamily.V4, 64))             is Error  &&
+  tcpServer(TcpServerSettings(clientHandler, maxVal{int}(), IpFamily.V4, 64))             is Error  &&
+  tcpServer(TcpServerSettings(clientHandler, 5000,          IpFamily.V4, maxVal{int}()))  is Error  &&
+  tcpServer(TcpServerSettings(clientHandler, -1,            IpFamily.V6, 64))             is Error  &&
+  tcpServer(TcpServerSettings(clientHandler, 65536,         IpFamily.V6, 64))             is Error  &&
+  tcpServer(TcpServerSettings(clientHandler, maxVal{int}(), IpFamily.V6, 64))             is Error  &&
+  tcpServer(TcpServerSettings(clientHandler, 5010,          IpFamily.V6, maxVal{int}()))  is Error
 )
 
 assert(

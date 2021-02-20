@@ -110,8 +110,6 @@ auto isPrecomputableIntrinsic(prog::sym::FuncKind funcKind) -> bool {
   case prog::sym::FuncKind::ConvBoolString:
 
   // Char
-  case prog::sym::FuncKind::IncrementChar:
-  case prog::sym::FuncKind::DecrementChar:
   case prog::sym::FuncKind::ConvCharString:
 
   // String
@@ -510,14 +508,6 @@ auto isPrecomputableIntrinsic(prog::sym::FuncKind funcKind) -> bool {
   }
 
   // Char
-  case prog::sym::FuncKind::IncrementChar: {
-    assert(args.size() == 1);
-    return prog::expr::litCharNode(prog, static_cast<uint8_t>(getChar(*args[0]) + 1));
-  }
-  case prog::sym::FuncKind::DecrementChar: {
-    assert(args.size() == 1);
-    return prog::expr::litCharNode(prog, static_cast<uint8_t>(getChar(*args[0]) - 1));
-  }
   case prog::sym::FuncKind::ConvCharString: {
     assert(args.size() == 1);
     auto c = getChar(*args[0]);
