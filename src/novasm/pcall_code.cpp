@@ -70,6 +70,9 @@ auto operator<<(std::ostream& out, const PCallCode& rhs) noexcept -> std::ostrea
     out << "console-open-stream";
     break;
 
+  case PCallCode::IsTerm:
+    out << "is-term";
+    break;
   case PCallCode::TermSetOptions:
     out << "term-set-options";
     break;

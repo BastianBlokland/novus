@@ -564,6 +564,9 @@ auto GenExpr::visit(const prog::expr::CallExprNode& n) -> void {
     m_asmb->addPCall(novasm::PCallCode::ConsoleOpenStream);
     break;
 
+  case prog::sym::FuncKind::ActionIsTerm:
+    m_asmb->addPCall(novasm::PCallCode::IsTerm);
+    break;
   case prog::sym::FuncKind::ActionTermSetOptions:
     m_asmb->addPCall(novasm::PCallCode::TermSetOptions);
     break;
@@ -820,7 +823,7 @@ auto GenExpr::visit(const prog::expr::UnionGetExprNode& n) -> void {
   m_asmb->label(endLabel);
 }
 
-auto GenExpr::visit(const prog::expr::FailNode & /*unused*/) -> void { m_asmb->addFail(); }
+auto GenExpr::visit(const prog::expr::FailNode& /*unused*/) -> void { m_asmb->addFail(); }
 
 auto GenExpr::visit(const prog::expr::LitBoolNode& n) -> void {
   m_asmb->addLoadLitInt(n.getVal() ? 1U : 0U);

@@ -342,6 +342,8 @@ Program::Program() :
       *this, Fk::ActionConsoleOpenStream, "console_openstream", sym::TypeSet{m_int}, m_stream);
 
   m_funcDecls.registerIntrinsicAction(
+      *this, Fk::ActionIsTerm, "is_term", sym::TypeSet{m_stream}, m_bool);
+  m_funcDecls.registerIntrinsicAction(
       *this, Fk::ActionTermSetOptions, "term_setoptions", sym::TypeSet{m_stream, m_int}, m_bool);
   m_funcDecls.registerIntrinsicAction(
       *this,

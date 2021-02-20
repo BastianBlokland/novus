@@ -108,6 +108,7 @@ act getSettings()
 
 act main()
   c = consoleOpen().failOnError();
+  c.failIfNotTerm();
   setupTerminal(c).failOnError();
   res = loop(c, getSettings());
   resetTerminal(c).failOnError();

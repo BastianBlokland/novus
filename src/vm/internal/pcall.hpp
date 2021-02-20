@@ -232,6 +232,10 @@ auto inline pcall(
     auto kind = static_cast<ConsoleStreamKind>(POP_INT());
     PUSH_REF(openConsoleStream(iface, refAlloc, pErr, kind));
   } break;
+  case PCallCode::IsTerm: {
+    auto stream = POP();
+    PUSH_BOOL(getIsTerm(pErr, stream));
+  } break;
 
   case PCallCode::TermSetOptions: {
     auto options = POP_INT();

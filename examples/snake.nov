@@ -289,6 +289,7 @@ fun setCursorWriter() -> Writer{I2}
 
 act main()
   c = consoleOpen().failOnError();
+  c.failIfNotTerm();
   setupTerminal(c).failOnError();
   res = loop(c, initState(c));
   resetTerminal(c).failOnError();

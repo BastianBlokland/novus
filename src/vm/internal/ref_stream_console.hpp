@@ -153,6 +153,14 @@ public:
     return false;
   }
 
+  [[nodiscard]] auto isTerminal() const noexcept -> bool {
+#if defined(_WIN32)
+    return GetFileType(m_consoleHandle) == FILE_TYPE_CHAR;
+#else // !_WIN32
+    return isatty(m_consoleHandle) == 1;
+#endif
+  }
+
   [[nodiscard]] auto getTermWidth(PlatformError* pErr) const noexcept -> int32_t {
     if (!isTerminal()) {
       *pErr = PlatformError::ConsoleNoTerminal;
@@ -288,16 +296,7 @@ private:
 
   inline explicit ConsoleStreamRef(FileHandle con, ConsoleStreamKind kind) noexcept :
       Ref{getKind()}, m_consoleHandle{con}, m_kind{kind} {}
-
-  [[nodiscard]] auto isTerminal() const noexcept -> bool {
-#if defined(_WIN32)
-    return GetFileType(m_consoleHandle) == FILE_TYPE_CHAR;
-#else // !_WIN32
-    return isatty(m_consoleHandle) == 1;
-#endif
-  }
 };
-
 inline auto openConsoleStream(
     PlatformInterface* iface, RefAllocator* alloc, PlatformError* pErr, ConsoleStreamKind kind)
     -> ConsoleStreamRef* {
@@ -324,15 +323,20 @@ inline auto openConsoleStream(
 inline auto getConsoleStream(PlatformError* pErr, Value stream) noexcept -> ConsoleStreamRef* {
   auto* streamRef = stream.getRef();
   if (streamRef->getKind() != RefKind::StreamConsole) {
-    *pErr = PlatformError::ConsoleNoTerminal;
+    *pErr = PlatformError::ConsoleUnknownError;
     return nullptr;
   }
   auto* consoleStreamRef = static_cast<ConsoleStreamRef*>(streamRef);
   if (!consoleStreamRef->isValid()) {
-    *pErr = PlatformError::ConsoleNoTerminal;
+    *pErr = PlatformError::ConsoleUnknownError;
     return nullptr;
   }
   return consoleStreamRef;
+}
+
+inline auto getIsTerm(PlatformError* pErr, Value stream) noexcept -> bool {
+  auto* consoleStreamRef = getConsoleStream(pErr, stream);
+  return consoleStreamRef && consoleStreamRef->isTerminal();
 }
 
 inline auto termGetWidth(PlatformError* pErr, Value stream) noexcept -> int32_t {

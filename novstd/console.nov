@@ -106,6 +106,9 @@ act printHex(float f) -> Option{Error}
 
 // -- Meta
 
+act isTerm(Console c) -> bool
+  intrinsic{is_term}(c.stdIn) && intrinsic{is_term}(c.stdOut)
+
 act setNoBlockInput(Console c) -> Option{Error}
   c.stdIn.setOptions(StreamOptions.NoBlock)
 
@@ -129,3 +132,6 @@ act termUnsetOptions(Console c, TerminalOptions opts) -> Option{Error}
   intrinsic{term_unsetoptions}(c.stdIn, int(opts))
     ? None()
     : getPlatformError("Failed to unset terminal options: " + opts.string())
+
+act failIfNotTerm(Console c) -> None
+  c.isTerm() ? None() : fail{None}("This application requires an interactive terminal")
