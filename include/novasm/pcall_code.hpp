@@ -36,10 +36,11 @@ enum class PCallCode : uint8_t {
 
   ConsoleOpenStream = 50, // (int) -> (stream)  Get a stream to stdin, stdout or stderr.
 
-  TermSetOptions   = 60, // (int, stream) -> (int)  Set terminal control options, returns success.
-  TermUnsetOptions = 61, // (int, stream) -> (int)  Unset terminal control options, returns success.
-  TermGetWidth     = 62, // (stream)      -> (int)  Get the width (num columns) of the terminal.
-  TermGetHeight    = 63, // (stream)      -> (int)  Get the height (num rows) of the terminal.
+  IsTerm           = 60, // (stream)      -> (int)  Check if the given stream is a terminal.
+  TermSetOptions   = 61, // (int, stream) -> (int)  Set terminal control options, returns success.
+  TermUnsetOptions = 62, // (int, stream) -> (int)  Unset terminal control options, returns success.
+  TermGetWidth     = 63, // (stream)      -> (int)  Get the width (num columns) of the terminal.
+  TermGetHeight    = 64, // (stream)      -> (int)  Get the height (num rows) of the terminal.
 
   EnvGetArg        = 70, // (int)     -> (string) Get an environment argument by index.
   EnvGetArgCount   = 71, // ()        -> (int)    Get the amount of environment arguments provided.

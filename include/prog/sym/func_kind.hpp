@@ -148,6 +148,7 @@ enum class FuncKind {
 
   ActionConsoleOpenStream, // Open a console stream.
 
+  ActionIsTerm,           // Check if the given stream is a terminal.
   ActionTermSetOptions,   // Set options for the terminal device.
   ActionTermUnsetOptions, // Unset option for the terminal device.
   ActionTermGetWidth,     // Get the width of the terminal device.
