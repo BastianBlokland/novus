@@ -155,12 +155,15 @@
     "function_declaration": {
       "patterns": [
         {
-          "begin": "\\b(fun|act)\\s+(.+?)\\s*(?=\\{|\\()",
+          "begin": "\\b(fun|act)\\s+(noinline)?\\s*(.+?)\\s*(?=\\{|\\()",
           "beginCaptures": {
             "1": {
               "name": "keyword.other.function.source.novus"
             },
             "2": {
+              "name": "keyword.other.noinline.source.novus"
+            },
+            "3": {
               "name": "entity.name.function.source.novus"
             }
           },
@@ -236,7 +239,7 @@
     "lambda_declaration": {
       "patterns": [
         {
-          "begin": "\\s*\\b(impure\\s+)?(lambda)\\s*\\(",
+          "begin": "\\s*\\b(impure)?\\s*(lambda)\\s*\\(",
           "beginCaptures": {
             "1": {
               "name": "keyword.other.impure.source.novus"
