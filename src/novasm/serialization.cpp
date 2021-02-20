@@ -7,6 +7,17 @@
 
 namespace novasm {
 
+/* Add a shebang line to instruct operating systems that support it to execute this file with the
+ * 'novrt' runtime executable. This is just an optional feature and does not hinder systems that do
+ * not support it.
+ *
+ * NOTE: To avoid hardcoding the absolute path of novrt we use '/usr/bin/env' to lookup the
+ * executable. This is not fully portable but works across many posix systems.
+ *
+ * More info: https://en.wikipedia.org/wiki/Shebang_(Unix)
+ */
+static const std::string g_shebangLine = "#!/usr/bin/env novrt\n";
+
 template <typename ValueType, typename OutputItr>
 using Writer = void(const ValueType& val, OutputItr& outItr);
 
@@ -159,8 +170,17 @@ static auto readSet(InputItr& itr, InputEndItr end, Reader<ElemType, InputItr, I
   return result;
 }
 
+template <typename InputItr, typename InputEndItr>
+static auto skipLine(InputItr& itr, InputEndItr end) {
+  while (itr != end && *itr++ != '\n')
+    ;
+}
+
 template <typename OutputItr>
 auto serialize(const Assembly& assembly, OutputItr outItr) noexcept -> OutputItr {
+
+  // Shebang line.
+  writeRaw(g_shebangLine.begin(), g_shebangLine.end(), outItr);
 
   // Format version number.
   writeUInt16(assemblyFormatVersion, outItr);
@@ -184,6 +204,9 @@ auto serialize(const Assembly& assembly, OutputItr outItr) noexcept -> OutputItr
 
 template <typename InputItrBegin, typename InputEndItr>
 auto deserialize(InputItrBegin itr, InputEndItr end) noexcept -> std::optional<Assembly> {
+
+  // Shebang line.
+  skipLine(itr, end);
 
   // Format version number.
   auto formatVersionNum = readUInt16(itr, end);
@@ -226,10 +249,11 @@ auto deserialize(InputItrBegin itr, InputEndItr end) noexcept -> std::optional<A
     return std::nullopt;
   }
 
-  return Assembly{std::move(*compilerVersion),
-                  *entryPoint,
-                  std::move(*stringLiterals),
-                  std::move(instructions)};
+  return Assembly{
+      std::move(*compilerVersion),
+      *entryPoint,
+      std::move(*stringLiterals),
+      std::move(instructions)};
 }
 
 // Explicit instantiations.
