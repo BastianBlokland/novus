@@ -106,7 +106,7 @@ enum Month =
   November,
   December
 
-fun string(Month m, bool short = false)
+fun noinline string(Month m, bool short = false)
   if m == Month.January   -> short ? "Jan" : "January"
   if m == Month.February  -> short ? "Feb" : "February"
   if m == Month.March     -> short ? "Mar" : "March"
@@ -139,7 +139,7 @@ fun WeekDay(Date e)
 fun WeekDay(DateTime dt)
   WeekDay((dt.daysSinceEpoch() + WeekDay.Thursday) % 7)
 
-fun string(WeekDay d, bool short = false)
+fun noinline string(WeekDay d, bool short = false)
   if d ==  WeekDay.Sunday     -> short ? "Sun"  : "Sunday"
   if d ==  WeekDay.Monday     -> short ? "Mon"  : "Monday"
   if d ==  WeekDay.Tuesday    -> short ? "Tue"  : "Tuesday"
@@ -216,7 +216,7 @@ fun days(Duration d)          d.ns / day().ns
 fun weeks(Duration d)         d.ns / week().ns
 
 // Create a human readable representation.
-fun string(Duration d)
+fun noinline string(Duration d)
   if d.ns < 0L  -> "-" + absDuration(d).string()
   else          ->
     if d < microsecond()  ->  d.nanoseconds().string()    + "ns"
