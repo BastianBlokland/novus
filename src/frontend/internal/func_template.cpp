@@ -91,10 +91,16 @@ auto FuncTemplate::getRetType(const prog::sym::TypeSet& typeParams)
   return retType->isConcrete() ? std::optional{*retType} : std::nullopt;
 }
 
+auto FuncTemplate::getArgumentTypes(const prog::sym::TypeSet& typeParams)
+    -> std::optional<prog::sym::TypeSet> {
+  const auto subTable = createSubTable(typeParams);
+  return getFuncInput(m_ctx, &subTable, *m_parseNode);
+}
+
 auto FuncTemplate::inferTypeParams(const prog::sym::TypeSet& argTypes)
     -> std::optional<InferResult> {
 
-  auto inputTypes = getInputTypes(argTypes);
+  auto inputTypes = inferOptArgs(argTypes);
   if (!inputTypes) {
     return std::nullopt;
   }
@@ -255,7 +261,7 @@ auto FuncTemplate::createSubTable(const prog::sym::TypeSet& typeParams) const
   return subTable;
 }
 
-auto FuncTemplate::getInputTypes(const prog::sym::TypeSet& argTypes)
+auto FuncTemplate::inferOptArgs(const prog::sym::TypeSet& argTypes)
     -> std::optional<prog::sym::TypeSet> {
 
   const auto maxInputs    = m_parseNode->getArgList().getCount();

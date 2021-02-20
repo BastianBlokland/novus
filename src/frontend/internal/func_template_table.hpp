@@ -8,6 +8,7 @@ namespace frontend::internal {
 class FuncTemplateTable final {
 public:
   struct CallInfo {
+    prog::sym::TypeSet argumentTypes;
     prog::sym::TypeId resultType;
     bool isAction;
   };
