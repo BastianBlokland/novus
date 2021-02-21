@@ -53,6 +53,8 @@ auto AnonFuncExprNode::isImpure() const -> bool {
   });
 }
 
+auto AnonFuncExprNode::isNoinline() const -> bool { return false; }
+
 auto AnonFuncExprNode::getArgList() const -> const ArgumentListDecl& { return m_argList; }
 
 auto AnonFuncExprNode::getRetType() const -> const std::optional<RetTypeSpec>& { return m_retType; }

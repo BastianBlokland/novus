@@ -240,7 +240,7 @@
 			<array>
 				<dict>
 					<key>begin</key>
-					<string>\b(fun|act)\s+(.+?)\s*(?=\{|\()</string>
+					<string>\b(fun|act)\s+(noinline)?\s*(.+?)\s*(?=\{|\()</string>
 					<key>beginCaptures</key>
 					<dict>
 						<key>1</key>
@@ -249,6 +249,11 @@
 							<string>keyword.other.function.source.novus</string>
 						</dict>
 						<key>2</key>
+						<dict>
+							<key>name</key>
+							<string>keyword.other.noinline.source.novus</string>
+						</dict>
+						<key>3</key>
 						<dict>
 							<key>name</key>
 							<string>entity.name.function.source.novus</string>
@@ -363,7 +368,7 @@
 			<array>
 				<dict>
 					<key>begin</key>
-					<string>\s*\b(impure\s+)?(lambda)\s*\(</string>
+					<string>\s*\b(impure)?\s*(lambda)\s*\(</string>
 					<key>beginCaptures</key>
 					<dict>
 						<key>1</key>

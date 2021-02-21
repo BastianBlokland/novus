@@ -11,10 +11,10 @@ public:
 
     // Without the aggressive flag inference will only reach an conclusion when it has all the
     // information required, with aggressive it can act on incomplete data.
-    Aggressive = 1U << 1U,
+    Aggressive = 1U << 0U,
 
-    AllowActionCalls = 1U << 2U,
-    NoOptArgs        = 1U << 3U, // Disallow optional arguments (requires passing all args).
+    AllowActionCalls = 1U << 1U,
+    NoOptArgs        = 1U << 2U, // Disallow optional arguments (requires passing all args).
   };
 
   TypeInferExpr() = delete;

@@ -4,7 +4,7 @@ syntax "nov" "\.nov$"
 comment "//"
 
 # Keywords.
-color brightblue "\b(intrinsic|import|struct|union|enum|fun|act|lambda|impure|fork|lazy)\b"
+color brightblue "\b(intrinsic|import|struct|union|enum|fun|act|lambda|impure|fork|lazy|noinline)\b"
 color red "(\b(if|else)\b)|(\?|\:)"
 color brightyellow "((\b(is|as)\b)|(\+\+)|(\-\-)|(\&\&)|(\|\|)|(\<\<)|(\>\>)|(\<\=)|(\>\=)|(\=\=)|(\!\=)|\+|\-|\*|(\/)|\^|\~|\%|\&|\!|<|>)"
 

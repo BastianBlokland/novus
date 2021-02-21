@@ -72,8 +72,21 @@ auto ParserImpl::nextImport() -> NodePtr {
 }
 
 auto ParserImpl::nextStmtFuncDecl() -> NodePtr {
-  auto kwTok    = consumeToken();
-  auto kw       = getKw(kwTok);
+  auto kwTok = consumeToken();
+  auto kw    = getKw(kwTok);
+
+  auto modifiers = std::vector<lex::Token>{};
+  while (auto kw = getKw(peekToken(0))) {
+    switch (*kw) {
+    case lex::Keyword::Noinline:
+      modifiers.push_back(consumeToken());
+      continue;
+    default:
+      break;
+    }
+    break; // Not supported modifier keyword.
+  }
+
   auto id       = consumeToken();
   auto typeSubs = peekToken(0).getKind() == lex::TokenKind::SepOpenCurly
       ? std::optional<TypeSubstitutionList>{nextTypeSubstitutionList()}
@@ -94,6 +107,7 @@ auto ParserImpl::nextStmtFuncDecl() -> NodePtr {
   if (kwValid && idValid && typeSubsValid && retTypeValid && argList.validate()) {
     return funcDeclStmtNode(
         kwTok,
+        std::move(modifiers),
         std::move(id),
         std::move(typeSubs),
         std::move(argList),
@@ -102,6 +116,7 @@ auto ParserImpl::nextStmtFuncDecl() -> NodePtr {
   }
   return errInvalidStmtFuncDecl(
       kwTok,
+      std::move(modifiers),
       std::move(id),
       std::move(typeSubs),
       std::move(argList),

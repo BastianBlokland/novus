@@ -43,6 +43,14 @@ TEST_CASE("[frontend] Analyzing user-function definitions", "frontend") {
     CHECK(funcDef.getBody() == *prog::expr::constExprNode(consts, *a));
   }
 
+  SECTION("Define noinline function") {
+    const auto& output = ANALYZE("fun noinline f() -> int 42");
+    REQUIRE(output.isSuccess());
+    const auto& funcDef = GET_FUNC_DEF(output, "f");
+    CHECK(funcDef.getBody() == *prog::expr::litIntNode(output.getProg(), 42));
+    CHECK(funcDef.hasFlags(prog::sym::FuncDef::Flags::NoInline));
+  }
+
   SECTION("Diagnostics") {
     CHECK_DIAG(
         "fun f() -> int true",

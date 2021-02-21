@@ -708,9 +708,10 @@ auto Program::defineFunc(
     sym::FuncId id,
     sym::ConstDeclTable consts,
     expr::NodePtr body,
-    std::vector<expr::NodePtr> optArgInitializers) -> void {
+    std::vector<expr::NodePtr> optArgInitializers,
+    sym::FuncDef::Flags flags) -> void {
   m_funcDefs.registerFunc(
-      m_funcDecls, id, std::move(consts), std::move(body), std::move(optArgInitializers));
+      m_funcDecls, id, std::move(consts), std::move(body), std::move(optArgInitializers), flags);
 }
 
 auto Program::addExecStmt(sym::ConstDeclTable consts, expr::NodePtr expr) -> void {

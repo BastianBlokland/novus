@@ -72,36 +72,36 @@ act writeErr(Console c, Writer{None} writer) -> Option{Error}
 
 // -- Print
 
-act print{T}(T x) -> Option{Error}
+act noinline print{T}(T x) -> Option{Error}
   consoleOpen().map(impure lambda (Console c) c.writeOut(x.string() + '\n'))
 
-act print{T}(T x, TtyStyle style) -> Option{Error}
+act noinline print{T}(T x, TtyStyle style) -> Option{Error}
   styledWriter = ttyStyledTextWriter(style);
   consoleOpen().map(impure lambda (Console c)
     c.writeOut(styledWriter, x.string() + '\n')
   )
 
-act printErr{T}(T x) -> Option{Error}
+act noinline printErr{T}(T x) -> Option{Error}
   consoleOpen().map(impure lambda (Console c)
     c.writeErr(x.string() + '\n')
   )
 
-act printErr{T}(T x, TtyStyle style) -> Option{Error}
+act noinline printErr{T}(T x, TtyStyle style) -> Option{Error}
   styledWriter = ttyStyledTextWriter(style);
   consoleOpen().map(impure lambda (Console c)
     c.writeErr(styledWriter, x.string() + '\n')
   )
 
-act printBits{T}(T mask, bool includeLeadingZeroes = false) -> Option{Error}
+act noinline printBits{T}(T mask, bool includeLeadingZeroes = false) -> Option{Error}
   print(toBitString(mask, includeLeadingZeroes))
 
-act printBits(float f, bool includeLeadingZeroes = false) -> Option{Error}
+act noinline printBits(float f, bool includeLeadingZeroes = false) -> Option{Error}
   print(toBitString(asInt(f), includeLeadingZeroes))
 
-act printHex{T}(T mask, bool includeLeadingZeroes = false) -> Option{Error}
+act noinline printHex{T}(T mask, bool includeLeadingZeroes = false) -> Option{Error}
   print(toHexString(mask, includeLeadingZeroes))
 
-act printHex(float f, bool includeLeadingZeroes = false) -> Option{Error}
+act noinline printHex(float f, bool includeLeadingZeroes = false) -> Option{Error}
   print(toHexString(asInt(f), includeLeadingZeroes))
 
 // -- Meta

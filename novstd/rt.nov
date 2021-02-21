@@ -69,7 +69,7 @@ fun string(Platform p)
   if p == Platform.Windows  -> "Windows"
   else                      -> "Unknown"
 
-fun string(PlatformError err)
+fun noinline string(PlatformError err)
   if err == PlatformError.Unknown                       -> "Unknown"
   if err == PlatformError.FeatureNetworkNotEnabled      -> "Network feature not enabled"
   if err == PlatformError.StreamOptionsNotSupported     -> "Stream does not support the given options"
@@ -176,11 +176,11 @@ act fail(string msg) -> Option{Error}
 act fail(Error err) -> Option{Error}
   fail{Option{Error}}(err)
 
-act fail{TResult}(string msg) -> TResult
+act noinline fail{TResult}(string msg) -> TResult
   printErr(msg);
   intrinsic{fail}{TResult}()
 
-act fail{TResult}(Error err) -> TResult
+act noinline fail{TResult}(Error err) -> TResult
   writer = litWriter("Failed:\n") & errorWriter(litWriter("- "), newlineWriter());
   fail{TResult}(writer.run(err))
 

@@ -17,11 +17,11 @@ public:
     // Checked constants access means that any constants that this expression declares are only
     // visible when this expression evaluates to 'true'. For example the 'as' expression (with a
     // constant) is only valid in a 'CheckedConstsAccess' expression.
-    CheckedConstsAccess = 1U << 1U,
+    CheckedConstsAccess = 1U << 0U,
 
-    AllowPureFuncCalls = 1U << 2U,
-    AllowActionCalls   = 1U << 3U,
-    NoOptArgs          = 1U << 4U, // Disallow optional arguments (requires passing all args).
+    AllowPureFuncCalls = 1U << 1U,
+    AllowActionCalls   = 1U << 2U,
+    NoOptArgs          = 1U << 3U, // Disallow optional arguments (requires passing all args).
   };
 
   GetExpr() = delete;

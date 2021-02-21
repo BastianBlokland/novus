@@ -28,6 +28,7 @@ public:
   [[nodiscard]] auto getSpan() const -> input::Span override;
 
   [[nodiscard]] auto isImpure() const -> bool;
+  [[nodiscard]] auto isNoinline() const -> bool;
   [[nodiscard]] auto getArgList() const -> const ArgumentListDecl&;
   [[nodiscard]] auto getRetType() const -> const std::optional<RetTypeSpec>&;
   [[nodiscard]] auto getBody() const -> const Node&;

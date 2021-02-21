@@ -9,12 +9,14 @@ static auto getIdOrErr(const lex::Token& token) {
 
 FuncDeclStmtNode::FuncDeclStmtNode(
     lex::Token kw,
+    std::vector<lex::Token> modifiers,
     lex::Token id,
     std::optional<TypeSubstitutionList> typeSubs,
     ArgumentListDecl argList,
     std::optional<RetTypeSpec> retType,
     NodePtr body) :
     m_kw{std::move(kw)},
+    m_modifiers{std::move(modifiers)},
     m_id{std::move(id)},
     m_typeSubs{std::move(typeSubs)},
     m_argList{std::move(argList)},
@@ -23,7 +25,7 @@ FuncDeclStmtNode::FuncDeclStmtNode(
 
 auto FuncDeclStmtNode::operator==(const Node& rhs) const noexcept -> bool {
   const auto r = dynamic_cast<const FuncDeclStmtNode*>(&rhs);
-  return r != nullptr && m_id == r->m_id && m_argList == r->m_argList &&
+  return r && m_modifiers == r->m_modifiers && m_id == r->m_id && m_argList == r->m_argList &&
       m_retType == r->m_retType && *m_body == *r->m_body;
 }
 
@@ -50,6 +52,12 @@ auto FuncDeclStmtNode::getSpan() const -> input::Span {
   return input::Span::combine(m_kw.getSpan(), m_body->getSpan());
 }
 
+auto FuncDeclStmtNode::isNoinline() const -> bool {
+  return std::any_of(m_modifiers.begin(), m_modifiers.end(), [](const lex::Token& t) {
+    return getKw(t) == lex::Keyword::Noinline;
+  });
+}
+
 auto FuncDeclStmtNode::isAction() const -> bool { return getKw(m_kw) == lex::Keyword::Act; }
 
 auto FuncDeclStmtNode::getId() const -> const lex::Token& { return m_id; }
@@ -68,6 +76,11 @@ auto FuncDeclStmtNode::accept(NodeVisitor* visitor) const -> void { visitor->vis
 
 auto FuncDeclStmtNode::print(std::ostream& out) const -> std::ostream& {
   out << (isAction() ? "act-" : "fun-");
+  for (const auto& mod : m_modifiers) {
+    if (auto modKw = getKw(mod)) {
+      out << *modKw << '-';
+    }
+  }
   if (m_id.getKind() == lex::TokenKind::Identifier) {
     out << getIdOrErr(m_id);
   } else {
@@ -86,6 +99,7 @@ auto FuncDeclStmtNode::print(std::ostream& out) const -> std::ostream& {
 // Factories.
 auto funcDeclStmtNode(
     lex::Token kw,
+    std::vector<lex::Token> modifiers,
     lex::Token id,
     std::optional<TypeSubstitutionList> typeSubs,
     ArgumentListDecl argList,
@@ -97,6 +111,7 @@ auto funcDeclStmtNode(
   }
   return std::unique_ptr<FuncDeclStmtNode>{new FuncDeclStmtNode{
       std::move(kw),
+      std::move(modifiers),
       std::move(id),
       std::move(typeSubs),
       std::move(argList),
