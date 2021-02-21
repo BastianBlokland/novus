@@ -12,6 +12,7 @@ class FuncDeclStmtNode final : public Node {
 public:
   friend auto funcDeclStmtNode(
       lex::Token kw,
+      std::vector<lex::Token> modifiers,
       lex::Token id,
       std::optional<TypeSubstitutionList> typeSubs,
       ArgumentListDecl argList,
@@ -28,6 +29,7 @@ public:
   [[nodiscard]] auto getSpan() const -> input::Span override;
 
   [[nodiscard]] auto isAction() const -> bool;
+  [[nodiscard]] auto isNoinline() const -> bool;
   [[nodiscard]] auto getId() const -> const lex::Token&;
   [[nodiscard]] auto getTypeSubs() const -> const std::optional<TypeSubstitutionList>&;
   [[nodiscard]] auto getArgList() const -> const ArgumentListDecl&;
@@ -38,6 +40,7 @@ public:
 
 private:
   const lex::Token m_kw;
+  const std::vector<lex::Token> m_modifiers;
   const lex::Token m_id;
   const std::optional<TypeSubstitutionList> m_typeSubs;
   const ArgumentListDecl m_argList;
@@ -46,6 +49,7 @@ private:
 
   FuncDeclStmtNode(
       lex::Token kw,
+      std::vector<lex::Token> modifiers,
       lex::Token id,
       std::optional<TypeSubstitutionList> typeSubs,
       ArgumentListDecl argList,
@@ -58,6 +62,7 @@ private:
 // Factories.
 auto funcDeclStmtNode(
     lex::Token kw,
+    std::vector<lex::Token> modifiers,
     lex::Token id,
     std::optional<TypeSubstitutionList> typeSubs,
     ArgumentListDecl argList,

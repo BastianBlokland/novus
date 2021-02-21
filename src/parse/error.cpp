@@ -119,6 +119,7 @@ auto errInvalidStmtImport(lex::Token kw, lex::Token path) -> NodePtr {
 
 auto errInvalidStmtFuncDecl(
     lex::Token kw,
+    std::vector<lex::Token> modifiers,
     lex::Token id,
     std::optional<TypeSubstitutionList> typeSubs,
     ArgumentListDecl argList,
@@ -140,6 +141,9 @@ auto errInvalidStmtFuncDecl(
 
   auto tokens = std::vector<lex::Token>{};
   tokens.push_back(std::move(kw));
+  for (auto& mod : modifiers) {
+    tokens.push_back(std::move(mod));
+  }
   tokens.push_back(std::move(id));
   if (typeSubs) {
     addTokens(*typeSubs, &tokens);

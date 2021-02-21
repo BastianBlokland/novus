@@ -17,6 +17,7 @@ namespace parse {
 
 [[nodiscard]] auto errInvalidStmtFuncDecl(
     lex::Token kw,
+    std::vector<lex::Token> modifiers,
     lex::Token id,
     std::optional<TypeSubstitutionList> typeSubs,
     ArgumentListDecl argList,
