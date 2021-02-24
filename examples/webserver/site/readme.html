@@ -338,16 +338,16 @@ main()
   <p>Build output can be found in the <code>bin</code> directory.
     For more convenience you can add the <code>bin</code> directory to your <code>PATH</code>.</p>
   <h2 id="building-novus-source-code">Building novus source code</h2>
-  <p>Novus source (<code>.ns</code>) can be compiled into novus assembly (<code>.nova</code>) using the
+  <p>Novus source (<code>.ns</code>) can be compiled into novus executable (<code>.nx</code>) using the
     <code>novc</code> executable.</p>
   <p>Example: <code>./bin/novc examples/fizzbuzz.ns</code>. The output can be found at
-    <code>examples/fizzbuzz.nova</code>.</p>
-  <h2 id="running-novus-assembly">Running novus assembly</h2>
-  <p>Novus assembly (<code>.nova</code>) can be run in the novus runtime (<code>novrt</code>).</p>
-  <p>Example: <code>./bin/novrt examples/fizzbuzz.nova</code>.</p>
-  <p>On unix if you add the runtime to your <code>PATH</code> you can straight up run <code>.nova</code> files:</p>
-  <pre><code>chmod +x examples/fizzbuzz<span class="hljs-selector-class">.nova</span>
-examples/fizzbuzz.nova
+    <code>examples/fizzbuzz.nx</code>.</p>
+  <h2 id="running-novus-executable">Running novus executable</h2>
+  <p>An Novus executable (<code>.nx</code>) can be run in the novus runtime (<code>novrt</code>).</p>
+  <p>Example: <code>./bin/novrt examples/fizzbuzz.nx</code>.</p>
+  <p>On unix if you add the runtime to your <code>PATH</code> you can straight up run <code>.nx</code> files:</p>
+  <pre><code>chmod +x examples/fizzbuzz<span class="hljs-selector-class">.nx</span>
+examples/fizzbuzz.nx
 </code></pre>
   <h2 id="evaluator">Evaluator</h2>
   <p>Alternatively you can use the <code>nove</code> (novus evaluator) to combine the compilation and running.</p>

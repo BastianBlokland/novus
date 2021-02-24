@@ -1,5 +1,5 @@
 #pragma once
-#include "novasm/assembly.hpp"
+#include "novasm/executable.hpp"
 #include "novasm/op_code.hpp"
 #include "novasm/pcall_code.hpp"
 #include <string>
@@ -142,7 +142,7 @@ public:
 
   auto setEntrypoint(std::string label) -> void;
 
-  [[nodiscard]] auto close() -> Assembly;
+  [[nodiscard]] auto close() -> Executable;
   [[nodiscard]] auto getLabels() -> std::unordered_map<uint32_t, std::vector<std::string>>;
 
 private:

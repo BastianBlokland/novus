@@ -376,20 +376,20 @@ For more convenience you can add the `bin` directory to your `PATH`.
 
 ## Building novus source code
 
-Novus source (`.ns`) can be compiled into novus assembly (`.nova`) using the `novc` executable.
+Novus source (`.ns`) can be compiled into an novus executable (`.nx`) using the `novc` compiler.
 
-Example: `./bin/novc examples/fizzbuzz.ns`. The output can be found at `examples/fizzbuzz.nova`.
+Example: `./bin/novc examples/fizzbuzz.ns`. The output can be found at `examples/fizzbuzz.nx`.
 
-## Running novus assembly
+## Running novus an executable
 
-Novus assembly (`.nova`) can be run in the novus runtime (`novrt`).
+An Novus executable (`.nx`) can be run in the novus runtime (`novrt`).
 
-Example: `./bin/novrt examples/fizzbuzz.nova`.
+Example: `./bin/novrt examples/fizzbuzz.nx`.
 
-On unix if you add the runtime to your `PATH` you can straight up run `.nova` files:
+On unix if you add the runtime to your `PATH` you can straight up run `.nx` files:
 ```
-chmod +x examples/fizzbuzz.nova
-examples/fizzbuzz.nova
+chmod +x examples/fizzbuzz.nx
+examples/fizzbuzz.nx
 ```
 
 ## Evaluator

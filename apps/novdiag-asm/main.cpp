@@ -11,8 +11,8 @@
 #include "frontend/source.hpp"
 #include "input/char_escape.hpp"
 #include "input/search_paths.hpp"
-#include "novasm/assembly.hpp"
 #include "novasm/disassembler.hpp"
+#include "novasm/executable.hpp"
 #include "novasm/serialization.hpp"
 #include "opt/opt.hpp"
 #include <chrono>
@@ -23,34 +23,34 @@ using Duration = std::chrono::duration<double>;
 
 auto operator<<(std::ostream& out, const Duration& rhs) -> std::ostream&;
 
-auto printStringLiterals(const novasm::Assembly& assembly) -> void {
+auto printStringLiterals(const novasm::Executable& executable) -> void {
   const auto idColWidth = 5;
 
   std::cout << rang::style::bold << "StringLiterals:\n" << rang::style::reset;
   auto id = 0U;
-  for (auto itr = assembly.beginLitStrings(); itr != assembly.endLitStrings(); ++itr, ++id) {
+  for (auto itr = executable.beginLitStrings(); itr != executable.endLitStrings(); ++itr, ++id) {
     std::cout << "  " << rang::style::bold << std::setw(idColWidth) << std::left << id
               << rang::style::reset << " \"" << input::escapeNonPrintingAsHex(*itr) << '"' << '\n';
   }
 }
 
-auto printCompilerVersion(const novasm::Assembly& assembly) -> void {
-  std::cout << rang::style::bold << "Compiler: " << assembly.getCompilerVersion()
+auto printCompilerVersion(const novasm::Executable& executable) -> void {
+  std::cout << rang::style::bold << "Compiler: " << executable.getCompilerVersion()
             << rang::style::reset << '\n';
 }
 
-auto printEntrypoint(const novasm::Assembly& assembly) -> void {
-  std::cout << rang::style::bold << "Entrypoint: " << assembly.getEntrypoint() << rang::style::reset
-            << '\n';
+auto printEntrypoint(const novasm::Executable& executable) -> void {
+  std::cout << rang::style::bold << "Entrypoint: " << executable.getEntrypoint()
+            << rang::style::reset << '\n';
 }
 
-auto printInstructions(const novasm::Assembly& assembly, const backend::InstructionLabels& labels)
-    -> void {
+auto printInstructions(
+    const novasm::Executable& executable, const backend::InstructionLabels& labels) -> void {
   const auto ipOffsetColWidth = 6;
   const auto opCodeColWidth   = 20;
 
   std::cout << rang::style::bold << "Instructions:\n" << rang::style::reset;
-  auto instructions = novasm::disassembleInstructions(assembly, labels);
+  auto instructions = novasm::disassembleInstructions(executable, labels);
   for (const auto& instr : instructions) {
     // Print any labels associated with this instruction.
     for (const auto& label : instr.getLabels()) {
@@ -86,15 +86,15 @@ auto printInstructions(const novasm::Assembly& assembly, const backend::Instruct
   }
 }
 
-auto printAssembly(const novasm::Assembly& assembly, const backend::InstructionLabels& labels)
+auto printExecutable(const novasm::Executable& executable, const backend::InstructionLabels& labels)
     -> void {
-  printCompilerVersion(assembly);
+  printCompilerVersion(executable);
   std::cout << '\n';
-  printEntrypoint(assembly);
+  printEntrypoint(executable);
   std::cout << '\n';
-  printStringLiterals(assembly);
+  printStringLiterals(executable);
   std::cout << '\n';
-  printInstructions(assembly, labels);
+  printInstructions(executable, labels);
 }
 
 template <typename InputItr>
@@ -108,7 +108,7 @@ auto runFromSource(
     const bool optimize) {
   const auto width = 80;
 
-  // Generate an assembly file and time how long it takes.
+  // Generate an executable file and time how long it takes.
   const auto t1  = Clock::now();
   const auto src = frontend::buildSource(inputId, std::move(inputPath), inputBegin, inputEnd);
   const auto frontendOutput = frontend::analyze(src, searchPaths);
@@ -125,42 +125,42 @@ auto runFromSource(
 
   const auto asmOutput = optimize ? backend::generate(opt::optimize(frontendOutput.getProg()))
                                   : backend::generate(opt::treeshake(frontendOutput.getProg()));
-  const auto t2     = Clock::now();
-  const auto genDur = std::chrono::duration_cast<Duration>(t2 - t1);
+  const auto t2        = Clock::now();
+  const auto genDur    = std::chrono::duration_cast<Duration>(t2 - t1);
 
   std::cout << rang::style::dim << rang::style::italic << std::string(width, '-') << '\n'
-            << "Generated assembly in " << genDur << '\n'
+            << "Generated executable in " << genDur << '\n'
             << std::string(width, '-') << '\n'
             << rang::style::reset;
 
   if (outputProgram) {
-    printAssembly(asmOutput.first, asmOutput.second);
+    printExecutable(asmOutput.first, asmOutput.second);
     std::cout << rang::style::dim << std::string(width, '-') << '\n';
   }
   return 0;
 }
 
 template <typename InputItr>
-auto runFromAssembly(InputItr inputBegin, const InputItr inputEnd, const bool outputProgram) {
+auto runFromExecutable(InputItr inputBegin, const InputItr inputEnd, const bool outputProgram) {
   const auto width = 80;
 
-  const auto assemblyOutput = novasm::deserialize(inputBegin, inputEnd);
-  if (!assemblyOutput) {
-    std::cerr << rang::style::bold << rang::bg::red << "Failed to deserialize assembly"
+  const auto executableOutput = novasm::deserialize(inputBegin, inputEnd);
+  if (!executableOutput) {
+    std::cerr << rang::style::bold << rang::bg::red << "Failed to deserialize executable"
               << rang::bg::reset << '\n'
               << rang::style::reset;
     return 1;
   }
 
   std::cout << rang::style::dim << rang::style::italic << std::string(width, '-') << '\n'
-            << "Successfully deserialized assembly\n"
+            << "Successfully deserialized executable\n"
             << std::string(width, '-') << '\n'
             << rang::style::reset;
 
   if (outputProgram) {
     // Note: Labels are not part of the 'nova' format so we cannot display them.
     auto labels = backend::InstructionLabels{};
-    printAssembly(*assemblyOutput, labels);
+    printExecutable(*executableOutput, labels);
     std::cout << rang::style::dim << std::string(width, '-') << '\n';
   }
   return 0;
@@ -224,8 +224,8 @@ auto main(int argc, const char** argv) -> int {
 
         auto absFilePath = filesystem::absolute(filePath);
         std::ifstream fs{filePath.string(), std::ios::binary};
-        if (absFilePath.extension() == ".nova") {
-          exitcode = runFromAssembly(
+        if (absFilePath.extension() == ".nx") {
+          exitcode = runFromExecutable(
               std::istreambuf_iterator<char>{fs}, std::istreambuf_iterator<char>{}, printOutput);
         } else {
           exitcode = runFromSource(

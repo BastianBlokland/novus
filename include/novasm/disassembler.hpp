@@ -1,5 +1,5 @@
 #pragma once
-#include "novasm/assembly.hpp"
+#include "novasm/executable.hpp"
 #include "novasm/op_code.hpp"
 #include "novasm/pcall_code.hpp"
 #include <iostream>
@@ -60,11 +60,11 @@ auto operator<<(std::ostream& out, const Instruction& rhs) -> std::ostream&;
 
 } // namespace dasm
 
-// Extract a list of instructions and their arguments from a assembly class.
+// Extract a list of instructions and their arguments from a executable.
 // Note: Optionally instruction labels (as created by the assembler) can be provided to add human
 // readable labels to the instructions.
 auto disassembleInstructions(
-    const Assembly& assembly, const dasm::InstructionLabels& instrLabels = {})
+    const Executable& executable, const dasm::InstructionLabels& instrLabels = {})
     -> std::vector<dasm::Instruction>;
 
 } // namespace novasm

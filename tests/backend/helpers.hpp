@@ -8,8 +8,8 @@
 
 namespace backend {
 
-inline auto buildAssemblyExpr(const std::function<void(novasm::Assembler*)>& build)
-    -> novasm::Assembly {
+inline auto buildExecutableExpr(const std::function<void(novasm::Assembler*)>& build)
+    -> novasm::Executable {
   auto compilerVersion = std::string{"0.42.1337"};
   auto asmb            = novasm::Assembler{std::move(compilerVersion)};
   build(&asmb);
@@ -24,8 +24,8 @@ inline auto buildAssemblyExpr(const std::function<void(novasm::Assembler*)>& bui
   return asmb.close();
 }
 
-inline auto buildAssembly(const std::function<void(novasm::Assembler*)>& build)
-    -> novasm::Assembly {
+inline auto buildExecutable(const std::function<void(novasm::Assembler*)>& build)
+    -> novasm::Executable {
   auto compilerVersion = std::string{"0.42.1337"};
   auto asmb            = novasm::Assembler{std::move(compilerVersion)};
   build(&asmb);
@@ -43,8 +43,8 @@ inline auto buildAssembly(const std::function<void(novasm::Assembler*)>& build)
   }
 
 #define CHECK_EXPR(INPUT, BUILD_EXPECTED_ASM)                                                      \
-  CHECK_ASM("act test() " + std::string(INPUT), buildAssemblyExpr(BUILD_EXPECTED_ASM))
+  CHECK_ASM("act test() " + std::string(INPUT), buildExecutableExpr(BUILD_EXPECTED_ASM))
 
-#define CHECK_PROG(INPUT, BUILD_EXPECTED_ASM) CHECK_ASM(INPUT, buildAssembly(BUILD_EXPECTED_ASM))
+#define CHECK_PROG(INPUT, BUILD_EXPECTED_ASM) CHECK_ASM(INPUT, buildExecutable(BUILD_EXPECTED_ASM))
 
 } // namespace backend

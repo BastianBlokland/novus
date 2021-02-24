@@ -258,8 +258,8 @@ target_include_directories(backend PRIVATE backend)
 message(STATUS "Configuring novasm library")
 add_library(novasm STATIC
   novasm/assembler.cpp
-  novasm/assembly.cpp
   novasm/disassembler.cpp
+  novasm/executable.cpp
   novasm/op_code.cpp
   novasm/pcall_code.cpp
   novasm/serialization.cpp)

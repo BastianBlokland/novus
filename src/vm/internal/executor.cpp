@@ -19,7 +19,7 @@
 
 namespace vm::internal {
 
-// Read a value from the assembly file and increment the given instruction pointer.
+// Read a value from the executable file and increment the given instruction pointer.
 template <typename Type>
 NO_SANITIZE(alignment)
 inline auto readAsm(const uint8_t** ip) {
@@ -37,7 +37,7 @@ inline auto readAsm(const uint8_t** ip) {
 // Make a call to a function at a given instruction pointer location. The current
 // instruction-pointer is saved on the stack for returning to when the called function returns.
 inline auto call(
-    const novasm::Assembly* assembly,
+    const novasm::Executable* executable,
     BasicStack* stack,
     ExecutorHandle* execHandle,
     const uint8_t** ip,
@@ -63,11 +63,11 @@ inline auto call(
   std::memmove(newSh, argStart, sizeof(Value) * argCount);
 
   // Save the return instruction pointer and stack-home.
-  *(newSh - 2) = uintValue(assembly->getOffset(*ip));
+  *(newSh - 2) = uintValue(executable->getOffset(*ip));
   *(newSh - 1) = rawPtrValue(*sh);
 
   // Setup the ip and stack-home for the new stack frame.
-  *ip = assembly->getIp(tgtIpOffset);
+  *ip = executable->getIp(tgtIpOffset);
   *sh = newSh;
   return true;
 }
@@ -75,7 +75,7 @@ inline auto call(
 // Make a tail call to a function at a given instruction pointer location. Execution will NOT be
 // returned to the current function when the called function returns.
 inline auto callTail(
-    const novasm::Assembly* assembly,
+    const novasm::Executable* executable,
     BasicStack* stack,
     const uint8_t** ip,
     Value* sh,
@@ -91,7 +91,7 @@ inline auto callTail(
   std::memmove(sh, argStart, sizeof(Value) * argCount);
 
   stack->rewindToNext(sh + argCount); // Discard any extra values on the stack.
-  *ip = assembly->getIp(tgtIpOffset);
+  *ip = executable->getIp(tgtIpOffset);
 }
 
 // Push all the arguments of a closure on the stack (in preparation for calling the closure
@@ -124,7 +124,7 @@ inline auto pushClosure(
 // promise object for retreiving the results from will be pushed onto the stack.
 inline auto fork(
     const Settings* settings,
-    const novasm::Assembly* assembly,
+    const novasm::Executable* executable,
     PlatformInterface* iface,
     ExecutorRegistry* execRegistry,
     RefAllocator* refAlloc,
@@ -145,7 +145,7 @@ inline auto fork(
   const auto startRes = threadStart(
       &execute,
       settings,
-      assembly,
+      executable,
       iface,
       execRegistry,
       refAlloc,
@@ -181,7 +181,7 @@ inline auto fork(
 
 auto execute(
     const Settings* settings,
-    const novasm::Assembly* assembly,
+    const novasm::Executable* executable,
     PlatformInterface* iface,
     ExecutorRegistry* execRegistry,
     RefAllocator* refAlloc,
@@ -190,7 +190,7 @@ auto execute(
     Value* entryArgSource,
     FutureRef* promise) noexcept -> ExecState {
 
-  assert(settings && assembly && iface && execRegistry && refAlloc);
+  assert(settings && executable && iface && execRegistry && refAlloc);
 
   using OpCode    = novasm::OpCode;
   using PCallCode = novasm::PCallCode;
@@ -258,14 +258,14 @@ auto execute(
 #define POP_INT() POP().getInt()
 #define POP_FLOAT() POP().getFloat()
 #define CALL(ARG_COUNT, TGT_IP)                                                                    \
-  if (unlikely(!call(assembly, &stack, &execHandle, &ip, &sh, ARG_COUNT, TGT_IP))) {               \
+  if (unlikely(!call(executable, &stack, &execHandle, &ip, &sh, ARG_COUNT, TGT_IP))) {             \
     goto End;                                                                                      \
   }
-#define CALL_TAIL(ARG_COUNT, TGT_IP) callTail(assembly, &stack, &ip, sh, ARG_COUNT, TGT_IP)
+#define CALL_TAIL(ARG_COUNT, TGT_IP) callTail(executable, &stack, &ip, sh, ARG_COUNT, TGT_IP)
 #define CALL_FORKED(ARG_COUNT, TGT_IP)                                                             \
   if (unlikely(!fork(                                                                              \
           settings,                                                                                \
-          assembly,                                                                                \
+          executable,                                                                              \
           iface,                                                                                   \
           execRegistry,                                                                            \
           refAlloc,                                                                                \
@@ -288,7 +288,7 @@ auto execute(
   if (promise) {
     stack.push(refValue(promise));
   }
-  const uint8_t* ip = assembly->getIp(entryIpOffset); // Current instruction-pointer.
+  const uint8_t* ip = executable->getIp(entryIpOffset); // Current instruction-pointer.
   Value* sh     = stack.getNext(); // Current 'home' for this stack-frame, used to store variables.
   Value* rootSh = sh;
 
@@ -331,7 +331,7 @@ auto execute(
       PUSH_FLOAT(READ_FLOAT());
     } break;
     case OpCode::LoadLitString: {
-      const auto& litStr = assembly->getLitString(READ_UINT());
+      const auto& litStr = executable->getLitString(READ_UINT());
       PUSH_REF(refAlloc->allocStrLit(litStr.data(), litStr.length()));
     } break;
     case OpCode::LoadLitIp: {
@@ -752,12 +752,12 @@ auto execute(
     } break;
 
     case OpCode::Jump: {
-      ip = assembly->getIp(READ_UINT());
+      ip = executable->getIp(READ_UINT());
     } break;
     case OpCode::JumpIf: {
       auto ipOffset = READ_UINT();
       if (POP_INT() != 0) {
-        ip = assembly->getIp(ipOffset);
+        ip = executable->getIp(ipOffset);
       }
     } break;
 
@@ -826,7 +826,14 @@ auto execute(
     } break;
     case OpCode::PCall: {
       pcall(
-          settings, assembly, iface, refAlloc, &stack, &execHandle, &pErr, readAsm<PCallCode>(&ip));
+          settings,
+          executable,
+          iface,
+          refAlloc,
+          &stack,
+          &execHandle,
+          &pErr,
+          readAsm<PCallCode>(&ip));
       if (unlikely(execHandle.getState(std::memory_order_relaxed) != ExecState::Running)) {
         assert(execHandle.getState(std::memory_order_relaxed) != ExecState::Success);
         goto End;
@@ -851,7 +858,7 @@ auto execute(
 
       // Note this assumes that the rewinding does not actually invalidate the memory (which it
       // doesn't).
-      ip = assembly->getIp((sh - 2)->getUInt());
+      ip = executable->getIp((sh - 2)->getUInt());
       sh = (sh - 1)->getRawPtr<Value>();
 
       // Place the return-value on the stack.

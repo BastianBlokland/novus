@@ -5,25 +5,25 @@
 
 namespace novasm {
 
-// In memory representation of a 'nova' novus assembly file.
-class Assembly final {
+// In memory representation of a 'nx' novus executable file.
+class Executable final {
 public:
   using LitStringIterator = typename std::vector<std::string>::const_iterator;
 
-  Assembly(
+  Executable(
       std::string compilerVersion,
       uint32_t entrypoint,
       std::vector<std::string> litStrings,
       std::vector<uint8_t> instructions) noexcept;
-  Assembly(const Assembly& rhs)     = delete;
-  Assembly(Assembly&& rhs) noexcept = default;
-  ~Assembly() noexcept              = default;
+  Executable(const Executable& rhs)     = delete;
+  Executable(Executable&& rhs) noexcept = default;
+  ~Executable() noexcept                = default;
 
-  auto operator=(const Assembly& rhs) -> Assembly& = delete;
-  auto operator=(Assembly&& rhs) -> Assembly& = delete;
+  auto operator=(const Executable& rhs) -> Executable& = delete;
+  auto operator=(Executable&& rhs) -> Executable& = delete;
 
-  auto operator==(const Assembly& rhs) const noexcept -> bool;
-  auto operator!=(const Assembly& rhs) const noexcept -> bool;
+  auto operator==(const Executable& rhs) const noexcept -> bool;
+  auto operator!=(const Executable& rhs) const noexcept -> bool;
 
   [[nodiscard]] auto beginLitStrings() const noexcept -> LitStringIterator;
   [[nodiscard]] auto endLitStrings() const noexcept -> LitStringIterator;

@@ -344,7 +344,7 @@ auto Assembler::addFail() -> void { writeOpCode(OpCode::Fail); }
 
 auto Assembler::setEntrypoint(std::string label) -> void { m_entrypointLabel = std::move(label); }
 
-auto Assembler::close() -> Assembly {
+auto Assembler::close() -> Executable {
   throwIfClosed();
 
   m_closed = true;
@@ -357,7 +357,7 @@ auto Assembler::close() -> Assembly {
     throw std::logic_error{oss.str()};
   }
 
-  return Assembly{
+  return Executable{
       m_compilerVersion, entrypointItr->second, std::move(m_litStrings), std::move(m_instructions)};
 }
 
