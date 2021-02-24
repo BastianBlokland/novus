@@ -9,8 +9,8 @@
 
 namespace vm {
 
-inline auto buildAssemblyExpr(const std::function<void(novasm::Assembler*)>& build)
-    -> novasm::Assembly {
+inline auto buildExecutableExpr(const std::function<void(novasm::Assembler*)>& build)
+    -> novasm::Executable {
   auto compilerVersion = std::string{"0.42.1337"};
   auto asmb            = novasm::Assembler{std::move(compilerVersion)};
   asmb.label("entrypoint");
@@ -20,8 +20,8 @@ inline auto buildAssemblyExpr(const std::function<void(novasm::Assembler*)>& bui
   return asmb.close();
 }
 
-inline auto buildAssembly(const std::function<void(novasm::Assembler*)>& build)
-    -> novasm::Assembly {
+inline auto buildExecutable(const std::function<void(novasm::Assembler*)>& build)
+    -> novasm::Executable {
   auto compilerVersion = std::string{"0.42.1337"};
   auto asmb            = novasm::Assembler{compilerVersion};
   build(&asmb);
@@ -96,15 +96,15 @@ inline auto prepareStdIn(std::string input) -> FileHandle {
     fileClose(stdInFile);                                                                          \
   }
 
-#define CHECK_EXPR(BUILD, INPUT, EXPECTED) CHECK_ASM(buildAssemblyExpr(BUILD), INPUT, EXPECTED)
+#define CHECK_EXPR(BUILD, INPUT, EXPECTED) CHECK_ASM(buildExecutableExpr(BUILD), INPUT, EXPECTED)
 
 #define CHECK_EXPR_RESULTCODE(BUILD, INPUT, EXPECTED)                                              \
-  CHECK_ASM_RESULTCODE(buildAssemblyExpr(BUILD), INPUT, EXPECTED)
+  CHECK_ASM_RESULTCODE(buildExecutableExpr(BUILD), INPUT, EXPECTED)
 
-#define CHECK_PROG(BUILD, INPUT, EXPECTED) CHECK_ASM(buildAssembly(BUILD), INPUT, EXPECTED)
+#define CHECK_PROG(BUILD, INPUT, EXPECTED) CHECK_ASM(buildExecutable(BUILD), INPUT, EXPECTED)
 
 #define CHECK_PROG_RESULTCODE(BUILD, INPUT, EXPECTED)                                              \
-  CHECK_ASM_RESULTCODE(buildAssembly(BUILD), INPUT, EXPECTED)
+  CHECK_ASM_RESULTCODE(buildExecutable(BUILD), INPUT, EXPECTED)
 
 #define ADD_PRINT(ASMB)                                                                            \
   {                                                                                                \

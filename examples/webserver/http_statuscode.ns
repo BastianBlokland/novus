@@ -1,0 +1,140 @@
+import "std.ns"
+
+// -- Types
+
+enum HttpStatusCode =
+  Continue:                       100,
+  SwitchingProtocols:             101,
+  Processing:                     102,
+  EarlyHints:                     103,
+  Ok:                             200,
+  Created:                        201,
+  Accepted:                       202,
+  NonAuthoritativeInformation:    203,
+  NoContent:                      204,
+  ResetContent:                   205,
+  PartialContent:                 206,
+  MultiStatus:                    207,
+  AlreadyReported:                208,
+  IMUsed:                         226,
+  MultipleChoices:                300,
+  MovedPermanently:               301,
+  Found:                          302,
+  SeeOther:                       303,
+  NotModified:                    304,
+  UseProxy:                       305,
+  TemporaryRedirect:              307,
+  PermanentRedirect:              308,
+  BadRequest:                     400,
+  Unauthorized:                   401,
+  PaymentRequired:                402,
+  Forbidden:                      403,
+  NotFound:                       404,
+  MethodNotAllowed:               405,
+  NotAcceptable:                  406,
+  ProxyAuthenticationRequired:    407,
+  RequestTimeout:                 408,
+  Conflict:                       409,
+  Gone:                           410,
+  LengthRequired:                 411,
+  PreconditionFailed:             412,
+  PayloadTooLarge:                413,
+  UriTooLong:                     414,
+  UnsupportedMediaType:           415,
+  RangeNotSatisfiable:            416,
+  ExpectationFailed:              417,
+  ImATeapot:                      418,
+  MisdirectedRequest:             421,
+  UnprocessableEntity:            422,
+  Locked:                         423,
+  FailedDependency:               424,
+  UpgradeRequired:                426,
+  PreconditionRequired:           428,
+  TooManyRequests:                429,
+  RequestHeaderFieldsTooLarge:    431,
+  UnavailableForLegalReasons:     451,
+  InternalServerError:            500,
+  NotImplemented:                 501,
+  BadGateway:                     502,
+  ServiceUnavailable:             503,
+  GatewayTimeout:                 504,
+  HttpVersionNotSupported:        505,
+  VariantAlsoNegotiates:          506,
+  InsufficientStorage:            507,
+  LoopDetected:                   508,
+  NotExtended:                    510,
+  NetworkAuthenticationRequired:  511
+
+// -- Conversions
+
+fun string(HttpStatusCode s)
+  if s == HttpStatusCode.Continue                      -> "Continue"
+  if s == HttpStatusCode.SwitchingProtocols            -> "SwitchingProtocols"
+  if s == HttpStatusCode.Processing                    -> "Processing"
+  if s == HttpStatusCode.EarlyHints                    -> "EarlyHints"
+  if s == HttpStatusCode.Ok                            -> "OK"
+  if s == HttpStatusCode.Created                       -> "Created"
+  if s == HttpStatusCode.Accepted                      -> "Accepted"
+  if s == HttpStatusCode.NonAuthoritativeInformation   -> "NonAuthoritativeInformation"
+  if s == HttpStatusCode.NoContent                     -> "NoContent"
+  if s == HttpStatusCode.ResetContent                  -> "ResetContent"
+  if s == HttpStatusCode.PartialContent                -> "PartialContent"
+  if s == HttpStatusCode.MultiStatus                   -> "MultiStatus"
+  if s == HttpStatusCode.AlreadyReported               -> "AlreadyReported"
+  if s == HttpStatusCode.IMUsed                        -> "IMUsed"
+  if s == HttpStatusCode.MultipleChoices               -> "MultipleChoices"
+  if s == HttpStatusCode.MovedPermanently              -> "MovedPermanently"
+  if s == HttpStatusCode.Found                         -> "Found"
+  if s == HttpStatusCode.SeeOther                      -> "SeeOther"
+  if s == HttpStatusCode.NotModified                   -> "NotModified"
+  if s == HttpStatusCode.UseProxy                      -> "UseProxy"
+  if s == HttpStatusCode.TemporaryRedirect             -> "TemporaryRedirect"
+  if s == HttpStatusCode.PermanentRedirect             -> "PermanentRedirect"
+  if s == HttpStatusCode.BadRequest                    -> "BadRequest"
+  if s == HttpStatusCode.Unauthorized                  -> "Unauthorized"
+  if s == HttpStatusCode.PaymentRequired               -> "PaymentRequired"
+  if s == HttpStatusCode.Forbidden                     -> "Forbidden"
+  if s == HttpStatusCode.NotFound                      -> "NotFound"
+  if s == HttpStatusCode.MethodNotAllowed              -> "MethodNotAllowed"
+  if s == HttpStatusCode.NotAcceptable                 -> "NotAcceptable"
+  if s == HttpStatusCode.ProxyAuthenticationRequired   -> "ProxyAuthenticationRequired"
+  if s == HttpStatusCode.RequestTimeout                -> "RequestTimeout"
+  if s == HttpStatusCode.Conflict                      -> "Conflict"
+  if s == HttpStatusCode.Gone                          -> "Gone"
+  if s == HttpStatusCode.LengthRequired                -> "LengthRequired"
+  if s == HttpStatusCode.PreconditionFailed            -> "PreconditionFailed"
+  if s == HttpStatusCode.PayloadTooLarge               -> "PayloadTooLarge"
+  if s == HttpStatusCode.UriTooLong                    -> "UriTooLong"
+  if s == HttpStatusCode.UnsupportedMediaType          -> "UnsupportedMediaType"
+  if s == HttpStatusCode.RangeNotSatisfiable           -> "RangeNotSatisfiable"
+  if s == HttpStatusCode.ExpectationFailed             -> "ExpectationFailed"
+  if s == HttpStatusCode.ImATeapot                     -> "ImATeapot"
+  if s == HttpStatusCode.MisdirectedRequest            -> "MisdirectedRequest"
+  if s == HttpStatusCode.UnprocessableEntity           -> "UnprocessableEntity"
+  if s == HttpStatusCode.Locked                        -> "Locked"
+  if s == HttpStatusCode.FailedDependency              -> "FailedDependency"
+  if s == HttpStatusCode.UpgradeRequired               -> "UpgradeRequired"
+  if s == HttpStatusCode.PreconditionRequired          -> "PreconditionRequired"
+  if s == HttpStatusCode.TooManyRequests               -> "TooManyRequests"
+  if s == HttpStatusCode.RequestHeaderFieldsTooLarge   -> "RequestHeaderFieldsTooLarge"
+  if s == HttpStatusCode.UnavailableForLegalReasons    -> "UnavailableForLegalReasons"
+  if s == HttpStatusCode.InternalServerError           -> "InternalServerError"
+  if s == HttpStatusCode.NotImplemented                -> "NotImplemented"
+  if s == HttpStatusCode.BadGateway                    -> "BadGateway"
+  if s == HttpStatusCode.ServiceUnavailable            -> "ServiceUnavailable"
+  if s == HttpStatusCode.GatewayTimeout                -> "GatewayTimeout"
+  if s == HttpStatusCode.HttpVersionNotSupported       -> "HttpVersionNotSupported"
+  if s == HttpStatusCode.VariantAlsoNegotiates         -> "VariantAlsoNegotiates"
+  if s == HttpStatusCode.InsufficientStorage           -> "InsufficientStorage"
+  if s == HttpStatusCode.LoopDetected                  -> "LoopDetected"
+  if s == HttpStatusCode.NotExtended                   -> "NotExtended"
+  if s == HttpStatusCode.NetworkAuthenticationRequired -> "NetworkAuthenticationRequired"
+  else                                                 -> ""
+
+// -- Writers
+
+// Example output: '200 OK'
+fun httpStatusCodeWriter()
+  (
+    stringWriter() & litWriter(' ') & stringWriter()
+  ).map(lambda (HttpStatusCode c) Pair(string(int(c)), string(c)))

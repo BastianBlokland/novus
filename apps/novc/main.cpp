@@ -53,7 +53,7 @@ auto main(int argc, const char** argv) noexcept -> int {
   // If no output path is given generate one based on the source file path.
   if (outPath.empty()) {
     outPath = srcPath;
-    outPath.replace_extension("nova");
+    outPath.replace_extension("nx");
   }
 
   // In validate-only mode don't specify an output path.

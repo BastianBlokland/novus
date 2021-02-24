@@ -112,7 +112,7 @@ auto compile(Options options) -> bool {
   msgHeader(std::cout) << "Finished generating novus assembly in: " << asmDur << '\n';
   infHeader(std::cout) << "Instructions: " << asmOutput.first.getInstructions().size() << '\n';
 
-  // Write assembly to disk.
+  // Write executable to disk.
   auto destFilestream = std::ofstream{options.destPath.string(), std::ios::binary};
   if (!destFilestream.good()) {
     msgHeader(std::cerr) << rang::style::bold << rang::bg::red << "Failed to write to output path\n"
@@ -121,7 +121,7 @@ auto compile(Options options) -> bool {
   }
   novasm::serialize(asmOutput.first, std::ostreambuf_iterator<char>{destFilestream});
 
-  msgHeader(std::cout) << "Successfully compiled program to: " << options.destPath << '\n';
+  msgHeader(std::cout) << "Successfully compiled executable to: " << options.destPath << '\n';
   return true;
 }
 

@@ -52,7 +52,7 @@ enum class PCallCode : uint8_t {
   ClockNanoSteady      = 81, // () -> (long) Get process steady clock in nanoseconds.
 
   VersionRt       = 90, // () -> (string) Version of the runtime.
-  VersionCompiler = 91, // () -> (string) Version of the compiler that created this assembly.
+  VersionCompiler = 91, // () -> (string) Version of the compiler that created this executable.
 
   PlatformCode   = 100, // () -> (int)    Platform id: Linux: 1, MacOs: 2, Windows: 3.
   WorkingDirPath = 101, // () -> (string) Get the path of the current working directory.

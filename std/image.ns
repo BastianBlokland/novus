@@ -1,0 +1,84 @@
+import "std/color.ns"
+import "std/list.ns"
+import "std/math.ns"
+import "std/text.ns"
+import "std/writer.ns"
+
+// -- Types
+
+struct Image = int width, int height, List{Color} pixels
+
+fun makeImage(int width, int height, function{int, int, Color} getCol)
+  Image(width, height, makeColorGrid(width, height, getCol))
+
+fun makeColorGrid(int width, int height, function{int, int, Color} getCol) -> List{Color}
+  makeGrid = (lambda (int x, int y, List{Color} result)
+      if y < 0  -> result
+      if x < 0  -> self(width - 1, --y, result)
+      else      -> self(--x, y, getCol(x, y) :: result)
+  );
+  makeGrid(width - 1, height - 1, List{Color}())
+
+// -- Conversions
+
+fun string(Image i)
+  "(" + i.width + "x" + i.height + ')'
+
+// -- Portable Pixmap Format
+// https://en.wikipedia.org/wiki/Netpbm
+// Support writing ascii and binary ppm images.
+
+fun ppmAsciiWriter()
+  sizeWriter  = txtIntWriter() & litWriter(' ') & txtIntWriter();
+  colorWriter = Writer(lambda (WriterState s, Color c)
+    s.write(
+      int(clamp(c.r, 0.0, 1.0) * 255 + .5).string() + ' ' +
+      int(clamp(c.g, 0.0, 1.0) * 255 + .5).string() + ' '+
+      int(clamp(c.b, 0.0, 1.0) * 255 + .5).string())
+  );
+  ( litWriter("P3") & newlineWriter()   &
+    sizeWriter & newlineWriter()        &
+    litWriter("255") & newlineWriter()  &
+    listWriter(colorWriter, newlineWriter())
+  ).map(lambda (Image i) Pair(Pair(i.width, i.height), i.pixels))
+
+fun ppmBinaryWriter()
+  sizeWriter  = txtIntWriter() & litWriter(' ') & txtIntWriter();
+  colorWriter = Writer(lambda (WriterState s, Color c)
+    s.write(string( char(clamp(c.r, 0.0, 1.0) * 255 + .5),
+                    char(clamp(c.g, 0.0, 1.0) * 255 + .5),
+                    char(clamp(c.b, 0.0, 1.0) * 255 + .5)))
+  );
+  ( litWriter("P6") & newlineWriter()   &
+    sizeWriter & newlineWriter()        &
+    litWriter("255") & newlineWriter()  &
+    listWriter(colorWriter)
+  ).map(lambda (Image i) Pair(Pair(i.width, i.height), i.pixels))
+
+// -- Truevision TGA
+// https://en.wikipedia.org/wiki/Truevision_TGA
+// Support writing 24 bit uncompressed tga files.
+
+fun tgaWriter()
+  headerWriter = Writer(lambda (WriterState s, Image i)
+    s.write(
+      string(char(0), 2) +
+      char(2) +
+      string(char(0), 9) +
+      char(i.width) + char(i.width >> 8) +
+      char(i.height) + char(i.height >> 8) +
+      char(24) +
+      char(0b10_0000))
+  );
+  colorWriter = Writer(lambda (WriterState s, Color c)
+    s.write(string( char(clamp(c.b, 0.0, 1.0) * 255 + .5),
+                    char(clamp(c.g, 0.0, 1.0) * 255 + .5),
+                    char(clamp(c.r, 0.0, 1.0) * 255 + .5)))
+  );
+  (headerWriter & listWriter(colorWriter)).map(lambda (Image i) Pair(i, i.pixels))
+
+// -- Tests
+
+assert(
+  g = makeColorGrid(2, 2, lambda (int x, int y) y == 0 ? red() : blue());
+  g == red() :: red() :: blue() :: blue())

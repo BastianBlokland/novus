@@ -8,8 +8,8 @@ TEST_CASE("[frontend] Analyzing import statements", "frontend") {
 
   SECTION("Diagnostics") {
     CHECK_DIAG(
-        "import \"nonexisting.nov\"",
-        errUnresolvedImport(src, "nonexisting.nov", input::Span{7, 23}));
+        "import \"nonexisting.ns\"",
+        errUnresolvedImport(src, "nonexisting.ns", input::Span{7, 22}));
   }
 }
 

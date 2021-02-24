@@ -177,25 +177,26 @@ static auto skipLine(InputItr& itr, InputEndItr end) {
 }
 
 template <typename OutputItr>
-auto serialize(const Assembly& assembly, OutputItr outItr) noexcept -> OutputItr {
+auto serialize(const Executable& executable, OutputItr outItr) noexcept -> OutputItr {
 
   // Shebang line.
   writeRaw(g_shebangLine.begin(), g_shebangLine.end(), outItr);
 
   // Format version number.
-  writeUInt16(assemblyFormatVersion, outItr);
+  writeUInt16(executableFormatVersion, outItr);
 
   // Compiler version.
-  writeString(assembly.getCompilerVersion(), outItr);
+  writeString(executable.getCompilerVersion(), outItr);
 
   // Program entry point.
-  writeUInt32(assembly.getEntrypoint(), outItr);
+  writeUInt32(executable.getEntrypoint(), outItr);
 
   // Program string literals.
-  writeSet(assembly.beginLitStrings(), assembly.endLitStrings(), &writeString<OutputItr>, outItr);
+  writeSet(
+      executable.beginLitStrings(), executable.endLitStrings(), &writeString<OutputItr>, outItr);
 
   // Program instructions.
-  const auto& instructions = assembly.getInstructions();
+  const auto& instructions = executable.getInstructions();
   writeUInt32(instructions.size(), outItr);
   writeRaw(instructions.begin(), instructions.end(), outItr);
 
@@ -203,7 +204,7 @@ auto serialize(const Assembly& assembly, OutputItr outItr) noexcept -> OutputItr
 }
 
 template <typename InputItrBegin, typename InputEndItr>
-auto deserialize(InputItrBegin itr, InputEndItr end) noexcept -> std::optional<Assembly> {
+auto deserialize(InputItrBegin itr, InputEndItr end) noexcept -> std::optional<Executable> {
 
   // Shebang line.
   skipLine(itr, end);
@@ -221,7 +222,7 @@ auto deserialize(InputItrBegin itr, InputEndItr end) noexcept -> std::optional<A
   }
 
   // Check if the version is supported.
-  if (formatVersionNum != assemblyFormatVersion) {
+  if (formatVersionNum != executableFormatVersion) {
     return std::nullopt;
   }
 
@@ -249,7 +250,7 @@ auto deserialize(InputItrBegin itr, InputEndItr end) noexcept -> std::optional<A
     return std::nullopt;
   }
 
-  return Assembly{
+  return Executable{
       std::move(*compilerVersion),
       *entryPoint,
       std::move(*stringLiterals),
@@ -257,22 +258,23 @@ auto deserialize(InputItrBegin itr, InputEndItr end) noexcept -> std::optional<A
 }
 
 // Explicit instantiations.
-template auto serialize(const Assembly&, std::back_insert_iterator<std::string>) noexcept
+template auto serialize(const Executable&, std::back_insert_iterator<std::string>) noexcept
     -> std::back_insert_iterator<std::string>;
-template auto serialize(const Assembly&, std::back_insert_iterator<std::vector<char>>) noexcept
+template auto serialize(const Executable&, std::back_insert_iterator<std::vector<char>>) noexcept
     -> std::back_insert_iterator<std::vector<char>>;
-template auto serialize(const Assembly&, std::ostream_iterator<char>) noexcept
+template auto serialize(const Executable&, std::ostream_iterator<char>) noexcept
     -> std::ostream_iterator<char>;
-template auto serialize(const Assembly&, std::ostreambuf_iterator<char>) noexcept
+template auto serialize(const Executable&, std::ostreambuf_iterator<char>) noexcept
     -> std::ostreambuf_iterator<char>;
 
-template auto deserialize(char*, char*) -> std::optional<Assembly>;
-template auto deserialize(std::string::iterator, std::string::iterator) -> std::optional<Assembly>;
+template auto deserialize(char*, char*) -> std::optional<Executable>;
+template auto deserialize(std::string::iterator, std::string::iterator)
+    -> std::optional<Executable>;
 template auto deserialize(std::string::const_iterator, std::string::const_iterator)
-    -> std::optional<Assembly>;
+    -> std::optional<Executable>;
 template auto deserialize(std::istream_iterator<char>, std::istream_iterator<char>)
-    -> std::optional<Assembly>;
+    -> std::optional<Executable>;
 template auto deserialize(std::istreambuf_iterator<char>, std::istreambuf_iterator<char>)
-    -> std::optional<Assembly>;
+    -> std::optional<Executable>;
 
 } // namespace novasm

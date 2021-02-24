@@ -14,7 +14,7 @@
 #include "internal/stack.hpp"
 #include "internal/stream_utilities.hpp"
 #include "internal/string_utilities.hpp"
-#include "novasm/assembly.hpp"
+#include "novasm/executable.hpp"
 #include "novasm/pcall_code.hpp"
 #include "vm/exec_state.hpp"
 #include "vm/platform_interface.hpp"
@@ -27,7 +27,7 @@ namespace vm::internal {
 // 'outside' world (for example file io).
 auto inline pcall(
     const Settings* settings,
-    const novasm::Assembly* assembly,
+    const novasm::Executable* executable,
     PlatformInterface* iface,
     RefAllocator* refAlloc,
     BasicStack* stack,
@@ -290,7 +290,7 @@ auto inline pcall(
     PUSH_REF(refAlloc->allocStrLit(PROJECT_VER));
   } break;
   case PCallCode::VersionCompiler: {
-    const auto& version = assembly->getCompilerVersion();
+    const auto& version = executable->getCompilerVersion();
     PUSH_REF(refAlloc->allocStrLit(version.data(), version.length()));
   } break;
 

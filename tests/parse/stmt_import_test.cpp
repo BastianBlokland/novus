@@ -7,17 +7,17 @@ namespace parse {
 
 TEST_CASE("[parse] Parsing import statements", "parse") {
 
-  CHECK_STMT("import \"test.nov\"", importStmtNode(IMPORT, STR_TOK("test.nov")));
-  CHECK_STMT("import \"std/test.nov\"", importStmtNode(IMPORT, STR_TOK("std/test.nov")));
-  CHECK_STMT("import \"../test.nov\"", importStmtNode(IMPORT, STR_TOK("../test.nov")));
-  CHECK_STMT("import\"test.nov\"", importStmtNode(IMPORT, STR_TOK("test.nov")));
+  CHECK_STMT("import \"test.ns\"", importStmtNode(IMPORT, STR_TOK("test.ns")));
+  CHECK_STMT("import \"std/test.ns\"", importStmtNode(IMPORT, STR_TOK("std/test.ns")));
+  CHECK_STMT("import \"../test.ns\"", importStmtNode(IMPORT, STR_TOK("../test.ns")));
+  CHECK_STMT("import\"test.ns\"", importStmtNode(IMPORT, STR_TOK("test.ns")));
 
   SECTION("Errors") {
     CHECK_STMT("import", errInvalidStmtImport(IMPORT, END));
     CHECK_STMT("import test", errInvalidStmtImport(IMPORT, ID("test")));
   }
 
-  SECTION("Spans") { CHECK_STMT_SPAN(" import \"test.nov\"", input::Span(1, 17)); }
+  SECTION("Spans") { CHECK_STMT_SPAN(" import \"test.ns\"", input::Span(1, 16)); }
 }
 
 } // namespace parse

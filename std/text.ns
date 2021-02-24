@@ -1,0 +1,433 @@
+import "std/ascii.ns"
+import "std/func.ns"
+import "std/list.ns"
+
+// -- Types
+
+struct TextPos =
+  int line,
+  int column
+
+// -- Operators
+
+fun +{T}(string s, T v)
+  s + v.string()
+
+fun string(char a, char b) string(a) + b
+fun string(char a, char b, char c) string(a, b) + c
+fun string(char a, char b, char c, char d) string(a, b, c) + d
+fun string(char a, char b, char c, char d, char e) string(a, b, c, d) + e
+fun string(char a, char b, char c, char d, char e, char f)  string(a, b, c, d, e) + f
+fun string(char a, char b, char c, char d, char e, char f, char g)  string(a, b, c, d, e, f) + g
+fun string(char a, char b, char c, char d, char e, char f, char g, char h)  string(a, b, c, d, e, f, g) + h
+
+// -- Conversions
+
+fun string(TextPos p)
+  "[ln " + (p.line + 1) + ", c " + (p.column + 1) + "]"
+
+fun string(int i, int minDigits)
+  i.string().padLeft(minDigits, '0')
+
+fun string(long i, int minDigits)
+  i.string().padLeft(minDigits, '0')
+
+fun string(char c, int amount)
+  repeat = (lambda (string result, int cnt)
+    if cnt <= 0 -> result
+    else        -> self(result + c, --cnt)
+  );
+  repeat("", amount)
+
+fun string(string str, int amount)
+  repeat = (lambda (string result, int cnt)
+    if cnt <= 0 -> result
+    else        -> self(result + str, --cnt)
+  );
+  repeat("", amount)
+
+// -- Functions
+
+fun isEmpty(string str)
+  str.length() == 0
+
+fun last(string str)
+  str[str.length() - 1]
+
+fun appendChar(string str, char c)
+  str + c
+
+fun contains(string str, string subStr)
+  str.indexOf(subStr) >= 0
+
+fun length(string str) -> int
+  intrinsic{string_length}(str)
+
+fun indexOf(string str, string subStr, int idx = 0, int subStrIdx = 0)
+  if idx >= str.length()            -> -1
+  if str[idx] == subStr[subStrIdx]  -> subStrIdx >= --subStr.length() ?
+                                        idx - --subStr.length() :
+                                        indexOf(str, subStr, ++idx, ++subStrIdx)
+  else                              -> indexOf(str, subStr, subStrIdx == 0 ? ++idx : idx, 0)
+
+fun indexOfLast(string str, string subStr)
+  indexOfLast(str, subStr, str.length() - 1, subStr.length() - 1)
+
+fun indexOfLast(string str, string subStr, int idx, int subStrIdx)
+  if idx < 0                        -> -1
+  if str[idx] == subStr[subStrIdx]  -> subStrIdx <= 0 ?
+                                        idx :
+                                        indexOfLast(str, subStr, --idx, --subStrIdx)
+  else                              -> indexOfLast(
+                                          str,
+                                          subStr,
+                                          subStrIdx == --subStr.length() ? --idx : idx,
+                                          --subStr.length())
+
+fun indexOf(string str, function{char, bool} pred, int idx = 0)
+  if idx >= str.length()  -> -1
+  if pred(str[idx])       -> idx
+  else                    -> indexOf(str, pred, ++idx)
+
+fun startsWith(string str, string subStr, int idx = 0)
+  invoke(
+    lambda (int subStrIdx)
+      if subStrIdx >= subStr.length()               -> true
+      if subStrIdx >= str.length()                  -> false
+      if str[idx + subStrIdx] != subStr[subStrIdx]  -> false
+      else                                          -> self(++subStrIdx)
+  , 0)
+
+fun endsWith(string str, string subStr)
+  invoke(
+    lambda (int revIdx)
+      if revIdx >= subStr.length()                                          -> true
+      if revIdx >= str.length()                                             -> false
+      if str[--str.length() - revIdx] != subStr[--subStr.length() - revIdx] -> false
+      else                                                                  -> self(++revIdx)
+  , 0)
+
+fun any(string str, function{char, bool} pred)
+  invoke(
+    lambda (int idx)
+      if idx >= str.length()  -> false
+      else                    -> pred(str[idx]) || self(++idx)
+  , 0)
+
+fun all(string str, function{char, bool} pred)
+  str.count(pred) == str.length()
+
+fun none(string str, function{char, bool} pred)
+  str.count(pred) == 0
+
+fun count(string str, function{char, bool} pred)
+  invoke(
+    lambda (int idx, int res)
+      if idx >= str.length()  -> res
+      else                    -> self(++idx, pred(str[idx]) ? ++res : res)
+  , 0, 0)
+
+fun replace(string str, string old, string new)
+  invoke(
+    lambda (string str, int startIdx)
+      idx = str.indexOf(old, startIdx);
+      if idx < 0  ->  str
+      else        ->  newStr = str[0, idx] + new + str[idx + old.length(), str.length()];
+                      self(newStr, idx + new.length())
+  , str, 0)
+
+fun insert(string str, string val, int idx)
+  if idx == 0             -> val + str
+  if idx >= str.length()  -> str + val
+  else                    -> str[0, idx] + val + str[idx, str.length()]
+
+fun remove(string str, int idx, int amount = 1)
+  if amount <= 0                  -> str
+  if idx == 0                     -> str[amount, str.length()]
+  if idx == str.length() - amount -> str[0, str.length() - amount]
+  else                            -> str[0, idx] + str[idx + amount, str.length()]
+
+fun padLeft(string str, int length, char c)
+  if str.length() < length  -> padLeft(c.string() + str, length, c)
+  else                      -> str
+
+fun fold{T}(string str, function{T, char, T} func)
+  invoke(
+    lambda (int idx, T result)
+      idx >= str.length() ? result : self(++idx, func(result, str[idx]))
+  , 0, T())
+
+fun transform(string str, function{char, string} func)
+  str.fold(lambda (string res, char c) res + func(c))
+
+fun split(string str, function{char, bool} pred)
+  invoke(
+    lambda (int startIdx, int endIdx, List{string} result)
+      if startIdx < 0         -> startIdx == endIdx ? result : str[startIdx, ++endIdx] :: result
+      if pred(str[startIdx])  -> startIdx == endIdx ?
+        self(--startIdx, --endIdx, result) :
+        self(--startIdx, --startIdx, str[++startIdx, ++endIdx] :: result)
+      else                    -> self(--startIdx, endIdx, result)
+  , --str.length(), --str.length(), List{string}())
+
+fun trimStart(string str, function{char, bool} pred = isWhitespace)
+  invoke(
+    lambda (int idx)
+      c = str[idx];
+      if c != '\0' && pred(c) -> self(++idx)
+      else                    -> str[idx, str.length()]
+  , 0)
+
+fun trimEnd(string str, function{char, bool} pred = isWhitespace)
+  invoke(
+    lambda (int idx)
+      c = str[idx];
+      if c != '\0' && pred(c) -> self(--idx)
+      else                    -> str[0, ++idx]
+  , --str.length())
+
+fun trim(string str, function{char, bool} pred = isWhitespace)
+  str.trimStart(pred).trimEnd(pred)
+
+fun toChars(string str)
+  invoke(
+    lambda (int idx, List{char} result)
+      if idx < 0  -> result
+      else        -> self(--idx, str[idx] :: result)
+  , --str.length(), List{char}())
+
+fun join(List{string} l)
+  l.sum()
+
+fun join(List{char} l)
+  l.fold(appendChar)
+
+fun getTextPos(string str)
+  line    = str.count(equals{char}['\n']);
+  column  = str.length() - (str.indexOfLast("\n") + 1);
+  TextPos(line, column)
+
+// -- Tests
+
+assert(
+  string(1, 2) == "01" &&
+  string(42L, 5) == "00042")
+
+assert(
+  string('0', 1) == "0" &&
+  string('0', 2) == "00" &&
+  string('0', 3) == "000" &&
+  string('0', 0) == "" &&
+  string('0', -1) == "")
+
+assert(
+  string("hello", 1)  == "hello" &&
+  string("hello", 2)  == "hellohello" &&
+  string("hello", 3)  == "hellohellohello" &&
+  string("hello", 0)  == "" &&
+  string("hello", -1) == "")
+
+assert("".isEmpty() && !" ".isEmpty())
+
+assert(
+  "".last() == '\0' &&
+  "o".last() == 'o' &&
+  "hello".last() == 'o')
+
+assert(
+  "hello world".contains("hello") &&
+  "hello world".contains("world") &&
+  "hello world".contains(" ") &&
+  "hello world".contains("ld") &&
+  "hello world".contains("he") &&
+  "hello world".contains("o w") &&
+  !"hello".contains("world") &&
+  !"hello".contains("llow") &&
+  !"hello".contains(""))
+
+assert(
+  "hello world".indexOf("hello") == 0 &&
+  "hello world".indexOf("world") == 6 &&
+  "hello world".indexOf(" ") == 5 &&
+  "hello world".indexOf("ld") == 9 &&
+  "hello world".indexOf("lo") == 3 &&
+  "hello world".indexOf("el") == 1 &&
+  "hello world".indexOf("he") == 0 &&
+  "hello world".indexOf("o w") == 4 &&
+  "wasd wasd".indexOf("wasd") == 0 &&
+  "hello".indexOf("world") == -1 &&
+  "hello".indexOf("llow") == -1 &&
+  "hello".indexOf("") == -1)
+
+assert(
+  "wasd wasd".indexOfLast("wasd") == 5 &&
+  "hello world".indexOfLast("hello") == 0 &&
+  "hello world".indexOfLast("world") == 6 &&
+  "hello world".indexOfLast("lo") == 3 &&
+  "hello world".indexOfLast("el") == 1 &&
+  "wasd wasd".indexOfLast(" ") == 4 &&
+  "wasd wasd".indexOfLast("d w") == 3 &&
+  "wasd wasd".indexOfLast("wasdz") == -1 &&
+  "wasd wasd".indexOfLast("") == -1 &&
+  "".indexOfLast("d") == -1)
+
+assert(
+  "hello world".indexOf(equals{char}[' ']) == 5 &&
+  "hello world".indexOf(equals{char}['d']) == 10 &&
+  "hello world".indexOf(equals{char}['h']) == 0 &&
+  "hello world".indexOf(equals{char}['1']) == -1 &&
+  "".indexOf(equals{char}[' ']) == -1)
+
+assert(
+  "hello world".startsWith("hello") &&
+  "hello world".startsWith("h") &&
+  "hello world".startsWith("hello world") &&
+  "hello world".startsWith("") &&
+  !"hello world".startsWith("world") &&
+  !"hello".startsWith("hello world") &&
+  !"hello".startsWith("ello") &&
+  !"".startsWith("h") &&
+  "".startsWith(""))
+
+assert(
+  "hello world".endsWith("world") &&
+  "hello world".endsWith("d") &&
+  "hello world".endsWith("hello world") &&
+  "hello world".endsWith("") &&
+  !"hello world".endsWith("hello") &&
+  !"hello".endsWith("hello world") &&
+  !"hello".endsWith("hell") &&
+  !"".endsWith("h") &&
+  "".endsWith(""))
+
+assert(
+  "hello world".any(equals{char}[' ']) &&
+  !"hello world".any(equals{char}['1']))
+
+assert(
+  "hello".all(!equals{char}[' ']) &&
+  !"hello world".all(equals{char}[' ']))
+
+assert(
+  "hello world".none(equals{char}['1']) &&
+  !"hello world".none(equals{char}[' ']))
+
+assert(
+  "".count(equals{char}[' ']) == 0 &&
+  " ".count(equals{char}[' ']) == 1 &&
+  " hello ".count(equals{char}[' ']) == 2 &&
+  "hello world".count(equals{char}[' ']) == 1 &&
+  "1234567890".count(isDigit) == 10)
+
+assert(
+  "hello world".replace("hello", "world") == "world world" &&
+  "hello hello hello".replace(" ", "-") == "hello-hello-hello" &&
+  "hello hello hello".replace(" ", "") == "hellohellohello" &&
+  "hello hello hello".replace("l", "L") == "heLLo heLLo heLLo" &&
+  "hello hello hello".replace(" ", " world ") == "hello world hello world hello" &&
+  "hello".replace("world", "1337") == "hello" &&
+  "hellohellohello".replace("hello", "world") == "worldworldworld" &&
+  "hellohellohello".replace("hello", "") == "" &&
+  "lelelel".replace("e", "lele") == "llelellelellelel" &&
+  "".replace("", "") == "")
+
+assert(
+  "helloworld".insert("_", 0) == "_helloworld" &&
+  "helloworld".insert("_", "helloworld".length()) == "helloworld_" &&
+  "helloworld".insert("_", 1) == "h_elloworld" &&
+  "helloworld".insert("_", 5) == "hello_world")
+
+assert(
+  "".remove(0)            == "" &&
+  "h".remove(0)           == "" &&
+  "helloworld".remove(0)  == "elloworld" &&
+  "helloworld".remove(1)  == "hlloworld" &&
+  "helloworld".remove(2)  == "heloworld" &&
+  "helloworld".remove(8)  == "helloword" &&
+  "helloworld".remove(9)  == "helloworl" &&
+  "helloworld".remove(-1) == "helloworld" &&
+  "helloworld".remove(10) == "helloworld")
+
+assert(
+  "".remove(0, 0)             == ""   &&
+  "".remove(0, 2)             == ""   &&
+  "h".remove(0, 0)            == "h"  &&
+  "h".remove(0, 2)            == ""   &&
+  "helloworld".remove(0, 2)   == "lloworld" &&
+  "helloworld".remove(1, 2)   == "hloworld" &&
+  "helloworld".remove(2, 2)   == "heoworld" &&
+  "helloworld".remove(8, 2)   == "hellowor" &&
+  "helloworld".remove(9, 2)   == "helloworl" &&
+  "helloworld".remove(0, 9)   == "d" &&
+  "helloworld".remove(0, 10)  == "" &&
+  "helloworld".remove(0, -1)  == "helloworld" &&
+  "helloworld".remove(2, -1)  == "helloworld")
+
+assert(
+  "1".padLeft(-1, '0') == "1" &&
+  "1".padLeft(0, '0') == "1" &&
+  "1".padLeft(1, '0') == "1" &&
+  "1".padLeft(2, '0') == "01" &&
+  "1".padLeft(3, '0') == "001")
+
+assert(
+  "hello".transform(lambda (char c) "W") == "WWWWW" &&
+  "".transform(lambda (char c) "W") == "")
+
+assert(
+  "hello world".split(equals{char}[' ']) == "hello" :: "world" &&
+  "lineA\nlineB\nlineC".split(equals{char}['\n']) == "lineA" :: "lineB" :: "lineC" &&
+  "   hello   world   ".split(equals{char}[' ']) == "hello" :: "world" &&
+  "    ".split(equals{char}[' ']).isEmpty() &&
+  " h e l l o ".split(equals{char}[' ']) == "h" :: "e" :: "l" :: "l" :: "o" &&
+  "hello-world".split(equals{char}[' ']) == List("hello-world") &&
+  "".split(equals{char}[' ']) == List{string}())
+
+assert(
+  "".trimStart()                 == ""          &&
+  " ".trimStart()                == ""          &&
+  " \t\n ".trimStart()           == ""          &&
+  "   hello".trimStart()         == "hello"     &&
+  "hello ".trimStart()           == "hello "    &&
+  "   h e llo".trimStart()       == "h e llo"   &&
+  " hello \t".trimStart()        == "hello \t"  &&
+  "1a2b3c45".trimStart(isDigit)  == "a2b3c45")
+
+assert(
+  "".trimEnd()                 == ""            &&
+  " ".trimEnd()                == ""            &&
+  " \t\n ".trimEnd()           == ""            &&
+  "   hello".trimEnd()         == "   hello"    &&
+  "hello ".trimEnd()           == "hello"       &&
+  "  h e llo \t".trimEnd()      == "  h e llo"  &&
+  "1a2b3c45".trimEnd(isDigit)  == "1a2b3c")
+
+assert(
+  "".trim()                 == ""         &&
+  " ".trim()                == ""         &&
+  " \t\n ".trim()           == ""         &&
+  "   hello".trim()         == "hello"    &&
+  "hello ".trim()           == "hello"    &&
+  "   h e llo".trim()       == "h e llo"  &&
+  " hello \t".trim()        == "hello"    &&
+  "1a2b3c45".trim(isDigit)  == "a2b3c")
+
+assert(
+  "h".toChars() == List{char}('h') &&
+  "hello".toChars() == 'h' :: 'e' :: 'l' :: 'l' :: 'o' &&
+  "1337".toChars().join() == "1337" &&
+  "".toChars() == List{char}())
+
+assert(
+  join("hello" :: " " :: "world") == "hello world" &&
+  join('h' :: 'e' :: 'l' :: 'l' :: 'o') == "hello" &&
+  List{string}().join() == "" &&
+  List{char}().join() == "")
+
+assert(
+  "".getTextPos()           == TextPos(0, 0) &&
+  "a".getTextPos()          == TextPos(0, 1) &&
+  "abc".getTextPos()        == TextPos(0, 3) &&
+  "abc\n".getTextPos()      == TextPos(1, 0) &&
+  "abc\ndef".getTextPos()   == TextPos(1, 3) &&
+  "abc\ndef\n".getTextPos() == TextPos(2, 0))

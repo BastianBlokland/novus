@@ -86,7 +86,8 @@ static auto getLabels(const dasm::InstructionLabels& instrLabels, uint32_t ipOff
   return itr->second;
 }
 
-auto disassembleInstructions(const Assembly& assembly, const dasm::InstructionLabels& instrLabels)
+auto disassembleInstructions(
+    const Executable& executable, const dasm::InstructionLabels& instrLabels)
     -> std::vector<dasm::Instruction> {
 
   using Instr = dasm::Instruction;
@@ -94,8 +95,8 @@ auto disassembleInstructions(const Assembly& assembly, const dasm::InstructionLa
 
   auto result = std::vector<dasm::Instruction>{};
 
-  for (auto* ip = assembly.getIp(0); !assembly.isEnd(ip);) {
-    const auto offset = assembly.getOffset(ip);
+  for (auto* ip = executable.getIp(0); !executable.isEnd(ip);) {
+    const auto offset = executable.getOffset(ip);
     const auto opCode = readAsm<OpCode>(&ip);
     const auto labels = getLabels(instrLabels, offset);
 

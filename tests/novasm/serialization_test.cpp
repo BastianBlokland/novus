@@ -4,7 +4,7 @@
 
 namespace novasm {
 
-static auto testSerializeAndDeserializeAsm(Assembly a) {
+static auto testSerializeAndDeserializeAsm(Executable a) {
   // Serialize.
   auto outputString = std::string{};
   serialize(a, std::back_inserter(outputString));

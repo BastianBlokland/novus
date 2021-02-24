@@ -1,6 +1,6 @@
 ## Syntax highlighting for the novus language.
 
-syntax "nov" "\.nov$"
+syntax "ns" "\.ns$"
 comment "//"
 
 # Keywords.

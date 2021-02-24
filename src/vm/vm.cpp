@@ -72,7 +72,7 @@ static auto teardown(const internal::Settings* /*unused*/) noexcept {}
 
 #endif // !_WIN32
 
-auto run(const novasm::Assembly* assembly, PlatformInterface* iface) noexcept -> ExecState {
+auto run(const novasm::Executable* executable, PlatformInterface* iface) noexcept -> ExecState {
 
   auto execRegistry = internal::ExecutorRegistry{};
   auto memAlloc     = internal::MemoryAllocator{};
@@ -91,11 +91,11 @@ auto run(const novasm::Assembly* assembly, PlatformInterface* iface) noexcept ->
 
   auto resultState = execute(
       &settings,
-      assembly,
+      executable,
       iface,
       &execRegistry,
       &refAlloc,
-      assembly->getEntrypoint(),
+      executable->getEntrypoint(),
       0,
       nullptr,
       nullptr);

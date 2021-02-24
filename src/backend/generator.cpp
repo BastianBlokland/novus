@@ -67,7 +67,7 @@ static auto generateExecStmt(
   return label;
 }
 
-auto generate(const prog::Program& program) -> std::pair<novasm::Assembly, InstructionLabels> {
+auto generate(const prog::Program& program) -> std::pair<novasm::Executable, InstructionLabels> {
   auto compilerVersion = std::string{PROJECT_VER};
   auto asmb            = novasm::Assembler{std::move(compilerVersion)};
 

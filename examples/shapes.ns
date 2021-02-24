@@ -1,0 +1,48 @@
+import "std.ns"
+
+struct Square         = float size
+struct Rectangle      = float width, float height
+struct Circle         = float radius
+struct RightTriangle  = float legA, float legB
+
+union Shape = Square, Rectangle, Circle, RightTriangle
+
+fun getArea(Shape s)
+  if s as Square square           -> square.size * square.size
+  if s as Rectangle rect          -> rect.width * rect.height
+  if s as Circle circle           -> pi() * circle.radius * circle.radius
+  if s as RightTriangle triangle  -> triangle.legA * triangle.legB / 2.0
+
+// -- Tests
+
+assert(         getArea(Square(42)) ==          1764)
+assert(         getArea(Rectangle(3, 8)) ==     24)
+assert(approx(  getArea(Circle(4.2)),           55.4177))
+assert(         getArea(RightTriangle(3, 8)) == 12)
+
+fun getHypotenuse(Shape s)
+  if s as RightTriangle triangle -> Option(getHypotenuse(triangle))
+  else                           -> None()
+
+fun getHypotenuse(RightTriangle triangle)
+  sqrt(triangle.legA * triangle.legA + triangle.legB * triangle.legB)
+
+// -- Tests
+
+assert(approx(getHypotenuse(RightTriangle(3, 8)), 8.544))
+assert(getHypotenuse(Circle(42)) is None)
+assert(getHypotenuse(Circle(42)) == None())
+
+fun getPerimeter(Shape s)
+  if s as Square square           -> square.size * 4
+  if s as Rectangle rect          -> rect.width * 2 + rect.height * 2
+  if s as Circle circle           -> pi() * 2 * circle.radius
+  if s as RightTriangle triangle  -> a = triangle.legA; b = triangle.legB;
+                                     a + b + sqrt(a * a + b * b)
+// -- Tests
+
+assert(         getPerimeter(Square(42)) ==         168)
+assert(         getPerimeter(Rectangle(3, 8)) ==    22)
+assert(approx(  getPerimeter(Circle(4.2)),          26.3894))
+assert(approx(  getPerimeter(RightTriangle(3, 8)),  19.544))
+

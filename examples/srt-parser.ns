@@ -1,0 +1,120 @@
+// -- Example of using the parser library to create a parser for the SubRip (srt) subtitle format.
+// Srt is a really simple format:
+//  184
+//  00:13:59,380 --> 00:14:01,257
+//  Catherine,
+//  what's going on here?
+//
+// More info: https://en.wikipedia.org/wiki/SubRip
+
+import "std.ns"
+
+// Quick information about the parsing library.
+// 'Parser{T}' is a function that when executed on an input string either produces a 'T' or fails.
+//
+// Many function's of the parsing library are higher-order functions as in you construct a Parser
+// by executing a function.
+//
+// Parsers can be combined to create more complex parsers,
+// an overview of a few of the ways to combine parsers;
+//
+// - '?Parser{T}' -> Parser{Option{T}}
+//    Makes a parser optional, an option parser always succeeds but doesn't always produce a value.
+//
+// - 'Parser{T1} & Parser{T2}' -> Parser{Pair{T1, T2}}
+//    And combiner, excecutes parser 2 only if parser 1 succeded, both values are returned.
+//
+// - 'Parser{T1} | Parser{T2}' -> Parser{Either{T1, T2}}'
+//    Else combiner, executes parser 2 only if parser 1 fails, either value is returned.
+//
+// - 'Parser{T1} >> Parser{T2}' -> Parser{T2}'
+//    Excecutes both parsers but only the result of parser 2 is returned.
+//
+// - 'Parser{T1} << Parser{T2}' -> Parser{T1}'
+//    Excecutes both parsers but only the result of parser 1 is returned.
+//
+// - 'Parser{T} :: Parser{T}' -> Parser{List{T}}'
+//    Excecutes both parsers, return a list containing both values.
+//
+// - 'Parser{T} ! Error' -> Parser{T}'
+//    Append a more descriptive error when the given parser fails.
+//
+// - 'Parser{T} !! Error' -> Parser{T}'
+//    Replace the error with a more descriptive error when the given parser fails.
+
+// -- Types
+
+struct Subtitle = int seq, Timing timing, string text
+struct Timing   = Duration start, Duration end
+
+// -- Conversions
+
+fun string(Subtitle s)  s.seq.string() + " (" + s.timing.string() + ")\n" + s.text
+fun string(Timing t)    t.start.string() + " -> " + t.end.string()
+
+// -- Parsers
+
+fun durationParser(Duration base) -> Parser{Duration}
+  txtIntParser().map(lambda (int i) base * i)
+
+// Format of timecode: '00:14:01,257'
+// Construct a list of duration parsers and then sum them.
+fun timecodeParser() -> Parser{Duration}
+  (
+    durationParser(hour())                              ::
+    (matchParser(':') >> durationParser(minute()))      ::
+    (matchParser(':') >> durationParser(second()))      ::
+    (matchParser(',') >> durationParser(millisecond()))
+  ).map(sum{Duration}) ! Error("Invalid srt timecode")
+
+// Format of timing: '00:13:59,380 --> 00:14:01,257'
+// Parse two timecodes and construct a 'Timing' struct.
+fun timingParser() -> Parser{Timing}
+  (
+    timecodeParser() & (matchParser(" --> ") >> timecodeParser())
+  ).map(construct{Duration, Duration, Timing}) ! Error("Invalid srt timing specification")
+
+// Parse all text until a empty line is encountered.
+fun subTextParser() -> Parser{string}
+  untilParser(newlineParser() & newlineParser())
+
+// Parse the sequence number, the timing line and all text belonging to this subtitle, then
+// construct a 'Subtitle' struct.
+fun subParser() -> Parser{Subtitle}
+  seq     = txtIntParser() << lineParser(ParseFlags.Optional) << whitespaceParser() ! Error("Invalid sequence number");
+  timing  = timingParser() << lineParser(ParseFlags.Optional) << whitespaceParser();
+  txt     = subTextParser();
+  (seq & timing & txt).map(construct{int, Timing, string, Subtitle})
+
+// Parse a list of subtitles optionally followed by whitespace.
+fun subListParser() -> Parser{List{Subtitle}}
+  manyUntilParser(subParser() << whitespaceParser(), endParser())
+
+// -- Driver code
+// Example output:
+//
+// 78 (5m34s -> 5m36s)
+// Good point. Good point.
+//
+// 79 (5m36s -> 5m38s)
+// - We're stuck.
+// - No we're not!
+
+act parseSrt(Path path)
+  subs = fileRead(path, subListParser()).failOnError();
+  print(string(subs, "", "\n\n", ""))
+
+act printUsage()
+  print("Srt parser");
+  print("Usage: srt-parser.nov --path path/to/file.srt\n");
+  print("Options:");
+  print("  --help   Print this usage information");
+  print("  --path   Path to the srt file")
+
+act main()
+  if hasEnvOpt("help") -> printUsage()
+  else ->
+    path = getEnvOpt("path", pathParser()).failOnError();
+    parseSrt(path)
+
+printBench(main)
