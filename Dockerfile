@@ -17,7 +17,7 @@ RUN apk add --no-cache build-base cmake bash git
 # Copy sources into the build container.
 COPY apps           /novus/apps
 COPY include        /novus/include
-COPY novstd         /novus/novstd
+COPY std            /novus/std
 COPY scripts        /novus/scripts
 COPY src            /novus/src
 COPY CMakeLists.txt /novus/CMakeLists.txt

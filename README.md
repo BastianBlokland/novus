@@ -83,7 +83,7 @@ The Novus type system contains some basic types build in to the language:
 and `lazy_action`).
 
 Note: These are the types the language itself supports, there are however many more types
-implemented in the [standard library](https://github.com/BastianBlokland/novus/tree/master/novstd).
+implemented in the [standard library](https://github.com/BastianBlokland/novus/tree/master/std).
 
 And can be extended with three kinds of user defined types:
 
@@ -268,7 +268,7 @@ Those functions are called 'actions'. An action is allowed to call into a functi
 versa.
 
 ```n
-import "std.nov"
+import "std.ns"
 
 act printFile(Path file)
   in  = fileOpen(file, FileMode.Open);
@@ -304,7 +304,7 @@ Open a interactive container with the compiler, runtime and examples installed:
 `docker run --rm -it bastianblokland/novus sh`
 
 Run an example:
-`nove examples/fizzbuzz.nov`
+`nove examples/fizzbuzz.ns`
 
 ## Installing the compiler and runtime
 
@@ -376,15 +376,21 @@ For more convenience you can add the `bin` directory to your `PATH`.
 
 ## Building novus source code
 
-Novus source (`.nov`) can be compiled into novus assembly (`.nova`) using the `novc` executable.
+Novus source (`.ns`) can be compiled into novus assembly (`.nova`) using the `novc` executable.
 
-Example: `./bin/novc examples/fizzbuzz.nov`. The output can be found at `examples/fizzbuzz.nova`.
+Example: `./bin/novc examples/fizzbuzz.ns`. The output can be found at `examples/fizzbuzz.nova`.
 
 ## Running novus assembly
 
 Novus assembly (`.nova`) can be run in the novus runtime (`novrt`).
 
 Example: `./bin/novrt examples/fizzbuzz.nova`.
+
+On unix if you add the runtime to your `PATH` you can straight up run `.nova` files:
+```
+chmod +x examples/fizzbuzz.nova
+examples/fizzbuzz.nova
+```
 
 ## Evaluator
 
@@ -393,8 +399,8 @@ Alternatively you can use the `nove` (novus evaluator) to combine the compilatio
 You can either pass the source straight to the evaluator:
 `./bin/nove 'print(pow(42, 1.337))'`.
 
-or give a `.nov` source file to the evaluator:
-`./bin/nove examples/fizzbuzz.nov`.
+or give a `.ns` source file to the evaluator:
+`./bin/nove examples/fizzbuzz.ns`.
 
 ## Debugging
 
@@ -410,9 +416,6 @@ After building the project you can run the tests by running `scripts/test.sh` on
 `scripts/test.ps1` on windows.
 
 Note: To run the compiler and vm tests they have to be enabled and build in the configure step.
-
-Note: On windows compiler and vm tests have to be run as administrator, reason is temporary files
-are created in the system root there and most users don't have access to write there.
 
 ## Ide
 

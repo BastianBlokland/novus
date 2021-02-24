@@ -162,4 +162,4 @@ if(BUILD_FUZZING)
   add_subdirectory(fuzz)
 endif()
 
-add_subdirectory(novstd)
+add_subdirectory(std)

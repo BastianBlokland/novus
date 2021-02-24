@@ -44,19 +44,19 @@ test.opt: build
 test.vm: build
 	./scripts/test.sh --filter "^\[vm\]"
 
-.PHONY: test.novstd
-test.novstd: build
-	./scripts/test.sh --filter "^\[novstd\]"
+.PHONY: test.std
+test.std: build
+	./scripts/test.sh --filter "^\[std\]"
 
 .PHONY: clean
 clean:
 	rm -rf build
 
-# Watch for changes to '.nov' files and automatically compile them.
+# Watch for changes to '.ns' files and automatically compile them.
 # Requires 'inotify-tools' to be installed.
-.PHONY: watch.nov
-watch.nov:
-	./scripts/watch_nov.sh . ./bin/novc
+.PHONY: watch.ns
+watch.ns:
+	./scripts/watch_ns.sh . ./bin/novc
 
 .PHONY: docker.run
 docker.run:

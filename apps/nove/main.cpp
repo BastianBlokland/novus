@@ -97,7 +97,7 @@ auto main(int argc, const char** argv) noexcept -> int {
   }
 
   auto progTxt = std::string{argv[1]};
-  progTxt.append(" import \"std.nov\"");
+  progTxt.append(" import \"std.ns\"");
   return run(
       "inline",
       std::nullopt,

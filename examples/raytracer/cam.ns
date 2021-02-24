@@ -1,0 +1,19 @@
+import "std.ns"
+import "ray3.ns"
+
+// -- Types
+
+struct Camera =
+  float aspect,
+  float scale
+
+// -- Functions
+
+fun camFromAspectAndFov(float aspect, float radVerFov)
+  Camera(aspect, tan(radVerFov * .5))
+
+fun getRay(Camera c, float u, float v) -> Ray3
+  x   = (2.0 * u - 1.0) * c.aspect * c.scale;
+  y   = (1.0 - 2.0 * v) * c.scale;
+  dir = normalize(Vec3(x, y, -1));
+  Ray3(vec3Zero(), dir)

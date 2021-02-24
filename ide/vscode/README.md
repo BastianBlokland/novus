@@ -43,7 +43,7 @@ Alternatively you can create a task that automatically compiles files in the bac
     {
       "label": "watch",
       "type": "shell",
-      "command": "${workspaceFolder}/scripts/watch_nov.sh",
+      "command": "${workspaceFolder}/scripts/watch_ns.sh",
       "args": [
         "${workspaceFolder}",
         "${workspaceFolder}/bin/novc"
@@ -54,4 +54,4 @@ Alternatively you can create a task that automatically compiles files in the bac
   ]
 }
 ```
-The `scripts/watch_nov.sh` bash script uses `inotifywait` to detect file changes.
+The `scripts/watch_ns.sh` bash script uses `inotifywait` to detect file changes.

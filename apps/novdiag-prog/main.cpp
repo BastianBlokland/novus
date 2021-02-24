@@ -334,7 +334,7 @@ auto main(int argc, const char** argv) -> int {
   auto analyzeCmd =
       app.add_subcommand("analyze", "Analyze the provided characters")->callback([&]() {
         rang::setControlMode(colorMode);
-        input.append(" import \"std.nov\"");
+        input.append(" import \"std.ns\"");
         exitcode =
             run("inline",
                 std::nullopt,

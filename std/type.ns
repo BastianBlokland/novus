@@ -1,0 +1,48 @@
+import "std/char.ns"
+
+// -- Type tag
+
+struct TypeTag{T}
+
+// -- Traits
+
+fun isIntegral(TypeTag{int} t)  true
+fun isIntegral(TypeTag{char} t) true
+fun isIntegral(TypeTag{long} t) true
+fun isIntegral{T}(TypeTag{T} t) false
+fun isIntegral{T}() isIntegral(TypeTag{T}())
+
+fun byteSize(TypeTag{char} t)   1
+fun byteSize(TypeTag{int} t)    4
+fun byteSize(TypeTag{float} t)  4
+fun byteSize(TypeTag{long} t)   8
+fun byteSize{T}()   byteSize(TypeTag{T}())
+fun bitSize{T}()    byteSize{T}() * 8
+fun nibbleSize{T}() byteSize{T}() * 2
+
+fun lowBit{T}()   T(1)
+fun highBit{T}()  lowBit{T}() << (bitSize{T}() - 1)
+
+fun minVal(TypeTag{char} t)  '\0'
+fun minVal(TypeTag{int} t)   0x8000_0000
+fun minVal(TypeTag{long} t)  0x8000_0000_0000_0000L
+fun minVal(TypeTag{float} t) asFloat(0xFF7F_FFFF)
+fun minVal{T}() minVal(TypeTag{T}())
+
+fun maxVal(TypeTag{char} t)  char(255)
+fun maxVal(TypeTag{int} t)   0x7FFF_FFFF
+fun maxVal(TypeTag{long} t)  0x7FFF_FFFF_FFFF_FFFFL
+fun maxVal(TypeTag{float} t) asFloat(0x7F7F_FFFF)
+fun maxVal{T}() maxVal(TypeTag{T}())
+
+// -- Tests
+
+assert(isIntegral{int}())
+assert(!isIntegral{string}())
+
+assert(bitSize{char}()  == 8)
+assert(bitSize{int}()   == 32)
+assert(bitSize{long}()  == 64)
+
+assert(lowBit{int}() == 1)
+assert(highBit{int}() == 1 << 31)

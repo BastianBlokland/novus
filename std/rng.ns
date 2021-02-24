@@ -1,0 +1,132 @@
+import "std/math.ns"
+import "std/list.ns"
+import "std/pair.ns"
+import "std/func.ns"
+
+// -- Pseudo random number generator
+// Implementation is the 'xorwow' xorshift alogrithm.
+// https://en.wikipedia.org/wiki/Xorshift
+
+// -- Types
+
+struct Rng          = int a, int b, int c, int d, int cnt
+struct RngResult{T} = Rng rng, T val
+
+// -- Implementation
+// 'xorwow' xorshift and using a simple 32 bit xorshift to init the state.
+
+fun rngInit(int seed)
+  s = seed == 0 ? 1 : seed;
+  xorShift32 = (lambda (int i)
+    x1 = i  ^ (i  << 13);
+    x2 = x1 ^ (x1 << 17);
+    x2      ^ (x2 << 5)
+  );
+  xA = xorShift32(s);
+  xB = xorShift32(xA);
+  xC = xorShift32(xB);
+  xD = xorShift32(xC);
+  Rng(xA, xB, xC, xD, 0)
+
+// Returns a floating point number between 0.0 (inclusive) and 1.0 (exclusive).
+fun rngNext(Rng r)
+  x1  = r.d  ^ (r.d >> 2);
+  x2  = x1   ^ (x1 << 1);
+  x3  = x2   ^ (r.a ^ (r.a << 4));
+  cnt = r.cnt + 362437;
+  val = abs(x3 + cnt) / (float(maxVal{int}()) + 1.0);
+  RngResult(Rng(x3, r.a, r.b, r.c, cnt), val)
+
+fun rngNext{T}(RngResult{T} r)
+  r.rng.rngNext().map(lambda (float f) Pair(r.val, f))
+
+// -- Utilities
+
+fun map{T, TResult}(RngResult{T} r, function{T, TResult} func)
+  RngResult(r.rng, func(r.val))
+
+fun map{T1, T2, TResult}(RngResult{Pair{T1, T2}} r, function{T1, T2, TResult} func)
+  RngResult(r.rng, func(r.val.first, r.val.second))
+
+// Returns a random value between min (inclusive) and max (exclusive).
+fun rngNext{T}(Rng r, T min, T max)
+  r.rngNext().map(lambda (float f) min >= max ? min : min + T(f * (max - min)))
+
+fun rngNext{T1, T2}(RngResult{T1} r, T2 min, T2 max)
+  r.rng.rngNext(min, max).map(lambda (T2 t) Pair(r.val, t))
+
+// Returns a list of random floating point numbers between 0.0 (inclusive) and 1.0 (exclusive).
+fun rngList(Rng r, int count)
+  rangeList(0, count).fold((lambda (RngResult{List{float}} res, int i)
+    n = res.rng.rngNext(); RngResult(n.rng, n.val :: res.val)
+  ), RngResult(r, List{float}()))
+
+// Returns a list of random values between min (inclusive) and max (exclusive).
+fun rngList{T}(Rng r, int count, T min, T max)
+  rangeList(0, count).fold((lambda (RngResult{List{T}} res, int i)
+    n = res.rng.rngNext(min, max); RngResult(n.rng, n.val :: res.val)
+  ), RngResult(r, List{T}()))
+
+// Combine multiple values of random functions together in a list.
+fun rngList{T}(Rng r, int count, function{Rng, RngResult{T}} func)
+  rangeList(0, count).fold((lambda (RngResult{List{T}} res, int i)
+    n = func(res.rng);
+    RngResult(n.rng, n.val :: res.val)
+  ), RngResult(r, List{T}()))
+
+// Return a optional random element from the list.
+fun rngElem{T}(Rng r, List{T} l)
+  r.rngNext(0, l.length()).map(lambda (int idx) l[idx])
+
+// -- Impure utlities
+
+act rngInit()
+  rngInit(int(intrinsic{clock_nanosteady}() % maxVal{int}()))
+
+// -- Tests
+
+assert(
+  rng = rngInit();
+  rng.a != 0 && rng.b != 0 && rng.c != 0 && rng.d != 0)
+
+assert(
+  rng = rngInit(0);
+  rng.a != 0 && rng.b != 0 && rng.c != 0 && rng.d != 0)
+
+assert(
+  cnt = 100_000;
+  l   = rngInit(42).rngList(cnt).val;
+  min = l.fold(min{float});
+  max = l.fold(max{float});
+  sum = l.sum();
+  avg = sum / cnt;
+  min >= 0.0 && max < 1.0 && avg > .49 && avg < .51)
+
+assert(rngInit(42).rngNext().map(lambda (float f) f.string()).val != "")
+
+assert(rngInit(42).rngNext().rngNext().map(lambda (Pair{float, float} p) p.string()).val != "")
+
+assert(rngInit(42).rngNext(10, 10).val == 10)
+
+assert(rngInit(42).rngNext(10, 10).rngNext(10, 10).val == Pair(10, 10))
+
+assert(
+  cnt = 100_000;
+  l   = rngInit(42).rngList(cnt, 10, 20).val;
+  min = l.fold(min{int}, 10);
+  max = l.fold(max{int});
+  sum = l.sum();
+  avg = sum / cnt;
+  min >= 10 && max < 20 && avg == 14)
+
+assert(
+  f       = (lambda (Rng r) r.rngNext().map(lambda (float f) f < .5 ? "hello" : "world"));
+  l       = rngInit(42).rngList(1_000, f).val;
+  hellos  = l.filter(equals{string}["hello"]).length();
+  worlds  = l.filter(equals{string}["world"]).length();
+  hellos > 450 && worlds > 450)
+
+assert(
+  l     = "hello" :: "great" :: "world";
+  elem  = rngInit(42).rngElem(l).val ?? "";
+  l.contains(elem))

@@ -1,0 +1,1035 @@
+import "std/ascii.ns"
+import "std/bits.ns"
+import "std/either.ns"
+import "std/error.ns"
+import "std/lazy.ns"
+import "std/math.ns"
+import "std/pair.ns"
+import "std/text.ns"
+
+// -- Types
+
+struct  ParseState      = string str, int pos
+struct  ParseSuccess{T} = T val, ParseState state
+struct  ParseFailure    = Error err, ParseState state
+union   ParseResult{T}  = ParseSuccess{T}, ParseFailure
+struct  Parser{T}       = function{ParseState, ParseResult{T}} func
+
+enum ParseFlags =
+  None                    : 0b000,
+  Optional                : 0b001,
+  NoWrapperError          : 0b010,
+  AllowTrailingSeperator  : 0b100
+
+// -- Operators
+
+fun (){T}(Parser{T} p, string str) -> ParseResult{T}
+  p(ParseState(str, 0))
+
+fun (){T}(Parser{T} p, ParseState s) -> ParseResult{T}
+  p.func(s)
+
+fun run{T}(Parser{T} p, string str, ParseFlags flags = ParseFlags.None) -> Either{T, Error}
+  res = p(str);
+  if res as ParseSuccess{T} suc  -> suc.val
+  if res as ParseFailure    fail ->
+    if (flags & ParseFlags.NoWrapperError) != 0 -> fail.err
+    else ->
+    txtPos = getTextPos(fail.state.str[0, fail.state.pos]);
+    Error("Parsing failed, line: " + (txtPos.line + 1) + ", column: " + (txtPos.column + 1)) :: fail.err
+
+fun build{T}(Parser{T} p, ParseFlags flags = ParseFlags.None) -> function{string, Either{T, Error}}
+  lambda (string str)
+    p.run(str, flags)
+
+fun ??{T}(ParseResult{T} res, T def) -> T
+  res as ParseSuccess{T} suc ? suc.val : def
+
+fun ??{T1, T2}(ParseResult{T1} res, T2 def) -> Either{T1, T2}
+  res as ParseSuccess{T1} suc ? suc.val : def
+
+fun [](ParseState p, int i) -> char
+  p.str[p.pos + i]
+
+fun ==(ParseState s, char c)
+  s.str[s.pos] == c
+
+fun ==(ParseState s, string text)
+  startsWith(s.str, text, s.pos)
+
+fun !=(ParseState s, char c)
+  s.str[s.pos] != c
+
+fun !=(ParseState s, string text)
+  !startsWith(s.str, text, s.pos)
+
+fun +(ParseState s, int amount)
+  ParseState(s.str, s.pos + amount)
+
+fun -(ParseState s, int amount)
+  ParseState(s.str, max(s.pos - amount, 0))
+
+fun ++(ParseState s)
+  s + 1
+
+fun --(ParseState s)
+  s - 1
+
+fun ?{T}(Parser{T} p)
+  Parser(lambda (ParseState s) -> ParseResult{Option{T}}
+    r = p(s);
+    if r is ParseFailure          -> s.success(Option{T}())
+    if r as ParseSuccess{T} suc   -> suc.state.success(Option{T}(suc.val))
+  )
+
+fun &{T1, T2}(Parser{T1} p1, Parser{T2} p2)
+  Parser(lambda (ParseState s) -> ParseResult{Pair{T1, T2}}
+    r1 = p1(s);
+    if r1 as ParseFailure     f1    -> f1
+    if r1 as ParseSuccess{T1} suc1  ->
+      r2 = p2(suc1.state);
+      if r2 as ParseFailure     f2    -> f2
+      if r2 as ParseSuccess{T2} suc2  -> suc2.state.success(Pair(suc1.val, suc2.val))
+  )
+
+fun |{T}(Parser{T} p1, Parser{T} p2)
+  Parser(lambda (ParseState s) -> ParseResult{T}
+    r1 = p1(s);
+    if r1 is ParseSuccess{T} -> r1
+    if r1 is ParseFailure    -> p2(s)
+  )
+
+fun |{T1, T2}(Parser{T1} p1, Parser{T2} p2)
+  Parser(lambda (ParseState s) -> ParseResult{Either{T1, T2}}
+    r1 = p1(s);
+    if r1 as ParseSuccess{T1} suc1  -> suc1.state.success(         Either{T1, T2}(suc1.val))
+    if r1 is ParseFailure           -> p2(s).map(lambda (T2 val2)  Either{T1, T2}(val2))
+  )
+
+fun >>{T1, T2}(Parser{T1} p1, Parser{T2} p2)
+  Parser(lambda (ParseState s) -> ParseResult{T2}
+    r1 = p1(s);
+    if r1 as ParseFailure     f1    -> f1
+    if r1 as ParseSuccess{T1} suc1  -> p2(suc1.state)
+  )
+
+fun <<{T1, T2}(Parser{T1} p1, Parser{T2} p2)
+  Parser(lambda (ParseState s) -> ParseResult{T1}
+    r1 = p1(s);
+    if r1 as ParseFailure     f1    -> f1
+    if r1 as ParseSuccess{T1} suc1  ->
+      r2 = p2(suc1.state);
+      if r2 as ParseFailure     f2    -> f2
+      if r2 as ParseSuccess{T2} suc2  -> suc2.state.success(suc1.val)
+  )
+
+fun ::{T}(Parser{T} p1, Parser{T} p2)
+  (p1 & p2).map(lambda (Pair{T, T} p) p.first :: p.second :: List{T}())
+
+fun ::{T}(Parser{T} p1, Parser{List{T}} p2)
+ (p1 & p2).map(lambda (Pair{T, List{T}} p) p.first :: p.second)
+
+fun =={T}(ParseResult{T} result, T val)
+  result as ParseSuccess{T} suc && suc.val == val
+
+fun =={T1, T2}(ParseResult{Either{T1, T2}} result, T1 val)
+  result as ParseSuccess{Either{T1, T2}} suc && suc.val == val
+
+fun =={T1, T2}(ParseResult{Either{T1, T2}} result, T2 val)
+  result as ParseSuccess{Either{T1, T2}} suc && suc.val == val
+
+fun !{T}(Parser{T} p, Error newError)
+  p !! (lambda (Error oldError) newError :: oldError)
+
+fun !!{T}(Parser{T} p, Error newError)
+  p !! (lambda (Error oldError) newError)
+
+fun !!{T}(Parser{T} p, function{Error, Error} errorMutation)
+  Parser(lambda (ParseState s) -> ParseResult{T}
+    pR = p(s);
+    pR as ParseFailure parseFail ? parseFail.state.failure(errorMutation(parseFail.err)) : pR)
+
+// -- Conversions
+
+fun string(ParseState s)
+  s.pos.string()
+
+fun string{T}(ParseResult{T} res)
+  if res as ParseSuccess{T} suc   -> suc.string()
+  if res as ParseFailure    fail  -> fail.string()
+
+fun string{T}(ParseSuccess{T} suc)
+  suc.val.string()
+
+fun string(ParseFailure fail)
+  "[" + fail.state.pos.string() + "] " + fail.err.string()
+
+// -- Utilities
+
+fun isEnd(ParseState s)               s.pos >= s.str.length()
+fun success{T}(ParseState s, T val)   ParseSuccess(val, s)
+fun failure(ParseState s, Error err)  ParseFailure(err, s)
+
+fun isOptional(ParseFlags flags)
+  (flags & ParseFlags.Optional) != 0
+
+fun isTrailingSeperatorAllowed(ParseFlags flags)
+  (flags & ParseFlags.AllowTrailingSeperator) != 0
+
+fun map{T, TResult}(ParseResult{T} res, function{T, TResult} func)
+  if res as ParseSuccess{T} suc   -> suc.state.success(func(suc.val))
+  if res as ParseFailure    fail  -> fail
+
+fun map{T, TResult}(Parser{T} p, function{T, TResult} func)
+  Parser(lambda (ParseState s) -> ParseResult{TResult}
+    res = p(s);
+    if res as ParseSuccess{T} suc   -> suc.state.success(func(suc.val))
+    if res as ParseFailure    fail  -> fail
+  )
+
+fun map{T, TResult}(Parser{T} p, function{T, Either{TResult, Error}} func)
+  Parser(lambda (ParseState s) -> ParseResult{TResult}
+    pR = p(s);
+    if pR as ParseFailure    parseFail  -> parseFail
+    if pR as ParseSuccess{T} parseSuc   ->
+      mR = func(parseSuc.val);
+      if mR as Error    err -> parseSuc.state.failure(err)
+      if mR as TResult  val -> parseSuc.state.success(val)
+  )
+
+fun map{T1, T2, TResult}(
+  Parser{Pair{T1, T2}} p, function{T1, T2, TResult} f)
+    p.map(lambda (Pair{T1, T2} pair) pair.map(f))
+
+fun map{T1, T2, T3, TResult}(
+  Parser{Pair{Pair{T1, T2}, T3}} p, function{T1, T2, T3, TResult} f)
+    p.map(lambda (Pair{Pair{T1, T2}, T3} pair) pair.map(f))
+
+fun map{T1, T2, T3, T4, TResult}(
+  Parser{Pair{Pair{Pair{T1, T2}, T3}, T4}} p, function{T1, T2, T3, T4, TResult} f)
+    p.map(lambda (Pair{Pair{Pair{T1, T2}, T3}, T4} pair) pair.map(f))
+
+fun map{T1, T2, T3, T4, T5, TResult}(
+  Parser{Pair{Pair{Pair{Pair{T1, T2}, T3}, T4}, T5}} p, function{T1, T2, T3, T4, T5, TResult} f)
+    p.map(lambda (Pair{Pair{Pair{Pair{T1, T2}, T3}, T4}, T5} pair) pair.map(f))
+
+// -- Basic parsers
+
+fun retParser{T}(T val)
+  Parser(lambda (ParseState s) -> ParseResult{T}
+    s.success(val)
+  )
+
+fun nopParser()
+  retParser(true)
+
+fun failParser(Error error = Error())
+  Parser(lambda (ParseState s) -> ParseResult{bool}
+    s.failure(error)
+  )
+
+fun matchParser(char c)
+  Parser(lambda (ParseState s) -> ParseResult{char}
+    if s == c -> (s + 1).success(c)
+    else      -> s.failure(
+      Error("Expected: '" + c.escapeForPrinting() + "', got: '" + s[0].escapeForPrinting() + "'"))
+  )
+
+fun matchParser(string str)
+  Parser(lambda (ParseState s) -> ParseResult{string}
+    if s == str -> (s + str.length()).success(str)
+    else        -> s.failure(
+      expected = str.escapeForPrinting();
+      got      = s.str[s.pos, s.pos + str.length()].escapeForPrinting();
+      Error("Expected: '" + expected + "', got: '" + got + "'"))
+  )
+
+fun allParser()
+  Parser(lambda (ParseState s) -> ParseResult{string}
+    endState = ParseState(s.str, s.str.length());
+    endState.success(s.str[s.pos, s.str.length()])
+  )
+
+fun endParser()
+  Parser(lambda (ParseState s) -> ParseResult{string}
+    s.isEnd() ? s.success("")
+              : s.failure(Error("Expected end of input, got '" + s[0].escapeForPrinting() + "'"))
+  )
+
+fun takeParser(int chars)
+  Parser(lambda (ParseState s) -> ParseResult{string}
+    rem = s.str.length() - s.pos;
+    if rem >= chars -> (s + chars).success(s.str[s.pos, s.pos + chars])
+    else            -> s.failure(Error("Not enough characters remaining"))
+  )
+
+fun whileParser(function{ParseState, bool} pred, ParseFlags flags = ParseFlags.None)
+  Parser(lambda (ParseState begin)
+    impl =
+    (
+      lambda (ParseState cur, bool valid) -> ParseResult{string}
+        if !cur.isEnd() && pred(cur) -> self(++cur, true)
+        else                         -> valid  ? cur.success(begin.str[begin.pos, cur.pos])
+                                               : cur.failure(
+          Error("Unexpected character: '" + cur[0].escapeForPrinting() + "'"))
+    );
+    impl(begin, flags.isOptional())
+  )
+
+fun whileParser(function{char, bool} pred, ParseFlags flags = ParseFlags.None)
+  whileParser(lambda (ParseState s) pred(s[0]), flags)
+
+fun untilParser(function{char, bool} pred, ParseFlags flags = ParseFlags.None)
+  whileParser(!pred, flags)
+
+fun untilParser{T}(Parser{T} endParser, ParseFlags flags = ParseFlags.None)
+  whileParser(lambda (ParseState s) endParser(s) is ParseFailure, flags)
+
+fun whitespaceParser(ParseFlags flags = ParseFlags.Optional)
+  whileParser(isWhitespace, flags)
+
+fun lineParser(ParseFlags flags = ParseFlags.None)
+  untilParser(isNewline, flags)
+
+fun newlineParser()
+  Parser(lambda (ParseState s)
+    if s == "\n"    -> (s + 1).success("\n")
+    if s == "\r\n"  -> (s + 2).success("\r\n")
+    else            -> s.failure(
+      Error("Expected a newline, got: '" + s[0].escapeForPrinting() + "'"))
+  )
+
+fun emptyLineParser()
+  matchParser("\r\n\r\n") | matchParser("\n\n") ! Error("Expected an empty line")
+
+fun multiLineParser(int count)
+  (lineParser() << newlineParser()).repeat(count)
+
+fun charParser()
+  Parser(lambda (ParseState s) -> ParseResult{char}
+    if s.isEnd()  -> s.failure(Error("Unexpected end of input"))
+    else          -> (s + 1).success(s[0])
+  )
+
+fun txtBoolParser()
+  Parser(lambda (ParseState s) -> ParseResult{bool}
+    if s == "true"  -> (s + 4).success(true)
+    if s == "TRUE"  -> (s + 4).success(true)
+    if s == "True"  -> (s + 4).success(true)
+    if s == "false" -> (s + 5).success(false)
+    if s == "FALSE" -> (s + 5).success(false)
+    if s == "False" -> (s + 5).success(false)
+    else            -> s.failure(
+      Error("Expected a boolean, got: '" + s[0].escapeForPrinting() + "'"))
+  )
+
+fun txtPosLongParser()
+  Parser(lambda (ParseState s)
+    invoke(
+      lambda (ParseState s, long res, bool valid) -> ParseResult{long}
+        if s[0].isDigit() -> self(++s, res * 10L + s[0] - '0', true)
+        else              -> valid ?  s.success(res) :
+                                      s.failure(
+          Error("Expected an integer, got: '" + s[0].escapeForPrinting() + "'"))
+      , s, 0L, false)
+  )
+
+fun txtLongParser()
+  matchParser('-') >> txtPosLongParser().map(negate{long})  |
+  matchParser('+') >> txtPosLongParser()                    |
+  txtPosLongParser()
+
+fun txtPosIntParser()
+   txtPosLongParser().map(lambda (long l) -> Either{int, Error}
+    l > maxVal{int}() ? Error("Integer too big") : int(l)
+  )
+
+fun txtIntParser()
+  txtLongParser().map(lambda (long l) -> Either{int, Error}
+    if l > maxVal{int}() -> Error("Integer too big")
+    if l < minVal{int}() -> Error("Integer too small")
+    else            -> int(l)
+  )
+
+fun txtHexParser(int minDigits = 1)
+  Parser(lambda (ParseState s)
+    invoke(
+      lambda (ParseState s, int res, int digits) -> ParseResult{int}
+        if s[0].isDigit()             -> self(++s, (res << 4) + s[0] - '0',         ++digits)
+        if s[0] >= 'a' && s[0] <= 'f' -> self(++s, (res << 4) + s[0] - ('a' - 10),  ++digits)
+        if s[0] >= 'A' && s[0] <= 'F' -> self(++s, (res << 4) + s[0] - ('A' - 10),  ++digits)
+        else                          -> digits >= minDigits ?
+                                          s.success(res) :
+                                          s.failure(digits > 0 && digits < minDigits
+            ? Error("Expected '" + minDigits + "' hex digits, got only '" + digits + "'")
+            : Error("Expected hex number, got: '" + s[0].escapeForPrinting() + "'"))
+      , s, 0, 0)
+  )
+
+fun txtPosFloatParser()
+  expParser = txtIntParser() ! Error("Invalid exponent");
+  Parser(lambda (ParseState s)
+    invoke(
+      lambda (ParseState s, float raw, float div, bool dec, bool valid) -> ParseResult{float}
+        if s == '.' && !dec     -> self(++s, raw, div, true, false)
+        if s[0].isDigit()       -> newRaw = raw * 10.0 + int(s[0]) - int('0');
+                                   newDiv = dec ? div * 10.0 : div;
+                                   self(++s, newRaw, newDiv, dec, true)
+        if s == 'e' || s == 'E' -> expParser(s + 1).map(lambda (int exp) raw / (div / pow(10.0, exp)))
+        else                    -> valid ?  s.success(raw / div) :
+                                            s.failure(
+          Error("Expected a floating point number, got: '" + s[0].escapeForPrinting() + "'"))
+      , s, 0.0, 1.0, false, false)
+    )
+
+fun txtFloatParser()
+  matchParser('-') >> txtPosFloatParser().map(negate{float})  |
+  matchParser('+') >> txtPosFloatParser()                     |
+  txtPosFloatParser()
+
+// -- Combination parsers
+
+fun manyParser{T}(Parser{T} p)
+  Parser(lambda (ParseState begin)
+    invoke(lambda (ParseState cur, List{T} result) -> ParseResult{List{T}}
+    (
+      if cur.isEnd() -> cur.success(result)
+      else ->
+        res = p(cur);
+        if res as ParseSuccess{T} suc   -> self(suc.state, suc.val :: result)
+        if res as ParseFailure    fail  -> cur.success(result)
+    ), begin, List{T}()).map(reverse{T})
+  )
+
+fun manyParser{T, SepT}(Parser{T} p, Parser{SepT} seperator, ParseFlags flags = ParseFlags.None)
+  Parser(lambda (ParseState begin)
+    invoke(lambda (ParseState cur, List{T} result, bool required) -> ParseResult{List{T}}
+    (
+      res = p(cur);
+      if res as ParseFailure     fail  -> required ? fail : cur.success(result)
+      if res as ParseSuccess{T}  suc   ->
+        sepRes = seperator(suc.state);
+        if sepRes is ParseFailure               -> suc.state.success(suc.val :: result)
+        if sepRes as ParseSuccess{SepT} sepSuc  ->
+          self( sepSuc.state, suc.val :: result, !flags.isTrailingSeperatorAllowed())
+    ), begin, List{T}(), false).map(reverse{T})
+  )
+
+fun manyUntilParser{T, UntilT}(Parser{T} p, Parser{UntilT} until)
+  Parser(lambda (ParseState begin)
+    invoke(lambda (ParseState cur, List{T} result) -> ParseResult{List{T}}
+    (
+      if until(cur) is ParseSuccess{UntilT} -> cur.success(result)
+      if cur.isEnd()                        -> cur.failure(Error("Unexpected end of input"))
+      else ->
+        res = p(cur);
+        if res as ParseSuccess{T} suc   -> self(suc.state, suc.val :: result)
+        if res as ParseFailure    fail  -> fail
+    ), begin, List{T}()).map(reverse{T})
+  )
+
+fun manyUntilParser{T, SepT, UntilT}(Parser{T} p, Parser{SepT} seperator, Parser{UntilT} until, ParseFlags flags = ParseFlags.None)
+  reachedUntil = (lambda (ParseState s) until(s) is ParseSuccess{UntilT});
+  Parser(lambda (ParseState begin)
+    invoke(lambda (ParseState cur, List{T} result, bool required) -> ParseResult{List{T}}
+    (
+      if !required && reachedUntil(cur) -> cur.success(result)
+      if cur.isEnd()                    -> cur.failure(Error("Unexpected end of input"))
+      else ->
+        res = p(cur);
+        if res as ParseFailure    fail  -> fail
+        if res as ParseSuccess{T} suc   ->
+          sepRes = seperator(suc.state);
+          if sepRes as ParseSuccess{SepT} sepSuc  ->
+            self(sepSuc.state, suc.val :: result, !flags.isTrailingSeperatorAllowed())
+          if sepRes as ParseFailure       sepFail ->
+            reachedUntil(suc.state) ? suc.state.success(suc.val :: result) : sepFail
+    ), begin, List{T}(), false).map(reverse{T})
+  )
+
+fun lazyParser{T}(lazy{Parser{T}} lp)
+  Parser(lambda (ParseState s)
+    lp.get()(s)
+  )
+
+// -- Parser modifiers
+
+fun trim(Parser{string} p)
+  p.map(lambda (string res) res.trim())
+
+fun trim(Parser{string} p, function{char, bool} pred)
+  p.map(lambda (string res) res.trim(pred))
+
+fun repeat{T}(Parser{T} p, int count)
+  Parser(lambda (ParseState begin)
+    invoke(lambda (ParseState cur, int i, List{T} result) -> ParseResult{List{T}}
+    (
+      if i <= 0 -> cur.success(result.reverse())
+      else      ->
+        res = p(cur);
+        if res as ParseFailure    fail  -> fail
+        if res as ParseSuccess{T} suc   -> self(suc.state, --i, suc.val :: result)
+    ), begin, count, List{T}())
+  )
+
+// -- Tests
+
+assert(retParser(42)("") == 42)
+
+assert(nopParser()("") == true)
+
+assert(
+  parseErr = Error("Parsing failed, line: 1, column: 1");
+  failParser(Error("Hello world")).run("")  == parseErr :: Error("Hello world") &&
+  failParser().run("Hello world")           == parseErr :: Error()              &&
+  failParser().run("")                      == parseErr :: Error())
+
+assert(
+  f = ParseFlags.NoWrapperError;
+  failParser(Error("Hello world")).run("", f)  == Error("Hello world") &&
+  failParser().run("Hello world", f)           == Error()              &&
+  failParser().run("", f)                      == Error())
+
+assert(
+  matchParser('a')("a") == 'a' &&
+  matchParser('a')("b") is ParseFailure)
+
+assert(
+  matchParser("hello")("hello world") == "hello" &&
+  matchParser("hello")("world") is ParseFailure)
+
+assert(
+  allParser()("hello world") == "hello world" &&
+  allParser()("")            == "" )
+
+assert(
+  p = matchParser("hello ") >> allParser();
+  p("hello world") == "world" )
+
+assert(
+  p = allParser() << endParser();
+  p("hello world") == "hello world")
+
+assert(
+  takeParser(0)("")       == ""           &&
+  takeParser(1)("")       is ParseFailure &&
+  takeParser(1)("h")      == "h"          &&
+  takeParser(1)("hello")  == "h"          &&
+  takeParser(2)("hello")  == "he"         &&
+  takeParser(5)("hello")  == "hello")
+
+assert(
+  p = takeParser(5) << endParser();
+  p("hello") == "hello")
+
+assert(
+  p = takeParser(5) & takeParser(3);
+  p("helloworld") == Pair("hello", "wor") &&
+  p("hellowo")    is ParseFailure)
+
+assert(
+  whileParser(isDigit)("123 123") == "123" &&
+  whileParser(isDigit)("12345")   == "12345" &&
+  whileParser(isDigit)("1")       == "1" &&
+  whileParser(isDigit)("1abc")    == "1" &&
+  whileParser(isDigit)("abc")   is ParseFailure &&
+  whileParser(isDigit)("")      is ParseFailure)
+
+assert(
+  untilParser(isDigit, ParseFlags.Optional)("abc123")   == "abc" &&
+  untilParser(isDigit, ParseFlags.Optional)("")         == "" &&
+  untilParser(isDigit)("  hello 1 world")               == "  hello " &&
+  untilParser(isDigit)("1")                             is ParseFailure &&
+  untilParser(isDigit)("")                              is ParseFailure)
+
+assert(
+  p = untilParser(matchParser('|'));
+  p("") is ParseFailure &&
+  p("|") is ParseFailure &&
+  p("|| |") is ParseFailure &&
+  p(" |") == " " &&
+  p("hello world| more?") == "hello world")
+
+assert(
+  p = untilParser(matchParser('|'), ParseFlags.Optional);
+  p("") == "" &&
+  p("|") == "")
+
+assert(
+  p = untilParser(endParser(), ParseFlags.Optional);
+  p("Hello world")  == "Hello world" &&
+  p("")             == "")
+
+assert(
+  p = untilParser(endParser());
+  p("Hello world") == "Hello world" &&
+  p("") is ParseFailure)
+
+assert(
+  whitespaceParser()("  123")   == "  " &&
+  whitespaceParser()(" a")      == " " &&
+  whitespaceParser()(" \n\t ")  == " \n\t " &&
+  whitespaceParser()("")        == "" &&
+  whitespaceParser()("abc")     == "")
+
+assert(
+  p = lineParser();
+  p("abc sdf hello world")     == "abc sdf hello world" &&
+  p("abc sdf\nhello world")    == "abc sdf" &&
+  p("abc sdf\r\nhello world")  == "abc sdf" &&
+  p("abc sdf\n\nhello world")  == "abc sdf" &&
+  p("") is ParseFailure)
+
+assert(
+  p = newlineParser();
+  p("\n")   == "\n" &&
+  p("\r\n") == "\r\n" &&
+  p("\n\n") == "\n" &&
+  p("\n\r") == "\n" &&
+  p("\r") is ParseFailure &&
+  p("")   is ParseFailure)
+
+assert(
+  p = emptyLineParser();
+  p("\n\n")     == "\n\n" &&
+  p("\r\n\r\n") == "\r\n\r\n" &&
+  p("")         is ParseFailure &&
+  p("\n")       is ParseFailure &&
+  p("\n \n")    is ParseFailure &&
+  p("\nabc\n")  is ParseFailure &&
+  p("\r\n")     is ParseFailure &&
+  p("\r\n\n")   is ParseFailure)
+
+assert(
+  p = multiLineParser(2);
+  p("First line\nSecond line\n") == "First line" :: "Second line" &&
+  p("First line\r\nSecond line\r\n") == "First line" :: "Second line" &&
+  p("First line\r\nSecond line\n") == "First line" :: "Second line" &&
+  p("") is ParseFailure &&
+  p("First line") is ParseFailure &&
+  p("First line\nSecond line") is ParseFailure &&
+  p("First line\nSecond line\r") is ParseFailure)
+
+assert(
+  p = endParser();
+  p("") == ""               &&
+  p("a") is ParseFailure    &&
+  p(" ") is ParseFailure)
+
+assert(
+  txtPosIntParser()("1")                    == 1 &&
+  txtPosIntParser()("1337")                 == 1337 &&
+  txtPosIntParser()(maxVal{int}().string()) == maxVal{int}())
+
+assert(
+  txtPosIntParser()("-1")         is ParseFailure &&
+  txtPosIntParser()("+1")         is ParseFailure &&
+  txtPosIntParser()("a")          is ParseFailure &&
+  txtPosIntParser()(" 123")       is ParseFailure &&
+  txtPosIntParser()("2147483648") is ParseFailure)
+
+assert(
+  txtIntParser()("")         is ParseFailure &&
+  txtIntParser()("a")        is ParseFailure &&
+  txtIntParser()(" 123")     is ParseFailure)
+
+assert(
+  txtIntParser()("1")                     == 1 &&
+  txtIntParser()("-1")                    == -1 &&
+  txtIntParser()("+1")                    == 1 &&
+  txtIntParser()("1337")                  == 1337 &&
+  txtIntParser()("+0200")                 == 200 &&
+  txtIntParser()(maxVal{int}().string())  == maxVal{int}() &&
+  txtIntParser()(minVal{int}().string())  == minVal{int}())
+
+assert(
+  txtIntParser()("")            is ParseFailure &&
+  txtIntParser()("a")           is ParseFailure &&
+  txtIntParser()(" 123")        is ParseFailure &&
+  txtIntParser()("-2147483649") is ParseFailure &&
+  txtIntParser()("2147483648")  is ParseFailure)
+
+assert(
+  txtPosLongParser()("1")                   == 1L &&
+  txtPosLongParser()("1337")                == 1337L &&
+  txtPosLongParser()(maxVal{int}().string())     == long(maxVal{int}()) &&
+  txtPosLongParser()(maxVal{long}().string())    == maxVal{long}() &&
+  txtPosLongParser()("7223372036854775807") == 7223372036854775807L &&
+  txtPosLongParser()("9223372036854775808") == -9223372036854775807L - 1L)
+
+assert(
+  txtPosLongParser()("-1") is ParseFailure &&
+  txtPosLongParser()("+1") is ParseFailure &&
+  txtPosLongParser()("a")  is ParseFailure)
+
+assert(
+  txtLongParser()("1")                      == 1L &&
+  txtLongParser()("-1")                     == -1L &&
+  txtLongParser()("+1")                     == 1L &&
+  txtLongParser()(maxVal{long}().string())  == maxVal{long}())
+
+assert(
+  txtHexParser()("0")         == 0x0 &&
+  txtHexParser()("9")         == 0x9 &&
+  txtHexParser()("009")       == 0x9 &&
+  txtHexParser()("a")         == 0xA &&
+  txtHexParser()("A")         == 0xA &&
+  txtHexParser()("abcdef")    == 0xABCDEF &&
+  txtHexParser()("ABCDEF")    == 0xABCDEF &&
+  txtHexParser()("7FffFfFF")  == 0x7FFFFFFF &&
+  txtHexParser()("1e240")     == 0x1E240 &&
+  txtHexParser()("12345678")  == 0x12345678 &&
+  txtHexParser()("23456789")  == 0x23456789 &&
+  txtHexParser()("539")       == 0x539)
+
+assert(
+  inputs  = rangeList(0, 1337);
+  hexStrs = inputs.map(lambda (int i) toHexString(i));
+  parser  = txtHexParser();
+  listEqual(hexStrs.map(lambda (string str) parser(str) ?? -1), inputs))
+
+assert(
+  txtHexParser()("")         is ParseFailure &&
+  txtHexParser()("g")        is ParseFailure &&
+  txtHexParser()(" 123")     is ParseFailure &&
+  txtHexParser(4)("123")     is ParseFailure &&
+  txtHexParser(4)("123G")    is ParseFailure)
+
+assert(
+  txtPosFloatParser()("0")            == 0.0 &&
+  txtPosFloatParser()("1")            == 1.0 &&
+  txtPosFloatParser()("0001")         == 1.0 &&
+  txtPosFloatParser()("0e10")         == 0.0 &&
+  txtPosFloatParser()("0e-10")        == 0.0 &&
+  txtPosFloatParser()("42e0")         == 42.0 &&
+  txtPosFloatParser()("42e1")         == 420.0 &&
+  txtPosFloatParser()("42e2")         == 4200.0 &&
+  txtPosFloatParser()("42e+0")        == 42.0 &&
+  txtPosFloatParser()("42e+1")        == 420.0 &&
+  txtPosFloatParser()("42e+2")        == 4200.0 &&
+  txtPosFloatParser()("42e-0")        == 42.0 &&
+  txtPosFloatParser()("42e-1")        == 4.2 &&
+  txtPosFloatParser()("42e-2")        == .42 &&
+  txtPosFloatParser()("42.1337")      == 42.1337 &&
+  txtPosFloatParser()("42.1337e4")    == 421337.0 &&
+  (txtPosFloatParser()("4000000000") ?? -1.0).approx(4000000000.0))
+
+assert(
+  txtPosFloatParser()("-1")     is ParseFailure &&
+  txtPosFloatParser()("+1")     is ParseFailure &&
+  txtPosFloatParser()("--1")    is ParseFailure &&
+  txtPosFloatParser()("-+1")    is ParseFailure &&
+  txtPosFloatParser()(" 1.0")   is ParseFailure &&
+  txtPosFloatParser()("1. 0 ")  is ParseFailure)
+
+assert(
+  txtFloatParser()("0")            == 0.0 &&
+  txtFloatParser()("1")            == 1.0 &&
+  txtFloatParser()("0001")         == 1.0 &&
+  txtFloatParser()("0e10")         == 0.0 &&
+  txtFloatParser()("0e-10")        == 0.0 &&
+  txtFloatParser()("-1")           == -1.0 &&
+  txtFloatParser()("+1")           == 1.0 &&
+  txtFloatParser()("-1.1")         == -1.1 &&
+  txtFloatParser()("+1.1")         == 1.1 &&
+  txtFloatParser()("-.1")          == -0.1 &&
+  txtFloatParser()("+.1")          == 0.1 &&
+  txtFloatParser()("42e0")         == 42.0 &&
+  txtFloatParser()("42e1")         == 420.0 &&
+  txtFloatParser()("42e2")         == 4200.0 &&
+  txtFloatParser()("42e+0")        == 42.0 &&
+  txtFloatParser()("42e+1")        == 420.0 &&
+  txtFloatParser()("42e+2")        == 4200.0 &&
+  txtFloatParser()("42e-0")        == 42.0 &&
+  txtFloatParser()("42e-1")        == 4.2 &&
+  txtFloatParser()("42e-2")        == .42 &&
+  txtFloatParser()("42.1337")      == 42.1337 &&
+  txtFloatParser()("42.1337e4")    == 421337.0 &&
+  txtFloatParser()("+42.1337E-2")  == .421337 &&
+  txtFloatParser()("-42.1337E-2")  == -.421337 &&
+  (txtFloatParser()("4000000000") ?? -1.0).approx(4000000000.0))
+
+assert(
+  txtFloatParser()("")       is ParseFailure &&
+  txtFloatParser()("--1")    is ParseFailure &&
+  txtFloatParser()("-+1")    is ParseFailure &&
+  txtFloatParser()(" 1.0")   is ParseFailure &&
+  txtFloatParser()("1. 0 ")  is ParseFailure)
+
+assert(
+  charParser()("a")                            == 'a' &&
+  charParser()("hello")                        == 'h' &&
+  (charParser() :: charParser())("hello")   == 'h' :: 'e' &&
+  charParser()("")                             is ParseFailure)
+
+assert(
+  txtBoolParser()("true")  == true &&
+  txtBoolParser()("TRUE")  == true &&
+  txtBoolParser()("True")  == true &&
+  txtBoolParser()("false") == false &&
+  txtBoolParser()("FALSE") == false &&
+  txtBoolParser()("False") == false)
+
+assert(
+  txtBoolParser()("")      is ParseFailure &&
+  txtBoolParser()("tRuE")  is ParseFailure &&
+  txtBoolParser()("fAlSe") is ParseFailure &&
+  txtBoolParser()("abc")   is ParseFailure)
+
+assert(
+  txtBoolParser().run("abc")   is Error &&
+  txtBoolParser().run("true")  is bool)
+
+assert(
+  txtBoolParser().build()("abc")   is Error &&
+  txtBoolParser().build()("true")  is bool)
+
+assert(
+  p = ?txtIntParser();
+  p("")     == Option{int}() &&
+  p("abc")  == Option{int}() &&
+  p("42")   == Option(42) &&
+  p("-42")  == Option(-42))
+
+assert(
+  p = (?txtIntParser() & ?txtBoolParser()).map(
+    lambda (Option{int} a, Option{bool} b)
+      if b ?? false -> a ?? -1
+      else          -> -42
+  );
+  p("false")      == -42  &&
+  p("")           == -42  &&
+  p("1337")       == -42  &&
+  p("1337false")  == -42  &&
+  p("true")       == -1   &&
+  p("1337true")   == 1337 &&
+  p("0true")      == 0)
+
+assert(
+  p = (matchParser("Hello ") | matchParser("Greetings ")) & matchParser("World");
+  p("Hello World")      == Pair("Hello ", "World") &&
+  p("Greetings World")  == Pair("Greetings ", "World") &&
+  p("HelloWorld") is ParseFailure)
+
+assert(
+  p = txtBoolParser() | txtIntParser();
+  p("42")   == 42 &&
+  p("true") == true &&
+  p("hello") is ParseFailure)
+
+assert(
+  p = matchParser("Hello ") >> matchParser("World");
+  p("Hello World") == "World" &&
+  p("Hello ") is ParseFailure &&
+  p("World")  is ParseFailure &&
+  p("abc")    is ParseFailure)
+
+assert(
+  p = matchParser("Hello") << matchParser(" World");
+  p("Hello World") == "Hello" &&
+  p("Hello")  is ParseFailure &&
+  p(" World") is ParseFailure &&
+  p("abc")    is ParseFailure)
+
+assert(
+  parseErr = Error("Parsing failed, line: 1, column: 1");
+  p = matchParser("Hello") ! Error("Did not greet");
+  p("Hello") == "Hello" &&
+  p.run("Hell") == parseErr :: Error("Did not greet") :: Error("Expected: 'Hello', got: 'Hell'"))
+
+assert(
+  parseErr = Error("Parsing failed, line: 1, column: 1");
+  p = matchParser("Hello") !! Error("Did not greet");
+  p("Hello") == "Hello" &&
+  p.run("Hell") == parseErr :: Error("Did not greet"))
+
+assert(
+  parseErr = Error("Parsing failed, line: 1, column: 1");
+  p = (matchParser("Hello") !! lambda (Error err) Error("Did not greet"));
+  p("Hello") == "Hello" &&
+  p.run("Hell") == parseErr :: Error("Did not greet"))
+
+assert(
+  parseErr = Error("Parsing failed, line: 1, column: 1");
+  p = (matchParser("Hello") !! lambda (Error err) Error("Did not greet") :: err);
+  p("Hello") == "Hello" &&
+  p.run("Hell") == parseErr :: Error("Did not greet") :: Error("Expected: 'Hello', got: 'Hell'"))
+
+assert(
+  p = txtIntParser().map(lambda (int i) i * i);
+  p("123") == 123 * 123 &&
+  p("") is ParseFailure)
+
+assert(
+  p = txtIntParser().map(lambda (int i) i == 42);
+  p("123")  == false &&
+  p("42")   == true &&
+  p("") is ParseFailure)
+
+assert(
+  err = Error("Value outside of the 100 - 200 range");
+  p = txtIntParser().map(lambda (int i) -> Either{int, Error}
+    if i >= 100 && i <= 200 -> i
+    else                    -> err
+  );
+  p("123") == 123 &&
+  p("100") == 100 &&
+  p("200") == 200 &&
+  p("42") is ParseFailure &&
+  p("42") as ParseFailure pf && pf.err == err &&
+  p("201") is ParseFailure &&
+  p("") is ParseFailure)
+
+assert(
+  p = txtIntParser().map(lambda (int i) -> Either{string, Error}
+    if i == 42    -> "Meaning of life"
+    if i == 1337  -> "Elite"
+    else          -> Error("No signficiant meaning to: '" + i + "'")
+  );
+  p("42") == "Meaning of life" &&
+  p("1337") == "Elite" &&
+  p("123") is ParseFailure &&
+  p("") is ParseFailure)
+
+assert(
+  p = txtBoolParser() :: txtBoolParser() :: txtBoolParser();
+  p("truefalsetrue") == true :: false :: true &&
+  p("truefalse")  is ParseFailure &&
+  p("")           is ParseFailure)
+
+assert(
+  p = (txtBoolParser() & txtBoolParser()).map(lambda (bool a, bool b) a && b);
+  p("truefalse")  == false &&
+  p("truetrue")   == true &&
+  p("true")   is ParseFailure &&
+  p("")       is ParseFailure)
+
+assert(
+  p = (txtBoolParser() & txtBoolParser() & txtBoolParser()).map(
+    lambda (bool a, bool b, bool c) a && b && c);
+  p("truefalsetrue")  == false &&
+  p("truetruetrue")   == true &&
+  p("truefalse")  is ParseFailure &&
+  p("")           is ParseFailure)
+
+assert(
+  p = (txtBoolParser() & txtBoolParser() & txtBoolParser() & txtBoolParser()).map(
+    lambda (bool a, bool b, bool c, bool d) a && b && c && d);
+  p("truefalsetruetrue")  == false &&
+  p("truetruetruetrue")   == true &&
+  p("truefalsetrue")  is ParseFailure &&
+  p("")               is ParseFailure)
+
+assert(
+  p = (txtBoolParser() & txtBoolParser() & txtBoolParser() & txtBoolParser() & txtBoolParser()).map(
+    lambda (bool a, bool b, bool c, bool d, bool e) a && b && c && d && e);
+  p("truefalsetruetruetrue")  == false &&
+  p("truefalsetruetruetrue")  == false &&
+  p("truetruetruetruetrue")   == true &&
+  p("truefalsetruefalse") is ParseFailure &&
+  p("truefalsetrue")      is ParseFailure &&
+  p("")                   is ParseFailure)
+
+assert(
+  p = manyParser(txtBoolParser());
+  p("truefalsetruetrue")  == true :: false :: true :: true &&
+  p("true")               == true :: List{bool}() &&
+  p("true1")              == true :: List{bool}() &&
+  p("")                   == List{bool}())
+
+assert(
+  p = manyParser(txtIntParser(), matchParser(','));
+  p("42,1337,1,2")  == 42 :: 1337 :: 1 :: 2 &&
+  p("42")           == 42 :: List{int}()    &&
+  p(",")            == List{int}()          &&
+  p("")             == List{int}())
+
+assert(
+  p = manyParser(txtIntParser(), matchParser(','), ParseFlags.AllowTrailingSeperator) << endParser();
+  p("42,1337,1,2,")  == 42 :: 1337 :: 1 :: 2  &&
+  p("42,")           == 42 :: List{int}()     &&
+  p("")              == List{int}()           &&
+  p("42,,")          is ParseFailure          &&
+  p("42,1337,,1,2,") is ParseFailure          &&
+  p(",")             is ParseFailure)
+
+assert(
+  p = manyParser(txtIntParser(), matchParser(','));
+  p("1,2,") is ParseFailure)
+
+assert(
+  p = manyUntilParser(txtBoolParser(), endParser());
+  p("true1true") is ParseFailure)
+
+assert(
+  p = manyUntilParser(txtBoolParser(), newlineParser());
+  p("truefalse\ntrue")   == true :: false  &&
+  p("true\n")            == true :: List{bool}()           &&
+  p("false,\n")          is ParseFailure                   &&
+  p("true true\n")       is ParseFailure                   &&
+  p("false")             is ParseFailure                   &&
+  p("")                  is ParseFailure)
+
+assert(
+  p = manyUntilParser(txtIntParser(), matchParser(','), newlineParser());
+  p("42,1337\n1,2")   == 42 :: 1337 :: List{int}()  &&
+  p("42\n")           == 42 :: List{int}()          &&
+  p("42,\n")          is ParseFailure               &&
+  p("42 42\n")        is ParseFailure               &&
+  p("42")             is ParseFailure               &&
+  p("")               is ParseFailure)
+
+assert(
+  p = manyUntilParser(txtBoolParser(), matchParser(','), newlineParser());
+  p("true,false\ntrue")   == true :: false          &&
+  p("true\n")             == true :: List{bool}()   &&
+  p("\n")                 == List{bool}()           &&
+  p("false,\n")           is ParseFailure           &&
+  p("true true\n")        is ParseFailure           &&
+  p("false")              is ParseFailure           &&
+  p("")                   is ParseFailure)
+
+assert(
+  p = manyUntilParser(
+    txtBoolParser(), matchParser(','), newlineParser(), ParseFlags.AllowTrailingSeperator);
+  p("true\n")             == true :: List{bool}()           &&
+  p("true,\n")            == true :: List{bool}()           &&
+  p("true,false,\n")      == true :: false :: List{bool}()  &&
+  p("\n")                 == List{bool}()                   &&
+  p("true,false,,\n")     is ParseFailure                   &&
+  p(",\n")                is ParseFailure                   &&
+  p("true,,false\n")      is ParseFailure                   &&
+  p("false")              is ParseFailure                   &&
+  p("")                   is ParseFailure)
+
+assert(
+  p = whileParser(!equals{char}['|']).trim();
+  p("") is ParseFailure &&
+  p(" ") == "" &&
+  p("\t\n\r ") == "" &&
+  p(" abc \t  | hello") == "abc" &&
+  p(" a b c \t  | hello") == "a b c" &&
+  p("\n\r a b c \t  | hello") == "a b c")
+
+assert(
+  p = whileParser(!equals{char}['|']).trim(isDigit);
+  p("") is ParseFailure &&
+  p(" ") == " " &&
+  p("123") == "" &&
+  p(" 123 ") == " 123 " &&
+  p("1abc501| hello") == "abc")
+
+assert(
+  p = txtBoolParser().repeat(2);
+  p("") is ParseFailure &&
+  p(" ") is ParseFailure &&
+  p("true") is ParseFailure &&
+  p("truefalse") == true :: false &&
+  p("truefalsefalse") == true :: false)
+
+assert(
+  txtBoolParser().repeat(-1)("") == List{bool}() &&
+  txtBoolParser().repeat(0)("") == List{bool}() &&
+  txtBoolParser().repeat(0)(" ") == List{bool}() &&
+  txtBoolParser().repeat(0)("true") == List{bool}() &&
+  txtBoolParser().repeat(1)("true") == true :: List{bool}())

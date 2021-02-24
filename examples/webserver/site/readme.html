@@ -1,174 +1,184 @@
-<h1 id="novus">Novus</h1>
-<p><a href="https://github.com/BastianBlokland/novus/actions?query=workflow%3Abuild"><img
-      src="https://img.shields.io/github/workflow/status/bastianblokland/novus/build/master" alt="build"></a>
-  <a href="https://codecov.io/gh/BastianBlokland/novus"><img
-      src="https://codecov.io/gh/BastianBlokland/novus/branch/master/graph/badge.svg?token=JK2KNANZ73"
-      alt="codecov"></a>
-  <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-blue.svg" alt="License: MIT"></a>
-</p>
-<p>Novus is a general purpose, statically typed, functional programming language.
-  Novus source compiles into instructions for the Novus virtual machine which provides the runtime
-  (eg Garbage collection) and platform abstraction (eg io).
-  The runtime supports Linux, Mac and Windows at this time.</p>
-<p>Note: This is intended as an academic exercise and not meant for production projects.</p>
-<h1 id="intro">Intro</h1>
-<p>Novus is an expression based pure functional language with eager evaluation. In practice this means
-  that all types are immutable, normal functions cannot have side-effects and all functions have to
-  produce a value.</p>
-<p>Simplest function:</p>
-<pre><code class="lang-n"><span class="hljs-function"><span class="hljs-keyword">fun</span> <span class="hljs-title">square</span></span>(int x) x * x
+<html>
+
+<head>
+  <style>
+    body {
+      color: black;
+    }
+  </style>
+</head>
+
+<body>
+  <h1 id="novus">Novus</h1>
+  <p><a href="https://github.com/BastianBlokland/novus/actions?query=workflow%3Abuild"><img
+        src="https://img.shields.io/github/workflow/status/bastianblokland/novus/build/master" alt="build"></a>
+    <a href="https://codecov.io/gh/BastianBlokland/novus"><img
+        src="https://codecov.io/gh/BastianBlokland/novus/branch/master/graph/badge.svg?token=JK2KNANZ73"
+        alt="codecov"></a>
+    <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-blue.svg" alt="License: MIT"></a>
+  </p>
+  <p>Novus is a general purpose, statically typed, functional programming language.
+    Novus source compiles into instructions for the Novus virtual machine which provides the runtime
+    (eg Garbage collection) and platform abstraction (eg io).
+    The runtime supports Linux, Mac and Windows at this time.</p>
+  <p>Note: This is intended as an academic exercise and not meant for production projects.</p>
+  <h1 id="intro">Intro</h1>
+  <p>Novus is an expression based pure functional language with eager evaluation. In practice this means
+    that all types are immutable, normal functions cannot have side-effects and all functions have to
+    produce a value.</p>
+  <p>Simplest function:</p>
+  <pre><code class="lang-n"><span class="hljs-function"><span class="hljs-keyword">fun</span> <span class="hljs-title">square</span></span>(int x) x * x
 </code></pre>
-<p>Input parameters have to be typed manually but the return type is inferred from the expression.</p>
-<p>Advantage of providing type information for the input parameters is that functions can be overloaded:</p>
-<pre><code class="lang-n"><span class="hljs-function"><span class="hljs-keyword">fun</span> <span class="hljs-title">getTxt</span><span class="hljs-params">(string s)</span></span>  s
+  <p>Input parameters have to be typed manually but the return type is inferred from the expression.</p>
+  <p>Advantage of providing type information for the input parameters is that functions can be overloaded:</p>
+  <pre><code class="lang-n"><span class="hljs-function"><span class="hljs-keyword">fun</span> <span class="hljs-title">getTxt</span><span class="hljs-params">(string s)</span></span>  s
 <span class="hljs-function"><span class="hljs-keyword">fun</span> <span class="hljs-title">getTxt</span><span class="hljs-params">(bool b)</span></span>    b ? <span class="hljs-string">"true"</span> : <span class="hljs-string">"false"</span>
 <span class="hljs-function"><span class="hljs-keyword">fun</span> <span class="hljs-title">getTxt</span><span class="hljs-params">(User u)</span></span>    n.name
 </code></pre>
-<p>Expressions can be combined using the group operator &#39;;&#39; (similar to the comma operator in some
-  languages). In an expression group the result is the value of the last expression.</p>
-<p>Can be used to define a constant and reuse it in the next expression:</p>
-<pre><code class="lang-n"><span class="hljs-function"><span class="hljs-keyword">fun</span> <span class="hljs-title">cube</span></span>(int x)
-  sqr = x * x; sqr * x
+  <p>Expressions can be combined using the group operator &#39;;&#39; (similar to the comma operator in some
+    languages). In an expression group the result is the value of the last expression.</p>
+  <p>Can be used to define a constant and reuse it in the next expression:</p>
+  <pre><code class="lang-n"><span class="hljs-function"><span class="hljs-keyword">fun</span> <span class="hljs-title">cube</span></span>(int x)
+ sqr = x * x; sqr * x
 </code></pre>
-<p>Note: All &#39;variables&#39; are single assignment only, so in the above example <code>sqr</code> cannot be
-  redefined
-  to mean something else later.</p>
-<h2 id="control-flow">Control flow</h2>
-<h3 id="conditional-operator">Conditional operator</h3>
-<p>For simple control-flow the conditional-operator (aka ternary-operator) can be used:</p>
-<pre><code class="lang-n"><span class="hljs-function"><span class="hljs-keyword">fun</span> <span class="hljs-title">max</span></span>(int a, int b)
-  a &gt; b ? a : b
+  <p>Note: All &#39;variables&#39; are single assignment only, so in the above example <code>sqr</code> cannot be
+    redefined
+    to mean something else later.</p>
+  <h2 id="control-flow">Control flow</h2>
+  <h3 id="conditional-operator">Conditional operator</h3>
+  <p>For simple control-flow the conditional-operator (aka ternary-operator) can be used:</p>
+  <pre><code class="lang-n"><span class="hljs-function"><span class="hljs-keyword">fun</span> <span class="hljs-title">max</span></span>(int a, int b)
+ a &gt; b ? a : b
 </code></pre>
-<h3 id="switch-expression">Switch expression</h3>
-<p>For more elaborate control-flow there is the switch expression:</p>
-<pre><code class="lang-n"><span class="hljs-keyword">fun</span> fizzbuzz(<span class="hljs-built_in">int</span> i)
-  fizz = i % <span class="hljs-number">3</span> == <span class="hljs-number">0</span>;
-  buzz = i % <span class="hljs-number">5</span> == <span class="hljs-number">0</span>;
-  <span class="hljs-keyword">if</span> fizz &amp;&amp; buzz -&gt; <span class="hljs-string">"FizzBuzz"</span>
-  <span class="hljs-keyword">if</span> fizz         -&gt; <span class="hljs-string">"Fizz"</span>
-  <span class="hljs-keyword">if</span> buzz         -&gt; <span class="hljs-string">"Buzz"</span>
-  <span class="hljs-keyword">else</span>            -&gt; <span class="hljs-built_in">string</span>(i)
+  <h3 id="switch-expression">Switch expression</h3>
+  <p>For more elaborate control-flow there is the switch expression:</p>
+  <pre><code class="lang-n"><span class="hljs-keyword">fun</span> fizzbuzz(<span class="hljs-built_in">int</span> i)
+ fizz = i % <span class="hljs-number">3</span> == <span class="hljs-number">0</span>;
+ buzz = i % <span class="hljs-number">5</span> == <span class="hljs-number">0</span>;
+ <span class="hljs-keyword">if</span> fizz &amp;&amp; buzz -&gt; <span class="hljs-string">"FizzBuzz"</span>
+ <span class="hljs-keyword">if</span> fizz         -&gt; <span class="hljs-string">"Fizz"</span>
+ <span class="hljs-keyword">if</span> buzz         -&gt; <span class="hljs-string">"Buzz"</span>
+ <span class="hljs-keyword">else</span>            -&gt; <span class="hljs-built_in">string</span>(i)
 </code></pre>
-<p>The switch expression is very similar to &#39;if&#39; statements in imperative languages, however in
-  Novus its an expression so the entire switch has to produce a value of a single type (meaning
-  it has to be exhaustive, so an &#39;else&#39; is required if the compiler cannot guarantee the if conditions
-  being exhaustive).</p>
-<p>Note: there are no loops in Novus, instead iterating is done using recursion. When performing tail
-  recursion the runtime guarantees to execute it in constant stack space.</p>
-<h2 id="type-system">Type system</h2>
-<p>The Novus type system contains some basic types build in to the language:</p>
-<ul>
-  <li><code>int</code> (32 bit signed integer)</li>
-  <li><code>long</code> (64 bit signed integer)</li>
-  <li><code>float</code> (32 bit floating point number)</li>
-  <li><code>bool</code></li>
-  <li><code>string</code></li>
-  <li><code>char</code> (8 bit unsigned integer)</li>
-</ul>
-<p>(Plus a few more niche types: <code>sys_stream</code>, <code>sys_process</code>, <code>function</code>,
-  <code>action</code>, <code>future</code>, <code>lazy</code>
-  and <code>lazy_action</code>).
-</p>
-<p>Note: These are the types the language itself supports, there are however many more types
-  implemented in the <a href="https://github.com/BastianBlokland/novus/tree/master/novstd">standard library</a>.</p>
-<p>And can be extended with three kinds of user defined types:</p>
-<h3 id="struct-aka-record-">Struct (aka record)</h3>
-<pre><code class="lang-n">struct User =
-  string  name,
-  int     age
+  <p>The switch expression is very similar to &#39;if&#39; statements in imperative languages, however in
+    Novus its an expression so the entire switch has to produce a value of a single type (meaning
+    it has to be exhaustive, so an &#39;else&#39; is required if the compiler cannot guarantee the if conditions
+    being exhaustive).</p>
+  <p>Note: there are no loops in Novus, instead iterating is done using recursion. When performing tail
+    recursion the runtime guarantees to execute it in constant stack space.</p>
+  <h2 id="type-system">Type system</h2>
+  <p>The Novus type system contains some basic types build in to the language:</p>
+  <ul>
+    <li><code>int</code> (32 bit signed integer)</li>
+    <li><code>long</code> (64 bit signed integer)</li>
+    <li><code>float</code> (32 bit floating point number)</li>
+    <li><code>bool</code></li>
+    <li><code>string</code></li>
+    <li><code>char</code> (8 bit unsigned integer)</li>
+  </ul>
+  <p>(Plus a few more niche types: <code>sys_stream</code>, <code>sys_process</code>, <code>function</code>,
+    <code>action</code>, <code>future</code>, <code>lazy</code>
+    and <code>lazy_action</code>).</p>
+  <p>Note: These are the types the language itself supports, there are however many more types
+    implemented in the <a href="https://github.com/BastianBlokland/novus/tree/master/std">standard library</a>.</p>
+  <p>And can be extended with three kinds of user defined types:</p>
+  <h3 id="struct-aka-record-">Struct (aka record)</h3>
+  <pre><code class="lang-n">struct User =
+ string  name,
+ int     age
 
 <span class="hljs-function"><span class="hljs-keyword">fun</span> <span class="hljs-title">getDefaultUser</span><span class="hljs-params">()</span></span>
-  User(<span class="hljs-string">"John doe"</span>, <span class="hljs-number">32</span>)
+ User(<span class="hljs-string">"John doe"</span>, <span class="hljs-number">32</span>)
 
 <span class="hljs-function"><span class="hljs-keyword">fun</span> <span class="hljs-title">getName</span><span class="hljs-params">(User u)</span></span>
-  u.name
+ u.name
 </code></pre>
-<h3 id="union-aka-discriminated-union-or-tagged-union-">Union (aka discriminated union or tagged union)</h3>
-<pre><code class="lang-n">union IntOrBool = int, bool
+  <h3 id="union-aka-discriminated-union-or-tagged-union-">Union (aka discriminated union or tagged union)</h3>
+  <pre><code class="lang-n">union IntOrBool = int, bool
 
 <span class="hljs-function"><span class="hljs-keyword">fun</span> <span class="hljs-title">getVal</span><span class="hljs-params">(int i)</span></span>
-  i == <span class="hljs-number">0</span> ? <span class="hljs-literal">false</span> : i
+ i == <span class="hljs-number">0</span> ? <span class="hljs-literal">false</span> : i
 
 <span class="hljs-function"><span class="hljs-keyword">fun</span> <span class="hljs-title">getNum</span><span class="hljs-params">(IntOrBool ib)</span></span>
-  <span class="hljs-keyword">if</span> ib <span class="hljs-keyword">as</span> int  i -&gt; i
-  <span class="hljs-keyword">if</span> ib <span class="hljs-keyword">as</span> bool b -&gt; b ? <span class="hljs-number">1</span> : <span class="hljs-number">0</span>
+ <span class="hljs-keyword">if</span> ib <span class="hljs-keyword">as</span> int  i -&gt; i
+ <span class="hljs-keyword">if</span> ib <span class="hljs-keyword">as</span> bool b -&gt; b ? <span class="hljs-number">1</span> : <span class="hljs-number">0</span>
 </code></pre>
-<p>Note that there is no &#39;else&#39; in the last switch expression, this is allowed because the compiler
-  can guarantee that the if conditions are exhaustive.</p>
-<h3 id="enum-aka-enumeration-">Enum (aka enumeration)</h3>
-<pre><code class="lang-n"><span class="hljs-keyword">enum</span> WeekDay =
-  Monday    : <span class="hljs-number">1</span>,
-  Tuesday   : <span class="hljs-number">2</span>,
-  Wednesday : <span class="hljs-number">3</span>,
-  Thursday,
-  Friday,
-  Saturday,
-  Sunday
+  <p>Note that there is no &#39;else&#39; in the last switch expression, this is allowed because the compiler
+    can guarantee that the if conditions are exhaustive.</p>
+  <h3 id="enum-aka-enumeration-">Enum (aka enumeration)</h3>
+  <pre><code class="lang-n"><span class="hljs-keyword">enum</span> WeekDay =
+ Monday    : <span class="hljs-number">1</span>,
+ Tuesday   : <span class="hljs-number">2</span>,
+ Wednesday : <span class="hljs-number">3</span>,
+ Thursday,
+ Friday,
+ Saturday,
+ Sunday
 
 <span class="hljs-function"><span class="hljs-keyword">fun</span> <span class="hljs-title">sunday</span><span class="hljs-params">()</span></span>
-  WeekDay.Sunday
+ WeekDay.Sunday
 
 <span class="hljs-function"><span class="hljs-keyword">fun</span> <span class="hljs-title">isSunday</span><span class="hljs-params">(WeekDay wd)</span></span>
-  wd == WeekDay.Sunday
+ wd == WeekDay.Sunday
 </code></pre>
-<p>Enum&#39;s follow the conventions that most c-like languages have, they are named values. If no value
-  is provided the last value is automatically incremented by one (starting from 0).</p>
-<h2 id="generic-programming-type-and-function-templates-">Generic programming (type and function templates)</h2>
-<p>To aid in generic programming you can create type and function templates
-  (similar in spirit to c++ templates). Instead of angle brackets &#39;&lt;&gt;&#39; found in many other
-  languages to define a type set, Novus uses curly braces &#39;{}&#39;.</p>
-<h3 id="type-template">Type template</h3>
-<pre><code class="lang-n">struct Pair{<span class="hljs-built_in">T1</span>, <span class="hljs-built_in">T2</span>} =
-  <span class="hljs-built_in">T1</span> first,
-  <span class="hljs-built_in">T2</span> second
+  <p>Enum&#39;s follow the conventions that most c-like languages have, they are named values. If no value
+    is provided the last value is automatically incremented by one (starting from 0).</p>
+  <h2 id="generic-programming-type-and-function-templates-">Generic programming (type and function templates)</h2>
+  <p>To aid in generic programming you can create type and function templates
+    (similar in spirit to c++ templates). Instead of angle brackets &#39;&lt;&gt;&#39; found in many other
+    languages to define a type set, Novus uses curly braces &#39;{}&#39;.</p>
+  <h3 id="type-template">Type template</h3>
+  <pre><code class="lang-n">struct Pair{<span class="hljs-built_in">T1</span>, <span class="hljs-built_in">T2</span>} =
+ <span class="hljs-built_in">T1</span> first,
+ <span class="hljs-built_in">T2</span> second
 </code></pre>
-<p>Instantiation of a type template:</p>
-<pre><code class="lang-n"><span class="hljs-function"><span class="hljs-keyword">fun</span> <span class="hljs-title">sum</span></span>(float a, float b)
-  sum(Pair(a, b))
+  <p>Instantiation of a type template:</p>
+  <pre><code class="lang-n"><span class="hljs-function"><span class="hljs-keyword">fun</span> <span class="hljs-title">sum</span></span>(float a, float b)
+ sum(Pair(a, b))
 
 <span class="hljs-function"><span class="hljs-keyword">fun</span> <span class="hljs-title">sum</span></span>(Pair{float, float} p)
-  p.first + p.second
+ p.first + p.second
 </code></pre>
-<p>Note: When constructing a type the type parameters can be inferred from usage.</p>
-<h3 id="function-template">Function template</h3>
-<pre><code class="lang-n"><span class="hljs-function"><span class="hljs-keyword">fun</span> <span class="hljs-title">sum</span></span>{T}(T a, T b)
-  a + b
+  <p>Note: When constructing a type the type parameters can be inferred from usage.</p>
+  <h3 id="function-template">Function template</h3>
+  <pre><code class="lang-n"><span class="hljs-function"><span class="hljs-keyword">fun</span> <span class="hljs-title">sum</span></span>{T}(T a, T b)
+ a + b
 
 <span class="hljs-function"><span class="hljs-keyword">fun</span> <span class="hljs-title">onePlusTwo</span></span>()
-  sum(<span class="hljs-number">1</span>, <span class="hljs-number">2</span>)
+ sum(<span class="hljs-number">1</span>, <span class="hljs-number">2</span>)
 </code></pre>
-<p>Note: When calling a templated function most of the time the type parameters can be inferred.</p>
-<h2 id="operator-overloading">Operator overloading</h2>
-<p>Operators can defined like any other function.</p>
-<pre><code class="lang-n">struct Pair = int first, int second
+  <p>Note: When calling a templated function most of the time the type parameters can be inferred.</p>
+  <h2 id="operator-overloading">Operator overloading</h2>
+  <p>Operators can defined like any other function.</p>
+  <pre><code class="lang-n">struct Pair = int first, int second
 
 <span class="hljs-function"><span class="hljs-keyword">fun</span> +<span class="hljs-params">(Pair a, Pair b)</span></span>
-  Pair(a.first + b.first, a.second + b.second)
+ Pair(a.first + b.first, a.second + b.second)
 
 <span class="hljs-function"><span class="hljs-keyword">fun</span> []<span class="hljs-params">(Pair p, int i)</span></span>
-  i == <span class="hljs-number">0</span> ? p.first : p.second
+ i == <span class="hljs-number">0</span> ? p.first : p.second
 
 <span class="hljs-function"><span class="hljs-keyword">fun</span> <span class="hljs-title">sum</span><span class="hljs-params">(Pair a, Pair b)</span></span>
-  a + b
+ a + b
 
 <span class="hljs-function"><span class="hljs-keyword">fun</span> <span class="hljs-title">getFirst</span><span class="hljs-params">(Pair p)</span></span>
-  p[<span class="hljs-number">0</span>]
+ p[<span class="hljs-number">0</span>]
 </code></pre>
-<p>The following list of operators can be overloaded:
-  <code>+</code>, <code>++</code>, <code>-</code>, <code>--</code>, <code>*</code>, <code>/</code>, <code>%</code>,
-  <code>&amp;</code>, <code>|</code>, <code>!</code>, <code>!!</code>, <code>&lt;&lt;</code>, <code>&gt;&gt;</code>,
-  <code>^</code>, <code>~</code>, <code>==</code>, <code>!=</code>, <code>&lt;</code>, <code>&gt;</code>,
-  <code>&lt;=</code>, <code>&gt;=</code>, <code>::</code>, <code>[]</code>, <code>()</code>, <code>?</code>,
-  <code>??</code>.
-</p>
-<p>Note: All operators are left associative except for the <code>::</code> operator, which makes the <code>::</code>
-  operator
-  ideal for creating linked lists.</p>
-<h2 id="first-class-functions">First class functions</h2>
-<p>Functions can be passed as values using the build-in <code>function{}</code> type template.
-  The last type in the type-set is the return-type, the types before that are the input types.</p>
-<pre><code class="lang-n"><span class="hljs-function"><span class="hljs-keyword">fun</span> <span class="hljs-title">performOp</span><span class="hljs-params">(int <span class="hljs-keyword">val</span>, function{int, int} op)</span></span>
-  op(<span class="hljs-keyword">val</span>)
+  <p>The following list of operators can be overloaded:
+    <code>+</code>, <code>++</code>, <code>-</code>, <code>--</code>, <code>*</code>, <code>/</code>, <code>%</code>,
+    <code>&amp;</code>, <code>|</code>, <code>!</code>, <code>!!</code>, <code>&lt;&lt;</code>, <code>&gt;&gt;</code>,
+    <code>^</code>, <code>~</code>, <code>==</code>, <code>!=</code>, <code>&lt;</code>, <code>&gt;</code>,
+    <code>&lt;=</code>, <code>&gt;=</code>, <code>::</code>, <code>[]</code>, <code>()</code>, <code>?</code>,
+    <code>??</code>.
+  </p>
+  <p>Note: All operators are left associative except for the <code>::</code> operator, which makes the <code>::</code>
+    operator
+    ideal for creating linked lists.</p>
+  <h2 id="first-class-functions">First class functions</h2>
+  <p>Functions can be passed as values using the build-in <code>function{}</code> type template.
+    The last type in the type-set is the return-type, the types before that are the input types.</p>
+  <pre><code class="lang-n"><span class="hljs-function"><span class="hljs-keyword">fun</span> <span class="hljs-title">performOp</span><span class="hljs-params">(int <span class="hljs-keyword">val</span>, function{int, int} op)</span></span>
+ op(<span class="hljs-keyword">val</span>)
 
 <span class="hljs-function"><span class="hljs-keyword">fun</span> <span class="hljs-title">square</span><span class="hljs-params">(int v)</span></span> v * v
 <span class="hljs-function"><span class="hljs-keyword">fun</span> <span class="hljs-title">cube</span><span class="hljs-params">(int v)</span></span>   v * v * v
@@ -176,200 +186,205 @@
 print(performOp(<span class="hljs-number">43</span>, cube))
 print(performOp(<span class="hljs-number">43</span>, square))
 </code></pre>
-<h3 id="lambda-s-aka-anonymous-functions-">Lambda&#39;s (aka anonymous functions)</h3>
-<p>Anonymous functions can be defined using the lambda syntax.</p>
-<pre><code class="lang-n"><span class="hljs-keyword">fun</span> performOp(<span class="hljs-built_in">int</span> <span class="hljs-keyword">val</span>, function{<span class="hljs-built_in">int</span>, <span class="hljs-built_in">int</span>} <span class="hljs-keyword">op</span>)
-  <span class="hljs-keyword">op</span>(<span class="hljs-keyword">val</span>)
+  <h3 id="lambda-s-aka-anonymous-functions-">Lambda&#39;s (aka anonymous functions)</h3>
+  <p>Anonymous functions can be defined using the lambda syntax.</p>
+  <pre><code class="lang-n"><span class="hljs-keyword">fun</span> performOp(<span class="hljs-built_in">int</span> <span class="hljs-keyword">val</span>, function{<span class="hljs-built_in">int</span>, <span class="hljs-built_in">int</span>} <span class="hljs-keyword">op</span>)
+ <span class="hljs-keyword">op</span>(<span class="hljs-keyword">val</span>)
 
 print(performOp(<span class="hljs-number">43</span>, lambda (<span class="hljs-built_in">int</span> x) x * x))
 </code></pre>
-<h3 id="closures">Closures</h3>
-<p>Lamba&#39;s can capture variables from the scope they are defined in.</p>
-<pre><code class="lang-n"><span class="hljs-function"><span class="hljs-keyword">fun</span> <span class="hljs-title">performOp</span><span class="hljs-params">(int <span class="hljs-keyword">val</span>, function{int, int} op)</span></span>
-  op(<span class="hljs-keyword">val</span>)
+  <h3 id="closures">Closures</h3>
+  <p>Lamba&#39;s can capture variables from the scope they are defined in.</p>
+  <pre><code class="lang-n"><span class="hljs-function"><span class="hljs-keyword">fun</span> <span class="hljs-title">performOp</span><span class="hljs-params">(int <span class="hljs-keyword">val</span>, function{int, int} op)</span></span>
+ op(<span class="hljs-keyword">val</span>)
 
 <span class="hljs-function"><span class="hljs-keyword">fun</span> <span class="hljs-title">makeAdder</span><span class="hljs-params">(int y)</span></span>
-  lambda (int x) x + y
+ lambda (int x) x + y
 
 print(performOp(<span class="hljs-number">42</span>, makeAdder(<span class="hljs-number">1337</span>))
 </code></pre>
-<h2 id="instance-calls">Instance calls</h2>
-<p>The first argument to a function can optionally be placed in front of the function call.
-  This is syntactic sugar only, but can aid in making function &#39;chains&#39; easier to read.</p>
-<pre><code class="lang-n">fun isEven(<span class="hljs-name">int</span> x) (<span class="hljs-name">x</span> % <span class="hljs-number">2</span>) == <span class="hljs-number">0</span>
+  <h2 id="instance-calls">Instance calls</h2>
+  <p>The first argument to a function can optionally be placed in front of the function call.
+    This is syntactic sugar only, but can aid in making function &#39;chains&#39; easier to read.</p>
+  <pre><code class="lang-n">fun isEven(<span class="hljs-name">int</span> x) (<span class="hljs-name">x</span> % <span class="hljs-number">2</span>) == <span class="hljs-number">0</span>
 fun square(<span class="hljs-name">int</span> x) x * x
 
 print(<span class="hljs-name">rangeList</span>(<span class="hljs-number">0</span>, <span class="hljs-number">100</span>).filter(<span class="hljs-name">isEven</span>).map(<span class="hljs-name">square</span>))
 </code></pre>
-<h2 id="parallel-computing">Parallel computing</h2>
-<p>Putting the keyword <code>fork</code> in front of any function call runs it on its own executor (thread) and
-  returns a <code>future{T}</code> handle to the executor.</p>
-<pre><code class="lang-n"><span class="hljs-function"><span class="hljs-keyword">fun</span> <span class="hljs-title">fib</span><span class="hljs-params">(int n)</span></span>
-  n &lt;= <span class="hljs-number">1</span> ? n : fib(n - <span class="hljs-number">1</span>) + fib(n - <span class="hljs-number">2</span>)
+  <h2 id="parallel-computing">Parallel computing</h2>
+  <p>Putting the keyword <code>fork</code> in front of any function call runs it on its own executor (thread) and
+    returns a <code>future{T}</code> handle to the executor.</p>
+  <pre><code class="lang-n"><span class="hljs-function"><span class="hljs-keyword">fun</span> <span class="hljs-title">fib</span><span class="hljs-params">(int n)</span></span>
+ n &lt;= <span class="hljs-number">1</span> ? n : fib(n - <span class="hljs-number">1</span>) + fib(n - <span class="hljs-number">2</span>)
 
 <span class="hljs-function"><span class="hljs-keyword">fun</span> <span class="hljs-title">calc</span><span class="hljs-params">()</span></span>
-  a = fork fib(<span class="hljs-number">25</span>);
-  b = fork fib(<span class="hljs-number">26</span>);
-  a.<span class="hljs-keyword">get</span>() + b.<span class="hljs-keyword">get</span>()
+ a = fork fib(<span class="hljs-number">25</span>);
+ b = fork fib(<span class="hljs-number">26</span>);
+ a.<span class="hljs-keyword">get</span>() + b.<span class="hljs-keyword">get</span>()
 </code></pre>
-<p>Note this is where a pure functional language shines, its completely safe to run any pure function
-  in parallel without any need for synchronization.</p>
-<h2 id="actions">Actions</h2>
-<p>As mentioned before functions are pure and cannot have any side-effects, but a program without
-  side-effects is not really useful (something about a tree falling in a forest..).</p>
-<p>That&#39;s why there are special kind of impure functions which are allowed to perform side-effects.
-  Those functions are called &#39;actions&#39;. An action is allowed to call into a function but not vise
-  versa.</p>
-<pre><code class="lang-n">import <span class="hljs-string">"std.nov"</span>
+  <p>Note this is where a pure functional language shines, its completely safe to run any pure function
+    in parallel without any need for synchronization.</p>
+  <h2 id="actions">Actions</h2>
+  <p>As mentioned before functions are pure and cannot have any side-effects, but a program without
+    side-effects is not really useful (something about a tree falling in a forest..).</p>
+  <p>That&#39;s why there are special kind of impure functions which are allowed to perform side-effects.
+    Those functions are called &#39;actions&#39;. An action is allowed to call into a function but not vise
+    versa.</p>
+  <pre><code class="lang-n">import <span class="hljs-string">"std.ns"</span>
 
 act printFile(<span class="hljs-name">Path</span> file)
-  in  = fileOpen(<span class="hljs-name">file</span>, FileMode.Open)<span class="hljs-comment">;</span>
-  out = consoleOpen(<span class="hljs-name">ConsoleKind</span>.StdOut)<span class="hljs-comment">;</span>
-  copy(<span class="hljs-name">in</span>, out)
+ in  = fileOpen(<span class="hljs-name">file</span>, FileMode.Open)<span class="hljs-comment">;</span>
+ out = consoleOpen(<span class="hljs-name">ConsoleKind</span>.StdOut)<span class="hljs-comment">;</span>
+ copy(<span class="hljs-name">in</span>, out)
 
 act main()
-  print(<span class="hljs-string">"Which file do you want to print?"</span>)<span class="hljs-comment">;</span>
-  p = Path(<span class="hljs-name">readLine</span>())<span class="hljs-comment">;</span>
-  print(<span class="hljs-string">"Ok, printing: "</span> + p)<span class="hljs-comment">;</span>
-  printFile(<span class="hljs-name">p</span>)
+ print(<span class="hljs-string">"Which file do you want to print?"</span>)<span class="hljs-comment">;</span>
+ p = Path(<span class="hljs-name">readLine</span>())<span class="hljs-comment">;</span>
+ print(<span class="hljs-string">"Ok, printing: "</span> + p)<span class="hljs-comment">;</span>
+ printFile(<span class="hljs-name">p</span>)
 
 main()
 </code></pre>
-<p>Note: To pass an action as a value you use the <code>action{}</code> type template instead of the
-  <code>function{}</code> one.
-</p>
-<p>Note: To create an &#39;action&#39; lambda you can use the <code>impure</code> keyword in front of the lambda:
-  <code>impure lambda (int x) x * x</code>
-</p>
-<h1 id="try-it-out">Try it out</h1>
-<h2 id="examples">Examples</h2>
-<p>Several examples can be found in the <a
-    href="https://github.com/BastianBlokland/novus/tree/master/examples">examples</a>
-  directory.</p>
-<h2 id="docker">Docker</h2>
-<p>You can quickly try it out using docker.
-  Open a interactive container with the compiler, runtime and examples installed:
-  <code>docker run --rm -it bastianblokland/novus sh</code>
-</p>
-<p>Run an example:
-  <code>nove examples/fizzbuzz.nov</code>
-</p>
-<h2 id="installing-the-compiler-and-runtime">Installing the compiler and runtime</h2>
-<p>At this time there are no releases of binary files, however you can try out the binaries produced
-  by the <a href="https://github.com/BastianBlokland/novus/actions">ci</a>.</p>
-<p>The best way is to build the compiler and runtime yourself, the process is documented below.</p>
-<h1 id="building">Building</h1>
-<h2 id="requirements">Requirements</h2>
-<h3 id="linux">Linux</h3>
-<ul>
-  <li>
-    <p><a href="https://cmake.org/">CMake</a> (At least version <code>3.15</code>).</p>
-  </li>
-  <li>
-    <p>Modern C++ compiler (at least c++ 17) (Tested with <code>gcc 7.5.0</code> and <code>clang 9.0.0</code>).</p>
-  </li>
-</ul>
-<h3 id="macos">MacOs</h3>
-<ul>
-  <li>
-    <p><a href="https://cmake.org/">CMake</a> (At least version <code>3.15</code>).</p>
-  </li>
-  <li>
-    <p>Modern C++ compiler (at least c++ 17) (Tested with <code>apple clang 11</code> and <code>clang 9.0.0</code>).</p>
-  </li>
-</ul>
-<h3 id="windows">Windows</h3>
-<ul>
-  <li>
-    <p><a href="https://cmake.org/">CMake</a> (At least version <code>3.15</code>).</p>
-    <p>For example with <code>chocolatey</code>: <code>choco install cmake</code>.</p>
-  </li>
-</ul>
-<p>Building can either be done using MinGW (windows port of Gcc and related tooling) or
-  Visual Studio (msvc).</p>
-<h4 id="mingw">MinGW</h4>
-<ul>
-  <li>
-    <p><a href="http://mingw-w64.org/">MinGW-w64</a>. Note: Either version <code>7.x</code> or <code>9.x</code>, version
-      <code>8.x</code> has a
-      <a href="https://sourceforge.net/p/mingw-w64/bugs/737/">broken <code>std::filesystem</code> library impl</a>.
-    </p>
-    <p>For example with <code>chocolatey</code>: <code>choco install mingw --version=7.3.0</code>. Unfortunately
-      <code>9.x</code> is at
-      the time of writing not yet on <code>chocolatey</code>, but the <a href="https://nuwen.net/mingw.html">nuwen</a>
-      distribution ships it.
-    </p>
-  </li>
-</ul>
-<h3 id="visual-studio">Visual Studio</h3>
-<ul>
-  <li>
-    <p>Tested with Visual Studio 2019 (make sure the c++ tooling is installed).</p>
-  </li>
-  <li>
-    <p>For command-line building install <code>vswhere</code> (<a
-        href="https://github.com/microsoft/vswhere">https://github.com/microsoft/vswhere</a>).</p>
-    <p>For example with <code>chocolatey</code>: <code>choco install vswhere</code>.</p>
-  </li>
-</ul>
-<h2 id="configure">Configure</h2>
-<p>Before building you have to configure the project, run <code>scripts/configure.sh</code> on unix or
-  <code>scripts/configure.ps1</code> on windows.
-</p>
-<p>For Visual Studio run <code>scripts/configure.ps1 -Gen VS2019</code>, after which the Visual Studio project
-  can be found in the <code>build</code> directory.</p>
-<p>On unix run <code>scripts/configure.sh --help</code> for a listing of options, on windows:
-  <code>Help scripts/configure.ps1</code>
-</p>
-<h2 id="building">Building</h2>
-<p>After configuring the project can be build by running <code>scripts/build.sh</code> on unix or
-  <code>scripts/build.ps1</code> on windows.
-</p>
-<p>Build output can be found in the <code>bin</code> directory.
-  For more convenience you can add the <code>bin</code> directory to your <code>PATH</code>.</p>
-<h2 id="building-novus-source-code">Building novus source code</h2>
-<p>Novus source (<code>.nov</code>) can be compiled into novus assembly (<code>.nova</code>) using the <code>novc</code>
-  executable.</p>
-<p>Example: <code>./bin/novc examples/fizzbuzz.nov</code>. The output can be found at
-  <code>examples/fizzbuzz.nova</code>.
-</p>
-<h2 id="running-novus-assembly">Running novus assembly</h2>
-<p>Novus assembly (<code>.nova</code>) can be run in the novus runtime (<code>novrt</code>).</p>
-<p>Example: <code>./bin/novrt examples/fizzbuzz.nova</code>.</p>
-<h2 id="evaluator">Evaluator</h2>
-<p>Alternatively you can use the <code>nove</code> (novus evaluator) to combine the compilation and running.</p>
-<p>You can either pass the source straight to the evaluator:
-  <code>./bin/nove &#39;print(pow(42, 1.337))&#39;</code>.
-</p>
-<p>or give a <code>.nov</code> source file to the evaluator:
-  <code>./bin/nove examples/fizzbuzz.nov</code>.
-</p>
-<h2 id="debugging">Debugging</h2>
-<p>While there is no debugger (yet?) for <code>novus</code> programs, there are a few diagnostic programs:</p>
-<ul>
-  <li><code>novdiag-prog</code> (Show the generated ast, optionally after optimizing)</li>
-  <li><code>novdiag-asm</code> (Show the generated nov assembly code)</li>
-  <li><code>novdiag-parse</code> (Show the parse-tree output)</li>
-  <li><code>novdiag-lex</code> (Show the output tokens of the lexer)</li>
-</ul>
-<h2 id="testing">Testing</h2>
-<p>After building the project you can run the tests by running <code>scripts/test.sh</code> on unix or
-  <code>scripts/test.ps1</code> on windows.
-</p>
-<p>Note: To run the compiler and vm tests they have to be enabled and build in the configure step.</p>
-<p>Note: On windows compiler and vm tests have to be run as administrator, reason is temporary files
-  are created in the system root there and most users don&#39;t have access to write there.</p>
-<h2 id="ide">Ide</h2>
-<p>For basic ide support when editing <code>novus</code> source code check the <code>ide</code> directory if there is a
-  plugin for your ide.</p>
-<p>For ide support when editing the compiler and vm:</p>
-<ul>
-  <li>Configure the project: <code>make configure.debug</code>.</li>
-  <li>Copy / symlink the file <code>build/compile_commands.json</code> to the root of the project.</li>
-  <li>Use a ide extension for <code>cpp</code> support, for example: <code>clangd</code> (vscode ext: <a
-      href="https://marketplace.visualstudio.com/items?itemName=llvm-vs-code-extensions.vscode-clangd">vscode-clangd</a>)
-  </li>
-</ul>
-<h2 id="name">Name</h2>
-<p>Naming things is hard 😅 From the Stargate tv-show: <a href="https://stargate.fandom.com/wiki/Novus">Novus =
-    &#39;new&#39; in ancient</a>.</p>
+  <p>Note: To pass an action as a value you use the <code>action{}</code> type template instead of the
+    <code>function{}</code> one.
+  </p>
+  <p>Note: To create an &#39;action&#39; lambda you can use the <code>impure</code> keyword in front of the lambda:
+    <code>impure lambda (int x) x * x</code>
+  </p>
+  <h1 id="try-it-out">Try it out</h1>
+  <h2 id="examples">Examples</h2>
+  <p>Several examples can be found in the <a
+      href="https://github.com/BastianBlokland/novus/tree/master/examples">examples</a>
+    directory.</p>
+  <h2 id="docker">Docker</h2>
+  <p>You can quickly try it out using docker.
+    Open a interactive container with the compiler, runtime and examples installed:
+    <code>docker run --rm -it bastianblokland/novus sh</code>
+  </p>
+  <p>Run an example:
+    <code>nove examples/fizzbuzz.ns</code>
+  </p>
+  <h2 id="installing-the-compiler-and-runtime">Installing the compiler and runtime</h2>
+  <p>At this time there are no releases of binary files, however you can try out the binaries produced
+    by the <a href="https://github.com/BastianBlokland/novus/actions">ci</a>.</p>
+  <p>The best way is to build the compiler and runtime yourself, the process is documented below.</p>
+  <h1 id="building">Building</h1>
+  <h2 id="requirements">Requirements</h2>
+  <h3 id="linux">Linux</h3>
+  <ul>
+    <li>
+      <p><a href="https://cmake.org/">CMake</a> (At least version <code>3.15</code>).</p>
+    </li>
+    <li>
+      <p>Modern C++ compiler (at least c++ 17) (Tested with <code>gcc 7.5.0</code> and <code>clang 9.0.0</code>).</p>
+    </li>
+  </ul>
+  <h3 id="macos">MacOs</h3>
+  <ul>
+    <li>
+      <p><a href="https://cmake.org/">CMake</a> (At least version <code>3.15</code>).</p>
+    </li>
+    <li>
+      <p>Modern C++ compiler (at least c++ 17) (Tested with <code>apple clang 11</code> and <code>clang 9.0.0</code>).
+      </p>
+    </li>
+  </ul>
+  <h3 id="windows">Windows</h3>
+  <ul>
+    <li>
+      <p><a href="https://cmake.org/">CMake</a> (At least version <code>3.15</code>).</p>
+      <p>For example with <code>chocolatey</code>: <code>choco install cmake</code>.</p>
+    </li>
+  </ul>
+  <p>Building can either be done using MinGW (windows port of Gcc and related tooling) or
+    Visual Studio (msvc).</p>
+  <h4 id="mingw">MinGW</h4>
+  <ul>
+    <li>
+      <p><a href="http://mingw-w64.org/">MinGW-w64</a>. Note: Either version <code>7.x</code> or <code>9.x</code>,
+        version <code>8.x</code> has a
+        <a href="https://sourceforge.net/p/mingw-w64/bugs/737/">broken <code>std::filesystem</code> library impl</a>.
+      </p>
+      <p>For example with <code>chocolatey</code>: <code>choco install mingw --version=7.3.0</code>. Unfortunately
+        <code>9.x</code> is at
+        the time of writing not yet on <code>chocolatey</code>, but the <a href="https://nuwen.net/mingw.html">nuwen</a>
+        distribution ships it.</p>
+    </li>
+  </ul>
+  <h3 id="visual-studio">Visual Studio</h3>
+  <ul>
+    <li>
+      <p>Tested with Visual Studio 2019 (make sure the c++ tooling is installed).</p>
+    </li>
+    <li>
+      <p>For command-line building install <code>vswhere</code> (<a
+          href="https://github.com/microsoft/vswhere">https://github.com/microsoft/vswhere</a>).</p>
+      <p>For example with <code>chocolatey</code>: <code>choco install vswhere</code>.</p>
+    </li>
+  </ul>
+  <h2 id="configure">Configure</h2>
+  <p>Before building you have to configure the project, run <code>scripts/configure.sh</code> on unix or
+    <code>scripts/configure.ps1</code> on windows.
+  </p>
+  <p>For Visual Studio run <code>scripts/configure.ps1 -Gen VS2019</code>, after which the Visual Studio project
+    can be found in the <code>build</code> directory.</p>
+  <p>On unix run <code>scripts/configure.sh --help</code> for a listing of options, on windows:
+    <code>Help scripts/configure.ps1</code>
+  </p>
+  <h2 id="building">Building</h2>
+  <p>After configuring the project can be build by running <code>scripts/build.sh</code> on unix or
+    <code>scripts/build.ps1</code> on windows.
+  </p>
+  <p>Build output can be found in the <code>bin</code> directory.
+    For more convenience you can add the <code>bin</code> directory to your <code>PATH</code>.</p>
+  <h2 id="building-novus-source-code">Building novus source code</h2>
+  <p>Novus source (<code>.ns</code>) can be compiled into novus assembly (<code>.nova</code>) using the
+    <code>novc</code> executable.</p>
+  <p>Example: <code>./bin/novc examples/fizzbuzz.ns</code>. The output can be found at
+    <code>examples/fizzbuzz.nova</code>.</p>
+  <h2 id="running-novus-assembly">Running novus assembly</h2>
+  <p>Novus assembly (<code>.nova</code>) can be run in the novus runtime (<code>novrt</code>).</p>
+  <p>Example: <code>./bin/novrt examples/fizzbuzz.nova</code>.</p>
+  <p>On unix if you add the runtime to your <code>PATH</code> you can straight up run <code>.nova</code> files:</p>
+  <pre><code>chmod +x examples/fizzbuzz<span class="hljs-selector-class">.nova</span>
+examples/fizzbuzz.nova
+</code></pre>
+  <h2 id="evaluator">Evaluator</h2>
+  <p>Alternatively you can use the <code>nove</code> (novus evaluator) to combine the compilation and running.</p>
+  <p>You can either pass the source straight to the evaluator:
+    <code>./bin/nove &#39;print(pow(42, 1.337))&#39;</code>.
+  </p>
+  <p>or give a <code>.ns</code> source file to the evaluator:
+    <code>./bin/nove examples/fizzbuzz.ns</code>.
+  </p>
+  <h2 id="debugging">Debugging</h2>
+  <p>While there is no debugger (yet?) for <code>novus</code> programs, there are a few diagnostic programs:</p>
+  <ul>
+    <li><code>novdiag-prog</code> (Show the generated ast, optionally after optimizing)</li>
+    <li><code>novdiag-asm</code> (Show the generated nov assembly code)</li>
+    <li><code>novdiag-parse</code> (Show the parse-tree output)</li>
+    <li><code>novdiag-lex</code> (Show the output tokens of the lexer)</li>
+  </ul>
+  <h2 id="testing">Testing</h2>
+  <p>After building the project you can run the tests by running <code>scripts/test.sh</code> on unix or
+    <code>scripts/test.ps1</code> on windows.
+  </p>
+  <p>Note: To run the compiler and vm tests they have to be enabled and build in the configure step.</p>
+  <h2 id="ide">Ide</h2>
+  <p>For basic ide support when editing <code>novus</code> source code check the <code>ide</code> directory if there is
+    a
+    plugin for your ide.</p>
+  <p>For ide support when editing the compiler and vm:</p>
+  <ul>
+    <li>Configure the project: <code>make configure.debug</code>.</li>
+    <li>Copy / symlink the file <code>build/compile_commands.json</code> to the root of the project.</li>
+    <li>Use a ide extension for <code>cpp</code> support, for example: <code>clangd</code> (vscode ext: <a
+        href="https://marketplace.visualstudio.com/items?itemName=llvm-vs-code-extensions.vscode-clangd">vscode-clangd</a>)
+    </li>
+  </ul>
+  <h2 id="name">Name</h2>
+  <p>Naming things is hard 😅 From the Stargate tv-show: <a href="https://stargate.fandom.com/wiki/Novus">Novus =
+      &#39;new&#39; in ancient</a>.</p>
+</body>
+
+</html>

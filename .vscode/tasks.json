@@ -17,9 +17,9 @@
       "problemMatcher": []
     },
     {
-      "label": "watch.nov",
+      "label": "watch.ns",
       "type": "shell",
-      "command": "${workspaceFolder}/scripts/watch_nov.sh",
+      "command": "${workspaceFolder}/scripts/watch_ns.sh",
       "args": [
         "${workspaceFolder}",
         "${workspaceFolder}/bin/novc"

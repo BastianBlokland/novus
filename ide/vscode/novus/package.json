@@ -18,7 +18,7 @@
           "novus"
         ],
         "extensions": [
-          ".nov"
+          ".ns"
         ],
         "configuration": "./language-configuration.json"
       }
