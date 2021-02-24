@@ -106,7 +106,7 @@ act parseSrt(Path path)
 
 act printUsage()
   print("Srt parser");
-  print("Usage: srt-parser.nov --path path/to/file.srt\n");
+  print("Usage: srt-parser.ns --path path/to/file.srt\n");
   print("Options:");
   print("  --help   Print this usage information");
   print("  --path   Path to the srt file")

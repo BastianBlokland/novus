@@ -11,7 +11,7 @@ COPY site /webserver/site
 WORKDIR   /webserver
 
 # Compile the webserver into a novus excutable file (.nx).
-RUN novc main.nov --out server.nx
+RUN novc main.ns --out server.nx
 
 # Open port '80'
 EXPOSE 80

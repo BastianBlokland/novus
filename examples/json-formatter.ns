@@ -14,7 +14,7 @@ act printJson(JsonValue v, bool pretty)
 
 act printUsage()
   print("Json formatter");
-  print("Usage: json-formatter.nov --path path/to/file.json --pretty\n");
+  print("Usage: json-formatter.ns --path path/to/file.json --pretty\n");
   print("Options:");
   print("  --help     Print this usage information");
   print("  --path     Path to the json file to format");
