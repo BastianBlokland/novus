@@ -9,7 +9,6 @@
 namespace novrt::win32 {
 
 auto registerWin32FileAssoc() noexcept -> bool {
-
   std::cout << "-- Adding registry class for 'Novus.Executable'.\n";
 
   constexpr std::string_view novExecClassKeyName =
@@ -25,6 +24,7 @@ auto registerWin32FileAssoc() noexcept -> bool {
   }
 
   const auto rtPath = getExecutablePath();
+  std::cout << "-- Registering 'novrt' path: '" << rtPath << "'\n";
 
   const size_t maxCmdValSize = MAX_PATH + 128u;
   char cmdValBuffer[maxCmdValSize];

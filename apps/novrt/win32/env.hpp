@@ -28,6 +28,18 @@ enum class EnvVarStore {
   return getEnvVar(name, EnvVarStore::Machine);
 }
 
+inline auto envVarExists(std::string_view name, EnvVarStore store) noexcept -> bool {
+  return getEnvVar(name, store).isValid();
+}
+
+inline auto usrEnvVarExists(std::string_view name) noexcept -> bool {
+  return getEnvVar(name, EnvVarStore::User).isValid();
+}
+
+inline auto sysEnvVarExists(std::string_view name) noexcept -> bool {
+  return getEnvVar(name, EnvVarStore::Machine).isValid();
+}
+
 auto setEnvVar(std::string_view name, std::string_view value, EnvVarStore store) noexcept
     -> OptWinErr;
 

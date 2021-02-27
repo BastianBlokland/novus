@@ -55,32 +55,48 @@ auto setEnvVar(std::string_view name, std::string_view value, EnvVarStore store)
 }
 
 auto addToDelimEnvVar(std::string_view name, std::string_view value) -> OptWinErr {
-  RegStrVal regStrVal = getUsrOrSysEnvVar(name);
-  if (!regStrVal) {
-    return regStrVal.getErrorCode();
+
+  std::string delimVal;
+  if (RegStrVal regStrVal = getUsrEnvVar(name)) {
+    delimVal = std::string{regStrVal.getVal()};
+  } else {
+    // The environment variable does not exist yet for the current user, check if it exists in the
+    // machine scope.
+    RegStrVal sysEnvVar = getSysEnvVar(name);
+    if (!sysEnvVar) {
+      // Machine does not have this environment variable either: error.
+      return sysEnvVar.getErrorCode();
+    }
+
+    // The environment variable exists for the machine, create a new environment variable for the
+    // user that extends the machine variable.
+    delimVal.reserve(name.size() + 2);
+    delimVal += "%";
+    delimVal += name;
+    delimVal += "%";
   }
-  const std::string_view delimVal = regStrVal.getVal();
+
+  const std::string_view delimValView = delimVal;
 
   // Check if the value is already present.
   for (size_t i = 0, end;; i = end + 1) {
-    end                  = delimVal.find(';', i);
-    std::string_view ext = delimVal.substr(i, end - i);
+    end                  = delimValView.find(';', i);
+    std::string_view ext = delimValView.substr(i, end - i);
     if (ext == value) {
       return winSuccess(); // Value is allready present.
     }
-    if (end == delimVal.npos || end == delimVal.size()) {
+    if (end == delimValView.npos || end == delimValView.size()) {
       break; // Reached the end of the collection.
     }
   }
 
   // Value is not present, add it.
-  std::string newDelimVal = std::string{delimVal};
-  if (!newDelimVal.empty() && newDelimVal.back() != ';') {
-    newDelimVal += ';';
+  if (!delimVal.empty() && delimVal.back() != ';') {
+    delimVal += ';';
   }
-  newDelimVal += value;
+  delimVal += value;
 
-  return setEnvVar(name, newDelimVal, EnvVarStore::User);
+  return setEnvVar(name, delimVal, EnvVarStore::User);
 }
 
 auto removeFromDelimEnvVar(std::string_view name, std::string_view value) -> OptWinErr {

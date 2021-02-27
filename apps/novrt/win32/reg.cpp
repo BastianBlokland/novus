@@ -106,7 +106,13 @@ auto getRegStrVal(const RegKey& key, std::string_view valName) noexcept -> RegSt
   do {
     result.resize(resultSize);
     err = ::RegGetValueA(
-        *key, nullptr, valNameNullTerm, RRF_RT_REG_SZ, nullptr, result.data(), &resultSize);
+        *key,
+        nullptr,
+        valNameNullTerm,
+        RRF_RT_REG_SZ | RRF_RT_REG_EXPAND_SZ | RRF_NOEXPAND,
+        nullptr,
+        result.data(),
+        &resultSize);
   } while (err == ERROR_MORE_DATA);
 
   if (err != ERROR_SUCCESS) {
@@ -132,7 +138,7 @@ auto setRegStrVal(const RegKey& key, std::string_view value, std::string_view va
       *key,
       valNameNullTerm,
       0,
-      REG_SZ,
+      REG_EXPAND_SZ,
       reinterpret_cast<const BYTE*>(valNullTerm),
       ::strlen(valNullTerm) + 1); // NOTE: Using strlen in case of any null-terms in the middle.
 
