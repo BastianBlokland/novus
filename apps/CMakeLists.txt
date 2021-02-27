@@ -36,6 +36,10 @@ target_link_libraries(novc PRIVATE frontend)
 target_link_libraries(novc PRIVATE backend)
 target_link_libraries(novc PRIVATE novasm)
 target_link_libraries(novc PRIVATE opt)
+if(WIN32)
+  configure_file(scripts/novus-install.bat "${EXECUTABLE_OUTPUT_PATH}/novus-install.bat" COPYONLY)
+  configure_file(scripts/novus-uninstall.bat "${EXECUTABLE_OUTPUT_PATH}/novus-uninstall.bat" COPYONLY)
+endif()
 
 # Runtime.
 message(STATUS "Configuring novrt executable")
