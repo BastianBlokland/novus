@@ -1,5 +1,6 @@
 #include "config.hpp"
 #include "filesystem.hpp"
+#include "metacmd.hpp"
 #include "novasm/serialization.hpp"
 #include "vm/exec_state.hpp"
 #include "vm/platform_interface.hpp"
@@ -8,13 +9,25 @@
 #include <fstream>
 
 auto main(int argc, const char** argv) noexcept -> int {
+  // Skip the first arg (path to this executable).
+  if (argc > 0) {
+    argc -= 1;
+    argv += 1;
+  }
 
-  if (argc < 2) {
+  // If a meta command was invoked (like --install) then execute it.
+  if (argc && strncmp(argv[0], "--", 2) == 0) {
+    return novrt::execMetaCommand(argc, argv);
+  }
+
+  // Otherwise execute a nx executable.
+
+  if (!argc) {
     std::cerr << "Novus runtime [" PROJECT_VER
                  "] - Please provide path to a 'nx' executable file\n";
     return 1;
   }
-  auto relProgPath = filesystem::path(std::string(argv[1]));
+  auto relProgPath = filesystem::path(std::string(argv[0]));
 
   // Open a handle to the program executable file.
   auto fs = std::ifstream{relProgPath.string(), std::ios::binary};
@@ -33,18 +46,14 @@ auto main(int argc, const char** argv) noexcept -> int {
   // Close the handle to the program executable file.
   fs.close();
 
-  const auto consumedArgs   = 1; // Consume the path to the runtime executable itself.
-  const auto vmEnvArgsCount = argc - consumedArgs;
-  const char** vmEnvArgs    = argv + consumedArgs;
-  auto absProgPath          = filesystem::canonical(relProgPath).string();
-
   auto iface = vm::PlatformInterface{
-      std::move(absProgPath),
-      vmEnvArgsCount,
-      vmEnvArgs,
+      filesystem::canonical(relProgPath).string(),
+      argc,
+      argv,
       vm::fileStdIn(),
       vm::fileStdOut(),
       vm::fileStdErr()};
+
   auto res = vm::run(&asmOutput.value(), &iface);
   if (res > vm::ExecState::Failed) {
     std::cerr << "runtime error: " << res << '\n';
