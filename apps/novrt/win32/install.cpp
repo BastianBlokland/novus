@@ -14,24 +14,38 @@ auto registerWin32FileAssoc() noexcept -> bool {
   const auto homePath = rtPath.parent_path();
 
   std::cout << "-- Novus home path: '" << homePath << "'\n";
-  std::cout << "-- Setting 'NOVUS_HOME' environment variable.'\n";
+  std::cout << "-- Setting 'NOVUS_HOME' environment variable.\n";
   setUsrEnvVar("NOVUS_HOME", homePath.string());
 
   std::cout << "-- Adding registry class for 'Novus.Executable'.\n";
 
-  constexpr std::string_view novExecClassKeyName =
-      "SOFTWARE\\Classes\\Novus.Executable\\Shell\\open\\command";
-
-  auto novExecClassKey = getUsrRegKey(novExecClassKeyName);
-  if (!novExecClassKey) {
-    std::cerr << "Failed to add registry key: \n" << novExecClassKey.getErrorMsg();
+  constexpr std::string_view novExecKeyName = "SOFTWARE\\Classes\\Novus.Executable";
+  auto novExecKey                           = getUsrRegKey(novExecKeyName);
+  if (!novExecKey) {
+    std::cerr << "Failed to add registry key: \n" << novExecKey.getErrorMsg();
     return false;
   }
-  if (novExecClassKey.isNew()) {
-    std::cout << "-- Added reg key: '" << novExecClassKeyName << "'\n";
+  if (novExecKey.isNew()) {
+    std::cout << "-- Added reg key: '" << novExecKeyName << "'\n";
+  }
+  if (const OptWinErr err = setRegStrVal(novExecKey, "Novus Executable")) {
+    std::cerr << "Failed to write to registry key: \n" << winErrToString(*err);
+    return false;
   }
 
-  std::cout << "-- Registering 'novrt' path: '" << rtPath << "'\n";
+  std::cout << "-- Adding shell open command for 'Novus.Executable'.\n";
+
+  constexpr std::string_view novExecCmdKeyName =
+      "SOFTWARE\\Classes\\Novus.Executable\\Shell\\open\\command";
+
+  auto novExecCmdKey = getUsrRegKey(novExecCmdKeyName);
+  if (!novExecCmdKey) {
+    std::cerr << "Failed to add registry key: \n" << novExecCmdKey.getErrorMsg();
+    return false;
+  }
+  if (novExecCmdKey.isNew()) {
+    std::cout << "-- Added reg key: '" << novExecCmdKeyName << "'\n";
+  }
 
   const size_t maxCmdValSize = MAX_PATH + 128u;
   char cmdValBuffer[maxCmdValSize];
@@ -43,7 +57,7 @@ auto registerWin32FileAssoc() noexcept -> bool {
   }
   const auto cmdVal = std::string_view{cmdValBuffer, static_cast<size_t>(cmdValSize)};
 
-  if (const OptWinErr err = setRegStrVal(novExecClassKey, cmdVal)) {
+  if (const OptWinErr err = setRegStrVal(novExecCmdKey, cmdVal)) {
     std::cerr << "Failed to write to registry key: \n" << winErrToString(*err);
     return false;
   }
@@ -53,10 +67,10 @@ auto registerWin32FileAssoc() noexcept -> bool {
   constexpr std::string_view nxFileAssocKeyName = "SOFTWARE\\Classes\\.nx";
   auto nxFileAssocKey                           = getUsrRegKey(nxFileAssocKeyName);
   if (!nxFileAssocKey) {
-    std::cerr << "Failed to add registry key: \n" << novExecClassKey.getErrorMsg();
+    std::cerr << "Failed to add registry key: \n" << nxFileAssocKey.getErrorMsg();
     return false;
   }
-  if (novExecClassKey.isNew()) {
+  if (nxFileAssocKey.isNew()) {
     std::cout << "-- Added reg key: '" << nxFileAssocKeyName << "'\n";
   }
   if (const OptWinErr err = setRegStrVal(nxFileAssocKey, "Novus.Executable")) {
