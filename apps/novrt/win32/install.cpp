@@ -1,5 +1,6 @@
 #if defined(_WIN32)
 #include "install.hpp"
+#include "env.hpp"
 #include "reg.hpp"
 #include "utilities.hpp"
 #include <array>
@@ -7,20 +8,20 @@
 
 namespace novrt::win32 {
 
-constexpr std::string_view g_shellCommandRegKey =
-    "SOFTWARE\\Classes\\Novus.Executable\\Shell\\open\\command";
-constexpr std::string_view g_nxFileAssocRegKey = "SOFTWARE\\Classes\\.nx";
-
 auto registerWin32FileAssoc() noexcept -> bool {
 
   std::cout << "-- Adding registry class for 'Novus.Executable'.\n";
-  auto novExecClassKey = getUsrRegKey(g_shellCommandRegKey);
+
+  constexpr std::string_view novExecClassKeyName =
+      "SOFTWARE\\Classes\\Novus.Executable\\Shell\\open\\command";
+
+  auto novExecClassKey = getUsrRegKey(novExecClassKeyName);
   if (!novExecClassKey) {
     std::cerr << "Failed to add registry key: \n" << novExecClassKey.getErrorMsg();
     return false;
   }
   if (novExecClassKey.isNew()) {
-    std::cout << "-- Added reg key: '" << g_shellCommandRegKey << "'\n";
+    std::cout << "-- Added reg key: '" << novExecClassKeyName << "'\n";
   }
 
   const auto rtPath = getExecutablePath();
@@ -42,18 +43,27 @@ auto registerWin32FileAssoc() noexcept -> bool {
 
   std::cout << "-- Associating '.nx' file extension with 'Novus.Executable' class.\n";
 
-  auto nxFileAssocKey = getUsrRegKey(g_nxFileAssocRegKey);
+  constexpr std::string_view nxFileAssocKeyName = "SOFTWARE\\Classes\\.nx";
+  auto nxFileAssocKey                           = getUsrRegKey(nxFileAssocKeyName);
   if (!nxFileAssocKey) {
     std::cerr << "Failed to add registry key: \n" << novExecClassKey.getErrorMsg();
     return false;
   }
   if (novExecClassKey.isNew()) {
-    std::cout << "-- Added reg key: '" << g_nxFileAssocRegKey << "'\n";
+    std::cout << "-- Added reg key: '" << nxFileAssocKeyName << "'\n";
   }
   if (const OptWinErr err = setRegStrVal(nxFileAssocKey, "Novus.Executable")) {
     std::cerr << "Failed to write to registry key: \n" << winErrToString(*err);
     return false;
   }
+
+  std::cout << "-- Adding '.NX' to 'PATHEXT' environment variable.\n";
+  if (const OptWinErr err = addToDelimEnvVar("PATHEXT", ".NX")) {
+    std::cerr << "Failed to add to 'PATHEXT' environment variable: \n" << winErrToString(*err);
+    return false;
+  }
+
+  std::cout << "<< NOTE: Please restart your shell for changes to take affect >>\n";
 
   return true;
 }
@@ -77,6 +87,12 @@ auto unregisterWin32FileAssoc() noexcept -> bool {
         return false;
       }
     }
+  }
+
+  std::cout << "-- Removing '.NX' from 'PATHEXT' environment variable.\n";
+  if (const OptWinErr err = removeFromDelimEnvVar("PATHEXT", ".NX")) {
+    std::cerr << "Failed to remove from 'PATHEXT' environment variable: \n" << winErrToString(*err);
+    return false;
   }
 
   return true;

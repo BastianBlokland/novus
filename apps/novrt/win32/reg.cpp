@@ -112,7 +112,7 @@ auto getRegStrVal(const RegKey& key, std::string_view valName) noexcept -> RegSt
   if (err != ERROR_SUCCESS) {
     return RegStrVal{err};
   }
-  result.resize(resultSize);
+  result.resize(resultSize - 1);
   return RegStrVal{std::move(result)};
 }
 
@@ -134,7 +134,7 @@ auto setRegStrVal(const RegKey& key, std::string_view value, std::string_view va
       0,
       REG_SZ,
       reinterpret_cast<const BYTE*>(valNullTerm),
-      value.size() + 1);
+      ::strlen(valNullTerm) + 1); // NOTE: Using strlen in case of any null-terms in the middle.
 
   if (err != ERROR_SUCCESS) {
     return err;

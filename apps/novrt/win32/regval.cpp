@@ -15,8 +15,9 @@ RegStrVal::~RegStrVal() noexcept {
 
 RegStrVal::RegStrVal(RegStrVal&& rhs) noexcept {
   if (rhs.m_valid) {
-    std::swap(m_val, rhs.m_val);
-    m_valid = true;
+    m_valid     = true;
+    m_val       = std::move(rhs.m_val);
+    rhs.m_valid = false;
   } else {
     m_valid   = false;
     m_errCode = rhs.m_errCode;
@@ -26,8 +27,9 @@ RegStrVal::RegStrVal(RegStrVal&& rhs) noexcept {
 auto RegStrVal::operator=(RegStrVal&& rhs) noexcept -> RegStrVal& {
   if (this != &rhs) {
     if (rhs.m_valid) {
-      m_valid = true;
-      m_val   = std::move(rhs.m_val);
+      m_valid     = true;
+      m_val       = std::move(rhs.m_val);
+      rhs.m_valid = false;
     } else {
       if (m_valid) {
         m_val.~basic_string();

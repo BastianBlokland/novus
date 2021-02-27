@@ -40,6 +40,7 @@ target_link_libraries(novc PRIVATE opt)
 # Runtime.
 message(STATUS "Configuring novrt executable")
 add_executable(novrt
+  novrt/win32/env.cpp
   novrt/win32/err.cpp
   novrt/win32/install.cpp
   novrt/win32/reg.cpp
