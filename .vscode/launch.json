@@ -33,6 +33,32 @@
       "stopOnEntry": false
     },
     {
+      "name": "novrt_install",
+      "preLaunchTask": "build",
+      "type": "lldb",
+      "request": "launch",
+      "program": "${workspaceFolder}/bin/novrt",
+      "args": [
+        "--install"
+      ],
+      "cwd": "${workspaceFolder}",
+      "terminal": "integrated",
+      "stopOnEntry": false
+    },
+    {
+      "name": "novrt_uninstall",
+      "preLaunchTask": "build",
+      "type": "lldb",
+      "request": "launch",
+      "program": "${workspaceFolder}/bin/novrt",
+      "args": [
+        "--uninstall"
+      ],
+      "cwd": "${workspaceFolder}",
+      "terminal": "integrated",
+      "stopOnEntry": false
+    },
+    {
       "name": "novrt_attach",
       "type": "lldb",
       "request": "attach",

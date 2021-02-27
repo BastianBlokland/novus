@@ -1,5 +1,6 @@
 #pragma once
 #include "config.hpp"
+#include "install.hpp"
 #include <cstring>
 #include <iostream>
 
@@ -23,6 +24,8 @@ inline constexpr MetaCmd g_metaCommands[] = {
        std::cout << "https://github.com/BastianBlokland/novus\n";
        return 0;
      }},
+    {"--install", install},
+    {"--uninstall", uninstall},
     {},
 };
 

@@ -39,7 +39,15 @@ target_link_libraries(novc PRIVATE opt)
 
 # Runtime.
 message(STATUS "Configuring novrt executable")
-add_executable(novrt novrt/main.cpp)
+add_executable(novrt
+  novrt/win32/err.cpp
+  novrt/win32/install.cpp
+  novrt/win32/reg.cpp
+  novrt/win32/regkey.cpp
+  novrt/win32/regval.cpp
+  novrt/win32/utilities.cpp
+  novrt/install.cpp
+  novrt/main.cpp)
 target_compile_features(novrt PUBLIC cxx_std_17)
 if(MSVC)
   target_compile_options(novrt PUBLIC /GR-)
