@@ -59,6 +59,8 @@ auto getRegStrVal(const RegKey& key, std::string_view valName = "") noexcept -> 
 auto setRegStrVal(const RegKey& key, std::string_view value, std::string_view valName = "") noexcept
     -> OptWinErr;
 
+auto deleteRegVal(const RegKey& key, std::string_view valName) noexcept -> OptWinErr;
+
 } // namespace novrt::win32
 
 #endif // _Win32

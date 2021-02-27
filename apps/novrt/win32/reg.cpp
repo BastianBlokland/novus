@@ -148,6 +148,21 @@ auto setRegStrVal(const RegKey& key, std::string_view value, std::string_view va
   return winSuccess();
 }
 
+auto deleteRegVal(const RegKey& key, std::string_view valName) noexcept -> OptWinErr {
+  if (!key) {
+    errorExit("Invalid key");
+  }
+
+  auto valNameCopy            = std::string{valName}; // Copy the keyName to null-term it.
+  const char* valNameNullTerm = valNameCopy.c_str();
+
+  const WinErr err = ::RegDeleteValueA(*key, valNameNullTerm);
+  if (err != ERROR_SUCCESS) {
+    return err;
+  }
+  return winSuccess();
+}
+
 } // namespace novrt::win32
 
 #endif // _Win32

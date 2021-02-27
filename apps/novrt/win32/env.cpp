@@ -54,6 +54,15 @@ auto setEnvVar(std::string_view name, std::string_view value, EnvVarStore store)
   return setRegStrVal(regKey, value, name);
 }
 
+auto deleteEnvVar(std::string_view name, EnvVarStore store) noexcept -> OptWinErr {
+  const RegKey regKey = getRegKey(
+      getRegKeyName(store), getKeyStore(store), RegKeyAccessMode::Write, RegKeyCreateMode::Open);
+  if (!regKey) {
+    return regKey.getErrorCode();
+  }
+  return deleteRegVal(regKey, name);
+}
+
 auto addToDelimEnvVar(std::string_view name, std::string_view value) -> OptWinErr {
 
   std::string delimVal;

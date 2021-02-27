@@ -9,6 +9,14 @@
 namespace novrt::win32 {
 
 auto registerWin32FileAssoc() noexcept -> bool {
+
+  const auto rtPath   = getExecutablePath();
+  const auto homePath = rtPath.parent_path();
+
+  std::cout << "-- Novus home path: '" << homePath << "'\n";
+  std::cout << "-- Setting 'NOVUS_HOME' environment variable.'\n";
+  setUsrEnvVar("NOVUS_HOME", homePath.string());
+
   std::cout << "-- Adding registry class for 'Novus.Executable'.\n";
 
   constexpr std::string_view novExecClassKeyName =
@@ -23,7 +31,6 @@ auto registerWin32FileAssoc() noexcept -> bool {
     std::cout << "-- Added reg key: '" << novExecClassKeyName << "'\n";
   }
 
-  const auto rtPath = getExecutablePath();
   std::cout << "-- Registering 'novrt' path: '" << rtPath << "'\n";
 
   const size_t maxCmdValSize = MAX_PATH + 128u;
@@ -63,12 +70,26 @@ auto registerWin32FileAssoc() noexcept -> bool {
     return false;
   }
 
+  std::cout << "-- Adding '%NOVUS_HOME%' to 'Path' environment variable.\n";
+  if (const OptWinErr err = addToDelimEnvVar("Path", "%NOVUS_HOME%")) {
+    std::cerr << "Failed to add to 'Path' environment variable: \n" << winErrToString(*err);
+    return false;
+  }
+
   std::cout << "<< NOTE: Please restart your shell for changes to take affect >>\n";
 
   return true;
 }
 
 auto unregisterWin32FileAssoc() noexcept -> bool {
+
+  if (usrEnvVarExists("NOVUS_HOME")) {
+    std::cout << "-- Removing 'NOVUS_HOME' environment variable.'\n";
+    if (const OptWinErr err = deleteUsrEnvVar("NOVUS_HOME")) {
+      std::cerr << "Failed to remove 'NOVUS_HOME' environment variable: \n" << winErrToString(*err);
+      return false;
+    }
+  }
 
   // TODO: Create a util to delete a key with subkeys to avoid having to manually delete each.
   std::array<std::string_view, 5> keysToDelete = {
@@ -92,6 +113,12 @@ auto unregisterWin32FileAssoc() noexcept -> bool {
   std::cout << "-- Removing '.NX' from 'PATHEXT' environment variable.\n";
   if (const OptWinErr err = removeFromDelimEnvVar("PATHEXT", ".NX")) {
     std::cerr << "Failed to remove from 'PATHEXT' environment variable: \n" << winErrToString(*err);
+    return false;
+  }
+
+  std::cout << "-- Removing '%NOVUS_HOME%' from 'Path' environment variable.\n";
+  if (const OptWinErr err = removeFromDelimEnvVar("Path", "%NOVUS_HOME%")) {
+    std::cerr << "Failed to remove from 'Path' environment variable: \n" << winErrToString(*err);
     return false;
   }
 

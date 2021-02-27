@@ -47,6 +47,12 @@ auto inline setUsrEnvVar(std::string_view name, std::string_view value) noexcept
   return setEnvVar(name, value, EnvVarStore::User);
 }
 
+auto deleteEnvVar(std::string_view name, EnvVarStore store) noexcept -> OptWinErr;
+
+auto inline deleteUsrEnvVar(std::string_view name) noexcept -> OptWinErr {
+  return deleteEnvVar(name, EnvVarStore::User);
+}
+
 auto addToDelimEnvVar(std::string_view name, std::string_view value) -> OptWinErr;
 
 auto removeFromDelimEnvVar(std::string_view name, std::string_view value) -> OptWinErr;
