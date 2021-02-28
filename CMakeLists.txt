@@ -1,5 +1,6 @@
 cmake_minimum_required(VERSION 3.15)
 
+cmake_policy(SET CMP0091 NEW)
 if(${CMAKE_VERSION} VERSION_GREATER_EQUAL "3.19")
   # Note: Eventually we want to opt into the new behaviour for test names, but because thats only
   # introduced in 3.19 we stick to the old behaviour until that is commonly available.
@@ -88,9 +89,10 @@ endif()
 
 if(MSVC)
   message(STATUS "Setting msvc compiler flags")
-  set(CXX_FLAGS_SHARED "${CXX_FLAGS_SHARED} /std:c++17 /O2 /WX /wd4530 /wd26451")
-  set(CMAKE_CXX_FLAGS_DEBUG "/Zi ${CXX_FLAGS_SHARED}")
-  set(CMAKE_CXX_FLAGS_RELEASE "/DNDEBUG ${CXX_FLAGS_SHARED}")
+  set(CMAKE_MSVC_RUNTIME_LIBRARY "") # Manually configure compiler flags.
+  set(CXX_FLAGS_SHARED "${CXX_FLAGS_SHARED} /std:c++17 /WX /wd4530 /wd26451")
+  set(CMAKE_CXX_FLAGS_DEBUG "${CXX_FLAGS_SHARED} /O1 /MTd")
+  set(CMAKE_CXX_FLAGS_RELEASE "${CXX_FLAGS_SHARED} /O2 /MT /DNDEBUG")
   set(CMAKE_EXE_LINKER_FLAGS "${LINKER_FLAGS_SHARED}")
 else()
   message(STATUS "Setting unix compiler flags")

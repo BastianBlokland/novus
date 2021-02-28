@@ -36,10 +36,23 @@ target_link_libraries(novc PRIVATE frontend)
 target_link_libraries(novc PRIVATE backend)
 target_link_libraries(novc PRIVATE novasm)
 target_link_libraries(novc PRIVATE opt)
+if(WIN32)
+  configure_file(scripts/novus-install.bat "${EXECUTABLE_OUTPUT_PATH}/novus-install.bat" COPYONLY)
+  configure_file(scripts/novus-uninstall.bat "${EXECUTABLE_OUTPUT_PATH}/novus-uninstall.bat" COPYONLY)
+endif()
 
 # Runtime.
 message(STATUS "Configuring novrt executable")
-add_executable(novrt novrt/main.cpp)
+add_executable(novrt
+  novrt/win32/env.cpp
+  novrt/win32/err.cpp
+  novrt/win32/install.cpp
+  novrt/win32/reg.cpp
+  novrt/win32/regkey.cpp
+  novrt/win32/regval.cpp
+  novrt/win32/utilities.cpp
+  novrt/install.cpp
+  novrt/main.cpp)
 target_compile_features(novrt PUBLIC cxx_std_17)
 if(MSVC)
   target_compile_options(novrt PUBLIC /GR-)
