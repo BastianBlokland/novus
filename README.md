@@ -398,7 +398,7 @@ On Windows you will have to install file associations using `./bin/novrt --insta
 the `./bin/novus-install.bat` batch script.
 
 That way windows knows to open `.nx` files with the `novrt.exe`
-executable. To uninstall the associations later `./bin/novrt --uninstall` or the
+executable. To uninstall the associations run `./bin/novrt --uninstall` or the
 `./bin/novus-uninstall.bat` batch script.
 
 In either case the result is that you can directly run novus executables:
