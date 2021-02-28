@@ -15,33 +15,50 @@ static auto setupWinsock(internal::Settings* settings) noexcept {
   if (settings->socketsEnabled) {
     const auto reqWsaVersion = MAKEWORD(2, 2);
     WSADATA wsaData;
-    if (WSAStartup(reqWsaVersion, &wsaData) != 0) {
+    if (::WSAStartup(reqWsaVersion, &wsaData) != 0) {
       settings->socketsEnabled = false;
     }
     // Verify that WSA 2.2 is supported.
     if (LOBYTE(wsaData.wVersion) != 2 || HIBYTE(wsaData.wVersion) != 2) {
-      WSACleanup();
+      ::WSACleanup();
       settings->socketsEnabled = false;
     }
   }
 }
 
-static auto enableVTConsoleMode() noexcept {
-  const auto hOut = GetStdHandle(STD_OUTPUT_HANDLE);
-  if (hOut == INVALID_HANDLE_VALUE) {
+static auto enableVTConsoleMode(PlatformInterface* iface) noexcept {
+  // Input buffer options.
+  DWORD inConsoleMode;
+  if (!::GetConsoleMode(iface->getStdIn(), &inConsoleMode)) {
     return false;
   }
-  DWORD dwMode = 0;
-  if (!GetConsoleMode(hOut, &dwMode)) {
+  inConsoleMode |= 0x0001; // ENABLE_PROCESSED_INPUT 0x0001
+  inConsoleMode |= 0x0200; // ENABLE_VIRTUAL_TERMINAL_INPUT 0x0200
+  if (!::SetConsoleMode(iface->getStdIn(), inConsoleMode)) {
     return false;
   }
-  dwMode |= 0x0004; // ENABLE_VIRTUAL_TERMINAL_PROCESSING 0x0004
-  return SetConsoleMode(hOut, dwMode) != 0;
+  if (!::SetConsoleCP(CP_UTF8)) {
+    return false;
+  }
+
+  // Output buffer options.
+  DWORD outConsoleMode;
+  if (!::GetConsoleMode(iface->getStdOut(), &outConsoleMode)) {
+    return false;
+  }
+  outConsoleMode |= 0x0004; // ENABLE_VIRTUAL_TERMINAL_PROCESSING 0x0004
+  if (!::SetConsoleMode(iface->getStdOut(), outConsoleMode)) {
+    return false;
+  }
+  if (!::SetConsoleOutputCP(CP_UTF8)) {
+    return false;
+  }
+  return true;
 }
 
-static auto setup(internal::Settings* settings) noexcept {
+static auto setup(internal::Settings* settings, PlatformInterface* iface) noexcept {
   setupWinsock(settings);
-  enableVTConsoleMode();
+  enableVTConsoleMode(iface);
 
   if (settings->interceptInterupt) {
     settings->interceptInterupt = internal::interruptSetupHandler();
@@ -52,7 +69,7 @@ static auto teardown(const internal::Settings* settings) noexcept {
 
   // Cleanup the winsock library.
   if (settings->socketsEnabled) {
-    WSACleanup();
+    ::WSACleanup();
   }
 }
 
@@ -87,7 +104,7 @@ auto run(const novasm::Executable* executable, PlatformInterface* iface) noexcep
   settings.socketsEnabled    = true; // TODO: Make configurable.
   settings.interceptInterupt = true; // TODO: Make configurable.
 
-  setup(&settings);
+  setup(&settings, iface);
 
   auto resultState = execute(
       &settings,
