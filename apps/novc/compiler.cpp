@@ -9,6 +9,7 @@
 #include "frontend/source.hpp"
 #include "novasm/serialization.hpp"
 #include "opt/opt.hpp"
+#include "utilities.hpp"
 #include <algorithm>
 #include <chrono>
 #include <fstream>
@@ -120,6 +121,13 @@ auto compile(Options options) -> bool {
     return false;
   }
   novasm::serialize(asmOutput.first, std::ostreambuf_iterator<char>{destFilestream});
+
+  if (!setOutputFilePermissions(options.destPath)) {
+    msgHeader(std::cerr) << rang::style::bold << rang::bg::red
+                         << "Failed to set output file permissions\n"
+                         << rang::style::reset;
+    return false;
+  }
 
   msgHeader(std::cout) << "Successfully compiled executable to: " << options.destPath << '\n';
   return true;
