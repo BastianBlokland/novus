@@ -26,8 +26,7 @@ static auto setupWinsock(internal::Settings* settings) noexcept {
   }
 }
 
-static auto enableVTConsoleMode(PlatformInterface* iface) noexcept {
-  // Input buffer options.
+static auto enableInputVTConsoleMode(PlatformInterface* iface) noexcept {
   DWORD inConsoleMode;
   if (!::GetConsoleMode(iface->getStdIn(), &inConsoleMode)) {
     return false;
@@ -40,8 +39,10 @@ static auto enableVTConsoleMode(PlatformInterface* iface) noexcept {
   if (!::SetConsoleCP(CP_UTF8)) {
     return false;
   }
+  return true;
+}
 
-  // Output buffer options.
+static auto enableOutputVTConsoleMode(PlatformInterface* iface) noexcept {
   DWORD outConsoleMode;
   if (!::GetConsoleMode(iface->getStdOut(), &outConsoleMode)) {
     return false;
@@ -58,7 +59,8 @@ static auto enableVTConsoleMode(PlatformInterface* iface) noexcept {
 
 static auto setup(internal::Settings* settings, PlatformInterface* iface) noexcept {
   setupWinsock(settings);
-  enableVTConsoleMode(iface);
+  enableInputVTConsoleMode(iface);
+  enableOutputVTConsoleMode(iface);
 
   if (settings->interceptInterupt) {
     settings->interceptInterupt = internal::interruptSetupHandler();
@@ -75,7 +77,7 @@ static auto teardown(const internal::Settings* settings) noexcept {
 
 #else // !_WIN32
 
-static auto setup(internal::Settings* settings) noexcept {
+static auto setup(internal::Settings* settings, PlatformInterface* /*unused*/) noexcept {
 
   // Ignore sig-pipe (we want to handle it on a per call basis instead of globally).
   signal(SIGPIPE, SIG_IGN);

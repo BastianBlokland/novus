@@ -117,7 +117,7 @@ fun ttyLitCursorShowWriter(bool show) -> Writer{None}
 fun ttyAltScreenWriter() -> Writer{bool}
   (
     litWriter(ttyEsc() + "[?1049") & charWriter()
-  ).map(lambda (bool show) show ? 'h' : 'l')
+  ).map(lambda (bool altScreen) altScreen ? 'h' : 'l')
 
 fun ttyLitAltScreenWriter(bool altScreen) -> Writer{None}
   litWriter(ttyEsc() + "[?1049" + (altScreen ? 'h' : 'l'))
