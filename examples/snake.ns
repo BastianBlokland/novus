@@ -200,6 +200,7 @@ act loop(Console c, State state, Writer{State} writer = stateWriter())
 fun stateWriter() -> Writer{State}
   (
     ttyLitClearWriter(TtyClearMode.All) &
+    ttyLitCursorShowWriter(false) &
     uiWriter() &
     listWriter(pickupWriter()) &
     playerWriter()
@@ -308,7 +309,6 @@ act setupTerminal(Console c)
     lazy c.setNoBlockInput()
     lazy c.writeOut(
       ttyLitAltScreenWriter(true)   &
-      ttyLitCursorShowWriter(false) &
       ttyLitWindowTitleWriter("Novus Snake")),
   )
 

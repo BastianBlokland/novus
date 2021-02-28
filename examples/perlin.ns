@@ -68,6 +68,7 @@ fun rowWriter() -> Writer{RowContent}
 
 fun screenWriter() -> Writer{ScreenContent}
   (
+    ttyLitCursorShowWriter(false) &
     listWriter(rowWriter())
   ).map(lambda (ScreenContent sc) sc.rows)
 
@@ -126,7 +127,6 @@ act getSize(Console c)
 
 act setupTerminal(Console c)
   c.writeOut(
-    ttyLitCursorShowWriter(false)         &
     ttyLitAltScreenWriter(true)           &
     ttyLitClearWriter(TtyClearMode.All)   &
     ttyLitWindowTitleWriter("Novus Perlin Noise"))
