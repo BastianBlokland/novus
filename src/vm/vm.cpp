@@ -26,14 +26,14 @@ static auto setupWinsock(internal::Settings* settings) noexcept {
   }
 }
 
-static auto enableInputVTConsoleMode(PlatformInterface* iface) noexcept {
-  DWORD inConsoleMode;
-  if (!::GetConsoleMode(iface->getStdIn(), &inConsoleMode)) {
+static auto setupInputConsole(internal::Settings* settings, PlatformInterface* iface) noexcept {
+  if (!::GetConsoleMode(iface->getStdIn(), &settings->win32OriginalInputConsoleMode)) {
     return false;
   }
-  inConsoleMode |= 0x0001; // ENABLE_PROCESSED_INPUT 0x0001
-  inConsoleMode |= 0x0200; // ENABLE_VIRTUAL_TERMINAL_INPUT 0x0200
-  if (!::SetConsoleMode(iface->getStdIn(), inConsoleMode)) {
+  DWORD newInputConsoleMode = settings->win32OriginalInputConsoleMode;
+  newInputConsoleMode |= 0x0001; // ENABLE_PROCESSED_INPUT 0x0001
+  newInputConsoleMode |= 0x0200; // ENABLE_VIRTUAL_TERMINAL_INPUT 0x0200
+  if (!::SetConsoleMode(iface->getStdIn(), newInputConsoleMode)) {
     return false;
   }
   if (!::SetConsoleCP(CP_UTF8)) {
@@ -42,13 +42,14 @@ static auto enableInputVTConsoleMode(PlatformInterface* iface) noexcept {
   return true;
 }
 
-static auto enableOutputVTConsoleMode(PlatformInterface* iface) noexcept {
-  DWORD outConsoleMode;
-  if (!::GetConsoleMode(iface->getStdOut(), &outConsoleMode)) {
+static auto setupOutputConsole(internal::Settings* settings, PlatformInterface* iface) noexcept {
+  // Save the original console mode.
+  if (!::GetConsoleMode(iface->getStdOut(), &settings->win32OriginalOutputConsoleMode)) {
     return false;
   }
-  outConsoleMode |= 0x0004; // ENABLE_VIRTUAL_TERMINAL_PROCESSING 0x0004
-  if (!::SetConsoleMode(iface->getStdOut(), outConsoleMode)) {
+  DWORD newOutputConsoleMode = settings->win32OriginalOutputConsoleMode;
+  newOutputConsoleMode |= 0x0004; // ENABLE_VIRTUAL_TERMINAL_PROCESSING 0x0004
+  if (!::SetConsoleMode(iface->getStdOut(), newOutputConsoleMode)) {
     return false;
   }
   if (!::SetConsoleOutputCP(CP_UTF8)) {
@@ -57,22 +58,32 @@ static auto enableOutputVTConsoleMode(PlatformInterface* iface) noexcept {
   return true;
 }
 
+static auto
+restoreInputConsole(const internal::Settings* settings, PlatformInterface* iface) noexcept {
+  return ::SetConsoleMode(iface->getStdIn(), settings->win32OriginalInputConsoleMode) == 0;
+}
+
+static auto
+restoreOutputConsole(const internal::Settings* settings, PlatformInterface* iface) noexcept {
+  return ::SetConsoleMode(iface->getStdOut(), settings->win32OriginalOutputConsoleMode) == 0;
+}
+
 static auto setup(internal::Settings* settings, PlatformInterface* iface) noexcept {
   setupWinsock(settings);
-  enableInputVTConsoleMode(iface);
-  enableOutputVTConsoleMode(iface);
+  setupInputConsole(settings, iface);
+  setupOutputConsole(settings, iface);
 
   if (settings->interceptInterupt) {
     settings->interceptInterupt = internal::interruptSetupHandler();
   }
 }
 
-static auto teardown(const internal::Settings* settings) noexcept {
-
-  // Cleanup the winsock library.
+static auto teardown(const internal::Settings* settings, PlatformInterface* iface) noexcept {
   if (settings->socketsEnabled) {
     ::WSACleanup();
   }
+  restoreInputConsole(settings, iface);
+  restoreOutputConsole(settings, iface);
 }
 
 #else // !_WIN32
@@ -87,7 +98,8 @@ static auto setup(internal::Settings* settings, PlatformInterface* /*unused*/) n
   }
 }
 
-static auto teardown(const internal::Settings* /*unused*/) noexcept {}
+static auto teardown(const internal::Settings* /*unused*/, PlatformInterface* /*unused*/) noexcept {
+}
 
 #endif // !_WIN32
 
@@ -129,7 +141,7 @@ auto run(const novasm::Executable* executable, PlatformInterface* iface) noexcep
 
   assert(execRegistry.isAborted());
 
-  teardown(&settings);
+  teardown(&settings, iface);
 
   return resultState;
 }
