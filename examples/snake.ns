@@ -306,14 +306,18 @@ act setupTerminal(Console c)
   actSeq(
     lazy c.termSetOptions(TerminalOptions.NoEcho | TerminalOptions.NoBuffer),
     lazy c.setNoBlockInput()
-    lazy c.writeOut(ttyLitAltScreenWriter(true) & ttyLitCursorShowWriter(false)),
+    lazy c.writeOut(
+      ttyLitAltScreenWriter(true)   &
+      ttyLitCursorShowWriter(false) &
+      ttyLitWindowTitleWriter("Novus Snake")),
   )
 
 act resetTerminal(Console c)
   actSeq(
     lazy c.termUnsetOptions(TerminalOptions.NoEcho | TerminalOptions.NoBuffer),
     lazy c.unsetNoBlockInput(),
-    lazy c.writeOut(ttyLitCursorShowWriter(true)        &
-                    ttyLitClearWriter(TtyClearMode.All) &
-                    ttyLitAltScreenWriter(false))
+    lazy c.writeOut(
+      ttyLitCursorShowWriter(true)        &
+      ttyLitClearWriter(TtyClearMode.All) &
+      ttyLitAltScreenWriter(false))
   )

@@ -128,7 +128,8 @@ act setupTerminal(Console c)
   c.writeOut(
     ttyLitCursorShowWriter(false)         &
     ttyLitAltScreenWriter(true)           &
-    ttyLitClearWriter(TtyClearMode.All))
+    ttyLitClearWriter(TtyClearMode.All)   &
+    ttyLitWindowTitleWriter("Novus Perlin Noise"))
 
 act resetTerminal(Console c)
   c.writeOut(

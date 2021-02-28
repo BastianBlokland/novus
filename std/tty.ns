@@ -64,6 +64,8 @@ fun TtyColor(Color c)
 
 fun ttyEsc() char(27).string()
 
+fun ttyBell() char(7).string()
+
 // -- Writer primitives
 
 fun ttyStyleWriter() -> Writer{TtyStyle}
@@ -114,10 +116,18 @@ fun ttyCursorShowWriter() -> Writer{bool}
 fun ttyLitCursorShowWriter(bool show) -> Writer{None}
   litWriter(ttyEsc() + "[?25" + (show ? 'h' : 'l'))
 
+fun ttyCursorBlinkWriter() -> Writer{bool}
+  (
+    litWriter(ttyEsc() + "[?12") & charWriter()
+  ).map(lambda (bool blink) blink ? 'h' : 'l')
+
+fun ttyLitCursorBlinkWriter(bool blink) -> Writer{None}
+  litWriter(ttyEsc() + "[?12" + (blink ? 'h' : 'l'))
+
 fun ttyAltScreenWriter() -> Writer{bool}
   (
     litWriter(ttyEsc() + "[?1049") & charWriter()
-  ).map(lambda (bool altScreen) altScreen ? 'h' : 'l')
+  ).map(lambda (bool show) show ? 'h' : 'l')
 
 fun ttyLitAltScreenWriter(bool altScreen) -> Writer{None}
   litWriter(ttyEsc() + "[?1049" + (altScreen ? 'h' : 'l'))
@@ -137,6 +147,14 @@ fun ttyClearLineWriter() -> Writer{TtyClearMode}
 
 fun ttyResetWriter() -> Writer{None}
   litWriter(ttyEsc() + "c")
+
+fun ttyLitWindowTitleWriter(string title) -> Writer{None}
+  litWriter(ttyEsc() + "]0;" + title + ttyBell())
+
+fun ttyWindowTitleWriter() -> Writer{string}
+  litWriter(ttyEsc() + "]0;") & stringWriter() & litWriter(ttyBell())
+
+//ESC ] 2 ; <string> BEL
 
 // -- Compound writers
 
