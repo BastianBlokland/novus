@@ -386,10 +386,24 @@ An Novus executable (`.nx`) can be run in the novus runtime (`novrt`).
 
 Example: `./bin/novrt examples/fizzbuzz.nx`.
 
-On unix if you add the runtime to your `PATH` you can straight up run `.nx` files:
+For more convenience you can also run `.nx` files without specifying the runtime:
+
+### Unix
+
+On unix this can be achieved by adding the runtime to your `PATH`.
+
+### Windows
+
+On Windows you will have to install file associations using `./bin/novrt --install` or run
+the `./bin/novus-install.bat` batch script.
+
+That way windows knows to open `.nx` files with the `novrt.exe`
+executable. To uninstall the associations later `./bin/novrt --uninstall` or the
+`./bin/novus-uninstall.bat` batch script.
+
+In either case the result is that you can directly run novus executables:
 ```
-chmod +x examples/fizzbuzz.nx
-examples/fizzbuzz.nx
+./fizzbuzz.nx
 ```
 
 ## Evaluator
