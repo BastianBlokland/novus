@@ -100,10 +100,11 @@ auto addToDelimEnvVar(std::string_view name, std::string_view value) -> OptWinEr
   }
 
   // Value is not present, add it.
-  if (!delimVal.empty() && delimVal.back() != ';') {
-    delimVal += ';';
+  if (delimVal.empty()) {
+    delimVal = value;
+  } else {
+    delimVal = std::string{value} + ";" + delimVal;
   }
-  delimVal += value;
 
   return setEnvVar(name, delimVal, EnvVarStore::User);
 }
