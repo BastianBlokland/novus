@@ -11,10 +11,10 @@ COPY site /webserver/site
 WORKDIR   /webserver
 
 # Compile the webserver into a novus excutable file (.nx).
-RUN novc main.ns --out server.nx
+RUN novc main.ns -o server.nx
 
 # Open port '80'
 EXPOSE 80
 
 # At entry start the webserver on port '80'.
-ENTRYPOINT ["novrt", "server.nx", "--port", "80"]
+ENTRYPOINT ["./server.nx", "--port", "80"]
