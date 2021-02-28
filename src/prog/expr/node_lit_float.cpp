@@ -42,7 +42,9 @@ auto LitFloatNode::toString() const -> std::string {
 }
 
 auto LitFloatNode::clone(Rewriter* /*rewriter*/) const -> std::unique_ptr<Node> {
-  return std::unique_ptr<LitFloatNode>{new LitFloatNode{m_type, m_val}};
+  auto* newExpr = new LitFloatNode{m_type, m_val};
+  newExpr->setSourceId(getSourceId());
+  return std::unique_ptr<LitFloatNode>{newExpr};
 }
 
 auto LitFloatNode::getVal() const noexcept -> float { return m_val; }

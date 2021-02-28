@@ -57,8 +57,10 @@ auto CallExprNode::toString() const -> std::string {
 }
 
 auto CallExprNode::clone(Rewriter* rewriter) const -> std::unique_ptr<Node> {
-  return std::unique_ptr<CallExprNode>{new CallExprNode{
-      m_func, m_resultType, cloneNodes(m_args, rewriter), m_mode, m_needsPatching}};
+  auto* newExpr =
+      new CallExprNode{m_func, m_resultType, cloneNodes(m_args, rewriter), m_mode, m_needsPatching};
+  newExpr->setSourceId(getSourceId());
+  return std::unique_ptr<CallExprNode>{newExpr};
 }
 
 auto CallExprNode::getFunc() const noexcept -> sym::FuncId { return m_func; }

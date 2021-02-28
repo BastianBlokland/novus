@@ -136,6 +136,8 @@ add_library(prog STATIC
   prog/sym/func_id.cpp
   prog/sym/future_def.cpp
   prog/sym/lazy_def.cpp
+  prog/sym/source_id_hasher.cpp
+  prog/sym/source_id.cpp
   prog/sym/struct_def.cpp
   prog/sym/type_decl_table.cpp
   prog/sym/type_decl.cpp

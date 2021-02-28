@@ -36,8 +36,9 @@ auto ClosureNode::toString() const -> std::string {
 }
 
 auto ClosureNode::clone(Rewriter* rewriter) const -> std::unique_ptr<Node> {
-  return std::unique_ptr<ClosureNode>{
-      new ClosureNode{m_type, m_func, cloneNodes(m_boundArgs, rewriter)}};
+  auto* newExpr = new ClosureNode{m_type, m_func, cloneNodes(m_boundArgs, rewriter)};
+  newExpr->setSourceId(getSourceId());
+  return std::unique_ptr<ClosureNode>{newExpr};
 }
 
 auto ClosureNode::getFunc() const noexcept -> sym::FuncId { return m_func; }

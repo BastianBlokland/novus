@@ -31,7 +31,9 @@ auto LitCharNode::toString() const -> std::string {
 }
 
 auto LitCharNode::clone(Rewriter* /*rewriter*/) const -> std::unique_ptr<Node> {
-  return std::unique_ptr<LitCharNode>{new LitCharNode{m_type, m_val}};
+  auto* newExpr = new LitCharNode{m_type, m_val};
+  newExpr->setSourceId(getSourceId());
+  return std::unique_ptr<LitCharNode>{newExpr};
 }
 
 auto LitCharNode::getVal() const noexcept -> uint8_t { return m_val; }

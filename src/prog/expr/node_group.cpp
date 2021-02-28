@@ -30,7 +30,9 @@ auto GroupExprNode::getType() const noexcept -> sym::TypeId { return m_exprs.bac
 auto GroupExprNode::toString() const -> std::string { return "group"; }
 
 auto GroupExprNode::clone(Rewriter* rewriter) const -> std::unique_ptr<Node> {
-  return std::unique_ptr<GroupExprNode>{new GroupExprNode{cloneNodes(m_exprs, rewriter)}};
+  auto* newExpr = new GroupExprNode{cloneNodes(m_exprs, rewriter)};
+  newExpr->setSourceId(getSourceId());
+  return std::unique_ptr<GroupExprNode>{newExpr};
 }
 
 auto GroupExprNode::accept(NodeVisitor* visitor) const -> void { visitor->visit(*this); }

@@ -34,8 +34,10 @@ auto FieldExprNode::toString() const -> std::string {
 }
 
 auto FieldExprNode::clone(Rewriter* rewriter) const -> std::unique_ptr<Node> {
-  return std::unique_ptr<FieldExprNode>{new FieldExprNode{
-      rewriter ? rewriter->rewrite(*m_lhs) : m_lhs->clone(nullptr), m_id, m_type}};
+  auto* newExpr =
+      new FieldExprNode{rewriter ? rewriter->rewrite(*m_lhs) : m_lhs->clone(nullptr), m_id, m_type};
+  newExpr->setSourceId(getSourceId());
+  return std::unique_ptr<FieldExprNode>{newExpr};
 }
 
 auto FieldExprNode::getId() const noexcept -> sym::FieldId { return m_id; }

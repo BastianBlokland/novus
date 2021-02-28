@@ -24,7 +24,9 @@ auto FailNode::getType() const noexcept -> sym::TypeId { return m_type; }
 auto FailNode::toString() const -> std::string { return "fail"; }
 
 auto FailNode::clone(Rewriter* /*rewriter*/) const -> std::unique_ptr<Node> {
-  return std::unique_ptr<FailNode>{new FailNode{m_type}};
+  auto* newExpr = new FailNode{m_type};
+  newExpr->setSourceId(getSourceId());
+  return std::unique_ptr<FailNode>{newExpr};
 }
 
 auto FailNode::accept(NodeVisitor* visitor) const -> void { visitor->visit(*this); }

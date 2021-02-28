@@ -1,4 +1,5 @@
 #include "internal/const_remapper.hpp"
+#include "internal/utilities.hpp"
 
 namespace opt::internal {
 
@@ -12,24 +13,30 @@ auto ConstRemapper::rewrite(const prog::expr::Node& expr) -> prog::expr::NodePtr
 
   switch (expr.getKind()) {
   case prog::expr::NodeKind::Assign: {
-    auto* assignExpr = expr.downcast<prog::expr::AssignExprNode>();
+    const auto* assignExpr = expr.downcast<prog::expr::AssignExprNode>();
 
-    m_modified = true;
-    return prog::expr::assignExprNode(
+    m_modified     = true;
+    auto newAssign = prog::expr::assignExprNode(
         m_consts, remap(assignExpr->getConst()), rewrite((*assignExpr)[0]));
+    copySourceAttr(*newAssign, expr);
+    return newAssign;
   }
   case prog::expr::NodeKind::Const: {
     auto* constExpr = expr.downcast<prog::expr::ConstExprNode>();
 
-    m_modified = true;
-    return prog::expr::constExprNode(m_consts, remap(constExpr->getId()));
+    m_modified    = true;
+    auto newConst = prog::expr::constExprNode(m_consts, remap(constExpr->getId()));
+    copySourceAttr(*newConst, expr);
+    return newConst;
   }
   case prog::expr::NodeKind::UnionGet: {
     auto* unionGetExpr = expr.downcast<prog::expr::UnionGetExprNode>();
 
-    m_modified = true;
-    return prog::expr::unionGetExprNode(
+    m_modified       = true;
+    auto newUnionGet = prog::expr::unionGetExprNode(
         m_prog, rewrite((*unionGetExpr)[0]), m_consts, remap(unionGetExpr->getConst()));
+    copySourceAttr(*newUnionGet, expr);
+    return newUnionGet;
   }
   default:
     return expr.clone(this);

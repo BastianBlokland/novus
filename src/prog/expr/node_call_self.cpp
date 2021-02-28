@@ -32,8 +32,9 @@ auto CallSelfExprNode::getType() const noexcept -> sym::TypeId { return m_result
 auto CallSelfExprNode::toString() const -> std::string { return "self-call"; }
 
 auto CallSelfExprNode::clone(Rewriter* rewriter) const -> std::unique_ptr<Node> {
-  return std::unique_ptr<CallSelfExprNode>{
-      new CallSelfExprNode{m_resultType, cloneNodes(m_args, rewriter)}};
+  auto* newExpr = new CallSelfExprNode{m_resultType, cloneNodes(m_args, rewriter)};
+  newExpr->setSourceId(getSourceId());
+  return std::unique_ptr<CallSelfExprNode>{newExpr};
 }
 
 auto CallSelfExprNode::accept(NodeVisitor* visitor) const -> void { visitor->visit(*this); }

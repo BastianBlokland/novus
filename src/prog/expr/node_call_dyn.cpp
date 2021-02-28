@@ -53,11 +53,13 @@ auto CallDynExprNode::toString() const -> std::string {
 }
 
 auto CallDynExprNode::clone(Rewriter* rewriter) const -> std::unique_ptr<Node> {
-  return std::unique_ptr<CallDynExprNode>{new CallDynExprNode{
+  auto* newExpr = new CallDynExprNode{
       rewriter ? rewriter->rewrite(*m_lhs) : m_lhs->clone(nullptr),
       m_resultType,
       cloneNodes(m_args, rewriter),
-      m_mode}};
+      m_mode};
+  newExpr->setSourceId(getSourceId());
+  return std::unique_ptr<CallDynExprNode>{newExpr};
 }
 
 auto CallDynExprNode::getArgs() const noexcept -> const std::vector<NodePtr>& { return m_args; }

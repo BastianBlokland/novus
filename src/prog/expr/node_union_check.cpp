@@ -39,8 +39,10 @@ auto UnionCheckExprNode::toString() const -> std::string {
 }
 
 auto UnionCheckExprNode::clone(Rewriter* rewriter) const -> std::unique_ptr<Node> {
-  return std::unique_ptr<UnionCheckExprNode>{new UnionCheckExprNode{
-      m_boolType, rewriter ? rewriter->rewrite(*m_lhs) : m_lhs->clone(nullptr), m_targetType}};
+  auto* newExpr = new UnionCheckExprNode{
+      m_boolType, rewriter ? rewriter->rewrite(*m_lhs) : m_lhs->clone(nullptr), m_targetType};
+  newExpr->setSourceId(getSourceId());
+  return std::unique_ptr<UnionCheckExprNode>{newExpr};
 }
 
 auto UnionCheckExprNode::getTargetType() const noexcept -> sym::TypeId { return m_targetType; }

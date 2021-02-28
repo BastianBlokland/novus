@@ -30,7 +30,9 @@ auto ConstExprNode::toString() const -> std::string {
 }
 
 auto ConstExprNode::clone(Rewriter* /*rewriter*/) const -> std::unique_ptr<Node> {
-  return std::unique_ptr<ConstExprNode>{new ConstExprNode{m_id, m_type}};
+  auto* newExpr = new ConstExprNode{m_id, m_type};
+  newExpr->setSourceId(getSourceId());
+  return std::unique_ptr<ConstExprNode>{newExpr};
 }
 
 auto ConstExprNode::getId() const noexcept -> sym::ConstId { return m_id; }
