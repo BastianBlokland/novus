@@ -19,6 +19,12 @@
 
 namespace frontend {
 
+auto buildOutput(
+    std::unique_ptr<prog::Program> prog,
+    std::forward_list<Source> importedSources,
+    SourceTable sourceTable,
+    std::vector<Diag> diags) -> Output;
+
 using TypeInfoMap =
     std::unordered_map<prog::sym::TypeId, internal::TypeInfo, prog::sym::TypeIdHasher>;
 
@@ -31,19 +37,21 @@ auto visitAll(std::vector<internal::Context>* ctxs, VisitorArgs&&... visitorArgs
 }
 
 auto analyze(const Source& mainSrc, const std::vector<filesystem::path>& searchPaths) -> Output {
-  auto prog          = std::make_unique<prog::Program>();
-  auto typeTemplates = internal::TypeTemplateTable{};
-  auto funcTemplates = internal::FuncTemplateTable{};
-  auto delegates     = internal::DelegateTable{};
-  auto futures       = internal::FutureTable{};
-  auto lazies        = internal::LazyTable{};
-  auto fails         = internal::FailTable{};
-  auto typeInfos     = TypeInfoMap{};
-  auto diags         = std::vector<Diag>{};
-  auto makeCtx       = [&](const Source& src) {
+  auto prog               = std::make_unique<prog::Program>();
+  auto sourceTableBuilder = internal::SourceTableBuilder{};
+  auto typeTemplates      = internal::TypeTemplateTable{};
+  auto funcTemplates      = internal::FuncTemplateTable{};
+  auto delegates          = internal::DelegateTable{};
+  auto futures            = internal::FutureTable{};
+  auto lazies             = internal::LazyTable{};
+  auto fails              = internal::FailTable{};
+  auto typeInfos          = TypeInfoMap{};
+  auto diags              = std::vector<Diag>{};
+  auto makeCtx            = [&](const Source& src) {
     return internal::Context(
         src,
         prog.get(),
+        &sourceTableBuilder,
         &typeTemplates,
         &funcTemplates,
         &delegates,
@@ -66,7 +74,7 @@ auto analyze(const Source& mainSrc, const std::vector<filesystem::path>& searchP
   // Check any parse errors.
   visitAll<internal::GetParseDiags>(&allContexts);
   if (!diags.empty()) {
-    return buildOutput(nullptr, std::move(importedSources), diags);
+    return buildOutput(nullptr, std::move(importedSources), sourceTableBuilder.build(), diags);
   }
 
   // Declare user types.
@@ -76,7 +84,7 @@ auto analyze(const Source& mainSrc, const std::vector<filesystem::path>& searchP
   visitAll<internal::DeclareUserTypes>(
       &allContexts, &structDeclInfos, &unionDeclInfos, &enumDeclInfos);
   if (!diags.empty()) {
-    return buildOutput(nullptr, std::move(importedSources), diags);
+    return buildOutput(nullptr, std::move(importedSources), sourceTableBuilder.build(), diags);
   }
 
   // Define user types.
@@ -90,14 +98,14 @@ auto analyze(const Source& mainSrc, const std::vector<filesystem::path>& searchP
     defineType(eDeclInfo.getCtx(), eDeclInfo.getId(), eDeclInfo.getParseNode());
   }
   if (!diags.empty()) {
-    return buildOutput(nullptr, std::move(importedSources), diags);
+    return buildOutput(nullptr, std::move(importedSources), sourceTableBuilder.build(), diags);
   }
 
   // Declare user functions.
   auto funcDeclInfos = std::vector<internal::FuncDeclInfo>{};
   visitAll<internal::DeclareUserFuncs>(&allContexts, &funcDeclInfos);
   if (!diags.empty()) {
-    return buildOutput(nullptr, std::move(importedSources), diags);
+    return buildOutput(nullptr, std::move(importedSources), sourceTableBuilder.build(), diags);
   }
 
   // Infer return-types of user functions (run multiple passes until all have been inferred).
@@ -115,7 +123,7 @@ auto analyze(const Source& mainSrc, const std::vector<filesystem::path>& searchP
       auto success = typeInferUserFuncs.inferRetType(
           fDeclInfo.getCtx(), fDeclInfo.getId(), fDeclInfo.getParseNode());
       if (!diags.empty()) {
-        return buildOutput(nullptr, std::move(importedSources), diags);
+        return buildOutput(nullptr, std::move(importedSources), sourceTableBuilder.build(), diags);
       }
       inferredAllFuncs &= success;
       inferredOne |= success;
@@ -137,14 +145,14 @@ auto analyze(const Source& mainSrc, const std::vector<filesystem::path>& searchP
         fDeclInfo.getParseNode());
   }
   if (!diags.empty()) {
-    return buildOutput(nullptr, std::move(importedSources), diags);
+    return buildOutput(nullptr, std::move(importedSources), sourceTableBuilder.build(), diags);
   }
 
   // Define execute statements from the main-source.
   auto defineExecStmts = internal::DefineExecStmts{allContexts.data()};
   mainSrc.accept(&defineExecStmts);
   if (!diags.empty()) {
-    return buildOutput(nullptr, std::move(importedSources), diags);
+    return buildOutput(nullptr, std::move(importedSources), sourceTableBuilder.build(), diags);
   }
 
   // Validate the type-definitions (used to detect things like cyclic structs).
@@ -152,13 +160,16 @@ auto analyze(const Source& mainSrc, const std::vector<filesystem::path>& searchP
     validateType(t.first, t.second);
   }
   if (!diags.empty()) {
-    return buildOutput(nullptr, std::move(importedSources), diags);
+    return buildOutput(nullptr, std::move(importedSources), sourceTableBuilder.build(), diags);
   }
+
+  // Create a map for looking up source information about expressions in the result program.
+  auto sourceMap = sourceTableBuilder.build();
 
   // Patch all call expressions to apply the optional arguments if they didn't supply overrides.
   prog->applyOptCallArgs();
 
-  return buildOutput(std::move(prog), std::move(importedSources), {});
+  return buildOutput(std::move(prog), std::move(importedSources), std::move(sourceMap), {});
 }
 
 } // namespace frontend

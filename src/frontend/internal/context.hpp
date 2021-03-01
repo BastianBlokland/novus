@@ -5,6 +5,7 @@
 #include "internal/func_template_table.hpp"
 #include "internal/future_table.hpp"
 #include "internal/lazy_table.hpp"
+#include "internal/source_table_builder.hpp"
 #include "internal/type_info.hpp"
 #include "internal/type_template_table.hpp"
 #include "prog/program.hpp"
@@ -22,6 +23,7 @@ public:
   Context(
       const Source& src,
       prog::Program* prog,
+      SourceTableBuilder* sourceTableBuilder,
       TypeTemplateTable* typeTemplates,
       FuncTemplateTable* funcTemplates,
       DelegateTable* delegates,
@@ -55,6 +57,7 @@ public:
 private:
   const Source& m_src;
   prog::Program* m_prog;
+  SourceTableBuilder* m_sourceTableBuilder;
   TypeTemplateTable* m_typeTemplates;
   FuncTemplateTable* m_funcTemplates;
   DelegateTable* m_delegates;

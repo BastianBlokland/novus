@@ -1,4 +1,5 @@
 #include "internal/context.hpp"
+#include "internal/source_table_builder.hpp"
 #include <sstream>
 
 namespace frontend::internal {
@@ -6,6 +7,7 @@ namespace frontend::internal {
 Context::Context(
     const Source& src,
     prog::Program* prog,
+    SourceTableBuilder* sourceTableBuilder,
     TypeTemplateTable* typeTemplates,
     FuncTemplateTable* funcTemplates,
     DelegateTable* delegates,
@@ -16,6 +18,7 @@ Context::Context(
     std::vector<Diag>* diags) :
     m_src{src},
     m_prog{prog},
+    m_sourceTableBuilder{sourceTableBuilder},
     m_typeTemplates{typeTemplates},
     m_funcTemplates{funcTemplates},
     m_delegates{delegates},
@@ -27,6 +30,9 @@ Context::Context(
 
   if (m_prog == nullptr) {
     throw std::invalid_argument{"Program cannot be null"};
+  }
+  if (m_sourceTableBuilder == nullptr) {
+    throw std::invalid_argument{"SourceTableBuilder cannot be null"};
   }
   if (m_typeTemplates == nullptr) {
     throw std::invalid_argument{"TypeTemplatesTable cannot be null"};

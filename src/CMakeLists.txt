@@ -178,6 +178,7 @@ add_library(frontend STATIC
   frontend/internal/lazy_table.cpp
   frontend/internal/get_expr.cpp
   frontend/internal/import_sources.cpp
+  frontend/internal/source_table_builder.cpp
   frontend/internal/struct_template.cpp
   frontend/internal/type_template_base.cpp
   frontend/internal/type_template_table.cpp
@@ -198,6 +199,7 @@ add_library(frontend STATIC
   frontend/diag_severity.cpp
   frontend/diag.cpp
   frontend/output.cpp
+  frontend/source_table.cpp
   frontend/source.cpp)
 target_compile_features(frontend PRIVATE cxx_std_17)
 if(MSVC)
