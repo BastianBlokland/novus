@@ -76,40 +76,36 @@ TEST_CASE("[frontend] Analyzing user-type declarations", "frontend") {
   }
 
   SECTION("Diagnostics") {
-    CHECK_DIAG("struct int = bool i", errTypeAlreadyDeclared(src, "int", input::Span{7, 9}));
-    CHECK_DIAG("union int = int, bool", errTypeAlreadyDeclared(src, "int", input::Span{6, 8}));
-    CHECK_DIAG(
-        "struct function = bool i", errTypeNameIsReserved(src, "function", input::Span{7, 14}));
-    CHECK_DIAG("struct action = bool i", errTypeNameIsReserved(src, "action", input::Span{7, 12}));
-    CHECK_DIAG(
-        "struct assert = bool i", errTypeNameConflictsWithFunc(src, "assert", input::Span{7, 12}));
-    CHECK_DIAG(
-        "union assert = int, bool",
-        errTypeNameConflictsWithFunc(src, "assert", input::Span{6, 11}));
+    CHECK_DIAG("struct int = bool i", errTypeAlreadyDeclared(NO_SRC, "int"));
+    CHECK_DIAG("union int = int, bool", errTypeAlreadyDeclared(NO_SRC, "int"));
+    CHECK_DIAG("struct function = bool i", errTypeNameIsReserved(NO_SRC, "function"));
+    CHECK_DIAG("struct action = bool i", errTypeNameIsReserved(NO_SRC, "action"));
+    CHECK_DIAG("struct assert = bool i", errTypeNameConflictsWithFunc(NO_SRC, "assert"));
+    CHECK_DIAG("union assert = int, bool", errTypeNameConflictsWithFunc(NO_SRC, "assert"));
     CHECK_DIAG(
         "struct s = int i "
         "struct s = bool b",
-        errTypeAlreadyDeclared(src, "s", input::Span{24, 24}));
+        errTypeAlreadyDeclared(NO_SRC, "s"));
     CHECK_DIAG(
         "union u = int, bool "
         "union u = bool, int",
-        errTypeAlreadyDeclared(src, "u", input::Span{26, 26}));
+        errTypeAlreadyDeclared(NO_SRC, "u"));
     CHECK_DIAG(
         "union s = int, bool "
         "struct s = bool b",
-        errTypeAlreadyDeclared(src, "s", input::Span{27, 27}));
+        errTypeAlreadyDeclared(NO_SRC, "s"));
     CHECK_DIAG(
         "union s{T} = T, bool "
         "struct s = bool b",
-        errTypeTemplateAlreadyDeclared(src, "s", input::Span{28, 28}));
+        errTypeTemplateAlreadyDeclared(NO_SRC, "s"));
     CHECK_DIAG(
         "union s{T} = T, bool "
         "struct s{T} = T t",
-        errTypeTemplateAlreadyDeclared(src, "s", input::Span{28, 28}));
-    CHECK_DIAG("enum int = a", errTypeAlreadyDeclared(src, "int", input::Span{5, 7}));
-    CHECK_DIAG("enum function = a", errTypeNameIsReserved(src, "function", input::Span{5, 12}));
-    CHECK_DIAG("enum action = a", errTypeNameIsReserved(src, "action", input::Span{5, 10}));
-    CHECK_DIAG("enum assert = a", errTypeNameConflictsWithFunc(src, "assert", input::Span{5, 10}));
+        errTypeTemplateAlreadyDeclared(NO_SRC, "s"));
+    CHECK_DIAG("enum int = a", errTypeAlreadyDeclared(NO_SRC, "int"));
+    CHECK_DIAG("enum function = a", errTypeNameIsReserved(NO_SRC, "function"));
+    CHECK_DIAG("enum action = a", errTypeNameIsReserved(NO_SRC, "action"));
+    CHECK_DIAG("enum assert = a", errTypeNameConflictsWithFunc(NO_SRC, "assert"));
   }
 }
 

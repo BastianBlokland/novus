@@ -23,9 +23,9 @@ auto defineType(
     if (!fieldType) {
       ctx->reportDiag(
           errUndeclaredType,
+          fieldParseType.getSpan(),
           getName(fieldParseType),
-          fieldParseType.getParamCount(),
-          fieldParseType.getSpan());
+          fieldParseType.getParamCount());
       isValid = false;
       continue;
     }
@@ -33,18 +33,18 @@ auto defineType(
     // Get field identifier.
     const auto fieldName = getName(field.getIdentifier());
     if (fieldTable.lookup(fieldName)) {
-      ctx->reportDiag(errDuplicateFieldNameInStruct, fieldName, field.getIdentifier().getSpan());
+      ctx->reportDiag(errDuplicateFieldNameInStruct, field.getIdentifier().getSpan(), fieldName);
       isValid = false;
       continue;
     }
     if (typeSubTable != nullptr && typeSubTable->lookupType(fieldName)) {
       ctx->reportDiag(
-          errFieldNameConflictsWithTypeSubstitution, fieldName, field.getIdentifier().getSpan());
+          errFieldNameConflictsWithTypeSubstitution, field.getIdentifier().getSpan(), fieldName);
       isValid = false;
       continue;
     }
     if (ctx->getProg()->lookupType(fieldName) || isReservedTypeName(fieldName)) {
-      ctx->reportDiag(errFieldNameConflictsWithType, fieldName, field.getIdentifier().getSpan());
+      ctx->reportDiag(errFieldNameConflictsWithType, field.getIdentifier().getSpan(), fieldName);
       isValid = false;
       continue;
     }
@@ -69,16 +69,16 @@ auto defineType(
     const auto type = getOrInstType(ctx, typeSubTable, parseType);
     if (!type) {
       ctx->reportDiag(
-          errUndeclaredType, getName(parseType), parseType.getParamCount(), parseType.getSpan());
+          errUndeclaredType, parseType.getSpan(), getName(parseType), parseType.getParamCount());
       isValid = false;
       continue;
     }
     if (std::find(types.begin(), types.end(), *type) != types.end()) {
       ctx->reportDiag(
           errDuplicateTypeInUnion,
+          parseType.getSpan(),
           getName(parseType),
-          getDisplayName(*ctx, *type),
-          parseType.getSpan());
+          getDisplayName(*ctx, *type));
       isValid = false;
       continue;
     }
@@ -104,11 +104,11 @@ auto defineType(Context* ctx, prog::sym::TypeId id, const parse::EnumDeclStmtNod
         entry.getValueSpec() ? entry.getValueSpec()->getValue() : lastValue + 1;
 
     if (!entries.insert({name, value}).second) {
-      ctx->reportDiag(errDuplicateEntryNameInEnum, name, entry.getSpan());
+      ctx->reportDiag(errDuplicateEntryNameInEnum, entry.getSpan(), name);
       isValid = false;
     }
     if (!values.insert(value).second) {
-      ctx->reportDiag(errDuplicateEntryValueInEnum, value, entry.getSpan());
+      ctx->reportDiag(errDuplicateEntryValueInEnum, entry.getSpan(), value);
       isValid = false;
     }
   }

@@ -30,14 +30,14 @@ auto DeclareUserFuncs::visit(const parse::FuncDeclStmtNode& n) -> void {
 
     auto op = getOperator(n.getId());
     if (!op) {
-      m_ctx->reportDiag(errNonOverloadableOperator, n.getId().str(), n.getId().getSpan());
+      m_ctx->reportDiag(errNonOverloadableOperator, n.getId().getSpan(), n.getId().str());
       return;
     }
     name        = prog::getFuncName(*op);
     displayName = "operator" + n.getId().str();
 
     if (n.getArgList().getCount() == 0) {
-      m_ctx->reportDiag(errOperatorOverloadWithoutArgs, displayName, n.getId().getSpan());
+      m_ctx->reportDiag(errOperatorOverloadWithoutArgs, n.getId().getSpan(), displayName);
       return;
     }
   }
@@ -66,7 +66,7 @@ auto DeclareUserFuncs::visit(const parse::FuncDeclStmtNode& n) -> void {
 
   // Verify that this is not a duplicate declaration.
   if (m_ctx->getProg()->lookupFunc(name, input.value(), prog::OvOptions{0})) {
-    m_ctx->reportDiag(errDuplicateFuncDeclaration, displayName, n.getSpan());
+    m_ctx->reportDiag(errDuplicateFuncDeclaration, n.getSpan(), displayName);
     return;
   }
 
@@ -94,9 +94,9 @@ auto DeclareUserFuncs::visit(const parse::FuncDeclStmtNode& n) -> void {
       } else if (*retType != *nonTemplConvType) {
         m_ctx->reportDiag(
             errIncorrectReturnTypeInConvFunc,
+            n.getId().getSpan(),
             name,
-            getDisplayName(*m_ctx, *retType),
-            n.getId().getSpan());
+            getDisplayName(*m_ctx, *retType));
         return;
       }
     } else {
@@ -105,7 +105,7 @@ auto DeclareUserFuncs::visit(const parse::FuncDeclStmtNode& n) -> void {
             inferRetType(m_ctx, nullptr, n, *input, nullptr, TypeInferExpr::Flags::Aggressive);
         if (!retType->isConcrete()) {
           m_ctx->reportDiag(
-              errUnableToInferReturnTypeOfConversionToTemplatedType, name, n.getId().getSpan());
+              errUnableToInferReturnTypeOfConversionToTemplatedType, n.getId().getSpan(), name);
           return;
         }
       }
@@ -113,9 +113,9 @@ auto DeclareUserFuncs::visit(const parse::FuncDeclStmtNode& n) -> void {
       if (!typeInfo || typeInfo->getName() != name) {
         m_ctx->reportDiag(
             errIncorrectReturnTypeInConvFunc,
+            n.getId().getSpan(),
             name,
-            getDisplayName(*m_ctx, *retType),
-            n.getId().getSpan());
+            getDisplayName(*m_ctx, *retType));
         return;
       }
     }
@@ -147,7 +147,7 @@ auto DeclareUserFuncs::validateType(
   if (!isType(m_ctx, nullptr, name) &&
       std::find(typeSubParams.begin(), typeSubParams.end(), name) == typeSubParams.end()) {
 
-    m_ctx->reportDiag(errUndeclaredType, name, type.getParamCount(), type.getSpan());
+    m_ctx->reportDiag(errUndeclaredType, type.getSpan(), name, type.getParamCount());
     isValid = false;
   }
 

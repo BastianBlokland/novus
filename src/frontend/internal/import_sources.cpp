@@ -1,5 +1,6 @@
 #include "internal/import_sources.hpp"
 #include "frontend/diag_defs.hpp"
+#include "internal/source_table_builder.hpp"
 #include "internal/utilities.hpp"
 #include "parse/node_stmt_import.hpp"
 #include <algorithm>
@@ -10,19 +11,23 @@ namespace frontend::internal {
 
 ImportSources::ImportSources(
     const Source& mainSource,
+    SourceTableBuilder& sourceTableBuilder,
     const std::vector<Path>& searchPaths,
     std::forward_list<Source>* importedSources,
     std::vector<Diag>* diags) :
-    ImportSources(mainSource, mainSource, searchPaths, importedSources, diags) {}
+    ImportSources(mainSource, mainSource, sourceTableBuilder, searchPaths, importedSources, diags) {
+}
 
 ImportSources::ImportSources(
     const Source& mainSource,
     const Source& currentSource,
+    SourceTableBuilder& sourceTableBuilder,
     const std::vector<Path>& searchPaths,
     std::forward_list<Source>* importedSources,
     std::vector<Diag>* diags) :
     m_mainSource{mainSource},
     m_currentSource{currentSource},
+    m_sourceTableBuilder{sourceTableBuilder},
     m_searchPaths{searchPaths},
     m_importedSources{importedSources},
     m_diags{diags} {
@@ -72,7 +77,8 @@ auto ImportSources::import(const Path& file, input::Span span) const -> bool {
     }
   }
 
-  m_diags->push_back(errUnresolvedImport(m_currentSource, file.string(), span));
+  const auto srcId = m_sourceTableBuilder.add(&m_currentSource, span);
+  m_diags->push_back(errUnresolvedImport(srcId, file.string()));
   return false;
 }
 
@@ -90,7 +96,12 @@ auto ImportSources::importFromDir(const Path& searchPath, const Path& file) cons
       std::istreambuf_iterator<char>{}));
 
   auto importNested = ImportSources{
-      m_mainSource, m_importedSources->front(), m_searchPaths, m_importedSources, m_diags};
+      m_mainSource,
+      m_importedSources->front(),
+      m_sourceTableBuilder,
+      m_searchPaths,
+      m_importedSources,
+      m_diags};
   m_importedSources->front().accept(&importNested);
   return true;
 }

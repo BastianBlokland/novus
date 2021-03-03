@@ -64,7 +64,8 @@ auto analyze(const Source& mainSrc, const std::vector<filesystem::path>& searchP
 
   // Resolve all imports.
   auto importedSources = std::forward_list<Source>{};
-  auto import          = internal::ImportSources{mainSrc, searchPaths, &importedSources, &diags};
+  auto import =
+      internal::ImportSources{mainSrc, sourceTableBuilder, searchPaths, &importedSources, &diags};
   mainSrc.accept(&import);
   auto allContexts = std::vector<internal::Context>{makeCtx(mainSrc)};
   for (const auto& importSrc : importedSources) {

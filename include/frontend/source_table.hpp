@@ -2,11 +2,11 @@
 #include "input/span.hpp"
 #include "prog/sym/source_id.hpp"
 #include "prog/sym/source_id_hasher.hpp"
+#include "source.hpp"
 #include <unordered_map>
 
 namespace frontend {
 
-class Source;
 namespace internal {
 class SourceTableBuilder;
 }
@@ -14,6 +14,18 @@ class SourceTableBuilder;
 struct SourceInfo {
   const Source* source;
   input::Span span;
+
+  [[nodiscard]] auto getPath() const noexcept -> std::optional<filesystem::path> {
+    return source->getPath();
+  }
+
+  [[nodiscard]] auto getStart() const noexcept -> input::TextPos {
+    return source->getTextPos(span.getStart());
+  }
+
+  [[nodiscard]] auto getEnd() const noexcept -> input::TextPos {
+    return source->getTextPos(span.getStart());
+  }
 };
 
 class SourceTable final {

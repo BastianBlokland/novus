@@ -24,8 +24,7 @@ TEST_CASE("[frontend] Analyzing unary expressions", "frontend") {
   }
 
   SECTION("Diagnostics") {
-    CHECK_DIAG(
-        "fun f() -> int -false", errUndeclaredUnaryOperator(src, "-", "bool", input::Span{15, 15}));
+    CHECK_DIAG("fun f() -> int -false", errUndeclaredUnaryOperator(NO_SRC, "-", "bool"));
   }
 }
 

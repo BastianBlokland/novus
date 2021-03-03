@@ -52,97 +52,80 @@ TEST_CASE("[frontend] Analyzing user-function definitions", "frontend") {
   }
 
   SECTION("Diagnostics") {
+    CHECK_DIAG("fun f() -> int true", errNonMatchingFuncReturnType(NO_SRC, "f", "int", "bool"));
+    CHECK_DIAG("fun f(int int) -> int true", errConstNameConflictsWithType(NO_SRC, "int"));
     CHECK_DIAG(
-        "fun f() -> int true",
-        errNonMatchingFuncReturnType(src, "f", "int", "bool", input::Span{15, 18}));
+        "fun f(int function) -> int true", errConstNameConflictsWithType(NO_SRC, "function"));
+    CHECK_DIAG("fun f(int action) -> int true", errConstNameConflictsWithType(NO_SRC, "action"));
+    CHECK_DIAG("fun f(int a, int a) -> int true", errConstNameConflictsWithConst(NO_SRC, "a"));
+    CHECK_DIAG("fun f() -> int f2()", errUndeclaredPureFunc(NO_SRC, "f2", {}));
+    CHECK_DIAG("fun f() -> int bool(1)", errUndeclaredTypeOrConversion(NO_SRC, "bool", {"int"}));
     CHECK_DIAG(
-        "fun f(int int) -> int true",
-        errConstNameConflictsWithType(src, "int", input::Span{10, 12}));
-    CHECK_DIAG(
-        "fun f(int function) -> int true",
-        errConstNameConflictsWithType(src, "function", input::Span{10, 17}));
-    CHECK_DIAG(
-        "fun f(int action) -> int true",
-        errConstNameConflictsWithType(src, "action", input::Span{10, 15}));
-    CHECK_DIAG(
-        "fun f(int a, int a) -> int true",
-        errConstNameConflictsWithConst(src, "a", input::Span{17, 17}));
-    CHECK_DIAG("fun f() -> int f2()", errUndeclaredPureFunc(src, "f2", {}, input::Span{15, 18}));
-    CHECK_DIAG(
-        "fun f() -> int bool(1)",
-        errUndeclaredTypeOrConversion(src, "bool", {"int"}, input::Span{15, 21}));
-    CHECK_DIAG(
-        "fun f() -> int int{float}()",
-        errNoTypeOrConversionFoundToInstantiate(src, "int", 1, input::Span{15, 26}));
-    CHECK_DIAG(
-        "fun f2() -> int f{int}(1)",
-        errNoPureFuncFoundToInstantiate(src, "f", 1, input::Span{16, 24}));
-    CHECK_DIAG(
-        "act a() -> int f{int}()",
-        errNoFuncOrActionFoundToInstantiate(src, "f", 1, input::Span{15, 22}));
-    CHECK_DIAG("f{int}()", errNoFuncOrActionFoundToInstantiate(src, "f", 1, input::Span{0, 7}));
+        "fun f() -> int int{float}()", errNoTypeOrConversionFoundToInstantiate(NO_SRC, "int", 1));
+    CHECK_DIAG("fun f2() -> int f{int}(1)", errNoPureFuncFoundToInstantiate(NO_SRC, "f", 1));
+    CHECK_DIAG("act a() -> int f{int}()", errNoFuncOrActionFoundToInstantiate(NO_SRC, "f", 1));
+    CHECK_DIAG("f{int}()", errNoFuncOrActionFoundToInstantiate(NO_SRC, "f", 1));
     CHECK_DIAG(
         "fun f1() -> int 1 "
         "fun f2() -> int f1{int}()",
-        errNoPureFuncFoundToInstantiate(src, "f1", 1, input::Span{34, 42}));
+        errNoPureFuncFoundToInstantiate(NO_SRC, "f1", 1));
     CHECK_DIAG(
         "fun f{T}(T t) t "
         "fun f2() -> int f{int, float}(1)",
-        errNoPureFuncFoundToInstantiate(src, "f", 2, input::Span{32, 47}));
+        errNoPureFuncFoundToInstantiate(NO_SRC, "f", 2));
     CHECK_DIAG(
         "fun f{T}(T T) -> T T "
         "fun f2() -> int f{int}(1)",
-        errConstNameConflictsWithTypeSubstitution(src, "T", input::Span{11, 11}),
-        errInvalidFuncInstantiation(src, input::Span{37, 37}),
-        errNoPureFuncFoundToInstantiate(src, "f", 1, input::Span{37, 45}));
+        errConstNameConflictsWithTypeSubstitution(NO_SRC, "T"),
+        errInvalidFuncInstantiation(NO_SRC),
+        errNoPureFuncFoundToInstantiate(NO_SRC, "f", 1));
     CHECK_DIAG(
         "fun f{T}(T T) -> T T "
         "fun f2() f{int}(1)",
-        errConstNameConflictsWithTypeSubstitution(src, "T", input::Span{11, 11}),
-        errInvalidFuncInstantiation(src, input::Span{30, 30}),
-        errNoPureFuncFoundToInstantiate(src, "f", 1, input::Span{30, 38}));
+        errConstNameConflictsWithTypeSubstitution(NO_SRC, "T"),
+        errInvalidFuncInstantiation(NO_SRC),
+        errNoPureFuncFoundToInstantiate(NO_SRC, "f", 1));
     CHECK_DIAG(
         "fun f{T}(T i) -> T "
         "  T = i * 2; i "
         "fun f2() -> int f{int}(1)",
-        errConstNameConflictsWithTypeSubstitution(src, "T", input::Span{21, 21}),
-        errInvalidFuncInstantiation(src, input::Span{50, 50}),
-        errNoPureFuncFoundToInstantiate(src, "f", 1, input::Span{50, 58}));
+        errConstNameConflictsWithTypeSubstitution(NO_SRC, "T"),
+        errInvalidFuncInstantiation(NO_SRC),
+        errNoPureFuncFoundToInstantiate(NO_SRC, "f", 1));
     CHECK_DIAG(
         "fun f() -> function{int} lambda () false",
-        errNonMatchingFuncReturnType(
-            src, "f", "function{int}", "function{bool}", input::Span{25, 39}));
+        errNonMatchingFuncReturnType(NO_SRC, "f", "function{int}", "function{bool}"));
     CHECK_DIAG(
         "fun f() -> string conWrite(\"hello world\")",
-        errUndeclaredPureFunc(src, "conWrite", {"string"}, input::Span{18, 40}));
+        errUndeclaredPureFunc(NO_SRC, "conWrite", {"string"}));
 
     SECTION("Infinite recursion") {
-      CHECK_DIAG("fun f() f()", errUnableToInferFuncReturnType(src, "f", input::Span{0, 10}));
+      CHECK_DIAG("fun f() f()", errUnableToInferFuncReturnType(NO_SRC, "f"));
 
-      CHECK_DIAG("fun f() -> int f()", errPureFuncInfRecursion(src, input::Span{15, 17}));
-      CHECK_DIAG("fun f() -> int a = f()", errPureFuncInfRecursion(src, input::Span{15, 21}));
-      CHECK_DIAG("fun f(int i) -> int i + f(i)", errPureFuncInfRecursion(src, input::Span{20, 27}));
+      CHECK_DIAG("fun f() -> int f()", errPureFuncInfRecursion(NO_SRC));
+      CHECK_DIAG("fun f() -> int a = f()", errPureFuncInfRecursion(NO_SRC));
+      CHECK_DIAG("fun f(int i) -> int i + f(i)", errPureFuncInfRecursion(NO_SRC));
       CHECK_DIAG(
           "fun f(int a, int b) -> int "
           " a2 = 42; b2 = 1337; f(a + a2, b + b2)",
-          errPureFuncInfRecursion(src, input::Span{28, 64}));
+          errPureFuncInfRecursion(NO_SRC));
       CHECK_DIAG(
           "fun f(int a, int b) -> int "
           " if f(a, b) == a -> a "
           " else            -> b",
-          errPureFuncInfRecursion(src, input::Span{28, 69}));
+          errPureFuncInfRecursion(NO_SRC));
       CHECK_DIAG(
           "fun f(int a, int b) -> int "
           " if a > b  -> f(a, 0) "
           " else      -> f(0, b)",
-          errPureFuncInfRecursion(src, input::Span{28, 69}));
-      CHECK_DIAG("fun f(int a = a) a", errUndeclaredConst(src, "a", input::Span{14, 14}));
-      CHECK_DIAG("fun f(int a = b = 42) a", errConstDeclareNotSupported(src, input::Span{14, 19}));
+          errPureFuncInfRecursion(NO_SRC));
+      CHECK_DIAG("fun f(int a = a) a", errUndeclaredConst(NO_SRC, "a"));
+      CHECK_DIAG("fun f(int a = b = 42) a", errConstDeclareNotSupported(NO_SRC));
       CHECK_DIAG(
           "union U = int, bool "
           "fun getU() U(42) "
           "fun f(int a = getU() as int i ? i : 0) a",
-          errConstDeclareNotSupported(src, input::Span{51, 65}));
+          errConstDeclareNotSupported(NO_SRC));
     }
   }
 }

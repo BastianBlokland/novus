@@ -274,12 +274,14 @@ auto run(
     const auto& diag = *diagItr;
     switch (diag.getSeverity()) {
     case frontend::DiagSeverity::Warning:
-      std::cerr << rang::style::bold << rang::bg::yellow << diag << rang::bg::reset << '\n'
-                << rang::style::reset;
+      std::cerr << rang::style::bold << rang::bg::yellow;
+      diag.print(std::cerr, output.getSourceTable());
+      std::cerr << rang::bg::reset << '\n' << rang::style::reset;
       break;
     case frontend::DiagSeverity::Error:
-      std::cerr << rang::style::bold << rang::bg::red << diag << rang::bg::reset << '\n'
-                << rang::style::reset;
+      std::cerr << rang::style::bold << rang::bg::red;
+      diag.print(std::cerr, output.getSourceTable());
+      std::cerr << rang::bg::reset << '\n' << rang::style::reset;
       break;
     }
   }

@@ -2,6 +2,7 @@
 #include "filesystem.hpp"
 #include "frontend/diag.hpp"
 #include "frontend/source.hpp"
+#include "internal/source_table_builder.hpp"
 #include "parse/node_visitor_optional.hpp"
 #include <forward_list>
 #include <optional>
@@ -17,12 +18,14 @@ public:
   ImportSources() = delete;
   ImportSources(
       const Source& mainSource,
+      SourceTableBuilder& sourceTableBuilder,
       const std::vector<Path>& searchPaths,
       std::forward_list<Source>* importedSources,
       std::vector<Diag>* diags);
   ImportSources(
       const Source& mainSource,
       const Source& currentSource,
+      SourceTableBuilder& sourceTableBuilder,
       const std::vector<Path>& searchPaths,
       std::forward_list<Source>* importedSources,
       std::vector<Diag>* diags);
@@ -32,6 +35,7 @@ public:
 private:
   const Source& m_mainSource;
   const Source& m_currentSource;
+  SourceTableBuilder& m_sourceTableBuilder;
   const std::vector<Path>& m_searchPaths;
   std::forward_list<Source>* m_importedSources;
   std::vector<Diag>* m_diags;

@@ -1,266 +1,226 @@
 #pragma once
 #include "frontend/diag.hpp"
-#include "frontend/source.hpp"
 #include "parse/node_error.hpp"
+#include "prog/sym/source_id.hpp"
 
 namespace frontend {
 
-[[nodiscard]] auto errUnresolvedImport(const Source& src, const std::string& path, input::Span span)
+[[nodiscard]] auto errUnresolvedImport(prog::sym::SourceId src, const std::string& path) -> Diag;
+
+[[nodiscard]] auto errParseError(prog::sym::SourceId src, const parse::ErrorNode& n) -> Diag;
+
+[[nodiscard]] auto errUnsupportedLiteral(prog::sym::SourceId src, const std::string& name) -> Diag;
+
+[[nodiscard]] auto errTypeAlreadyDeclared(prog::sym::SourceId src, const std::string& name) -> Diag;
+
+[[nodiscard]] auto errTypeTemplateAlreadyDeclared(prog::sym::SourceId src, const std::string& name)
     -> Diag;
 
-[[nodiscard]] auto errParseError(const Source& src, const parse::ErrorNode& n) -> Diag;
+[[nodiscard]] auto errTypeNameIsReserved(prog::sym::SourceId src, const std::string& name) -> Diag;
 
-[[nodiscard]] auto
-errUnsupportedLiteral(const Source& src, const std::string& name, input::Span span) -> Diag;
-
-[[nodiscard]] auto
-errTypeAlreadyDeclared(const Source& src, const std::string& name, input::Span span) -> Diag;
-
-[[nodiscard]] auto
-errTypeTemplateAlreadyDeclared(const Source& src, const std::string& name, input::Span span)
+[[nodiscard]] auto errTypeNameConflictsWithFunc(prog::sym::SourceId src, const std::string& name)
     -> Diag;
 
 [[nodiscard]] auto
-errTypeNameIsReserved(const Source& src, const std::string& name, input::Span span) -> Diag;
+errDuplicateFieldNameInStruct(prog::sym::SourceId src, const std::string& fieldName) -> Diag;
 
 [[nodiscard]] auto
-errTypeNameConflictsWithFunc(const Source& src, const std::string& name, input::Span span) -> Diag;
-
-[[nodiscard]] auto
-errDuplicateFieldNameInStruct(const Source& src, const std::string& fieldName, input::Span span)
+errFieldNameConflictsWithTypeSubstitution(prog::sym::SourceId src, const std::string& fieldName)
     -> Diag;
-
-[[nodiscard]] auto errFieldNameConflictsWithTypeSubstitution(
-    const Source& src, const std::string& fieldName, input::Span span) -> Diag;
 
 [[nodiscard]] auto errCyclicStruct(
-    const Source& src,
-    const std::string& fieldName,
-    const std::string& structName,
-    input::Span span) -> Diag;
+    prog::sym::SourceId src, const std::string& fieldName, const std::string& structName) -> Diag;
 
-[[nodiscard]] auto
-errFieldNameConflictsWithType(const Source& src, const std::string& name, input::Span span) -> Diag;
+[[nodiscard]] auto errFieldNameConflictsWithType(prog::sym::SourceId src, const std::string& name)
+    -> Diag;
 
 [[nodiscard]] auto errFieldNotFoundOnType(
-    const Source& src, const std::string& fieldName, const std::string& typeName, input::Span span)
-    -> Diag;
+    prog::sym::SourceId src, const std::string& fieldName, const std::string& typeName) -> Diag;
 
 [[nodiscard]] auto errStaticFieldNotFoundOnType(
-    const Source& src, const std::string& fieldName, const std::string& typeName, input::Span span)
-    -> Diag;
+    prog::sym::SourceId src, const std::string& fieldName, const std::string& typeName) -> Diag;
 
 [[nodiscard]] auto errDuplicateTypeInUnion(
-    const Source& src,
-    const std::string& typeName,
-    const std::string& substitutedTypeName,
-    input::Span span) -> Diag;
+    prog::sym::SourceId src, const std::string& typeName, const std::string& substitutedTypeName)
+    -> Diag;
 
-[[nodiscard]] auto errNonUnionIsExpression(const Source& src, input::Span span) -> Diag;
+[[nodiscard]] auto errNonUnionIsExpression(prog::sym::SourceId src) -> Diag;
 
 [[nodiscard]] auto errTypeNotPartOfUnion(
-    const Source& src, const std::string& typeName, const std::string& unionName, input::Span span)
-    -> Diag;
+    prog::sym::SourceId src, const std::string& typeName, const std::string& unionName) -> Diag;
 
-[[nodiscard]] auto errUncheckedAsExpressionWithConst(const Source& src, input::Span span) -> Diag;
-
-[[nodiscard]] auto
-errDuplicateEntryNameInEnum(const Source& src, const std::string& entryName, input::Span span)
-    -> Diag;
+[[nodiscard]] auto errUncheckedAsExpressionWithConst(prog::sym::SourceId src) -> Diag;
 
 [[nodiscard]] auto
-errDuplicateEntryValueInEnum(const Source& src, int32_t entryValue, input::Span span) -> Diag;
+errDuplicateEntryNameInEnum(prog::sym::SourceId src, const std::string& entryName) -> Diag;
+
+[[nodiscard]] auto errDuplicateEntryValueInEnum(prog::sym::SourceId src, int32_t entryValue)
+    -> Diag;
 
 [[nodiscard]] auto errValueNotFoundInEnum(
-    const Source& src, const std::string& entryName, const std::string& enumName, input::Span span)
-    -> Diag;
+    prog::sym::SourceId src, const std::string& entryName, const std::string& enumName) -> Diag;
 
 [[nodiscard]] auto errIncorrectReturnTypeInConvFunc(
-    const Source& src, const std::string& name, const std::string& returnedType, input::Span span)
+    prog::sym::SourceId src, const std::string& name, const std::string& returnedType) -> Diag;
+
+[[nodiscard]] auto errNonOverloadableOperator(prog::sym::SourceId src, const std::string& name)
+    -> Diag;
+
+[[nodiscard]] auto errNonPureOperatorOverload(prog::sym::SourceId src) -> Diag;
+
+[[nodiscard]] auto errOperatorOverloadWithoutArgs(prog::sym::SourceId src, const std::string& name)
     -> Diag;
 
 [[nodiscard]] auto
-errNonOverloadableOperator(const Source& src, const std::string& name, input::Span span) -> Diag;
+errTypeParamNameConflictsWithType(prog::sym::SourceId src, const std::string& name) -> Diag;
 
-[[nodiscard]] auto errNonPureOperatorOverload(const Source& src, input::Span span) -> Diag;
-
-[[nodiscard]] auto
-errOperatorOverloadWithoutArgs(const Source& src, const std::string& name, input::Span span)
+[[nodiscard]] auto errDuplicateFuncDeclaration(prog::sym::SourceId src, const std::string& name)
     -> Diag;
 
-[[nodiscard]] auto
-errTypeParamNameConflictsWithType(const Source& src, const std::string& name, input::Span span)
-    -> Diag;
-
-[[nodiscard]] auto
-errDuplicateFuncDeclaration(const Source& src, const std::string& name, input::Span span) -> Diag;
-
-[[nodiscard]] auto
-errUnableToInferFuncReturnType(const Source& src, const std::string& name, input::Span span)
+[[nodiscard]] auto errUnableToInferFuncReturnType(prog::sym::SourceId src, const std::string& name)
     -> Diag;
 
 [[nodiscard]] auto errUnableToInferReturnTypeOfConversionToTemplatedType(
-    const Source& src, const std::string& name, input::Span span) -> Diag;
+    prog::sym::SourceId src, const std::string& name) -> Diag;
 
 [[nodiscard]] auto errNonMatchingFuncReturnType(
-    const Source& src,
+    prog::sym::SourceId src,
     const std::string& name,
     const std::string& declaredType,
-    const std::string& returnedType,
-    input::Span span) -> Diag;
+    const std::string& returnedType) -> Diag;
 
 [[nodiscard]] auto errNonMatchingInitializerType(
-    const Source& src,
-    const std::string& declaredType,
-    const std::string& intializerType,
-    input::Span span) -> Diag;
-
-[[nodiscard]] auto errUnableToInferLambdaReturnType(const Source& src, input::Span span) -> Diag;
-
-[[nodiscard]] auto
-errConstNameConflictsWithType(const Source& src, const std::string& name, input::Span span) -> Diag;
-
-[[nodiscard]] auto errConstNameConflictsWithTypeSubstitution(
-    const Source& src, const std::string& name, input::Span span) -> Diag;
-
-[[nodiscard]] auto
-errConstNameConflictsWithConst(const Source& src, const std::string& name, input::Span span)
+    prog::sym::SourceId src, const std::string& declaredType, const std::string& intializerType)
     -> Diag;
 
-[[nodiscard]] auto errConstDeclareNotSupported(const Source& src, input::Span span) -> Diag;
+[[nodiscard]] auto errUnableToInferLambdaReturnType(prog::sym::SourceId src) -> Diag;
 
-[[nodiscard]] auto errUndeclaredType(
-    const Source& src, const std::string& name, unsigned int typeParams, input::Span span) -> Diag;
+[[nodiscard]] auto errConstNameConflictsWithType(prog::sym::SourceId src, const std::string& name)
+    -> Diag;
+
+[[nodiscard]] auto
+errConstNameConflictsWithTypeSubstitution(prog::sym::SourceId src, const std::string& name) -> Diag;
+
+[[nodiscard]] auto errConstNameConflictsWithConst(prog::sym::SourceId src, const std::string& name)
+    -> Diag;
+
+[[nodiscard]] auto errConstDeclareNotSupported(prog::sym::SourceId src) -> Diag;
+
+[[nodiscard]] auto
+errUndeclaredType(prog::sym::SourceId src, const std::string& name, unsigned int typeParams)
+    -> Diag;
 
 [[nodiscard]] auto errUndeclaredTypeOrConversion(
-    const Source& src,
-    const std::string& name,
-    const std::vector<std::string>& argTypes,
-    input::Span span) -> Diag;
+    prog::sym::SourceId src, const std::string& name, const std::vector<std::string>& argTypes)
+    -> Diag;
 
 [[nodiscard]] auto errNoTypeOrConversionFoundToInstantiate(
-    const Source& src, const std::string& name, unsigned int templateParamCount, input::Span span)
+    prog::sym::SourceId src, const std::string& name, unsigned int templateParamCount) -> Diag;
+
+[[nodiscard]] auto errTypeParamOnSubstitutionType(prog::sym::SourceId src, const std::string& name)
     -> Diag;
 
-[[nodiscard]] auto
-errTypeParamOnSubstitutionType(const Source& src, const std::string& name, input::Span span)
-    -> Diag;
+[[nodiscard]] auto errInvalidTypeInstantiation(prog::sym::SourceId src) -> Diag;
 
-[[nodiscard]] auto errInvalidTypeInstantiation(const Source& src, input::Span span) -> Diag;
+[[nodiscard]] auto errUndeclaredConst(prog::sym::SourceId src, const std::string& name) -> Diag;
 
-[[nodiscard]] auto errUndeclaredConst(const Source& src, const std::string& name, input::Span span)
-    -> Diag;
-
-[[nodiscard]] auto
-errUninitializedConst(const Source& src, const std::string& name, input::Span span) -> Diag;
+[[nodiscard]] auto errUninitializedConst(prog::sym::SourceId src, const std::string& name) -> Diag;
 
 [[nodiscard]] auto errUndeclaredPureFunc(
-    const Source& src,
-    const std::string& name,
-    const std::vector<std::string>& argTypes,
-    input::Span span) -> Diag;
+    prog::sym::SourceId src, const std::string& name, const std::vector<std::string>& argTypes)
+    -> Diag;
 
 [[nodiscard]] auto errUndeclaredAction(
-    const Source& src,
-    const std::string& name,
-    const std::vector<std::string>& argTypes,
-    input::Span span) -> Diag;
+    prog::sym::SourceId src, const std::string& name, const std::vector<std::string>& argTypes)
+    -> Diag;
 
 [[nodiscard]] auto errUndeclaredFuncOrAction(
-    const Source& src,
-    const std::string& name,
-    const std::vector<std::string>& argTypes,
-    input::Span span) -> Diag;
+    prog::sym::SourceId src, const std::string& name, const std::vector<std::string>& argTypes)
+    -> Diag;
 
 [[nodiscard]] auto errUnknownIntrinsic(
-    const Source& src,
+    prog::sym::SourceId src,
     const std::string& name,
     bool pureOnly,
-    const std::vector<std::string>& argTypes,
-    input::Span span) -> Diag;
+    const std::vector<std::string>& argTypes) -> Diag;
 
-[[nodiscard]] auto errPureFuncInfRecursion(const Source& src, input::Span span) -> Diag;
+[[nodiscard]] auto errPureFuncInfRecursion(prog::sym::SourceId src) -> Diag;
 
 [[nodiscard]] auto errNoPureFuncFoundToInstantiate(
-    const Source& src, const std::string& name, unsigned int templateParamCount, input::Span span)
-    -> Diag;
+    prog::sym::SourceId src, const std::string& name, unsigned int templateParamCount) -> Diag;
 
 [[nodiscard]] auto errNoActionFoundToInstantiate(
-    const Source& src, const std::string& name, unsigned int templateParamCount, input::Span span)
-    -> Diag;
+    prog::sym::SourceId src, const std::string& name, unsigned int templateParamCount) -> Diag;
 
 [[nodiscard]] auto errNoFuncOrActionFoundToInstantiate(
-    const Source& src, const std::string& name, unsigned int templateParamCount, input::Span span)
-    -> Diag;
-
-[[nodiscard]] auto errNoTypeParamsProvidedToTemplateFunction(
-    const Source& src, const std::string& name, input::Span span) -> Diag;
+    prog::sym::SourceId src, const std::string& name, unsigned int templateParamCount) -> Diag;
 
 [[nodiscard]] auto
-errAmbiguousFunction(const Source& src, const std::string& name, input::Span span) -> Diag;
+errNoTypeParamsProvidedToTemplateFunction(prog::sym::SourceId src, const std::string& name) -> Diag;
+
+[[nodiscard]] auto errAmbiguousFunction(prog::sym::SourceId src, const std::string& name) -> Diag;
 
 [[nodiscard]] auto errAmbiguousTemplateFunction(
-    const Source& src, const std::string& name, unsigned int templateParamCount, input::Span span)
-    -> Diag;
+    prog::sym::SourceId src, const std::string& name, unsigned int templateParamCount) -> Diag;
 
-[[nodiscard]] auto errIllegalDelegateCall(const Source& src, input::Span span) -> Diag;
+[[nodiscard]] auto errIllegalDelegateCall(prog::sym::SourceId src) -> Diag;
 
-[[nodiscard]] auto errIncorrectArgsToDelegate(const Source& src, input::Span span) -> Diag;
-
-[[nodiscard]] auto errUndeclaredCallOperator(
-    const Source& src, const std::vector<std::string>& argTypes, input::Span span) -> Diag;
-
-[[nodiscard]] auto errUndeclaredIndexOperator(
-    const Source& src, const std::vector<std::string>& argTypes, input::Span span) -> Diag;
-
-[[nodiscard]] auto errInvalidFuncInstantiation(const Source& src, input::Span span) -> Diag;
+[[nodiscard]] auto errIncorrectArgsToDelegate(prog::sym::SourceId src) -> Diag;
 
 [[nodiscard]] auto
-errUnsupportedOperator(const Source& src, const std::string& name, input::Span span) -> Diag;
+errUndeclaredCallOperator(prog::sym::SourceId src, const std::vector<std::string>& argTypes)
+    -> Diag;
+
+[[nodiscard]] auto
+errUndeclaredIndexOperator(prog::sym::SourceId src, const std::vector<std::string>& argTypes)
+    -> Diag;
+
+[[nodiscard]] auto errInvalidFuncInstantiation(prog::sym::SourceId src) -> Diag;
+
+[[nodiscard]] auto errUnsupportedOperator(prog::sym::SourceId src, const std::string& name) -> Diag;
 
 [[nodiscard]] auto errUndeclaredUnaryOperator(
-    const Source& src, const std::string& name, const std::string& type, input::Span span) -> Diag;
+    prog::sym::SourceId src, const std::string& name, const std::string& type) -> Diag;
 
 [[nodiscard]] auto errUndeclaredBinOperator(
-    const Source& src,
+    prog::sym::SourceId src,
     const std::string& name,
     const std::string& lhsType,
-    const std::string& rhsType,
-    input::Span span) -> Diag;
+    const std::string& rhsType) -> Diag;
 
-[[nodiscard]] auto errBranchesHaveNoCommonType(const Source& src, input::Span span) -> Diag;
+[[nodiscard]] auto errBranchesHaveNoCommonType(prog::sym::SourceId src) -> Diag;
 
 [[nodiscard]] auto errNoImplicitConversionFound(
-    const Source& src, const std::string& from, const std::string& to, input::Span span) -> Diag;
+    prog::sym::SourceId src, const std::string& from, const std::string& to) -> Diag;
 
-[[nodiscard]] auto errNonExhaustiveSwitchWithoutElse(const Source& src, input::Span span) -> Diag;
+[[nodiscard]] auto errNonExhaustiveSwitchWithoutElse(prog::sym::SourceId src) -> Diag;
 
-[[nodiscard]] auto errNonPureConversion(const Source& src, input::Span span) -> Diag;
+[[nodiscard]] auto errNonPureConversion(prog::sym::SourceId src) -> Diag;
 
-[[nodiscard]] auto errForkedNonUserFunc(const Source& src, input::Span span) -> Diag;
+[[nodiscard]] auto errForkedNonUserFunc(prog::sym::SourceId src) -> Diag;
 
-[[nodiscard]] auto errLazyNonUserFunc(const Source& src, input::Span span) -> Diag;
+[[nodiscard]] auto errLazyNonUserFunc(prog::sym::SourceId src) -> Diag;
 
-[[nodiscard]] auto errForkedSelfCall(const Source& src, input::Span span) -> Diag;
+[[nodiscard]] auto errForkedSelfCall(prog::sym::SourceId src) -> Diag;
 
-[[nodiscard]] auto errLazySelfCall(const Source& src, input::Span span) -> Diag;
+[[nodiscard]] auto errLazySelfCall(prog::sym::SourceId src) -> Diag;
 
-[[nodiscard]] auto errSelfCallInNonFunc(const Source& src, input::Span span) -> Diag;
+[[nodiscard]] auto errSelfCallInNonFunc(prog::sym::SourceId src) -> Diag;
 
-[[nodiscard]] auto errSelfCallWithoutInferredRetType(const Source& src, input::Span span) -> Diag;
+[[nodiscard]] auto errSelfCallWithoutInferredRetType(prog::sym::SourceId src) -> Diag;
 
 [[nodiscard]] auto errIncorrectNumArgsInSelfCall(
-    const Source& src, unsigned int expectedNumArgs, unsigned int actualNumArgs, input::Span span)
-    -> Diag;
-
-[[nodiscard]] auto errInvalidFailIntrinsicCall(
-    const Source& src, unsigned int typeParams, unsigned int argCount, input::Span span) -> Diag;
-
-[[nodiscard]] auto errIntrinsicFuncLiteral(const Source& src, input::Span span) -> Diag;
+    prog::sym::SourceId src, unsigned int expectedNumArgs, unsigned int actualNumArgs) -> Diag;
 
 [[nodiscard]] auto
-errUnsupportedArgInitializer(const Source& src, const std::string& name, input::Span span) -> Diag;
+errInvalidFailIntrinsicCall(prog::sym::SourceId src, unsigned int typeParams, unsigned int argCount)
+    -> Diag;
 
-[[nodiscard]] auto errNonOptArgFollowingOpt(const Source& src, input::Span span) -> Diag;
+[[nodiscard]] auto errIntrinsicFuncLiteral(prog::sym::SourceId src) -> Diag;
+
+[[nodiscard]] auto errUnsupportedArgInitializer(prog::sym::SourceId src, const std::string& name)
+    -> Diag;
+
+[[nodiscard]] auto errNonOptArgFollowingOpt(prog::sym::SourceId src) -> Diag;
 
 } // namespace frontend

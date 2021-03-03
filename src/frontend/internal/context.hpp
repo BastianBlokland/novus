@@ -50,8 +50,9 @@ public:
   auto declareTypeInfo(prog::sym::TypeId typeId, TypeInfo typeInfo) -> void;
 
   template <typename DiagConstructor, class... Args>
-  auto reportDiag(DiagConstructor constructor, Args&&... args) -> void {
-    m_diags->push_back(constructor(m_src, std::forward<Args>(args)...));
+  auto reportDiag(DiagConstructor constructor, input::Span span, Args&&... args) -> void {
+    const auto srcId = m_sourceTableBuilder->add(&m_src, span);
+    m_diags->push_back(constructor(srcId, std::forward<Args>(args)...));
   }
 
 private:

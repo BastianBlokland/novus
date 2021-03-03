@@ -172,7 +172,7 @@ auto GetExpr::visit(const parse::BinaryExprNode& n) -> void {
   }
   const auto op = getOperator(opToken);
   if (!op) {
-    m_ctx->reportDiag(errUnsupportedOperator, opToken.str(), opToken.getSpan());
+    m_ctx->reportDiag(errUnsupportedOperator, opToken.getSpan(), opToken.str());
     return;
   }
 
@@ -192,10 +192,10 @@ auto GetExpr::visit(const parse::BinaryExprNode& n) -> void {
   if (!func) {
     m_ctx->reportDiag(
         errUndeclaredBinOperator,
+        opToken.getSpan(),
         getText(op.value()),
         getDisplayName(*m_ctx, args[0]->getType()),
-        getDisplayName(*m_ctx, args[1]->getType()),
-        opToken.getSpan());
+        getDisplayName(*m_ctx, args[1]->getType()));
     return;
   }
 
@@ -268,7 +268,7 @@ auto GetExpr::visit(const parse::CallExprNode& n) -> void {
 
     if (auto type = getOrInstType(m_ctx, m_typeSubTable, nameToken, typeParams)) {
       m_ctx->reportDiag(
-          errUndeclaredTypeOrConversion, getDisplayName(*m_ctx, *type), argTypeNames, n.getSpan());
+          errUndeclaredTypeOrConversion, n.getSpan(), getDisplayName(*m_ctx, *type), argTypeNames);
       return;
     }
     if (isType(m_ctx, m_typeSubTable, nameString)) {
@@ -279,11 +279,11 @@ auto GetExpr::visit(const parse::CallExprNode& n) -> void {
         // TODO: Include the type-names for the arguments in the diagnostic.
         m_ctx->reportDiag(
             errNoTypeOrConversionFoundToInstantiate,
+            n.getSpan(),
             nameString,
-            typeParams->getCount(),
-            n.getSpan());
+            typeParams->getCount());
       } else {
-        m_ctx->reportDiag(errUndeclaredTypeOrConversion, nameString, argTypeNames, n.getSpan());
+        m_ctx->reportDiag(errUndeclaredTypeOrConversion, n.getSpan(), nameString, argTypeNames);
       }
       return;
     }
@@ -295,24 +295,24 @@ auto GetExpr::visit(const parse::CallExprNode& n) -> void {
       // TODO: Include the type-names for the arguments in the diagnostic.
       if (allowPureFunc && allowAction) {
         m_ctx->reportDiag(
-            errNoFuncOrActionFoundToInstantiate, nameString, typeParams->getCount(), n.getSpan());
+            errNoFuncOrActionFoundToInstantiate, n.getSpan(), nameString, typeParams->getCount());
       } else if (allowPureFunc) {
         m_ctx->reportDiag(
-            errNoPureFuncFoundToInstantiate, nameString, typeParams->getCount(), n.getSpan());
+            errNoPureFuncFoundToInstantiate, n.getSpan(), nameString, typeParams->getCount());
       } else {
         m_ctx->reportDiag(
-            errNoActionFoundToInstantiate, nameString, typeParams->getCount(), n.getSpan());
+            errNoActionFoundToInstantiate, n.getSpan(), nameString, typeParams->getCount());
       }
       return;
     }
     if (getIdVisitor.isIntrinsic()) {
-      m_ctx->reportDiag(errUnknownIntrinsic, nameString, !allowAction, argTypeNames, n.getSpan());
+      m_ctx->reportDiag(errUnknownIntrinsic, n.getSpan(), nameString, !allowAction, argTypeNames);
     } else if (allowPureFunc && allowAction) {
-      m_ctx->reportDiag(errUndeclaredFuncOrAction, nameString, argTypeNames, n.getSpan());
+      m_ctx->reportDiag(errUndeclaredFuncOrAction, n.getSpan(), nameString, argTypeNames);
     } else if (allowPureFunc) {
-      m_ctx->reportDiag(errUndeclaredPureFunc, nameString, argTypeNames, n.getSpan());
+      m_ctx->reportDiag(errUndeclaredPureFunc, n.getSpan(), nameString, argTypeNames);
     } else {
-      m_ctx->reportDiag(errUndeclaredAction, nameString, argTypeNames, n.getSpan());
+      m_ctx->reportDiag(errUndeclaredAction, n.getSpan(), nameString, argTypeNames);
     }
     return;
   }
@@ -419,16 +419,16 @@ auto GetExpr::visit(const parse::IdExprNode& n) -> void {
     if (instances.empty()) {
       if (hasFlag<Flags::AllowPureFuncCalls>() && hasFlag<Flags::AllowActionCalls>()) {
         m_ctx->reportDiag(
-            errNoFuncOrActionFoundToInstantiate, name, typeSet->getCount(), n.getSpan());
+            errNoFuncOrActionFoundToInstantiate, n.getSpan(), name, typeSet->getCount());
       } else if (hasFlag<Flags::AllowPureFuncCalls>()) {
-        m_ctx->reportDiag(errNoPureFuncFoundToInstantiate, name, typeSet->getCount(), n.getSpan());
+        m_ctx->reportDiag(errNoPureFuncFoundToInstantiate, n.getSpan(), name, typeSet->getCount());
       } else {
-        m_ctx->reportDiag(errNoActionFoundToInstantiate, name, typeSet->getCount(), n.getSpan());
+        m_ctx->reportDiag(errNoActionFoundToInstantiate, n.getSpan(), name, typeSet->getCount());
       }
       return;
     }
     if (instances.size() != 1) {
-      m_ctx->reportDiag(errAmbiguousTemplateFunction, name, typeSet->getCount(), n.getSpan());
+      m_ctx->reportDiag(errAmbiguousTemplateFunction, n.getSpan(), name, typeSet->getCount());
       return;
     }
     m_expr = getLitFunc(m_ctx, *instances[0]->getFunc());
@@ -439,7 +439,7 @@ auto GetExpr::visit(const parse::IdExprNode& n) -> void {
   auto funcs = m_ctx->getProg()->lookupFunc(name, getOvOptions(-1, true));
   if (!funcs.empty()) {
     if (funcs.size() != 1) {
-      m_ctx->reportDiag(errAmbiguousFunction, name, n.getSpan());
+      m_ctx->reportDiag(errAmbiguousFunction, n.getSpan(), name);
       return;
     }
     m_expr = getLitFunc(m_ctx, funcs[0]);
@@ -448,7 +448,7 @@ auto GetExpr::visit(const parse::IdExprNode& n) -> void {
 
   // Error if no templated args are provided to templated function.
   if (m_ctx->getFuncTemplates()->hasFunc(name)) {
-    m_ctx->reportDiag(errNoTypeParamsProvidedToTemplateFunction, name, n.getSpan());
+    m_ctx->reportDiag(errNoTypeParamsProvidedToTemplateFunction, n.getSpan(), name);
     return;
   }
 
@@ -480,21 +480,21 @@ auto GetExpr::visit(const parse::FieldExprNode& n) -> void {
   const auto lhsType   = lhsExpr->getType();
   if (!lhsType.isConcrete()) {
     m_ctx->reportDiag(
-        errFieldNotFoundOnType, fieldName, getDisplayName(*m_ctx, lhsType), n.getSpan());
+        errFieldNotFoundOnType, n.getSpan(), fieldName, getDisplayName(*m_ctx, lhsType));
     return;
   }
 
   const auto& lhsTypeDecl = m_ctx->getProg()->getTypeDecl(lhsType);
   if (lhsTypeDecl.getKind() != prog::sym::TypeKind::Struct) {
     m_ctx->reportDiag(
-        errFieldNotFoundOnType, fieldName, getDisplayName(*m_ctx, lhsType), n.getSpan());
+        errFieldNotFoundOnType, n.getSpan(), fieldName, getDisplayName(*m_ctx, lhsType));
     return;
   }
   const auto& structDef = std::get<prog::sym::StructDef>(m_ctx->getProg()->getTypeDef(lhsType));
   const auto field      = structDef.getFields().lookup(fieldName);
   if (!field) {
     m_ctx->reportDiag(
-        errFieldNotFoundOnType, fieldName, getDisplayName(*m_ctx, lhsType), n.getSpan());
+        errFieldNotFoundOnType, n.getSpan(), fieldName, getDisplayName(*m_ctx, lhsType));
     return;
   }
 
@@ -533,7 +533,7 @@ auto GetExpr::visit(const parse::IndexExprNode& n) -> void {
     for (const auto& argType : args->second) {
       argTypeNames.push_back(getDisplayName(*m_ctx, argType));
     }
-    m_ctx->reportDiag(errUndeclaredIndexOperator, argTypeNames, n.getSpan());
+    m_ctx->reportDiag(errUndeclaredIndexOperator, n.getSpan(), argTypeNames);
     return;
   }
 
@@ -569,7 +569,7 @@ auto GetExpr::visit(const parse::IsExprNode& n) -> void {
   const auto type       = getOrInstType(m_ctx, m_typeSubTable, parseType);
   if (!type) {
     m_ctx->reportDiag(
-        errUndeclaredType, getName(parseType), parseType.getParamCount(), parseType.getSpan());
+        errUndeclaredType, parseType.getSpan(), getName(parseType), parseType.getParamCount());
     return;
   }
 
@@ -577,9 +577,9 @@ auto GetExpr::visit(const parse::IsExprNode& n) -> void {
   if (!unionDef.hasType(*type)) {
     m_ctx->reportDiag(
         errTypeNotPartOfUnion,
+        parseType.getSpan(),
         getDisplayName(*m_ctx, *type),
-        getDisplayName(*m_ctx, lhsType),
-        parseType.getSpan());
+        getDisplayName(*m_ctx, lhsType));
     return;
   }
 
@@ -637,7 +637,7 @@ auto GetExpr::visit(const parse::LitExprNode& n) -> void {
   default:
     std::stringstream oss;
     oss << n.getVal().getKind();
-    m_ctx->reportDiag(errUnsupportedLiteral, oss.str(), n.getSpan());
+    m_ctx->reportDiag(errUnsupportedLiteral, n.getSpan(), oss.str());
   }
 }
 
@@ -721,7 +721,7 @@ auto GetExpr::visit(const parse::UnaryExprNode& n) -> void {
   const auto& opToken = n.getOperator();
   const auto op       = getOperator(opToken);
   if (!op) {
-    m_ctx->reportDiag(errUnsupportedOperator, opToken.str(), opToken.getSpan());
+    m_ctx->reportDiag(errUnsupportedOperator, opToken.getSpan(), opToken.str());
     return;
   }
 
@@ -739,9 +739,9 @@ auto GetExpr::visit(const parse::UnaryExprNode& n) -> void {
   if (!func) {
     m_ctx->reportDiag(
         errUndeclaredUnaryOperator,
+        opToken.getSpan(),
         getText(op.value()),
-        getDisplayName(*m_ctx, args[0]->getType()),
-        opToken.getSpan());
+        getDisplayName(*m_ctx, args[0]->getType()));
     return;
   }
 
@@ -878,9 +878,9 @@ auto GetExpr::applyImplicitConversion(
   if (!conv) {
     m_ctx->reportDiag(
         errNoImplicitConversionFound,
+        span,
         getDisplayName(*m_ctx, fromType),
-        getDisplayName(*m_ctx, toType),
-        span);
+        getDisplayName(*m_ctx, toType));
     return false;
   }
 
@@ -954,21 +954,21 @@ auto GetExpr::getStaticFieldExpr(
     const auto& enumDef = std::get<prog::sym::EnumDef>(m_ctx->getProg()->getTypeDef(*type));
     if (!enumDef.hasEntry(fieldName)) {
       m_ctx->reportDiag(
-          errValueNotFoundInEnum, fieldName, getDisplayName(*m_ctx, *type), fieldToken.getSpan());
+          errValueNotFoundInEnum, fieldToken.getSpan(), fieldName, getDisplayName(*m_ctx, *type));
       return nullptr;
     }
     return prog::expr::litEnumNode(*m_ctx->getProg(), *type, fieldName);
   }
 
   m_ctx->reportDiag(
-      errStaticFieldNotFoundOnType, fieldName, getDisplayName(*m_ctx, *type), fieldToken.getSpan());
+      errStaticFieldNotFoundOnType, fieldToken.getSpan(), fieldName, getDisplayName(*m_ctx, *type));
   return nullptr;
 }
 
 auto GetExpr::getConstExpr(const parse::IdExprNode& n) -> prog::expr::NodePtr {
   const auto name = getName(n.getId());
   if (!m_constBinder) {
-    m_ctx->reportDiag(errUndeclaredConst, name, n.getSpan());
+    m_ctx->reportDiag(errUndeclaredConst, n.getSpan(), name);
     return nullptr;
   }
 
@@ -978,9 +978,9 @@ auto GetExpr::getConstExpr(const parse::IdExprNode& n) -> prog::expr::NodePtr {
   }
 
   if (m_constBinder->doesExistButNotVisible(name)) {
-    m_ctx->reportDiag(errUninitializedConst, name, n.getSpan());
+    m_ctx->reportDiag(errUninitializedConst, n.getSpan(), name);
   } else {
-    m_ctx->reportDiag(errUndeclaredConst, name, n.getSpan());
+    m_ctx->reportDiag(errUndeclaredConst, n.getSpan(), name);
   }
   return nullptr;
 }
@@ -1012,7 +1012,7 @@ auto GetExpr::getSelfCallExpr(const parse::CallExprNode& n) -> prog::expr::NodeP
 
   // Verify that correct amount of arguments are provided.
   if (selfArgCount != argCount) {
-    m_ctx->reportDiag(errIncorrectNumArgsInSelfCall, selfArgCount, argCount, n.getSpan());
+    m_ctx->reportDiag(errIncorrectNumArgsInSelfCall, n.getSpan(), selfArgCount, argCount);
     return nullptr;
   }
 
@@ -1087,7 +1087,7 @@ auto GetExpr::getDynCallExpr(const parse::CallExprNode& n) -> prog::expr::NodePt
     for (const auto& argType : args->second) {
       argTypeNames.push_back(getDisplayName(*m_ctx, argType));
     }
-    m_ctx->reportDiag(errUndeclaredCallOperator, argTypeNames, n.getSpan());
+    m_ctx->reportDiag(errUndeclaredCallOperator, n.getSpan(), argTypeNames);
     return nullptr;
   }
 

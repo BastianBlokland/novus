@@ -22,6 +22,8 @@ auto Output::getImportedSources() const noexcept -> const std::forward_list<Sour
   return m_importedSources;
 }
 
+auto Output::getSourceTable() const noexcept -> const SourceTable& { return m_sourceTable; }
+
 auto Output::beginDiags() const noexcept -> DiagIterator { return m_diags.begin(); }
 
 auto Output::endDiags() const noexcept -> DiagIterator { return m_diags.end(); }

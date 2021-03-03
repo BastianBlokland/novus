@@ -20,9 +20,9 @@ auto injectFailIntrinsic(
     // Invalid fail intrinsic, expects 1 type parameter and 0 normal arguments.
     ctx->reportDiag(
         errInvalidFailIntrinsicCall,
+        callSpan,
         typeParams ? typeParams->getCount() : 0u,
-        args.first.size(),
-        callSpan);
+        args.first.size());
     return;
   }
 

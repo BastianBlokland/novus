@@ -99,54 +99,46 @@ TEST_CASE("[frontend] Analyzing user-type definitions", "frontend") {
   }
 
   SECTION("Struct diagnostics") {
-    CHECK_DIAG(
-        "struct s = hello a, bool b", errUndeclaredType(src, "hello", 0, input::Span{11, 15}));
-    CHECK_DIAG(
-        "struct s = int a, bool a", errDuplicateFieldNameInStruct(src, "a", input::Span{23, 23}));
-    CHECK_DIAG(
-        "struct s = int int", errFieldNameConflictsWithType(src, "int", input::Span{15, 17}));
-    CHECK_DIAG(
-        "struct s = int function",
-        errFieldNameConflictsWithType(src, "function", input::Span{15, 22}));
-    CHECK_DIAG(
-        "struct s = int action", errFieldNameConflictsWithType(src, "action", input::Span{15, 20}));
-    CHECK_DIAG("struct s = s i", errCyclicStruct(src, "i", "s", input::Span{0, 13}));
+    CHECK_DIAG("struct s = hello a, bool b", errUndeclaredType(NO_SRC, "hello", 0));
+    CHECK_DIAG("struct s = int a, bool a", errDuplicateFieldNameInStruct(NO_SRC, "a"));
+    CHECK_DIAG("struct s = int int", errFieldNameConflictsWithType(NO_SRC, "int"));
+    CHECK_DIAG("struct s = int function", errFieldNameConflictsWithType(NO_SRC, "function"));
+    CHECK_DIAG("struct s = int action", errFieldNameConflictsWithType(NO_SRC, "action"));
+    CHECK_DIAG("struct s = s i", errCyclicStruct(NO_SRC, "i", "s"));
     CHECK_DIAG(
         "struct s1 = s2 a "
         "struct s2 = s1 b",
-        errCyclicStruct(src, "a", "s1", input::Span{0, 15}),
-        errCyclicStruct(src, "b", "s2", input::Span{17, 32}));
+        errCyclicStruct(NO_SRC, "a", "s1"),
+        errCyclicStruct(NO_SRC, "b", "s2"));
     CHECK_DIAG(
         "struct s1 = s2 a "
         "struct s2 = int a, s1 b "
         "struct s3 = s1 a, s2 b",
-        errCyclicStruct(src, "a", "s1", input::Span{0, 15}),
-        errCyclicStruct(src, "b", "s2", input::Span{17, 39}),
-        errCyclicStruct(src, "a", "s3", input::Span{41, 62}));
+        errCyclicStruct(NO_SRC, "a", "s1"),
+        errCyclicStruct(NO_SRC, "b", "s2"),
+        errCyclicStruct(NO_SRC, "a", "s3"));
     CHECK_DIAG(
         "struct s{T} = T T "
         "struct s2 = s{int} s",
-        errFieldNameConflictsWithTypeSubstitution(src, "T", input::Span{16, 16}),
-        errInvalidTypeInstantiation(src, input::Span{30, 30}),
-        errUndeclaredType(src, "s", 1, input::Span{30, 35}));
+        errFieldNameConflictsWithTypeSubstitution(NO_SRC, "T"),
+        errInvalidTypeInstantiation(NO_SRC),
+        errUndeclaredType(NO_SRC, "s", 1));
   }
 
   SECTION("Union diagnostics") {
-    CHECK_DIAG("union u = hello, bool", errUndeclaredType(src, "hello", 0, input::Span{10, 14}));
-    CHECK_DIAG(
-        "union u = int, int", errDuplicateTypeInUnion(src, "int", "int", input::Span{15, 17}));
+    CHECK_DIAG("union u = hello, bool", errUndeclaredType(NO_SRC, "hello", 0));
+    CHECK_DIAG("union u = int, int", errDuplicateTypeInUnion(NO_SRC, "int", "int"));
     CHECK_DIAG(
         "union u{T} = int, T "
         "fun f(u{int} in) -> int 1",
-        errDuplicateTypeInUnion(src, "T", "int", input::Span{18, 18}),
-        errInvalidTypeInstantiation(src, input::Span{26, 26}),
-        errUndeclaredType(src, "u", 1, input::Span{26, 31}));
+        errDuplicateTypeInUnion(NO_SRC, "T", "int"),
+        errInvalidTypeInstantiation(NO_SRC),
+        errUndeclaredType(NO_SRC, "u", 1));
   }
 
   SECTION("Enum diagnostics") {
-    CHECK_DIAG("enum e = a, b, a", errDuplicateEntryNameInEnum(src, "a", input::Span{15, 15}));
-    CHECK_DIAG(
-        "enum e = a : 1, b, c : 1", errDuplicateEntryValueInEnum(src, 1, input::Span{19, 23}));
+    CHECK_DIAG("enum e = a, b, a", errDuplicateEntryNameInEnum(NO_SRC, "a"));
+    CHECK_DIAG("enum e = a : 1, b, c : 1", errDuplicateEntryValueInEnum(NO_SRC, 1));
   }
 }
 
