@@ -22,6 +22,7 @@ public:
   auto operator==(const SourceId& rhs) const noexcept -> bool;
   auto operator!=(const SourceId& rhs) const noexcept -> bool;
 
+  [[nodiscard]] auto isSet() const noexcept -> bool;
   [[nodiscard]] auto getNum() const noexcept -> unsigned int;
 
 private:

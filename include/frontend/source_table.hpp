@@ -15,7 +15,9 @@ struct SourceInfo {
   const Source* source;
   input::Span span;
 
-  [[nodiscard]] auto getPath() const noexcept -> std::optional<filesystem::path> {
+  [[nodiscard]] auto getId() const noexcept -> const std::string& { return source->getId(); }
+
+  [[nodiscard]] auto getPath() const noexcept -> const std::optional<filesystem::path>& {
     return source->getPath();
   }
 

@@ -90,4 +90,11 @@ auto Context::declareTypeInfo(prog::sym::TypeId typeId, TypeInfo typeInfo) -> vo
   m_typeInfos->insert({typeId, std::move(typeInfo)});
 }
 
+auto Context::associateSrc(const prog::expr::NodePtr& expr, input::Span span) -> void {
+  if (expr) {
+    const auto srcId = m_sourceTableBuilder->add(&m_src, span);
+    expr->setSourceId(srcId);
+  }
+}
+
 } // namespace frontend::internal

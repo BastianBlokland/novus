@@ -55,6 +55,8 @@ public:
     m_diags->push_back(constructor(srcId, std::forward<Args>(args)...));
   }
 
+  auto associateSrc(const prog::expr::NodePtr& expr, input::Span span) -> void;
+
 private:
   const Source& m_src;
   prog::Program* m_prog;

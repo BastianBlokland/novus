@@ -12,6 +12,8 @@ auto SourceId::operator!=(const SourceId& rhs) const noexcept -> bool {
   return !SourceId::operator==(rhs);
 }
 
+auto SourceId::isSet() const noexcept -> bool { return m_id != 0; }
+
 auto SourceId::getNum() const noexcept -> unsigned int { return m_id; }
 
 auto operator<<(std::ostream& out, const SourceId& rhs) -> std::ostream& {
