@@ -68,41 +68,41 @@ TEST_CASE("[frontend] Analyzing 'is' / 'as' expressions", "frontend") {
   }
 
   SECTION("Diagnostics") {
-    CHECK_DIAG(" fun f(int i) i as bool b", errNonUnionIsExpression(src, input::Span{14, 14}));
+    CHECK_DIAG(" fun f(int i) i as bool b", errNonUnionIsExpression(NO_SRC));
     CHECK_DIAG(
         "struct S = int i "
         "fun f(S s) s as int i",
-        errNonUnionIsExpression(src, input::Span{28, 28}));
+        errNonUnionIsExpression(NO_SRC));
     CHECK_DIAG(
         "union U = int, float "
         "fun f(U u) u as hello i",
-        errUndeclaredType(src, "hello", 0, input::Span{37, 41}));
+        errUndeclaredType(NO_SRC, "hello", 0));
     CHECK_DIAG(
         "union U = int, float "
         "fun f(U u) u as bool b",
-        errTypeNotPartOfUnion(src, "bool", "U", input::Span{37, 40}));
+        errTypeNotPartOfUnion(NO_SRC, "bool", "U"));
 
     CHECK_DIAG(
         "union U = int, float "
         "fun f(U u) !(u as int i) ? i : 42",
-        errUncheckedAsExpressionWithConst(src, input::Span{39, 41}));
+        errUncheckedAsExpressionWithConst(NO_SRC));
     CHECK_DIAG(
         "union U = int, float "
         "fun f(U u) (u as int i; z = 4) ? i : 42",
-        errUncheckedAsExpressionWithConst(src, input::Span{38, 40}));
+        errUncheckedAsExpressionWithConst(NO_SRC));
     CHECK_DIAG(
         "union U = int, float "
         "fun f(U u) -> int (u as int i || true) ? i : 42",
-        errUncheckedAsExpressionWithConst(src, input::Span{45, 47}));
+        errUncheckedAsExpressionWithConst(NO_SRC));
 
     CHECK_DIAG(
         "union U = int, float "
         "fun f(U u) u as int int ? 1 : 2",
-        errConstNameConflictsWithType(src, "int", input::Span{41, 43}));
+        errConstNameConflictsWithType(NO_SRC, "int"));
     CHECK_DIAG(
         "union U = int, float "
         "fun f(U u) u as int u ? 1 : 2",
-        errConstNameConflictsWithConst(src, "u", input::Span{41, 41}));
+        errConstNameConflictsWithConst(NO_SRC, "u"));
   }
 }
 

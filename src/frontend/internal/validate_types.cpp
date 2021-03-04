@@ -50,7 +50,7 @@ auto validateType(prog::sym::TypeId id, const TypeInfo& info) -> void {
     const auto cyclicField = getCyclicField(ctx, fields, visitedTypes);
     if (cyclicField) {
       const auto fieldName = fields[*cyclicField].getName();
-      ctx->reportDiag(errCyclicStruct, fieldName, typeDecl.getName(), info.getSourceSpan());
+      ctx->reportDiag(errCyclicStruct, info.getSourceSpan(), fieldName, typeDecl.getName());
       return;
     }
   }

@@ -117,8 +117,9 @@ auto runFromSource(
     // Print diagnostics.
     for (auto diagItr = frontendOutput.beginDiags(); diagItr != frontendOutput.endDiags();
          ++diagItr) {
-      std::cerr << rang::style::bold << rang::bg::red << *diagItr << rang::bg::reset << '\n'
-                << rang::style::reset;
+      std::cerr << rang::style::bold << rang::bg::red;
+      diagItr->print(std::cerr, frontendOutput.getSourceTable());
+      std::cerr << rang::bg::reset << '\n' << rang::style::reset;
     }
     return 1;
   }

@@ -3,272 +3,247 @@
 
 namespace frontend {
 
-auto errUnresolvedImport(const Source& src, const std::string& path, input::Span span) -> Diag {
+auto errUnresolvedImport(prog::sym::SourceId src, const std::string& path) -> Diag {
   std::ostringstream oss;
   oss << "Unable to resolve import '" << path << '\'';
-  return error(src, oss.str(), span);
+  return error(oss.str(), src);
 }
 
-auto errParseError(const Source& src, const parse::ErrorNode& n) -> Diag {
+auto errParseError(prog::sym::SourceId src, const parse::ErrorNode& n) -> Diag {
   std::ostringstream oss;
   oss << n.getMessage();
-  return error(src, oss.str(), n.getSpan());
+  return error(oss.str(), src);
 }
 
-auto errUnsupportedLiteral(const Source& src, const std::string& name, input::Span span) -> Diag {
+auto errUnsupportedLiteral(prog::sym::SourceId src, const std::string& name) -> Diag {
   std::ostringstream oss;
   oss << "Unsupported literal: " << name;
-  return error(src, oss.str(), span);
+  return error(oss.str(), src);
 }
 
-auto errTypeAlreadyDeclared(const Source& src, const std::string& name, input::Span span) -> Diag {
+auto errTypeAlreadyDeclared(prog::sym::SourceId src, const std::string& name) -> Diag {
   std::ostringstream oss;
   oss << "Type name '" << name << "' conflicts with an previously declared type";
-  return error(src, oss.str(), span);
+  return error(oss.str(), src);
 }
 
-auto errTypeTemplateAlreadyDeclared(const Source& src, const std::string& name, input::Span span)
-    -> Diag {
+auto errTypeTemplateAlreadyDeclared(prog::sym::SourceId src, const std::string& name) -> Diag {
   std::ostringstream oss;
   oss << "Type name '" << name << "' conflicts with an previously declared type template";
-  return error(src, oss.str(), span);
+  return error(oss.str(), src);
 }
 
-auto errTypeNameIsReserved(const Source& src, const std::string& name, input::Span span) -> Diag {
+auto errTypeNameIsReserved(prog::sym::SourceId src, const std::string& name) -> Diag {
   std::ostringstream oss;
   oss << "Type name '" << name << "' is a reserved type-name that cannot be used for user types";
-  return error(src, oss.str(), span);
+  return error(oss.str(), src);
 }
 
-auto errTypeNameConflictsWithFunc(const Source& src, const std::string& name, input::Span span)
-    -> Diag {
+auto errTypeNameConflictsWithFunc(prog::sym::SourceId src, const std::string& name) -> Diag {
   std::ostringstream oss;
   oss << "Type name '" << name << "' conflicts with a build-in function with the same name";
-  return error(src, oss.str(), span);
+  return error(oss.str(), src);
 }
 
-auto errDuplicateFieldNameInStruct(
-    const Source& src, const std::string& fieldName, input::Span span) -> Diag {
+auto errDuplicateFieldNameInStruct(prog::sym::SourceId src, const std::string& fieldName) -> Diag {
   std::ostringstream oss;
   oss << "Field name '" << fieldName << "' conflicts with another field with the same name";
-  return error(src, oss.str(), span);
+  return error(oss.str(), src);
 }
 
 auto errFieldNameConflictsWithTypeSubstitution(
-    const Source& src, const std::string& fieldName, input::Span span) -> Diag {
+    prog::sym::SourceId src, const std::string& fieldName) -> Diag {
   std::ostringstream oss;
   oss << "Field name '" << fieldName << "' conflicts with a type-substitution with the same name";
-  return error(src, oss.str(), span);
+  return error(oss.str(), src);
 }
 
 auto errCyclicStruct(
-    const Source& src,
-    const std::string& fieldName,
-    const std::string& structName,
-    input::Span span) -> Diag {
+    prog::sym::SourceId src, const std::string& fieldName, const std::string& structName) -> Diag {
   std::ostringstream oss;
   oss << "Field '" << fieldName << "' causes struct '" << structName << "' to become cyclic";
-  return error(src, oss.str(), span);
+  return error(oss.str(), src);
 }
 
-auto errFieldNameConflictsWithType(const Source& src, const std::string& name, input::Span span)
-    -> Diag {
+auto errFieldNameConflictsWithType(prog::sym::SourceId src, const std::string& name) -> Diag {
   std::ostringstream oss;
   oss << "Field name '" << name << "' conflicts with a type with the same name";
-  return error(src, oss.str(), span);
+  return error(oss.str(), src);
 }
 
 auto errFieldNotFoundOnType(
-    const Source& src, const std::string& fieldName, const std::string& typeName, input::Span span)
-    -> Diag {
+    prog::sym::SourceId src, const std::string& fieldName, const std::string& typeName) -> Diag {
   std::ostringstream oss;
   oss << "Type '" << typeName << "' has no field named '" << fieldName << '\'';
-  return error(src, oss.str(), span);
+  return error(oss.str(), src);
 }
 
 auto errStaticFieldNotFoundOnType(
-    const Source& src, const std::string& fieldName, const std::string& typeName, input::Span span)
-    -> Diag {
+    prog::sym::SourceId src, const std::string& fieldName, const std::string& typeName) -> Diag {
   std::ostringstream oss;
   oss << "Type '" << typeName << "' has no static field named '" << fieldName << '\'';
-  return error(src, oss.str(), span);
+  return error(oss.str(), src);
 }
 
 auto errDuplicateTypeInUnion(
-    const Source& src,
-    const std::string& typeName,
-    const std::string& substitutedTypeName,
-    input::Span span) -> Diag {
+    prog::sym::SourceId src, const std::string& typeName, const std::string& substitutedTypeName)
+    -> Diag {
   std::ostringstream oss;
   oss << "Type '" << typeName << '\'';
   if (typeName != substitutedTypeName) {
     oss << " ('" << substitutedTypeName << "')";
   }
   oss << " is already part of this union";
-  return error(src, oss.str(), span);
+  return error(oss.str(), src);
 }
 
-auto errNonUnionIsExpression(const Source& src, input::Span span) -> Diag {
+auto errNonUnionIsExpression(prog::sym::SourceId src) -> Diag {
   std::ostringstream oss;
   oss << "Left-hand-side of 'is' expression has to be a union type";
-  return error(src, oss.str(), span);
+  return error(oss.str(), src);
 }
 
 auto errTypeNotPartOfUnion(
-    const Source& src, const std::string& typeName, const std::string& unionName, input::Span span)
-    -> Diag {
+    prog::sym::SourceId src, const std::string& typeName, const std::string& unionName) -> Diag {
   std::ostringstream oss;
   oss << "Type '" << typeName << "' is not part of the union '" << unionName << '\'';
-  return error(src, oss.str(), span);
+  return error(oss.str(), src);
 }
 
-auto errUncheckedAsExpressionWithConst(const Source& src, input::Span span) -> Diag {
+auto errUncheckedAsExpressionWithConst(prog::sym::SourceId src) -> Diag {
   std::ostringstream oss;
   oss << "Unchecked 'as' expression with constant declaration, either use in a checked context or "
          "discard '_' the const";
-  return error(src, oss.str(), span);
+  return error(oss.str(), src);
 }
 
-auto errDuplicateEntryNameInEnum(const Source& src, const std::string& entryName, input::Span span)
-    -> Diag {
+auto errDuplicateEntryNameInEnum(prog::sym::SourceId src, const std::string& entryName) -> Diag {
   std::ostringstream oss;
   oss << "Name '" << entryName << "' conflicts with a previous entry in the same enum";
-  return error(src, oss.str(), span);
+  return error(oss.str(), src);
 }
 
-auto errDuplicateEntryValueInEnum(const Source& src, int32_t entryValue, input::Span span) -> Diag {
+auto errDuplicateEntryValueInEnum(prog::sym::SourceId src, int32_t entryValue) -> Diag {
   std::ostringstream oss;
   oss << "Value '" << entryValue << "' conflicts with a previous entry in the same enum";
-  return error(src, oss.str(), span);
+  return error(oss.str(), src);
 }
 
 auto errValueNotFoundInEnum(
-    const Source& src, const std::string& entryName, const std::string& enumName, input::Span span)
-    -> Diag {
+    prog::sym::SourceId src, const std::string& entryName, const std::string& enumName) -> Diag {
   std::ostringstream oss;
   oss << "Enum '" << enumName << "' does not contain '" << entryName << '\'';
-  return error(src, oss.str(), span);
+  return error(oss.str(), src);
 }
 
 auto errIncorrectReturnTypeInConvFunc(
-    const Source& src, const std::string& name, const std::string& returnedType, input::Span span)
-    -> Diag {
+    prog::sym::SourceId src, const std::string& name, const std::string& returnedType) -> Diag {
   std::ostringstream oss;
   oss << "Conversion function '" << name << "' returns incorrect type '" << returnedType << '\'';
-  return error(src, oss.str(), span);
+  return error(oss.str(), src);
 }
 
-auto errNonOverloadableOperator(const Source& src, const std::string& name, input::Span span)
-    -> Diag {
+auto errNonOverloadableOperator(prog::sym::SourceId src, const std::string& name) -> Diag {
   std::ostringstream oss;
   oss << "Operator '" << name << "' does not support overloading";
-  return error(src, oss.str(), span);
+  return error(oss.str(), src);
 }
 
-auto errNonPureOperatorOverload(const Source& src, input::Span span) -> Diag {
+auto errNonPureOperatorOverload(prog::sym::SourceId src) -> Diag {
   std::ostringstream oss;
   oss << "Operator overloads have to be pure ('fun' instead of 'act')";
-  return error(src, oss.str(), span);
+  return error(oss.str(), src);
 }
 
-auto errOperatorOverloadWithoutArgs(const Source& src, const std::string& name, input::Span span)
-    -> Diag {
+auto errOperatorOverloadWithoutArgs(prog::sym::SourceId src, const std::string& name) -> Diag {
   std::ostringstream oss;
   oss << "Operator '" << name << "' cannot be defined without arguments";
-  return error(src, oss.str(), span);
+  return error(oss.str(), src);
 }
 
-auto errTypeParamNameConflictsWithType(const Source& src, const std::string& name, input::Span span)
-    -> Diag {
+auto errTypeParamNameConflictsWithType(prog::sym::SourceId src, const std::string& name) -> Diag {
   std::ostringstream oss;
   oss << "Type parameter name '" << name << "' conflicts with a type with the same name";
-  return error(src, oss.str(), span);
+  return error(oss.str(), src);
 }
 
-auto errDuplicateFuncDeclaration(const Source& src, const std::string& name, input::Span span)
-    -> Diag {
+auto errDuplicateFuncDeclaration(prog::sym::SourceId src, const std::string& name) -> Diag {
   std::ostringstream oss;
   oss << "Declaration of function '" << name
       << "' conflicts with an existing function with the same name and inputs";
-  return error(src, oss.str(), span);
+  return error(oss.str(), src);
 }
 
-auto errUnableToInferFuncReturnType(const Source& src, const std::string& name, input::Span span)
-    -> Diag {
+auto errUnableToInferFuncReturnType(prog::sym::SourceId src, const std::string& name) -> Diag {
   std::ostringstream oss;
   oss << "Unable to infer return-type of function '" << name
       << "', please specify return-type using the '-> [TYPE]' syntax";
-  return error(src, oss.str(), span);
+  return error(oss.str(), src);
 }
 
 auto errUnableToInferReturnTypeOfConversionToTemplatedType(
-    const Source& src, const std::string& name, input::Span span) -> Diag {
+    prog::sym::SourceId src, const std::string& name) -> Diag {
   std::ostringstream oss;
   oss << "Unable to infer return-type of conversion '" << name
       << "' to templated type, please specify return-type using the '-> [TYPE]' syntax";
-  return error(src, oss.str(), span);
+  return error(oss.str(), src);
 }
 
 auto errNonMatchingFuncReturnType(
-    const Source& src,
+    prog::sym::SourceId src,
     const std::string& name,
     const std::string& declaredType,
-    const std::string& returnedType,
-    input::Span span) -> Diag {
+    const std::string& returnedType) -> Diag {
   std::ostringstream oss;
   oss << "Function '" << name << "' returns value of type '" << returnedType
       << "' but its declared to return a value of type '" << declaredType << "'";
-  return error(src, oss.str(), span);
+  return error(oss.str(), src);
 }
 
 auto errNonMatchingInitializerType(
-    const Source& src,
-    const std::string& declaredType,
-    const std::string& initializerType,
-    input::Span span) -> Diag {
+    prog::sym::SourceId src, const std::string& declaredType, const std::string& initializerType)
+    -> Diag {
   std::ostringstream oss;
   oss << "Initializer returns value of type '" << initializerType
       << "' which is incompatible with the declared type '" << declaredType << "'";
-  return error(src, oss.str(), span);
+  return error(oss.str(), src);
 }
 
-auto errConstNameConflictsWithTypeSubstitution(
-    const Source& src, const std::string& name, input::Span span) -> Diag {
+auto errConstNameConflictsWithTypeSubstitution(prog::sym::SourceId src, const std::string& name)
+    -> Diag {
   std::ostringstream oss;
   oss << "Constant name '" << name << "' conflicts with a type-substitution with the same name";
-  return error(src, oss.str(), span);
+  return error(oss.str(), src);
 }
 
-auto errUnableToInferLambdaReturnType(const Source& src, input::Span span) -> Diag {
+auto errUnableToInferLambdaReturnType(prog::sym::SourceId src) -> Diag {
   std::ostringstream oss;
   oss << "Unable to infer return-type of lambda, please specify return-type using the '-> [TYPE]' "
          "syntax";
-  return error(src, oss.str(), span);
+  return error(oss.str(), src);
 }
 
-auto errConstNameConflictsWithType(const Source& src, const std::string& name, input::Span span)
-    -> Diag {
+auto errConstNameConflictsWithType(prog::sym::SourceId src, const std::string& name) -> Diag {
   std::ostringstream oss;
   oss << "Constant name '" << name << "' conflicts with a type with the same name";
-  return error(src, oss.str(), span);
+  return error(oss.str(), src);
 }
 
-auto errConstNameConflictsWithConst(const Source& src, const std::string& name, input::Span span)
-    -> Diag {
+auto errConstNameConflictsWithConst(prog::sym::SourceId src, const std::string& name) -> Diag {
   std::ostringstream oss;
   oss << "Constant name '" << name
       << "' conflicts with an already declared constant in the same scope";
-  return error(src, oss.str(), span);
+  return error(oss.str(), src);
 }
 
-auto errConstDeclareNotSupported(const Source& src, input::Span span) -> Diag {
+auto errConstDeclareNotSupported(prog::sym::SourceId src) -> Diag {
   std::ostringstream oss;
   oss << "Declaring constants is not supported in this context";
-  return error(src, oss.str(), span);
+  return error(oss.str(), src);
 }
 
-auto errUndeclaredType(
-    const Source& src, const std::string& name, unsigned int typeParams, input::Span span) -> Diag {
+auto errUndeclaredType(prog::sym::SourceId src, const std::string& name, unsigned int typeParams)
+    -> Diag {
   std::ostringstream oss;
   oss << "Unknown type: '" << name << '\'';
   if (typeParams == 0) {
@@ -276,14 +251,12 @@ auto errUndeclaredType(
   } else {
     oss << " with '" << typeParams << "' type parameters";
   }
-  return error(src, oss.str(), span);
+  return error(oss.str(), src);
 }
 
 auto errUndeclaredTypeOrConversion(
-    const Source& src,
-    const std::string& name,
-    const std::vector<std::string>& argTypes,
-    input::Span span) -> Diag {
+    prog::sym::SourceId src, const std::string& name, const std::vector<std::string>& argTypes)
+    -> Diag {
   std::ostringstream oss;
   if (argTypes.empty()) {
     oss << "No type or conversion '" << name << "' has been declared without any arguments";
@@ -296,48 +269,44 @@ auto errUndeclaredTypeOrConversion(
       oss << '\'' << argTypes[i] << '\'';
     }
   }
-  return error(src, oss.str(), span);
+  return error(oss.str(), src);
 }
 
 auto errNoTypeOrConversionFoundToInstantiate(
-    const Source& src, const std::string& name, unsigned int templateParamCount, input::Span span)
-    -> Diag {
+    prog::sym::SourceId src, const std::string& name, unsigned int templateParamCount) -> Diag {
   std::ostringstream oss;
   oss << "No templated type or conversion '" << name << "' has been declared with '"
       << templateParamCount << "' type parameters";
-  return error(src, oss.str(), span);
+  return error(oss.str(), src);
 }
 
-auto errTypeParamOnSubstitutionType(const Source& src, const std::string& name, input::Span span)
-    -> Diag {
+auto errTypeParamOnSubstitutionType(prog::sym::SourceId src, const std::string& name) -> Diag {
   std::ostringstream oss;
   oss << "Type parameters cannot be applied to substitution type: '" << name << '\'';
-  return error(src, oss.str(), span);
+  return error(oss.str(), src);
 }
 
-auto errInvalidTypeInstantiation(const Source& src, input::Span span) -> Diag {
+auto errInvalidTypeInstantiation(prog::sym::SourceId src) -> Diag {
   std::ostringstream oss;
   oss << "One or more errors occurred in type template instantiation";
-  return error(src, oss.str(), span);
+  return error(oss.str(), src);
 }
 
-auto errUndeclaredConst(const Source& src, const std::string& name, input::Span span) -> Diag {
+auto errUndeclaredConst(prog::sym::SourceId src, const std::string& name) -> Diag {
   std::ostringstream oss;
   oss << "No constant named '" << name << "' has been declared in the current scope";
-  return error(src, oss.str(), span);
+  return error(oss.str(), src);
 }
 
-auto errUninitializedConst(const Source& src, const std::string& name, input::Span span) -> Diag {
+auto errUninitializedConst(prog::sym::SourceId src, const std::string& name) -> Diag {
   std::ostringstream oss;
   oss << "Constant '" << name << "' is not initialized at point of access";
-  return error(src, oss.str(), span);
+  return error(oss.str(), src);
 }
 
 auto errUndeclaredPureFunc(
-    const Source& src,
-    const std::string& name,
-    const std::vector<std::string>& argTypes,
-    input::Span span) -> Diag {
+    prog::sym::SourceId src, const std::string& name, const std::vector<std::string>& argTypes)
+    -> Diag {
   std::ostringstream oss;
   if (argTypes.empty()) {
     oss << "No overload for a pure function called: '" << name
@@ -352,14 +321,12 @@ auto errUndeclaredPureFunc(
       oss << '\'' << argTypes[i] << '\'';
     }
   }
-  return error(src, oss.str(), span);
+  return error(oss.str(), src);
 }
 
 auto errUndeclaredAction(
-    const Source& src,
-    const std::string& name,
-    const std::vector<std::string>& argTypes,
-    input::Span span) -> Diag {
+    prog::sym::SourceId src, const std::string& name, const std::vector<std::string>& argTypes)
+    -> Diag {
   std::ostringstream oss;
   if (argTypes.empty()) {
     oss << "No overload for an action named '" << name
@@ -374,14 +341,12 @@ auto errUndeclaredAction(
       oss << '\'' << argTypes[i] << '\'';
     }
   }
-  return error(src, oss.str(), span);
+  return error(oss.str(), src);
 }
 
 auto errUndeclaredFuncOrAction(
-    const Source& src,
-    const std::string& name,
-    const std::vector<std::string>& argTypes,
-    input::Span span) -> Diag {
+    prog::sym::SourceId src, const std::string& name, const std::vector<std::string>& argTypes)
+    -> Diag {
   std::ostringstream oss;
   if (argTypes.empty()) {
     oss << "No overload for a function or action called: '" << name
@@ -396,15 +361,14 @@ auto errUndeclaredFuncOrAction(
       oss << '\'' << argTypes[i] << '\'';
     }
   }
-  return error(src, oss.str(), span);
+  return error(oss.str(), src);
 }
 
 auto errUnknownIntrinsic(
-    const Source& src,
+    prog::sym::SourceId src,
     const std::string& name,
     bool pureOnly,
-    const std::vector<std::string>& argTypes,
-    input::Span span) -> Diag {
+    const std::vector<std::string>& argTypes) -> Diag {
   std::ostringstream oss;
   oss << "No " << (pureOnly ? "pure " : "") << "compiler intrinsic called: '" << name << "' ";
   if (argTypes.empty()) {
@@ -418,78 +382,74 @@ auto errUnknownIntrinsic(
       oss << '\'' << argTypes[i] << '\'';
     }
   }
-  return error(src, oss.str(), span);
+  return error(oss.str(), src);
 }
 
-auto errPureFuncInfRecursion(const Source& src, input::Span span) -> Diag {
+auto errPureFuncInfRecursion(prog::sym::SourceId src) -> Diag {
   std::ostringstream oss;
   oss << "Pure function recurses infinitely";
-  return error(src, oss.str(), span);
+  return error(oss.str(), src);
 }
 
 auto errNoPureFuncFoundToInstantiate(
-    const Source& src, const std::string& name, unsigned int templateParamCount, input::Span span)
-    -> Diag {
+    prog::sym::SourceId src, const std::string& name, unsigned int templateParamCount) -> Diag {
   std::ostringstream oss;
   oss << "No templated pure function '" << name << "' has been declared with '"
       << templateParamCount << "' type parameters";
-  return error(src, oss.str(), span);
+  return error(oss.str(), src);
 }
 
 auto errNoActionFoundToInstantiate(
-    const Source& src, const std::string& name, unsigned int templateParamCount, input::Span span)
-    -> Diag {
+    prog::sym::SourceId src, const std::string& name, unsigned int templateParamCount) -> Diag {
   std::ostringstream oss;
   oss << "No templated action '" << name << "' has been declared with '" << templateParamCount
       << "' type parameters";
-  return error(src, oss.str(), span);
+  return error(oss.str(), src);
 }
 
 auto errNoFuncOrActionFoundToInstantiate(
-    const Source& src, const std::string& name, unsigned int templateParamCount, input::Span span)
-    -> Diag {
+    prog::sym::SourceId src, const std::string& name, unsigned int templateParamCount) -> Diag {
   std::ostringstream oss;
   oss << "No templated function or action '" << name << "' has been declared with '"
       << templateParamCount << "' type parameters";
-  return error(src, oss.str(), span);
+  return error(oss.str(), src);
 }
 
-auto errNoTypeParamsProvidedToTemplateFunction(
-    const Source& src, const std::string& name, input::Span span) -> Diag {
+auto errNoTypeParamsProvidedToTemplateFunction(prog::sym::SourceId src, const std::string& name)
+    -> Diag {
   std::ostringstream oss;
   oss << "No type parameters provided to function template '" << name << '\'';
-  return error(src, oss.str(), span);
+  return error(oss.str(), src);
 }
 
-auto errAmbiguousFunction(const Source& src, const std::string& name, input::Span span) -> Diag {
+auto errAmbiguousFunction(prog::sym::SourceId src, const std::string& name) -> Diag {
   std::ostringstream oss;
   oss << "Ambiguous function, multiple functions named '" << name << '\'';
-  return error(src, oss.str(), span);
+  return error(oss.str(), src);
 }
 
 auto errAmbiguousTemplateFunction(
-    const Source& src, const std::string& name, unsigned int templateParamCount, input::Span span)
-    -> Diag {
+    prog::sym::SourceId src, const std::string& name, unsigned int templateParamCount) -> Diag {
   std::ostringstream oss;
   oss << "Ambiguous function, multiple templated functions named '" << name << "' with '"
       << templateParamCount << "' type parameters";
-  return error(src, oss.str(), span);
+  return error(oss.str(), src);
 }
 
-auto errIllegalDelegateCall(const Source& src, input::Span span) -> Diag {
+auto errIllegalDelegateCall(prog::sym::SourceId src) -> Diag {
   std::ostringstream oss;
   oss << "Cannot invoke the delegate, action's cannot be called from pure functions";
-  return error(src, oss.str(), span);
+  return error(oss.str(), src);
 }
 
-auto errIncorrectArgsToDelegate(const Source& src, input::Span span) -> Diag {
+auto errIncorrectArgsToDelegate(prog::sym::SourceId src) -> Diag {
   std::ostringstream oss;
   oss << "Incorrect arguments provided to delegate";
-  return error(src, oss.str(), span);
+  return error(oss.str(), src);
 }
 
-auto errUndeclaredCallOperator(
-    const Source& src, const std::vector<std::string>& argTypes, input::Span span) -> Diag {
+auto errUndeclaredCallOperator(prog::sym::SourceId src, const std::vector<std::string>& argTypes)
+    -> Diag {
   std::ostringstream oss;
   oss << "No overload for the call operator '()' has been declared with argument types: ";
   for (auto i = 0U; i < argTypes.size(); ++i) {
@@ -498,11 +458,11 @@ auto errUndeclaredCallOperator(
     }
     oss << '\'' << argTypes[i] << '\'';
   }
-  return error(src, oss.str(), span);
+  return error(oss.str(), src);
 }
 
-auto errUndeclaredIndexOperator(
-    const Source& src, const std::vector<std::string>& argTypes, input::Span span) -> Diag {
+auto errUndeclaredIndexOperator(prog::sym::SourceId src, const std::vector<std::string>& argTypes)
+    -> Diag {
   std::ostringstream oss;
   oss << "No overload for the index operator '[]' has been declared with argument types: ";
   for (auto i = 0U; i < argTypes.size(); ++i) {
@@ -511,113 +471,111 @@ auto errUndeclaredIndexOperator(
     }
     oss << '\'' << argTypes[i] << '\'';
   }
-  return error(src, oss.str(), span);
+  return error(oss.str(), src);
 }
 
-auto errInvalidFuncInstantiation(const Source& src, input::Span span) -> Diag {
+auto errInvalidFuncInstantiation(prog::sym::SourceId src) -> Diag {
   std::ostringstream oss;
   oss << "One or more errors occurred in function template instantiation";
-  return error(src, oss.str(), span);
+  return error(oss.str(), src);
 }
 
-auto errUnsupportedOperator(const Source& src, const std::string& name, input::Span span) -> Diag {
+auto errUnsupportedOperator(prog::sym::SourceId src, const std::string& name) -> Diag {
   std::ostringstream oss;
   oss << "Unsupported operator '" << name << '\'';
-  return error(src, oss.str(), span);
+  return error(oss.str(), src);
 }
 
 auto errUndeclaredUnaryOperator(
-    const Source& src, const std::string& name, const std::string& type, input::Span span) -> Diag {
+    prog::sym::SourceId src, const std::string& name, const std::string& type) -> Diag {
   std::ostringstream oss;
   oss << "No overload for unary operator '" << name << "' has been declared for type: '" << type
       << '\'';
-  return error(src, oss.str(), span);
+  return error(oss.str(), src);
 }
 
 auto errUndeclaredBinOperator(
-    const Source& src,
+    prog::sym::SourceId src,
     const std::string& name,
     const std::string& lhsType,
-    const std::string& rhsType,
-    input::Span span) -> Diag {
+    const std::string& rhsType) -> Diag {
   std::ostringstream oss;
   oss << "No overload for binary operator '" << name << "' has been declared for types: '"
       << lhsType << "' and '" << rhsType << '\'';
-  return error(src, oss.str(), span);
+  return error(oss.str(), src);
 }
 
-auto errBranchesHaveNoCommonType(const Source& src, input::Span span) -> Diag {
+auto errBranchesHaveNoCommonType(prog::sym::SourceId src) -> Diag {
   std::ostringstream oss;
   oss << "Branches have no common type they are convertable to";
-  return error(src, oss.str(), span);
+  return error(oss.str(), src);
 }
 
 auto errNoImplicitConversionFound(
-    const Source& src, const std::string& from, const std::string& to, input::Span span) -> Diag {
+    prog::sym::SourceId src, const std::string& from, const std::string& to) -> Diag {
   std::ostringstream oss;
   oss << "No implicit conversion found from '" << from << "' to '" << to << '\'';
-  return error(src, oss.str(), span);
+  return error(oss.str(), src);
 }
 
-auto errNonExhaustiveSwitchWithoutElse(const Source& src, input::Span span) -> Diag {
+auto errNonExhaustiveSwitchWithoutElse(prog::sym::SourceId src) -> Diag {
   std::ostringstream oss;
   oss << "Switch expression is missing an 'else' branch and cannot be guaranteed to be exhaustive";
-  return error(src, oss.str(), span);
+  return error(oss.str(), src);
 }
 
-auto errNonPureConversion(const Source& src, input::Span span) -> Diag {
+auto errNonPureConversion(prog::sym::SourceId src) -> Diag {
   std::ostringstream oss;
   oss << "Type conversion has to be pure ('fun' instead of 'act')";
-  return error(src, oss.str(), span);
+  return error(oss.str(), src);
 }
 
-auto errForkedNonUserFunc(const Source& src, input::Span span) -> Diag {
+auto errForkedNonUserFunc(prog::sym::SourceId src) -> Diag {
   std::ostringstream oss;
   oss << "Only user-defined functions can be forked";
-  return error(src, oss.str(), span);
+  return error(oss.str(), src);
 }
 
-auto errLazyNonUserFunc(const Source& src, input::Span span) -> Diag {
+auto errLazyNonUserFunc(prog::sym::SourceId src) -> Diag {
   std::ostringstream oss;
   oss << "Only user-defined functions can be called lazily";
-  return error(src, oss.str(), span);
+  return error(oss.str(), src);
 }
 
-auto errForkedSelfCall(const Source& src, input::Span span) -> Diag {
+auto errForkedSelfCall(prog::sym::SourceId src) -> Diag {
   std::ostringstream oss;
   oss << "Self calls cannot be forked";
-  return error(src, oss.str(), span);
+  return error(oss.str(), src);
 }
 
-auto errLazySelfCall(const Source& src, input::Span span) -> Diag {
+auto errLazySelfCall(prog::sym::SourceId src) -> Diag {
   std::ostringstream oss;
   oss << "Self calls cannot be lazy";
-  return error(src, oss.str(), span);
+  return error(oss.str(), src);
 }
 
-auto errSelfCallInNonFunc(const Source& src, input::Span span) -> Diag {
+auto errSelfCallInNonFunc(prog::sym::SourceId src) -> Diag {
   std::ostringstream oss;
   oss << "Self calls can only be used inside functions or actions";
-  return error(src, oss.str(), span);
+  return error(oss.str(), src);
 }
 
-auto errSelfCallWithoutInferredRetType(const Source& src, input::Span span) -> Diag {
+auto errSelfCallWithoutInferredRetType(prog::sym::SourceId src) -> Diag {
   std::ostringstream oss;
   oss << "Failed to bind self call as return type could not be inferred";
-  return error(src, oss.str(), span);
+  return error(oss.str(), src);
 }
 
 auto errIncorrectNumArgsInSelfCall(
-    const Source& src, unsigned int expectedNumArgs, unsigned int actualNumArgs, input::Span span)
-    -> Diag {
+    prog::sym::SourceId src, unsigned int expectedNumArgs, unsigned int actualNumArgs) -> Diag {
   std::ostringstream oss;
   oss << "Self call requires '" << expectedNumArgs << "' arguments but got '" << actualNumArgs
       << "'";
-  return error(src, oss.str(), span);
+  return error(oss.str(), src);
 }
 
 auto errInvalidFailIntrinsicCall(
-    const Source& src, unsigned int typeParams, unsigned int argCount, input::Span span) -> Diag {
+    prog::sym::SourceId src, unsigned int typeParams, unsigned int argCount) -> Diag {
   std::ostringstream oss;
   oss << "Invalid fail intrinsic action call";
   if (typeParams != 1) {
@@ -626,26 +584,25 @@ auto errInvalidFailIntrinsicCall(
   if (argCount != 0) {
     oss << ", requires '0' arguments but got '" << argCount << "'";
   }
-  return error(src, oss.str(), span);
+  return error(oss.str(), src);
 }
 
-auto errIntrinsicFuncLiteral(const Source& src, input::Span span) -> Diag {
+auto errIntrinsicFuncLiteral(prog::sym::SourceId src) -> Diag {
   std::ostringstream oss;
   oss << "Compiler intrinsic cannot be used as a function literal";
-  return error(src, oss.str(), span);
+  return error(oss.str(), src);
 }
 
-auto errUnsupportedArgInitializer(const Source& src, const std::string& name, input::Span span)
-    -> Diag {
+auto errUnsupportedArgInitializer(prog::sym::SourceId src, const std::string& name) -> Diag {
   std::ostringstream oss;
   oss << "Initializer for input argument '" << name << "' is unsupported in the current context";
-  return error(src, oss.str(), span);
+  return error(oss.str(), src);
 }
 
-auto errNonOptArgFollowingOpt(const Source& src, input::Span span) -> Diag {
+auto errNonOptArgFollowingOpt(prog::sym::SourceId src) -> Diag {
   std::ostringstream oss;
   oss << "Required argument cannot follow an optional argument";
-  return error(src, oss.str(), span);
+  return error(oss.str(), src);
 }
 
 } // namespace frontend

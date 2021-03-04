@@ -62,7 +62,8 @@ auto compile(Options options) -> bool {
   if (!frontendOut.isSuccess()) {
     msgHeader(std::cerr) << rang::style::bold << rang::bg::red << "Compilation failed, errors:\n";
     for (auto diagItr = frontendOut.beginDiags(); diagItr != frontendOut.endDiags(); ++diagItr) {
-      std::cerr << *diagItr << '\n';
+      diagItr->print(std::cerr, frontendOut.getSourceTable());
+      std::cerr << '\n';
     }
     std::cerr << rang::style::reset;
     return false;

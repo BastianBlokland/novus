@@ -83,11 +83,11 @@ TEST_CASE("[frontend] Analyzing conditional expressions", "frontend") {
     CHECK_DIAG(
         "fun f(int a) -> int "
         "a ? 1 : 2",
-        errNoImplicitConversionFound(src, "int", "bool", input::Span{20, 20}));
+        errNoImplicitConversionFound(NO_SRC, "int", "bool"));
     CHECK_DIAG(
         "fun f() -> int "
         "true ? 1 : true",
-        errNoImplicitConversionFound(src, "bool", "int", input::Span{22, 22}));
+        errNoImplicitConversionFound(NO_SRC, "bool", "int"));
   }
 }
 

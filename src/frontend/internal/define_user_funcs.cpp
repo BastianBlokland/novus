@@ -56,9 +56,9 @@ static auto getOptInputInitializers(
 
     ctx->reportDiag(
         errNonMatchingInitializerType,
+        n[i].getSpan(),
         getDisplayName(*ctx, type),
-        getDisplayName(*ctx, initializerExpr->getType()),
-        n[i].getSpan());
+        getDisplayName(*ctx, initializerExpr->getType()));
   }
 
   return result;
@@ -97,7 +97,7 @@ auto defineFunc(
   // Report this diagnostic after processing the body so other errors have priority over this.
   if (funcRetType.isInfer()) {
     if (!ctx->hasErrors()) {
-      ctx->reportDiag(errUnableToInferFuncReturnType, funcDisplayName, n.getSpan());
+      ctx->reportDiag(errUnableToInferFuncReturnType, n.getSpan(), funcDisplayName);
     }
     return false;
   }
@@ -147,10 +147,10 @@ auto defineFunc(
 
   ctx->reportDiag(
       errNonMatchingFuncReturnType,
+      n.getBody().getSpan(),
       funcDisplayName,
       getDisplayName(*ctx, funcRetType),
-      getDisplayName(*ctx, bodyExpr->getType()),
-      n.getBody().getSpan());
+      getDisplayName(*ctx, bodyExpr->getType()));
   return false;
 }
 

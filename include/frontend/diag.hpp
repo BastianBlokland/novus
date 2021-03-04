@@ -1,16 +1,15 @@
 #pragma once
 #include "frontend/diag_severity.hpp"
-#include "frontend/source.hpp"
-#include "input/span.hpp"
-#include "input/textpos.hpp"
+#include "prog/sym/source_id.hpp"
 #include <string>
 
 namespace frontend {
 
+class SourceTable;
+
 class Diag final {
-  friend auto warning(const Source& src, std::string msg, input::Span span) -> Diag;
-  friend auto error(const Source& src, std::string msg, input::Span span) -> Diag;
-  friend auto operator<<(std::ostream& out, const Diag& rhs) -> std::ostream&;
+  friend auto warning(std::string msg, prog::sym::SourceId src) -> Diag;
+  friend auto error(std::string msg, prog::sym::SourceId src) -> Diag;
 
 public:
   Diag() = delete;
@@ -20,28 +19,19 @@ public:
 
   [[nodiscard]] auto getSeverity() const noexcept -> DiagSeverity;
   [[nodiscard]] auto getMsg() const noexcept -> std::string;
-  [[nodiscard]] auto getSourcePath() const noexcept -> std::optional<filesystem::path>;
-  [[nodiscard]] auto getSourceStart() const noexcept -> input::TextPos;
-  [[nodiscard]] auto getSourceEnd() const noexcept -> input::TextPos;
+  [[nodiscard]] auto getSrc() const noexcept -> prog::sym::SourceId;
+
+  auto print(std::ostream& stream, const SourceTable& sourceTable) const -> void;
 
 private:
   DiagSeverity m_severity;
   std::string m_msg;
-  std::optional<filesystem::path> m_sourcePath;
-  input::TextPos m_sourceStart;
-  input::TextPos m_sourceEnd;
+  prog::sym::SourceId m_src;
 
-  Diag(
-      DiagSeverity severity,
-      std::string msg,
-      std::optional<filesystem::path> sourcePath,
-      input::TextPos sourceStart,
-      input::TextPos sourceEnd);
+  Diag(DiagSeverity severity, std::string msg, prog::sym::SourceId src);
 };
 
-auto operator<<(std::ostream& out, const Diag& rhs) -> std::ostream&;
-
-auto warning(const Source& src, std::string msg, input::Span span) -> Diag;
-auto error(const Source& src, std::string msg, input::Span span) -> Diag;
+auto warning(std::string msg, prog::sym::SourceId src) -> Diag;
+auto error(std::string msg, prog::sym::SourceId src) -> Diag;
 
 } // namespace frontend

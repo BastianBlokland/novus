@@ -32,7 +32,9 @@ auto LitFuncNode::toString() const -> std::string {
 }
 
 auto LitFuncNode::clone(Rewriter* /*rewriter*/) const -> std::unique_ptr<Node> {
-  return std::unique_ptr<LitFuncNode>{new LitFuncNode{m_type, m_func}};
+  auto* newExpr = new LitFuncNode{m_type, m_func};
+  newExpr->setSourceId(getSourceId());
+  return std::unique_ptr<LitFuncNode>{newExpr};
 }
 
 auto LitFuncNode::getFunc() const noexcept -> sym::FuncId { return m_func; }

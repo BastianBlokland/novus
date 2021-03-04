@@ -201,9 +201,9 @@ auto FuncTemplate::setupInstance(FuncTemplateInst* instance) -> void {
       if (instance->m_retType != *nonTemplConvType) {
         m_ctx->reportDiag(
             errIncorrectReturnTypeInConvFunc,
+            m_parseNode->getSpan(),
             instance->getDisplayName(*m_ctx),
-            getDisplayName(*m_ctx, *instance->m_retType),
-            m_parseNode->getSpan());
+            getDisplayName(*m_ctx, *instance->m_retType));
 
         instance->m_success = false;
         return;
@@ -214,9 +214,9 @@ auto FuncTemplate::setupInstance(FuncTemplateInst* instance) -> void {
       if (!typeInfo || typeInfo->getName() != m_name) {
         m_ctx->reportDiag(
             errIncorrectReturnTypeInConvFunc,
+            m_parseNode->getSpan(),
             instance->getDisplayName(*m_ctx),
-            getDisplayName(*m_ctx, *instance->m_retType),
-            m_parseNode->getSpan());
+            getDisplayName(*m_ctx, *instance->m_retType));
 
         instance->m_success = false;
         return;
@@ -230,7 +230,7 @@ auto FuncTemplate::setupInstance(FuncTemplateInst* instance) -> void {
   // Check if an identical function has already been registered.
   if (m_ctx->getProg()->lookupFunc(funcName, *funcInput, prog::OvOptions{0})) {
     m_ctx->reportDiag(
-        errDuplicateFuncDeclaration, instance->getDisplayName(*m_ctx), m_parseNode->getSpan());
+        errDuplicateFuncDeclaration, m_parseNode->getSpan(), instance->getDisplayName(*m_ctx));
     instance->m_success = false;
     return;
   }

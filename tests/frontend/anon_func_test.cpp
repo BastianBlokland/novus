@@ -212,38 +212,26 @@ TEST_CASE("[frontend] Analyzing anonymous functions", "frontend") {
   }
 
   SECTION("Diagnostics") {
-    CHECK_DIAG("fun f() lambda (b c) 1", errUndeclaredType(src, "b", 0, input::Span{16, 16}));
-    CHECK_DIAG(
-        "fun f() lambda (int a) -> b 1", errUndeclaredType(src, "b", 0, input::Span{26, 26}));
-    CHECK_DIAG(
-        "fun f() lambda (int int) 1",
-        errConstNameConflictsWithType(src, "int", input::Span{20, 22}));
-    CHECK_DIAG(
-        "fun f() lambda (int i, int i) 1",
-        errConstNameConflictsWithConst(src, "i", input::Span{27, 27}));
+    CHECK_DIAG("fun f() lambda (b c) 1", errUndeclaredType(NO_SRC, "b", 0));
+    CHECK_DIAG("fun f() lambda (int a) -> b 1", errUndeclaredType(NO_SRC, "b", 0));
+    CHECK_DIAG("fun f() lambda (int int) 1", errConstNameConflictsWithType(NO_SRC, "int"));
+    CHECK_DIAG("fun f() lambda (int i, int i) 1", errConstNameConflictsWithConst(NO_SRC, "i"));
     CHECK_DIAG(
         "fun f{T}() lambda (int T) 1 "
         "fun f() f{int}()",
-        errConstNameConflictsWithTypeSubstitution(src, "T", input::Span{23, 23}),
-        errInvalidFuncInstantiation(src, input::Span{36, 36}),
-        errNoPureFuncFoundToInstantiate(src, "f", 1, input::Span{36, 43}));
-    CHECK_DIAG("fun f() lambda () b", errUndeclaredConst(src, "b", input::Span{18, 18}));
+        errConstNameConflictsWithTypeSubstitution(NO_SRC, "T"),
+        errInvalidFuncInstantiation(NO_SRC),
+        errNoPureFuncFoundToInstantiate(NO_SRC, "f", 1));
+    CHECK_DIAG("fun f() lambda () b", errUndeclaredConst(NO_SRC, "b"));
+    CHECK_DIAG("fun f() lambda () false ? i = 1 : i ", errUninitializedConst(NO_SRC, "i"));
+    CHECK_DIAG("fun f() false ? i = 1 : (lambda () i)() ", errUninitializedConst(NO_SRC, "i"));
     CHECK_DIAG(
-        "fun f() lambda () false ? i = 1 : i ",
-        errUninitializedConst(src, "i", input::Span{34, 34}));
-    CHECK_DIAG(
-        "fun f() false ? i = 1 : (lambda () i)() ",
-        errUninitializedConst(src, "i", input::Span{35, 35}));
-    CHECK_DIAG(
-        "fun f() lambda (int a) -> bool a",
-        errNoImplicitConversionFound(src, "int", "bool", input::Span{8, 31}));
+        "fun f() lambda (int a) -> bool a", errNoImplicitConversionFound(NO_SRC, "int", "bool"));
     CHECK_DIAG(
         "act a1() -> int 42 "
         "act a2() lambda () a1()",
-        errUndeclaredPureFunc(src, "a1", {}, input::Span{38, 41}));
-    CHECK_DIAG(
-        "fun f() lambda (int i = 0) i",
-        errUnsupportedArgInitializer(src, "i", input::Span{16, 24}));
+        errUndeclaredPureFunc(NO_SRC, "a1", {}));
+    CHECK_DIAG("fun f() lambda (int i = 0) i", errUnsupportedArgInitializer(NO_SRC, "i"));
   }
 }
 

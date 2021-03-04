@@ -55,7 +55,8 @@ auto run(
     std::cerr << rang::style::bold << rang::bg::red;
     for (auto diagItr = frontendOutput.beginDiags(); diagItr != frontendOutput.endDiags();
          ++diagItr) {
-      std::cerr << *diagItr << '\n';
+      diagItr->print(std::cerr, frontendOutput.getSourceTable());
+      std::cerr << '\n';
     }
     std::cerr << rang::style::reset;
   }

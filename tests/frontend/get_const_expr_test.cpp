@@ -54,31 +54,25 @@ TEST_CASE("[frontend] Analyzing constant expressions", "frontend") {
   }
 
   SECTION("Diagnostics") {
-    CHECK_DIAG("fun f() -> int x", errUndeclaredConst(src, "x", input::Span{15, 15}));
-    CHECK_DIAG(
-        "fun f() -> int bool = 42",
-        errConstNameConflictsWithType(src, "bool", input::Span{15, 18}));
-    CHECK_DIAG(
-        "fun f(int a) -> int a = 42",
-        errConstNameConflictsWithConst(src, "a", input::Span{20, 20}));
+    CHECK_DIAG("fun f() -> int x", errUndeclaredConst(NO_SRC, "x"));
+    CHECK_DIAG("fun f() -> int bool = 42", errConstNameConflictsWithType(NO_SRC, "bool"));
+    CHECK_DIAG("fun f(int a) -> int a = 42", errConstNameConflictsWithConst(NO_SRC, "a"));
     CHECK_DIAG(
         "fun f(int a) -> int "
         "if a > 5  -> b = 1 "
         "else      -> b = 2",
-        errConstNameConflictsWithConst(src, "b", input::Span{52, 52}));
+        errConstNameConflictsWithConst(NO_SRC, "b"));
     CHECK_DIAG(
         "fun f(int a) -> int "
         "if a > 5  -> b = 1 "
         "else      -> b + 1",
-        errUninitializedConst(src, "b", input::Span{52, 52}));
+        errUninitializedConst(NO_SRC, "b"));
     CHECK_DIAG(
         "fun f(int a) -> int "
         "if b = a * a; b > 5  -> b "
         "else                 -> b + 1",
-        errUninitializedConst(src, "b", input::Span{70, 70}));
-    CHECK_DIAG(
-        "fun f() -> int (true && (x = 5; false)); x",
-        errUninitializedConst(src, "x", input::Span{41, 41}));
+        errUninitializedConst(NO_SRC, "b"));
+    CHECK_DIAG("fun f() -> int (true && (x = 5; false)); x", errUninitializedConst(NO_SRC, "x"));
   }
 }
 

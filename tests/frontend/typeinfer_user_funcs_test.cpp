@@ -435,7 +435,7 @@ TEST_CASE("[frontend] Infer return type of user functions", "frontend") {
     CHECK_DIAG(
         "fun f1() f2() "
         "fun f2() f1()",
-        errUnableToInferFuncReturnType(src, "f1", input::Span{0, 12}));
+        errUnableToInferFuncReturnType(NO_SRC, "f1"));
   }
 }
 

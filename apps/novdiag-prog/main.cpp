@@ -19,6 +19,7 @@ using Duration = std::chrono::duration<double>;
 auto operator<<(std::ostream& out, const Duration& rhs) -> std::ostream&;
 
 auto printExpr(
+    const frontend::SourceTable& srcTable,
     const prog::expr::Node& n,
     std::string prefix = "",
     bool isRoot        = true,
@@ -48,12 +49,18 @@ auto printExpr(
   n.accept(&exprCol);
 
   std::cout << rang::style::bold << exprCol.getFgColor()
-            << input::escapeNonPrintingAsHex(n.toString()) << ' ' << rang::fg::reset
-            << rang::style::dim << n.getType() << rang::style::reset << '\n';
+            << input::escapeNonPrintingAsHex(n.toString()) << rang::fg::reset << " -> "
+            << n.getType();
+
+  if (n.getSourceId().isSet()) {
+    const auto& srcInfo = srcTable[n.getSourceId()];
+    std::cout << rang::style::dim << " (" << srcInfo.getId() << ": " << srcInfo.getStart() << ")";
+  }
+  std::cout << rang::style::reset << '\n';
 
   const auto childCount = n.getChildCount();
   for (auto i = 0U; i < childCount; ++i) {
-    printExpr(n[i], prefix, false, i == (childCount - 1));
+    printExpr(srcTable, n[i], prefix, false, i == (childCount - 1));
   }
 }
 
@@ -186,7 +193,7 @@ auto printConsts(const prog::sym::ConstDeclTable& consts) -> void {
   }
 }
 
-auto printFuncDefs(const prog::Program& prog) -> void {
+auto printFuncDefs(const frontend::SourceTable& srcTable, const prog::Program& prog) -> void {
   std::cout << rang::style::bold << "Function definitions:\n" << rang::style::reset;
   for (auto funcItr = prog.beginFuncDefs(); funcItr != prog.endFuncDefs(); ++funcItr) {
     if (funcItr != prog.beginFuncDefs()) {
@@ -208,11 +215,11 @@ auto printFuncDefs(const prog::Program& prog) -> void {
     }
 
     std::cout << rang::style::italic << "  Body:\n" << rang::style::reset;
-    printExpr(funcDef.getBody(), "   ");
+    printExpr(srcTable, funcDef.getBody(), "   ");
   }
 }
 
-auto printExecStmts(const prog::Program& prog) -> void {
+auto printExecStmts(const frontend::SourceTable& srcTable, const prog::Program& prog) -> void {
   std::cout << rang::style::bold << "Execute statements:\n" << rang::style::reset;
   for (auto execItr = prog.beginExecStmts(); execItr != prog.endExecStmts(); ++execItr) {
     const auto& consts = execItr->getConsts();
@@ -222,12 +229,14 @@ auto printExecStmts(const prog::Program& prog) -> void {
     }
 
     std::cout << rang::style::italic << "  Body:\n" << rang::style::reset;
-    printExpr(execItr->getExpr(), "   ");
+    printExpr(srcTable, execItr->getExpr(), "   ");
     std::cout << '\n';
   }
 }
 
-auto printProgram(const prog::Program& prog, bool includeIntrinsics) -> void {
+auto printProgram(
+    const frontend::SourceTable& srcTable, const prog::Program& prog, bool includeIntrinsics)
+    -> void {
   printTypeDecls(prog);
   std::cout << '\n';
   printFuncDecls(prog, includeIntrinsics);
@@ -237,11 +246,11 @@ auto printProgram(const prog::Program& prog, bool includeIntrinsics) -> void {
   }
   if (prog.beginFuncDefs() != prog.endFuncDefs()) {
     std::cout << '\n';
-    printFuncDefs(prog);
+    printFuncDefs(srcTable, prog);
   }
   if (prog.beginExecStmts() != prog.endExecStmts()) {
     std::cout << '\n';
-    printExecStmts(prog);
+    printExecStmts(srcTable, prog);
   }
 }
 
@@ -274,23 +283,25 @@ auto run(
     const auto& diag = *diagItr;
     switch (diag.getSeverity()) {
     case frontend::DiagSeverity::Warning:
-      std::cerr << rang::style::bold << rang::bg::yellow << diag << rang::bg::reset << '\n'
-                << rang::style::reset;
+      std::cerr << rang::style::bold << rang::bg::yellow;
+      diag.print(std::cerr, output.getSourceTable());
+      std::cerr << rang::bg::reset << '\n' << rang::style::reset;
       break;
     case frontend::DiagSeverity::Error:
-      std::cerr << rang::style::bold << rang::bg::red << diag << rang::bg::reset << '\n'
-                << rang::style::reset;
+      std::cerr << rang::style::bold << rang::bg::red;
+      diag.print(std::cerr, output.getSourceTable());
+      std::cerr << rang::bg::reset << '\n' << rang::style::reset;
       break;
     }
   }
 
   if (output.isSuccess() && outputProgram) {
     if (optimize) {
-      printProgram(opt::optimize(output.getProg()), includeIntrinsics);
+      printProgram(output.getSourceTable(), opt::optimize(output.getProg()), includeIntrinsics);
     } else if (treeshake) {
-      printProgram(opt::treeshake(output.getProg()), includeIntrinsics);
+      printProgram(output.getSourceTable(), opt::treeshake(output.getProg()), includeIntrinsics);
     } else {
-      printProgram(output.getProg(), includeIntrinsics);
+      printProgram(output.getSourceTable(), output.getProg(), includeIntrinsics);
     }
     std::cout << rang::style::dim << std::string(width, '-') << '\n';
   }

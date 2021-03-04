@@ -26,7 +26,9 @@ auto LitEnumNode::getType() const noexcept -> sym::TypeId { return m_type; }
 auto LitEnumNode::toString() const -> std::string { return m_name; }
 
 auto LitEnumNode::clone(Rewriter* /*rewriter*/) const -> std::unique_ptr<Node> {
-  return std::unique_ptr<LitEnumNode>{new LitEnumNode{m_type, m_name, m_val}};
+  auto* newExpr = new LitEnumNode{m_type, m_name, m_val};
+  newExpr->setSourceId(getSourceId());
+  return std::unique_ptr<LitEnumNode>{newExpr};
 }
 
 auto LitEnumNode::getName() const noexcept -> const std::string& { return m_name; }

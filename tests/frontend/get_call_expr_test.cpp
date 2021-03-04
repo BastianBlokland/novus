@@ -265,54 +265,48 @@ TEST_CASE("[frontend] Analyzing call expressions", "frontend") {
     CHECK_DIAG(
         "fun f1() -> int 1 "
         "fun f2() -> int f3()",
-        errUndeclaredPureFunc(src, "f3", {}, input::Span{34, 37}));
+        errUndeclaredPureFunc(NO_SRC, "f3", {}));
     CHECK_DIAG(
         "fun f1() -> int 1 "
         "fun f2() -> int f2(1)",
-        errUndeclaredPureFunc(src, "f2", {"int"}, input::Span{34, 38}));
-    CHECK_DIAG("fun f() -> int 1()", errUndeclaredCallOperator(src, {"int"}, input::Span{15, 17}));
-    CHECK_DIAG(
-        "fun f(int i) -> int i()", errUndeclaredCallOperator(src, {"int"}, input::Span{20, 22}));
-    CHECK_DIAG(
-        "fun f1(int i) -> int i.f2()",
-        errFieldNotFoundOnType(src, "f2", "int", input::Span{21, 24}));
+        errUndeclaredPureFunc(NO_SRC, "f2", {"int"}));
+    CHECK_DIAG("fun f() -> int 1()", errUndeclaredCallOperator(NO_SRC, {"int"}));
+    CHECK_DIAG("fun f(int i) -> int i()", errUndeclaredCallOperator(NO_SRC, {"int"}));
+    CHECK_DIAG("fun f1(int i) -> int i.f2()", errFieldNotFoundOnType(NO_SRC, "f2", "int"));
     CHECK_DIAG(
         "act length(string str) -> int intrinsic{string_length}(str) "
         "fun f() -> int (42).length()",
-        errUndeclaredPureFunc(src, "length", {"int"}, input::Span{75, 87}));
+        errUndeclaredPureFunc(NO_SRC, "length", {"int"}));
     CHECK_DIAG(
         "fun ()(string s) -> int intrinsic{string_length}(s) "
         "fun f() -> int 42()",
-        errUndeclaredCallOperator(src, {"int"}, input::Span{67, 70}));
+        errUndeclaredCallOperator(NO_SRC, {"int"}));
     CHECK_DIAG(
         "act a() -> int 1 "
         "fun f2() -> int a()",
-        errUndeclaredPureFunc(src, "a", {}, input::Span{33, 35}));
+        errUndeclaredPureFunc(NO_SRC, "a", {}));
     CHECK_DIAG(
         "act a{T}() -> T T() "
         "fun f2() -> int a{int}()",
-        errNoPureFuncFoundToInstantiate(src, "a", 1, input::Span{36, 43}));
+        errNoPureFuncFoundToInstantiate(NO_SRC, "a", 1));
     CHECK_DIAG(
         "act a(int i) -> int i * 2 "
         "fun f2(int i) -> int i.a()",
-        errUndeclaredPureFunc(src, "a", {"int"}, input::Span{47, 51}));
+        errUndeclaredPureFunc(NO_SRC, "a", {"int"}));
     CHECK_DIAG(
         "fun f(future{int} fi) -> int fork intrinsic{future_get}(fi)",
-        errForkedNonUserFunc(src, input::Span{29, 58}));
+        errForkedNonUserFunc(NO_SRC));
     CHECK_DIAG(
-        "fun f(future{int} fi) -> int lazy intrinsic{future_get}(fi)",
-        errLazyNonUserFunc(src, input::Span{29, 58}));
-    CHECK_DIAG(
-        "fun f() -> int fail{int}()",
-        errNoPureFuncFoundToInstantiate(src, "fail", 1, input::Span{15, 25}));
+        "fun f(future{int} fi) -> int lazy intrinsic{future_get}(fi)", errLazyNonUserFunc(NO_SRC));
+    CHECK_DIAG("fun f() -> int fail{int}()", errNoPureFuncFoundToInstantiate(NO_SRC, "fail", 1));
     CHECK_DIAG(
         "act f() -> int intrinsic{fail}()",
-        errInvalidFailIntrinsicCall(src, 0, 0, input::Span{15, 31}),
-        errUnknownIntrinsic(src, "fail", false, {}, input::Span{15, 31}));
+        errInvalidFailIntrinsicCall(NO_SRC, 0, 0),
+        errUnknownIntrinsic(NO_SRC, "fail", false, {}));
     CHECK_DIAG(
         "act f() -> int intrinsic{fail}(1)",
-        errInvalidFailIntrinsicCall(src, 0, 1, input::Span{15, 32}),
-        errUnknownIntrinsic(src, "fail", false, {"int"}, input::Span{15, 32}));
+        errInvalidFailIntrinsicCall(NO_SRC, 0, 1),
+        errUnknownIntrinsic(NO_SRC, "fail", false, {"int"}));
   }
 }
 

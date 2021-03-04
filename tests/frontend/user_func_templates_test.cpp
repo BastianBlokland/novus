@@ -268,21 +268,21 @@ TEST_CASE("[frontend] Analyzing user-function templates", "frontend") {
     CHECK_DIAG(
         "fun ft{T}(T a = T(), T b) a * b "
         "fun f() ft(1, 2)",
-        errNonOptArgFollowingOpt(src, input::Span{21, 23}));
+        errNonOptArgFollowingOpt(NO_SRC));
     CHECK_DIAG(
         "struct S = int i "
         "fun ft{T}() T() "
         "fun f() ft{S}()",
-        errUndeclaredTypeOrConversion(src, "S", {}, input::Span{29, 31}),
-        errInvalidFuncInstantiation(src, input::Span{41, 42}),
-        errNoPureFuncFoundToInstantiate(src, "ft", 1, input::Span{41, 47}));
+        errUndeclaredTypeOrConversion(NO_SRC, "S", {}),
+        errInvalidFuncInstantiation(NO_SRC),
+        errNoPureFuncFoundToInstantiate(NO_SRC, "ft", 1));
     CHECK_DIAG(
         "struct S{T} = T t "
         "fun ft{T}() T() "
         "fun f() ft{S{int}}()",
-        errUndeclaredTypeOrConversion(src, "S{int}", {}, input::Span{30, 32}),
-        errInvalidFuncInstantiation(src, input::Span{42, 43}),
-        errNoPureFuncFoundToInstantiate(src, "ft", 1, input::Span{42, 53}));
+        errUndeclaredTypeOrConversion(NO_SRC, "S{int}", {}),
+        errInvalidFuncInstantiation(NO_SRC),
+        errNoPureFuncFoundToInstantiate(NO_SRC, "ft", 1));
   }
 }
 

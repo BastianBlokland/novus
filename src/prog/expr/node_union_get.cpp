@@ -42,11 +42,13 @@ auto UnionGetExprNode::toString() const -> std::string {
 }
 
 auto UnionGetExprNode::clone(Rewriter* rewriter) const -> std::unique_ptr<Node> {
-  return std::unique_ptr<UnionGetExprNode>{
-      new UnionGetExprNode{m_boolType,
-                           rewriter ? rewriter->rewrite(*m_lhs) : m_lhs->clone(nullptr),
-                           m_targetType,
-                           m_constId}};
+  auto* newExpr = new UnionGetExprNode{
+      m_boolType,
+      rewriter ? rewriter->rewrite(*m_lhs) : m_lhs->clone(nullptr),
+      m_targetType,
+      m_constId};
+  newExpr->setSourceId(getSourceId());
+  return std::unique_ptr<UnionGetExprNode>{newExpr};
 }
 
 auto UnionGetExprNode::getConst() const noexcept -> sym::ConstId { return m_constId; }

@@ -123,43 +123,37 @@ TEST_CASE("[frontend] Analyzing optional argument", "frontend") {
 
       CHECK_DIAG(
           "fun f(int a = \"Hello World\") a",
-          errNonMatchingInitializerType(src, "int", "string", input::Span{14, 26}));
+          errNonMatchingInitializerType(NO_SRC, "int", "string"));
       CHECK_DIAG(
           "struct S{T} = T t "
           "fun f(S{int} a = S(\"Hello World\")) a",
-          errNonMatchingInitializerType(src, "S{int}", "S{string}", input::Span{35, 50}));
+          errNonMatchingInitializerType(NO_SRC, "S{int}", "S{string}"));
 
-      CHECK_DIAG("fun f(int a = (b = 2)) a", errConstDeclareNotSupported(src, input::Span{15, 19}));
+      CHECK_DIAG("fun f(int a = (b = 2)) a", errConstDeclareNotSupported(NO_SRC));
       CHECK_DIAG(
           "fun f(int a = (b = 2; b * 2)) a",
-          errConstDeclareNotSupported(src, input::Span{15, 19}),
-          errUndeclaredConst(src, "b", input::Span{22, 22}));
+          errConstDeclareNotSupported(NO_SRC),
+          errUndeclaredConst(NO_SRC, "b"));
 
-      CHECK_DIAG(
-          "fun fb(int a = fb()) a", errUndeclaredPureFunc(src, "fb", {}, input::Span{15, 18}));
+      CHECK_DIAG("fun fb(int a = fb()) a", errUndeclaredPureFunc(NO_SRC, "fb", {}));
       CHECK_DIAG(
           "fun fa(int a = 0) a "
           "fun fb(int a = fa()) a",
-          errUndeclaredPureFunc(src, "fa", {}, input::Span{35, 38}));
+          errUndeclaredPureFunc(NO_SRC, "fa", {}));
       CHECK_DIAG(
           "fun fa(int a = fb()) a "
           "fun fb(int a = fa()) a",
-          errUndeclaredPureFunc(src, "fb", {}, input::Span{15, 18}),
-          errUndeclaredPureFunc(src, "fa", {}, input::Span{38, 41}));
+          errUndeclaredPureFunc(NO_SRC, "fb", {}),
+          errUndeclaredPureFunc(NO_SRC, "fa", {}));
 
-      CHECK_DIAG(
-          "fun f(int a = 0, int b) a + b", errNonOptArgFollowingOpt(src, input::Span{17, 21}));
-      CHECK_DIAG(
-          "fun f(int a = 0, int b, int c = 0) a + b + c",
-          errNonOptArgFollowingOpt(src, input::Span{17, 21}));
-      CHECK_DIAG(
-          "fun f(int a, int b = 0, int c) a + b + c",
-          errNonOptArgFollowingOpt(src, input::Span{24, 28}));
+      CHECK_DIAG("fun f(int a = 0, int b) a + b", errNonOptArgFollowingOpt(NO_SRC));
+      CHECK_DIAG("fun f(int a = 0, int b, int c = 0) a + b + c", errNonOptArgFollowingOpt(NO_SRC));
+      CHECK_DIAG("fun f(int a, int b = 0, int c) a + b + c", errNonOptArgFollowingOpt(NO_SRC));
 
       CHECK_DIAG(
           "act a() 42 "
           "fun f(int i = a()) i",
-          errUndeclaredPureFunc(src, "a", {}, input::Span{25, 27}));
+          errUndeclaredPureFunc(NO_SRC, "a", {}));
     }
   }
 
@@ -228,32 +222,31 @@ TEST_CASE("[frontend] Analyzing optional argument", "frontend") {
       CHECK_DIAG(
           "fun ft{T}(T a = \"Hello World\") a "
           "fun f() ft{int}()",
-          errNonMatchingInitializerType(src, "int", "string", input::Span{16, 28}),
-          errInvalidFuncInstantiation(src, input::Span{41, 42}),
-          errNoPureFuncFoundToInstantiate(src, "ft", 1, input::Span{41, 49}));
+          errNonMatchingInitializerType(NO_SRC, "int", "string"),
+          errInvalidFuncInstantiation(NO_SRC),
+          errNoPureFuncFoundToInstantiate(NO_SRC, "ft", 1));
 
       CHECK_DIAG(
           "fun ft{T}(T a = (b = 2)) a "
           "fun f() ft{int}()",
-          errConstDeclareNotSupported(src, input::Span{17, 21}),
-          errInvalidFuncInstantiation(src, input::Span{35, 36}),
-          errNoPureFuncFoundToInstantiate(src, "ft", 1, input::Span{35, 43}));
+          errConstDeclareNotSupported(NO_SRC),
+          errInvalidFuncInstantiation(NO_SRC),
+          errNoPureFuncFoundToInstantiate(NO_SRC, "ft", 1));
 
       CHECK_DIAG(
           "fun ft{T}(T a = ft()) a "
           "fun f() ft{int}()",
-          errUndeclaredPureFunc(src, "ft", {}, input::Span{16, 19}),
-          errInvalidFuncInstantiation(src, input::Span{32, 33}),
-          errNoPureFuncFoundToInstantiate(src, "ft", 1, input::Span{32, 40}));
+          errUndeclaredPureFunc(NO_SRC, "ft", {}),
+          errInvalidFuncInstantiation(NO_SRC),
+          errNoPureFuncFoundToInstantiate(NO_SRC, "ft", 1));
 
       CHECK_DIAG(
           "fun ft{T}(T a = T(), T b) a + b "
           "fun f() ft{int}()",
-          errNonOptArgFollowingOpt(src, input::Span{21, 23}),
-          errNoPureFuncFoundToInstantiate(src, "ft", 1, input::Span{40, 48}));
+          errNonOptArgFollowingOpt(NO_SRC),
+          errNoPureFuncFoundToInstantiate(NO_SRC, "ft", 1));
 
-      CHECK_DIAG(
-          "fun f(int a = 0, int b) a + b", errNonOptArgFollowingOpt(src, input::Span{17, 21}));
+      CHECK_DIAG("fun f(int a = 0, int b) a + b", errNonOptArgFollowingOpt(NO_SRC));
     }
   }
 
@@ -261,13 +254,11 @@ TEST_CASE("[frontend] Analyzing optional argument", "frontend") {
 
     SECTION("Diagnostics") {
 
-      CHECK_DIAG(
-          "fun f() lambda (int i = 0) i",
-          errUnsupportedArgInitializer(src, "i", input::Span{16, 24}));
+      CHECK_DIAG("fun f() lambda (int i = 0) i", errUnsupportedArgInitializer(NO_SRC, "i"));
       CHECK_DIAG(
           "fun f() lambda (int a = 0, int b = 0) a + b",
-          errUnsupportedArgInitializer(src, "a", input::Span{16, 24}),
-          errUnsupportedArgInitializer(src, "b", input::Span{27, 35}));
+          errUnsupportedArgInitializer(NO_SRC, "a"),
+          errUnsupportedArgInitializer(NO_SRC, "b"));
     }
   }
 }

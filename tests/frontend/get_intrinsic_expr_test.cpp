@@ -35,45 +35,43 @@ TEST_CASE("[frontend] Analyzing intrinsic expressions", "frontend") {
     CHECK_DIAG(
         "fun f() "
         "  intrinsic{test}",
-        errIntrinsicFuncLiteral(src, input::Span{10, 24}));
+        errIntrinsicFuncLiteral(NO_SRC));
     CHECK_DIAG(
         "fun f() -> int "
         "  intrinsic{test}",
-        errIntrinsicFuncLiteral(src, input::Span{17, 31}));
+        errIntrinsicFuncLiteral(NO_SRC));
     CHECK_DIAG(
         "fun f() "
         "  intrinsic{does_not_exist}()",
-        errUnknownIntrinsic(src, "does_not_exist", true, {}, input::Span{10, 36}));
+        errUnknownIntrinsic(NO_SRC, "does_not_exist", true, {}));
     CHECK_DIAG(
         "act a() "
         "  intrinsic{does_not_exist}()",
-        errUnknownIntrinsic(src, "does_not_exist", false, {}, input::Span{10, 36}));
+        errUnknownIntrinsic(NO_SRC, "does_not_exist", false, {}));
     CHECK_DIAG(
         "fun f() "
         "  intrinsic{does_not_exist}(1)",
-        errUnknownIntrinsic(src, "does_not_exist", true, {"int"}, input::Span{10, 37}));
+        errUnknownIntrinsic(NO_SRC, "does_not_exist", true, {"int"}));
     CHECK_DIAG(
         "act a() "
         "  intrinsic{does_not_exist}(1)",
-        errUnknownIntrinsic(src, "does_not_exist", false, {"int"}, input::Span{10, 37}));
+        errUnknownIntrinsic(NO_SRC, "does_not_exist", false, {"int"}));
     CHECK_DIAG(
         "fun f() "
         "  intrinsic{does_not_exist}(1, false)",
-        errUnknownIntrinsic(src, "does_not_exist", true, {"int", "bool"}, input::Span{10, 44}));
+        errUnknownIntrinsic(NO_SRC, "does_not_exist", true, {"int", "bool"}));
     CHECK_DIAG(
         "act a() "
         "  intrinsic{does_not_exist}(1, false)",
-        errUnknownIntrinsic(src, "does_not_exist", false, {"int", "bool"}, input::Span{10, 44}));
+        errUnknownIntrinsic(NO_SRC, "does_not_exist", false, {"int", "bool"}));
     CHECK_DIAG(
         "fun f() "
         "  intrinsic{platform_endianness_native}()",
-        errUnknownIntrinsic(src, "platform_endianness_native", true, {}, input::Span{10, 48}));
+        errUnknownIntrinsic(NO_SRC, "platform_endianness_native", true, {}));
     CHECK_DIAG(
-        "fun f() -> future{float} lazy intrinsic{float_sin}(42.0)",
-        errLazyNonUserFunc(src, input::Span{25, 55}));
+        "fun f() -> future{float} lazy intrinsic{float_sin}(42.0)", errLazyNonUserFunc(NO_SRC));
     CHECK_DIAG(
-        "fun f() -> future{float} fork intrinsic{float_sin}(42.0)",
-        errForkedNonUserFunc(src, input::Span{25, 55}));
+        "fun f() -> future{float} fork intrinsic{float_sin}(42.0)", errForkedNonUserFunc(NO_SRC));
   }
 }
 

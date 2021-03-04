@@ -263,7 +263,7 @@ auto getOrInstType(
     const auto subType = subTable->lookupType(name);
     if (subType) {
       if (parseType.getParamList()) {
-        ctx->reportDiag(errTypeParamOnSubstitutionType, name, parseType.getSpan());
+        ctx->reportDiag(errTypeParamOnSubstitutionType, parseType.getSpan(), name);
         return std::nullopt;
       }
       return subType;
@@ -330,9 +330,9 @@ auto getRetType(
   if (!retType) {
     ctx->reportDiag(
         errUndeclaredType,
+        retParseType.getSpan(),
         getName(retParseType),
-        retParseType.getParamCount(),
-        retParseType.getSpan());
+        retParseType.getParamCount());
     return std::nullopt;
   }
   return retType;
@@ -433,9 +433,9 @@ auto getFuncInput(
     } else {
       ctx->reportDiag(
           errUndeclaredType,
+          argParseType.getSpan(),
           getName(argParseType),
-          argParseType.getParamCount(),
-          argParseType.getSpan());
+          argParseType.getParamCount());
       isValid = false;
     }
   }
@@ -473,7 +473,7 @@ auto declareFuncInput(
       continue;
     }
     if (arg.hasInitializer() && !allowArgInitializer) {
-      ctx->reportDiag(errUnsupportedArgInitializer, *constName, arg.getSpan());
+      ctx->reportDiag(errUnsupportedArgInitializer, arg.getSpan(), *constName);
       isValid = false;
       continue;
     }
@@ -483,9 +483,9 @@ auto declareFuncInput(
     if (!argType) {
       ctx->reportDiag(
           errUndeclaredType,
+          argParseType.getSpan(),
           getName(argParseType),
-          argParseType.getParamCount(),
-          argParseType.getSpan());
+          argParseType.getParamCount());
       isValid = false;
       continue;
     }
@@ -502,7 +502,7 @@ auto getSubstitutionParams(Context* ctx, const parse::TypeSubstitutionList& subL
   for (const auto& typeSubToken : subList) {
     const auto typeParamName = getName(typeSubToken);
     if (isType(ctx, nullptr, typeParamName)) {
-      ctx->reportDiag(errTypeParamNameConflictsWithType, typeParamName, typeSubToken.getSpan());
+      ctx->reportDiag(errTypeParamNameConflictsWithType, typeSubToken.getSpan(), typeParamName);
       isValid = false;
     } else {
       typeParams.push_back(typeParamName);
@@ -523,7 +523,7 @@ auto getTypeSet(
       types.push_back(*type);
     } else {
       ctx->reportDiag(
-          errUndeclaredType, getName(parseType), parseType.getParamCount(), parseType.getSpan());
+          errUndeclaredType, parseType.getSpan(), getName(parseType), parseType.getParamCount());
       isValid = false;
     }
   }
@@ -546,15 +546,15 @@ auto getConstName(
 
   const auto name = getName(nameToken);
   if (subTable != nullptr && subTable->lookupType(name)) {
-    ctx->reportDiag(errConstNameConflictsWithTypeSubstitution, name, nameToken.getSpan());
+    ctx->reportDiag(errConstNameConflictsWithTypeSubstitution, nameToken.getSpan(), name);
     return std::nullopt;
   }
   if (isType(ctx, nullptr, name)) {
-    ctx->reportDiag(errConstNameConflictsWithType, name, nameToken.getSpan());
+    ctx->reportDiag(errConstNameConflictsWithType, nameToken.getSpan(), name);
     return std::nullopt;
   }
   if (consts.lookup(name)) {
-    ctx->reportDiag(errConstNameConflictsWithConst, name, nameToken.getSpan());
+    ctx->reportDiag(errConstNameConflictsWithConst, nameToken.getSpan(), name);
     return std::nullopt;
   }
   return name;

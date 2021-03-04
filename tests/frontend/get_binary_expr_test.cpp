@@ -139,14 +139,11 @@ TEST_CASE("[frontend] Analyzing binary expressions", "frontend") {
 
   SECTION("Diagnostics") {
     CHECK_DIAG(
-        "fun f() -> int true + false",
-        errUndeclaredBinOperator(src, "+", "bool", "bool", input::Span{20, 20}));
+        "fun f() -> int true + false", errUndeclaredBinOperator(NO_SRC, "+", "bool", "bool"));
     CHECK_DIAG(
-        "fun f(int a, bool b) -> bool a && b",
-        errNoImplicitConversionFound(src, "int", "bool", input::Span{29, 29}));
+        "fun f(int a, bool b) -> bool a && b", errNoImplicitConversionFound(NO_SRC, "int", "bool"));
     CHECK_DIAG(
-        "fun f(bool a, int b) -> bool a || b",
-        errNoImplicitConversionFound(src, "int", "bool", input::Span{34, 34}));
+        "fun f(bool a, int b) -> bool a || b", errNoImplicitConversionFound(NO_SRC, "int", "bool"));
   }
 }
 

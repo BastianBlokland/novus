@@ -16,7 +16,7 @@ public:
 
   auto visit(const parse::ErrorNode& n) -> void override {
     parse::DeepNodeVisitor::visit(n);
-    m_ctx->reportDiag(errParseError, n);
+    m_ctx->reportDiag(errParseError, n.getSpan(), n);
   }
 
 private:

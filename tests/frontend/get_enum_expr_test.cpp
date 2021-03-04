@@ -18,12 +18,11 @@ TEST_CASE("[frontend] Analyzing enum expressions", "frontend") {
   }
 
   SECTION("Diagnostics") {
-    CHECK_DIAG(
-        "fun f() -> int int.a", errStaticFieldNotFoundOnType(src, "a", "int", input::Span{19, 19}));
+    CHECK_DIAG("fun f() -> int int.a", errStaticFieldNotFoundOnType(NO_SRC, "a", "int"));
     CHECK_DIAG(
         "enum E = a, c "
         "fun f() -> int E.b",
-        errValueNotFoundInEnum(src, "b", "E", input::Span{31, 31}));
+        errValueNotFoundInEnum(NO_SRC, "b", "E"));
   }
 }
 

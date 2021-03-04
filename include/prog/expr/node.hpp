@@ -1,6 +1,7 @@
 #pragma once
 #include "prog/expr/node_kind.hpp"
 #include "prog/expr/node_visitor.hpp"
+#include "prog/sym/source_id.hpp"
 #include "prog/sym/type_id.hpp"
 #include <iostream>
 #include <memory>
@@ -26,11 +27,14 @@ public:
   virtual auto operator!=(const Node& rhs) const noexcept -> bool = 0;
 
   [[nodiscard]] auto getKind() const -> NodeKind;
+  [[nodiscard]] auto getSourceId() const -> sym::SourceId;
 
   [[nodiscard]] virtual auto operator[](unsigned int) const -> const Node& = 0;
   [[nodiscard]] virtual auto getChildCount() const -> unsigned int         = 0;
   [[nodiscard]] virtual auto getType() const noexcept -> sym::TypeId       = 0;
   [[nodiscard]] virtual auto toString() const -> std::string               = 0;
+
+  auto setSourceId(sym::SourceId source) -> void;
 
   [[nodiscard]] virtual auto clone(Rewriter* rewriter) const -> std::unique_ptr<Node> = 0;
 
@@ -50,6 +54,7 @@ protected:
 
 private:
   NodeKind m_kind;
+  sym::SourceId m_sourceId;
 };
 
 using NodePtr = std::unique_ptr<Node>;

@@ -39,20 +39,15 @@ TEST_CASE("[frontend] Analyzing self call expressions", "frontend") {
   }
 
   SECTION("Diagnostics") {
-    CHECK_DIAG("conWrite(self())", errSelfCallInNonFunc(src, input::Span{9, 14}));
-    CHECK_DIAG(
-        "fun f(int i) i < 0 ? fork self(0) : i", errForkedSelfCall(src, input::Span{21, 32}));
-    CHECK_DIAG("fun f(int i) i < 0 ? lazy self(0) : i", errLazySelfCall(src, input::Span{21, 32}));
-    CHECK_DIAG("fun f() self()", errSelfCallWithoutInferredRetType(src, input::Span{8, 13}));
-    CHECK_DIAG(
-        "fun f(int i) i < 0 ? self() : i",
-        errIncorrectNumArgsInSelfCall(src, 1, 0, input::Span{21, 26}));
-    CHECK_DIAG(
-        "fun f(int i) i < 0 ? self(i, 1) : i",
-        errIncorrectNumArgsInSelfCall(src, 1, 2, input::Span{21, 30}));
+    CHECK_DIAG("conWrite(self())", errSelfCallInNonFunc(NO_SRC));
+    CHECK_DIAG("fun f(int i) i < 0 ? fork self(0) : i", errForkedSelfCall(NO_SRC));
+    CHECK_DIAG("fun f(int i) i < 0 ? lazy self(0) : i", errLazySelfCall(NO_SRC));
+    CHECK_DIAG("fun f() self()", errSelfCallWithoutInferredRetType(NO_SRC));
+    CHECK_DIAG("fun f(int i) i < 0 ? self() : i", errIncorrectNumArgsInSelfCall(NO_SRC, 1, 0));
+    CHECK_DIAG("fun f(int i) i < 0 ? self(i, 1) : i", errIncorrectNumArgsInSelfCall(NO_SRC, 1, 2));
     CHECK_DIAG(
         "fun f(int i) i < 0 ? self(\"hello\") : i",
-        errNoImplicitConversionFound(src, "string", "int", input::Span{26, 32}));
+        errNoImplicitConversionFound(NO_SRC, "string", "int"));
   }
 }
 

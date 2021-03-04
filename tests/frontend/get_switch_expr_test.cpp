@@ -113,32 +113,32 @@ TEST_CASE("[frontend] Analyzing switch expressions", "frontend") {
         "fun f(bool a) "
         "  if a   -> 1 "
         "  else   -> true",
-        errBranchesHaveNoCommonType(src, input::Span{16, 43}));
+        errBranchesHaveNoCommonType(NO_SRC));
     CHECK_DIAG(
         "fun f(int a) -> int "
         "  if a   -> 1 "
         "  else   -> 2",
-        errNoImplicitConversionFound(src, "int", "bool", input::Span{25, 25}));
+        errNoImplicitConversionFound(NO_SRC, "int", "bool"));
     CHECK_DIAG(
         "fun f() -> int "
         "  if true   -> 1 "
         "  else      -> true",
-        errNoImplicitConversionFound(src, "bool", "int", input::Span{34, 50}));
+        errNoImplicitConversionFound(NO_SRC, "bool", "int"));
     CHECK_DIAG(
         "fun f() -> int "
         "  if true   -> 1 "
         "  if false  -> false "
         "  else      -> 2",
-        errNoImplicitConversionFound(src, "bool", "int", input::Span{34, 51}));
+        errNoImplicitConversionFound(NO_SRC, "bool", "int"));
     CHECK_DIAG(
         "fun f() -> int "
         "  if false  -> 2 ",
-        errNonExhaustiveSwitchWithoutElse(src, input::Span{17, 30}));
+        errNonExhaustiveSwitchWithoutElse(NO_SRC));
     CHECK_DIAG(
         "union U = int, float "
         "fun f(U u) -> int "
         "  if u is float -> 1 ",
-        errNonExhaustiveSwitchWithoutElse(src, input::Span{41, 58}));
+        errNonExhaustiveSwitchWithoutElse(NO_SRC));
   }
 }
 

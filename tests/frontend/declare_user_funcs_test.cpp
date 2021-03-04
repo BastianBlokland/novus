@@ -144,60 +144,52 @@ TEST_CASE("[frontend] Analyzing user-function declarations", "frontend") {
     CHECK_DIAG(
         "fun a() -> int 1 "
         "fun a() -> int 1",
-        errDuplicateFuncDeclaration(src, "a", input::Span{17, 32}));
-    CHECK_DIAG("fun a(b c) -> int 1", errUndeclaredType(src, "b", 0, input::Span{6, 6}));
-    CHECK_DIAG("fun a() -> b 1", errUndeclaredType(src, "b", 0, input::Span{11, 11}));
-    CHECK_DIAG(
-        "fun bool(int i) -> int i",
-        errIncorrectReturnTypeInConvFunc(src, "bool", "int", input::Span{4, 7}));
+        errDuplicateFuncDeclaration(NO_SRC, "a"));
+    CHECK_DIAG("fun a(b c) -> int 1", errUndeclaredType(NO_SRC, "b", 0));
+    CHECK_DIAG("fun a() -> b 1", errUndeclaredType(NO_SRC, "b", 0));
+    CHECK_DIAG("fun bool(int i) -> int i", errIncorrectReturnTypeInConvFunc(NO_SRC, "bool", "int"));
     CHECK_DIAG(
         "struct s{T1, T2} = T1 a, T2 b "
         "fun s{T}(T a) -> T a "
         "fun f() s{int}(1)",
-        errIncorrectReturnTypeInConvFunc(src, "s{int}", "int", input::Span{30, 49}),
-        errInvalidFuncInstantiation(src, input::Span{59, 59}),
-        errNoTypeOrConversionFoundToInstantiate(src, "s", 1, input::Span{59, 67}));
-    CHECK_DIAG(
-        "fun -(int i) -> int 1", errDuplicateFuncDeclaration(src, "operator-", input::Span{0, 20}));
-    CHECK_DIAG("fun &&() -> int 1", errNonOverloadableOperator(src, "&&", input::Span{4, 5}));
-    CHECK_DIAG(
-        "fun f{int}() -> int 1", errTypeParamNameConflictsWithType(src, "int", input::Span{6, 8}));
+        errIncorrectReturnTypeInConvFunc(NO_SRC, "s{int}", "int"),
+        errInvalidFuncInstantiation(NO_SRC),
+        errNoTypeOrConversionFoundToInstantiate(NO_SRC, "s", 1));
+    CHECK_DIAG("fun -(int i) -> int 1", errDuplicateFuncDeclaration(NO_SRC, "operator-"));
+    CHECK_DIAG("fun &&() -> int 1", errNonOverloadableOperator(NO_SRC, "&&"));
+    CHECK_DIAG("fun f{int}() -> int 1", errTypeParamNameConflictsWithType(NO_SRC, "int"));
     CHECK_DIAG(
         "fun f{T}(T{int} a) -> int i "
         "fun f() f{int}(1)",
-        errTypeParamOnSubstitutionType(src, "T", input::Span{9, 14}),
-        errUndeclaredType(src, "T", 1, input::Span{9, 14}));
+        errTypeParamOnSubstitutionType(NO_SRC, "T"),
+        errUndeclaredType(NO_SRC, "T", 1));
     CHECK_DIAG(
         "fun f{T}(T a) b "
         "fun f() f{int}(1)",
-        errUndeclaredConst(src, "b", input::Span{14, 14}),
-        errInvalidFuncInstantiation(src, input::Span{24, 24}),
-        errNoPureFuncFoundToInstantiate(src, "f", 1, input::Span{24, 32}));
+        errUndeclaredConst(NO_SRC, "b"),
+        errInvalidFuncInstantiation(NO_SRC),
+        errNoPureFuncFoundToInstantiate(NO_SRC, "f", 1));
+    CHECK_DIAG("fun +() -> int i", errOperatorOverloadWithoutArgs(NO_SRC, "operator+"));
+    CHECK_DIAG("fun +{T}() -> T T()", errOperatorOverloadWithoutArgs(NO_SRC, "operator+"));
+    CHECK_DIAG("fun f{T}(test a) -> int 1", errUndeclaredType(NO_SRC, "test", 0));
+    CHECK_DIAG("fun f{T}(int{M} a) -> int 1", errUndeclaredType(NO_SRC, "M", 0));
+    CHECK_DIAG("fun f{T}(int{T{M}} a) -> int 1", errUndeclaredType(NO_SRC, "M", 0));
     CHECK_DIAG(
-        "fun +() -> int i", errOperatorOverloadWithoutArgs(src, "operator+", input::Span{4, 4}));
-    CHECK_DIAG(
-        "fun +{T}() -> T T()", errOperatorOverloadWithoutArgs(src, "operator+", input::Span{4, 4}));
-    CHECK_DIAG("fun f{T}(test a) -> int 1", errUndeclaredType(src, "test", 0, input::Span{9, 12}));
-    CHECK_DIAG("fun f{T}(int{M} a) -> int 1", errUndeclaredType(src, "M", 0, input::Span{13, 13}));
-    CHECK_DIAG(
-        "fun f{T}(int{T{M}} a) -> int 1", errUndeclaredType(src, "M", 0, input::Span{15, 15}));
-    CHECK_DIAG(
-        "fun assert(bool cond, string msg) input",
-        errDuplicateFuncDeclaration(src, "assert", input::Span{0, 38}));
-    CHECK_DIAG("act +(int i) i + 1", errNonPureOperatorOverload(src, input::Span{4, 4}));
-    CHECK_DIAG("act +{T}(T t) t + 1", errNonPureOperatorOverload(src, input::Span{4, 4}));
+        "fun assert(bool cond, string msg) input", errDuplicateFuncDeclaration(NO_SRC, "assert"));
+    CHECK_DIAG("act +(int i) i + 1", errNonPureOperatorOverload(NO_SRC));
+    CHECK_DIAG("act +{T}(T t) t + 1", errNonPureOperatorOverload(NO_SRC));
     CHECK_DIAG(
         "struct S = int i, bool b "
         "act S() S(0, false)",
-        errNonPureConversion(src, input::Span{29, 29}));
+        errNonPureConversion(NO_SRC));
     CHECK_DIAG(
         "struct S{T} = int i, T t "
         "act S{T}() S{T}(0, T()) "
         "act a() S{int}()",
-        errNonPureConversion(src, input::Span{25, 47}),
-        errInvalidFuncInstantiation(src, input::Span{57, 57}),
-        errUndeclaredTypeOrConversion(src, "S{int}", {}, input::Span{57, 64}));
-    CHECK_DIAG("fun f(int a = 0, int b) a * b", errNonOptArgFollowingOpt(src, input::Span{17, 21}));
+        errNonPureConversion(NO_SRC),
+        errInvalidFuncInstantiation(NO_SRC),
+        errUndeclaredTypeOrConversion(NO_SRC, "S{int}", {}));
+    CHECK_DIAG("fun f(int a = 0, int b) a * b", errNonOptArgFollowingOpt(NO_SRC));
   }
 }
 

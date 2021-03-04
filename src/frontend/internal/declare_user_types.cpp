@@ -94,19 +94,19 @@ auto DeclareUserTypes::visit(const parse::EnumDeclStmtNode& n) -> void {
 auto DeclareUserTypes::validateTypeName(const lex::Token& nameToken) -> bool {
   const auto name = getName(nameToken);
   if (m_ctx->getProg()->lookupType(name)) {
-    m_ctx->reportDiag(errTypeAlreadyDeclared, name, nameToken.getSpan());
+    m_ctx->reportDiag(errTypeAlreadyDeclared, nameToken.getSpan(), name);
     return false;
   }
   if (m_ctx->getTypeTemplates()->hasType(name)) {
-    m_ctx->reportDiag(errTypeTemplateAlreadyDeclared, name, nameToken.getSpan());
+    m_ctx->reportDiag(errTypeTemplateAlreadyDeclared, nameToken.getSpan(), name);
     return false;
   }
   if (isReservedTypeName(name)) {
-    m_ctx->reportDiag(errTypeNameIsReserved, name, nameToken.getSpan());
+    m_ctx->reportDiag(errTypeNameIsReserved, nameToken.getSpan(), name);
     return false;
   }
   if (m_ctx->getProg()->hasFunc(name)) {
-    m_ctx->reportDiag(errTypeNameConflictsWithFunc, name, nameToken.getSpan());
+    m_ctx->reportDiag(errTypeNameConflictsWithFunc, nameToken.getSpan(), name);
     return false;
   }
   return true;

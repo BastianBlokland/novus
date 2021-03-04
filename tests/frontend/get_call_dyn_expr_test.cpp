@@ -220,38 +220,34 @@ TEST_CASE("[frontend] Analyzing call dynamic expressions", "frontend") {
   SECTION("Diagnostics") {
     CHECK_DIAG(
         "fun f(function{int, float, bool} op) -> bool op(false, 1.0)",
-        errIncorrectArgsToDelegate(src, input::Span{45, 58}));
+        errIncorrectArgsToDelegate(NO_SRC));
     CHECK_DIAG(
         "fun f1(int v) -> int v "
         "fun f1(float v) -> float v "
         "fun f2() -> int op = f1; op()",
-        errAmbiguousFunction(src, "f1", input::Span{71, 72}),
-        errUndeclaredPureFunc(src, "op", {}, input::Span{75, 78}));
+        errAmbiguousFunction(NO_SRC, "f1"),
+        errUndeclaredPureFunc(NO_SRC, "op", {}));
     CHECK_DIAG(
         "fun f1{T}(int v) -> T T() "
         "fun f1{T}(float v) -> T T() "
         "fun f2() -> int op = f1{int}; op(1)",
-        errAmbiguousTemplateFunction(src, "f1", 1, input::Span{75, 81}),
-        errUndeclaredPureFunc(src, "op", {"int"}, input::Span{84, 88}));
-    CHECK_DIAG(
-        "fun f() f1{float}", errNoPureFuncFoundToInstantiate(src, "f1", 1, input::Span{8, 16}));
-    CHECK_DIAG(
-        "act a() f1{float}", errNoFuncOrActionFoundToInstantiate(src, "f1", 1, input::Span{8, 16}));
+        errAmbiguousTemplateFunction(NO_SRC, "f1", 1),
+        errUndeclaredPureFunc(NO_SRC, "op", {"int"}));
+    CHECK_DIAG("fun f() f1{float}", errNoPureFuncFoundToInstantiate(NO_SRC, "f1", 1));
+    CHECK_DIAG("act a() f1{float}", errNoFuncOrActionFoundToInstantiate(NO_SRC, "f1", 1));
     CHECK_DIAG(
         "fun f1{T}() -> T T() "
         "fun f2() -> int op = f1; op()",
-        errNoTypeParamsProvidedToTemplateFunction(src, "f1", input::Span{42, 43}),
-        errUndeclaredPureFunc(src, "op", {}, input::Span{46, 49}));
+        errNoTypeParamsProvidedToTemplateFunction(NO_SRC, "f1"),
+        errUndeclaredPureFunc(NO_SRC, "op", {}));
     CHECK_DIAG(
-        "fun f() -> function{string, string} conWrite",
-        errUndeclaredConst(src, "conWrite", input::Span{36, 43}));
+        "fun f() -> function{string, string} conWrite", errUndeclaredConst(NO_SRC, "conWrite"));
     CHECK_DIAG(
         "fun f() -> string op = conWrite; op(\"hello world\")",
-        errUndeclaredConst(src, "conWrite", input::Span{23, 30}),
-        errUndeclaredPureFunc(src, "op", {"string"}, input::Span{33, 49}));
-    CHECK_DIAG("fun f(action{int} a) a()", errIllegalDelegateCall(src, input::Span{21, 23}));
-    CHECK_DIAG(
-        "fun f(action{int} a) lambda () a()", errIllegalDelegateCall(src, input::Span{31, 33}));
+        errUndeclaredConst(NO_SRC, "conWrite"),
+        errUndeclaredPureFunc(NO_SRC, "op", {"string"}));
+    CHECK_DIAG("fun f(action{int} a) a()", errIllegalDelegateCall(NO_SRC));
+    CHECK_DIAG("fun f(action{int} a) lambda () a()", errIllegalDelegateCall(NO_SRC));
   }
 }
 

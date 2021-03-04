@@ -56,8 +56,7 @@ inline auto buildSource(std::string input) {
 
 #define CHECK_DIAG(INPUT, ...)                                                                     \
   {                                                                                                \
-    const auto src    = SRC(INPUT);                                                                \
-    const auto output = analyze(src);                                                              \
+    const auto output = analyze(SRC(INPUT));                                                       \
     const auto diags  = std::vector<frontend::Diag>{output.beginDiags(), output.endDiags()};       \
     const std::vector<frontend::Diag> expectedDiags = {__VA_ARGS__};                               \
     CHECK_THAT(diags, Catch::UnorderedEquals(expectedDiags));                                      \
@@ -105,5 +104,7 @@ inline auto arrayMoveToVec(Array c) {
 
 #define NO_EXPRS                                                                                   \
   std::vector<prog::expr::NodePtr> {}
+
+#define NO_SRC prog::sym::SourceId::none()
 
 } // namespace frontend

@@ -136,6 +136,8 @@ add_library(prog STATIC
   prog/sym/func_id.cpp
   prog/sym/future_def.cpp
   prog/sym/lazy_def.cpp
+  prog/sym/source_id_hasher.cpp
+  prog/sym/source_id.cpp
   prog/sym/struct_def.cpp
   prog/sym/type_decl_table.cpp
   prog/sym/type_decl.cpp
@@ -176,6 +178,7 @@ add_library(frontend STATIC
   frontend/internal/lazy_table.cpp
   frontend/internal/get_expr.cpp
   frontend/internal/import_sources.cpp
+  frontend/internal/source_table_builder.cpp
   frontend/internal/struct_template.cpp
   frontend/internal/type_template_base.cpp
   frontend/internal/type_template_table.cpp
@@ -196,6 +199,7 @@ add_library(frontend STATIC
   frontend/diag_severity.cpp
   frontend/diag.cpp
   frontend/output.cpp
+  frontend/source_table.cpp
   frontend/source.cpp)
 target_compile_features(frontend PRIVATE cxx_std_17)
 if(MSVC)

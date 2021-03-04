@@ -27,7 +27,9 @@ auto LitStringNode::getType() const noexcept -> sym::TypeId { return m_type; }
 auto LitStringNode::toString() const -> std::string { return m_val; }
 
 auto LitStringNode::clone(Rewriter* /*rewriter*/) const -> std::unique_ptr<Node> {
-  return std::unique_ptr<LitStringNode>{new LitStringNode{m_type, m_val}};
+  auto* newExpr = new LitStringNode{m_type, m_val};
+  newExpr->setSourceId(getSourceId());
+  return std::unique_ptr<LitStringNode>{newExpr};
 }
 
 auto LitStringNode::getVal() const noexcept -> const std::string& { return m_val; }
