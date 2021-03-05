@@ -487,6 +487,14 @@ auto GenExpr::visit(const prog::expr::CallExprNode& n) -> void {
     break;
   }
 
+  case prog::sym::FuncKind::SourceLocFile:
+    m_asmb->addLoadLitString("unknown");
+    break;
+  case prog::sym::FuncKind::SourceLocLine:
+  case prog::sym::FuncKind::SourceLocColumn:
+    m_asmb->addLoadLitInt(-1);
+    break;
+
   // Platform actions:
   case prog::sym::FuncKind::ActionEndiannessNative:
     m_asmb->addPCall(novasm::PCallCode::EndiannessNative);
