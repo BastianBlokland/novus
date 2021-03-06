@@ -42,7 +42,7 @@ TEST_CASE("[vm] Execute process platform-calls", "vm") {
           asmb->setEntrypoint("entry");
 
           // Run a program that exits with code 0.
-          asmb->addLoadLitString(novePath + " assert(true)");
+          asmb->addLoadLitString(novePath + " 'assert(true)'");
           asmb->addPCall(novasm::PCallCode::ProcessStart);
           asmb->addPCall(novasm::PCallCode::ProcessBlock);
 
@@ -51,7 +51,7 @@ TEST_CASE("[vm] Execute process platform-calls", "vm") {
           ADD_PRINT(asmb);
 
           // Run a program that exits with code 1.
-          asmb->addLoadLitString(novePath + " fail()");
+          asmb->addLoadLitString(novePath + " 'fail()'");
           asmb->addPCall(novasm::PCallCode::ProcessStart);
           asmb->addPCall(novasm::PCallCode::ProcessBlock);
 
@@ -60,7 +60,7 @@ TEST_CASE("[vm] Execute process platform-calls", "vm") {
           ADD_PRINT(asmb);
 
           // Run a program that exits with code 14.
-          asmb->addLoadLitString(novePath + " assert(1 / 0)");
+          asmb->addLoadLitString(novePath + " 'assert(1 / 0 == 1)'");
           asmb->addPCall(novasm::PCallCode::ProcessStart);
           asmb->addPCall(novasm::PCallCode::ProcessBlock);
 
