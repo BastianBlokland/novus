@@ -1,4 +1,5 @@
-import "writer.ns"
+import "std/assert.ns"
+import "std/writer.ns"
 
 // -- Types
 
@@ -31,12 +32,8 @@ fun sourceLocWriter()
 
 // -- Tests
 
-assert(intrinsic{source_loc_file}() == "unknown")
-assert(intrinsic{source_loc_line}() == -1)
-assert(intrinsic{source_loc_column}() == -1)
+assertEq(getSourceLoc().file, "sourceloc.ns")
+assertEq(getSourceLoc().line, 36)
+assertEq(getSourceLoc().column, 1)
 
-assert(getSourceLoc().file == "sourceloc.ns")
-assert(getSourceLoc().line == 39)
-assert(getSourceLoc().column == 8)
-
-assert(getSourceLoc().string() == "sourceloc.ns:42:8")
+assertEq(getSourceLoc().string(), "sourceloc.ns:39:1")

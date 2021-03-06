@@ -30,6 +30,7 @@ file(WRITE ${stdHeader} "")
 
 # Standard nov library.
 configure_std_file(ascii)
+configure_std_file(assert)
 configure_std_file(bench)
 configure_std_file(bits)
 configure_std_file(char)

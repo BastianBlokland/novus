@@ -1,3 +1,4 @@
+import "std/assert.ns"
 import "std/list.ns"
 import "std/pair.ns"
 import "std/parser.ns"

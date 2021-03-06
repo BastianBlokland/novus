@@ -1,3 +1,4 @@
+import "std/assert.ns"
 import "std/json.ns"
 import "std/path.ns"
 import "std/stream.ns"

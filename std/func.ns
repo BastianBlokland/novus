@@ -1,3 +1,5 @@
+import "std/assert.ns"
+
 // -- Operators
 
 fun []{TC, TR}(function{TC, TR} func, TC arg)

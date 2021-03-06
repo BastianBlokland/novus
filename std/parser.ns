@@ -1,3 +1,4 @@
+import "std/assert.ns"
 import "std/ascii.ns"
 import "std/bits.ns"
 import "std/either.ns"

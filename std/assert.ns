@@ -1,0 +1,46 @@
+import "std/console.ns"
+import "std/rt.ns"
+import "std/sourceloc.ns"
+
+// -- Types
+
+struct AssertData =
+  bool      cond,
+  string    condDesc,
+  string    usrMsg,
+  SourceLoc srcLoc
+
+// -- Utilities
+
+act assert(bool cond, string msg = "", SourceLoc srcLoc = getSourceLoc())
+  assert(AssertData(cond, "", msg, srcLoc))
+
+act assertEq{X, Y}(X x, Y y, string msg = "", SourceLoc srcLoc = getSourceLoc())
+  assert(AssertData(x == y, x.string() + " == " + y.string(), msg, srcLoc))
+
+act assert(AssertData data)
+  if data.cond -> true
+  else         -> fail{bool}(assertErrMsgWriter().run(data))
+
+// -- Writers
+
+fun assertErrMsgWriter()
+  srcLocWriter = (
+    litWriter("[") &
+      stringWriter() & litWriter(" Ln ") & txtIntWriter() & litWriter(", Col ") & txtIntWriter() &
+    litWriter("]")
+  ).map(lambda (SourceLoc sl) makePair(sl.file, sl.line, sl.column));
+  condDescWriter = (
+    litWriter(" '") & stringWriter() & litWriter("'")
+  );
+  usrMsgWriter = (
+    litWriter(": ") & stringWriter()
+  );
+  (
+    litWriter("Assertion failed ") & srcLocWriter & ?condDescWriter & ?usrMsgWriter
+  ).map(lambda (AssertData d)
+    makePair(
+      d.srcLoc,
+      d.condDesc.isEmpty() ? None() : d.condDesc,
+      d.usrMsg.isEmpty() ? None() : d.usrMsg)
+  )
