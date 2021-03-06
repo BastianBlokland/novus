@@ -1,5 +1,6 @@
 #include "frontend/diag.hpp"
 #include "frontend/source_table.hpp"
+#include <iostream>
 #include <utility>
 
 namespace frontend {
@@ -28,6 +29,10 @@ auto Diag::print(std::ostream& stream, const SourceTable& sourceTable) const -> 
 
   stream << id << ':' << startLine << ':' << startCol << '-' << endLine << ':' << endCol << ": "
          << m_severity << ": " << m_msg;
+}
+
+auto operator<<(std::ostream& out, Diag diag) -> std::ostream& {
+  return out << diag.getSeverity() << ": " << diag.getMsg();
 }
 
 // Factories.

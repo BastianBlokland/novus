@@ -169,7 +169,11 @@ auto analyze(const Source& mainSrc, const std::vector<filesystem::path>& searchP
   auto sourceTable = sourceTableBuilder.build();
 
   // Patch all call expressions to apply the optional arguments if they didn't supply overrides.
-  internal::patchCallArgs(*prog, sourceTable);
+  internal::patchCallArgs(*prog, sourceTable, [&diags](Diag diag) { diags.push_back(diag); });
+
+  if (!diags.empty()) {
+    return buildOutput(nullptr, std::move(importedSources), std::move(sourceTable), diags);
+  }
 
   return buildOutput(std::move(prog), std::move(importedSources), std::move(sourceTable), {});
 }

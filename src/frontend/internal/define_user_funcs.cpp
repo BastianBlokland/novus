@@ -22,7 +22,7 @@ static auto getOptInputInitializers(
   auto result = std::vector<prog::expr::NodePtr>{};
   result.reserve(funcDecl.getNumOptInputs());
 
-  auto getExprFlags = GetExpr::Flags::AllowPureFuncCalls | GetExpr::Flags::NoOptArgs;
+  auto getExprFlags = GetExpr::Flags::AllowPureFuncCalls;
   if (funcDecl.isAction()) {
     getExprFlags = getExprFlags | GetExpr::Flags::AllowActionCalls;
   }

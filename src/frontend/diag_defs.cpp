@@ -605,4 +605,10 @@ auto errNonOptArgFollowingOpt(prog::sym::SourceId src) -> Diag {
   return error(oss.str(), src);
 }
 
+auto errCyclicOptArgInitializer(prog::sym::SourceId src) -> Diag {
+  std::ostringstream oss;
+  oss << "Cycle detected while applying optional argument initializers";
+  return error(oss.str(), src);
+}
+
 } // namespace frontend

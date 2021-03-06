@@ -223,4 +223,6 @@ errInvalidFailIntrinsicCall(prog::sym::SourceId src, unsigned int typeParams, un
 
 [[nodiscard]] auto errNonOptArgFollowingOpt(prog::sym::SourceId src) -> Diag;
 
+[[nodiscard]] auto errCyclicOptArgInitializer(prog::sym::SourceId src) -> Diag;
+
 } // namespace frontend

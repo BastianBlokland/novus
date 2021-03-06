@@ -1,4 +1,5 @@
 #include "internal/patch_args.hpp"
+#include "frontend/diag_defs.hpp"
 #include "prog/expr/node_call.hpp"
 #include "prog/expr/node_lit_int.hpp"
 #include "prog/expr/node_lit_string.hpp"
@@ -9,6 +10,13 @@
 namespace frontend::internal {
 
 namespace {
+
+/* Maximum depth we allow while recursivly applying optional arguments. If we recurse deeper then
+ * this we consider it an 'cycle' and fail the compilation.
+ * TODO: Investigate if there are smarter ways to detect this, its not very trivial as you can have
+ * indirect recursion in your initializers.
+ */
+constexpr size_t g_maxOptArgRecurseDepth = 100;
 
 /* Replace calls to the source-location intrinsics with literals containing the source info.
  */
@@ -44,14 +52,22 @@ auto patchSourceLocIntrinsic(
  */
 class PatchOptArgsVisitor final : public prog::expr::DeepNodeVisitor {
 public:
-  PatchOptArgsVisitor(const prog::Program& prog, const SourceTable& srcTable) :
-      m_prog{prog}, m_srcTable{srcTable}, m_rootSrcId{std::nullopt} {}
+  PatchOptArgsVisitor(
+      const prog::Program& prog, const SourceTable& srcTable, PatchDiagReportFunc reportFunc) :
+      m_prog{prog},
+      m_srcTable{srcTable},
+      m_reportFunc{std::move(reportFunc)},
+      m_optArgRecurseDepth{0},
+      m_rootSrcId{std::nullopt} {}
 
   auto visit(const prog::expr::CallExprNode& n) -> void override;
 
 private:
   const prog::Program& m_prog;
   const SourceTable& m_srcTable;
+  PatchDiagReportFunc m_reportFunc;
+
+  size_t m_optArgRecurseDepth;
 
   // Root of this call to be used by SourceLoc intrinsics.
   std::optional<prog::sym::SourceId> m_rootSrcId;
@@ -91,6 +107,16 @@ auto PatchOptArgsVisitor::visit(const prog::expr::CallExprNode& n) -> void {
     m_rootSrcId = n.getSourceId();
   }
 
+  if (hadOptArgs) {
+    if (++m_optArgRecurseDepth > g_maxOptArgRecurseDepth) {
+      // TODO: How should we handle getting here without a source-id? Which is theorectically
+      // possible if we didn't associate this expression with any source.
+      assert(m_rootSrcId);
+      m_reportFunc(errCyclicOptArgInitializer(*m_rootSrcId));
+      return;
+    }
+  }
+
   // Recurse to apply optional arguments for any nested calls.
   visitNode(&n);
 
@@ -108,13 +134,19 @@ auto PatchOptArgsVisitor::visit(const prog::expr::CallExprNode& n) -> void {
   if (isSrcIdRoot) {
     m_rootSrcId = std::nullopt;
   }
+
+  if (hadOptArgs) {
+    --m_optArgRecurseDepth;
+  }
 }
 
 } // namespace
 
-auto patchCallArgs(const prog::Program& prog, const SourceTable& srcTable) -> void {
+auto patchCallArgs(
+    const prog::Program& prog, const SourceTable& srcTable, PatchDiagReportFunc reportFunc)
+    -> void {
 
-  auto visitor = PatchOptArgsVisitor{prog, srcTable};
+  auto visitor = PatchOptArgsVisitor{prog, srcTable, reportFunc};
 
   for (auto itr = prog.beginFuncDefs(); itr != prog.endFuncDefs(); ++itr) {
     auto funcId         = *itr;
