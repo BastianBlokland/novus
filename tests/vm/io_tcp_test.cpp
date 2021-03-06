@@ -115,8 +115,7 @@ TEST_CASE("[vm] Execute tcp platform-calls", "vm") {
           asmb->addPCall(novasm::PCallCode::TcpShutdown);
 
           // Assert that the shutdown completed successfully.
-          asmb->addLoadLitString("Shutdown failed");
-          asmb->addPCall(novasm::PCallCode::Assert);
+          ADD_ASSERT(asmb);
 
           // Wait on the worker to finnish.
           asmb->addStackLoad(1);
@@ -177,8 +176,7 @@ TEST_CASE("[vm] Execute tcp platform-calls", "vm") {
           asmb->addPCall(novasm::PCallCode::TcpShutdown);
 
           // Assert that the shutdown completed successfully.
-          asmb->addLoadLitString("Shutdown failed");
-          asmb->addPCall(novasm::PCallCode::Assert);
+          ADD_ASSERT(asmb);
 
           // Wait on the worker to finnish.
           asmb->addStackLoad(1);
@@ -214,8 +212,7 @@ TEST_CASE("[vm] Execute tcp platform-calls", "vm") {
           asmb->addLoadLitString(loopbackAddrIpV4);
           asmb->addCheckEqString();
 
-          asmb->addLoadLitString("Invalid loopback address received");
-          asmb->addPCall(novasm::PCallCode::Assert);
+          ADD_ASSERT(asmb);
 
           asmb->addRet();
         },
@@ -236,8 +233,7 @@ TEST_CASE("[vm] Execute tcp platform-calls", "vm") {
           asmb->addLoadLitString(loopbackAddrIpV6);
           asmb->addCheckEqString();
 
-          asmb->addLoadLitString("Invalid loopback address received");
-          asmb->addPCall(novasm::PCallCode::Assert);
+          ADD_ASSERT(asmb);
 
           asmb->addRet();
         },
@@ -258,8 +254,7 @@ TEST_CASE("[vm] Execute tcp platform-calls", "vm") {
           asmb->addLoadLitString("");
           asmb->addCheckEqString();
 
-          asmb->addLoadLitString("Expected an empty string");
-          asmb->addPCall(novasm::PCallCode::Assert);
+          ADD_ASSERT(asmb);
 
           asmb->addRet();
         },
@@ -280,8 +275,7 @@ TEST_CASE("[vm] Execute tcp platform-calls", "vm") {
           asmb->addLoadLitString("");
           asmb->addCheckEqString();
 
-          asmb->addLoadLitString("Expected an empty string");
-          asmb->addPCall(novasm::PCallCode::Assert);
+          ADD_ASSERT(asmb);
 
           asmb->addRet();
         },

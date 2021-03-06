@@ -213,8 +213,7 @@ TEST_CASE("[vm] Execute process platform-calls", "vm") {
           asmb->addLoadLitLong(0);
           asmb->addCheckGtLong();
 
-          asmb->addLoadLitString("Invalid process id");
-          asmb->addPCall(novasm::PCallCode::Assert);
+          ADD_ASSERT(asmb);
 
           asmb->addRet();
         },
@@ -290,8 +289,7 @@ TEST_CASE("[vm] Execute process platform-calls", "vm") {
             // Assert that the exitcode is zero.
             asmb->addLoadLitInt(0);
             asmb->addCheckEqInt();
-            asmb->addLoadLitString("Unexpected exitcode");
-            asmb->addPCall(novasm::PCallCode::Assert);
+            ADD_ASSERT(asmb);
           }
           asmb->addRet();
           // --- Main function end.
@@ -449,9 +447,7 @@ TEST_CASE("[vm] Execute process platform-calls", "vm") {
           // Send an interupt signal to the process.
           asmb->addLoadLitInt(0); // Signal 0: interupt.
           asmb->addPCall(novasm::PCallCode::ProcessSendSignal);
-          asmb->addLoadLitString("Failed to send signal");
-          asmb->addPCall(novasm::PCallCode::Assert);
-          asmb->addPop(); // Ignore the assert return value.
+          ADD_ASSERT(asmb);
 
           // Wait for the child process to finnish.
           asmb->addPCall(novasm::PCallCode::ProcessBlock);
@@ -488,9 +484,7 @@ TEST_CASE("[vm] Execute process platform-calls", "vm") {
           // Send a kill signal to the process.
           asmb->addLoadLitInt(1); // Signal 1: kill.
           asmb->addPCall(novasm::PCallCode::ProcessSendSignal);
-          asmb->addLoadLitString("Failed to send signal");
-          asmb->addPCall(novasm::PCallCode::Assert);
-          asmb->addPop(); // Ignore the assert return value.
+          ADD_ASSERT(asmb);
 
           // Wait for the child process to finnish.
           asmb->addPCall(novasm::PCallCode::ProcessBlock);

@@ -22,35 +22,6 @@ TEST_CASE("[vm] Execute input and output", "vm") {
         "");
   }
 
-  SECTION("Assert") {
-    CHECK_PROG_RESULTCODE(
-        [](novasm::Assembler* asmb) -> void {
-          asmb->label("entry");
-          asmb->setEntrypoint("entry");
-
-          asmb->addLoadLitInt(0);
-          asmb->addLoadLitString("Fails");
-          asmb->addPCall(novasm::PCallCode::Assert);
-
-          asmb->addRet();
-        },
-        "input",
-        ExecState::AssertFailed);
-    CHECK_PROG(
-        [](novasm::Assembler* asmb) -> void {
-          asmb->label("entry");
-          asmb->setEntrypoint("entry");
-
-          asmb->addLoadLitInt(1);
-          asmb->addLoadLitString("Does not fail");
-          asmb->addPCall(novasm::PCallCode::Assert);
-
-          asmb->addRet();
-        },
-        "input",
-        "");
-  }
-
   SECTION("Read string from console") {
     CHECK_EXPR(
         [](novasm::Assembler* asmb) -> void {
@@ -110,8 +81,7 @@ TEST_CASE("[vm] Execute input and output", "vm") {
           asmb->addPCall(novasm::PCallCode::StreamWriteString);
 
           // Assert that writing succeeded.
-          asmb->addLoadLitString("Write failed");
-          asmb->addPCall(novasm::PCallCode::Assert);
+          ADD_ASSERT(asmb);
 
           // Write character to file.
           asmb->addStackLoad(0);       // Load stream.
@@ -119,8 +89,7 @@ TEST_CASE("[vm] Execute input and output", "vm") {
           asmb->addPCall(novasm::PCallCode::StreamWriteString);
 
           // Assert that writing succeeded.
-          asmb->addLoadLitString("Write failed");
-          asmb->addPCall(novasm::PCallCode::Assert);
+          ADD_ASSERT(asmb);
 
           // Open the file again for reading.
           asmb->addLoadLitString(filePath); // Load stream.
@@ -131,8 +100,7 @@ TEST_CASE("[vm] Execute input and output", "vm") {
           // Assert that file-stream is valid.
           asmb->addStackLoad(0); // Load stream.
           asmb->addPCall(novasm::PCallCode::StreamCheckValid);
-          asmb->addLoadLitString("Stream not valid");
-          asmb->addPCall(novasm::PCallCode::Assert);
+          ADD_ASSERT(asmb);
 
           // Read and print the first character.
           asmb->addStackLoad(0);  // Load stream.
@@ -167,8 +135,7 @@ TEST_CASE("[vm] Execute input and output", "vm") {
           // Assert that file-stream is not valid.
           asmb->addPCall(novasm::PCallCode::StreamCheckValid);
           asmb->addLogicInvInt(); // Invert to check if stream is not valid.
-          asmb->addLoadLitString("Stream not valid");
-          asmb->addPCall(novasm::PCallCode::Assert);
+          ADD_ASSERT(asmb);
           asmb->addRet();
         },
         "input",
@@ -217,8 +184,7 @@ TEST_CASE("[vm] Execute input and output", "vm") {
 
           // Assert that writing failed.
           asmb->addLogicInvInt(); // Invert to check if writing failed.
-          asmb->addLoadLitString("Write failed");
-          asmb->addPCall(novasm::PCallCode::Assert);
+          ADD_ASSERT(asmb);
           asmb->addRet();
         },
         "input",
@@ -294,8 +260,7 @@ TEST_CASE("[vm] Execute input and output", "vm") {
           asmb->addLoadLitInt(0);
           asmb->addCheckGtInt();
 
-          asmb->addLoadLitString("Environment variable 'PATH' not found");
-          asmb->addPCall(novasm::PCallCode::Assert);
+          ADD_ASSERT(asmb);
 
           asmb->addRet();
         },

@@ -16,8 +16,7 @@ TEST_CASE("[vm] Execute struct operations", "vm") {
           // Assert its not null.
           asmb->addCheckStructNull();
           asmb->addLogicInvInt();
-          asmb->addLoadLitString("Struct null");
-          asmb->addPCall(novasm::PCallCode::Assert);
+          ADD_ASSERT(asmb);
         },
         "input",
         "");
@@ -31,8 +30,7 @@ TEST_CASE("[vm] Execute struct operations", "vm") {
 
           // Assert its null.
           asmb->addCheckStructNull();
-          asmb->addLoadLitString("Struct not null");
-          asmb->addPCall(novasm::PCallCode::Assert);
+          ADD_ASSERT(asmb);
         },
         "input",
         "");

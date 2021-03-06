@@ -14,9 +14,8 @@ enum class ExecState : int8_t {
 
   /* Normal exit codes for the vm.
    */
-  Success      = 0, // The executor has finished successfully, is the 'normal' result of the vm.
-  Failed       = 1, // The executor has encountered a 'fail' instruction.
-  AssertFailed = 2, // An assert in the user programs has failed.
+  Success = 0, // The executor has finished successfully, is the 'normal' result of the vm.
+  Failed  = 1, // The executor has encountered a 'fail' instruction.
 
   /* Error exit codes for the vm.
    */
