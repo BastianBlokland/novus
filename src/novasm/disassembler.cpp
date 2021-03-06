@@ -1,4 +1,5 @@
 #include "novasm/disassembler.hpp"
+#include "intrinsics.hpp"
 #include "novasm/pcall_code.hpp"
 #include <stdexcept>
 
@@ -70,6 +71,7 @@ auto operator<<(std::ostream& out, const Instruction& rhs) -> std::ostream& {
 } // namespace dasm
 
 template <typename Type>
+NO_SANITIZE(alignment)
 inline auto readAsm(const uint8_t** ip) {
   const Type v = *reinterpret_cast<const Type*>(*ip); // NOLINT: Reinterpret cast
   *ip += sizeof(Type);

@@ -59,8 +59,8 @@ TEST_CASE("[vm] Execute process platform-calls", "vm") {
           asmb->addConvIntString();
           ADD_PRINT(asmb);
 
-          // Run a program that exits with code 7.
-          asmb->addLoadLitString(novePath + " assert(false)");
+          // Run a program that exits with code 14.
+          asmb->addLoadLitString(novePath + " assert(1 / 0)");
           asmb->addPCall(novasm::PCallCode::ProcessStart);
           asmb->addPCall(novasm::PCallCode::ProcessBlock);
 
@@ -71,7 +71,7 @@ TEST_CASE("[vm] Execute process platform-calls", "vm") {
           asmb->addRet();
         },
         "input",
-        "012");
+        "0114");
   }
 
   SECTION("StdOut can be read from a child-process") {

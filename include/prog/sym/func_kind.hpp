@@ -180,7 +180,6 @@ enum class FuncKind {
   ActionProgramPath,    // Get the path of the currently executing program.
 
   ActionSleepNano, // Sleep the executor for x nanoseconds.
-  ActionAssert,    // Assert a condition to be true (and fail the executor if it isn't).
   ActionFail,      // Fail the current executor (will return exit-code 1 from the application).
 };
 

@@ -80,8 +80,6 @@ TEST_CASE("[frontend] Analyzing user-type declarations", "frontend") {
     CHECK_DIAG("union int = int, bool", errTypeAlreadyDeclared(NO_SRC, "int"));
     CHECK_DIAG("struct function = bool i", errTypeNameIsReserved(NO_SRC, "function"));
     CHECK_DIAG("struct action = bool i", errTypeNameIsReserved(NO_SRC, "action"));
-    CHECK_DIAG("struct assert = bool i", errTypeNameConflictsWithFunc(NO_SRC, "assert"));
-    CHECK_DIAG("union assert = int, bool", errTypeNameConflictsWithFunc(NO_SRC, "assert"));
     CHECK_DIAG(
         "struct s = int i "
         "struct s = bool b",
@@ -105,7 +103,6 @@ TEST_CASE("[frontend] Analyzing user-type declarations", "frontend") {
     CHECK_DIAG("enum int = a", errTypeAlreadyDeclared(NO_SRC, "int"));
     CHECK_DIAG("enum function = a", errTypeNameIsReserved(NO_SRC, "function"));
     CHECK_DIAG("enum action = a", errTypeNameIsReserved(NO_SRC, "action"));
-    CHECK_DIAG("enum assert = a", errTypeNameConflictsWithFunc(NO_SRC, "assert"));
   }
 }
 

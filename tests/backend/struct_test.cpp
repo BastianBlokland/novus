@@ -8,7 +8,8 @@ TEST_CASE("[backend] Generate assembly for structs", "backend") {
   SECTION("Normal struct") {
     CHECK_PROG(
         "struct User = string name, int age "
-        "assert(User(\"hello\", 42) == User(\"world\", 1337), \"test\")",
+        "fun test(bool b) b "
+        "test(User(\"hello\", 42) == User(\"world\", 1337))",
         [](novasm::Assembler* asmb) -> void {
           // --- Struct equality function start.
           asmb->label("UserEq");
@@ -43,7 +44,13 @@ TEST_CASE("[backend] Generate assembly for structs", "backend") {
           asmb->addRet();
           // --- Struct equality function end.
 
-          // --- assert statement start.
+          // --- test function start.
+          asmb->label("func-test");
+          asmb->addStackLoad(0);
+          asmb->addRet();
+          // --- test function end.
+
+          // --- exec statement start.
           asmb->label("prog");
           // Make struct 1 'User("hello", 42)'.
           asmb->addLoadLitString("hello");
@@ -55,12 +62,11 @@ TEST_CASE("[backend] Generate assembly for structs", "backend") {
           asmb->addLoadLitInt(1337);
           asmb->addMakeStruct(2);
 
-          // Call the equality function and write the result.
+          // Call the equality function and write the result.m
           asmb->addCall("UserEq", 2, novasm::CallMode::Normal);
-          asmb->addLoadLitString("test");
-          asmb->addPCall(novasm::PCallCode::Assert);
+          asmb->addCall("func-test", 1, novasm::CallMode::Normal);
           asmb->addRet();
-          // --- assert statement end.
+          // --- exec statement end.
 
           asmb->setEntrypoint("prog");
         });
@@ -69,7 +75,8 @@ TEST_CASE("[backend] Generate assembly for structs", "backend") {
   SECTION("Empty struct (tag type)") {
     CHECK_PROG(
         "struct Empty "
-        "assert(Empty() == Empty(), \"test\")",
+        "fun test(bool b) b "
+        "test(Empty() == Empty())",
         [](novasm::Assembler* asmb) -> void {
           // --- Struct equality function start.
           asmb->label("UserEq");
@@ -78,7 +85,13 @@ TEST_CASE("[backend] Generate assembly for structs", "backend") {
           asmb->addRet();
           // --- Struct equality function end.
 
-          // --- assert statement start.
+          // --- test function start.
+          asmb->label("func-test");
+          asmb->addStackLoad(0);
+          asmb->addRet();
+          // --- test function end.
+
+          // --- exec statement start.
           asmb->label("prog");
           // Make struct 1 'Empty()'.
           asmb->addMakeNullStruct(); // Empty struct is represented by a null-struct.
@@ -88,10 +101,9 @@ TEST_CASE("[backend] Generate assembly for structs", "backend") {
 
           // Call the equality function and write the result.
           asmb->addCall("UserEq", 2, novasm::CallMode::Normal);
-          asmb->addLoadLitString("test");
-          asmb->addPCall(novasm::PCallCode::Assert);
+          asmb->addCall("func-test", 1, novasm::CallMode::Normal);
           asmb->addRet();
-          // --- assert statement end.
+          // --- exec statement end.
 
           asmb->setEntrypoint("prog");
         });
@@ -99,8 +111,9 @@ TEST_CASE("[backend] Generate assembly for structs", "backend") {
     SECTION("One field struct") {
       CHECK_PROG(
           "struct Age = int years "
-          "assert(Age(42) == Age(1337), \"test\") "
-          "assert(Age(42).years == 0, \"test\")",
+          "fun test(bool b) b "
+          "test(Age(42) == Age(1337)) "
+          "test(Age(42).years == 0)",
           [](novasm::Assembler* asmb) -> void {
             // --- Struct equality function start.
             asmb->label("UserEq");
@@ -110,8 +123,14 @@ TEST_CASE("[backend] Generate assembly for structs", "backend") {
             asmb->addRet();
             // --- Struct equality function end.
 
-            // --- assert statement 1 start.
-            asmb->label("write1");
+            // --- test function start.
+            asmb->label("func-test");
+            asmb->addStackLoad(0);
+            asmb->addRet();
+            // --- test function end.
+
+            // --- exec statement 1 start.
+            asmb->label("exec1");
             // Make struct 1 'Age(42)'.
             asmb->addLoadLitInt(42); // Struct with 1 field is represented by the field itself.
 
@@ -120,27 +139,24 @@ TEST_CASE("[backend] Generate assembly for structs", "backend") {
 
             // Call the equality function and write the result.
             asmb->addCall("UserEq", 2, novasm::CallMode::Normal);
-            asmb->addLoadLitString("test");
-            asmb->addPCall(novasm::PCallCode::Assert);
+            asmb->addCall("func-test", 1, novasm::CallMode::Normal);
             asmb->addRet();
-            // --- assert statement 1 end.
+            // --- exec statement 1 end.
 
-            // --- assert statement 2 start.
-            asmb->label("write2");
+            // --- exec statement 2 start.
+            asmb->label("exec2");
             // Make struct 'Age(42)'.
             asmb->addLoadLitInt(42); // Struct with 1 field is represented by the field itself.
             asmb->addLoadLitInt(0);
             asmb->addCheckEqInt();
-
-            asmb->addLoadLitString("test");
-            asmb->addPCall(novasm::PCallCode::Assert);
+            asmb->addCall("func-test", 1, novasm::CallMode::Normal);
             asmb->addRet();
-            // --- assert statement 2 end.
+            // --- exec statement 2 end.
 
             // Entry point that calls both writes.
             asmb->label("entry");
-            asmb->addCall("write1", 0, novasm::CallMode::Normal);
-            asmb->addCall("write2", 0, novasm::CallMode::Normal);
+            asmb->addCall("exec1", 0, novasm::CallMode::Normal);
+            asmb->addCall("exec2", 0, novasm::CallMode::Normal);
             asmb->addRet();
 
             asmb->setEntrypoint("entry");

@@ -175,7 +175,9 @@ TEST_CASE("[frontend] Analyzing user-function declarations", "frontend") {
     CHECK_DIAG("fun f{T}(int{M} a) -> int 1", errUndeclaredType(NO_SRC, "M", 0));
     CHECK_DIAG("fun f{T}(int{T{M}} a) -> int 1", errUndeclaredType(NO_SRC, "M", 0));
     CHECK_DIAG(
-        "fun assert(bool cond, string msg) input", errDuplicateFuncDeclaration(NO_SRC, "assert"));
+        "fun fa(bool b, string s) b "
+        "fun fa(bool b, string s) b",
+        errDuplicateFuncDeclaration(NO_SRC, "fa"));
     CHECK_DIAG("act +(int i) i + 1", errNonPureOperatorOverload(NO_SRC));
     CHECK_DIAG("act +{T}(T t) t + 1", errNonPureOperatorOverload(NO_SRC));
     CHECK_DIAG(

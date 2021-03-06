@@ -624,9 +624,6 @@ auto GenExpr::visit(const prog::expr::CallExprNode& n) -> void {
   case prog::sym::FuncKind::ActionSleepNano:
     m_asmb->addPCall(novasm::PCallCode::SleepNano);
     break;
-  case prog::sym::FuncKind::ActionAssert:
-    m_asmb->addPCall(novasm::PCallCode::Assert);
-    break;
   case prog::sym::FuncKind::ActionFail:
     m_asmb->addFail();
     break;

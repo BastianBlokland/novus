@@ -1,6 +1,5 @@
 #include "internal/get_expr.hpp"
 #include "frontend/diag_defs.hpp"
-#include "internal/call_modifiers.hpp"
 #include "internal/check_union_exhaustiveness.hpp"
 #include "internal/define_user_funcs.hpp"
 #include "internal/get_identifier.hpp"
@@ -266,10 +265,6 @@ auto GetExpr::visit(const parse::CallExprNode& n) -> void {
       return;
     }
   }
-
-  // modifyCallArgs is a mechanism for the frontend to adjust the arguments of a call, for example
-  // it allows adding extra arguments.
-  modifyCallArgs(m_ctx, m_typeSubTable, nameToken, typeParams, n, *args.get());
 
   auto possibleFuncs = getIdVisitor.isIntrinsic()
       ? m_ctx->getProg()->lookupIntrinsic(getName(nameToken), getOvOptions(0))
