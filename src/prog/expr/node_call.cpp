@@ -1,6 +1,5 @@
 #include "prog/expr/node_call.hpp"
 #include "internal/implicit_conv.hpp"
-#include "internal/opt_args.hpp"
 #include "utilities.hpp"
 #include <sstream>
 #include <stdexcept>
@@ -8,17 +7,12 @@
 namespace prog::expr {
 
 CallExprNode::CallExprNode(
-    sym::FuncId func,
-    sym::TypeId resultType,
-    std::vector<NodePtr> args,
-    CallMode mode,
-    bool needsPatching) :
+    sym::FuncId func, sym::TypeId resultType, std::vector<NodePtr> args, CallMode mode) :
     Node{CallExprNode::getKind()},
     m_func{func},
     m_resultType{resultType},
     m_mode{mode},
-    m_args{std::move(args)},
-    m_needsPatching{needsPatching} {}
+    m_args{std::move(args)} {}
 
 auto CallExprNode::operator==(const Node& rhs) const noexcept -> bool {
   const auto r = dynamic_cast<const CallExprNode*>(&rhs);
@@ -57,8 +51,7 @@ auto CallExprNode::toString() const -> std::string {
 }
 
 auto CallExprNode::clone(Rewriter* rewriter) const -> std::unique_ptr<Node> {
-  auto* newExpr =
-      new CallExprNode{m_func, m_resultType, cloneNodes(m_args, rewriter), m_mode, m_needsPatching};
+  auto* newExpr = new CallExprNode{m_func, m_resultType, cloneNodes(m_args, rewriter), m_mode};
   newExpr->setSourceId(getSourceId());
   return std::unique_ptr<CallExprNode>{newExpr};
 }
@@ -73,14 +66,11 @@ auto CallExprNode::isFork() const noexcept -> bool { return m_mode == CallMode::
 
 auto CallExprNode::isLazy() const noexcept -> bool { return m_mode == CallMode::Lazy; }
 
-auto CallExprNode::needsPatching() const noexcept -> bool { return m_needsPatching; }
-
-auto CallExprNode::applyPatches(const Program& prog) const -> void {
-  if (m_needsPatching) {
-    internal::applyOptArgIntializers(prog, m_func, &m_args);
-    m_needsPatching = false;
-  }
+auto CallExprNode::isComplete(const Program& prog) const noexcept -> bool {
+  return prog.getFuncDecl(m_func).getInput().getCount() == m_args.size();
 }
+
+auto CallExprNode::patchArgs(ArgPatcher patcher) const -> void { patcher(m_func, &m_args); }
 
 auto CallExprNode::accept(NodeVisitor* visitor) const -> void { visitor->visit(*this); }
 
@@ -139,12 +129,8 @@ auto callExprNode(
   // Apply implicit conversions if necessary (and throw if types are incompatible).
   internal::applyImplicitConversions(prog, funcDecl.getInput(), &args);
 
-  // For calls that do not supply overrides for optional arguments we need to patch the optional
-  // arguments later after all functions have been defined.
-  const bool needsPatching = args.size() < funcDecl.getInput().getCount();
-
   return std::unique_ptr<CallExprNode>{
-      new CallExprNode{funcDecl.getId(), resultType, std::move(args), mode, needsPatching}};
+      new CallExprNode{funcDecl.getId(), resultType, std::move(args), mode}};
 }
 
 } // namespace prog::expr

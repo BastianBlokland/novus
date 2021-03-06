@@ -56,7 +56,7 @@ auto inlineCalls(const prog::Program& prog, bool& modified) -> prog::Program {
 auto CallInlineRewriter::isInlinable(const prog::expr::CallExprNode* callExpr) -> bool {
   const auto funcId = callExpr->getFunc();
 
-  if (callExpr->needsPatching()) {
+  if (!callExpr->isComplete(m_prog)) {
     // This is not a valid state and means the frontend had an internal error and the backend will
     // crash when trying to genenerate assembly.
     return false;

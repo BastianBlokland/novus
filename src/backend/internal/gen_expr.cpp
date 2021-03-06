@@ -81,7 +81,7 @@ auto GenExpr::visit(const prog::expr::SwitchExprNode& n) -> void {
 }
 
 auto GenExpr::visit(const prog::expr::CallExprNode& n) -> void {
-  if (n.needsPatching()) {
+  if (!n.isComplete(m_prog)) {
     throw std::logic_error{"Call expression needs to be patched first"};
   }
 

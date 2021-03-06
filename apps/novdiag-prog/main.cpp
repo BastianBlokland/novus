@@ -52,7 +52,7 @@ auto printExpr(
             << input::escapeNonPrintingAsHex(n.toString()) << rang::fg::reset << " -> "
             << n.getType();
 
-  if (n.getSourceId().isSet()) {
+  if (n.hasSourceId()) {
     const auto& srcInfo = srcTable[n.getSourceId()];
     std::cout << rang::style::dim << " (" << srcInfo.getId() << ": " << srcInfo.getStart() << ")";
   }

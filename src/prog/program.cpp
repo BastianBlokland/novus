@@ -1,6 +1,5 @@
 #include "prog/program.hpp"
 #include "internal/implicit_conv.hpp"
-#include "internal/opt_args.hpp"
 #include "internal/overload.hpp"
 #include "prog/operator.hpp"
 
@@ -728,7 +727,5 @@ auto Program::addExecStmt(sym::ConstDeclTable consts, expr::NodePtr expr) -> voi
 auto Program::updateFuncOutput(sym::FuncId funcId, sym::TypeId newOutput) -> void {
   m_funcDecls.updateFuncOutput(funcId, newOutput);
 }
-
-auto Program::applyOptCallArgs() -> void { internal::applyOptArgIntializers(*this); }
 
 } // namespace prog

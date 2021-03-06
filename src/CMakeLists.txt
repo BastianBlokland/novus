@@ -114,7 +114,6 @@ add_library(prog STATIC
   prog/expr/utilities.cpp
 
   prog/internal/implicit_conv.cpp
-  prog/internal/opt_args.cpp
   prog/internal/overload.cpp
 
   prog/sym/const_decl_table.cpp
@@ -176,6 +175,7 @@ add_library(frontend STATIC
   frontend/internal/future_table.cpp
   frontend/internal/intrinsic_call_hooks.cpp
   frontend/internal/lazy_table.cpp
+  frontend/internal/patch_args.cpp
   frontend/internal/get_expr.cpp
   frontend/internal/import_sources.cpp
   frontend/internal/source_table_builder.cpp
