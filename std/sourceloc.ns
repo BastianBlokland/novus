@@ -1,0 +1,42 @@
+import "writer.ns"
+
+// -- Types
+
+struct SourceLoc =
+  string  file,
+  int     line,
+  int     column
+
+// -- Conversions
+
+fun string(SourceLoc v)
+  sourceLocWriter().run(v)
+
+// -- Utilities
+
+fun getSourceLoc(
+    string  file    = intrinsic{source_loc_file}(),
+    int     line    = intrinsic{source_loc_line}(),
+    int     column  = intrinsic{source_loc_column}()
+  ) SourceLoc(file, line, column)
+
+// -- Writers
+
+fun sourceLocWriter()
+  (
+    stringWriter() & litWriter(':') & txtIntWriter() & litWriter(':') & txtIntWriter()
+  ).map(lambda (SourceLoc sl)
+      makePair(sl.file, sl.line, sl.column)
+    )
+
+// -- Tests
+
+assert(intrinsic{source_loc_file}() == "unknown")
+assert(intrinsic{source_loc_line}() == -1)
+assert(intrinsic{source_loc_column}() == -1)
+
+assert(getSourceLoc().file == "sourceloc.ns")
+assert(getSourceLoc().line == 39)
+assert(getSourceLoc().column == 8)
+
+assert(getSourceLoc().string() == "sourceloc.ns:42:8")
