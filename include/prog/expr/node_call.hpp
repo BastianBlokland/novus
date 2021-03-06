@@ -2,6 +2,7 @@
 #include "prog/expr/call_mode.hpp"
 #include "prog/expr/node.hpp"
 #include "prog/program.hpp"
+#include <functional>
 
 namespace prog::expr {
 
@@ -20,6 +21,8 @@ class CallExprNode final : public Node {
       CallMode mode) -> NodePtr;
 
 public:
+  using ArgPatcher = std::function<void(sym::FuncId func, std::vector<NodePtr>* args)>;
+
   CallExprNode() = delete;
 
   auto operator==(const Node& rhs) const noexcept -> bool override;
@@ -39,9 +42,14 @@ public:
   [[nodiscard]] auto getMode() const noexcept -> CallMode;
   [[nodiscard]] auto isFork() const noexcept -> bool;
   [[nodiscard]] auto isLazy() const noexcept -> bool;
-  [[nodiscard]] auto needsPatching() const noexcept -> bool;
+  [[nodiscard]] auto isComplete(const Program& prog) const noexcept -> bool;
 
-  auto applyPatches(const Program& prog) const -> void;
+  /* Patching arguments actually mutates the arguments. This only ever valid while still
+   * constructing a program. After sharing your program this should never be called.
+   *
+   * In general using the rewriting api is a better way to modify programs after creation.
+   */
+  auto patchArgs(ArgPatcher patcher) const -> void;
 
   auto accept(NodeVisitor* visitor) const -> void override;
 
@@ -53,14 +61,8 @@ private:
   // NOTE: The arguments are mutable because optional arguments are applied in a separate phase
   // after all functions have been defined.
   mutable std::vector<NodePtr> m_args;
-  mutable bool m_needsPatching;
 
-  CallExprNode(
-      sym::FuncId func,
-      sym::TypeId resultType,
-      std::vector<NodePtr> args,
-      CallMode mode,
-      bool needsPatching);
+  CallExprNode(sym::FuncId func, sym::TypeId resultType, std::vector<NodePtr> args, CallMode mode);
 };
 
 // Factories.

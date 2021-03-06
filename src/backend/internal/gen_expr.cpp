@@ -81,7 +81,7 @@ auto GenExpr::visit(const prog::expr::SwitchExprNode& n) -> void {
 }
 
 auto GenExpr::visit(const prog::expr::CallExprNode& n) -> void {
-  if (n.needsPatching()) {
+  if (!n.isComplete(m_prog)) {
     throw std::logic_error{"Call expression needs to be patched first"};
   }
 
@@ -486,6 +486,14 @@ auto GenExpr::visit(const prog::expr::CallExprNode& n) -> void {
     }
     break;
   }
+
+  case prog::sym::FuncKind::SourceLocFile:
+    m_asmb->addLoadLitString("unknown");
+    break;
+  case prog::sym::FuncKind::SourceLocLine:
+  case prog::sym::FuncKind::SourceLocColumn:
+    m_asmb->addLoadLitInt(-1);
+    break;
 
   // Platform actions:
   case prog::sym::FuncKind::ActionEndiannessNative:

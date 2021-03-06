@@ -1,5 +1,5 @@
-#include "lazy_table.hpp"
-#include "utilities.hpp"
+#include "internal/lazy_table.hpp"
+#include "internal/utilities.hpp"
 
 namespace frontend::internal {
 

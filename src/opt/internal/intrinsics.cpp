@@ -122,6 +122,12 @@ auto isPrecomputableIntrinsic(prog::sym::FuncKind funcKind) -> bool {
   case prog::sym::FuncKind::CheckNEqString:
   case prog::sym::FuncKind::DefString:
 
+  // Source location
+  // NOTE: These are only present if the frontend was unable to replace it with valid literals.
+  case prog::sym::FuncKind::SourceLocFile:
+  case prog::sym::FuncKind::SourceLocLine:
+  case prog::sym::FuncKind::SourceLocColumn:
+
     return true;
 
   default:
@@ -568,6 +574,16 @@ auto isPrecomputableIntrinsic(prog::sym::FuncKind funcKind) -> bool {
   case prog::sym::FuncKind::DefString: {
     assert(args.size() == 0);
     return prog::expr::litStringNode(prog, "");
+  }
+
+  case prog::sym::FuncKind::SourceLocFile: {
+    assert(args.size() == 0);
+    return prog::expr::litStringNode(prog, "unknown");
+  }
+  case prog::sym::FuncKind::SourceLocLine:
+  case prog::sym::FuncKind::SourceLocColumn: {
+    assert(args.size() == 0);
+    return prog::expr::litIntNode(prog, -1);
   }
 
   default:

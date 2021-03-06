@@ -1,6 +1,7 @@
 #pragma once
 #include "frontend/diag_severity.hpp"
 #include "prog/sym/source_id.hpp"
+#include <iosfwd>
 #include <string>
 
 namespace frontend {
@@ -30,6 +31,8 @@ private:
 
   Diag(DiagSeverity severity, std::string msg, prog::sym::SourceId src);
 };
+
+auto operator<<(std::ostream& out, Diag diag) -> std::ostream&;
 
 auto warning(std::string msg, prog::sym::SourceId src) -> Diag;
 auto error(std::string msg, prog::sym::SourceId src) -> Diag;

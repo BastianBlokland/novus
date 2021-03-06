@@ -122,6 +122,13 @@ enum class FuncKind {
                     // all user-types.
   CheckNEqUserType, // Check if two user-types are not equal.
 
+  // NOTE: The source-location functions are no-ops that just return 'unknown' and '-1' at runtime.
+  // If used in a supported context (like in an optional argument initializer the frontend will
+  // replace these functions with literals containing the requested information).
+  SourceLocFile,   // Get the filename of the current source file.
+  SourceLocLine,   // Get the line number in the current source file.
+  SourceLocColumn, // Get the column number in the current source file.
+
   ActionEndiannessNative,  // Get the native endianness of the system: Little: 0, Big: 1.
   ActionPlatformErrorCode, // Get the last plaform error.
 

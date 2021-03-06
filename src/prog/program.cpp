@@ -1,6 +1,5 @@
 #include "prog/program.hpp"
 #include "internal/implicit_conv.hpp"
-#include "internal/opt_args.hpp"
 #include "internal/overload.hpp"
 #include "prog/operator.hpp"
 
@@ -237,6 +236,13 @@ Program::Program() :
   m_funcDecls.registerFunc(*this, Fk::ConvCharString, "string", sym::TypeSet{m_char}, m_string);
   m_funcDecls.registerFunc(*this, Fk::NoOp, "asFloat", sym::TypeSet{m_int}, m_float);
   m_funcDecls.registerFunc(*this, Fk::NoOp, "asInt", sym::TypeSet{m_float}, m_int);
+
+  // Source-location intrinsics.
+  m_funcDecls.registerIntrinsic(
+      *this, Fk::SourceLocFile, "source_loc_file", sym::TypeSet{}, m_string);
+  m_funcDecls.registerIntrinsic(*this, Fk::SourceLocLine, "source_loc_line", sym::TypeSet{}, m_int);
+  m_funcDecls.registerIntrinsic(
+      *this, Fk::SourceLocColumn, "source_loc_column", sym::TypeSet{}, m_int);
 
   // Register build-in actions.
   m_funcDecls.registerIntrinsicAction(
@@ -721,7 +727,5 @@ auto Program::addExecStmt(sym::ConstDeclTable consts, expr::NodePtr expr) -> voi
 auto Program::updateFuncOutput(sym::FuncId funcId, sym::TypeId newOutput) -> void {
   m_funcDecls.updateFuncOutput(funcId, newOutput);
 }
-
-auto Program::applyOptCallArgs() -> void { internal::applyOptArgIntializers(*this); }
 
 } // namespace prog

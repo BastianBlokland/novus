@@ -6,6 +6,7 @@
 #include "prog/expr/node_lit_int.hpp"
 #include "prog/expr/node_lit_string.hpp"
 #include "prog/operator.hpp"
+#include <iostream>
 
 namespace frontend {
 
@@ -135,16 +136,15 @@ TEST_CASE("[frontend] Analyzing optional argument", "frontend") {
           errConstDeclareNotSupported(NO_SRC),
           errUndeclaredConst(NO_SRC, "b"));
 
-      CHECK_DIAG("fun fb(int a = fb()) a", errUndeclaredPureFunc(NO_SRC, "fb", {}));
       CHECK_DIAG(
-          "fun fa(int a = 0) a "
-          "fun fb(int a = fa()) a",
-          errUndeclaredPureFunc(NO_SRC, "fa", {}));
+          "fun fa(int a = fa()) a "
+          "fun fb() fa()",
+          errCyclicOptArgInitializer(NO_SRC));
       CHECK_DIAG(
           "fun fa(int a = fb()) a "
-          "fun fb(int a = fa()) a",
-          errUndeclaredPureFunc(NO_SRC, "fb", {}),
-          errUndeclaredPureFunc(NO_SRC, "fa", {}));
+          "fun fb(int a = fa()) a "
+          "fun fc() fb()",
+          errCyclicOptArgInitializer(NO_SRC));
 
       CHECK_DIAG("fun f(int a = 0, int b) a + b", errNonOptArgFollowingOpt(NO_SRC));
       CHECK_DIAG("fun f(int a = 0, int b, int c = 0) a + b + c", errNonOptArgFollowingOpt(NO_SRC));

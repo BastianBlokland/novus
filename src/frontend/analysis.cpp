@@ -9,6 +9,7 @@
 #include "internal/func_template_table.hpp"
 #include "internal/get_parse_diags.hpp"
 #include "internal/import_sources.hpp"
+#include "internal/patch_args.hpp"
 #include "internal/type_info.hpp"
 #include "internal/type_template_table.hpp"
 #include "internal/typeinfer_user_funcs.hpp"
@@ -164,13 +165,17 @@ auto analyze(const Source& mainSrc, const std::vector<filesystem::path>& searchP
     return buildOutput(nullptr, std::move(importedSources), sourceTableBuilder.build(), diags);
   }
 
-  // Create a map for looking up source information about expressions in the result program.
-  auto sourceMap = sourceTableBuilder.build();
+  // Create a table for looking up source information about expressions in the result program.
+  auto sourceTable = sourceTableBuilder.build();
 
   // Patch all call expressions to apply the optional arguments if they didn't supply overrides.
-  prog->applyOptCallArgs();
+  internal::patchCallArgs(*prog, sourceTable, [&diags](Diag diag) { diags.push_back(diag); });
 
-  return buildOutput(std::move(prog), std::move(importedSources), std::move(sourceMap), {});
+  if (!diags.empty()) {
+    return buildOutput(nullptr, std::move(importedSources), std::move(sourceTable), diags);
+  }
+
+  return buildOutput(std::move(prog), std::move(importedSources), std::move(sourceTable), {});
 }
 
 } // namespace frontend

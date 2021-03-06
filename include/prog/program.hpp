@@ -184,10 +184,6 @@ public:
 
   auto updateFuncOutput(sym::FuncId funcId, sym::TypeId newOutput) -> void;
 
-  // Patch call expressions to apply the not-provided optional arguments.
-  // Should be called after all functions have been defined.
-  auto applyOptCallArgs() -> void;
-
 private:
   sym::TypeDeclTable m_typeDecls;
   sym::FuncDeclTable m_funcDecls;

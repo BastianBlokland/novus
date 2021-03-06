@@ -27,6 +27,7 @@ public:
   virtual auto operator!=(const Node& rhs) const noexcept -> bool = 0;
 
   [[nodiscard]] auto getKind() const -> NodeKind;
+  [[nodiscard]] auto hasSourceId() const -> bool;
   [[nodiscard]] auto getSourceId() const -> sym::SourceId;
 
   [[nodiscard]] virtual auto operator[](unsigned int) const -> const Node& = 0;
