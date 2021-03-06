@@ -2,6 +2,7 @@
 #include "frontend/diag.hpp"
 #include "frontend/source_table.hpp"
 #include "prog/program.hpp"
+#include <functional>
 
 namespace frontend::internal {
 
