@@ -154,8 +154,6 @@ fun ttyLitWindowTitleWriter(string title) -> Writer{None}
 fun ttyWindowTitleWriter() -> Writer{string}
   litWriter(ttyEsc() + "]0;") & stringWriter() & litWriter(ttyBell())
 
-//ESC ] 2 ; <string> BEL
-
 // -- Compound writers
 
 fun ttyStyledTextWriter(TtyStyle s) -> Writer{string}

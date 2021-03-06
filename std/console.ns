@@ -83,9 +83,11 @@ act noinline print{T}(T x, TtyStyle style) -> Option{Error}
   )
 
 act noinline printErr{T}(T x) -> Option{Error}
-  consoleOpen().map(impure lambda (Console c)
-    c.writeErr(x.string() + '\n')
-  )
+  cOrErr = consoleOpen();
+  if cOrErr as Error    e -> e
+  if cOrErr as Console  c ->
+    if c.isTerm() -> c.writeErr(ttyStyledTextWriter(TtyStyle.BgRed), x.string() + '\n')
+    else          -> c.writeErr(x.string() + '\n')
 
 act noinline printErr{T}(T x, TtyStyle style) -> Option{Error}
   styledWriter = ttyStyledTextWriter(style);
