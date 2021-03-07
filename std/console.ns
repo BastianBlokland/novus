@@ -105,6 +105,9 @@ act noinline printHex{T}(T mask, bool includeLeadingZeroes = false) -> Option{Er
 act noinline printHex(float f, bool includeLeadingZeroes = false) -> Option{Error}
   print(toHexString(asInt(f), includeLeadingZeroes))
 
+act printType{T}(Type{T} t) -> Option{Error}
+  print(t)
+
 act printType{T}(T val) -> Option{Error}
   print(val.getType())
 
