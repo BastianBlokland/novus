@@ -1,18 +1,20 @@
 #pragma once
 #include "internal/context.hpp"
 #include "lex/token.hpp"
+#include <optional>
 #include <utility>
 #include <vector>
 
 namespace frontend::internal {
 
-auto injectPossibleIntrinsicFunctions(
+using IntrinsicArgs = std::pair<std::vector<prog::expr::NodePtr>, prog::sym::TypeSet>;
+
+auto resolveMetaIntrinsic(
     Context* ctx,
     const TypeSubstitutionTable* subTable,
+    bool allowActions,
     const lex::Token& nameToken,
-    input::Span callSpan,
     const std::optional<parse::TypeParamList>& typeParams,
-    const std::pair<std::vector<prog::expr::NodePtr>, prog::sym::TypeSet>& args,
-    std::vector<prog::sym::FuncId>& possibleFuncs) -> void;
+    const IntrinsicArgs& args) -> std::optional<prog::expr::NodePtr>;
 
 } // namespace frontend::internal

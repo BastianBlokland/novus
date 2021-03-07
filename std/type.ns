@@ -2,38 +2,58 @@ import "std/char.ns"
 
 // -- Type tag
 
-struct TypeTag{T}
+struct Type{T}
+
+// -- Utilities
+
+fun getType{T}(T val)
+  Type{T}()
+
+fun typeName{T}(Type{T} t)
+  typeName{T}()
+
+fun typeName{T}() -> string
+  intrinsic{type_name}{T}()
+
+// -- Conversions
+
+fun string{T}(Type{T} t)
+  t.typeName()
 
 // -- Traits
 
-fun isIntegral(TypeTag{int} t)  true
-fun isIntegral(TypeTag{char} t) true
-fun isIntegral(TypeTag{long} t) true
-fun isIntegral{T}(TypeTag{T} t) false
-fun isIntegral{T}() isIntegral(TypeTag{T}())
+fun isIntegral(Type{int} t)   true
+fun isIntegral(Type{char} t)  true
+fun isIntegral(Type{long} t)  true
+fun isIntegral{T}(Type{T} t)  false
+fun isIntegral{T}()           isIntegral(Type{T}())
 
-fun byteSize(TypeTag{char} t)   1
-fun byteSize(TypeTag{int} t)    4
-fun byteSize(TypeTag{float} t)  4
-fun byteSize(TypeTag{long} t)   8
-fun byteSize{T}()   byteSize(TypeTag{T}())
-fun bitSize{T}()    byteSize{T}() * 8
-fun nibbleSize{T}() byteSize{T}() * 2
+fun byteSize(Type{char} t)    1
+fun byteSize(Type{int} t)     4
+fun byteSize(Type{float} t)   4
+fun byteSize(Type{long} t)    8
+fun byteSize{T}()             byteSize(Type{T}())
 
-fun lowBit{T}()   T(1)
-fun highBit{T}()  lowBit{T}() << (bitSize{T}() - 1)
+fun bitSize{T}(Type{T} t)     byteSize(t) * 8
+fun bitSize{T}()              bitSize(Type{T}())
 
-fun minVal(TypeTag{char} t)  '\0'
-fun minVal(TypeTag{int} t)   0x8000_0000
-fun minVal(TypeTag{long} t)  0x8000_0000_0000_0000L
-fun minVal(TypeTag{float} t) asFloat(0xFF7F_FFFF)
-fun minVal{T}() minVal(TypeTag{T}())
+fun nibbleSize{T}(Type{T} t)  byteSize(t) * 2
+fun nibbleSize{T}()           nibbleSize(Type{T}())
 
-fun maxVal(TypeTag{char} t)  char(255)
-fun maxVal(TypeTag{int} t)   0x7FFF_FFFF
-fun maxVal(TypeTag{long} t)  0x7FFF_FFFF_FFFF_FFFFL
-fun maxVal(TypeTag{float} t) asFloat(0x7F7F_FFFF)
-fun maxVal{T}() maxVal(TypeTag{T}())
+fun lowBit{T}()               T(1)
+fun highBit{T}()              lowBit{T}() << (bitSize{T}() - 1)
+
+fun minVal(Type{char} t)      '\0'
+fun minVal(Type{int} t)       0x8000_0000
+fun minVal(Type{long} t)      0x8000_0000_0000_0000L
+fun minVal(Type{float} t)     asFloat(0xFF7F_FFFF)
+fun minVal{T}()               minVal(Type{T}())
+
+fun maxVal(Type{char} t)      char(255)
+fun maxVal(Type{int} t)       0x7FFF_FFFF
+fun maxVal(Type{long} t)      0x7FFF_FFFF_FFFF_FFFFL
+fun maxVal(Type{float} t)     asFloat(0x7F7F_FFFF)
+fun maxVal{T}()               maxVal(Type{T}())
 
 // -- Tests
 
@@ -46,3 +66,10 @@ assert(bitSize{long}()  == 64)
 
 assert(lowBit{int}() == 1)
 assert(highBit{int}() == 1 << 31)
+
+assert(getType(42).string() == "int")
+assert(getType(42L).string() == "long")
+assert(getType('a').string() == "char")
+assert(getType(42.0).string() == "float")
+assert(getType(42).getType().string() == "Type{int}")
+assert(getType(42).getType().getType().string() == "Type{Type{int}}")

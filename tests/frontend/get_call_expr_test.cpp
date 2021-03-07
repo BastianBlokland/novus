@@ -251,16 +251,6 @@ TEST_CASE("[frontend] Analyzing call expressions", "frontend") {
     CHECK(GET_FUNC_DEF(output, "a2").getBody() == *callExpr);
   }
 
-  SECTION("Get fail intrinsic action call") {
-    const auto& output = ANALYZE("act a() -> int intrinsic{fail}{int}()");
-    REQUIRE(output.isSuccess());
-
-    auto callExpr = prog::expr::callExprNode(
-        output.getProg(), GET_INTRINSIC_ID(output, "__fail_int"), NO_EXPRS);
-
-    CHECK(GET_FUNC_DEF(output, "a").getBody() == *callExpr);
-  }
-
   SECTION("Diagnostics") {
     CHECK_DIAG(
         "fun f1() -> int 1 "
@@ -298,15 +288,6 @@ TEST_CASE("[frontend] Analyzing call expressions", "frontend") {
         errForkedNonUserFunc(NO_SRC));
     CHECK_DIAG(
         "fun f(future{int} fi) -> int lazy intrinsic{future_get}(fi)", errLazyNonUserFunc(NO_SRC));
-    CHECK_DIAG("fun f() -> int fail{int}()", errNoPureFuncFoundToInstantiate(NO_SRC, "fail", 1));
-    CHECK_DIAG(
-        "act f() -> int intrinsic{fail}()",
-        errInvalidFailIntrinsicCall(NO_SRC, 0, 0),
-        errUnknownIntrinsic(NO_SRC, "fail", false, {}));
-    CHECK_DIAG(
-        "act f() -> int intrinsic{fail}(1)",
-        errInvalidFailIntrinsicCall(NO_SRC, 0, 1),
-        errUnknownIntrinsic(NO_SRC, "fail", false, {"int"}));
   }
 }
 

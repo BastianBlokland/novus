@@ -251,6 +251,22 @@ auto GetExpr::visit(const parse::CallExprNode& n) -> void {
     return;
   }
 
+  const bool allowPureFunc = hasFlag<Flags::AllowPureFuncCalls>();
+  const bool allowAction   = hasFlag<Flags::AllowActionCalls>();
+
+  if (getIdVisitor.isIntrinsic()) {
+    // Meta intrinsics are intrinsics where the frontend emits special expression nodes, an example
+    // of this is 'intrinsic{type_name}{T}()' where the frontend will actually emit a literal string
+    // expression containing the type name.
+    if (auto metaExpr = resolveMetaIntrinsic(
+            m_ctx, m_typeSubTable, allowAction, nameToken, typeParams, *args.get())) {
+
+      m_expr = std::move(*metaExpr);
+      m_ctx->associateSrc(m_expr, n.getSpan());
+      return;
+    }
+  }
+
   // modifyCallArgs is a mechanism for the frontend to adjust the arguments of a call, for example
   // it allows adding extra arguments.
   modifyCallArgs(m_ctx, m_typeSubTable, nameToken, typeParams, n, *args.get());
@@ -258,11 +274,6 @@ auto GetExpr::visit(const parse::CallExprNode& n) -> void {
   auto possibleFuncs = getIdVisitor.isIntrinsic()
       ? m_ctx->getProg()->lookupIntrinsic(getName(nameToken), getOvOptions(0))
       : getFunctionsInclConversions(nameToken, typeParams, args->second);
-
-  if (getIdVisitor.isIntrinsic()) {
-    injectPossibleIntrinsicFunctions(
-        m_ctx, m_typeSubTable, nameToken, n.getSpan(), typeParams, *args.get(), possibleFuncs);
-  }
 
   // On instance calls we do not allow (implicit) conversions on the first argument (the instance).
   const auto noConvFirstArg = instance != nullptr;
@@ -296,8 +307,6 @@ auto GetExpr::visit(const parse::CallExprNode& n) -> void {
       return;
     }
 
-    const bool allowPureFunc = hasFlag<Flags::AllowPureFuncCalls>();
-    const bool allowAction   = hasFlag<Flags::AllowActionCalls>();
     if (typeParams) {
       // TODO: Include the type-names for the type-parameters in the diagnostic.
       // TODO: Include the type-names for the arguments in the diagnostic.

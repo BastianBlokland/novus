@@ -574,19 +574,6 @@ auto errIncorrectNumArgsInSelfCall(
   return error(oss.str(), src);
 }
 
-auto errInvalidFailIntrinsicCall(
-    prog::sym::SourceId src, unsigned int typeParams, unsigned int argCount) -> Diag {
-  std::ostringstream oss;
-  oss << "Invalid fail intrinsic action call";
-  if (typeParams != 1) {
-    oss << ", requires '1' type parameter but got '" << typeParams << "'";
-  }
-  if (argCount != 0) {
-    oss << ", requires '0' arguments but got '" << argCount << "'";
-  }
-  return error(oss.str(), src);
-}
-
 auto errIntrinsicFuncLiteral(prog::sym::SourceId src) -> Diag {
   std::ostringstream oss;
   oss << "Compiler intrinsic cannot be used as a function literal";
