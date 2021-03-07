@@ -186,311 +186,233 @@ act endiannessNative() Endianness(intrinsic{platform_endianness_native}())
 
 // -- Tests
 
-assert(
-  unsetLow(0b111) == 0b110 &&
-  unsetLow(0b110) == 0b100 &&
-  unsetLow(0b11000000) == 0b10000000 &&
-  unsetLow(0) == 0 &&
-  unsetLow(1) == 0)
+assertEq(unsetLow(0b111), 0b110)
+assertEq(unsetLow(0b110), 0b100)
+assertEq(unsetLow(0b11000000), 0b10000000)
+assertEq(unsetLow(0), 0)
+assertEq(unsetLow(1), 0)
 
-assert(
-  unsetLow(char(0b111)) == 0b110 &&
-  unsetLow(char(0b110)) == 0b100 &&
-  unsetLow(char(0b11000000)) == 0b10000000)
+assertEq(unsetLow(char(0b111)), 0b110)
+assertEq(unsetLow(char(0b110)), 0b100)
+assertEq(unsetLow(char(0b11000000)), 0b10000000)
 
-assert(
-  unsetLow(0xFFFF_FFFF_FFFF0L) == 0xFFFF_FFFF_FFFE0L &&
-  unsetLow(0xFFFF_FFFF_FFFFL) == 0xFFFF_FFFF_FFFEL)
+assertEq(unsetLow(0xFFFF_FFFF_FFFF0L), 0xFFFF_FFFF_FFFE0L)
+assertEq(unsetLow(0xFFFF_FFFF_FFFFL), 0xFFFF_FFFF_FFFEL)
 
-assert(
-  onlyLow(0) == 0 &&
-  onlyLow(1) == 1 &&
-  onlyLow(-1) == 1 &&
-  onlyLow(0b100) == 0b100 &&
-  onlyLow(0b1010_1000) == 0b1000)
+assertEq(onlyLow(0), 0)
+assertEq(onlyLow(1), 1)
+assertEq(onlyLow(-1), 1)
+assertEq(onlyLow(0b100), 0b100)
+assertEq(onlyLow(0b1010_1000), 0b1000)
 
-assert(
-  onlyLow(char(0xFF)) == char(1) &&
-  onlyLow(char(0b100)) == char(0b100) &&
-  onlyLow(char(0b1010_1000)) == char(0b1000))
+assertEq(onlyLow(char(0xFF)), char(1))
+assertEq(onlyLow(char(0b100)), char(0b100))
+assertEq(onlyLow(char(0b1010_1000)), char(0b1000))
 
-assert(
-  onlyLow(0xFFFF_FFFF_FFFF0L) == 0x10L &&
-  onlyLow(0xFFFF_FFFF_FFFFL) == 0x1L)
+assertEq(onlyLow(0xFFFF_FFFF_FFFF0L), 0x10L)
+assertEq(onlyLow(0xFFFF_FFFF_FFFFL), 0x1L)
 
-assert(
-  unsetHigh(0) == 0 &&
-  unsetHigh(1) == 0 &&
-  unsetHigh(0b11) == 0b1 &&
-  unsetHigh(0b1101) == 0b101 &&
-  unsetHigh(0b1101001) == 0b101001 &&
-  unsetHigh(0b1001101001) == 0b1101001 &&
-  unsetHigh(-1) == -1 >> 1 &&
-  unsetHigh(0b1000_0000_0000_0000_0000_0000_0100_1000) == 0b100_1000)
+assertEq(unsetHigh(0), 0)
+assertEq(unsetHigh(1), 0)
+assertEq(unsetHigh(0b11), 0b1)
+assertEq(unsetHigh(0b1101), 0b101)
+assertEq(unsetHigh(0b1101001), 0b101001)
+assertEq(unsetHigh(0b1001101001), 0b1101001)
+assertEq(unsetHigh(-1), -1 >> 1)
+assertEq(unsetHigh(0b1000_0000_0000_0000_0000_0000_0100_1000), 0b100_1000)
 
-assert(
-  unsetHigh(char(0b11)) == char(0b1) &&
-  unsetHigh(char(0b1101)) == char(0b101) &&
-  unsetHigh(char(0b1101001)) == char(0b101001))
+assertEq(unsetHigh(char(0b11)), char(0b1))
+assertEq(unsetHigh(char(0b1101)), char(0b101))
+assertEq(unsetHigh(char(0b1101001)), char(0b101001))
 
-assert(
-  unsetHigh(0xFFFF_FFFF_FFFFL) == 0x7FFF_FFFF_FFFFL &&
-  unsetHigh(0xFFFF_FFFF_FFFF_FFFFL) == 0x7FFF_FFFF_FFFF_FFFFL)
+assertEq(unsetHigh(0xFFFF_FFFF_FFFFL), 0x7FFF_FFFF_FFFFL)
+assertEq(unsetHigh(0xFFFF_FFFF_FFFF_FFFFL), 0x7FFF_FFFF_FFFF_FFFFL)
 
-assert(
-  popCount(0) == 0 &&
-  popCount(1) == 1 &&
-  popCount(0b0010) == 1 &&
-  popCount(0b101) == 2 &&
-  popCount(0b100101) == 3 &&
-  popCount(0xFFFF_FFFF) == 32 &&
-  popCount(0xEFFF_FFFF) == 31)
+assertEq(popCount(0), 0)
+assertEq(popCount(1), 1)
+assertEq(popCount(0b0010), 1)
+assertEq(popCount(0b101), 2)
+assertEq(popCount(0b100101), 3)
+assertEq(popCount(0xFFFF_FFFF), 32)
+assertEq(popCount(0xEFFF_FFFF), 31)
 
-assert(
-  popCount(char(0b100101)) == 3 &&
-  popCount(char(0xFF)) == 8)
+assertEq(popCount(char(0b100101)), 3)
+assertEq(popCount(char(0xFF)), 8)
 
-assert(
-  popCount(0xFFFF_F0FF_FFFFL) == 44 &&
-  popCount(0xFFFF_FFFF_FFFFL) == 48 &&
-  popCount(0xFFFF_FFFF_FFFF_FFFFL) == 64)
+assertEq(popCount(0xFFFF_F0FF_FFFFL), 44)
+assertEq(popCount(0xFFFF_FFFF_FFFFL), 48)
+assertEq(popCount(0xFFFF_FFFF_FFFF_FFFFL), 64)
 
-assert(
-  trailingZeroes(0) == 32 &&
-  trailingZeroes(-1) == 0 &&
-  trailingZeroes(0b10) == 1 &&
-  trailingZeroes(0b10100) == 2 &&
-  trailingZeroes(0b101001000) == 3)
+assertEq(trailingZeroes(0), 32)
+assertEq(trailingZeroes(-1), 0)
+assertEq(trailingZeroes(0b10), 1)
+assertEq(trailingZeroes(0b10100), 2)
+assertEq(trailingZeroes(0b101001000), 3)
 
-assert(
-  trailingZeroes(char(0b100100)) == 2 &&
-  trailingZeroes(char(0xFF)) == 0 &&
-  trailingZeroes(char(0)) == 8)
+assertEq(trailingZeroes(char(0b100100)), 2)
+assertEq(trailingZeroes(char(0xFF)), 0)
+assertEq(trailingZeroes(char(0)), 8)
 
-assert(
-  trailingZeroes(0xFFFF_FFFF_FFFF_FFFFL) == 0 &&
-  trailingZeroes(0xFFFF_0000L) == 16 &&
-  trailingZeroes(0x1000_0000_0000_0000L) == 60 &&
-  trailingZeroes(0L) == 64)
+assertEq(trailingZeroes(0xFFFF_FFFF_FFFF_FFFFL), 0)
+assertEq(trailingZeroes(0xFFFF_0000L), 16)
+assertEq(trailingZeroes(0x1000_0000_0000_0000L), 60)
+assertEq(trailingZeroes(0L), 64)
 
-assert(
-  leadingZeroes(0) == 32 &&
-  leadingZeroes(-1) == 0 &&
-  leadingZeroes(1) == 31 &&
-  leadingZeroes(1 << 30) == 1 &&
-  leadingZeroes(1 << 15) == 16 &&
-  leadingZeroes(0b0000_0100_0101_0101_0110_0101_0100_1000) == 5 &&
-  leadingZeroes(-1) == 0)
+assertEq(leadingZeroes(0), 32)
+assertEq(leadingZeroes(-1), 0)
+assertEq(leadingZeroes(1), 31)
+assertEq(leadingZeroes(1 << 30), 1)
+assertEq(leadingZeroes(1 << 15), 16)
+assertEq(leadingZeroes(0b0000_0100_0101_0101_0110_0101_0100_1000), 5)
+assertEq(leadingZeroes(-1), 0)
 
-assert(
-  leadingZeroes(char(0)) == 8 &&
-  leadingZeroes(char(0b1)) == 7 &&
-  leadingZeroes(char(0xFF)) == 0)
+assertEq(leadingZeroes(char(0)), 8)
+assertEq(leadingZeroes(char(0b1)), 7)
+assertEq(leadingZeroes(char(0xFF)), 0)
 
-assert(
-  leadingZeroes(0xFFFF_FFFF_FFFF_FFFFL) == 0 &&
-  leadingZeroes(0xF0F0_F0F0L) == 32 &&
-  leadingZeroes(0x1000_0000_0000_0000L) == 3 &&
-  leadingZeroes(0L) == 64)
+assertEq(leadingZeroes(0xFFFF_FFFF_FFFF_FFFFL), 0)
+assertEq(leadingZeroes(0xF0F0_F0F0L), 32)
+assertEq(leadingZeroes(0x1000_0000_0000_0000L), 3)
+assertEq(leadingZeroes(0L), 64)
 
-assert(
-  nthSetBit(0, -1) == 0 &&
-  nthSetBit(0, 0) == 0 &&
-  nthSetBit(0, 1) == 0 &&
-  nthSetBit(0b1, 0) == 1 &&
-  nthSetBit(0b1, 1) == 0 &&
-  nthSetBit(0b1001_1101, 0) == 1 &&
-  nthSetBit(0b1001_1101, 0) == 1 &&
-  nthSetBit(0b1001_1101, 0) == 1 &&
-  nthSetBit(0b1001_1101, 2) == 0b1000 &&
-  nthSetBit(0b1001_1101, 4) == 0b1000_0000)
+assertEq(nthSetBit(0, -1), 0)
+assertEq(nthSetBit(0, 0), 0)
+assertEq(nthSetBit(0, 1), 0)
+assertEq(nthSetBit(0b1, 0), 1)
+assertEq(nthSetBit(0b1, 1), 0)
+assertEq(nthSetBit(0b1001_1101, 0), 1)
+assertEq(nthSetBit(0b1001_1101, 0), 1)
+assertEq(nthSetBit(0b1001_1101, 0), 1)
+assertEq(nthSetBit(0b1001_1101, 2), 0b1000)
+assertEq(nthSetBit(0b1001_1101, 4), 0b1000_0000)
 
-assert(
-  nthSetBit(char(0b1), 0)   == 1 &&
-  nthSetBit(char(0b1001_1101), 0) == 1 &&
-  nthSetBit(char(0b1001_1101), 2) == 0b1000 &&
-  nthSetBit(char(0b1001_1101), 4) == 0b1000_0000)
+assertEq(nthSetBit(char(0b1), 0)  , 1)
+assertEq(nthSetBit(char(0b1001_1101), 0), 1)
+assertEq(nthSetBit(char(0b1001_1101), 2), 0b1000)
+assertEq(nthSetBit(char(0b1001_1101), 4), 0b1000_0000)
 
-assert(
-  nthSetBit(0b1L, 0)   == 1 &&
-  nthSetBit(0b1001_1101L, 0) == 1 &&
-  nthSetBit(0xFFFF_FFFF_FFFF_FFFFL, 0) == 1 &&
-  nthSetBit(0xFFFF_FFFF_FFFF_1010L, 1) == 0x1000L)
+assertEq(nthSetBit(0b1L, 0)  , 1)
+assertEq(nthSetBit(0b1001_1101L, 0), 1)
+assertEq(nthSetBit(0xFFFF_FFFF_FFFF_FFFFL, 0), 1)
+assertEq(nthSetBit(0xFFFF_FFFF_FFFF_1010L, 1), 0x1000L)
 
-assert(
-  toBitString(0) == "0" &&
-  toBitString(0, true) == string('0', 32) &&
-  toBitString(-1) == string('1', 32) &&
-  toBitString(-1, true) == string('1', 32) &&
-  toBitString(1) == "1" &&
-  toBitString(2) == "10" &&
-  toBitString(4) == "100" &&
-  toBitString(0b1011_1101_1111) == "101111011111" &&
-  toBitString(0b0000_0100_0101_0101_0110_0101_0100_1000, true) == "00000100010101010110010101001000")
+assertEq(toBitString(0), "0")
+assertEq(toBitString(0, true), string('0', 32))
+assertEq(toBitString(-1), string('1', 32))
+assertEq(toBitString(-1, true), string('1', 32))
+assertEq(toBitString(1), "1")
+assertEq(toBitString(2), "10")
+assertEq(toBitString(4), "100")
+assertEq(toBitString(0b1011_1101_1111), "101111011111")
+assertEq(toBitString(0b0000_0100_0101_0101_0110_0101_0100_1000, true), "00000100010101010110010101001000")
 
-assert(
-  toBitString(char(0)) == "0" &&
-  toBitString(char(0), true) == string('0', 8) &&
-  toBitString(char(0b0101_0101), true) == "01010101")
+assertEq(toBitString(char(0)), "0")
+assertEq(toBitString(char(0), true), string('0', 8))
+assertEq(toBitString(char(0b0101_0101), true), "01010101")
 
-assert(
-  toBitString(0L) == "0" &&
-  toBitString(0L, true) == string('0', 64) &&
-  toBitString(~0L) == string('1', 64))
+assertEq(toBitString(0L), "0")
+assertEq(toBitString(0L, true), string('0', 64))
+assertEq(toBitString(~0L), string('1', 64))
 
-assert(
-  toHexString(0) == "0" &&
-  toHexString(-1) == "FFFFFFFF" &&
-  toHexString(1) == "1" &&
-  toHexString(0x1A2B3C) == "1A2B3C" &&
-  toHexString(0xABCDEF) == "ABCDEF" &&
-  toHexString(0x123ABC) == "123ABC")
+assertEq(toHexString(0), "0")
+assertEq(toHexString(-1), "FFFFFFFF")
+assertEq(toHexString(1), "1")
+assertEq(toHexString(0x1A2B3C), "1A2B3C")
+assertEq(toHexString(0xABCDEF), "ABCDEF")
+assertEq(toHexString(0x123ABC), "123ABC")
 
-assert(
-  toHexString(0, true) == "00000000" &&
-  toHexString(-1, true) == "FFFFFFFF" &&
-  toHexString(1, true) == "00000001" &&
-  toHexString(0x0ABCDEF0, true) == "0ABCDEF0")
+assertEq(toHexString(0, true), "00000000")
+assertEq(toHexString(-1, true), "FFFFFFFF")
+assertEq(toHexString(1, true), "00000001")
+assertEq(toHexString(0x0ABCDEF0, true), "0ABCDEF0")
 
-assert(
-  toHexString(char(0)) == "0" &&
-  toHexString(char(0xE)) == "E" &&
-  toHexString(char(0xFA)) == "FA")
+assertEq(toHexString(char(0)), "0")
+assertEq(toHexString(char(0xE)), "E")
+assertEq(toHexString(char(0xFA)), "FA")
 
-assert(
-  toHexString(char(0), true) == "00" &&
-  toHexString(char(0xE), true) == "0E" &&
-  toHexString(char(0xFA), true) == "FA")
+assertEq(toHexString(char(0), true), "00")
+assertEq(toHexString(char(0xE), true), "0E")
+assertEq(toHexString(char(0xFA), true), "FA")
 
-assert(
-  toHexString(0L) == "0" &&
-  toHexString(0xFFFF_FFFF_FFFFL) == "FFFFFFFFFFFF" &&
-  toHexString(0x1234_ABCD_EF99L) == "1234ABCDEF99")
+assertEq(toHexString(0L), "0")
+assertEq(toHexString(0xFFFF_FFFF_FFFFL), "FFFFFFFFFFFF")
+assertEq(toHexString(0x1234_ABCD_EF99L), "1234ABCDEF99")
 
-assert(
-  toHexString(0L, true) == "0000000000000000" &&
-  toHexString(~0L, true) == "FFFFFFFFFFFFFFFF" &&
-  toHexString(0x00AB_CDEF_1234_FFFFL, true) == "00ABCDEF1234FFFF")
+assertEq(toHexString(0L, true), "0000000000000000")
+assertEq(toHexString(~0L, true), "FFFFFFFFFFFFFFFF")
+assertEq(toHexString(0x00AB_CDEF_1234_FFFFL, true), "00ABCDEF1234FFFF")
 
-assert(bitInt8Writer()('a') == "a")
+assertEq(bitInt8Writer()('a'), "a")
 
-assert(
-  w = bitInt8Writer();
-  p = bitInt8Parser();
-  p(w(char(0)).string())    == char(0)    &&
-  p(w(char(1)).string())    == char(1)    &&
-  p(w(char(-1)).string())   == char(-1)   &&
-  p(w(char(42)).string())   == char(42)   &&
-  p(w(char(-42)).string())  == char(-42)  &&
-  p(w(char(240)).string())  == char(240)  &&
-  p(w(char(256)).string())  == char(256))
+assertEq(
+  testData    = char(0) :: char(1) :: char(-1) :: char(42) :: char(-42) :: char(240) :: char(256);
+  w           = bitInt8Writer();
+  p           = bitInt8Parser();
+  parsedData  = testData.map(lambda (char c) p(w(c).string()) ?? '\0');
+  makePair(testData, parsedData))
 
-assert(
-  w = bitInt16Writer(Endianness.Little);
-  p = bitSInt16Parser(Endianness.Little);
-  w(1337)                 == string(char(57), char(5))  &&
-  p(w(0).string())        == 0                          &&
-  p(w(1).string())        == 1                          &&
-  p(w(-1).string())       == -1                         &&
-  p(w(42).string())       == 42                         &&
-  p(w(-42).string())      == -42                        &&
-  p(w(1337).string())     == 1337                       &&
-  p(w(-1337).string())    == -1337                      &&
-  p(w(32_767).string())   == 32_767                     &&
-  p(w(-32_768).string())  == -32_768)
+assertEq(bitInt16Writer(Endianness.Little)(1337), string(char(57), char(5)))
 
-assert(
-  w = bitInt16Writer(Endianness.Big);
-  p = bitSInt16Parser(Endianness.Big);
-  w(1337)                 == string(char(5), char(57))  &&
-  p(w(0).string())        == 0                          &&
-  p(w(1).string())        == 1                          &&
-  p(w(-1).string())       == -1                         &&
-  p(w(42).string())       == 42                         &&
-  p(w(-42).string())      == -42                        &&
-  p(w(1337).string())     == 1337                       &&
-  p(w(-1337).string())    == -1337                      &&
-  p(w(32_767).string())   == 32_767                     &&
-  p(w(-32_768).string())  == -32_768)
+assertEq(
+  testData    = 0 :: 1 :: -1 :: 42 :: -42 :: 1337 :: -1337 :: 32_767 :: -32_768;
+  w           = bitInt16Writer(Endianness.Little);
+  p           = bitSInt16Parser(Endianness.Little);
+  parsedData  = testData.map(lambda (int c) p(w(c).string()) ?? -1);
+  makePair(testData, parsedData))
 
-assert(
-  w = bitInt32Writer(Endianness.Little);
-  p = bitInt32Parser(Endianness.Little);
-  w(13371337)                   == string(char(201), char(7), char(204), char(0)) &&
-  p(w(0).string())              == 0                                              &&
-  p(w(1).string())              == 1                                              &&
-  p(w(-1).string())             == -1                                             &&
-  p(w(42).string())             == 42                                             &&
-  p(w(-42).string())            == -42                                            &&
-  p(w(1337).string())           == 1337                                           &&
-  p(w(-1337).string())          == -1337                                          &&
-  p(w(32_767).string())         == 32_767                                         &&
-  p(w(-32_768).string())        == -32_768                                        &&
-  p(w(100_000).string())        == 100_000                                        &&
-  p(w(-100_000).string())       == -100_000                                       &&
-  p(w(maxVal{int}()).string())  == maxVal{int}()                                  &&
-  p(w(minVal{int}()).string())  == minVal{int}())
+assertEq(bitInt16Writer(Endianness.Big)(1337), string(char(5), char(57)))
 
-assert(
-  w = bitInt32Writer(Endianness.Big);
-  p = bitInt32Parser(Endianness.Big);
-  w(13371337)                   == string(char(0), char(204), char(7), char(201)) &&
-  p(w(0).string())              == 0                                              &&
-  p(w(1).string())              == 1                                              &&
-  p(w(-1).string())             == -1                                             &&
-  p(w(42).string())             == 42                                             &&
-  p(w(-42).string())            == -42                                            &&
-  p(w(1337).string())           == 1337                                           &&
-  p(w(-1337).string())          == -1337                                          &&
-  p(w(32_767).string())         == 32_767                                         &&
-  p(w(-32_768).string())        == -32_768                                        &&
-  p(w(100_000).string())        == 100_000                                        &&
-  p(w(-100_000).string())       == -100_000                                       &&
-  p(w(maxVal{int}()).string())  == maxVal{int}()                                  &&
-  p(w(minVal{int}()).string())  == minVal{int}())
+assertEq(
+  testData    = 0 :: 1 :: -1 :: 42 :: -42 :: 1337 :: -1337 :: 32_767 :: -32_768;
+  w           = bitInt16Writer(Endianness.Big);
+  p           = bitSInt16Parser(Endianness.Big);
+  parsedData  = testData.map(lambda (int c) p(w(c).string()) ?? -1);
+  makePair(testData, parsedData))
 
-assert(
-  w = bitInt64Writer(Endianness.Little);
-  p = bitInt64Parser(Endianness.Little);
-  w(1337133713371337L)                        ==
-    string(char(201), char(176), char(0), char(180), char(29), char(192), char(4), char(0)) &&
-  p(w(0L).string())                           == 0L                                         &&
-  p(w(1L).string())                           == 1L                                         &&
-  p(w(-1L).string())                          == -1L                                        &&
-  p(w(42L).string())                          == 42L                                        &&
-  p(w(-42L).string())                         == -42L                                       &&
-  p(w(1337L).string())                        == 1337L                                      &&
-  p(w(-1337L).string())                       == -1337L                                     &&
-  p(w(32_767L).string())                      == 32_767L                                    &&
-  p(w(-32_768L).string())                     == -32_768L                                   &&
-  p(w(100_000L).string())                     == 100_000L                                   &&
-  p(w(-100_000L).string())                    == -100_000L                                  &&
-  p(w(2_147_483_647L).string())               == 2_147_483_647L                             &&
-  p(w(-2_147_483_648L).string())              == -2_147_483_648L                            &&
-  p(w(9_223_372_036_854_775_807L).string())   == 9_223_372_036_854_775_807L                 &&
-  p(w(minVal{long}()).string())               == minVal{long}() )
+assertEq(bitInt32Writer(Endianness.Little)(13371337), string(char(201), char(7), char(204), char(0)))
 
-assert(
-  w = bitInt64Writer(Endianness.Big);
-  p = bitInt64Parser(Endianness.Big);
-  w(1337133713371337L)                        ==
-    string(char(0), char(4), char(192), char(29), char(180), char(0), char(176), char(201)) &&
-  p(w(0L).string())                           == 0L                                         &&
-  p(w(1L).string())                           == 1L                                         &&
-  p(w(-1L).string())                          == -1L                                        &&
-  p(w(42L).string())                          == 42L                                        &&
-  p(w(-42L).string())                         == -42L                                       &&
-  p(w(1337L).string())                        == 1337L                                      &&
-  p(w(-1337L).string())                       == -1337L                                     &&
-  p(w(32_767L).string())                      == 32_767L                                    &&
-  p(w(-32_768L).string())                     == -32_768L                                   &&
-  p(w(100_000L).string())                     == 100_000L                                   &&
-  p(w(-100_000L).string())                    == -100_000L                                  &&
-  p(w(2_147_483_647L).string())               == 2_147_483_647L                             &&
-  p(w(-2_147_483_648L).string())              == -2_147_483_648L                            &&
-  p(w(9_223_372_036_854_775_807L).string())   == 9_223_372_036_854_775_807L                 &&
-  p(w(minVal{long}()).string())               == minVal{long}() )
+assertEq(
+  testData    = 0 :: 1 :: -1 :: 42 :: -42 :: 1337 :: -1337 :: 32_767 :: -32_768 :: 100_000 :: -100_000 :: maxVal{int}() :: minVal{int}();
+  w           = bitInt32Writer(Endianness.Little);
+  p           = bitInt32Parser(Endianness.Little);
+  parsedData  = testData.map(lambda (int c) p(w(c).string()) ?? -1);
+  makePair(testData, parsedData))
+
+assertEq(bitInt32Writer(Endianness.Big)(13371337), string(char(0), char(204), char(7), char(201)))
+
+assertEq(
+  testData    = 0 :: 1 :: -1 :: 42 :: -42 :: 1337 :: -1337 :: 32_767 :: -32_768 :: 100_000 :: -100_000 :: maxVal{int}() :: minVal{int}();
+  w           = bitInt32Writer(Endianness.Big);
+  p           = bitInt32Parser(Endianness.Big);
+  parsedData  = testData.map(lambda (int c) p(w(c).string()) ?? -1);
+  makePair(testData, parsedData))
+
+assertEq(
+  bitInt64Writer(Endianness.Little)(1337133713371337L),
+  string(char(201), char(176), char(0), char(180), char(29), char(192), char(4), char(0)))
+
+assertEq(
+  testData    = 0L :: 1L :: -1L :: 42L :: -42L :: 1337L :: -1337L :: 32_767L :: -32_768L ::
+                100_000L :: -100_000L :: 2_147_483_647L :: -2_147_483_648L ::
+                9_223_372_036_854_775_807L :: minVal{long}();
+  w           = bitInt64Writer(Endianness.Little);
+  p           = bitInt64Parser(Endianness.Little);
+  parsedData  = testData.map(lambda (long c) p(w(c).string()) ?? -1L);
+  makePair(testData, parsedData))
+
+assertEq(
+  bitInt64Writer(Endianness.Big)(1337133713371337L),
+  string(char(0), char(4), char(192), char(29), char(180), char(0), char(176), char(201)))
+
+assertEq(
+  testData    = 0L :: 1L :: -1L :: 42L :: -42L :: 1337L :: -1337L :: 32_767L :: -32_768L ::
+                100_000L :: -100_000L :: 2_147_483_647L :: -2_147_483_648L ::
+                9_223_372_036_854_775_807L :: minVal{long}();
+  w           = bitInt64Writer(Endianness.Big);
+  p           = bitInt64Parser(Endianness.Big);
+  parsedData  = testData.map(lambda (long c) p(w(c).string()) ?? -1L);
+  makePair(testData, parsedData))
 
 // This test is left here for the first person running this on a BigEndian system, needs thorough
 // testing as none of this code has ever been run on a BigEndian system.
-assert(endiannessNative() == Endianness.Little)
+assertEq(endiannessNative(), Endianness.Little, "Only LittleEndian systems are supported at this time")
