@@ -49,6 +49,7 @@ add_executable(novtests
   frontend/get_intrinsic_expr_test.cpp
   frontend/get_is_expr_test.cpp
   frontend/get_lit_expr_test.cpp
+  frontend/get_meta_intrinsic_test.cpp
   frontend/get_paren_expr_test.cpp
   frontend/get_switch_expr_test.cpp
   frontend/get_unary_expr_test.cpp

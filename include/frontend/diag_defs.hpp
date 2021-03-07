@@ -212,10 +212,6 @@ errUndeclaredIndexOperator(prog::sym::SourceId src, const std::vector<std::strin
 [[nodiscard]] auto errIncorrectNumArgsInSelfCall(
     prog::sym::SourceId src, unsigned int expectedNumArgs, unsigned int actualNumArgs) -> Diag;
 
-[[nodiscard]] auto
-errInvalidFailIntrinsicCall(prog::sym::SourceId src, unsigned int typeParams, unsigned int argCount)
-    -> Diag;
-
 [[nodiscard]] auto errIntrinsicFuncLiteral(prog::sym::SourceId src) -> Diag;
 
 [[nodiscard]] auto errUnsupportedArgInitializer(prog::sym::SourceId src, const std::string& name)
