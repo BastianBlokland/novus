@@ -31,8 +31,7 @@ auto run(
 
   if (frontendOutput.isSuccess()) {
 
-    const auto optProg   = opt::optimize(frontendOutput.getProg());
-    const auto asmOutput = backend::generate(optProg);
+    const auto asmOutput = backend::generate(frontendOutput.getProg());
 
     auto progPath = inputPath ? inputPath->string() : std::string{};
     auto iface    = vm::PlatformInterface{
