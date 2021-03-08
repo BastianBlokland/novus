@@ -162,7 +162,6 @@ target_include_directories(prog PRIVATE prog)
 # Frontend.
 message(STATUS "Configuring frontend library")
 add_library(frontend STATIC
-  frontend/internal/call_modifiers.cpp
   frontend/internal/check_inf_recursion.cpp
   frontend/internal/check_union_exhaustiveness.cpp
   frontend/internal/const_binder.cpp

@@ -1,3 +1,4 @@
+import "std/assert.ns"
 import "std/parser.ns"
 import "std/rt.ns"
 import "std/writer.ns"
@@ -171,155 +172,123 @@ act getPathAbsolute(Path p)
 
 // -- Tests
 
-assert(
-  (pathRel() / "hello.txt").filename()                == "hello.txt"    &&
-  (pathRel() / "hello" / "world").filename()          == "world"        &&
-  (pathRel() / "hello" / "world.ns").filename()      == "world.ns"    &&
-  (pathDefaultRootWindows() / "world.ns").filename() == "world.ns"    &&
-  pathRel().filename()                                is None           &&
-  pathDefaultRootUnix().filename()                    is None           &&
-  pathDefaultRootWindows().filename()                 is None
-)
+assertEq((pathRel() / "hello.txt").filename(), "hello.txt")
+assertEq((pathRel() / "hello" / "world").filename(), "world")
+assertEq((pathRel() / "hello" / "world.ns").filename(), "world.ns")
+assertEq((pathDefaultRootWindows() / "world.ns").filename(), "world.ns")
+assertIs(pathRel().filename(), Type{None}())
+assertIs(pathDefaultRootUnix().filename(), Type{None}())
+assertIs(pathDefaultRootWindows().filename(), Type{None}())
 
-assert(
-  (pathRel() / "hello.txt").stem()                     == "hello"       &&
-  (pathRel() / "hello.c").stem()                       == "hello"       &&
-  (pathRel() / "hello.world").stem()                   == "hello"       &&
-  (pathRel() / "hello.world.ns").stem()               == "hello.world" &&
-  (pathRel() / ".profile").stem()                      == ".profile"    &&
-  (pathRel() / "hello" / "world" / ".profile").stem()  == ".profile"    &&
-  (pathRel() / "hello").stem()                         == "hello"       &&
-  (pathRel() / "hello.").stem()                        == "hello."      &&
-  (pathRel() / "hello" / "world").stem()               == "world"       &&
-  pathDefaultRootUnix().stem()                         is None          &&
-  pathDefaultRootWindows().stem()                      is None
-)
+assertEq((pathRel() / "hello.txt").stem(), "hello")
+assertEq((pathRel() / "hello.c").stem(), "hello")
+assertEq((pathRel() / "hello.world").stem(), "hello")
+assertEq((pathRel() / "hello.world.ns").stem(), "hello.world")
+assertEq((pathRel() / ".profile").stem(), ".profile")
+assertEq((pathRel() / "hello" / "world" / ".profile").stem(), ".profile")
+assertEq((pathRel() / "hello").stem(), "hello")
+assertEq((pathRel() / "hello.").stem(), "hello." )
+assertEq((pathRel() / "hello" / "world").stem(), "world")
+assertIs(pathDefaultRootUnix().stem(), Type{None}())
+assertIs(pathDefaultRootWindows().stem(), Type{None}())
 
-assert(
-  (pathRel() / "hello.txt").extension()                     == "txt"    &&
-  (pathRel() / "hello.c").extension()                       == "c"      &&
-  (pathRel() / "hello.world").extension()                   == "world"  &&
-  (pathRel() / "hello.world.ns").extension()                == "ns"    &&
-  (pathRel() / ".profile").extension()                      is None     &&
-  (pathRel() / "hello" / "world" / ".profile").extension()  is None     &&
-  (pathRel() / "hello").extension()                         is None     &&
-  (pathRel() / "hello.").extension()                        is None     &&
-  (pathRel() / "hello" / "world").extension()               is None     &&
-  pathDefaultRootUnix().extension()                         is None     &&
-  pathDefaultRootWindows().extension()                      is None
-)
+assertEq((pathRel() / "hello.txt").extension(), "txt")
+assertEq((pathRel() / "hello.c").extension(), "c")
+assertEq((pathRel() / "hello.world").extension(), "world")
+assertEq((pathRel() / "hello.world.ns").extension(), "ns")
+assertIs((pathRel() / ".profile").extension(), Type{None}())
+assertIs((pathRel() / "hello" / "world" / ".profile").extension(), Type{None}())
+assertIs((pathRel() / "hello").extension(), Type{None}())
+assertIs((pathRel() / "hello.").extension(), Type{None}())
+assertIs((pathRel() / "hello" / "world").extension(), Type{None}())
+assertIs(pathDefaultRootUnix().extension(), Type{None}())
+assertIs(pathDefaultRootWindows().extension(), Type{None}())
 
-assert(
-  (pathRel() / "hello.txt").parent()              == pathRel()                    &&
-  (pathRel() / "hello" / "world.txt").parent()    == pathRel() / "hello"          &&
-  (pathDefaultRootUnix() / "hello.txt").parent()  == pathDefaultRootUnix()        &&
-  pathRel().parent()                              == pathRel()                    &&
-  pathDefaultRootUnix().parent()                  == pathDefaultRootUnix()        &&
-  pathDefaultRootWindows().parent()               == pathDefaultRootWindows())
+assertEq((pathRel() / "hello.txt").parent(), pathRel())
+assertEq((pathRel() / "hello" / "world.txt").parent(), pathRel() / "hello")
+assertEq((pathDefaultRootUnix() / "hello.txt").parent(), pathDefaultRootUnix())
+assertEq(pathRel().parent(), pathRel())
+assertEq(pathDefaultRootUnix().parent(), pathDefaultRootUnix() )
+assertEq(pathDefaultRootWindows().parent(), pathDefaultRootWindows())
 
-assert(
-  p = pathAbsParser();
-  p.run("/")        == pathAbs("/")     &&
-  p.run("c:\\")     == pathAbs("c:/")   &&
-  p.run("c:/")      == pathAbs("c:/")   &&
-  p.run("C:/")      == pathAbs("c:/")   &&
-  p.run("z:\\")     == pathAbs("z:/")   &&
-  p.run("\\")       is Error            &&
-  p.run("hello")    is Error            &&
-  p.run("c:hello")  is Error
-)
+assertEq(pathAbsParser().run("/"), pathAbs("/"))
+assertEq(pathAbsParser().run("c:\\"), pathAbs("c:/"))
+assertEq(pathAbsParser().run("c:/"), pathAbs("c:/"))
+assertEq(pathAbsParser().run("C:/"), pathAbs("c:/"))
+assertEq(pathAbsParser().run("z:\\"), pathAbs("z:/"))
+assertIs(pathAbsParser().run("\\"), Type{Error}())
+assertIs(pathAbsParser().run("hello"), Type{Error}())
+assertIs(pathAbsParser().run("c:hello"), Type{Error}())
 
-assert(
-  p = pathRelParser();
-  p.run("test.txt")               == pathRel("test.txt" :: List{string}())                  &&
-  p.run("hello/test.txt")         == pathRel("hello" :: "test.txt")                         &&
-  p.run("hello")                  == pathRel("hello" :: List{string}())                     &&
-  p.run("你好，世界")               == pathRel("你好，世界" :: List{string}())                  &&
-  p.run("hello/world")            == pathRel("hello" :: "world")                            &&
-  p.run("hello/world/")           == pathRel("hello" :: "world")                            &&
-  p.run("hello world")            == pathRel("hello world" :: List{string}())               &&
-  p.run("h/e/l/l/o/w/")           == pathRel("h" :: "e" :: "l" :: "l" :: "o" :: "w")        &&
-  p.run("hello/../world")         == pathRel("hello" :: ".." :: "world")                    &&
-  p.run("hello/..")               == pathRel("hello" :: "..")                               &&
-  p.run("hello/../")              == pathRel("hello" :: "..")                               &&
-  p.run("hello/./world")          == pathRel("hello" :: "." :: "world")                     &&
-  p.run("hello/.")                == pathRel("hello" :: ".")                                &&
-  p.run("hello/./")               == pathRel("hello" :: ".")                                &&
-  p.run("hello\\test.txt")        == pathRel("hello" :: "test.txt")                         &&
-  p.run("hello\\world")           == pathRel("hello" :: "world")                            &&
-  p.run("hello\\world\\")         == pathRel("hello" :: "world")                            &&
-  p.run("hello\\..\\world")       == pathRel("hello" :: ".." :: "world")                    &&
-  p.run("hello\\..")              == pathRel("hello" :: "..")                               &&
-  p.run("hello/..\\")             == pathRel("hello" :: "..")                               &&
-  p.run("hello\\./world")         == pathRel("hello" :: "." :: "world")                     &&
-  p.run(".")                      == pathRel("." :: List{string}())                         &&
-  p.run("/")                      is Error                                                  &&
-  p.run("\\")                     is Error                                                  &&
-  p.run("/hello")                 is Error                                                  &&
-  p.run("hello//")                is Error                                                  &&
-  p.run(" ")                      is Error                                                  &&
-  p.run(" hello")                 is Error                                                  &&
-  p.run("hello  ")                is Error                                                  &&
-  p.run("hello\tworld")           is Error                                                  &&
-  p.run("hello/ world")           is Error                                                  &&
-  p.run("hello\\\\")              is Error                                                  &&
-  p.run("hello//world")           is Error
-)
+assertEq(pathRelParser().run("test.txt"), pathRel("test.txt" :: List{string}()))
+assertEq(pathRelParser().run("hello/test.txt"), pathRel("hello" :: "test.txt"))
+assertEq(pathRelParser().run("hello"), pathRel("hello" :: List{string}()))
+assertEq(pathRelParser().run("你好，世界"), pathRel("你好，世界" :: List{string}()))
+assertEq(pathRelParser().run("hello/world"), pathRel("hello" :: "world"))
+assertEq(pathRelParser().run("hello/world/"), pathRel("hello" :: "world"))
+assertEq(pathRelParser().run("hello world"), pathRel("hello world" :: List{string}()))
+assertEq(pathRelParser().run("h/e/l/l/o/w/"), pathRel("h" :: "e" :: "l" :: "l" :: "o" :: "w"))
+assertEq(pathRelParser().run("hello/../world"), pathRel("hello" :: ".." :: "world"))
+assertEq(pathRelParser().run("hello/.."), pathRel("hello" :: ".."))
+assertEq(pathRelParser().run("hello/../"), pathRel("hello" :: ".."))
+assertEq(pathRelParser().run("hello/./world"), pathRel("hello" :: "." :: "world"))
+assertEq(pathRelParser().run("hello/."), pathRel("hello" :: "."))
+assertEq(pathRelParser().run("hello/./"), pathRel("hello" :: "."))
+assertEq(pathRelParser().run("hello\\test.txt"), pathRel("hello" :: "test.txt"))
+assertEq(pathRelParser().run("hello\\world"), pathRel("hello" :: "world"))
+assertEq(pathRelParser().run("hello\\world\\"), pathRel("hello" :: "world"))
+assertEq(pathRelParser().run("hello\\..\\world"), pathRel("hello" :: ".." :: "world"))
+assertEq(pathRelParser().run("hello\\.."), pathRel("hello" :: ".."))
+assertEq(pathRelParser().run("hello/..\\"), pathRel("hello" :: ".."))
+assertEq(pathRelParser().run("hello\\./world"), pathRel("hello" :: "." :: "world"))
+assertEq(pathRelParser().run("."), pathRel("." :: List{string}()))
+assertIs(pathRelParser().run("/"), Type{Error}())
+assertIs(pathRelParser().run("\\"), Type{Error}())
+assertIs(pathRelParser().run("/hello"), Type{Error}())
+assertIs(pathRelParser().run("hello//"), Type{Error}())
+assertIs(pathRelParser().run(" "), Type{Error}())
+assertIs(pathRelParser().run(" hello"), Type{Error}())
+assertIs(pathRelParser().run("hello  "), Type{Error}())
+assertIs(pathRelParser().run("hello\tworld"), Type{Error}())
+assertIs(pathRelParser().run("hello/ world"), Type{Error}())
+assertIs(pathRelParser().run("hello\\\\"), Type{Error}())
+assertIs(pathRelParser().run("hello//world"), Type{Error}())
 
-assert(
-  p = pathParser();
-  p.run("test.txt")         == Path(pathRel("test.txt" :: List{string}()))          &&
-  p.run("hello/test.txt")   == Path(pathRel("hello" :: "test.txt"))                 &&
-  p.run("/hello")           == Path(pathAbs("/",    "hello" :: List{string}()))     &&
-  p.run("c:\\hello")        == Path(pathAbs("c:/",  "hello" :: List{string}()))     &&
-  p.run("c:/hello")         == Path(pathAbs("c:/",  "hello" :: List{string}()))     &&
-  p.run("\\")               is Error                                                &&
-  p.run("//")               is Error
-)
+assertEq(pathParser().run("test.txt"), Path(pathRel("test.txt" :: List{string}())))
+assertEq(pathParser().run("hello/test.txt"), Path(pathRel("hello" :: "test.txt")))
+assertEq(pathParser().run("/hello"), Path(pathAbs("/", "hello" :: List{string}())))
+assertEq(pathParser().run("c:\\hello"), Path(pathAbs("c:/", "hello" :: List{string}())))
+assertEq(pathParser().run("c:/hello"), Path(pathAbs("c:/", "hello" :: List{string}())))
+assertIs(pathParser().run("\\"), Type{Error}())
+assertIs(pathParser().run("//"), Type{Error}())
 
-assert(
-  p = pathParser(newlineParser());
-  p.run("hello\nworld")           == Path(pathRel("hello" :: List{string}()))          &&
-  p.run("hello.txt\nworld")       == Path(pathRel("hello.txt" :: List{string}()))      &&
-  p.run("hello/world.txt\nworld") == Path(pathRel("hello" :: "world.txt"))             &&
-  p.run("c:\\win\\dows\r\nhello") == Path(pathAbs("c:/", "win" :: "dows"))             &&
-  p.run("你好，世界.txt\nworld")    == Path(pathRel("你好，世界.txt" :: List{string}()))
-)
+assertEq(pathParser(newlineParser()).run("hello\nworld"), Path(pathRel("hello" :: List{string}())))
+assertEq(pathParser(newlineParser()).run("hello.txt\nworld"), Path(pathRel("hello.txt" :: List{string}())))
+assertEq(pathParser(newlineParser()).run("hello/world.txt\nworld"), Path(pathRel("hello" :: "world.txt")))
+assertEq(pathParser(newlineParser()).run("c:\\win\\dows\r\nhello"), Path(pathAbs("c:/", "win" :: "dows")))
+assertEq(pathParser(newlineParser()).run("你好，世界.txt\nworld"), Path(pathRel("你好，世界.txt" :: List{string}())))
 
-assert(
-  w = pathWriter();
-  w(pathDefaultRootUnix())                                == "/"                      &&
-  w(pathDefaultRootWindows())                             == "c:/"                    &&
-  w(pathDefaultRootWindows())                             == "c:/"                    &&
-  w(pathAbs("z:/"))                                       == "z:/"                    &&
-  w(pathDefaultRootWindows() / "hello")                   == "c:/hello"               &&
-  w(pathDefaultRootUnix() / "hello")                      == "/hello"                 &&
-  w(pathDefaultRootUnix() / "hello" / "world")            == "/hello/world"           &&
-  w(pathDefaultRootUnix() / "hello world")                == "/hello world"           &&
-  w(pathDefaultRootUnix() / "hello world" / "e l i t e")  == "/hello world/e l i t e"
-)
+assertEq(pathWriter()(pathDefaultRootUnix()), "/" )
+assertEq(pathWriter()(pathDefaultRootWindows()), "c:/" )
+assertEq(pathWriter()(pathDefaultRootWindows()), "c:/" )
+assertEq(pathWriter()(pathAbs("z:/")), "z:/" )
+assertEq(pathWriter()(pathDefaultRootWindows() / "hello"), "c:/hello")
+assertEq(pathWriter()(pathDefaultRootUnix() / "hello"), "/hello")
+assertEq(pathWriter()(pathDefaultRootUnix() / "hello" / "world"), "/hello/world")
+assertEq(pathWriter()(pathDefaultRootUnix() / "hello world"), "/hello world")
+assertEq(pathWriter()(pathDefaultRootUnix() / "hello world" / "e l i t e"), "/hello world/e l i t e")
 
-assert(
-  w = pathWriter();
-  w(pathRel() / "hello")                     == "hello"                  &&
-  w(pathRel() / "hello" / "world")           == "hello/world"            &&
-  w(pathRel() / "你好，世界" / "world")        == "你好，世界/world"        &&
-  w(pathRel() / "hello world")               == "hello world"            &&
-  w(pathRel() / "hello world" / "e l i t e") == "hello world/e l i t e"
-)
+assertEq(pathWriter()(pathRel() / "hello"), "hello")
+assertEq(pathWriter()(pathRel() / "hello" / "world"), "hello/world")
+assertEq(pathWriter()(pathRel() / "你好，世界" / "world"), "你好，世界/world")
+assertEq(pathWriter()(pathRel() / "hello world"), "hello world")
+assertEq(pathWriter()(pathRel() / "hello world" / "e l i t e"), "hello world/e l i t e")
 
-assert(
-  w   = pathWriter();
-  p1  = pathRel() / "elite";
-  p2  = pathRel() / "hello world";
-  w(p1)           == "elite"                          &&
-  w(p1 / p2)      == "elite/hello world"              &&
-  w(p1 / p1 / p2) == "elite/elite/hello world"        &&
-  w(p2 / p2)      == "hello world/hello world"        &&
-  w(p2 / p2 / p1) == "hello world/hello world/elite"
-)
+assertEq(pathWriter()(pathRel() / "elite"), "elite")
+assertEq(pathWriter()(pathRel() / "elite" / pathRel() / "hello world"), "elite/hello world")
+assertEq(pathWriter()(pathRel() / "elite" / pathRel() / "elite" / pathRel() / "hello world"), "elite/elite/hello world")
+assertEq(pathWriter()(pathRel() / "hello world" / pathRel() / "hello world"), "hello world/hello world")
+assertEq(pathWriter()(pathRel() / "hello world" / pathRel() / "hello world" / pathRel() / "elite"), "hello world/hello world/elite")
 
-assert(
-  getPathAbsolute(pathRel() / "hello.txt").parent()    == getPathCurrent() &&
-  getPathAbsolute(pathRel() / "hello.txt").extension() == "txt"
-)
+assertEq(getPathAbsolute(pathRel() / "hello.txt").parent(), getPathCurrent())
+assertEq(getPathAbsolute(pathRel() / "hello.txt").extension(), "txt")

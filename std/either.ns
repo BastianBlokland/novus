@@ -1,4 +1,7 @@
+import "std/assert.ns"
 import "std/func.ns"
+import "std/option.ns"
+import "std/type.ns"
 
 // -- Types
 
@@ -26,34 +29,55 @@ fun map{T1, T2}(Either{T1, T2} e, function{T1, Either{T1, T2}} func) -> Either{T
 fun map{T1, T2}(Either{T1, T2} e, function{T2, Either{T1, T2}} func) -> Either{T1, T2}
   e as T2 t2 ? func(t2) : e
 
+fun toOption{T1, T2}(Either{T1, T2} e, Type{T1} t) -> Option{T1}
+  e as T1 t1 ? t1 : None()
+
+fun toOption{T1, T2}(Either{T1, T2} e, Type{T2} t) -> Option{T2}
+  e as T2 t2 ? t2 : None()
+
 // -- Tests
 
-assert(
-  Either{int, string}(42) == 42 &&
-  Either{int, string}("hello world") == "hello world" &&
-  Either{int, string}(42) != Either{int, string}("hello world"))
+assertEq(Either{int, string}(42), 42)
+assertEq(Either{int, string}("hello world"), "hello world")
+assertNotEq(Either{int, string}(42), Either{int, string}("hello world"))
 
-assert(Either{int, string}(42).string() == "42")
-assert(Either{int, string}("hello world").string() == "hello world")
+assertEq(Either{int, string}(42).string(), "42")
+assertEq(Either{int, string}("hello world").string(), "hello world")
 
-assert(
-  Either{int, string}("hello").map(equals{string}["hello"]) == true &&
-  Either{int, string}("hello").map(lambda (string str) str + " world") == "hello world" &&
-  Either{int, string}(42).map(equals{string}["hello"]) == 42)
+assertEq(Either{int, string}("hello").map(equals{string}["hello"]), true)
+assertEq(Either{int, string}("hello").map(lambda (string str) str + " world"), "hello world")
+assertEq(Either{int, string}(42).map(equals{string}["hello"]), 42)
 
-assert(
-  Either{int, string}("hello").map(lambda (int i) i * i) == "hello" &&
-  Either{int, string}(42).map(equals{int}[42]) == true &&
-  Either{int, string}(42).map(lambda (int i) i * i) == 42 * 42)
+assertEq(Either{int, string}("hello").map(lambda (int i) i * i), "hello")
+assertEq(Either{int, string}(42).map(equals{int}[42]), true)
+assertEq(Either{int, string}(42).map(lambda (int i) i * i), 42 * 42)
 
-assert(
-  func = (lambda (int i) i == 42 ? Either{int, bool}(true) : Either{int, bool}(i));
-  Either{int, bool}(42).map(func) == true &&
-  Either{int, bool}(41).map(func) == 41 &&
-  Either{int, bool}(false).map(func) == false)
+assertEq(
+  func = ( lambda (int i) -> Either{int, bool}
+    i == 42 ? true : i
+  );
+  Either{int, bool}(42).map(func), true)
 
-assert(
-  func = (lambda (int i) i == 42 ? Either{bool, int}(true) : Either{bool, int}(i));
-  Either{bool, int}(42).map(func) == true &&
-  Either{bool, int}(41).map(func) == 41 &&
-  Either{bool, int}(false).map(func) == false)
+assertEq(
+  func = ( lambda (int i) -> Either{int, bool}
+    i == 42 ? true : i
+  );
+  Either{int, bool}(41).map(func), 41)
+
+assertEq(
+  func = ( lambda (int i) -> Either{int, bool}
+    i == 42 ? true : i
+  );
+  Either{int, bool}(false).map(func), false)
+
+assertEq(
+  func = ( lambda (int i) -> Either{bool, int}
+    i == 42 ? true : i
+  );
+  Either{bool, int}(42).map(func), true)
+
+assertEq(Either{bool, int}(42).toOption(Type{int}()), 42)
+assertEq(Either{bool, int}(42).toOption(Type{bool}()), None())
+
+assertEq(Either{bool, int}(true).toOption(Type{bool}()), true)
+assertEq(Either{bool, int}(true).toOption(Type{int}()), None())

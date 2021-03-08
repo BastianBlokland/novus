@@ -1,3 +1,4 @@
+import "std/assert.ns"
 import "std/bits.ns"
 import "std/math.ns"
 import "std/option.ns"
@@ -206,121 +207,106 @@ fun lazyWriter{T}(lazy{Writer{T}} lw)
 
 // -- Tests
 
-assert(
+assertEq(
   w = noneWriter();
-  w(None()) == "")
+  w(None()), "")
 
-assert(
+assertEq(
   w = litWriter("hello world");
-  w(None()) == "hello world")
+  w(None()), "hello world")
 
-assert(
+assertEq(
   w = stringWriter();
-  w("hello world") == "hello world")
+  w("hello world"), "hello world")
 
-assert(
+assertEq(
   w = charWriter();
-  w('w') == "w")
+  w('w'), "w")
 
-assert(
+assertEq(
   w = txtIntWriter();
-  w(42) == "42")
+  w(42), "42")
 
-assert(
-  w = txtHexWriter();
-  w(0)        == "0"        &&
-  w(1)        == "1"        &&
-  w(-1)       == "FFFFFFFF" &&
-  w(42)       == "2A"       &&
-  w(1337)     == "539"      &&
-  w(13371337) == "CC07C9")
+assertEq(txtHexWriter()(0), "0")
+assertEq(txtHexWriter()(1), "1")
+assertEq(txtHexWriter()(-1), "FFFFFFFF")
+assertEq(txtHexWriter()(42), "2A")
+assertEq(txtHexWriter()(1337), "539")
+assertEq(txtHexWriter()(13371337), "CC07C9")
 
-assert(
-  w = txtHexWriter(4);
-  w(0)        == "0000"     &&
-  w(1)        == "0001"     &&
-  w(1)        == "0001"     &&
-  w(-1)       == "FFFFFFFF" &&
-  w(42)       == "002A"     &&
-  w(1337)     == "0539")
+assertEq(txtHexWriter(4)(0), "0000")
+assertEq(txtHexWriter(4)(1), "0001")
+assertEq(txtHexWriter(4)(1), "0001")
+assertEq(txtHexWriter(4)(-1), "FFFFFFFF")
+assertEq(txtHexWriter(4)(42), "002A")
+assertEq(txtHexWriter(4)(1337), "0539")
 
-assert(
-  w = txtFloatWriter();
-  w(42.1337) == "42.1337")
+assertEq(txtFloatWriter()(42.1337), "42.1337")
 
-assert(
-  w = txtBoolWriter();
-  w(true) == "true" &&
-  w(false) == "false")
+assertEq(txtBoolWriter()(true), "true")
+assertEq(txtBoolWriter()(false), "false")
 
-assert(
-  w = ?txtBoolWriter();
-  w(Option{bool}(true))   == "true" &&
-  w(Option{bool}())       == "")
+assertEq((?txtBoolWriter())(Option{bool}(true)), "true")
+assertEq((?txtBoolWriter())(Option{bool}()), "")
 
-assert(
-  w = ?(litWriter("hello: ") & stringWriter());
-  w(Option{string}("world"))   == "hello: world" &&
-  w(Option{string}())          == "")
+assertEq((?(litWriter("hello: ") & stringWriter()))(Option{string}("world")), "hello: world")
+assertEq((?(litWriter("hello: ") & stringWriter()))(Option{string}()), "")
 
-assert(
+assertEq(
   w = litWriter("name: ") & stringWriter() & ?(litWriter(", age: ") & txtIntWriter());
-  w(Pair("John", Option{int}()))   == "name: John" &&
-  w(Pair("Jane", Option{int}(42))) == "name: Jane, age: 42")
+  w(Pair("John", Option{int}()))  , "name: John")
 
-assert(
-  w = listWriter(txtIntWriter());
-  w(List{int}()) == "" &&
-  w(42 :: List{int}()) == "42" &&
-  w(1 :: 2 :: 3) == "123")
+assertEq(
+  w = litWriter("name: ") & stringWriter() & ?(litWriter(", age: ") & txtIntWriter());
+  w(Pair("Jane", Option{int}(42))), "name: Jane, age: 42")
 
-assert(
-  w = listWriter(txtIntWriter(), litWriter(','));
-  w(List{int}()) == "" &&
-  w(42 :: List{int}()) == "42" &&
-  w(1 :: 2 :: 3) == "1,2,3")
+assertEq(listWriter(txtIntWriter())(List{int}()), "")
+assertEq(listWriter(txtIntWriter())(42 :: List{int}()), "42")
+assertEq(listWriter(txtIntWriter())(1 :: 2 :: 3), "123")
 
-assert(
-  w = listWriter(stringWriter(), litWriter(',') & litWriter(" "));
-  w(List{string}()) == "" &&
-  w("hello" :: List{string}()) == "hello" &&
-  w("hello" :: "good" :: "world") == "hello, good, world")
+assertEq((listWriter(txtIntWriter(), litWriter(',')))(List{int}()), "")
+assertEq((listWriter(txtIntWriter(), litWriter(',')))(42 :: List{int}()), "42")
+assertEq((listWriter(txtIntWriter(), litWriter(',')))(1 :: 2 :: 3), "1,2,3")
 
-assert(
-  w = listWriter(stringWriter(), newlineWriter());
-  w(List{string}()) == "" &&
-  w("hello" :: List{string}()) == "hello" &&
-  w("hello" :: "world") == "hello\nworld" &&
-  w("hello" :: "world", WriterNewlineMode.CrLf) == "hello\r\nworld")
+assertEq(listWriter(stringWriter(), litWriter(',') & litWriter(" "))(List{string}()), "")
+assertEq(listWriter(stringWriter(), litWriter(',') & litWriter(" "))("hello" :: List{string}()), "hello")
+assertEq(listWriter(stringWriter(), litWriter(',') & litWriter(" "))("hello" :: "good" :: "world"), "hello, good, world")
 
-assert(
+assertEq(listWriter(stringWriter(), newlineWriter())(List{string}()), "")
+assertEq(listWriter(stringWriter(), newlineWriter())("hello" :: List{string}()), "hello")
+assertEq(listWriter(stringWriter(), newlineWriter())("hello" :: "world"), "hello\nworld")
+assertEq(listWriter(stringWriter(), newlineWriter())("hello" :: "world", WriterNewlineMode.CrLf), "hello\r\nworld")
+
+assertEq(
   w = litWriter('[') & listWriter(stringWriter(), litWriter(',')) & litWriter(']');
-  w(List{string}()) == "[]" &&
-  w("hello" :: List{string}()) == "[hello]" &&
-  w("hello" :: "good" :: "world") == "[hello,good,world]")
+  w(List{string}()), "[]")
 
-assert(
-  w = indentedListWriter(txtIntWriter(), litWriter(','));
-  w(List{int}()) == "" &&
-  w(1 :: List{int}()) == "  1\n" &&
-  w(1 :: 2 :: 3) == "  1,\n  2,\n  3\n" &&
-  w(List{int}(), "", WriterNewlineMode.None) == "" &&
-  w(1 :: List{int}(), "", WriterNewlineMode.None) == "1" &&
-  w(1 :: 2 :: 3, "", WriterNewlineMode.None) == "1,2,3")
+assertEq(
+  w = litWriter('[') & listWriter(stringWriter(), litWriter(',')) & litWriter(']');
+  w("hello" :: List{string}()), "[hello]")
 
-assert(
-  w = indentedListWriter(txtIntWriter());
-  w(List{int}()) == "" &&
-  w(1 :: List{int}()) == "  1\n" &&
-  w(1 :: 2 :: 3) == "  1\n  2\n  3\n" &&
-  w(List{int}(), "", WriterNewlineMode.None) == "" &&
-  w(1 :: List{int}(), "", WriterNewlineMode.None) == "1" &&
-  w(1 :: 2 :: 3, "", WriterNewlineMode.None) == "123")
+assertEq(
+  w = litWriter('[') & listWriter(stringWriter(), litWriter(',')) & litWriter(']');
+  w("hello" :: "good" :: "world"), "[hello,good,world]")
 
-assert(
+assertEq(indentedListWriter(txtIntWriter(), litWriter(','))(List{int}()), "")
+assertEq(indentedListWriter(txtIntWriter(), litWriter(','))(1 :: List{int}()), "  1\n")
+assertEq(indentedListWriter(txtIntWriter(), litWriter(','))(1 :: 2 :: 3), "  1,\n  2,\n  3\n")
+assertEq(indentedListWriter(txtIntWriter(), litWriter(','))(List{int}(), "", WriterNewlineMode.None), "")
+assertEq(indentedListWriter(txtIntWriter(), litWriter(','))(1 :: List{int}(), "", WriterNewlineMode.None), "1")
+assertEq(indentedListWriter(txtIntWriter(), litWriter(','))(1 :: 2 :: 3, "", WriterNewlineMode.None), "1,2,3")
+
+assertEq(indentedListWriter(txtIntWriter())(List{int}()), "")
+assertEq(indentedListWriter(txtIntWriter())(1 :: List{int}()), "  1\n")
+assertEq(indentedListWriter(txtIntWriter())(1 :: 2 :: 3), "  1\n  2\n  3\n")
+assertEq(indentedListWriter(txtIntWriter())(List{int}(), "", WriterNewlineMode.None), "")
+assertEq(indentedListWriter(txtIntWriter())(1 :: List{int}(), "", WriterNewlineMode.None), "1")
+assertEq(indentedListWriter(txtIntWriter())(1 :: 2 :: 3, "", WriterNewlineMode.None), "123")
+
+assertEq(
   w = stringWriter() & txtIntWriter();
-  w(Pair("hello", 42)) == "hello42")
+  w(Pair("hello", 42)), "hello42")
 
-assert(
+assertEq(
   w = stringWriter() & litWriter(' ') & txtIntWriter();
-  w(Pair("hello", 42)) == "hello 42")
+  w(Pair("hello", 42)), "hello 42")

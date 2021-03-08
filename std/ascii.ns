@@ -1,3 +1,4 @@
+import "std/assert.ns"
 import "std/list.ns"
 import "std/text.ns"
 
@@ -56,73 +57,67 @@ fun escapeForPrinting(string str)
 
 // -- Tests
 
-assert(
-  rangeList(char(0),    char(127)).all(isAscii) &&
-  rangeList(char(128),  char(255)).none(isAscii))
+assertAll(rangeList(char(0), char(127)), isAscii)
+assertNone(rangeList(char(128), char(255)), isAscii)
 
-assert(
-  rangeList('0', '9').all(isDigit) &&
-  rangeList('a', 'z').none(isDigit))
+assertAll(rangeList('0', '9'), isDigit)
+assertNone(rangeList('a', 'z'), isDigit)
 
-assert(
-  rangeList('0', '9').all(isHexDigit) &&
-  rangeList('a', 'f').all(isHexDigit) &&
-  rangeList('A', 'F').all(isHexDigit) &&
-  rangeList('g', 'z').none(isHexDigit))
+assertAll(rangeList('0', '9'), isHexDigit)
+assertAll(rangeList('a', 'f'), isHexDigit)
+assertAll(rangeList('A', 'F'), isHexDigit)
+assertNone(rangeList('g', 'z'), isHexDigit)
 
-assert(
-  rangeList('a', 'z').all(isLetter) &&
-  rangeList('A', 'Z').all(isLetter) &&
-  rangeList('0', '9').none(isLetter))
+assertAll(rangeList('a', 'z'), isLetter)
+assertAll(rangeList('A', 'Z'), isLetter)
+assertNone(rangeList('0', '9'), isLetter)
 
-assert(
-  rangeList('a', 'z').all(isLower) &&
-  rangeList('A', 'Z').none(isLower) &&
-  rangeList('0', '9').none(isLower))
+assertAll(rangeList('a', 'z'), isLower)
+assertNone(rangeList('A', 'Z'), isLower)
+assertNone(rangeList('0', '9'), isLower)
 
-assert(
-  rangeList('A', 'Z').all(isUpper) &&
-  rangeList('a', 'z').none(isUpper) &&
-  rangeList('0', '9').none(isUpper))
+assertAll(rangeList('A', 'Z'), isUpper)
+assertNone(rangeList('a', 'z'), isUpper)
+assertNone(rangeList('0', '9'), isUpper)
 
-assert(
-  ' '.isWhitespace() && '\t'.isWhitespace() && '\n'.isWhitespace() && '\r'.isWhitespace() &&
-  rangeList('a', 'z').none(isWhitespace) &&
-  rangeList('A', 'Z').none(isWhitespace) &&
-  rangeList('0', '9').none(isWhitespace))
+assert(' '.isWhitespace())
+assert('\t'.isWhitespace())
+assert('\n'.isWhitespace())
+assert('\r'.isWhitespace())
+assertNone(rangeList('a', 'z'), isWhitespace)
+assertNone(rangeList('A', 'Z'), isWhitespace)
+assertNone(rangeList('0', '9'), isWhitespace)
 
-assert('\n'.isNewline() && '\r'.isNewline() && !'\t'.isNewline())
+assert('\n'.isNewline())
+assert('\r'.isNewline())
+assertNot('\t'.isNewline())
 
-assert(
-  '\0'.isControl() &&
-  '\t'.isControl() &&
-  '\f'.isControl() &&
-  '\v'.isControl() &&
-  '\n'.isControl() &&
-  '\r'.isControl())
+assert('\0'.isControl())
+assert('\t'.isControl())
+assert('\f'.isControl())
+assert('\v'.isControl())
+assert('\n'.isControl())
+assert('\r'.isControl())
 
-assert(
-  rangeList('a', 'z').map(toUpper) == rangeList('A', 'Z') &&
-  rangeList('A', 'Z').map(toLower) == rangeList('a', 'z'))
+assertEq(rangeList('a', 'z').map(toUpper), rangeList('A', 'Z'))
+assertEq(rangeList('A', 'Z').map(toLower), rangeList('a', 'z'))
 
-assert(
-  '\0'.escapeForPrinting()      == "\\0"    &&
-  '\n'.escapeForPrinting()      == "\\n"    &&
-  '\r'.escapeForPrinting()      == "\\r"    &&
-  '\t'.escapeForPrinting()      == "\\t"    &&
-  '\a'.escapeForPrinting()      == "\\7"    &&
-  '\b'.escapeForPrinting()      == "\\8"    &&
-  ' '.escapeForPrinting()       == " "      &&
-  'a'.escapeForPrinting()       == "a"      &&
-  '+'.escapeForPrinting()       == "+"      &&
-  char(127).escapeForPrinting() == "\\127"  &&
-  char(189).escapeForPrinting() == "\\189")
+assertEq('\0'.escapeForPrinting(), "\\0")
+assertEq('\n'.escapeForPrinting(), "\\n")
+assertEq('\r'.escapeForPrinting(), "\\r")
+assertEq('\t'.escapeForPrinting(), "\\t")
+assertEq('\a'.escapeForPrinting(), "\\7")
+assertEq('\b'.escapeForPrinting(), "\\8")
+assertEq(' '.escapeForPrinting(), " ")
+assertEq('a'.escapeForPrinting(), "a")
+assertEq('+'.escapeForPrinting(), "+")
+assertEq(char(127).escapeForPrinting(), "\\127")
+assertEq(char(189).escapeForPrinting(), "\\189")
 
-assert(
-  "".escapeForPrinting()                  == ""                     &&
-  "hello world".escapeForPrinting()       == "hello world"          &&
-  "hello\nworld".escapeForPrinting()      == "hello\\nworld"        &&
-  "\thello\nworld\r".escapeForPrinting()  == "\\thello\\nworld\\r"  &&
-  "\0".escapeForPrinting()                == "\\0"                  &&
-  "\0\0\0".escapeForPrinting()            == "\\0\\0\\0"            &&
-  "\a\n\t\b".escapeForPrinting()          == "\\7\\n\\t\\8")
+assertEq("".escapeForPrinting(), "")
+assertEq("hello world".escapeForPrinting(), "hello world")
+assertEq("hello\nworld".escapeForPrinting(), "hello\\nworld")
+assertEq("\thello\nworld\r".escapeForPrinting(), "\\thello\\nworld\\r")
+assertEq("\0".escapeForPrinting(), "\\0")
+assertEq("\0\0\0".escapeForPrinting(), "\\0\\0\\0")
+assertEq("\a\n\t\b".escapeForPrinting(), "\\7\\n\\t\\8")

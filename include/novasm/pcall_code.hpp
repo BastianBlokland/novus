@@ -60,7 +60,6 @@ enum class PCallCode : uint8_t {
   ProgramPath    = 103, // () -> (string) Get the path of the currently running program.
 
   SleepNano = 240, // (long)         -> (int) Sleep the current executor for x nanoseconds.
-  Assert    = 241, // (string, int)  -> (int) If condition is false: fail with message.
 };
 
 /* Platform errors

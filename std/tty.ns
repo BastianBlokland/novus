@@ -76,6 +76,11 @@ fun ttyStyleWriter() -> Writer{TtyStyle}
 fun ttyLitStyleWriter(TtyStyle s) -> Writer{None}
   litWriter(ttyEsc() + '[' + s.int().string() + 'm')
 
+fun ttyLitStyleWriter(List{TtyStyle} styleList) -> Writer{None}
+  styleList.fold(lambda (Writer{None} res, TtyStyle s)
+    res & ttyLitStyleWriter(s)
+  , noneWriter())
+
 fun ttyStyleFgColorWriter() -> Writer{TtyColor}
   (
     litWriter(ttyEsc() + "[38;5;") & txtIntWriter() & litWriter('m')
@@ -154,9 +159,10 @@ fun ttyLitWindowTitleWriter(string title) -> Writer{None}
 fun ttyWindowTitleWriter() -> Writer{string}
   litWriter(ttyEsc() + "]0;") & stringWriter() & litWriter(ttyBell())
 
-//ESC ] 2 ; <string> BEL
-
 // -- Compound writers
 
 fun ttyStyledTextWriter(TtyStyle s) -> Writer{string}
   ttyLitStyleWriter(s) & stringWriter() & ttyLitStyleWriter(TtyStyle.Reset)
+
+fun ttyStyledTextWriter(List{TtyStyle} styleList) -> Writer{string}
+  ttyLitStyleWriter(styleList) & stringWriter() & ttyLitStyleWriter(TtyStyle.Reset)

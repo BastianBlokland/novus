@@ -1,3 +1,5 @@
+import "std/assert.ns"
+
 // -- Types
 
 struct Pair{T1, T2} = T1 first, T2 second
@@ -49,10 +51,8 @@ fun string{T1, T2}(Pair{T1, T2} p)
 
 // -- Tests
 
-assert(
-  p = Pair(42, "hello world");
-  p == Pair(42, "hello world") &&
-  p != Pair(42, "hello") &&
-  p != Pair(1337, "hello world"))
+assertEq(Pair(42, "hello world"), Pair(42, "hello world"))
+assertNotEq(Pair(42, "hello world"), Pair(42, "hello"))
+assertNotEq(Pair(42, "hello world"), Pair(1337, "hello world"))
 
-assert(Pair(42, "hello world").string() == "(42,hello world)")
+assertEq(Pair(42, "hello world").string(), "(42,hello world)")

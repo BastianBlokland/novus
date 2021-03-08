@@ -20,9 +20,6 @@ auto operator<<(std::ostream& out, const ExecState& rhs) noexcept -> std::ostrea
   case ExecState::Failed:
     out << "failed";
     break;
-  case ExecState::AssertFailed:
-    out << "assert-failed";
-    break;
 
   case ExecState::VmInitFailed:
     out << "vm-init-failed";

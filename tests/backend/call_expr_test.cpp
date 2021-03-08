@@ -528,22 +528,28 @@ TEST_CASE("[backend] Generate assembly for call expressions", "backend") {
 
   SECTION("User functions") {
     CHECK_PROG(
-        "fun test(int a, int b) -> bool a == b "
-        "assert(test(42, 1337), \"test\")",
+        "fun funcA(int a, int b) -> bool a == b "
+        "fun test(bool b) b "
+        "test(funcA(42, 1337))",
         [](novasm::Assembler* asmb) -> void {
-          asmb->label("test");
+          asmb->label("funcA");
           asmb->addStackLoad(0);
           asmb->addStackLoad(1);
           asmb->addCheckEqInt();
           asmb->addRet();
 
+          // --- test function start.
+          asmb->label("func-test");
+          asmb->addStackLoad(0);
+          asmb->addRet();
+          // --- test function end.
+
           asmb->label("prog");
           asmb->addLoadLitInt(42);
           asmb->addLoadLitInt(1337);
-          asmb->addCall("test", 2, novasm::CallMode::Normal);
+          asmb->addCall("funcA", 2, novasm::CallMode::Normal);
 
-          asmb->addLoadLitString("test");
-          asmb->addPCall(novasm::PCallCode::Assert);
+          asmb->addCall("func-test", 1, novasm::CallMode::Normal);
           asmb->addRet();
 
           asmb->setEntrypoint("prog");

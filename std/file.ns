@@ -1,3 +1,4 @@
+import "std/assert.ns"
 import "std/json.ns"
 import "std/path.ns"
 import "std/stream.ns"
@@ -18,6 +19,20 @@ struct File =
   FileMode    mode,
   FileFlags   flags,
   sys_stream  stream
+
+// -- Conversions
+
+fun string(FileMode m)
+  if m == FileMode.Create -> "Create"
+  if m == FileMode.Open   -> "Open"
+  if m == FileMode.Append -> "Append"
+  else                    -> ""
+
+fun string(FileFlags o)
+  (o & FileFlags.AutoRemove) != 0 ? "[AutoRemove]" : ""
+
+fun string(File f)
+  "(" + f.mode.string() + f.flags.string() + " " + f.path.string() + ")"
 
 // -- Actions
 
@@ -67,15 +82,15 @@ act fileRemove(Path p) -> Option{Error}
 
 // -- Tests
 
-assert(
+assertEq(
   p = getPathCurrent() / "file-test1.tmp";
   f = fileOpen(p, FileMode.Create, FileFlags.AutoRemove).map(
     impure lambda (File f)
       f.write("hello world")
   );
-  fileRead(p) == "hello world")
+  fileRead(p), "hello world")
 
-assert(
+assertEq(
   p = getPathCurrent() / "file-test2.tmp";
   f = fileOpen(p, FileMode.Create, FileFlags.AutoRemove).map(
     impure lambda (File f)
@@ -83,27 +98,27 @@ assert(
       f.write("hello world");
       f.write("hello world")
   );
-  fileRead(p) == "hello worldhello worldhello world")
+  fileRead(p), "hello worldhello worldhello world")
 
-assert(
+assertEq(
   json  = JsonValue(JsonArray(JsonValue(true) :: JsonValue(2.0)));
   p     = getPathCurrent() / "file-test3.tmp";
   f     = fileOpen(p, FileMode.Create, FileFlags.AutoRemove).map(
     impure lambda (File f)
       f.write(jsonWriter(), json)
   );
-  fileRead(p, jsonParser()) == json)
+  makePair(fileRead(p, jsonParser()), json))
 
-assert(
+assertIs(
   p = getPathCurrent() / "file-test4.tmp";
-  fileOpen(p, FileMode.Create, FileFlags.AutoRemove) is File)
+  fileOpen(p, FileMode.Create, FileFlags.AutoRemove), Type{File}())
 
-assert(
+assertIs(
   p = getPathCurrent() / "file-test5.tmp";
-  fileOpen(p, FileMode.Open) is Error)
+  fileOpen(p, FileMode.Open), Type{Error}())
 
-assert(
+assertIs(
   p = getPathCurrent() / "file-test6.tmp";
-  fileOpen(p, FileMode.Append, FileFlags.AutoRemove) is Error)
+  fileOpen(p, FileMode.Append, FileFlags.AutoRemove), Type{Error}())
 
-assert(fileRemove(getPathCurrent() / "non-existing-file") is Error)
+assertIs(fileRemove(getPathCurrent() / "non-existing-file"), Type{Error}())

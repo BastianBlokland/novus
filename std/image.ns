@@ -1,3 +1,4 @@
+import "std/assert.ns"
 import "std/color.ns"
 import "std/list.ns"
 import "std/math.ns"
@@ -79,6 +80,6 @@ fun tgaWriter()
 
 // -- Tests
 
-assert(
-  g = makeColorGrid(2, 2, lambda (int x, int y) y == 0 ? red() : blue());
-  g == red() :: red() :: blue() :: blue())
+assertEq(
+  makeColorGrid(2, 2, lambda (int x, int y) y == 0 ? red() : blue()),
+  red() :: red() :: blue() :: blue())

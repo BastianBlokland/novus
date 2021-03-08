@@ -11,14 +11,15 @@ namespace frontend {
 TEST_CASE("[frontend] Analyzing execute statements", "frontend") {
 
   SECTION("Define exec statement") {
-    const auto& output = ANALYZE("assert(true, \"hello world\")");
+    const auto& output = ANALYZE("fun fa(bool b, string s) b "
+                                 "fa(true, \"hello world\")");
     REQUIRE(output.isSuccess());
     auto execsBegin     = output.getProg().beginExecStmts();
     const auto execsEnd = output.getProg().endExecStmts();
 
     auto callExpr = prog::expr::callExprNode(
         output.getProg(),
-        GET_FUNC_ID(output, "assert", GET_TYPE_ID(output, "bool"), GET_TYPE_ID(output, "string")),
+        GET_FUNC_ID(output, "fa", GET_TYPE_ID(output, "bool"), GET_TYPE_ID(output, "string")),
         EXPRS(
             prog::expr::litBoolNode(output.getProg(), true),
             prog::expr::litStringNode(output.getProg(), "hello world")));
@@ -52,7 +53,8 @@ TEST_CASE("[frontend] Analyzing execute statements", "frontend") {
   }
 
   SECTION("Define exec statement with const") {
-    const auto& output = ANALYZE("assert(x = 5; x == 1, \"msg\")");
+    const auto& output = ANALYZE("fun fa(bool b, string s) b "
+                                 "fa(x = 5; x == 1, \"msg\")");
     REQUIRE(output.isSuccess());
     auto execsBegin        = output.getProg().beginExecStmts();
     const auto execsEnd    = output.getProg().endExecStmts();
@@ -63,26 +65,15 @@ TEST_CASE("[frontend] Analyzing execute statements", "frontend") {
     REQUIRE(++execsBegin == execsEnd);
   }
 
-  SECTION("Define exec statement to custom action") {
-    const auto& output = ANALYZE("act main() "
-                                 " assert(true, \"hello \") "
-                                 "main()");
-    REQUIRE(output.isSuccess());
-    auto execsBegin     = output.getProg().beginExecStmts();
-    const auto execsEnd = output.getProg().endExecStmts();
-
-    CHECK(
-        execsBegin->getExpr() ==
-        *prog::expr::callExprNode(output.getProg(), GET_FUNC_ID(output, "main"), {}));
-    REQUIRE(++execsBegin == execsEnd);
-  }
-
   SECTION("Diagnostics") {
     CHECK_DIAG("things()", errUndeclaredFuncOrAction(NO_SRC, "things", {}));
     CHECK_DIAG(
-        "assert(1, 1)",
-        errUndeclaredFuncOrAction(NO_SRC, "assert", std::vector<std::string>{"int", "int"}));
-    CHECK_DIAG("assert(test())", errUndeclaredFuncOrAction(NO_SRC, "test", {}));
+        "fa(1, 1)",
+        errUndeclaredFuncOrAction(NO_SRC, "fa", std::vector<std::string>{"int", "int"}));
+    CHECK_DIAG(
+        "fun fa(bool b) b "
+        "fa(test())",
+        errUndeclaredFuncOrAction(NO_SRC, "test", {}));
   }
 }
 

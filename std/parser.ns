@@ -1,3 +1,4 @@
+import "std/assert.ns"
 import "std/ascii.ns"
 import "std/bits.ns"
 import "std/either.ns"
@@ -474,213 +475,175 @@ fun repeat{T}(Parser{T} p, int count)
 
 // -- Tests
 
-assert(retParser(42)("") == 42)
+assertEq(retParser(42)(""), 42)
+assertEq(nopParser()(""), true)
 
-assert(nopParser()("") == true)
+assertEq(failParser(Error("Hello world")).run(""), Error("Parsing failed, line: 1, column: 1") :: Error("Hello world"))
+assertEq(failParser().run("Hello world"), Error("Parsing failed, line: 1, column: 1") :: Error())
+assertEq(failParser().run(""), Error("Parsing failed, line: 1, column: 1") :: Error())
 
-assert(
-  parseErr = Error("Parsing failed, line: 1, column: 1");
-  failParser(Error("Hello world")).run("")  == parseErr :: Error("Hello world") &&
-  failParser().run("Hello world")           == parseErr :: Error()              &&
-  failParser().run("")                      == parseErr :: Error())
+assertEq(failParser(Error("Hello world")).run("", ParseFlags.NoWrapperError), Error("Hello world"))
+assertEq(failParser().run("Hello world", ParseFlags.NoWrapperError), Error())
+assertEq(failParser().run("", ParseFlags.NoWrapperError), Error())
 
-assert(
-  f = ParseFlags.NoWrapperError;
-  failParser(Error("Hello world")).run("", f)  == Error("Hello world") &&
-  failParser().run("Hello world", f)           == Error()              &&
-  failParser().run("", f)                      == Error())
+assertEq(matchParser('a')("a"), 'a')
+assertIs(matchParser('a')("b"), Type{ParseFailure}())
 
-assert(
-  matchParser('a')("a") == 'a' &&
-  matchParser('a')("b") is ParseFailure)
+assertEq(matchParser("hello")("hello world"), "hello")
+assertIs(matchParser("hello")("world"), Type{ParseFailure}())
 
-assert(
-  matchParser("hello")("hello world") == "hello" &&
-  matchParser("hello")("world") is ParseFailure)
+assertEq(allParser()("hello world"), "hello world")
+assertEq(allParser()(""), "" )
 
-assert(
-  allParser()("hello world") == "hello world" &&
-  allParser()("")            == "" )
-
-assert(
+assertEq(
   p = matchParser("hello ") >> allParser();
-  p("hello world") == "world" )
+  p("hello world"), "world")
 
-assert(
+assertEq(
   p = allParser() << endParser();
-  p("hello world") == "hello world")
+  p("hello world"), "hello world")
 
-assert(
-  takeParser(0)("")       == ""           &&
-  takeParser(1)("")       is ParseFailure &&
-  takeParser(1)("h")      == "h"          &&
-  takeParser(1)("hello")  == "h"          &&
-  takeParser(2)("hello")  == "he"         &&
-  takeParser(5)("hello")  == "hello")
+assertIs(takeParser(1)(""), Type{ParseFailure}())
 
-assert(
+assertEq(takeParser(0)(""), "")
+assertEq(takeParser(1)("h"), "h")
+assertEq(takeParser(1)("hello"), "h")
+assertEq(takeParser(2)("hello"), "he")
+assertEq(takeParser(5)("hello"), "hello")
+
+assertEq(
   p = takeParser(5) << endParser();
-  p("hello") == "hello")
+  p("hello"), "hello")
 
-assert(
+assertEq(
   p = takeParser(5) & takeParser(3);
-  p("helloworld") == Pair("hello", "wor") &&
-  p("hellowo")    is ParseFailure)
+  p("helloworld"), Pair("hello", "wor"))
 
-assert(
-  whileParser(isDigit)("123 123") == "123" &&
-  whileParser(isDigit)("12345")   == "12345" &&
-  whileParser(isDigit)("1")       == "1" &&
-  whileParser(isDigit)("1abc")    == "1" &&
-  whileParser(isDigit)("abc")   is ParseFailure &&
-  whileParser(isDigit)("")      is ParseFailure)
+assertIs(
+  p = takeParser(5) & takeParser(3);
+  p("hellowo"), Type{ParseFailure}())
 
-assert(
-  untilParser(isDigit, ParseFlags.Optional)("abc123")   == "abc" &&
-  untilParser(isDigit, ParseFlags.Optional)("")         == "" &&
-  untilParser(isDigit)("  hello 1 world")               == "  hello " &&
-  untilParser(isDigit)("1")                             is ParseFailure &&
-  untilParser(isDigit)("")                              is ParseFailure)
+assertEq(whileParser(isDigit)("123 123"), "123")
+assertEq(whileParser(isDigit)("12345"), "12345")
+assertEq(whileParser(isDigit)("1"), "1")
+assertEq(whileParser(isDigit)("1abc"), "1")
+assertIs(whileParser(isDigit)("abc"), Type{ParseFailure}())
+assertIs(whileParser(isDigit)(""), Type{ParseFailure}())
 
-assert(
-  p = untilParser(matchParser('|'));
-  p("") is ParseFailure &&
-  p("|") is ParseFailure &&
-  p("|| |") is ParseFailure &&
-  p(" |") == " " &&
-  p("hello world| more?") == "hello world")
+assertEq(untilParser(isDigit, ParseFlags.Optional)("abc123"), "abc")
+assertEq(untilParser(isDigit, ParseFlags.Optional)(""), "")
+assertEq(untilParser(isDigit)("  hello 1 world"), "  hello ")
+assertIs(untilParser(isDigit)("1"), Type{ParseFailure}())
+assertIs(untilParser(isDigit)(""), Type{ParseFailure}())
 
-assert(
-  p = untilParser(matchParser('|'), ParseFlags.Optional);
-  p("") == "" &&
-  p("|") == "")
+assertIs(p = untilParser(matchParser('|')); p(""), Type{ParseFailure}())
+assertIs(p = untilParser(matchParser('|')); p("|"), Type{ParseFailure}())
+assertIs(p = untilParser(matchParser('|')); p("|| |"), Type{ParseFailure}())
+assertEq(p = untilParser(matchParser('|')); p(" |"), " ")
+assertEq(p = untilParser(matchParser('|')); p("hello world| more?"), "hello world")
+assertEq(p = untilParser(matchParser('|'), ParseFlags.Optional); p(""), "")
+assertEq(p = untilParser(matchParser('|'), ParseFlags.Optional); p("|"), "")
+assertEq(p = untilParser(endParser(), ParseFlags.Optional); p("Hello world"), "Hello world")
+assertEq(p = untilParser(endParser(), ParseFlags.Optional); p(""), "")
+assertEq(p = untilParser(endParser()); p("Hello world"), "Hello world")
+assertIs(p = untilParser(endParser()); p(""), Type{ParseFailure}())
 
-assert(
-  p = untilParser(endParser(), ParseFlags.Optional);
-  p("Hello world")  == "Hello world" &&
-  p("")             == "")
+assertEq(whitespaceParser()("  123"), "  ")
+assertEq(whitespaceParser()(" a"), " ")
+assertEq(whitespaceParser()(" \n\t "), " \n\t ")
+assertEq(whitespaceParser()(""), "")
+assertEq(whitespaceParser()("abc"), "")
 
-assert(
-  p = untilParser(endParser());
-  p("Hello world") == "Hello world" &&
-  p("") is ParseFailure)
+assertEq(lineParser()("abc sdf hello world"), "abc sdf hello world")
+assertEq(lineParser()("abc sdf\nhello world"), "abc sdf")
+assertEq(lineParser()("abc sdf\r\nhello world"), "abc sdf")
+assertEq(lineParser()("abc sdf\n\nhello world"), "abc sdf")
+assertIs(lineParser()(""), Type{ParseFailure}())
 
-assert(
-  whitespaceParser()("  123")   == "  " &&
-  whitespaceParser()(" a")      == " " &&
-  whitespaceParser()(" \n\t ")  == " \n\t " &&
-  whitespaceParser()("")        == "" &&
-  whitespaceParser()("abc")     == "")
+assertEq(newlineParser()("\n"), "\n")
+assertEq(newlineParser()("\r\n"), "\r\n")
+assertEq(newlineParser()("\n\n"), "\n")
+assertEq(newlineParser()("\n\r"), "\n")
+assertIs(newlineParser()("\r"), Type{ParseFailure}())
+assertIs(newlineParser()(""), Type{ParseFailure}())
 
-assert(
-  p = lineParser();
-  p("abc sdf hello world")     == "abc sdf hello world" &&
-  p("abc sdf\nhello world")    == "abc sdf" &&
-  p("abc sdf\r\nhello world")  == "abc sdf" &&
-  p("abc sdf\n\nhello world")  == "abc sdf" &&
-  p("") is ParseFailure)
+assertEq(emptyLineParser()("\n\n"), "\n\n")
+assertEq(emptyLineParser()("\r\n\r\n"), "\r\n\r\n")
+assertIs(emptyLineParser()(""), Type{ParseFailure}())
+assertIs(emptyLineParser()("\n"), Type{ParseFailure}())
+assertIs(emptyLineParser()("\n \n"), Type{ParseFailure}())
+assertIs(emptyLineParser()("\nabc\n"), Type{ParseFailure}())
+assertIs(emptyLineParser()("\r\n"), Type{ParseFailure}())
+assertIs(emptyLineParser()("\r\n\n"), Type{ParseFailure}())
 
-assert(
-  p = newlineParser();
-  p("\n")   == "\n" &&
-  p("\r\n") == "\r\n" &&
-  p("\n\n") == "\n" &&
-  p("\n\r") == "\n" &&
-  p("\r") is ParseFailure &&
-  p("")   is ParseFailure)
+assertEq(multiLineParser(2)("First line\nSecond line\n"), "First line" :: "Second line")
+assertEq(multiLineParser(2)("First line\r\nSecond line\r\n"), "First line" :: "Second line")
+assertEq(multiLineParser(2)("First line\r\nSecond line\n"), "First line" :: "Second line")
+assertIs(multiLineParser(2)(""), Type{ParseFailure}())
+assertIs(multiLineParser(2)("First line"), Type{ParseFailure}())
+assertIs(multiLineParser(2)("First line\nSecond line"), Type{ParseFailure}())
+assertIs(multiLineParser(2)("First line\nSecond line\r"), Type{ParseFailure}())
 
-assert(
-  p = emptyLineParser();
-  p("\n\n")     == "\n\n" &&
-  p("\r\n\r\n") == "\r\n\r\n" &&
-  p("")         is ParseFailure &&
-  p("\n")       is ParseFailure &&
-  p("\n \n")    is ParseFailure &&
-  p("\nabc\n")  is ParseFailure &&
-  p("\r\n")     is ParseFailure &&
-  p("\r\n\n")   is ParseFailure)
+assertEq(endParser()(""), "")
+assertIs(endParser()("a"), Type{ParseFailure}())
+assertIs(endParser()(" "), Type{ParseFailure}())
 
-assert(
-  p = multiLineParser(2);
-  p("First line\nSecond line\n") == "First line" :: "Second line" &&
-  p("First line\r\nSecond line\r\n") == "First line" :: "Second line" &&
-  p("First line\r\nSecond line\n") == "First line" :: "Second line" &&
-  p("") is ParseFailure &&
-  p("First line") is ParseFailure &&
-  p("First line\nSecond line") is ParseFailure &&
-  p("First line\nSecond line\r") is ParseFailure)
+assertEq(txtPosIntParser()("1"), 1)
+assertEq(txtPosIntParser()("1337"), 1337)
+assertEq(txtPosIntParser()(maxVal{int}().string()), maxVal{int}())
 
-assert(
-  p = endParser();
-  p("") == ""               &&
-  p("a") is ParseFailure    &&
-  p(" ") is ParseFailure)
+assertIs(txtPosIntParser()("-1"), Type{ParseFailure}())
+assertIs(txtPosIntParser()("+1"), Type{ParseFailure}())
+assertIs(txtPosIntParser()("a"), Type{ParseFailure}())
+assertIs(txtPosIntParser()(" 123"), Type{ParseFailure}())
+assertIs(txtPosIntParser()("2147483648"), Type{ParseFailure}())
 
-assert(
-  txtPosIntParser()("1")                    == 1 &&
-  txtPosIntParser()("1337")                 == 1337 &&
-  txtPosIntParser()(maxVal{int}().string()) == maxVal{int}())
+assertIs(txtIntParser()(""), Type{ParseFailure}())
+assertIs(txtIntParser()("a"), Type{ParseFailure}())
+assertIs(txtIntParser()(" 123"), Type{ParseFailure}())
 
-assert(
-  txtPosIntParser()("-1")         is ParseFailure &&
-  txtPosIntParser()("+1")         is ParseFailure &&
-  txtPosIntParser()("a")          is ParseFailure &&
-  txtPosIntParser()(" 123")       is ParseFailure &&
-  txtPosIntParser()("2147483648") is ParseFailure)
+assertEq(txtIntParser()("1"), 1)
+assertEq(txtIntParser()("-1"), -1)
+assertEq(txtIntParser()("+1"), 1)
+assertEq(txtIntParser()("1337"), 1337)
+assertEq(txtIntParser()("+0200"), 200)
+assertEq(txtIntParser()(maxVal{int}().string()), maxVal{int}())
+assertEq(txtIntParser()(minVal{int}().string()), minVal{int}())
 
-assert(
-  txtIntParser()("")         is ParseFailure &&
-  txtIntParser()("a")        is ParseFailure &&
-  txtIntParser()(" 123")     is ParseFailure)
+assertIs(txtIntParser()(""), Type{ParseFailure}())
+assertIs(txtIntParser()("a"), Type{ParseFailure}())
+assertIs(txtIntParser()(" 123"), Type{ParseFailure}())
+assertIs(txtIntParser()("-2147483649"), Type{ParseFailure}())
+assertIs(txtIntParser()("2147483648"), Type{ParseFailure}())
 
-assert(
-  txtIntParser()("1")                     == 1 &&
-  txtIntParser()("-1")                    == -1 &&
-  txtIntParser()("+1")                    == 1 &&
-  txtIntParser()("1337")                  == 1337 &&
-  txtIntParser()("+0200")                 == 200 &&
-  txtIntParser()(maxVal{int}().string())  == maxVal{int}() &&
-  txtIntParser()(minVal{int}().string())  == minVal{int}())
+assertEq(txtPosLongParser()("1"), 1L)
+assertEq(txtPosLongParser()("1337"), 1337L)
+assertEq(txtPosLongParser()(maxVal{int}().string()), long(maxVal{int}()))
+assertEq(txtPosLongParser()(maxVal{long}().string()), maxVal{long}())
+assertEq(txtPosLongParser()("7223372036854775807"), 7223372036854775807L)
+assertEq(txtPosLongParser()("9223372036854775808"), -9223372036854775807L - 1L)
 
-assert(
-  txtIntParser()("")            is ParseFailure &&
-  txtIntParser()("a")           is ParseFailure &&
-  txtIntParser()(" 123")        is ParseFailure &&
-  txtIntParser()("-2147483649") is ParseFailure &&
-  txtIntParser()("2147483648")  is ParseFailure)
+assertIs(txtPosLongParser()("-1"), Type{ParseFailure}())
+assertIs(txtPosLongParser()("+1"), Type{ParseFailure}())
+assertIs(txtPosLongParser()("a"), Type{ParseFailure}())
 
-assert(
-  txtPosLongParser()("1")                   == 1L &&
-  txtPosLongParser()("1337")                == 1337L &&
-  txtPosLongParser()(maxVal{int}().string())     == long(maxVal{int}()) &&
-  txtPosLongParser()(maxVal{long}().string())    == maxVal{long}() &&
-  txtPosLongParser()("7223372036854775807") == 7223372036854775807L &&
-  txtPosLongParser()("9223372036854775808") == -9223372036854775807L - 1L)
+assertEq(txtLongParser()("1"), 1L)
+assertEq(txtLongParser()("-1"), -1L)
+assertEq(txtLongParser()("+1"), 1L)
+assertEq(txtLongParser()(maxVal{long}().string()), maxVal{long}())
 
-assert(
-  txtPosLongParser()("-1") is ParseFailure &&
-  txtPosLongParser()("+1") is ParseFailure &&
-  txtPosLongParser()("a")  is ParseFailure)
-
-assert(
-  txtLongParser()("1")                      == 1L &&
-  txtLongParser()("-1")                     == -1L &&
-  txtLongParser()("+1")                     == 1L &&
-  txtLongParser()(maxVal{long}().string())  == maxVal{long}())
-
-assert(
-  txtHexParser()("0")         == 0x0 &&
-  txtHexParser()("9")         == 0x9 &&
-  txtHexParser()("009")       == 0x9 &&
-  txtHexParser()("a")         == 0xA &&
-  txtHexParser()("A")         == 0xA &&
-  txtHexParser()("abcdef")    == 0xABCDEF &&
-  txtHexParser()("ABCDEF")    == 0xABCDEF &&
-  txtHexParser()("7FffFfFF")  == 0x7FFFFFFF &&
-  txtHexParser()("1e240")     == 0x1E240 &&
-  txtHexParser()("12345678")  == 0x12345678 &&
-  txtHexParser()("23456789")  == 0x23456789 &&
-  txtHexParser()("539")       == 0x539)
+assertEq(txtHexParser()("0"), 0x0)
+assertEq(txtHexParser()("9"), 0x9)
+assertEq(txtHexParser()("009"), 0x9)
+assertEq(txtHexParser()("a"), 0xA)
+assertEq(txtHexParser()("A"), 0xA)
+assertEq(txtHexParser()("abcdef"), 0xABCDEF)
+assertEq(txtHexParser()("ABCDEF"), 0xABCDEF)
+assertEq(txtHexParser()("7FffFfFF"), 0x7FFFFFFF)
+assertEq(txtHexParser()("1e240"), 0x1E240)
+assertEq(txtHexParser()("12345678"), 0x12345678)
+assertEq(txtHexParser()("23456789"), 0x23456789)
+assertEq(txtHexParser()("539"), 0x539)
 
 assert(
   inputs  = rangeList(0, 1337);
@@ -688,348 +651,317 @@ assert(
   parser  = txtHexParser();
   listEqual(hexStrs.map(lambda (string str) parser(str) ?? -1), inputs))
 
-assert(
-  txtHexParser()("")         is ParseFailure &&
-  txtHexParser()("g")        is ParseFailure &&
-  txtHexParser()(" 123")     is ParseFailure &&
-  txtHexParser(4)("123")     is ParseFailure &&
-  txtHexParser(4)("123G")    is ParseFailure)
+assertIs(txtHexParser()(""), Type{ParseFailure}())
+assertIs(txtHexParser()("g"), Type{ParseFailure}())
+assertIs(txtHexParser()(" 123"), Type{ParseFailure}())
+assertIs(txtHexParser(4)("123"), Type{ParseFailure}())
+assertIs(txtHexParser(4)("123G"), Type{ParseFailure}())
 
-assert(
-  txtPosFloatParser()("0")            == 0.0 &&
-  txtPosFloatParser()("1")            == 1.0 &&
-  txtPosFloatParser()("0001")         == 1.0 &&
-  txtPosFloatParser()("0e10")         == 0.0 &&
-  txtPosFloatParser()("0e-10")        == 0.0 &&
-  txtPosFloatParser()("42e0")         == 42.0 &&
-  txtPosFloatParser()("42e1")         == 420.0 &&
-  txtPosFloatParser()("42e2")         == 4200.0 &&
-  txtPosFloatParser()("42e+0")        == 42.0 &&
-  txtPosFloatParser()("42e+1")        == 420.0 &&
-  txtPosFloatParser()("42e+2")        == 4200.0 &&
-  txtPosFloatParser()("42e-0")        == 42.0 &&
-  txtPosFloatParser()("42e-1")        == 4.2 &&
-  txtPosFloatParser()("42e-2")        == .42 &&
-  txtPosFloatParser()("42.1337")      == 42.1337 &&
-  txtPosFloatParser()("42.1337e4")    == 421337.0 &&
-  (txtPosFloatParser()("4000000000") ?? -1.0).approx(4000000000.0))
+assertEq(txtPosFloatParser()("0"), 0.0)
+assertEq(txtPosFloatParser()("1"), 1.0)
+assertEq(txtPosFloatParser()("0001"), 1.0)
+assertEq(txtPosFloatParser()("0e10"), 0.0)
+assertEq(txtPosFloatParser()("0e-10"), 0.0)
+assertEq(txtPosFloatParser()("42e0"), 42.0)
+assertEq(txtPosFloatParser()("42e1"), 420.0)
+assertEq(txtPosFloatParser()("42e2"), 4200.0)
+assertEq(txtPosFloatParser()("42e+0"), 42.0)
+assertEq(txtPosFloatParser()("42e+1"), 420.0)
+assertEq(txtPosFloatParser()("42e+2"), 4200.0)
+assertEq(txtPosFloatParser()("42e-0"), 42.0)
+assertEq(txtPosFloatParser()("42e-1"), 4.2)
+assertEq(txtPosFloatParser()("42e-2"), .42)
+assertEq(txtPosFloatParser()("42.1337"), 42.1337)
+assertEq(txtPosFloatParser()("42.1337e4"), 421337.0)
+assertApprox(txtPosFloatParser()("4000000000") ?? -1.0, 4000000000.0)
 
-assert(
-  txtPosFloatParser()("-1")     is ParseFailure &&
-  txtPosFloatParser()("+1")     is ParseFailure &&
-  txtPosFloatParser()("--1")    is ParseFailure &&
-  txtPosFloatParser()("-+1")    is ParseFailure &&
-  txtPosFloatParser()(" 1.0")   is ParseFailure &&
-  txtPosFloatParser()("1. 0 ")  is ParseFailure)
+assertIs(txtPosFloatParser()("-1"), Type{ParseFailure}())
+assertIs(txtPosFloatParser()("+1"), Type{ParseFailure}())
+assertIs(txtPosFloatParser()("--1"), Type{ParseFailure}())
+assertIs(txtPosFloatParser()("-+1"), Type{ParseFailure}())
+assertIs(txtPosFloatParser()(" 1.0"), Type{ParseFailure}())
+assertIs(txtPosFloatParser()("1. 0 "), Type{ParseFailure}())
 
-assert(
-  txtFloatParser()("0")            == 0.0 &&
-  txtFloatParser()("1")            == 1.0 &&
-  txtFloatParser()("0001")         == 1.0 &&
-  txtFloatParser()("0e10")         == 0.0 &&
-  txtFloatParser()("0e-10")        == 0.0 &&
-  txtFloatParser()("-1")           == -1.0 &&
-  txtFloatParser()("+1")           == 1.0 &&
-  txtFloatParser()("-1.1")         == -1.1 &&
-  txtFloatParser()("+1.1")         == 1.1 &&
-  txtFloatParser()("-.1")          == -0.1 &&
-  txtFloatParser()("+.1")          == 0.1 &&
-  txtFloatParser()("42e0")         == 42.0 &&
-  txtFloatParser()("42e1")         == 420.0 &&
-  txtFloatParser()("42e2")         == 4200.0 &&
-  txtFloatParser()("42e+0")        == 42.0 &&
-  txtFloatParser()("42e+1")        == 420.0 &&
-  txtFloatParser()("42e+2")        == 4200.0 &&
-  txtFloatParser()("42e-0")        == 42.0 &&
-  txtFloatParser()("42e-1")        == 4.2 &&
-  txtFloatParser()("42e-2")        == .42 &&
-  txtFloatParser()("42.1337")      == 42.1337 &&
-  txtFloatParser()("42.1337e4")    == 421337.0 &&
-  txtFloatParser()("+42.1337E-2")  == .421337 &&
-  txtFloatParser()("-42.1337E-2")  == -.421337 &&
-  (txtFloatParser()("4000000000") ?? -1.0).approx(4000000000.0))
+assertEq(txtFloatParser()("0"), 0.0)
+assertEq(txtFloatParser()("1"), 1.0)
+assertEq(txtFloatParser()("0001"), 1.0)
+assertEq(txtFloatParser()("0e10"), 0.0)
+assertEq(txtFloatParser()("0e-10"), 0.0)
+assertEq(txtFloatParser()("-1"), -1.0)
+assertEq(txtFloatParser()("+1"), 1.0)
+assertEq(txtFloatParser()("-1.1"), -1.1)
+assertEq(txtFloatParser()("+1.1"), 1.1)
+assertEq(txtFloatParser()("-.1"), -0.1)
+assertEq(txtFloatParser()("+.1"), 0.1)
+assertEq(txtFloatParser()("42e0"), 42.0)
+assertEq(txtFloatParser()("42e1"), 420.0)
+assertEq(txtFloatParser()("42e2"), 4200.0)
+assertEq(txtFloatParser()("42e+0"), 42.0)
+assertEq(txtFloatParser()("42e+1"), 420.0)
+assertEq(txtFloatParser()("42e+2"), 4200.0)
+assertEq(txtFloatParser()("42e-0"), 42.0)
+assertEq(txtFloatParser()("42e-1"), 4.2)
+assertEq(txtFloatParser()("42e-2"), .42)
+assertEq(txtFloatParser()("42.1337"), 42.1337)
+assertEq(txtFloatParser()("42.1337e4"), 421337.0)
+assertEq(txtFloatParser()("+42.1337E-2"), .421337)
+assertEq(txtFloatParser()("-42.1337E-2"), -.421337)
+assertApprox((txtFloatParser()("4000000000") ?? -1.0), 4000000000.0)
 
-assert(
-  txtFloatParser()("")       is ParseFailure &&
-  txtFloatParser()("--1")    is ParseFailure &&
-  txtFloatParser()("-+1")    is ParseFailure &&
-  txtFloatParser()(" 1.0")   is ParseFailure &&
-  txtFloatParser()("1. 0 ")  is ParseFailure)
+assertIs(txtFloatParser()(""), Type{ParseFailure}())
+assertIs(txtFloatParser()("--1"), Type{ParseFailure}())
+assertIs(txtFloatParser()("-+1"), Type{ParseFailure}())
+assertIs(txtFloatParser()(" 1.0"), Type{ParseFailure}())
+assertIs(txtFloatParser()("1. 0 "), Type{ParseFailure}())
 
-assert(
-  charParser()("a")                            == 'a' &&
-  charParser()("hello")                        == 'h' &&
-  (charParser() :: charParser())("hello")   == 'h' :: 'e' &&
-  charParser()("")                             is ParseFailure)
+assertEq(charParser()("a"), 'a')
+assertEq(charParser()("hello"), 'h')
+assertEq((charParser() :: charParser())("hello"), 'h' :: 'e')
+assertIs(charParser()(""), Type{ParseFailure}())
 
-assert(
-  txtBoolParser()("true")  == true &&
-  txtBoolParser()("TRUE")  == true &&
-  txtBoolParser()("True")  == true &&
-  txtBoolParser()("false") == false &&
-  txtBoolParser()("FALSE") == false &&
-  txtBoolParser()("False") == false)
+assertEq(txtBoolParser()("true"), true)
+assertEq(txtBoolParser()("TRUE"), true)
+assertEq(txtBoolParser()("True"), true)
+assertEq(txtBoolParser()("false"), false)
+assertEq(txtBoolParser()("FALSE"), false)
+assertEq(txtBoolParser()("False"), false)
 
-assert(
-  txtBoolParser()("")      is ParseFailure &&
-  txtBoolParser()("tRuE")  is ParseFailure &&
-  txtBoolParser()("fAlSe") is ParseFailure &&
-  txtBoolParser()("abc")   is ParseFailure)
+assertIs(txtBoolParser()(""), Type{ParseFailure}())
+assertIs(txtBoolParser()("tRuE"), Type{ParseFailure}())
+assertIs(txtBoolParser()("fAlSe"), Type{ParseFailure}())
+assertIs(txtBoolParser()("abc"), Type{ParseFailure}())
 
-assert(
-  txtBoolParser().run("abc")   is Error &&
-  txtBoolParser().run("true")  is bool)
+assertIs(txtBoolParser().run("abc"), Type{Error}())
+assertIs(txtBoolParser().run("true"), Type{bool}())
 
-assert(
-  txtBoolParser().build()("abc")   is Error &&
-  txtBoolParser().build()("true")  is bool)
+assertIs(txtBoolParser().build()("abc"), Type{Error}())
+assertIs(txtBoolParser().build()("true"), Type{bool}())
 
-assert(
-  p = ?txtIntParser();
-  p("")     == Option{int}() &&
-  p("abc")  == Option{int}() &&
-  p("42")   == Option(42) &&
-  p("-42")  == Option(-42))
+assertEq((?txtIntParser())(""), Option{int}())
+assertEq((?txtIntParser())("abc"), Option{int}())
+assertEq((?txtIntParser())("42"), Option(42))
+assertEq((?txtIntParser())("-42"), Option(-42))
 
-assert(
+assertEq(
   p = (?txtIntParser() & ?txtBoolParser()).map(
     lambda (Option{int} a, Option{bool} b)
       if b ?? false -> a ?? -1
       else          -> -42
   );
-  p("false")      == -42  &&
-  p("")           == -42  &&
-  p("1337")       == -42  &&
-  p("1337false")  == -42  &&
-  p("true")       == -1   &&
-  p("1337true")   == 1337 &&
-  p("0true")      == 0)
+  ("false" :: "" :: "1337" :: "1337false" :: "true" :: "1337true" :: "0true").map(lambda (string s) p(s) ?? -42),
+  -42 :: -42 :: -42 :: -42 :: -1 :: 1337 :: 0)
 
-assert(
-  p = (matchParser("Hello ") | matchParser("Greetings ")) & matchParser("World");
-  p("Hello World")      == Pair("Hello ", "World") &&
-  p("Greetings World")  == Pair("Greetings ", "World") &&
-  p("HelloWorld") is ParseFailure)
+assertEq(
+  p = (matchParser("Hello ") | matchParser("Greetings ")) & matchParser("World"); p("Hello World"),
+  Pair("Hello ", "World"))
 
-assert(
-  p = txtBoolParser() | txtIntParser();
-  p("42")   == 42 &&
-  p("true") == true &&
-  p("hello") is ParseFailure)
+assertEq(
+  p = (matchParser("Hello ") | matchParser("Greetings ")) & matchParser("World"); p("Greetings World"),
+  Pair("Greetings ", "World"))
 
-assert(
-  p = matchParser("Hello ") >> matchParser("World");
-  p("Hello World") == "World" &&
-  p("Hello ") is ParseFailure &&
-  p("World")  is ParseFailure &&
-  p("abc")    is ParseFailure)
+assertIs(
+  p = (matchParser("Hello ") | matchParser("Greetings ")) & matchParser("World"); p("HelloWorld"),
+  Type{ParseFailure}())
 
-assert(
-  p = matchParser("Hello") << matchParser(" World");
-  p("Hello World") == "Hello" &&
-  p("Hello")  is ParseFailure &&
-  p(" World") is ParseFailure &&
-  p("abc")    is ParseFailure)
+assertEq(p = txtBoolParser() | txtIntParser(); p("42"), 42)
+assertEq(p = txtBoolParser() | txtIntParser(); p("true"), true)
+assertIs(p = txtBoolParser() | txtIntParser(); p("hello"), Type{ParseFailure}())
 
-assert(
-  parseErr = Error("Parsing failed, line: 1, column: 1");
-  p = matchParser("Hello") ! Error("Did not greet");
-  p("Hello") == "Hello" &&
-  p.run("Hell") == parseErr :: Error("Did not greet") :: Error("Expected: 'Hello', got: 'Hell'"))
+assertEq((matchParser("Hello ") >> matchParser("World"))("Hello World"), "World")
+assertIs((matchParser("Hello ") >> matchParser("World"))("Hello "), Type{ParseFailure}())
+assertIs((matchParser("Hello ") >> matchParser("World"))("World"), Type{ParseFailure}())
+assertIs((matchParser("Hello ") >> matchParser("World"))("abc"), Type{ParseFailure}())
+assertEq((matchParser("Hello") << matchParser(" World"))("Hello World"), "Hello")
+assertIs((matchParser("Hello") << matchParser(" World"))("Hello"), Type{ParseFailure}())
+assertIs((matchParser("Hello") << matchParser(" World"))(" World"), Type{ParseFailure}())
+assertIs((matchParser("Hello") << matchParser(" World"))("abc"), Type{ParseFailure}())
 
-assert(
-  parseErr = Error("Parsing failed, line: 1, column: 1");
-  p = matchParser("Hello") !! Error("Did not greet");
-  p("Hello") == "Hello" &&
-  p.run("Hell") == parseErr :: Error("Did not greet"))
+assertEq(p = matchParser("Hello") ! Error("Did not greet"); p("Hello"), "Hello")
 
-assert(
-  parseErr = Error("Parsing failed, line: 1, column: 1");
-  p = (matchParser("Hello") !! lambda (Error err) Error("Did not greet"));
-  p("Hello") == "Hello" &&
-  p.run("Hell") == parseErr :: Error("Did not greet"))
+assertEq(
+  p = matchParser("Hello") ! Error("Did not greet"); p.run("Hell"),
+  Error("Parsing failed, line: 1, column: 1") :: Error("Did not greet") :: Error("Expected: 'Hello', got: 'Hell'"))
 
-assert(
-  parseErr = Error("Parsing failed, line: 1, column: 1");
-  p = (matchParser("Hello") !! lambda (Error err) Error("Did not greet") :: err);
-  p("Hello") == "Hello" &&
-  p.run("Hell") == parseErr :: Error("Did not greet") :: Error("Expected: 'Hello', got: 'Hell'"))
+assertEq(p = matchParser("Hello") !! Error("Did not greet"); p("Hello"), "Hello")
 
-assert(
-  p = txtIntParser().map(lambda (int i) i * i);
-  p("123") == 123 * 123 &&
-  p("") is ParseFailure)
+assertEq(
+  p = matchParser("Hello") !! Error("Did not greet"); p.run("Hell"),
+  Error("Parsing failed, line: 1, column: 1") :: Error("Did not greet"))
 
-assert(
-  p = txtIntParser().map(lambda (int i) i == 42);
-  p("123")  == false &&
-  p("42")   == true &&
-  p("") is ParseFailure)
+assertEq(p = (matchParser("Hello") !! lambda (Error err) Error("Did not greet")); p("Hello"),"Hello")
 
-assert(
-  err = Error("Value outside of the 100 - 200 range");
+assertEq(
+  p = (matchParser("Hello") !! lambda (Error err) Error("Did not greet")); p.run("Hell"),
+  Error("Parsing failed, line: 1, column: 1") :: Error("Did not greet"))
+
+assertEq(p = (matchParser("Hello") !! lambda (Error err) Error("Did not greet") :: err); p("Hello"), "Hello")
+
+assertEq(
+  p = (matchParser("Hello") !! lambda (Error err) Error("Did not greet") :: err); p.run("Hell"),
+  Error("Parsing failed, line: 1, column: 1") :: Error("Did not greet") :: Error("Expected: 'Hello', got: 'Hell'"))
+
+assertEq(txtIntParser().map(lambda (int i) i * i)("123"), 123 * 123)
+assertIs(txtIntParser().map(lambda (int i) i * i)(""), Type{ParseFailure}())
+
+assertEq(txtIntParser().map(lambda (int i) i == 42)("123"), false)
+assertEq(txtIntParser().map(lambda (int i) i == 42)("42"), true)
+assertIs(txtIntParser().map(lambda (int i) i == 42)(""), Type{ParseFailure}())
+
+assertEq(
   p = txtIntParser().map(lambda (int i) -> Either{int, Error}
     if i >= 100 && i <= 200 -> i
-    else                    -> err
+    else                    -> Error("Value outside of the 100 - 200 range")
   );
-  p("123") == 123 &&
-  p("100") == 100 &&
-  p("200") == 200 &&
-  p("42") is ParseFailure &&
-  p("42") as ParseFailure pf && pf.err == err &&
-  p("201") is ParseFailure &&
-  p("") is ParseFailure)
+  ("123" :: "100" :: "200" :: "42" :: "42" :: "201" :: "").map(lambda (string s) p.run(s) ?? -1),
+  123 :: 100 :: 200 :: -1 :: -1 :: -1 :: -1)
 
-assert(
+assertEq(
   p = txtIntParser().map(lambda (int i) -> Either{string, Error}
     if i == 42    -> "Meaning of life"
     if i == 1337  -> "Elite"
     else          -> Error("No signficiant meaning to: '" + i + "'")
   );
-  p("42") == "Meaning of life" &&
-  p("1337") == "Elite" &&
-  p("123") is ParseFailure &&
-  p("") is ParseFailure)
+  ("42" :: "1337" :: "123" :: "").map(lambda (string s) p.run(s) ?? "err"),
+  "Meaning of life" :: "Elite" :: "err" :: "err")
 
-assert(
-  p = txtBoolParser() :: txtBoolParser() :: txtBoolParser();
-  p("truefalsetrue") == true :: false :: true &&
-  p("truefalse")  is ParseFailure &&
-  p("")           is ParseFailure)
+assertEq((txtBoolParser() :: txtBoolParser() :: txtBoolParser())("truefalsetrue"), true :: false :: true)
+assertIs((txtBoolParser() :: txtBoolParser() :: txtBoolParser())("truefalse"), Type{ParseFailure}())
+assertIs((txtBoolParser() :: txtBoolParser() :: txtBoolParser())(""), Type{ParseFailure}())
 
-assert(
+assertEq(
   p = (txtBoolParser() & txtBoolParser()).map(lambda (bool a, bool b) a && b);
-  p("truefalse")  == false &&
-  p("truetrue")   == true &&
-  p("true")   is ParseFailure &&
-  p("")       is ParseFailure)
+  inputs = "truefalse" :: "truetrue" :: "true" :: "";
+  inputs.map(lambda (string s) p.run(s).toOption(Type{bool}())),
+  false :: true)
 
-assert(
+assertEq(
   p = (txtBoolParser() & txtBoolParser() & txtBoolParser()).map(
     lambda (bool a, bool b, bool c) a && b && c);
-  p("truefalsetrue")  == false &&
-  p("truetruetrue")   == true &&
-  p("truefalse")  is ParseFailure &&
-  p("")           is ParseFailure)
+  inputs = "truefalsetrue" :: "truetruetrue" :: "truefalse" :: "";
+  inputs.map(lambda (string s) p.run(s).toOption(Type{bool}())),
+  false :: true)
 
-assert(
+assertEq(
   p = (txtBoolParser() & txtBoolParser() & txtBoolParser() & txtBoolParser()).map(
     lambda (bool a, bool b, bool c, bool d) a && b && c && d);
-  p("truefalsetruetrue")  == false &&
-  p("truetruetruetrue")   == true &&
-  p("truefalsetrue")  is ParseFailure &&
-  p("")               is ParseFailure)
+  inputs = "truefalsetruetrue" :: "truetruetruetrue" :: "truefalsetrue" :: "";
+  inputs.map(lambda (string s) p.run(s).toOption(Type{bool}())),
+  false :: true)
 
-assert(
+assertEq(
   p = (txtBoolParser() & txtBoolParser() & txtBoolParser() & txtBoolParser() & txtBoolParser()).map(
     lambda (bool a, bool b, bool c, bool d, bool e) a && b && c && d && e);
-  p("truefalsetruetruetrue")  == false &&
-  p("truefalsetruetruetrue")  == false &&
-  p("truetruetruetruetrue")   == true &&
-  p("truefalsetruefalse") is ParseFailure &&
-  p("truefalsetrue")      is ParseFailure &&
-  p("")                   is ParseFailure)
+  inputs = "truefalsetruetruetrue" :: "truefalsetruetruetrue" :: "truetruetruetruetrue" :: "truefalsetruefalse" :: "truefalsetrue" :: "";
+  inputs.map(lambda (string s) p.run(s).toOption(Type{bool}())),
+  false :: false :: true)
 
-assert(
-  p = manyParser(txtBoolParser());
-  p("truefalsetruetrue")  == true :: false :: true :: true &&
-  p("true")               == true :: List{bool}() &&
-  p("true1")              == true :: List{bool}() &&
-  p("")                   == List{bool}())
+assertEq(manyParser(txtBoolParser())("truefalsetruetrue"), true :: false :: true :: true)
+assertEq(manyParser(txtBoolParser())("true"), true :: List{bool}())
+assertEq(manyParser(txtBoolParser())("true1"), true :: List{bool}())
+assertEq(manyParser(txtBoolParser())(""), List{bool}())
 
-assert(
-  p = manyParser(txtIntParser(), matchParser(','));
-  p("42,1337,1,2")  == 42 :: 1337 :: 1 :: 2 &&
-  p("42")           == 42 :: List{int}()    &&
-  p(",")            == List{int}()          &&
-  p("")             == List{int}())
+assertEq(manyParser(txtIntParser(), matchParser(','))("42,1337,1,2"), 42 :: 1337 :: 1 :: 2)
+assertEq(manyParser(txtIntParser(), matchParser(','))("42"), 42 :: List{int}())
+assertEq(manyParser(txtIntParser(), matchParser(','))(","), List{int}())
+assertEq(manyParser(txtIntParser(), matchParser(','))(""), List{int}())
 
-assert(
+assertEq(
   p = manyParser(txtIntParser(), matchParser(','), ParseFlags.AllowTrailingSeperator) << endParser();
-  p("42,1337,1,2,")  == 42 :: 1337 :: 1 :: 2  &&
-  p("42,")           == 42 :: List{int}()     &&
-  p("")              == List{int}()           &&
-  p("42,,")          is ParseFailure          &&
-  p("42,1337,,1,2,") is ParseFailure          &&
-  p(",")             is ParseFailure)
+  p("42,1337,1,2,"), 42 :: 1337 :: 1 :: 2)
 
-assert(
+assertEq(
+  p = manyParser(txtIntParser(), matchParser(','), ParseFlags.AllowTrailingSeperator) << endParser();
+  p("42,"), 42 :: List{int}())
+
+assertEq(
+  p = manyParser(txtIntParser(), matchParser(','), ParseFlags.AllowTrailingSeperator) << endParser();
+  p(""), List{int}())
+
+assertIs(
+  p = manyParser(txtIntParser(), matchParser(','), ParseFlags.AllowTrailingSeperator) << endParser();
+  p("42,,"), Type{ParseFailure}())
+
+assertIs(
+  p = manyParser(txtIntParser(), matchParser(','), ParseFlags.AllowTrailingSeperator) << endParser();
+  p("42,1337,,1,2,"), Type{ParseFailure}())
+
+assertIs(
+  p = manyParser(txtIntParser(), matchParser(','), ParseFlags.AllowTrailingSeperator) << endParser();
+  p(","), Type{ParseFailure}())
+
+assertIs(
   p = manyParser(txtIntParser(), matchParser(','));
-  p("1,2,") is ParseFailure)
+  p("1,2,"), Type{ParseFailure}())
 
-assert(
+assertIs(
   p = manyUntilParser(txtBoolParser(), endParser());
-  p("true1true") is ParseFailure)
+  p("true1true"), Type{ParseFailure}())
 
-assert(
-  p = manyUntilParser(txtBoolParser(), newlineParser());
-  p("truefalse\ntrue")   == true :: false  &&
-  p("true\n")            == true :: List{bool}()           &&
-  p("false,\n")          is ParseFailure                   &&
-  p("true true\n")       is ParseFailure                   &&
-  p("false")             is ParseFailure                   &&
-  p("")                  is ParseFailure)
+assertEq(manyUntilParser(txtBoolParser(), newlineParser())("truefalse\ntrue"), true :: false)
+assertEq(manyUntilParser(txtBoolParser(), newlineParser())("true\n"), true :: List{bool}())
+assertIs(manyUntilParser(txtBoolParser(), newlineParser())("false,\n"), Type{ParseFailure}())
+assertIs(manyUntilParser(txtBoolParser(), newlineParser())("true true\n"), Type{ParseFailure}())
+assertIs(manyUntilParser(txtBoolParser(), newlineParser())("false"), Type{ParseFailure}())
+assertIs(manyUntilParser(txtBoolParser(), newlineParser())(""), Type{ParseFailure}())
 
-assert(
-  p = manyUntilParser(txtIntParser(), matchParser(','), newlineParser());
-  p("42,1337\n1,2")   == 42 :: 1337 :: List{int}()  &&
-  p("42\n")           == 42 :: List{int}()          &&
-  p("42,\n")          is ParseFailure               &&
-  p("42 42\n")        is ParseFailure               &&
-  p("42")             is ParseFailure               &&
-  p("")               is ParseFailure)
+assertEq(
+  p = manyUntilParser(txtIntParser(), matchParser(','), newlineParser()); p("42,1337\n1,2"),
+  42 :: 1337 :: List{int}())
 
-assert(
+assertEq(
+  p = manyUntilParser(txtIntParser(), matchParser(','), newlineParser()); p("42\n"),
+  42 :: List{int}())
+
+assertIs(
+  p = manyUntilParser(txtIntParser(), matchParser(','), newlineParser()); p("42,\n"),
+  Type{ParseFailure}())
+
+assertIs(
+  p = manyUntilParser(txtIntParser(), matchParser(','), newlineParser()); p("42 42\n"),
+  Type{ParseFailure}())
+
+assertIs(
+  p = manyUntilParser(txtIntParser(), matchParser(','), newlineParser()); p("42"),
+  Type{ParseFailure}())
+
+assertIs(
+  p = manyUntilParser(txtIntParser(), matchParser(','), newlineParser()); p(""),
+  Type{ParseFailure}())
+
+assertEq(
   p = manyUntilParser(txtBoolParser(), matchParser(','), newlineParser());
-  p("true,false\ntrue")   == true :: false          &&
-  p("true\n")             == true :: List{bool}()   &&
-  p("\n")                 == List{bool}()           &&
-  p("false,\n")           is ParseFailure           &&
-  p("true true\n")        is ParseFailure           &&
-  p("false")              is ParseFailure           &&
-  p("")                   is ParseFailure)
+  inputs = "true,false\ntrue" :: "true\n" :: "\n" :: "false,\n" :: "true true\n" :: "false" :: "";
+  inputs.map(lambda (string s) p.run(s).toOption(Type{List{bool}}())),
+  (true :: false) :: (true :: List{bool}()) :: List{bool}() :: List{List{bool}}())
 
-assert(
+assertEq(
   p = manyUntilParser(
     txtBoolParser(), matchParser(','), newlineParser(), ParseFlags.AllowTrailingSeperator);
-  p("true\n")             == true :: List{bool}()           &&
-  p("true,\n")            == true :: List{bool}()           &&
-  p("true,false,\n")      == true :: false :: List{bool}()  &&
-  p("\n")                 == List{bool}()                   &&
-  p("true,false,,\n")     is ParseFailure                   &&
-  p(",\n")                is ParseFailure                   &&
-  p("true,,false\n")      is ParseFailure                   &&
-  p("false")              is ParseFailure                   &&
-  p("")                   is ParseFailure)
+  inputs = "true\n" :: "true,\n" :: "true,false,\n" :: "\n" :: "true,false,,\n" :: ",\n" :: "true,,false\n" :: "false" :: "";
+  inputs.map(lambda (string s) p.run(s).toOption(Type{List{bool}}())),
+  (true :: List{bool}()) :: (true :: List{bool}()) :: (true :: false) :: (List{bool}()) :: List{List{bool}}())
 
-assert(
-  p = whileParser(!equals{char}['|']).trim();
-  p("") is ParseFailure &&
-  p(" ") == "" &&
-  p("\t\n\r ") == "" &&
-  p(" abc \t  | hello") == "abc" &&
-  p(" a b c \t  | hello") == "a b c" &&
-  p("\n\r a b c \t  | hello") == "a b c")
+assertIs(whileParser(!equals{char}['|']).trim()(""), Type{ParseFailure}())
+assertEq(whileParser(!equals{char}['|']).trim()(" "), "")
+assertEq(whileParser(!equals{char}['|']).trim()("\t\n\r "), "")
+assertEq(whileParser(!equals{char}['|']).trim()(" abc \t  | hello"), "abc")
+assertEq(whileParser(!equals{char}['|']).trim()(" a b c \t  | hello"), "a b c")
+assertEq(whileParser(!equals{char}['|']).trim()("\n\r a b c \t  | hello"), "a b c")
 
-assert(
-  p = whileParser(!equals{char}['|']).trim(isDigit);
-  p("") is ParseFailure &&
-  p(" ") == " " &&
-  p("123") == "" &&
-  p(" 123 ") == " 123 " &&
-  p("1abc501| hello") == "abc")
+assertIs(whileParser(!equals{char}['|']).trim(isDigit)(""), Type{ParseFailure}())
+assertEq(whileParser(!equals{char}['|']).trim(isDigit)(" "), " ")
+assertEq(whileParser(!equals{char}['|']).trim(isDigit)("123"), "")
+assertEq(whileParser(!equals{char}['|']).trim(isDigit)(" 123 "), " 123 ")
+assertEq(whileParser(!equals{char}['|']).trim(isDigit)("1abc501| hello"), "abc")
 
-assert(
-  p = txtBoolParser().repeat(2);
-  p("") is ParseFailure &&
-  p(" ") is ParseFailure &&
-  p("true") is ParseFailure &&
-  p("truefalse") == true :: false &&
-  p("truefalsefalse") == true :: false)
+assertIs(txtBoolParser().repeat(2)(""), Type{ParseFailure}())
+assertIs(txtBoolParser().repeat(2)(" "), Type{ParseFailure}())
+assertIs(txtBoolParser().repeat(2)("true"), Type{ParseFailure}())
+assertEq(txtBoolParser().repeat(2)("truefalse"), true :: false)
+assertEq(txtBoolParser().repeat(2)("truefalsefalse"), true :: false)
 
-assert(
-  txtBoolParser().repeat(-1)("") == List{bool}() &&
-  txtBoolParser().repeat(0)("") == List{bool}() &&
-  txtBoolParser().repeat(0)(" ") == List{bool}() &&
-  txtBoolParser().repeat(0)("true") == List{bool}() &&
-  txtBoolParser().repeat(1)("true") == true :: List{bool}())
+assertEq(txtBoolParser().repeat(-1)(""), List{bool}())
+assertEq(txtBoolParser().repeat(0)(""), List{bool}())
+assertEq(txtBoolParser().repeat(0)(" "), List{bool}())
+assertEq(txtBoolParser().repeat(0)("true"), List{bool}())
+assertEq(txtBoolParser().repeat(1)("true"), true :: List{bool}())

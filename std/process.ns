@@ -1,3 +1,5 @@
+import "std/ascii.ns"
+import "std/assert.ns"
 import "std/console.ns"
 import "std/future.ns"
 import "std/list.ns"
@@ -38,10 +40,10 @@ fun string(ExitCode p)
   p.code.string()
 
 fun string(Process p)
-  "(" + p.id + ", " + p.cmdLine + ")"
+  "(pid:" + p.id + ", " + p.cmdLine + ")"
 
 fun string(ProcessResult r)
-  "(" + r.exitCode + ")"
+  "(out:'" + r.stdOut.escapeForPrinting() + "' err:'" + r.stdErr.escapeForPrinting() + "' code:" + r.exitCode + ")"
 
 // -- Functions
 
@@ -108,24 +110,32 @@ act shutdown(Process p) -> Either{ProcessResult, Error}
 // -- Tests
 
 assert(
-  p = run("cmake", "-E" :: "echo" :: "Hello world" :: List{string}()).failOnError();
-  p.id.id > 0 &&
-  p.cmdLine == "'cmake' '-E' 'echo' 'Hello world'")
+  run("cmake", "-E" :: "echo" :: "Hello world" :: List{string}()),
+  lambda (Either{Process, Error} e)
+    e as Process p  &&
+    p.id.id > 0     &&
+    p.cmdLine == "'cmake' '-E' 'echo' 'Hello world'")
 
 assert(
-  r = run("cmake", "-E" :: "echo" :: "Hello world").wait().failOnError();
-  r.stdOut.startsWith("Hello world") &&
-  r.stdErr.isEmpty() &&
-  r.exitCode == ExitCode(0))
+  run("cmake", "-E" :: "echo" :: "Hello world").wait(),
+  lambda (Either{ProcessResult, Error} e)
+    e as ProcessResult r                &&
+    r.stdOut.startsWith("Hello world")  &&
+    r.stdErr.isEmpty()                  &&
+    r.exitCode == ExitCode(0))
 
 assert(
-  r = run("cmake", "--version" :: List{string}()).wait().failOnError();
-  r.stdOut.startsWith("cmake version") &&
-  r.stdErr.isEmpty() &&
-  r.exitCode == ExitCode(0))
+  run("cmake", "--version" :: List{string}()).wait(),
+  lambda (Either{ProcessResult, Error} e)
+    e as ProcessResult r                  &&
+    r.stdOut.startsWith("cmake version")  &&
+    r.stdErr.isEmpty()                    &&
+    r.exitCode == ExitCode(0))
 
 assert(
-  r = run("cmake", "--invalid" :: List{string}()).wait().failOnError();
-  r.stdOut.isEmpty() &&
-  r.stdErr.startsWith("CMake Error") &&
-  r.exitCode == ExitCode(1))
+  run("cmake", "invalid" :: List{string}()).wait(),
+  lambda (Either{ProcessResult, Error} e)
+    e as ProcessResult r                &&
+    r.stdOut.isEmpty()                  &&
+    r.stdErr.startsWith("CMake Error")  &&
+    r.exitCode == ExitCode(1))

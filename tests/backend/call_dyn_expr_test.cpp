@@ -8,19 +8,26 @@ TEST_CASE("[backend] Generate assembly for dynamic call expressions", "backend")
 
   SECTION("User functions") {
     CHECK_PROG(
-        "fun test(int a, int b) -> bool a == b "
-        "assert(op = test; op(42, 1337), \"test\")",
+        "fun funcA(int a, int b) -> bool a == b "
+        "fun test(bool b) b "
+        "test(op = funcA; op(42, 1337))",
         [](novasm::Assembler* asmb) -> void {
-          asmb->label("test");
+          asmb->label("funcA");
           asmb->addStackLoad(0);
           asmb->addStackLoad(1);
           asmb->addCheckEqInt();
           asmb->addRet();
 
+          // --- test function start.
+          asmb->label("func-test");
+          asmb->addStackLoad(0);
+          asmb->addRet();
+          // --- test function end.
+
           asmb->label("prog");
           asmb->addStackAlloc(1);
 
-          asmb->addLoadLitIp("test");
+          asmb->addLoadLitIp("funcA");
           asmb->addStackStore(0);
 
           asmb->addLoadLitInt(42);
@@ -28,8 +35,7 @@ TEST_CASE("[backend] Generate assembly for dynamic call expressions", "backend")
           asmb->addStackLoad(0);
           asmb->addCallDyn(2, novasm::CallMode::Normal);
 
-          asmb->addLoadLitString("test");
-          asmb->addPCall(novasm::PCallCode::Assert);
+          asmb->addCall("func-test", 1, novasm::CallMode::Normal);
           asmb->addRet();
 
           asmb->setEntrypoint("prog");
@@ -38,7 +44,15 @@ TEST_CASE("[backend] Generate assembly for dynamic call expressions", "backend")
 
   SECTION("Closure") {
     CHECK_PROG(
-        "assert(i = 1337; (lambda () i == 42)(), \"test\")", [](novasm::Assembler* asmb) -> void {
+        "fun test(bool b) b "
+        "test(i = 1337; (lambda () i == 42)())",
+        [](novasm::Assembler* asmb) -> void {
+          // --- test function start.
+          asmb->label("func-test");
+          asmb->addStackLoad(0);
+          asmb->addRet();
+          // --- test function end.
+
           asmb->label("anon func");
           asmb->addStackLoad(0);
           asmb->addLoadLitInt(42);
@@ -56,8 +70,7 @@ TEST_CASE("[backend] Generate assembly for dynamic call expressions", "backend")
           asmb->addMakeStruct(2);
 
           asmb->addCallDyn(0, novasm::CallMode::Normal);
-          asmb->addLoadLitString("test");
-          asmb->addPCall(novasm::PCallCode::Assert);
+          asmb->addCall("func-test", 1, novasm::CallMode::Normal);
           asmb->addRet();
 
           asmb->setEntrypoint("prog");
@@ -66,8 +79,15 @@ TEST_CASE("[backend] Generate assembly for dynamic call expressions", "backend")
 
   SECTION("Closure") {
     CHECK_PROG(
-        "assert(i = 1337; (lambda (float f) f == i)(.1), \"test\")",
+        "fun test(bool b) b "
+        "test(i = 1337; (lambda (float f) f == i)(.1))",
         [](novasm::Assembler* asmb) -> void {
+          // --- test function start.
+          asmb->label("func-test");
+          asmb->addStackLoad(0);
+          asmb->addRet();
+          // --- test function end.
+
           asmb->label("anon func");
           asmb->addStackLoad(0);
           asmb->addStackLoad(1);
@@ -87,8 +107,7 @@ TEST_CASE("[backend] Generate assembly for dynamic call expressions", "backend")
           asmb->addMakeStruct(2);
 
           asmb->addCallDyn(1, novasm::CallMode::Normal);
-          asmb->addLoadLitString("test");
-          asmb->addPCall(novasm::PCallCode::Assert);
+          asmb->addCall("func-test", 1, novasm::CallMode::Normal);
           asmb->addRet();
 
           asmb->setEntrypoint("prog");

@@ -1,3 +1,4 @@
+import "std/assert.ns"
 import "std/option.ns"
 import "std/time.ns"
 
@@ -26,6 +27,6 @@ act getUntilInterupt{T}(future{T} f) -> Option{T}
 
 // -- Tests
 
-assert(get(fork invoke(lambda () 42), second()) == 42)
-assert(get(fork invoke(lambda () 42), lambda () true) == 42)
-assert(get(fork invoke(lambda () 42), lambda () false) == None())
+assertEq(get(fork invoke(lambda () 42), second()), 42)
+assertEq(get(fork invoke(lambda () 42), lambda () true), 42)
+assertIs(get(fork invoke(lambda () 42), lambda () false), Type{None}())

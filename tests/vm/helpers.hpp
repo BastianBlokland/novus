@@ -114,4 +114,12 @@ inline auto prepareStdIn(std::string input) -> FileHandle {
     (ASMB)->addPCall(novasm::PCallCode::StreamWriteString);                                        \
   }
 
+#define ADD_ASSERT(ASMB)                                                                           \
+  {                                                                                                \
+    const auto label = (ASMB)->generateLabel("assert-end");                                        \
+    (ASMB)->addJumpIf(label);                                                                      \
+    (ASMB)->addFail();                                                                             \
+    (ASMB)->label(label);                                                                          \
+  }
+
 } // namespace vm

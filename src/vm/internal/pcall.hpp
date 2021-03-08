@@ -327,21 +327,6 @@ auto inline pcall(
     }
     PUSH_BOOL(res);
   } break;
-  case PCallCode::Assert: {
-    auto* msg = getStringRef(refAlloc, POP());
-    CHECK_ALLOC(msg);
-
-    auto cond = PEEK_INT();
-    if (unlikely(cond == 0)) {
-      auto stdErrHandle = iface->getStdErr();
-      if (fileIsValid(stdErrHandle)) {
-        fileWrite(stdErrHandle, "Assertion failed: ", 18);
-        fileWrite(stdErrHandle, msg->getCharDataPtr(), msg->getSize());
-        fileWrite(stdErrHandle, "\n", 1);
-      }
-      execHandle->setState(ExecState::AssertFailed);
-    }
-  } break;
   default:
     execHandle->setState(ExecState::InvalidAssembly);
   }

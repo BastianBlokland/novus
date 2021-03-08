@@ -8,7 +8,7 @@ TEST_CASE("[backend] Generate assembly for tail calls", "backend") {
   SECTION("Tail recursion") {
     CHECK_PROG(
         "fun test(int a) -> int a > 0 ? test(0) : a "
-        "assert(test(42) == 0, \"test\")",
+        "test(42)",
         [](novasm::Assembler* asmb) -> void {
           asmb->label("test");
           asmb->addStackLoad(0);
@@ -29,11 +29,6 @@ TEST_CASE("[backend] Generate assembly for tail calls", "backend") {
           asmb->label("prog");
           asmb->addLoadLitInt(42);
           asmb->addCall("test", 1, novasm::CallMode::Normal);
-          asmb->addLoadLitInt(0);
-          asmb->addCheckEqInt();
-
-          asmb->addLoadLitString("test");
-          asmb->addPCall(novasm::PCallCode::Assert);
           asmb->addRet();
 
           asmb->setEntrypoint("prog");
@@ -44,7 +39,8 @@ TEST_CASE("[backend] Generate assembly for tail calls", "backend") {
     CHECK_PROG(
         "fun f1() -> int 42 "
         "fun f2() -> int f1() "
-        "assert(f2() == 0, \"test\")",
+        "fun test(bool b) b "
+        "test(f2() == 0)",
         [](novasm::Assembler* asmb) -> void {
           asmb->label("f1");
           asmb->addLoadLitInt(42);
@@ -54,13 +50,18 @@ TEST_CASE("[backend] Generate assembly for tail calls", "backend") {
           asmb->addCall("f1", 0, novasm::CallMode::Tail);
           asmb->addRet();
 
+          // --- test function start.
+          asmb->label("func-test");
+          asmb->addStackLoad(0);
+          asmb->addRet();
+          // --- test function end.
+
           asmb->label("prog");
           asmb->addCall("f2", 0, novasm::CallMode::Normal);
           asmb->addLoadLitInt(0);
           asmb->addCheckEqInt();
 
-          asmb->addLoadLitString("test");
-          asmb->addPCall(novasm::PCallCode::Assert);
+          asmb->addCall("func-test", 1, novasm::CallMode::Normal);
           asmb->addRet();
 
           asmb->setEntrypoint("prog");
@@ -71,7 +72,8 @@ TEST_CASE("[backend] Generate assembly for tail calls", "backend") {
     CHECK_PROG(
         "fun f1(int i) -> int i "
         "fun f2() -> int v = 42; f1(v) "
-        "assert(f2() == 0, \"test\")",
+        "fun test(bool b) b "
+        "test(f2() == 0)",
         [](novasm::Assembler* asmb) -> void {
           asmb->label("f1");
           asmb->addStackLoad(0);
@@ -87,13 +89,18 @@ TEST_CASE("[backend] Generate assembly for tail calls", "backend") {
           asmb->addCall("f1", 1, novasm::CallMode::Tail);
           asmb->addRet();
 
+          // --- test function start.
+          asmb->label("func-test");
+          asmb->addStackLoad(0);
+          asmb->addRet();
+          // --- test function end.
+
           asmb->label("prog");
           asmb->addCall("f2", 0, novasm::CallMode::Normal);
           asmb->addLoadLitInt(0);
           asmb->addCheckEqInt();
 
-          asmb->addLoadLitString("test");
-          asmb->addPCall(novasm::PCallCode::Assert);
+          asmb->addCall("func-test", 1, novasm::CallMode::Normal);
           asmb->addRet();
 
           asmb->setEntrypoint("prog");
@@ -104,7 +111,8 @@ TEST_CASE("[backend] Generate assembly for tail calls", "backend") {
     CHECK_PROG(
         "fun f1() -> int 42 "
         "fun f2(function{int} func) -> int func() "
-        "assert(f2(f1) == 0, \"test\")",
+        "fun test(bool b) b "
+        "test(f2(f1) == 0)",
         [](novasm::Assembler* asmb) -> void {
           asmb->label("f1");
           asmb->addLoadLitInt(42);
@@ -115,14 +123,19 @@ TEST_CASE("[backend] Generate assembly for tail calls", "backend") {
           asmb->addCallDyn(0, novasm::CallMode::Tail);
           asmb->addRet();
 
+          // --- test function start.
+          asmb->label("func-test");
+          asmb->addStackLoad(0);
+          asmb->addRet();
+          // --- test function end.
+
           asmb->label("prog");
           asmb->addLoadLitIp("f1");
           asmb->addCall("f2", 1, novasm::CallMode::Normal);
           asmb->addLoadLitInt(0);
           asmb->addCheckEqInt();
 
-          asmb->addLoadLitString("test");
-          asmb->addPCall(novasm::PCallCode::Assert);
+          asmb->addCall("func-test", 1, novasm::CallMode::Normal);
           asmb->addRet();
 
           asmb->setEntrypoint("prog");

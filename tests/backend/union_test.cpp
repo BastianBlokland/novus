@@ -8,9 +8,10 @@ TEST_CASE("[backend] Generate assembly for unions", "backend") {
   SECTION("Normal union") {
     CHECK_PROG(
         "union Val = int, float "
-        "assert(Val(1) == Val(1.0), \"test\")"
-        "assert(Val(1) is int, \"test\")"
-        "assert(Val(1) as int i ? (i == 0) : false, \"test\")",
+        "fun test(bool b) b "
+        "test(Val(1) == Val(1.0))"
+        "test(Val(1) is int)"
+        "test(Val(1) as int i ? (i == 0) : false)",
         [](novasm::Assembler* asmb) -> void {
           // --- Union equality function start.
           asmb->label("ValEq");
@@ -72,8 +73,14 @@ TEST_CASE("[backend] Generate assembly for unions", "backend") {
           asmb->addRet();
           // --- Struct equality function end.
 
-          // --- first assert statement start.
-          asmb->label("assert1");
+          // --- test function start.
+          asmb->label("func-test");
+          asmb->addStackLoad(0);
+          asmb->addRet();
+          // --- test function end.
+
+          // --- first test statement start.
+          asmb->label("test1");
 
           // Make union with int 'Val(1)'.
           asmb->addLoadLitInt(0); // 0 because 'int' is the first type in the union.
@@ -87,13 +94,12 @@ TEST_CASE("[backend] Generate assembly for unions", "backend") {
 
           // Call equality function and write the result.
           asmb->addCall("ValEq", 2, novasm::CallMode::Normal);
-          asmb->addLoadLitString("test");
-          asmb->addPCall(novasm::PCallCode::Assert);
+          asmb->addCall("func-test", 1, novasm::CallMode::Normal);
           asmb->addRet();
-          // --- first assert statement end.
+          // --- first test statement end.
 
-          // --- second assert statement start.
-          asmb->label("assert2");
+          // --- second test statement start.
+          asmb->label("test2");
 
           // Make union with int 'Val(1)'.
           asmb->addLoadLitInt(0); // 0 because 'int' is the first type in the union.
@@ -106,13 +112,12 @@ TEST_CASE("[backend] Generate assembly for unions", "backend") {
           asmb->addCheckEqInt();
 
           // Write the result.
-          asmb->addLoadLitString("test");
-          asmb->addPCall(novasm::PCallCode::Assert);
+          asmb->addCall("func-test", 1, novasm::CallMode::Normal);
           asmb->addRet();
-          // --- second assert statement end.
+          // --- second test statement end.
 
-          // --- third assert statement start.
-          asmb->label("assert3");
+          // --- third test statement start.
+          asmb->label("test3");
           asmb->addStackAlloc(1); // Allocate space for constant 'i'.
 
           // Make union with int 'Val(1)'.
@@ -153,15 +158,14 @@ TEST_CASE("[backend] Generate assembly for unions", "backend") {
 
           // Write the result.
           asmb->label("as-check-write-result");
-          asmb->addLoadLitString("test");
-          asmb->addPCall(novasm::PCallCode::Assert);
+          asmb->addCall("func-test", 1, novasm::CallMode::Normal);
           asmb->addRet();
-          // --- third assert statement end.
+          // --- third test statement end.
 
           asmb->label("prog");
-          asmb->addCall("assert1", 0, novasm::CallMode::Normal);
-          asmb->addCall("assert2", 0, novasm::CallMode::Normal);
-          asmb->addCall("assert3", 0, novasm::CallMode::Normal);
+          asmb->addCall("test1", 0, novasm::CallMode::Normal);
+          asmb->addCall("test2", 0, novasm::CallMode::Normal);
+          asmb->addCall("test3", 0, novasm::CallMode::Normal);
           asmb->addRet();
 
           asmb->setEntrypoint("prog");
@@ -175,10 +179,11 @@ TEST_CASE("[backend] Generate assembly for unions", "backend") {
         "struct User = string name, int age "
         "struct Null "
         "union NullableUser = User, Null "
-        "assert(NullableUser(User(\"John\", 42)) == Null(), \"test\")"
-        "assert(NullableUser(User(\"John\", 42)) is Null, \"test\")"
-        "assert(NullableUser(User(\"John\", 42)) is User, \"test\")"
-        "assert(NullableUser(User(\"John\", 42)) as User u ? (u.name == \"J\") : false, \"test\")",
+        "fun test(bool b) b "
+        "test(NullableUser(User(\"John\", 42)) == Null())"
+        "test(NullableUser(User(\"John\", 42)) is Null)"
+        "test(NullableUser(User(\"John\", 42)) is User)"
+        "test(NullableUser(User(\"John\", 42)) as User u ? (u.name == \"J\") : false)",
         [](novasm::Assembler* asmb) -> void {
           // -- struct 'User' equality function start.
           asmb->label("user-eq");
@@ -255,8 +260,14 @@ TEST_CASE("[backend] Generate assembly for unions", "backend") {
           asmb->addRet();
           // -- union 'NullableUser' equality function end.
 
-          // --- first assert statement start.
-          asmb->label("assert1");
+          // --- test function start.
+          asmb->label("func-test");
+          asmb->addStackLoad(0);
+          asmb->addRet();
+          // --- test function end.
+
+          // --- first test statement start.
+          asmb->label("test1");
 
           // Create user.
           asmb->addLoadLitString("John");
@@ -272,13 +283,12 @@ TEST_CASE("[backend] Generate assembly for unions", "backend") {
           asmb->addCall("nullableuser-eq", 2, novasm::CallMode::Normal);
 
           // Write the result.
-          asmb->addLoadLitString("test");
-          asmb->addPCall(novasm::PCallCode::Assert);
+          asmb->addCall("func-test", 1, novasm::CallMode::Normal);
           asmb->addRet();
-          // --- first assert statement end.
+          // --- first test statement end.
 
-          // --- second assert statement start.
-          asmb->label("assert2");
+          // --- second test statement start.
+          asmb->label("test2");
 
           // Create user.
           asmb->addLoadLitString("John");
@@ -288,14 +298,12 @@ TEST_CASE("[backend] Generate assembly for unions", "backend") {
           // Check if user is null.
           asmb->addCheckStructNull();
 
-          // Write the result.
-          asmb->addLoadLitString("test");
-          asmb->addPCall(novasm::PCallCode::Assert);
+          asmb->addCall("func-test", 1, novasm::CallMode::Normal);
           asmb->addRet();
-          // --- second assert statement end.
+          // --- second test statement end.
 
-          // --- third assert statement start.
-          asmb->label("assert3");
+          // --- third test statement start.
+          asmb->label("test3");
 
           // Create user.
           asmb->addLoadLitString("John");
@@ -306,14 +314,12 @@ TEST_CASE("[backend] Generate assembly for unions", "backend") {
           asmb->addCheckStructNull();
           asmb->addLogicInvInt();
 
-          // Write the result.
-          asmb->addLoadLitString("test");
-          asmb->addPCall(novasm::PCallCode::Assert);
+          asmb->addCall("func-test", 1, novasm::CallMode::Normal);
           asmb->addRet();
-          // --- third assert statement end.
+          // --- third test statement end.
 
-          // --- fourth assert statement start.
-          asmb->label("assert4");
+          // --- fourth test statement start.
+          asmb->label("test4");
           asmb->addStackAlloc(1); // Allocate space for the 'u' constant.
 
           // Create user.
@@ -330,7 +336,7 @@ TEST_CASE("[backend] Generate assembly for unions", "backend") {
 
           // Is null.
           asmb->addLoadLitInt(0); // Load 'false'.
-          asmb->addJump("fourth-assert-end");
+          asmb->addJump("fourth-test-end");
 
           asmb->label("user-is-not-null");
           // Load name of user.
@@ -341,18 +347,16 @@ TEST_CASE("[backend] Generate assembly for unions", "backend") {
           asmb->addLoadLitString("J");
           asmb->addCheckEqString();
 
-          asmb->label("fourth-assert-end");
-          // Assert the result.
-          asmb->addLoadLitString("test");
-          asmb->addPCall(novasm::PCallCode::Assert);
+          asmb->label("fourth-test-end");
+          asmb->addCall("func-test", 1, novasm::CallMode::Normal);
           asmb->addRet();
-          // --- fourth assert statement end.
+          // --- fourth test statement end.
 
           asmb->label("prog");
-          asmb->addCall("assert1", 0, novasm::CallMode::Normal);
-          asmb->addCall("assert2", 0, novasm::CallMode::Normal);
-          asmb->addCall("assert3", 0, novasm::CallMode::Normal);
-          asmb->addCall("assert4", 0, novasm::CallMode::Normal);
+          asmb->addCall("test1", 0, novasm::CallMode::Normal);
+          asmb->addCall("test2", 0, novasm::CallMode::Normal);
+          asmb->addCall("test3", 0, novasm::CallMode::Normal);
+          asmb->addCall("test4", 0, novasm::CallMode::Normal);
           asmb->addRet();
 
           asmb->setEntrypoint("prog");

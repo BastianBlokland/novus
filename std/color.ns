@@ -1,3 +1,4 @@
+import "std/assert.ns"
 import "std/math.ns"
 
 // -- Types
@@ -47,6 +48,5 @@ fun gammaEncode(Color c)
 
 // -- Tests
 
-assert(
-  red().string() == "(1,0,0)" &&
-  white().string() == "(1,1,1)")
+assertEq(red().string(), "(1,0,0)")
+assertEq(white().string(), "(1,1,1)")

@@ -1,3 +1,4 @@
+import "std/assert.ns"
 import "std/list.ns"
 import "std/pair.ns"
 import "std/parser.ns"
@@ -146,7 +147,7 @@ fun jsonParser()
 fun jsonStringWriter()
   litWriter('"') & stringWriter().map(jsonStringEscape) & litWriter('"')
 
-fun jsonObjectWriter(Writer{JsonValue} valWriter)
+fun jsonObjectWriter(Writer{JsonValue} valWriter = jsonValueWriter())
   keyValue = jsonStringWriter() & litWriter(": ") & valWriter;
   (
     litWriter('{')                                &
@@ -155,7 +156,7 @@ fun jsonObjectWriter(Writer{JsonValue} valWriter)
     indentWriter() & litWriter('}')
   ).map(lambda (JsonObject v) v.fields)
 
-fun jsonArrayWriter(Writer{JsonValue} valWriter)
+fun jsonArrayWriter(Writer{JsonValue} valWriter = jsonValueWriter())
   (
     litWriter('[')                                &
     newlineWriter()                               &
@@ -183,204 +184,170 @@ fun jsonWriter()
 
 // -- Parser Tests
 
-assert(
-  jsonStringEscape("\"Hello\nWorld\"") == "\\\"Hello\\nWorld\\\"" &&
-  jsonStringEscape("\"\\\b\f\n\r\t") == "\\\"\\\\\\b\\f\\n\\r\\t" &&
-  jsonStringEscape("ᚻᛖ ᚳᚹᚫᚦ ᚦᚫᛏ") == "ᚻᛖ ᚳᚹᚫᚦ ᚦᚫᛏ")
+assertEq(jsonStringEscape("\"Hello\nWorld\""), "\\\"Hello\\nWorld\\\"")
+assertEq(jsonStringEscape("\"\\\b\f\n\r\t"), "\\\"\\\\\\b\\f\\n\\r\\t")
+assertEq(jsonStringEscape("ᚻᛖ ᚳᚹᚫᚦ ᚦᚫᛏ"), "ᚻᛖ ᚳᚹᚫᚦ ᚦᚫᛏ")
 
-assert(
-  p = jsonNullParser();
-  p("")     is ParseFailure &&
-  p("null") == JsonNull() &&
-  p("NULL") is ParseFailure)
+assertIs(jsonNullParser()(""), Type{ParseFailure}())
+assertIs(jsonNullParser()("NULL"), Type{ParseFailure}())
+assertEq(jsonNullParser()("null"), JsonNull())
 
-assert(
-  p = jsonNumberParser();
-  p("")             is ParseFailure &&
-  p("123")          == 123.0 &&
-  p("123.123")      == 123.123 &&
-  p("-1")           == -1.0 &&
-  p("-123.123")     == -123.123 &&
-  p("0.123")        == .123 &&
-  p("0E1")          == 0.0 &&
-  p("0e1")          == 0.0 &&
-  p("1E1")          == 10.0 &&
-  p("1e1")          == 10.0 &&
-  p("1E-3")         == .001 &&
-  p("1e-3")         == .001 &&
-  p("-123.123e-2")  == -1.23123 &&
-  p("-123.123e+2")  == -12312.3 &&
-  p("-123.123e2")   == -12312.3)
+assertIs(jsonNumberParser()(""), Type{ParseFailure}())
+assertEq(jsonNumberParser()("123"), 123.0)
+assertEq(jsonNumberParser()("123.123"), 123.123)
+assertEq(jsonNumberParser()("-1"), -1.0)
+assertEq(jsonNumberParser()("-123.123"), -123.123)
+assertEq(jsonNumberParser()("0.123"), .123)
+assertEq(jsonNumberParser()("0E1"), 0.0)
+assertEq(jsonNumberParser()("0e1"), 0.0)
+assertEq(jsonNumberParser()("1E1"), 10.0)
+assertEq(jsonNumberParser()("1e1"), 10.0)
+assertEq(jsonNumberParser()("1E-3"), .001)
+assertEq(jsonNumberParser()("1e-3"), .001)
+assertEq(jsonNumberParser()("-123.123e-2"), -1.23123)
+assertEq(jsonNumberParser()("-123.123e+2"), -12312.3)
+assertEq(jsonNumberParser()("-123.123e2"), -12312.3)
 
-assert(
-  p = jsonBoolParser();
-  p("")       is ParseFailure &&
-  p("true")   == true &&
-  p("false")  == false &&
-  p("TRUE")   is ParseFailure &&
-  p("FALSE")  is ParseFailure)
+assertIs(jsonBoolParser()(""), Type{ParseFailure}())
+assertIs(jsonBoolParser()("TRUE"), Type{ParseFailure}())
+assertIs(jsonBoolParser()("FALSE"), Type{ParseFailure}())
+assertEq(jsonBoolParser()("true"), true)
+assertEq(jsonBoolParser()("false"), false)
 
-assert(
-  p = jsonUtf8EscapedCharParser();
-  p("\"") == "\"" &&
-  p("\\") == "\\" &&
-  p("/")  == "/" &&
-  p("b")  == "\b" &&
-  p("f")  == "\f" &&
-  p("n")  == "\n" &&
-  p("r")  == "\r" &&
-  p("t")  == "\t" &&
-  p("u0026")  == "&" &&
-  p("u039B")  == "Λ" &&
-  p("u0E3F")  == "฿" &&
-  p("u1D459") == "𝑙")
+assertEq(jsonUtf8EscapedCharParser()("\""), "\"")
+assertEq(jsonUtf8EscapedCharParser()("\\"), "\\")
+assertEq(jsonUtf8EscapedCharParser()("/"), "/")
+assertEq(jsonUtf8EscapedCharParser()("b"), "\b")
+assertEq(jsonUtf8EscapedCharParser()("f"), "\f")
+assertEq(jsonUtf8EscapedCharParser()("n"), "\n")
+assertEq(jsonUtf8EscapedCharParser()("r"), "\r")
+assertEq(jsonUtf8EscapedCharParser()("t"), "\t")
+assertEq(jsonUtf8EscapedCharParser()("u0026"), "&")
+assertEq(jsonUtf8EscapedCharParser()("u039B"), "Λ")
+assertEq(jsonUtf8EscapedCharParser()("u0E3F"), "฿")
+assertEq(jsonUtf8EscapedCharParser()("u1D459"), "𝑙")
 
-assert(
-  p = jsonUtf8EscapedCharParser();
-  p("a")      is ParseFailure &&
-  p("ug")     is ParseFailure &&
-  p("u123")   is ParseFailure &&
-  p("u123G")  is ParseFailure &&
-  p("u")      is ParseFailure)
+assertIs(jsonUtf8EscapedCharParser()("a"), Type{ParseFailure}())
+assertIs(jsonUtf8EscapedCharParser()("ug"), Type{ParseFailure}())
+assertIs(jsonUtf8EscapedCharParser()("u123"), Type{ParseFailure}())
+assertIs(jsonUtf8EscapedCharParser()("u123G"), Type{ParseFailure}())
+assertIs(jsonUtf8EscapedCharParser()("u"), Type{ParseFailure}())
 
-assert(
-  p = jsonUtf8CharParser();
-  p("a")        == "a"  &&
-  p("\\\"")     == "\"" &&
-  p("\\u039B")  == "Λ"  &&
-  p("\\u039b")  == "Λ"  &&
-  p("฿")        == "฿"  &&
-  p("𝑙") == "𝑙")
+assertEq(jsonUtf8CharParser()("a"), "a")
+assertEq(jsonUtf8CharParser()("\\\""), "\"")
+assertEq(jsonUtf8CharParser()("\\u039B"), "Λ")
+assertEq(jsonUtf8CharParser()("\\u039b"), "Λ")
+assertEq(jsonUtf8CharParser()("฿"), "฿")
+assertEq(jsonUtf8CharParser()("𝑙"), "𝑙")
 
-assert(
-  p = jsonUtf8CharParser();
-  p("\n")                       is ParseFailure &&
-  p("\0")                       is ParseFailure &&
-  p("")                         is ParseFailure &&
-  p("\\u123G")                  is ParseFailure &&
-  p(string(char(0b1000_0000)))  is ParseFailure)
+assertIs(jsonUtf8CharParser()("\n"), Type{ParseFailure}())
+assertIs(jsonUtf8CharParser()("\0"), Type{ParseFailure}())
+assertIs(jsonUtf8CharParser()(""), Type{ParseFailure}())
+assertIs(jsonUtf8CharParser()("\\u123G"), Type{ParseFailure}())
+assertIs(jsonUtf8CharParser()(string(char(0b1000_0000))), Type{ParseFailure}())
 
-assert(
-  p = jsonStringParser();
-  p("\"\"")                   == "" &&
-  p("\"hello world\"")        == "hello world" &&
-  p("\"hello\\nworld\"")      == "hello\nworld" &&
-  p("\"hello\\u000Aworld\"")  == "hello\nworld")
+assertEq(jsonStringParser()("\"\""), "")
+assertEq(jsonStringParser()("\"hello world\""), "hello world")
+assertEq(jsonStringParser()("\"hello\\nworld\""), "hello\nworld")
+assertEq(jsonStringParser()("\"hello\\u000Aworld\""), "hello\nworld")
 
-assert(
+assertEq(
   p = jsonStringParser();
   testStr = "STARGΛ̊TE,Hello world,Καλημέρα κόσμε,コンニチハ,⡌⠁⠧⠑ ⠼⠁⠒,ᚻᛖ ᚳᚹᚫᚦ ᚦᚫᛏ,ሰማይ አይታረስ ንጉሥ አይከሰስ።,แผ่นดินฮั่นเสื่อมโทรมแสนสังเวช,Зарегистрируйтесь,გთხოვთ ახლავე გაიაროთ⎪⎢⎜ ⎳aⁱ-bⁱ⎟⎥⎪▁▂▃▄▅▆▇█∀∂∈ℝ∧∪≡∞";
-  p("\"" + testStr + "\"") == testStr)
+  makePair(p("\"" + testStr + "\""), testStr))
 
-assert(
-  p = jsonStringParser();
-  p("")         is ParseFailure &&
-  p("\"")       is ParseFailure &&
-  p("\"\n\"")   is ParseFailure &&
-  p("hello\\a") is ParseFailure)
+assertIs(jsonStringParser()(""), Type{ParseFailure}())
+assertIs(jsonStringParser()("\""), Type{ParseFailure}())
+assertIs(jsonStringParser()("\"\n\""), Type{ParseFailure}())
+assertIs(jsonStringParser()("hello\\a"), Type{ParseFailure}())
 
-assert(
-  p = jsonArrayParser(jsonValueParser());
-  p("[]")           == JsonArray(List{JsonValue}()) &&
-  p("[    ]")       == JsonArray(List{JsonValue}()) &&
-  p("[1]")          == JsonArray(JsonValue(1.0)   :: List{JsonValue}()) &&
-  p("[ 1]")         == JsonArray(JsonValue(1.0)   :: List{JsonValue}()) &&
-  p("[ 1 ]")        == JsonArray(JsonValue(1.0)   :: List{JsonValue}()) &&
-  p("[1,2]")        == JsonArray(JsonValue(1.0)   :: JsonValue(2.0)) &&
-  p("[ 1 , 2 ]")    == JsonArray(JsonValue(1.0)   :: JsonValue(2.0)) &&
-  p("[ true, 2 ]")  == JsonArray(JsonValue(true)  :: JsonValue(2.0)) &&
-  p("[ \"true\" , false, 2 ]") ==
-    JsonArray(
+assertEq(jsonArrayParser()("[]"), JsonArray(List{JsonValue}()))
+assertEq(jsonArrayParser()("[    ]"), JsonArray(List{JsonValue}()))
+assertEq(jsonArrayParser()("[1]"), JsonArray(JsonValue(1.0) :: List{JsonValue}()))
+assertEq(jsonArrayParser()("[ 1]"), JsonArray(JsonValue(1.0) :: List{JsonValue}()))
+assertEq(jsonArrayParser()("[ 1 ]"), JsonArray(JsonValue(1.0) :: List{JsonValue}()))
+assertEq(jsonArrayParser()("[1,2]"), JsonArray(JsonValue(1.0) :: JsonValue(2.0)))
+assertEq(jsonArrayParser()("[ 1 , 2 ]"), JsonArray(JsonValue(1.0) :: JsonValue(2.0)))
+assertEq(jsonArrayParser()("[ true, 2 ]"), JsonArray(JsonValue(true) :: JsonValue(2.0)))
+
+assertEq(
+  jsonArrayParser()("[ \"true\" , false, 2 ]"),
+  JsonArray(
       JsonValue("true") ::
       JsonValue(false)  ::
-      JsonValue(2.0)    :: List{JsonValue}()) &&
-  p("[ [1, 2], 2 ]") ==
-    JsonArray(
+      JsonValue(2.0)    :: List{JsonValue}()))
+
+assertEq(
+  jsonArrayParser()("[ [1, 2], 2 ]"),
+  JsonArray(
       JsonValue(JsonArray(JsonValue(1.0) :: JsonValue(2.0))) ::
       JsonValue(2.0) :: List{JsonValue}()))
 
-assert(
-  p = jsonArrayParser(jsonValueParser());
-  p("")             is ParseFailure &&
-  p("[")            is ParseFailure &&
-  p("[,")           is ParseFailure &&
-  p("[,]")          is ParseFailure &&
-  p("[233 123]")    is ParseFailure &&
-  p("[233,]")       is ParseFailure &&
-  p("[233 ,  ]")    is ParseFailure &&
-  p("[233, 123 ,]") is ParseFailure)
+assertIs(jsonArrayParser()(""), Type{ParseFailure}())
+assertIs(jsonArrayParser()("["), Type{ParseFailure}())
+assertIs(jsonArrayParser()("[,"), Type{ParseFailure}())
+assertIs(jsonArrayParser()("[,]"), Type{ParseFailure}())
+assertIs(jsonArrayParser()("[233 123]"), Type{ParseFailure}())
+assertIs(jsonArrayParser()("[233,]"), Type{ParseFailure}())
+assertIs(jsonArrayParser()("[233 ,  ]"), Type{ParseFailure}())
+assertIs(jsonArrayParser()("[233, 123 ,]"), Type{ParseFailure}())
 
-assert(
-  p = jsonObjectParser(jsonValueParser());
-  p("{}")           == JsonObject(List{Pair{string, JsonValue}}()) &&
-  p("{\"key\":32}") == JsonObject(Pair("key", JsonValue(32.0)) :: List{Pair{string, JsonValue}}()) &&
-  p("{ \"key\" : 32 }") == JsonObject(Pair("key", JsonValue(32.0)) :: List{Pair{string, JsonValue}}()))
+assertEq(
+  jsonObjectParser()("{ \"key\" : 32 }"),
+  JsonObject(Pair("key", JsonValue(32.0)) :: List{Pair{string, JsonValue}}()))
 
-assert(
-  p = jsonObjectParser(jsonValueParser());
-  p("{\"key1\":32,\"key2\":true}") ==
-    JsonObject(
-      Pair("key1", JsonValue(32.0)) ::
-      Pair("key2", JsonValue(true)) :: List{Pair{string, JsonValue}}()))
+assertEq(
+  jsonObjectParser()("{\"key1\":32,\"key2\":true}"),
+  JsonObject(
+    Pair("key1", JsonValue(32.0)) ::
+    Pair("key2", JsonValue(true)) :: List{Pair{string, JsonValue}}()))
 
-assert(
-  p = jsonObjectParser(jsonValueParser());
-  p("{\n\"key1\"\n:\n32\n,\n\"key2\"\n:\ntrue\n}") ==
-    JsonObject(
-      Pair("key1", JsonValue(32.0)) ::
-      Pair("key2", JsonValue(true)) :: List{Pair{string, JsonValue}}()))
+assertEq(
+  jsonObjectParser()("{\n\"key1\"\n:\n32\n,\n\"key2\"\n:\ntrue\n}"),
+  JsonObject(
+    Pair("key1", JsonValue(32.0)) ::
+    Pair("key2", JsonValue(true)) :: List{Pair{string, JsonValue}}()))
 
-assert(
-  p = jsonObjectParser(jsonValueParser());
-  p("{\"obj\":{\"k\":true}}") ==
-    JsonObject(
-      Pair("obj", JsonValue(JsonObject(Pair("k", JsonValue(true)) :: List{Pair{string, JsonValue}}()))) ::
-      List{Pair{string, JsonValue}}()))
+assertEq(
+  jsonObjectParser()("{\"obj\":{\"k\":true}}"),
+  JsonObject(
+    Pair("obj", JsonValue(JsonObject(Pair("k", JsonValue(true)) :: List{Pair{string, JsonValue}}()))) ::
+    List{Pair{string, JsonValue}}()))
 
-assert(
-  p = jsonArrayParser(jsonValueParser());
-  p("")               is ParseFailure &&
-  p("{")              is ParseFailure &&
-  p("{,")             is ParseFailure &&
-  p("{,}")            is ParseFailure &&
-  p("{\"key\" 123}")  is ParseFailure &&
-  p("{\"key\":}")     is ParseFailure &&
-  p("{\"key\":123,}") is ParseFailure)
+assertIs(jsonArrayParser()(""), Type{ParseFailure}())
+assertIs(jsonArrayParser()("{"), Type{ParseFailure}())
+assertIs(jsonArrayParser()("{,"), Type{ParseFailure}())
+assertIs(jsonArrayParser()("{,}"), Type{ParseFailure}())
+assertIs(jsonArrayParser()("{\"key\" 123}"), Type{ParseFailure}())
+assertIs(jsonArrayParser()("{\"key\":}"), Type{ParseFailure}())
+assertIs(jsonArrayParser()("{\"key\":123,}"), Type{ParseFailure}())
 
 // -- Writer Tests
 
-assert(
-  w = jsonStringWriter();
-  w("hello world") == "\"hello world\"" &&
-  w("hello\nworld") == "\"hello\\nworld\"")
+assertEq(jsonStringWriter()("hello world"), "\"hello world\"")
+assertEq(jsonStringWriter()("hello\nworld"), "\"hello\\nworld\"")
 
-assert(
-  w = jsonObjectWriter(jsonValueWriter());
-  w(JsonObject(
-      Pair("key1", JsonValue(32.0)) ::
-      Pair("key2", JsonValue(true)) :: List{Pair{string, JsonValue}}())) ==
+assertEq(
+  jsonObjectWriter()(JsonObject(
+    Pair("key1", JsonValue(32.0)) ::
+    Pair("key2", JsonValue(true)) :: List{Pair{string, JsonValue}}())),
   "{\n  \"key1\": 32,\n  \"key2\": true\n}")
 
-assert(
-  w = jsonObjectWriter(jsonValueWriter());
-  w(JsonObject(
-      Pair("obj", JsonValue(JsonObject(Pair("k", JsonValue(true)) :: List{Pair{string, JsonValue}}()))) ::
-      List{Pair{string, JsonValue}}())) ==
+assertEq(
+  jsonObjectWriter()(JsonObject(
+    Pair("obj", JsonValue(JsonObject(Pair("k", JsonValue(true)) :: List{Pair{string, JsonValue}}()))) ::
+    List{Pair{string, JsonValue}}())),
   "{\n  \"obj\": {\n    \"k\": true\n  }\n}")
 
-assert(
-  w = jsonArrayWriter(jsonValueWriter());
-  w(JsonArray(List{JsonValue}())) == "[\n]" &&
-  w(JsonArray(JsonValue(1.0) :: List{JsonValue}())) == "[\n  1\n]" &&
-  w(JsonArray(JsonValue(1.0) :: JsonValue(true))) == "[\n  1,\n  true\n]")
+assertEq(jsonArrayWriter()(JsonArray(List{JsonValue}())), "[\n]")
+assertEq(jsonArrayWriter()(JsonArray(JsonValue(1.0) :: List{JsonValue}())), "[\n  1\n]")
+assertEq(jsonArrayWriter()(JsonArray(JsonValue(1.0) :: JsonValue(true))), "[\n  1,\n  true\n]")
 
-assert(
-  w = jsonValueWriter();
-  w(JsonValue(JsonNull()))    == "null"   &&
-  w(JsonValue(1.0))           == "1"      &&
-  w(JsonValue(1.1337))        == "1.1337" &&
-  w(JsonValue(true))          == "true"   &&
-  w(JsonValue("hello world")) == "\"hello world\"")
+assertEq(jsonValueWriter()(JsonValue(JsonNull())), "null")
+assertEq(jsonValueWriter()(JsonValue(1.0)), "1")
+assertEq(jsonValueWriter()(JsonValue(1.1337)), "1.1337")
+assertEq(jsonValueWriter()(JsonValue(true)), "true")
+assertEq(jsonValueWriter()(JsonValue("hello world")), "\"hello world\"")
 
 // -- Combination Tests
 

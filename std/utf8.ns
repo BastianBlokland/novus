@@ -1,3 +1,4 @@
+import "std/assert.ns"
 import "std/unicode.ns"
 import "std/parser.ns"
 
@@ -88,37 +89,25 @@ fun utf8Parser()
 
 // -- Tests
 
-assert(
-  utf8  = "&";
-  uni   = UnicodePoint(0x26);
-  utf8CodePointParser()(utf8) == uni  &&
-  uni.toUtf8() == utf8                &&
-  uni.utf8RequiredChars() == 1        &&
-  utf8[0].utf8GetCharCount() == 1)
+assertEq(utf8CodePointParser()("&"), UnicodePoint(0x26))
+assertEq(UnicodePoint(0x26).toUtf8(), "&")
+assertEq(UnicodePoint(0x26).utf8RequiredChars(), 1)
+assertEq("&"[0].utf8GetCharCount(), 1)
 
-assert(
-  utf8  = "Λ";
-  uni   = UnicodePoint(0x39B);
-  utf8CodePointParser()(utf8) == uni  &&
-  uni.toUtf8() == utf8                &&
-  uni.utf8RequiredChars() == 2        &&
-  utf8[0].utf8GetCharCount() == 2)
+assertEq(utf8CodePointParser()("Λ"), UnicodePoint(0x39B))
+assertEq(UnicodePoint(0x39B).toUtf8(), "Λ")
+assertEq(UnicodePoint(0x39B).utf8RequiredChars(), 2)
+assertEq("Λ"[0].utf8GetCharCount(), 2)
 
-assert(
-  utf8  = "฿";
-  uni   = UnicodePoint(0xE3F);
-  utf8CodePointParser()(utf8) == uni  &&
-  uni.toUtf8() == utf8                &&
-  uni.utf8RequiredChars() == 3        &&
-  utf8[0].utf8GetCharCount() == 3)
+assertEq(utf8CodePointParser()("฿"), UnicodePoint(0xE3F))
+assertEq(UnicodePoint(0xE3F).toUtf8(), "฿")
+assertEq(UnicodePoint(0xE3F).utf8RequiredChars(), 3)
+assertEq("฿"[0].utf8GetCharCount(), 3)
 
-assert(
-  utf8  = "𝑙";
-  uni   = UnicodePoint(0x1D459);
-  utf8CodePointParser()(utf8) == uni  &&
-  uni.toUtf8() == utf8                &&
-  uni.utf8RequiredChars() == 4        &&
-  utf8[0].utf8GetCharCount() == 4)
+assertEq(utf8CodePointParser()("𝑙"), UnicodePoint(0x1D459))
+assertEq(UnicodePoint(0x1D459).toUtf8(), "𝑙")
+assertEq(UnicodePoint(0x1D459).utf8RequiredChars(), 4)
+assertEq("𝑙"[0].utf8GetCharCount(), 4)
 
 assert(
  testStr  = "STARGΛ̊TE,Hello world,Καλημέρα κόσμε,コンニチハ,⡌⠁⠧⠑ ⠼⠁⠒,ᚻᛖ ᚳᚹᚫᚦ ᚦᚫᛏ,ሰማይ አይታረስ ንጉሥ አይከሰስ።,แผ่นดินฮั่นเสื่อมโทรมแสนสังเวช,Зарегистрируйтесь,გთხოვთ ახლავე გაიაროთ⎪⎢⎜ ⎳aⁱ-bⁱ⎟⎥⎪▁▂▃▄▅▆▇█∀∂∈ℝ∧∪≡∞";
@@ -129,15 +118,14 @@ assert(
  parser   = utf8Parser();
  parser(testStr) as ParseSuccess{List{UnicodePoint}} suc && suc.val.map(toUtf8).sum() == testStr)
 
-assert(
-  !utf8Validate(string(char(0b1000_0000)), 0, true) &&
-  !utf8Validate(string(char(0b1100_0000)), 0, true) &&
-  !utf8Validate(string(char(0b1110_0000)), 0, true) &&
-  !utf8Validate(string(char(0b1111_0000)), 0, true) &&
-  utf8Validate(string(char(0b0000_0001)), 0, true)  &&
-  utf8Validate(string(char(0b1100_0000), char(0b1000_0001)), 0, true) &&
-  utf8Validate(string(char(0b1110_0000), char(0b1000_0001), char(0b1000_0001)), 0, true) &&
-  utf8Validate(string(char(0b1111_0000), char(0b1000_0001), char(0b1000_0001), char(0b1000_0001)), 0, true))
+assertNot(utf8Validate(string(char(0b1000_0000)), 0, true))
+assertNot(utf8Validate(string(char(0b1100_0000)), 0, true))
+assertNot(utf8Validate(string(char(0b1110_0000)), 0, true))
+assertNot(utf8Validate(string(char(0b1111_0000)), 0, true))
+assert(utf8Validate(string(char(0b0000_0001)), 0, true) )
+assert(utf8Validate(string(char(0b1100_0000), char(0b1000_0001)), 0, true))
+assert(utf8Validate(string(char(0b1110_0000), char(0b1000_0001), char(0b1000_0001)), 0, true))
+assert(utf8Validate(string(char(0b1111_0000), char(0b1000_0001), char(0b1000_0001), char(0b1000_0001)), 0, true))
 
 assert(
   allCodePoints   = rangeList(minUnicodePoint(), maxUnicodePoint());

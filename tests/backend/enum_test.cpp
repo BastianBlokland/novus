@@ -8,18 +8,24 @@ TEST_CASE("[backend] Generate assembly for enums", "backend") {
   SECTION("Create and convert to int") {
     CHECK_PROG(
         "enum E = a : 42 "
-        "assert(E.a == 1337, \"test\")",
+        "fun test(bool b) b "
+        "test(E.a == 1337)",
         [](novasm::Assembler* asmb) -> void {
-          // --- conWite statement start.
+          // --- test function start.
+          asmb->label("func-test");
+          asmb->addStackLoad(0);
+          asmb->addRet();
+          // --- test function end.
+
+          // --- exec statement start.
           asmb->label("prog");
           asmb->addLoadLitInt(42);
           asmb->addLoadLitInt(1337);
           asmb->addCheckEqInt();
 
-          asmb->addLoadLitString("test");
-          asmb->addPCall(novasm::PCallCode::Assert);
+          asmb->addCall("func-test", 1, novasm::CallMode::Normal);
           asmb->addRet();
-          // --- conWite statement end.
+          // --- exec statement end.
 
           asmb->setEntrypoint("prog");
         });
@@ -28,9 +34,16 @@ TEST_CASE("[backend] Generate assembly for enums", "backend") {
   SECTION("Bitwise ops") {
     CHECK_PROG(
         "enum E = a:0b01, b:0b10, ab:0b11 "
-        "assert((E.a | E.b) == E.ab, \"test\")",
+        "fun test(bool b) b "
+        "test((E.a | E.b) == E.ab)",
         [](novasm::Assembler* asmb) -> void {
-          // --- conWite statement start.
+          // --- test function start.
+          asmb->label("func-test");
+          asmb->addStackLoad(0);
+          asmb->addRet();
+          // --- test function end.
+
+          // --- exec statement start.
           asmb->label("prog");
           asmb->addLoadLitInt(0b01);
           asmb->addLoadLitInt(0b10);
@@ -39,10 +52,9 @@ TEST_CASE("[backend] Generate assembly for enums", "backend") {
           asmb->addLoadLitInt(0b11);
           asmb->addCheckEqInt();
 
-          asmb->addLoadLitString("test");
-          asmb->addPCall(novasm::PCallCode::Assert);
+          asmb->addCall("func-test", 1, novasm::CallMode::Normal);
           asmb->addRet();
-          // --- conWite statement end.
+          // --- exec statement end.
 
           asmb->setEntrypoint("prog");
         });
@@ -51,18 +63,24 @@ TEST_CASE("[backend] Generate assembly for enums", "backend") {
   SECTION("Convert from int") {
     CHECK_PROG(
         "enum E = a "
-        "assert(E(0) == E.a, \"test\")",
+        "fun test(bool b) b "
+        "test(E(0) == E.a)",
         [](novasm::Assembler* asmb) -> void {
-          // --- conWite statement start.
+          // --- test function start.
+          asmb->label("func-test");
+          asmb->addStackLoad(0);
+          asmb->addRet();
+          // --- test function end.
+
+          // --- exec statement start.
           asmb->label("prog");
           asmb->addLoadLitInt(0); // Conversion is a no-op at runtime.
           asmb->addLoadLitInt(0);
           asmb->addCheckEqInt();
 
-          asmb->addLoadLitString("test");
-          asmb->addPCall(novasm::PCallCode::Assert);
+          asmb->addCall("func-test", 1, novasm::CallMode::Normal);
           asmb->addRet();
-          // --- conWite statement end.
+          // --- exec statement end.
 
           asmb->setEntrypoint("prog");
         });
