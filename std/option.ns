@@ -23,6 +23,9 @@ fun ??{T}(Option{T} opt, T def) -> T
 fun string{T}(Option{T} opt)
   opt as T val ? val.string() : "none"
 
+fun string(None n)
+  "none"
+
 // -- Functions
 
 fun map{T, TResult}(Option{T} opt, function{T, TResult} func) -> Option{TResult}

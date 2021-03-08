@@ -122,127 +122,130 @@ act map{T, TResult}(Either{T, Error} v, action{T, TResult} f) -> Either{TResult,
 
 // -- Tests
 
-assert(Error("Hello").string() == "['Hello']")
+assertEq(Error("Hello").string(), "['Hello']")
 
-assert((Error("Hello") :: Error("World")).string() == "['Hello','World']")
+assertEq((Error("Hello") :: Error("World")).string(), "['Hello','World']")
 
-assert((Error("Hello") :: Error("Good") :: Error("World")).string() == "['Hello','Good','World']")
+assertEq((Error("Hello") :: Error("Good") :: Error("World")).string(), "['Hello','Good','World']")
 
-assert(
+assertEq(
   w = errorWriter();
-  w(Error()).string() == "Unknown error" &&
-  w(Error(1337, "Hello") :: Error(42, "World")).string() == "Hello\nWorld")
+  w(Error()).string(), "Unknown error")
 
-assert(
+assertEq(
+  w = errorWriter();
+  w(Error(1337, "Hello") :: Error(42, "World")).string(), "Hello\nWorld")
+
+assertEq(
   w = errorWriter(indentWriter(), litWriter(",")).indent();
-  w(Error()).string() == "  Unknown error" &&
-  w(Error(1337, "Hello") :: Error(42, "World")).string() == "  Hello,  World")
+  w(Error()).string(), "  Unknown error")
 
-assert(
+assertEq(
+  w = errorWriter(indentWriter(), litWriter(",")).indent();
+  w(Error(1337, "Hello") :: Error(42, "World")).string(), "  Hello,  World")
+
+assertEq(
   w = errorWriter(ErrorWriteFlags.IncludeCodes);
-  w(Error()).string() == "[-1] Unknown error" &&
-  w(Error(1337, "Hello") :: Error(42, "World")).string() == "[1337] Hello\n[42] World")
+  w(Error(1337, "Hello") :: Error(42, "World")).string(), "[1337] Hello\n[42] World")
 
-assert(
+assertEq(
   w = errorWriter(indentWriter(), litWriter(","), ErrorWriteFlags.IncludeCodes).indent();
-  w(Error()).string() == "  [-1] Unknown error" &&
-  w(Error(1337, "Hello") :: Error(42, "World")).string() == "  [1337] Hello,  [42] World")
+  w(Error(1337, "Hello") :: Error(42, "World")).string(), "  [1337] Hello,  [42] World")
 
-assert(
-  Error("Hello").count() == 1 &&
-  (Error("Hello") :: Error("World")).count() == 2 &&
-  (Error("Good") :: Error("Hello") :: Error("World")).count() == 3)
+assertEq(Error("Hello").count(), 1)
+assertEq((Error("Hello") :: Error("World")).count(), 2)
+assertEq((Error("Good") :: Error("Hello") :: Error("World")).count(), 3)
 
-assert(
-  err = Error("Hello") :: Error("Good") :: Error("World");
-  err.allErrors() == Error("Hello") :: Error("Good") :: Error("World") :: List{Error}())
+assertEq(
+  (Error("Hello") :: Error("Good") :: Error("World")).allErrors(),
+  Error("Hello") :: Error("Good") :: Error("World") :: List{Error}())
 
-assert(
-  errs = Error("Hello") :: Error("Good") :: Error("World") :: List{Error}();
-  errs.combine() == Error("Hello") :: Error("Good") :: Error("World"))
+assertEq(
+  (Error("Hello") :: Error("Good") :: Error("World") :: List{Error}()).combine(),
+  Error("Hello") :: Error("Good") :: Error("World"))
 
-assert(
-  Error("Hello").distinct() == Error("Hello") &&
-  (Error() :: Error()).distinct() == Error() &&
-  (Error("Hello") :: Error("World")).distinct() == Error("Hello") :: Error("World") &&
-  (Error("Hello") :: Error("World") :: Error("Hello")).distinct() == Error("Hello") :: Error("World"))
+assertEq(Error("Hello").distinct(), Error("Hello"))
+assertEq((Error() :: Error()).distinct(), Error())
+assertEq((Error("Hello") :: Error("World")).distinct(), Error("Hello") :: Error("World"))
+assertEq((Error("Hello") :: Error("World")).distinct(), Error("Hello") :: Error("World"))
 
-assert(
+assertEq(
   v = Either{int, Error}(42);
-  v.map(lambda (int val) val * 2) == 84)
+  v.map(lambda (int val) val * 2), 84)
 
-assert(
+assertEq(
   v = Either{int, Error}(Error());
-  v.map(lambda (int val) 42) == Error())
+  v.map(lambda (int val) 42), Error())
 
-assert(
+assertEq(
   v = Either{int, Error}(42);
-  v.map(lambda (int val) val > 100 ? val : Error("Test")) == Error("Test"))
+  v.map(lambda (int val) val > 100 ? val : Error("Test")), Error("Test"))
 
-assert(
+assertEq(
   v = Either{int, Error}(Error());
-  v.map(lambda (int val) val > 100 ? val : Error("Test")) == Error())
+  v.map(lambda (int val) val > 100 ? val : Error("Test")), Error())
 
-assert(
+assertEq(
   v = Either{int, Error}(Error("Low level error"));
-  (v ! Error("Better error")) == Error("Better error") :: Error("Low level error"))
+  (v ! Error("Better error")), Error("Better error") :: Error("Low level error"))
 
-assert(
+assertEq(
   v = Either{int, Error}(42);
-  (v ! Error("Better error")) == 42)
+  (v ! Error("Better error")), 42)
 
-assert(
+assertEq(
   v = Option(Error("Low level error"));
-  (v ! Error("Better error")) == Error("Better error") :: Error("Low level error"))
+  (v ! Error("Better error")), Error("Better error") :: Error("Low level error"))
 
-assert(
+assertIs(
   v = Option{Error}();
-  (v ! Error("Better error")) == None())
+  (v ! Error("Better error")), Type{None}())
 
-assert(
+assertEq(
   v = Either{int, Error}(Error("Low level error"));
-  (v !! Error("Better error")) == Error("Better error"))
+  (v !! Error("Better error")), Error("Better error"))
 
-assert(
+assertEq(
   v = Either{int, Error}(42);
-  (v !! Error("Better error")) == 42)
+  (v !! Error("Better error")), 42)
 
-assert(
+assertEq(
   v = Option(Error("Low level error"));
-  (v !! Error("Better error")) == Error("Better error"))
+  (v !! Error("Better error")), Error("Better error"))
 
-assert(
+assertIs(
   v = Option{Error}();
-  (v !! Error("Better error")) == None())
+  (v !! Error("Better error")), Type{None}())
 
-assert(
-  valueOrError(42, None())        == 42 &&
-  valueOrError(42, Error("Test")) == Error("Test") )
+assertEq(valueOrError(42, None()), 42)
+assertEq(valueOrError(42, Error("Test")), Error("Test"))
 
-assert(
-  valueOrError(42, List{Error}())                                     == 42 &&
-  valueOrError(42, Error("Test") :: List{Error}())                    == Error("Test") &&
-  valueOrError(42, Error("Test") :: Error("Test2") :: List{Error}())  == Error("Test") :: Error("Test2") )
+assertEq(valueOrError(42, List{Error}()), 42)
+assertEq(valueOrError(42, Error("Test") :: List{Error}()), Error("Test"))
+assertEq(valueOrError(42, Error("Test") :: Error("Test2") :: List{Error}()), Error("Test") :: Error("Test2"))
 
 // -- Impure Tests
 
-assert(
+assertEq(
   v = Either{int, Error}(42);
-  v.map(impure lambda (int val) val * 2) == 84)
+  v.map(impure lambda (int val) val * 2), 84)
 
-assert(
+assertEq(
   v = Either{int, Error}(Error("Test"));
-  v.map(impure lambda (int val) val) == Error("Test"))
+  v.map(impure lambda (int val) val), Error("Test"))
 
-assert(
+assertEq(
   v = Either{int, Error}(42);
-  v.map(impure lambda (int val) val > 100 ? val : Error("Test")) == Error("Test"))
+  v.map(impure lambda (int val) val > 100 ? val : Error("Test")), Error("Test"))
 
-assert(
+assertIs(
   v = Either{int, Error}(42);
-  v.map(impure lambda (int val) val > 100 ? Option(Error("Test")) : None())  is None &&
-  v.map(impure lambda (int val) val > 30 ? Option(Error("Test")) : None())   == Error("Test"))
+  v.map(impure lambda (int val) val > 100 ? Option(Error("Test")) : None()), Type{None}())
 
-assert(
+assertEq(
+  v = Either{int, Error}(42);
+  v.map(impure lambda (int val) val > 30 ? Option(Error("Test")) : None()), Error("Test"))
+
+assertEq(
   v = Either{int, Error}(Error());
-  v.map(impure lambda (int val) val > 100 ? val : Error("Test")) == Error())
+  v.map(impure lambda (int val) val > 100 ? val : Error("Test")), Error())

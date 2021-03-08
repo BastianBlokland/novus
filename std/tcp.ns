@@ -1,6 +1,7 @@
 import "std/assert.ns"
 import "std/future.ns"
 import "std/ip.ns"
+import "std/list.ns"
 import "std/option.ns"
 import "std/parallel.ns"
 import "std/rt.ns"
@@ -34,6 +35,14 @@ fun TcpServerSettings(
     family,
     maxBacklog,
     impure lambda (TcpServerState state) interuptIsRequested())
+
+// -- Conversions
+
+fun string(TcpConnection serverState)
+  "(tcpconnection)"
+
+fun string(TcpServerState serverState)
+  "(tcpserver, counter:" + serverState.connectionCounter + ")"
 
 // -- Connection
 
@@ -93,19 +102,7 @@ act tcpServer(TcpServerSettings settings) -> Either{TcpServerState, Error}
 
 // -- Tests
 
-assert(
-  clientHandler = (impure lambda (TcpConnection c, TcpServerState state) Option{Error}());
-  tcpServer(TcpServerSettings(clientHandler, -1,            IpFamily.V4, 64))             is Error  &&
-  tcpServer(TcpServerSettings(clientHandler, 65536,         IpFamily.V4, 64))             is Error  &&
-  tcpServer(TcpServerSettings(clientHandler, maxVal{int}(), IpFamily.V4, 64))             is Error  &&
-  tcpServer(TcpServerSettings(clientHandler, 5000,          IpFamily.V4, maxVal{int}()))  is Error  &&
-  tcpServer(TcpServerSettings(clientHandler, -1,            IpFamily.V6, 64))             is Error  &&
-  tcpServer(TcpServerSettings(clientHandler, 65536,         IpFamily.V6, 64))             is Error  &&
-  tcpServer(TcpServerSettings(clientHandler, maxVal{int}(), IpFamily.V6, 64))             is Error  &&
-  tcpServer(TcpServerSettings(clientHandler, 5010,          IpFamily.V6, maxVal{int}()))  is Error
-)
-
-assert(
+assertEq(
   clientHandler = (impure lambda (TcpConnection c, TcpServerState state)
     c.write(c.socket.readLine() ?? "" + '\n')
   );
@@ -115,34 +112,31 @@ assert(
     c.write(message + '\n').failOnError();
     c.socket.readLine()
   );
-  parallelFor(25, impure lambda (int i)
-    msg = string("Hello from the network", i);
-    client(msg) == msg
-  ).all()
+  parallelFor(25, impure lambda (int i) client(string("Hello", i))),
+  rangeList(0, 25).map(lambda (int i) Either{string, Error}(string("Hello", i)))
 )
 
-assert(
+assertEq(
   clientHandler = (impure lambda (TcpConnection c, TcpServerState state)
     Option(Error("Did not go well"))
   );
   res = fork tcpServer(TcpServerSettings(clientHandler, 5013));
   client = tcpConnect(ipV4Loopback(), 5013).failOnError();
-  res.get() == Error("Did not go well")
+  res.get(), Error("Did not go well")
 )
 
-assert(
+assertEq(
   clientHandler = (impure lambda (TcpConnection c, TcpServerState state)
     c.write("hello")
   );
   cancelPredicate = (impure lambda (TcpServerState state)
     true
   );
-  res = tcpServer(TcpServerSettings(clientHandler, 5014, IpFamily.V4, 64, cancelPredicate));
-  if res as Error          err  -> printErr(err); false
-  if res as TcpServerState s    -> s == TcpServerState(0)
+  tcpServer(TcpServerSettings(clientHandler, 5014, IpFamily.V4, 64, cancelPredicate)),
+  TcpServerState(0)
 )
 
-assert(
+assertEq(
   cancelPredicate = (impure lambda (TcpServerState state)
     state.connectionCounter == 25
   );
@@ -154,6 +148,6 @@ assert(
     c = tcpConnect(ipV4Loopback(), 5015).failOnError();
     c.socket.readLine()
   );
-  if server.get() as Error          err  -> printErr(err); false
-  if server.get() as TcpServerState s    -> s == TcpServerState(25)
+  server.get(),
+  TcpServerState(25)
 )

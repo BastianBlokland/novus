@@ -36,32 +36,24 @@ act parallelFor{T, TResult}(T from, T to, action{T, TResult} a) -> List{TResult}
 
 // -- Tests
 
-assert(
-  l = 1 :: 2 :: 3;
-  l.parallelMap(lambda (int i) i * i) == 1 :: 4 :: 9)
+assertEq((1 :: 2 :: 3).parallelMap(lambda (int i) i * i), 1 :: 4 :: 9)
 
-assert(
-  parallelFor(1, 5, lambda (int i) i * i) == 1 :: 4 :: 9 :: 16)
+assertEq(parallelFor(1, 5, lambda (int i) i * i), 1 :: 4 :: 9 :: 16)
 
-assert(
-  parallelFor(5, lambda (int i) i * i) == 0 :: 1 :: 4 :: 9 :: 16)
+assertEq(parallelFor(5, lambda (int i) i * i), 0 :: 1 :: 4 :: 9 :: 16)
 
-assert(
+assertEq(
   op = (lambda (int i) i + i);
-  parallelFor(2000, op) == rangeListReverse(0, 2000).mapReverse(op))
+  parallelFor(2000, op), rangeListReverse(0, 2000).mapReverse(op))
 
 // -- Impure tests
 
-assert(
-  l = 1 :: 2 :: 3;
-  l.parallelMap(impure lambda (int i) i * i) == 1 :: 4 :: 9)
+assertEq((1 :: 2 :: 3).parallelMap(impure lambda (int i) i * i), 1 :: 4 :: 9)
 
-assert(
-  parallelFor(1, 5, impure lambda (int i) i * i) == 1 :: 4 :: 9 :: 16)
+assertEq(parallelFor(1, 5, impure lambda (int i) i * i), 1 :: 4 :: 9 :: 16)
 
-assert(
-  parallelFor(5, impure lambda (int i) i * i) == 0 :: 1 :: 4 :: 9 :: 16)
+assertEq(parallelFor(5, impure lambda (int i) i * i), 0 :: 1 :: 4 :: 9 :: 16)
 
-assert(
+assertEq(
   op = (impure lambda (int i) i + i);
-  parallelFor(2000, op) == rangeListReverse(0, 2000).mapReverse(op))
+  parallelFor(2000, op), rangeListReverse(0, 2000).mapReverse(op))

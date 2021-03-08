@@ -102,90 +102,90 @@ act actSeq{T}(
 
 // -- Tests
 
-assert(
+assertEq(
   f = (lambda () 42);
   lazyF = lazy f();
-  lazyF.get() == 42)
+  lazyF.get(), 42)
 
-assert(
+assertEq(
   f1 = (lambda () Option{int}());
   f2 = (lambda () Option(42));
-  first(lazy f1() :: lazy f2()) == 42)
+  first(lazy f1() :: lazy f2()), 42)
 
-assert(
+assertEq(
   f1 = (lambda () Option{int}());
   f2 = (lambda () Option{int}());
-  first(lazy f1() :: lazy f2()) == None())
+  first(lazy f1() :: lazy f2()), None())
 
 // -- Impure Tests
 
-assert(
+assertEq(
   a = (impure lambda () 42);
   lazyA = lazy a();
-  lazyA.get() == 42)
+  lazyA.get(), 42)
 
-assert(
+assertEq(
   getFallback = (lambda () 42);
-  Option{int}() ?? lazy getFallback() == 42)
+  Option{int}() ?? lazy getFallback(), 42)
 
-assert(
+assertEq(
   getFallback = (lambda () 42);
-  Option(1337) ?? lazy getFallback() == 1337)
+  Option(1337) ?? lazy getFallback(), 1337)
 
-assert(
+assertEq(
   executeAction = (impure lambda () 42);
-  Option{int}().orAct(lazy executeAction()) == 42)
+  Option{int}().orAct(lazy executeAction()), 42)
 
-assert(
+assertEq(
   executeAction = (impure lambda () 42);
-  Option(1337).orAct(lazy executeAction()) == 1337)
+  Option(1337).orAct(lazy executeAction()), 1337)
 
-assert(
-  Either{int, string}("Hello").actIf(impure lambda (int i) Either{int, string}(i * 2)) == "Hello")
+assertEq(
+  Either{int, string}("Hello").actIf(impure lambda (int i) Either{int, string}(i * 2)), "Hello")
 
-assert(
-  Either{int, string}(42).actIf(impure lambda (int i) Either{int, string}(i * 2)) == 84)
+assertEq(
+  Either{int, string}(42).actIf(impure lambda (int i) Either{int, string}(i * 2)), 84)
 
-assert(
-  Either{int, string}(42).actIf(impure lambda (int i) Either{int, string}("Hello")) == "Hello")
+assertEq(
+  Either{int, string}(42).actIf(impure lambda (int i) Either{int, string}("Hello")), "Hello")
 
-assert(
-  Either{int, string}(42).actIf(impure lambda (int i) Either{float, string}(i / 84.0)) == 0.5)
+assertEq(
+  Either{int, string}(42).actIf(impure lambda (int i) Either{float, string}(i / 84.0)), 0.5)
 
-assert(
-  Either{int, string}(42).actIf(impure lambda (int i) Either{float, string}("Hello")) == "Hello")
+assertEq(
+  Either{int, string}(42).actIf(impure lambda (int i) Either{float, string}("Hello")), "Hello")
 
-assert(
-  Either{string, int}("Hello").actIf(impure lambda (int i) Either{int, string}(i * 2)) == "Hello")
+assertEq(
+  Either{string, int}("Hello").actIf(impure lambda (int i) Either{int, string}(i * 2)), "Hello")
 
-assert(
-  Either{string, int}(42).actIf(impure lambda (int i) Either{int, string}(i * 2)) == 84)
+assertEq(
+  Either{string, int}(42).actIf(impure lambda (int i) Either{int, string}(i * 2)), 84)
 
-assert(
-  Either{string, int}(42).actIf(impure lambda (int i) Either{int, string}("Hello")) == "Hello")
+assertEq(
+  Either{string, int}(42).actIf(impure lambda (int i) Either{int, string}("Hello")), "Hello")
 
-assert(
-  Either{string, int}(42).actIf(impure lambda (int i) Either{float, string}(i / 84.0)) == 0.5)
+assertEq(
+  Either{string, int}(42).actIf(impure lambda (int i) Either{float, string}(i / 84.0)), 0.5)
 
-assert(
-  Either{string, int}(42).actIf(impure lambda (int i) Either{float, string}("Hello")) == "Hello")
+assertEq(
+  Either{string, int}(42).actIf(impure lambda (int i) Either{float, string}("Hello")), "Hello")
 
-assert(
+assertEq(
   a1 = (impure lambda () Option{int}());
   a2 = (impure lambda () Option(42));
-  actSeq(lazy a1() :: lazy a2()) == 42)
+  actSeq(lazy a1() :: lazy a2()), 42)
 
-assert(
+assertEq(
   a1 = (impure lambda () Option{int}());
   a2 = (impure lambda () Option{int}());
-  actSeq(lazy a1() :: lazy a2()) == None())
+  actSeq(lazy a1() :: lazy a2()), None())
 
-assert(
+assertEq(
   a1 = (impure lambda () Option{int}());
   a2 = (impure lambda () Option(42));
-  actSeq(lazy a1(), lazy a2()) == 42)
+  actSeq(lazy a1(), lazy a2()), 42)
 
-assert(
+assertEq(
   a1 = (impure lambda () Option{int}());
   a2 = (impure lambda () Option{int}());
-  actSeq(lazy a1(), lazy a2()) == None())
+  actSeq(lazy a1(), lazy a2()), None())

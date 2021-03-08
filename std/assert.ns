@@ -2,6 +2,7 @@ import "std/console.ns"
 import "std/list.ns"
 import "std/rt.ns"
 import "std/sourceloc.ns"
+import "std/type.ns"
 
 // -- Types
 
@@ -15,6 +16,12 @@ struct AssertData =
 
 act assert(bool cond, string msg = "", SourceLoc srcLoc = getSourceLoc())
   assert(AssertData(cond, "", msg, srcLoc))
+
+act assertNot(bool cond, string msg = "", SourceLoc srcLoc = getSourceLoc())
+  assert(AssertData(!cond, "", msg, srcLoc))
+
+act assert{T}(T value, function{T, bool} predicate, string msg = "", SourceLoc srcLoc = getSourceLoc())
+  assert(AssertData(predicate(value), "predicate(" + value.string() + ")", msg, srcLoc))
 
 // -- Comparisons
 
@@ -55,6 +62,19 @@ act assertLe{X, Y}(Pair{X, Y} p, string msg = "", SourceLoc srcLoc = getSourceLo
 
 act assertLeOrEq{X, Y}(Pair{X, Y} p, string msg = "", SourceLoc srcLoc = getSourceLoc())
   assertLeOrEq(p.first, p.second, msg, srcLoc)
+
+// -- Approx
+
+act assertApprox{X, Y}(X x, Y y, string msg = "", SourceLoc srcLoc = getSourceLoc())
+  assert(AssertData(approx(x, y), x.string() + " ≈ " + y.string(), msg, srcLoc))
+
+act assertNotApprox{X, Y}(X x, Y y, string msg = "", SourceLoc srcLoc = getSourceLoc())
+  assert(AssertData(!approx(x, y), x.string() + " !≈ " + y.string(), msg, srcLoc))
+
+// -- Unions
+
+act assertIs{X, T}(X x, Type{T} t, string msg = "", SourceLoc srcLoc = getSourceLoc())
+  assert(AssertData(x is T, x.string() + " is " + t, msg, srcLoc))
 
 // -- Collections
 

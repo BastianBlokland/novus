@@ -209,36 +209,41 @@ act invoke{T1, T2, T3, T4, T5, TR}(action{T1, T2, T3, T4, T5, TR} func, T1 a1, T
 
 // -- Tests
 
-assert(equals(1, 1) && !equals(1, 2))
+assert(equals(1, 1))
+assertNot(equals(1, 2))
 
 assert(
   eq42 = equals{int}[42];
-  eq42(42) && !eq42(43))
+  eq42(42))
 
 assert(
+  eq42 = equals{int}[42];
+  (!eq42)(43))
+
+assertEq(
   funcRet = (lambda (int x) x);
   ret42 = funcRet[42];
-  ret42() == funcRet(42))
+  makePair(ret42(), funcRet(42)))
 
-assert(
+assertEq(
   funcPlus = (lambda (int a, int b) a + b);
   plus42 = funcPlus[42];
-  plus42(1337) == funcPlus(1337, 42))
+  makePair(plus42(1337), funcPlus(1337, 42)))
 
-assert(
+assertEq(
   funcSum = (lambda (int a, int b, int c) a + b + c);
   sumPlus42 = funcSum[42];
-  sumPlus42(1, 2) == funcSum(1, 2, 42))
+  makePair(sumPlus42(1, 2), funcSum(1, 2, 42)))
 
-assert(
+assertEq(
   funcSum = (lambda (int a, int b, int c, int d) a + b + c + d);
   sumPlus42 = funcSum[42];
-  sumPlus42(1, 2, 3) == funcSum(1, 2, 3, 42))
+  makePair(sumPlus42(1, 2, 3), funcSum(1, 2, 3, 42)))
 
 assert(
   funcTrue = (lambda () true);
   funcFalse = (lambda () false);
-  (funcTrue & funcTrue)() && !(funcTrue & funcFalse)())
+  (funcTrue & funcTrue)())
 
 assert(
   isEven = (lambda (int x) x % 2 == 0);
@@ -348,64 +353,64 @@ assert(
   notEq = !eq;
   notEq(42, 42, 42, 1337) && !notEq(42, 42, 42, 42))
 
-assert(invoke(lambda() 42 + 1337) == 42 + 1337)
+assertEq(invoke(lambda() 42 + 1337), 42 + 1337)
 
-assert(invoke(lambda(int x) 42 + x, 1337) == 42 + 1337)
+assertEq(invoke(lambda(int x) 42 + x, 1337), 42 + 1337)
 
-assert(invoke(lambda(int x, float y) string(x) + string(y), 1337, 42.42) == "133742.42")
+assertEq(invoke(lambda(int x, float y) string(x) + string(y), 1337, 42.42), "133742.42")
 
-assert(
+assertEq(
   invoke(lambda(int x, float y, string z) string(x) + " " + string(y) + " " + z,
-    1337, 42.42, "hello world") == "1337 42.42 hello world")
+    1337, 42.42, "hello world"), "1337 42.42 hello world")
 
-assert(
+assertEq(
   invoke(lambda(int x, float y, string z, long w) string(x) + " " + string(y) + " " + z + " " + string(w),
-    1337, 42.42, "hello world", -4242L) == "1337 42.42 hello world -4242")
+    1337, 42.42, "hello world", -4242L), "1337 42.42 hello world -4242")
 
-assert(
+assertEq(
   invoke(
     lambda(int x, float y, string z, long w, int a)
       string(x) + " " + string(y) + " " + z + " " + string(w) + " " + string(a)
-    ,1337, 42.42, "hello world", -4242L, -1) == "1337 42.42 hello world -4242 -1")
+    ,1337, 42.42, "hello world", -4242L, -1), "1337 42.42 hello world -4242 -1")
 
 // -- Impure tests
 
-assert(
+assertEq(
   actRet = (impure lambda (int x) x);
   ret42 = actRet[42];
-  ret42() == actRet(42))
+  makePair(ret42(), actRet(42)))
 
-assert(
+assertEq(
   actPlus = (impure lambda (int a, int b) a + b);
   plus42 = actPlus[42];
-  plus42(1337) == actPlus(1337, 42))
+  makePair(plus42(1337), actPlus(1337, 42)))
 
-assert(
+assertEq(
   actSum = (impure lambda (int a, int b, int c) a + b + c);
   sumPlus42 = actSum[42];
-  sumPlus42(1, 2) == actSum(1, 2, 42))
+  makePair(sumPlus42(1, 2), actSum(1, 2, 42)))
 
-assert(
+assertEq(
   actSum = (impure lambda (int a, int b, int c, int d) a + b + c + d);
   sumPlus42 = actSum[42];
-  sumPlus42(1, 2, 3) == actSum(1, 2, 3, 42))
+  makePair(sumPlus42(1, 2, 3), actSum(1, 2, 3, 42)))
 
-assert(invoke(impure lambda() 42 + 1337) == 42 + 1337)
+assertEq(invoke(impure lambda() 42 + 1337), 42 + 1337)
 
-assert(invoke(impure lambda(int x) 42 + x, 1337) == 42 + 1337)
+assertEq(invoke(impure lambda(int x) 42 + x, 1337), 42 + 1337)
 
-assert(invoke(impure lambda(int x, float y) string(x) + string(y), 1337, 42.42) == "133742.42")
+assertEq(invoke(impure lambda(int x, float y) string(x) + string(y), 1337, 42.42), "133742.42")
 
-assert(
+assertEq(
   invoke(impure lambda(int x, float y, string z) string(x) + " " + string(y) + " " + z,
-    1337, 42.42, "hello world") == "1337 42.42 hello world")
+    1337, 42.42, "hello world"), "1337 42.42 hello world")
 
-assert(
+assertEq(
   invoke(impure lambda(int x, float y, string z, long w) string(x) + " " + string(y) + " " + z + " " + string(w),
-    1337, 42.42, "hello world", -4242L) == "1337 42.42 hello world -4242")
+    1337, 42.42, "hello world", -4242L), "1337 42.42 hello world -4242")
 
-assert(
+assertEq(
   invoke(
     impure lambda(int x, float y, string z, long w, int a)
       string(x) + " " + string(y) + " " + z + " " + string(w) + " " + string(a)
-    , 1337, 42.42, "hello world", -4242L, -1) == "1337 42.42 hello world -4242 -1")
+    , 1337, 42.42, "hello world", -4242L, -1), "1337 42.42 hello world -4242 -1")

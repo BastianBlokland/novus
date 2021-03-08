@@ -73,8 +73,8 @@ fun perlinPermutation() -> string
 
 // -- Tests
 
-assert(approx(perlinNoise3d(.1, .2, .3),          +.351229250))
-assert(approx(perlinNoise3d(-.1, -.2, -.3),       -.41573518))
-assert(approx(perlinNoise3d(.2, -.2, 10.6),       -.09902167))
-assert(approx(perlinNoise3d(1000, -1000, .1337),  +.14788535237))
-assert(approx(perlinNoise3d(3.14, 42, 7),         .1369200497))
+assertApprox(perlinNoise3d(.1, .2, .3),          +.351229250)
+assertApprox(perlinNoise3d(-.1, -.2, -.3),       -.41573518)
+assertApprox(perlinNoise3d(.2, -.2, 10.6),       -.09902167)
+assertApprox(perlinNoise3d(1000, -1000, .1337),  +.14788535237)
+assertApprox(perlinNoise3d(3.14, 42, 7),         .1369200497)

@@ -196,21 +196,21 @@ act failOnError(Option{Error} v) -> None
 // -- Tests
 
 assert(
-  p = getPlatform();
-  p == Platform.Linux || p == Platform.MacOs || p == Platform.Windows)
+  getPlatform(),
+  lambda (Platform p) p == Platform.Linux || p == Platform.MacOs || p == Platform.Windows)
 
-assert(getRuntimeVersion() >= Version(0, 5, 0))
+assertGtrOrEq(getRuntimeVersion(), Version(0, 11, 0))
 
-assert(getCompilerVersion() >= Version(0, 5, 0))
+assertGtrOrEq(getCompilerVersion(), Version(0, 11, 0))
 
-assert(getPathCurrent().extension() is None)
+assertIs(getPathCurrent().extension(), Type{None}())
 
 assert(
-  runtimeName = getPathRuntime().stem();
-  runtimeName == "novrt" || runtimeName == "nove")
+  getPathRuntime().stem(),
+  lambda (Option{string} runtimeName) runtimeName == "novrt" || runtimeName == "nove")
 
-assert(getPathProgram().filename() == "rt.ns")
+assertEq(getPathProgram().filename(), "rt.ns")
 
-assert(getPathProgram().stem() == "rt")
+assertEq(getPathProgram().stem(), "rt")
 
-assert(getPathProgram().extension() == "ns")
+assertEq(getPathProgram().extension(), "ns")

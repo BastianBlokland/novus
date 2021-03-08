@@ -15,10 +15,10 @@ fun getArea(Shape s)
 
 // -- Tests
 
-assert(         getArea(Square(42)) ==          1764)
-assert(         getArea(Rectangle(3, 8)) ==     24)
-assert(approx(  getArea(Circle(4.2)),           55.4177))
-assert(         getArea(RightTriangle(3, 8)) == 12)
+assertEq(      getArea(Square(42)),           1764)
+assertEq(      getArea(Rectangle(3, 8)),      24)
+assertApprox(  getArea(Circle(4.2)),          55.4177)
+assertEq(      getArea(RightTriangle(3, 8)),  12)
 
 fun getHypotenuse(Shape s)
   if s as RightTriangle triangle -> Option(getHypotenuse(triangle))
@@ -29,9 +29,10 @@ fun getHypotenuse(RightTriangle triangle)
 
 // -- Tests
 
-assert(approx(getHypotenuse(RightTriangle(3, 8)), 8.544))
-assert(getHypotenuse(Circle(42)) is None)
-assert(getHypotenuse(Circle(42)) == None())
+assertApprox( getHypotenuse(RightTriangle(3, 8)),   8.544)
+assert(       getHypotenuse(Circle(42))             is None)
+assertIs(     getHypotenuse(Circle(42)),            Type{None}())
+assertEq(     getHypotenuse(Circle(42)),            None())
 
 fun getPerimeter(Shape s)
   if s as Square square           -> square.size * 4
@@ -41,8 +42,8 @@ fun getPerimeter(Shape s)
                                      a + b + sqrt(a * a + b * b)
 // -- Tests
 
-assert(         getPerimeter(Square(42)) ==         168)
-assert(         getPerimeter(Rectangle(3, 8)) ==    22)
-assert(approx(  getPerimeter(Circle(4.2)),          26.3894))
-assert(approx(  getPerimeter(RightTriangle(3, 8)),  19.544))
+assertEq(      getPerimeter(Square(42)),            168)
+assertEq(      getPerimeter(Rectangle(3, 8)),       22)
+assertApprox(  getPerimeter(Circle(4.2)),           26.3894)
+assertApprox(  getPerimeter(RightTriangle(3, 8)),   19.544)
 

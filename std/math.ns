@@ -103,158 +103,140 @@ fun atan2(float x, float y) -> float
 
 // -- Tests
 
-assert(
-  (1.0 / 0.0) == posInfinity() &&
-  (-1.0 / 0.0) == negInfinity() &&
-  -posInfinity() == negInfinity())
+assertEq((1.0 / 0.0), posInfinity())
+assertEq((-1.0 / 0.0), negInfinity())
+assertEq(-posInfinity(), negInfinity())
 
-assert(
-  nan().isNan() &&
-  isNan(0.0 / 0.0) &&
-  !isNan(0.0) &&
-  !isNan(1.0) &&
-  !isNan(1.0 / 0.0))
+assert(nan().isNan())
+assert(isNan(0.0 / 0.0))
+assertNot(isNan(0.0))
+assertNot(isNan(1.0))
+assertNot(isNan(1.0 / 0.0))
 
-assert(
-  negate(1) == -1 &&
-  negate(-1) == 1 &&
-  negate(42).negate() == 42 &&
-  negate(1.0) == -1.0 &&
-  negate(-1.0) == 1.0)
+assertEq(negate(1), -1)
+assertEq(negate(-1), 1)
+assertEq(negate(42).negate(), 42)
+assertEq(negate(1.0), -1.0)
+assertEq(negate(-1.0), 1.0)
 
-assert(
-  abs(1) == 1 &&
-  abs(-1) == 1 &&
-  abs(-.42) == .42)
+assertEq(abs(1), 1)
+assertEq(abs(-1), 1)
+assertEq(abs(-.42), .42)
 
-assert(
-  sign(1) == 1 &&
-  sign(-1) == -1 &&
-  sign(-42) == -1 &&
-  sign(42) == 1 &&
-  sign(-.42) == -1 &&
-  sign(.42) == 1)
+assertEq(sign(1), 1)
+assertEq(sign(-1), -1)
+assertEq(sign(-42), -1)
+assertEq(sign(42), 1)
+assertEq(sign(-.42), -1)
+assertEq(sign(.42), 1)
 
-assert(
-  isEven(0) &&
-  isEven(2) &&
-  isEven(4) &&
-  isEven(-2) &&
-  isEven(-4) &&
-  !isEven(1) &&
-  !isEven(-1))
+assert(isEven(0))
+assert(isEven(2))
+assert(isEven(4))
+assert(isEven(-2))
+assert(isEven(-4))
+assertNot(isEven(1))
+assertNot(isEven(-1))
 
 assert(isEven('b'))
 assert(isEven(~1L))
 
-assert(
-  min(1, 2) == 1 &&
-  min(42, -42) == -42 &&
-  min(.01, .001) == .001)
+assertEq(min(1, 2), 1)
+assertEq(min(42, -42), -42)
+assertEq(min(.01, .001), .001)
 
-assert(
-  max(1, 2) == 2 &&
-  max(42, -42) == 42 &&
-  max(.01, .001) == .01)
+assertEq(max(1, 2), 2)
+assertEq(max(42, -42), 42)
+assertEq(max(.01, .001), .01)
 
-assert(
-  clamp(3, 0, 5) == 3 &&
-  clamp(3, 0, 2) == 2 &&
-  clamp(-2, -3, 3) == -2 &&
-  clamp(-1, -3, -2) == -2 &&
-  clamp(.42, .2, .4) == .4 &&
-  clamp(.38, .4, .5) == .4)
+assertEq(clamp(3, 0, 5), 3)
+assertEq(clamp(3, 0, 2), 2)
+assertEq(clamp(-2, -3, 3), -2)
+assertEq(clamp(-1, -3, -2), -2)
+assertEq(clamp(.42, .2, .4), .4)
+assertEq(clamp(.38, .4, .5), .4)
 
-assert(
-  trunc(1.42) == 1.0 &&
-  trunc(42.1337) == 42.0 &&
-  trunc(-1.42) == -1.0 &&
-  trunc(-42.1337) == -42.0 &&
-  trunc(-.34) == 0.0)
+assertEq(trunc(1.42), 1.0)
+assertEq(trunc(42.1337), 42.0)
+assertEq(trunc(-1.42), -1.0)
+assertEq(trunc(-42.1337), -42.0)
+assertEq(trunc(-.34), 0.0)
 
-assert(
-  floor(.1) == 0.0 &&
-  floor(1.1) == 1.0 &&
-  floor(1.99) == 1.0 &&
-  floor(-42.1337) == -43.0 &&
-  floor(-2.3) == -3.0 &&
-  floor(-1.99) == -2.0)
+assertEq(floor(.1), 0.0)
+assertEq(floor(1.1), 1.0)
+assertEq(floor(1.99), 1.0)
+assertEq(floor(-42.1337), -43.0)
+assertEq(floor(-2.3), -3.0)
+assertEq(floor(-1.99), -2.0)
 
-assert(
-  ceil(1.0) == 1.0 &&
-  ceil(0.0) == 0.0 &&
-  ceil(1.2) == 2.0 &&
-  ceil(-1.0) == -1.0 &&
-  ceil(-1.2) == -1.0 &&
-  ceil(-42.1337) == -42.0 &&
-  ceil(-1.99) == -1.0 &&
-  ceil(-1.01) == -1.0)
+assertEq(ceil(1.0), 1.0)
+assertEq(ceil(0.0), 0.0)
+assertEq(ceil(1.2), 2.0)
+assertEq(ceil(-1.0), -1.0)
+assertEq(ceil(-1.2), -1.0)
+assertEq(ceil(-42.1337), -42.0)
+assertEq(ceil(-1.99), -1.0)
+assertEq(ceil(-1.01), -1.0)
 
-assert(
-  round(1.0) == 1.0 &&
-  round(.0) == 0.0 &&
-  round(.6) == 1.0 &&
-  round(.5) == 0.0 &&
-  round(.499) == 0.0 &&
-  round(.51) == 1.0 &&
-  round(1.4) == 1.0 &&
-  round(1.5) == 2.0 &&
-  round(1.6) == 2.0 &&
-  round(2.5) == 2.0 &&
-  round(2.6) == 3.0 &&
-  round(3.5) == 4.0 &&
-  round(-.1) == 0.0 &&
-  round(-.4) == 0.0 &&
-  round(-.5) == 0.0 &&
-  round(-1.5) == -2.0 &&
-  round(-1.6) == -2.0 &&
-  round(-2.5) == -2.0 &&
-  round(-2.6) == -3.0 &&
-  round(-3.5) == -4.0)
+assertEq(round(1.0), 1.0)
+assertEq(round(.0), 0.0)
+assertEq(round(.6), 1.0)
+assertEq(round(.5), 0.0)
+assertEq(round(.499), 0.0)
+assertEq(round(.51), 1.0)
+assertEq(round(1.4), 1.0)
+assertEq(round(1.5), 2.0)
+assertEq(round(1.6), 2.0)
+assertEq(round(2.5), 2.0)
+assertEq(round(2.6), 3.0)
+assertEq(round(3.5), 4.0)
+assertEq(round(-.1), 0.0)
+assertEq(round(-.4), 0.0)
+assertEq(round(-.5), 0.0)
+assertEq(round(-1.5), -2.0)
+assertEq(round(-1.6), -2.0)
+assertEq(round(-2.5), -2.0)
+assertEq(round(-2.6), -3.0)
+assertEq(round(-3.5), -4.0)
 
-assert(
-  approx(1.0, 1.0) &&
-  approx(0.0, 0.0) &&
-  approx(0.0, epsilon()) &&
-  approx(epsilon(), 0.0) &&
-  approx(1.0, 10.0 / 10.0) &&
-  approx(1.0, 1.000001) &&
-  approx(1.000001, 1.0) &&
-  approx(5000.0, 5000.001) &&
-  approx(50000.0, 50000.01) &&
-  approx(500000.0, 500000.1) &&
-  approx(sqrt(42.1337 * 42.1337), 42.1337))
+assertApprox(1.0, 1.0)
+assertApprox(0.0, 0.0)
+assertApprox(0.0, epsilon())
+assertApprox(epsilon(), 0.0)
+assertApprox(1.0, 10.0 / 10.0)
+assertApprox(1.0, 1.000001)
+assertApprox(1.000001, 1.0)
+assertApprox(5000.0, 5000.001)
+assertApprox(50000.0, 50000.01)
+assertApprox(500000.0, 500000.1)
+assertApprox(sqrt(42.1337 * 42.1337), 42.1337)
 
-assert(
-  lerp(1.0, 2.0, 0.0) == 1 &&
-  lerp(1.0, 2.0, 1.0) == 2 &&
-  approx(lerp(1.0, 2.0, .5), 1.5) &&
-  lerp(-3.0, -1.0, 0.0) == -3.0 &&
-  lerp(-3.0, -1.0, 1.0) == -1.0 &&
-  lerp(-1.0, -3.0, 0.0) == -1.0 &&
-  lerp(-1.0, -3.0, 1.0) == -3.0 &&
-  lerp(0.0, 1.0, -1) == 0.0 &&
-  lerp(0.0, 1.0, 2) == 1.0)
+assertEq(lerp(1.0, 2.0, 0.0), 1)
+assertEq(lerp(1.0, 2.0, 1.0), 2)
+assertApprox(lerp(1.0, 2.0, .5), 1.5)
+assertEq(lerp(-3.0, -1.0, 0.0), -3.0)
+assertEq(lerp(-3.0, -1.0, 1.0), -1.0)
+assertEq(lerp(-1.0, -3.0, 0.0), -1.0)
+assertEq(lerp(-1.0, -3.0, 1.0), -3.0)
+assertEq(lerp(0.0, 1.0, -1), 0.0)
+assertEq(lerp(0.0, 1.0, 2), 1.0)
 
-assert(
-  invLerp(1.0, 2.0, 1.0) == 0.0 &&
-  invLerp(1.0, 2.0, 2.0) == 1.0 &&
-  approx(invLerp(1.0, 2.0, 1.5), 0.5) &&
-  invLerp(1.0, 2.0, 0.0) == 0.0 &&
-  invLerp(1.0, 2.0, 3.0) == 1.0 &&
-  approx(invLerp(-1.0, -2.0, -1.5), 0.5) &&
-  approx(invLerp(-1.0, -2.0, -1.0), 0.0) &&
-  approx(invLerp(-1.0, -2.0, -2.0), 1.0))
+assertEq(invLerp(1.0, 2.0, 1.0), 0.0)
+assertEq(invLerp(1.0, 2.0, 2.0), 1.0)
+assertApprox(invLerp(1.0, 2.0, 1.5), 0.5)
+assertEq(invLerp(1.0, 2.0, 0.0), 0.0)
+assertEq(invLerp(1.0, 2.0, 3.0), 1.0)
+assertApprox(invLerp(-1.0, -2.0, -1.5), 0.5)
+assertApprox(invLerp(-1.0, -2.0, -1.0), 0.0)
+assertApprox(invLerp(-1.0, -2.0, -2.0), 1.0)
 
-assert(
-  approx(degToRad(45), pi() / 4) &&
-  approx(degToRad(90), pi() / 2) &&
-  approx(degToRad(180), pi()) &&
-  approx(degToRad(360), pi() * 2) &&
-  approx(degToRad(720), pi() * 4) &&
-  approx(degToRad(-720), pi() * -4))
+assertApprox(degToRad(45), pi() / 4)
+assertApprox(degToRad(90), pi() / 2)
+assertApprox(degToRad(180), pi())
+assertApprox(degToRad(360), pi() * 2)
+assertApprox(degToRad(720), pi() * 4)
+assertApprox(degToRad(-720), pi() * -4)
 
-assert(
-  approx(radToDeg(pi() / 2), 90) &&
-  approx(radToDeg(pi()), 180) &&
-  approx(radToDeg(pi() * 2), 360))
+assertApprox(radToDeg(pi() / 2), 90)
+assertApprox(radToDeg(pi()), 180)
+assertApprox(radToDeg(pi() * 2), 360)

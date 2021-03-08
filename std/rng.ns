@@ -103,13 +103,13 @@ assert(
   avg = sum / cnt;
   min >= 0.0 && max < 1.0 && avg > .49 && avg < .51)
 
-assert(rngInit(42).rngNext().map(lambda (float f) f.string()).val != "")
+assertNotEq(rngInit(42).rngNext().map(lambda (float f) f.string()).val, "")
 
-assert(rngInit(42).rngNext().rngNext().map(lambda (Pair{float, float} p) p.string()).val != "")
+assertNotEq(rngInit(42).rngNext().rngNext().map(lambda (Pair{float, float} p) p.string()).val, "")
 
-assert(rngInit(42).rngNext(10, 10).val == 10)
+assertEq(rngInit(42).rngNext(10, 10).val, 10)
 
-assert(rngInit(42).rngNext(10, 10).rngNext(10, 10).val == Pair(10, 10))
+assertEq(rngInit(42).rngNext(10, 10).rngNext(10, 10).val, Pair(10, 10))
 
 assert(
   cnt = 100_000;

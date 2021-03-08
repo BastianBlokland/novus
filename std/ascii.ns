@@ -90,7 +90,7 @@ assertNone(rangeList('0', '9'), isWhitespace)
 
 assert('\n'.isNewline())
 assert('\r'.isNewline())
-assert(!'\t'.isNewline())
+assertNot('\t'.isNewline())
 
 assert('\0'.isControl())
 assert('\t'.isControl())

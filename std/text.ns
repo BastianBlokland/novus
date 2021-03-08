@@ -210,225 +210,199 @@ fun getTextPos(string str)
 
 // -- Tests
 
-assert(
-  string(1, 2) == "01" &&
-  string(42L, 5) == "00042")
+assertEq(string(1, 2), "01")
+assertEq(string(42L, 5), "00042")
 
-assert(
-  string('0', 1) == "0" &&
-  string('0', 2) == "00" &&
-  string('0', 3) == "000" &&
-  string('0', 0) == "" &&
-  string('0', -1) == "")
+assertEq(string('0', 1), "0")
+assertEq(string('0', 2), "00")
+assertEq(string('0', 3), "000")
+assertEq(string('0', 0), "")
+assertEq(string('0', -1), "")
 
-assert(
-  string("hello", 1)  == "hello" &&
-  string("hello", 2)  == "hellohello" &&
-  string("hello", 3)  == "hellohellohello" &&
-  string("hello", 0)  == "" &&
-  string("hello", -1) == "")
+assertEq(string("hello", 1), "hello")
+assertEq(string("hello", 2), "hellohello")
+assertEq(string("hello", 3), "hellohellohello")
+assertEq(string("hello", 0), "")
+assertEq(string("hello", -1), "")
 
-assert("".isEmpty() && !" ".isEmpty())
+assert("".isEmpty())
+assertNot(" ".isEmpty())
 
-assert(
-  "".last() == '\0' &&
-  "o".last() == 'o' &&
-  "hello".last() == 'o')
+assertEq("".last(), '\0')
+assertEq("o".last(), 'o')
+assertEq("hello".last(), 'o')
 
-assert(
-  "hello world".contains("hello") &&
-  "hello world".contains("world") &&
-  "hello world".contains(" ") &&
-  "hello world".contains("ld") &&
-  "hello world".contains("he") &&
-  "hello world".contains("o w") &&
-  !"hello".contains("world") &&
-  !"hello".contains("llow") &&
-  !"hello".contains(""))
+assert("hello world".contains("hello"))
+assert("hello world".contains("world"))
+assert("hello world".contains(" "))
+assert("hello world".contains("ld"))
+assert("hello world".contains("he"))
+assert("hello world".contains("o w"))
+assertNot("hello".contains("world"))
+assertNot("hello".contains("llow"))
+assertNot("hello".contains(""))
 
-assert(
-  "hello world".indexOf("hello") == 0 &&
-  "hello world".indexOf("world") == 6 &&
-  "hello world".indexOf(" ") == 5 &&
-  "hello world".indexOf("ld") == 9 &&
-  "hello world".indexOf("lo") == 3 &&
-  "hello world".indexOf("el") == 1 &&
-  "hello world".indexOf("he") == 0 &&
-  "hello world".indexOf("o w") == 4 &&
-  "wasd wasd".indexOf("wasd") == 0 &&
-  "hello".indexOf("world") == -1 &&
-  "hello".indexOf("llow") == -1 &&
-  "hello".indexOf("") == -1)
+assertEq("hello world".indexOf("hello"), 0)
+assertEq("hello world".indexOf("world"), 6)
+assertEq("hello world".indexOf(" "), 5)
+assertEq("hello world".indexOf("ld"), 9)
+assertEq("hello world".indexOf("lo"), 3)
+assertEq("hello world".indexOf("el"), 1)
+assertEq("hello world".indexOf("he"), 0)
+assertEq("hello world".indexOf("o w"), 4)
+assertEq("wasd wasd".indexOf("wasd"), 0)
+assertEq("hello".indexOf("world"), -1)
+assertEq("hello".indexOf("llow"), -1)
+assertEq("hello".indexOf(""), -1)
 
-assert(
-  "wasd wasd".indexOfLast("wasd") == 5 &&
-  "hello world".indexOfLast("hello") == 0 &&
-  "hello world".indexOfLast("world") == 6 &&
-  "hello world".indexOfLast("lo") == 3 &&
-  "hello world".indexOfLast("el") == 1 &&
-  "wasd wasd".indexOfLast(" ") == 4 &&
-  "wasd wasd".indexOfLast("d w") == 3 &&
-  "wasd wasd".indexOfLast("wasdz") == -1 &&
-  "wasd wasd".indexOfLast("") == -1 &&
-  "".indexOfLast("d") == -1)
+assertEq("wasd wasd".indexOfLast("wasd"), 5)
+assertEq("hello world".indexOfLast("hello"), 0)
+assertEq("hello world".indexOfLast("world"), 6)
+assertEq("hello world".indexOfLast("lo"), 3)
+assertEq("hello world".indexOfLast("el"), 1)
+assertEq("wasd wasd".indexOfLast(" "), 4)
+assertEq("wasd wasd".indexOfLast("d w"), 3)
+assertEq("wasd wasd".indexOfLast("wasdz"), -1)
+assertEq("wasd wasd".indexOfLast(""), -1)
+assertEq("".indexOfLast("d"), -1)
 
-assert(
-  "hello world".indexOf(equals{char}[' ']) == 5 &&
-  "hello world".indexOf(equals{char}['d']) == 10 &&
-  "hello world".indexOf(equals{char}['h']) == 0 &&
-  "hello world".indexOf(equals{char}['1']) == -1 &&
-  "".indexOf(equals{char}[' ']) == -1)
+assertEq("hello world".indexOf(equals{char}[' ']), 5)
+assertEq("hello world".indexOf(equals{char}['d']), 10)
+assertEq("hello world".indexOf(equals{char}['h']), 0)
+assertEq("hello world".indexOf(equals{char}['1']), -1)
+assertEq("".indexOf(equals{char}[' ']), -1)
 
-assert(
-  "hello world".startsWith("hello") &&
-  "hello world".startsWith("h") &&
-  "hello world".startsWith("hello world") &&
-  "hello world".startsWith("") &&
-  !"hello world".startsWith("world") &&
-  !"hello".startsWith("hello world") &&
-  !"hello".startsWith("ello") &&
-  !"".startsWith("h") &&
-  "".startsWith(""))
+assert("hello world".startsWith("hello"))
+assert("hello world".startsWith("h"))
+assert("hello world".startsWith("hello world"))
+assert("hello world".startsWith(""))
+assertNot("hello world".startsWith("world"))
+assertNot("hello".startsWith("hello world"))
+assertNot("hello".startsWith("ello"))
+assertNot("".startsWith("h"))
+assert("".startsWith(""))
 
-assert(
-  "hello world".endsWith("world") &&
-  "hello world".endsWith("d") &&
-  "hello world".endsWith("hello world") &&
-  "hello world".endsWith("") &&
-  !"hello world".endsWith("hello") &&
-  !"hello".endsWith("hello world") &&
-  !"hello".endsWith("hell") &&
-  !"".endsWith("h") &&
-  "".endsWith(""))
+assert("hello world".endsWith("world"))
+assert("hello world".endsWith("d"))
+assert("hello world".endsWith("hello world"))
+assert("hello world".endsWith(""))
+assertNot("hello world".endsWith("hello"))
+assertNot("hello".endsWith("hello world"))
+assertNot("hello".endsWith("hell"))
+assertNot("".endsWith("h"))
+assert("".endsWith(""))
 
-assert(
-  "hello world".any(equals{char}[' ']) &&
-  !"hello world".any(equals{char}['1']))
+assert("hello world".any(equals{char}[' ']))
+assertNot("hello world".any(equals{char}['1']))
 
-assert(
-  "hello".all(!equals{char}[' ']) &&
-  !"hello world".all(equals{char}[' ']))
+assert("hello".all(!equals{char}[' ']))
+assertNot("hello world".all(equals{char}[' ']))
 
-assert(
-  "hello world".none(equals{char}['1']) &&
-  !"hello world".none(equals{char}[' ']))
+assert("hello world".none(equals{char}['1']))
+assertNot("hello world".none(equals{char}[' ']))
 
-assert(
-  "".count(equals{char}[' ']) == 0 &&
-  " ".count(equals{char}[' ']) == 1 &&
-  " hello ".count(equals{char}[' ']) == 2 &&
-  "hello world".count(equals{char}[' ']) == 1 &&
-  "1234567890".count(isDigit) == 10)
+assertEq("".count(equals{char}[' ']), 0)
+assertEq(" ".count(equals{char}[' ']), 1)
+assertEq(" hello ".count(equals{char}[' ']), 2)
+assertEq("hello world".count(equals{char}[' ']), 1)
+assertEq("1234567890".count(isDigit), 10)
 
-assert(
-  "hello world".replace("hello", "world") == "world world" &&
-  "hello hello hello".replace(" ", "-") == "hello-hello-hello" &&
-  "hello hello hello".replace(" ", "") == "hellohellohello" &&
-  "hello hello hello".replace("l", "L") == "heLLo heLLo heLLo" &&
-  "hello hello hello".replace(" ", " world ") == "hello world hello world hello" &&
-  "hello".replace("world", "1337") == "hello" &&
-  "hellohellohello".replace("hello", "world") == "worldworldworld" &&
-  "hellohellohello".replace("hello", "") == "" &&
-  "lelelel".replace("e", "lele") == "llelellelellelel" &&
-  "".replace("", "") == "")
+assertEq("hello world".replace("hello", "world"), "world world")
+assertEq("hello hello hello".replace(" ", "-"), "hello-hello-hello")
+assertEq("hello hello hello".replace(" ", ""), "hellohellohello")
+assertEq("hello hello hello".replace("l", "L"), "heLLo heLLo heLLo")
+assertEq("hello hello hello".replace(" ", " world "), "hello world hello world hello")
+assertEq("hello".replace("world", "1337"), "hello")
+assertEq("hellohellohello".replace("hello", "world"), "worldworldworld")
+assertEq("hellohellohello".replace("hello", ""), "")
+assertEq("lelelel".replace("e", "lele"), "llelellelellelel")
+assertEq("".replace("", ""), "")
 
-assert(
-  "helloworld".insert("_", 0) == "_helloworld" &&
-  "helloworld".insert("_", "helloworld".length()) == "helloworld_" &&
-  "helloworld".insert("_", 1) == "h_elloworld" &&
-  "helloworld".insert("_", 5) == "hello_world")
+assertEq("helloworld".insert("_", 0), "_helloworld")
+assertEq("helloworld".insert("_", "helloworld".length()), "helloworld_")
+assertEq("helloworld".insert("_", 1), "h_elloworld")
+assertEq("helloworld".insert("_", 5), "hello_world")
 
-assert(
-  "".remove(0)            == "" &&
-  "h".remove(0)           == "" &&
-  "helloworld".remove(0)  == "elloworld" &&
-  "helloworld".remove(1)  == "hlloworld" &&
-  "helloworld".remove(2)  == "heloworld" &&
-  "helloworld".remove(8)  == "helloword" &&
-  "helloworld".remove(9)  == "helloworl" &&
-  "helloworld".remove(-1) == "helloworld" &&
-  "helloworld".remove(10) == "helloworld")
+assertEq("".remove(0), "")
+assertEq("h".remove(0), "")
+assertEq("helloworld".remove(0), "elloworld")
+assertEq("helloworld".remove(1), "hlloworld")
+assertEq("helloworld".remove(2), "heloworld")
+assertEq("helloworld".remove(8), "helloword")
+assertEq("helloworld".remove(9), "helloworl")
+assertEq("helloworld".remove(-1), "helloworld")
+assertEq("helloworld".remove(10), "helloworld")
 
-assert(
-  "".remove(0, 0)             == ""   &&
-  "".remove(0, 2)             == ""   &&
-  "h".remove(0, 0)            == "h"  &&
-  "h".remove(0, 2)            == ""   &&
-  "helloworld".remove(0, 2)   == "lloworld" &&
-  "helloworld".remove(1, 2)   == "hloworld" &&
-  "helloworld".remove(2, 2)   == "heoworld" &&
-  "helloworld".remove(8, 2)   == "hellowor" &&
-  "helloworld".remove(9, 2)   == "helloworl" &&
-  "helloworld".remove(0, 9)   == "d" &&
-  "helloworld".remove(0, 10)  == "" &&
-  "helloworld".remove(0, -1)  == "helloworld" &&
-  "helloworld".remove(2, -1)  == "helloworld")
+assertEq("".remove(0, 0), "")
+assertEq("".remove(0, 2), "")
+assertEq("h".remove(0, 0), "h")
+assertEq("h".remove(0, 2), "")
+assertEq("helloworld".remove(0, 2), "lloworld")
+assertEq("helloworld".remove(1, 2), "hloworld")
+assertEq("helloworld".remove(2, 2), "heoworld")
+assertEq("helloworld".remove(8, 2), "hellowor")
+assertEq("helloworld".remove(9, 2), "helloworl")
+assertEq("helloworld".remove(0, 9), "d")
+assertEq("helloworld".remove(0, 10), "")
+assertEq("helloworld".remove(0, -1), "helloworld")
+assertEq("helloworld".remove(2, -1), "helloworld")
 
-assert(
-  "1".padLeft(-1, '0') == "1" &&
-  "1".padLeft(0, '0') == "1" &&
-  "1".padLeft(1, '0') == "1" &&
-  "1".padLeft(2, '0') == "01" &&
-  "1".padLeft(3, '0') == "001")
+assertEq("1".padLeft(-1, '0'), "1")
+assertEq("1".padLeft(0, '0'), "1")
+assertEq("1".padLeft(1, '0'), "1")
+assertEq("1".padLeft(2, '0'), "01")
+assertEq("1".padLeft(3, '0'), "001")
 
-assert(
-  "hello".transform(lambda (char c) "W") == "WWWWW" &&
-  "".transform(lambda (char c) "W") == "")
+assertEq("hello".transform(lambda (char c) "W"), "WWWWW")
+assertEq("".transform(lambda (char c) "W"), "")
 
-assert(
-  "hello world".split(equals{char}[' ']) == "hello" :: "world" &&
-  "lineA\nlineB\nlineC".split(equals{char}['\n']) == "lineA" :: "lineB" :: "lineC" &&
-  "   hello   world   ".split(equals{char}[' ']) == "hello" :: "world" &&
-  "    ".split(equals{char}[' ']).isEmpty() &&
-  " h e l l o ".split(equals{char}[' ']) == "h" :: "e" :: "l" :: "l" :: "o" &&
-  "hello-world".split(equals{char}[' ']) == List("hello-world") &&
-  "".split(equals{char}[' ']) == List{string}())
+assertEq("hello world".split(equals{char}[' ']), "hello" :: "world")
+assertEq("lineA\nlineB\nlineC".split(equals{char}['\n']), "lineA" :: "lineB" :: "lineC")
+assertEq("   hello   world   ".split(equals{char}[' ']), "hello" :: "world")
+assert("    ".split(equals{char}[' ']).isEmpty())
+assertEq(" h e l l o ".split(equals{char}[' ']), "h" :: "e" :: "l" :: "l" :: "o")
+assertEq("hello-world".split(equals{char}[' ']), List("hello-world"))
+assertEq("".split(equals{char}[' ']), List{string}())
 
-assert(
-  "".trimStart()                 == ""          &&
-  " ".trimStart()                == ""          &&
-  " \t\n ".trimStart()           == ""          &&
-  "   hello".trimStart()         == "hello"     &&
-  "hello ".trimStart()           == "hello "    &&
-  "   h e llo".trimStart()       == "h e llo"   &&
-  " hello \t".trimStart()        == "hello \t"  &&
-  "1a2b3c45".trimStart(isDigit)  == "a2b3c45")
+assertEq("".trimStart(), "")
+assertEq(" ".trimStart(), "")
+assertEq(" \t\n ".trimStart(), "")
+assertEq("   hello".trimStart(), "hello")
+assertEq("hello ".trimStart(), "hello ")
+assertEq("   h e llo".trimStart(), "h e llo")
+assertEq(" hello \t".trimStart(), "hello \t")
+assertEq("1a2b3c45".trimStart(isDigit), "a2b3c45")
 
-assert(
-  "".trimEnd()                 == ""            &&
-  " ".trimEnd()                == ""            &&
-  " \t\n ".trimEnd()           == ""            &&
-  "   hello".trimEnd()         == "   hello"    &&
-  "hello ".trimEnd()           == "hello"       &&
-  "  h e llo \t".trimEnd()      == "  h e llo"  &&
-  "1a2b3c45".trimEnd(isDigit)  == "1a2b3c")
+assertEq("".trimEnd(), "")
+assertEq(" ".trimEnd(), "")
+assertEq(" \t\n ".trimEnd(), "")
+assertEq("   hello".trimEnd(), "   hello")
+assertEq("hello ".trimEnd(), "hello")
+assertEq("  h e llo \t".trimEnd(), "  h e llo")
+assertEq("1a2b3c45".trimEnd(isDigit), "1a2b3c")
 
-assert(
-  "".trim()                 == ""         &&
-  " ".trim()                == ""         &&
-  " \t\n ".trim()           == ""         &&
-  "   hello".trim()         == "hello"    &&
-  "hello ".trim()           == "hello"    &&
-  "   h e llo".trim()       == "h e llo"  &&
-  " hello \t".trim()        == "hello"    &&
-  "1a2b3c45".trim(isDigit)  == "a2b3c")
+assertEq("".trim(), "")
+assertEq(" ".trim(), "")
+assertEq(" \t\n ".trim(), "")
+assertEq("   hello".trim(), "hello")
+assertEq("hello ".trim(), "hello")
+assertEq("   h e llo".trim(), "h e llo")
+assertEq(" hello \t".trim(), "hello")
+assertEq("1a2b3c45".trim(isDigit), "a2b3c")
 
-assert(
-  "h".toChars() == List{char}('h') &&
-  "hello".toChars() == 'h' :: 'e' :: 'l' :: 'l' :: 'o' &&
-  "1337".toChars().join() == "1337" &&
-  "".toChars() == List{char}())
+assertEq("h".toChars(), List{char}('h'))
+assertEq("hello".toChars(), 'h' :: 'e' :: 'l' :: 'l' :: 'o')
+assertEq("1337".toChars().join(), "1337")
+assertEq("".toChars(), List{char}())
 
-assert(
-  join("hello" :: " " :: "world") == "hello world" &&
-  join('h' :: 'e' :: 'l' :: 'l' :: 'o') == "hello" &&
-  List{string}().join() == "" &&
-  List{char}().join() == "")
+assertEq(join("hello" :: " " :: "world"), "hello world")
+assertEq(join('h' :: 'e' :: 'l' :: 'l' :: 'o'), "hello")
+assertEq(List{string}().join(), "")
+assertEq(List{char}().join(), "")
 
-assert(
-  "".getTextPos()           == TextPos(0, 0) &&
-  "a".getTextPos()          == TextPos(0, 1) &&
-  "abc".getTextPos()        == TextPos(0, 3) &&
-  "abc\n".getTextPos()      == TextPos(1, 0) &&
-  "abc\ndef".getTextPos()   == TextPos(1, 3) &&
-  "abc\ndef\n".getTextPos() == TextPos(2, 0))
+assertEq("".getTextPos(), TextPos(0, 0))
+assertEq("a".getTextPos(), TextPos(0, 1))
+assertEq("abc".getTextPos(), TextPos(0, 3))
+assertEq("abc\n".getTextPos(), TextPos(1, 0))
+assertEq("abc\ndef".getTextPos(), TextPos(1, 3))
+assertEq("abc\ndef\n".getTextPos(), TextPos(2, 0))
