@@ -109,18 +109,18 @@ TEST_CASE("[opt] Precompute literals", "opt") {
     ASSERT_EXPR_FLOAT(precomputeLiterals, "-1.1", litFloatNode(prog, -1.1));
     ASSERT_EXPR_FLOAT(precomputeLiterals, "--1.1", litFloatNode(prog, 0.1));
     ASSERT_EXPR_FLOAT(precomputeLiterals, "++1.1", litFloatNode(prog, 2.1));
-    ASSERT_EXPR_FLOAT(precomputeLiterals, "1.1 == 1.2", litBoolNode(prog, false));
-    ASSERT_EXPR_FLOAT(precomputeLiterals, "1.1 != 1.2", litBoolNode(prog, true));
-    ASSERT_EXPR_FLOAT(precomputeLiterals, "1.1 < 1.2", litBoolNode(prog, true));
-    ASSERT_EXPR_FLOAT(precomputeLiterals, "1.1 <= 1.2", litBoolNode(prog, true));
-    ASSERT_EXPR_FLOAT(precomputeLiterals, "1.1 > 1.2", litBoolNode(prog, false));
-    ASSERT_EXPR_FLOAT(precomputeLiterals, "1.1 >= 1.2", litBoolNode(prog, false));
-    ASSERT_EXPR_FLOAT(precomputeLiterals, "int(1337.0)", litIntNode(prog, 1337));
-    ASSERT_EXPR_FLOAT(precomputeLiterals, "string(0.0 / 0.0)", litStringNode(prog, "nan"));
-    ASSERT_EXPR_FLOAT(precomputeLiterals, "string(42.1337)", litStringNode(prog, "42.1337"));
-    ASSERT_EXPR_FLOAT(precomputeLiterals, "string(-42.1337)", litStringNode(prog, "-42.1337"));
-    ASSERT_EXPR_FLOAT(precomputeLiterals, "char(230.0)", litCharNode(prog, 230));
-    ASSERT_EXPR_FLOAT(precomputeLiterals, "long(230.0)", litLongNode(prog, 230));
+    ASSERT_EXPR(precomputeLiterals, "1.1 == 1.2", litBoolNode(prog, false));
+    ASSERT_EXPR(precomputeLiterals, "1.1 != 1.2", litBoolNode(prog, true));
+    ASSERT_EXPR(precomputeLiterals, "1.1 < 1.2", litBoolNode(prog, true));
+    ASSERT_EXPR(precomputeLiterals, "1.1 <= 1.2", litBoolNode(prog, true));
+    ASSERT_EXPR(precomputeLiterals, "1.1 > 1.2", litBoolNode(prog, false));
+    ASSERT_EXPR(precomputeLiterals, "1.1 >= 1.2", litBoolNode(prog, false));
+    ASSERT_EXPR(precomputeLiterals, "int(1337.0)", litIntNode(prog, 1337));
+    ASSERT_EXPR(precomputeLiterals, "string(0.0 / 0.0)", litStringNode(prog, "nan"));
+    ASSERT_EXPR(precomputeLiterals, "string(42.1337)", litStringNode(prog, "42.1337"));
+    ASSERT_EXPR(precomputeLiterals, "string(-42.1337)", litStringNode(prog, "-42.1337"));
+    ASSERT_EXPR(precomputeLiterals, "char(230.0)", litCharNode(prog, 230));
+    ASSERT_EXPR(precomputeLiterals, "long(230.0)", litLongNode(prog, 230));
   }
 
   SECTION("long intrinsics") {
@@ -194,12 +194,6 @@ TEST_CASE("[opt] Precompute literals", "opt") {
     ASSERT_EXPR(precomputeLiterals, "\"hello\" == \"world\"", litBoolNode(prog, false));
     ASSERT_EXPR(precomputeLiterals, "\"hello\" == \"hello\"", litBoolNode(prog, true));
     ASSERT_EXPR(precomputeLiterals, "\"hello\" != \"world\"", litBoolNode(prog, true));
-  }
-
-  SECTION("identity conversions") {
-    ASSERT_EXPR(precomputeLiterals, "+42", litIntNode(prog, 42));
-    ASSERT_EXPR(precomputeLiterals, "+42.1", litFloatNode(prog, 42.1));
-    ASSERT_EXPR(precomputeLiterals, "+42L", litLongNode(prog, 42));
   }
 
   SECTION("reinterpret conversions") {

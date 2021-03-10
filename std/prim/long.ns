@@ -4,3 +4,7 @@
 fun long() 0L
 
 fun long(long l) l
+
+// -- Operators
+
+fun +(long l) l

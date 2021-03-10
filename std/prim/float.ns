@@ -4,3 +4,7 @@
 fun float() 0.0
 
 fun float(float f) f
+
+// -- Operators
+
+fun +(float f) f

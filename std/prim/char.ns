@@ -8,6 +8,8 @@ fun char(char c) c
 
 // -- Operators
 
+fun +(char c) c
+
 fun <<(char x, int y)
   char(int(x) << y)
 

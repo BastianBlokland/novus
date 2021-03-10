@@ -4,3 +4,7 @@
 fun int() 0
 
 fun int(int i) i
+
+// -- Operators
+
+fun +(int i) i
