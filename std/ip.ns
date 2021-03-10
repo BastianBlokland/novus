@@ -1,6 +1,7 @@
 import "std/assert.ns"
 import "std/error.ns"
 import "std/parser.ns"
+import "std/prim.ns"
 import "std/rt.ns"
 import "std/writer.ns"
 

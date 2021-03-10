@@ -200,13 +200,6 @@ Program::Program() :
       sym::TypeSet{m_string, m_int, m_int},
       m_string);
 
-  // Register build-in default constructors.
-  m_funcDecls.registerFunc(*this, Fk::DefInt, "int", sym::TypeSet{}, m_int);
-  m_funcDecls.registerFunc(*this, Fk::DefLong, "long", sym::TypeSet{}, m_long);
-  m_funcDecls.registerFunc(*this, Fk::DefFloat, "float", sym::TypeSet{}, m_float);
-  m_funcDecls.registerFunc(*this, Fk::DefBool, "bool", sym::TypeSet{}, m_bool);
-  m_funcDecls.registerFunc(*this, Fk::DefString, "string", sym::TypeSet{}, m_string);
-
   // Register build-in implicit conversions.
   m_funcDecls.registerImplicitConv(*this, Fk::NoOp, m_char, m_int);
   m_funcDecls.registerImplicitConv(*this, Fk::ConvIntLong, m_int, m_long);

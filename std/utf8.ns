@@ -1,6 +1,7 @@
 import "std/assert.ns"
-import "std/unicode.ns"
 import "std/parser.ns"
+import "std/prim.ns"
+import "std/unicode.ns"
 
 // Utilities for encoding / decoding utf8 from / to unicode codepoints.
 

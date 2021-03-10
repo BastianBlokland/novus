@@ -1,0 +1,6 @@
+import "std/prim/bool.ns"
+import "std/prim/char.ns"
+import "std/prim/int.ns"
+import "std/prim/float.ns"
+import "std/prim/long.ns"
+import "std/prim/string.ns"

@@ -1,5 +1,6 @@
 import "std/assert.ns"
 import "std/list.ns"
+import "std/prim.ns"
 import "std/text.ns"
 
 // -- Functions

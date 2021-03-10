@@ -2,6 +2,7 @@ import "std/assert.ns"
 import "std/either.ns"
 import "std/option.ns"
 import "std/pair.ns"
+import "std/prim.ns"
 
 // -- Types
 

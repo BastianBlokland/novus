@@ -1,4 +1,5 @@
 import "std/assert.ns"
+import "std/prim.ns"
 
 // -- Operators
 

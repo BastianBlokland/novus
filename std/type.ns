@@ -1,5 +1,5 @@
 import "std/assert.ns"
-import "std/char.ns"
+import "std/prim.ns"
 
 // -- Type tag
 

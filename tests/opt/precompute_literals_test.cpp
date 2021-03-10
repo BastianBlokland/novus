@@ -93,7 +93,6 @@ TEST_CASE("[opt] Precompute literals", "opt") {
     ASSERT_EXPR(precomputeLiterals, "string(1337)", litStringNode(prog, "1337"));
     ASSERT_EXPR(precomputeLiterals, "char(137)", litCharNode(prog, 137)); // NOLINT: Magic numbers
     ASSERT_EXPR(precomputeLiterals, "char(1337)", litCharNode(prog, 57)); // NOLINT: Magic numbers
-    ASSERT_EXPR(precomputeLiterals, "int()", litIntNode(prog, 0));
   }
 
   SECTION("float intrinsics") {
@@ -153,7 +152,6 @@ TEST_CASE("[opt] Precompute literals", "opt") {
     ASSERT_EXPR(precomputeLiterals, "string(-42.1337)", litStringNode(prog, "-42.1337"));
     ASSERT_EXPR(precomputeLiterals, "char(230.0)", litCharNode(prog, 230)); // NOLINT: Magic numbers
     ASSERT_EXPR(precomputeLiterals, "long(230.0)", litLongNode(prog, 230)); // NOLINT: Magic numbers
-    ASSERT_EXPR(precomputeLiterals, "float()", litFloatNode(prog, 0.0));
   }
 
   SECTION("long intrinsics") {
@@ -194,14 +192,12 @@ TEST_CASE("[opt] Precompute literals", "opt") {
     ASSERT_EXPR(precomputeLiterals, "int(137L)", litIntNode(prog, 137)); // NOLINT: Magic numbers
     ASSERT_EXPR(precomputeLiterals, "string(1337L)", litStringNode(prog, "1337"));
     ASSERT_EXPR(precomputeLiterals, "char(137L)", litCharNode(prog, 137)); // NOLINT: Magic numbers
-    ASSERT_EXPR(precomputeLiterals, "long()", litLongNode(prog, 0));
   }
 
   SECTION("bool intrinsics") {
     ASSERT_EXPR(precomputeLiterals, "!false", litBoolNode(prog, true));
     ASSERT_EXPR(precomputeLiterals, "false == true", litBoolNode(prog, false));
     ASSERT_EXPR(precomputeLiterals, "false != true", litBoolNode(prog, true));
-    ASSERT_EXPR(precomputeLiterals, "bool()", litBoolNode(prog, false));
     ASSERT_EXPR(precomputeLiterals, "string(true)", litStringNode(prog, "true"));
     ASSERT_EXPR(precomputeLiterals, "string(false)", litStringNode(prog, "false"));
   }
@@ -233,7 +229,6 @@ TEST_CASE("[opt] Precompute literals", "opt") {
     ASSERT_EXPR(precomputeLiterals, "\"hello\" == \"world\"", litBoolNode(prog, false));
     ASSERT_EXPR(precomputeLiterals, "\"hello\" == \"hello\"", litBoolNode(prog, true));
     ASSERT_EXPR(precomputeLiterals, "\"hello\" != \"world\"", litBoolNode(prog, true));
-    ASSERT_EXPR(precomputeLiterals, "string()", litStringNode(prog, ""));
   }
 
   SECTION("identity conversions") {

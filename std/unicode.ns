@@ -1,5 +1,6 @@
 import "std/assert.ns"
 import "std/bits.ns"
+import "std/prim.ns"
 
 // Utlities for interacting with unicode text encoding.
 

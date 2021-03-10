@@ -1,6 +1,7 @@
 import "std/assert.ns"
 import "std/func.ns"
 import "std/lazy.ns"
+import "std/prim.ns"
 
 // -- Types
 

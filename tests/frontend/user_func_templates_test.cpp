@@ -153,7 +153,8 @@ TEST_CASE("[frontend] Analyzing user-function templates", "frontend") {
   }
 
   SECTION("Infer type-parameter in templated call") {
-    const auto& output = ANALYZE("struct Null "
+    const auto& output = ANALYZE("fun int() 0 "
+                                 "struct Null "
                                  "union Option{T} = T, Null "
                                  "fun ft{T}(Option{T} a, Option{T} b) "
                                  "  if a as T aVal && b as T bVal -> aVal + bVal "
@@ -252,7 +253,8 @@ TEST_CASE("[frontend] Analyzing user-function templates", "frontend") {
   }
 
   SECTION("Call conversion function through type substitution") {
-    const auto& output = ANALYZE("struct Test{T} = T val "
+    const auto& output = ANALYZE("fun int() 0 "
+                                 "struct Test{T} = T val "
                                  "fun Test{T}() Test(T()) "
                                  "fun factory{T}() T() "
                                  "fun f1() factory{Test{int}}()");

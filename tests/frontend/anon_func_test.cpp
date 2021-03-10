@@ -178,7 +178,9 @@ TEST_CASE("[frontend] Analyzing anonymous functions", "frontend") {
   }
 
   SECTION("Return templated anonymous function") {
-    const auto& output = ANALYZE("fun f1{T}() -> function{T} "
+    const auto& output = ANALYZE("fun int() 0 "
+                                 "fun float() 0.0 "
+                                 "fun f1{T}() -> function{T} "
                                  "  lambda () T() "
                                  "fun f2() f1{int}() "
                                  "fun f3() f1{float}() ");

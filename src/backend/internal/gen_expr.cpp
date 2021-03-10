@@ -415,22 +415,6 @@ auto GenExpr::visit(const prog::expr::CallExprNode& n) -> void {
     m_asmb->addConvFloatLong();
     break;
 
-  case prog::sym::FuncKind::DefInt:
-    m_asmb->addLoadLitInt(0);
-    break;
-  case prog::sym::FuncKind::DefLong:
-    m_asmb->addLoadLitLong(0);
-    break;
-  case prog::sym::FuncKind::DefFloat:
-    m_asmb->addLoadLitFloat(.0);
-    break;
-  case prog::sym::FuncKind::DefBool:
-    m_asmb->addLoadLitInt(0);
-    break;
-  case prog::sym::FuncKind::DefString:
-    m_asmb->addLoadLitString("");
-    break;
-
   case prog::sym::FuncKind::MakeStruct: {
     auto fieldCount = n.getChildCount();
     if (fieldCount == 0U) {

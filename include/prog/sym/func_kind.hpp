@@ -104,12 +104,6 @@ enum class FuncKind {
   ConvFloatChar,   // Convert a float to a character.
   ConvFloatLong,   // Convert a float to long.
 
-  DefInt,    // Return the default value for a integer.
-  DefLong,   // Return the default value for a long.
-  DefFloat,  // Return the default value for a float.
-  DefBool,   // Return the default value for a boolean.
-  DefString, // Return the default value for a string.
-
   MakeStruct, // Create a new structure.
   MakeUnion,  // Create a new union.
 

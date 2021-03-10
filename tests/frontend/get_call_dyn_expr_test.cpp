@@ -66,7 +66,8 @@ TEST_CASE("[frontend] Analyzing call dynamic expressions", "frontend") {
   }
 
   SECTION("Get delegate call with templated function") {
-    const auto& output = ANALYZE("fun f1{T}() -> T T() "
+    const auto& output = ANALYZE("fun int() 0 "
+                                 "fun f1{T}() -> T T() "
                                  "fun f2(function{int} op) -> int op() "
                                  "fun f() -> int f2(f1{int})");
     REQUIRE(output.isSuccess());
@@ -228,6 +229,7 @@ TEST_CASE("[frontend] Analyzing call dynamic expressions", "frontend") {
         errAmbiguousFunction(NO_SRC, "f1"),
         errUndeclaredPureFunc(NO_SRC, "op", {}));
     CHECK_DIAG(
+        "fun int() 0 "
         "fun f1{T}(int v) -> T T() "
         "fun f1{T}(float v) -> T T() "
         "fun f2() -> int op = f1{int}; op(1)",

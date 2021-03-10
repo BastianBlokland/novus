@@ -1,6 +1,7 @@
 import "std/assert.ns"
 import "std/list.ns"
 import "std/parser.ns"
+import "std/prim.ns"
 import "std/writer.ns"
 
 // Utilities for sem-ver versions.

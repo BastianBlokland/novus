@@ -2,6 +2,7 @@ import "std/assert.ns"
 import "std/either.ns"
 import "std/list.ns"
 import "std/option.ns"
+import "std/prim.ns"
 import "std/writer.ns"
 
 // -- Types

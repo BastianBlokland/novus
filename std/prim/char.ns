@@ -1,5 +1,9 @@
 import "std/assert.ns"
 
+// -- Constructors
+
+fun char() '\0'
+
 // -- Operators
 
 fun <<(char x, int y)

@@ -518,14 +518,6 @@ TEST_CASE("[backend] Generate assembly for call expressions", "backend") {
     });
   }
 
-  SECTION("Default constructors") {
-    CHECK_EXPR("int()", [](novasm::Assembler* asmb) -> void { asmb->addLoadLitInt(0); });
-    CHECK_EXPR("long()", [](novasm::Assembler* asmb) -> void { asmb->addLoadLitLong(0); });
-    CHECK_EXPR("float()", [](novasm::Assembler* asmb) -> void { asmb->addLoadLitFloat(.0); });
-    CHECK_EXPR("bool()", [](novasm::Assembler* asmb) -> void { asmb->addLoadLitInt(0); });
-    CHECK_EXPR("string()", [](novasm::Assembler* asmb) -> void { asmb->addLoadLitString(""); });
-  }
-
   SECTION("User functions") {
     CHECK_PROG(
         "fun funcA(int a, int b) -> bool a == b "

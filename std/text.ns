@@ -1,7 +1,8 @@
-import "std/assert.ns"
 import "std/ascii.ns"
+import "std/assert.ns"
 import "std/func.ns"
 import "std/list.ns"
+import "std/prim.ns"
 
 // -- Types
 
