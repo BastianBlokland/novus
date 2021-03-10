@@ -91,7 +91,6 @@ enum class FuncKind {
   ConvIntString,   // Convert a integer to a string.
   ConvLongString,  // Convert a long to a string.
   ConvFloatString, // Convert a float to a string.
-  ConvBoolString,  // Convert a boolean to a string.
   ConvCharString,  // Convert a character to a string.
   ConvIntChar,     // Convert a integer to a character.
   ConvLongChar,    // Convert a long to a character.

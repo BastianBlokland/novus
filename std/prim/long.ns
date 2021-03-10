@@ -5,6 +5,9 @@ fun long() 0L
 
 fun long(long l) l
 
+fun long(float f)
+  intrinsic{float_to_long}(f)
+
 // -- Operators
 
 fun +(long l) l

@@ -191,21 +191,27 @@ Program::Program() :
   m_funcDecls.registerImplicitConv(*this, Fk::ConvCharLong, m_char, m_long);
   m_funcDecls.registerImplicitConv(*this, Fk::ConvIntFloat, m_int, m_float);
 
-  // Register build-in explicit conversions.
-  m_funcDecls.registerFunc(*this, Fk::ConvFloatInt, "int", sym::TypeSet{m_float}, m_int);
-  m_funcDecls.registerFunc(*this, Fk::ConvLongInt, "int", sym::TypeSet{m_long}, m_int);
-  m_funcDecls.registerFunc(*this, Fk::ConvIntChar, "char", sym::TypeSet{m_int}, m_char);
-  m_funcDecls.registerFunc(*this, Fk::ConvLongChar, "char", sym::TypeSet{m_long}, m_char);
-  m_funcDecls.registerFunc(*this, Fk::ConvFloatChar, "char", sym::TypeSet{m_float}, m_char);
-  m_funcDecls.registerFunc(*this, Fk::ConvFloatLong, "long", sym::TypeSet{m_float}, m_long);
-  m_funcDecls.registerFunc(*this, Fk::ConvLongFloat, "float", sym::TypeSet{m_long}, m_float);
-  m_funcDecls.registerFunc(*this, Fk::ConvIntString, "string", sym::TypeSet{m_int}, m_string);
-  m_funcDecls.registerFunc(*this, Fk::ConvLongString, "string", sym::TypeSet{m_long}, m_string);
-  m_funcDecls.registerFunc(*this, Fk::ConvFloatString, "string", sym::TypeSet{m_float}, m_string);
-  m_funcDecls.registerFunc(*this, Fk::ConvBoolString, "string", sym::TypeSet{m_bool}, m_string);
-  m_funcDecls.registerFunc(*this, Fk::ConvCharString, "string", sym::TypeSet{m_char}, m_string);
-
-  // Register aliasing convertion intrinsics.
+  // Register conversion intrinsics.
+  m_funcDecls.registerIntrinsic(
+      *this, Fk::ConvFloatInt, "float_to_int", sym::TypeSet{m_float}, m_int);
+  m_funcDecls.registerIntrinsic(*this, Fk::ConvLongInt, "long_to_int", sym::TypeSet{m_long}, m_int);
+  m_funcDecls.registerIntrinsic(*this, Fk::ConvIntChar, "int_to_char", sym::TypeSet{m_int}, m_char);
+  m_funcDecls.registerIntrinsic(
+      *this, Fk::ConvLongChar, "long_to_char", sym::TypeSet{m_long}, m_char);
+  m_funcDecls.registerIntrinsic(
+      *this, Fk::ConvFloatChar, "float_to_char", sym::TypeSet{m_float}, m_char);
+  m_funcDecls.registerIntrinsic(
+      *this, Fk::ConvFloatLong, "float_to_long", sym::TypeSet{m_float}, m_long);
+  m_funcDecls.registerIntrinsic(
+      *this, Fk::ConvLongFloat, "long_to_float", sym::TypeSet{m_long}, m_float);
+  m_funcDecls.registerIntrinsic(
+      *this, Fk::ConvIntString, "int_to_string", sym::TypeSet{m_int}, m_string);
+  m_funcDecls.registerIntrinsic(
+      *this, Fk::ConvLongString, "long_to_string", sym::TypeSet{m_long}, m_string);
+  m_funcDecls.registerIntrinsic(
+      *this, Fk::ConvFloatString, "float_to_string", sym::TypeSet{m_float}, m_string);
+  m_funcDecls.registerIntrinsic(
+      *this, Fk::ConvCharString, "char_to_string", sym::TypeSet{m_char}, m_string);
   m_funcDecls.registerIntrinsic(*this, Fk::NoOp, "int_as_float", sym::TypeSet{m_int}, m_float);
   m_funcDecls.registerIntrinsic(*this, Fk::NoOp, "float_as_int", sym::TypeSet{m_float}, m_int);
 

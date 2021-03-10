@@ -6,6 +6,15 @@ fun char() '\0'
 
 fun char(char c) c
 
+fun char(int i)
+  intrinsic{int_to_char}(i)
+
+fun char(long l)
+  intrinsic{long_to_char}(l)
+
+fun char(float f)
+  intrinsic{float_to_char}(f)
+
 // -- Operators
 
 fun +(char c) c

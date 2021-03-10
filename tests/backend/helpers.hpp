@@ -51,6 +51,15 @@ inline auto buildExecutable(const std::function<void(novasm::Assembler*)>& build
 #define CHECK_EXPR_INT(INPUT, BUILD_EXPECTED_ASM)                                                  \
   CHECK_ASM("act test() -> int " + std::string(INPUT), buildExecutableExpr(BUILD_EXPECTED_ASM))
 
+#define CHECK_EXPR_LONG(INPUT, BUILD_EXPECTED_ASM)                                                 \
+  CHECK_ASM("act test() -> long " + std::string(INPUT), buildExecutableExpr(BUILD_EXPECTED_ASM))
+
+#define CHECK_EXPR_CHAR(INPUT, BUILD_EXPECTED_ASM)                                                 \
+  CHECK_ASM("act test() -> char " + std::string(INPUT), buildExecutableExpr(BUILD_EXPECTED_ASM))
+
+#define CHECK_EXPR_STRING(INPUT, BUILD_EXPECTED_ASM)                                               \
+  CHECK_ASM("act test() -> string " + std::string(INPUT), buildExecutableExpr(BUILD_EXPECTED_ASM))
+
 #define CHECK_PROG(INPUT, BUILD_EXPECTED_ASM) CHECK_ASM(INPUT, buildExecutable(BUILD_EXPECTED_ASM))
 
 } // namespace backend

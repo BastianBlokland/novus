@@ -218,21 +218,6 @@ auto Assembler::addConvLongString() -> void { writeOpCode(OpCode::ConvLongString
 
 auto Assembler::addConvFloatString() -> void { writeOpCode(OpCode::ConvFloatString); }
 
-auto Assembler::addConvBoolString() -> void {
-  // Implemented on the backend to keep the vm simpler.
-  const auto endLabel  = generateLabel("bool-to-string-end");
-  const auto trueLabel = generateLabel("bool-to-string-true");
-  addJumpIf(trueLabel);
-
-  addLoadLitString("false");
-  addJump(endLabel);
-
-  label(trueLabel);
-  addLoadLitString("true");
-
-  label(endLabel);
-}
-
 auto Assembler::addConvCharString() -> void { writeOpCode(OpCode::ConvCharString); }
 
 auto Assembler::addConvIntChar() -> void { writeOpCode(OpCode::ConvIntChar); }

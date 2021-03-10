@@ -69,7 +69,9 @@ TEST_CASE("[frontend] Analyzing user-function templates", "frontend") {
   }
 
   SECTION("Return type as parameter") {
-    const auto& output = ANALYZE("fun ft{T}(int a) -> T T(a) "
+    const auto& output = ANALYZE("fun string(int i) intrinsic{int_to_string}(i) "
+                                 "fun int(int i) i "
+                                 "fun ft{T}(int a) -> T T(a) "
                                  "fun f1() -> int ft{int}(1) "
                                  "fun f2() -> float ft{float}(1) "
                                  "fun f3() -> string ft{string}(1)");

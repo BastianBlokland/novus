@@ -4,3 +4,18 @@
 fun string() ""
 
 fun string(string s) s
+
+fun string(int i)
+  intrinsic{int_to_string}(i)
+
+fun string(long l)
+  intrinsic{long_to_string}(l)
+
+fun string(float f)
+  intrinsic{float_to_string}(f)
+
+fun string(char c)
+  intrinsic{char_to_string}(c)
+
+fun string(bool b)
+  b ? "true" : "false"

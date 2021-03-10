@@ -97,7 +97,6 @@ auto isPrecomputableIntrinsic(prog::sym::FuncKind funcKind) -> bool {
   case prog::sym::FuncKind::InvBool:
   case prog::sym::FuncKind::CheckEqBool:
   case prog::sym::FuncKind::CheckNEqBool:
-  case prog::sym::FuncKind::ConvBoolString:
 
   // Char
   case prog::sym::FuncKind::ConvCharString:
@@ -456,10 +455,6 @@ auto isPrecomputableIntrinsic(prog::sym::FuncKind funcKind) -> bool {
   case prog::sym::FuncKind::CheckNEqBool: {
     assert(args.size() == 2);
     return prog::expr::litBoolNode(prog, getBool(*args[0]) != getBool(*args[1]));
-  }
-  case prog::sym::FuncKind::ConvBoolString: {
-    assert(args.size() == 1);
-    return prog::expr::litStringNode(prog, getBool(*args[0]) ? "true" : "false");
   }
 
   // Char

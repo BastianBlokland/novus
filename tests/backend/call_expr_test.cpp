@@ -425,59 +425,55 @@ TEST_CASE("[backend] Generate assembly for call expressions", "backend") {
   }
 
   SECTION("Conversions") {
-    CHECK_EXPR("float(42)", [](novasm::Assembler* asmb) -> void {
+    CHECK_EXPR_FLOAT("float(42)", [](novasm::Assembler* asmb) -> void {
       asmb->addLoadLitInt(42);
       asmb->addConvIntFloat();
     });
-    CHECK_EXPR("int(42.1337)", [](novasm::Assembler* asmb) -> void {
+    CHECK_EXPR_INT("intrinsic{float_to_int}(42.1337)", [](novasm::Assembler* asmb) -> void {
       asmb->addLoadLitFloat(42.1337F);
       asmb->addConvFloatInt();
     });
-    CHECK_EXPR("int(42L)", [](novasm::Assembler* asmb) -> void {
+    CHECK_EXPR_INT("intrinsic{long_to_int}(42L)", [](novasm::Assembler* asmb) -> void {
       asmb->addLoadLitLong(42);
       asmb->addConvLongInt();
     });
-    CHECK_EXPR("long(42)", [](novasm::Assembler* asmb) -> void {
+    CHECK_EXPR_LONG("long(42)", [](novasm::Assembler* asmb) -> void {
       asmb->addLoadLitInt(42);
       asmb->addConvIntLong();
     });
-    CHECK_EXPR("long('a')", [](novasm::Assembler* asmb) -> void {
+    CHECK_EXPR_LONG("long('a')", [](novasm::Assembler* asmb) -> void {
       asmb->addLoadLitInt('a');
       asmb->addConvIntLong();
     });
-    CHECK_EXPR("string(42)", [](novasm::Assembler* asmb) -> void {
+    CHECK_EXPR_STRING("intrinsic{int_to_string}(42)", [](novasm::Assembler* asmb) -> void {
       asmb->addLoadLitInt(42);
       asmb->addConvIntString();
     });
-    CHECK_EXPR("string(42L)", [](novasm::Assembler* asmb) -> void {
+    CHECK_EXPR_STRING("intrinsic{long_to_string}(42L)", [](novasm::Assembler* asmb) -> void {
       asmb->addLoadLitLong(42);
       asmb->addConvLongString();
     });
-    CHECK_EXPR("string(.1337)", [](novasm::Assembler* asmb) -> void {
+    CHECK_EXPR_STRING("intrinsic{float_to_string}(.1337)", [](novasm::Assembler* asmb) -> void {
       asmb->addLoadLitFloat(0.1337F);
       asmb->addConvFloatString();
     });
-    CHECK_EXPR("string(true)", [](novasm::Assembler* asmb) -> void {
-      asmb->addLoadLitInt(1);
-      asmb->addConvBoolString();
-    });
-    CHECK_EXPR("string('a')", [](novasm::Assembler* asmb) -> void {
+    CHECK_EXPR_STRING("intrinsic{char_to_string}('a')", [](novasm::Assembler* asmb) -> void {
       asmb->addLoadLitInt('a');
       asmb->addConvCharString();
     });
-    CHECK_EXPR("char(42)", [](novasm::Assembler* asmb) -> void {
+    CHECK_EXPR_CHAR("intrinsic{int_to_char}(42)", [](novasm::Assembler* asmb) -> void {
       asmb->addLoadLitInt(42);
       asmb->addConvIntChar();
     });
-    CHECK_EXPR("char(42L)", [](novasm::Assembler* asmb) -> void {
+    CHECK_EXPR_CHAR("intrinsic{long_to_char}(42L)", [](novasm::Assembler* asmb) -> void {
       asmb->addLoadLitLong(42);
       asmb->addConvLongChar();
     });
-    CHECK_EXPR("char(42.42)", [](novasm::Assembler* asmb) -> void {
+    CHECK_EXPR_CHAR("intrinsic{float_to_char}(42.42)", [](novasm::Assembler* asmb) -> void {
       asmb->addLoadLitFloat(42.42F);
       asmb->addConvFloatChar();
     });
-    CHECK_EXPR("long(42.42)", [](novasm::Assembler* asmb) -> void {
+    CHECK_EXPR_LONG("intrinsic{float_to_long}(42.42)", [](novasm::Assembler* asmb) -> void {
       asmb->addLoadLitFloat(42.42F);
       asmb->addConvFloatLong();
     });

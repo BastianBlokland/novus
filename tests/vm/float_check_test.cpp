@@ -11,7 +11,7 @@ TEST_CASE("[vm] Execute float checks", "vm") {
           asmb->addLoadLitFloat(0.1337F);  // NOLINT: Magic numbers
           asmb->addLoadLitFloat(-0.1337F); // NOLINT: Magic numbers
           asmb->addCheckEqFloat();
-          asmb->addConvBoolString();
+          ADD_BOOL_TO_STRING(asmb);
           ADD_PRINT(asmb);
         },
         "input",
@@ -21,7 +21,7 @@ TEST_CASE("[vm] Execute float checks", "vm") {
           asmb->addLoadLitFloat(0.1337F); // NOLINT: Magic numbers
           asmb->addLoadLitFloat(0.1337F); // NOLINT: Magic numbers
           asmb->addCheckEqFloat();
-          asmb->addConvBoolString();
+          ADD_BOOL_TO_STRING(asmb);
           ADD_PRINT(asmb);
         },
         "input",
@@ -34,7 +34,7 @@ TEST_CASE("[vm] Execute float checks", "vm") {
           asmb->addLoadLitFloat(-0.1337F); // NOLINT: Magic numbers
           asmb->addLoadLitFloat(0.1337F);  // NOLINT: Magic numbers
           asmb->addCheckGtFloat();
-          asmb->addConvBoolString();
+          ADD_BOOL_TO_STRING(asmb);
           ADD_PRINT(asmb);
         },
         "input",
@@ -44,7 +44,7 @@ TEST_CASE("[vm] Execute float checks", "vm") {
           asmb->addLoadLitFloat(0.2337F); // NOLINT: Magic numbers
           asmb->addLoadLitFloat(0.1337F); // NOLINT: Magic numbers
           asmb->addCheckGtFloat();
-          asmb->addConvBoolString();
+          ADD_BOOL_TO_STRING(asmb);
           ADD_PRINT(asmb);
         },
         "input",
@@ -57,7 +57,7 @@ TEST_CASE("[vm] Execute float checks", "vm") {
           asmb->addLoadLitFloat(0.2337F); // NOLINT: Magic numbers
           asmb->addLoadLitFloat(0.1337F); // NOLINT: Magic numbers
           asmb->addCheckLeFloat();
-          asmb->addConvBoolString();
+          ADD_BOOL_TO_STRING(asmb);
           ADD_PRINT(asmb);
         },
         "input",
@@ -67,7 +67,7 @@ TEST_CASE("[vm] Execute float checks", "vm") {
           asmb->addLoadLitFloat(0.1337F); // NOLINT: Magic numbers
           asmb->addLoadLitFloat(0.2337F); // NOLINT: Magic numbers
           asmb->addCheckLeFloat();
-          asmb->addConvBoolString();
+          ADD_BOOL_TO_STRING(asmb);
           ADD_PRINT(asmb);
         },
         "input",

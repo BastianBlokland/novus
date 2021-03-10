@@ -372,9 +372,6 @@ auto GenExpr::visit(const prog::expr::CallExprNode& n) -> void {
   case prog::sym::FuncKind::ConvFloatString:
     m_asmb->addConvFloatString();
     break;
-  case prog::sym::FuncKind::ConvBoolString:
-    m_asmb->addConvBoolString();
-    break;
   case prog::sym::FuncKind::ConvCharString:
     m_asmb->addConvCharString();
     break;

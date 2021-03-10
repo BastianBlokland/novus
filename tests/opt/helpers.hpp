@@ -57,8 +57,23 @@ inline auto buildSource(std::string input) {
     CHECK(GET_FUNC_DEF(prog, "test").getBody() == *(EXPECTED_EXPR));                               \
   }
 
+#define ASSERT_EXPR_BOOL(OPT, INPUT, EXPECTED_EXPR)                                                \
+  ASSERT_EXPR_TYPED(OPT, "bool", INPUT, EXPECTED_EXPR)
+
+#define ASSERT_EXPR_INT(OPT, INPUT, EXPECTED_EXPR)                                                 \
+  ASSERT_EXPR_TYPED(OPT, "int", INPUT, EXPECTED_EXPR)
+
+#define ASSERT_EXPR_CHAR(OPT, INPUT, EXPECTED_EXPR)                                                \
+  ASSERT_EXPR_TYPED(OPT, "char", INPUT, EXPECTED_EXPR)
+
 #define ASSERT_EXPR_FLOAT(OPT, INPUT, EXPECTED_EXPR)                                               \
   ASSERT_EXPR_TYPED(OPT, "float", INPUT, EXPECTED_EXPR)
+
+#define ASSERT_EXPR_LONG(OPT, INPUT, EXPECTED_EXPR)                                                \
+  ASSERT_EXPR_TYPED(OPT, "long", INPUT, EXPECTED_EXPR)
+
+#define ASSERT_EXPR_STRING(OPT, INPUT, EXPECTED_EXPR)                                              \
+  ASSERT_EXPR_TYPED(OPT, "string", INPUT, EXPECTED_EXPR)
 
 inline auto
 getIntBinaryOpExpr(const prog::Program& prog, prog::Operator op, int32_t lhs, int32_t rhs)
