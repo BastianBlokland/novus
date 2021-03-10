@@ -206,7 +206,8 @@ TEST_CASE("[frontend] Analyzing user-function templates", "frontend") {
   }
 
   SECTION("Overloaded func templates prefer less type-parameters") {
-    const auto& output = ANALYZE("union Choice{T1, T2} = T1, T2 "
+    const auto& output = ANALYZE("fun bool(bool b) b "
+                                 "union Choice{T1, T2} = T1, T2 "
                                  "fun ft{T1, T2}(T1 a, T2 b) -> Choice{T1, T2} "
                                  "  bool(a) ? a : b "
                                  "fun ft{T}(T a, T b) -> T "

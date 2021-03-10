@@ -49,6 +49,17 @@ inline auto buildSource(std::string input) {
     CHECK(GET_FUNC_DEF(prog, "test").getBody() == *(EXPECTED_EXPR));                               \
   }
 
+#define ASSERT_EXPR_TYPED(OPT, TYPE, INPUT, EXPECTED_EXPR)                                         \
+  {                                                                                                \
+    const auto& output = ANALYZE("act test() -> " TYPE " " INPUT);                                 \
+    REQUIRE(output.isSuccess());                                                                   \
+    const auto prog = OPT(output.getProg());                                                       \
+    CHECK(GET_FUNC_DEF(prog, "test").getBody() == *(EXPECTED_EXPR));                               \
+  }
+
+#define ASSERT_EXPR_FLOAT(OPT, INPUT, EXPECTED_EXPR)                                               \
+  ASSERT_EXPR_TYPED(OPT, "float", INPUT, EXPECTED_EXPR)
+
 inline auto
 getIntBinaryOpExpr(const prog::Program& prog, prog::Operator op, int32_t lhs, int32_t rhs)
     -> prog::expr::NodePtr {

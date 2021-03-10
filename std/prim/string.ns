@@ -2,3 +2,5 @@
 // -- Constructors
 
 fun string() ""
+
+fun string(string s) s

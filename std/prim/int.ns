@@ -2,3 +2,5 @@
 // -- Constructors
 
 fun int() 0
+
+fun int(int i) i

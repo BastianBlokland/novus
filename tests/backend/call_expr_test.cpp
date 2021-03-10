@@ -547,19 +547,6 @@ TEST_CASE("[backend] Generate assembly for call expressions", "backend") {
           asmb->setEntrypoint("prog");
         });
   }
-
-  SECTION("Identity conversions") {
-    CHECK_EXPR("int(42)", [](novasm::Assembler* asmb) -> void { asmb->addLoadLitInt(42); });
-    CHECK_EXPR("long(42L)", [](novasm::Assembler* asmb) -> void { asmb->addLoadLitLong(42); });
-    CHECK_EXPR("float(42.1337)", [](novasm::Assembler* asmb) -> void {
-      asmb->addLoadLitFloat(42.1337F); // NOLINT: Magic numbers
-    });
-    CHECK_EXPR("bool(false)", [](novasm::Assembler* asmb) -> void { asmb->addLoadLitInt(0); });
-    CHECK_EXPR("string(\"hello world\")", [](novasm::Assembler* asmb) -> void {
-      asmb->addLoadLitString("hello world");
-    });
-    CHECK_EXPR("char('a')", [](novasm::Assembler* asmb) -> void { asmb->addLoadLitInt('a'); });
-  }
 }
 
 } // namespace backend

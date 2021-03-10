@@ -4,6 +4,8 @@ import "std/assert.ns"
 
 fun char() '\0'
 
+fun char(char c) c
+
 // -- Operators
 
 fun <<(char x, int y)

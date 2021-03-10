@@ -2,3 +2,5 @@
 // -- Constructors
 
 fun long() 0L
+
+fun long(long l) l
