@@ -191,11 +191,6 @@ TEST_CASE("[opt] Precompute literals", "opt") {
   }
 
   SECTION("reinterpret conversions") {
-    ASSERT_EXPR(precomputeLiterals, "int('a')", litIntNode(prog, 'a'));
-    ASSERT_EXPR(precomputeLiterals, "asFloat(0xFFA0_0000)", litFloatNode(prog, std::nanf("")));
-    ASSERT_EXPR(precomputeLiterals, "asInt(0.0)", litIntNode(prog, 0));
-    ASSERT_EXPR(precomputeLiterals, "asInt(asFloat(42))", litIntNode(prog, 42));
-
     {
       const auto& output = ANALYZE("enum e = a : 42 "
                                    "fun f() int(e.a)");

@@ -5,6 +5,11 @@ fun float() 0.0
 
 fun float(float f) f
 
+// -- Conversions
+
+fun asInt(float f) -> int
+  intrinsic{float_as_int}(f)
+
 // -- Operators
 
 fun +(float f) f

@@ -1,9 +1,15 @@
+import "std/assert.ns"
 
 // -- Constructors
 
 fun int() 0
 
 fun int(int i) i
+
+// -- Conversions
+
+fun asFloat(int i) -> float
+  intrinsic{int_as_float}(i)
 
 // -- Operators
 

@@ -204,8 +204,10 @@ Program::Program() :
   m_funcDecls.registerFunc(*this, Fk::ConvFloatString, "string", sym::TypeSet{m_float}, m_string);
   m_funcDecls.registerFunc(*this, Fk::ConvBoolString, "string", sym::TypeSet{m_bool}, m_string);
   m_funcDecls.registerFunc(*this, Fk::ConvCharString, "string", sym::TypeSet{m_char}, m_string);
-  m_funcDecls.registerFunc(*this, Fk::NoOp, "asFloat", sym::TypeSet{m_int}, m_float);
-  m_funcDecls.registerFunc(*this, Fk::NoOp, "asInt", sym::TypeSet{m_float}, m_int);
+
+  // Register aliasing convertion intrinsics.
+  m_funcDecls.registerIntrinsic(*this, Fk::NoOp, "int_as_float", sym::TypeSet{m_int}, m_float);
+  m_funcDecls.registerIntrinsic(*this, Fk::NoOp, "float_as_int", sym::TypeSet{m_float}, m_int);
 
   // Source-location intrinsics.
   m_funcDecls.registerIntrinsic(
