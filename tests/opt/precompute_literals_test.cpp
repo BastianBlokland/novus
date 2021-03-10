@@ -68,8 +68,6 @@ TEST_CASE("[opt] Precompute literals", "opt") {
     ASSERT_EXPR(precomputeLiterals, "4 % 0", getIntBinaryOpExpr(prog, prog::Operator::Rem, 4, 0));
     ASSERT_EXPR(precomputeLiterals, "0 % 0", getIntBinaryOpExpr(prog, prog::Operator::Rem, 0, 0));
     ASSERT_EXPR(precomputeLiterals, "-42", litIntNode(prog, -42));
-    ASSERT_EXPR(precomputeLiterals, "++1", litIntNode(prog, 2));
-    ASSERT_EXPR(precomputeLiterals, "--2", litIntNode(prog, 1));
     ASSERT_EXPR(precomputeLiterals, "2 << 1", litIntNode(prog, 4));
     ASSERT_EXPR(precomputeLiterals, "4 >> 1", litIntNode(prog, 2));
     ASSERT_EXPR(precomputeLiterals, "3 & 1", litIntNode(prog, 1));
@@ -107,8 +105,6 @@ TEST_CASE("[opt] Precompute literals", "opt") {
     ASSERT_EXPR_FLOAT(
         precomputeLiterals, "intrinsic{float_atan2}(0.0, 0.0)", litFloatNode(prog, 0.0));
     ASSERT_EXPR_FLOAT(precomputeLiterals, "-1.1", litFloatNode(prog, -1.1));
-    ASSERT_EXPR_FLOAT(precomputeLiterals, "--1.1", litFloatNode(prog, 0.1));
-    ASSERT_EXPR_FLOAT(precomputeLiterals, "++1.1", litFloatNode(prog, 2.1));
     ASSERT_EXPR(precomputeLiterals, "1.1 == 1.2", litBoolNode(prog, false));
     ASSERT_EXPR(precomputeLiterals, "1.1 != 1.2", litBoolNode(prog, true));
     ASSERT_EXPR(precomputeLiterals, "1.1 < 1.2", litBoolNode(prog, true));
@@ -140,8 +136,6 @@ TEST_CASE("[opt] Precompute literals", "opt") {
     ASSERT_EXPR(
         precomputeLiterals, "0L % 0L", getLongBinaryOpExpr(prog, prog::Operator::Rem, 0, 0));
     ASSERT_EXPR(precomputeLiterals, "-42L", litLongNode(prog, -42));
-    ASSERT_EXPR(precomputeLiterals, "++1L", litLongNode(prog, 2));
-    ASSERT_EXPR(precomputeLiterals, "--2L", litLongNode(prog, 1));
     ASSERT_EXPR(precomputeLiterals, "2L << 1", litLongNode(prog, 4));
     ASSERT_EXPR(precomputeLiterals, "4L >> 1", litLongNode(prog, 2));
     ASSERT_EXPR(precomputeLiterals, "3L & 1L", litLongNode(prog, 1));

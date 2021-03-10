@@ -37,10 +37,6 @@ Program::Program() :
   // Register build-in unary int operators.
   m_funcDecls.registerFunc(
       *this, Fk::NegateInt, getFuncName(Op::Minus), sym::TypeSet{m_int}, m_int);
-  m_funcDecls.registerFunc(
-      *this, Fk::IncrementInt, getFuncName(Op::PlusPlus), sym::TypeSet{m_int}, m_int);
-  m_funcDecls.registerFunc(
-      *this, Fk::DecrementInt, getFuncName(Op::MinusMinus), sym::TypeSet{m_int}, m_int);
   m_funcDecls.registerFunc(*this, Fk::InvInt, getFuncName(Op::Tilde), sym::TypeSet{m_int}, m_int);
 
   // Register build-in binary int operators.
@@ -81,10 +77,6 @@ Program::Program() :
   m_funcDecls.registerFunc(
       *this, Fk::NegateLong, getFuncName(Op::Minus), sym::TypeSet{m_long}, m_long);
   m_funcDecls.registerFunc(
-      *this, Fk::IncrementLong, getFuncName(Op::PlusPlus), sym::TypeSet{m_long}, m_long);
-  m_funcDecls.registerFunc(
-      *this, Fk::DecrementLong, getFuncName(Op::MinusMinus), sym::TypeSet{m_long}, m_long);
-  m_funcDecls.registerFunc(
       *this, Fk::InvLong, getFuncName(Op::Tilde), sym::TypeSet{m_long}, m_long);
 
   // Register build-in binary long operators.
@@ -124,10 +116,6 @@ Program::Program() :
   // Register build-in unary float operators.
   m_funcDecls.registerFunc(
       *this, Fk::NegateFloat, getFuncName(Op::Minus), sym::TypeSet{m_float}, m_float);
-  m_funcDecls.registerFunc(
-      *this, Fk::IncrementFloat, getFuncName(Op::PlusPlus), sym::TypeSet{m_float}, m_float);
-  m_funcDecls.registerFunc(
-      *this, Fk::DecrementFloat, getFuncName(Op::MinusMinus), sym::TypeSet{m_float}, m_float);
 
   // Register build-in binary float operators.
   m_funcDecls.registerFunc(

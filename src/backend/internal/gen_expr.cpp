@@ -144,14 +144,6 @@ auto GenExpr::visit(const prog::expr::CallExprNode& n) -> void {
   case prog::sym::FuncKind::NegateInt:
     m_asmb->addNegInt();
     break;
-  case prog::sym::FuncKind::IncrementInt:
-    m_asmb->addLoadLitInt(1);
-    m_asmb->addAddInt();
-    break;
-  case prog::sym::FuncKind::DecrementInt:
-    m_asmb->addLoadLitInt(1);
-    m_asmb->addSubInt();
-    break;
   case prog::sym::FuncKind::ShiftLeftInt:
     m_asmb->addShiftLeftInt();
     break;
@@ -210,14 +202,6 @@ auto GenExpr::visit(const prog::expr::CallExprNode& n) -> void {
     break;
   case prog::sym::FuncKind::NegateLong:
     m_asmb->addNegLong();
-    break;
-  case prog::sym::FuncKind::IncrementLong:
-    m_asmb->addLoadLitLong(1);
-    m_asmb->addAddLong();
-    break;
-  case prog::sym::FuncKind::DecrementLong:
-    m_asmb->addLoadLitLong(1);
-    m_asmb->addSubLong();
     break;
   case prog::sym::FuncKind::ShiftLeftLong:
     m_asmb->addShiftLeftLong();
@@ -304,14 +288,6 @@ auto GenExpr::visit(const prog::expr::CallExprNode& n) -> void {
     break;
   case prog::sym::FuncKind::NegateFloat:
     m_asmb->addNegFloat();
-    break;
-  case prog::sym::FuncKind::IncrementFloat:
-    m_asmb->addLoadLitFloat(1.0F);
-    m_asmb->addAddFloat();
-    break;
-  case prog::sym::FuncKind::DecrementFloat:
-    m_asmb->addLoadLitFloat(1.0F);
-    m_asmb->addSubFloat();
     break;
 
   case prog::sym::FuncKind::CheckEqFloat:

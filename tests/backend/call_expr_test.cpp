@@ -19,16 +19,6 @@ TEST_CASE("[backend] Generate assembly for call expressions", "backend") {
       asmb->addLoadLitInt(42);
       asmb->addInvInt();
     });
-    CHECK_EXPR("--42", [](novasm::Assembler* asmb) -> void {
-      asmb->addLoadLitInt(42);
-      asmb->addLoadLitInt(1);
-      asmb->addSubInt();
-    });
-    CHECK_EXPR("++42", [](novasm::Assembler* asmb) -> void {
-      asmb->addLoadLitInt(42);
-      asmb->addLoadLitInt(1);
-      asmb->addAddInt();
-    });
     CHECK_EXPR("1 + 3", [](novasm::Assembler* asmb) -> void {
       asmb->addLoadLitInt(1);
       asmb->addLoadLitInt(3);
@@ -101,16 +91,6 @@ TEST_CASE("[backend] Generate assembly for call expressions", "backend") {
       asmb->addLoadLitLong(42);
       asmb->addInvLong();
     });
-    CHECK_EXPR("--42L", [](novasm::Assembler* asmb) -> void {
-      asmb->addLoadLitLong(42);
-      asmb->addLoadLitLong(1);
-      asmb->addSubLong();
-    });
-    CHECK_EXPR("++42L", [](novasm::Assembler* asmb) -> void {
-      asmb->addLoadLitLong(42);
-      asmb->addLoadLitLong(1);
-      asmb->addAddLong();
-    });
     CHECK_EXPR("1L + 3L", [](novasm::Assembler* asmb) -> void {
       asmb->addLoadLitLong(1);
       asmb->addLoadLitLong(3);
@@ -173,16 +153,6 @@ TEST_CASE("[backend] Generate assembly for call expressions", "backend") {
     CHECK_EXPR_FLOAT("-.1337", [](novasm::Assembler* asmb) -> void {
       asmb->addLoadLitFloat(0.1337F);
       asmb->addNegFloat();
-    });
-    CHECK_EXPR_FLOAT("--.1337", [](novasm::Assembler* asmb) -> void {
-      asmb->addLoadLitFloat(0.1337F);
-      asmb->addLoadLitFloat(1.0F);
-      asmb->addSubFloat();
-    });
-    CHECK_EXPR_FLOAT("++.1337", [](novasm::Assembler* asmb) -> void {
-      asmb->addLoadLitFloat(0.1337F);
-      asmb->addLoadLitFloat(1.0F);
-      asmb->addAddFloat();
     });
     CHECK_EXPR_FLOAT("1.42 + 3.42", [](novasm::Assembler* asmb) -> void {
       asmb->addLoadLitFloat(1.42F);

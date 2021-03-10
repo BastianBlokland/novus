@@ -15,8 +15,6 @@ enum class FuncKind {
   DivInt,        // Divide two integers.
   RemInt,        // Return division remainder of two integers.
   NegateInt,     // Negate an integer.
-  IncrementInt,  // Increment an integer.
-  DecrementInt,  // Decrement an integer.
   ShiftLeftInt,  // Shift bits of an integer to the left.
   ShiftRightInt, // Shift bits of an integer to the right.
   AndInt,        // Bitwise and two integers.
@@ -36,8 +34,6 @@ enum class FuncKind {
   DivLong,        // Divide two longs.
   RemLong,        // Return division remainder of two longs.
   NegateLong,     // Negate a long value.
-  IncrementLong,  // Increment a long value.
-  DecrementLong,  // Decrement a long value.
   ShiftLeftLong,  // Shift bits of an long to the left.
   ShiftRightLong, // Shift bits of an long to the right.
   AndLong,        // Bitwise and two longs.
@@ -66,8 +62,6 @@ enum class FuncKind {
   ATanFloat,      // Compute the arc tangent of a float.
   ATan2Float,     // Compute the arc tangent of two floats.
   NegateFloat,    // Negate a float.
-  IncrementFloat, // Increment a float.
-  DecrementFloat, // Decrement a float.
   CheckEqFloat,   // Check if two floats are equal.
   CheckNEqFloat,  // Check if two floats are not equal.
   CheckLeFloat,   // Check if a float is less then another float.

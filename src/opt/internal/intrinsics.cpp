@@ -24,8 +24,6 @@ auto isPrecomputableIntrinsic(prog::sym::FuncKind funcKind) -> bool {
   case prog::sym::FuncKind::DivInt:
   case prog::sym::FuncKind::RemInt:
   case prog::sym::FuncKind::NegateInt:
-  case prog::sym::FuncKind::IncrementInt:
-  case prog::sym::FuncKind::DecrementInt:
   case prog::sym::FuncKind::ShiftLeftInt:
   case prog::sym::FuncKind::ShiftRightInt:
   case prog::sym::FuncKind::AndInt:
@@ -60,8 +58,6 @@ auto isPrecomputableIntrinsic(prog::sym::FuncKind funcKind) -> bool {
   case prog::sym::FuncKind::ATanFloat:
   case prog::sym::FuncKind::ATan2Float:
   case prog::sym::FuncKind::NegateFloat:
-  case prog::sym::FuncKind::IncrementFloat:
-  case prog::sym::FuncKind::DecrementFloat:
   case prog::sym::FuncKind::CheckEqFloat:
   case prog::sym::FuncKind::CheckNEqFloat:
   case prog::sym::FuncKind::CheckLeFloat:
@@ -80,8 +76,6 @@ auto isPrecomputableIntrinsic(prog::sym::FuncKind funcKind) -> bool {
   case prog::sym::FuncKind::DivLong:
   case prog::sym::FuncKind::RemLong:
   case prog::sym::FuncKind::NegateLong:
-  case prog::sym::FuncKind::IncrementLong:
-  case prog::sym::FuncKind::DecrementLong:
   case prog::sym::FuncKind::ShiftLeftLong:
   case prog::sym::FuncKind::ShiftRightLong:
   case prog::sym::FuncKind::AndLong:
@@ -171,14 +165,6 @@ auto isPrecomputableIntrinsic(prog::sym::FuncKind funcKind) -> bool {
   case prog::sym::FuncKind::NegateInt: {
     assert(args.size() == 1);
     return prog::expr::litIntNode(prog, -getInt(*args[0]));
-  }
-  case prog::sym::FuncKind::IncrementInt: {
-    assert(args.size() == 1);
-    return prog::expr::litIntNode(prog, getInt(*args[0]) + 1);
-  }
-  case prog::sym::FuncKind::DecrementInt: {
-    assert(args.size() == 1);
-    return prog::expr::litIntNode(prog, getInt(*args[0]) - 1);
   }
   case prog::sym::FuncKind::ShiftLeftInt: {
     assert(args.size() == 2);
@@ -309,14 +295,6 @@ auto isPrecomputableIntrinsic(prog::sym::FuncKind funcKind) -> bool {
     assert(args.size() == 1);
     return prog::expr::litFloatNode(prog, -getFloat(*args[0]));
   }
-  case prog::sym::FuncKind::IncrementFloat: {
-    assert(args.size() == 1);
-    return prog::expr::litFloatNode(prog, getFloat(*args[0]) + 1);
-  }
-  case prog::sym::FuncKind::DecrementFloat: {
-    assert(args.size() == 1);
-    return prog::expr::litFloatNode(prog, getFloat(*args[0]) - 1);
-  }
   case prog::sym::FuncKind::CheckEqFloat: {
     assert(args.size() == 2);
     return prog::expr::litBoolNode(prog, getFloat(*args[0]) == getFloat(*args[1]));
@@ -398,14 +376,6 @@ auto isPrecomputableIntrinsic(prog::sym::FuncKind funcKind) -> bool {
   case prog::sym::FuncKind::NegateLong: {
     assert(args.size() == 1);
     return prog::expr::litLongNode(prog, -getLong(*args[0]));
-  }
-  case prog::sym::FuncKind::IncrementLong: {
-    assert(args.size() == 1);
-    return prog::expr::litLongNode(prog, getLong(*args[0]) + 1);
-  }
-  case prog::sym::FuncKind::DecrementLong: {
-    assert(args.size() == 1);
-    return prog::expr::litLongNode(prog, getLong(*args[0]) - 1);
   }
   case prog::sym::FuncKind::ShiftLeftLong: {
     assert(args.size() == 2);

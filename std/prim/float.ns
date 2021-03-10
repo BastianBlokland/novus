@@ -8,3 +8,7 @@ fun float(float f) f
 // -- Operators
 
 fun +(float f) f
+
+fun ++(float f) f + 1.0
+
+fun --(float f) f - 1.0

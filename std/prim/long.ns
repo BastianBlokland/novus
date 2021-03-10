@@ -8,3 +8,7 @@ fun long(long l) l
 // -- Operators
 
 fun +(long l) l
+
+fun ++(long l) l + 1L
+
+fun --(long l) l - 1L

@@ -10,6 +10,10 @@ fun char(char c) c
 
 fun +(char c) c
 
+fun ++(char c) c + char(1)
+
+fun --(char c) c - char(1)
+
 fun <<(char x, int y)
   char(int(x) << y)
 
@@ -48,12 +52,6 @@ fun >(char x, char y)
 
 fun >=(char x, char y)
   int(x) >= int(y)
-
-fun ++(char x)
-  char(int(x) + 1)
-
-fun --(char x)
-  char(int(x) - 1)
 
 // -- Tests
 
