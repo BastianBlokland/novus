@@ -1,11 +1,9 @@
-import "std/assert.ns"
-import "std/future.ns"
-import "std/io/ip.ns"
-import "std/list.ns"
-import "std/option.ns"
-import "std/parallel.ns"
+import "ip.ns"
+
+import "std/core.ns"
+import "std/diag.ns"
 import "std/prim.ns"
-import "std/rt.ns"
+import "std/sys.ns"
 
 // -- Types
 

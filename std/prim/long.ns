@@ -1,5 +1,4 @@
-
-import "std/prim/type.ns"
+import "type.ns"
 
 // -- Traits
 

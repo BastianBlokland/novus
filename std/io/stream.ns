@@ -1,10 +1,7 @@
-import "std/assert.ns"
-import "std/lazy.ns"
-import "std/list.ns"
-import "std/pair.ns"
+import "std/core.ns"
+import "std/diag.ns"
 import "std/prim.ns"
-import "std/rt.ns"
-import "std/text.ns"
+import "std/sys.ns"
 
 // -- Types
 

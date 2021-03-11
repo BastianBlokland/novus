@@ -1,8 +1,9 @@
-import "std/bits.ns"
-import "std/error.ns"
-import "std/io/stream.ns"
-import "std/io/tty.ns"
-import "std/parser.ns"
+import "stream.ns"
+import "tty.ns"
+
+import "std/core.ns"
+import "std/diag.ns"
+import "std/format.ns"
 import "std/prim.ns"
 
 // -- Types

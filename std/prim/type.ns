@@ -1,8 +1,9 @@
-import "std/assert.ns"
-import "std/prim/char.ns"
-import "std/prim/float.ns"
-import "std/prim/int.ns"
-import "std/prim/long.ns"
+import "char.ns"
+import "float.ns"
+import "int.ns"
+import "long.ns"
+
+import "std/diag.ns"
 
 // -- Type tag
 

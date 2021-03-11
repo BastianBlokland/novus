@@ -1,8 +1,6 @@
-import "std/ascii.ns"
-import "std/assert.ns"
-import "std/future.ns"
-import "std/io.ns"
-import "std/list.ns"
+import "std/core.ns"
+import "std/diag.ns"
+import "std/format.ns"
 import "std/prim.ns"
 
 // -- Types
