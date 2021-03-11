@@ -1,4 +1,12 @@
 import "std/assert.ns"
+import "std/type.ns"
+
+// -- Traits
+
+fun isIntegral(Type{int} t)   true
+fun byteSize(Type{int} t)     4
+fun minVal(Type{int} t)       0x8000_0000
+fun maxVal(Type{int} t)       0x7FFF_FFFF
 
 // -- Constructors
 

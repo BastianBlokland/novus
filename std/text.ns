@@ -10,60 +10,18 @@ struct TextPos =
   int line,
   int column
 
-// -- Operators
-
-fun +{T}(string s, T v)
-  s + v.string()
-
-fun string(char a, char b) string(a) + b
-fun string(char a, char b, char c) string(a, b) + c
-fun string(char a, char b, char c, char d) string(a, b, c) + d
-fun string(char a, char b, char c, char d, char e) string(a, b, c, d) + e
-fun string(char a, char b, char c, char d, char e, char f)  string(a, b, c, d, e) + f
-fun string(char a, char b, char c, char d, char e, char f, char g)  string(a, b, c, d, e, f) + g
-fun string(char a, char b, char c, char d, char e, char f, char g, char h)  string(a, b, c, d, e, f, g) + h
-
 // -- Conversions
 
 fun string(TextPos p)
   "[ln " + (p.line + 1) + ", c " + (p.column + 1) + "]"
 
-fun string(int i, int minDigits)
-  i.string().padLeft(minDigits, '0')
-
-fun string(long i, int minDigits)
-  i.string().padLeft(minDigits, '0')
-
-fun string(char c, int amount)
-  repeat = (lambda (string result, int cnt)
-    if cnt <= 0 -> result
-    else        -> self(result + c, --cnt)
-  );
-  repeat("", amount)
-
-fun string(string str, int amount)
-  repeat = (lambda (string result, int cnt)
-    if cnt <= 0 -> result
-    else        -> self(result + str, --cnt)
-  );
-  repeat("", amount)
-
 // -- Functions
-
-fun isEmpty(string str)
-  str.length() == 0
-
-fun last(string str)
-  str[str.length() - 1]
 
 fun appendChar(string str, char c)
   str + c
 
 fun contains(string str, string subStr)
   str.indexOf(subStr) >= 0
-
-fun length(string str) -> int
-  intrinsic{string_length}(str)
 
 fun indexOf(string str, string subStr, int idx = 0, int subStrIdx = 0)
   if idx >= str.length()            -> -1
@@ -149,10 +107,6 @@ fun remove(string str, int idx, int amount = 1)
   if idx == str.length() - amount -> str[0, str.length() - amount]
   else                            -> str[0, idx] + str[idx + amount, str.length()]
 
-fun padLeft(string str, int length, char c)
-  if str.length() < length  -> padLeft(c.string() + str, length, c)
-  else                      -> str
-
 fun fold{T}(string str, function{T, char, T} func)
   invoke(
     lambda (int idx, T result)
@@ -210,28 +164,6 @@ fun getTextPos(string str)
   TextPos(line, column)
 
 // -- Tests
-
-assertEq(string(1, 2), "01")
-assertEq(string(42L, 5), "00042")
-
-assertEq(string('0', 1), "0")
-assertEq(string('0', 2), "00")
-assertEq(string('0', 3), "000")
-assertEq(string('0', 0), "")
-assertEq(string('0', -1), "")
-
-assertEq(string("hello", 1), "hello")
-assertEq(string("hello", 2), "hellohello")
-assertEq(string("hello", 3), "hellohellohello")
-assertEq(string("hello", 0), "")
-assertEq(string("hello", -1), "")
-
-assert("".isEmpty())
-assertNot(" ".isEmpty())
-
-assertEq("".last(), '\0')
-assertEq("o".last(), 'o')
-assertEq("hello".last(), 'o')
 
 assert("hello world".contains("hello"))
 assert("hello world".contains("world"))
@@ -347,12 +279,6 @@ assertEq("helloworld".remove(0, 9), "d")
 assertEq("helloworld".remove(0, 10), "")
 assertEq("helloworld".remove(0, -1), "helloworld")
 assertEq("helloworld".remove(2, -1), "helloworld")
-
-assertEq("1".padLeft(-1, '0'), "1")
-assertEq("1".padLeft(0, '0'), "1")
-assertEq("1".padLeft(1, '0'), "1")
-assertEq("1".padLeft(2, '0'), "01")
-assertEq("1".padLeft(3, '0'), "001")
 
 assertEq("hello".transform(lambda (char c) "W"), "WWWWW")
 assertEq("".transform(lambda (char c) "W"), "")

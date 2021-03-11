@@ -1,4 +1,13 @@
 
+import "std/type.ns"
+
+// -- Traits
+
+fun isIntegral(Type{long} t)  true
+fun byteSize(Type{long} t)    8
+fun minVal(Type{long} t)      0x8000_0000_0000_0000L
+fun maxVal(Type{long} t)      0x7FFF_FFFF_FFFF_FFFFL
+
 // -- Constructors
 
 fun long() 0L

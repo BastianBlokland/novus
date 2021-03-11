@@ -1,3 +1,11 @@
+import "std/assert.ns"
+import "std/type.ns"
+
+// -- Traits
+
+fun byteSize(Type{float} t)   4
+fun minVal(Type{float} t)     asFloat(0xFF7F_FFFF)
+fun maxVal(Type{float} t)     asFloat(0x7F7F_FFFF)
 
 // -- Constructors
 
@@ -18,3 +26,32 @@ fun +(float f) f
 fun ++(float f) f + 1.0
 
 fun --(float f) f - 1.0
+
+// -- Utilities
+
+fun nan()
+  asFloat(0xFFA0_0000)
+
+fun isNan(float v)
+  v != v
+
+fun epsilon()
+  asFloat(0x1)
+
+fun posInfinity()
+  asFloat(0x7F80_0000)
+
+fun negInfinity()
+  asFloat(0xFF80_0000)
+
+// -- Tests
+
+assertEq((1.0 / 0.0), posInfinity())
+assertEq((-1.0 / 0.0), negInfinity())
+assertEq(-posInfinity(), negInfinity())
+
+assert(nan().isNan())
+assert(isNan(0.0 / 0.0))
+assertNot(isNan(0.0))
+assertNot(isNan(1.0))
+assertNot(isNan(1.0 / 0.0))

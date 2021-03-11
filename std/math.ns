@@ -3,21 +3,6 @@ import "std/prim.ns"
 
 // -- Functions
 
-fun nan()
-  asFloat(0xFFA0_0000)
-
-fun isNan(float v)
-  v != v
-
-fun epsilon()
-  asFloat(0x1)
-
-fun posInfinity()
-  asFloat(0x7F80_0000)
-
-fun negInfinity()
-  asFloat(0xFF80_0000)
-
 fun pi()
   3.14159274
 
@@ -103,16 +88,6 @@ fun atan2(float x, float y) -> float
   intrinsic{float_atan2}(x, y)
 
 // -- Tests
-
-assertEq((1.0 / 0.0), posInfinity())
-assertEq((-1.0 / 0.0), negInfinity())
-assertEq(-posInfinity(), negInfinity())
-
-assert(nan().isNan())
-assert(isNan(0.0 / 0.0))
-assertNot(isNan(0.0))
-assertNot(isNan(1.0))
-assertNot(isNan(1.0 / 0.0))
 
 assertEq(negate(1), -1)
 assertEq(negate(-1), 1)
