@@ -11,7 +11,7 @@ TEST_CASE("[vm] Execute long checks", "vm") {
           asmb->addLoadLitLong(4'200'000'000'000L);
           asmb->addLoadLitLong(-4'200'000'000'000L);
           asmb->addCheckEqLong();
-          asmb->addConvBoolString();
+          ADD_BOOL_TO_STRING(asmb);
           ADD_PRINT(asmb);
         },
         "input",
@@ -21,7 +21,7 @@ TEST_CASE("[vm] Execute long checks", "vm") {
           asmb->addLoadLitLong(4'200'000'000'000L);
           asmb->addLoadLitLong(4'200'000'000'000L);
           asmb->addCheckEqLong();
-          asmb->addConvBoolString();
+          ADD_BOOL_TO_STRING(asmb);
           ADD_PRINT(asmb);
         },
         "input",
@@ -34,7 +34,7 @@ TEST_CASE("[vm] Execute long checks", "vm") {
           asmb->addLoadLitLong(-1);
           asmb->addLoadLitLong(2);
           asmb->addCheckGtLong();
-          asmb->addConvBoolString();
+          ADD_BOOL_TO_STRING(asmb);
           ADD_PRINT(asmb);
         },
         "input",
@@ -44,7 +44,7 @@ TEST_CASE("[vm] Execute long checks", "vm") {
           asmb->addLoadLitLong(2);
           asmb->addLoadLitLong(1);
           asmb->addCheckGtLong();
-          asmb->addConvBoolString();
+          ADD_BOOL_TO_STRING(asmb);
           ADD_PRINT(asmb);
         },
         "input",
@@ -57,7 +57,7 @@ TEST_CASE("[vm] Execute long checks", "vm") {
           asmb->addLoadLitLong(3);
           asmb->addLoadLitLong(2);
           asmb->addCheckLeLong();
-          asmb->addConvBoolString();
+          ADD_BOOL_TO_STRING(asmb);
           ADD_PRINT(asmb);
         },
         "input",
@@ -67,7 +67,7 @@ TEST_CASE("[vm] Execute long checks", "vm") {
           asmb->addLoadLitLong(2);
           asmb->addLoadLitLong(3);
           asmb->addCheckLeLong();
-          asmb->addConvBoolString();
+          ADD_BOOL_TO_STRING(asmb);
           ADD_PRINT(asmb);
         },
         "input",

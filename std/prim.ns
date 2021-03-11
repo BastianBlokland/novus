@@ -1,0 +1,35 @@
+import "std/prim/bool.ns"
+import "std/prim/char.ns"
+import "std/prim/float.ns"
+import "std/prim/int.ns"
+import "std/prim/long.ns"
+import "std/prim/string.ns"
+import "std/prim/type.ns"
+
+// -- Traits
+
+fun isIntegral{T}(Type{T} t)  false
+fun isIntegral{T}()           isIntegral(Type{T}())
+
+fun byteSize{T}()             byteSize(Type{T}())
+fun bitSize{T}(Type{T} t)     byteSize(t) * 8
+fun bitSize{T}()              bitSize(Type{T}())
+fun nibbleSize{T}(Type{T} t)  byteSize(t) * 2
+fun nibbleSize{T}()           nibbleSize(Type{T}())
+
+fun lowBit{T}()               T(1)
+fun highBit{T}()              lowBit{T}() << (bitSize{T}() - 1)
+fun minVal{T}()               minVal(Type{T}())
+fun maxVal{T}()               maxVal(Type{T}())
+
+// -- Tests
+
+assert(isIntegral{int}())
+assertNot(isIntegral{string}())
+
+assertEq(bitSize{char}(), 8)
+assertEq(bitSize{int}(), 32)
+assertEq(bitSize{long}(), 64)
+
+assertEq(lowBit{int}(), 1)
+assertEq(highBit{int}(), 1 << 31)

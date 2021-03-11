@@ -1,0 +1,7 @@
+import "type.ns"
+
+// -- Constructors
+
+fun bool() false
+
+fun bool(bool b) b

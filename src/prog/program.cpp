@@ -37,11 +37,6 @@ Program::Program() :
   // Register build-in unary int operators.
   m_funcDecls.registerFunc(
       *this, Fk::NegateInt, getFuncName(Op::Minus), sym::TypeSet{m_int}, m_int);
-  m_funcDecls.registerFunc(*this, Fk::NoOp, getFuncName(Op::Plus), sym::TypeSet{m_int}, m_int);
-  m_funcDecls.registerFunc(
-      *this, Fk::IncrementInt, getFuncName(Op::PlusPlus), sym::TypeSet{m_int}, m_int);
-  m_funcDecls.registerFunc(
-      *this, Fk::DecrementInt, getFuncName(Op::MinusMinus), sym::TypeSet{m_int}, m_int);
   m_funcDecls.registerFunc(*this, Fk::InvInt, getFuncName(Op::Tilde), sym::TypeSet{m_int}, m_int);
 
   // Register build-in binary int operators.
@@ -81,11 +76,6 @@ Program::Program() :
   // Register build-in unary long operators.
   m_funcDecls.registerFunc(
       *this, Fk::NegateLong, getFuncName(Op::Minus), sym::TypeSet{m_long}, m_long);
-  m_funcDecls.registerFunc(*this, Fk::NoOp, getFuncName(Op::Plus), sym::TypeSet{m_long}, m_long);
-  m_funcDecls.registerFunc(
-      *this, Fk::IncrementLong, getFuncName(Op::PlusPlus), sym::TypeSet{m_long}, m_long);
-  m_funcDecls.registerFunc(
-      *this, Fk::DecrementLong, getFuncName(Op::MinusMinus), sym::TypeSet{m_long}, m_long);
   m_funcDecls.registerFunc(
       *this, Fk::InvLong, getFuncName(Op::Tilde), sym::TypeSet{m_long}, m_long);
 
@@ -126,11 +116,6 @@ Program::Program() :
   // Register build-in unary float operators.
   m_funcDecls.registerFunc(
       *this, Fk::NegateFloat, getFuncName(Op::Minus), sym::TypeSet{m_float}, m_float);
-  m_funcDecls.registerFunc(*this, Fk::NoOp, getFuncName(Op::Plus), sym::TypeSet{m_float}, m_float);
-  m_funcDecls.registerFunc(
-      *this, Fk::IncrementFloat, getFuncName(Op::PlusPlus), sym::TypeSet{m_float}, m_float);
-  m_funcDecls.registerFunc(
-      *this, Fk::DecrementFloat, getFuncName(Op::MinusMinus), sym::TypeSet{m_float}, m_float);
 
   // Register build-in binary float operators.
   m_funcDecls.registerFunc(
@@ -200,42 +185,35 @@ Program::Program() :
       sym::TypeSet{m_string, m_int, m_int},
       m_string);
 
-  // Register build-in default constructors.
-  m_funcDecls.registerFunc(*this, Fk::DefInt, "int", sym::TypeSet{}, m_int);
-  m_funcDecls.registerFunc(*this, Fk::DefLong, "long", sym::TypeSet{}, m_long);
-  m_funcDecls.registerFunc(*this, Fk::DefFloat, "float", sym::TypeSet{}, m_float);
-  m_funcDecls.registerFunc(*this, Fk::DefBool, "bool", sym::TypeSet{}, m_bool);
-  m_funcDecls.registerFunc(*this, Fk::DefString, "string", sym::TypeSet{}, m_string);
-
   // Register build-in implicit conversions.
   m_funcDecls.registerImplicitConv(*this, Fk::NoOp, m_char, m_int);
   m_funcDecls.registerImplicitConv(*this, Fk::ConvIntLong, m_int, m_long);
   m_funcDecls.registerImplicitConv(*this, Fk::ConvCharLong, m_char, m_long);
   m_funcDecls.registerImplicitConv(*this, Fk::ConvIntFloat, m_int, m_float);
 
-  // Register build-in identity conversions (turns into no-ops).
-  m_funcDecls.registerFunc(*this, Fk::NoOp, "int", sym::TypeSet{m_int}, m_int);
-  m_funcDecls.registerFunc(*this, Fk::NoOp, "long", sym::TypeSet{m_long}, m_long);
-  m_funcDecls.registerFunc(*this, Fk::NoOp, "float", sym::TypeSet{m_float}, m_float);
-  m_funcDecls.registerFunc(*this, Fk::NoOp, "bool", sym::TypeSet{m_bool}, m_bool);
-  m_funcDecls.registerFunc(*this, Fk::NoOp, "string", sym::TypeSet{m_string}, m_string);
-  m_funcDecls.registerFunc(*this, Fk::NoOp, "char", sym::TypeSet{m_char}, m_char);
-
-  // Register build-in explicit conversions.
-  m_funcDecls.registerFunc(*this, Fk::ConvFloatInt, "int", sym::TypeSet{m_float}, m_int);
-  m_funcDecls.registerFunc(*this, Fk::ConvLongInt, "int", sym::TypeSet{m_long}, m_int);
-  m_funcDecls.registerFunc(*this, Fk::ConvIntChar, "char", sym::TypeSet{m_int}, m_char);
-  m_funcDecls.registerFunc(*this, Fk::ConvLongChar, "char", sym::TypeSet{m_long}, m_char);
-  m_funcDecls.registerFunc(*this, Fk::ConvFloatChar, "char", sym::TypeSet{m_float}, m_char);
-  m_funcDecls.registerFunc(*this, Fk::ConvFloatLong, "long", sym::TypeSet{m_float}, m_long);
-  m_funcDecls.registerFunc(*this, Fk::ConvLongFloat, "float", sym::TypeSet{m_long}, m_float);
-  m_funcDecls.registerFunc(*this, Fk::ConvIntString, "string", sym::TypeSet{m_int}, m_string);
-  m_funcDecls.registerFunc(*this, Fk::ConvLongString, "string", sym::TypeSet{m_long}, m_string);
-  m_funcDecls.registerFunc(*this, Fk::ConvFloatString, "string", sym::TypeSet{m_float}, m_string);
-  m_funcDecls.registerFunc(*this, Fk::ConvBoolString, "string", sym::TypeSet{m_bool}, m_string);
-  m_funcDecls.registerFunc(*this, Fk::ConvCharString, "string", sym::TypeSet{m_char}, m_string);
-  m_funcDecls.registerFunc(*this, Fk::NoOp, "asFloat", sym::TypeSet{m_int}, m_float);
-  m_funcDecls.registerFunc(*this, Fk::NoOp, "asInt", sym::TypeSet{m_float}, m_int);
+  // Register conversion intrinsics.
+  m_funcDecls.registerIntrinsic(
+      *this, Fk::ConvFloatInt, "float_to_int", sym::TypeSet{m_float}, m_int);
+  m_funcDecls.registerIntrinsic(*this, Fk::ConvLongInt, "long_to_int", sym::TypeSet{m_long}, m_int);
+  m_funcDecls.registerIntrinsic(*this, Fk::ConvIntChar, "int_to_char", sym::TypeSet{m_int}, m_char);
+  m_funcDecls.registerIntrinsic(
+      *this, Fk::ConvLongChar, "long_to_char", sym::TypeSet{m_long}, m_char);
+  m_funcDecls.registerIntrinsic(
+      *this, Fk::ConvFloatChar, "float_to_char", sym::TypeSet{m_float}, m_char);
+  m_funcDecls.registerIntrinsic(
+      *this, Fk::ConvFloatLong, "float_to_long", sym::TypeSet{m_float}, m_long);
+  m_funcDecls.registerIntrinsic(
+      *this, Fk::ConvLongFloat, "long_to_float", sym::TypeSet{m_long}, m_float);
+  m_funcDecls.registerIntrinsic(
+      *this, Fk::ConvIntString, "int_to_string", sym::TypeSet{m_int}, m_string);
+  m_funcDecls.registerIntrinsic(
+      *this, Fk::ConvLongString, "long_to_string", sym::TypeSet{m_long}, m_string);
+  m_funcDecls.registerIntrinsic(
+      *this, Fk::ConvFloatString, "float_to_string", sym::TypeSet{m_float}, m_string);
+  m_funcDecls.registerIntrinsic(
+      *this, Fk::ConvCharString, "char_to_string", sym::TypeSet{m_char}, m_string);
+  m_funcDecls.registerIntrinsic(*this, Fk::NoOp, "int_as_float", sym::TypeSet{m_int}, m_float);
+  m_funcDecls.registerIntrinsic(*this, Fk::NoOp, "float_as_int", sym::TypeSet{m_float}, m_int);
 
   // Source-location intrinsics.
   m_funcDecls.registerIntrinsic(

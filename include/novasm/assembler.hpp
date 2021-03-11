@@ -108,7 +108,6 @@ public:
   auto addConvIntString() -> void;
   auto addConvLongString() -> void;
   auto addConvFloatString() -> void;
-  auto addConvBoolString() -> void;
   auto addConvCharString() -> void;
   auto addConvIntChar() -> void;
   auto addConvLongChar() -> void;

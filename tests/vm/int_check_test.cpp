@@ -11,7 +11,7 @@ TEST_CASE("[vm] Execute integer checks", "vm") {
           asmb->addLoadLitInt(1);
           asmb->addLoadLitInt(-2);
           asmb->addCheckEqInt();
-          asmb->addConvBoolString();
+          ADD_BOOL_TO_STRING(asmb);
           ADD_PRINT(asmb);
         },
         "input",
@@ -21,7 +21,7 @@ TEST_CASE("[vm] Execute integer checks", "vm") {
           asmb->addLoadLitInt(2);
           asmb->addLoadLitInt(2);
           asmb->addCheckEqInt();
-          asmb->addConvBoolString();
+          ADD_BOOL_TO_STRING(asmb);
           ADD_PRINT(asmb);
         },
         "input",
@@ -34,7 +34,7 @@ TEST_CASE("[vm] Execute integer checks", "vm") {
           asmb->addLoadLitInt(-1);
           asmb->addLoadLitInt(2);
           asmb->addCheckGtInt();
-          asmb->addConvBoolString();
+          ADD_BOOL_TO_STRING(asmb);
           ADD_PRINT(asmb);
         },
         "input",
@@ -44,7 +44,7 @@ TEST_CASE("[vm] Execute integer checks", "vm") {
           asmb->addLoadLitInt(2);
           asmb->addLoadLitInt(1);
           asmb->addCheckGtInt();
-          asmb->addConvBoolString();
+          ADD_BOOL_TO_STRING(asmb);
           ADD_PRINT(asmb);
         },
         "input",
@@ -57,7 +57,7 @@ TEST_CASE("[vm] Execute integer checks", "vm") {
           asmb->addLoadLitInt(3);
           asmb->addLoadLitInt(2);
           asmb->addCheckLeInt();
-          asmb->addConvBoolString();
+          ADD_BOOL_TO_STRING(asmb);
           ADD_PRINT(asmb);
         },
         "input",
@@ -67,7 +67,7 @@ TEST_CASE("[vm] Execute integer checks", "vm") {
           asmb->addLoadLitInt(2);
           asmb->addLoadLitInt(3);
           asmb->addCheckLeInt();
-          asmb->addConvBoolString();
+          ADD_BOOL_TO_STRING(asmb);
           ADD_PRINT(asmb);
         },
         "input",

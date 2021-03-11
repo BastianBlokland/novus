@@ -314,7 +314,8 @@ TEST_CASE("[frontend] Infer return type of user functions", "frontend") {
   }
 
   SECTION("Instance function call with arguments") {
-    const auto& output = ANALYZE("fun test(int a, string b) a.string() + b "
+    const auto& output = ANALYZE("fun string(int i) intrinsic{int_to_string}(i) "
+                                 "fun test(int a, string b) a.string() + b "
                                  "fun f() (42).test(\"test\")");
     REQUIRE(output.isSuccess());
     CHECK(GET_FUNC_DECL(output, "f").getOutput() == GET_TYPE_ID(output, "string"));

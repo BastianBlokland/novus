@@ -11,7 +11,7 @@ TEST_CASE("[vm] Execute string checks", "vm") {
           asmb->addLoadLitString("hello");
           asmb->addLoadLitString("world");
           asmb->addCheckEqString();
-          asmb->addConvBoolString();
+          ADD_BOOL_TO_STRING(asmb);
           ADD_PRINT(asmb);
         },
         "input",
@@ -21,7 +21,7 @@ TEST_CASE("[vm] Execute string checks", "vm") {
           asmb->addLoadLitString("hello world");
           asmb->addLoadLitString("hello world");
           asmb->addCheckEqString();
-          asmb->addConvBoolString();
+          ADD_BOOL_TO_STRING(asmb);
           ADD_PRINT(asmb);
         },
         "input",
@@ -33,7 +33,7 @@ TEST_CASE("[vm] Execute string checks", "vm") {
           asmb->addLoadLitString("world");
           asmb->addAddString();
           asmb->addCheckEqString();
-          asmb->addConvBoolString();
+          ADD_BOOL_TO_STRING(asmb);
           ADD_PRINT(asmb);
         },
         "input",

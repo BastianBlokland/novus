@@ -110,7 +110,7 @@ TEST_CASE("[vm] Execute forks", "vm") {
           asmb->addFutureWaitNano();
 
           // Print the result.
-          asmb->addConvBoolString();
+          ADD_BOOL_TO_STRING(asmb);
           ADD_PRINT(asmb);
           asmb->addRet();
           // --- Main function end.

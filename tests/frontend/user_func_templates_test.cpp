@@ -69,7 +69,9 @@ TEST_CASE("[frontend] Analyzing user-function templates", "frontend") {
   }
 
   SECTION("Return type as parameter") {
-    const auto& output = ANALYZE("fun ft{T}(int a) -> T T(a) "
+    const auto& output = ANALYZE("fun string(int i) intrinsic{int_to_string}(i) "
+                                 "fun int(int i) i "
+                                 "fun ft{T}(int a) -> T T(a) "
                                  "fun f1() -> int ft{int}(1) "
                                  "fun f2() -> float ft{float}(1) "
                                  "fun f3() -> string ft{string}(1)");
@@ -153,7 +155,8 @@ TEST_CASE("[frontend] Analyzing user-function templates", "frontend") {
   }
 
   SECTION("Infer type-parameter in templated call") {
-    const auto& output = ANALYZE("struct Null "
+    const auto& output = ANALYZE("fun int() 0 "
+                                 "struct Null "
                                  "union Option{T} = T, Null "
                                  "fun ft{T}(Option{T} a, Option{T} b) "
                                  "  if a as T aVal && b as T bVal -> aVal + bVal "
@@ -205,7 +208,8 @@ TEST_CASE("[frontend] Analyzing user-function templates", "frontend") {
   }
 
   SECTION("Overloaded func templates prefer less type-parameters") {
-    const auto& output = ANALYZE("union Choice{T1, T2} = T1, T2 "
+    const auto& output = ANALYZE("fun bool(bool b) b "
+                                 "union Choice{T1, T2} = T1, T2 "
                                  "fun ft{T1, T2}(T1 a, T2 b) -> Choice{T1, T2} "
                                  "  bool(a) ? a : b "
                                  "fun ft{T}(T a, T b) -> T "
@@ -252,7 +256,8 @@ TEST_CASE("[frontend] Analyzing user-function templates", "frontend") {
   }
 
   SECTION("Call conversion function through type substitution") {
-    const auto& output = ANALYZE("struct Test{T} = T val "
+    const auto& output = ANALYZE("fun int() 0 "
+                                 "struct Test{T} = T val "
                                  "fun Test{T}() Test(T()) "
                                  "fun factory{T}() T() "
                                  "fun f1() factory{Test{int}}()");

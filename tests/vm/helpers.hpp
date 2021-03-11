@@ -122,4 +122,16 @@ inline auto prepareStdIn(std::string input) -> FileHandle {
     (ASMB)->label(label);                                                                          \
   }
 
+#define ADD_BOOL_TO_STRING(ASMB)                                                                   \
+  {                                                                                                \
+    const auto endLabel  = (ASMB)->generateLabel("bool-to-string-end");                            \
+    const auto trueLabel = (ASMB)->generateLabel("bool-to-string-true");                           \
+    (ASMB)->addJumpIf(trueLabel);                                                                  \
+    (ASMB)->addLoadLitString("false");                                                             \
+    (ASMB)->addJump(endLabel);                                                                     \
+    (ASMB)->label(trueLabel);                                                                      \
+    (ASMB)->addLoadLitString("true");                                                              \
+    (ASMB)->label(endLabel);                                                                       \
+  }
+
 } // namespace vm

@@ -1,0 +1,4 @@
+import "std/diag/assert.ns"
+import "std/diag/bench.ns"
+import "std/diag/error.ns"
+import "std/diag/sourceloc.ns"

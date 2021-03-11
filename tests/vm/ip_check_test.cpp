@@ -13,7 +13,7 @@ TEST_CASE("[vm] Execute instruction pointer checks", "vm") {
 
           asmb->label("label");
           asmb->addCheckEqIp();
-          asmb->addConvBoolString();
+          ADD_BOOL_TO_STRING(asmb);
           ADD_PRINT(asmb);
         },
         "input",
@@ -28,7 +28,7 @@ TEST_CASE("[vm] Execute instruction pointer checks", "vm") {
           asmb->addCheckEqIp();
 
           asmb->label("label2");
-          asmb->addConvBoolString();
+          ADD_BOOL_TO_STRING(asmb);
           ADD_PRINT(asmb);
         },
         "input",
@@ -41,7 +41,7 @@ TEST_CASE("[vm] Execute instruction pointer checks", "vm") {
 
           asmb->label("label");
           asmb->addCheckEqCallDynTgt();
-          asmb->addConvBoolString();
+          ADD_BOOL_TO_STRING(asmb);
           ADD_PRINT(asmb);
         },
         "input",
@@ -56,7 +56,7 @@ TEST_CASE("[vm] Execute instruction pointer checks", "vm") {
           asmb->addCheckEqCallDynTgt();
 
           asmb->label("label2");
-          asmb->addConvBoolString();
+          ADD_BOOL_TO_STRING(asmb);
           ADD_PRINT(asmb);
         },
         "input",
@@ -78,7 +78,7 @@ TEST_CASE("[vm] Execute instruction pointer checks", "vm") {
           asmb->label("label");
           asmb->addCheckEqCallDynTgt();
 
-          asmb->addConvBoolString();
+          ADD_BOOL_TO_STRING(asmb);
           ADD_PRINT(asmb);
         },
         "input",
@@ -101,7 +101,7 @@ TEST_CASE("[vm] Execute instruction pointer checks", "vm") {
           asmb->addCheckEqCallDynTgt();
 
           asmb->label("label2");
-          asmb->addConvBoolString();
+          ADD_BOOL_TO_STRING(asmb);
           ADD_PRINT(asmb);
         },
         "input",
@@ -120,7 +120,7 @@ TEST_CASE("[vm] Execute instruction pointer checks", "vm") {
           asmb->label("label");
           asmb->addCheckEqCallDynTgt();
 
-          asmb->addConvBoolString();
+          ADD_BOOL_TO_STRING(asmb);
           ADD_PRINT(asmb);
         },
         "input",
@@ -140,7 +140,7 @@ TEST_CASE("[vm] Execute instruction pointer checks", "vm") {
           asmb->addCheckEqCallDynTgt();
 
           asmb->label("label2");
-          asmb->addConvBoolString();
+          ADD_BOOL_TO_STRING(asmb);
           ADD_PRINT(asmb);
         },
         "input",

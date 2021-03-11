@@ -10,7 +10,6 @@ TEST_CASE("[backend] Generate assembly for call expressions", "backend") {
       asmb->addLoadLitInt(42);
       asmb->addNegInt();
     });
-    CHECK_EXPR("+42", [](novasm::Assembler* asmb) -> void { asmb->addLoadLitInt(42); });
     CHECK_EXPR("- -42", [](novasm::Assembler* asmb) -> void {
       asmb->addLoadLitInt(42);
       asmb->addNegInt();
@@ -19,16 +18,6 @@ TEST_CASE("[backend] Generate assembly for call expressions", "backend") {
     CHECK_EXPR("~42", [](novasm::Assembler* asmb) -> void {
       asmb->addLoadLitInt(42);
       asmb->addInvInt();
-    });
-    CHECK_EXPR("--42", [](novasm::Assembler* asmb) -> void {
-      asmb->addLoadLitInt(42);
-      asmb->addLoadLitInt(1);
-      asmb->addSubInt();
-    });
-    CHECK_EXPR("++42", [](novasm::Assembler* asmb) -> void {
-      asmb->addLoadLitInt(42);
-      asmb->addLoadLitInt(1);
-      asmb->addAddInt();
     });
     CHECK_EXPR("1 + 3", [](novasm::Assembler* asmb) -> void {
       asmb->addLoadLitInt(1);
@@ -93,7 +82,6 @@ TEST_CASE("[backend] Generate assembly for call expressions", "backend") {
       asmb->addLoadLitLong(42);
       asmb->addNegLong();
     });
-    CHECK_EXPR("+42L", [](novasm::Assembler* asmb) -> void { asmb->addLoadLitLong(42); });
     CHECK_EXPR("- -42L", [](novasm::Assembler* asmb) -> void {
       asmb->addLoadLitLong(42);
       asmb->addNegLong();
@@ -102,16 +90,6 @@ TEST_CASE("[backend] Generate assembly for call expressions", "backend") {
     CHECK_EXPR("~42L", [](novasm::Assembler* asmb) -> void {
       asmb->addLoadLitLong(42);
       asmb->addInvLong();
-    });
-    CHECK_EXPR("--42L", [](novasm::Assembler* asmb) -> void {
-      asmb->addLoadLitLong(42);
-      asmb->addLoadLitLong(1);
-      asmb->addSubLong();
-    });
-    CHECK_EXPR("++42L", [](novasm::Assembler* asmb) -> void {
-      asmb->addLoadLitLong(42);
-      asmb->addLoadLitLong(1);
-      asmb->addAddLong();
     });
     CHECK_EXPR("1L + 3L", [](novasm::Assembler* asmb) -> void {
       asmb->addLoadLitLong(1);
@@ -172,87 +150,74 @@ TEST_CASE("[backend] Generate assembly for call expressions", "backend") {
   }
 
   SECTION("Float operations") {
-    CHECK_EXPR("-.1337", [](novasm::Assembler* asmb) -> void {
-      asmb->addLoadLitFloat(0.1337F); // NOLINT: Magic numbers
+    CHECK_EXPR_FLOAT("-.1337", [](novasm::Assembler* asmb) -> void {
+      asmb->addLoadLitFloat(0.1337F);
       asmb->addNegFloat();
     });
-    CHECK_EXPR("+.1337", [](novasm::Assembler* asmb) -> void {
-      asmb->addLoadLitFloat(0.1337F); // NOLINT: Magic numbers
-    });
-    CHECK_EXPR("--.1337", [](novasm::Assembler* asmb) -> void {
-      asmb->addLoadLitFloat(0.1337F); // NOLINT: Magic numbers
-      asmb->addLoadLitFloat(1.0F);
-      asmb->addSubFloat();
-    });
-    CHECK_EXPR("++.1337", [](novasm::Assembler* asmb) -> void {
-      asmb->addLoadLitFloat(0.1337F); // NOLINT: Magic numbers
-      asmb->addLoadLitFloat(1.0F);
+    CHECK_EXPR_FLOAT("1.42 + 3.42", [](novasm::Assembler* asmb) -> void {
+      asmb->addLoadLitFloat(1.42F);
+      asmb->addLoadLitFloat(3.42F);
       asmb->addAddFloat();
     });
-    CHECK_EXPR("1.42 + 3.42", [](novasm::Assembler* asmb) -> void {
-      asmb->addLoadLitFloat(1.42F); // NOLINT: Magic numbers
-      asmb->addLoadLitFloat(3.42F); // NOLINT: Magic numbers
-      asmb->addAddFloat();
-    });
-    CHECK_EXPR("1.42 - 3.42", [](novasm::Assembler* asmb) -> void {
-      asmb->addLoadLitFloat(1.42F); // NOLINT: Magic numbers
-      asmb->addLoadLitFloat(3.42F); // NOLINT: Magic numbers
+    CHECK_EXPR_FLOAT("1.42 - 3.42", [](novasm::Assembler* asmb) -> void {
+      asmb->addLoadLitFloat(1.42F);
+      asmb->addLoadLitFloat(3.42F);
       asmb->addSubFloat();
     });
-    CHECK_EXPR("1.42 * 3.42", [](novasm::Assembler* asmb) -> void {
-      asmb->addLoadLitFloat(1.42F); // NOLINT: Magic numbers
-      asmb->addLoadLitFloat(3.42F); // NOLINT: Magic numbers
+    CHECK_EXPR_FLOAT("1.42 * 3.42", [](novasm::Assembler* asmb) -> void {
+      asmb->addLoadLitFloat(1.42F);
+      asmb->addLoadLitFloat(3.42F);
       asmb->addMulFloat();
     });
-    CHECK_EXPR("1.42 / 3.42", [](novasm::Assembler* asmb) -> void {
-      asmb->addLoadLitFloat(1.42F); // NOLINT: Magic numbers
-      asmb->addLoadLitFloat(3.42F); // NOLINT: Magic numbers
+    CHECK_EXPR_FLOAT("1.42 / 3.42", [](novasm::Assembler* asmb) -> void {
+      asmb->addLoadLitFloat(1.42F);
+      asmb->addLoadLitFloat(3.42F);
       asmb->addDivFloat();
     });
-    CHECK_EXPR("1.0 / 2", [](novasm::Assembler* asmb) -> void {
+    CHECK_EXPR_FLOAT("1.0 / 2", [](novasm::Assembler* asmb) -> void {
       asmb->addLoadLitFloat(1.0F);
       asmb->addLoadLitInt(2);
       asmb->addConvIntFloat();
       asmb->addDivFloat();
     });
-    CHECK_EXPR("1 / 2.0", [](novasm::Assembler* asmb) -> void {
+    CHECK_EXPR_FLOAT("1 / 2.0", [](novasm::Assembler* asmb) -> void {
       asmb->addLoadLitInt(1);
       asmb->addConvIntFloat();
-      asmb->addLoadLitFloat(2.0F); // NOLINT: Magic numbers
+      asmb->addLoadLitFloat(2.0F);
       asmb->addDivFloat();
     });
-    CHECK_EXPR("6.0 % 2.0", [](novasm::Assembler* asmb) -> void {
-      asmb->addLoadLitFloat(6.0F); // NOLINT: Magic numbers
-      asmb->addLoadLitFloat(2.0F); // NOLINT: Magic numbers
+    CHECK_EXPR_FLOAT("6.0 % 2.0", [](novasm::Assembler* asmb) -> void {
+      asmb->addLoadLitFloat(6.0F);
+      asmb->addLoadLitFloat(2.0F);
       asmb->addModFloat();
     });
-    CHECK_EXPR("float(intrinsic{float_sin}(2.0))", [](novasm::Assembler* asmb) -> void {
-      asmb->addLoadLitFloat(2.0F); // NOLINT: Magic numbers
+    CHECK_EXPR_FLOAT("intrinsic{float_sin}(2.0)", [](novasm::Assembler* asmb) -> void {
+      asmb->addLoadLitFloat(2.0F);
       asmb->addSinFloat();
     });
-    CHECK_EXPR("float(intrinsic{float_cos}(2.0))", [](novasm::Assembler* asmb) -> void {
-      asmb->addLoadLitFloat(2.0F); // NOLINT: Magic numbers
+    CHECK_EXPR_FLOAT("intrinsic{float_cos}(2.0)", [](novasm::Assembler* asmb) -> void {
+      asmb->addLoadLitFloat(2.0F);
       asmb->addCosFloat();
     });
-    CHECK_EXPR("float(intrinsic{float_tan}(2.0))", [](novasm::Assembler* asmb) -> void {
-      asmb->addLoadLitFloat(2.0F); // NOLINT: Magic numbers
+    CHECK_EXPR_FLOAT("intrinsic{float_tan}(2.0)", [](novasm::Assembler* asmb) -> void {
+      asmb->addLoadLitFloat(2.0F);
       asmb->addTanFloat();
     });
-    CHECK_EXPR("float(intrinsic{float_asin}(2.0))", [](novasm::Assembler* asmb) -> void {
-      asmb->addLoadLitFloat(2.0F); // NOLINT: Magic numbers
+    CHECK_EXPR_FLOAT("intrinsic{float_asin}(2.0)", [](novasm::Assembler* asmb) -> void {
+      asmb->addLoadLitFloat(2.0F);
       asmb->addASinFloat();
     });
-    CHECK_EXPR("float(intrinsic{float_acos}(2.0))", [](novasm::Assembler* asmb) -> void {
-      asmb->addLoadLitFloat(2.0F); // NOLINT: Magic numbers
+    CHECK_EXPR_FLOAT("intrinsic{float_acos}(2.0)", [](novasm::Assembler* asmb) -> void {
+      asmb->addLoadLitFloat(2.0F);
       asmb->addACosFloat();
     });
-    CHECK_EXPR("float(intrinsic{float_atan}(2.0))", [](novasm::Assembler* asmb) -> void {
-      asmb->addLoadLitFloat(2.0F); // NOLINT: Magic numbers
+    CHECK_EXPR_FLOAT("intrinsic{float_atan}(2.0)", [](novasm::Assembler* asmb) -> void {
+      asmb->addLoadLitFloat(2.0F);
       asmb->addATanFloat();
     });
-    CHECK_EXPR("float(intrinsic{float_atan2}(6.0, 2.0))", [](novasm::Assembler* asmb) -> void {
-      asmb->addLoadLitFloat(6.0F); // NOLINT: Magic numbers
-      asmb->addLoadLitFloat(2.0F); // NOLINT: Magic numbers
+    CHECK_EXPR_FLOAT("intrinsic{float_atan2}(6.0, 2.0)", [](novasm::Assembler* asmb) -> void {
+      asmb->addLoadLitFloat(6.0F);
+      asmb->addLoadLitFloat(2.0F);
       asmb->addATan2Float();
     });
   }
@@ -343,35 +308,35 @@ TEST_CASE("[backend] Generate assembly for call expressions", "backend") {
 
   SECTION("Float checks") {
     CHECK_EXPR("1.42 == 3.42", [](novasm::Assembler* asmb) -> void {
-      asmb->addLoadLitFloat(1.42F); // NOLINT: Magic numbers
-      asmb->addLoadLitFloat(3.42F); // NOLINT: Magic numbers
+      asmb->addLoadLitFloat(1.42F);
+      asmb->addLoadLitFloat(3.42F);
       asmb->addCheckEqFloat();
     });
     CHECK_EXPR("1.42 != 3.42", [](novasm::Assembler* asmb) -> void {
-      asmb->addLoadLitFloat(1.42F); // NOLINT: Magic numbers
-      asmb->addLoadLitFloat(3.42F); // NOLINT: Magic numbers
+      asmb->addLoadLitFloat(1.42F);
+      asmb->addLoadLitFloat(3.42F);
       asmb->addCheckEqFloat();
       asmb->addLogicInvInt();
     });
     CHECK_EXPR("1.42 < 3.42", [](novasm::Assembler* asmb) -> void {
-      asmb->addLoadLitFloat(1.42F); // NOLINT: Magic numbers
-      asmb->addLoadLitFloat(3.42F); // NOLINT: Magic numbers
+      asmb->addLoadLitFloat(1.42F);
+      asmb->addLoadLitFloat(3.42F);
       asmb->addCheckLeFloat();
     });
     CHECK_EXPR("1.42 <= 3.42", [](novasm::Assembler* asmb) -> void {
-      asmb->addLoadLitFloat(1.42F); // NOLINT: Magic numbers
-      asmb->addLoadLitFloat(3.42F); // NOLINT: Magic numbers
+      asmb->addLoadLitFloat(1.42F);
+      asmb->addLoadLitFloat(3.42F);
       asmb->addCheckGtFloat();
       asmb->addLogicInvInt();
     });
     CHECK_EXPR("1.42 > 3.42", [](novasm::Assembler* asmb) -> void {
-      asmb->addLoadLitFloat(1.42F); // NOLINT: Magic numbers
-      asmb->addLoadLitFloat(3.42F); // NOLINT: Magic numbers
+      asmb->addLoadLitFloat(1.42F);
+      asmb->addLoadLitFloat(3.42F);
       asmb->addCheckGtFloat();
     });
     CHECK_EXPR("1.42 >= 3.42", [](novasm::Assembler* asmb) -> void {
-      asmb->addLoadLitFloat(1.42F); // NOLINT: Magic numbers
-      asmb->addLoadLitFloat(3.42F); // NOLINT: Magic numbers
+      asmb->addLoadLitFloat(1.42F);
+      asmb->addLoadLitFloat(3.42F);
       asmb->addCheckLeFloat();
       asmb->addLogicInvInt();
     });
@@ -426,8 +391,8 @@ TEST_CASE("[backend] Generate assembly for call expressions", "backend") {
       asmb->addAppendChar();
     });
 
-    CHECK_EXPR(
-        "int(intrinsic{string_length}(\"hello world\"))", [](novasm::Assembler* asmb) -> void {
+    CHECK_EXPR_INT(
+        "intrinsic{string_length}(\"hello world\")", [](novasm::Assembler* asmb) -> void {
           asmb->addLoadLitString("hello world");
           asmb->addLengthString();
         });
@@ -460,70 +425,58 @@ TEST_CASE("[backend] Generate assembly for call expressions", "backend") {
   }
 
   SECTION("Conversions") {
-    CHECK_EXPR("float(42)", [](novasm::Assembler* asmb) -> void {
+    CHECK_EXPR_FLOAT("float(42)", [](novasm::Assembler* asmb) -> void {
       asmb->addLoadLitInt(42);
       asmb->addConvIntFloat();
     });
-    CHECK_EXPR("int(42.1337)", [](novasm::Assembler* asmb) -> void {
-      asmb->addLoadLitFloat(42.1337F); // NOLINT: Magic numbers
+    CHECK_EXPR_INT("intrinsic{float_to_int}(42.1337)", [](novasm::Assembler* asmb) -> void {
+      asmb->addLoadLitFloat(42.1337F);
       asmb->addConvFloatInt();
     });
-    CHECK_EXPR("int(42L)", [](novasm::Assembler* asmb) -> void {
-      asmb->addLoadLitLong(42); // NOLINT: Magic numbers
+    CHECK_EXPR_INT("intrinsic{long_to_int}(42L)", [](novasm::Assembler* asmb) -> void {
+      asmb->addLoadLitLong(42);
       asmb->addConvLongInt();
     });
-    CHECK_EXPR("long(42)", [](novasm::Assembler* asmb) -> void {
-      asmb->addLoadLitInt(42); // NOLINT: Magic numbers
+    CHECK_EXPR_LONG("long(42)", [](novasm::Assembler* asmb) -> void {
+      asmb->addLoadLitInt(42);
       asmb->addConvIntLong();
     });
-    CHECK_EXPR("long('a')", [](novasm::Assembler* asmb) -> void {
+    CHECK_EXPR_LONG("long('a')", [](novasm::Assembler* asmb) -> void {
       asmb->addLoadLitInt('a');
       asmb->addConvIntLong();
     });
-    CHECK_EXPR("string(42)", [](novasm::Assembler* asmb) -> void {
+    CHECK_EXPR_STRING("intrinsic{int_to_string}(42)", [](novasm::Assembler* asmb) -> void {
       asmb->addLoadLitInt(42);
       asmb->addConvIntString();
     });
-    CHECK_EXPR("string(42L)", [](novasm::Assembler* asmb) -> void {
+    CHECK_EXPR_STRING("intrinsic{long_to_string}(42L)", [](novasm::Assembler* asmb) -> void {
       asmb->addLoadLitLong(42);
       asmb->addConvLongString();
     });
-    CHECK_EXPR("string(.1337)", [](novasm::Assembler* asmb) -> void {
-      asmb->addLoadLitFloat(0.1337F); // NOLINT: Magic numbers
+    CHECK_EXPR_STRING("intrinsic{float_to_string}(.1337)", [](novasm::Assembler* asmb) -> void {
+      asmb->addLoadLitFloat(0.1337F);
       asmb->addConvFloatString();
     });
-    CHECK_EXPR("string(true)", [](novasm::Assembler* asmb) -> void {
-      asmb->addLoadLitInt(1);
-      asmb->addConvBoolString();
-    });
-    CHECK_EXPR("string('a')", [](novasm::Assembler* asmb) -> void {
+    CHECK_EXPR_STRING("intrinsic{char_to_string}('a')", [](novasm::Assembler* asmb) -> void {
       asmb->addLoadLitInt('a');
       asmb->addConvCharString();
     });
-    CHECK_EXPR("char(42)", [](novasm::Assembler* asmb) -> void {
-      asmb->addLoadLitInt(42); // NOLINT: Magic numbers
+    CHECK_EXPR_CHAR("intrinsic{int_to_char}(42)", [](novasm::Assembler* asmb) -> void {
+      asmb->addLoadLitInt(42);
       asmb->addConvIntChar();
     });
-    CHECK_EXPR("char(42L)", [](novasm::Assembler* asmb) -> void {
-      asmb->addLoadLitLong(42); // NOLINT: Magic numbers
+    CHECK_EXPR_CHAR("intrinsic{long_to_char}(42L)", [](novasm::Assembler* asmb) -> void {
+      asmb->addLoadLitLong(42);
       asmb->addConvLongChar();
     });
-    CHECK_EXPR("char(42.42)", [](novasm::Assembler* asmb) -> void {
-      asmb->addLoadLitFloat(42.42F); // NOLINT: Magic numbers
+    CHECK_EXPR_CHAR("intrinsic{float_to_char}(42.42)", [](novasm::Assembler* asmb) -> void {
+      asmb->addLoadLitFloat(42.42F);
       asmb->addConvFloatChar();
     });
-    CHECK_EXPR("long(42.42)", [](novasm::Assembler* asmb) -> void {
-      asmb->addLoadLitFloat(42.42F); // NOLINT: Magic numbers
+    CHECK_EXPR_LONG("intrinsic{float_to_long}(42.42)", [](novasm::Assembler* asmb) -> void {
+      asmb->addLoadLitFloat(42.42F);
       asmb->addConvFloatLong();
     });
-  }
-
-  SECTION("Default constructors") {
-    CHECK_EXPR("int()", [](novasm::Assembler* asmb) -> void { asmb->addLoadLitInt(0); });
-    CHECK_EXPR("long()", [](novasm::Assembler* asmb) -> void { asmb->addLoadLitLong(0); });
-    CHECK_EXPR("float()", [](novasm::Assembler* asmb) -> void { asmb->addLoadLitFloat(.0); });
-    CHECK_EXPR("bool()", [](novasm::Assembler* asmb) -> void { asmb->addLoadLitInt(0); });
-    CHECK_EXPR("string()", [](novasm::Assembler* asmb) -> void { asmb->addLoadLitString(""); });
   }
 
   SECTION("User functions") {
@@ -554,19 +507,6 @@ TEST_CASE("[backend] Generate assembly for call expressions", "backend") {
 
           asmb->setEntrypoint("prog");
         });
-  }
-
-  SECTION("Identity conversions") {
-    CHECK_EXPR("int(42)", [](novasm::Assembler* asmb) -> void { asmb->addLoadLitInt(42); });
-    CHECK_EXPR("long(42L)", [](novasm::Assembler* asmb) -> void { asmb->addLoadLitLong(42); });
-    CHECK_EXPR("float(42.1337)", [](novasm::Assembler* asmb) -> void {
-      asmb->addLoadLitFloat(42.1337F); // NOLINT: Magic numbers
-    });
-    CHECK_EXPR("bool(false)", [](novasm::Assembler* asmb) -> void { asmb->addLoadLitInt(0); });
-    CHECK_EXPR("string(\"hello world\")", [](novasm::Assembler* asmb) -> void {
-      asmb->addLoadLitString("hello world");
-    });
-    CHECK_EXPR("char('a')", [](novasm::Assembler* asmb) -> void { asmb->addLoadLitInt('a'); });
   }
 }
 

@@ -162,7 +162,8 @@ TEST_CASE("[frontend] Analyzing call expressions", "frontend") {
   }
 
   SECTION("Get instance call with args") {
-    const auto& output = ANALYZE("fun f1(int i, string v) -> string i.string() + v "
+    const auto& output = ANALYZE("fun string(int i) intrinsic{int_to_string}(i) "
+                                 "fun f1(int i, string v) -> string i.string() + v "
                                  "fun f2(int i) -> string i.f1(\"test\")");
     REQUIRE(output.isSuccess());
 

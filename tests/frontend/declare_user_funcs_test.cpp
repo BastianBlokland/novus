@@ -59,7 +59,9 @@ TEST_CASE("[frontend] Analyzing user-function declarations", "frontend") {
     }
 
     SECTION("Declare templated conversion function") {
-      const auto& output = ANALYZE("struct Tuple{T, Y} = T a, Y b "
+      const auto& output = ANALYZE("fun string(int i) intrinsic{int_to_string}(i) "
+                                   "fun string(bool b) b ? \"true\" : \"false\" "
+                                   "struct Tuple{T, Y} = T a, Y b "
                                    "fun string{T, Y}(Tuple{T, Y} t) "
                                    " t.a.string() + \",\" + t.b.string() "
                                    "fun f() string{int, bool}(Tuple{int, bool}(42, false))");

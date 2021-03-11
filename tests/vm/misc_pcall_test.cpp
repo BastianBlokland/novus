@@ -89,7 +89,7 @@ TEST_CASE("[vm] Execute miscellaneous pcalls", "vm") {
           asmb->addLoadLitInt(0);
           asmb->addCheckEqInt();
 
-          asmb->addConvBoolString();
+          ADD_BOOL_TO_STRING(asmb);
           ADD_PRINT(asmb);
           asmb->addRet();
 

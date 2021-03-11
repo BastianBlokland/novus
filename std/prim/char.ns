@@ -1,0 +1,114 @@
+import "type.ns"
+
+import "std/diag.ns"
+
+// -- Traits
+
+fun isIntegral(Type{char} t)  true
+fun byteSize(Type{char} t)    1
+fun minVal(Type{char} t)      '\0'
+fun maxVal(Type{char} t)      char(255)
+
+// -- Constructors
+
+fun char() '\0'
+
+fun char(char c) c
+
+fun char(int i)
+  intrinsic{int_to_char}(i)
+
+fun char(long l)
+  intrinsic{long_to_char}(l)
+
+fun char(float f)
+  intrinsic{float_to_char}(f)
+
+// -- Operators
+
+fun +(char c) c
+
+fun ++(char c) c + char(1)
+
+fun --(char c) c - char(1)
+
+fun <<(char x, int y)
+  char(int(x) << y)
+
+fun >>(char x, int y)
+  char(int(x) >> y)
+
+fun &(char x, char y)
+  char(int(x) & int(y))
+
+fun |(char x, char y)
+  char(int(x) | int(y))
+
+fun ~(char x)
+  char(~int(x))
+
+fun +(char x, char y)
+  char(int(x) + int(y))
+
+fun -(char x, char y)
+  char(int(x) - char(y))
+
+fun ==(char x, char y)
+  int(x) == int(y)
+
+fun !=(char x, char y)
+  int(x) != int(y)
+
+fun <(char x, char y)
+  int(x) < int(y)
+
+fun <=(char x, char y)
+  int(x) <= int(y)
+
+fun >(char x, char y)
+  int(x) > int(y)
+
+fun >=(char x, char y)
+  int(x) >= int(y)
+
+// -- Tests
+
+assertEq((char(0b1) << 0), char(0b1))
+assertEq((char(0b1) << 1), char(0b10))
+assertEq((char(0b1) << 2), char(0b100))
+assertEq((char(0b0101) << 2), char(0b010100))
+assertEq((char(0b1) << 7), char(0b1000_0000))
+
+assertEq((char(0b1) >> 0), char(0b1))
+assertEq((char(0b10) >> 1), char(0b1))
+assertEq((char(0b100) >> 2), char(0b1))
+assertEq((char(0b0101) >> 1), char(0b010))
+assertEq((char(0b1000_0000) >> 7), char(0b1))
+
+assertEq((char(0b1) & char(0b0)), char(0b0))
+assertEq((char(0b111) & char(0b101)), char(0b101))
+assertEq((char(0b011) & char(0b101)), char(0b001))
+
+assertEq((char(0b0) | char(0b0)), char(0b0))
+assertEq((char(0b1) | char(0b0)), char(0b1))
+assertEq((char(0b111) | char(0b101)), char(0b111))
+assertEq((char(0b011) | char(0b001)), char(0b011))
+
+assertEq(~char(0b0), char(0xFF))
+assertEq(~char(0xFF), char(0))
+assertEq(~char(0b1010_1010), char(0b0101_0101))
+
+assertEq(char(42) + char(1), char(43))
+assertEq(char(42) + char(255), char(41))
+
+assertEq(char(42) - char(1), char(41))
+assertEq(char(42) - char(255), char(43))
+
+assertEq('a', 'a')
+assertNotEq('a', 'b')
+assertLe('a', 'b')
+assertGtr('b', 'a')
+assertLeOrEq('a', 'a')
+assertGtrOrEq('a', 'a')
+assertEq(++'a', 'b')
+assertEq(--'b', 'a')

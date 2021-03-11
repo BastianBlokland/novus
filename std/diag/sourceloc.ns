@@ -1,0 +1,41 @@
+import "assert.ns"
+
+import "std/format.ns"
+import "std/prim.ns"
+
+// -- Types
+
+struct SourceLoc =
+  string  file,
+  int     line,
+  int     column
+
+// -- Conversions
+
+fun string(SourceLoc v)
+  sourceLocWriter().run(v)
+
+// -- Utilities
+
+fun getSourceLoc(
+    string  file    = intrinsic{source_loc_file}(),
+    int     line    = intrinsic{source_loc_line}(),
+    int     column  = intrinsic{source_loc_column}()
+  ) SourceLoc(file, line, column)
+
+// -- Writers
+
+fun sourceLocWriter()
+  (
+    stringWriter() & litWriter(':') & txtIntWriter() & litWriter(':') & txtIntWriter()
+  ).map(lambda (SourceLoc sl)
+      makePair(sl.file, sl.line, sl.column)
+    )
+
+// -- Tests
+
+assertEq(getSourceLoc().file, "sourceloc.ns")
+assertEq(getSourceLoc().line, 38)
+assertEq(getSourceLoc().column, 1)
+
+assertEq(getSourceLoc().string(), "sourceloc.ns:41:1")

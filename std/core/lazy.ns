@@ -1,0 +1,193 @@
+import "time.ns"
+import "list.ns"
+import "option.ns"
+
+import "std/diag.ns"
+import "std/prim.ns"
+
+// -- Operators
+
+fun ??{T}(Option{T} opt, lazy{T} def) -> T
+  opt as T val ? val : def.get()
+
+// -- Functions
+
+fun get{T}(lazy{T} f) -> T
+  intrinsic{lazy_get}(f)
+
+fun first{T}(List{lazy{Option{T}}} l) -> Option{T}
+  if l is LEnd                      -> None()
+  if l as LNode{lazy{Option{T}}} n  ->
+    if n.val.get() as T val -> val
+    else                    -> first(n.next)
+
+// -- Actions
+
+act get{T}(lazy_action{T} l) -> T
+  intrinsic{lazy_action_get}(l)
+
+act orAct{T}(Option{T} o, lazy_action{T} a) -> Option{T}
+  o as T v ? v : a.get()
+
+act orAct{T}(Option{T} o, lazy_action{Option{T}} a) -> Option{T}
+  o as T v ? v : a.get()
+
+act actIf{T1, T2, T3}(Either{T1, T2} e, action{T1, Either{T3, T2}} a) -> Either{T3, T2}
+  if e as T1 et1 -> a(et1)
+  if e as T2 et2 -> et2
+
+act actIf{T1, T2, T3}(Either{T1, T2} e, action{T2, Either{T3, T1}} a) -> Either{T3, T1}
+  if e as T1 et1 -> et1
+  if e as T2 et2 -> a(et2)
+
+act actSeq{T}(List{lazy_action{Option{T}}} l) -> Option{T}
+  if l is LEnd                            -> None()
+  if l as LNode{lazy_action{Option{T}}} n ->
+    if n.val.get() as T val -> val
+    else                    -> actSeq(n.next)
+
+act actSeq{T}(
+  lazy_action{Option{T}} a,
+  lazy_action{Option{T}} b) -> Option{T}
+  a.get().orAct(b)
+
+act actSeq{T}(
+  lazy_action{Option{T}} a,
+  lazy_action{Option{T}} b,
+  lazy_action{Option{T}} c) -> Option{T}
+  a.get().orAct(b).orAct(c)
+
+act actSeq{T}(
+  lazy_action{Option{T}} a,
+  lazy_action{Option{T}} b,
+  lazy_action{Option{T}} c,
+  lazy_action{Option{T}} d) -> Option{T}
+  a.get().orAct(b).orAct(c).orAct(d)
+
+act actSeq{T}(
+  lazy_action{Option{T}} a,
+  lazy_action{Option{T}} b,
+  lazy_action{Option{T}} c,
+  lazy_action{Option{T}} d,
+  lazy_action{Option{T}} e) -> Option{T}
+  a.get().orAct(b).orAct(c).orAct(d).orAct(e)
+
+act actSeq{T}(
+  lazy_action{Option{T}} a,
+  lazy_action{Option{T}} b,
+  lazy_action{Option{T}} c,
+  lazy_action{Option{T}} d,
+  lazy_action{Option{T}} e,
+  lazy_action{Option{T}} f) -> Option{T}
+  a.get().orAct(b).orAct(c).orAct(d).orAct(e).orAct(f)
+
+act actSeq{T}(
+  lazy_action{Option{T}} a,
+  lazy_action{Option{T}} b,
+  lazy_action{Option{T}} c,
+  lazy_action{Option{T}} d,
+  lazy_action{Option{T}} e,
+  lazy_action{Option{T}} f,
+  lazy_action{Option{T}} g) -> Option{T}
+  a.get().orAct(b).orAct(c).orAct(d).orAct(e).orAct(f).orAct(g)
+
+act actSeq{T}(
+  lazy_action{Option{T}} a,
+  lazy_action{Option{T}} b,
+  lazy_action{Option{T}} c,
+  lazy_action{Option{T}} d,
+  lazy_action{Option{T}} e,
+  lazy_action{Option{T}} f,
+  lazy_action{Option{T}} g,
+  lazy_action{Option{T}} h) -> Option{T}
+  a.get().orAct(b).orAct(c).orAct(d).orAct(e).orAct(f).orAct(g).orAct(h)
+
+// -- Tests
+
+assertEq(
+  f = (lambda () 42);
+  lazyF = lazy f();
+  lazyF.get(), 42)
+
+assertEq(
+  f1 = (lambda () Option{int}());
+  f2 = (lambda () Option(42));
+  first(lazy f1() :: lazy f2()), 42)
+
+assertEq(
+  f1 = (lambda () Option{int}());
+  f2 = (lambda () Option{int}());
+  first(lazy f1() :: lazy f2()), None())
+
+// -- Impure Tests
+
+assertEq(
+  a = (impure lambda () 42);
+  lazyA = lazy a();
+  lazyA.get(), 42)
+
+assertEq(
+  getFallback = (lambda () 42);
+  Option{int}() ?? lazy getFallback(), 42)
+
+assertEq(
+  getFallback = (lambda () 42);
+  Option(1337) ?? lazy getFallback(), 1337)
+
+assertEq(
+  executeAction = (impure lambda () 42);
+  Option{int}().orAct(lazy executeAction()), 42)
+
+assertEq(
+  executeAction = (impure lambda () 42);
+  Option(1337).orAct(lazy executeAction()), 1337)
+
+assertEq(
+  Either{int, string}("Hello").actIf(impure lambda (int i) Either{int, string}(i * 2)), "Hello")
+
+assertEq(
+  Either{int, string}(42).actIf(impure lambda (int i) Either{int, string}(i * 2)), 84)
+
+assertEq(
+  Either{int, string}(42).actIf(impure lambda (int i) Either{int, string}("Hello")), "Hello")
+
+assertEq(
+  Either{int, string}(42).actIf(impure lambda (int i) Either{float, string}(i / 84.0)), 0.5)
+
+assertEq(
+  Either{int, string}(42).actIf(impure lambda (int i) Either{float, string}("Hello")), "Hello")
+
+assertEq(
+  Either{string, int}("Hello").actIf(impure lambda (int i) Either{int, string}(i * 2)), "Hello")
+
+assertEq(
+  Either{string, int}(42).actIf(impure lambda (int i) Either{int, string}(i * 2)), 84)
+
+assertEq(
+  Either{string, int}(42).actIf(impure lambda (int i) Either{int, string}("Hello")), "Hello")
+
+assertEq(
+  Either{string, int}(42).actIf(impure lambda (int i) Either{float, string}(i / 84.0)), 0.5)
+
+assertEq(
+  Either{string, int}(42).actIf(impure lambda (int i) Either{float, string}("Hello")), "Hello")
+
+assertEq(
+  a1 = (impure lambda () Option{int}());
+  a2 = (impure lambda () Option(42));
+  actSeq(lazy a1() :: lazy a2()), 42)
+
+assertEq(
+  a1 = (impure lambda () Option{int}());
+  a2 = (impure lambda () Option{int}());
+  actSeq(lazy a1() :: lazy a2()), None())
+
+assertEq(
+  a1 = (impure lambda () Option{int}());
+  a2 = (impure lambda () Option(42));
+  actSeq(lazy a1(), lazy a2()), 42)
+
+assertEq(
+  a1 = (impure lambda () Option{int}());
+  a2 = (impure lambda () Option{int}());
+  actSeq(lazy a1(), lazy a2()), None())
