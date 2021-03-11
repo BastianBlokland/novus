@@ -1,4 +1,4 @@
-import "std/type.ns"
+import "std/prim/type.ns"
 
 // -- Constructors
 

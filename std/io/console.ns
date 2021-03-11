@@ -4,7 +4,6 @@ import "std/io/stream.ns"
 import "std/io/tty.ns"
 import "std/parser.ns"
 import "std/prim.ns"
-import "std/type.ns"
 
 // -- Types
 

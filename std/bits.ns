@@ -2,7 +2,6 @@ import "std/assert.ns"
 import "std/parser.ns"
 import "std/prim.ns"
 import "std/text.ns"
-import "std/type.ns"
 import "std/writer.ns"
 
 // -- Types

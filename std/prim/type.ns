@@ -1,0 +1,34 @@
+import "std/assert.ns"
+import "std/prim/char.ns"
+import "std/prim/float.ns"
+import "std/prim/int.ns"
+import "std/prim/long.ns"
+
+// -- Type tag
+
+struct Type{T}
+
+// -- Utilities
+
+fun getType{T}(T val)
+  Type{T}()
+
+fun typeName{T}(Type{T} t)
+  typeName{T}()
+
+fun typeName{T}() -> string
+  intrinsic{type_name}{T}()
+
+// -- Conversions
+
+fun string{T}(Type{T} t)
+  t.typeName()
+
+// -- Tests
+
+assertEq(getType(42).string(), "int")
+assertEq(getType(42L).string(), "long")
+assertEq(getType('a').string(), "char")
+assertEq(getType(42.0).string(), "float")
+assertEq(getType(42).getType().string(), "Type{int}")
+assertEq(getType(42).getType().getType().string(), "Type{Type{int}}")

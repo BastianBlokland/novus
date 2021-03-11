@@ -2,7 +2,6 @@ import "std/assert.ns"
 import "std/func.ns"
 import "std/option.ns"
 import "std/prim.ns"
-import "std/type.ns"
 
 // -- Types
 
