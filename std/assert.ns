@@ -1,4 +1,4 @@
-import "std/console.ns"
+import "std/io.ns"
 import "std/list.ns"
 import "std/rt.ns"
 import "std/sourceloc.ns"

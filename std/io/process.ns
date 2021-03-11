@@ -1,7 +1,7 @@
 import "std/ascii.ns"
 import "std/assert.ns"
-import "std/console.ns"
 import "std/future.ns"
+import "std/io.ns"
 import "std/list.ns"
 import "std/prim.ns"
 

@@ -1,8 +1,8 @@
 import "std/assert.ns"
+import "std/io/path.ns"
+import "std/io/stream.ns"
 import "std/json.ns"
-import "std/path.ns"
 import "std/prim.ns"
-import "std/stream.ns"
 
 // -- Types
 

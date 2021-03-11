@@ -1,6 +1,5 @@
 import "std/assert.ns"
-import "std/console.ns"
-import "std/path.ns"
+import "std/io.ns"
 import "std/prim.ns"
 import "std/time.ns"
 import "std/version.ns"
