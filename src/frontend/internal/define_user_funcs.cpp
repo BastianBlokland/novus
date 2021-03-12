@@ -123,8 +123,9 @@ auto defineFunc(
     return false;
   }
 
+  const auto isNoInline = n.hasModifier(lex::Keyword::Noinline);
   const auto funcDefFlags =
-      n.isNoinline() ? prog::sym::FuncDef::Flags::NoInline : prog::sym::FuncDef::Flags::None;
+      isNoInline ? prog::sym::FuncDef::Flags::NoInline : prog::sym::FuncDef::Flags::None;
 
   if (bodyExpr->getType() == funcRetType) {
     ctx->getProg()->defineFunc(

@@ -195,6 +195,26 @@ TEST_CASE("[parse] Parsing function declaration statements", "parse") {
             ArgumentListDecl(OPAREN, NO_ARGS, COMMAS(0), CPAREN),
             std::nullopt,
             INT(1)));
+    CHECK_STMT(
+        "fun implicit a() 1",
+        funcDeclStmtNode(
+            FUN,
+            {IMPLICIT},
+            ID("a"),
+            std::nullopt,
+            ArgumentListDecl(OPAREN, NO_ARGS, COMMAS(0), CPAREN),
+            std::nullopt,
+            INT(1)));
+    CHECK_STMT(
+        "fun noinline implicit a() 1",
+        funcDeclStmtNode(
+            FUN,
+            {NOINLINE, IMPLICIT},
+            ID("a"),
+            std::nullopt,
+            ArgumentListDecl(OPAREN, NO_ARGS, COMMAS(0), CPAREN),
+            std::nullopt,
+            INT(1)));
   }
 
   SECTION("Actions") {

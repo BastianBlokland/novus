@@ -79,6 +79,7 @@ auto ParserImpl::nextStmtFuncDecl() -> NodePtr {
   while (auto kw = getKw(peekToken(0))) {
     switch (*kw) {
     case lex::Keyword::Noinline:
+    case lex::Keyword::Implicit:
       modifiers.push_back(consumeToken());
       continue;
     default:
@@ -91,8 +92,8 @@ auto ParserImpl::nextStmtFuncDecl() -> NodePtr {
   auto typeSubs = peekToken(0).getKind() == lex::TokenKind::SepOpenCurly
       ? std::optional<TypeSubstitutionList>{nextTypeSubstitutionList()}
       : std::nullopt;
-  auto argList = nextArgDeclList();
-  auto retType = std::optional<RetTypeSpec>{};
+  auto argList  = nextArgDeclList();
+  auto retType  = std::optional<RetTypeSpec>{};
   if (peekToken(0).getKind() == lex::TokenKind::SepArrow) {
     retType = nextRetTypeSpec();
   }
@@ -130,10 +131,10 @@ auto ParserImpl::nextStmtStructDecl() -> NodePtr {
   auto typeSubs = peekToken(0).getKind() == lex::TokenKind::SepOpenCurly
       ? std::optional<TypeSubstitutionList>{nextTypeSubstitutionList()}
       : std::nullopt;
-  auto isEmpty = peekToken(0).getKind() != lex::TokenKind::OpEq;
-  auto eq      = isEmpty ? std::nullopt : std::optional{consumeToken()};
-  auto fields  = std::vector<StructDeclStmtNode::FieldSpec>{};
-  auto commas  = std::vector<lex::Token>{};
+  auto isEmpty  = peekToken(0).getKind() != lex::TokenKind::OpEq;
+  auto eq       = isEmpty ? std::nullopt : std::optional{consumeToken()};
+  auto fields   = std::vector<StructDeclStmtNode::FieldSpec>{};
+  auto commas   = std::vector<lex::Token>{};
   if (!isEmpty) {
     while (peekToken(0).getKind() == lex::TokenKind::Identifier ||
            peekToken(0).getKind() == lex::TokenKind::Keyword) {
@@ -178,9 +179,9 @@ auto ParserImpl::nextStmtUnionDecl() -> NodePtr {
   auto typeSubs = peekToken(0).getKind() == lex::TokenKind::SepOpenCurly
       ? std::optional<TypeSubstitutionList>{nextTypeSubstitutionList()}
       : std::nullopt;
-  auto eq     = consumeToken();
-  auto types  = std::vector<Type>{};
-  auto commas = std::vector<lex::Token>{};
+  auto eq       = consumeToken();
+  auto types    = std::vector<Type>{};
+  auto commas   = std::vector<lex::Token>{};
   while (peekToken(0).getKind() == lex::TokenKind::Identifier ||
          peekToken(0).getKind() == lex::TokenKind::Keyword) {
 
