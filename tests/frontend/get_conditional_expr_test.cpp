@@ -30,7 +30,8 @@ TEST_CASE("[frontend] Analyzing conditional expressions", "frontend") {
   }
 
   SECTION("Get conditional expression with conversion on the lhs branch") {
-    const auto& output = ANALYZE("fun f() true ? 0 : 1.0");
+    const auto& output = ANALYZE("fun implicit float(int i) intrinsic{int_to_float}(i) "
+                                 "fun f() true ? 0 : 1.0");
     REQUIRE(output.isSuccess());
     const auto& funcDef = GET_FUNC_DEF(output, "f");
 
@@ -45,7 +46,8 @@ TEST_CASE("[frontend] Analyzing conditional expressions", "frontend") {
   }
 
   SECTION("Get conditional expression with conversion on the rhs branch") {
-    const auto& output = ANALYZE("fun f() true ? 1.0 : 0");
+    const auto& output = ANALYZE("fun implicit float(int i) intrinsic{int_to_float}(i) "
+                                 "fun f() true ? 1.0 : 0");
     REQUIRE(output.isSuccess());
     const auto& funcDef = GET_FUNC_DEF(output, "f");
 

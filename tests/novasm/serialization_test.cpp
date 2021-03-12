@@ -20,7 +20,8 @@ static auto testSerializeAndDeserializeAsm(Executable a) {
 TEST_CASE("[novasm] Assembly serialization", "novasm") {
 
   SECTION("Basic program") {
-    testSerializeAndDeserializeAsm(GEN_ASM("act main(int i, float f) -> float"
+    testSerializeAndDeserializeAsm(GEN_ASM("fun implicit float(int i) intrinsic{int_to_float}(i) "
+                                           "act main(int i, float f) -> float"
                                            "  intrinsic{float_pow}(i, f) + intrinsic{float_sin}(f) "
                                            "main(42, 1.337)"));
   }

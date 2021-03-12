@@ -204,7 +204,8 @@ TEST_CASE("[frontend] Analyzing anonymous functions", "frontend") {
   }
 
   SECTION("Anonymous function with conversion") {
-    const auto& output = ANALYZE("fun f() lambda () -> float 2");
+    const auto& output = ANALYZE("fun implicit float(int i) intrinsic{int_to_float}(i) "
+                                 "fun f() lambda () -> float 2");
     REQUIRE(output.isSuccess());
     const auto& anonFuncDef = findAnonFuncDef(output, 0);
 
