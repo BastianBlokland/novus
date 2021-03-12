@@ -17,6 +17,9 @@ fun float(float f) f
 fun float(long l)
   intrinsic{long_to_float}(l)
 
+fun implicit float(int i)
+  intrinsic{int_to_float}(i)
+
 fun asFloat(int i) -> float
   intrinsic{int_as_float}(i)
 

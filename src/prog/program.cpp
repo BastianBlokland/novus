@@ -185,13 +185,13 @@ Program::Program() :
       sym::TypeSet{m_string, m_int, m_int},
       m_string);
 
-  // Register build-in implicit conversions.
-  m_funcDecls.registerImplicitConv(*this, Fk::NoOp, m_char, m_int);
-  m_funcDecls.registerImplicitConv(*this, Fk::ConvIntLong, m_int, m_long);
-  m_funcDecls.registerImplicitConv(*this, Fk::ConvCharLong, m_char, m_long);
-  m_funcDecls.registerImplicitConv(*this, Fk::ConvIntFloat, m_int, m_float);
-
   // Register conversion intrinsics.
+  m_funcDecls.registerIntrinsic(*this, Fk::NoOp, "char_to_int", sym::TypeSet{m_char}, m_int);
+  m_funcDecls.registerIntrinsic(*this, Fk::ConvIntLong, "int_to_long", sym::TypeSet{m_int}, m_long);
+  m_funcDecls.registerIntrinsic(
+      *this, Fk::ConvCharLong, "char_to_long", sym::TypeSet{m_char}, m_long);
+  m_funcDecls.registerIntrinsic(
+      *this, Fk::ConvIntFloat, "int_to_float", sym::TypeSet{m_int}, m_float);
   m_funcDecls.registerIntrinsic(
       *this, Fk::ConvFloatInt, "float_to_int", sym::TypeSet{m_float}, m_int);
   m_funcDecls.registerIntrinsic(*this, Fk::ConvLongInt, "long_to_int", sym::TypeSet{m_long}, m_int);

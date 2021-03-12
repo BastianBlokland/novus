@@ -16,6 +16,12 @@ fun long(long l) l
 fun long(float f)
   intrinsic{float_to_long}(f)
 
+fun implicit long(int i)
+  intrinsic{int_to_long}(i)
+
+fun implicit long(char c)
+  intrinsic{char_to_long}(c)
+
 // -- Operators
 
 fun +(long l) l
