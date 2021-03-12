@@ -161,6 +161,24 @@ auto errOperatorOverloadWithoutArgs(prog::sym::SourceId src, const std::string& 
   return error(oss.str(), src);
 }
 
+auto errTemplatedImplicitConversion(prog::sym::SourceId src) -> Diag {
+  std::ostringstream oss;
+  oss << "Templated implicit conversions are not supported";
+  return error(oss.str(), src);
+}
+
+auto errImplicitNonConv(prog::sym::SourceId src) -> Diag {
+  std::ostringstream oss;
+  oss << "Implicit modifier is only valid on conversions";
+  return error(oss.str(), src);
+}
+
+auto errToManyInputsInImplicitConv(prog::sym::SourceId src) -> Diag {
+  std::ostringstream oss;
+  oss << "Implicit conversions can only take a single argument";
+  return error(oss.str(), src);
+}
+
 auto errTypeParamNameConflictsWithType(prog::sym::SourceId src, const std::string& name) -> Diag {
   std::ostringstream oss;
   oss << "Type parameter name '" << name << "' conflicts with a type with the same name";

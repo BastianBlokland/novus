@@ -528,6 +528,10 @@ auto Program::declareAction(
       *this, sym::FuncKind::User, std::move(name), std::move(input), output, numOptInputs);
 }
 
+auto Program::declareImplicitConv(sym::TypeId input, sym::TypeId output) -> sym::FuncId {
+  return m_funcDecls.registerImplicitConv(*this, sym::FuncKind::User, input, output);
+}
+
 auto Program::declareFailIntrinsic(std::string name, sym::TypeId output) -> sym::FuncId {
   return m_funcDecls.registerIntrinsicAction(
       *this, sym::FuncKind::ActionFail, std::move(name), sym::TypeSet{}, output);

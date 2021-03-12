@@ -142,6 +142,17 @@ TEST_CASE("[frontend] Analyzing user-function declarations", "frontend") {
     }
   }
 
+  SECTION("Implicit conversions") {
+
+    SECTION("Declare implicit conversion") {
+      const auto& output = ANALYZE("fun implicit bool(int i) i == 0");
+      REQUIRE(output.isSuccess());
+      const auto& funcDecl = GET_FUNC_DECL(output, "bool", GET_TYPE_ID(output, "int"));
+      CHECK(funcDecl.getOutput() == GET_TYPE_ID(output, "bool"));
+      CHECK(funcDecl.isImplicitConv());
+    }
+  }
+
   SECTION("Diagnostics") {
     CHECK_DIAG(
         "fun a() -> int 1 "
@@ -194,6 +205,10 @@ TEST_CASE("[frontend] Analyzing user-function declarations", "frontend") {
         errInvalidFuncInstantiation(NO_SRC),
         errUndeclaredTypeOrConversion(NO_SRC, "S{int}", {}));
     CHECK_DIAG("fun f(int a = 0, int b) a * b", errNonOptArgFollowingOpt(NO_SRC));
+    CHECK_DIAG("fun implicit int{T}(T v) int(v)", errTemplatedImplicitConversion(NO_SRC));
+    CHECK_DIAG("fun implicit f(int i) i", errImplicitNonConv(NO_SRC));
+    CHECK_DIAG("fun implicit bool(int i, int j) i == 0", errToManyInputsInImplicitConv(NO_SRC));
+    CHECK_DIAG("fun implicit bool(int i = 0) i == 0", errToManyInputsInImplicitConv(NO_SRC));
   }
 }
 
