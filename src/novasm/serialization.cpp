@@ -16,7 +16,7 @@ namespace novasm {
  *
  * More info: https://en.wikipedia.org/wiki/Shebang_(Unix)
  */
-static const std::string g_shebangLine = "#!/usr/bin/env novrt\n";
+static std::string_view g_shebangLine = "#!/usr/bin/env novrt\n";
 
 template <typename ValueType, typename OutputItr>
 using Writer = void(const ValueType& val, OutputItr& outItr);
