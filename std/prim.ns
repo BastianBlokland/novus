@@ -22,6 +22,20 @@ fun highBit{T}()              lowBit{T}() << (bitSize{T}() - 1)
 fun minVal{T}()               minVal(Type{T}())
 fun maxVal{T}()               maxVal(Type{T}())
 
+// -- Equality
+
+fun =={T}(T x, T y) -> bool
+  intrinsic{usertype_eq_usertype}(x, y)
+
+fun !={T1, T2}(T1 x, T2 y) -> bool
+  !(x == y)
+
+fun equals{T1, T2}(T1 x, T2 y) -> bool
+  x == y
+
+fun equals{T}(T x, T y) -> bool
+  x == y
+
 // -- Tests
 
 assert(isIntegral{int}())
@@ -33,3 +47,14 @@ assertEq(bitSize{long}(), 64)
 
 assertEq(lowBit{int}(), 1)
 assertEq(highBit{int}(), 1 << 31)
+
+assert(equals(1, 1))
+assertNot(equals(1, 2))
+
+assert(
+  eq42 = equals{int}[42];
+  eq42(42))
+
+assert(
+  eq42 = equals{int}[42];
+  (!eq42)(43))

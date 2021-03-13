@@ -47,6 +47,11 @@ fun []{T}(List{T} l, int idx) -> Option{T}
 fun []{T}(List{T} l, int startIdx, int endIdx) -> List{T}
   l.pop(startIdx).take(endIdx - startIdx)
 
+fun =={T}(List{T} l1, List{T} l2)
+  if l1 as LNode{T} n1 && l2 as LNode{T} n2 && n1.val == n2.val   -> self(n1.next, n2.next)
+  if l1 is LEnd && l2 is LEnd                                     -> true
+  else                                                            -> false
+
 // -- Conversions
 
 fun string{T}(List{T} l, string start = "[", string sep = ",", string end = "]")
@@ -274,14 +279,6 @@ fun splitReverse{T1, T2}(List{Either{T1, T2}} l)
         elem as T2 t2 ? (t2 :: res.second)  : res.second
       )
     , makePair(List{T1}(), List{T2}()))
-
-// The default equality uses stack size linear with the list length, so for large lists its
-// ineffiecient / impossible to use the default equality. This is an alternative that uses
-// constant stack space.
-fun listEqual{T}(List{T} l1, List{T} l2)
-  if l1 as LNode{T} n1 && l2 as LNode{T} n2 && n1.val == n2.val   -> self(n1.next, n2.next)
-  if l1 is LEnd && l2 is LEnd                                     -> true
-  else                                                            -> false
 
 // -- Impure
 
@@ -667,12 +664,12 @@ assertEq(
   splitReverse(l),
   makePair(4 :: 3 :: 2 :: 1, "world" :: "hello"))
 
-assert(listEqual(0 :: 1 :: 4 :: 9, 0 :: 1 :: 4 :: 9))
-assert(listEqual(0 :: 1 :: 4 :: 9, 0 :: 1 :: 4 :: 9))
-assertNot(listEqual(0 :: 1 :: 4 :: 9, 0 :: 1 :: 5 :: 9))
-assertNot(listEqual(0 :: 1 :: 4 :: 9, 0 :: 1))
-assertNot(listEqual(0 :: 1 :: 4 :: 9, List{int}()))
-assert(listEqual(List{int}(), List{int}()))
+assertEq(0 :: 1 :: 4 :: 9, 0 :: 1 :: 4 :: 9)
+assertEq(0 :: 1 :: 4 :: 9, 0 :: 1 :: 4 :: 9)
+assertNotEq(0 :: 1 :: 4 :: 9, 0 :: 1 :: 5 :: 9)
+assertNotEq(0 :: 1 :: 4 :: 9, 0 :: 1)
+assertNotEq(0 :: 1 :: 4 :: 9, List{int}())
+assertEq(List{int}(), List{int}())
 
 // -- Impure Tests
 

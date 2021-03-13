@@ -34,3 +34,6 @@ fun +(int i) i
 fun ++(int i) i + 1
 
 fun --(int i) i - 1
+
+fun ==(int x, int y) -> bool
+  intrinsic{int_eq_int}(x, y)

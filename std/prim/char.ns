@@ -33,43 +33,40 @@ fun ++(char c) c + char(1)
 fun --(char c) c - char(1)
 
 fun <<(char x, int y)
-  char(int(x) << y)
+  char(intrinsic{char_to_int}(x) << y)
 
 fun >>(char x, int y)
-  char(int(x) >> y)
+  char(intrinsic{char_to_int}(x) >> y)
 
 fun &(char x, char y)
-  char(int(x) & int(y))
+  char(intrinsic{char_to_int}(x) & intrinsic{char_to_int}(y))
 
 fun |(char x, char y)
-  char(int(x) | int(y))
+  char(intrinsic{char_to_int}(x) | intrinsic{char_to_int}(y))
 
 fun ~(char x)
-  char(~int(x))
+  char(~intrinsic{char_to_int}(x))
 
 fun +(char x, char y)
-  char(int(x) + int(y))
+  char(intrinsic{char_to_int}(x) + intrinsic{char_to_int}(y))
 
 fun -(char x, char y)
-  char(int(x) - char(y))
+  char(intrinsic{char_to_int}(x) - char(y))
 
-fun ==(char x, char y)
-  int(x) == int(y)
+fun ==(char x, char y) -> bool
+  intrinsic{int_eq_int}(intrinsic{char_to_int}(x), intrinsic{char_to_int}(y))
 
-fun !=(char x, char y)
-  int(x) != int(y)
+fun <(char x, char y) -> bool
+  intrinsic{char_to_int}(x) < intrinsic{char_to_int}(y)
 
-fun <(char x, char y)
-  int(x) < int(y)
+fun <=(char x, char y) -> bool
+  intrinsic{char_to_int}(x) <= intrinsic{char_to_int}(y)
 
-fun <=(char x, char y)
-  int(x) <= int(y)
+fun >(char x, char y) -> bool
+  intrinsic{char_to_int}(x) > intrinsic{char_to_int}(y)
 
-fun >(char x, char y)
-  int(x) > int(y)
-
-fun >=(char x, char y)
-  int(x) >= int(y)
+fun >=(char x, char y) -> bool
+  intrinsic{char_to_int}(x) >= intrinsic{char_to_int}(y)
 
 // -- Tests
 

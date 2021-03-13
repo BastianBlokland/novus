@@ -54,6 +54,9 @@ fun string(long i, int minDigits)
 fun +{T}(string s, T v)
   s + v.string()
 
+fun ==(string x, string y) -> bool
+  intrinsic{string_eq_string}(x, y)
+
 // -- Utilities
 
 fun isEmpty(string str)

@@ -641,11 +641,11 @@ assertEq(txtHexParser()("12345678"), 0x12345678)
 assertEq(txtHexParser()("23456789"), 0x23456789)
 assertEq(txtHexParser()("539"), 0x539)
 
-assert(
+assertEq(
   inputs  = rangeList(0, 1337);
   hexStrs = inputs.map(lambda (int i) toHexString(i));
   parser  = txtHexParser();
-  listEqual(hexStrs.map(lambda (string str) parser(str) ?? -1), inputs))
+  makePair(hexStrs.map(lambda (string str) parser(str) ?? -1), inputs))
 
 assertIs(txtHexParser()(""), Type{ParseFailure}())
 assertIs(txtHexParser()("g"), Type{ParseFailure}())
