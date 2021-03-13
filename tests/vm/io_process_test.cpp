@@ -65,69 +65,113 @@ auto compileProg(std::string_view name, std::string_view srcText) -> filesystem:
 
 auto novrtPath = (input::getExecutablePath().parent_path() / "novrt").string();
 
-auto hello_world_nx = compileProg(
-    "hello_world.nx",
-    "import \"std/io.ns\" "
-    "print(\"Hello world\")");
+auto helloWorldNx() -> const std::string& {
+  static auto path = compileProg(
+                         "hello_world.nx",
+                         "import \"std/io.ns\" "
+                         "print(\"Hello world\")")
+                         .string();
+  return path;
+}
 
-auto hello_world_err_nx = compileProg(
-    "hello_world_err.nx",
-    "import \"std/io.ns\" "
-    "printErr(\"Hello world\")");
+auto helloWorldErrNx() -> const std::string& {
+  static auto path = compileProg(
+                         "hello_world_err.nx",
+                         "import \"std/io.ns\" "
+                         "printErr(\"Hello world\")")
+                         .string();
+  return path;
+}
 
-auto read_line_nx = compileProg(
-    "read_line.nx",
-    "import \"std/io.ns\" "
-    "print(readLine())");
+auto readLineNx() -> const std::string& {
+  static auto path = compileProg(
+                         "read_line.nx",
+                         "import \"std/io.ns\" "
+                         "print(readLine())")
+                         .string();
+  return path;
+}
 
-auto print_num_env_args_nx = compileProg(
-    "print_num_env_args.nx",
-    "import \"std/io.ns\" "
-    "import \"std/sys.ns\" "
-    "print(intrinsic{env_argument_count}())");
+auto printNumEnvArgsNx() -> const std::string& {
+  static auto path = compileProg(
+                         "print_num_env_args.nx",
+                         "import \"std/io.ns\" "
+                         "import \"std/sys.ns\" "
+                         "print(intrinsic{env_argument_count}())")
+                         .string();
+  return path;
+}
 
-auto print_test_env_opt_nx = compileProg(
-    "print_test_env_opt.nx",
-    "import \"std/io.ns\" "
-    "import \"std/sys.ns\" "
-    "print(getEnvOpt(\"test\"))");
+auto printTestEnvOptNx() -> const std::string& {
+  static auto path = compileProg(
+                         "print_test_env_opt.nx",
+                         "import \"std/io.ns\" "
+                         "import \"std/sys.ns\" "
+                         "print(getEnvOpt(\"test\"))")
+                         .string();
+  return path;
+}
 
-auto print_first_arg_nx = compileProg(
-    "print_first_arg.nx",
-    "import \"std/io.ns\" "
-    "import \"std/sys.ns\" "
-    "print(intrinsic{env_argument}(0))");
+auto printFirstArgNx() -> const std::string& {
+  static auto path = compileProg(
+                         "print_first_arg.nx",
+                         "import \"std/io.ns\" "
+                         "import \"std/sys.ns\" "
+                         "print(intrinsic{env_argument}(0))")
+                         .string();
+  return path;
+}
 
-auto assert_true_nx = compileProg(
-    "assert_true.nx",
-    "import \"std/diag.ns\" "
-    "assert(true)");
+auto assertTrueNx() -> const std::string& {
+  static auto path = compileProg(
+                         "assert_true.nx",
+                         "import \"std/diag.ns\" "
+                         "assert(true)")
+                         .string();
+  return path;
+}
 
-auto fail_nx = compileProg(
-    "fail.nx",
-    "import \"std/sys.ns\" "
-    "fail(\"Failed on purpose\")");
+auto failNx() -> const std::string& {
+  static auto path = compileProg(
+                         "fail.nx",
+                         "import \"std/sys.ns\" "
+                         "fail(\"Failed on purpose\")")
+                         .string();
+  return path;
+}
 
-auto div_by_zero_nx = compileProg(
-    "div_by_zero.nx",
-    "import \"std/diag.ns\" "
-    "assert(1 / 0 == 1)");
+auto divByZeroNx() -> const std::string& {
+  static auto path = compileProg(
+                         "div_by_zero.nx",
+                         "import \"std/diag.ns\" "
+                         "assert(1 / 0 == 1)")
+                         .string();
+  return path;
+}
 
-auto wait_for_interupt_nx = compileProg(
-    "wait_for_interupt.nx",
-    "import \"std/core.ns\" "
-    "import \"std/io.ns\" "
-    "import \"std/sys.ns\" "
-    "print(invoke( "
-    "   impure lambda() "
-    "     if interuptIsRequested() -> \"Received interupt\" "
-    "     else -> sleep(millisecond()); self() ))");
+auto waitForInteruptNx() -> const std::string& {
+  static auto path = compileProg(
+                         "wait_for_interupt.nx",
+                         "import \"std/core.ns\" "
+                         "import \"std/io.ns\" "
+                         "import \"std/sys.ns\" "
+                         "print(invoke( "
+                         "   impure lambda() "
+                         "     if interuptIsRequested() -> \"Received interupt\" "
+                         "     else -> sleep(millisecond()); self() ))")
+                         .string();
+  return path;
+}
 
-auto infinite_loop_nx = compileProg(
-    "infinite_loop.nx",
-    "import \"std/core.ns\" "
-    "import \"std/sys.ns\" "
-    "invoke(impure lambda() -> bool sleep(millisecond()); self())");
+auto infiniteLoopNx() -> const std::string& {
+  static auto path = compileProg(
+                         "infinite_loop.nx",
+                         "import \"std/core.ns\" "
+                         "import \"std/sys.ns\" "
+                         "invoke(impure lambda() -> bool sleep(millisecond()); self())")
+                         .string();
+  return path;
+}
 
 } // namespace
 
@@ -140,7 +184,7 @@ TEST_CASE("[vm] Execute process platform-calls", "vm") {
           asmb->setEntrypoint("entry");
 
           // Run a program that exits with code 0.
-          asmb->addLoadLitString(novrtPath + " " + assert_true_nx.string());
+          asmb->addLoadLitString(novrtPath + " " + assertTrueNx());
           asmb->addPCall(novasm::PCallCode::ProcessStart);
           asmb->addPCall(novasm::PCallCode::ProcessBlock);
 
@@ -149,7 +193,7 @@ TEST_CASE("[vm] Execute process platform-calls", "vm") {
           ADD_PRINT(asmb);
 
           // Run a program that exits with code 1.
-          asmb->addLoadLitString(novrtPath + " " + fail_nx.string());
+          asmb->addLoadLitString(novrtPath + " " + failNx());
           asmb->addPCall(novasm::PCallCode::ProcessStart);
           asmb->addPCall(novasm::PCallCode::ProcessBlock);
 
@@ -158,7 +202,7 @@ TEST_CASE("[vm] Execute process platform-calls", "vm") {
           ADD_PRINT(asmb);
 
           // Run a program that exits with code 14.
-          asmb->addLoadLitString(novrtPath + " " + div_by_zero_nx.string());
+          asmb->addLoadLitString(novrtPath + " " + divByZeroNx());
           asmb->addPCall(novasm::PCallCode::ProcessStart);
           asmb->addPCall(novasm::PCallCode::ProcessBlock);
 
@@ -179,7 +223,7 @@ TEST_CASE("[vm] Execute process platform-calls", "vm") {
           asmb->setEntrypoint("entry");
 
           // Run a program that prints to stdOut.
-          asmb->addLoadLitString(novrtPath + " " + hello_world_nx.string());
+          asmb->addLoadLitString(novrtPath + " " + helloWorldNx());
           asmb->addPCall(novasm::PCallCode::ProcessStart);
 
           asmb->addDup(); // Duplicate the process.
@@ -209,7 +253,7 @@ TEST_CASE("[vm] Execute process platform-calls", "vm") {
           asmb->setEntrypoint("entry");
 
           // Run a program that prints to stdErr.
-          asmb->addLoadLitString(novrtPath + " " + hello_world_err_nx.string());
+          asmb->addLoadLitString(novrtPath + " " + helloWorldErrNx());
           asmb->addPCall(novasm::PCallCode::ProcessStart);
 
           asmb->addDup(); // Duplicate the process.
@@ -239,7 +283,7 @@ TEST_CASE("[vm] Execute process platform-calls", "vm") {
           asmb->setEntrypoint("entry");
 
           // Run a program that reads a line from stdIn and write to stdOut.
-          asmb->addLoadLitString(novrtPath + " " + read_line_nx.string());
+          asmb->addLoadLitString(novrtPath + " " + readLineNx());
           asmb->addPCall(novasm::PCallCode::ProcessStart);
           asmb->addDup(); // Duplicate the process.
           asmb->addDup(); // Duplicate the process.
@@ -270,7 +314,7 @@ TEST_CASE("[vm] Execute process platform-calls", "vm") {
 
           // Run a program that prints the number of environment arguments.
           asmb->addLoadLitString(
-              novrtPath + " " + print_num_env_args_nx.string() + " a --b -ce hello 'hello world'");
+              novrtPath + " " + printNumEnvArgsNx() + " a --b -ce hello 'hello world'");
           asmb->addPCall(novasm::PCallCode::ProcessStart);
 
           asmb->addDup(); // Duplicate the process.
@@ -282,8 +326,7 @@ TEST_CASE("[vm] Execute process platform-calls", "vm") {
 
           // Run a program that the argument after --test.
           asmb->addLoadLitString(
-              novrtPath + " " + print_test_env_opt_nx.string() +
-              " --something --test 'hello world' else");
+              novrtPath + " " + printTestEnvOptNx() + " --something --test 'hello world' else");
           asmb->addPCall(novasm::PCallCode::ProcessStart);
 
           asmb->addDup(); // Duplicate the process.
@@ -305,7 +348,7 @@ TEST_CASE("[vm] Execute process platform-calls", "vm") {
           asmb->label("entry");
           asmb->setEntrypoint("entry");
 
-          asmb->addLoadLitString(novrtPath + " " + hello_world_nx.string());
+          asmb->addLoadLitString(novrtPath + " " + helloWorldNx());
           asmb->addPCall(novasm::PCallCode::ProcessStart);
           asmb->addPCall(novasm::PCallCode::ProcessGetId);
 
@@ -326,7 +369,7 @@ TEST_CASE("[vm] Execute process platform-calls", "vm") {
           asmb->label("entry");
           asmb->setEntrypoint("entry");
 
-          asmb->addLoadLitString(novrtPath + " " + hello_world_nx.string());
+          asmb->addLoadLitString(novrtPath + " " + helloWorldNx());
           asmb->addPCall(novasm::PCallCode::ProcessStart);
 
           asmb->addPop();
@@ -342,7 +385,7 @@ TEST_CASE("[vm] Execute process platform-calls", "vm") {
           asmb->label("entry");
           asmb->setEntrypoint("entry");
 
-          asmb->addLoadLitString(novrtPath + " " + hello_world_nx.string());
+          asmb->addLoadLitString(novrtPath + " " + helloWorldNx());
           asmb->addPCall(novasm::PCallCode::ProcessStart);
 
           // Sleep for 500 ms to give the child-process time to finish.
@@ -369,7 +412,7 @@ TEST_CASE("[vm] Execute process platform-calls", "vm") {
           // Stack var 2 - ( numForks + 2 ):  future handles to the forked workers.
 
           // Start a process and save it in a variable.
-          asmb->addLoadLitString(novrtPath + " " + hello_world_nx.string());
+          asmb->addLoadLitString(novrtPath + " " + helloWorldNx());
           asmb->addPCall(novasm::PCallCode::ProcessStart);
           asmb->addStackStore(0);
 
@@ -467,7 +510,7 @@ TEST_CASE("[vm] Execute process platform-calls", "vm") {
           asmb->label("entry");
           asmb->setEntrypoint("entry");
 
-          asmb->addLoadLitString(" \t \n \r " + novrtPath + " " + hello_world_nx.string());
+          asmb->addLoadLitString(" \t \n \r " + novrtPath + " " + helloWorldNx());
           asmb->addPCall(novasm::PCallCode::ProcessStart);
           asmb->addPCall(novasm::PCallCode::ProcessBlock);
 
@@ -485,8 +528,7 @@ TEST_CASE("[vm] Execute process platform-calls", "vm") {
           asmb->label("entry");
           asmb->setEntrypoint("entry");
 
-          asmb->addLoadLitString(
-              novrtPath + " " + print_first_arg_nx.string() + " non-quoted\\'quoted\\'");
+          asmb->addLoadLitString(novrtPath + " " + printFirstArgNx() + " non-quoted\\'quoted\\'");
           asmb->addPCall(novasm::PCallCode::ProcessStart);
 
           asmb->addDup(); // Duplicate the process.
@@ -508,7 +550,7 @@ TEST_CASE("[vm] Execute process platform-calls", "vm") {
           asmb->setEntrypoint("entry");
 
           // Run a program that waits until its interupted.
-          asmb->addLoadLitString(novrtPath + " " + wait_for_interupt_nx.string());
+          asmb->addLoadLitString(novrtPath + " " + waitForInteruptNx());
           asmb->addPCall(novasm::PCallCode::ProcessStart);
           asmb->addDup(); // Duplicate the process.
           asmb->addDup(); // Duplicate the process.
@@ -546,7 +588,7 @@ TEST_CASE("[vm] Execute process platform-calls", "vm") {
           asmb->setEntrypoint("entry");
 
           // Run a program that runs an infinite loop.
-          asmb->addLoadLitString(novrtPath + " " + infinite_loop_nx.string());
+          asmb->addLoadLitString(novrtPath + " " + infiniteLoopNx());
           asmb->addPCall(novasm::PCallCode::ProcessStart);
           asmb->addDup(); // Duplicate the process.
           asmb->addDup(); // Duplicate the process.

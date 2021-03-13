@@ -5,10 +5,14 @@
 
 namespace vm {
 
-TEST_CASE("[vm] Execute tcp platform-calls", "vm") {
+namespace {
 
-  auto loopbackAddrIpV4 = std::string{127, 0, 0, 1};
-  auto loopbackAddrIpV6 = std::string{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1};
+auto loopbackAddrIpV4 = std::string{127, 0, 0, 1};
+auto loopbackAddrIpV6 = std::string{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1};
+
+} // namespace
+
+TEST_CASE("[vm] Execute tcp platform-calls", "vm") {
 
   SECTION("Send and receive message IpV4") {
     CHECK_PROG(
