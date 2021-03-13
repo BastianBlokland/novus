@@ -33,7 +33,7 @@ TEST_CASE("[backend] Generate assembly for self call expressions", "backend") {
 
   SECTION("Closure") {
     CHECK_PROG(
-        "fun f(int i) lambda (bool b) b ? i : self(!b) ", [](novasm::Assembler* asmb) -> void {
+        "fun f(int i) lambda (bool b) b ? i : self(b) ", [](novasm::Assembler* asmb) -> void {
           // Function.
           asmb->addStackLoad(0); // Load arg 'i'.
           asmb->addLoadLitIp("lambda");
@@ -45,9 +45,8 @@ TEST_CASE("[backend] Generate assembly for self call expressions", "backend") {
           asmb->addStackLoad(0); // Load arg 'b'.
           asmb->addJumpIf("bTrue");
 
-          asmb->addStackLoad(0);  // Load arg 'b'.
-          asmb->addLogicInvInt(); // !b
-          asmb->addStackLoad(1);  // Load closure arg 'i'.
+          asmb->addStackLoad(0); // Load arg 'b'.
+          asmb->addStackLoad(1); // Load closure arg 'i'.
           asmb->addCall("lambda", 2, novasm::CallMode::Tail);
           asmb->addJump("lambdaEnd");
 

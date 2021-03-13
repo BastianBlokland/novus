@@ -72,6 +72,8 @@ Program::Program() :
   // Register int intrinsics.
   m_funcDecls.registerIntrinsic(
       *this, Fk::CheckEqInt, "int_eq_int", sym::TypeSet{m_int, m_int}, m_bool);
+  m_funcDecls.registerIntrinsic(
+      *this, Fk::CheckIntZero, "int_eq_zero", sym::TypeSet{m_int}, m_bool);
 
   // Register build-in unary long operators.
   m_funcDecls.registerFunc(
@@ -151,9 +153,6 @@ Program::Program() :
   m_funcDecls.registerIntrinsic(*this, Fk::ATanFloat, "float_atan", sym::TypeSet{m_float}, m_float);
   m_funcDecls.registerIntrinsic(
       *this, Fk::ATan2Float, "float_atan2", sym::TypeSet{m_float, m_float}, m_float);
-
-  // Register build-in unary bool operators.
-  m_funcDecls.registerFunc(*this, Fk::InvBool, getFuncName(Op::Bang), sym::TypeSet{m_bool}, m_bool);
 
   // Register build-in binary string operators.
   m_funcDecls.registerFunc(

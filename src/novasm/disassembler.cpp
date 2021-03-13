@@ -162,7 +162,6 @@ auto disassembleInstructions(
     case OpCode::NegInt:
     case OpCode::NegLong:
     case OpCode::NegFloat:
-    case OpCode::LogicInvInt:
     case OpCode::ShiftLeftInt:
     case OpCode::ShiftLeftLong:
     case OpCode::ShiftRightInt:
@@ -191,6 +190,7 @@ auto disassembleInstructions(
     case OpCode::CheckLeLong:
     case OpCode::CheckLeFloat:
     case OpCode::CheckStructNull:
+    case OpCode::CheckIntZero:
     case OpCode::ConvIntLong:
     case OpCode::ConvIntFloat:
     case OpCode::ConvLongInt:

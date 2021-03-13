@@ -134,7 +134,7 @@ TEST_CASE("[vm] Execute input and output", "vm") {
 
           // Assert that file-stream is not valid.
           asmb->addPCall(novasm::PCallCode::StreamCheckValid);
-          asmb->addLogicInvInt(); // Invert to check if stream is not valid.
+          asmb->addCheckIntZero(); // Invert. // Invert to check if stream is not valid.
           ADD_ASSERT(asmb);
           asmb->addRet();
         },
@@ -183,7 +183,7 @@ TEST_CASE("[vm] Execute input and output", "vm") {
           asmb->addPCall(novasm::PCallCode::StreamWriteString);
 
           // Assert that writing failed.
-          asmb->addLogicInvInt(); // Invert to check if writing failed.
+          asmb->addCheckIntZero(); // Invert. // Invert to check if writing failed.
           ADD_ASSERT(asmb);
           asmb->addRet();
         },

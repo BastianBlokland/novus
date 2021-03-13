@@ -163,10 +163,6 @@ TEST_CASE("[opt] Precompute literals", "opt") {
     ASSERT_EXPR_CHAR(precomputeLiterals, "intrinsic{long_to_char}(137L)", litCharNode(prog, 137));
   }
 
-  SECTION("bool intrinsics") {
-    ASSERT_EXPR_BOOL(precomputeLiterals, "!false", litBoolNode(prog, true));
-  }
-
   SECTION("char intrinsics") {
     ASSERT_EXPR_STRING(
         precomputeLiterals, "intrinsic{char_to_string}('h')", litStringNode(prog, "h"));
@@ -200,10 +196,6 @@ TEST_CASE("[opt] Precompute literals", "opt") {
     ASSERT_EXPR_BOOL(
         precomputeLiterals,
         "intrinsic{string_eq_string}(\"hello\", \"hello\")",
-        litBoolNode(prog, true));
-    ASSERT_EXPR_BOOL(
-        precomputeLiterals,
-        "!intrinsic{string_eq_string}(\"hello\", \"world\")",
         litBoolNode(prog, true));
   }
 

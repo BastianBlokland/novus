@@ -57,22 +57,21 @@ enum class OpCode : uint8_t {
   NegInt         = 66, // [] (int)              -> (int)    Negate an int.
   NegLong        = 67, // [] (long)             -> (long)   Negate a long.
   NegFloat       = 68, // [] (float)            -> (float)  Negate a float.
-  LogicInvInt    = 69, // [] (int)              -> (int)    Logic invert, (0 to 1) & (1 to 0).
-  ShiftLeftInt   = 70, // [] (int, int)         -> (int)    Bitwise shift an int x to left.
-  ShiftLeftLong  = 71, // [] (int, long)        -> (int)    Bitwise shift an long x to left.
-  ShiftRightInt  = 72, // [] (int, int)         -> (int)    Bitwise shift an int x to right.
-  ShiftRightLong = 73, // [] (int, long)        -> (int)    Bitwise shift an long x to right.
-  AndInt         = 74, // [] (int, int)         -> (int)    Bitwise and two ints.
-  AndLong        = 75, // [] (long, long)       -> (long)   Bitwise and two longs.
-  OrInt          = 76, // [] (int, int)         -> (int)    Bitwise or two ints.
-  OrLong         = 77, // [] (long, long)       -> (long)   Bitwise or two longs.
-  XorInt         = 78, // [] (int, int)         -> (int)    Bitwise exclusive-or two ints.
-  XorLong        = 79, // [] (long, long)       -> (long)   Bitwise exclusive-or two longs.
-  InvInt         = 80, // [] (int)              -> (int)    Bitwise invert an int.
-  InvLong        = 81, // [] (long)             -> (long)   Bitwise invert an long.
-  LengthString   = 82, // [] (string)           -> (int)    Calc length of a string.
-  IndexString    = 83, // [] (int, string)      -> (int)    Get char at index in string (ascii).
-  SliceString    = 84, // [] (int, int, string) -> (string) Substring from start to end (exclusive).
+  ShiftLeftInt   = 69, // [] (int, int)         -> (int)    Bitwise shift an int x to left.
+  ShiftLeftLong  = 70, // [] (int, long)        -> (int)    Bitwise shift an long x to left.
+  ShiftRightInt  = 71, // [] (int, int)         -> (int)    Bitwise shift an int x to right.
+  ShiftRightLong = 72, // [] (int, long)        -> (int)    Bitwise shift an long x to right.
+  AndInt         = 73, // [] (int, int)         -> (int)    Bitwise and two ints.
+  AndLong        = 74, // [] (long, long)       -> (long)   Bitwise and two longs.
+  OrInt          = 75, // [] (int, int)         -> (int)    Bitwise or two ints.
+  OrLong         = 76, // [] (long, long)       -> (long)   Bitwise or two longs.
+  XorInt         = 77, // [] (int, int)         -> (int)    Bitwise exclusive-or two ints.
+  XorLong        = 78, // [] (long, long)       -> (long)   Bitwise exclusive-or two longs.
+  InvInt         = 79, // [] (int)              -> (int)    Bitwise invert an int.
+  InvLong        = 80, // [] (long)             -> (long)   Bitwise invert an long.
+  LengthString   = 81, // [] (string)           -> (int)    Calc length of a string.
+  IndexString    = 82, // [] (int, string)      -> (int)    Get char at index in string (ascii).
+  SliceString    = 83, // [] (int, int, string) -> (string) Substring from start to end (exclusive).
 
   CheckEqInt        = 90, //  [] (int, int)               -> (int) Check ints equal.
   CheckEqLong       = 91, //  [] (long, long)             -> (int) Check long equal.
@@ -87,6 +86,7 @@ enum class OpCode : uint8_t {
   CheckLeLong       = 100, // [] (long, long)             -> (int) Check int is less.
   CheckLeFloat      = 101, // [] (float, float)           -> (int) Check float is less.
   CheckStructNull   = 102, // [] (struct)                 -> (int) Check if struct is null.
+  CheckIntZero      = 103, // [] (int)                    -> (int) Check if integer is zero.
 
   ConvIntLong     = 111, // [] (int)   -> (long)     Convert int to long.
   ConvIntFloat    = 112, // [] (int)   -> (float)    Convert int to float.

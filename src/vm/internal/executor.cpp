@@ -505,9 +505,6 @@ auto execute(
     case OpCode::NegFloat: {
       PUSH_FLOAT(-POP_FLOAT());
     } break;
-    case OpCode::LogicInvInt: {
-      PUSH_BOOL(POP_INT() == 0);
-    } break;
     case OpCode::ShiftLeftInt: {
       auto b = POP_UINT();
       auto a = POP_UINT();
@@ -654,6 +651,9 @@ auto execute(
     } break;
     case OpCode::CheckStructNull: {
       PUSH_BOOL(POP().isNullRef());
+    } break;
+    case OpCode::CheckIntZero: {
+      PUSH_BOOL(POP_INT() == 0);
     } break;
 
     case OpCode::ConvIntLong: {

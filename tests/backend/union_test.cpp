@@ -314,7 +314,7 @@ TEST_CASE("[backend] Generate assembly for unions", "backend") {
 
           // Check if user is not null.
           asmb->addCheckStructNull();
-          asmb->addLogicInvInt();
+          asmb->addCheckIntZero(); // Invert.
 
           asmb->addCall("func-test", 1, novasm::CallMode::Normal);
           asmb->addRet();
@@ -333,7 +333,7 @@ TEST_CASE("[backend] Generate assembly for unions", "backend") {
           asmb->addDup();
           asmb->addStackStore(0);
           asmb->addCheckStructNull();
-          asmb->addLogicInvInt();
+          asmb->addCheckIntZero(); // Invert.
           asmb->addJumpIf("user-is-not-null");
 
           // Is null.

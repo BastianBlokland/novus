@@ -171,14 +171,17 @@ auto GenExpr::visit(const prog::expr::CallExprNode& n) -> void {
     break;
   case prog::sym::FuncKind::CheckLeEqInt:
     m_asmb->addCheckGtInt();
-    m_asmb->addLogicInvInt();
+    m_asmb->addCheckIntZero(); // Invert.
     break;
   case prog::sym::FuncKind::CheckGtInt:
     m_asmb->addCheckGtInt();
     break;
   case prog::sym::FuncKind::CheckGtEqInt:
     m_asmb->addCheckLeInt();
-    m_asmb->addLogicInvInt();
+    m_asmb->addCheckIntZero(); // Invert.
+    break;
+  case prog::sym::FuncKind::CheckIntZero:
+    m_asmb->addCheckIntZero();
     break;
 
   case prog::sym::FuncKind::AddLong:
@@ -226,14 +229,14 @@ auto GenExpr::visit(const prog::expr::CallExprNode& n) -> void {
     break;
   case prog::sym::FuncKind::CheckLeEqLong:
     m_asmb->addCheckGtLong();
-    m_asmb->addLogicInvInt();
+    m_asmb->addCheckIntZero(); // Invert.
     break;
   case prog::sym::FuncKind::CheckGtLong:
     m_asmb->addCheckGtLong();
     break;
   case prog::sym::FuncKind::CheckGtEqLong:
     m_asmb->addCheckLeLong();
-    m_asmb->addLogicInvInt();
+    m_asmb->addCheckIntZero(); // Invert.
     break;
 
   case prog::sym::FuncKind::AddFloat:
@@ -290,18 +293,14 @@ auto GenExpr::visit(const prog::expr::CallExprNode& n) -> void {
     break;
   case prog::sym::FuncKind::CheckLeEqFloat:
     m_asmb->addCheckGtFloat();
-    m_asmb->addLogicInvInt();
+    m_asmb->addCheckIntZero(); // Invert.
     break;
   case prog::sym::FuncKind::CheckGtFloat:
     m_asmb->addCheckGtFloat();
     break;
   case prog::sym::FuncKind::CheckGtEqFloat:
     m_asmb->addCheckLeFloat();
-    m_asmb->addLogicInvInt();
-    break;
-
-  case prog::sym::FuncKind::InvBool:
-    m_asmb->addLogicInvInt();
+    m_asmb->addCheckIntZero(); // Invert.
     break;
 
   case prog::sym::FuncKind::AddString:
@@ -682,7 +681,7 @@ auto GenExpr::visit(const prog::expr::UnionCheckExprNode& n) -> void {
       m_asmb->addCheckStructNull();
     } else {
       m_asmb->addCheckStructNull();
-      m_asmb->addLogicInvInt();
+      m_asmb->addCheckIntZero(); // Invert.
     }
     return;
   }
@@ -709,7 +708,7 @@ auto GenExpr::visit(const prog::expr::UnionGetExprNode& n) -> void {
       m_asmb->addDup();
       m_asmb->addStackStore(getConstOffset(m_constTable, n.getConst()));
       m_asmb->addCheckStructNull();
-      m_asmb->addLogicInvInt();
+      m_asmb->addCheckIntZero(); // Invert.
     }
     return;
   }

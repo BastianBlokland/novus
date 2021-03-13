@@ -95,7 +95,7 @@ TEST_CASE("[frontend] Analyzing user-function declarations", "frontend") {
     }
 
     SECTION("Overload operator") {
-      const auto& output = ANALYZE("fun -(bool b) !b "
+      const auto& output = ANALYZE("fun -(bool b) b "
                                    "fun f() -false");
       REQUIRE(output.isSuccess());
 

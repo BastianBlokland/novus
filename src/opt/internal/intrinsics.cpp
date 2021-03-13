@@ -35,6 +35,7 @@ auto isPrecomputableIntrinsic(prog::sym::FuncKind funcKind) -> bool {
   case prog::sym::FuncKind::CheckLeEqInt:
   case prog::sym::FuncKind::CheckGtInt:
   case prog::sym::FuncKind::CheckGtEqInt:
+  case prog::sym::FuncKind::CheckIntZero:
   case prog::sym::FuncKind::ConvIntLong:
   case prog::sym::FuncKind::ConvCharLong:
   case prog::sym::FuncKind::ConvIntFloat:
@@ -89,9 +90,6 @@ auto isPrecomputableIntrinsic(prog::sym::FuncKind funcKind) -> bool {
   case prog::sym::FuncKind::ConvLongFloat:
   case prog::sym::FuncKind::ConvLongString:
   case prog::sym::FuncKind::ConvLongChar:
-
-  // Bool
-  case prog::sym::FuncKind::InvBool:
 
   // Char
   case prog::sym::FuncKind::ConvCharString:
@@ -202,6 +200,10 @@ auto isPrecomputableIntrinsic(prog::sym::FuncKind funcKind) -> bool {
   case prog::sym::FuncKind::CheckGtEqInt: {
     assert(args.size() == 2);
     return prog::expr::litBoolNode(prog, getInt(*args[0]) >= getInt(*args[1]));
+  }
+  case prog::sym::FuncKind::CheckIntZero: {
+    assert(args.size() == 1);
+    return prog::expr::litBoolNode(prog, getInt(*args[0]) == 0);
   }
   case prog::sym::FuncKind::ConvIntLong:
   case prog::sym::FuncKind::ConvCharLong: {
@@ -423,12 +425,6 @@ auto isPrecomputableIntrinsic(prog::sym::FuncKind funcKind) -> bool {
   case prog::sym::FuncKind::ConvLongChar: {
     assert(args.size() == 1);
     return prog::expr::litCharNode(prog, static_cast<uint8_t>(getLong(*args[0])));
-  }
-
-  // Bool
-  case prog::sym::FuncKind::InvBool: {
-    assert(args.size() == 1);
-    return prog::expr::litBoolNode(prog, !getBool(*args[0]));
   }
 
   // Char

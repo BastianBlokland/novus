@@ -26,6 +26,7 @@ enum class FuncKind {
   CheckLeEqInt,  // Check if an integer is less then or equal to another integer.
   CheckGtInt,    // Check if an integer is greater then another integer.
   CheckGtEqInt,  // Check if an integer is greater then or equal to another integer.
+  CheckIntZero,  // Check if an integer is zero.
 
   AddLong,        // Add two longs.
   SubLong,        // Substract two longs.
@@ -65,8 +66,6 @@ enum class FuncKind {
   CheckLeEqFloat, // Check if a float is less then or equal to another float.
   CheckGtFloat,   // Check if a float is greater then another float.
   CheckGtEqFloat, // Check if a float is greater then or equal to another float.
-
-  InvBool, // Logic invert a boolean, true -> false, false -> true.
 
   AddString,     // Combine two strings.
   LengthString,  // Return the length of a string.
