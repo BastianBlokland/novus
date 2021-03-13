@@ -78,8 +78,7 @@ TEST_CASE("[opt] Precompute literals", "opt") {
     ASSERT_EXPR_INT(precomputeLiterals, "2 | 1", litIntNode(prog, 3));
     ASSERT_EXPR_INT(precomputeLiterals, "3 ^ 1", litIntNode(prog, 2));
     ASSERT_EXPR_INT(precomputeLiterals, "~1", litIntNode(prog, -2));
-    ASSERT_EXPR_BOOL(precomputeLiterals, "1 == 2", litBoolNode(prog, false));
-    ASSERT_EXPR_BOOL(precomputeLiterals, "1 != 2", litBoolNode(prog, true));
+    ASSERT_EXPR_BOOL(precomputeLiterals, "intrinsic{int_eq_int}(1, 2)", litBoolNode(prog, false));
     ASSERT_EXPR_BOOL(precomputeLiterals, "1 < 2", litBoolNode(prog, true));
     ASSERT_EXPR_BOOL(precomputeLiterals, "1 <= 2", litBoolNode(prog, true));
     ASSERT_EXPR_BOOL(precomputeLiterals, "1 > 2", litBoolNode(prog, false));
@@ -110,8 +109,8 @@ TEST_CASE("[opt] Precompute literals", "opt") {
     ASSERT_EXPR_FLOAT(
         precomputeLiterals, "intrinsic{float_atan2}(0.0, 0.0)", litFloatNode(prog, 0.0));
     ASSERT_EXPR_FLOAT(precomputeLiterals, "-1.1", litFloatNode(prog, -1.1));
-    ASSERT_EXPR(precomputeLiterals, "1.1 == 1.2", litBoolNode(prog, false));
-    ASSERT_EXPR(precomputeLiterals, "1.1 != 1.2", litBoolNode(prog, true));
+    ASSERT_EXPR_BOOL(
+        precomputeLiterals, "intrinsic{float_eq_float}(1.1, 1.2)", litBoolNode(prog, false));
     ASSERT_EXPR(precomputeLiterals, "1.1 < 1.2", litBoolNode(prog, true));
     ASSERT_EXPR(precomputeLiterals, "1.1 <= 1.2", litBoolNode(prog, true));
     ASSERT_EXPR(precomputeLiterals, "1.1 > 1.2", litBoolNode(prog, false));
@@ -152,12 +151,12 @@ TEST_CASE("[opt] Precompute literals", "opt") {
     ASSERT_EXPR(precomputeLiterals, "2L | 1L", litLongNode(prog, 3));
     ASSERT_EXPR(precomputeLiterals, "3L ^ 1L", litLongNode(prog, 2));
     ASSERT_EXPR(precomputeLiterals, "~1L", litLongNode(prog, -2));
-    ASSERT_EXPR(precomputeLiterals, "1L == 2L", litBoolNode(prog, false));
-    ASSERT_EXPR(precomputeLiterals, "1L != 2L", litBoolNode(prog, true));
-    ASSERT_EXPR(precomputeLiterals, "1L < 2L", litBoolNode(prog, true));
-    ASSERT_EXPR(precomputeLiterals, "1L <= 2L", litBoolNode(prog, true));
-    ASSERT_EXPR(precomputeLiterals, "1L > 2L", litBoolNode(prog, false));
-    ASSERT_EXPR(precomputeLiterals, "1L >= 2L", litBoolNode(prog, false));
+    ASSERT_EXPR_BOOL(
+        precomputeLiterals, "intrinsic{long_eq_long}(1L, 2L)", litBoolNode(prog, false));
+    ASSERT_EXPR_BOOL(precomputeLiterals, "1L < 2L", litBoolNode(prog, true));
+    ASSERT_EXPR_BOOL(precomputeLiterals, "1L <= 2L", litBoolNode(prog, true));
+    ASSERT_EXPR_BOOL(precomputeLiterals, "1L > 2L", litBoolNode(prog, false));
+    ASSERT_EXPR_BOOL(precomputeLiterals, "1L >= 2L", litBoolNode(prog, false));
     ASSERT_EXPR_INT(precomputeLiterals, "intrinsic{long_to_int}(137L)", litIntNode(prog, 137));
     ASSERT_EXPR_STRING(
         precomputeLiterals, "intrinsic{long_to_string}(1337L)", litStringNode(prog, "1337"));
@@ -165,9 +164,11 @@ TEST_CASE("[opt] Precompute literals", "opt") {
   }
 
   SECTION("bool intrinsics") {
-    ASSERT_EXPR(precomputeLiterals, "!false", litBoolNode(prog, true));
-    ASSERT_EXPR(precomputeLiterals, "false == true", litBoolNode(prog, false));
-    ASSERT_EXPR(precomputeLiterals, "false != true", litBoolNode(prog, true));
+    ASSERT_EXPR_BOOL(precomputeLiterals, "!false", litBoolNode(prog, true));
+    ASSERT_EXPR_BOOL(
+        precomputeLiterals, "intrinsic{bool_eq_bool}(false, true)", litBoolNode(prog, false));
+    ASSERT_EXPR_BOOL(
+        precomputeLiterals, "!intrinsic{bool_eq_bool}(false, true)", litBoolNode(prog, true));
   }
 
   SECTION("char intrinsics") {
@@ -196,9 +197,18 @@ TEST_CASE("[opt] Precompute literals", "opt") {
         precomputeLiterals, "\"hello world\"[0, 11]", litStringNode(prog, "hello world"));
     ASSERT_EXPR_STRING(
         precomputeLiterals, "\"hello\" + ' ' + \"world\"", litStringNode(prog, "hello world"));
-    ASSERT_EXPR_BOOL(precomputeLiterals, "\"hello\" == \"world\"", litBoolNode(prog, false));
-    ASSERT_EXPR_BOOL(precomputeLiterals, "\"hello\" == \"hello\"", litBoolNode(prog, true));
-    ASSERT_EXPR_BOOL(precomputeLiterals, "\"hello\" != \"world\"", litBoolNode(prog, true));
+    ASSERT_EXPR_BOOL(
+        precomputeLiterals,
+        "intrinsic{string_eq_string}(\"hello\", \"world\")",
+        litBoolNode(prog, false));
+    ASSERT_EXPR_BOOL(
+        precomputeLiterals,
+        "intrinsic{string_eq_string}(\"hello\", \"hello\")",
+        litBoolNode(prog, true));
+    ASSERT_EXPR_BOOL(
+        precomputeLiterals,
+        "!intrinsic{string_eq_string}(\"hello\", \"world\")",
+        litBoolNode(prog, true));
   }
 
   SECTION("reinterpret conversions") {

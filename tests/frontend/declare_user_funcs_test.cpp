@@ -145,7 +145,8 @@ TEST_CASE("[frontend] Analyzing user-function declarations", "frontend") {
   SECTION("Implicit conversions") {
 
     SECTION("Declare implicit conversion") {
-      const auto& output = ANALYZE("fun implicit bool(int i) i == 0");
+      const auto& output = ANALYZE("fun ==(int x, int y) -> bool intrinsic{int_eq_int}(x, y) "
+                                   "fun implicit bool(int i) i == 0");
       REQUIRE(output.isSuccess());
       const auto& funcDecl = GET_FUNC_DECL(output, "bool", GET_TYPE_ID(output, "int"));
       CHECK(funcDecl.getOutput() == GET_TYPE_ID(output, "bool"));

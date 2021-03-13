@@ -8,7 +8,7 @@ TEST_CASE("[backend] Generate assembly for dynamic call expressions", "backend")
 
   SECTION("User functions") {
     CHECK_PROG(
-        "fun funcA(int a, int b) -> bool a == b "
+        "fun funcA(int a, int b) -> bool intrinsic{int_eq_int}(a, b) "
         "fun test(bool b) b "
         "test(op = funcA; op(42, 1337))",
         [](novasm::Assembler* asmb) -> void {
@@ -45,7 +45,7 @@ TEST_CASE("[backend] Generate assembly for dynamic call expressions", "backend")
   SECTION("Closure") {
     CHECK_PROG(
         "fun test(bool b) b "
-        "test(i = 1337; (lambda () i == 42)())",
+        "test(i = 1337; (lambda () -> bool intrinsic{int_eq_int}(i, 42))())",
         [](novasm::Assembler* asmb) -> void {
           // --- test function start.
           asmb->label("func-test");
@@ -80,7 +80,7 @@ TEST_CASE("[backend] Generate assembly for dynamic call expressions", "backend")
   SECTION("Closure") {
     CHECK_PROG(
         "fun test(bool b) b "
-        "test(i = 1337.0; (lambda (float f) f == i)(.1))",
+        "test(i = 1337.0; (lambda (float f) -> bool intrinsic{float_eq_float}(f, i))(.1))",
         [](novasm::Assembler* asmb) -> void {
           // --- test function start.
           asmb->label("func-test");

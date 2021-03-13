@@ -111,6 +111,7 @@ TEST_CASE("[frontend] Analyzing user-function definitions", "frontend") {
           " a2 = 42; b2 = 1337; f(a + a2, b + b2)",
           errPureFuncInfRecursion(NO_SRC));
       CHECK_DIAG(
+          "fun ==(int x, int y) -> bool intrinsic{int_eq_int}(x, y) "
           "fun f(int a, int b) -> int "
           " if f(a, b) == a -> a "
           " else            -> b",

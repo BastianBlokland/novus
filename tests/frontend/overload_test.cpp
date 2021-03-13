@@ -32,7 +32,8 @@ TEST_CASE("[frontend] Analyzing overloads", "frontend") {
   }
 
   SECTION("Allow conversion in binary operator") {
-    const auto& output = ANALYZE("fun implicit float(int i) intrinsic{int_to_float}(i) "
+    const auto& output = ANALYZE("fun ==(float x, float y) -> bool intrinsic{float_eq_float}(x, y) "
+                                 "fun implicit float(int i) intrinsic{int_to_float}(i) "
                                  "fun a(bool b) b "
                                  "a(1.0 / 2 == .5)");
     REQUIRE(output.isSuccess());

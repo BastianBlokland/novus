@@ -211,22 +211,16 @@ TEST_CASE("[backend] Generate assembly for call expressions", "backend") {
   }
 
   SECTION("Int checks") {
-    CHECK_EXPR("1 == 3", [](novasm::Assembler* asmb) -> void {
+    CHECK_EXPR_BOOL("intrinsic{int_eq_int}(1, 3)", [](novasm::Assembler* asmb) -> void {
       asmb->addLoadLitInt(1);
       asmb->addLoadLitInt(3);
       asmb->addCheckEqInt();
     });
-    CHECK_EXPR("1 == -3", [](novasm::Assembler* asmb) -> void {
+    CHECK_EXPR_BOOL("intrinsic{int_eq_int}(1, -3)", [](novasm::Assembler* asmb) -> void {
       asmb->addLoadLitInt(1);
       asmb->addLoadLitInt(3);
       asmb->addNegInt();
       asmb->addCheckEqInt();
-    });
-    CHECK_EXPR("1 != 3", [](novasm::Assembler* asmb) -> void {
-      asmb->addLoadLitInt(1);
-      asmb->addLoadLitInt(3);
-      asmb->addCheckEqInt();
-      asmb->addLogicInvInt();
     });
     CHECK_EXPR("1 < 3", [](novasm::Assembler* asmb) -> void {
       asmb->addLoadLitInt(1);
@@ -253,22 +247,16 @@ TEST_CASE("[backend] Generate assembly for call expressions", "backend") {
   }
 
   SECTION("Long checks") {
-    CHECK_EXPR("1L == 3L", [](novasm::Assembler* asmb) -> void {
+    CHECK_EXPR_BOOL("intrinsic{long_eq_long}(1L, 3L)", [](novasm::Assembler* asmb) -> void {
       asmb->addLoadLitLong(1);
       asmb->addLoadLitLong(3);
       asmb->addCheckEqLong();
     });
-    CHECK_EXPR("1L == -3L", [](novasm::Assembler* asmb) -> void {
+    CHECK_EXPR_BOOL("intrinsic{long_eq_long}(1L, -3L)", [](novasm::Assembler* asmb) -> void {
       asmb->addLoadLitLong(1);
       asmb->addLoadLitLong(3);
       asmb->addNegLong();
       asmb->addCheckEqLong();
-    });
-    CHECK_EXPR("1L != 3L", [](novasm::Assembler* asmb) -> void {
-      asmb->addLoadLitLong(1);
-      asmb->addLoadLitLong(3);
-      asmb->addCheckEqLong();
-      asmb->addLogicInvInt();
     });
     CHECK_EXPR("1L < 3L", [](novasm::Assembler* asmb) -> void {
       asmb->addLoadLitLong(1);
@@ -295,16 +283,10 @@ TEST_CASE("[backend] Generate assembly for call expressions", "backend") {
   }
 
   SECTION("Float checks") {
-    CHECK_EXPR("1.42 == 3.42", [](novasm::Assembler* asmb) -> void {
+    CHECK_EXPR_BOOL("intrinsic{float_eq_float}(1.42, 3.42)", [](novasm::Assembler* asmb) -> void {
       asmb->addLoadLitFloat(1.42F);
       asmb->addLoadLitFloat(3.42F);
       asmb->addCheckEqFloat();
-    });
-    CHECK_EXPR("1.42 != 3.42", [](novasm::Assembler* asmb) -> void {
-      asmb->addLoadLitFloat(1.42F);
-      asmb->addLoadLitFloat(3.42F);
-      asmb->addCheckEqFloat();
-      asmb->addLogicInvInt();
     });
     CHECK_EXPR("1.42 < 3.42", [](novasm::Assembler* asmb) -> void {
       asmb->addLoadLitFloat(1.42F);
@@ -342,16 +324,10 @@ TEST_CASE("[backend] Generate assembly for call expressions", "backend") {
   }
 
   SECTION("Bool checks") {
-    CHECK_EXPR("false == true", [](novasm::Assembler* asmb) -> void {
+    CHECK_EXPR_BOOL("intrinsic{bool_eq_bool}(false, true)", [](novasm::Assembler* asmb) -> void {
       asmb->addLoadLitInt(0);
       asmb->addLoadLitInt(1);
       asmb->addCheckEqInt();
-    });
-    CHECK_EXPR("false != true", [](novasm::Assembler* asmb) -> void {
-      asmb->addLoadLitInt(0);
-      asmb->addLoadLitInt(1);
-      asmb->addCheckEqInt();
-      asmb->addLogicInvInt();
     });
   }
 
@@ -379,11 +355,10 @@ TEST_CASE("[backend] Generate assembly for call expressions", "backend") {
       asmb->addAppendChar();
     });
 
-    CHECK_EXPR_INT(
-        "intrinsic{string_length}(\"hello world\")", [](novasm::Assembler* asmb) -> void {
-          asmb->addLoadLitString("hello world");
-          asmb->addLengthString();
-        });
+    CHECK_EXPR_INT("intrinsic{string_length}(\"hello\")", [](novasm::Assembler* asmb) -> void {
+      asmb->addLoadLitString("hello");
+      asmb->addLengthString();
+    });
 
     CHECK_EXPR("\"hello world\"[6]", [](novasm::Assembler* asmb) -> void {
       asmb->addLoadLitString("hello world");
@@ -399,17 +374,12 @@ TEST_CASE("[backend] Generate assembly for call expressions", "backend") {
   }
 
   SECTION("String checks") {
-    CHECK_EXPR("\"hello\" == \"world\"", [](novasm::Assembler* asmb) -> void {
-      asmb->addLoadLitString("hello");
-      asmb->addLoadLitString("world");
-      asmb->addCheckEqString();
-    });
-    CHECK_EXPR("\"hello\" != \"world\"", [](novasm::Assembler* asmb) -> void {
-      asmb->addLoadLitString("hello");
-      asmb->addLoadLitString("world");
-      asmb->addCheckEqString();
-      asmb->addLogicInvInt();
-    });
+    CHECK_EXPR_BOOL(
+        "intrinsic{string_eq_string}(\"hello\", \"world\")", [](novasm::Assembler* asmb) -> void {
+          asmb->addLoadLitString("hello");
+          asmb->addLoadLitString("world");
+          asmb->addCheckEqString();
+        });
   }
 
   SECTION("Conversions") {
@@ -469,7 +439,7 @@ TEST_CASE("[backend] Generate assembly for call expressions", "backend") {
 
   SECTION("User functions") {
     CHECK_PROG(
-        "fun funcA(int a, int b) -> bool a == b "
+        "fun funcA(int a, int b) -> bool intrinsic{int_eq_int}(a, b) "
         "fun test(bool b) b "
         "test(funcA(42, 1337))",
         [](novasm::Assembler* asmb) -> void {

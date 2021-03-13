@@ -12,7 +12,8 @@ namespace frontend {
 TEST_CASE("[frontend] Analyzing user-function templates", "frontend") {
 
   SECTION("Recursive templated call") {
-    const auto& output = ANALYZE("fun ft{T}(T a) -> T a != 0 ? ft{T}(a) : a "
+    const auto& output = ANALYZE("fun ==(int x, int y) -> bool intrinsic{int_eq_int}(x, y) "
+                                 "fun ft{T}(T a) -> T a == 0 ? ft{T}(a) : a "
                                  "fun f() -> int ft{int}(1)");
     REQUIRE(output.isSuccess());
 

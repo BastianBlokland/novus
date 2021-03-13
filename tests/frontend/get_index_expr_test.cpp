@@ -10,7 +10,8 @@ namespace frontend {
 TEST_CASE("[frontend] Analyzing index expressions", "frontend") {
 
   SECTION("Get single argument index operator") {
-    const auto& output = ANALYZE("struct Pair = int a, int b "
+    const auto& output = ANALYZE("fun ==(int x, int y) -> bool intrinsic{int_eq_int}(x, y) "
+                                 "struct Pair = int a, int b "
                                  "fun [](Pair p, int i) "
                                  "  if i == 0 -> p.a "
                                  "  else      -> p.b "
@@ -30,7 +31,8 @@ TEST_CASE("[frontend] Analyzing index expressions", "frontend") {
   }
 
   SECTION("Get multi argument index operator") {
-    const auto& output = ANALYZE("struct Pair = string a, string b "
+    const auto& output = ANALYZE("fun ==(int x, int y) -> bool intrinsic{int_eq_int}(x, y) "
+                                 "struct Pair = string a, string b "
                                  "fun [](Pair p, int i, string b) "
                                  "  if i == 0 -> Pair(p.a, b) "
                                  "  else      -> Pair(p.b, b) "

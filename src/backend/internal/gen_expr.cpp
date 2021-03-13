@@ -166,10 +166,6 @@ auto GenExpr::visit(const prog::expr::CallExprNode& n) -> void {
   case prog::sym::FuncKind::CheckEqInt:
     m_asmb->addCheckEqInt();
     break;
-  case prog::sym::FuncKind::CheckNEqInt:
-    m_asmb->addCheckEqInt();
-    m_asmb->addLogicInvInt();
-    break;
   case prog::sym::FuncKind::CheckLeInt:
     m_asmb->addCheckLeInt();
     break;
@@ -224,10 +220,6 @@ auto GenExpr::visit(const prog::expr::CallExprNode& n) -> void {
 
   case prog::sym::FuncKind::CheckEqLong:
     m_asmb->addCheckEqLong();
-    break;
-  case prog::sym::FuncKind::CheckNEqLong:
-    m_asmb->addCheckEqLong();
-    m_asmb->addLogicInvInt();
     break;
   case prog::sym::FuncKind::CheckLeLong:
     m_asmb->addCheckLeLong();
@@ -293,10 +285,6 @@ auto GenExpr::visit(const prog::expr::CallExprNode& n) -> void {
   case prog::sym::FuncKind::CheckEqFloat:
     m_asmb->addCheckEqFloat();
     break;
-  case prog::sym::FuncKind::CheckNEqFloat:
-    m_asmb->addCheckEqFloat();
-    m_asmb->addLogicInvInt();
-    break;
   case prog::sym::FuncKind::CheckLeFloat:
     m_asmb->addCheckLeFloat();
     break;
@@ -318,10 +306,6 @@ auto GenExpr::visit(const prog::expr::CallExprNode& n) -> void {
   case prog::sym::FuncKind::CheckEqBool:
     m_asmb->addCheckEqInt();
     break;
-  case prog::sym::FuncKind::CheckNEqBool:
-    m_asmb->addCheckEqInt();
-    m_asmb->addLogicInvInt();
-    break;
 
   case prog::sym::FuncKind::AddString:
     m_asmb->addAddString();
@@ -337,10 +321,6 @@ auto GenExpr::visit(const prog::expr::CallExprNode& n) -> void {
     break;
   case prog::sym::FuncKind::CheckEqString:
     m_asmb->addCheckEqString();
-    break;
-  case prog::sym::FuncKind::CheckNEqString:
-    m_asmb->addCheckEqString();
-    m_asmb->addLogicInvInt();
     break;
 
   case prog::sym::FuncKind::AppendChar:
@@ -426,21 +406,16 @@ auto GenExpr::visit(const prog::expr::CallExprNode& n) -> void {
     break;
   }
 
-  case prog::sym::FuncKind::CheckEqUserType:
-  case prog::sym::FuncKind::CheckNEqUserType: {
+  case prog::sym::FuncKind::CheckEqUserType: {
     auto lhsType = n[0].getType();
     auto rhsType = n[1].getType();
     if (lhsType != rhsType) {
       throw std::logic_error{"User-type equality function requires args to have the same type"};
     }
-    auto invert = funcDecl.getKind() == prog::sym::FuncKind::CheckNEqUserType;
     m_asmb->addCall(
         getUserTypeEqLabel(m_prog, lhsType),
         2,
-        (m_tail && !invert) ? novasm::CallMode::Tail : novasm::CallMode::Normal);
-    if (invert) {
-      m_asmb->addLogicInvInt();
-    }
+        m_tail ? novasm::CallMode::Tail : novasm::CallMode::Normal);
     break;
   }
 

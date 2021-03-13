@@ -40,7 +40,7 @@ TEST_CASE("[backend] Generate assembly for tail calls", "backend") {
         "fun f1() -> int 42 "
         "fun f2() -> int f1() "
         "fun test(bool b) b "
-        "test(f2() == 0)",
+        "test(intrinsic{int_eq_int}(f2(), 0))",
         [](novasm::Assembler* asmb) -> void {
           asmb->label("f1");
           asmb->addLoadLitInt(42);
@@ -73,7 +73,7 @@ TEST_CASE("[backend] Generate assembly for tail calls", "backend") {
         "fun f1(int i) -> int i "
         "fun f2() -> int v = 42; f1(v) "
         "fun test(bool b) b "
-        "test(f2() == 0)",
+        "test(intrinsic{int_eq_int}(f2(), 0))",
         [](novasm::Assembler* asmb) -> void {
           asmb->label("f1");
           asmb->addStackLoad(0);
@@ -112,7 +112,7 @@ TEST_CASE("[backend] Generate assembly for tail calls", "backend") {
         "fun f1() -> int 42 "
         "fun f2(function{int} func) -> int func() "
         "fun test(bool b) b "
-        "test(f2(f1) == 0)",
+        "test(intrinsic{int_eq_int}(f2(f1), 0))",
         [](novasm::Assembler* asmb) -> void {
           asmb->label("f1");
           asmb->addLoadLitInt(42);
