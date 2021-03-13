@@ -135,9 +135,6 @@ auto operator<<(std::ostream& out, const OpCode& rhs) noexcept -> std::ostream& 
   case OpCode::NegFloat:
     out << "neg-float";
     break;
-  case OpCode::LogicInvInt:
-    out << "logicinvert-int";
-    break;
   case OpCode::ShiftLeftInt:
     out << "shiftleft-int";
     break;
@@ -222,6 +219,9 @@ auto operator<<(std::ostream& out, const OpCode& rhs) noexcept -> std::ostream& 
     break;
   case OpCode::CheckStructNull:
     out << "check-struct-null";
+    break;
+  case OpCode::CheckIntZero:
+    out << "check-int-zero";
     break;
 
   case OpCode::ConvIntLong:

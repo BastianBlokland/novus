@@ -31,6 +31,9 @@ fun ++(float f) f + 1.0
 
 fun --(float f) f - 1.0
 
+fun ==(float x, float y) -> bool
+  intrinsic{float_eq_float}(x, y)
+
 // -- Utilities
 
 fun nan()

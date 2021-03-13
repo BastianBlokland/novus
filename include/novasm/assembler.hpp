@@ -69,7 +69,6 @@ public:
   auto addNegInt() -> void;
   auto addNegLong() -> void;
   auto addNegFloat() -> void;
-  auto addLogicInvInt() -> void;
   auto addShiftLeftInt() -> void;
   auto addShiftLeftLong() -> void;
   auto addShiftRightInt() -> void;
@@ -99,6 +98,7 @@ public:
   auto addCheckLeLong() -> void;
   auto addCheckLeFloat() -> void;
   auto addCheckStructNull() -> void;
+  auto addCheckIntZero() -> void;
 
   auto addConvIntLong() -> void;
   auto addConvIntFloat() -> void;

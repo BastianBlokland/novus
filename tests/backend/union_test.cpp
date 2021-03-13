@@ -9,9 +9,9 @@ TEST_CASE("[backend] Generate assembly for unions", "backend") {
     CHECK_PROG(
         "union Val = int, float "
         "fun test(bool b) b "
-        "test(Val(1) == Val(1.0))"
+        "test(intrinsic{usertype_eq_usertype}(Val(1), Val(1.0)))"
         "test(Val(1) is int)"
-        "test(Val(1) as int i ? (i == 0) : false)",
+        "test(Val(1) as int i ? intrinsic{int_eq_int}(i, 0) : false)",
         [](novasm::Assembler* asmb) -> void {
           // --- Union equality function start.
           asmb->label("ValEq");
@@ -180,10 +180,12 @@ TEST_CASE("[backend] Generate assembly for unions", "backend") {
         "struct Null "
         "union NullableUser = User, Null "
         "fun test(bool b) b "
-        "test(NullableUser(User(\"John\", 42)) == Null())"
+        "test(intrinsic{usertype_eq_usertype}(NullableUser(User(\"John\", 42)), Null()))"
         "test(NullableUser(User(\"John\", 42)) is Null)"
         "test(NullableUser(User(\"John\", 42)) is User)"
-        "test(NullableUser(User(\"John\", 42)) as User u ? (u.name == \"J\") : false)",
+        "test(NullableUser(User(\"John\", 42)) as User u "
+        "  ? intrinsic{string_eq_string}(u.name, \"J\") "
+        "  : false)",
         [](novasm::Assembler* asmb) -> void {
           // -- struct 'User' equality function start.
           asmb->label("user-eq");
@@ -312,7 +314,7 @@ TEST_CASE("[backend] Generate assembly for unions", "backend") {
 
           // Check if user is not null.
           asmb->addCheckStructNull();
-          asmb->addLogicInvInt();
+          asmb->addCheckIntZero(); // Invert.
 
           asmb->addCall("func-test", 1, novasm::CallMode::Normal);
           asmb->addRet();
@@ -331,7 +333,7 @@ TEST_CASE("[backend] Generate assembly for unions", "backend") {
           asmb->addDup();
           asmb->addStackStore(0);
           asmb->addCheckStructNull();
-          asmb->addLogicInvInt();
+          asmb->addCheckIntZero(); // Invert.
           asmb->addJumpIf("user-is-not-null");
 
           // Is null.

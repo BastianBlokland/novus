@@ -5,3 +5,11 @@ import "type.ns"
 fun bool() false
 
 fun bool(bool b) b
+
+// -- Operators
+
+fun !(bool b) -> bool
+  intrinsic{int_eq_zero}(intrinsic{bool_as_int}(b))
+
+fun ==(bool x, bool y) -> bool
+  intrinsic{int_eq_int}(intrinsic{bool_as_int}(x), intrinsic{bool_as_int}(y))

@@ -156,7 +156,7 @@ TEST_CASE("[vm] Execute integer operations", "vm") {
     CHECK_EXPR(
         [](novasm::Assembler* asmb) -> void {
           asmb->addLoadLitInt(0);
-          asmb->addLogicInvInt();
+          asmb->addCheckIntZero(); // Invert.
           asmb->addConvIntString();
           ADD_PRINT(asmb);
         },
@@ -165,7 +165,7 @@ TEST_CASE("[vm] Execute integer operations", "vm") {
     CHECK_EXPR(
         [](novasm::Assembler* asmb) -> void {
           asmb->addLoadLitInt(1);
-          asmb->addLogicInvInt();
+          asmb->addCheckIntZero(); // Invert.
           asmb->addConvIntString();
           ADD_PRINT(asmb);
         },
@@ -174,7 +174,7 @@ TEST_CASE("[vm] Execute integer operations", "vm") {
     CHECK_EXPR(
         [](novasm::Assembler* asmb) -> void {
           asmb->addLoadLitInt(2);
-          asmb->addLogicInvInt();
+          asmb->addCheckIntZero(); // Invert.
           asmb->addConvIntString();
           ADD_PRINT(asmb);
         },

@@ -190,10 +190,11 @@ auto GetExpr::visit(const parse::BinaryExprNode& n) -> void {
   }
 
   const auto argTypeSet = prog::sym::TypeSet{{args[0]->getType(), args[1]->getType()}};
+  const auto ovOptions  = getOvOptions(1);
   const auto funcName   = prog::getFuncName(op.value());
   const auto possibleFuncs =
-      getFunctions(funcName, std::nullopt, argTypeSet, n.getOperator().getSpan());
-  const auto func = m_ctx->getProg()->lookupFunc(possibleFuncs, argTypeSet, getOvOptions(1));
+      getFunctions(funcName, std::nullopt, argTypeSet, n.getOperator().getSpan(), ovOptions);
+  const auto func = m_ctx->getProg()->lookupFunc(possibleFuncs, argTypeSet, ovOptions);
   if (!func) {
     m_ctx->reportDiag(
         errUndeclaredBinOperator,
@@ -267,14 +268,15 @@ auto GetExpr::visit(const parse::CallExprNode& n) -> void {
     }
   }
 
-  auto possibleFuncs = getIdVisitor.isIntrinsic()
-      ? m_ctx->getProg()->lookupIntrinsic(getName(nameToken), getOvOptions(0))
-      : getFunctionsInclConversions(nameToken, typeParams, args->second);
-
   // On instance calls we do not allow (implicit) conversions on the first argument (the instance).
   const auto noConvFirstArg = instance != nullptr;
-  const auto ovOpts         = getOvOptions(-1, false, noConvFirstArg);
-  const auto func           = m_ctx->getProg()->lookupFunc(possibleFuncs, args->second, ovOpts);
+  const auto ovOptions      = getOvOptions(-1, false, noConvFirstArg);
+
+  auto possibleFuncs = getIdVisitor.isIntrinsic()
+      ? m_ctx->getProg()->lookupIntrinsic(getName(nameToken), ovOptions)
+      : getFunctionsInclConversions(nameToken, typeParams, args->second, ovOptions);
+
+  const auto func = m_ctx->getProg()->lookupFunc(possibleFuncs, args->second, ovOptions);
   if (!func) {
     auto argTypeNames = std::vector<std::string>{};
     for (const auto& argType : args->second) {
@@ -548,9 +550,11 @@ auto GetExpr::visit(const parse::IndexExprNode& n) -> void {
     return;
   }
 
-  const auto funcName      = prog::getFuncName(prog::Operator::SquareSquare);
-  const auto possibleFuncs = getFunctions(funcName, std::nullopt, args->second, n.getSpan());
-  const auto func = m_ctx->getProg()->lookupFunc(possibleFuncs, args->second, getOvOptions(-1));
+  const auto funcName  = prog::getFuncName(prog::Operator::SquareSquare);
+  const auto ovOptions = getOvOptions(-1);
+  const auto possibleFuncs =
+      getFunctions(funcName, std::nullopt, args->second, n.getSpan(), ovOptions);
+  const auto func = m_ctx->getProg()->lookupFunc(possibleFuncs, args->second, ovOptions);
   if (!func) {
     auto argTypeNames = std::vector<std::string>{};
     for (const auto& argType : args->second) {
@@ -761,11 +765,12 @@ auto GetExpr::visit(const parse::UnaryExprNode& n) -> void {
     return;
   }
 
-  const auto argTypes = prog::sym::TypeSet{{args[0]->getType()}};
-  const auto funcName = prog::getFuncName(op.value());
+  const auto argTypes  = prog::sym::TypeSet{{args[0]->getType()}};
+  const auto funcName  = prog::getFuncName(op.value());
+  const auto ovOptions = getOvOptions(0);
   const auto possibleFuncs =
-      getFunctions(funcName, std::nullopt, argTypes, n.getOperator().getSpan());
-  const auto func = m_ctx->getProg()->lookupFunc(possibleFuncs, argTypes, getOvOptions(0));
+      getFunctions(funcName, std::nullopt, argTypes, n.getOperator().getSpan(), ovOptions);
+  const auto func = m_ctx->getProg()->lookupFunc(possibleFuncs, argTypes, ovOptions);
   if (!func) {
     m_ctx->reportDiag(
         errUndeclaredUnaryOperator,
@@ -1110,9 +1115,10 @@ auto GetExpr::getDynCallExpr(const parse::CallExprNode& n) -> prog::expr::NodePt
   }
 
   // Check if this is a call to a overloaded call operator.
-  const auto funcName      = prog::getFuncName(prog::Operator::ParenParen);
-  const auto possibleFuncs = getFunctions(funcName, std::nullopt, args->second, n.getSpan());
-  const auto func          = m_ctx->getProg()->lookupFunc(possibleFuncs, args->second, ovOptions);
+  const auto funcName = prog::getFuncName(prog::Operator::ParenParen);
+  const auto possibleFuncs =
+      getFunctions(funcName, std::nullopt, args->second, n.getSpan(), ovOptions);
+  const auto func = m_ctx->getProg()->lookupFunc(possibleFuncs, args->second, ovOptions);
   if (!func) {
     auto argTypeNames = std::vector<std::string>{};
     for (const auto& argType : args->second) {
@@ -1162,11 +1168,12 @@ auto GetExpr::isExhaustive(const std::vector<prog::expr::NodePtr>& conditions) c
 auto GetExpr::getFunctionsInclConversions(
     const lex::Token& nameToken,
     const std::optional<parse::TypeParamList>& typeParams,
-    const prog::sym::TypeSet& argTypes) -> std::vector<prog::sym::FuncId> {
+    const prog::sym::TypeSet& argTypes,
+    prog::OvOptions ovOptions) -> std::vector<prog::sym::FuncId> {
 
   const auto funcName = getName(nameToken);
-  auto result         = getFunctions(funcName, typeParams, argTypes, nameToken.getSpan());
-  auto isValid        = true;
+  auto result  = getFunctions(funcName, typeParams, argTypes, nameToken.getSpan(), ovOptions);
+  auto isValid = true;
 
   // Check if this name + typeParams is a type (or type template) in the program.
   auto convType = getOrInstType(m_ctx, m_typeSubTable, nameToken, typeParams, argTypes);
@@ -1200,11 +1207,11 @@ auto GetExpr::getFunctions(
     const std::string& funcName,
     const std::optional<parse::TypeParamList>& typeParams,
     const prog::sym::TypeSet& argTypes,
-    input::Span span) -> std::vector<prog::sym::FuncId> {
+    input::Span span,
+    prog::OvOptions ovOptions) -> std::vector<prog::sym::FuncId> {
 
-  auto result    = std::vector<prog::sym::FuncId>{};
-  auto isValid   = true;
-  auto ovOptions = getOvOptions(-1);
+  auto result  = std::vector<prog::sym::FuncId>{};
+  auto isValid = true;
 
   if (typeParams) {
     // If this is a template call then instantiate the templates.
@@ -1228,9 +1235,8 @@ auto GetExpr::getFunctions(
     // Find all non-templated funcs.
     result = m_ctx->getProg()->lookupFunc(funcName, ovOptions);
 
-    // If there is a direct match (without any implicit conversions) then there is no need to
-    // attempt to instantiate a template.
-    if (m_ctx->getProg()->lookupFunc(result, argTypes, getOvOptions(0))) {
+    // If we found a match, then there is no need to attempt to instantiate a template.
+    if (m_ctx->getProg()->lookupFunc(result, argTypes, ovOptions)) {
       return result;
     }
 

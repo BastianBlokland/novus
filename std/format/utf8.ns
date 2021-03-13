@@ -129,10 +129,10 @@ assert(utf8Validate(string(char(0b1100_0000), char(0b1000_0001)), 0, true))
 assert(utf8Validate(string(char(0b1110_0000), char(0b1000_0001), char(0b1000_0001)), 0, true))
 assert(utf8Validate(string(char(0b1111_0000), char(0b1000_0001), char(0b1000_0001), char(0b1000_0001)), 0, true))
 
-assert(
+assertEq(
   allCodePoints   = rangeList(minUnicodePoint(), maxUnicodePoint());
   allUtf8Strs     = allCodePoints.mapReverse(toUtf8);
   codePointParser = utf8CodePointParser();
-  listEqual(
+  makePair(
     allUtf8Strs.mapReverse(lambda (string str) codePointParser(str) ?? errorUnicodePoint()),
     allCodePoints))

@@ -179,7 +179,8 @@ TEST_CASE("[frontend] Infer return type of user functions", "frontend") {
   }
 
   SECTION("Templated call") {
-    const auto& output = ANALYZE("fun ft{T}(T a) a == a "
+    const auto& output = ANALYZE("fun ==(int x, int y) -> bool intrinsic{int_eq_int}(x, y) "
+                                 "fun ft{T}(T a) a == a "
                                  "fun f(int i) ft{int}(i)");
     REQUIRE(output.isSuccess());
     CHECK(
@@ -212,7 +213,8 @@ TEST_CASE("[frontend] Infer return type of user functions", "frontend") {
   }
 
   SECTION("Forked templated call") {
-    const auto& output = ANALYZE("fun ft{T}(T a) a == a "
+    const auto& output = ANALYZE("fun ==(int x, int y) -> bool intrinsic{int_eq_int}(x, y) "
+                                 "fun ft{T}(T a) a == a "
                                  "fun f(int i) fork ft{int}(i)");
     REQUIRE(output.isSuccess());
     CHECK(
@@ -229,21 +231,24 @@ TEST_CASE("[frontend] Infer return type of user functions", "frontend") {
   }
 
   SECTION("Lazy call") {
-    const auto& output = ANALYZE("fun f1(int i) i * i "
+    const auto& output = ANALYZE("fun ==(int x, int y) -> bool intrinsic{int_eq_int}(x, y) "
+                                 "fun f1(int i) i == i "
                                  "fun f2() lazy f1(42)");
     REQUIRE(output.isSuccess());
-    CHECK(GET_FUNC_DECL(output, "f2").getOutput() == GET_TYPE_ID(output, "__lazy_int"));
+    CHECK(GET_FUNC_DECL(output, "f2").getOutput() == GET_TYPE_ID(output, "__lazy_bool"));
   }
 
   SECTION("Lazy action call") {
-    const auto& output = ANALYZE("act a1(int i) i * i "
+    const auto& output = ANALYZE("fun ==(int x, int y) -> bool intrinsic{int_eq_int}(x, y) "
+                                 "act a1(int i) i == i "
                                  "act a2() lazy a1(42)");
     REQUIRE(output.isSuccess());
-    CHECK(GET_FUNC_DECL(output, "a2").getOutput() == GET_TYPE_ID(output, "__lazy_action_int"));
+    CHECK(GET_FUNC_DECL(output, "a2").getOutput() == GET_TYPE_ID(output, "__lazy_action_bool"));
   }
 
   SECTION("Lazy templated call") {
-    const auto& output = ANALYZE("fun ft{T}(T a) a == a "
+    const auto& output = ANALYZE("fun ==(int x, int y) -> bool intrinsic{int_eq_int}(x, y) "
+                                 "fun ft{T}(T a) a == a "
                                  "fun f(int i) lazy ft{int}(i)");
     REQUIRE(output.isSuccess());
     CHECK(
@@ -252,7 +257,8 @@ TEST_CASE("[frontend] Infer return type of user functions", "frontend") {
   }
 
   SECTION("Lazy templated action call") {
-    const auto& output = ANALYZE("act at{T}(T a) a == a "
+    const auto& output = ANALYZE("fun ==(int x, int y) -> bool intrinsic{int_eq_int}(x, y) "
+                                 "act at{T}(T a) a == a "
                                  "act a(int i) lazy at{int}(i)");
     REQUIRE(output.isSuccess());
     CHECK(
@@ -288,14 +294,16 @@ TEST_CASE("[frontend] Infer return type of user functions", "frontend") {
   }
 
   SECTION("Call operator") {
-    const auto& output = ANALYZE("fun ()(int i) i != 0 "
+    const auto& output = ANALYZE("fun ==(int x, int y) -> bool intrinsic{int_eq_int}(x, y) "
+                                 "fun ()(int i) i == 0 "
                                  "fun f() 42()");
     REQUIRE(output.isSuccess());
     CHECK(GET_FUNC_DECL(output, "f").getOutput() == GET_TYPE_ID(output, "bool"));
   }
 
   SECTION("Forked call operator") {
-    const auto& output = ANALYZE("fun ()(int i) i != 0 "
+    const auto& output = ANALYZE("fun ==(int x, int y) -> bool intrinsic{int_eq_int}(x, y) "
+                                 "fun ()(int i) i == 0 "
                                  "fun f() fork 42()");
     REQUIRE(output.isSuccess());
     CHECK(GET_FUNC_DECL(output, "f").getOutput() == GET_TYPE_ID(output, "__future_bool"));
@@ -365,7 +373,8 @@ TEST_CASE("[frontend] Infer return type of user functions", "frontend") {
   }
 
   SECTION("Anonymous function") {
-    const auto& output = ANALYZE("fun f() lambda (int i) i == i");
+    const auto& output = ANALYZE("fun ==(int x, int y) -> bool intrinsic{int_eq_int}(x, y) "
+                                 "fun f() lambda (int i) i == i");
     REQUIRE(output.isSuccess());
     CHECK(GET_FUNC_DECL(output, "f").getOutput() == GET_TYPE_ID(output, "__function_int_bool"));
   }
@@ -378,7 +387,8 @@ TEST_CASE("[frontend] Infer return type of user functions", "frontend") {
   }
 
   SECTION("Anonymous function call") {
-    const auto& output = ANALYZE("fun f() (lambda (int i) i == i)(42)");
+    const auto& output = ANALYZE("fun ==(int x, int y) -> bool intrinsic{int_eq_int}(x, y) "
+                                 "fun f() (lambda (int i) i == i)(42)");
     REQUIRE(output.isSuccess());
     CHECK(GET_FUNC_DECL(output, "f").getOutput() == GET_TYPE_ID(output, "bool"));
   }
@@ -416,13 +426,15 @@ TEST_CASE("[frontend] Infer return type of user functions", "frontend") {
   }
 
   SECTION("Anonymous action") {
-    const auto& output = ANALYZE("act a() impure lambda (int i) i == i");
+    const auto& output = ANALYZE("fun ==(int x, int y) -> bool intrinsic{int_eq_int}(x, y) "
+                                 "act a() impure lambda (int i) i == i");
     REQUIRE(output.isSuccess());
     CHECK(GET_FUNC_DECL(output, "a").getOutput() == GET_TYPE_ID(output, "__action_int_bool"));
   }
 
   SECTION("Anonymous action call") {
-    const auto& output = ANALYZE("act a() (lambda (int i) i == i)(42)");
+    const auto& output = ANALYZE("fun ==(int x, int y) -> bool intrinsic{int_eq_int}(x, y) "
+                                 "act a() (lambda (int i) i == i)(42)");
     REQUIRE(output.isSuccess());
     CHECK(GET_FUNC_DECL(output, "a").getOutput() == GET_TYPE_ID(output, "bool"));
   }

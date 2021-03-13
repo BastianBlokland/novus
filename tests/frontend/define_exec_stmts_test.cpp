@@ -53,7 +53,8 @@ TEST_CASE("[frontend] Analyzing execute statements", "frontend") {
   }
 
   SECTION("Define exec statement with const") {
-    const auto& output = ANALYZE("fun fa(bool b, string s) b "
+    const auto& output = ANALYZE("fun ==(int x, int y) -> bool intrinsic{int_eq_int}(x, y) "
+                                 "fun fa(bool b, string s) b "
                                  "fa(x = 5; x == 1, \"msg\")");
     REQUIRE(output.isSuccess());
     auto execsBegin        = output.getProg().beginExecStmts();

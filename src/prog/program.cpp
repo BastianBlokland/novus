@@ -61,10 +61,6 @@ Program::Program() :
   m_funcDecls.registerFunc(
       *this, Fk::XorInt, getFuncName(Op::Hat), sym::TypeSet{m_int, m_int}, m_int);
   m_funcDecls.registerFunc(
-      *this, Fk::CheckEqInt, getFuncName(Op::EqEq), sym::TypeSet{m_int, m_int}, m_bool);
-  m_funcDecls.registerFunc(
-      *this, Fk::CheckNEqInt, getFuncName(Op::BangEq), sym::TypeSet{m_int, m_int}, m_bool);
-  m_funcDecls.registerFunc(
       *this, Fk::CheckLeInt, getFuncName(Op::Le), sym::TypeSet{m_int, m_int}, m_bool);
   m_funcDecls.registerFunc(
       *this, Fk::CheckLeEqInt, getFuncName(Op::LeEq), sym::TypeSet{m_int, m_int}, m_bool);
@@ -72,6 +68,12 @@ Program::Program() :
       *this, Fk::CheckGtInt, getFuncName(Op::Gt), sym::TypeSet{m_int, m_int}, m_bool);
   m_funcDecls.registerFunc(
       *this, Fk::CheckGtEqInt, getFuncName(Op::GtEq), sym::TypeSet{m_int, m_int}, m_bool);
+
+  // Register int intrinsics.
+  m_funcDecls.registerIntrinsic(
+      *this, Fk::CheckEqInt, "int_eq_int", sym::TypeSet{m_int, m_int}, m_bool);
+  m_funcDecls.registerIntrinsic(
+      *this, Fk::CheckIntZero, "int_eq_zero", sym::TypeSet{m_int}, m_bool);
 
   // Register build-in unary long operators.
   m_funcDecls.registerFunc(
@@ -101,10 +103,6 @@ Program::Program() :
   m_funcDecls.registerFunc(
       *this, Fk::XorLong, getFuncName(Op::Hat), sym::TypeSet{m_long, m_long}, m_long);
   m_funcDecls.registerFunc(
-      *this, Fk::CheckEqLong, getFuncName(Op::EqEq), sym::TypeSet{m_long, m_long}, m_bool);
-  m_funcDecls.registerFunc(
-      *this, Fk::CheckNEqLong, getFuncName(Op::BangEq), sym::TypeSet{m_long, m_long}, m_bool);
-  m_funcDecls.registerFunc(
       *this, Fk::CheckLeLong, getFuncName(Op::Le), sym::TypeSet{m_long, m_long}, m_bool);
   m_funcDecls.registerFunc(
       *this, Fk::CheckLeEqLong, getFuncName(Op::LeEq), sym::TypeSet{m_long, m_long}, m_bool);
@@ -112,6 +110,10 @@ Program::Program() :
       *this, Fk::CheckGtLong, getFuncName(Op::Gt), sym::TypeSet{m_long, m_long}, m_bool);
   m_funcDecls.registerFunc(
       *this, Fk::CheckGtEqLong, getFuncName(Op::GtEq), sym::TypeSet{m_long, m_long}, m_bool);
+
+  // Register long intrinsics.
+  m_funcDecls.registerIntrinsic(
+      *this, Fk::CheckEqLong, "long_eq_long", sym::TypeSet{m_long, m_long}, m_bool);
 
   // Register build-in unary float operators.
   m_funcDecls.registerFunc(
@@ -129,10 +131,6 @@ Program::Program() :
   m_funcDecls.registerFunc(
       *this, Fk::ModFloat, getFuncName(Op::Rem), sym::TypeSet{m_float, m_float}, m_float);
   m_funcDecls.registerFunc(
-      *this, Fk::CheckEqFloat, getFuncName(Op::EqEq), sym::TypeSet{m_float, m_float}, m_bool);
-  m_funcDecls.registerFunc(
-      *this, Fk::CheckNEqFloat, getFuncName(Op::BangEq), sym::TypeSet{m_float, m_float}, m_bool);
-  m_funcDecls.registerFunc(
       *this, Fk::CheckLeFloat, getFuncName(Op::Le), sym::TypeSet{m_float, m_float}, m_bool);
   m_funcDecls.registerFunc(
       *this, Fk::CheckLeEqFloat, getFuncName(Op::LeEq), sym::TypeSet{m_float, m_float}, m_bool);
@@ -141,7 +139,9 @@ Program::Program() :
   m_funcDecls.registerFunc(
       *this, Fk::CheckGtEqFloat, getFuncName(Op::GtEq), sym::TypeSet{m_float, m_float}, m_bool);
 
-  // Register build-in float functions.
+  // Register float intrinsics.
+  m_funcDecls.registerIntrinsic(
+      *this, Fk::CheckEqFloat, "float_eq_float", sym::TypeSet{m_float, m_float}, m_bool);
   m_funcDecls.registerIntrinsic(
       *this, Fk::PowFloat, "float_pow", sym::TypeSet{m_float, m_float}, m_float);
   m_funcDecls.registerIntrinsic(*this, Fk::SqrtFloat, "float_sqrt", sym::TypeSet{m_float}, m_float);
@@ -154,24 +154,15 @@ Program::Program() :
   m_funcDecls.registerIntrinsic(
       *this, Fk::ATan2Float, "float_atan2", sym::TypeSet{m_float, m_float}, m_float);
 
-  // Register build-in unary bool operators.
-  m_funcDecls.registerFunc(*this, Fk::InvBool, getFuncName(Op::Bang), sym::TypeSet{m_bool}, m_bool);
-
-  // Register build-in binary bool operators.
-  m_funcDecls.registerFunc(
-      *this, Fk::CheckEqBool, getFuncName(Op::EqEq), sym::TypeSet{m_bool, m_bool}, m_bool);
-  m_funcDecls.registerFunc(
-      *this, Fk::CheckNEqBool, getFuncName(Op::BangEq), sym::TypeSet{m_bool, m_bool}, m_bool);
-
   // Register build-in binary string operators.
   m_funcDecls.registerFunc(
       *this, Fk::AddString, getFuncName(Op::Plus), sym::TypeSet{m_string, m_string}, m_string);
   m_funcDecls.registerFunc(
       *this, Fk::AppendChar, getFuncName(Op::Plus), sym::TypeSet{m_string, m_char}, m_string);
-  m_funcDecls.registerFunc(
-      *this, Fk::CheckEqString, getFuncName(Op::EqEq), sym::TypeSet{m_string, m_string}, m_bool);
-  m_funcDecls.registerFunc(
-      *this, Fk::CheckNEqString, getFuncName(Op::BangEq), sym::TypeSet{m_string, m_string}, m_bool);
+
+  // Register string intrinsics.
+  m_funcDecls.registerIntrinsic(
+      *this, Fk::CheckEqString, "string_eq_string", sym::TypeSet{m_string, m_string}, m_bool);
 
   // Register build-in string functions.
   m_funcDecls.registerIntrinsic(
@@ -186,7 +177,6 @@ Program::Program() :
       m_string);
 
   // Register conversion intrinsics.
-  m_funcDecls.registerIntrinsic(*this, Fk::NoOp, "char_to_int", sym::TypeSet{m_char}, m_int);
   m_funcDecls.registerIntrinsic(*this, Fk::ConvIntLong, "int_to_long", sym::TypeSet{m_int}, m_long);
   m_funcDecls.registerIntrinsic(
       *this, Fk::ConvCharLong, "char_to_long", sym::TypeSet{m_char}, m_long);
@@ -212,8 +202,10 @@ Program::Program() :
       *this, Fk::ConvFloatString, "float_to_string", sym::TypeSet{m_float}, m_string);
   m_funcDecls.registerIntrinsic(
       *this, Fk::ConvCharString, "char_to_string", sym::TypeSet{m_char}, m_string);
+  m_funcDecls.registerIntrinsic(*this, Fk::NoOp, "char_as_int", sym::TypeSet{m_char}, m_int);
   m_funcDecls.registerIntrinsic(*this, Fk::NoOp, "int_as_float", sym::TypeSet{m_int}, m_float);
   m_funcDecls.registerIntrinsic(*this, Fk::NoOp, "float_as_int", sym::TypeSet{m_float}, m_int);
+  m_funcDecls.registerIntrinsic(*this, Fk::NoOp, "bool_as_int", sym::TypeSet{m_bool}, m_int);
 
   // Source-location intrinsics.
   m_funcDecls.registerIntrinsic(
@@ -547,19 +539,9 @@ auto Program::defineStruct(sym::TypeId id, sym::FieldDeclTable fields) -> void {
   const auto& name = m_typeDecls[id].getName();
   m_funcDecls.registerFunc(*this, sym::FuncKind::MakeStruct, name, sym::TypeSet{fieldTypes}, id);
 
-  // Register (in)equality functions.
-  m_funcDecls.registerFunc(
-      *this,
-      sym::FuncKind::CheckEqUserType,
-      getFuncName(Operator::EqEq),
-      sym::TypeSet{id, id},
-      m_bool);
-  m_funcDecls.registerFunc(
-      *this,
-      sym::FuncKind::CheckNEqUserType,
-      getFuncName(Operator::BangEq),
-      sym::TypeSet{id, id},
-      m_bool);
+  // Register equality intrinsic.
+  m_funcDecls.registerIntrinsic(
+      *this, sym::FuncKind::CheckEqUserType, "usertype_eq_usertype", sym::TypeSet{id, id}, m_bool);
 
   // Register struct definition.
   m_typeDefs.registerStruct(m_typeDecls, id, std::move(fields));
@@ -572,19 +554,9 @@ auto Program::defineUnion(sym::TypeId id, std::vector<sym::TypeId> types) -> voi
     m_funcDecls.registerImplicitConv(*this, sym::FuncKind::MakeUnion, type, id);
   }
 
-  // Register (in)equality functions.
-  m_funcDecls.registerFunc(
-      *this,
-      sym::FuncKind::CheckEqUserType,
-      getFuncName(Operator::EqEq),
-      sym::TypeSet{id, id},
-      m_bool);
-  m_funcDecls.registerFunc(
-      *this,
-      sym::FuncKind::CheckNEqUserType,
-      getFuncName(Operator::BangEq),
-      sym::TypeSet{id, id},
-      m_bool);
+  // Register equality intrinsic.
+  m_funcDecls.registerIntrinsic(
+      *this, sym::FuncKind::CheckEqUserType, "usertype_eq_usertype", sym::TypeSet{id, id}, m_bool);
 
   // Register union definition.
   m_typeDefs.registerUnion(m_typeDecls, id, std::move(types));
@@ -615,11 +587,9 @@ auto Program::defineEnum(sym::TypeId id, std::unordered_map<std::string, int32_t
   m_funcDecls.registerFunc(*this, fk::OrInt, getFuncName(Operator::Pipe), sym::TypeSet{id, id}, id);
   m_funcDecls.registerFunc(*this, fk::AndInt, getFuncName(Operator::Amp), sym::TypeSet{id, id}, id);
 
-  // Register (in)equality functions.
-  m_funcDecls.registerFunc(
-      *this, fk::CheckEqInt, getFuncName(Operator::EqEq), sym::TypeSet{id, id}, m_bool);
-  m_funcDecls.registerFunc(
-      *this, fk::CheckNEqInt, getFuncName(Operator::BangEq), sym::TypeSet{id, id}, m_bool);
+  // Register equality intrinsic.
+  m_funcDecls.registerIntrinsic(
+      *this, fk::CheckEqInt, "usertype_eq_usertype", sym::TypeSet{id, id}, m_bool);
 
   // Register enum definition.
   m_typeDefs.registerEnum(m_typeDecls, id, std::move(entries));

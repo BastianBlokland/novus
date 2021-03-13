@@ -9,7 +9,7 @@ TEST_CASE("[backend] Generate assembly for enums", "backend") {
     CHECK_PROG(
         "enum E = a : 42 "
         "fun test(bool b) b "
-        "test(E.a == 1337)",
+        "test(intrinsic{int_eq_int}(E.a, 1337))",
         [](novasm::Assembler* asmb) -> void {
           // --- test function start.
           asmb->label("func-test");
@@ -35,7 +35,7 @@ TEST_CASE("[backend] Generate assembly for enums", "backend") {
     CHECK_PROG(
         "enum E = a:0b01, b:0b10, ab:0b11 "
         "fun test(bool b) b "
-        "test((E.a | E.b) == E.ab)",
+        "test(intrinsic{int_eq_int}(E.a | E.b, E.ab))",
         [](novasm::Assembler* asmb) -> void {
           // --- test function start.
           asmb->label("func-test");
@@ -64,7 +64,7 @@ TEST_CASE("[backend] Generate assembly for enums", "backend") {
     CHECK_PROG(
         "enum E = a "
         "fun test(bool b) b "
-        "test(E(0) == E.a)",
+        "test(intrinsic{int_eq_int}(E(0), E.a))",
         [](novasm::Assembler* asmb) -> void {
           // --- test function start.
           asmb->label("func-test");

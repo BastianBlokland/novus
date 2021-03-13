@@ -120,13 +120,15 @@ private:
   [[nodiscard]] auto getFunctionsInclConversions(
       const lex::Token& nameToken,
       const std::optional<parse::TypeParamList>& typeParams,
-      const prog::sym::TypeSet& argTypes) -> std::vector<prog::sym::FuncId>;
+      const prog::sym::TypeSet& argTypes,
+      prog::OvOptions ovOptions) -> std::vector<prog::sym::FuncId>;
 
   [[nodiscard]] auto getFunctions(
       const std::string& funcName,
       const std::optional<parse::TypeParamList>& typeParams,
       const prog::sym::TypeSet& argTypes,
-      input::Span span) -> std::vector<prog::sym::FuncId>;
+      input::Span span,
+      prog::OvOptions ovOptions) -> std::vector<prog::sym::FuncId>;
 
   template <Flags F>
   [[nodiscard]] inline auto hasFlag() const noexcept {

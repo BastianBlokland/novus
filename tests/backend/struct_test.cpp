@@ -9,7 +9,7 @@ TEST_CASE("[backend] Generate assembly for structs", "backend") {
     CHECK_PROG(
         "struct User = string name, int age "
         "fun test(bool b) b "
-        "test(User(\"hello\", 42) == User(\"world\", 1337))",
+        "test(intrinsic{usertype_eq_usertype}(User(\"hello\", 42), User(\"world\", 1337)))",
         [](novasm::Assembler* asmb) -> void {
           // --- Struct equality function start.
           asmb->label("UserEq");
@@ -76,7 +76,7 @@ TEST_CASE("[backend] Generate assembly for structs", "backend") {
     CHECK_PROG(
         "struct Empty "
         "fun test(bool b) b "
-        "test(Empty() == Empty())",
+        "test(intrinsic{usertype_eq_usertype}(Empty(), Empty()))",
         [](novasm::Assembler* asmb) -> void {
           // --- Struct equality function start.
           asmb->label("UserEq");
@@ -112,8 +112,8 @@ TEST_CASE("[backend] Generate assembly for structs", "backend") {
       CHECK_PROG(
           "struct Age = int years "
           "fun test(bool b) b "
-          "test(Age(42) == Age(1337)) "
-          "test(Age(42).years == 0)",
+          "test(intrinsic{usertype_eq_usertype}(Age(42), Age(1337))) "
+          "test(intrinsic{int_eq_int}(Age(42).years, 0))",
           [](novasm::Assembler* asmb) -> void {
             // --- Struct equality function start.
             asmb->label("UserEq");

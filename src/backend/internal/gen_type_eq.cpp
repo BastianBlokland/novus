@@ -296,7 +296,7 @@ auto genUserTypeEquality(novasm::Assembler* asmb, const prog::Program& prog) -> 
   for (auto fItr = prog.beginFuncDecls(); fItr != prog.endFuncDecls(); ++fItr) {
     using fk  = prog::sym::FuncKind;
     auto kind = fItr->second.getKind();
-    if (kind == fk::CheckEqUserType || kind == fk::CheckNEqUserType) {
+    if (kind == fk::CheckEqUserType) {
       addTypeAndNestedTypes(prog, &types, *fItr->second.getInput().begin());
     }
   }

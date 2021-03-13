@@ -77,9 +77,6 @@ fun !{T1, T2, T3, T4}(function{T1, T2, T3, T4, bool} pred)
 
 // -- Functions
 
-fun equals{T}(T a, T b)
-  a == b
-
 fun construct{TR}()
   TR()
 
@@ -209,17 +206,6 @@ act invoke{T1, T2, T3, T4, T5, TR}(action{T1, T2, T3, T4, T5, TR} func, T1 a1, T
   func(a1, a2, a3, a4, a5)
 
 // -- Tests
-
-assert(equals(1, 1))
-assertNot(equals(1, 2))
-
-assert(
-  eq42 = equals{int}[42];
-  eq42(42))
-
-assert(
-  eq42 = equals{int}[42];
-  (!eq42)(43))
 
 assertEq(
   funcRet = (lambda (int x) x);

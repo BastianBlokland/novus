@@ -22,11 +22,11 @@ enum class FuncKind {
   XorInt,        // Bitwise xor two integers.
   InvInt,        // Bitwise invert an integer.
   CheckEqInt,    // Check if two integers are equal.
-  CheckNEqInt,   // Check if two integers are not equal.
   CheckLeInt,    // Check if an integer is less then another integer.
   CheckLeEqInt,  // Check if an integer is less then or equal to another integer.
   CheckGtInt,    // Check if an integer is greater then another integer.
   CheckGtEqInt,  // Check if an integer is greater then or equal to another integer.
+  CheckIntZero,  // Check if an integer is zero.
 
   AddLong,        // Add two longs.
   SubLong,        // Substract two longs.
@@ -41,7 +41,6 @@ enum class FuncKind {
   XorLong,        // Bitwise xor two longs.
   InvLong,        // Bitwise invert an long.
   CheckEqLong,    // Check if two longs are equal.
-  CheckNEqLong,   // Check if two longs are not equal.
   CheckLeLong,    // Check if a long is less then another long.
   CheckLeEqLong,  // Check if a long is less then or equal to another long.
   CheckGtLong,    // Check if a long is greater then another long.
@@ -63,22 +62,16 @@ enum class FuncKind {
   ATan2Float,     // Compute the arc tangent of two floats.
   NegateFloat,    // Negate a float.
   CheckEqFloat,   // Check if two floats are equal.
-  CheckNEqFloat,  // Check if two floats are not equal.
   CheckLeFloat,   // Check if a float is less then another float.
   CheckLeEqFloat, // Check if a float is less then or equal to another float.
   CheckGtFloat,   // Check if a float is greater then another float.
   CheckGtEqFloat, // Check if a float is greater then or equal to another float.
 
-  InvBool,      // Logic invert a boolean, true -> false, false -> true.
-  CheckEqBool,  // Check if two booleans are equal.
-  CheckNEqBool, // Check if two booleans are not equal.
-
-  AddString,      // Combine two strings.
-  LengthString,   // Return the length of a string.
-  IndexString,    // Return the character at a specific index into a string.
-  SliceString,    // Return a subsection of a string, indicated by start and end.
-  CheckEqString,  // Check if two strings are equal.
-  CheckNEqString, // Check if two strings are not equal.
+  AddString,     // Combine two strings.
+  LengthString,  // Return the length of a string.
+  IndexString,   // Return the character at a specific index into a string.
+  SliceString,   // Return a subsection of a string, indicated by start and end.
+  CheckEqString, // Check if two strings are equal.
 
   AppendChar, // Append a character to a string.
 
@@ -105,9 +98,8 @@ enum class FuncKind {
 
   LazyGet, // Retreive the value for a lazy value.
 
-  CheckEqUserType,  // Check if two user types are equal. Note: Backend will generate equality for
-                    // all user-types.
-  CheckNEqUserType, // Check if two user-types are not equal.
+  CheckEqUserType, // Check if two user types are equal.
+                   // Note: Backend will generate equality for all user-types.
 
   // NOTE: The source-location functions are no-ops that just return 'unknown' and '-1' at runtime.
   // If used in a supported context (like in an optional argument initializer the frontend will

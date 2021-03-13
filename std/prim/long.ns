@@ -29,3 +29,6 @@ fun +(long l) l
 fun ++(long l) l + 1L
 
 fun --(long l) l - 1L
+
+fun ==(long x, long y) -> bool
+  intrinsic{long_eq_long}(x, y)

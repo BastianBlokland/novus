@@ -15,7 +15,7 @@ TEST_CASE("[vm] Execute struct operations", "vm") {
 
           // Assert its not null.
           asmb->addCheckStructNull();
-          asmb->addLogicInvInt();
+          asmb->addCheckIntZero(); // Invert.
           ADD_ASSERT(asmb);
         },
         "input",

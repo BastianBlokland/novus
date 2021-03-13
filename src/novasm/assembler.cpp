@@ -144,8 +144,6 @@ auto Assembler::addNegLong() -> void { writeOpCode(OpCode::NegLong); }
 
 auto Assembler::addNegFloat() -> void { writeOpCode(OpCode::NegFloat); }
 
-auto Assembler::addLogicInvInt() -> void { writeOpCode(OpCode::LogicInvInt); }
-
 auto Assembler::addShiftLeftInt() -> void { writeOpCode(OpCode::ShiftLeftInt); }
 
 auto Assembler::addShiftLeftLong() -> void { writeOpCode(OpCode::ShiftLeftLong); }
@@ -201,6 +199,8 @@ auto Assembler::addCheckLeLong() -> void { writeOpCode(OpCode::CheckLeLong); }
 auto Assembler::addCheckLeFloat() -> void { writeOpCode(OpCode::CheckLeFloat); }
 
 auto Assembler::addCheckStructNull() -> void { writeOpCode(OpCode::CheckStructNull); }
+
+auto Assembler::addCheckIntZero() -> void { writeOpCode(OpCode::CheckIntZero); }
 
 auto Assembler::addConvIntLong() -> void { writeOpCode(OpCode::ConvIntLong); }
 
