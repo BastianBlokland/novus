@@ -25,6 +25,9 @@ namespace opt::internal {
 rewriteAll(const std::vector<prog::expr::NodePtr>& nodes, prog::expr::Rewriter* rewriter)
     -> std::vector<prog::expr::NodePtr>;
 
+[[nodiscard]] auto cloneAll(const std::vector<prog::expr::NodePtr>& nodes, size_t count)
+    -> std::vector<prog::expr::NodePtr>;
+
 inline auto copySourceAttr(prog::expr::Node& to, const prog::expr::Node& from) -> void {
   to.setSourceId(from.getSourceId());
 }

@@ -11,6 +11,11 @@ namespace opt::internal {
     prog::sym::FuncKind funcKind,
     const std::vector<prog::expr::NodePtr>& args) -> prog::expr::NodePtr;
 
+[[nodiscard]] auto maybeSimplifyIntrinsic(
+    const prog::Program& prog,
+    prog::sym::FuncKind funcKind,
+    const std::vector<prog::expr::NodePtr>& args) -> prog::expr::NodePtr;
+
 // NOTE: Returns nullptr if it was not possible to precompute the reinterpret conversion.
 [[nodiscard]] auto maybePrecomputeReinterpretConv(
     const prog::Program& prog, const prog::expr::Node& arg, prog::sym::TypeId dstType)
