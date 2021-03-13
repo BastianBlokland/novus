@@ -52,9 +52,9 @@ auto FuncDeclStmtNode::getSpan() const -> input::Span {
   return input::Span::combine(m_kw.getSpan(), m_body->getSpan());
 }
 
-auto FuncDeclStmtNode::isNoinline() const -> bool {
-  return std::any_of(m_modifiers.begin(), m_modifiers.end(), [](const lex::Token& t) {
-    return getKw(t) == lex::Keyword::Noinline;
+auto FuncDeclStmtNode::hasModifier(lex::Keyword keyword) const -> bool {
+  return std::any_of(m_modifiers.begin(), m_modifiers.end(), [keyword](const lex::Token& t) {
+    return getKw(t) == keyword;
   });
 }
 

@@ -155,13 +155,13 @@
     "function_declaration": {
       "patterns": [
         {
-          "begin": "\\b(fun|act)\\s+(noinline)?\\s*(.+?)\\s*(?=\\{|\\()",
+          "begin": "\\b(fun|act)\\s+((?:(?:noinline|implicit)\\s+)*)(.+?)\\s*(?=\\{|\\()",
           "beginCaptures": {
             "1": {
               "name": "keyword.other.function.source.novus"
             },
             "2": {
-              "name": "keyword.other.noinline.source.novus"
+              "name": "keyword.other.modifiers.source.novus"
             },
             "3": {
               "name": "entity.name.function.source.novus"

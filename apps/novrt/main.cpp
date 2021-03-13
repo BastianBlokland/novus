@@ -9,7 +9,7 @@
 #include <fstream>
 
 auto main(int argc, const char** argv) noexcept -> int {
-  // Skip the first arg (path to this executable).
+  // Drop the first arg (path to this executable).
   if (argc > 0) {
     argc -= 1;
     argv += 1;
@@ -28,6 +28,11 @@ auto main(int argc, const char** argv) noexcept -> int {
     return 1;
   }
   auto relProgPath = filesystem::path(std::string(argv[0]));
+  // Drop the first arg (path to the novus executable).
+  if (argc > 0) {
+    argc -= 1;
+    argv += 1;
+  }
 
   // Open a handle to the program executable file.
   auto fs = std::ifstream{relProgPath.string(), std::ios::binary};

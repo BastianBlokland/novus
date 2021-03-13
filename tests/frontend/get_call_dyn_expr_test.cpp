@@ -37,7 +37,8 @@ TEST_CASE("[frontend] Analyzing call dynamic expressions", "frontend") {
   }
 
   SECTION("Get delegate call with args") {
-    const auto& output = ANALYZE("fun f1(bool b, float v) -> int b ? 1 : 0 "
+    const auto& output = ANALYZE("fun implicit float(int i) intrinsic{int_to_float}(i) "
+                                 "fun f1(bool b, float v) -> int b ? 1 : 0 "
                                  "fun f2(function{bool, float, int} op) -> int op(false, 1) "
                                  "fun f() -> int f2(f1)");
     REQUIRE(output.isSuccess());

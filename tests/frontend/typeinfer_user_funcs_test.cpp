@@ -131,13 +131,15 @@ TEST_CASE("[frontend] Infer return type of user functions", "frontend") {
   }
 
   SECTION("Conditional operator") {
-    const auto& output = ANALYZE("fun f() 1 > 2 ? 42 : 1337.0");
+    const auto& output = ANALYZE("fun implicit float(int i) intrinsic{int_to_float}(i) "
+                                 "fun f() 1 > 2 ? 42 : 1337.0");
     REQUIRE(output.isSuccess());
     CHECK(GET_FUNC_DECL(output, "f").getOutput() == GET_TYPE_ID(output, "float"));
   }
 
   SECTION("Switch") {
-    const auto& output = ANALYZE("fun f() "
+    const auto& output = ANALYZE("fun implicit float(int i) intrinsic{int_to_float}(i) "
+                                 "fun f() "
                                  "if 1 > 2  -> 1 "
                                  "else      -> 2.0");
     REQUIRE(output.isSuccess());
@@ -369,7 +371,8 @@ TEST_CASE("[frontend] Infer return type of user functions", "frontend") {
   }
 
   SECTION("Anonymous function with return type spec") {
-    const auto& output = ANALYZE("fun f() lambda (int i) -> float i");
+    const auto& output = ANALYZE("fun implicit float(int i) intrinsic{int_to_float}(i) "
+                                 "fun f() lambda (int i) -> float i");
     REQUIRE(output.isSuccess());
     CHECK(GET_FUNC_DECL(output, "f").getOutput() == GET_TYPE_ID(output, "__function_int_float"));
   }
@@ -381,23 +384,23 @@ TEST_CASE("[frontend] Infer return type of user functions", "frontend") {
   }
 
   SECTION("Anonymous function with closure") {
-    const auto& output = ANALYZE("fun f(float v) lambda (int i) i + v");
+    const auto& output = ANALYZE("fun f(float a) lambda (float b) b + a");
     REQUIRE(output.isSuccess());
     CHECK(
         GET_FUNC_DECL(output, "f", GET_TYPE_ID(output, "float")).getOutput() ==
-        GET_TYPE_ID(output, "__function_int_float"));
+        GET_TYPE_ID(output, "__function_float_float"));
   }
 
   SECTION("Anonymous function with nested closure") {
-    const auto& output = ANALYZE("fun f(float v) lambda (int i) (lambda () i + v)");
+    const auto& output = ANALYZE("fun f(float a) lambda (float b) (lambda () b + a)");
     REQUIRE(output.isSuccess());
     CHECK(
         GET_FUNC_DECL(output, "f", GET_TYPE_ID(output, "float")).getOutput() ==
-        GET_TYPE_ID(output, "__function_int___function_float"));
+        GET_TYPE_ID(output, "__function_float___function_float"));
   }
 
   SECTION("Anonymous function call with closure") {
-    const auto& output = ANALYZE("fun f(float v) (lambda (int i) i + v)(42)");
+    const auto& output = ANALYZE("fun f(float a) (lambda (float b) b + a)(42.0)");
     REQUIRE(output.isSuccess());
     CHECK(
         GET_FUNC_DECL(output, "f", GET_TYPE_ID(output, "float")).getOutput() ==
@@ -405,11 +408,11 @@ TEST_CASE("[frontend] Infer return type of user functions", "frontend") {
   }
 
   SECTION("Anonymous function call with nested closure") {
-    const auto& output = ANALYZE("fun f(float v) (lambda (int i) (lambda () i + v))(42)");
+    const auto& output = ANALYZE("fun f(int a) (lambda (int b) (lambda () b + a))(42)");
     REQUIRE(output.isSuccess());
     CHECK(
-        GET_FUNC_DECL(output, "f", GET_TYPE_ID(output, "float")).getOutput() ==
-        GET_TYPE_ID(output, "__function_float"));
+        GET_FUNC_DECL(output, "f", GET_TYPE_ID(output, "int")).getOutput() ==
+        GET_TYPE_ID(output, "__function_int"));
   }
 
   SECTION("Anonymous action") {

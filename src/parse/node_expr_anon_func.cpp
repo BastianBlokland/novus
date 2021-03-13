@@ -53,7 +53,7 @@ auto AnonFuncExprNode::isImpure() const -> bool {
   });
 }
 
-auto AnonFuncExprNode::isNoinline() const -> bool { return false; }
+auto AnonFuncExprNode::hasModifier(lex::Keyword /*unused*/) const -> bool { return false; }
 
 auto AnonFuncExprNode::getArgList() const -> const ArgumentListDecl& { return m_argList; }
 

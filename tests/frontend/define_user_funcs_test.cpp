@@ -21,7 +21,8 @@ TEST_CASE("[frontend] Analyzing user-function definitions", "frontend") {
   }
 
   SECTION("Define function with conversion") {
-    const auto& output = ANALYZE("fun f() -> float 2");
+    const auto& output = ANALYZE("fun implicit float(int i) intrinsic{int_to_float}(i) "
+                                 "fun f() -> float 2");
     REQUIRE(output.isSuccess());
     const auto& funcDef = GET_FUNC_DEF(output, "f");
 
