@@ -52,16 +52,10 @@ auto rewriteAll(const std::vector<prog::expr::NodePtr>& nodes, prog::expr::Rewri
   return newNodes;
 }
 
-auto cloneAll(const std::vector<prog::expr::NodePtr>& nodes, size_t count)
-    -> std::vector<prog::expr::NodePtr> {
-
-  assert(nodes.size() >= count);
-
+auto cloneToVec(const prog::expr::NodePtr& node) -> std::vector<prog::expr::NodePtr> {
   auto newNodes = std::vector<prog::expr::NodePtr>{};
-  newNodes.reserve(count);
-  for (auto i = 0u; i != count; ++i) {
-    newNodes.push_back(nodes[i]->clone(nullptr));
-  }
+  newNodes.reserve(1);
+  newNodes.push_back(node->clone(nullptr));
   return newNodes;
 }
 

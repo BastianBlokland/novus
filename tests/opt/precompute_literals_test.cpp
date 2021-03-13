@@ -214,6 +214,19 @@ TEST_CASE("[opt] Precompute literals", "opt") {
                   funcDef.getConsts(), *funcDef.getConsts().lookup("i")))));
     }
     {
+      const auto& output = ANALYZE("fun f(int i) -> bool intrinsic{int_eq_int}(0, i)");
+      REQUIRE(output.isSuccess());
+      const auto prog     = precomputeLiterals(output.getProg());
+      const auto& funcDef = GET_FUNC_DEF(prog, "f", prog.getInt());
+      CHECK(
+          funcDef.getBody() ==
+          *prog::expr::callExprNode(
+              prog,
+              GET_INTRINSIC_ID(prog, "int_eq_zero", prog.getInt()),
+              EXPRS(prog::expr::constExprNode(
+                  funcDef.getConsts(), *funcDef.getConsts().lookup("i")))));
+    }
+    {
       const auto& output = ANALYZE("fun f(string s) -> string s + \"\"");
       REQUIRE(output.isSuccess());
       const auto prog     = precomputeLiterals(output.getProg());
