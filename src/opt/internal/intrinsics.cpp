@@ -510,6 +510,14 @@ auto maybeSimplifyIntrinsic(
       return prog::expr::callExprNode(
           prog, *prog.lookupIntrinsic("int_eq_zero", {prog.getInt()}), cloneAll(args, 1));
     }
+  case prog::sym::FuncKind::AddString:
+    assert(args.size() == 2);
+    if (isLiteral(*args[1]) && getString(*args[1]) == "") {
+      return args[0]->clone(nullptr);
+    }
+    if (isLiteral(*args[0]) && getString(*args[0]) == "") {
+      return args[1]->clone(nullptr);
+    }
     return nullptr;
   default:
     return nullptr;

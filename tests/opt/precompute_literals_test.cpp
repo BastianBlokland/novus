@@ -213,6 +213,24 @@ TEST_CASE("[opt] Precompute literals", "opt") {
               EXPRS(prog::expr::constExprNode(
                   funcDef.getConsts(), *funcDef.getConsts().lookup("i")))));
     }
+    {
+      const auto& output = ANALYZE("fun f(string s) -> string s + \"\"");
+      REQUIRE(output.isSuccess());
+      const auto prog     = precomputeLiterals(output.getProg());
+      const auto& funcDef = GET_FUNC_DEF(prog, "f", prog.getString());
+      CHECK(
+          funcDef.getBody() ==
+          *prog::expr::constExprNode(funcDef.getConsts(), *funcDef.getConsts().lookup("s")));
+    }
+    {
+      const auto& output = ANALYZE("fun f(string s) -> string \"\" + s");
+      REQUIRE(output.isSuccess());
+      const auto prog     = precomputeLiterals(output.getProg());
+      const auto& funcDef = GET_FUNC_DEF(prog, "f", prog.getString());
+      CHECK(
+          funcDef.getBody() ==
+          *prog::expr::constExprNode(funcDef.getConsts(), *funcDef.getConsts().lookup("s")));
+    }
   }
 
   SECTION("reinterpret conversions") {
