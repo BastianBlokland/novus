@@ -176,7 +176,7 @@ TEST_CASE("[frontend] Analyzing optional argument", "frontend") {
     }
 
     SECTION("Type parameter can be inferred from an initializer") {
-      const auto& output = ANALYZE("fun implicit int(char c) intrinsic{char_to_int}(c) "
+      const auto& output = ANALYZE("fun implicit int(char c) intrinsic{char_as_int}(c) "
                                    "fun string(int i) intrinsic{int_to_string}(i) "
                                    "fun ft{TX, TY}(TX a = \"World\", TY b = 'W') a + string(b) "
                                    "fun f1() ft() "

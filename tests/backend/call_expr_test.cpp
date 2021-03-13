@@ -323,14 +323,6 @@ TEST_CASE("[backend] Generate assembly for call expressions", "backend") {
     });
   }
 
-  SECTION("Bool checks") {
-    CHECK_EXPR_BOOL("intrinsic{bool_eq_bool}(false, true)", [](novasm::Assembler* asmb) -> void {
-      asmb->addLoadLitInt(0);
-      asmb->addLoadLitInt(1);
-      asmb->addCheckEqInt();
-    });
-  }
-
   SECTION("Bool operations") {
     CHECK_EXPR("!false", [](novasm::Assembler* asmb) -> void {
       asmb->addLoadLitInt(0);

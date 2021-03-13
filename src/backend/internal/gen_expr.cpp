@@ -303,9 +303,6 @@ auto GenExpr::visit(const prog::expr::CallExprNode& n) -> void {
   case prog::sym::FuncKind::InvBool:
     m_asmb->addLogicInvInt();
     break;
-  case prog::sym::FuncKind::CheckEqBool:
-    m_asmb->addCheckEqInt();
-    break;
 
   case prog::sym::FuncKind::AddString:
     m_asmb->addAddString();

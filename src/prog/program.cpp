@@ -155,10 +155,6 @@ Program::Program() :
   // Register build-in unary bool operators.
   m_funcDecls.registerFunc(*this, Fk::InvBool, getFuncName(Op::Bang), sym::TypeSet{m_bool}, m_bool);
 
-  // Register bool intrinsics.
-  m_funcDecls.registerIntrinsic(
-      *this, Fk::CheckEqBool, "bool_eq_bool", sym::TypeSet{m_bool, m_bool}, m_bool);
-
   // Register build-in binary string operators.
   m_funcDecls.registerFunc(
       *this, Fk::AddString, getFuncName(Op::Plus), sym::TypeSet{m_string, m_string}, m_string);
@@ -182,7 +178,6 @@ Program::Program() :
       m_string);
 
   // Register conversion intrinsics.
-  m_funcDecls.registerIntrinsic(*this, Fk::NoOp, "char_to_int", sym::TypeSet{m_char}, m_int);
   m_funcDecls.registerIntrinsic(*this, Fk::ConvIntLong, "int_to_long", sym::TypeSet{m_int}, m_long);
   m_funcDecls.registerIntrinsic(
       *this, Fk::ConvCharLong, "char_to_long", sym::TypeSet{m_char}, m_long);
@@ -208,8 +203,10 @@ Program::Program() :
       *this, Fk::ConvFloatString, "float_to_string", sym::TypeSet{m_float}, m_string);
   m_funcDecls.registerIntrinsic(
       *this, Fk::ConvCharString, "char_to_string", sym::TypeSet{m_char}, m_string);
+  m_funcDecls.registerIntrinsic(*this, Fk::NoOp, "char_as_int", sym::TypeSet{m_char}, m_int);
   m_funcDecls.registerIntrinsic(*this, Fk::NoOp, "int_as_float", sym::TypeSet{m_int}, m_float);
   m_funcDecls.registerIntrinsic(*this, Fk::NoOp, "float_as_int", sym::TypeSet{m_float}, m_int);
+  m_funcDecls.registerIntrinsic(*this, Fk::NoOp, "bool_as_int", sym::TypeSet{m_bool}, m_int);
 
   // Source-location intrinsics.
   m_funcDecls.registerIntrinsic(

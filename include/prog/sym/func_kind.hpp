@@ -66,8 +66,7 @@ enum class FuncKind {
   CheckGtFloat,   // Check if a float is greater then another float.
   CheckGtEqFloat, // Check if a float is greater then or equal to another float.
 
-  InvBool,     // Logic invert a boolean, true -> false, false -> true.
-  CheckEqBool, // Check if two booleans are equal.
+  InvBool, // Logic invert a boolean, true -> false, false -> true.
 
   AddString,     // Combine two strings.
   LengthString,  // Return the length of a string.

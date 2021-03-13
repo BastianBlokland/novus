@@ -22,7 +22,7 @@ fun int(long l)
   intrinsic{long_to_int}(l)
 
 fun implicit int(char c)
-  intrinsic{char_to_int}(c)
+  intrinsic{char_as_int}(c)
 
 fun asInt(float f) -> int
   intrinsic{float_as_int}(f)

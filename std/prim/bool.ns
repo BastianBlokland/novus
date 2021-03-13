@@ -9,4 +9,4 @@ fun bool(bool b) b
 // -- Operators
 
 fun ==(bool x, bool y) -> bool
-  intrinsic{bool_eq_bool}(x, y)
+  intrinsic{int_eq_int}(intrinsic{bool_as_int}(x), intrinsic{bool_as_int}(y))

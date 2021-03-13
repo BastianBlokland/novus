@@ -165,10 +165,6 @@ TEST_CASE("[opt] Precompute literals", "opt") {
 
   SECTION("bool intrinsics") {
     ASSERT_EXPR_BOOL(precomputeLiterals, "!false", litBoolNode(prog, true));
-    ASSERT_EXPR_BOOL(
-        precomputeLiterals, "intrinsic{bool_eq_bool}(false, true)", litBoolNode(prog, false));
-    ASSERT_EXPR_BOOL(
-        precomputeLiterals, "!intrinsic{bool_eq_bool}(false, true)", litBoolNode(prog, true));
   }
 
   SECTION("char intrinsics") {
