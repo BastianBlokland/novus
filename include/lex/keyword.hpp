@@ -22,7 +22,8 @@ enum class Keyword {
   Else,
   Is,
   As,
-  Noinline
+  Noinline,
+  Implicit,
 };
 
 auto operator<<(std::ostream& out, const Keyword& rhs) -> std::ostream&;

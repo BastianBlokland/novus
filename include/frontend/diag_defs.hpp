@@ -71,6 +71,12 @@ errDuplicateEntryNameInEnum(prog::sym::SourceId src, const std::string& entryNam
 [[nodiscard]] auto errOperatorOverloadWithoutArgs(prog::sym::SourceId src, const std::string& name)
     -> Diag;
 
+[[nodiscard]] auto errTemplatedImplicitConversion(prog::sym::SourceId src) -> Diag;
+
+[[nodiscard]] auto errImplicitNonConv(prog::sym::SourceId src) -> Diag;
+
+[[nodiscard]] auto errToManyInputsInImplicitConv(prog::sym::SourceId src) -> Diag;
+
 [[nodiscard]] auto
 errTypeParamNameConflictsWithType(prog::sym::SourceId src, const std::string& name) -> Diag;
 

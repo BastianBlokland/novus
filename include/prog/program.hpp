@@ -158,6 +158,7 @@ public:
   auto
   declareAction(std::string name, sym::TypeSet input, sym::TypeId output, unsigned int numOptInputs)
       -> sym::FuncId;
+  auto declareImplicitConv(sym::TypeId input, sym::TypeId output) -> sym::FuncId;
   auto declareFailIntrinsic(std::string name, sym::TypeId output) -> sym::FuncId;
 
   auto defineStruct(sym::TypeId id, sym::FieldDeclTable fields) -> void;

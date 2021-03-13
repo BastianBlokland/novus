@@ -174,18 +174,6 @@ TEST_CASE("[backend] Generate assembly for call expressions", "backend") {
       asmb->addLoadLitFloat(3.42F);
       asmb->addDivFloat();
     });
-    CHECK_EXPR_FLOAT("1.0 / 2", [](novasm::Assembler* asmb) -> void {
-      asmb->addLoadLitFloat(1.0F);
-      asmb->addLoadLitInt(2);
-      asmb->addConvIntFloat();
-      asmb->addDivFloat();
-    });
-    CHECK_EXPR_FLOAT("1 / 2.0", [](novasm::Assembler* asmb) -> void {
-      asmb->addLoadLitInt(1);
-      asmb->addConvIntFloat();
-      asmb->addLoadLitFloat(2.0F);
-      asmb->addDivFloat();
-    });
     CHECK_EXPR_FLOAT("6.0 % 2.0", [](novasm::Assembler* asmb) -> void {
       asmb->addLoadLitFloat(6.0F);
       asmb->addLoadLitFloat(2.0F);
@@ -425,7 +413,7 @@ TEST_CASE("[backend] Generate assembly for call expressions", "backend") {
   }
 
   SECTION("Conversions") {
-    CHECK_EXPR_FLOAT("float(42)", [](novasm::Assembler* asmb) -> void {
+    CHECK_EXPR_FLOAT("intrinsic{int_to_float}(42)", [](novasm::Assembler* asmb) -> void {
       asmb->addLoadLitInt(42);
       asmb->addConvIntFloat();
     });
@@ -437,11 +425,11 @@ TEST_CASE("[backend] Generate assembly for call expressions", "backend") {
       asmb->addLoadLitLong(42);
       asmb->addConvLongInt();
     });
-    CHECK_EXPR_LONG("long(42)", [](novasm::Assembler* asmb) -> void {
+    CHECK_EXPR_LONG("intrinsic{int_to_long}(42)", [](novasm::Assembler* asmb) -> void {
       asmb->addLoadLitInt(42);
       asmb->addConvIntLong();
     });
-    CHECK_EXPR_LONG("long('a')", [](novasm::Assembler* asmb) -> void {
+    CHECK_EXPR_LONG("intrinsic{char_to_long}('a')", [](novasm::Assembler* asmb) -> void {
       asmb->addLoadLitInt('a');
       asmb->addConvIntLong();
     });

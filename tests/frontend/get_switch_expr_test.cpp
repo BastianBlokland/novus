@@ -38,7 +38,8 @@ TEST_CASE("[frontend] Analyzing switch expressions", "frontend") {
   }
 
   SECTION("Get switch expression with conversion on the branches") {
-    const auto& output = ANALYZE("fun f() "
+    const auto& output = ANALYZE("fun implicit float(int i) intrinsic{int_to_float}(i) "
+                                 "fun f() "
                                  "  if true   -> 1 "
                                  "  if false  -> 1.0 "
                                  "  else      -> 3");

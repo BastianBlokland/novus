@@ -56,6 +56,9 @@ auto operator<<(std::ostream& out, const Keyword& rhs) -> std::ostream& {
   case Keyword::Noinline:
     out << "noinline";
     break;
+  case Keyword::Implicit:
+    out << "implicit";
+    break;
   }
   return out;
 }
@@ -79,6 +82,7 @@ auto getKeyword(const std::string& str) -> std::optional<Keyword> {
       {"is", Keyword::Is},
       {"as", Keyword::As},
       {"noinline", Keyword::Noinline},
+      {"implicit", Keyword::Implicit},
   };
 
   const auto keywordSearch = keywordTable.find(str);

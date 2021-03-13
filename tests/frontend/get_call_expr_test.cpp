@@ -48,7 +48,8 @@ TEST_CASE("[frontend] Analyzing call expressions", "frontend") {
   }
 
   SECTION("Get call with conversion") {
-    const auto& output = ANALYZE("fun f1(float a) a "
+    const auto& output = ANALYZE("fun implicit float(int i) intrinsic{int_to_float}(i) "
+                                 "fun f1(float a) a "
                                  "fun f2() f1(1)");
     REQUIRE(output.isSuccess());
 

@@ -31,7 +31,8 @@ TEST_CASE("[frontend] Analyzing binary expressions", "frontend") {
   }
 
   SECTION("Get binary expression with conversion on lhs") {
-    const auto& output = ANALYZE("fun f(float a) 2 * a");
+    const auto& output = ANALYZE("fun implicit float(int i) intrinsic{int_to_float}(i) "
+                                 "fun f(float a) 2 * a");
     REQUIRE(output.isSuccess());
     const auto& funcDef = GET_FUNC_DEF(output, "f", GET_TYPE_ID(output, "float"));
 
@@ -51,7 +52,8 @@ TEST_CASE("[frontend] Analyzing binary expressions", "frontend") {
   }
 
   SECTION("Get binary expression with conversion on rhs") {
-    const auto& output = ANALYZE("fun f(float a) a * 2");
+    const auto& output = ANALYZE("fun implicit float(int i) intrinsic{int_to_float}(i) "
+                                 "fun f(float a) a * 2");
     REQUIRE(output.isSuccess());
     const auto& funcDef = GET_FUNC_DEF(output, "f", GET_TYPE_ID(output, "float"));
 

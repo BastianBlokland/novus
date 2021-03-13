@@ -51,7 +51,8 @@ TEST_CASE("[frontend] Analyzing user-function templates", "frontend") {
   }
 
   SECTION("Overload templated functions") {
-    const auto& output = ANALYZE("fun ft{T}(int a, T b) a + b "
+    const auto& output = ANALYZE("fun implicit float(int i) intrinsic{int_to_float}(i) "
+                                 "fun ft{T}(int a, T b) a + b "
                                  "fun ft{T}(float a, T b) a + b "
                                  "fun f() -> float ft{int}(1.0, 2)");
     REQUIRE(output.isSuccess());
@@ -69,7 +70,8 @@ TEST_CASE("[frontend] Analyzing user-function templates", "frontend") {
   }
 
   SECTION("Return type as parameter") {
-    const auto& output = ANALYZE("fun string(int i) intrinsic{int_to_string}(i) "
+    const auto& output = ANALYZE("fun implicit float(int i) intrinsic{int_to_float}(i) "
+                                 "fun string(int i) intrinsic{int_to_string}(i) "
                                  "fun int(int i) i "
                                  "fun ft{T}(int a) -> T T(a) "
                                  "fun f1() -> int ft{int}(1) "
@@ -119,7 +121,8 @@ TEST_CASE("[frontend] Analyzing user-function templates", "frontend") {
   }
 
   SECTION("Infer type-parameter in templated call") {
-    const auto& output = ANALYZE("fun ft{T, Y}(T a, Y b) "
+    const auto& output = ANALYZE("fun implicit float(int i) intrinsic{int_to_float}(i) "
+                                 "fun ft{T, Y}(T a, Y b) "
                                  "  a + b "
                                  "fun f() ft(2, 1.0)");
     REQUIRE(output.isSuccess());
@@ -137,7 +140,8 @@ TEST_CASE("[frontend] Analyzing user-function templates", "frontend") {
   }
 
   SECTION("Infer type-parameter supports implicit conversion") {
-    const auto& output = ANALYZE("fun ft{T}(T a, T b) "
+    const auto& output = ANALYZE("fun implicit float(int i) intrinsic{int_to_float}(i) "
+                                 "fun ft{T}(T a, T b) "
                                  "  a + b "
                                  "fun f() ft(1.0, 2)");
     REQUIRE(output.isSuccess());

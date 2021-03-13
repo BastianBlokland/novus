@@ -240,7 +240,7 @@
 			<array>
 				<dict>
 					<key>begin</key>
-					<string>\b(fun|act)\s+(noinline)?\s*(.+?)\s*(?=\{|\()</string>
+					<string>\b(fun|act)\s+((?:(?:noinline|implicit)\s+)*)(.+?)\s*(?=\{|\()</string>
 					<key>beginCaptures</key>
 					<dict>
 						<key>1</key>
@@ -251,7 +251,7 @@
 						<key>2</key>
 						<dict>
 							<key>name</key>
-							<string>keyword.other.noinline.source.novus</string>
+							<string>keyword.other.modifiers.source.novus</string>
 						</dict>
 						<key>3</key>
 						<dict>

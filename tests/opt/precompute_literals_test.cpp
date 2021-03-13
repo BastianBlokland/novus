@@ -84,8 +84,8 @@ TEST_CASE("[opt] Precompute literals", "opt") {
     ASSERT_EXPR_BOOL(precomputeLiterals, "1 <= 2", litBoolNode(prog, true));
     ASSERT_EXPR_BOOL(precomputeLiterals, "1 > 2", litBoolNode(prog, false));
     ASSERT_EXPR_BOOL(precomputeLiterals, "1 >= 2", litBoolNode(prog, false));
-    ASSERT_EXPR_LONG(precomputeLiterals, "long(137)", litLongNode(prog, 137));
-    ASSERT_EXPR_FLOAT(precomputeLiterals, "float(137)", litFloatNode(prog, 137));
+    ASSERT_EXPR_LONG(precomputeLiterals, "intrinsic{int_to_long}(137)", litLongNode(prog, 137));
+    ASSERT_EXPR_FLOAT(precomputeLiterals, "intrinsic{int_to_float}(137)", litFloatNode(prog, 137));
     ASSERT_EXPR_STRING(
         precomputeLiterals, "intrinsic{int_to_string}(1337)", litStringNode(prog, "1337"));
     ASSERT_EXPR_CHAR(precomputeLiterals, "intrinsic{int_to_char}(137)", litCharNode(prog, 137));

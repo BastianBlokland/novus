@@ -80,7 +80,7 @@ TEST_CASE("[backend] Generate assembly for dynamic call expressions", "backend")
   SECTION("Closure") {
     CHECK_PROG(
         "fun test(bool b) b "
-        "test(i = 1337; (lambda (float f) f == i)(.1))",
+        "test(i = 1337.0; (lambda (float f) f == i)(.1))",
         [](novasm::Assembler* asmb) -> void {
           // --- test function start.
           asmb->label("func-test");
@@ -91,14 +91,13 @@ TEST_CASE("[backend] Generate assembly for dynamic call expressions", "backend")
           asmb->label("anon func");
           asmb->addStackLoad(0);
           asmb->addStackLoad(1);
-          asmb->addConvIntFloat();
           asmb->addCheckEqFloat();
           asmb->addRet();
 
           asmb->label("prog");
           asmb->addStackAlloc(1);
 
-          asmb->addLoadLitInt(1337);
+          asmb->addLoadLitFloat(1337.0f);
           asmb->addStackStore(0);
 
           asmb->addLoadLitFloat(.1F); // NOLINT: Magic numbers

@@ -18,6 +18,8 @@ DeclareUserFuncs::DeclareUserFuncs(Context* ctx, std::vector<FuncDeclInfo>* func
 
 auto DeclareUserFuncs::visit(const parse::FuncDeclStmtNode& n) -> void {
 
+  const auto isImplicit = n.hasModifier(lex::Keyword::Implicit);
+
   std::string name;
   std::string displayName;
   if (n.getId().getKind() == lex::TokenKind::Identifier) {
@@ -47,6 +49,13 @@ auto DeclareUserFuncs::visit(const parse::FuncDeclStmtNode& n) -> void {
   if (n.getTypeSubs()) {
     auto typeSubs = getSubstitutionParams(m_ctx, *n.getTypeSubs());
     if (typeSubs && validateFuncTemplateArgList(n.getArgList(), *typeSubs)) {
+
+      if (isImplicit) {
+        // Templated implicit conversion are not supported atm.
+        // Fundamentally there is no reason we cannot support this but the need has not come up yet.
+        m_ctx->reportDiag(errTemplatedImplicitConversion, n.getId().getSpan());
+        return;
+      }
 
       if (n.isAction()) {
         m_ctx->getFuncTemplates()->declareAction(m_ctx, name, std::move(*typeSubs), &n);
@@ -78,10 +87,15 @@ auto DeclareUserFuncs::visit(const parse::FuncDeclStmtNode& n) -> void {
 
   const auto isConv = isType(m_ctx, nullptr, name);
   if (isConv && n.isAction()) {
-    if (n.isAction()) {
-      m_ctx->reportDiag(errNonPureConversion, n.getId().getSpan());
-      return;
-    }
+    m_ctx->reportDiag(errNonPureConversion, n.getId().getSpan());
+    return;
+  }
+  if (isImplicit && !isConv) {
+    m_ctx->reportDiag(errImplicitNonConv, n.getId().getSpan());
+    return;
+  }
+  if (isImplicit && (input->getCount() != 1 || numOptInputs)) {
+    m_ctx->reportDiag(errToManyInputsInImplicitConv, n.getId().getSpan());
     return;
   }
 
@@ -122,11 +136,21 @@ auto DeclareUserFuncs::visit(const parse::FuncDeclStmtNode& n) -> void {
   }
 
   // Declare the function in the program.
-  const auto funcName = isConv ? getName(*m_ctx, *retType) : name;
-  auto funcId         = n.isAction()
-      ? m_ctx->getProg()->declareAction(funcName, input.value(), retType.value(), numOptInputs)
-      : m_ctx->getProg()->declarePureFunc(funcName, input.value(), retType.value(), numOptInputs);
-  m_funcDecls->emplace_back(funcId, m_ctx, name, n);
+  if (n.isAction()) {
+    const auto funcId =
+        m_ctx->getProg()->declareAction(name, input.value(), retType.value(), numOptInputs);
+    m_funcDecls->emplace_back(funcId, m_ctx, std::move(name), n);
+    return;
+  }
+  if (isImplicit) {
+    const auto funcId = m_ctx->getProg()->declareImplicitConv((*input)[0], retType.value());
+    m_funcDecls->emplace_back(funcId, m_ctx, std::move(name), n);
+    return;
+  }
+  auto funcName     = isConv ? getName(*m_ctx, *retType) : name;
+  const auto funcId = m_ctx->getProg()->declarePureFunc(
+      std::move(funcName), input.value(), retType.value(), numOptInputs);
+  m_funcDecls->emplace_back(funcId, m_ctx, std::move(name), n);
 }
 
 auto DeclareUserFuncs::validateFuncTemplateArgList(
