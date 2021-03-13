@@ -440,7 +440,7 @@ TEST_CASE("[vm] Execute process platform-calls", "vm") {
           asmb->addDup(); // Duplicate the process.
 
           // Wait a few seconds to give the process time to start.
-          asmb->addLoadLitLong(3'000'000'000);
+          asmb->addLoadLitLong(5'000'000'000);
           asmb->addPCall(novasm::PCallCode::SleepNano);
           asmb->addPop(); // Ignore sleep return value.
 
