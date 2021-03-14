@@ -191,6 +191,7 @@ auto disassembleInstructions(
     case OpCode::CheckLeFloat:
     case OpCode::CheckStructNull:
     case OpCode::CheckIntZero:
+    case OpCode::CheckStringEmpty:
     case OpCode::ConvIntLong:
     case OpCode::ConvIntFloat:
     case OpCode::ConvLongInt:

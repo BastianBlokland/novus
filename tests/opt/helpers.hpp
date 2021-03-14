@@ -7,8 +7,12 @@
 #include "prog/expr/node_lit_long.hpp"
 #include "prog/operator.hpp"
 #include "prog/program.hpp"
+#include <array>
+#include <vector>
 
 namespace opt {
+
+#define NUM_ARGS(...) std::tuple_size<decltype(std::make_tuple(__VA_ARGS__))>::value
 
 inline auto buildSource(std::string input) {
   return frontend::buildSource("test", std::nullopt, input.begin(), input.end());
@@ -74,6 +78,18 @@ inline auto buildSource(std::string input) {
 
 #define ASSERT_EXPR_STRING(OPT, INPUT, EXPECTED_EXPR)                                              \
   ASSERT_EXPR_TYPED(OPT, "string", INPUT, EXPECTED_EXPR)
+
+template <typename Array>
+inline auto arrayMoveToVec(Array c) {
+  auto result = std::vector<typename Array::value_type>{};
+  for (auto& elem : c) {
+    result.push_back(std::move(elem));
+  }
+  return result;
+}
+
+#define EXPRS(...)                                                                                 \
+  arrayMoveToVec<std::array<prog::expr::NodePtr, NUM_ARGS(__VA_ARGS__)>>({__VA_ARGS__})
 
 inline auto
 getIntBinaryOpExpr(const prog::Program& prog, prog::Operator op, int32_t lhs, int32_t rhs)

@@ -60,7 +60,7 @@ fun ==(string x, string y) -> bool
 // -- Utilities
 
 fun isEmpty(string str)
-  str.length() == 0
+  str == ""
 
 fun last(string str)
   str[str.length() - 1]

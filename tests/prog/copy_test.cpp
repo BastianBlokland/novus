@@ -48,7 +48,7 @@ TEST_CASE("[prog] Copy", "prog") {
   SECTION("Fail to copy intrinsic") {
     auto progA     = Program{};
     auto progB     = Program{};
-    auto intrinsic = progA.lookupIntrinsic("clock_nanosteady", sym::TypeSet{}, OvOptions{});
+    auto intrinsic = progA.lookupIntrinsic("clock_nanosteady", sym::TypeSet{});
     REQUIRE(intrinsic);
     REQUIRE(!copyFunc(progA, &progB, *intrinsic));
   }

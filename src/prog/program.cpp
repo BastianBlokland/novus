@@ -163,6 +163,8 @@ Program::Program() :
   // Register string intrinsics.
   m_funcDecls.registerIntrinsic(
       *this, Fk::CheckEqString, "string_eq_string", sym::TypeSet{m_string, m_string}, m_bool);
+  m_funcDecls.registerIntrinsic(
+      *this, Fk::CheckStringEmpty, "string_eq_empty", sym::TypeSet{m_string}, m_bool);
 
   // Register build-in string functions.
   m_funcDecls.registerIntrinsic(

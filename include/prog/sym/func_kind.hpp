@@ -9,24 +9,25 @@ enum class FuncKind {
   NoOp, // Backend will generate no assembly, usefull for aliasing conversions.
   User, // User-defined function, contains a definition in the 'FuncDefTable'.
 
-  AddInt,        // Add two integers.
-  SubInt,        // Substact two integers.
-  MulInt,        // Multiply two integers.
-  DivInt,        // Divide two integers.
-  RemInt,        // Return division remainder of two integers.
-  NegateInt,     // Negate an integer.
-  ShiftLeftInt,  // Shift bits of an integer to the left.
-  ShiftRightInt, // Shift bits of an integer to the right.
-  AndInt,        // Bitwise and two integers.
-  OrInt,         // Bitwise or two integers.
-  XorInt,        // Bitwise xor two integers.
-  InvInt,        // Bitwise invert an integer.
-  CheckEqInt,    // Check if two integers are equal.
-  CheckLeInt,    // Check if an integer is less then another integer.
-  CheckLeEqInt,  // Check if an integer is less then or equal to another integer.
-  CheckGtInt,    // Check if an integer is greater then another integer.
-  CheckGtEqInt,  // Check if an integer is greater then or equal to another integer.
-  CheckIntZero,  // Check if an integer is zero.
+  AddInt,           // Add two integers.
+  SubInt,           // Substact two integers.
+  MulInt,           // Multiply two integers.
+  DivInt,           // Divide two integers.
+  RemInt,           // Return division remainder of two integers.
+  NegateInt,        // Negate an integer.
+  ShiftLeftInt,     // Shift bits of an integer to the left.
+  ShiftRightInt,    // Shift bits of an integer to the right.
+  AndInt,           // Bitwise and two integers.
+  OrInt,            // Bitwise or two integers.
+  XorInt,           // Bitwise xor two integers.
+  InvInt,           // Bitwise invert an integer.
+  CheckEqInt,       // Check if two integers are equal.
+  CheckLeInt,       // Check if an integer is less then another integer.
+  CheckLeEqInt,     // Check if an integer is less then or equal to another integer.
+  CheckGtInt,       // Check if an integer is greater then another integer.
+  CheckGtEqInt,     // Check if an integer is greater then or equal to another integer.
+  CheckIntZero,     // Check if an integer is zero.
+  CheckStringEmpty, // Check if a string is empty.
 
   AddLong,        // Add two longs.
   SubLong,        // Substract two longs.

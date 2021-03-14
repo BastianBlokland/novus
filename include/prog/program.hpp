@@ -102,11 +102,12 @@ public:
   [[nodiscard]] auto lookupFunc(const std::string& name, OvOptions options) const
       -> std::vector<sym::FuncId>;
 
-  [[nodiscard]] auto
-  lookupIntrinsic(const std::string& name, const sym::TypeSet& input, OvOptions options) const
+  [[nodiscard]] auto lookupIntrinsic(
+      const std::string& name, const sym::TypeSet& input, OvOptions options = OvOptions{0}) const
       -> std::optional<sym::FuncId>;
 
-  [[nodiscard]] auto lookupIntrinsic(const std::string& name, OvOptions options) const
+  [[nodiscard]] auto
+  lookupIntrinsic(const std::string& name, OvOptions options = OvOptions{0}) const
       -> std::vector<sym::FuncId>;
 
   [[nodiscard]] auto lookupImplicitConv(sym::TypeId from, sym::TypeId to) const

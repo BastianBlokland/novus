@@ -199,6 +199,53 @@ TEST_CASE("[opt] Precompute literals", "opt") {
         litBoolNode(prog, true));
   }
 
+  SECTION("simplify intrinsic calls") {
+    {
+      const auto& output = ANALYZE("fun f(int i) -> bool intrinsic{int_eq_int}(i, 0)");
+      REQUIRE(output.isSuccess());
+      const auto prog     = precomputeLiterals(output.getProg());
+      const auto& funcDef = GET_FUNC_DEF(prog, "f", prog.getInt());
+      CHECK(
+          funcDef.getBody() ==
+          *prog::expr::callExprNode(
+              prog,
+              GET_INTRINSIC_ID(prog, "int_eq_zero", prog.getInt()),
+              EXPRS(prog::expr::constExprNode(
+                  funcDef.getConsts(), *funcDef.getConsts().lookup("i")))));
+    }
+    {
+      const auto& output = ANALYZE("fun f(string s) -> bool intrinsic{string_eq_string}(s, \"\")");
+      REQUIRE(output.isSuccess());
+      const auto prog     = precomputeLiterals(output.getProg());
+      const auto& funcDef = GET_FUNC_DEF(prog, "f", prog.getString());
+      CHECK(
+          funcDef.getBody() ==
+          *prog::expr::callExprNode(
+              prog,
+              GET_INTRINSIC_ID(prog, "string_eq_empty", prog.getString()),
+              EXPRS(prog::expr::constExprNode(
+                  funcDef.getConsts(), *funcDef.getConsts().lookup("s")))));
+    }
+    {
+      const auto& output = ANALYZE("fun f(string s) -> string s + \"\"");
+      REQUIRE(output.isSuccess());
+      const auto prog     = precomputeLiterals(output.getProg());
+      const auto& funcDef = GET_FUNC_DEF(prog, "f", prog.getString());
+      CHECK(
+          funcDef.getBody() ==
+          *prog::expr::constExprNode(funcDef.getConsts(), *funcDef.getConsts().lookup("s")));
+    }
+    {
+      const auto& output = ANALYZE("fun f(string s) -> string \"\" + s");
+      REQUIRE(output.isSuccess());
+      const auto prog     = precomputeLiterals(output.getProg());
+      const auto& funcDef = GET_FUNC_DEF(prog, "f", prog.getString());
+      CHECK(
+          funcDef.getBody() ==
+          *prog::expr::constExprNode(funcDef.getConsts(), *funcDef.getConsts().lookup("s")));
+    }
+  }
+
   SECTION("reinterpret conversions") {
     {
       const auto& output = ANALYZE("enum e = a : 42 "
@@ -236,10 +283,8 @@ TEST_CASE("[opt] Precompute literals", "opt") {
     const auto prog = precomputeLiterals(output.getProg());
 
     // Verify that it was optimized into a normal call.
-    auto args = std::vector<prog::expr::NodePtr>{};
-    args.push_back(litIntNode(prog, 42));
-    auto callExpr =
-        callExprNode(prog, GET_FUNC_ID(prog, "f1", GET_TYPE_ID(prog, "int")), std::move(args));
+    auto callExpr = callExprNode(
+        prog, GET_FUNC_ID(prog, "f1", GET_TYPE_ID(prog, "int")), EXPRS(litIntNode(prog, 42)));
 
     CHECK(GET_FUNC_DEF(prog, "f2").getBody() == *callExpr);
   }

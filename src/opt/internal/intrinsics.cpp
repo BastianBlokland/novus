@@ -1,6 +1,7 @@
 #include "internal/intrinsics.hpp"
 #include "internal/expr_matchers.hpp"
 #include "internal/utilities.hpp"
+#include "prog/expr/node_call.hpp"
 #include "prog/expr/node_lit_bool.hpp"
 #include "prog/expr/node_lit_char.hpp"
 #include "prog/expr/node_lit_enum.hpp"
@@ -115,7 +116,7 @@ auto isPrecomputableIntrinsic(prog::sym::FuncKind funcKind) -> bool {
   }
 }
 
-[[nodiscard]] auto precomputeIntrinsic(
+auto precomputeIntrinsic(
     const prog::Program& prog,
     prog::sym::FuncKind funcKind,
     const std::vector<prog::expr::NodePtr>& args) -> prog::expr::NodePtr {
@@ -497,7 +498,49 @@ auto isPrecomputableIntrinsic(prog::sym::FuncKind funcKind) -> bool {
   }
 }
 
-[[nodiscard]] auto maybePrecomputeReinterpretConv(
+auto maybeSimplifyIntrinsic(
+    const prog::Program& prog,
+    prog::sym::FuncKind funcKind,
+    const std::vector<prog::expr::NodePtr>& args) -> prog::expr::NodePtr {
+
+  switch (funcKind) {
+  case prog::sym::FuncKind::CheckEqInt:
+    assert(args.size() == 2);
+    if (isLiteral(*args[1]) && getInt(*args[1]) == 0) {
+      return prog::expr::callExprNode(
+          prog, *prog.lookupIntrinsic("int_eq_zero", {prog.getInt()}), cloneToVec(args[0]));
+    }
+    if (isLiteral(*args[0]) && getInt(*args[0]) == 0) {
+      return prog::expr::callExprNode(
+          prog, *prog.lookupIntrinsic("int_eq_zero", {prog.getInt()}), cloneToVec(args[1]));
+    }
+    return nullptr;
+  case prog::sym::FuncKind::CheckEqString:
+    assert(args.size() == 2);
+    if (isLiteral(*args[1]) && getString(*args[1]) == "") {
+      return prog::expr::callExprNode(
+          prog, *prog.lookupIntrinsic("string_eq_empty", {prog.getString()}), cloneToVec(args[0]));
+    }
+    if (isLiteral(*args[0]) && getString(*args[0]) == "") {
+      return prog::expr::callExprNode(
+          prog, *prog.lookupIntrinsic("string_eq_empty", {prog.getString()}), cloneToVec(args[1]));
+    }
+    return nullptr;
+  case prog::sym::FuncKind::AddString:
+    assert(args.size() == 2);
+    if (isLiteral(*args[1]) && getString(*args[1]) == "") {
+      return args[0]->clone(nullptr);
+    }
+    if (isLiteral(*args[0]) && getString(*args[0]) == "") {
+      return args[1]->clone(nullptr);
+    }
+    return nullptr;
+  default:
+    return nullptr;
+  }
+}
+
+auto maybePrecomputeReinterpretConv(
     const prog::Program& prog, const prog::expr::Node& arg, prog::sym::TypeId dstType)
     -> prog::expr::NodePtr {
 
@@ -505,10 +548,16 @@ auto isPrecomputableIntrinsic(prog::sym::FuncKind funcKind) -> bool {
   auto& srcTypeDecl = prog.getTypeDecl(arg.getType());
   auto& dstTypeDecl = prog.getTypeDecl(dstType);
 
-  // Char to int.
+  // Char as int.
   if (srcTypeDecl.getKind() == prog::sym::TypeKind::Char &&
       dstTypeDecl.getKind() == prog::sym::TypeKind::Int) {
     return prog::expr::litIntNode(prog, static_cast<int32_t>(getChar(arg)));
+  }
+
+  // Bool as int.
+  if (srcTypeDecl.getKind() == prog::sym::TypeKind::Bool &&
+      dstTypeDecl.getKind() == prog::sym::TypeKind::Int) {
+    return prog::expr::litIntNode(prog, getBool(arg) ? 1 : 0);
   }
 
   // Int as float.

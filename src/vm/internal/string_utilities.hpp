@@ -10,6 +10,16 @@
 
 namespace vm::internal {
 
+inline auto isStringEmpty(const Value& val) noexcept {
+  auto* ref = getStringOrLinkRef(val);
+  if (ref->getKind() == RefKind::String) {
+    return downcastRef<StringRef>(ref)->getSize() == 0;
+  }
+
+  // String-links are never empty.
+  return false;
+}
+
 // Get a StringRef* from a value. Supports direct StringRef's or StringLinkRefs.
 // Requires a allocator as in-case of a StringLinkRef we might need to allocate a new string.
 inline auto getStringRef(RefAllocator* refAlloc, const Value& val) noexcept {

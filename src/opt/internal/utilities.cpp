@@ -6,6 +6,7 @@
 #include "prog/expr/node_lit_long.hpp"
 #include "prog/expr/node_lit_string.hpp"
 #include "prog/expr/rewriter.hpp"
+#include <cassert>
 
 namespace opt::internal {
 
@@ -45,11 +46,16 @@ auto rewriteAll(const std::vector<prog::expr::NodePtr>& nodes, prog::expr::Rewri
 
   auto newNodes = std::vector<prog::expr::NodePtr>{};
   newNodes.reserve(nodes.size());
-
   for (const auto& node : nodes) {
     newNodes.push_back(rewriter->rewrite(*node));
   }
+  return newNodes;
+}
 
+auto cloneToVec(const prog::expr::NodePtr& node) -> std::vector<prog::expr::NodePtr> {
+  auto newNodes = std::vector<prog::expr::NodePtr>{};
+  newNodes.reserve(1);
+  newNodes.push_back(node->clone(nullptr));
   return newNodes;
 }
 

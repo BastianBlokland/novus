@@ -186,6 +186,12 @@ auto PrecomputeRewriter::precomputeIntrinsicCall(
       }
     }
   }
+
+  // Attempt to simplify the intrinsic.
+  if (auto simplified = internal::maybeSimplifyIntrinsic(m_prog, funcKind, newArgs)) {
+    return simplified;
+  }
+
   // if we cannot precompute then construct a copy of the call.
   return prog::expr::callExprNode(m_prog, callExpr.getFunc(), std::move(newArgs));
 }
