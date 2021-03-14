@@ -67,11 +67,11 @@ TEST_CASE("[opt] Precompute literals", "opt") {
     ASSERT_EXPR_INT(
         precomputeLiterals,
         "intrinsic{int_div_int}(4, 0)",
-        getIntrinsicBinaryOp(prog, "int_div_int", 4, 0));
+        getIntrinsicIntBinaryOp(prog, "int_div_int", 4, 0));
     ASSERT_EXPR_INT(
         precomputeLiterals,
         "intrinsic{int_div_int}(0, 0)",
-        getIntrinsicBinaryOp(prog, "int_div_int", 0, 0));
+        getIntrinsicIntBinaryOp(prog, "int_div_int", 0, 0));
     ASSERT_EXPR_INT(precomputeLiterals, "intrinsic{int_rem_int}(4, 3)", litIntNode(prog, 1));
     ASSERT_EXPR_INT(
         precomputeLiterals,
@@ -80,11 +80,11 @@ TEST_CASE("[opt] Precompute literals", "opt") {
     ASSERT_EXPR_INT(
         precomputeLiterals,
         "intrinsic{int_rem_int}(4, 0)",
-        getIntrinsicBinaryOp(prog, "int_rem_int", 4, 0));
+        getIntrinsicIntBinaryOp(prog, "int_rem_int", 4, 0));
     ASSERT_EXPR_INT(
         precomputeLiterals,
         "intrinsic{int_rem_int}(0, 0)",
-        getIntrinsicBinaryOp(prog, "int_rem_int", 0, 0));
+        getIntrinsicIntBinaryOp(prog, "int_rem_int", 0, 0));
     ASSERT_EXPR_INT(precomputeLiterals, "intrinsic{int_neg}(42)", litIntNode(prog, -42));
     ASSERT_EXPR_INT(precomputeLiterals, "intrinsic{int_shiftleft}(2, 1)", litIntNode(prog, 4));
     ASSERT_EXPR_INT(precomputeLiterals, "intrinsic{int_shiftright}(4, 1)", litIntNode(prog, 2));
@@ -159,11 +159,11 @@ TEST_CASE("[opt] Precompute literals", "opt") {
     ASSERT_EXPR_LONG(
         precomputeLiterals,
         "intrinsic{long_div_long}(4L, 0L)",
-        getIntrinsicBinaryOp(prog, "long_div_long", 4L, 0L));
+        getIntrinsicLongBinaryOp(prog, "long_div_long", 4L, 0L));
     ASSERT_EXPR_LONG(
         precomputeLiterals,
         "intrinsic{long_div_long}(0L, 0L)",
-        getIntrinsicBinaryOp(prog, "long_div_long", 0L, 0L));
+        getIntrinsicLongBinaryOp(prog, "long_div_long", 0L, 0L));
     ASSERT_EXPR_LONG(precomputeLiterals, "intrinsic{long_rem_long}(4L, 3L)", litLongNode(prog, 1));
     ASSERT_EXPR_LONG(
         precomputeLiterals,
@@ -172,11 +172,11 @@ TEST_CASE("[opt] Precompute literals", "opt") {
     ASSERT_EXPR_LONG(
         precomputeLiterals,
         "intrinsic{long_rem_long}(4L, 0L)",
-        getIntrinsicBinaryOp(prog, "long_rem_long", 4L, 0L));
+        getIntrinsicLongBinaryOp(prog, "long_rem_long", 4L, 0L));
     ASSERT_EXPR_LONG(
         precomputeLiterals,
         "intrinsic{long_rem_long}(0L, 0L)",
-        getIntrinsicBinaryOp(prog, "long_rem_long", 0L, 0L));
+        getIntrinsicLongBinaryOp(prog, "long_rem_long", 0L, 0L));
     ASSERT_EXPR_LONG(precomputeLiterals, "intrinsic{long_neg}(42L)", litLongNode(prog, -42));
     ASSERT_EXPR_LONG(precomputeLiterals, "intrinsic{long_shiftleft}(2L, 1)", litLongNode(prog, 4));
     ASSERT_EXPR_LONG(precomputeLiterals, "intrinsic{long_shiftright}(4L, 1)", litLongNode(prog, 2));

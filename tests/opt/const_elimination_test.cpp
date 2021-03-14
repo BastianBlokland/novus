@@ -17,7 +17,7 @@ TEST_CASE("[opt] Constants elimination", "opt") {
     // Verify that both constants are removed.
     const auto& funcDef = GET_FUNC_DEF(optProg, "func");
 
-    CHECK(funcDef.getBody() == *getIntrinsicBinaryOp(optProg, "int_add_int", 42, 1337));
+    CHECK(funcDef.getBody() == *getIntrinsicIntBinaryOp(optProg, "int_add_int", 42, 1337));
   }
 
   SECTION("Trivial constants are eliminated") {
@@ -30,7 +30,7 @@ TEST_CASE("[opt] Constants elimination", "opt") {
     // Verify that both constants are removed.
     const auto& funcDef = GET_FUNC_DEF(optProg, "func");
 
-    CHECK(funcDef.getBody() == *getIntrinsicBinaryOp(optProg, "int_add_int", 42, 42));
+    CHECK(funcDef.getBody() == *getIntrinsicIntBinaryOp(optProg, "int_add_int", 42, 42));
   }
 }
 
