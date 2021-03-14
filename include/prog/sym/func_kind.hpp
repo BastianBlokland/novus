@@ -71,7 +71,6 @@ enum class FuncKind {
   AppendChar, // Append a character to a string.
 
   ConvIntLong,     // Convert a integer to a long.
-  ConvCharLong,    // Convert a character to a long.
   ConvIntFloat,    // Convert a int to a float.
   ConvLongInt,     // Convert a long to an integer.
   ConvLongFloat,   // Convert a long to a float.

@@ -169,8 +169,6 @@ Program::Program() :
   // Register conversion intrinsics.
   m_funcDecls.registerIntrinsic(*this, Fk::ConvIntLong, "int_to_long", sym::TypeSet{m_int}, m_long);
   m_funcDecls.registerIntrinsic(
-      *this, Fk::ConvCharLong, "char_to_long", sym::TypeSet{m_char}, m_long);
-  m_funcDecls.registerIntrinsic(
       *this, Fk::ConvIntFloat, "int_to_float", sym::TypeSet{m_int}, m_float);
   m_funcDecls.registerIntrinsic(
       *this, Fk::ConvFloatInt, "float_to_int", sym::TypeSet{m_float}, m_int);

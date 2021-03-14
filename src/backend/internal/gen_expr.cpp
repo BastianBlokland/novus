@@ -303,7 +303,6 @@ auto GenExpr::visit(const prog::expr::CallExprNode& n) -> void {
     break;
 
   case prog::sym::FuncKind::ConvIntLong:
-  case prog::sym::FuncKind::ConvCharLong:
     m_asmb->addConvIntLong();
     break;
   case prog::sym::FuncKind::ConvIntFloat:

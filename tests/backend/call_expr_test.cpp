@@ -333,10 +333,6 @@ TEST_CASE("[backend] Generate assembly for call expressions", "backend") {
       asmb->addLoadLitInt(42);
       asmb->addConvIntLong();
     });
-    CHECK_EXPR_LONG("intrinsic{char_to_long}('a')", [](novasm::Assembler* asmb) -> void {
-      asmb->addLoadLitInt('a');
-      asmb->addConvIntLong();
-    });
     CHECK_EXPR_STRING("intrinsic{int_to_string}(42)", [](novasm::Assembler* asmb) -> void {
       asmb->addLoadLitInt(42);
       asmb->addConvIntString();

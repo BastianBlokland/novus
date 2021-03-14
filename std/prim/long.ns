@@ -20,7 +20,7 @@ fun implicit long(int i)
   intrinsic{int_to_long}(i)
 
 fun implicit long(char c)
-  intrinsic{char_to_long}(c)
+  intrinsic{int_to_long}(intrinsic{char_as_int}(c))
 
 // -- Operators
 
