@@ -185,6 +185,12 @@ auto errTypeParamNameConflictsWithType(prog::sym::SourceId src, const std::strin
   return error(oss.str(), src);
 }
 
+auto errDuplicateTypeParamName(prog::sym::SourceId src, const std::string& name) -> Diag {
+  std::ostringstream oss;
+  oss << "Duplicate type parameter name '" << name << "'";
+  return error(oss.str(), src);
+}
+
 auto errDuplicateFuncDeclaration(prog::sym::SourceId src, const std::string& name) -> Diag {
   std::ostringstream oss;
   oss << "Declaration of function '" << name

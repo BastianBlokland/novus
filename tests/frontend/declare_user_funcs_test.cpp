@@ -173,6 +173,7 @@ TEST_CASE("[frontend] Analyzing user-function declarations", "frontend") {
         errNoTypeOrConversionFoundToInstantiate(NO_SRC, "s", 1));
     CHECK_DIAG("fun &&() -> int 1", errNonOverloadableOperator(NO_SRC, "&&"));
     CHECK_DIAG("fun f{int}() -> int 1", errTypeParamNameConflictsWithType(NO_SRC, "int"));
+    CHECK_DIAG("fun f{T, T}() -> int 1", errDuplicateTypeParamName(NO_SRC, "T"));
     CHECK_DIAG(
         "fun f{T}(T{int} a) -> int i "
         "fun f() f{int}(1)",
