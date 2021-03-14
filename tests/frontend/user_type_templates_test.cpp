@@ -91,7 +91,8 @@ TEST_CASE("[frontend] Analyzing user-type templates", "frontend") {
 
   SECTION("Templated conversion") {
     const auto& output =
-        ANALYZE("fun string(int i) intrinsic{int_to_string}(i) "
+        ANALYZE("fun +(string x, string y) -> string intrinsic{string_add_string}(x, y) "
+                "fun string(int i) intrinsic{int_to_string}(i) "
                 "fun string(float f) intrinsic{float_to_string}(f) "
                 "struct tuple{T1, T2} = T1 a, T2 b "
                 "fun string{T1, T2}(tuple{T1, T2} t) t.a.string() + \",\" + t.b.string() "

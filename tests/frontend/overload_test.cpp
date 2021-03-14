@@ -6,9 +6,11 @@ namespace frontend {
 TEST_CASE("[frontend] Analyzing overloads", "frontend") {
 
   SECTION("Allow conversion") {
-    const auto& output = ANALYZE("fun implicit float(int i) intrinsic{int_to_float}(i) "
-                                 "fun f1(float a, float b) a + b "
-                                 "fun f2() f1(42, 1337)");
+    const auto& output =
+        ANALYZE("fun +(float x, float y) -> float intrinsic{float_add_float}(x, y) "
+                "fun implicit float(int i) intrinsic{int_to_float}(i) "
+                "fun f1(float a, float b) a + b "
+                "fun f2() f1(42, 1337)");
     REQUIRE(output.isSuccess());
     CHECK(GET_FUNC_DEF(output, "f2").getBody().getType() == GET_TYPE_ID(output, "float"));
   }

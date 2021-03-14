@@ -35,8 +35,6 @@ Program::Program() :
   using Op = prog::Operator;
 
   // Register build-in unary int operators.
-  m_funcDecls.registerFunc(
-      *this, Fk::NegateInt, getFuncName(Op::Minus), sym::TypeSet{m_int}, m_int);
   m_funcDecls.registerFunc(*this, Fk::InvInt, getFuncName(Op::Tilde), sym::TypeSet{m_int}, m_int);
 
   // Register build-in binary int operators.
@@ -70,18 +68,13 @@ Program::Program() :
       *this, Fk::AddInt, "int_add_int", sym::TypeSet{m_int, m_int}, m_int);
   m_funcDecls.registerIntrinsic(
       *this, Fk::SubInt, "int_sub_int", sym::TypeSet{m_int, m_int}, m_int);
+  m_funcDecls.registerIntrinsic(*this, Fk::NegateInt, "int_neg", sym::TypeSet{m_int}, m_int);
 
   // Register build-in unary long operators.
-  m_funcDecls.registerFunc(
-      *this, Fk::NegateLong, getFuncName(Op::Minus), sym::TypeSet{m_long}, m_long);
   m_funcDecls.registerFunc(
       *this, Fk::InvLong, getFuncName(Op::Tilde), sym::TypeSet{m_long}, m_long);
 
   // Register build-in binary long operators.
-  m_funcDecls.registerFunc(
-      *this, Fk::AddLong, getFuncName(Op::Plus), sym::TypeSet{m_long, m_long}, m_long);
-  m_funcDecls.registerFunc(
-      *this, Fk::SubLong, getFuncName(Op::Minus), sym::TypeSet{m_long, m_long}, m_long);
   m_funcDecls.registerFunc(
       *this, Fk::MulLong, getFuncName(Op::Star), sym::TypeSet{m_long, m_long}, m_long);
   m_funcDecls.registerFunc(
@@ -106,16 +99,13 @@ Program::Program() :
       *this, Fk::CheckLeLong, "long_le_long", sym::TypeSet{m_long, m_long}, m_bool);
   m_funcDecls.registerIntrinsic(
       *this, Fk::CheckGtLong, "long_gt_long", sym::TypeSet{m_long, m_long}, m_bool);
-
-  // Register build-in unary float operators.
-  m_funcDecls.registerFunc(
-      *this, Fk::NegateFloat, getFuncName(Op::Minus), sym::TypeSet{m_float}, m_float);
+  m_funcDecls.registerIntrinsic(
+      *this, Fk::AddLong, "long_add_long", sym::TypeSet{m_long, m_long}, m_long);
+  m_funcDecls.registerIntrinsic(
+      *this, Fk::SubLong, "long_sub_long", sym::TypeSet{m_long, m_long}, m_long);
+  m_funcDecls.registerIntrinsic(*this, Fk::NegateLong, "long_neg", sym::TypeSet{m_long}, m_long);
 
   // Register build-in binary float operators.
-  m_funcDecls.registerFunc(
-      *this, Fk::AddFloat, getFuncName(Op::Plus), sym::TypeSet{m_float, m_float}, m_float);
-  m_funcDecls.registerFunc(
-      *this, Fk::SubFloat, getFuncName(Op::Minus), sym::TypeSet{m_float, m_float}, m_float);
   m_funcDecls.registerFunc(
       *this, Fk::MulFloat, getFuncName(Op::Star), sym::TypeSet{m_float, m_float}, m_float);
   m_funcDecls.registerFunc(
@@ -131,6 +121,12 @@ Program::Program() :
   m_funcDecls.registerIntrinsic(
       *this, Fk::CheckGtFloat, "float_gt_float", sym::TypeSet{m_float, m_float}, m_bool);
   m_funcDecls.registerIntrinsic(
+      *this, Fk::AddFloat, "float_add_float", sym::TypeSet{m_float, m_float}, m_float);
+  m_funcDecls.registerIntrinsic(
+      *this, Fk::SubFloat, "float_sub_float", sym::TypeSet{m_float, m_float}, m_float);
+  m_funcDecls.registerIntrinsic(
+      *this, Fk::NegateFloat, "float_neg", sym::TypeSet{m_float}, m_float);
+  m_funcDecls.registerIntrinsic(
       *this, Fk::PowFloat, "float_pow", sym::TypeSet{m_float, m_float}, m_float);
   m_funcDecls.registerIntrinsic(*this, Fk::SqrtFloat, "float_sqrt", sym::TypeSet{m_float}, m_float);
   m_funcDecls.registerIntrinsic(*this, Fk::SinFloat, "float_sin", sym::TypeSet{m_float}, m_float);
@@ -142,17 +138,15 @@ Program::Program() :
   m_funcDecls.registerIntrinsic(
       *this, Fk::ATan2Float, "float_atan2", sym::TypeSet{m_float, m_float}, m_float);
 
-  // Register build-in binary string operators.
-  m_funcDecls.registerFunc(
-      *this, Fk::AddString, getFuncName(Op::Plus), sym::TypeSet{m_string, m_string}, m_string);
-  m_funcDecls.registerFunc(
-      *this, Fk::AppendChar, getFuncName(Op::Plus), sym::TypeSet{m_string, m_char}, m_string);
-
   // Register string intrinsics.
   m_funcDecls.registerIntrinsic(
       *this, Fk::CheckEqString, "string_eq_string", sym::TypeSet{m_string, m_string}, m_bool);
   m_funcDecls.registerIntrinsic(
       *this, Fk::CheckStringEmpty, "string_eq_empty", sym::TypeSet{m_string}, m_bool);
+  m_funcDecls.registerIntrinsic(
+      *this, Fk::AddString, "string_add_string", sym::TypeSet{m_string, m_string}, m_string);
+  m_funcDecls.registerIntrinsic(
+      *this, Fk::AppendChar, "string_add_char", sym::TypeSet{m_string, m_char}, m_string);
 
   // Register build-in string functions.
   m_funcDecls.registerIntrinsic(

@@ -60,18 +60,18 @@ TEST_CASE("[opt] Precompute literals", "opt") {
     ASSERT_EXPR_INT(precomputeLiterals, "intrinsic{int_sub_int}(1, 2)", litIntNode(prog, -1));
     ASSERT_EXPR_INT(precomputeLiterals, "3 * 2", litIntNode(prog, 6));
     ASSERT_EXPR_INT(precomputeLiterals, "4 / 2", litIntNode(prog, 2));
-    ASSERT_EXPR_INT(precomputeLiterals, "4 / -2", litIntNode(prog, -2));
+    ASSERT_EXPR_INT(precomputeLiterals, "4 / intrinsic{int_neg}(2)", litIntNode(prog, -2));
     ASSERT_EXPR_INT(
         precomputeLiterals, "4 / 0", getIntBinaryOpExpr(prog, prog::Operator::Slash, 4, 0));
     ASSERT_EXPR_INT(
         precomputeLiterals, "0 / 0", getIntBinaryOpExpr(prog, prog::Operator::Slash, 0, 0));
     ASSERT_EXPR_INT(precomputeLiterals, "4 % 3", litIntNode(prog, 1));
-    ASSERT_EXPR_INT(precomputeLiterals, "4 % -3", litIntNode(prog, 1));
+    ASSERT_EXPR_INT(precomputeLiterals, "4 % intrinsic{int_neg}(3)", litIntNode(prog, 1));
     ASSERT_EXPR_INT(
         precomputeLiterals, "4 % 0", getIntBinaryOpExpr(prog, prog::Operator::Rem, 4, 0));
     ASSERT_EXPR_INT(
         precomputeLiterals, "0 % 0", getIntBinaryOpExpr(prog, prog::Operator::Rem, 0, 0));
-    ASSERT_EXPR_INT(precomputeLiterals, "-42", litIntNode(prog, -42));
+    ASSERT_EXPR_INT(precomputeLiterals, "intrinsic{int_neg}(42)", litIntNode(prog, -42));
     ASSERT_EXPR_INT(precomputeLiterals, "2 << 1", litIntNode(prog, 4));
     ASSERT_EXPR_INT(precomputeLiterals, "4 >> 1", litIntNode(prog, 2));
     ASSERT_EXPR_INT(precomputeLiterals, "3 & 1", litIntNode(prog, 1));
@@ -90,8 +90,10 @@ TEST_CASE("[opt] Precompute literals", "opt") {
   }
 
   SECTION("float intrinsics") {
-    ASSERT_EXPR_FLOAT(precomputeLiterals, "1.1 + 1.2", litFloatNode(prog, 2.3));
-    ASSERT_EXPR_FLOAT(precomputeLiterals, "1.2 - 1.1", litFloatNode(prog, 0.1));
+    ASSERT_EXPR_FLOAT(
+        precomputeLiterals, "intrinsic{float_add_float}(1.1, 1.2)", litFloatNode(prog, 2.3));
+    ASSERT_EXPR_FLOAT(
+        precomputeLiterals, "intrinsic{float_sub_float}(1.2, 1.1)", litFloatNode(prog, 0.1));
     ASSERT_EXPR_FLOAT(precomputeLiterals, "1.1 * 1.2", litFloatNode(prog, 1.32));
     ASSERT_EXPR_FLOAT(precomputeLiterals, "3.3 / 1.1", litFloatNode(prog, 3.0));
     ASSERT_EXPR_FLOAT(precomputeLiterals, "5.2 % 2.2", litFloatNode(prog, 0.8));
@@ -106,7 +108,7 @@ TEST_CASE("[opt] Precompute literals", "opt") {
     ASSERT_EXPR_FLOAT(precomputeLiterals, "intrinsic{float_atan}(0.0)", litFloatNode(prog, 0.0));
     ASSERT_EXPR_FLOAT(
         precomputeLiterals, "intrinsic{float_atan2}(0.0, 0.0)", litFloatNode(prog, 0.0));
-    ASSERT_EXPR_FLOAT(precomputeLiterals, "-1.1", litFloatNode(prog, -1.1));
+    ASSERT_EXPR_FLOAT(precomputeLiterals, "intrinsic{float_neg}(1.1)", litFloatNode(prog, -1.1));
     ASSERT_EXPR_BOOL(
         precomputeLiterals, "intrinsic{float_eq_float}(1.1, 1.2)", litBoolNode(prog, false));
     ASSERT_EXPR_BOOL(
@@ -120,35 +122,35 @@ TEST_CASE("[opt] Precompute literals", "opt") {
         precomputeLiterals, "intrinsic{float_to_string}(42.1337)", litStringNode(prog, "42.1337"));
     ASSERT_EXPR_STRING(
         precomputeLiterals,
-        "intrinsic{float_to_string}(-42.1337)",
+        "intrinsic{float_to_string}(intrinsic{float_neg}(42.1337))",
         litStringNode(prog, "-42.1337"));
     ASSERT_EXPR_CHAR(precomputeLiterals, "intrinsic{float_to_char}(230.0)", litCharNode(prog, 230));
     ASSERT_EXPR_LONG(precomputeLiterals, "intrinsic{float_to_long}(230.0)", litLongNode(prog, 230));
   }
 
   SECTION("long intrinsics") {
-    ASSERT_EXPR(precomputeLiterals, "1L + 2L", litLongNode(prog, 3));
-    ASSERT_EXPR(precomputeLiterals, "1L - 2L", litLongNode(prog, -1));
-    ASSERT_EXPR(precomputeLiterals, "3L * 2L", litLongNode(prog, 6));
-    ASSERT_EXPR(precomputeLiterals, "4L / 2L", litLongNode(prog, 2));
-    ASSERT_EXPR(precomputeLiterals, "4L / -2L", litLongNode(prog, -2));
-    ASSERT_EXPR(
+    ASSERT_EXPR_LONG(precomputeLiterals, "intrinsic{long_add_long}(1L, 2L)", litLongNode(prog, 3));
+    ASSERT_EXPR_LONG(precomputeLiterals, "intrinsic{long_sub_long}(1L, 2L)", litLongNode(prog, -1));
+    ASSERT_EXPR_LONG(precomputeLiterals, "3L * 2L", litLongNode(prog, 6));
+    ASSERT_EXPR_LONG(precomputeLiterals, "4L / 2L", litLongNode(prog, 2));
+    ASSERT_EXPR_LONG(precomputeLiterals, "4L / intrinsic{long_neg}(2L)", litLongNode(prog, -2));
+    ASSERT_EXPR_LONG(
         precomputeLiterals, "4L / 0L", getLongBinaryOpExpr(prog, prog::Operator::Slash, 4, 0));
-    ASSERT_EXPR(
+    ASSERT_EXPR_LONG(
         precomputeLiterals, "0L / 0L", getLongBinaryOpExpr(prog, prog::Operator::Slash, 0, 0));
-    ASSERT_EXPR(precomputeLiterals, "4L % 3L", litLongNode(prog, 1));
-    ASSERT_EXPR(precomputeLiterals, "4L % -3L", litLongNode(prog, 1));
-    ASSERT_EXPR(
+    ASSERT_EXPR_LONG(precomputeLiterals, "4L % 3L", litLongNode(prog, 1));
+    ASSERT_EXPR_LONG(precomputeLiterals, "4L % intrinsic{long_neg}(3L)", litLongNode(prog, 1));
+    ASSERT_EXPR_LONG(
         precomputeLiterals, "4L % 0L", getLongBinaryOpExpr(prog, prog::Operator::Rem, 4, 0));
-    ASSERT_EXPR(
+    ASSERT_EXPR_LONG(
         precomputeLiterals, "0L % 0L", getLongBinaryOpExpr(prog, prog::Operator::Rem, 0, 0));
-    ASSERT_EXPR(precomputeLiterals, "-42L", litLongNode(prog, -42));
-    ASSERT_EXPR(precomputeLiterals, "2L << 1", litLongNode(prog, 4));
-    ASSERT_EXPR(precomputeLiterals, "4L >> 1", litLongNode(prog, 2));
-    ASSERT_EXPR(precomputeLiterals, "3L & 1L", litLongNode(prog, 1));
-    ASSERT_EXPR(precomputeLiterals, "2L | 1L", litLongNode(prog, 3));
-    ASSERT_EXPR(precomputeLiterals, "3L ^ 1L", litLongNode(prog, 2));
-    ASSERT_EXPR(precomputeLiterals, "~1L", litLongNode(prog, -2));
+    ASSERT_EXPR_LONG(precomputeLiterals, "intrinsic{long_neg}(42L)", litLongNode(prog, -42));
+    ASSERT_EXPR_LONG(precomputeLiterals, "2L << 1", litLongNode(prog, 4));
+    ASSERT_EXPR_LONG(precomputeLiterals, "4L >> 1", litLongNode(prog, 2));
+    ASSERT_EXPR_LONG(precomputeLiterals, "3L & 1L", litLongNode(prog, 1));
+    ASSERT_EXPR_LONG(precomputeLiterals, "2L | 1L", litLongNode(prog, 3));
+    ASSERT_EXPR_LONG(precomputeLiterals, "3L ^ 1L", litLongNode(prog, 2));
+    ASSERT_EXPR_LONG(precomputeLiterals, "~1L", litLongNode(prog, -2));
     ASSERT_EXPR_BOOL(
         precomputeLiterals, "intrinsic{long_eq_long}(1L, 2L)", litBoolNode(prog, false));
     ASSERT_EXPR_BOOL(
@@ -168,17 +170,20 @@ TEST_CASE("[opt] Precompute literals", "opt") {
 
   SECTION("string intrinsics") {
     ASSERT_EXPR_STRING(
-        precomputeLiterals, "\"hello\" + \"world\"", litStringNode(prog, "helloworld"));
-    ASSERT_EXPR_STRING(precomputeLiterals, "\"hello\" + ' '", litStringNode(prog, "hello "));
+        precomputeLiterals,
+        "intrinsic{string_add_string}(\"hello\", \"world\")",
+        litStringNode(prog, "helloworld"));
+    ASSERT_EXPR_STRING(
+        precomputeLiterals,
+        "intrinsic{string_add_char}(\"hello\", ' ')",
+        litStringNode(prog, "hello "));
     ASSERT_EXPR_INT(precomputeLiterals, "intrinsic{string_length}(\"hello\")", litIntNode(prog, 5));
     ASSERT_EXPR_CHAR(precomputeLiterals, "\"hello\"[0]", litCharNode(prog, 'h'));
     ASSERT_EXPR_CHAR(precomputeLiterals, "\"hello\"[4]", litCharNode(prog, 'o'));
-    ASSERT_EXPR_CHAR(precomputeLiterals, "\"hello\"[-1]", litCharNode(prog, '\0'));
     ASSERT_EXPR_CHAR(precomputeLiterals, "\"hello\"[5]", litCharNode(prog, '\0'));
     ASSERT_EXPR_STRING(precomputeLiterals, "\"hello world\"[0, 5]", litStringNode(prog, "hello"));
     ASSERT_EXPR_STRING(precomputeLiterals, "\"hello world\"[4, 4]", litStringNode(prog, ""));
     ASSERT_EXPR_STRING(precomputeLiterals, "\"hello world\"[4, 5]", litStringNode(prog, "o"));
-    ASSERT_EXPR_STRING(precomputeLiterals, "\"hello world\"[-99, 5]", litStringNode(prog, "hello"));
     ASSERT_EXPR_STRING(precomputeLiterals, "\"hello world\"[6, 11]", litStringNode(prog, "world"));
     ASSERT_EXPR_STRING(precomputeLiterals, "\"hello world\"[6, 99]", litStringNode(prog, "world"));
     ASSERT_EXPR_STRING(precomputeLiterals, "\"hello world\"[2, 9]", litStringNode(prog, "llo wor"));
@@ -186,7 +191,9 @@ TEST_CASE("[opt] Precompute literals", "opt") {
     ASSERT_EXPR_STRING(
         precomputeLiterals, "\"hello world\"[0, 11]", litStringNode(prog, "hello world"));
     ASSERT_EXPR_STRING(
-        precomputeLiterals, "\"hello\" + ' ' + \"world\"", litStringNode(prog, "hello world"));
+        precomputeLiterals,
+        "intrinsic{string_add_string}(intrinsic{string_add_char}(\"hello\", ' '), \"world\")",
+        litStringNode(prog, "hello world"));
     ASSERT_EXPR_BOOL(
         precomputeLiterals,
         "intrinsic{string_eq_string}(\"hello\", \"world\")",
@@ -225,7 +232,8 @@ TEST_CASE("[opt] Precompute literals", "opt") {
                   funcDef.getConsts(), *funcDef.getConsts().lookup("s")))));
     }
     {
-      const auto& output = ANALYZE("fun f(string s) -> string s + \"\"");
+      const auto& output =
+          ANALYZE("fun f(string s) -> string intrinsic{string_add_string}(s, \"\")");
       REQUIRE(output.isSuccess());
       const auto prog     = precomputeLiterals(output.getProg());
       const auto& funcDef = GET_FUNC_DEF(prog, "f", prog.getString());
@@ -234,7 +242,8 @@ TEST_CASE("[opt] Precompute literals", "opt") {
           *prog::expr::constExprNode(funcDef.getConsts(), *funcDef.getConsts().lookup("s")));
     }
     {
-      const auto& output = ANALYZE("fun f(string s) -> string \"\" + s");
+      const auto& output =
+          ANALYZE("fun f(string s) -> string intrinsic{string_add_string}(\"\", s)");
       REQUIRE(output.isSuccess());
       const auto prog     = precomputeLiterals(output.getProg());
       const auto& funcDef = GET_FUNC_DEF(prog, "f", prog.getString());

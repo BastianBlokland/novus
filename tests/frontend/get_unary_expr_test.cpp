@@ -10,7 +10,8 @@ namespace frontend {
 TEST_CASE("[frontend] Analyzing unary expressions", "frontend") {
 
   SECTION("Get basic unary expression") {
-    const auto& output = ANALYZE("fun f(int a) -> int -a");
+    const auto& output = ANALYZE("fun -(int x) -> int intrinsic{int_neg}(x) "
+                                 "fun f(int a) -> int -a");
     REQUIRE(output.isSuccess());
     const auto& funcDef = GET_FUNC_DEF(output, "f", GET_TYPE_ID(output, "int"));
 

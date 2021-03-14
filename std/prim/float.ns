@@ -27,7 +27,16 @@ fun asFloat(int i) -> float
 
 fun +(float f) f
 
+fun +(float x, float y) -> float
+  intrinsic{float_add_float}(x, y)
+
 fun ++(float f) f + 1.0
+
+fun -(float x) -> float
+  intrinsic{float_neg}(x)
+
+fun -(float x, float y) -> float
+  intrinsic{float_sub_float}(x, y)
 
 fun --(float f) f - 1.0
 

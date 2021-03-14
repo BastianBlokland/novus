@@ -52,10 +52,12 @@ TEST_CASE("[frontend] Analyzing user-function templates", "frontend") {
   }
 
   SECTION("Overload templated functions") {
-    const auto& output = ANALYZE("fun implicit float(int i) intrinsic{int_to_float}(i) "
-                                 "fun ft{T}(int a, T b) -> int intrinsic{int_add_int}(a, b) "
-                                 "fun ft{T}(float a, T b) -> float a + b "
-                                 "fun f() -> float ft{int}(1.0, 2)");
+    const auto& output =
+        ANALYZE("fun +(float x, float y) -> float intrinsic{float_add_float}(x, y) "
+                "fun implicit float(int i) intrinsic{int_to_float}(i) "
+                "fun ft{T}(int a, T b) -> int intrinsic{int_add_int}(a, b) "
+                "fun ft{T}(float a, T b) -> float a + b "
+                "fun f() -> float ft{int}(1.0, 2)");
     REQUIRE(output.isSuccess());
 
     const auto& fDef = GET_FUNC_DEF(output, "f");
@@ -122,10 +124,12 @@ TEST_CASE("[frontend] Analyzing user-function templates", "frontend") {
   }
 
   SECTION("Infer type-parameter in templated call") {
-    const auto& output = ANALYZE("fun implicit float(int i) intrinsic{int_to_float}(i) "
-                                 "fun ft{T, Y}(T a, Y b) "
-                                 "  a + b "
-                                 "fun f() ft(2, 1.0)");
+    const auto& output =
+        ANALYZE("fun +(float x, float y) -> float intrinsic{float_add_float}(x, y) "
+                "fun implicit float(int i) intrinsic{int_to_float}(i) "
+                "fun ft{T, Y}(T a, Y b) "
+                "  a + b "
+                "fun f() ft(2, 1.0)");
     REQUIRE(output.isSuccess());
 
     const auto& fDef = GET_FUNC_DEF(output, "f");
@@ -141,10 +145,12 @@ TEST_CASE("[frontend] Analyzing user-function templates", "frontend") {
   }
 
   SECTION("Infer type-parameter supports implicit conversion") {
-    const auto& output = ANALYZE("fun implicit float(int i) intrinsic{int_to_float}(i) "
-                                 "fun ft{T}(T a, T b) "
-                                 "  a + b "
-                                 "fun f() ft(1.0, 2)");
+    const auto& output =
+        ANALYZE("fun +(float x, float y) -> float intrinsic{float_add_float}(x, y) "
+                "fun implicit float(int i) intrinsic{int_to_float}(i) "
+                "fun ft{T}(T a, T b) "
+                "  a + b "
+                "fun f() ft(1.0, 2)");
     REQUIRE(output.isSuccess());
 
     const auto& fDef = GET_FUNC_DEF(output, "f");

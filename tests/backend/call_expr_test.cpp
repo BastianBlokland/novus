@@ -6,16 +6,17 @@ namespace backend {
 TEST_CASE("[backend] Generate assembly for call expressions", "backend") {
 
   SECTION("Int operations") {
-    CHECK_EXPR("-42", [](novasm::Assembler* asmb) -> void {
+    CHECK_EXPR_INT("intrinsic{int_neg}(42)", [](novasm::Assembler* asmb) -> void {
       asmb->addLoadLitInt(42);
       asmb->addNegInt();
     });
-    CHECK_EXPR("- -42", [](novasm::Assembler* asmb) -> void {
-      asmb->addLoadLitInt(42);
-      asmb->addNegInt();
-      asmb->addNegInt();
-    });
-    CHECK_EXPR("~42", [](novasm::Assembler* asmb) -> void {
+    CHECK_EXPR_INT(
+        "intrinsic{int_neg}(intrinsic{int_neg}(42))", [](novasm::Assembler* asmb) -> void {
+          asmb->addLoadLitInt(42);
+          asmb->addNegInt();
+          asmb->addNegInt();
+        });
+    CHECK_EXPR_INT("~42", [](novasm::Assembler* asmb) -> void {
       asmb->addLoadLitInt(42);
       asmb->addInvInt();
     });
@@ -24,53 +25,54 @@ TEST_CASE("[backend] Generate assembly for call expressions", "backend") {
       asmb->addLoadLitInt(3);
       asmb->addAddInt();
     });
-    CHECK_EXPR_INT("intrinsic{int_add_int}(-1, 3)", [](novasm::Assembler* asmb) -> void {
-      asmb->addLoadLitInt(1);
-      asmb->addNegInt();
-      asmb->addLoadLitInt(3);
-      asmb->addAddInt();
-    });
+    CHECK_EXPR_INT(
+        "intrinsic{int_add_int}(intrinsic{int_neg}(1), 3)", [](novasm::Assembler* asmb) -> void {
+          asmb->addLoadLitInt(1);
+          asmb->addNegInt();
+          asmb->addLoadLitInt(3);
+          asmb->addAddInt();
+        });
     CHECK_EXPR_INT("intrinsic{int_sub_int}(1, 3)", [](novasm::Assembler* asmb) -> void {
       asmb->addLoadLitInt(1);
       asmb->addLoadLitInt(3);
       asmb->addSubInt();
     });
-    CHECK_EXPR("1 * 3", [](novasm::Assembler* asmb) -> void {
+    CHECK_EXPR_INT("1 * 3", [](novasm::Assembler* asmb) -> void {
       asmb->addLoadLitInt(1);
       asmb->addLoadLitInt(3);
       asmb->addMulInt();
     });
-    CHECK_EXPR("1 / 3", [](novasm::Assembler* asmb) -> void {
+    CHECK_EXPR_INT("1 / 3", [](novasm::Assembler* asmb) -> void {
       asmb->addLoadLitInt(1);
       asmb->addLoadLitInt(3);
       asmb->addDivInt();
     });
-    CHECK_EXPR("1 % 3", [](novasm::Assembler* asmb) -> void {
+    CHECK_EXPR_INT("1 % 3", [](novasm::Assembler* asmb) -> void {
       asmb->addLoadLitInt(1);
       asmb->addLoadLitInt(3);
       asmb->addRemInt();
     });
-    CHECK_EXPR("1 << 3", [](novasm::Assembler* asmb) -> void {
+    CHECK_EXPR_INT("1 << 3", [](novasm::Assembler* asmb) -> void {
       asmb->addLoadLitInt(1);
       asmb->addLoadLitInt(3);
       asmb->addShiftLeftInt();
     });
-    CHECK_EXPR("1 >> 3", [](novasm::Assembler* asmb) -> void {
+    CHECK_EXPR_INT("1 >> 3", [](novasm::Assembler* asmb) -> void {
       asmb->addLoadLitInt(1);
       asmb->addLoadLitInt(3);
       asmb->addShiftRightInt();
     });
-    CHECK_EXPR("1 & 3", [](novasm::Assembler* asmb) -> void {
+    CHECK_EXPR_INT("1 & 3", [](novasm::Assembler* asmb) -> void {
       asmb->addLoadLitInt(1);
       asmb->addLoadLitInt(3);
       asmb->addAndInt();
     });
-    CHECK_EXPR("1 | 3", [](novasm::Assembler* asmb) -> void {
+    CHECK_EXPR_INT("1 | 3", [](novasm::Assembler* asmb) -> void {
       asmb->addLoadLitInt(1);
       asmb->addLoadLitInt(3);
       asmb->addOrInt();
     });
-    CHECK_EXPR("1 ^ 3", [](novasm::Assembler* asmb) -> void {
+    CHECK_EXPR_INT("1 ^ 3", [](novasm::Assembler* asmb) -> void {
       asmb->addLoadLitInt(1);
       asmb->addLoadLitInt(3);
       asmb->addXorInt();
@@ -78,71 +80,66 @@ TEST_CASE("[backend] Generate assembly for call expressions", "backend") {
   }
 
   SECTION("Long operations") {
-    CHECK_EXPR("-42L", [](novasm::Assembler* asmb) -> void {
+    CHECK_EXPR_LONG("intrinsic{long_neg}(42L)", [](novasm::Assembler* asmb) -> void {
       asmb->addLoadLitLong(42);
       asmb->addNegLong();
     });
-    CHECK_EXPR("- -42L", [](novasm::Assembler* asmb) -> void {
-      asmb->addLoadLitLong(42);
-      asmb->addNegLong();
-      asmb->addNegLong();
-    });
-    CHECK_EXPR("~42L", [](novasm::Assembler* asmb) -> void {
+    CHECK_EXPR_LONG(
+        "intrinsic{long_neg}(intrinsic{long_neg}(42L))", [](novasm::Assembler* asmb) -> void {
+          asmb->addLoadLitLong(42);
+          asmb->addNegLong();
+          asmb->addNegLong();
+        });
+    CHECK_EXPR_LONG("~42L", [](novasm::Assembler* asmb) -> void {
       asmb->addLoadLitLong(42);
       asmb->addInvLong();
     });
-    CHECK_EXPR("1L + 3L", [](novasm::Assembler* asmb) -> void {
+    CHECK_EXPR_LONG("intrinsic{long_add_long}(1L, 3L)", [](novasm::Assembler* asmb) -> void {
       asmb->addLoadLitLong(1);
       asmb->addLoadLitLong(3);
       asmb->addAddLong();
     });
-    CHECK_EXPR("-1L + 3L", [](novasm::Assembler* asmb) -> void {
-      asmb->addLoadLitLong(1);
-      asmb->addNegLong();
-      asmb->addLoadLitLong(3);
-      asmb->addAddLong();
-    });
-    CHECK_EXPR("1L - 3L", [](novasm::Assembler* asmb) -> void {
+    CHECK_EXPR_LONG("intrinsic{long_sub_long}(1L, 3L)", [](novasm::Assembler* asmb) -> void {
       asmb->addLoadLitLong(1);
       asmb->addLoadLitLong(3);
       asmb->addSubLong();
     });
-    CHECK_EXPR("1L * 3L", [](novasm::Assembler* asmb) -> void {
+    CHECK_EXPR_LONG("1L * 3L", [](novasm::Assembler* asmb) -> void {
       asmb->addLoadLitLong(1);
       asmb->addLoadLitLong(3);
       asmb->addMulLong();
     });
-    CHECK_EXPR("1L / 3L", [](novasm::Assembler* asmb) -> void {
+    CHECK_EXPR_LONG("1L / 3L", [](novasm::Assembler* asmb) -> void {
       asmb->addLoadLitLong(1);
       asmb->addLoadLitLong(3);
       asmb->addDivLong();
     });
-    CHECK_EXPR("1L % 3L", [](novasm::Assembler* asmb) -> void {
+    CHECK_EXPR_LONG("1L % 3L", [](novasm::Assembler* asmb) -> void {
       asmb->addLoadLitLong(1);
       asmb->addLoadLitLong(3);
       asmb->addRemLong();
     });
-    CHECK_EXPR("1L << 3", [](novasm::Assembler* asmb) -> void {
+    CHECK_EXPR_LONG("1L << 3", [](novasm::Assembler* asmb) -> void {
       asmb->addLoadLitLong(1);
       asmb->addLoadLitInt(3);
       asmb->addShiftLeftLong();
     });
-    CHECK_EXPR("1L >> 3", [](novasm::Assembler* asmb) -> void {
+    CHECK_EXPR_LONG("1L >> 3", [](novasm::Assembler* asmb) -> void {
       asmb->addLoadLitLong(1);
       asmb->addLoadLitInt(3);
       asmb->addShiftRightLong();
     });
-    CHECK_EXPR("1L & 3L", [](novasm::Assembler* asmb) -> void {
+    CHECK_EXPR_LONG("1L & 3L", [](novasm::Assembler* asmb) -> void {
       asmb->addLoadLitLong(1);
       asmb->addLoadLitLong(3);
       asmb->addAndLong();
     });
-    CHECK_EXPR("1L | 3L", [](novasm::Assembler* asmb) -> void {
+    CHECK_EXPR_LONG("1L | 3L", [](novasm::Assembler* asmb) -> void {
       asmb->addLoadLitLong(1);
       asmb->addLoadLitLong(3);
       asmb->addOrLong();
     });
-    CHECK_EXPR("1L ^ 3L", [](novasm::Assembler* asmb) -> void {
+    CHECK_EXPR_LONG("1L ^ 3L", [](novasm::Assembler* asmb) -> void {
       asmb->addLoadLitLong(1);
       asmb->addLoadLitLong(3);
       asmb->addXorLong();
@@ -150,16 +147,16 @@ TEST_CASE("[backend] Generate assembly for call expressions", "backend") {
   }
 
   SECTION("Float operations") {
-    CHECK_EXPR_FLOAT("-.1337", [](novasm::Assembler* asmb) -> void {
+    CHECK_EXPR_FLOAT("intrinsic{float_neg}(.1337)", [](novasm::Assembler* asmb) -> void {
       asmb->addLoadLitFloat(0.1337F);
       asmb->addNegFloat();
     });
-    CHECK_EXPR_FLOAT("1.42 + 3.42", [](novasm::Assembler* asmb) -> void {
+    CHECK_EXPR_FLOAT("intrinsic{float_add_float}(1.42, 3.42)", [](novasm::Assembler* asmb) -> void {
       asmb->addLoadLitFloat(1.42F);
       asmb->addLoadLitFloat(3.42F);
       asmb->addAddFloat();
     });
-    CHECK_EXPR_FLOAT("1.42 - 3.42", [](novasm::Assembler* asmb) -> void {
+    CHECK_EXPR_FLOAT("intrinsic{float_sub_float}(1.42, 3.42)", [](novasm::Assembler* asmb) -> void {
       asmb->addLoadLitFloat(1.42F);
       asmb->addLoadLitFloat(3.42F);
       asmb->addSubFloat();
@@ -216,12 +213,13 @@ TEST_CASE("[backend] Generate assembly for call expressions", "backend") {
       asmb->addLoadLitInt(3);
       asmb->addCheckEqInt();
     });
-    CHECK_EXPR_BOOL("intrinsic{int_eq_int}(1, -3)", [](novasm::Assembler* asmb) -> void {
-      asmb->addLoadLitInt(1);
-      asmb->addLoadLitInt(3);
-      asmb->addNegInt();
-      asmb->addCheckEqInt();
-    });
+    CHECK_EXPR_BOOL(
+        "intrinsic{int_eq_int}(1, intrinsic{int_neg}(3))", [](novasm::Assembler* asmb) -> void {
+          asmb->addLoadLitInt(1);
+          asmb->addLoadLitInt(3);
+          asmb->addNegInt();
+          asmb->addCheckEqInt();
+        });
     CHECK_EXPR_BOOL("intrinsic{int_le_int}(1, 3)", [](novasm::Assembler* asmb) -> void {
       asmb->addLoadLitInt(1);
       asmb->addLoadLitInt(3);
@@ -240,12 +238,14 @@ TEST_CASE("[backend] Generate assembly for call expressions", "backend") {
       asmb->addLoadLitLong(3);
       asmb->addCheckEqLong();
     });
-    CHECK_EXPR_BOOL("intrinsic{long_eq_long}(1L, -3L)", [](novasm::Assembler* asmb) -> void {
-      asmb->addLoadLitLong(1);
-      asmb->addLoadLitLong(3);
-      asmb->addNegLong();
-      asmb->addCheckEqLong();
-    });
+    CHECK_EXPR_BOOL(
+        "intrinsic{long_eq_long}(1L, intrinsic{long_neg}(3L))",
+        [](novasm::Assembler* asmb) -> void {
+          asmb->addLoadLitLong(1);
+          asmb->addLoadLitLong(3);
+          asmb->addNegLong();
+          asmb->addCheckEqLong();
+        });
     CHECK_EXPR_BOOL("intrinsic{long_le_long}(1L, 3L)", [](novasm::Assembler* asmb) -> void {
       asmb->addLoadLitLong(1);
       asmb->addLoadLitLong(3);
@@ -277,17 +277,19 @@ TEST_CASE("[backend] Generate assembly for call expressions", "backend") {
   }
 
   SECTION("String operations") {
-    CHECK_EXPR("\"hello\" + \"world\"", [](novasm::Assembler* asmb) -> void {
-      asmb->addLoadLitString("hello");
-      asmb->addLoadLitString("world");
-      asmb->addAddString();
-    });
+    CHECK_EXPR_STRING(
+        "intrinsic{string_add_string}(\"hello\", \"world\")", [](novasm::Assembler* asmb) -> void {
+          asmb->addLoadLitString("hello");
+          asmb->addLoadLitString("world");
+          asmb->addAddString();
+        });
 
-    CHECK_EXPR("\"hello worl\" + 'd'", [](novasm::Assembler* asmb) -> void {
-      asmb->addLoadLitString("hello worl");
-      asmb->addLoadLitInt('d');
-      asmb->addAppendChar();
-    });
+    CHECK_EXPR_STRING(
+        "intrinsic{string_add_char}(\"hello worl\", 'd')", [](novasm::Assembler* asmb) -> void {
+          asmb->addLoadLitString("hello worl");
+          asmb->addLoadLitInt('d');
+          asmb->addAppendChar();
+        });
 
     CHECK_EXPR_INT("intrinsic{string_length}(\"hello\")", [](novasm::Assembler* asmb) -> void {
       asmb->addLoadLitString("hello");

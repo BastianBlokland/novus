@@ -28,7 +28,13 @@ fun char(float f)
 
 fun +(char c) c
 
+fun +(char x, char y)
+  char(intrinsic{int_add_int}(intrinsic{char_as_int}(x), intrinsic{char_as_int}(y)))
+
 fun ++(char c) c + char(1)
+
+fun -(char x, char y)
+  char(intrinsic{int_sub_int}(intrinsic{char_as_int}(x), char(y)))
 
 fun --(char c) c - char(1)
 
@@ -46,12 +52,6 @@ fun |(char x, char y)
 
 fun ~(char x)
   char(~intrinsic{char_as_int}(x))
-
-fun +(char x, char y)
-  char(intrinsic{char_as_int}(x) + intrinsic{char_as_int}(y))
-
-fun -(char x, char y)
-  char(intrinsic{char_as_int}(x) - char(y))
 
 fun ==(char x, char y) -> bool
   intrinsic{int_eq_int}(intrinsic{char_as_int}(x), intrinsic{char_as_int}(y))

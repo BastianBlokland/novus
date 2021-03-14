@@ -36,6 +36,9 @@ fun +(int x, int y) -> int
 
 fun ++(int i) i + 1
 
+fun -(int x) -> int
+  intrinsic{int_neg}(x)
+
 fun -(int x, int y) -> int
   intrinsic{int_sub_int}(x, y)
 

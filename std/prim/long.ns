@@ -26,7 +26,16 @@ fun implicit long(char c)
 
 fun +(long l) l
 
+fun +(long x, long y) -> long
+  intrinsic{long_add_long}(x, y)
+
 fun ++(long l) l + 1L
+
+fun -(long x) -> long
+  intrinsic{long_neg}(x)
+
+fun -(long x, long y) -> long
+  intrinsic{long_sub_long}(x, y)
 
 fun --(long l) l - 1L
 

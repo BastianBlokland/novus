@@ -164,9 +164,11 @@ TEST_CASE("[frontend] Analyzing call expressions", "frontend") {
   }
 
   SECTION("Get instance call with args") {
-    const auto& output = ANALYZE("fun string(int i) intrinsic{int_to_string}(i) "
-                                 "fun f1(int i, string v) -> string i.string() + v "
-                                 "fun f2(int i) -> string i.f1(\"test\")");
+    const auto& output =
+        ANALYZE("fun +(string x, string y) -> string intrinsic{string_add_string}(x, y) "
+                "fun string(int i) intrinsic{int_to_string}(i) "
+                "fun f1(int i, string v) -> string i.string() + v "
+                "fun f2(int i) -> string i.f1(\"test\")");
     REQUIRE(output.isSuccess());
 
     const auto& fDef   = GET_FUNC_DEF(output, "f2", GET_TYPE_ID(output, "int"));

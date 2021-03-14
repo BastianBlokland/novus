@@ -30,7 +30,7 @@ TEST_CASE("[opt] Optimization synergy", "opt") {
     const auto& output = ANALYZE("act get{T}(lazy_action{T} a) -> T intrinsic{lazy_action_get}(a) "
                                  "act getNonZero(lazy_action{int} a, lazy_action{int} b) "
                                  " v = a.get(); intrinsic{int_gt_int}(v, 0) ? v : b.get() "
-                                 "act produceA() -1337 "
+                                 "act produceA() -> int intrinsic{int_neg}(1337) "
                                  "act produceB(int multiplier) 42 * multiplier "
                                  "act main() getNonZero(lazy produceA(), lazy produceB(2)) "
                                  "main()");
