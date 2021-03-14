@@ -100,14 +100,6 @@ Program::Program() :
       *this, Fk::SubLong, "long_sub_long", sym::TypeSet{m_long, m_long}, m_long);
   m_funcDecls.registerIntrinsic(*this, Fk::NegateLong, "long_neg", sym::TypeSet{m_long}, m_long);
 
-  // Register build-in binary float operators.
-  m_funcDecls.registerFunc(
-      *this, Fk::MulFloat, getFuncName(Op::Star), sym::TypeSet{m_float, m_float}, m_float);
-  m_funcDecls.registerFunc(
-      *this, Fk::DivFloat, getFuncName(Op::Slash), sym::TypeSet{m_float, m_float}, m_float);
-  m_funcDecls.registerFunc(
-      *this, Fk::ModFloat, getFuncName(Op::Rem), sym::TypeSet{m_float, m_float}, m_float);
-
   // Register float intrinsics.
   m_funcDecls.registerIntrinsic(
       *this, Fk::CheckEqFloat, "float_eq_float", sym::TypeSet{m_float, m_float}, m_bool);
@@ -123,6 +115,13 @@ Program::Program() :
       *this, Fk::NegateFloat, "float_neg", sym::TypeSet{m_float}, m_float);
   m_funcDecls.registerIntrinsic(
       *this, Fk::PowFloat, "float_pow", sym::TypeSet{m_float, m_float}, m_float);
+  m_funcDecls.registerIntrinsic(
+      *this, Fk::MulFloat, "float_mul_float", sym::TypeSet{m_float, m_float}, m_float);
+  m_funcDecls.registerIntrinsic(
+      *this, Fk::DivFloat, "float_div_float", sym::TypeSet{m_float, m_float}, m_float);
+  m_funcDecls.registerIntrinsic(
+      *this, Fk::ModFloat, "float_mod_float", sym::TypeSet{m_float, m_float}, m_float);
+
   m_funcDecls.registerIntrinsic(*this, Fk::SqrtFloat, "float_sqrt", sym::TypeSet{m_float}, m_float);
   m_funcDecls.registerIntrinsic(*this, Fk::SinFloat, "float_sin", sym::TypeSet{m_float}, m_float);
   m_funcDecls.registerIntrinsic(*this, Fk::CosFloat, "float_cos", sym::TypeSet{m_float}, m_float);

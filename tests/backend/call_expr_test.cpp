@@ -161,17 +161,17 @@ TEST_CASE("[backend] Generate assembly for call expressions", "backend") {
       asmb->addLoadLitFloat(3.42F);
       asmb->addSubFloat();
     });
-    CHECK_EXPR_FLOAT("1.42 * 3.42", [](novasm::Assembler* asmb) -> void {
+    CHECK_EXPR_FLOAT("intrinsic{float_mul_float}(1.42, 3.42)", [](novasm::Assembler* asmb) -> void {
       asmb->addLoadLitFloat(1.42F);
       asmb->addLoadLitFloat(3.42F);
       asmb->addMulFloat();
     });
-    CHECK_EXPR_FLOAT("1.42 / 3.42", [](novasm::Assembler* asmb) -> void {
+    CHECK_EXPR_FLOAT("intrinsic{float_div_float}(1.42, 3.42)", [](novasm::Assembler* asmb) -> void {
       asmb->addLoadLitFloat(1.42F);
       asmb->addLoadLitFloat(3.42F);
       asmb->addDivFloat();
     });
-    CHECK_EXPR_FLOAT("6.0 % 2.0", [](novasm::Assembler* asmb) -> void {
+    CHECK_EXPR_FLOAT("intrinsic{float_mod_float}(6.0, 2.0)", [](novasm::Assembler* asmb) -> void {
       asmb->addLoadLitFloat(6.0F);
       asmb->addLoadLitFloat(2.0F);
       asmb->addModFloat();

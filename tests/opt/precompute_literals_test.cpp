@@ -108,9 +108,12 @@ TEST_CASE("[opt] Precompute literals", "opt") {
         precomputeLiterals, "intrinsic{float_add_float}(1.1, 1.2)", litFloatNode(prog, 2.3));
     ASSERT_EXPR_FLOAT(
         precomputeLiterals, "intrinsic{float_sub_float}(1.2, 1.1)", litFloatNode(prog, 0.1));
-    ASSERT_EXPR_FLOAT(precomputeLiterals, "1.1 * 1.2", litFloatNode(prog, 1.32));
-    ASSERT_EXPR_FLOAT(precomputeLiterals, "3.3 / 1.1", litFloatNode(prog, 3.0));
-    ASSERT_EXPR_FLOAT(precomputeLiterals, "5.2 % 2.2", litFloatNode(prog, 0.8));
+    ASSERT_EXPR_FLOAT(
+        precomputeLiterals, "intrinsic{float_mul_float}(1.1, 1.2)", litFloatNode(prog, 1.32));
+    ASSERT_EXPR_FLOAT(
+        precomputeLiterals, "intrinsic{float_div_float}(3.3, 1.1)", litFloatNode(prog, 3.0));
+    ASSERT_EXPR_FLOAT(
+        precomputeLiterals, "intrinsic{float_mod_float}(5.2, 2.2)", litFloatNode(prog, 0.8));
     ASSERT_EXPR_FLOAT(
         precomputeLiterals, "intrinsic{float_pow}(1.1, 2.0)", litFloatNode(prog, 1.21));
     ASSERT_EXPR_FLOAT(precomputeLiterals, "intrinsic{float_sqrt}(4.0)", litFloatNode(prog, 2.0));
@@ -131,7 +134,9 @@ TEST_CASE("[opt] Precompute literals", "opt") {
         precomputeLiterals, "intrinsic{float_gt_float}(1.1, 1.2)", litBoolNode(prog, false));
     ASSERT_EXPR_INT(precomputeLiterals, "intrinsic{float_to_int}(1337.0)", litIntNode(prog, 1337));
     ASSERT_EXPR_STRING(
-        precomputeLiterals, "intrinsic{float_to_string}(0.0 / 0.0)", litStringNode(prog, "nan"));
+        precomputeLiterals,
+        "intrinsic{float_to_string}(intrinsic{float_div_float}(0.0, 0.0))",
+        litStringNode(prog, "nan"));
     ASSERT_EXPR_STRING(
         precomputeLiterals, "intrinsic{float_to_string}(42.1337)", litStringNode(prog, "42.1337"));
     ASSERT_EXPR_STRING(
