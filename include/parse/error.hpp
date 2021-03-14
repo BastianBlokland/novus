@@ -82,7 +82,8 @@ errInvalidIsExpr(NodePtr lhs, lex::Token kw, const Type& type, std::optional<lex
     lex::Token open,
     std::vector<NodePtr> args,
     std::vector<lex::Token> commas,
-    lex::Token close) -> NodePtr;
+    lex::Token close,
+    bool missingComma) -> NodePtr;
 
 [[nodiscard]] auto errInvalidIndexExpr(
     NodePtr lhs,

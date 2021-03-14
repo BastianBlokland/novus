@@ -485,10 +485,13 @@ auto errInvalidCallExpr(
     lex::Token open,
     std::vector<NodePtr> args,
     std::vector<lex::Token> commas,
-    lex::Token close) -> NodePtr {
+    lex::Token close,
+    bool missingComma) -> NodePtr {
 
   std::ostringstream oss;
-  if (commas.size() != (args.empty() ? 0 : args.size() - 1)) {
+  if (missingComma) {
+    oss << "Missing comma ',' in call expression";
+  } else if (commas.size() != (args.empty() ? 0 : args.size() - 1)) {
     oss << "Incorrect number of comma's ',' in call expression";
   } else if (
       open.getKind() != lex::TokenKind::SepOpenParen &&
