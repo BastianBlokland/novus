@@ -4,11 +4,16 @@
 namespace parse {
 
 TypeParamList::TypeParamList(
-    lex::Token open, std::vector<Type> params, std::vector<lex::Token> commas, lex::Token close) :
+    lex::Token open,
+    std::vector<Type> params,
+    std::vector<lex::Token> commas,
+    lex::Token close,
+    bool missingComma) :
     m_open{std::move(open)},
     m_params{std::move(params)},
     m_commas{std::move(commas)},
-    m_close{std::move(close)} {}
+    m_close{std::move(close)},
+    m_missingComma{missingComma} {}
 
 auto TypeParamList::operator==(const TypeParamList& rhs) const noexcept -> bool {
   return m_params == rhs.m_params;
@@ -53,7 +58,7 @@ auto TypeParamList::validate() const -> bool {
   if (!std::all_of(m_params.begin(), m_params.end(), [](const auto& t) { return t.validate(); })) {
     return false;
   }
-  if (m_commas.size() != m_params.size() - 1) {
+  if (m_missingComma || m_commas.size() != m_params.size() - 1) {
     return false;
   }
   if (m_close.getKind() != lex::TokenKind::SepCloseCurly) {
@@ -61,6 +66,8 @@ auto TypeParamList::validate() const -> bool {
   }
   return true;
 }
+
+auto TypeParamList::hasMissingComma() const -> bool { return m_missingComma; }
 
 auto operator<<(std::ostream& out, const TypeParamList& rhs) -> std::ostream& {
   out << '{';

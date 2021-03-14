@@ -451,42 +451,54 @@ auto ParserImpl::nextExprCall(NodePtr lhs, std::vector<lex::Token> modifiers) ->
   auto open  = consumeToken();
   auto empty = open.getKind() == lex::TokenKind::OpParenParen;
 
-  auto args   = std::vector<NodePtr>{};
-  auto commas = std::vector<lex::Token>{};
+  auto args         = std::vector<NodePtr>{};
+  auto commas       = std::vector<lex::Token>{};
+  auto missingComma = false;
   if (!empty) {
     while (peekToken(0).getKind() != lex::TokenKind::SepCloseParen && !peekToken(0).isEnd()) {
       args.push_back(nextExpr(0));
       if (peekToken(0).getKind() == lex::TokenKind::SepComma) {
         commas.push_back(consumeToken());
+      } else if (peekToken(0).getKind() != lex::TokenKind::SepCloseParen) {
+        missingComma = true;
       }
     }
   }
   auto close = empty ? open : consumeToken();
 
-  const auto commasValid = commas.size() == (args.empty() ? 0 : args.size() - 1);
+  auto commasValid = !missingComma && commas.size() == (args.empty() ? 0 : args.size() - 1);
   if (validateParentheses(open, close) && commasValid) {
     return callExprNode(
         std::move(modifiers), std::move(lhs), open, std::move(args), std::move(commas), close);
   }
   return errInvalidCallExpr(
-      std::move(modifiers), std::move(lhs), open, std::move(args), std::move(commas), close);
+      std::move(modifiers),
+      std::move(lhs),
+      open,
+      std::move(args),
+      std::move(commas),
+      close,
+      missingComma);
 }
 
 auto ParserImpl::nextExprIndex(NodePtr lhs) -> NodePtr {
-  auto open   = consumeToken();
-  auto args   = std::vector<NodePtr>{};
-  auto commas = std::vector<lex::Token>{};
+  auto open         = consumeToken();
+  auto args         = std::vector<NodePtr>{};
+  auto commas       = std::vector<lex::Token>{};
+  auto missingComma = false;
   while (peekToken(0).getKind() != lex::TokenKind::SepCloseSquare && !peekToken(0).isEnd()) {
     args.push_back(nextExpr(0));
     if (peekToken(0).getKind() == lex::TokenKind::SepComma) {
       commas.push_back(consumeToken());
+    } else if (peekToken(0).getKind() != lex::TokenKind::SepCloseSquare) {
+      missingComma = true;
     }
   }
   auto close = consumeToken();
 
   const auto openValid   = open.getKind() == lex::TokenKind::SepOpenSquare;
   const auto closeValid  = close.getKind() == lex::TokenKind::SepCloseSquare;
-  const auto commasValid = commas.size() == args.size() - 1;
+  const auto commasValid = !missingComma && commas.size() == args.size() - 1;
   if (openValid && closeValid && !args.empty() && commasValid) {
     return indexExprNode(std::move(lhs), open, std::move(args), std::move(commas), close);
   }
@@ -578,40 +590,47 @@ auto ParserImpl::nextType() -> Type {
 }
 
 auto ParserImpl::nextTypeParamList() -> TypeParamList {
-  auto open   = consumeToken();
-  auto params = std::vector<Type>{};
-  auto commas = std::vector<lex::Token>{};
+  auto open         = consumeToken();
+  auto params       = std::vector<Type>{};
+  auto commas       = std::vector<lex::Token>{};
+  auto missingComma = false;
   while (peekToken(0).getKind() != lex::TokenKind::SepCloseCurly && !peekToken(0).isEnd()) {
     params.push_back(nextType());
     if (peekToken(0).getKind() == lex::TokenKind::SepComma) {
       commas.push_back(consumeToken());
+    } else if (peekToken(0).getKind() != lex::TokenKind::SepCloseCurly) {
+      missingComma = true;
     }
   }
   auto close = consumeToken();
 
-  return TypeParamList(open, std::move(params), std::move(commas), close);
+  return TypeParamList(open, std::move(params), std::move(commas), close, missingComma);
 }
 
 auto ParserImpl::nextTypeSubstitutionList() -> TypeSubstitutionList {
-  auto open   = consumeToken();
-  auto params = std::vector<lex::Token>{};
-  auto commas = std::vector<lex::Token>{};
+  auto open         = consumeToken();
+  auto params       = std::vector<lex::Token>{};
+  auto commas       = std::vector<lex::Token>{};
+  bool missingComma = false;
   while (peekToken(0).getKind() != lex::TokenKind::SepCloseCurly && !peekToken(0).isEnd()) {
     params.push_back(consumeToken());
     if (peekToken(0).getKind() == lex::TokenKind::SepComma) {
       commas.push_back(consumeToken());
+    } else if (peekToken(0).getKind() != lex::TokenKind::SepCloseCurly) {
+      missingComma = true;
     }
   }
   auto close = consumeToken();
 
-  return TypeSubstitutionList(open, std::move(params), std::move(commas), close);
+  return TypeSubstitutionList(open, std::move(params), std::move(commas), close, missingComma);
 }
 
 auto ParserImpl::nextArgDeclList() -> ArgumentListDecl {
-  auto open   = consumeToken();
-  auto empty  = open.getKind() == lex::TokenKind::OpParenParen;
-  auto args   = std::vector<ArgumentListDecl::ArgSpec>{};
-  auto commas = std::vector<lex::Token>{};
+  auto open         = consumeToken();
+  auto empty        = open.getKind() == lex::TokenKind::OpParenParen;
+  auto args         = std::vector<ArgumentListDecl::ArgSpec>{};
+  auto commas       = std::vector<lex::Token>{};
+  auto missingComma = false;
   if (!empty) {
 
     while (peekToken(0).getKind() == lex::TokenKind::Identifier ||
@@ -635,12 +654,16 @@ auto ParserImpl::nextArgDeclList() -> ArgumentListDecl {
 
       if (peekToken(0).getKind() == lex::TokenKind::SepComma) {
         commas.push_back(consumeToken());
+      } else if (
+          peekToken(0).getKind() == lex::TokenKind::Identifier ||
+          peekToken(0).getKind() == lex::TokenKind::Keyword) {
+        missingComma = true;
       }
     }
   }
 
   auto close = empty ? open : consumeToken();
-  return ArgumentListDecl(open, std::move(args), std::move(commas), close);
+  return ArgumentListDecl(open, std::move(args), std::move(commas), close, missingComma);
 }
 
 auto ParserImpl::nextRetTypeSpec() -> RetTypeSpec {

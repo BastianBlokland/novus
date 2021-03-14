@@ -388,7 +388,8 @@ TEST_CASE("[parse] Parsing function declaration statements", "parse") {
                     ArgumentListDecl::ArgSpec(TYPE("int"), ID("x")),
                     ArgumentListDecl::ArgSpec(TYPE("int"), ID("y"))),
                 COMMAS(0),
-                CPAREN),
+                CPAREN,
+                true),
             RetTypeSpec{ARROW, TYPE("x")},
             errInvalidPrimaryExpr(END)));
     CHECK_STMT(
@@ -404,7 +405,25 @@ TEST_CASE("[parse] Parsing function declaration statements", "parse") {
                     ArgumentListDecl::ArgSpec(TYPE("int"), ID("x")),
                     ArgumentListDecl::ArgSpec(TYPE("int"), ID("y"))),
                 COMMAS(0),
-                CPAREN),
+                CPAREN,
+                true),
+            RetTypeSpec{ARROW, TYPE("int")},
+            INT(1)));
+    CHECK_STMT(
+        "fun a(int x int y,) -> int 1",
+        errInvalidStmtFuncDecl(
+            FUN,
+            {},
+            ID("a"),
+            std::nullopt,
+            ArgumentListDecl(
+                OPAREN,
+                ARGS(
+                    ArgumentListDecl::ArgSpec(TYPE("int"), ID("x")),
+                    ArgumentListDecl::ArgSpec(TYPE("int"), ID("y"))),
+                COMMAS(1),
+                CPAREN,
+                true),
             RetTypeSpec{ARROW, TYPE("int")},
             INT(1)));
     CHECK_STMT(

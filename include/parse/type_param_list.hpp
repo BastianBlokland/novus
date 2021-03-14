@@ -15,7 +15,11 @@ public:
 
   TypeParamList() = delete;
   TypeParamList(
-      lex::Token open, std::vector<Type> params, std::vector<lex::Token> commas, lex::Token close);
+      lex::Token open,
+      std::vector<Type> params,
+      std::vector<lex::Token> commas,
+      lex::Token close,
+      bool missingComma = false);
 
   auto operator==(const TypeParamList& rhs) const noexcept -> bool;
   auto operator!=(const TypeParamList& rhs) const noexcept -> bool;
@@ -34,12 +38,14 @@ public:
   [[nodiscard]] auto getClose() const -> const lex::Token&;
 
   [[nodiscard]] auto validate() const -> bool;
+  [[nodiscard]] auto hasMissingComma() const -> bool;
 
 private:
   lex::Token m_open;
   std::vector<Type> m_params;
   std::vector<lex::Token> m_commas;
   lex::Token m_close;
+  bool m_missingComma;
 
   auto print(std::ostream& out) const -> std::ostream&;
 };

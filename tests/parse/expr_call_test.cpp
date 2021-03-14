@@ -117,13 +117,23 @@ TEST_CASE("[parse] Parsing call expressions", "parse") {
   CHECK_EXPR(
       "fork (a)()",
       callExprNode(
-          {FORK}, parenExprNode(OPAREN, ID_EXPR("a"), CPAREN), OPAREN, NO_NODES, COMMAS(0), CPAREN));
+          {FORK},
+          parenExprNode(OPAREN, ID_EXPR("a"), CPAREN),
+          OPAREN,
+          NO_NODES,
+          COMMAS(0),
+          CPAREN));
 
   SECTION("Errors") {
     CHECK_EXPR(
         "a(1 1)",
-        errInvalidCallExpr({}, ID_EXPR("a"), OPAREN, NODES(INT(1), INT(1)), COMMAS(0), CPAREN));
-    CHECK_EXPR("a(", errInvalidCallExpr({}, ID_EXPR("a"), OPAREN, NO_NODES, COMMAS(0), END));
+        errInvalidCallExpr(
+            {}, ID_EXPR("a"), OPAREN, NODES(INT(1), INT(1)), COMMAS(0), CPAREN, true));
+    CHECK_EXPR(
+        "a(1 1,)",
+        errInvalidCallExpr(
+            {}, ID_EXPR("a"), OPAREN, NODES(INT(1), INT(1)), COMMAS(1), CPAREN, true));
+    CHECK_EXPR("a(", errInvalidCallExpr({}, ID_EXPR("a"), OPAREN, NO_NODES, COMMAS(0), END, false));
     CHECK_EXPR("a{", errInvalidIdExpr(ID("a"), TypeParamList(OCURLY, {}, COMMAS(0), END)));
     CHECK_EXPR(
         "a{}()",
@@ -147,7 +157,7 @@ TEST_CASE("[parse] Parsing call expressions", "parse") {
     CHECK_EXPR(
         "a(,",
         errInvalidCallExpr(
-            {}, ID_EXPR("a"), OPAREN, NODES(errInvalidPrimaryExpr(COMMA)), COMMAS(0), END));
+            {}, ID_EXPR("a"), OPAREN, NODES(errInvalidPrimaryExpr(COMMA)), COMMAS(0), END, true));
     CHECK_EXPR(
         "a(,)",
         callExprNode(

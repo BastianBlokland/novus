@@ -67,20 +67,31 @@ TEST_CASE("[parse] Parsing execute statements", "parse") {
   CHECK_STMT(
       "(exec)()",
       execStmtNode(callExprNode(
-          {}, parenExprNode(OPAREN, ID_EXPR("exec"), CPAREN), OPAREN, NO_NODES, COMMAS(0), CPAREN)));
+          {},
+          parenExprNode(OPAREN, ID_EXPR("exec"), CPAREN),
+          OPAREN,
+          NO_NODES,
+          COMMAS(0),
+          CPAREN)));
   CHECK_STMT("1()", execStmtNode(callExprNode({}, INT(1), OPAREN, NO_NODES, COMMAS(0), CPAREN)));
 
   SECTION("Errors") {
     CHECK_STMT(
         "a(1 1)",
         execStmtNode(errInvalidCallExpr(
-            {}, ID_EXPR("a"), OPAREN, NODES(INT(1), INT(1)), COMMAS(0), CPAREN)));
+            {}, ID_EXPR("a"), OPAREN, NODES(INT(1), INT(1)), COMMAS(0), CPAREN, true)));
     CHECK_STMT(
-        "a(", execStmtNode(errInvalidCallExpr({}, ID_EXPR("a"), OPAREN, NO_NODES, COMMAS(0), END)));
+        "a(1 1,)",
+        execStmtNode(errInvalidCallExpr(
+            {}, ID_EXPR("a"), OPAREN, NODES(INT(1), INT(1)), COMMAS(1), CPAREN, true)));
+    CHECK_STMT(
+        "a(",
+        execStmtNode(
+            errInvalidCallExpr({}, ID_EXPR("a"), OPAREN, NO_NODES, COMMAS(0), END, false)));
     CHECK_STMT(
         "a(,",
         execStmtNode(errInvalidCallExpr(
-            {}, ID_EXPR("a"), OPAREN, NODES(errInvalidPrimaryExpr(COMMA)), COMMAS(0), END)));
+            {}, ID_EXPR("a"), OPAREN, NODES(errInvalidPrimaryExpr(COMMA)), COMMAS(0), END, true)));
     CHECK_STMT(
         "a(,)",
         execStmtNode(callExprNode(
