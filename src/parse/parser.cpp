@@ -608,10 +608,11 @@ auto ParserImpl::nextTypeSubstitutionList() -> TypeSubstitutionList {
 }
 
 auto ParserImpl::nextArgDeclList() -> ArgumentListDecl {
-  auto open   = consumeToken();
-  auto empty  = open.getKind() == lex::TokenKind::OpParenParen;
-  auto args   = std::vector<ArgumentListDecl::ArgSpec>{};
-  auto commas = std::vector<lex::Token>{};
+  auto open         = consumeToken();
+  auto empty        = open.getKind() == lex::TokenKind::OpParenParen;
+  auto args         = std::vector<ArgumentListDecl::ArgSpec>{};
+  auto commas       = std::vector<lex::Token>{};
+  auto missingComma = false;
   if (!empty) {
 
     while (peekToken(0).getKind() == lex::TokenKind::Identifier ||
@@ -635,12 +636,16 @@ auto ParserImpl::nextArgDeclList() -> ArgumentListDecl {
 
       if (peekToken(0).getKind() == lex::TokenKind::SepComma) {
         commas.push_back(consumeToken());
+      } else if (
+          peekToken(0).getKind() == lex::TokenKind::Identifier ||
+          peekToken(0).getKind() == lex::TokenKind::Keyword) {
+        missingComma = true;
       }
     }
   }
 
   auto close = empty ? open : consumeToken();
-  return ArgumentListDecl(open, std::move(args), std::move(commas), close);
+  return ArgumentListDecl(open, std::move(args), std::move(commas), close, missingComma);
 }
 
 auto ParserImpl::nextRetTypeSpec() -> RetTypeSpec {

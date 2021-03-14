@@ -81,8 +81,13 @@ static auto getError(std::ostream& out, const ArgumentListDecl& argList) -> void
     return;
   }
 
+  if (argList.hasMissingComma()) {
+    out << "Missing comma ',' in argument list";
+    return;
+  }
+
   if (argList.getCommas().size() != (argList.getCount() == 0 ? 0 : argList.getCount() - 1)) {
-    out << "Incorrect number of comma's ',' in function declaration";
+    out << "Incorrect number of comma's ',' in argument list";
     return;
   }
 

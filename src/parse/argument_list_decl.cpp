@@ -78,11 +78,16 @@ auto ArgumentListDecl::ArgSpec::validate() const -> bool {
 }
 
 ArgumentListDecl::ArgumentListDecl(
-    lex::Token open, std::vector<ArgSpec> args, std::vector<lex::Token> commas, lex::Token close) :
+    lex::Token open,
+    std::vector<ArgSpec> args,
+    std::vector<lex::Token> commas,
+    lex::Token close,
+    bool missingComma) :
     m_open{std::move(open)},
     m_args{std::move(args)},
     m_commas{std::move(commas)},
-    m_close{std::move(close)} {}
+    m_close{std::move(close)},
+    m_missingComma{missingComma} {}
 
 auto ArgumentListDecl::operator==(const ArgumentListDecl& rhs) const noexcept -> bool {
   return m_args == rhs.m_args;
@@ -144,11 +149,13 @@ auto ArgumentListDecl::validate() const -> bool {
   if (!std::all_of(m_args.begin(), m_args.end(), [](const auto& a) { return a.validate(); })) {
     return false;
   }
-  if (m_commas.size() != (m_args.empty() ? 0 : m_args.size() - 1)) {
+  if (m_missingComma || m_commas.size() != (m_args.empty() ? 0 : m_args.size() - 1)) {
     return false;
   }
   return true;
 }
+
+auto ArgumentListDecl::hasMissingComma() const -> bool { return m_missingComma; }
 
 auto operator<<(std::ostream& out, const ArgumentListDecl& rhs) -> std::ostream& {
   out << '(';
