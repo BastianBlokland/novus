@@ -313,14 +313,14 @@ TEST_CASE("[frontend] Infer return type of user functions", "frontend") {
   }
 
   SECTION("Lazy call operator") {
-    const auto& output = ANALYZE("fun ()(int x, int y) x * y "
+    const auto& output = ANALYZE("fun ()(int x, int y) -> int intrinsic{int_mul_int}(x, y) "
                                  "fun f() lazy 42(1337)");
     REQUIRE(output.isSuccess());
     CHECK(GET_FUNC_DECL(output, "f").getOutput() == GET_TYPE_ID(output, "__lazy_int"));
   }
 
   SECTION("Instance function call") {
-    const auto& output = ANALYZE("fun double(int i) i * 2 "
+    const auto& output = ANALYZE("fun double(int i) -> int intrinsic{int_mul_int}(i, 2) "
                                  "fun f() (42).double()");
     REQUIRE(output.isSuccess());
     CHECK(GET_FUNC_DECL(output, "f").getOutput() == GET_TYPE_ID(output, "int"));

@@ -34,27 +34,6 @@ Program::Program() :
   using Fk = prog::sym::FuncKind;
   using Op = prog::Operator;
 
-  // Register build-in unary int operators.
-  m_funcDecls.registerFunc(*this, Fk::InvInt, getFuncName(Op::Tilde), sym::TypeSet{m_int}, m_int);
-
-  // Register build-in binary int operators.
-  m_funcDecls.registerFunc(
-      *this, Fk::MulInt, getFuncName(Op::Star), sym::TypeSet{m_int, m_int}, m_int);
-  m_funcDecls.registerFunc(
-      *this, Fk::DivInt, getFuncName(Op::Slash), sym::TypeSet{m_int, m_int}, m_int);
-  m_funcDecls.registerFunc(
-      *this, Fk::RemInt, getFuncName(Op::Rem), sym::TypeSet{m_int, m_int}, m_int);
-  m_funcDecls.registerFunc(
-      *this, Fk::ShiftLeftInt, getFuncName(Op::ShiftL), sym::TypeSet{m_int, m_int}, m_int);
-  m_funcDecls.registerFunc(
-      *this, Fk::ShiftRightInt, getFuncName(Op::ShiftR), sym::TypeSet{m_int, m_int}, m_int);
-  m_funcDecls.registerFunc(
-      *this, Fk::AndInt, getFuncName(Op::Amp), sym::TypeSet{m_int, m_int}, m_int);
-  m_funcDecls.registerFunc(
-      *this, Fk::OrInt, getFuncName(Op::Pipe), sym::TypeSet{m_int, m_int}, m_int);
-  m_funcDecls.registerFunc(
-      *this, Fk::XorInt, getFuncName(Op::Hat), sym::TypeSet{m_int, m_int}, m_int);
-
   // Register int intrinsics.
   m_funcDecls.registerIntrinsic(
       *this, Fk::CheckEqInt, "int_eq_int", sym::TypeSet{m_int, m_int}, m_bool);
@@ -69,6 +48,22 @@ Program::Program() :
   m_funcDecls.registerIntrinsic(
       *this, Fk::SubInt, "int_sub_int", sym::TypeSet{m_int, m_int}, m_int);
   m_funcDecls.registerIntrinsic(*this, Fk::NegateInt, "int_neg", sym::TypeSet{m_int}, m_int);
+  m_funcDecls.registerIntrinsic(*this, Fk::InvInt, "int_inv", sym::TypeSet{m_int}, m_int);
+  m_funcDecls.registerIntrinsic(
+      *this, Fk::MulInt, "int_mul_int", sym::TypeSet{m_int, m_int}, m_int);
+  m_funcDecls.registerIntrinsic(
+      *this, Fk::DivInt, "int_div_int", sym::TypeSet{m_int, m_int}, m_int);
+  m_funcDecls.registerIntrinsic(
+      *this, Fk::RemInt, "int_rem_int", sym::TypeSet{m_int, m_int}, m_int);
+  m_funcDecls.registerIntrinsic(
+      *this, Fk::ShiftLeftInt, "int_shiftleft", sym::TypeSet{m_int, m_int}, m_int);
+  m_funcDecls.registerIntrinsic(
+      *this, Fk::ShiftRightInt, "int_shiftright", sym::TypeSet{m_int, m_int}, m_int);
+  m_funcDecls.registerIntrinsic(
+      *this, Fk::AndInt, "int_and_int", sym::TypeSet{m_int, m_int}, m_int);
+  m_funcDecls.registerIntrinsic(*this, Fk::OrInt, "int_or_int", sym::TypeSet{m_int, m_int}, m_int);
+  m_funcDecls.registerIntrinsic(
+      *this, Fk::XorInt, "int_xor_int", sym::TypeSet{m_int, m_int}, m_int);
 
   // Register build-in unary long operators.
   m_funcDecls.registerFunc(

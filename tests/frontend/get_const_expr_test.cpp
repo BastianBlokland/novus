@@ -69,8 +69,8 @@ TEST_CASE("[frontend] Analyzing constant expressions", "frontend") {
         errUninitializedConst(NO_SRC, "b"));
     CHECK_DIAG(
         "fun f(int a) -> int "
-        "if b = a * a; intrinsic{int_le_int}(b, 5) -> b "
-        "else                                      -> b + 1",
+        "if b = intrinsic{int_mul_int}(a, a); intrinsic{int_le_int}(b, 5) -> b "
+        "else                                                             -> b + 1",
         errUninitializedConst(NO_SRC, "b"));
     CHECK_DIAG("fun f() -> int (true && (x = 5; false)); x", errUninitializedConst(NO_SRC, "x"));
   }

@@ -16,7 +16,7 @@ TEST_CASE("[backend] Generate assembly for call expressions", "backend") {
           asmb->addNegInt();
           asmb->addNegInt();
         });
-    CHECK_EXPR_INT("~42", [](novasm::Assembler* asmb) -> void {
+    CHECK_EXPR_INT("intrinsic{int_inv}(42)", [](novasm::Assembler* asmb) -> void {
       asmb->addLoadLitInt(42);
       asmb->addInvInt();
     });
@@ -37,42 +37,42 @@ TEST_CASE("[backend] Generate assembly for call expressions", "backend") {
       asmb->addLoadLitInt(3);
       asmb->addSubInt();
     });
-    CHECK_EXPR_INT("1 * 3", [](novasm::Assembler* asmb) -> void {
+    CHECK_EXPR_INT("intrinsic{int_mul_int}(1, 3)", [](novasm::Assembler* asmb) -> void {
       asmb->addLoadLitInt(1);
       asmb->addLoadLitInt(3);
       asmb->addMulInt();
     });
-    CHECK_EXPR_INT("1 / 3", [](novasm::Assembler* asmb) -> void {
+    CHECK_EXPR_INT("intrinsic{int_div_int}(1, 3)", [](novasm::Assembler* asmb) -> void {
       asmb->addLoadLitInt(1);
       asmb->addLoadLitInt(3);
       asmb->addDivInt();
     });
-    CHECK_EXPR_INT("1 % 3", [](novasm::Assembler* asmb) -> void {
+    CHECK_EXPR_INT("intrinsic{int_rem_int}(1, 3)", [](novasm::Assembler* asmb) -> void {
       asmb->addLoadLitInt(1);
       asmb->addLoadLitInt(3);
       asmb->addRemInt();
     });
-    CHECK_EXPR_INT("1 << 3", [](novasm::Assembler* asmb) -> void {
+    CHECK_EXPR_INT("intrinsic{int_shiftleft}(1, 3)", [](novasm::Assembler* asmb) -> void {
       asmb->addLoadLitInt(1);
       asmb->addLoadLitInt(3);
       asmb->addShiftLeftInt();
     });
-    CHECK_EXPR_INT("1 >> 3", [](novasm::Assembler* asmb) -> void {
+    CHECK_EXPR_INT("intrinsic{int_shiftright}(1, 3)", [](novasm::Assembler* asmb) -> void {
       asmb->addLoadLitInt(1);
       asmb->addLoadLitInt(3);
       asmb->addShiftRightInt();
     });
-    CHECK_EXPR_INT("1 & 3", [](novasm::Assembler* asmb) -> void {
+    CHECK_EXPR_INT("intrinsic{int_and_int}(1, 3)", [](novasm::Assembler* asmb) -> void {
       asmb->addLoadLitInt(1);
       asmb->addLoadLitInt(3);
       asmb->addAndInt();
     });
-    CHECK_EXPR_INT("1 | 3", [](novasm::Assembler* asmb) -> void {
+    CHECK_EXPR_INT("intrinsic{int_or_int}(1, 3)", [](novasm::Assembler* asmb) -> void {
       asmb->addLoadLitInt(1);
       asmb->addLoadLitInt(3);
       asmb->addOrInt();
     });
-    CHECK_EXPR_INT("1 ^ 3", [](novasm::Assembler* asmb) -> void {
+    CHECK_EXPR_INT("intrinsic{int_xor_int}(1, 3)", [](novasm::Assembler* asmb) -> void {
       asmb->addLoadLitInt(1);
       asmb->addLoadLitInt(3);
       asmb->addXorInt();

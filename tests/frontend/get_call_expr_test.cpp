@@ -104,7 +104,7 @@ TEST_CASE("[frontend] Analyzing call expressions", "frontend") {
   }
 
   SECTION("Get lazy call to overloaded call operator on literal") {
-    const auto& output = ANALYZE("fun ()(int i) -> int i * i "
+    const auto& output = ANALYZE("fun ()(int i) -> int intrinsic{int_mul_int}(i, i) "
                                  "fun f() -> lazy{int} lazy 1()");
     REQUIRE(output.isSuccess());
 
@@ -119,7 +119,7 @@ TEST_CASE("[frontend] Analyzing call expressions", "frontend") {
   }
 
   SECTION("Get call to overloaded call operator on literal") {
-    const auto& output = ANALYZE("fun ()(int i) -> int i * i "
+    const auto& output = ANALYZE("fun ()(int i) -> int intrinsic{int_mul_int}(i, i) "
                                  "fun f() -> int 1()");
     REQUIRE(output.isSuccess());
 
@@ -132,7 +132,7 @@ TEST_CASE("[frontend] Analyzing call expressions", "frontend") {
   }
 
   SECTION("Get call to overloaded call operator on const") {
-    const auto& output = ANALYZE("fun ()(int i) -> int i * i "
+    const auto& output = ANALYZE("fun ()(int i) -> int intrinsic{int_mul_int}(i, i) "
                                  "fun f(int i) -> int i()");
     REQUIRE(output.isSuccess());
 
@@ -285,6 +285,7 @@ TEST_CASE("[frontend] Analyzing call expressions", "frontend") {
         "fun f2() -> int a{int}()",
         errNoPureFuncFoundToInstantiate(NO_SRC, "a", 1));
     CHECK_DIAG(
+        "fun *(int x, int y) -> int intrinsic{int_mul_int}(x, y) "
         "act a(int i) -> int i * 2 "
         "fun f2(int i) -> int i.a()",
         errUndeclaredPureFunc(NO_SRC, "a", {"int"}));

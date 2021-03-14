@@ -14,7 +14,8 @@ namespace frontend {
 TEST_CASE("[frontend] Analyzing binary expressions", "frontend") {
 
   SECTION("Get basic binary expression") {
-    const auto& output = ANALYZE("fun f(int a) -> int 1 * a");
+    const auto& output = ANALYZE("fun *(int x, int y) -> int intrinsic{int_mul_int}(x, y) "
+                                 "fun f(int a) -> int 1 * a");
     REQUIRE(output.isSuccess());
     const auto& funcDef = GET_FUNC_DEF(output, "f", GET_TYPE_ID(output, "int"));
 

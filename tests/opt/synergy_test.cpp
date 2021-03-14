@@ -27,13 +27,14 @@ TEST_CASE("[opt] Optimization synergy", "opt") {
 
   SECTION("One time used lazy calls are optimized out") {
 
-    const auto& output = ANALYZE("act get{T}(lazy_action{T} a) -> T intrinsic{lazy_action_get}(a) "
-                                 "act getNonZero(lazy_action{int} a, lazy_action{int} b) "
-                                 " v = a.get(); intrinsic{int_gt_int}(v, 0) ? v : b.get() "
-                                 "act produceA() -> int intrinsic{int_neg}(1337) "
-                                 "act produceB(int multiplier) 42 * multiplier "
-                                 "act main() getNonZero(lazy produceA(), lazy produceB(2)) "
-                                 "main()");
+    const auto& output =
+        ANALYZE("act get{T}(lazy_action{T} a) -> T intrinsic{lazy_action_get}(a) "
+                "act getNonZero(lazy_action{int} a, lazy_action{int} b) "
+                " v = a.get(); intrinsic{int_gt_int}(v, 0) ? v : b.get() "
+                "act produceA() -> int intrinsic{int_neg}(1337) "
+                "act produceB(int multiplier) -> int intrinsic{int_mul_int}(42, multiplier) "
+                "act main() getNonZero(lazy produceA(), lazy produceB(2)) "
+                "main()");
     REQUIRE(output.isSuccess());
 
     auto optimizedProg = optimize(output.getProg());

@@ -58,26 +58,40 @@ TEST_CASE("[opt] Precompute literals", "opt") {
   SECTION("int intrinsics") {
     ASSERT_EXPR_INT(precomputeLiterals, "intrinsic{int_add_int}(1, 2)", litIntNode(prog, 3));
     ASSERT_EXPR_INT(precomputeLiterals, "intrinsic{int_sub_int}(1, 2)", litIntNode(prog, -1));
-    ASSERT_EXPR_INT(precomputeLiterals, "3 * 2", litIntNode(prog, 6));
-    ASSERT_EXPR_INT(precomputeLiterals, "4 / 2", litIntNode(prog, 2));
-    ASSERT_EXPR_INT(precomputeLiterals, "4 / intrinsic{int_neg}(2)", litIntNode(prog, -2));
+    ASSERT_EXPR_INT(precomputeLiterals, "intrinsic{int_mul_int}(3, 2)", litIntNode(prog, 6));
+    ASSERT_EXPR_INT(precomputeLiterals, "intrinsic{int_div_int}(4, 2)", litIntNode(prog, 2));
     ASSERT_EXPR_INT(
-        precomputeLiterals, "4 / 0", getIntBinaryOpExpr(prog, prog::Operator::Slash, 4, 0));
+        precomputeLiterals,
+        "intrinsic{int_div_int}(4, intrinsic{int_neg}(2))",
+        litIntNode(prog, -2));
     ASSERT_EXPR_INT(
-        precomputeLiterals, "0 / 0", getIntBinaryOpExpr(prog, prog::Operator::Slash, 0, 0));
-    ASSERT_EXPR_INT(precomputeLiterals, "4 % 3", litIntNode(prog, 1));
-    ASSERT_EXPR_INT(precomputeLiterals, "4 % intrinsic{int_neg}(3)", litIntNode(prog, 1));
+        precomputeLiterals,
+        "intrinsic{int_div_int}(4, 0)",
+        getIntrinsicBinaryOp(prog, "int_div_int", 4, 0));
     ASSERT_EXPR_INT(
-        precomputeLiterals, "4 % 0", getIntBinaryOpExpr(prog, prog::Operator::Rem, 4, 0));
+        precomputeLiterals,
+        "intrinsic{int_div_int}(0, 0)",
+        getIntrinsicBinaryOp(prog, "int_div_int", 0, 0));
+    ASSERT_EXPR_INT(precomputeLiterals, "intrinsic{int_rem_int}(4, 3)", litIntNode(prog, 1));
     ASSERT_EXPR_INT(
-        precomputeLiterals, "0 % 0", getIntBinaryOpExpr(prog, prog::Operator::Rem, 0, 0));
+        precomputeLiterals,
+        "intrinsic{int_rem_int}(4, intrinsic{int_neg}(3))",
+        litIntNode(prog, 1));
+    ASSERT_EXPR_INT(
+        precomputeLiterals,
+        "intrinsic{int_rem_int}(4, 0)",
+        getIntrinsicBinaryOp(prog, "int_rem_int", 4, 0));
+    ASSERT_EXPR_INT(
+        precomputeLiterals,
+        "intrinsic{int_rem_int}(0, 0)",
+        getIntrinsicBinaryOp(prog, "int_rem_int", 0, 0));
     ASSERT_EXPR_INT(precomputeLiterals, "intrinsic{int_neg}(42)", litIntNode(prog, -42));
-    ASSERT_EXPR_INT(precomputeLiterals, "2 << 1", litIntNode(prog, 4));
-    ASSERT_EXPR_INT(precomputeLiterals, "4 >> 1", litIntNode(prog, 2));
-    ASSERT_EXPR_INT(precomputeLiterals, "3 & 1", litIntNode(prog, 1));
-    ASSERT_EXPR_INT(precomputeLiterals, "2 | 1", litIntNode(prog, 3));
-    ASSERT_EXPR_INT(precomputeLiterals, "3 ^ 1", litIntNode(prog, 2));
-    ASSERT_EXPR_INT(precomputeLiterals, "~1", litIntNode(prog, -2));
+    ASSERT_EXPR_INT(precomputeLiterals, "intrinsic{int_shiftleft}(2, 1)", litIntNode(prog, 4));
+    ASSERT_EXPR_INT(precomputeLiterals, "intrinsic{int_shiftright}(4, 1)", litIntNode(prog, 2));
+    ASSERT_EXPR_INT(precomputeLiterals, "intrinsic{int_and_int}(3, 1)", litIntNode(prog, 1));
+    ASSERT_EXPR_INT(precomputeLiterals, "intrinsic{int_or_int}(2, 1)", litIntNode(prog, 3));
+    ASSERT_EXPR_INT(precomputeLiterals, "intrinsic{int_xor_int}(3, 1)", litIntNode(prog, 2));
+    ASSERT_EXPR_INT(precomputeLiterals, "intrinsic{int_inv}(1)", litIntNode(prog, -2));
     ASSERT_EXPR_BOOL(precomputeLiterals, "intrinsic{int_eq_int}(1, 2)", litBoolNode(prog, false));
     ASSERT_EXPR_BOOL(precomputeLiterals, "intrinsic{int_le_int}(1, 2)", litBoolNode(prog, true));
     ASSERT_EXPR_BOOL(precomputeLiterals, "intrinsic{int_gt_int}(1, 2)", litBoolNode(prog, false));
@@ -280,7 +294,8 @@ TEST_CASE("[opt] Precompute literals", "opt") {
   }
 
   SECTION("dynamic call to func literal") {
-    const auto& output = ANALYZE("fun f1(int i) i * 42 "
+    const auto& output = ANALYZE("fun *(int x, int y) -> int intrinsic{int_mul_int}(x, y) "
+                                 "fun f1(int i) i * 42 "
                                  "fun f2() (f1)(42)");
     REQUIRE(output.isSuccess());
     // Check that it originally is a dynamic call.
@@ -297,7 +312,8 @@ TEST_CASE("[opt] Precompute literals", "opt") {
   }
 
   SECTION("dynamic call to closure") {
-    const auto& output = ANALYZE("fun f(int x) (lambda (int y) x * y)(42)");
+    const auto& output = ANALYZE("fun *(int x, int y) -> int intrinsic{int_mul_int}(x, y) "
+                                 "fun f(int x) (lambda (int y) x * y)(42)");
     REQUIRE(output.isSuccess());
     // Check that it originally is a dynamic call.
     REQUIRE(

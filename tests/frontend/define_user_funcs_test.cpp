@@ -87,6 +87,7 @@ TEST_CASE("[frontend] Analyzing user-function definitions", "frontend") {
         errInvalidFuncInstantiation(NO_SRC),
         errNoPureFuncFoundToInstantiate(NO_SRC, "f", 1));
     CHECK_DIAG(
+        "fun *(int x, int y) -> int intrinsic{int_mul_int}(x, y) "
         "fun f{T}(T i) -> T "
         "  T = i * 2; i "
         "fun f2() -> int f{int}(1)",
