@@ -11,32 +11,32 @@ TEST_CASE("[opt] Precompute literals", "opt") {
   SECTION("switch expression") {
     ASSERT_EXPR(
         precomputeLiterals,
-        "if 1 > 2 -> 1 "
-        "else     -> 2",
+        "if intrinsic{int_gt_int}(1, 2) -> 1 "
+        "else                           -> 2",
         litIntNode(prog, 2));
     ASSERT_EXPR(
         precomputeLiterals,
-        "if 2 > 1 -> 1 "
-        "else     -> 2",
+        "if intrinsic{int_gt_int}(2, 1) -> 1 "
+        "else                           -> 2",
         litIntNode(prog, 1));
     ASSERT_EXPR(
         precomputeLiterals,
-        "if 1 < 1 -> 1 "
-        "if 2 > 3 -> 2 "
-        "else     -> 3",
+        "if intrinsic{int_le_int}(1, 1) -> 1 "
+        "if intrinsic{int_gt_int}(2, 3) -> 2 "
+        "else                           -> 3",
         litIntNode(prog, 3));
     ASSERT_EXPR(
         precomputeLiterals,
-        "if 1 < 1 -> 1 "
-        "if 4 > 3 -> 2 "
-        "else     -> 3",
+        "if intrinsic{int_le_int}(1, 1) -> 1 "
+        "if intrinsic{int_gt_int}(4, 3) -> 2 "
+        "else                           -> 3",
         litIntNode(prog, 2));
 
     ASSERT_EXPR(
         precomputeLiterals,
-        "if 1 < 1                               -> 1 "
-        "if intrinsic{env_argument_count}() > 3 -> 2 "
-        "else                                   -> 3",
+        "if intrinsic{int_le_int}(1, 1)                               -> 1 "
+        "if intrinsic{int_gt_int}(intrinsic{env_argument_count}(), 3) -> 2 "
+        "else                                                         -> 3",
         ([&]() {
           auto args = std::vector<prog::expr::NodePtr>{};
           args.push_back(callExprNode(prog, GET_INTRINSIC_ID(prog, "env_argument_count"), {}));
@@ -45,7 +45,7 @@ TEST_CASE("[opt] Precompute literals", "opt") {
           auto conditions = std::vector<prog::expr::NodePtr>{};
           conditions.push_back(prog::expr::callExprNode(
               prog,
-              GET_OP_FUNC_ID(prog, prog::Operator::Gt, prog.getInt(), prog.getInt()),
+              GET_INTRINSIC_ID(prog, "int_gt_int", prog.getInt(), prog.getInt()),
               std::move(args)));
 
           auto branches = std::vector<prog::expr::NodePtr>{};
@@ -79,10 +79,8 @@ TEST_CASE("[opt] Precompute literals", "opt") {
     ASSERT_EXPR_INT(precomputeLiterals, "3 ^ 1", litIntNode(prog, 2));
     ASSERT_EXPR_INT(precomputeLiterals, "~1", litIntNode(prog, -2));
     ASSERT_EXPR_BOOL(precomputeLiterals, "intrinsic{int_eq_int}(1, 2)", litBoolNode(prog, false));
-    ASSERT_EXPR_BOOL(precomputeLiterals, "1 < 2", litBoolNode(prog, true));
-    ASSERT_EXPR_BOOL(precomputeLiterals, "1 <= 2", litBoolNode(prog, true));
-    ASSERT_EXPR_BOOL(precomputeLiterals, "1 > 2", litBoolNode(prog, false));
-    ASSERT_EXPR_BOOL(precomputeLiterals, "1 >= 2", litBoolNode(prog, false));
+    ASSERT_EXPR_BOOL(precomputeLiterals, "intrinsic{int_le_int}(1, 2)", litBoolNode(prog, true));
+    ASSERT_EXPR_BOOL(precomputeLiterals, "intrinsic{int_gt_int}(1, 2)", litBoolNode(prog, false));
     ASSERT_EXPR_LONG(precomputeLiterals, "intrinsic{int_to_long}(137)", litLongNode(prog, 137));
     ASSERT_EXPR_FLOAT(precomputeLiterals, "intrinsic{int_to_float}(137)", litFloatNode(prog, 137));
     ASSERT_EXPR_STRING(
@@ -111,10 +109,10 @@ TEST_CASE("[opt] Precompute literals", "opt") {
     ASSERT_EXPR_FLOAT(precomputeLiterals, "-1.1", litFloatNode(prog, -1.1));
     ASSERT_EXPR_BOOL(
         precomputeLiterals, "intrinsic{float_eq_float}(1.1, 1.2)", litBoolNode(prog, false));
-    ASSERT_EXPR(precomputeLiterals, "1.1 < 1.2", litBoolNode(prog, true));
-    ASSERT_EXPR(precomputeLiterals, "1.1 <= 1.2", litBoolNode(prog, true));
-    ASSERT_EXPR(precomputeLiterals, "1.1 > 1.2", litBoolNode(prog, false));
-    ASSERT_EXPR(precomputeLiterals, "1.1 >= 1.2", litBoolNode(prog, false));
+    ASSERT_EXPR_BOOL(
+        precomputeLiterals, "intrinsic{float_le_float}(1.1, 1.2)", litBoolNode(prog, true));
+    ASSERT_EXPR_BOOL(
+        precomputeLiterals, "intrinsic{float_gt_float}(1.1, 1.2)", litBoolNode(prog, false));
     ASSERT_EXPR_INT(precomputeLiterals, "intrinsic{float_to_int}(1337.0)", litIntNode(prog, 1337));
     ASSERT_EXPR_STRING(
         precomputeLiterals, "intrinsic{float_to_string}(0.0 / 0.0)", litStringNode(prog, "nan"));
@@ -153,10 +151,10 @@ TEST_CASE("[opt] Precompute literals", "opt") {
     ASSERT_EXPR(precomputeLiterals, "~1L", litLongNode(prog, -2));
     ASSERT_EXPR_BOOL(
         precomputeLiterals, "intrinsic{long_eq_long}(1L, 2L)", litBoolNode(prog, false));
-    ASSERT_EXPR_BOOL(precomputeLiterals, "1L < 2L", litBoolNode(prog, true));
-    ASSERT_EXPR_BOOL(precomputeLiterals, "1L <= 2L", litBoolNode(prog, true));
-    ASSERT_EXPR_BOOL(precomputeLiterals, "1L > 2L", litBoolNode(prog, false));
-    ASSERT_EXPR_BOOL(precomputeLiterals, "1L >= 2L", litBoolNode(prog, false));
+    ASSERT_EXPR_BOOL(
+        precomputeLiterals, "intrinsic{long_le_long}(1L, 2L)", litBoolNode(prog, true));
+    ASSERT_EXPR_BOOL(
+        precomputeLiterals, "intrinsic{long_gt_long}(1L, 2L)", litBoolNode(prog, false));
     ASSERT_EXPR_INT(precomputeLiterals, "intrinsic{long_to_int}(137L)", litIntNode(prog, 137));
     ASSERT_EXPR_STRING(
         precomputeLiterals, "intrinsic{long_to_string}(1337L)", litStringNode(prog, "1337"));

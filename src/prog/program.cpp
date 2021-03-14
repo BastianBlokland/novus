@@ -60,20 +60,16 @@ Program::Program() :
       *this, Fk::OrInt, getFuncName(Op::Pipe), sym::TypeSet{m_int, m_int}, m_int);
   m_funcDecls.registerFunc(
       *this, Fk::XorInt, getFuncName(Op::Hat), sym::TypeSet{m_int, m_int}, m_int);
-  m_funcDecls.registerFunc(
-      *this, Fk::CheckLeInt, getFuncName(Op::Le), sym::TypeSet{m_int, m_int}, m_bool);
-  m_funcDecls.registerFunc(
-      *this, Fk::CheckLeEqInt, getFuncName(Op::LeEq), sym::TypeSet{m_int, m_int}, m_bool);
-  m_funcDecls.registerFunc(
-      *this, Fk::CheckGtInt, getFuncName(Op::Gt), sym::TypeSet{m_int, m_int}, m_bool);
-  m_funcDecls.registerFunc(
-      *this, Fk::CheckGtEqInt, getFuncName(Op::GtEq), sym::TypeSet{m_int, m_int}, m_bool);
 
   // Register int intrinsics.
   m_funcDecls.registerIntrinsic(
       *this, Fk::CheckEqInt, "int_eq_int", sym::TypeSet{m_int, m_int}, m_bool);
   m_funcDecls.registerIntrinsic(
       *this, Fk::CheckIntZero, "int_eq_zero", sym::TypeSet{m_int}, m_bool);
+  m_funcDecls.registerIntrinsic(
+      *this, Fk::CheckLeInt, "int_le_int", sym::TypeSet{m_int, m_int}, m_bool);
+  m_funcDecls.registerIntrinsic(
+      *this, Fk::CheckGtInt, "int_gt_int", sym::TypeSet{m_int, m_int}, m_bool);
 
   // Register build-in unary long operators.
   m_funcDecls.registerFunc(
@@ -102,18 +98,14 @@ Program::Program() :
       *this, Fk::OrLong, getFuncName(Op::Pipe), sym::TypeSet{m_long, m_long}, m_long);
   m_funcDecls.registerFunc(
       *this, Fk::XorLong, getFuncName(Op::Hat), sym::TypeSet{m_long, m_long}, m_long);
-  m_funcDecls.registerFunc(
-      *this, Fk::CheckLeLong, getFuncName(Op::Le), sym::TypeSet{m_long, m_long}, m_bool);
-  m_funcDecls.registerFunc(
-      *this, Fk::CheckLeEqLong, getFuncName(Op::LeEq), sym::TypeSet{m_long, m_long}, m_bool);
-  m_funcDecls.registerFunc(
-      *this, Fk::CheckGtLong, getFuncName(Op::Gt), sym::TypeSet{m_long, m_long}, m_bool);
-  m_funcDecls.registerFunc(
-      *this, Fk::CheckGtEqLong, getFuncName(Op::GtEq), sym::TypeSet{m_long, m_long}, m_bool);
 
   // Register long intrinsics.
   m_funcDecls.registerIntrinsic(
       *this, Fk::CheckEqLong, "long_eq_long", sym::TypeSet{m_long, m_long}, m_bool);
+  m_funcDecls.registerIntrinsic(
+      *this, Fk::CheckLeLong, "long_le_long", sym::TypeSet{m_long, m_long}, m_bool);
+  m_funcDecls.registerIntrinsic(
+      *this, Fk::CheckGtLong, "long_gt_long", sym::TypeSet{m_long, m_long}, m_bool);
 
   // Register build-in unary float operators.
   m_funcDecls.registerFunc(
@@ -130,18 +122,14 @@ Program::Program() :
       *this, Fk::DivFloat, getFuncName(Op::Slash), sym::TypeSet{m_float, m_float}, m_float);
   m_funcDecls.registerFunc(
       *this, Fk::ModFloat, getFuncName(Op::Rem), sym::TypeSet{m_float, m_float}, m_float);
-  m_funcDecls.registerFunc(
-      *this, Fk::CheckLeFloat, getFuncName(Op::Le), sym::TypeSet{m_float, m_float}, m_bool);
-  m_funcDecls.registerFunc(
-      *this, Fk::CheckLeEqFloat, getFuncName(Op::LeEq), sym::TypeSet{m_float, m_float}, m_bool);
-  m_funcDecls.registerFunc(
-      *this, Fk::CheckGtFloat, getFuncName(Op::Gt), sym::TypeSet{m_float, m_float}, m_bool);
-  m_funcDecls.registerFunc(
-      *this, Fk::CheckGtEqFloat, getFuncName(Op::GtEq), sym::TypeSet{m_float, m_float}, m_bool);
 
   // Register float intrinsics.
   m_funcDecls.registerIntrinsic(
       *this, Fk::CheckEqFloat, "float_eq_float", sym::TypeSet{m_float, m_float}, m_bool);
+  m_funcDecls.registerIntrinsic(
+      *this, Fk::CheckLeFloat, "float_le_float", sym::TypeSet{m_float, m_float}, m_bool);
+  m_funcDecls.registerIntrinsic(
+      *this, Fk::CheckGtFloat, "float_gt_float", sym::TypeSet{m_float, m_float}, m_bool);
   m_funcDecls.registerIntrinsic(
       *this, Fk::PowFloat, "float_pow", sym::TypeSet{m_float, m_float}, m_float);
   m_funcDecls.registerIntrinsic(*this, Fk::SqrtFloat, "float_sqrt", sym::TypeSet{m_float}, m_float);
@@ -575,15 +563,11 @@ auto Program::defineEnum(sym::TypeId id, std::unordered_map<std::string, int32_t
   // Register implicit conversion to int and long.
   m_funcDecls.registerImplicitConv(*this, fk::NoOp, id, m_int);
 
-  // Register ordering operators (<, <=, >, >=).
+  // Register ordering operators (<, >).
   m_funcDecls.registerFunc(
       *this, fk::CheckLeInt, getFuncName(Operator::Le), sym::TypeSet{id, id}, m_bool);
   m_funcDecls.registerFunc(
-      *this, fk::CheckLeEqInt, getFuncName(Operator::LeEq), sym::TypeSet{id, id}, m_bool);
-  m_funcDecls.registerFunc(
       *this, fk::CheckGtInt, getFuncName(Operator::Gt), sym::TypeSet{id, id}, m_bool);
-  m_funcDecls.registerFunc(
-      *this, fk::CheckGtEqInt, getFuncName(Operator::GtEq), sym::TypeSet{id, id}, m_bool);
 
   // Register bitwise & and | operators.
   m_funcDecls.registerFunc(*this, fk::OrInt, getFuncName(Operator::Pipe), sym::TypeSet{id, id}, id);

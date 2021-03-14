@@ -132,7 +132,7 @@ TEST_CASE("[frontend] Infer return type of user functions", "frontend") {
 
   SECTION("Conditional operator") {
     const auto& output = ANALYZE("fun implicit float(int i) intrinsic{int_to_float}(i) "
-                                 "fun f() 1 > 2 ? 42 : 1337.0");
+                                 "fun f() intrinsic{int_le_int}(1, 2) ? 42 : 1337.0");
     REQUIRE(output.isSuccess());
     CHECK(GET_FUNC_DECL(output, "f").getOutput() == GET_TYPE_ID(output, "float"));
   }
@@ -140,8 +140,8 @@ TEST_CASE("[frontend] Infer return type of user functions", "frontend") {
   SECTION("Switch") {
     const auto& output = ANALYZE("fun implicit float(int i) intrinsic{int_to_float}(i) "
                                  "fun f() "
-                                 "if 1 > 2  -> 1 "
-                                 "else      -> 2.0");
+                                 "if intrinsic{int_gt_int}(1, 2) -> 1 "
+                                 "else                           -> 2.0");
     REQUIRE(output.isSuccess());
     CHECK(GET_FUNC_DECL(output, "f").getOutput() == GET_TYPE_ID(output, "float"));
   }
@@ -189,7 +189,7 @@ TEST_CASE("[frontend] Infer return type of user functions", "frontend") {
   }
 
   SECTION("Recursive templated call") {
-    const auto& output = ANALYZE("fun ft{T}(T a) a < 0 ? ft(-a) : a "
+    const auto& output = ANALYZE("fun ft{T}(T a) intrinsic{int_le_int}(a, 0) ? ft(-a) : a "
                                  "fun f(int i) ft{int}(i)");
     REQUIRE(output.isSuccess());
     CHECK(

@@ -118,8 +118,8 @@ TEST_CASE("[frontend] Analyzing user-function definitions", "frontend") {
           errPureFuncInfRecursion(NO_SRC));
       CHECK_DIAG(
           "fun f(int a, int b) -> int "
-          " if a > b  -> f(a, 0) "
-          " else      -> f(0, b)",
+          " if intrinsic{int_le_int}(a, b) -> f(a, 0) "
+          " else                           -> f(0, b)",
           errPureFuncInfRecursion(NO_SRC));
       CHECK_DIAG("fun f(int a = a) a", errUndeclaredConst(NO_SRC, "a"));
       CHECK_DIAG("fun f(int a = b = 42) a", errConstDeclareNotSupported(NO_SRC));

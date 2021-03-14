@@ -32,3 +32,9 @@ fun --(long l) l - 1L
 
 fun ==(long x, long y) -> bool
   intrinsic{long_eq_long}(x, y)
+
+fun <(long x, long y) -> bool
+  intrinsic{long_le_long}(x, y)
+
+fun >(long x, long y) -> bool
+  intrinsic{long_gt_long}(x, y)

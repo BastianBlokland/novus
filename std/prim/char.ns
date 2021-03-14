@@ -57,16 +57,10 @@ fun ==(char x, char y) -> bool
   intrinsic{int_eq_int}(intrinsic{char_as_int}(x), intrinsic{char_as_int}(y))
 
 fun <(char x, char y) -> bool
-  intrinsic{char_as_int}(x) < intrinsic{char_as_int}(y)
-
-fun <=(char x, char y) -> bool
-  intrinsic{char_as_int}(x) <= intrinsic{char_as_int}(y)
+  intrinsic{int_le_int}(intrinsic{char_as_int}(x), intrinsic{char_as_int}(y))
 
 fun >(char x, char y) -> bool
-  intrinsic{char_as_int}(x) > intrinsic{char_as_int}(y)
-
-fun >=(char x, char y) -> bool
-  intrinsic{char_as_int}(x) >= intrinsic{char_as_int}(y)
+  intrinsic{int_gt_int}(intrinsic{char_as_int}(x), intrinsic{char_as_int}(y))
 
 // -- Tests
 

@@ -7,7 +7,7 @@ TEST_CASE("[backend] Generate assembly for tail calls", "backend") {
 
   SECTION("Tail recursion") {
     CHECK_PROG(
-        "fun test(int a) -> int a > 0 ? test(0) : a "
+        "fun test(int a) -> int intrinsic{int_gt_int}(a, 0) ? test(0) : a "
         "test(42)",
         [](novasm::Assembler* asmb) -> void {
           asmb->label("test");

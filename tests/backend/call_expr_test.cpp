@@ -222,27 +222,15 @@ TEST_CASE("[backend] Generate assembly for call expressions", "backend") {
       asmb->addNegInt();
       asmb->addCheckEqInt();
     });
-    CHECK_EXPR("1 < 3", [](novasm::Assembler* asmb) -> void {
+    CHECK_EXPR_BOOL("intrinsic{int_le_int}(1, 3)", [](novasm::Assembler* asmb) -> void {
       asmb->addLoadLitInt(1);
       asmb->addLoadLitInt(3);
       asmb->addCheckLeInt();
     });
-    CHECK_EXPR("1 <= 3", [](novasm::Assembler* asmb) -> void {
+    CHECK_EXPR_BOOL("intrinsic{int_gt_int}(1, 3)", [](novasm::Assembler* asmb) -> void {
       asmb->addLoadLitInt(1);
       asmb->addLoadLitInt(3);
       asmb->addCheckGtInt();
-      asmb->addCheckIntZero(); // Invert.
-    });
-    CHECK_EXPR("1 > 3", [](novasm::Assembler* asmb) -> void {
-      asmb->addLoadLitInt(1);
-      asmb->addLoadLitInt(3);
-      asmb->addCheckGtInt();
-    });
-    CHECK_EXPR("1 >= 3", [](novasm::Assembler* asmb) -> void {
-      asmb->addLoadLitInt(1);
-      asmb->addLoadLitInt(3);
-      asmb->addCheckLeInt();
-      asmb->addCheckIntZero(); // Invert.
     });
   }
 
@@ -258,27 +246,15 @@ TEST_CASE("[backend] Generate assembly for call expressions", "backend") {
       asmb->addNegLong();
       asmb->addCheckEqLong();
     });
-    CHECK_EXPR("1L < 3L", [](novasm::Assembler* asmb) -> void {
+    CHECK_EXPR_BOOL("intrinsic{long_le_long}(1L, 3L)", [](novasm::Assembler* asmb) -> void {
       asmb->addLoadLitLong(1);
       asmb->addLoadLitLong(3);
       asmb->addCheckLeLong();
     });
-    CHECK_EXPR("1L <= 3L", [](novasm::Assembler* asmb) -> void {
+    CHECK_EXPR_BOOL("intrinsic{long_gt_long}(1L, 3L)", [](novasm::Assembler* asmb) -> void {
       asmb->addLoadLitLong(1);
       asmb->addLoadLitLong(3);
       asmb->addCheckGtLong();
-      asmb->addCheckIntZero(); // Invert.
-    });
-    CHECK_EXPR("1L > 3L", [](novasm::Assembler* asmb) -> void {
-      asmb->addLoadLitLong(1);
-      asmb->addLoadLitLong(3);
-      asmb->addCheckGtLong();
-    });
-    CHECK_EXPR("1L >= 3L", [](novasm::Assembler* asmb) -> void {
-      asmb->addLoadLitLong(1);
-      asmb->addLoadLitLong(3);
-      asmb->addCheckLeLong();
-      asmb->addCheckIntZero(); // Invert.
     });
   }
 
@@ -288,27 +264,15 @@ TEST_CASE("[backend] Generate assembly for call expressions", "backend") {
       asmb->addLoadLitFloat(3.42F);
       asmb->addCheckEqFloat();
     });
-    CHECK_EXPR("1.42 < 3.42", [](novasm::Assembler* asmb) -> void {
+    CHECK_EXPR_BOOL("intrinsic{float_le_float}(1.42, 3.42)", [](novasm::Assembler* asmb) -> void {
       asmb->addLoadLitFloat(1.42F);
       asmb->addLoadLitFloat(3.42F);
       asmb->addCheckLeFloat();
     });
-    CHECK_EXPR("1.42 <= 3.42", [](novasm::Assembler* asmb) -> void {
+    CHECK_EXPR_BOOL("intrinsic{float_gt_float}(1.42, 3.42)", [](novasm::Assembler* asmb) -> void {
       asmb->addLoadLitFloat(1.42F);
       asmb->addLoadLitFloat(3.42F);
       asmb->addCheckGtFloat();
-      asmb->addCheckIntZero(); // Invert.
-    });
-    CHECK_EXPR("1.42 > 3.42", [](novasm::Assembler* asmb) -> void {
-      asmb->addLoadLitFloat(1.42F);
-      asmb->addLoadLitFloat(3.42F);
-      asmb->addCheckGtFloat();
-    });
-    CHECK_EXPR("1.42 >= 3.42", [](novasm::Assembler* asmb) -> void {
-      asmb->addLoadLitFloat(1.42F);
-      asmb->addLoadLitFloat(3.42F);
-      asmb->addCheckLeFloat();
-      asmb->addCheckIntZero(); // Invert.
     });
   }
 

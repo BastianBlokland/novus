@@ -23,9 +23,7 @@ enum class FuncKind {
   InvInt,           // Bitwise invert an integer.
   CheckEqInt,       // Check if two integers are equal.
   CheckLeInt,       // Check if an integer is less then another integer.
-  CheckLeEqInt,     // Check if an integer is less then or equal to another integer.
   CheckGtInt,       // Check if an integer is greater then another integer.
-  CheckGtEqInt,     // Check if an integer is greater then or equal to another integer.
   CheckIntZero,     // Check if an integer is zero.
   CheckStringEmpty, // Check if a string is empty.
 
@@ -43,30 +41,26 @@ enum class FuncKind {
   InvLong,        // Bitwise invert an long.
   CheckEqLong,    // Check if two longs are equal.
   CheckLeLong,    // Check if a long is less then another long.
-  CheckLeEqLong,  // Check if a long is less then or equal to another long.
   CheckGtLong,    // Check if a long is greater then another long.
-  CheckGtEqLong,  // CHeck if a long is greater then or equal to another long.
 
-  AddFloat,       // Add two floats.
-  SubFloat,       // Substract two floats.
-  MulFloat,       // Multiply two floats.
-  DivFloat,       // Divide two floats.
-  ModFloat,       // Modulo two floats.
-  PowFloat,       // Raise a float to the power of another float.
-  SqrtFloat,      // Return the square-root of a float.
-  SinFloat,       // Compute the sine of a float.
-  CosFloat,       // Compute the cosine of a float.
-  TanFloat,       // Compute the tangent of a float.
-  ASinFloat,      // Compute the arc sine of a float.
-  ACosFloat,      // Compute the arc cosine of a float.
-  ATanFloat,      // Compute the arc tangent of a float.
-  ATan2Float,     // Compute the arc tangent of two floats.
-  NegateFloat,    // Negate a float.
-  CheckEqFloat,   // Check if two floats are equal.
-  CheckLeFloat,   // Check if a float is less then another float.
-  CheckLeEqFloat, // Check if a float is less then or equal to another float.
-  CheckGtFloat,   // Check if a float is greater then another float.
-  CheckGtEqFloat, // Check if a float is greater then or equal to another float.
+  AddFloat,     // Add two floats.
+  SubFloat,     // Substract two floats.
+  MulFloat,     // Multiply two floats.
+  DivFloat,     // Divide two floats.
+  ModFloat,     // Modulo two floats.
+  PowFloat,     // Raise a float to the power of another float.
+  SqrtFloat,    // Return the square-root of a float.
+  SinFloat,     // Compute the sine of a float.
+  CosFloat,     // Compute the cosine of a float.
+  TanFloat,     // Compute the tangent of a float.
+  ASinFloat,    // Compute the arc sine of a float.
+  ACosFloat,    // Compute the arc cosine of a float.
+  ATanFloat,    // Compute the arc tangent of a float.
+  ATan2Float,   // Compute the arc tangent of two floats.
+  NegateFloat,  // Negate a float.
+  CheckEqFloat, // Check if two floats are equal.
+  CheckLeFloat, // Check if a float is less then another float.
+  CheckGtFloat, // Check if a float is greater then another float.
 
   AddString,     // Combine two strings.
   LengthString,  // Return the length of a string.

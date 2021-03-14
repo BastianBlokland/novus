@@ -6,29 +6,31 @@ namespace backend {
 TEST_CASE("[backend] Generate assembly for self call expressions", "backend") {
 
   SECTION("Function") {
-    CHECK_PROG("fun f(int i) i < 0 ? self(0) : i ", [](novasm::Assembler* asmb) -> void {
-      // Function.
-      asmb->label("func");
-      asmb->addStackLoad(0); // Load arg 'i'.
-      asmb->addLoadLitInt(0);
-      asmb->addCheckLeInt();
-      asmb->addJumpIf("less");
+    CHECK_PROG(
+        "fun f(int i) intrinsic{int_le_int}(i, 0) ? self(0) : i ",
+        [](novasm::Assembler* asmb) -> void {
+          // Function.
+          asmb->label("func");
+          asmb->addStackLoad(0); // Load arg 'i'.
+          asmb->addLoadLitInt(0);
+          asmb->addCheckLeInt();
+          asmb->addJumpIf("less");
 
-      asmb->addStackLoad(0); // Load arg 'i'.
-      asmb->addJump("end");
+          asmb->addStackLoad(0); // Load arg 'i'.
+          asmb->addJump("end");
 
-      asmb->label("less");
-      asmb->addLoadLitInt(0);
-      asmb->addCall("func", 1, novasm::CallMode::Tail);
+          asmb->label("less");
+          asmb->addLoadLitInt(0);
+          asmb->addCall("func", 1, novasm::CallMode::Tail);
 
-      asmb->label("end");
-      asmb->addRet();
+          asmb->label("end");
+          asmb->addRet();
 
-      // Entry point.
-      asmb->setEntrypoint("entry");
-      asmb->label("entry");
-      asmb->addRet();
-    });
+          // Entry point.
+          asmb->setEntrypoint("entry");
+          asmb->label("entry");
+          asmb->addRet();
+        });
   }
 
   SECTION("Closure") {

@@ -22,7 +22,7 @@ fun highBit{T}()              lowBit{T}() << (bitSize{T}() - 1)
 fun minVal{T}()               minVal(Type{T}())
 fun maxVal{T}()               maxVal(Type{T}())
 
-// -- Equality
+// -- Comparision
 
 fun =={T}(T x, T y) -> bool
   intrinsic{usertype_eq_usertype}(x, y)
@@ -35,6 +35,24 @@ fun equals{T1, T2}(T1 x, T2 y) -> bool
 
 fun equals{T}(T x, T y) -> bool
   x == y
+
+fun >={T1, T2}(T1 x, T2 y) -> bool
+  !(x < y)
+
+fun <={T1, T2}(T1 x, T2 y) -> bool
+  !(x > y)
+
+fun less{T1, T2}(T1 x, T2 y) -> bool
+  x < y
+
+fun less{T}(T x, T y) -> bool
+  x < y
+
+fun greater{T1, T2}(T1 x, T2 y) -> bool
+  x > y
+
+fun greater{T}(T x, T y) -> bool
+  x > y
 
 // -- Tests
 
