@@ -39,6 +39,33 @@ fun -(long x, long y) -> long
 
 fun --(long l) l - 1L
 
+fun ~(long x) -> long
+  intrinsic{long_inv}(x)
+
+fun *(long x, long y) -> long
+  intrinsic{long_mul_long}(x, y)
+
+fun /(long x, long y) -> long
+  intrinsic{long_div_long}(x, y)
+
+fun %(long x, long y) -> long
+  intrinsic{long_rem_long}(x, y)
+
+fun <<(long x, int y) -> long
+  intrinsic{long_shiftleft}(x, y)
+
+fun >>(long x, int y) -> long
+  intrinsic{long_shiftright}(x, y)
+
+fun &(long x, long y) -> long
+  intrinsic{long_and_long}(x, y)
+
+fun |(long x, long y) -> long
+  intrinsic{long_or_long}(x, y)
+
+fun ^(long x, long y) -> long
+  intrinsic{long_xor_long}(x, y)
+
 fun ==(long x, long y) -> bool
   intrinsic{long_eq_long}(x, y)
 

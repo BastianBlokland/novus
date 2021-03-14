@@ -65,28 +65,6 @@ Program::Program() :
   m_funcDecls.registerIntrinsic(
       *this, Fk::XorInt, "int_xor_int", sym::TypeSet{m_int, m_int}, m_int);
 
-  // Register build-in unary long operators.
-  m_funcDecls.registerFunc(
-      *this, Fk::InvLong, getFuncName(Op::Tilde), sym::TypeSet{m_long}, m_long);
-
-  // Register build-in binary long operators.
-  m_funcDecls.registerFunc(
-      *this, Fk::MulLong, getFuncName(Op::Star), sym::TypeSet{m_long, m_long}, m_long);
-  m_funcDecls.registerFunc(
-      *this, Fk::DivLong, getFuncName(Op::Slash), sym::TypeSet{m_long, m_long}, m_long);
-  m_funcDecls.registerFunc(
-      *this, Fk::RemLong, getFuncName(Op::Rem), sym::TypeSet{m_long, m_long}, m_long);
-  m_funcDecls.registerFunc(
-      *this, Fk::ShiftLeftLong, getFuncName(Op::ShiftL), sym::TypeSet{m_long, m_int}, m_long);
-  m_funcDecls.registerFunc(
-      *this, Fk::ShiftRightLong, getFuncName(Op::ShiftR), sym::TypeSet{m_long, m_int}, m_long);
-  m_funcDecls.registerFunc(
-      *this, Fk::AndLong, getFuncName(Op::Amp), sym::TypeSet{m_long, m_long}, m_long);
-  m_funcDecls.registerFunc(
-      *this, Fk::OrLong, getFuncName(Op::Pipe), sym::TypeSet{m_long, m_long}, m_long);
-  m_funcDecls.registerFunc(
-      *this, Fk::XorLong, getFuncName(Op::Hat), sym::TypeSet{m_long, m_long}, m_long);
-
   // Register long intrinsics.
   m_funcDecls.registerIntrinsic(
       *this, Fk::CheckEqLong, "long_eq_long", sym::TypeSet{m_long, m_long}, m_bool);
@@ -99,6 +77,23 @@ Program::Program() :
   m_funcDecls.registerIntrinsic(
       *this, Fk::SubLong, "long_sub_long", sym::TypeSet{m_long, m_long}, m_long);
   m_funcDecls.registerIntrinsic(*this, Fk::NegateLong, "long_neg", sym::TypeSet{m_long}, m_long);
+  m_funcDecls.registerIntrinsic(*this, Fk::InvLong, "long_inv", sym::TypeSet{m_long}, m_long);
+  m_funcDecls.registerIntrinsic(
+      *this, Fk::MulLong, "long_mul_long", sym::TypeSet{m_long, m_long}, m_long);
+  m_funcDecls.registerIntrinsic(
+      *this, Fk::DivLong, "long_div_long", sym::TypeSet{m_long, m_long}, m_long);
+  m_funcDecls.registerIntrinsic(
+      *this, Fk::RemLong, "long_rem_long", sym::TypeSet{m_long, m_long}, m_long);
+  m_funcDecls.registerIntrinsic(
+      *this, Fk::ShiftLeftLong, "long_shiftleft", sym::TypeSet{m_long, m_int}, m_long);
+  m_funcDecls.registerIntrinsic(
+      *this, Fk::ShiftRightLong, "long_shiftright", sym::TypeSet{m_long, m_int}, m_long);
+  m_funcDecls.registerIntrinsic(
+      *this, Fk::AndLong, "long_and_long", sym::TypeSet{m_long, m_long}, m_long);
+  m_funcDecls.registerIntrinsic(
+      *this, Fk::OrLong, "long_or_long", sym::TypeSet{m_long, m_long}, m_long);
+  m_funcDecls.registerIntrinsic(
+      *this, Fk::XorLong, "long_xor_long", sym::TypeSet{m_long, m_long}, m_long);
 
   // Register float intrinsics.
   m_funcDecls.registerIntrinsic(

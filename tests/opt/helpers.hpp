@@ -100,29 +100,13 @@ inline auto getIntrinsicBinaryOp(
       prog, funcId, EXPRS(prog::expr::litIntNode(prog, lhs), prog::expr::litIntNode(prog, rhs)));
 }
 
-inline auto
-getIntBinaryOpExpr(const prog::Program& prog, prog::Operator op, int32_t lhs, int32_t rhs)
+inline auto getIntrinsicBinaryOp(
+    const prog::Program& prog, const std::string& intrinsic, int64_t lhs, int64_t rhs)
     -> prog::expr::NodePtr {
 
-  const auto funcId = GET_OP_FUNC_ID(prog, op, GET_TYPE_ID(prog, "int"), GET_TYPE_ID(prog, "int"));
-
-  auto args = std::vector<prog::expr::NodePtr>{};
-  args.push_back(prog::expr::litIntNode(prog, lhs));
-  args.push_back(prog::expr::litIntNode(prog, rhs));
-  return prog::expr::callExprNode(prog, funcId, std::move(args));
-}
-
-inline auto
-getLongBinaryOpExpr(const prog::Program& prog, prog::Operator op, int64_t lhs, int64_t rhs)
-    -> prog::expr::NodePtr {
-
-  const auto funcId =
-      GET_OP_FUNC_ID(prog, op, GET_TYPE_ID(prog, "long"), GET_TYPE_ID(prog, "long"));
-
-  auto args = std::vector<prog::expr::NodePtr>{};
-  args.push_back(prog::expr::litLongNode(prog, lhs));
-  args.push_back(prog::expr::litLongNode(prog, rhs));
-  return prog::expr::callExprNode(prog, funcId, std::move(args));
+  const auto funcId = GET_INTRINSIC_ID(prog, intrinsic, prog.getLong(), prog.getLong());
+  return prog::expr::callExprNode(
+      prog, funcId, EXPRS(prog::expr::litLongNode(prog, lhs), prog::expr::litLongNode(prog, rhs)));
 }
 
 } // namespace opt

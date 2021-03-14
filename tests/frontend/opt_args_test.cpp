@@ -73,7 +73,7 @@ TEST_CASE("[frontend] Analyzing optional argument", "frontend") {
     }
 
     SECTION("Declare a function with an optional arg initializer that calls an intrinsic") {
-      const auto& output = ANALYZE("act a(long time = intrinsic{clock_nanosteady}()) time * 2L");
+      const auto& output = ANALYZE("act a(long time = intrinsic{clock_nanosteady}()) time");
       REQUIRE(output.isSuccess());
 
       const auto& funcDecl = GET_FUNC_DECL(output, "a", GET_TYPE_ID(output, "long"));
