@@ -60,6 +60,12 @@ fun +(string x, string y) -> string
 fun +(string x, char y) -> string
   intrinsic{string_add_char}(x, y)
 
+fun [](string s, int index) -> char
+  intrinsic{string_index}(s, index)
+
+fun [](string s, int start, int end) -> string
+  intrinsic{string_slice}(s, start, end)
+
 fun ==(string x, string y) -> bool
   intrinsic{string_eq_string}(x, y)
 

@@ -211,18 +211,44 @@ TEST_CASE("[opt] Precompute literals", "opt") {
         "intrinsic{string_add_char}(\"hello\", ' ')",
         litStringNode(prog, "hello "));
     ASSERT_EXPR_INT(precomputeLiterals, "intrinsic{string_length}(\"hello\")", litIntNode(prog, 5));
-    ASSERT_EXPR_CHAR(precomputeLiterals, "\"hello\"[0]", litCharNode(prog, 'h'));
-    ASSERT_EXPR_CHAR(precomputeLiterals, "\"hello\"[4]", litCharNode(prog, 'o'));
-    ASSERT_EXPR_CHAR(precomputeLiterals, "\"hello\"[5]", litCharNode(prog, '\0'));
-    ASSERT_EXPR_STRING(precomputeLiterals, "\"hello world\"[0, 5]", litStringNode(prog, "hello"));
-    ASSERT_EXPR_STRING(precomputeLiterals, "\"hello world\"[4, 4]", litStringNode(prog, ""));
-    ASSERT_EXPR_STRING(precomputeLiterals, "\"hello world\"[4, 5]", litStringNode(prog, "o"));
-    ASSERT_EXPR_STRING(precomputeLiterals, "\"hello world\"[6, 11]", litStringNode(prog, "world"));
-    ASSERT_EXPR_STRING(precomputeLiterals, "\"hello world\"[6, 99]", litStringNode(prog, "world"));
-    ASSERT_EXPR_STRING(precomputeLiterals, "\"hello world\"[2, 9]", litStringNode(prog, "llo wor"));
-    ASSERT_EXPR_STRING(precomputeLiterals, "\"hello world\"[8, 3]", litStringNode(prog, ""));
+    ASSERT_EXPR_CHAR(
+        precomputeLiterals, "intrinsic{string_index}(\"hello\", 0)", litCharNode(prog, 'h'));
+    ASSERT_EXPR_CHAR(
+        precomputeLiterals, "intrinsic{string_index}(\"hello\", 4)", litCharNode(prog, 'o'));
+    ASSERT_EXPR_CHAR(
+        precomputeLiterals, "intrinsic{string_index}(\"hello\", 5)", litCharNode(prog, '\0'));
     ASSERT_EXPR_STRING(
-        precomputeLiterals, "\"hello world\"[0, 11]", litStringNode(prog, "hello world"));
+        precomputeLiterals,
+        "intrinsic{string_slice}(\"hello world\", 0, 5)",
+        litStringNode(prog, "hello"));
+    ASSERT_EXPR_STRING(
+        precomputeLiterals,
+        "intrinsic{string_slice}(\"hello world\", 4, 4)",
+        litStringNode(prog, ""));
+    ASSERT_EXPR_STRING(
+        precomputeLiterals,
+        "intrinsic{string_slice}(\"hello world\", 4, 5)",
+        litStringNode(prog, "o"));
+    ASSERT_EXPR_STRING(
+        precomputeLiterals,
+        "intrinsic{string_slice}(\"hello world\", 6, 11)",
+        litStringNode(prog, "world"));
+    ASSERT_EXPR_STRING(
+        precomputeLiterals,
+        "intrinsic{string_slice}(\"hello world\", 6, 99)",
+        litStringNode(prog, "world"));
+    ASSERT_EXPR_STRING(
+        precomputeLiterals,
+        "intrinsic{string_slice}(\"hello world\", 2, 9)",
+        litStringNode(prog, "llo wor"));
+    ASSERT_EXPR_STRING(
+        precomputeLiterals,
+        "intrinsic{string_slice}(\"hello world\", 8, 3)",
+        litStringNode(prog, ""));
+    ASSERT_EXPR_STRING(
+        precomputeLiterals,
+        "intrinsic{string_slice}(\"hello world\", 0, 11)",
+        litStringNode(prog, "hello world"));
     ASSERT_EXPR_STRING(
         precomputeLiterals,
         "intrinsic{string_add_string}(intrinsic{string_add_char}(\"hello\", ' '), \"world\")",

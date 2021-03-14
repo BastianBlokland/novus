@@ -296,17 +296,19 @@ TEST_CASE("[backend] Generate assembly for call expressions", "backend") {
       asmb->addLengthString();
     });
 
-    CHECK_EXPR("\"hello world\"[6]", [](novasm::Assembler* asmb) -> void {
-      asmb->addLoadLitString("hello world");
-      asmb->addLoadLitInt(6);
-      asmb->addIndexString();
-    });
-    CHECK_EXPR("\"hello world\"[0, 6]", [](novasm::Assembler* asmb) -> void {
-      asmb->addLoadLitString("hello world");
-      asmb->addLoadLitInt(0);
-      asmb->addLoadLitInt(6);
-      asmb->addSliceString();
-    });
+    CHECK_EXPR_CHAR(
+        "intrinsic{string_index}(\"hello world\", 6)", [](novasm::Assembler* asmb) -> void {
+          asmb->addLoadLitString("hello world");
+          asmb->addLoadLitInt(6);
+          asmb->addIndexString();
+        });
+    CHECK_EXPR_STRING(
+        "intrinsic{string_slice}(\"hello world\", 0, 6)", [](novasm::Assembler* asmb) -> void {
+          asmb->addLoadLitString("hello world");
+          asmb->addLoadLitInt(0);
+          asmb->addLoadLitInt(6);
+          asmb->addSliceString();
+        });
   }
 
   SECTION("String checks") {

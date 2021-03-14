@@ -63,12 +63,11 @@ enum class FuncKind {
   CheckGtFloat, // Check if a float is greater then another float.
 
   AddString,     // Combine two strings.
+  AppendChar,    // Append a character to a string.
   LengthString,  // Return the length of a string.
   IndexString,   // Return the character at a specific index into a string.
   SliceString,   // Return a subsection of a string, indicated by start and end.
   CheckEqString, // Check if two strings are equal.
-
-  AppendChar, // Append a character to a string.
 
   ConvIntLong,     // Convert a integer to a long.
   ConvIntFloat,    // Convert a int to a float.

@@ -285,6 +285,9 @@ auto GenExpr::visit(const prog::expr::CallExprNode& n) -> void {
   case prog::sym::FuncKind::AddString:
     m_asmb->addAddString();
     break;
+  case prog::sym::FuncKind::AppendChar:
+    m_asmb->addAppendChar();
+    break;
   case prog::sym::FuncKind::LengthString:
     m_asmb->addLengthString();
     break;
@@ -296,10 +299,6 @@ auto GenExpr::visit(const prog::expr::CallExprNode& n) -> void {
     break;
   case prog::sym::FuncKind::CheckEqString:
     m_asmb->addCheckEqString();
-    break;
-
-  case prog::sym::FuncKind::AppendChar:
-    m_asmb->addAppendChar();
     break;
 
   case prog::sym::FuncKind::ConvIntLong:

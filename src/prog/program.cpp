@@ -32,7 +32,6 @@ Program::Program() :
     m_process{m_typeDecls.registerType(sym::TypeKind::Process, "sys_process")} {
 
   using Fk = prog::sym::FuncKind;
-  using Op = prog::Operator;
 
   // Register int intrinsics.
   m_funcDecls.registerIntrinsic(
@@ -136,18 +135,12 @@ Program::Program() :
       *this, Fk::AddString, "string_add_string", sym::TypeSet{m_string, m_string}, m_string);
   m_funcDecls.registerIntrinsic(
       *this, Fk::AppendChar, "string_add_char", sym::TypeSet{m_string, m_char}, m_string);
-
-  // Register build-in string functions.
   m_funcDecls.registerIntrinsic(
       *this, Fk::LengthString, "string_length", sym::TypeSet{m_string}, m_int);
-  m_funcDecls.registerFunc(
-      *this, Fk::IndexString, getFuncName(Op::SquareSquare), sym::TypeSet{m_string, m_int}, m_char);
-  m_funcDecls.registerFunc(
-      *this,
-      Fk::SliceString,
-      getFuncName(Op::SquareSquare),
-      sym::TypeSet{m_string, m_int, m_int},
-      m_string);
+  m_funcDecls.registerIntrinsic(
+      *this, Fk::IndexString, "string_index", sym::TypeSet{m_string, m_int}, m_char);
+  m_funcDecls.registerIntrinsic(
+      *this, Fk::SliceString, "string_slice", sym::TypeSet{m_string, m_int, m_int}, m_string);
 
   // Register conversion intrinsics.
   m_funcDecls.registerIntrinsic(*this, Fk::ConvIntLong, "int_to_long", sym::TypeSet{m_int}, m_long);
