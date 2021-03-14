@@ -19,18 +19,18 @@ TEST_CASE("[backend] Generate assembly for call expressions", "backend") {
       asmb->addLoadLitInt(42);
       asmb->addInvInt();
     });
-    CHECK_EXPR("1 + 3", [](novasm::Assembler* asmb) -> void {
+    CHECK_EXPR_INT("intrinsic{int_add_int}(1, 3)", [](novasm::Assembler* asmb) -> void {
       asmb->addLoadLitInt(1);
       asmb->addLoadLitInt(3);
       asmb->addAddInt();
     });
-    CHECK_EXPR("-1 + 3", [](novasm::Assembler* asmb) -> void {
+    CHECK_EXPR_INT("intrinsic{int_add_int}(-1, 3)", [](novasm::Assembler* asmb) -> void {
       asmb->addLoadLitInt(1);
       asmb->addNegInt();
       asmb->addLoadLitInt(3);
       asmb->addAddInt();
     });
-    CHECK_EXPR("1 - 3", [](novasm::Assembler* asmb) -> void {
+    CHECK_EXPR_INT("intrinsic{int_sub_int}(1, 3)", [](novasm::Assembler* asmb) -> void {
       asmb->addLoadLitInt(1);
       asmb->addLoadLitInt(3);
       asmb->addSubInt();

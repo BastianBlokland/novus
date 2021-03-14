@@ -105,8 +105,10 @@ TEST_CASE("[frontend] Analyzing user-function definitions", "frontend") {
 
       CHECK_DIAG("fun f() -> int f()", errPureFuncInfRecursion(NO_SRC));
       CHECK_DIAG("fun f() -> int a = f()", errPureFuncInfRecursion(NO_SRC));
-      CHECK_DIAG("fun f(int i) -> int i + f(i)", errPureFuncInfRecursion(NO_SRC));
       CHECK_DIAG(
+          "fun f(int i) -> int intrinsic{int_add_int}(i, f(i))", errPureFuncInfRecursion(NO_SRC));
+      CHECK_DIAG(
+          "fun +(int x, int y) -> int intrinsic{int_add_int}(x, y) "
           "fun f(int a, int b) -> int "
           " a2 = 42; b2 = 1337; f(a + a2, b + b2)",
           errPureFuncInfRecursion(NO_SRC));

@@ -31,7 +31,13 @@ fun asInt(float f) -> int
 
 fun +(int i) i
 
+fun +(int x, int y) -> int
+  intrinsic{int_add_int}(x, y)
+
 fun ++(int i) i + 1
+
+fun -(int x, int y) -> int
+  intrinsic{int_sub_int}(x, y)
 
 fun --(int i) i - 1
 

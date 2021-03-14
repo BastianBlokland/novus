@@ -27,7 +27,7 @@ TEST_CASE("[frontend] Analyzing user-function templates", "frontend") {
   }
 
   SECTION("Chained templated call") {
-    const auto& output = ANALYZE("fun ft1{T}(T a, T b) -> T a + b "
+    const auto& output = ANALYZE("fun ft1{T}(T a, T b) -> T intrinsic{int_add_int}(a, b) "
                                  "fun ft2{T}(T a) -> T ft1{T}(a, a) "
                                  "fun f() -> int ft2{int}(1)");
     REQUIRE(output.isSuccess());
@@ -53,8 +53,8 @@ TEST_CASE("[frontend] Analyzing user-function templates", "frontend") {
 
   SECTION("Overload templated functions") {
     const auto& output = ANALYZE("fun implicit float(int i) intrinsic{int_to_float}(i) "
-                                 "fun ft{T}(int a, T b) a + b "
-                                 "fun ft{T}(float a, T b) a + b "
+                                 "fun ft{T}(int a, T b) -> int intrinsic{int_add_int}(a, b) "
+                                 "fun ft{T}(float a, T b) -> float a + b "
                                  "fun f() -> float ft{int}(1.0, 2)");
     REQUIRE(output.isSuccess());
 
@@ -160,7 +160,8 @@ TEST_CASE("[frontend] Analyzing user-function templates", "frontend") {
   }
 
   SECTION("Infer type-parameter in templated call") {
-    const auto& output = ANALYZE("fun int() 0 "
+    const auto& output = ANALYZE("fun +(int x, int y) -> int intrinsic{int_add_int}(x, y) "
+                                 "fun int() 0 "
                                  "struct Null "
                                  "union Option{T} = T, Null "
                                  "fun ft{T}(Option{T} a, Option{T} b) "
@@ -213,7 +214,8 @@ TEST_CASE("[frontend] Analyzing user-function templates", "frontend") {
   }
 
   SECTION("Overloaded func templates prefer less type-parameters") {
-    const auto& output = ANALYZE("fun bool(bool b) b "
+    const auto& output = ANALYZE("fun +(int x, int y) -> int intrinsic{int_add_int}(x, y) "
+                                 "fun bool(bool b) b "
                                  "union Choice{T1, T2} = T1, T2 "
                                  "fun ft{T1, T2}(T1 a, T2 b) -> Choice{T1, T2} "
                                  "  bool(a) ? a : b "

@@ -41,10 +41,6 @@ Program::Program() :
 
   // Register build-in binary int operators.
   m_funcDecls.registerFunc(
-      *this, Fk::AddInt, getFuncName(Op::Plus), sym::TypeSet{m_int, m_int}, m_int);
-  m_funcDecls.registerFunc(
-      *this, Fk::SubInt, getFuncName(Op::Minus), sym::TypeSet{m_int, m_int}, m_int);
-  m_funcDecls.registerFunc(
       *this, Fk::MulInt, getFuncName(Op::Star), sym::TypeSet{m_int, m_int}, m_int);
   m_funcDecls.registerFunc(
       *this, Fk::DivInt, getFuncName(Op::Slash), sym::TypeSet{m_int, m_int}, m_int);
@@ -70,6 +66,10 @@ Program::Program() :
       *this, Fk::CheckLeInt, "int_le_int", sym::TypeSet{m_int, m_int}, m_bool);
   m_funcDecls.registerIntrinsic(
       *this, Fk::CheckGtInt, "int_gt_int", sym::TypeSet{m_int, m_int}, m_bool);
+  m_funcDecls.registerIntrinsic(
+      *this, Fk::AddInt, "int_add_int", sym::TypeSet{m_int, m_int}, m_int);
+  m_funcDecls.registerIntrinsic(
+      *this, Fk::SubInt, "int_sub_int", sym::TypeSet{m_int, m_int}, m_int);
 
   // Register build-in unary long operators.
   m_funcDecls.registerFunc(

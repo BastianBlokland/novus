@@ -91,6 +91,15 @@ inline auto arrayMoveToVec(Array c) {
 #define EXPRS(...)                                                                                 \
   arrayMoveToVec<std::array<prog::expr::NodePtr, NUM_ARGS(__VA_ARGS__)>>({__VA_ARGS__})
 
+inline auto getIntrinsicBinaryOp(
+    const prog::Program& prog, const std::string& intrinsic, int32_t lhs, int32_t rhs)
+    -> prog::expr::NodePtr {
+
+  const auto funcId = GET_INTRINSIC_ID(prog, intrinsic, prog.getInt(), prog.getInt());
+  return prog::expr::callExprNode(
+      prog, funcId, EXPRS(prog::expr::litIntNode(prog, lhs), prog::expr::litIntNode(prog, rhs)));
+}
+
 inline auto
 getIntBinaryOpExpr(const prog::Program& prog, prog::Operator op, int32_t lhs, int32_t rhs)
     -> prog::expr::NodePtr {

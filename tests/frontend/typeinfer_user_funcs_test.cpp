@@ -119,7 +119,8 @@ TEST_CASE("[frontend] Infer return type of user functions", "frontend") {
   }
 
   SECTION("Binary operator") {
-    const auto& output = ANALYZE("fun f() 42 + 1337");
+    const auto& output = ANALYZE("fun +(int x, int y) -> int intrinsic{int_add_int}(x, y) "
+                                 "fun f() 42 + 1337");
     REQUIRE(output.isSuccess());
     CHECK(GET_FUNC_DECL(output, "f").getOutput() == GET_TYPE_ID(output, "int"));
   }
@@ -284,7 +285,8 @@ TEST_CASE("[frontend] Infer return type of user functions", "frontend") {
   }
 
   SECTION("Index operator") {
-    const auto& output = ANALYZE("struct s = int a "
+    const auto& output = ANALYZE("fun +(int x, int y) -> int intrinsic{int_add_int}(x, y) "
+                                 "struct s = int a "
                                  "fun [](s a, int i) a.a + i "
                                  "fun f(s a) a[0]");
     REQUIRE(output.isSuccess());
@@ -418,7 +420,8 @@ TEST_CASE("[frontend] Infer return type of user functions", "frontend") {
   }
 
   SECTION("Anonymous function call with nested closure") {
-    const auto& output = ANALYZE("fun f(int a) (lambda (int b) (lambda () b + a))(42)");
+    const auto& output = ANALYZE("fun +(int x, int y) -> int intrinsic{int_add_int}(x, y) "
+                                 "fun f(int a) (lambda (int b) (lambda () b + a))(42)");
     REQUIRE(output.isSuccess());
     CHECK(
         GET_FUNC_DECL(output, "f", GET_TYPE_ID(output, "int")).getOutput() ==

@@ -56,8 +56,8 @@ TEST_CASE("[opt] Precompute literals", "opt") {
   }
 
   SECTION("int intrinsics") {
-    ASSERT_EXPR_INT(precomputeLiterals, "1 + 2", litIntNode(prog, 3));
-    ASSERT_EXPR_INT(precomputeLiterals, "1 - 2", litIntNode(prog, -1));
+    ASSERT_EXPR_INT(precomputeLiterals, "intrinsic{int_add_int}(1, 2)", litIntNode(prog, 3));
+    ASSERT_EXPR_INT(precomputeLiterals, "intrinsic{int_sub_int}(1, 2)", litIntNode(prog, -1));
     ASSERT_EXPR_INT(precomputeLiterals, "3 * 2", litIntNode(prog, 6));
     ASSERT_EXPR_INT(precomputeLiterals, "4 / 2", litIntNode(prog, 2));
     ASSERT_EXPR_INT(precomputeLiterals, "4 / -2", litIntNode(prog, -2));
@@ -305,7 +305,7 @@ TEST_CASE("[opt] Precompute literals", "opt") {
   }
 
   SECTION("Lazy get to normal lazy call") {
-    const auto& output = ANALYZE("fun f1(int a, int b) a + b "
+    const auto& output = ANALYZE("fun f1(int a, int b) -> int intrinsic{int_add_int}(a, b) "
                                  "fun f2() -> int intrinsic{lazy_get}(lazy f1(1, 2))");
     REQUIRE(output.isSuccess());
     // Check that it originally call lazy-get.

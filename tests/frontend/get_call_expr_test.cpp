@@ -21,7 +21,8 @@ TEST_CASE("[frontend] Analyzing call expressions", "frontend") {
   }
 
   SECTION("Get call with arg") {
-    const auto& output = ANALYZE("fun f1(int a) -> int a + 1 "
+    const auto& output = ANALYZE("fun +(int x, int y) -> int intrinsic{int_add_int}(x, y) "
+                                 "fun f1(int a) -> int a + 1 "
                                  "fun f2() -> int f1(1)");
     REQUIRE(output.isSuccess());
 

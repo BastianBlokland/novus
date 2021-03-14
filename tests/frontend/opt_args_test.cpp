@@ -86,7 +86,8 @@ TEST_CASE("[frontend] Analyzing optional argument", "frontend") {
     }
 
     SECTION("Call a function with an optional argument") {
-      const auto& output = ANALYZE("fun fa(int a, int b = 1 + 2) a + b "
+      const auto& output = ANALYZE("fun +(int x, int y) -> int intrinsic{int_add_int}(x, y) "
+                                   "fun fa(int a, int b = 1 + 2) a + b "
                                    "fun fb() fa(2)");
       REQUIRE(output.isSuccess());
       CHECK(
@@ -246,6 +247,7 @@ TEST_CASE("[frontend] Analyzing optional argument", "frontend") {
           errNoPureFuncFoundToInstantiate(NO_SRC, "ft", 1));
 
       CHECK_DIAG(
+          "fun +(int x, int y) -> int intrinsic{int_add_int}(x, y) "
           "fun ft{T}(T a = T(), T b) a + b "
           "fun f() ft{int}()",
           errNonOptArgFollowingOpt(NO_SRC),
