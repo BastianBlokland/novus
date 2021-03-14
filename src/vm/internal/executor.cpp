@@ -382,7 +382,13 @@ auto execute(
       // to the end). Support for building up strings backwards is possible but not implemented atm.
 
       auto* a = getStringOrLinkRef(POP());
-      PUSH_REF(refAlloc->allocStrLink(a, refValue(b)));
+      if (b->getSize() == 0) {
+        // When adding an empty string, its just a no-op.
+        // This way we also maintain our invariant that a StringLink is never empty.
+        PUSH_REF(a);
+      } else {
+        PUSH_REF(refAlloc->allocStrLink(a, refValue(b)));
+      }
     } break;
     case OpCode::AppendChar: {
       auto b  = POP_INT();
@@ -654,6 +660,9 @@ auto execute(
     } break;
     case OpCode::CheckIntZero: {
       PUSH_BOOL(POP_INT() == 0);
+    } break;
+    case OpCode::CheckStringEmpty: {
+      PUSH_BOOL(isStringEmpty(POP()));
     } break;
 
     case OpCode::ConvIntLong: {

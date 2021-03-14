@@ -223,6 +223,9 @@ auto operator<<(std::ostream& out, const OpCode& rhs) noexcept -> std::ostream& 
   case OpCode::CheckIntZero:
     out << "check-int-zero";
     break;
+  case OpCode::CheckStringEmpty:
+    out << "check-string-empty";
+    break;
 
   case OpCode::ConvIntLong:
     out << "conv-int-long";

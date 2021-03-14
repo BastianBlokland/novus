@@ -7,6 +7,8 @@
 #include "prog/expr/node_lit_long.hpp"
 #include "prog/operator.hpp"
 #include "prog/program.hpp"
+#include <array>
+#include <vector>
 
 namespace opt {
 

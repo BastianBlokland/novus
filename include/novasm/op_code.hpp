@@ -87,6 +87,7 @@ enum class OpCode : uint8_t {
   CheckLeFloat      = 101, // [] (float, float)           -> (int) Check float is less.
   CheckStructNull   = 102, // [] (struct)                 -> (int) Check if struct is null.
   CheckIntZero      = 103, // [] (int)                    -> (int) Check if integer is zero.
+  CheckStringEmpty  = 104, // [] (string)                 -> (int) Check if string is empty.
 
   ConvIntLong     = 111, // [] (int)   -> (long)     Convert int to long.
   ConvIntFloat    = 112, // [] (int)   -> (float)    Convert int to float.

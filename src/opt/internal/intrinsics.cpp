@@ -515,6 +515,17 @@ auto maybeSimplifyIntrinsic(
           prog, *prog.lookupIntrinsic("int_eq_zero", {prog.getInt()}), cloneToVec(args[1]));
     }
     return nullptr;
+  case prog::sym::FuncKind::CheckEqString:
+    assert(args.size() == 2);
+    if (isLiteral(*args[1]) && getString(*args[1]) == "") {
+      return prog::expr::callExprNode(
+          prog, *prog.lookupIntrinsic("string_eq_empty", {prog.getString()}), cloneToVec(args[0]));
+    }
+    if (isLiteral(*args[0]) && getString(*args[0]) == "") {
+      return prog::expr::callExprNode(
+          prog, *prog.lookupIntrinsic("string_eq_empty", {prog.getString()}), cloneToVec(args[1]));
+    }
+    return nullptr;
   case prog::sym::FuncKind::AddString:
     assert(args.size() == 2);
     if (isLiteral(*args[1]) && getString(*args[1]) == "") {

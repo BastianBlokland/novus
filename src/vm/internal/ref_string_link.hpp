@@ -68,6 +68,9 @@ private:
   inline explicit StringLinkRef(Ref* prev, Value val) noexcept :
       Ref(getKind()), m_prev{prev}, m_val{val}, m_collapsed{nullptr} {
 
+    // Check the invariant that StringLink's are never empty.
+    assert(!val.isRef() || downcastRef<StringRef>(val.getRef())->getSize() != 0);
+
     assert(m_prev != nullptr);
     assert(m_prev->getKind() == RefKind::String || m_prev->getKind() == RefKind::StringLink);
   }

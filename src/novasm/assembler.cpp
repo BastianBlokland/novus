@@ -202,6 +202,8 @@ auto Assembler::addCheckStructNull() -> void { writeOpCode(OpCode::CheckStructNu
 
 auto Assembler::addCheckIntZero() -> void { writeOpCode(OpCode::CheckIntZero); }
 
+auto Assembler::addCheckStringEmtpy() -> void { writeOpCode(OpCode::CheckStringEmpty); }
+
 auto Assembler::addConvIntLong() -> void { writeOpCode(OpCode::ConvIntLong); }
 
 auto Assembler::addConvIntFloat() -> void { writeOpCode(OpCode::ConvIntFloat); }

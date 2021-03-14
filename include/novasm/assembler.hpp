@@ -99,6 +99,7 @@ public:
   auto addCheckLeFloat() -> void;
   auto addCheckStructNull() -> void;
   auto addCheckIntZero() -> void;
+  auto addCheckStringEmtpy() -> void;
 
   auto addConvIntLong() -> void;
   auto addConvIntFloat() -> void;
