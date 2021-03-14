@@ -80,6 +80,9 @@ errDuplicateEntryNameInEnum(prog::sym::SourceId src, const std::string& entryNam
 [[nodiscard]] auto
 errTypeParamNameConflictsWithType(prog::sym::SourceId src, const std::string& name) -> Diag;
 
+[[nodiscard]] auto errDuplicateTypeParamName(prog::sym::SourceId src, const std::string& name)
+    -> Diag;
+
 [[nodiscard]] auto errDuplicateFuncDeclaration(prog::sym::SourceId src, const std::string& name)
     -> Diag;
 

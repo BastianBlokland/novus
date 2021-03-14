@@ -499,6 +499,8 @@ auto getSubstitutionParams(Context* ctx, const parse::TypeSubstitutionList& subL
 
   auto typeParams = std::vector<std::string>{};
   auto isValid    = true;
+
+  // Find all substitution params.
   for (const auto& typeSubToken : subList) {
     const auto typeParamName = getName(typeSubToken);
     if (isType(ctx, nullptr, typeParamName)) {
@@ -508,6 +510,17 @@ auto getSubstitutionParams(Context* ctx, const parse::TypeSubstitutionList& subL
       typeParams.push_back(typeParamName);
     }
   }
+
+  // Check for duplicates.
+  for (auto i = 0u; i < typeParams.size(); ++i) {
+    for (auto j = i + 1; j < typeParams.size(); ++j) {
+      if (typeParams[i] == typeParams[j]) {
+        ctx->reportDiag(errDuplicateTypeParamName, subList.getSpan(), typeParams[i]);
+        isValid = false;
+      }
+    }
+  }
+
   return isValid ? std::optional(typeParams) : std::nullopt;
 }
 
