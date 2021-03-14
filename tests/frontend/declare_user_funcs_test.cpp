@@ -59,12 +59,14 @@ TEST_CASE("[frontend] Analyzing user-function declarations", "frontend") {
     }
 
     SECTION("Declare templated conversion function") {
-      const auto& output = ANALYZE("fun string(int i) intrinsic{int_to_string}(i) "
-                                   "fun string(bool b) b ? \"true\" : \"false\" "
-                                   "struct Tuple{T, Y} = T a, Y b "
-                                   "fun string{T, Y}(Tuple{T, Y} t) "
-                                   " t.a.string() + \",\" + t.b.string() "
-                                   "fun f() string{int, bool}(Tuple{int, bool}(42, false))");
+      const auto& output =
+          ANALYZE("fun +(string x, string y) -> string intrinsic{string_add_string}(x, y) "
+                  "fun string(int i) intrinsic{int_to_string}(i) "
+                  "fun string(bool b) b ? \"true\" : \"false\" "
+                  "struct Tuple{T, Y} = T a, Y b "
+                  "fun string{T, Y}(Tuple{T, Y} t) "
+                  " t.a.string() + \",\" + t.b.string() "
+                  "fun f() string{int, bool}(Tuple{int, bool}(42, false))");
       REQUIRE(output.isSuccess());
       CHECK(GET_FUNC_DECL(output, "f").getOutput() == GET_TYPE_ID(output, "string"));
       CHECK(
@@ -169,7 +171,6 @@ TEST_CASE("[frontend] Analyzing user-function declarations", "frontend") {
         errIncorrectReturnTypeInConvFunc(NO_SRC, "s{int}", "int"),
         errInvalidFuncInstantiation(NO_SRC),
         errNoTypeOrConversionFoundToInstantiate(NO_SRC, "s", 1));
-    CHECK_DIAG("fun -(int i) -> int 1", errDuplicateFuncDeclaration(NO_SRC, "operator-"));
     CHECK_DIAG("fun &&() -> int 1", errNonOverloadableOperator(NO_SRC, "&&"));
     CHECK_DIAG("fun f{int}() -> int 1", errTypeParamNameConflictsWithType(NO_SRC, "int"));
     CHECK_DIAG(

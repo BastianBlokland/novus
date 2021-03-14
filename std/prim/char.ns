@@ -28,45 +28,39 @@ fun char(float f)
 
 fun +(char c) c
 
+fun +(char x, char y)
+  char(intrinsic{int_add_int}(intrinsic{char_as_int}(x), intrinsic{char_as_int}(y)))
+
 fun ++(char c) c + char(1)
+
+fun -(char x, char y)
+  char(intrinsic{int_sub_int}(intrinsic{char_as_int}(x), char(y)))
 
 fun --(char c) c - char(1)
 
 fun <<(char x, int y)
-  char(intrinsic{char_as_int}(x) << y)
+  char(intrinsic{int_shiftleft}(intrinsic{char_as_int}(x), y))
 
 fun >>(char x, int y)
-  char(intrinsic{char_as_int}(x) >> y)
+  char(intrinsic{int_shiftright}(intrinsic{char_as_int}(x), y))
 
 fun &(char x, char y)
-  char(intrinsic{char_as_int}(x) & intrinsic{char_as_int}(y))
+  char(intrinsic{int_and_int}(intrinsic{char_as_int}(x), intrinsic{char_as_int}(y)))
 
 fun |(char x, char y)
-  char(intrinsic{char_as_int}(x) | intrinsic{char_as_int}(y))
+  char(intrinsic{int_or_int}(intrinsic{char_as_int}(x), intrinsic{char_as_int}(y)))
 
 fun ~(char x)
-  char(~intrinsic{char_as_int}(x))
-
-fun +(char x, char y)
-  char(intrinsic{char_as_int}(x) + intrinsic{char_as_int}(y))
-
-fun -(char x, char y)
-  char(intrinsic{char_as_int}(x) - char(y))
+  char(intrinsic{int_inv}(intrinsic{char_as_int}(x)))
 
 fun ==(char x, char y) -> bool
   intrinsic{int_eq_int}(intrinsic{char_as_int}(x), intrinsic{char_as_int}(y))
 
 fun <(char x, char y) -> bool
-  intrinsic{char_as_int}(x) < intrinsic{char_as_int}(y)
-
-fun <=(char x, char y) -> bool
-  intrinsic{char_as_int}(x) <= intrinsic{char_as_int}(y)
+  intrinsic{int_le_int}(intrinsic{char_as_int}(x), intrinsic{char_as_int}(y))
 
 fun >(char x, char y) -> bool
-  intrinsic{char_as_int}(x) > intrinsic{char_as_int}(y)
-
-fun >=(char x, char y) -> bool
-  intrinsic{char_as_int}(x) >= intrinsic{char_as_int}(y)
+  intrinsic{int_gt_int}(intrinsic{char_as_int}(x), intrinsic{char_as_int}(y))
 
 // -- Tests
 

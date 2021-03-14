@@ -9,7 +9,8 @@ namespace frontend {
 TEST_CASE("[frontend] Analyzing parenthesized expressions", "frontend") {
 
   SECTION("Get basic paren expression") {
-    const auto& output = ANALYZE("fun f(int a, int b) ((a) + (b))");
+    const auto& output = ANALYZE("fun +(int x, int y) -> int intrinsic{int_add_int}(x, y) "
+                                 "fun f(int a, int b) ((a) + (b))");
     REQUIRE(output.isSuccess());
     const auto& funcDef =
         GET_FUNC_DEF(output, "f", GET_TYPE_ID(output, "int"), GET_TYPE_ID(output, "int"));

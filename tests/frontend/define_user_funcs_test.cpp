@@ -87,6 +87,7 @@ TEST_CASE("[frontend] Analyzing user-function definitions", "frontend") {
         errInvalidFuncInstantiation(NO_SRC),
         errNoPureFuncFoundToInstantiate(NO_SRC, "f", 1));
     CHECK_DIAG(
+        "fun *(int x, int y) -> int intrinsic{int_mul_int}(x, y) "
         "fun f{T}(T i) -> T "
         "  T = i * 2; i "
         "fun f2() -> int f{int}(1)",
@@ -105,8 +106,10 @@ TEST_CASE("[frontend] Analyzing user-function definitions", "frontend") {
 
       CHECK_DIAG("fun f() -> int f()", errPureFuncInfRecursion(NO_SRC));
       CHECK_DIAG("fun f() -> int a = f()", errPureFuncInfRecursion(NO_SRC));
-      CHECK_DIAG("fun f(int i) -> int i + f(i)", errPureFuncInfRecursion(NO_SRC));
       CHECK_DIAG(
+          "fun f(int i) -> int intrinsic{int_add_int}(i, f(i))", errPureFuncInfRecursion(NO_SRC));
+      CHECK_DIAG(
+          "fun +(int x, int y) -> int intrinsic{int_add_int}(x, y) "
           "fun f(int a, int b) -> int "
           " a2 = 42; b2 = 1337; f(a + a2, b + b2)",
           errPureFuncInfRecursion(NO_SRC));
@@ -118,8 +121,8 @@ TEST_CASE("[frontend] Analyzing user-function definitions", "frontend") {
           errPureFuncInfRecursion(NO_SRC));
       CHECK_DIAG(
           "fun f(int a, int b) -> int "
-          " if a > b  -> f(a, 0) "
-          " else      -> f(0, b)",
+          " if intrinsic{int_le_int}(a, b) -> f(a, 0) "
+          " else                           -> f(0, b)",
           errPureFuncInfRecursion(NO_SRC));
       CHECK_DIAG("fun f(int a = a) a", errUndeclaredConst(NO_SRC, "a"));
       CHECK_DIAG("fun f(int a = b = 42) a", errConstDeclareNotSupported(NO_SRC));

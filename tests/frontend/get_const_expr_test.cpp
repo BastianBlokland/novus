@@ -59,18 +59,18 @@ TEST_CASE("[frontend] Analyzing constant expressions", "frontend") {
     CHECK_DIAG("fun f(int a) -> int a = 42", errConstNameConflictsWithConst(NO_SRC, "a"));
     CHECK_DIAG(
         "fun f(int a) -> int "
-        "if a > 5  -> b = 1 "
-        "else      -> b = 2",
+        "if intrinsic{int_le_int}(a, 5) -> b = 1 "
+        "else                           -> b = 2",
         errConstNameConflictsWithConst(NO_SRC, "b"));
     CHECK_DIAG(
         "fun f(int a) -> int "
-        "if a > 5  -> b = 1 "
-        "else      -> b + 1",
+        "if intrinsic{int_gt_int}(a, 5) -> b = 1 "
+        "else                           -> b + 1",
         errUninitializedConst(NO_SRC, "b"));
     CHECK_DIAG(
         "fun f(int a) -> int "
-        "if b = a * a; b > 5  -> b "
-        "else                 -> b + 1",
+        "if b = intrinsic{int_mul_int}(a, a); intrinsic{int_le_int}(b, 5) -> b "
+        "else                                                             -> b + 1",
         errUninitializedConst(NO_SRC, "b"));
     CHECK_DIAG("fun f() -> int (true && (x = 5; false)); x", errUninitializedConst(NO_SRC, "x"));
   }

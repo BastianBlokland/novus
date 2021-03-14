@@ -27,8 +27,10 @@ TEST_CASE("[frontend] Analyzing optional argument", "frontend") {
     }
 
     SECTION("Declare a function with a normal argument and a optional argument") {
-      const auto& output = ANALYZE("fun implicit float(int i) intrinsic{int_to_float}(i) "
-                                   "fun f(float a, int b = 0) a + b");
+      const auto& output =
+          ANALYZE("fun +(float x, float y) -> float intrinsic{float_add_float}(x, y) "
+                  "fun implicit float(int i) intrinsic{int_to_float}(i) "
+                  "fun f(float a, int b = 0) a + b");
       REQUIRE(output.isSuccess());
 
       const auto& funcDecl =
@@ -71,7 +73,7 @@ TEST_CASE("[frontend] Analyzing optional argument", "frontend") {
     }
 
     SECTION("Declare a function with an optional arg initializer that calls an intrinsic") {
-      const auto& output = ANALYZE("act a(long time = intrinsic{clock_nanosteady}()) time * 2L");
+      const auto& output = ANALYZE("act a(long time = intrinsic{clock_nanosteady}()) time");
       REQUIRE(output.isSuccess());
 
       const auto& funcDecl = GET_FUNC_DECL(output, "a", GET_TYPE_ID(output, "long"));
@@ -86,7 +88,8 @@ TEST_CASE("[frontend] Analyzing optional argument", "frontend") {
     }
 
     SECTION("Call a function with an optional argument") {
-      const auto& output = ANALYZE("fun fa(int a, int b = 1 + 2) a + b "
+      const auto& output = ANALYZE("fun +(int x, int y) -> int intrinsic{int_add_int}(x, y) "
+                                   "fun fa(int a, int b = 1 + 2) a + b "
                                    "fun fb() fa(2)");
       REQUIRE(output.isSuccess());
       CHECK(
@@ -109,9 +112,11 @@ TEST_CASE("[frontend] Analyzing optional argument", "frontend") {
     }
 
     SECTION("Call a function with an optional argument with a conversion") {
-      const auto& output = ANALYZE("fun implicit float(int i) intrinsic{int_to_float}(i) "
-                                   "fun fa(int a, float b = 2) a + b "
-                                   "fun fb() fa(2)");
+      const auto& output =
+          ANALYZE("fun +(float x, float y) -> float intrinsic{float_add_float}(x, y) "
+                  "fun implicit float(int i) intrinsic{int_to_float}(i) "
+                  "fun fa(int a, float b = 2) a + b "
+                  "fun fb() fa(2)");
       REQUIRE(output.isSuccess());
       CHECK(
           GET_FUNC_DEF(output, "fb").getBody() ==
@@ -176,12 +181,14 @@ TEST_CASE("[frontend] Analyzing optional argument", "frontend") {
     }
 
     SECTION("Type parameter can be inferred from an initializer") {
-      const auto& output = ANALYZE("fun implicit int(char c) intrinsic{char_as_int}(c) "
-                                   "fun string(int i) intrinsic{int_to_string}(i) "
-                                   "fun ft{TX, TY}(TX a = \"World\", TY b = 'W') a + string(b) "
-                                   "fun f1() ft() "
-                                   "fun f2() ft(\"Hello\", 42) "
-                                   "fun f3() ft(\"Hello\")");
+      const auto& output =
+          ANALYZE("fun +(string x, string y) -> string intrinsic{string_add_string}(x, y) "
+                  "fun implicit int(char c) intrinsic{char_as_int}(c) "
+                  "fun string(int i) intrinsic{int_to_string}(i) "
+                  "fun ft{TX, TY}(TX a = \"World\", TY b = 'W') a + string(b) "
+                  "fun f1() ft() "
+                  "fun f2() ft(\"Hello\", 42) "
+                  "fun f3() ft(\"Hello\")");
       REQUIRE(output.isSuccess());
 
       const auto& funcT1Decl = GET_FUNC_DECL(
@@ -246,6 +253,7 @@ TEST_CASE("[frontend] Analyzing optional argument", "frontend") {
           errNoPureFuncFoundToInstantiate(NO_SRC, "ft", 1));
 
       CHECK_DIAG(
+          "fun +(int x, int y) -> int intrinsic{int_add_int}(x, y) "
           "fun ft{T}(T a = T(), T b) a + b "
           "fun f() ft{int}()",
           errNonOptArgFollowingOpt(NO_SRC),

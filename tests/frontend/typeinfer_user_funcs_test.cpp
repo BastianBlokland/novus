@@ -119,20 +119,22 @@ TEST_CASE("[frontend] Infer return type of user functions", "frontend") {
   }
 
   SECTION("Binary operator") {
-    const auto& output = ANALYZE("fun f() 42 + 1337");
+    const auto& output = ANALYZE("fun +(int x, int y) -> int intrinsic{int_add_int}(x, y) "
+                                 "fun f() 42 + 1337");
     REQUIRE(output.isSuccess());
     CHECK(GET_FUNC_DECL(output, "f").getOutput() == GET_TYPE_ID(output, "int"));
   }
 
   SECTION("Unary operator") {
-    const auto& output = ANALYZE("fun f() -42");
+    const auto& output = ANALYZE("fun -(int x) -> int intrinsic{int_neg}(x) "
+                                 "fun f() -42");
     REQUIRE(output.isSuccess());
     CHECK(GET_FUNC_DECL(output, "f").getOutput() == GET_TYPE_ID(output, "int"));
   }
 
   SECTION("Conditional operator") {
     const auto& output = ANALYZE("fun implicit float(int i) intrinsic{int_to_float}(i) "
-                                 "fun f() 1 > 2 ? 42 : 1337.0");
+                                 "fun f() intrinsic{int_le_int}(1, 2) ? 42 : 1337.0");
     REQUIRE(output.isSuccess());
     CHECK(GET_FUNC_DECL(output, "f").getOutput() == GET_TYPE_ID(output, "float"));
   }
@@ -140,8 +142,8 @@ TEST_CASE("[frontend] Infer return type of user functions", "frontend") {
   SECTION("Switch") {
     const auto& output = ANALYZE("fun implicit float(int i) intrinsic{int_to_float}(i) "
                                  "fun f() "
-                                 "if 1 > 2  -> 1 "
-                                 "else      -> 2.0");
+                                 "if intrinsic{int_gt_int}(1, 2) -> 1 "
+                                 "else                           -> 2.0");
     REQUIRE(output.isSuccess());
     CHECK(GET_FUNC_DECL(output, "f").getOutput() == GET_TYPE_ID(output, "float"));
   }
@@ -189,7 +191,7 @@ TEST_CASE("[frontend] Infer return type of user functions", "frontend") {
   }
 
   SECTION("Recursive templated call") {
-    const auto& output = ANALYZE("fun ft{T}(T a) a < 0 ? ft(-a) : a "
+    const auto& output = ANALYZE("fun ft{T}(T a) intrinsic{int_le_int}(a, 0) ? ft(a) : a "
                                  "fun f(int i) ft{int}(i)");
     REQUIRE(output.isSuccess());
     CHECK(
@@ -284,7 +286,8 @@ TEST_CASE("[frontend] Infer return type of user functions", "frontend") {
   }
 
   SECTION("Index operator") {
-    const auto& output = ANALYZE("struct s = int a "
+    const auto& output = ANALYZE("fun +(int x, int y) -> int intrinsic{int_add_int}(x, y) "
+                                 "struct s = int a "
                                  "fun [](s a, int i) a.a + i "
                                  "fun f(s a) a[0]");
     REQUIRE(output.isSuccess());
@@ -310,23 +313,25 @@ TEST_CASE("[frontend] Infer return type of user functions", "frontend") {
   }
 
   SECTION("Lazy call operator") {
-    const auto& output = ANALYZE("fun ()(int x, int y) x * y "
+    const auto& output = ANALYZE("fun ()(int x, int y) -> int intrinsic{int_mul_int}(x, y) "
                                  "fun f() lazy 42(1337)");
     REQUIRE(output.isSuccess());
     CHECK(GET_FUNC_DECL(output, "f").getOutput() == GET_TYPE_ID(output, "__lazy_int"));
   }
 
   SECTION("Instance function call") {
-    const auto& output = ANALYZE("fun double(int i) i * 2 "
+    const auto& output = ANALYZE("fun double(int i) -> int intrinsic{int_mul_int}(i, 2) "
                                  "fun f() (42).double()");
     REQUIRE(output.isSuccess());
     CHECK(GET_FUNC_DECL(output, "f").getOutput() == GET_TYPE_ID(output, "int"));
   }
 
   SECTION("Instance function call with arguments") {
-    const auto& output = ANALYZE("fun string(int i) intrinsic{int_to_string}(i) "
-                                 "fun test(int a, string b) a.string() + b "
-                                 "fun f() (42).test(\"test\")");
+    const auto& output =
+        ANALYZE("fun +(string x, string y) -> string intrinsic{string_add_string}(x, y) "
+                "fun string(int i) intrinsic{int_to_string}(i) "
+                "fun test(int a, string b) a.string() + b "
+                "fun f() (42).test(\"test\")");
     REQUIRE(output.isSuccess());
     CHECK(GET_FUNC_DECL(output, "f").getOutput() == GET_TYPE_ID(output, "string"));
   }
@@ -394,7 +399,9 @@ TEST_CASE("[frontend] Infer return type of user functions", "frontend") {
   }
 
   SECTION("Anonymous function with closure") {
-    const auto& output = ANALYZE("fun f(float a) lambda (float b) b + a");
+    const auto& output =
+        ANALYZE("fun +(float x, float y) -> float intrinsic{float_add_float}(x, y) "
+                "fun f(float a) lambda (float b) b + a");
     REQUIRE(output.isSuccess());
     CHECK(
         GET_FUNC_DECL(output, "f", GET_TYPE_ID(output, "float")).getOutput() ==
@@ -402,7 +409,9 @@ TEST_CASE("[frontend] Infer return type of user functions", "frontend") {
   }
 
   SECTION("Anonymous function with nested closure") {
-    const auto& output = ANALYZE("fun f(float a) lambda (float b) (lambda () b + a)");
+    const auto& output =
+        ANALYZE("fun +(float x, float y) -> float intrinsic{float_add_float}(x, y) "
+                "fun f(float a) lambda (float b) (lambda () b + a)");
     REQUIRE(output.isSuccess());
     CHECK(
         GET_FUNC_DECL(output, "f", GET_TYPE_ID(output, "float")).getOutput() ==
@@ -410,7 +419,9 @@ TEST_CASE("[frontend] Infer return type of user functions", "frontend") {
   }
 
   SECTION("Anonymous function call with closure") {
-    const auto& output = ANALYZE("fun f(float a) (lambda (float b) b + a)(42.0)");
+    const auto& output =
+        ANALYZE("fun +(float x, float y) -> float intrinsic{float_add_float}(x, y) "
+                "fun f(float a) (lambda (float b) b + a)(42.0)");
     REQUIRE(output.isSuccess());
     CHECK(
         GET_FUNC_DECL(output, "f", GET_TYPE_ID(output, "float")).getOutput() ==
@@ -418,7 +429,8 @@ TEST_CASE("[frontend] Infer return type of user functions", "frontend") {
   }
 
   SECTION("Anonymous function call with nested closure") {
-    const auto& output = ANALYZE("fun f(int a) (lambda (int b) (lambda () b + a))(42)");
+    const auto& output = ANALYZE("fun +(int x, int y) -> int intrinsic{int_add_int}(x, y) "
+                                 "fun f(int a) (lambda (int b) (lambda () b + a))(42)");
     REQUIRE(output.isSuccess());
     CHECK(
         GET_FUNC_DECL(output, "f", GET_TYPE_ID(output, "int")).getOutput() ==

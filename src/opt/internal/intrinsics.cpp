@@ -33,12 +33,9 @@ auto isPrecomputableIntrinsic(prog::sym::FuncKind funcKind) -> bool {
   case prog::sym::FuncKind::InvInt:
   case prog::sym::FuncKind::CheckEqInt:
   case prog::sym::FuncKind::CheckLeInt:
-  case prog::sym::FuncKind::CheckLeEqInt:
   case prog::sym::FuncKind::CheckGtInt:
-  case prog::sym::FuncKind::CheckGtEqInt:
   case prog::sym::FuncKind::CheckIntZero:
   case prog::sym::FuncKind::ConvIntLong:
-  case prog::sym::FuncKind::ConvCharLong:
   case prog::sym::FuncKind::ConvIntFloat:
   case prog::sym::FuncKind::ConvIntString:
   case prog::sym::FuncKind::ConvIntChar:
@@ -61,9 +58,7 @@ auto isPrecomputableIntrinsic(prog::sym::FuncKind funcKind) -> bool {
   case prog::sym::FuncKind::NegateFloat:
   case prog::sym::FuncKind::CheckEqFloat:
   case prog::sym::FuncKind::CheckLeFloat:
-  case prog::sym::FuncKind::CheckLeEqFloat:
   case prog::sym::FuncKind::CheckGtFloat:
-  case prog::sym::FuncKind::CheckGtEqFloat:
   case prog::sym::FuncKind::ConvFloatInt:
   case prog::sym::FuncKind::ConvFloatString:
   case prog::sym::FuncKind::ConvFloatChar:
@@ -84,9 +79,7 @@ auto isPrecomputableIntrinsic(prog::sym::FuncKind funcKind) -> bool {
   case prog::sym::FuncKind::InvLong:
   case prog::sym::FuncKind::CheckEqLong:
   case prog::sym::FuncKind::CheckLeLong:
-  case prog::sym::FuncKind::CheckLeEqLong:
   case prog::sym::FuncKind::CheckGtLong:
-  case prog::sym::FuncKind::CheckGtEqLong:
   case prog::sym::FuncKind::ConvLongInt:
   case prog::sym::FuncKind::ConvLongFloat:
   case prog::sym::FuncKind::ConvLongString:
@@ -190,24 +183,15 @@ auto precomputeIntrinsic(
     assert(args.size() == 2);
     return prog::expr::litBoolNode(prog, getInt(*args[0]) < getInt(*args[1]));
   }
-  case prog::sym::FuncKind::CheckLeEqInt: {
-    assert(args.size() == 2);
-    return prog::expr::litBoolNode(prog, getInt(*args[0]) <= getInt(*args[1]));
-  }
   case prog::sym::FuncKind::CheckGtInt: {
     assert(args.size() == 2);
     return prog::expr::litBoolNode(prog, getInt(*args[0]) > getInt(*args[1]));
-  }
-  case prog::sym::FuncKind::CheckGtEqInt: {
-    assert(args.size() == 2);
-    return prog::expr::litBoolNode(prog, getInt(*args[0]) >= getInt(*args[1]));
   }
   case prog::sym::FuncKind::CheckIntZero: {
     assert(args.size() == 1);
     return prog::expr::litBoolNode(prog, getInt(*args[0]) == 0);
   }
-  case prog::sym::FuncKind::ConvIntLong:
-  case prog::sym::FuncKind::ConvCharLong: {
+  case prog::sym::FuncKind::ConvIntLong: {
     assert(args.size() == 1);
     return prog::expr::litLongNode(prog, static_cast<int64_t>(getInt(*args[0])));
   }
@@ -295,17 +279,9 @@ auto precomputeIntrinsic(
     assert(args.size() == 2);
     return prog::expr::litBoolNode(prog, getFloat(*args[0]) < getFloat(*args[1]));
   }
-  case prog::sym::FuncKind::CheckLeEqFloat: {
-    assert(args.size() == 2);
-    return prog::expr::litBoolNode(prog, getFloat(*args[0]) <= getFloat(*args[1]));
-  }
   case prog::sym::FuncKind::CheckGtFloat: {
     assert(args.size() == 2);
     return prog::expr::litBoolNode(prog, getFloat(*args[0]) > getFloat(*args[1]));
-  }
-  case prog::sym::FuncKind::CheckGtEqFloat: {
-    assert(args.size() == 2);
-    return prog::expr::litBoolNode(prog, getFloat(*args[0]) >= getFloat(*args[1]));
   }
   case prog::sym::FuncKind::ConvFloatInt: {
     assert(args.size() == 1);
@@ -397,17 +373,9 @@ auto precomputeIntrinsic(
     assert(args.size() == 2);
     return prog::expr::litBoolNode(prog, getLong(*args[0]) < getLong(*args[1]));
   }
-  case prog::sym::FuncKind::CheckLeEqLong: {
-    assert(args.size() == 2);
-    return prog::expr::litBoolNode(prog, getLong(*args[0]) <= getLong(*args[1]));
-  }
   case prog::sym::FuncKind::CheckGtLong: {
     assert(args.size() == 2);
     return prog::expr::litBoolNode(prog, getLong(*args[0]) > getLong(*args[1]));
-  }
-  case prog::sym::FuncKind::CheckGtEqLong: {
-    assert(args.size() == 2);
-    return prog::expr::litBoolNode(prog, getLong(*args[0]) >= getLong(*args[1]));
   }
   case prog::sym::FuncKind::ConvLongInt: {
     assert(args.size() == 1);

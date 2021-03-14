@@ -12,7 +12,8 @@ namespace frontend {
 TEST_CASE("[frontend] Analyzing group expressions", "frontend") {
 
   SECTION("Get basic group expression") {
-    const auto& output = ANALYZE("fun f() b = 1; c = 2; b * c");
+    const auto& output = ANALYZE("fun *(int x, int y) -> int intrinsic{int_mul_int}(x, y) "
+                                 "fun f() b = 1; c = 2; b * c");
     REQUIRE(output.isSuccess());
     const auto& funcDef = GET_FUNC_DEF(output, "f");
     const auto& consts  = funcDef.getConsts();

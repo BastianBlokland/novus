@@ -21,7 +21,8 @@ TEST_CASE("[frontend] Analyzing call expressions", "frontend") {
   }
 
   SECTION("Get call with arg") {
-    const auto& output = ANALYZE("fun f1(int a) -> int a + 1 "
+    const auto& output = ANALYZE("fun +(int x, int y) -> int intrinsic{int_add_int}(x, y) "
+                                 "fun f1(int a) -> int a + 1 "
                                  "fun f2() -> int f1(1)");
     REQUIRE(output.isSuccess());
 
@@ -103,7 +104,7 @@ TEST_CASE("[frontend] Analyzing call expressions", "frontend") {
   }
 
   SECTION("Get lazy call to overloaded call operator on literal") {
-    const auto& output = ANALYZE("fun ()(int i) -> int i * i "
+    const auto& output = ANALYZE("fun ()(int i) -> int intrinsic{int_mul_int}(i, i) "
                                  "fun f() -> lazy{int} lazy 1()");
     REQUIRE(output.isSuccess());
 
@@ -118,7 +119,7 @@ TEST_CASE("[frontend] Analyzing call expressions", "frontend") {
   }
 
   SECTION("Get call to overloaded call operator on literal") {
-    const auto& output = ANALYZE("fun ()(int i) -> int i * i "
+    const auto& output = ANALYZE("fun ()(int i) -> int intrinsic{int_mul_int}(i, i) "
                                  "fun f() -> int 1()");
     REQUIRE(output.isSuccess());
 
@@ -131,7 +132,7 @@ TEST_CASE("[frontend] Analyzing call expressions", "frontend") {
   }
 
   SECTION("Get call to overloaded call operator on const") {
-    const auto& output = ANALYZE("fun ()(int i) -> int i * i "
+    const auto& output = ANALYZE("fun ()(int i) -> int intrinsic{int_mul_int}(i, i) "
                                  "fun f(int i) -> int i()");
     REQUIRE(output.isSuccess());
 
@@ -163,9 +164,11 @@ TEST_CASE("[frontend] Analyzing call expressions", "frontend") {
   }
 
   SECTION("Get instance call with args") {
-    const auto& output = ANALYZE("fun string(int i) intrinsic{int_to_string}(i) "
-                                 "fun f1(int i, string v) -> string i.string() + v "
-                                 "fun f2(int i) -> string i.f1(\"test\")");
+    const auto& output =
+        ANALYZE("fun +(string x, string y) -> string intrinsic{string_add_string}(x, y) "
+                "fun string(int i) intrinsic{int_to_string}(i) "
+                "fun f1(int i, string v) -> string i.string() + v "
+                "fun f2(int i) -> string i.f1(\"test\")");
     REQUIRE(output.isSuccess());
 
     const auto& fDef   = GET_FUNC_DEF(output, "f2", GET_TYPE_ID(output, "int"));
@@ -282,6 +285,7 @@ TEST_CASE("[frontend] Analyzing call expressions", "frontend") {
         "fun f2() -> int a{int}()",
         errNoPureFuncFoundToInstantiate(NO_SRC, "a", 1));
     CHECK_DIAG(
+        "fun *(int x, int y) -> int intrinsic{int_mul_int}(x, y) "
         "act a(int i) -> int i * 2 "
         "fun f2(int i) -> int i.a()",
         errUndeclaredPureFunc(NO_SRC, "a", {"int"}));

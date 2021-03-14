@@ -7,11 +7,16 @@
 namespace prog::expr {
 
 CallExprNode::CallExprNode(
-    sym::FuncId func, sym::TypeId resultType, std::vector<NodePtr> args, CallMode mode) :
+    sym::FuncId func,
+    sym::TypeId resultType,
+    std::vector<NodePtr> args,
+    CallMode mode,
+    bool callToIntrinsic) :
     Node{CallExprNode::getKind()},
     m_func{func},
     m_resultType{resultType},
     m_mode{mode},
+    m_callToIntrinsic{callToIntrinsic},
     m_args{std::move(args)} {}
 
 auto CallExprNode::operator==(const Node& rhs) const noexcept -> bool {
@@ -36,22 +41,27 @@ auto CallExprNode::getType() const noexcept -> sym::TypeId { return m_resultType
 
 auto CallExprNode::toString() const -> std::string {
   auto oss = std::ostringstream{};
-  switch (m_mode) {
-  case CallMode::Forked:
-    oss << "forked-call-" << m_func;
-    break;
-  case CallMode::Lazy:
-    oss << "lazy-call-" << m_func;
-    break;
-  case CallMode::Normal:
-    oss << "call-" << m_func;
-    break;
+  if (m_callToIntrinsic) {
+    oss << "intrinsic-" << m_func;
+  } else {
+    switch (m_mode) {
+    case CallMode::Forked:
+      oss << "forked-call-" << m_func;
+      break;
+    case CallMode::Lazy:
+      oss << "lazy-call-" << m_func;
+      break;
+    case CallMode::Normal:
+      oss << "call-" << m_func;
+      break;
+    }
   }
   return oss.str();
 }
 
 auto CallExprNode::clone(Rewriter* rewriter) const -> std::unique_ptr<Node> {
-  auto* newExpr = new CallExprNode{m_func, m_resultType, cloneNodes(m_args, rewriter), m_mode};
+  auto* newExpr = new CallExprNode{
+      m_func, m_resultType, cloneNodes(m_args, rewriter), m_mode, m_callToIntrinsic};
   newExpr->setSourceId(getSourceId());
   return std::unique_ptr<CallExprNode>{newExpr};
 }
@@ -65,6 +75,8 @@ auto CallExprNode::getMode() const noexcept -> CallMode { return m_mode; }
 auto CallExprNode::isFork() const noexcept -> bool { return m_mode == CallMode::Forked; }
 
 auto CallExprNode::isLazy() const noexcept -> bool { return m_mode == CallMode::Lazy; }
+
+auto CallExprNode::isCallToIntrinsic() const noexcept -> bool { return m_callToIntrinsic; }
 
 auto CallExprNode::isComplete(const Program& prog) const noexcept -> bool {
   return prog.getFuncDecl(m_func).getInput().getCount() == m_args.size();
@@ -129,8 +141,9 @@ auto callExprNode(
   // Apply implicit conversions if necessary (and throw if types are incompatible).
   internal::applyImplicitConversions(prog, funcDecl.getInput(), &args);
 
+  const bool callToIntrinsic = funcDecl.isIntrinsic();
   return std::unique_ptr<CallExprNode>{
-      new CallExprNode{funcDecl.getId(), resultType, std::move(args), mode}};
+      new CallExprNode{funcDecl.getId(), resultType, std::move(args), mode, callToIntrinsic}};
 }
 
 } // namespace prog::expr

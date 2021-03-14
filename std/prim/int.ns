@@ -31,9 +31,51 @@ fun asInt(float f) -> int
 
 fun +(int i) i
 
+fun +(int x, int y) -> int
+  intrinsic{int_add_int}(x, y)
+
 fun ++(int i) i + 1
+
+fun -(int x) -> int
+  intrinsic{int_neg}(x)
+
+fun -(int x, int y) -> int
+  intrinsic{int_sub_int}(x, y)
 
 fun --(int i) i - 1
 
+fun ~(int x) -> int
+  intrinsic{int_inv}(x)
+
+fun *(int x, int y) -> int
+  intrinsic{int_mul_int}(x, y)
+
+fun /(int x, int y) -> int
+  intrinsic{int_div_int}(x, y)
+
+fun %(int x, int y) -> int
+  intrinsic{int_rem_int}(x, y)
+
+fun <<(int x, int y) -> int
+  intrinsic{int_shiftleft}(x, y)
+
+fun >>(int x, int y) -> int
+  intrinsic{int_shiftright}(x, y)
+
+fun &(int x, int y) -> int
+  intrinsic{int_and_int}(x, y)
+
+fun |(int x, int y) -> int
+  intrinsic{int_or_int}(x, y)
+
+fun ^(int x, int y) -> int
+  intrinsic{int_xor_int}(x, y)
+
 fun ==(int x, int y) -> bool
   intrinsic{int_eq_int}(x, y)
+
+fun <(int x, int y) -> bool
+  intrinsic{int_le_int}(x, y)
+
+fun >(int x, int y) -> bool
+  intrinsic{int_gt_int}(x, y)

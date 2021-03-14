@@ -42,6 +42,7 @@ public:
   [[nodiscard]] auto getMode() const noexcept -> CallMode;
   [[nodiscard]] auto isFork() const noexcept -> bool;
   [[nodiscard]] auto isLazy() const noexcept -> bool;
+  [[nodiscard]] auto isCallToIntrinsic() const noexcept -> bool;
   [[nodiscard]] auto isComplete(const Program& prog) const noexcept -> bool;
 
   /* Patching arguments actually mutates the arguments. This only ever valid while still
@@ -57,12 +58,18 @@ private:
   sym::FuncId m_func;
   sym::TypeId m_resultType;
   CallMode m_mode;
+  bool m_callToIntrinsic;
 
   // NOTE: The arguments are mutable because optional arguments are applied in a separate phase
   // after all functions have been defined.
   mutable std::vector<NodePtr> m_args;
 
-  CallExprNode(sym::FuncId func, sym::TypeId resultType, std::vector<NodePtr> args, CallMode mode);
+  CallExprNode(
+      sym::FuncId func,
+      sym::TypeId resultType,
+      std::vector<NodePtr> args,
+      CallMode mode,
+      bool callToIntrinsic);
 };
 
 // Factories.

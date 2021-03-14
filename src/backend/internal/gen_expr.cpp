@@ -169,16 +169,8 @@ auto GenExpr::visit(const prog::expr::CallExprNode& n) -> void {
   case prog::sym::FuncKind::CheckLeInt:
     m_asmb->addCheckLeInt();
     break;
-  case prog::sym::FuncKind::CheckLeEqInt:
-    m_asmb->addCheckGtInt();
-    m_asmb->addCheckIntZero(); // Invert.
-    break;
   case prog::sym::FuncKind::CheckGtInt:
     m_asmb->addCheckGtInt();
-    break;
-  case prog::sym::FuncKind::CheckGtEqInt:
-    m_asmb->addCheckLeInt();
-    m_asmb->addCheckIntZero(); // Invert.
     break;
   case prog::sym::FuncKind::CheckIntZero:
     m_asmb->addCheckIntZero();
@@ -230,16 +222,8 @@ auto GenExpr::visit(const prog::expr::CallExprNode& n) -> void {
   case prog::sym::FuncKind::CheckLeLong:
     m_asmb->addCheckLeLong();
     break;
-  case prog::sym::FuncKind::CheckLeEqLong:
-    m_asmb->addCheckGtLong();
-    m_asmb->addCheckIntZero(); // Invert.
-    break;
   case prog::sym::FuncKind::CheckGtLong:
     m_asmb->addCheckGtLong();
-    break;
-  case prog::sym::FuncKind::CheckGtEqLong:
-    m_asmb->addCheckLeLong();
-    m_asmb->addCheckIntZero(); // Invert.
     break;
 
   case prog::sym::FuncKind::AddFloat:
@@ -294,20 +278,15 @@ auto GenExpr::visit(const prog::expr::CallExprNode& n) -> void {
   case prog::sym::FuncKind::CheckLeFloat:
     m_asmb->addCheckLeFloat();
     break;
-  case prog::sym::FuncKind::CheckLeEqFloat:
-    m_asmb->addCheckGtFloat();
-    m_asmb->addCheckIntZero(); // Invert.
-    break;
   case prog::sym::FuncKind::CheckGtFloat:
     m_asmb->addCheckGtFloat();
-    break;
-  case prog::sym::FuncKind::CheckGtEqFloat:
-    m_asmb->addCheckLeFloat();
-    m_asmb->addCheckIntZero(); // Invert.
     break;
 
   case prog::sym::FuncKind::AddString:
     m_asmb->addAddString();
+    break;
+  case prog::sym::FuncKind::AppendChar:
+    m_asmb->addAppendChar();
     break;
   case prog::sym::FuncKind::LengthString:
     m_asmb->addLengthString();
@@ -322,12 +301,7 @@ auto GenExpr::visit(const prog::expr::CallExprNode& n) -> void {
     m_asmb->addCheckEqString();
     break;
 
-  case prog::sym::FuncKind::AppendChar:
-    m_asmb->addAppendChar();
-    break;
-
   case prog::sym::FuncKind::ConvIntLong:
-  case prog::sym::FuncKind::ConvCharLong:
     m_asmb->addConvIntLong();
     break;
   case prog::sym::FuncKind::ConvIntFloat:
