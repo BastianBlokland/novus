@@ -11,11 +11,13 @@ TypeSubstitutionList::TypeSubstitutionList(
     lex::Token open,
     std::vector<lex::Token> subs,
     std::vector<lex::Token> commas,
-    lex::Token close) :
+    lex::Token close,
+    bool missingComma) :
     m_open{std::move(open)},
     m_subs{std::move(subs)},
     m_commas{std::move(commas)},
-    m_close{std::move(close)} {}
+    m_close{std::move(close)},
+    m_missingComma{missingComma} {}
 
 auto TypeSubstitutionList::operator==(const TypeSubstitutionList& rhs) const noexcept -> bool {
   return m_subs == rhs.m_subs;
@@ -53,7 +55,7 @@ auto TypeSubstitutionList::validate() const -> bool {
       })) {
     return false;
   }
-  if (m_commas.size() != m_subs.size() - 1) {
+  if (m_missingComma || m_commas.size() != m_subs.size() - 1) {
     return false;
   }
   if (m_close.getKind() != lex::TokenKind::SepCloseCurly) {
@@ -61,6 +63,8 @@ auto TypeSubstitutionList::validate() const -> bool {
   }
   return true;
 }
+
+auto TypeSubstitutionList::hasMissingComma() const -> bool { return m_missingComma; }
 
 auto operator<<(std::ostream& out, const TypeSubstitutionList& rhs) -> std::ostream& {
   out << '{';
