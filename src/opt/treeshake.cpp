@@ -20,6 +20,16 @@ auto treeshake(const prog::Program& prog) -> prog::Program {
     itr->getExpr().accept(&findFuncs);
   }
 
+  // Mark all 'NoOp' functions as used.
+  // This is a bit of a hack, but no-op functions are used for reinterpreting conversions, like
+  // converting an enum to its backing type. The optimizer should have the option to use these
+  // functions, even if they are not used in the original program.
+  for (auto itr = prog.beginFuncDecls(); itr != prog.endFuncDecls(); ++itr) {
+    if (itr->second.getKind() == prog::sym::FuncKind::NoOp) {
+      funcs.insert(itr->first);
+    }
+  }
+
   auto findTypes = internal::FindUsedTypes{prog, &types};
 
   // Find all types used in the execute statements.
