@@ -101,7 +101,7 @@ auto TypeInferExpr::visit(const parse::CallExprNode& n) -> void {
 
   // Dynamic call.
   const auto isConst =
-      m_constTypes && m_constTypes->find(getName(*identifier)) != m_constTypes->end();
+      m_constTypes && identifier && m_constTypes->find(getName(*identifier)) != m_constTypes->end();
   const auto isPotentialFieldCall =
       instance && !isFuncOrConv(m_ctx, m_typeSubTable, getName(*identifier));
   if (!identifier || isConst || isPotentialFieldCall) {
