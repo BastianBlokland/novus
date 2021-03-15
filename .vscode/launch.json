@@ -22,6 +22,21 @@
       "pid": "${command:pickProcess}"
     },
     {
+      "name": "novc",
+      "preLaunchTask": "build",
+      "type": "lldb",
+      "request": "launch",
+      "program": "${workspaceFolder}/bin/novc",
+      "args": [
+        "examples/raytracer/main.ns",
+        "-o",
+        "raytracer"
+      ],
+      "cwd": "${workspaceFolder}",
+      "terminal": "integrated",
+      "stopOnEntry": false
+    },
+    {
       "name": "novrt",
       "preLaunchTask": "build",
       "type": "lldb",
