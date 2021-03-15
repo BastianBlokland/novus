@@ -98,14 +98,26 @@ act noinline printErr{T}(T x, TtyStyle style) -> Option{Error}
     c.writeErr(styledWriter, x.string() + '\n')
   )
 
-act noinline printBits{T}(T mask, bool includeLeadingZeroes = false) -> Option{Error}
-  print(toBitString(mask, includeLeadingZeroes))
+act noinline printBits(char c, bool includeLeadingZeroes = false) -> Option{Error}
+  print(toBitString(c, includeLeadingZeroes))
+
+act noinline printBits(int i, bool includeLeadingZeroes = false) -> Option{Error}
+  print(toBitString(i, includeLeadingZeroes))
+
+act noinline printBits(long l, bool includeLeadingZeroes = false) -> Option{Error}
+  print(toBitString(l, includeLeadingZeroes))
 
 act noinline printBits(float f, bool includeLeadingZeroes = false) -> Option{Error}
   print(toBitString(asInt(f), includeLeadingZeroes))
 
-act noinline printHex{T}(T mask, bool includeLeadingZeroes = false) -> Option{Error}
-  print(toHexString(mask, includeLeadingZeroes))
+act noinline printHex(char c, bool includeLeadingZeroes = false) -> Option{Error}
+  print(toHexString(c, includeLeadingZeroes))
+
+act noinline printHex(int i, bool includeLeadingZeroes = false) -> Option{Error}
+  print(toHexString(i, includeLeadingZeroes))
+
+act noinline printHex(long l, bool includeLeadingZeroes = false) -> Option{Error}
+  print(toHexString(l, includeLeadingZeroes))
 
 act noinline printHex(float f, bool includeLeadingZeroes = false) -> Option{Error}
   print(toHexString(asInt(f), includeLeadingZeroes))
