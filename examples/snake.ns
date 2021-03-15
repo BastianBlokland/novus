@@ -306,10 +306,10 @@ act getWindow(Console c)
 act setupTerminal(Console c)
   actSeq(
     lazy c.termSetOptions(TerminalOptions.NoEcho | TerminalOptions.NoBuffer),
-    lazy c.setNoBlockInput()
+    lazy c.setNoBlockInput(),
     lazy c.writeOut(
       ttyLitAltScreenWriter(true)   &
-      ttyLitWindowTitleWriter("Novus Snake")),
+      ttyLitWindowTitleWriter("Novus Snake"))
   )
 
 act resetTerminal(Console c)
