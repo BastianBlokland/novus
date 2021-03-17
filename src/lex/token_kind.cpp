@@ -142,6 +142,9 @@ auto operator<<(std::ostream& out, const TokenKind& rhs) -> std::ostream& {
   case TokenKind::LitChar:
     out << "char";
     break;
+  case TokenKind::StaticInt:
+    out << "static-int";
+    break;
   case TokenKind::Keyword:
     out << "keyword";
     break;

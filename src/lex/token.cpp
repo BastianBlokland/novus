@@ -10,6 +10,7 @@
 #include "lex/token_payload_lit_int.hpp"
 #include "lex/token_payload_lit_long.hpp"
 #include "lex/token_payload_lit_string.hpp"
+#include "lex/token_payload_static_int.hpp"
 #include <memory>
 #include <sstream>
 #include <utility>
@@ -110,6 +111,10 @@ auto litStrToken(std::string val, const input::Span span) -> Token {
 
 auto litCharToken(uint8_t val, const input::Span span) -> Token {
   return Token{TokenKind::LitChar, std::make_unique<LitCharTokenPayload>(val), span};
+}
+
+auto staticIntToken(int32_t val, const input::Span span) -> Token {
+  return Token{TokenKind::StaticInt, std::make_unique<StaticIntTokenPayload>(val), span};
 }
 
 auto keywordToken(Keyword keyword, const input::Span span) -> Token {

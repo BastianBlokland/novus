@@ -80,6 +80,7 @@ add_executable(novtests
   lex/litchar_test.cpp
   lex/operators_test.cpp
   lex/seperators_test.cpp
+  lex/staticint_test.cpp
   lex/utilities_test.cpp
 
   novasm/serialization_test.cpp

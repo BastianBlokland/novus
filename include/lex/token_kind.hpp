@@ -51,6 +51,7 @@ enum class TokenKind {
   LitBool,        // true
   LitString,      // "hello world"
   LitChar,        // 'h'
+  StaticInt,      // '#42'
   Keyword,        // if
   Identifier,     // helloworld
   LineComment,    // // Hello world

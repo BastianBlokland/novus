@@ -34,8 +34,7 @@ TEST_CASE("[lex] Lexing identifiers", "lex") {
         identiferToken("world"));
     CHECK_TOKENS(
         "hello@world", identiferToken("hello"), errInvalidChar('@'), identiferToken("world"));
-    CHECK_TOKENS(
-        "hello#world", identiferToken("hello"), errInvalidChar('#'), identiferToken("world"));
+    CHECK_TOKENS("hello#world", identiferToken("hello"), errStaticIntInvalidChar());
   }
 
   SECTION("Errors") {
