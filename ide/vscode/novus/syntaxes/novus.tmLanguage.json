@@ -43,6 +43,10 @@
         {
           "match": "\\b(int|long|float|bool|string|char|sys_stream|sys_process|function|action|future|lazy|lazy_action)\\b",
           "name": "keyword.other.buildin.source.novus"
+        },
+        {
+          "match": "#[0-9]+\\b",
+          "name": "keyword.other.staticint.source.novus"
         }
       ]
     },
