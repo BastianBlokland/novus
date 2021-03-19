@@ -6,6 +6,9 @@ struct Meta{Int}
 
 // -- Conversions
 
+fun int{Int}(Meta{Int} m)
+  intrinsic{staticint_to_int}{Int}()
+
 fun string{Int}(Meta{Int} m)
   typeName{Int}()
 
@@ -16,6 +19,10 @@ fun =={Int}(Meta{Int} x, Meta{Int} y) true
 fun =={IntA, IntB}(Meta{IntA} x, Meta{IntB} y) false
 
 // -- Tests
+
+assertEq(Meta{#0}().int(), 0)
+assertEq(Meta{#42}().int(), 42)
+assertEq(Meta{float}().int(), -1)
 
 assertEq(Meta{#0}().string(), "#0")
 assertEq(Meta{#42}().string(), "#42")
