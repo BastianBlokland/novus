@@ -4,6 +4,7 @@
 #include "internal/typeinfer_expr.hpp"
 #include "lex/token_payload_id.hpp"
 #include "lex/token_payload_keyword.hpp"
+#include "lex/token_payload_static_int.hpp"
 #include "parse/node_expr_anon_func.hpp"
 #include "parse/type_param_list.hpp"
 #include "prog/expr/node_closure.hpp"
@@ -23,6 +24,11 @@ auto getName(const lex::Token& token) -> std::string {
   case lex::TokenKind::Keyword: {
     std::ostringstream oss;
     oss << token.getPayload<lex::KeywordTokenPayload>()->getKeyword();
+    return oss.str();
+  }
+  case lex::TokenKind::StaticInt: {
+    std::ostringstream oss;
+    oss << "#" << token.getPayload<lex::StaticIntTokenPayload>()->getValue();
     return oss.str();
   }
   default:

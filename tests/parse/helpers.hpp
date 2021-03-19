@@ -71,7 +71,9 @@ namespace parse {
 #define STR_TOK(VAL) lex::litStrToken(VAL)
 
 #define ID(ID) lex::identiferToken(ID)
+#define STATIC_INT(INT) lex::staticIntToken(INT)
 #define COMMENT(MSG) lex::lineCommentToken(MSG)
+
 #define TYPE(NAME, ...)                                                                            \
   NUM_ARGS(__VA_ARGS__) == 0                                                                       \
       ? Type(ID(NAME))                                                                             \
@@ -82,6 +84,8 @@ namespace parse {
                 {__VA_ARGS__},                                                                     \
                 COMMAS(NUM_ARGS(__VA_ARGS__) == 0 ? 0 : (NUM_ARGS(__VA_ARGS__) - 1)),              \
                 CCURLY))
+
+#define STATIC_INT_TYPE(INT) Type(STATIC_INT(INT))
 
 #define INT(VAL) litExprNode(lex::litIntToken(VAL))
 #define STR(VAL) litExprNode(lex::litStrToken(VAL))
@@ -150,11 +154,13 @@ inline auto arrayMoveToVec(Array c) {
 
 #define NODES(...) arrayMoveToVec<std::array<NodePtr, NUM_ARGS(__VA_ARGS__)>>({__VA_ARGS__})
 
-#define NO_NODES std::vector<NodePtr>{}
+#define NO_NODES                                                                                   \
+  std::vector<NodePtr> {}
 
 #define ARGS(...)                                                                                  \
   arrayMoveToVec<std::array<ArgumentListDecl::ArgSpec, NUM_ARGS(__VA_ARGS__)>>({__VA_ARGS__})
 
-#define NO_ARGS std::vector<ArgumentListDecl::ArgSpec>{}
+#define NO_ARGS                                                                                    \
+  std::vector<ArgumentListDecl::ArgSpec> {}
 
 } // namespace parse

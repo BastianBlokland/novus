@@ -112,6 +112,29 @@ TEST_CASE("[parse] Parsing call expressions", "parse") {
           COMMAS(0),
           CPAREN));
 
+  CHECK_EXPR(
+      "a{#1, #2}()",
+      callExprNode(
+          {},
+          ID_EXPR_PARAM(
+              "a",
+              TypeParamList(OCURLY, {STATIC_INT_TYPE(1), STATIC_INT_TYPE(2)}, COMMAS(1), CCURLY)),
+          OPAREN,
+          NO_NODES,
+          COMMAS(0),
+          CPAREN));
+
+  CHECK_EXPR(
+      "a{A{#42}}()",
+      callExprNode(
+          {},
+          ID_EXPR_PARAM(
+              "a", TypeParamList(OCURLY, {TYPE("A", STATIC_INT_TYPE(42))}, COMMAS(0), CCURLY)),
+          OPAREN,
+          NO_NODES,
+          COMMAS(0),
+          CPAREN));
+
   CHECK_EXPR("fork a()", callExprNode({FORK}, ID_EXPR("a"), OPAREN, NO_NODES, COMMAS(0), CPAREN));
 
   CHECK_EXPR(

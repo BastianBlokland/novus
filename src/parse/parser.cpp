@@ -11,6 +11,17 @@ namespace {
 // Maximum depth that expressions are allowed to be nested.
 constexpr size_t g_maxRecursionDepth = 100;
 
+auto isPossibleTypeToken(lex::Token token) -> bool {
+  switch (token.getKind()) {
+  case lex::TokenKind::Identifier:
+  case lex::TokenKind::Keyword:
+  case lex::TokenKind::StaticInt:
+    return true;
+  default:
+    return false;
+  }
+}
+
 } // namespace
 
 namespace parse {
@@ -92,8 +103,8 @@ auto ParserImpl::nextStmtFuncDecl() -> NodePtr {
   auto typeSubs = peekToken(0).getKind() == lex::TokenKind::SepOpenCurly
       ? std::optional<TypeSubstitutionList>{nextTypeSubstitutionList()}
       : std::nullopt;
-  auto argList  = nextArgDeclList();
-  auto retType  = std::optional<RetTypeSpec>{};
+  auto argList = nextArgDeclList();
+  auto retType = std::optional<RetTypeSpec>{};
   if (peekToken(0).getKind() == lex::TokenKind::SepArrow) {
     retType = nextRetTypeSpec();
   }
@@ -131,13 +142,12 @@ auto ParserImpl::nextStmtStructDecl() -> NodePtr {
   auto typeSubs = peekToken(0).getKind() == lex::TokenKind::SepOpenCurly
       ? std::optional<TypeSubstitutionList>{nextTypeSubstitutionList()}
       : std::nullopt;
-  auto isEmpty  = peekToken(0).getKind() != lex::TokenKind::OpEq;
-  auto eq       = isEmpty ? std::nullopt : std::optional{consumeToken()};
-  auto fields   = std::vector<StructDeclStmtNode::FieldSpec>{};
-  auto commas   = std::vector<lex::Token>{};
+  auto isEmpty = peekToken(0).getKind() != lex::TokenKind::OpEq;
+  auto eq      = isEmpty ? std::nullopt : std::optional{consumeToken()};
+  auto fields  = std::vector<StructDeclStmtNode::FieldSpec>{};
+  auto commas  = std::vector<lex::Token>{};
   if (!isEmpty) {
-    while (peekToken(0).getKind() == lex::TokenKind::Identifier ||
-           peekToken(0).getKind() == lex::TokenKind::Keyword) {
+    while (isPossibleTypeToken(peekToken(0)) || peekToken(0).getKind() == lex::TokenKind::Keyword) {
 
       auto fieldType = nextType();
       auto fieldId   = consumeToken();
@@ -179,11 +189,10 @@ auto ParserImpl::nextStmtUnionDecl() -> NodePtr {
   auto typeSubs = peekToken(0).getKind() == lex::TokenKind::SepOpenCurly
       ? std::optional<TypeSubstitutionList>{nextTypeSubstitutionList()}
       : std::nullopt;
-  auto eq       = consumeToken();
-  auto types    = std::vector<Type>{};
-  auto commas   = std::vector<lex::Token>{};
-  while (peekToken(0).getKind() == lex::TokenKind::Identifier ||
-         peekToken(0).getKind() == lex::TokenKind::Keyword) {
+  auto eq     = consumeToken();
+  auto types  = std::vector<Type>{};
+  auto commas = std::vector<lex::Token>{};
+  while (isPossibleTypeToken(peekToken(0)) || peekToken(0).getKind() == lex::TokenKind::Keyword) {
 
     types.push_back(nextType());
     if (peekToken(0).getKind() == lex::TokenKind::SepComma) {
@@ -633,8 +642,7 @@ auto ParserImpl::nextArgDeclList() -> ArgumentListDecl {
   auto missingComma = false;
   if (!empty) {
 
-    while (peekToken(0).getKind() == lex::TokenKind::Identifier ||
-           peekToken(0).getKind() == lex::TokenKind::Keyword ||
+    while (isPossibleTypeToken(peekToken(0)) ||
            peekToken(0).getKind() == lex::TokenKind::SepComma) {
 
       auto argType        = nextType();
