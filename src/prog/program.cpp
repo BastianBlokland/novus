@@ -470,6 +470,10 @@ auto Program::declareLazy(std::string name) -> sym::TypeId {
   return m_typeDecls.registerType(sym::TypeKind::Lazy, std::move(name));
 }
 
+auto Program::declareStaticInt(std::string name) -> sym::TypeId {
+  return m_typeDecls.registerType(sym::TypeKind::StaticInt, std::move(name));
+}
+
 auto Program::declarePureFunc(
     std::string name, sym::TypeSet input, sym::TypeId output, unsigned int numOptInputs)
     -> sym::FuncId {

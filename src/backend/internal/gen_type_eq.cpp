@@ -28,10 +28,6 @@ static auto genTypeEqualityEntry(
   case prog::sym::TypeKind::String:
     asmb->addCheckEqString();
     break;
-  case prog::sym::TypeKind::Stream:
-    // Streams are not equality checked at the moment.
-    asmb->addLoadLitInt(1);
-    break;
   case prog::sym::TypeKind::Delegate:
     asmb->addCheckEqCallDynTgt();
     break;
@@ -76,8 +72,9 @@ static auto genTypeEqualityEntry(
   case prog::sym::TypeKind::Union:
     asmb->addCall(getUserTypeEqLabel(prog, typeDecl.getId()), 2, novasm::CallMode::Normal);
     break;
-  case prog::sym::TypeKind::Process:
-    // Processes are not equality checked at the moment.
+  case prog::sym::TypeKind::StaticInt: // By definition static-ints are equal.
+  case prog::sym::TypeKind::Process:   // Processes are not equality checked at the moment.
+  case prog::sym::TypeKind::Stream:    // Streams are not equality checked at the moment.
     asmb->addLoadLitInt(1);
     break;
   }

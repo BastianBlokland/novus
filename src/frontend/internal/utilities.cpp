@@ -214,9 +214,6 @@ auto getOrInstType(
   if (subTable != nullptr && subTable->lookupType(typeName)) {
     return subTable->lookupType(typeName);
   }
-  if (!isType(ctx, nullptr, typeName)) {
-    return std::nullopt;
-  }
 
   // If type arguments are provided we attempt to instantiate a type using them.
   if (typeParams) {
@@ -263,6 +260,11 @@ auto getOrInstType(
 auto getOrInstType(
     Context* ctx, const TypeSubstitutionTable* subTable, const parse::Type& parseType)
     -> std::optional<prog::sym::TypeId> {
+
+  if (parseType.getId().getKind() == lex::TokenKind::StaticInt) {
+    return ctx->getStaticIntTable()->getType(
+        ctx, parseType.getId().getPayload<lex::StaticIntTokenPayload>()->getValue());
+  }
 
   const auto name = getName(parseType.getId());
   if (subTable) {

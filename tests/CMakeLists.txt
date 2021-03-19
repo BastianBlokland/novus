@@ -59,6 +59,7 @@ add_executable(novtests
   frontend/parse_diags_test.cpp
   frontend/source_location_test.cpp
   frontend/source_test.cpp
+  frontend/static_int_test.cpp
   frontend/typeinfer_user_funcs_test.cpp
   frontend/user_func_templates_test.cpp
   frontend/user_type_templates_test.cpp

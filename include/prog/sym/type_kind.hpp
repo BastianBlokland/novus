@@ -18,6 +18,7 @@ enum class TypeKind {
   Future,
   Lazy,
   Process,
+  StaticInt,
 };
 
 [[nodiscard]] auto isPrimitive(const TypeKind& kind) -> bool;
