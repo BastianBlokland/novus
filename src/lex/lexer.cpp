@@ -513,11 +513,16 @@ auto LexerImpl::nextLitChar() -> Token {
 auto LexerImpl::nextStaticInt() -> Token {
   const auto startPos = m_inputPos;
 
+  const bool negative = peekChar(0) == '-';
+  if (negative) {
+    consumeChar(); // Consume the negation character.
+  }
+
   uint64_t val             = 0;
   bool atLeastOneDigit     = false;
   bool containsInvalidChar = false;
   bool tooBig              = false;
-  while (!isTokenSeperator(peekChar(0))) {
+  while (!isTokenSeperator(peekChar(0)) || peekChar(0) == '-') {
     auto c = consumeChar();
     if (isDigit(c)) {
       val             = val * 10 + c - '0';
@@ -540,7 +545,7 @@ auto LexerImpl::nextStaticInt() -> Token {
   if (tooBig) {
     return errStaticIntTooBig(span);
   }
-  return staticIntToken(static_cast<int32_t>(val), span);
+  return staticIntToken(static_cast<int32_t>(val) * (negative ? -1 : 1), span);
 }
 
 auto LexerImpl::nextWordToken(const char startingChar) -> Token {
