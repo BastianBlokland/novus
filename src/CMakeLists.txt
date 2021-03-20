@@ -183,7 +183,7 @@ add_library(frontend STATIC
   frontend/internal/lazy_table.cpp
   frontend/internal/patch_args.cpp
   frontend/internal/source_table_builder.cpp
-  frontend/internal/static_int_table.cpp
+  frontend/internal/staticint_table.cpp
   frontend/internal/struct_template.cpp
   frontend/internal/type_template_base.cpp
   frontend/internal/type_template_table.cpp

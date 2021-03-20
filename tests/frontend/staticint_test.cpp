@@ -30,6 +30,27 @@ TEST_CASE("[frontend] Analyze static integer", "frontend") {
 
     CHECK(GET_FUNC_DEF(output, "f").getBody() == *prog::expr::litIntNode(output.getProg(), -1));
   }
+
+  SECTION("Static integers can be added") {
+    const auto& output = ANALYZE("struct Type{T} "
+                                 "fun f() Type{staticint_add{#2, #8}}()");
+    REQUIRE(output.isSuccess());
+    CHECK(GET_FUNC_DECL(output, "f").getOutput() == GET_TYPE_ID(output, "Type__#10"));
+  }
+
+  SECTION("Static integers can be substracted") {
+    const auto& output = ANALYZE("struct Type{T} "
+                                 "fun f() Type{staticint_sub{#8, #2}}()");
+    REQUIRE(output.isSuccess());
+    CHECK(GET_FUNC_DECL(output, "f").getOutput() == GET_TYPE_ID(output, "Type__#6"));
+  }
+
+  SECTION("Static integers can be negated") {
+    const auto& output = ANALYZE("struct Type{T} "
+                                 "fun f() Type{staticint_neg{#8}}()");
+    REQUIRE(output.isSuccess());
+    CHECK(GET_FUNC_DECL(output, "f").getOutput() == GET_TYPE_ID(output, "Type__#-8"));
+  }
 }
 
 } // namespace frontend

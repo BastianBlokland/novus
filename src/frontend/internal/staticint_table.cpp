@@ -1,4 +1,4 @@
-#include "static_int_table.hpp"
+#include "staticint_table.hpp"
 #include "internal/context.hpp"
 #include <sstream>
 
@@ -13,6 +13,28 @@ auto getStaticIntName(int32_t val) -> std::string {
 } // namespace
 
 namespace frontend::internal {
+
+auto StaticIntTable::add(Context* ctx, prog::sym::TypeId x, prog::sym::TypeId y)
+    -> prog::sym::TypeId {
+  const auto xVal = getValue(x).value_or(0);
+  const auto yVal = getValue(y).value_or(0);
+  return getType(ctx, xVal + yVal);
+}
+
+auto StaticIntTable::sub(Context* ctx, prog::sym::TypeId x, prog::sym::TypeId y)
+    -> prog::sym::TypeId {
+  const auto xVal = getValue(x).value_or(0);
+  const auto yVal = getValue(y).value_or(0);
+  return getType(ctx, xVal - yVal);
+}
+
+auto StaticIntTable::neg(Context* ctx, prog::sym::TypeId x) -> prog::sym::TypeId {
+  const auto optVal = getValue(x);
+  if (!optVal) {
+    return getType(ctx, 0);
+  }
+  return getType(ctx, -*optVal);
+}
 
 auto StaticIntTable::getValue(prog::sym::TypeId type) -> std::optional<int> {
   auto itr = m_values.find(type);

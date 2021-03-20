@@ -6,7 +6,7 @@
 #include "internal/future_table.hpp"
 #include "internal/lazy_table.hpp"
 #include "internal/source_table_builder.hpp"
-#include "internal/static_int_table.hpp"
+#include "internal/staticint_table.hpp"
 #include "internal/type_info.hpp"
 #include "internal/type_template_table.hpp"
 #include "prog/program.hpp"

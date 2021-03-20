@@ -313,6 +313,15 @@ auto instType(
   if (typeName == "lazy_action" && typeSet->getCount() == 1) {
     return ctx->getLazies()->getLazy(ctx, *typeSet->begin(), true);
   }
+  if (typeName == "staticint_add" && typeSet->getCount() == 2) {
+    return ctx->getStaticIntTable()->add(ctx, (*typeSet)[0], (*typeSet)[1]);
+  }
+  if (typeName == "staticint_sub" && typeSet->getCount() == 2) {
+    return ctx->getStaticIntTable()->sub(ctx, (*typeSet)[0], (*typeSet)[1]);
+  }
+  if (typeName == "staticint_neg" && typeSet->getCount() == 1) {
+    return ctx->getStaticIntTable()->neg(ctx, (*typeSet)[0]);
+  }
 
   const auto typeInstantiation = ctx->getTypeTemplates()->instantiate(typeName, *typeSet);
   if (!typeInstantiation) {

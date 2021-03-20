@@ -19,6 +19,14 @@ public:
   auto operator=(const StaticIntTable& rhs) -> StaticIntTable& = delete;
   auto operator=(StaticIntTable&& rhs) noexcept -> StaticIntTable& = delete;
 
+  [[nodiscard]] auto add(Context* ctx, prog::sym::TypeId x, prog::sym::TypeId y)
+      -> prog::sym::TypeId;
+
+  [[nodiscard]] auto sub(Context* ctx, prog::sym::TypeId x, prog::sym::TypeId y)
+      -> prog::sym::TypeId;
+
+  [[nodiscard]] auto neg(Context* ctx, prog::sym::TypeId x) -> prog::sym::TypeId;
+
   [[nodiscard]] auto getValue(prog::sym::TypeId type) -> std::optional<int>;
   [[nodiscard]] auto getType(Context* ctx, int32_t val) -> prog::sym::TypeId;
 
