@@ -269,7 +269,7 @@ auto getOrInstType(
     Context* ctx, const TypeSubstitutionTable* subTable, const parse::Type& parseType)
     -> std::optional<prog::sym::TypeId> {
 
-  if (parseType.getId().getKind() == lex::TokenKind::StaticInt) {
+  if (parseType.isStaticInt()) {
     return ctx->getStaticIntTable()->getType(
         ctx, parseType.getId().getPayload<lex::StaticIntTokenPayload>()->getValue());
   }

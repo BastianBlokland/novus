@@ -87,6 +87,8 @@ auto Type::getSpan() const -> input::Span {
 
 auto Type::getId() const -> const lex::Token& { return m_id; }
 
+auto Type::isStaticInt() const -> bool { return m_id.getKind() == lex::TokenKind::StaticInt; }
+
 auto Type::getParamList() const -> const TypeParamList* { return m_paramList; }
 
 auto Type::getParamCount() const -> unsigned int {

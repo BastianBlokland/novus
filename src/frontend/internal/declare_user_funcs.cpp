@@ -168,7 +168,7 @@ auto DeclareUserFuncs::validateType(
 
   auto isValid    = true;
   const auto name = getName(type.getId());
-  if (!isType(m_ctx, nullptr, name) &&
+  if (!type.isStaticInt() && !isType(m_ctx, nullptr, name) &&
       std::find(typeSubParams.begin(), typeSubParams.end(), name) == typeSubParams.end()) {
 
     m_ctx->reportDiag(errUndeclaredType, type.getSpan(), name, type.getParamCount());
