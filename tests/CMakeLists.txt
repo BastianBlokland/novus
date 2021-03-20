@@ -57,6 +57,7 @@ add_executable(novtests
   frontend/opt_args_test.cpp
   frontend/overload_test.cpp
   frontend/parse_diags_test.cpp
+  frontend/reflect_test.cpp
   frontend/source_location_test.cpp
   frontend/source_test.cpp
   frontend/staticint_test.cpp

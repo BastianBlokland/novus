@@ -1,6 +1,7 @@
 #include "utilities.hpp"
 #include "frontend/diag_defs.hpp"
 #include "internal/context.hpp"
+#include "internal/reflect.hpp"
 #include "internal/typeinfer_expr.hpp"
 #include "lex/token_payload_id.hpp"
 #include "lex/token_payload_keyword.hpp"
@@ -329,6 +330,9 @@ auto instType(
   }
   if (typeName == "staticint_neg" && typeSet->getCount() == 1) {
     return ctx->getStaticIntTable()->neg(ctx, (*typeSet)[0]);
+  }
+  if (typeName == "reflect_enum_count" && typeSet->getCount() == 1) {
+    return reflectEnumCount(ctx, (*typeSet)[0]);
   }
 
   const auto typeInstantiation = ctx->getTypeTemplates()->instantiate(typeName, *typeSet);

@@ -24,13 +24,6 @@ TEST_CASE("[frontend] Analyze static integer", "frontend") {
     CHECK(GET_FUNC_DEF(output, "f").getBody() == *prog::expr::litIntNode(output.getProg(), 42));
   }
 
-  SECTION("Non static integer types are converted to -1") {
-    const auto& output = ANALYZE("fun f() -> int intrinsic{staticint_to_int}{string}()");
-    REQUIRE(output.isSuccess());
-
-    CHECK(GET_FUNC_DEF(output, "f").getBody() == *prog::expr::litIntNode(output.getProg(), -1));
-  }
-
   SECTION("Static integers can be added") {
     const auto& output = ANALYZE("struct Type{T} "
                                  "fun f() Type{staticint_add{#2, #8}}()");

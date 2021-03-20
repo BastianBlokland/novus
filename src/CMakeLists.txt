@@ -182,6 +182,7 @@ add_library(frontend STATIC
   frontend/internal/intrinsic_call_hooks.cpp
   frontend/internal/lazy_table.cpp
   frontend/internal/patch_args.cpp
+  frontend/internal/reflect.cpp
   frontend/internal/source_table_builder.cpp
   frontend/internal/staticint_table.cpp
   frontend/internal/struct_template.cpp

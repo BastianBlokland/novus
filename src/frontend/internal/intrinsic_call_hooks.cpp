@@ -1,5 +1,6 @@
 #include "internal/intrinsic_call_hooks.hpp"
 #include "frontend/diag_defs.hpp"
+#include "internal/reflect.hpp"
 #include "internal/utilities.hpp"
 #include "parse/nodes.hpp"
 #include "prog/expr/node_call.hpp"
@@ -15,54 +16,55 @@ namespace {
 using OptNodeExpr = std::optional<prog::expr::NodePtr>;
 
 auto resolveTypeNameIntrinsic(
-    Context* ctx,
-    const TypeSubstitutionTable* subTable,
-    const std::optional<parse::TypeParamList>& typeParams,
-    const IntrinsicArgs& args) -> OptNodeExpr {
+    Context* ctx, const prog::sym::TypeSet& typeParams, const IntrinsicArgs& args) -> OptNodeExpr {
 
-  if (!typeParams || typeParams->getCount() != 1 || args.first.size() != 0) {
+  if (typeParams.getCount() != 1 || args.first.size() != 0) {
     return std::nullopt;
   }
-  const auto type = getOrInstType(ctx, subTable, (*typeParams)[0]);
-  if (!type) {
-    return std::nullopt;
-  }
-  return prog::expr::litStringNode(*ctx->getProg(), getDisplayName(*ctx, *type));
+  return prog::expr::litStringNode(*ctx->getProg(), getDisplayName(*ctx, typeParams[0]));
 }
 
 auto resolveFailIntrinsic(
     Context* ctx,
-    const TypeSubstitutionTable* subTable,
     bool allowActions,
-    const std::optional<parse::TypeParamList>& typeParams,
+    const prog::sym::TypeSet& typeParams,
     const IntrinsicArgs& args) -> OptNodeExpr {
 
-  if (!allowActions || !typeParams || typeParams->getCount() != 1 || args.first.size() != 0) {
+  if (!allowActions || typeParams.getCount() != 1 || args.first.size() != 0) {
     return std::nullopt;
   }
-  const auto resultType = getOrInstType(ctx, subTable, (*typeParams)[0]);
-  if (!resultType) {
-    return std::nullopt;
-  }
-  const auto funcId = ctx->getFails()->getFailIntrinsic(ctx, *resultType);
+  const auto funcId = ctx->getFails()->getFailIntrinsic(ctx, typeParams[0]);
   return prog::expr::callExprNode(*ctx->getProg(), funcId, {});
 }
 
 auto resolveStaticIntToIntIntrinsic(
-    Context* ctx,
-    const TypeSubstitutionTable* subTable,
-    const std::optional<parse::TypeParamList>& typeParams,
-    const IntrinsicArgs& args) -> OptNodeExpr {
+    Context* ctx, const prog::sym::TypeSet& typeParams, const IntrinsicArgs& args) -> OptNodeExpr {
 
-  if (!typeParams || typeParams->getCount() != 1 || args.first.size() != 0) {
+  if (typeParams.getCount() != 1 || args.first.size() != 0) {
     return std::nullopt;
   }
-  const auto type = getOrInstType(ctx, subTable, (*typeParams)[0]);
-  if (!type) {
+  const auto value = ctx->getStaticIntTable()->getValue(typeParams[0]);
+  return value ? prog::expr::litIntNode(*ctx->getProg(), *value) : OptNodeExpr{};
+}
+
+auto resolveRelectEnumKey(
+    Context* ctx, const prog::sym::TypeSet& typeParams, const IntrinsicArgs& args) -> OptNodeExpr {
+
+  if (typeParams.getCount() != 2 || args.first.size() != 0) {
     return std::nullopt;
   }
-  return prog::expr::litIntNode(
-      *ctx->getProg(), ctx->getStaticIntTable()->getValue(*type).value_or(-1));
+  auto key = reflectEnumKey(ctx, typeParams[0], typeParams[1]);
+  return key ? prog::expr::litStringNode(*ctx->getProg(), *key) : OptNodeExpr{};
+}
+
+auto resolveRelectEnumValue(
+    Context* ctx, const prog::sym::TypeSet& typeParams, const IntrinsicArgs& args) -> OptNodeExpr {
+
+  if (typeParams.getCount() != 2 || args.first.size() != 0) {
+    return std::nullopt;
+  }
+  auto val = reflectEnumVal(ctx, typeParams[0], typeParams[1]);
+  return val ? prog::expr::litIntNode(*ctx->getProg(), *val) : OptNodeExpr{};
 }
 
 } // namespace
@@ -77,15 +79,27 @@ auto resolveMetaIntrinsic(
 
   assert(ctx);
 
+  auto typeParamSet =
+      typeParams ? getTypeSet(ctx, subTable, typeParams->getTypes()) : prog::sym::TypeSet{};
+  if (!typeParamSet) {
+    return std::nullopt;
+  }
+
   const auto name = getName(nameToken);
   if (name == "type_name") {
-    return resolveTypeNameIntrinsic(ctx, subTable, typeParams, args);
+    return resolveTypeNameIntrinsic(ctx, *typeParamSet, args);
   }
   if (name == "fail") {
-    return resolveFailIntrinsic(ctx, subTable, allowActions, typeParams, args);
+    return resolveFailIntrinsic(ctx, allowActions, *typeParamSet, args);
   }
   if (name == "staticint_to_int") {
-    return resolveStaticIntToIntIntrinsic(ctx, subTable, typeParams, args);
+    return resolveStaticIntToIntIntrinsic(ctx, *typeParamSet, args);
+  }
+  if (name == "reflect_enum_key") {
+    return resolveRelectEnumKey(ctx, *typeParamSet, args);
+  }
+  if (name == "reflect_enum_value") {
+    return resolveRelectEnumValue(ctx, *typeParamSet, args);
   }
   return std::nullopt;
 }
