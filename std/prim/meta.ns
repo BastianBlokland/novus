@@ -6,8 +6,9 @@ struct Meta{Int}
 
 // -- Presets
 
-fun metaZero()  Meta{#0}()
-fun metaOne()   Meta{#1}()
+fun metaZero()    Meta{#0}()
+fun metaOne()     Meta{#1}()
+fun metaNegOne()  Meta{#-1}()
 
 // -- Conversions
 
@@ -45,7 +46,6 @@ fun --{Int}(Meta{Int} x)
 
 assertEq(Meta{#0}().int(), 0)
 assertEq(Meta{#42}().int(), 42)
-assertEq(Meta{float}().int(), -1)
 
 assertEq(Meta{#0}().string(), "#0")
 assertEq(Meta{#42}().string(), "#42")

@@ -1,0 +1,106 @@
+import "list.ns"
+import "time.ns"
+
+import "std/prim.ns"
+
+// -- Type infos
+
+struct EnumEntry  = string key, int value
+struct EnumInfo   = List{EnumEntry} entries
+
+// -- Conversions
+
+fun string(EnumEntry e)
+  e.key + ":" + e.value.string()
+
+fun string(EnumInfo e)
+  e.entries.string()
+
+// -- Reflection
+
+fun reflectEnumEntries{Enum}(Type{Enum} t, Meta{#-1} idx, List{EnumEntry} entries)
+  entries
+
+fun reflectEnumEntries{Enum, Int}(Type{Enum} t, Meta{Int} idx, List{EnumEntry} entries)
+  reflectEnumEntries(t, --idx, EnumEntry(reflectEnumKey(t, idx), reflectEnumVal(t, idx)) :: entries)
+
+fun reflectEnum{Enum}(Type{Enum} t) -> EnumInfo
+  EnumInfo(reflectEnumEntries(t, --reflectEnumCount(t), List{EnumEntry}()))
+
+// -- Enum Utilities
+
+// ---- Lookup key for value
+
+fun reflectEnumKeyForVal{Enum}(Type{Enum} t, int val, Meta{#-1} idx) -> Option{string}
+  None()
+
+fun reflectEnumKeyForVal{Enum, Idx}(Type{Enum} t, int val, Meta{Idx} idx) -> Option{string}
+  reflectEnumVal(t, idx) == val
+    ? reflectEnumKey(t, idx)
+    : reflectEnumKeyForVal(t, val, --idx)
+
+fun reflectEnumKeyForVal{Enum}(Type{Enum} t, int val) -> Option{string}
+  reflectEnumKeyForVal(t, val, --reflectEnumCount(t))
+
+// ---- Lookup value for key
+
+fun reflectEnumValForKey{Enum}(Type{Enum} t, string key, StrComp comp, Meta{#-1} idx) -> Option{int}
+  None()
+
+fun reflectEnumValForKey{Enum, Idx}(Type{Enum} t, string key, StrComp comp, Meta{Idx} idx)  -> Option{int}
+  equals(reflectEnumKey(t, idx), key, comp)
+    ? reflectEnumVal(t, idx)
+    : reflectEnumValForKey(t, key, comp, --idx)
+
+fun reflectEnumValForKey{Enum}(Type{Enum} t, string key, StrComp comp = StrComp.Ordinal) -> Option{int}
+  reflectEnumValForKey(t, key, comp, --reflectEnumCount(t))
+
+// ---- Lookup number of enum entries
+
+fun reflectEnumCount{Enum}(Type{Enum} t)
+  Meta{reflect_enum_count{Enum}}()
+
+// ---- Lookup enum key from index
+
+fun reflectEnumKey{Enum, Idx}(Type{Enum} t, Meta{Idx} idx) -> string
+  intrinsic{reflect_enum_key}{Enum, Idx}()
+
+// ---- Lookup enum value from index
+
+fun reflectEnumVal{Enum, Idx}(Type{Enum} t, Meta{Idx} idx) -> int
+  intrinsic{reflect_enum_value}{Enum, Idx}()
+
+// -- Tests
+
+assertEq(reflectEnum(Type{Month}()), EnumInfo(
+  EnumEntry("January",    1)   ::
+  EnumEntry("February",   2)   ::
+  EnumEntry("March",      3)   ::
+  EnumEntry("April",      4)   ::
+  EnumEntry("May",        5)   ::
+  EnumEntry("June",       6)   ::
+  EnumEntry("July",       7)   ::
+  EnumEntry("August",     8)   ::
+  EnumEntry("September",  9)   ::
+  EnumEntry("October",    10)  ::
+  EnumEntry("November",   11)  ::
+  EnumEntry("December",   12)
+))
+
+assertEq(reflectEnumCount(Type{Month}()), Meta{#12}())
+assertEq(reflectEnumCount(Type{string}()), Meta{#0}())
+
+assertEq(reflectEnumKey(Type{Month}(), Meta{#0}()), "January")
+assertEq(reflectEnumKey(Type{Month}(), Meta{#11}()), "December")
+
+assertEq(reflectEnumVal(Type{Month}(), Meta{#0}()), 1)
+assertEq(reflectEnumVal(Type{Month}(), Meta{#11}()), 12)
+
+assertEq(reflectEnumKeyForVal(Type{Month}(), 3), "March")
+assertEq(reflectEnumKeyForVal(Type{Month}(), 12), "December")
+assertEq(reflectEnumKeyForVal(Type{Month}(), 0), None())
+assertEq(reflectEnumKeyForVal(Type{Month}(), 13), None())
+
+assertEq(reflectEnumValForKey(Type{Month}(), "April"), 4)
+assertEq(reflectEnumValForKey(Type{Month}(), "aPrIl", StrComp.OrdinalIgnoreCase), 4)
+assertEq(reflectEnumValForKey(Type{Month}(), "Hello"), None())
