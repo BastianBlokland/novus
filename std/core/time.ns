@@ -1,3 +1,5 @@
+import "reflect.ns"
+
 import "std/diag.ns"
 import "std/format.ns"
 import "std/prim.ns"
@@ -107,19 +109,7 @@ enum Month =
   December
 
 fun noinline string(Month m, bool short = false)
-  if m == Month.January   -> short ? "Jan" : "January"
-  if m == Month.February  -> short ? "Feb" : "February"
-  if m == Month.March     -> short ? "Mar" : "March"
-  if m == Month.April     -> short ? "Apr" : "April"
-  if m == Month.May       -> short ? "May" : "May"
-  if m == Month.June      -> short ? "Jun" : "June"
-  if m == Month.July      -> short ? "Jul" : "July"
-  if m == Month.August    -> short ? "Aug" : "August"
-  if m == Month.September -> short ? "Sep" : "September"
-  if m == Month.October   -> short ? "Oct" : "October"
-  if m == Month.November  -> short ? "Nov" : "November"
-  if m == Month.December  -> short ? "Dec" : "December"
-  else                    -> ""
+  (reflectEnumKeyForVal(m) ?? "")[0, short ? 3 : 99]
 
 // -- Weekday
 // Represents a single day of the week.
@@ -140,14 +130,7 @@ fun WeekDay(DateTime dt)
   WeekDay((dt.daysSinceEpoch() + WeekDay.Thursday) % 7)
 
 fun noinline string(WeekDay d, bool short = false)
-  if d ==  WeekDay.Sunday     -> short ? "Sun"  : "Sunday"
-  if d ==  WeekDay.Monday     -> short ? "Mon"  : "Monday"
-  if d ==  WeekDay.Tuesday    -> short ? "Tue"  : "Tuesday"
-  if d ==  WeekDay.Wednesday  -> short ? "Wed"  : "Wednesday"
-  if d ==  WeekDay.Thursday   -> short ? "Thu"  : "Thursday"
-  if d ==  WeekDay.Friday     -> short ? "Fri"  : "Friday"
-  if d ==  WeekDay.Saturday   -> short ? "Sat"  : "Saturday"
-  else                        -> ""
+  (reflectEnumKeyForVal(d) ?? "")[0, short ? 3 : 99]
 
 // -- Duration
 // Represents elapsed time, can be negative.

@@ -42,6 +42,9 @@ fun reflectEnumKeyForVal{Enum, Idx}(Type{Enum} t, int val, Meta{Idx} idx) -> Opt
 fun reflectEnumKeyForVal{Enum}(Type{Enum} t, int val) -> Option{string}
   reflectEnumKeyForVal(t, val, --reflectEnumCount(t))
 
+fun reflectEnumKeyForVal{Enum}(Enum val) -> Option{string}
+  reflectEnumKeyForVal(Type{Enum}(), val)
+
 // ---- Lookup value for key
 
 fun reflectEnumValForKey{Enum}(Type{Enum} t, string key, StrComp comp, Meta{#-1} idx) -> Option{int}

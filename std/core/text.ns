@@ -1,5 +1,6 @@
 import "func.ns"
 import "list.ns"
+import "reflect.ns"
 
 import "std/diag.ns"
 import "std/format.ns"
@@ -17,6 +18,9 @@ enum StrComp = Ordinal, OrdinalIgnoreCase
 
 fun string(TextPos p)
   "[ln " + (p.line + 1) + ", c " + (p.column + 1) + "]"
+
+fun string(StrComp sc)
+  reflectEnumKeyForVal(sc) ?? "Unknown"
 
 // -- Functions
 

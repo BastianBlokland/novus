@@ -1,6 +1,7 @@
 import "path.ns"
 import "stream.ns"
 
+import "std/core.ns"
 import "std/diag.ns"
 import "std/format.ns"
 import "std/prim.ns"
@@ -25,10 +26,7 @@ struct File =
 // -- Conversions
 
 fun string(FileMode m)
-  if m == FileMode.Create -> "Create"
-  if m == FileMode.Open   -> "Open"
-  if m == FileMode.Append -> "Append"
-  else                    -> ""
+  reflectEnumKeyForVal(m) ?? ""
 
 fun string(FileFlags o)
   (o & FileFlags.AutoRemove) != 0 ? "[AutoRemove]" : ""

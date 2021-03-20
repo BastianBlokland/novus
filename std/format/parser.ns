@@ -380,7 +380,7 @@ fun enumParser{Enum}(Type{Enum} t, StrComp sc = StrComp.Ordinal)
   Parser(lambda (ParseState s) -> ParseResult{Enum}
     res = entries.first(lambda (EnumEntry e) s.startsWith(e.key, sc));
     if res as EnumEntry entry -> (s + entry.key.length()).success(Enum(entry.value))
-    else                      -> s.failure(Error("Expected a " + t.string()))
+    else                      -> s.failure(Error("Expected a " + t.string() + ", got: '" + s[0].escapeForPrinting() + "'"))
   )
 
 // -- Combination parsers

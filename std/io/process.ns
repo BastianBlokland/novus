@@ -31,9 +31,7 @@ fun string(ProcessId p)
   "[" + p.id + "]"
 
 fun string(Signal s)
-  if s == Signal.Interupt -> "Interupt"
-  if s == Signal.Kill     -> "Kill"
-  else                    -> "Unknown signal"
+  reflectEnumKeyForVal(s) ?? "Unknown"
 
 fun string(ExitCode p)
   p.code.string()
