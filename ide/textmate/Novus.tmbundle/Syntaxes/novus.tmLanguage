@@ -74,7 +74,7 @@
 				</dict>
         <dict>
 					<key>match</key>
-					<string>#[0-9]+\b</string>
+					<string>#-?[0-9]+\b</string>
 					<key>name</key>
 					<string>keyword.other.staticint.source.novus</string>
 				</dict>

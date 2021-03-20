@@ -45,7 +45,7 @@
           "name": "keyword.other.buildin.source.novus"
         },
         {
-          "match": "#[0-9]+\\b",
+          "match": "#-?[0-9]+\\b",
           "name": "keyword.other.staticint.source.novus"
         }
       ]
