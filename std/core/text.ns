@@ -11,6 +11,8 @@ struct TextPos =
   int line,
   int column
 
+enum StrComp = Ordinal, OrdinalIgnoreCase
+
 // -- Conversions
 
 fun string(TextPos p)
@@ -117,6 +119,9 @@ fun fold{T}(string str, function{T, char, T} func)
 fun transform(string str, function{char, string} func)
   str.fold(lambda (string res, char c) res + func(c))
 
+fun transform(string str, function{char, char} func)
+  str.fold(lambda (string res, char c) res + func(c))
+
 fun split(string str, function{char, bool} pred)
   invoke(
     lambda (int startIdx, int endIdx, List{string} result)
@@ -163,6 +168,17 @@ fun getTextPos(string str)
   line    = str.count(equals{char}['\n']);
   column  = str.length() - (str.indexOfLast("\n") + 1);
   TextPos(line, column)
+
+fun strToLower(string str)
+  str.transform(toLower)
+
+fun equals(string x, string y, StrComp sc)
+  if sc == StrComp.Ordinal           -> x == y
+  if sc == StrComp.OrdinalIgnoreCase -> equalsIgnoreCase(x, y)
+  else                               -> false
+
+fun equalsIgnoreCase(string x, string y)
+  x.length() == y.length() && x.strToLower() == y.strToLower()
 
 // -- Tests
 
@@ -334,3 +350,10 @@ assertEq("abc".getTextPos(), TextPos(0, 3))
 assertEq("abc\n".getTextPos(), TextPos(1, 0))
 assertEq("abc\ndef".getTextPos(), TextPos(1, 3))
 assertEq("abc\ndef\n".getTextPos(), TextPos(2, 0))
+
+assert(equals("Hello", "Hello", StrComp.Ordinal))
+assertNot(equals("HeLlo", "hElLo", StrComp.Ordinal))
+assert(equals("Hello", "Hello", StrComp.OrdinalIgnoreCase))
+assert(equals("HeLlo", "hElLo", StrComp.OrdinalIgnoreCase))
+assert(equals("", "", StrComp.OrdinalIgnoreCase))
+assertNot(equals("HeLlo", "hElLoz", StrComp.OrdinalIgnoreCase))
