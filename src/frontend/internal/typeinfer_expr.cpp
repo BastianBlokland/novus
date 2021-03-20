@@ -7,6 +7,21 @@
 #include <cassert>
 #include <optional>
 
+namespace {
+
+constexpr const size_t g_maxTypeInferRecurseDepth = 100;
+
+// Keep track of the type-infer recursion depth, this is needed because with meta-programming you
+// can actually build type or function definitions that recurse indefinitely.
+// TODO: Implement this is a more elegant way.
+thread_local size_t g_typeInferRecurseDepth = 0;
+
+auto isMaxInferRecurseDepthReached() noexcept -> bool {
+  return g_typeInferRecurseDepth >= g_maxTypeInferRecurseDepth;
+}
+
+} // namespace
+
 namespace frontend::internal {
 
 TypeInferExpr::TypeInferExpr(
@@ -23,7 +38,10 @@ TypeInferExpr::TypeInferExpr(
   if (m_ctx == nullptr) {
     throw std::invalid_argument{"Context cannot be null"};
   }
+  ++g_typeInferRecurseDepth;
 }
+
+TypeInferExpr::~TypeInferExpr() noexcept { --g_typeInferRecurseDepth; }
 
 auto TypeInferExpr::getInferredType() const noexcept -> prog::sym::TypeId { return m_type; }
 
@@ -89,6 +107,10 @@ auto TypeInferExpr::visit(const parse::BinaryExprNode& n) -> void {
 }
 
 auto TypeInferExpr::visit(const parse::CallExprNode& n) -> void {
+  if (isMaxInferRecurseDepthReached()) {
+    return;
+  }
+
   auto getIdVisitor = GetIdentifier{true};
   n[0].accept(&getIdVisitor);
   auto* instance  = getIdVisitor.getInstance();

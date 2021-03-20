@@ -23,6 +23,7 @@ public:
       const TypeSubstitutionTable* typeSubTable,
       std::unordered_map<std::string, prog::sym::TypeId>* constTypes,
       Flags flags);
+  ~TypeInferExpr() noexcept;
 
   [[nodiscard]] auto getInferredType() const noexcept -> prog::sym::TypeId;
 
