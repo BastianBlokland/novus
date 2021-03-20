@@ -184,7 +184,7 @@ TEST_CASE("[frontend] Analyzing user-function declarations", "frontend") {
         "fun f() f{int}(1)",
         errUndeclaredConst(NO_SRC, "b"),
         errInvalidFuncInstantiation(NO_SRC),
-        errNoPureFuncFoundToInstantiate(NO_SRC, "f", 1));
+        errNoPureFuncFoundToInstantiate(NO_SRC, "f", {"int"}));
     CHECK_DIAG("fun +() -> int i", errOperatorOverloadWithoutArgs(NO_SRC, "operator+"));
     CHECK_DIAG("fun +{T}() -> T T()", errOperatorOverloadWithoutArgs(NO_SRC, "operator+"));
     CHECK_DIAG("fun f{T}(test a) -> int 1", errUndeclaredType(NO_SRC, "test", 0));

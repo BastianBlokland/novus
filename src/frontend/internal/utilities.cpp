@@ -66,6 +66,14 @@ auto getDisplayName(const Context& ctx, prog::sym::TypeId typeId) -> std::string
   return oss.str();
 }
 
+auto getDisplayNames(const Context& ctx, prog::sym::TypeSet typeSet) -> std::vector<std::string> {
+  std::vector<std::string> result;
+  for (const auto& type : typeSet) {
+    result.push_back(getDisplayName(ctx, type));
+  }
+  return result;
+}
+
 auto getOperator(const lex::Token& token) -> std::optional<prog::Operator> {
   switch (token.getKind()) {
   case lex::TokenKind::OpPlus:

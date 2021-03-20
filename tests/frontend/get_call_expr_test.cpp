@@ -283,7 +283,7 @@ TEST_CASE("[frontend] Analyzing call expressions", "frontend") {
     CHECK_DIAG(
         "act a{T}() -> T T() "
         "fun f2() -> int a{int}()",
-        errNoPureFuncFoundToInstantiate(NO_SRC, "a", 1));
+        errNoPureFuncFoundToInstantiate(NO_SRC, "a", {"int"}));
     CHECK_DIAG(
         "fun *(int x, int y) -> int intrinsic{int_mul_int}(x, y) "
         "act a(int i) -> int i * 2 "

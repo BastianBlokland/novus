@@ -46,7 +46,8 @@ TEST_CASE("[frontend] Analyzing meta intrinsics", "frontend") {
   }
 
   SECTION("Diagnostics") {
-    CHECK_DIAG("fun f() -> int fail{int}()", errNoPureFuncFoundToInstantiate(NO_SRC, "fail", 1));
+    CHECK_DIAG(
+        "fun f() -> int fail{int}()", errNoPureFuncFoundToInstantiate(NO_SRC, "fail", {"int"}));
   }
 }
 

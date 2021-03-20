@@ -155,14 +155,21 @@ errUndeclaredType(prog::sym::SourceId src, const std::string& name, unsigned int
 
 [[nodiscard]] auto errPureFuncInfRecursion(prog::sym::SourceId src) -> Diag;
 
+[[nodiscard]] auto errNoCompatibleIntrinsicFound(
+    prog::sym::SourceId src, const std::string& name, const std::vector<std::string>& typeParams)
+    -> Diag;
+
 [[nodiscard]] auto errNoPureFuncFoundToInstantiate(
-    prog::sym::SourceId src, const std::string& name, unsigned int templateParamCount) -> Diag;
+    prog::sym::SourceId src, const std::string& name, const std::vector<std::string>& typeParams)
+    -> Diag;
 
 [[nodiscard]] auto errNoActionFoundToInstantiate(
-    prog::sym::SourceId src, const std::string& name, unsigned int templateParamCount) -> Diag;
+    prog::sym::SourceId src, const std::string& name, const std::vector<std::string>& typeParams)
+    -> Diag;
 
 [[nodiscard]] auto errNoFuncOrActionFoundToInstantiate(
-    prog::sym::SourceId src, const std::string& name, unsigned int templateParamCount) -> Diag;
+    prog::sym::SourceId src, const std::string& name, const std::vector<std::string>& typeParams)
+    -> Diag;
 
 [[nodiscard]] auto
 errNoTypeParamsProvidedToTemplateFunction(prog::sym::SourceId src, const std::string& name) -> Diag;

@@ -278,11 +278,7 @@ auto GetExpr::visit(const parse::CallExprNode& n) -> void {
 
   const auto func = m_ctx->getProg()->lookupFunc(possibleFuncs, args->second, ovOptions);
   if (!func) {
-    auto argTypeNames = std::vector<std::string>{};
-    for (const auto& argType : args->second) {
-      argTypeNames.push_back(getDisplayName(*m_ctx, argType));
-    }
-
+    auto argTypeNames = getDisplayNames(*m_ctx, args->second);
     if (auto type = getOrInstType(m_ctx, m_typeSubTable, nameToken, typeParams)) {
       m_ctx->reportDiag(
           errUndeclaredTypeOrConversion, n.getSpan(), getDisplayName(*m_ctx, *type), argTypeNames);
@@ -306,17 +302,20 @@ auto GetExpr::visit(const parse::CallExprNode& n) -> void {
     }
 
     if (typeParams) {
-      // TODO: Include the type-names for the type-parameters in the diagnostic.
+      const auto typeParamSet = getTypeSet(m_ctx, m_typeSubTable, typeParams->getTypes());
+      auto typeParamNames =
+          typeParamSet ? getDisplayNames(*m_ctx, *typeParamSet) : std::vector<std::string>{};
+
       // TODO: Include the type-names for the arguments in the diagnostic.
-      if (allowPureFunc && allowAction) {
+      if (getIdVisitor.isIntrinsic()) {
+        m_ctx->reportDiag(errNoCompatibleIntrinsicFound, n.getSpan(), nameString, typeParamNames);
+      } else if (allowPureFunc && allowAction) {
         m_ctx->reportDiag(
-            errNoFuncOrActionFoundToInstantiate, n.getSpan(), nameString, typeParams->getCount());
+            errNoFuncOrActionFoundToInstantiate, n.getSpan(), nameString, typeParamNames);
       } else if (allowPureFunc) {
-        m_ctx->reportDiag(
-            errNoPureFuncFoundToInstantiate, n.getSpan(), nameString, typeParams->getCount());
+        m_ctx->reportDiag(errNoPureFuncFoundToInstantiate, n.getSpan(), nameString, typeParamNames);
       } else {
-        m_ctx->reportDiag(
-            errNoActionFoundToInstantiate, n.getSpan(), nameString, typeParams->getCount());
+        m_ctx->reportDiag(errNoActionFoundToInstantiate, n.getSpan(), nameString, typeParamNames);
       }
       return;
     }
@@ -436,13 +435,13 @@ auto GetExpr::visit(const parse::IdExprNode& n) -> void {
     }
     const auto instances = m_ctx->getFuncTemplates()->instantiate(name, *typeSet, getOvOptions(-1));
     if (instances.empty()) {
+      const auto typeParamNames = getDisplayNames(*m_ctx, *typeSet);
       if (hasFlag<Flags::AllowPureFuncCalls>() && hasFlag<Flags::AllowActionCalls>()) {
-        m_ctx->reportDiag(
-            errNoFuncOrActionFoundToInstantiate, n.getSpan(), name, typeSet->getCount());
+        m_ctx->reportDiag(errNoFuncOrActionFoundToInstantiate, n.getSpan(), name, typeParamNames);
       } else if (hasFlag<Flags::AllowPureFuncCalls>()) {
-        m_ctx->reportDiag(errNoPureFuncFoundToInstantiate, n.getSpan(), name, typeSet->getCount());
+        m_ctx->reportDiag(errNoPureFuncFoundToInstantiate, n.getSpan(), name, typeParamNames);
       } else {
-        m_ctx->reportDiag(errNoActionFoundToInstantiate, n.getSpan(), name, typeSet->getCount());
+        m_ctx->reportDiag(errNoActionFoundToInstantiate, n.getSpan(), name, typeParamNames);
       }
       return;
     }

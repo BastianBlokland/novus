@@ -224,7 +224,7 @@ TEST_CASE("[frontend] Analyzing anonymous functions", "frontend") {
         "fun f() f{int}()",
         errConstNameConflictsWithTypeSubstitution(NO_SRC, "T"),
         errInvalidFuncInstantiation(NO_SRC),
-        errNoPureFuncFoundToInstantiate(NO_SRC, "f", 1));
+        errNoPureFuncFoundToInstantiate(NO_SRC, "f", {"int"}));
     CHECK_DIAG("fun f() lambda () b", errUndeclaredConst(NO_SRC, "b"));
     CHECK_DIAG("fun f() lambda () false ? i = 1 : i ", errUninitializedConst(NO_SRC, "i"));
     CHECK_DIAG("fun f() false ? i = 1 : (lambda () i)() ", errUninitializedConst(NO_SRC, "i"));

@@ -63,29 +63,30 @@ TEST_CASE("[frontend] Analyzing user-function definitions", "frontend") {
     CHECK_DIAG("fun f() -> int bool(1)", errUndeclaredTypeOrConversion(NO_SRC, "bool", {"int"}));
     CHECK_DIAG(
         "fun f() -> int int{float}()", errNoTypeOrConversionFoundToInstantiate(NO_SRC, "int", 1));
-    CHECK_DIAG("fun f2() -> int f{int}(1)", errNoPureFuncFoundToInstantiate(NO_SRC, "f", 1));
-    CHECK_DIAG("act a() -> int f{int}()", errNoFuncOrActionFoundToInstantiate(NO_SRC, "f", 1));
-    CHECK_DIAG("f{int}()", errNoFuncOrActionFoundToInstantiate(NO_SRC, "f", 1));
+    CHECK_DIAG("fun f2() -> int f{int}(1)", errNoPureFuncFoundToInstantiate(NO_SRC, "f", {"int"}));
+    CHECK_DIAG(
+        "act a() -> int f{int}()", errNoFuncOrActionFoundToInstantiate(NO_SRC, "f", {"int"}));
+    CHECK_DIAG("f{int}()", errNoFuncOrActionFoundToInstantiate(NO_SRC, "f", {"int"}));
     CHECK_DIAG(
         "fun f1() -> int 1 "
         "fun f2() -> int f1{int}()",
-        errNoPureFuncFoundToInstantiate(NO_SRC, "f1", 1));
+        errNoPureFuncFoundToInstantiate(NO_SRC, "f1", {"int"}));
     CHECK_DIAG(
         "fun f{T}(T t) t "
         "fun f2() -> int f{int, float}(1)",
-        errNoPureFuncFoundToInstantiate(NO_SRC, "f", 2));
+        errNoPureFuncFoundToInstantiate(NO_SRC, "f", {"int", "float"}));
     CHECK_DIAG(
         "fun f{T}(T T) -> T T "
         "fun f2() -> int f{int}(1)",
         errConstNameConflictsWithTypeSubstitution(NO_SRC, "T"),
         errInvalidFuncInstantiation(NO_SRC),
-        errNoPureFuncFoundToInstantiate(NO_SRC, "f", 1));
+        errNoPureFuncFoundToInstantiate(NO_SRC, "f", {"int"}));
     CHECK_DIAG(
         "fun f{T}(T T) -> T T "
         "fun f2() f{int}(1)",
         errConstNameConflictsWithTypeSubstitution(NO_SRC, "T"),
         errInvalidFuncInstantiation(NO_SRC),
-        errNoPureFuncFoundToInstantiate(NO_SRC, "f", 1));
+        errNoPureFuncFoundToInstantiate(NO_SRC, "f", {"int"}));
     CHECK_DIAG(
         "fun *(int x, int y) -> int intrinsic{int_mul_int}(x, y) "
         "fun f{T}(T i) -> T "
@@ -93,7 +94,7 @@ TEST_CASE("[frontend] Analyzing user-function definitions", "frontend") {
         "fun f2() -> int f{int}(1)",
         errConstNameConflictsWithTypeSubstitution(NO_SRC, "T"),
         errInvalidFuncInstantiation(NO_SRC),
-        errNoPureFuncFoundToInstantiate(NO_SRC, "f", 1));
+        errNoPureFuncFoundToInstantiate(NO_SRC, "f", {"int"}));
     CHECK_DIAG(
         "fun f() -> function{int} lambda () false",
         errNonMatchingFuncReturnType(NO_SRC, "f", "function{int}", "function{bool}"));
