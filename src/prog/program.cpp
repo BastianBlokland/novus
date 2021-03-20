@@ -530,7 +530,7 @@ auto Program::defineUnion(sym::TypeId id, std::vector<sym::TypeId> types) -> voi
   m_typeDefs.registerUnion(m_typeDecls, id, std::move(types));
 }
 
-auto Program::defineEnum(sym::TypeId id, std::unordered_map<std::string, int32_t> entries) -> void {
+auto Program::defineEnum(sym::TypeId id, std::vector<sym::EnumDef::Pair> entries) -> void {
   using fk = sym::FuncKind;
 
   const auto& name = m_typeDecls[id].getName();

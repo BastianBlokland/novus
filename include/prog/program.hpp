@@ -166,7 +166,7 @@ public:
 
   auto defineStruct(sym::TypeId id, sym::FieldDeclTable fields) -> void;
   auto defineUnion(sym::TypeId id, std::vector<sym::TypeId> types) -> void;
-  auto defineEnum(sym::TypeId id, std::unordered_map<std::string, int32_t> entries) -> void;
+  auto defineEnum(sym::TypeId id, std::vector<sym::EnumDef::Pair> entries) -> void;
   auto defineDelegate(
       sym::TypeId id,
       bool isAction,

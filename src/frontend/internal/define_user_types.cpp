@@ -95,15 +95,16 @@ auto defineType(Context* ctx, prog::sym::TypeId id, const parse::EnumDeclStmtNod
 
   auto isValid      = true;
   auto values       = std::unordered_set<int32_t>{};
-  auto entries      = std::unordered_map<std::string, int32_t>{};
+  auto keys         = std::unordered_set<std::string>{};
+  auto entries      = std::vector<prog::sym::EnumDef::Pair>{};
   int32_t lastValue = -1;
 
   for (const auto& entry : n.getEntries()) {
-    const auto name  = getName(entry.getIdentifier());
+    auto name        = getName(entry.getIdentifier());
     const auto value = lastValue =
         entry.getValueSpec() ? entry.getValueSpec()->getValue() : lastValue + 1;
 
-    if (!entries.insert({name, value}).second) {
+    if (!keys.insert(name).second) {
       ctx->reportDiag(errDuplicateEntryNameInEnum, entry.getSpan(), name);
       isValid = false;
     }
@@ -111,6 +112,7 @@ auto defineType(Context* ctx, prog::sym::TypeId id, const parse::EnumDeclStmtNod
       ctx->reportDiag(errDuplicateEntryValueInEnum, entry.getSpan(), value);
       isValid = false;
     }
+    entries.emplace_back(std::move(name), value);
   }
 
   if (isValid) {
