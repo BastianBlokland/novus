@@ -375,6 +375,14 @@ fun txtFloatParser()
   matchParser('+') >> txtPosFloatParser()                     |
   txtPosFloatParser()
 
+fun enumParser{Enum}(Type{Enum} t, StrComp sc = StrComp.Ordinal)
+  entries = reflectEnum(t).entries;
+  Parser(lambda (ParseState s) -> ParseResult{Enum}
+    res = entries.first(lambda (EnumEntry e) s.startsWith(e.key, sc));
+    if res as EnumEntry entry -> (s + entry.key.length()).success(Enum(entry.value))
+    else                      -> s.failure(Error("Expected a " + t.string()))
+  )
+
 // -- Combination parsers
 
 fun manyParser{T}(Parser{T} p)
@@ -841,6 +849,14 @@ assertEq(
   inputs = "truefalsetruetruetrue" :: "truefalsetruetruetrue" :: "truetruetruetruetrue" :: "truefalsetruefalse" :: "truefalsetrue" :: "";
   inputs.map(lambda (string s) p.run(s).toOption(Type{bool}())),
   false :: false :: true)
+
+assertEq(enumParser(Type{Month}())("January"), Month.January)
+assertEq(enumParser(Type{Month}())("April"), Month.April)
+assertEq(enumParser(Type{Month}(), StrComp.OrdinalIgnoreCase)("aPriL"), Month.April)
+assertEq(enumParser(Type{Month}())("December"), Month.December)
+
+assertIs(enumParser(Type{Month}())("december"), Type{ParseFailure}())
+assertIs(enumParser(Type{Month}())(""), Type{ParseFailure}())
 
 assertEq(manyParser(txtBoolParser())("truefalsetruetrue"), true :: false :: true :: true)
 assertEq(manyParser(txtBoolParser())("true"), true :: List{bool}())
