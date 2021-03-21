@@ -19,6 +19,13 @@ namespace frontend::internal {
     Context* ctx, prog::sym::TypeId structType, prog::sym::TypeId indexType) noexcept
     -> std::optional<prog::sym::TypeId>;
 
+[[nodiscard]] auto reflectUnionCount(Context* ctx, prog::sym::TypeId unionType) noexcept
+    -> std::optional<prog::sym::TypeId>;
+
+[[nodiscard]] auto
+reflectUnionType(Context* ctx, prog::sym::TypeId unionType, prog::sym::TypeId indexType) noexcept
+    -> std::optional<prog::sym::TypeId>;
+
 [[nodiscard]] auto reflectEnumCount(Context* ctx, prog::sym::TypeId enumType) noexcept
     -> std::optional<prog::sym::TypeId>;
 

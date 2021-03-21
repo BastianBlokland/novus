@@ -45,6 +45,25 @@ TEST_CASE("[frontend] Analyze reflection", "frontend") {
     }
   }
 
+  SECTION("Union") {
+
+    SECTION("Union count") {
+      const auto& output = ANALYZE("struct Type{T} "
+                                   "union U = int, float, long "
+                                   "fun f() Type{reflect_union_count{U}}()");
+      REQUIRE(output.isSuccess());
+      CHECK(GET_FUNC_DECL(output, "f").getOutput() == GET_TYPE_ID(output, "Type__#3"));
+    }
+
+    SECTION("Union type at index") {
+      const auto& output = ANALYZE("struct Type{T} "
+                                   "union U = int, float, long "
+                                   "fun f() Type{reflect_union_type{U, #1}}()");
+      REQUIRE(output.isSuccess());
+      CHECK(GET_FUNC_DECL(output, "f").getOutput() == GET_TYPE_ID(output, "Type__float"));
+    }
+  }
+
   SECTION("Enum") {
 
     SECTION("Enum count") {

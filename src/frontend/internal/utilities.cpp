@@ -344,6 +344,16 @@ auto instType(
       return fieldType;
     }
   }
+  if (typeName == "reflect_union_count" && typeSet->getCount() == 1) {
+    if (auto unionCount = reflectUnionCount(ctx, (*typeSet)[0])) {
+      return unionCount;
+    }
+  }
+  if (typeName == "reflect_union_type" && typeSet->getCount() == 2) {
+    if (auto unionType = reflectUnionType(ctx, (*typeSet)[0], (*typeSet)[1])) {
+      return unionType;
+    }
+  }
   if (typeName == "reflect_enum_count" && typeSet->getCount() == 1) {
     if (auto enumCount = reflectEnumCount(ctx, (*typeSet)[0])) {
       return enumCount;

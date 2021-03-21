@@ -13,6 +13,14 @@ auto getStructDef(Context* ctx, prog::sym::TypeId structType) noexcept
   return &std::get<prog::sym::StructDef>(ctx->getProg()->getTypeDef(structType));
 }
 
+auto getUnionDef(Context* ctx, prog::sym::TypeId unionType) noexcept -> const prog::sym::UnionDef* {
+  const auto& unionDecl = ctx->getProg()->getTypeDecl(unionType);
+  if (unionDecl.getKind() != prog::sym::TypeKind::Union) {
+    return nullptr; // Not a union.
+  }
+  return &std::get<prog::sym::UnionDef>(ctx->getProg()->getTypeDef(unionType));
+}
+
 auto getEnumDef(Context* ctx, prog::sym::TypeId enumType) noexcept -> const prog::sym::EnumDef* {
   const auto& enumTypeDecl = ctx->getProg()->getTypeDecl(enumType);
   if (enumTypeDecl.getKind() != prog::sym::TypeKind::Enum) {
@@ -59,6 +67,28 @@ auto reflectStructFieldType(
     return std::nullopt; // Not a struct or out of bounds field index.
   }
   return structDef->getFields()[index].getType();
+}
+
+auto reflectUnionCount(Context* ctx, prog::sym::TypeId unionType) noexcept
+    -> std::optional<prog::sym::TypeId> {
+
+  const auto* unionDef = getUnionDef(ctx, unionType);
+  if (!unionDef) {
+    return std::nullopt;
+  }
+  return ctx->getStaticIntTable()->getType(ctx, unionDef->getTypes().size());
+}
+
+auto reflectUnionType(
+    Context* ctx, prog::sym::TypeId unionType, prog::sym::TypeId indexType) noexcept
+    -> std::optional<prog::sym::TypeId> {
+
+  const auto* unionDef = getUnionDef(ctx, unionType);
+  auto index           = ctx->getStaticIntTable()->getValue(indexType).value_or(-1);
+  if (!unionDef || index < 0 || index >= static_cast<int>(unionDef->getTypes().size())) {
+    return std::nullopt; // Not a union or out of bounds index.
+  }
+  return unionDef->getTypes()[index];
 }
 
 auto reflectEnumCount(Context* ctx, prog::sym::TypeId enumType) noexcept
