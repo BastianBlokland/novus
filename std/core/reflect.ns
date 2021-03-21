@@ -17,7 +17,7 @@ struct  EnumEntry     = string key, int value
 struct  EnumInfo      = string name, List{EnumEntry} entries
 
 struct  DelegateInfo
-struct  FutureInfo
+struct  FutureInfo    = TypeInfo type
 struct  LazyInfo      = TypeInfo type, bool isAction
 struct  StaticIntInfo = int value
 
@@ -53,6 +53,9 @@ fun string(EnumEntry e)
 fun string(EnumInfo e)
   e.name + ":" + e.entries.string()
 
+fun string(FutureInfo f)
+  "Future:" + f.type.string()
+
 fun string(LazyInfo l)
   (l.isAction ? "ImpureLazy:" : "PureLazy:") + l.type.string()
 
@@ -65,7 +68,7 @@ fun string(TypeInfo ti)
   if ti as UnionInfo ui           -> ui.string()
   if ti as EnumInfo ei            -> ei.string()
   if ti is DelegateInfo           -> "Delegate"
-  if ti is FutureInfo             -> "Future"
+  if ti as FutureInfo fi          -> fi.string()
   if ti as LazyInfo li            -> li.string()
   if ti as StaticIntInfo sii      -> sii.string()
   if ti as RecursiveTypeInfo req  -> req.name
@@ -89,7 +92,7 @@ fun reflect{T}(Type{T} t, ReflectCtx rc, Meta{#8}  structTypeKind)     reflectSt
 fun reflect{T}(Type{T} t, ReflectCtx rc, Meta{#9}  unionTypeKind)      reflectUnion(t, rc)
 fun reflect{T}(Type{T} t, ReflectCtx rc, Meta{#10} enumTypeKind)       reflectEnum(t)
 fun reflect{T}(Type{T} t, ReflectCtx rc, Meta{#11} delegateTypeKind)   DelegateInfo()
-fun reflect{T}(Type{T} t, ReflectCtx rc, Meta{#12} futureTypeKind)     FutureInfo()
+fun reflect{T}(Type{T} t, ReflectCtx rc, Meta{#12} futureTypeKind)     reflectFuture(t, rc)
 fun reflect{T}(Type{T} t, ReflectCtx rc, Meta{#13} lazyTypeKind)       reflectLazy(t, rc)
 fun reflect{T}(Type{T} t, ReflectCtx rc, Meta{#14} staticIntTypeKind)  StaticIntInfo(int(Meta{T}()))
 
@@ -138,6 +141,11 @@ fun reflectEnum{Enum}(Type{Enum} t) -> EnumInfo
   EnumInfo(
     t.string(),
     reflectEnumEntries(t, --reflectEnumCount(t), List{EnumEntry}()))
+
+// ---- Future
+
+fun reflectFuture{Lazy}(Type{Lazy} t, ReflectCtx rc = ReflectCtx()) -> FutureInfo
+  FutureInfo(reflect(reflectFutureType(t), rc))
 
 // ---- Lazy
 
@@ -221,6 +229,13 @@ fun reflectEnumKey{Enum, Idx}(Type{Enum} t, Meta{Idx} idx) -> string
 fun reflectEnumVal{Enum, Idx}(Type{Enum} t, Meta{Idx} idx) -> int
   intrinsic{reflect_enum_value}{Enum, Idx}()
 
+// -- Future Utilities
+
+// ---- Lookup future type
+
+fun reflectFutureType{InnerType}(Type{future{InnerType}} t)
+  Type{InnerType}()
+
 // -- Lazy Utilities
 
 // ---- Lookup lazy type
@@ -282,7 +297,8 @@ assertEq(reflect(Type{Month}()), EnumInfo("Month",
 
 assertIs(reflect(Type{function{int}}()),  Type{DelegateInfo}())
 assertIs(reflect(Type{action{int}}()),    Type{DelegateInfo}())
-assertIs(reflect(Type{future{int}}()),    Type{FutureInfo}())
+
+assertEq(reflect(Type{future{int}}()), FutureInfo(PrimInfo(PrimType.Int)))
 
 assertEq(reflect(Type{lazy{int}}()), LazyInfo(PrimInfo(PrimType.Int), false))
 assertEq(reflect(Type{lazy_action{int}}()), LazyInfo(PrimInfo(PrimType.Int), true))
@@ -330,6 +346,11 @@ assertEq(reflectEnumKeyForVal(Type{Month}(), 13), None())
 assertEq(reflectEnumValForKey(Type{Month}(), "April"), 4)
 assertEq(reflectEnumValForKey(Type{Month}(), "aPrIl", StrComp.OrdinalIgnoreCase), 4)
 assertEq(reflectEnumValForKey(Type{Month}(), "Hello"), None())
+
+// -- Future utility tests
+
+assertEq(reflectFutureType(Type{future{int}}()), Type{int}())
+assertEq(reflectFutureType(Type{future{List{int}}}()), Type{List{int}}())
 
 // -- Lazy utility tests
 
