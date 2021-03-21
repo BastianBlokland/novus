@@ -291,6 +291,20 @@ auto errUndeclaredType(prog::sym::SourceId src, const std::string& name, unsigne
   return error(oss.str(), src);
 }
 
+auto errUndeclaredTypeWithNames(
+    prog::sym::SourceId src, const std::string& name, const std::vector<std::string>& typeParams)
+    -> Diag {
+  std::ostringstream oss;
+  oss << "Unknown type: '" << name << "\' with ";
+  if (typeParams.empty()) {
+    oss << "no type parameters";
+  } else {
+    printTypeList(oss, typeParams);
+    oss << (typeParams.size() == 1 ? " type parameter" : " type parameters");
+  }
+  return error(oss.str(), src);
+}
+
 auto errUndeclaredTypeOrConversion(
     prog::sym::SourceId src, const std::string& name, const std::vector<std::string>& argTypes)
     -> Diag {

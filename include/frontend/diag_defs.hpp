@@ -119,6 +119,10 @@ errConstNameConflictsWithTypeSubstitution(prog::sym::SourceId src, const std::st
 errUndeclaredType(prog::sym::SourceId src, const std::string& name, unsigned int typeParams)
     -> Diag;
 
+[[nodiscard]] auto errUndeclaredTypeWithNames(
+    prog::sym::SourceId src, const std::string& name, const std::vector<std::string>& typeParams)
+    -> Diag;
+
 [[nodiscard]] auto errUndeclaredTypeOrConversion(
     prog::sym::SourceId src, const std::string& name, const std::vector<std::string>& argTypes)
     -> Diag;

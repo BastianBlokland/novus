@@ -337,7 +337,7 @@ auto instType(
   if (typeName == "reflect_enum_count" && typeSet->getCount() == 1) {
     if (auto enumCount = reflectEnumCount(ctx, (*typeSet)[0])) {
       return enumCount;
-  }
+    }
   }
 
   const auto typeInstantiation = ctx->getTypeTemplates()->instantiate(typeName, *typeSet);
@@ -569,9 +569,20 @@ auto getTypeSet(
     if (type) {
       types.push_back(*type);
     } else {
+      isValid = false;
+      if (parseType.getParamCount() > 0) {
+        if (auto typeParamSet = getTypeSet(ctx, subTable, parseType.getParamList()->getTypes())) {
+          auto typeParamDisplayNames = getDisplayNames(*ctx, *typeParamSet);
+          ctx->reportDiag(
+              errUndeclaredTypeWithNames,
+              parseType.getSpan(),
+              getName(parseType),
+              typeParamDisplayNames);
+          break;
+        }
+      }
       ctx->reportDiag(
           errUndeclaredType, parseType.getSpan(), getName(parseType), parseType.getParamCount());
-      isValid = false;
     }
   }
   return isValid ? std::optional{prog::sym::TypeSet{std::move(types)}} : std::nullopt;
