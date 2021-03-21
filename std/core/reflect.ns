@@ -9,20 +9,29 @@ enum    PrimType      = Int, Long, Float, Bool, Char, String, SysStream, SysProc
 struct  PrimInfo      = PrimType type
 
 struct  StructField   = string name, TypeInfo value
-struct  StructInfo    = List{StructField} fields
+struct  StructInfo    = string name, List{StructField} fields
 
-struct  UnionInfo
+struct  UnionInfo     = string name, List{TypeInfo} entries
 
 struct  EnumEntry     = string key, int value
-struct  EnumInfo      = List{EnumEntry} entries
+struct  EnumInfo      = string name, List{EnumEntry} entries
 
 struct  DelegateInfo
 struct  FutureInfo
 struct  LazyInfo
 struct  StaticIntInfo = int value
 
+struct  RecursiveTypeInfo = string name
+
 union TypeInfo =
-  PrimInfo, StructInfo, UnionInfo, EnumInfo, DelegateInfo, FutureInfo, LazyInfo, StaticIntInfo
+  PrimInfo, StructInfo, UnionInfo, EnumInfo, DelegateInfo, FutureInfo, LazyInfo, StaticIntInfo, RecursiveTypeInfo
+
+struct ReflectCtx =
+  List{string} types
+
+// -- Constructors
+
+fun ReflectCtx() ReflectCtx(List{string}())
 
 // -- Conversions
 
@@ -33,61 +42,86 @@ fun string(StructField e)
   e.name + ":" + e.value.string()
 
 fun string(StructInfo s)
-  s.fields.string()
+  s.name + ":" + s.fields.string()
+
+fun string(UnionInfo u)
+  u.name + ":" + u.entries.string()
 
 fun string(EnumEntry e)
   e.key + ":" + e.value.string()
 
 fun string(EnumInfo e)
-  e.entries.string()
+  e.name + ":" + e.entries.string()
 
 fun string(StaticIntInfo si)
   "#" + si.value.string()
 
 fun string(TypeInfo ti)
-  if ti as PrimInfo pi        -> pi.string()
-  if ti as StructInfo si      -> "Struct:" + si.string()
-  if ti is UnionInfo          -> "Union"
-  if ti as EnumInfo ei        -> "Enum:" + ei.string()
-  if ti is DelegateInfo       -> "Delegate"
-  if ti is FutureInfo         -> "Future"
-  if ti is LazyInfo           -> "Lazy"
-  if ti as StaticIntInfo sii  -> sii.string()
+  if ti as PrimInfo pi            -> pi.string()
+  if ti as StructInfo si          -> si.string()
+  if ti as UnionInfo ui           -> ui.string()
+  if ti as EnumInfo ei            -> ei.string()
+  if ti is DelegateInfo           -> "Delegate"
+  if ti is FutureInfo             -> "Future"
+  if ti is LazyInfo               -> "Lazy"
+  if ti as StaticIntInfo sii      -> sii.string()
+  if ti as RecursiveTypeInfo req  -> req.name
+
+// -- Utilities
+
+fun addType{T}(ReflectCtx rc, Type{T} t)
+  ReflectCtx(t.string() :: rc.types)
 
 // -- Reflection
 
-fun reflectType{T}(Type{T} t, Meta{#0}  intTypeKind)        PrimInfo(PrimType.Int)
-fun reflectType{T}(Type{T} t, Meta{#1}  longTypeKind)       PrimInfo(PrimType.Long)
-fun reflectType{T}(Type{T} t, Meta{#2}  floatTypeKind)      PrimInfo(PrimType.Float)
-fun reflectType{T}(Type{T} t, Meta{#3}  boolTypeKind)       PrimInfo(PrimType.Bool)
-fun reflectType{T}(Type{T} t, Meta{#4}  charTypeKind)       PrimInfo(PrimType.Char)
-fun reflectType{T}(Type{T} t, Meta{#5}  stringTypeKind)     PrimInfo(PrimType.String)
-fun reflectType{T}(Type{T} t, Meta{#6}  sysStreamTypeKind)  PrimInfo(PrimType.SysStream)
-fun reflectType{T}(Type{T} t, Meta{#7}  sysProcessTypeKind) PrimInfo(PrimType.SysProcess)
-fun reflectType{T}(Type{T} t, Meta{#8}  structTypeKind)     reflectStruct(t)
-fun reflectType{T}(Type{T} t, Meta{#9}  unionTypeKind)      UnionInfo()
-fun reflectType{T}(Type{T} t, Meta{#10} enumTypeKind)       reflectEnum(t)
-fun reflectType{T}(Type{T} t, Meta{#11} delegateTypeKind)   DelegateInfo()
-fun reflectType{T}(Type{T} t, Meta{#12} futureTypeKind)     FutureInfo()
-fun reflectType{T}(Type{T} t, Meta{#13} lazyTypeKind)       LazyInfo()
-fun reflectType{T}(Type{T} t, Meta{#14} staticIntTypeKind)  StaticIntInfo(int(Meta{T}()))
+fun reflect{T}(Type{T} t, ReflectCtx rc, Meta{#0}  intTypeKind)        PrimInfo(PrimType.Int)
+fun reflect{T}(Type{T} t, ReflectCtx rc, Meta{#1}  longTypeKind)       PrimInfo(PrimType.Long)
+fun reflect{T}(Type{T} t, ReflectCtx rc, Meta{#2}  floatTypeKind)      PrimInfo(PrimType.Float)
+fun reflect{T}(Type{T} t, ReflectCtx rc, Meta{#3}  boolTypeKind)       PrimInfo(PrimType.Bool)
+fun reflect{T}(Type{T} t, ReflectCtx rc, Meta{#4}  charTypeKind)       PrimInfo(PrimType.Char)
+fun reflect{T}(Type{T} t, ReflectCtx rc, Meta{#5}  stringTypeKind)     PrimInfo(PrimType.String)
+fun reflect{T}(Type{T} t, ReflectCtx rc, Meta{#6}  sysStreamTypeKind)  PrimInfo(PrimType.SysStream)
+fun reflect{T}(Type{T} t, ReflectCtx rc, Meta{#7}  sysProcessTypeKind) PrimInfo(PrimType.SysProcess)
+fun reflect{T}(Type{T} t, ReflectCtx rc, Meta{#8}  structTypeKind)     reflectStruct(t, rc)
+fun reflect{T}(Type{T} t, ReflectCtx rc, Meta{#9}  unionTypeKind)      reflectUnion(t, rc)
+fun reflect{T}(Type{T} t, ReflectCtx rc, Meta{#10} enumTypeKind)       reflectEnum(t)
+fun reflect{T}(Type{T} t, ReflectCtx rc, Meta{#11} delegateTypeKind)   DelegateInfo()
+fun reflect{T}(Type{T} t, ReflectCtx rc, Meta{#12} futureTypeKind)     FutureInfo()
+fun reflect{T}(Type{T} t, ReflectCtx rc, Meta{#13} lazyTypeKind)       LazyInfo()
+fun reflect{T}(Type{T} t, ReflectCtx rc, Meta{#14} staticIntTypeKind)  StaticIntInfo(int(Meta{T}()))
 
-fun reflectType{T}(Type{T} t) -> TypeInfo
-  reflectType(t, Meta{reflect_type_kind{T}}())
+fun reflect{T}(Type{T} t, ReflectCtx rc = ReflectCtx()) -> TypeInfo
+  if rc.types.contains(t.string())  -> RecursiveTypeInfo(t.string())
+  else                              -> reflect(t, rc.addType(t), Meta{reflect_type_kind{T}}())
 
 // ---- Struct
 
-fun reflectStructFields{Struct}(Type{Struct} t, Meta{#-1} idx, List{StructField} entries)
+fun reflectStructFields{Struct}(Type{Struct} t, ReflectCtx rc, Meta{#-1} idx, List{StructField} entries)
   entries
 
-fun reflectStructFields{Struct, Int}(Type{Struct} t, Meta{Int} idx, List{StructField} entries)
-  reflectStructFields(t, --idx,
+fun reflectStructFields{Struct, Int}(Type{Struct} t, ReflectCtx rc, Meta{Int} idx, List{StructField} entries)
+  reflectStructFields(t, rc, --idx,
     StructField(
       reflectStructFieldName(t, idx),
-      reflectType(reflectStructFieldType(t, idx))) :: entries)
+      reflect(reflectStructFieldType(t, idx), rc)) :: entries)
 
-fun reflectStruct{Struct}(Type{Struct} t) -> StructInfo
-  StructInfo(reflectStructFields(t, --reflectStructFieldCount(t), List{StructField}()))
+fun reflectStruct{Struct}(Type{Struct} t, ReflectCtx rc = ReflectCtx()) -> StructInfo
+  StructInfo(
+    t.string(),
+    reflectStructFields(t, rc, --reflectStructFieldCount(t), List{StructField}()))
+
+// ---- Union
+
+fun reflectUnionEntries{Union}(Type{Union} t, ReflectCtx rc, Meta{#-1} idx, List{TypeInfo} entries)
+  entries
+
+fun reflectUnionEntries{Union, Int}(Type{Union} t, ReflectCtx rc, Meta{Int} idx, List{TypeInfo} entries)
+  reflectUnionEntries(t, rc, --idx, reflect(reflectUnionType(t, idx), rc) :: entries)
+
+fun reflectUnion{Union}(Type{Union} t, ReflectCtx rc = ReflectCtx()) -> UnionInfo
+  UnionInfo(
+    t.string(),
+    reflectUnionEntries(t, rc, --reflectUnionCount(t), List{TypeInfo}()))
 
 // ---- Enum
 
@@ -98,7 +132,9 @@ fun reflectEnumEntries{Enum, Int}(Type{Enum} t, Meta{Int} idx, List{EnumEntry} e
   reflectEnumEntries(t, --idx, EnumEntry(reflectEnumKey(t, idx), reflectEnumVal(t, idx)) :: entries)
 
 fun reflectEnum{Enum}(Type{Enum} t) -> EnumInfo
-  EnumInfo(reflectEnumEntries(t, --reflectEnumCount(t), List{EnumEntry}()))
+  EnumInfo(
+    t.string(),
+    reflectEnumEntries(t, --reflectEnumCount(t), List{EnumEntry}()))
 
 // -- Struct Utilities
 
@@ -116,6 +152,18 @@ fun reflectStructFieldName{Struct, Idx}(Type{Struct} t, Meta{Idx} idx) -> string
 
 fun reflectStructFieldType{Struct, Idx}(Type{Struct} t, Meta{Idx} idx)
   Type{reflect_struct_field_type{Struct, Idx}}()
+
+// -- Union Utilities
+
+// ---- Lookup union count
+
+fun reflectUnionCount{Union}(Type{Union} t)
+  Meta{reflect_union_count{Union}}()
+
+// ---- Lookup union type from index
+
+fun reflectUnionType{Union, Idx}(Type{Union} t, Meta{Idx} idx)
+  Type{reflect_union_type{Union, Idx}}()
 
 // -- Enum Utilities
 
@@ -165,24 +213,34 @@ fun reflectEnumVal{Enum, Idx}(Type{Enum} t, Meta{Idx} idx) -> int
 
 // -- Tests
 
-assertEq(reflectType(Type{int}()),          PrimInfo(PrimType.Int))
-assertEq(reflectType(Type{long}()),         PrimInfo(PrimType.Long))
-assertEq(reflectType(Type{float}()),        PrimInfo(PrimType.Float))
-assertEq(reflectType(Type{bool}()),         PrimInfo(PrimType.Bool))
-assertEq(reflectType(Type{char}()),         PrimInfo(PrimType.Char))
-assertEq(reflectType(Type{string}()),       PrimInfo(PrimType.String))
-assertEq(reflectType(Type{sys_stream}()),   PrimInfo(PrimType.SysStream))
-assertEq(reflectType(Type{sys_process}()),  PrimInfo(PrimType.SysProcess))
+assertEq(reflect(Type{int}()),          PrimInfo(PrimType.Int))
+assertEq(reflect(Type{long}()),         PrimInfo(PrimType.Long))
+assertEq(reflect(Type{float}()),        PrimInfo(PrimType.Float))
+assertEq(reflect(Type{bool}()),         PrimInfo(PrimType.Bool))
+assertEq(reflect(Type{char}()),         PrimInfo(PrimType.Char))
+assertEq(reflect(Type{string}()),       PrimInfo(PrimType.String))
+assertEq(reflect(Type{sys_stream}()),   PrimInfo(PrimType.SysStream))
+assertEq(reflect(Type{sys_process}()),  PrimInfo(PrimType.SysProcess))
 
-assertEq(reflectType(Type{Date}()), StructInfo(
+assertEq(reflect(Type{Date}()), StructInfo("Date",
   StructField("year",   PrimInfo(PrimType.Int))     ::
   StructField("month",  reflectEnum(Type{Month}())) ::
   StructField("day",    PrimInfo(PrimType.Int))
 ))
 
-assertIs(reflectType(Type{TypeInfo}()), Type{UnionInfo}())
+assertEq(reflect(Type{Option{int}}()), UnionInfo("Option{int}",
+  reflect(Type{int}()) :: reflect(Type{None}())
+))
 
-assertEq(reflectType(Type{Month}()), EnumInfo(
+assertEq(reflect(Type{List{int}}()), UnionInfo("List{int}",
+  TypeInfo(StructInfo("LNode{int}",
+    StructField("val",  PrimInfo(PrimType.Int)) ::
+    StructField("next", RecursiveTypeInfo("List{int}"))
+  )) ::
+  TypeInfo(StructInfo("LEnd", List{StructField}()))
+))
+
+assertEq(reflect(Type{Month}()), EnumInfo("Month",
   EnumEntry("January",    1)   ::
   EnumEntry("February",   2)   ::
   EnumEntry("March",      3)   ::
@@ -197,11 +255,11 @@ assertEq(reflectType(Type{Month}()), EnumInfo(
   EnumEntry("December",   12)
 ))
 
-assertIs(reflectType(Type{function{int}}()),  Type{DelegateInfo}())
-assertIs(reflectType(Type{action{int}}()),    Type{DelegateInfo}())
-assertIs(reflectType(Type{future{int}}()),    Type{FutureInfo}())
-assertIs(reflectType(Type{lazy{int}}()),      Type{LazyInfo}())
-assertEq(reflectType(Type{#42}()),            StaticIntInfo(42))
+assertIs(reflect(Type{function{int}}()),  Type{DelegateInfo}())
+assertIs(reflect(Type{action{int}}()),    Type{DelegateInfo}())
+assertIs(reflect(Type{future{int}}()),    Type{FutureInfo}())
+assertIs(reflect(Type{lazy{int}}()),      Type{LazyInfo}())
+assertEq(reflect(Type{#42}()),            StaticIntInfo(42))
 
 // -- Struct utility tests
 
@@ -215,7 +273,16 @@ assertEq(reflectStructFieldName(Type{Date}(), Meta{#2}()), "day")
 
 assertEq(reflectStructFieldType(Type{Date}(), Meta{#0}()), Type{int}())
 assertEq(reflectStructFieldType(Type{Date}(), Meta{#1}()), Type{Month}())
-assertEq(reflectStructFieldType(Type{EnumInfo}(), Meta{#0}()), Type{List{EnumEntry}}())
+assertEq(reflectStructFieldType(Type{EnumInfo}(), Meta{#1}()), Type{List{EnumEntry}}())
+
+// -- Union utility tests
+
+assertEq(reflectUnionCount(Type{Option{int}}()), Meta{#2}())
+assertEq(reflectUnionCount(Type{TypeInfo}()), Meta{#9}())
+
+assertEq(reflectUnionType(Type{Option{int}}(), Meta{#0}()), Type{int}())
+assertEq(reflectUnionType(Type{Option{int}}(), Meta{#1}()), Type{None}())
+assertEq(reflectUnionType(Type{TypeInfo}(), Meta{#4}()), Type{DelegateInfo}())
 
 // -- Enum utility tests
 
