@@ -4,6 +4,7 @@
 #include "internal/utilities.hpp"
 #include "parse/nodes.hpp"
 #include "prog/expr/node_call.hpp"
+#include "prog/expr/node_lit_bool.hpp"
 #include "prog/expr/node_lit_int.hpp"
 #include "prog/expr/node_lit_string.hpp"
 #include <cassert>
@@ -47,7 +48,7 @@ auto resolveStaticIntToIntIntrinsic(
   return value ? prog::expr::litIntNode(*ctx->getProg(), *value) : OptNodeExpr{};
 }
 
-auto resolveRelectStructFieldName(
+auto resolvedReflectStructFieldName(
     Context* ctx, const prog::sym::TypeSet& typeParams, const IntrinsicArgs& args) -> OptNodeExpr {
 
   if (typeParams.getCount() != 2 || args.first.size() != 0) {
@@ -57,7 +58,7 @@ auto resolveRelectStructFieldName(
   return name ? prog::expr::litStringNode(*ctx->getProg(), *name) : OptNodeExpr{};
 }
 
-auto resolveRelectEnumKey(
+auto resolvedReflectEnumKey(
     Context* ctx, const prog::sym::TypeSet& typeParams, const IntrinsicArgs& args) -> OptNodeExpr {
 
   if (typeParams.getCount() != 2 || args.first.size() != 0) {
@@ -67,7 +68,7 @@ auto resolveRelectEnumKey(
   return key ? prog::expr::litStringNode(*ctx->getProg(), *key) : OptNodeExpr{};
 }
 
-auto resolveRelectEnumValue(
+auto resolvedReflectEnumValue(
     Context* ctx, const prog::sym::TypeSet& typeParams, const IntrinsicArgs& args) -> OptNodeExpr {
 
   if (typeParams.getCount() != 2 || args.first.size() != 0) {
@@ -75,6 +76,16 @@ auto resolveRelectEnumValue(
   }
   auto val = reflectEnumVal(ctx, typeParams[0], typeParams[1]);
   return val ? prog::expr::litIntNode(*ctx->getProg(), *val) : OptNodeExpr{};
+}
+
+auto resolvedReflectDelegateIsAction(
+    Context* ctx, const prog::sym::TypeSet& typeParams, const IntrinsicArgs& args) -> OptNodeExpr {
+
+  if (typeParams.getCount() != 1 || args.first.size() != 0) {
+    return std::nullopt;
+  }
+  auto val = reflectDelegateIsAction(ctx, typeParams[0]);
+  return val ? prog::expr::litBoolNode(*ctx->getProg(), *val) : OptNodeExpr{};
 }
 
 } // namespace
@@ -106,13 +117,16 @@ auto resolveMetaIntrinsic(
     return resolveStaticIntToIntIntrinsic(ctx, *typeParamSet, args);
   }
   if (name == "reflect_struct_field_name") {
-    return resolveRelectStructFieldName(ctx, *typeParamSet, args);
+    return resolvedReflectStructFieldName(ctx, *typeParamSet, args);
   }
   if (name == "reflect_enum_key") {
-    return resolveRelectEnumKey(ctx, *typeParamSet, args);
+    return resolvedReflectEnumKey(ctx, *typeParamSet, args);
   }
   if (name == "reflect_enum_value") {
-    return resolveRelectEnumValue(ctx, *typeParamSet, args);
+    return resolvedReflectEnumValue(ctx, *typeParamSet, args);
+  }
+  if (name == "reflect_delegate_is_action") {
+    return resolvedReflectDelegateIsAction(ctx, *typeParamSet, args);
   }
   return std::nullopt;
 }

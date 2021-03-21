@@ -37,4 +37,17 @@ reflectEnumKey(Context* ctx, prog::sym::TypeId enumType, prog::sym::TypeId index
 reflectEnumVal(Context* ctx, prog::sym::TypeId enumType, prog::sym::TypeId indexType) noexcept
     -> std::optional<int32_t>;
 
+[[nodiscard]] auto reflectDelegateInputCount(Context* ctx, prog::sym::TypeId delegateType) noexcept
+    -> std::optional<prog::sym::TypeId>;
+
+[[nodiscard]] auto reflectDelegateInputType(
+    Context* ctx, prog::sym::TypeId delegateType, prog::sym::TypeId indexType) noexcept
+    -> std::optional<prog::sym::TypeId>;
+
+[[nodiscard]] auto reflectDelegateRetType(Context* ctx, prog::sym::TypeId delegateType) noexcept
+    -> std::optional<prog::sym::TypeId>;
+
+[[nodiscard]] auto reflectDelegateIsAction(Context* ctx, prog::sym::TypeId delegateType) noexcept
+    -> std::optional<bool>;
+
 } // namespace frontend::internal

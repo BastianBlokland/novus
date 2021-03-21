@@ -359,6 +359,21 @@ auto instType(
       return enumCount;
     }
   }
+  if (typeName == "reflect_delegate_input_count" && typeSet->getCount() == 1) {
+    if (auto inputCount = reflectDelegateInputCount(ctx, (*typeSet)[0])) {
+      return inputCount;
+    }
+  }
+  if (typeName == "reflect_delegate_input_type" && typeSet->getCount() == 2) {
+    if (auto inputType = reflectDelegateInputType(ctx, (*typeSet)[0], (*typeSet)[1])) {
+      return inputType;
+    }
+  }
+  if (typeName == "reflect_delegate_ret_type" && typeSet->getCount() == 1) {
+    if (auto retType = reflectDelegateRetType(ctx, (*typeSet)[0])) {
+      return retType;
+    }
+  }
 
   const auto typeInstantiation = ctx->getTypeTemplates()->instantiate(typeName, *typeSet);
   if (!typeInstantiation) {

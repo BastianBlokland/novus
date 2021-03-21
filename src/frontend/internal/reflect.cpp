@@ -29,6 +29,16 @@ auto getEnumDef(Context* ctx, prog::sym::TypeId enumType) noexcept -> const prog
   return &std::get<prog::sym::EnumDef>(ctx->getProg()->getTypeDef(enumType));
 }
 
+auto getDelegateDef(Context* ctx, prog::sym::TypeId delegateType) noexcept
+    -> const prog::sym::DelegateDef* {
+
+  const auto& delegateTypeDecl = ctx->getProg()->getTypeDecl(delegateType);
+  if (delegateTypeDecl.getKind() != prog::sym::TypeKind::Delegate) {
+    return nullptr; // Not a delegate.
+  }
+  return &std::get<prog::sym::DelegateDef>(ctx->getProg()->getTypeDef(delegateType));
+}
+
 } // namespace
 
 auto reflectTypeKind(Context* ctx, prog::sym::TypeId type) noexcept -> prog::sym::TypeId {
@@ -38,11 +48,10 @@ auto reflectTypeKind(Context* ctx, prog::sym::TypeId type) noexcept -> prog::sym
 
 auto reflectStructFieldCount(Context* ctx, prog::sym::TypeId structType) noexcept
     -> std::optional<prog::sym::TypeId> {
-  const auto* structDef = getStructDef(ctx, structType);
-  if (!structDef) {
-    return std::nullopt;
+  if (const auto* structDef = getStructDef(ctx, structType)) {
+    return ctx->getStaticIntTable()->getType(ctx, structDef->getFields().getCount());
   }
-  return ctx->getStaticIntTable()->getType(ctx, structDef->getFields().getCount());
+  return std::nullopt;
 }
 
 auto reflectStructFieldName(
@@ -72,11 +81,10 @@ auto reflectStructFieldType(
 auto reflectUnionCount(Context* ctx, prog::sym::TypeId unionType) noexcept
     -> std::optional<prog::sym::TypeId> {
 
-  const auto* unionDef = getUnionDef(ctx, unionType);
-  if (!unionDef) {
-    return std::nullopt;
+  if (const auto* unionDef = getUnionDef(ctx, unionType)) {
+    return ctx->getStaticIntTable()->getType(ctx, unionDef->getTypes().size());
   }
-  return ctx->getStaticIntTable()->getType(ctx, unionDef->getTypes().size());
+  return std::nullopt;
 }
 
 auto reflectUnionType(
@@ -93,11 +101,10 @@ auto reflectUnionType(
 
 auto reflectEnumCount(Context* ctx, prog::sym::TypeId enumType) noexcept
     -> std::optional<prog::sym::TypeId> {
-  const auto* enumDef = getEnumDef(ctx, enumType);
-  if (!enumDef) {
-    return std::nullopt;
+  if (const auto* enumDef = getEnumDef(ctx, enumType)) {
+    return ctx->getStaticIntTable()->getType(ctx, enumDef->getCount());
   }
-  return ctx->getStaticIntTable()->getType(ctx, enumDef->getCount());
+  return std::nullopt;
 }
 
 auto reflectEnumKey(Context* ctx, prog::sym::TypeId enumType, prog::sym::TypeId indexType) noexcept
@@ -122,6 +129,43 @@ auto reflectEnumVal(Context* ctx, prog::sym::TypeId enumType, prog::sym::TypeId 
     return std::nullopt; // Not an enum or out of bounds index.
   }
   return (*enumDef)[index].second;
+}
+
+auto reflectDelegateInputCount(Context* ctx, prog::sym::TypeId delegateType) noexcept
+    -> std::optional<prog::sym::TypeId> {
+  if (const auto* delegateDef = getDelegateDef(ctx, delegateType)) {
+    return ctx->getStaticIntTable()->getType(ctx, delegateDef->getInput().getCount());
+  }
+  return std::nullopt;
+}
+
+auto reflectDelegateInputType(
+    Context* ctx, prog::sym::TypeId delegateType, prog::sym::TypeId indexType) noexcept
+    -> std::optional<prog::sym::TypeId> {
+
+  const auto* delegateDef = getDelegateDef(ctx, delegateType);
+  auto index              = ctx->getStaticIntTable()->getValue(indexType).value_or(-1);
+  if (!delegateDef || index < 0 || index >= static_cast<int>(delegateDef->getInput().getCount())) {
+    return std::nullopt; // Not a delegate or out of bounds input index.
+  }
+  return delegateDef->getInput()[index];
+}
+
+auto reflectDelegateRetType(Context* ctx, prog::sym::TypeId delegateType) noexcept
+    -> std::optional<prog::sym::TypeId> {
+  if (const auto* delegateDef = getDelegateDef(ctx, delegateType)) {
+    return delegateDef->getOutput();
+  }
+  return std::nullopt;
+}
+
+auto reflectDelegateIsAction(Context* ctx, prog::sym::TypeId delegateType) noexcept
+    -> std::optional<bool> {
+
+  if (const auto* delegateDef = getDelegateDef(ctx, delegateType)) {
+    return delegateDef->isAction();
+  }
+  return std::nullopt;
 }
 
 } // namespace frontend::internal
