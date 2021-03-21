@@ -123,10 +123,10 @@ act noinline printHex(float f, bool includeLeadingZeroes = false) -> Option{Erro
   print(toHexString(asInt(f), includeLeadingZeroes))
 
 act printType{T}(Type{T} t) -> Option{Error}
-  print(reflect(t))
+  print(reflect(t).string("  ", WriterNewlineMode.Lf))
 
 act printType{T}(T val) -> Option{Error}
-  print(reflect(val.getType()))
+  print(reflect(val.getType()).string("  ", WriterNewlineMode.Lf))
 
 // -- Meta
 

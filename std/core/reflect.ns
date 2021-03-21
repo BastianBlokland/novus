@@ -1,6 +1,7 @@
 import "list.ns"
 import "time.ns"
 
+import "std/format.ns"
 import "std/prim.ns"
 
 // -- Type infos
@@ -8,7 +9,7 @@ import "std/prim.ns"
 enum    PrimType      = Int, Long, Float, Bool, Char, String, SysStream, SysProcess
 struct  PrimInfo      = PrimType type
 
-struct  StructField   = string name, TypeInfo value
+struct  StructField   = string name, TypeInfo type
 struct  StructInfo    = string name, List{StructField} fields
 
 struct  UnionInfo     = string name, List{TypeInfo} entries
@@ -35,46 +36,41 @@ fun ReflectCtx() ReflectCtx(List{string}())
 
 // -- Conversions
 
-fun string(PrimInfo pi)
-  reflectEnumKeyForVal(pi.type) ?? ""
+fun string(PrimInfo pi, string indent = "", WriterNewlineMode newlineMode = WriterNewlineMode.None)
+  w = primInfoWriter();
+  w(pi, indent, newlineMode).string()
 
-fun string(StructField e)
-  e.name + ":" + e.value.string()
+fun string(StructInfo si, string indent = "", WriterNewlineMode newlineMode = WriterNewlineMode.None)
+  w = structInfoWriter();
+  w(si, indent, newlineMode).string()
 
-fun string(StructInfo s)
-  s.name + ":" + s.fields.string()
+fun string(UnionInfo ui, string indent = "", WriterNewlineMode newlineMode = WriterNewlineMode.None)
+  w = unionInfoWriter();
+  w(ui, indent, newlineMode).string()
 
-fun string(UnionInfo u)
-  u.name + ":" + u.entries.string()
+fun string(EnumInfo ei, string indent = "", WriterNewlineMode newlineMode = WriterNewlineMode.None)
+  w = enumInfoWriter();
+  w(ei, indent, newlineMode).string()
 
-fun string(EnumEntry e)
-  e.key + ":" + e.value.string()
+fun string(DelegateInfo di, string indent = "", WriterNewlineMode newlineMode = WriterNewlineMode.None)
+  w = delegateInfoWriter();
+  w(di, indent, newlineMode).string()
 
-fun string(EnumInfo e)
-  e.name + ":" + e.entries.string()
+fun string(FutureInfo fi, string indent = "", WriterNewlineMode newlineMode = WriterNewlineMode.None)
+  w = futureInfoWriter();
+  w(fi, indent, newlineMode).string()
 
-fun string(DelegateInfo d)
-  (d.isAction ? "Action:" : "Function:") + d.inputTypes.string() + "->" + d.retType.string()
+fun string(LazyInfo li, string indent = "", WriterNewlineMode newlineMode = WriterNewlineMode.None)
+  w = lazyInfoWriter();
+  w(li, indent, newlineMode).string()
 
-fun string(FutureInfo f)
-  "Future:" + f.type.string()
+fun string(StaticIntInfo sii, string indent = "", WriterNewlineMode newlineMode = WriterNewlineMode.None)
+  w = staticIntInfoWriter();
+  w(sii, indent, newlineMode).string()
 
-fun string(LazyInfo l)
-  (l.isAction ? "ImpureLazy:" : "PureLazy:") + l.type.string()
-
-fun string(StaticIntInfo si)
-  "#" + si.value.string()
-
-fun string(TypeInfo ti)
-  if ti as PrimInfo pi            -> pi.string()
-  if ti as StructInfo si          -> si.string()
-  if ti as UnionInfo ui           -> ui.string()
-  if ti as EnumInfo ei            -> ei.string()
-  if ti as DelegateInfo di        -> di.string()
-  if ti as FutureInfo fi          -> fi.string()
-  if ti as LazyInfo li            -> li.string()
-  if ti as StaticIntInfo sii      -> sii.string()
-  if ti as RecursiveTypeInfo req  -> req.name
+fun string(TypeInfo ti, string indent = "", WriterNewlineMode newlineMode = WriterNewlineMode.None)
+  w = typeInfoWriter();
+  w(ti, indent, newlineMode).string()
 
 // -- Utilities
 
@@ -289,6 +285,76 @@ fun reflectLazyType{InnerType}(Type{lazy_action{InnerType}} t)
 
 fun reflectLazyIsAction{InnerType}(Type{lazy{InnerType}} t)         false
 fun reflectLazyIsAction{InnerType}(Type{lazy_action{InnerType}} t)  true
+
+// -- Writers
+
+fun namedTypeInfoWriter() -> Writer{Pair{string, string}}
+  stringWriter() & litWriter(" (") & stringWriter() & litWriter(") ")
+
+fun primInfoWriter()
+  (
+    enumKeyWriter(Type{PrimType}())
+  ).map(lambda (PrimInfo pi) pi.type)
+
+fun structInfoWriter(Writer{TypeInfo} typeInfoWriter = typeInfoWriter())
+  fieldWriter = (
+    stringWriter() & litWriter(": ") & typeInfoWriter
+  ).map(lambda (StructField f) makePair(f.name, f.type));
+  (
+    namedTypeInfoWriter() & basicListWriter(fieldWriter)
+  ).map(lambda (StructInfo s) makePair(s.name, "Struct", s.fields))
+
+fun unionInfoWriter(Writer{TypeInfo} typeInfoWriter = typeInfoWriter())
+  (
+    namedTypeInfoWriter() & basicListWriter(typeInfoWriter)
+  ).map(lambda (UnionInfo s) makePair(s.name, "Union", s.entries))
+
+fun enumInfoWriter()
+  entryWriter = (
+    stringWriter() & litWriter(": ") & txtIntWriter()
+  ).map(lambda (EnumEntry f) makePair(f.key, f.value));
+  (
+    namedTypeInfoWriter() & basicListWriter(entryWriter)
+  ).map(lambda (EnumInfo e) makePair(e.name, "Enum", e.entries))
+
+fun delegateInfoWriter(Writer{TypeInfo} typeInfoWriter = typeInfoWriter())
+  (
+    stringWriter() & basicListWriter(typeInfoWriter) & litWriter(" -> ") & typeInfoWriter
+  ).map(lambda (DelegateInfo d) makePair(d.isAction ? "Action: " : "Function: ", d.inputTypes, d.retType))
+
+fun futureInfoWriter(Writer{TypeInfo} typeInfoWriter = typeInfoWriter())
+  (
+    litWriter("Future: ") & typeInfoWriter
+  ).map(lambda (FutureInfo f) f.type)
+
+fun lazyInfoWriter(Writer{TypeInfo} typeInfoWriter = typeInfoWriter())
+  (
+    stringWriter() & typeInfoWriter
+  ).map(lambda (LazyInfo l) makePair(l.isAction ? "ImpureLazy: " : "PureLazy: ", l.type))
+
+fun staticIntInfoWriter()
+  (litWriter("#") & txtIntWriter()).map(lambda (StaticIntInfo i) i.value)
+
+fun typeInfoWriter()
+  primWriter      = primInfoWriter();
+  structWriter    = structInfoWriter(lazyWriter(lazy typeInfoWriter()));
+  unionWriter     = unionInfoWriter(lazyWriter(lazy typeInfoWriter()));
+  enumWriter      = enumInfoWriter();
+  delegateWriter  = delegateInfoWriter(lazyWriter(lazy typeInfoWriter()));
+  futureWriter    = futureInfoWriter(lazyWriter(lazy typeInfoWriter()));
+  lazyWriter      = lazyInfoWriter(lazyWriter(lazy typeInfoWriter()));
+  staticIntWriter = staticIntInfoWriter();
+  Writer(lambda (WriterState s, TypeInfo t)
+    if t as PrimInfo pi           -> primWriter(s, pi)
+    if t as StructInfo si         -> structWriter(s, si)
+    if t as UnionInfo ui          -> unionWriter(s, ui)
+    if t as EnumInfo ei           -> enumWriter(s, ei)
+    if t as DelegateInfo di       -> delegateWriter(s, di)
+    if t as FutureInfo fi         -> futureWriter(s, fi)
+    if t as LazyInfo li           -> lazyWriter(s, li)
+    if t as StaticIntInfo sii     -> staticIntWriter(s, sii)
+    if t as RecursiveTypeInfo ri  -> s.write(ri.name)
+  )
 
 // -- Tests
 
