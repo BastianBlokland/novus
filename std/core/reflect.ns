@@ -161,7 +161,6 @@ assertIs(reflectType(Type{lazy{int}}()),      Type{LazyInfo}())
 assertEq(reflectType(Type{#42}()),            StaticIntInfo(42))
 
 assertEq(reflectEnumCount(Type{Month}()), Meta{#12}())
-assertEq(reflectEnumCount(Type{string}()), Meta{#0}())
 
 assertEq(reflectEnumKey(Type{Month}(), Meta{#0}()), "January")
 assertEq(reflectEnumKey(Type{Month}(), Meta{#11}()), "December")

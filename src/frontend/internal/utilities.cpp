@@ -335,7 +335,9 @@ auto instType(
     return reflectTypeKind(ctx, (*typeSet)[0]);
   }
   if (typeName == "reflect_enum_count" && typeSet->getCount() == 1) {
-    return reflectEnumCount(ctx, (*typeSet)[0]);
+    if (auto enumCount = reflectEnumCount(ctx, (*typeSet)[0])) {
+      return enumCount;
+  }
   }
 
   const auto typeInstantiation = ctx->getTypeTemplates()->instantiate(typeName, *typeSet);

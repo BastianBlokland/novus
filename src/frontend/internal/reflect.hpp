@@ -9,7 +9,7 @@ namespace frontend::internal {
     -> prog::sym::TypeId;
 
 [[nodiscard]] auto reflectEnumCount(Context* ctx, prog::sym::TypeId enumType) noexcept
-    -> prog::sym::TypeId;
+    -> std::optional<prog::sym::TypeId>;
 
 [[nodiscard]] auto
 reflectEnumKey(Context* ctx, prog::sym::TypeId enumType, prog::sym::TypeId indexType) noexcept
