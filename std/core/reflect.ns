@@ -16,7 +16,7 @@ struct  UnionInfo     = string name, List{TypeInfo} entries
 struct  EnumEntry     = string key, int value
 struct  EnumInfo      = string name, List{EnumEntry} entries
 
-struct  DelegateInfo
+struct  DelegateInfo  = List{TypeInfo} inputTypes, TypeInfo retType, bool isAction
 struct  FutureInfo    = TypeInfo type
 struct  LazyInfo      = TypeInfo type, bool isAction
 struct  StaticIntInfo = int value
@@ -53,6 +53,9 @@ fun string(EnumEntry e)
 fun string(EnumInfo e)
   e.name + ":" + e.entries.string()
 
+fun string(DelegateInfo d)
+  (d.isAction ? "Action:" : "Function:") + d.inputTypes.string() + "->" + d.retType.string()
+
 fun string(FutureInfo f)
   "Future:" + f.type.string()
 
@@ -67,7 +70,7 @@ fun string(TypeInfo ti)
   if ti as StructInfo si          -> si.string()
   if ti as UnionInfo ui           -> ui.string()
   if ti as EnumInfo ei            -> ei.string()
-  if ti is DelegateInfo           -> "Delegate"
+  if ti as DelegateInfo di        -> di.string()
   if ti as FutureInfo fi          -> fi.string()
   if ti as LazyInfo li            -> li.string()
   if ti as StaticIntInfo sii      -> sii.string()
@@ -91,7 +94,7 @@ fun reflect{T}(Type{T} t, ReflectCtx rc, Meta{#7}  sysProcessTypeKind) PrimInfo(
 fun reflect{T}(Type{T} t, ReflectCtx rc, Meta{#8}  structTypeKind)     reflectStruct(t, rc)
 fun reflect{T}(Type{T} t, ReflectCtx rc, Meta{#9}  unionTypeKind)      reflectUnion(t, rc)
 fun reflect{T}(Type{T} t, ReflectCtx rc, Meta{#10} enumTypeKind)       reflectEnum(t)
-fun reflect{T}(Type{T} t, ReflectCtx rc, Meta{#11} delegateTypeKind)   DelegateInfo()
+fun reflect{T}(Type{T} t, ReflectCtx rc, Meta{#11} delegateTypeKind)   reflectDelegate(t, rc)
 fun reflect{T}(Type{T} t, ReflectCtx rc, Meta{#12} futureTypeKind)     reflectFuture(t, rc)
 fun reflect{T}(Type{T} t, ReflectCtx rc, Meta{#13} lazyTypeKind)       reflectLazy(t, rc)
 fun reflect{T}(Type{T} t, ReflectCtx rc, Meta{#14} staticIntTypeKind)  StaticIntInfo(int(Meta{T}()))
@@ -141,6 +144,20 @@ fun reflectEnum{Enum}(Type{Enum} t) -> EnumInfo
   EnumInfo(
     t.string(),
     reflectEnumEntries(t, --reflectEnumCount(t), List{EnumEntry}()))
+
+// ---- Delegate
+
+fun reflectDelegateInputs{Delegate}(Type{Delegate} t, ReflectCtx rc, Meta{#-1} idx, List{TypeInfo} inputs)
+  inputs
+
+fun reflectDelegateInputs{Delegate, Int}(Type{Delegate} t, ReflectCtx rc, Meta{Int} idx, List{TypeInfo} inputs)
+  reflectDelegateInputs(t, rc, --idx, reflect(reflectDelegateInputType(t, idx), rc) :: inputs)
+
+fun reflectDelegate{Delegate}(Type{Delegate} t, ReflectCtx rc = ReflectCtx()) -> DelegateInfo
+  DelegateInfo(
+    reflectDelegateInputs(t, rc, --reflectDelegateInputCount(t), List{TypeInfo}()),
+    reflect(reflectDelegateRetType(t), rc),
+    reflectDelegateIsAction(t))
 
 // ---- Future
 
@@ -229,6 +246,28 @@ fun reflectEnumKey{Enum, Idx}(Type{Enum} t, Meta{Idx} idx) -> string
 fun reflectEnumVal{Enum, Idx}(Type{Enum} t, Meta{Idx} idx) -> int
   intrinsic{reflect_enum_value}{Enum, Idx}()
 
+// -- Delegate Utilities
+
+// ---- Lookup delegate input count
+
+fun reflectDelegateInputCount{Delegate}(Type{Delegate} t)
+  Meta{reflect_delegate_input_count{Delegate}}()
+
+// ---- Lookup delegate input type from index
+
+fun reflectDelegateInputType{Delegate, Idx}(Type{Delegate} t, Meta{Idx} idx)
+  Type{reflect_delegate_input_type{Delegate, Idx}}()
+
+// ---- Lookup delegate return type
+
+fun reflectDelegateRetType{Delegate}(Type{Delegate} t)
+  Type{reflect_delegate_ret_type{Delegate}}()
+
+// ---- Lookup if a delegate type is a action
+
+fun reflectDelegateIsAction{Delegate}(Type{Delegate} t) -> bool
+  intrinsic{reflect_delegate_is_action}{Delegate}()
+
 // -- Future Utilities
 
 // ---- Lookup future type
@@ -295,8 +334,23 @@ assertEq(reflect(Type{Month}()), EnumInfo("Month",
   EnumEntry("December",   12)
 ))
 
-assertIs(reflect(Type{function{int}}()),  Type{DelegateInfo}())
-assertIs(reflect(Type{action{int}}()),    Type{DelegateInfo}())
+assertEq(reflect(Type{function{int}}()), DelegateInfo(
+  List{TypeInfo}(),
+  reflect(Type{int}()),
+  false
+))
+
+assertEq(reflect(Type{function{char, float, int}}()), DelegateInfo(
+  reflect(Type{char}()) :: reflect(Type{float}()),
+  reflect(Type{int}()),
+  false
+))
+
+assertEq(reflect(Type{action{char, float, int}}()), DelegateInfo(
+  reflect(Type{char}()) :: reflect(Type{float}()),
+  reflect(Type{int}()),
+  true
+))
 
 assertEq(reflect(Type{future{int}}()), FutureInfo(PrimInfo(PrimType.Int)))
 
@@ -346,6 +400,26 @@ assertEq(reflectEnumKeyForVal(Type{Month}(), 13), None())
 assertEq(reflectEnumValForKey(Type{Month}(), "April"), 4)
 assertEq(reflectEnumValForKey(Type{Month}(), "aPrIl", StrComp.OrdinalIgnoreCase), 4)
 assertEq(reflectEnumValForKey(Type{Month}(), "Hello"), None())
+
+// -- Delegate utility tests
+
+assertEq(reflectDelegateInputCount(Type{function{bool}}()), Meta{#0}())
+assertEq(reflectDelegateInputCount(Type{action{bool}}()), Meta{#0}())
+assertEq(reflectDelegateInputCount(Type{function{int, float, bool}}()), Meta{#2}())
+assertEq(reflectDelegateInputCount(Type{action{float, bool}}()), Meta{#1}())
+
+assertEq(reflectDelegateInputType(Type{function{float, bool}}(), Meta{#0}()), Type{float}())
+assertEq(reflectDelegateInputType(Type{action{float, bool}}(), Meta{#0}()), Type{float}())
+assertEq(reflectDelegateInputType(Type{function{int, float, bool}}(), Meta{#0}()), Type{int}())
+assertEq(reflectDelegateInputType(Type{function{int, float, bool}}(), Meta{#1}()), Type{float}())
+
+assertEq(reflectDelegateRetType(Type{function{int, bool}}()), Type{bool}())
+assertEq(reflectDelegateRetType(Type{function{bool}}()), Type{bool}())
+assertEq(reflectDelegateRetType(Type{action{int, bool}}()), Type{bool}())
+assertEq(reflectDelegateRetType(Type{action{bool}}()), Type{bool}())
+
+assertNot(reflectDelegateIsAction(Type{function{bool}}()))
+assert(reflectDelegateIsAction(Type{action{bool}}()))
 
 // -- Future utility tests
 
