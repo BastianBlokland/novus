@@ -8,7 +8,9 @@ import "std/prim.ns"
 enum    PrimType      = Int, Long, Float, Bool, Char, String, SysStream, SysProcess
 struct  PrimInfo      = PrimType type
 
-struct  StructInfo
+struct  StructField   = string name, TypeInfo value
+struct  StructInfo    = List{StructField} fields
+
 struct  UnionInfo
 
 struct  EnumEntry     = string key, int value
@@ -27,6 +29,12 @@ union TypeInfo =
 fun string(PrimInfo pi)
   reflectEnumKeyForVal(pi.type) ?? ""
 
+fun string(StructField e)
+  e.name + ":" + e.value.string()
+
+fun string(StructInfo s)
+  s.fields.string()
+
 fun string(EnumEntry e)
   e.key + ":" + e.value.string()
 
@@ -37,14 +45,14 @@ fun string(StaticIntInfo si)
   "#" + si.value.string()
 
 fun string(TypeInfo ti)
-  if ti as PrimInfo pi      -> pi.string()
-  if ti is StructInfo       -> "Struct"
-  if ti is UnionInfo        -> "Union"
-  if ti is EnumInfo         -> "Enum"
-  if ti is DelegateInfo     -> "Delegate"
-  if ti is FutureInfo       -> "Future"
-  if ti is LazyInfo         -> "Lazy"
-  if ti as StaticIntInfo si -> si.string()
+  if ti as PrimInfo pi        -> pi.string()
+  if ti as StructInfo si      -> "Struct:" + si.string()
+  if ti is UnionInfo          -> "Union"
+  if ti as EnumInfo ei        -> "Enum:" + ei.string()
+  if ti is DelegateInfo       -> "Delegate"
+  if ti is FutureInfo         -> "Future"
+  if ti is LazyInfo           -> "Lazy"
+  if ti as StaticIntInfo sii  -> sii.string()
 
 // -- Reflection
 
@@ -56,7 +64,7 @@ fun reflectType{T}(Type{T} t, Meta{#4}  charTypeKind)       PrimInfo(PrimType.Ch
 fun reflectType{T}(Type{T} t, Meta{#5}  stringTypeKind)     PrimInfo(PrimType.String)
 fun reflectType{T}(Type{T} t, Meta{#6}  sysStreamTypeKind)  PrimInfo(PrimType.SysStream)
 fun reflectType{T}(Type{T} t, Meta{#7}  sysProcessTypeKind) PrimInfo(PrimType.SysProcess)
-fun reflectType{T}(Type{T} t, Meta{#8}  structTypeKind)     StructInfo()
+fun reflectType{T}(Type{T} t, Meta{#8}  structTypeKind)     reflectStruct(t)
 fun reflectType{T}(Type{T} t, Meta{#9}  unionTypeKind)      UnionInfo()
 fun reflectType{T}(Type{T} t, Meta{#10} enumTypeKind)       reflectEnum(t)
 fun reflectType{T}(Type{T} t, Meta{#11} delegateTypeKind)   DelegateInfo()
@@ -66,6 +74,20 @@ fun reflectType{T}(Type{T} t, Meta{#14} staticIntTypeKind)  StaticIntInfo(int(Me
 
 fun reflectType{T}(Type{T} t) -> TypeInfo
   reflectType(t, Meta{reflect_type_kind{T}}())
+
+// ---- Struct
+
+fun reflectStructFields{Struct}(Type{Struct} t, Meta{#-1} idx, List{StructField} entries)
+  entries
+
+fun reflectStructFields{Struct, Int}(Type{Struct} t, Meta{Int} idx, List{StructField} entries)
+  reflectStructFields(t, --idx,
+    StructField(
+      reflectStructFieldName(t, idx),
+      reflectType(reflectStructFieldType(t, idx))) :: entries)
+
+fun reflectStruct{Struct}(Type{Struct} t) -> StructInfo
+  StructInfo(reflectStructFields(t, --reflectStructFieldCount(t), List{StructField}()))
 
 // ---- Enum
 
@@ -77,6 +99,23 @@ fun reflectEnumEntries{Enum, Int}(Type{Enum} t, Meta{Int} idx, List{EnumEntry} e
 
 fun reflectEnum{Enum}(Type{Enum} t) -> EnumInfo
   EnumInfo(reflectEnumEntries(t, --reflectEnumCount(t), List{EnumEntry}()))
+
+// -- Struct Utilities
+
+// ---- Lookup struct field count
+
+fun reflectStructFieldCount{Struct}(Type{Struct} t)
+  Meta{reflect_struct_field_count{Struct}}()
+
+// ---- Lookup struct field name from index
+
+fun reflectStructFieldName{Struct, Idx}(Type{Struct} t, Meta{Idx} idx) -> string
+  intrinsic{reflect_struct_field_name}{Struct, Idx}()
+
+// ---- Lookup struct field type from index
+
+fun reflectStructFieldType{Struct, Idx}(Type{Struct} t, Meta{Idx} idx)
+  Type{reflect_struct_field_type{Struct, Idx}}()
 
 // -- Enum Utilities
 
@@ -135,7 +174,11 @@ assertEq(reflectType(Type{string}()),       PrimInfo(PrimType.String))
 assertEq(reflectType(Type{sys_stream}()),   PrimInfo(PrimType.SysStream))
 assertEq(reflectType(Type{sys_process}()),  PrimInfo(PrimType.SysProcess))
 
-assertIs(reflectType(Type{EnumInfo}()), Type{StructInfo}())
+assertEq(reflectType(Type{Date}()), StructInfo(
+  StructField("year",   PrimInfo(PrimType.Int))     ::
+  StructField("month",  reflectEnum(Type{Month}())) ::
+  StructField("day",    PrimInfo(PrimType.Int))
+))
 
 assertIs(reflectType(Type{TypeInfo}()), Type{UnionInfo}())
 
@@ -159,6 +202,22 @@ assertIs(reflectType(Type{action{int}}()),    Type{DelegateInfo}())
 assertIs(reflectType(Type{future{int}}()),    Type{FutureInfo}())
 assertIs(reflectType(Type{lazy{int}}()),      Type{LazyInfo}())
 assertEq(reflectType(Type{#42}()),            StaticIntInfo(42))
+
+// -- Struct utility tests
+
+assertEq(reflectStructFieldCount(Type{Date}()), Meta{#3}())
+assertEq(reflectStructFieldCount(Type{DateTime}()), Meta{#1}())
+assertEq(reflectStructFieldCount(Type{None}()), Meta{#0}())
+
+assertEq(reflectStructFieldName(Type{Date}(), Meta{#0}()), "year")
+assertEq(reflectStructFieldName(Type{Date}(), Meta{#1}()), "month")
+assertEq(reflectStructFieldName(Type{Date}(), Meta{#2}()), "day")
+
+assertEq(reflectStructFieldType(Type{Date}(), Meta{#0}()), Type{int}())
+assertEq(reflectStructFieldType(Type{Date}(), Meta{#1}()), Type{Month}())
+assertEq(reflectStructFieldType(Type{EnumInfo}(), Meta{#0}()), Type{List{EnumEntry}}())
+
+// -- Enum utility tests
 
 assertEq(reflectEnumCount(Type{Month}()), Meta{#12}())
 
