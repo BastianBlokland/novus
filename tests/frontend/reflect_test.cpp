@@ -7,6 +7,16 @@ namespace frontend {
 
 TEST_CASE("[frontend] Analyze reflection", "frontend") {
 
+  SECTION("Type") {
+
+    SECTION("Type Kind") {
+      const auto& output = ANALYZE("struct Type{T} "
+                                   "fun f() Type{reflect_type_kind{sys_stream}}()");
+      REQUIRE(output.isSuccess());
+      CHECK(GET_FUNC_DECL(output, "f").getOutput() == GET_TYPE_ID(output, "Type__#6"));
+    }
+  }
+
   SECTION("Enum") {
 
     SECTION("Enum count") {

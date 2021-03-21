@@ -331,6 +331,9 @@ auto instType(
   if (typeName == "staticint_neg" && typeSet->getCount() == 1) {
     return ctx->getStaticIntTable()->neg(ctx, (*typeSet)[0]);
   }
+  if (typeName == "reflect_type_kind" && typeSet->getCount() == 1) {
+    return reflectTypeKind(ctx, (*typeSet)[0]);
+  }
   if (typeName == "reflect_enum_count" && typeSet->getCount() == 1) {
     return reflectEnumCount(ctx, (*typeSet)[0]);
   }

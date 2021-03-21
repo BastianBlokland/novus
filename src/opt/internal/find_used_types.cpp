@@ -23,6 +23,15 @@ auto FindUsedTypes::markType(prog::sym::TypeId type) -> void {
   // Visit any newly found types.
   const auto& typeDecl = m_prog.getTypeDecl(type);
   switch (typeDecl.getKind()) {
+  case prog::sym::TypeKind::Int:
+  case prog::sym::TypeKind::Long:
+  case prog::sym::TypeKind::Float:
+  case prog::sym::TypeKind::Bool:
+  case prog::sym::TypeKind::Char:
+  case prog::sym::TypeKind::String:
+  case prog::sym::TypeKind::SysStream:
+  case prog::sym::TypeKind::SysProcess:
+    break;
   case prog::sym::TypeKind::Struct: {
     const auto& structDef = std::get<prog::sym::StructDef>(m_prog.getTypeDef(type));
     for (const auto& field : structDef.getFields()) {
@@ -35,6 +44,8 @@ auto FindUsedTypes::markType(prog::sym::TypeId type) -> void {
       markType(unionType);
     }
   } break;
+  case prog::sym::TypeKind::Enum:
+    break;
   case prog::sym::TypeKind::Delegate: {
     const auto& delDef = std::get<prog::sym::DelegateDef>(m_prog.getTypeDef(type));
     for (const auto& inputType : delDef.getInput()) {
@@ -50,15 +61,6 @@ auto FindUsedTypes::markType(prog::sym::TypeId type) -> void {
     const auto& lazyDef = std::get<prog::sym::LazyDef>(m_prog.getTypeDef(type));
     markType(lazyDef.getResult());
   } break;
-  case prog::sym::TypeKind::Enum:
-  case prog::sym::TypeKind::Int:
-  case prog::sym::TypeKind::Long:
-  case prog::sym::TypeKind::Float:
-  case prog::sym::TypeKind::Bool:
-  case prog::sym::TypeKind::String:
-  case prog::sym::TypeKind::Char:
-  case prog::sym::TypeKind::Stream:
-  case prog::sym::TypeKind::Process:
   case prog::sym::TypeKind::StaticInt:
     break;
   }

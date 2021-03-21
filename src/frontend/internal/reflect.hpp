@@ -5,6 +5,9 @@
 
 namespace frontend::internal {
 
+[[nodiscard]] auto reflectTypeKind(Context* ctx, prog::sym::TypeId type) noexcept
+    -> prog::sym::TypeId;
+
 [[nodiscard]] auto reflectEnumCount(Context* ctx, prog::sym::TypeId enumType) noexcept
     -> prog::sym::TypeId;
 

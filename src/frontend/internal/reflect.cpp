@@ -14,6 +14,11 @@ auto getEnumDef(Context* ctx, prog::sym::TypeId enumType) noexcept -> const prog
 
 } // namespace
 
+auto reflectTypeKind(Context* ctx, prog::sym::TypeId type) noexcept -> prog::sym::TypeId {
+  const auto& typeDecl = ctx->getProg()->getTypeDecl(type);
+  return ctx->getStaticIntTable()->getType(ctx, static_cast<int32_t>(typeDecl.getKind()));
+}
+
 auto reflectEnumCount(Context* ctx, prog::sym::TypeId enumType) noexcept -> prog::sym::TypeId {
   const auto* enumDef = getEnumDef(ctx, enumType);
   return ctx->getStaticIntTable()->getType(ctx, enumDef ? enumDef->getCount() : 0);
