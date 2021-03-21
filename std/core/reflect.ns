@@ -5,10 +5,27 @@ import "std/prim.ns"
 
 // -- Type infos
 
-struct EnumEntry  = string key, int value
-struct EnumInfo   = List{EnumEntry} entries
+enum    PrimType      = Int, Long, Float, Bool, Char, String, SysStream, SysProcess
+struct  PrimInfo      = PrimType type
+
+struct  StructInfo
+struct  UnionInfo
+
+struct  EnumEntry     = string key, int value
+struct  EnumInfo      = List{EnumEntry} entries
+
+struct  DelegateInfo
+struct  FutureInfo
+struct  LazyInfo
+struct  StaticIntInfo = int value
+
+union TypeInfo =
+  PrimInfo, StructInfo, UnionInfo, EnumInfo, DelegateInfo, FutureInfo, LazyInfo, StaticIntInfo
 
 // -- Conversions
+
+fun string(PrimInfo pi)
+  reflectEnumKeyForVal(pi.type) ?? ""
 
 fun string(EnumEntry e)
   e.key + ":" + e.value.string()
@@ -16,7 +33,41 @@ fun string(EnumEntry e)
 fun string(EnumInfo e)
   e.entries.string()
 
+fun string(StaticIntInfo si)
+  "#" + si.value.string()
+
+fun string(TypeInfo ti)
+  if ti as PrimInfo pi      -> pi.string()
+  if ti is StructInfo       -> "Struct"
+  if ti is UnionInfo        -> "Union"
+  if ti is EnumInfo         -> "Enum"
+  if ti is DelegateInfo     -> "Delegate"
+  if ti is FutureInfo       -> "Future"
+  if ti is LazyInfo         -> "Lazy"
+  if ti as StaticIntInfo si -> si.string()
+
 // -- Reflection
+
+fun reflectType{T}(Type{T} t, Meta{#0}  intTypeKind)        PrimInfo(PrimType.Int)
+fun reflectType{T}(Type{T} t, Meta{#1}  longTypeKind)       PrimInfo(PrimType.Long)
+fun reflectType{T}(Type{T} t, Meta{#2}  floatTypeKind)      PrimInfo(PrimType.Float)
+fun reflectType{T}(Type{T} t, Meta{#3}  boolTypeKind)       PrimInfo(PrimType.Bool)
+fun reflectType{T}(Type{T} t, Meta{#4}  charTypeKind)       PrimInfo(PrimType.Char)
+fun reflectType{T}(Type{T} t, Meta{#5}  stringTypeKind)     PrimInfo(PrimType.String)
+fun reflectType{T}(Type{T} t, Meta{#6}  sysStreamTypeKind)  PrimInfo(PrimType.SysStream)
+fun reflectType{T}(Type{T} t, Meta{#7}  sysProcessTypeKind) PrimInfo(PrimType.SysProcess)
+fun reflectType{T}(Type{T} t, Meta{#8}  structTypeKind)     StructInfo()
+fun reflectType{T}(Type{T} t, Meta{#9}  unionTypeKind)      UnionInfo()
+fun reflectType{T}(Type{T} t, Meta{#10} enumTypeKind)       reflectEnum(t)
+fun reflectType{T}(Type{T} t, Meta{#11} delegateTypeKind)   DelegateInfo()
+fun reflectType{T}(Type{T} t, Meta{#12} futureTypeKind)     FutureInfo()
+fun reflectType{T}(Type{T} t, Meta{#13} lazyTypeKind)       LazyInfo()
+fun reflectType{T}(Type{T} t, Meta{#14} staticIntTypeKind)  StaticIntInfo(int(Meta{T}()))
+
+fun reflectType{T}(Type{T} t) -> TypeInfo
+  reflectType(t, Meta{reflect_type_kind{T}}())
+
+// ---- Enum
 
 fun reflectEnumEntries{Enum}(Type{Enum} t, Meta{#-1} idx, List{EnumEntry} entries)
   entries
@@ -75,7 +126,20 @@ fun reflectEnumVal{Enum, Idx}(Type{Enum} t, Meta{Idx} idx) -> int
 
 // -- Tests
 
-assertEq(reflectEnum(Type{Month}()), EnumInfo(
+assertEq(reflectType(Type{int}()),          PrimInfo(PrimType.Int))
+assertEq(reflectType(Type{long}()),         PrimInfo(PrimType.Long))
+assertEq(reflectType(Type{float}()),        PrimInfo(PrimType.Float))
+assertEq(reflectType(Type{bool}()),         PrimInfo(PrimType.Bool))
+assertEq(reflectType(Type{char}()),         PrimInfo(PrimType.Char))
+assertEq(reflectType(Type{string}()),       PrimInfo(PrimType.String))
+assertEq(reflectType(Type{sys_stream}()),   PrimInfo(PrimType.SysStream))
+assertEq(reflectType(Type{sys_process}()),  PrimInfo(PrimType.SysProcess))
+
+assertIs(reflectType(Type{EnumInfo}()), Type{StructInfo}())
+
+assertIs(reflectType(Type{TypeInfo}()), Type{UnionInfo}())
+
+assertEq(reflectType(Type{Month}()), EnumInfo(
   EnumEntry("January",    1)   ::
   EnumEntry("February",   2)   ::
   EnumEntry("March",      3)   ::
@@ -89,6 +153,12 @@ assertEq(reflectEnum(Type{Month}()), EnumInfo(
   EnumEntry("November",   11)  ::
   EnumEntry("December",   12)
 ))
+
+assertIs(reflectType(Type{function{int}}()),  Type{DelegateInfo}())
+assertIs(reflectType(Type{action{int}}()),    Type{DelegateInfo}())
+assertIs(reflectType(Type{future{int}}()),    Type{FutureInfo}())
+assertIs(reflectType(Type{lazy{int}}()),      Type{LazyInfo}())
+assertEq(reflectType(Type{#42}()),            StaticIntInfo(42))
 
 assertEq(reflectEnumCount(Type{Month}()), Meta{#12}())
 assertEq(reflectEnumCount(Type{string}()), Meta{#0}())
