@@ -47,6 +47,16 @@ auto resolveStaticIntToIntIntrinsic(
   return value ? prog::expr::litIntNode(*ctx->getProg(), *value) : OptNodeExpr{};
 }
 
+auto resolveRelectStructFieldName(
+    Context* ctx, const prog::sym::TypeSet& typeParams, const IntrinsicArgs& args) -> OptNodeExpr {
+
+  if (typeParams.getCount() != 2 || args.first.size() != 0) {
+    return std::nullopt;
+  }
+  auto name = reflectStructFieldName(ctx, typeParams[0], typeParams[1]);
+  return name ? prog::expr::litStringNode(*ctx->getProg(), *name) : OptNodeExpr{};
+}
+
 auto resolveRelectEnumKey(
     Context* ctx, const prog::sym::TypeSet& typeParams, const IntrinsicArgs& args) -> OptNodeExpr {
 
@@ -94,6 +104,9 @@ auto resolveMetaIntrinsic(
   }
   if (name == "staticint_to_int") {
     return resolveStaticIntToIntIntrinsic(ctx, *typeParamSet, args);
+  }
+  if (name == "reflect_struct_field_name") {
+    return resolveRelectStructFieldName(ctx, *typeParamSet, args);
   }
   if (name == "reflect_enum_key") {
     return resolveRelectEnumKey(ctx, *typeParamSet, args);

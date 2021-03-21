@@ -8,6 +8,17 @@ namespace frontend::internal {
 [[nodiscard]] auto reflectTypeKind(Context* ctx, prog::sym::TypeId type) noexcept
     -> prog::sym::TypeId;
 
+[[nodiscard]] auto reflectStructFieldCount(Context* ctx, prog::sym::TypeId structType) noexcept
+    -> std::optional<prog::sym::TypeId>;
+
+[[nodiscard]] auto reflectStructFieldName(
+    Context* ctx, prog::sym::TypeId structType, prog::sym::TypeId indexType) noexcept
+    -> std::optional<std::string>;
+
+[[nodiscard]] auto reflectStructFieldType(
+    Context* ctx, prog::sym::TypeId structType, prog::sym::TypeId indexType) noexcept
+    -> std::optional<prog::sym::TypeId>;
+
 [[nodiscard]] auto reflectEnumCount(Context* ctx, prog::sym::TypeId enumType) noexcept
     -> std::optional<prog::sym::TypeId>;
 

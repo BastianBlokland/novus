@@ -334,6 +334,16 @@ auto instType(
   if (typeName == "reflect_type_kind" && typeSet->getCount() == 1) {
     return reflectTypeKind(ctx, (*typeSet)[0]);
   }
+  if (typeName == "reflect_struct_field_count" && typeSet->getCount() == 1) {
+    if (auto fieldCount = reflectStructFieldCount(ctx, (*typeSet)[0])) {
+      return fieldCount;
+    }
+  }
+  if (typeName == "reflect_struct_field_type" && typeSet->getCount() == 2) {
+    if (auto fieldType = reflectStructFieldType(ctx, (*typeSet)[0], (*typeSet)[1])) {
+      return fieldType;
+    }
+  }
   if (typeName == "reflect_enum_count" && typeSet->getCount() == 1) {
     if (auto enumCount = reflectEnumCount(ctx, (*typeSet)[0])) {
       return enumCount;

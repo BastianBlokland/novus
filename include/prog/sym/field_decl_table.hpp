@@ -19,6 +19,7 @@ public:
   auto operator=(const FieldDeclTable& rhs) -> FieldDeclTable& = delete;
   auto operator=(FieldDeclTable&& rhs) noexcept -> FieldDeclTable& = delete;
 
+  [[nodiscard]] auto operator[](size_t idx) const -> const FieldDecl&;
   [[nodiscard]] auto operator[](FieldId id) const -> const FieldDecl&;
 
   [[nodiscard]] auto getCount() const -> unsigned int;

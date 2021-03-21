@@ -4,6 +4,15 @@ namespace frontend::internal {
 
 namespace {
 
+auto getStructDef(Context* ctx, prog::sym::TypeId structType) noexcept
+    -> const prog::sym::StructDef* {
+  const auto& structTypeDecl = ctx->getProg()->getTypeDecl(structType);
+  if (structTypeDecl.getKind() != prog::sym::TypeKind::Struct) {
+    return nullptr; // Not a struct.
+  }
+  return &std::get<prog::sym::StructDef>(ctx->getProg()->getTypeDef(structType));
+}
+
 auto getEnumDef(Context* ctx, prog::sym::TypeId enumType) noexcept -> const prog::sym::EnumDef* {
   const auto& enumTypeDecl = ctx->getProg()->getTypeDecl(enumType);
   if (enumTypeDecl.getKind() != prog::sym::TypeKind::Enum) {
@@ -17,6 +26,39 @@ auto getEnumDef(Context* ctx, prog::sym::TypeId enumType) noexcept -> const prog
 auto reflectTypeKind(Context* ctx, prog::sym::TypeId type) noexcept -> prog::sym::TypeId {
   const auto& typeDecl = ctx->getProg()->getTypeDecl(type);
   return ctx->getStaticIntTable()->getType(ctx, static_cast<int32_t>(typeDecl.getKind()));
+}
+
+auto reflectStructFieldCount(Context* ctx, prog::sym::TypeId structType) noexcept
+    -> std::optional<prog::sym::TypeId> {
+  const auto* structDef = getStructDef(ctx, structType);
+  if (!structDef) {
+    return std::nullopt;
+  }
+  return ctx->getStaticIntTable()->getType(ctx, structDef->getFields().getCount());
+}
+
+auto reflectStructFieldName(
+    Context* ctx, prog::sym::TypeId structType, prog::sym::TypeId indexType) noexcept
+    -> std::optional<std::string> {
+
+  const auto* structDef = getStructDef(ctx, structType);
+  auto index            = ctx->getStaticIntTable()->getValue(indexType).value_or(-1);
+  if (!structDef || index < 0 || index >= static_cast<int>(structDef->getFields().getCount())) {
+    return std::nullopt; // Not a struct or out of bounds field index.
+  }
+  return structDef->getFields()[index].getName();
+}
+
+auto reflectStructFieldType(
+    Context* ctx, prog::sym::TypeId structType, prog::sym::TypeId indexType) noexcept
+    -> std::optional<prog::sym::TypeId> {
+
+  const auto* structDef = getStructDef(ctx, structType);
+  auto index            = ctx->getStaticIntTable()->getValue(indexType).value_or(-1);
+  if (!structDef || index < 0 || index >= static_cast<int>(structDef->getFields().getCount())) {
+    return std::nullopt; // Not a struct or out of bounds field index.
+  }
+  return structDef->getFields()[index].getType();
 }
 
 auto reflectEnumCount(Context* ctx, prog::sym::TypeId enumType) noexcept
