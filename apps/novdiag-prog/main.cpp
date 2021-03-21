@@ -87,7 +87,7 @@ auto printFuncDecls(const prog::Program& prog, bool includeIntrinsics) -> void {
   std::cout << rang::style::bold << "Function declarations:\n" << rang::style::reset;
   for (auto funcItr = prog.beginFuncDecls(); funcItr != prog.endFuncDecls(); ++funcItr) {
     const auto& funcDecl = funcItr->second;
-    if (funcDecl.isIntrinsic() && !includeIntrinsics) {
+    if (funcDecl.getKind() != prog::sym::FuncKind::User && !includeIntrinsics) {
       continue;
     }
 

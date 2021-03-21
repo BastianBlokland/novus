@@ -24,6 +24,9 @@ private:
 
   auto nextLitStr() -> Token;
   auto nextLitChar() -> Token;
+
+  auto nextStaticInt() -> Token;
+
   auto nextWordToken(char startingChar) -> Token;
   auto nextLineComment() -> Token;
 

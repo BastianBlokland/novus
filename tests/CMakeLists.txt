@@ -57,8 +57,10 @@ add_executable(novtests
   frontend/opt_args_test.cpp
   frontend/overload_test.cpp
   frontend/parse_diags_test.cpp
+  frontend/reflect_test.cpp
   frontend/source_location_test.cpp
   frontend/source_test.cpp
+  frontend/staticint_test.cpp
   frontend/typeinfer_user_funcs_test.cpp
   frontend/user_func_templates_test.cpp
   frontend/user_type_templates_test.cpp
@@ -80,6 +82,7 @@ add_executable(novtests
   lex/litchar_test.cpp
   lex/operators_test.cpp
   lex/seperators_test.cpp
+  lex/staticint_test.cpp
   lex/utilities_test.cpp
 
   novasm/serialization_test.cpp

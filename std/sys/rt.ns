@@ -65,10 +65,7 @@ enum PlatformError =
 // -- Conversions
 
 fun string(Platform p)
-  if p == Platform.Linux    -> "Linux"
-  if p == Platform.MacOs    -> "MacOs"
-  if p == Platform.Windows  -> "Windows"
-  else                      -> "Unknown"
+  reflectEnumKeyForVal(p) ?? "Unknown"
 
 fun noinline string(PlatformError err)
   if err == PlatformError.Unknown                       -> "Unknown"

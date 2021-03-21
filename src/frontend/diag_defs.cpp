@@ -3,6 +3,19 @@
 
 namespace frontend {
 
+namespace {
+
+auto printTypeList(std::ostream& stream, const std::vector<std::string> typeNames) {
+  for (auto i = 0U; i < typeNames.size(); ++i) {
+    if (i != 0) {
+      stream << ", ";
+    }
+    stream << '\'' << typeNames[i] << '\'';
+  }
+}
+
+} // namespace
+
 auto errUnresolvedImport(prog::sym::SourceId src, const std::string& path) -> Diag {
   std::ostringstream oss;
   oss << "Unable to resolve import '" << path << '\'';
@@ -278,6 +291,20 @@ auto errUndeclaredType(prog::sym::SourceId src, const std::string& name, unsigne
   return error(oss.str(), src);
 }
 
+auto errUndeclaredTypeWithNames(
+    prog::sym::SourceId src, const std::string& name, const std::vector<std::string>& typeParams)
+    -> Diag {
+  std::ostringstream oss;
+  oss << "Unknown type: '" << name << "\' with ";
+  if (typeParams.empty()) {
+    oss << "no type parameters";
+  } else {
+    printTypeList(oss, typeParams);
+    oss << (typeParams.size() == 1 ? " type parameter" : " type parameters");
+  }
+  return error(oss.str(), src);
+}
+
 auto errUndeclaredTypeOrConversion(
     prog::sym::SourceId src, const std::string& name, const std::vector<std::string>& argTypes)
     -> Diag {
@@ -286,12 +313,7 @@ auto errUndeclaredTypeOrConversion(
     oss << "No type or conversion '" << name << "' has been declared without any arguments";
   } else {
     oss << "No type or conversion '" << name << "' has been declared with argument types: ";
-    for (auto i = 0U; i < argTypes.size(); ++i) {
-      if (i != 0) {
-        oss << ", ";
-      }
-      oss << '\'' << argTypes[i] << '\'';
-    }
+    printTypeList(oss, argTypes);
   }
   return error(oss.str(), src);
 }
@@ -338,12 +360,7 @@ auto errUndeclaredPureFunc(
   } else {
     oss << "No overload for a pure function called: '" << name
         << "' has been declared with argument types: ";
-    for (auto i = 0U; i < argTypes.size(); ++i) {
-      if (i != 0) {
-        oss << ", ";
-      }
-      oss << '\'' << argTypes[i] << '\'';
-    }
+    printTypeList(oss, argTypes);
   }
   return error(oss.str(), src);
 }
@@ -358,12 +375,7 @@ auto errUndeclaredAction(
   } else {
     oss << "No overload for an action named '" << name
         << "' has been declared with argument types: ";
-    for (auto i = 0U; i < argTypes.size(); ++i) {
-      if (i != 0) {
-        oss << ", ";
-      }
-      oss << '\'' << argTypes[i] << '\'';
-    }
+    printTypeList(oss, argTypes);
   }
   return error(oss.str(), src);
 }
@@ -378,12 +390,7 @@ auto errUndeclaredFuncOrAction(
   } else {
     oss << "No overload for a function or action called: '" << name
         << "' has been declared with argument types: ";
-    for (auto i = 0U; i < argTypes.size(); ++i) {
-      if (i != 0) {
-        oss << ", ";
-      }
-      oss << '\'' << argTypes[i] << '\'';
-    }
+    printTypeList(oss, argTypes);
   }
   return error(oss.str(), src);
 }
@@ -399,12 +406,7 @@ auto errUnknownIntrinsic(
     oss << "found without arguments";
   } else {
     oss << "found with argument types: ";
-    for (auto i = 0U; i < argTypes.size(); ++i) {
-      if (i != 0) {
-        oss << ", ";
-      }
-      oss << '\'' << argTypes[i] << '\'';
-    }
+    printTypeList(oss, argTypes);
   }
   return error(oss.str(), src);
 }
@@ -415,27 +417,39 @@ auto errPureFuncInfRecursion(prog::sym::SourceId src) -> Diag {
   return error(oss.str(), src);
 }
 
-auto errNoPureFuncFoundToInstantiate(
-    prog::sym::SourceId src, const std::string& name, unsigned int templateParamCount) -> Diag {
+auto errNoCompatibleIntrinsicFound(
+    prog::sym::SourceId src, const std::string& name, const std::vector<std::string>& typeParams)
+    -> Diag {
   std::ostringstream oss;
-  oss << "No templated pure function '" << name << "' has been declared with '"
-      << templateParamCount << "' type parameters";
+  oss << "No compatible intrinsic '" << name << "' found with type parameters: ";
+  printTypeList(oss, typeParams);
+  return error(oss.str(), src);
+}
+
+auto errNoPureFuncFoundToInstantiate(
+    prog::sym::SourceId src, const std::string& name, const std::vector<std::string>& typeParams)
+    -> Diag {
+  std::ostringstream oss;
+  oss << "No templated pure function '" << name << "' has been declared type parameters: ";
+  printTypeList(oss, typeParams);
   return error(oss.str(), src);
 }
 
 auto errNoActionFoundToInstantiate(
-    prog::sym::SourceId src, const std::string& name, unsigned int templateParamCount) -> Diag {
+    prog::sym::SourceId src, const std::string& name, const std::vector<std::string>& typeParams)
+    -> Diag {
   std::ostringstream oss;
-  oss << "No templated action '" << name << "' has been declared with '" << templateParamCount
-      << "' type parameters";
+  oss << "No templated action '" << name << "' has been declared type parameters: ";
+  printTypeList(oss, typeParams);
   return error(oss.str(), src);
 }
 
 auto errNoFuncOrActionFoundToInstantiate(
-    prog::sym::SourceId src, const std::string& name, unsigned int templateParamCount) -> Diag {
+    prog::sym::SourceId src, const std::string& name, const std::vector<std::string>& typeParams)
+    -> Diag {
   std::ostringstream oss;
-  oss << "No templated function or action '" << name << "' has been declared with '"
-      << templateParamCount << "' type parameters";
+  oss << "No templated function or action '" << name << "' has been declared type parameters: ";
+  printTypeList(oss, typeParams);
   return error(oss.str(), src);
 }
 
@@ -476,12 +490,7 @@ auto errUndeclaredCallOperator(prog::sym::SourceId src, const std::vector<std::s
     -> Diag {
   std::ostringstream oss;
   oss << "No overload for the call operator '()' has been declared with argument types: ";
-  for (auto i = 0U; i < argTypes.size(); ++i) {
-    if (i != 0) {
-      oss << ", ";
-    }
-    oss << '\'' << argTypes[i] << '\'';
-  }
+  printTypeList(oss, argTypes);
   return error(oss.str(), src);
 }
 
@@ -489,12 +498,7 @@ auto errUndeclaredIndexOperator(prog::sym::SourceId src, const std::vector<std::
     -> Diag {
   std::ostringstream oss;
   oss << "No overload for the index operator '[]' has been declared with argument types: ";
-  for (auto i = 0U; i < argTypes.size(); ++i) {
-    if (i != 0) {
-      oss << ", ";
-    }
-    oss << '\'' << argTypes[i] << '\'';
-  }
+  printTypeList(oss, argTypes);
   return error(oss.str(), src);
 }
 

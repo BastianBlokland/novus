@@ -213,6 +213,10 @@ fun distinct{T}(List{T} l)
 fun distinctReverse{T}(List{T} l)
   l.fold(pushUnique{T})
 
+fun first{T}(List{T} l, function{T, bool} pred) -> Option{T}
+  if l as LNode{T} n  -> pred(n.val) ? n.val : n.next.first(pred)
+  if l is LEnd        -> None()
+
 fun count{T}(List{T} l, function{T, bool} pred)
   l.fold(lambda (int c, T val) pred(val) ? ++c : c)
 
@@ -562,6 +566,11 @@ assertEq(
   l = 1 :: 1 :: 2 :: 2 :: 3 :: 3 :: 3;
   l.distinctReverse(), 3 :: 2 :: 1)
 assertEq(List{int}().distinctReverse(), List{int}())
+
+assertEq((1 :: 2 :: 3).first(greater{int}[0]), 1)
+assertEq((1 :: 2 :: 3).first(greater{int}[2]), 3)
+assertEq(List{int}().first(greater{int}[0]), None())
+assertEq((1 :: 2 :: 3).first(greater{int}[4]), None())
 
 assertEq((1 :: 2 :: 3).count(lambda (int v) v > 2), 1)
 assertEq((1 :: 2 :: 3).count(lambda (int v) v == 0), 0)

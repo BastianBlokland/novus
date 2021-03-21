@@ -63,6 +63,18 @@ auto errLitCharInvalidEscape(const input::Span span) -> Token {
   return errorToken("Invalid escape sequence in character literal", span);
 }
 
+auto errStaticIntNoDigits(const input::Span span) -> Token {
+  return errorToken("Static integer needs at least one digit", span);
+}
+
+auto errStaticIntTooBig(const input::Span span) -> Token {
+  return errorToken("Static integer too big", span);
+}
+
+auto errStaticIntInvalidChar(const input::Span span) -> Token {
+  return errorToken("Static integer contains an invalid character", span);
+}
+
 auto errIdentifierIllegalCharacter(const input::Span span) -> Token {
   return errorToken("Identifier contains an invalid character", span);
 }

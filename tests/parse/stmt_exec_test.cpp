@@ -74,6 +74,15 @@ TEST_CASE("[parse] Parsing execute statements", "parse") {
           COMMAS(0),
           CPAREN)));
   CHECK_STMT("1()", execStmtNode(callExprNode({}, INT(1), OPAREN, NO_NODES, COMMAS(0), CPAREN)));
+  CHECK_STMT(
+      "exec{#1}()",
+      execStmtNode(callExprNode(
+          {},
+          ID_EXPR_PARAM("exec", TypeParamList(OCURLY, {STATIC_INT_TYPE(1)}, COMMAS(0), CCURLY)),
+          OPAREN,
+          NO_NODES,
+          COMMAS(0),
+          CPAREN)));
 
   SECTION("Errors") {
     CHECK_STMT(

@@ -33,6 +33,12 @@ namespace lex {
 
 [[nodiscard]] auto errLitCharInvalidEscape(input::Span span = input::Span{0}) -> Token;
 
+[[nodiscard]] auto errStaticIntNoDigits(input::Span span = input::Span{0}) -> Token;
+
+[[nodiscard]] auto errStaticIntTooBig(input::Span span = input::Span{0}) -> Token;
+
+[[nodiscard]] auto errStaticIntInvalidChar(input::Span span = input::Span{0}) -> Token;
+
 [[nodiscard]] auto errIdentifierIllegalCharacter(input::Span span = input::Span{0}) -> Token;
 
 [[nodiscard]] auto errIdentifierIllegalSequence(input::Span span = input::Span{0}) -> Token;

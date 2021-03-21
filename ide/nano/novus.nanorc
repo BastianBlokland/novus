@@ -32,6 +32,9 @@ color brightmagenta "'\\?.'"
 # Constants - String.
 color brightyellow ""([^"]|\\")*""
 
+# Constants - StaticInt.
+color green "#-?[0-9]+\b"
+
 # Comments.
 color brightblack "//.*"
 

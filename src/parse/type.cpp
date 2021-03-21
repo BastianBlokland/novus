@@ -1,4 +1,5 @@
 #include "parse/type.hpp"
+#include "lex/token_payload_static_int.hpp"
 #include "parse/type_param_list.hpp"
 #include "utilities.hpp"
 #include <sstream>
@@ -13,6 +14,11 @@ static auto getIdOrErr(const lex::Token& token) {
   case lex::TokenKind::Keyword: {
     std::ostringstream oss;
     oss << *getKw(token);
+    return oss.str();
+  }
+  case lex::TokenKind::StaticInt: {
+    std::ostringstream oss;
+    oss << "#" << token.getPayload<lex::StaticIntTokenPayload>()->getValue();
     return oss.str();
   }
   default:
@@ -81,6 +87,8 @@ auto Type::getSpan() const -> input::Span {
 
 auto Type::getId() const -> const lex::Token& { return m_id; }
 
+auto Type::isStaticInt() const -> bool { return m_id.getKind() == lex::TokenKind::StaticInt; }
+
 auto Type::getParamList() const -> const TypeParamList* { return m_paramList; }
 
 auto Type::getParamCount() const -> unsigned int {
@@ -88,7 +96,12 @@ auto Type::getParamCount() const -> unsigned int {
 }
 
 auto Type::validate() const -> bool {
-  if (m_id.getKind() != lex::TokenKind::Identifier && m_id.getKind() != lex::TokenKind::Keyword) {
+  switch (m_id.getKind()) {
+  case lex::TokenKind::Identifier:
+  case lex::TokenKind::Keyword:
+  case lex::TokenKind::StaticInt:
+    break;
+  default:
     return false;
   }
   if (m_paramList && !m_paramList->validate()) {

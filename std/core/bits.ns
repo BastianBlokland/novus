@@ -1,3 +1,4 @@
+import "reflect.ns"
 import "text.ns"
 
 import "std/diag.ns"
@@ -13,9 +14,7 @@ enum Endianness =
 // -- Conversions
 
 fun string(Endianness e)
-  if e == Endianness.Little -> "LittleEndian"
-  if e == Endianness.Big    -> "BigEndian"
-  else                      -> "Unknown"
+  reflectEnumKeyForVal(e) ?? "Unknown"
 
 // -- Utilities
 

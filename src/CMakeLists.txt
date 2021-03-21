@@ -171,21 +171,23 @@ add_library(frontend STATIC
   frontend/internal/define_exec_stmts.cpp
   frontend/internal/define_user_funcs.cpp
   frontend/internal/define_user_types.cpp
-  frontend/internal/future_table.cpp
-  frontend/internal/intrinsic_call_hooks.cpp
-  frontend/internal/lazy_table.cpp
-  frontend/internal/patch_args.cpp
-  frontend/internal/get_expr.cpp
-  frontend/internal/import_sources.cpp
-  frontend/internal/source_table_builder.cpp
-  frontend/internal/struct_template.cpp
-  frontend/internal/type_template_base.cpp
-  frontend/internal/type_template_table.cpp
   frontend/internal/delegate_table.cpp
   frontend/internal/fail_table.cpp
   frontend/internal/func_template_inst.cpp
   frontend/internal/func_template_table.cpp
   frontend/internal/func_template.cpp
+  frontend/internal/future_table.cpp
+  frontend/internal/get_expr.cpp
+  frontend/internal/import_sources.cpp
+  frontend/internal/intrinsic_call_hooks.cpp
+  frontend/internal/lazy_table.cpp
+  frontend/internal/patch_args.cpp
+  frontend/internal/reflect.cpp
+  frontend/internal/source_table_builder.cpp
+  frontend/internal/staticint_table.cpp
+  frontend/internal/struct_template.cpp
+  frontend/internal/type_template_base.cpp
+  frontend/internal/type_template_table.cpp
   frontend/internal/typeinfer_expr.cpp
   frontend/internal/typeinfer_typesub.cpp
   frontend/internal/typeinfer_user_funcs.cpp

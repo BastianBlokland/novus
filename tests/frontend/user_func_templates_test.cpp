@@ -293,14 +293,14 @@ TEST_CASE("[frontend] Analyzing user-function templates", "frontend") {
         "fun f() ft{S}()",
         errUndeclaredTypeOrConversion(NO_SRC, "S", {}),
         errInvalidFuncInstantiation(NO_SRC),
-        errNoPureFuncFoundToInstantiate(NO_SRC, "ft", 1));
+        errNoPureFuncFoundToInstantiate(NO_SRC, "ft", {"S"}));
     CHECK_DIAG(
         "struct S{T} = T t "
         "fun ft{T}() T() "
         "fun f() ft{S{int}}()",
         errUndeclaredTypeOrConversion(NO_SRC, "S{int}", {}),
         errInvalidFuncInstantiation(NO_SRC),
-        errNoPureFuncFoundToInstantiate(NO_SRC, "ft", 1));
+        errNoPureFuncFoundToInstantiate(NO_SRC, "ft", {"S{int}"}));
   }
 }
 

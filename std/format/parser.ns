@@ -48,18 +48,6 @@ fun ??{T1, T2}(ParseResult{T1} res, T2 def) -> Either{T1, T2}
 fun [](ParseState p, int i) -> char
   p.str[p.pos + i]
 
-fun ==(ParseState s, char c)
-  s.str[s.pos] == c
-
-fun ==(ParseState s, string text)
-  startsWith(s.str, text, s.pos)
-
-fun !=(ParseState s, char c)
-  s.str[s.pos] != c
-
-fun !=(ParseState s, string text)
-  !startsWith(s.str, text, s.pos)
-
 fun +(ParseState s, int amount)
   ParseState(s.str, s.pos + amount)
 
@@ -173,6 +161,12 @@ fun isOptional(ParseFlags flags)
 fun isTrailingSeperatorAllowed(ParseFlags flags)
   (flags & ParseFlags.AllowTrailingSeperator) != 0
 
+fun startsWith(ParseState s, char c, StrComp sc = StrComp.Ordinal)
+  equals(s.str[s.pos], c, sc)
+
+fun startsWith(ParseState s, string text, StrComp sc = StrComp.Ordinal)
+  startsWith(s.str, text, s.pos, sc)
+
 fun map{T, TResult}(ParseResult{T} res, function{T, TResult} func)
   if res as ParseSuccess{T} suc   -> suc.state.success(func(suc.val))
   if res as ParseFailure    fail  -> fail
@@ -225,17 +219,17 @@ fun failParser(Error error = Error())
     s.failure(error)
   )
 
-fun matchParser(char c)
+fun matchParser(char c, StrComp sc = StrComp.Ordinal)
   Parser(lambda (ParseState s) -> ParseResult{char}
-    if s == c -> (s + 1).success(c)
-    else      -> s.failure(
+    if s.startsWith(c, sc) -> (s + 1).success(c)
+    else                   -> s.failure(
       Error("Expected: '" + c.escapeForPrinting() + "', got: '" + s[0].escapeForPrinting() + "'"))
   )
 
-fun matchParser(string str)
+fun matchParser(string str, StrComp sc = StrComp.Ordinal)
   Parser(lambda (ParseState s) -> ParseResult{string}
-    if s == str -> (s + str.length()).success(str)
-    else        -> s.failure(
+    if s.startsWith(str, sc) -> (s + str.length()).success(str)
+    else                     -> s.failure(
       expected = str.escapeForPrinting();
       got      = s.str[s.pos, s.pos + str.length()].escapeForPrinting();
       Error("Expected: '" + expected + "', got: '" + got + "'"))
@@ -290,8 +284,8 @@ fun lineParser(ParseFlags flags = ParseFlags.None)
 
 fun newlineParser()
   Parser(lambda (ParseState s)
-    if s == "\n"    -> (s + 1).success("\n")
-    if s == "\r\n"  -> (s + 2).success("\r\n")
+    if s.startsWith("\n")   -> (s + 1).success("\n")
+    if s.startsWith("\r\n") -> (s + 2).success("\r\n")
     else            -> s.failure(
       Error("Expected a newline, got: '" + s[0].escapeForPrinting() + "'"))
   )
@@ -310,12 +304,8 @@ fun charParser()
 
 fun txtBoolParser()
   Parser(lambda (ParseState s) -> ParseResult{bool}
-    if s == "true"  -> (s + 4).success(true)
-    if s == "TRUE"  -> (s + 4).success(true)
-    if s == "True"  -> (s + 4).success(true)
-    if s == "false" -> (s + 5).success(false)
-    if s == "FALSE" -> (s + 5).success(false)
-    if s == "False" -> (s + 5).success(false)
+    if s.startsWith("true", StrComp.OrdinalIgnoreCase)  -> (s + 4).success(true)
+    if s.startsWith("false", StrComp.OrdinalIgnoreCase) -> (s + 5).success(false)
     else            -> s.failure(
       Error("Expected a boolean, got: '" + s[0].escapeForPrinting() + "'"))
   )
@@ -368,14 +358,15 @@ fun txtPosFloatParser()
   Parser(lambda (ParseState s)
     invoke(
       lambda (ParseState s, float raw, float div, bool dec, bool valid) -> ParseResult{float}
-        if s == '.' && !dec     -> self(++s, raw, div, true, false)
-        if s[0].isDigit()       -> newRaw = raw * 10.0 + int(s[0]) - int('0');
-                                   newDiv = dec ? div * 10.0 : div;
-                                   self(++s, newRaw, newDiv, dec, true)
-        if s == 'e' || s == 'E' -> expParser(s + 1).map(lambda (int exp) raw / (div / pow(10.0, exp)))
-        else                    -> valid ?  s.success(raw / div) :
-                                            s.failure(
-          Error("Expected a floating point number, got: '" + s[0].escapeForPrinting() + "'"))
+        if s.startsWith('.') && !dec -> self(++s, raw, div, true, false)
+        if s[0].isDigit()            -> newRaw = raw * 10.0 + int(s[0]) - int('0');
+                                        newDiv = dec ? div * 10.0 : div;
+                                        self(++s, newRaw, newDiv, dec, true)
+        if s.startsWith('e') || s.startsWith('E') -> expParser(s + 1).map(lambda (int exp) raw / (div / pow(10.0, exp)))
+        else -> valid
+          ? s.success(raw / div)
+          : s.failure(
+            Error("Expected a floating point number, got: '" + s[0].escapeForPrinting() + "'"))
       , s, 0.0, 1.0, false, false)
     )
 
@@ -383,6 +374,14 @@ fun txtFloatParser()
   matchParser('-') >> txtPosFloatParser().map(negate{float})  |
   matchParser('+') >> txtPosFloatParser()                     |
   txtPosFloatParser()
+
+fun enumParser{Enum}(Type{Enum} t, StrComp sc = StrComp.Ordinal)
+  entries = reflectEnum(t).entries;
+  Parser(lambda (ParseState s) -> ParseResult{Enum}
+    res = entries.first(lambda (EnumEntry e) s.startsWith(e.key, sc));
+    if res as EnumEntry entry -> (s + entry.key.length()).success(Enum(entry.value))
+    else                      -> s.failure(Error("Expected a " + t.string() + ", got: '" + s[0].escapeForPrinting() + "'"))
+  )
 
 // -- Combination parsers
 
@@ -718,13 +717,13 @@ assertIs(charParser()(""), Type{ParseFailure}())
 assertEq(txtBoolParser()("true"), true)
 assertEq(txtBoolParser()("TRUE"), true)
 assertEq(txtBoolParser()("True"), true)
+assertEq(txtBoolParser()("tRuE"), true)
 assertEq(txtBoolParser()("false"), false)
 assertEq(txtBoolParser()("FALSE"), false)
 assertEq(txtBoolParser()("False"), false)
+assertEq(txtBoolParser()("fAlSe"), false)
 
 assertIs(txtBoolParser()(""), Type{ParseFailure}())
-assertIs(txtBoolParser()("tRuE"), Type{ParseFailure}())
-assertIs(txtBoolParser()("fAlSe"), Type{ParseFailure}())
 assertIs(txtBoolParser()("abc"), Type{ParseFailure}())
 
 assertIs(txtBoolParser().run("abc"), Type{Error}())
@@ -850,6 +849,14 @@ assertEq(
   inputs = "truefalsetruetruetrue" :: "truefalsetruetruetrue" :: "truetruetruetruetrue" :: "truefalsetruefalse" :: "truefalsetrue" :: "";
   inputs.map(lambda (string s) p.run(s).toOption(Type{bool}())),
   false :: false :: true)
+
+assertEq(enumParser(Type{Month}())("January"), Month.January)
+assertEq(enumParser(Type{Month}())("April"), Month.April)
+assertEq(enumParser(Type{Month}(), StrComp.OrdinalIgnoreCase)("aPriL"), Month.April)
+assertEq(enumParser(Type{Month}())("December"), Month.December)
+
+assertIs(enumParser(Type{Month}())("december"), Type{ParseFailure}())
+assertIs(enumParser(Type{Month}())(""), Type{ParseFailure}())
 
 assertEq(manyParser(txtBoolParser())("truefalsetruetrue"), true :: false :: true :: true)
 assertEq(manyParser(txtBoolParser())("true"), true :: List{bool}())

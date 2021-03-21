@@ -157,12 +157,7 @@ fun jsonObjectWriter(Writer{JsonValue} valWriter = jsonValueWriter())
   ).map(lambda (JsonObject v) v.fields)
 
 fun jsonArrayWriter(Writer{JsonValue} valWriter = jsonValueWriter())
-  (
-    litWriter('[')                                &
-    newlineWriter()                               &
-    indentedListWriter(valWriter, litWriter(',')) &
-    indentWriter() & litWriter(']')
-  ).map(lambda (JsonArray a) a.entries)
+  basicListWriter(valWriter).map(lambda (JsonArray a) a.entries)
 
 fun jsonValueWriter()
   numWriter   = txtFloatWriter();
@@ -339,7 +334,7 @@ assertEq(
     List{Pair{string, JsonValue}}())),
   "{\n  \"obj\": {\n    \"k\": true\n  }\n}")
 
-assertEq(jsonArrayWriter()(JsonArray(List{JsonValue}())), "[\n]")
+assertEq(jsonArrayWriter()(JsonArray(List{JsonValue}())), "[]")
 assertEq(jsonArrayWriter()(JsonArray(JsonValue(1.0) :: List{JsonValue}())), "[\n  1\n]")
 assertEq(jsonArrayWriter()(JsonArray(JsonValue(1.0) :: JsonValue(true))), "[\n  1,\n  true\n]")
 

@@ -1,0 +1,68 @@
+import "type.ns"
+
+// -- Types
+
+struct Meta{Int}
+
+// -- Presets
+
+fun metaZero()    Meta{#0}()
+fun metaOne()     Meta{#1}()
+fun metaNegOne()  Meta{#-1}()
+
+// -- Conversions
+
+fun int{Int}(Meta{Int} m)
+  intrinsic{staticint_to_int}{Int}()
+
+fun string{Int}(Meta{Int} m)
+  typeName{Int}()
+
+// -- Operators
+
+fun =={Int}(Meta{Int} x, Meta{Int} y) true
+
+fun =={IntA, IntB}(Meta{IntA} x, Meta{IntB} y) false
+
+fun +{Int}(Meta{Int} x)
+  x
+
+fun +{IntA, IntB}(Meta{IntA} x, Meta{IntB} y)
+  Meta{staticint_add{IntA, IntB}}()
+
+fun ++{Int}(Meta{Int} x)
+  x + metaOne()
+
+fun -{Int}(Meta{Int} x)
+  Meta{staticint_neg{Int}}()
+
+fun -{IntA, IntB}(Meta{IntA} x, Meta{IntB} y)
+  Meta{staticint_sub{IntA, IntB}}()
+
+fun --{Int}(Meta{Int} x)
+  x - metaOne()
+
+// -- Tests
+
+assertEq(Meta{#0}().int(), 0)
+assertEq(Meta{#42}().int(), 42)
+
+assertEq(Meta{#0}().string(), "#0")
+assertEq(Meta{#42}().string(), "#42")
+
+assertEq(Meta{#42}(), Meta{#42}())
+assertNotEq(Meta{#42}(), Meta{#41}())
+
+assertEq(+Meta{#1}(), Meta{#1}())
+assertEq(Meta{#1}() + Meta{#0}(), Meta{#1}())
+assertEq(Meta{#1}() + Meta{#2}(), Meta{#3}())
+assertEq(Meta{#42}() + Meta{#42}(), Meta{#84}())
+
+assertEq(++Meta{#42}(), Meta{#43}())
+
+assertEq(-Meta{#1}(), Meta{#0}() - Meta{#1}())
+assertEq(Meta{#1}() - Meta{#0}(), Meta{#1}())
+assertEq(Meta{#0}() - Meta{#0}(), Meta{#0}())
+assertEq(Meta{#42}() - Meta{#2}(), Meta{#40}())
+
+assertEq(--Meta{#42}(), Meta{#41}())

@@ -32,6 +32,18 @@ TEST_CASE("[parse] Parsing union declaration statements", "parse") {
           EQ,
           {TYPE("List", TYPE("T", TYPE("U"))), TYPE("U")},
           COMMAS(1)));
+  CHECK_STMT(
+      "union u = #1, #2",
+      unionDeclStmtNode(
+          UNION,
+          ID("u"),
+          std::nullopt,
+          EQ,
+          {
+              STATIC_INT_TYPE(1),
+              STATIC_INT_TYPE(2),
+          },
+          COMMAS(1)));
 
   SECTION("Errors") {
     CHECK_STMT(

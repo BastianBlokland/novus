@@ -215,6 +215,20 @@ TEST_CASE("[parse] Parsing function declaration statements", "parse") {
             ArgumentListDecl(OPAREN, NO_ARGS, COMMAS(0), CPAREN),
             std::nullopt,
             INT(1)));
+    CHECK_STMT(
+        "fun a(#1 one) -> #42 42",
+        funcDeclStmtNode(
+            FUN,
+            {},
+            ID("a"),
+            std::nullopt,
+            ArgumentListDecl(
+                OPAREN,
+                ARGS(ArgumentListDecl::ArgSpec(STATIC_INT_TYPE(1), ID("one"))),
+                COMMAS(0),
+                CPAREN),
+            RetTypeSpec{ARROW, STATIC_INT_TYPE(42)},
+            INT(42)));
   }
 
   SECTION("Actions") {

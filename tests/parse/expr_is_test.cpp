@@ -29,6 +29,8 @@ TEST_CASE("[parse] Parsing is / as expressions", "parse") {
       "x is List{T{Y}}",
       isExprNode(ID_EXPR("x"), IS, TYPE("List", TYPE("T", TYPE("Y"))), std::nullopt));
   CHECK_EXPR("x as fork f", isExprNode(ID_EXPR("x"), AS, Type(FORK), ID("f")));
+  CHECK_EXPR("x is #1", isExprNode(ID_EXPR("x"), IS, STATIC_INT_TYPE(1), std::nullopt));
+  CHECK_EXPR("x as #1 i", isExprNode(ID_EXPR("x"), AS, STATIC_INT_TYPE(1), ID("i")));
 
   SECTION("Errors") {
     CHECK_EXPR("x as", errInvalidIsExpr(ID_EXPR("x"), AS, Type(END), END));

@@ -46,6 +46,7 @@ auto analyze(const Source& mainSrc, const std::vector<filesystem::path>& searchP
   auto futures            = internal::FutureTable{};
   auto lazies             = internal::LazyTable{};
   auto fails              = internal::FailTable{};
+  auto staticIntTable     = internal::StaticIntTable{};
   auto typeInfos          = TypeInfoMap{};
   auto diags              = std::vector<Diag>{};
   auto makeCtx            = [&](const Source& src) {
@@ -59,6 +60,7 @@ auto analyze(const Source& mainSrc, const std::vector<filesystem::path>& searchP
         &futures,
         &lazies,
         &fails,
+        &staticIntTable,
         &typeInfos,
         &diags);
   };

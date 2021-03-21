@@ -26,10 +26,10 @@ Program::Program() :
     m_long{m_typeDecls.registerType(sym::TypeKind::Long, "long")},
     m_float{m_typeDecls.registerType(sym::TypeKind::Float, "float")},
     m_bool{m_typeDecls.registerType(sym::TypeKind::Bool, "bool")},
-    m_string{m_typeDecls.registerType(sym::TypeKind::String, "string")},
     m_char{m_typeDecls.registerType(sym::TypeKind::Char, "char")},
-    m_stream{m_typeDecls.registerType(sym::TypeKind::Stream, "sys_stream")},
-    m_process{m_typeDecls.registerType(sym::TypeKind::Process, "sys_process")} {
+    m_string{m_typeDecls.registerType(sym::TypeKind::String, "string")},
+    m_sysStream{m_typeDecls.registerType(sym::TypeKind::SysStream, "sys_stream")},
+    m_sysProcess{m_typeDecls.registerType(sym::TypeKind::SysProcess, "sys_process")} {
 
   using Fk = prog::sym::FuncKind;
 
@@ -185,53 +185,57 @@ Program::Program() :
       *this, Fk::ActionPlatformErrorCode, "platform_error_code", sym::TypeSet{}, m_int);
 
   m_funcDecls.registerIntrinsicAction(
-      *this, Fk::ActionStreamCheckValid, "stream_checkvalid", sym::TypeSet{m_stream}, m_bool);
+      *this, Fk::ActionStreamCheckValid, "stream_checkvalid", sym::TypeSet{m_sysStream}, m_bool);
   m_funcDecls.registerIntrinsicAction(
       *this,
       Fk::ActionStreamReadString,
       "stream_read_string",
-      sym::TypeSet{m_stream, m_int},
+      sym::TypeSet{m_sysStream, m_int},
       m_string);
   m_funcDecls.registerIntrinsicAction(
       *this,
       Fk::ActionStreamWriteString,
       "stream_write_string",
-      sym::TypeSet{m_stream, m_string},
+      sym::TypeSet{m_sysStream, m_string},
       m_bool);
   m_funcDecls.registerIntrinsicAction(
       *this,
       Fk::ActionStreamSetOptions,
       "stream_setoptions",
-      sym::TypeSet{m_stream, m_int},
+      sym::TypeSet{m_sysStream, m_int},
       m_bool);
   m_funcDecls.registerIntrinsicAction(
       *this,
       Fk::ActionStreamUnsetOptions,
       "stream_unsetoptions",
-      sym::TypeSet{m_stream, m_int},
+      sym::TypeSet{m_sysStream, m_int},
       m_bool);
 
   m_funcDecls.registerIntrinsicAction(
-      *this, Fk::ActionProcessStart, "process_start", sym::TypeSet{m_string}, m_process);
+      *this, Fk::ActionProcessStart, "process_start", sym::TypeSet{m_string}, m_sysProcess);
   m_funcDecls.registerIntrinsicAction(
-      *this, Fk::ActionProcessBlock, "process_block", sym::TypeSet{m_process}, m_int);
+      *this, Fk::ActionProcessBlock, "process_block", sym::TypeSet{m_sysProcess}, m_int);
   m_funcDecls.registerIntrinsicAction(
       *this,
       Fk::ActionProcessOpenStream,
       "process_openstream",
-      sym::TypeSet{m_process, m_int},
-      m_stream);
+      sym::TypeSet{m_sysProcess, m_int},
+      m_sysStream);
   m_funcDecls.registerIntrinsicAction(
-      *this, Fk::ActionProcessGetId, "process_getid", sym::TypeSet{m_process}, m_long);
+      *this, Fk::ActionProcessGetId, "process_getid", sym::TypeSet{m_sysProcess}, m_long);
   m_funcDecls.registerIntrinsicAction(
       *this,
       Fk::ActionProcessSendSignal,
       "process_sendsignal",
-      sym::TypeSet{m_process, m_int},
+      sym::TypeSet{m_sysProcess, m_int},
       m_bool);
 
   m_funcDecls.registerIntrinsicAction(
-      *this, Fk::ActionFileOpenStream, "file_openstream", sym::TypeSet{m_string, m_int}, m_stream);
+      *this,
+      Fk::ActionFileOpenStream,
+      "file_openstream",
+      sym::TypeSet{m_string, m_int},
+      m_sysStream);
   m_funcDecls.registerIntrinsicAction(
       *this, Fk::ActionFileRemove, "file_remove", sym::TypeSet{m_string}, m_bool);
 
@@ -240,17 +244,17 @@ Program::Program() :
       Fk::ActionTcpOpenCon,
       "tcp_connection_open",
       sym::TypeSet{m_string, m_int, m_int},
-      m_stream);
+      m_sysStream);
   m_funcDecls.registerIntrinsicAction(
       *this,
       Fk::ActionTcpStartServer,
       "tcp_server_start",
       sym::TypeSet{m_int, m_int, m_int},
-      m_stream);
+      m_sysStream);
   m_funcDecls.registerIntrinsicAction(
-      *this, Fk::ActionTcpAcceptCon, "tcp_server_accept", sym::TypeSet{m_stream}, m_stream);
+      *this, Fk::ActionTcpAcceptCon, "tcp_server_accept", sym::TypeSet{m_sysStream}, m_sysStream);
   m_funcDecls.registerIntrinsicAction(
-      *this, Fk::ActionTcpShutdown, "tcp_shutdown", sym::TypeSet{m_stream}, m_bool);
+      *this, Fk::ActionTcpShutdown, "tcp_shutdown", sym::TypeSet{m_sysStream}, m_bool);
   m_funcDecls.registerIntrinsicAction(
       *this,
       Fk::ActionIpLookupAddress,
@@ -259,22 +263,22 @@ Program::Program() :
       m_string);
 
   m_funcDecls.registerIntrinsicAction(
-      *this, Fk::ActionConsoleOpenStream, "console_openstream", sym::TypeSet{m_int}, m_stream);
+      *this, Fk::ActionConsoleOpenStream, "console_openstream", sym::TypeSet{m_int}, m_sysStream);
 
   m_funcDecls.registerIntrinsicAction(
-      *this, Fk::ActionIsTerm, "is_term", sym::TypeSet{m_stream}, m_bool);
+      *this, Fk::ActionIsTerm, "is_term", sym::TypeSet{m_sysStream}, m_bool);
   m_funcDecls.registerIntrinsicAction(
-      *this, Fk::ActionTermSetOptions, "term_setoptions", sym::TypeSet{m_stream, m_int}, m_bool);
+      *this, Fk::ActionTermSetOptions, "term_setoptions", sym::TypeSet{m_sysStream, m_int}, m_bool);
   m_funcDecls.registerIntrinsicAction(
       *this,
       Fk::ActionTermUnsetOptions,
       "term_unsetoptions",
-      sym::TypeSet{m_stream, m_int},
+      sym::TypeSet{m_sysStream, m_int},
       m_bool);
   m_funcDecls.registerIntrinsicAction(
-      *this, Fk::ActionTermGetWidth, "term_getwidth", sym::TypeSet{m_stream}, m_int);
+      *this, Fk::ActionTermGetWidth, "term_getwidth", sym::TypeSet{m_sysStream}, m_int);
   m_funcDecls.registerIntrinsicAction(
-      *this, Fk::ActionTermGetHeight, "term_getheight", sym::TypeSet{m_stream}, m_int);
+      *this, Fk::ActionTermGetHeight, "term_getheight", sym::TypeSet{m_sysStream}, m_int);
 
   m_funcDecls.registerIntrinsicAction(
       *this, Fk::ActionEnvGetArg, "env_argument", sym::TypeSet{m_int}, m_string);
@@ -470,6 +474,10 @@ auto Program::declareLazy(std::string name) -> sym::TypeId {
   return m_typeDecls.registerType(sym::TypeKind::Lazy, std::move(name));
 }
 
+auto Program::declareStaticInt(std::string name) -> sym::TypeId {
+  return m_typeDecls.registerType(sym::TypeKind::StaticInt, std::move(name));
+}
+
 auto Program::declarePureFunc(
     std::string name, sym::TypeSet input, sym::TypeId output, unsigned int numOptInputs)
     -> sym::FuncId {
@@ -526,7 +534,7 @@ auto Program::defineUnion(sym::TypeId id, std::vector<sym::TypeId> types) -> voi
   m_typeDefs.registerUnion(m_typeDecls, id, std::move(types));
 }
 
-auto Program::defineEnum(sym::TypeId id, std::unordered_map<std::string, int32_t> entries) -> void {
+auto Program::defineEnum(sym::TypeId id, std::vector<sym::EnumDef::Pair> entries) -> void {
   using fk = sym::FuncKind;
 
   const auto& name = m_typeDecls[id].getName();

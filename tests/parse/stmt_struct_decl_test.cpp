@@ -66,6 +66,18 @@ TEST_CASE("[parse] Parsing struct declaration statements", "parse") {
           EQ,
           {StructDeclStmtNode::FieldSpec(Type(FORK), ID("f"))},
           COMMAS(0)));
+  CHECK_STMT(
+      "struct s = #42 a, #0 b",
+      structDeclStmtNode(
+          STRUCT,
+          ID("s"),
+          std::nullopt,
+          EQ,
+          {
+              StructDeclStmtNode::FieldSpec(STATIC_INT_TYPE(42), ID("a")),
+              StructDeclStmtNode::FieldSpec(STATIC_INT_TYPE(0), ID("b")),
+          },
+          COMMAS(1)));
 
   SECTION("Errors") {
     CHECK_STMT(

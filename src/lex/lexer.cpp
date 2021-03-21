@@ -192,6 +192,8 @@ auto LexerImpl::next() -> Token {
         return basicToken(TokenKind::OpColonColon, input::Span{m_inputPos - 1, m_inputPos});
       }
       return basicToken(TokenKind::SepColon, input::Span{m_inputPos});
+    case '#':
+      return nextStaticInt();
     case ' ':
     case '\t':
     case '\n':
@@ -506,6 +508,44 @@ auto LexerImpl::nextLitChar() -> Token {
       break;
     }
   }
+}
+
+auto LexerImpl::nextStaticInt() -> Token {
+  const auto startPos = m_inputPos;
+
+  const bool negative = peekChar(0) == '-';
+  if (negative) {
+    consumeChar(); // Consume the negation character.
+  }
+
+  uint64_t val             = 0;
+  bool atLeastOneDigit     = false;
+  bool containsInvalidChar = false;
+  bool tooBig              = false;
+  while (!isTokenSeperator(peekChar(0)) || peekChar(0) == '-') {
+    auto c = consumeChar();
+    if (isDigit(c)) {
+      val             = val * 10 + c - '0';
+      atLeastOneDigit = true;
+      if (val > std::numeric_limits<int32_t>::max()) {
+        tooBig = true;
+      }
+    } else {
+      containsInvalidChar = true;
+    }
+  }
+
+  const auto span = input::Span{startPos, m_inputPos};
+  if (containsInvalidChar) {
+    return errStaticIntInvalidChar(span);
+  }
+  if (!atLeastOneDigit) {
+    return errStaticIntNoDigits(span);
+  }
+  if (tooBig) {
+    return errStaticIntTooBig(span);
+  }
+  return staticIntToken(static_cast<int32_t>(val) * (negative ? -1 : 1), span);
 }
 
 auto LexerImpl::nextWordToken(const char startingChar) -> Token {

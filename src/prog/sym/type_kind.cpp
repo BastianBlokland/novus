@@ -4,14 +4,14 @@ namespace prog::sym {
 
 auto isPrimitive(const TypeKind& kind) -> bool {
   switch (kind) {
-  case TypeKind::Bool:
   case TypeKind::Int:
   case TypeKind::Long:
   case TypeKind::Float:
-  case TypeKind::String:
+  case TypeKind::Bool:
   case TypeKind::Char:
-  case TypeKind::Stream:
-  case TypeKind::Process:
+  case TypeKind::String:
+  case TypeKind::SysStream:
+  case TypeKind::SysProcess:
     return true;
   case TypeKind::Struct:
   case TypeKind::Union:
@@ -19,6 +19,7 @@ auto isPrimitive(const TypeKind& kind) -> bool {
   case TypeKind::Delegate:
   case TypeKind::Future:
   case TypeKind::Lazy:
+  case TypeKind::StaticInt:
     return false;
   }
   throw std::invalid_argument{"Unknown type-kind"};
@@ -26,9 +27,6 @@ auto isPrimitive(const TypeKind& kind) -> bool {
 
 auto operator<<(std::ostream& out, const TypeKind& rhs) -> std::ostream& {
   switch (rhs) {
-  case TypeKind::Bool:
-    out << "bool";
-    break;
   case TypeKind::Int:
     out << "int";
     break;
@@ -38,14 +36,20 @@ auto operator<<(std::ostream& out, const TypeKind& rhs) -> std::ostream& {
   case TypeKind::Float:
     out << "float";
     break;
-  case TypeKind::String:
-    out << "string";
+  case TypeKind::Bool:
+    out << "bool";
     break;
   case TypeKind::Char:
     out << "char";
     break;
-  case TypeKind::Stream:
-    out << "stream";
+  case TypeKind::String:
+    out << "string";
+    break;
+  case TypeKind::SysStream:
+    out << "sys_stream";
+    break;
+  case TypeKind::SysProcess:
+    out << "sys_process";
     break;
   case TypeKind::Struct:
     out << "struct";
@@ -65,8 +69,8 @@ auto operator<<(std::ostream& out, const TypeKind& rhs) -> std::ostream& {
   case TypeKind::Lazy:
     out << "lazy";
     break;
-  case TypeKind::Process:
-    out << "process";
+  case TypeKind::StaticInt:
+    out << "staticint";
     break;
   }
   return out;

@@ -55,6 +55,14 @@ TEST_CASE("[parse] Parsing intrinsic expressions", "parse") {
           NODES(INT(1), INT(2)),
           COMMAS(1),
           CPAREN));
+  CHECK_EXPR(
+      "intrinsic {test} {#1, #2}",
+      intrinsicExprNode(
+          INTRINSIC,
+          OCURLY,
+          ID("test"),
+          CCURLY,
+          TypeParamList(OCURLY, {STATIC_INT_TYPE(1), STATIC_INT_TYPE(2)}, COMMAS(1), CCURLY)));
 
   SECTION("Errors") {
     CHECK_EXPR(

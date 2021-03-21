@@ -1,9 +1,11 @@
 #include "utilities.hpp"
 #include "frontend/diag_defs.hpp"
 #include "internal/context.hpp"
+#include "internal/reflect.hpp"
 #include "internal/typeinfer_expr.hpp"
 #include "lex/token_payload_id.hpp"
 #include "lex/token_payload_keyword.hpp"
+#include "lex/token_payload_static_int.hpp"
 #include "parse/node_expr_anon_func.hpp"
 #include "parse/type_param_list.hpp"
 #include "prog/expr/node_closure.hpp"
@@ -23,6 +25,11 @@ auto getName(const lex::Token& token) -> std::string {
   case lex::TokenKind::Keyword: {
     std::ostringstream oss;
     oss << token.getPayload<lex::KeywordTokenPayload>()->getKeyword();
+    return oss.str();
+  }
+  case lex::TokenKind::StaticInt: {
+    std::ostringstream oss;
+    oss << "#" << token.getPayload<lex::StaticIntTokenPayload>()->getValue();
     return oss.str();
   }
   default:
@@ -58,6 +65,14 @@ auto getDisplayName(const Context& ctx, prog::sym::TypeId typeId) -> std::string
   }
   oss << '}';
   return oss.str();
+}
+
+auto getDisplayNames(const Context& ctx, prog::sym::TypeSet typeSet) -> std::vector<std::string> {
+  std::vector<std::string> result;
+  for (const auto& type : typeSet) {
+    result.push_back(getDisplayName(ctx, type));
+  }
+  return result;
 }
 
 auto getOperator(const lex::Token& token) -> std::optional<prog::Operator> {
@@ -208,9 +223,6 @@ auto getOrInstType(
   if (subTable != nullptr && subTable->lookupType(typeName)) {
     return subTable->lookupType(typeName);
   }
-  if (!isType(ctx, nullptr, typeName)) {
-    return std::nullopt;
-  }
 
   // If type arguments are provided we attempt to instantiate a type using them.
   if (typeParams) {
@@ -258,6 +270,11 @@ auto getOrInstType(
     Context* ctx, const TypeSubstitutionTable* subTable, const parse::Type& parseType)
     -> std::optional<prog::sym::TypeId> {
 
+  if (parseType.isStaticInt()) {
+    return ctx->getStaticIntTable()->getType(
+        ctx, parseType.getId().getPayload<lex::StaticIntTokenPayload>()->getValue());
+  }
+
   const auto name = getName(parseType.getId());
   if (subTable) {
     const auto subType = subTable->lookupType(name);
@@ -304,6 +321,58 @@ auto instType(
   }
   if (typeName == "lazy_action" && typeSet->getCount() == 1) {
     return ctx->getLazies()->getLazy(ctx, *typeSet->begin(), true);
+  }
+  if (typeName == "staticint_add" && typeSet->getCount() == 2) {
+    return ctx->getStaticIntTable()->add(ctx, (*typeSet)[0], (*typeSet)[1]);
+  }
+  if (typeName == "staticint_sub" && typeSet->getCount() == 2) {
+    return ctx->getStaticIntTable()->sub(ctx, (*typeSet)[0], (*typeSet)[1]);
+  }
+  if (typeName == "staticint_neg" && typeSet->getCount() == 1) {
+    return ctx->getStaticIntTable()->neg(ctx, (*typeSet)[0]);
+  }
+  if (typeName == "reflect_type_kind" && typeSet->getCount() == 1) {
+    return reflectTypeKind(ctx, (*typeSet)[0]);
+  }
+  if (typeName == "reflect_struct_field_count" && typeSet->getCount() == 1) {
+    if (auto fieldCount = reflectStructFieldCount(ctx, (*typeSet)[0])) {
+      return fieldCount;
+    }
+  }
+  if (typeName == "reflect_struct_field_type" && typeSet->getCount() == 2) {
+    if (auto fieldType = reflectStructFieldType(ctx, (*typeSet)[0], (*typeSet)[1])) {
+      return fieldType;
+    }
+  }
+  if (typeName == "reflect_union_count" && typeSet->getCount() == 1) {
+    if (auto unionCount = reflectUnionCount(ctx, (*typeSet)[0])) {
+      return unionCount;
+    }
+  }
+  if (typeName == "reflect_union_type" && typeSet->getCount() == 2) {
+    if (auto unionType = reflectUnionType(ctx, (*typeSet)[0], (*typeSet)[1])) {
+      return unionType;
+    }
+  }
+  if (typeName == "reflect_enum_count" && typeSet->getCount() == 1) {
+    if (auto enumCount = reflectEnumCount(ctx, (*typeSet)[0])) {
+      return enumCount;
+    }
+  }
+  if (typeName == "reflect_delegate_input_count" && typeSet->getCount() == 1) {
+    if (auto inputCount = reflectDelegateInputCount(ctx, (*typeSet)[0])) {
+      return inputCount;
+    }
+  }
+  if (typeName == "reflect_delegate_input_type" && typeSet->getCount() == 2) {
+    if (auto inputType = reflectDelegateInputType(ctx, (*typeSet)[0], (*typeSet)[1])) {
+      return inputType;
+    }
+  }
+  if (typeName == "reflect_delegate_ret_type" && typeSet->getCount() == 1) {
+    if (auto retType = reflectDelegateRetType(ctx, (*typeSet)[0])) {
+      return retType;
+    }
   }
 
   const auto typeInstantiation = ctx->getTypeTemplates()->instantiate(typeName, *typeSet);
@@ -535,9 +604,20 @@ auto getTypeSet(
     if (type) {
       types.push_back(*type);
     } else {
+      isValid = false;
+      if (parseType.getParamCount() > 0) {
+        if (auto typeParamSet = getTypeSet(ctx, subTable, parseType.getParamList()->getTypes())) {
+          auto typeParamDisplayNames = getDisplayNames(*ctx, *typeParamSet);
+          ctx->reportDiag(
+              errUndeclaredTypeWithNames,
+              parseType.getSpan(),
+              getName(parseType),
+              typeParamDisplayNames);
+          break;
+        }
+      }
       ctx->reportDiag(
           errUndeclaredType, parseType.getSpan(), getName(parseType), parseType.getParamCount());
-      isValid = false;
     }
   }
   return isValid ? std::optional{prog::sym::TypeSet{std::move(types)}} : std::nullopt;

@@ -4,10 +4,13 @@
 
 namespace prog::sym {
 
+auto FieldDeclTable::operator[](size_t idx) const -> const FieldDecl& {
+  assert(idx < this->m_fields.size());
+  return m_fields[idx];
+}
+
 auto FieldDeclTable::operator[](FieldId id) const -> const FieldDecl& {
-  const auto index = id.m_id;
-  assert(index < this->m_fields.size());
-  return m_fields[index];
+  return operator[](id.m_id);
 }
 
 auto FieldDeclTable::getCount() const -> unsigned int { return m_fields.size(); }

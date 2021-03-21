@@ -6,6 +6,7 @@
 #include "internal/future_table.hpp"
 #include "internal/lazy_table.hpp"
 #include "internal/source_table_builder.hpp"
+#include "internal/staticint_table.hpp"
 #include "internal/type_info.hpp"
 #include "internal/type_template_table.hpp"
 #include "prog/program.hpp"
@@ -30,6 +31,7 @@ public:
       FutureTable* futures,
       LazyTable* lazies,
       FailTable* fails,
+      StaticIntTable* staticIntTable,
       TypeInfoMap* typeInfos,
       std::vector<Diag>* diags);
 
@@ -43,6 +45,7 @@ public:
   [[nodiscard]] auto getFutures() const noexcept -> FutureTable*;
   [[nodiscard]] auto getLazies() const noexcept -> LazyTable*;
   [[nodiscard]] auto getFails() const noexcept -> FailTable*;
+  [[nodiscard]] auto getStaticIntTable() const noexcept -> StaticIntTable*;
 
   [[nodiscard]] auto getTypeInfo(prog::sym::TypeId typeId) const noexcept
       -> std::optional<TypeInfo>;
@@ -67,6 +70,7 @@ private:
   FutureTable* m_futures;
   LazyTable* m_lazies;
   FailTable* m_fails;
+  StaticIntTable* m_staticIntTable;
 
   TypeInfoMap* m_typeInfos;
   std::vector<Diag>* m_diags;

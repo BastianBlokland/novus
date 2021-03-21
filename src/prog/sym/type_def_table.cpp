@@ -41,7 +41,7 @@ auto TypeDefTable::registerUnion(
 auto TypeDefTable::registerEnum(
     const sym::TypeDeclTable& typeTable,
     sym::TypeId id,
-    std::unordered_map<std::string, int32_t> entries) -> void {
+    std::vector<std::pair<std::string, int32_t>> entries) -> void {
   if (typeTable[id].getKind() != sym::TypeKind::Enum) {
     throw std::invalid_argument{"Type has not been declared as being a enum"};
   }

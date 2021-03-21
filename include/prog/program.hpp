@@ -82,10 +82,10 @@ public:
   [[nodiscard]] auto getLong() const noexcept -> sym::TypeId { return m_long; }
   [[nodiscard]] auto getFloat() const noexcept -> sym::TypeId { return m_float; }
   [[nodiscard]] auto getBool() const noexcept -> sym::TypeId { return m_bool; }
-  [[nodiscard]] auto getString() const noexcept -> sym::TypeId { return m_string; }
   [[nodiscard]] auto getChar() const noexcept -> sym::TypeId { return m_char; }
-  [[nodiscard]] auto getStream() const noexcept -> sym::TypeId { return m_stream; }
-  [[nodiscard]] auto getProcess() const noexcept -> sym::TypeId { return m_process; }
+  [[nodiscard]] auto getString() const noexcept -> sym::TypeId { return m_string; }
+  [[nodiscard]] auto getSysStream() const noexcept -> sym::TypeId { return m_sysStream; }
+  [[nodiscard]] auto getSysProcess() const noexcept -> sym::TypeId { return m_sysProcess; }
 
   [[nodiscard]] auto hasType(const std::string& name) const -> bool;
   [[nodiscard]] auto lookupType(const std::string& name) const -> std::optional<sym::TypeId>;
@@ -153,6 +153,8 @@ public:
   auto declareDelegate(std::string name) -> sym::TypeId;
   auto declareFuture(std::string name) -> sym::TypeId;
   auto declareLazy(std::string name) -> sym::TypeId;
+  auto declareStaticInt(std::string name) -> sym::TypeId;
+
   auto declarePureFunc(
       std::string name, sym::TypeSet input, sym::TypeId output, unsigned int numOptInputs)
       -> sym::FuncId;
@@ -164,7 +166,7 @@ public:
 
   auto defineStruct(sym::TypeId id, sym::FieldDeclTable fields) -> void;
   auto defineUnion(sym::TypeId id, std::vector<sym::TypeId> types) -> void;
-  auto defineEnum(sym::TypeId id, std::unordered_map<std::string, int32_t> entries) -> void;
+  auto defineEnum(sym::TypeId id, std::vector<sym::EnumDef::Pair> entries) -> void;
   auto defineDelegate(
       sym::TypeId id,
       bool isAction,
@@ -197,10 +199,10 @@ private:
   sym::TypeId m_long;
   sym::TypeId m_float;
   sym::TypeId m_bool;
-  sym::TypeId m_string;
   sym::TypeId m_char;
-  sym::TypeId m_stream;
-  sym::TypeId m_process;
+  sym::TypeId m_string;
+  sym::TypeId m_sysStream;
+  sym::TypeId m_sysProcess;
 };
 
 } // namespace prog

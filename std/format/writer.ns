@@ -197,9 +197,30 @@ fun indentedListWriter{T}(Writer{T} elemWriter, Writer{None} sepWriter)
   lastElem  = indentWriter() & elemWriter & newlineWriter();
   indent(listWriter(elem, lastElem))
 
+fun basicListWriter{T}(Writer{T} elemWriter) -> Writer{List{T}}
+  w = (
+    litWriter('[') & newlineWriter() &
+    indentedListWriter(elemWriter, litWriter(',')) &
+    indentWriter() & litWriter(']')
+  );
+  Writer(lambda (WriterState s, List{T} l)
+    if l.isEmpty()  -> s.write("[]")
+    else            -> w(s, l)
+  )
+
 fun lazyWriter{T}(lazy{Writer{T}} lw)
   Writer(lambda (WriterState s, T v)
     get(lw)(s, v)
+  )
+
+fun enumKeyWriter{Enum}(Type{Enum} t)
+  Writer(lambda (WriterState s, Enum e)
+    s.write(reflectEnumKeyForVal(t, e) ?? "")
+  )
+
+fun enumValWriter{Enum}(Type{Enum} t)
+  Writer(lambda (WriterState s, Enum e)
+    s.write(int(e).string())
   )
 
 // -- Tests
@@ -299,6 +320,34 @@ assertEq(indentedListWriter(txtIntWriter())(1 :: 2 :: 3), "  1\n  2\n  3\n")
 assertEq(indentedListWriter(txtIntWriter())(List{int}(), "", WriterNewlineMode.None), "")
 assertEq(indentedListWriter(txtIntWriter())(1 :: List{int}(), "", WriterNewlineMode.None), "1")
 assertEq(indentedListWriter(txtIntWriter())(1 :: 2 :: 3, "", WriterNewlineMode.None), "123")
+
+assertEq(
+  w = basicListWriter(txtIntWriter());
+  l = 1 :: 2 :: 3;
+  w(l), "[\n  1,\n  2,\n  3\n]")
+
+assertEq(
+  w = basicListWriter(txtIntWriter());
+  l = List{int}();
+  w(l), "[]")
+
+assertEq(
+  w = basicListWriter(txtIntWriter());
+  l = 1 :: 2 :: 3;
+  w(l, "", WriterNewlineMode.None), "[1,2,3]")
+
+assertEq(
+  w = basicListWriter(txtIntWriter());
+  l = List{int}();
+  w(l, "", WriterNewlineMode.None), "[]")
+
+
+assertEq(enumKeyWriter(Type{Month}())(Month.January), "January")
+assertEq(enumKeyWriter(Type{Month}())(Month.April), "April")
+assertEq(enumKeyWriter(Type{Month}())(Month(42)), "")
+
+assertEq(enumValWriter(Type{Month}())(Month.April), "4")
+assertEq(enumValWriter(Type{Month}())(Month(42)), "42")
 
 assertEq(
   w = stringWriter() & txtIntWriter();

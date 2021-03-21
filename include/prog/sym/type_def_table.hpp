@@ -44,9 +44,8 @@ public:
       -> void;
 
   auto registerEnum(
-      const sym::TypeDeclTable& typeTable,
-      sym::TypeId id,
-      std::unordered_map<std::string, int32_t> entries) -> void;
+      const sym::TypeDeclTable& typeTable, sym::TypeId id, std::vector<sym::EnumDef::Pair> entries)
+      -> void;
 
   auto registerDelegate(
       const sym::TypeDeclTable& typeTable,

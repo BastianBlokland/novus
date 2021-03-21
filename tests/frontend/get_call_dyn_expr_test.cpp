@@ -236,8 +236,8 @@ TEST_CASE("[frontend] Analyzing call dynamic expressions", "frontend") {
         "fun f2() -> int op = f1{int}; op(1)",
         errAmbiguousTemplateFunction(NO_SRC, "f1", 1),
         errUndeclaredPureFunc(NO_SRC, "op", {"int"}));
-    CHECK_DIAG("fun f() f1{float}", errNoPureFuncFoundToInstantiate(NO_SRC, "f1", 1));
-    CHECK_DIAG("act a() f1{float}", errNoFuncOrActionFoundToInstantiate(NO_SRC, "f1", 1));
+    CHECK_DIAG("fun f() f1{float}", errNoPureFuncFoundToInstantiate(NO_SRC, "f1", {"float"}));
+    CHECK_DIAG("act a() f1{float}", errNoFuncOrActionFoundToInstantiate(NO_SRC, "f1", {"float"}));
     CHECK_DIAG(
         "fun f1{T}() -> T T() "
         "fun f2() -> int op = f1; op()",

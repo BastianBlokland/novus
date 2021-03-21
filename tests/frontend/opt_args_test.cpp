@@ -236,28 +236,28 @@ TEST_CASE("[frontend] Analyzing optional argument", "frontend") {
           "fun f() ft{int}()",
           errNonMatchingInitializerType(NO_SRC, "int", "string"),
           errInvalidFuncInstantiation(NO_SRC),
-          errNoPureFuncFoundToInstantiate(NO_SRC, "ft", 1));
+          errNoPureFuncFoundToInstantiate(NO_SRC, "ft", {"int"}));
 
       CHECK_DIAG(
           "fun ft{T}(T a = (b = 2)) a "
           "fun f() ft{int}()",
           errConstDeclareNotSupported(NO_SRC),
           errInvalidFuncInstantiation(NO_SRC),
-          errNoPureFuncFoundToInstantiate(NO_SRC, "ft", 1));
+          errNoPureFuncFoundToInstantiate(NO_SRC, "ft", {"int"}));
 
       CHECK_DIAG(
           "fun ft{T}(T a = ft()) a "
           "fun f() ft{int}()",
           errUndeclaredPureFunc(NO_SRC, "ft", {}),
           errInvalidFuncInstantiation(NO_SRC),
-          errNoPureFuncFoundToInstantiate(NO_SRC, "ft", 1));
+          errNoPureFuncFoundToInstantiate(NO_SRC, "ft", {"int"}));
 
       CHECK_DIAG(
           "fun +(int x, int y) -> int intrinsic{int_add_int}(x, y) "
           "fun ft{T}(T a = T(), T b) a + b "
           "fun f() ft{int}()",
           errNonOptArgFollowingOpt(NO_SRC),
-          errNoPureFuncFoundToInstantiate(NO_SRC, "ft", 1));
+          errNoPureFuncFoundToInstantiate(NO_SRC, "ft", {"int"}));
 
       CHECK_DIAG("fun f(int a = 0, int b) a + b", errNonOptArgFollowingOpt(NO_SRC));
     }
