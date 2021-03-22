@@ -18,7 +18,6 @@
 #include "novasm/pcall_code.hpp"
 #include "vm/exec_state.hpp"
 #include "vm/platform_interface.hpp"
-#include <chrono>
 #include <cstdlib>
 
 namespace vm::internal {
@@ -278,12 +277,10 @@ auto inline pcall(
   } break;
 
   case PCallCode::ClockMicroSinceEpoch: {
-    const auto now = std::chrono::system_clock::now().time_since_epoch();
-    PUSH_LONG(std::chrono::duration_cast<std::chrono::microseconds>(now).count());
+    PUSH_LONG(clockMicroSinceEpoch());
   } break;
   case PCallCode::ClockNanoSteady: {
-    auto now = std::chrono::steady_clock::now().time_since_epoch();
-    PUSH_LONG(std::chrono::duration_cast<std::chrono::nanoseconds>(now).count());
+    PUSH_LONG(clockNanoSteady());
   } break;
 
   case PCallCode::VersionRt: {

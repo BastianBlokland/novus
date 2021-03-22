@@ -120,8 +120,10 @@ if(WIN32)
   # On windows link against the 'winsock' library.
   link_libraries(ws2_32)
 
-  # Target windows 'vista', reason is some additional winsock api's became available in vista.
-  add_definitions(-DWINVER=0x0600 -D_WIN32_WINNT=0x0600)
+  # Target windows '8', change to '0x0600' for supporting back to windows Vista but losing extra
+  # precision in clock systemcalls. Further back then Vista we cannot easily support due to missing
+  # winsock apis.
+  add_definitions(-DWINVER=0x0602 -D_WIN32_WINNT=0x0602)
 endif()
 
 # Generate a 'compile_commands.json' for use by clangd.

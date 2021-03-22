@@ -3,6 +3,7 @@
 #include "internal/executor_registry.hpp"
 #include "internal/interupt.hpp"
 #include "internal/os_include.hpp"
+#include "internal/platform_utilities.hpp"
 #include "internal/ref_allocator.hpp"
 #include "vm/platform_interface.hpp"
 #include <csignal>
@@ -72,6 +73,7 @@ static auto setup(internal::Settings* settings, PlatformInterface* iface) noexce
   setupWinsock(settings);
   setupInputConsole(settings, iface);
   setupOutputConsole(settings, iface);
+  internal::setupPlatformUtilities();
 
   if (settings->interceptInterupt) {
     settings->interceptInterupt = internal::interruptSetupHandler();
@@ -92,6 +94,8 @@ static auto setup(internal::Settings* settings, PlatformInterface* /*unused*/) n
 
   // Ignore sig-pipe (we want to handle it on a per call basis instead of globally).
   signal(SIGPIPE, SIG_IGN);
+
+  internal::setupPlatformUtilities();
 
   if (settings->interceptInterupt) {
     settings->interceptInterupt = internal::interruptSetupHandler();

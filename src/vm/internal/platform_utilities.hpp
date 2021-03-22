@@ -70,4 +70,10 @@ enum class PlatformError : uint32_t {
   SleepFailed = 700,
 };
 
+auto setupPlatformUtilities() noexcept -> void;
+
+[[nodiscard]] auto clockMicroSinceEpoch() noexcept -> int64_t;
+
+[[nodiscard]] auto clockNanoSteady() noexcept -> int64_t;
+
 } // namespace vm::internal
