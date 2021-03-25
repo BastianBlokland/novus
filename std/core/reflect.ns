@@ -428,7 +428,7 @@ assertEq(reflect(Type{#42}()), StaticIntInfo(42))
 // -- Struct utility tests
 
 assertEq(reflectStructFieldCount(Type{Date}()), Meta{#3}())
-assertEq(reflectStructFieldCount(Type{DateTime}()), Meta{#1}())
+assertEq(reflectStructFieldCount(Type{DateTime}()), Meta{#2}())
 assertEq(reflectStructFieldCount(Type{None}()), Meta{#0}())
 
 assertEq(reflectStructFieldName(Type{Date}(), Meta{#0}()), "year")

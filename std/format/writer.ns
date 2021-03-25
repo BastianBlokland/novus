@@ -152,9 +152,14 @@ fun charWriter()
     s.write(c)
   )
 
-fun txtIntWriter()
+fun txtIntWriter(int minDigits = 0)
   Writer(lambda (WriterState s, int i)
-    s.write(i.string())
+    s.write((i < 0 ? "-" : "") + string(abs(i), minDigits))
+  )
+
+fun txtLongWriter(int minDigits = 0)
+  Writer(lambda (WriterState s, long l)
+    s.write((l < 0 ? "-" : "") + string(abs(l), minDigits))
   )
 
 fun txtHexWriter(int minDigits = 0)
@@ -244,6 +249,26 @@ assertEq(
 assertEq(
   w = txtIntWriter();
   w(42), "42")
+
+assertEq(
+  w = txtIntWriter(4);
+  w(42), "0042")
+
+assertEq(
+  w = txtIntWriter(4);
+  w(-42), "-0042")
+
+assertEq(
+  w = txtLongWriter();
+  w(42L), "42")
+
+assertEq(
+  w = txtLongWriter(4);
+  w(-42L), "-0042")
+
+assertEq(
+  w = txtLongWriter(4);
+  w(-42L), "-0042")
 
 assertEq(txtHexWriter()(0), "0")
 assertEq(txtHexWriter()(1), "1")
