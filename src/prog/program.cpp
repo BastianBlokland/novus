@@ -296,6 +296,8 @@ Program::Program() :
       *this, Fk::ActionClockMicroSinceEpoch, "clock_microsinceepoch", sym::TypeSet{}, m_long);
   m_funcDecls.registerIntrinsicAction(
       *this, Fk::ActionClockNanoSteady, "clock_nanosteady", sym::TypeSet{}, m_long);
+  m_funcDecls.registerIntrinsicAction(
+      *this, Fk::ActionClockTimezoneOffset, "clock_timezoneoffset", sym::TypeSet{}, m_int);
 
   m_funcDecls.registerIntrinsicAction(
       *this, Fk::ActionVersionRt, "version_runtime", sym::TypeSet{}, m_string);

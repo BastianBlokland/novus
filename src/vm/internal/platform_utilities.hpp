@@ -76,4 +76,7 @@ auto setupPlatformUtilities() noexcept -> void;
 
 [[nodiscard]] auto clockNanoSteady() noexcept -> int64_t;
 
+// Returns the local timezone offset in minutes.
+[[nodiscard]] auto clockTimezoneOffset() noexcept -> int32_t;
+
 } // namespace vm::internal

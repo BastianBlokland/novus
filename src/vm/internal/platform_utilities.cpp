@@ -96,4 +96,26 @@ auto clockNanoSteady() noexcept -> int64_t {
 #endif
 }
 
+auto clockTimezoneOffset() noexcept -> int32_t {
+
+#if defined(_WIN32)
+
+  TIME_ZONE_INFORMATION timeZoneInfo;
+  if (unlikely(::GetTimeZoneInformation(&timeZoneInfo) == TIME_ZONE_ID_INVALID)) {
+    // TODO: Consider if we want to swallow this or if we add error reporting to this call.
+    return 0;
+  }
+  return -static_cast<int32_t>(timeZoneInfo.Bias);
+
+#else // !_WIN32
+
+  const time_t utcSeconds            = ::time(nullptr);
+  const time_t localSeconds          = ::timegm(::localtime(&utcSeconds));
+  const time_t timezoneOffsetSeconds = localSeconds - utcSeconds;
+  const time_t timezoneOffsetMinutes = timezoneOffsetSeconds / 60;
+  return static_cast<int32_t>(timezoneOffsetMinutes);
+
+#endif
+}
+
 } // namespace vm::internal

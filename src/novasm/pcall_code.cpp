@@ -108,6 +108,9 @@ auto operator<<(std::ostream& out, const PCallCode& rhs) noexcept -> std::ostrea
   case PCallCode::ClockNanoSteady:
     out << "clock-nano-steady";
     break;
+  case PCallCode::ClockTimezoneOffset:
+    out << "clock-timezone-offset";
+    break;
 
   case PCallCode::VersionRt:
     out << "version-rt";

@@ -282,6 +282,9 @@ auto inline pcall(
   case PCallCode::ClockNanoSteady: {
     PUSH_LONG(clockNanoSteady());
   } break;
+  case PCallCode::ClockTimezoneOffset: {
+    PUSH_INT(clockTimezoneOffset());
+  } break;
 
   case PCallCode::VersionRt: {
     PUSH_REF(refAlloc->allocStrLit(PROJECT_VER));
