@@ -1,0 +1,27 @@
+// --- Commandline app that prints the current time in a pretty format.
+// When running interactivly it keeps printing until interupt.
+
+import "std.ns"
+
+act printTimeUntilInterupt(Console con, Writer{DateTime} timeWriter, Duration updateInterval = milliseconds(30))
+  writer = ttyResetLineWriter() & timeWriter;
+  actSeq(
+    lazy con.writeOut(ttyLitCursorShowWriter(false)),
+    lazy invokeUntilInterupt(impure lambda () con.writeOut(writer, timeNow()), updateInterval),
+    lazy con.writeOut(ttyLitCursorShowWriter(true)),
+    lazy con.writeOut("\n")
+  )
+
+act printTimeOnce(Console con, Writer{DateTime} timeWriter)
+  actSeq(
+    lazy con.writeOut(timeWriter, timeNow()),
+    lazy con.writeOut("\n")
+  )
+
+act main()
+  con = consoleOpen().failOnError();
+  timeWriter = dateTimePrettyWriter(hasEnvOpt("millies"));
+  if con.isTerm() -> printTimeUntilInterupt(con, timeWriter).failOnError()
+  else            -> printTimeOnce(con, timeWriter).failOnError()
+
+main()

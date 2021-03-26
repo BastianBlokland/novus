@@ -363,12 +363,13 @@ fun datePrettyWriter() -> Writer{Date}
 
 // Local date and time in pretty format.
 // Example output: 'Friday 24 March 2021 09:41:38 +02:00'.
-fun dateTimePrettyWriter() -> Writer{DateTime}
+fun dateTimePrettyWriter(bool includeMillies = false) -> Writer{DateTime}
   (
     datePrettyWriter()  & litWriter(' ') &
     txtLongWriter(2)    & litWriter(':') &
     txtLongWriter(2)    & litWriter(':') &
-    txtLongWriter(2)    & litWriter(' ') & timezonePrettyWriter()
+    txtLongWriter(2)    & ?(litWriter(':') & txtLongWriter(3)) &
+    litWriter(' ')      & timezonePrettyWriter()
   ).map(lambda (DateTime dt)
     localTime = dt + Duration(dt.zone);
     sinceEpoch = absDuration(localTime - timeEpoch());
@@ -377,6 +378,7 @@ fun dateTimePrettyWriter() -> Writer{DateTime}
       sinceEpoch.hours()    % 24,
       sinceEpoch.minutes()  % 60,
       sinceEpoch.seconds()  % 60,
+      includeMillies ? Option{long}(sinceEpoch.milliseconds() % 1000) : None(),
       dt.zone))
 
 // -- Actions
