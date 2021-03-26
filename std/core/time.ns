@@ -42,8 +42,7 @@ fun DateTime(Date d)
   DateTime(daysSinceEpoch * day().microseconds(), timezoneUTC())
 
 fun string(DateTime dt)
-  w = timeISO8601Writer();
-  w(dt).string()
+  dateTimeISO8601Writer().run(dt)
 
 fun daysSinceEpoch(DateTime dt)
   int(dt.microSinceEpoch / day().microseconds())
@@ -84,8 +83,7 @@ fun Date(DateTime dt)
   Date(month <= 2 ? ++year : year, month, day)
 
 fun string(Date date)
-  w = dateISO8601Writer();
-  w(date).string()
+  dateISO8601Writer().run(date)
 
 // -- Month
 // Represents a single month in the Gregorian calendar.
@@ -134,8 +132,7 @@ fun noinline string(WeekDay d, bool short = false)
 struct Timezone = Duration offset
 
 fun string(Timezone t)
-  w = timezoneISO8601Writer();
-  w(t).string()
+  timezoneISO8601Writer().run(t)
 
 fun Duration(Timezone t)
   t.offset
@@ -254,15 +251,27 @@ fun string(Timestamp t) t.ns.string()
 
 // Time in unix seconds from epoch
 // Example format: 1605977674
-fun timeUnixParser()
+fun timeUnixParser() -> Parser{DateTime}
   txtPosLongParser().map(lambda (long l) timeEpoch() + seconds(l)) ! Error("Invalid unix timestamp")
 
 // -- Writers
 
 // Time in unix seconds from epoch
 // Example format: 1605977674
-fun timeUnixWriter()
+fun timeUnixWriter() -> Writer{DateTime}
   txtLongWriter().map(lambda (DateTime dt)(dt - timeEpoch()).seconds())
+
+// Example output: 'Sunday'
+// Example short output: 'Sun'
+fun weekDayWriter(bool short) -> Writer{WeekDay}
+  Writer(lambda (WriterState s, WeekDay wd)
+    s.write(wd.string(short)))
+
+// Example output: 'January'
+// Example short output: 'Jan'
+fun monthWriter(bool short) -> Writer{Month}
+  Writer(lambda (WriterState s, Month m)
+    s.write(m.string(short)))
 
 // Date in iso-8601 format (https://en.wikipedia.org/wiki/ISO_8601).
 // Example output: 1920-03-19.
@@ -284,9 +293,9 @@ fun timezoneISO8601Writer() -> Writer{Timezone}
           absDuration(t.offset).minutes() % 60))
   )
 
-// Local time in iso-8601 format (https://en.wikipedia.org/wiki/ISO_8601).
+// Local date and time in iso-8601 format (https://en.wikipedia.org/wiki/ISO_8601).
 // Example output: 1920-03-19T07:11:23+02:00.
-fun timeISO8601Writer() -> Writer{DateTime}
+fun dateTimeISO8601Writer() -> Writer{DateTime}
   (
     dateISO8601Writer() & litWriter('T') &
     txtLongWriter(2)    & litWriter(':') &
@@ -301,6 +310,36 @@ fun timeISO8601Writer() -> Writer{DateTime}
       sinceEpoch.minutes()  % 60,
       sinceEpoch.seconds()  % 60,
       dt.zone))
+
+// Time in RFC1123 format (used in the http standard).
+// Example output: 'Sun, 24 May 2020'
+fun dateRFC1123Writer() -> Writer{Date}
+  (
+    weekDayWriter(true) & litWriter(", ") &
+    txtIntWriter()      & litWriter(' ')  &
+    monthWriter(true)   & litWriter(' ')  &
+    txtIntWriter()
+  ).map(lambda (Date d) makePair(WeekDay(d), d.day, d.month, d.year))
+
+// Time in RFC1123 format (used in the http standard).
+// NOTE: Always in UTC.
+// Example output: '15:08:51 GMT'
+fun timeRFC1123Writer() -> Writer{DateTime}
+  (
+    txtLongWriter(2)    & litWriter(':') &
+    txtLongWriter(2)    & litWriter(':') &
+    txtLongWriter(2)    & litWriter(" GMT")
+  ).map(lambda (DateTime dt)
+    sinceEpoch = absDuration(dt - timeEpoch());
+    makePair(sinceEpoch.hours() % 24, sinceEpoch.minutes() % 60, sinceEpoch.seconds() % 60))
+
+// Date + time in RFC1123 format (used in the http standard).
+// NOTE: Always in UTC.
+// Example output: 'Sun, 24 May 2020 15:08:51 GMT'
+fun dateTimeRFC1123Writer() -> Writer{DateTime}
+  (
+    dateRFC1123Writer() & litWriter(' ') & timeRFC1123Writer()
+  ).map(lambda (DateTime dt) makePair(Date(dt), dt))
 
 // -- Actions
 
@@ -416,6 +455,8 @@ assertEq(timezoneISO8601Writer()(Timezone(-hours(2))), "-02:00")
 assertEq(timezoneISO8601Writer()(Timezone(-hours(10))), "-10:00")
 assertEq(timezoneISO8601Writer()(Timezone(-hours(2) - minutes(30))), "-02:30")
 
-assertEq(timeISO8601Writer()(timeEpoch()), "1970-01-01T00:00:00Z")
-assertEq(timeISO8601Writer()(timeEpoch() + hours(13)), "1970-01-01T13:00:00Z")
-assertEq(timeISO8601Writer()(timeEpoch() + hours(13) + seconds(42)), "1970-01-01T13:00:42Z")
+assertEq(dateTimeISO8601Writer()(timeEpoch()), "1970-01-01T00:00:00Z")
+assertEq(dateTimeISO8601Writer()(timeEpoch() + hours(13)), "1970-01-01T13:00:00Z")
+assertEq(dateTimeISO8601Writer()(timeEpoch() + hours(13) + seconds(42)), "1970-01-01T13:00:42Z")
+
+assertEq(dateTimeRFC1123Writer()(timeEpoch() + hours(13) + seconds(42)), "Thu, 1 Jan 1970 13:00:42 GMT")

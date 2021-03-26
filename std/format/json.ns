@@ -43,16 +43,13 @@ fun jsonStringEscape(string str)
 // -- Conversions
 
 fun string(JsonObject o, string indent = "", WriterNewlineMode newlineMode = WriterNewlineMode.None)
-  w = jsonObjectWriter(jsonValueWriter());
-  w(o, indent, newlineMode).string()
+  jsonObjectWriter(jsonValueWriter()).run(o, indent, newlineMode)
 
 fun string(JsonArray a, string indent = "", WriterNewlineMode newlineMode = WriterNewlineMode.None)
-  w = jsonArrayWriter(jsonValueWriter());
-  w(a, indent, newlineMode).string()
+  jsonArrayWriter(jsonValueWriter()).run(a, indent, newlineMode)
 
 fun string(JsonValue v, string indent = "", WriterNewlineMode newlineMode = WriterNewlineMode.None)
-  w = jsonValueWriter();
-  w(v, indent, newlineMode).string()
+  jsonValueWriter().run(v, indent, newlineMode)
 
 fun string(JsonNull n)
   "null"

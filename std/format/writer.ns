@@ -45,30 +45,35 @@ fun (){T}(Writer{T} w, T val) -> WriterState
 fun ==(WriterState s, string str)
   s.curResult == str
 
-fun ?{T}(Writer{T} p) -> Writer{Option{T}}
+fun ?{T}(Writer{T} w) -> Writer{Option{T}}
   Writer(lambda (WriterState s, Option{T} optVal)
-    if optVal as T val  -> p(s, val)
+    if optVal as T val  -> w(s, val)
     else                -> s
   )
 
-fun &(Writer{None} p1, Writer{None} p2) -> Writer{None}
+fun &(Writer{None} w1, Writer{None} w2) -> Writer{None}
   Writer(lambda (WriterState s, None n)
-    p2(p1(s, None()), None())
+    w2(w1(s, None()), None())
   )
 
-fun &{T}(Writer{T} p1, Writer{None} p2) -> Writer{T}
+fun &{T}(Writer{T} w1, Writer{None} w2) -> Writer{T}
   Writer(lambda (WriterState s, T val)
-    p2(p1(s, val), None())
+    w2(w1(s, val), None())
   )
 
-fun &{T}(Writer{None} p1, Writer{T} p2) -> Writer{T}
+fun &{T}(Writer{None} w1, Writer{T} w2) -> Writer{T}
   Writer(lambda (WriterState s, T val)
-    p2(p1(s, None()), val)
+    w2(w1(s, None()), val)
   )
 
-fun &{T1, T2}(Writer{T1} p1, Writer{T2} p2) -> Writer{Pair{T1, T2}}
+fun &{T1, T2}(Writer{T1} w1, Writer{T2} w2) -> Writer{Pair{T1, T2}}
   Writer(lambda (WriterState s, Pair{T1, T2} val)
-    p2(p1(s, val.first), val.second)
+    w2(w1(s, val.first), val.second)
+  )
+
+fun >>{T}(Writer{T} w1, Writer{T} w2) -> Writer{T}
+  Writer(lambda (WriterState s, T val)
+    w2(w1(s, val), val)
   )
 
 // -- Conversions
@@ -77,6 +82,9 @@ fun string(WriterState s)
   s.curResult
 
 // -- Utilities
+
+fun run{T}(Writer{T} w, T val, string indent, WriterNewlineMode newlineMode) -> string
+  w(val, indent, newlineMode).string()
 
 fun run{T}(Writer{T} w, T val, WriterNewlineMode newlineMode) -> string
   w(val, newlineMode).string()
@@ -289,6 +297,8 @@ assertEq(txtFloatWriter()(42.1337), "42.1337")
 assertEq(txtBoolWriter()(true), "true")
 assertEq(txtBoolWriter()(false), "false")
 
+assertEq((txtBoolWriter() >> txtBoolWriter())(true), "truetrue")
+
 assertEq((?txtBoolWriter())(Option{bool}(true)), "true")
 assertEq((?txtBoolWriter())(Option{bool}()), "")
 
@@ -365,7 +375,6 @@ assertEq(
   w = basicListWriter(txtIntWriter());
   l = List{int}();
   w(l, "", WriterNewlineMode.None), "[]")
-
 
 assertEq(enumKeyWriter(Type{Month}())(Month.January), "January")
 assertEq(enumKeyWriter(Type{Month}())(Month.April), "April")

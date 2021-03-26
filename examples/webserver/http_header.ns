@@ -66,19 +66,3 @@ fun httpRespHeaderWriter()
     httpRespStatusLineWriter() & newlineWriter() &
     listWriter(httpHeaderFieldWriter(), newlineWriter())
   ).map(lambda (HttpRespHeader h) Pair(h, h.fields))
-
-// -- Functions
-
-// Date in 'RFC 822' format.
-// Example output: 'Sun, 24 May 2020 15:08:51 GMT'
-fun httpDateStr(DateTime dt)
-  date        = Date(dt);
-  wd          = WeekDay(dt);
-  tSinceEpoch = absDuration(dt - timeEpoch());
-  wd.string(true)                         + ", " +
-  date.day                                + " " +
-  date.month.string(true)                 + " " +
-  date.year                               + " " +
-  (tSinceEpoch.hours() % 24).string(2)    + ":" +
-  (tSinceEpoch.minutes() % 60).string(2)  + ":" +
-  (tSinceEpoch.seconds() % 60).string(2)  + " GMT"

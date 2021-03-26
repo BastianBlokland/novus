@@ -26,6 +26,7 @@ struct ClientContext =
   Content                content,
   List{Variable}         variables,
   TcpConnection          connection,
+  Writer{DateTime}       timeWriter,
   Writer{HttpResp}       respWriter,
   Parser{HttpReqHeader}  reqParser
 
@@ -61,10 +62,10 @@ fun getResponse(ClientContext ctx, HttpMethod m, string url) -> HttpResp
 
 act writeResponse(ClientContext ctx, HttpResp resp) -> Option{Error}
   extraFields = (
-    HttpHeaderField("Date",               httpDateStr(timeNow())) ::
-    HttpHeaderField("Server",             "Novus")                ::
-    HttpHeaderField("Transfer-Encoding",  "identity")             ::
-    HttpHeaderField("Connection",         "keep-alive")           ::
+    HttpHeaderField("Date",               ctx.timeWriter.run(timeNow()))  ::
+    HttpHeaderField("Server",             "Novus")                        ::
+    HttpHeaderField("Transfer-Encoding",  "identity")                     ::
+    HttpHeaderField("Connection",         "keep-alive")                   ::
     HttpHeaderField("Keep-Alive",         "timeout=5, max=1000")
   );
   finalResp     = resp.httpRespAddFields(extraFields);
@@ -100,6 +101,7 @@ act handleConnection(ClientContext ctx)
 act main(int port, Content content)
   print("Starting server (url: http://localhost:" + port + ")");
   startTime   = timeNow();
+  timeWriter  = dateTimeRFC1123Writer();
   respWriter  = httpRespWriter();
   reqParser   = httpReqHeaderParser();
   handleCon   = (
@@ -107,12 +109,12 @@ act main(int port, Content content)
       uptime    = timeNow() - startTime;
       variables = (
         Variable("SERVER_UPTIME",             uptime.string())                  ::
-        Variable("SERVER_DATE",               timeNow().httpDateStr())          ::
+        Variable("SERVER_DATE",               timeWriter.run(timeNow()))        ::
         Variable("SERVER_PLATFORM",           getPlatform().string())           ::
         Variable("SERVER_RUNTIME_VERSION",    getRuntimeVersion().string())     ::
         Variable("SERVER_CONNECTION_COUNTER", state.connectionCounter.string())
       );
-      ctx       = ClientContext(content, variables, con, respWriter, reqParser);
+      ctx       = ClientContext(content, variables, con, timeWriter, respWriter, reqParser);
       handleConnection(ctx)
   );
   tcpServer(TcpServerSettings(handleCon, port)).failOnError();
