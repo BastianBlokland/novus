@@ -263,13 +263,13 @@ fun timeUnixWriter() -> Writer{DateTime}
 
 // Example output: 'Sunday'
 // Example short output: 'Sun'
-fun weekDayWriter(bool short) -> Writer{WeekDay}
+fun weekDayWriter(bool short = false) -> Writer{WeekDay}
   Writer(lambda (WriterState s, WeekDay wd)
     s.write(wd.string(short)))
 
 // Example output: 'January'
 // Example short output: 'Jan'
-fun monthWriter(bool short) -> Writer{Month}
+fun monthWriter(bool short = false) -> Writer{Month}
   Writer(lambda (WriterState s, Month m)
     s.write(m.string(short)))
 
@@ -311,7 +311,7 @@ fun dateTimeISO8601Writer() -> Writer{DateTime}
       sinceEpoch.seconds()  % 60,
       dt.zone))
 
-// Time in RFC1123 format (used in the http standard).
+// Date in RFC1123 format (used in the http standard).
 // Example output: 'Sun, 24 May 2020'
 fun dateRFC1123Writer() -> Writer{Date}
   (
@@ -340,6 +340,44 @@ fun dateTimeRFC1123Writer() -> Writer{DateTime}
   (
     dateRFC1123Writer() & litWriter(' ') & timeRFC1123Writer()
   ).map(lambda (DateTime dt) makePair(Date(dt), dt))
+
+// Timezone in pretty format.
+// Example output: +02:00.
+fun timezonePrettyWriter() -> Writer{Timezone}
+  (
+    charWriter() & txtLongWriter(2) & litWriter(':') & txtLongWriter(2)
+  ).map(lambda (Timezone t) makePair(
+      t.offset < Duration(0) ? '-' : '+',
+      absDuration(t.offset).hours(),
+      absDuration(t.offset).minutes() % 60))
+
+// Date in pretty format.
+// Example output: 'Friday 24 March 2021'
+fun datePrettyWriter() -> Writer{Date}
+  (
+    weekDayWriter() & litWriter(' ') &
+    txtIntWriter()  & litWriter(' ')  &
+    monthWriter()   & litWriter(' ')  &
+    txtIntWriter()
+  ).map(lambda (Date d) makePair(WeekDay(d), d.day, d.month, d.year))
+
+// Local date and time in pretty format.
+// Example output: 'Friday 24 March 2021 09:41:38 +02:00'.
+fun dateTimePrettyWriter() -> Writer{DateTime}
+  (
+    datePrettyWriter()  & litWriter(' ') &
+    txtLongWriter(2)    & litWriter(':') &
+    txtLongWriter(2)    & litWriter(':') &
+    txtLongWriter(2)    & litWriter(' ') & timezonePrettyWriter()
+  ).map(lambda (DateTime dt)
+    localTime = dt + Duration(dt.zone);
+    sinceEpoch = absDuration(localTime - timeEpoch());
+    makePair(
+      Date(localTime),
+      sinceEpoch.hours()    % 24,
+      sinceEpoch.minutes()  % 60,
+      sinceEpoch.seconds()  % 60,
+      dt.zone))
 
 // -- Actions
 
@@ -460,3 +498,7 @@ assertEq(dateTimeISO8601Writer()(timeEpoch() + hours(13)), "1970-01-01T13:00:00Z
 assertEq(dateTimeISO8601Writer()(timeEpoch() + hours(13) + seconds(42)), "1970-01-01T13:00:42Z")
 
 assertEq(dateTimeRFC1123Writer()(timeEpoch() + hours(13) + seconds(42)), "Thu, 1 Jan 1970 13:00:42 GMT")
+
+assertEq(dateTimePrettyWriter()(timeEpoch() + hours(13) + seconds(42)), "Thursday 1 January 1970 13:00:42 +00:00")
+assertEq(dateTimePrettyWriter()(DateTime(0, Timezone(hour())) + hours(13) + seconds(42)), "Thursday 1 January 1970 14:00:42 +01:00")
+assertEq(dateTimePrettyWriter()(DateTime(0, Timezone(-hour())) + hours(13) + seconds(42)), "Thursday 1 January 1970 12:00:42 -01:00")
