@@ -159,7 +159,12 @@ act interuptReset() -> bool
 act atInterupt{T}(action{T} delegate) -> future{T}
   fork invoke(impure lambda () -> T
     if interuptIsRequested() -> delegate()
-    else                     -> sleep(milliseconds(100)); self())
+    else                     -> sleep(milliseconds(100)).failOnError(); self())
+
+act invokeUntilInterupt{T}(action{Option{T}} delegate, Duration interval = milliseconds(100)) -> Option{T}
+  if interuptIsRequested()  -> None()
+  if delegate() as T t      -> t
+  else                      -> sleep(interval).failOnError(); self(delegate, interval)
 
 // -- Misc
 

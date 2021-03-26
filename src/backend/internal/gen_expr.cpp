@@ -505,6 +505,9 @@ auto GenExpr::visit(const prog::expr::CallExprNode& n) -> void {
   case prog::sym::FuncKind::ActionClockNanoSteady:
     m_asmb->addPCall(novasm::PCallCode::ClockNanoSteady);
     break;
+  case prog::sym::FuncKind::ActionClockTimezoneOffset:
+    m_asmb->addPCall(novasm::PCallCode::ClockTimezoneOffset);
+    break;
 
   case prog::sym::FuncKind::ActionVersionRt:
     m_asmb->addPCall(novasm::PCallCode::VersionRt);

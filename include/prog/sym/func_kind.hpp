@@ -142,6 +142,7 @@ enum class FuncKind {
   ActionClockMicroSinceEpoch, // Return a long of the amount of microseconds since epoch
                               // (01-01-1970).
   ActionClockNanoSteady,      // Return a long of the amount of nanoseconds on the steady clock.
+  ActionClockTimezoneOffset,  // Return the local timezone offset in minutes (can be negative).
 
   ActionVersionRt,       // Get the version of the runtime.
   ActionVersionCompiler, // Get the version of the compiler that created this assembly.

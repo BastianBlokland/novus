@@ -347,7 +347,7 @@ assertEq(
   testData    = char(0) :: char(1) :: char(-1) :: char(42) :: char(-42) :: char(240) :: char(256);
   w           = bitInt8Writer();
   p           = bitInt8Parser();
-  parsedData  = testData.map(lambda (char c) p(w(c).string()) ?? '\0');
+  parsedData  = testData.map(lambda (char c) p(w.run(c)) ?? '\0');
   makePair(testData, parsedData))
 
 assertEq(bitInt16Writer(Endianness.Little)(1337), string(char(57), char(5)))
@@ -356,7 +356,7 @@ assertEq(
   testData    = 0 :: 1 :: -1 :: 42 :: -42 :: 1337 :: -1337 :: 32_767 :: -32_768;
   w           = bitInt16Writer(Endianness.Little);
   p           = bitSInt16Parser(Endianness.Little);
-  parsedData  = testData.map(lambda (int c) p(w(c).string()) ?? -1);
+  parsedData  = testData.map(lambda (int c) p(w.run(c)) ?? -1);
   makePair(testData, parsedData))
 
 assertEq(bitInt16Writer(Endianness.Big)(1337), string(char(5), char(57)))
@@ -365,7 +365,7 @@ assertEq(
   testData    = 0 :: 1 :: -1 :: 42 :: -42 :: 1337 :: -1337 :: 32_767 :: -32_768;
   w           = bitInt16Writer(Endianness.Big);
   p           = bitSInt16Parser(Endianness.Big);
-  parsedData  = testData.map(lambda (int c) p(w(c).string()) ?? -1);
+  parsedData  = testData.map(lambda (int c) p(w.run(c)) ?? -1);
   makePair(testData, parsedData))
 
 assertEq(bitInt32Writer(Endianness.Little)(13371337), string(char(201), char(7), char(204), char(0)))
@@ -374,7 +374,7 @@ assertEq(
   testData    = 0 :: 1 :: -1 :: 42 :: -42 :: 1337 :: -1337 :: 32_767 :: -32_768 :: 100_000 :: -100_000 :: maxVal{int}() :: minVal{int}();
   w           = bitInt32Writer(Endianness.Little);
   p           = bitInt32Parser(Endianness.Little);
-  parsedData  = testData.map(lambda (int c) p(w(c).string()) ?? -1);
+  parsedData  = testData.map(lambda (int c) p(w.run(c)) ?? -1);
   makePair(testData, parsedData))
 
 assertEq(bitInt32Writer(Endianness.Big)(13371337), string(char(0), char(204), char(7), char(201)))
@@ -383,7 +383,7 @@ assertEq(
   testData    = 0 :: 1 :: -1 :: 42 :: -42 :: 1337 :: -1337 :: 32_767 :: -32_768 :: 100_000 :: -100_000 :: maxVal{int}() :: minVal{int}();
   w           = bitInt32Writer(Endianness.Big);
   p           = bitInt32Parser(Endianness.Big);
-  parsedData  = testData.map(lambda (int c) p(w(c).string()) ?? -1);
+  parsedData  = testData.map(lambda (int c) p(w.run(c)) ?? -1);
   makePair(testData, parsedData))
 
 assertEq(
@@ -396,7 +396,7 @@ assertEq(
                 9_223_372_036_854_775_807L :: minVal{long}();
   w           = bitInt64Writer(Endianness.Little);
   p           = bitInt64Parser(Endianness.Little);
-  parsedData  = testData.map(lambda (long c) p(w(c).string()) ?? -1L);
+  parsedData  = testData.map(lambda (long c) p(w.run(c)) ?? -1L);
   makePair(testData, parsedData))
 
 assertEq(
@@ -409,7 +409,7 @@ assertEq(
                 9_223_372_036_854_775_807L :: minVal{long}();
   w           = bitInt64Writer(Endianness.Big);
   p           = bitInt64Parser(Endianness.Big);
-  parsedData  = testData.map(lambda (long c) p(w(c).string()) ?? -1L);
+  parsedData  = testData.map(lambda (long c) p(w.run(c)) ?? -1L);
   makePair(testData, parsedData))
 
 // This test is left here for the first person running this on a BigEndian system, needs thorough

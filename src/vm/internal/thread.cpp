@@ -1,7 +1,6 @@
 #include "internal/thread.hpp"
 #include "internal/os_include.hpp"
 #include <cerrno>
-#include <chrono>
 #include <cstdio>
 #include <thread>
 

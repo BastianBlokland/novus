@@ -9,16 +9,18 @@ import "std/prim.ns"
 // -- DateTime
 // Represents a absolute moment in time.
 
-struct DateTime = long microSinceEpoch
+struct DateTime =
+  long      microSinceEpoch,
+  Timezone  zone
 
 fun -(DateTime dt1, DateTime dt2) microseconds(dt1.microSinceEpoch - dt2.microSinceEpoch)
 fun <(DateTime dt1, DateTime dt2) dt1.microSinceEpoch < dt2.microSinceEpoch
 fun >(DateTime dt1, DateTime dt2) dt1.microSinceEpoch > dt2.microSinceEpoch
-fun +(DateTime dt, Duration d)    DateTime(dt.microSinceEpoch + d.microseconds())
-fun -(DateTime dt, Duration d)    DateTime(dt.microSinceEpoch - d.microseconds())
+fun +(DateTime dt, Duration d)    DateTime(dt.microSinceEpoch + d.microseconds(), dt.zone)
+fun -(DateTime dt, Duration d)    DateTime(dt.microSinceEpoch - d.microseconds(), dt.zone)
 
 // Jan 1 1970 (Unix time)
-fun timeEpoch() DateTime(0L)
+fun timeEpoch() DateTime(0L, timezoneUTC())
 
 // Construct a DateTime from a Gregorian calendar date.
 fun DateTime(int year, Month month, int day)
@@ -37,16 +39,10 @@ fun DateTime(Date d)
   dayOfYear       = (153 * (d.month + (d.month > 2 ? -3 : 9)) + 2) / 5 + --d.day;
   dayOfEra        = yearOfEra * 365 + yearOfEra / 4 - yearOfEra / 100 + dayOfYear;
   daysSinceEpoch  = era * 146_097 + dayOfEra - 719_468;
-  DateTime(daysSinceEpoch * day().microseconds())
+  DateTime(daysSinceEpoch * day().microseconds(), timezoneUTC())
 
-// Date + time in iso-8601 format (https://en.wikipedia.org/wiki/ISO_8601).
-// Example output: 1920-03-19T07:11:23Z.
 fun string(DateTime dt)
-  sinceEpoch = absDuration(dt - timeEpoch());
-  Date(dt).string() + "T" +
-    (sinceEpoch.hours() % 24).string(2) + ":" +
-    (sinceEpoch.minutes() % 60).string(2) + ":" +
-    (sinceEpoch.seconds() % 60).string(2) + "Z"
+  dateTimeISO8601Writer().run(dt)
 
 fun daysSinceEpoch(DateTime dt)
   int(dt.microSinceEpoch / day().microseconds())
@@ -86,10 +82,8 @@ fun Date(DateTime dt)
   month      = Month(mp + (mp < 10 ? 3 : -9));
   Date(month <= 2 ? ++year : year, month, day)
 
-// Date in iso-8601 format (https://en.wikipedia.org/wiki/ISO_8601).
-// Example output: 1920-03-19.
 fun string(Date date)
-  date.year.string(4) + "-" + int(date.month).string(2) + "-" + date.day.string(2)
+  dateISO8601Writer().run(date)
 
 // -- Month
 // Represents a single month in the Gregorian calendar.
@@ -132,6 +126,21 @@ fun WeekDay(DateTime dt)
 fun noinline string(WeekDay d, bool short = false)
   (reflectEnumKeyForVal(d) ?? "")[0, short ? 3 : 99]
 
+// -- Timezone
+// Offset from UTC in minutes.
+
+struct Timezone = Duration offset
+
+fun string(Timezone t)
+  timezoneISO8601Writer().run(t)
+
+fun Duration(Timezone t)
+  t.offset
+
+fun timezoneUTC() Timezone(Duration(0))
+
+fun isUTC(Timezone t) t.offset == Duration(0)
+
 // -- Duration
 // Represents elapsed time, can be negative.
 
@@ -139,6 +148,7 @@ struct Duration = long ns
 
 fun Duration() Duration(0)
 
+fun -(Duration d)  Duration(-d.ns)
 fun -(Duration d1, Duration d2)   Duration(d1.ns - d2.ns)
 fun +(Duration d1, Duration d2)   Duration(d1.ns + d2.ns)
 fun *(Duration d, long l)         Duration(d.ns * l)
@@ -239,13 +249,148 @@ fun string(Timestamp t) t.ns.string()
 
 // -- Parsers
 
-fun unixTimeParser()
+// Time in unix seconds from epoch
+// Example format: 1605977674
+fun timeUnixParser() -> Parser{DateTime}
   txtPosLongParser().map(lambda (long l) timeEpoch() + seconds(l)) ! Error("Invalid unix timestamp")
+
+// -- Writers
+
+// Time in unix seconds from epoch
+// Example format: 1605977674
+fun timeUnixWriter() -> Writer{DateTime}
+  txtLongWriter().map(lambda (DateTime dt)(dt - timeEpoch()).seconds())
+
+// Example output: 'Sunday'
+// Example short output: 'Sun'
+fun weekDayWriter(bool short = false) -> Writer{WeekDay}
+  Writer(lambda (WriterState s, WeekDay wd)
+    s.write(wd.string(short)))
+
+// Example output: 'January'
+// Example short output: 'Jan'
+fun monthWriter(bool short = false) -> Writer{Month}
+  Writer(lambda (WriterState s, Month m)
+    s.write(m.string(short)))
+
+// Date in iso-8601 format (https://en.wikipedia.org/wiki/ISO_8601).
+// Example output: 1920-03-19.
+fun dateISO8601Writer() -> Writer{Date}
+  (
+    txtIntWriter(4) & litWriter('-') & txtIntWriter(2) & litWriter('-') & txtIntWriter(2)
+  ).map(lambda (Date d) makePair(d.year, int(d.month), d.day))
+
+// Timezone in iso-8601 format (https://en.wikipedia.org/wiki/ISO_8601).
+// Example output: +02:00.
+fun timezoneISO8601Writer() -> Writer{Timezone}
+  offsetWriter = charWriter() & txtLongWriter(2) & litWriter(':') & txtLongWriter(2);
+  Writer(lambda (WriterState s, Timezone t)
+    t.isUTC()
+      ? s.write("Z")
+      : offsetWriter(s, makePair(
+          t.offset < Duration(0) ? '-' : '+',
+          absDuration(t.offset).hours(),
+          absDuration(t.offset).minutes() % 60))
+  )
+
+// Local date and time in iso-8601 format (https://en.wikipedia.org/wiki/ISO_8601).
+// Example output: 1920-03-19T07:11:23+02:00.
+fun dateTimeISO8601Writer() -> Writer{DateTime}
+  (
+    dateISO8601Writer() & litWriter('T') &
+    txtLongWriter(2)    & litWriter(':') &
+    txtLongWriter(2)    & litWriter(':') &
+    txtLongWriter(2)    & timezoneISO8601Writer()
+  ).map(lambda (DateTime dt)
+    localTime = dt + Duration(dt.zone);
+    sinceEpoch = absDuration(localTime - timeEpoch());
+    makePair(
+      Date(localTime),
+      sinceEpoch.hours()    % 24,
+      sinceEpoch.minutes()  % 60,
+      sinceEpoch.seconds()  % 60,
+      dt.zone))
+
+// Date in RFC1123 format (used in the http standard).
+// Example output: 'Sun, 24 May 2020'
+fun dateRFC1123Writer() -> Writer{Date}
+  (
+    weekDayWriter(true) & litWriter(", ") &
+    txtIntWriter()      & litWriter(' ')  &
+    monthWriter(true)   & litWriter(' ')  &
+    txtIntWriter()
+  ).map(lambda (Date d) makePair(WeekDay(d), d.day, d.month, d.year))
+
+// Time in RFC1123 format (used in the http standard).
+// NOTE: Always in UTC.
+// Example output: '15:08:51 GMT'
+fun timeRFC1123Writer() -> Writer{DateTime}
+  (
+    txtLongWriter(2)    & litWriter(':') &
+    txtLongWriter(2)    & litWriter(':') &
+    txtLongWriter(2)    & litWriter(" GMT")
+  ).map(lambda (DateTime dt)
+    sinceEpoch = absDuration(dt - timeEpoch());
+    makePair(sinceEpoch.hours() % 24, sinceEpoch.minutes() % 60, sinceEpoch.seconds() % 60))
+
+// Date + time in RFC1123 format (used in the http standard).
+// NOTE: Always in UTC.
+// Example output: 'Sun, 24 May 2020 15:08:51 GMT'
+fun dateTimeRFC1123Writer() -> Writer{DateTime}
+  (
+    dateRFC1123Writer() & litWriter(' ') & timeRFC1123Writer()
+  ).map(lambda (DateTime dt) makePair(Date(dt), dt))
+
+// Timezone in pretty format.
+// Example output: +02:00.
+fun timezonePrettyWriter() -> Writer{Timezone}
+  (
+    charWriter() & txtLongWriter(2) & litWriter(':') & txtLongWriter(2)
+  ).map(lambda (Timezone t) makePair(
+      t.offset < Duration(0) ? '-' : '+',
+      absDuration(t.offset).hours(),
+      absDuration(t.offset).minutes() % 60))
+
+// Date in pretty format.
+// Example output: 'Friday 24 March 2021'
+fun datePrettyWriter() -> Writer{Date}
+  (
+    weekDayWriter() & litWriter(' ') &
+    txtIntWriter()  & litWriter(' ')  &
+    monthWriter()   & litWriter(' ')  &
+    txtIntWriter()
+  ).map(lambda (Date d) makePair(WeekDay(d), d.day, d.month, d.year))
+
+// Local date and time in pretty format.
+// Example output: 'Friday 24 March 2021 09:41:38 +02:00'.
+fun dateTimePrettyWriter(bool includeMillies = false) -> Writer{DateTime}
+  (
+    datePrettyWriter()  & litWriter(' ') &
+    txtLongWriter(2)    & litWriter(':') &
+    txtLongWriter(2)    & litWriter(':') &
+    txtLongWriter(2)    & ?(litWriter(':') & txtLongWriter(3)) &
+    litWriter(' ')      & timezonePrettyWriter()
+  ).map(lambda (DateTime dt)
+    localTime = dt + Duration(dt.zone);
+    sinceEpoch = absDuration(localTime - timeEpoch());
+    makePair(
+      Date(localTime),
+      sinceEpoch.hours()    % 24,
+      sinceEpoch.minutes()  % 60,
+      sinceEpoch.seconds()  % 60,
+      includeMillies ? Option{long}(sinceEpoch.milliseconds() % 1000) : None(),
+      dt.zone))
 
 // -- Actions
 
 // Get a DateTime from the current system clock.
-act timeNow() DateTime(intrinsic{clock_microsinceepoch}())
+act timeNow() DateTime(intrinsic{clock_microsinceepoch}(), timezone())
+
+// Convert a DateTime to a DateTimeLocal.
+act timeToLocal(DateTime dt) DateTime(dt.microSinceEpoch, timezone())
+
+// Get the local timezone offset.
+act timezone() Timezone(minutes(intrinsic{clock_timezoneoffset}()))
 
 // Get a timestamp based on the process steady clock, guaranteed to go forward
 // (even if system clock changes) and is more precise then 'timeNow()'.
@@ -329,5 +474,33 @@ assertApprox(float(seconds(1337) + millisecond()), 1337.001)
 
 // -- Parser tests
 
-assertIs(unixTimeParser()(""), Type{ParseFailure}())
-assertEq(unixTimeParser()("1606579701"), DateTime(2020, Month.November, 28) + hours(16) + minutes(8) + seconds(21))
+assertIs(timeUnixParser()(""), Type{ParseFailure}())
+assertEq(timeUnixParser()("1606579701"), DateTime(2020, Month.November, 28) + hours(16) + minutes(8) + seconds(21))
+
+// -- Writer tests
+
+assertEq(
+  timeUnixWriter()(DateTime(2020, Month.November, 28) + hours(16) + minutes(8) + seconds(21)),
+  "1606579701")
+
+assertEq(dateISO8601Writer()(Date(2020, Month.March, 25)), "2020-03-25")
+
+assertEq(timezoneISO8601Writer()(timezoneUTC()), "Z")
+assertEq(timezoneISO8601Writer()(Timezone(hours(0))), "Z")
+
+assertEq(timezoneISO8601Writer()(Timezone(hours(2))), "+02:00")
+assertEq(timezoneISO8601Writer()(Timezone(hours(2) + minutes(30))), "+02:30")
+assertEq(timezoneISO8601Writer()(Timezone(hours(10))), "+10:00")
+assertEq(timezoneISO8601Writer()(Timezone(-hours(2))), "-02:00")
+assertEq(timezoneISO8601Writer()(Timezone(-hours(10))), "-10:00")
+assertEq(timezoneISO8601Writer()(Timezone(-hours(2) - minutes(30))), "-02:30")
+
+assertEq(dateTimeISO8601Writer()(timeEpoch()), "1970-01-01T00:00:00Z")
+assertEq(dateTimeISO8601Writer()(timeEpoch() + hours(13)), "1970-01-01T13:00:00Z")
+assertEq(dateTimeISO8601Writer()(timeEpoch() + hours(13) + seconds(42)), "1970-01-01T13:00:42Z")
+
+assertEq(dateTimeRFC1123Writer()(timeEpoch() + hours(13) + seconds(42)), "Thu, 1 Jan 1970 13:00:42 GMT")
+
+assertEq(dateTimePrettyWriter()(timeEpoch() + hours(13) + seconds(42)), "Thursday 1 January 1970 13:00:42 +00:00")
+assertEq(dateTimePrettyWriter()(DateTime(0, Timezone(hour())) + hours(13) + seconds(42)), "Thursday 1 January 1970 14:00:42 +01:00")
+assertEq(dateTimePrettyWriter()(DateTime(0, Timezone(-hour())) + hours(13) + seconds(42)), "Thursday 1 January 1970 12:00:42 -01:00")

@@ -37,40 +37,31 @@ fun ReflectCtx() ReflectCtx(List{string}())
 // -- Conversions
 
 fun string(PrimInfo pi, string indent = "", WriterNewlineMode newlineMode = WriterNewlineMode.None)
-  w = primInfoWriter();
-  w(pi, indent, newlineMode).string()
+  primInfoWriter().run(pi, indent, newlineMode)
 
 fun string(StructInfo si, string indent = "", WriterNewlineMode newlineMode = WriterNewlineMode.None)
-  w = structInfoWriter();
-  w(si, indent, newlineMode).string()
+  structInfoWriter().run(si, indent, newlineMode)
 
 fun string(UnionInfo ui, string indent = "", WriterNewlineMode newlineMode = WriterNewlineMode.None)
-  w = unionInfoWriter();
-  w(ui, indent, newlineMode).string()
+  unionInfoWriter().run(ui, indent, newlineMode)
 
 fun string(EnumInfo ei, string indent = "", WriterNewlineMode newlineMode = WriterNewlineMode.None)
-  w = enumInfoWriter();
-  w(ei, indent, newlineMode).string()
+  enumInfoWriter().run(ei, indent, newlineMode)
 
 fun string(DelegateInfo di, string indent = "", WriterNewlineMode newlineMode = WriterNewlineMode.None)
-  w = delegateInfoWriter();
-  w(di, indent, newlineMode).string()
+  delegateInfoWriter().run(di, indent, newlineMode)
 
 fun string(FutureInfo fi, string indent = "", WriterNewlineMode newlineMode = WriterNewlineMode.None)
-  w = futureInfoWriter();
-  w(fi, indent, newlineMode).string()
+  futureInfoWriter().run(fi, indent, newlineMode)
 
 fun string(LazyInfo li, string indent = "", WriterNewlineMode newlineMode = WriterNewlineMode.None)
-  w = lazyInfoWriter();
-  w(li, indent, newlineMode).string()
+  lazyInfoWriter().run(li, indent, newlineMode)
 
 fun string(StaticIntInfo sii, string indent = "", WriterNewlineMode newlineMode = WriterNewlineMode.None)
-  w = staticIntInfoWriter();
-  w(sii, indent, newlineMode).string()
+  staticIntInfoWriter().run(sii, indent, newlineMode)
 
 fun string(TypeInfo ti, string indent = "", WriterNewlineMode newlineMode = WriterNewlineMode.None)
-  w = typeInfoWriter();
-  w(ti, indent, newlineMode).string()
+  typeInfoWriter().run(ti, indent, newlineMode)
 
 // -- Utilities
 
@@ -428,7 +419,7 @@ assertEq(reflect(Type{#42}()), StaticIntInfo(42))
 // -- Struct utility tests
 
 assertEq(reflectStructFieldCount(Type{Date}()), Meta{#3}())
-assertEq(reflectStructFieldCount(Type{DateTime}()), Meta{#1}())
+assertEq(reflectStructFieldCount(Type{DateTime}()), Meta{#2}())
 assertEq(reflectStructFieldCount(Type{None}()), Meta{#0}())
 
 assertEq(reflectStructFieldName(Type{Date}(), Meta{#0}()), "year")

@@ -39,7 +39,7 @@ fun userParser()
 fun commitParser()
   (
     untilParser(matchParser("author")) >> matchParser("author") >> userParser()       &
-    whitespaceParser()                                          >> unixTimeParser()   &
+    whitespaceParser()                                          >> timeUnixParser()   &
     untilParser(emptyLineParser()) >> emptyLineParser()         >> lineParser()       &
     whitespaceParser()                                          >> allParser().trim()
   ).map(construct{User, DateTime, string, string, Commit})

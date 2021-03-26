@@ -103,6 +103,16 @@ fun ttyCusorMoveWriter() -> Writer{TtyCursorMove}
       if m.dir == TtyDir.Right -> 'C'
       else                     -> 'D'))
 
+fun ttyLitCusorMoveWriter(TtyCursorMove m) -> Writer{None}
+  litWriter(ttyEsc() + "[" + m.amount.string() +
+    if m.dir == TtyDir.Up    -> 'A'
+    if m.dir == TtyDir.Down  -> 'B'
+    if m.dir == TtyDir.Right -> 'C'
+    else                     -> 'D')
+
+fun ttyLitCusorLineStartWriter() -> Writer{None}
+  ttyLitCusorMoveWriter(TtyCursorMove(TtyDir.Left, 99999))
+
 fun ttyCursorColWriter() -> Writer{int}
   litWriter(ttyEsc() + "[") & txtIntWriter() & litWriter('G')
 
@@ -151,8 +161,14 @@ fun ttyClearLineWriter() -> Writer{TtyClearMode}
     litWriter(ttyEsc() + "[") & txtIntWriter() & litWriter('K')
   ).map(lambda (TtyClearMode m) m.int())
 
+fun ttyLitClearLineWriter(TtyClearMode m = TtyClearMode.All) -> Writer{None}
+  litWriter(ttyEsc() + "[" + m.int().string() + 'K')
+
 fun ttyResetWriter() -> Writer{None}
   litWriter(ttyEsc() + "c")
+
+fun ttyResetLineWriter() -> Writer{None}
+  ttyLitCusorLineStartWriter() & ttyLitClearLineWriter(TtyClearMode.CursorToEnd)
 
 fun ttyLitWindowTitleWriter(string title) -> Writer{None}
   litWriter(ttyEsc() + "]0;" + title + ttyBell())

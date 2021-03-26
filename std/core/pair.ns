@@ -22,6 +22,9 @@ fun makePair{T1, T2, T3, T4}(T1 a1, T2 a2, T3 a3, T4 a4)
 fun makePair{T1, T2, T3, T4, T5}(T1 a1, T2 a2, T3 a3, T4 a4, T5 a5)
   Pair(Pair(Pair(Pair(a1, a2), a3), a4), a5)
 
+fun makePair{T1, T2, T3, T4, T5, T6}(T1 a1, T2 a2, T3 a3, T4 a4, T5 a5, T6 a6)
+  Pair(Pair(Pair(Pair(Pair(a1, a2), a3), a4), a5), a6)
+
 fun map{T1, T2, TResult}(Pair{T1, T2} p, function{T1, T2, TResult} f)
   f(p.first,
     p.second)

@@ -50,6 +50,7 @@ enum class PCallCode : uint8_t {
 
   ClockMicroSinceEpoch = 80, // () -> (long) Get the elapsed microseconds since unix epoch.
   ClockNanoSteady      = 81, // () -> (long) Get process steady clock in nanoseconds.
+  ClockTimezoneOffset  = 82, // () -> (int)  Get the local time-zone offset in minutes.
 
   VersionRt       = 90, // () -> (string) Version of the runtime.
   VersionCompiler = 91, // () -> (string) Version of the compiler that created this executable.
