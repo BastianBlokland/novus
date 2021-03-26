@@ -42,7 +42,7 @@ fun DateTime(Date d)
   DateTime(daysSinceEpoch * day().microseconds(), timezoneUTC())
 
 fun string(DateTime dt)
-  w = dateTimeISO8601Writer();
+  w = timeISO8601Writer();
   w(dt).string()
 
 fun daysSinceEpoch(DateTime dt)
@@ -252,10 +252,17 @@ fun string(Timestamp t) t.ns.string()
 
 // -- Parsers
 
-fun unixTimeParser()
+// Time in unix seconds from epoch
+// Example format: 1605977674
+fun timeUnixParser()
   txtPosLongParser().map(lambda (long l) timeEpoch() + seconds(l)) ! Error("Invalid unix timestamp")
 
 // -- Writers
+
+// Time in unix seconds from epoch
+// Example format: 1605977674
+fun timeUnixWriter()
+  txtLongWriter().map(lambda (DateTime dt)(dt - timeEpoch()).seconds())
 
 // Date in iso-8601 format (https://en.wikipedia.org/wiki/ISO_8601).
 // Example output: 1920-03-19.
@@ -279,7 +286,7 @@ fun timezoneISO8601Writer() -> Writer{Timezone}
 
 // Local time in iso-8601 format (https://en.wikipedia.org/wiki/ISO_8601).
 // Example output: 1920-03-19T07:11:23+02:00.
-fun dateTimeISO8601Writer() -> Writer{DateTime}
+fun timeISO8601Writer() -> Writer{DateTime}
   (
     dateISO8601Writer() & litWriter('T') &
     txtLongWriter(2)    & litWriter(':') &
@@ -388,10 +395,14 @@ assertApprox(float(seconds(1337) + millisecond()), 1337.001)
 
 // -- Parser tests
 
-assertIs(unixTimeParser()(""), Type{ParseFailure}())
-assertEq(unixTimeParser()("1606579701"), DateTime(2020, Month.November, 28) + hours(16) + minutes(8) + seconds(21))
+assertIs(timeUnixParser()(""), Type{ParseFailure}())
+assertEq(timeUnixParser()("1606579701"), DateTime(2020, Month.November, 28) + hours(16) + minutes(8) + seconds(21))
 
 // -- Writer tests
+
+assertEq(
+  timeUnixWriter()(DateTime(2020, Month.November, 28) + hours(16) + minutes(8) + seconds(21)),
+  "1606579701")
 
 assertEq(dateISO8601Writer()(Date(2020, Month.March, 25)), "2020-03-25")
 
@@ -405,6 +416,6 @@ assertEq(timezoneISO8601Writer()(Timezone(-hours(2))), "-02:00")
 assertEq(timezoneISO8601Writer()(Timezone(-hours(10))), "-10:00")
 assertEq(timezoneISO8601Writer()(Timezone(-hours(2) - minutes(30))), "-02:30")
 
-assertEq(dateTimeISO8601Writer()(timeEpoch()), "1970-01-01T00:00:00Z")
-assertEq(dateTimeISO8601Writer()(timeEpoch() + hours(13)), "1970-01-01T13:00:00Z")
-assertEq(dateTimeISO8601Writer()(timeEpoch() + hours(13) + seconds(42)), "1970-01-01T13:00:42Z")
+assertEq(timeISO8601Writer()(timeEpoch()), "1970-01-01T00:00:00Z")
+assertEq(timeISO8601Writer()(timeEpoch() + hours(13)), "1970-01-01T13:00:00Z")
+assertEq(timeISO8601Writer()(timeEpoch() + hours(13) + seconds(42)), "1970-01-01T13:00:42Z")
