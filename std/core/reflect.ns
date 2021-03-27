@@ -185,6 +185,26 @@ fun reflectStructField{Struct, Idx}(Struct s, Meta{Idx} idx) -> reflect_struct_f
 fun reflectStructAlias{StructIn, StructOut}(StructIn in, Type{StructOut} out) -> StructOut
   intrinsic{reflect_struct_alias}{StructIn, StructOut}(in)
 
+// ---- Struct to string
+// Calls string() for every field and combines the result.
+
+fun reflectStructString{Struct}(Struct s, Meta{#0} idx, string seperator, string result)
+  result
+
+fun reflectStructString{Struct}(Struct s, Meta{#1} idx, string seperator, string result)
+  result + reflectStructField(s,
+    reflectStructFieldCount(Type{Struct}()) - idx
+  ).string()
+
+fun reflectStructString{Struct, Int}(Struct s, Meta{Int} idx, string seperator, string result)
+  reflectStructString(s, --idx, seperator,
+    result + reflectStructField(s,
+      reflectStructFieldCount(Type{Struct}()) - idx
+    ).string() + seperator)
+
+fun reflectStructString{Struct}(Struct s, string prefix = "(", string seperator = ",", string suffix = ")") -> string
+  prefix + reflectStructString(s, reflectStructFieldCount(Type{Struct}()), seperator, "") + suffix
+
 // -- Union Utilities
 
 // ---- Lookup union count
@@ -446,6 +466,11 @@ assertEq(reflectStructField(Date(2021, Month.March, 27), Meta{#2}()), 27)
 
 assertEq(reflectStructAlias(Duration(42), Type{Timestamp}()), Timestamp(42))
 assertEq(reflectStructAlias(Date(2021, Month.March, 27), Type{Date}()), Date(2021, Month.March, 27))
+
+assertEq(reflectStructString(Date(2021, Month.March, 27)), "(2021,March,27)")
+assertEq(reflectStructString(None()), "()")
+assertEq(reflectStructString(Duration(42)), "(42)")
+assertEq(reflectStructString(DateTime(42, timezoneUTC())), "(42,Z)")
 
 // -- Union utility tests
 
