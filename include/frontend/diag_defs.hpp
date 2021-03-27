@@ -41,8 +41,10 @@ errFieldNameConflictsWithTypeSubstitution(prog::sym::SourceId src, const std::st
     prog::sym::SourceId src, const std::string& fieldName, const std::string& typeName) -> Diag;
 
 [[nodiscard]] auto errDuplicateTypeInUnion(
-    prog::sym::SourceId src, const std::string& typeName, const std::string& substitutedTypeName)
-    -> Diag;
+    prog::sym::SourceId src,
+    const std::string& unionName,
+    const std::string& typeName,
+    const std::string& substitutedTypeName) -> Diag;
 
 [[nodiscard]] auto errNonUnionIsExpression(prog::sym::SourceId src) -> Diag;
 

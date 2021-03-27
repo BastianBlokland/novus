@@ -102,14 +102,16 @@ auto errStaticFieldNotFoundOnType(
 }
 
 auto errDuplicateTypeInUnion(
-    prog::sym::SourceId src, const std::string& typeName, const std::string& substitutedTypeName)
-    -> Diag {
+    prog::sym::SourceId src,
+    const std::string& unionName,
+    const std::string& typeName,
+    const std::string& substitutedTypeName) -> Diag {
   std::ostringstream oss;
   oss << "Type '" << typeName << '\'';
   if (typeName != substitutedTypeName) {
     oss << " ('" << substitutedTypeName << "')";
   }
-  oss << " is already part of this union";
+  oss << " is already part of the union '" << unionName << '\'';
   return error(oss.str(), src);
 }
 

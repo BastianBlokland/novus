@@ -127,11 +127,11 @@ TEST_CASE("[frontend] Analyzing user-type definitions", "frontend") {
 
   SECTION("Union diagnostics") {
     CHECK_DIAG("union u = hello, bool", errUndeclaredType(NO_SRC, "hello", 0));
-    CHECK_DIAG("union u = int, int", errDuplicateTypeInUnion(NO_SRC, "int", "int"));
+    CHECK_DIAG("union u = int, int", errDuplicateTypeInUnion(NO_SRC, "u", "int", "int"));
     CHECK_DIAG(
         "union u{T} = int, T "
         "fun f(u{int} in) -> int 1",
-        errDuplicateTypeInUnion(NO_SRC, "T", "int"),
+        errDuplicateTypeInUnion(NO_SRC, "u{int}", "T", "int"),
         errInvalidTypeInstantiation(NO_SRC),
         errUndeclaredType(NO_SRC, "u", 1));
   }
