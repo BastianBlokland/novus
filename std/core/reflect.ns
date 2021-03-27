@@ -175,6 +175,11 @@ fun reflectStructFieldName{Struct, Idx}(Type{Struct} t, Meta{Idx} idx) -> string
 fun reflectStructFieldType{Struct, Idx}(Type{Struct} t, Meta{Idx} idx)
   Type{reflect_struct_field_type{Struct, Idx}}()
 
+// ---- Lookup struct field from index
+
+fun reflectStructField{Struct, Idx}(Struct s, Meta{Idx} idx) -> reflect_struct_field_type{Struct, Idx}
+  intrinsic{reflect_struct_field}{Struct, Idx}(s)
+
 // -- Union Utilities
 
 // ---- Lookup union count
@@ -429,6 +434,10 @@ assertEq(reflectStructFieldName(Type{Date}(), Meta{#2}()), "day")
 assertEq(reflectStructFieldType(Type{Date}(), Meta{#0}()), Type{int}())
 assertEq(reflectStructFieldType(Type{Date}(), Meta{#1}()), Type{Month}())
 assertEq(reflectStructFieldType(Type{EnumInfo}(), Meta{#1}()), Type{List{EnumEntry}}())
+
+assertEq(reflectStructField(Date(2021, Month.March, 27), Meta{#0}()), 2021)
+assertEq(reflectStructField(Date(2021, Month.March, 27), Meta{#1}()), Month.March)
+assertEq(reflectStructField(Date(2021, Month.March, 27), Meta{#2}()), 27)
 
 // -- Union utility tests
 

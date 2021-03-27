@@ -78,6 +78,18 @@ auto reflectStructFieldType(
   return structDef->getFields()[index].getType();
 }
 
+auto reflectStructFieldId(
+    Context* ctx, prog::sym::TypeId structType, prog::sym::TypeId indexType) noexcept
+    -> std::optional<prog::sym::FieldId> {
+
+  const auto* structDef = getStructDef(ctx, structType);
+  auto index            = ctx->getStaticIntTable()->getValue(indexType).value_or(-1);
+  if (!structDef || index < 0 || index >= static_cast<int>(structDef->getFields().getCount())) {
+    return std::nullopt; // Not a struct or out of bounds field index.
+  }
+  return structDef->getFields()[index].getId();
+}
+
 auto reflectUnionCount(Context* ctx, prog::sym::TypeId unionType) noexcept
     -> std::optional<prog::sym::TypeId> {
 

@@ -1,5 +1,7 @@
 #include "catch2/catch.hpp"
 #include "helpers.hpp"
+#include "prog/expr/node_const.hpp"
+#include "prog/expr/node_field.hpp"
 #include "prog/expr/node_lit_bool.hpp"
 #include "prog/expr/node_lit_int.hpp"
 #include "prog/expr/node_lit_string.hpp"
@@ -43,6 +45,22 @@ TEST_CASE("[frontend] Analyze reflection", "frontend") {
                                    "fun f() Type{reflect_struct_field_type{S, #1}}()");
       REQUIRE(output.isSuccess());
       CHECK(GET_FUNC_DECL(output, "f").getOutput() == GET_TYPE_ID(output, "Type__float"));
+    }
+
+    SECTION("Field at index") {
+      const auto& output = ANALYZE("struct Type{T} "
+                                   "struct S = int A, float B, long C "
+                                   "fun f(S s) -> reflect_struct_field_type{S, #1} "
+                                   "  intrinsic{reflect_struct_field}{S, #1}(s)");
+      REQUIRE(output.isSuccess());
+      const auto& funcDef   = GET_FUNC_DEF(output, "f", GET_TYPE_ID(output, "S"));
+      const auto& structDef = std::get<prog::sym::StructDef>(GET_TYPE_DEF(output, "S"));
+      CHECK(
+          funcDef.getBody() ==
+          *prog::expr::fieldExprNode(
+              output.getProg(),
+              prog::expr::constExprNode(funcDef.getConsts(), *funcDef.getConsts().lookup("s")),
+              structDef.getFields()[1].getId()));
     }
   }
 

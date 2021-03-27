@@ -15,6 +15,6 @@ auto resolveMetaIntrinsic(
     bool allowActions,
     const lex::Token& nameToken,
     const std::optional<parse::TypeParamList>& typeParams,
-    const IntrinsicArgs& args) -> std::optional<prog::expr::NodePtr>;
+    IntrinsicArgs& args) -> std::optional<prog::expr::NodePtr>;
 
 } // namespace frontend::internal
