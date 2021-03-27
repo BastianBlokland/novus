@@ -245,23 +245,25 @@ auto getOrInstType(
     const std::optional<parse::TypeParamList>& typeParams,
     const prog::sym::TypeSet& constructorArgs) -> std::optional<prog::sym::TypeId> {
 
-  // Check if a type can be found / instantiated.
+  if (!typeParams) {
+    // Attempt to instantiate a templated type by infering the type parameters based on the
+    // constructor arguments.
+    const auto typeName = getName(nameToken);
+    const auto typeInstantiation =
+        ctx->getTypeTemplates()->inferParamsAndInstantiate(typeName, constructorArgs);
+    if (typeInstantiation) {
+      if (!(*typeInstantiation)->isSuccess()) {
+        ctx->reportDiag(errInvalidTypeInstantiation, nameToken.getSpan());
+      } else {
+        return (*typeInstantiation)->getType();
+      }
+    }
+  }
+
+  // Fall back to getting the type based on name and type parameters.
   const auto result = getOrInstType(ctx, subTable, nameToken, typeParams);
   if (result) {
     return result;
-  }
-
-  // Attempt to instantiate a templated type by infering the type parameters based on the
-  // constructor arguments.
-  const auto typeName = getName(nameToken);
-  const auto typeInstantiation =
-      ctx->getTypeTemplates()->inferParamsAndInstantiate(typeName, constructorArgs);
-  if (typeInstantiation) {
-    if (!(*typeInstantiation)->isSuccess()) {
-      ctx->reportDiag(errInvalidTypeInstantiation, nameToken.getSpan());
-    } else {
-      return (*typeInstantiation)->getType();
-    }
   }
   return std::nullopt;
 }
