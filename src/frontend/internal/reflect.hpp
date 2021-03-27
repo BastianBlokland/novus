@@ -23,6 +23,10 @@ namespace frontend::internal {
     Context* ctx, prog::sym::TypeId structType, prog::sym::TypeId indexType) noexcept
     -> std::optional<prog::sym::FieldId>;
 
+[[nodiscard]] auto reflectStructAliasIntrinsic(
+    Context* ctx, prog::sym::TypeId input, prog::sym::TypeId output) noexcept
+    -> std::optional<prog::sym::FuncId>;
+
 [[nodiscard]] auto reflectUnionCount(Context* ctx, prog::sym::TypeId unionType) noexcept
     -> std::optional<prog::sym::TypeId>;
 

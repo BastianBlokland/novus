@@ -429,6 +429,25 @@ auto Program::isCallable(sym::TypeId delegate, const sym::TypeSet& input, OvOpti
       *this, delegateDef.getInput(), input, options.getMaxImplicitConvs());
 }
 
+auto Program::areStructsEquivalent(sym::TypeId a, sym::TypeId b) const -> bool {
+  const auto& aDecl = getTypeDecl(a);
+  const auto& bDecl = getTypeDecl(b);
+  if (aDecl.getKind() != sym::TypeKind::Struct || bDecl.getKind() != sym::TypeKind::Struct) {
+    return false;
+  }
+  const auto& aDef = std::get<sym::StructDef>(getTypeDef(a));
+  const auto& bDef = std::get<sym::StructDef>(getTypeDef(b));
+  if (aDef.getFields().getCount() != bDef.getFields().getCount()) {
+    return false;
+  }
+  for (auto i = 0u; i != aDef.getFields().getCount(); ++i) {
+    if (aDef.getFields()[i].getType() != bDef.getFields()[i].getType()) {
+      return false;
+    }
+  }
+  return true;
+}
+
 auto Program::getDelegateRetType(sym::TypeId id) const -> std::optional<sym::TypeId> {
   if (!id.isConcrete()) {
     return std::nullopt;
@@ -501,6 +520,15 @@ auto Program::declareImplicitConv(sym::TypeId input, sym::TypeId output) -> sym:
 auto Program::declareFailIntrinsic(std::string name, sym::TypeId output) -> sym::FuncId {
   return m_funcDecls.registerIntrinsicAction(
       *this, sym::FuncKind::ActionFail, std::move(name), sym::TypeSet{}, output);
+}
+
+auto Program::declareStructAliasIntrinsic(std::string name, sym::TypeId input, sym::TypeId output)
+    -> sym::FuncId {
+  if (!areStructsEquivalent(input, output)) {
+    throw std::invalid_argument{"Input and output structs have to be equivelent"};
+  }
+  return m_funcDecls.registerIntrinsic(
+      *this, sym::FuncKind::NoOp, std::move(name), sym::TypeSet{input}, output);
 }
 
 auto Program::defineStruct(sym::TypeId id, sym::FieldDeclTable fields) -> void {

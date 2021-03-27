@@ -1,4 +1,6 @@
 #include "internal/reflect.hpp"
+#include "internal/utilities.hpp"
+#include <cassert>
 
 namespace frontend::internal {
 
@@ -88,6 +90,27 @@ auto reflectStructFieldId(
     return std::nullopt; // Not a struct or out of bounds field index.
   }
   return structDef->getFields()[index].getId();
+}
+
+auto reflectStructAliasIntrinsic(
+    Context* ctx, prog::sym::TypeId input, prog::sym::TypeId output) noexcept
+    -> std::optional<prog::sym::FuncId> {
+
+  if (!ctx->getProg()->areStructsEquivalent(input, output)) {
+    return std::nullopt;
+  }
+
+  // TODO: We should make a proper table for this, instead of just relying on the mangled names.
+
+  auto intrinsicName = std::string{"__alias_struct_"};
+  intrinsicName += getName(*ctx, input);
+  intrinsicName += std::string{"_"};
+  intrinsicName += getName(*ctx, output);
+
+  if (const auto intrinsicId = ctx->getProg()->lookupIntrinsic(intrinsicName, {input})) {
+    return intrinsicId;
+  }
+  return ctx->getProg()->declareStructAliasIntrinsic(std::move(intrinsicName), input, output);
 }
 
 auto reflectUnionCount(Context* ctx, prog::sym::TypeId unionType) noexcept

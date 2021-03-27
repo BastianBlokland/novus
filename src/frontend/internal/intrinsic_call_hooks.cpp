@@ -73,6 +73,22 @@ auto resolveReflectStructField(
   return prog::expr::fieldExprNode(*ctx->getProg(), std::move(args.first[0]), *fieldId);
 }
 
+auto resolveReflectStructAlias(
+    Context* ctx, const prog::sym::TypeSet& typeParams, IntrinsicArgs& args) -> OptNodeExpr {
+
+  if (typeParams.getCount() != 2 || args.first.size() != 1) {
+    return std::nullopt;
+  }
+  const auto aliasFuncId = reflectStructAliasIntrinsic(ctx, typeParams[0], typeParams[1]);
+  if (!aliasFuncId) {
+    return std::nullopt;
+  }
+  if (args.first[0]->getType() != typeParams[0]) {
+    return std::nullopt; // Expression does not resolve to the expected type.
+  }
+  return prog::expr::callExprNode(*ctx->getProg(), *aliasFuncId, std::move(args.first));
+}
+
 auto resolveReflectEnumKey(Context* ctx, const prog::sym::TypeSet& typeParams, IntrinsicArgs& args)
     -> OptNodeExpr {
 
@@ -136,6 +152,9 @@ auto resolveMetaIntrinsic(
   }
   if (name == "reflect_struct_field") {
     return resolveReflectStructField(ctx, *typeParamSet, args);
+  }
+  if (name == "reflect_struct_alias") {
+    return resolveReflectStructAlias(ctx, *typeParamSet, args);
   }
   if (name == "reflect_enum_key") {
     return resolveReflectEnumKey(ctx, *typeParamSet, args);

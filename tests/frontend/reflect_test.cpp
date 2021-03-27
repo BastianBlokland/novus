@@ -62,6 +62,23 @@ TEST_CASE("[frontend] Analyze reflection", "frontend") {
               prog::expr::constExprNode(funcDef.getConsts(), *funcDef.getConsts().lookup("s")),
               structDef.getFields()[1].getId()));
     }
+
+    SECTION("Alias struct") {
+      const auto& output = ANALYZE("struct S1 = int A, float B, long C "
+                                   "struct S2 = int A, float B, long C "
+                                   "fun f(S1 s) -> S2 "
+                                   "  intrinsic{reflect_struct_alias}{S1, S2}(s)");
+      REQUIRE(output.isSuccess());
+      const auto& funcDef = GET_FUNC_DEF(output, "f", GET_TYPE_ID(output, "S1"));
+      CHECK(
+          funcDef.getBody() ==
+          *prog::expr::callExprNode(
+              output.getProg(),
+              *output.getProg().lookupIntrinsic(
+                  "__alias_struct_S1_S2", {GET_TYPE_ID(output, "S1")}),
+              EXPRS(prog::expr::constExprNode(
+                  funcDef.getConsts(), *funcDef.getConsts().lookup("s")))));
+    }
   }
 
   SECTION("Union") {

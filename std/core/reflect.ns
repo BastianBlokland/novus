@@ -180,6 +180,11 @@ fun reflectStructFieldType{Struct, Idx}(Type{Struct} t, Meta{Idx} idx)
 fun reflectStructField{Struct, Idx}(Struct s, Meta{Idx} idx) -> reflect_struct_field_type{Struct, Idx}
   intrinsic{reflect_struct_field}{Struct, Idx}(s)
 
+// ---- Alias a struct to an equivalent struct type
+
+fun reflectStructAlias{StructIn, StructOut}(StructIn in, Type{StructOut} out) -> StructOut
+  intrinsic{reflect_struct_alias}{StructIn, StructOut}(in)
+
 // -- Union Utilities
 
 // ---- Lookup union count
@@ -438,6 +443,9 @@ assertEq(reflectStructFieldType(Type{EnumInfo}(), Meta{#1}()), Type{List{EnumEnt
 assertEq(reflectStructField(Date(2021, Month.March, 27), Meta{#0}()), 2021)
 assertEq(reflectStructField(Date(2021, Month.March, 27), Meta{#1}()), Month.March)
 assertEq(reflectStructField(Date(2021, Month.March, 27), Meta{#2}()), 27)
+
+assertEq(reflectStructAlias(Duration(42), Type{Timestamp}()), Timestamp(42))
+assertEq(reflectStructAlias(Date(2021, Month.March, 27), Type{Date}()), Date(2021, Month.March, 27))
 
 // -- Union utility tests
 
