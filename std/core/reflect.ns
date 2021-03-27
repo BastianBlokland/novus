@@ -60,6 +60,9 @@ fun string(LazyInfo li, string indent = "", WriterNewlineMode newlineMode = Writ
 fun string(StaticIntInfo sii, string indent = "", WriterNewlineMode newlineMode = WriterNewlineMode.None)
   staticIntInfoWriter().run(sii, indent, newlineMode)
 
+fun string(RecursiveTypeInfo ri)
+  ri.name
+
 fun string(TypeInfo ti, string indent = "", WriterNewlineMode newlineMode = WriterNewlineMode.None)
   typeInfoWriter().run(ti, indent, newlineMode)
 
@@ -188,22 +191,22 @@ fun reflectStructAlias{StructIn, StructOut}(StructIn in, Type{StructOut} out) ->
 // ---- Struct to string
 // Calls string() for every field and combines the result.
 
-fun reflectStructString{Struct}(Struct s, Meta{#0} idx, string seperator, string result)
+fun reflectStructToString{Struct}(Struct s, Meta{#0} idx, string seperator, string result)
   result
 
-fun reflectStructString{Struct}(Struct s, Meta{#1} idx, string seperator, string result)
+fun reflectStructToString{Struct}(Struct s, Meta{#1} idx, string seperator, string result)
   result + reflectStructField(s,
     reflectStructFieldCount(Type{Struct}()) - idx
   ).string()
 
-fun reflectStructString{Struct, Int}(Struct s, Meta{Int} idx, string seperator, string result)
-  reflectStructString(s, --idx, seperator,
+fun reflectStructToString{Struct, Int}(Struct s, Meta{Int} idx, string seperator, string result)
+  reflectStructToString(s, --idx, seperator,
     result + reflectStructField(s,
       reflectStructFieldCount(Type{Struct}()) - idx
     ).string() + seperator)
 
-fun reflectStructString{Struct}(Struct s, string prefix = "(", string seperator = ",", string suffix = ")") -> string
-  prefix + reflectStructString(s, reflectStructFieldCount(Type{Struct}()), seperator, "") + suffix
+fun reflectStructToString{Struct}(Struct s, string prefix = "(", string seperator = ",", string suffix = ")") -> string
+  prefix + reflectStructToString(s, reflectStructFieldCount(Type{Struct}()), seperator, "") + suffix
 
 // -- Union Utilities
 
@@ -216,6 +219,18 @@ fun reflectUnionCount{Union}(Type{Union} t)
 
 fun reflectUnionType{Union, Idx}(Type{Union} t, Meta{Idx} idx)
   Type{reflect_union_type{Union, Idx}}()
+
+// ---- Union to string
+// Calls string() for the active type of the union.
+
+fun reflectUnionToString{Union}(Union u, Meta{#-1} idx) ""
+
+fun reflectUnionToString{Union, Idx}(Union u, Meta{Idx} idx)
+  if u as reflect_union_type{Union, Idx} val -> val.string()
+  else -> reflectUnionToString(u, --idx)
+
+fun reflectUnionToString{Union}(Union u) -> string
+  reflectUnionToString(u, --reflectUnionCount(Type{Union}()))
 
 // -- Enum Utilities
 
@@ -467,10 +482,15 @@ assertEq(reflectStructField(Date(2021, Month.March, 27), Meta{#2}()), 27)
 assertEq(reflectStructAlias(Duration(42), Type{Timestamp}()), Timestamp(42))
 assertEq(reflectStructAlias(Date(2021, Month.March, 27), Type{Date}()), Date(2021, Month.March, 27))
 
-assertEq(reflectStructString(Date(2021, Month.March, 27)), "(2021,March,27)")
-assertEq(reflectStructString(None()), "()")
-assertEq(reflectStructString(Duration(42)), "(42)")
-assertEq(reflectStructString(DateTime(42, timezoneUTC())), "(42,Z)")
+assertEq(reflectStructToString(Date(2021, Month.March, 27)), "(2021,March,27)")
+assertEq(reflectStructToString(None()), "()")
+assertEq(reflectStructToString(Duration(42)), "(42)")
+assertEq(reflectStructToString(DateTime(42, timezoneUTC())), "(42,Z)")
+
+assertEq(reflectUnionToString(Option{int}()), "none")
+assertEq(reflectUnionToString(Option{int}(42)), "42")
+assertEq(reflectUnionToString(TypeInfo(StaticIntInfo(1337))), "#1337")
+assertEq(reflectUnionToString(TypeInfo(RecursiveTypeInfo("Hello"))), "Hello")
 
 // -- Union utility tests
 
