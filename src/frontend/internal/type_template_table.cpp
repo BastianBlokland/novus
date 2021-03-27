@@ -1,4 +1,5 @@
 #include "type_template_table.hpp"
+#include <cassert>
 
 namespace frontend::internal {
 
@@ -22,8 +23,12 @@ auto TypeTemplateTable::declareUnion(
   declareTemplate(&m_unions, name, std::move(unionTemplate));
 }
 
-auto TypeTemplateTable::hasType(const std::string& name) const -> bool {
+auto TypeTemplateTable::hasType(const std::string& name) -> bool {
   return m_structs.find(name) != m_structs.end() || m_unions.find(name) != m_unions.end();
+}
+
+auto TypeTemplateTable::hasType(const std::string& name, unsigned int numTypeParams) -> bool {
+  return lookup(&m_structs, name, numTypeParams) || lookup(&m_unions, name, numTypeParams);
 }
 
 auto TypeTemplateTable::instantiate(const std::string& name, const prog::sym::TypeSet& typeParams)
@@ -46,44 +51,52 @@ auto TypeTemplateTable::inferParamsAndInstantiate(
 }
 
 template <typename T>
-auto TypeTemplateTable::declareTemplate(
-    std::unordered_map<std::string, T>* templates, const std::string& name, T newTemplate) -> void {
-  if (!templates->insert({name, std::move(newTemplate)}).second) {
-    throw std::logic_error{"Template with an identical name has already been declared"};
+auto TypeTemplateTable::lookup(
+    TemplateMap<T>* templates, const std::string& name, unsigned int numTypeParams) -> T* {
+  auto itrs = templates->equal_range(name);
+  for (; itrs.first != itrs.second; ++itrs.first) {
+    if (itrs.first->second.getTypeParamCount() == numTypeParams) {
+      return &itrs.first->second;
+    }
   }
+  return nullptr;
+}
+
+template <typename T>
+auto TypeTemplateTable::declareTemplate(
+    TemplateMap<T>* templates, const std::string& name, T newTemplate) -> void {
+
+  assert(!lookup(templates, name, newTemplate.getTypeParamCount()));
+  templates->insert({name, std::move(newTemplate)});
 }
 
 template <typename T>
 auto TypeTemplateTable::instantiateTemplate(
-    std::unordered_map<std::string, T>* templates,
-    const std::string& name,
-    const prog::sym::TypeSet& typeParams) const -> std::optional<const TypeTemplateInst*> {
+    TemplateMap<T>* templates, const std::string& name, const prog::sym::TypeSet& typeParams)
+    -> std::optional<const TypeTemplateInst*> {
 
-  auto itr = templates->find(name);
-  if (itr == templates->end()) {
+  T* entry = lookup(templates, name, typeParams.getCount());
+  if (!entry) {
     return std::nullopt;
   }
-  if (itr->second.getTypeParamCount() != typeParams.getCount()) {
-    return std::nullopt;
-  }
-  return itr->second.instantiate(typeParams);
+  return entry->instantiate(typeParams);
 }
 
 template <typename T>
 auto TypeTemplateTable::inferParamsAndInstantiate(
-    std::unordered_map<std::string, T>* templates,
+    TemplateMap<T>* templates,
     const std::string& name,
     const prog::sym::TypeSet& constructorArgTypes) const -> std::optional<const TypeTemplateInst*> {
 
-  auto itr = templates->find(name);
-  if (itr == templates->end()) {
-    return std::nullopt;
+  auto itrs = templates->equal_range(name);
+  for (; itrs.first != itrs.second; ++itrs.first) {
+    T& templ                      = itrs.first->second;
+    const auto inferredTypeParams = templ.inferTypeParams(constructorArgTypes);
+    if (inferredTypeParams) {
+      return templ.instantiate(*inferredTypeParams);
+    }
   }
-  const auto inferredTypeParams = itr->second.inferTypeParams(constructorArgTypes);
-  if (!inferredTypeParams) {
-    return std::nullopt;
-  }
-  return itr->second.instantiate(*inferredTypeParams);
+  return std::nullopt;
 }
 
 } // namespace frontend::internal

@@ -94,12 +94,12 @@ TEST_CASE("[frontend] Analyzing user-type declarations", "frontend") {
         errTypeAlreadyDeclared(NO_SRC, "s"));
     CHECK_DIAG(
         "union s{T} = T, bool "
-        "struct s = bool b",
-        errTypeTemplateAlreadyDeclared(NO_SRC, "s"));
+        "struct s{T} = bool b",
+        errTypeTemplateAlreadyDeclared(NO_SRC, "s", 1));
     CHECK_DIAG(
         "union s{T} = T, bool "
         "struct s{T} = T t",
-        errTypeTemplateAlreadyDeclared(NO_SRC, "s"));
+        errTypeTemplateAlreadyDeclared(NO_SRC, "s", 1));
     CHECK_DIAG("enum int = a", errTypeAlreadyDeclared(NO_SRC, "int"));
     CHECK_DIAG("enum function = a", errTypeNameIsReserved(NO_SRC, "function"));
     CHECK_DIAG("enum action = a", errTypeNameIsReserved(NO_SRC, "action"));

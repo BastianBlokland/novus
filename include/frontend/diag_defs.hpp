@@ -13,8 +13,8 @@ namespace frontend {
 
 [[nodiscard]] auto errTypeAlreadyDeclared(prog::sym::SourceId src, const std::string& name) -> Diag;
 
-[[nodiscard]] auto errTypeTemplateAlreadyDeclared(prog::sym::SourceId src, const std::string& name)
-    -> Diag;
+[[nodiscard]] auto errTypeTemplateAlreadyDeclared(
+    prog::sym::SourceId src, const std::string& name, unsigned int typeParams) -> Diag;
 
 [[nodiscard]] auto errTypeNameIsReserved(prog::sym::SourceId src, const std::string& name) -> Diag;
 

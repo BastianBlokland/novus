@@ -30,7 +30,8 @@ public:
       std::vector<std::string> typeSubs,
       const parse::UnionDeclStmtNode& n) -> void;
 
-  [[nodiscard]] auto hasType(const std::string& name) const -> bool;
+  [[nodiscard]] auto hasType(const std::string& name) -> bool;
+  [[nodiscard]] auto hasType(const std::string& name, unsigned int numTypeParams) -> bool;
 
   [[nodiscard]] auto instantiate(const std::string& name, const prog::sym::TypeSet& typeParams)
       -> std::optional<const TypeTemplateInst*>;
@@ -40,23 +41,26 @@ public:
       -> std::optional<const TypeTemplateInst*>;
 
 private:
-  std::unordered_map<std::string, StructTemplate> m_structs;
-  std::unordered_map<std::string, UnionTemplate> m_unions;
+  template <typename T>
+  using TemplateMap = std::unordered_multimap<std::string, T>;
+
+  TemplateMap<StructTemplate> m_structs;
+  TemplateMap<UnionTemplate> m_unions;
 
   template <typename T>
-  auto declareTemplate(
-      std::unordered_map<std::string, T>* templates, const std::string& name, T newTemplate)
-      -> void;
+  auto lookup(TemplateMap<T>* templates, const std::string& name, unsigned int numTypeParams) -> T*;
+
+  template <typename T>
+  auto declareTemplate(TemplateMap<T>* templates, const std::string& name, T newTemplate) -> void;
 
   template <typename T>
   auto instantiateTemplate(
-      std::unordered_map<std::string, T>* templates,
-      const std::string& name,
-      const prog::sym::TypeSet& typeParams) const -> std::optional<const TypeTemplateInst*>;
+      TemplateMap<T>* templates, const std::string& name, const prog::sym::TypeSet& typeParams)
+      -> std::optional<const TypeTemplateInst*>;
 
   template <typename T>
   auto inferParamsAndInstantiate(
-      std::unordered_map<std::string, T>* templates,
+      TemplateMap<T>* templates,
       const std::string& name,
       const prog::sym::TypeSet& constructorArgTypes) const
       -> std::optional<const TypeTemplateInst*>;

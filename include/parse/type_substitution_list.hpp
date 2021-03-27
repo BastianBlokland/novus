@@ -28,6 +28,7 @@ public:
   [[nodiscard]] auto begin() const -> Iterator;
   [[nodiscard]] auto end() const -> Iterator;
 
+  [[nodiscard]] auto getCount() const -> size_t;
   [[nodiscard]] auto getSpan() const -> input::Span;
   [[nodiscard]] auto getOpen() const -> const lex::Token&;
   [[nodiscard]] auto getSubs() const -> const std::vector<lex::Token>&;

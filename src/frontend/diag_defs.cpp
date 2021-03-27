@@ -40,9 +40,12 @@ auto errTypeAlreadyDeclared(prog::sym::SourceId src, const std::string& name) ->
   return error(oss.str(), src);
 }
 
-auto errTypeTemplateAlreadyDeclared(prog::sym::SourceId src, const std::string& name) -> Diag {
+auto errTypeTemplateAlreadyDeclared(
+    prog::sym::SourceId src, const std::string& name, unsigned int typeParams) -> Diag {
   std::ostringstream oss;
-  oss << "Type name '" << name << "' conflicts with an previously declared type template";
+  oss << "Type name '" << name
+      << "' conflicts with an previously declared type template with the same amount of paramers: '"
+      << typeParams << '\'';
   return error(oss.str(), src);
 }
 
