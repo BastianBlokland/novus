@@ -631,4 +631,10 @@ auto errCyclicOptArgInitializer(prog::sym::SourceId src) -> Diag {
   return error(oss.str(), src);
 }
 
+auto errTooDeepRecursionInFunctionBody(prog::sym::SourceId src, const std::string& name) -> Diag {
+  std::ostringstream oss;
+  oss << "Definition for function '" << name << "' recurses deeper then is supported.";
+  return error(oss.str(), src);
+}
+
 } // namespace frontend

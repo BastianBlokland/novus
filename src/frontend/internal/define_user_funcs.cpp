@@ -8,6 +8,26 @@
 #include "prog/expr/node_call.hpp"
 #include <cassert>
 
+namespace {
+
+constexpr const size_t g_maxFuncDefinitionRecurseDepth = 500;
+
+// Keep track of the function definition recursion depth, this is needed because with
+// meta-programming you can actually build function definitions that recurse indefinitely.
+// TODO: Implement this is a more elegant way.
+thread_local size_t g_funcDefinitionRecurseDepth = 0;
+
+struct RecursionTracker {
+  RecursionTracker() { ++g_funcDefinitionRecurseDepth; }
+  ~RecursionTracker() { --g_funcDefinitionRecurseDepth; }
+
+  [[nodiscard]] auto isMaxFuncDefinitionRecurseDepthReached() const noexcept -> bool {
+    return g_funcDefinitionRecurseDepth >= g_maxFuncDefinitionRecurseDepth;
+  }
+};
+
+} // namespace
+
 namespace frontend::internal {
 
 template <typename FuncParseNode>
@@ -78,6 +98,12 @@ auto defineFunc(
 
   auto consts = prog::sym::ConstDeclTable{};
   if (!declareFuncInput(ctx, typeSubTable, n, &consts, true)) {
+    return false;
+  }
+
+  auto recursionTracker = RecursionTracker{};
+  if (recursionTracker.isMaxFuncDefinitionRecurseDepthReached()) {
+    ctx->reportDiag(errTooDeepRecursionInFunctionBody, n.getBody().getSpan(), funcDisplayName);
     return false;
   }
 

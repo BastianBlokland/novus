@@ -243,4 +243,7 @@ errUndeclaredIndexOperator(prog::sym::SourceId src, const std::vector<std::strin
 
 [[nodiscard]] auto errCyclicOptArgInitializer(prog::sym::SourceId src) -> Diag;
 
+[[nodiscard]] auto
+errTooDeepRecursionInFunctionBody(prog::sym::SourceId src, const std::string& name) -> Diag;
+
 } // namespace frontend
