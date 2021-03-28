@@ -92,6 +92,13 @@ auto reflectStructFieldId(
   return structDef->getFields()[index].getId();
 }
 
+[[nodiscard]] auto reflectStructAreEquivalentIntrinsic(
+    Context* ctx, prog::sym::TypeId structX, prog::sym::TypeId structY) noexcept
+    -> prog::sym::TypeId {
+  auto& staticInts = *ctx->getStaticIntTable();
+  return staticInts.getType(ctx, ctx->getProg()->areStructsEquivalent(structX, structY));
+}
+
 auto reflectStructAliasIntrinsic(
     Context* ctx, prog::sym::TypeId input, prog::sym::TypeId output) noexcept
     -> std::optional<prog::sym::FuncId> {

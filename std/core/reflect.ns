@@ -183,6 +183,11 @@ fun reflectStructFieldType{Struct, Idx}(Type{Struct} t, Meta{Idx} idx)
 fun reflectStructField{Struct, Idx}(Struct s, Meta{Idx} idx) -> reflect_struct_field_type{Struct, Idx}
   intrinsic{reflect_struct_field}{Struct, Idx}(s)
 
+// ---- Check if two struct types are equivalent (same field types).
+
+fun reflectAreStructsEquivalent{StructX, StructY}(Type{StructX} x, Type{StructY} y)
+  Meta{reflect_struct_are_equivalent{StructX, StructY}}()
+
 // ---- Alias a struct to an equivalent struct type
 
 fun reflectStructAlias{StructIn, StructOut}(StructIn in, Type{StructOut} out) -> StructOut
@@ -478,6 +483,10 @@ assertEq(reflectStructFieldType(Type{EnumInfo}(), Meta{#1}()), Type{List{EnumEnt
 assertEq(reflectStructField(Date(2021, Month.March, 27), Meta{#0}()), 2021)
 assertEq(reflectStructField(Date(2021, Month.March, 27), Meta{#1}()), Month.March)
 assertEq(reflectStructField(Date(2021, Month.March, 27), Meta{#2}()), 27)
+
+assertEq(reflectAreStructsEquivalent(Type{Duration}(),  Type{Timestamp}()),               metaTrue())
+assertEq(reflectAreStructsEquivalent(Type{Duration}(),  Type{Date}()),                    metaFalse())
+assertEq(reflectAreStructsEquivalent(Type{Date}(),      Type{Tuple{int, Month, int}}()),  metaTrue())
 
 assertEq(reflectStructAlias(Duration(42), Type{Timestamp}()), Timestamp(42))
 assertEq(reflectStructAlias(Date(2021, Month.March, 27), Type{Date}()), Date(2021, Month.March, 27))

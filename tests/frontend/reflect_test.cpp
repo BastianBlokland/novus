@@ -63,6 +63,26 @@ TEST_CASE("[frontend] Analyze reflection", "frontend") {
               structDef.getFields()[1].getId()));
     }
 
+    SECTION("Equivalent structs") {
+      const auto& output = ANALYZE("struct Type{T} "
+                                   "struct S1 = int A, float B, long C "
+                                   "struct S2 = int A, float B, long C "
+                                   "fun f()"
+                                   "  Type{reflect_struct_are_equivalent{S1, S2}}()");
+      REQUIRE(output.isSuccess());
+      CHECK(GET_FUNC_DECL(output, "f").getOutput() == GET_TYPE_ID(output, "Type__#1"));
+    }
+
+    SECTION("Non equivalent structs") {
+      const auto& output = ANALYZE("struct Type{T} "
+                                   "struct S1 = int A, float B, long C "
+                                   "struct S2 = int A, float B "
+                                   "fun f()"
+                                   "  Type{reflect_struct_are_equivalent{S1, S2}}()");
+      REQUIRE(output.isSuccess());
+      CHECK(GET_FUNC_DECL(output, "f").getOutput() == GET_TYPE_ID(output, "Type__#0"));
+    }
+
     SECTION("Alias struct") {
       const auto& output = ANALYZE("struct S1 = int A, float B, long C "
                                    "struct S2 = int A, float B, long C "
