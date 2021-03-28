@@ -47,12 +47,6 @@ fun map{T1, T2, T3, T4, T5, TResult}(Pair{Pair{Pair{Pair{T1, T2}, T3}, T4}, T5} 
     p.first.second,
     p.second)
 
-
-// -- Conversions
-
-fun string{T1, T2}(Pair{T1, T2} p)
-  "(" + p.first.string() + "," + p.second.string() + ")"
-
 // -- Tests
 
 assertEq(Pair(42, "hello world"), Pair(42, "hello world"))

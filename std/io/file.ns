@@ -25,9 +25,6 @@ struct File =
 
 // -- Conversions
 
-fun string(FileMode m)
-  reflectEnumKeyForVal(m) ?? ""
-
 fun string(FileFlags o)
   (o & FileFlags.AutoRemove) != 0 ? "[AutoRemove]" : ""
 

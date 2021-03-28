@@ -65,11 +65,6 @@ enum HttpStatusCode =
   NotExtended:                    510,
   NetworkAuthenticationRequired:  511
 
-// -- Conversions
-
-fun string(HttpStatusCode s)
-  reflectEnumKeyForVal(s) ?? ""
-
 // -- Writers
 
 // Example output: '200 OK'

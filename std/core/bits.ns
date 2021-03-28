@@ -11,11 +11,6 @@ enum Endianness =
   Little  : 0,
   Big     : 1
 
-// -- Conversions
-
-fun string(Endianness e)
-  reflectEnumKeyForVal(e) ?? "Unknown"
-
 // -- Utilities
 
 // Unset the least significant set bit.

@@ -339,7 +339,7 @@ TEST_CASE("[vm] Execute process platform-calls", "vm") {
           asmb->addRet();
         },
         "input",
-        "5\ntest[hello world,else]\n");
+        "5\n(test,[hello world,else])\n");
   }
 
   SECTION("Process id can be retrieved") {

@@ -23,7 +23,7 @@ fun makeColorGrid(int width, int height, function{int, int, Color} getCol) -> Li
 // -- Conversions
 
 fun string(Image i)
-  "(" + i.width + "x" + i.height + ')'
+  "(" + i.width + 'x' + i.height + ')'
 
 // -- Portable Pixmap Format
 // https://en.wikipedia.org/wiki/Netpbm
