@@ -40,9 +40,12 @@ auto errTypeAlreadyDeclared(prog::sym::SourceId src, const std::string& name) ->
   return error(oss.str(), src);
 }
 
-auto errTypeTemplateAlreadyDeclared(prog::sym::SourceId src, const std::string& name) -> Diag {
+auto errTypeTemplateAlreadyDeclared(
+    prog::sym::SourceId src, const std::string& name, unsigned int typeParams) -> Diag {
   std::ostringstream oss;
-  oss << "Type name '" << name << "' conflicts with an previously declared type template";
+  oss << "Type name '" << name
+      << "' conflicts with an previously declared type template with the same amount of paramers: '"
+      << typeParams << '\'';
   return error(oss.str(), src);
 }
 
@@ -99,14 +102,16 @@ auto errStaticFieldNotFoundOnType(
 }
 
 auto errDuplicateTypeInUnion(
-    prog::sym::SourceId src, const std::string& typeName, const std::string& substitutedTypeName)
-    -> Diag {
+    prog::sym::SourceId src,
+    const std::string& unionName,
+    const std::string& typeName,
+    const std::string& substitutedTypeName) -> Diag {
   std::ostringstream oss;
   oss << "Type '" << typeName << '\'';
   if (typeName != substitutedTypeName) {
     oss << " ('" << substitutedTypeName << "')";
   }
-  oss << " is already part of this union";
+  oss << " is already part of the union '" << unionName << '\'';
   return error(oss.str(), src);
 }
 
@@ -623,6 +628,12 @@ auto errNonOptArgFollowingOpt(prog::sym::SourceId src) -> Diag {
 auto errCyclicOptArgInitializer(prog::sym::SourceId src) -> Diag {
   std::ostringstream oss;
   oss << "Cycle detected while applying optional argument initializers";
+  return error(oss.str(), src);
+}
+
+auto errTooDeepRecursionInFunctionBody(prog::sym::SourceId src, const std::string& name) -> Diag {
+  std::ostringstream oss;
+  oss << "Definition for function '" << name << "' recurses deeper then is supported.";
   return error(oss.str(), src);
 }
 

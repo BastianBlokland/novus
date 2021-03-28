@@ -10,6 +10,9 @@ fun metaZero()    Meta{#0}()
 fun metaOne()     Meta{#1}()
 fun metaNegOne()  Meta{#-1}()
 
+fun metaFalse()   Meta{#0}()
+fun metaTrue()    Meta{#1}()
+
 // -- Conversions
 
 fun int{Int}(Meta{Int} m)

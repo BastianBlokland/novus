@@ -31,6 +31,8 @@ auto TypeSubstitutionList::begin() const -> Iterator { return m_subs.begin(); }
 
 auto TypeSubstitutionList::end() const -> Iterator { return m_subs.end(); }
 
+auto TypeSubstitutionList::getCount() const -> size_t { return m_subs.size(); }
+
 auto TypeSubstitutionList::getSpan() const -> input::Span {
   return input::Span::combine(m_open.getSpan(), m_close.getSpan());
 }

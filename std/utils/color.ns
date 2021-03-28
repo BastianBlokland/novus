@@ -27,11 +27,6 @@ fun *(Color a, Color b) Color(a.r * b.r,  a.g * b.g,  a.b * b.b)
 fun *(Color c, float t) Color(c.r * t,    c.g * t,    c.b * t)
 fun /(Color c, float t) Color(c.r / t,    c.g / t,    c.b / t)
 
-// -- Conversions
-
-fun string(Color c)
-  "(" + c.r.string() + ',' + c.g.string() + ',' + c.b.string() + ')'
-
 // -- Functions
 
 fun lerp(Color x, Color y, float t)

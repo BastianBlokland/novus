@@ -65,28 +65,28 @@ act readLine(sys_stream s) -> Either{string, Error}
         else                      -> self(result + s)
   , "")
 
-act readLine(StreamReadState state) -> Either{Pair{string, StreamReadState}, Error}
+act readLine(StreamReadState state) -> Either{Tuple{string, StreamReadState}, Error}
   state.readUntil("\n" :: "\r\n")
 
-act readUntil(StreamReadState state, List{string} patterns) -> Either{Pair{string, StreamReadState}, Error}
+act readUntil(StreamReadState state, List{string} patterns) -> Either{Tuple{string, StreamReadState}, Error}
   invoke(
     impure lambda (string txt)
-      p = patterns.fold(  ( lambda (Pair{int, string} best, string p)
+      p = patterns.fold(  ( lambda (Tuple{int, string} best, string p)
                               idx = txt.indexOf(p);
-                              if idx < 0                            -> best
-                              if best.first < 0 || idx < best.first -> Pair(idx, p)
-                              else                                  -> best
-                          ), Pair(-1, ""));
-      idx = p.first;
+                              if idx < 0                      -> best
+                              if best.f1 < 0 || idx < best.f1 -> Tuple(idx, p)
+                              else                            -> best
+                          ), Tuple(-1, ""));
+      idx = p.f1;
       if idx >= 0 ->
         matchedTxt  = txt[0, idx];
-        remTxt      = txt[idx + p.second.length(), txt.length()];
-        Pair(matchedTxt, StreamReadState(remTxt, false, state.src))
+        remTxt      = txt[idx + p.f2.length(), txt.length()];
+        Tuple(matchedTxt, StreamReadState(remTxt, false, state.src))
       else        ->
         readRes = state.src.read(streamReadBlockSize());
         if readRes as Error   e                           -> e
         if readRes as string  read && read.length() > 0   -> self(txt + read)
-        else                                              -> Pair("", StreamReadState(txt, true, state.src))
+        else                                              -> Tuple("", StreamReadState(txt, true, state.src))
   , state.txt)
 
 // -- Writing actions

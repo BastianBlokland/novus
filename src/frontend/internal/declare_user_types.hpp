@@ -44,7 +44,8 @@ private:
   std::vector<UnionDeclInfo>* m_unionDecls;
   std::vector<EnumDeclInfo>* m_enumDecls;
 
-  auto validateTypeName(const lex::Token& nameToken) -> bool;
+  auto validateTypeName(const std::string& name, input::Span span, unsigned int numTypeParams)
+      -> bool;
 };
 
 } // namespace frontend::internal

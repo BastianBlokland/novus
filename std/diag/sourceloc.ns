@@ -25,17 +25,15 @@ fun getSourceLoc(
 
 // -- Writers
 
-fun sourceLocWriter()
+fun sourceLocWriter() -> Writer{SourceLoc}
   (
     stringWriter() & litWriter(':') & txtIntWriter() & litWriter(':') & txtIntWriter()
-  ).map(lambda (SourceLoc sl)
-      makePair(sl.file, sl.line, sl.column)
-    )
+  ).to(Type{SourceLoc}())
 
 // -- Tests
 
 assertEq(getSourceLoc().file, "sourceloc.ns")
-assertEq(getSourceLoc().line, 38)
+assertEq(getSourceLoc().line, 36)
 assertEq(getSourceLoc().column, 1)
 
-assertEq(getSourceLoc().string(), "sourceloc.ns:41:1")
+assertEq(getSourceLoc().string(), "sourceloc.ns:39:1")

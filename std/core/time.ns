@@ -278,7 +278,7 @@ fun monthWriter(bool short = false) -> Writer{Month}
 fun dateISO8601Writer() -> Writer{Date}
   (
     txtIntWriter(4) & litWriter('-') & txtIntWriter(2) & litWriter('-') & txtIntWriter(2)
-  ).map(lambda (Date d) makePair(d.year, int(d.month), d.day))
+  ).map(lambda (Date d) Tuple(d.year, int(d.month), d.day))
 
 // Timezone in iso-8601 format (https://en.wikipedia.org/wiki/ISO_8601).
 // Example output: +02:00.
@@ -287,7 +287,7 @@ fun timezoneISO8601Writer() -> Writer{Timezone}
   Writer(lambda (WriterState s, Timezone t)
     t.isUTC()
       ? s.write("Z")
-      : offsetWriter(s, makePair(
+      : offsetWriter(s, Tuple(
           t.offset < Duration(0) ? '-' : '+',
           absDuration(t.offset).hours(),
           absDuration(t.offset).minutes() % 60))
@@ -304,7 +304,7 @@ fun dateTimeISO8601Writer() -> Writer{DateTime}
   ).map(lambda (DateTime dt)
     localTime = dt + Duration(dt.zone);
     sinceEpoch = absDuration(localTime - timeEpoch());
-    makePair(
+    Tuple(
       Date(localTime),
       sinceEpoch.hours()    % 24,
       sinceEpoch.minutes()  % 60,
@@ -319,7 +319,7 @@ fun dateRFC1123Writer() -> Writer{Date}
     txtIntWriter()      & litWriter(' ')  &
     monthWriter(true)   & litWriter(' ')  &
     txtIntWriter()
-  ).map(lambda (Date d) makePair(WeekDay(d), d.day, d.month, d.year))
+  ).map(lambda (Date d) Tuple(WeekDay(d), d.day, d.month, d.year))
 
 // Time in RFC1123 format (used in the http standard).
 // NOTE: Always in UTC.
@@ -331,7 +331,7 @@ fun timeRFC1123Writer() -> Writer{DateTime}
     txtLongWriter(2)    & litWriter(" GMT")
   ).map(lambda (DateTime dt)
     sinceEpoch = absDuration(dt - timeEpoch());
-    makePair(sinceEpoch.hours() % 24, sinceEpoch.minutes() % 60, sinceEpoch.seconds() % 60))
+    Tuple(sinceEpoch.hours() % 24, sinceEpoch.minutes() % 60, sinceEpoch.seconds() % 60))
 
 // Date + time in RFC1123 format (used in the http standard).
 // NOTE: Always in UTC.
@@ -339,14 +339,14 @@ fun timeRFC1123Writer() -> Writer{DateTime}
 fun dateTimeRFC1123Writer() -> Writer{DateTime}
   (
     dateRFC1123Writer() & litWriter(' ') & timeRFC1123Writer()
-  ).map(lambda (DateTime dt) makePair(Date(dt), dt))
+  ).map(lambda (DateTime dt) Tuple(Date(dt), dt))
 
 // Timezone in pretty format.
 // Example output: +02:00.
 fun timezonePrettyWriter() -> Writer{Timezone}
   (
     charWriter() & txtLongWriter(2) & litWriter(':') & txtLongWriter(2)
-  ).map(lambda (Timezone t) makePair(
+  ).map(lambda (Timezone t) Tuple(
       t.offset < Duration(0) ? '-' : '+',
       absDuration(t.offset).hours(),
       absDuration(t.offset).minutes() % 60))
@@ -359,7 +359,7 @@ fun datePrettyWriter() -> Writer{Date}
     txtIntWriter()  & litWriter(' ')  &
     monthWriter()   & litWriter(' ')  &
     txtIntWriter()
-  ).map(lambda (Date d) makePair(WeekDay(d), d.day, d.month, d.year))
+  ).map(lambda (Date d) Tuple(WeekDay(d), d.day, d.month, d.year))
 
 // Local date and time in pretty format.
 // Example output: 'Friday 24 March 2021 09:41:38 +02:00'.
@@ -373,7 +373,7 @@ fun dateTimePrettyWriter(bool includeMillies = false) -> Writer{DateTime}
   ).map(lambda (DateTime dt)
     localTime = dt + Duration(dt.zone);
     sinceEpoch = absDuration(localTime - timeEpoch());
-    makePair(
+    Tuple(
       Date(localTime),
       sinceEpoch.hours()    % 24,
       sinceEpoch.minutes()  % 60,

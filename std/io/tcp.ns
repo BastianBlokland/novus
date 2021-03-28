@@ -35,14 +35,6 @@ fun TcpServerSettings(
     maxBacklog,
     impure lambda (TcpServerState state) interuptIsRequested())
 
-// -- Conversions
-
-fun string(TcpConnection serverState)
-  "(tcpconnection)"
-
-fun string(TcpServerState serverState)
-  "(tcpserver, counter:" + serverState.connectionCounter + ")"
-
 // -- Connection
 
 act write(TcpConnection c, string str) -> Option{Error}

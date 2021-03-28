@@ -60,6 +60,9 @@ fun string(LazyInfo li, string indent = "", WriterNewlineMode newlineMode = Writ
 fun string(StaticIntInfo sii, string indent = "", WriterNewlineMode newlineMode = WriterNewlineMode.None)
   staticIntInfoWriter().run(sii, indent, newlineMode)
 
+fun string(RecursiveTypeInfo ri)
+  ri.name
+
 fun string(TypeInfo ti, string indent = "", WriterNewlineMode newlineMode = WriterNewlineMode.None)
   typeInfoWriter().run(ti, indent, newlineMode)
 
@@ -158,6 +161,27 @@ fun reflectLazy{Lazy}(Type{Lazy} t, ReflectCtx rc = ReflectCtx()) -> LazyInfo
     reflect(reflectLazyType(t), rc),
     reflectLazyIsAction(t))
 
+// -- Conversion utilities
+
+// ---- Attempt to convert a value to a type.
+// For equivalent structs we alias the types, otherwise we attempt to call a constructor for the
+// target type.
+
+fun reflectCoerceToType{T, Target}(T val, Type{Target} tgt, Meta{#8} structTypeKind, Meta{#0} nonEquivalent)
+  Target(val)
+
+fun reflectCoerceToType{T, Target}(T val, Type{Target} tgt, Meta{#8} structTypeKind, Meta{#1} equivalent)
+  reflectStructAlias(val, tgt)
+
+fun reflectCoerceToType{T, Target}(T val, Type{Target} tgt, Meta{#8} structTypeKind)
+  reflectCoerceToType(val, tgt, structTypeKind, reflectAreStructsEquivalent(Type{T}(), tgt))
+
+fun reflectCoerceToType{T, Target, TypeId}(T val, Type{Target} tgt, Meta{TypeId} fallbackTypeKind)
+  Target(val)
+
+fun reflectCoerceToType{T, Target}(T val, Type{Target} t) -> Target
+  reflectCoerceToType(val, t, Meta{reflect_type_kind{T}}())
+
 // -- Struct Utilities
 
 // ---- Lookup struct field count
@@ -175,6 +199,41 @@ fun reflectStructFieldName{Struct, Idx}(Type{Struct} t, Meta{Idx} idx) -> string
 fun reflectStructFieldType{Struct, Idx}(Type{Struct} t, Meta{Idx} idx)
   Type{reflect_struct_field_type{Struct, Idx}}()
 
+// ---- Lookup struct field from index
+
+fun reflectStructField{Struct, Idx}(Struct s, Meta{Idx} idx) -> reflect_struct_field_type{Struct, Idx}
+  intrinsic{reflect_struct_field}{Struct, Idx}(s)
+
+// ---- Check if two struct types are equivalent (same field types).
+
+fun reflectAreStructsEquivalent{StructX, StructY}(Type{StructX} x, Type{StructY} y)
+  Meta{reflect_struct_are_equivalent{StructX, StructY}}()
+
+// ---- Alias a struct to an equivalent struct type
+
+fun reflectStructAlias{StructIn, StructOut}(StructIn in, Type{StructOut} out) -> StructOut
+  intrinsic{reflect_struct_alias}{StructIn, StructOut}(in)
+
+// ---- Struct to string
+// Calls string() for every field and combines the result.
+
+fun reflectStructToString{Struct}(Struct s, Meta{#0} idx, string seperator, string result)
+  result
+
+fun reflectStructToString{Struct}(Struct s, Meta{#1} idx, string seperator, string result)
+  result + reflectStructField(s,
+    reflectStructFieldCount(Type{Struct}()) - idx
+  ).string()
+
+fun reflectStructToString{Struct, Int}(Struct s, Meta{Int} idx, string seperator, string result)
+  reflectStructToString(s, --idx, seperator,
+    result + reflectStructField(s,
+      reflectStructFieldCount(Type{Struct}()) - idx
+    ).string() + seperator)
+
+fun reflectStructToString{Struct}(Struct s, string prefix = "(", string seperator = ",", string suffix = ")") -> string
+  prefix + reflectStructToString(s, reflectStructFieldCount(Type{Struct}()), seperator, "") + suffix
+
 // -- Union Utilities
 
 // ---- Lookup union count
@@ -186,6 +245,18 @@ fun reflectUnionCount{Union}(Type{Union} t)
 
 fun reflectUnionType{Union, Idx}(Type{Union} t, Meta{Idx} idx)
   Type{reflect_union_type{Union, Idx}}()
+
+// ---- Union to string
+// Calls string() for the active type of the union.
+
+fun reflectUnionToString{Union}(Union u, Meta{#-1} idx) ""
+
+fun reflectUnionToString{Union, Idx}(Union u, Meta{Idx} idx)
+  if u as reflect_union_type{Union, Idx} val -> val.string()
+  else -> reflectUnionToString(u, --idx)
+
+fun reflectUnionToString{Union}(Union u) -> string
+  reflectUnionToString(u, --reflectUnionCount(Type{Union}()))
 
 // -- Enum Utilities
 
@@ -279,7 +350,7 @@ fun reflectLazyIsAction{InnerType}(Type{lazy_action{InnerType}} t)  true
 
 // -- Writers
 
-fun namedTypeInfoWriter() -> Writer{Pair{string, string}}
+fun namedTypeInfoWriter() -> Writer{Tuple{string, string}}
   stringWriter() & litWriter(" (") & stringWriter() & litWriter(") ")
 
 fun primInfoWriter()
@@ -290,28 +361,28 @@ fun primInfoWriter()
 fun structInfoWriter(Writer{TypeInfo} typeInfoWriter = typeInfoWriter())
   fieldWriter = (
     stringWriter() & litWriter(": ") & typeInfoWriter
-  ).map(lambda (StructField f) makePair(f.name, f.type));
+  ).to(Type{StructField}());
   (
     namedTypeInfoWriter() & basicListWriter(fieldWriter)
-  ).map(lambda (StructInfo s) makePair(s.name, "Struct", s.fields))
+  ).map(lambda (StructInfo s) Tuple(s.name, "Struct", s.fields))
 
 fun unionInfoWriter(Writer{TypeInfo} typeInfoWriter = typeInfoWriter())
   (
     namedTypeInfoWriter() & basicListWriter(typeInfoWriter)
-  ).map(lambda (UnionInfo s) makePair(s.name, "Union", s.entries))
+  ).map(lambda (UnionInfo s) Tuple(s.name, "Union", s.entries))
 
 fun enumInfoWriter()
   entryWriter = (
     stringWriter() & litWriter(": ") & txtIntWriter()
-  ).map(lambda (EnumEntry f) makePair(f.key, f.value));
+  ).to(Type{EnumEntry}());
   (
     namedTypeInfoWriter() & basicListWriter(entryWriter)
-  ).map(lambda (EnumInfo e) makePair(e.name, "Enum", e.entries))
+  ).map(lambda (EnumInfo e) Tuple(e.name, "Enum", e.entries))
 
 fun delegateInfoWriter(Writer{TypeInfo} typeInfoWriter = typeInfoWriter())
   (
     stringWriter() & basicListWriter(typeInfoWriter) & litWriter(" -> ") & typeInfoWriter
-  ).map(lambda (DelegateInfo d) makePair(d.isAction ? "Action: " : "Function: ", d.inputTypes, d.retType))
+  ).map(lambda (DelegateInfo d) Tuple(d.isAction ? "Action: " : "Function: ", d.inputTypes, d.retType))
 
 fun futureInfoWriter(Writer{TypeInfo} typeInfoWriter = typeInfoWriter())
   (
@@ -321,7 +392,7 @@ fun futureInfoWriter(Writer{TypeInfo} typeInfoWriter = typeInfoWriter())
 fun lazyInfoWriter(Writer{TypeInfo} typeInfoWriter = typeInfoWriter())
   (
     stringWriter() & typeInfoWriter
-  ).map(lambda (LazyInfo l) makePair(l.isAction ? "ImpureLazy: " : "PureLazy: ", l.type))
+  ).map(lambda (LazyInfo l) Tuple(l.isAction ? "ImpureLazy: " : "PureLazy: ", l.type))
 
 fun staticIntInfoWriter()
   (litWriter("#") & txtIntWriter()).map(lambda (StaticIntInfo i) i.value)
@@ -416,6 +487,11 @@ assertEq(reflect(Type{lazy_action{int}}()), LazyInfo(PrimInfo(PrimType.Int), tru
 
 assertEq(reflect(Type{#42}()), StaticIntInfo(42))
 
+// -- Type conversion utility tests
+
+assertEq(reflectCoerceToType(Duration(42), Type{Timestamp}()), Timestamp(42))
+assertEq(reflectCoerceToType(42,           Type{Timestamp}()), Timestamp(42))
+
 // -- Struct utility tests
 
 assertEq(reflectStructFieldCount(Type{Date}()), Meta{#3}())
@@ -429,6 +505,27 @@ assertEq(reflectStructFieldName(Type{Date}(), Meta{#2}()), "day")
 assertEq(reflectStructFieldType(Type{Date}(), Meta{#0}()), Type{int}())
 assertEq(reflectStructFieldType(Type{Date}(), Meta{#1}()), Type{Month}())
 assertEq(reflectStructFieldType(Type{EnumInfo}(), Meta{#1}()), Type{List{EnumEntry}}())
+
+assertEq(reflectStructField(Date(2021, Month.March, 27), Meta{#0}()), 2021)
+assertEq(reflectStructField(Date(2021, Month.March, 27), Meta{#1}()), Month.March)
+assertEq(reflectStructField(Date(2021, Month.March, 27), Meta{#2}()), 27)
+
+assertEq(reflectAreStructsEquivalent(Type{Duration}(),  Type{Timestamp}()),               metaTrue())
+assertEq(reflectAreStructsEquivalent(Type{Duration}(),  Type{Date}()),                    metaFalse())
+assertEq(reflectAreStructsEquivalent(Type{Date}(),      Type{Tuple{int, Month, int}}()),  metaTrue())
+
+assertEq(reflectStructAlias(Duration(42), Type{Timestamp}()), Timestamp(42))
+assertEq(reflectStructAlias(Date(2021, Month.March, 27), Type{Date}()), Date(2021, Month.March, 27))
+
+assertEq(reflectStructToString(Date(2021, Month.March, 27)), "(2021,March,27)")
+assertEq(reflectStructToString(None()), "()")
+assertEq(reflectStructToString(Duration(42)), "(42)")
+assertEq(reflectStructToString(DateTime(42, timezoneUTC())), "(42,Z)")
+
+assertEq(reflectUnionToString(Option{int}()), "none")
+assertEq(reflectUnionToString(Option{int}(42)), "42")
+assertEq(reflectUnionToString(TypeInfo(StaticIntInfo(1337))), "#1337")
+assertEq(reflectUnionToString(TypeInfo(RecursiveTypeInfo("Hello"))), "Hello")
 
 // -- Union utility tests
 

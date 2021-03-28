@@ -22,9 +22,6 @@ fun ??{T}(Option{T} opt, T def) -> T
 
 // -- Conversions
 
-fun string{T}(Option{T} opt)
-  opt as T val ? val.string() : "none"
-
 fun string(None n)
   "none"
 

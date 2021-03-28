@@ -77,6 +77,7 @@ auto defineType(
       ctx->reportDiag(
           errDuplicateTypeInUnion,
           parseType.getSpan(),
+          getDisplayName(*ctx, id),
           getName(parseType),
           getDisplayName(*ctx, *type));
       isValid = false;

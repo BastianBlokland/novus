@@ -19,7 +19,7 @@ union JsonValue =
   JsonArray
 
 struct JsonObject =
-  List{Pair{string, JsonValue}} fields
+  List{Tuple{string, JsonValue}} fields
 
 struct JsonArray =
   List{JsonValue} entries
@@ -106,14 +106,14 @@ fun jsonObjectParser(Parser{JsonValue} valParser = lazyParser(lazy jsonValuePars
   comma     = matchParser(',')    << whitespaceParser() !! Error("Expected comma or end of object");
   close     = matchParser('}')    << whitespaceParser();
   keyValue  = (key << colon) & value;
-  (open >> manyUntilParser(keyValue, comma, close) << close).map(construct{List{Pair{string, JsonValue}}, JsonObject})
+  (open >> manyUntilParser(keyValue, comma, close) << close).to(Type{JsonObject}())
 
 fun jsonArrayParser(Parser{JsonValue} valParser = lazyParser(lazy jsonValueParser()))
   open  = matchParser('[')    << whitespaceParser();
   value = valParser           << whitespaceParser();
   comma = matchParser(',')    << whitespaceParser() !! Error("Expected comma or end of array");
   close = matchParser(']')    << whitespaceParser();
-  (open >> manyUntilParser(value, comma, close) << close).map(construct{List{JsonValue}, JsonArray})
+  (open >> manyUntilParser(value, comma, close) << close).to(Type{JsonArray}())
 
 fun jsonValueParser()
   objectP = jsonObjectParser();
@@ -123,14 +123,14 @@ fun jsonValueParser()
   boolP   = jsonBoolParser();
   numberP = jsonNumberParser();
   Parser(lambda (ParseState s)
-    if s[0] == '{'    -> objectP(s) .map(construct{JsonObject, JsonValue})
-    if s[0] == '['    -> arrayP(s)  .map(construct{JsonArray, JsonValue})
-    if s[0] == '"'    -> stringP(s) .map(construct{string, JsonValue})
-    if s[0] == 'n'    -> nullP(s)   .map(construct{JsonNull, JsonValue})
-    if s[0] == 't'    -> boolP(s)   .map(construct{bool, JsonValue})
-    if s[0] == 'f'    -> boolP(s)   .map(construct{bool, JsonValue})
-    if s[0].isDigit() -> numberP(s) .map(construct{float, JsonValue})
-    if s[0] == '-'    -> numberP(s) .map(construct{float, JsonValue})
+    if s[0] == '{'    -> objectP(s) .to(Type{JsonValue}())
+    if s[0] == '['    -> arrayP(s)  .to(Type{JsonValue}())
+    if s[0] == '"'    -> stringP(s) .to(Type{JsonValue}())
+    if s[0] == 'n'    -> nullP(s)   .to(Type{JsonValue}())
+    if s[0] == 't'    -> boolP(s)   .to(Type{JsonValue}())
+    if s[0] == 'f'    -> boolP(s)   .to(Type{JsonValue}())
+    if s[0].isDigit() -> numberP(s) .to(Type{JsonValue}())
+    if s[0] == '-'    -> numberP(s) .to(Type{JsonValue}())
     if s[0] == '\0'   -> s.failure(Error("Missing json value"))
     else              -> s.failure(
       Error("Invalid start of json value: '" + s[0].escapeForPrinting() + "'"))
@@ -246,7 +246,7 @@ assertEq(jsonStringParser()("\"hello\\u000Aworld\""), "hello\nworld")
 assertEq(
   p = jsonStringParser();
   testStr = "STARGΛ̊TE,Hello world,Καλημέρα κόσμε,コンニチハ,⡌⠁⠧⠑ ⠼⠁⠒,ᚻᛖ ᚳᚹᚫᚦ ᚦᚫᛏ,ሰማይ አይታረስ ንጉሥ አይከሰስ።,แผ่นดินฮั่นเสื่อมโทรมแสนสังเวช,Зарегистрируйтесь,გთხოვთ ახლავე გაიაროთ⎪⎢⎜ ⎳aⁱ-bⁱ⎟⎥⎪▁▂▃▄▅▆▇█∀∂∈ℝ∧∪≡∞";
-  makePair(p("\"" + testStr + "\""), testStr))
+  Tuple(p("\"" + testStr + "\""), testStr))
 
 assertIs(jsonStringParser()(""), Type{ParseFailure}())
 assertIs(jsonStringParser()("\""), Type{ParseFailure}())
@@ -286,25 +286,25 @@ assertIs(jsonArrayParser()("[233, 123 ,]"), Type{ParseFailure}())
 
 assertEq(
   jsonObjectParser()("{ \"key\" : 32 }"),
-  JsonObject(Pair("key", JsonValue(32.0)) :: List{Pair{string, JsonValue}}()))
+  JsonObject(Tuple("key", JsonValue(32.0)) :: List{Tuple{string, JsonValue}}()))
 
 assertEq(
   jsonObjectParser()("{\"key1\":32,\"key2\":true}"),
   JsonObject(
-    Pair("key1", JsonValue(32.0)) ::
-    Pair("key2", JsonValue(true)) :: List{Pair{string, JsonValue}}()))
+    Tuple("key1", JsonValue(32.0)) ::
+    Tuple("key2", JsonValue(true)) :: List{Tuple{string, JsonValue}}()))
 
 assertEq(
   jsonObjectParser()("{\n\"key1\"\n:\n32\n,\n\"key2\"\n:\ntrue\n}"),
   JsonObject(
-    Pair("key1", JsonValue(32.0)) ::
-    Pair("key2", JsonValue(true)) :: List{Pair{string, JsonValue}}()))
+    Tuple("key1", JsonValue(32.0)) ::
+    Tuple("key2", JsonValue(true)) :: List{Tuple{string, JsonValue}}()))
 
 assertEq(
   jsonObjectParser()("{\"obj\":{\"k\":true}}"),
   JsonObject(
-    Pair("obj", JsonValue(JsonObject(Pair("k", JsonValue(true)) :: List{Pair{string, JsonValue}}()))) ::
-    List{Pair{string, JsonValue}}()))
+    Tuple("obj", JsonValue(JsonObject(Tuple("k", JsonValue(true)) :: List{Tuple{string, JsonValue}}()))) ::
+    List{Tuple{string, JsonValue}}()))
 
 assertIs(jsonArrayParser()(""), Type{ParseFailure}())
 assertIs(jsonArrayParser()("{"), Type{ParseFailure}())
@@ -321,14 +321,14 @@ assertEq(jsonStringWriter()("hello\nworld"), "\"hello\\nworld\"")
 
 assertEq(
   jsonObjectWriter()(JsonObject(
-    Pair("key1", JsonValue(32.0)) ::
-    Pair("key2", JsonValue(true)) :: List{Pair{string, JsonValue}}())),
+    Tuple("key1", JsonValue(32.0)) ::
+    Tuple("key2", JsonValue(true)) :: List{Tuple{string, JsonValue}}())),
   "{\n  \"key1\": 32,\n  \"key2\": true\n}")
 
 assertEq(
   jsonObjectWriter()(JsonObject(
-    Pair("obj", JsonValue(JsonObject(Pair("k", JsonValue(true)) :: List{Pair{string, JsonValue}}()))) ::
-    List{Pair{string, JsonValue}}())),
+    Tuple("obj", JsonValue(JsonObject(Tuple("k", JsonValue(true)) :: List{Tuple{string, JsonValue}}()))) ::
+    List{Tuple{string, JsonValue}}())),
   "{\n  \"obj\": {\n    \"k\": true\n  }\n}")
 
 assertEq(jsonArrayWriter()(JsonArray(List{JsonValue}())), "[]")

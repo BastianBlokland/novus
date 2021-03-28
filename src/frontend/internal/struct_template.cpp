@@ -42,13 +42,13 @@ auto StructTemplate::setupInstance(TypeTemplateInst* instance) -> void {
   // Declare the struct in the program.
   instance->m_type = getCtx()->getProg()->declareStruct(mangledName);
 
-  // Define the struct.
-  instance->m_success = defineType(getCtx(), &subTable, *instance->m_type, m_parseNode);
-
   // Keep track of some extra information about the type.
   getCtx()->declareTypeInfo(
       *instance->m_type,
       TypeInfo{getCtx(), getTemplateName(), m_parseNode.getSpan(), instance->getTypeParams()});
+
+  // Define the struct.
+  instance->m_success = defineType(getCtx(), &subTable, *instance->m_type, m_parseNode);
 }
 
 } // namespace frontend::internal

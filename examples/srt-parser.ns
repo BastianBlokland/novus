@@ -21,7 +21,7 @@ import "std.ns"
 // - '?Parser{T}' -> Parser{Option{T}}
 //    Makes a parser optional, an option parser always succeeds but doesn't always produce a value.
 //
-// - 'Parser{T1} & Parser{T2}' -> Parser{Pair{T1, T2}}
+// - 'Parser{T1} & Parser{T2}' -> Parser{Tuple{T1, T2}}
 //    And combiner, excecutes parser 2 only if parser 1 succeded, both values are returned.
 //
 // - 'Parser{T1} | Parser{T2}' -> Parser{Either{T1, T2}}'
@@ -72,7 +72,7 @@ fun timecodeParser() -> Parser{Duration}
 fun timingParser() -> Parser{Timing}
   (
     timecodeParser() & (matchParser(" --> ") >> timecodeParser())
-  ).map(construct{Duration, Duration, Timing}) ! Error("Invalid srt timing specification")
+  ).to(Type{Timing}()) ! Error("Invalid srt timing specification")
 
 // Parse all text until a empty line is encountered.
 fun subTextParser() -> Parser{string}
@@ -84,7 +84,7 @@ fun subParser() -> Parser{Subtitle}
   seq     = txtIntParser() << lineParser(ParseFlags.Optional) << whitespaceParser() ! Error("Invalid sequence number");
   timing  = timingParser() << lineParser(ParseFlags.Optional) << whitespaceParser();
   txt     = subTextParser();
-  (seq & timing & txt).map(construct{int, Timing, string, Subtitle})
+  (seq & timing & txt).to(Type{Subtitle}())
 
 // Parse a list of subtitles optionally followed by whitespace.
 fun subListParser() -> Parser{List{Subtitle}}

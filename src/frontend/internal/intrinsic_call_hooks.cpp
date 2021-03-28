@@ -4,6 +4,7 @@
 #include "internal/utilities.hpp"
 #include "parse/nodes.hpp"
 #include "prog/expr/node_call.hpp"
+#include "prog/expr/node_field.hpp"
 #include "prog/expr/node_lit_bool.hpp"
 #include "prog/expr/node_lit_int.hpp"
 #include "prog/expr/node_lit_string.hpp"
@@ -17,7 +18,7 @@ namespace {
 using OptNodeExpr = std::optional<prog::expr::NodePtr>;
 
 auto resolveTypeNameIntrinsic(
-    Context* ctx, const prog::sym::TypeSet& typeParams, const IntrinsicArgs& args) -> OptNodeExpr {
+    Context* ctx, const prog::sym::TypeSet& typeParams, IntrinsicArgs& args) -> OptNodeExpr {
 
   if (typeParams.getCount() != 1 || args.first.size() != 0) {
     return std::nullopt;
@@ -26,10 +27,8 @@ auto resolveTypeNameIntrinsic(
 }
 
 auto resolveFailIntrinsic(
-    Context* ctx,
-    bool allowActions,
-    const prog::sym::TypeSet& typeParams,
-    const IntrinsicArgs& args) -> OptNodeExpr {
+    Context* ctx, bool allowActions, const prog::sym::TypeSet& typeParams, IntrinsicArgs& args)
+    -> OptNodeExpr {
 
   if (!allowActions || typeParams.getCount() != 1 || args.first.size() != 0) {
     return std::nullopt;
@@ -39,7 +38,7 @@ auto resolveFailIntrinsic(
 }
 
 auto resolveStaticIntToIntIntrinsic(
-    Context* ctx, const prog::sym::TypeSet& typeParams, const IntrinsicArgs& args) -> OptNodeExpr {
+    Context* ctx, const prog::sym::TypeSet& typeParams, IntrinsicArgs& args) -> OptNodeExpr {
 
   if (typeParams.getCount() != 1 || args.first.size() != 0) {
     return std::nullopt;
@@ -48,8 +47,8 @@ auto resolveStaticIntToIntIntrinsic(
   return value ? prog::expr::litIntNode(*ctx->getProg(), *value) : OptNodeExpr{};
 }
 
-auto resolvedReflectStructFieldName(
-    Context* ctx, const prog::sym::TypeSet& typeParams, const IntrinsicArgs& args) -> OptNodeExpr {
+auto resolveReflectStructFieldName(
+    Context* ctx, const prog::sym::TypeSet& typeParams, IntrinsicArgs& args) -> OptNodeExpr {
 
   if (typeParams.getCount() != 2 || args.first.size() != 0) {
     return std::nullopt;
@@ -58,8 +57,40 @@ auto resolvedReflectStructFieldName(
   return name ? prog::expr::litStringNode(*ctx->getProg(), *name) : OptNodeExpr{};
 }
 
-auto resolvedReflectEnumKey(
-    Context* ctx, const prog::sym::TypeSet& typeParams, const IntrinsicArgs& args) -> OptNodeExpr {
+auto resolveReflectStructField(
+    Context* ctx, const prog::sym::TypeSet& typeParams, IntrinsicArgs& args) -> OptNodeExpr {
+
+  if (typeParams.getCount() != 2 || args.first.size() != 1) {
+    return std::nullopt;
+  }
+  const auto fieldId = reflectStructFieldId(ctx, typeParams[0], typeParams[1]);
+  if (!fieldId) {
+    return std::nullopt;
+  }
+  if (args.first[0]->getType() != typeParams[0]) {
+    return std::nullopt; // Expression does not resolve to the expected type.
+  }
+  return prog::expr::fieldExprNode(*ctx->getProg(), std::move(args.first[0]), *fieldId);
+}
+
+auto resolveReflectStructAlias(
+    Context* ctx, const prog::sym::TypeSet& typeParams, IntrinsicArgs& args) -> OptNodeExpr {
+
+  if (typeParams.getCount() != 2 || args.first.size() != 1) {
+    return std::nullopt;
+  }
+  const auto aliasFuncId = reflectStructAliasIntrinsic(ctx, typeParams[0], typeParams[1]);
+  if (!aliasFuncId) {
+    return std::nullopt;
+  }
+  if (args.first[0]->getType() != typeParams[0]) {
+    return std::nullopt; // Expression does not resolve to the expected type.
+  }
+  return prog::expr::callExprNode(*ctx->getProg(), *aliasFuncId, std::move(args.first));
+}
+
+auto resolveReflectEnumKey(Context* ctx, const prog::sym::TypeSet& typeParams, IntrinsicArgs& args)
+    -> OptNodeExpr {
 
   if (typeParams.getCount() != 2 || args.first.size() != 0) {
     return std::nullopt;
@@ -68,8 +99,8 @@ auto resolvedReflectEnumKey(
   return key ? prog::expr::litStringNode(*ctx->getProg(), *key) : OptNodeExpr{};
 }
 
-auto resolvedReflectEnumValue(
-    Context* ctx, const prog::sym::TypeSet& typeParams, const IntrinsicArgs& args) -> OptNodeExpr {
+auto resolveReflectEnumValue(
+    Context* ctx, const prog::sym::TypeSet& typeParams, IntrinsicArgs& args) -> OptNodeExpr {
 
   if (typeParams.getCount() != 2 || args.first.size() != 0) {
     return std::nullopt;
@@ -78,8 +109,8 @@ auto resolvedReflectEnumValue(
   return val ? prog::expr::litIntNode(*ctx->getProg(), *val) : OptNodeExpr{};
 }
 
-auto resolvedReflectDelegateIsAction(
-    Context* ctx, const prog::sym::TypeSet& typeParams, const IntrinsicArgs& args) -> OptNodeExpr {
+auto resolveReflectDelegateIsAction(
+    Context* ctx, const prog::sym::TypeSet& typeParams, IntrinsicArgs& args) -> OptNodeExpr {
 
   if (typeParams.getCount() != 1 || args.first.size() != 0) {
     return std::nullopt;
@@ -96,7 +127,7 @@ auto resolveMetaIntrinsic(
     bool allowActions,
     const lex::Token& nameToken,
     const std::optional<parse::TypeParamList>& typeParams,
-    const IntrinsicArgs& args) -> OptNodeExpr {
+    IntrinsicArgs& args) -> OptNodeExpr {
 
   assert(ctx);
 
@@ -117,16 +148,22 @@ auto resolveMetaIntrinsic(
     return resolveStaticIntToIntIntrinsic(ctx, *typeParamSet, args);
   }
   if (name == "reflect_struct_field_name") {
-    return resolvedReflectStructFieldName(ctx, *typeParamSet, args);
+    return resolveReflectStructFieldName(ctx, *typeParamSet, args);
+  }
+  if (name == "reflect_struct_field") {
+    return resolveReflectStructField(ctx, *typeParamSet, args);
+  }
+  if (name == "reflect_struct_alias") {
+    return resolveReflectStructAlias(ctx, *typeParamSet, args);
   }
   if (name == "reflect_enum_key") {
-    return resolvedReflectEnumKey(ctx, *typeParamSet, args);
+    return resolveReflectEnumKey(ctx, *typeParamSet, args);
   }
   if (name == "reflect_enum_value") {
-    return resolvedReflectEnumValue(ctx, *typeParamSet, args);
+    return resolveReflectEnumValue(ctx, *typeParamSet, args);
   }
   if (name == "reflect_delegate_is_action") {
-    return resolvedReflectDelegateIsAction(ctx, *typeParamSet, args);
+    return resolveReflectDelegateIsAction(ctx, *typeParamSet, args);
   }
   return std::nullopt;
 }

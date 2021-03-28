@@ -16,10 +16,6 @@ fun vec3Right() Vec3( 1,     0,      0)
 fun vec3Left()  Vec3(-1,     0,      0)
 fun vec3Nan()   Vec3(nan(),  nan(),  nan())
 
-// -- Conversions
-
-fun string(Vec3 v) "(" + v.x + ',' + v.y + ',' + v.z + ')'
-
 // -- Operatators
 
 fun [](Vec3 v, int idx) -> float

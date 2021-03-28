@@ -1,5 +1,6 @@
 import "type.ns"
 
+import "std/core.ns"
 import "std/diag.ns"
 
 // -- Constructors
@@ -48,6 +49,16 @@ fun string(int i, int minDigits)
 
 fun string(long i, int minDigits)
   i.string().padLeft(minDigits, '0')
+
+// -- Reflection based string conversions as fallback for all other types.
+
+fun string{T}(T val,         Meta{#8}     structTypeKind)     reflectStructToString(val)
+fun string{T}(T val,         Meta{#9}     unionTypeKind)      reflectUnionToString(val)
+fun string{T}(T val,         Meta{#10}    enumTypeKind)       reflectEnumKeyForVal(val) ?? ""
+fun string{T, TypeId}(T val, Meta{TypeId} fallbackTypeKind)   typeName{T}()
+
+fun string{T}(T val)
+  val.string(Meta{reflect_type_kind{T}}())
 
 // -- Operators
 

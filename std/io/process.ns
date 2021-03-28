@@ -27,15 +27,6 @@ struct ProcessResult =
 
 // -- Conversions
 
-fun string(ProcessId p)
-  "[" + p.id + "]"
-
-fun string(Signal s)
-  reflectEnumKeyForVal(s) ?? "Unknown"
-
-fun string(ExitCode p)
-  p.code.string()
-
 fun string(Process p)
   "(pid:" + p.id + ", " + p.cmdLine + ")"
 

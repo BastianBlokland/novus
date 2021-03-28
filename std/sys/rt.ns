@@ -64,9 +64,6 @@ enum PlatformError =
 
 // -- Conversions
 
-fun string(Platform p)
-  reflectEnumKeyForVal(p) ?? "Unknown"
-
 fun noinline string(PlatformError err)
   if err == PlatformError.Unknown                       -> "Unknown"
   if err == PlatformError.FeatureNetworkNotEnabled      -> "Network feature not enabled"

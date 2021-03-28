@@ -23,7 +23,7 @@ fun makeColorGrid(int width, int height, function{int, int, Color} getCol) -> Li
 // -- Conversions
 
 fun string(Image i)
-  "(" + i.width + "x" + i.height + ')'
+  "(" + i.width + 'x' + i.height + ')'
 
 // -- Portable Pixmap Format
 // https://en.wikipedia.org/wiki/Netpbm
@@ -41,7 +41,7 @@ fun ppmAsciiWriter()
     sizeWriter & newlineWriter()        &
     litWriter("255") & newlineWriter()  &
     listWriter(colorWriter, newlineWriter())
-  ).map(lambda (Image i) Pair(Pair(i.width, i.height), i.pixels))
+  ).to(Type{Image}())
 
 fun ppmBinaryWriter()
   sizeWriter  = txtIntWriter() & litWriter(' ') & txtIntWriter();
@@ -54,7 +54,7 @@ fun ppmBinaryWriter()
     sizeWriter & newlineWriter()        &
     litWriter("255") & newlineWriter()  &
     listWriter(colorWriter)
-  ).map(lambda (Image i) Pair(Pair(i.width, i.height), i.pixels))
+  ).to(Type{Image}())
 
 // -- Truevision TGA
 // https://en.wikipedia.org/wiki/Truevision_TGA
@@ -76,7 +76,7 @@ fun tgaWriter()
                     char(clamp(c.g, 0.0, 1.0) * 255 + .5),
                     char(clamp(c.r, 0.0, 1.0) * 255 + .5)))
   );
-  (headerWriter & listWriter(colorWriter)).map(lambda (Image i) Pair(i, i.pixels))
+  (headerWriter & listWriter(colorWriter)).map(lambda (Image i) Tuple(i, i.pixels))
 
 // -- Tests
 

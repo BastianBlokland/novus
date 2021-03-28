@@ -65,15 +65,10 @@ enum HttpStatusCode =
   NotExtended:                    510,
   NetworkAuthenticationRequired:  511
 
-// -- Conversions
-
-fun string(HttpStatusCode s)
-  reflectEnumKeyForVal(s) ?? ""
-
 // -- Writers
 
 // Example output: '200 OK'
 fun httpStatusCodeWriter()
   (
     stringWriter() & litWriter(' ') & stringWriter()
-  ).map(lambda (HttpStatusCode c) Pair(string(int(c)), string(c)))
+  ).map(lambda (HttpStatusCode c) Tuple(string(int(c)), string(c)))

@@ -13,8 +13,8 @@ namespace frontend {
 
 [[nodiscard]] auto errTypeAlreadyDeclared(prog::sym::SourceId src, const std::string& name) -> Diag;
 
-[[nodiscard]] auto errTypeTemplateAlreadyDeclared(prog::sym::SourceId src, const std::string& name)
-    -> Diag;
+[[nodiscard]] auto errTypeTemplateAlreadyDeclared(
+    prog::sym::SourceId src, const std::string& name, unsigned int typeParams) -> Diag;
 
 [[nodiscard]] auto errTypeNameIsReserved(prog::sym::SourceId src, const std::string& name) -> Diag;
 
@@ -41,8 +41,10 @@ errFieldNameConflictsWithTypeSubstitution(prog::sym::SourceId src, const std::st
     prog::sym::SourceId src, const std::string& fieldName, const std::string& typeName) -> Diag;
 
 [[nodiscard]] auto errDuplicateTypeInUnion(
-    prog::sym::SourceId src, const std::string& typeName, const std::string& substitutedTypeName)
-    -> Diag;
+    prog::sym::SourceId src,
+    const std::string& unionName,
+    const std::string& typeName,
+    const std::string& substitutedTypeName) -> Diag;
 
 [[nodiscard]] auto errNonUnionIsExpression(prog::sym::SourceId src) -> Diag;
 
@@ -240,5 +242,8 @@ errUndeclaredIndexOperator(prog::sym::SourceId src, const std::vector<std::strin
 [[nodiscard]] auto errNonOptArgFollowingOpt(prog::sym::SourceId src) -> Diag;
 
 [[nodiscard]] auto errCyclicOptArgInitializer(prog::sym::SourceId src) -> Diag;
+
+[[nodiscard]] auto
+errTooDeepRecursionInFunctionBody(prog::sym::SourceId src, const std::string& name) -> Diag;
 
 } // namespace frontend

@@ -41,13 +41,13 @@ auto UnionTemplate::setupInstance(TypeTemplateInst* instance) -> void {
   // Declare the struct in the program.
   instance->m_type = getCtx()->getProg()->declareUnion(mangledName);
 
-  // Define the union.
-  instance->m_success = defineType(getCtx(), &subTable, *instance->m_type, m_parseNode);
-
   // Keep track of some extra information about the type.
   getCtx()->declareTypeInfo(
       *instance->m_type,
       TypeInfo{getCtx(), getTemplateName(), m_parseNode.getSpan(), instance->getTypeParams()});
+
+  // Define the union.
+  instance->m_success = defineType(getCtx(), &subTable, *instance->m_type, m_parseNode);
 }
 
 auto UnionTemplate::inferSubType(const std::string& subType, const prog::sym::TypeId& inputType)

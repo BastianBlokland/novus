@@ -67,14 +67,15 @@ fun ?{T}(Parser{T} p)
     if r as ParseSuccess{T} suc   -> suc.state.success(Option{T}(suc.val))
   )
 
+// Construct a parser that produces a tuple of values.
 fun &{T1, T2}(Parser{T1} p1, Parser{T2} p2)
-  Parser(lambda (ParseState s) -> ParseResult{Pair{T1, T2}}
+  Parser(lambda (ParseState s)
     r1 = p1(s);
     if r1 as ParseFailure     f1    -> f1
     if r1 as ParseSuccess{T1} suc1  ->
       r2 = p2(suc1.state);
       if r2 as ParseFailure     f2    -> f2
-      if r2 as ParseSuccess{T2} suc2  -> suc2.state.success(Pair(suc1.val, suc2.val))
+      if r2 as ParseSuccess{T2} suc2  -> ParseResult(suc2.state.success(tupleAdd(suc1.val, suc2.val)))
   )
 
 fun |{T}(Parser{T} p1, Parser{T} p2)
@@ -109,10 +110,10 @@ fun <<{T1, T2}(Parser{T1} p1, Parser{T2} p2)
   )
 
 fun ::{T}(Parser{T} p1, Parser{T} p2)
-  (p1 & p2).map(lambda (Pair{T, T} p) p.first :: p.second :: List{T}())
+  (p1 & p2).map(lambda (Tuple{T, T} p) p.f1 :: p.f2 :: List{T}())
 
 fun ::{T}(Parser{T} p1, Parser{List{T}} p2)
- (p1 & p2).map(lambda (Pair{T, List{T}} p) p.first :: p.second)
+ (p1 & p2).map(lambda (Tuple{T, List{T}} p) p.f1 :: p.f2)
 
 fun =={T}(ParseResult{T} result, T val)
   result as ParseSuccess{T} suc && suc.val == val
@@ -188,21 +189,16 @@ fun map{T, TResult}(Parser{T} p, function{T, Either{TResult, Error}} func)
       if mR as TResult  val -> parseSuc.state.success(val)
   )
 
-fun map{T1, T2, TResult}(
-  Parser{Pair{T1, T2}} p, function{T1, T2, TResult} f)
-    p.map(lambda (Pair{T1, T2} pair) pair.map(f))
+fun to{T, TResult}(ParseResult{T} res, Type{TResult} t)
+  if res as ParseSuccess{T} suc   -> suc.state.success(suc.val.reflectCoerceToType(t))
+  if res as ParseFailure    fail  -> fail
 
-fun map{T1, T2, T3, TResult}(
-  Parser{Pair{Pair{T1, T2}, T3}} p, function{T1, T2, T3, TResult} f)
-    p.map(lambda (Pair{Pair{T1, T2}, T3} pair) pair.map(f))
-
-fun map{T1, T2, T3, T4, TResult}(
-  Parser{Pair{Pair{Pair{T1, T2}, T3}, T4}} p, function{T1, T2, T3, T4, TResult} f)
-    p.map(lambda (Pair{Pair{Pair{T1, T2}, T3}, T4} pair) pair.map(f))
-
-fun map{T1, T2, T3, T4, T5, TResult}(
-  Parser{Pair{Pair{Pair{Pair{T1, T2}, T3}, T4}, T5}} p, function{T1, T2, T3, T4, T5, TResult} f)
-    p.map(lambda (Pair{Pair{Pair{Pair{T1, T2}, T3}, T4}, T5} pair) pair.map(f))
+fun to{T, TResult}(Parser{T} p, Type{TResult} t)
+  Parser(lambda (ParseState s) -> ParseResult{TResult}
+    res = p(s);
+    if res as ParseSuccess{T} suc   -> suc.state.success(suc.val.reflectCoerceToType(t))
+    if res as ParseFailure    fail  -> fail
+  )
 
 // -- Basic parsers
 
@@ -512,7 +508,7 @@ assertEq(
 
 assertEq(
   p = takeParser(5) & takeParser(3);
-  p("helloworld"), Pair("hello", "wor"))
+  p("helloworld"), Tuple("hello", "wor"))
 
 assertIs(
   p = takeParser(5) & takeParser(3);
@@ -644,7 +640,7 @@ assertEq(
   inputs  = rangeList(0, 1337);
   hexStrs = inputs.map(lambda (int i) toHexString(i));
   parser  = txtHexParser();
-  makePair(hexStrs.map(lambda (string str) parser(str) ?? -1), inputs))
+  Tuple(hexStrs.map(lambda (string str) parser(str) ?? -1), inputs))
 
 assertIs(txtHexParser()(""), Type{ParseFailure}())
 assertIs(txtHexParser()("g"), Type{ParseFailure}())
@@ -739,20 +735,20 @@ assertEq((?txtIntParser())("-42"), Option(-42))
 
 assertEq(
   p = (?txtIntParser() & ?txtBoolParser()).map(
-    lambda (Option{int} a, Option{bool} b)
-      if b ?? false -> a ?? -1
-      else          -> -42
+    lambda (Tuple{Option{int}, Option{bool}} t)
+      if t.f2 ?? false  -> t.f1 ?? -1
+      else              -> -42
   );
   ("false" :: "" :: "1337" :: "1337false" :: "true" :: "1337true" :: "0true").map(lambda (string s) p(s) ?? -42),
   -42 :: -42 :: -42 :: -42 :: -1 :: 1337 :: 0)
 
 assertEq(
   p = (matchParser("Hello ") | matchParser("Greetings ")) & matchParser("World"); p("Hello World"),
-  Pair("Hello ", "World"))
+  Tuple("Hello ", "World"))
 
 assertEq(
   p = (matchParser("Hello ") | matchParser("Greetings ")) & matchParser("World"); p("Greetings World"),
-  Pair("Greetings ", "World"))
+  Tuple("Greetings ", "World"))
 
 assertIs(
   p = (matchParser("Hello ") | matchParser("Greetings ")) & matchParser("World"); p("HelloWorld"),
@@ -824,28 +820,28 @@ assertIs((txtBoolParser() :: txtBoolParser() :: txtBoolParser())("truefalse"), T
 assertIs((txtBoolParser() :: txtBoolParser() :: txtBoolParser())(""), Type{ParseFailure}())
 
 assertEq(
-  p = (txtBoolParser() & txtBoolParser()).map(lambda (bool a, bool b) a && b);
+  p = (txtBoolParser() & txtBoolParser()).map(lambda (Tuple{bool, bool} t) t.f1 && t.f2);
   inputs = "truefalse" :: "truetrue" :: "true" :: "";
   inputs.map(lambda (string s) p.run(s).toOption(Type{bool}())),
   false :: true)
 
 assertEq(
   p = (txtBoolParser() & txtBoolParser() & txtBoolParser()).map(
-    lambda (bool a, bool b, bool c) a && b && c);
+    lambda (Tuple{bool, bool, bool} t) t.f1 && t.f2 && t.f3);
   inputs = "truefalsetrue" :: "truetruetrue" :: "truefalse" :: "";
   inputs.map(lambda (string s) p.run(s).toOption(Type{bool}())),
   false :: true)
 
 assertEq(
   p = (txtBoolParser() & txtBoolParser() & txtBoolParser() & txtBoolParser()).map(
-    lambda (bool a, bool b, bool c, bool d) a && b && c && d);
+    lambda (Tuple{bool, bool, bool, bool} t) t.f1 && t.f2 && t.f3 && t.f4);
   inputs = "truefalsetruetrue" :: "truetruetruetrue" :: "truefalsetrue" :: "";
   inputs.map(lambda (string s) p.run(s).toOption(Type{bool}())),
   false :: true)
 
 assertEq(
   p = (txtBoolParser() & txtBoolParser() & txtBoolParser() & txtBoolParser() & txtBoolParser()).map(
-    lambda (bool a, bool b, bool c, bool d, bool e) a && b && c && d && e);
+    lambda (Tuple{bool, bool, bool, bool, bool} t) t.f1 && t.f2 && t.f3 && t.f4 && t.f5);
   inputs = "truefalsetruetruetrue" :: "truefalsetruetruetrue" :: "truetruetruetruetrue" :: "truefalsetruefalse" :: "truefalsetrue" :: "";
   inputs.map(lambda (string s) p.run(s).toOption(Type{bool}())),
   false :: false :: true)

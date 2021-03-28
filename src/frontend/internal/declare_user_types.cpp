@@ -27,15 +27,17 @@ DeclareUserTypes::DeclareUserTypes(
 }
 
 auto DeclareUserTypes::visit(const parse::StructDeclStmtNode& n) -> void {
-  // Get type name.
-  const auto name = getName(n.getId());
-  if (!validateTypeName(n.getId())) {
+
+  const auto name          = getName(n.getId());
+  const auto numTypeParams = n.getTypeSubs() ? n.getTypeSubs()->getCount() : 0;
+
+  if (!validateTypeName(name, n.getId().getSpan(), numTypeParams)) {
     return;
   }
 
   // If the type is a template then we don't declare it in the program yet but declare it in
   // the type-template table.
-  if (n.getTypeSubs()) {
+  if (numTypeParams) {
     auto typeSubs = getSubstitutionParams(m_ctx, *n.getTypeSubs());
     if (typeSubs) {
       m_ctx->getTypeTemplates()->declareStruct(m_ctx, name, std::move(*typeSubs), n);
@@ -52,15 +54,17 @@ auto DeclareUserTypes::visit(const parse::StructDeclStmtNode& n) -> void {
 }
 
 auto DeclareUserTypes::visit(const parse::UnionDeclStmtNode& n) -> void {
-  // Get type name.
-  const auto name = getName(n.getId());
-  if (!validateTypeName(n.getId())) {
+
+  const auto name          = getName(n.getId());
+  const auto numTypeParams = n.getTypeSubs() ? n.getTypeSubs()->getCount() : 0;
+
+  if (!validateTypeName(name, n.getId().getSpan(), numTypeParams)) {
     return;
   }
 
   // If the type is a template then we don't declare it in the program yet but declare it in
   // the type-template table.
-  if (n.getTypeSubs()) {
+  if (numTypeParams) {
     auto typeSubs = getSubstitutionParams(m_ctx, *n.getTypeSubs());
     if (typeSubs) {
       m_ctx->getTypeTemplates()->declareUnion(m_ctx, name, std::move(*typeSubs), n);
@@ -77,9 +81,9 @@ auto DeclareUserTypes::visit(const parse::UnionDeclStmtNode& n) -> void {
 }
 
 auto DeclareUserTypes::visit(const parse::EnumDeclStmtNode& n) -> void {
-  // Get type name.
+
   const auto name = getName(n.getId());
-  if (!validateTypeName(n.getId())) {
+  if (!validateTypeName(name, n.getId().getSpan(), 0)) {
     return;
   }
 
@@ -91,22 +95,27 @@ auto DeclareUserTypes::visit(const parse::EnumDeclStmtNode& n) -> void {
   m_ctx->declareTypeInfo(typeId, TypeInfo{m_ctx, name, n.getSpan()});
 }
 
-auto DeclareUserTypes::validateTypeName(const lex::Token& nameToken) -> bool {
-  const auto name = getName(nameToken);
-  if (m_ctx->getProg()->lookupType(name)) {
-    m_ctx->reportDiag(errTypeAlreadyDeclared, nameToken.getSpan(), name);
-    return false;
-  }
-  if (m_ctx->getTypeTemplates()->hasType(name)) {
-    m_ctx->reportDiag(errTypeTemplateAlreadyDeclared, nameToken.getSpan(), name);
-    return false;
+auto DeclareUserTypes::validateTypeName(
+    const std::string& name, input::Span span, unsigned int numTypeParams) -> bool {
+  if (numTypeParams) {
+    // Templated type, check for another templates with the same name and amount of params.
+    if (m_ctx->getTypeTemplates()->hasType(name, numTypeParams)) {
+      m_ctx->reportDiag(errTypeTemplateAlreadyDeclared, span, name, numTypeParams);
+      return false;
+    }
+  } else {
+    // Non-templated type, check for other (non-templated) types with the same name.
+    if (m_ctx->getProg()->lookupType(name)) {
+      m_ctx->reportDiag(errTypeAlreadyDeclared, span, name);
+      return false;
+    }
   }
   if (isReservedTypeName(name)) {
-    m_ctx->reportDiag(errTypeNameIsReserved, nameToken.getSpan(), name);
+    m_ctx->reportDiag(errTypeNameIsReserved, span, name);
     return false;
   }
   if (m_ctx->getProg()->hasFunc(name)) {
-    m_ctx->reportDiag(errTypeNameConflictsWithFunc, nameToken.getSpan(), name);
+    m_ctx->reportDiag(errTypeNameConflictsWithFunc, span, name);
     return false;
   }
   return true;

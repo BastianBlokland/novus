@@ -20,7 +20,7 @@ struct HttpResp =
 fun httpRespWriter()
   (
     httpRespHeaderWriter() & newlineWriter() & newlineWriter() & stringWriter()
-  ).map(lambda (HttpResp r) Pair(r.header, r.content))
+  ).to(Type{HttpResp}())
 
 // -- Functions
 

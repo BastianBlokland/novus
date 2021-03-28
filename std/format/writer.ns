@@ -66,9 +66,49 @@ fun &{T}(Writer{None} w1, Writer{T} w2) -> Writer{T}
     w2(w1(s, None()), val)
   )
 
-fun &{T1, T2}(Writer{T1} w1, Writer{T2} w2) -> Writer{Pair{T1, T2}}
-  Writer(lambda (WriterState s, Pair{T1, T2} val)
-    w2(w1(s, val.first), val.second)
+fun &{T1, T2}(Writer{T1} w1, Writer{T2} w2)
+  Writer(lambda (WriterState s, Tuple{T1, T2} val)
+    w2(w1(s, val.f1), val.f2)
+  )
+
+fun &{T1, T2, T3}(Writer{Tuple{T1, T2}} w1, Writer{T3} w2)
+  Writer(lambda (WriterState s, Tuple{T1, T2, T3} val)
+    w2(w1(s, Tuple(val.f1, val.f2)), val.f3)
+  )
+
+fun &{T1, T2, T3, T4}(Writer{Tuple{T1, T2, T3}} w1, Writer{T4} w2)
+  Writer(lambda (WriterState s, Tuple{T1, T2, T3, T4} val)
+    w2(w1(s, Tuple(val.f1, val.f2, val.f3)), val.f4)
+  )
+
+fun &{T1, T2, T3, T4, T5}(Writer{Tuple{T1, T2, T3, T4}} w1, Writer{T5} w2)
+  Writer(lambda (WriterState s, Tuple{T1, T2, T3, T4, T5} val)
+    w2(w1(s, Tuple(val.f1, val.f2, val.f3, val.f4)), val.f5)
+  )
+
+fun &{T1, T2, T3, T4, T5, T6}(Writer{Tuple{T1, T2, T3, T4, T5}} w1, Writer{T6} w2)
+  Writer(lambda (WriterState s, Tuple{T1, T2, T3, T4, T5, T6} val)
+    w2(w1(s, Tuple(val.f1, val.f2, val.f3, val.f4, val.f5)), val.f6)
+  )
+
+fun &{T1, T2, T3, T4, T5, T6, T7}(Writer{Tuple{T1, T2, T3, T4, T5, T6}} w1, Writer{T7} w2)
+  Writer(lambda (WriterState s, Tuple{T1, T2, T3, T4, T5, T6, T7} val)
+    w2(w1(s, Tuple(val.f1, val.f2, val.f3, val.f4, val.f5, val.f6)), val.f7)
+  )
+
+fun &{T1, T2, T3, T4, T5, T6, T7, T8}(Writer{Tuple{T1, T2, T3, T4, T5, T6, T7}} w1, Writer{T8} w2)
+  Writer(lambda (WriterState s, Tuple{T1, T2, T3, T4, T5, T6, T7, T8} val)
+    w2(w1(s, Tuple(val.f1, val.f2, val.f3, val.f4, val.f5, val.f6, val.f7)), val.f8)
+  )
+
+fun &{T1, T2, T3, T4, T5, T6, T7, T8, T9}(Writer{Tuple{T1, T2, T3, T4, T5, T6, T7, T8}} w1, Writer{T9} w2)
+  Writer(lambda (WriterState s, Tuple{T1, T2, T3, T4, T5, T6, T7, T8, T9} val)
+    w2(w1(s, Tuple(val.f1, val.f2, val.f3, val.f4, val.f5, val.f6, val.f7, val.f8)), val.f9)
+  )
+
+fun &{T1, T2, T3, T4, T5, T6, T7, T8, T9, T10}(Writer{Tuple{T1, T2, T3, T4, T5, T6, T7, T8, T9}} w1, Writer{T10} w2)
+  Writer(lambda (WriterState s, Tuple{T1, T2, T3, T4, T5, T6, T7, T8, T9, T10} val)
+    w2(w1(s, Tuple(val.f1, val.f2, val.f3, val.f4, val.f5, val.f6, val.f7, val.f8, val.f9)), val.f10)
   )
 
 fun >>{T}(Writer{T} w1, Writer{T} w2) -> Writer{T}
@@ -109,6 +149,11 @@ fun write(WriterState s, char c)
 fun map{T, TResult}(Writer{TResult} w, function{T, TResult} func)
   Writer(lambda (WriterState s, T v)
     w(s, func(v))
+  )
+
+fun to{Target, WriterT}(Writer{WriterT} w, Type{Target} t)
+  Writer(lambda (WriterState s, Target v)
+    w(s, reflectCoerceToType(v, Type{WriterT}()))
   )
 
 // -- Writers
@@ -307,11 +352,11 @@ assertEq((?(litWriter("hello: ") & stringWriter()))(Option{string}()), "")
 
 assertEq(
   w = litWriter("name: ") & stringWriter() & ?(litWriter(", age: ") & txtIntWriter());
-  w(Pair("John", Option{int}()))  , "name: John")
+  w(Tuple("John", Option{int}()))  , "name: John")
 
 assertEq(
   w = litWriter("name: ") & stringWriter() & ?(litWriter(", age: ") & txtIntWriter());
-  w(Pair("Jane", Option{int}(42))), "name: Jane, age: 42")
+  w(Tuple("Jane", Option{int}(42))), "name: Jane, age: 42")
 
 assertEq(listWriter(txtIntWriter())(List{int}()), "")
 assertEq(listWriter(txtIntWriter())(42 :: List{int}()), "42")
@@ -385,8 +430,8 @@ assertEq(enumValWriter(Type{Month}())(Month(42)), "42")
 
 assertEq(
   w = stringWriter() & txtIntWriter();
-  w(Pair("hello", 42)), "hello42")
+  w(Tuple("hello", 42)), "hello42")
 
 assertEq(
   w = stringWriter() & litWriter(' ') & txtIntWriter();
-  w(Pair("hello", 42)), "hello 42")
+  w(Tuple("hello", 42)), "hello 42")

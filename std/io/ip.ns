@@ -57,9 +57,9 @@ fun ipV4TxtParser() -> Parser{IpV4Address}
     txtPosIntParser() << matchParser('.') &
     txtPosIntParser() << matchParser('.') &
     txtPosIntParser()
-  ).map(lambda (int a, int b, int c, int d) -> Either{IpV4Address, Error}
-      if a < 256 && b < 256 && c < 256 && d < 256 -> IpV4Address(char(a), char(b), char(c), char(d))
-      else                                        -> Error("IpV4 segment is outside of the valid range")
+  ).map(lambda (Tuple{int, int, int, int} t) -> Either{IpV4Address, Error}
+      if t.f1 < 256 && t.f2 < 256 && t.f3 < 256 && t.f4 < 256 -> IpV4Address(char(t.f1), char(t.f2), char(t.f3), char(t.f4))
+      else                                                    -> Error("IpV4 segment is outside of the valid range")
     )
 
 fun ipV6TxtParser() -> Parser{IpV6Address}
@@ -82,9 +82,9 @@ fun ipV6TxtParser() -> Parser{IpV6Address}
                                                               canonical[7] ?? 0)
   )
 
-fun ipTxtParser() -> Parser{IpAddress}
-  ipV4TxtParser().map(construct{IpV4Address, IpAddress}) |
-  ipV6TxtParser().map(construct{IpV6Address, IpAddress}) ! Error("Invalid ip-address")
+fun ipTxtParser()
+  ipV4TxtParser().to(Type{IpAddress}()) |
+  ipV6TxtParser().to(Type{IpAddress}()) ! Error("Invalid ip-address")
 
 fun ipV4BinParser() -> Parser{IpV4Address}
   takeParser(4).map(lambda (string s) IpV4Address(s[0], s[1], s[2], s[3]))
@@ -101,9 +101,9 @@ fun ipV6BinParser() -> Parser{IpV6Address}
                   parseInt16(Endianness.Big, s[14], s[15]))
   )
 
-fun ipBinParser() -> Parser{IpAddress}
-  ipV6BinParser().map(construct{IpV6Address, IpAddress}) |
-  ipV4BinParser().map(construct{IpV4Address, IpAddress}) ! Error("Invalid ip-address")
+fun ipBinParser()
+  ipV6BinParser().to(Type{IpAddress}()) |
+  ipV4BinParser().to(Type{IpAddress}()) ! Error("Invalid ip-address")
 
 // -- Writers
 
@@ -197,11 +197,11 @@ assertIs(ipV6TxtParser()("q1::0"), Type{ParseFailure}())
 
 assertEq(
   p = ipTxtParser() & newlineParser() >> ipTxtParser();
-  p("::\n::"), makePair(IpAddress(ipV6Unspecified()), IpAddress(ipV6Unspecified())))
+  p("::\n::"), Tuple(IpAddress(ipV6Unspecified()), IpAddress(ipV6Unspecified())))
 
 assertEq(
   p = ipTxtParser() & newlineParser() >> ipTxtParser();
-  p("127.0.0.1\n::1"), makePair(IpAddress(ipV4Loopback()), IpAddress(ipV6Loopback())))
+  p("127.0.0.1\n::1"), Tuple(IpAddress(ipV4Loopback()), IpAddress(ipV6Loopback())))
 
 assertEq(ipV4TxtWriter()(IpV4Address(char(1), char(2), char(3), char(4))), "1.2.3.4")
 assertEq(ipV4TxtWriter()(IpV4Address(char(127), char(0), char(0), char(1))), "127.0.0.1")

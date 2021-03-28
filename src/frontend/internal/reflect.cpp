@@ -1,4 +1,6 @@
 #include "internal/reflect.hpp"
+#include "internal/utilities.hpp"
+#include <cassert>
 
 namespace frontend::internal {
 
@@ -76,6 +78,46 @@ auto reflectStructFieldType(
     return std::nullopt; // Not a struct or out of bounds field index.
   }
   return structDef->getFields()[index].getType();
+}
+
+auto reflectStructFieldId(
+    Context* ctx, prog::sym::TypeId structType, prog::sym::TypeId indexType) noexcept
+    -> std::optional<prog::sym::FieldId> {
+
+  const auto* structDef = getStructDef(ctx, structType);
+  auto index            = ctx->getStaticIntTable()->getValue(indexType).value_or(-1);
+  if (!structDef || index < 0 || index >= static_cast<int>(structDef->getFields().getCount())) {
+    return std::nullopt; // Not a struct or out of bounds field index.
+  }
+  return structDef->getFields()[index].getId();
+}
+
+[[nodiscard]] auto reflectStructAreEquivalentIntrinsic(
+    Context* ctx, prog::sym::TypeId structX, prog::sym::TypeId structY) noexcept
+    -> prog::sym::TypeId {
+  auto& staticInts = *ctx->getStaticIntTable();
+  return staticInts.getType(ctx, ctx->getProg()->areStructsEquivalent(structX, structY));
+}
+
+auto reflectStructAliasIntrinsic(
+    Context* ctx, prog::sym::TypeId input, prog::sym::TypeId output) noexcept
+    -> std::optional<prog::sym::FuncId> {
+
+  if (!ctx->getProg()->areStructsEquivalent(input, output)) {
+    return std::nullopt;
+  }
+
+  // TODO: We should make a proper table for this, instead of just relying on the mangled names.
+
+  auto intrinsicName = std::string{"__alias_struct_"};
+  intrinsicName += getName(*ctx, input);
+  intrinsicName += std::string{"_"};
+  intrinsicName += getName(*ctx, output);
+
+  if (const auto intrinsicId = ctx->getProg()->lookupIntrinsic(intrinsicName, {input})) {
+    return intrinsicId;
+  }
+  return ctx->getProg()->declareStructAliasIntrinsic(std::move(intrinsicName), input, output);
 }
 
 auto reflectUnionCount(Context* ctx, prog::sym::TypeId unionType) noexcept
