@@ -32,6 +32,7 @@ public:
   [[nodiscard]] auto getNumOptArgs() const -> unsigned int;
   [[nodiscard]] auto getMinArgumentCount() const -> unsigned int;
   [[nodiscard]] auto getArgumentCount() const -> unsigned int;
+  [[nodiscard]] auto getTemplatedArgumentCount() const -> unsigned int;
 
   [[nodiscard]] auto getRetType(const prog::sym::TypeSet& typeParams)
       -> std::optional<prog::sym::TypeId>;
