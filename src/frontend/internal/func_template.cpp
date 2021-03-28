@@ -10,6 +10,28 @@
 
 namespace frontend::internal {
 
+namespace {
+
+auto isParseTypeTemplated(
+    const parse::Type& parseType, const std::vector<std::string>& typeSubs) noexcept {
+  const auto typeName = getName(parseType.getId());
+  for (const auto& sub : typeSubs) {
+    if (typeName == sub) {
+      return true;
+    }
+  }
+  if (parseType.getParamList()) {
+    for (const auto& param : *parseType.getParamList()) {
+      if (isParseTypeTemplated(param, typeSubs)) {
+        return true;
+      }
+    }
+  }
+  return false;
+}
+
+} // namespace
+
 FuncTemplate::FuncTemplate(
     Context* ctx,
     std::string name,
@@ -46,6 +68,16 @@ auto FuncTemplate::getMinArgumentCount() const -> unsigned int {
 
 auto FuncTemplate::getArgumentCount() const -> unsigned int {
   return m_parseNode->getArgList().getCount();
+}
+
+auto FuncTemplate::getTemplatedArgumentCount() const -> unsigned int {
+  auto result = 0u;
+  for (const auto& parseArg : m_parseNode->getArgList()) {
+    if (isParseTypeTemplated(parseArg.getType(), m_typeSubs)) {
+      ++result;
+    }
+  }
+  return result;
 }
 
 auto FuncTemplate::getRetType(const prog::sym::TypeSet& typeParams)
@@ -115,9 +147,17 @@ auto FuncTemplate::inferTypeParams(const prog::sym::TypeSet& argTypes)
     typeParams.push_back(*inferredType);
   }
 
+  /* The complexity of an infer result is used for overloaded function templates to determine the
+   * best match (with the lowest complexity).
+   *
+   * The complexity is determined by the amount of templated arguments to the function + the
+   * complexity of the inferred substitutions (deeper nested types have higher complexity).
+   */
+
   InferResult result;
-  result.types      = prog::sym::TypeSet{std::move(typeParams)};
-  result.complexity = getComplexity(*m_ctx, result.types);
+  result.types = prog::sym::TypeSet{std::move(typeParams)};
+  result.complexity =
+      static_cast<int>(getTemplatedArgumentCount()) + getComplexity(*m_ctx, result.types);
   return result;
 }
 
