@@ -125,7 +125,7 @@ fun pathRelParser{UntilT}(Parser{UntilT} until = endParser()) -> Parser{PathRela
       else              -> Error("Invalid path segment")
   );
   flags         = ParseFlags.AllowTrailingSeperator;
-  manyUntilParser(segParser, sepParser, until, flags).map(construct{List{string}, PathRelative})
+  manyUntilParser(segParser, sepParser, until, flags).to(Type{PathRelative}())
 
 fun pathAbsParser{UntilT}(Parser{UntilT} until = endParser()) -> Parser{PathAbsolute}
   unixRoot    = matchParser("/");
@@ -133,11 +133,11 @@ fun pathAbsParser{UntilT}(Parser{UntilT} until = endParser()) -> Parser{PathAbso
     .map(lambda (char drive) drive.toLower().string() + ":/");
   (
     (unixRoot | windowsRoot) & pathRelParser(until)
-  ).toStruct(Type{PathAbsolute}())
+  ).to(Type{PathAbsolute}())
 
 fun pathParser{UntilT}(Parser{UntilT} until = endParser()) -> Parser{Path}
-  pathAbsParser(until).map(construct{PathAbsolute, Path}) |
-  pathRelParser(until).map(construct{PathRelative, Path}) ! Error("Invalid path")
+  pathAbsParser(until).to(Type{Path}()) |
+  pathRelParser(until).to(Type{Path}()) ! Error("Invalid path")
 
 // -- Writers
 
@@ -147,7 +147,7 @@ fun pathRelWriter() -> Writer{PathRelative}
 fun pathAbsWriter() -> Writer{PathAbsolute}
   (
     stringWriter() & pathRelWriter()
-  ).fromStruct(Type{PathAbsolute}())
+  ).to(Type{PathAbsolute}())
 
 fun pathWriter() -> Writer{Path}
   absWriter = pathAbsWriter();

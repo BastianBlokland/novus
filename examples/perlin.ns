@@ -59,7 +59,7 @@ fun getContent(Size size, int itr, int numItrs, Duration t, Settings s) -> Scree
 fun cellWriter() -> Writer{CellContent}
   (
     ttyStyleFgColorWriter() & stringWriter()
-  ).fromStruct(Type{CellContent}())
+  ).to(Type{CellContent}())
 
 fun rowWriter() -> Writer{RowContent}
   (

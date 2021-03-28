@@ -41,7 +41,7 @@ fun ppmAsciiWriter()
     sizeWriter & newlineWriter()        &
     litWriter("255") & newlineWriter()  &
     listWriter(colorWriter, newlineWriter())
-  ).fromStruct(Type{Image}())
+  ).to(Type{Image}())
 
 fun ppmBinaryWriter()
   sizeWriter  = txtIntWriter() & litWriter(' ') & txtIntWriter();
@@ -54,7 +54,7 @@ fun ppmBinaryWriter()
     sizeWriter & newlineWriter()        &
     litWriter("255") & newlineWriter()  &
     listWriter(colorWriter)
-  ).fromStruct(Type{Image}())
+  ).to(Type{Image}())
 
 // -- Truevision TGA
 // https://en.wikipedia.org/wiki/Truevision_TGA

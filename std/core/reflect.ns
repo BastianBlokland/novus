@@ -161,6 +161,27 @@ fun reflectLazy{Lazy}(Type{Lazy} t, ReflectCtx rc = ReflectCtx()) -> LazyInfo
     reflect(reflectLazyType(t), rc),
     reflectLazyIsAction(t))
 
+// -- Conversion utilities
+
+// ---- Attempt to convert a value to a type.
+// For equivalent structs we alias the types, otherwise we attempt to call a constructor for the
+// target type.
+
+fun reflectCoerceToType{T, Target}(T val, Type{Target} tgt, Meta{#8} structTypeKind, Meta{#0} nonEquivalent)
+  Target(val)
+
+fun reflectCoerceToType{T, Target}(T val, Type{Target} tgt, Meta{#8} structTypeKind, Meta{#1} equivalent)
+  reflectStructAlias(val, tgt)
+
+fun reflectCoerceToType{T, Target}(T val, Type{Target} tgt, Meta{#8} structTypeKind)
+  reflectCoerceToType(val, tgt, structTypeKind, reflectAreStructsEquivalent(Type{T}(), tgt))
+
+fun reflectCoerceToType{T, Target, TypeId}(T val, Type{Target} tgt, Meta{TypeId} fallbackTypeKind)
+  Target(val)
+
+fun reflectCoerceToType{T, Target}(T val, Type{Target} t) -> Target
+  reflectCoerceToType(val, t, Meta{reflect_type_kind{T}}())
+
 // -- Struct Utilities
 
 // ---- Lookup struct field count
@@ -340,7 +361,7 @@ fun primInfoWriter()
 fun structInfoWriter(Writer{TypeInfo} typeInfoWriter = typeInfoWriter())
   fieldWriter = (
     stringWriter() & litWriter(": ") & typeInfoWriter
-  ).fromStruct(Type{StructField}());
+  ).to(Type{StructField}());
   (
     namedTypeInfoWriter() & basicListWriter(fieldWriter)
   ).map(lambda (StructInfo s) Tuple(s.name, "Struct", s.fields))
@@ -353,7 +374,7 @@ fun unionInfoWriter(Writer{TypeInfo} typeInfoWriter = typeInfoWriter())
 fun enumInfoWriter()
   entryWriter = (
     stringWriter() & litWriter(": ") & txtIntWriter()
-  ).fromStruct(Type{EnumEntry}());
+  ).to(Type{EnumEntry}());
   (
     namedTypeInfoWriter() & basicListWriter(entryWriter)
   ).map(lambda (EnumInfo e) Tuple(e.name, "Enum", e.entries))
@@ -465,6 +486,11 @@ assertEq(reflect(Type{lazy{int}}()), LazyInfo(PrimInfo(PrimType.Int), false))
 assertEq(reflect(Type{lazy_action{int}}()), LazyInfo(PrimInfo(PrimType.Int), true))
 
 assertEq(reflect(Type{#42}()), StaticIntInfo(42))
+
+// -- Type conversion utility tests
+
+assertEq(reflectCoerceToType(Duration(42), Type{Timestamp}()), Timestamp(42))
+assertEq(reflectCoerceToType(42,           Type{Timestamp}()), Timestamp(42))
 
 // -- Struct utility tests
 

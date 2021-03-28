@@ -189,10 +189,14 @@ fun map{T, TResult}(Parser{T} p, function{T, Either{TResult, Error}} func)
       if mR as TResult  val -> parseSuc.state.success(val)
   )
 
-fun toStruct{T, TResult}(Parser{T} p, Type{TResult} t)
+fun to{T, TResult}(ParseResult{T} res, Type{TResult} t)
+  if res as ParseSuccess{T} suc   -> suc.state.success(suc.val.reflectCoerceToType(t))
+  if res as ParseFailure    fail  -> fail
+
+fun to{T, TResult}(Parser{T} p, Type{TResult} t)
   Parser(lambda (ParseState s) -> ParseResult{TResult}
     res = p(s);
-    if res as ParseSuccess{T} suc   -> suc.state.success(suc.val.tupleToStruct(t))
+    if res as ParseSuccess{T} suc   -> suc.state.success(suc.val.reflectCoerceToType(t))
     if res as ParseFailure    fail  -> fail
   )
 

@@ -119,7 +119,7 @@ fun ttyCursorColWriter() -> Writer{int}
 fun ttyCursorPosWriter() -> Writer{TtyCursorPos}
   (
     litWriter(ttyEsc() + "[") & txtIntWriter() & litWriter(';') & txtIntWriter() & litWriter('H')
-  ).fromStruct(Type{TtyCursorPos}())
+  ).to(Type{TtyCursorPos}())
 
 fun ttyLitCursorPosWriter(TtyCursorPos p) -> Writer{None}
   litWriter(ttyEsc() + "[" + p.row.string() + ';' + p.col.string() + 'H')

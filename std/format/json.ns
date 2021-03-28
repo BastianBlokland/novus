@@ -106,14 +106,14 @@ fun jsonObjectParser(Parser{JsonValue} valParser = lazyParser(lazy jsonValuePars
   comma     = matchParser(',')    << whitespaceParser() !! Error("Expected comma or end of object");
   close     = matchParser('}')    << whitespaceParser();
   keyValue  = (key << colon) & value;
-  (open >> manyUntilParser(keyValue, comma, close) << close).map(construct{List{Tuple{string, JsonValue}}, JsonObject})
+  (open >> manyUntilParser(keyValue, comma, close) << close).to(Type{JsonObject}())
 
 fun jsonArrayParser(Parser{JsonValue} valParser = lazyParser(lazy jsonValueParser()))
   open  = matchParser('[')    << whitespaceParser();
   value = valParser           << whitespaceParser();
   comma = matchParser(',')    << whitespaceParser() !! Error("Expected comma or end of array");
   close = matchParser(']')    << whitespaceParser();
-  (open >> manyUntilParser(value, comma, close) << close).map(construct{List{JsonValue}, JsonArray})
+  (open >> manyUntilParser(value, comma, close) << close).to(Type{JsonArray}())
 
 fun jsonValueParser()
   objectP = jsonObjectParser();
@@ -123,14 +123,14 @@ fun jsonValueParser()
   boolP   = jsonBoolParser();
   numberP = jsonNumberParser();
   Parser(lambda (ParseState s)
-    if s[0] == '{'    -> objectP(s) .map(construct{JsonObject, JsonValue})
-    if s[0] == '['    -> arrayP(s)  .map(construct{JsonArray, JsonValue})
-    if s[0] == '"'    -> stringP(s) .map(construct{string, JsonValue})
-    if s[0] == 'n'    -> nullP(s)   .map(construct{JsonNull, JsonValue})
-    if s[0] == 't'    -> boolP(s)   .map(construct{bool, JsonValue})
-    if s[0] == 'f'    -> boolP(s)   .map(construct{bool, JsonValue})
-    if s[0].isDigit() -> numberP(s) .map(construct{float, JsonValue})
-    if s[0] == '-'    -> numberP(s) .map(construct{float, JsonValue})
+    if s[0] == '{'    -> objectP(s) .to(Type{JsonValue}())
+    if s[0] == '['    -> arrayP(s)  .to(Type{JsonValue}())
+    if s[0] == '"'    -> stringP(s) .to(Type{JsonValue}())
+    if s[0] == 'n'    -> nullP(s)   .to(Type{JsonValue}())
+    if s[0] == 't'    -> boolP(s)   .to(Type{JsonValue}())
+    if s[0] == 'f'    -> boolP(s)   .to(Type{JsonValue}())
+    if s[0].isDigit() -> numberP(s) .to(Type{JsonValue}())
+    if s[0] == '-'    -> numberP(s) .to(Type{JsonValue}())
     if s[0] == '\0'   -> s.failure(Error("Missing json value"))
     else              -> s.failure(
       Error("Invalid start of json value: '" + s[0].escapeForPrinting() + "'"))

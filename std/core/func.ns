@@ -77,24 +77,6 @@ fun !{T1, T2, T3, T4}(function{T1, T2, T3, T4, bool} pred)
 
 // -- Functions
 
-fun construct{TR}()
-  TR()
-
-fun construct{T1, TR}(T1 a)
-  TR(a)
-
-fun construct{T1, T2, TR}(T1 a, T2 b)
-  TR(a, b)
-
-fun construct{T1, T2, T3, TR}(T1 a, T2 b, T3 c)
-  TR(a, b, c)
-
-fun construct{T1, T2, T3, T4, TR}(T1 a, T2 b, T3 c, T4 d)
-  TR(a, b, c, d)
-
-fun construct{T1, T2, T3, T4, T5, TR}(T1 a, T2 b, T3 c, T4 d, T5 e)
-  TR(a, b, c, d, e)
-
 fun curry{TC, TR}(function{TC, TR} func, TC arg)
   lambda () func(arg)
 

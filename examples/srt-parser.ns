@@ -72,7 +72,7 @@ fun timecodeParser() -> Parser{Duration}
 fun timingParser() -> Parser{Timing}
   (
     timecodeParser() & (matchParser(" --> ") >> timecodeParser())
-  ).toStruct(Type{Timing}()) ! Error("Invalid srt timing specification")
+  ).to(Type{Timing}()) ! Error("Invalid srt timing specification")
 
 // Parse all text until a empty line is encountered.
 fun subTextParser() -> Parser{string}
@@ -84,7 +84,7 @@ fun subParser() -> Parser{Subtitle}
   seq     = txtIntParser() << lineParser(ParseFlags.Optional) << whitespaceParser() ! Error("Invalid sequence number");
   timing  = timingParser() << lineParser(ParseFlags.Optional) << whitespaceParser();
   txt     = subTextParser();
-  (seq & timing & txt).toStruct(Type{Subtitle}())
+  (seq & timing & txt).to(Type{Subtitle}())
 
 // Parse a list of subtitles optionally followed by whitespace.
 fun subListParser() -> Parser{List{Subtitle}}

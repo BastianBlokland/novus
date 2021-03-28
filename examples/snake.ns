@@ -280,13 +280,12 @@ fun litAtWriter(string lit) -> Writer{I2}
   setCursorWriter() & litWriter(lit)
 
 fun atWriter() -> Writer{DrawInst}
-  (setCursorWriter() & stringWriter()).fromStruct(Type{DrawInst}())
+  (setCursorWriter() & stringWriter()).to(Type{DrawInst}())
 
 fun setCursorWriter() -> Writer{I2}
-  ttyCursorPosWriter().map(lambda (I2 p) TtyCursorPos(p.y, p.x))
+  ttyCursorPosWriter().to(Type{I2}())
 
 // --- Entry point
-
 
 act main()
   c = consoleOpen().failOnError();

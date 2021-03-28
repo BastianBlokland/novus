@@ -25,7 +25,7 @@ fun userParser()
   emailEnd    = matchParser('>');
   (
     untilParser(emailStart).trim() & emailStart >> untilParser(emailEnd) << emailEnd
-  ).toStruct(Type{User}())
+  ).to(Type{User}())
 
 // Input example:
 // '
@@ -42,7 +42,7 @@ fun commitParser()
     whitespaceParser()                                          >> timeUnixParser()   &
     untilParser(emptyLineParser()) >> emptyLineParser()         >> lineParser()       &
     whitespaceParser()                                          >> allParser().trim()
-  ).toStruct(Type{Commit}())
+  ).to(Type{Commit}())
 
 // -- Actions
 

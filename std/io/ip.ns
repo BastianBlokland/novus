@@ -82,9 +82,9 @@ fun ipV6TxtParser() -> Parser{IpV6Address}
                                                               canonical[7] ?? 0)
   )
 
-fun ipTxtParser() -> Parser{IpAddress}
-  ipV4TxtParser().map(construct{IpV4Address, IpAddress}) |
-  ipV6TxtParser().map(construct{IpV6Address, IpAddress}) ! Error("Invalid ip-address")
+fun ipTxtParser()
+  ipV4TxtParser().to(Type{IpAddress}()) |
+  ipV6TxtParser().to(Type{IpAddress}()) ! Error("Invalid ip-address")
 
 fun ipV4BinParser() -> Parser{IpV4Address}
   takeParser(4).map(lambda (string s) IpV4Address(s[0], s[1], s[2], s[3]))
@@ -101,9 +101,9 @@ fun ipV6BinParser() -> Parser{IpV6Address}
                   parseInt16(Endianness.Big, s[14], s[15]))
   )
 
-fun ipBinParser() -> Parser{IpAddress}
-  ipV6BinParser().map(construct{IpV6Address, IpAddress}) |
-  ipV4BinParser().map(construct{IpV4Address, IpAddress}) ! Error("Invalid ip-address")
+fun ipBinParser()
+  ipV6BinParser().to(Type{IpAddress}()) |
+  ipV4BinParser().to(Type{IpAddress}()) ! Error("Invalid ip-address")
 
 // -- Writers
 

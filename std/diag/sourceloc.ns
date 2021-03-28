@@ -28,7 +28,7 @@ fun getSourceLoc(
 fun sourceLocWriter() -> Writer{SourceLoc}
   (
     stringWriter() & litWriter(':') & txtIntWriter() & litWriter(':') & txtIntWriter()
-  ).fromStruct(Type{SourceLoc}())
+  ).to(Type{SourceLoc}())
 
 // -- Tests
 

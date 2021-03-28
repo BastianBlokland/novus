@@ -100,7 +100,7 @@ fun assertErrMsgWriter()
     litWriter("[") &
       stringWriter() & litWriter(" Ln ") & txtIntWriter() & litWriter(", Col ") & txtIntWriter() &
     litWriter("]")
-  ).fromStruct(Type{SourceLoc}());
+  ).to(Type{SourceLoc}());
   condDescWriter = (
     litWriter(" '") & stringWriter() & litWriter("'")
   );
