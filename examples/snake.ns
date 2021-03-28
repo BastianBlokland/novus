@@ -36,7 +36,7 @@ fun center(Box b)   I2(b.origin.x + b.size.x / 2, b.origin.y + b.size.y / 2)
 fun min(Box b)      b.origin
 fun max(Box b)      b.origin + b.size
 
-fun toI2(Pair{int, int} p)  I2(p.first, p.second)
+fun toI2(Tuple{int, int} p) I2(p.f1, p.f2)
 fun toDir(int i)            Dir(i)
 
 fun opposite(Dir dir)
@@ -108,7 +108,7 @@ fun createPlayer(Rng r, Box window)
   )
 
 fun createPickup(Rng r, Box window)
-  r.rngInside(window).rngNext(1, 4).map(construct{I2, int, PickupState})
+  r.rngInside(window).rngNext(1, 4).map(lambda (Tuple{I2, int} t) PickupState(t.f1, t.f2))
 
 fun createPickups(Rng r, Box window, int count)
   r.rngList(count, createPickup[window])
@@ -205,7 +205,7 @@ fun stateWriter() -> Writer{State}
     listWriter(pickupWriter()) &
     playerWriter()
   ).map(lambda (State state)
-    makePair(state, state.game.pickups, state.game.player)
+    Tuple(state, state.game.pickups, state.game.player)
   )
 
 fun uiWriter() -> Writer{State}
@@ -221,10 +221,10 @@ fun uiWriter() -> Writer{State}
     litWriter("FT: ") & stringWriter()
   );
   (setupStyle & drawBg & drawText & resetStyle).map(lambda (State state)
-    makePair(
+    Tuple(
       state.game.gameover ? TtyStyle.BgBrightRed : TtyStyle.BgGreen,
       state.window,
-      makePair(state.game.score, state.lastFrameTime.string()))
+      Tuple(state.game.score, state.lastFrameTime.string()))
   )
 
 fun pickupWriter() -> Writer{PickupState}
@@ -236,14 +236,14 @@ fun pickupWriter() -> Writer{PickupState}
       if p.value == 2 -> TtyStyle.FgBrightCyan
       else            -> TtyStyle.FgBrightMagenta
     );
-    makePair(style, p.pos)
+    Tuple(style, p.pos)
   )
 
 fun playerWriter() -> Writer{PlayerState}
   (
     atWriter() & listWriter(litAtWriter("●"))
   ).map(lambda (PlayerState p)
-    makePair(
+    Tuple(
       DrawInst(p.pos,
         if p.dir == Dir.up     -> "▲"
         if p.dir == Dir.down   -> "▼"
@@ -260,7 +260,7 @@ fun boxWriter() -> Writer{Box}
     corners & horLine & horLine & verLine & verLine
   ).map(lambda (Box b)
     horContent = string("─", b.size.x - 2);
-    makePair(b,
+    Tuple(b,
       DrawInst(b.origin + I2(1, 0),         horContent),
       DrawInst(b.origin + I2(1, b.size.y),  horContent),
       for(1, b.size.y - 1, lambda (int y) DrawInst(b.origin + I2(0, y),             "│")),
@@ -270,7 +270,7 @@ fun boxWriter() -> Writer{Box}
 fun boxCornerWriter() -> Writer{Box}
   (
     litAtWriter("┌") & litAtWriter("┐") & litAtWriter("└") & litAtWriter("┘")
-  ).map(lambda (Box b) makePair(
+  ).map(lambda (Box b) Tuple(
     b.origin + I2(0,            0),
     b.origin + I2(b.size.x - 1, 0),
     b.origin + I2(0,            b.size.y),
@@ -280,7 +280,7 @@ fun litAtWriter(string lit) -> Writer{I2}
   setCursorWriter() & litWriter(lit)
 
 fun atWriter() -> Writer{DrawInst}
-  (setCursorWriter() & stringWriter()).map(lambda (DrawInst di) makePair(di.pos, di.content))
+  (setCursorWriter() & stringWriter()).fromStruct(Type{DrawInst}())
 
 fun setCursorWriter() -> Writer{I2}
   ttyCursorPosWriter().map(lambda (I2 p) TtyCursorPos(p.y, p.x))

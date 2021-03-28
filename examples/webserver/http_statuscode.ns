@@ -71,4 +71,4 @@ enum HttpStatusCode =
 fun httpStatusCodeWriter()
   (
     stringWriter() & litWriter(' ') & stringWriter()
-  ).map(lambda (HttpStatusCode c) Pair(string(int(c)), string(c)))
+  ).map(lambda (HttpStatusCode c) Tuple(string(int(c)), string(c)))

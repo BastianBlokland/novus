@@ -210,22 +210,22 @@ act invoke{T1, T2, T3, T4, T5, TR}(action{T1, T2, T3, T4, T5, TR} func, T1 a1, T
 assertEq(
   funcRet = (lambda (int x) x);
   ret42 = funcRet[42];
-  makePair(ret42(), funcRet(42)))
+  Tuple(ret42(), funcRet(42)))
 
 assertEq(
   funcPlus = (lambda (int a, int b) a + b);
   plus42 = funcPlus[42];
-  makePair(plus42(1337), funcPlus(1337, 42)))
+  Tuple(plus42(1337), funcPlus(1337, 42)))
 
 assertEq(
   funcSum = (lambda (int a, int b, int c) a + b + c);
   sumPlus42 = funcSum[42];
-  makePair(sumPlus42(1, 2), funcSum(1, 2, 42)))
+  Tuple(sumPlus42(1, 2), funcSum(1, 2, 42)))
 
 assertEq(
   funcSum = (lambda (int a, int b, int c, int d) a + b + c + d);
   sumPlus42 = funcSum[42];
-  makePair(sumPlus42(1, 2, 3), funcSum(1, 2, 3, 42)))
+  Tuple(sumPlus42(1, 2, 3), funcSum(1, 2, 3, 42)))
 
 assert(
   funcTrue = (lambda () true);
@@ -365,22 +365,22 @@ assertEq(
 assertEq(
   actRet = (impure lambda (int x) x);
   ret42 = actRet[42];
-  makePair(ret42(), actRet(42)))
+  Tuple(ret42(), actRet(42)))
 
 assertEq(
   actPlus = (impure lambda (int a, int b) a + b);
   plus42 = actPlus[42];
-  makePair(plus42(1337), actPlus(1337, 42)))
+  Tuple(plus42(1337), actPlus(1337, 42)))
 
 assertEq(
   actSum = (impure lambda (int a, int b, int c) a + b + c);
   sumPlus42 = actSum[42];
-  makePair(sumPlus42(1, 2), actSum(1, 2, 42)))
+  Tuple(sumPlus42(1, 2), actSum(1, 2, 42)))
 
 assertEq(
   actSum = (impure lambda (int a, int b, int c, int d) a + b + c + d);
   sumPlus42 = actSum[42];
-  makePair(sumPlus42(1, 2, 3), actSum(1, 2, 3, 42)))
+  Tuple(sumPlus42(1, 2, 3), actSum(1, 2, 3, 42)))
 
 assertEq(invoke(impure lambda() 42 + 1337), 42 + 1337)
 

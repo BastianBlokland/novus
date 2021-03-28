@@ -70,11 +70,11 @@ fun combine(List{Error} err) -> Option{Error}
     result as Error e ? Option(e :: err) : Option(err)
   )
 
-fun valueOrError{T}(Pair{T, Option{Error}} p) -> Either{T, Error}
-  valueOrError(p.first, p.second)
+fun valueOrError{T}(Tuple{T, Option{Error}} p) -> Either{T, Error}
+  valueOrError(p.f1, p.f2)
 
-fun valueOrError{T}(Pair{T, List{Error}} p) -> Either{T, Error}
-  valueOrError(p.first, p.second)
+fun valueOrError{T}(Tuple{T, List{Error}} p) -> Either{T, Error}
+  valueOrError(p.f1, p.f2)
 
 fun valueOrError{T}(T val, Option{Error} err) -> Either{T, Error}
   err as Error e ? e : val
@@ -102,7 +102,7 @@ fun errorWriter(
   )
   includeCodes  = (flags & ErrorWriteFlags.IncludeCodes) != 0;
   codeWriter    = litWriter('[') & txtIntWriter() & litWriter("] ");
-  writer        = includeCodes  ? (codeWriter & stringWriter()) .map(lambda (Error err) makePair(err.code, err.msg))
+  writer        = includeCodes  ? (codeWriter & stringWriter()) .map(lambda (Error err) Tuple(err.code, err.msg))
                                 : stringWriter()                .map(lambda (Error err) err.msg);
   listWriter(prefixWriter & writer, sepWriter).map(lambda (Error err) err.allErrors())
 

@@ -104,7 +104,7 @@ assertEq(
     impure lambda (File f)
       f.write(jsonWriter(), json)
   );
-  makePair(fileRead(p, jsonParser()), json))
+  Tuple(fileRead(p, jsonParser()), json))
 
 assertIs(
   p = getPathCurrent() / "file-test4.tmp";

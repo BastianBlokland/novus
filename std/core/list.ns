@@ -1,6 +1,6 @@
 import "either.ns"
 import "option.ns"
-import "pair.ns"
+import "tuple.ns"
 
 import "std/diag.ns"
 import "std/prim.ns"
@@ -129,20 +129,20 @@ fun rangeListReverse{T}(T start, T end)
   List{T}().pushRangeReverse(start, end)
 
 fun gridList{T}(T width, T height)
-  makeGrid = (lambda (T x, T y, List{Pair{T, T}} result)
+  makeGrid = (lambda (T x, T y, List{Tuple{T, T}} result)
       if y < T()  -> result
       if x < T()  -> self(--width, --y, result)
-      else        -> self(--x, y, Pair(x, y) :: result)
+      else        -> self(--x, y, Tuple(x, y) :: result)
   );
-  makeGrid(--width, --height, List{Pair{T, T}}())
+  makeGrid(--width, --height, List{Tuple{T, T}}())
 
 fun gridListReverse{T}(T width, T height)
-  makeGrid = (lambda (T x, T y, List{Pair{T, T}} result)
+  makeGrid = (lambda (T x, T y, List{Tuple{T, T}} result)
       if y >= height  -> result
       if x >= width   -> self(T(), ++y, result)
-      else            -> self(++x, y, Pair(x, y) :: result)
+      else            -> self(++x, y, Tuple(x, y) :: result)
   );
-  makeGrid(T(), T(), List{Pair{T, T}}())
+  makeGrid(T(), T(), List{Tuple{T, T}}())
 
 fun fold{T, TResult}(List{T} l, function{TResult, T, TResult} func)
   fold(l, func, TResult())
@@ -277,12 +277,12 @@ fun split{T1, T2}(List{Either{T1, T2}} l)
 
 fun splitReverse{T1, T2}(List{Either{T1, T2}} l)
   l.fold(
-    lambda (Pair{List{T1}, List{T2}} res, Either{T1, T2} elem)
-      makePair(
-        elem as T1 t1 ? (t1 :: res.first)   : res.first,
-        elem as T2 t2 ? (t2 :: res.second)  : res.second
+    lambda (Tuple{List{T1}, List{T2}} res, Either{T1, T2} elem)
+      Tuple(
+        elem as T1 t1 ? (t1 :: res.f1) : res.f1,
+        elem as T2 t2 ? (t2 :: res.f2) : res.f2
       )
-    , makePair(List{T1}(), List{T2}()))
+    , Tuple(List{T1}(), List{T2}()))
 
 // -- Impure
 
@@ -393,19 +393,19 @@ assertEq(List{int}().push(42, 3), 42 :: 42 :: 42)
 
 assertEq(
   l = (1 :: 2 :: 3);
-  makePair(l.pushUnique(1), l))
+  Tuple(l.pushUnique(1), l))
 assertEq(
   l = (1 :: 2 :: 3);
-  makePair(l.pushUnique(2), l))
+  Tuple(l.pushUnique(2), l))
 assertEq(
   l = (1 :: 2 :: 3);
-  makePair(l.pushUnique(3), l))
+  Tuple(l.pushUnique(3), l))
 assertEq(
   l = (1 :: 2 :: 3);
-  makePair(l.pushUnique(4), 4 :: l))
+  Tuple(l.pushUnique(4), 4 :: l))
 assertEq(
   l = (1 :: 2 :: 3);
-  makePair(l.pushUnique(-1).pushUnique(2).pushUnique(4), 4 :: -1 :: l))
+  Tuple(l.pushUnique(-1).pushUnique(2).pushUnique(4), 4 :: -1 :: l))
 
 assertEq(
   (42 :: 1337).pushRange(1, 4),
@@ -471,25 +471,25 @@ assertEq(rangeList('a', 'd'), 'a' :: 'b' :: 'c')
 assertEq(rangeListReverse(1, 4), 3 :: 2 :: 1)
 assertEq(rangeListReverse('a', 'd'), 'c' :: 'b' :: 'a')
 
-assertEq(gridList(2, 2), Pair(0, 0) :: Pair(1, 0) ::
-                         Pair(0, 1) :: Pair(1, 1))
+assertEq(gridList(2, 2), Tuple(0, 0) :: Tuple(1, 0) ::
+                         Tuple(0, 1) :: Tuple(1, 1))
 
-assertEq(gridList(3, 3), Pair(0, 0) :: Pair(1, 0) :: Pair(2, 0) ::
-                         Pair(0, 1) :: Pair(1, 1) :: Pair(2, 1) ::
-                         Pair(0, 2) :: Pair(1, 2) :: Pair(2, 2))
+assertEq(gridList(3, 3), Tuple(0, 0) :: Tuple(1, 0) :: Tuple(2, 0) ::
+                         Tuple(0, 1) :: Tuple(1, 1) :: Tuple(2, 1) ::
+                         Tuple(0, 2) :: Tuple(1, 2) :: Tuple(2, 2))
 
-assertEq(gridList(1, 1), Pair(0, 0) :: List{Pair{int, int}}())
-assertEq(gridList(0, 0), List{Pair{int, int}}())
+assertEq(gridList(1, 1), Tuple(0, 0) :: List{Tuple{int, int}}())
+assertEq(gridList(0, 0), List{Tuple{int, int}}())
 
-assertEq(gridListReverse(2, 2), Pair(1, 1) :: Pair(0, 1) ::
-                                Pair(1, 0) :: Pair(0, 0))
+assertEq(gridListReverse(2, 2), Tuple(1, 1) :: Tuple(0, 1) ::
+                                Tuple(1, 0) :: Tuple(0, 0))
 
-assertEq(gridListReverse(3, 3), Pair(2, 2) :: Pair(1, 2) :: Pair(0, 2) ::
-                                Pair(2, 1) :: Pair(1, 1) :: Pair(0, 1) ::
-                                Pair(2, 0) :: Pair(1, 0) :: Pair(0, 0))
+assertEq(gridListReverse(3, 3), Tuple(2, 2) :: Tuple(1, 2) :: Tuple(0, 2) ::
+                                Tuple(2, 1) :: Tuple(1, 1) :: Tuple(0, 1) ::
+                                Tuple(2, 0) :: Tuple(1, 0) :: Tuple(0, 0))
 
-assertEq(gridListReverse(1, 1), Pair(0, 0) :: List{Pair{int, int}}())
-assertEq(gridListReverse(0, 0), List{Pair{int, int}}())
+assertEq(gridListReverse(1, 1), Tuple(0, 0) :: List{Tuple{int, int}}())
+assertEq(gridListReverse(0, 0), List{Tuple{int, int}}())
 
 assertEq((1 :: 2 :: 3 :: 4).filter(lambda (int v) v > 2), 3 :: 4)
 assertEq((1 :: 2 :: 3 :: 4).filter(lambda (int v) v < 0), List{int}())
@@ -640,38 +640,38 @@ assertEq(
 assert(
   l = List{Either{int, string}}();
   r = split(l);
-  r.first.isEmpty() && r.second.isEmpty())
+  r.f1.isEmpty() && r.f2.isEmpty())
 
 assertEq(
   eS = (lambda (string s) Either{int, string}(s));
   eI = (lambda (int i) Either{int, string}(i));
   l = eI(1) :: eS("hello") :: eI(2) :: eS("world") :: eI(3) :: eI(4);
   split(l),
-  makePair(1 :: 2 :: 3 :: 4, "hello" :: "world"))
+  Tuple(1 :: 2 :: 3 :: 4, "hello" :: "world"))
 
 assertEq(
   eS = (lambda (string s) Either{int, string}(s));
   l = eS("hello") :: eS("good") :: eS("world");
   split(l),
-  makePair(List{int}(), "hello" :: "good" :: "world"))
+  Tuple(List{int}(), "hello" :: "good" :: "world"))
 
 assertEq(
   eI = (lambda (int i) Either{int, string}(i));
   l = eI(1) :: eI(2) :: eI(3);
   split(l),
-  makePair(1 :: 2 :: 3, List{string}()))
+  Tuple(1 :: 2 :: 3, List{string}()))
 
 assert(
   l = List{Either{int, string}}();
   r = splitReverse(l);
-  r.first.isEmpty() && r.second.isEmpty())
+  r.f1.isEmpty() && r.f2.isEmpty())
 
 assertEq(
   eS = (lambda (string s) Either{int, string}(s));
   eI = (lambda (int i) Either{int, string}(i));
   l = eI(1) :: eS("hello") :: eI(2) :: eS("world") :: eI(3) :: eI(4);
   splitReverse(l),
-  makePair(4 :: 3 :: 2 :: 1, "world" :: "hello"))
+  Tuple(4 :: 3 :: 2 :: 1, "world" :: "hello"))
 
 assertEq(0 :: 1 :: 4 :: 9, 0 :: 1 :: 4 :: 9)
 assertEq(0 :: 1 :: 4 :: 9, 0 :: 1 :: 4 :: 9)

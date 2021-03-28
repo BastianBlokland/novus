@@ -72,12 +72,8 @@ fun versionParser() -> Parser{Version}
     txtPosIntParser() & matchParser('.') >> txtPosIntParser() & ?(matchParser('.') >> txtPosIntParser()) &
     ?(matchParser('-') >> manyParser(tagParser, matchParser('.'))) &
     ?((matchParser('+') | matchParser('.')) >> manyParser(tagParser, matchParser('.')))
-  ).map( lambda ( int major,
-                  int minor,
-                  Option{int} patch,
-                  Option{List{string}} prereleaseTags,
-                  Option{List{string}} meta)
-      Version(major, minor, patch ?? 0, prereleaseTags ?? List{string}(), meta ?? List{string}())
+  ).map( lambda (Tuple{int, int, Option{int}, Option{List{string}}, Option{List{string}}} t)
+      Version(t.f1, t.f2, t.f3 ?? 0, t.f4 ?? List{string}(), t.f5 ?? List{string}())
     ) ! Error("Invalid sem-ver version")
 
 // -- Writers
@@ -88,7 +84,7 @@ fun versionWriter()
     ?(litWriter("-") & listWriter(stringWriter(), litWriter("."))) &
     ?(litWriter("+") & listWriter(stringWriter(), litWriter(".")))
   ).map(lambda (Version v)
-      makePair(
+      Tuple(
         v.major,
         v.minor,
         v.patch,

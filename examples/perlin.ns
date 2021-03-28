@@ -59,12 +59,12 @@ fun getContent(Size size, int itr, int numItrs, Duration t, Settings s) -> Scree
 fun cellWriter() -> Writer{CellContent}
   (
     ttyStyleFgColorWriter() & stringWriter()
-  ).map(lambda (CellContent cc) makePair(cc.color, cc.text))
+  ).fromStruct(Type{CellContent}())
 
 fun rowWriter() -> Writer{RowContent}
   (
     ttyCursorPosWriter() & listWriter(cellWriter())
-  ).map(lambda (RowContent rc) makePair(TtyCursorPos(rc.row, 0), rc.cells))
+  ).map(lambda (RowContent rc) Tuple(TtyCursorPos(rc.row, 0), rc.cells))
 
 fun screenWriter() -> Writer{ScreenContent}
   (

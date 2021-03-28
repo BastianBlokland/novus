@@ -25,7 +25,7 @@ fun userParser()
   emailEnd    = matchParser('>');
   (
     untilParser(emailStart).trim() & emailStart >> untilParser(emailEnd) << emailEnd
-  ).map(construct{string, string, User})
+  ).toStruct(Type{User}())
 
 // Input example:
 // '
@@ -42,7 +42,7 @@ fun commitParser()
     whitespaceParser()                                          >> timeUnixParser()   &
     untilParser(emptyLineParser()) >> emptyLineParser()         >> lineParser()       &
     whitespaceParser()                                          >> allParser().trim()
-  ).map(construct{User, DateTime, string, string, Commit})
+  ).toStruct(Type{Commit}())
 
 // -- Actions
 
@@ -81,7 +81,7 @@ act printChangeLog(List{Commit} commits)
     headerWriter  = litWriter("Changes (") & txtIntWriter() & litWriter(" commits):");
     commitWriter  = litWriter("* ") & stringWriter().map(lambda (Commit c) c.title);
     writer        = headerWriter & newlineWriter() & listWriter(commitWriter, newlineWriter());
-    print(writer(makePair(commits.length(), commits)))
+    print(writer(Tuple(commits.length(), commits)))
 
 act printUsage()
   print("Changelog generator");

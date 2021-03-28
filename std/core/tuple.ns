@@ -1,0 +1,90 @@
+import "reflect.ns"
+
+import "std/diag.ns"
+import "std/prim.ns"
+
+// -- Types
+
+struct Tuple
+struct Tuple{T1}                                      = T1 f1
+struct Tuple{T1, T2}                                  = T1 f1, T2 f2
+struct Tuple{T1, T2, T3}                              = T1 f1, T2 f2, T3 f3
+struct Tuple{T1, T2, T3, T4}                          = T1 f1, T2 f2, T3 f3, T4 f4
+struct Tuple{T1, T2, T3, T4, T5}                      = T1 f1, T2 f2, T3 f3, T4 f4, T5 f5
+struct Tuple{T1, T2, T3, T4, T5, T6}                  = T1 f1, T2 f2, T3 f3, T4 f4, T5 f5, T6 f6
+struct Tuple{T1, T2, T3, T4, T5, T6, T7}              = T1 f1, T2 f2, T3 f3, T4 f4, T5 f5, T6 f6, T7 f7
+struct Tuple{T1, T2, T3, T4, T5, T6, T7, T8}          = T1 f1, T2 f2, T3 f3, T4 f4, T5 f5, T6 f6, T7 f7, T8 f8
+struct Tuple{T1, T2, T3, T4, T5, T6, T7, T8, T9}      = T1 f1, T2 f2, T3 f3, T4 f4, T5 f5, T6 f6, T7 f7, T8 f8, T9 f9
+struct Tuple{T1, T2, T3, T4, T5, T6, T7, T8, T9, T10} = T1 f1, T2 f2, T3 f3, T4 f4, T5 f5, T6 f6, T7 f7, T8 f8, T9 f9, T10 f10
+
+// -- Meta utilities
+
+fun tupleSize{Tup}(Tup t)
+  tupleSize(Type{Tup}())
+
+fun tupleSize{Tup}(Type{Tup} t)
+  reflectStructFieldCount(t)
+
+fun tupleGet{Tup, Index}(Tup t, Meta{Index} idx)
+  reflectStructField(t, idx)
+
+// ---- Appending a new type to a tuple type
+
+fun tupleAddType{T1}(Type{Tuple} t, Type{T1} newType)                                                                            Type{Tuple{T1}}()
+fun tupleAddType{T1, T2}(Type{Tuple{T1}} t, Type{T2} newType)                                                                    Type{Tuple{T1, T2}}()
+fun tupleAddType{T1, T2, T3}(Type{Tuple{T1, T2}} t, Type{T3} newType)                                                            Type{Tuple{T1, T2, T3}}()
+fun tupleAddType{T1, T2, T3, T4}(Type{Tuple{T1, T2, T3}} t, Type{T4} newType)                                                    Type{Tuple{T1, T2, T3, T4}}()
+fun tupleAddType{T1, T2, T3, T4, T5}(Type{Tuple{T1, T2, T3, T4}} t, Type{T5} newType)                                            Type{Tuple{T1, T2, T3, T4, T5}}()
+fun tupleAddType{T1, T2, T3, T4, T5, T6}(Type{Tuple{T1, T2, T3, T4, T5}} t, Type{T6} newType)                                    Type{Tuple{T1, T2, T3, T4, T5, T6}}()
+fun tupleAddType{T1, T2, T3, T4, T5, T6, T7}(Type{Tuple{T1, T2, T3, T4, T5, T6}} t, Type{T7} newType)                            Type{Tuple{T1, T2, T3, T4, T5, T6, T7}}()
+fun tupleAddType{T1, T2, T3, T4, T5, T6, T7, T8}(Type{Tuple{T1, T2, T3, T4, T5, T6, T7}} t, Type{T8} newType)                    Type{Tuple{T1, T2, T3, T4, T5, T6, T7, T8}}()
+fun tupleAddType{T1, T2, T3, T4, T5, T6, T7, T8, T9}(Type{Tuple{T1, T2, T3, T4, T5, T6, T7, T8}} t, Type{T9} newType)            Type{Tuple{T1, T2, T3, T4, T5, T6, T7, T8, T9}}()
+fun tupleAddType{T1, T2, T3, T4, T5, T6, T7, T8, T9, T10}(Type{Tuple{T1, T2, T3, T4, T5, T6, T7, T8, T9}} t, Type{T10} newType)  Type{Tuple{T1, T2, T3, T4, T5, T6, T7, T8, T9, T10}}()
+
+// ---- Appending a new value to a tuple.
+
+fun tupleAdd{T1}(Tuple t, T1 val)                                                                            Tuple(val)
+fun tupleAdd{T1, T2}(Tuple{T1} t, T2 val)                                                                    Tuple(t.f1, val)
+fun tupleAdd{T1, T2, T3}(Tuple{T1, T2} t, T3 val)                                                            Tuple(t.f1, t.f2, val)
+fun tupleAdd{T1, T2, T3, T4}(Tuple{T1, T2, T3} t, T4 val)                                                    Tuple(t.f1, t.f2, t.f3, val)
+fun tupleAdd{T1, T2, T3, T4, T5}(Tuple{T1, T2, T3, T4} t, T5 val)                                            Tuple(t.f1, t.f2, t.f3, t.f4, val)
+fun tupleAdd{T1, T2, T3, T4, T5, T6}(Tuple{T1, T2, T3, T4, T5} t, T6 val)                                    Tuple(t.f1, t.f2, t.f3, t.f4, t.f5, val)
+fun tupleAdd{T1, T2, T3, T4, T5, T6, T7}(Tuple{T1, T2, T3, T4, T5, T6} t, T7 val)                            Tuple(t.f1, t.f2, t.f3, t.f4, t.f5, t.f6, val)
+fun tupleAdd{T1, T2, T3, T4, T5, T6, T7, T8}(Tuple{T1, T2, T3, T4, T5, T6, T7} t, T8 val)                    Tuple(t.f1, t.f2, t.f3, t.f4, t.f5, t.f6, t.f7, val)
+fun tupleAdd{T1, T2, T3, T4, T5, T6, T7, T8, T9}(Tuple{T1, T2, T3, T4, T5, T6, T7, T8} t, T9 val)            Tuple(t.f1, t.f2, t.f3, t.f4, t.f5, t.f6, t.f7, t.f8, val)
+fun tupleAdd{T1, T2, T3, T4, T5, T6, T7, T8, T9, T10}(Tuple{T1, T2, T3, T4, T5, T6, T7, T8, T9} t, T10 val)  Tuple(t.f1, t.f2, t.f3, t.f4, t.f5, t.f6, t.f7, t.f8, t.f9, val)
+fun tupleAdd{T1, T2}(T1 t1, T2 t2) Tuple(t1, t2)
+
+// ---- Create a Tuple type that matches a struct (same types as the field types)
+
+fun tupleTypeForStruct{Struct, Tup}(Type{Struct} s, Meta{#0} idx, Type{Tup} result)
+  result
+
+fun tupleTypeForStruct{Struct, Int, Tup}(Type{Struct} s, Meta{Int} idx, Type{Tup} result)
+  tupleTypeForStruct(s, --idx, result.tupleAddType(reflectStructFieldType(s, reflectStructFieldCount(s) - idx)))
+
+fun tupleTypeForStruct{Struct}(Type{Struct} s)
+  tupleTypeForStruct(s, reflectStructFieldCount(s), Type{Tuple}())
+
+// ---- Struct to Tuple and vise versa conversion.
+
+fun structToTuple{Struct}(Struct s)
+  reflectStructAlias(s, tupleTypeForStruct(Type{Struct}()))
+
+fun tupleToStruct{Tup, Struct}(Tup t, Type{Struct} type) -> Struct
+  reflectStructAlias(t, type)
+
+// -- Tests
+
+assertEq(Tuple(2021, Month.March, 27).tupleSize(), Meta{#3}())
+assertEq(Tuple(2021, Month.March, 27).tupleGet(Meta{#0}()), 2021)
+assertEq(Tuple(2021, Month.March, 27).tupleGet(Meta{#1}()), Month.March)
+assertEq(Tuple(2021, Month.March, 27).tupleGet(Meta{#2}()), 27)
+
+assertEq(Tuple().tupleAdd(2021).tupleAdd(Month.March).tupleAdd(27), Tuple(2021, Month.March, 27))
+assertEq(
+  Tuple().tupleAdd(1).tupleAdd(2).tupleAdd(3).tupleAdd(4).tupleAdd(5).tupleAdd(6).tupleAdd(7).tupleAdd(8).tupleAdd(9).tupleAdd(10),
+  Tuple(1, 2, 3, 4, 5, 6, 7, 8, 9, 10))
+
+assertEq(structToTuple(Date(2021, Month.March, 27)), Tuple(2021, Month.March, 27))
+assertEq(tupleToStruct(structToTuple(Date(2021, Month.March, 27)), Type{Date}()), Date(2021, Month.March, 27))

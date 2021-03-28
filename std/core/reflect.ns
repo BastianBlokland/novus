@@ -324,7 +324,7 @@ fun reflectLazyIsAction{InnerType}(Type{lazy_action{InnerType}} t)  true
 
 // -- Writers
 
-fun namedTypeInfoWriter() -> Writer{Pair{string, string}}
+fun namedTypeInfoWriter() -> Writer{Tuple{string, string}}
   stringWriter() & litWriter(" (") & stringWriter() & litWriter(") ")
 
 fun primInfoWriter()
@@ -335,28 +335,28 @@ fun primInfoWriter()
 fun structInfoWriter(Writer{TypeInfo} typeInfoWriter = typeInfoWriter())
   fieldWriter = (
     stringWriter() & litWriter(": ") & typeInfoWriter
-  ).map(lambda (StructField f) makePair(f.name, f.type));
+  ).fromStruct(Type{StructField}());
   (
     namedTypeInfoWriter() & basicListWriter(fieldWriter)
-  ).map(lambda (StructInfo s) makePair(s.name, "Struct", s.fields))
+  ).map(lambda (StructInfo s) Tuple(s.name, "Struct", s.fields))
 
 fun unionInfoWriter(Writer{TypeInfo} typeInfoWriter = typeInfoWriter())
   (
     namedTypeInfoWriter() & basicListWriter(typeInfoWriter)
-  ).map(lambda (UnionInfo s) makePair(s.name, "Union", s.entries))
+  ).map(lambda (UnionInfo s) Tuple(s.name, "Union", s.entries))
 
 fun enumInfoWriter()
   entryWriter = (
     stringWriter() & litWriter(": ") & txtIntWriter()
-  ).map(lambda (EnumEntry f) makePair(f.key, f.value));
+  ).fromStruct(Type{EnumEntry}());
   (
     namedTypeInfoWriter() & basicListWriter(entryWriter)
-  ).map(lambda (EnumInfo e) makePair(e.name, "Enum", e.entries))
+  ).map(lambda (EnumInfo e) Tuple(e.name, "Enum", e.entries))
 
 fun delegateInfoWriter(Writer{TypeInfo} typeInfoWriter = typeInfoWriter())
   (
     stringWriter() & basicListWriter(typeInfoWriter) & litWriter(" -> ") & typeInfoWriter
-  ).map(lambda (DelegateInfo d) makePair(d.isAction ? "Action: " : "Function: ", d.inputTypes, d.retType))
+  ).map(lambda (DelegateInfo d) Tuple(d.isAction ? "Action: " : "Function: ", d.inputTypes, d.retType))
 
 fun futureInfoWriter(Writer{TypeInfo} typeInfoWriter = typeInfoWriter())
   (
@@ -366,7 +366,7 @@ fun futureInfoWriter(Writer{TypeInfo} typeInfoWriter = typeInfoWriter())
 fun lazyInfoWriter(Writer{TypeInfo} typeInfoWriter = typeInfoWriter())
   (
     stringWriter() & typeInfoWriter
-  ).map(lambda (LazyInfo l) makePair(l.isAction ? "ImpureLazy: " : "PureLazy: ", l.type))
+  ).map(lambda (LazyInfo l) Tuple(l.isAction ? "ImpureLazy: " : "PureLazy: ", l.type))
 
 fun staticIntInfoWriter()
   (litWriter("#") & txtIntWriter()).map(lambda (StaticIntInfo i) i.value)

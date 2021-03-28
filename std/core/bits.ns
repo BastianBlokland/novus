@@ -343,7 +343,7 @@ assertEq(
   w           = bitInt8Writer();
   p           = bitInt8Parser();
   parsedData  = testData.map(lambda (char c) p(w.run(c)) ?? '\0');
-  makePair(testData, parsedData))
+  Tuple(testData, parsedData))
 
 assertEq(bitInt16Writer(Endianness.Little)(1337), string(char(57), char(5)))
 
@@ -352,7 +352,7 @@ assertEq(
   w           = bitInt16Writer(Endianness.Little);
   p           = bitSInt16Parser(Endianness.Little);
   parsedData  = testData.map(lambda (int c) p(w.run(c)) ?? -1);
-  makePair(testData, parsedData))
+  Tuple(testData, parsedData))
 
 assertEq(bitInt16Writer(Endianness.Big)(1337), string(char(5), char(57)))
 
@@ -361,7 +361,7 @@ assertEq(
   w           = bitInt16Writer(Endianness.Big);
   p           = bitSInt16Parser(Endianness.Big);
   parsedData  = testData.map(lambda (int c) p(w.run(c)) ?? -1);
-  makePair(testData, parsedData))
+  Tuple(testData, parsedData))
 
 assertEq(bitInt32Writer(Endianness.Little)(13371337), string(char(201), char(7), char(204), char(0)))
 
@@ -370,7 +370,7 @@ assertEq(
   w           = bitInt32Writer(Endianness.Little);
   p           = bitInt32Parser(Endianness.Little);
   parsedData  = testData.map(lambda (int c) p(w.run(c)) ?? -1);
-  makePair(testData, parsedData))
+  Tuple(testData, parsedData))
 
 assertEq(bitInt32Writer(Endianness.Big)(13371337), string(char(0), char(204), char(7), char(201)))
 
@@ -379,7 +379,7 @@ assertEq(
   w           = bitInt32Writer(Endianness.Big);
   p           = bitInt32Parser(Endianness.Big);
   parsedData  = testData.map(lambda (int c) p(w.run(c)) ?? -1);
-  makePair(testData, parsedData))
+  Tuple(testData, parsedData))
 
 assertEq(
   bitInt64Writer(Endianness.Little)(1337133713371337L),
@@ -392,7 +392,7 @@ assertEq(
   w           = bitInt64Writer(Endianness.Little);
   p           = bitInt64Parser(Endianness.Little);
   parsedData  = testData.map(lambda (long c) p(w.run(c)) ?? -1L);
-  makePair(testData, parsedData))
+  Tuple(testData, parsedData))
 
 assertEq(
   bitInt64Writer(Endianness.Big)(1337133713371337L),
@@ -405,7 +405,7 @@ assertEq(
   w           = bitInt64Writer(Endianness.Big);
   p           = bitInt64Parser(Endianness.Big);
   parsedData  = testData.map(lambda (long c) p(w.run(c)) ?? -1L);
-  makePair(testData, parsedData))
+  Tuple(testData, parsedData))
 
 // This test is left here for the first person running this on a BigEndian system, needs thorough
 // testing as none of this code has ever been run on a BigEndian system.

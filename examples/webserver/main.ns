@@ -91,8 +91,8 @@ act handleConnection(ClientContext ctx)
     lazy print("- Client connected"),
     lazy invoke(impure lambda(StreamReadState read)
     (
-        read.readUntil("\r\n\r\n" :: "\n\n") as Pair{string, StreamReadState} r && r.first.length() > 0
-          ? handleRequest(ctx, r.first) as Error err ? err : self(r.second)
+        read.readUntil("\r\n\r\n" :: "\n\n") as Tuple{string, StreamReadState} r && r.f1.length() > 0
+          ? handleRequest(ctx, r.f1) as Error err ? err : self(r.f2)
           : None()
     ), StreamReadState(ctx.connection.socket)),
     lazy print("- Client disconnected")

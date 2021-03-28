@@ -37,22 +37,22 @@ fun rngNext(Rng r)
   RngResult(Rng(x3, r.a, r.b, r.c, cnt), val)
 
 fun rngNext{T}(RngResult{T} r)
-  r.rng.rngNext().map(lambda (float f) Pair(r.val, f))
+  r.rng.rngNext().map(lambda (float f) Tuple(r.val, f))
 
 // -- Utilities
 
 fun map{T, TResult}(RngResult{T} r, function{T, TResult} func)
   RngResult(r.rng, func(r.val))
 
-fun map{T1, T2, TResult}(RngResult{Pair{T1, T2}} r, function{T1, T2, TResult} func)
-  RngResult(r.rng, func(r.val.first, r.val.second))
+fun map{T1, T2, TResult}(RngResult{Tuple{T1, T2}} r, function{T1, T2, TResult} func)
+  RngResult(r.rng, func(r.val.f1, r.val.f2))
 
 // Returns a random value between min (inclusive) and max (exclusive).
 fun rngNext{T}(Rng r, T min, T max)
   r.rngNext().map(lambda (float f) min >= max ? min : min + T(f * (max - min)))
 
 fun rngNext{T1, T2}(RngResult{T1} r, T2 min, T2 max)
-  r.rng.rngNext(min, max).map(lambda (T2 t) Pair(r.val, t))
+  r.rng.rngNext(min, max).map(lambda (T2 t) Tuple(r.val, t))
 
 // Returns a list of random floating point numbers between 0.0 (inclusive) and 1.0 (exclusive).
 fun rngList(Rng r, int count)
@@ -103,11 +103,11 @@ assert(
 
 assertNotEq(rngInit(42).rngNext().map(lambda (float f) f.string()).val, "")
 
-assertNotEq(rngInit(42).rngNext().rngNext().map(lambda (Pair{float, float} p) p.string()).val, "")
+assertNotEq(rngInit(42).rngNext().rngNext().map(lambda (Tuple{float, float} p) p.string()).val, "")
 
 assertEq(rngInit(42).rngNext(10, 10).val, 10)
 
-assertEq(rngInit(42).rngNext(10, 10).rngNext(10, 10).val, Pair(10, 10))
+assertEq(rngInit(42).rngNext(10, 10).rngNext(10, 10).val, Tuple(10, 10))
 
 assert(
   cnt = 100_000;

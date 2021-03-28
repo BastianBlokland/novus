@@ -96,7 +96,7 @@ fun ttyCusorMoveWriter() -> Writer{TtyCursorMove}
   (
     litWriter(ttyEsc() + "[") & txtIntWriter() & charWriter()
   ).map(lambda (TtyCursorMove m)
-    makePair(
+    Tuple(
       m.amount,
       if m.dir == TtyDir.Up    -> 'A'
       if m.dir == TtyDir.Down  -> 'B'
@@ -119,7 +119,7 @@ fun ttyCursorColWriter() -> Writer{int}
 fun ttyCursorPosWriter() -> Writer{TtyCursorPos}
   (
     litWriter(ttyEsc() + "[") & txtIntWriter() & litWriter(';') & txtIntWriter() & litWriter('H')
-  ).map(lambda (TtyCursorPos p) makePair(p.row, p.col))
+  ).fromStruct(Type{TtyCursorPos}())
 
 fun ttyLitCursorPosWriter(TtyCursorPos p) -> Writer{None}
   litWriter(ttyEsc() + "[" + p.row.string() + ';' + p.col.string() + 'H')
