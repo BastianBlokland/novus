@@ -101,11 +101,16 @@ auto clockTimezoneOffset() noexcept -> int32_t {
 #if defined(_WIN32)
 
   TIME_ZONE_INFORMATION timeZoneInfo;
-  if (unlikely(::GetTimeZoneInformation(&timeZoneInfo) == TIME_ZONE_ID_INVALID)) {
+  switch (::GetTimeZoneInformation(&timeZoneInfo)) {
+  case TIME_ZONE_ID_STANDARD:
+    return -static_cast<int32_t>(timeZoneInfo.Bias + timeZoneInfo.StandardBias);
+  case TIME_ZONE_ID_DAYLIGHT:
+    return -static_cast<int32_t>(timeZoneInfo.Bias + timeZoneInfo.DaylightBias);
+  case TIME_ZONE_ID_INVALID:
+  default:
     // TODO: Consider if we want to swallow this or if we add error reporting to this call.
     return 0;
   }
-  return -static_cast<int32_t>(timeZoneInfo.Bias);
 
 #else // !_WIN32
 
