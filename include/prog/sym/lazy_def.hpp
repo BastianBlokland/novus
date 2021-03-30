@@ -18,16 +18,17 @@ public:
   auto operator=(const LazyDef& rhs) -> LazyDef& = delete;
   auto operator=(LazyDef&& rhs) noexcept -> LazyDef& = delete;
 
-  [[nodiscard]] auto getId() const noexcept -> const TypeId&;
-  [[nodiscard]] auto getResult() const noexcept -> const TypeId&;
-  [[nodiscard]] auto isAction() const noexcept -> bool;
+  [[nodiscard]] auto getId() const noexcept -> const TypeId& { return m_id; }
+  [[nodiscard]] auto getResult() const noexcept -> const TypeId& { return m_result; }
+  [[nodiscard]] auto isAction() const noexcept -> bool { return m_isAction; }
 
 private:
   sym::TypeId m_id;
   TypeId m_result;
   bool m_isAction;
 
-  LazyDef(sym::TypeId id, TypeId result, bool isAction);
+  LazyDef(sym::TypeId id, TypeId result, bool isAction) :
+      m_id{id}, m_result{result}, m_isAction{isAction} {}
 };
 
 } // namespace prog::sym

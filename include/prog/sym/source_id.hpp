@@ -15,20 +15,22 @@ class SourceId final {
   friend auto operator<<(std::ostream& out, const SourceId& rhs) -> std::ostream&;
 
 public:
-  [[nodiscard]] static auto none() noexcept -> SourceId;
+  [[nodiscard]] static auto none() noexcept -> SourceId { return SourceId{0}; };
 
-  explicit SourceId(unsigned int id);
+  explicit SourceId(unsigned int id) : m_id{id} {}
 
-  auto operator==(const SourceId& rhs) const noexcept -> bool;
-  auto operator!=(const SourceId& rhs) const noexcept -> bool;
+  auto operator==(const SourceId& rhs) const noexcept -> bool { return m_id == rhs.m_id; }
+  auto operator!=(const SourceId& rhs) const noexcept -> bool { return !SourceId::operator==(rhs); }
 
-  [[nodiscard]] auto isSet() const noexcept -> bool;
-  [[nodiscard]] auto getNum() const noexcept -> unsigned int;
+  [[nodiscard]] auto isSet() const noexcept -> bool { return m_id != 0; }
+  [[nodiscard]] auto getNum() const noexcept -> unsigned int { return m_id; }
 
 private:
   unsigned int m_id;
 };
 
-auto operator<<(std::ostream& out, const SourceId& rhs) -> std::ostream&;
+inline auto operator<<(std::ostream& out, const SourceId& rhs) -> std::ostream& {
+  return out << "source-" << rhs.m_id;
+}
 
 } // namespace prog::sym

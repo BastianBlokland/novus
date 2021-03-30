@@ -9,17 +9,19 @@ class FieldId final {
   friend auto operator<<(std::ostream& out, const FieldId& rhs) -> std::ostream&;
 
 public:
-  auto operator==(const FieldId& rhs) const noexcept -> bool;
-  auto operator!=(const FieldId& rhs) const noexcept -> bool;
+  auto operator==(const FieldId& rhs) const noexcept -> bool { return m_id == rhs.m_id; }
+  auto operator!=(const FieldId& rhs) const noexcept -> bool { return !FieldId::operator==(rhs); }
 
-  [[nodiscard]] auto getNum() const noexcept -> unsigned int;
+  [[nodiscard]] auto getNum() const noexcept -> unsigned int { return m_id; }
 
 private:
   unsigned int m_id;
 
-  explicit FieldId(unsigned int id);
+  explicit FieldId(unsigned int id) : m_id{id} {}
 };
 
-auto operator<<(std::ostream& out, const FieldId& rhs) -> std::ostream&;
+inline auto operator<<(std::ostream& out, const FieldId& rhs) -> std::ostream& {
+  return out << "field-" << rhs.m_id;
+}
 
 } // namespace prog::sym

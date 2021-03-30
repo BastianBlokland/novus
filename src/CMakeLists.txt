@@ -110,39 +110,22 @@ add_library(prog STATIC
   prog/expr/node_union_check.cpp
   prog/expr/node_union_get.cpp
   prog/expr/node_visitor_deep.cpp
-  prog/expr/node.cpp
   prog/expr/utilities.cpp
 
   prog/internal/implicit_conv.cpp
   prog/internal/overload.cpp
 
   prog/sym/const_decl_table.cpp
-  prog/sym/const_decl.cpp
-  prog/sym/const_id_hasher.cpp
-  prog/sym/const_id.cpp
   prog/sym/const_kind.cpp
-  prog/sym/delegate_def.cpp
   prog/sym/enum_def.cpp
   prog/sym/exec_stmt.cpp
   prog/sym/field_decl_table.cpp
   prog/sym/field_decl.cpp
-  prog/sym/field_id.cpp
   prog/sym/func_decl_table.cpp
-  prog/sym/func_decl.cpp
   prog/sym/func_def_table.cpp
   prog/sym/func_def.cpp
-  prog/sym/func_id_hasher.cpp
-  prog/sym/func_id.cpp
-  prog/sym/future_def.cpp
-  prog/sym/lazy_def.cpp
-  prog/sym/source_id_hasher.cpp
-  prog/sym/source_id.cpp
-  prog/sym/struct_def.cpp
   prog/sym/type_decl_table.cpp
-  prog/sym/type_decl.cpp
   prog/sym/type_def_table.cpp
-  prog/sym/type_id_hasher.cpp
-  prog/sym/type_id.cpp
   prog/sym/type_kind.cpp
   prog/sym/type_set.cpp
   prog/sym/union_def.cpp

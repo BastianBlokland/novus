@@ -15,24 +15,26 @@ class TypeId final {
   friend auto operator<<(std::ostream& out, const TypeId& rhs) -> std::ostream&;
 
 public:
-  [[nodiscard]] static auto inferType() -> TypeId;
+  [[nodiscard]] static auto inferType() -> TypeId { return TypeId{0}; };
 
-  auto operator==(const TypeId& rhs) const noexcept -> bool;
-  auto operator!=(const TypeId& rhs) const noexcept -> bool;
+  auto operator==(const TypeId& rhs) const noexcept -> bool { return m_id == rhs.m_id; }
+  auto operator!=(const TypeId& rhs) const noexcept -> bool { return !TypeId::operator==(rhs); }
 
-  auto operator<(const TypeId& rhs) const noexcept -> bool;
-  auto operator>(const TypeId& rhs) const noexcept -> bool;
+  auto operator<(const TypeId& rhs) const noexcept -> bool { return m_id < rhs.m_id; }
+  auto operator>(const TypeId& rhs) const noexcept -> bool { return m_id > rhs.m_id; }
 
-  [[nodiscard]] auto getNum() const noexcept -> unsigned int;
-  [[nodiscard]] auto isInfer() const noexcept -> bool;
-  [[nodiscard]] auto isConcrete() const noexcept -> bool;
+  [[nodiscard]] auto getNum() const noexcept -> unsigned int { return m_id; }
+  [[nodiscard]] auto isInfer() const noexcept -> bool { return m_id == 0; };
+  [[nodiscard]] auto isConcrete() const noexcept -> bool { return m_id != 0; }
 
 private:
   unsigned int m_id;
 
-  explicit TypeId(unsigned int id);
+  explicit TypeId(unsigned int id) : m_id{id} {}
 };
 
-auto operator<<(std::ostream& out, const TypeId& rhs) -> std::ostream&;
+inline auto operator<<(std::ostream& out, const TypeId& rhs) -> std::ostream& {
+  return out << "t-" << rhs.m_id;
+}
 
 } // namespace prog::sym

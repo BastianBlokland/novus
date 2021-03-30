@@ -13,19 +13,20 @@ class TypeDecl final {
 public:
   TypeDecl() = delete;
 
-  auto operator==(const TypeDecl& rhs) const noexcept -> bool;
-  auto operator!=(const TypeDecl& rhs) const noexcept -> bool;
+  auto operator==(const TypeDecl& rhs) const noexcept -> bool { return m_id == rhs.m_id; }
+  auto operator!=(const TypeDecl& rhs) const noexcept -> bool { return !TypeDecl::operator==(rhs); }
 
-  [[nodiscard]] auto getId() const -> const TypeId&;
-  [[nodiscard]] auto getKind() const -> const TypeKind&;
-  [[nodiscard]] auto getName() const -> const std::string&;
+  [[nodiscard]] auto getId() const -> const TypeId& { return m_id; }
+  [[nodiscard]] auto getKind() const -> const TypeKind& { return m_kind; }
+  [[nodiscard]] auto getName() const -> const std::string& { return m_name; }
 
 private:
   TypeId m_id;
   TypeKind m_kind;
   std::string m_name;
 
-  TypeDecl(TypeId id, TypeKind kind, std::string name);
+  TypeDecl(TypeId id, TypeKind kind, std::string name) :
+      m_id{id}, m_kind{kind}, m_name{std::move(name)} {}
 };
 
 auto operator<<(std::ostream& out, const TypeDecl& rhs) -> std::ostream&;

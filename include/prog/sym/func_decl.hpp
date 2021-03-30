@@ -15,21 +15,23 @@ class FuncDecl final {
 public:
   FuncDecl() = delete;
 
-  auto operator==(const FuncDecl& rhs) const noexcept -> bool;
-  auto operator!=(const FuncDecl& rhs) const noexcept -> bool;
+  auto operator==(const FuncDecl& rhs) const noexcept -> bool { return m_id == rhs.m_id; }
+  auto operator!=(const FuncDecl& rhs) const noexcept -> bool { return !FuncDecl::operator==(rhs); }
 
-  [[nodiscard]] auto getId() const noexcept -> const FuncId&;
-  [[nodiscard]] auto getKind() const noexcept -> const FuncKind&;
-  [[nodiscard]] auto isAction() const noexcept -> bool;
-  [[nodiscard]] auto isIntrinsic() const noexcept -> bool;
-  [[nodiscard]] auto isImplicitConv() const noexcept -> bool;
-  [[nodiscard]] auto getName() const noexcept -> const std::string&;
-  [[nodiscard]] auto getInput() const noexcept -> const TypeSet&;
-  [[nodiscard]] auto getOutput() const noexcept -> TypeId;
-  [[nodiscard]] auto getMinInputCount() const noexcept -> unsigned int;
-  [[nodiscard]] auto getNumOptInputs() const noexcept -> unsigned int;
+  [[nodiscard]] auto getId() const noexcept -> const FuncId& { return m_id; }
+  [[nodiscard]] auto getKind() const noexcept -> const FuncKind& { return m_kind; }
+  [[nodiscard]] auto isAction() const noexcept -> bool { return m_isAction; }
+  [[nodiscard]] auto isIntrinsic() const noexcept -> bool { return m_isIntrinsic; }
+  [[nodiscard]] auto isImplicitConv() const noexcept -> bool { return m_isImplicitConv; }
+  [[nodiscard]] auto getName() const noexcept -> const std::string& { return m_name; }
+  [[nodiscard]] auto getInput() const noexcept -> const TypeSet& { return m_input; }
+  [[nodiscard]] auto getOutput() const noexcept -> TypeId { return m_output; }
+  [[nodiscard]] auto getMinInputCount() const noexcept -> unsigned int {
+    return m_input.getCount() - m_numOptInputs;
+  }
+  [[nodiscard]] auto getNumOptInputs() const noexcept -> unsigned int { return m_numOptInputs; }
 
-  auto updateOutput(TypeId newOutput) noexcept -> void;
+  auto updateOutput(TypeId newOutput) noexcept -> void { m_output = newOutput; }
 
 private:
   FuncId m_id;
@@ -51,9 +53,21 @@ private:
       std::string name,
       TypeSet input,
       TypeId output,
-      unsigned int m_numOptInputs);
+      unsigned int numOptInputs) :
+      m_id{id},
+      m_kind{kind},
+      m_isAction{isAction},
+      m_isIntrinsic{isIntrinsic},
+      m_isImplicitConv{isImplicitConv},
+      m_name{std::move(name)},
+      m_input{std::move(input)},
+      m_output{output},
+      m_numOptInputs{numOptInputs} {}
 };
 
-auto operator<<(std::ostream& out, const FuncDecl& rhs) -> std::ostream&;
+inline auto operator<<(std::ostream& out, const FuncDecl& rhs) -> std::ostream& {
+  return out << '[' << rhs.m_id << "]-'" << rhs.m_name << "'-" << '(' << rhs.m_input << ")->"
+             << rhs.m_output;
+}
 
 } // namespace prog::sym
