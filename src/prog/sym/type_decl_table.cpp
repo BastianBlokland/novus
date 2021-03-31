@@ -4,8 +4,6 @@
 
 namespace prog::sym {
 
-const unsigned int reservedTypesCount = 1;
-
 auto TypeDeclTable::operator[](TypeId id) const -> const TypeDecl& {
   const auto itr = m_types.find(id);
   if (itr == m_types.end()) {
@@ -42,9 +40,7 @@ auto TypeDeclTable::registerType(TypeKind kind, std::string name) -> TypeId {
   }
 
   // Assign an id one higher then the current highest, starting from 'reservedTypesCount'.
-  const auto highestKey = m_types.rbegin();
-  const auto id =
-      TypeId{highestKey == m_types.rend() ? reservedTypesCount : highestKey->first.m_id + 1};
+  const auto id = TypeId{static_cast<unsigned int>(++m_highestIndex)};
 
   if (m_lookup.insert({name, id}).second) {
     m_types.insert({id, TypeDecl{id, kind, std::move(name)}});
@@ -56,6 +52,10 @@ auto TypeDeclTable::registerType(TypeKind kind, std::string name) -> TypeId {
 auto TypeDeclTable::insertType(TypeId id, TypeKind kind, std::string name) -> void {
   if (name.empty()) {
     throw std::invalid_argument{"Name has to contain aleast 1 char"};
+  }
+
+  if (static_cast<int>(id.getNum()) > m_highestIndex) {
+    m_highestIndex = static_cast<int>(id.getNum());
   }
 
   // Insert into types map.

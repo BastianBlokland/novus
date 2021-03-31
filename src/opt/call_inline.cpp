@@ -5,6 +5,7 @@
 #include "prog/expr/nodes.hpp"
 #include "prog/expr/rewriter.hpp"
 #include "prog/sym/const_id_hasher.hpp"
+#include <cassert>
 #include <sstream>
 #include <unordered_set>
 
@@ -56,15 +57,13 @@ auto inlineCalls(const prog::Program& prog, bool& modified) -> prog::Program {
 auto CallInlineRewriter::isInlinable(const prog::expr::CallExprNode* callExpr) -> bool {
   const auto funcId = callExpr->getFunc();
 
-  if (!callExpr->isComplete(m_prog)) {
-    // This is not a valid state and means the frontend had an internal error and the backend will
-    // crash when trying to genenerate assembly.
-    return false;
-  }
+  assert(callExpr->isComplete(m_prog)); // Call expression has to be complete (patched).
+
+  // NOTE: Non-user function have no definition.
+  const prog::sym::FuncDef* funcDef = m_prog.findFuncDef(funcId);
 
   // Non-normal (fork or lazy) calls or calls to non-user funcs are not inlinable.
-  if (callExpr->getMode() != prog::expr::CallMode::Normal ||
-      !internal::isUserFunc(m_prog, funcId)) {
+  if (!funcDef || callExpr->getMode() != prog::expr::CallMode::Normal) {
     return false;
   }
 
@@ -73,12 +72,12 @@ auto CallInlineRewriter::isInlinable(const prog::expr::CallExprNode* callExpr) -
     return false;
   }
 
-  if (internal::hasFuncDefFlags(m_prog, funcId, prog::sym::FuncDef::Flags::NoInline)) {
+  if (funcDef->hasFlags(prog::sym::FuncDef::Flags::NoInline)) {
     return false;
   }
 
   // Recursive functions are not inlined.
-  if (internal::isRecursive(m_prog, funcId)) {
+  if (internal::isRecursive(m_prog, *funcDef)) {
     return false;
   }
 

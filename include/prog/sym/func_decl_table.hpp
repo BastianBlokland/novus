@@ -1,10 +1,10 @@
 #pragma once
 #include "prog/sym/func_decl.hpp"
 #include "prog/sym/func_id.hpp"
+#include "prog/sym/func_id_hasher.hpp"
 #include "prog/sym/overload_options.hpp"
 #include "prog/sym/type_decl.hpp"
 #include "prog/sym/type_set.hpp"
-#include <map>
 #include <optional>
 #include <string>
 #include <unordered_map>
@@ -25,7 +25,7 @@ namespace sym {
 //
 class FuncDeclTable final {
 public:
-  using Iterator = std::map<FuncId, FuncDecl>::const_iterator;
+  using Iterator = std::unordered_map<FuncId, FuncDecl, FuncIdHasher>::const_iterator;
   using Id       = prog::sym::FuncId;
 
   FuncDeclTable()                         = default;
@@ -100,9 +100,10 @@ public:
   auto updateFuncOutput(FuncId id, TypeId newOutput) -> void;
 
 private:
-  std::map<FuncId, FuncDecl> m_funcs;
+  std::unordered_map<FuncId, FuncDecl, FuncIdHasher> m_funcs;
   std::unordered_multimap<std::string, FuncId> m_normalLookup;
   std::unordered_multimap<std::string, FuncId> m_intrinsicLookup;
+  int m_highestIndex = -1;
 
   [[nodiscard]] auto
   lookupByName(const std::string& name, bool intrinsic, OverloadOptions options) const

@@ -110,6 +110,10 @@ auto FuncDeclTable::insertFunc(
     throw std::invalid_argument{"Name has to contain aleast 1 char"};
   }
 
+  if (static_cast<int>(id.getNum()) > m_highestIndex) {
+    m_highestIndex = static_cast<int>(id.getNum());
+  }
+
   // Insert into function map.
   auto funcDecl = FuncDecl{
       id,
@@ -163,7 +167,7 @@ auto FuncDeclTable::lookupByName(
 }
 
 auto FuncDeclTable::registerFunc(
-    const Program& prog,
+    [[maybe_unused]] const Program& prog,
     FuncKind kind,
     bool isAction,
     bool isIntrinsic,
@@ -176,18 +180,12 @@ auto FuncDeclTable::registerFunc(
   if (name.empty()) {
     throw std::invalid_argument{"Name has to contain aleast 1 char"};
   }
-  if (internal::findOverload(
-          prog,
-          *this,
-          lookupByName(name, isIntrinsic, OverloadOptions{0}),
-          input,
-          OverloadOptions{0})) {
-    throw std::logic_error{"Function with an identical name and input has already been registered"};
-  }
 
-  // Assign an id one higher then the current highest, starting from 0.
-  const auto highestKey = m_funcs.rbegin();
-  const auto id         = FuncId{highestKey == m_funcs.rend() ? 0 : highestKey->first.m_id + 1};
+  // Validate that there is no function with an identical name and inputs already registered.
+  assert(!internal::findOverload(
+      prog, *this, lookupByName(name, isIntrinsic, OverloadOptions{0}), input, OverloadOptions{0}));
+
+  const auto id = FuncId{static_cast<unsigned int>(++m_highestIndex)};
 
   (isIntrinsic ? m_intrinsicLookup : m_normalLookup).insert({name, id});
 

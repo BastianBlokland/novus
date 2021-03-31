@@ -149,8 +149,7 @@ auto patchCallArgs(
   auto visitor = PatchOptArgsVisitor{prog, srcTable, reportFunc};
 
   for (auto itr = prog.beginFuncDefs(); itr != prog.endFuncDefs(); ++itr) {
-    auto funcId         = *itr;
-    const auto& funcDef = prog.getFuncDef(funcId);
+    const auto& funcDef = itr->second;
     funcDef.getBody().accept(&visitor);
   }
 

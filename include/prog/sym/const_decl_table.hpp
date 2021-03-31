@@ -50,7 +50,9 @@ public:
 
   [[nodiscard]] auto getOffset(ConstId id) const -> unsigned int;
   [[nodiscard]] auto getHighestConstId() const -> ConstId;
-  [[nodiscard]] auto getNextConstId() const noexcept -> ConstId;
+  [[nodiscard]] auto getNextConstId() const noexcept -> ConstId {
+    return ConstId{static_cast<unsigned int>(m_highestId + 1)};
+  }
 
   auto registerBound(TypeId type) -> ConstId;
   auto registerInput(std::string name, TypeId type) -> ConstId;
@@ -63,6 +65,7 @@ public:
 private:
   std::vector<ConstDecl> m_consts;
   std::unordered_map<std::string, ConstId> m_lookup;
+  int m_highestId = -1;
 
   auto registerConst(ConstKind kind, std::string name, TypeId type) -> ConstId;
 

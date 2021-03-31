@@ -2,6 +2,7 @@
 #include "prog/expr/call_mode.hpp"
 #include "prog/expr/node.hpp"
 #include "prog/program.hpp"
+#include <cassert>
 #include <functional>
 
 namespace prog::expr {
@@ -30,9 +31,12 @@ public:
 
   [[nodiscard]] constexpr static auto getKind() { return NodeKind::Call; }
 
-  [[nodiscard]] auto operator[](unsigned int i) const -> const Node& override;
-  [[nodiscard]] auto getChildCount() const -> unsigned int override;
-  [[nodiscard]] auto getType() const noexcept -> sym::TypeId override;
+  [[nodiscard]] auto operator[](unsigned int i) const -> const Node& override {
+    assert(i < m_args.size());
+    return *m_args[i];
+  }
+  [[nodiscard]] auto getChildCount() const -> unsigned int override { return m_args.size(); }
+  [[nodiscard]] auto getType() const noexcept -> sym::TypeId override { return m_resultType; }
   [[nodiscard]] auto toString() const -> std::string override;
 
   [[nodiscard]] auto clone(Rewriter* rewriter) const -> std::unique_ptr<Node> override;

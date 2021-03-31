@@ -1,5 +1,6 @@
 #pragma once
 #include "prog/sym/type_id.hpp"
+#include <cassert>
 #include <initializer_list>
 #include <iostream>
 #include <vector>
@@ -14,18 +15,21 @@ public:
   using Iterator = typename std::vector<TypeId>::const_iterator;
 
   TypeSet() = default;
-  TypeSet(std::initializer_list<TypeId> list);
-  explicit TypeSet(std::vector<TypeId> val);
+  TypeSet(std::initializer_list<TypeId> list) : m_val{list} {}
+  explicit TypeSet(std::vector<TypeId> val) : m_val{std::move(val)} {}
 
-  [[nodiscard]] auto operator[](unsigned int) const -> TypeId;
+  [[nodiscard]] auto operator[](unsigned int i) const -> TypeId {
+    assert(i < this->m_val.size());
+    return m_val[i];
+  }
 
-  auto operator==(const TypeSet& rhs) const noexcept -> bool;
-  auto operator!=(const TypeSet& rhs) const noexcept -> bool;
+  auto operator==(const TypeSet& rhs) const noexcept -> bool { return m_val == rhs.m_val; }
+  auto operator!=(const TypeSet& rhs) const noexcept -> bool { return !TypeSet::operator==(rhs); }
 
-  [[nodiscard]] auto getCount() const -> unsigned int;
+  [[nodiscard]] auto getCount() const -> unsigned int { return m_val.size(); }
 
-  [[nodiscard]] auto begin() const -> Iterator;
-  [[nodiscard]] auto end() const -> Iterator;
+  [[nodiscard]] auto begin() const -> Iterator { return m_val.begin(); }
+  [[nodiscard]] auto end() const -> Iterator { return m_val.end(); }
 
   [[nodiscard]] auto withExtraType(TypeId type) -> TypeSet;
 

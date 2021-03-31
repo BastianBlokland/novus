@@ -21,10 +21,8 @@ auto FindCalledFuncs::markFunc(prog::sym::FuncId func) -> void {
   }
 
   // Visit any newly found user functions.
-  const auto& funcDecl = m_prog.getFuncDecl(func);
-  if (funcDecl.getKind() == prog::sym::FuncKind::User) {
-    const auto& funcDef = m_prog.getFuncDef(func);
-    funcDef.getBody().accept(this);
+  if (const prog::sym::FuncDef* funcDef = m_prog.findFuncDef(func)) {
+    funcDef->getBody().accept(this);
   }
 }
 

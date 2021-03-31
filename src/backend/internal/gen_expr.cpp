@@ -81,9 +81,8 @@ auto GenExpr::visit(const prog::expr::SwitchExprNode& n) -> void {
 }
 
 auto GenExpr::visit(const prog::expr::CallExprNode& n) -> void {
-  if (!n.isComplete(m_prog)) {
-    throw std::logic_error{"Call expression needs to be patched first"};
-  }
+
+  assert(n.isComplete(m_prog)); // Call expression has to be complete (patched).
 
   const auto& funcDecl = m_prog.getFuncDecl(n.getFunc());
 

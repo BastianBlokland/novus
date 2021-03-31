@@ -7,7 +7,6 @@
 #include "prog/sym/type_decl_table.hpp"
 #include "prog/sym/type_id_hasher.hpp"
 #include "prog/sym/union_def.hpp"
-#include <set>
 #include <unordered_map>
 #include <variant>
 
@@ -18,7 +17,7 @@ class TypeDefTable final {
 public:
   using TypeDef =
       typename std::variant<StructDef, UnionDef, EnumDef, DelegateDef, FutureDef, LazyDef>;
-  using Iterator = typename std::set<TypeId>::const_iterator;
+  using Iterator = typename std::unordered_map<TypeId, TypeDef, TypeIdHasher>::const_iterator;
 
   TypeDefTable()                        = default;
   TypeDefTable(const TypeDefTable& rhs) = delete;
@@ -32,8 +31,8 @@ public:
 
   [[nodiscard]] auto hasDef(sym::TypeId id) const -> bool;
 
-  [[nodiscard]] auto begin() const -> Iterator;
-  [[nodiscard]] auto end() const -> Iterator;
+  [[nodiscard]] auto begin() const -> Iterator { return m_typeDefs.begin(); }
+  [[nodiscard]] auto end() const -> Iterator { return m_typeDefs.end(); }
 
   auto
   registerStruct(const sym::TypeDeclTable& typeTable, sym::TypeId id, sym::FieldDeclTable fields)
@@ -64,7 +63,6 @@ public:
 
 private:
   std::unordered_map<TypeId, TypeDef, TypeIdHasher> m_typeDefs;
-  std::set<TypeId> m_types;
 };
 
 } // namespace prog::sym

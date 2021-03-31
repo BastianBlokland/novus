@@ -15,10 +15,6 @@ auto TypeDefTable::hasDef(sym::TypeId id) const -> bool {
   return m_typeDefs.find(id) != m_typeDefs.end();
 }
 
-auto TypeDefTable::begin() const -> Iterator { return m_types.begin(); }
-
-auto TypeDefTable::end() const -> Iterator { return m_types.end(); }
-
 auto TypeDefTable::registerStruct(
     const sym::TypeDeclTable& typeTable, sym::TypeId id, sym::FieldDeclTable fields) -> void {
   if (typeTable[id].getKind() != sym::TypeKind::Struct) {
@@ -87,7 +83,6 @@ auto TypeDefTable::registerType(sym::TypeId id, TypeDef def) -> void {
     throw std::logic_error{"Type already has a definition registered"};
   }
   m_typeDefs.insert({id, std::move(def)});
-  m_types.insert(id);
 }
 
 } // namespace prog::sym
