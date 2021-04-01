@@ -3,6 +3,7 @@
 #include "frontend/analysis.hpp"
 #include "frontend/source.hpp"
 #include "prog/expr/node_call.hpp"
+#include <algorithm>
 #include <array>
 #include <vector>
 
@@ -63,15 +64,19 @@ inline auto buildSource(std::string input) {
   }
 
 inline auto findAnonFunc(const Output& output, unsigned int num) -> prog::sym::FuncId {
+  auto anonFuncIds = std::vector<prog::sym::FuncId>{};
   for (auto itr = output.getProg().beginFuncDecls(); itr != output.getProg().endFuncDecls();
        ++itr) {
-    const auto& funcDecl = itr->second;
-    const auto isAnon    = funcDecl.getName().rfind("__anon_", 0) == 0;
-    if (isAnon && num-- == 0) {
-      return funcDecl.getId();
+    if (itr->second.getName().rfind("__anon_", 0) == 0) {
+      anonFuncIds.push_back(itr->first);
     }
   }
-  throw std::logic_error{"Unable to find anonymous function"};
+  std::sort(anonFuncIds.begin(), anonFuncIds.end());
+
+  if (num >= anonFuncIds.size()) {
+    throw std::logic_error{"Unable to find anonymous function"};
+  }
+  return anonFuncIds[num];
 }
 
 inline auto findAnonFuncDef(const Output& output, unsigned int num) -> const prog::sym::FuncDef& {

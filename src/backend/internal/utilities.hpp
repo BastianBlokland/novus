@@ -4,6 +4,7 @@
 #include "prog/sym/field_id.hpp"
 #include "prog/sym/func_id.hpp"
 #include "prog/sym/type_id.hpp"
+#include <algorithm>
 #include <string>
 
 namespace backend::internal {
