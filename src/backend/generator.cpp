@@ -67,18 +67,20 @@ static auto generateExecStmt(
   return label;
 }
 
-auto generate(const prog::Program& program) -> std::pair<novasm::Executable, InstructionLabels> {
+auto generate(const prog::Program& program, GenerateFlags flags)
+    -> std::pair<novasm::Executable, InstructionLabels> {
   auto compilerVersion = std::string{PROJECT_VER};
   auto asmb            = novasm::Assembler{std::move(compilerVersion)};
+
+  const bool deterministic = (flags & GenerateFlags::Deterministic) != GenerateFlags::None;
 
   // Generate equality functions for user types (structs and unions).
   internal::genUserTypeEquality(&asmb, program);
 
   // Generate function definitons.
-  for (auto funcItr = program.beginFuncDefs(); funcItr != program.endFuncDefs(); ++funcItr) {
-    const auto& funcDef = funcItr->second;
+  internal::forEachFuncDef(program, deterministic, [&](const prog::sym::FuncDef& funcDef) {
     generateFunc(&asmb, program, funcDef);
-  }
+  });
 
   // Generate execution statements.
   std::vector<std::string> execStmtLabels = {};

@@ -32,4 +32,22 @@ auto structIsTagType(const prog::Program& prog, prog::sym::TypeId structType) ->
 // To be eligible it needs to have 2 entries, a struct with fields and an empty struct.
 auto unionIsNullableStruct(const prog::Program& prog, prog::sym::TypeId unionType) -> bool;
 
+template <typename Operation>
+auto forEachFuncDef(const prog::Program& program, bool deterministic, Operation op) -> void {
+  if (deterministic) {
+    auto funcIds = std::vector<prog::sym::FuncId>{};
+    for (auto itr = program.beginFuncDefs(); itr != program.endFuncDefs(); ++itr) {
+      funcIds.push_back(itr->first);
+    }
+    std::sort(funcIds.begin(), funcIds.end());
+    for (const auto& funcId : funcIds) {
+      op(program.getFuncDef(funcId));
+    }
+  } else {
+    for (auto itr = program.beginFuncDefs(); itr != program.endFuncDefs(); ++itr) {
+      op(itr->second);
+    }
+  }
+}
+
 } // namespace backend::internal
