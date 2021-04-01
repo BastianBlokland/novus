@@ -43,9 +43,7 @@ auto matchesExpr(const prog::Program& prog, prog::sym::FuncId funcId, UnaryPredi
   return matcher.isFound();
 }
 
-auto isUserFunc(const prog::Program& prog, prog::sym::FuncId funcId) -> bool;
-
-auto isRecursive(const prog::Program& prog, prog::sym::FuncId funcId) -> bool;
+auto isRecursive(const prog::Program& prog, const prog::sym::FuncDef& funcDef) -> bool;
 
 auto hasFuncDefFlags(
     const prog::Program& prog, prog::sym::FuncId funcId, prog::sym::FuncDef::Flags flags) -> bool;

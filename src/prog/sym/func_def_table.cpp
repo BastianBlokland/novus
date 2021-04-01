@@ -12,9 +12,10 @@ auto FuncDefTable::operator[](sym::FuncId id) const -> const FuncDef& {
   return itr->second;
 }
 
-auto FuncDefTable::begin() const -> Iterator { return m_funcs.begin(); }
-
-auto FuncDefTable::end() const -> Iterator { return m_funcs.end(); }
+auto FuncDefTable::findFuncDef(sym::FuncId id) const noexcept -> const FuncDef* {
+  auto itr = m_funcDefs.find(id);
+  return itr != m_funcDefs.end() ? &itr->second : nullptr;
+}
 
 auto FuncDefTable::registerFunc(
     const sym::FuncDeclTable& funcTable,
@@ -52,7 +53,6 @@ auto FuncDefTable::registerFunc(
   }
   m_funcDefs.insert(
       {id, FuncDef{id, std::move(consts), std::move(body), std::move(optArgInitializers), flags}});
-  m_funcs.insert(id);
 }
 
 } // namespace prog::sym

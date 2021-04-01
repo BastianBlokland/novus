@@ -459,18 +459,6 @@ auto Program::getDelegateRetType(sym::TypeId id) const -> std::optional<sym::Typ
   return std::get<sym::DelegateDef>(getTypeDef(id)).getOutput();
 }
 
-auto Program::getTypeDecl(sym::TypeId id) const -> const sym::TypeDecl& { return m_typeDecls[id]; }
-
-auto Program::getFuncDecl(sym::FuncId id) const -> const sym::FuncDecl& { return m_funcDecls[id]; }
-
-auto Program::getFuncDef(sym::FuncId id) const -> const sym::FuncDef& { return m_funcDefs[id]; }
-
-auto Program::hasTypeDef(sym::TypeId id) const -> bool { return m_typeDefs.hasDef(id); }
-
-auto Program::getTypeDef(sym::TypeId id) const -> const sym::TypeDefTable::TypeDef& {
-  return m_typeDefs[id];
-}
-
 auto Program::declareStruct(std::string name) -> sym::TypeId {
   return m_typeDecls.registerType(sym::TypeKind::Struct, std::move(name));
 }

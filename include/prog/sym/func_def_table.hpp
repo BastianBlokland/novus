@@ -12,7 +12,7 @@ namespace prog::sym {
 // Function definition table. Contains a defintiion for all user-functions.
 class FuncDefTable final {
 public:
-  using Iterator = std::set<FuncId>::const_iterator;
+  using Iterator = std::unordered_map<FuncId, FuncDef, FuncIdHasher>::const_iterator;
 
   FuncDefTable()                        = default;
   FuncDefTable(const FuncDefTable& rhs) = delete;
@@ -24,8 +24,10 @@ public:
 
   [[nodiscard]] auto operator[](sym::FuncId id) const -> const FuncDef&;
 
-  [[nodiscard]] auto begin() const -> Iterator;
-  [[nodiscard]] auto end() const -> Iterator;
+  [[nodiscard]] auto findFuncDef(sym::FuncId id) const noexcept -> const FuncDef*;
+
+  [[nodiscard]] auto begin() const -> Iterator { return m_funcDefs.begin(); }
+  [[nodiscard]] auto end() const -> Iterator { return m_funcDefs.end(); }
 
   auto registerFunc(
       const sym::FuncDeclTable& funcTable,
@@ -37,7 +39,6 @@ public:
 
 private:
   std::unordered_map<FuncId, FuncDef, FuncIdHasher> m_funcDefs;
-  std::set<FuncId> m_funcs;
 };
 
 } // namespace prog::sym

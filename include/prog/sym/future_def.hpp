@@ -17,14 +17,14 @@ public:
   auto operator=(const FutureDef& rhs) -> FutureDef& = delete;
   auto operator=(FutureDef&& rhs) noexcept -> FutureDef& = delete;
 
-  [[nodiscard]] auto getId() const noexcept -> const TypeId&;
-  [[nodiscard]] auto getResult() const -> const TypeId&;
+  [[nodiscard]] auto getId() const noexcept -> const TypeId& { return m_id; }
+  [[nodiscard]] auto getResult() const -> const TypeId& { return m_result; }
 
 private:
   sym::TypeId m_id;
   TypeId m_result;
 
-  FutureDef(sym::TypeId id, TypeId result);
+  FutureDef(sym::TypeId id, TypeId result) : m_id{id}, m_result{result} {}
 };
 
 } // namespace prog::sym

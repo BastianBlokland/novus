@@ -142,12 +142,23 @@ public:
 
   [[nodiscard]] auto getDelegateRetType(sym::TypeId id) const -> std::optional<sym::TypeId>;
 
-  [[nodiscard]] auto getTypeDecl(sym::TypeId id) const -> const sym::TypeDecl&;
-  [[nodiscard]] auto getFuncDecl(sym::FuncId id) const -> const sym::FuncDecl&;
+  [[nodiscard]] auto getTypeDecl(sym::TypeId id) const -> const sym::TypeDecl& {
+    return m_typeDecls[id];
+  }
+  [[nodiscard]] auto getFuncDecl(sym::FuncId id) const -> const sym::FuncDecl& {
+    return m_funcDecls[id];
+  }
 
-  [[nodiscard]] auto hasTypeDef(sym::TypeId id) const -> bool;
-  [[nodiscard]] auto getTypeDef(sym::TypeId id) const -> const sym::TypeDefTable::TypeDef&;
-  [[nodiscard]] auto getFuncDef(sym::FuncId id) const -> const sym::FuncDef&;
+  [[nodiscard]] auto hasTypeDef(sym::TypeId id) const -> bool { return m_typeDefs.hasDef(id); }
+  [[nodiscard]] auto getTypeDef(sym::TypeId id) const -> const sym::TypeDefTable::TypeDef& {
+    return m_typeDefs[id];
+  }
+  [[nodiscard]] auto getFuncDef(sym::FuncId id) const -> const sym::FuncDef& {
+    return m_funcDefs[id];
+  }
+  [[nodiscard]] auto findFuncDef(sym::FuncId id) const -> const sym::FuncDef* {
+    return m_funcDefs.findFuncDef(id);
+  }
 
   auto declareStruct(std::string name) -> sym::TypeId;
   auto declareUnion(std::string name) -> sym::TypeId;

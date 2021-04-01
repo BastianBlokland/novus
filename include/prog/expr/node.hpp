@@ -26,16 +26,16 @@ public:
   virtual auto operator==(const Node& rhs) const noexcept -> bool = 0;
   virtual auto operator!=(const Node& rhs) const noexcept -> bool = 0;
 
-  [[nodiscard]] auto getKind() const -> NodeKind;
-  [[nodiscard]] auto hasSourceId() const -> bool;
-  [[nodiscard]] auto getSourceId() const -> sym::SourceId;
+  [[nodiscard]] auto getKind() const -> NodeKind { return m_kind; }
+  [[nodiscard]] auto hasSourceId() const -> bool { return m_sourceId.isSet(); }
+  [[nodiscard]] auto getSourceId() const -> sym::SourceId { return m_sourceId; }
 
   [[nodiscard]] virtual auto operator[](unsigned int) const -> const Node& = 0;
   [[nodiscard]] virtual auto getChildCount() const -> unsigned int         = 0;
   [[nodiscard]] virtual auto getType() const noexcept -> sym::TypeId       = 0;
   [[nodiscard]] virtual auto toString() const -> std::string               = 0;
 
-  auto setSourceId(sym::SourceId source) -> void;
+  auto setSourceId(sym::SourceId source) -> void { m_sourceId = source; }
 
   [[nodiscard]] virtual auto clone(Rewriter* rewriter) const -> std::unique_ptr<Node> = 0;
 
@@ -51,7 +51,7 @@ public:
   }
 
 protected:
-  explicit Node(NodeKind kind);
+  explicit Node(NodeKind kind) : m_kind{kind}, m_sourceId(sym::SourceId::none()) {}
 
 private:
   NodeKind m_kind;
@@ -60,6 +60,8 @@ private:
 
 using NodePtr = std::unique_ptr<Node>;
 
-auto operator<<(std::ostream& out, const Node& rhs) -> std::ostream&;
+inline auto operator<<(std::ostream& out, const Node& rhs) -> std::ostream& {
+  return out << rhs.toString();
+}
 
 } // namespace prog::expr

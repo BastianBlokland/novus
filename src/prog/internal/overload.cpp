@@ -23,14 +23,13 @@ auto findOverload(
 
     // Check if this overload satisfies the given options.
     using Flags = sym::OverloadFlags;
-    if (options.hasFlag<Flags::ExclActions>() && declTable[overload].isAction()) {
+    if (options.hasFlag<Flags::ExclActions>() && overloadDecl.isAction()) {
       continue;
     }
-    if (options.hasFlag<Flags::ExclPureFuncs>() && !declTable[overload].isAction()) {
+    if (options.hasFlag<Flags::ExclPureFuncs>() && !overloadDecl.isAction()) {
       continue;
     }
-    if (options.hasFlag<Flags::ExclNonUser>() &&
-        declTable[overload].getKind() != sym::FuncKind::User) {
+    if (options.hasFlag<Flags::ExclNonUser>() && overloadDecl.getKind() != sym::FuncKind::User) {
       continue;
     }
     if (options.hasFlag<Flags::NoOptArgs>() &&

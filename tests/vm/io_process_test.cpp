@@ -57,7 +57,8 @@ auto compileProg(std::string_view name, std::string_view srcText) -> filesystem:
     throw std::logic_error{"Failed to write test program to disk"};
   }
 
-  const auto asmOutput = backend::generate(frontendOutput.getProg());
+  const auto asmOutput =
+      backend::generate(frontendOutput.getProg(), backend::GenerateFlags::Deterministic);
   novasm::serialize(asmOutput.first, std::ostreambuf_iterator<char>{destFilestream});
 
   return filePath;

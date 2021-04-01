@@ -38,7 +38,8 @@ inline auto buildExecutable(const std::function<void(novasm::Assembler*)>& build
     const auto src = frontend::buildSource("test", std::nullopt, srcText.begin(), srcText.end());  \
     const auto frontendOutput = frontend::analyze(src);                                            \
     REQUIRE(frontendOutput.isSuccess());                                                           \
-    const auto asmOutput = backend::generate(frontendOutput.getProg());                            \
+    const auto asmOutput =                                                                         \
+        backend::generate(frontendOutput.getProg(), backend::GenerateFlags::Deterministic);        \
     CHECK(asmOutput.first == (EXPECTED_ASM));                                                      \
   }
 

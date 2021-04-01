@@ -80,10 +80,6 @@ auto ConstDeclTable::getHighestConstId() const -> ConstId {
   return highestKey->getId();
 }
 
-auto ConstDeclTable::getNextConstId() const noexcept -> ConstId {
-  return m_consts.empty() ? ConstId{0} : ConstId{getHighestConstId().m_id + 1};
-}
-
 auto ConstDeclTable::registerBound(TypeId type) -> ConstId {
   std::ostringstream oss;
   oss << "__bound_" << m_consts.size();
@@ -103,7 +99,7 @@ auto ConstDeclTable::registerConst(ConstKind kind, std::string name, TypeId type
     throw std::invalid_argument{"Name has to contain aleast 1 char"};
   }
 
-  const auto id = getNextConstId();
+  const auto id = ConstId{static_cast<unsigned int>(++m_highestId)};
 
   if (m_lookup.insert({name, id}).second) {
     // Keep entries in m_consts sorted by kind.
@@ -125,6 +121,11 @@ auto ConstDeclTable::erase(ConstId id) -> bool {
       m_lookup.begin(), m_lookup.end(), [id](const auto& entry) { return entry.second == id; });
   assert(lookupItr != m_lookup.end());
   m_lookup.erase(lookupItr);
+
+  if (static_cast<int>(id.getNum()) == m_highestId) {
+    m_highestId = m_consts.empty() ? -1 : static_cast<int>(getHighestConstId().getNum());
+  }
+
   return true;
 }
 

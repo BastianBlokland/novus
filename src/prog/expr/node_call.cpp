@@ -28,17 +28,6 @@ auto CallExprNode::operator!=(const Node& rhs) const noexcept -> bool {
   return !CallExprNode::operator==(rhs);
 }
 
-auto CallExprNode::operator[](unsigned int i) const -> const Node& {
-  if (i >= m_args.size()) {
-    throw std::out_of_range("No child at given index");
-  }
-  return *m_args[i];
-}
-
-auto CallExprNode::getChildCount() const -> unsigned int { return m_args.size(); }
-
-auto CallExprNode::getType() const noexcept -> sym::TypeId { return m_resultType; }
-
 auto CallExprNode::toString() const -> std::string {
   auto oss = std::ostringstream{};
   if (m_callToIntrinsic) {
