@@ -105,9 +105,9 @@ jobs:
             image: ubuntu-16.04,
             arch: x86_64,
             os: ubuntu,
-            compiler: gcc7,
-            cc: gcc-7,
-            cxx: g++-7
+            compiler: gcc9,
+            cc: gcc-9,
+            cxx: g++-9
           }
         - {
             image: ubuntu-16.04,
