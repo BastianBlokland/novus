@@ -529,8 +529,8 @@ auto Program::declareImplicitConv(sym::TypeId input, sym::TypeId output) -> sym:
 }
 
 auto Program::declareFailIntrinsic(std::string name, sym::TypeId output) -> sym::FuncId {
-  return m_funcDecls.registerIntrinsicAction(
-      *this, sym::FuncKind::ActionFail, std::move(name), sym::TypeSet{}, output);
+  return m_funcDecls.registerIntrinsic(
+      *this, sym::FuncKind::Fail, std::move(name), sym::TypeSet{}, output);
 }
 
 auto Program::declareUsertypeAliasIntrinsic(std::string name, sym::TypeId input, sym::TypeId output)

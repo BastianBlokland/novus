@@ -101,6 +101,8 @@ enum class FuncKind {
   SourceLocLine,   // Get the line number in the current source file.
   SourceLocColumn, // Get the column number in the current source file.
 
+  Fail, // Fail the current executor (will return exit-code 1 from the application).
+
   ActionEndiannessNative,  // Get the native endianness of the system: Little: 0, Big: 1.
   ActionPlatformErrorCode, // Get the last plaform error.
 
@@ -153,7 +155,6 @@ enum class FuncKind {
   ActionProgramPath,    // Get the path of the currently executing program.
 
   ActionSleepNano, // Sleep the executor for x nanoseconds.
-  ActionFail,      // Fail the current executor (will return exit-code 1 from the application).
 };
 
 } // namespace prog::sym
