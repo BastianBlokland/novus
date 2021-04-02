@@ -346,9 +346,6 @@ auto instType(
       return fieldType;
     }
   }
-  if (typeName == "reflect_struct_are_equivalent" && typeSet->getCount() == 2) {
-    return reflectStructAreEquivalentIntrinsic(ctx, (*typeSet)[0], (*typeSet)[1]);
-  }
   if (typeName == "reflect_union_count" && typeSet->getCount() == 1) {
     if (auto unionCount = reflectUnionCount(ctx, (*typeSet)[0])) {
       return unionCount;
@@ -378,6 +375,9 @@ auto instType(
     if (auto retType = reflectDelegateRetType(ctx, (*typeSet)[0])) {
       return retType;
     }
+  }
+  if (typeName == "reflect_usertypes_are_equivalent" && typeSet->getCount() == 2) {
+    return reflectUsertypesAreEquivalentIntrinsic(ctx, (*typeSet)[0], (*typeSet)[1]);
   }
 
   const auto typeInstantiation = ctx->getTypeTemplates()->instantiate(typeName, *typeSet);

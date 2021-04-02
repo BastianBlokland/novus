@@ -68,7 +68,7 @@ TEST_CASE("[frontend] Analyze reflection", "frontend") {
                                    "struct S1 = int A, float B, long C "
                                    "struct S2 = int A, float B, long C "
                                    "fun f()"
-                                   "  Type{reflect_struct_are_equivalent{S1, S2}}()");
+                                   "  Type{reflect_usertypes_are_equivalent{S1, S2}}()");
       REQUIRE(output.isSuccess());
       CHECK(GET_FUNC_DECL(output, "f").getOutput() == GET_TYPE_ID(output, "Type__#1"));
     }
@@ -78,7 +78,7 @@ TEST_CASE("[frontend] Analyze reflection", "frontend") {
                                    "struct S1 = int A, float B, long C "
                                    "struct S2 = int A, float B "
                                    "fun f()"
-                                   "  Type{reflect_struct_are_equivalent{S1, S2}}()");
+                                   "  Type{reflect_usertypes_are_equivalent{S1, S2}}()");
       REQUIRE(output.isSuccess());
       CHECK(GET_FUNC_DECL(output, "f").getOutput() == GET_TYPE_ID(output, "Type__#0"));
     }
@@ -87,7 +87,7 @@ TEST_CASE("[frontend] Analyze reflection", "frontend") {
       const auto& output = ANALYZE("struct S1 = int A, float B, long C "
                                    "struct S2 = int A, float B, long C "
                                    "fun f(S1 s) -> S2 "
-                                   "  intrinsic{reflect_struct_alias}{S1, S2}(s)");
+                                   "  intrinsic{reflect_usertype_alias}{S1, S2}(s)");
       REQUIRE(output.isSuccess());
       const auto& funcDef = GET_FUNC_DEF(output, "f", GET_TYPE_ID(output, "S1"));
       CHECK(
@@ -95,7 +95,7 @@ TEST_CASE("[frontend] Analyze reflection", "frontend") {
           *prog::expr::callExprNode(
               output.getProg(),
               *output.getProg().lookupIntrinsic(
-                  "__alias_struct_S1_S2", {GET_TYPE_ID(output, "S1")}),
+                  "__alias_usertype_S1_S2", {GET_TYPE_ID(output, "S1")}),
               EXPRS(prog::expr::constExprNode(
                   funcDef.getConsts(), *funcDef.getConsts().lookup("s")))));
     }
@@ -117,6 +117,43 @@ TEST_CASE("[frontend] Analyze reflection", "frontend") {
                                    "fun f() Type{reflect_union_type{U, #1}}()");
       REQUIRE(output.isSuccess());
       CHECK(GET_FUNC_DECL(output, "f").getOutput() == GET_TYPE_ID(output, "Type__float"));
+    }
+
+    SECTION("Equivalent unions") {
+      const auto& output = ANALYZE("struct Type{T} "
+                                   "union U1 = int, float, long "
+                                   "union U2 = int, float, long "
+                                   "fun f()"
+                                   "  Type{reflect_usertypes_are_equivalent{U1, U2}}()");
+      REQUIRE(output.isSuccess());
+      CHECK(GET_FUNC_DECL(output, "f").getOutput() == GET_TYPE_ID(output, "Type__#1"));
+    }
+
+    SECTION("Non equivalent unions") {
+      const auto& output = ANALYZE("struct Type{T} "
+                                   "union U1 = int, float, long "
+                                   "union U2 = int, float, bool "
+                                   "fun f()"
+                                   "  Type{reflect_usertypes_are_equivalent{U1, U2}}()");
+      REQUIRE(output.isSuccess());
+      CHECK(GET_FUNC_DECL(output, "f").getOutput() == GET_TYPE_ID(output, "Type__#0"));
+    }
+
+    SECTION("Alias union") {
+      const auto& output = ANALYZE("union U1 = int, float, long "
+                                   "union U2 = int, float, long "
+                                   "fun f(U1 u) -> U2 "
+                                   "  intrinsic{reflect_usertype_alias}{U1, U2}(u)");
+      REQUIRE(output.isSuccess());
+      const auto& funcDef = GET_FUNC_DEF(output, "f", GET_TYPE_ID(output, "U1"));
+      CHECK(
+          funcDef.getBody() ==
+          *prog::expr::callExprNode(
+              output.getProg(),
+              *output.getProg().lookupIntrinsic(
+                  "__alias_usertype_U1_U2", {GET_TYPE_ID(output, "U1")}),
+              EXPRS(prog::expr::constExprNode(
+                  funcDef.getConsts(), *funcDef.getConsts().lookup("u")))));
     }
   }
 

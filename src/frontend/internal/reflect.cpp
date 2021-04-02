@@ -92,34 +92,6 @@ auto reflectStructFieldId(
   return structDef->getFields()[index].getId();
 }
 
-[[nodiscard]] auto reflectStructAreEquivalentIntrinsic(
-    Context* ctx, prog::sym::TypeId structX, prog::sym::TypeId structY) noexcept
-    -> prog::sym::TypeId {
-  auto& staticInts = *ctx->getStaticIntTable();
-  return staticInts.getType(ctx, ctx->getProg()->areStructsEquivalent(structX, structY));
-}
-
-auto reflectStructAliasIntrinsic(
-    Context* ctx, prog::sym::TypeId input, prog::sym::TypeId output) noexcept
-    -> std::optional<prog::sym::FuncId> {
-
-  if (!ctx->getProg()->areStructsEquivalent(input, output)) {
-    return std::nullopt;
-  }
-
-  // TODO: We should make a proper table for this, instead of just relying on the mangled names.
-
-  auto intrinsicName = std::string{"__alias_struct_"};
-  intrinsicName += getName(*ctx, input);
-  intrinsicName += std::string{"_"};
-  intrinsicName += getName(*ctx, output);
-
-  if (const auto intrinsicId = ctx->getProg()->lookupIntrinsic(intrinsicName, {input})) {
-    return intrinsicId;
-  }
-  return ctx->getProg()->declareStructAliasIntrinsic(std::move(intrinsicName), input, output);
-}
-
 auto reflectUnionCount(Context* ctx, prog::sym::TypeId unionType) noexcept
     -> std::optional<prog::sym::TypeId> {
 
@@ -208,6 +180,33 @@ auto reflectDelegateIsAction(Context* ctx, prog::sym::TypeId delegateType) noexc
     return delegateDef->isAction();
   }
   return std::nullopt;
+}
+
+[[nodiscard]] auto reflectUsertypesAreEquivalentIntrinsic(
+    Context* ctx, prog::sym::TypeId typeX, prog::sym::TypeId typeY) noexcept -> prog::sym::TypeId {
+  auto& staticInts = *ctx->getStaticIntTable();
+  return staticInts.getType(ctx, ctx->getProg()->areUsertypesEquivalent(typeX, typeY));
+}
+
+auto reflectUsertypeAliasIntrinsic(
+    Context* ctx, prog::sym::TypeId input, prog::sym::TypeId output) noexcept
+    -> std::optional<prog::sym::FuncId> {
+
+  if (!ctx->getProg()->areUsertypesEquivalent(input, output)) {
+    return std::nullopt;
+  }
+
+  // TODO: We should make a proper table for this, instead of just relying on the mangled names.
+
+  auto intrinsicName = std::string{"__alias_usertype_"};
+  intrinsicName += getName(*ctx, input);
+  intrinsicName += std::string{"_"};
+  intrinsicName += getName(*ctx, output);
+
+  if (const auto intrinsicId = ctx->getProg()->lookupIntrinsic(intrinsicName, {input})) {
+    return intrinsicId;
+  }
+  return ctx->getProg()->declareUsertypeAliasIntrinsic(std::move(intrinsicName), input, output);
 }
 
 } // namespace frontend::internal

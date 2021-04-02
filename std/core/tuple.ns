@@ -69,10 +69,10 @@ fun tupleTypeForStruct{Struct}(Type{Struct} s)
 // ---- Struct to Tuple and vise versa conversion.
 
 fun structToTuple{Struct}(Struct s)
-  reflectStructAlias(s, tupleTypeForStruct(Type{Struct}()))
+  reflectUsertypeAlias(s, tupleTypeForStruct(Type{Struct}()))
 
 fun tupleToStruct{Tup, Struct}(Tup t, Type{Struct} type) -> Struct
-  reflectStructAlias(t, type)
+  reflectUsertypeAlias(t, type)
 
 // -- Tests
 
