@@ -182,7 +182,7 @@ fun reflectCoerceToType{T, Target}(T val, Type{Target} tgt, Meta{#8} structTypeK
 // ------ Unions
 
 fun reflectCoerceToType{T, Target}(T val, Type{Target} tgt, Meta{#9} unionTypeKind, Meta{#0} nonEquivalent)
-  Target(val)
+  reflectFromUnion(val, tgt)
 
 fun reflectCoerceToType{T, Target}(T val, Type{Target} tgt, Meta{#9} unionTypeKind, Meta{#1} equivalent)
   reflectUsertypeAlias(val, tgt)
@@ -287,6 +287,19 @@ fun reflectIsSubUnion{UnionX, UnionY, Idx}(Type{UnionX} t1, Type{UnionY} t2, Met
 fun reflectIsSubUnion{UnionX, UnionY}(Type{UnionX} t1, Type{UnionY} t2)
   lastIndex = reflectUnionCount(t1) - metaOne();
   reflectIsSubUnion(t1, t2, lastIndex, reflectUnionHasType(t2, reflectUnionType(t1, lastIndex)))
+
+// ---- Construct a type from a union
+// Will call the type constructor using the active union member.
+
+fun reflectFromUnion{Union, TResult}(Union u, Type{TResult} t, Meta{#-1} idx) -> TResult
+  intrinsic{fail}{TResult}()
+
+fun reflectFromUnion{Union, TResult, Idx}(Union u, Type{TResult} t, Meta{Idx} idx) -> TResult
+  if u as reflect_union_type{Union, Idx} val -> TResult(val)
+  else -> reflectFromUnion(u, t, --idx)
+
+fun reflectFromUnion{Union, TResult}(Union u, Type{TResult} t) -> TResult
+  reflectFromUnion(u, t, --reflectUnionCount(Type{Union}()))
 
 // ---- Union to string
 // Calls string() for the active type of the union.
@@ -576,11 +589,6 @@ assertEq(reflectStructToString(None()), "()")
 assertEq(reflectStructToString(Duration(42)), "(42)")
 assertEq(reflectStructToString(DateTime(42, timezoneUTC())), "(42,Z)")
 
-assertEq(reflectUnionToString(Option{int}()), "none")
-assertEq(reflectUnionToString(Option{int}(42)), "42")
-assertEq(reflectUnionToString(TypeInfo(StaticIntInfo(1337))), "#1337")
-assertEq(reflectUnionToString(TypeInfo(RecursiveTypeInfo("Hello"))), "Hello")
-
 // -- Union utility tests
 
 assertEq(reflectUnionCount(Type{Option{int}}()), Meta{#2}())
@@ -611,6 +619,18 @@ assert(Type{Either{int, bool}}().reflectIsSubUnion(Type{Either{int, bool, char}}
 assert(Type{Either{int, bool}}().reflectIsSubUnion(Type{Either{int, bool, char, float}}()))
 assert(Type{Either{int, bool}}().reflectIsSubUnion(Type{Either{bool, int}}()))
 assertNot(Type{Either{int, bool}}().reflectIsSubUnion(Type{Either{int, float}}()))
+
+assertEq(
+  reflectFromUnion(Either{int, char, long, float}(42.42), Type{int}()), 42)
+
+assertEq(
+  reflectFromUnion(Either{int, bool}(42), Type{Either{float, int, char, bool}}()),
+  Either{float, int, char, bool}(42))
+
+assertEq(reflectUnionToString(Option{int}()), "none")
+assertEq(reflectUnionToString(Option{int}(42)), "42")
+assertEq(reflectUnionToString(TypeInfo(StaticIntInfo(1337))), "#1337")
+assertEq(reflectUnionToString(TypeInfo(RecursiveTypeInfo("Hello"))), "Hello")
 
 // -- Enum utility tests
 

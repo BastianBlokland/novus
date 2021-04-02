@@ -37,6 +37,8 @@ fun toEitherType{T1, T2}(Type{T1} t1, Type{T2} t2) Type{Either{T1, T2}}()
 
 // ---- Appending a new type to a either type
 
+fun eitherAddType{T1, T2}(Type{T1} t1, Type{T2} t2) toEitherType(t1, t2)
+
 fun eitherAddType{T1, T2, T3}(Type{Either{T1, T2}} t, Type{T3} newType)                                                            Type{Either{T1, T2, T3}}()
 fun eitherAddType{T1, T2, T3, T4}(Type{Either{T1, T2, T3}} t, Type{T4} newType)                                                    Type{Either{T1, T2, T3, T4}}()
 fun eitherAddType{T1, T2, T3, T4, T5}(Type{Either{T1, T2, T3, T4}} t, Type{T5} newType)                                            Type{Either{T1, T2, T3, T4, T5}}()

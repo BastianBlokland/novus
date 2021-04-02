@@ -86,11 +86,7 @@ fun |{T}(Parser{T} p1, Parser{T} p2)
   )
 
 fun |{T1, T2}(Parser{T1} p1, Parser{T2} p2)
-  Parser(lambda (ParseState s) -> ParseResult{Either{T1, T2}}
-    r1 = p1(s);
-    if r1 as ParseSuccess{T1} suc1  -> suc1.state.success(         Either{T1, T2}(suc1.val))
-    if r1 is ParseFailure           -> p2(s).map(lambda (T2 val2)  Either{T1, T2}(val2))
-  )
+  unionParser(p1, p2, eitherAddType(Type{T1}(), Type{T2}()))
 
 fun >>{T1, T2}(Parser{T1} p1, Parser{T2} p2)
   Parser(lambda (ParseState s) -> ParseResult{T2}
@@ -198,6 +194,13 @@ fun to{T, TResult}(Parser{T} p, Type{TResult} t)
     res = p(s);
     if res as ParseSuccess{T} suc   -> suc.state.success(suc.val.reflectCoerceToType(t))
     if res as ParseFailure    fail  -> fail
+  )
+
+fun unionParser{T1, T2, TUnion}(Parser{T1} p1, Parser{T2} p2, Type{TUnion} t)
+  Parser(lambda (ParseState s) -> ParseResult{TUnion}
+    r1 = p1(s);
+    if r1 as ParseSuccess{T1} suc1  -> suc1.state.success(         suc1.val.reflectCoerceToType(t))
+    if r1 is ParseFailure           -> p2(s).map(lambda (T2 val2)  val2.reflectCoerceToType(t))
   )
 
 // -- Basic parsers
@@ -757,6 +760,10 @@ assertIs(
 assertEq(p = txtBoolParser() | txtIntParser(); p("42"), 42)
 assertEq(p = txtBoolParser() | txtIntParser(); p("true"), true)
 assertIs(p = txtBoolParser() | txtIntParser(); p("hello"), Type{ParseFailure}())
+
+assertEq(
+  p = txtBoolParser() | txtIntParser() | matchParser("Hello") | enumParser(Type{Month}());
+  p("42"), Either{bool, int, string, Month}(42))
 
 assertEq((matchParser("Hello ") >> matchParser("World"))("Hello World"), "World")
 assertIs((matchParser("Hello ") >> matchParser("World"))("Hello "), Type{ParseFailure}())
