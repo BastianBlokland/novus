@@ -281,6 +281,12 @@ fun enumValWriter{Enum}(Type{Enum} t)
     s.write(int(e).string())
   )
 
+fun unionWriter{Union, T1, T2}(Type{Union} t, Writer{T1} w1, Writer{T2} w2) -> Writer{Union}
+  Writer(lambda (WriterState s, Union u)
+    if u as T1 v1 -> w1(s, v1)
+    if u as T2 v2 -> w2(s, v2)
+  )
+
 // -- Tests
 
 assertEq(
