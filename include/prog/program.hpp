@@ -139,6 +139,8 @@ public:
   isCallable(sym::TypeId delegate, const sym::TypeSet& input, OvOptions options) const -> bool;
 
   [[nodiscard]] auto areStructsEquivalent(sym::TypeId a, sym::TypeId b) const -> bool;
+  [[nodiscard]] auto areUnionsEquivalent(sym::TypeId a, sym::TypeId b) const -> bool;
+  [[nodiscard]] auto areUsertypesEquivalent(sym::TypeId a, sym::TypeId b) const -> bool;
 
   [[nodiscard]] auto getDelegateRetType(sym::TypeId id) const -> std::optional<sym::TypeId>;
 
@@ -176,7 +178,7 @@ public:
       -> sym::FuncId;
   auto declareImplicitConv(sym::TypeId input, sym::TypeId output) -> sym::FuncId;
   auto declareFailIntrinsic(std::string name, sym::TypeId output) -> sym::FuncId;
-  auto declareStructAliasIntrinsic(std::string name, sym::TypeId input, sym::TypeId output)
+  auto declareUsertypeAliasIntrinsic(std::string name, sym::TypeId input, sym::TypeId output)
       -> sym::FuncId;
 
   auto defineStruct(sym::TypeId id, sym::FieldDeclTable fields) -> void;

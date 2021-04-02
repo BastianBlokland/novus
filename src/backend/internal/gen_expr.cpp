@@ -391,6 +391,10 @@ auto GenExpr::visit(const prog::expr::CallExprNode& n) -> void {
     break;
   }
 
+  case prog::sym::FuncKind::Fail:
+    m_asmb->addFail();
+    break;
+
   case prog::sym::FuncKind::SourceLocFile:
     m_asmb->addLoadLitString("unknown");
     break;
@@ -530,9 +534,6 @@ auto GenExpr::visit(const prog::expr::CallExprNode& n) -> void {
 
   case prog::sym::FuncKind::ActionSleepNano:
     m_asmb->addPCall(novasm::PCallCode::SleepNano);
-    break;
-  case prog::sym::FuncKind::ActionFail:
-    m_asmb->addFail();
     break;
   }
 }

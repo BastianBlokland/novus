@@ -7,12 +7,66 @@ import "std/prim.ns"
 // -- Types
 
 union Either{T1, T2} = T1, T2
+union Either{T1, T2, T3} = T1, T2, T3
+union Either{T1, T2, T3, T4} = T1, T2, T3, T4
+union Either{T1, T2, T3, T4, T5} = T1, T2, T3, T4, T5
+union Either{T1, T2, T3, T4, T5, T6} = T1, T2, T3, T4, T5, T6
+union Either{T1, T2, T3, T4, T5, T6, T7} = T1, T2, T3, T4, T5, T6, T7
+union Either{T1, T2, T3, T4, T5, T6, T7, T8} = T1, T2, T3, T4, T5, T6, T7, T8
+union Either{T1, T2, T3, T4, T5, T6, T7, T8, T9} = T1, T2, T3, T4, T5, T6, T7, T8, T9
+union Either{T1, T2, T3, T4, T5, T6, T7, T8, T9, T10} = T1, T2, T3, T4, T5, T6, T7, T8, T9, T10
 
 // -- Conversions
 
-fun string{T1, T2}(Either{T1, T2} e)
-  if e as T1 t1  -> t1.string()
-  if e as T2 t2  -> t2.string()
+
+// -- Meta utilities
+
+fun eitherSize{Eith}(Eith e)
+  eitherSize(Type{Eith}())
+
+fun eitherSize{Eith}(Type{Eith} e)
+  reflectUnionCount(e)
+
+fun eitherGet{Eith, T}(Eith e, Type{T} t) -> Option{T}
+  e.eitherGet(reflectUnionIndex(Type{Eith}(), t))
+
+fun eitherGet{Eith, Index}(Eith e, Meta{Index} idx)
+  e as reflect_union_type{Eith, Index} v ? Option{reflect_union_type{Eith, Index}}(v) : None()
+
+fun toEitherType{T1, T2}(Type{T1} t1, Type{T2} t2) Type{Either{T1, T2}}()
+
+// ---- Appending a new type to a either type
+
+fun eitherAddType{T1, T2}(Type{T1} t1, Type{T2} t2) toEitherType(t1, t2)
+
+fun eitherAddType{T1, T2, T3}(Type{Either{T1, T2}} t, Type{T3} newType)                                                            Type{Either{T1, T2, T3}}()
+fun eitherAddType{T1, T2, T3, T4}(Type{Either{T1, T2, T3}} t, Type{T4} newType)                                                    Type{Either{T1, T2, T3, T4}}()
+fun eitherAddType{T1, T2, T3, T4, T5}(Type{Either{T1, T2, T3, T4}} t, Type{T5} newType)                                            Type{Either{T1, T2, T3, T4, T5}}()
+fun eitherAddType{T1, T2, T3, T4, T5, T6}(Type{Either{T1, T2, T3, T4, T5}} t, Type{T6} newType)                                    Type{Either{T1, T2, T3, T4, T5, T6}}()
+fun eitherAddType{T1, T2, T3, T4, T5, T6, T7}(Type{Either{T1, T2, T3, T4, T5, T6}} t, Type{T7} newType)                            Type{Either{T1, T2, T3, T4, T5, T6, T7}}()
+fun eitherAddType{T1, T2, T3, T4, T5, T6, T7, T8}(Type{Either{T1, T2, T3, T4, T5, T6, T7}} t, Type{T8} newType)                    Type{Either{T1, T2, T3, T4, T5, T6, T7, T8}}()
+fun eitherAddType{T1, T2, T3, T4, T5, T6, T7, T8, T9}(Type{Either{T1, T2, T3, T4, T5, T6, T7, T8}} t, Type{T9} newType)            Type{Either{T1, T2, T3, T4, T5, T6, T7, T8, T9}}()
+fun eitherAddType{T1, T2, T3, T4, T5, T6, T7, T8, T9, T10}(Type{Either{T1, T2, T3, T4, T5, T6, T7, T8, T9}} t, Type{T10} newType)  Type{Either{T1, T2, T3, T4, T5, T6, T7, T8, T9, T10}}()
+
+// ---- Create a Either type that matches a union (same types in the same order)
+
+fun eitherTypeForUnion{Union, Eith}(Type{Union} u, Meta{#0} idx, Type{Eith} result)
+  result
+
+fun eitherTypeForUnion{Union, Int, Eith}(Type{Union} u, Meta{Int} idx, Type{Eith} result)
+  eitherTypeForUnion(u, --idx, result.eitherAddType(reflectUnionType(u, reflectUnionCount(u) - idx)))
+
+fun eitherTypeForUnion{Union}(Type{Union} u)
+  extraEntries = reflectUnionCount(u) - Meta{#2}();
+  eitherTypeForUnion(u, extraEntries, toEitherType(reflectUnionType(u, metaZero()), reflectUnionType(u, metaOne())))
+
+// ---- Union to Either and vise versa conversion.
+
+fun unionToEither{Union}(Union u)
+  reflectUsertypeAlias(u, eitherTypeForUnion(Type{Union}()))
+
+fun eitherToUnion{Eith, Union}(Eith e, Type{Union} type) -> Union
+  reflectUsertypeAlias(e, type)
 
 // -- Functions
 
@@ -30,12 +84,6 @@ fun map{T1, T2}(Either{T1, T2} e, function{T1, Either{T1, T2}} func) -> Either{T
 fun map{T1, T2}(Either{T1, T2} e, function{T2, Either{T1, T2}} func) -> Either{T1, T2}
   e as T2 t2 ? func(t2) : e
 
-fun toOption{T1, T2}(Either{T1, T2} e, Type{T1} t) -> Option{T1}
-  e as T1 t1 ? t1 : None()
-
-fun toOption{T1, T2}(Either{T1, T2} e, Type{T2} t) -> Option{T2}
-  e as T2 t2 ? t2 : None()
-
 // -- Tests
 
 assertEq(Either{int, string}(42), 42)
@@ -44,6 +92,16 @@ assertNotEq(Either{int, string}(42), Either{int, string}("hello world"))
 
 assertEq(Either{int, string}(42).string(), "42")
 assertEq(Either{int, string}("hello world").string(), "hello world")
+
+assertEq(Either{int, float, string}(27).eitherSize(), Meta{#3}())
+
+assertEq(unionToEither(Option(42)), Either{int, None}(42))
+assertEq(unionToEither(Either{int, float, bool, string}("Hello")), "Hello")
+assertEq(
+  u = Either{int, float, bool, string, char, long, sys_stream, sys_process, Option{int}, Option{bool}}("Hello");
+  unionToEither(u), "Hello")
+
+assertEq(eitherToUnion(Either{int, None}(42), Type{Option{int}}()), 42)
 
 assertEq(Either{int, string}("hello").map(equals{string}["hello"]), true)
 assertEq(Either{int, string}("hello").map(lambda (string str) str + " world"), "hello world")
@@ -77,8 +135,8 @@ assertEq(
   );
   Either{bool, int}(42).map(func), true)
 
-assertEq(Either{bool, int}(42).toOption(Type{int}()), 42)
-assertEq(Either{bool, int}(42).toOption(Type{bool}()), None())
+assertEq(Either{bool, int}(42).eitherGet(Type{int}()), 42)
+assertEq(Either{bool, int}(42).eitherGet(Type{bool}()), None())
 
-assertEq(Either{bool, int}(true).toOption(Type{bool}()), true)
-assertEq(Either{bool, int}(true).toOption(Type{int}()), None())
+assertEq(Either{bool, int}(true).eitherGet(Type{bool}()), true)
+assertEq(Either{bool, int}(true).eitherGet(Type{int}()), None())

@@ -448,6 +448,29 @@ auto Program::areStructsEquivalent(sym::TypeId a, sym::TypeId b) const -> bool {
   return true;
 }
 
+auto Program::areUnionsEquivalent(sym::TypeId a, sym::TypeId b) const -> bool {
+  const auto& aDecl = getTypeDecl(a);
+  const auto& bDecl = getTypeDecl(b);
+  if (aDecl.getKind() != sym::TypeKind::Union || bDecl.getKind() != sym::TypeKind::Union) {
+    return false;
+  }
+  const auto& aDef = std::get<sym::UnionDef>(getTypeDef(a));
+  const auto& bDef = std::get<sym::UnionDef>(getTypeDef(b));
+  if (aDef.getTypes().size() != bDef.getTypes().size()) {
+    return false;
+  }
+  for (auto i = 0u; i != aDef.getTypes().size(); ++i) {
+    if (aDef.getTypes()[i] != bDef.getTypes()[i]) {
+      return false;
+    }
+  }
+  return true;
+}
+
+auto Program::areUsertypesEquivalent(sym::TypeId a, sym::TypeId b) const -> bool {
+  return areStructsEquivalent(a, b) || areUnionsEquivalent(a, b);
+}
+
 auto Program::getDelegateRetType(sym::TypeId id) const -> std::optional<sym::TypeId> {
   if (!id.isConcrete()) {
     return std::nullopt;
@@ -506,14 +529,14 @@ auto Program::declareImplicitConv(sym::TypeId input, sym::TypeId output) -> sym:
 }
 
 auto Program::declareFailIntrinsic(std::string name, sym::TypeId output) -> sym::FuncId {
-  return m_funcDecls.registerIntrinsicAction(
-      *this, sym::FuncKind::ActionFail, std::move(name), sym::TypeSet{}, output);
+  return m_funcDecls.registerIntrinsic(
+      *this, sym::FuncKind::Fail, std::move(name), sym::TypeSet{}, output);
 }
 
-auto Program::declareStructAliasIntrinsic(std::string name, sym::TypeId input, sym::TypeId output)
+auto Program::declareUsertypeAliasIntrinsic(std::string name, sym::TypeId input, sym::TypeId output)
     -> sym::FuncId {
-  if (!areStructsEquivalent(input, output)) {
-    throw std::invalid_argument{"Input and output structs have to be equivelent"};
+  if (!areUsertypesEquivalent(input, output)) {
+    throw std::invalid_argument{"Input and output usertypes have to be equivelent"};
   }
   return m_funcDecls.registerIntrinsic(
       *this, sym::FuncKind::NoOp, std::move(name), sym::TypeSet{input}, output);

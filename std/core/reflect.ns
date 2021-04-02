@@ -1,3 +1,4 @@
+import "either.ns"
 import "list.ns"
 import "time.ns"
 
@@ -164,17 +165,32 @@ fun reflectLazy{Lazy}(Type{Lazy} t, ReflectCtx rc = ReflectCtx()) -> LazyInfo
 // -- Conversion utilities
 
 // ---- Attempt to convert a value to a type.
-// For equivalent structs we alias the types, otherwise we attempt to call a constructor for the
+// For equivalent usertypes we alias the types, otherwise we attempt to call a constructor for the
 // target type.
+
+// ------ Structs
 
 fun reflectCoerceToType{T, Target}(T val, Type{Target} tgt, Meta{#8} structTypeKind, Meta{#0} nonEquivalent)
   Target(val)
 
 fun reflectCoerceToType{T, Target}(T val, Type{Target} tgt, Meta{#8} structTypeKind, Meta{#1} equivalent)
-  reflectStructAlias(val, tgt)
+  reflectUsertypeAlias(val, tgt)
 
 fun reflectCoerceToType{T, Target}(T val, Type{Target} tgt, Meta{#8} structTypeKind)
-  reflectCoerceToType(val, tgt, structTypeKind, reflectAreStructsEquivalent(Type{T}(), tgt))
+  reflectCoerceToType(val, tgt, structTypeKind, reflectAreUsertypesEquivalent(Type{T}(), tgt))
+
+// ------ Unions
+
+fun reflectCoerceToType{T, Target}(T val, Type{Target} tgt, Meta{#9} unionTypeKind, Meta{#0} nonEquivalent)
+  reflectFromUnion(val, tgt)
+
+fun reflectCoerceToType{T, Target}(T val, Type{Target} tgt, Meta{#9} unionTypeKind, Meta{#1} equivalent)
+  reflectUsertypeAlias(val, tgt)
+
+fun reflectCoerceToType{T, Target}(T val, Type{Target} tgt, Meta{#9} unionTypeKind)
+  reflectCoerceToType(val, tgt, unionTypeKind, reflectAreUsertypesEquivalent(Type{T}(), tgt))
+
+// ------ Generic
 
 fun reflectCoerceToType{T, Target, TypeId}(T val, Type{Target} tgt, Meta{TypeId} fallbackTypeKind)
   Target(val)
@@ -203,16 +219,6 @@ fun reflectStructFieldType{Struct, Idx}(Type{Struct} t, Meta{Idx} idx)
 
 fun reflectStructField{Struct, Idx}(Struct s, Meta{Idx} idx) -> reflect_struct_field_type{Struct, Idx}
   intrinsic{reflect_struct_field}{Struct, Idx}(s)
-
-// ---- Check if two struct types are equivalent (same field types).
-
-fun reflectAreStructsEquivalent{StructX, StructY}(Type{StructX} x, Type{StructY} y)
-  Meta{reflect_struct_are_equivalent{StructX, StructY}}()
-
-// ---- Alias a struct to an equivalent struct type
-
-fun reflectStructAlias{StructIn, StructOut}(StructIn in, Type{StructOut} out) -> StructOut
-  intrinsic{reflect_struct_alias}{StructIn, StructOut}(in)
 
 // ---- Struct to string
 // Calls string() for every field and combines the result.
@@ -245,6 +251,55 @@ fun reflectUnionCount{Union}(Type{Union} t)
 
 fun reflectUnionType{Union, Idx}(Type{Union} t, Meta{Idx} idx)
   Type{reflect_union_type{Union, Idx}}()
+
+// ---- Lookup the index for a type in a union
+
+fun reflectUnionIndex{Union, T}(Type{Union} u, Type{T} t, Meta{#0} idx, Meta{#0} notEqual)
+  -metaOne()
+
+fun reflectUnionIndex{Union, T, Idx}(Type{Union} u, Type{T} t, Meta{Idx} idx, Meta{#0} notEqual)
+  reflectUnionIndex(u, t, --idx, t == reflectUnionType(u, --idx))
+
+fun reflectUnionIndex{Union, T, Idx}(Type{Union} u, Type{T} t, Meta{Idx} idx, Meta{#1} equal)
+  idx
+
+fun reflectUnionIndex{Union, T}(Type{Union} u, Type{T} t)
+  lastIndex = reflectUnionCount(u) - metaOne();
+  reflectUnionIndex(u, t, lastIndex, reflectUnionType(u, lastIndex) == t)
+
+// ---- Check if a type is part of a union
+
+fun reflectUnionHasType{Union, T}(      Type{Union} u, Type{T} t, Meta{#-1} idx) metaFalse()
+fun reflectUnionHasType{Union, T, Idx}( Type{Union} u, Type{T} t, Meta{Idx} idx) metaTrue()
+fun reflectUnionHasType{Union, T}(      Type{Union} u, Type{T} t) reflectUnionHasType(u, t, reflectUnionIndex(u, t))
+
+// ---- Check if a union is a subset of another
+
+fun reflectIsSubUnion{UnionX, UnionY}(Type{UnionX} t1, Type{UnionY} t2, Meta{#0} idx, Meta{#1} hasType)
+  metaTrue()
+
+fun reflectIsSubUnion{UnionX, UnionY, Idx}(Type{UnionX} t1, Type{UnionY} t2, Meta{Idx} idx, Meta{#0} hasType)
+  metaFalse()
+
+fun reflectIsSubUnion{UnionX, UnionY, Idx}(Type{UnionX} t1, Type{UnionY} t2, Meta{Idx} idx, Meta{#1} hasType)
+  reflectIsSubUnion(t1, t2, --idx, reflectUnionHasType(t2, reflectUnionType(t1, --idx)))
+
+fun reflectIsSubUnion{UnionX, UnionY}(Type{UnionX} t1, Type{UnionY} t2)
+  lastIndex = reflectUnionCount(t1) - metaOne();
+  reflectIsSubUnion(t1, t2, lastIndex, reflectUnionHasType(t2, reflectUnionType(t1, lastIndex)))
+
+// ---- Construct a type from a union
+// Will call the type constructor using the active union member.
+
+fun reflectFromUnion{Union, TResult}(Union u, Type{TResult} t, Meta{#-1} idx) -> TResult
+  intrinsic{fail}{TResult}()
+
+fun reflectFromUnion{Union, TResult, Idx}(Union u, Type{TResult} t, Meta{Idx} idx) -> TResult
+  if u as reflect_union_type{Union, Idx} val -> TResult(val)
+  else -> reflectFromUnion(u, t, --idx)
+
+fun reflectFromUnion{Union, TResult}(Union u, Type{TResult} t) -> TResult
+  reflectFromUnion(u, t, --reflectUnionCount(Type{Union}()))
 
 // ---- Union to string
 // Calls string() for the active type of the union.
@@ -347,6 +402,18 @@ fun reflectLazyType{InnerType}(Type{lazy_action{InnerType}} t)
 
 fun reflectLazyIsAction{InnerType}(Type{lazy{InnerType}} t)         false
 fun reflectLazyIsAction{InnerType}(Type{lazy_action{InnerType}} t)  true
+
+// -- Usertype Utilities
+
+// ---- Check if two usertypes are equivalent.
+
+fun reflectAreUsertypesEquivalent{TypeX, TypeY}(Type{TypeX} x, Type{TypeY} y)
+  Meta{reflect_usertypes_are_equivalent{TypeX, TypeY}}()
+
+// ---- Alias a struct to an equivalent struct type
+
+fun reflectUsertypeAlias{TypeIn, TypeOut}(TypeIn in, Type{TypeOut} out) -> TypeOut
+  intrinsic{reflect_usertype_alias}{TypeIn, TypeOut}(in)
 
 // -- Writers
 
@@ -510,22 +577,17 @@ assertEq(reflectStructField(Date(2021, Month.March, 27), Meta{#0}()), 2021)
 assertEq(reflectStructField(Date(2021, Month.March, 27), Meta{#1}()), Month.March)
 assertEq(reflectStructField(Date(2021, Month.March, 27), Meta{#2}()), 27)
 
-assertEq(reflectAreStructsEquivalent(Type{Duration}(),  Type{Timestamp}()),               metaTrue())
-assertEq(reflectAreStructsEquivalent(Type{Duration}(),  Type{Date}()),                    metaFalse())
-assertEq(reflectAreStructsEquivalent(Type{Date}(),      Type{Tuple{int, Month, int}}()),  metaTrue())
+assertEq(reflectAreUsertypesEquivalent(Type{Duration}(),  Type{Timestamp}()),               metaTrue())
+assertEq(reflectAreUsertypesEquivalent(Type{Duration}(),  Type{Date}()),                    metaFalse())
+assertEq(reflectAreUsertypesEquivalent(Type{Date}(),      Type{Tuple{int, Month, int}}()),  metaTrue())
 
-assertEq(reflectStructAlias(Duration(42), Type{Timestamp}()), Timestamp(42))
-assertEq(reflectStructAlias(Date(2021, Month.March, 27), Type{Date}()), Date(2021, Month.March, 27))
+assertEq(reflectUsertypeAlias(Duration(42), Type{Timestamp}()), Timestamp(42))
+assertEq(reflectUsertypeAlias(Date(2021, Month.March, 27), Type{Date}()), Date(2021, Month.March, 27))
 
 assertEq(reflectStructToString(Date(2021, Month.March, 27)), "(2021,March,27)")
 assertEq(reflectStructToString(None()), "()")
 assertEq(reflectStructToString(Duration(42)), "(42)")
 assertEq(reflectStructToString(DateTime(42, timezoneUTC())), "(42,Z)")
-
-assertEq(reflectUnionToString(Option{int}()), "none")
-assertEq(reflectUnionToString(Option{int}(42)), "42")
-assertEq(reflectUnionToString(TypeInfo(StaticIntInfo(1337))), "#1337")
-assertEq(reflectUnionToString(TypeInfo(RecursiveTypeInfo("Hello"))), "Hello")
 
 // -- Union utility tests
 
@@ -535,6 +597,40 @@ assertEq(reflectUnionCount(Type{TypeInfo}()), Meta{#9}())
 assertEq(reflectUnionType(Type{Option{int}}(), Meta{#0}()), Type{int}())
 assertEq(reflectUnionType(Type{Option{int}}(), Meta{#1}()), Type{None}())
 assertEq(reflectUnionType(Type{TypeInfo}(), Meta{#4}()), Type{DelegateInfo}())
+
+assertEq(reflectAreUsertypesEquivalent(Type{Option{int}}(),  Type{Either{int, None}}()),  metaTrue())
+assertEq(reflectAreUsertypesEquivalent(Type{Option{int}}(),  Type{Either{None, int}}()),  metaFalse())
+assertEq(reflectAreUsertypesEquivalent(Type{Duration}(),     Type{Either{Date, None}}()), metaFalse())
+
+assertEq(reflectUsertypeAlias(Option(42), Type{Either{int, None}}()), Either{int, None}(42))
+assertEq(reflectUsertypeAlias(Either{int, None}(42), Type{Option{int}}()), 42)
+
+assertEq(reflectUnionIndex(Type{Option{int}}(), Type{int}()),   metaZero())
+assertEq(reflectUnionIndex(Type{Option{int}}(), Type{None}()),  metaOne())
+assertEq(reflectUnionIndex(Type{Option{int}}(), Type{float}()), -metaOne())
+assertEq(reflectUnionIndex(Type{Either{int, bool, string, char}}(), Type{char}()), Meta{#3}())
+assertEq(reflectUnionIndex(Type{Either{int, bool, string, char}}(), Type{long}()), -metaOne())
+
+assert(reflectUnionHasType(Type{Either{int, bool}}(), Type{int}()))
+assertNot(reflectUnionHasType(Type{Either{int, bool}}(), Type{float}()))
+
+assert(Type{Either{int, bool}}().reflectIsSubUnion(Type{Either{int, bool}}()))
+assert(Type{Either{int, bool}}().reflectIsSubUnion(Type{Either{int, bool, char}}()))
+assert(Type{Either{int, bool}}().reflectIsSubUnion(Type{Either{int, bool, char, float}}()))
+assert(Type{Either{int, bool}}().reflectIsSubUnion(Type{Either{bool, int}}()))
+assertNot(Type{Either{int, bool}}().reflectIsSubUnion(Type{Either{int, float}}()))
+
+assertEq(
+  reflectFromUnion(Either{int, char, long, float}(42.42), Type{int}()), 42)
+
+assertEq(
+  reflectFromUnion(Either{int, bool}(42), Type{Either{float, int, char, bool}}()),
+  Either{float, int, char, bool}(42))
+
+assertEq(reflectUnionToString(Option{int}()), "none")
+assertEq(reflectUnionToString(Option{int}(42)), "42")
+assertEq(reflectUnionToString(TypeInfo(StaticIntInfo(1337))), "#1337")
+assertEq(reflectUnionToString(TypeInfo(RecursiveTypeInfo("Hello"))), "Hello")
 
 // -- Enum utility tests
 

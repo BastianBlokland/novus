@@ -132,13 +132,8 @@ fun ipV6BinWriter() -> Writer{IpV6Address}
   listWriter(bitInt16Writer(Endianness.Big)).map(lambda (IpV6Address addr)
     addr.a :: addr.b :: addr.c :: addr.d :: addr.e :: addr.f :: addr.g :: addr.h)
 
-fun ipBinWriter() -> Writer{IpAddress}
-  v4BinWriter = ipV4BinWriter();
-  v6BinWriter = ipV6BinWriter();
-  Writer(lambda (WriterState s, IpAddress addr)
-    if addr as IpV4Address v4 -> v4BinWriter(s, v4)
-    if addr as IpV6Address v6 -> v6BinWriter(s, v6)
-  )
+fun ipBinWriter()
+  unionWriter(Type{IpAddress}(), ipV4BinWriter(), ipV6BinWriter())
 
 // -- Actions
 

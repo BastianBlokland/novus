@@ -23,14 +23,6 @@ namespace frontend::internal {
     Context* ctx, prog::sym::TypeId structType, prog::sym::TypeId indexType) noexcept
     -> std::optional<prog::sym::FieldId>;
 
-[[nodiscard]] auto reflectStructAreEquivalentIntrinsic(
-    Context* ctx, prog::sym::TypeId structX, prog::sym::TypeId structY) noexcept
-    -> prog::sym::TypeId;
-
-[[nodiscard]] auto reflectStructAliasIntrinsic(
-    Context* ctx, prog::sym::TypeId input, prog::sym::TypeId output) noexcept
-    -> std::optional<prog::sym::FuncId>;
-
 [[nodiscard]] auto reflectUnionCount(Context* ctx, prog::sym::TypeId unionType) noexcept
     -> std::optional<prog::sym::TypeId>;
 
@@ -61,5 +53,12 @@ reflectEnumVal(Context* ctx, prog::sym::TypeId enumType, prog::sym::TypeId index
 
 [[nodiscard]] auto reflectDelegateIsAction(Context* ctx, prog::sym::TypeId delegateType) noexcept
     -> std::optional<bool>;
+
+[[nodiscard]] auto reflectUsertypesAreEquivalentIntrinsic(
+    Context* ctx, prog::sym::TypeId typeX, prog::sym::TypeId typeY) noexcept -> prog::sym::TypeId;
+
+[[nodiscard]] auto reflectUsertypeAliasIntrinsic(
+    Context* ctx, prog::sym::TypeId input, prog::sym::TypeId output) noexcept
+    -> std::optional<prog::sym::FuncId>;
 
 } // namespace frontend::internal

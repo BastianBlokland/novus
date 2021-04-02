@@ -259,8 +259,8 @@ auto GetExpr::visit(const parse::CallExprNode& n) -> void {
     // Meta intrinsics are intrinsics where the frontend emits special expression nodes, an example
     // of this is 'intrinsic{type_name}{T}()' where the frontend will actually emit a literal string
     // expression containing the type name.
-    if (auto metaExpr = resolveMetaIntrinsic(
-            m_ctx, m_typeSubTable, allowAction, nameToken, typeParams, *args.get())) {
+    if (auto metaExpr =
+            resolveMetaIntrinsic(m_ctx, m_typeSubTable, nameToken, typeParams, *args.get())) {
 
       m_expr = std::move(*metaExpr);
       m_ctx->associateSrc(m_expr, n.getSpan());

@@ -26,11 +26,10 @@ auto resolveTypeNameIntrinsic(
   return prog::expr::litStringNode(*ctx->getProg(), getDisplayName(*ctx, typeParams[0]));
 }
 
-auto resolveFailIntrinsic(
-    Context* ctx, bool allowActions, const prog::sym::TypeSet& typeParams, IntrinsicArgs& args)
+auto resolveFailIntrinsic(Context* ctx, const prog::sym::TypeSet& typeParams, IntrinsicArgs& args)
     -> OptNodeExpr {
 
-  if (!allowActions || typeParams.getCount() != 1 || args.first.size() != 0) {
+  if (typeParams.getCount() != 1 || args.first.size() != 0) {
     return std::nullopt;
   }
   const auto funcId = ctx->getFails()->getFailIntrinsic(ctx, typeParams[0]);
@@ -73,13 +72,13 @@ auto resolveReflectStructField(
   return prog::expr::fieldExprNode(*ctx->getProg(), std::move(args.first[0]), *fieldId);
 }
 
-auto resolveReflectStructAlias(
+auto resolveReflectUsertypeAlias(
     Context* ctx, const prog::sym::TypeSet& typeParams, IntrinsicArgs& args) -> OptNodeExpr {
 
   if (typeParams.getCount() != 2 || args.first.size() != 1) {
     return std::nullopt;
   }
-  const auto aliasFuncId = reflectStructAliasIntrinsic(ctx, typeParams[0], typeParams[1]);
+  const auto aliasFuncId = reflectUsertypeAliasIntrinsic(ctx, typeParams[0], typeParams[1]);
   if (!aliasFuncId) {
     return std::nullopt;
   }
@@ -124,7 +123,6 @@ auto resolveReflectDelegateIsAction(
 auto resolveMetaIntrinsic(
     Context* ctx,
     const TypeSubstitutionTable* subTable,
-    bool allowActions,
     const lex::Token& nameToken,
     const std::optional<parse::TypeParamList>& typeParams,
     IntrinsicArgs& args) -> OptNodeExpr {
@@ -142,7 +140,7 @@ auto resolveMetaIntrinsic(
     return resolveTypeNameIntrinsic(ctx, *typeParamSet, args);
   }
   if (name == "fail") {
-    return resolveFailIntrinsic(ctx, allowActions, *typeParamSet, args);
+    return resolveFailIntrinsic(ctx, *typeParamSet, args);
   }
   if (name == "staticint_to_int") {
     return resolveStaticIntToIntIntrinsic(ctx, *typeParamSet, args);
@@ -153,8 +151,8 @@ auto resolveMetaIntrinsic(
   if (name == "reflect_struct_field") {
     return resolveReflectStructField(ctx, *typeParamSet, args);
   }
-  if (name == "reflect_struct_alias") {
-    return resolveReflectStructAlias(ctx, *typeParamSet, args);
+  if (name == "reflect_usertype_alias") {
+    return resolveReflectUsertypeAlias(ctx, *typeParamSet, args);
   }
   if (name == "reflect_enum_key") {
     return resolveReflectEnumKey(ctx, *typeParamSet, args);
