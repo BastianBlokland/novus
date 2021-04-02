@@ -822,28 +822,28 @@ assertIs((txtBoolParser() :: txtBoolParser() :: txtBoolParser())(""), Type{Parse
 assertEq(
   p = (txtBoolParser() & txtBoolParser()).map(lambda (Tuple{bool, bool} t) t.f1 && t.f2);
   inputs = "truefalse" :: "truetrue" :: "true" :: "";
-  inputs.map(lambda (string s) p.run(s).toOption(Type{bool}())),
+  inputs.map(lambda (string s) p.run(s).eitherGet(Type{bool}())),
   false :: true)
 
 assertEq(
   p = (txtBoolParser() & txtBoolParser() & txtBoolParser()).map(
     lambda (Tuple{bool, bool, bool} t) t.f1 && t.f2 && t.f3);
   inputs = "truefalsetrue" :: "truetruetrue" :: "truefalse" :: "";
-  inputs.map(lambda (string s) p.run(s).toOption(Type{bool}())),
+  inputs.map(lambda (string s) p.run(s).eitherGet(Type{bool}())),
   false :: true)
 
 assertEq(
   p = (txtBoolParser() & txtBoolParser() & txtBoolParser() & txtBoolParser()).map(
     lambda (Tuple{bool, bool, bool, bool} t) t.f1 && t.f2 && t.f3 && t.f4);
   inputs = "truefalsetruetrue" :: "truetruetruetrue" :: "truefalsetrue" :: "";
-  inputs.map(lambda (string s) p.run(s).toOption(Type{bool}())),
+  inputs.map(lambda (string s) p.run(s).eitherGet(Type{bool}())),
   false :: true)
 
 assertEq(
   p = (txtBoolParser() & txtBoolParser() & txtBoolParser() & txtBoolParser() & txtBoolParser()).map(
     lambda (Tuple{bool, bool, bool, bool, bool} t) t.f1 && t.f2 && t.f3 && t.f4 && t.f5);
   inputs = "truefalsetruetruetrue" :: "truefalsetruetruetrue" :: "truetruetruetruetrue" :: "truefalsetruefalse" :: "truefalsetrue" :: "";
-  inputs.map(lambda (string s) p.run(s).toOption(Type{bool}())),
+  inputs.map(lambda (string s) p.run(s).eitherGet(Type{bool}())),
   false :: false :: true)
 
 assertEq(enumParser(Type{Month}())("January"), Month.January)
@@ -930,14 +930,14 @@ assertIs(
 assertEq(
   p = manyUntilParser(txtBoolParser(), matchParser(','), newlineParser());
   inputs = "true,false\ntrue" :: "true\n" :: "\n" :: "false,\n" :: "true true\n" :: "false" :: "";
-  inputs.map(lambda (string s) p.run(s).toOption(Type{List{bool}}())),
+  inputs.map(lambda (string s) p.run(s).eitherGet(Type{List{bool}}())),
   (true :: false) :: (true :: List{bool}()) :: List{bool}() :: List{List{bool}}())
 
 assertEq(
   p = manyUntilParser(
     txtBoolParser(), matchParser(','), newlineParser(), ParseFlags.AllowTrailingSeperator);
   inputs = "true\n" :: "true,\n" :: "true,false,\n" :: "\n" :: "true,false,,\n" :: ",\n" :: "true,,false\n" :: "false" :: "";
-  inputs.map(lambda (string s) p.run(s).toOption(Type{List{bool}}())),
+  inputs.map(lambda (string s) p.run(s).eitherGet(Type{List{bool}}())),
   (true :: List{bool}()) :: (true :: List{bool}()) :: (true :: false) :: (List{bool}()) :: List{List{bool}}())
 
 assertIs(whileParser(!equals{char}['|']).trim()(""), Type{ParseFailure}())

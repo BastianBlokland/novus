@@ -21,7 +21,13 @@ fun int{Int}(Meta{Int} m)
 fun string{Int}(Meta{Int} m)
   typeName{Int}()
 
+fun implicit bool(Meta{#0} m) false
+fun implicit bool(Meta{#1} m) true
+
 // -- Operators
+
+fun !(Meta{#0} m) metaTrue()
+fun !(Meta{#1} m) metaFalse()
 
 fun =={Int}(Meta{Int} x, Meta{Int} y) true
 
@@ -46,6 +52,9 @@ fun --{Int}(Meta{Int} x)
   x - metaOne()
 
 // -- Tests
+
+assert(metaTrue())
+assertNot(metaFalse())
 
 assertEq(Meta{#0}().int(), 0)
 assertEq(Meta{#42}().int(), 42)

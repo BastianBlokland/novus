@@ -252,6 +252,42 @@ fun reflectUnionCount{Union}(Type{Union} t)
 fun reflectUnionType{Union, Idx}(Type{Union} t, Meta{Idx} idx)
   Type{reflect_union_type{Union, Idx}}()
 
+// ---- Lookup the index for a type in a union
+
+fun reflectUnionIndex{Union, T}(Type{Union} u, Type{T} t, Meta{#0} idx, Meta{#0} notEqual)
+  -metaOne()
+
+fun reflectUnionIndex{Union, T, Idx}(Type{Union} u, Type{T} t, Meta{Idx} idx, Meta{#0} notEqual)
+  reflectUnionIndex(u, t, --idx, t == reflectUnionType(u, --idx))
+
+fun reflectUnionIndex{Union, T, Idx}(Type{Union} u, Type{T} t, Meta{Idx} idx, Meta{#1} equal)
+  idx
+
+fun reflectUnionIndex{Union, T}(Type{Union} u, Type{T} t)
+  lastIndex = reflectUnionCount(u) - metaOne();
+  reflectUnionIndex(u, t, lastIndex, reflectUnionType(u, lastIndex) == t)
+
+// ---- Check if a type is part of a union
+
+fun reflectUnionHasType{Union, T}(      Type{Union} u, Type{T} t, Meta{#-1} idx) metaFalse()
+fun reflectUnionHasType{Union, T, Idx}( Type{Union} u, Type{T} t, Meta{Idx} idx) metaTrue()
+fun reflectUnionHasType{Union, T}(      Type{Union} u, Type{T} t) reflectUnionHasType(u, t, reflectUnionIndex(u, t))
+
+// ---- Check if a union is a subset of another
+
+fun reflectIsSubUnion{UnionX, UnionY}(Type{UnionX} t1, Type{UnionY} t2, Meta{#0} idx, Meta{#1} hasType)
+  metaTrue()
+
+fun reflectIsSubUnion{UnionX, UnionY, Idx}(Type{UnionX} t1, Type{UnionY} t2, Meta{Idx} idx, Meta{#0} hasType)
+  metaFalse()
+
+fun reflectIsSubUnion{UnionX, UnionY, Idx}(Type{UnionX} t1, Type{UnionY} t2, Meta{Idx} idx, Meta{#1} hasType)
+  reflectIsSubUnion(t1, t2, --idx, reflectUnionHasType(t2, reflectUnionType(t1, --idx)))
+
+fun reflectIsSubUnion{UnionX, UnionY}(Type{UnionX} t1, Type{UnionY} t2)
+  lastIndex = reflectUnionCount(t1) - metaOne();
+  reflectIsSubUnion(t1, t2, lastIndex, reflectUnionHasType(t2, reflectUnionType(t1, lastIndex)))
+
 // ---- Union to string
 // Calls string() for the active type of the union.
 
@@ -560,6 +596,21 @@ assertEq(reflectAreUsertypesEquivalent(Type{Duration}(),     Type{Either{Date, N
 
 assertEq(reflectUsertypeAlias(Option(42), Type{Either{int, None}}()), Either{int, None}(42))
 assertEq(reflectUsertypeAlias(Either{int, None}(42), Type{Option{int}}()), 42)
+
+assertEq(reflectUnionIndex(Type{Option{int}}(), Type{int}()),   metaZero())
+assertEq(reflectUnionIndex(Type{Option{int}}(), Type{None}()),  metaOne())
+assertEq(reflectUnionIndex(Type{Option{int}}(), Type{float}()), -metaOne())
+assertEq(reflectUnionIndex(Type{Either{int, bool, string, char}}(), Type{char}()), Meta{#3}())
+assertEq(reflectUnionIndex(Type{Either{int, bool, string, char}}(), Type{long}()), -metaOne())
+
+assert(reflectUnionHasType(Type{Either{int, bool}}(), Type{int}()))
+assertNot(reflectUnionHasType(Type{Either{int, bool}}(), Type{float}()))
+
+assert(Type{Either{int, bool}}().reflectIsSubUnion(Type{Either{int, bool}}()))
+assert(Type{Either{int, bool}}().reflectIsSubUnion(Type{Either{int, bool, char}}()))
+assert(Type{Either{int, bool}}().reflectIsSubUnion(Type{Either{int, bool, char, float}}()))
+assert(Type{Either{int, bool}}().reflectIsSubUnion(Type{Either{bool, int}}()))
+assertNot(Type{Either{int, bool}}().reflectIsSubUnion(Type{Either{int, float}}()))
 
 // -- Enum utility tests
 

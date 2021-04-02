@@ -25,6 +25,11 @@ fun typeName{T}() -> string
 fun string{T}(Type{T} t)
   t.typeName()
 
+// -- Operators
+
+fun =={T}(Type{T} x, Type{T} y) metaTrue()
+fun =={T1, T2}(Type{T1} x, Type{T2} y) metaFalse()
+
 // -- Tests
 
 assertEq(getType(42).string(), "int")
@@ -33,3 +38,6 @@ assertEq(getType('a').string(), "char")
 assertEq(getType(42.0).string(), "float")
 assertEq(getType(42).getType().string(), "Type{int}")
 assertEq(getType(42).getType().getType().string(), "Type{Type{int}}")
+
+assertEq(Type{int}(), Type{int}())
+assertNotEq(Type{int}(), Type{float}())
