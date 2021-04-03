@@ -89,7 +89,7 @@ act handleRequest(ClientContext ctx, string txt) -> Option{Error}
 act handleConnection(ClientContext ctx)
   actSeq(
     lazy print("- Client connected"),
-    lazy invoke(impure lambda(StreamReadState read)
+    lazy invoke(impure lambda(StreamReadState read) -> Option{Error}
     (
         read.readUntil("\r\n\r\n" :: "\n\n") as Tuple{string, StreamReadState} r && r.f1.length() > 0
           ? handleRequest(ctx, r.f1) as Error err ? err : self(r.f2)

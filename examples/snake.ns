@@ -283,7 +283,7 @@ fun atWriter() -> Writer{DrawInst}
   (setCursorWriter() & stringWriter()).to(Type{DrawInst}())
 
 fun setCursorWriter() -> Writer{I2}
-  ttyCursorPosWriter().to(Type{I2}())
+  ttyCursorPosWriter().map(lambda (I2 p) TtyCursorPos(p.y, p.x))
 
 // --- Entry point
 
