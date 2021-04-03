@@ -30,19 +30,19 @@ act isValid(sys_stream s) -> bool
 act setOptions(sys_stream s, StreamOptions opts) -> Option{Error}
   intrinsic{stream_setoptions}(s, int(opts))
     ? None()
-    : getPlatformError("Failed to set stream options")
+    : platformError("Failed to set stream options")
 
 act unsetOptions(sys_stream s, StreamOptions opts) -> Option{Error}
   intrinsic{stream_unsetoptions}(s, int(opts))
     ? None()
-    : getPlatformError("Failed to unset stream options")
+    : platformError("Failed to unset stream options")
 
 // -- Reading actions
 
 act read(sys_stream s, int maxChars) -> Either{string, Error}
   res = intrinsic{stream_read_string}(s, maxChars);
-  res.isEmpty() && getPlatformErrorCode() != PlatformError.StreamNoDataAvailable
-    ? getPlatformError("Failed to read from stream")
+  res.isEmpty() && platformErrorCode() != PlatformError.StreamNoDataAvailable
+    ? platformError("Failed to read from stream")
     : res
 
 act readToEnd(sys_stream s) -> Either{string, Error}
@@ -94,7 +94,7 @@ act readUntil(StreamReadState state, List{string} patterns) -> Either{Tuple{stri
 act write(sys_stream s, string str) -> Option{Error}
   intrinsic{stream_write_string}(s, str)
     ? None()
-    : getPlatformError("Failed to write to stream")
+    : platformError("Failed to write to stream")
 
 act copy(sys_stream from, sys_stream to) -> Either{int, Error}
   invoke(

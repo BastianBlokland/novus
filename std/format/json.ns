@@ -40,6 +40,19 @@ fun jsonStringEscape(string str)
     else          -> string(c)
   )
 
+fun jsonValueType(JsonValue jv)
+  if jv is JsonNull   -> "null"
+  if jv is float      -> "number"
+  if jv as bool b     -> b ? "true" : "false"
+  if jv is string     -> "string"
+  if jv is JsonObject -> "object"
+  if jv is JsonArray  -> "array"
+
+fun getField(JsonObject jo, string name, StrComp strComp = StrComp.Ordinal) -> Option{JsonValue}
+  jo.fields
+    .first(lambda (Tuple{string, JsonValue} field) equals(field.f1, name, strComp))
+    .map(lambda (Tuple{string, JsonValue} field) field.f2)
+
 // -- Conversions
 
 fun string(JsonObject o, string indent = "", WriterNewlineMode newlineMode = WriterNewlineMode.None)

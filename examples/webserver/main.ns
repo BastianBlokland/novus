@@ -110,8 +110,8 @@ act main(int port, Content content)
       variables = (
         Variable("SERVER_UPTIME",             uptime.string())                  ::
         Variable("SERVER_DATE",               timeWriter.run(timeNow()))        ::
-        Variable("SERVER_PLATFORM",           getPlatform().string())           ::
-        Variable("SERVER_RUNTIME_VERSION",    getRuntimeVersion().string())     ::
+        Variable("SERVER_PLATFORM",           platform().string())           ::
+        Variable("SERVER_RUNTIME_VERSION",    runtimeVersion().string())     ::
         Variable("SERVER_CONNECTION_COUNTER", state.connectionCounter.string())
       );
       ctx       = ClientContext(content, variables, con, timeWriter, respWriter, reqParser);
@@ -133,7 +133,7 @@ act loadContent(Path root, List{RewriteRule} rewriteUrls, List{string} files)
 
 main(
   port = getEnvOpt("port", txtIntParser()) ?? 8080;
-  rootPath = getEnvOpt("root", pathParser()) ?? getPathProgram().parent() / "site";
+  rootPath = getEnvOpt("root", pathParser()) ?? pathProgram().parent() / "site";
   rewriteUrls =
   (
     RewriteRule("/", "/index.html") :: List{RewriteRule}()

@@ -75,6 +75,6 @@ act driver(int width, int height, int threads, int bounces, float fov, Path outP
   outPath.fileWrite(writer, Image(width, height, res.value)).failOnError();
   print("Wrote result to file: " + outPath)
 
-getUntilInterupt(fork driver(1280, 720, 4, 4, 60, getPathCurrent() / "image.ppm", ppmBinaryWriter()))
-//getUntilInterupt(fork driver(1280, 720, 4, 4, 60, getPathCurrent() / "image.tga", tgaWriter()))
+getUntilInterupt(fork driver(1280, 720, 4, 4, 60, pathCurrent() / "image.ppm", ppmBinaryWriter()))
+//getUntilInterupt(fork driver(1280, 720, 4, 4, 60, pathCurrent() / "image.tga", tgaWriter()))
 

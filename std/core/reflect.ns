@@ -304,9 +304,10 @@ fun reflectFromUnion{Union, TResult}(Union u, Type{TResult} t) -> TResult
 // ---- Union to string
 // Calls string() for the active type of the union.
 
-fun reflectUnionToString{Union}(Union u, Meta{#-1} idx) ""
+fun reflectUnionToString{Union}(Union u, Meta{#-1} idx) -> string
+  intrinsic{fail}{string}()
 
-fun reflectUnionToString{Union, Idx}(Union u, Meta{Idx} idx)
+fun reflectUnionToString{Union, Idx}(Union u, Meta{Idx} idx) -> string
   if u as reflect_union_type{Union, Idx} val -> val.string()
   else -> reflectUnionToString(u, --idx)
 

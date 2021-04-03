@@ -151,7 +151,7 @@ act ipLookupAddress(string hostname) -> Either{IpAddress, Error}
   else                        ->
     v6 = ipLookupV4Address(hostname);
     if v6 as IpV4Address v6Addr -> IpAddress(v6Addr)
-    else                        -> getPlatformError("Failed to lookup ip address for hostname: '" + hostname + "'")
+    else                        -> platformError("Failed to lookup ip address for hostname: '" + hostname + "'")
 
 // -- Tests
 

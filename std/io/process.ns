@@ -53,7 +53,7 @@ act run(string prog, List{string} args) -> Either{Process, Error}
 act run(string cmdLine) -> Either{Process, Error}
   handle  = intrinsic{process_start}(cmdLine);
   pid     = ProcessId(intrinsic{process_getid}(handle));
-  if pid.id < 0 -> getPlatformError("Failed to run: '" + cmdLine + "'")
+  if pid.id < 0 -> platformError("Failed to run: '" + cmdLine + "'")
   else          ->
     Process(
       cmdLine, handle, pid,

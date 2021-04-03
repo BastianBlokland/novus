@@ -1,0 +1,332 @@
+import "json.ns"
+
+import "std/core.ns"
+import "std/prim.ns"
+
+// -- Orm (Object Relational Mapper) for Json types
+
+// -- Value to json
+
+fun toJson(int v) -> JsonValue
+  float(v)
+
+fun toJson(long v) -> JsonValue
+  string(v)
+
+fun toJson(float v) -> JsonValue
+  v
+
+fun toJson(bool v) -> JsonValue
+  v
+
+fun toJson(char v) -> JsonValue
+  float(int(v))
+
+fun toJson(string v) -> JsonValue
+  v
+
+fun toJson(None v) -> JsonValue
+  JsonNull()
+
+fun toJson{T}(Option{T} v) -> JsonValue
+  if v as T vt  -> toJson(vt)
+  else          -> JsonNull()
+
+fun toJson{T}(List{T} list) -> JsonValue
+  JsonArray(list.map(lambda (T v) v.toJson()))
+
+fun toJson{T}(T v)
+  toJson(v, Meta{reflect_type_kind{T}}())
+
+fun toJson{T}(T structV, Meta{#8} structTypeKind) -> JsonValue
+  structToJson(structV)
+
+fun toJson{T}(T unionV, Meta{#9} unionTypeKind) -> JsonValue
+  unionToJson(unionV)
+
+fun toJson{T}(T enumV, Meta{#10} enumTypeKind) -> JsonValue
+  float(enumV)
+
+// ---- Struct to json object
+
+fun structToJson{T}(T structV, Meta{#-1} idx, List{Tuple{string, JsonValue}} fields) -> JsonValue
+  JsonObject(fields)
+
+fun structToJson{T, Idx}(T structV, Meta{Idx} idx, List{Tuple{string, JsonValue}} fields) -> JsonValue
+  field = Tuple(reflectStructFieldName(Type{T}(), idx), toJson(reflectStructField(structV, idx)));
+  structToJson(structV, --idx, field :: fields)
+
+fun structToJson{T}(T structV) -> JsonValue
+  structToJson(structV, --reflectStructFieldCount(Type{T}()), List{Tuple{string, JsonValue}}())
+
+// ---- Union to json object
+
+fun unionToJson{T}(T unionV, Meta{#-1} idx) -> JsonValue
+  intrinsic{fail}{JsonValue}()
+
+fun unionToJson{T, Idx}(T unionV, Meta{Idx} idx) -> JsonValue
+  if unionV as reflect_union_type{T, Idx} val ->
+    JsonObject(
+      Tuple("$type", JsonValue(typeName{reflect_union_type{T, Idx}}()))
+      ::
+      Tuple("$value", val.toJson()))
+  else -> unionToJson(unionV, --idx)
+
+fun unionToJson{T}(T unionV) -> JsonValue
+  unionToJson(unionV, --reflectUnionCount(Type{T}()))
+
+// -- Value from json
+
+fun fromJson(JsonValue jv, Type{int} t) -> Either{int, Error}
+  if jv as float f  -> int(f)
+  else              -> Error("Expected a number, got a " + jsonValueType(jv))
+
+fun fromJson(JsonValue jv, Type{long} t) -> Either{long, Error}
+  if jv as float f  -> long(f)
+  if jv as string s -> txtLongParser().build()(s)
+  else              -> Error("Expected a string, got a " + jsonValueType(jv))
+
+fun fromJson(JsonValue jv, Type{float} t) -> Either{float, Error}
+  if jv as float f  -> f
+  else              -> Error("Expected a number, got a " + jsonValueType(jv))
+
+fun fromJson(JsonValue jv, Type{bool} t) -> Either{bool, Error}
+  if jv as bool b   -> b
+  else              -> Error("Expected a boolean, got a " + jsonValueType(jv))
+
+fun fromJson(JsonValue jv, Type{char} t) -> Either{char, Error}
+  if jv as float f  -> char(f)
+  else              -> Error("Expected a number, got a " + jsonValueType(jv))
+
+fun fromJson(JsonValue jv, Type{string} t) -> Either{string, Error}
+  if jv as string s -> s
+  else              -> Error("Expected a string, got a " + jsonValueType(jv))
+
+fun fromJson(JsonValue jv, Type{None} t) -> Either{None, Error}
+  if jv is JsonNull -> None()
+  else              -> Error("Expected a null, got a " + jsonValueType(jv))
+
+fun fromJson{T}(JsonValue jv, Type{Option{T}} t) -> Either{Option{T}, Error}
+  if jv is JsonNull -> Option{T}()
+  else -> jv.fromJson(Type{T}()).map(lambda (T vt) Option(vt))
+
+fun fromJson{T}(JsonValue jv, Type{List{T}} t) -> Either{List{T}, Error}
+  if jv as JsonArray a  -> a.entries.map(lambda (JsonValue jv) fromJson(jv, Type{T}())).split().valueOrError()
+  else                  -> Error("Expected a array, got a " + jsonValueType(jv))
+
+fun fromJson{T}(JsonValue jv, Type{T} t) -> Either{T, Error}
+  fromJson(jv, t, Meta{reflect_type_kind{T}}())
+
+fun fromJson{T}(JsonValue jv, Type{T} t, Meta{#8} structTypeKind) -> Either{T, Error}
+  if jv as JsonObject jo  -> structFromJson(jo, t)
+  else                    -> Error("Expected a object, got a " + jsonValueType(jv))
+
+fun fromJson{T}(JsonValue jv, Type{T} t, Meta{#9} unionTypeKind) -> Either{T, Error}
+  if jv as JsonObject jo  -> unionFromJson(jo, t)
+  else                    -> Error("Expected a object, got a " + jsonValueType(jv))
+
+fun fromJson{T}(JsonValue jv, Type{T} t, Meta{#10} enumTypeKind) -> Either{T, Error}
+  if jv as float f ->
+    reflectEnumKeyForVal(T(int(f))) is string
+      ? T(int(f))
+      : Error("'" + f + "' is not a valid " + t)
+  if jv as string s ->
+    reflectEnumValForKey(t, s, StrComp.OrdinalIgnoreCase) as int evz
+      ? T(evz)
+      : Error("'" + s + "' is not a valid " + t)
+  else ->
+    Error("Expected a number or string, got a " + jsonValueType(jv))
+
+// ---- Struct from json object
+
+fun structFromJson{T, Tup, J}(JsonObject jo, Type{T} t, Meta{#-1} i, Meta{J} j, Tup res) -> Either{T, Error}
+  res.tupleToStruct(t)
+
+fun structFromJson{T, Tup, I, J}(JsonObject jo, Type{T} t, Meta{I} i, Meta{J} j, Tup res) -> Either{T, Error}
+  fieldName = reflectStructFieldName(t, j);
+  if jo.getField(fieldName, StrComp.OrdinalIgnoreCase) as JsonValue jv ->
+  (
+    v = fromJson(jv, reflectStructFieldType(t, j));
+    if v as reflect_struct_field_type{T, J} val -> structFromJson(jo, t, --i, ++j, res.tupleAdd(val))
+    if v as Error err -> Error("Invalid field '" + fieldName + "'") :: err
+  )
+  else -> Error("No field named '" + fieldName + "' found on object")
+
+fun structFromJson{T}(JsonObject jo, Type{T} t) -> Either{T, Error}
+  fieldCount = reflectStructFieldCount(Type{T}());
+  structFromJson(jo, t, --fieldCount, metaZero(), Tuple())
+
+// ---- Union from json object
+
+fun unionFromJson{T}(JsonObject jo, Type{T} t, string type, JsonValue val, Meta{#-1} idx) -> Either{T, Error}
+  Error("$type '" + type + "' is not part of the union '" + t + "'")
+
+fun unionFromJson{T, Idx}(JsonObject jo, Type{T} t, string type, JsonValue val, Meta{Idx} idx) -> Either{T, Error}
+  unionEntry = reflectUnionType(t, idx);
+  if equals(type, unionEntry.string(), StrComp.OrdinalIgnoreCase) ->
+  (
+    entryVal = val.fromJson(unionEntry);
+    if entryVal as reflect_union_type{T, Idx} entry -> T(entry)
+    if entryVal as Error err -> Error("Invalid union entry") :: err
+  )
+  else -> unionFromJson(jo, t, type, val, --idx)
+
+fun unionFromJson{T}(JsonObject jo, Type{T} t) -> Either{T, Error}
+  if jo.getField("$type") as JsonValue type && jo.getField("$value") as JsonValue value ->
+    unionFromJson(jo, t, type as string s ? s : type.string(), value, --reflectUnionCount(Type{T}()))
+  else ->
+    Error("No '$type' and '$value' fields found on object")
+
+// -- Parsers
+
+fun jsonParser{T}() -> Parser{T}
+  jsonParser(Type{T}())
+
+fun jsonParser{T}(Type{T} t) -> Parser{T}
+  jsonParser().map(lambda (JsonValue jv) fromJson(jv, t))
+
+// -- Writers
+
+fun jsonWriter{T}() -> Writer{T}
+  jsonWriter(Type{T}())
+
+fun jsonWriter{T}(Type{T} t) -> Writer{T}
+  jsonValueWriter().map(lambda (T t) toJson(t))
+
+// -- Tests
+
+// ---- toJson tests
+
+assertEq(toJson(42),                        JsonValue(42))
+assertEq(toJson(42L),                       JsonValue("42"))
+assertEq(toJson(42.42),                     JsonValue(42.42))
+assertEq(toJson(true),                      JsonValue(true))
+assertEq(toJson('a'),                       JsonValue(int('a')))
+assertEq(toJson("Hello"),                   JsonValue("Hello"))
+assertEq(toJson(None()),                    JsonNull())
+assertEq(toJson(Month.January),             JsonValue(1))
+assertEq(toJson(Month.June),                JsonValue(6))
+assertEq(toJson(1 :: 2 :: 3),               JsonArray(JsonValue(1) :: JsonValue(2) :: JsonValue(3)))
+assertEq(toJson(Month.May :: Month.April),  JsonArray(JsonValue(5) :: JsonValue(4)))
+assertEq(toJson(Option(42)),                JsonValue(42))
+assertEq(toJson(Option{int}()),             JsonNull())
+assertEq(toJson(List{int}()),               JsonArray(List{JsonValue}()))
+assertEq(toJson(LEnd()),                    JsonObject(List{Tuple{string, JsonValue}}()))
+assertEq(
+  toJson(Date(2021, Month.April, 3)),
+  JsonObject(Tuple("year", JsonValue(2021)) :: Tuple("month", JsonValue(4)) :: Tuple("day", JsonValue(3))))
+assertEq(
+  toJson(Date(2021, Month.April, 3) :: Date(1992, Month.June, 9)),
+  JsonArray(
+    JsonValue(JsonObject(Tuple("year", JsonValue(2021)) :: Tuple("month", JsonValue(4)) :: Tuple("day", JsonValue(3))))
+    ::
+    JsonValue(JsonObject(Tuple("year", JsonValue(1992)) :: Tuple("month", JsonValue(6)) :: Tuple("day", JsonValue(9))))
+  ))
+assertEq(
+  toJson(Either{int, float}(42)),
+  JsonObject(Tuple("$type", JsonValue("int")) :: Tuple("$value", JsonValue(42))))
+assertEq(
+  toJson(Either{Option{int}, List{string}, float}(Option(42))),
+  JsonObject(Tuple("$type", JsonValue("Option{int}")) :: Tuple("$value", JsonValue(42))))
+
+// ---- fromJson tests
+
+assertEq(JsonValue(42).fromJson(Type{int}()),                 42)
+assertIs(JsonValue("42").fromJson(Type{int}()),               Type{Error}())
+
+assertEq(JsonValue(42).fromJson(Type{long}()),                42L)
+assertEq(JsonValue("42").fromJson(Type{long}()),              42L)
+assertIs(JsonValue(true).fromJson(Type{long}()),              Type{Error}())
+
+assertEq(JsonValue(42.42).fromJson(Type{float}()),            42.42)
+assertIs(JsonValue("42").fromJson(Type{float}()),             Type{Error}())
+
+assertEq(JsonValue(true).fromJson(Type{bool}()),              true)
+assertIs(JsonValue("true").fromJson(Type{bool}()),            Type{Error}())
+
+assertEq(JsonValue(int('a')).fromJson(Type{char}()),          'a')
+assertIs(JsonValue("a").fromJson(Type{char}()),               Type{Error}())
+
+assertEq(JsonValue("Hello").fromJson(Type{string}()),         "Hello")
+assertIs(JsonValue(true).fromJson(Type{string}()),            Type{Error}())
+
+assertEq(JsonValue(JsonNull()).fromJson(Type{None}()),        None())
+assertIs(JsonValue("null").fromJson(Type{None}()),            Type{Error}())
+
+assertEq(JsonValue(6).fromJson(Type{Month}()),                Month.June)
+assertEq(JsonValue("June").fromJson(Type{Month}()),           Month.June)
+assertEq(JsonValue("jUnE").fromJson(Type{Month}()),           Month.June)
+assertIs(JsonValue(true).fromJson(Type{Month}()),             Type{Error}())
+
+assertEq(JsonValue(JsonNull()).fromJson(Type{Option{int}}()), Option{int}())
+assertEq(JsonValue(42).fromJson(Type{Option{int}}()),         Option(42))
+assertIs(JsonValue("null").fromJson(Type{Option{int}}()),     Type{Error}())
+
+assertEq(
+  j = JsonArray(JsonValue(1) :: JsonValue(2) :: JsonValue(3));
+  fromJson(j, Type{List{int}}()),
+  1 :: 2 :: 3)
+
+assertEq(
+  j = JsonArray(List{JsonValue}());
+  fromJson(j, Type{List{int}}()),
+  List{int}())
+
+assertEq(
+  j = JsonArray(JsonValue(5) :: JsonValue(4));
+  fromJson(j, Type{List{Month}}()),
+  Month.May :: Month.April)
+
+assertEq(
+  j = JsonObject(Tuple("year", JsonValue(2021)) :: Tuple("month", JsonValue(4)) :: Tuple("day", JsonValue(3)));
+  fromJson(j, Type{Date}()),
+  Date(2021, Month.April, 3))
+
+assertEq(
+  j = JsonObject(Tuple("Year", JsonValue(2021)) :: Tuple("mOnTH", JsonValue(4)) :: Tuple("dAy", JsonValue(3)));
+  fromJson(j, Type{Date}()),
+  Date(2021, Month.April, 3))
+
+assertEq(
+  j = JsonArray(
+    JsonValue(JsonObject(Tuple("year", JsonValue(2021)) :: Tuple("month", JsonValue(4)) :: Tuple("Day", JsonValue(3))))
+    ::
+    JsonValue(JsonObject(Tuple("year", JsonValue(1992)) :: Tuple("Month", JsonValue(6)) :: Tuple("day", JsonValue(9))))
+  );
+  fromJson(j, Type{List{Date}}()),
+  Date(2021, Month.April, 3) :: Date(1992, Month.June, 9))
+
+assertEq(
+  j = JsonObject(Tuple("$type", JsonValue("int")) :: Tuple("$value", JsonValue(42)));
+  fromJson(j, Type{Either{int, float}}()),
+  Either{int, float}(42))
+
+assertEq(
+  j = JsonObject(Tuple("$type", JsonValue("bool")) :: Tuple("$value", JsonValue(true)));
+  fromJson(j, Type{Either{int, float, bool}}()),
+  Either{int, float, bool}(true))
+
+assertIs(
+  j = JsonObject(Tuple("$type", JsonValue("int")) :: Tuple("$value", JsonValue(42)));
+  fromJson(j, Type{Either{char, float}}()),
+  Type{Error}())
+
+// ---- Combined tests
+
+assertEq(
+  l = Date(2021, Month.April, 3) :: Date(1992, Month.June, 9);
+  j = l.toJson();
+  Tuple(l, j.fromJson(l.getType()).failOnError())
+)
+
+assertEq(
+  l = Either{Date, List{float}}(Date(2021, Month.April, 3));
+  j = l.toJson();
+  Tuple(l, j.fromJson(l.getType()).failOnError())
+)
+
+assertEq(
+  l = Either{List{Date}, List{float}}(Date(2021, Month.April, 3) :: Date(2021, Month.June, 9));
+  j = l.toJson();
+  Tuple(l, j.fromJson(l.getType()).failOnError())
+)

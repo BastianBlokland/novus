@@ -30,7 +30,7 @@ act consoleOpen() -> Either{Console, Error}
   stdOut  = intrinsic{console_openstream}(1);
   stdErr  = intrinsic{console_openstream}(2);
   if stdIn.isValid() && stdOut.isValid() && stdErr.isValid()  -> Console(stdIn, stdOut, stdErr)
-  else                                                        -> getPlatformError("Failed to open console")
+  else                                                        -> platformError("Failed to open console")
 
 // -- Read
 
@@ -141,21 +141,21 @@ act unsetNoBlockInput(Console c) -> Option{Error}
 
 act termGetWidth(Console c) -> Either{int, Error}
   w = intrinsic{term_getwidth}(c.stdOut);
-  w >= 0 ? w : getPlatformError("Failed to get the terminal width")
+  w >= 0 ? w : platformError("Failed to get the terminal width")
 
 act termGetHeight(Console c) -> Either{int, Error}
   h = intrinsic{term_getheight}(c.stdOut);
-  h >= 0 ? h : getPlatformError("Failed to get the terminal height")
+  h >= 0 ? h : platformError("Failed to get the terminal height")
 
 act termSetOptions(Console c, TerminalOptions opts) -> Option{Error}
   intrinsic{term_setoptions}(c.stdIn, int(opts))
     ? None()
-    : getPlatformError("Failed to set terminal options: " + opts.string())
+    : platformError("Failed to set terminal options: " + opts.string())
 
 act termUnsetOptions(Console c, TerminalOptions opts) -> Option{Error}
   intrinsic{term_unsetoptions}(c.stdIn, int(opts))
     ? None()
-    : getPlatformError("Failed to unset terminal options: " + opts.string())
+    : platformError("Failed to unset terminal options: " + opts.string())
 
 act failIfNotTerm(Console c) -> None
   c.isTerm() ? None() : fail{None}("This application requires an interactive terminal")

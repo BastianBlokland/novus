@@ -118,17 +118,17 @@ fun noinline string(PlatformError err)
 
 // -- Platform
 
-act getPlatform() Platform(intrinsic{runtime_platform}())
+act platform() Platform(intrinsic{runtime_platform}())
 
-act getPlatformErrorCode() PlatformError(intrinsic{platform_error_code}())
+act platformErrorCode() PlatformError(intrinsic{platform_error_code}())
 
-act getPlatformError(string message = "")
-  code = getPlatformErrorCode();
+act platformError(string message = "")
+  code = platformErrorCode();
   Error(code, message.isEmpty() ? code.string() : message + ": " + code.string())
 
 // -- Versions
 
-act getRuntimeVersion() -> Version
+act runtimeVersion() -> Version
   versionParser().run(intrinsic{version_runtime}()).failOnError()
 
 act getCompilerVersion() -> Version
@@ -136,13 +136,13 @@ act getCompilerVersion() -> Version
 
 // -- Paths
 
-act getPathCurrent() -> PathAbsolute
+act pathCurrent() -> PathAbsolute
   pathAbsParser().run(intrinsic{path_workingdirectory}()).failOnError()
 
-act getPathRuntime() -> PathAbsolute
+act pathRuntime() -> PathAbsolute
   pathAbsParser().run(intrinsic{path_runtime}()).failOnError()
 
-act getPathProgram() -> PathAbsolute
+act pathProgram() -> PathAbsolute
   pathAbsParser().run(intrinsic{path_program}()).failOnError()
 
 // -- Interupt
@@ -166,7 +166,7 @@ act invokeUntilInterupt{T}(action{Option{T}} delegate, Duration interval = milli
 // -- Misc
 
 act sleep(Duration d) -> Option{Error}
-  intrinsic{sleep_nano}(d.ns) ? None() : getPlatformError()
+  intrinsic{sleep_nano}(d.ns) ? None() : platformError()
 
 // -- Failure
 
@@ -195,21 +195,21 @@ act failOnError(Option{Error} v) -> None
 // -- Tests
 
 assert(
-  getPlatform(),
+  platform(),
   lambda (Platform p) p == Platform.Linux || p == Platform.MacOs || p == Platform.Windows)
 
-assertGtrOrEq(getRuntimeVersion(), Version(0, 11, 0))
+assertGtrOrEq(runtimeVersion(), Version(0, 11, 0))
 
 assertGtrOrEq(getCompilerVersion(), Version(0, 11, 0))
 
-assertIs(getPathCurrent().extension(), Type{None}())
+assertIs(pathCurrent().extension(), Type{None}())
 
 assert(
-  getPathRuntime().stem(),
+  pathRuntime().stem(),
   lambda (Option{string} runtimeName) runtimeName == "novrt" || runtimeName == "nove")
 
-assertEq(getPathProgram().filename(), "rt.ns")
+assertEq(pathProgram().filename(), "rt.ns")
 
-assertEq(getPathProgram().stem(), "rt")
+assertEq(pathProgram().stem(), "rt")
 
-assertEq(getPathProgram().extension(), "ns")
+assertEq(pathProgram().extension(), "ns")
