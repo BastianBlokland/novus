@@ -153,16 +153,16 @@ fun pathWriter()
 
 // -- Actions
 
-act getPathDefaultRoot()
-  if getPlatform() == Platform.Windows  -> pathDefaultRootWindows()
-  else                                  -> pathDefaultRootUnix()
+act pathDefaultRoot()
+  if platform() == Platform.Windows -> pathDefaultRootWindows()
+  else                              -> pathDefaultRootUnix()
 
-act getPathAbsolute(PathRelative rel)
-  getPathCurrent() / rel
+act pathAbsolute(PathRelative rel)
+  pathCurrent() / rel
 
-act getPathAbsolute(Path p)
+act pathAbsolute(Path p)
   if p as PathAbsolute a -> a
-  if p as PathRelative r -> r.getPathAbsolute()
+  if p as PathRelative r -> r.pathAbsolute()
 
 // -- Tests
 
@@ -284,5 +284,5 @@ assertEq(pathWriter()(pathRel() / "elite" / pathRel() / "elite" / pathRel() / "h
 assertEq(pathWriter()(pathRel() / "hello world" / pathRel() / "hello world"), "hello world/hello world")
 assertEq(pathWriter()(pathRel() / "hello world" / pathRel() / "hello world" / pathRel() / "elite"), "hello world/hello world/elite")
 
-assertEq(getPathAbsolute(pathRel() / "hello.txt").parent(), getPathCurrent())
-assertEq(getPathAbsolute(pathRel() / "hello.txt").extension(), "txt")
+assertEq(pathAbsolute(pathRel() / "hello.txt").parent(), pathCurrent())
+assertEq(pathAbsolute(pathRel() / "hello.txt").extension(), "txt")

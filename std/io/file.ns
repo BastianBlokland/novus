@@ -34,11 +34,11 @@ fun string(File f)
 // -- Actions
 
 act fileOpen(Path p, FileMode m, FileFlags flags = FileFlags.None) -> Either{File, Error}
-  absPath     = p.getPathAbsolute();
+  absPath     = p.pathAbsolute();
   absPathStr  = absPath.string();
   stream      = intrinsic{file_openstream}(absPathStr, int(m) | flags << 8);
   if stream.isValid() -> File(absPath, m, flags, stream)
-  else                -> getPlatformError("Failed to open file: '" + absPathStr + "'")
+  else                -> platformError("Failed to open file: '" + absPathStr + "'")
 
 act readToEnd(File f) -> Either{string, Error}
   f.stream.readToEnd()
@@ -71,16 +71,16 @@ act fileAppend{T}(Path p, Writer{T} writer, T val) -> Option{Error}
   p.fileOpen(FileMode.Append).map(impure lambda (File f) f.write(writer, val))
 
 act fileRemove(Path p) -> Option{Error}
-  absPath     = p.getPathAbsolute();
+  absPath     = p.pathAbsolute();
   absPathStr  = absPath.string();
   intrinsic{file_remove}(absPathStr)
     ? None()
-    : getPlatformError("Failed to remove file: '" + absPathStr + "'")
+    : platformError("Failed to remove file: '" + absPathStr + "'")
 
 // -- Tests
 
 assertEq(
-  p = getPathCurrent() / "file-test1.tmp";
+  p = pathCurrent() / "file-test1.tmp";
   f = fileOpen(p, FileMode.Create, FileFlags.AutoRemove).map(
     impure lambda (File f)
       f.write("hello world")
@@ -88,7 +88,7 @@ assertEq(
   fileRead(p), "hello world")
 
 assertEq(
-  p = getPathCurrent() / "file-test2.tmp";
+  p = pathCurrent() / "file-test2.tmp";
   f = fileOpen(p, FileMode.Create, FileFlags.AutoRemove).map(
     impure lambda (File f)
       f.write("hello world");
@@ -99,7 +99,7 @@ assertEq(
 
 assertEq(
   json  = JsonValue(JsonArray(JsonValue(true) :: JsonValue(2.0)));
-  p     = getPathCurrent() / "file-test3.tmp";
+  p     = pathCurrent() / "file-test3.tmp";
   f     = fileOpen(p, FileMode.Create, FileFlags.AutoRemove).map(
     impure lambda (File f)
       f.write(jsonWriter(), json)
@@ -107,15 +107,15 @@ assertEq(
   Tuple(fileRead(p, jsonParser()), json))
 
 assertIs(
-  p = getPathCurrent() / "file-test4.tmp";
+  p = pathCurrent() / "file-test4.tmp";
   fileOpen(p, FileMode.Create, FileFlags.AutoRemove), Type{File}())
 
 assertIs(
-  p = getPathCurrent() / "file-test5.tmp";
+  p = pathCurrent() / "file-test5.tmp";
   fileOpen(p, FileMode.Open), Type{Error}())
 
 assertIs(
-  p = getPathCurrent() / "file-test6.tmp";
+  p = pathCurrent() / "file-test6.tmp";
   fileOpen(p, FileMode.Append, FileFlags.AutoRemove), Type{Error}())
 
-assertIs(fileRemove(getPathCurrent() / "non-existing-file"), Type{Error}())
+assertIs(fileRemove(pathCurrent() / "non-existing-file"), Type{Error}())
