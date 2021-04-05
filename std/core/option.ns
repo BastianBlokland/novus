@@ -1,7 +1,7 @@
+import "func.ns"
 import "lazy.ns"
 
 import "std/diag.ns"
-import "std/func.ns"
 import "std/prim.ns"
 
 // -- Types

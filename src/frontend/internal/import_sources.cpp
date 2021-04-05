@@ -47,19 +47,46 @@ auto ImportSources::visit(const parse::ImportStmtNode& n) -> void {
   }
 }
 
-auto ImportSources::import(const Path& file, input::Span span) const -> bool {
+auto ImportSources::alreadyImportedAbsPath(const Path& file) const -> bool {
+  assert(file.is_absolute());
+  assert(!m_mainSource.getPath() || m_mainSource.getPath()->is_absolute());
 
-  // Check if this file is same as our main source.
-  if (m_mainSource.getPath()) {
-    if (file.filename() == m_mainSource.getPath()->filename()) {
+  if (m_mainSource.getPath() && file == *m_mainSource.getPath()) {
+    return true;
+  }
+  if (std::any_of(m_importedSources->begin(), m_importedSources->end(), [&file](const Source& src) {
+        assert(src.getPath());
+        assert(src.getPath()->is_absolute());
+        return file == *src.getPath();
+      })) {
+    return true;
+  }
+
+  return false;
+}
+
+auto ImportSources::alreadyImportedRelPath(const Path& file) const -> bool {
+  assert(file.is_relative());
+
+  if (m_currentSource.getPath()) {
+    if (alreadyImportedAbsPath(m_currentSource.getPath()->parent_path() / file)) {
       return true;
     }
   }
+  for (const auto& searchPath : m_searchPaths) {
+    if (alreadyImportedAbsPath(searchPath / file)) {
+      return true;
+    }
+  }
+  return false;
+}
 
-  // Check if we've already imported this file.
-  if (std::any_of(m_importedSources->begin(), m_importedSources->end(), [&file](const Source& src) {
-        return file.filename() == src.getPath()->filename();
-      })) {
+auto ImportSources::import(const Path& file, input::Span span) const -> bool {
+
+  if (file.is_absolute() && alreadyImportedAbsPath(file)) {
+    return true;
+  }
+  if (file.is_relative() && alreadyImportedRelPath(file)) {
     return true;
   }
 
