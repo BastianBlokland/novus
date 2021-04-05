@@ -45,7 +45,8 @@ private:
 
   [[nodiscard]] auto import(const Path& file, input::Span span) const -> bool;
 
-  [[nodiscard]] auto importFromDir(const Path& searchPath, const Path& file) const -> bool;
+  [[nodiscard]] auto importRelPath(const Path& file) const -> bool;
+  [[nodiscard]] auto importAbsPath(const Path& file) const -> bool;
 };
 
 } // namespace frontend::internal

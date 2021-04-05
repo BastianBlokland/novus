@@ -83,25 +83,11 @@ auto ImportSources::alreadyImportedRelPath(const Path& file) const -> bool {
 
 auto ImportSources::import(const Path& file, input::Span span) const -> bool {
 
-  if (file.is_absolute() && alreadyImportedAbsPath(file)) {
+  if (file.is_absolute() && importAbsPath(file)) {
     return true;
   }
-  if (file.is_relative() && alreadyImportedRelPath(file)) {
+  if (file.is_relative() && importRelPath(file)) {
     return true;
-  }
-
-  // First attempt from the local directory of the current source.
-  if (m_currentSource.getPath()) {
-    if (importFromDir(m_currentSource.getPath()->parent_path(), file)) {
-      return true;
-    }
-  }
-
-  // Otherwise try in all the searchpaths.
-  for (const auto& searchPath : m_searchPaths) {
-    if (importFromDir(searchPath, file)) {
-      return true;
-    }
   }
 
   const auto srcId = m_sourceTableBuilder.add(&m_currentSource, span);
@@ -109,16 +95,40 @@ auto ImportSources::import(const Path& file, input::Span span) const -> bool {
   return false;
 }
 
-auto ImportSources::importFromDir(const Path& searchPath, const Path& file) const -> bool {
-  const auto fullPath = searchPath / file;
-  auto fs             = std::ifstream{fullPath.string()};
+auto ImportSources::importRelPath(const Path& file) const -> bool {
+  assert(file.is_relative());
+
+  if (alreadyImportedRelPath(file)) {
+    return true;
+  }
+  if (m_currentSource.getPath()) {
+    if (importAbsPath(m_currentSource.getPath()->parent_path() / file)) {
+      return true;
+    }
+  }
+  for (const auto& searchPath : m_searchPaths) {
+    if (importAbsPath(searchPath / file)) {
+      return true;
+    }
+  }
+  return false;
+}
+
+auto ImportSources::importAbsPath(const Path& file) const -> bool {
+  assert(file.is_absolute());
+
+  if (alreadyImportedAbsPath(file)) {
+    return true;
+  }
+
+  auto fs = std::ifstream{file.string()};
   if (!fs.good()) {
     return false;
   }
 
   m_importedSources->push_front(frontend::buildSource(
       file.filename().string(),
-      filesystem::canonical(fullPath),
+      filesystem::canonical(file),
       std::istreambuf_iterator<char>{fs},
       std::istreambuf_iterator<char>{}));
 
