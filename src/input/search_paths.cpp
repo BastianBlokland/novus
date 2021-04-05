@@ -1,17 +1,26 @@
 #include "input/search_paths.hpp"
 #include <array>
+#include <optional>
 #include <string>
+
+#if defined(linux)
+#include <linux/limits.h>
+#include <unistd.h>
+#endif
 
 #if defined(__APPLE__)
 #include <mach-o/dyld.h>
+#include <unistd.h>
 #endif
 
 #if defined(_WIN32)
+#include <direct.h>
 #include <windows.h>
 #endif
 
 #if defined(_MSC_VER)
 #define PATH_MAX MAX_PATH
+#define getcwd _getcwd
 #endif
 
 namespace {
@@ -22,12 +31,24 @@ auto errorExit(const char* msg) {
   std::exit(EXIT_FAILURE);
 }
 
+auto workingDirectory() -> std::optional<filesystem::path> {
+  auto pathBuffer = std::array<char, PATH_MAX>{};
+  if (::getcwd(pathBuffer.data(), PATH_MAX)) {
+    return filesystem::path{pathBuffer.data()};
+  }
+  return std::nullopt;
+}
+
 } // namespace
 
 namespace input {
 
 auto getSearchPaths(const char** argv) noexcept -> std::vector<filesystem::path> {
   auto result = std::vector<filesystem::path>{};
+
+  if (auto wd = workingDirectory()) {
+    result.push_back(std::move(*wd));
+  }
 
   // If the executable was started with a path add it as a search-path.
   // Note: if the executable was found from PATH this will only contain the executable name so we
@@ -39,7 +60,7 @@ auto getSearchPaths(const char** argv) noexcept -> std::vector<filesystem::path>
     }
   }
 
-  // Add the parent of the path.
+  // Add the parent path of the executable.
   auto executablePath = getExecutablePath();
   result.push_back(executablePath.parent_path());
 
