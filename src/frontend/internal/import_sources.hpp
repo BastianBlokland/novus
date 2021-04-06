@@ -40,9 +40,13 @@ private:
   std::forward_list<Source>* m_importedSources;
   std::vector<Diag>* m_diags;
 
+  [[nodiscard]] auto alreadyImportedAbsPath(const Path& file) const -> bool;
+  [[nodiscard]] auto alreadyImportedRelPath(const Path& file) const -> bool;
+
   [[nodiscard]] auto import(const Path& file, input::Span span) const -> bool;
 
-  [[nodiscard]] auto importFromDir(const Path& searchPath, const Path& file) const -> bool;
+  [[nodiscard]] auto importRelPath(const Path& file) const -> bool;
+  [[nodiscard]] auto importAbsPath(const Path& file) const -> bool;
 };
 
 } // namespace frontend::internal

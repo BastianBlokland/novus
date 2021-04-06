@@ -47,34 +47,47 @@ auto ImportSources::visit(const parse::ImportStmtNode& n) -> void {
   }
 }
 
-auto ImportSources::import(const Path& file, input::Span span) const -> bool {
+auto ImportSources::alreadyImportedAbsPath(const Path& file) const -> bool {
+  assert(file.is_absolute());
+  assert(!m_mainSource.getPath() || m_mainSource.getPath()->is_absolute());
 
-  // Check if this file is same as our main source.
-  if (m_mainSource.getPath()) {
-    if (file.filename() == m_mainSource.getPath()->filename()) {
-      return true;
-    }
+  if (m_mainSource.getPath() && file == *m_mainSource.getPath()) {
+    return true;
   }
-
-  // Check if we've already imported this file.
   if (std::any_of(m_importedSources->begin(), m_importedSources->end(), [&file](const Source& src) {
-        return file.filename() == src.getPath()->filename();
+        assert(src.getPath());
+        assert(src.getPath()->is_absolute());
+        return file == *src.getPath();
       })) {
     return true;
   }
 
-  // First attempt from the local directory of the current source.
+  return false;
+}
+
+auto ImportSources::alreadyImportedRelPath(const Path& file) const -> bool {
+  assert(file.is_relative());
+
   if (m_currentSource.getPath()) {
-    if (importFromDir(m_currentSource.getPath()->parent_path(), file)) {
+    if (alreadyImportedAbsPath(m_currentSource.getPath()->parent_path() / file)) {
       return true;
     }
   }
-
-  // Otherwise try in all the searchpaths.
   for (const auto& searchPath : m_searchPaths) {
-    if (importFromDir(searchPath, file)) {
+    if (alreadyImportedAbsPath(searchPath / file)) {
       return true;
     }
+  }
+  return false;
+}
+
+auto ImportSources::import(const Path& file, input::Span span) const -> bool {
+
+  if (file.is_absolute() && importAbsPath(file)) {
+    return true;
+  }
+  if (file.is_relative() && importRelPath(file)) {
+    return true;
   }
 
   const auto srcId = m_sourceTableBuilder.add(&m_currentSource, span);
@@ -82,16 +95,40 @@ auto ImportSources::import(const Path& file, input::Span span) const -> bool {
   return false;
 }
 
-auto ImportSources::importFromDir(const Path& searchPath, const Path& file) const -> bool {
-  const auto fullPath = searchPath / file;
-  auto fs             = std::ifstream{fullPath.string()};
+auto ImportSources::importRelPath(const Path& file) const -> bool {
+  assert(file.is_relative());
+
+  if (alreadyImportedRelPath(file)) {
+    return true;
+  }
+  if (m_currentSource.getPath()) {
+    if (importAbsPath(m_currentSource.getPath()->parent_path() / file)) {
+      return true;
+    }
+  }
+  for (const auto& searchPath : m_searchPaths) {
+    if (importAbsPath(searchPath / file)) {
+      return true;
+    }
+  }
+  return false;
+}
+
+auto ImportSources::importAbsPath(const Path& file) const -> bool {
+  assert(file.is_absolute());
+
+  if (alreadyImportedAbsPath(file)) {
+    return true;
+  }
+
+  auto fs = std::ifstream{file.string()};
   if (!fs.good()) {
     return false;
   }
 
   m_importedSources->push_front(frontend::buildSource(
       file.filename().string(),
-      filesystem::canonical(fullPath),
+      filesystem::canonical(file),
       std::istreambuf_iterator<char>{fs},
       std::istreambuf_iterator<char>{}));
 
