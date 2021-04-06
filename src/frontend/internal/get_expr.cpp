@@ -433,16 +433,12 @@ auto GetExpr::visit(const parse::IdExprNode& n) -> void {
       assert(m_ctx->hasErrors());
       return;
     }
-    const auto instances = m_ctx->getFuncTemplates()->instantiate(name, *typeSet, getOvOptions(-1));
+    const auto instances = m_ctx->getFuncTemplates()->instantiate(
+        name, *typeSet, prog::OvOptions{prog::OvFlags::ExclNonUser, -1});
+
     if (instances.empty()) {
       const auto typeParamNames = getDisplayNames(*m_ctx, *typeSet);
-      if (hasFlag<Flags::AllowPureFuncCalls>() && hasFlag<Flags::AllowActionCalls>()) {
-        m_ctx->reportDiag(errNoFuncOrActionFoundToInstantiate, n.getSpan(), name, typeParamNames);
-      } else if (hasFlag<Flags::AllowPureFuncCalls>()) {
-        m_ctx->reportDiag(errNoPureFuncFoundToInstantiate, n.getSpan(), name, typeParamNames);
-      } else {
-        m_ctx->reportDiag(errNoActionFoundToInstantiate, n.getSpan(), name, typeParamNames);
-      }
+      m_ctx->reportDiag(errNoFuncOrActionFoundToInstantiate, n.getSpan(), name, typeParamNames);
       return;
     }
     if (instances.size() != 1) {
@@ -455,7 +451,7 @@ auto GetExpr::visit(const parse::IdExprNode& n) -> void {
   }
 
   // Non-templated function literal.
-  auto funcs = m_ctx->getProg()->lookupFunc(name, getOvOptions(-1, true));
+  auto funcs = m_ctx->getProg()->lookupFunc(name, prog::OvOptions{prog::OvFlags::ExclNonUser, -1});
   if (!funcs.empty()) {
     if (funcs.size() != 1) {
       m_ctx->reportDiag(errAmbiguousFunction, n.getSpan(), name);
