@@ -262,6 +262,9 @@ inline auto removeFile(PlatformError* pErr, StringRef* path) -> bool {
     case ENOTDIR:
       *pErr = PlatformError::FileNotFound;
       break;
+    case EISDIR:
+      *pErr = PlatformError::FileIsDirectory;
+      break;
     default:
       *pErr = PlatformError::FileUnknownError;
       break;

@@ -48,6 +48,7 @@ enum class PlatformError : uint32_t {
   FilePathTooLong     = 504,
   FileDiskFull        = 505,
   FileLocked          = 506,
+  FileIsDirectory     = 507,
 
   TcpUnknownError              = 600,
   TcpInvalidSocket             = 601,
