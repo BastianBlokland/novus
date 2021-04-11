@@ -110,7 +110,7 @@ fun cliCleanupAction(Type{Settings} t) resetTerminal
 act driver(Settings s)
   c = consoleOpen().failOnError();
   c.failIfNotTerm();
-  setupTerminal().failOnError();
+  setupTerminal(c).failOnError();
   loop(c, s)
 
 cli(driver)
@@ -123,8 +123,7 @@ act getSize(Console c)
     c.termGetHeight().failOnError()
   )
 
-act setupTerminal()
-  c = consoleOpen().failOnError();
+act setupTerminal(Console c)
   c.writeOut(
     ttyLitAltScreenWriter(true)           &
     ttyLitClearWriter(TtyClearMode.All)   &
