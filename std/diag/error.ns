@@ -84,6 +84,9 @@ fun valueOrError{T}(T val, Option{Error} err) -> Either{T, Error}
 fun valueOrError{T}(T val, List{Error} err) -> Either{T, Error}
   valueOrError(val, combine(err))
 
+fun error{T}(Either{T, Error} eitherOrError) -> Option{Error}
+  eitherOrError.eitherGet(Type{Error}())
+
 fun map{T, TResult}(Either{T, Error} v, function{T, Either{TResult, Error}} f) -> Either{TResult, Error}
   if v as T      val -> f(val)
   if v as Error  err -> err

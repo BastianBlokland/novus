@@ -131,7 +131,7 @@ act platformError(string message = "")
 act runtimeVersion() -> Version
   versionParser().run(intrinsic{version_runtime}()).failOnError()
 
-act getCompilerVersion() -> Version
+act compilerVersion() -> Version
   versionParser().run(intrinsic{version_compiler}()).failOnError()
 
 // -- Paths
@@ -158,17 +158,15 @@ act atInterupt{T}(action{T} delegate) -> future{T}
     if interuptIsRequested() -> delegate()
     else                     -> sleep(milliseconds(100)).failOnError(); self())
 
-act invokeUntilInterupt{T}(action{Option{T}} delegate, Duration interval = milliseconds(100)) -> Option{T}
-  if interuptIsRequested()  -> None()
-  if delegate() as T t      -> t
-  else                      -> sleep(interval).failOnError(); self(delegate, interval)
-
 // -- Misc
 
 act sleep(Duration d) -> Option{Error}
   intrinsic{sleep_nano}(d.ns) ? None() : platformError()
 
 // -- Failure
+
+act fail() -> Option{Error}
+  intrinsic{fail}{Option{Error}}()
 
 act fail(string msg) -> Option{Error}
   fail{Option{Error}}(msg)
@@ -181,7 +179,7 @@ act noinline fail{TResult}(string msg) -> TResult
   intrinsic{fail}{TResult}()
 
 act noinline fail{TResult}(Error err) -> TResult
-  writer = litWriter("Failed:\n") & errorWriter(litWriter("- "), newlineWriter());
+  writer = litWriter("Failed:") & newlineWriter() & errorWriter(litWriter("- "), newlineWriter());
   fail{TResult}(writer.run(err))
 
 act failOnError{T}(Either{T, Error} v) -> T
@@ -200,7 +198,7 @@ assert(
 
 assertGtrOrEq(runtimeVersion(), Version(0, 11, 0))
 
-assertGtrOrEq(getCompilerVersion(), Version(0, 11, 0))
+assertGtrOrEq(compilerVersion(), Version(0, 11, 0))
 
 assertIs(pathCurrent().extension(), Type{None}())
 

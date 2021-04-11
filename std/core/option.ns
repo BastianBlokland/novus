@@ -20,6 +20,9 @@ fun Option{T}()
 fun ??{T}(Option{T} opt, T def) -> T
   opt as T val ? val : def
 
+fun ??{T}(Option{T} opt, Option{T} def) -> Option{T}
+  opt as T val ? val : def
+
 // -- Conversions
 
 fun string(None n)
