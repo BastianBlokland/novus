@@ -68,10 +68,10 @@ fun cliOptVal{T}(CliResult r, CliId id, Type{CliPositional{T}} t) -> Either{CliP
 
 fun cliOptVal{T}(CliResult r, CliId id, Type{List{T}} t) -> Either{List{T}, Error}
   p = cliParser(Type{T}());
-  r.getValues(id).map(lambda (string s) cliParse(r, id, p, s)).split().valueOrError()
+  r.cliValues(id).map(lambda (string s) cliParse(r, id, p, s)).split().valueOrError()
 
 fun cliOptVal{T}(CliResult r, CliId id, Type{T} t) -> Either{T, Error}
-  if r.getValues(id).front() as string s -> cliParse(r, id, t, s)
+  if r.cliValues(id).front() as string s -> cliParse(r, id, t, s)
   else -> Error("Required option is missing")
 
 // -- Retrieve the values for a struct

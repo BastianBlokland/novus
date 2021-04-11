@@ -1,0 +1,209 @@
+import "options.ns"
+import "runner.ns"
+
+import "std/core.ns"
+import "std/diag.ns"
+import "std/prim.ns"
+
+// -- Types
+
+struct CliHelpCfg =
+  bool useColors
+
+struct CliHelpHeader =
+  string          appName,
+  Version         appVer,
+  Option{string}  appDesc
+
+struct CliHelpValType =
+  string  name,
+  bool    multiValue
+
+struct CliHelpOptNecessity =
+  bool            isOptional,
+  Option{string}  default
+
+struct CliHelpOpts =
+  Option{List{CliOpt}}  arguments,
+  Option{List{CliOpt}}  flags
+
+struct CliHelpCmd =
+  string          appBin,
+  Option{string}  cmdName,
+  Option{string}  cmdDesc,
+  CliOptSet       opts
+
+// -- Conversions
+
+fun CliHelpHeader(CliAppCfg appCfg)
+  CliHelpHeader(appCfg.appName, appCfg.appVer, appCfg.appDesc.isEmpty() ? None() : appCfg.appDesc)
+
+fun CliHelpValType(CliOpt opt)
+  if opt as CliFlag     f   -> CliHelpValType("unknown", false)
+  if opt as CliValFlag  vf  -> CliHelpValType(vf.valTypeName, opt.cliIsMultiValue())
+  if opt as CliArg      a   -> CliHelpValType(a.valTypeName, opt.cliIsMultiValue())
+
+fun CliHelpOpts(CliHelpCmd cmd)
+  args  = cmd.opts.options.filter(lambda (CliOpt o) o is CliArg);
+  flags = cmd.opts.options.filter(lambda (CliOpt o) o is CliFlag || o is CliValFlag);
+  CliHelpOpts(args.isEmpty() ? None() : args, flags.isEmpty() ? None() : flags)
+
+fun CliHelpCmd(CliAppCfg appCfg, CliCmdCfg cmdCfg)
+  CliHelpCmd(
+    appCfg.appBin,
+    cmdCfg.name.isEmpty() ? None() : cmdCfg.name,
+    cmdCfg.desc.isEmpty() ? None() : cmdCfg.desc,
+    cmdCfg.opts)
+
+fun CliHelpOptNecessity(CliValFlag vf)
+  CliHelpOptNecessity(cliIsOptional(vf), vf.default)
+
+fun CliHelpOptNecessity(CliArg a)
+  CliHelpOptNecessity(cliIsOptional(a), a.default)
+
+// -- Utilities
+
+fun cliHelpUsageName(CliOptName n)
+  n.shortName.map(lambda (char c) "-" + c) ?? ("--" + n.longName)
+
+// -- Writers
+
+fun cliHelpHighlight{T}(Writer{T} w, CliHelpCfg cfg, bool strong = false)
+  cfg.useColors ? w.ttyStyledTextWriter(strong  ? TtyStyle.Bold :: TtyStyle.Underline
+                                                : TtyStyle.Bold :: List{TtyStyle}())
+                : w
+
+fun cliHelpErrorHighlight{T}(Writer{T} w, CliHelpCfg cfg)
+  cfg.useColors ? w.ttyStyledTextWriter(TtyStyle.BgRed :: TtyStyle.Bold)
+                : w
+
+fun cliHelpHeaderWriter(CliHelpCfg cfg) -> Writer{CliHelpHeader}
+  (
+    stringWriter().cliHelpHighlight(cfg, true) & litWriter(" v") & versionWriter() & newlineWriter() &
+    ?(newlineWriter() & stringWriter() & newlineWriter())
+  ).to(Type{CliHelpHeader}())
+
+fun cliHelpOptNameWriter() -> Writer{CliOptName}
+  (
+    stringWriter() & litWriter(" --") & stringWriter()
+  ).map(lambda (CliOptName n) Tuple(n.shortName as char c ? ("-" + c + ",") : "   ", n.longName))
+
+fun cliHelpValTypeWriter() -> Writer{CliHelpValType}
+  (litWriter('<') & stringWriter() & txtBoolWriter("...", "") & litWriter('>')).to(Type{CliHelpValType}())
+
+fun cliHelpFilterWriter(int minCol = 55, int maxCol = 78) -> Writer{List{string}}
+  padUntilWriter(minCol) &
+  listWriter(
+    wrapWriter(stringWriter(), maxCol, newlineWriter() & padUntilWriter(minCol)),
+    litWriter(", "))
+
+fun cliHelpOptNecessityWriter() -> Writer{CliHelpOptNecessity}
+  stringWriter().map(lambda (CliHelpOptNecessity n)
+    if n.default as string def -> def
+    if n.isOptional            -> "OPTIONAL"
+    else                       -> "REQUIRED"
+  )
+
+fun cliHelpFlagWriter() -> Writer{CliFlag}
+  cliHelpOptNameWriter().map(lambda (CliFlag f) f.name)
+
+fun cliHelpValFlagWriter() -> Writer{CliValFlag}
+  (
+    cliHelpOptNameWriter() &
+    padUntilWriter(24) & cliHelpValTypeWriter() &
+    padUntilWriter(41) & cliHelpOptNecessityWriter() &
+    cliHelpFilterWriter()
+  ).map(lambda (CliValFlag vf) Tuple(vf.name, CliHelpValType(vf), CliHelpOptNecessity(vf), vf.filter))
+
+fun cliHelpArgWriter() -> Writer{CliArg}
+  (
+    stringWriter() &
+    padUntilWriter(24) & cliHelpValTypeWriter() &
+    padUntilWriter(41) & cliHelpOptNecessityWriter() &
+    cliHelpFilterWriter()
+  ).map(lambda (CliArg a) Tuple(a.name, CliHelpValType(a), CliHelpOptNecessity(a), a.filter))
+
+fun cliHelpOptWriter()
+  unionWriter(Type{CliOpt}(), cliHelpFlagWriter(), cliHelpValFlagWriter(), cliHelpArgWriter())
+
+fun cliHelpCmdOptsWriter(CliHelpCfg cfg) -> Writer{CliHelpOpts}
+  opts = indentedListWriter(cliHelpOptWriter()) & newlineWriter();
+  (
+    ?(indentWriter() & litWriter("Arguments:").cliHelpHighlight(cfg) & newlineWriter() & opts) &
+    ?(indentWriter() & litWriter("Flags:").cliHelpHighlight(cfg)     & newlineWriter() & opts)
+  ).to(Type{CliHelpOpts}())
+
+fun cliHelpCmdUsageOptWriter() -> Writer{CliOpt}
+  flag    = stringWriter().map(lambda (CliFlag f) cliHelpUsageName(f.name));
+  valFlag = (
+              stringWriter() & litWriter(' ') & cliHelpValTypeWriter()
+            ).map(lambda (CliValFlag vf) Tuple(cliHelpUsageName(vf.name), CliHelpValType(vf)));
+  arg     = (
+              cliHelpValTypeWriter()
+            ).map(lambda (CliArg a) CliHelpValType(a));
+  (
+    txtBoolWriter("[", "") & unionWriter(Type{CliOpt}(), flag, valFlag, arg) & txtBoolWriter("]", "")
+  ).map(lambda (CliOpt o) Tuple(cliIsOptional(o), o, cliIsOptional(o)))
+
+fun cliHelpCmdUsageWriter() -> Writer{CliHelpCmd}
+  (
+    indentWriter() & litWriter("usage: ") & stringWriter() & ?(litWriter(' ') & stringWriter()) &
+    litWriter(' ') & listWriter(
+      wrapWriter(cliHelpCmdUsageOptWriter(), 79, newlineWriter() & padUntilWriter(7)),
+      litWriter(" "))
+  ).map(lambda (CliHelpCmd cmd) Tuple(cmd.appBin, cmd.cmdName, cmd.opts.options))
+
+fun cliHelpCmdHeaderWriter(CliHelpCfg cfg) -> Writer{CliHelpCmd}
+  (
+    stringWriter().cliHelpHighlight(cfg, true) & ?(litWriter(" - ") & stringWriter()) & newlineWriter()
+  ).map(lambda (CliHelpCmd cmd) Tuple(cmd.cmdName ?? "", cmd.cmdDesc))
+
+fun cliHelpCmdWriter(CliHelpCfg cfg) -> Writer{CliHelpCmd}
+  (
+    cliHelpCmdHeaderWriter(cfg) &
+    cliHelpCmdUsageWriter() & newlineWriter() & newlineWriter() &
+    cliHelpCmdOptsWriter(cfg).indent()
+  ).map(lambda (CliHelpCmd cmd) Tuple(cmd, cmd, CliHelpOpts(cmd)))
+
+fun cliHelpRootCmdWriter(CliHelpCfg cfg) -> Writer{CliHelpCmd}
+  (
+    cliHelpCmdUsageWriter() & newlineWriter() & newlineWriter() &
+    cliHelpCmdOptsWriter(cfg)
+  ).map(lambda (CliHelpCmd cmd) Tuple(cmd, CliHelpOpts(cmd)))
+
+fun cliHelpWriter(CliHelpCfg cfg) -> Writer{CliAppCfg}
+  (
+    cliHelpHeaderWriter(cfg) & newlineWriter() &
+    ?(cliHelpRootCmdWriter(cfg) & litWriter("Commands:").cliHelpHighlight(cfg) & newlineWriter() & newlineWriter()) &
+    listWriter(cliHelpCmdWriter(cfg))
+  ).map(lambda (CliAppCfg c)
+    Tuple(
+      CliHelpHeader(c),
+      c.rootCmd as CliCmdCfg rootCmd ? CliHelpCmd(c, rootCmd) : None(),
+      c.cmds.map(lambda (CliCmdCfg cmd) CliHelpCmd(c, cmd))))
+
+fun cliHelpOverviewWriter(CliHelpCfg cfg) -> Writer{CliAppCfg}
+  (
+    cliHelpHeaderWriter(cfg) & newlineWriter() & litWriter("Commands:") & newlineWriter() &
+    listWriter(litWriter("- ") & cliHelpCmdHeaderWriter(cfg))
+  ).map(lambda (CliAppCfg c)
+    Tuple(
+      CliHelpHeader(c),
+      c.cmds.map(lambda (CliCmdCfg cmd) CliHelpCmd(c, cmd))))
+
+fun cliHelpErrorWriter(CliHelpCfg cfg) -> Writer{Tuple{CliAppCfg, CliCmdCfg, Error}}
+  (
+    stringWriter() & ?(litWriter(' ') & stringWriter()) & litWriter(": ") & newlineWriter() &
+    errorWriter().cliHelpErrorHighlight(cfg) & newlineWriter()
+  ).map(lambda (Tuple{CliAppCfg, CliCmdCfg, Error} input)
+    Tuple(input.f1.appBin, input.f2.name.isEmpty() ? None() : input.f2.name, input.f3))
+
+fun cliHelpUnknownCmdWriter(CliHelpCfg cfg) -> Writer{Tuple{CliAppCfg, string}}
+  (
+    stringWriter() & litWriter(": ") &
+    (litWriter("Unknown command '") & stringWriter() & litWriter('\'')).cliHelpErrorHighlight(cfg) &
+    newlineWriter() & newlineWriter() &
+    litWriter("Commands:") & newlineWriter() &
+    listWriter(litWriter("- ") & cliHelpCmdHeaderWriter(cfg))
+  ).map(lambda (Tuple{CliAppCfg, string} input)
+    Tuple(input.f1.appBin, input.f2, input.f1.cmds.map(lambda (CliCmdCfg cmd) CliHelpCmd(input.f1, cmd))))

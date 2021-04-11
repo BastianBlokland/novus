@@ -31,8 +31,8 @@ fun cliCmdCfgFromRoutine{T}(CliCmd{T} c) -> Either{CliCmdCfg, Error}
 
 fun cliCmdCfgFromRoutine{T}(CliCmd{T} c, Meta{#8} structKind) -> Either{CliCmdCfg, Error}
   t = Type{T}();
-  cliOptCfgFromStruct(t).map(lambda (CliOptCfg optCfg)
-    CliCmdCfg(c.name, c.desc, optCfg, cliIsInteruptable(t), cliCreateInvoker(c.routine), cliCleanupAction(t))
+  cliOptSetFromStruct(t).map(lambda (CliOptSet optSet)
+    CliCmdCfg(c.name, c.desc, optSet, cliIsInteruptable(t), cliCreateInvoker(c.routine), cliCleanupAction(t))
   )
 
 fun cliCmdCfgFromRoutine{T, Idx}(CliCmd{T} c, Meta{Idx} unsupportedKind) -> Either{CliCmdCfg, Error}
