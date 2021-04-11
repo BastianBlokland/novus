@@ -54,6 +54,8 @@ fun !!(Option{Error} e, Error newError) -> Option{Error}
 fun string(Error err)
   err.allErrors().map(lambda (Error err) "'" + err.msg + "'").string()
 
+fun string(ErrorWriteFlags f) toEnumFlagNames(f).string()
+
 // -- Functions
 
 fun count(Error err) -> int
@@ -81,6 +83,9 @@ fun valueOrError{T}(T val, Option{Error} err) -> Either{T, Error}
 
 fun valueOrError{T}(T val, List{Error} err) -> Either{T, Error}
   valueOrError(val, combine(err))
+
+fun error{T}(Either{T, Error} eitherOrError) -> Option{Error}
+  eitherOrError.eitherGet(Type{Error}())
 
 fun map{T, TResult}(Either{T, Error} v, function{T, Either{TResult, Error}} f) -> Either{TResult, Error}
   if v as T      val -> f(val)

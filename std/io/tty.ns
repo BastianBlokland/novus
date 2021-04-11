@@ -178,8 +178,8 @@ fun ttyWindowTitleWriter() -> Writer{string}
 
 // -- Compound writers
 
-fun ttyStyledTextWriter(TtyStyle s) -> Writer{string}
-  ttyLitStyleWriter(s) & stringWriter() & ttyLitStyleWriter(TtyStyle.Reset)
+fun ttyStyledTextWriter{T}(Writer{T} w, TtyStyle s) -> Writer{T}
+  ttyLitStyleWriter(s) & w & ttyLitStyleWriter(TtyStyle.Reset)
 
-fun ttyStyledTextWriter(List{TtyStyle} styleList) -> Writer{string}
-  ttyLitStyleWriter(styleList) & stringWriter() & ttyLitStyleWriter(TtyStyle.Reset)
+fun ttyStyledTextWriter{T}(Writer{T} w, List{TtyStyle} styleList) -> Writer{T}
+  ttyLitStyleWriter(styleList) & w & ttyLitStyleWriter(TtyStyle.Reset)

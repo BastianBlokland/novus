@@ -1,0 +1,50 @@
+import "runner.ns"
+
+import "std/core.ns"
+import "std/prim.ns"
+
+// -- Commands
+
+act cliBuildinCmds() -> List{CliCmdCfg}
+  cliBuildinCmd("help",     "Display help information",     cliHelpCmd) ::
+  cliBuildinCmd("version",  "Display version information",  cliVersionCmd)
+
+act cliBuildinCmd{T}(string name, string desc, action{T, CliResult, Option{Error}} routine)
+  CliCmdCfg(
+    name,
+    desc,
+    cliOptSetFromStruct(Type{T}()).failOnError(),
+    false,
+    cliCreateInvoker(routine),
+    cliNopCleanupAction())
+
+// -- Version
+
+struct CliVersionConfig =
+  bool verbose
+
+act cliVersionCmd(CliVersionConfig cfg, CliResult res)
+  consoleOpen().map(impure lambda (Console c)
+    if cfg.verbose ->
+      c.writeOut(
+        stringWriter() & litWriter(' ') & versionWriter() & newlineWriter() &
+        litWriter("Runtime ")           & versionWriter() & newlineWriter() &
+        litWriter("Compiler ")          & versionWriter() & newlineWriter(),
+        Tuple(res.app.appName, res.app.appVer, runtimeVersion(), compilerVersion()))
+    else ->
+      c.writeOut(
+        stringWriter() & litWriter(' ') & versionWriter() & newlineWriter(),
+        Tuple(res.app.appName, res.app.appVer))
+  )
+
+// -- Help
+
+struct CliHelpConfig =
+  bool color,
+  bool noColor
+
+act cliHelpCmd(CliHelpConfig cfg, CliResult res)
+  consoleOpen().map(impure lambda (Console c)
+    helpWriterCfg = CliHelpCfg((cfg.color || c.allowColor()) && !cfg.noColor);
+    c.writeOut(cliHelpWriter(helpWriterCfg), res.app)
+  )

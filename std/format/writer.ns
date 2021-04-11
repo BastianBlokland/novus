@@ -8,6 +8,7 @@ enum WriterNewlineMode = Lf, CrLf, None
 
 struct WriterState =
   string            curResult,
+  int               curLineStart,
   int               curIndent,
   string            indentStr,
   WriterNewlineMode newlineMode
@@ -23,7 +24,7 @@ fun WriterState(WriterNewlineMode newlineMode)
   WriterState("  ", newlineMode)
 
 fun WriterState(string indentStr, WriterNewlineMode newlineMode)
-  WriterState("", 0, indentStr, newlineMode)
+  WriterState("", 0, 0, indentStr, newlineMode)
 
 // -- Operators
 
@@ -46,10 +47,7 @@ fun ==(WriterState s, string str)
   s.curResult == str
 
 fun ?{T}(Writer{T} w) -> Writer{Option{T}}
-  Writer(lambda (WriterState s, Option{T} optVal)
-    if optVal as T val  -> w(s, val)
-    else                -> s
-  )
+  optionWriter(w)
 
 fun &(Writer{None} w1, Writer{None} w2) -> Writer{None}
   Writer(lambda (WriterState s, None n)
@@ -135,6 +133,7 @@ fun run{T}(Writer{T} w, T val) -> string
 fun write(WriterState s, string txt)
   WriterState(
     s.curResult + txt,
+    s.curLineStart,
     s.curIndent,
     s.indentStr,
     s.newlineMode)
@@ -142,6 +141,7 @@ fun write(WriterState s, string txt)
 fun write(WriterState s, char c)
   WriterState(
     s.curResult + c,
+    s.curLineStart,
     s.curIndent,
     s.indentStr,
     s.newlineMode)
@@ -173,10 +173,16 @@ fun litWriter(char lit)
 
 fun newlineWriter()
   Writer(lambda (WriterState s, None n)
-    if s.newlineMode == WriterNewlineMode.Lf    -> s.write('\n')
-    if s.newlineMode == WriterNewlineMode.CrLf  -> s.write("\r\n")
-    else                                        -> s
-  )
+    if s.newlineMode == WriterNewlineMode.None -> s
+    else ->
+      newResult = s.curResult + (s.newlineMode == WriterNewlineMode.CrLf ? "\r\n" : "\n");
+      WriterState(
+        newResult,
+        newResult.length(),
+        s.curIndent,
+        s.indentStr,
+        s.newlineMode)
+      )
 
 fun indentWriter()
   Writer(lambda (WriterState s, None n)
@@ -187,6 +193,7 @@ fun indent(int amount)
   Writer(lambda (WriterState s, None n)
     WriterState(
       s.curResult,
+      s.curLineStart,
       max(0, s.curIndent + amount),
       s.indentStr,
       s.newlineMode)
@@ -194,6 +201,18 @@ fun indent(int amount)
 
 fun indent{T}(Writer{T} w)
   indent(1) & w & indent(-1)
+
+fun padUntilWriter(int column, char c = ' ')
+  Writer(lambda (WriterState s, None n)
+    s.write(string(c, column - (s.curResult.length() - s.curLineStart)))
+  )
+
+fun wrapWriter{T}(Writer{T} w, int maxColumn, Writer{None} wrapWriter = newlineWriter())
+  Writer(lambda (WriterState s, T v)
+    newState = w(s, v);
+    if (newState.curResult.length() - newState.curLineStart) > maxColumn  -> w(wrapWriter(s, None()), v)
+    else                                                                  -> newState
+  )
 
 fun stringWriter()
   Writer(lambda (WriterState s, string str)
@@ -226,9 +245,15 @@ fun txtFloatWriter()
     s.write(f.string())
   )
 
-fun txtBoolWriter()
+fun txtBoolWriter(string trueTxt = "true", string falseTxt = "false")
   Writer(lambda (WriterState s, bool b)
-    s.write(b ? "true" : "false")
+    s.write(b ? trueTxt : falseTxt)
+  )
+
+fun optionWriter{T}(Writer{T} w, Writer{None} elseWriter = noneWriter()) -> Writer{Option{T}}
+  Writer(lambda (WriterState s, Option{T} optVal)
+    if optVal as T val  -> w(s, val)
+    else                -> elseWriter(s, None())
   )
 
 fun listWriter{T}(Writer{T} elemWriter)
@@ -285,6 +310,13 @@ fun unionWriter{Union, T1, T2}(Type{Union} t, Writer{T1} w1, Writer{T2} w2) -> W
   Writer(lambda (WriterState s, Union u)
     if u as T1 v1 -> w1(s, v1)
     if u as T2 v2 -> w2(s, v2)
+  )
+
+fun unionWriter{Union, T1, T2, T3}(Type{Union} t, Writer{T1} w1, Writer{T2} w2, Writer{T3} w3) -> Writer{Union}
+  Writer(lambda (WriterState s, Union u)
+    if u as T1 v1 -> w1(s, v1)
+    if u as T2 v2 -> w2(s, v2)
+    if u as T3 v3 -> w3(s, v3)
   )
 
 // -- Tests

@@ -25,8 +25,7 @@ struct File =
 
 // -- Conversions
 
-fun string(FileFlags o)
-  (o & FileFlags.AutoRemove) != 0 ? "[AutoRemove]" : ""
+fun string(FileFlags f) toEnumFlagNames(f).string()
 
 fun string(File f)
   "(" + f.mode.string() + f.flags.string() + " " + f.path.string() + ")"

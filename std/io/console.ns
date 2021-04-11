@@ -19,9 +19,7 @@ enum TerminalOptions =
 
 // -- Conversions
 
-fun string(TerminalOptions o)
-  ((o & TerminalOptions.NoEcho)   != 0 ? "[NoEcho]"   : "") +
-  ((o & TerminalOptions.NoBuffer) != 0 ? "[NoBuffer]" : "")
+fun string(TerminalOptions o) toEnumFlagNames(o).string()
 
 // -- Actions
 
@@ -78,7 +76,7 @@ act noinline print{T}(T x) -> Option{Error}
   consoleOpen().map(impure lambda (Console c) c.writeOut(x.string() + '\n'))
 
 act noinline print{T}(T x, TtyStyle style) -> Option{Error}
-  styledWriter = ttyStyledTextWriter(style);
+  styledWriter = stringWriter().ttyStyledTextWriter(style);
   consoleOpen().map(impure lambda (Console c)
     c.writeOut(styledWriter, x.string() + '\n')
   )
@@ -87,13 +85,13 @@ act noinline printErr{T}(T x) -> Option{Error}
   cOrErr = consoleOpen();
   if cOrErr as Error    e -> e
   if cOrErr as Console  c ->
-    if !c.isTerm()  -> c.writeErr(x.string() + '\n')
-    else            ->
-      styledWriter = ttyStyledTextWriter(TtyStyle.BgRed :: TtyStyle.Bold);
+    if !c.allowColor() -> c.writeErr(x.string() + '\n')
+    else                ->
+      styledWriter = stringWriter().ttyStyledTextWriter(TtyStyle.BgRed :: TtyStyle.Bold);
       c.writeErr(styledWriter, x.string() + '\n')
 
 act noinline printErr{T}(T x, TtyStyle style) -> Option{Error}
-  styledWriter = ttyStyledTextWriter(style);
+  styledWriter = stringWriter().ttyStyledTextWriter(style);
   consoleOpen().map(impure lambda (Console c)
     c.writeErr(styledWriter, x.string() + '\n')
   )
@@ -132,6 +130,15 @@ act printType{T}(T val) -> Option{Error}
 
 act isTerm(Console c) -> bool
   intrinsic{is_term}(c.stdIn) && intrinsic{is_term}(c.stdOut)
+
+// Determine if programs are allowed to emit colors.
+// Check if the console is an interactive terminal and if the user hasn't requested to disable the colors.
+// More info: https://no-color.org/
+act allowColor(Console c)
+  if !c.isTerm()                      -> false
+  if hasEnvVar("NO_COLOR")            -> false
+  if getEnvVar("TERM") == "dumb"      -> false
+  else                                -> true
 
 act setNoBlockInput(Console c) -> Option{Error}
   c.stdIn.setOptions(StreamOptions.NoBlock)

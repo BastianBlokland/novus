@@ -12,7 +12,7 @@ struct TextPos =
   int line,
   int column
 
-enum StrComp = Ordinal, OrdinalIgnoreCase
+enum StrComp = Normal, IgnoreCase
 
 // -- Conversions
 
@@ -24,20 +24,20 @@ fun string(TextPos p)
 fun appendChar(string str, char c)
   str + c
 
-fun contains(string str, string subStr, StrComp sc = StrComp.Ordinal)
+fun contains(string str, string subStr, StrComp sc = StrComp.Normal)
   str.indexOf(subStr, 0, 0, sc) >= 0
 
-fun indexOf(string str, string subStr, int idx = 0, int subStrIdx = 0, StrComp sc = StrComp.Ordinal)
+fun indexOf(string str, string subStr, int idx = 0, int subStrIdx = 0, StrComp sc = StrComp.Normal)
   if idx >= str.length()                      -> -1
   if equals(str[idx], subStr[subStrIdx], sc)  -> subStrIdx >= --subStr.length()
                                                   ? idx - --subStr.length()
                                                   : indexOf(str, subStr, ++idx, ++subStrIdx, sc)
   else                                        -> indexOf(str, subStr, subStrIdx == 0 ? ++idx : idx, 0, sc)
 
-fun indexOfLast(string str, string subStr, StrComp sc = StrComp.Ordinal)
+fun indexOfLast(string str, string subStr, StrComp sc = StrComp.Normal)
   indexOfLast(str, subStr, str.length() - 1, subStr.length() - 1, sc)
 
-fun indexOfLast(string str, string subStr, int idx, int subStrIdx, StrComp sc = StrComp.Ordinal)
+fun indexOfLast(string str, string subStr, int idx, int subStrIdx, StrComp sc = StrComp.Normal)
   if idx < 0                                  -> -1
   if equals(str[idx], subStr[subStrIdx], sc)  -> subStrIdx <= 0
                                                   ? idx
@@ -54,7 +54,7 @@ fun indexOf(string str, function{char, bool} pred, int idx = 0)
   if pred(str[idx])       -> idx
   else                    -> indexOf(str, pred, ++idx)
 
-fun startsWith(string str, string subStr, int idx = 0, StrComp sc = StrComp.Ordinal)
+fun startsWith(string str, string subStr, int idx = 0, StrComp sc = StrComp.Normal)
   invoke(
     lambda (int subStrIdx)
       if subStrIdx >= subStr.length()                         -> true
@@ -63,7 +63,7 @@ fun startsWith(string str, string subStr, int idx = 0, StrComp sc = StrComp.Ordi
       else                                                    -> self(++subStrIdx)
   , 0)
 
-fun endsWith(string str, string subStr, StrComp sc = StrComp.Ordinal)
+fun endsWith(string str, string subStr, StrComp sc = StrComp.Normal)
   invoke(
     lambda (int revIdx)
       if revIdx >= subStr.length()                                                     -> true
@@ -92,7 +92,7 @@ fun count(string str, function{char, bool} pred)
       else                    -> self(++idx, pred(str[idx]) ? ++res : res)
   , 0, 0)
 
-fun replace(string str, string old, string new, StrComp sc = StrComp.Ordinal)
+fun replace(string str, string old, string new, StrComp sc = StrComp.Normal)
   invoke(
     lambda (string str, int startIdx)
       idx = str.indexOf(old, startIdx, 0, sc);
@@ -178,14 +178,14 @@ fun strToUpper(string str)
   str.transform(toUpper)
 
 fun equals(char x, char y, StrComp sc)
-  if sc == StrComp.Ordinal           -> x == y
-  if sc == StrComp.OrdinalIgnoreCase -> equalsIgnoreCase(x, y)
-  else                               -> false
+  if sc == StrComp.Normal     -> x == y
+  if sc == StrComp.IgnoreCase -> equalsIgnoreCase(x, y)
+  else                        -> false
 
 fun equals(string x, string y, StrComp sc)
-  if sc == StrComp.Ordinal           -> x == y
-  if sc == StrComp.OrdinalIgnoreCase -> equalsIgnoreCase(x, y)
-  else                               -> false
+  if sc == StrComp.Normal     -> x == y
+  if sc == StrComp.IgnoreCase -> equalsIgnoreCase(x, y)
+  else                        -> false
 
 fun equalsIgnoreCase(char x, char y)
   x.toLower() == y.toLower()
@@ -205,8 +205,8 @@ assertNot("hello".contains("world"))
 assertNot("hello".contains("llow"))
 assertNot("hello".contains(""))
 
-assert("hello world".contains("hElLo W", StrComp.OrdinalIgnoreCase))
-assertNot("hello".contains("HeLLO Z", StrComp.OrdinalIgnoreCase))
+assert("hello world".contains("hElLo W", StrComp.IgnoreCase))
+assertNot("hello".contains("HeLLO Z", StrComp.IgnoreCase))
 
 assertEq("hello world".indexOf("hello"), 0)
 assertEq("hello world".indexOf("world"), 6)
@@ -221,8 +221,8 @@ assertEq("hello".indexOf("world"), -1)
 assertEq("hello".indexOf("llow"), -1)
 assertEq("hello".indexOf(""), -1)
 
-assertEq("hello world".indexOf("LD", 0, 0, StrComp.OrdinalIgnoreCase), 9)
-assertEq("hello".indexOf("llOw", 0, 0, StrComp.OrdinalIgnoreCase), -1)
+assertEq("hello world".indexOf("LD", 0, 0, StrComp.IgnoreCase), 9)
+assertEq("hello".indexOf("llOw", 0, 0, StrComp.IgnoreCase), -1)
 
 assertEq("wasd wasd".indexOfLast("wasd"), 5)
 assertEq("hello world".indexOfLast("hello"), 0)
@@ -235,9 +235,9 @@ assertEq("wasd wasd".indexOfLast("wasdz"), -1)
 assertEq("wasd wasd".indexOfLast(""), -1)
 assertEq("".indexOfLast("d"), -1)
 
-assertEq("hello world".indexOfLast("LO", StrComp.OrdinalIgnoreCase), 3)
-assertEq("hello world".indexOfLast("eL", StrComp.OrdinalIgnoreCase), 1)
-assertEq("wasd wasd".indexOfLast("wAsDz", StrComp.OrdinalIgnoreCase), -1)
+assertEq("hello world".indexOfLast("LO", StrComp.IgnoreCase), 3)
+assertEq("hello world".indexOfLast("eL", StrComp.IgnoreCase), 1)
+assertEq("wasd wasd".indexOfLast("wAsDz", StrComp.IgnoreCase), -1)
 
 assertEq("hello world".indexOf(equals{char}[' ']), 5)
 assertEq("hello world".indexOf(equals{char}['d']), 10)
@@ -255,8 +255,8 @@ assertNot("hello".startsWith("ello"))
 assertNot("".startsWith("h"))
 assert("".startsWith(""))
 
-assert("hello world".startsWith("HeLLO", 0, StrComp.OrdinalIgnoreCase))
-assertNot("hello".startsWith("eLLo", 0, StrComp.OrdinalIgnoreCase))
+assert("hello world".startsWith("HeLLO", 0, StrComp.IgnoreCase))
+assertNot("hello".startsWith("eLLo", 0, StrComp.IgnoreCase))
 
 assert("hello world".endsWith("world"))
 assert("hello world".endsWith("d"))
@@ -268,8 +268,8 @@ assertNot("hello".endsWith("hell"))
 assertNot("".endsWith("h"))
 assert("".endsWith(""))
 
-assert("hello world".endsWith("wOrLD", StrComp.OrdinalIgnoreCase))
-assertNot("hello".endsWith("hElL", StrComp.OrdinalIgnoreCase))
+assert("hello world".endsWith("wOrLD", StrComp.IgnoreCase))
+assertNot("hello".endsWith("hElL", StrComp.IgnoreCase))
 
 assert("hello world".any(equals{char}[' ']))
 assertNot("hello world".any(equals{char}['1']))
@@ -297,8 +297,8 @@ assertEq("hellohellohello".replace("hello", ""), "")
 assertEq("lelelel".replace("e", "lele"), "llelellelellelel")
 assertEq("".replace("", ""), "")
 
-assertEq("hElLO world".replace("hello", "world", StrComp.OrdinalIgnoreCase), "world world")
-assertEq("hElLohelloHELLO".replace("hello", "world", StrComp.OrdinalIgnoreCase), "worldworldworld")
+assertEq("hElLO world".replace("hello", "world", StrComp.IgnoreCase), "world world")
+assertEq("hElLohelloHELLO".replace("hello", "world", StrComp.IgnoreCase), "worldworldworld")
 
 assertEq("helloworld".insert("_", 0), "_helloworld")
 assertEq("helloworld".insert("_", "helloworld".length()), "helloworld_")
@@ -386,14 +386,14 @@ assertEq("abc\ndef\n".getTextPos(), TextPos(2, 0))
 assertEq(strToLower("hEllo"), "hello")
 assertEq(strToUpper("hEllo"), "HELLO")
 
-assert(equals('a', 'a', StrComp.Ordinal))
-assertNot(equals('a', 'A', StrComp.Ordinal))
-assert(equals('a', 'a', StrComp.OrdinalIgnoreCase))
-assert(equals('a', 'A', StrComp.OrdinalIgnoreCase))
+assert(equals('a', 'a', StrComp.Normal))
+assertNot(equals('a', 'A', StrComp.Normal))
+assert(equals('a', 'a', StrComp.IgnoreCase))
+assert(equals('a', 'A', StrComp.IgnoreCase))
 
-assert(equals("Hello", "Hello", StrComp.Ordinal))
-assertNot(equals("HeLlo", "hElLo", StrComp.Ordinal))
-assert(equals("Hello", "Hello", StrComp.OrdinalIgnoreCase))
-assert(equals("HeLlo", "hElLo", StrComp.OrdinalIgnoreCase))
-assert(equals("", "", StrComp.OrdinalIgnoreCase))
-assertNot(equals("HeLlo", "hElLoz", StrComp.OrdinalIgnoreCase))
+assert(equals("Hello", "Hello", StrComp.Normal))
+assertNot(equals("HeLlo", "hElLo", StrComp.Normal))
+assert(equals("Hello", "Hello", StrComp.IgnoreCase))
+assert(equals("HeLlo", "hElLo", StrComp.IgnoreCase))
+assert(equals("", "", StrComp.IgnoreCase))
+assertNot(equals("HeLlo", "hElLoz", StrComp.IgnoreCase))

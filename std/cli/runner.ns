@@ -1,0 +1,120 @@
+import "help.ns"
+import "invoker.ns"
+import "options.ns"
+import "parser.ns"
+
+import "std/core.ns"
+import "std/format.ns"
+import "std/io.ns"
+import "std/prim.ns"
+
+struct CliCmdCfg =
+  string                            name,
+  string                            desc,
+  CliOptSet                         opts,
+  bool                              interuptable,
+  action{CliResult, Option{Error}}  routine,
+  action{Option{Error}}             cleanup
+
+struct CliAppCfg =
+  string            appName,
+  string            appDesc,
+  Version           appVer,
+  string            appBin,
+  Option{CliCmdCfg} rootCmd,
+  List{CliCmdCfg}   cmds
+
+struct CliOptResult =
+  CliId         id,
+  List{string}  values
+
+struct CliResult =
+  CliAppCfg           app,
+  CliCmdCfg           cmd,
+  List{CliOptResult}  options
+
+// -- Constructors
+
+fun CliCmdCfg()
+  CliCmdCfg(CliOptSet())
+
+fun CliCmdCfg(CliOptSet optSet)
+  CliCmdCfg("", "", optSet, true,
+  impure lambda (CliResult r) Option{Error}(Error("Not implemented")),
+  cliNopCleanupAction())
+
+fun CliAppCfg()
+  CliAppCfg("", "", Version(0, 0, 0), "", None(), List{CliCmdCfg}())
+
+fun CliOptResult(CliId id)
+  CliOptResult(id, List{string}())
+
+fun CliOptResult(CliId id, string value)
+  CliOptResult(id, value :: List{string}())
+
+// Operators
+
+fun [](CliResult cfg, CliId id) -> Option{CliOptResult}
+  cfg.options.first(lambda (CliOptResult r) r.id == id)
+
+// Utilities
+
+fun cliValues(CliResult cfg, CliId id) -> List{string}
+  cfg[id].map(lambda (CliOptResult r) r.values) ?? List{string}()
+
+fun cliGetCmd(CliAppCfg app, Option{string} arg) -> Option{CliCmdCfg}
+  if arg as string s  -> app.cmds.first(lambda (CliCmdCfg cmd) s == cmd.name || s == ("--" + cmd.name)) ?? app.rootCmd
+  if arg is None      -> app.rootCmd
+
+fun cliNopCleanupAction() impure lambda () Option{Error}()
+
+// -- Actions
+
+act cliReportError(CliAppCfg app, CliCmdCfg cmd, Error err)
+  consoleOpen().map(impure lambda (Console c)
+    c.writeErr(cliHelpErrorWriter(CliHelpCfg(c.allowColor())), Tuple(app, cmd, err))
+  ); fail()
+
+act cliReportUnknownCommand(CliAppCfg app, string input)
+  consoleOpen().map(impure lambda (Console c)
+    c.writeErr(cliHelpUnknownCmdWriter(CliHelpCfg(c.allowColor())), Tuple(app, input))
+  ); fail()
+
+act cliPrintOverview(CliAppCfg app)
+  consoleOpen().map(impure lambda (Console c)
+    c.writeOut(cliHelpOverviewWriter(CliHelpCfg(c.allowColor())), app)
+  )
+
+act cliRunInteruptable(CliResult result) -> Option{Error}
+  getUntilInterupt(fork result.cmd.routine(result)) as Error err
+    ? cliReportError(result.app, result.cmd, err)
+    : interuptIsRequested() ? print(" interrupted") : None()
+
+act cliRunNonInteruptable(CliResult result) -> Option{Error}
+  result.cmd.routine(result) as Error err
+    ? cliReportError(result.app, result.cmd, err)
+    : None()
+
+act cliRunCleanup(CliResult result)
+  (result.cmd.cleanup)() as Error err
+    ? cliReportError(result.app, result.cmd, err)
+    : None()
+
+act cliRun(CliResult result) -> Option{Error}
+  result.cmd.interuptable ? cliRunInteruptable(result) : cliRunNonInteruptable(result);
+  cliRunCleanup(result)
+
+act cliRun(CliAppCfg app, List{string} envArgs = getEnvArgs()) -> Option{Error}
+  headArg   = envArgs.front();
+  maybeCmd  = cliGetCmd(app, headArg);
+  if maybeCmd as CliCmdCfg cmd ->
+  (
+    parseResOrErr = cliParseOpts(cmd, cmd.name.isEmpty() ? envArgs : envArgs.pop(1));
+    if parseResOrErr as List{CliOptResult}  parseRes -> cliRun(CliResult(app, cmd, parseRes))
+    if parseResOrErr as Error               parseErr -> cliReportError(app, cmd, parseErr)
+  )
+  if maybeCmd is None ->
+  (
+    if headArg as string s -> cliReportUnknownCommand(app, s)
+    if headArg is None     -> cliPrintOverview(app)
+  )

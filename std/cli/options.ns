@@ -1,0 +1,288 @@
+import "std/core.ns"
+import "std/diag.ns"
+import "std/prim.ns"
+
+// -- Extension points
+
+struct CliPositional{T} = T val
+
+struct CliDefault = string name, string default
+
+// Add a specialization for your command input type to provide default values for options.
+fun cliDefaults{T}(Type{T} commandInputType) List{CliDefault}()
+
+// -- Types
+
+struct CliId = int i
+
+enum CliOptFlags =
+  None        : 0b00,
+  Optional    : 0b01,
+  MultiValue  : 0b10
+
+struct CliOptName =
+  Option{char}    shortName,
+  string          longName
+
+struct CliFlag =
+  CliId           id,
+  CliOptName      name
+
+struct CliValFlag =
+  CliId           id,
+  CliOptName      name,
+  string          valTypeName,
+  CliOptFlags     flags,
+  Option{string}  default,
+  List{string}    filter
+
+struct CliArg =
+  CliId           id,
+  string          name,
+  int             position,
+  string          valTypeName,
+  CliOptFlags     flags,
+  Option{string}  default,
+  List{string}    filter
+
+union CliOpt = CliFlag, CliValFlag, CliArg
+
+struct CliOptSet = List{CliOpt} options
+
+// -- Conversions
+
+fun CliOptSet()
+  CliOptSet(List{CliOpt}())
+
+fun CliValFlag(CliId id, CliOptName name, string valTypeName, CliOptFlags flags)
+  CliValFlag(id, name, valTypeName, flags, None(), List{string}())
+
+fun CliArg(CliId id, string name, int position, string valTypeName, CliOptFlags flags)
+  CliArg(id, name, position, valTypeName, flags, None(), List{string}())
+
+fun CliId{Int}(Meta{Int} i) CliId(int(i))
+
+fun string(CliId id)        string(id.i)
+fun string(CliOptFlags f)   toEnumFlagNames(f).string()
+fun string(CliOptName n)    n.longName
+
+// -- Operators
+
+fun [](CliOptSet set, char c) -> Option{CliOpt}
+  set.options.first(lambda (CliOpt o)
+    if o as CliFlag     f   -> f.name.shortName == c
+    if o as CliValFlag  vf  -> vf.name.shortName == c
+    if o as CliArg      a   -> false
+  )
+
+fun [](CliOptSet set, string s) -> Option{CliOpt}
+  set.options.first(lambda (CliOpt o)
+    if o as CliFlag     f   -> f.name.longName == s
+    if o as CliValFlag  vf  -> vf.name.longName == s
+    if o as CliArg      a   -> false
+  )
+
+fun [](CliOptSet set, CliId id) -> Option{CliOpt}
+  set.options.first(lambda (CliOpt o)
+    if o as CliFlag     f   -> f.id == id
+    if o as CliValFlag  vf  -> vf.id == id
+    if o as CliArg      a   -> a.id == id
+  )
+
+fun ==(CliOpt o, CliDefault d)
+  o.cliOptName() == d.name
+
+fun ==(CliDefault d, CliOpt o)
+  d.name == o.cliOptName()
+
+// -- Utilities
+
+fun cliOptName(CliOptSet set, CliId id) -> string
+  maybeOpt = set[id];
+  maybeOpt as CliOpt o ? o.cliOptName() : "unknown"
+
+fun cliOptName(CliOpt opt) -> string
+  if opt as CliFlag     f   -> f.name.longName
+  if opt as CliValFlag  vf  -> vf.name.longName
+  if opt as CliArg      a   -> a.name
+
+fun cliToDashCase(string name)
+  invoke(
+    lambda (int idx, string result)
+      c   = name[idx];
+      nc  = name[idx + 1];
+      if c == '\0'                              -> result
+      if c == '_'                               -> self(++idx, result + '-')
+      if c.isLower()                            -> self(++idx, result + c)
+      if idx > 0 && c.isUpper() && nc.isLower() -> self(++idx, result + '-' + c.toLower())
+      else                                      -> self(++idx, result + c.toLower())
+  , 0, "")
+
+fun cliFlagName(CliOptSet set, string fieldName) -> CliOptName
+  CliOptName(
+    possibleShortNames = fieldName[0].toLower() :: fieldName[0].toUpper();
+    possibleShortNames.first(lambda (char c) set[c] is None),
+    cliToDashCase(fieldName)
+  )
+
+fun cliAddOptFlags(CliOpt opt, CliOptFlags flags) -> CliOpt
+  if opt as CliFlag     f   -> f
+  if opt as CliValFlag  vf  -> CliValFlag(vf.id, vf.name, vf.valTypeName, vf.flags | flags, vf.default, vf.filter)
+  if opt as CliArg      a   -> CliArg(a.id, a.name, a.position, a.valTypeName, a.flags | flags, a.default, a.filter)
+
+fun cliAddDefault(CliOpt opt, string default) -> CliOpt
+  if opt as CliFlag     f   -> f
+  if opt as CliValFlag  vf  -> CliValFlag(vf.id, vf.name, vf.valTypeName, vf.flags | CliOptFlags.Optional, default, vf.filter)
+  if opt as CliArg      a   -> CliArg(a.id, a.name, a.position, a.valTypeName, a.flags | CliOptFlags.Optional, default, a.filter)
+
+fun cliGetHighestPositional(CliOptSet set) -> int
+  set.options.fold(lambda (int highest, CliOpt o) o as CliArg a ? max(a.position, highest) : highest, -1)
+
+fun cliArg(CliOptSet set, int position) -> Option{CliArg}
+  set.options.map(lambda (CliOpt o) o as CliArg a ? a : None()).first(lambda (CliArg a) a.position == position)
+
+fun cliDefault(CliOpt opt) -> Option{string}
+  if opt as CliFlag     f   -> None()
+  if opt as CliValFlag  vf  -> vf.default
+  if opt as CliArg      a   -> a.default
+
+fun cliIsOptional(CliOpt opt)
+  if opt as CliFlag     f   -> true
+  if opt as CliValFlag  vf  -> (vf.flags & CliOptFlags.Optional) == CliOptFlags.Optional
+  if opt as CliArg      a   -> (a.flags & CliOptFlags.Optional) == CliOptFlags.Optional
+
+fun cliIsMultiValue(CliOpt opt)
+  if opt as CliFlag     f   -> false
+  if opt as CliValFlag  vf  -> (vf.flags & CliOptFlags.MultiValue) == CliOptFlags.MultiValue
+  if opt as CliArg      a   -> (a.flags & CliOptFlags.MultiValue) == CliOptFlags.MultiValue
+
+fun cliId(CliOpt opt) -> CliId
+  if opt as CliFlag     f   -> f.id
+  if opt as CliValFlag  vf  -> vf.id
+  if opt as CliArg      a   -> a.id
+
+// -- Option builders
+
+fun cliFlagOpt(CliId id, CliOptName name) -> CliOpt
+  CliFlag(id, name)
+
+fun cliValFlagOpt{T}(CliId id, CliOptName name, Type{T} t) -> CliOpt
+  CliValFlag(id, name, t.string(), CliOptFlags.None, None(), List{string}())
+
+fun cliValFlagFilteredOpt{T}(CliId id, CliOptName name, Type{T} t, List{string} filter) -> CliOpt
+  CliValFlag(id, name, t.string(), CliOptFlags.None, None(), filter)
+
+fun cliArgOpt(CliOpt opt, int position) -> CliOpt
+  if opt as CliFlag     f   -> CliArg(f.id, f.name.longName, position, "bool", CliOptFlags.None, None(), List{string}())
+  if opt as CliValFlag  vf  -> CliArg(vf.id, vf.name.longName, position, vf.valTypeName, vf.flags, vf.default, vf.filter)
+  if opt as CliArg      a   -> a
+
+// -- Extract option from type
+
+fun cliOptFromType(CliOptSet set, CliId id, string name, Type{bool} t) -> CliOpt
+  cliFlagOpt(id, set.cliFlagName(name))
+
+fun cliOptFromType{T}(CliOptSet set, CliId id, string name, Type{Option{T}} t) -> CliOpt
+  cliOptFromType(set, id, name, Type{T}()).cliAddOptFlags(CliOptFlags.Optional)
+
+fun cliOptFromType{T}(CliOptSet set, CliId id, string name, Type{List{T}} t) -> CliOpt
+  cliOptFromType(set, id, name, Type{T}()).cliAddOptFlags(CliOptFlags.MultiValue)
+
+fun cliOptFromType{T}(CliOptSet set, CliId id, string name, Type{CliPositional{T}} t) -> CliOpt
+  cliOptFromType(set, id, name, Type{T}()).cliArgOpt(set.cliGetHighestPositional() + 1)
+
+fun cliOptFromType{T}(CliOptSet set, CliId id, string name, Type{T} t)
+  cliOptFromType(set, id, name, t, Meta{reflect_type_kind{T}}())
+
+fun cliOptFromType{T}(CliOptSet set, CliId id, string name, Type{T} t, Meta{#10} enumKind) -> CliOpt
+  cliValFlagFilteredOpt(id, set.cliFlagName(name), t, reflectEnumKeys(t))
+
+fun cliOptFromType{T, Idx}(CliOptSet set, CliId id, string name, Type{T} t, Meta{Idx} otherKind) -> CliOpt
+  cliValFlagOpt(id, set.cliFlagName(name), t)
+
+// -- Adding defaults
+
+fun cliAddDefaults{T}(CliOptSet set, Type{T} t) -> Either{CliOptSet, Error}
+  cliAddDefaults(set, cliDefaults(t))
+
+fun cliAddDefaults(CliOptSet set, List{CliDefault} defaults) -> Either{CliOptSet, Error}
+  result = CliOptSet(
+    set.options.map(lambda (CliOpt o) defaults.find(o) as CliDefault def ? o.cliAddDefault(def.default) : o)
+  );
+  defaults.first(lambda (CliDefault def) result.options.find(def) is None) as CliDefault invalidDefault
+    ? Error("Default '" + invalidDefault.name + "' is not a known option")
+    : result
+
+// -- Extract input config from struct
+
+fun cliOptSetFromStruct{T}(Type{T} t) -> Either{CliOptSet, Error}
+  cliOptSetFromStruct(t, reflectStructFieldCount(t), CliOptSet()).cliAddDefaults(t)
+
+fun cliOptSetFromStruct{T}(Type{T} t, Meta{#0} idx, CliOptSet set) -> CliOptSet
+  set
+
+fun cliOptSetFromStruct{T, Idx}(Type{T} t, Meta{Idx} idx, CliOptSet set) -> CliOptSet
+  idxFromStart  = reflectStructFieldCount(t) - idx;
+  fieldName     = reflectStructFieldName(t, idxFromStart);
+  opt           = cliOptFromType(set, CliId(idxFromStart), fieldName, reflectStructFieldType(t, idxFromStart));
+  cliOptSetFromStruct(t, --idx, CliOptSet(set.options :: opt))
+
+// -- Tests
+
+assertEq(cliToDashCase("add"),          "add")
+assertEq(cliToDashCase("hello_world"),  "hello-world")
+assertEq(cliToDashCase("hello-world"),  "hello-world")
+assertEq(cliToDashCase("helloWorld"),   "hello-world")
+assertEq(cliToDashCase("HelloWorld"),   "hello-world")
+assertEq(cliToDashCase("HELLOWORLD"),   "helloworld")
+
+assertEq(
+  cliOptFromType(CliOptSet(), CliId(0), "verbose", Type{bool}()),
+  cliFlagOpt(CliId(0), CliOptName('v', "verbose")))
+
+assertEq(
+  cliOptFromType(CliOptSet(), CliId(0), "HelloWorld", Type{bool}()),
+  cliFlagOpt(CliId(0), CliOptName('h', "hello-world")))
+
+assertEq(
+  cfg = CliOptSet(cliFlagOpt(CliId(0), CliOptName('v', "version")) :: List{CliOpt}());
+  cliOptFromType(cfg, CliId(0), "verbose", Type{bool}()),
+  cliFlagOpt(CliId(0), CliOptName('V', "verbose")))
+
+assertEq(
+  cfg = CliOptSet(  cliFlagOpt(CliId(0), CliOptName('v', "version")) ::
+                    cliFlagOpt(CliId(0), CliOptName('V', "verbose")));
+  cliOptFromType(cfg, CliId(0), "very", Type{bool}()),
+  cliFlagOpt(CliId(0), CliOptName(None(), "very")))
+
+assertEq(
+  cliOptFromType(CliOptSet(), CliId(0), "path", Type{Path}()),
+  CliOpt(CliValFlag(CliId(0), CliOptName('p', "path"), "Path", CliOptFlags.None, None(), List{string}())))
+
+assertEq(
+  cliOptFromType(CliOptSet(), CliId(0), "Month", Type{Month}()),
+  CliOpt(CliValFlag(CliId(0), CliOptName('m', "month"), "Month", CliOptFlags.None, None(),
+    "January" :: "February" :: "March" :: "April" :: "May" :: "June" :: "July" :: "August" :: "September" :: "October" :: "November" :: "December")))
+
+assertEq(
+  cliOptFromType(CliOptSet(), CliId(0), "Month", Type{Option{Month}}()),
+  CliOpt(CliValFlag(CliId(0), CliOptName('m', "month"), "Month", CliOptFlags.Optional, None(),
+    "January" :: "February" :: "March" :: "April" :: "May" :: "June" :: "July" :: "August" :: "September" :: "October" :: "November" :: "December")))
+
+assertEq(
+  cliOptFromType(CliOptSet(), CliId(0), "Month", Type{List{Month}}()),
+  CliOpt(CliValFlag(CliId(0), CliOptName('m', "month"), "Month", CliOptFlags.MultiValue, None(),
+    "January" :: "February" :: "March" :: "April" :: "May" :: "June" :: "July" :: "August" :: "September" :: "October" :: "November" :: "December")))
+
+assertEq(
+  cliOptFromType(CliOptSet(), CliId(0), "path", Type{CliPositional{Path}}()),
+  CliOpt(CliArg(CliId(0), "path", 0, "Path", CliOptFlags.None, None(), List{string}())))
+
+assertEq(
+  cliOptFromType(CliOptSet(), CliId(0), "path", Type{CliPositional{List{Path}}}()),
+  CliOpt(CliArg(CliId(0), "path", 0, "Path", CliOptFlags.MultiValue, None(), List{string}())))
+
+assertEq(
+  cfg = CliOptSet(CliOpt(CliArg(CliId(0), "path", 3, "Path", CliOptFlags.None, None(), List{string}())) :: List{CliOpt}());
+  cliOptFromType(cfg, CliId(0), "count", Type{CliPositional{int}}()),
+  CliOpt(CliArg(CliId(0), "count", 4, "int", CliOptFlags.None, None(), List{string}())))

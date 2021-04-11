@@ -66,15 +66,29 @@ fun createScene()
     ground :: s1 :: s2 :: s3 :: s4 :: s5 :: s6 :: s7,
     sun :: redLight)
 
-act driver(int width, int height, int threads, int bounces, float fov, Path outPath, Writer{Image} writer)
-  print("Begin rendering (" + width + "x" + height + ", threads: " + threads + " bounches: " + bounces + ")");
+struct Settings =
+  int   width,
+  int   height,
+  int   threads,
+  int   bounces,
+  float fov,
+  Path  outPath
 
-  res = bench(impure lambda () render(width, height, threads, bounces, fov));
+act driver(Settings s)
+  print("Begin rendering (" + s.width + "x" + s.height + ", threads: " + s.threads + " bounches: " + s.bounces + ")");
+  res = bench(impure lambda () render(s.width, s.height, s.threads, s.bounces, s.fov));
   print("Finished rendering in " + res.dur);
+  s.outPath.fileWrite(tgaWriter(), Image(s.width, s.height, res.value)).failOnError();
+  print("Wrote result to file: " + s.outPath)
 
-  outPath.fileWrite(writer, Image(width, height, res.value)).failOnError();
-  print("Wrote result to file: " + outPath)
+fun cliDefaults(Type{Settings} t)
+  CliDefault("width",     "1280") ::
+  CliDefault("height",    "720") ::
+  CliDefault("threads",   "6") ::
+  CliDefault("bounces",   "3") ::
+  CliDefault("fov",       "60") ::
+  CliDefault("out-path",  "image.tga")
 
-getUntilInterupt(fork driver(1280, 720, 4, 4, 60, pathCurrent() / "image.ppm", ppmBinaryWriter()))
-//getUntilInterupt(fork driver(1280, 720, 4, 4, 60, pathCurrent() / "image.tga", tgaWriter()))
-
+cli(cliCmd("render", driver, "Render an image"),
+    cliAppInfo("Novus Raytracer", "Example of a software raytracer writen in Novus.\n" +
+                                  "Output: https://www.bastian.tech/media/novus_raytracer.png"))

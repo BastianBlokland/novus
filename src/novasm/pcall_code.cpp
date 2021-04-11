@@ -92,6 +92,9 @@ auto operator<<(std::ostream& out, const PCallCode& rhs) noexcept -> std::ostrea
   case PCallCode::EnvGetArgCount:
     out << "env-get-arg-count";
     break;
+  case PCallCode::EnvHasVar:
+    out << "env-has-var";
+    break;
   case PCallCode::EnvGetVar:
     out << "env-get-var";
     break;

@@ -137,6 +137,7 @@ enum class FuncKind {
 
   ActionEnvGetArgCount,   // Get the amount of environment arguments passed to the application.
   ActionEnvGetArg,        // Get a environment argument string at a specific index.
+  ActionEnvHasVar,        // Check if an environment variable exists with a given name.
   ActionEnvGetVar,        // Get a environment variable by name.
   ActionInteruptIsReq,    // Check if an interupt has been requested.
   ActionInteruptResetReq, // Reset the interupt requested flag.

@@ -342,8 +342,19 @@ fun reflectEnumValForKey{Enum, Idx}(Type{Enum} t, string key, StrComp comp, Meta
     ? reflectEnumVal(t, idx)
     : reflectEnumValForKey(t, key, comp, --idx)
 
-fun reflectEnumValForKey{Enum}(Type{Enum} t, string key, StrComp comp = StrComp.Ordinal) -> Option{int}
+fun reflectEnumValForKey{Enum}(Type{Enum} t, string key, StrComp comp = StrComp.Normal) -> Option{int}
   reflectEnumValForKey(t, key, comp, --reflectEnumCount(t))
+
+// ---- Lookup all enum keys
+
+fun reflectEnumKeys{Enum}(Type{Enum} t, Meta{#-1} idx, List{string} entries)
+  entries
+
+fun reflectEnumKeys{Enum, Int}(Type{Enum} t, Meta{Int} idx, List{string} entries)
+  reflectEnumKeys(t, --idx, reflectEnumKey(t, idx) :: entries)
+
+fun reflectEnumKeys{Enum}(Type{Enum} t) -> List{string}
+  reflectEnumKeys(t, --reflectEnumCount(t), List{string}())
 
 // ---- Lookup number of enum entries
 
@@ -649,8 +660,12 @@ assertEq(reflectEnumKeyForVal(Type{Month}(), 0), None())
 assertEq(reflectEnumKeyForVal(Type{Month}(), 13), None())
 
 assertEq(reflectEnumValForKey(Type{Month}(), "April"), 4)
-assertEq(reflectEnumValForKey(Type{Month}(), "aPrIl", StrComp.OrdinalIgnoreCase), 4)
+assertEq(reflectEnumValForKey(Type{Month}(), "aPrIl", StrComp.IgnoreCase), 4)
 assertEq(reflectEnumValForKey(Type{Month}(), "Hello"), None())
+
+assertEq(
+  reflectEnumKeys(Type{Month}()),
+  "January" :: "February" :: "March" :: "April" :: "May" :: "June" :: "July" :: "August" :: "September" :: "October" :: "November" :: "December")
 
 // -- Delegate utility tests
 

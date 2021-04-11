@@ -27,6 +27,9 @@ act get{T}(future{T} f, action{bool} predicate, Duration checkInternal = millise
 act getUntilInterupt{T}(future{T} f) -> Option{T}
   f.get(impure lambda() !interuptIsRequested())
 
+act getUntilInterupt{T}(future{Option{T}} f) -> Option{T}
+  f.get(impure lambda() !interuptIsRequested()).unwrap()
+
 // -- Tests
 
 assertEq(get(fork invoke(lambda () 42), second()), 42)

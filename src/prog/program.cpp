@@ -285,6 +285,8 @@ Program::Program() :
   m_funcDecls.registerIntrinsicAction(
       *this, Fk::ActionEnvGetArgCount, "env_argument_count", sym::TypeSet{}, m_int);
   m_funcDecls.registerIntrinsicAction(
+      *this, Fk::ActionEnvHasVar, "env_variable_exists", sym::TypeSet{m_string}, m_bool);
+  m_funcDecls.registerIntrinsicAction(
       *this, Fk::ActionEnvGetVar, "env_variable", sym::TypeSet{m_string}, m_string);
 
   m_funcDecls.registerIntrinsicAction(

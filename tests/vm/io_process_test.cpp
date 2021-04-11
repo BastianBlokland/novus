@@ -103,16 +103,6 @@ auto printNumEnvArgsNx() -> const std::string& {
   return path;
 }
 
-auto printTestEnvOptNx() -> const std::string& {
-  static auto path = compileProg(
-                         "print_test_env_opt.nx",
-                         "import \"std/io.ns\" "
-                         "import \"std/sys.ns\" "
-                         "print(getEnvOpt(\"test\"))")
-                         .string();
-  return path;
-}
-
 auto printFirstArgNx() -> const std::string& {
   static auto path = compileProg(
                          "print_first_arg.nx",
@@ -325,22 +315,10 @@ TEST_CASE("[vm] Execute process platform-calls", "vm") {
           READ_STD_OUT(asmb);
           ADD_PRINT(asmb);
 
-          // Run a program that the argument after --test.
-          asmb->addLoadLitString(
-              novrtPath + " " + printTestEnvOptNx() + " --something --test 'hello world' else");
-          asmb->addPCall(novasm::PCallCode::ProcessStart);
-
-          asmb->addDup(); // Duplicate the process.
-          asmb->addPCall(novasm::PCallCode::ProcessBlock);
-          asmb->addPop(); // Ignore the exit code.
-
-          READ_STD_OUT(asmb);
-          ADD_PRINT(asmb);
-
           asmb->addRet();
         },
         "input",
-        "5\n(test,[hello world,else])\n");
+        "5\n");
   }
 
   SECTION("Process id can be retrieved") {

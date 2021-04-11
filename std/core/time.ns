@@ -254,6 +254,25 @@ fun string(Timestamp t) t.ns.string()
 fun timeUnixParser() -> Parser{DateTime}
   txtPosLongParser().map(lambda (long l) timeEpoch() + seconds(l)) ! Error("Invalid unix timestamp")
 
+// Duration
+// Example format: 10ms
+fun durationParser() -> Parser{Duration}
+  sc = StrComp.IgnoreCase;
+  (txtPosLongParser() & whitespaceParser() >>
+    (
+      matchParser("ns", sc) >> retParser(nanosecond())   |
+      matchParser("us", sc) >> retParser(microsecond())  |
+      matchParser("µs", sc) >> retParser(microsecond())  |
+      matchParser("ms", sc) >> retParser(millisecond())  |
+      matchParser("s", sc)  >> retParser(second())       |
+      matchParser("m", sc)  >> retParser(minute())       |
+      matchParser("h", sc)  >> retParser(hour())         |
+      matchParser("d", sc)  >> retParser(day())          |
+      matchParser("w", sc)  >> retParser(week())
+      !! Error("Expected a time scalar (ns, us, ms, s, m, h, d, w)")
+    )
+  ).map(lambda (Tuple{long, Duration} t) t.f2 * t.f1)
+
 // -- Writers
 
 // Time in unix seconds from epoch
@@ -476,6 +495,19 @@ assertApprox(float(seconds(1337) + millisecond()), 1337.001)
 
 assertIs(timeUnixParser()(""), Type{ParseFailure}())
 assertEq(timeUnixParser()("1606579701"), DateTime(2020, Month.November, 28) + hours(16) + minutes(8) + seconds(21))
+
+assertEq(durationParser()("42ns"), nanoseconds(42))
+assertEq(durationParser()("42us"), microseconds(42))
+assertEq(durationParser()("42ms"), milliseconds(42))
+assertEq(durationParser()("42s"), seconds(42))
+assertEq(durationParser()("42m"), minutes(42))
+assertEq(durationParser()("42h"), hours(42))
+assertEq(durationParser()("42d"), days(42))
+assertEq(durationParser()("42w"), weeks(42))
+
+assertEq(durationParser()("42 ns"), nanoseconds(42))
+assertEq(durationParser()("42   Ns"), nanoseconds(42))
+assertEq(durationParser()("42\tNS"), nanoseconds(42))
 
 // -- Writer tests
 

@@ -48,7 +48,7 @@ fun jsonValueType(JsonValue jv)
   if jv is JsonObject -> "object"
   if jv is JsonArray  -> "array"
 
-fun getField(JsonObject jo, string name, StrComp strComp = StrComp.Ordinal) -> Option{JsonValue}
+fun getField(JsonObject jo, string name, StrComp strComp = StrComp.Normal) -> Option{JsonValue}
   jo.fields
     .first(lambda (Tuple{string, JsonValue} field) equals(field.f1, name, strComp))
     .map(lambda (Tuple{string, JsonValue} field) field.f2)
