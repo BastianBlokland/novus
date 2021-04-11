@@ -1,0 +1,414 @@
+import "options.ns"
+import "runner.ns"
+
+import "std/core.ns"
+import "std/format.ns"
+import "std/prim.ns"
+
+// -- Types
+
+struct CliParseContext =
+  CliCmdCfg           cmd,
+  bool                acceptOptions,
+  List{CliOptResult}  result,
+  List{string}        remArgs
+
+// -- Constructors
+
+fun CliParseContext(CliCmdCfg cmd, List{string} args)
+  CliParseContext(cmd, true, List{CliOptResult}(), args)
+
+fun CliParseContext(CliCmdCfg cmd, List{CliOptResult} result)
+  CliParseContext(cmd, false, result, List{string}())
+
+// -- Api
+
+fun cliParseOpts(List{CliOpt} options, List{string} args) -> Either{List{CliOptResult}, Error}
+  cliParseOpts(CliCmdCfg(CliOptSet(options)), args)
+
+fun cliParseOpts(CliCmdCfg cmd, List{string} args) -> Either{List{CliOptResult}, Error}
+  cliParseOpts(CliParseContext(cmd, args)).map(lambda (CliParseContext ctx) ctx.result)
+
+// -- Utilities
+
+fun cliHasOpt(CliParseContext ctx, CliOpt opt) -> bool
+  cliHasOpt(ctx, cliId(opt))
+
+fun cliHasOpt(CliParseContext ctx, CliId id) -> bool
+  ctx.result.any(lambda (CliOptResult r) r.id == id)
+
+fun cliConsumeArg(CliParseContext ctx, int count = 1, bool allowFurtherOptions = true)
+  CliParseContext(ctx.cmd, allowFurtherOptions, ctx.result, ctx.remArgs.pop(count))
+
+fun addResultOpt(CliParseContext ctx, CliOptResult opt, int args = 1) -> Either{CliParseContext, Error}
+  CliParseContext(ctx.cmd, ctx.acceptOptions, opt :: ctx.result, ctx.remArgs.pop(args))
+
+fun cliNextPositional(CliParseContext ctx) -> Option{CliArg}
+  position = ctx.result.fold(lambda (int nextPos, CliOptResult optRes)
+    if ctx.cmd.opts[optRes.id] as CliOpt o && o as CliArg a -> max(a.position + 1, nextPos)
+    else -> nextPos
+  , 0);
+  ctx.cmd.opts.cliArg(position)
+
+fun cliParseValues(CliParseContext ctx, bool multi, int skip) -> List{string}
+  multi ? ctx.remArgs.pop(skip).take(lambda (string c) c[0] != '-' || !ctx.acceptOptions)
+        : ctx.remArgs.pop(skip).front() :: List{string}()
+
+fun cliParseFlag(CliParseContext ctx, CliFlag f, bool consumeArg = true) -> Either{CliParseContext, Error}
+  if ctx.cliHasOpt(f.id) -> Error("Duplicate option '" + f.name.longName + '\'')
+  else -> ctx.addResultOpt(CliOptResult(f.id), consumeArg ? 1 : 0)
+
+fun cliParseValFlag(CliParseContext ctx, CliValFlag vf) -> Either{CliParseContext, Error}
+  if ctx.cliHasOpt(vf.id) -> Error("Duplicate option '" + vf.name.longName + '\'')
+  else ->
+    values = cliParseValues(ctx, cliIsMultiValue(vf), 1);
+    if values.isEmpty() -> Error("Value missing for option '" + vf.name.longName + '\'')
+    else                -> ctx.addResultOpt(CliOptResult(vf.id, values), 1 + values.length())
+
+fun cliParseArg(CliParseContext ctx, CliArg arg) -> Either{CliParseContext, Error}
+  values = cliParseValues(ctx, cliIsMultiValue(arg), 0);
+  ctx.addResultOpt(CliOptResult(arg.id, values), values.length())
+
+fun cliParseShortFlags(CliParseContext ctx, List{char} chars) -> Either{CliParseContext, Error}
+  chars.fold(lambda (Either{CliParseContext, Error} res, char c)
+    if res as Error err           -> err
+    if res as CliParseContext ctx ->
+    (
+      if ctx.cmd.opts[c] as CliOpt o ->
+      (
+        if o as CliFlag     f   -> ctx.cliParseFlag(f, false)
+        if o as CliValFlag  vf  -> Error("Option '" + c + "\' takes a value")
+        if o as CliArg      a   -> Error("Unsupported")
+      )
+      else -> Error("Unknown short flag '" + c + '\'')
+    )
+  , cliConsumeArg(ctx))
+
+fun cliParseShortFlag(CliParseContext ctx, char c) -> Either{CliParseContext, Error}
+  if ctx.cmd.opts[c] as CliOpt o ->
+  (
+    if o as CliFlag     f   -> ctx.cliParseFlag(f)
+    if o as CliValFlag  vf  -> ctx.cliParseValFlag(vf)
+    if o as CliArg      a   -> Error("Unsupported")
+  )
+  else -> Error("Unknown short flag '" + c + '\'')
+
+fun cliParseLongFlag(CliParseContext ctx, string name) -> Either{CliParseContext, Error}
+  if ctx.cmd.opts[name] as CliOpt o ->
+  (
+    if o as CliFlag     f   -> ctx.cliParseFlag(f)
+    if o as CliValFlag  vf  -> ctx.cliParseValFlag(vf)
+    if o as CliArg      a   -> Error("Unsupported")
+  )
+  else -> Error("Unknown long flag '" + name + '\'')
+
+fun cliAddDefaults(CliParseContext ctx) -> CliParseContext
+  defaults = ctx.cmd.opts.options.map(lambda (CliOpt o) -> Option{CliOptResult}
+    if o.cliDefault() as string def && !ctx.cliHasOpt(o) -> CliOptResult(o.cliId(), def)
+    else -> None()
+  );
+  CliParseContext(ctx.cmd, defaults :: ctx.result)
+
+fun cliValidateRequiredOpts(CliParseContext ctx) -> Either{CliParseContext, Error}
+  missing = ctx.cmd.opts.options.filter(lambda (CliOpt o) !o.cliIsOptional() && !ctx.cliHasOpt(o));
+  if missing.isEmpty() -> ctx
+  else -> single = missing.length() == 1;
+    Error(
+      (single ? " Required option " : "Required options ") +
+      missing.map(lambda (CliOpt o) "'" + o.cliOptName() + '\'').string("", ", ", "") +
+      (single ? " is missing" : " are missing"))
+
+fun cliParseOpts(CliParseContext ctx, string head) -> Either{CliParseContext, Error}
+  if ctx.acceptOptions && head == "-"                                 -> ctx.cliConsumeArg(1)
+  if ctx.acceptOptions && head == "--"                                -> ctx.cliConsumeArg(1, false)
+  if ctx.acceptOptions && head.startsWith("--")                       -> ctx.cliParseLongFlag(head.remove(0, 2))
+  if ctx.acceptOptions && head.startsWith("-") && head.length() == 2  -> ctx.cliParseShortFlag(head[1])
+  if ctx.acceptOptions && head.startsWith("-")                        -> ctx.cliParseShortFlags(head.remove(0, 1).toChars())
+  if ctx.cliNextPositional() as CliArg arg                            -> ctx.cliParseArg(arg)
+  else -> Error("Invalid input: '" + head + '\'')
+
+fun cliParseOpts(CliParseContext ctx) -> Either{CliParseContext, Error}
+  if ctx.remArgs.front() as string s ->
+  (
+    res = ctx.cliParseOpts(s);
+    if res as CliParseContext newCtx -> newCtx.cliParseOpts()
+    if res as Error err -> err
+  )
+  else -> cliValidateRequiredOpts(ctx.cliAddDefaults())
+
+// -- Tests
+
+// ---- CliFlag Tests
+
+assertEq(
+  options = CliOpt(CliFlag(CliId(0), CliOptName('t', "test"))) :: List{CliOpt}();
+  args    = List{string}();
+  results = List{CliOptResult}();
+  cliParseOpts(options, args), results)
+
+assertEq(
+  options = CliOpt(CliFlag(CliId(0), CliOptName('t', "test"))) :: List{CliOpt}();
+  args    = "-t" :: List{string}();
+  results = CliOptResult(CliId(0)) :: List{CliOptResult}();
+  cliParseOpts(options, args), results)
+
+assertEq(
+  options = CliOpt(CliFlag(CliId(0), CliOptName('t', "test"))) :: List{CliOpt}();
+  args    = "--test" :: List{string}();
+  results = CliOptResult(CliId(0)) :: List{CliOptResult}();
+  cliParseOpts(options, args), results)
+
+assertIs(
+  options = CliOpt(CliFlag(CliId(0), CliOptName('t', "test"))) :: List{CliOpt}();
+  args    = "-test" :: List{string}();
+  cliParseOpts(options, args), Type{Error}())
+
+assertIs(
+  options = CliOpt(CliFlag(CliId(0), CliOptName('t', "test"))) :: List{CliOpt}();
+  args    = "-tt" :: List{string}();
+  cliParseOpts(options, args), Type{Error}())
+
+assertIs(
+  options = CliOpt(CliFlag(CliId(0), CliOptName('t', "test"))) :: List{CliOpt}();
+  args    = "-t -t" :: List{string}();
+  cliParseOpts(options, args), Type{Error}())
+
+assertIs(
+  options = CliOpt(CliFlag(CliId(0), CliOptName('t', "test"))) :: List{CliOpt}();
+  args    = "--test -t" :: List{string}();
+  cliParseOpts(options, args), Type{Error}())
+
+assertEq(
+  options = CliOpt(CliFlag(CliId(0), CliOptName('t', "test")))  ::
+            CliOpt(CliFlag(CliId(1), CliOptName('f', "force"))) ::
+            CliOpt(CliFlag(CliId(2), CliOptName('v', "verbose")));
+  args    = "-" :: "-t" :: "-" :: "-f" :: "-v" :: "-";
+  results = CliOptResult(CliId(2)) ::
+            CliOptResult(CliId(1)) ::
+            CliOptResult(CliId(0));
+  cliParseOpts(options, args), results)
+
+assertEq(
+  options = CliOpt(CliFlag(CliId(0), CliOptName('t', "test")))  ::
+            CliOpt(CliFlag(CliId(1), CliOptName('f', "force"))) ::
+            CliOpt(CliFlag(CliId(2), CliOptName('v', "verbose")));
+  args    = "-tfv" :: List{string}();
+  results = CliOptResult(CliId(2)) ::
+            CliOptResult(CliId(1)) ::
+            CliOptResult(CliId(0));
+  cliParseOpts(options, args), results)
+
+assertEq(
+  options = CliOpt(CliFlag(CliId(0), CliOptName('t', "test")))  ::
+            CliOpt(CliFlag(CliId(1), CliOptName('f', "force"))) ::
+            CliOpt(CliFlag(CliId(2), CliOptName('v', "verbose")));
+  args    = "-tf" :: "-v";
+  results = CliOptResult(CliId(2)) ::
+            CliOptResult(CliId(1)) ::
+            CliOptResult(CliId(0));
+  cliParseOpts(options, args), results)
+
+assertEq(
+  options = CliOpt(CliFlag(CliId(0), CliOptName('t', "test")))  ::
+            CliOpt(CliFlag(CliId(1), CliOptName('f', "force"))) ::
+            CliOpt(CliFlag(CliId(2), CliOptName('v', "verbose")));
+  args    = "--test" :: "--force" :: "--verbose";
+  results = CliOptResult(CliId(2)) ::
+            CliOptResult(CliId(1)) ::
+            CliOptResult(CliId(0));
+  cliParseOpts(options, args), results)
+
+assertEq(
+  options = CliOpt(CliFlag(CliId(0), CliOptName('t', "test")))  ::
+            CliOpt(CliFlag(CliId(1), CliOptName('f', "force"))) ::
+            CliOpt(CliFlag(CliId(2), CliOptName('v', "verbose")));
+  args    = "--test" :: "-vf";
+  results = CliOptResult(CliId(1)) ::
+            CliOptResult(CliId(2)) ::
+            CliOptResult(CliId(0));
+  cliParseOpts(options, args), results)
+
+// ---- CliValFlag Tests
+
+assertEq(
+  options = CliOpt(CliValFlag(CliId(0), CliOptName('t', "test"), "", CliOptFlags.None)) :: List{CliOpt}();
+  args    = "--test" :: "hello";
+  results = CliOptResult(CliId(0), "hello") :: List{CliOptResult}();
+  cliParseOpts(options, args), results)
+
+assertEq(
+  options = CliOpt(CliValFlag(CliId(0), CliOptName('t', "test"), "", CliOptFlags.None)) :: List{CliOpt}();
+  args    = "-t" :: "hello";
+  results = CliOptResult(CliId(0), "hello") :: List{CliOptResult}();
+  cliParseOpts(options, args), results)
+
+assertIs(
+  options = CliOpt(CliValFlag(CliId(0), CliOptName('t', "test"), "", CliOptFlags.None)) :: List{CliOpt}();
+  args    = List{string}();
+  cliParseOpts(options, args), Type{Error}())
+
+assertIs(
+  options = CliOpt(CliValFlag(CliId(0), CliOptName('t', "test"), "", CliOptFlags.None)) :: List{CliOpt}();
+  args    = "-t" :: List{string}();
+  cliParseOpts(options, args), Type{Error}())
+
+assertIs(
+  options = CliOpt(CliValFlag(CliId(0), CliOptName('t', "test"), "", CliOptFlags.None)) ::
+            CliOpt(CliFlag(CliId(1), CliOptName('f', "force")));
+  args    = "-vt" :: "helo";
+  cliParseOpts(options, args), Type{Error}())
+
+assertIs(
+  options = CliOpt(CliValFlag(CliId(0), CliOptName('t', "test"), "", CliOptFlags.None)) :: List{CliOpt}();
+  args    = "-t" :: "helo" :: "--test" :: "hello";
+  cliParseOpts(options, args), Type{Error}())
+
+assertIs(
+  options = CliOpt(CliValFlag(CliId(0), CliOptName('t', "test"), "", CliOptFlags.None)) ::
+            CliOpt(CliFlag(CliId(1), CliOptName('f', "force")));
+  args    = "-tv" :: "helo";
+  cliParseOpts(options, args), Type{Error}())
+
+assertEq(
+  options = CliOpt(CliValFlag(CliId(0), CliOptName('t', "test"), "", CliOptFlags.None))  ::
+            CliOpt(CliValFlag(CliId(1), CliOptName('i', "index"), "", CliOptFlags.None)) ::
+            CliOpt(CliValFlag(CliId(2), CliOptName('c', "count"), "", CliOptFlags.None));
+  args    = "-c" :: "hello" :: "--index" :: "beautifull" :: "-t" :: "world";
+  results = CliOptResult(CliId(0), "world") ::
+            CliOptResult(CliId(1), "beautifull") ::
+            CliOptResult(CliId(2), "hello");
+  cliParseOpts(options, args), results)
+
+assertEq(
+  options = CliOpt(CliValFlag(CliId(0), CliOptName('t', "test"), "", CliOptFlags.None)) :: List{CliOpt}();
+  args    = "-t" :: "-hello";
+  results = CliOptResult(CliId(0), "-hello") :: List{CliOptResult}();
+  cliParseOpts(options, args), results)
+
+assertEq(
+  options = CliOpt(CliValFlag(CliId(0), CliOptName('t', "test"), "", CliOptFlags.None)) :: List{CliOpt}();
+  args    = "-t" :: "--hello";
+  results = CliOptResult(CliId(0), "--hello") :: List{CliOptResult}();
+  cliParseOpts(options, args), results)
+
+// ---- Optional CliValFlags tests
+
+assertEq(
+  options = CliOpt(CliValFlag(CliId(0), CliOptName('t', "test"), "", CliOptFlags.Optional)) :: List{CliOpt}();
+  args    = List{string}();
+  results = List{CliOptResult}();
+  cliParseOpts(options, args), results)
+
+assertIs(
+  options = CliOpt(CliValFlag(CliId(0), CliOptName('t', "test"), "", CliOptFlags.None)) :: List{CliOpt}();
+  args    = "-t" :: List{string}();
+  cliParseOpts(options, args), Type{Error}())
+
+// ---- MultiValue CliValFlags tests
+
+assertEq(
+  options = CliOpt(CliValFlag(CliId(0), CliOptName('t', "test"), "", CliOptFlags.MultiValue)) :: List{CliOpt}();
+  args    = "-t" :: "1" :: "2" :: "3";
+  results = CliOptResult(CliId(0), "1" :: "2" :: "3") :: List{CliOptResult}();
+  cliParseOpts(options, args), results)
+
+assertEq(
+  options = CliOpt(CliValFlag(CliId(0), CliOptName('t', "test"), "", CliOptFlags.MultiValue)) :: List{CliOpt}();
+  args    = "-t" :: "1";
+  results = CliOptResult(CliId(0), "1") :: List{CliOptResult}();
+  cliParseOpts(options, args), results)
+
+assertIs(
+  options = CliOpt(CliValFlag(CliId(0), CliOptName('t', "test"), "", CliOptFlags.MultiValue)) :: List{CliOpt}();
+  args    = "-t" :: List{string}();
+  cliParseOpts(options, args), Type{Error}())
+
+assertEq(
+  options = CliOpt(CliValFlag(CliId(0), CliOptName('t', "test"), "", CliOptFlags.MultiValue))  ::
+            CliOpt(CliValFlag(CliId(1), CliOptName('i', "index"), "", CliOptFlags.MultiValue));
+  args    = "-t" :: "hello" :: "world" :: "--index" :: "1" :: "2" :: "3";
+  results = CliOptResult(CliId(1), "1" :: "2" :: "3") ::
+            CliOptResult(CliId(0), "hello" :: "world");
+  cliParseOpts(options, args), results)
+
+assertIs(
+  options = CliOpt(CliValFlag(CliId(0), CliOptName('t', "test"), "", CliOptFlags.MultiValue)) :: List{CliOpt}();
+  args    = "-t" :: "1" :: "2" :: "-" :: "3";
+  cliParseOpts(options, args), Type{Error}())
+
+assertIs(
+  options = CliOpt(CliValFlag(CliId(0), CliOptName('t', "test"), "", CliOptFlags.MultiValue)) :: List{CliOpt}();
+  args    = "-t" :: "1" :: "2" :: "-3";
+  cliParseOpts(options, args), Type{Error}())
+
+// ---- CliArg tests
+
+assertEq(
+  options = CliOpt(CliArg(CliId(0), "", 0, "", CliOptFlags.None)) :: List{CliOpt}();
+  args    = "hello world" :: List{string}();
+  results = CliOptResult(CliId(0), "hello world") :: List{CliOptResult}();
+  cliParseOpts(options, args), results)
+
+assertEq(
+  options = CliOpt(CliArg(CliId(0), "", 0, "", CliOptFlags.None)) :: List{CliOpt}();
+  args    = "--" :: "-hello world" :: List{string}();
+  results = CliOptResult(CliId(0), "-hello world") :: List{CliOptResult}();
+  cliParseOpts(options, args), results)
+
+assertEq(
+  options = CliOpt(CliArg(CliId(0), "", 0, "", CliOptFlags.None)) :: List{CliOpt}();
+  args    = "--" :: "--hello world" :: List{string}();
+  results = CliOptResult(CliId(0), "--hello world") :: List{CliOptResult}();
+  cliParseOpts(options, args), results)
+
+assertEq(
+  options = CliOpt(CliArg(CliId(0), "", 0, "", CliOptFlags.None)) ::
+            CliOpt(CliArg(CliId(1), "", 1, "", CliOptFlags.None));
+  args    = "hello" :: "world" :: List{string}();
+  results = CliOptResult(CliId(1), "world") ::
+            CliOptResult(CliId(0), "hello");
+  cliParseOpts(options, args), results)
+
+assertIs(
+  options = CliOpt(CliArg(CliId(0), "", 0, "", CliOptFlags.None)) :: List{CliOpt}();
+  args    = List{string}();
+  cliParseOpts(options, args), Type{Error}())
+
+// ---- MultiValue CliArg tests
+
+assertEq(
+  options = CliOpt(CliArg(CliId(0), "", 0, "", CliOptFlags.MultiValue)) :: List{CliOpt}();
+  args    = "1" :: "2" :: "3";
+  results = CliOptResult(CliId(0), "1" :: "2" :: "3") :: List{CliOptResult}();
+  cliParseOpts(options, args), results)
+
+assertEq(
+  options = CliOpt(CliArg(CliId(0), "", 0, "", CliOptFlags.MultiValue)) ::
+            CliOpt(CliArg(CliId(1), "", 1, "", CliOptFlags.MultiValue));
+  args    = "1" :: "2" :: "-" :: "3" :: "2";
+  results = CliOptResult(CliId(1), "3" :: "2") ::
+            CliOptResult(CliId(0), "1" :: "2");
+  cliParseOpts(options, args), results)
+
+assertEq(
+  options = CliOpt(CliArg(CliId(0), "", 0, "", CliOptFlags.MultiValue)) :: List{CliOpt}();
+  args    = "--" :: "1" :: "2" :: "-" :: "3" :: "2";
+  results = CliOptResult(CliId(0), "1" :: "2" :: "-" :: "3" :: "2") :: List{CliOptResult}();
+  cliParseOpts(options, args), results)
+
+assertEq(
+  options = CliOpt(CliArg(CliId(0), "", 0, "", CliOptFlags.MultiValue)) ::
+            CliOpt(CliValFlag(CliId(1), CliOptName('t', "test"), "", CliOptFlags.None))  ::
+            CliOpt(CliValFlag(CliId(2), CliOptName('i', "index"), "", CliOptFlags.None)) ::
+            CliOpt(CliValFlag(CliId(3), CliOptName('c', "count"), "", CliOptFlags.None));
+  args    = "-c" :: "hello" :: "1" :: "2" :: "3" :: "--index" :: "beautifull" :: "-t" :: "world";
+  results = CliOptResult(CliId(1), "world") ::
+            CliOptResult(CliId(2), "beautifull") ::
+            CliOptResult(CliId(0), "1" :: "2" :: "3") ::
+            CliOptResult(CliId(3), "hello");
+  cliParseOpts(options, args), results)
+
+assertIs(
+  options = CliOpt(CliArg(CliId(0), "", 0, "", CliOptFlags.MultiValue)) :: List{CliOpt}();
+  args    = List{string}();
+  cliParseOpts(options, args), Type{Error}())
