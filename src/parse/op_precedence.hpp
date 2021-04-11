@@ -4,8 +4,8 @@
 namespace parse {
 
 const int callPrecedence           = 17;
-const int doubleQmarkPrecedence    = 16;
-const int fieldPrecedence          = 15;
+const int fieldPrecedence          = 16;
+const int doubleQmarkPrecedence    = 15;
 const int unaryPrecedence          = 14;
 const int multiplicativePrecedence = 13;
 const int additivePrecedence       = 12;
