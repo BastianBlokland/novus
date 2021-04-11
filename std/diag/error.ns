@@ -54,6 +54,8 @@ fun !!(Option{Error} e, Error newError) -> Option{Error}
 fun string(Error err)
   err.allErrors().map(lambda (Error err) "'" + err.msg + "'").string()
 
+fun string(ErrorWriteFlags f) toEnumFlagNames(f).string()
+
 // -- Functions
 
 fun count(Error err) -> int

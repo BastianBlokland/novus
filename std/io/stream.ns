@@ -22,6 +22,10 @@ fun streamReadBlockSize() 1024
 fun StreamReadState(sys_stream src)
   StreamReadState("", false, src)
 
+// -- Conversions
+
+fun string(StreamOptions o) toEnumFlagNames(o).string()
+
 // -- Actions
 
 act isValid(sys_stream s) -> bool

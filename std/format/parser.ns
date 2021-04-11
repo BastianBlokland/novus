@@ -136,6 +136,8 @@ fun !!{T}(Parser{T} p, function{Error, Error} errorMutation)
 fun string(ParseState s)
   s.pos.string()
 
+fun string(ParseFlags f) toEnumFlagNames(f).string()
+
 fun string{T}(ParseResult{T} res)
   if res as ParseSuccess{T} suc   -> suc.string()
   if res as ParseFailure    fail  -> fail.string()

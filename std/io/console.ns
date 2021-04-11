@@ -19,9 +19,7 @@ enum TerminalOptions =
 
 // -- Conversions
 
-fun string(TerminalOptions o)
-  ((o & TerminalOptions.NoEcho)   != 0 ? "[NoEcho]"   : "") +
-  ((o & TerminalOptions.NoBuffer) != 0 ? "[NoBuffer]" : "")
+fun string(TerminalOptions o) toEnumFlagNames(o).string()
 
 // -- Actions
 

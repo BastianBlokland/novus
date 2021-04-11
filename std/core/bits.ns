@@ -86,6 +86,11 @@ fun toHexString{T}(T mask, bool includeLeadingZeroes = false) -> string
         string(v < 10 ? char('0' + v) : char('A' + v - 10)) + result)
     ); string('0', includeLeadingZeroes ? (leadingZeroes(mask) / 4) : 0) + f(mask, "")
 
+fun toEnumFlagNames{T}(T enumV) -> List{string}
+  for(popCount(int(enumV)), lambda (int i)
+    reflectEnumKeyForVal(T(nthSetBit(int(enumV), i)))
+  )
+
 fun signExtend16To32(int val) -> int
   (0xffff & val ^ 0x8000) - 0x8000
 
@@ -335,6 +340,16 @@ assertEq(toHexString(0x1234_ABCD_EF99L), "1234ABCDEF99")
 assertEq(toHexString(0L, true), "0000000000000000")
 assertEq(toHexString(~0L, true), "FFFFFFFFFFFFFFFF")
 assertEq(toHexString(0x00AB_CDEF_1234_FFFFL, true), "00ABCDEF1234FFFF")
+
+assertEq(toEnumFlagNames(ParseFlags.None), List{string}())
+assertEq(toEnumFlagNames(ParseFlags.Optional), "Optional" :: List{string}())
+assertEq(toEnumFlagNames(ParseFlags.Optional | ParseFlags.NoWrapperError), "Optional" :: "NoWrapperError")
+assertEq(
+  toEnumFlagNames(ParseFlags.NoWrapperError | ParseFlags.AllowTrailingSeperator),
+  "NoWrapperError" :: "AllowTrailingSeperator")
+assertEq(
+  toEnumFlagNames(ParseFlags.Optional | ParseFlags.NoWrapperError | ParseFlags.AllowTrailingSeperator),
+  "Optional" :: "NoWrapperError" :: "AllowTrailingSeperator")
 
 assertEq(bitInt8Writer()('a'), "a")
 
