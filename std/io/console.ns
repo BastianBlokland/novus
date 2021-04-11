@@ -78,7 +78,7 @@ act noinline print{T}(T x) -> Option{Error}
   consoleOpen().map(impure lambda (Console c) c.writeOut(x.string() + '\n'))
 
 act noinline print{T}(T x, TtyStyle style) -> Option{Error}
-  styledWriter = ttyStyledTextWriter(style);
+  styledWriter = stringWriter().ttyStyledTextWriter(style);
   consoleOpen().map(impure lambda (Console c)
     c.writeOut(styledWriter, x.string() + '\n')
   )
@@ -87,13 +87,11 @@ act noinline printErr{T}(T x) -> Option{Error}
   cOrErr = consoleOpen();
   if cOrErr as Error    e -> e
   if cOrErr as Console  c ->
-    if !c.isTerm()  -> c.writeErr(x.string() + '\n')
-    else            ->
-      styledWriter = ttyStyledTextWriter(TtyStyle.BgRed :: TtyStyle.Bold);
+      styledWriter = stringWriter().ttyStyledTextWriter(TtyStyle.BgRed :: TtyStyle.Bold);
       c.writeErr(styledWriter, x.string() + '\n')
 
 act noinline printErr{T}(T x, TtyStyle style) -> Option{Error}
-  styledWriter = ttyStyledTextWriter(style);
+  styledWriter = stringWriter().ttyStyledTextWriter(style);
   consoleOpen().map(impure lambda (Console c)
     c.writeErr(styledWriter, x.string() + '\n')
   )
