@@ -262,12 +262,15 @@ auto inline pcall(
   case PCallCode::EnvGetArgCount: {
     PUSH_INT(iface->envGetArgCount());
   } break;
+  case PCallCode::EnvHasVar: {
+    auto* nameStrRef = getStringRef(refAlloc, POP());
+    CHECK_ALLOC(nameStrRef);
+    PUSH_BOOL(platformHasEnv(nameStrRef));
+  } break;
   case PCallCode::EnvGetVar: {
     auto* nameStrRef = getStringRef(refAlloc, POP());
     CHECK_ALLOC(nameStrRef);
-
-    auto* res = std::getenv(nameStrRef->getCharDataPtr());
-    PUSH_REF(res == nullptr ? refAlloc->allocStr(0) : toStringRef(refAlloc, res));
+    PUSH_REF(platformGetEnv(nameStrRef, refAlloc));
   } break;
   case PCallCode::InteruptIsReq: {
     PUSH_BOOL(interuptIsRequested());

@@ -1,6 +1,7 @@
 #include "internal/platform_utilities.hpp"
 #include "internal/intrinsics.hpp"
 #include "internal/os_include.hpp"
+#include "internal/string_utilities.hpp"
 
 namespace vm::internal {
 
@@ -121,6 +122,13 @@ auto clockTimezoneOffset() noexcept -> int32_t {
   return static_cast<int32_t>(timezoneOffsetMinutes);
 
 #endif
+}
+
+auto platformHasEnv(const StringRef* name) -> bool { return ::getenv(name->getCharDataPtr()); }
+
+auto platformGetEnv(const StringRef* name, RefAllocator* refAlloc) -> StringRef* {
+  const char* envVar = ::getenv(name->getCharDataPtr());
+  return envVar ? toStringRef(refAlloc, envVar) : refAlloc->allocStr(0);
 }
 
 } // namespace vm::internal

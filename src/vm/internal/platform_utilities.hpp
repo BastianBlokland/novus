@@ -3,6 +3,9 @@
 
 namespace vm::internal {
 
+class StringRef;
+class RefAllocator;
+
 enum class Endianness : uint8_t {
   Little = 0,
   Big    = 1,
@@ -78,5 +81,8 @@ auto setupPlatformUtilities() noexcept -> void;
 
 // Returns the local timezone offset in minutes.
 [[nodiscard]] auto clockTimezoneOffset() noexcept -> int32_t;
+
+[[nodiscard]] auto platformHasEnv(const StringRef* name) -> bool;
+[[nodiscard]] auto platformGetEnv(const StringRef* name, RefAllocator* refAlloc) -> StringRef*;
 
 } // namespace vm::internal

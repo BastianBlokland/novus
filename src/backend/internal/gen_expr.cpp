@@ -492,6 +492,9 @@ auto GenExpr::visit(const prog::expr::CallExprNode& n) -> void {
   case prog::sym::FuncKind::ActionEnvGetArgCount:
     m_asmb->addPCall(novasm::PCallCode::EnvGetArgCount);
     break;
+  case prog::sym::FuncKind::ActionEnvHasVar:
+    m_asmb->addPCall(novasm::PCallCode::EnvHasVar);
+    break;
   case prog::sym::FuncKind::ActionEnvGetVar:
     m_asmb->addPCall(novasm::PCallCode::EnvGetVar);
     break;
