@@ -1,0 +1,88 @@
+import "buildin.ns"
+import "invoker.ns"
+import "options.ns"
+import "runner.ns"
+
+import "std/core.ns"
+import "std/diag.ns"
+import "std/prim.ns"
+
+struct CliAppInfo =
+  string  name,
+  string  desc,
+  Version ver,
+  string  bin
+
+struct CliCmd{T} =
+  string                    name,
+  action{T, Option{Error}}  routine,
+  string                    desc
+
+// -- Extension points
+
+fun cliIsInteruptable{T}(Type{T} commandInputType) true
+
+fun cliCleanupAction{T}(Type{T} commandInputType) cliNopCleanupAction()
+
+// -- Create a command-config from a given routine
+
+fun cliCmdCfgFromRoutine{T}(CliCmd{T} c) -> Either{CliCmdCfg, Error}
+  cliCmdCfgFromRoutine(c, Meta{reflect_type_kind{T}}())
+
+fun cliCmdCfgFromRoutine{T}(CliCmd{T} c, Meta{#8} structKind) -> Either{CliCmdCfg, Error}
+  t = Type{T}();
+  cliOptCfgFromStruct(t).map(lambda (CliOptCfg optCfg)
+    CliCmdCfg(c.name, c.desc, optCfg, cliIsInteruptable(t), cliCreateInvoker(c.routine), cliCleanupAction(t))
+  )
+
+fun cliCmdCfgFromRoutine{T, Idx}(CliCmd{T} c, Meta{Idx} unsupportedKind) -> Either{CliCmdCfg, Error}
+  Error("Unsupported cli command input type " + Type{T}().string() + ", input has to be a struct" )
+
+// -- Create a app config from a set of commands
+
+fun cliCmdCfgFromRoutines{CmdsTuple}(CmdsTuple cmdsTuple)
+  cliCmdCfgFromRoutines(cmdsTuple, --tupleSize(cmdsTuple), List{CliCmdCfg}())
+
+fun cliCmdCfgFromRoutines{CmdsTuple}(CmdsTuple cmdsTuple, Meta{#-1} idx, List{CliCmdCfg} result) -> Either{List{CliCmdCfg}, Error}
+  result
+
+fun cliCmdCfgFromRoutines{CmdsTuple, Idx}(CmdsTuple cmdsTuple, Meta{Idx} idx, List{CliCmdCfg} result) -> Either{List{CliCmdCfg}, Error}
+  cmdCfgOrErr = cliCmdCfgFromRoutine(tupleGet(cmdsTuple, idx));
+  if cmdCfgOrErr as CliCmdCfg cfg -> cliCmdCfgFromRoutines(cmdsTuple, --idx, cfg :: result)
+  if cmdCfgOrErr as Error     err -> err
+
+// -- Api
+
+act cliAppInfo(
+  string name = pathProgram().stem().map(lambda (string s) s[0].toUpper().string() + s[1, 25]) ?? "App",
+  string desc = "",
+  Version ver = Version(0, 1, 0),
+  string bin  = pathProgram().filename() ?? "app")
+  CliAppInfo(name, desc, ver, bin)
+
+fun cliCmd{T}(string name, action{T, Option{Error}} routine, string desc = "")
+  CliCmd(name, routine, desc)
+
+act cli{T}(action{T, Option{Error}} routine, CliAppInfo appInfo = cliAppInfo())
+  rootCmd = cliCmdCfgFromRoutine(cliCmd("", routine)).failOnError();
+  cliRun(CliAppCfg(appInfo.name, appInfo.desc, appInfo.ver, appInfo.bin, rootCmd, cliBuildinCmds()))
+
+act cli{T1}(CliCmd{T1} cmd1, CliAppInfo appInfo = cliAppInfo())
+  cmds = cliCmdCfgFromRoutines(Tuple(cmd1)).failOnError();
+  cliRun(CliAppCfg(appInfo.name, appInfo.desc, appInfo.ver, appInfo.bin, None(), cmds :: cliBuildinCmds()))
+
+act cli{T1, T2}(CliCmd{T1} cmd1, CliCmd{T2} cmd2, CliAppInfo appInfo = cliAppInfo())
+  cmds = cliCmdCfgFromRoutines(Tuple(cmd1, cmd2)).failOnError();
+  cliRun(CliAppCfg(appInfo.name, appInfo.desc, appInfo.ver, appInfo.bin, None(), cmds :: cliBuildinCmds()))
+
+act cli{T1, T2, T3}(CliCmd{T1} cmd1, CliCmd{T2} cmd2, CliCmd{T3} cmd3, CliAppInfo appInfo = cliAppInfo())
+  cmds = cliCmdCfgFromRoutines(Tuple(cmd1, cmd2, cmd3)).failOnError();
+  cliRun(CliAppCfg(appInfo.name, appInfo.desc, appInfo.ver, appInfo.bin, None(), cmds :: cliBuildinCmds()))
+
+act cli{T1, T2, T3, T4}(CliCmd{T1} cmd1, CliCmd{T2} cmd2, CliCmd{T3} cmd3, CliCmd{T4} cmd4, CliAppInfo appInfo = cliAppInfo())
+  cmds = cliCmdCfgFromRoutines(Tuple(cmd1, cmd2, cmd3, cmd4)).failOnError();
+  cliRun(CliAppCfg(appInfo.name, appInfo.desc, appInfo.ver, appInfo.bin, None(), cmds :: cliBuildinCmds()))
+
+act cli{T1, T2, T3, T4, T5}(CliCmd{T1} cmd1, CliCmd{T2} cmd2, CliCmd{T3} cmd3, CliCmd{T4} cmd4, CliCmd{T5} cmd5, CliAppInfo appInfo = cliAppInfo())
+  cmds = cliCmdCfgFromRoutines(Tuple(cmd1, cmd2, cmd3, cmd4, cmd5)).failOnError();
+  cliRun(CliAppCfg(appInfo.name, appInfo.desc, appInfo.ver, appInfo.bin, None(), cmds :: cliBuildinCmds()))
