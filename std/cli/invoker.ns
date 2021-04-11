@@ -1,0 +1,201 @@
+import "options.ns"
+import "parser.ns"
+
+import "std/core.ns"
+import "std/format.ns"
+import "std/prim.ns"
+
+// -- Parsers for supported option types
+// Define additional overload to support custom types.
+
+fun cliParser(Type{char} t)         charParser()
+fun cliParser(Type{string} t)       allParser()
+fun cliParser(Type{bool} t)         txtBoolParser()
+fun cliParser(Type{int} t)          txtIntParser()
+fun cliParser(Type{long} t)         txtLongParser()
+fun cliParser(Type{float} t)        txtFloatParser()
+fun cliParser(Type{Duration} t)     durationParser()
+fun cliParser(Type{Path} t)         pathParser()
+fun cliParser(Type{PathRelative} t) pathRelParser()
+fun cliParser(Type{PathAbsolute} t) pathAbsParser()
+fun cliParser(Type{IpAddress} t)    ipTxtParser()
+fun cliParser(Type{IpV4Address} t)  ipV4TxtParser()
+fun cliParser(Type{IpV6Address} t)  ipV6TxtParser()
+fun cliParser(Type{JsonValue} t)    jsonParser()
+
+fun cliParser{T}(Type{T} t)
+  cliParser(t, Meta{reflect_type_kind{T}}())
+
+fun cliParser{T}(Type{T} t, Meta{#10} enumTypeKind)
+  enumParser(t, StrComp.IgnoreCase)
+
+fun cliParse{T}(CliResult r, CliId id, Type{T} t, string input)
+  cliParse(r, id, cliParser(t) << endParser(), input)
+
+fun cliParse{T}(CliResult r, CliId id, Parser{T} p, string input)
+  p.run(input, ParseFlags.NoWrapperError) !
+    Error("Invalid value '" + input + "' for option '" + r.cmd.opts.cliOptName(id) + "'")
+
+// -- Api
+
+fun cliCreateInvoker{T}(action{T, Option{Error}} routine) -> action{CliResult, Option{Error}}
+  impure lambda (CliResult r) cliInvoke(r, routine)
+
+fun cliCreateInvoker{T}(action{T, CliResult, Option{Error}} routine) -> action{CliResult, Option{Error}}
+  impure lambda (CliResult r) cliInvoke(r, routine)
+
+act cliInvoke{T}(CliResult r, action{T, Option{Error}} routine) -> Option{Error}
+  input = cliInputStruct(r, Type{T}());
+  if input as T val -> routine(val)
+  if input as Error err -> err
+
+act cliInvoke{T}(CliResult r, action{T, CliResult, Option{Error}} routine) -> Option{Error}
+  input = cliInputStruct(r, Type{T}());
+  if input as T val -> routine(val, r)
+  if input as Error err -> err
+
+// -- Retrieve the value for an option
+
+fun cliOptVal(CliResult r, CliId id, Type{bool} t) -> Either{bool, Error}
+  if r[id] as CliOptResult opt  -> opt.values.front() as string s ? cliParse(r, id, t, s) : true
+  else                          -> false
+
+fun cliOptVal{T}(CliResult r, CliId id, Type{Option{T}} t) -> Either{Option{T}, Error}
+  r[id] is None ? Option{T}() : cliOptVal(r, id, Type{T}()).map(lambda (T v) Option{T}(v))
+
+fun cliOptVal{T}(CliResult r, CliId id, Type{CliPositional{T}} t) -> Either{CliPositional{T}, Error}
+  cliOptVal(r, id, Type{T}()).map(lambda (T v) CliPositional{T}(v))
+
+fun cliOptVal{T}(CliResult r, CliId id, Type{List{T}} t) -> Either{List{T}, Error}
+  p = cliParser(Type{T}());
+  r.getValues(id).map(lambda (string s) cliParse(r, id, p, s)).split().valueOrError()
+
+fun cliOptVal{T}(CliResult r, CliId id, Type{T} t) -> Either{T, Error}
+  if r.getValues(id).front() as string s -> cliParse(r, id, t, s)
+  else -> Error("Required option is missing")
+
+// -- Retrieve the values for a struct
+
+fun cliInputStruct{T}(CliResult r, Type{T} t) -> Either{T, Error}
+  cliInputStruct(r, t, --reflectStructFieldCount(t), metaZero(), Tuple())
+
+fun cliInputStruct{T, Tup, J}(CliResult r, Type{T} t, Meta{#-1} i, Meta{J} j, Tup res) -> Either{T, Error}
+  res.tupleToStruct(t)
+
+fun cliInputStruct{T, Tup, I, J}(CliResult r, Type{T} t, Meta{I} i, Meta{J} j, Tup res) -> Either{T, Error}
+  id        = CliId(j);
+  valOrErr  = cliOptVal(r, id, reflectStructFieldType(t, j));
+  if valOrErr as reflect_struct_field_type{T, J} val -> cliInputStruct(r, t, --i, ++j, res.tupleAdd(val))
+  if valOrErr as Error err -> err
+
+// -- Tests
+
+assertEq(
+  r = CliResult(CliAppCfg(), CliCmdCfg(), List{CliOptResult}());
+  cliOptVal(r, CliId(0), Type{bool}()),
+  false
+)
+assertEq(
+  r = CliResult(CliAppCfg(), CliCmdCfg(), CliOptResult(CliId(0), List{string}()) :: List{CliOptResult}());
+  cliOptVal(r, CliId(0), Type{bool}()),
+  true
+)
+assertEq(
+  r = CliResult(CliAppCfg(), CliCmdCfg(), CliOptResult(CliId(0), "false" :: List{string}()) :: List{CliOptResult}());
+  cliOptVal(r, CliId(0), Type{bool}()),
+  false
+)
+assertIs(
+  r = CliResult(CliAppCfg(), CliCmdCfg(), CliOptResult(CliId(0), "hello" :: List{string}()) :: List{CliOptResult}());
+  cliOptVal(r, CliId(0), Type{bool}()),
+  Type{Error}()
+)
+
+assertEq(
+  r = CliResult(CliAppCfg(), CliCmdCfg(), CliOptResult(CliId(0), "42" :: List{string}()) :: List{CliOptResult}());
+  cliOptVal(r, CliId(0), Type{int}()),
+  42
+)
+assertIs(
+  r = CliResult(CliAppCfg(), CliCmdCfg(), CliOptResult(CliId(0), "hello" :: List{string}()) :: List{CliOptResult}());
+  cliOptVal(r, CliId(0), Type{int}()),
+  Type{Error}()
+)
+
+assertEq(
+  r = CliResult(CliAppCfg(), CliCmdCfg(), List{CliOptResult}());
+  cliOptVal(r, CliId(0), Type{Option{bool}}()),
+  Option{bool}()
+)
+assertEq(
+  r = CliResult(CliAppCfg(), CliCmdCfg(), CliOptResult(CliId(0), List{string}()) :: List{CliOptResult}());
+  cliOptVal(r, CliId(0), Type{Option{bool}}()),
+  Option(true)
+)
+assertEq(
+  r = CliResult(CliAppCfg(), CliCmdCfg(), CliOptResult(CliId(0), "false" :: List{string}()) :: List{CliOptResult}());
+  cliOptVal(r, CliId(0), Type{Option{bool}}()),
+  Option(false)
+)
+assertEq(
+  r = CliResult(CliAppCfg(), CliCmdCfg(), List{CliOptResult}());
+  cliOptVal(r, CliId(0), Type{Option{int}}()),
+  Option{int}()
+)
+assertEq(
+  r = CliResult(CliAppCfg(), CliCmdCfg(), CliOptResult(CliId(0), "January" :: List{string}()) :: List{CliOptResult}());
+  cliOptVal(r, CliId(0), Type{Option{Month}}()),
+  Option(Month.January)
+)
+
+assertIs(
+  r = CliResult(CliAppCfg(), CliCmdCfg(), List{CliOptResult}());
+  cliOptVal(r, CliId(0), Type{CliPositional{int}}()),
+  Type{Error}()
+)
+assertEq(
+  r = CliResult(CliAppCfg(), CliCmdCfg(), CliOptResult(CliId(0), "January" :: List{string}()) :: List{CliOptResult}());
+  cliOptVal(r, CliId(0), Type{CliPositional{Month}}()),
+  CliPositional(Month.January)
+)
+assertEq(
+  r = CliResult(CliAppCfg(), CliCmdCfg(), List{CliOptResult}());
+  cliOptVal(r, CliId(0), Type{CliPositional{Option{int}}}()),
+  CliPositional(Option{int}())
+)
+assertEq(
+  r = CliResult(CliAppCfg(), CliCmdCfg(), List{CliOptResult}());
+  cliOptVal(r, CliId(0), Type{Option{CliPositional{int}}}()),
+  Option{CliPositional{int}}()
+)
+
+assertEq(
+  r = CliResult(CliAppCfg(), CliCmdCfg(), CliOptResult(CliId(0), "January" :: "December" :: "April") :: List{CliOptResult}());
+  cliOptVal(r, CliId(0), Type{List{Month}}()),
+  Month.January :: Month.December :: Month.April
+)
+assertEq(
+  r = CliResult(CliAppCfg(), CliCmdCfg(), CliOptResult(CliId(0), List{string}()) :: List{CliOptResult}());
+  cliOptVal(r, CliId(0), Type{List{Month}}()),
+  List{Month}()
+)
+assertEq(
+  r = CliResult(CliAppCfg(), CliCmdCfg(), CliOptResult(CliId(0), "January" :: "December" :: "April") :: List{CliOptResult}());
+  cliOptVal(r, CliId(0), Type{CliPositional{List{Month}}}()),
+  CliPositional(Month.January :: Month.December :: Month.April)
+)
+
+assertEq(
+  r = CliResult(CliAppCfg(), CliCmdCfg(), CliOptResult(CliId(0), "2021"   :: List{string}()) ::
+                                          CliOptResult(CliId(1), "April"  :: List{string}()) ::
+                                          CliOptResult(CliId(2), "5"      :: List{string}()));
+  cliInputStruct(r, Type{Date}()),
+  Date(2021, Month.April, 5)
+)
+assertIs(
+  r = CliResult(CliAppCfg(), CliCmdCfg(), CliOptResult(CliId(0), "2021"   :: List{string}()) ::
+                                          CliOptResult(CliId(1), "April"  :: List{string}()) ::
+                                          CliOptResult(CliId(2), "Hello"  :: List{string}()));
+  cliInputStruct(r, Type{Date}()),
+  Type{Error}()
+)
