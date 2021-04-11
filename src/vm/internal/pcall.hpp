@@ -179,6 +179,11 @@ auto inline pcall(
     CHECK_ALLOC(pathStrRef);
     PUSH_BOOL(removeFile(pErr, pathStrRef));
   } break;
+  case PCallCode::FileRemoveDir: {
+    auto* pathStrRef = getStringRef(refAlloc, POP());
+    CHECK_ALLOC(pathStrRef);
+    PUSH_BOOL(removeFileDir(pErr, pathStrRef));
+  } break;
 
   case PCallCode::TcpOpenCon: {
     const auto port         = POP_INT();

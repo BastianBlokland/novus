@@ -72,9 +72,11 @@ act fileAppend{T}(Path p, Writer{T} writer, T val) -> Option{Error}
 act fileRemove(Path p) -> Option{Error}
   absPath     = p.pathAbsolute();
   absPathStr  = absPath.string();
-  intrinsic{file_remove}(absPathStr)
-    ? None()
-    : platformError("Failed to remove file: '" + absPathStr + "'")
+  if intrinsic{file_remove}(absPathStr) || (platformErrorCode() == PlatformError.FileIsDirectory &&
+                                            intrinsic{file_remove_directory}(absPathStr))
+    -> None()
+  else
+    -> platformError("Failed to remove file: '" + absPathStr + "'")
 
 // -- Tests
 

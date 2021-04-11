@@ -449,6 +449,9 @@ auto GenExpr::visit(const prog::expr::CallExprNode& n) -> void {
   case prog::sym::FuncKind::ActionFileRemove:
     m_asmb->addPCall(novasm::PCallCode::FileRemove);
     break;
+  case prog::sym::FuncKind::ActionFileRemoveDir:
+    m_asmb->addPCall(novasm::PCallCode::FileRemoveDir);
+    break;
 
   case prog::sym::FuncKind::ActionTcpOpenCon:
     m_asmb->addPCall(novasm::PCallCode::TcpOpenCon);

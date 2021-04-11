@@ -236,6 +236,9 @@ inline auto removeFile(PlatformError* pErr, StringRef* path) -> bool {
     case ERROR_ACCESS_DENIED:
       *pErr = PlatformError::FileNoAccess;
       break;
+    case ERROR_SHARING_VIOLATION:
+      *pErr = PlatformError::FileLocked;
+      break;
     case ERROR_FILE_NOT_FOUND:
     case ERROR_PATH_NOT_FOUND:
     case ERROR_INVALID_DRIVE:
@@ -259,11 +262,70 @@ inline auto removeFile(PlatformError* pErr, StringRef* path) -> bool {
       *pErr = PlatformError::FileNoAccess;
       break;
     case ENOENT:
-    case ENOTDIR:
       *pErr = PlatformError::FileNotFound;
       break;
     case EISDIR:
       *pErr = PlatformError::FileIsDirectory;
+      break;
+    default:
+      *pErr = PlatformError::FileUnknownError;
+      break;
+    }
+  }
+  return res == 0;
+
+#endif // !_WIN32
+}
+
+inline auto removeFileDir(PlatformError* pErr, StringRef* path) -> bool {
+#if defined(_WIN32)
+
+  const bool success = ::RemoveDirectoryA(path->getCharDataPtr());
+  if (!success) {
+    switch (::GetLastError()) {
+    case ERROR_ACCESS_DENIED:
+      *pErr = PlatformError::FileNoAccess;
+      break;
+    case ERROR_SHARING_VIOLATION:
+      *pErr = PlatformError::FileLocked;
+      break;
+    case ERROR_FILE_NOT_FOUND:
+    case ERROR_PATH_NOT_FOUND:
+    case ERROR_INVALID_DRIVE:
+      *pErr = PlatformError::FileNotFound;
+      break;
+    case ERROR_DIRECTORY:
+      *pErr = PlatformError::FileIsNotDirectory;
+      break;
+    case ERROR_DIR_NOT_EMPTY:
+      *pErr = PlatformError::FileDirectoryNotEmpty;
+      break;
+    default:
+      *pErr = PlatformError::FileUnknownError;
+      break;
+    }
+  }
+  return success;
+
+#else // !_WIN32
+
+  const int res = ::rmdir(path->getCharDataPtr());
+  if (res != 0) {
+    switch (errno) {
+    case EACCES:
+    case EPERM:
+    case EROFS:
+      *pErr = PlatformError::FileNoAccess;
+      break;
+    case ENOENT:
+      *pErr = PlatformError::FileNotFound;
+      break;
+    case ENOTDIR:
+      *pErr = PlatformError::FileIsNotDirectory;
+      break;
+    case EEXIST:
+    case ENOTEMPTY:
+      *pErr = PlatformError::FileDirectoryNotEmpty;
       break;
     default:
       *pErr = PlatformError::FileUnknownError;

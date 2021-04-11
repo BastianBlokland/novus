@@ -41,6 +41,8 @@ enum PlatformError =
   FileDiskFull                  : 505,
   FileLocked                    : 506,
   FileIsDirectory               : 507,
+  FileIsNotDirectory            : 508,
+  FileDirectoryNotEmpty         : 509,
   TcpUnknownError               : 600,
   TcpInvalidSocket              : 601,
   TcpInvalidServerSocket        : 602,
@@ -95,6 +97,8 @@ fun noinline string(PlatformError err)
   if err == PlatformError.FileDiskFull                  -> "Not enough space left on the underlying filesystem"
   if err == PlatformError.FileLocked                    -> "File is locked"
   if err == PlatformError.FileIsDirectory               -> "File is a directory"
+  if err == PlatformError.FileIsNotDirectory            -> "File is not a directory"
+  if err == PlatformError.FileDirectoryNotEmpty         -> "File directory is not empty"
   if err == PlatformError.TcpUnknownError               -> "Unknown Tcp error occured"
   if err == PlatformError.TcpInvalidSocket              -> "Invalid Tcp socket"
   if err == PlatformError.TcpInvalidServerSocket        -> "Invalid Tcp server socket"
