@@ -1,3 +1,2 @@
-import "std/sys/cli.ns"
 import "std/sys/env.ns"
 import "std/sys/rt.ns"

@@ -40,7 +40,9 @@ act getResult(TestRun run)
   res = run.process.wait().failOnError();
   TestResult(res.isSuccess(), timeNow() - run.startTime)
 
-act main()
+struct Settings
+
+act main(Settings s)
   print("-- Starting tests");
   run = startTests();
   printOutput(run);
@@ -48,4 +50,4 @@ act main()
   if result.success -> print(   "-- Tests succeeded in " + result.duration, TtyStyle.FgGreen)
   else              -> printErr("-- Tests failed in "   + result.duration, TtyStyle.FgRed)
 
-main()
+cli(main)

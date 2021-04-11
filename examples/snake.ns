@@ -5,10 +5,11 @@ import "std.ns"
 
 // --- Config
 
-fun pickupsCount()        5
-fun initialPlayerLength() 2
-fun growPerPickup()       5
-fun simInterval()         milliseconds(75)
+struct Settings =
+  Duration  simInterval,
+  int       pickupCount,
+  int       initialLength,
+  int       growPerPickup
 
 // --- Misc types
 
@@ -65,6 +66,7 @@ fun rngDir(Rng r)
 struct PlayerState = I2 pos, Dir dir, List{I2} segments, int grow
 struct PickupState = I2 pos, int value
 struct GameState   =
+  Settings          settings,
   Rng               rng,
   PlayerState       player,
   List{PickupState} pickups,
@@ -72,38 +74,39 @@ struct GameState   =
   bool              gameover
 
 struct State =
+  Settings  settings,
   GameState game,
   Box       window,
   Timestamp frameStart,
   Duration  lastFrameTime
 
 fun withPlayer(GameState s, PlayerState p)
-  GameState(s.rng, p, s.pickups, s.score, s.gameover)
+  GameState(s.settings, s.rng, p, s.pickups, s.score, s.gameover)
 
 fun withRng(GameState s, Rng r)
-  GameState(r, s.player, s.pickups, s.score, s.gameover)
+  GameState(s.settings, r, s.player, s.pickups, s.score, s.gameover)
 
 fun withPickups(GameState s, List{PickupState} l)
-  GameState(s.rng, s.player, l, s.score, s.gameover)
+  GameState(s.settings, s.rng, s.player, l, s.score, s.gameover)
 
 fun addScore(GameState s, int additionalScore)
-  GameState(s.rng, s.player, s.pickups, s.score + additionalScore, s.gameover)
+  GameState(s.settings, s.rng, s.player, s.pickups, s.score + additionalScore, s.gameover)
 
 fun setGameover(GameState s)
-  GameState(s.rng, s.player, s.pickups, s.score, true)
+  GameState(s.settings, s.rng, s.player, s.pickups, s.score, true)
 
-fun createGame(Rng r, Box window)
-  r1 = createPlayer(r, window);
-  r2 = createPickups(r1.rng, window, pickupsCount());
-  GameState(r2.rng, r1.val, r2.val, 0, false)
+fun createGame(Settings s, Rng r, Box window)
+  r1 = createPlayer(s, r, window);
+  r2 = createPickups(r1.rng, window, s.pickupCount);
+  GameState(s, r2.rng, r1.val, r2.val, 0, false)
 
 fun createPlayerSegs(I2 pos, Dir dir, int length)
   rangeList(1, length).map(lambda (int i) pos - I2(dir) * i)
 
-fun createPlayer(Rng r, Box window)
+fun createPlayer(Settings s, Rng r, Box window)
   r.rngDir().map(lambda (Dir dir)
     pos = window.center();
-    segs = createPlayerSegs(pos, dir, initialPlayerLength());
+    segs = createPlayerSegs(pos, dir, s.initialLength);
     PlayerState(pos, dir, segs, 0)
   )
 
@@ -154,7 +157,7 @@ fun simulatePlayer(GameState g, Box win, Input input)
   newDir          = input as InputTurn turn ? turn.apply(g.player.dir) : g.player.dir;
   newPos          = win.wrap(g.player.pos + newDir);
   hitPickup       = !g.getPickups(newPos).isEmpty();
-  grow            = g.player.grow + (hitPickup ? growPerPickup() : 0 );
+  grow            = g.player.grow + (hitPickup ? g.settings.growPerPickup : 0 );
   newSegments     = g.player.pos :: (grow == 0 ? g.player.segments.popBack() : g.player.segments);
   g.withPlayer(PlayerState(newPos, newDir, newSegments, max(grow - 1, 0)))
 
@@ -172,27 +175,27 @@ fun simulateGameover(GameState g)
 
 // -- Game loop
 
-act initState(Console c)
+act initState(Settings s, Console c)
   rng     = rngInit();
   window  = c.getWindow();
-  game    = createGame(rng, window);
-  State(game, window, timestamp(), Duration(0))
+  game    = createGame(s, rng, window);
+  State(s, game, window, timestamp(), Duration(0))
 
 act updateState(Console c, State state, Input input) -> State
   window      = c.getWindow();
   game        = simulateGame(state.game, window, input);
   frameStart  = timestamp();
-  State(game, window, frameStart, frameStart - state.frameStart)
+  State(state.settings, game, window, frameStart, frameStart - state.frameStart)
 
-act loop(Console c, State state, Writer{State} writer = stateWriter())
+act loop(Console c, State state, Writer{State} writer = stateWriter()) -> Option{Error}
   input = getInput(c.readToEnd() ?? "");
   if input is InputQuit || interuptIsRequested()  -> None()
-  if input is InputRestart                        -> loop(c, initState(c))
+  if input is InputRestart                        -> loop(c, initState(state.settings, c))
   else ->
     newState = updateState(c, state, input);
     if c.writeOut(writer, newState) as Error drawErr -> drawErr
     else ->
-      sleep(simInterval() - (timestamp() - newState.frameStart));
+      sleep(state.settings.simInterval - (timestamp() - newState.frameStart));
       loop(c, newState, writer)
 
 // --- Drawing writers
@@ -287,22 +290,29 @@ fun setCursorWriter() -> Writer{I2}
 
 // --- Entry point
 
-act main()
+fun cliDefaults(Type{Settings} t)
+  CliDefault("sim-interval",    "75ms") ::
+  CliDefault("pickup-count",    "5")    ::
+  CliDefault("initial-length",  "2")    ::
+  CliDefault("grow-per-pickup", "5")
+
+fun cliCleanupAction(Type{Settings} t) resetTerminal
+
+act driver(Settings s)
   c = consoleOpen().failOnError();
   c.failIfNotTerm();
-  setupTerminal(c).failOnError();
-  res = loop(c, initState(c));
-  resetTerminal(c).failOnError();
-  res.failOnError()
+  setupTerminal().failOnError();
+  loop(c, initState(s, c))
 
-main()
+cli(driver)
 
 // --- Terminal setup
 
 act getWindow(Console c)
   Box(I2(1, 1), I2(c.termGetWidth().failOnError(), c.termGetHeight().failOnError()))
 
-act setupTerminal(Console c)
+act setupTerminal()
+  c = consoleOpen().failOnError();
   actSeq(
     lazy c.termSetOptions(TerminalOptions.NoEcho | TerminalOptions.NoBuffer),
     lazy c.setNoBlockInput(),
@@ -311,7 +321,8 @@ act setupTerminal(Console c)
       ttyLitWindowTitleWriter("Novus Snake"))
   )
 
-act resetTerminal(Console c)
+act resetTerminal()
+  c = consoleOpen().failOnError();
   actSeq(
     lazy c.termUnsetOptions(TerminalOptions.NoEcho | TerminalOptions.NoBuffer),
     lazy c.unsetNoBlockInput(),

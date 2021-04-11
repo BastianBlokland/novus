@@ -3,25 +3,34 @@
 
 import "std.ns"
 
-act printTimeUntilInterupt(Console con, Writer{DateTime} timeWriter, Duration updateInterval = milliseconds(30))
-  writer = ttyResetLineWriter() & timeWriter;
-  actSeq(
-    lazy con.writeOut(ttyLitCursorShowWriter(false)),
-    lazy invokeUntilInterupt(impure lambda () con.writeOut(writer, timeNow()), updateInterval),
-    lazy con.writeOut(ttyLitCursorShowWriter(true)),
-    lazy con.writeOut("\n")
+act printTimeLoop(Console con, Writer{DateTime} timeWriter, Duration interval)
+  con.writeOut(ttyLitCursorShowWriter(false));
+  invoke(impure lambda () -> None
+    con.writeOut(ttyResetLineWriter() & timeWriter, timeNow());
+    sleep(interval);
+    self()
   )
+
+act cleanup()
+  con = consoleOpen().failOnError();
+  if con.isTerm() -> con.writeOut(ttyLitCursorShowWriter(true))
+  else            -> None()
 
 act printTimeOnce(Console con, Writer{DateTime} timeWriter)
-  actSeq(
-    lazy con.writeOut(timeWriter, timeNow()),
-    lazy con.writeOut("\n")
-  )
+  con.writeOut(timeWriter & litWriter('\n'), timeNow())
 
-act main()
+struct ClockSettings =
+  bool      millies,
+  Duration  interval
+
+fun cliDefaults(Type{ClockSettings} t)
+  CliDefault("interval", "100ms") :: List{CliDefault}()
+
+fun cliCleanupAction(Type{ClockSettings} t) cleanup
+
+cli(impure lambda (ClockSettings s)
   con = consoleOpen().failOnError();
-  timeWriter = dateTimePrettyWriter(hasEnvOpt("millies"));
-  if con.isTerm() -> printTimeUntilInterupt(con, timeWriter).failOnError()
-  else            -> printTimeOnce(con, timeWriter).failOnError()
-
-main()
+  timeWriter = dateTimePrettyWriter(s.millies);
+  if con.isTerm() -> printTimeLoop(con, timeWriter, s.interval)
+  else            -> printTimeOnce(con, timeWriter)
+)

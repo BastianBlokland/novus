@@ -98,8 +98,15 @@ act handleConnection(ClientContext ctx)
     lazy print("- Client disconnected")
   )
 
-act main(int port, Content content)
-  print("Starting server (url: http://localhost:" + port + ")");
+struct Settings =
+  int               port,
+  List{RewriteRule} rewriteRules,
+  Option{Path}      root
+
+act serve(Settings s)
+  rootPath = s.root ?? pathProgram().parent() / "site";
+  content = loadContent(rootPath, s.rewriteRules, getFileNames());
+  print("Starting server (url: http://localhost:" + s.port + ")");
   startTime   = timeNow();
   timeWriter  = dateTimeRFC1123Writer();
   respWriter  = httpRespWriter();
@@ -108,8 +115,8 @@ act main(int port, Content content)
     impure lambda (TcpConnection con, TcpServerState state)
       uptime    = timeNow() - startTime;
       variables = (
-        Variable("SERVER_UPTIME",             uptime.string())                  ::
-        Variable("SERVER_DATE",               timeWriter.run(timeNow()))        ::
+        Variable("SERVER_UPTIME",             uptime.string())               ::
+        Variable("SERVER_DATE",               timeWriter.run(timeNow()))     ::
         Variable("SERVER_PLATFORM",           platform().string())           ::
         Variable("SERVER_RUNTIME_VERSION",    runtimeVersion().string())     ::
         Variable("SERVER_CONNECTION_COUNTER", state.connectionCounter.string())
@@ -117,8 +124,7 @@ act main(int port, Content content)
       ctx       = ClientContext(content, variables, con, timeWriter, respWriter, reqParser);
       handleConnection(ctx)
   );
-  tcpServer(TcpServerSettings(handleCon, port)).failOnError();
-  print("Server stopped")
+  tcpServer(TcpServerSettings(handleCon, s.port)).error()
 
 act loadContent(Path root, List{RewriteRule} rewriteUrls, List{string} files)
   print("Loading resouces (root: '" + root.string() + "')");
@@ -131,19 +137,22 @@ act loadContent(Path root, List{RewriteRule} rewriteUrls, List{string} files)
   print("Loaded " + resources.length() + " resources");
   Content(rewriteUrls, resources)
 
-main(
-  port = getEnvOpt("port", txtIntParser()) ?? 8080;
-  rootPath = getEnvOpt("root", pathParser()) ?? pathProgram().parent() / "site";
-  rewriteUrls =
-  (
-    RewriteRule("/", "/index.html") :: List{RewriteRule}()
-  );
-  files = getEnvOpt("files") ?? EnvOpt( "files",  "index.html"        ::
-                                                  "style.css"         ::
-                                                  "readme.html"       ::
-                                                  "win.jpg"           ::
-                                                  "github-logo.png"   ::
-                                                  "favicon.ico").args;
-  port,
-  loadContent(rootPath, rewriteUrls, files)
-)
+// TODO: Remove this hardcoded list once we have support for iterating directories.
+fun getFileNames()
+  "index.html"        ::
+  "style.css"         ::
+  "readme.html"       ::
+  "win.jpg"           ::
+  "github-logo.png"   ::
+  "favicon.ico"
+
+fun cliDefaults(Type{Settings} t)
+  CliDefault("port",          "8080") ::
+  CliDefault("rewrite-rules", "/>/index.html")
+
+fun cliParser(Type{RewriteRule} t)
+  (untilParser(equals{char}['>']) << matchParser('>') & allParser()).to(Type{RewriteRule}())
+
+cli(cliCmd("serve", serve, "Serve webpages"),
+    cliAppInfo("Novus WebServer", "Example of a very basic http webserver writen in Novus.\n" +
+                                  "Demo: https://www.bastian.tech/novus-webserver"))

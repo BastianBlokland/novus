@@ -83,18 +83,16 @@ act printChangeLog(List{Commit} commits)
     writer        = headerWriter & newlineWriter() & listWriter(commitWriter, newlineWriter());
     print(writer(Tuple(commits.length(), commits)))
 
-act printUsage()
-  print("Changelog generator");
-  print("Usage: git-changelog.ns --tag 'v0.*'\n");
-  print("Options:");
-  print("  --help   Print this usage information");
-  print("  --tag    Glob tag pattern for the base commit")
+struct Settings =
+  CliPositional{string} fromTag
 
-act main()
-  if hasEnvOpt("help") -> printUsage()
-  else ->
-    tagPattern  = getEnvOpt("tag", allParser()) ?? "*";
-    commits     = getShaByTagPattern(tagPattern).map(getCommitsFrom).failOnError();
+fun cliDefaults(Type{Settings} t)
+  CliDefault("from-tag", "v*.*.*") :: List{CliDefault}()
+
+cli(impure lambda (Settings s)
+  (
+    commits = getShaByTagPattern(s.fromTag.val).map(getCommitsFrom).failOnError();
     printChangeLog(commits)
-
-main()
+  ),
+  cliAppInfo("Git Changelog", "Utility to gather a nicely formatted changelog from git history")
+)

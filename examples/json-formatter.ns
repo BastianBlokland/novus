@@ -2,9 +2,13 @@
 
 import "std.ns"
 
-act formatJson(Path path, bool pretty)
-  json = path.fileRead(jsonParser()).failOnError();
-  printJson(json, pretty)
+struct Settings =
+  CliPositional{Path} path,
+  bool                pretty
+
+act formatJson(Settings s)
+  json = s.path.val.fileRead(jsonParser()).failOnError();
+  printJson(json, s.pretty)
 
 act printJson(JsonValue v, bool pretty)
   indent      = pretty ? "  " : "";
@@ -12,19 +16,4 @@ act printJson(JsonValue v, bool pretty)
   str = v.string(indent, newlineMode);
   print(str)
 
-act printUsage()
-  print("Json formatter");
-  print("Usage: json-formatter.ns --path path/to/file.json --pretty\n");
-  print("Options:");
-  print("  --help     Print this usage information");
-  print("  --path     Path to the json file to format");
-  print("  --pretty   Should the output be pretty formatted (multiple lines)")
-
-act main()
-  if hasEnvOpt("help") -> printUsage()
-  else ->
-    path    = getEnvOpt("path", pathParser()).failOnError();
-    pretty  = hasEnvOpt("pretty");
-    formatJson(path, pretty)
-
-main()
+cli(formatJson, cliAppInfo("Json formatter", "Utility to validate and reformat json files"))

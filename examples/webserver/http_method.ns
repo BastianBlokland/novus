@@ -12,4 +12,4 @@ fun string(HttpMethod m)
 // -- Parsers
 
 fun httpMethodParser()
-  enumParser(Type{HttpMethod}(), StrComp.OrdinalIgnoreCase)
+  enumParser(Type{HttpMethod}(), StrComp.IgnoreCase)

@@ -100,21 +100,11 @@ fun subListParser() -> Parser{List{Subtitle}}
 // - We're stuck.
 // - No we're not!
 
-act parseSrt(Path path)
-  subs = fileRead(path, subListParser()).failOnError();
+struct Settings =
+  CliPositional{Path} path
+
+act parseSrt(Settings s)
+  subs = fileRead(s.path.val, subListParser()).failOnError();
   print(string(subs, "", "\n\n", ""))
 
-act printUsage()
-  print("Srt parser");
-  print("Usage: srt-parser.ns --path path/to/file.srt\n");
-  print("Options:");
-  print("  --help   Print this usage information");
-  print("  --path   Path to the srt file")
-
-act main()
-  if hasEnvOpt("help") -> printUsage()
-  else ->
-    path = getEnvOpt("path", pathParser()).failOnError();
-    parseSrt(path)
-
-printBench(main)
+cli(parseSrt, cliAppInfo("Srt parser", "Example of a parser for the SubRip (srt) subtitle format"))
