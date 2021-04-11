@@ -239,7 +239,8 @@ auto TypeInferExpr::visit(const parse::IdExprNode& n) -> void {
     if (!typeSet) {
       return;
     }
-    const auto callInfo = m_ctx->getFuncTemplates()->getCallInfo(name, *typeSet, getOvOptions());
+    const auto callInfo = m_ctx->getFuncTemplates()->getCallInfo(
+        name, *typeSet, prog::OvOptions{prog::OvFlags::ExclNonUser, -1});
     if (callInfo) {
       m_type = m_ctx->getDelegates()->getDelegate(
           m_ctx, callInfo->isAction, callInfo->argumentTypes, callInfo->resultType);
@@ -248,7 +249,8 @@ auto TypeInferExpr::visit(const parse::IdExprNode& n) -> void {
   }
 
   // Non-templated function literal.
-  const auto funcs = m_ctx->getProg()->lookupFunc(name, getOvOptions(true));
+  const auto funcs =
+      m_ctx->getProg()->lookupFunc(name, prog::OvOptions{prog::OvFlags::ExclNonUser, -1});
   if (!funcs.empty() && !m_ctx->hasErrors()) {
     m_type = getDelegate(m_ctx, funcs[0]);
     return;
