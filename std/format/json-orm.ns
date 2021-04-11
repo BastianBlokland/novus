@@ -131,7 +131,7 @@ fun fromJson{T}(JsonValue jv, Type{T} t, Meta{#10} enumTypeKind) -> Either{T, Er
       ? T(int(f))
       : Error("'" + f + "' is not a valid " + t)
   if jv as string s ->
-    reflectEnumValForKey(t, s, StrComp.OrdinalIgnoreCase) as int evz
+    reflectEnumValForKey(t, s, StrComp.IgnoreCase) as int evz
       ? T(evz)
       : Error("'" + s + "' is not a valid " + t)
   else ->
@@ -144,7 +144,7 @@ fun structFromJson{T, Tup, J}(JsonObject jo, Type{T} t, Meta{#-1} i, Meta{J} j, 
 
 fun structFromJson{T, Tup, I, J}(JsonObject jo, Type{T} t, Meta{I} i, Meta{J} j, Tup res) -> Either{T, Error}
   fieldName = reflectStructFieldName(t, j);
-  if jo.getField(fieldName, StrComp.OrdinalIgnoreCase) as JsonValue jv ->
+  if jo.getField(fieldName, StrComp.IgnoreCase) as JsonValue jv ->
   (
     v = fromJson(jv, reflectStructFieldType(t, j));
     if v as reflect_struct_field_type{T, J} val -> structFromJson(jo, t, --i, ++j, res.tupleAdd(val))
@@ -153,7 +153,7 @@ fun structFromJson{T, Tup, I, J}(JsonObject jo, Type{T} t, Meta{I} i, Meta{J} j,
   else -> Error("No field named '" + fieldName + "' found on object")
 
 fun structFromJson{T}(JsonObject jo, Type{T} t) -> Either{T, Error}
-  fieldCount = reflectStructFieldCount(Type{T}());
+  fieldCount = reflectStructFieldCount(t);
   structFromJson(jo, t, --fieldCount, metaZero(), Tuple())
 
 // ---- Union from json object
@@ -163,7 +163,7 @@ fun unionFromJson{T}(JsonObject jo, Type{T} t, string type, JsonValue val, Meta{
 
 fun unionFromJson{T, Idx}(JsonObject jo, Type{T} t, string type, JsonValue val, Meta{Idx} idx) -> Either{T, Error}
   unionEntry = reflectUnionType(t, idx);
-  if equals(type, unionEntry.string(), StrComp.OrdinalIgnoreCase) ->
+  if equals(type, unionEntry.string(), StrComp.IgnoreCase) ->
   (
     entryVal = val.fromJson(unionEntry);
     if entryVal as reflect_union_type{T, Idx} entry -> T(entry)

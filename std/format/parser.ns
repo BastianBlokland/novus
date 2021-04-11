@@ -160,10 +160,10 @@ fun isOptional(ParseFlags flags)
 fun isTrailingSeperatorAllowed(ParseFlags flags)
   (flags & ParseFlags.AllowTrailingSeperator) != 0
 
-fun startsWith(ParseState s, char c, StrComp sc = StrComp.Ordinal)
+fun startsWith(ParseState s, char c, StrComp sc = StrComp.Normal)
   equals(s.str[s.pos], c, sc)
 
-fun startsWith(ParseState s, string text, StrComp sc = StrComp.Ordinal)
+fun startsWith(ParseState s, string text, StrComp sc = StrComp.Normal)
   startsWith(s.str, text, s.pos, sc)
 
 fun map{T, TResult}(ParseResult{T} res, function{T, TResult} func)
@@ -220,14 +220,14 @@ fun failParser(Error error = Error())
     s.failure(error)
   )
 
-fun matchParser(char c, StrComp sc = StrComp.Ordinal)
+fun matchParser(char c, StrComp sc = StrComp.Normal)
   Parser(lambda (ParseState s) -> ParseResult{char}
     if s.startsWith(c, sc) -> (s + 1).success(c)
     else                   -> s.failure(
       Error("Expected: '" + c.escapeForPrinting() + "', got: '" + s[0].escapeForPrinting() + "'"))
   )
 
-fun matchParser(string str, StrComp sc = StrComp.Ordinal)
+fun matchParser(string str, StrComp sc = StrComp.Normal)
   Parser(lambda (ParseState s) -> ParseResult{string}
     if s.startsWith(str, sc) -> (s + str.length()).success(str)
     else                     -> s.failure(
@@ -305,8 +305,8 @@ fun charParser()
 
 fun txtBoolParser()
   Parser(lambda (ParseState s) -> ParseResult{bool}
-    if s.startsWith("true", StrComp.OrdinalIgnoreCase)  -> (s + 4).success(true)
-    if s.startsWith("false", StrComp.OrdinalIgnoreCase) -> (s + 5).success(false)
+    if s.startsWith("true", StrComp.IgnoreCase)  -> (s + 4).success(true)
+    if s.startsWith("false", StrComp.IgnoreCase) -> (s + 5).success(false)
     else            -> s.failure(
       Error("Expected a boolean, got: '" + s[0].escapeForPrinting() + "'"))
   )
@@ -376,7 +376,7 @@ fun txtFloatParser()
   matchParser('+') >> txtPosFloatParser()                     |
   txtPosFloatParser()
 
-fun enumParser{Enum}(Type{Enum} t, StrComp sc = StrComp.Ordinal)
+fun enumParser{Enum}(Type{Enum} t, StrComp sc = StrComp.Normal)
   entries = reflectEnum(t).entries;
   Parser(lambda (ParseState s) -> ParseResult{Enum}
     res = entries.first(lambda (EnumEntry e) s.startsWith(e.key, sc));
@@ -857,7 +857,7 @@ assertEq(
 
 assertEq(enumParser(Type{Month}())("January"), Month.January)
 assertEq(enumParser(Type{Month}())("April"), Month.April)
-assertEq(enumParser(Type{Month}(), StrComp.OrdinalIgnoreCase)("aPriL"), Month.April)
+assertEq(enumParser(Type{Month}(), StrComp.IgnoreCase)("aPriL"), Month.April)
 assertEq(enumParser(Type{Month}())("December"), Month.December)
 
 assertIs(enumParser(Type{Month}())("december"), Type{ParseFailure}())

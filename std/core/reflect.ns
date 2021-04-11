@@ -342,7 +342,7 @@ fun reflectEnumValForKey{Enum, Idx}(Type{Enum} t, string key, StrComp comp, Meta
     ? reflectEnumVal(t, idx)
     : reflectEnumValForKey(t, key, comp, --idx)
 
-fun reflectEnumValForKey{Enum}(Type{Enum} t, string key, StrComp comp = StrComp.Ordinal) -> Option{int}
+fun reflectEnumValForKey{Enum}(Type{Enum} t, string key, StrComp comp = StrComp.Normal) -> Option{int}
   reflectEnumValForKey(t, key, comp, --reflectEnumCount(t))
 
 // ---- Lookup number of enum entries
