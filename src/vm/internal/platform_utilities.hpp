@@ -51,6 +51,7 @@ enum class PlatformError : uint32_t {
   FileIsDirectory       = 507,
   FileIsNotDirectory    = 508,
   FileDirectoryNotEmpty = 509,
+  FileAlreadyExists     = 510,
 
   TcpUnknownError              = 600,
   TcpInvalidSocket             = 601,

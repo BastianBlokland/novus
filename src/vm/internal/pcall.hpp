@@ -174,6 +174,11 @@ auto inline pcall(
 
     PUSH_REF(openFileStream(refAlloc, pErr, pathStrRef, mode, flags));
   } break;
+  case PCallCode::FileCreateDir: {
+    auto* pathStrRef = getStringRef(refAlloc, POP());
+    CHECK_ALLOC(pathStrRef);
+    PUSH_BOOL(createFileDir(pErr, pathStrRef));
+  } break;
   case PCallCode::FileRemove: {
     auto* pathStrRef = getStringRef(refAlloc, POP());
     CHECK_ALLOC(pathStrRef);

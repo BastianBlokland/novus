@@ -26,8 +26,9 @@ enum class PCallCode : uint8_t {
   ProcessSendSignal = 24, // (int, process) -> (int) Send a signal to the process, return success.
 
   FileOpenStream = 30, // (int, string) -> (stream)  Open a file at path with options.
-  FileRemove     = 31, // (string)      -> (int)     Remove the file at path, returns success.
-  FileRemoveDir  = 32, // (string)      -> (int)     Remove the file dir at path, returns success.
+  FileCreateDir  = 31, // (string)      -> (int)     Create a new directory at path, return success.
+  FileRemove     = 32, // (string)      -> (int)     Remove the file at path, returns success.
+  FileRemoveDir  = 33, // (string)      -> (int)     Remove the file dir at path, returns success.
 
   TcpOpenCon      = 40, // (int, int, string) -> (stream) Open a connect to a remote addr and port.
   TcpStartServer  = 41, // (int, int, int)    -> (stream) Start a tcp-server at port.

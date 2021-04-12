@@ -69,14 +69,17 @@ act fileAppend(Path p, string str) -> Option{Error}
 act fileAppend{T}(Path p, Writer{T} writer, T val) -> Option{Error}
   p.fileOpen(FileMode.Append).map(impure lambda (File f) f.write(writer, val))
 
+act fileCreateDir(Path p) -> Option{Error}
+  absPath     = p.pathAbsolute();
+  absPathStr  = absPath.string();
+  if intrinsic{file_create_directory}(absPathStr) -> None()
+  else -> platformError("Failed to create directory: '" + absPathStr + "'")
+
 act fileRemove(Path p) -> Option{Error}
   absPath     = p.pathAbsolute();
   absPathStr  = absPath.string();
-  if intrinsic{file_remove}(absPathStr) || (platformErrorCode() == PlatformError.FileIsDirectory &&
-                                            intrinsic{file_remove_directory}(absPathStr))
-    -> None()
-  else
-    -> platformError("Failed to remove file: '" + absPathStr + "'")
+  if intrinsic{file_remove}(absPathStr) || intrinsic{file_remove_directory}(absPathStr) -> None()
+  else -> platformError("Failed to remove file: '" + absPathStr + "'")
 
 // -- Tests
 

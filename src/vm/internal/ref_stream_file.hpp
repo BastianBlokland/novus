@@ -227,6 +227,70 @@ inline auto openFileStream(
 #endif
 }
 
+inline auto createFileDir(PlatformError* pErr, StringRef* path) -> bool {
+#if defined(_WIN32)
+
+  const bool success = ::CreateDirectoryA(path->getCharDataPtr(), nullptr);
+  if (!success) {
+    switch (::GetLastError()) {
+    case ERROR_ACCESS_DENIED:
+      *pErr = PlatformError::FileNoAccess;
+      break;
+    case ERROR_SHARING_VIOLATION:
+      *pErr = PlatformError::FileLocked;
+      break;
+    case ERROR_FILE_NOT_FOUND:
+    case ERROR_PATH_NOT_FOUND:
+    case ERROR_INVALID_DRIVE:
+      *pErr = PlatformError::FileNotFound;
+      break;
+    case ERROR_ALREADY_EXISTS:
+      *pErr = PlatformError::FileAlreadyExists;
+      break;
+    default:
+      *pErr = PlatformError::FileUnknownError;
+      break;
+    }
+  }
+  return success;
+
+#else // !_WIN32
+
+  const int newDirPerms = S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH; // RW for owner, and R for others.
+  const int res = ::mkdir(path->getCharDataPtr(), newDirPerms);
+  if (res != 0) {
+    switch (errno) {
+    case EACCES:
+    case EPERM:
+    case EROFS:
+      *pErr = PlatformError::FileNoAccess;
+      break;
+    case EDQUOT:
+    case ENOSPC:
+      *pErr = PlatformError::FileDiskFull;
+      break;
+    case EEXIST:
+      *pErr = PlatformError::FileAlreadyExists;
+      break;
+    case ENOTDIR:
+      *pErr = PlatformError::FileIsNotDirectory;
+      break;
+    case ENOENT:
+      *pErr = PlatformError::FileNotFound;
+      break;
+    case ENAMETOOLONG:
+      *pErr = PlatformError::FilePathTooLong;
+      break;
+    default:
+      *pErr = PlatformError::FileUnknownError;
+      break;
+    }
+  }
+  return res == 0;
+
+#endif // !_WIN32
+}
+
 inline auto removeFile(PlatformError* pErr, StringRef* path) -> bool {
 #if defined(_WIN32)
 
