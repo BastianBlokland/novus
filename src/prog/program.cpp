@@ -237,6 +237,8 @@ Program::Program() :
       sym::TypeSet{m_string, m_int},
       m_sysStream);
   m_funcDecls.registerIntrinsicAction(
+      *this, Fk::ActionFileType, "file_type", sym::TypeSet{m_string}, m_int);
+  m_funcDecls.registerIntrinsicAction(
       *this, Fk::ActionFileCreateDir, "file_create_directory", sym::TypeSet{m_string}, m_bool);
   m_funcDecls.registerIntrinsicAction(
       *this, Fk::ActionFileRemove, "file_remove", sym::TypeSet{m_string}, m_bool);

@@ -13,6 +13,14 @@ enum FileMode =
   Open,
   Append
 
+enum FileType =
+  None      : 0,
+  Regular   : 1,
+  Directory : 2,
+  Socket    : 3,
+  Character : 4,
+  Unknown   : 5
+
 enum FileFlags =
   None       : 0b0,
   AutoRemove : 0b1
@@ -69,6 +77,14 @@ act fileAppend(Path p, string str) -> Option{Error}
 act fileAppend{T}(Path p, Writer{T} writer, T val) -> Option{Error}
   p.fileOpen(FileMode.Append).map(impure lambda (File f) f.write(writer, val))
 
+act fileExists(Path p)    p.fileType() != FileType.None
+act fileDirExists(Path p) p.fileType() == FileType.Directory
+
+act fileType(Path p) -> FileType
+  absPath     = p.pathAbsolute();
+  absPathStr  = absPath.string();
+  FileType(intrinsic{file_type}(absPathStr))
+
 act fileCreateDir(Path p) -> Option{Error}
   absPath     = p.pathAbsolute();
   absPathStr  = absPath.string();
@@ -123,3 +139,19 @@ assertIs(
   fileOpen(p, FileMode.Append, FileFlags.AutoRemove), Type{Error}())
 
 assertIs(fileRemove(pathCurrent() / "non-existing-file"), Type{Error}())
+
+assert(fileType(pathCurrent() / "non-existing-file") == FileType.None)
+
+assert(
+  p = pathCurrent() / "file-test7.tmp";
+  fileType(p) == FileType.None &&
+  fileOpen(p, FileMode.Create, FileFlags.AutoRemove) is File &&
+  fileType(p) == FileType.Regular)
+
+assert(
+  p = pathCurrent() / "file-test8";
+  fileType(p) == FileType.None &&
+  fileCreateDir(p) is None &&
+  fileType(p) == FileType.Directory &&
+  fileRemove(p) is None &&
+  fileType(p) == FileType.None)

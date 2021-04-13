@@ -11,6 +11,15 @@
 
 namespace vm::internal {
 
+enum class FileType : uint8_t {
+  None      = 0,
+  Regular   = 1,
+  Directory = 2,
+  Socket    = 3,
+  Character = 4,
+  Unknown   = 5,
+};
+
 enum class FileStreamMode : uint8_t {
   Create = 0,
   Open   = 1,
@@ -225,6 +234,41 @@ inline auto openFileStream(
   return alloc->allocPlain<FileStreamRef>(file, filePath, f);
 
 #endif
+}
+
+inline auto getFileType(StringRef* path) -> FileType {
+#if defined(_WIN32)
+
+  const DWORD attributes = ::GetFileAttributesA(path->getCharDataPtr());
+  if (attributes == INVALID_FILE_ATTRIBUTES) {
+    return FileType::None;
+  }
+  if (attributes & FILE_ATTRIBUTE_DIRECTORY) {
+    return FileType::Directory;
+  }
+    return FileType::Regular;
+
+#else // !_WIN32
+
+  struct stat statResult;
+  if (::stat(path->getCharDataPtr(), &statResult) != 0) {
+    return FileType::None;
+  }
+  if (S_ISREG(statResult.st_mode)) {
+    return FileType::Regular;
+  }
+  if (S_ISDIR(statResult.st_mode)) {
+    return FileType::Directory;
+  }
+  if (S_ISSOCK(statResult.st_mode)) {
+    return FileType::Socket;
+  }
+  if (S_ISCHR(statResult.st_mode)) {
+    return FileType::Character;
+  }
+  return FileType::Unknown;
+
+#endif // !_WIN32
 }
 
 inline auto createFileDir(PlatformError* pErr, StringRef* path) -> bool {

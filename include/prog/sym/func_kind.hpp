@@ -119,6 +119,7 @@ enum class FuncKind {
   ActionProcessSendSignal, // Send a signal to the given process.
 
   ActionFileOpenStream, // Open a file stream.
+  ActionFileType,       // Lookup the file type.
   ActionFileCreateDir,  // Create a new file directory.
   ActionFileRemove,     // Delete a file from the filesystem.
   ActionFileRemoveDir,  // Delete a file directory from the filesystem.
