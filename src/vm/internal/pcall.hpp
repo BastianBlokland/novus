@@ -194,6 +194,13 @@ auto inline pcall(
     CHECK_ALLOC(pathStrRef);
     PUSH_BOOL(removeFileDir(pErr, pathStrRef));
   } break;
+  case PCallCode::FileRename: {
+    auto* newStrRef = getStringRef(refAlloc, POP());
+    CHECK_ALLOC(newStrRef);
+    auto* oldStrRef = getStringRef(refAlloc, POP());
+    CHECK_ALLOC(oldStrRef);
+    PUSH_BOOL(renameFile(pErr, oldStrRef, newStrRef));
+  } break;
 
   case PCallCode::TcpOpenCon: {
     const auto port         = POP_INT();

@@ -123,6 +123,7 @@ enum class FuncKind {
   ActionFileCreateDir,  // Create a new file directory.
   ActionFileRemove,     // Delete a file from the filesystem.
   ActionFileRemoveDir,  // Delete a file directory from the filesystem.
+  ActionFileRename,     // Rename a file.
 
   ActionTcpOpenCon,      // Open a tcp connection to a remote ip address and port.
   ActionTcpStartServer,  // Start a tcp server.

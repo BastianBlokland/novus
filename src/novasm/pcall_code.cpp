@@ -58,6 +58,9 @@ auto operator<<(std::ostream& out, const PCallCode& rhs) noexcept -> std::ostrea
   case PCallCode::FileRemoveDir:
     out << "file-remove-dir";
     break;
+  case PCallCode::FileRename:
+    out << "file-rename";
+    break;
 
   case PCallCode::TcpOpenCon:
     out << "tcp-open-con";

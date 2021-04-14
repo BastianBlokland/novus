@@ -97,6 +97,13 @@ act fileRemove(Path p) -> Option{Error}
   if intrinsic{file_remove}(absPathStr) || intrinsic{file_remove_directory}(absPathStr) -> None()
   else -> platformError("Failed to remove file: '" + absPathStr + "'")
 
+act fileRename(Path old, Path new) -> Option{Error}
+  absOldPathStr = old.pathAbsolute().string();
+  absNewPathStr = new.pathAbsolute().string();
+  if intrinsic{file_rename}(absOldPathStr, absNewPathStr) -> None()
+  else -> platformError("Failed to rename file: '" + absOldPathStr + "' to '" + absNewPathStr + '\'')
+
+
 // -- Tests
 
 assertEq(
@@ -155,3 +162,14 @@ assert(
   fileType(p) == FileType.Directory &&
   fileRemove(p) is None &&
   fileType(p) == FileType.None)
+
+assert(
+  p1 = pathCurrent() / "file-test9.tmp";
+  p2 = pathCurrent() / "file-test10.tmp";
+  fileOpen(p1, FileMode.Create, FileFlags.AutoRemove) is File &&
+  fileType(p1) == FileType.Regular &&
+  fileType(p2) == FileType.None &&
+  fileRename(p1, p2) is None &&
+  fileType(p1) == FileType.None &&
+  fileType(p2) == FileType.Regular &&
+  fileRename(p2, p1) is None)

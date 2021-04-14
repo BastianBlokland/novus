@@ -246,7 +246,7 @@ inline auto getFileType(StringRef* path) -> FileType {
   if (attributes & FILE_ATTRIBUTE_DIRECTORY) {
     return FileType::Directory;
   }
-    return FileType::Regular;
+  return FileType::Regular;
 
 #else // !_WIN32
 
@@ -430,6 +430,74 @@ inline auto removeFileDir(PlatformError* pErr, StringRef* path) -> bool {
       break;
     case ENOTDIR:
       *pErr = PlatformError::FileIsNotDirectory;
+      break;
+    case EEXIST:
+    case ENOTEMPTY:
+      *pErr = PlatformError::FileDirectoryNotEmpty;
+      break;
+    default:
+      *pErr = PlatformError::FileUnknownError;
+      break;
+    }
+  }
+  return res == 0;
+
+#endif // !_WIN32
+}
+
+inline auto renameFile(PlatformError* pErr, StringRef* oldPath, StringRef* newPath) -> bool {
+#if defined(_WIN32)
+
+  const bool success = ::MoveFileExA(
+      oldPath->getCharDataPtr(), newPath->getCharDataPtr(), MOVEFILE_REPLACE_EXISTING);
+  if (!success) {
+    switch (::GetLastError()) {
+    case ERROR_ACCESS_DENIED:
+      *pErr = PlatformError::FileNoAccess;
+      break;
+    case ERROR_SHARING_VIOLATION:
+      *pErr = PlatformError::FileLocked;
+      break;
+    case ERROR_FILE_NOT_FOUND:
+    case ERROR_PATH_NOT_FOUND:
+    case ERROR_INVALID_DRIVE:
+      *pErr = PlatformError::FileNotFound;
+      break;
+    case ERROR_BUFFER_OVERFLOW:
+      *pErr = PlatformError::FilePathTooLong;
+      break;
+    default:
+      *pErr = PlatformError::FileUnknownError;
+      break;
+    }
+  }
+  return success;
+
+#else // !_WIN32
+
+  const int res = ::rename(oldPath->getCharDataPtr(), newPath->getCharDataPtr());
+  if (res != 0) {
+    switch (errno) {
+    case EACCES:
+    case EPERM:
+    case EROFS:
+      *pErr = PlatformError::FileNoAccess;
+      break;
+    case EDQUOT:
+    case ENOSPC:
+      *pErr = PlatformError::FileDiskFull;
+      break;
+    case ENOENT:
+      *pErr = PlatformError::FileNotFound;
+      break;
+    case EISDIR:
+      *pErr = PlatformError::FileIsDirectory;
+      break;
+    case ENOTDIR:
+      *pErr = PlatformError::FileIsNotDirectory;
+      break;
+    case ENAMETOOLONG:
+      *pErr = PlatformError::FilePathTooLong;
       break;
     case EEXIST:
     case ENOTEMPTY:
