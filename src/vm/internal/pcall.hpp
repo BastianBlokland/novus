@@ -179,6 +179,11 @@ auto inline pcall(
     CHECK_ALLOC(pathStrRef);
     PUSH_INT(static_cast<int32_t>(getFileType(pathStrRef)));
   } break;
+  case PCallCode::FileModTimeMicroSinceEpoch: {
+    auto* pathStrRef = getStringRef(refAlloc, POP());
+    CHECK_ALLOC(pathStrRef);
+    PUSH_LONG(getFileModTimeSinceMicro(pErr, pathStrRef));
+  } break;
   case PCallCode::FileCreateDir: {
     auto* pathStrRef = getStringRef(refAlloc, POP());
     CHECK_ALLOC(pathStrRef);

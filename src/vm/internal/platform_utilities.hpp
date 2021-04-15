@@ -1,4 +1,5 @@
 #pragma once
+#include "os_include.hpp"
 #include <cstdint>
 
 namespace vm::internal {
@@ -88,5 +89,21 @@ auto setupPlatformUtilities() noexcept -> void;
 
 [[nodiscard]] auto platformHasEnv(const StringRef* name) -> bool;
 [[nodiscard]] auto platformGetEnv(const StringRef* name, RefAllocator* refAlloc) -> StringRef*;
+
+#if defined(_WIN32)
+[[nodiscard]] inline auto winFileTimeToMicroSinceEpoch(const FILETIME& fileTime) noexcept
+    -> int64_t {
+
+  // Windows FILETIME is in 100 ns ticks since January 1 1601.
+  constexpr int64_t winEpochToUnixEpoch = 116'444'736'000'000'000LL;
+  constexpr int64_t winTickToMicro      = 10LL;
+
+  LARGE_INTEGER winTicks;
+  winTicks.LowPart  = fileTime.dwLowDateTime;
+  winTicks.HighPart = fileTime.dwHighDateTime;
+
+  return (winTicks.QuadPart - winEpochToUnixEpoch) / winTickToMicro;
+}
+#endif
 
 } // namespace vm::internal

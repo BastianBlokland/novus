@@ -19,6 +19,9 @@ fun >(DateTime dt1, DateTime dt2) dt1.microSinceEpoch > dt2.microSinceEpoch
 fun +(DateTime dt, Duration d)    DateTime(dt.microSinceEpoch + d.microseconds(), dt.zone)
 fun -(DateTime dt, Duration d)    DateTime(dt.microSinceEpoch - d.microseconds(), dt.zone)
 
+fun ==(DateTime dt1, DateTime dt2)
+  dt1.microSinceEpoch == dt2.microSinceEpoch
+
 // Jan 1 1970 (Unix time)
 fun timeEpoch() DateTime(0L, timezoneUTC())
 
@@ -405,7 +408,7 @@ fun dateTimePrettyWriter(bool includeMillies = false) -> Writer{DateTime}
 // Get a DateTime from the current system clock.
 act timeNow() DateTime(intrinsic{clock_microsinceepoch}(), timezone())
 
-// Convert a DateTime to a DateTimeLocal.
+// Convert a DateTime to be based on the local timezone.
 act timeToLocal(DateTime dt) DateTime(dt.microSinceEpoch, timezone())
 
 // Get the local timezone offset.

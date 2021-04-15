@@ -48,22 +48,13 @@ auto clockMicroSinceEpoch() noexcept -> int64_t {
 
 #if defined(_WIN32)
 
-  // Windows FILETIME is in 100 ns ticks since January 1 1601.
-
-  constexpr int64_t winEpochToUnixEpoch = 116'444'736'000'000'000LL;
-  constexpr int64_t winTickToMicro      = 10LL;
-
   FILETIME fileTime;
 #if (_WIN32_WINNT >= _WIN32_WINNT_WIN8)
   ::GetSystemTimePreciseAsFileTime(&fileTime);
 #else
   ::GetSystemTimeAsFileTime(&fileTime);
 #endif
-  LARGE_INTEGER winTicks;
-  winTicks.LowPart  = fileTime.dwLowDateTime;
-  winTicks.HighPart = fileTime.dwHighDateTime;
-
-  return (winTicks.QuadPart - winEpochToUnixEpoch) / winTickToMicro;
+  return winFileTimeToMicroSinceEpoch(fileTime);
 
 #else // !_WIN32
 

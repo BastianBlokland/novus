@@ -118,12 +118,13 @@ enum class FuncKind {
   ActionProcessGetId,      // Get the native process id for the given process.
   ActionProcessSendSignal, // Send a signal to the given process.
 
-  ActionFileOpenStream, // Open a file stream.
-  ActionFileType,       // Lookup the file type.
-  ActionFileCreateDir,  // Create a new file directory.
-  ActionFileRemove,     // Delete a file from the filesystem.
-  ActionFileRemoveDir,  // Delete a file directory from the filesystem.
-  ActionFileRename,     // Rename a file.
+  ActionFileOpenStream,             // Open a file stream.
+  ActionFileType,                   // Lookup the file type.
+  ActionFileModTimeMicroSinceEpoch, // Lookup the last modification time for a file.
+  ActionFileCreateDir,              // Create a new file directory.
+  ActionFileRemove,                 // Delete a file from the filesystem.
+  ActionFileRemoveDir,              // Delete a file directory from the filesystem.
+  ActionFileRename,                 // Rename a file.
 
   ActionTcpOpenCon,      // Open a tcp connection to a remote ip address and port.
   ActionTcpStartServer,  // Start a tcp server.

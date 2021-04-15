@@ -25,12 +25,13 @@ enum class PCallCode : uint8_t {
   ProcessGetId      = 23, // (process)      -> (long) Retrieve the native process id.
   ProcessSendSignal = 24, // (int, process) -> (int) Send a signal to the process, return success.
 
-  FileOpenStream = 30, // (int, string) -> (stream)  Open a file at path with options.
-  FileType       = 31, // (string)      -> (int)     Lookup the file type at given path.
-  FileCreateDir  = 32, // (string)      -> (int)     Create a new directory at path, return success.
-  FileRemove     = 33, // (string)      -> (int)     Remove the file at path, returns success.
-  FileRemoveDir  = 34, // (string)      -> (int)     Remove the file dir at path, returns success.
-  FileRename     = 35, // (string, string) -> (int)  Rename a file, returns success.
+  FileOpenStream             = 30, // (int, string) -> (stream)  Open a file at path with options.
+  FileType                   = 31, // (string)      -> (int)     Lookup the file type at given path.
+  FileModTimeMicroSinceEpoch = 32, // (string) -> (long)  Last file modification time.
+  FileCreateDir = 33, // (string)      -> (int)     Create a new directory at path, return success.
+  FileRemove    = 34, // (string)      -> (int)     Remove the file at path, returns success.
+  FileRemoveDir = 35, // (string)      -> (int)     Remove the file dir at path, returns success.
+  FileRename    = 36, // (string, string) -> (int)  Rename a file, returns success.
 
   TcpOpenCon      = 40, // (int, int, string) -> (stream) Open a connect to a remote addr and port.
   TcpStartServer  = 41, // (int, int, int)    -> (stream) Start a tcp-server at port.
@@ -78,6 +79,7 @@ enum class PCallCode : uint8_t {
  * - ProcessSendSignal, error is set when false is returned.
  * - FileOpenStream, error is set when an invalid stream is returned.
  * - FileRemove, error is set when false is returned.
+ * - FileModTimeMicroSinceEpoch, error is set when a negative number is returned.
  * - FileRemoveDir, error is set when false is returned.
  * - FileRename, error is set when false is returned.
  * - TcpOpenCon, error is set when an invalid stream is returned.

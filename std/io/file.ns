@@ -81,19 +81,22 @@ act fileExists(Path p)    p.fileType() != FileType.None
 act fileDirExists(Path p) p.fileType() == FileType.Directory
 
 act fileType(Path p) -> FileType
-  absPath     = p.pathAbsolute();
-  absPathStr  = absPath.string();
+  absPathStr = p.pathAbsolute().string();
   FileType(intrinsic{file_type}(absPathStr))
 
+act fileModTime(Path p) -> Either{DateTime, Error}
+  absPathStr = p.pathAbsolute().string();
+  microSinceEpoch = intrinsic{file_modification_time_microsinceepoch}(absPathStr);
+  if microSinceEpoch >= 0 -> DateTime(microSinceEpoch, timezone())
+  else                    -> platformError("Failed to get file modification time: '" + absPathStr + "'")
+
 act fileCreateDir(Path p) -> Option{Error}
-  absPath     = p.pathAbsolute();
-  absPathStr  = absPath.string();
+  absPathStr = p.pathAbsolute().string();
   if intrinsic{file_create_directory}(absPathStr) -> None()
   else -> platformError("Failed to create directory: '" + absPathStr + "'")
 
 act fileRemove(Path p) -> Option{Error}
-  absPath     = p.pathAbsolute();
-  absPathStr  = absPath.string();
+  absPathStr = p.pathAbsolute().string();
   if intrinsic{file_remove}(absPathStr) || intrinsic{file_remove_directory}(absPathStr) -> None()
   else -> platformError("Failed to remove file: '" + absPathStr + "'")
 

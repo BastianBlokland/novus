@@ -271,6 +271,63 @@ inline auto getFileType(StringRef* path) -> FileType {
 #endif // !_WIN32
 }
 
+inline auto getFileModTimeSinceMicro(PlatformError* pErr, StringRef* path) -> int64_t {
+#if defined(_WIN32)
+
+  WIN32_FILE_ATTRIBUTE_DATA data;
+  const bool success = ::GetFileAttributesExA(path->getCharDataPtr(), GetFileExInfoStandard, &data);
+
+  if (!success) {
+    switch (::GetLastError()) {
+    case ERROR_ACCESS_DENIED:
+      *pErr = PlatformError::FileNoAccess;
+      break;
+    case ERROR_FILE_NOT_FOUND:
+    case ERROR_PATH_NOT_FOUND:
+    case ERROR_INVALID_DRIVE:
+      *pErr = PlatformError::FileNotFound;
+      break;
+    default:
+      *pErr = PlatformError::FileUnknownError;
+      break;
+    }
+    return -1L;
+  }
+
+  return winFileTimeToMicroSinceEpoch(data.ftLastWriteTime);
+
+#else // !_WIN32
+
+  struct stat statResult;
+  if (::stat(path->getCharDataPtr(), &statResult) != 0) {
+    switch (errno) {
+    case EACCES:
+      *pErr = PlatformError::FileNoAccess;
+      break;
+    case ENOTDIR:
+      *pErr = PlatformError::FileIsNotDirectory;
+      break;
+    case ENOENT:
+      *pErr = PlatformError::FileNotFound;
+      break;
+    case ENAMETOOLONG:
+      *pErr = PlatformError::FilePathTooLong;
+      break;
+    default:
+      *pErr = PlatformError::FileUnknownError;
+      break;
+    }
+    return -1L;
+  }
+#if defined(__APPLE__)
+  return statResult.st_mtimespec.tv_sec * 1'000'000L + statResult.st_mtimespec.tv_nsec / 1'000;
+#else  // !__APPLE__
+  return statResult.st_mtim.tv_sec * 1'000'000L + statResult.st_mtim.tv_nsec / 1'000;
+#endif // !__APPLE__
+
+#endif // !_WIN32
+}
+
 inline auto createFileDir(PlatformError* pErr, StringRef* path) -> bool {
 #if defined(_WIN32)
 
