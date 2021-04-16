@@ -1,4 +1,5 @@
 import "std/core/bits.ns"
+import "std/core/byte-size.ns"
 import "std/core/either.ns"
 import "std/core/func.ns"
 import "std/core/future.ns"

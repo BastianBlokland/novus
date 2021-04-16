@@ -159,9 +159,7 @@ fun /(Duration d1, Duration d2)   d1.ns / d2.ns
 fun /(Duration d1, long l)        Duration(d1.ns / l)
 fun %(Duration d1, Duration d2)   Duration(d1.ns % d2.ns)
 fun <(Duration d1, Duration d2)   d1.ns < d2.ns
-fun <=(Duration d1, Duration d2)  d1.ns <= d2.ns
 fun >(Duration d1, Duration d2)   d1.ns > d2.ns
-fun >=(Duration d1, Duration d2)  d1.ns >= d2.ns
 
 fun minDuration() Duration(0x8000_0000_0000_0000L)
 fun maxDuration() Duration(0x7FFF_FFFF_FFFF_FFFFL)
