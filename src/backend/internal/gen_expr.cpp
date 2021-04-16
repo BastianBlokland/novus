@@ -452,6 +452,9 @@ auto GenExpr::visit(const prog::expr::CallExprNode& n) -> void {
   case prog::sym::FuncKind::ActionFileModTimeMicroSinceEpoch:
     m_asmb->addPCall(novasm::PCallCode::FileModTimeMicroSinceEpoch);
     break;
+  case prog::sym::FuncKind::ActionFileSize:
+    m_asmb->addPCall(novasm::PCallCode::FileSize);
+    break;
   case prog::sym::FuncKind::ActionFileCreateDir:
     m_asmb->addPCall(novasm::PCallCode::FileCreateDir);
     break;

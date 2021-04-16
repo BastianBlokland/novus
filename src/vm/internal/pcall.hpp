@@ -184,6 +184,11 @@ auto inline pcall(
     CHECK_ALLOC(pathStrRef);
     PUSH_LONG(getFileModTimeSinceMicro(pErr, pathStrRef));
   } break;
+  case PCallCode::FileSize: {
+    auto* pathStrRef = getStringRef(refAlloc, POP());
+    CHECK_ALLOC(pathStrRef);
+    PUSH_LONG(getFileSize(pErr, pathStrRef));
+  } break;
   case PCallCode::FileCreateDir: {
     auto* pathStrRef = getStringRef(refAlloc, POP());
     CHECK_ALLOC(pathStrRef);

@@ -52,6 +52,9 @@ auto operator<<(std::ostream& out, const PCallCode& rhs) noexcept -> std::ostrea
   case PCallCode::FileModTimeMicroSinceEpoch:
     out << "file-mod-time-micro-since-epoch";
     break;
+  case PCallCode::FileSize:
+    out << "file-size";
+    break;
   case PCallCode::FileCreateDir:
     out << "file-create-dir";
     break;

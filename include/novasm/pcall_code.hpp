@@ -28,10 +28,11 @@ enum class PCallCode : uint8_t {
   FileOpenStream             = 30, // (int, string) -> (stream)  Open a file at path with options.
   FileType                   = 31, // (string)      -> (int)     Lookup the file type at given path.
   FileModTimeMicroSinceEpoch = 32, // (string) -> (long)  Last file modification time.
-  FileCreateDir = 33, // (string)      -> (int)     Create a new directory at path, return success.
-  FileRemove    = 34, // (string)      -> (int)     Remove the file at path, returns success.
-  FileRemoveDir = 35, // (string)      -> (int)     Remove the file dir at path, returns success.
-  FileRename    = 36, // (string, string) -> (int)  Rename a file, returns success.
+  FileSize                   = 33, // (string) -> (long)  Lookup the file size in bytes.
+  FileCreateDir = 34, // (string)      -> (int)     Create a new directory at path, return success.
+  FileRemove    = 35, // (string)      -> (int)     Remove the file at path, returns success.
+  FileRemoveDir = 36, // (string)      -> (int)     Remove the file dir at path, returns success.
+  FileRename    = 37, // (string, string) -> (int)  Rename a file, returns success.
 
   TcpOpenCon      = 40, // (int, int, string) -> (stream) Open a connect to a remote addr and port.
   TcpStartServer  = 41, // (int, int, int)    -> (stream) Start a tcp-server at port.
@@ -80,6 +81,7 @@ enum class PCallCode : uint8_t {
  * - FileOpenStream, error is set when an invalid stream is returned.
  * - FileRemove, error is set when false is returned.
  * - FileModTimeMicroSinceEpoch, error is set when a negative number is returned.
+ * - FileSize, error is set when a negative number is returned.
  * - FileRemoveDir, error is set when false is returned.
  * - FileRename, error is set when false is returned.
  * - TcpOpenCon, error is set when an invalid stream is returned.

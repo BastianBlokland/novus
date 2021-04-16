@@ -328,6 +328,61 @@ inline auto getFileModTimeSinceMicro(PlatformError* pErr, StringRef* path) -> in
 #endif // !_WIN32
 }
 
+inline auto getFileSize(PlatformError* pErr, StringRef* path) -> int64_t {
+#if defined(_WIN32)
+
+  WIN32_FILE_ATTRIBUTE_DATA data;
+  const bool success = ::GetFileAttributesExA(path->getCharDataPtr(), GetFileExInfoStandard, &data);
+
+  if (!success) {
+    switch (::GetLastError()) {
+    case ERROR_ACCESS_DENIED:
+      *pErr = PlatformError::FileNoAccess;
+      break;
+    case ERROR_FILE_NOT_FOUND:
+    case ERROR_PATH_NOT_FOUND:
+    case ERROR_INVALID_DRIVE:
+      *pErr = PlatformError::FileNotFound;
+      break;
+    default:
+      *pErr = PlatformError::FileUnknownError;
+      break;
+    }
+    return -1L;
+  }
+  LARGE_INTEGER fileSize;
+  fileSize.LowPart  = data.nFileSizeLow;
+  fileSize.HighPart = data.nFileSizeHigh;
+  return static_cast<int64_t>(fileSize.QuadPart);
+
+#else // !_WIN32
+
+  struct stat statResult;
+  if (::stat(path->getCharDataPtr(), &statResult) != 0) {
+    switch (errno) {
+    case EACCES:
+      *pErr = PlatformError::FileNoAccess;
+      break;
+    case ENOTDIR:
+      *pErr = PlatformError::FileIsNotDirectory;
+      break;
+    case ENOENT:
+      *pErr = PlatformError::FileNotFound;
+      break;
+    case ENAMETOOLONG:
+      *pErr = PlatformError::FilePathTooLong;
+      break;
+    default:
+      *pErr = PlatformError::FileUnknownError;
+      break;
+    }
+    return -1L;
+  }
+  return static_cast<int64_t>(statResult.st_size);
+
+#endif // !_WIN32
+}
+
 inline auto createFileDir(PlatformError* pErr, StringRef* path) -> bool {
 #if defined(_WIN32)
 

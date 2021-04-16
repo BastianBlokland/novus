@@ -121,6 +121,7 @@ enum class FuncKind {
   ActionFileOpenStream,             // Open a file stream.
   ActionFileType,                   // Lookup the file type.
   ActionFileModTimeMicroSinceEpoch, // Lookup the last modification time for a file.
+  ActionFileSize,                   // Lookup the file size in bytes.
   ActionFileCreateDir,              // Create a new file directory.
   ActionFileRemove,                 // Delete a file from the filesystem.
   ActionFileRemoveDir,              // Delete a file directory from the filesystem.

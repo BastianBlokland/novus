@@ -90,6 +90,12 @@ act fileModTime(Path p) -> Either{DateTime, Error}
   if microSinceEpoch >= 0 -> DateTime(microSinceEpoch, timezone())
   else                    -> platformError("Failed to get file modification time: '" + absPathStr + "'")
 
+act fileSize(Path p) -> Either{ByteSize, Error}
+  absPathStr = p.pathAbsolute().string();
+  size = intrinsic{file_size}(absPathStr);
+  if size >= 0  -> ByteSize(size)
+  else          -> platformError("Failed to get file size for: '" + absPathStr + "'")
+
 act fileCreateDir(Path p) -> Option{Error}
   absPathStr = p.pathAbsolute().string();
   if intrinsic{file_create_directory}(absPathStr) -> None()
@@ -105,7 +111,6 @@ act fileRename(Path old, Path new) -> Option{Error}
   absNewPathStr = new.pathAbsolute().string();
   if intrinsic{file_rename}(absOldPathStr, absNewPathStr) -> None()
   else -> platformError("Failed to rename file: '" + absOldPathStr + "' to '" + absNewPathStr + '\'')
-
 
 // -- Tests
 
@@ -167,12 +172,7 @@ assert(
   fileType(p) == FileType.None)
 
 assert(
-  p1 = pathCurrent() / "file-test9.tmp";
-  p2 = pathCurrent() / "file-test10.tmp";
-  fileOpen(p1, FileMode.Create, FileFlags.AutoRemove) is File &&
-  fileType(p1) == FileType.Regular &&
-  fileType(p2) == FileType.None &&
-  fileRename(p1, p2) is None &&
-  fileType(p1) == FileType.None &&
-  fileType(p2) == FileType.Regular &&
-  fileRename(p2, p1) is None)
+  p = pathCurrent() / "file-test11.tmp";
+  s = "Hello World";
+  f = fileOpen(p, FileMode.Create, FileFlags.AutoRemove).map( impure lambda (File f) f.write(s));
+  fileSize(p) == ByteSize(s.length()))
