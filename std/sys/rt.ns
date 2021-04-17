@@ -12,6 +12,7 @@ enum Platform =
   Windows : 3
 
 enum PlatformError =
+  None                          : 000,
   Unknown                       : 001,
   FeatureNetworkNotEnabled      : 100,
   StreamOptionsNotSupported     : 200,
@@ -69,6 +70,7 @@ enum PlatformError =
 // -- Conversions
 
 fun noinline string(PlatformError err)
+  if err == PlatformError.None                          -> "None"
   if err == PlatformError.Unknown                       -> "Unknown"
   if err == PlatformError.FeatureNetworkNotEnabled      -> "Network feature not enabled"
   if err == PlatformError.StreamOptionsNotSupported     -> "Stream does not support the given options"

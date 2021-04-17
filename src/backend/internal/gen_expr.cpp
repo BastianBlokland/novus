@@ -467,6 +467,9 @@ auto GenExpr::visit(const prog::expr::CallExprNode& n) -> void {
   case prog::sym::FuncKind::ActionFileRename:
     m_asmb->addPCall(novasm::PCallCode::FileRename);
     break;
+  case prog::sym::FuncKind::ActionFileListDir:
+    m_asmb->addPCall(novasm::PCallCode::FileListDir);
+    break;
 
   case prog::sym::FuncKind::ActionTcpOpenCon:
     m_asmb->addPCall(novasm::PCallCode::TcpOpenCon);

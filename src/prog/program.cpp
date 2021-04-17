@@ -254,6 +254,8 @@ Program::Program() :
       *this, Fk::ActionFileRemoveDir, "file_remove_directory", sym::TypeSet{m_string}, m_bool);
   m_funcDecls.registerIntrinsicAction(
       *this, Fk::ActionFileRename, "file_rename", sym::TypeSet{m_string, m_string}, m_bool);
+  m_funcDecls.registerIntrinsicAction(
+      *this, Fk::ActionFileListDir, "file_list_dir", sym::TypeSet{m_string, m_int}, m_string);
 
   m_funcDecls.registerIntrinsicAction(
       *this,

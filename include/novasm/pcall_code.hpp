@@ -33,6 +33,7 @@ enum class PCallCode : uint8_t {
   FileRemove    = 35, // (string)      -> (int)     Remove the file at path, returns success.
   FileRemoveDir = 36, // (string)      -> (int)     Remove the file dir at path, returns success.
   FileRename    = 37, // (string, string) -> (int)  Rename a file, returns success.
+  FileListDir   = 38, // (int, string) -> (string)  List all files in a directory newline separated.
 
   TcpOpenCon      = 40, // (int, int, string) -> (stream) Open a connect to a remote addr and port.
   TcpStartServer  = 41, // (int, int, int)    -> (stream) Start a tcp-server at port.
@@ -84,6 +85,7 @@ enum class PCallCode : uint8_t {
  * - FileSize, error is set when a negative number is returned.
  * - FileRemoveDir, error is set when false is returned.
  * - FileRename, error is set when false is returned.
+ * - FileListDir, error is always set, error is 0 for success.
  * - TcpOpenCon, error is set when an invalid stream is returned.
  * - TcpStartServer, error is set when an invalid stream is returned.
  * - TcpAcceptCon, error is set when an invalid stream is returned.
