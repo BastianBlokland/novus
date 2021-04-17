@@ -105,6 +105,10 @@ act fileCreateDir(Path p) -> Option{Error}
   if intrinsic{file_create_directory}(absPathStr) -> None()
   else -> platformError("Failed to create directory: '" + absPathStr + "'")
 
+act fileCreatePath(Path p) -> Option{Error}
+  if p.fileDirExists()  -> None()
+  else                  -> actSeq(lazy fileCreatePath(p.parent()), lazy fileCreateDir(p))
+
 act fileRemove(Path p) -> Option{Error}
   absPathStr = p.pathAbsolute().string();
   if intrinsic{file_remove}(absPathStr) || intrinsic{file_remove_directory}(absPathStr) -> None()
