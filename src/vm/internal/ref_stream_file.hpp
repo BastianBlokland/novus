@@ -529,6 +529,8 @@ inline auto getFilePlatformError() noexcept -> PlatformError {
   case EPERM:
   case EROFS:
     return PlatformError::FileNoAccess;
+  case ETXTBSY:
+    return PlatformError::FileLocked;
   case EDQUOT:
   case ENOSPC:
     return PlatformError::FileDiskFull;
