@@ -69,6 +69,11 @@ public:
 
   auto readString(ExecutorHandle* execHandle, PlatformError* pErr, StringRef* str) noexcept
       -> bool {
+
+    if (unlikely(m_mode == FileStreamMode::Append)) {
+      *pErr = PlatformError::StreamReadNotSupported;
+      return false;
+    }
     if (unlikely(str->getSize() == 0)) {
       return true;
     }
@@ -99,6 +104,10 @@ public:
   auto writeString(ExecutorHandle* execHandle, PlatformError* pErr, StringRef* str) noexcept
       -> bool {
 
+    if (unlikely(m_mode == FileStreamMode::OpenReadOnly)) {
+      *pErr = PlatformError::StreamWriteNotSupported;
+      return false;
+    }
     if (unlikely(str->getSize() == 0)) {
       return true;
     }
@@ -132,13 +141,21 @@ public:
   }
 
 private:
+  FileStreamMode m_mode;
   FileStreamFlags m_flags;
   FileHandle m_fileHandle;
   gsl::owner<char*> m_filePath;
 
   inline explicit FileStreamRef(
-      FileHandle fileHandle, gsl::owner<char*> filePath, FileStreamFlags flags) noexcept :
-      Ref{getKind()}, m_flags{flags}, m_fileHandle{fileHandle}, m_filePath{filePath} {}
+      FileHandle fileHandle,
+      gsl::owner<char*> filePath,
+      FileStreamMode mode,
+      FileStreamFlags flags) noexcept :
+      Ref{getKind()},
+      m_mode{mode},
+      m_flags{flags},
+      m_fileHandle{fileHandle},
+      m_filePath{filePath} {}
 };
 
 inline auto openFileStream(
@@ -179,7 +196,7 @@ inline auto openFileStream(
   if (!fileIsValid(file)) {
     *pErr = getFilePlatformError();
   }
-  return alloc->allocPlain<FileStreamRef>(file, filePath, f);
+  return alloc->allocPlain<FileStreamRef>(file, filePath, m, f);
 
 #else //!_WIN32
 
@@ -204,7 +221,7 @@ inline auto openFileStream(
   if (!fileIsValid(file)) {
     *pErr = getFilePlatformError();
   }
-  return alloc->allocPlain<FileStreamRef>(file, filePath, f);
+  return alloc->allocPlain<FileStreamRef>(file, filePath, m, f);
 
 #endif
 }
