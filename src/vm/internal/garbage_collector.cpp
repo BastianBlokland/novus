@@ -94,7 +94,7 @@ auto GarbageCollector::collectorLoop() noexcept -> void {
     // Wait for a request (or timout for a minimum gc interval).
     {
       std::unique_lock<std::mutex> lk(m_requestMutex);
-      m_requestCondVar.wait_for(lk, std::chrono::seconds(gcMinIntervalSeconds), [this]() {
+      m_requestCondVar.wait_for(lk, std::chrono::milliseconds(gcMinIntervalMilliseconds), [this]() {
         return m_requestType != RequestType::None;
       });
       if (unlikely(m_requestType == RequestType::Terminate)) {

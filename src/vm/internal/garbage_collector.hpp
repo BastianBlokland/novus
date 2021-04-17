@@ -8,9 +8,9 @@ namespace vm::internal {
 
 class RefAllocator;
 
-const auto gcByteInterval         = 100U * 1024U * 1024U; // 100 MiB
-const auto gcMinIntervalSeconds   = 10U;
-const auto initialGcMarkQueueSize = 1024U;
+const auto gcByteInterval            = 100U * 1024U * 1024U; // 100 MiB
+const auto gcMinIntervalMilliseconds = 1000U;
+const auto initialGcMarkQueueSize    = 1024U;
 
 // Garbage collector is responsible for freeing unused references. It uses allocated bytes and
 // elapsed time as heuristics to decide when to run a collection pass.
