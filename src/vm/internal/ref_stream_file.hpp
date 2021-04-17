@@ -302,7 +302,10 @@ inline auto createFileDir(PlatformError* pErr, StringRef* path) -> bool {
 
 #else // !_WIN32
 
-  const int newDirPerms = S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH; // RW for owner, and R for others.
+  // RWX for owner and group, RX for others.
+  const int newDirPerms =
+      S_IRUSR | S_IWUSR | S_IXUSR | S_IRGRP | S_IWGRP | S_IXGRP | S_IROTH | S_IXOTH;
+
   const int res = ::mkdir(path->getCharDataPtr(), newDirPerms);
   if (res != 0) {
     *pErr = getFilePlatformError();
