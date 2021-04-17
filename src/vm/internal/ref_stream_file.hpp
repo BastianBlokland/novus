@@ -417,13 +417,19 @@ fileListDir(RefAllocator* refAlloc, PlatformError* pErr, StringRef* path, FileLi
     }
 
     if (writeHead + nameLength + 1 >= bufferEnd) { // Note: +1 for the seperating newline.
-      buffer = refAlloc->allocStr(buffer ? buffer->getSize() * 2 : (MAX_PATH * 2));
-      if (unlikely(buffer == nullptr)) {
+      StringRef* newBuffer = refAlloc->allocStr(buffer ? buffer->getSize() * 2 : (MAX_PATH * 2));
+      if (unlikely(newBuffer == nullptr)) {
         ::FindClose(searchHandle);
         return nullptr;
       }
-      writeHead = buffer->getCharDataPtr();
-      bufferEnd = writeHead + buffer->getSize();
+      char* oldWriteHead = writeHead;
+      writeHead          = newBuffer->getCharDataPtr();
+      bufferEnd          = writeHead + newBuffer->getSize();
+      if (buffer) { // Copy the contents of the old buffer to the new buffer.
+        ::memcpy(writeHead, buffer->getCharDataPtr(), buffer->getSize());
+        writeHead += oldWriteHead - buffer->getCharDataPtr();
+      }
+      buffer = newBuffer;
     }
     ::memcpy(writeHead, findData.cFileName, nameLength);
     writeHead += nameLength;
@@ -456,13 +462,19 @@ fileListDir(RefAllocator* refAlloc, PlatformError* pErr, StringRef* path, FileLi
     }
 
     if (writeHead + nameLength + 1 >= bufferEnd) { // Note: +1 for the seperating newline.
-      buffer = refAlloc->allocStr(buffer ? buffer->getSize() * 2 : (NAME_MAX * 2));
-      if (unlikely(buffer == nullptr)) {
+      StringRef* newBuffer = refAlloc->allocStr(buffer ? buffer->getSize() * 2 : (NAME_MAX * 2));
+      if (unlikely(newBuffer == nullptr)) {
         ::closedir(dir);
         return nullptr;
       }
-      writeHead = buffer->getCharDataPtr();
-      bufferEnd = writeHead + buffer->getSize();
+      char* oldWriteHead = writeHead;
+      writeHead = newBuffer->getCharDataPtr();
+      bufferEnd = writeHead + newBuffer->getSize();
+      if (buffer) { // Copy the contents of the old buffer to the new buffer.
+        ::memcpy(writeHead, buffer->getCharDataPtr(), buffer->getSize());
+        writeHead += oldWriteHead - buffer->getCharDataPtr();
+      }
+      buffer = newBuffer;
     }
     ::memcpy(writeHead, dirEnt->d_name, nameLength);
     writeHead += nameLength;
