@@ -52,7 +52,7 @@ public:
     if ((m_flags & AutoRemoveFile) == AutoRemoveFile) {
 #if defined(_WIN32)
       ::DeleteFileA(m_filePath);
-#else  //!_WIN32
+#else //!_WIN32
       ::unlink(m_filePath);
 #endif //!_WIN32
     }
@@ -257,7 +257,7 @@ inline auto getFileModTimeSinceMicro(PlatformError* pErr, StringRef* path) -> in
   }
 #if defined(__APPLE__)
   return statResult.st_mtimespec.tv_sec * 1'000'000L + statResult.st_mtimespec.tv_nsec / 1'000;
-#else  // !__APPLE__
+#else // !__APPLE__
   return statResult.st_mtim.tv_sec * 1'000'000L + statResult.st_mtim.tv_nsec / 1'000;
 #endif // !__APPLE__
 
@@ -444,7 +444,7 @@ fileListDir(RefAllocator* refAlloc, PlatformError* pErr, StringRef* path, FileLi
     return refAlloc->allocStr(0);
   }
 
-#else  // !_WIN32
+#else // !_WIN32
 
   DIR* dir = ::opendir(path->getCharDataPtr());
   if (!dir) {
@@ -523,6 +523,8 @@ inline auto getFilePlatformError() noexcept -> PlatformError {
   case ERROR_INVALID_NAME:
   case ERROR_BAD_PATHNAME:
     return PlatformError::FileInvalidFileName;
+  case ERROR_TOO_MANY_OPEN_FILES:
+    return PlatformError::FileTooManyOpenFiles;
   }
 
 #else // !_WIN32
@@ -551,6 +553,8 @@ inline auto getFilePlatformError() noexcept -> PlatformError {
     return PlatformError::FileDirectoryNotEmpty;
   case EINVAL:
     return PlatformError::FileInvalidFileName;
+  case EMFILE:
+    return PlatformError::FileTooManyOpen;
   }
 
 #endif // !_WIN32
