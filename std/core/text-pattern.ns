@@ -1,0 +1,126 @@
+import "text.ns"
+
+import "std/diag.ns"
+import "std/format.ns"
+import "std/prim.ns"
+
+// Basic string matching library.
+//
+// * AnyTextPattern:    Any input text matches.
+// * ExactTextPattern:  Text needs to match pattern exactly
+// * GlobTextPattern:   Glob style matching, supports '*' and '?'.
+
+// -- Types
+
+struct AnyTextPattern
+struct ExactTextPattern = string text, StrComp sc
+struct GlobTextPattern  = string text, StrComp sc
+
+union TextPattern = AnyTextPattern, ExactTextPattern, GlobTextPattern
+
+// -- Constructors
+
+fun ExactTextPattern(string pattern)
+  ExactTextPattern(pattern, StrComp.Normal)
+
+fun GlobTextPattern(string pattern)
+  GlobTextPattern(pattern, StrComp.Normal)
+
+// -- Conversions
+
+fun string(AnyTextPattern p)
+  "[any]"
+
+fun string(ExactTextPattern p)
+  "[exact: '" + p.text + "']"
+
+fun string(GlobTextPattern p)
+  "[glob: '" + p.text + "']"
+
+// -- Functions
+
+fun textMatch(TextPattern p, string input)
+  if p is AnyTextPattern      -> true
+  if p as ExactTextPattern  e -> e.textMatch(input)
+  if p as GlobTextPattern   g -> g.textMatch(input)
+
+fun textMatch(ExactTextPattern p, string input)
+  equals(input, p.text, p.sc)
+
+fun textMatch(GlobTextPattern p, string input)
+  textMatchGlob(p.text, 0, input, 0, p.sc)
+
+fun textMatchGlob(string p, int pIdx, string input, int inputIdx, StrComp sc)
+  pC    = p[pIdx];
+  lastP = pIdx == p.length() - 1;
+  iC    = input[inputIdx];
+  if pC == '\0'                         -> iC == '\0'
+  if iC == '\0'                         -> pC == '*' && lastP
+  if pC == '*'                          -> textMatchGlob(p, ++pIdx, input, inputIdx, sc) || self(p, pIdx, input, ++inputIdx, sc)
+  if pC == '?' || equals(pC, iC, sc)    -> self(p, ++pIdx, input, ++inputIdx, sc)
+  else                                  -> false
+
+// -- Utilities
+
+fun filter(List{string} l, TextPattern pattern)
+  l.foldRight(lambda (List{string} result, string v) textMatch(pattern, v) ? v :: result : result)
+
+// -- Tests
+
+// --- AnyTextPattern
+
+assert(textMatch(AnyTextPattern(), "hello"))
+assert(textMatch(AnyTextPattern(), ""))
+
+// --- ExactTextPattern
+
+assert(textMatch(ExactTextPattern("hello"), "hello"))
+assert(textMatch(ExactTextPattern(""), ""))
+
+assertNot(textMatch(ExactTextPattern("hello"), ""))
+assertNot(textMatch(ExactTextPattern("hello"), "world"))
+assertNot(textMatch(ExactTextPattern("hello"), "helloworld"))
+assertNot(textMatch(ExactTextPattern("hello"), "worldhello"))
+assertNot(textMatch(ExactTextPattern(""), "hello"))
+
+assert(textMatch(ExactTextPattern("hello", StrComp.IgnoreCase), "HeLlO"))
+assertNot(textMatch(ExactTextPattern("hello", StrComp.IgnoreCase), "HeLlOZ"))
+
+// --- GlobTextPattern
+
+assert(textMatch(GlobTextPattern("*"), "hello"))
+assert(textMatch(GlobTextPattern("*world"), "world"))
+assert(textMatch(GlobTextPattern("*world"), " world"))
+assert(textMatch(GlobTextPattern("*world"), "helloworld"))
+assert(textMatch(GlobTextPattern("hello*world"), "helloworld"))
+assert(textMatch(GlobTextPattern("hello*world"), "hello world"))
+assert(textMatch(GlobTextPattern("hello*world"), "hellostuffworld"))
+assert(textMatch(GlobTextPattern("hello*world*more"), "hellostuffworldsomemore"))
+assert(textMatch(GlobTextPattern("hello*world*more"), "hellostuffworldmore"))
+assert(textMatch(GlobTextPattern("*world*"), "world"))
+assert(textMatch(GlobTextPattern("*world*"), "helloworldmore"))
+assert(textMatch(GlobTextPattern("**"), "world"))
+assert(textMatch(GlobTextPattern("*"), ""))
+assert(textMatch(GlobTextPattern(""), ""))
+assert(textMatch(GlobTextPattern("?"), "a"))
+assert(textMatch(GlobTextPattern("?"), " "))
+assert(textMatch(GlobTextPattern("h??lo?w?rld"), "hello world"))
+assert(textMatch(GlobTextPattern("hello"), "hello"))
+
+assertNot(textMatch(GlobTextPattern("*world"), "hello"))
+assertNot(textMatch(GlobTextPattern("*world"), "worldhello"))
+assertNot(textMatch(GlobTextPattern("hello"), ""))
+assertNot(textMatch(GlobTextPattern("hello"), "world"))
+assertNot(textMatch(GlobTextPattern("hello"), "helloworld"))
+assertNot(textMatch(GlobTextPattern("hello"), "worldhello"))
+assertNot(textMatch(GlobTextPattern(""), "hello"))
+assertNot(textMatch(GlobTextPattern("hello*world"), "hellostuffworl"))
+assertNot(textMatch(GlobTextPattern("hello*world"), "hellstuffworl"))
+assertNot(textMatch(GlobTextPattern("hello*world*more"), "hellostuffworld"))
+assertNot(textMatch(GlobTextPattern("?"), ""))
+assertNot(textMatch(GlobTextPattern("h??lo?w?rld?"), "ello world"))
+assertNot(textMatch(GlobTextPattern("h??lo?w?rld?"), "helloworld"))
+assertNot(textMatch(GlobTextPattern("h??lo?w?rld?"), "hello world"))
+
+assert(textMatch(GlobTextPattern("hello", StrComp.IgnoreCase), "HeLlO"))
+assertNot(textMatch(GlobTextPattern("hello", StrComp.IgnoreCase), "HeLlOZ"))
