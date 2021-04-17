@@ -143,6 +143,13 @@ act fileRemoveReq(Path p) -> Option{Error}
     impure lambda (PathAbsolute p) fileRemove(p)
   ).combine()
 
+act fileCopy(Path from, Path to) -> Option{Error}
+  fileOpen(from, FileMode.Open).map(impure lambda (File fromFile)
+    fileOpen(to, FileMode.Create).map(impure lambda (File toFile)
+      copy(fromFile.stream, toFile.stream).eitherGet(Type{Error}())
+    )
+  )
+
 // -- Tests
 
 assertEq(
