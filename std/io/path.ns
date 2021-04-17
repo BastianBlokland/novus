@@ -112,6 +112,16 @@ fun parent(Path p)
   if p as PathAbsolute abs -> abs.parent()
   if p as PathRelative rel -> rel.parent()
 
+fun makeRelative(PathAbsolute p, PathAbsolute relativeTo) -> Option{PathRelative}
+  if p.root != relativeTo.root -> None()
+  else ->
+    invoke(lambda (List{string} remSegs, List{string} resSegs)
+    (
+      if remSegs == relativeTo.path.segments  -> pathRel(resSegs)
+      if remSegs.back() as string dir         -> self(remSegs.popBack(), dir :: resSegs)
+      else                                    -> None()
+    ), p.path.segments, List{string}())
+
 // -- Parsers
 
 fun pathRelParser{UntilT}(Parser{UntilT} until = endParser()) -> Parser{PathRelative}
@@ -204,6 +214,14 @@ assertEq((pathDefaultRootUnix() / "hello.txt").parent(), pathDefaultRootUnix())
 assertEq(pathRel().parent(), pathRel())
 assertEq(pathDefaultRootUnix().parent(), pathDefaultRootUnix() )
 assertEq(pathDefaultRootWindows().parent(), pathDefaultRootWindows())
+
+assertEq(makeRelative(pathCurrent(), pathCurrent()), pathRel())
+assertEq(makeRelative(pathCurrent() / "hello", pathCurrent()), pathRel() / "hello")
+assertEq(makeRelative(pathCurrent() / "hello" / "world", pathCurrent()), pathRel() / "hello" / "world")
+assertEq(makeRelative(pathCurrent(), pathDefaultRoot()), pathCurrent().path)
+assertEq(makeRelative(pathCurrent(), pathAbs("wierd-root")), None())
+assertEq(makeRelative(pathCurrent(), pathCurrent() / "hello"), None())
+assertEq(makeRelative(pathCurrent() / "world", pathCurrent() / "hello"), None())
 
 assertEq(pathAbsParser().run("/"), pathAbs("/"))
 assertEq(pathAbsParser().run("c:\\"), pathAbs("c:/"))

@@ -130,23 +130,26 @@ act fileList(Path p, FileListFlags flags = FileListFlags.None) -> Either{List{Pa
 
 // -- Utilities
 
-act fileListReq(Path p) -> Either{List{PathAbsolute}, Error}
+act fileListReq(Path p, bool includeDirs = true) -> Either{List{PathAbsolute}, Error}
   pathAbs = p.pathAbsolute();
   dl      = fileList(pathAbs, FileListFlags.None);
   if dl as List{PathAbsolute} entries ->
     entries.fold(impure lambda (Either{List{PathAbsolute}, Error} result, PathAbsolute entry)
-      combine(result, fileListReq(entry))
-    , List(pathAbs))
-  if dl as Error err -> err.code == PlatformError.FileIsNotDirectory || err.code == PlatformError.FileNoAccess
-      ? List(pathAbs)
-      : err
+      combine(result, fileListReq(entry, includeDirs))
+    , includeDirs ? List(pathAbs) : List{PathAbsolute}())
+  if dl as Error err ->
+  (
+    if err.code == PlatformError.FileIsNotDirectory -> List(pathAbs)
+    if err.code == PlatformError.FileNoAccess       -> List{PathAbsolute}()
+    else                                            -> err
+  )
 
 act fileRemoveReq(Path p) -> Option{Error}
-  entriesOrErr = p.fileListReq();
-  if entriesOrErr as Error err -> err
-  if entriesOrErr as List{PathAbsolute} entries -> entries.mapReverse(
-    impure lambda (PathAbsolute p) fileRemove(p)
-  ).combine()
+  p.fileListReq(true).map(impure lambda (List{PathAbsolute} entries)
+    entries.mapReverse(
+      impure lambda (PathAbsolute p) fileRemove(p)
+    ).combine()
+  )
 
 act fileCopy(Path from, Path to) -> Option{Error}
   fileOpen(from, FileMode.OpenReadOnly).map(impure lambda (File fromFile)
@@ -154,6 +157,16 @@ act fileCopy(Path from, Path to) -> Option{Error}
       copy(fromFile.stream, toFile.stream).eitherGet(Type{Error}())
     )
   )
+
+act fileCopyReq(Path from, Path to) -> Option{Error}
+  fromAbs = pathAbsolute(from);
+  fileListReq(fromAbs, false).map(impure lambda (List{PathAbsolute} files)
+    files.mapReverse(
+      impure lambda (PathAbsolute p)
+        targetPath = to / p.makeRelative(fromAbs) ?? pathRel();
+        actSeq(lazy fileCreatePath(targetPath.parent()), lazy fileCopy(p, targetPath))
+    )
+  ); None()
 
 // -- Tests
 
