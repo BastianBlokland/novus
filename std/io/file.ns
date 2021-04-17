@@ -25,7 +25,7 @@ enum FileFlags =
   None       : 0b0,
   AutoRemove : 0b1
 
-enum FileListDirFlags =
+enum FileListFlags =
   None            : 0b0,
   IncludeSymlinks : 0b1
 
@@ -116,7 +116,7 @@ act fileRename(Path old, Path new) -> Option{Error}
   if intrinsic{file_rename}(absOldPathStr, absNewPathStr) -> None()
   else -> platformError("Failed to rename file: '" + absOldPathStr + "' to '" + absNewPathStr + '\'')
 
-act fileListDir(Path p, FileListDirFlags flags = FileListDirFlags.None) -> Either{List{PathAbsolute}, Error}
+act fileList(Path p, FileListFlags flags = FileListFlags.None) -> Either{List{PathAbsolute}, Error}
   absPath     = p.pathAbsolute();
   absPathStr  = absPath.string();
   fileNames   = split(intrinsic{file_list_dir}(absPathStr, flags), equals{char}['\n']);
@@ -125,14 +125,23 @@ act fileListDir(Path p, FileListDirFlags flags = FileListDirFlags.None) -> Eithe
 
 // -- Utilities
 
-act fileListDirReq(Path p) -> Either{List{PathAbsolute}, Error}
+act fileListReq(Path p) -> Either{List{PathAbsolute}, Error}
   pathAbs = p.pathAbsolute();
-  dl      = fileListDir(pathAbs, FileListDirFlags.None);
-  if dl as Error err -> err.code == PlatformError.FileIsNotDirectory ? List(pathAbs) : List{PathAbsolute}()
+  dl      = fileList(pathAbs, FileListFlags.None);
   if dl as List{PathAbsolute} entries ->
     entries.fold(impure lambda (Either{List{PathAbsolute}, Error} result, PathAbsolute entry)
-      combine(result, fileListDirReq(entry))
-    , List{PathAbsolute}())
+      combine(result, fileListReq(entry))
+    , List(pathAbs))
+  if dl as Error err -> err.code == PlatformError.FileIsNotDirectory || err.code == PlatformError.FileNoAccess
+      ? List(pathAbs)
+      : err
+
+act fileRemoveReq(Path p) -> Option{Error}
+  entriesOrErr = p.fileListReq();
+  if entriesOrErr as Error err -> err
+  if entriesOrErr as List{PathAbsolute} entries -> entries.mapReverse(
+    impure lambda (PathAbsolute p) fileRemove(p)
+  ).combine()
 
 // -- Tests
 
