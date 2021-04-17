@@ -11,6 +11,7 @@ import "std/prim.ns"
 enum FileMode =
   Create : 0,
   Open,
+  OpenReadOnly,
   Append
 
 enum FileType =
@@ -64,10 +65,10 @@ act write{T}(File f, Writer{T} writer, T val) -> Option{Error}
   f.write(writer.run(val))
 
 act fileRead(Path p) -> Either{string, Error}
-  p.fileOpen(FileMode.Open).map(impure lambda (File f) f.readToEnd())
+  p.fileOpen(FileMode.OpenReadOnly).map(impure lambda (File f) f.readToEnd())
 
 act fileRead{T}(Path p, Parser{T} parser) -> Either{T, Error}
-  p.fileOpen(FileMode.Open).map(impure lambda (File f) f.readToEnd(parser))
+  p.fileOpen(FileMode.OpenReadOnly).map(impure lambda (File f) f.readToEnd(parser))
 
 act fileWrite(Path p, string str) -> Option{Error}
   p.fileOpen(FileMode.Create).map(impure lambda (File f) f.write(str))
@@ -148,7 +149,7 @@ act fileRemoveReq(Path p) -> Option{Error}
   ).combine()
 
 act fileCopy(Path from, Path to) -> Option{Error}
-  fileOpen(from, FileMode.Open).map(impure lambda (File fromFile)
+  fileOpen(from, FileMode.OpenReadOnly).map(impure lambda (File fromFile)
     fileOpen(to, FileMode.Create).map(impure lambda (File toFile)
       copy(fromFile.stream, toFile.stream).eitherGet(Type{Error}())
     )

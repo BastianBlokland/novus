@@ -21,9 +21,10 @@ enum class FileType : uint8_t {
 };
 
 enum class FileStreamMode : uint8_t {
-  Create = 0,
-  Open   = 1,
-  Append = 2,
+  Create       = 0,
+  Open         = 1,
+  OpenReadOnly = 2,
+  Append       = 3,
 };
 
 enum FileStreamFlags : uint8_t {
@@ -159,6 +160,10 @@ inline auto openFileStream(
     desiredAccess |= GENERIC_READ | GENERIC_WRITE;
     creationDisposition = OPEN_EXISTING;
     break;
+  case FileStreamMode::OpenReadOnly:
+    desiredAccess |= GENERIC_READ;
+    creationDisposition = OPEN_EXISTING;
+    break;
   case FileStreamMode::Append:
     desiredAccess |= FILE_APPEND_DATA;
     creationDisposition = OPEN_EXISTING;
@@ -178,16 +183,20 @@ inline auto openFileStream(
 
 #else //!_WIN32
 
-  int flags = O_RDWR | O_NOCTTY;
+  int flags = O_NOCTTY;
   switch (m) {
   default:
   case FileStreamMode::Open:
+    flags |= O_RDWR;
+    break;
+  case FileStreamMode::OpenReadOnly:
+    flags |= O_RDONLY;
     break;
   case FileStreamMode::Append:
-    flags |= O_APPEND;
+    flags |= O_RDWR | O_APPEND;
     break;
   case FileStreamMode::Create:
-    flags |= O_CREAT | O_TRUNC;
+    flags |= O_RDWR | O_CREAT | O_TRUNC;
     break;
   }
   const int newFilePerms = S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH; // RW for owner, and R for others.
@@ -554,7 +563,7 @@ inline auto getFilePlatformError() noexcept -> PlatformError {
   case EINVAL:
     return PlatformError::FileInvalidFileName;
   case EMFILE:
-    return PlatformError::FileTooManyOpen;
+    return PlatformError::FileTooManyOpenFiles;
   }
 
 #endif // !_WIN32
