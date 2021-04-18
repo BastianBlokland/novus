@@ -4,7 +4,7 @@
 #include <string>
 
 #if defined(linux)
-#include <linux/limits.h>
+#include <climits>
 #include <unistd.h>
 #endif
 
