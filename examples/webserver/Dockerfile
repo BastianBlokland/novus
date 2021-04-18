@@ -17,4 +17,4 @@ RUN novc main.ns -o server.nx
 EXPOSE 80
 
 # At entry start the webserver on port '80'.
-ENTRYPOINT ["./server.nx", "--port", "80"]
+ENTRYPOINT ["./server.nx", "serve", "--port", "80"]
