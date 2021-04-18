@@ -46,11 +46,15 @@ fun string(File f)
 // -- Actions
 
 act fileOpen(Path p, FileMode m, FileFlags flags = FileFlags.None) -> Either{File, Error}
+  invoke(impure lambda (int retry)
+  (
   absPath     = p.pathAbsolute();
   absPathStr  = absPath.string();
   stream      = intrinsic{file_openstream}(absPathStr, int(m) | flags << 8);
   if stream.isValid() -> File(absPath, m, flags, stream)
-  else                -> platformError("Failed to open file: '" + absPathStr + "'")
+    if retry == 0 && platformErrorCode() == PlatformError.FileTooManyOpenFiles -> gcCollect(); self(++retry)
+    else -> platformError("Failed to open file: '" + absPathStr + "'")
+  ), 0)
 
 act readToEnd(File f) -> Either{string, Error}
   f.stream.readToEnd()
