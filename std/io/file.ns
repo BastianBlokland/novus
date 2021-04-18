@@ -48,10 +48,10 @@ fun string(File f)
 act fileOpen(Path p, FileMode m, FileFlags flags = FileFlags.None) -> Either{File, Error}
   invoke(impure lambda (int retry)
   (
-  absPath     = p.pathAbsolute();
-  absPathStr  = absPath.string();
-  stream      = intrinsic{file_openstream}(absPathStr, int(m) | flags << 8);
-  if stream.isValid() -> File(absPath, m, flags, stream)
+    absPath     = p.pathAbsolute();
+    absPathStr  = absPath.string();
+    stream      = intrinsic{file_openstream}(absPathStr, int(m) | flags << 8);
+    if stream.isValid() -> File(absPath, m, flags, stream)
     if retry == 0 && platformErrorCode() == PlatformError.FileTooManyOpenFiles -> gcCollect(); self(++retry)
     else -> platformError("Failed to open file: '" + absPathStr + "'")
   ), 0)
@@ -150,9 +150,12 @@ act fileListReq(Path p, bool includeDirs = true) -> Either{List{PathAbsolute}, E
 
 act fileRemoveReq(Path p) -> Option{Error}
   p.fileListReq(true).map(impure lambda (List{PathAbsolute} entries)
-    entries.mapReverse(
-      impure lambda (PathAbsolute p) fileRemove(p)
-    ).combine()
+    entries.mapReverse(impure lambda (PathAbsolute p) fileRemove(p)).combine()
+  )
+
+act fileSizeReq(Path p) -> Either{ByteSize, Error}
+  p.fileListReq(true).map(impure lambda (List{PathAbsolute} entries)
+    entries.mapReverse(impure lambda (PathAbsolute p) fileSize(p)).split().valueOrError().map(sum{ByteSize})
   )
 
 act fileCopy(Path from, Path to) -> Option{Error}
