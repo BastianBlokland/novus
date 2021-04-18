@@ -1,0 +1,89 @@
+import "std/diag.ns"
+import "std/format.ns"
+import "std/prim.ns"
+
+struct ByteSize = long bytes
+
+fun ByteSize() ByteSize(0)
+
+fun -(ByteSize s)  ByteSize(-s.bytes)
+fun -(ByteSize s1, ByteSize s2)   ByteSize(s1.bytes - s2.bytes)
+fun +(ByteSize s1, ByteSize s2)   ByteSize(s1.bytes + s2.bytes)
+fun *(ByteSize s, long l)         ByteSize(s.bytes * l)
+fun /(ByteSize s1, ByteSize s2)   s1.bytes / s2.bytes
+fun /(ByteSize s1, long l)        ByteSize(s1.bytes / l)
+fun %(ByteSize s1, ByteSize s2)   ByteSize(s1.bytes % s2.bytes)
+fun <(ByteSize s1, ByteSize s2)   s1.bytes < s2.bytes
+fun >(ByteSize s1, ByteSize s2)   s1.bytes > s2.bytes
+
+fun minByteSize() ByteSize(minVal{long}())
+fun maxByteSize() ByteSize(maxVal{long}())
+
+fun absByteSize(ByteSize s)
+  if s.bytes > 0L       -> s
+  if s == minByteSize() -> maxByteSize()
+  else                  -> ByteSize(-s.bytes)
+
+fun byte()      ByteSize(1)
+fun kibibyte()  byte()      * 1024
+fun mebibyte()  kibibyte()  * 1024
+fun gibibyte()  mebibyte()  * 1024
+fun tebibyte()  gibibyte()  * 1024
+fun pebibyte()  tebibyte()  * 1024
+
+fun bytes(long count)      byte()     * count
+fun kibibytes(long count)  kibibyte() * count
+fun mebibytes(long count)  mebibyte() * count
+fun gibibytes(long count)  gibibyte() * count
+fun tebibytes(long count)  tebibyte() * count
+fun pebibytes(long count)  pebibyte() * count
+
+fun bytes(ByteSize s)     s.bytes
+fun kibibytes(ByteSize s) s.bytes / kibibyte().bytes
+fun mebibytes(ByteSize s) s.bytes / mebibyte().bytes
+fun gibibytes(ByteSize s) s.bytes / gibibyte().bytes
+fun tebibytes(ByteSize s) s.bytes / tebibyte().bytes
+fun pebibytes(ByteSize s) s.bytes / pebibyte().bytes
+
+// Create a human readable representation.
+fun noinline string(ByteSize s)
+  if s.bytes < 0L -> "-" + absByteSize(s).string()
+  else            ->
+    if s < kibibyte() -> s.bytes().string() + "B"
+    if s < mebibyte() -> s.kibibytes().string() + "KiB"
+    if s < gibibyte() -> s.mebibytes().string() + "MiB"
+    if s < tebibyte() -> s.gibibytes().string() + "GiB"
+    if s < pebibyte() -> s.tebibytes().string() + "TiB"
+    else              -> s.pebibytes().string() + "PiB"
+
+// Tests
+
+assertEq(byte().bytes(), 1)
+assertEq(kibibyte().kibibytes(), 1)
+assertEq(mebibyte().mebibytes(), 1)
+assertEq(gibibyte().gibibytes(), 1)
+assertEq(tebibyte().tebibytes(), 1)
+assertEq(pebibyte().pebibytes(), 1)
+
+assertEq(kibibyte().bytes(), 1_024L)
+assertEq(mebibyte().bytes(), 1_048_576L)
+assertEq(gibibyte().bytes(), 1_073_741_824L)
+assertEq(tebibyte().bytes(), 1_099_511_627_776L)
+assertEq(pebibyte().bytes(), 1_125_899_906_842_624L)
+
+assertEq(bytes(42).string(), "42B")
+assertEq(kibibytes(42).string(), "42KiB")
+assertEq(mebibytes(42).string(), "42MiB")
+assertEq(gibibytes(42).string(), "42GiB")
+assertEq(tebibytes(42).string(), "42TiB")
+assertEq(pebibytes(42).string(), "42PiB")
+
+assertEq(bytes(-42).string(), "-42B")
+assertEq(kibibytes(-42).string(), "-42KiB")
+assertEq(mebibytes(-42).string(), "-42MiB")
+assertEq(gibibytes(-42).string(), "-42GiB")
+assertEq(tebibytes(-42).string(), "-42TiB")
+assertEq(pebibytes(-42).string(), "-42PiB")
+
+assertEq(absByteSize(tebibytes(-42)), tebibytes(42))
+assertEq(absByteSize(minByteSize()), maxByteSize())

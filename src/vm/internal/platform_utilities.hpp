@@ -1,4 +1,5 @@
 #pragma once
+#include "os_include.hpp"
 #include <cstdint>
 
 namespace vm::internal {
@@ -41,13 +42,18 @@ enum class PlatformError : uint32_t {
   ConsoleFailedToUpdateTermInfo = 404,
   ConsoleNoLongerAvailable      = 405,
 
-  FileUnknownError    = 500,
-  FileNoAccess        = 501,
-  FileNotFound        = 502,
-  FileInvalidFileName = 503,
-  FilePathTooLong     = 504,
-  FileDiskFull        = 505,
-  FileLocked          = 506,
+  FileUnknownError      = 500,
+  FileNoAccess          = 501,
+  FileNotFound          = 502,
+  FileInvalidFileName   = 503,
+  FilePathTooLong       = 504,
+  FileDiskFull          = 505,
+  FileLocked            = 506,
+  FileIsDirectory       = 507,
+  FileIsNotDirectory    = 508,
+  FileDirectoryNotEmpty = 509,
+  FileAlreadyExists     = 510,
+  FileTooManyOpenFiles  = 511,
 
   TcpUnknownError              = 600,
   TcpInvalidSocket             = 601,
@@ -74,6 +80,7 @@ enum class PlatformError : uint32_t {
 };
 
 auto setupPlatformUtilities() noexcept -> void;
+auto teardownPlatformUtilities() noexcept -> void;
 
 [[nodiscard]] auto clockMicroSinceEpoch() noexcept -> int64_t;
 
@@ -82,7 +89,27 @@ auto setupPlatformUtilities() noexcept -> void;
 // Returns the local timezone offset in minutes.
 [[nodiscard]] auto clockTimezoneOffset() noexcept -> int32_t;
 
-[[nodiscard]] auto platformHasEnv(const StringRef* name) -> bool;
-[[nodiscard]] auto platformGetEnv(const StringRef* name, RefAllocator* refAlloc) -> StringRef*;
+[[nodiscard]] auto platformHasEnv(const StringRef* name) noexcept -> bool;
+[[nodiscard]] auto platformGetEnv(const StringRef* name, RefAllocator* refAlloc) noexcept
+    -> StringRef*;
+
+[[nodiscard]] auto platformWorkingDirPath(RefAllocator* refAlloc) noexcept -> StringRef*;
+[[nodiscard]] auto platformExecPath(RefAllocator* refAlloc) noexcept -> StringRef*;
+
+#if defined(_WIN32)
+[[nodiscard]] inline auto winFileTimeToMicroSinceEpoch(const FILETIME& fileTime) noexcept
+    -> int64_t {
+
+  // Windows FILETIME is in 100 ns ticks since January 1 1601.
+  constexpr int64_t winEpochToUnixEpoch = 116'444'736'000'000'000LL;
+  constexpr int64_t winTickToMicro      = 10LL;
+
+  LARGE_INTEGER winTicks;
+  winTicks.LowPart  = fileTime.dwLowDateTime;
+  winTicks.HighPart = fileTime.dwHighDateTime;
+
+  return (winTicks.QuadPart - winEpochToUnixEpoch) / winTickToMicro;
+}
+#endif
 
 } // namespace vm::internal

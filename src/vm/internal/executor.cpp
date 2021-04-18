@@ -128,6 +128,7 @@ inline auto fork(
     PlatformInterface* iface,
     ExecutorRegistry* execRegistry,
     RefAllocator* refAlloc,
+    GarbageCollector* gc,
     BasicStack* stack,
     ExecutorHandle* execHandle,
     uint8_t argCount,
@@ -149,6 +150,7 @@ inline auto fork(
       iface,
       execRegistry,
       refAlloc,
+      gc,
       entryIpOffset,
       argCount,
       argSource,
@@ -185,12 +187,13 @@ auto execute(
     PlatformInterface* iface,
     ExecutorRegistry* execRegistry,
     RefAllocator* refAlloc,
+    GarbageCollector* gc,
     uint32_t entryIpOffset,
     uint8_t entryArgCount,
     Value* entryArgSource,
     FutureRef* promise) noexcept -> ExecState {
 
-  assert(settings && executable && iface && execRegistry && refAlloc);
+  assert(settings && executable && iface && execRegistry && refAlloc && gc);
 
   using OpCode    = novasm::OpCode;
   using PCallCode = novasm::PCallCode;
@@ -269,6 +272,7 @@ auto execute(
           iface,                                                                                   \
           execRegistry,                                                                            \
           refAlloc,                                                                                \
+          gc,                                                                                      \
           &stack,                                                                                  \
           &execHandle,                                                                             \
           ARG_COUNT,                                                                               \
@@ -839,6 +843,7 @@ auto execute(
           executable,
           iface,
           refAlloc,
+          gc,
           &stack,
           &execHandle,
           &pErr,

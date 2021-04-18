@@ -2,7 +2,6 @@
 #include "config.hpp"
 #include "internal/executor_handle.hpp"
 #include "internal/interupt.hpp"
-#include "internal/path_utilities.hpp"
 #include "internal/platform_utilities.hpp"
 #include "internal/ref_process.hpp"
 #include "internal/ref_stream_console.hpp"
@@ -29,11 +28,12 @@ auto inline pcall(
     const novasm::Executable* executable,
     PlatformInterface* iface,
     RefAllocator* refAlloc,
+    GarbageCollector* gc,
     BasicStack* stack,
     ExecutorHandle* execHandle,
     PlatformError* pErr,
     novasm::PCallCode code) noexcept -> void {
-  assert(iface && refAlloc && stack && execHandle);
+  assert(iface && refAlloc && gc && stack && execHandle);
 
   using PCallCode = novasm::PCallCode;
 
@@ -174,10 +174,48 @@ auto inline pcall(
 
     PUSH_REF(openFileStream(refAlloc, pErr, pathStrRef, mode, flags));
   } break;
+  case PCallCode::FileType: {
+    auto* pathStrRef = getStringRef(refAlloc, POP());
+    CHECK_ALLOC(pathStrRef);
+    PUSH_INT(static_cast<int32_t>(getFileType(pathStrRef)));
+  } break;
+  case PCallCode::FileModTimeMicroSinceEpoch: {
+    auto* pathStrRef = getStringRef(refAlloc, POP());
+    CHECK_ALLOC(pathStrRef);
+    PUSH_LONG(getFileModTimeSinceMicro(pErr, pathStrRef));
+  } break;
+  case PCallCode::FileSize: {
+    auto* pathStrRef = getStringRef(refAlloc, POP());
+    CHECK_ALLOC(pathStrRef);
+    PUSH_LONG(getFileSize(pErr, pathStrRef));
+  } break;
+  case PCallCode::FileCreateDir: {
+    auto* pathStrRef = getStringRef(refAlloc, POP());
+    CHECK_ALLOC(pathStrRef);
+    PUSH_BOOL(createFileDir(pErr, pathStrRef));
+  } break;
   case PCallCode::FileRemove: {
     auto* pathStrRef = getStringRef(refAlloc, POP());
     CHECK_ALLOC(pathStrRef);
     PUSH_BOOL(removeFile(pErr, pathStrRef));
+  } break;
+  case PCallCode::FileRemoveDir: {
+    auto* pathStrRef = getStringRef(refAlloc, POP());
+    CHECK_ALLOC(pathStrRef);
+    PUSH_BOOL(removeFileDir(pErr, pathStrRef));
+  } break;
+  case PCallCode::FileRename: {
+    auto* newStrRef = getStringRef(refAlloc, POP());
+    CHECK_ALLOC(newStrRef);
+    auto* oldStrRef = getStringRef(refAlloc, POP());
+    CHECK_ALLOC(oldStrRef);
+    PUSH_BOOL(renameFile(pErr, oldStrRef, newStrRef));
+  } break;
+  case PCallCode::FileListDir: {
+    auto flags       = static_cast<FileListDirFlags>(POP_INT());
+    auto* pathStrRef = getStringRef(refAlloc, POP());
+    CHECK_ALLOC(pathStrRef);
+    PUSH_REF(fileListDir(refAlloc, pErr, pathStrRef, flags));
   } break;
 
   case PCallCode::TcpOpenCon: {
@@ -307,14 +345,24 @@ auto inline pcall(
 #endif
   } break;
   case PCallCode::WorkingDirPath: {
-    PUSH_REF(getWorkingDirPath(refAlloc));
+    PUSH_REF(platformWorkingDirPath(refAlloc));
   } break;
   case PCallCode::RtPath: {
-    PUSH_REF(getExecPath(refAlloc));
+    PUSH_REF(platformExecPath(refAlloc));
   } break;
   case PCallCode::ProgramPath: {
     const auto& path = iface->getProgramPath();
     PUSH_REF(refAlloc->allocStrLit(path.data(), path.length()));
+  } break;
+
+  case PCallCode::GcCollect: {
+    auto flags = static_cast<GarbageCollectFlags>(PEEK_INT());
+    execHandle->setState(ExecState::Paused);
+    gc->collectNow(flags);
+    execHandle->setState(ExecState::Running);
+    if (execHandle->trap()) {
+      return;
+    }
   } break;
 
   case PCallCode::SleepNano: {

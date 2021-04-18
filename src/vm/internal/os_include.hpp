@@ -24,6 +24,8 @@
 #include <sys/socket.h>
 #include <sys/types.h>
 #include <sys/wait.h>
+#include <sys/stat.h>
+#include <dirent.h>
 #include <termios.h>
 #include <pthread.h>
 #include <unistd.h>

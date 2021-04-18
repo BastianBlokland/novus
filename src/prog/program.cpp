@@ -237,7 +237,25 @@ Program::Program() :
       sym::TypeSet{m_string, m_int},
       m_sysStream);
   m_funcDecls.registerIntrinsicAction(
+      *this, Fk::ActionFileType, "file_type", sym::TypeSet{m_string}, m_int);
+  m_funcDecls.registerIntrinsicAction(
+      *this,
+      Fk::ActionFileModTimeMicroSinceEpoch,
+      "file_modification_time_microsinceepoch",
+      sym::TypeSet{m_string},
+      m_long);
+  m_funcDecls.registerIntrinsicAction(
+      *this, Fk::ActionFileSize, "file_size", sym::TypeSet{m_string}, m_long);
+  m_funcDecls.registerIntrinsicAction(
+      *this, Fk::ActionFileCreateDir, "file_create_directory", sym::TypeSet{m_string}, m_bool);
+  m_funcDecls.registerIntrinsicAction(
       *this, Fk::ActionFileRemove, "file_remove", sym::TypeSet{m_string}, m_bool);
+  m_funcDecls.registerIntrinsicAction(
+      *this, Fk::ActionFileRemoveDir, "file_remove_directory", sym::TypeSet{m_string}, m_bool);
+  m_funcDecls.registerIntrinsicAction(
+      *this, Fk::ActionFileRename, "file_rename", sym::TypeSet{m_string, m_string}, m_bool);
+  m_funcDecls.registerIntrinsicAction(
+      *this, Fk::ActionFileListDir, "file_list_dir", sym::TypeSet{m_string, m_int}, m_string);
 
   m_funcDecls.registerIntrinsicAction(
       *this,
@@ -314,6 +332,9 @@ Program::Program() :
       *this, Fk::ActionRtPath, "path_runtime", sym::TypeSet{}, m_string);
   m_funcDecls.registerIntrinsicAction(
       *this, Fk::ActionProgramPath, "path_program", sym::TypeSet{}, m_string);
+
+  m_funcDecls.registerIntrinsicAction(
+      *this, Fk::ActionGcCollect, "gc_collect", sym::TypeSet{m_int}, m_int);
 
   m_funcDecls.registerIntrinsicAction(
       *this, Fk::ActionSleepNano, "sleep_nano", sym::TypeSet{m_long}, m_bool);

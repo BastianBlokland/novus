@@ -72,6 +72,12 @@ fun combine(List{Error} err) -> Option{Error}
     result as Error e ? Option(e :: err) : Option(err)
   )
 
+fun combine{T}(Either{List{T}, Error} e1, Either{List{T}, Error} e2)
+  if e1 as Error err1 && e2 as Error err2 -> err1 :: err2
+  if e1 as Error onlyErr1 -> onlyErr1
+  if e1 as List{T} l1 && e2 as List{T} l2 -> l1.push(l2)
+  else -> e2
+
 fun valueOrError{T}(Tuple{T, Option{Error}} p) -> Either{T, Error}
   valueOrError(p.f1, p.f2)
 

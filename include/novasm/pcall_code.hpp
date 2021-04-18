@@ -25,8 +25,15 @@ enum class PCallCode : uint8_t {
   ProcessGetId      = 23, // (process)      -> (long) Retrieve the native process id.
   ProcessSendSignal = 24, // (int, process) -> (int) Send a signal to the process, return success.
 
-  FileOpenStream = 30, // (int, string) -> (stream)  Open a file at path with options.
-  FileRemove     = 31, // (string)      -> (int)     Remove the file at path, returns success.
+  FileOpenStream             = 30, // (int, string) -> (stream)  Open a file at path with options.
+  FileType                   = 31, // (string)      -> (int)     Lookup the file type at given path.
+  FileModTimeMicroSinceEpoch = 32, // (string) -> (long)  Last file modification time.
+  FileSize                   = 33, // (string) -> (long)  Lookup the file size in bytes.
+  FileCreateDir = 34, // (string)      -> (int)     Create a new directory at path, return success.
+  FileRemove    = 35, // (string)      -> (int)     Remove the file at path, returns success.
+  FileRemoveDir = 36, // (string)      -> (int)     Remove the file dir at path, returns success.
+  FileRename    = 37, // (string, string) -> (int)  Rename a file, returns success.
+  FileListDir   = 38, // (int, string) -> (string)  List all files in a directory newline separated.
 
   TcpOpenCon      = 40, // (int, int, string) -> (stream) Open a connect to a remote addr and port.
   TcpStartServer  = 41, // (int, int, int)    -> (stream) Start a tcp-server at port.
@@ -61,6 +68,8 @@ enum class PCallCode : uint8_t {
   RtPath         = 102, // () -> (string) Get the path of the runtime executable.
   ProgramPath    = 103, // () -> (string) Get the path of the currently running program.
 
+  GcCollect = 200, // (int) -> (int) Manually run a garbage collection.
+
   SleepNano = 240, // (long)         -> (int) Sleep the current executor for x nanoseconds.
 };
 
@@ -74,6 +83,11 @@ enum class PCallCode : uint8_t {
  * - ProcessSendSignal, error is set when false is returned.
  * - FileOpenStream, error is set when an invalid stream is returned.
  * - FileRemove, error is set when false is returned.
+ * - FileModTimeMicroSinceEpoch, error is set when a negative number is returned.
+ * - FileSize, error is set when a negative number is returned.
+ * - FileRemoveDir, error is set when false is returned.
+ * - FileRename, error is set when false is returned.
+ * - FileListDir, error is always set, error is 0 for success.
  * - TcpOpenCon, error is set when an invalid stream is returned.
  * - TcpStartServer, error is set when an invalid stream is returned.
  * - TcpAcceptCon, error is set when an invalid stream is returned.

@@ -446,8 +446,29 @@ auto GenExpr::visit(const prog::expr::CallExprNode& n) -> void {
   case prog::sym::FuncKind::ActionFileOpenStream:
     m_asmb->addPCall(novasm::PCallCode::FileOpenStream);
     break;
+  case prog::sym::FuncKind::ActionFileType:
+    m_asmb->addPCall(novasm::PCallCode::FileType);
+    break;
+  case prog::sym::FuncKind::ActionFileModTimeMicroSinceEpoch:
+    m_asmb->addPCall(novasm::PCallCode::FileModTimeMicroSinceEpoch);
+    break;
+  case prog::sym::FuncKind::ActionFileSize:
+    m_asmb->addPCall(novasm::PCallCode::FileSize);
+    break;
+  case prog::sym::FuncKind::ActionFileCreateDir:
+    m_asmb->addPCall(novasm::PCallCode::FileCreateDir);
+    break;
   case prog::sym::FuncKind::ActionFileRemove:
     m_asmb->addPCall(novasm::PCallCode::FileRemove);
+    break;
+  case prog::sym::FuncKind::ActionFileRemoveDir:
+    m_asmb->addPCall(novasm::PCallCode::FileRemoveDir);
+    break;
+  case prog::sym::FuncKind::ActionFileRename:
+    m_asmb->addPCall(novasm::PCallCode::FileRename);
+    break;
+  case prog::sym::FuncKind::ActionFileListDir:
+    m_asmb->addPCall(novasm::PCallCode::FileListDir);
     break;
 
   case prog::sym::FuncKind::ActionTcpOpenCon:
@@ -533,6 +554,10 @@ auto GenExpr::visit(const prog::expr::CallExprNode& n) -> void {
     break;
   case prog::sym::FuncKind::ActionProgramPath:
     m_asmb->addPCall(novasm::PCallCode::ProgramPath);
+    break;
+
+  case prog::sym::FuncKind::ActionGcCollect:
+    m_asmb->addPCall(novasm::PCallCode::GcCollect);
     break;
 
   case prog::sym::FuncKind::ActionSleepNano:

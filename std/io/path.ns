@@ -66,6 +66,9 @@ fun pathDefaultRootUnix()
 fun pathDefaultRootWindows()
   pathAbs("c:/")
 
+fun pathRoot(PathAbsolute abs)
+  pathAbs(abs.root)
+
 fun filename(PathAbsolute abs) -> Option{string}
   abs.path.filename()
 
@@ -111,6 +114,33 @@ fun parent(PathRelative rel) -> PathRelative
 fun parent(Path p)
   if p as PathAbsolute abs -> abs.parent()
   if p as PathRelative rel -> rel.parent()
+
+fun makeRelative(PathAbsolute p, PathAbsolute relativeTo) -> Option{PathRelative}
+  if p.root != relativeTo.root -> None()
+  else ->
+    invoke(lambda (List{string} remSegs, List{string} resSegs)
+    (
+      if remSegs == relativeTo.path.segments  -> pathRel(resSegs)
+      if remSegs.back() as string dir         -> self(remSegs.popBack(), dir :: resSegs)
+      else                                    -> None()
+    ), p.path.segments, List{string}())
+
+fun pathCannonize(Path p) -> Path
+  if p as PathAbsolute abs -> abs.pathCannonize()
+  if p as PathRelative rel -> rel.pathCannonize()
+
+fun pathCannonize(PathAbsolute p) -> PathAbsolute
+  PathAbsolute(p.root, pathCannonize(p.path))
+
+fun pathCannonize(PathRelative p) -> PathRelative
+  PathRelative(p.segments.foldRight( lambda (Tuple{List{string}, int} state, string seg)
+    (
+      if seg == "."   -> Tuple(state.f1, state.f2)
+      if seg == ".."  -> Tuple(state.f1, ++state.f2)
+      if state.f2 > 0 -> Tuple(state.f1, --state.f2)
+      else            -> Tuple(seg :: state.f1, 0)
+    ), Tuple(List{string}(), 0)).f1
+  )
 
 // -- Parsers
 
@@ -158,7 +188,7 @@ act pathDefaultRoot()
   else                              -> pathDefaultRootUnix()
 
 act pathAbsolute(PathRelative rel)
-  pathCurrent() / rel
+  (pathCurrent() / rel).pathCannonize()
 
 act pathAbsolute(Path p)
   if p as PathAbsolute a -> a
@@ -204,6 +234,23 @@ assertEq((pathDefaultRootUnix() / "hello.txt").parent(), pathDefaultRootUnix())
 assertEq(pathRel().parent(), pathRel())
 assertEq(pathDefaultRootUnix().parent(), pathDefaultRootUnix() )
 assertEq(pathDefaultRootWindows().parent(), pathDefaultRootWindows())
+
+assertEq(makeRelative(pathCurrent(), pathCurrent()), pathRel())
+assertEq(makeRelative(pathCurrent() / "hello", pathCurrent()), pathRel() / "hello")
+assertEq(makeRelative(pathCurrent() / "hello" / "world", pathCurrent()), pathRel() / "hello" / "world")
+assertEq(makeRelative(pathCurrent(), pathCurrent().pathRoot()), pathCurrent().path)
+assertEq(makeRelative(pathCurrent(), pathAbs("wierd-root")), None())
+assertEq(makeRelative(pathCurrent(), pathCurrent() / "hello"), None())
+assertEq(makeRelative(pathCurrent() / "world", pathCurrent() / "hello"), None())
+
+assertEq(pathCannonize(pathRel()), pathRel())
+assertEq(pathCannonize(pathRel() / "HelloWorld"), pathRel() / "HelloWorld")
+assertEq(pathCannonize(pathRel() / "."), pathRel())
+assertEq(pathCannonize(pathRel() / ".."), pathRel())
+assertEq(pathCannonize(pathRel() / ".." / ".." / "." / ".."), pathRel())
+assertEq(pathCannonize(pathRel() / "world" / ".." / "world" / "." / "more" / "things"), pathRel() / "world" / "more" / "things")
+assertEq(pathCannonize(pathRel() / "world" / ".." / "world" / ".." / "more" / ".." / "things"), pathRel() / "things")
+assertEq(pathCannonize(pathRel() / "hello" / "good" / "world" / ".." / ".." / "more"), pathRel() / "hello" / "more")
 
 assertEq(pathAbsParser().run("/"), pathAbs("/"))
 assertEq(pathAbsParser().run("c:\\"), pathAbs("c:/"))

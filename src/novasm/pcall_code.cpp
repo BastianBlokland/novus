@@ -46,8 +46,29 @@ auto operator<<(std::ostream& out, const PCallCode& rhs) noexcept -> std::ostrea
   case PCallCode::FileOpenStream:
     out << "file-open-stream";
     break;
+  case PCallCode::FileType:
+    out << "file-type";
+    break;
+  case PCallCode::FileModTimeMicroSinceEpoch:
+    out << "file-mod-time-micro-since-epoch";
+    break;
+  case PCallCode::FileSize:
+    out << "file-size";
+    break;
+  case PCallCode::FileCreateDir:
+    out << "file-create-dir";
+    break;
   case PCallCode::FileRemove:
     out << "file-remove";
+    break;
+  case PCallCode::FileRemoveDir:
+    out << "file-remove-dir";
+    break;
+  case PCallCode::FileRename:
+    out << "file-rename";
+    break;
+  case PCallCode::FileListDir:
+    out << "file-list-dir";
     break;
 
   case PCallCode::TcpOpenCon:
@@ -133,6 +154,10 @@ auto operator<<(std::ostream& out, const PCallCode& rhs) noexcept -> std::ostrea
     break;
   case PCallCode::ProgramPath:
     out << "program-path";
+    break;
+
+  case PCallCode::GcCollect:
+    out << "gc-collect";
     break;
 
   case PCallCode::SleepNano:

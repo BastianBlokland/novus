@@ -11,11 +11,24 @@ import "std/prim.ns"
 enum FileMode =
   Create : 0,
   Open,
+  OpenReadOnly,
   Append
+
+enum FileType =
+  None      : 0,
+  Regular   : 1,
+  Directory : 2,
+  Socket    : 3,
+  Character : 4,
+  Unknown   : 5
 
 enum FileFlags =
   None       : 0b0,
   AutoRemove : 0b1
+
+enum FileListFlags =
+  None            : 0b0,
+  IncludeSymlinks : 0b1
 
 struct File =
   Path        path,
@@ -33,11 +46,15 @@ fun string(File f)
 // -- Actions
 
 act fileOpen(Path p, FileMode m, FileFlags flags = FileFlags.None) -> Either{File, Error}
-  absPath     = p.pathAbsolute();
-  absPathStr  = absPath.string();
-  stream      = intrinsic{file_openstream}(absPathStr, int(m) | flags << 8);
-  if stream.isValid() -> File(absPath, m, flags, stream)
-  else                -> platformError("Failed to open file: '" + absPathStr + "'")
+  invoke(impure lambda (int retry)
+  (
+    absPath     = p.pathAbsolute();
+    absPathStr  = absPath.string();
+    stream      = intrinsic{file_openstream}(absPathStr, int(m) | flags << 8);
+    if stream.isValid() -> File(absPath, m, flags, stream)
+    if retry == 0 && platformErrorCode() == PlatformError.FileTooManyOpenFiles -> gcCollect(); self(++retry)
+    else -> platformError("Failed to open file: '" + absPathStr + "'")
+  ), 0)
 
 act readToEnd(File f) -> Either{string, Error}
   f.stream.readToEnd()
@@ -52,10 +69,10 @@ act write{T}(File f, Writer{T} writer, T val) -> Option{Error}
   f.write(writer.run(val))
 
 act fileRead(Path p) -> Either{string, Error}
-  p.fileOpen(FileMode.Open).map(impure lambda (File f) f.readToEnd())
+  p.fileOpen(FileMode.OpenReadOnly).map(impure lambda (File f) f.readToEnd())
 
 act fileRead{T}(Path p, Parser{T} parser) -> Either{T, Error}
-  p.fileOpen(FileMode.Open).map(impure lambda (File f) f.readToEnd(parser))
+  p.fileOpen(FileMode.OpenReadOnly).map(impure lambda (File f) f.readToEnd(parser))
 
 act fileWrite(Path p, string str) -> Option{Error}
   p.fileOpen(FileMode.Create).map(impure lambda (File f) f.write(str))
@@ -69,12 +86,94 @@ act fileAppend(Path p, string str) -> Option{Error}
 act fileAppend{T}(Path p, Writer{T} writer, T val) -> Option{Error}
   p.fileOpen(FileMode.Append).map(impure lambda (File f) f.write(writer, val))
 
+act fileExists(Path p)    p.fileType() != FileType.None
+act fileDirExists(Path p) p.fileType() == FileType.Directory
+
+act fileType(Path p) -> FileType
+  absPathStr = p.pathAbsolute().string();
+  FileType(intrinsic{file_type}(absPathStr))
+
+act fileModTime(Path p) -> Either{DateTime, Error}
+  absPathStr = p.pathAbsolute().string();
+  microSinceEpoch = intrinsic{file_modification_time_microsinceepoch}(absPathStr);
+  if microSinceEpoch >= 0 -> DateTime(microSinceEpoch, timezone())
+  else                    -> platformError("Failed to get file modification time: '" + absPathStr + "'")
+
+act fileSize(Path p) -> Either{ByteSize, Error}
+  absPathStr = p.pathAbsolute().string();
+  size = intrinsic{file_size}(absPathStr);
+  if size >= 0  -> ByteSize(size)
+  else          -> platformError("Failed to get file size for: '" + absPathStr + "'")
+
+act fileCreateDir(Path p) -> Option{Error}
+  absPathStr = p.pathAbsolute().string();
+  if intrinsic{file_create_directory}(absPathStr) -> None()
+  else -> platformError("Failed to create directory: '" + absPathStr + "'")
+
+act fileCreatePath(Path p) -> Option{Error}
+  if p.fileDirExists()  -> None()
+  else                  -> actSeq(lazy fileCreatePath(p.parent()), lazy fileCreateDir(p))
+
 act fileRemove(Path p) -> Option{Error}
+  absPathStr = p.pathAbsolute().string();
+  if intrinsic{file_remove}(absPathStr) || intrinsic{file_remove_directory}(absPathStr) -> None()
+  else -> platformError("Failed to remove file: '" + absPathStr + "'")
+
+act fileRename(Path old, Path new) -> Option{Error}
+  absOldPathStr = old.pathAbsolute().string();
+  absNewPathStr = new.pathAbsolute().string();
+  if intrinsic{file_rename}(absOldPathStr, absNewPathStr) -> None()
+  else -> platformError("Failed to rename file: '" + absOldPathStr + "' to '" + absNewPathStr + '\'')
+
+act fileList(Path p, FileListFlags flags = FileListFlags.None) -> Either{List{PathAbsolute}, Error}
   absPath     = p.pathAbsolute();
   absPathStr  = absPath.string();
-  intrinsic{file_remove}(absPathStr)
-    ? None()
-    : platformError("Failed to remove file: '" + absPathStr + "'")
+  fileNames   = split(intrinsic{file_list_dir}(absPathStr, flags), equals{char}['\n']);
+  if platformErrorCode() != PlatformError.None -> platformError("Failed to list directory: '" + absPathStr + "'")
+  else -> fileNames.mapReverse(lambda (string fileName) absPath / fileName)
+
+// -- Utilities
+
+act fileListReq(Path p, bool includeDirs = true) -> Either{List{PathAbsolute}, Error}
+  pathAbs = p.pathAbsolute();
+  dl      = fileList(pathAbs, FileListFlags.None);
+  if dl as List{PathAbsolute} entries ->
+    entries.fold(impure lambda (Either{List{PathAbsolute}, Error} result, PathAbsolute entry)
+      combine(result, fileListReq(entry, includeDirs))
+    , includeDirs ? List(pathAbs) : List{PathAbsolute}())
+  if dl as Error err ->
+  (
+    if err.code == PlatformError.FileIsNotDirectory -> List(pathAbs)
+    if err.code == PlatformError.FileNoAccess       -> List{PathAbsolute}()
+    else                                            -> err
+  )
+
+act fileRemoveReq(Path p) -> Option{Error}
+  p.fileListReq(true).map(impure lambda (List{PathAbsolute} entries)
+    entries.mapReverse(impure lambda (PathAbsolute p) fileRemove(p)).combine()
+  )
+
+act fileSizeReq(Path p) -> Either{ByteSize, Error}
+  p.fileListReq(true).map(impure lambda (List{PathAbsolute} entries)
+    entries.mapReverse(impure lambda (PathAbsolute p) fileSize(p)).split().valueOrError().map(sum{ByteSize})
+  )
+
+act fileCopy(Path from, Path to) -> Option{Error}
+  fileOpen(from, FileMode.OpenReadOnly).map(impure lambda (File fromFile)
+    fileOpen(to, FileMode.Create).map(impure lambda (File toFile)
+      copy(fromFile.stream, toFile.stream).eitherGet(Type{Error}())
+    )
+  )
+
+act fileCopyReq(Path from, Path to) -> Option{Error}
+  fromAbs = pathAbsolute(from);
+  fileListReq(fromAbs, false).map(impure lambda (List{PathAbsolute} files)
+    files.mapReverse(
+      impure lambda (PathAbsolute p)
+        targetPath = to / p.makeRelative(fromAbs) ?? pathRel();
+        actSeq(lazy fileCreatePath(targetPath.parent()), lazy fileCopy(p, targetPath))
+    )
+  ); None()
 
 // -- Tests
 
@@ -118,3 +217,25 @@ assertIs(
   fileOpen(p, FileMode.Append, FileFlags.AutoRemove), Type{Error}())
 
 assertIs(fileRemove(pathCurrent() / "non-existing-file"), Type{Error}())
+
+assert(fileType(pathCurrent() / "non-existing-file") == FileType.None)
+
+assert(
+  p = pathCurrent() / "file-test7.tmp";
+  fileType(p) == FileType.None &&
+  fileOpen(p, FileMode.Create, FileFlags.AutoRemove) is File &&
+  fileType(p) == FileType.Regular)
+
+assert(
+  p = pathCurrent() / "file-test8";
+  fileType(p) == FileType.None &&
+  fileCreateDir(p) is None &&
+  fileType(p) == FileType.Directory &&
+  fileRemove(p) is None &&
+  fileType(p) == FileType.None)
+
+assert(
+  p = pathCurrent() / "file-test11.tmp";
+  s = "Hello World";
+  f = fileOpen(p, FileMode.Create, FileFlags.AutoRemove).map( impure lambda (File f) f.write(s));
+  fileSize(p) == ByteSize(s.length()))

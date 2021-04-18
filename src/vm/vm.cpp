@@ -86,6 +86,7 @@ static auto teardown(const internal::Settings* settings, PlatformInterface* ifac
   }
   restoreInputConsole(settings, iface);
   restoreOutputConsole(settings, iface);
+  internal::teardownPlatformUtilities();
 }
 
 #else // !_WIN32
@@ -130,6 +131,7 @@ auto run(const novasm::Executable* executable, PlatformInterface* iface) noexcep
       iface,
       &execRegistry,
       &refAlloc,
+      &gc,
       executable->getEntrypoint(),
       0,
       nullptr,

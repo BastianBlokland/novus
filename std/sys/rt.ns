@@ -12,6 +12,7 @@ enum Platform =
   Windows : 3
 
 enum PlatformError =
+  None                          : 000,
   Unknown                       : 001,
   FeatureNetworkNotEnabled      : 100,
   StreamOptionsNotSupported     : 200,
@@ -40,6 +41,11 @@ enum PlatformError =
   FilePathTooLong               : 504,
   FileDiskFull                  : 505,
   FileLocked                    : 506,
+  FileIsDirectory               : 507,
+  FileIsNotDirectory            : 508,
+  FileDirectoryNotEmpty         : 509,
+  FileAlreadyExists             : 510,
+  FileTooManyOpenFiles          : 511,
   TcpUnknownError               : 600,
   TcpInvalidSocket              : 601,
   TcpInvalidServerSocket        : 602,
@@ -65,6 +71,7 @@ enum PlatformError =
 // -- Conversions
 
 fun noinline string(PlatformError err)
+  if err == PlatformError.None                          -> "None"
   if err == PlatformError.Unknown                       -> "Unknown"
   if err == PlatformError.FeatureNetworkNotEnabled      -> "Network feature not enabled"
   if err == PlatformError.StreamOptionsNotSupported     -> "Stream does not support the given options"
@@ -93,6 +100,11 @@ fun noinline string(PlatformError err)
   if err == PlatformError.FilePathTooLong               -> "File path is too long for the underlying filesystem"
   if err == PlatformError.FileDiskFull                  -> "Not enough space left on the underlying filesystem"
   if err == PlatformError.FileLocked                    -> "File is locked"
+  if err == PlatformError.FileIsDirectory               -> "File is a directory"
+  if err == PlatformError.FileIsNotDirectory            -> "File is not a directory"
+  if err == PlatformError.FileDirectoryNotEmpty         -> "File directory is not empty"
+  if err == PlatformError.FileAlreadyExists             -> "File already exists"
+  if err == PlatformError.FileTooManyOpenFiles          -> "Too many files open"
   if err == PlatformError.TcpUnknownError               -> "Unknown Tcp error occured"
   if err == PlatformError.TcpInvalidSocket              -> "Invalid Tcp socket"
   if err == PlatformError.TcpInvalidServerSocket        -> "Invalid Tcp server socket"

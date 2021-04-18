@@ -78,8 +78,10 @@ fun push{T}(List{T} l, T val, int times)
   else          -> self(l.push(val), val, --times)
 
 fun push{T}(List{T} l, List{T} l2)
-  if l2 as LNode{T} n -> List{T}(n.val, push(l, n.next))
-  if l2 is LEnd       -> l
+  l.pushReverse(l2.reverse())
+
+fun pushReverse{T}(List{T} l, List{T} l2)
+  l2.fold(lambda (List{T} result, T val) push(result, val) , l)
 
 fun pushUnique{T}(List{T} l, T val)
   l.contains(val) ? l : l.push(val)
