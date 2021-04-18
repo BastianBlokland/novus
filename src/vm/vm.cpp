@@ -86,6 +86,7 @@ static auto teardown(const internal::Settings* settings, PlatformInterface* ifac
   }
   restoreInputConsole(settings, iface);
   restoreOutputConsole(settings, iface);
+  internal::teardownPlatformUtilities();
 }
 
 #else // !_WIN32

@@ -2,7 +2,6 @@
 #include "config.hpp"
 #include "internal/executor_handle.hpp"
 #include "internal/interupt.hpp"
-#include "internal/path_utilities.hpp"
 #include "internal/platform_utilities.hpp"
 #include "internal/ref_process.hpp"
 #include "internal/ref_stream_console.hpp"
@@ -346,10 +345,10 @@ auto inline pcall(
 #endif
   } break;
   case PCallCode::WorkingDirPath: {
-    PUSH_REF(getWorkingDirPath(refAlloc));
+    PUSH_REF(platformWorkingDirPath(refAlloc));
   } break;
   case PCallCode::RtPath: {
-    PUSH_REF(getExecPath(refAlloc));
+    PUSH_REF(platformExecPath(refAlloc));
   } break;
   case PCallCode::ProgramPath: {
     const auto& path = iface->getProgramPath();

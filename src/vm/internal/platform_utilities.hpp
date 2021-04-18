@@ -80,6 +80,7 @@ enum class PlatformError : uint32_t {
 };
 
 auto setupPlatformUtilities() noexcept -> void;
+auto teardownPlatformUtilities() noexcept -> void;
 
 [[nodiscard]] auto clockMicroSinceEpoch() noexcept -> int64_t;
 
@@ -88,8 +89,12 @@ auto setupPlatformUtilities() noexcept -> void;
 // Returns the local timezone offset in minutes.
 [[nodiscard]] auto clockTimezoneOffset() noexcept -> int32_t;
 
-[[nodiscard]] auto platformHasEnv(const StringRef* name) -> bool;
-[[nodiscard]] auto platformGetEnv(const StringRef* name, RefAllocator* refAlloc) -> StringRef*;
+[[nodiscard]] auto platformHasEnv(const StringRef* name) noexcept -> bool;
+[[nodiscard]] auto platformGetEnv(const StringRef* name, RefAllocator* refAlloc) noexcept
+    -> StringRef*;
+
+[[nodiscard]] auto platformWorkingDirPath(RefAllocator* refAlloc) noexcept -> StringRef*;
+[[nodiscard]] auto platformExecPath(RefAllocator* refAlloc) noexcept -> StringRef*;
 
 #if defined(_WIN32)
 [[nodiscard]] inline auto winFileTimeToMicroSinceEpoch(const FILETIME& fileTime) noexcept

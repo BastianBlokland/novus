@@ -580,6 +580,7 @@ inline auto getFilePlatformError() noexcept -> PlatformError {
   case EINVAL:
     return PlatformError::FileInvalidFileName;
   case EMFILE:
+  case ENFILE:
     return PlatformError::FileTooManyOpenFiles;
   }
 
