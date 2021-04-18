@@ -9,6 +9,7 @@
 namespace vm::internal {
 
 class FutureRef;
+class GarbageCollector;
 
 // Execute a specific entrypoint in the executable until completion.
 //
@@ -20,6 +21,7 @@ auto execute(
     PlatformInterface* iface,
     ExecutorRegistry* execRegistry,
     RefAllocator* refAlloc,
+    GarbageCollector* gc,
     uint32_t entryIpOffset,
     uint8_t entryArgCount,
     Value* entryArgSource,

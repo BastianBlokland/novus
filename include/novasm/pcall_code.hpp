@@ -68,6 +68,8 @@ enum class PCallCode : uint8_t {
   RtPath         = 102, // () -> (string) Get the path of the runtime executable.
   ProgramPath    = 103, // () -> (string) Get the path of the currently running program.
 
+  GcCollect = 200, // (int) -> (int) Manually run a garbage collection.
+
   SleepNano = 240, // (long)         -> (int) Sleep the current executor for x nanoseconds.
 };
 

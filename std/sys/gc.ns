@@ -1,0 +1,23 @@
+import "std/core.ns"
+import "std/prim.ns"
+
+// -- Types
+
+enum GcCollectFlags =
+  Normal        : 0b0,
+  BlockingSweep : 0b1
+
+// -- Conversions
+
+fun string(GcCollectFlags f) toEnumFlagNames(f).string()
+
+// -- Actions
+
+act gcCollect(GcCollectFlags flags = GcCollectFlags.Normal) -> None
+  intrinsic{gc_collect}(flags); None()
+
+// -- Tests
+
+// Note: Nothing to assert yet from the library side, but this at least tests that it doesn't deadlock :)
+assertEq(gcCollect(GcCollectFlags.Normal), None())
+assertEq(gcCollect(GcCollectFlags.BlockingSweep), None())

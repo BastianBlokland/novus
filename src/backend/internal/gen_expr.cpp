@@ -556,6 +556,10 @@ auto GenExpr::visit(const prog::expr::CallExprNode& n) -> void {
     m_asmb->addPCall(novasm::PCallCode::ProgramPath);
     break;
 
+  case prog::sym::FuncKind::ActionGcCollect:
+    m_asmb->addPCall(novasm::PCallCode::GcCollect);
+    break;
+
   case prog::sym::FuncKind::ActionSleepNano:
     m_asmb->addPCall(novasm::PCallCode::SleepNano);
     break;

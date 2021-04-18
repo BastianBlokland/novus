@@ -334,6 +334,9 @@ Program::Program() :
       *this, Fk::ActionProgramPath, "path_program", sym::TypeSet{}, m_string);
 
   m_funcDecls.registerIntrinsicAction(
+      *this, Fk::ActionGcCollect, "gc_collect", sym::TypeSet{m_int}, m_int);
+
+  m_funcDecls.registerIntrinsicAction(
       *this, Fk::ActionSleepNano, "sleep_nano", sym::TypeSet{m_long}, m_bool);
 }
 

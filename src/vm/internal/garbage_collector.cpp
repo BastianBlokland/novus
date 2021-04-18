@@ -20,8 +20,12 @@ thread_local static unsigned int bytesAllocThreadAccum;
 GarbageCollector::GarbageCollector(RefAllocator* refAlloc, ExecutorRegistry* execReg) noexcept :
     m_refAlloc{refAlloc},
     m_execRegistry{execReg},
+    m_bytesUntilNextCollection{gcByteInterval},
     m_collectorStatus{CollectorStatus::NotRunning},
-    m_requestType{RequestType::None} {
+    m_requestType{RequestType::None},
+    m_requestCollectFlags{GcCollectNormal},
+    m_collectionStarted{0},
+    m_collectionFinished{0} {
 
   assert(refAlloc && execReg);
 
@@ -47,16 +51,26 @@ auto GarbageCollector::startCollector() noexcept -> CollectorStartResult {
   return CollectorStartResult::Success;
 }
 
-auto GarbageCollector::requestCollection() noexcept -> void {
+auto GarbageCollector::requestCollection(GarbageCollectFlags flags) noexcept -> CollectionId {
   assert(m_collectorStatus.load(std::memory_order_acquire) == CollectorStatus::Running);
 
+  CollectionId result;
   {
     std::lock_guard<std::mutex> lk(m_requestMutex);
     if (likely(m_requestType == RequestType::None)) {
       m_requestType = RequestType::Collect;
     }
+    m_requestCollectFlags = static_cast<GarbageCollectFlags>(m_requestCollectFlags | flags);
+    result                = m_collectionStarted.load(std::memory_order_acquire) + 1;
   }
   m_requestCondVar.notify_one();
+  return result;
+}
+
+auto GarbageCollector::collectNow(GarbageCollectFlags flags) noexcept -> void {
+  auto collectionId = requestCollection(flags);
+  while (m_collectionFinished.load(std::memory_order_acquire) < collectionId)
+    threadYield();
 }
 
 auto GarbageCollector::terminateCollector() noexcept -> void {
@@ -81,8 +95,9 @@ auto GarbageCollector::notifyAlloc(unsigned int size) noexcept -> void {
     // Decrease the bytesUntilNextCollection atomic.
     if (m_bytesUntilNextCollection.fetch_sub(bytesAllocThreadAccum, std::memory_order_acq_rel) <
         0) {
+
       m_bytesUntilNextCollection.store(gcByteInterval, std::memory_order_release);
-      requestCollection();
+      requestCollection(GarbageCollectFlags::GcCollectNormal);
     }
 
     bytesAllocThreadAccum = 0;
@@ -90,6 +105,7 @@ auto GarbageCollector::notifyAlloc(unsigned int size) noexcept -> void {
 }
 
 auto GarbageCollector::collectorLoop() noexcept -> void {
+  GarbageCollectFlags collectFlags = GcCollectNormal;
   while (true) {
     // Wait for a request (or timout for a minimum gc interval).
     {
@@ -100,21 +116,24 @@ auto GarbageCollector::collectorLoop() noexcept -> void {
       if (unlikely(m_requestType == RequestType::Terminate)) {
         break;
       }
+      collectFlags          = m_requestCollectFlags;
+      m_requestType         = RequestType::None;
+      m_requestCollectFlags = GcCollectNormal;
+      m_collectionStarted.fetch_add(1, std::memory_order_acq_rel);
 
       // Reset the bytes counter.
       m_bytesUntilNextCollection.store(gcByteInterval, std::memory_order_release);
-
-      m_requestType = RequestType::None;
     }
 
     // Collect garbage.
-    collect();
+    collect(collectFlags);
   }
 
   m_collectorStatus.store(CollectorStatus::Terminated, std::memory_order_release);
 }
 
-auto GarbageCollector::collect() noexcept -> void {
+auto GarbageCollector::collect(GarbageCollectFlags flags) noexcept -> void {
+
   // Pause all executors. This makes sure that we are free to inspect the stacks of the allocators
   // and no new allocations are being made.
   m_execRegistry->pauseExecutors(); // Will block until all executors have paused.
@@ -128,11 +147,18 @@ auto GarbageCollector::collect() noexcept -> void {
   // Get the head ref to start the sweep from.
   Ref* sweepHead = m_refAlloc->getHeadAlloc();
 
-  // Resume the executors as the sweeping can run concurrently with the program.
-  m_execRegistry->resumeExecutors();
+  if ((flags & GcCollectBlockingSweep) == 0) {
+    m_execRegistry->resumeExecutors();
+  }
 
   // Remove all non-marked allocations.
   sweep(sweepHead);
+
+  if (flags & GcCollectBlockingSweep) {
+    m_execRegistry->resumeExecutors();
+  }
+
+  m_collectionFinished.fetch_add(1, std::memory_order_acq_rel);
 }
 
 auto GarbageCollector::populateMarkQueue() noexcept -> void {

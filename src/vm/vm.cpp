@@ -130,6 +130,7 @@ auto run(const novasm::Executable* executable, PlatformInterface* iface) noexcep
       iface,
       &execRegistry,
       &refAlloc,
+      &gc,
       executable->getEntrypoint(),
       0,
       nullptr,

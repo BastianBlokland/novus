@@ -156,6 +156,10 @@ auto operator<<(std::ostream& out, const PCallCode& rhs) noexcept -> std::ostrea
     out << "program-path";
     break;
 
+  case PCallCode::GcCollect:
+    out << "gc-collect";
+    break;
+
   case PCallCode::SleepNano:
     out << "sleep-nano";
     break;

@@ -162,6 +162,8 @@ enum class FuncKind {
   ActionRtPath,         // Get the path of the runtime executable.
   ActionProgramPath,    // Get the path of the currently executing program.
 
+  ActionGcCollect, // Manually run a garbage collection.
+
   ActionSleepNano, // Sleep the executor for x nanoseconds.
 };
 

@@ -29,11 +29,12 @@ auto inline pcall(
     const novasm::Executable* executable,
     PlatformInterface* iface,
     RefAllocator* refAlloc,
+    GarbageCollector* gc,
     BasicStack* stack,
     ExecutorHandle* execHandle,
     PlatformError* pErr,
     novasm::PCallCode code) noexcept -> void {
-  assert(iface && refAlloc && stack && execHandle);
+  assert(iface && refAlloc && gc && stack && execHandle);
 
   using PCallCode = novasm::PCallCode;
 
@@ -353,6 +354,16 @@ auto inline pcall(
   case PCallCode::ProgramPath: {
     const auto& path = iface->getProgramPath();
     PUSH_REF(refAlloc->allocStrLit(path.data(), path.length()));
+  } break;
+
+  case PCallCode::GcCollect: {
+    auto flags = static_cast<GarbageCollectFlags>(PEEK_INT());
+    execHandle->setState(ExecState::Paused);
+    gc->collectNow(flags);
+    execHandle->setState(ExecState::Running);
+    if (execHandle->trap()) {
+      return;
+    }
   } break;
 
   case PCallCode::SleepNano: {
