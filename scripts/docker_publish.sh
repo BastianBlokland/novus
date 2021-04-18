@@ -96,5 +96,5 @@ info "Pushing image to repository"
 sudo docker push "${repository}:${tag}"
 sudo docker push "${repository}:latest"
 
-info "Sucesfully published docker image"
+info "Successfully published docker image"
 exit 0
