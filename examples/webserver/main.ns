@@ -13,8 +13,8 @@ struct Resource =
   string          content
 
 struct RewriteRule =
-  string source,
-  string replacement
+  GlobTextPattern source,
+  string          replacement
 
 struct Content =
   List{RewriteRule} rewrites,
@@ -31,12 +31,13 @@ struct ClientContext =
   Parser{HttpReqHeader}  reqParser
 
 fun rewriteUrl(Content c, string url) -> string
-  rewriten = c.rewrites.map(lambda (RewriteRule r) r.source == url ? Option(r.replacement) : None());
-  rewriten.front() ?? url
+  maybeRule = c.rewrites.first(lambda (RewriteRule r) textMatch(r.source, url));
+  if maybeRule as RewriteRule rule -> rule.replacement.replace("{SOURCE}", url)
+  else -> url
 
 fun getResource(Content c, string url) -> Option{Resource}
   rewrittenUrl = c.rewriteUrl(url);
-  c.resources.filter(lambda (Resource r) r.url == rewrittenUrl).front()
+  c.resources.first(lambda (Resource r) r.url == rewrittenUrl)
 
 fun replaceVariables(ClientContext ctx, Resource r) -> string
   if !r.type.isText() -> r.content
@@ -104,8 +105,8 @@ struct Settings =
   Option{Path}      root
 
 act serve(Settings s)
-  rootPath = s.root ?? pathProgram().parent() / "site";
-  content = loadContent(rootPath, s.rewriteRules, getFileNames());
+  rootPath = pathAbsolute(s.root ?? (pathProgram().parent() / "site"));
+  content = loadContent(rootPath, s.rewriteRules);
   print("Starting server (url: http://localhost:" + s.port + ")");
   startTime   = timeNow();
   timeWriter  = dateTimeRFC1123Writer();
@@ -126,32 +127,25 @@ act serve(Settings s)
   );
   tcpServer(TcpServerSettings(handleCon, s.port)).error()
 
-act loadContent(Path root, List{RewriteRule} rewriteUrls, List{string} files)
+act loadContent(PathAbsolute root, List{RewriteRule} rewriteUrls)
   print("Loading resouces (root: '" + root.string() + "')");
-  resources = files.parallelMap(impure lambda (string file)
-    path        = root / file;
-    contentType = path.findHttpContentType();
-    content     = path.fileRead().failOnError();
-    Resource("/" + file, contentType, content)
+  files = fileListReq(root, false).failOnError();
+  resources = files.parallelMap(impure lambda (PathAbsolute filePath)
+    contentType = findHttpContentType(filePath);
+    content     = fileRead(filePath).failOnError();
+    Resource("/" + makeRelative(filePath, root).string(), contentType, content)
   );
   print("Loaded " + resources.length() + " resources");
   Content(rewriteUrls, resources)
 
-// TODO: Remove this hardcoded list once we have support for iterating directories.
-fun getFileNames()
-  "index.html"        ::
-  "style.css"         ::
-  "readme.html"       ::
-  "win.jpg"           ::
-  "github-logo.png"   ::
-  "favicon.ico"
-
 fun cliDefaults(Type{Settings} t)
   CliDefault("port",          "8080") ::
-  CliDefault("rewrite-rules", "/>/index.html")
+  CliDefault("rewrite-rules", "*/>{SOURCE}index.html")
 
 fun cliParser(Type{RewriteRule} t)
-  (untilParser(equals{char}['>']) << matchParser('>') & allParser()).to(Type{RewriteRule}())
+  (
+    untilParser(equals{char}['>']) << matchParser('>') & allParser()
+  ).map(lambda (Tuple{string, string} t) RewriteRule(GlobTextPattern(t.f1), t.f2))
 
 cli(cliCmd("serve", serve, "Serve webpages"),
     cliAppInfo("Novus WebServer", "Example of a very basic http webserver writen in Novus.\n" +
