@@ -296,7 +296,14 @@ auto precomputeIntrinsic(
     }
     const auto flags     = static_cast<uint8_t>(options);
     const auto precision = static_cast<uint8_t>(options >> 8U);
-    auto ss              = std::stringstream{};
+
+#if defined(_WIN32) && (!defined(_MSC_VER) || _MSC_VER < 1400)
+    // By default windows will add a leading zero to pad to 3 digits in the exponent, to be
+    // consistent with unix we enable the 'two digit' mode.
+    _set_output_format(_TWO_DIGIT_EXPONENT);
+#endif
+
+    auto ss = std::stringstream{};
     if (flags == 0) {
       // No special flags.
     } else if (flags & (1 << 0)) {
