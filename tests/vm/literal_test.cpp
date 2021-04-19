@@ -47,7 +47,7 @@ TEST_CASE("[vm] Execute literals", "vm") {
     CHECK_EXPR(
         [](novasm::Assembler* asmb) -> void {
           asmb->addLoadLitFloat(0.1337F); // NOLINT: Magic numbers
-          asmb->addConvFloatString();
+          ADD_FLOAT_TO_STRING(asmb, 6, 0);
           ADD_PRINT(asmb);
         },
         "input",
@@ -55,7 +55,7 @@ TEST_CASE("[vm] Execute literals", "vm") {
     CHECK_EXPR(
         [](novasm::Assembler* asmb) -> void {
           asmb->addLoadLitFloat(-0.1337F); // NOLINT: Magic numbers
-          asmb->addConvFloatString();
+          ADD_FLOAT_TO_STRING(asmb, 6, 0);
           ADD_PRINT(asmb);
         },
         "input",

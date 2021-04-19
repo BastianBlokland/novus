@@ -163,7 +163,7 @@ Program::Program() :
   m_funcDecls.registerIntrinsic(
       *this, Fk::ConvLongString, "long_to_string", sym::TypeSet{m_long}, m_string);
   m_funcDecls.registerIntrinsic(
-      *this, Fk::ConvFloatString, "float_to_string", sym::TypeSet{m_float}, m_string);
+      *this, Fk::ConvFloatString, "float_to_string", sym::TypeSet{m_float, m_int}, m_string);
   m_funcDecls.registerIntrinsic(
       *this, Fk::ConvCharString, "char_to_string", sym::TypeSet{m_char}, m_string);
   m_funcDecls.registerIntrinsic(*this, Fk::NoOp, "char_as_int", sym::TypeSet{m_char}, m_int);

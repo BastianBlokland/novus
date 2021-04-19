@@ -134,4 +134,10 @@ inline auto prepareStdIn(std::string input) -> FileHandle {
     (ASMB)->label(endLabel);                                                                       \
   }
 
+#define ADD_FLOAT_TO_STRING(ASMB, PRECISION, FLAGS)                                                \
+  {                                                                                                \
+    (ASMB)->addLoadLitInt((FLAGS) | ((PRECISION) << 8u));                                          \
+    (ASMB)->addConvFloatString();                                                                  \
+  }
+
 } // namespace vm

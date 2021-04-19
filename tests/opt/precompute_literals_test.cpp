@@ -135,13 +135,31 @@ TEST_CASE("[opt] Precompute literals", "opt") {
     ASSERT_EXPR_INT(precomputeLiterals, "intrinsic{float_to_int}(1337.0)", litIntNode(prog, 1337));
     ASSERT_EXPR_STRING(
         precomputeLiterals,
-        "intrinsic{float_to_string}(intrinsic{float_div_float}(0.0, 0.0))",
+        "intrinsic{float_to_string}(intrinsic{float_div_float}(0.0, 0.0), 1536)",
         litStringNode(prog, "nan"));
     ASSERT_EXPR_STRING(
-        precomputeLiterals, "intrinsic{float_to_string}(42.1337)", litStringNode(prog, "42.1337"));
+        precomputeLiterals,
+        "intrinsic{float_to_string}(42.1337, 1536)",
+        litStringNode(prog, "42.1337"));
     ASSERT_EXPR_STRING(
         precomputeLiterals,
-        "intrinsic{float_to_string}(intrinsic{float_neg}(42.1337))",
+        "intrinsic{float_to_string}(.00001337, 1536)",
+        litStringNode(prog, "1.337e-05"));
+    ASSERT_EXPR_STRING(
+        precomputeLiterals,
+        "intrinsic{float_to_string}(.00001337, 1537)",
+        litStringNode(prog, "0.000013"));
+    ASSERT_EXPR_STRING(
+        precomputeLiterals,
+        "intrinsic{float_to_string}(.00001337, 2049)",
+        litStringNode(prog, "0.00001337"));
+    ASSERT_EXPR_STRING(
+        precomputeLiterals,
+        "intrinsic{float_to_string}(42.1337, 1538)",
+        litStringNode(prog, "4.213370e+01"));
+    ASSERT_EXPR_STRING(
+        precomputeLiterals,
+        "intrinsic{float_to_string}(intrinsic{float_neg}(42.1337), 1536)",
         litStringNode(prog, "-42.1337"));
     ASSERT_EXPR_CHAR(precomputeLiterals, "intrinsic{float_to_char}(230.0)", litCharNode(prog, 230));
     ASSERT_EXPR_LONG(precomputeLiterals, "intrinsic{float_to_long}(230.0)", litLongNode(prog, 230));
