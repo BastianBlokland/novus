@@ -11,7 +11,7 @@ TEST_CASE("[vm] Execute conversions", "vm") {
           asmb->addLoadLitInt(42);
           asmb->addConvIntFloat();
 
-          asmb->addConvFloatString();
+          ADD_FLOAT_TO_STRING(asmb, 6, 0);
           ADD_PRINT(asmb);
         },
         "input",
@@ -21,7 +21,7 @@ TEST_CASE("[vm] Execute conversions", "vm") {
           asmb->addLoadLitInt(-2147483647);
           asmb->addConvIntFloat();
 
-          asmb->addConvFloatString();
+          ADD_FLOAT_TO_STRING(asmb, 6, 0);
           ADD_PRINT(asmb);
         },
         "input",
@@ -90,7 +90,7 @@ TEST_CASE("[vm] Execute conversions", "vm") {
           asmb->addLoadLitLong(42);
           asmb->addConvLongFloat();
 
-          asmb->addConvFloatString();
+          ADD_FLOAT_TO_STRING(asmb, 6, 0);
           ADD_PRINT(asmb);
         },
         "input",
@@ -100,7 +100,7 @@ TEST_CASE("[vm] Execute conversions", "vm") {
           asmb->addLoadLitLong(51474836478);
           asmb->addConvLongFloat();
 
-          asmb->addConvFloatString();
+          ADD_FLOAT_TO_STRING(asmb, 6, 0);
           ADD_PRINT(asmb);
         },
         "input",
@@ -240,7 +240,7 @@ TEST_CASE("[vm] Execute conversions", "vm") {
     CHECK_EXPR(
         [](novasm::Assembler* asmb) -> void {
           asmb->addLoadLitFloat(0.0F);
-          asmb->addConvFloatString();
+          ADD_FLOAT_TO_STRING(asmb, 6, 0);
           ADD_PRINT(asmb);
         },
         "input",
@@ -248,23 +248,63 @@ TEST_CASE("[vm] Execute conversions", "vm") {
     CHECK_EXPR(
         [](novasm::Assembler* asmb) -> void {
           asmb->addLoadLitFloat(42.0F); // NOLINT: Magic numbers
-          asmb->addConvFloatString();
+          ADD_FLOAT_TO_STRING(asmb, 6, 0);
           ADD_PRINT(asmb);
         },
         "input",
         "42");
     CHECK_EXPR(
         [](novasm::Assembler* asmb) -> void {
+          asmb->addLoadLitFloat(42.0F); // NOLINT: Magic numbers
+          ADD_FLOAT_TO_STRING(asmb, 6, 1);
+          ADD_PRINT(asmb);
+        },
+        "input",
+        "42.000000");
+    CHECK_EXPR(
+        [](novasm::Assembler* asmb) -> void {
+          asmb->addLoadLitFloat(42.0F); // NOLINT: Magic numbers
+          ADD_FLOAT_TO_STRING(asmb, 2, 1);
+          ADD_PRINT(asmb);
+        },
+        "input",
+        "42.00");
+    CHECK_EXPR(
+        [](novasm::Assembler* asmb) -> void {
+          asmb->addLoadLitFloat(42.0F); // NOLINT: Magic numbers
+          ADD_FLOAT_TO_STRING(asmb, 0, 1);
+          ADD_PRINT(asmb);
+        },
+        "input",
+        "42");
+    CHECK_EXPR(
+        [](novasm::Assembler* asmb) -> void {
+          asmb->addLoadLitFloat(42.0F); // NOLINT: Magic numbers
+          ADD_FLOAT_TO_STRING(asmb, 6, 2);
+          ADD_PRINT(asmb);
+        },
+        "input",
+        "4.200000e+01");
+    CHECK_EXPR(
+        [](novasm::Assembler* asmb) -> void {
           asmb->addLoadLitFloat(42.1337F); // NOLINT: Magic numbers
-          asmb->addConvFloatString();
+          ADD_FLOAT_TO_STRING(asmb, 6, 0);
           ADD_PRINT(asmb);
         },
         "input",
         "42.1337");
     CHECK_EXPR(
         [](novasm::Assembler* asmb) -> void {
+          asmb->addLoadLitFloat(42.1337F); // NOLINT: Magic numbers
+          ADD_FLOAT_TO_STRING(asmb, 1, 1);
+          ADD_PRINT(asmb);
+        },
+        "input",
+        "42.1");
+    CHECK_EXPR(
+        [](novasm::Assembler* asmb) -> void {
           asmb->addLoadLitFloat(0.42F); // NOLINT: Magic numbers
-          asmb->addConvFloatString();
+          ADD_FLOAT_TO_STRING(asmb, 6, 0);
           ADD_PRINT(asmb);
         },
         "input",
@@ -272,7 +312,7 @@ TEST_CASE("[vm] Execute conversions", "vm") {
     CHECK_EXPR(
         [](novasm::Assembler* asmb) -> void {
           asmb->addLoadLitFloat(999999.0F); // NOLINT: Magic numbers
-          asmb->addConvFloatString();
+          ADD_FLOAT_TO_STRING(asmb, 6, 0);
           ADD_PRINT(asmb);
         },
         "input",
@@ -280,7 +320,7 @@ TEST_CASE("[vm] Execute conversions", "vm") {
     CHECK_EXPR(
         [](novasm::Assembler* asmb) -> void {
           asmb->addLoadLitFloat(99999.1F); // NOLINT: Magic numbers
-          asmb->addConvFloatString();
+          ADD_FLOAT_TO_STRING(asmb, 6, 0);
           ADD_PRINT(asmb);
         },
         "input",
@@ -288,7 +328,7 @@ TEST_CASE("[vm] Execute conversions", "vm") {
     CHECK_EXPR(
         [](novasm::Assembler* asmb) -> void {
           asmb->addLoadLitFloat(0.000001F); // NOLINT: Magic numbers
-          asmb->addConvFloatString();
+          ADD_FLOAT_TO_STRING(asmb, 6, 0);
           ADD_PRINT(asmb);
         },
         "input",
@@ -296,15 +336,23 @@ TEST_CASE("[vm] Execute conversions", "vm") {
     CHECK_EXPR(
         [](novasm::Assembler* asmb) -> void {
           asmb->addLoadLitFloat(9999999999.0F); // NOLINT: Magic numbers
-          asmb->addConvFloatString();
+          ADD_FLOAT_TO_STRING(asmb, 6, 0);
           ADD_PRINT(asmb);
         },
         "input",
         "1e+10"); // Rounding error.
     CHECK_EXPR(
         [](novasm::Assembler* asmb) -> void {
+          asmb->addLoadLitFloat(9999999999.0F); // NOLINT: Magic numbers
+          ADD_FLOAT_TO_STRING(asmb, 4, 1);
+          ADD_PRINT(asmb);
+        },
+        "input",
+        "10000000000.0000"); // Rounding error.
+    CHECK_EXPR(
+        [](novasm::Assembler* asmb) -> void {
           asmb->addLoadLitFloat(-0.42F); // NOLINT: Magic numbers
-          asmb->addConvFloatString();
+          ADD_FLOAT_TO_STRING(asmb, 6, 0);
           ADD_PRINT(asmb);
         },
         "input",
@@ -312,7 +360,7 @@ TEST_CASE("[vm] Execute conversions", "vm") {
     CHECK_EXPR(
         [](novasm::Assembler* asmb) -> void {
           asmb->addLoadLitFloat(-9999999999.0F); // NOLINT: Magic numbers
-          asmb->addConvFloatString();
+          ADD_FLOAT_TO_STRING(asmb, 6, 0);
           ADD_PRINT(asmb);
         },
         "input",

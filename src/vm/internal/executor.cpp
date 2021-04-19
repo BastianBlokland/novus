@@ -691,7 +691,12 @@ auto execute(
       PUSH_REF(intToString(refAlloc, getLong(POP())));
     } break;
     case OpCode::ConvFloatString: {
-      PUSH_REF(floatToString(refAlloc, POP_FLOAT()));
+      // Flags are stored in the least significant 8 bits.
+      // Precision is stored in the 8 bits before (more significant).
+      const auto options   = POP_INT();
+      const auto flags     = static_cast<FloatToStringFlags>(options);
+      const auto precision = static_cast<uint8_t>(options >> 8U);
+      PUSH_REF(floatToString(refAlloc, POP_FLOAT(), precision, flags));
     } break;
     case OpCode::ConvCharString: {
       PUSH_REF(charToString(refAlloc, static_cast<uint8_t>(POP_INT())));

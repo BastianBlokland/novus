@@ -345,10 +345,12 @@ TEST_CASE("[backend] Generate assembly for call expressions", "backend") {
       asmb->addLoadLitLong(42);
       asmb->addConvLongString();
     });
-    CHECK_EXPR_STRING("intrinsic{float_to_string}(.1337)", [](novasm::Assembler* asmb) -> void {
-      asmb->addLoadLitFloat(0.1337F);
-      asmb->addConvFloatString();
-    });
+    CHECK_EXPR_STRING(
+        "intrinsic{float_to_string}(.1337, 1536)", [](novasm::Assembler* asmb) -> void {
+          asmb->addLoadLitFloat(0.1337F);
+          asmb->addLoadLitInt(1536);
+          asmb->addConvFloatString();
+        });
     CHECK_EXPR_STRING("intrinsic{char_to_string}('a')", [](novasm::Assembler* asmb) -> void {
       asmb->addLoadLitInt('a');
       asmb->addConvCharString();

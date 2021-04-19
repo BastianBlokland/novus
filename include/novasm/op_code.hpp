@@ -89,19 +89,19 @@ enum class OpCode : uint8_t {
   CheckIntZero      = 103, // [] (int)                    -> (int) Check if integer is zero.
   CheckStringEmpty  = 104, // [] (string)                 -> (int) Check if string is empty.
 
-  ConvIntLong     = 111, // [] (int)   -> (long)     Convert int to long.
-  ConvIntFloat    = 112, // [] (int)   -> (float)    Convert int to float.
-  ConvLongInt     = 113, // [] (long)  -> (int)      Convert long to int.
-  ConvLongFloat   = 114, // [] (long)  -> (float)    Convert long to float.
-  ConvFloatInt    = 115, // [] (float) -> (int)      Convert float to int.
-  ConvIntString   = 116, // [] (int)   -> (string)   Convert int to string.
-  ConvLongString  = 117, // [] (long)  -> (string)   Convert long to string.
-  ConvFloatString = 118, // [] (float) -> (string)   Convert float to string.
-  ConvCharString  = 119, // [] (int)   -> (string)   Convert char to string (8 bit).
-  ConvIntChar     = 120, // [] (int)   -> (int)      Convert int to char (8 bit).
-  ConvLongChar    = 121, // [] (long)  -> (int)      Convert long to char (8 bit).
-  ConvFloatChar   = 122, // [] (float) -> (int)      Convert float to char (8 bit).
-  ConvFloatLong   = 123, // [] (float) -> (long)     Convert float to long.
+  ConvIntLong     = 111, // [] (int)        -> (long)   Convert int to long.
+  ConvIntFloat    = 112, // [] (int)        -> (float)  Convert int to float.
+  ConvLongInt     = 113, // [] (long)       -> (int)    Convert long to int.
+  ConvLongFloat   = 114, // [] (long)       -> (float)  Convert long to float.
+  ConvFloatInt    = 115, // [] (float)      -> (int)    Convert float to int.
+  ConvIntString   = 116, // [] (int)        -> (string) Convert int to string.
+  ConvLongString  = 117, // [] (long)       -> (string) Convert long to string.
+  ConvFloatString = 118, // [] (int, float) -> (string) Convert float to string (takes options).
+  ConvCharString  = 119, // [] (int)        -> (string) Convert char to string (8 bit).
+  ConvIntChar     = 120, // [] (int)        -> (int)    Convert int to char (8 bit).
+  ConvLongChar    = 121, // [] (long)       -> (int)    Convert long to char (8 bit).
+  ConvFloatChar   = 122, // [] (float)      -> (int)    Convert float to char (8 bit).
+  ConvFloatLong   = 123, // [] (float)      -> (long)   Convert float to long.
 
   MakeAtomic        = 180, // [int32]        ()       -> (atomic) Create a new atomic value.
   AtomicLoad        = 181, // []             (atomic) -> (int)    Load the value of the atomic.

@@ -240,9 +240,9 @@ fun txtHexWriter(int minDigits = 0)
     s.write(string('0', minDigits - str.length()) + str)
   )
 
-fun txtFloatWriter()
+fun txtFloatWriter(int precision = 6, FloatToStringFlags flags = FloatToStringFlags.Normal)
   Writer(lambda (WriterState s, float f)
-    s.write(f.string())
+    s.write(f.string(precision, flags))
   )
 
 fun txtBoolWriter(string trueTxt = "true", string falseTxt = "false")

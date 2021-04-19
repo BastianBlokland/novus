@@ -74,16 +74,35 @@ template <typename IntType>
   return str;
 }
 
-[[nodiscard]] auto inline floatToString(RefAllocator* refAlloc, float val) noexcept -> StringRef* {
+enum FloatToStringFlags : uint8_t {
+  FloatToStringNormal           = 0,
+  FloatToStringNeverScientific  = 1 << 0,
+  FloatToStringAlwaysScientific = 1 << 1,
+};
+
+[[nodiscard]] auto inline floatToString(
+    RefAllocator* refAlloc, float val, uint8_t precision, FloatToStringFlags flags) noexcept
+    -> StringRef* {
+
   // In theory the 'nan' case is already covered by 'snprintf' but it seems some implementations
   // return '-nan' instead causing an inconsistency between platforms.
   if (unlikely(std::isnan(val))) {
     return refAlloc->allocStrLit("nan", 3);
   }
 
+  const char* format;
+  if (flags & FloatToStringNeverScientific) {
+    format = "%.*f";
+  } else if (flags & FloatToStringAlwaysScientific) {
+    format = "%.*e";
+  } else {
+    format = "%.*g";
+  }
+
   // NOLINTNEXTLINE: C-style var-arg func.
-  const auto charSize = std::snprintf(nullptr, 0, "%.6g", val) + 1; // +1: null-terminator.
-  const auto str      = refAlloc->allocStr(charSize);
+  const auto charSize =
+      std::snprintf(nullptr, 0, format, precision, val) + 1; // +1: null-terminator.
+  const auto str = refAlloc->allocStr(charSize);
   if (unlikely(str == nullptr)) {
     return nullptr;
   }
@@ -96,7 +115,7 @@ template <typename IntType>
 #endif
 
   // NOLINTNEXTLINE: C-style var-arg func.
-  const auto size = std::snprintf(charDataPtr, charSize, "%.6g", val);
+  const auto size = std::snprintf(charDataPtr, charSize, format, precision, val);
   str->updateSize(size);
 
   return str;

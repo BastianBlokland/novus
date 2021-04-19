@@ -3,6 +3,13 @@ import "type.ns"
 import "std/core.ns"
 import "std/diag.ns"
 
+// -- Types
+
+enum FloatToStringFlags =
+  Normal            : 0b00,
+  NeverScientific   : 0b01,
+  AlwaysScientific  : 0b10
+
 // -- Constructors
 
 fun string() ""
@@ -15,8 +22,8 @@ fun string(int i)
 fun string(long l)
   intrinsic{long_to_string}(l)
 
-fun string(float f)
-  intrinsic{float_to_string}(f)
+fun string(float f, int precision = 6, FloatToStringFlags flags = FloatToStringFlags.Normal)
+  intrinsic{float_to_string}(f, int(flags) | precision << 8)
 
 fun string(bool b)
   b ? "true" : "false"
@@ -111,6 +118,51 @@ assertEq(string("hello", 2), "hellohello")
 assertEq(string("hello", 3), "hellohellohello")
 assertEq(string("hello", 0), "")
 assertEq(string("hello", -1), "")
+
+assertEq(string(nan()), "nan")
+assertEq(string(42.0, 6, FloatToStringFlags.Normal), "42")
+assertEq(string(42.1337, 6, FloatToStringFlags.Normal), "42.1337")
+assertEq(string(420000000.0, 6, FloatToStringFlags.Normal), "4.2e+08")
+assertEq(string(.0000042, 6, FloatToStringFlags.Normal), "4.2e-06")
+assertEq(string(.000004242, 6, FloatToStringFlags.Normal), "4.242e-06")
+assertEq(string(.000004242, 7, FloatToStringFlags.Normal), "4.242e-06")
+assertEq(string(.000004242, 5, FloatToStringFlags.Normal), "4.242e-06")
+
+assertEq(string(42.0, 7, FloatToStringFlags.NeverScientific), "42.0000000")
+assertEq(string(42.1337, 7, FloatToStringFlags.NeverScientific), "42.1337013")
+assertEq(string(42.1337, 6, FloatToStringFlags.NeverScientific), "42.133701")
+assertEq(string(42.1337, 5, FloatToStringFlags.NeverScientific), "42.13370")
+assertEq(string(42.1337, 4, FloatToStringFlags.NeverScientific), "42.1337")
+assertEq(string(42.1337, 3, FloatToStringFlags.NeverScientific), "42.134")
+assertEq(string(42.1337, 2, FloatToStringFlags.NeverScientific), "42.13")
+assertEq(string(42.1337, 1, FloatToStringFlags.NeverScientific), "42.1")
+assertEq(string(42.1337, 0, FloatToStringFlags.NeverScientific), "42")
+assertEq(string(-42.1337, 7, FloatToStringFlags.NeverScientific), "-42.1337013")
+assertEq(string(-42.1337, 6, FloatToStringFlags.NeverScientific), "-42.133701")
+assertEq(string(-42.1337, 5, FloatToStringFlags.NeverScientific), "-42.13370")
+assertEq(string(-42.1337, 4, FloatToStringFlags.NeverScientific), "-42.1337")
+assertEq(string(-42.1337, 3, FloatToStringFlags.NeverScientific), "-42.134")
+assertEq(string(-42.1337, 2, FloatToStringFlags.NeverScientific), "-42.13")
+assertEq(string(-42.1337, 1, FloatToStringFlags.NeverScientific), "-42.1")
+assertEq(string(-42.1337, 0, FloatToStringFlags.NeverScientific), "-42")
+
+assertEq(string(42.0, 7, FloatToStringFlags.AlwaysScientific), "4.2000000e+01")
+assertEq(string(42.1337, 7, FloatToStringFlags.AlwaysScientific), "4.2133701e+01")
+assertEq(string(42.1337, 6, FloatToStringFlags.AlwaysScientific), "4.213370e+01")
+assertEq(string(42.1337, 5, FloatToStringFlags.AlwaysScientific), "4.21337e+01")
+assertEq(string(42.1337, 4, FloatToStringFlags.AlwaysScientific), "4.2134e+01")
+assertEq(string(42.1337, 3, FloatToStringFlags.AlwaysScientific), "4.213e+01")
+assertEq(string(42.1337, 2, FloatToStringFlags.AlwaysScientific), "4.21e+01")
+assertEq(string(42.1337, 1, FloatToStringFlags.AlwaysScientific), "4.2e+01")
+assertEq(string(42.1337, 0, FloatToStringFlags.AlwaysScientific), "4e+01")
+assertEq(string(-42.1337, 7, FloatToStringFlags.AlwaysScientific), "-4.2133701e+01")
+assertEq(string(-42.1337, 6, FloatToStringFlags.AlwaysScientific), "-4.213370e+01")
+assertEq(string(-42.1337, 5, FloatToStringFlags.AlwaysScientific), "-4.21337e+01")
+assertEq(string(-42.1337, 4, FloatToStringFlags.AlwaysScientific), "-4.2134e+01")
+assertEq(string(-42.1337, 3, FloatToStringFlags.AlwaysScientific), "-4.213e+01")
+assertEq(string(-42.1337, 2, FloatToStringFlags.AlwaysScientific), "-4.21e+01")
+assertEq(string(-42.1337, 1, FloatToStringFlags.AlwaysScientific), "-4.2e+01")
+assertEq(string(-42.1337, 0, FloatToStringFlags.AlwaysScientific), "-4e+01")
 
 assert("".isEmpty())
 assertNot(" ".isEmpty())

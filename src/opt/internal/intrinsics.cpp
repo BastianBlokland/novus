@@ -288,13 +288,28 @@ auto precomputeIntrinsic(
     return prog::expr::litIntNode(prog, static_cast<int32_t>(getFloat(*args[0])));
   }
   case prog::sym::FuncKind::ConvFloatString: {
-    assert(args.size() == 1);
-    auto f = getFloat(*args[0]);
+    assert(args.size() == 2);
+    const auto f       = getFloat(*args[0]);
+    const auto options = getInt(*args[1]);
     if (std::isnan(f)) {
       return prog::expr::litStringNode(prog, "nan");
     }
-    auto ss = std::stringstream{};
-    ss << std::setprecision(6) << f;
+    const auto flags     = static_cast<uint8_t>(options);
+    const auto precision = static_cast<uint8_t>(options >> 8U);
+    auto ss              = std::stringstream{};
+    if (flags == 0) {
+      // No special flags.
+    } else if (flags & (1 << 0)) {
+      // Never-scientific flag.
+      ss << std::setiosflags(std::ios_base::fixed);
+    } else if (flags & (1 << 1)) {
+      // Always-scientific flag.
+      ss << std::setiosflags(std::ios_base::scientific);
+    } else {
+      // flag combination unsupported by this precompute routine.
+      return nullptr;
+    }
+    ss << std::setprecision(precision) << f;
     return prog::expr::litStringNode(prog, ss.str());
   }
   case prog::sym::FuncKind::ConvFloatChar: {

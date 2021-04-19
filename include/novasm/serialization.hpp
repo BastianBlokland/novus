@@ -7,7 +7,7 @@ namespace novasm {
 // Version number for the binary representation of the novus assembly format.
 // Increase this when performing breaking changes to the format.
 // TODO(bastian): Add system for defining migrations.
-const uint16_t executableFormatVersion = 16U;
+const uint16_t executableFormatVersion = 17U;
 
 // Write a binary representation of the executable file to the output iterator.
 template <typename OutputItr>
