@@ -147,9 +147,22 @@ fun isUTC(Timezone t) t.offset == Duration(0)
 // -- Duration
 // Represents elapsed time, can be negative.
 
+enum DurationUnit = Nanosecond, Microsecond, Millisecond, Second, Minute, Hour, Day, Week
+
 struct Duration = long ns
 
 fun Duration() Duration(0)
+
+fun noinline Duration(DurationUnit unit)
+  if unit == DurationUnit.Nanosecond  -> nanosecond()
+  if unit == DurationUnit.Microsecond -> microsecond()
+  if unit == DurationUnit.Millisecond -> millisecond()
+  if unit == DurationUnit.Second      -> second()
+  if unit == DurationUnit.Minute      -> minute()
+  if unit == DurationUnit.Hour        -> hour()
+  if unit == DurationUnit.Day         -> day()
+  if unit == DurationUnit.Week        -> week()
+  else                                -> nanosecond()
 
 fun -(Duration d)  Duration(-d.ns)
 fun -(Duration d1, Duration d2)   Duration(d1.ns - d2.ns)
@@ -209,28 +222,30 @@ fun hours(Duration d)         d.ns / hour().ns
 fun days(Duration d)          d.ns / day().ns
 fun weeks(Duration d)         d.ns / week().ns
 
-// Create a human readable representation.
-fun noinline string(Duration d)
-  if d.ns < 0L  -> "-" + absDuration(d).string()
-  else          ->
-    if d < microsecond()  ->  d.nanoseconds().string()    + "ns"
-    if d < millisecond()  ->  d.microseconds().string()   + "µs"
-    if d < second()       ->  d.milliseconds().string()   + "ms"
-    if d < minute()       ->  d.seconds().string()        + "s"
-    if d < hour()         ->  d.minutes().string()        + "m" +
-                              (d.seconds() % 60).string() + "s"
-    if d < day()          ->  d.hours().string()          + "h" +
-                              (d.minutes() % 60).string() + "m" +
-                              (d.seconds() % 60).string() + "s"
-    if d < week()         ->  d.days().string()           + "d" +
-                              (d.hours() % 24).string()   + "h" +
-                              (d.minutes() % 60).string() + "m" +
-                              (d.seconds() % 60).string() + "s"
-    else                  ->  d.weeks().string()          + "w" +
-                              (d.days() % 7).string()     + "d" +
-                              (d.hours() % 24).string()   + "h" +
-                              (d.minutes() % 60).string() + "m" +
-                              (d.seconds() % 60).string() + "s"
+fun noinline durationUnit(Duration d)
+  absTime = absDuration(d);
+  if absTime < microsecond()  -> DurationUnit.Nanosecond
+  if absTime < millisecond()  -> DurationUnit.Microsecond
+  if absTime < second()       -> DurationUnit.Millisecond
+  if absTime < minute()       -> DurationUnit.Second
+  if absTime < hour()         -> DurationUnit.Minute
+  if absTime < day()          -> DurationUnit.Hour
+  if absTime < week()         -> DurationUnit.Day
+  else                        -> DurationUnit.Week
+
+fun noinline string(DurationUnit d)
+  if d == DurationUnit.Nanosecond  -> "ns"
+  if d == DurationUnit.Microsecond -> "µs"
+  if d == DurationUnit.Millisecond -> "ms"
+  if d == DurationUnit.Second      -> "s"
+  if d == DurationUnit.Minute      -> "m"
+  if d == DurationUnit.Hour        -> "h"
+  if d == DurationUnit.Day         -> "d"
+  if d == DurationUnit.Week        -> "w"
+  else                             -> ""
+
+fun string(Duration d)
+  timeDurationWriter().run(d)
 
 // -- Timestamp
 // Difference between DateTime is that Timestamp is more precise (nanoseconds) and does not
@@ -401,6 +416,16 @@ fun dateTimePrettyWriter(bool includeMillies = false) -> Writer{DateTime}
       includeMillies ? Option{long}(sinceEpoch.milliseconds() % 1000) : None(),
       dt.zone))
 
+// Duration in human readable format
+// Example output: '42.3s'.
+fun timeDurationWriter(Writer{None} sepWriter = noneWriter()) -> Writer{Duration}
+  (
+    txtFloatWriter(1, FloatToStringFlags.NeverScientific) & sepWriter & stringWriter()
+  ).map(lambda (Duration d)
+    unit = durationUnit(d);
+    Tuple(d.ns.float() / Duration(unit).ns.float(), unit.string())
+  )
+
 // -- Actions
 
 // Get a DateTime from the current system clock.
@@ -460,25 +485,25 @@ assertEq(hour().nanoseconds(), 3_600_000_000_000L)
 assertEq(day().nanoseconds(), 86_400_000_000_000L)
 assertEq(week().nanoseconds(), 604_800_000_000_000L)
 
-assertEq(nanoseconds(42).string(), "42ns")
-assertEq(microseconds(42).string(), "42µs")
-assertEq(milliseconds(42).string(), "42ms")
-assertEq(seconds(42).string(), "42s")
-assertEq(minutes(42).string(), "42m0s")
-assertEq(hours(4).string(), "4h0m0s")
-assertEq(days(4).string(), "4d0h0m0s")
-assertEq(weeks(4).string(), "4w0d0h0m0s")
-assertEq((weeks(5) + days(4) + hours(3) + minutes(2) + seconds(1)).string(), "5w4d3h2m1s")
+assertEq(nanoseconds(42).string(), "42.0ns")
+assertEq(microseconds(42).string(), "42.0µs")
+assertEq(milliseconds(42).string(), "42.0ms")
+assertEq(seconds(42).string(), "42.0s")
+assertEq(minutes(42).string(), "42.0m")
+assertEq(hours(4).string(), "4.0h")
+assertEq(days(4).string(), "4.0d")
+assertEq(weeks(4).string(), "4.0w")
+assertEq((weeks(5) + days(4) + hours(3) + minutes(2) + seconds(1)).string(), "5.6w")
 
-assertEq(nanoseconds(-42).string(), "-42ns")
-assertEq(microseconds(-42).string(), "-42µs")
-assertEq(milliseconds(-42).string(), "-42ms")
-assertEq(seconds(-42).string(), "-42s")
-assertEq(minutes(-42).string(), "-42m0s")
-assertEq(hours(-4).string(), "-4h0m0s")
-assertEq(days(-4).string(), "-4d0h0m0s")
-assertEq(weeks(-4).string(), "-4w0d0h0m0s")
-assertEq((weeks(-5) + days(-4) + hours(-3) + minutes(-2) + seconds(-1)).string(), "-5w4d3h2m1s")
+assertEq(nanoseconds(-42).string(), "-42.0ns")
+assertEq(microseconds(-42).string(), "-42.0µs")
+assertEq(milliseconds(-42).string(), "-42.0ms")
+assertEq(seconds(-42).string(), "-42.0s")
+assertEq(minutes(-42).string(), "-42.0m")
+assertEq(hours(-4).string(), "-4.0h")
+assertEq(days(-4).string(), "-4.0d")
+assertEq(weeks(-4).string(), "-4.0w")
+assertEq((weeks(-5) + days(-4) + hours(-3) + minutes(-2) + seconds(-1)).string(), "-5.6w")
 
 assertEq(absDuration(weeks(-42)), weeks(42))
 assertEq(absDuration(minDuration()), maxDuration())
