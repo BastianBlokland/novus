@@ -550,6 +550,9 @@ assertEq(
   l = 42 :: 1337 :: -42 :: -5;
   l.sort(), -42 :: -5 :: 42 :: 1337)
 assertEq(List{int}().sort(), List{int}())
+assertEq(
+  l = "January" :: "February" :: "March" :: "April" :: "May" :: "June" :: "July" :: "August" :: "September" :: "October" :: "November" :: "December";
+  l.sort(), "April" :: "August" :: "December" :: "February" :: "January" :: "July" :: "June" :: "March" :: "May" :: "November" :: "October" :: "September")
 
 assertEq(
   l = 1 :: 2 :: 3;
