@@ -61,11 +61,14 @@ fun string(long i, int minDigits)
 
 fun string{T}(T val,         Meta{#8}     structTypeKind)     reflectStructToString(val)
 fun string{T}(T val,         Meta{#9}     unionTypeKind)      reflectUnionToString(val)
-fun string{T}(T val,         Meta{#10}    enumTypeKind)       reflectEnumKeyForVal(val) ?? ""
+fun string{T}(T val,         Meta{#10}    enumTypeKind)       stringForEnum(val)
 fun string{T, TypeId}(T val, Meta{TypeId} fallbackTypeKind)   typeName{T}()
 
 fun string{T}(T val)
   val.string(Meta{reflect_type_kind{T}}())
+
+fun stringForEnum{T}(T val)
+  reflectEnumKeyForVal(val) ?? ""
 
 // -- Operators
 
