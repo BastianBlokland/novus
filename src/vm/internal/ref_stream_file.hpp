@@ -403,7 +403,7 @@ inline auto renameFile(PlatformError* pErr, StringRef* oldPath, StringRef* newPa
 }
 
 inline auto
-fileListDir(RefAllocator* refAlloc, PlatformError* pErr, StringRef* path, FileListDirFlags flags)
+fileDirList(RefAllocator* refAlloc, PlatformError* pErr, StringRef* path, FileListDirFlags flags)
     -> StringRef* {
 
   StringRef* buffer = nullptr;
@@ -441,8 +441,7 @@ fileListDir(RefAllocator* refAlloc, PlatformError* pErr, StringRef* path, FileLi
     const size_t nameLength = ::strlen(findData.cFileName);
     if (findData.cFileName[0] == '.' &&
         (nameLength == 1 || (nameLength == 2 && findData.cFileName[1] == '.'))) {
-      // Skip the '.' and '..' entries.
-      continue;
+      continue; // Skip the '.' and '..' entries.
     }
 
     if (writeHead + nameLength + 1 >= bufferEnd) { // Note: +1 for the seperating newline.
@@ -486,8 +485,7 @@ fileListDir(RefAllocator* refAlloc, PlatformError* pErr, StringRef* path, FileLi
     const size_t nameLength = ::strlen(dirEnt->d_name);
     if (dirEnt->d_name[0] == '.' &&
         (nameLength == 1 || (nameLength == 2 && dirEnt->d_name[1] == '.'))) {
-      // Skip the '.' and '..' entries.
-      continue;
+      continue; // Skip the '.' and '..' entries.
     }
 
     if (writeHead + nameLength + 1 >= bufferEnd) { // Note: +1 for the seperating newline.
@@ -522,6 +520,62 @@ fileListDir(RefAllocator* refAlloc, PlatformError* pErr, StringRef* path, FileLi
     return buffer;
   }
   return refAlloc->allocStr(0);
+}
+
+inline auto fileDirCount(PlatformError* pErr, StringRef* path, FileListDirFlags flags) -> int32_t {
+
+  int32_t result = -2; // Note: Start at -2 to exclude the '.' and '..' entries.
+#if defined(_WIN32)
+
+  if (path->getSize() > MAX_PATH) {
+    *pErr = PlatformError::FilePathTooLong;
+    return -1;
+  }
+
+  // Append '/*' to the input path to turn it into a filter for FindFirstFile.
+  // Info: https://docs.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-findfirstfileexa
+  char inputPathBuffer[MAX_PATH + 2];
+  ::memcpy(inputPathBuffer, path->getCharDataPtr(), path->getSize());
+  ::memcpy(inputPathBuffer + path->getSize(), "/*", 3); // 3 to copy the null-terminator also.
+
+  WIN32_FIND_DATA findData;
+  HANDLE searchHandle = ::FindFirstFileExA(
+      inputPathBuffer, FindExInfoBasic, &findData, FindExSearchNameMatch, nullptr, 0);
+  if (searchHandle == INVALID_HANDLE_VALUE) {
+    *pErr = getFilePlatformError();
+    return -1;
+  }
+  do {
+    const bool isSymlink = (findData.dwFileAttributes & FILE_ATTRIBUTE_REPARSE_POINT) &&
+        (findData.dwReserved0 == IO_REPARSE_TAG_SYMLINK);
+    if ((flags & IncludeSymlinks) || !isSymlink) {
+      ++result;
+    }
+  } while (::FindNextFileA(searchHandle, &findData));
+
+  if (!::FindClose(searchHandle)) {
+    *pErr = PlatformError::FileUnknownError;
+    return -1;
+  }
+
+#else // !_WIN32
+
+  if (DIR* dir = ::opendir(path->getCharDataPtr())) {
+    while (struct dirent* dirEnt = ::readdir(dir)) {
+      if ((flags & IncludeSymlinks) || dirEnt->d_type != DT_LNK) {
+        ++result;
+      }
+    }
+    if (::closedir(dir)) {
+      *pErr = PlatformError::FileUnknownError;
+      return -1;
+    }
+  } else {
+    *pErr = getFilePlatformError();
+    return -1;
+  }
+#endif // !_WIN32
+  return result;
 }
 
 inline auto getFilePlatformError() noexcept -> PlatformError {

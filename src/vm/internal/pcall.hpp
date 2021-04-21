@@ -211,11 +211,17 @@ auto inline pcall(
     CHECK_ALLOC(oldStrRef);
     PUSH_BOOL(renameFile(pErr, oldStrRef, newStrRef));
   } break;
-  case PCallCode::FileListDir: {
+  case PCallCode::FileDirList: {
     auto flags       = static_cast<FileListDirFlags>(POP_INT());
     auto* pathStrRef = getStringRef(refAlloc, POP());
     CHECK_ALLOC(pathStrRef);
-    PUSH_REF(fileListDir(refAlloc, pErr, pathStrRef, flags));
+    PUSH_REF(fileDirList(refAlloc, pErr, pathStrRef, flags));
+  } break;
+  case PCallCode::FileDirCount: {
+    auto flags       = static_cast<FileListDirFlags>(POP_INT());
+    auto* pathStrRef = getStringRef(refAlloc, POP());
+    CHECK_ALLOC(pathStrRef);
+    PUSH_INT(fileDirCount(pErr, pathStrRef, flags));
   } break;
 
   case PCallCode::TcpOpenCon: {

@@ -128,9 +128,15 @@ act fileRename(Path old, Path new) -> Option{Error}
 act fileList(Path p, FileListFlags flags = FileListFlags.None) -> Either{List{PathAbsolute}, Error}
   absPath     = p.pathAbsolute();
   absPathStr  = absPath.string();
-  fileNames   = split(intrinsic{file_list_dir}(absPathStr, flags), equals{char}['\n']);
+  fileNames   = split(intrinsic{file_dir_list}(absPathStr, flags), equals{char}['\n']);
   if platformErrorCode() != PlatformError.None -> platformError("Failed to list directory: '" + absPathStr + "'")
   else -> fileNames.mapReverse(lambda (string fileName) absPath / fileName)
+
+act fileCount(Path p, FileListFlags flags = FileListFlags.None) -> Either{int, Error}
+  absPathStr  = p.pathAbsolute().string();
+  count       = intrinsic{file_dir_count}(absPathStr, flags);
+  if count >= 0 -> count
+  else -> platformError("Failed to count directory: '" + absPathStr + "'")
 
 // -- Utilities
 
