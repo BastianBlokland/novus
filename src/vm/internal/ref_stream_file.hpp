@@ -15,9 +15,10 @@ enum class FileType : uint8_t {
   None      = 0,
   Regular   = 1,
   Directory = 2,
-  Socket    = 3,
-  Character = 4,
-  Unknown   = 5,
+  Symlink   = 3,
+  Socket    = 4,
+  Character = 5,
+  Unknown   = 6,
 };
 
 enum class FileStreamMode : uint8_t {
@@ -236,12 +237,15 @@ inline auto getFileType(StringRef* path) -> FileType {
   if (attributes & FILE_ATTRIBUTE_DIRECTORY) {
     return FileType::Directory;
   }
+  if (attributes & FILE_ATTRIBUTE_REPARSE_POINT) {
+    return FileType::Symlink;
+  }
   return FileType::Regular;
 
 #else // !_WIN32
 
   struct stat statResult;
-  if (::stat(path->getCharDataPtr(), &statResult) != 0) {
+  if (::lstat(path->getCharDataPtr(), &statResult) != 0) {
     return FileType::None;
   }
   if (S_ISREG(statResult.st_mode)) {
@@ -249,6 +253,9 @@ inline auto getFileType(StringRef* path) -> FileType {
   }
   if (S_ISDIR(statResult.st_mode)) {
     return FileType::Directory;
+  }
+  if (S_ISLNK(statResult.st_mode)) {
+    return FileType::Symlink;
   }
   if (S_ISSOCK(statResult.st_mode)) {
     return FileType::Socket;

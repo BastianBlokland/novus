@@ -18,9 +18,10 @@ enum FileType =
   None      : 0,
   Regular   : 1,
   Directory : 2,
-  Socket    : 3,
-  Character : 4,
-  Unknown   : 5
+  Symlink   : 3,
+  Socket    : 4,
+  Character : 5,
+  Unknown   : 6
 
 enum FileFlags =
   None       : 0b0,
