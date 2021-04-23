@@ -159,6 +159,27 @@ private:
       m_filePath{filePath} {}
 };
 
+#if defined(_WIN32)
+inline auto fileValidWin32Path(PlatformError* pErr, StringRef* path) -> bool {
+  if (path->getSize() > MAX_PATH) {
+    *pErr = PlatformError::FilePathTooLong;
+    return false;
+  }
+  for (const char* p = path->getCharDataPtr(); p != path->getCharDataPtrEnd(); ++p) {
+    switch (*p) {
+    case '?':
+    case '*':
+    case '|':
+    case '<':
+    case '>':
+      *pErr = PlatformError::FileInvalidFileName;
+      return false;
+    }
+  }
+  return true;
+}
+#endif
+
 inline auto openFileStream(
     RefAllocator* alloc, PlatformError* pErr, StringRef* path, FileStreamMode m, FileStreamFlags f)
     -> FileStreamRef* {
@@ -419,8 +440,7 @@ fileDirList(RefAllocator* refAlloc, PlatformError* pErr, StringRef* path, FileLi
 
 #if defined(_WIN32)
 
-  if (path->getSize() > MAX_PATH) {
-    *pErr = PlatformError::FilePathTooLong;
+  if (!fileValidWin32Path(pErr, path)) {
     return refAlloc->allocStr(0);
   }
 
@@ -534,8 +554,7 @@ inline auto fileDirCount(PlatformError* pErr, StringRef* path, FileListDirFlags 
   int32_t result = -2; // Note: Start at -2 to exclude the '.' and '..' entries.
 #if defined(_WIN32)
 
-  if (path->getSize() > MAX_PATH) {
-    *pErr = PlatformError::FilePathTooLong;
+  if (!fileValidWin32Path(pErr, path)) {
     return -1;
   }
 
