@@ -85,12 +85,13 @@ act collectRootInfo(List{Path} paths, Settings s) -> RootInfo
 // -- Collect info for a set of roots
 
 act collectDirRootInfos(List{Path} roots, Settings s) -> List{RootInfo}
-  roots.map(impure lambda (Path p)
+  roots.mapReverse(impure lambda (Path p)
     fileType(p) == FileType.Directory ? Option(collectRootInfo(p, s)) : None()
-  )
+  ).reverse()
 
 act collectUnamedRootInfos(List{Path} roots, Settings s) -> List{RootInfo}
-  root = collectRootInfo(roots.filter(impure lambda (Path p) fileType(p) != FileType.Directory), s);
+  files = roots.filterReverse(impure lambda (Path p) fileType(p) != FileType.Directory);
+  root = collectRootInfo(files, s);
   root.entries.isEmpty() ? List{RootInfo}() : List(root)
 
 act collectRootInfos(List{Path} roots, Settings s) -> List{RootInfo}
@@ -161,7 +162,7 @@ struct Settings =
 
 fun cliDefaults(Type{Settings} t)
   CliDefault("filter",      "*")    ::
-  CliDefault("sort-limit",  "5000") ::
+  CliDefault("sort-limit",  "1000") ::
   CliDefault("sort",        "name")
 
 act main(Settings s)

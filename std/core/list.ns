@@ -114,8 +114,10 @@ fun take{T}(List{T} l, int amount)
   if l is LEnd        -> l
 
 fun take{T}(List{T} l, function{T, bool} pred)
-  if l as LNode{T} n  -> pred(n.val) ? List{T}(n.val, take(n.next, pred)) : List{T}()
-  if l is LEnd        -> l
+  invoke(lambda (List{T} rem, List{T} result)
+    if rem as LNode{T} n  -> pred(n.val) ? self(n.next, n.val :: result) : result
+    if rem is LEnd        -> result
+  , l, List{T}()).reverse()
 
 fun insert{T}(List{T} l, int idx, T val)
   l.take(idx) :: val :: l.pop(idx)

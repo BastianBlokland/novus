@@ -70,7 +70,7 @@ fun cliOptVal{T}(CliResult r, CliId id, Type{CliPositional{T}} t) -> Either{CliP
 
 fun cliOptVal{T}(CliResult r, CliId id, Type{List{T}} t) -> Either{List{T}, Error}
   p = cliParser(Type{T}());
-  r.cliValues(id).map(lambda (string s) cliParse(r, id, p, s)).split().valueOrError()
+  r.cliValues(id).mapReverse(lambda (string s) cliParse(r, id, p, s)).reverse().split().valueOrError()
 
 fun cliOptVal{T}(CliResult r, CliId id, Type{T} t) -> Either{T, Error}
   if r.cliValues(id).front() as string s -> cliParse(r, id, t, s)
