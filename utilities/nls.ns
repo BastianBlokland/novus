@@ -50,20 +50,20 @@ act collectEntryInfo(Path p, Settings s) -> Option{EntryInfo}
 enum SortMode = Name, Ext, Size, Time
 
 fun orderFile(FileInfo f1, FileInfo f2, Settings s)
-  if s.sort == SortMode.Ext   -> f1.ext > f2.ext
-  if s.sort == SortMode.Size  -> f1.size > f2.size
-  if s.sort == SortMode.Time  -> f1.time > f2.time
-  else                        -> f1.name < f2.name
+  if s.sort == SortMode.Ext && f1.ext != f2.ext     -> f1.ext > f2.ext
+  if s.sort == SortMode.Size && f1.size != f2.size  -> f1.size > f2.size
+  if s.sort == SortMode.Time && f1.time != f2.time  -> f1.time > f2.time
+  else                                              -> f1.name < f2.name
 
 fun orderDir(DirInfo d1, DirInfo d2, Settings s)
-  if s.sort == SortMode.Size  -> d1.items > d2.items
-  if s.sort == SortMode.Time  -> d1.time > d2.time
-  else                        -> d1.name < d2.name
+  if s.sort == SortMode.Size && d1.items != d2.items  -> d1.items > d2.items
+  if s.sort == SortMode.Time && d1.time != d2.time    -> d1.time > d2.time
+  else                                                -> d1.name < d2.name
 
 fun orderEntry(EntryInfo e1, EntryInfo e2, Settings s)
-  if e1 as FileInfo f1      && e2 as FileInfo f2      -> orderFile(f1, f2, s)
-  if e1 as DirInfo d1 && e2 as DirInfo d2 -> orderDir(d1, d2, s)
-  else                                                -> e1 is DirInfo
+  if e1 as FileInfo f1 && e2 as FileInfo f2  -> orderFile(f1, f2, s)
+  if e1 as DirInfo d1 && e2 as DirInfo d2    -> orderDir(d1, d2, s)
+  else                                       -> e1 is DirInfo
 
 fun sortEntries(List{EntryInfo} entries, Settings s)
   entries.length() <= s.sortLimit ? entries.sort(orderEntry[s]) : entries
@@ -161,7 +161,7 @@ struct Settings =
 
 fun cliDefaults(Type{Settings} t)
   CliDefault("filter",      "*")    ::
-  CliDefault("sort-limit",  "512")  ::
+  CliDefault("sort-limit",  "5000") ::
   CliDefault("sort",        "name")
 
 act main(Settings s)
