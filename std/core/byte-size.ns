@@ -78,9 +78,11 @@ fun string(ByteSize s)
 // -- Writers
 
 // Create a human readable representation.
-fun byteSizeWriter(Writer{None} sepWriter = noneWriter()) -> Writer{ByteSize}
+fun byteSizeWriter(
+  Writer{float} numWriter = txtFloatWriter(1, FloatToStringFlags.NeverScientific),
+  Writer{None}  sepWriter = noneWriter()) -> Writer{ByteSize}
   (
-    txtFloatWriter(1, FloatToStringFlags.NeverScientific) & sepWriter & enumKeyWriter(Type{ByteSizeUnit}())
+    numWriter & sepWriter & enumKeyWriter(Type{ByteSizeUnit}())
   ).map(lambda (ByteSize bs)
     unit = byteSizeUnit(bs);
     Tuple(bs.bytes.float() / ByteSize(unit).bytes.float(), unit)

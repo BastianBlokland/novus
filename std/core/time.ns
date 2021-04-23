@@ -235,7 +235,7 @@ fun noinline durationUnit(Duration d)
 
 fun noinline string(DurationUnit d)
   if d == DurationUnit.Nanosecond  -> "ns"
-  if d == DurationUnit.Microsecond -> "µs"
+  if d == DurationUnit.Microsecond -> "us"
   if d == DurationUnit.Millisecond -> "ms"
   if d == DurationUnit.Second      -> "s"
   if d == DurationUnit.Minute      -> "m"
@@ -418,9 +418,11 @@ fun dateTimePrettyWriter(bool includeMillies = false) -> Writer{DateTime}
 
 // Duration in human readable format
 // Example output: '42.3s'.
-fun timeDurationWriter(Writer{None} sepWriter = noneWriter()) -> Writer{Duration}
+fun timeDurationWriter(
+  Writer{float} numWriter = txtFloatWriter(1, FloatToStringFlags.NeverScientific),
+  Writer{None}  sepWriter = noneWriter()) -> Writer{Duration}
   (
-    txtFloatWriter(1, FloatToStringFlags.NeverScientific) & sepWriter & stringWriter()
+    numWriter & sepWriter & stringWriter()
   ).map(lambda (Duration d)
     unit = durationUnit(d);
     Tuple(d.ns.float() / Duration(unit).ns.float(), unit.string())
@@ -486,7 +488,7 @@ assertEq(day().nanoseconds(), 86_400_000_000_000L)
 assertEq(week().nanoseconds(), 604_800_000_000_000L)
 
 assertEq(nanoseconds(42).string(), "42.0ns")
-assertEq(microseconds(42).string(), "42.0µs")
+assertEq(microseconds(42).string(), "42.0us")
 assertEq(milliseconds(42).string(), "42.0ms")
 assertEq(seconds(42).string(), "42.0s")
 assertEq(minutes(42).string(), "42.0m")
@@ -496,7 +498,7 @@ assertEq(weeks(4).string(), "4.0w")
 assertEq((weeks(5) + days(4) + hours(3) + minutes(2) + seconds(1)).string(), "5.6w")
 
 assertEq(nanoseconds(-42).string(), "-42.0ns")
-assertEq(microseconds(-42).string(), "-42.0µs")
+assertEq(microseconds(-42).string(), "-42.0us")
 assertEq(milliseconds(-42).string(), "-42.0ms")
 assertEq(seconds(-42).string(), "-42.0s")
 assertEq(minutes(-42).string(), "-42.0m")

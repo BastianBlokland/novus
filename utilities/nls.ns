@@ -1,0 +1,173 @@
+// --- File listing.
+// Basic 'ls' style file listing application.
+
+import "std.ns"
+
+// -- Collect file info
+
+struct FileInfo =
+  FileType  type,
+  string    name,
+  string    ext,
+  ByteSize  size,
+  DateTime  time
+
+act collectFileInfo(Path p, FileType type, Settings s) -> Option{EntryInfo}
+  name = filename(p) ?? "";
+  if !textMatch(s.filter, name) -> None()
+  else ->
+    ext   = extension(p) ?? "";
+    size  = fileSize(p) ?? bytes(0);
+    time  = fileModTime(p) ?? timeEpoch();
+    EntryInfo(FileInfo(type, s.escape ? escapeForPrinting(name) : name, ext, size, time))
+
+// -- Collect directory info
+
+struct DirInfo =
+  string    name,
+  int       items,
+  DateTime  time
+
+act collectDirInfo(Path p, Settings s) -> Option{EntryInfo}
+  name = filename(p) ?? "";
+  if !textMatch(s.filter, name) -> None()
+  else ->
+    items = fileCount(p, FileListFlags.IncludeSymlinks) ?? 0;
+    time  = fileModTime(p) ?? timeEpoch();
+    EntryInfo(DirInfo(s.escape ? escapeForPrinting(name) : name, items, time))
+
+// -- Collect entry info
+
+union EntryInfo = FileInfo, DirInfo
+
+act collectEntryInfo(Path p, Settings s) -> Option{EntryInfo}
+  type = fileType(p);
+  if type == FileType.Directory   -> collectDirInfo(p, s)
+  else                            -> collectFileInfo(p, type, s)
+
+// -- Sorting entries
+
+enum SortMode = Name, Ext, Size, Time
+
+fun orderFile(FileInfo f1, FileInfo f2, Settings s)
+  if s.sort == SortMode.Ext   -> f1.ext > f2.ext
+  if s.sort == SortMode.Size  -> f1.size > f2.size
+  if s.sort == SortMode.Time  -> f1.time > f2.time
+  else                        -> f1.name < f2.name
+
+fun orderDir(DirInfo d1, DirInfo d2, Settings s)
+  if s.sort == SortMode.Size  -> d1.items > d2.items
+  if s.sort == SortMode.Time  -> d1.time > d2.time
+  else                        -> d1.name < d2.name
+
+fun orderEntry(EntryInfo e1, EntryInfo e2, Settings s)
+  if e1 as FileInfo f1      && e2 as FileInfo f2      -> orderFile(f1, f2, s)
+  if e1 as DirInfo d1 && e2 as DirInfo d2 -> orderDir(d1, d2, s)
+  else                                                -> e1 is DirInfo
+
+fun sortEntries(List{EntryInfo} entries, Settings s)
+  entries.length() <= s.sortLimit ? entries.sort(orderEntry[s]) : entries
+
+// -- Collect info a root
+
+struct RootInfo =
+  Option{PathAbsolute}  path,
+  List{EntryInfo}       entries
+
+act collectRootInfo(Path p, Settings s) -> RootInfo
+  files = fileList(p, FileListFlags.IncludeSymlinks).failOnError();
+  entries = files.mapReverse(impure lambda (PathAbsolute p) collectEntryInfo(p, s));
+  RootInfo(pathAbsolute(p), sortEntries(entries, s))
+
+act collectRootInfo(List{Path} paths, Settings s) -> RootInfo
+  RootInfo(None(), sortEntries(paths.mapReverse(collectEntryInfo[s]), s))
+
+// -- Collect info for a set of roots
+
+act collectDirRootInfos(List{Path} roots, Settings s) -> List{RootInfo}
+  roots.map(impure lambda (Path p)
+    fileType(p) == FileType.Directory ? Option(collectRootInfo(p, s)) : None()
+  )
+
+act collectUnamedRootInfos(List{Path} roots, Settings s) -> List{RootInfo}
+  root = collectRootInfo(roots.filter(impure lambda (Path p) fileType(p) != FileType.Directory), s);
+  root.entries.isEmpty() ? List{RootInfo}() : List(root)
+
+act collectRootInfos(List{Path} roots, Settings s) -> List{RootInfo}
+  collectUnamedRootInfos(roots, s) :: collectDirRootInfos(roots, s)
+
+// -- Writers
+
+fun highlight{T}(Writer{T} w, bool color)
+  color ? w.ttyStyledTextWriter(TtyStyle.Bold) : w
+
+fun highlightStrong{T}(Writer{T} w, bool color)
+  color ? w.ttyStyledTextWriter(TtyStyle.Bold :: TtyStyle.Underline) : w
+
+fun fileTimeWriter(DateTime now) -> Writer{DateTime}
+  timeDurationWriter(
+    txtFloatWriter(1, FloatToStringFlags.NeverScientific).padLeftWriter(23),
+    litWriter(' ')).map(lambda (DateTime t) now - t)
+
+fun fileSizeWriter() -> Writer{ByteSize}
+  byteSizeWriter(
+    txtFloatWriter(1, FloatToStringFlags.NeverScientific).padLeftWriter(11),
+    padUntilWriter(12))
+
+fun fileFileTypeWriter() -> Writer{FileType}
+  Writer(lambda (WriterState s, FileType ft)
+    if ft == FileType.Regular   -> s.write("file")
+    if ft == FileType.Symlink   -> s.write("link")
+    if ft == FileType.Character -> s.write("char")
+    if ft == FileType.Socket    -> s.write("sock")
+    else                        -> s.write("unkn")
+  )
+
+fun fileEntryWriter(DateTime now, bool color) -> Writer{FileInfo}
+  (
+    fileFileTypeWriter() & fileSizeWriter() & fileTimeWriter(now) & padUntilWriter(27) & stringWriter()
+  ).map(lambda (FileInfo f) Tuple(f.type, f.size, f.time, f.name))
+
+fun dirEntryWriter(DateTime now, bool color) -> Writer{DirInfo}
+  (
+    litWriter("dir") & txtIntWriter().padLeftWriter(11) & litWriter(" items") & fileTimeWriter(now) &
+    padUntilWriter(27) & stringWriter().highlight(color)
+  ).map(lambda (DirInfo d) Tuple(d.items, d.time, d.name))
+
+fun entryWriter(DateTime now, bool color) -> Writer{EntryInfo}
+  unionWriter(Type{EntryInfo}(), fileEntryWriter(now, color), dirEntryWriter(now, color))
+
+fun rootWriter(DateTime now, bool color) -> Writer{RootInfo}
+  (
+    ?(
+      pathAbsWriter().highlightStrong(color) &
+      litWriter(" (") & txtIntWriter() & litWriter(" items)")
+    ) & ?newlineWriter() & listWriter(entryWriter(now, color), newlineWriter())
+  ).map(lambda (RootInfo ri)
+    Tuple(
+      ri.path.map(lambda (PathAbsolute p) Tuple(p, ri.entries.length())),
+      ri.path is PathAbsolute && !ri.entries.isEmpty(),
+      ri.entries)
+  )
+
+// -- Driver
+
+struct Settings =
+  GlobTextPattern filter,
+  SortMode        sort,
+  int             sortLimit,
+  bool            escape,
+  CliPositional{Option{List{Path}}} paths
+
+fun cliDefaults(Type{Settings} t)
+  CliDefault("filter",      "*")    ::
+  CliDefault("sort-limit",  "512")  ::
+  CliDefault("sort",        "name")
+
+act main(Settings s)
+  console = consoleOpen().failOnError();
+  roots   = collectRootInfos(s.paths.val ?? List(Path(pathCurrent())), s);
+  writer  = rootWriter(timeNow(), console.allowColor()) & newlineWriter();
+  console.writeOut(listWriter(writer), roots)
+
+cli(main, cliAppInfo("File listing", "Print file listing.", Version(0, 1, 0)))

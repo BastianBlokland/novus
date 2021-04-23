@@ -49,6 +49,11 @@ fun ==(WriterState s, string str)
 fun ?{T}(Writer{T} w) -> Writer{Option{T}}
   optionWriter(w)
 
+fun ?(Writer{None} w) -> Writer{bool}
+  Writer(lambda (WriterState s, bool b)
+    b ? w(s, None()) : s
+  )
+
 fun &(Writer{None} w1, Writer{None} w2) -> Writer{None}
   Writer(lambda (WriterState s, None n)
     w2(w1(s, None()), None())
@@ -205,6 +210,19 @@ fun indent{T}(Writer{T} w)
 fun padUntilWriter(int column, char c = ' ')
   Writer(lambda (WriterState s, None n)
     s.write(string(c, column - (s.curResult.length() - s.curLineStart)))
+  )
+
+fun padLeftWriter{T}(Writer{T} w, int column, char c = ' ')
+  Writer(lambda (WriterState s, T v)
+    begin = s.curResult.length();
+    newState = w(s, v);
+    padding = column - (newState.curResult.length() - s.curLineStart);
+    WriterState(
+        s.curResult + string(c, padding) + newState.curResult[begin, newState.curResult.length()],
+        s.curLineStart,
+        s.curIndent,
+        s.indentStr,
+        s.newlineMode)
   )
 
 fun wrapWriter{T}(Writer{T} w, int maxColumn, Writer{None} wrapWriter = newlineWriter())
