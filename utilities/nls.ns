@@ -42,6 +42,7 @@ union EntryInfo = FileInfo, DirInfo
 
 act collectEntryInfo(Path p, Settings s) -> Option{EntryInfo}
   type = fileType(p);
+  if type == FileType.None        -> fail{Option{EntryInfo}}("No file found at path: '" + p + '\'')
   if type == FileType.Directory   -> collectDirInfo(p, s)
   else                            -> collectFileInfo(p, type, s)
 

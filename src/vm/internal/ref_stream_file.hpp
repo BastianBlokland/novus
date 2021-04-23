@@ -253,6 +253,9 @@ inline auto getFileType(StringRef* path) -> FileType {
 
   const DWORD attributes = ::GetFileAttributesA(path->getCharDataPtr());
   if (attributes == INVALID_FILE_ATTRIBUTES) {
+    if (::GetLastError() == ERROR_SHARING_VIOLATION) {
+      return FileType::Unknown; // NOTE: There is a file, but we cannot access it.
+    }
     return FileType::None;
   }
   if (attributes & FILE_ATTRIBUTE_DIRECTORY) {
