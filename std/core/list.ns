@@ -206,8 +206,22 @@ fun sum{T}(List{T} l)
 fun reverse{T}(List{T} l)
   l.fold(lambda (List{T} newList, T val) val :: newList)
 
+fun partition{T}(List{T} l, T pivot)
+  partition(l, pivot, less{T})
+
+fun partition{T}(List{T} l, T pivot, function{T, T, bool} order)
+  l.fold(lambda (Tuple{List{T}, List{T}} result, T item)
+    less = order(item, pivot);
+    Tuple(less ? item :: result.f1 : result.f1, less ? result.f2 : item :: result.f2)
+  , Tuple(List{T}(), List{T}()))
+
 fun sort{T}(List{T} l)
-  l.fold(insertOrdered{T})
+  sort(l, less{T})
+
+fun sort{T}(List{T} l, function{T, T, bool} order)
+  if l as LNode{T} n  -> part = partition(n.next, n.val, order);
+                         sort(part.f1, order) :: n.val :: sort(part.f2, order)
+  if l is LEnd        -> List{T}()
 
 fun distinct{T}(List{T} l)
   l.fold(pushUnique{T}).reverse()
