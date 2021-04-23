@@ -1,7 +1,7 @@
 import "std/core.ns"
 import "std/format.ns"
 import "std/prim.ns"
-import "std/utils.ns"
+import "std/utilities.ns"
 
 // -- Utilities for interacting with a tty terminal using ANSI escape codes:
 // https://en.wikipedia.org/wiki/ANSI_escape_code

@@ -91,7 +91,7 @@ fun cliHelpOptNameWriter() -> Writer{CliOptName}
 fun cliHelpValTypeWriter() -> Writer{CliHelpValType}
   (litWriter('<') & stringWriter() & txtBoolWriter("...", "") & litWriter('>')).to(Type{CliHelpValType}())
 
-fun cliHelpFilterWriter(int minCol = 55, int maxCol = 78) -> Writer{List{string}}
+fun cliHelpFilterWriter(int minCol = 56, int maxCol = 78) -> Writer{List{string}}
   padUntilWriter(minCol) &
   listWriter(
     wrapWriter(stringWriter(), maxCol, newlineWriter() & padUntilWriter(minCol)),
@@ -111,7 +111,7 @@ fun cliHelpValFlagWriter() -> Writer{CliValFlag}
   (
     cliHelpOptNameWriter() &
     padUntilWriter(24) & cliHelpValTypeWriter() &
-    padUntilWriter(41) & cliHelpOptNecessityWriter() &
+    padUntilWriter(42) & cliHelpOptNecessityWriter() &
     cliHelpFilterWriter()
   ).map(lambda (CliValFlag vf) Tuple(vf.name, CliHelpValType(vf), CliHelpOptNecessity(vf), vf.filter))
 
@@ -119,7 +119,7 @@ fun cliHelpArgWriter() -> Writer{CliArg}
   (
     stringWriter() &
     padUntilWriter(24) & cliHelpValTypeWriter() &
-    padUntilWriter(41) & cliHelpOptNecessityWriter() &
+    padUntilWriter(42) & cliHelpOptNecessityWriter() &
     cliHelpFilterWriter()
   ).map(lambda (CliArg a) Tuple(a.name, CliHelpValType(a), CliHelpOptNecessity(a), a.filter))
 

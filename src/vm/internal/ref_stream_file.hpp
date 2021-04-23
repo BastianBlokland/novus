@@ -15,9 +15,10 @@ enum class FileType : uint8_t {
   None      = 0,
   Regular   = 1,
   Directory = 2,
-  Socket    = 3,
-  Character = 4,
-  Unknown   = 5,
+  Symlink   = 3,
+  Socket    = 4,
+  Character = 5,
+  Unknown   = 6,
 };
 
 enum class FileStreamMode : uint8_t {
@@ -158,6 +159,27 @@ private:
       m_filePath{filePath} {}
 };
 
+#if defined(_WIN32)
+inline auto fileValidWin32Path(PlatformError* pErr, StringRef* path) -> bool {
+  if (path->getSize() > MAX_PATH) {
+    *pErr = PlatformError::FilePathTooLong;
+    return false;
+  }
+  for (const char* p = path->getCharDataPtr(); p != path->getCharDataPtrEnd(); ++p) {
+    switch (*p) {
+    case '?':
+    case '*':
+    case '|':
+    case '<':
+    case '>':
+      *pErr = PlatformError::FileInvalidFileName;
+      return false;
+    }
+  }
+  return true;
+}
+#endif
+
 inline auto openFileStream(
     RefAllocator* alloc, PlatformError* pErr, StringRef* path, FileStreamMode m, FileStreamFlags f)
     -> FileStreamRef* {
@@ -231,17 +253,23 @@ inline auto getFileType(StringRef* path) -> FileType {
 
   const DWORD attributes = ::GetFileAttributesA(path->getCharDataPtr());
   if (attributes == INVALID_FILE_ATTRIBUTES) {
+    if (::GetLastError() == ERROR_SHARING_VIOLATION) {
+      return FileType::Unknown; // NOTE: There is a file, but we cannot access it.
+    }
     return FileType::None;
   }
   if (attributes & FILE_ATTRIBUTE_DIRECTORY) {
     return FileType::Directory;
+  }
+  if (attributes & FILE_ATTRIBUTE_REPARSE_POINT) {
+    return FileType::Symlink;
   }
   return FileType::Regular;
 
 #else // !_WIN32
 
   struct stat statResult;
-  if (::stat(path->getCharDataPtr(), &statResult) != 0) {
+  if (::lstat(path->getCharDataPtr(), &statResult) != 0) {
     return FileType::None;
   }
   if (S_ISREG(statResult.st_mode)) {
@@ -249,6 +277,9 @@ inline auto getFileType(StringRef* path) -> FileType {
   }
   if (S_ISDIR(statResult.st_mode)) {
     return FileType::Directory;
+  }
+  if (S_ISLNK(statResult.st_mode)) {
+    return FileType::Symlink;
   }
   if (S_ISSOCK(statResult.st_mode)) {
     return FileType::Socket;
@@ -403,7 +434,7 @@ inline auto renameFile(PlatformError* pErr, StringRef* oldPath, StringRef* newPa
 }
 
 inline auto
-fileListDir(RefAllocator* refAlloc, PlatformError* pErr, StringRef* path, FileListDirFlags flags)
+fileDirList(RefAllocator* refAlloc, PlatformError* pErr, StringRef* path, FileListDirFlags flags)
     -> StringRef* {
 
   StringRef* buffer = nullptr;
@@ -412,8 +443,7 @@ fileListDir(RefAllocator* refAlloc, PlatformError* pErr, StringRef* path, FileLi
 
 #if defined(_WIN32)
 
-  if (path->getSize() > MAX_PATH) {
-    *pErr = PlatformError::FilePathTooLong;
+  if (!fileValidWin32Path(pErr, path)) {
     return refAlloc->allocStr(0);
   }
 
@@ -441,8 +471,7 @@ fileListDir(RefAllocator* refAlloc, PlatformError* pErr, StringRef* path, FileLi
     const size_t nameLength = ::strlen(findData.cFileName);
     if (findData.cFileName[0] == '.' &&
         (nameLength == 1 || (nameLength == 2 && findData.cFileName[1] == '.'))) {
-      // Skip the '.' and '..' entries.
-      continue;
+      continue; // Skip the '.' and '..' entries.
     }
 
     if (writeHead + nameLength + 1 >= bufferEnd) { // Note: +1 for the seperating newline.
@@ -486,8 +515,7 @@ fileListDir(RefAllocator* refAlloc, PlatformError* pErr, StringRef* path, FileLi
     const size_t nameLength = ::strlen(dirEnt->d_name);
     if (dirEnt->d_name[0] == '.' &&
         (nameLength == 1 || (nameLength == 2 && dirEnt->d_name[1] == '.'))) {
-      // Skip the '.' and '..' entries.
-      continue;
+      continue; // Skip the '.' and '..' entries.
     }
 
     if (writeHead + nameLength + 1 >= bufferEnd) { // Note: +1 for the seperating newline.
@@ -522,6 +550,61 @@ fileListDir(RefAllocator* refAlloc, PlatformError* pErr, StringRef* path, FileLi
     return buffer;
   }
   return refAlloc->allocStr(0);
+}
+
+inline auto fileDirCount(PlatformError* pErr, StringRef* path, FileListDirFlags flags) -> int32_t {
+
+  int32_t result = -2; // Note: Start at -2 to exclude the '.' and '..' entries.
+#if defined(_WIN32)
+
+  if (!fileValidWin32Path(pErr, path)) {
+    return -1;
+  }
+
+  // Append '/*' to the input path to turn it into a filter for FindFirstFile.
+  // Info: https://docs.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-findfirstfileexa
+  char inputPathBuffer[MAX_PATH + 2];
+  ::memcpy(inputPathBuffer, path->getCharDataPtr(), path->getSize());
+  ::memcpy(inputPathBuffer + path->getSize(), "/*", 3); // 3 to copy the null-terminator also.
+
+  WIN32_FIND_DATA findData;
+  HANDLE searchHandle = ::FindFirstFileExA(
+      inputPathBuffer, FindExInfoBasic, &findData, FindExSearchNameMatch, nullptr, 0);
+  if (searchHandle == INVALID_HANDLE_VALUE) {
+    *pErr = getFilePlatformError();
+    return -1;
+  }
+  do {
+    const bool isSymlink = (findData.dwFileAttributes & FILE_ATTRIBUTE_REPARSE_POINT) &&
+        (findData.dwReserved0 == IO_REPARSE_TAG_SYMLINK);
+    if ((flags & IncludeSymlinks) || !isSymlink) {
+      ++result;
+    }
+  } while (::FindNextFileA(searchHandle, &findData));
+
+  if (!::FindClose(searchHandle)) {
+    *pErr = PlatformError::FileUnknownError;
+    return -1;
+  }
+
+#else // !_WIN32
+
+  if (DIR* dir = ::opendir(path->getCharDataPtr())) {
+    while (struct dirent* dirEnt = ::readdir(dir)) {
+      if ((flags & IncludeSymlinks) || dirEnt->d_type != DT_LNK) {
+        ++result;
+      }
+    }
+    if (::closedir(dir)) {
+      *pErr = PlatformError::FileUnknownError;
+      return -1;
+    }
+  } else {
+    *pErr = getFilePlatformError();
+    return -1;
+  }
+#endif // !_WIN32
+  return result;
 }
 
 inline auto getFilePlatformError() noexcept -> PlatformError {

@@ -23,6 +23,9 @@ public:
   [[nodiscard]] inline auto getCharDataPtr() const noexcept {
     return reinterpret_cast<char*>(m_data);
   }
+  [[nodiscard]] inline auto getCharDataPtrEnd() const noexcept {
+    return reinterpret_cast<char*>(m_data + m_size);
+  }
 
   [[nodiscard]] inline auto getSize() const noexcept { return m_size; }
 

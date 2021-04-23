@@ -2,9 +2,25 @@ import "std/diag.ns"
 import "std/format.ns"
 import "std/prim.ns"
 
+// -- Types
+
+enum ByteSizeUnit = B, KiB, MiB, GiB, TiB, PiB
+
 struct ByteSize = long bytes
 
+// -- Constructors
+
 fun ByteSize() ByteSize(0)
+
+fun noinline ByteSize(ByteSizeUnit unit)
+  if unit == ByteSizeUnit.KiB -> kibibyte()
+  if unit == ByteSizeUnit.MiB -> mebibyte()
+  if unit == ByteSizeUnit.GiB -> gibibyte()
+  if unit == ByteSizeUnit.TiB -> tebibyte()
+  if unit == ByteSizeUnit.PiB -> pebibyte()
+  else                        -> byte()
+
+// -- Operators
 
 fun -(ByteSize s)  ByteSize(-s.bytes)
 fun -(ByteSize s1, ByteSize s2)   ByteSize(s1.bytes - s2.bytes)
@@ -15,6 +31,8 @@ fun /(ByteSize s1, long l)        ByteSize(s1.bytes / l)
 fun %(ByteSize s1, ByteSize s2)   ByteSize(s1.bytes % s2.bytes)
 fun <(ByteSize s1, ByteSize s2)   s1.bytes < s2.bytes
 fun >(ByteSize s1, ByteSize s2)   s1.bytes > s2.bytes
+
+// -- Utilities
 
 fun minByteSize() ByteSize(minVal{long}())
 fun maxByteSize() ByteSize(maxVal{long}())
@@ -45,18 +63,32 @@ fun gibibytes(ByteSize s) s.bytes / gibibyte().bytes
 fun tebibytes(ByteSize s) s.bytes / tebibyte().bytes
 fun pebibytes(ByteSize s) s.bytes / pebibyte().bytes
 
-// Create a human readable representation.
-fun noinline string(ByteSize s)
-  if s.bytes < 0L -> "-" + absByteSize(s).string()
-  else            ->
-    if s < kibibyte() -> s.bytes().string() + "B"
-    if s < mebibyte() -> s.kibibytes().string() + "KiB"
-    if s < gibibyte() -> s.mebibytes().string() + "MiB"
-    if s < tebibyte() -> s.gibibytes().string() + "GiB"
-    if s < pebibyte() -> s.tebibytes().string() + "TiB"
-    else              -> s.pebibytes().string() + "PiB"
+fun noinline byteSizeUnit(ByteSize s)
+  absSize = absByteSize(s);
+  if absSize < kibibyte() -> ByteSizeUnit.B
+  if absSize < mebibyte() -> ByteSizeUnit.KiB
+  if absSize < gibibyte() -> ByteSizeUnit.MiB
+  if absSize < tebibyte() -> ByteSizeUnit.GiB
+  if absSize < pebibyte() -> ByteSizeUnit.TiB
+  else                    -> ByteSizeUnit.PiB
 
-// Tests
+fun string(ByteSize s)
+  byteSizeWriter().run(s)
+
+// -- Writers
+
+// Create a human readable representation.
+fun byteSizeWriter(
+  Writer{float} numWriter = txtFloatWriter(1, FloatToStringFlags.NeverScientific),
+  Writer{None}  sepWriter = noneWriter()) -> Writer{ByteSize}
+  (
+    numWriter & sepWriter & enumKeyWriter(Type{ByteSizeUnit}())
+  ).map(lambda (ByteSize bs)
+    unit = byteSizeUnit(bs);
+    Tuple(bs.bytes.float() / ByteSize(unit).bytes.float(), unit)
+  )
+
+// -- Tests
 
 assertEq(byte().bytes(), 1)
 assertEq(kibibyte().kibibytes(), 1)
@@ -71,19 +103,19 @@ assertEq(gibibyte().bytes(), 1_073_741_824L)
 assertEq(tebibyte().bytes(), 1_099_511_627_776L)
 assertEq(pebibyte().bytes(), 1_125_899_906_842_624L)
 
-assertEq(bytes(42).string(), "42B")
-assertEq(kibibytes(42).string(), "42KiB")
-assertEq(mebibytes(42).string(), "42MiB")
-assertEq(gibibytes(42).string(), "42GiB")
-assertEq(tebibytes(42).string(), "42TiB")
-assertEq(pebibytes(42).string(), "42PiB")
+assertEq(bytes(42).string(), "42.0B")
+assertEq(kibibytes(42).string(), "42.0KiB")
+assertEq(mebibytes(42).string(), "42.0MiB")
+assertEq(gibibytes(42).string(), "42.0GiB")
+assertEq(tebibytes(42).string(), "42.0TiB")
+assertEq(pebibytes(42).string(), "42.0PiB")
 
-assertEq(bytes(-42).string(), "-42B")
-assertEq(kibibytes(-42).string(), "-42KiB")
-assertEq(mebibytes(-42).string(), "-42MiB")
-assertEq(gibibytes(-42).string(), "-42GiB")
-assertEq(tebibytes(-42).string(), "-42TiB")
-assertEq(pebibytes(-42).string(), "-42PiB")
+assertEq(bytes(-42).string(), "-42.0B")
+assertEq(kibibytes(-42).string(), "-42.0KiB")
+assertEq(mebibytes(-42).string(), "-42.0MiB")
+assertEq(gibibytes(-42).string(), "-42.0GiB")
+assertEq(tebibytes(-42).string(), "-42.0TiB")
+assertEq(pebibytes(-42).string(), "-42.0PiB")
 
 assertEq(absByteSize(tebibytes(-42)), tebibytes(42))
 assertEq(absByteSize(minByteSize()), maxByteSize())

@@ -65,6 +65,14 @@ fun textMatchGlob(string p, int pIdx, string input, int inputIdx, StrComp sc)
 fun filter(List{string} l, TextPattern pattern)
   l.foldRight(lambda (List{string} result, string v) textMatch(pattern, v) ? v :: result : result)
 
+// -- Parsers
+
+fun exactPatternParser(StrComp sc = StrComp.IgnoreCase) -> Parser{ExactTextPattern}
+  allParser().map(lambda (string pattern) ExactTextPattern(pattern, sc))
+
+fun globPatternParser(StrComp sc = StrComp.IgnoreCase) -> Parser{GlobTextPattern}
+  allParser().map(lambda (string pattern) GlobTextPattern(pattern, sc))
+
 // -- Tests
 
 // --- AnyTextPattern

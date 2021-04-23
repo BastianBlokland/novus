@@ -172,3 +172,4 @@ if(BUILD_FUZZING)
 endif()
 
 add_subdirectory(std)
+add_subdirectory(utilities)

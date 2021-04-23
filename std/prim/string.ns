@@ -61,11 +61,14 @@ fun string(long i, int minDigits)
 
 fun string{T}(T val,         Meta{#8}     structTypeKind)     reflectStructToString(val)
 fun string{T}(T val,         Meta{#9}     unionTypeKind)      reflectUnionToString(val)
-fun string{T}(T val,         Meta{#10}    enumTypeKind)       reflectEnumKeyForVal(val) ?? ""
+fun string{T}(T val,         Meta{#10}    enumTypeKind)       stringForEnum(val)
 fun string{T, TypeId}(T val, Meta{TypeId} fallbackTypeKind)   typeName{T}()
 
 fun string{T}(T val)
   val.string(Meta{reflect_type_kind{T}}())
+
+fun stringForEnum{T}(T val)
+  reflectEnumKeyForVal(val) ?? ""
 
 // -- Operators
 
@@ -86,6 +89,26 @@ fun [](string s, int start, int end) -> string
 
 fun ==(string x, string y) -> bool
   intrinsic{string_eq_string}(x, y)
+
+fun <(string x, string y) -> bool
+  invoke(lambda (int idx)
+    xC = x[idx].toLower();
+    yC = y[idx].toLower();
+    if idx == x.length()  -> false
+    if xC < yC  -> true
+    if xC > yC  -> false
+    else        -> self(++idx)
+  , 0)
+
+fun >(string x, string y) -> bool
+  invoke(lambda (int idx)
+    xC = x[idx].toLower();
+    yC = y[idx].toLower();
+    if idx == x.length()  -> false
+    if xC > yC  -> true
+    if xC < yC  -> false
+    else        -> self(++idx)
+  , 0)
 
 // -- Utilities
 
@@ -163,6 +186,14 @@ assertEq(string(-42.1337, 3, FloatToStringFlags.AlwaysScientific), "-4.213e+01")
 assertEq(string(-42.1337, 2, FloatToStringFlags.AlwaysScientific), "-4.21e+01")
 assertEq(string(-42.1337, 1, FloatToStringFlags.AlwaysScientific), "-4.2e+01")
 assertEq(string(-42.1337, 0, FloatToStringFlags.AlwaysScientific), "-4e+01")
+
+assertLe("a", "b")
+assertLe("aa", "ab")
+assertGtrOrEq("aa", "aa")
+
+assertGtr("b", "a")
+assertGtr("ab", "aa")
+assertLeOrEq("aa", "aa")
 
 assert("".isEmpty())
 assertNot(" ".isEmpty())

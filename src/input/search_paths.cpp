@@ -56,13 +56,14 @@ auto getSearchPaths(const char** argv) noexcept -> std::vector<filesystem::path>
   if (filesystem::exists(argv[0])) {
     auto parent = filesystem::absolute(argv[0]).parent_path();
     if (filesystem::is_directory(parent)) {
+      parent = filesystem::canonical(parent);
       result.push_back(std::move(parent));
     }
   }
 
   // Add the parent path of the executable.
   auto executablePath = getExecutablePath();
-  result.push_back(executablePath.parent_path());
+  result.push_back(filesystem::canonical(executablePath.parent_path()));
 
   return result;
 }
