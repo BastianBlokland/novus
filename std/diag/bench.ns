@@ -45,10 +45,7 @@ act printBench{T}(action{T} invokable) -> T
 
 act printBenchAverage{T}(action{T} invokable) -> T
   b = benchAverage(invokable);
-  print(
-    "[Elapsed: " + b.avgDur +
-    " (" + b.avgDur.ns + " ns)" +
-    " (" + b.wallTime + " / " + b.iters + " itrs)]");
+  print("[Elapsed: " + b.avgDur + " (" + b.wallTime + " / " + b.iters + " itrs)]");
   b.value
 
 // -- Tests
