@@ -212,7 +212,7 @@ Program::Program() :
       m_bool);
 
   m_funcDecls.registerIntrinsicAction(
-      *this, Fk::ActionProcessStart, "process_start", sym::TypeSet{m_string}, m_sysProcess);
+      *this, Fk::ActionProcessStart, "process_start", sym::TypeSet{m_string, m_int}, m_sysProcess);
   m_funcDecls.registerIntrinsicAction(
       *this, Fk::ActionProcessBlock, "process_block", sym::TypeSet{m_sysProcess}, m_int);
   m_funcDecls.registerIntrinsicAction(

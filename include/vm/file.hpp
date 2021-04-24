@@ -25,4 +25,9 @@ auto fileSeek(FileHandle file, size_t position) noexcept -> bool;
 
 auto fileClose(FileHandle file) noexcept -> void;
 
+template <typename... FileHandles>
+auto fileClose(FileHandles... files) {
+  (fileClose(files), ...);
+}
+
 } // namespace vm

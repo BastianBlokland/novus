@@ -27,6 +27,12 @@ enum class ProcessSignalKind : uint8_t {
   Kill     = 1, // Request a process to die.
 };
 
+enum ProcessFlags : uint8_t {
+  ProcessPipeStdIn  = 1u << 0, // Create a pipe for writing to std in.
+  ProcessPipeStdOut = 1u << 1, // Create a pipe for reading from std out.
+  ProcessPipeStdErr = 1u << 2, // Create a pipe for reading from std err.
+};
+
 #if defined(_WIN32)
 using ProcessType = PROCESS_INFORMATION;
 #else // !_WIN32
@@ -41,18 +47,6 @@ inline auto invalidProcess() -> ProcessType {
 #endif
 };
 
-#if defined(_WIN32)
-template <typename... Handles>
-auto CloseHandle(Handles... handles) {
-  (::CloseHandle(handles), ...);
-}
-#else // !_WIN32
-template <typename... Descriptors>
-auto close(Descriptors... descriptors) {
-  (::close(descriptors), ...);
-}
-#endif // !_WIN32
-
 class ProcessRef final : public Ref {
   friend class RefAllocator;
 
@@ -60,7 +54,7 @@ public:
   ProcessRef(const ProcessRef& rhs) = delete;
   ProcessRef(ProcessRef&& rhs)      = delete;
   ~ProcessRef() noexcept {
-    // Close our handles to the in / out / err pipes.
+    // Close our handles to the in / out / err pipes if they are open.
     if (fileIsValid(m_stdIn)) {
       fileClose(m_stdIn);
     }
@@ -111,9 +105,9 @@ public:
 #endif
   }
 
-  [[nodiscard]] auto getStdIn() const noexcept { return m_stdIn; }
-  [[nodiscard]] auto getStdOut() const noexcept { return m_stdOut; }
-  [[nodiscard]] auto getStdErr() const noexcept { return m_stdErr; }
+  [[nodiscard]] auto getStdInPipe() const noexcept { return m_stdIn; }
+  [[nodiscard]] auto getStdOutPipe() const noexcept { return m_stdOut; }
+  [[nodiscard]] auto getStdErrPipe() const noexcept { return m_stdErr; }
 
   [[nodiscard]] auto isFinished() noexcept -> bool {
     return m_state.load(std::memory_order_acquire) == ProcessState::Finished;
@@ -186,6 +180,7 @@ public:
 
 private:
   ProcessType m_process;
+  ProcessFlags m_flags;
   std::atomic<ProcessState> m_state;
   std::atomic<int32_t> m_exitCode;
   std::mutex m_mutex;
@@ -195,9 +190,15 @@ private:
   FileHandle m_stdOut;
   FileHandle m_stdErr;
 
-  ProcessRef(ProcessType process, FileHandle stdIn, FileHandle stdOut, FileHandle stdErr) noexcept :
+  ProcessRef(
+      ProcessType process,
+      ProcessFlags flags,
+      FileHandle stdIn,
+      FileHandle stdOut,
+      FileHandle stdErr) noexcept :
       Ref(getKind()),
       m_process{process},
+      m_flags{flags},
       m_state{ProcessState::Unknown},
       m_stdIn{stdIn},
       m_stdOut{stdOut},
@@ -205,8 +206,8 @@ private:
 
   auto killImpl() noexcept -> bool {
 #if defined(_WIN32)
-    return TerminateProcess(m_process.hProcess, 9999); // TODO: Decide what exitcode to use here.
-#else // !_WIN32
+    return ::TerminateProcess(m_process.hProcess, 9999); // TODO: Decide what exitcode to use here.
+#else
     return ::killpg(m_process, SIGKILL) == 0;
 #endif
   }
@@ -240,13 +241,21 @@ private:
   }
 };
 
-inline auto processStart(RefAllocator* alloc, PlatformError* pErr, const StringRef* cmdLineStr)
+inline auto processStart(
+    RefAllocator* alloc, PlatformError* pErr, const StringRef* cmdLineStr, ProcessFlags flags)
     -> ProcessRef* {
+
   if (cmdLineStr->getSize() == 0) {
     *pErr = PlatformError::ProcessInvalidCmdLine;
     return alloc->allocPlain<ProcessRef>(
-        invalidProcess(), fileInvalid(), fileInvalid(), fileInvalid());
+        invalidProcess(), flags, fileInvalid(), fileInvalid(), fileInvalid());
   }
+
+  using Pipe                    = std::array<FileHandle, 2>;
+  static const Pipe invalidPipe = {fileInvalid(), fileInvalid()};
+
+  // Create pipes to communicate with the child process.
+  Pipe pipeStdIn = invalidPipe, pipeStdOut = invalidPipe, pipeStdErr = invalidPipe;
 
 #if defined(_WIN32)
   // Make a local copy of the command-line string for preprocessing.
@@ -293,20 +302,23 @@ inline auto processStart(RefAllocator* alloc, PlatformError* pErr, const StringR
   saAttr.nLength             = sizeof(SECURITY_ATTRIBUTES);
   saAttr.bInheritHandle      = true;
 
-  std::array<HANDLE, 2> pipeStdIn, pipeStdOut, pipeStdErr;
-  if (!CreatePipe(&pipeStdIn[0], &pipeStdIn[1], &saAttr, 0) ||        // Create stdIn pipe.
-      !SetHandleInformation(pipeStdIn[1], HANDLE_FLAG_INHERIT, 0) ||  // Mark parentside noninherit.
-      !CreatePipe(&pipeStdOut[0], &pipeStdOut[1], &saAttr, 0) ||      // Create stdOut pipe.
-      !SetHandleInformation(pipeStdOut[0], HANDLE_FLAG_INHERIT, 0) || // Mark parentside noninherit.
-      !CreatePipe(&pipeStdErr[0], &pipeStdErr[1], &saAttr, 0) ||      // Create stdErr pipe.
-      !SetHandleInformation(pipeStdErr[0], HANDLE_FLAG_INHERIT, 0))   // Mark parentside noninherit.
-  {
+  bool pipeFailed = false;
+  pipeFailed |= flags & ProcessPipeStdIn &&
+      (!CreatePipe(&pipeStdIn[0], &pipeStdIn[1], &saAttr, 0) ||
+       !SetHandleInformation(pipeStdIn[1], HANDLE_FLAG_INHERIT, 0));
+  pipeFailed |= flags & ProcessPipeStdOut &&
+      (!CreatePipe(&pipeStdOut[0], &pipeStdOut[1], &saAttr, 0) ||
+       !SetHandleInformation(pipeStdOut[0], HANDLE_FLAG_INHERIT, 0));
+  pipeFailed |= flags & ProcessPipeStdErr &&
+      (!CreatePipe(&pipeStdErr[0], &pipeStdErr[1], &saAttr, 0) ||
+       !SetHandleInformation(pipeStdErr[0], HANDLE_FLAG_INHERIT, 0));
+  if (pipeFailed) {
     // Failed to create all the pipes, close whichever child pipes where created.
-    CloseHandle(pipeStdIn[0], pipeStdOut[1], pipeStdErr[1]);
+    fileClose(pipeStdIn[0], pipeStdOut[1], pipeStdErr[1]);
 
     *pErr = PlatformError::ProcessFailedToCreatePipes;
     return alloc->allocPlain<ProcessRef>(
-        invalidProcess(), pipeStdIn[1], pipeStdOut[0], pipeStdErr[0]);
+        invalidProcess(), flags, pipeStdIn[1], pipeStdOut[0], pipeStdErr[0]);
   }
 
   STARTUPINFO startupInfo = {};
@@ -314,7 +326,9 @@ inline auto processStart(RefAllocator* alloc, PlatformError* pErr, const StringR
   startupInfo.hStdInput   = pipeStdIn[0];
   startupInfo.hStdOutput  = pipeStdOut[1];
   startupInfo.hStdError   = pipeStdErr[1];
-  startupInfo.dwFlags |= STARTF_USESTDHANDLES;
+  if (flags & (ProcessPipeStdIn | ProcessPipeStdOut | ProcessPipeStdErr)) {
+    startupInfo.dwFlags |= STARTF_USESTDHANDLES;
+  }
 
   PROCESS_INFORMATION processInfo = {};
 
@@ -355,27 +369,30 @@ inline auto processStart(RefAllocator* alloc, PlatformError* pErr, const StringR
   ::free(localStr); // Free our local copy of the command-line string.
 
   // Close the child side of the pipes.
-  CloseHandle(pipeStdIn[0], pipeStdOut[1], pipeStdErr[1]);
+  fileClose(pipeStdIn[0], pipeStdOut[1], pipeStdErr[1]);
 
   if (!success) {
     CloseHandle(processInfo.hThread);
     CloseHandle(processInfo.hProcess);
     return alloc->allocPlain<ProcessRef>(
-        invalidProcess(), pipeStdIn[1], pipeStdOut[0], pipeStdErr[0]);
+        invalidProcess(), flags, pipeStdIn[1], pipeStdOut[0], pipeStdErr[0]);
   }
-  return alloc->allocPlain<ProcessRef>(processInfo, pipeStdIn[1], pipeStdOut[0], pipeStdErr[0]);
+  return alloc->allocPlain<ProcessRef>(
+      processInfo, flags, pipeStdIn[1], pipeStdOut[0], pipeStdErr[0]);
 
 #else // !_WIN32
 
-  // Create pipes to communicate with the child process.
-  std::array<int, 2> pipeStdIn, pipeStdOut, pipeStdErr;
-  if (pipe(pipeStdIn.data()) || pipe(pipeStdOut.data()) || pipe(pipeStdErr.data())) {
+  bool pipeFailed = false;
+  pipeFailed |= flags & ProcessPipeStdIn && ::pipe(pipeStdIn.data());
+  pipeFailed |= flags & ProcessPipeStdOut && ::pipe(pipeStdOut.data());
+  pipeFailed |= flags & ProcessPipeStdErr && ::pipe(pipeStdErr.data());
+  if (pipeFailed) {
     // Failed to create all the pipes, close whichever child pipes where created.
-    close(pipeStdIn[0], pipeStdOut[1], pipeStdErr[1]);
+    fileClose(pipeStdIn[0], pipeStdOut[1], pipeStdErr[1]);
 
     *pErr = PlatformError::ProcessFailedToCreatePipes;
     return alloc->allocPlain<ProcessRef>(
-        invalidProcess(), pipeStdIn[1], pipeStdOut[0], pipeStdErr[0]);
+        invalidProcess(), flags, pipeStdIn[1], pipeStdOut[0], pipeStdErr[0]);
   }
 
   const auto childPid = fork();
@@ -387,23 +404,23 @@ inline auto processStart(RefAllocator* alloc, PlatformError* pErr, const StringR
     auto sid = setsid();
     if (unlikely(sid == -1)) {
       const char* setSidFailedMsg = "[err_1] Failed to create a new session";
-      const int writeRes          = ::write(2, setSidFailedMsg, ::strlen(setSidFailedMsg));
-      (void)writeRes;
+      const size_t bytesWritten   = ::write(2, setSidFailedMsg, ::strlen(setSidFailedMsg));
+      (void)bytesWritten;
       ::abort();
     }
 
-    // Close the parent side of the pipes.
-    close(pipeStdIn[1], pipeStdOut[0], pipeStdErr[0]);
+    // Close the parent side of the pipes (if they are created).
+    fileClose(pipeStdIn[1], pipeStdOut[0], pipeStdErr[0]);
 
     // Duplicate the child side of the pipes onto the stdIn, stdOut and stdErr of this process.
-    bool dupSuccess = true;
-    dupSuccess &= dup2(pipeStdIn[0], 0) != -1;
-    dupSuccess &= dup2(pipeStdOut[1], 1) != -1;
-    dupSuccess &= dup2(pipeStdErr[1], 2) != -1;
-    if (unlikely(!dupSuccess)) {
-      const char* dupFailedMsg = "[err_2] Failed to setup input and output pipes";
-      const int writeRes       = ::write(2, dupFailedMsg, ::strlen(dupFailedMsg));
-      (void)writeRes;
+    bool dupFailed = false;
+    dupFailed |= flags & ProcessPipeStdIn && ::dup2(pipeStdIn[0], 0) == -1;
+    dupFailed |= flags & ProcessPipeStdOut && ::dup2(pipeStdOut[1], 1) == -1;
+    dupFailed |= flags & ProcessPipeStdErr && ::dup2(pipeStdErr[1], 2) == -1;
+    if (unlikely(dupFailed)) {
+      const char* dupFailedMsg  = "[err_2] Failed to setup input and output pipes";
+      const size_t bytesWritten = ::write(2, dupFailedMsg, ::strlen(dupFailedMsg));
+      (void)bytesWritten;
       ::abort();
     }
 
@@ -443,7 +460,7 @@ inline auto processStart(RefAllocator* alloc, PlatformError* pErr, const StringR
 
     // Start executing the target program.
     if (argV[0]) {
-      execvp(argV[0], argV.data());
+      ::execvp(argV[0], argV.data());
     }
 
     // Only reachable when exec failed.
@@ -465,12 +482,11 @@ inline auto processStart(RefAllocator* alloc, PlatformError* pErr, const StringR
       execFailedMsg = "[err_7] Unknown error while executing: ";
       break;
     }
-    const int msgRes = ::write(2, execFailedMsg, ::strlen(execFailedMsg));
-    (void)msgRes;
+    size_t bytesWritten = ::write(2, execFailedMsg, ::strlen(execFailedMsg));
     if (argV[0]) {
-      const int execNameRes = ::write(2, argV[0], ::strlen(argV[0]));
-      (void)execNameRes;
+      bytesWritten += ::write(2, argV[0], ::strlen(argV[0]));
     }
+    (void)bytesWritten;
     ::abort();
   }
   default:
@@ -484,9 +500,10 @@ inline auto processStart(RefAllocator* alloc, PlatformError* pErr, const StringR
         break;
       }
     }
-    // Close the child side of the pipes.
-    close(pipeStdIn[0], pipeStdOut[1], pipeStdErr[1]);
-    return alloc->allocPlain<ProcessRef>(childPid, pipeStdIn[1], pipeStdOut[0], pipeStdErr[0]);
+    // Close the child side of the pipes (if they exist).
+    fileClose(pipeStdIn[0], pipeStdOut[1], pipeStdErr[1]);
+    return alloc->allocPlain<ProcessRef>(
+        childPid, flags, pipeStdIn[1], pipeStdOut[0], pipeStdErr[0]);
   }
 #endif
 }

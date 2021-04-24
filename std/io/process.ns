@@ -8,22 +8,30 @@ import "std/prim.ns"
 struct ProcessId  = long id
 struct ExitCode   = int code
 
+enum ProcessFlags =
+  None        : 0b000,
+  PipeStdIn   : 0b001,
+  PipeStdOut  : 0b010,
+  PipeStdErr  : 0b100,
+  PipeOut     : 0b110,
+  PipeInOut   : 0b111
+
 enum Signal =
   Interupt  : 0,
   Kill      : 1
 
 struct Process =
-  string      cmdLine,
-  sys_process handle,
-  ProcessId   id,
-  sys_stream  stdIn,
-  sys_stream  stdOut,
-  sys_stream  stdErr
+  string              cmdLine,
+  sys_process         handle,
+  ProcessId           id,
+  Option{sys_stream}  stdInPipe,
+  Option{sys_stream}  stdOutPipe,
+  Option{sys_stream}  stdErrPipe
 
 struct ProcessResult =
-  string    stdOut,
-  string    stdErr,
-  ExitCode  exitCode
+  Option{string}  stdOut,
+  Option{string}  stdErr,
+  ExitCode        exitCode
 
 // -- Conversions
 
@@ -31,7 +39,12 @@ fun string(Process p)
   "(pid:" + p.id + ", " + p.cmdLine + ")"
 
 fun string(ProcessResult r)
-  "(out:'" + r.stdOut.escapeForPrinting() + "' err:'" + r.stdErr.escapeForPrinting() + "' code:" + r.exitCode + ")"
+  "(out:'" + (r.stdOut ?? "").escapeForPrinting() +
+  "' err:'" + (r.stdErr ?? "").escapeForPrinting() +
+  "' code:" + r.exitCode + ")"
+
+fun string(ProcessFlags f)
+  toEnumFlagNames(f).string()
 
 // -- Functions
 
@@ -47,19 +60,19 @@ fun isSuccess(ProcessResult r)
 
 // -- Actions
 
-act run(string prog, List{string} args) -> Either{Process, Error}
-  run(toCmdLine(prog, args))
+act run(string prog, List{string} args, ProcessFlags flags = ProcessFlags.None) -> Either{Process, Error}
+  run(toCmdLine(prog, args), flags)
 
-act run(string cmdLine) -> Either{Process, Error}
-  handle  = intrinsic{process_start}(cmdLine);
+act run(string cmdLine, ProcessFlags flags = ProcessFlags.None) -> Either{Process, Error}
+  handle  = intrinsic{process_start}(cmdLine, flags);
   pid     = ProcessId(intrinsic{process_getid}(handle));
   if pid.id < 0 -> platformError("Failed to run: '" + cmdLine + "'")
   else          ->
     Process(
       cmdLine, handle, pid,
-      intrinsic{process_openstream}(handle, 0),
-      intrinsic{process_openstream}(handle, 1),
-      intrinsic{process_openstream}(handle, 2))
+      (flags & ProcessFlags.PipeStdIn) != 0 ? Option(intrinsic{process_openstream}(handle, 0)) : None(),
+      (flags & ProcessFlags.PipeStdOut) != 0 ? Option(intrinsic{process_openstream}(handle, 1)) : None(),
+      (flags & ProcessFlags.PipeStdErr) != 0 ? Option(intrinsic{process_openstream}(handle, 2)) : None())
 
 act sendInterupt(Process p) -> Option{Error}
   p.sendSignal(Signal.Interupt)
@@ -69,19 +82,24 @@ act sendSignal(Process p, Signal s) -> Option{Error}
     ? None()
     : Error("Failed to send signal: '" + s + "'")
 
+act readProcessOutPipe(Process p) -> Either{Option{string}, Error}
+  if p.stdOutPipe as sys_stream s -> s.readToEnd().map(lambda (string s) Option(s))
+  else                            -> Option{string}()
+
+act readProcessErrPipe(Process p) -> Either{Option{string}, Error}
+  if p.stdErrPipe as sys_stream s -> s.readToEnd().map(lambda (string s) Option(s))
+  else                            -> Option{string}()
+
 act wait(Either{Process, Error} pOrErr) -> Either{ProcessResult, Error}
   pOrErr.map(impure lambda (Process p) p.wait())
 
 act wait(Process p) -> Either{ProcessResult, Error}
-  stdOutRes = p.stdOut.readToEnd();
-  stdErrRes = p.stdErr.readToEnd();
+  exitCode = ExitCode(intrinsic{process_block}(p.handle));
+  stdOutRes = p.readProcessOutPipe();
+  stdErrRes = p.readProcessErrPipe();
   if stdOutRes as Error outErr -> outErr
   if stdErrRes as Error errErr -> errErr
-  else ->
-    ProcessResult(
-      stdOutRes ?? "",
-      stdErrRes ?? "",
-      ExitCode(intrinsic{process_block}(p.handle)))
+  else -> ProcessResult(stdOutRes ?? Option{string}(), stdErrRes ?? Option{string}(), exitCode)
 
 act waitAsync(Process p) -> future{Either{ProcessResult, Error}}
   fork p.wait()
@@ -105,25 +123,25 @@ assert(
     p.cmdLine == "'cmake' '-E' 'echo' 'Hello world'")
 
 assert(
-  run("cmake", "-E" :: "echo" :: "Hello world").wait(),
+  run("cmake", "-E" :: "echo" :: "Hello world", ProcessFlags.PipeInOut).wait(),
   lambda (Either{ProcessResult, Error} e)
-    e as ProcessResult r                &&
-    r.stdOut.startsWith("Hello world")  &&
-    r.stdErr.isEmpty()                  &&
+    e as ProcessResult r                        &&
+    (r.stdOut ?? "").startsWith("Hello world")  &&
+    (r.stdErr ?? "").isEmpty()                  &&
     r.exitCode == ExitCode(0))
 
 assert(
-  run("cmake", "--version" :: List{string}()).wait(),
+  run("cmake", "--version" :: List{string}(), ProcessFlags.PipeInOut).wait(),
   lambda (Either{ProcessResult, Error} e)
-    e as ProcessResult r                  &&
-    r.stdOut.startsWith("cmake version")  &&
-    r.stdErr.isEmpty()                    &&
+    e as ProcessResult r                          &&
+    (r.stdOut ?? "").startsWith("cmake version")  &&
+    (r.stdErr ?? "").isEmpty()                    &&
     r.exitCode == ExitCode(0))
 
 assert(
-  run("cmake", "invalid" :: List{string}()).wait(),
+  run("cmake", "invalid" :: List{string}(), ProcessFlags.PipeInOut).wait(),
   lambda (Either{ProcessResult, Error} e)
-    e as ProcessResult r                &&
-    r.stdOut.isEmpty()                  &&
-    r.stdErr.startsWith("CMake Error")  &&
+    e as ProcessResult r                        &&
+    (r.stdOut ?? "").isEmpty()                  &&
+    (r.stdErr ?? "").startsWith("CMake Error")  &&
     r.exitCode == ExitCode(1))

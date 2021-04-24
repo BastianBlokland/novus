@@ -19,7 +19,7 @@ enum class PCallCode : uint8_t {
   StreamSetOptions   = 13, // (int, stream)    -> (int)     Set options, returns success.
   StreamUnsetOptions = 14, // (int, stream)    -> (int)     Unset options, returns success.
 
-  ProcessStart = 20, // (string)  -> (process) Start a new sys process from the given cmdline str.
+  ProcessStart = 20, // (int, string)-> (process) Start a new process from the given cmdline str.
   ProcessBlock = 21, // (process) -> (int)     Block until the process has exited, returns exitcode.
   ProcessOpenStream = 22, // (int, process) -> (stream)  Get a stream to stdin, stdout or stderr.
   ProcessGetId      = 23, // (process)      -> (long) Retrieve the native process id.

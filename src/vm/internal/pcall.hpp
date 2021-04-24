@@ -130,9 +130,10 @@ auto inline pcall(
   } break;
 
   case PCallCode::ProcessStart: {
+    auto flags          = static_cast<ProcessFlags>(POP_INT());
     auto* cmdLineStrRef = getStringRef(refAlloc, POP());
     CHECK_ALLOC(cmdLineStrRef);
-    PUSH_REF(processStart(refAlloc, pErr, cmdLineStrRef));
+    PUSH_REF(processStart(refAlloc, pErr, cmdLineStrRef, flags));
   } break;
   case PCallCode::ProcessBlock: {
     // Note: Keep the process on the stack, reason is gc could run while we are blocked.

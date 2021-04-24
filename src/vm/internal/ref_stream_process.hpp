@@ -112,11 +112,11 @@ private:
   [[nodiscard]] auto getFile() noexcept -> FileHandle {
     switch (m_streamKind) {
     case ProcessStreamKind::StdIn:
-      return m_process->getStdIn();
+      return m_process->getStdInPipe();
     case ProcessStreamKind::StdOut:
-      return m_process->getStdOut();
+      return m_process->getStdOutPipe();
     case ProcessStreamKind::StdErr:
-      return m_process->getStdErr();
+      return m_process->getStdErrPipe();
     }
     return fileInvalid();
   }

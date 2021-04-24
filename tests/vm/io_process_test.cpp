@@ -176,6 +176,7 @@ TEST_CASE("[vm] Execute process platform-calls", "vm") {
 
           // Run a program that exits with code 0.
           asmb->addLoadLitString(novrtPath + " " + assertTrueNx());
+          asmb->addLoadLitInt(7); // Pipe stdIn, stdOut and stdErr.
           asmb->addPCall(novasm::PCallCode::ProcessStart);
           asmb->addPCall(novasm::PCallCode::ProcessBlock);
 
@@ -185,6 +186,7 @@ TEST_CASE("[vm] Execute process platform-calls", "vm") {
 
           // Run a program that exits with code 1.
           asmb->addLoadLitString(novrtPath + " " + failNx());
+          asmb->addLoadLitInt(7); // Pipe stdIn, stdOut and stdErr.
           asmb->addPCall(novasm::PCallCode::ProcessStart);
           asmb->addPCall(novasm::PCallCode::ProcessBlock);
 
@@ -194,6 +196,7 @@ TEST_CASE("[vm] Execute process platform-calls", "vm") {
 
           // Run a program that exits with code 14.
           asmb->addLoadLitString(novrtPath + " " + divByZeroNx());
+          asmb->addLoadLitInt(7); // Pipe stdIn, stdOut and stdErr.
           asmb->addPCall(novasm::PCallCode::ProcessStart);
           asmb->addPCall(novasm::PCallCode::ProcessBlock);
 
@@ -215,6 +218,7 @@ TEST_CASE("[vm] Execute process platform-calls", "vm") {
 
           // Run a program that prints to stdOut.
           asmb->addLoadLitString(novrtPath + " " + helloWorldNx());
+          asmb->addLoadLitInt(7); // Pipe stdIn, stdOut and stdErr.
           asmb->addPCall(novasm::PCallCode::ProcessStart);
 
           asmb->addDup(); // Duplicate the process.
@@ -245,6 +249,7 @@ TEST_CASE("[vm] Execute process platform-calls", "vm") {
 
           // Run a program that prints to stdErr.
           asmb->addLoadLitString(novrtPath + " " + helloWorldErrNx());
+          asmb->addLoadLitInt(7); // Pipe stdIn, stdOut and stdErr.
           asmb->addPCall(novasm::PCallCode::ProcessStart);
 
           asmb->addDup(); // Duplicate the process.
@@ -275,6 +280,7 @@ TEST_CASE("[vm] Execute process platform-calls", "vm") {
 
           // Run a program that reads a line from stdIn and write to stdOut.
           asmb->addLoadLitString(novrtPath + " " + readLineNx());
+          asmb->addLoadLitInt(7); // Pipe stdIn, stdOut and stdErr.
           asmb->addPCall(novasm::PCallCode::ProcessStart);
           asmb->addDup(); // Duplicate the process.
           asmb->addDup(); // Duplicate the process.
@@ -306,6 +312,7 @@ TEST_CASE("[vm] Execute process platform-calls", "vm") {
           // Run a program that prints the number of environment arguments.
           asmb->addLoadLitString(
               novrtPath + " " + printNumEnvArgsNx() + " a --b -ce hello 'hello world'");
+          asmb->addLoadLitInt(7); // Pipe stdIn, stdOut and stdErr.
           asmb->addPCall(novasm::PCallCode::ProcessStart);
 
           asmb->addDup(); // Duplicate the process.
@@ -328,6 +335,7 @@ TEST_CASE("[vm] Execute process platform-calls", "vm") {
           asmb->setEntrypoint("entry");
 
           asmb->addLoadLitString(novrtPath + " " + helloWorldNx());
+          asmb->addLoadLitInt(7); // Pipe stdIn, stdOut and stdErr.
           asmb->addPCall(novasm::PCallCode::ProcessStart);
           asmb->addPCall(novasm::PCallCode::ProcessGetId);
 
@@ -349,6 +357,7 @@ TEST_CASE("[vm] Execute process platform-calls", "vm") {
           asmb->setEntrypoint("entry");
 
           asmb->addLoadLitString(novrtPath + " " + helloWorldNx());
+          asmb->addLoadLitInt(7); // Pipe stdIn, stdOut and stdErr.
           asmb->addPCall(novasm::PCallCode::ProcessStart);
 
           asmb->addPop();
@@ -365,6 +374,7 @@ TEST_CASE("[vm] Execute process platform-calls", "vm") {
           asmb->setEntrypoint("entry");
 
           asmb->addLoadLitString(novrtPath + " " + helloWorldNx());
+          asmb->addLoadLitInt(7); // Pipe stdIn, stdOut and stdErr.
           asmb->addPCall(novasm::PCallCode::ProcessStart);
 
           // Sleep for 500 ms to give the child-process time to finish.
@@ -392,6 +402,7 @@ TEST_CASE("[vm] Execute process platform-calls", "vm") {
 
           // Start a process and save it in a variable.
           asmb->addLoadLitString(novrtPath + " " + helloWorldNx());
+          asmb->addLoadLitInt(7); // Pipe stdIn, stdOut and stdErr.
           asmb->addPCall(novasm::PCallCode::ProcessStart);
           asmb->addStackStore(0);
 
@@ -433,6 +444,7 @@ TEST_CASE("[vm] Execute process platform-calls", "vm") {
           asmb->setEntrypoint("entry");
 
           asmb->addLoadLitString("non-existent arg1 arg2");
+          asmb->addLoadLitInt(7); // Pipe stdIn, stdOut and stdErr.
           asmb->addPCall(novasm::PCallCode::ProcessStart);
           asmb->addPCall(novasm::PCallCode::ProcessBlock);
 
@@ -452,6 +464,7 @@ TEST_CASE("[vm] Execute process platform-calls", "vm") {
           asmb->setEntrypoint("entry");
 
           asmb->addLoadLitString("");
+          asmb->addLoadLitInt(7); // Pipe stdIn, stdOut and stdErr.
           asmb->addPCall(novasm::PCallCode::ProcessStart);
           asmb->addPCall(novasm::PCallCode::ProcessBlock);
 
@@ -471,6 +484,7 @@ TEST_CASE("[vm] Execute process platform-calls", "vm") {
           asmb->setEntrypoint("entry");
 
           asmb->addLoadLitString(" ");
+          asmb->addLoadLitInt(7); // Pipe stdIn, stdOut and stdErr.
           asmb->addPCall(novasm::PCallCode::ProcessStart);
           asmb->addPCall(novasm::PCallCode::ProcessBlock);
 
@@ -490,6 +504,7 @@ TEST_CASE("[vm] Execute process platform-calls", "vm") {
           asmb->setEntrypoint("entry");
 
           asmb->addLoadLitString(" \t \n \r " + novrtPath + " " + helloWorldNx());
+          asmb->addLoadLitInt(7); // Pipe stdIn, stdOut and stdErr.
           asmb->addPCall(novasm::PCallCode::ProcessStart);
           asmb->addPCall(novasm::PCallCode::ProcessBlock);
 
@@ -508,6 +523,7 @@ TEST_CASE("[vm] Execute process platform-calls", "vm") {
           asmb->setEntrypoint("entry");
 
           asmb->addLoadLitString(novrtPath + " " + printFirstArgNx() + " non-quoted\\'quoted\\'");
+          asmb->addLoadLitInt(7); // Pipe stdIn, stdOut and stdErr.
           asmb->addPCall(novasm::PCallCode::ProcessStart);
 
           asmb->addDup(); // Duplicate the process.
@@ -530,6 +546,7 @@ TEST_CASE("[vm] Execute process platform-calls", "vm") {
 
           // Run a program that waits until its interupted.
           asmb->addLoadLitString(novrtPath + " " + waitForInteruptNx());
+          asmb->addLoadLitInt(7); // Pipe stdIn, stdOut and stdErr.
           asmb->addPCall(novasm::PCallCode::ProcessStart);
           asmb->addDup(); // Duplicate the process.
           asmb->addDup(); // Duplicate the process.
@@ -568,6 +585,7 @@ TEST_CASE("[vm] Execute process platform-calls", "vm") {
 
           // Run a program that runs an infinite loop.
           asmb->addLoadLitString(novrtPath + " " + infiniteLoopNx());
+          asmb->addLoadLitInt(7); // Pipe stdIn, stdOut and stdErr.
           asmb->addPCall(novasm::PCallCode::ProcessStart);
           asmb->addDup(); // Duplicate the process.
           asmb->addDup(); // Duplicate the process.

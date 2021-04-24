@@ -29,11 +29,11 @@ enum class FileStreamMode : uint8_t {
 };
 
 enum FileStreamFlags : uint8_t {
-  AutoRemoveFile = 1, // File is deleted when the reference to it is freed.
+  AutoRemoveFile = 1u << 0, // File is deleted when the reference to it is freed.
 };
 
 enum FileListDirFlags : uint8_t {
-  IncludeSymlinks = 1, // Should symbolic links be included in directory listings.
+  IncludeSymlinks = 1u << 0, // Should symbolic links be included in directory listings.
 };
 
 auto getFilePlatformError() noexcept -> PlatformError;
