@@ -30,12 +30,6 @@ act startTests()
   atInterupt(shutdown[process]);
   TestRun(timeNow(), process)
 
-act printOutput(TestRun run)
-  c   = consoleOpen().failOnError();
-  out = fork copy(run.process.stdOut, c.stdOut);
-  err = fork copy(run.process.stdErr, c.stdErr);
-  waitAll(out :: err)
-
 act getResult(TestRun run)
   res = run.process.wait().failOnError();
   TestResult(res.isSuccess(), timeNow() - run.startTime)
@@ -45,9 +39,10 @@ struct Settings
 act main(Settings s)
   print("-- Starting tests");
   run = startTests();
-  printOutput(run);
   result = run.getResult();
   if result.success -> print(   "-- Tests succeeded in " + result.duration, TtyStyle.FgGreen)
   else              -> printErr("-- Tests failed in "   + result.duration, TtyStyle.FgRed)
+
+fun cliIsInteruptable(Type{Settings} s) false
 
 cli(main)
