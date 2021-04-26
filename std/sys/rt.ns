@@ -66,7 +66,9 @@ enum PlatformError =
   TcpAddressNotFound            : 617,
   TcpRemoteResetConnection      : 618,
   TcpSocketIsDead               : 619,
-  SleepFailed                   : 700
+  IOWatcherUnknownError         : 700,
+  IOWatcherFileAlreadyWatched   : 701,
+  SleepFailed                   : 800
 
 // -- Conversions
 
@@ -125,6 +127,8 @@ fun noinline string(PlatformError err)
   if err == PlatformError.TcpAddressNotFound            -> "Tcp address not found"
   if err == PlatformError.TcpRemoteResetConnection      -> "Tcp connection reset by remote"
   if err == PlatformError.TcpSocketIsDead               -> "Tcp socket is dead"
+  if err == PlatformError.IOWatcherUnknownError         -> "Unknown IOWatcher error occured"
+  if err == PlatformError.IOWatcherFileAlreadyWatched   -> "File is already being watched"
   if err == PlatformError.SleepFailed                   -> "Sleep failed"
   else                                                  -> "Unrecognized platform error '" + int(err) + "'"
 

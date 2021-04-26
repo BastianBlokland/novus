@@ -1,6 +1,7 @@
 #include "internal/ref.hpp"
 #include "internal/ref_atomic.hpp"
 #include "internal/ref_future.hpp"
+#include "internal/ref_iowatcher.hpp"
 #include "internal/ref_process.hpp"
 #include "internal/ref_stream_console.hpp"
 #include "internal/ref_stream_file.hpp"
@@ -52,6 +53,9 @@ auto Ref::destroy() noexcept -> void {
     break;
   case RefKind::Process:
     downcastRef<ProcessRef>(this)->~ProcessRef();
+    break;
+  case RefKind::IOWatcher:
+    downcastRef<IOWatcherRef>(this)->~IOWatcherRef();
     break;
   }
 }

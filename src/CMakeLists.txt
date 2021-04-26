@@ -267,6 +267,7 @@ add_library(vm STATIC
   vm/internal/executor.cpp
   vm/internal/garbage_collector.cpp
   vm/internal/interupt.cpp
+  vm/internal/iowatcher.cpp
   vm/internal/memory_allocator.cpp
   vm/internal/platform_utilities.cpp
   vm/internal/ref_allocator.cpp

@@ -31,6 +31,7 @@ auto FindUsedTypes::markType(prog::sym::TypeId type) -> void {
   case prog::sym::TypeKind::String:
   case prog::sym::TypeKind::SysStream:
   case prog::sym::TypeKind::SysProcess:
+  case prog::sym::TypeKind::SysIOWatcher:
     break;
   case prog::sym::TypeKind::Struct: {
     const auto& structDef = std::get<prog::sym::StructDef>(m_prog.getTypeDef(type));

@@ -7,7 +7,7 @@ import "std/prim.ns"
 
 // -- Type infos
 
-enum    PrimType      = Int, Long, Float, Bool, Char, String, SysStream, SysProcess
+enum    PrimType      = Int, Long, Float, Bool, Char, String, SysStream, SysProcess, SysIOWatcher
 struct  PrimInfo      = PrimType type
 
 struct  StructField   = string name, TypeInfo type
@@ -74,21 +74,22 @@ fun addType{T}(ReflectCtx rc, Type{T} t)
 
 // -- Reflection
 
-fun reflect{T}(Type{T} t, ReflectCtx rc, Meta{#0}  intTypeKind)        PrimInfo(PrimType.Int)
-fun reflect{T}(Type{T} t, ReflectCtx rc, Meta{#1}  longTypeKind)       PrimInfo(PrimType.Long)
-fun reflect{T}(Type{T} t, ReflectCtx rc, Meta{#2}  floatTypeKind)      PrimInfo(PrimType.Float)
-fun reflect{T}(Type{T} t, ReflectCtx rc, Meta{#3}  boolTypeKind)       PrimInfo(PrimType.Bool)
-fun reflect{T}(Type{T} t, ReflectCtx rc, Meta{#4}  charTypeKind)       PrimInfo(PrimType.Char)
-fun reflect{T}(Type{T} t, ReflectCtx rc, Meta{#5}  stringTypeKind)     PrimInfo(PrimType.String)
-fun reflect{T}(Type{T} t, ReflectCtx rc, Meta{#6}  sysStreamTypeKind)  PrimInfo(PrimType.SysStream)
-fun reflect{T}(Type{T} t, ReflectCtx rc, Meta{#7}  sysProcessTypeKind) PrimInfo(PrimType.SysProcess)
-fun reflect{T}(Type{T} t, ReflectCtx rc, Meta{#8}  structTypeKind)     reflectStruct(t, rc)
-fun reflect{T}(Type{T} t, ReflectCtx rc, Meta{#9}  unionTypeKind)      reflectUnion(t, rc)
-fun reflect{T}(Type{T} t, ReflectCtx rc, Meta{#10} enumTypeKind)       reflectEnum(t)
-fun reflect{T}(Type{T} t, ReflectCtx rc, Meta{#11} delegateTypeKind)   reflectDelegate(t, rc)
-fun reflect{T}(Type{T} t, ReflectCtx rc, Meta{#12} futureTypeKind)     reflectFuture(t, rc)
-fun reflect{T}(Type{T} t, ReflectCtx rc, Meta{#13} lazyTypeKind)       reflectLazy(t, rc)
-fun reflect{T}(Type{T} t, ReflectCtx rc, Meta{#14} staticIntTypeKind)  StaticIntInfo(int(Meta{T}()))
+fun reflect{T}(Type{T} t, ReflectCtx rc, Meta{#0}  intTypeKind)           PrimInfo(PrimType.Int)
+fun reflect{T}(Type{T} t, ReflectCtx rc, Meta{#1}  longTypeKind)          PrimInfo(PrimType.Long)
+fun reflect{T}(Type{T} t, ReflectCtx rc, Meta{#2}  floatTypeKind)         PrimInfo(PrimType.Float)
+fun reflect{T}(Type{T} t, ReflectCtx rc, Meta{#3}  boolTypeKind)          PrimInfo(PrimType.Bool)
+fun reflect{T}(Type{T} t, ReflectCtx rc, Meta{#4}  charTypeKind)          PrimInfo(PrimType.Char)
+fun reflect{T}(Type{T} t, ReflectCtx rc, Meta{#5}  stringTypeKind)        PrimInfo(PrimType.String)
+fun reflect{T}(Type{T} t, ReflectCtx rc, Meta{#6}  sysStreamTypeKind)     PrimInfo(PrimType.SysStream)
+fun reflect{T}(Type{T} t, ReflectCtx rc, Meta{#7}  sysProcessTypeKind)    PrimInfo(PrimType.SysProcess)
+fun reflect{T}(Type{T} t, ReflectCtx rc, Meta{#8}  sysIOWatcherTypeKind)  PrimInfo(PrimType.SysIOWatcher)
+fun reflect{T}(Type{T} t, ReflectCtx rc, Meta{#9}  structTypeKind)        reflectStruct(t, rc)
+fun reflect{T}(Type{T} t, ReflectCtx rc, Meta{#10} unionTypeKind)         reflectUnion(t, rc)
+fun reflect{T}(Type{T} t, ReflectCtx rc, Meta{#11} enumTypeKind)          reflectEnum(t)
+fun reflect{T}(Type{T} t, ReflectCtx rc, Meta{#12} delegateTypeKind)      reflectDelegate(t, rc)
+fun reflect{T}(Type{T} t, ReflectCtx rc, Meta{#13} futureTypeKind)        reflectFuture(t, rc)
+fun reflect{T}(Type{T} t, ReflectCtx rc, Meta{#14} lazyTypeKind)          reflectLazy(t, rc)
+fun reflect{T}(Type{T} t, ReflectCtx rc, Meta{#15} staticIntTypeKind)     StaticIntInfo(int(Meta{T}()))
 
 fun reflect{T}(Type{T} t, ReflectCtx rc = ReflectCtx()) -> TypeInfo
   if rc.types.contains(t.string())  -> RecursiveTypeInfo(t.string())
@@ -170,24 +171,24 @@ fun reflectLazy{Lazy}(Type{Lazy} t, ReflectCtx rc = ReflectCtx()) -> LazyInfo
 
 // ------ Structs
 
-fun reflectCoerceToType{T, Target}(T val, Type{Target} tgt, Meta{#8} structTypeKind, Meta{#0} nonEquivalent)
+fun reflectCoerceToType{T, Target}(T val, Type{Target} tgt, Meta{#9} structTypeKind, Meta{#0} nonEquivalent)
   Target(val)
 
-fun reflectCoerceToType{T, Target}(T val, Type{Target} tgt, Meta{#8} structTypeKind, Meta{#1} equivalent)
+fun reflectCoerceToType{T, Target}(T val, Type{Target} tgt, Meta{#9} structTypeKind, Meta{#1} equivalent)
   reflectUsertypeAlias(val, tgt)
 
-fun reflectCoerceToType{T, Target}(T val, Type{Target} tgt, Meta{#8} structTypeKind)
+fun reflectCoerceToType{T, Target}(T val, Type{Target} tgt, Meta{#9} structTypeKind)
   reflectCoerceToType(val, tgt, structTypeKind, reflectAreUsertypesEquivalent(Type{T}(), tgt))
 
 // ------ Unions
 
-fun reflectCoerceToType{T, Target}(T val, Type{Target} tgt, Meta{#9} unionTypeKind, Meta{#0} nonEquivalent)
+fun reflectCoerceToType{T, Target}(T val, Type{Target} tgt, Meta{#10} unionTypeKind, Meta{#0} nonEquivalent)
   reflectFromUnion(val, tgt)
 
-fun reflectCoerceToType{T, Target}(T val, Type{Target} tgt, Meta{#9} unionTypeKind, Meta{#1} equivalent)
+fun reflectCoerceToType{T, Target}(T val, Type{Target} tgt, Meta{#10} unionTypeKind, Meta{#1} equivalent)
   reflectUsertypeAlias(val, tgt)
 
-fun reflectCoerceToType{T, Target}(T val, Type{Target} tgt, Meta{#9} unionTypeKind)
+fun reflectCoerceToType{T, Target}(T val, Type{Target} tgt, Meta{#10} unionTypeKind)
   reflectCoerceToType(val, tgt, unionTypeKind, reflectAreUsertypesEquivalent(Type{T}(), tgt))
 
 // ------ Generic

@@ -202,6 +202,7 @@ auto isReservedTypeName(const std::string& name) -> bool {
       "char",
       "sys_stream",
       "sys_process",
+      "sys_iowatcher",
       "function",
       "action",
       "future",

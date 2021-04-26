@@ -546,6 +546,13 @@ auto GenExpr::visit(const prog::expr::CallExprNode& n) -> void {
     m_asmb->addPCall(novasm::PCallCode::VersionCompiler);
     break;
 
+  case prog::sym::FuncKind::ActionIOWatcherCreate:
+    m_asmb->addPCall(novasm::PCallCode::IOWatcherCreate);
+    break;
+  case prog::sym::FuncKind::ActionIOWatcherGet:
+    m_asmb->addPCall(novasm::PCallCode::IOWatcherGet);
+    break;
+
   case prog::sym::FuncKind::ActionPlatformCode:
     m_asmb->addPCall(novasm::PCallCode::PlatformCode);
     break;

@@ -220,6 +220,7 @@ private:
   sym::TypeId m_string;
   sym::TypeId m_sysStream;
   sym::TypeId m_sysProcess;
+  sym::TypeId m_sysIOWatcher;
 };
 
 } // namespace prog

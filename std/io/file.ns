@@ -53,7 +53,7 @@ act fileOpen(Path p, FileMode m, FileFlags flags = FileFlags.None) -> Either{Fil
     absPathStr  = absPath.string();
     stream      = intrinsic{file_openstream}(absPathStr, int(m) | flags << 8);
     if stream.isValid() -> File(absPath, m, flags, stream)
-    if retry == 0 && platformErrorCode() == PlatformError.FileTooManyOpenFiles -> gcCollect(); self(++retry)
+    if retry == 0 && platformErrorCode() == PlatformError.FileTooManyOpenFiles -> gcCollectBlocking(); self(++retry)
     else -> platformError("Failed to open file: '" + absPathStr + "'")
   ), 0)
 

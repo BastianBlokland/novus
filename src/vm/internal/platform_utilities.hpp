@@ -76,7 +76,10 @@ enum class PlatformError : uint32_t {
   TcpRemoteResetConnection     = 618,
   TcpSocketIsDead              = 619,
 
-  SleepFailed = 700,
+  IOWatcherUnknownError       = 700,
+  IOWatcherFileAlreadyWatched = 701,
+
+  SleepFailed = 800,
 };
 
 auto setupPlatformUtilities() noexcept -> void;

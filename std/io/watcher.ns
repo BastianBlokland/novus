@@ -1,0 +1,92 @@
+import "file.ns"
+import "path.ns"
+
+import "std/core.ns"
+import "std/diag.ns"
+import "std/prim.ns"
+
+// -- Types
+
+enum IOWatcherFlags =
+  None : 0b0
+
+struct IOWatcher =
+  PathAbsolute  path,
+  sys_iowatcher handle
+
+// -- Conversions
+
+fun string(IOWatcher w)
+  "(iowatcher:" + w.path + ")"
+
+fun string(IOWatcherFlags f)
+  toEnumFlagNames(f).string()
+
+// -- Actions
+
+act ioWatcherCreate(Path path, IOWatcherFlags flags = IOWatcherFlags.None) -> IOWatcher
+  absPath = path.pathAbsolute();
+  IOWatcher(absPath, intrinsic{iowatcher_create}(absPath.string(), flags))
+
+act ioWatcherGet(IOWatcher watcher) -> Either{PathAbsolute, Error}
+ pathStr = intrinsic{iowatcher_get}(watcher.handle);
+ if pathStr.isEmpty() -> platformError("Failed to watch: '" + watcher.path + "'")
+ else                 -> pathAbsParser().run(pathStr)
+
+// -- Tests
+
+assertEq(
+  pathDir = pathCurrent() / "watcher-test1";
+  pathFile = pathDir / "file";
+  fileCreateDir(pathDir).failOnError();
+  waitForModFile = fork ioWatcherGet(ioWatcherCreate(pathDir));
+  sleep(milliseconds(10));
+  fileWrite(pathFile, "HelloWorld").failOnError();
+  gcCollectBlocking();
+  fileRemoveReq(pathDir).failOnError();
+  Tuple(pathFile, waitForModFile.get().failOnError())
+)
+
+assertEq(
+  pathDir     = pathCurrent() / "watcher-test2";
+  pathSubDir  = pathDir / "subdir";
+  pathFile    = pathSubDir / "file";
+  fileCreateDir(pathDir).failOnError();
+  fileCreateDir(pathSubDir).failOnError();
+  waitForModFile = fork ioWatcherGet(ioWatcherCreate(pathDir));
+  sleep(milliseconds(10));
+  fileWrite(pathFile, "HelloWorldFromSubDir").failOnError();
+  gcCollectBlocking();
+  fileRemoveReq(pathDir).failOnError();
+  Tuple(pathFile, waitForModFile.get().failOnError())
+)
+
+assertEq(
+  pathDir     = pathCurrent() / "watcher-test3";
+  pathSubDir  = pathDir / "lazysubdir";
+  pathFile    = pathSubDir / "file";
+  fileCreateDir(pathDir).failOnError();
+  waitForModFile = fork ioWatcherGet(ioWatcherCreate(pathDir));
+  sleep(milliseconds(10));
+  fileCreateDir(pathSubDir).failOnError();
+  fileWrite(pathFile, "HelloWorldFromLazySubDir").failOnError();
+  gcCollectBlocking();
+  fileRemoveReq(pathDir).failOnError();
+  Tuple(pathFile, waitForModFile.get().failOnError())
+)
+
+assertEq(
+  pathDir     = pathCurrent() / "watcher-test4";
+  pathSubDir1 = pathDir / "subdir1";
+  pathSubDir2 = pathDir / "subdir2";
+  pathFile    = pathSubDir2 / "file";
+  fileCreateDir(pathDir).failOnError();
+  fileCreateDir(pathSubDir1).failOnError();
+  waitForModFile = fork ioWatcherGet(ioWatcherCreate(pathDir));
+  sleep(milliseconds(10));
+  fileRename(pathSubDir1, pathSubDir2).failOnError();
+  fileWrite(pathFile, "HelloWorldFromSubDir").failOnError();
+  gcCollectBlocking();
+  fileRemoveReq(pathDir).failOnError();
+  Tuple(pathFile, waitForModFile.get().failOnError())
+)

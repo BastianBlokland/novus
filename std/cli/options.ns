@@ -194,7 +194,7 @@ fun cliOptFromType{T}(CliOptSet set, CliId id, string name, Type{CliPositional{T
 fun cliOptFromType{T}(CliOptSet set, CliId id, string name, Type{T} t)
   cliOptFromType(set, id, name, t, Meta{reflect_type_kind{T}}())
 
-fun cliOptFromType{T}(CliOptSet set, CliId id, string name, Type{T} t, Meta{#10} enumKind) -> CliOpt
+fun cliOptFromType{T}(CliOptSet set, CliId id, string name, Type{T} t, Meta{#11} enumKind) -> CliOpt
   cliValFlagFilteredOpt(id, set.cliFlagName(name), t, reflectEnumKeys(t))
 
 fun cliOptFromType{T, Idx}(CliOptSet set, CliId id, string name, Type{T} t, Meta{Idx} otherKind) -> CliOpt

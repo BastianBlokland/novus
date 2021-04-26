@@ -3,6 +3,7 @@
 #include "internal/executor_handle.hpp"
 #include "internal/interupt.hpp"
 #include "internal/platform_utilities.hpp"
+#include "internal/ref_iowatcher.hpp"
 #include "internal/ref_process.hpp"
 #include "internal/ref_stream_console.hpp"
 #include "internal/ref_stream_file.hpp"
@@ -340,6 +341,24 @@ auto inline pcall(
   case PCallCode::VersionCompiler: {
     const auto& version = executable->getCompilerVersion();
     PUSH_REF(refAlloc->allocStrLit(version.data(), version.length()));
+  } break;
+
+  case PCallCode::IOWatcherCreate: {
+    auto flags = static_cast<IOWatcherFlags>(POP_INT());
+    auto* path = getStringRef(refAlloc, POP());
+    CHECK_ALLOC(path);
+    PUSH_REF(ioWatcherCreate(refAlloc, path, flags));
+  } break;
+  case PCallCode::IOWatcherGet: {
+    // Note: Keep the iowatcher on the stack, reason is gc could run while we are blocked.
+    auto watcher = PEEK();
+    // Allocate a new string, and push it on the stack (so its already visible to the gc).
+    auto str = refAlloc->allocStr(PATH_MAX);
+    PUSH_REF(str);
+
+    ioWatcherGet(execHandle, pErr, watcher.getDowncastRef<IOWatcherRef>(), str);
+
+    POP_AT(1); // Pop the watcher off the stack, 1 because its behind the result string.
   } break;
 
   case PCallCode::PlatformCode: {
