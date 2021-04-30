@@ -14,6 +14,9 @@ namespace vm::internal {
 
 namespace {
 
+/**
+ * Internal helper for tracking a registed inotify watch.
+ */
 struct Watch {
   int id;
   gsl::owner<char*> path;
@@ -31,17 +34,27 @@ struct Watch {
 
 } // namespace
 
+/**
+ * Watcher object, stays alive for the duration of the watcher.
+ */
 struct IOWatcher {
   IOWatcherFlags flags;
   std::atomic<PlatformError> error;
 
+  /**
+   * Only a single thread can perform any operation on the watcher.
+   */
   std::mutex mutex;
-  std::unordered_map<int, Watch> watches;
+
+  std::unordered_map<int, Watch> watches; // map of inotify watchid's to our watch representation.
   int inotifyHandle;
 };
 
 namespace {
 
+/**
+ * Mask of inotify events to wait for.
+ */
 auto getMask() noexcept -> uint32_t {
   return IN_CLOSE_WRITE | IN_CREATE | IN_DELETE_SELF | IN_MOVE_SELF | IN_MOVED_TO | IN_DONT_FOLLOW |
       IN_EXCL_UNLINK | IN_ONLYDIR;
@@ -72,6 +85,10 @@ auto getError() noexcept {
   return PlatformError::IOWatcherUnknownError;
 }
 
+/**
+ * Helper utility for concatenating two paths with a '/' seperator.
+ * NOTE: Returns a malloced string.
+ */
 auto concatPath(const char* a, const size_t aLen, const char* b, const size_t bLen) noexcept
     -> gsl::owner<char*> {
   const size_t len = aLen + 1 + bLen + 1;
@@ -87,6 +104,10 @@ auto concatPath(const char* path, const char* name) noexcept {
   return concatPath(path, ::strlen(path), name, ::strlen(name));
 }
 
+/**
+ * Setup watches for the specified directory and all of its subdirectories.
+ * NOTE: Will take ownership of the provided (malloced) path string.
+ */
 auto setupWatchesReq(IOWatcher& watcher, gsl::owner<char*> path, bool allowMissing) noexcept
     -> void {
   // Open the directory.
@@ -165,7 +186,7 @@ auto getNextModifiedFile(IOWatcher& watcher, ExecutorHandle* execHandle, StringR
   // Only a single thread is allowed to perform operations on the watcher object.
   std::lock_guard<std::mutex> lk(watcher.mutex);
 
-  // Lookup the watch accociated with the watch-id.
+  // Lookup the watch associated with the watch-id.
   auto lookupItr = watcher.watches.find(event->wd);
   if (lookupItr == watcher.watches.end()) {
     return false;
