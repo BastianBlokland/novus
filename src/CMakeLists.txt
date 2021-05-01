@@ -287,3 +287,12 @@ target_link_libraries(vm PUBLIC Threads::Threads)
 target_link_libraries(vm PUBLIC novasm)
 target_include_directories(vm PUBLIC ${PROJECT_SOURCE_DIR}/include)
 target_include_directories(vm PRIVATE vm)
+
+if(APPLE)
+  # Link against the MacOS CoreServices framework, this is need for the fsevents api for example.
+  find_library(CORE_SERVICES CoreServices)
+  if(NOT CORE_SERVICES)
+      message(FATAL_ERROR "CoreServices not found")
+  endif()
+  target_link_libraries(vm PUBLIC ${CORE_SERVICES})
+endif()

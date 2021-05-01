@@ -41,11 +41,12 @@ assertEq(
   pathDir = pathCurrent() / "watcher-test1";
   pathFile = pathDir / "file";
   fileCreateDir(pathDir).failOnError();
-  sleep(milliseconds(5));
-  waitForModFile = fork ioWatcherGet(ioWatcherCreate(pathDir));
-  sleep(milliseconds(5));
+  watcher = ioWatcherCreate(pathDir);
+  waitForModFile = fork watcher.get();
+  sleep(milliseconds(500));
   fileWrite(pathFile, "HelloWorld").failOnError();
   gcCollectBlocking();
+  sleep(milliseconds(500));
   fileRemoveReq(pathDir).failOnError();
   Tuple(pathFile, waitForModFile.get().failOnError())
 )
@@ -56,11 +57,12 @@ assertEq(
   pathFile    = pathSubDir / "file";
   fileCreateDir(pathDir).failOnError();
   fileCreateDir(pathSubDir).failOnError();
-  sleep(milliseconds(5));
-  waitForModFile = fork ioWatcherGet(ioWatcherCreate(pathDir));
-  sleep(milliseconds(5));
+  watcher = ioWatcherCreate(pathDir);
+  waitForModFile = fork watcher.get();
+  sleep(milliseconds(500));
   fileWrite(pathFile, "HelloWorldFromSubDir").failOnError();
   gcCollectBlocking();
+  sleep(milliseconds(500));
   fileRemoveReq(pathDir).failOnError();
   Tuple(pathFile, waitForModFile.get().failOnError())
 )
@@ -70,12 +72,13 @@ assertEq(
   pathSubDir  = pathDir / "lazysubdir";
   pathFile    = pathSubDir / "file";
   fileCreateDir(pathDir).failOnError();
-  sleep(milliseconds(5));
-  waitForModFile = fork ioWatcherGet(ioWatcherCreate(pathDir));
-  sleep(milliseconds(5));
+  watcher = ioWatcherCreate(pathDir);
+  waitForModFile = fork watcher.get();
+  sleep(milliseconds(500));
   fileCreateDir(pathSubDir).failOnError();
   fileWrite(pathFile, "HelloWorldFromLazySubDir").failOnError();
   gcCollectBlocking();
+  sleep(milliseconds(500));
   fileRemoveReq(pathDir).failOnError();
   Tuple(pathFile, waitForModFile.get().failOnError())
 )
@@ -87,12 +90,13 @@ assertEq(
   pathFile    = pathSubDir2 / "file";
   fileCreateDir(pathDir).failOnError();
   fileCreateDir(pathSubDir1).failOnError();
-  sleep(milliseconds(5));
-  waitForModFile = fork ioWatcherGet(ioWatcherCreate(pathDir));
-  sleep(milliseconds(5));
+  watcher = ioWatcherCreate(pathDir);
+  waitForModFile = fork watcher.get();
+  sleep(milliseconds(500));
   fileRename(pathSubDir1, pathSubDir2).failOnError();
   fileWrite(pathFile, "HelloWorldFromSubDir").failOnError();
   gcCollectBlocking();
+  sleep(milliseconds(500));
   fileRemoveReq(pathDir).failOnError();
   Tuple(pathFile, waitForModFile.get().failOnError())
 )
@@ -102,12 +106,12 @@ assert(
   pathDir = pathCurrent() / "watcher-test5";
   filePaths = for(numFiles, lambda (int i) pathDir / ("file" + i));
   fileCreateDir(pathDir).failOnError();
-  sleep(milliseconds(5));
   watcher = ioWatcherCreate(pathDir);
-  waits = for(numFiles, impure lambda (int i) fork ioWatcherGet(watcher));
-  sleep(milliseconds(5));
+  waits = for(numFiles, impure lambda (int i) fork watcher.get());
+  sleep(milliseconds(500));
   filePaths.map(impure lambda (PathAbsolute path) fileWrite(path, "HelloWorld").failOnError());
   gcCollectBlocking();
+  sleep(milliseconds(500));
   fileRemoveReq(pathDir).failOnError();
   waits.map(impure lambda (future{Either{PathAbsolute, Error}} f)
   (
@@ -119,11 +123,12 @@ assert(
   pathDir = pathCurrent() / "watcher-test6";
   filePaths = for(100, lambda (int i) pathDir / ("file" + i));
   fileCreateDir(pathDir).failOnError();
-  sleep(milliseconds(5));
-  waitForModFile = fork ioWatcherGet(ioWatcherCreate(pathDir));
-  sleep(milliseconds(5));
+  watcher = ioWatcherCreate(pathDir);
+  waitForModFile = fork watcher.get();
+  sleep(milliseconds(500));
   filePaths.map(impure lambda (PathAbsolute path) fileWrite(path, "HelloWorld").failOnError());
   gcCollectBlocking();
+  sleep(milliseconds(500));
   fileRemoveReq(pathDir).failOnError();
   waitForModFile.get() is PathAbsolute
 )
@@ -131,9 +136,9 @@ assert(
 assert(
   pathDir = pathCurrent() / "watcher-test7";
   fileCreateDir(pathDir).failOnError();
-  sleep(milliseconds(5));
-  waitForModFile = fork ioWatcherGet(ioWatcherCreate(pathDir));
-  sleep(milliseconds(5));
+  watcher = ioWatcherCreate(pathDir);
+  waitForModFile = fork watcher.get();
+  sleep(milliseconds(500));
   removedSuccessfully = fileRemoveReq(pathDir) is None;
   gcCollectBlocking();
   removedSuccessfully
