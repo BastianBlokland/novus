@@ -5,7 +5,6 @@
 #include "internal/ref_allocator.hpp"
 #include "internal/ref_string.hpp"
 #include <array>
-#include <atomic>
 #include <cstring>
 #include <sys/inotify.h>
 #include <unordered_map>
@@ -13,6 +12,15 @@
 namespace vm::internal {
 
 namespace {
+
+/**
+ * Buffer of how many inotify events to read at a time. If more events then this are buffered up on
+ * the os-side then events get dropped.
+ */
+constexpr size_t g_bufferMaxEntries = 64;
+constexpr size_t g_bufferMaxSize    = (sizeof(inotify_event) + NAME_MAX + 1) * g_bufferMaxEntries;
+
+} // namespace
 
 /**
  * Internal helper for tracking a registed inotify watch.
@@ -32,14 +40,12 @@ struct Watch {
   ~Watch() { ::free(path); }
 };
 
-} // namespace
-
 /**
  * Watcher object, stays alive for the duration of the watcher.
  */
 struct IOWatcher {
   IOWatcherFlags flags;
-  std::atomic<PlatformError> error;
+  PlatformError error;
 
   /**
    * Only a single thread can perform any operation on the watcher.
@@ -48,6 +54,10 @@ struct IOWatcher {
 
   std::unordered_map<int, Watch> watches; // map of inotify watchid's to our watch representation.
   int inotifyHandle;
+
+  char* eventsBufferHead;
+  char* eventsBufferEnd;
+  std::array<char, g_bufferMaxSize> eventsBuffer;
 };
 
 namespace {
@@ -91,12 +101,16 @@ auto getError() noexcept {
  */
 auto concatPath(const char* a, const size_t aLen, const char* b, const size_t bLen) noexcept
     -> gsl::owner<char*> {
-  const size_t len = aLen + 1 + bLen + 1;
+  const bool needsSeperator = aLen > 0 && *(a + aLen - 1) != '/';
+
+  const size_t len = aLen + needsSeperator + bLen + 1;
   auto result      = reinterpret_cast<gsl::owner<char*>>(::malloc(len));
   ::memcpy(result, a, aLen);
-  result[aLen] = '/';
-  ::memcpy(result + aLen + 1, b, bLen);
-  result[aLen + 1 + bLen] = '\0';
+  if (needsSeperator) {
+    result[aLen] = '/';
+  }
+  ::memcpy(result + aLen + needsSeperator, b, bLen);
+  result[aLen + needsSeperator + bLen] = '\0';
   return result;
 }
 
@@ -121,7 +135,7 @@ auto setupWatchesReq(IOWatcher& watcher, gsl::owner<char*> path, bool allowMissi
   }
 
   // Setup a watch for it.
-  int watchId = ::inotify_add_watch(watcher.inotifyHandle, path, getMask());
+  const int watchId = ::inotify_add_watch(watcher.inotifyHandle, path, getMask());
   if (watchId == -1) {
     watcher.error = getError();
     ::free(path);
@@ -157,16 +171,14 @@ auto setupWatchesReq(IOWatcher& watcher, gsl::owner<char*> path, bool allowMissi
   ::closedir(dir);
 }
 
-auto getNextModifiedFile(IOWatcher& watcher, ExecutorHandle* execHandle, StringRef* result)
-    -> bool {
-  constexpr size_t bufferSize = sizeof(struct inotify_event) + NAME_MAX + 1;
-  std::array<char, bufferSize> buffer;
-  auto* event = reinterpret_cast<struct inotify_event*>(buffer.data());
-
+/**
+ * Read a batch of changes from inotify.
+ */
+auto readEvents(IOWatcher& watcher, ExecutorHandle* execHandle) -> bool {
   execHandle->setState(ExecState::Paused);
 
-  // Read a inotify event.
-  const auto bytesRead = ::read(watcher.inotifyHandle, buffer.data(), bufferSize);
+  const auto bytesRead =
+      ::read(watcher.inotifyHandle, watcher.eventsBuffer.data(), g_bufferMaxSize);
 
   execHandle->setState(ExecState::Running);
   if (execHandle->trap()) {
@@ -183,55 +195,80 @@ auto getNextModifiedFile(IOWatcher& watcher, ExecutorHandle* execHandle, StringR
     return false;
   }
 
-  // Only a single thread is allowed to perform operations on the watcher object.
-  std::lock_guard<std::mutex> lk(watcher.mutex);
+  watcher.eventsBufferHead = watcher.eventsBuffer.data();
+  watcher.eventsBufferEnd  = watcher.eventsBufferHead + bytesRead;
+  return true;
+}
 
-  // Lookup the watch associated with the watch-id.
-  auto lookupItr = watcher.watches.find(event->wd);
-  if (lookupItr == watcher.watches.end()) {
+auto getNextModifiedFile(IOWatcher& watcher, ExecutorHandle* execHandle, StringRef* result)
+    -> bool {
+
+  // Check if we have an event on our buffer, if not ask inotify for a next event batch.
+  // NOTE: If no events are in the buffer this will block here.
+  const bool hasEvents = watcher.eventsBufferHead || readEvents(watcher, execHandle);
+  if (!hasEvents) {
     return false;
   }
-  auto& watch = lookupItr->second;
 
-  if (event->mask & IN_Q_OVERFLOW) {
-    // Getting here means the application is reading the events too slowly and the kernel buffer has
-    // filled up. At the moment we just ignore this and the overflowed events get silently dropped,
-    // in the future we could consider reporting this error to the application.
-  }
-
-  // If the event is a 'close-write' then we return the absolute path of the modified file.
-  if (event->mask & IN_CLOSE_WRITE) {
-    const size_t dirLen       = ::strlen(watch.path);
-    const size_t nameLen      = ::strlen(event->name);
-    const size_t requiredSize = dirLen + 1 + nameLen;
-    if (result->getSize() < requiredSize) {
-      watcher.error = PlatformError::IOWatcherUnknownError;
-      return false;
+  while (watcher.eventsBufferHead) {
+    auto* event = reinterpret_cast<struct inotify_event*>(watcher.eventsBufferHead);
+    watcher.eventsBufferHead += sizeof(inotify_event) + event->len;
+    if (watcher.eventsBufferHead >= watcher.eventsBufferEnd) {
+      watcher.eventsBufferHead = nullptr;
     }
-    ::memcpy(result->getCharDataPtr(), watch.path, dirLen);
-    *(result->getCharDataPtr() + dirLen) = '/';
-    ::memcpy(result->getCharDataPtr() + dirLen + 1, event->name, nameLen);
-    result->updateSize(requiredSize);
-    return true;
-  }
 
-  // For created directories we start watching them.
-  if ((event->mask & IN_ISDIR) && (event->mask & (IN_CREATE | IN_MOVED_TO))) {
-    setupWatchesReq(watcher, concatPath(watch.path, event->name), true);
+    if (event->mask & IN_Q_OVERFLOW) {
+      // Getting here means the application is reading the events too slowly and the kernel buffer
+      // has filled up. At the moment we just ignore this and the overflowed events get silently
+      // dropped, in the future we could consider reporting this error to the application.
+      continue;
+    }
+
+    // Lookup the watch associated with the watch-id.
+    auto lookupItr = watcher.watches.find(event->wd);
+    if (lookupItr == watcher.watches.end()) {
+      continue;
+    }
+    auto& watch = lookupItr->second;
+
+    // If the event is a 'close-write' then we return the absolute path of the modified file.
+    if (event->mask & IN_CLOSE_WRITE) {
+      const size_t dirLen       = ::strlen(watch.path);
+      const bool needsSeperator = dirLen > 0 && *(watch.path + dirLen - 1) != '/';
+      const size_t nameLen      = ::strlen(event->name);
+      const size_t requiredSize = dirLen + needsSeperator + nameLen;
+      if (result->getSize() < requiredSize) {
+        watcher.error = PlatformError::IOWatcherUnknownError;
+        return false;
+      }
+      ::memcpy(result->getCharDataPtr(), watch.path, dirLen);
+      if (needsSeperator) {
+        *(result->getCharDataPtr() + dirLen) = '/';
+      }
+      ::memcpy(result->getCharDataPtr() + dirLen + needsSeperator, event->name, nameLen);
+      result->updateSize(requiredSize);
+      return true;
+    }
+
+    // For created directories we start watching them.
+    if ((event->mask & IN_ISDIR) && (event->mask & (IN_CREATE | IN_MOVED_TO))) {
+      setupWatchesReq(watcher, concatPath(watch.path, event->name), true);
+    }
+    // If the OS stops tracking the file then we remove our watch also.
+    if (event->mask & IN_IGNORED) {
+      watcher.watches.erase(lookupItr);
+    }
   }
-  // If the OS stops tracking the file then we remove our watch also.
-  if (event->mask & IN_IGNORED) {
-    watcher.watches.erase(lookupItr);
-  }
-  return false;
+  return false; // No event available.
 }
 
 }; // namespace
 
 auto ioWatcherCreate(const char* rootPath, IOWatcherFlags flags) noexcept -> IOWatcher* {
-  auto* watcher  = new IOWatcher;
-  watcher->flags = flags;
-  watcher->error = PlatformError::None;
+  auto* watcher             = new IOWatcher;
+  watcher->flags            = flags;
+  watcher->error            = PlatformError::None;
+  watcher->eventsBufferHead = nullptr;
 
   watcher->inotifyHandle = ::inotify_init();
   if (watcher->inotifyHandle == -1) {
@@ -246,6 +283,17 @@ auto ioWatcherCreate(const char* rootPath, IOWatcherFlags flags) noexcept -> IOW
 auto ioWatcherGet(
     IOWatcher* watcher, ExecutorHandle* execHandle, StringRef* result, PlatformError* pErr) noexcept
     -> bool {
+
+  // Acquire the watcher lock.
+  // NOTE: This can block for a long time as another executor might be already waiting for an event
+  // from inotify.
+  execHandle->setState(ExecState::Paused);
+  std::lock_guard<std::mutex> lk(watcher->mutex);
+  execHandle->setState(ExecState::Running);
+  if (execHandle->trap()) {
+    return false; // Aborted.
+  }
+
   if (watcher->error != PlatformError::None) {
     *pErr = watcher->error;
     result->updateSize(0);

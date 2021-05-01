@@ -30,8 +30,10 @@ act ioWatcherCreate(Path path, IOWatcherFlags flags = IOWatcherFlags.None) -> IO
 
 act ioWatcherGet(IOWatcher watcher) -> Either{PathAbsolute, Error}
  pathStr = intrinsic{iowatcher_get}(watcher.handle);
- if pathStr.isEmpty() -> platformError("Failed to watch: '" + watcher.path + "'")
- else                 -> pathAbsParser().run(pathStr)
+ p = pathAbsParser();
+ if pathStr.isEmpty()                   -> platformError("Failed to watch: '" + watcher.path + "'")
+ if p.run(pathStr) as PathAbsolute path -> path
+ else                                   -> self(watcher)
 
 // -- Tests
 
@@ -92,11 +94,12 @@ assertEq(
 )
 
 assert(
+  numFiles = 25;
   pathDir = pathCurrent() / "watcher-test5";
-  filePaths = for(10, lambda (int i) pathDir / ("file" + i));
+  filePaths = for(numFiles, lambda (int i) pathDir / ("file" + i));
   fileCreateDir(pathDir).failOnError();
   watcher = ioWatcherCreate(pathDir);
-  waits = for(10, impure lambda (int i) fork ioWatcherGet(watcher));
+  waits = for(numFiles, impure lambda (int i) fork ioWatcherGet(watcher));
   sleep(milliseconds(10));
   filePaths.map(impure lambda (PathAbsolute path) fileWrite(path, "HelloWorld").failOnError());
   gcCollectBlocking();

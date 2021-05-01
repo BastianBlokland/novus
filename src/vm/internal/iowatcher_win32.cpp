@@ -13,7 +13,7 @@ namespace {
 
 /**
  * Buffer of how many windows events to read at a time. If more events then this are buffered up on
- * the os-side then events get dropped/
+ * the os-side then events get dropped.
  */
 constexpr size_t g_bufferMaxEntries = 64;
 constexpr size_t g_bufferMaxSize    = sizeof(FILE_NOTIFY_INFORMATION) * g_bufferMaxEntries;
@@ -115,7 +115,7 @@ struct IOWatcher {
    */
   std::mutex mutex;
 
-  FILE_NOTIFY_INFORMATION* event;
+  char* event;
   WatcherBuffer<g_bufferMaxSize> eventsBuffer;
   WatcherBuffer<PATH_MAX> rootPath;
   WatcherBuffer<PATH_MAX> lastModPath;
@@ -228,10 +228,10 @@ auto getFilePath(
 /**
  * Read a batch of changes from win32.
  */
-auto readChangeEvents(IOWatcher& watcher, ExecutorHandle* execHandle) -> bool {
+auto readEvents(IOWatcher& watcher, ExecutorHandle* execHandle) -> bool {
 
-  execHandle->setState(ExecState::Paused);
   watcher.eventsBuffer.clear();
+  execHandle->setState(ExecState::Paused);
 
   DWORD bytesWritten;
   const bool success = ::ReadDirectoryChangesW(
@@ -256,7 +256,7 @@ auto readChangeEvents(IOWatcher& watcher, ExecutorHandle* execHandle) -> bool {
     // TODO: Handle the case that our buffer is too small to receive all available events.
     return false;
   }
-  watcher.event = reinterpret_cast<FILE_NOTIFY_INFORMATION*>(watcher.eventsBuffer.data());
+  watcher.event = watcher.eventsBuffer.data();
   watcher.eventsBuffer.setSize(bytesWritten);
   return true;
 }
@@ -269,7 +269,7 @@ auto getNextModifiedFile(IOWatcher& watcher, ExecutorHandle* execHandle, StringR
 
   // Check if we have an event on our buffer, if not ask win32 for a next event batch.
   // NOTE: If no events are in the buffer this will block here.
-  const bool hasEvents = watcher.event || readChangeEvents(watcher, execHandle);
+  const bool hasEvents = watcher.event || readEvents(watcher, execHandle);
   if (!hasEvents) {
     return false;
   }
@@ -277,10 +277,9 @@ auto getNextModifiedFile(IOWatcher& watcher, ExecutorHandle* execHandle, StringR
   WatcherBuffer<PATH_MAX> fileBuffer;
 
   while (watcher.event) {
-    auto* event = watcher.event;
-    if (watcher.event->NextEntryOffset) {
-      watcher.event = reinterpret_cast<FILE_NOTIFY_INFORMATION*>(
-          reinterpret_cast<char*>(watcher.event) + watcher.event->NextEntryOffset);
+    auto* event = reinterpret_cast<FILE_NOTIFY_INFORMATION*>(watcher.event);
+    if (event->NextEntryOffset) {
+      watcher.event = watcher.event + event->NextEntryOffset;
     } else {
       watcher.event = nullptr;
     }
