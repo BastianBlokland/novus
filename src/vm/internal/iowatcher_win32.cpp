@@ -181,7 +181,7 @@ auto getError() noexcept {
 auto openDirHandle(IOWatcher& watcher) noexcept -> void {
   watcher.dirHandle = ::CreateFileA(
       watcher.rootPath.data(),
-      FILE_GENERIC_READ,
+      FILE_LIST_DIRECTORY,
       FILE_SHARE_DELETE | FILE_SHARE_READ | FILE_SHARE_WRITE,
       nullptr,
       OPEN_EXISTING,
