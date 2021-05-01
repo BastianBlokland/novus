@@ -138,7 +138,7 @@ auto watcherRefInc(IOWatcher* watcher) {
 
 // Decrement the reference counter.
 auto watcherRefDec(IOWatcher* watcher) {
-  if (watcher->refCount.fetch_sub(1, std::memory_order_acq_rel) == 0) {
+  if (watcher->refCount.fetch_sub(1, std::memory_order_acq_rel) == 1) {
     watcherDestroyImpl(watcher);
   }
 }

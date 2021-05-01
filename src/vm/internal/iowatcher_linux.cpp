@@ -48,6 +48,13 @@ struct IOWatcher {
   PlatformError error;
 
   /**
+   * Reference counter.
+   * Why is there is reference counter in this garbage collected object? Problem is that when a
+   * thread is blocked in the os 'read' call we do not want to block the garbage collector.
+   */
+  std::atomic<int> refCount;
+
+  /**
    * Only a single thread can perform any operation on the watcher.
    */
   std::mutex mutex;
@@ -61,6 +68,38 @@ struct IOWatcher {
 };
 
 namespace {
+
+auto watcherDestroyImpl(IOWatcher* watcher) {
+  watcher->watches.clear();
+  if (watcher->inotifyHandle != -1) {
+    ::close(watcher->inotifyHandle);
+  }
+  delete watcher;
+}
+
+// Increment the reference counter.
+auto watcherRefInc(IOWatcher* watcher) {
+  watcher->refCount.fetch_add(1, std::memory_order_acq_rel);
+}
+
+// Decrement the reference counter.
+auto watcherRefDec(IOWatcher* watcher) {
+  if (watcher->refCount.fetch_sub(1, std::memory_order_acq_rel) == 1) {
+    watcherDestroyImpl(watcher);
+  }
+}
+
+/**
+ * RAII helper for increment and decrementing the ref counter.
+ */
+class WatcherRef {
+public:
+  WatcherRef(IOWatcher* watcher) : m_watcher{watcher} { watcherRefInc(m_watcher); }
+  ~WatcherRef() { watcherRefDec(m_watcher); }
+
+private:
+  IOWatcher* m_watcher;
+};
 
 /**
  * Mask of inotify events to wait for.
@@ -269,6 +308,7 @@ auto ioWatcherCreate(const char* rootPath, IOWatcherFlags flags) noexcept -> IOW
   watcher->flags            = flags;
   watcher->error            = PlatformError::None;
   watcher->eventsBufferHead = nullptr;
+  watcher->refCount         = 1;
 
   watcher->inotifyHandle = ::inotify_init();
   if (watcher->inotifyHandle == -1) {
@@ -283,6 +323,8 @@ auto ioWatcherCreate(const char* rootPath, IOWatcherFlags flags) noexcept -> IOW
 auto ioWatcherGet(
     IOWatcher* watcher, ExecutorHandle* execHandle, StringRef* result, PlatformError* pErr) noexcept
     -> bool {
+
+  auto ref = WatcherRef(watcher);
 
   // Acquire the watcher lock.
   // NOTE: This can block for a long time as another executor might be already waiting for an event
@@ -315,12 +357,6 @@ auto ioWatcherGet(
   return fileModified;
 }
 
-auto ioWatcherDestroy(IOWatcher* watcher) noexcept -> void {
-  watcher->watches.clear();
-  if (watcher->inotifyHandle != -1) {
-    ::close(watcher->inotifyHandle);
-  }
-  delete watcher;
-}
+auto ioWatcherDestroy(IOWatcher* watcher) noexcept -> void { watcherRefDec(watcher); }
 
 } // namespace vm::internal
