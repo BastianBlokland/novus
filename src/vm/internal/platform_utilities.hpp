@@ -78,6 +78,7 @@ enum class PlatformError : uint32_t {
 
   IOWatcherUnknownError       = 700,
   IOWatcherFileAlreadyWatched = 701,
+  IOWatcherNotSupported       = 702,
 
   SleepFailed = 800,
 };

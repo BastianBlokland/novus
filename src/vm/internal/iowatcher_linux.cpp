@@ -301,7 +301,7 @@ auto getNextModifiedFile(IOWatcher& watcher, ExecutorHandle* execHandle, StringR
   return false; // No event available.
 }
 
-}; // namespace
+} // namespace
 
 auto ioWatcherCreate(const char* rootPath, IOWatcherFlags flags) noexcept -> IOWatcher* {
   auto* watcher             = new IOWatcher;
