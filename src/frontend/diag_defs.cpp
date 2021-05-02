@@ -141,12 +141,6 @@ auto errDuplicateEntryNameInEnum(prog::sym::SourceId src, const std::string& ent
   return error(oss.str(), src);
 }
 
-auto errDuplicateEntryValueInEnum(prog::sym::SourceId src, int32_t entryValue) -> Diag {
-  std::ostringstream oss;
-  oss << "Value '" << entryValue << "' conflicts with a previous entry in the same enum";
-  return error(oss.str(), src);
-}
-
 auto errValueNotFoundInEnum(
     prog::sym::SourceId src, const std::string& entryName, const std::string& enumName) -> Diag {
   std::ostringstream oss;

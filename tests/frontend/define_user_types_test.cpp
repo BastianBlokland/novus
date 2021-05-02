@@ -138,7 +138,6 @@ TEST_CASE("[frontend] Analyzing user-type definitions", "frontend") {
 
   SECTION("Enum diagnostics") {
     CHECK_DIAG("enum e = a, b, a", errDuplicateEntryNameInEnum(NO_SRC, "a"));
-    CHECK_DIAG("enum e = a : 1, b, c : 1", errDuplicateEntryValueInEnum(NO_SRC, 1));
   }
 }
 
