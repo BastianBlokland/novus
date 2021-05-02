@@ -376,6 +376,12 @@ fun dateTimeRFC1123Writer() -> Writer{DateTime}
     dateRFC1123Writer() & litWriter(' ') & timeRFC1123Writer()
   ).map(lambda (DateTime dt) Tuple(Date(dt), dt))
 
+enum PrettyTimeFlags =
+  None            : 0b00,
+  Default         : 0b10,
+  IncludeMillies  : 0b01,
+  IncludeTimeZone : 0b10
+
 // Timezone in pretty format.
 // Example output: +02:00.
 fun timezonePrettyWriter() -> Writer{Timezone}
@@ -396,25 +402,29 @@ fun datePrettyWriter() -> Writer{Date}
     txtIntWriter()
   ).map(lambda (Date d) Tuple(WeekDay(d), d.day, d.month, d.year))
 
-// Local date and time in pretty format.
-// Example output: 'Friday 24 March 2021 09:41:38 +02:00'.
-fun dateTimePrettyWriter(bool includeMillies = false) -> Writer{DateTime}
+// Local time in pretty format.
+// Example output: '09:41:38 +02:00'.
+fun timePrettyWriter(PrettyTimeFlags flags = PrettyTimeFlags.Default) -> Writer{DateTime}
   (
-    datePrettyWriter()  & litWriter(' ') &
     txtLongWriter(2)    & litWriter(':') &
     txtLongWriter(2)    & litWriter(':') &
-    txtLongWriter(2)    & ?(litWriter(':') & txtLongWriter(3)) &
-    litWriter(' ')      & timezonePrettyWriter()
+    txtLongWriter(2)    & ?(litWriter(':') & txtLongWriter(3)) & ?(litWriter(' ') & timezonePrettyWriter())
   ).map(lambda (DateTime dt)
     localTime = dt + Duration(dt.zone);
     sinceEpoch = absDuration(localTime - timeEpoch());
     Tuple(
-      Date(localTime),
       sinceEpoch.hours()    % 24,
       sinceEpoch.minutes()  % 60,
       sinceEpoch.seconds()  % 60,
-      includeMillies ? Option{long}(sinceEpoch.milliseconds() % 1000) : None(),
-      dt.zone))
+      ((flags & PrettyTimeFlags.IncludeMillies) != 0) ? Option(sinceEpoch.milliseconds() % 1000) : None(),
+      ((flags & PrettyTimeFlags.IncludeTimeZone) != 0) ? Option(dt.zone) : None()))
+
+// Local date and time in pretty format.
+// Example output: 'Friday 24 March 2021 09:41:38 +02:00'.
+fun dateTimePrettyWriter(PrettyTimeFlags flags = PrettyTimeFlags.Default) -> Writer{DateTime}
+  (
+    datePrettyWriter() & litWriter(' ') & timePrettyWriter(flags)
+  ).map(lambda (DateTime dt) Tuple(Date(dt + Duration(dt.zone)), dt))
 
 // Duration in human readable format
 // Example output: '42.3s'.

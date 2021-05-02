@@ -1,4 +1,4 @@
-// --- File listing.
+// --- File Listing.
 // Basic 'ls' style file listing application.
 
 import "std.ns"

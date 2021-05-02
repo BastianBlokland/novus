@@ -28,7 +28,7 @@ act ioWatcherCreate(Path path, IOWatcherFlags flags = IOWatcherFlags.None) -> IO
   absPath = path.pathAbsolute();
   IOWatcher(absPath, intrinsic{iowatcher_create}(absPath.string(), flags))
 
-act ioWatcherGet(IOWatcher watcher) -> Either{PathAbsolute, Error}
+act get(IOWatcher watcher) -> Either{PathAbsolute, Error}
  pathStr = intrinsic{iowatcher_get}(watcher.handle);
  p = pathAbsParser();
  if pathStr.isEmpty()                   -> platformError("Failed to watch: '" + watcher.path + "'")

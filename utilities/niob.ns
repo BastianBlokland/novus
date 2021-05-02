@@ -1,0 +1,50 @@
+// --- Novus Io OBserver.
+// Utility to observe file io.
+
+import "std.ns"
+
+struct Settings =
+  GlobTextPattern             filter,
+  int                         threads,
+  bool                        noTime,
+  CliPositional{Option{Path}} path
+
+struct ObservedWrite =
+  PathAbsolute  path,
+  DateTime      time
+
+fun outputWriter(Settings s) -> Writer{ObservedWrite}
+  (
+    ?(litWriter('[') & timePrettyWriter(PrettyTimeFlags.IncludeMillies) & litWriter("] ")) &
+    pathAbsWriter() & newlineWriter()
+  ).map(lambda (ObservedWrite w) Tuple(s.noTime ? None() : Option(w.time), w.path))
+
+act observe(Settings s, PathAbsolute p) -> Option{ObservedWrite}
+  if textMatch(s.filter, p.string())  -> ObservedWrite(p, timeNow())
+  else                                -> None()
+
+act reportFile(Settings s, Console c, PathAbsolute p, Writer{ObservedWrite} writer)
+  if observe(s, p) as ObservedWrite o -> c.writeOut(writer, o)
+  else                                -> None()
+
+act watchFiles(Settings s, IOWatcher watcher, Console c, Writer{ObservedWrite} w) -> Option{Error}
+  result = watcher.get();
+  if result as Error        error -> error
+  if result as PathAbsolute path  -> reportFile(s, c, path, w); self(s, watcher, c, w)
+
+fun cliDefaults(Type{Settings} t)
+  CliDefault("filter",  "*")    ::
+  CliDefault("threads", "2")
+
+act main(Settings s)
+  console = consoleOpen().failOnError();
+  path    = s.path.val ?? pathCurrent();
+  writer  = outputWriter(s);
+  watcher = ioWatcherCreate(path);
+  parallelFor(s.threads, impure lambda (int i) watchFiles(s, watcher, console, writer)).combine()
+
+cli(main,
+  cliAppInfo(
+    "Novus Io OBserver",
+    "Utility that lists files that have been written to.",
+    Version(0, 1, 0)))
