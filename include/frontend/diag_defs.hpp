@@ -56,9 +56,6 @@ errFieldNameConflictsWithTypeSubstitution(prog::sym::SourceId src, const std::st
 [[nodiscard]] auto
 errDuplicateEntryNameInEnum(prog::sym::SourceId src, const std::string& entryName) -> Diag;
 
-[[nodiscard]] auto errDuplicateEntryValueInEnum(prog::sym::SourceId src, int32_t entryValue)
-    -> Diag;
-
 [[nodiscard]] auto errValueNotFoundInEnum(
     prog::sym::SourceId src, const std::string& entryName, const std::string& enumName) -> Diag;
 
