@@ -102,6 +102,10 @@ static auto getError(std::ostream& out, const ArgumentListDecl& argList) -> void
       out << "Invalid initializer for argument '" << getIdOrUnkown(arg.getIdentifier()) << "'";
       return;
     }
+    if (!arg.getType().validate()) {
+      out << "Invalid type specifier for argument '" << getIdOrUnkown(arg.getIdentifier()) << "'";
+      return;
+    }
   }
 
   out << "Invalid argument list";
