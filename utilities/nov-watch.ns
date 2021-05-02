@@ -1,0 +1,133 @@
+// --- Novus Watch.
+// Watch novus source files for changes and automatically compile them.
+
+import "std.ns"
+
+struct Context =
+  Settings    settings,
+  Console     console,
+  TextPattern filter
+
+// -- Validation
+
+struct ValidateSettings =
+  bool                        clear,
+  Option{List{Path}}          searchPaths,
+  CliPositional{Option{Path}} path
+
+fun getSearchPathArgs(ValidateSettings s)
+  if s.searchPaths as List{Path} paths -> "--searchpaths" :: paths.map(lambda (Path p) p.string())
+  else                                 -> List{string}()
+
+act validateAction(Context ctx, ValidateSettings s)
+  ProcessAction(impure lambda (PathAbsolute file) -> Option{Error}
+    run = run("novc", file.string() :: "--validate-only" :: getSearchPathArgs(s));
+    if run as Error   err     -> ctx.console.writeErr("Failed to invoke compiler: " + err + '\n'); err
+    if run as Process process -> process.wait(); None()
+  )
+
+act validateCmd(ValidateSettings s) -> Option{Error}
+  ctx = Context(s, consoleOpen().failOnError(), EndsWithTextPattern(".ns"));
+  path  = ctx.getPath();
+  ctx.console.writeOut("Start watching '" + path + "' for changes to .ns files.\n");
+  driver(path, validateAction(ctx, s), ctx)
+
+// -- Compilation
+
+struct CompileSettings =
+  bool                        clear,
+  bool                        noOptimize,
+  Option{List{Path}}          searchPaths,
+  CliPositional{Option{Path}} path
+
+fun getOptimizeArgs(CompileSettings s)
+  s.noOptimize ? List("--no-optimize") : List{string}()
+
+fun getSearchPathArgs(CompileSettings s)
+  if s.searchPaths as List{Path} paths -> "--searchpaths" :: paths.map(lambda (Path p) p.string())
+  else                                 -> List{string}()
+
+act compileAction(Context ctx, CompileSettings s)
+  ProcessAction(impure lambda (PathAbsolute file) -> Option{Error}
+    args = file.string() :: getOptimizeArgs(s) :: getSearchPathArgs(s);
+    run = run("novc", args);
+    if run as Error   err     -> ctx.console.writeErr("Failed to invoke compiler: " + err + '\n'); err
+    if run as Process process -> process.wait(); None()
+  )
+
+act compileCmd(CompileSettings s)
+  ctx = Context(s, consoleOpen().failOnError(), EndsWithTextPattern(".ns"));
+  path  = ctx.getPath();
+  ctx.console.writeOut("Start watching '" + path + "' for changes to .ns files.\n");
+  driver(path, compileAction(ctx, s), ctx)
+
+// -- Evaluation
+
+struct EvaluateSettings =
+  bool                        clear,
+  CliPositional{Option{Path}} path
+
+act evaluateAction(Context ctx)
+  ProcessAction(impure lambda (PathAbsolute file) -> Option{Error}
+    run = run("nove", file.string() :: List{string}());
+    if run as Error   err     -> ctx.console.writeErr("Failed to invoke evaluator: " + err + '\n'); err
+    if run as Process process -> process.wait(); None()
+  )
+
+act evaluateCmd(EvaluateSettings s)
+  ctx   = Context(s, consoleOpen().failOnError(), EndsWithTextPattern(".ns"));
+  path  = ctx.getPath();
+  ctx.console.writeOut("Start watching '" + path + "' for changes to .ns files.\n");
+  driver(path, evaluateAction(ctx), ctx)
+
+// -- Driver
+
+union Settings = ValidateSettings, EvaluateSettings, CompileSettings
+
+struct ProcessAction =
+  action{PathAbsolute, Option{Error}} delegate
+
+act runAction(ProcessAction pa, PathAbsolute path, Context ctx)
+  actSeq(
+    lazy clearTerminal(ctx),
+    lazy ctx.console.writeOut("File change detected: '" + path + "':\n"),
+    lazy pa.delegate(path),
+    lazy ctx.console.writeOut("Complete. Watching for file changes...\n")
+  )
+
+act driver(Path p, ProcessAction pa, Context ctx)
+  driver(ioWatcherCreate(p), pa, ctx)
+
+act driver(IOWatcher w, ProcessAction pa, Context ctx) -> Option{Error}
+  result = w.get();
+  if result as Error        error -> error
+  if result as PathAbsolute path  ->
+    if ctx.filter.textMatch(path.string()) && runAction(pa, path, ctx) as Error delError -> delError
+    else -> self(w, pa, ctx)
+
+// -- Utilities
+
+act getPath(Context ctx)
+  if ctx.settings as ValidateSettings vs -> vs.path.val ?? pathCurrent()
+  if ctx.settings as EvaluateSettings es -> es.path.val ?? pathCurrent()
+  if ctx.settings as CompileSettings  cs -> cs.path.val ?? pathCurrent()
+
+act enableClear(Context ctx)
+  if ctx.settings as ValidateSettings vs -> vs.clear && ctx.console.isTerm()
+  if ctx.settings as EvaluateSettings es -> es.clear && ctx.console.isTerm()
+  if ctx.settings as CompileSettings  cs -> cs.clear && ctx.console.isTerm()
+
+act clearTerminal(Context ctx)
+  if enableClear(ctx) -> ctx.console.writeOut(
+                            ttyLitClearWriter(TtyClearMode.All) &
+                            ttyLitCursorPosWriter(TtyCursorPos(0, 0)))
+  else                -> None()
+
+// -- App
+
+cli(cliCmd("validate",  validateCmd,  "Validate the program."),
+    cliCmd("compile",   compileCmd,   "Compile the program."),
+    cliCmd("evaluate",  evaluateCmd,  "Evaluate the program."),
+    cliAppInfo(
+      "Novus Watch", "Utility to watch novus source files for changes.",
+      Version(0, 1, 0)))

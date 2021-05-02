@@ -52,11 +52,17 @@ test.std: build
 clean:
 	rm -rf build
 
-# Watch for changes to '.ns' files and automatically compile them.
-# Requires 'inotify-tools' to be installed.
-.PHONY: watch.ns
-watch.ns:
-	./scripts/watch_ns.sh . ./bin/novc
+.PHONY: watch.validate
+watch.validate:
+	nov-watch.nx validate
+
+.PHONY: watch.compile
+watch.compile:
+	nov-watch.nx compile
+
+.PHONY: watch.evaluate
+watch.evaluate:
+	nov-watch.nx evaluate
 
 .PHONY: docker.run
 docker.run:

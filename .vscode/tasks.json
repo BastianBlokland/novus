@@ -17,12 +17,37 @@
       "problemMatcher": []
     },
     {
-      "label": "watch.ns",
+      "label": "watch.validate",
       "type": "shell",
-      "command": "${workspaceFolder}/scripts/watch_ns.sh",
+      "command": "nov-watch.nx",
       "args": [
-        "${workspaceFolder}",
-        "${workspaceFolder}/bin/novc"
+        "validate",
+        "--clear",
+        "${workspaceFolder}"
+      ],
+      "isBackground": true,
+      "problemMatcher": "$novus"
+    },
+    {
+      "label": "watch.compile",
+      "type": "shell",
+      "command": "nov-watch.nx",
+      "args": [
+        "compile",
+        "--clear",
+        "${workspaceFolder}"
+      ],
+      "isBackground": true,
+      "problemMatcher": "$novus"
+    },
+    {
+      "label": "watch.evaluate",
+      "type": "shell",
+      "command": "nov-watch.nx",
+      "args": [
+        "evaluate",
+        "--clear",
+        "${workspaceFolder}"
       ],
       "isBackground": true,
       "problemMatcher": "$novus"
