@@ -29,7 +29,8 @@ Program::Program() :
     m_char{m_typeDecls.registerType(sym::TypeKind::Char, "char")},
     m_string{m_typeDecls.registerType(sym::TypeKind::String, "string")},
     m_sysStream{m_typeDecls.registerType(sym::TypeKind::SysStream, "sys_stream")},
-    m_sysProcess{m_typeDecls.registerType(sym::TypeKind::SysProcess, "sys_process")} {
+    m_sysProcess{m_typeDecls.registerType(sym::TypeKind::SysProcess, "sys_process")},
+    m_sysIOWatcher{m_typeDecls.registerType(sym::TypeKind::SysIOWatcher, "sys_iowatcher")} {
 
   using Fk = prog::sym::FuncKind;
 
@@ -325,6 +326,15 @@ Program::Program() :
       *this, Fk::ActionVersionRt, "version_runtime", sym::TypeSet{}, m_string);
   m_funcDecls.registerIntrinsicAction(
       *this, Fk::ActionVersionCompiler, "version_compiler", sym::TypeSet{}, m_string);
+
+  m_funcDecls.registerIntrinsicAction(
+      *this,
+      Fk::ActionIOWatcherCreate,
+      "iowatcher_create",
+      sym::TypeSet{m_string, m_int},
+      m_sysIOWatcher);
+  m_funcDecls.registerIntrinsicAction(
+      *this, Fk::ActionIOWatcherGet, "iowatcher_get", sym::TypeSet{m_sysIOWatcher}, m_string);
 
   m_funcDecls.registerIntrinsicAction(
       *this, Fk::ActionPlatformCode, "runtime_platform", sym::TypeSet{}, m_int);

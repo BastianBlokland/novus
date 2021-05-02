@@ -20,6 +20,7 @@ COPY include        /novus/include
 COPY std            /novus/std
 COPY scripts        /novus/scripts
 COPY src            /novus/src
+COPY utilities      /novus/utilities
 COPY CMakeLists.txt /novus/CMakeLists.txt
 WORKDIR /novus
 

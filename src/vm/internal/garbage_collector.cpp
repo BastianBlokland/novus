@@ -247,6 +247,7 @@ auto GarbageCollector::mark() noexcept -> void {
     case RefKind::StreamConsole:
     case RefKind::StreamTcp:
     case RefKind::Process:
+    case RefKind::IOWatcher:
       break;
     }
   }

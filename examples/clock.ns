@@ -28,9 +28,14 @@ fun cliDefaults(Type{ClockSettings} t)
 
 fun cliCleanupAction(Type{ClockSettings} t) cleanup
 
+fun getPrettyTimeFlags(ClockSettings s)
+  baseFlags = PrettyTimeFlags.Default;
+  if s.millies  -> baseFlags | PrettyTimeFlags.IncludeMillies
+  else          -> baseFlags
+
 cli(impure lambda (ClockSettings s)
   con = consoleOpen().failOnError();
-  timeWriter = dateTimePrettyWriter(s.millies);
+  timeWriter = dateTimePrettyWriter(s.getPrettyTimeFlags());
   if con.isTerm() -> printTimeLoop(con, timeWriter, s.interval)
   else            -> printTimeOnce(con, timeWriter)
 )

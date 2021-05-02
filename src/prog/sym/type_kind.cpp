@@ -12,6 +12,7 @@ auto isPrimitive(const TypeKind& kind) -> bool {
   case TypeKind::String:
   case TypeKind::SysStream:
   case TypeKind::SysProcess:
+  case TypeKind::SysIOWatcher:
     return true;
   case TypeKind::Struct:
   case TypeKind::Union:
@@ -50,6 +51,9 @@ auto operator<<(std::ostream& out, const TypeKind& rhs) -> std::ostream& {
     break;
   case TypeKind::SysProcess:
     out << "sys_process";
+    break;
+  case TypeKind::SysIOWatcher:
+    out << "sys_iowatcher";
     break;
   case TypeKind::Struct:
     out << "struct";

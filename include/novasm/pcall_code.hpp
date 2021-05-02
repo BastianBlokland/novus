@@ -69,6 +69,9 @@ enum class PCallCode : uint8_t {
   RtPath         = 102, // () -> (string) Get the path of the runtime executable.
   ProgramPath    = 103, // () -> (string) Get the path of the currently running program.
 
+  IOWatcherCreate = 110, // (int, string) -> (iowatcher) Create a new io-watcher for the given path.
+  IOWatcherGet    = 111, // (iowatcher)   -> (string)    Block until a change is detected.
+
   GcCollect = 200, // (int) -> (int) Manually run a garbage collection.
 
   SleepNano = 240, // (long)         -> (int) Sleep the current executor for x nanoseconds.
@@ -96,6 +99,7 @@ enum class PCallCode : uint8_t {
  * - TcpShutdown, error is set when false is returned.
  * - IpLookupAddress, error is set when empty string is returned.
  * - ConsoleOpenStream, error is set when an invalid stream is returned.
+ * - IOWatcherGet, error is set when an empty string is returned.
  * - SleepNano, error is set when false is returned.
  * - TermSetOptions, error is set when false is returned.
  * - TermUnsetOptions, error is set when false is returned.

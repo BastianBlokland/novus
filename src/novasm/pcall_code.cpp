@@ -146,6 +146,13 @@ auto operator<<(std::ostream& out, const PCallCode& rhs) noexcept -> std::ostrea
     out << "version-compiler";
     break;
 
+  case PCallCode::IOWatcherCreate:
+    out << "iowatcher-create";
+    break;
+  case PCallCode::IOWatcherGet:
+    out << "iowatcher-get";
+    break;
+
   case PCallCode::PlatformCode:
     out << "platform-code";
     break;

@@ -29,7 +29,7 @@ fun cliCleanupAction{T}(Type{T} commandInputType) cliNopCleanupAction()
 fun cliCmdCfgFromRoutine{T}(CliCmd{T} c) -> Either{CliCmdCfg, Error}
   cliCmdCfgFromRoutine(c, Meta{reflect_type_kind{T}}())
 
-fun cliCmdCfgFromRoutine{T}(CliCmd{T} c, Meta{#8} structKind) -> Either{CliCmdCfg, Error}
+fun cliCmdCfgFromRoutine{T}(CliCmd{T} c, Meta{#9} structKind) -> Either{CliCmdCfg, Error}
   t = Type{T}();
   cliOptSetFromStruct(t).map(lambda (CliOptSet optSet)
     CliCmdCfg(c.name, c.desc, optSet, cliIsInteruptable(t), cliCreateInvoker(c.routine), cliCleanupAction(t))

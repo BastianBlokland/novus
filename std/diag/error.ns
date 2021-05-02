@@ -72,6 +72,9 @@ fun combine(List{Error} err) -> Option{Error}
     result as Error e ? Option(e :: err) : Option(err)
   )
 
+fun combine(List{Option{Error}} maybeErrs) -> Option{Error}
+  maybeErrs.filterNone().combine()
+
 fun combine{T}(Either{List{T}, Error} e1, Either{List{T}, Error} e2)
   if e1 as Error err1 && e2 as Error err2 -> err1 :: err2
   if e1 as Error onlyErr1 -> onlyErr1

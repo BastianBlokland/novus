@@ -267,6 +267,7 @@ add_library(vm STATIC
   vm/internal/executor.cpp
   vm/internal/garbage_collector.cpp
   vm/internal/interupt.cpp
+  vm/internal/iowatcher.cpp
   vm/internal/memory_allocator.cpp
   vm/internal/platform_utilities.cpp
   vm/internal/ref_allocator.cpp
@@ -286,3 +287,12 @@ target_link_libraries(vm PUBLIC Threads::Threads)
 target_link_libraries(vm PUBLIC novasm)
 target_include_directories(vm PUBLIC ${PROJECT_SOURCE_DIR}/include)
 target_include_directories(vm PRIVATE vm)
+
+if(APPLE)
+  # Link against the MacOS CoreServices framework, this is need for the fsevents api for example.
+  find_library(CORE_SERVICES CoreServices)
+  if(NOT CORE_SERVICES)
+      message(FATAL_ERROR "CoreServices not found")
+  endif()
+  target_link_libraries(vm PUBLIC ${CORE_SERVICES})
+endif()

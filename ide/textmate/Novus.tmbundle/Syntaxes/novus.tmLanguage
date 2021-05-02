@@ -68,7 +68,7 @@
 			<array>
 				<dict>
 					<key>match</key>
-					<string>\b(int|long|float|bool|string|char|sys_stream|sys_process|function|action|future|lazy|lazy_action)\b</string>
+					<string>\b(int|long|float|bool|string|char|sys_stream|sys_process|sys_iowatcher|function|action|future|lazy|lazy_action)\b</string>
 					<key>name</key>
 					<string>keyword.other.buildin.source.novus</string>
 				</dict>

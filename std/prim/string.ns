@@ -59,9 +59,9 @@ fun string(long i, int minDigits)
 
 // -- Reflection based string conversions as fallback for all other types.
 
-fun string{T}(T val,         Meta{#8}     structTypeKind)     reflectStructToString(val)
-fun string{T}(T val,         Meta{#9}     unionTypeKind)      reflectUnionToString(val)
-fun string{T}(T val,         Meta{#10}    enumTypeKind)       stringForEnum(val)
+fun string{T}(T val,         Meta{#9}     structTypeKind)     reflectStructToString(val)
+fun string{T}(T val,         Meta{#10}    unionTypeKind)      reflectUnionToString(val)
+fun string{T}(T val,         Meta{#11}    enumTypeKind)       stringForEnum(val)
 fun string{T, TypeId}(T val, Meta{TypeId} fallbackTypeKind)   typeName{T}()
 
 fun string{T}(T val)

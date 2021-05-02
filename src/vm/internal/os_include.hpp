@@ -42,4 +42,10 @@
 
 #endif // __APPLE__
 
+#if defined(_MSC_VER)
+
+#define PATH_MAX MAX_PATH
+
+#endif // _MSC_VER
+
 // clang-format on

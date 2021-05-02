@@ -38,13 +38,13 @@ fun toJson{T}(List{T} list) -> JsonValue
 fun toJson{T}(T v)
   toJson(v, Meta{reflect_type_kind{T}}())
 
-fun toJson{T}(T structV, Meta{#8} structTypeKind) -> JsonValue
+fun toJson{T}(T structV, Meta{#9} structTypeKind) -> JsonValue
   structToJson(structV)
 
-fun toJson{T}(T unionV, Meta{#9} unionTypeKind) -> JsonValue
+fun toJson{T}(T unionV, Meta{#10} unionTypeKind) -> JsonValue
   unionToJson(unionV)
 
-fun toJson{T}(T enumV, Meta{#10} enumTypeKind) -> JsonValue
+fun toJson{T}(T enumV, Meta{#11} enumTypeKind) -> JsonValue
   float(enumV)
 
 // ---- Struct to json object
@@ -117,15 +117,15 @@ fun fromJson{T}(JsonValue jv, Type{List{T}} t) -> Either{List{T}, Error}
 fun fromJson{T}(JsonValue jv, Type{T} t) -> Either{T, Error}
   fromJson(jv, t, Meta{reflect_type_kind{T}}())
 
-fun fromJson{T}(JsonValue jv, Type{T} t, Meta{#8} structTypeKind) -> Either{T, Error}
+fun fromJson{T}(JsonValue jv, Type{T} t, Meta{#9} structTypeKind) -> Either{T, Error}
   if jv as JsonObject jo  -> structFromJson(jo, t)
   else                    -> Error("Expected a object, got a " + jsonValueType(jv))
 
-fun fromJson{T}(JsonValue jv, Type{T} t, Meta{#9} unionTypeKind) -> Either{T, Error}
+fun fromJson{T}(JsonValue jv, Type{T} t, Meta{#10} unionTypeKind) -> Either{T, Error}
   if jv as JsonObject jo  -> unionFromJson(jo, t)
   else                    -> Error("Expected a object, got a " + jsonValueType(jv))
 
-fun fromJson{T}(JsonValue jv, Type{T} t, Meta{#10} enumTypeKind) -> Either{T, Error}
+fun fromJson{T}(JsonValue jv, Type{T} t, Meta{#11} enumTypeKind) -> Either{T, Error}
   if jv as float f ->
     reflectEnumKeyForVal(T(int(f))) is string
       ? T(int(f))

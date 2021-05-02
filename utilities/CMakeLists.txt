@@ -20,4 +20,5 @@ function(configure_nove_executable file)
 endfunction(configure_nove_executable)
 
 # Utilities.
+configure_nove_executable(niob)
 configure_nove_executable(nls)

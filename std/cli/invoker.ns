@@ -28,7 +28,7 @@ fun cliParser(Type{GlobTextPattern} t)  globPatternParser()
 fun cliParser{T}(Type{T} t)
   cliParser(t, Meta{reflect_type_kind{T}}())
 
-fun cliParser{T}(Type{T} t, Meta{#10} enumTypeKind)
+fun cliParser{T}(Type{T} t, Meta{#11} enumTypeKind)
   enumParser(t, StrComp.IgnoreCase)
 
 fun cliParse{T}(CliResult r, CliId id, Type{T} t, string input)

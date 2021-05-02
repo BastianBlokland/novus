@@ -158,6 +158,9 @@ enum class FuncKind {
   ActionVersionRt,       // Get the version of the runtime.
   ActionVersionCompiler, // Get the version of the compiler that created this assembly.
 
+  ActionIOWatcherCreate, // Create a new io-watcher for the given path.
+  ActionIOWatcherGet,    // Block until a change is detected.
+
   ActionPlatformCode,   // Get the platform identifier: Linux: 1, MacOs: 2, Windows: 3.
   ActionWorkingDirPath, // Get the current working directory.
   ActionRtPath,         // Get the path of the runtime executable.
