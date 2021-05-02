@@ -41,17 +41,17 @@ Alternatively you can create a task that automatically compiles files in the bac
   "version": "2.0.0",
   "tasks": [
     {
-      "label": "watch",
+      "label": "watch.validate",
       "type": "shell",
-      "command": "${workspaceFolder}/scripts/watch_ns.sh",
+      "command": "nov-watch.nx",
       "args": [
-        "${workspaceFolder}",
-        "${workspaceFolder}/bin/novc"
+        "validate",
+        "--clear",
+        "${workspaceFolder}"
       ],
       "isBackground": true,
-      "problemMatcher": "$novus",
+      "problemMatcher": "$novus"
     }
   ]
 }
 ```
-The `scripts/watch_ns.sh` bash script uses `inotifywait` to detect file changes.

@@ -403,7 +403,7 @@ inline auto processStart(
     // Create a new session for the child process.
     auto sid = setsid();
     if (unlikely(sid == -1)) {
-      const char* setSidFailedMsg = "[err_1] Failed to create a new session";
+      const char* setSidFailedMsg = "[err_1] Failed to create a new session\n";
       const size_t bytesWritten   = ::write(2, setSidFailedMsg, ::strlen(setSidFailedMsg));
       (void)bytesWritten;
       ::abort();
@@ -418,7 +418,7 @@ inline auto processStart(
     dupFailed |= flags & ProcessPipeStdOut && ::dup2(pipeStdOut[1], 1) == -1;
     dupFailed |= flags & ProcessPipeStdErr && ::dup2(pipeStdErr[1], 2) == -1;
     if (unlikely(dupFailed)) {
-      const char* dupFailedMsg  = "[err_2] Failed to setup input and output pipes";
+      const char* dupFailedMsg  = "[err_2] Failed to setup input and output pipes\n";
       const size_t bytesWritten = ::write(2, dupFailedMsg, ::strlen(dupFailedMsg));
       (void)bytesWritten;
       ::abort();
@@ -486,6 +486,7 @@ inline auto processStart(
     if (argV[0]) {
       bytesWritten += ::write(2, argV[0], ::strlen(argV[0]));
     }
+    bytesWritten += ::write(2, "\n", 1);
     (void)bytesWritten;
     ::abort();
   }

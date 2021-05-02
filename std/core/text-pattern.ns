@@ -13,15 +13,19 @@ import "std/prim.ns"
 // -- Types
 
 struct AnyTextPattern
-struct ExactTextPattern = string text, StrComp sc
-struct GlobTextPattern  = string text, StrComp sc
+struct ExactTextPattern     = string text, StrComp sc
+struct EndsWithTextPattern  = string text, StrComp sc
+struct GlobTextPattern      = string text, StrComp sc
 
-union TextPattern = AnyTextPattern, ExactTextPattern, GlobTextPattern
+union TextPattern = AnyTextPattern, ExactTextPattern, EndsWithTextPattern, GlobTextPattern
 
 // -- Constructors
 
 fun ExactTextPattern(string pattern)
   ExactTextPattern(pattern, StrComp.Normal)
+
+fun EndsWithTextPattern(string pattern)
+  EndsWithTextPattern(pattern, StrComp.Normal)
 
 fun GlobTextPattern(string pattern)
   GlobTextPattern(pattern, StrComp.Normal)
@@ -34,18 +38,25 @@ fun string(AnyTextPattern p)
 fun string(ExactTextPattern p)
   "[exact: '" + p.text + "']"
 
+fun string(EndsWithTextPattern p)
+  "[endswith: '" + p.text + "']"
+
 fun string(GlobTextPattern p)
   "[glob: '" + p.text + "']"
 
 // -- Functions
 
 fun textMatch(TextPattern p, string input)
-  if p is AnyTextPattern      -> true
-  if p as ExactTextPattern  e -> e.textMatch(input)
-  if p as GlobTextPattern   g -> g.textMatch(input)
+  if p is AnyTextPattern          -> true
+  if p as ExactTextPattern    ex  -> ex.textMatch(input)
+  if p as EndsWithTextPattern ew  -> ew.textMatch(input)
+  if p as GlobTextPattern     g   -> g.textMatch(input)
 
 fun textMatch(ExactTextPattern p, string input)
   equals(input, p.text, p.sc)
+
+fun textMatch(EndsWithTextPattern p, string input)
+  endsWith(input, p.text, p.sc)
 
 fun textMatch(GlobTextPattern p, string input)
   textMatchGlob(p.text, 0, input, 0, p.sc)
@@ -69,6 +80,9 @@ fun filter(List{string} l, TextPattern pattern)
 
 fun exactPatternParser(StrComp sc = StrComp.IgnoreCase) -> Parser{ExactTextPattern}
   allParser().map(lambda (string pattern) ExactTextPattern(pattern, sc))
+
+fun endsWithPatternParser(StrComp sc = StrComp.IgnoreCase) -> Parser{EndsWithTextPattern}
+  allParser().map(lambda (string pattern) EndsWithTextPattern(pattern, sc))
 
 fun globPatternParser(StrComp sc = StrComp.IgnoreCase) -> Parser{GlobTextPattern}
   allParser().map(lambda (string pattern) GlobTextPattern(pattern, sc))

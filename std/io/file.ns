@@ -126,12 +126,27 @@ act fileRename(Path old, Path new) -> Option{Error}
   if intrinsic{file_rename}(absOldPathStr, absNewPathStr) -> None()
   else -> platformError("Failed to rename file: '" + absOldPathStr + "' to '" + absNewPathStr + '\'')
 
-act fileList(Path p, FileListFlags flags = FileListFlags.None) -> Either{List{PathAbsolute}, Error}
+act fileList(
+    Path p,
+    FileListFlags flags = FileListFlags.None,
+    TextPattern fileFilter = AnyTextPattern(),
+    TextPattern dirFilter = AnyTextPattern()) -> Either{List{PathAbsolute}, Error}
   absPath     = p.pathAbsolute();
   absPathStr  = absPath.string();
-  fileNames   = split(intrinsic{file_dir_list}(absPathStr, flags), equals{char}['\n']);
+  vmRes = intrinsic{file_dir_list}(absPathStr, flags);
   if platformErrorCode() != PlatformError.None -> platformError("Failed to list directory: '" + absPathStr + "'")
-  else -> fileNames.mapReverse(lambda (string fileName) absPath / fileName)
+  else ->
+    findEndIdx = (lambda (int i) vmRes[i] == '\n' ? i : self(++i));
+    invoke(
+      lambda (int i, List{PathAbsolute} result)
+        c = vmRes[i]; c == '\0' ? result :
+        (
+          end = findEndIdx(++i); name = vmRes[++i, end];
+          if c == 'f' && !fileFilter.textMatch(name) -> self(++end, result)
+          if c == 'd' && !dirFilter.textMatch(name)  -> self(++end, result)
+          else                                       -> self(++end, (absPath / name) :: result)
+        )
+    , 0, List{PathAbsolute}())
 
 act fileCount(Path p, FileListFlags flags = FileListFlags.None) -> Either{int, Error}
   absPathStr  = p.pathAbsolute().string();
@@ -141,12 +156,16 @@ act fileCount(Path p, FileListFlags flags = FileListFlags.None) -> Either{int, E
 
 // -- Utilities
 
-act fileListReq(Path p, bool includeDirs = true) -> Either{List{PathAbsolute}, Error}
+act fileListReq(
+    Path p,
+    bool includeDirs = true,
+    TextPattern fileFilter = AnyTextPattern(),
+    TextPattern dirFilter = AnyTextPattern()) -> Either{List{PathAbsolute}, Error}
   pathAbs = p.pathAbsolute();
-  dl      = fileList(pathAbs, FileListFlags.None);
+  dl      = fileList(pathAbs, FileListFlags.None, fileFilter, dirFilter);
   if dl as List{PathAbsolute} entries ->
     entries.fold(impure lambda (Either{List{PathAbsolute}, Error} result, PathAbsolute entry)
-      combine(result, fileListReq(entry, includeDirs))
+      combine(result, fileListReq(entry, includeDirs, fileFilter, dirFilter))
     , includeDirs ? List(pathAbs) : List{PathAbsolute}())
   if dl as Error err ->
   (

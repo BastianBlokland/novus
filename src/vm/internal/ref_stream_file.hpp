@@ -474,7 +474,7 @@ fileDirList(RefAllocator* refAlloc, PlatformError* pErr, StringRef* path, FileLi
       continue; // Skip the '.' and '..' entries.
     }
 
-    if (writeHead + nameLength + 1 >= bufferEnd) { // Note: +1 for the seperating newline.
+    if (writeHead + 1 + nameLength + 1 >= bufferEnd) { // Note: +1 for type, +1 for newline.
       StringRef* newBuffer = refAlloc->allocStr(buffer ? buffer->getSize() * 2 : (MAX_PATH * 2));
       if (unlikely(newBuffer == nullptr)) {
         ::FindClose(searchHandle);
@@ -489,6 +489,7 @@ fileDirList(RefAllocator* refAlloc, PlatformError* pErr, StringRef* path, FileLi
       }
       buffer = newBuffer;
     }
+    *writeHead++ = (findData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) ? 'd' : 'f';
     ::memcpy(writeHead, findData.cFileName, nameLength);
     writeHead += nameLength;
     *writeHead++ = '\n';
@@ -518,7 +519,7 @@ fileDirList(RefAllocator* refAlloc, PlatformError* pErr, StringRef* path, FileLi
       continue; // Skip the '.' and '..' entries.
     }
 
-    if (writeHead + nameLength + 1 >= bufferEnd) { // Note: +1 for the seperating newline.
+    if (writeHead + 1 + nameLength + 1 >= bufferEnd) { // Note: +1 for type, +1 for newline.
       StringRef* newBuffer = refAlloc->allocStr(buffer ? buffer->getSize() * 2 : (NAME_MAX * 2));
       if (unlikely(newBuffer == nullptr)) {
         ::closedir(dir);
@@ -533,6 +534,7 @@ fileDirList(RefAllocator* refAlloc, PlatformError* pErr, StringRef* path, FileLi
       }
       buffer = newBuffer;
     }
+    *writeHead++ = dirEnt->d_type == DT_DIR ? 'd' : 'f';
     ::memcpy(writeHead, dirEnt->d_name, nameLength);
     writeHead += nameLength;
     *writeHead++ = '\n';

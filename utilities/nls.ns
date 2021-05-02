@@ -12,14 +12,12 @@ struct FileInfo =
   ByteSize  size,
   DateTime  time
 
-act collectFileInfo(Path p, FileType type, Settings s) -> Option{EntryInfo}
+act collectFileInfo(Path p, FileType type, Settings s) -> EntryInfo
   name = filename(p) ?? "";
-  if !textMatch(s.filter, name) -> None()
-  else ->
-    ext   = extension(p) ?? "";
-    size  = fileSize(p) ?? bytes(0);
-    time  = fileModTime(p) ?? timeEpoch();
-    EntryInfo(FileInfo(type, s.escape ? escapeForPrinting(name) : name, ext, size, time))
+  ext   = extension(p) ?? "";
+  size  = fileSize(p) ?? bytes(0);
+  time  = fileModTime(p) ?? timeEpoch();
+  EntryInfo(FileInfo(type, s.escape ? escapeForPrinting(name) : name, ext, size, time))
 
 // -- Collect directory info
 
@@ -28,21 +26,19 @@ struct DirInfo =
   int       items,
   DateTime  time
 
-act collectDirInfo(Path p, Settings s) -> Option{EntryInfo}
+act collectDirInfo(Path p, Settings s) -> EntryInfo
   name = filename(p) ?? "";
-  if !textMatch(s.filter, name) -> None()
-  else ->
-    items = fileCount(p, FileListFlags.IncludeSymlinks) ?? 0;
-    time  = fileModTime(p) ?? timeEpoch();
-    EntryInfo(DirInfo(s.escape ? escapeForPrinting(name) : name, items, time))
+  items = fileCount(p, FileListFlags.IncludeSymlinks) ?? 0;
+  time  = fileModTime(p) ?? timeEpoch();
+  EntryInfo(DirInfo(s.escape ? escapeForPrinting(name) : name, items, time))
 
 // -- Collect entry info
 
 union EntryInfo = FileInfo, DirInfo
 
-act collectEntryInfo(Path p, Settings s) -> Option{EntryInfo}
+act collectEntryInfo(Path p, Settings s) -> EntryInfo
   type = fileType(p);
-  if type == FileType.None        -> fail{Option{EntryInfo}}("No file found at path: '" + p + '\'')
+  if type == FileType.None        -> fail{EntryInfo}("No file found at path: '" + p + '\'')
   if type == FileType.Directory   -> collectDirInfo(p, s)
   else                            -> collectFileInfo(p, type, s)
 
@@ -76,12 +72,15 @@ struct RootInfo =
   List{EntryInfo}       entries
 
 act collectRootInfo(Path p, Settings s) -> RootInfo
-  files = fileList(p, FileListFlags.IncludeSymlinks).failOnError();
+  files = fileList(p, FileListFlags.IncludeSymlinks, s.filter, s.filter).failOnError();
   entries = files.mapReverse(impure lambda (PathAbsolute p) collectEntryInfo(p, s));
   RootInfo(pathAbsolute(p), sortEntries(entries, s))
 
 act collectRootInfo(List{Path} paths, Settings s) -> RootInfo
-  RootInfo(None(), sortEntries(paths.mapReverse(collectEntryInfo[s]), s))
+  RootInfo(None(), sortEntries(paths.mapReverse(
+    impure lambda (Path path) -> Option{EntryInfo}
+      s.filter.textMatch(path.filename() ?? "") ? collectEntryInfo(path, s) : None())
+  , s))
 
 // -- Collect info for a set of roots
 
