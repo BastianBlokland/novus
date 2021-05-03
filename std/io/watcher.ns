@@ -74,7 +74,7 @@ assertEq(
   fileCreateDir(pathDir).failOnError();
   watcher = ioWatcherCreate(pathDir);
   waitForModFile = fork watcher.get();
-  sleep(milliseconds(250));
+  sleep(second());
   fileCreateDir(pathSubDir).failOnError();
   fileWrite(pathFile, "HelloWorldFromLazySubDir").failOnError();
   gcCollectBlocking();
