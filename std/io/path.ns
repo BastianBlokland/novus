@@ -160,7 +160,7 @@ fun pathRelParser{UntilT}(Parser{UntilT} until = endParser()) -> Parser{PathRela
 fun pathAbsParser{UntilT}(Parser{UntilT} until = endParser()) -> Parser{PathAbsolute}
   unixRoot    = matchParser("/");
   windowsRoot = (charParser() << (matchParser(":\\") | matchParser(":/")))
-    .map(lambda (char drive) drive.toLower().string() + ":/");
+    .map(lambda (char drive) drive.toUpper().string() + ":/");
   (
     (unixRoot | windowsRoot) & pathRelParser(until)
   ).to(Type{PathAbsolute}())
@@ -253,10 +253,10 @@ assertEq(pathCannonize(pathRel() / "world" / ".." / "world" / ".." / "more" / ".
 assertEq(pathCannonize(pathRel() / "hello" / "good" / "world" / ".." / ".." / "more"), pathRel() / "hello" / "more")
 
 assertEq(pathAbsParser().run("/"), pathAbs("/"))
-assertEq(pathAbsParser().run("c:\\"), pathAbs("c:/"))
-assertEq(pathAbsParser().run("c:/"), pathAbs("c:/"))
-assertEq(pathAbsParser().run("C:/"), pathAbs("c:/"))
-assertEq(pathAbsParser().run("z:\\"), pathAbs("z:/"))
+assertEq(pathAbsParser().run("c:\\"), pathAbs("C:/"))
+assertEq(pathAbsParser().run("c:/"), pathAbs("C:/"))
+assertEq(pathAbsParser().run("C:/"), pathAbs("C:/"))
+assertEq(pathAbsParser().run("z:\\"), pathAbs("Z:/"))
 assertIs(pathAbsParser().run("\\"), Type{Error}())
 assertIs(pathAbsParser().run("hello"), Type{Error}())
 assertIs(pathAbsParser().run("c:hello"), Type{Error}())
@@ -298,15 +298,15 @@ assertIs(pathRelParser().run("hello//world"), Type{Error}())
 assertEq(pathParser().run("test.txt"), Path(pathRel("test.txt" :: List{string}())))
 assertEq(pathParser().run("hello/test.txt"), Path(pathRel("hello" :: "test.txt")))
 assertEq(pathParser().run("/hello"), Path(pathAbs("/", "hello" :: List{string}())))
-assertEq(pathParser().run("c:\\hello"), Path(pathAbs("c:/", "hello" :: List{string}())))
-assertEq(pathParser().run("c:/hello"), Path(pathAbs("c:/", "hello" :: List{string}())))
+assertEq(pathParser().run("c:\\hello"), Path(pathAbs("C:/", "hello" :: List{string}())))
+assertEq(pathParser().run("c:/hello"), Path(pathAbs("C:/", "hello" :: List{string}())))
 assertIs(pathParser().run("\\"), Type{Error}())
 assertIs(pathParser().run("//"), Type{Error}())
 
 assertEq(pathParser(newlineParser()).run("hello\nworld"), Path(pathRel("hello" :: List{string}())))
 assertEq(pathParser(newlineParser()).run("hello.txt\nworld"), Path(pathRel("hello.txt" :: List{string}())))
 assertEq(pathParser(newlineParser()).run("hello/world.txt\nworld"), Path(pathRel("hello" :: "world.txt")))
-assertEq(pathParser(newlineParser()).run("c:\\win\\dows\r\nhello"), Path(pathAbs("c:/", "win" :: "dows")))
+assertEq(pathParser(newlineParser()).run("c:\\win\\dows\r\nhello"), Path(pathAbs("C:/", "win" :: "dows")))
 assertEq(pathParser(newlineParser()).run("你好，世界.txt\nworld"), Path(pathRel("你好，世界.txt" :: List{string}())))
 
 assertEq(pathWriter()(pathDefaultRootUnix()), "/" )
