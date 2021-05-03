@@ -16,8 +16,19 @@ union Either{T1, T2, T3, T4, T5, T6, T7, T8} = T1, T2, T3, T4, T5, T6, T7, T8
 union Either{T1, T2, T3, T4, T5, T6, T7, T8, T9} = T1, T2, T3, T4, T5, T6, T7, T8, T9
 union Either{T1, T2, T3, T4, T5, T6, T7, T8, T9, T10} = T1, T2, T3, T4, T5, T6, T7, T8, T9, T10
 
-// -- Conversions
+// -- Operators
 
+fun =={T, Y}(T a, Either{T, Y} b)
+  b as T t && t == a
+
+fun =={T, Y}(Y a, Either{T, Y} b)
+  b as Y y && y == a
+
+fun =={T, Y}(Either{T, Y} a, T b)
+  a as T t && t == b
+
+fun =={T, Y}(Either{T, Y} a, Y b)
+  a as Y y && y == b
 
 // -- Meta utilities
 
