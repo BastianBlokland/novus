@@ -89,7 +89,7 @@ act cliPrintOverview(CliAppCfg app)
 act cliRunInteruptable(CliResult result) -> Option{Error}
   getUntilInterupt(fork result.cmd.routine(result)) as Error err
     ? cliReportError(result.app, result.cmd, err)
-    : interuptIsRequested() ? (print(" interrupted"); sleep(result.cmd.interuptDelay)) : None()
+    : interuptIsRequested() ? (sleep(result.cmd.interuptDelay); print(" interrupted")) : None()
 
 act cliRunNonInteruptable(CliResult result) -> Option{Error}
   result.cmd.routine(result) as Error err
