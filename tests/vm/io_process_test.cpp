@@ -546,7 +546,7 @@ TEST_CASE("[vm] Execute process platform-calls", "vm") {
 
           // Run a program that waits until its interupted.
           asmb->addLoadLitString(novrtPath + " " + waitForInteruptNx());
-          asmb->addLoadLitInt(7); // Pipe stdIn, stdOut and stdErr.
+          asmb->addLoadLitInt(15); // Pipe stdIn, stdOut and stdErr and create a new process group.
           asmb->addPCall(novasm::PCallCode::ProcessStart);
           asmb->addDup(); // Duplicate the process.
           asmb->addDup(); // Duplicate the process.
@@ -585,7 +585,7 @@ TEST_CASE("[vm] Execute process platform-calls", "vm") {
 
           // Run a program that runs an infinite loop.
           asmb->addLoadLitString(novrtPath + " " + infiniteLoopNx());
-          asmb->addLoadLitInt(7); // Pipe stdIn, stdOut and stdErr.
+          asmb->addLoadLitInt(15); // Pipe stdIn, stdOut and stdErr and create a new process group.
           asmb->addPCall(novasm::PCallCode::ProcessStart);
           asmb->addDup(); // Duplicate the process.
           asmb->addDup(); // Duplicate the process.
