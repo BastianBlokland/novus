@@ -21,6 +21,7 @@ struct CliCmd{T} =
 // -- Extension points
 
 fun cliIsInteruptable{T}(Type{T} commandInputType) true
+fun cliInteruptDelay{T}(Type{T} commandInputType) seconds(0)
 
 fun cliCleanupAction{T}(Type{T} commandInputType) cliNopCleanupAction()
 
@@ -32,7 +33,7 @@ fun cliCmdCfgFromRoutine{T}(CliCmd{T} c) -> Either{CliCmdCfg, Error}
 fun cliCmdCfgFromRoutine{T}(CliCmd{T} c, Meta{#9} structKind) -> Either{CliCmdCfg, Error}
   t = Type{T}();
   cliOptSetFromStruct(t).map(lambda (CliOptSet optSet)
-    CliCmdCfg(c.name, c.desc, optSet, cliIsInteruptable(t), cliCreateInvoker(c.routine), cliCleanupAction(t))
+    CliCmdCfg(c.name, c.desc, optSet, cliIsInteruptable(t), cliInteruptDelay(t), cliCreateInvoker(c.routine), cliCleanupAction(t))
   )
 
 fun cliCmdCfgFromRoutine{T, Idx}(CliCmd{T} c, Meta{Idx} unsupportedKind) -> Either{CliCmdCfg, Error}
