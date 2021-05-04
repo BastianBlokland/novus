@@ -31,6 +31,7 @@ enum ProcessFlags : uint8_t {
   ProcessPipeStdIn  = 1u << 0, // Create a pipe for writing to std in.
   ProcessPipeStdOut = 1u << 1, // Create a pipe for reading from std out.
   ProcessPipeStdErr = 1u << 2, // Create a pipe for reading from std err.
+  ProcessNewGroup   = 1u << 3, // Create a new process group for the child proccess.
 };
 
 #if defined(_WIN32)
@@ -332,13 +333,18 @@ inline auto processStart(
 
   PROCESS_INFORMATION processInfo = {};
 
+  DWORD creationFlags = NORMAL_PRIORITY_CLASS;
+  if (flags & ProcessNewGroup) {
+    creationFlags |= CREATE_NEW_PROCESS_GROUP;
+  }
+
   const bool success = ::CreateProcess(
       nullptr,
       cmdLineStrStart,
       nullptr,
       nullptr,
       true,
-      NORMAL_PRIORITY_CLASS | CREATE_NEW_PROCESS_GROUP,
+      creationFlags,
       nullptr,
       nullptr,
       &startupInfo,
@@ -400,13 +406,15 @@ inline auto processStart(
   case 0: {
     // Executed on child process:
 
-    // Create a new session for the child process.
-    auto sid = setsid();
-    if (unlikely(sid == -1)) {
-      const char* setSidFailedMsg = "[err_1] Failed to create a new session\n";
-      const size_t bytesWritten   = ::write(2, setSidFailedMsg, ::strlen(setSidFailedMsg));
-      (void)bytesWritten;
-      ::abort();
+    if (flags & ProcessNewGroup) {
+      // Create a new session (with a new progress group) for the child process.
+      auto sid = setsid();
+      if (unlikely(sid == -1)) {
+        const char* setSidFailedMsg = "[err_1] Failed to create a new process group\n";
+        const size_t bytesWritten   = ::write(2, setSidFailedMsg, ::strlen(setSidFailedMsg));
+        (void)bytesWritten;
+        ::abort();
+      }
     }
 
     // Close the parent side of the pipes (if they are created).

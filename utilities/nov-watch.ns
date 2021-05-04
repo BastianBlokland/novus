@@ -74,6 +74,8 @@ act evaluateAction(Context ctx)
     if run as Process process -> process.wait(); None()
   )
 
+fun cliInteruptDelay(Type{EvaluateSettings} t) seconds(1)
+
 act evaluateCmd(EvaluateSettings s)
   ctx   = Context(s, consoleOpen().failOnError(), EndsWithTextPattern(".ns"));
   path  = ctx.getPath();

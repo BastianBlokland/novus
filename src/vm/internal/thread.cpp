@@ -58,7 +58,7 @@ auto threadSleepNano(int64_t time) noexcept -> bool {
 
   // TODO: This only has milliseconds resolution, investigate win32 alternatives with better
   // resolution.
-  unsigned long timeMilli = static_cast<unsigned long>(time) / 1'000'000;
+  auto timeMilli = static_cast<unsigned long>(time / 1'000'000);
   Sleep(timeMilli > 0 ? timeMilli : 1);
   return true; // The win32 sleep api cannot fail.
 

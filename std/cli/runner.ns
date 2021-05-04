@@ -13,6 +13,7 @@ struct CliCmdCfg =
   string                            desc,
   CliOptSet                         opts,
   bool                              interuptable,
+  Duration                          interuptDelay,
   action{CliResult, Option{Error}}  routine,
   action{Option{Error}}             cleanup
 
@@ -39,7 +40,7 @@ fun CliCmdCfg()
   CliCmdCfg(CliOptSet())
 
 fun CliCmdCfg(CliOptSet optSet)
-  CliCmdCfg("", "", optSet, true,
+  CliCmdCfg("", "", optSet, true, seconds(0),
   impure lambda (CliResult r) Option{Error}(Error("Not implemented")),
   cliNopCleanupAction())
 
@@ -88,7 +89,7 @@ act cliPrintOverview(CliAppCfg app)
 act cliRunInteruptable(CliResult result) -> Option{Error}
   getUntilInterupt(fork result.cmd.routine(result)) as Error err
     ? cliReportError(result.app, result.cmd, err)
-    : interuptIsRequested() ? print(" interrupted") : None()
+    : interuptIsRequested() ? (sleep(result.cmd.interuptDelay); print(" interrupted")) : None()
 
 act cliRunNonInteruptable(CliResult result) -> Option{Error}
   result.cmd.routine(result) as Error err
