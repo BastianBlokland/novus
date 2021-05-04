@@ -47,7 +47,7 @@ fun commitParser()
 // -- Actions
 
 act runGit(List{string} args) -> Either{string, Error}
-  run("git", args, ProcessFlags.PipeInOut).wait().map(impure lambda (ProcessResult r)
+  run("git", args, ProcessFlags.PipeInOut | ProcessFlags.NewGroup).wait().map(impure lambda (ProcessResult r)
     r.isSuccess() ? (r.stdOut ?? "") : Error("Failed to run git: " + (r.stdErr ?? "").trim())
   )
 
