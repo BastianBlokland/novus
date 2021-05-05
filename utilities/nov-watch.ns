@@ -69,7 +69,7 @@ struct EvaluateSettings =
 
 act evaluateAction(Context ctx)
   ProcessAction(impure lambda (PathAbsolute file) -> Option{Error}
-    run = run("nove", file.string() :: List{string}());
+    run = run("nove.nx", file.string() :: List{string}());
     if run as Error   err     -> ctx.console.writeErr("Failed to invoke evaluator: " + err + '\n'); err
     if run as Process process -> process.wait(); None()
   )

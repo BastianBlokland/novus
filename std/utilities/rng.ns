@@ -39,6 +39,11 @@ fun rngNext(Rng r)
 fun rngNext{T}(RngResult{T} r)
   r.rng.rngNext().map(lambda (float f) Tuple(r.val, f))
 
+// -- Operators
+
+fun ??{T}(RngResult{Option{T}} r, T def) -> RngResult{T}
+  RngResult(r.rng, r.val ?? def)
+
 // -- Utilities
 
 fun map{T, TResult}(RngResult{T} r, function{T, TResult} func)
@@ -76,6 +81,9 @@ fun rngList{T}(Rng r, int count, function{Rng, RngResult{T}} func)
 // Return a optional random element from the list.
 fun rngElem{T}(Rng r, List{T} l)
   r.rngNext(0, l.length()).map(lambda (int idx) l[idx])
+
+fun rngString(Rng r, int length, List{char} chars = rangeList('a', 'z') :: rangeList('0', '9'))
+  r.rngList(length, lambda (Rng r) r.rngElem(chars) ?? '0').map(lambda (List{char} l) l.join())
 
 // -- Impure utlities
 
@@ -129,3 +137,5 @@ assert(
   l     = "hello" :: "great" :: "world";
   elem  = rngInit(42).rngElem(l).val ?? "";
   l.contains(elem))
+
+assertEq(rngInit(42).rngString(10).val.length(), 10)

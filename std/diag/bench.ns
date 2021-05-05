@@ -50,8 +50,6 @@ act printBenchAverage{T}(action{T} invokable) -> T
 
 // -- Tests
 
-assertGtrOrEq(bench(impure lambda () 1 + 1).dur, nanosecond())
-
 assert(
   res = benchAverage(impure lambda () 1 + 1);
   res.avgDur < res.wallTime)

@@ -222,10 +222,10 @@ assertIs(pathCurrent().extension(), Type{None}())
 
 assert(
   pathRuntime().stem(),
-  lambda (Option{string} runtimeName) runtimeName == "novrt" || runtimeName == "nove")
+  lambda (Option{string} runtimeName) runtimeName == "novrt")
 
-assertEq(pathProgram().filename(), "rt.ns")
+assert((pathProgram().filename() ?? "").startsWith("rt"))
 
-assertEq(pathProgram().stem(), "rt")
+assert((pathProgram().stem() ?? "").startsWith("rt"))
 
-assertEq(pathProgram().extension(), "ns")
+assert(pathProgram().extension() == "ns" || pathProgram().extension() == "nx")

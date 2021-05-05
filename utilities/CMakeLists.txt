@@ -1,4 +1,4 @@
-function(configure_nove_executable file)
+function(configure_nov_executable file)
   message(STATUS "Configuring utility: ${file}")
 
   set(srcFile ${CMAKE_CURRENT_SOURCE_DIR}/${file}.ns)
@@ -17,9 +17,10 @@ function(configure_nove_executable file)
       COMMAND ${CMAKE_COMMAND} -E copy
       ${CMAKE_CURRENT_BINARY_DIR}/${tgtFile}
       ${EXECUTABLE_OUTPUT_PATH}/${tgtFile})
-endfunction(configure_nove_executable)
+endfunction(configure_nov_executable)
 
 # Utilities.
-configure_nove_executable(niob)
-configure_nove_executable(nls)
-configure_nove_executable(nov-watch)
+configure_nov_executable(niob)
+configure_nov_executable(nls)
+configure_nov_executable(nov-watch)
+configure_nov_executable(nove)

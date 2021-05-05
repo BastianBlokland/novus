@@ -1,0 +1,99 @@
+// --- Novus Evaluator.
+// Utility that compiles and runs novus source files.
+
+import "std.ns"
+
+enum StdLib = Minimal, Full, None
+
+struct Settings =
+  bool                                optimize,
+  bool                                compilerOutput,
+  StdLib                              stdLib,
+  Path                                compiler,
+  Path                                runtime,
+  Option{List{Path}}                  searchPaths,
+  CliPositional{string}               source,
+  CliPositional{Option{List{string}}} args
+
+// -- Utilities
+
+act rndStr()
+  rngInit().rngString(8).val
+
+// -- Source file
+// If the source text is a path to a file then that file is loaded, otherwise a new temporary source
+// file is created containing the given source text.
+
+fun getImportStatement(StdLib stdLib)
+  if stdLib == StdLib.Minimal -> "import \"std/io/console.ns\""
+  if stdLib == StdLib.Full    -> "import \"std.ns\""
+  else                        -> ""
+
+act createTempSourceFile(Settings s) -> Either{File, Error}
+  path = pathCurrent() / (rndStr() + ".ns");
+  fileOpen(path, FileMode.Create, FileFlags.AutoRemove).map(impure lambda (File f)
+    f.write(getImportStatement(s.stdLib) + " " + s.source.val) as Error err ? err : f
+  )
+
+act getSourceFile(Settings s) -> Either{File, Error}
+  pathOrErr = pathParser().run(s.source.val);
+  if pathOrErr as Path  path  -> fileOpen(path, FileMode.OpenReadOnly).orAct(lazy createTempSourceFile(s))
+  if pathOrErr as Error err   -> createTempSourceFile(s)
+
+// -- Compilation
+// Invoke the compiler and open the resulting executable file.
+
+fun getSearchPathArgs(Settings s)
+  if s.searchPaths as List{Path} paths -> "--searchpaths" :: paths.map(lambda (Path p) p.string())
+  else                                 -> List{string}()
+
+fun getCompileArgs(File source, Settings s, Path path, bool color) -> List{string}
+  source.path.string()                ::
+  "--out" :: path.string()            ::
+  getSearchPathArgs(s)                ::
+  (color ? "--color" : "--no-color")  ::
+  (s.optimize ? "--optimize" : "--no-optimize")
+
+act getOutputPath(File source)
+  source.path.parent() / (source.path.stem() ?? "" + "-" + rndStr() + ".nx")
+
+act printCompilerOutput(Settings s, Console c, ProcessResult r)
+  s.compilerOutput ? c.writeOut(r.stdOut ?? "") : None()
+
+act compile(File source, Settings s, Console c) -> Either{File, Error}
+  path  = getOutputPath(source);
+  args  = getCompileArgs(source, s, path, c.allowColor());
+  flags = ProcessFlags.PipeInOut | ProcessFlags.NewGroup;
+  run(s.compiler.string(), args, flags).wait().map(impure lambda (ProcessResult r)
+    r.isSuccess()
+      ? (printCompilerOutput(s, c, r); path.fileOpen(FileMode.OpenReadOnly, FileFlags.AutoRemove))
+      : Error("Compliation:\n" + r.stdErr ?? "Unknown error")
+  )
+
+// -- Execution
+// Invoke the runtime with the path to the executable.
+
+fun getExecutionArgs(File executable, Settings s) -> List{string}
+  executable.path.string() :: (s.args.val ?? List{string}())
+
+act execute(File executable, Settings s)
+  run(s.runtime.string(), getExecutionArgs(executable, s)).wait().map(impure lambda (ProcessResult r)
+    r.isSuccess() ? Option{Error}() : intrinsic{fail}{Option{Error}}()
+  )
+
+// -- Driver
+
+act main(Settings s) -> Option{Error}
+  console     = consoleOpen().failOnError();
+  source      = getSourceFile(s).failOnError();
+  executable  = compile(source, s, console).failOnError();
+  execute(executable, s)
+
+fun cliDefaults(Type{Settings} t)
+  CliDefault("std-lib",   "minimal")  ::
+  CliDefault("compiler",  "novc")     ::
+  CliDefault("runtime",   "novrt")
+
+fun cliIsInteruptable(Type{Settings} s) false
+
+cli(main, cliAppInfo("Novus Evaluator", "Utility that compiles and runs novus source files.", Version(0, 1, 0)))
