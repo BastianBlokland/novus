@@ -304,7 +304,7 @@ Open a interactive container with the compiler, runtime and examples installed:
 `docker run --rm -it bastianblokland/novus sh`
 
 Run an example:
-`nove examples/fizzbuzz.ns`
+`nove.nx examples/fizzbuzz.ns`
 
 ## Installing the compiler and runtime
 
@@ -408,13 +408,13 @@ In either case the result is that you can directly run novus executables:
 
 ## Evaluator
 
-Alternatively you can use the `nove` (novus evaluator) to combine the compilation and running.
+Alternatively you can use the `nove.nx` (novus evaluator) to combine the compilation and running.
 
 You can either pass the source straight to the evaluator:
-`./bin/nove 'print(pow(42, 1.337))'`.
+`./bin/nove.nx 'print(pow(42, 1.337))'`.
 
 or give a `.ns` source file to the evaluator:
-`./bin/nove examples/fizzbuzz.ns`.
+`./bin/nove.nx examples/fizzbuzz.ns`.
 
 ## Debugging
 

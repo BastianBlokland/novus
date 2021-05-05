@@ -63,22 +63,6 @@ endif()
 target_link_libraries(novrt PRIVATE vm)
 target_link_libraries(novrt PRIVATE novasm)
 
-# Evaluator.
-message(STATUS "Configuring nove executable")
-add_executable(nove nove/main.cpp)
-target_compile_features(nove PUBLIC cxx_std_17)
-if(MSVC)
-  target_compile_options(nove PUBLIC /EHsc)
-else()
-  target_compile_options(nove PUBLIC -fexceptions)
-endif()
-target_include_directories(nove PRIVATE ${rang_SOURCE_DIR}/include)
-target_link_libraries(nove PRIVATE input)
-target_link_libraries(nove PRIVATE frontend)
-target_link_libraries(nove PRIVATE backend)
-target_link_libraries(nove PRIVATE vm)
-target_link_libraries(nove PRIVATE opt)
-
 # Lexer diagnostic tool.
 message(STATUS "Configuring novdiag-lex executable")
 add_executable(novdiag-lex novdiag-lex/main.cpp)

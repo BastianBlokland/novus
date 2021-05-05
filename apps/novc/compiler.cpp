@@ -60,7 +60,7 @@ auto compile(Options options) -> bool {
   const auto compileDur = std::chrono::duration_cast<Duration>(compileEndTime - compileStartTime);
 
   if (!frontendOut.isSuccess()) {
-    msgHeader(std::cerr) << rang::style::bold << rang::bg::red << "Compilation failed, errors:\n";
+    msgHeader(std::cout) << rang::style::bold << rang::bg::red << "Compilation failed, errors:\n";
     for (auto diagItr = frontendOut.beginDiags(); diagItr != frontendOut.endDiags(); ++diagItr) {
       diagItr->print(std::cerr, frontendOut.getSourceTable());
       std::cerr << '\n';

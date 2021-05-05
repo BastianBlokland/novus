@@ -16,7 +16,7 @@ public:
       FileHandle stdErr) noexcept;
 
   // String containing the absolute path to the currently running program.
-  // Note: Can be empty if the program only exists in memory (For example: inline exec by nove).
+  // Note: Can be empty if the program only exists in memory (For example: inline exec in tests.
   auto getProgramPath() noexcept -> const std::string& { return m_programPath; }
 
   // Retreive the null terminated c-style string of the environment argument at the specified index.

@@ -32,6 +32,9 @@ act orAct{T}(Option{T} o, lazy_action{T} a) -> Option{T}
 act orAct{T}(Option{T} o, lazy_action{Option{T}} a) -> Option{T}
   o as T v ? v : a.get()
 
+act orAct{T}(Either{T, Error} o, lazy_action{Either{T, Error}} a) -> Either{T, Error}
+  o as T v ? v : a.get()
+
 act actIf{T1, T2, T3}(Either{T1, T2} e, action{T1, Either{T3, T2}} a) -> Either{T3, T2}
   if e as T1 et1 -> a(et1)
   if e as T2 et2 -> et2

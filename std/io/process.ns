@@ -117,7 +117,7 @@ act shutdown(Process p) -> Either{ProcessResult, Error}
 // -- Tests
 
 assert(
-  run("cmake", "-E" :: "echo" :: "Hello world" :: List{string}()),
+  run("cmake", "-E" :: "echo" :: "Hello world" :: List{string}(), ProcessFlags.PipeInOut),
   lambda (Either{Process, Error} e)
     e as Process p  &&
     p.id.id > 0     &&

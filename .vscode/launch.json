@@ -2,26 +2,6 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "nove",
-      "preLaunchTask": "build",
-      "type": "lldb",
-      "request": "launch",
-      "program": "${workspaceFolder}/bin/nove",
-      "args": [
-        "assert(1 + 1 == 2)"
-      ],
-      "cwd": "${workspaceFolder}",
-      "terminal": "integrated",
-      "stopOnEntry": false
-    },
-    {
-      "name": "nove_attach",
-      "type": "lldb",
-      "request": "attach",
-      "program": "${workspaceFolder}/bin/nove",
-      "pid": "${command:pickProcess}"
-    },
-    {
       "name": "novc",
       "preLaunchTask": "build",
       "type": "lldb",

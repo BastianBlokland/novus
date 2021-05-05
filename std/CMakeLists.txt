@@ -6,7 +6,12 @@ set(stdHeader ${EXECUTABLE_OUTPUT_PATH}/std.ns)
 function(add_nov_test filePath)
   get_filename_component(fileName ${filePath} NAME)
   set(testName "[std]\\ ${fileName}")
-  add_test("${testName}" ${EXECUTABLE_OUTPUT_PATH}/nove ${filePath})
+  add_test("${testName}"
+    ${EXECUTABLE_OUTPUT_PATH}/novrt
+    ${EXECUTABLE_OUTPUT_PATH}/nove.nx
+    --compiler ${EXECUTABLE_OUTPUT_PATH}/novc
+    --runtime ${EXECUTABLE_OUTPUT_PATH}/novrt
+    ${filePath})
 endfunction(add_nov_test)
 
 function(configure_std_file file)
