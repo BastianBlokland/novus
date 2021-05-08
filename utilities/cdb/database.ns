@@ -36,11 +36,6 @@ fun mergeEntries(Database a, Database b) -> Database
 
 // -- Save / Load
 
-act getHomePath() -> Either{Path, Error}
-  homeEnv = getEnvVar("HOME") ?? getEnvVar("HOMEPATH");
-  if homeEnv is None            -> Error("Home environment variable not found")
-  if homeEnv as string homeStr  -> pathParser().run(homeStr)
-
 act getDbPath()       getHomePath().map(lambda (Path p) p / ".cdb")
 act getDbBackupPath() getHomePath().map(lambda (Path p) p / ".cdb.back")
 

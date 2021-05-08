@@ -115,8 +115,8 @@ act fileCreatePath(Path p) -> Option{Error}
   if p.fileDirExists()  -> None()
   else                  -> actSeq(lazy fileCreatePath(p.parent()), lazy fileCreateDir(p))
 
-act fileRemove(Path p) -> Option{Error}
-  invoke(impure lambda (int retry)
+act fileRemove(Path p)
+  invoke(impure lambda (int retry) -> Option{Error}
   (
     absPathStr = p.pathAbsolute().string();
     deleted = intrinsic{file_remove}(absPathStr);

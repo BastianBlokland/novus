@@ -95,3 +95,7 @@ act cli{T1, T2, T3, T4, T5, T6}(CliCmd{T1} cmd1, CliCmd{T2} cmd2, CliCmd{T3} cmd
 act cli{T1, T2, T3, T4, T5, T6, T7}(CliCmd{T1} cmd1, CliCmd{T2} cmd2, CliCmd{T3} cmd3, CliCmd{T4} cmd4, CliCmd{T5} cmd5, CliCmd{T6} cmd6, CliCmd{T7} cmd7, CliAppInfo appInfo = cliAppInfo())
   cmds = cliCmdCfgFromRoutines(Tuple(cmd1, cmd2, cmd3, cmd4, cmd5, cmd6, cmd7)).failOnError();
   cliRun(CliAppCfg(appInfo.name, appInfo.desc, appInfo.ver, appInfo.bin, None(), cmds :: cliBuildinCmds()))
+
+act cli{T1, T2, T3, T4, T5, T6, T7, T8}(CliCmd{T1} cmd1, CliCmd{T2} cmd2, CliCmd{T3} cmd3, CliCmd{T4} cmd4, CliCmd{T5} cmd5, CliCmd{T6} cmd6, CliCmd{T7} cmd7, CliCmd{T8} cmd8, CliAppInfo appInfo = cliAppInfo())
+  cmds = cliCmdCfgFromRoutines(Tuple(cmd1, cmd2, cmd3, cmd4, cmd5, cmd6, cmd7, cmd8)).failOnError();
+  cliRun(CliAppCfg(appInfo.name, appInfo.desc, appInfo.ver, appInfo.bin, None(), cmds :: cliBuildinCmds()))
