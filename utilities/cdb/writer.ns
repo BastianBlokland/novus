@@ -8,11 +8,11 @@ fun cmdWriter() -> Writer{Cmd}
 fun entryTimeWriter() -> Writer{Entry}
   timeWriter = dateTimePrettyWriter(PrettyTimeFlags.None);
   (
-    padUntilWriter(15) & litWriter("Creation ") & padUntilWriter(25) & timeWriter & newlineWriter() &
-    padUntilWriter(15) & litWriter("Access ")   & padUntilWriter(25) & timeWriter
+    padUntilWriter(20) & litWriter("Creation ") & padUntilWriter(30) & timeWriter & newlineWriter() &
+    padUntilWriter(20) & litWriter("Access ")   & padUntilWriter(30) & timeWriter
   ).map(lambda (Entry e) Tuple(e.creationTime, e.accessTime))
 
 fun entryWriter(bool includeTime) -> Writer{Entry}
   (
-    stringWriter().padLeftWriter(10) & litWriter(" -> ") & cmdWriter() &  ?(newlineWriter() & entryTimeWriter())
+    stringWriter().padLeftWriter(15) & litWriter(" -> ") & cmdWriter() &  ?(newlineWriter() & entryTimeWriter())
   ).map(lambda (Entry e) Tuple(e.key, e.value, includeTime ? e : None()))
