@@ -34,6 +34,9 @@ fun updateEntry(Database db, Entry entry) -> Database
 fun removeEntry(Database db, string key) -> Database
   Database(db.entries.filter(lambda (Entry e) e.key != key))
 
+fun mergeEntries(Database a, Database b) -> Database
+  Database(a.entries :: b.entries.filter(lambda (Entry e) a[e.key] is None))
+
 // -- Save / Load
 
 act getDbPath() -> Either{Path, Error}
@@ -168,12 +171,47 @@ act listCmd(ListSettings s) -> Option{Error}
   w   = listWriter(entryWriter(s.time), newlineWriter()) & newlineWriter();
   c.writeOut(w, db.entries.map(updateTimeToLocal))
 
+// -- Export Cli Command
+
+struct ExportSettings =
+  bool                        minify,
+  CliPositional{Option{Path}} path
+
+act getExportStream(ExportSettings s) -> Either{sys_stream, Error}
+  if s.path.val as Path p -> p.fileOpen(FileMode.Create).map(lambda (File f) f.stream)
+  else                    -> consoleOpen().map(lambda (Console c) c.stdOut)
+
+act exportCmd(ExportSettings s) -> Option{Error}
+  db      = loadDb().failOnError();
+  stream  = getExportStream(s).failOnError();
+  indent  = s.minify ? "" : "  ";
+  newline = s.minify ? WriterNewlineMode.None : WriterNewlineMode.Lf;
+  stream.write(jsonWriter{Database}().run(db, indent, newline))
+
+// -- Import Cli Command
+
+struct ImportSettings =
+  CliPositional{Option{Path}} path
+
+act getImportStream(ImportSettings s) -> Either{sys_stream, Error}
+  if s.path.val as Path p -> p.fileOpen(FileMode.OpenReadOnly).map(lambda (File f) f.stream)
+  else                    -> consoleOpen().map(lambda (Console c) c.stdIn)
+
+act importCmd(ImportSettings s) -> Option{Error}
+  existingDb  = loadDbOrDefault();
+  stream      = getImportStream(s).failOnError();
+  json        = stream.readToEnd().failOnError();
+  importedDb  = jsonParser{Database}().run(json).failOnError();
+  saveDb(mergeEntries(importedDb, existingDb))
+
 // -- Cli App
 
-cli(cliCmd("get",   getCmd,     "Get an entry from the database."),
-    cliCmd("add",   addCmd,     "Add an entry to the database."),
-    cliCmd("rm",    removeCmd,  "Remove an entry from the database."),
-    cliCmd("list",  listCmd,    "List all commands stored in the database."),
+cli(cliCmd("get",     getCmd,     "Get an entry from the database."),
+    cliCmd("add",     addCmd,     "Add an entry to the database."),
+    cliCmd("rm",      removeCmd,  "Remove an entry from the database."),
+    cliCmd("list",    listCmd,    "List all commands stored in the database."),
+    cliCmd("export",  exportCmd,  "Export the database to a json file."),
+    cliCmd("import",  importCmd,  "Import a database json file."),
     cliAppInfo(
       "Command DataBase", "Simple database for storing shell commands.",
-      Version(0, 1, 0)))
+      Version(0, 2, 0)))
