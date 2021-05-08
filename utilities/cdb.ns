@@ -210,12 +210,12 @@ act importCmd(ImportSettings s) -> Option{Error}
 
 // -- Cli App
 
-cli(cliCmd("get",     getCmd,     "Get an entry from the database."),
-    cliCmd("add",     addCmd,     "Add an entry to the database."),
-    cliCmd("rm",      removeCmd,  "Remove entries from the database."),
-    cliCmd("list",    listCmd,    "List all commands stored in the database."),
-    cliCmd("export",  exportCmd,  "Export the database to a json file."),
-    cliCmd("import",  importCmd,  "Import a database json file."),
+cli(cliCmd("get",     getCmd,     "Get an entry from the database"),
+    cliCmd("add",     addCmd,     "Add an entry to the database"),
+    cliCmd("rm",      removeCmd,  "Remove entries from the database"),
+    cliCmd("list",    listCmd,    "List all commands stored in the database"),
+    cliCmd("export",  exportCmd,  "Export the database to a json file"),
+    cliCmd("import",  importCmd,  "Import a database json file"),
     cliAppInfo(
       "Command DataBase", "Simple database for storing shell commands.",
       Version(0, 4, 0)))
