@@ -6,6 +6,7 @@
 #include <algorithm>
 #include <cassert>
 #include <fstream>
+#include <system_error>
 
 namespace frontend::internal {
 
@@ -117,18 +118,24 @@ auto ImportSources::importRelPath(const Path& file) const -> bool {
 auto ImportSources::importAbsPath(const Path& file) const -> bool {
   assert(file.is_absolute());
 
-  if (alreadyImportedAbsPath(file)) {
+  std::error_code err;
+  Path canonicalPath = filesystem::canonical(file, err);
+  if (err) {
+    return false;
+  }
+
+  if (alreadyImportedAbsPath(canonicalPath)) {
     return true;
   }
 
-  auto fs = std::ifstream{file.string()};
+  auto fs = std::ifstream{canonicalPath.string()};
   if (!fs.good()) {
     return false;
   }
 
   m_importedSources->push_front(frontend::buildSource(
-      file.filename().string(),
-      filesystem::canonical(file),
+      canonicalPath.filename().string(),
+      canonicalPath,
       std::istreambuf_iterator<char>{fs},
       std::istreambuf_iterator<char>{}));
 
