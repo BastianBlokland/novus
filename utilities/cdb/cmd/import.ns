@@ -1,0 +1,17 @@
+import "std.ns"
+
+import "../database.ns"
+
+struct ImportSettings =
+  CliPositional{Option{Path}} path
+
+act getImportStream(ImportSettings s) -> Either{sys_stream, Error}
+  if s.path.val as Path p -> p.fileOpen(FileMode.OpenReadOnly).map(lambda (File f) f.stream)
+  else                    -> consoleOpen().map(lambda (Console c) c.stdIn)
+
+act importCmd(ImportSettings s) -> Option{Error}
+  existingDb  = loadDb().failOnError();
+  stream      = getImportStream(s).failOnError();
+  json        = stream.readToEnd().failOnError();
+  importedDb  = jsonParser{Database}().run(json).failOnError();
+  saveDb(mergeEntries(importedDb, existingDb))

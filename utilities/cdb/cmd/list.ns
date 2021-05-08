@@ -1,0 +1,17 @@
+import "std.ns"
+
+import "../database.ns"
+import "../writer.ns"
+
+struct ListSettings =
+  bool time
+
+act updateTimeToLocal(Entry e) -> Entry
+  Entry(e.key, e.value, timeToLocal(e.creationTime), timeToLocal(e.accessTime))
+
+act listCmd(ListSettings s) -> Option{Error}
+  c   = consoleOpen().failOnError();
+  db  = loadDb().failOnError();
+  w   = listWriter(entryWriter(s.time), newlineWriter()) & newlineWriter();
+  if db.entries.isEmpty() -> c.writeOut("No entries in database\n")
+  else                    -> c.writeOut(w, db.entries.map(updateTimeToLocal))

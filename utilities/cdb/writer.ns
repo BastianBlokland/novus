@@ -1,0 +1,18 @@
+import "database.ns"
+
+fun cmdWriter() -> Writer{Cmd}
+  (
+    pathAbsWriter() & ?(litWriter(' ') & listWriter(stringWriter(), litWriter(' ')))
+  ).map(lambda (Cmd c) Tuple(c.path, !c.args.isEmpty() ? c.args : None()))
+
+fun entryTimeWriter() -> Writer{Entry}
+  timeWriter = dateTimePrettyWriter(PrettyTimeFlags.None);
+  (
+    padUntilWriter(15) & litWriter("Creation ") & padUntilWriter(25) & timeWriter & newlineWriter() &
+    padUntilWriter(15) & litWriter("Access ")   & padUntilWriter(25) & timeWriter
+  ).map(lambda (Entry e) Tuple(e.creationTime, e.accessTime))
+
+fun entryWriter(bool includeTime) -> Writer{Entry}
+  (
+    stringWriter().padLeftWriter(10) & litWriter(" -> ") & cmdWriter() &  ?(newlineWriter() & entryTimeWriter())
+  ).map(lambda (Entry e) Tuple(e.key, e.value, includeTime ? e : None()))

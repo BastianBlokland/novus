@@ -1,0 +1,74 @@
+import "std.ns"
+
+// -- Types
+
+struct Cmd =
+  PathAbsolute  path,
+  List{string}  args
+
+struct Entry =
+  string    key,
+  Cmd       value,
+  DateTime  creationTime,
+  DateTime  accessTime
+
+struct Database =
+  List{Entry} entries
+
+// -- Operators
+
+fun [](Database db, string key) -> Option{Entry}
+  db.entries.first(lambda (Entry e) e.key == key)
+
+// -- Utilities
+
+fun addEntry(Database db, Entry entry) -> Database
+  Database(db.entries :: entry)
+
+fun updateEntry(Database db, Entry entry) -> Database
+  Database(db.entries.map(lambda (Entry e) e.key == entry.key ? entry : e))
+
+fun removeEntry(Database db, string key) -> Database
+  Database(db.entries.filter(lambda (Entry e) e.key != key))
+
+fun mergeEntries(Database a, Database b) -> Database
+  Database(a.entries :: b.entries.filter(lambda (Entry e) a[e.key] is None))
+
+// -- Save / Load
+
+act getDbPath() -> Either{Path, Error}
+  homeEnv = getEnvVar("HOME") ?? getEnvVar("HOMEPATH");
+  if homeEnv is None            -> Error("Home environment variable not found")
+  if homeEnv as string homeStr  -> pathParser().run(homeStr + "/.cdb")
+
+act saveDb(Database db) -> Option{Error}
+  pathOrErr = getDbPath();
+  if pathOrErr as Path  p   -> saveDb(db, p)
+  if pathOrErr as Error err -> err
+
+act saveDb(Database db, Path p) -> Option{Error}
+  p.fileWrite(jsonWriter{Database}(), db)
+
+act loadDb() -> Either{Database, Error}
+  pathOrErr = getDbPath();
+  if pathOrErr as Path  p   -> loadDb(p)
+  if pathOrErr as Error err -> err
+
+act loadDb(Path p) -> Either{Database, Error}
+  if p.fileOpen(FileMode.OpenReadOnly) as File f  -> f.readToEnd(jsonParser{Database}())
+  else                                            -> Database(List{Entry}())
+
+// -- Transaction
+
+act transaction(action{Database, Either{Database, Error}} delegate) -> Option{Error}
+  transaction{None}(impure lambda (Database db)
+    delegate(db).map(impure lambda (Database newDb) Tuple(newDb, None()))
+  ).eitherGet(Type{Error}())
+
+act transaction{T}(action{Database, Either{Tuple{Database, T}, Error}} delegate) -> Either{T, Error}
+  dbOrErr = loadDb();
+  if dbOrErr as Error     err -> err
+  if dbOrErr as Database  db  ->
+    resOrErr = delegate(db);
+    if resOrErr as Error              actErr -> actErr
+    if resOrErr as Tuple{Database, T} res    -> saveDb(res.f1) as Error saveErr ? saveErr : res.f2

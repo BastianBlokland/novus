@@ -1,8 +1,8 @@
-function(configure_nov_executable file)
-  message(STATUS "Configuring utility: ${file}")
+function(configure_nov_executable app file)
+  message(STATUS "Configuring utility: ${app}")
 
-  set(srcFile ${CMAKE_CURRENT_SOURCE_DIR}/${file}.ns)
-  set(tgtFile ${file}.nx)
+  set(srcFile ${CMAKE_CURRENT_SOURCE_DIR}/${file})
+  set(tgtFile ${app}.nx)
 
   add_custom_command(
     OUTPUT ${tgtFile}
@@ -10,18 +10,18 @@ function(configure_nov_executable file)
     DEPENDS ${srcFile}
     VERBATIM)
 
-  add_custom_target(${file} ALL DEPENDS ${tgtFile} novc)
+  add_custom_target(${app} ALL DEPENDS ${tgtFile} novc)
 
   add_custom_command(
-      TARGET ${file} POST_BUILD
+      TARGET ${app} POST_BUILD
       COMMAND ${CMAKE_COMMAND} -E copy
       ${CMAKE_CURRENT_BINARY_DIR}/${tgtFile}
       ${EXECUTABLE_OUTPUT_PATH}/${tgtFile})
 endfunction(configure_nov_executable)
 
 # Utilities.
-configure_nov_executable(cdb)
-configure_nov_executable(niob)
-configure_nov_executable(nls)
-configure_nov_executable(nov-watch)
-configure_nov_executable(nove)
+configure_nov_executable(cdb        cdb/app.ns)
+configure_nov_executable(niob       niob.ns)
+configure_nov_executable(nls        nls.ns)
+configure_nov_executable(nov-watch  nov-watch.ns)
+configure_nov_executable(nove       nove.ns)

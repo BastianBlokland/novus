@@ -1,0 +1,22 @@
+import "std.ns"
+
+import "../database.ns"
+
+struct RemoveSettings =
+  CliPositional{List{string}} keys
+
+act removeFromDb(Database db, List{string} keys) -> Either{Database, Error}
+  keys.fold(lambda (Either{Database, Error} res, string key) -> Either{Database, Error}
+    if res as Error     err -> err
+    if res as Database  db ->
+      if db[key] is None  -> Error("Key '" + key + "' cannot be found")
+      else                -> db.removeEntry(key)
+  , Either{Database, Error}(db))
+
+act removeCmd(RemoveSettings s) -> Option{Error}
+  c     = consoleOpen().failOnError();
+  keys  = s.keys.val;
+  if transaction(removeFromDb[keys]) as Error err  -> fail(err)
+  else ->
+    writer = listWriter(litWriter("Removed '") & stringWriter() & litWriter('\'') & newlineWriter());
+    c.writeOut(writer, keys)

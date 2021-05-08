@@ -1,0 +1,27 @@
+import "std.ns"
+
+import "../database.ns"
+import "../writer.ns"
+
+struct AddSettings =
+  CliPositional{string}               key,
+  CliPositional{Option{Path}}         path,
+  CliPositional{Option{List{string}}} args
+
+act createCmd(AddSettings s) -> Either{Cmd, Error}
+  args = (s.args.val ?? List{string}());
+  absPath = pathAbsolute(s.path.val ?? pathCurrent());
+  if !fileExists(absPath) -> Error("No file found at path: '" + absPath + '\'')
+  else                    -> Cmd(absPath, args)
+
+act addToDb(Database db, string key, Cmd cmd) -> Either{Database, Error}
+  if db[key] is Entry -> Error("Key '" + key + "' already exists")
+  else                -> db.addEntry(Entry(key, cmd, timeNow(), timeNow()))
+
+act addCmd(AddSettings s) -> Option{Error}
+  c   = consoleOpen().failOnError();
+  cmd = createCmd(s).failOnError();
+  key = s.key.val;
+  transaction(addToDb[cmd][key]).failOnError();
+  writer = litWriter("Added '") & stringWriter() & litWriter("': ") & cmdWriter() & newlineWriter();
+  c.writeOut(writer, Tuple(key, cmd))

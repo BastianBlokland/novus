@@ -1,0 +1,22 @@
+import "std.ns"
+
+import "../database.ns"
+import "../writer.ns"
+
+struct GetSettings =
+  CliPositional{string} key
+
+act updateAccessTime(Entry e) -> Entry
+  Entry(e.key, e.value, e.creationTime, timeNow())
+
+act getFromDb(Database db, GetSettings s) -> Either{Tuple{Database, Entry}, Error}
+  key   = s.key.val;
+  entry = db[key];
+  if db[key] as Entry e -> Tuple(db.updateEntry(updateAccessTime(e)), e)
+  else                  -> Error("No entry found with key: '" + key + '\'')
+
+act getCmd(GetSettings s) -> Option{Error}
+  c = consoleOpen().failOnError();
+  entryOrErr = transaction(getFromDb[s]);
+  if entryOrErr as Error err  -> err
+  if entryOrErr as Entry e    -> c.writeOut(cmdWriter() & newlineWriter(), e.value)
