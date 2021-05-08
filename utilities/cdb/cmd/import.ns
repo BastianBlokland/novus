@@ -11,6 +11,7 @@ act getImportStream(ImportSettings s) -> Either{sys_stream, Error}
 
 act importCmd(ImportSettings s) -> Option{Error}
   existingDb  = loadDb().failOnError();
+  saveDbBack(existingDb).failOnError();
   stream      = getImportStream(s).failOnError();
   json        = stream.readToEnd().failOnError();
   importedDb  = jsonParser{Database}().run(json).failOnError();
