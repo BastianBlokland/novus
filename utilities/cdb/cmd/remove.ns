@@ -16,7 +16,7 @@ act removeFromDb(Database db, List{string} keys) -> Either{Database, Error}
 act removeCmd(RemoveSettings s) -> Option{Error}
   c     = consoleOpen().failOnError();
   keys  = s.keys.val;
-  if transaction(removeFromDb[keys]) as Error err  -> fail(err)
+  if transaction(removeFromDb[keys], TransactionFlags.Backup) as Error err  -> fail(err)
   else ->
     writer = listWriter(litWriter("Removed '") & stringWriter() & litWriter('\'') & newlineWriter());
     c.writeOut(writer, keys)

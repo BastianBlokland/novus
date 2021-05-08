@@ -36,23 +36,22 @@ fun mergeEntries(Database a, Database b) -> Database
 
 // -- Save / Load
 
-act getDbPath() -> Either{Path, Error}
+act getHomePath() -> Either{Path, Error}
   homeEnv = getEnvVar("HOME") ?? getEnvVar("HOMEPATH");
   if homeEnv is None            -> Error("Home environment variable not found")
-  if homeEnv as string homeStr  -> pathParser().run(homeStr + "/.cdb")
+  if homeEnv as string homeStr  -> pathParser().run(homeStr)
 
-act saveDb(Database db) -> Option{Error}
-  pathOrErr = getDbPath();
-  if pathOrErr as Path  p   -> saveDb(db, p)
-  if pathOrErr as Error err -> err
+act getDbPath()       getHomePath().map(lambda (Path p) p / ".cdb")
+act getDbBackupPath() getHomePath().map(lambda (Path p) p / ".cdb.back")
 
 act saveDb(Database db, Path p) -> Option{Error}
   p.fileWrite(jsonWriter{Database}(), db)
 
-act loadDb() -> Either{Database, Error}
-  pathOrErr = getDbPath();
-  if pathOrErr as Path  p   -> loadDb(p)
-  if pathOrErr as Error err -> err
+act saveDb(Database db)     getDbPath().map(impure lambda (Path p) saveDb(db, p))
+act saveDbBack(Database db) getDbBackupPath().map(impure lambda (Path p) saveDb(db, p))
+
+act loadDb()      getDbPath().map(impure lambda (Path p) loadDb(p))
+act loadDbBack()  getDbBackupPath().map(impure lambda (Path p) loadDb(p))
 
 act loadDb(Path p) -> Either{Database, Error}
   if p.fileOpen(FileMode.OpenReadOnly) as File f  -> f.readToEnd(jsonParser{Database}())
@@ -60,15 +59,26 @@ act loadDb(Path p) -> Either{Database, Error}
 
 // -- Transaction
 
-act transaction(action{Database, Either{Database, Error}} delegate) -> Option{Error}
+enum TransactionFlags =
+  None   : 0b0,
+  Backup : 0b1
+
+act transaction(
+    action{Database, Either{Database, Error}} delegate,
+    TransactionFlags                          flags = TransactionFlags.None
+  ) -> Option{Error}
   transaction{None}(impure lambda (Database db)
     delegate(db).map(impure lambda (Database newDb) Tuple(newDb, None()))
-  ).eitherGet(Type{Error}())
+  , flags).eitherGet(Type{Error}())
 
-act transaction{T}(action{Database, Either{Tuple{Database, T}, Error}} delegate) -> Either{T, Error}
+act transaction{T}(
+    action{Database, Either{Tuple{Database, T}, Error}} delegate,
+    TransactionFlags                                    flags = TransactionFlags.None
+  ) -> Either{T, Error}
   dbOrErr = loadDb();
   if dbOrErr as Error     err -> err
   if dbOrErr as Database  db  ->
+    ((flags & TransactionFlags.Backup) != 0 ? db.saveDbBack() : None());
     resOrErr = delegate(db);
     if resOrErr as Error              actErr -> actErr
     if resOrErr as Tuple{Database, T} res    -> saveDb(res.f1) as Error saveErr ? saveErr : res.f2

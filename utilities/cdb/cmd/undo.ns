@@ -1,0 +1,13 @@
+import "std.ns"
+
+import "../database.ns"
+
+struct UndoSettings
+
+act undoCmd(UndoSettings s) -> Option{Error}
+  backupPath = getDbBackupPath().failOnError();
+  if !fileExists(backupPath) -> print("Nothing to undo")
+  else ->
+    db = loadDb(backupPath).failOnError();
+    saveDb(db).failOnError();
+    fileRemove(backupPath)
