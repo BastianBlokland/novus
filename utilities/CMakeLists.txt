@@ -20,6 +20,7 @@ function(configure_nov_executable file)
 endfunction(configure_nov_executable)
 
 # Utilities.
+configure_nov_executable(cdb)
 configure_nov_executable(niob)
 configure_nov_executable(nls)
 configure_nov_executable(nov-watch)

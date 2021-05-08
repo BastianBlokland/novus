@@ -1,0 +1,179 @@
+// --- Command DataBase.
+// Simple database for storing shell commands.
+
+import "std.ns"
+
+// -- Types
+
+struct Cmd =
+  PathAbsolute  path,
+  List{string}  args
+
+struct Entry =
+  string    key,
+  Cmd       value,
+  DateTime  creationTime,
+  DateTime  accessTime
+
+struct Database =
+  List{Entry} entries
+
+// -- Operators
+
+fun [](Database db, string key) -> Option{Entry}
+  db.entries.first(lambda (Entry e) e.key == key)
+
+// -- Utilities
+
+fun addEntry(Database db, Entry entry) -> Database
+  Database(db.entries :: entry)
+
+fun updateEntry(Database db, Entry entry) -> Database
+  Database(db.entries.map(lambda (Entry e) e.key == entry.key ? entry : e))
+
+fun removeEntry(Database db, string key) -> Database
+  Database(db.entries.filter(lambda (Entry e) e.key != key))
+
+// -- Save / Load
+
+act getDbPath() -> Either{Path, Error}
+  homeEnv = getEnvVar("HOME") ?? getEnvVar("HOMEPATH");
+  if homeEnv is None            -> Error("Home environment variable not found")
+  if homeEnv as string homeStr  -> pathParser().run(homeStr + "/.cdb")
+
+act saveDb(Database db) -> Option{Error}
+  pathOrErr = getDbPath();
+  if pathOrErr as Path  p   -> saveDb(db, p)
+  if pathOrErr as Error err -> err
+
+act saveDb(Database db, Path p) -> Option{Error}
+  p.fileWrite(jsonWriter{Database}(), db)
+
+act loadDb() -> Either{Database, Error}
+  pathOrErr = getDbPath();
+  if pathOrErr as Path  p   -> loadDb(p)
+  if pathOrErr as Error err -> err
+
+act loadDb(Path p) -> Either{Database, Error}
+  p.fileRead(jsonParser{Database}())
+
+act loadDbOrDefault() -> Database
+  loadDb() ?? Database(List{Entry}())
+
+// -- Transaction
+
+act transaction(action{Database, Either{Database, Error}} delegate) -> Option{Error}
+  transaction{None}(impure lambda (Database db)
+    delegate(db).map(impure lambda (Database newDb) Tuple(newDb, None()))
+  ).eitherGet(Type{Error}())
+
+act transaction{T}(action{Database, Either{Tuple{Database, T}, Error}} delegate) -> Either{T, Error}
+  db = loadDbOrDefault();
+  resOrErr = delegate(db);
+  if resOrErr as Error              actErr -> actErr
+  if resOrErr as Tuple{Database, T} res    -> saveDb(res.f1) as Error saveErr ? saveErr : res.f2
+
+// -- Output writers
+
+fun cmdWriter() -> Writer{Cmd}
+  (
+    pathAbsWriter() & ?(litWriter(' ') & listWriter(stringWriter(), litWriter(' ')))
+  ).map(lambda (Cmd c) Tuple(c.path, !c.args.isEmpty() ? c.args : None()))
+
+fun entryTimeWriter() -> Writer{Entry}
+  timeWriter = dateTimePrettyWriter(PrettyTimeFlags.None);
+  (
+    padUntilWriter(15) & litWriter("Creation ") & padUntilWriter(25) & timeWriter & newlineWriter() &
+    padUntilWriter(15) & litWriter("Access ")   & padUntilWriter(25) & timeWriter
+  ).map(lambda (Entry e) Tuple(e.creationTime, e.accessTime))
+
+fun entryWriter(bool includeTime) -> Writer{Entry}
+  (
+    stringWriter().padLeftWriter(10) & litWriter(" -> ") & cmdWriter() &  ?(newlineWriter() & entryTimeWriter())
+  ).map(lambda (Entry e) Tuple(e.key, e.value, includeTime ? e : None()))
+
+// -- Add Cli Command
+
+struct AddSettings =
+  CliPositional{string}               key,
+  CliPositional{Path}                 path,
+  CliPositional{Option{List{string}}} args
+
+act createCmd(AddSettings s) -> Either{Cmd, Error}
+  args = (s.args.val ?? List{string}());
+  absPath = pathAbsolute(s.path.val);
+  if !fileExists(absPath) -> Error("No file found at path: '" + absPath + '\'')
+  else                    -> Cmd(absPath, args)
+
+act addToDb(Database db, string key, Cmd cmd) -> Either{Database, Error}
+  if db[key] is Entry -> Error("Key '" + key + "' already exists")
+  else                -> db.addEntry(Entry(key, cmd, timeNow(), timeNow()))
+
+act addCmd(AddSettings s) -> Option{Error}
+  c   = consoleOpen().failOnError();
+  cmd = createCmd(s).failOnError();
+  key = s.key.val;
+  transaction(addToDb[cmd][key]).failOnError();
+  writer = litWriter("Added '") & stringWriter() & litWriter("': ") & cmdWriter() & newlineWriter();
+  c.writeOut(writer, Tuple(key, cmd))
+
+// -- Remove Cli Command
+
+struct RemoveSettings =
+  CliPositional{string} key
+
+act removeFromDb(Database db, string key) -> Either{Database, Error}
+  if db[key] is None  -> Error("Key '" + key + "' cannot be found")
+  else                -> db.removeEntry(key)
+
+act removeCmd(RemoveSettings s) -> Option{Error}
+  c   = consoleOpen().failOnError();
+  key = s.key.val;
+  if transaction(removeFromDb[key]) as Error err  -> fail(err)
+  else ->
+    writer = litWriter("Removed '") & stringWriter() & litWriter('\'') & newlineWriter();
+    c.writeOut(writer, key)
+
+// -- Get Cli Command
+
+struct GetSettings =
+  CliPositional{string} key
+
+act updateAccessTime(Entry e) -> Entry
+  Entry(e.key, e.value, e.creationTime, timeNow())
+
+act getFromDb(Database db, GetSettings s) -> Either{Tuple{Database, Entry}, Error}
+  key   = s.key.val;
+  entry = db[key];
+  if db[key] as Entry e -> Tuple(db.updateEntry(updateAccessTime(e)), e)
+  else                  -> Error("No entry found with key: '" + key + '\'')
+
+act getCmd(GetSettings s) -> Option{Error}
+  c = consoleOpen().failOnError();
+  entryOrErr = transaction(getFromDb[s]);
+  if entryOrErr as Error err  -> err
+  if entryOrErr as Entry e    -> c.writeOut(cmdWriter() & newlineWriter(), e.value)
+
+// -- List Cli Command
+
+struct ListSettings =
+  bool time
+
+act updateTimeToLocal(Entry e) -> Entry
+  Entry(e.key, e.value, timeToLocal(e.creationTime), timeToLocal(e.accessTime))
+
+act listCmd(ListSettings s) -> Option{Error}
+  c   = consoleOpen().failOnError();
+  db  = loadDb().failOnError();
+  w   = listWriter(entryWriter(s.time), newlineWriter()) & newlineWriter();
+  c.writeOut(w, db.entries.map(updateTimeToLocal))
+
+// -- Cli App
+
+cli(cliCmd("get",   getCmd,     "Get an entry from the database."),
+    cliCmd("add",   addCmd,     "Add an entry to the database."),
+    cliCmd("rm",    removeCmd,  "Remove an entry from the database."),
+    cliCmd("list",  listCmd,    "List all commands stored in the database."),
+    cliAppInfo(
+      "Command DataBase", "Simple database for storing shell commands.",
+      Version(0, 1, 0)))
