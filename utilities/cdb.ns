@@ -123,19 +123,23 @@ act addCmd(AddSettings s) -> Option{Error}
 // -- Remove Cli Command
 
 struct RemoveSettings =
-  CliPositional{string} key
+  CliPositional{List{string}} keys
 
-act removeFromDb(Database db, string key) -> Either{Database, Error}
-  if db[key] is None  -> Error("Key '" + key + "' cannot be found")
-  else                -> db.removeEntry(key)
+act removeFromDb(Database db, List{string} keys) -> Either{Database, Error}
+  keys.fold(lambda (Either{Database, Error} res, string key) -> Either{Database, Error}
+    if res as Error     err -> err
+    if res as Database  db ->
+      if db[key] is None  -> Error("Key '" + key + "' cannot be found")
+      else                -> db.removeEntry(key)
+  , Either{Database, Error}(db))
 
 act removeCmd(RemoveSettings s) -> Option{Error}
-  c   = consoleOpen().failOnError();
-  key = s.key.val;
-  if transaction(removeFromDb[key]) as Error err  -> fail(err)
+  c     = consoleOpen().failOnError();
+  keys  = s.keys.val;
+  if transaction(removeFromDb[keys]) as Error err  -> fail(err)
   else ->
-    writer = litWriter("Removed '") & stringWriter() & litWriter('\'') & newlineWriter();
-    c.writeOut(writer, key)
+    writer = listWriter(litWriter("Removed '") & stringWriter() & litWriter('\'') & newlineWriter());
+    c.writeOut(writer, keys)
 
 // -- Get Cli Command
 
@@ -208,10 +212,10 @@ act importCmd(ImportSettings s) -> Option{Error}
 
 cli(cliCmd("get",     getCmd,     "Get an entry from the database."),
     cliCmd("add",     addCmd,     "Add an entry to the database."),
-    cliCmd("rm",      removeCmd,  "Remove an entry from the database."),
+    cliCmd("rm",      removeCmd,  "Remove entries from the database."),
     cliCmd("list",    listCmd,    "List all commands stored in the database."),
     cliCmd("export",  exportCmd,  "Export the database to a json file."),
     cliCmd("import",  importCmd,  "Import a database json file."),
     cliAppInfo(
       "Command DataBase", "Simple database for storing shell commands.",
-      Version(0, 2, 0)))
+      Version(0, 3, 0)))
