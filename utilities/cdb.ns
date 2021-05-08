@@ -99,12 +99,12 @@ fun entryWriter(bool includeTime) -> Writer{Entry}
 
 struct AddSettings =
   CliPositional{string}               key,
-  CliPositional{Path}                 path,
+  CliPositional{Option{Path}}         path,
   CliPositional{Option{List{string}}} args
 
 act createCmd(AddSettings s) -> Either{Cmd, Error}
   args = (s.args.val ?? List{string}());
-  absPath = pathAbsolute(s.path.val);
+  absPath = pathAbsolute(s.path.val ?? pathCurrent());
   if !fileExists(absPath) -> Error("No file found at path: '" + absPath + '\'')
   else                    -> Cmd(absPath, args)
 
@@ -218,4 +218,4 @@ cli(cliCmd("get",     getCmd,     "Get an entry from the database."),
     cliCmd("import",  importCmd,  "Import a database json file."),
     cliAppInfo(
       "Command DataBase", "Simple database for storing shell commands.",
-      Version(0, 3, 0)))
+      Version(0, 4, 0)))
