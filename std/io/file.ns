@@ -116,9 +116,16 @@ act fileCreatePath(Path p) -> Option{Error}
   else                  -> actSeq(lazy fileCreatePath(p.parent()), lazy fileCreateDir(p))
 
 act fileRemove(Path p) -> Option{Error}
-  absPathStr = p.pathAbsolute().string();
-  if intrinsic{file_remove}(absPathStr) || intrinsic{file_remove_directory}(absPathStr) -> None()
-  else -> platformError("Failed to remove file: '" + absPathStr + "'")
+  invoke(impure lambda (int retry)
+  (
+    absPathStr = p.pathAbsolute().string();
+    deleted = intrinsic{file_remove}(absPathStr);
+    err     = platformErrorCode();
+    if deleted                                        -> None()
+    if retry == 0 && err == PlatformError.FileLocked  -> gcCollectBlocking(); self(++retry)
+    if intrinsic{file_remove_directory}(absPathStr)   -> None()
+    else -> platformError(err, "Failed to remove file: '" + absPathStr + "'")
+  ), 0)
 
 act fileRename(Path old, Path new) -> Option{Error}
   absOldPathStr = old.pathAbsolute().string();

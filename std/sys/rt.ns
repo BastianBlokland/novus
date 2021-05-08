@@ -141,7 +141,9 @@ act platform() Platform(intrinsic{runtime_platform}())
 act platformErrorCode() PlatformError(intrinsic{platform_error_code}())
 
 act platformError(string message = "")
-  code = platformErrorCode();
+  platformError(platformErrorCode(), message)
+
+act platformError(PlatformError code, string message = "")
   Error(code, message.isEmpty() ? code.string() : message + ": " + code.string())
 
 // -- Versions

@@ -22,6 +22,6 @@ act addCmd(AddSettings s) -> Option{Error}
   c   = consoleOpen().failOnError();
   cmd = createCmd(s).failOnError();
   key = s.key.val;
-  transaction(addToDb[cmd][key]).failOnError();
+  transaction(addToDb[cmd][key], TransactionFlags.Backup).failOnError();
   writer = litWriter("Added '") & stringWriter() & litWriter("': ") & cmdWriter() & newlineWriter();
   c.writeOut(writer, Tuple(key, cmd))
