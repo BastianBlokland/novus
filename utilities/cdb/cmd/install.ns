@@ -24,12 +24,20 @@ fun getJumpAlias(Shell s, Path programPath) -> string
   if s == Shell.CMD         -> "j=for /F \"usebackq delims=\" %A in (`" + programPath.string() + " get $*`) do cd %A"
   else                      -> ""
 
+fun getExecAlias(Shell s, Path programPath) -> string
+  if s == Shell.ZShell      -> "function e() { $(" + programPath.string() + " get $@); } # " + autoGenComment()
+  if s == Shell.Bash        -> "function e() { $(" + programPath.string() + " get $@); } # " + autoGenComment()
+  if s == Shell.PowerShell  -> "function e { & $(" + programPath.string() + " get $args) } # " + autoGenComment()
+  if s == Shell.CMD         -> "j=for /F \"usebackq delims=\" %A in (`" + programPath.string() + " get $*`) do %A"
+  else                      -> ""
+
 act installCmd(InstallSettings s) -> Option{Error}
   homePath    = getHomePath().failOnError();
   configPath  = s.shellConfigPath.val ?? (homePath / getShellConfigName(s.shell.val));
   if !fileExists(configPath) -> fail("Shell configuration file not found: " + configPath)
   else ->
     configFile = fileOpen(configPath, FileMode.Append).failOnError();
-    configFile.write("\n" + getJumpAlias(s.shell.val, pathProgram()) + '\n');
+    configFile.write("\n" + getJumpAlias(s.shell.val, pathProgram()) + '\n' +
+                            getExecAlias(s.shell.val, pathProgram()) + '\n');
     print("Added aliases to: '" + configPath + '\'');
     print("Please restart your shell or refresh the configuration file.")
