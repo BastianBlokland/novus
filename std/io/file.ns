@@ -106,14 +106,19 @@ act fileSize(Path p) -> Either{ByteSize, Error}
   if size >= 0  -> ByteSize(size)
   else          -> platformError("Failed to get file size for: '" + absPathStr + "'")
 
+act fileCreate(Path p) -> Option{Error}
+  absPath = p.pathAbsolute();
+  if fileExists(absPath) -> None()
+  else -> actSeq(lazy fileCreatePath(absPath.parent()), lazy fileWrite(absPath, ""))
+
 act fileCreateDir(Path p) -> Option{Error}
   absPathStr = p.pathAbsolute().string();
   if intrinsic{file_create_directory}(absPathStr) -> None()
   else -> platformError("Failed to create directory: '" + absPathStr + "'")
 
 act fileCreatePath(Path p) -> Option{Error}
-  if p.fileDirExists()  -> None()
-  else                  -> actSeq(lazy fileCreatePath(p.parent()), lazy fileCreateDir(p))
+  if p.fileExists() -> None()
+  else              -> actSeq(lazy fileCreatePath(p.parent()), lazy fileCreateDir(p))
 
 act fileRemove(Path p)
   invoke(impure lambda (int retry) -> Option{Error}

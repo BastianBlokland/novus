@@ -36,17 +36,17 @@ fun mergeEntries(Database a, Database b) -> Database
 
 // -- Save / Load
 
-act getDbPath()       getHomePath().map(lambda (Path p) p / ".cdb")
-act getDbBackupPath() getHomePath().map(lambda (Path p) p / ".cdb.back")
+act getDbPath()       getHomePath().map(lambda (PathAbsolute p) p / ".cdb")
+act getDbBackupPath() getHomePath().map(lambda (PathAbsolute p) p / ".cdb.back")
 
 act saveDb(Database db, Path p) -> Option{Error}
   p.fileWrite(jsonWriter{Database}(), db)
 
-act saveDb(Database db)     getDbPath().map(impure lambda (Path p) saveDb(db, p))
-act saveDbBack(Database db) getDbBackupPath().map(impure lambda (Path p) saveDb(db, p))
+act saveDb(Database db)     getDbPath().map(impure lambda (PathAbsolute p) saveDb(db, p))
+act saveDbBack(Database db) getDbBackupPath().map(impure lambda (PathAbsolute p) saveDb(db, p))
 
-act loadDb()      getDbPath().map(impure lambda (Path p) loadDb(p))
-act loadDbBack()  getDbBackupPath().map(impure lambda (Path p) loadDb(p))
+act loadDb()      getDbPath().map(impure lambda (PathAbsolute p) loadDb(p))
+act loadDbBack()  getDbBackupPath().map(impure lambda (PathAbsolute p) loadDb(p))
 
 act loadDb(Path p) -> Either{Database, Error}
   if p.fileOpen(FileMode.OpenReadOnly) as File f  -> f.readToEnd(jsonParser{Database}())

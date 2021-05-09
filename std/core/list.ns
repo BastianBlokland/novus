@@ -352,6 +352,10 @@ act for{T, TResult}(T from, T to, action{T, TResult} a)
 act for{T, TResult}(T to, action{T, TResult} a)
   rangeList(T(), to).map(a)
 
+act first{T}(List{T} l, action{T, bool} pred) -> Option{T}
+  if l as LNode{T} n  -> pred(n.val) ? n.val : n.next.first(pred)
+  if l is LEnd        -> None()
+
 // -- Tests
 
 assertEq(List(42), List(42))
