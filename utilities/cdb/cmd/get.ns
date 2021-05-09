@@ -4,6 +4,8 @@ import "../database.ns"
 import "../writer.ns"
 
 struct GetSettings =
+  bool                  quotePath,
+  bool                  doubleQuotePath,
   CliPositional{string} key
 
 act updateAccessTime(Entry e) -> Entry
@@ -15,8 +17,13 @@ act getFromDb(Database db, GetSettings s) -> Either{Tuple{Database, Entry}, Erro
   if db[key] as Entry e -> Tuple(db.updateEntry(updateAccessTime(e)), e)
   else                  -> Error("No entry found with key: '" + key + '\'')
 
+fun getCmdWriteFlags(GetSettings s) -> CmdWriteFlags
+  if s.doubleQuotePath  -> CmdWriteFlags.DoubleQuotePath
+  if s.quotePath        -> CmdWriteFlags.QuotePath
+  else                  -> CmdWriteFlags.None
+
 act getCmd(GetSettings s) -> Option{Error}
   c = consoleOpen().failOnError();
   entryOrErr = transaction(getFromDb[s]);
   if entryOrErr as Error err  -> err
-  if entryOrErr as Entry e    -> c.writeOut(cmdWriter() & newlineWriter(), e.value)
+  if entryOrErr as Entry e    -> c.writeOut(cmdWriter(s.getCmdWriteFlags()) & newlineWriter(), e.value)

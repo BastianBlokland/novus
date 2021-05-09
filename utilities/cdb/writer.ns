@@ -1,8 +1,21 @@
 import "database.ns"
 
-fun cmdWriter() -> Writer{Cmd}
+enum CmdWriteFlags =
+  None            : 0b00,
+  QuotePath       : 0b01,
+  DoubleQuotePath : 0b10
+
+fun cmdQuoteWriter(CmdWriteFlags flags) -> Writer{None}
+  singleQuote = (flags & CmdWriteFlags.QuotePath) != 0;
+  doubleQuote = (flags & CmdWriteFlags.DoubleQuotePath) != 0;
+  (singleQuote || doubleQuote) ? litWriter(doubleQuote ? '"' : '\'') : noneWriter()
+
+fun cmdQuotedWriter{T}(Writer{T} writer, CmdWriteFlags flags) -> Writer{T}
+  cmdQuoteWriter(flags) & writer & cmdQuoteWriter(flags)
+
+fun cmdWriter(CmdWriteFlags flags = CmdWriteFlags.None) -> Writer{Cmd}
   (
-    pathAbsWriter() & ?(litWriter(' ') & listWriter(stringWriter(), litWriter(' ')))
+    cmdQuotedWriter(pathAbsWriter(), flags) & ?(litWriter(' ') & listWriter(stringWriter(), litWriter(' ')))
   ).map(lambda (Cmd c) Tuple(c.path, !c.args.isEmpty() ? c.args : None()))
 
 fun entryTimeWriter() -> Writer{Entry}
