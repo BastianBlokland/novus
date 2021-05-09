@@ -25,8 +25,8 @@ fun getJumpAlias(Shell s, Path programPath) -> string
   else                      -> ""
 
 fun getExecAlias(Shell s, Path programPath) -> string
-  if s == Shell.ZShell      -> "function e() { $(" + programPath.string() + " get $@); } # " + autoGenComment()
-  if s == Shell.Bash        -> "function e() { $(" + programPath.string() + " get $@); } # " + autoGenComment()
+  if s == Shell.ZShell      -> "function e() { eval \"$(" + programPath.string() + " get $@ --quote-path)\"; } # " + autoGenComment()
+  if s == Shell.Bash        -> "function e() { eval \"$(" + programPath.string() + " get $@ --quote-path)\"; } # " + autoGenComment()
   if s == Shell.PowerShell  -> "function e { $c = $(" + programPath.string() + " get $args --quote-path); if ($c) { Invoke-Expression \"& $c\" } } # " + autoGenComment()
   if s == Shell.CMD         -> "e=for /f \"usebackq delims=\" %A in (`" + programPath.string() + " get $* --double-quote-path`) do call %A"
   else                      -> ""
