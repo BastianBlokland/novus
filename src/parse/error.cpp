@@ -106,6 +106,14 @@ static auto getError(std::ostream& out, const ArgumentListDecl& argList) -> void
       out << "Invalid type specifier for argument '" << getIdOrUnkown(arg.getIdentifier()) << "'";
       return;
     }
+    if (arg.getIdentifier().getKind() != lex::TokenKind::Identifier) {
+      out << "Invalid argument identifier '" << arg.getIdentifier() << "'";
+      return;
+    }
+    if (!arg.validate()) {
+      out << "Invalid argument '" << getIdOrUnkown(arg.getIdentifier()) << "'";
+      return;
+    }
   }
 
   out << "Invalid argument list";

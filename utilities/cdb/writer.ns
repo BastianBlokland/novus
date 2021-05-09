@@ -1,0 +1,31 @@
+import "database.ns"
+
+enum CmdWriteFlags =
+  None            : 0b00,
+  QuotePath       : 0b01,
+  DoubleQuotePath : 0b10
+
+fun cmdQuoteWriter(CmdWriteFlags flags) -> Writer{None}
+  singleQuote = (flags & CmdWriteFlags.QuotePath) != 0;
+  doubleQuote = (flags & CmdWriteFlags.DoubleQuotePath) != 0;
+  (singleQuote || doubleQuote) ? litWriter(doubleQuote ? '"' : '\'') : noneWriter()
+
+fun cmdQuotedWriter{T}(Writer{T} writer, CmdWriteFlags flags) -> Writer{T}
+  cmdQuoteWriter(flags) & writer & cmdQuoteWriter(flags)
+
+fun cmdWriter(CmdWriteFlags flags = CmdWriteFlags.None) -> Writer{Cmd}
+  (
+    cmdQuotedWriter(pathAbsWriter(), flags) & ?(litWriter(' ') & listWriter(stringWriter(), litWriter(' ')))
+  ).map(lambda (Cmd c) Tuple(c.path, !c.args.isEmpty() ? c.args : None()))
+
+fun entryTimeWriter() -> Writer{Entry}
+  timeWriter = dateTimePrettyWriter(PrettyTimeFlags.None);
+  (
+    padUntilWriter(20) & litWriter("Creation ") & padUntilWriter(30) & timeWriter & newlineWriter() &
+    padUntilWriter(20) & litWriter("Access ")   & padUntilWriter(30) & timeWriter
+  ).map(lambda (Entry e) Tuple(e.creationTime, e.accessTime))
+
+fun entryWriter(bool includeTime) -> Writer{Entry}
+  (
+    stringWriter().padLeftWriter(15) & litWriter(" -> ") & cmdWriter() &  ?(newlineWriter() & entryTimeWriter())
+  ).map(lambda (Entry e) Tuple(e.key, e.value, includeTime ? e : None()))

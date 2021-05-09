@@ -396,7 +396,7 @@ fun timezonePrettyWriter() -> Writer{Timezone}
 // Example output: 'Friday 24 March 2021'
 fun datePrettyWriter() -> Writer{Date}
   (
-    weekDayWriter() & litWriter(' ') &
+    weekDayWriter() & litWriter(' ')  &
     txtIntWriter()  & litWriter(' ')  &
     monthWriter()   & litWriter(' ')  &
     txtIntWriter()

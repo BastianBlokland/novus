@@ -1,0 +1,18 @@
+import "std.ns"
+
+import "../database.ns"
+
+struct ExportSettings =
+  bool                        minify,
+  CliPositional{Option{Path}} path
+
+act getExportStream(ExportSettings s) -> Either{sys_stream, Error}
+  if s.path.val as Path p -> p.fileOpen(FileMode.Create).map(lambda (File f) f.stream)
+  else                    -> consoleOpen().map(lambda (Console c) c.stdOut)
+
+act exportCmd(ExportSettings s) -> Option{Error}
+  db      = loadDb().failOnError();
+  stream  = getExportStream(s).failOnError();
+  indent  = s.minify ? "" : "  ";
+  newline = s.minify ? WriterNewlineMode.None : WriterNewlineMode.Lf;
+  stream.write(jsonWriter{Database}().run(db, indent, newline))

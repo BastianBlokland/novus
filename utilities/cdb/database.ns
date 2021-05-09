@@ -1,0 +1,79 @@
+import "std.ns"
+
+// -- Types
+
+struct Cmd =
+  PathAbsolute  path,
+  List{string}  args
+
+struct Entry =
+  string    key,
+  Cmd       value,
+  DateTime  creationTime,
+  DateTime  accessTime
+
+struct Database =
+  List{Entry} entries
+
+// -- Operators
+
+fun [](Database db, string key) -> Option{Entry}
+  db.entries.first(lambda (Entry e) e.key == key)
+
+// -- Utilities
+
+fun addEntry(Database db, Entry entry) -> Database
+  Database(db.entries :: entry)
+
+fun updateEntry(Database db, Entry entry) -> Database
+  Database(db.entries.map(lambda (Entry e) e.key == entry.key ? entry : e))
+
+fun removeEntry(Database db, string key) -> Database
+  Database(db.entries.filter(lambda (Entry e) e.key != key))
+
+fun mergeEntries(Database a, Database b) -> Database
+  Database(a.entries :: b.entries.filter(lambda (Entry e) a[e.key] is None))
+
+// -- Save / Load
+
+act getDbPath()       getHomePath().map(lambda (PathAbsolute p) p / ".cdb")
+act getDbBackupPath() getHomePath().map(lambda (PathAbsolute p) p / ".cdb.back")
+
+act saveDb(Database db, Path p) -> Option{Error}
+  p.fileWrite(jsonWriter{Database}(), db)
+
+act saveDb(Database db)     getDbPath().map(impure lambda (PathAbsolute p) saveDb(db, p))
+act saveDbBack(Database db) getDbBackupPath().map(impure lambda (PathAbsolute p) saveDb(db, p))
+
+act loadDb()      getDbPath().map(impure lambda (PathAbsolute p) loadDb(p))
+act loadDbBack()  getDbBackupPath().map(impure lambda (PathAbsolute p) loadDb(p))
+
+act loadDb(Path p) -> Either{Database, Error}
+  if p.fileOpen(FileMode.OpenReadOnly) as File f  -> f.readToEnd(jsonParser{Database}())
+  else                                            -> Database(List{Entry}())
+
+// -- Transaction
+
+enum TransactionFlags =
+  None   : 0b0,
+  Backup : 0b1
+
+act transaction(
+    action{Database, Either{Database, Error}} delegate,
+    TransactionFlags                          flags = TransactionFlags.None
+  ) -> Option{Error}
+  transaction{None}(impure lambda (Database db)
+    delegate(db).map(impure lambda (Database newDb) Tuple(newDb, None()))
+  , flags).eitherGet(Type{Error}())
+
+act transaction{T}(
+    action{Database, Either{Tuple{Database, T}, Error}} delegate,
+    TransactionFlags                                    flags = TransactionFlags.None
+  ) -> Either{T, Error}
+  dbOrErr = loadDb();
+  if dbOrErr as Error     err -> err
+  if dbOrErr as Database  db  ->
+    ((flags & TransactionFlags.Backup) != 0 ? db.saveDbBack() : None());
+    resOrErr = delegate(db);
+    if resOrErr as Error              actErr -> actErr
+    if resOrErr as Tuple{Database, T} res    -> saveDb(res.f1) as Error saveErr ? saveErr : res.f2

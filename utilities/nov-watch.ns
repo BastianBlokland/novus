@@ -127,9 +127,9 @@ act clearTerminal(Context ctx)
 
 // -- App
 
-cli(cliCmd("validate",  validateCmd,  "Validate the program."),
-    cliCmd("compile",   compileCmd,   "Compile the program."),
-    cliCmd("evaluate",  evaluateCmd,  "Evaluate the program."),
+cli(cliCmd("validate",  validateCmd,  "Validate the program"),
+    cliCmd("compile",   compileCmd,   "Compile the program"),
+    cliCmd("evaluate",  evaluateCmd,  "Evaluate the program"),
     cliAppInfo(
       "Novus Watch", "Utility to watch novus source files for changes.",
       Version(0, 1, 0)))

@@ -28,6 +28,18 @@ fun toJson(string v) -> JsonValue
 fun toJson(None v) -> JsonValue
   JsonNull()
 
+fun toJson(Path p) -> JsonValue
+  p.string()
+
+fun toJson(PathRelative p) -> JsonValue
+  p.string()
+
+fun toJson(PathAbsolute p) -> JsonValue
+  p.string()
+
+fun toJson(DateTime dt) -> JsonValue
+  timeUnixWriter().run(dt)
+
 fun toJson{T}(Option{T} v) -> JsonValue
   if v as T vt  -> toJson(vt)
   else          -> JsonNull()
@@ -105,6 +117,22 @@ fun fromJson(JsonValue jv, Type{string} t) -> Either{string, Error}
 fun fromJson(JsonValue jv, Type{None} t) -> Either{None, Error}
   if jv is JsonNull -> None()
   else              -> Error("Expected a null, got a " + jsonValueType(jv))
+
+fun fromJson(JsonValue jv, Type{Path} t) -> Either{Path, Error}
+  if jv as string s -> pathParser().run(s)
+  else              -> Error("Expected a string, got a " + jsonValueType(jv))
+
+fun fromJson(JsonValue jv, Type{PathRelative} t) -> Either{PathRelative, Error}
+  if jv as string s -> pathRelParser().run(s)
+  else              -> Error("Expected a string, got a " + jsonValueType(jv))
+
+fun fromJson(JsonValue jv, Type{PathAbsolute} t) -> Either{PathAbsolute, Error}
+  if jv as string s -> pathAbsParser().run(s)
+  else              -> Error("Expected a string, got a " + jsonValueType(jv))
+
+fun fromJson(JsonValue jv, Type{DateTime} t) -> Either{DateTime, Error}
+  if jv as string s -> timeUnixParser().run(s)
+  else              -> Error("Expected a string, got a " + jsonValueType(jv))
 
 fun fromJson{T}(JsonValue jv, Type{Option{T}} t) -> Either{Option{T}, Error}
   if jv is JsonNull -> Option{T}()
