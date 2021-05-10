@@ -16,3 +16,5 @@ act exportCmd(ExportSettings s) -> Option{Error}
   indent  = s.minify ? "" : "  ";
   newline = s.minify ? WriterNewlineMode.None : WriterNewlineMode.Lf;
   stream.write(jsonWriter{Database}().run(db, indent, newline))
+
+fun cliIsInteruptable(Type{ExportSettings} s) true

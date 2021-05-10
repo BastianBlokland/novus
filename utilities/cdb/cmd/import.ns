@@ -16,3 +16,5 @@ act importCmd(ImportSettings s) -> Option{Error}
   json        = stream.readToEnd().failOnError();
   importedDb  = jsonParser{Database}().run(json).failOnError();
   saveDb(mergeEntries(importedDb, existingDb))
+
+fun cliIsInteruptable(Type{ImportSettings} s) true

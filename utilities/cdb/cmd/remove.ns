@@ -20,3 +20,5 @@ act removeCmd(RemoveSettings s) -> Option{Error}
   else ->
     writer = listWriter(litWriter("Removed '") & stringWriter() & litWriter('\'') & newlineWriter());
     c.writeOut(writer, keys)
+
+fun cliIsInteruptable(Type{RemoveSettings} s) false

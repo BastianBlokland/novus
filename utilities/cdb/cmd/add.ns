@@ -25,3 +25,5 @@ act addCmd(AddSettings s) -> Option{Error}
   transaction(addToDb[cmd][key], TransactionFlags.Backup).failOnError();
   writer = litWriter("Added '") & stringWriter() & litWriter("': ") & cmdWriter() & newlineWriter();
   c.writeOut(writer, Tuple(key, cmd))
+
+fun cliIsInteruptable(Type{AddSettings} s) false

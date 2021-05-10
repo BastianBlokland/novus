@@ -27,3 +27,5 @@ act getCmd(GetSettings s) -> Option{Error}
   entryOrErr = transaction(getFromDb[s]);
   if entryOrErr as Error err  -> err
   if entryOrErr as Entry e    -> c.writeOut(cmdWriter(s.getCmdWriteFlags()) & newlineWriter(), e.value)
+
+fun cliIsInteruptable(Type{GetSettings} s) false

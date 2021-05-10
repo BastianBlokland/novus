@@ -3,15 +3,32 @@ import "std.ns"
 import "../database.ns"
 import "../writer.ns"
 
+enum ListSortMode = Key, Path, CreationTime, AccessTime
+
 struct ListSettings =
-  bool time
+  bool          time,
+  ListSortMode  sort
 
 act updateTimeToLocal(Entry e) -> Entry
   Entry(e.key, e.value, timeToLocal(e.creationTime), timeToLocal(e.accessTime))
+
+fun orderListEntry(Entry e1, Entry e2, ListSettings s)
+  if s.sort == ListSortMode.CreationTime  -> e1.creationTime > e2.creationTime
+  if s.sort == ListSortMode.AccessTime    -> e1.accessTime > e2.accessTime
+  if s.sort == ListSortMode.Path          -> e1.value.path.string() < e2.value.path.string()
+  else                                    -> e1.key < e2.key
+
+fun sortListEntries(List{Entry} entries, ListSettings s)
+  entries.sort(orderListEntry[s])
+
+fun cliDefaults(Type{ListSettings} t)
+  CliDefault("sort", "key") :: List{CliDefault}()
 
 act listCmd(ListSettings s) -> Option{Error}
   c   = consoleOpen().failOnError();
   db  = loadDb().failOnError();
   w   = listWriter(entryWriter(s.time), newlineWriter()) & newlineWriter();
   if db.entries.isEmpty() -> c.writeOut("No entries in database\n")
-  else                    -> c.writeOut(w, db.entries.map(updateTimeToLocal))
+  else                    -> c.writeOut(w, db.entries.map(updateTimeToLocal).sortListEntries(s))
+
+fun cliIsInteruptable(Type{ListSettings} s) false
