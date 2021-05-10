@@ -30,3 +30,5 @@ act listCmd(ListSettings s) -> Option{Error}
   w   = listWriter(entryWriter(s.time), newlineWriter()) & newlineWriter();
   if db.entries.isEmpty() -> c.writeOut("No entries in database\n")
   else                    -> c.writeOut(w, db.entries.map(updateTimeToLocal).sortListEntries(s))
+
+fun cliIsInteruptable(Type{ListSettings} s) false

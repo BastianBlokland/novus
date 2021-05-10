@@ -46,3 +46,5 @@ act installCmd(InstallSettings s) -> Option{Error}
                           getExecAlias(s.shell.val, pathProgram()) + '\n');
   print("Added aliases to: '" + configPath + '\'');
   print("Please restart your shell or refresh the configuration file.")
+
+fun cliIsInteruptable(Type{InstallSettings} s) false

@@ -11,3 +11,5 @@ act undoCmd(UndoSettings s) -> Option{Error}
     db = loadDb(backupPath).failOnError();
     saveDb(db).failOnError();
     fileRemove(backupPath)
+
+fun cliIsInteruptable(Type{UndoSettings} s) false
