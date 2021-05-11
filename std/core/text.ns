@@ -134,6 +134,16 @@ fun split(string str, function{char, bool} pred)
       else                    -> self(--startIdx, endIdx, result)
   , --str.length(), --str.length(), List{string}())
 
+fun splitWithSep(string str, function{char, bool} pred)
+  invoke(
+    lambda (int startIdx, int endIdx, List{string} result)
+      if startIdx < 0         -> startIdx == endIdx ? result : str[startIdx, ++endIdx] :: result
+      if pred(str[startIdx])  -> startIdx == endIdx ?
+        self(--startIdx, --endIdx, str[startIdx, ++startIdx] :: result) :
+        self(--startIdx, --startIdx, str[startIdx, ++endIdx] :: result)
+      else                    -> self(--startIdx, endIdx, result)
+  , --str.length(), --str.length(), List{string}())
+
 fun trimStart(string str, function{char, bool} pred = isWhitespace)
   invoke(
     lambda (int idx)
@@ -339,6 +349,16 @@ assert("    ".split(equals{char}[' ']).isEmpty())
 assertEq(" h e l l o ".split(equals{char}[' ']), "h" :: "e" :: "l" :: "l" :: "o")
 assertEq("hello-world".split(equals{char}[' ']), List("hello-world"))
 assertEq("".split(equals{char}[' ']), List{string}())
+
+assertEq("hello-world".splitWithSep(equals{char}['-']), "hello" :: "-world")
+assertEq("lineA_lineB_lineC_".splitWithSep(equals{char}['_']), "lineA" :: "_lineB" :: "_lineC" :: "_")
+assertEq("---hello-world--".splitWithSep(equals{char}['-']), "-" :: "-" :: "-hello" :: "-world" :: "-" :: "-")
+assertEq("---hello-world--".splitWithSep(equals{char}['-']).join(), "---hello-world--")
+assertEq("-- he-lo-w o rld- -".splitWithSep(equals{char}['-'] | equals{char}[' ']).join(), "-- he-lo-w o rld- -")
+assertEq("    ".splitWithSep(equals{char}[' ']), " " :: " " :: " " :: " ")
+assertEq(" h e l l o ".splitWithSep(equals{char}[' ']), " h" :: " e" :: " l" :: " l" :: " o" :: " ")
+assertEq("hello-world".splitWithSep(equals{char}[' ']), List("hello-world"))
+assertEq("".splitWithSep(equals{char}[' ']), List{string}())
 
 assertEq("".trimStart(), "")
 assertEq(" ".trimStart(), "")

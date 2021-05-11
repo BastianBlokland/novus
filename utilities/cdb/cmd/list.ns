@@ -7,7 +7,8 @@ enum ListSortMode = Key, Path, CreationTime, AccessTime
 
 struct ListSettings =
   bool          time,
-  ListSortMode  sort
+  ListSortMode  sort,
+  Option{int}   width
 
 act updateTimeToLocal(Entry e) -> Entry
   Entry(e.key, e.value, timeToLocal(e.creationTime), timeToLocal(e.accessTime))
@@ -21,14 +22,19 @@ fun orderListEntry(Entry e1, Entry e2, ListSettings s)
 fun sortListEntries(List{Entry} entries, ListSettings s)
   entries.sort(orderListEntry[s])
 
+fun getMaxListEntryKeySize(List{Entry} entries)
+  entries.fold(lambda (int max, Entry e) e.key.length() > max ? e.key.length() : max)
+
 fun cliDefaults(Type{ListSettings} t)
   CliDefault("sort", "key") :: List{CliDefault}()
 
 act listCmd(ListSettings s) -> Option{Error}
-  c   = consoleOpen().failOnError();
-  db  = loadDb().failOnError();
-  w   = listWriter(entryWriter(s.time), newlineWriter()) & newlineWriter();
+  c             = consoleOpen().failOnError();
+  db            = loadDb().failOnError();
+  maxKeyWidth   = getMaxListEntryKeySize(db.entries);
+  maxTotalWidth = s.width ?? (c.termGetWidth() ?? 80);
+  writer        = listWriter(entryWriter(s.time, maxKeyWidth, maxTotalWidth), newlineWriter()) & newlineWriter();
   if db.entries.isEmpty() -> c.writeOut("No entries in database\n")
-  else                    -> c.writeOut(w, db.entries.map(updateTimeToLocal).sortListEntries(s))
+  else                    -> c.writeOut(writer, db.entries.map(updateTimeToLocal).sortListEntries(s))
 
 fun cliIsInteruptable(Type{ListSettings} s) false

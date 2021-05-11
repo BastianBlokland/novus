@@ -232,6 +232,16 @@ fun wrapWriter{T}(Writer{T} w, int maxColumn, Writer{None} wrapWriter = newlineW
     else                                                                  -> newState
   )
 
+fun splitWriter{T}(Writer{T} w, Writer{string} partWriter = stringWriter(), List{char} seperators = ' ' :: '_' :: '/')
+  partsWriter = listWriter(partWriter);
+  Writer(lambda (WriterState s, T v)
+    begin     = s.curResult.length();
+    newState  = w(s, v);
+    newText   = newState.curResult[begin, newState.curResult.length()];
+    newParts  = newText.splitWithSep(lambda (char c) seperators.contains(c));
+    partsWriter(s, newParts)
+  )
+
 fun stringWriter()
   Writer(lambda (WriterState s, string str)
     s.write(str)
@@ -491,3 +501,7 @@ assertEq(
 assertEq(
   w = stringWriter() & litWriter(' ') & txtIntWriter();
   w(Tuple("hello", 42)), "hello 42")
+
+assertEq(
+  w = litWriter("Hi!") & splitWriter(stringWriter(), litWriter('\'') & stringWriter() & litWriter('\''));
+  w("Hello/how_is/it / going?"), "Hi!'Hello''/how''_is''/it'' ''/'' going?'")

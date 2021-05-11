@@ -25,7 +25,9 @@ fun entryTimeWriter() -> Writer{Entry}
     padUntilWriter(20) & litWriter("Access ")   & padUntilWriter(30) & timeWriter
   ).map(lambda (Entry e) Tuple(e.creationTime, e.accessTime))
 
-fun entryWriter(bool includeTime) -> Writer{Entry}
+fun entryWriter(bool includeTime, int padKeyUntilCol = 15, int maxCol = 80) -> Writer{Entry}
   (
-    stringWriter().padLeftWriter(15) & litWriter(" -> ") & cmdWriter() &  ?(newlineWriter() & entryTimeWriter())
+    stringWriter().padLeftWriter(padKeyUntilCol) & litWriter(" -> ") &
+    splitWriter(cmdWriter(), wrapWriter(stringWriter(), maxCol, newlineWriter() & padUntilWriter(padKeyUntilCol + 4))) &
+    ?(newlineWriter() & entryTimeWriter())
   ).map(lambda (Entry e) Tuple(e.key, e.value, includeTime ? e : None()))
