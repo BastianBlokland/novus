@@ -7,6 +7,7 @@ enum ListSortMode = Key, Path, CreationTime, AccessTime
 
 struct ListSettings =
   bool          time,
+  bool          noColor,
   ListSortMode  sort,
   Option{int}   width
 
@@ -33,7 +34,8 @@ act listCmd(ListSettings s) -> Option{Error}
   db            = loadDb().failOnError();
   maxKeyWidth   = getMaxListEntryKeySize(db.entries);
   maxTotalWidth = s.width ?? (c.termGetWidth() ?? 80);
-  writer        = listWriter(entryWriter(s.time, maxKeyWidth, maxTotalWidth), newlineWriter()) & newlineWriter();
+  color         = !s.noColor && c.allowColor();
+  writer        = listWriter(entryWriter(s.time, maxKeyWidth, maxTotalWidth, color), newlineWriter()) & newlineWriter();
   if db.entries.isEmpty() -> c.writeOut("No entries in database\n")
   else                    -> c.writeOut(writer, db.entries.map(updateTimeToLocal).sortListEntries(s))
 

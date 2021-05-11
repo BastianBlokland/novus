@@ -18,16 +18,19 @@ fun cmdWriter(CmdWriteFlags flags = CmdWriteFlags.None) -> Writer{Cmd}
     cmdQuotedWriter(pathAbsWriter(), flags) & ?(litWriter(' ') & listWriter(stringWriter(), litWriter(' ')))
   ).map(lambda (Cmd c) Tuple(c.path, !c.args.isEmpty() ? c.args : None()))
 
-fun entryTimeWriter() -> Writer{Entry}
+fun entryDimWriter{T}(Writer{T} w, bool color)
+  color ? w.ttyStyledTextWriter(TtyStyle.FgBrightBlack) : w
+
+fun entryTimeWriter(int padUntilCol = 10, bool color = false) -> Writer{Entry}
   timeWriter = dateTimePrettyWriter(PrettyTimeFlags.None);
   (
-    padUntilWriter(20) & litWriter("Creation ") & padUntilWriter(30) & timeWriter & newlineWriter() &
-    padUntilWriter(20) & litWriter("Access ")   & padUntilWriter(30) & timeWriter
-  ).map(lambda (Entry e) Tuple(e.creationTime, e.accessTime))
+    padUntilWriter(padUntilCol) & (litWriter("> Access: ") & timeWriter).entryDimWriter(color) & newlineWriter() &
+    padUntilWriter(padUntilCol) & (litWriter("> Creation: ") & timeWriter).entryDimWriter(color)
+  ).map(lambda (Entry e) Tuple(e.accessTime, e.creationTime))
 
-fun entryWriter(bool includeTime, int padKeyUntilCol = 15, int maxCol = 80) -> Writer{Entry}
+fun entryWriter(bool includeTime, int padKeyUntilCol = 15, int maxCol = 80, bool color = false) -> Writer{Entry}
   (
     stringWriter().padLeftWriter(padKeyUntilCol) & litWriter(" -> ") &
     splitWriter(cmdWriter(), wrapWriter(stringWriter(), maxCol, newlineWriter() & padUntilWriter(padKeyUntilCol + 4))) &
-    ?(newlineWriter() & entryTimeWriter())
+    ?(newlineWriter() & entryTimeWriter(padKeyUntilCol + 2, color))
   ).map(lambda (Entry e) Tuple(e.key, e.value, includeTime ? e : None()))
