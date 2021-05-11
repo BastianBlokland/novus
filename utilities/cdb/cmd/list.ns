@@ -7,7 +7,8 @@ enum ListSortMode = Key, Path, CreationTime, AccessTime
 
 struct ListSettings =
   bool          time,
-  ListSortMode  sort
+  ListSortMode  sort,
+  Option{int}   width
 
 act updateTimeToLocal(Entry e) -> Entry
   Entry(e.key, e.value, timeToLocal(e.creationTime), timeToLocal(e.accessTime))
@@ -27,7 +28,7 @@ fun cliDefaults(Type{ListSettings} t)
 act listCmd(ListSettings s) -> Option{Error}
   c   = consoleOpen().failOnError();
   db  = loadDb().failOnError();
-  w   = listWriter(entryWriter(s.time), newlineWriter()) & newlineWriter();
+  w   = listWriter(entryWriter(s.time, s.width ?? (c.termGetWidth() ?? 80)), newlineWriter()) & newlineWriter();
   if db.entries.isEmpty() -> c.writeOut("No entries in database\n")
   else                    -> c.writeOut(w, db.entries.map(updateTimeToLocal).sortListEntries(s))
 
