@@ -22,4 +22,4 @@ cli(cliCmd("get",     getCmd,     "Get an entry from the database"),
     cliCmd("import",  importCmd,  "Import a database json file"),
     cliAppInfo(
       "Command DataBase", "Simple database for storing shell commands.",
-      Version(0, 6, 0)))
+      Version(0, 7, 0)))
