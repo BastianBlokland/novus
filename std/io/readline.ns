@@ -108,79 +108,77 @@ fun rlStateWriter(RlSettings s) -> Writer{RlState}
   (
     ttyResetLineWriter() & rlDimWriter(s, stringWriter()) &
     stringWriter() & rlResultWriter(s) & ttyCursorColWriter()
-  ).map(lambda (RlState state) Tuple(s.prompt, state.line, state, state.cursor + 1 + s.prompt.length()))
+  ).map(lambda (RlState state) Tuple(s.prompt, state.text, state, state.cursor + 1 + s.prompt.length()))
 
 act rlRenderState(RlSettings s, RlState state, Writer{RlState} writer) -> Option{Error}
   s.out.write(writer.run(state))
 
 // -- Result
 
-struct RlResultSuccess = string line
+struct RlResultSuccess = string text
 struct RlResultCancelled
 
 union RlResult = RlResultSuccess, RlResultCancelled
 
-fun rlSuccess(string line) -> RlResult
-  RlResultSuccess(line)
+fun rlSuccess(string text) -> RlResult
+  RlResultSuccess(text)
 
 fun rlCancel() -> RlResult
   RlResultCancelled()
 
 // -- Loop
 
-struct RlState = string line, int cursor, int cycle
+struct RlState = string text, int cursor, int cycle
 
-struct ScoredOption =
-  string  option,
-  int     score
+struct ScoredOption = string  option, int score
 
 fun rlOrderOptions(ScoredOption a, ScoredOption b)
   a.score > b.score
 
-fun flFuzzyScore(string option, string input) -> int
-  idx = option.indexOf(input);
+fun rlFuzzyScore(string option, string input) -> int
+  idx = option.indexOf(input, StrComp.IgnoreCase);
   idx < 0 ? -1 : 1000 - idx
 
 fun rlScoreOption(string option, List{string} inputs) -> Option{ScoredOption}
-  score = inputs.fold(lambda (int score, string input) score + flFuzzyScore(option, input));
+  score = inputs.fold(lambda (int score, string input) score + rlFuzzyScore(option, input));
   score <= 0 ? None() : ScoredOption(option, score)
 
 fun rlGetResult(RlState state, RlSettings settings) -> string
-  if settings.options.isEmpty() -> state.line
+  if settings.options.isEmpty() -> state.text
   else ->
     inputSeps   = ' ' :: '_' :: '-';
-    inputs      = state.line.split(lambda (char c) inputSeps.contains(c));
+    inputs      = state.text.split(lambda (char c) inputSeps.contains(c));
     scored      = settings.options.map(rlScoreOption[inputs]);
     options     = scored.isEmpty() ? settings.options : scored.sort(rlOrderOptions).map(lambda (ScoredOption so) so.option);
     options[state.cycle % options.length()] ?? ""
 
 fun rlPrevWordStart(RlState state)
-  nw = state.line.indexOfLast(!isWhitespace, state.cursor - 1);
+  nw = state.text.indexOfLast(!isWhitespace, state.cursor - 1);
   if nw <= 0  -> 0
-  else        -> state.line.indexOfLast(isWhitespace, nw) + 1
+  else        -> state.text.indexOfLast(isWhitespace, nw) + 1
 
 fun rlNextWordStart(RlState state)
-  w = state.line.indexOf(isWhitespace, state.cursor);
-  if w < 0  -> state.line.length()
-  else      -> (i = state.line.indexOf(!isWhitespace, w); i > 0 ? i : state.line.length())
+  w = state.text.indexOf(isWhitespace, state.cursor);
+  if w < 0  -> state.text.length()
+  else      -> (i = state.text.indexOf(!isWhitespace, w); i > 0 ? i : state.text.length())
 
 fun rlNextWordEnd(RlState state)
-  w = state.line.indexOf(!isWhitespace, state.cursor);
-  if w < 0  -> state.line.length()
-  else      -> (i = state.line.indexOf(isWhitespace, w); i > 0 ? i : state.line.length())
+  w = state.text.indexOf(!isWhitespace, state.cursor);
+  if w < 0  -> state.text.length()
+  else      -> (i = state.text.indexOf(isWhitespace, w); i > 0 ? i : state.text.length())
 
-fun rlAddChar(RlState state, char c)  RlState(state.line.insert(c.string(), state.cursor), ++state.cursor, 0)
-fun rlCycle(RlState state, RlDir dir) RlState(state.line, state.cursor, dir == RlDir.Forward ? ++state.cycle : max(--state.cycle, 0))
-fun rlRemovePrevChar(RlState state)   RlState(state.line.remove(state.cursor - 1), max(--state.cursor, 0), 0)
-fun rlRemoveNextChar(RlState state)   RlState(state.line.remove(state.cursor), state.cursor, 0)
-fun rlRemovePrevWord(RlState state)   prev = state.rlPrevWordStart(); RlState(state.line.remove(prev, state.cursor - prev), prev, 0)
-fun rlRemoveNextWord(RlState state)   next = state.rlNextWordEnd(); RlState(state.line.remove(state.cursor, next - state.cursor), state.cursor, 0)
-fun rlCursorLeft(RlState state)       RlState(state.line, max(--state.cursor, 0), state.cycle)
-fun rlCursorRight(RlState state)      RlState(state.line, min(++state.cursor, state.line.length()), state.cycle)
-fun rlCursorHome(RlState state)       RlState(state.line, 0, state.cycle)
-fun rlCursorEnd(RlState state)        RlState(state.line, state.line.length(), state.cycle)
-fun rlCursorPrev(RlState state)       RlState(state.line, state.rlPrevWordStart(), state.cycle)
-fun rlCursorNext(RlState state)       RlState(state.line, state.rlNextWordStart(), state.cycle)
+fun rlAddChar(RlState state, char c)  RlState(state.text.insert(c.string(), state.cursor), ++state.cursor, 0)
+fun rlCycle(RlState state, RlDir dir) RlState(state.text, state.cursor, dir == RlDir.Forward ? ++state.cycle : max(--state.cycle, 0))
+fun rlRemovePrevChar(RlState state)   RlState(state.text.remove(state.cursor - 1), max(--state.cursor, 0), 0)
+fun rlRemoveNextChar(RlState state)   RlState(state.text.remove(state.cursor), state.cursor, 0)
+fun rlRemovePrevWord(RlState state)   prev = state.rlPrevWordStart(); RlState(state.text.remove(prev, state.cursor - prev), prev, 0)
+fun rlRemoveNextWord(RlState state)   next = state.rlNextWordEnd(); RlState(state.text.remove(state.cursor, next - state.cursor), state.cursor, 0)
+fun rlCursorLeft(RlState state)       RlState(state.text, max(--state.cursor, 0), state.cycle)
+fun rlCursorRight(RlState state)      RlState(state.text, min(++state.cursor, state.text.length()), state.cycle)
+fun rlCursorHome(RlState state)       RlState(state.text, 0, state.cycle)
+fun rlCursorEnd(RlState state)        RlState(state.text, state.text.length(), state.cycle)
+fun rlCursorPrev(RlState state)       RlState(state.text, state.rlPrevWordStart(), state.cycle)
+fun rlCursorNext(RlState state)       RlState(state.text, state.rlNextWordStart(), state.cycle)
 
 fun rlApplyInput(RlState s, RlInput input) -> RlState
   if input as RlInputText txt -> s.rlAddChar(txt.c)

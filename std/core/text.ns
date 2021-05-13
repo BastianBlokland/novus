@@ -27,6 +27,9 @@ fun appendChar(string str, char c)
 fun contains(string str, string subStr, StrComp sc = StrComp.Normal)
   str.indexOf(subStr, 0, 0, sc) >= 0
 
+fun indexOf(string str, string subStr, StrComp sc = StrComp.Normal)
+  indexOf(str, subStr, 0, 0, sc)
+
 fun indexOf(string str, string subStr, int idx = 0, int subStrIdx = 0, StrComp sc = StrComp.Normal)
   if idx >= str.length()                      -> -1
   if equals(str[idx], subStr[subStrIdx], sc)  -> subStrIdx >= --subStr.length()
