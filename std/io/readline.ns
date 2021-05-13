@@ -21,17 +21,22 @@ enum RlStride = Char, Word, Line
 
 struct RlInputAccept
 struct RlInputCancel
+struct RlInputCycle   = RlDir dir
 struct RlInputRemove  = RlDir dir, RlStride stride
 struct RlInputMove    = RlDir dir, RlStride stride
 struct RlInputText    = char c
 
-union RlInput = RlInputAccept, RlInputCancel, RlInputRemove, RlInputMove, RlInputText
+union RlInput = RlInputAccept, RlInputCancel, RlInputCycle, RlInputRemove, RlInputMove, RlInputText
 
 fun rlAcceptParser()
   (matchParser('\n') | matchParser('\r')) >> retParser(RlInputAccept())
 
 fun rlCancelParser()
   (matchParser(ttyEsc()) & endParser()) >> retParser(RlInputCancel())
+
+fun rlCycleParser()
+  matchParser('\t')             >> retParser(RlInputCycle(RlDir.Forward)) |
+  matchParser(ttyEsc() + "[Z")  >> retParser(RlInputCycle(RlDir.Backward))
 
 fun rlRemoveParser()
   (matchParser(char(127))           >> retParser(RlInputRemove(RlDir.Backward, RlStride.Char))) |
@@ -58,6 +63,7 @@ fun rlTextParser()
 fun rlInputParser() -> Parser{RlInput}
   ( rlAcceptParser()  |
     rlCancelParser()  |
+    rlCycleParser()   |
     rlRemoveParser()  |
     rlMoveParser()    |
     rlTextParser()
@@ -92,7 +98,7 @@ fun rlCancel() -> RlResult
 
 // -- Loop
 
-struct RlState = string line, int cursor
+struct RlState = string line, int cursor, int selected
 
 fun rlPrevWordStart(RlState state)
   nw = state.line.indexOfLast(!isWhitespace, state.cursor - 1);
@@ -109,28 +115,36 @@ fun rlNextWordEnd(RlState state)
   if w < 0  -> state.line.length()
   else      -> (i = state.line.indexOf(isWhitespace, w); i > 0 ? i : state.line.length())
 
-fun rlAddChar(RlState state, char c)  RlState(state.line.insert(c.string(), state.cursor), ++state.cursor)
-fun rlRemovePrevChar(RlState state)   RlState(state.line.remove(state.cursor - 1), max(--state.cursor, 0))
-fun rlRemoveNextChar(RlState state)   RlState(state.line.remove(state.cursor), state.cursor)
-fun rlRemovePrevWord(RlState state)   prev = state.rlPrevWordStart(); RlState(state.line.remove(prev, state.cursor - prev), prev)
-fun rlRemoveNextWord(RlState state)   next = state.rlNextWordEnd(); RlState(state.line.remove(state.cursor, next - state.cursor), state.cursor)
-fun rlCursorLeft(RlState state)       RlState(state.line, max(--state.cursor, 0))
-fun rlCursorRight(RlState state)      RlState(state.line, min(++state.cursor, state.line.length()))
-fun rlCursorHome(RlState state)       RlState(state.line, 0)
-fun rlCursorEnd(RlState state)        RlState(state.line, state.line.length())
-fun rlCursorPrev(RlState state)       RlState(state.line, state.rlPrevWordStart())
-fun rlCursorNext(RlState state)       RlState(state.line, state.rlNextWordStart())
+fun rlAddChar(RlState state, char c)  RlState(state.line.insert(c.string(), state.cursor), ++state.cursor, 0)
+fun rlCycle(RlState state, RlDir dir) RlState(state.line, state.cursor, dir == RlDir.Forward ? ++state.selected : --state.selected)
+fun rlRemovePrevChar(RlState state)   RlState(state.line.remove(state.cursor - 1), max(--state.cursor, 0), 0)
+fun rlRemoveNextChar(RlState state)   RlState(state.line.remove(state.cursor), state.cursor, 0)
+fun rlRemovePrevWord(RlState state)   prev = state.rlPrevWordStart(); RlState(state.line.remove(prev, state.cursor - prev), prev, 0)
+fun rlRemoveNextWord(RlState state)   next = state.rlNextWordEnd(); RlState(state.line.remove(state.cursor, next - state.cursor), state.cursor, 0)
+fun rlCursorLeft(RlState state)       RlState(state.line, max(--state.cursor, 0), state.selected)
+fun rlCursorRight(RlState state)      RlState(state.line, min(++state.cursor, state.line.length()), state.selected)
+fun rlCursorHome(RlState state)       RlState(state.line, 0, state.selected)
+fun rlCursorEnd(RlState state)        RlState(state.line, state.line.length(), state.selected)
+fun rlCursorPrev(RlState state)       RlState(state.line, state.rlPrevWordStart(), state.selected)
+fun rlCursorNext(RlState state)       RlState(state.line, state.rlNextWordStart(), state.selected)
 
 fun rlApplyInput(RlState s, RlInput input) -> RlState
   if input as RlInputText txt -> s.rlAddChar(txt.c)
+  if input as RlInputCycle c  -> s.rlCycle(c.dir)
   if input as RlInputRemove r -> if r.stride == RlStride.Word -> r.dir == RlDir.Backward ? s.rlRemovePrevWord() : s.rlRemoveNextWord()
                                  else                         -> r.dir == RlDir.Backward ? s.rlRemovePrevChar() : s.rlRemoveNextChar()
-  if input as RlInputMove m   -> if m.stride == RlStride.Char -> m.dir == RlDir.Backward ? s.rlCursorLeft() : s.rlCursorRight()
-                                 if m.stride == RlStride.Word -> m.dir == RlDir.Backward ? s.rlCursorPrev() : s.rlCursorNext()
-                                 else                         -> m.dir == RlDir.Backward ? s.rlCursorHome() : s.rlCursorEnd()
+  if input as RlInputMove m   -> if m.stride == RlStride.Char -> m.dir == RlDir.Backward ? s.rlCursorLeft()     : s.rlCursorRight()
+                                 if m.stride == RlStride.Word -> m.dir == RlDir.Backward ? s.rlCursorPrev()     : s.rlCursorNext()
+                                 else                         -> m.dir == RlDir.Backward ? s.rlCursorHome()     : s.rlCursorEnd()
   else                        -> s
 
-act rlLoop(Console c, RlState state = RlState("", 0), Parser{List{RlInput}} parser = rlInputListParser()) -> Either{RlResult, Error}
+act rlLoop(Console c) -> Either{RlResult, Error}
+  state       = RlState("", 0, 0);
+  inputParser = rlInputListParser();
+  if rlRenderState(c, state) as Error renderErr -> renderErr
+  else                                          -> c.rlLoop(state, inputParser)
+
+act rlLoop(Console c, RlState state, Parser{List{RlInput}} parser) -> Either{RlResult, Error}
   inputOrErr = c.rlReadInput(parser);
   if inputOrErr as Error          err     -> err
   if inputOrErr as List{RlInput}  inputs  ->
