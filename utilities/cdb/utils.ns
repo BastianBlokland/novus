@@ -31,8 +31,10 @@ act updateTimeToLocal(Entry e) -> Entry
 
 enum EntryType = Directory, File, Any
 
-act filterEntries(List{Entry} entries, EntryType type)
-  entries.filter(impure lambda (Entry e)
-    if type == EntryType.Directory -> fileType(e.value.path) == FileType.Directory
-    if type == EntryType.File      -> ft = fileType(e.value.path); ft == FileType.Regular || ft == FileType.Symlink
-    else                           -> true)
+act entryMatchesFilter(Entry e, EntryType t)
+  if t == EntryType.Directory -> fileType(e.value.path) == FileType.Directory
+  if t == EntryType.File      -> ft = fileType(e.value.path); ft == FileType.Regular || ft == FileType.Symlink
+  else                        -> true
+
+act filterEntries(List{Entry} entries, EntryType t)
+  entries.filter(entryMatchesFilter[t])
