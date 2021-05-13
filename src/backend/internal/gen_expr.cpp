@@ -3,6 +3,7 @@
 #include "prog/expr/nodes.hpp"
 #include "utilities.hpp"
 #include <cassert>
+#include <limits>
 #include <stdexcept>
 #include <vector>
 

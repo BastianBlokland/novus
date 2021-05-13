@@ -1,6 +1,7 @@
 import "std.ns"
 
 import "../database.ns"
+import "../utils.ns"
 import "../writer.ns"
 
 enum ListSortMode = Key, Path, CreationTime, AccessTime
@@ -11,20 +12,14 @@ struct ListSettings =
   ListSortMode  sort,
   Option{int}   width
 
-act updateTimeToLocal(Entry e) -> Entry
-  Entry(e.key, e.value, timeToLocal(e.creationTime), timeToLocal(e.accessTime))
-
 fun orderListEntry(Entry e1, Entry e2, ListSettings s)
-  if s.sort == ListSortMode.CreationTime  -> e1.creationTime > e2.creationTime
-  if s.sort == ListSortMode.AccessTime    -> e1.accessTime > e2.accessTime
-  if s.sort == ListSortMode.Path          -> e1.value.path.string() < e2.value.path.string()
-  else                                    -> e1.key < e2.key
+  if s.sort == ListSortMode.CreationTime  -> orderEntryCreationTime(e1, e2)
+  if s.sort == ListSortMode.AccessTime    -> orderEntryAccessTime(e1, e2)
+  if s.sort == ListSortMode.Path          -> orderEntryPath(e1, e2)
+  else                                    -> orderEntryKey(e1, e2)
 
 fun sortListEntries(List{Entry} entries, ListSettings s)
   entries.sort(orderListEntry[s])
-
-fun getMaxListEntryKeySize(List{Entry} entries)
-  entries.fold(lambda (int max, Entry e) e.key.length() > max ? e.key.length() : max)
 
 fun cliDefaults(Type{ListSettings} t)
   CliDefault("sort", "key") :: List{CliDefault}()
@@ -32,7 +27,7 @@ fun cliDefaults(Type{ListSettings} t)
 act listCmd(ListSettings s) -> Option{Error}
   c             = consoleOpen().failOnError();
   db            = loadDb().failOnError();
-  maxKeyWidth   = getMaxListEntryKeySize(db.entries);
+  maxKeyWidth   = getMaxEntryKeySize(db.entries);
   maxTotalWidth = s.width ?? (c.termGetWidth() ?? 80);
   color         = !s.noColor && c.allowColor();
   writer        = listWriter(entryWriter(s.time, maxKeyWidth, maxTotalWidth, color), newlineWriter()) & newlineWriter();

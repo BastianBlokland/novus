@@ -303,6 +303,24 @@ fun charParser()
     else          -> (s + 1).success(s[0])
   )
 
+fun charDigitParser()
+  Parser(lambda (ParseState s) -> ParseResult{char}
+    if s.isEnd() || !s[0].isDigit() -> s.failure(Error("Expected a digit"))
+    else                            -> (s + 1).success(s[0])
+  )
+
+fun charLetterParser()
+  Parser(lambda (ParseState s) -> ParseResult{char}
+    if s.isEnd() || !s[0].isLetter() -> s.failure(Error("Expected a letter"))
+    else                             -> (s + 1).success(s[0])
+  )
+
+fun charPrintableParser()
+  Parser(lambda (ParseState s) -> ParseResult{char}
+    if s.isEnd() || !s[0].isPrintable() -> s.failure(Error("Expected a printable character"))
+    else                                -> (s + 1).success(s[0])
+  )
+
 fun txtBoolParser()
   Parser(lambda (ParseState s) -> ParseResult{bool}
     if s.startsWith("true", StrComp.IgnoreCase)  -> (s + 4).success(true)

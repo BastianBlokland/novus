@@ -128,8 +128,11 @@ act printType{T}(T val) -> Option{Error}
 
 // -- Meta
 
+act isTerm(sys_stream s) -> bool
+  intrinsic{is_term}(s)
+
 act isTerm(Console c) -> bool
-  intrinsic{is_term}(c.stdIn) && intrinsic{is_term}(c.stdOut)
+  c.stdIn.isTerm() && c.stdOut.isTerm()
 
 // Determine if programs are allowed to emit colors.
 // Check if the console is an interactive terminal and if the user hasn't requested to disable the colors.
@@ -154,15 +157,21 @@ act termGetHeight(Console c) -> Either{int, Error}
   h = intrinsic{term_getheight}(c.stdOut);
   h >= 0 ? h : platformError("Failed to get the terminal height")
 
-act termSetOptions(Console c, TerminalOptions opts) -> Option{Error}
-  intrinsic{term_setoptions}(c.stdIn, int(opts))
+act termSetOptions(sys_stream s, TerminalOptions opts) -> Option{Error}
+  intrinsic{term_setoptions}(s, int(opts))
     ? None()
     : platformError("Failed to set terminal options: " + opts.string())
 
-act termUnsetOptions(Console c, TerminalOptions opts) -> Option{Error}
-  intrinsic{term_unsetoptions}(c.stdIn, int(opts))
+act termSetOptions(Console c, TerminalOptions opts) -> Option{Error}
+  c.stdIn.termSetOptions(opts)
+
+act termUnsetOptions(sys_stream s, TerminalOptions opts) -> Option{Error}
+  intrinsic{term_unsetoptions}(s, int(opts))
     ? None()
     : platformError("Failed to unset terminal options: " + opts.string())
+
+act termUnsetOptions(Console c, TerminalOptions opts) -> Option{Error}
+  c.stdIn.termUnsetOptions(opts)
 
 act failIfNotTerm(Console c) -> None
   c.isTerm() ? None() : fail{None}("This application requires an interactive terminal")

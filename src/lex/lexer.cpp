@@ -2,6 +2,7 @@
 #include "input/char_escape.hpp"
 #include "lex/error.hpp"
 #include <cassert>
+#include <limits>
 
 namespace lex {
 

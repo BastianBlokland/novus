@@ -6,6 +6,7 @@
 #include "internal/ref_string.hpp"
 #include <array>
 #include <cstring>
+#include <limits>
 #include <sys/inotify.h>
 #include <unordered_map>
 

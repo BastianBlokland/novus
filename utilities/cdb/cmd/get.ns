@@ -1,18 +1,19 @@
 import "std.ns"
 
 import "../database.ns"
+import "../utils.ns"
 import "../writer.ns"
 
 struct GetSettings =
-  bool                  quotePath,
-  bool                  doubleQuotePath,
-  CliPositional{string} key
+  bool                          quotePath,
+  bool                          doubleQuotePath,
+  bool                          noColor,
+  CliPositional{Option{string}} key
 
 act updateAccessTime(Entry e) -> Entry
   Entry(e.key, e.value, e.creationTime, timeNow())
 
-act getFromDb(Database db, GetSettings s) -> Either{Tuple{Database, Entry}, Error}
-  key   = s.key.val;
+act getFromDb(Database db, string key) -> Either{Tuple{Database, Entry}, Error}
   entry = db[key];
   if db[key] as Entry e -> Tuple(db.updateEntry(updateAccessTime(e)), e)
   else                  -> Error("No entry found with key: '" + key + '\'')
@@ -22,10 +23,28 @@ fun getCmdWriteFlags(GetSettings s) -> CmdWriteFlags
   if s.quotePath        -> CmdWriteFlags.QuotePath
   else                  -> CmdWriteFlags.None
 
-act getCmd(GetSettings s) -> Option{Error}
+fun getCmdEntryOrder(Entry e1, Entry e2)
+  e1.accessTime > e2.accessTime
+
+act getCmdInteractive(GetSettings s)
+  c           = consoleOpen().failOnError();
+  inStream    = c.stdIn;
+  outStream   = getInteractiveOutputStream(c).failOnError();
+  db          = loadDb().failOnError();
+  keys        = db.entries.sort(getCmdEntryOrder).map(lambda (Entry e) e.key);
+  rlSettings  = RlSettings(inStream, outStream, keys, "> ", !s.noColor);
+  res         = ttyReadLine(rlSettings).failOnError();
+  if res as RlResultSuccess success -> getCmdWithKey(s, success.text)
+  if res is RlResultCancelled       -> fail("Cancelled")
+
+act getCmdWithKey(GetSettings s, string key) -> Option{Error}
   c = consoleOpen().failOnError();
-  entryOrErr = transaction(getFromDb[s]);
+  entryOrErr = transaction(getFromDb[key]);
   if entryOrErr as Error err  -> err
   if entryOrErr as Entry e    -> c.writeOut(cmdWriter(s.getCmdWriteFlags()) & newlineWriter(), e.value)
+
+act getCmd(GetSettings s) -> Option{Error}
+  if s.key.val is None        -> getCmdInteractive(s)
+  if s.key.val as string key  -> getCmdWithKey(s, key)
 
 fun cliIsInteruptable(Type{GetSettings} s) false

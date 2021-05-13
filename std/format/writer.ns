@@ -166,6 +166,9 @@ fun to{Target, WriterT}(Writer{WriterT} w, Type{Target} t)
 fun noneWriter()
   Writer(lambda (WriterState s, None n) s)
 
+fun nopWriter{T}() -> Writer{T}
+  Writer(lambda (WriterState s, T t) s)
+
 fun litWriter(string lit)
   Writer(lambda (WriterState s, None n)
     s.write(lit)

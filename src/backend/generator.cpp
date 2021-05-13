@@ -9,6 +9,7 @@
 #include "prog/sym/func_decl.hpp"
 #include "prog/sym/func_id.hpp"
 #include <cassert>
+#include <limits>
 #include <sstream>
 
 namespace backend {

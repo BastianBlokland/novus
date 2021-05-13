@@ -1,0 +1,28 @@
+import "database.ns"
+
+// -- Functions
+
+fun orderEntryCreationTime(Entry e1, Entry e2)
+  e1.creationTime > e2.creationTime
+
+fun orderEntryAccessTime(Entry e1, Entry e2)
+  e1.accessTime > e2.accessTime
+
+fun orderEntryKey(Entry e1, Entry e2)
+  e1.key < e2.key
+
+fun orderEntryPath(Entry e1, Entry e2)
+  e1.value.path.string() < e2.value.path.string()
+
+fun getMaxEntryKeySize(List{Entry} entries)
+  entries.fold(lambda (int max, Entry e) e.key.length() > max ? e.key.length() : max)
+
+// -- Actions
+
+act getInteractiveOutputStream(Console c) -> Either{sys_stream, Error}
+  if c.stdOut.isTerm() -> c.stdOut
+  if c.stdErr.isTerm() -> c.stdErr
+  else                 -> Error("An interactive terminal is required")
+
+act updateTimeToLocal(Entry e) -> Entry
+  Entry(e.key, e.value, timeToLocal(e.creationTime), timeToLocal(e.accessTime))
