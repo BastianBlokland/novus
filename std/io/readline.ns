@@ -1,0 +1,150 @@
+import "tty.ns"
+
+import "std/core.ns"
+import "std/prim.ns"
+
+// -- Terminal setup
+
+fun rlTermOpts() TerminalOptions.NoEcho | TerminalOptions.NoBuffer
+
+act rlSetup(Console c) -> Option{Error}
+  if !c.isTerm() -> Error("ReadLine requires an interactive terminal")
+  else           -> c.termSetOptions(rlTermOpts())
+
+act rlTeardown(Console c) -> Option{Error}
+  c.termUnsetOptions(rlTermOpts())
+
+// -- Input
+
+enum RlDir    = Forward, Backward
+enum RlStride = Char, Word, Line
+
+struct RlInputAccept
+struct RlInputCancel
+struct RlInputRemove  = RlDir dir, RlStride stride
+struct RlInputMove    = RlDir dir, RlStride stride
+struct RlInputText    = char c
+
+union RlInput = RlInputAccept, RlInputCancel, RlInputRemove, RlInputMove, RlInputText
+
+fun rlAcceptParser()
+  (matchParser('\n') | matchParser('\r')) >> retParser(RlInputAccept())
+
+fun rlCancelParser()
+  (matchParser(ttyEsc()) & endParser()) >> retParser(RlInputCancel())
+
+fun rlRemoveParser()
+  (matchParser(char(127))           >> retParser(RlInputRemove(RlDir.Backward, RlStride.Char))) |
+  (matchParser(ttyEsc() + "[3~")    >> retParser(RlInputRemove(RlDir.Forward,  RlStride.Char))) |
+  (matchParser(char(8))             >> retParser(RlInputRemove(RlDir.Backward, RlStride.Word))) |
+  (matchParser(ttyEsc() + "[3;5~")  >> retParser(RlInputRemove(RlDir.Forward,  RlStride.Word)))
+
+fun rlMoveParser()
+  escapeSecParser = ( lambda (string escape, RlDir dir, RlStride type)
+      matchParser(ttyEsc() + escape) >> retParser(RlInputMove(dir, type))
+  );
+  escapeSecParser("[D",     RlDir.Backward, RlStride.Char) |
+  escapeSecParser("[C",     RlDir.Forward,  RlStride.Char) |
+  escapeSecParser("[H",     RlDir.Backward, RlStride.Line) |
+  escapeSecParser("[7~",    RlDir.Backward, RlStride.Line) |
+  escapeSecParser("[F",     RlDir.Forward,  RlStride.Line) |
+  escapeSecParser("[8~",    RlDir.Forward,  RlStride.Line) |
+  escapeSecParser("[1;5D",  RlDir.Backward, RlStride.Word) |
+  escapeSecParser("[1;5C",  RlDir.Forward,  RlStride.Word)
+
+fun rlTextParser()
+  charPrintableParser().map(lambda (char c) RlInputText(c))
+
+fun rlInputParser() -> Parser{RlInput}
+  ( rlAcceptParser()  |
+    rlCancelParser()  |
+    rlRemoveParser()  |
+    rlMoveParser()    |
+    rlTextParser()
+  ).to(Type{RlInput}())
+
+fun rlInputListParser() -> Parser{List{RlInput}}
+  manyParser(rlInputParser())
+
+act rlReadInput(Console c, Parser{List{RlInput}} parser) -> Either{List{RlInput}, Error}
+  inputOrErr = c.read(128);
+  if inputOrErr as Error  inputErr -> inputErr
+  if inputOrErr as string input    -> parser.run(input) ?? List{RlInput}()
+
+// -- Rendering
+
+act rlRenderState(Console c, RlState state) -> Option{Error}
+  w = ttyResetLineWriter() & stringWriter() & ttyCursorColWriter();
+  c.writeOut(w, Tuple(state.line, state.cursor + 1))
+
+// -- Result
+
+struct RlResultSuccess = string line
+struct RlResultCancelled
+
+union RlResult = RlResultSuccess, RlResultCancelled
+
+fun rlSuccess(string line) -> RlResult
+  RlResultSuccess(line)
+
+fun rlCancel() -> RlResult
+  RlResultCancelled()
+
+// -- Loop
+
+struct RlState = string line, int cursor
+
+fun rlPrevWordStart(RlState state)
+  nw = state.line.indexOfLast(!isWhitespace, state.cursor - 1);
+  if nw <= 0  -> 0
+  else        -> state.line.indexOfLast(isWhitespace, nw) + 1
+
+fun rlNextWordStart(RlState state)
+  w = state.line.indexOf(isWhitespace, state.cursor);
+  if w < 0  -> state.line.length()
+  else      -> (i = state.line.indexOf(!isWhitespace, w); i > 0 ? i : state.line.length())
+
+fun rlNextWordEnd(RlState state)
+  w = state.line.indexOf(!isWhitespace, state.cursor);
+  if w < 0  -> state.line.length()
+  else      -> (i = state.line.indexOf(isWhitespace, w); i > 0 ? i : state.line.length())
+
+fun rlAddChar(RlState state, char c)  RlState(state.line.insert(c.string(), state.cursor), ++state.cursor)
+fun rlRemovePrevChar(RlState state)   RlState(state.line.remove(state.cursor - 1), max(--state.cursor, 0))
+fun rlRemoveNextChar(RlState state)   RlState(state.line.remove(state.cursor), state.cursor)
+fun rlRemovePrevWord(RlState state)   prev = state.rlPrevWordStart(); RlState(state.line.remove(prev, state.cursor - prev), prev)
+fun rlRemoveNextWord(RlState state)   next = state.rlNextWordEnd(); RlState(state.line.remove(state.cursor, next - state.cursor), state.cursor)
+fun rlCursorLeft(RlState state)       RlState(state.line, max(--state.cursor, 0))
+fun rlCursorRight(RlState state)      RlState(state.line, min(++state.cursor, state.line.length()))
+fun rlCursorHome(RlState state)       RlState(state.line, 0)
+fun rlCursorEnd(RlState state)        RlState(state.line, state.line.length())
+fun rlCursorPrev(RlState state)       RlState(state.line, state.rlPrevWordStart())
+fun rlCursorNext(RlState state)       RlState(state.line, state.rlNextWordStart())
+
+fun rlApplyInput(RlState s, RlInput input) -> RlState
+  if input as RlInputText txt -> s.rlAddChar(txt.c)
+  if input as RlInputRemove r -> if r.stride == RlStride.Word -> r.dir == RlDir.Backward ? s.rlRemovePrevWord() : s.rlRemoveNextWord()
+                                 else                         -> r.dir == RlDir.Backward ? s.rlRemovePrevChar() : s.rlRemoveNextChar()
+  if input as RlInputMove m   -> if m.stride == RlStride.Char -> m.dir == RlDir.Backward ? s.rlCursorLeft() : s.rlCursorRight()
+                                 if m.stride == RlStride.Word -> m.dir == RlDir.Backward ? s.rlCursorPrev() : s.rlCursorNext()
+                                 else                         -> m.dir == RlDir.Backward ? s.rlCursorHome() : s.rlCursorEnd()
+  else                        -> s
+
+act rlLoop(Console c, RlState state = RlState("", 0), Parser{List{RlInput}} parser = rlInputListParser()) -> Either{RlResult, Error}
+  inputOrErr = c.rlReadInput(parser);
+  if inputOrErr as Error          err     -> err
+  if inputOrErr as List{RlInput}  inputs  ->
+  (
+    if inputs.any(lambda (RlInput i) i is RlInputAccept) -> rlSuccess(state.line)
+    if inputs.any(lambda (RlInput i) i is RlInputCancel) -> rlCancel()
+    else -> ( newState = inputs.fold(rlApplyInput, state);
+              if rlRenderState(c, newState) as Error renderErr  -> renderErr
+              else                                              -> self(c, newState, parser) )
+  )
+
+// -- Api
+
+act ttyReadLine(Console c) -> Either{RlResult, Error}
+  if c.rlSetup() as Error setupErr  -> setupErr
+  else                              -> res = getUntilInterupt(fork c.rlLoop()) ?? rlCancel();
+                                       c.rlTeardown(); res

@@ -54,6 +54,14 @@ fun indexOf(string str, function{char, bool} pred, int idx = 0)
   if pred(str[idx])       -> idx
   else                    -> indexOf(str, pred, ++idx)
 
+fun indexOfLast(string str, function{char, bool} pred)
+  indexOfLast(str, pred, str.length() - 1)
+
+fun indexOfLast(string str, function{char, bool} pred, int idx)
+  if idx < 0            -> -1
+  if pred(str[idx])     -> idx
+  else                  -> indexOfLast(str, pred, --idx)
+
 fun startsWith(string str, string subStr, int idx = 0, StrComp sc = StrComp.Normal)
   invoke(
     lambda (int subStrIdx)
@@ -254,6 +262,12 @@ assertEq("hello world".indexOf(equals{char}['d']), 10)
 assertEq("hello world".indexOf(equals{char}['h']), 0)
 assertEq("hello world".indexOf(equals{char}['1']), -1)
 assertEq("".indexOf(equals{char}[' ']), -1)
+
+assertEq("hello world".indexOfLast(equals{char}[' ']), 5)
+assertEq("hello world".indexOfLast(equals{char}['d']), 10)
+assertEq("hello world".indexOfLast(equals{char}['o']), 7)
+assertEq("hello world".indexOfLast(equals{char}['1']), -1)
+assertEq("".indexOfLast(equals{char}[' ']), -1)
 
 assert("hello world".startsWith("hello"))
 assert("hello world".startsWith("h"))
