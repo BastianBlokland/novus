@@ -1,5 +1,6 @@
 #include "internal/implicit_conv.hpp"
 #include "prog/program.hpp"
+#include <limits>
 
 namespace prog::internal {
 
