@@ -1,6 +1,6 @@
 import "database.ns"
 
-// -- Functions
+// -- Utility functions
 
 fun orderEntryCreationTime(Entry e1, Entry e2)
   e1.creationTime > e2.creationTime
@@ -17,7 +17,7 @@ fun orderEntryPath(Entry e1, Entry e2)
 fun getMaxEntryKeySize(List{Entry} entries)
   entries.fold(lambda (int max, Entry e) e.key.length() > max ? e.key.length() : max)
 
-// -- Actions
+// -- Utility actions
 
 act getInteractiveOutputStream(Console c) -> Either{sys_stream, Error}
   if c.stdOut.isTerm() -> c.stdOut
@@ -26,3 +26,13 @@ act getInteractiveOutputStream(Console c) -> Either{sys_stream, Error}
 
 act updateTimeToLocal(Entry e) -> Entry
   Entry(e.key, e.value, timeToLocal(e.creationTime), timeToLocal(e.accessTime))
+
+// -- Filtering
+
+enum EntryType = Directory, File, Any
+
+act filterEntries(List{Entry} entries, EntryType type)
+  entries.filter(impure lambda (Entry e)
+    if type == EntryType.Directory -> fileType(e.value.path) == FileType.Directory
+    if type == EntryType.File      -> ft = fileType(e.value.path); ft == FileType.Regular || ft == FileType.Symlink
+    else                           -> true)
