@@ -127,9 +127,29 @@ fun rlCancel() -> RlResult
 
 struct RlState = string line, int cursor, int cycle
 
+struct ScoredOption =
+  string  option,
+  int     score
+
+fun rlOrderOptions(ScoredOption a, ScoredOption b)
+  a.score > b.score
+
+fun flFuzzyScore(string option, string input) -> int
+  idx = option.indexOf(input);
+  idx < 0 ? -1 : 1000 - idx
+
+fun rlScoreOption(string option, List{string} inputs) -> Option{ScoredOption}
+  score = inputs.fold(lambda (int score, string input) score + flFuzzyScore(option, input));
+  score < 0 ? None() : ScoredOption(option, score)
+
 fun rlGetResult(RlState state, RlSettings settings) -> string
   if settings.options.isEmpty() -> state.line
-  else                          -> settings.options[state.cycle % settings.options.length()] ?? ""
+  else ->
+    inputSeps   = ' ' :: '_' :: '-';
+    inputs      = state.line.split(lambda (char c) inputSeps.contains(c));
+    scored      = settings.options.map(rlScoreOption[inputs]);
+    options     = scored.isEmpty() ? settings.options : scored.sort(rlOrderOptions).map(lambda (ScoredOption so) so.option);
+    options[state.cycle % options.length()] ?? ""
 
 fun rlPrevWordStart(RlState state)
   nw = state.line.indexOfLast(!isWhitespace, state.cursor - 1);
