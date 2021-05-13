@@ -7,10 +7,11 @@ import "../writer.ns"
 enum ListSortMode = Key, Path, CreationTime, AccessTime
 
 struct ListSettings =
+  EntryType     type,
+  Option{int}   width,
   bool          time,
-  bool          noColor,
   ListSortMode  sort,
-  Option{int}   width
+  bool          noColor
 
 fun orderListEntry(Entry e1, Entry e2, ListSettings s)
   if s.sort == ListSortMode.CreationTime  -> orderEntryCreationTime(e1, e2)
@@ -21,17 +22,24 @@ fun orderListEntry(Entry e1, Entry e2, ListSettings s)
 fun sortListEntries(List{Entry} entries, ListSettings s)
   entries.sort(orderListEntry[s])
 
+fun getListErrorMessage(ListSettings s)
+  if s.type == EntryType.File       -> "No files found in database\n"
+  if s.type == EntryType.Directory  -> "No directories found in database\n"
+  else                              -> "No entries in database\n"
+
 fun cliDefaults(Type{ListSettings} t)
-  CliDefault("sort", "key") :: List{CliDefault}()
+  CliDefault("type", "any") ::
+  CliDefault("sort", "key")
 
 act listCmd(ListSettings s) -> Option{Error}
   c             = consoleOpen().failOnError();
   db            = loadDb().failOnError();
-  maxKeyWidth   = getMaxEntryKeySize(db.entries);
-  maxTotalWidth = s.width ?? (c.termGetWidth() ?? 80);
   color         = !s.noColor && c.allowColor();
+  entries       = db.entries.filterEntries(s.type).map(updateTimeToLocal).sortListEntries(s);
+  maxKeyWidth   = getMaxEntryKeySize(entries);
+  maxTotalWidth = s.width ?? (c.termGetWidth() ?? 80);
   writer        = listWriter(entryWriter(s.time, maxKeyWidth, maxTotalWidth, color), newlineWriter()) & newlineWriter();
-  if db.entries.isEmpty() -> c.writeOut("No entries in database\n")
-  else                    -> c.writeOut(writer, db.entries.map(updateTimeToLocal).sortListEntries(s))
+  if entries.isEmpty() -> c.writeOut(getListErrorMessage(s))
+  else                 -> c.writeOut(writer, entries)
 
 fun cliIsInteruptable(Type{ListSettings} s) false

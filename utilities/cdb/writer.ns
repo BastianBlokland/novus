@@ -30,7 +30,7 @@ fun entryTimeWriter(int padUntilCol = 10, bool color = false) -> Writer{Entry}
 
 fun entryWriter(bool includeTime, int padKeyUntilCol = 15, int maxCol = 80, bool color = false) -> Writer{Entry}
   (
-    stringWriter().padLeftWriter(padKeyUntilCol) & litWriter(" -> ") &
+    stringWriter() & padUntilWriter(padKeyUntilCol) & litWriter(" -> ") &
     splitWriter(cmdWriter(), wrapWriter(stringWriter(), maxCol, newlineWriter() & padUntilWriter(padKeyUntilCol + 4))) &
     ?(newlineWriter() & entryTimeWriter(padKeyUntilCol + 2, color))
   ).map(lambda (Entry e) Tuple(e.key, e.value, includeTime ? e : None()))

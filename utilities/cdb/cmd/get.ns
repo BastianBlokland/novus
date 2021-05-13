@@ -5,17 +5,24 @@ import "../utils.ns"
 import "../writer.ns"
 
 struct GetSettings =
+  EntryType                     type,
   bool                          quotePath,
   bool                          doubleQuotePath,
   bool                          noColor,
   CliPositional{Option{string}} key
 
+fun getIncorrectTypeErrMsg(EntryType t)
+  if t == EntryType.File       -> "Entry is not a file"
+  if t == EntryType.Directory  -> "Entry is not a directory"
+  else                         -> "Unknown err"
+
 act updateAccessTime(Entry e) -> Entry
   Entry(e.key, e.value, e.creationTime, timeNow())
 
-act getFromDb(Database db, string key) -> Either{Tuple{Database, Entry}, Error}
+act getFromDb(Database db, string key, EntryType t) -> Either{Tuple{Database, Entry}, Error}
   entry = db[key];
-  if db[key] as Entry e -> Tuple(db.updateEntry(updateAccessTime(e)), e)
+  if db[key] as Entry e -> entryMatchesFilter(e, t) ? Tuple(db.updateEntry(updateAccessTime(e)), e)
+                                                    : Error(getIncorrectTypeErrMsg(t))
   else                  -> Error("No entry found with key: '" + key + '\'')
 
 fun getCmdWriteFlags(GetSettings s) -> CmdWriteFlags
@@ -31,7 +38,7 @@ act getCmdInteractive(GetSettings s)
   inStream    = c.stdIn;
   outStream   = getInteractiveOutputStream(c).failOnError();
   db          = loadDb().failOnError();
-  keys        = db.entries.sort(getCmdEntryOrder).map(lambda (Entry e) e.key);
+  keys        = db.entries.filterEntries(s.type).sort(getCmdEntryOrder).map(lambda (Entry e) e.key);
   rlSettings  = RlSettings(inStream, outStream, keys, "> ", !s.noColor);
   res         = ttyReadLine(rlSettings).failOnError();
   if res as RlResultSuccess success -> getCmdWithKey(s, success.text)
@@ -39,9 +46,12 @@ act getCmdInteractive(GetSettings s)
 
 act getCmdWithKey(GetSettings s, string key) -> Option{Error}
   c = consoleOpen().failOnError();
-  entryOrErr = transaction(getFromDb[key]);
+  entryOrErr = transaction(getFromDb[s.type][key]);
   if entryOrErr as Error err  -> err
   if entryOrErr as Entry e    -> c.writeOut(cmdWriter(s.getCmdWriteFlags()) & newlineWriter(), e.value)
+
+fun cliDefaults(Type{GetSettings} t)
+  CliDefault("type", "any") :: List{CliDefault}()
 
 act getCmd(GetSettings s) -> Option{Error}
   if s.key.val is None        -> getCmdInteractive(s)
