@@ -6,10 +6,11 @@ import "std/prim.ns"
 // -- Settings
 
 struct RlSettings =
-  sys_stream  in,
-  sys_stream  out,
-  string      prompt,
-  bool        useColor
+  sys_stream    in,
+  sys_stream    out,
+  List{string}  options,
+  string        prompt,
+  bool          useColor
 
 // -- Terminal setup
 
@@ -90,9 +91,24 @@ act rlReadInput(RlSettings s, Parser{List{RlInput}} parser) -> Either{List{RlInp
 fun rlDimWriter{T}(RlSettings s, Writer{T} w)
   s.useColor ? w.ttyStyledTextWriter(TtyStyle.FgBrightBlack) : w
 
-act rlRenderState(RlSettings s, RlState state) -> Option{Error}
-  w = ttyResetLineWriter() & rlDimWriter(s, stringWriter()) & stringWriter() & ttyCursorColWriter();
-  s.out.write(w.run(Tuple(s.prompt, state.line, state.cursor + 1 + s.prompt.length())))
+fun rlHighlightWriter{T}(RlSettings s, Writer{T} w)
+  s.useColor ? w.ttyStyledTextWriter(TtyStyle.Bold :: TtyStyle.Underline) : w
+
+fun rlResultWriter(RlSettings settings) -> Writer{RlState}
+  if settings.options.isEmpty() -> nopWriter{RlState}()
+  else ->
+  (
+    litWriter("  [") & settings.rlHighlightWriter(stringWriter()) & litWriter(']')
+  ).map(lambda (RlState s) s.rlGetResult(settings))
+
+fun rlStateWriter(RlSettings s) -> Writer{RlState}
+  (
+    ttyResetLineWriter() & rlDimWriter(s, stringWriter()) &
+    stringWriter() & rlResultWriter(s) & ttyCursorColWriter()
+  ).map(lambda (RlState state) Tuple(s.prompt, state.line, state, state.cursor + 1 + s.prompt.length()))
+
+act rlRenderState(RlSettings s, RlState state, Writer{RlState} writer) -> Option{Error}
+  s.out.write(writer.run(state))
 
 // -- Result
 
@@ -110,6 +126,10 @@ fun rlCancel() -> RlResult
 // -- Loop
 
 struct RlState = string line, int cursor, int cycle
+
+fun rlGetResult(RlState state, RlSettings settings) -> string
+  if settings.options.isEmpty() -> state.line
+  else                          -> settings.options[state.cycle % settings.options.length()] ?? ""
 
 fun rlPrevWordStart(RlState state)
   nw = state.line.indexOfLast(!isWhitespace, state.cursor - 1);
@@ -152,30 +172,29 @@ fun rlApplyInput(RlState s, RlInput input) -> RlState
 act rlLoop(RlSettings s) -> Either{RlResult, Error}
   state       = RlState("", 0, 0);
   inputParser = rlInputListParser();
-  if rlRenderState(s, state) as Error renderErr -> renderErr
-  else                                          -> rlLoop(s, state, inputParser)
+  renderer    = rlStateWriter(s);
+  if rlRenderState(s, state, renderer) as Error renderErr -> renderErr
+  else                                                    -> rlLoop(s, state, inputParser, renderer)
 
-act rlLoop(RlSettings s, RlState state, Parser{List{RlInput}} parser) -> Either{RlResult, Error}
+act rlLoop(RlSettings s, RlState state, Parser{List{RlInput}} parser, Writer{RlState} renderer) -> Either{RlResult, Error}
   inputOrErr = rlReadInput(s, parser);
   if inputOrErr as Error          err     -> err
   if inputOrErr as List{RlInput}  inputs  ->
   (
-    if inputs.any(lambda (RlInput i) i is RlInputAccept) -> rlSuccess(state.line)
+    if inputs.any(lambda (RlInput i) i is RlInputAccept) -> rlSuccess(rlGetResult(state, s))
     if inputs.any(lambda (RlInput i) i is RlInputCancel) -> rlCancel()
     else -> ( newState = inputs.fold(rlApplyInput, state);
-              if rlRenderState(s, newState) as Error renderErr  -> renderErr
-              else                                              -> self(s, newState, parser) )
+              if rlRenderState(s, newState, renderer) as Error renderErr  -> renderErr
+              else                                                        -> self(s, newState, parser, renderer) )
   )
 
 // -- Api
 
-act rlSettings(Console c, string prompt = "> ") -> Either{RlSettings, Error}
-  RlSettings(c.stdIn, c.stdOut, prompt, c.allowColor())
+act rlSettings(Console c, List{string} options = List{string}(), string prompt = "> ") -> RlSettings
+  RlSettings(c.stdIn, c.stdOut, options, prompt, c.allowColor())
 
 act ttyReadLine(Console c) -> Either{RlResult, Error}
-  settingsOrErr = rlSettings(c);
-  if settingsOrErr as Error       err       -> err
-  if settingsOrErr as RlSettings  settings  -> ttyReadLine(settings)
+  ttyReadLine(rlSettings(c))
 
 act ttyReadLine(RlSettings s) -> Either{RlResult, Error}
   if s.rlSetup() as Error setupErr  -> setupErr
