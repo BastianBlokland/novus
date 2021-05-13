@@ -3,16 +3,24 @@ import "tty.ns"
 import "std/core.ns"
 import "std/prim.ns"
 
+// -- Settings
+
+struct RlSettings =
+  sys_stream  in,
+  sys_stream  out,
+  string      prompt,
+  bool        useColor
+
 // -- Terminal setup
 
 fun rlTermOpts() TerminalOptions.NoEcho | TerminalOptions.NoBuffer
 
-act rlSetup(Console c) -> Option{Error}
-  if !c.isTerm() -> Error("ReadLine requires an interactive terminal")
-  else           -> c.termSetOptions(rlTermOpts())
+act rlSetup(RlSettings s) -> Option{Error}
+  if !s.in.isTerm() || !s.out.isTerm()  -> Error("ReadLine requires an interactive input and output stream")
+  else                                  -> s.in.termSetOptions(rlTermOpts())
 
-act rlTeardown(Console c) -> Option{Error}
-  c.termUnsetOptions(rlTermOpts())
+act rlTeardown(RlSettings s) -> Option{Error}
+  s.in.termUnsetOptions(rlTermOpts())
 
 // -- Input
 
@@ -72,16 +80,19 @@ fun rlInputParser() -> Parser{RlInput}
 fun rlInputListParser() -> Parser{List{RlInput}}
   manyParser(rlInputParser())
 
-act rlReadInput(Console c, Parser{List{RlInput}} parser) -> Either{List{RlInput}, Error}
-  inputOrErr = c.read(128);
+act rlReadInput(RlSettings s, Parser{List{RlInput}} parser) -> Either{List{RlInput}, Error}
+  inputOrErr = s.in.read(128);
   if inputOrErr as Error  inputErr -> inputErr
   if inputOrErr as string input    -> parser.run(input) ?? List{RlInput}()
 
 // -- Rendering
 
-act rlRenderState(Console c, RlState state) -> Option{Error}
-  w = ttyResetLineWriter() & stringWriter() & ttyCursorColWriter();
-  c.writeOut(w, Tuple(state.line, state.cursor + 1))
+fun rlDimWriter{T}(RlSettings s, Writer{T} w)
+  s.useColor ? w.ttyStyledTextWriter(TtyStyle.FgBrightBlack) : w
+
+act rlRenderState(RlSettings s, RlState state) -> Option{Error}
+  w = ttyResetLineWriter() & rlDimWriter(s, stringWriter()) & stringWriter() & ttyCursorColWriter();
+  s.out.write(w.run(Tuple(s.prompt, state.line, state.cursor + 1 + s.prompt.length())))
 
 // -- Result
 
@@ -98,7 +109,7 @@ fun rlCancel() -> RlResult
 
 // -- Loop
 
-struct RlState = string line, int cursor, int selected
+struct RlState = string line, int cursor, int cycle
 
 fun rlPrevWordStart(RlState state)
   nw = state.line.indexOfLast(!isWhitespace, state.cursor - 1);
@@ -116,17 +127,17 @@ fun rlNextWordEnd(RlState state)
   else      -> (i = state.line.indexOf(isWhitespace, w); i > 0 ? i : state.line.length())
 
 fun rlAddChar(RlState state, char c)  RlState(state.line.insert(c.string(), state.cursor), ++state.cursor, 0)
-fun rlCycle(RlState state, RlDir dir) RlState(state.line, state.cursor, dir == RlDir.Forward ? ++state.selected : --state.selected)
+fun rlCycle(RlState state, RlDir dir) RlState(state.line, state.cursor, dir == RlDir.Forward ? ++state.cycle : --state.cycle)
 fun rlRemovePrevChar(RlState state)   RlState(state.line.remove(state.cursor - 1), max(--state.cursor, 0), 0)
 fun rlRemoveNextChar(RlState state)   RlState(state.line.remove(state.cursor), state.cursor, 0)
 fun rlRemovePrevWord(RlState state)   prev = state.rlPrevWordStart(); RlState(state.line.remove(prev, state.cursor - prev), prev, 0)
 fun rlRemoveNextWord(RlState state)   next = state.rlNextWordEnd(); RlState(state.line.remove(state.cursor, next - state.cursor), state.cursor, 0)
-fun rlCursorLeft(RlState state)       RlState(state.line, max(--state.cursor, 0), state.selected)
-fun rlCursorRight(RlState state)      RlState(state.line, min(++state.cursor, state.line.length()), state.selected)
-fun rlCursorHome(RlState state)       RlState(state.line, 0, state.selected)
-fun rlCursorEnd(RlState state)        RlState(state.line, state.line.length(), state.selected)
-fun rlCursorPrev(RlState state)       RlState(state.line, state.rlPrevWordStart(), state.selected)
-fun rlCursorNext(RlState state)       RlState(state.line, state.rlNextWordStart(), state.selected)
+fun rlCursorLeft(RlState state)       RlState(state.line, max(--state.cursor, 0), state.cycle)
+fun rlCursorRight(RlState state)      RlState(state.line, min(++state.cursor, state.line.length()), state.cycle)
+fun rlCursorHome(RlState state)       RlState(state.line, 0, state.cycle)
+fun rlCursorEnd(RlState state)        RlState(state.line, state.line.length(), state.cycle)
+fun rlCursorPrev(RlState state)       RlState(state.line, state.rlPrevWordStart(), state.cycle)
+fun rlCursorNext(RlState state)       RlState(state.line, state.rlNextWordStart(), state.cycle)
 
 fun rlApplyInput(RlState s, RlInput input) -> RlState
   if input as RlInputText txt -> s.rlAddChar(txt.c)
@@ -138,27 +149,35 @@ fun rlApplyInput(RlState s, RlInput input) -> RlState
                                  else                         -> m.dir == RlDir.Backward ? s.rlCursorHome()     : s.rlCursorEnd()
   else                        -> s
 
-act rlLoop(Console c) -> Either{RlResult, Error}
+act rlLoop(RlSettings s) -> Either{RlResult, Error}
   state       = RlState("", 0, 0);
   inputParser = rlInputListParser();
-  if rlRenderState(c, state) as Error renderErr -> renderErr
-  else                                          -> c.rlLoop(state, inputParser)
+  if rlRenderState(s, state) as Error renderErr -> renderErr
+  else                                          -> rlLoop(s, state, inputParser)
 
-act rlLoop(Console c, RlState state, Parser{List{RlInput}} parser) -> Either{RlResult, Error}
-  inputOrErr = c.rlReadInput(parser);
+act rlLoop(RlSettings s, RlState state, Parser{List{RlInput}} parser) -> Either{RlResult, Error}
+  inputOrErr = rlReadInput(s, parser);
   if inputOrErr as Error          err     -> err
   if inputOrErr as List{RlInput}  inputs  ->
   (
     if inputs.any(lambda (RlInput i) i is RlInputAccept) -> rlSuccess(state.line)
     if inputs.any(lambda (RlInput i) i is RlInputCancel) -> rlCancel()
     else -> ( newState = inputs.fold(rlApplyInput, state);
-              if rlRenderState(c, newState) as Error renderErr  -> renderErr
-              else                                              -> self(c, newState, parser) )
+              if rlRenderState(s, newState) as Error renderErr  -> renderErr
+              else                                              -> self(s, newState, parser) )
   )
 
 // -- Api
 
+act rlSettings(Console c, string prompt = "> ") -> Either{RlSettings, Error}
+  RlSettings(c.stdIn, c.stdOut, prompt, c.allowColor())
+
 act ttyReadLine(Console c) -> Either{RlResult, Error}
-  if c.rlSetup() as Error setupErr  -> setupErr
-  else                              -> res = getUntilInterupt(fork c.rlLoop()) ?? rlCancel();
-                                       c.rlTeardown(); res
+  settingsOrErr = rlSettings(c);
+  if settingsOrErr as Error       err       -> err
+  if settingsOrErr as RlSettings  settings  -> ttyReadLine(settings)
+
+act ttyReadLine(RlSettings s) -> Either{RlResult, Error}
+  if s.rlSetup() as Error setupErr  -> setupErr
+  else                              -> res = getUntilInterupt(fork rlLoop(s)) ?? rlCancel();
+                                       rlTeardown(s); res
