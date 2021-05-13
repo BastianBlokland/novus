@@ -21,7 +21,10 @@ act rlSetup(RlSettings s) -> Option{Error}
   else                                  -> s.in.termSetOptions(rlTermOpts())
 
 act rlTeardown(RlSettings s) -> Option{Error}
-  s.in.termUnsetOptions(rlTermOpts())
+  actSeq(
+    lazy s.out.write(ttyResetLineWriter().run(None())),
+    lazy s.in.termUnsetOptions(rlTermOpts())
+  )
 
 // -- Input
 
@@ -140,7 +143,7 @@ fun flFuzzyScore(string option, string input) -> int
 
 fun rlScoreOption(string option, List{string} inputs) -> Option{ScoredOption}
   score = inputs.fold(lambda (int score, string input) score + flFuzzyScore(option, input));
-  score < 0 ? None() : ScoredOption(option, score)
+  score <= 0 ? None() : ScoredOption(option, score)
 
 fun rlGetResult(RlState state, RlSettings settings) -> string
   if settings.options.isEmpty() -> state.line
@@ -167,7 +170,7 @@ fun rlNextWordEnd(RlState state)
   else      -> (i = state.line.indexOf(isWhitespace, w); i > 0 ? i : state.line.length())
 
 fun rlAddChar(RlState state, char c)  RlState(state.line.insert(c.string(), state.cursor), ++state.cursor, 0)
-fun rlCycle(RlState state, RlDir dir) RlState(state.line, state.cursor, dir == RlDir.Forward ? ++state.cycle : --state.cycle)
+fun rlCycle(RlState state, RlDir dir) RlState(state.line, state.cursor, dir == RlDir.Forward ? ++state.cycle : max(--state.cycle, 0))
 fun rlRemovePrevChar(RlState state)   RlState(state.line.remove(state.cursor - 1), max(--state.cursor, 0), 0)
 fun rlRemoveNextChar(RlState state)   RlState(state.line.remove(state.cursor), state.cursor, 0)
 fun rlRemovePrevWord(RlState state)   prev = state.rlPrevWordStart(); RlState(state.line.remove(prev, state.cursor - prev), prev, 0)
