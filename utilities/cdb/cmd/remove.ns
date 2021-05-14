@@ -3,7 +3,7 @@ import "std.ns"
 import "../database.ns"
 
 struct RemoveSettings =
-  CliPositional{List{string}} keys
+  CliPositional{Option{List{string}}} keys
 
 act removeFromDb(Database db, List{string} keys) -> Either{Database, Error}
   keys.fold(lambda (Either{Database, Error} res, string key) -> Either{Database, Error}
@@ -13,9 +13,20 @@ act removeFromDb(Database db, List{string} keys) -> Either{Database, Error}
       else                -> db.removeEntry(key)
   , Either{Database, Error}(db))
 
+act getRemoveInputText(Console c) -> string
+  if c.isTerm() -> ttyReadLine(c).failOnError() as RlResultSuccess success ? success.text : ""
+  else          -> (getUntilInterupt(fork c.readToEnd()) ?? "").failOnError()
+
+act getKeysToRemoveFromInput(Console c) -> List{string}
+  getRemoveInputText(c).split(equals{char}['\n'])
+
+act getKeysToRemove(RemoveSettings s, Console c) -> List{string}
+  if s.keys.val as List{string} keys -> keys
+  else                               -> getKeysToRemoveFromInput(c)
+
 act removeCmd(RemoveSettings s) -> Option{Error}
   c     = consoleOpen().failOnError();
-  keys  = s.keys.val;
+  keys  = getKeysToRemove(s, c);
   if transaction(removeFromDb[keys], TransactionFlags.Backup) as Error err  -> fail(err)
   else ->
     writer = listWriter(litWriter("Removed '") & stringWriter() & litWriter('\'') & newlineWriter());

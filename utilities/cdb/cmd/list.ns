@@ -7,11 +7,13 @@ import "../writer.ns"
 enum ListSortMode = Key, Path, CreationTime, AccessTime
 
 struct ListSettings =
-  EntryType     type,
-  Option{int}   width,
-  bool          time,
-  ListSortMode  sort,
-  bool          noColor
+  EntryType       type,
+  GlobTextPattern filter,
+  Option{int}     width,
+  bool            time,
+  ListSortMode    sort,
+  bool            noColor,
+  bool            keysOnly
 
 fun orderListEntry(Entry e1, Entry e2, ListSettings s)
   if s.sort == ListSortMode.CreationTime  -> orderEntryCreationTime(e1, e2)
@@ -28,17 +30,19 @@ fun getListErrorMessage(ListSettings s)
   else                              -> "No entries in database\n"
 
 fun cliDefaults(Type{ListSettings} t)
-  CliDefault("type", "any") ::
-  CliDefault("sort", "key")
+  CliDefault("type",    "any") ::
+  CliDefault("filter",  "*")   ::
+  CliDefault("sort",    "key")
 
 act listCmd(ListSettings s) -> Option{Error}
   c             = consoleOpen().failOnError();
   db            = loadDb().failOnError();
   color         = !s.noColor && c.allowColor();
-  entries       = db.entries.filterEntries(s.type).map(updateTimeToLocal).sortListEntries(s);
+  entries       = db.entries.filterEntries(s.type, s.filter).map(updateTimeToLocal).sortListEntries(s);
   maxKeyWidth   = getMaxEntryKeySize(entries);
   maxTotalWidth = s.width ?? (c.termGetWidth() ?? 80);
-  writer        = listWriter(entryWriter(s.time, maxKeyWidth, maxTotalWidth, color), newlineWriter()) & newlineWriter();
+  entryWriter   = s.keysOnly ? entryKeyWriter() : entryWriter(s.time, maxKeyWidth, maxTotalWidth, color);
+  writer        = listWriter(entryWriter, newlineWriter()) & newlineWriter();
   if entries.isEmpty() -> c.writeOut(getListErrorMessage(s))
   else                 -> c.writeOut(writer, entries)
 
