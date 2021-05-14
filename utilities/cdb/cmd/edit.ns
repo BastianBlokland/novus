@@ -11,10 +11,11 @@ struct EditSettings =
   CliPositional{Option{List{string}}} args
 
 act editInteractive(Console c, Cmd cmd, EditSettings s) -> Either{Cmd, Error}
-  inStream    = c.stdIn;
-  outStream   = getInteractiveOutputStream(c).failOnError();
-  rlSettings  = RlSettings(inStream, outStream, List{string}(), cmdWriter().run(cmd), "> ", !s.noColor);
-  res         = ttyReadLine(rlSettings).failOnError();
+  inStream      = c.stdIn;
+  outStream     = getInteractiveOutputStream(c).failOnError();
+  cmdWriteFlags = cmd.path.pathContainsWhitespace() ? CmdWriteFlags.QuotePath : CmdWriteFlags.None;
+  rlSettings    = RlSettings(inStream, outStream, List{string}(), cmdWriter(cmdWriteFlags).run(cmd), "> ", !s.noColor);
+  res           = ttyReadLine(rlSettings).failOnError();
   if res as RlResultSuccess success -> buildCmd(success.text)
   if res is RlResultCancelled       -> Error("Cancelled")
 
