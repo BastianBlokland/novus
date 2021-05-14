@@ -1,6 +1,7 @@
 import "std.ns"
 
 import "../database.ns"
+import "../utils.ns"
 import "../writer.ns"
 
 struct AddSettings =
@@ -8,19 +9,13 @@ struct AddSettings =
   CliPositional{Option{Path}}         path,
   CliPositional{Option{List{string}}} args
 
-act createCmd(AddSettings s) -> Either{Cmd, Error}
-  args = (s.args.val ?? List{string}());
-  absPath = pathAbsolute(s.path.val ?? pathCurrent());
-  if !fileExists(absPath) -> Error("No file found at path: '" + absPath + '\'')
-  else                    -> Cmd(absPath, args)
-
 act addToDb(Database db, string key, Cmd cmd) -> Either{Database, Error}
   if db[key] is Entry -> Error("Key '" + key + "' already exists")
   else                -> db.addEntry(Entry(key, cmd, timeNow(), timeNow()))
 
 act addCmd(AddSettings s) -> Option{Error}
   c   = consoleOpen().failOnError();
-  cmd = createCmd(s).failOnError();
+  cmd = buildCmd(s.path.val ?? pathCurrent(), s.args.val ?? List{string}()).failOnError();
   key = s.key.val;
   transaction(addToDb[cmd][key], TransactionFlags.Backup).failOnError();
   writer = litWriter("Added '") & stringWriter() & litWriter("': ") & cmdWriter() & newlineWriter();

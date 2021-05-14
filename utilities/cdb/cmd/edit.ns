@@ -1,0 +1,33 @@
+import "std.ns"
+
+import "../database.ns"
+import "../utils.ns"
+import "../writer.ns"
+
+struct EditSettings =
+  bool                                noColor,
+  CliPositional{string}               key,
+  CliPositional{Option{Path}}         path,
+  CliPositional{Option{List{string}}} args
+
+act editInteractive(Console c, Cmd cmd, EditSettings s) -> Either{Cmd, Error}
+  inStream    = c.stdIn;
+  outStream   = getInteractiveOutputStream(c).failOnError();
+  rlSettings  = RlSettings(inStream, outStream, List{string}(), cmdWriter().run(cmd), "> ", !s.noColor);
+  res         = ttyReadLine(rlSettings).failOnError();
+  if res as RlResultSuccess success -> buildCmd(success.text)
+  if res is RlResultCancelled       -> Error("Cancelled")
+
+act updateDbEntry(Database db, Entry entry) -> Either{Database, Error}
+  db.updateEntry(entry)
+
+act editCmd(EditSettings s) -> Option{Error}
+  c  = consoleOpen().failOnError();
+  db = loadDb().failOnError();
+  if db[s.key.val] as Entry entry ->
+  ( newCmd = ( s.path.val as Path p ? buildCmd(p, s.args.val ?? List{string}())
+                                    : editInteractive(c, entry.value, s) ).failOnError();
+    transaction(updateDbEntry[Entry(entry.key, newCmd, entry.creationTime, entry.accessTime)]) )
+  else -> Error("No entry found with key: '" + s.key.val + '\'')
+
+fun cliIsInteruptable(Type{EditSettings} s) false
