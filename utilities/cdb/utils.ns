@@ -44,10 +44,12 @@ act buildCmd(PathAbsolute path, List{string} args) -> Either{Cmd, Error}
 
 enum EntryType = Directory, File, Any
 
-act entryMatchesFilter(Entry e, EntryType t)
-  if t == EntryType.Directory -> fileType(e.value.path) == FileType.Directory
-  if t == EntryType.File      -> ft = fileType(e.value.path); ft == FileType.Regular || ft == FileType.Symlink
-  else                        -> true
+act entryMatchesFilter(Entry e, EntryType t, TextPattern filter = AnyTextPattern())
+  if !filter.textMatch(e.key) -> false
+  else -> (
+    if t == EntryType.Directory -> fileType(e.value.path) == FileType.Directory
+    if t == EntryType.File      -> ft = fileType(e.value.path); ft == FileType.Regular || ft == FileType.Symlink
+    else                        -> true )
 
-act filterEntries(List{Entry} entries, EntryType t)
-  entries.filter(entryMatchesFilter[t])
+act filterEntries(List{Entry} entries, EntryType t, TextPattern filter = AnyTextPattern()) -> List{Entry}
+  entries.filter(entryMatchesFilter[filter][t])
