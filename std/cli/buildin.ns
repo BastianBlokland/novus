@@ -41,11 +41,24 @@ act cliVersionCmd(CliVersionConfig cfg, CliResult res)
 // -- Help
 
 struct CliHelpConfig =
-  bool color,
-  bool noColor
+  CliPositional{Option{string}} command,
+  bool                          color,
+  bool                          noColor
+
+fun cliGetHelpCmd(CliResult res, string name) -> Option{CliHelpCmd}
+  if res.app.cmds.first(lambda (CliCmdCfg c) name == c.name) as CliCmdCfg cmd -> CliHelpCmd(res.app, cmd)
+  else                                                                        -> None()
 
 act cliHelpCmd(CliHelpConfig cfg, CliResult res)
   consoleOpen().map(impure lambda (Console c)
     helpWriterCfg = CliHelpCfg((cfg.color || c.allowColor()) && !cfg.noColor);
-    c.writeOut(cliHelpWriter(helpWriterCfg), res.app)
+    if cfg.command.val as string cmdName ->
+    (
+      if cliGetHelpCmd(res, cmdName) as CliHelpCmd cmd -> c.writeOut(cliHelpCmdWriter(helpWriterCfg), cmd)
+      else                                             -> cliReportUnknownCommand(res.app, cmdName)
+    )
+    else ->
+    (
+      c.writeOut(cliHelpWriter(helpWriterCfg), res.app)
+    )
   )
