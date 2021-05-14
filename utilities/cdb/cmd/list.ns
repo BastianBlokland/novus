@@ -11,7 +11,8 @@ struct ListSettings =
   Option{int}   width,
   bool          time,
   ListSortMode  sort,
-  bool          noColor
+  bool          noColor,
+  bool          keysOnly
 
 fun orderListEntry(Entry e1, Entry e2, ListSettings s)
   if s.sort == ListSortMode.CreationTime  -> orderEntryCreationTime(e1, e2)
@@ -38,7 +39,8 @@ act listCmd(ListSettings s) -> Option{Error}
   entries       = db.entries.filterEntries(s.type).map(updateTimeToLocal).sortListEntries(s);
   maxKeyWidth   = getMaxEntryKeySize(entries);
   maxTotalWidth = s.width ?? (c.termGetWidth() ?? 80);
-  writer        = listWriter(entryWriter(s.time, maxKeyWidth, maxTotalWidth, color), newlineWriter()) & newlineWriter();
+  entryWriter   = s.keysOnly ? entryKeyWriter() : entryWriter(s.time, maxKeyWidth, maxTotalWidth, color);
+  writer        = listWriter(entryWriter, newlineWriter()) & newlineWriter();
   if entries.isEmpty() -> c.writeOut(getListErrorMessage(s))
   else                 -> c.writeOut(writer, entries)
 
