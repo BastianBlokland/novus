@@ -27,7 +27,10 @@ act editCmd(EditSettings s) -> Option{Error}
   if db[s.key.val] as Entry entry ->
   ( newCmd = ( s.path.val as Path p ? buildCmd(p, s.args.val ?? List{string}())
                                     : editInteractive(c, entry.value, s) ).failOnError();
-    transaction(updateDbEntry[Entry(entry.key, newCmd, entry.creationTime, entry.accessTime)]) )
+    transaction(updateDbEntry[Entry(entry.key, newCmd, entry.creationTime, entry.accessTime)]).failOnError();
+    writer = litWriter("Updated '") & stringWriter() & litWriter("': ") & cmdWriter() & newlineWriter();
+    c.writeOut(writer, Tuple(entry.key, newCmd))
+  )
   else -> Error("No entry found with key: '" + s.key.val + '\'')
 
 fun cliIsInteruptable(Type{EditSettings} s) false
