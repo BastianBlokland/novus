@@ -39,7 +39,7 @@ act getCmdInteractive(GetSettings s)
   outStream   = getInteractiveOutputStream(c).failOnError();
   db          = loadDb().failOnError();
   keys        = db.entries.filterEntries(s.type).sort(getCmdEntryOrder).map(lambda (Entry e) e.key);
-  rlSettings  = RlSettings(inStream, outStream, keys, "> ", !s.noColor);
+  rlSettings  = RlSettings(inStream, outStream, keys, "", "> ", !s.noColor);
   res         = ttyReadLine(rlSettings).failOnError();
   if res as RlResultSuccess success -> getCmdWithKey(s, success.text)
   if res is RlResultCancelled       -> fail("Cancelled")

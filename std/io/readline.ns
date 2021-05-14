@@ -9,6 +9,7 @@ struct RlSettings =
   sys_stream    in,
   sys_stream    out,
   List{string}  options,
+  string        startingLine,
   string        prompt,
   bool          useColor
 
@@ -191,7 +192,7 @@ fun rlApplyInput(RlState s, RlInput input) -> RlState
   else                        -> s
 
 act rlLoop(RlSettings s) -> Either{RlResult, Error}
-  state       = RlState("", 0, 0);
+  state       = RlState(s.startingLine, s.startingLine.length(), 0);
   inputParser = rlInputListParser();
   renderer    = rlStateWriter(s);
   if rlRenderState(s, state, renderer) as Error renderErr -> renderErr
@@ -212,7 +213,7 @@ act rlLoop(RlSettings s, RlState state, Parser{List{RlInput}} parser, Writer{RlS
 // -- Api
 
 act rlSettings(Console c, List{string} options = List{string}(), string prompt = "> ") -> RlSettings
-  RlSettings(c.stdIn, c.stdOut, options, prompt, c.allowColor())
+  RlSettings(c.stdIn, c.stdOut, options, "", prompt, c.allowColor())
 
 act ttyReadLine(Console c) -> Either{RlResult, Error}
   ttyReadLine(rlSettings(c))
