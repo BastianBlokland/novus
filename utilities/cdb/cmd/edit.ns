@@ -11,10 +11,11 @@ struct EditSettings =
   CliPositional{Option{List{string}}} args
 
 act editInteractive(Console c, Cmd cmd, EditSettings s) -> Either{Cmd, Error}
-  inStream    = c.stdIn;
-  outStream   = getInteractiveOutputStream(c).failOnError();
-  rlSettings  = RlSettings(inStream, outStream, List{string}(), cmdWriter().run(cmd), "> ", !s.noColor);
-  res         = ttyReadLine(rlSettings).failOnError();
+  inStream      = c.stdIn;
+  outStream     = getInteractiveOutputStream(c).failOnError();
+  cmdWriteFlags = cmd.path.pathContainsWhitespace() ? CmdWriteFlags.QuotePath : CmdWriteFlags.None;
+  rlSettings    = RlSettings(inStream, outStream, List{string}(), cmdWriter(cmdWriteFlags).run(cmd), "> ", !s.noColor);
+  res           = ttyReadLine(rlSettings).failOnError();
   if res as RlResultSuccess success -> buildCmd(success.text)
   if res is RlResultCancelled       -> Error("Cancelled")
 
@@ -27,7 +28,8 @@ act editCmd(EditSettings s) -> Option{Error}
   if db[s.key.val] as Entry entry ->
   ( newCmd = ( s.path.val as Path p ? buildCmd(p, s.args.val ?? List{string}())
                                     : editInteractive(c, entry.value, s) ).failOnError();
-    transaction(updateDbEntry[Entry(entry.key, newCmd, entry.creationTime, entry.accessTime)]).failOnError();
+    newEntry = Entry(entry.key, newCmd, entry.creationTime, entry.accessTime);
+    transaction(updateDbEntry[newEntry], TransactionFlags.Backup).failOnError();
     writer = litWriter("Updated '") & stringWriter() & litWriter("': ") & cmdWriter() & newlineWriter();
     c.writeOut(writer, Tuple(entry.key, newCmd))
   )

@@ -142,6 +142,16 @@ fun pathCannonize(PathRelative p) -> PathRelative
     ), Tuple(List{string}(), 0)).f1
   )
 
+fun pathContainsWhitespace(Path p)
+  if p as PathAbsolute abs -> abs.pathContainsWhitespace()
+  if p as PathRelative rel -> rel.pathContainsWhitespace()
+
+fun pathContainsWhitespace(PathRelative p)
+  p.segments.any(lambda (string s) s.any(isWhitespace))
+
+fun pathContainsWhitespace(PathAbsolute p)
+  p.root.any(isWhitespace) || p.path.pathContainsWhitespace()
+
 // -- Parsers
 
 fun pathRelParser{UntilT}(Parser{UntilT} until = endParser()) -> Parser{PathRelative}

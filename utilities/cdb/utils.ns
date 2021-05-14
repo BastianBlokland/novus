@@ -17,6 +17,13 @@ fun orderEntryPath(Entry e1, Entry e2)
 fun getMaxEntryKeySize(List{Entry} entries)
   entries.fold(lambda (int max, Entry e) e.key.length() > max ? e.key.length() : max)
 
+fun splitCommandLineString(string str) -> Either{List{string}, Error}
+  makeQuotedParser  = (lambda (char q) qp = matchParser(q); qp >> untilParser(qp) << qp);
+  singleQuoteParser = makeQuotedParser('\'') << whitespaceParser();
+  doubleQuoteParser = makeQuotedParser('\"') << whitespaceParser();
+  nonQuotedParser   = untilParser(isWhitespace) << whitespaceParser();
+  manyParser(singleQuoteParser | doubleQuoteParser | nonQuotedParser).run(str)
+
 // -- Utility actions
 
 act getInteractiveOutputStream(Console c) -> Either{sys_stream, Error}
@@ -28,10 +35,12 @@ act updateTimeToLocal(Entry e) -> Entry
   Entry(e.key, e.value, timeToLocal(e.creationTime), timeToLocal(e.accessTime))
 
 act buildCmd(string str) -> Either{Cmd, Error}
-  parts = str.split(equals{char}[' ']);
-  if parts.front() as string path ->
-    pathAbsParser().run(path).map(impure lambda (PathAbsolute absPath) buildCmd(absPath, parts.pop()))
-  else -> Error("Invalid command string")
+  partsOrErr = splitCommandLineString(str);
+  if partsOrErr as Error        err -> err
+  if partsOrErr as List{string} parts ->
+    if parts.front() as string path ->
+      pathAbsParser().run(path).map(impure lambda (PathAbsolute absPath) buildCmd(absPath, parts.pop()))
+    else -> Error("Invalid command string")
 
 act buildCmd(Path path, List{string} args) -> Either{Cmd, Error}
   buildCmd(pathAbsolute(path), args)
