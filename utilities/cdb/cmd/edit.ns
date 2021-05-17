@@ -17,7 +17,7 @@ act editInteractive(Console c, Cmd cmd, EditSettings s) -> Either{Cmd, Error}
   rlSettings    = RlSettings(inStream, outStream, List{string}(), cmdWriter(cmdWriteFlags).run(cmd), "> ", !s.noColor);
   res           = ttyReadLine(rlSettings).failOnError();
   if res as RlResultSuccess success -> buildCmd(success.text)
-  if res is RlResultCancelled       -> Error("Cancelled")
+  if res is RlResultCancelled       -> cmd
 
 act updateDbEntry(Database db, Entry entry) -> Either{Database, Error}
   db.updateEntry(entry)
