@@ -149,13 +149,19 @@ act setNoBlockInput(Console c) -> Option{Error}
 act unsetNoBlockInput(Console c) -> Option{Error}
   c.stdIn.unsetOptions(StreamOptions.NoBlock)
 
-act termGetWidth(Console c) -> Either{int, Error}
-  w = intrinsic{term_getwidth}(c.stdOut);
+act termGetWidth(sys_stream stream) -> Either{int, Error}
+  w = intrinsic{term_getwidth}(stream);
   w >= 0 ? w : platformError("Failed to get the terminal width")
 
-act termGetHeight(Console c) -> Either{int, Error}
-  h = intrinsic{term_getheight}(c.stdOut);
+act termGetWidth(Console c) -> Either{int, Error}
+  termGetWidth(c.stdOut)
+
+act termGetHeight(sys_stream stream) -> Either{int, Error}
+  h = intrinsic{term_getheight}(stream);
   h >= 0 ? h : platformError("Failed to get the terminal height")
+
+act termGetHeight(Console c) -> Either{int, Error}
+  termGetHeight(c.stdOut)
 
 act termSetOptions(sys_stream s, TerminalOptions opts) -> Option{Error}
   intrinsic{term_setoptions}(s, int(opts))

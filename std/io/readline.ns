@@ -18,12 +18,15 @@ struct RlSettings =
 fun rlTermOpts() TerminalOptions.NoEcho | TerminalOptions.NoBuffer
 
 act rlSetup(RlSettings s) -> Option{Error}
-  if !s.in.isTerm() || !s.out.isTerm()  -> Error("ReadLine requires an interactive input and output stream")
-  else                                  -> s.in.termSetOptions(rlTermOpts())
+  if !s.in.isTerm() || !s.out.isTerm() -> Error("ReadLine requires an interactive input and output stream")
+  else -> actSeq(
+    lazy s.out.write(ttyLitLineWrapWriter(false).run(None())),
+    lazy s.in.termSetOptions(rlTermOpts())
+  )
 
 act rlTeardown(RlSettings s) -> Option{Error}
   actSeq(
-    lazy s.out.write(ttyResetLineWriter().run(None())),
+    lazy s.out.write((ttyLitLineWrapWriter(true) & ttyResetLineWriter()).run(None())),
     lazy s.in.termUnsetOptions(rlTermOpts())
   )
 
