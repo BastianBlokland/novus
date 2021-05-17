@@ -6,9 +6,16 @@ import "../writer.ns"
 
 struct EditSettings =
   bool                                noColor,
-  CliPositional{string}               key,
+  CliPositional{Option{string}}       key,
   CliPositional{Option{Path}}         path,
   CliPositional{Option{List{string}}} args
+
+act getEditKey(Console c, Database db, EditSettings s) -> Either{string, Error}
+  if s.key.val as string key -> key
+  else ->
+    inStream  = c.stdIn;
+    outStream = getInteractiveOutputStream(c).failOnError();
+    getKeyInteractive(db, EntryType.Any, inStream, outStream, !s.noColor)
 
 act editInteractive(Console c, Cmd cmd, EditSettings s) -> Either{Cmd, Error}
   inStream      = c.stdIn;
@@ -23,16 +30,21 @@ act updateDbEntry(Database db, Entry entry) -> Either{Database, Error}
   db.updateEntry(entry)
 
 act editCmd(EditSettings s) -> Option{Error}
-  c  = consoleOpen().failOnError();
-  db = loadDb().failOnError();
-  if db[s.key.val] as Entry entry ->
+  c        = consoleOpen().failOnError();
+  db       = loadDb().failOnError();
+  keyOrErr = getEditKey(c, db, s);
+  if keyOrErr as Error  keyErr  -> keyErr
+  if keyOrErr as string key     ->
+  if db[key]  as Entry  entry   ->
   ( newCmd = ( s.path.val as Path p ? buildCmd(p, s.args.val ?? List{string}())
                                     : editInteractive(c, entry.value, s) ).failOnError();
     newEntry = Entry(entry.key, newCmd, entry.creationTime, entry.accessTime);
-    transaction(updateDbEntry[newEntry], TransactionFlags.Backup).failOnError();
-    writer = litWriter("Updated '") & stringWriter() & litWriter("': ") & cmdWriter() & newlineWriter();
-    c.writeOut(writer, Tuple(entry.key, newCmd))
+    if transaction(updateDbEntry[newEntry], TransactionFlags.Backup) as Error transErr -> transErr
+    else ->
+      writer = litWriter("Updated '") & stringWriter() & litWriter("': ") & cmdWriter() & newlineWriter();
+      c.writeOut(writer, Tuple(entry.key, newCmd))
   )
-  else -> Error("No entry found with key: '" + s.key.val + '\'')
+  else -> Error("No entry found with key: '" + key + '\'')
+
 
 fun cliIsInteruptable(Type{EditSettings} s) false

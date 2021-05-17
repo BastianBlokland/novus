@@ -12,9 +12,11 @@ act getImportStream(ImportSettings s) -> Either{sys_stream, Error}
 act importCmd(ImportSettings s) -> Option{Error}
   existingDb  = loadDb().failOnError();
   saveDbBack(existingDb).failOnError();
-  stream      = getImportStream(s).failOnError();
-  json        = stream.readToEnd().failOnError();
-  importedDb  = jsonParser{Database}().run(json).failOnError();
-  saveDb(mergeEntries(importedDb, existingDb))
+  stream          = getImportStream(s).failOnError();
+  json            = stream.readToEnd().failOnError();
+  importedDbOrErr = jsonParser{Database}().run(json);
+  if importedDbOrErr as Error     parseErr    -> parseErr
+  if importedDbOrErr as Database  importedDb  ->
+    saveDb(mergeEntries(importedDb, existingDb))
 
 fun cliIsInteruptable(Type{ImportSettings} s) true

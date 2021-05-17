@@ -30,19 +30,14 @@ fun getCmdWriteFlags(GetSettings s) -> CmdWriteFlags
   if s.quotePath        -> CmdWriteFlags.QuotePath
   else                  -> CmdWriteFlags.None
 
-fun getCmdEntryOrder(Entry e1, Entry e2)
-  e1.accessTime > e2.accessTime
-
-act getCmdInteractive(GetSettings s)
+act getCmdInteractive(GetSettings s) -> Option{Error}
   c           = consoleOpen().failOnError();
   inStream    = c.stdIn;
   outStream   = getInteractiveOutputStream(c).failOnError();
   db          = loadDb().failOnError();
-  keys        = db.entries.filterEntries(s.type).sort(getCmdEntryOrder).map(lambda (Entry e) e.key);
-  rlSettings  = RlSettings(inStream, outStream, keys, "", "> ", !s.noColor);
-  res         = ttyReadLine(rlSettings).failOnError();
-  if res as RlResultSuccess success -> getCmdWithKey(s, success.text)
-  if res is RlResultCancelled       -> fail("Cancelled")
+  keyOrErr    = getKeyInteractive(db, s.type, inStream, outStream, !s.noColor);
+  if keyOrErr as Error  err -> err
+  if keyOrErr as string key -> getCmdWithKey(s, key)
 
 act getCmdWithKey(GetSettings s, string key) -> Option{Error}
   c = consoleOpen().failOnError();

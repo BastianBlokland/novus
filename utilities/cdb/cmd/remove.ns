@@ -27,7 +27,7 @@ act getKeysToRemove(RemoveSettings s, Console c) -> List{string}
 act removeCmd(RemoveSettings s) -> Option{Error}
   c     = consoleOpen().failOnError();
   keys  = getKeysToRemove(s, c);
-  if transaction(removeFromDb[keys], TransactionFlags.Backup) as Error err  -> fail(err)
+  if transaction(removeFromDb[keys], TransactionFlags.Backup) as Error err -> err
   else ->
     writer = listWriter(litWriter("Removed '") & stringWriter() & litWriter('\'') & newlineWriter());
     c.writeOut(writer, keys)
