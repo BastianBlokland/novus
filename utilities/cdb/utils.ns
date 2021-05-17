@@ -31,6 +31,17 @@ act getInteractiveOutputStream(Console c) -> Either{sys_stream, Error}
   if c.stdErr.isTerm() -> c.stdErr
   else                 -> Error("An interactive terminal is required")
 
+act getKeyInteractive(Database db, EntryType t, sys_stream inStream, sys_stream outStream, bool color) -> Either{string, Error}
+  keys        = db.entries.filterEntries(t).sort(orderEntryAccessTime).map(lambda (Entry e) e.key);
+  rlSettings  = RlSettings(inStream, outStream, keys, "", "> ", color);
+  resOrError  = ttyReadLine(rlSettings);
+  if resOrError as Error    rlError -> rlError
+  if resOrError as RlResult res     ->
+  (
+    if res as RlResultSuccess success -> success.text
+    if res is RlResultCancelled       -> Error("Cancelled")
+  )
+
 act updateTimeToLocal(Entry e) -> Entry
   Entry(e.key, e.value, timeToLocal(e.creationTime), timeToLocal(e.accessTime))
 

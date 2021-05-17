@@ -8,6 +8,8 @@ struct GetSettings =
   EntryType                     type,
   bool                          quotePath,
   bool                          doubleQuotePath,
+  bool                          quoteArgs,
+  bool                          doubleQuoteArgs,
   bool                          noColor,
   CliPositional{Option{string}} key
 
@@ -26,23 +28,20 @@ act getFromDb(Database db, string key, EntryType t) -> Either{Tuple{Database, En
   else                  -> Error("No entry found with key: '" + key + '\'')
 
 fun getCmdWriteFlags(GetSettings s) -> CmdWriteFlags
-  if s.doubleQuotePath  -> CmdWriteFlags.DoubleQuotePath
-  if s.quotePath        -> CmdWriteFlags.QuotePath
-  else                  -> CmdWriteFlags.None
+  CmdWriteFlags.None
+  | (s.quotePath        ? CmdWriteFlags.QuotePath       : CmdWriteFlags.None)
+  | (s.doubleQuotePath  ? CmdWriteFlags.DoubleQuotePath : CmdWriteFlags.None)
+  | (s.quoteArgs        ? CmdWriteFlags.QuoteArgs       : CmdWriteFlags.None)
+  | (s.doubleQuoteArgs  ? CmdWriteFlags.DoubleQuoteArgs : CmdWriteFlags.None)
 
-fun getCmdEntryOrder(Entry e1, Entry e2)
-  e1.accessTime > e2.accessTime
-
-act getCmdInteractive(GetSettings s)
+act getCmdInteractive(GetSettings s) -> Option{Error}
   c           = consoleOpen().failOnError();
   inStream    = c.stdIn;
   outStream   = getInteractiveOutputStream(c).failOnError();
   db          = loadDb().failOnError();
-  keys        = db.entries.filterEntries(s.type).sort(getCmdEntryOrder).map(lambda (Entry e) e.key);
-  rlSettings  = RlSettings(inStream, outStream, keys, "", "> ", !s.noColor);
-  res         = ttyReadLine(rlSettings).failOnError();
-  if res as RlResultSuccess success -> getCmdWithKey(s, success.text)
-  if res is RlResultCancelled       -> fail("Cancelled")
+  keyOrErr    = getKeyInteractive(db, s.type, inStream, outStream, !s.noColor);
+  if keyOrErr as Error  err -> err
+  if keyOrErr as string key -> getCmdWithKey(s, key)
 
 act getCmdWithKey(GetSettings s, string key) -> Option{Error}
   c = consoleOpen().failOnError();

@@ -14,11 +14,14 @@ act addToDb(Database db, string key, Cmd cmd) -> Either{Database, Error}
   else                -> db.addEntry(Entry(key, cmd, timeNow(), timeNow()))
 
 act addCmd(AddSettings s) -> Option{Error}
-  c   = consoleOpen().failOnError();
-  cmd = buildCmd(s.path.val ?? pathCurrent(), s.args.val ?? List{string}()).failOnError();
-  key = s.key.val;
-  transaction(addToDb[cmd][key], TransactionFlags.Backup).failOnError();
-  writer = litWriter("Added '") & stringWriter() & litWriter("': ") & cmdWriter() & newlineWriter();
-  c.writeOut(writer, Tuple(key, cmd))
+  c         = consoleOpen().failOnError();
+  cmdOrErr  = buildCmd(s.path.val ?? pathCurrent(), s.args.val ?? List{string}());
+  if cmdOrErr as Error cmdErr -> cmdErr
+  if cmdOrErr as Cmd   cmd    ->
+    key      = s.key.val;
+    if transaction(addToDb[cmd][key], TransactionFlags.Backup) as Error transErr -> transErr
+    else ->
+      writer   = litWriter("Added '") & stringWriter() & litWriter("': ") & cmdWriter() & newlineWriter();
+      c.writeOut(writer, Tuple(key, cmd))
 
 fun cliIsInteruptable(Type{AddSettings} s) false

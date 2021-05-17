@@ -132,6 +132,14 @@ fun ttyCursorShowWriter() -> Writer{bool}
 fun ttyLitCursorShowWriter(bool show) -> Writer{None}
   litWriter(ttyEsc() + "[?25" + (show ? 'h' : 'l'))
 
+fun ttyLineWrapWriter() -> Writer{bool}
+  (
+    litWriter(ttyEsc() + "[?7") & charWriter()
+  ).map(lambda (bool wrap) wrap ? 'h' : 'l')
+
+fun ttyLitLineWrapWriter(bool wrap) -> Writer{None}
+  litWriter(ttyEsc() + "[?7" + (wrap ? 'h' : 'l'))
+
 fun ttyCursorBlinkWriter() -> Writer{bool}
   (
     litWriter(ttyEsc() + "[?12") & charWriter()
