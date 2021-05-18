@@ -6,10 +6,7 @@ import "../writer.ns"
 
 struct GetSettings =
   EntryType                     type,
-  bool                          quotePath,
-  bool                          doubleQuotePath,
-  bool                          quoteArgs,
-  bool                          doubleQuoteArgs,
+  bool                          doubleQuote,
   bool                          noColor,
   CliPositional{Option{string}} key
 
@@ -29,10 +26,7 @@ act getFromDb(Database db, string key, EntryType t) -> Either{Tuple{Database, En
 
 fun getCmdWriteFlags(GetSettings s) -> CmdWriteFlags
   CmdWriteFlags.None
-  | (s.quotePath        ? CmdWriteFlags.QuotePath       : CmdWriteFlags.None)
-  | (s.doubleQuotePath  ? CmdWriteFlags.DoubleQuotePath : CmdWriteFlags.None)
-  | (s.quoteArgs        ? CmdWriteFlags.QuoteArgs       : CmdWriteFlags.None)
-  | (s.doubleQuoteArgs  ? CmdWriteFlags.DoubleQuoteArgs : CmdWriteFlags.None)
+  | (s.doubleQuote  ? CmdWriteFlags.DoubleQuote : CmdWriteFlags.None)
 
 act getCmdInteractive(GetSettings s) -> Option{Error}
   c           = consoleOpen().failOnError();

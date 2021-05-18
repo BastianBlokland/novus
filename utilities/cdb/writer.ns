@@ -1,28 +1,22 @@
 import "database.ns"
 
 enum CmdWriteFlags =
-  None            : 0b0000,
-  QuotePath       : 0b0001,
-  DoubleQuotePath : 0b0010,
-  QuoteArgs       : 0b0100,
-  DoubleQuoteArgs : 0b1000
+  None        : 0b0,
+  DoubleQuote : 0b1
 
-enum CmdQuoteFlags =
-  Quote       : 0b01,
-  DoubleQuote : 0b10
-
-fun cmdQuoteWriter(CmdQuoteFlags flags) -> Writer{None}
-  singleQuote = (flags & CmdQuoteFlags.Quote) != 0;
-  doubleQuote = (flags & CmdQuoteFlags.DoubleQuote) != 0;
-  (singleQuote || doubleQuote) ? litWriter(doubleQuote ? '"' : '\'') : noneWriter()
-
-fun cmdQuotedWriter{T}(Writer{T} writer, CmdQuoteFlags flags) -> Writer{T}
-  cmdQuoteWriter(flags) & writer & cmdQuoteWriter(flags)
+fun cmdQuotedWriter{T}(Writer{T} writer, CmdWriteFlags flags) -> Writer{T}
+  doubleQuote = (flags & CmdWriteFlags.DoubleQuote) != 0;
+  quote = doubleQuote ? "\"" : "\'";
+  Writer(lambda (WriterState s, T val)
+    str = writer.run(val);
+    shouldQuote = str.any(isWhitespace | equals{char}['|']);
+    s.write((shouldQuote ? quote : "") + str + (shouldQuote ? quote : ""))
+  )
 
 fun cmdWriter(CmdWriteFlags flags = CmdWriteFlags.None) -> Writer{Cmd}
   (
-    cmdQuotedWriter(pathAbsWriter(), CmdQuoteFlags(flags & 0b11)) &
-    ?(litWriter(' ') & listWriter(cmdQuotedWriter(stringWriter(), CmdQuoteFlags((flags >> 2) & 0b11)), litWriter(' ')))
+    cmdQuotedWriter(pathAbsWriter(), flags) &
+    ?(litWriter(' ') & listWriter(cmdQuotedWriter(stringWriter(), flags), litWriter(' ')))
   ).map(lambda (Cmd c) Tuple(c.path, !c.args.isEmpty() ? c.args : None()))
 
 fun entryDimWriter{T}(Writer{T} w, bool color)
