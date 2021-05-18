@@ -1,15 +1,17 @@
 import "database.ns"
 
 enum CmdWriteFlags =
-  None        : 0b0,
-  DoubleQuote : 0b1
+  None        : 0b00,
+  DoubleQuote : 0b01,
+  NeverQuote  : 0b10
 
 fun cmdQuotedWriter{T}(Writer{T} writer, CmdWriteFlags flags) -> Writer{T}
   doubleQuote = (flags & CmdWriteFlags.DoubleQuote) != 0;
+  neverQuote  = (flags & CmdWriteFlags.NeverQuote) != 0;
   quote = doubleQuote ? "\"" : "\'";
   Writer(lambda (WriterState s, T val)
     str = writer.run(val);
-    shouldQuote = str.any(isWhitespace | equals{char}['|']);
+    shouldQuote = !neverQuote && str.any(isWhitespace | equals{char}['|']);
     s.write((shouldQuote ? quote : "") + str + (shouldQuote ? quote : ""))
   )
 
