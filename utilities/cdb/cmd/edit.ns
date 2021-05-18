@@ -17,16 +17,10 @@ act getEditKey(Console c, Database db, EditSettings s) -> Either{string, Error}
     outStream = getInteractiveOutputStream(c).failOnError();
     getKeyInteractive(db, EntryType.Any, inStream, outStream, !s.noColor)
 
-fun getEditCmdWriteFlags(Cmd cmd) -> CmdWriteFlags
-  CmdWriteFlags.None
-  | (cmd.path.pathContainsWhitespace() ? CmdWriteFlags.QuotePath : CmdWriteFlags.None)
-  | (cmd.args.any(lambda (string s) s.any(isWhitespace)) ? CmdWriteFlags.QuoteArgs : CmdWriteFlags.None)
-
 act editInteractive(Console c, Cmd cmd, EditSettings s) -> Either{Cmd, Error}
   inStream      = c.stdIn;
   outStream     = getInteractiveOutputStream(c).failOnError();
-  cmdWriteFlags = getEditCmdWriteFlags(cmd);
-  rlSettings    = RlSettings(inStream, outStream, List{string}(), cmdWriter(cmdWriteFlags).run(cmd), "> ", !s.noColor);
+  rlSettings    = RlSettings(inStream, outStream, List{string}(), cmdWriter().run(cmd), "> ", !s.noColor);
   res           = ttyReadLine(rlSettings).failOnError();
   if res as RlResultSuccess success -> buildCmd(success.text)
   if res is RlResultCancelled       -> cmd

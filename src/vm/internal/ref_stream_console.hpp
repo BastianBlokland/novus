@@ -394,7 +394,15 @@ inline auto unsetFileDescriptorOpts(int fd, StreamOpts opts) noexcept -> bool {
 #endif // !_WIN32
 
 inline auto getConsolePlatformError() noexcept -> PlatformError {
-#if !defined(_WIN32)
+#if defined(_WIN32)
+
+  switch (::GetLastError()) {
+  case ERROR_BROKEN_PIPE:
+    return PlatformError::StreamNoDataAvailable;
+  }
+
+#else // !_WIN32
+
   switch (errno) {
   case EAGAIN:
     return PlatformError::StreamNoDataAvailable;
@@ -402,6 +410,7 @@ inline auto getConsolePlatformError() noexcept -> PlatformError {
   case ETIMEDOUT:
     return PlatformError::ConsoleNoLongerAvailable;
   }
+
 #endif
   return PlatformError::ConsoleUnknownError;
 }

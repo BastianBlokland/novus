@@ -10,6 +10,7 @@ import "cmd/get.ns"
 import "cmd/import.ns"
 import "cmd/install.ns"
 import "cmd/list.ns"
+import "cmd/prune.ns"
 import "cmd/remove.ns"
 import "cmd/undo.ns"
 
@@ -19,9 +20,10 @@ cli(cliCmd("get",     getCmd,     "Get an entry from the database"),
     cliCmd("list",    listCmd,    "List all commands stored in the database"),
     cliCmd("undo",    undoCmd,    "Restore the latest backup"),
     cliCmd("edit",    editCmd,    "Edit an entry in the database"),
+    cliCmd("prune",   pruneCmd,   "Prune unwanted entries from the database"),
     cliCmd("install", installCmd, "Install shell aliases"),
     cliCmd("export",  exportCmd,  "Export the database to a json file"),
     cliCmd("import",  importCmd,  "Import a database json file"),
     cliAppInfo(
       "Command DataBase", "Simple database for storing shell commands.",
-      Version(0, 9, 0)))
+      Version(0, 11, 0)))
