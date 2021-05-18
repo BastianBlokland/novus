@@ -1,0 +1,40 @@
+import "std.ns"
+
+import "../database.ns"
+import "../utils.ns"
+
+enum PruneType =
+  Missing,
+  Unused
+
+struct PruneSettings =
+  PruneType type,
+  int       unusedWeeksThreshold
+
+act prunePredicate(Entry e, PruneSettings s) -> bool
+  if s.type == PruneType.Missing  -> !fileExists(e.value.path)
+  if s.type == PruneType.Unused   -> (timeNow() - e.accessTime) > weeks(s.unusedWeeksThreshold)
+  else                            -> false
+
+act pruneFromDb(Database db, List{string} keys) -> Either{Database, Error}
+  keys.fold(lambda (Either{Database, Error} res, string key) -> Either{Database, Error}
+    if res as Error     err -> err
+    if res as Database  db  -> db.removeEntry(key)
+  , Either{Database, Error}(db))
+
+fun cliDefaults(Type{PruneSettings} t)
+  CliDefault("type",                    "missing") ::
+  CliDefault("unused-weeks-threshold",  "4")
+
+act pruneCmd(PruneSettings s) -> Option{Error}
+  c     = consoleOpen().failOnError();
+  db    = loadDb().failOnError();
+  keys  = db.entries.filter(prunePredicate[s]).map(lambda (Entry e) e.key);
+  if keys.isEmpty() -> c.writeOut("Nothing to prune\n")
+  else ->
+    if transaction(pruneFromDb[keys], TransactionFlags.Backup) as Error err -> err
+    else ->
+      writer = listWriter(litWriter("Pruned '") & stringWriter() & litWriter('\'') & newlineWriter());
+      c.writeOut(writer, keys)
+
+fun cliIsInteruptable(Type{PruneSettings} s) false
