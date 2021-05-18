@@ -1,8 +1,10 @@
 import "std.ns"
 
 import "../database.ns"
+import "../utils.ns"
 
 struct RemoveSettings =
+  bool                                noColor,
   CliPositional{Option{List{string}}} keys
 
 act removeFromDb(Database db, List{string} keys) -> Either{Database, Error}
@@ -13,16 +15,22 @@ act removeFromDb(Database db, List{string} keys) -> Either{Database, Error}
       else                -> db.removeEntry(key)
   , Either{Database, Error}(db))
 
-act getRemoveInputText(Console c) -> string
-  if c.isTerm() -> ttyReadLine(c).failOnError() as RlResultSuccess success ? success.text : ""
+act getRemoveInputTextInteractive(RemoveSettings s, Console c) -> string
+  inStream  = c.stdIn;
+  outStream = getInteractiveOutputStream(c).failOnError();
+  db        = loadDb().failOnError();
+  getKeyInteractive(db, EntryType.Any, inStream, outStream, !s.noColor) ?? ""
+
+act getRemoveInputText(RemoveSettings s, Console c) -> string
+  if c.isTerm() -> getRemoveInputTextInteractive(s, c)
   else          -> (getUntilInterupt(fork c.readToEnd()) ?? "").failOnError()
 
-act getKeysToRemoveFromInput(Console c) -> List{string}
-  getRemoveInputText(c).split(equals{char}['\n'])
+act getKeysToRemoveFromInput(RemoveSettings s, Console c) -> List{string}
+  getRemoveInputText(s, c).split(equals{char}['\n'])
 
 act getKeysToRemove(RemoveSettings s, Console c) -> List{string}
   if s.keys.val as List{string} keys -> keys
-  else                               -> getKeysToRemoveFromInput(c)
+  else                               -> getKeysToRemoveFromInput(s, c)
 
 act removeCmd(RemoveSettings s) -> Option{Error}
   c     = consoleOpen().failOnError();
