@@ -1,0 +1,28 @@
+import "std.ns"
+
+import "data.ns"
+import "parser.ns"
+
+struct P4Config =
+  P4Server  server,
+  P4Client  client,
+  P4User    user
+
+// Custom Json mappings for P4 specific types.
+
+fun fromJson(JsonValue jv, Type{P4Server} t) -> Either{P4Server, Error}
+  if jv as string s -> p4ServerParser().run(s)
+  else              -> Error("Expected a P4Server, got a " + jsonValueType(jv))
+
+fun fromJson(JsonValue jv, Type{P4Client} t) -> Either{P4Client, Error}
+  jv as string s ? P4Client(s) : Error("Expected a P4Client, got a " + jsonValueType(jv))
+
+fun fromJson(JsonValue jv, Type{P4User} t) -> Either{P4User, Error}
+  jv as string s ? P4User(s) : Error("Expected a P4User, got a " + jsonValueType(jv))
+
+// Utilities.
+
+act loadP4Config(PathAbsolute p = pathCurrent()) -> Either{P4Config, Error}
+  if fileOpen(p / ".np4", FileMode.OpenReadOnly) as File f  -> f.readToEnd(jsonParser{P4Config}())
+  if p.pathIsRoot()                                         -> Error("Unable to find a .np4 config file")
+  else                                                      -> loadP4Config(p.parent())

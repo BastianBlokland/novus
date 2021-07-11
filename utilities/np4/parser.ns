@@ -1,0 +1,44 @@
+import "std.ns"
+
+import "data.ns"
+
+fun p4ServerParser()
+  (
+    untilParser(matchParser(':')).trim() & (matchParser(':') >> txtIntParser())
+  ).to(Type{P4Server}())
+
+fun p4UserParser()    untilParser(isWhitespace).to(Type{P4User}())
+fun p4ClientParser()  untilParser(isWhitespace).to(Type{P4Client}())
+fun p4StreamParser()  untilParser(isWhitespace).to(Type{P4Stream}())
+
+fun p4TagParser{T}(string tag, Parser{T} valParser) -> Parser{T}
+  matchParser("... ")                  >>
+  matchParser(tag, StrComp.IgnoreCase) >>
+  matchParser(' ')                     >> valParser << whitespaceParser()
+
+fun p4TagParser(string tag) -> Parser{string}
+  p4TagParser(tag, untilParser(newlineParser() >> matchParser("...")) | endParser())
+
+fun p4TagSkipUntilParser(string tag) -> Parser{string}
+  untilParser(matchParser("... ") >> matchParser(tag, StrComp.IgnoreCase), ParseFlags.Optional)
+
+fun p4ChangeParser()
+  (
+    p4TagParser("change", txtIntParser())                                           &
+    p4TagParser("time", timeUnixParser())                                           &
+    p4TagParser("user", p4UserParser())                                             &
+    p4TagParser("client", p4ClientParser())                                         &
+    p4TagParser("status", enumParser(Type{P4ChangeStatus}(), StrComp.IgnoreCase))   &
+    p4TagParser("changeType", enumParser(Type{P4ChangeType}(), StrComp.IgnoreCase)) &
+    p4TagParser("desc").trim()
+  ).to(Type{P4Change}())
+
+fun p4ClientInfoParser()
+  (
+                                      p4TagParser("client", p4ClientParser())              &
+    p4TagSkipUntilParser("owner")  >> p4TagParser("owner", p4UserParser())                 &
+                                      p4TagParser("host")                                  &
+                                      p4TagParser("description").trim()                    &
+                                      p4TagParser("root", pathAbsParser(newlineParser()))  &
+    p4TagSkipUntilParser("stream") >> p4TagParser("stream", p4StreamParser())
+  ).to(Type{P4ClientInfo}())

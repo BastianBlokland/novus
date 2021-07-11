@@ -1,0 +1,14 @@
+import "std.ns"
+
+import "../config.ns"
+import "../p4.ns"
+
+struct StatusSettings
+
+act statusCmd(StatusSettings s) -> Option{Error}
+  cfg         = loadP4Config().failOnError();
+  curStream   = p4QueryCurrentStreamName(cfg).failOnError();
+  clientInfo  = p4QueryClientInfo(cfg, cfg.client).failOnError();
+  print("Stream: " + clientInfo.stream + " (" + curStream + ")")
+
+fun cliIsInteruptable(Type{StatusSettings} s) true

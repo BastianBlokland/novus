@@ -1,0 +1,36 @@
+import "std.ns"
+
+import "config.ns"
+import "data.ns"
+import "parser.ns"
+
+act p4GlobalArgs(P4Config cfg) -> List{string}
+  "-p"  :: cfg.server.string() ::
+  "-c"  :: cfg.client.string() ::
+  "-u"  :: cfg.user.string()   ::
+  "-z"  :: "tag"
+
+act p4Run(P4Config cfg, List{string} args) -> Either{string, Error}
+  p = run("p4", cfg.p4GlobalArgs() :: args, ProcessFlags.PipeInOut | ProcessFlags.NewGroup);
+  p.wait().map(impure lambda (ProcessResult r)
+    r.isSuccess() ? (r.stdOut ?? "") : Error("p4 error: " + (r.stdErr ?? "").trim())
+  )
+
+act p4Run{T}(P4Config cfg, List{string} args, Parser{T} parser) -> Either{T, Error}
+  cfg.p4Run(args).map(parser.build(ParseFlags.NoWrapperError))
+
+act p4QueryCurrentStreamName(P4Config cfg) -> Either{string, Error}
+  cfg.p4Run("switch" :: List{string}(), allParser().trim())
+
+act p4QueryClientInfo(P4Config cfg, P4Client client) -> Either{P4ClientInfo, Error}
+  cfg.p4Run("client" :: "-o" :: client.id, p4ClientInfoParser())
+
+act p4QueryChanges(P4Config cfg, P4User u, P4ChangeStatus s, int maxAmount = 25) -> Either{List{P4Change}, Error}
+  cfg.p4Run(
+    "changes"                       ::
+    "-L"                            ::
+    "-m" :: maxAmount.string()      ::
+    "-s" :: s.string().strToLower() ::
+    "-u" :: u.string()
+    , manyUntilParser(p4ChangeParser(), endParser())
+  )

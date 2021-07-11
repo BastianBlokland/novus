@@ -1,0 +1,33 @@
+import "std.ns"
+
+struct P4User   = string id
+struct P4Client = string id
+struct P4Server = string host, int port
+struct P4Stream = string path
+
+enum P4ChangeStatus = Pending, Submitted, Shelved
+enum P4ChangeType   = Public, Restricted
+
+struct P4Change =
+  int             id,
+  DateTime        time,
+  P4User          user,
+  P4Client        client,
+  P4ChangeStatus  status,
+  P4ChangeType    type,
+  string          description
+
+struct P4ClientInfo =
+  P4Client      client,
+  P4User        owner,
+  string        host,
+  string        description,
+  PathAbsolute  root,
+  P4Stream      stream
+
+// String converion overrides.
+
+fun string(P4User u) u.id
+fun string(P4Client c) c.id
+fun string(P4Server s) s.host + ':' + s.port.string()
+fun string(P4Stream s) s.path
