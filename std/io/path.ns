@@ -71,6 +71,9 @@ fun pathDefaultRootWindows()
 fun pathRoot(PathAbsolute abs)
   pathAbs(abs.root)
 
+fun pathIsRoot(PathAbsolute p)
+  p.path.segments.isEmpty()
+
 fun filename(PathAbsolute abs) -> Option{string}
   abs.path.filename()
 
@@ -221,6 +224,10 @@ assertEq((pathDefaultRootWindows() / "world.ns").filename(), "world.ns")
 assertIs(pathRel().filename(), Type{None}())
 assertIs(pathDefaultRootUnix().filename(), Type{None}())
 assertIs(pathDefaultRootWindows().filename(), Type{None}())
+
+assert(pathDefaultRootUnix().pathIsRoot())
+assert(pathDefaultRootWindows().pathIsRoot())
+assertNot((pathDefaultRootWindows() / "hello.txt").pathIsRoot())
 
 assertEq((pathRel() / "hello.txt").stem(), "hello")
 assertEq((pathRel() / "hello.c").stem(), "hello")
