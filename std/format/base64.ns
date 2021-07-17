@@ -1,6 +1,34 @@
 import "std/diag.ns"
 import "std/prim.ns"
 
+// MIME Base64 encoding uses 64 'safe' ascii characters to represent 6 bits of data.
+// So to represent 3 bytes of data you need 4 base64 digits (24 bit = 6 * 4).
+//
+// The base64 characters are: 'A - Z', 'a - z' and '0 - 9' and '+' and '/'.
+// '=' is used to pad to a multiple of 4.
+
+// Encode the given input as a base64 string.
+fun base64Encode(string input)
+  table   = base64EncodeTable();
+  padding = string('=', c = input.length() % 3; c == 0 ? 0 : 3 - c);
+  encoded = invoke(lambda (int idx, string result)
+    if idx >= input.length() -> result
+    else ->
+      iA    = input[idx + 0];
+      iB    = input[idx + 1];
+      iC    = input[idx + 2];
+      bits  = (int(iA) << 16) | (int(iB) << 8) | int(iC);
+      oA    = table[(bits >> 18)  & 0x3f];
+      oB    = table[(bits >> 12)  & 0x3f];
+      oC    = table[(bits >> 6)   & 0x3f];
+      oD    = table[(bits >> 0)   & 0x3f];
+      self(idx + 3, result + oA + oB + oC + oD)
+  , 0, "");
+  encoded[0, encoded.length() - padding.length()] + padding
+
+fun base64EncodeTable() -> string
+  "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/="
+
 // Compute the decoded length of the given input.
 fun base64DecodedLength(string encoded) -> int
   if encoded.length() < 2 -> 0
@@ -37,7 +65,25 @@ fun base64DecodeTable() -> string
     char(36)  + char(37)  + char(38)  + char(39)  + char(40)  + char(41)  + char(42) + char(43)  +
     char(44)  + char(45)  + char(46)  + char(47)  + char(48)  + char(49)  + char(50) + char(51)
 
-// -- Tests
+// -- Encode Tests
+
+assertEq(base64Encode("Hello World!"), "SGVsbG8gV29ybGQh")
+assertEq(base64Encode("Hello World"), "SGVsbG8gV29ybGQ=")
+assertEq(base64Encode("any carnal pleasure"), "YW55IGNhcm5hbCBwbGVhc3VyZQ==")
+
+assertEq(base64Encode("Man is distinguished, not only by his reason, but by this singular passion " +
+                      "from other animals, which is a lust of the mind, that by a perseverance of " +
+                      "delight in the continued and indefatigable generation of knowledge, exceeds " +
+                      "the short vehemence of any carnal pleasure."),
+        "TWFuIGlzIGRpc3Rpbmd1aXNoZWQsIG5vdCBvbmx5IGJ5IGhpcyByZWFzb24sIGJ1dCBieSB0aGlz" +
+        "IHNpbmd1bGFyIHBhc3Npb24gZnJvbSBvdGhlciBhbmltYWxzLCB3aGljaCBpcyBhIGx1c3Qgb2Yg" +
+        "dGhlIG1pbmQsIHRoYXQgYnkgYSBwZXJzZXZlcmFuY2Ugb2YgZGVsaWdodCBpbiB0aGUgY29udGlu" +
+        "dWVkIGFuZCBpbmRlZmF0aWdhYmxlIGdlbmVyYXRpb24gb2Yga25vd2xlZGdlLCBleGNlZWRzIHRo" +
+        "ZSBzaG9ydCB2ZWhlbWVuY2Ugb2YgYW55IGNhcm5hbCBwbGVhc3VyZS4=")
+
+assertEq(base64Encode(""), "")
+
+// -- Decode Tests
 
 assertEq(base64DecodeTable().length(), 'z' - '+' + 1)
 
