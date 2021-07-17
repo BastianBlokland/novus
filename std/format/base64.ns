@@ -1,0 +1,66 @@
+import "std/diag.ns"
+import "std/prim.ns"
+
+// Compute the decoded length of the given input.
+fun base64DecodedLength(string encoded) -> int
+  if encoded.length() < 2 -> 0
+  else                  ->
+    padding = (if encoded[encoded.length() - 2] == '=' -> 2
+               if encoded[encoded.length() - 1] == '=' -> 1
+               else                                    -> 0);
+    encoded.length() / 4 * 3 - padding
+
+// Decode the given base64 encoded string.
+fun base64Decode(string encoded)
+  table = base64DecodeTable();
+  invoke(lambda (int idx, int val, int bits, string result) -> Either{string, Error}
+    c       = encoded[idx];
+    newVal  = (val << 6) | table[c - '+'];
+    newBits = bits + 6;
+    if c == '\0' || c == '='                       -> result
+    if c < '+' || c > 'z' || table[c - '+'] == 255 -> Error("Character '" + escapeForPrinting(c) +
+                                                            "' is not a valid base64 character")
+    if newBits >= 0                                -> self(++idx, newVal, newBits - 8, result + char(newVal >> newBits))
+    else                                           -> self(++idx, newVal, newBits, result)
+  , 0, 0, -8, "")
+
+fun base64DecodeTable() -> string
+  "" +
+    char(62)  + char(255) + char(255) + char(255) + char(63)  + char(52)  + char(53) + char(54)  +
+    char(55)  + char(56)  + char(57)  + char(58)  + char(59)  + char(60)  + char(61) + char(255) +
+    char(255) + char(255) + char(255) + char(255) + char(255) + char(255) + char(0)  + char(1)   +
+    char(2)   + char(3)   + char(4)   + char(5)   + char(6)   + char(7)   + char(8)  + char(9)   +
+    char(10)  + char(11)  + char(12)  + char(13)  + char(14)  + char(15)  + char(16) + char(17)  +
+    char(18)  + char(19)  + char(20)  + char(21)  + char(22)  + char(23)  + char(24) + char(25)  +
+    char(255) + char(255) + char(255) + char(255) + char(255) + char(255) + char(26) + char(27)  +
+    char(28)  + char(29)  + char(30)  + char(31)  + char(32)  + char(33)  + char(34) + char(35)  +
+    char(36)  + char(37)  + char(38)  + char(39)  + char(40)  + char(41)  + char(42) + char(43)  +
+    char(44)  + char(45)  + char(46)  + char(47)  + char(48)  + char(49)  + char(50) + char(51)
+
+// -- Tests
+
+assertEq(base64DecodeTable().length(), 'z' - '+' + 1)
+
+assertEq(base64Decode("SGVsbG8gV29ybGQh"), "Hello World!")
+assertEq(base64DecodedLength("SGVsbG8gV29ybGQh"), 12)
+
+assertEq(base64Decode("SGVsbG8gV29ybGQ="), "Hello World")
+assertEq(base64DecodedLength("SGVsbG8gV29ybGQ="), 11)
+
+assertEq(base64Decode("TWFuIGlzIGRpc3Rpbmd1aXNoZWQsIG5vdCBvbmx5IGJ5IGhpcyByZWFzb24sIGJ1dCBieSB0aGlz" +
+                      "IHNpbmd1bGFyIHBhc3Npb24gZnJvbSBvdGhlciBhbmltYWxzLCB3aGljaCBpcyBhIGx1c3Qgb2Yg" +
+                      "dGhlIG1pbmQsIHRoYXQgYnkgYSBwZXJzZXZlcmFuY2Ugb2YgZGVsaWdodCBpbiB0aGUgY29udGlu" +
+                      "dWVkIGFuZCBpbmRlZmF0aWdhYmxlIGdlbmVyYXRpb24gb2Yga25vd2xlZGdlLCBleGNlZWRzIHRo" +
+                      "ZSBzaG9ydCB2ZWhlbWVuY2Ugb2YgYW55IGNhcm5hbCBwbGVhc3VyZS4="),
+        "Man is distinguished, not only by his reason, but by this singular passion from other "   +
+        "animals, which is a lust of the mind, that by a perseverance of delight in the continued" +
+        " and indefatigable generation of knowledge, exceeds the short vehemence of any carnal "   +
+        "pleasure.")
+
+assertEq(base64Decode("YW55IGNhcm5hbCBwbGVhc3VyZQ=="), "any carnal pleasure")
+assertEq(base64DecodedLength("YW55IGNhcm5hbCBwbGVhc3VyZQ=="), 19)
+
+assertIs(base64Decode("SGVsbG8-gV29ybGQ"), Type{Error}())
+
+assertEq(base64Decode(""), "")
+assertEq(base64DecodedLength(""), 0)

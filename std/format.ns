@@ -1,4 +1,5 @@
 import "std/format/ascii.ns"
+import "std/format/base64.ns"
 import "std/format/image.ns"
 import "std/format/json-orm.ns"
 import "std/format/json.ns"
