@@ -1,0 +1,234 @@
+import "base64.ns"
+import "parser.ns"
+
+import "std/core.ns"
+import "std/diag.ns"
+import "std/prim.ns"
+
+// -- Python Marshal format parser and writer
+// https://docs.python.org/3/library/marshal.html
+//
+// Support for:
+// - None
+// - Booleans
+// - Integers
+// - String (always assumed to be valid utf8)
+// - List
+// - Tuple
+// - Dictionary
+// - Set
+//
+// Compatiblity with python marshal versions:
+// - Version 0: Float support is missing.
+// - Version 1: Interned strings are read (but treated as normal strings).
+// - Version 2: Binary float support is missing.
+// - Version 3: References are not supported.
+//
+
+// -- Types
+
+enum PyTypeCode =
+  Null                : 48,
+  None                : 78,
+  False               : 70,
+  True                : 84,
+  StopIter            : 83,
+  Ellipsis            : 46,
+  Int32               : 105,
+  Int64               : 73,
+  Float               : 102,
+  BinaryFloat         : 103,
+  Complex             : 120,
+  BinaryComplex       : 121,
+  Long                : 108,
+  String              : 115,
+  Interned            : 116,
+  Ref                 : 114,
+  Tuple               : 40,
+  List                : 91,
+  Dict                : 123,
+  Code                : 99,
+  Unicode             : 117,
+  Unknown             : 63,
+  Set                 : 60,
+  FrozenSet           : 62,
+  Ascii               : 97,
+  AsciiInterned       : 65,
+  SmallTuple          : 41,
+  ShortAscii          : 122,
+  ShortAsciiInterned  : 90
+
+struct PyNone
+struct PyList   = List{PyObj} entries
+struct PyTuple  = List{PyObj} entries
+struct PyDict   = List{Tuple{PyObj, PyObj}} entries
+struct PySet    = List{PyObj} entries
+union  PyObj    = PyNone, bool, int, long, string, PyList, PyTuple, PyDict, PySet
+
+// -- Conversions
+
+fun string(PyNone n) "none"
+fun string(PyList l) l.entries.string()
+fun string(PyTuple l) l.entries.string()
+fun string(PyDict l) l.entries.string()
+fun string(PySet l) l.entries.string()
+
+// -- Parsers
+
+fun pyMarshalInt32Parser()
+  Parser(lambda (ParseState s) -> ParseResult{int}
+    rem = s.str.length() - s.pos;
+    rem >= 4
+      ? (s + 4).success(parseInt32(Endianness.Little, s[0], s[1], s[2], s[3]))
+      : s.failure(Error("Unexpected end of python int32 object"))
+  )
+
+fun pyMarshalInt64Parser()
+  Parser(lambda (ParseState s) -> ParseResult{long}
+    rem = s.str.length() - s.pos;
+    rem >= 8
+      ? (s + 8).success(parseInt64(Endianness.Little, s[0],  s[1], s[2], s[3], s[4], s[5], s[6], s[7]))
+      : s.failure(Error("Unexpected end of python int64 object"))
+  )
+
+fun pyMarshalStringParser()
+  Parser(lambda (ParseState s) -> ParseResult{string}
+    rem = s.str.length() - s.pos;
+    rem >= 4 && (len = parseInt32(Endianness.Little, s[0], s[1], s[2], s[3]); rem >= 4 + len)
+      ? (s + 4 + len).success(s.str[s.pos + 4, s.pos + 4 + len])
+      : s.failure(Error("Unexpected end of python string object"))
+  )
+
+fun pyMarshalShortStringParser()
+  Parser(lambda (ParseState s) -> ParseResult{string}
+    rem = s.str.length() - s.pos;
+    rem >= 1 && (len = int(s[0]); rem >= 1 + len)
+      ? (s + 1 + len).success(s.str[s.pos + 1, s.pos + 1 + len])
+      : s.failure(Error("Unexpected end of python short-string object"))
+  )
+
+fun pyMarshalListParser(Parser{PyObj} objParser = lazyParser(lazy pyMarshalObjParser()))
+  Parser(lambda (ParseState s) -> ParseResult{PyList}
+    rem = s.str.length() - s.pos;
+    rem >= 4 && (len = parseInt32(Endianness.Little, s[0], s[1], s[2], s[3]); rem >= 4 + len)
+      ? objParser.repeat(len)(s + 4).to(Type{PyList}())
+      : s.failure(Error("Unexpected end of python list object"))
+  )
+
+fun pyMarshalTupleParser(Parser{PyObj} objParser = lazyParser(lazy pyMarshalObjParser()))
+  Parser(lambda (ParseState s) -> ParseResult{PyTuple}
+    rem = s.str.length() - s.pos;
+    rem >= 4 && (len = parseInt32(Endianness.Little, s[0], s[1], s[2], s[3]); rem >= 4 + len)
+      ? objParser.repeat(len)(s + 4).to(Type{PyTuple}())
+      : s.failure(Error("Unexpected end of python tuple object"))
+  )
+
+fun pyMarshalSmallTupleParser(Parser{PyObj} objParser = lazyParser(lazy pyMarshalObjParser()))
+  Parser(lambda (ParseState s) -> ParseResult{PyTuple}
+    rem = s.str.length() - s.pos;
+    rem >= 1 && (len = int(s[0]); rem >= 1 + len)
+      ? objParser.repeat(len)(s + 1).to(Type{PyTuple}())
+      : s.failure(Error("Unexpected end of python small tuple object"))
+  )
+
+fun pyMarshalDictParser(Parser{PyObj} objParser = lazyParser(lazy pyMarshalObjParser()))
+  end = matchParser(char(PyTypeCode.Null));
+  (manyUntilParser(objParser & objParser, end) << end).to(Type{PyDict}())
+
+fun pyMarshalSetParser(Parser{PyObj} objParser = lazyParser(lazy pyMarshalObjParser()))
+  Parser(lambda (ParseState s) -> ParseResult{PySet}
+    rem = s.str.length() - s.pos;
+    rem >= 4 && (len = parseInt32(Endianness.Little, s[0], s[1], s[2], s[3]); rem >= 4 + len)
+      ? objParser.repeat(len)(s + 4).to(Type{PySet}())
+      : s.failure(Error("Unexpected end of python set object"))
+  )
+
+// Note: Assumes strings are always valid utf8.
+fun pyMarshalObjParser()
+  int32P        = pyMarshalInt32Parser();
+  int64P        = pyMarshalInt64Parser();
+  stringP       = pyMarshalStringParser();
+  shortStringP  = pyMarshalShortStringParser();
+  listP         = pyMarshalListParser();
+  tupleP        = pyMarshalTupleParser();
+  smallTupleP   = pyMarshalSmallTupleParser();
+  dictP         = pyMarshalDictParser();
+  setP          = pyMarshalSetParser();
+  Parser(lambda (ParseState s) -> ParseResult{PyObj}
+    type = PyTypeCode(s[0] & ~0x80);
+    if type == PyTypeCode.None                -> (s + 1).success(PyObj(PyNone()))
+    if type == PyTypeCode.False               -> (s + 1).success(PyObj(false))
+    if type == PyTypeCode.True                -> (s + 1).success(PyObj(true))
+    if type == PyTypeCode.Int32               -> int32P(s + 1)        .to(Type{PyObj}())
+    if type == PyTypeCode.Int64               -> int64P(s + 1)        .to(Type{PyObj}())
+    if type == PyTypeCode.String              -> stringP(s + 1)       .to(Type{PyObj}())
+    if type == PyTypeCode.Ascii               -> stringP(s + 1)       .to(Type{PyObj}())
+    if type == PyTypeCode.ShortAscii          -> shortStringP(s + 1)  .to(Type{PyObj}())
+    if type == PyTypeCode.ShortAsciiInterned  -> shortStringP(s + 1)  .to(Type{PyObj}())
+    if type == PyTypeCode.Interned            -> stringP(s + 1)       .to(Type{PyObj}())
+    if type == PyTypeCode.Unicode             -> stringP(s + 1)       .to(Type{PyObj}())
+    if type == PyTypeCode.List                -> listP(s + 1)         .to(Type{PyObj}())
+    if type == PyTypeCode.Tuple               -> tupleP(s + 1)        .to(Type{PyObj}())
+    if type == PyTypeCode.SmallTuple          -> smallTupleP(s + 1)   .to(Type{PyObj}())
+    if type == PyTypeCode.Dict                -> dictP(s + 1)         .to(Type{PyObj}())
+    if type == PyTypeCode.Set                 -> setP(s + 1)          .to(Type{PyObj}())
+    if type == PyTypeCode.FrozenSet           -> setP(s + 1)          .to(Type{PyObj}())
+    else -> s.failure(
+      Error("Unsupported python object: '" + reflectEnumKeyForVal(type) + '\''))
+  )
+
+fun pyMarshalParser()
+  pyMarshalObjParser()
+
+// -- Tests
+
+assertEq(pyMarshalParser()(base64Decode("Tg==").failOnError()), PyObj(PyNone()))
+assertEq(pyMarshalParser()(base64Decode("Rg==").failOnError()), PyObj(false))
+assertEq(pyMarshalParser()(base64Decode("VA==").failOnError()), PyObj(true))
+assertEq(pyMarshalParser()(base64Decode("aSoAAAA=").failOnError()), PyObj(42))
+assertEq(pyMarshalParser()(base64Decode("aTkFAAA=").failOnError()), PyObj(1337))
+assertEq(pyMarshalParser()(base64Decode("dQAAAAA=").failOnError()), PyObj(""))
+assertEq(pyMarshalParser()(base64Decode("dQEAAAAg").failOnError()), PyObj(" "))
+assertEq(pyMarshalParser()(base64Decode("dQsAAABIZWxsbyBXb3JsZA==").failOnError()), PyObj("Hello World"))
+
+assertEq(pyMarshalParser()(
+  base64Decode("c7oBAABTVEFSR86bzIpURSxIZWxsbyB3b3JsZCzOms6xzrvOt8684b2zz4HOsSDOuuG9uc+DzrzOtSzjg" +
+  "rPjg7Pjg4vjg4Hjg48s4qGM4qCB4qCn4qCRIOKgvOKggeKgkizhmrvhm5Yg4Zqz4Zq54Zqr4ZqmIOGapuGaq+GbjyzhiLD" +
+  "hiJvhi60g4Yqg4Yut4Ymz4Yio4Yi1IOGKleGMieGIpSDhiqDhi63hiqjhiLDhiLXhjaIs4LmB4Lic4LmI4LiZ4LiU4Li04" +
+  "LiZ4Liu4Lix4LmI4LiZ4LmA4Liq4Li34LmI4Lit4Lih4LmC4LiX4Lij4Lih4LmB4Liq4LiZ4Liq4Lix4LiH4LmA4Lin4Li" +
+  "KLNCX0LDRgNC10LPQuNGB0YLRgNC40YDRg9C50YLQtdGB0Yws4YOS4YOX4YOu4YOd4YOV4YOXIOGDkOGDruGDmuGDkOGDl" +
+  "eGDlCDhg5Lhg5Dhg5jhg5Dhg6Dhg53hg5fijqrijqLijpwg4o6zYeKBsS1i4oGx4o6f4o6l4o6q4paB4paC4paD4paE4pa" +
+  "F4paG4paH4paI4oiA4oiC4oiI4oSd4oin4oiq4omh4oie").failOnError()),
+  PyObj("STARGΛ̊TE,Hello world,Καλημέρα κόσμε,コンニチハ,⡌⠁⠧⠑ ⠼⠁⠒,ᚻᛖ ᚳᚹᚫᚦ ᚦᚫᛏ,ሰማይ አይታረስ ንጉሥ አይከሰ" +
+  "ስ።,แผ่นดินฮั่นเสื่อมโทรมแสนสังเวช,Зарегистрируйтесь,გთხოვთ ახლავე გაიაროთ⎪⎢⎜ ⎳aⁱ-bⁱ⎟⎥⎪▁▂▃▄▅▆▇█∀∂∈ℝ∧∪≡∞"))
+
+assertEq(pyMarshalParser()(
+  base64Decode("WwUAAABpAQAAAGkCAAAAaQMAAABpBAAAAGkFAAAA").failOnError()),
+  PyObj(PyList(PyObj(1) :: PyObj(2) :: PyObj(3) :: PyObj(4) :: PyObj(5))))
+
+assertEq(pyMarshalParser()(
+  base64Decode("WwMAAAB1BQAAAGhlbGxvaSoAAABbAgAAAGkBAAAAVA==").failOnError()),
+  PyObj(PyList(PyObj("hello") :: PyObj(42) :: PyObj(PyList(PyObj(1) :: PyObj(true))))))
+
+assertEq(pyMarshalParser()(
+  base64Decode("KAQAAAB1BQAAAGhlbGxvaSoAAAAoAgAAAGkBAAAAVFsBAAAAaTkFAAA=").failOnError()),
+  PyObj(PyTuple(
+    PyObj("hello") ::
+    PyObj(42) ::
+    PyObj(PyTuple(PyObj(1) :: PyObj(true))) ::
+    PyObj(PyList(PyObj(1337) :: List{PyObj}())))))
+
+assertEq(pyMarshalParser()(
+  base64Decode("e3UBAAAAYWkqAAAAdQEAAABiVFR7dQYAAABuZXN0ZWRpOQUAADB1AQAAAGMoAgAAAHUFAAAASGVsbG91B" +
+  "QAAAFdvcmxkMA==").failOnError()),
+  PyObj(PyDict(
+    Tuple{PyObj, PyObj}(PyObj("a"), PyObj(42)) ::
+    Tuple{PyObj, PyObj}(PyObj("b"), PyObj(true)) ::
+    Tuple{PyObj, PyObj}(PyObj(true), PyDict(
+      Tuple{PyObj, PyObj}(PyObj("nested"), PyObj(1337)) :: List{Tuple{PyObj, PyObj}}()
+    )) ::
+    Tuple{PyObj, PyObj}(PyObj("c"), PyObj(PyTuple(PyObj("Hello") :: PyObj("World")))))))
+
+assertEq(pyMarshalParser()(
+  base64Decode("PAMAAAB1AQAAAGFpKgAAAHUBAAAAYw==").failOnError()),
+  PyObj(PySet(PyObj("a") :: PyObj(42) :: PyObj("c"))))
