@@ -1,0 +1,330 @@
+import "python.ns"
+
+import "std/core.ns"
+import "std/prim.ns"
+
+// -- Orm (Object Relational Mapper) for Python marshal types
+
+// -- Value to Python
+
+fun toPython(int v) -> PyObj
+  PyObj(v)
+
+fun toPython(long v) -> PyObj
+  PyObj(v)
+
+fun toPython(bool v) -> PyObj
+  PyObj(v)
+
+fun toPython(char v) -> PyObj
+  PyObj(int(v))
+
+fun toPython(string v) -> PyObj
+  PyObj(v)
+
+fun toPython(None v) -> PyObj
+  PyNone()
+
+fun toPython(Path p) -> PyObj
+  PyObj(p.string())
+
+fun toPython(PathRelative p) -> PyObj
+  PyObj(p.string())
+
+fun toPython(PathAbsolute p) -> PyObj
+  PyObj(p.string())
+
+fun toPython(DateTime dt) -> PyObj
+  PyObj((dt - timeEpoch()).seconds())
+
+fun toPython{T}(Option{T} v) -> PyObj
+  if v as T vt  -> toPython(vt)
+  else          -> PyNone()
+
+fun toPython{T}(List{T} list) -> PyObj
+  PyList(list.map(lambda (T v) v.toPython()))
+
+fun toPython{T}(T v)
+  toPython(v, Meta{reflect_type_kind{T}}())
+
+fun toPython{T}(T structV, Meta{#9} structTypeKind) -> PyObj
+  structToPython(structV)
+
+fun toPython{T}(T unionV, Meta{#10} unionTypeKind) -> PyObj
+  unionToPython(unionV)
+
+fun toPython{T}(T enumV, Meta{#11} enumTypeKind) -> PyObj
+  PyObj(int(enumV))
+
+// ---- Struct to Python object
+
+fun structToPython{T}(T structV, Meta{#-1} idx, List{Tuple{PyObj, PyObj}} fields) -> PyObj
+  PyDict(fields)
+
+fun structToPython{T, Idx}(T structV, Meta{Idx} idx, List{Tuple{PyObj, PyObj}} fields) -> PyObj
+  field = Tuple(PyObj(reflectStructFieldName(Type{T}(), idx)), toPython(reflectStructField(structV, idx)));
+  structToPython(structV, --idx, field :: fields)
+
+fun structToPython{T}(T structV) -> PyObj
+  structToPython(structV, --reflectStructFieldCount(Type{T}()), List{Tuple{PyObj, PyObj}}())
+
+// ---- Union to Python object
+
+fun unionToPython{T}(T unionV, Meta{#-1} idx) -> PyObj
+  intrinsic{fail}{PyObj}()
+
+fun unionToPython{T, Idx}(T unionV, Meta{Idx} idx) -> PyObj
+  if unionV as reflect_union_type{T, Idx} val -> val.toPython()
+  else                                        -> unionToPython(unionV, --idx)
+
+fun unionToPython{T}(T unionV) -> PyObj
+  unionToPython(unionV, --reflectUnionCount(Type{T}()))
+
+// -- Value from Python
+
+fun fromPython(PyObj po, Type{int} t) -> Either{int, Error}
+  if po as int i -> i
+  else           -> Error("Expected an Int, got a " + pyObjType(po))
+
+fun fromPython(PyObj po, Type{long} t) -> Either{long, Error}
+  if po as int i  -> long(i)
+  if po as long l -> l
+  else            -> Error("Expected a Long, got a " + pyObjType(po))
+
+fun fromPython(PyObj po, Type{bool} t) -> Either{bool, Error}
+  if po as bool b -> b
+  else            -> Error("Expected a Boolean, got a " + pyObjType(po))
+
+fun fromPython(PyObj po, Type{string} t) -> Either{string, Error}
+  if po as string s -> s
+  else              -> Error("Expected a String, got a " + pyObjType(po))
+
+fun fromPython(PyObj po, Type{None} t) -> Either{None, Error}
+  if po is PyNone -> None()
+  else            -> Error("Expected a None, got a " + pyObjType(po))
+
+fun fromPython(PyObj po, Type{Path} t) -> Either{Path, Error}
+  if po as string s -> pathParser().run(s)
+  else              -> Error("Expected a String, got a " + pyObjType(po))
+
+fun fromPython(PyObj po, Type{PathRelative} t) -> Either{PathRelative, Error}
+  if po as string s -> pathRelParser().run(s)
+  else              -> Error("Expected a String, got a " + pyObjType(po))
+
+fun fromPython(PyObj po, Type{PathAbsolute} t) -> Either{PathAbsolute, Error}
+  if po as string s -> pathAbsParser().run(s)
+  else              -> Error("Expected a String, got a " + pyObjType(po))
+
+fun fromPython(PyObj po, Type{DateTime} t) -> Either{DateTime, Error}
+  if po as long l -> timeEpoch() + seconds(l)
+  if po as int i  -> timeEpoch() + seconds(i)
+  else            -> Error("Expected a Long, got a " + pyObjType(po))
+
+fun fromPython{T}(PyObj po, Type{Option{T}} t) -> Either{Option{T}, Error}
+  if po is PyNone -> Option{T}()
+  else            -> po.fromPython(Type{T}()).map(lambda (T vt) Option(vt))
+
+fun fromPython{T}(PyObj po, Type{List{T}} t) -> Either{List{T}, Error}
+  if po as PyList l -> l.entries.map(lambda (PyObj po) fromPython(po, Type{T}())).split().valueOrError()
+  else              -> Error("Expected a List, got a " + pyObjType(po))
+
+fun fromPython{T}(PyObj po, Type{T} t) -> Either{T, Error}
+  fromPython(po, t, Meta{reflect_type_kind{T}}())
+
+fun fromPython{T}(PyObj po, Type{T} t, Meta{#9} structTypeKind) -> Either{T, Error}
+  if po as PyDict d -> structFromPython(d, t)
+  else              -> Error("Expected a Dictionary, got a " + pyObjType(po))
+
+fun fromPython{T}(PyObj po, Type{T} t, Meta{#10} unionTypeKind) -> Either{T, Error}
+  unionFromPython(po, t)
+
+fun fromPython{T}(PyObj po, Type{T} t, Meta{#11} enumTypeKind) -> Either{T, Error}
+  if po as int i ->
+    reflectEnumKeyForVal(T(i)) is string
+      ? T(i)
+      : Error("'" + i + "' is not a valid " + t)
+  if po as string s ->
+    reflectEnumValForKey(t, s, StrComp.IgnoreCase) as int evz
+      ? T(evz)
+      : Error("'" + s + "' is not a valid " + t)
+  else ->
+    Error("Expected an Int or a String, got a " + pyObjType(po))
+
+// ---- Struct from Python dict
+
+fun structFromPython{T, Tup, J}(PyDict pd, Type{T} t, Meta{#-1} i, Meta{J} j, Tup res) -> Either{T, Error}
+  res.tupleToStruct(t)
+
+fun structFromPython{T, Tup, I, J}(PyDict pd, Type{T} t, Meta{I} i, Meta{J} j, Tup res) -> Either{T, Error}
+  fieldName = reflectStructFieldName(t, j);
+  if pd.getField(fieldName, StrComp.IgnoreCase) as PyObj po ->
+  (
+    v = fromPython(po, reflectStructFieldType(t, j));
+    if v as reflect_struct_field_type{T, J} val -> structFromPython(pd, t, --i, ++j, res.tupleAdd(val))
+    if v as Error err -> Error("Invalid field '" + fieldName + "'") :: err
+  )
+  else -> Error("No key named '" + fieldName + "' found in Dictionary")
+
+fun structFromPython{T}(PyDict pd, Type{T} t) -> Either{T, Error}
+  fieldCount = reflectStructFieldCount(t);
+  structFromPython(pd, t, --fieldCount, metaZero(), Tuple())
+
+// ---- Union from Python object
+
+fun unionFromPython{T}(PyObj o, Type{T} t, Meta{#-1} idx) -> Either{T, Error}
+  Error("'" + pyObjType(o) + "' is not an object compatible with union '" + t + "'")
+
+fun unionFromPython{T, Idx}(PyObj o, Type{T} t, Meta{Idx} idx) -> Either{T, Error}
+  unionEntry  = reflectUnionType(t, idx);
+  valOrErr    = fromPython(o, unionEntry);
+  if valOrErr as reflect_union_type{T, Idx} val -> T(val)
+  else                                          -> unionFromPython(o, t, --idx)
+
+fun unionFromPython{T}(PyObj o, Type{T} t) -> Either{T, Error}
+  unionFromPython(o, t, --reflectUnionCount(Type{T}()))
+
+// -- Parsers
+
+fun pyMarshalParser{T}() -> Parser{T}
+  pyMarshalParser(Type{T}())
+
+fun pyMarshalParser{T}(Type{T} t) -> Parser{T}
+  pyMarshalParser().map(lambda (PyObj po) fromPython(po, t))
+
+// -- Writers
+
+fun pyMarshalWriter{T}() -> Writer{T}
+  pyMarshalWriter(Type{T}())
+
+fun pyMarshalWriter{T}(Type{T} t) -> Writer{T}
+  pyMarshalWriter().map(lambda (T t) toPython(t))
+
+// -- Tests
+
+// ---- toPython tests
+
+assertEq(toPython(42),                        PyObj(42))
+assertEq(toPython(42L),                       PyObj(42L))
+assertEq(toPython(true),                      PyObj(true))
+assertEq(toPython('a'),                       PyObj(int('a')))
+assertEq(toPython("Hello"),                   PyObj("Hello"))
+assertEq(toPython(None()),                    PyNone())
+assertEq(toPython(Month.January),             PyObj(1))
+assertEq(toPython(Month.June),                PyObj(6))
+assertEq(toPython(1 :: 2 :: 3),               PyList(PyObj(1) :: PyObj(2) :: PyObj(3)))
+assertEq(toPython(Month.May :: Month.April),  PyList(PyObj(5) :: PyObj(4)))
+assertEq(toPython(Option(42)),                PyObj(42))
+assertEq(toPython(Option{int}()),             PyNone())
+assertEq(toPython(List{int}()),               PyList(List{PyObj}()))
+assertEq(toPython(LEnd()),                    PyDict(List{Tuple{PyObj, PyObj}}()))
+assertEq(
+  toPython(Date(2021, Month.April, 3)),
+  PyDict(Tuple(PyObj("year"), PyObj(2021)) :: Tuple(PyObj("month"), PyObj(4)) :: Tuple(PyObj("day"), PyObj(3))))
+assertEq(
+  toPython(Date(2021, Month.April, 3) :: Date(1992, Month.June, 9)),
+  PyList(
+    PyObj(PyDict(Tuple(PyObj("year"), PyObj(2021)) :: Tuple(PyObj("month"), PyObj(4)) :: Tuple(PyObj("day"), PyObj(3))))
+    ::
+    PyObj(PyDict(Tuple(PyObj("year"), PyObj(1992)) :: Tuple(PyObj("month"), PyObj(6)) :: Tuple(PyObj("day"), PyObj(9))))
+  ))
+assertEq(
+  toPython(Either{int, string}(42)),
+  PyObj(42))
+assertEq(
+  toPython(Either{Option{int}, List{string}, long}(Option(42))),
+  PyObj(42))
+
+// ---- fromPython tests
+
+assertEq(PyObj(42).fromPython(Type{int}()),                 42)
+assertIs(PyObj("42").fromPython(Type{int}()),               Type{Error}())
+
+assertEq(PyObj(42).fromPython(Type{long}()),                42L)
+assertEq(PyObj(42L).fromPython(Type{long}()),               42L)
+assertIs(PyObj(true).fromPython(Type{long}()),              Type{Error}())
+
+assertEq(PyObj(true).fromPython(Type{bool}()),              true)
+
+assertEq(PyObj("Hello").fromPython(Type{string}()),         "Hello")
+assertIs(PyObj(true).fromPython(Type{string}()),            Type{Error}())
+
+assertEq(PyObj(PyNone()).fromPython(Type{None}()),          None())
+assertIs(PyObj("null").fromPython(Type{None}()),            Type{Error}())
+
+assertEq(PyObj(6).fromPython(Type{Month}()),                Month.June)
+assertEq(PyObj("June").fromPython(Type{Month}()),           Month.June)
+assertEq(PyObj("jUnE").fromPython(Type{Month}()),           Month.June)
+assertIs(PyObj(true).fromPython(Type{Month}()),             Type{Error}())
+
+assertEq(PyObj(PyNone()).fromPython(Type{Option{int}}()),   Option{int}())
+assertEq(PyObj(42).fromPython(Type{Option{int}}()),         Option(42))
+assertIs(PyObj("none").fromPython(Type{Option{int}}()),     Type{Error}())
+
+assertEq(
+  l = PyList(PyObj(1) :: PyObj(2) :: PyObj(3));
+  fromPython(l, Type{List{int}}()),
+  1 :: 2 :: 3)
+
+assertEq(
+  l = PyList(List{PyObj}());
+  fromPython(l, Type{List{int}}()),
+  List{int}())
+
+assertEq(
+  l = PyList(PyObj(5) :: PyObj(4));
+  fromPython(l, Type{List{Month}}()),
+  Month.May :: Month.April)
+
+assertEq(
+  d = PyDict(Tuple(PyObj("year"), PyObj(2021)) :: Tuple(PyObj("month"), PyObj(4)) :: Tuple(PyObj("day"), PyObj(3)));
+  fromPython(d, Type{Date}()),
+  Date(2021, Month.April, 3))
+
+assertEq(
+  d = PyDict(Tuple(PyObj("Year"), PyObj(2021)) :: Tuple(PyObj("mOnTH"), PyObj(4)) :: Tuple(PyObj("dAy"), PyObj(3)));
+  fromPython(d, Type{Date}()),
+  Date(2021, Month.April, 3))
+
+assertEq(
+  l = PyList(
+    PyObj(PyDict(Tuple(PyObj("year"), PyObj(2021)) :: Tuple(PyObj("month"), PyObj(4)) :: Tuple(PyObj("Day"), PyObj(3))))
+    ::
+    PyObj(PyDict(Tuple(PyObj("year"), PyObj(1992)) :: Tuple(PyObj("Month"), PyObj(6)) :: Tuple(PyObj("day"), PyObj(9))))
+  );
+  fromPython(l, Type{List{Date}}()),
+  Date(2021, Month.April, 3) :: Date(1992, Month.June, 9))
+
+assertEq(
+  o = PyObj(42);
+  fromPython(o, Type{Either{int, string}}()),
+  Either{int, string}(42))
+
+assertEq(
+  o = PyObj(true);
+  fromPython(o, Type{Either{int, string, bool}}()),
+  Either{int, string, bool}(true))
+
+assertIs(
+  o = PyObj(true);
+  fromPython(o, Type{Either{int, string}}()),
+  Type{Error}())
+
+// ---- Combined tests
+
+assertEq(
+  l = Date(2021, Month.April, 3) :: Date(1992, Month.June, 9);
+  p = l.toPython();
+  Tuple(l, p.fromPython(l.getType()).failOnError())
+)
+
+assertEq(
+  l = Either{Date, List{string}}(Date(2021, Month.April, 3));
+  p = l.toPython();
+  Tuple(l, p.fromPython(l.getType()).failOnError())
+)
+
+assertEq(
+  l = Either{List{Date}, List{string}}(Date(2021, Month.April, 3) :: Date(2021, Month.June, 9));
+  p = l.toPython();
+  Tuple(l, p.fromPython(l.getType()).failOnError())
+)

@@ -65,6 +65,24 @@ struct PyDict   = List{Tuple{PyObj, PyObj}} entries
 struct PySet    = List{PyObj} entries
 union  PyObj    = PyNone, bool, int, long, string, PyList, PyTuple, PyDict, PySet
 
+// -- Utilities
+
+fun pyObjType(PyObj po)
+  if po is PyNone  -> "None"
+  if po as bool b  -> b ? "True" : "False"
+  if po is int     -> "Int"
+  if po is long    -> "Long"
+  if po is string  -> "String"
+  if po is PyList  -> "List"
+  if po is PyTuple -> "Tuple"
+  if po is PyDict  -> "Dict"
+  if po is PySet   -> "Set"
+
+fun getField(PyDict pd, string name, StrComp strComp = StrComp.Normal) -> Option{PyObj}
+  pd.entries
+    .first(lambda (Tuple{PyObj, PyObj} field) field.f1 as string str && equals(str, name, strComp))
+    .map(lambda (Tuple{PyObj, PyObj} field) field.f2)
+
 // -- Conversions
 
 fun string(PyNone n) "none"
@@ -191,7 +209,7 @@ fun pyMarshalTypeCodeLitWriter(PyTypeCode tc) -> Writer{None}
   pyMarshalTypeCodeWriter().injectWriter(tc)
 
 fun pyMarshalStringWriter() -> Writer{string}
-  w = pyMarshalTypeCodeLitWriter(PyTypeCode.String) & bitInt32Writer(Endianness.Little) & stringWriter();
+  w = pyMarshalTypeCodeLitWriter(PyTypeCode.Unicode) & bitInt32Writer(Endianness.Little) & stringWriter();
   Writer(lambda (WriterState s, string str)
     w(s, Tuple(str.length(), str))
   )
@@ -305,15 +323,15 @@ assertEq(base64Encode(pyMarshalWriter().run(false)), "Rg==")
 assertEq(base64Encode(pyMarshalWriter().run(true)), "VA==")
 assertEq(base64Encode(pyMarshalWriter().run(42)), "aSoAAAA=")
 assertEq(base64Encode(pyMarshalWriter().run(1337)), "aTkFAAA=")
-assertEq(base64Encode(pyMarshalWriter().run("")), "cwAAAAA=")
-assertEq(base64Encode(pyMarshalWriter().run(" ")), "cwEAAAAg")
-assertEq(base64Encode(pyMarshalWriter().run("Hello World")), "cwsAAABIZWxsbyBXb3JsZA==")
+assertEq(base64Encode(pyMarshalWriter().run("")), "dQAAAAA=")
+assertEq(base64Encode(pyMarshalWriter().run(" ")), "dQEAAAAg")
+assertEq(base64Encode(pyMarshalWriter().run("Hello World")), "dQsAAABIZWxsbyBXb3JsZA==")
 
 assertEq(
   base64Encode(pyMarshalWriter().run(
   "STARGΛ̊TE,Hello world,Καλημέρα κόσμε,コンニチハ,⡌⠁⠧⠑ ⠼⠁⠒,ᚻᛖ ᚳᚹᚫᚦ ᚦᚫᛏ,ሰማይ አይታረስ ንጉሥ አይከሰስ።,แผ่น" +
   "ดินฮั่นเสื่อมโทรมแสนสังเวช,Зарегистрируйтесь,გთხოვთ ახლავე გაიაროთ⎪⎢⎜ ⎳aⁱ-bⁱ⎟⎥⎪▁▂▃▄▅▆▇█∀∂∈ℝ∧∪≡∞")),
-  "c7oBAABTVEFSR86bzIpURSxIZWxsbyB3b3JsZCzOms6xzrvOt8684b2zz4HOsSDOuuG9uc+DzrzOtSzjgrPjg7Pjg4vjg4" +
+  "dboBAABTVEFSR86bzIpURSxIZWxsbyB3b3JsZCzOms6xzrvOt8684b2zz4HOsSDOuuG9uc+DzrzOtSzjgrPjg7Pjg4vjg4" +
   "Hjg48s4qGM4qCB4qCn4qCRIOKgvOKggeKgkizhmrvhm5Yg4Zqz4Zq54Zqr4ZqmIOGapuGaq+GbjyzhiLDhiJvhi60g4Yqg" +
   "4Yut4Ymz4Yio4Yi1IOGKleGMieGIpSDhiqDhi63hiqjhiLDhiLXhjaIs4LmB4Lic4LmI4LiZ4LiU4Li04LiZ4Liu4Lix4L" +
   "mI4LiZ4LmA4Liq4Li34LmI4Lit4Lih4LmC4LiX4Lij4Lih4LmB4Liq4LiZ4Liq4Lix4LiH4LmA4Lin4LiKLNCX0LDRgNC1" +
@@ -327,7 +345,7 @@ assertEq(base64Encode(pyMarshalWriter().run(
 
 assertEq(base64Encode(pyMarshalWriter().run(
   PyList(PyObj("hello") :: PyObj(42) :: PyObj(PyList(PyObj(1) :: PyObj(true)))))),
-  "WwMAAABzBQAAAGhlbGxvaSoAAABbAgAAAGkBAAAAVA==")
+  "WwMAAAB1BQAAAGhlbGxvaSoAAABbAgAAAGkBAAAAVA==")
 
 assertEq(base64Encode(pyMarshalWriter().run(
   PyTuple(
@@ -335,7 +353,7 @@ assertEq(base64Encode(pyMarshalWriter().run(
     PyObj(42) ::
     PyObj(PyTuple(PyObj(1) :: PyObj(true))) ::
     PyObj(PyList(PyObj(1337) :: List{PyObj}()))))),
-  "KAQAAABzBQAAAGhlbGxvaSoAAAAoAgAAAGkBAAAAVFsBAAAAaTkFAAA=")
+  "KAQAAAB1BQAAAGhlbGxvaSoAAAAoAgAAAGkBAAAAVFsBAAAAaTkFAAA=")
 
 assertEq(base64Encode(pyMarshalWriter().run(
   PyDict(
@@ -345,8 +363,8 @@ assertEq(base64Encode(pyMarshalWriter().run(
       Tuple(PyObj("nested"), PyObj(1337)) :: List{Tuple{PyObj, PyObj}}()
     ))) ::
     Tuple(PyObj("c"), PyObj(PyTuple(PyObj("Hello") :: PyObj("World"))))))),
-  "e3MBAAAAYWkqAAAAcwEAAABiVFR7cwYAAABuZXN0ZWRpOQUAADBzAQAAAGMoAgAAAHMFAAAASGVsbG9zBQAAAFdvcmxkMA==")
+  "e3UBAAAAYWkqAAAAdQEAAABiVFR7dQYAAABuZXN0ZWRpOQUAADB1AQAAAGMoAgAAAHUFAAAASGVsbG91BQAAAFdvcmxkMA==")
 
 assertEq(base64Encode(pyMarshalWriter().run(
   PySet(PyObj("a") :: PyObj(42) :: PyObj("c")))),
-  "PAMAAABzAQAAAGFpKgAAAHMBAAAAYw==")
+  "PAMAAAB1AQAAAGFpKgAAAHUBAAAAYw==")
