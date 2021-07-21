@@ -180,7 +180,72 @@ fun pyMarshalObjParser()
 fun pyMarshalParser()
   pyMarshalObjParser()
 
-// -- Tests
+// -- Writers
+
+fun pyMarshalTypeCodeWriter() -> Writer{PyTypeCode}
+  Writer(lambda (WriterState s, PyTypeCode t)
+    s.write(char(t))
+  )
+
+fun pyMarshalTypeCodeLitWriter(PyTypeCode tc) -> Writer{None}
+  pyMarshalTypeCodeWriter().injectWriter(tc)
+
+fun pyMarshalStringWriter() -> Writer{string}
+  w = pyMarshalTypeCodeLitWriter(PyTypeCode.String) & bitInt32Writer(Endianness.Little) & stringWriter();
+  Writer(lambda (WriterState s, string str)
+    w(s, Tuple(str.length(), str))
+  )
+
+fun pyMarshalListWriter(Writer{PyObj} objWriter = lazyWriter(lazy pyMarshalObjWriter())) -> Writer{PyList}
+  w = pyMarshalTypeCodeLitWriter(PyTypeCode.List) & bitInt32Writer(Endianness.Little) & listWriter(objWriter);
+  Writer(lambda (WriterState s, PyList list)
+    w(s, Tuple(list.entries.length(), list.entries))
+  )
+
+fun pyMarshalTupleWriter(Writer{PyObj} objWriter = lazyWriter(lazy pyMarshalObjWriter())) -> Writer{PyTuple}
+  w = pyMarshalTypeCodeLitWriter(PyTypeCode.Tuple) & bitInt32Writer(Endianness.Little) & listWriter(objWriter);
+  Writer(lambda (WriterState s, PyTuple tuple)
+    w(s, Tuple(tuple.entries.length(), tuple.entries))
+  )
+
+fun pyMarshalDictWriter(Writer{PyObj} objWriter = lazyWriter(lazy pyMarshalObjWriter())) -> Writer{PyDict}
+  w = pyMarshalTypeCodeLitWriter(PyTypeCode.Dict) & listWriter(objWriter & objWriter) & pyMarshalTypeCodeLitWriter(PyTypeCode.Null);
+  Writer(lambda (WriterState s, PyDict dict)
+    w(s, dict.entries)
+  )
+
+fun pyMarshalSetWriter(Writer{PyObj} objWriter = lazyWriter(lazy pyMarshalObjWriter())) -> Writer{PySet}
+  w = pyMarshalTypeCodeLitWriter(PyTypeCode.Set) & bitInt32Writer(Endianness.Little) & listWriter(objWriter);
+  Writer(lambda (WriterState s, PySet set)
+    w(s, Tuple(set.entries.length(), set.entries))
+  )
+
+fun pyMarshalObjWriter() -> Writer{PyObj}
+  wType  = pyMarshalTypeCodeWriter();
+  wI32   = pyMarshalTypeCodeLitWriter(PyTypeCode.Int32) & bitInt32Writer(Endianness.Little);
+  wI64   = pyMarshalTypeCodeLitWriter(PyTypeCode.Int64) & bitInt64Writer(Endianness.Little);
+  wStr   = pyMarshalStringWriter();
+  wList  = pyMarshalListWriter();
+  wTuple = pyMarshalTupleWriter();
+  wDict  = pyMarshalDictWriter();
+  wSet   = pyMarshalSetWriter();
+  Writer(lambda (WriterState s, PyObj o)
+    if o is PyNone        -> wType(s, PyTypeCode.None)
+    if o as bool    b     -> wType(s, b ? PyTypeCode.True : PyTypeCode.False)
+    if o as int     i     -> wI32(s, i)
+    if o as long    l     -> wI64(s, l)
+    if o as string  str   -> wStr(s, str)
+    if o as PyList  list  -> wList(s, list)
+    if o as PyTuple tuple -> wTuple(s, tuple)
+    if o as PyDict  dict  -> wDict(s, dict)
+    if o as PySet   set   -> wSet(s, set)
+    else                  -> s.write("")
+  )
+
+fun pyMarshalWriter()
+  pyMarshalObjWriter()
+
+// -- Parser Tests
 
 assertEq(pyMarshalParser()(base64Decode("Tg==").failOnError()), PyObj(PyNone()))
 assertEq(pyMarshalParser()(base64Decode("Rg==").failOnError()), PyObj(false))
@@ -222,13 +287,66 @@ assertEq(pyMarshalParser()(
   base64Decode("e3UBAAAAYWkqAAAAdQEAAABiVFR7dQYAAABuZXN0ZWRpOQUAADB1AQAAAGMoAgAAAHUFAAAASGVsbG91B" +
   "QAAAFdvcmxkMA==").failOnError()),
   PyObj(PyDict(
-    Tuple{PyObj, PyObj}(PyObj("a"), PyObj(42)) ::
-    Tuple{PyObj, PyObj}(PyObj("b"), PyObj(true)) ::
-    Tuple{PyObj, PyObj}(PyObj(true), PyDict(
-      Tuple{PyObj, PyObj}(PyObj("nested"), PyObj(1337)) :: List{Tuple{PyObj, PyObj}}()
-    )) ::
-    Tuple{PyObj, PyObj}(PyObj("c"), PyObj(PyTuple(PyObj("Hello") :: PyObj("World")))))))
+    Tuple(PyObj("a"), PyObj(42)) ::
+    Tuple(PyObj("b"), PyObj(true)) ::
+    Tuple(PyObj(true), PyObj(PyDict(
+      Tuple(PyObj("nested"), PyObj(1337)) :: List{Tuple{PyObj, PyObj}}()
+    ))) ::
+    Tuple(PyObj("c"), PyObj(PyTuple(PyObj("Hello") :: PyObj("World")))))))
 
 assertEq(pyMarshalParser()(
   base64Decode("PAMAAAB1AQAAAGFpKgAAAHUBAAAAYw==").failOnError()),
   PyObj(PySet(PyObj("a") :: PyObj(42) :: PyObj("c"))))
+
+// -- Writer Tests
+
+assertEq(base64Encode(pyMarshalWriter().run(PyNone())), "Tg==")
+assertEq(base64Encode(pyMarshalWriter().run(false)), "Rg==")
+assertEq(base64Encode(pyMarshalWriter().run(true)), "VA==")
+assertEq(base64Encode(pyMarshalWriter().run(42)), "aSoAAAA=")
+assertEq(base64Encode(pyMarshalWriter().run(1337)), "aTkFAAA=")
+assertEq(base64Encode(pyMarshalWriter().run("")), "cwAAAAA=")
+assertEq(base64Encode(pyMarshalWriter().run(" ")), "cwEAAAAg")
+assertEq(base64Encode(pyMarshalWriter().run("Hello World")), "cwsAAABIZWxsbyBXb3JsZA==")
+
+assertEq(
+  base64Encode(pyMarshalWriter().run(
+  "STARGΛ̊TE,Hello world,Καλημέρα κόσμε,コンニチハ,⡌⠁⠧⠑ ⠼⠁⠒,ᚻᛖ ᚳᚹᚫᚦ ᚦᚫᛏ,ሰማይ አይታረስ ንጉሥ አይከሰስ።,แผ่น" +
+  "ดินฮั่นเสื่อมโทรมแสนสังเวช,Зарегистрируйтесь,გთხოვთ ახლავე გაიაროთ⎪⎢⎜ ⎳aⁱ-bⁱ⎟⎥⎪▁▂▃▄▅▆▇█∀∂∈ℝ∧∪≡∞")),
+  "c7oBAABTVEFSR86bzIpURSxIZWxsbyB3b3JsZCzOms6xzrvOt8684b2zz4HOsSDOuuG9uc+DzrzOtSzjgrPjg7Pjg4vjg4" +
+  "Hjg48s4qGM4qCB4qCn4qCRIOKgvOKggeKgkizhmrvhm5Yg4Zqz4Zq54Zqr4ZqmIOGapuGaq+GbjyzhiLDhiJvhi60g4Yqg" +
+  "4Yut4Ymz4Yio4Yi1IOGKleGMieGIpSDhiqDhi63hiqjhiLDhiLXhjaIs4LmB4Lic4LmI4LiZ4LiU4Li04LiZ4Liu4Lix4L" +
+  "mI4LiZ4LmA4Liq4Li34LmI4Lit4Lih4LmC4LiX4Lij4Lih4LmB4Liq4LiZ4Liq4Lix4LiH4LmA4Lin4LiKLNCX0LDRgNC1" +
+  "0LPQuNGB0YLRgNC40YDRg9C50YLQtdGB0Yws4YOS4YOX4YOu4YOd4YOV4YOXIOGDkOGDruGDmuGDkOGDleGDlCDhg5Lhg5" +
+  "Dhg5jhg5Dhg6Dhg53hg5fijqrijqLijpwg4o6zYeKBsS1i4oGx4o6f4o6l4o6q4paB4paC4paD4paE4paF4paG4paH4paI" +
+  "4oiA4oiC4oiI4oSd4oin4oiq4omh4oie")
+
+assertEq(base64Encode(pyMarshalWriter().run(
+  PyList(PyObj(1) :: PyObj(2) :: PyObj(3) :: PyObj(4) :: PyObj(5)))),
+  "WwUAAABpAQAAAGkCAAAAaQMAAABpBAAAAGkFAAAA")
+
+assertEq(base64Encode(pyMarshalWriter().run(
+  PyList(PyObj("hello") :: PyObj(42) :: PyObj(PyList(PyObj(1) :: PyObj(true)))))),
+  "WwMAAABzBQAAAGhlbGxvaSoAAABbAgAAAGkBAAAAVA==")
+
+assertEq(base64Encode(pyMarshalWriter().run(
+  PyTuple(
+    PyObj("hello") ::
+    PyObj(42) ::
+    PyObj(PyTuple(PyObj(1) :: PyObj(true))) ::
+    PyObj(PyList(PyObj(1337) :: List{PyObj}()))))),
+  "KAQAAABzBQAAAGhlbGxvaSoAAAAoAgAAAGkBAAAAVFsBAAAAaTkFAAA=")
+
+assertEq(base64Encode(pyMarshalWriter().run(
+  PyDict(
+    Tuple(PyObj("a"), PyObj(42)) ::
+    Tuple(PyObj("b"), PyObj(true)) ::
+    Tuple(PyObj(true), PyObj(PyDict(
+      Tuple(PyObj("nested"), PyObj(1337)) :: List{Tuple{PyObj, PyObj}}()
+    ))) ::
+    Tuple(PyObj("c"), PyObj(PyTuple(PyObj("Hello") :: PyObj("World"))))))),
+  "e3MBAAAAYWkqAAAAcwEAAABiVFR7cwYAAABuZXN0ZWRpOQUAADBzAQAAAGMoAgAAAHMFAAAASGVsbG9zBQAAAFdvcmxkMA==")
+
+assertEq(base64Encode(pyMarshalWriter().run(
+  PySet(PyObj("a") :: PyObj(42) :: PyObj("c")))),
+  "PAMAAABzAQAAAGFpKgAAAHMBAAAAYw==")

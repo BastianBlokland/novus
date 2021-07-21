@@ -169,6 +169,11 @@ fun noneWriter()
 fun nopWriter{T}() -> Writer{T}
   Writer(lambda (WriterState s, T t) s)
 
+fun injectWriter{T}(Writer{T} w, T val) -> Writer{None}
+  Writer(lambda (WriterState s, None n)
+    w(s, val)
+  )
+
 fun litWriter(string lit)
   Writer(lambda (WriterState s, None n)
     s.write(lit)
@@ -365,12 +370,20 @@ assertEq(
   w("hello world"), "hello world")
 
 assertEq(
+  w = stringWriter().injectWriter("hello world");
+  w(None()), "hello world")
+
+assertEq(
   w = charWriter();
   w('w'), "w")
 
 assertEq(
   w = txtIntWriter();
   w(42), "42")
+
+assertEq(
+  w = txtIntWriter().injectWriter(42);
+  w(None()), "42")
 
 assertEq(
   w = txtIntWriter(4);
