@@ -9,27 +9,37 @@ import "../utils/style.ns"
 struct StatusData =
   P4Config            config,
   P4ClientInfo        clientInfo,
-  P4StreamName        streamName,
+  P4StreamInfo        streamInfo,
   List{P4ChangeInfo}  pendingChanges
 
 act statusQuery(P4Config cfg, Console c) -> Either{StatusData, Error}
   waitForJobs(Tuple(
     fork p4RunClientInfo(cfg, cfg.client),
-    fork p4RunCurrentStreamName(cfg),
-    fork p4RunChangeInfos(cfg, cfg.user, cfg.client, P4ChangeStatus.Pending))
-  ).map(impure lambda (Tuple{P4ClientInfo, P4StreamName, List{P4ChangeInfo}} res)
+    fork p4RunCurrentStreamInfo(cfg),
+    fork p4RunChangeInfos(cfg, cfg.client, P4ChangeStatus.Pending))
+  ).map(impure lambda (Tuple{P4ClientInfo, P4StreamInfo, List{P4ChangeInfo}} res)
     StatusData(cfg, res.f1, res.f2, res.f3)
   )
 
 // -- Writers.
 
+fun statusClientWriter(StyleCtx ctx) -> Writer{StatusData}
+  (
+    stringWriter().styleWriter(ctx, Style.Header) &
+    litWriter(" (") & pathAbsWriter().styleWriter(ctx, Style.Info) & litWriter(")")
+  ).map(lambda (StatusData data)
+    Tuple(data.clientInfo.client.string(), data.clientInfo.root))
+
 fun statusStreamWriter(StyleCtx ctx) -> Writer{StatusData}
   (
     stringWriter().styleWriter(ctx, Style.Header) &
-    litWriter(" (") &
-    stringWriter().styleWriter(ctx, Style.Header) &
-    litWriter(")")
-  ).map(lambda (StatusData data) Tuple(data.clientInfo.stream.string(), data.streamName.string()))
+    litWriter(" (") & enumKeyWriter(Type{P4StreamType}()).styleWriter(ctx, Style.Info) & litWriter(")") &
+    ?(litWriter(" Parent: ") & stringWriter().styleWriter(ctx, Style.Header))
+  ).map(lambda (StatusData data)
+    Tuple(  data.streamInfo.stream.string(),
+            data.streamInfo.type,
+            data.streamInfo.parent.map(lambda (P4Stream s) s.string()))
+  )
 
 fun statusChangesWriter(StyleCtx ctx, int maxWidth) -> Writer{P4ChangeInfo}
   (
@@ -41,10 +51,11 @@ fun statusChangesWriter(StyleCtx ctx, int maxWidth) -> Writer{P4ChangeInfo}
 
 fun statusOutputWriter(StyleCtx ctx, int maxWidth) -> Writer{StatusData}
   (
+    litWriter("Client: ") & statusClientWriter(ctx) & newlineWriter() &
     litWriter("Stream: ") & statusStreamWriter(ctx) & newlineWriter() &
     litWriter("Pending: ") & newlineWriter() &
     indentedListWriter(statusChangesWriter(ctx, maxWidth))
-  ).map(lambda (StatusData data) Tuple(data, data.pendingChanges))
+  ).map(lambda (StatusData data) Tuple(data, data, data.pendingChanges))
 
 // -- Driver.
 

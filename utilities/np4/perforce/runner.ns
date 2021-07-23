@@ -14,8 +14,6 @@ struct P4RunOutput{T} =
 
 // -- Utilities.
 
-fun p4GetRunData{T}(P4RunOutput{T} output) output.data
-
 fun p4GlobalArgs(P4Config cfg) -> List{string}
   "-p"  :: cfg.server.string() ::
   "-c"  :: cfg.client.string() ::
@@ -42,11 +40,19 @@ act p4RunMany{T}(P4Config cfg, List{string} args, Type{T} resultType) -> Either{
 
 // -- Queries.
 
-act p4RunCurrentStreamName(P4Config cfg) -> Either{P4StreamName, Error}
-  cfg.p4Run("switch" :: List{string}(), Type{P4RunOutput{P4StreamName}}()).map(p4GetRunData{P4StreamName})
+act p4RunCurrentStreamInfo(P4Config cfg) -> Either{P4StreamInfo, Error}
+  cfg.p4Run("stream" :: "-o", Type{P4StreamInfo}())
 
 act p4RunClientInfo(P4Config cfg, P4Client client) -> Either{P4ClientInfo, Error}
   cfg.p4Run("client" :: "-o" :: client.id, Type{P4ClientInfo}())
+
+act p4RunChangeInfos(P4Config cfg, P4User u, int maxAmount = 25) -> Either{List{P4ChangeInfo}, Error}
+  cfg.p4RunMany(
+    "changes"                       ::
+    "-l"                            ::
+    "-u" :: u.string()              ::
+    "-m" :: maxAmount.string(),
+    Type{P4ChangeInfo}())
 
 act p4RunChangeInfos(P4Config cfg, P4User u, P4ChangeStatus s, int maxAmount = 25) -> Either{List{P4ChangeInfo}, Error}
   cfg.p4RunMany(
@@ -57,20 +63,11 @@ act p4RunChangeInfos(P4Config cfg, P4User u, P4ChangeStatus s, int maxAmount = 2
     "-m" :: maxAmount.string(),
     Type{P4ChangeInfo}())
 
-act p4RunChangeInfos(P4Config cfg, P4User u, P4Client c, P4ChangeStatus s, int maxAmount = 25) -> Either{List{P4ChangeInfo}, Error}
+act p4RunChangeInfos(P4Config cfg, P4Client c, P4ChangeStatus s, int maxAmount = 25) -> Either{List{P4ChangeInfo}, Error}
   cfg.p4RunMany(
     "changes"                       ::
     "-l"                            ::
-    "-u" :: u.string()              ::
     "-c" :: c.string()              ::
     "-s" :: s.string().strToLower() ::
-    "-m" :: maxAmount.string(),
-    Type{P4ChangeInfo}())
-
-act p4RunChangeInfos(P4Config cfg, P4User u, int maxAmount = 25) -> Either{List{P4ChangeInfo}, Error}
-  cfg.p4RunMany(
-    "changes"                       ::
-    "-l"                            ::
-    "-u" :: u.string()              ::
     "-m" :: maxAmount.string(),
     Type{P4ChangeInfo}())
