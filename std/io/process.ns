@@ -95,12 +95,12 @@ act wait(Either{Process, Error} pOrErr) -> Either{ProcessResult, Error}
   pOrErr.map(impure lambda (Process p) p.wait())
 
 act wait(Process p) -> Either{ProcessResult, Error}
-  exitCode = ExitCode(intrinsic{process_block}(p.handle));
-  stdOutRes = p.readProcessOutPipe();
-  stdErrRes = p.readProcessErrPipe();
-  if stdOutRes as Error outErr -> outErr
-  if stdErrRes as Error errErr -> errErr
-  else -> ProcessResult(stdOutRes ?? Option{string}(), stdErrRes ?? Option{string}(), exitCode)
+  stdOutRes = fork p.readProcessOutPipe();
+  stdErrRes = fork p.readProcessErrPipe();
+  exitCode  = ExitCode(intrinsic{process_block}(p.handle));
+  if stdOutRes.get() as Error outErr -> outErr
+  if stdErrRes.get() as Error errErr -> errErr
+  else -> ProcessResult(stdOutRes.get() ?? Option{string}(), stdErrRes.get() ?? Option{string}(), exitCode)
 
 act waitAsync(Process p) -> future{Either{ProcessResult, Error}}
   fork p.wait()
