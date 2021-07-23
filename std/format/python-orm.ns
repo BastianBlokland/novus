@@ -116,9 +116,10 @@ fun fromPython(PyObj po, Type{PathAbsolute} t) -> Either{PathAbsolute, Error}
   else              -> Error("Expected a String, got a " + pyObjType(po))
 
 fun fromPython(PyObj po, Type{DateTime} t) -> Either{DateTime, Error}
-  if po as long l -> timeEpoch() + seconds(l)
-  if po as int i  -> timeEpoch() + seconds(i)
-  else            -> Error("Expected a Long, got a " + pyObjType(po))
+  if po as long l   -> timeEpoch() + seconds(l)
+  if po as int i    -> timeEpoch() + seconds(i)
+  if po as string s -> txtLongParser().run(s).map(lambda (long l) timeEpoch() + seconds(l))
+  else              -> Error("Expected a Long, got a " + pyObjType(po))
 
 fun fromPython{T}(PyObj po, Type{Option{T}} t) -> Either{Option{T}, Error}
   if po is PyNone -> Option{T}()

@@ -1,0 +1,37 @@
+import "std.ns"
+
+import "client.ns"
+import "user.ns"
+
+// -- Types.
+
+enum P4ChangeStatus = Pending, Submitted, Shelved
+enum P4ChangeType   = Public, Restricted
+
+struct P4Change = int id
+
+struct P4ChangeInfo =
+  P4Change        change,
+  DateTime        time,
+  P4User          user,
+  P4Client        client,
+  P4ChangeStatus  status,
+  P4ChangeType    changeType,
+  string          desc
+
+// -- Conversions.
+
+fun string(P4Change c) c.id.string()
+
+// -- Utilities
+
+fun changeShortDesc(P4ChangeInfo c, int maxLength = 60)
+  newLineIdx = c.desc.indexOf(isNewline);
+  c.desc[0, newLineIdx < 0 ? maxLength : min(newLineIdx, maxLength)]
+
+// -- Mappings.
+
+fun fromPython(PyObj po, Type{P4Change} t) -> Either{P4Change, Error}
+  if po as int i    -> P4Change(i)
+  if po as string s -> txtIntParser().run(s).map(lambda (int i) P4Change(i))
+  else              -> Error("Expected a perforce Change, got a " + pyObjType(po))

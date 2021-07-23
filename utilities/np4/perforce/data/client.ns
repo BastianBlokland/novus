@@ -1,0 +1,32 @@
+import "std.ns"
+
+import "stream.ns"
+import "user.ns"
+
+// -- Types.
+
+struct P4Client = string id
+
+struct P4ClientInfo =
+  P4Client      client,
+  P4User        owner,
+  string        host,
+  string        description,
+  PathAbsolute  root,
+  P4Stream      stream
+
+// -- Conversions.
+
+fun string(P4Client u) u.id
+
+// -- Mappings.
+
+fun fromJson(JsonValue jv, Type{P4Client} t) -> Either{P4Client, Error}
+  jv as string s ? P4Client(s) : Error("Expected a p4 client, got a " + jsonValueType(jv))
+
+fun fromPython(PyObj po, Type{P4Client} t) -> Either{P4Client, Error}
+  po as string s ? P4Client(s) : Error("Expected a p4 client, got a " + pyObjType(po))
+
+// -- Parsers.
+
+fun p4ClientTxtParser() untilParser(isWhitespace).to(Type{P4Client}())

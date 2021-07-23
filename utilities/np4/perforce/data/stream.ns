@@ -1,0 +1,20 @@
+import "std.ns"
+
+// -- Types.
+
+struct P4StreamName = string name
+
+struct P4Stream = string path
+
+// -- Conversions.
+
+fun string(P4StreamName s) s.name
+fun string(P4Stream s) s.path
+
+// -- Mappings.
+
+fun fromPython(PyObj po, Type{P4StreamName} t) -> Either{P4StreamName, Error}
+  po as string s ? P4StreamName(s) : Error("Expected a p4 stream name, got a " + pyObjType(po))
+
+fun fromPython(PyObj po, Type{P4Stream} t) -> Either{P4Stream, Error}
+  po as string s ? P4Stream(s) : Error("Expected a p4 stream path, got a " + pyObjType(po))

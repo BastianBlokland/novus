@@ -21,6 +21,7 @@ endfunction(configure_nov_executable)
 
 # Utilities.
 configure_nov_executable(cdb        cdb/app.ns)
+configure_nov_executable(np4        np4/app.ns)
 configure_nov_executable(niob       niob.ns)
 configure_nov_executable(nls        nls.ns)
 configure_nov_executable(nov-watch  nov-watch.ns)

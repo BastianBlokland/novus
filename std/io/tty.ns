@@ -9,6 +9,7 @@ import "std/utilities.ns"
 enum TtyStyle =
   Reset           : 0,
   Bold            : 1,
+  Faint           : 2,
   Underline       : 4,
   Reversed        : 7,
   FgBlack         : 30,

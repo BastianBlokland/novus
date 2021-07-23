@@ -1,0 +1,21 @@
+import "std.ns"
+
+// -- Types.
+
+struct P4User = string id
+
+// -- Conversions.
+
+fun string(P4User u) u.id
+
+// -- Mappings.
+
+fun fromJson(JsonValue jv, Type{P4User} t) -> Either{P4User, Error}
+  jv as string s ? P4User(s) : Error("Expected a p4 user, got a " + jsonValueType(jv))
+
+fun fromPython(PyObj po, Type{P4User} t) -> Either{P4User, Error}
+  po as string s ? P4User(s) : Error("Expected a p4 user, got a " + pyObjType(po))
+
+// -- Parsers.
+
+fun p4UserTxtParser() untilParser(isWhitespace).to(Type{P4User}())

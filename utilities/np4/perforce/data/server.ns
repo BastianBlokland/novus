@@ -1,0 +1,25 @@
+import "std.ns"
+
+// -- Types.
+
+struct P4Server = string host, int port
+
+// -- Conversions.
+
+fun string(P4Server s) s.host + ':' + s.port.string()
+
+// -- Mappings.
+
+fun fromJson(JsonValue jv, Type{P4Server} t) -> Either{P4Server, Error}
+  if jv as string s -> p4ServerTxtParser().run(s)
+  else              -> Error("Expected a p4 server, got a " + jsonValueType(jv))
+
+fun fromPython(PyObj po, Type{P4Server} t) -> Either{P4Server, Error}
+  po as string s ? p4ServerTxtParser().run(s) : Error("Expected a p4 server, got a " + pyObjType(po))
+
+// -- Parsers.
+
+fun p4ServerTxtParser()
+  (
+    untilParser(matchParser(':')).trim() & (matchParser(':') >> txtIntParser())
+  ).to(Type{P4Server}())

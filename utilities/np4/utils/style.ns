@@ -1,0 +1,15 @@
+import "std.ns"
+
+// -- Types.
+
+enum Style = Header, Info, Normal
+
+struct StyleCtx = bool allowColor
+
+// -- Writers.
+
+fun styleWriter{T}(Writer{T} w, StyleCtx ctx, Style style)
+  ctx.allowColor ? w.ttyStyledTextWriter( if style == Style.Header -> TtyStyle.Bold :: List{TtyStyle}()
+                                          if style == Style.Info   -> TtyStyle.Faint :: List{TtyStyle}()
+                                          else                     -> List{TtyStyle}())
+                 : w

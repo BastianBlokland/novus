@@ -1,0 +1,19 @@
+import "std.ns"
+
+import "user.ns"
+import "client.ns"
+import "server.ns"
+
+// -- Types.
+
+struct P4Config =
+  P4Server  server,
+  P4Client  client,
+  P4User    user
+
+// -- Utilities.
+
+act loadP4Config(PathAbsolute p = pathCurrent()) -> Either{P4Config, Error}
+  if fileOpen(p / ".np4", FileMode.OpenReadOnly) as File f  -> f.readToEnd(jsonParser{P4Config}())
+  if p.pathIsRoot()                                         -> Error("Unable to find a .np4 config file")
+  else                                                      -> loadP4Config(p.parent())

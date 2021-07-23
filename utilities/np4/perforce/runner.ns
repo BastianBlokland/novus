@@ -1,0 +1,76 @@
+import "std.ns"
+
+import "data/change.ns"
+import "data/config.ns"
+import "data/stream.ns"
+
+// -- Types.
+
+enum P4RunCode = Stat, Info, Error
+
+struct P4RunOutput{T} =
+  P4RunCode code,
+  T         data
+
+// -- Utilities.
+
+fun p4GetRunData{T}(P4RunOutput{T} output) output.data
+
+fun p4GlobalArgs(P4Config cfg) -> List{string}
+  "-p"  :: cfg.server.string() ::
+  "-c"  :: cfg.client.string() ::
+  "-u"  :: cfg.user.string()   ::
+  "-Q"  :: "utf8unchecked"     ::
+  "-G"
+
+act p4Run(P4Config cfg, List{string} args) -> Either{string, Error}
+  p = run("p4", cfg.p4GlobalArgs() :: args, ProcessFlags.PipeInOut | ProcessFlags.NewGroup);
+  p.wait().map(impure lambda (ProcessResult r)
+    if r.isSuccess() -> r.stdOut ?? ""
+    else             ->
+      pyMarshalParser(Type{P4RunOutput{string}}()).run(r.stdOut ?? "") as P4RunOutput{string} err
+        ? Error("p4 error: " + err.data)
+        : Error("p4 error: " + r.stdErr ?? "")
+  )
+
+act p4Run{T}(P4Config cfg, List{string} args, Type{T} resultType) -> Either{T, Error}
+  cfg.p4Run(args).map(pyMarshalParser(resultType).build(ParseFlags.NoWrapperError))
+
+act p4RunMany{T}(P4Config cfg, List{string} args, Type{T} resultType) -> Either{List{T}, Error}
+  p = manyUntilParser(pyMarshalParser(resultType), endParser());
+  cfg.p4Run(args).map(p.build(ParseFlags.NoWrapperError))
+
+// -- Queries.
+
+act p4RunCurrentStreamName(P4Config cfg) -> Either{P4StreamName, Error}
+  cfg.p4Run("switch" :: List{string}(), Type{P4RunOutput{P4StreamName}}()).map(p4GetRunData{P4StreamName})
+
+act p4RunClientInfo(P4Config cfg, P4Client client) -> Either{P4ClientInfo, Error}
+  cfg.p4Run("client" :: "-o" :: client.id, Type{P4ClientInfo}())
+
+act p4RunChangeInfos(P4Config cfg, P4User u, P4ChangeStatus s, int maxAmount = 25) -> Either{List{P4ChangeInfo}, Error}
+  cfg.p4RunMany(
+    "changes"                       ::
+    "-l"                            ::
+    "-u" :: u.string()              ::
+    "-s" :: s.string().strToLower() ::
+    "-m" :: maxAmount.string(),
+    Type{P4ChangeInfo}())
+
+act p4RunChangeInfos(P4Config cfg, P4User u, P4Client c, P4ChangeStatus s, int maxAmount = 25) -> Either{List{P4ChangeInfo}, Error}
+  cfg.p4RunMany(
+    "changes"                       ::
+    "-l"                            ::
+    "-u" :: u.string()              ::
+    "-c" :: c.string()              ::
+    "-s" :: s.string().strToLower() ::
+    "-m" :: maxAmount.string(),
+    Type{P4ChangeInfo}())
+
+act p4RunChangeInfos(P4Config cfg, P4User u, int maxAmount = 25) -> Either{List{P4ChangeInfo}, Error}
+  cfg.p4RunMany(
+    "changes"                       ::
+    "-l"                            ::
+    "-u" :: u.string()              ::
+    "-m" :: maxAmount.string(),
+    Type{P4ChangeInfo}())

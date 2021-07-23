@@ -85,11 +85,20 @@ fun getField(PyDict pd, string name, StrComp strComp = StrComp.Normal) -> Option
 
 // -- Conversions
 
-fun string(PyNone n) "none"
-fun string(PyList l) l.entries.string()
-fun string(PyTuple l) l.entries.string()
-fun string(PyDict l) l.entries.string()
-fun string(PySet l) l.entries.string()
+fun string(PyNone n)
+  "none"
+
+fun string(PyList l)
+  l.entries.string("[", ",", "]")
+
+fun string(PyTuple l)
+  l.entries.string("(", ",", ")")
+
+fun string(PyDict l)
+  l.entries.map(lambda (Tuple{PyObj, PyObj} e) e.f1.string() + ":" + e.f2.string()).string("{", ",", "}")
+
+fun string(PySet l)
+  l.entries.string("[", ",", "]")
 
 // -- Parsers
 
