@@ -10,6 +10,7 @@ import "std/prim.ns"
 
 enum FileMode =
   Create : 0,
+  CreateNew,
   Open,
   OpenReadOnly,
   Append
@@ -273,7 +274,12 @@ assert(
   fileType(p) == FileType.None)
 
 assert(
-  p = pathCurrent() / "file-test11.tmp";
+  p = pathCurrent() / "file-test9.tmp";
   s = "Hello World";
   f = fileOpen(p, FileMode.Create, FileFlags.AutoRemove).map( impure lambda (File f) f.write(s));
   fileSize(p) == ByteSize(s.length()))
+
+assert(
+  p = pathCurrent() / "file-test10.tmp";
+  fileOpen(p, FileMode.CreateNew, FileFlags.AutoRemove) is File &&
+  fileOpen(p, FileMode.CreateNew) is Error)

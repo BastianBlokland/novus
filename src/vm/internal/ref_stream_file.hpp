@@ -23,9 +23,10 @@ enum class FileType : uint8_t {
 
 enum class FileStreamMode : uint8_t {
   Create       = 0,
-  Open         = 1,
-  OpenReadOnly = 2,
-  Append       = 3,
+  CreateNew    = 1,
+  Open         = 2,
+  OpenReadOnly = 3,
+  Append       = 4,
 };
 
 enum FileStreamFlags : uint8_t {
@@ -54,7 +55,7 @@ public:
     if ((m_flags & AutoRemoveFile) == AutoRemoveFile) {
 #if defined(_WIN32)
       ::DeleteFileA(m_filePath);
-#else //!_WIN32
+#else  //!_WIN32
       ::unlink(m_filePath);
 #endif //!_WIN32
     }
@@ -195,6 +196,14 @@ inline auto openFileStream(
   DWORD flags               = FILE_ATTRIBUTE_NORMAL | FILE_FLAG_POSIX_SEMANTICS;
   switch (m) {
   default:
+  case FileStreamMode::Create:
+    desiredAccess |= GENERIC_READ | GENERIC_WRITE;
+    creationDisposition = CREATE_ALWAYS;
+    break;
+  case FileStreamMode::CreateNew:
+    desiredAccess |= GENERIC_READ | GENERIC_WRITE;
+    creationDisposition = CREATE_NEW;
+    break;
   case FileStreamMode::Open:
     desiredAccess |= GENERIC_READ | GENERIC_WRITE;
     creationDisposition = OPEN_EXISTING;
@@ -206,10 +215,6 @@ inline auto openFileStream(
   case FileStreamMode::Append:
     desiredAccess |= FILE_APPEND_DATA;
     creationDisposition = OPEN_EXISTING;
-    break;
-  case FileStreamMode::Create:
-    desiredAccess |= GENERIC_READ | GENERIC_WRITE;
-    creationDisposition = CREATE_ALWAYS;
     break;
   }
 
@@ -225,6 +230,12 @@ inline auto openFileStream(
   int flags = O_NOCTTY;
   switch (m) {
   default:
+  case FileStreamMode::Create:
+    flags |= O_RDWR | O_CREAT | O_TRUNC;
+    break;
+  case FileStreamMode::CreateNew:
+    flags |= O_RDWR | O_CREAT | O_EXCL;
+    break;
   case FileStreamMode::Open:
     flags |= O_RDWR;
     break;
@@ -233,9 +244,6 @@ inline auto openFileStream(
     break;
   case FileStreamMode::Append:
     flags |= O_RDWR | O_APPEND;
-    break;
-  case FileStreamMode::Create:
-    flags |= O_RDWR | O_CREAT | O_TRUNC;
     break;
   }
   const int newFilePerms = S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH; // RW for owner, and R for others.
@@ -314,7 +322,7 @@ inline auto getFileModTimeSinceMicro(PlatformError* pErr, StringRef* path) -> in
   }
 #if defined(__APPLE__)
   return statResult.st_mtimespec.tv_sec * 1'000'000L + statResult.st_mtimespec.tv_nsec / 1'000;
-#else // !__APPLE__
+#else  // !__APPLE__
   return statResult.st_mtim.tv_sec * 1'000'000L + statResult.st_mtim.tv_nsec / 1'000;
 #endif // !__APPLE__
 
@@ -500,7 +508,7 @@ fileDirList(RefAllocator* refAlloc, PlatformError* pErr, StringRef* path, FileLi
     return refAlloc->allocStr(0);
   }
 
-#else // !_WIN32
+#else  // !_WIN32
 
   DIR* dir = ::opendir(path->getCharDataPtr());
   if (!dir) {
@@ -589,7 +597,7 @@ inline auto fileDirCount(PlatformError* pErr, StringRef* path, FileListDirFlags 
     return -1;
   }
 
-#else // !_WIN32
+#else  // !_WIN32
 
   if (DIR* dir = ::opendir(path->getCharDataPtr())) {
     while (struct dirent* dirEnt = ::readdir(dir)) {

@@ -93,7 +93,7 @@ TEST_CASE("[vm] Execute input and output", "vm") {
 
           // Open the file again for reading.
           asmb->addLoadLitString(filePath); // Load stream.
-          asmb->addLoadLitInt(1U);          // Options, mode 1 (Open).
+          asmb->addLoadLitInt(2U);          // Options, mode 2 (Open).
           asmb->addPCall(novasm::PCallCode::FileOpenStream);
           asmb->addStackStore(0); // Store file-stream.
 
@@ -129,7 +129,7 @@ TEST_CASE("[vm] Execute input and output", "vm") {
 
           // Open steam to non existing file.
           asmb->addLoadLitString("does-not-exist.tmp"); // Path.
-          asmb->addLoadLitInt(1U);                      // Options, mode 1 (Open).
+          asmb->addLoadLitInt(2U);                      // Options, mode 2 (Open).
           asmb->addPCall(novasm::PCallCode::FileOpenStream);
 
           // Assert that file-stream is not valid.
@@ -150,7 +150,7 @@ TEST_CASE("[vm] Execute input and output", "vm") {
 
           // Open steam to non existing file.
           asmb->addLoadLitString("does-not-exist.tmp"); // Path.
-          asmb->addLoadLitInt(1U);                      // Options, mode 1 (Open).
+          asmb->addLoadLitInt(2U);                      // Options, mode 2 (Open).
           asmb->addPCall(novasm::PCallCode::FileOpenStream);
 
           // Read file content.
@@ -174,7 +174,7 @@ TEST_CASE("[vm] Execute input and output", "vm") {
 
           // Open steam to non existing file.
           asmb->addLoadLitString("test.tmp"); // Path.
-          asmb->addLoadLitInt(1U);            // Options, mode 1 (Open).
+          asmb->addLoadLitInt(2U);            // Options, mode 2 (Open).
           asmb->addPCall(novasm::PCallCode::FileOpenStream);
 
           // Write to file.
