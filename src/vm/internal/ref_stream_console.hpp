@@ -408,6 +408,7 @@ inline auto getConsolePlatformError() noexcept -> PlatformError {
     return PlatformError::StreamNoDataAvailable;
   case ENOENT:
   case ETIMEDOUT:
+  case EPIPE:
     return PlatformError::ConsoleNoLongerAvailable;
   }
 
