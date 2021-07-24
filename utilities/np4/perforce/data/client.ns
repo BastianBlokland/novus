@@ -24,8 +24,13 @@ fun string(P4Client u) u.id
 fun fromJson(JsonValue jv, Type{P4Client} t) -> Either{P4Client, Error}
   jv as string s ? P4Client(s) : Error("Expected a p4 client, got a " + jsonValueType(jv))
 
+fun toJson(P4Client c) -> JsonValue
+  c.string()
+
 fun fromPython(PyObj po, Type{P4Client} t) -> Either{P4Client, Error}
   po as string s ? P4Client(s) : Error("Expected a p4 client, got a " + pyObjType(po))
+
+fun cliParser(Type{P4Client} t) p4ClientTxtParser()
 
 // -- Parsers.
 

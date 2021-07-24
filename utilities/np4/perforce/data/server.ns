@@ -14,12 +14,17 @@ fun fromJson(JsonValue jv, Type{P4Server} t) -> Either{P4Server, Error}
   if jv as string s -> p4ServerTxtParser().run(s)
   else              -> Error("Expected a p4 server, got a " + jsonValueType(jv))
 
+fun toJson(P4Server s) -> JsonValue
+  s.string()
+
 fun fromPython(PyObj po, Type{P4Server} t) -> Either{P4Server, Error}
   po as string s ? p4ServerTxtParser().run(s) : Error("Expected a p4 server, got a " + pyObjType(po))
+
+fun cliParser(Type{P4Server} t) p4ServerTxtParser()
 
 // -- Parsers.
 
 fun p4ServerTxtParser()
   (
     untilParser(matchParser(':')).trim() & (matchParser(':') >> txtIntParser())
-  ).to(Type{P4Server}())
+  ).to(Type{P4Server}()) ! Error("Invalid p4 server [HOST:PORT]")

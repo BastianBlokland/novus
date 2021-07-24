@@ -4,7 +4,7 @@ import "../perforce/runner.ns"
 import "../utils/job.ns"
 import "../utils/style.ns"
 
-// -- Query.
+// -- Utilities.
 
 struct StatusData =
   P4Config            config,
@@ -12,7 +12,7 @@ struct StatusData =
   P4StreamInfo        streamInfo,
   List{P4ChangeInfo}  pendingChanges
 
-act statusQuery(P4Config cfg, Console c) -> Either{StatusData, Error}
+act statusQuery(P4Config cfg) -> Either{StatusData, Error}
   waitForJobs(Tuple(
     fork p4RunClientInfo(cfg, cfg.client),
     fork p4RunCurrentStreamInfo(cfg),
@@ -25,16 +25,16 @@ act statusQuery(P4Config cfg, Console c) -> Either{StatusData, Error}
 
 fun statusClientWriter(StyleCtx ctx) -> Writer{StatusData}
   (
-    stringWriter().styleWriter(ctx, Style.Header) &
-    litWriter(" (") & pathAbsWriter().styleWriter(ctx, Style.Info) & litWriter(")")
+    stringWriter().styleWriter(ctx, Style.Important) &
+    litWriter(" (") & pathAbsWriter().styleWriter(ctx, Style.Detail) & litWriter(")")
   ).map(lambda (StatusData data)
     Tuple(data.clientInfo.client.string(), data.clientInfo.root))
 
 fun statusStreamWriter(StyleCtx ctx) -> Writer{StatusData}
   (
-    stringWriter().styleWriter(ctx, Style.Header) &
-    litWriter(" (") & enumKeyWriter(Type{P4StreamType}()).styleWriter(ctx, Style.Info) & litWriter(")") &
-    ?(litWriter(" Parent: ") & stringWriter().styleWriter(ctx, Style.Header))
+    stringWriter().styleWriter(ctx, Style.Important) &
+    litWriter(" (") & enumKeyWriter(Type{P4StreamType}()).styleWriter(ctx, Style.Detail) & litWriter(")") &
+    ?(litWriter(" Parent: ") & stringWriter().styleWriter(ctx, Style.Important))
   ).map(lambda (StatusData data)
     Tuple(  data.streamInfo.stream.string(),
             data.streamInfo.type,
@@ -44,7 +44,7 @@ fun statusStreamWriter(StyleCtx ctx) -> Writer{StatusData}
 fun statusChangesWriter(StyleCtx ctx, int maxWidth) -> Writer{P4ChangeInfo}
   (
     litWriter("[ ") &
-    txtIntWriter(8).styleWriter(ctx, Style.Info) &
+    txtIntWriter(8).styleWriter(ctx, Style.Detail) &
     litWriter(" ] ") &
     stringWriter()
   ).map(lambda (P4ChangeInfo c) Tuple(c.change.id, c.changeShortDesc(maxWidth - 16)))
@@ -66,7 +66,7 @@ struct StatusSettings =
 act statusCmd(StatusSettings s) -> Option{Error}
   c         = consoleOpen().failOnError();
   maxWidth  = s.maxWidth ?? (c.termGetWidth() ?? 80);
-  dataOrErr = loadP4Config().map(statusQuery[c]);
+  dataOrErr = loadP4Config().map(statusQuery);
   writer    = statusOutputWriter(StyleCtx(!s.noColor && c.allowColor()), maxWidth);
   if dataOrErr as Error      err  -> err
   if dataOrErr as StatusData data -> c.writeOut(writer, data)
