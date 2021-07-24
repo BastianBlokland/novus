@@ -13,7 +13,8 @@ struct P4Config =
 // -- Utilities.
 
 act loadP4Config(PathAbsolute p = pathCurrent()) -> Either{P4Config, Error}
-  if fileOpen(p / ".np4", FileMode.OpenReadOnly) as File f  -> f.readToEnd(jsonParser{P4Config}())
+  parser = jsonParser{P4Config}();
+  if fileOpen(p / ".np4", FileMode.OpenReadOnly) as File f  -> f.readToEnd(parser) ! Error("Failed to parse .np4 config file")
   if p.pathIsRoot()                                         -> Error("Not a np4 workspace, run 'np4 setup' to set one up")
   else                                                      -> loadP4Config(p.parent())
 
