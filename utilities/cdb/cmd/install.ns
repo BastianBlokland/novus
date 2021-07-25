@@ -40,7 +40,6 @@ act getShellConfigPath(InstallSettings s) -> Option{PathAbsolute}
 
 act installCmd(InstallSettings s) -> Option{Error}
   configPath = getShellConfigPath(s).valueOrError(Error("No shell configuration file found for shell '" + s.shell.val + '\'')).failOnError();
-  fileCreate(configPath).failOnError();
   configFile = fileOpen(configPath, FileMode.Append).failOnError();
   configFile.write("\n" + getJumpAlias(s.shell.val, pathProgram()) + '\n' +
                           getExecAlias(s.shell.val, pathProgram()) + '\n');
