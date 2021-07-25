@@ -13,6 +13,7 @@ enum FileMode =
   CreateNew,
   Open,
   OpenReadOnly,
+  OpenOrCreate,
   Append
 
 enum FileType =
@@ -251,22 +252,18 @@ assertIs(
   p = pathCurrent() / "file-test5.tmp";
   fileOpen(p, FileMode.Open), Type{Error}())
 
-assertIs(
-  p = pathCurrent() / "file-test6.tmp";
-  fileOpen(p, FileMode.Append, FileFlags.AutoRemove), Type{Error}())
-
 assertIs(fileRemove(pathCurrent() / "non-existing-file"), Type{Error}())
 
 assert(fileType(pathCurrent() / "non-existing-file") == FileType.None)
 
 assert(
-  p = pathCurrent() / "file-test7.tmp";
+  p = pathCurrent() / "file-test6.tmp";
   fileType(p) == FileType.None &&
   fileOpen(p, FileMode.Create, FileFlags.AutoRemove) is File &&
   fileType(p) == FileType.Regular)
 
 assert(
-  p = pathCurrent() / "file-test8";
+  p = pathCurrent() / "file-test7";
   fileType(p) == FileType.None &&
   fileCreateDir(p) is None &&
   fileType(p) == FileType.Directory &&
@@ -274,12 +271,12 @@ assert(
   fileType(p) == FileType.None)
 
 assert(
-  p = pathCurrent() / "file-test9.tmp";
+  p = pathCurrent() / "file-test8.tmp";
   s = "Hello World";
   f = fileOpen(p, FileMode.Create, FileFlags.AutoRemove).map( impure lambda (File f) f.write(s));
   fileSize(p) == ByteSize(s.length()))
 
 assert(
-  p = pathCurrent() / "file-test10.tmp";
+  p = pathCurrent() / "file-test9.tmp";
   fileOpen(p, FileMode.CreateNew, FileFlags.AutoRemove) is File &&
   fileOpen(p, FileMode.CreateNew) is Error)

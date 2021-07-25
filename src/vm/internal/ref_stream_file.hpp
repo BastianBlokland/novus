@@ -26,7 +26,8 @@ enum class FileStreamMode : uint8_t {
   CreateNew    = 1,
   Open         = 2,
   OpenReadOnly = 3,
-  Append       = 4,
+  OpenOrCreate = 4,
+  Append       = 5,
 };
 
 enum FileStreamFlags : uint8_t {
@@ -213,9 +214,13 @@ inline auto openFileStream(
     desiredAccess |= GENERIC_READ;
     creationDisposition = OPEN_EXISTING;
     break;
+  case FileStreamMode::OpenOrCreate:
+    desiredAccess |= GENERIC_READ | GENERIC_WRITE;
+    creationDisposition = OPEN_ALWAYS;
+    break;
   case FileStreamMode::Append:
     desiredAccess |= FILE_APPEND_DATA;
-    creationDisposition = OPEN_EXISTING;
+    creationDisposition = OPEN_ALWAYS;
     break;
   }
 
@@ -243,8 +248,11 @@ inline auto openFileStream(
   case FileStreamMode::OpenReadOnly:
     flags |= O_RDONLY;
     break;
+  case FileStreamMode::OpenOrCreate:
+    flags |= O_RDWR | O_CREAT;
+    break;
   case FileStreamMode::Append:
-    flags |= O_RDWR | O_APPEND;
+    flags |= O_WRONLY | O_CREAT | O_APPEND;
     break;
   }
   const int newFilePerms = S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH; // RW for owner, and R for others.
