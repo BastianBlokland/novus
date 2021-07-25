@@ -1,5 +1,6 @@
 import "std.ns"
 
+import "change.ns"
 import "client.ns"
 
 // -- Types.
@@ -14,6 +15,11 @@ struct P4OpenFile =
   P4DepotFile   depotFile,
   P4ClientFile  clientFile,
   int           rev,
+  P4FileOp      Action
+
+struct P4FileInfo =
+  P4DepotFile   depotFile,
+  P4Change      change,
   P4FileOp      Action
 
 // -- Mappings.

@@ -90,5 +90,8 @@ act p4RunChangeInfos(P4Config cfg, P4Client c, P4ChangeStatus s, int maxAmount =
     "-m" :: maxAmount.string(),
     Type{P4ChangeInfo}())
 
+act p4RunGetDepotFiles(P4Config cfg, P4Change change) -> Either{List{P4FileInfo}, Error}
+  cfg.p4RunMany("files" :: ("@=" + change.string()), Type{P4FileInfo}())
+
 act p4RunGetOpenFiles(P4Config cfg, P4Client client, P4Change change) -> Either{List{P4OpenFile}, Error}
   cfg.p4RunMany("opened" :: "-C" :: client.string() :: "-c" :: change.string(), Type{P4OpenFile}())

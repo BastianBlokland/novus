@@ -15,14 +15,16 @@ struct StatusData =
 
 struct StatusChangeData =
   P4ChangeInfo      info,
-  List{P4OpenFile}  openFiles
+  List{P4OpenFile}  openFiles,
+  List{P4FileInfo}  shelvedFiles
 
 act statusQueryChanges(P4Config cfg) -> Either{List{StatusChangeData}, Error}
   p4RunChangeInfos(cfg, cfg.client, P4ChangeStatus.Pending)
     .map(impure lambda (List{P4ChangeInfo} changes)
       changes.parallelMap(impure lambda (P4ChangeInfo info)
         p4RunGetOpenFiles(cfg, cfg.client, info.change).map(impure lambda (List{P4OpenFile} openFiles)
-          StatusChangeData(info, openFiles)
+          shelvedFiles = p4RunGetDepotFiles(cfg, info.change) ?? List{P4FileInfo}();
+          StatusChangeData(info, openFiles, shelvedFiles)
         )
       ).split().valueOrError()
     )
@@ -41,12 +43,14 @@ act statusQuery(P4Config cfg) -> Either{StatusData, Error}
   )
 
 fun statusStyleForFileOp(P4FileOp op) -> Style
-  if op == P4FileOp.Add       -> Style.OpAdd
-  if op == P4FileOp.Edit      -> Style.OpEdit
-  if op == P4FileOp.Delete    -> Style.OpDelete
-  if op == P4FileOp.Integrate -> Style.OpIntegrate
-  if op == P4FileOp.Branch    -> Style.OpBranch
-  else                        -> Style.Normal
+  if op == P4FileOp.Add         -> Style.OpAdd
+  if op == P4FileOp.Edit        -> Style.OpEdit
+  if op == P4FileOp.Delete      -> Style.OpDelete
+  if op == P4FileOp.Integrate   -> Style.OpIntegrate
+  if op == P4FileOp.Branch      -> Style.OpBranch
+  if op == P4FileOp.MoveAdd     -> Style.OpMove
+  if op == P4FileOp.MoveDelete  -> Style.OpMove
+  else                          -> Style.Important
 
 // -- Writers.
 
@@ -81,12 +85,18 @@ fun statusChangesWriter(StyleCtx ctx, int maxWidth) -> Writer{StatusChangeData}
     stringWriter().styledWriter(ctx, Style.Important) &
     litWriter("] ") &
     stringWriter() &
-    listWriter(newlineWriter() & indentWriter() & statusOpenFileWriter(ctx, maxWidth)).indent()
+    (
+      ?(
+        newlineWriter() & indentWriter() &
+        litWriter("Shelved: ") & txtIntWriter() & litWriter(" files")
+      ).styledWriter(ctx, Style.Important) &
+      listWriter(newlineWriter() & indentWriter() & statusOpenFileWriter(ctx, maxWidth))
+    ).indent()
   ).map(lambda (StatusChangeData c)
     Tuple(
       c.info.change.string(),
       c.info.changeShortDesc(maxWidth - 16),
-      c.openFiles)
+      Tuple(c.shelvedFiles.isEmpty() ? Option{int}() : c.shelvedFiles.length(), c.openFiles))
   )
 
 fun statusOutputWriter(StyleCtx ctx, int maxWidth) -> Writer{StatusData}
