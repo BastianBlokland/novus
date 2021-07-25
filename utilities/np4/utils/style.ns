@@ -2,14 +2,29 @@ import "std.ns"
 
 // -- Types.
 
-enum Style = Important, Normal, Detail
+enum Style = Important, Normal, Detail, OpAdd, OpDelete, OpEdit, OpIntegrate, OpBranch
 
 struct StyleCtx = bool allowColor
 
 // -- Writers.
 
-fun styleWriter{T}(Writer{T} w, StyleCtx ctx, Style style)
-  ctx.allowColor ? w.ttyStyledTextWriter( if style == Style.Important -> TtyStyle.Bold :: List{TtyStyle}()
-                                          if style == Style.Detail    -> TtyStyle.Faint :: List{TtyStyle}()
-                                          else                        -> List{TtyStyle}())
-                 : w
+fun styleToTtyStyleList(Style s) -> List{TtyStyle}
+  if s == Style.Important   -> TtyStyle.Bold      :: List{TtyStyle}()
+  if s == Style.Detail      -> TtyStyle.Faint     :: List{TtyStyle}()
+  if s == Style.OpAdd       -> TtyStyle.FgGreen   :: TtyStyle.Bold
+  if s == Style.OpDelete    -> TtyStyle.FgRed     :: TtyStyle.Bold
+  if s == Style.OpEdit      -> TtyStyle.FgYellow  :: TtyStyle.Bold
+  if s == Style.OpIntegrate -> TtyStyle.FgBlue    :: TtyStyle.Bold
+  if s == Style.OpBranch    -> TtyStyle.FgMagenta :: TtyStyle.Bold
+  else                      -> List{TtyStyle}()
+
+fun styleWriter(StyleCtx ctx) -> Writer{Style}
+  ctx.allowColor ? ttyStyleListWriter().map(lambda (Style s) styleToTtyStyleList(s))
+                 : nopWriter{Style}()
+
+fun styleLitWriter(StyleCtx ctx, Style s) -> Writer{None}
+  ctx.allowColor ? ttyLitStyleWriter(styleToTtyStyleList(s))
+                 : noneWriter()
+
+fun styledWriter{T}(Writer{T} w, StyleCtx ctx, Style s)
+  styleLitWriter(ctx, s) & w & ttyLitStyleWriter(TtyStyle.Reset)

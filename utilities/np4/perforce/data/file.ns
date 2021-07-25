@@ -1,0 +1,53 @@
+import "std.ns"
+
+import "client.ns"
+
+// -- Types.
+
+enum P4FileOp = Add, Edit, Delete, Branch, MoveAdd, MoveDelete, Integrate, Import, Purge, Archive
+
+struct P4DepotFile = PathRelative path
+
+struct P4ClientFile = P4Client client, PathRelative path
+
+struct P4OpenFile =
+  P4DepotFile   depotFile,
+  P4ClientFile  clientFile,
+  int           rev,
+  P4FileOp      Action
+
+// -- Mappings.
+
+fun fromPython(PyObj po, Type{P4FileOp} t) -> Either{P4FileOp, Error}
+  if po as string s ->
+  (
+    if s == "add"         -> P4FileOp.Add
+    if s == "edit"        -> P4FileOp.Edit
+    if s == "delete"      -> P4FileOp.Delete
+    if s == "branch"      -> P4FileOp.Branch
+    if s == "move/add"    -> P4FileOp.MoveAdd
+    if s == "move/delete" -> P4FileOp.MoveDelete
+    if s == "integrate"   -> P4FileOp.Integrate
+    if s == "import"      -> P4FileOp.Import
+    if s == "purge"       -> P4FileOp.Purge
+    if s == "archive"     -> P4FileOp.Archive
+    else                  -> Error("Unsupported P4 file operation: '" + s + '\'')
+  )
+  else -> Error("Expected a p4 file operation, got a " + pyObjType(po))
+
+fun fromPython(PyObj po, Type{P4DepotFile} t) -> Either{P4DepotFile, Error}
+  po as string s ? p4DepotFileParser().run(s) : Error("Expected a p4 depot file, got a " + pyObjType(po))
+
+fun fromPython(PyObj po, Type{P4ClientFile} t) -> Either{P4ClientFile, Error}
+  po as string s ? p4ClientFileParser().run(s) : Error("Expected a p4 client file, got a " + pyObjType(po))
+
+// -- Parsers.
+
+fun p4DepotFileParser()
+  (matchParser("//") >> pathRelParser()).to(Type{P4DepotFile}())
+
+fun p4ClientFileParser()
+  (
+    matchParser("//") >> untilParser(matchParser('/')).to(Type{P4Client}()) << matchParser('/') &
+    pathRelParser()
+  ).to(Type{P4ClientFile}())

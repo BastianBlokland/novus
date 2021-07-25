@@ -2,6 +2,7 @@ import "std.ns"
 
 import "data/change.ns"
 import "data/config.ns"
+import "data/file.ns"
 import "data/stream.ns"
 import "data/var.ns"
 
@@ -88,3 +89,6 @@ act p4RunChangeInfos(P4Config cfg, P4Client c, P4ChangeStatus s, int maxAmount =
     "-s" :: s.string().strToLower() ::
     "-m" :: maxAmount.string(),
     Type{P4ChangeInfo}())
+
+act p4RunGetOpenFiles(P4Config cfg, P4Change c) -> Either{List{P4OpenFile}, Error}
+  cfg.p4RunMany("opened" :: "-c" :: c.string(), Type{P4OpenFile}())

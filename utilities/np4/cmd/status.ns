@@ -7,53 +7,88 @@ import "../utils/style.ns"
 // -- Utilities.
 
 struct StatusData =
-  P4Config            config,
-  P4ClientInfo        clientInfo,
-  P4StreamInfo        streamInfo,
-  List{P4ChangeInfo}  pendingChanges
+  P4Config                config,
+  P4ClientInfo            clientInfo,
+  P4StreamInfo            streamInfo,
+  List{StatusChangeData}  pendingChanges
+
+struct StatusChangeData =
+  P4ChangeInfo      info,
+  List{P4OpenFile}  openFiles
+
+act statusQueryChanges(P4Config cfg) -> Either{List{StatusChangeData}, Error}
+  p4RunChangeInfos(cfg, cfg.client, P4ChangeStatus.Pending)
+    .map(impure lambda (List{P4ChangeInfo} changes)
+      changes.parallelMap(impure lambda (P4ChangeInfo info)
+        p4RunGetOpenFiles(cfg, info.change).map(impure lambda (List{P4OpenFile} openFiles)
+          StatusChangeData(info, openFiles)
+        )
+      ).split().valueOrError()
+    )
 
 act statusQuery(P4Config cfg) -> Either{StatusData, Error}
   waitForJobs(Tuple(
     fork p4RunClientInfo(cfg, cfg.client),
     fork p4RunCurrentStreamInfo(cfg),
-    fork p4RunChangeInfos(cfg, cfg.client, P4ChangeStatus.Pending))
-  ).map(impure lambda (Tuple{P4ClientInfo, P4StreamInfo, List{P4ChangeInfo}} res)
+    fork statusQueryChanges(cfg))
+  ).map(impure lambda (Tuple{P4ClientInfo, P4StreamInfo, List{StatusChangeData}} res)
     StatusData(cfg, res.f1, res.f2, res.f3)
   )
+
+fun statusStyleForFileOp(P4FileOp op) -> Style
+  if op == P4FileOp.Add       -> Style.OpAdd
+  if op == P4FileOp.Edit      -> Style.OpEdit
+  if op == P4FileOp.Delete    -> Style.OpDelete
+  if op == P4FileOp.Integrate -> Style.OpIntegrate
+  if op == P4FileOp.Branch    -> Style.OpBranch
+  else                        -> Style.Normal
 
 // -- Writers.
 
 fun statusClientWriter(StyleCtx ctx) -> Writer{StatusData}
   (
-    stringWriter().styleWriter(ctx, Style.Important) &
-    litWriter(" (") & pathAbsWriter().styleWriter(ctx, Style.Detail) & litWriter(")")
+    stringWriter() &
+    litWriter(" (") & pathAbsWriter().styledWriter(ctx, Style.Detail) & litWriter(")")
   ).map(lambda (StatusData data)
     Tuple(data.clientInfo.client.string(), data.clientInfo.root))
 
 fun statusStreamWriter(StyleCtx ctx) -> Writer{StatusData}
   (
-    stringWriter().styleWriter(ctx, Style.Important) &
-    litWriter(" (") & enumKeyWriter(Type{P4StreamType}()).styleWriter(ctx, Style.Detail) & litWriter(")") &
-    ?(litWriter(" Parent: ") & stringWriter().styleWriter(ctx, Style.Important))
+    stringWriter() &
+    litWriter(" (") & enumKeyWriter(Type{P4StreamType}()).styledWriter(ctx, Style.Detail) & litWriter(")") &
+    ?(litWriter(" Parent: ").styledWriter(ctx, Style.Important) & stringWriter())
   ).map(lambda (StatusData data)
     Tuple(  data.streamInfo.stream.string(),
             data.streamInfo.type,
             data.streamInfo.parent.map(lambda (P4Stream s) s.string()))
   )
 
-fun statusChangesWriter(StyleCtx ctx, int maxWidth) -> Writer{P4ChangeInfo}
+fun statusOpenFileWriter(StyleCtx ctx, int maxWidth) -> Writer{P4OpenFile}
   (
-    litWriter("[ ") &
-    txtIntWriter(8).styleWriter(ctx, Style.Detail) &
-    litWriter(" ] ") &
-    stringWriter()
-  ).map(lambda (P4ChangeInfo c) Tuple(c.change.id, c.changeShortDesc(maxWidth - 16)))
+    styleWriter(ctx) & enumKeyWriter(Type{P4FileOp}()) &
+    litWriter(": ") & pathRelWriter() & ttyLitStyleWriter(TtyStyle.Reset) &
+    litWriter(" (") & txtIntWriter().styledWriter(ctx, Style.Detail) & litWriter(")")
+  ).map(lambda (P4OpenFile c) Tuple(statusStyleForFileOp(c.Action), c.Action, c.clientFile.path, c.rev))
+
+fun statusChangesWriter(StyleCtx ctx, int maxWidth) -> Writer{StatusChangeData}
+  (
+    litWriter("[") &
+    txtIntWriter().styledWriter(ctx, Style.Important) &
+    litWriter("] ") &
+    stringWriter() &
+    listWriter(newlineWriter() & indentWriter() & statusOpenFileWriter(ctx, maxWidth)).indent()
+  ).map(lambda (StatusChangeData c)
+    Tuple(
+      c.info.change.id,
+      c.info.changeShortDesc(maxWidth - 16),
+      c.openFiles)
+  )
 
 fun statusOutputWriter(StyleCtx ctx, int maxWidth) -> Writer{StatusData}
   (
-    litWriter("Client: ") & statusClientWriter(ctx) & newlineWriter() &
-    litWriter("Stream: ") & statusStreamWriter(ctx) & newlineWriter() &
-    litWriter("Pending: ") & newlineWriter() &
+    litWriter("Client: ").styledWriter(ctx, Style.Important) & statusClientWriter(ctx) & newlineWriter() &
+    litWriter("Stream: ").styledWriter(ctx, Style.Important) & statusStreamWriter(ctx) & newlineWriter() &
+    litWriter("Pending: ").styledWriter(ctx, Style.Important) & newlineWriter() &
     indentedListWriter(statusChangesWriter(ctx, maxWidth))
   ).map(lambda (StatusData data) Tuple(data, data, data.pendingChanges))
 

@@ -83,13 +83,15 @@ fun unionToPython{T}(T unionV) -> PyObj
 // -- Value from Python
 
 fun fromPython(PyObj po, Type{int} t) -> Either{int, Error}
-  if po as int i -> i
-  else           -> Error("Expected an Int, got a " + pyObjType(po))
+  if po as int    i -> i
+  if po as string s -> txtIntParser().build()(s)
+  else              -> Error("Expected an Int, got a " + pyObjType(po))
 
 fun fromPython(PyObj po, Type{long} t) -> Either{long, Error}
-  if po as int i  -> long(i)
-  if po as long l -> l
-  else            -> Error("Expected a Long, got a " + pyObjType(po))
+  if po as int    i -> long(i)
+  if po as long   l -> l
+  if po as string s -> txtLongParser().build()(s)
+  else              -> Error("Expected a Long, got a " + pyObjType(po))
 
 fun fromPython(PyObj po, Type{bool} t) -> Either{bool, Error}
   if po as bool b -> b

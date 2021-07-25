@@ -33,10 +33,10 @@ act setupWorkspace(SetupSettings s, P4Config newCfg) -> Either{NewWorkspace, Err
 fun setupSuccessWriter(StyleCtx ctx) -> Writer{NewWorkspace}
   (
     litWriter("Workspace succesfully setup") & newlineWriter() &
-    litWriter("Root: ") & pathAbsWriter().styleWriter(ctx, Style.Important) & newlineWriter() &
-    litWriter("User: ") & stringWriter().styleWriter(ctx, Style.Important) & newlineWriter() &
-    litWriter("Host: ") & stringWriter().styleWriter(ctx, Style.Important) & newlineWriter() &
-    litWriter("Description: ") & stringWriter().styleWriter(ctx, Style.Important)
+    litWriter("Root: ") & pathAbsWriter().styledWriter(ctx, Style.Important) & newlineWriter() &
+    litWriter("User: ") & stringWriter().styledWriter(ctx, Style.Important) & newlineWriter() &
+    litWriter("Host: ") & stringWriter().styledWriter(ctx, Style.Important) & newlineWriter() &
+    litWriter("Description: ") & stringWriter().styledWriter(ctx, Style.Important)
   ).map(lambda (NewWorkspace w)
     Tuple(
       w.clientInfo.root,

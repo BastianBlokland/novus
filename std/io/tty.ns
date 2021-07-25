@@ -75,6 +75,9 @@ fun ttyStyleWriter() -> Writer{TtyStyle}
     litWriter(ttyEsc() + '[') & txtIntWriter() & litWriter('m')
   ).map(lambda (TtyStyle s) s.int())
 
+fun ttyStyleListWriter() -> Writer{List{TtyStyle}}
+  listWriter(ttyStyleWriter())
+
 fun ttyLitStyleWriter(TtyStyle s) -> Writer{None}
   litWriter(ttyEsc() + '[' + s.int().string() + 'm')
 
