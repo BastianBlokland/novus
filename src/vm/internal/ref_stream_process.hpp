@@ -37,6 +37,7 @@ public:
       -> bool {
     if (unlikely(m_streamKind == ProcessStreamKind::StdIn)) {
       *pErr = PlatformError::StreamReadNotSupported;
+      str->updateSize(0);
       return false;
     }
 
