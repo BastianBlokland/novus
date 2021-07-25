@@ -21,9 +21,13 @@ struct P4ChangeInfo =
 
 // -- Conversions.
 
-fun string(P4Change c) c.id.string()
+fun string(P4Change c)
+  if c.id == 0  -> "default"
+  else          -> c.id.string()
 
 // -- Utilities
+
+fun p4DefaultChange() P4Change(0)
 
 fun changeShortDesc(P4ChangeInfo c, int maxLength = 60)
   newLineIdx = c.desc.indexOf(isNewline);
@@ -33,5 +37,6 @@ fun changeShortDesc(P4ChangeInfo c, int maxLength = 60)
 
 fun fromPython(PyObj po, Type{P4Change} t) -> Either{P4Change, Error}
   if po as int i    -> P4Change(i)
-  if po as string s -> txtIntParser().run(s).map(lambda (int i) P4Change(i))
-  else              -> Error("Expected a perforce Change, got a " + pyObjType(po))
+  if po as string s -> s == "default" ? p4DefaultChange()
+                                      : txtIntParser().run(s).map(lambda (int i) P4Change(i))
+  else -> Error("Expected a perforce Change, got a " + pyObjType(po))
