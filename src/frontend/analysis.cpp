@@ -68,7 +68,7 @@ auto analyze(const Source& mainSrc, const std::vector<filesystem::path>& searchP
   // Resolve all imports.
   auto importedSources = std::forward_list<Source>{};
   auto import =
-      internal::ImportSources{mainSrc, sourceTableBuilder, searchPaths, &importedSources, &diags};
+      internal::ImportSources{mainSrc, searchPaths, &importedSources, &sourceTableBuilder, &diags};
   mainSrc.accept(&import);
   auto allContexts = std::vector<internal::Context>{makeCtx(mainSrc)};
   for (const auto& importSrc : importedSources) {
@@ -178,6 +178,14 @@ auto analyze(const Source& mainSrc, const std::vector<filesystem::path>& searchP
   }
 
   return buildOutput(std::move(prog), std::move(importedSources), std::move(sourceTable), {});
+}
+
+auto getDependencies(const Source& mainSrc, const std::vector<filesystem::path>& searchPaths)
+    -> std::forward_list<Source> {
+  auto dependencies = std::forward_list<Source>{};
+  auto import       = internal::ImportSources{mainSrc, searchPaths, &dependencies};
+  mainSrc.accept(&import);
+  return dependencies;
 }
 
 } // namespace frontend

@@ -23,7 +23,7 @@ static auto operator<<(std::ostream& out, const Duration& rhs) -> std::ostream&;
 static auto msgHeader(std::ostream& out) -> std::ostream&;
 static auto infHeader(std::ostream& out) -> std::ostream&;
 
-auto compile(Options options) -> bool {
+auto compile(const CompileOptions& options) -> bool {
 
   std::cout << rang::style::bold << "--- Novus compiler [" PROJECT_VER "] ---\n"
             << rang::style::reset;

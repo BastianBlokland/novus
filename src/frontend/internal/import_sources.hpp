@@ -18,26 +18,26 @@ public:
   ImportSources() = delete;
   ImportSources(
       const Source& mainSource,
-      SourceTableBuilder& sourceTableBuilder,
       const std::vector<Path>& searchPaths,
       std::forward_list<Source>* importedSources,
-      std::vector<Diag>* diags);
+      SourceTableBuilder* sourceTableBuilder = nullptr,
+      std::vector<Diag>* diags               = nullptr);
   ImportSources(
       const Source& mainSource,
       const Source& currentSource,
-      SourceTableBuilder& sourceTableBuilder,
       const std::vector<Path>& searchPaths,
       std::forward_list<Source>* importedSources,
-      std::vector<Diag>* diags);
+      SourceTableBuilder* sourceTableBuilder = nullptr,
+      std::vector<Diag>* diags               = nullptr);
 
   auto visit(const parse::ImportStmtNode& n) -> void override;
 
 private:
   const Source& m_mainSource;
   const Source& m_currentSource;
-  SourceTableBuilder& m_sourceTableBuilder;
   const std::vector<Path>& m_searchPaths;
   std::forward_list<Source>* m_importedSources;
+  SourceTableBuilder* m_sourceTableBuilder;
   std::vector<Diag>* m_diags;
 
   [[nodiscard]] auto alreadyImportedAbsPath(const Path& file) const -> bool;

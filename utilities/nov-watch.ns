@@ -21,7 +21,7 @@ fun getSearchPathArgs(ValidateSettings s)
 
 act validateAction(Context ctx, ValidateSettings s)
   ProcessAction(impure lambda (PathAbsolute file) -> Option{Error}
-    run = run("novc", file.string() :: "--validate-only" :: getSearchPathArgs(s));
+    run = run("novc", file.string() :: getSearchPathArgs(s) :: "validate");
     if run as Error   err     -> ctx.console.writeErr("Failed to invoke compiler: " + err + '\n'); err
     if run as Process process -> process.wait(); None()
   )

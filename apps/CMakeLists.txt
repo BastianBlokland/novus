@@ -22,6 +22,7 @@ FetchContent_MakeAvailable(rang)
 message(STATUS "Configuring novc executable")
 add_executable(novc
   novc/compiler.cpp
+  novc/deps.cpp
   novc/main.cpp
   novc/utilities.cpp)
 target_compile_features(novc PUBLIC cxx_std_17)
