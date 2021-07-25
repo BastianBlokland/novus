@@ -10,6 +10,10 @@ fun waitForJobs{TupSrc, Int, T, TupDst}(TupSrc s, Meta{Int} idx, Either{T, Error
   if job as Error err -> err
   if job as T     val -> s.waitForJobs(idx, result.tupleAdd(val))
 
+fun waitForJobs{TupSrc, Int, T, TupDst}(TupSrc s, Meta{Int} idx, Option{T} job, TupDst result)
+  if job as Error err -> err
+  else                -> s.waitForJobs(idx, result)
+
 fun waitForJobs{TupSrc, Int, TupDst}(TupSrc s, Meta{Int} idx, TupDst result)
   resFuture = s.tupleGet(s.tupleSize() - idx);
   s.waitForJobs(--idx, resFuture.get(), result)

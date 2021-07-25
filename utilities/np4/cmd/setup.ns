@@ -1,6 +1,8 @@
 import "std.ns"
 
+import "../perforce/ignore.ns"
 import "../perforce/runner.ns"
+import "../utils/job.ns"
 import "../utils/style.ns"
 
 // -- Utilities.
@@ -20,8 +22,10 @@ act setupSaveConfig(SetupSettings s, P4Config newCfg, P4ClientInfo clientInfo) -
 
 act setupWorkspace(SetupSettings s, P4Config newCfg) -> Either{NewWorkspace, Error}
   p4RunClientInfo(newCfg, newCfg.client).map(impure lambda (P4ClientInfo clientInfo)
-    if setupSaveConfig(s, newCfg, clientInfo) as Error saveErr -> saveErr
-    else                                                       -> NewWorkspace(newCfg, clientInfo)
+    waitForJobs(Tuple(
+      fork setupSaveConfig(s, newCfg, clientInfo),
+      fork p4AddToIgnore(newCfg, clientInfo, ".np4"))
+    ).map(impure lambda (Tuple res) NewWorkspace(newCfg, clientInfo))
   )
 
 // -- Writers

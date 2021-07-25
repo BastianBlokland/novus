@@ -1,0 +1,16 @@
+import "std.ns"
+
+// -- Types.
+
+struct P4Var = string key, string val
+
+// -- Conversions.
+
+fun string(P4Var v) v.key + "=" + v.val
+
+// -- Parsers.
+
+fun p4VarParser()
+  (
+    untilParser(matchParser('=')) & matchParser('=') >> untilParser(isNewline)
+  ).to(Type{P4Var}())

@@ -365,6 +365,8 @@ assertEq("   hello   world   ".split(equals{char}[' ']), "hello" :: "world")
 assert("    ".split(equals{char}[' ']).isEmpty())
 assertEq(" h e l l o ".split(equals{char}[' ']), "h" :: "e" :: "l" :: "l" :: "o")
 assertEq("hello-world".split(equals{char}[' ']), List("hello-world"))
+assertEq("hello\nworld\n".split(isNewline), "hello" :: "world")
+assertEq("hello\r\nworld\r\n".split(isNewline), "hello" :: "world")
 assertEq("".split(equals{char}[' ']), List{string}())
 
 assertEq("hello-world".splitWithSep(equals{char}['-']), "hello" :: "-world")

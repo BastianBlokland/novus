@@ -3,6 +3,7 @@ import "std.ns"
 import "data/change.ns"
 import "data/config.ns"
 import "data/stream.ns"
+import "data/var.ns"
 
 // -- Types.
 
@@ -45,6 +46,14 @@ act p4RunMany{T}(P4Config cfg, List{string} args, Type{T} resultType) -> Either{
   cfg.p4Run(args).map(p.build(ParseFlags.NoWrapperError))
 
 // -- Queries.
+
+act p4RunGetVars(P4Config cfg) -> Either{List{P4Var}, Error}
+  args = "set" :: "-q";
+  p = manyParser(p4VarParser(), newlineParser(), ParseFlags.AllowTrailingSeperator) ! p4ParseError(args);
+  cfg.p4Run(args).map(p.build(ParseFlags.NoWrapperError))
+
+act p4RunSetVar(P4Config cfg, P4Var var) -> Option{Error}
+  cfg.p4Run("set" :: var.string()) as Error err ? err : None()
 
 act p4RunCurrentStreamInfo(P4Config cfg) -> Either{P4StreamInfo, Error}
   cfg.p4Run("stream" :: "-o", Type{P4StreamInfo}())

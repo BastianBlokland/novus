@@ -1,0 +1,34 @@
+import "std.ns"
+
+import "runner.ns"
+
+act p4GetCurrentIgnoreFileName(P4Config cfg) -> Either{Option{string}, Error}
+  p4RunGetVars(cfg).map(lambda (List{P4Var} vars)
+    vars.first(lambda (P4Var v) v.key == "P4IGNORE").map(lambda (P4Var v) v.val)
+  )
+
+act p4GetIgnoreFileName(P4Config cfg) -> Either{string, Error}
+  default = ".p4ignore";
+  p4GetCurrentIgnoreFileName(cfg).map(impure lambda (Option{string} current) -> Either{string, Error}
+    if current as string currentVal -> currentVal
+    if current is None              ->
+      p4RunSetVar(cfg, P4Var("P4IGNORE", default)) as Error err ? err : default
+  )
+
+act p4OpenIgnoreFile(P4Config cfg, P4ClientInfo clientInfo) -> Either{File, Error}
+  p4OpenIgnoreFile(cfg, clientInfo.root)
+
+act p4OpenIgnoreFile(P4Config cfg, Path root) -> Either{File, Error}
+  p4GetIgnoreFileName(cfg).map(impure lambda (string ignoreFileName)
+    fileOpen(root / ignoreFileName, FileMode.OpenOrCreate)
+  )
+
+act p4AddToIgnore(P4Config cfg, P4ClientInfo clientInfo, string line) -> Option{Error}
+  p4OpenIgnoreFile(cfg, clientInfo).map(impure lambda (File f)
+    currentLinesOrErr = f.readToEnd().map(split[isNewline]);
+    if currentLinesOrErr as Error         err           -> err
+    if currentLinesOrErr as List{string}  currentLines  ->
+      currentLines.any(lambda (string current) current.trim() == line)
+        ? None()
+        : f.write(stringWriter() & newlineWriter(), line)
+  )
