@@ -74,6 +74,7 @@ public:
 
     if (unlikely(m_mode == FileStreamMode::Append)) {
       *pErr = PlatformError::StreamReadNotSupported;
+      str->updateSize(0);
       return false;
     }
     if (unlikely(str->getSize() == 0)) {

@@ -52,6 +52,7 @@ public:
       -> bool {
     if (unlikely(m_kind != ConsoleStreamKind::StdIn)) {
       *pErr = PlatformError::StreamReadNotSupported;
+      str->updateSize(0);
       return false;
     }
 
