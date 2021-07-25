@@ -12,38 +12,39 @@ namespace frontend::internal {
 
 ImportSources::ImportSources(
     const Source& mainSource,
-    SourceTableBuilder& sourceTableBuilder,
     const std::vector<Path>& searchPaths,
     std::forward_list<Source>* importedSources,
+    SourceTableBuilder* sourceTableBuilder,
     std::vector<Diag>* diags) :
-    ImportSources(mainSource, mainSource, sourceTableBuilder, searchPaths, importedSources, diags) {
+    ImportSources(mainSource, mainSource, searchPaths, importedSources, sourceTableBuilder, diags) {
 }
 
 ImportSources::ImportSources(
     const Source& mainSource,
     const Source& currentSource,
-    SourceTableBuilder& sourceTableBuilder,
     const std::vector<Path>& searchPaths,
     std::forward_list<Source>* importedSources,
+    SourceTableBuilder* sourceTableBuilder,
     std::vector<Diag>* diags) :
     m_mainSource{mainSource},
     m_currentSource{currentSource},
-    m_sourceTableBuilder{sourceTableBuilder},
     m_searchPaths{searchPaths},
     m_importedSources{importedSources},
+    m_sourceTableBuilder{sourceTableBuilder},
     m_diags{diags} {
 
   if (m_importedSources == nullptr) {
     throw std::invalid_argument{"ImportedSources output list cannot be null"};
   }
-  if (m_diags == nullptr) {
-    throw std::invalid_argument{"Diagnostics output vector cannot be null"};
+  if (m_diags && m_sourceTableBuilder == nullptr) {
+    throw std::invalid_argument{
+        "Diagnostic collection requested but no SourceTableBuilder is provided"};
   }
 }
 
 auto ImportSources::visit(const parse::ImportStmtNode& n) -> void {
   if (!import(n.getPathString(), n.getPath().getSpan())) {
-    assert(!m_diags->empty());
+    assert(!m_diags || !m_diags->empty());
     return;
   }
 }
@@ -91,8 +92,10 @@ auto ImportSources::import(const Path& file, input::Span span) const -> bool {
     return true;
   }
 
-  const auto srcId = m_sourceTableBuilder.add(&m_currentSource, span);
-  m_diags->push_back(errUnresolvedImport(srcId, file.string()));
+  if (m_diags) {
+    const auto srcId = m_sourceTableBuilder->add(&m_currentSource, span);
+    m_diags->push_back(errUnresolvedImport(srcId, file.string()));
+  }
   return false;
 }
 
@@ -142,9 +145,9 @@ auto ImportSources::importAbsPath(const Path& file) const -> bool {
   auto importNested = ImportSources{
       m_mainSource,
       m_importedSources->front(),
-      m_sourceTableBuilder,
       m_searchPaths,
       m_importedSources,
+      m_sourceTableBuilder,
       m_diags};
   m_importedSources->front().accept(&importNested);
   return true;
