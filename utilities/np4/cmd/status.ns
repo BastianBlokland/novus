@@ -13,28 +13,40 @@ struct StatusData =
   List{StatusChangeData}  pendingChanges,
   List{P4OpenFile}        defaultOpenFiles
 
-struct StatusChangeData =
-  P4ChangeInfo      info,
-  List{P4OpenFile}  openFiles,
-  List{P4FileInfo}  shelvedFiles
+struct StatusFileList{T} = List{T} files, int count, int max, bool truncated
 
-act statusQueryChanges(P4Config cfg) -> Either{List{StatusChangeData}, Error}
-  p4RunChangeInfos(cfg, cfg.client, P4ChangeStatus.Pending)
-    .map(impure lambda (List{P4ChangeInfo} changes)
-      changes.parallelMap(impure lambda (P4ChangeInfo info)
-        p4RunGetOpenFiles(cfg, cfg.client, info.change).map(impure lambda (List{P4OpenFile} openFiles)
-          shelvedFiles = p4RunGetDepotFiles(cfg, info.change) ?? List{P4FileInfo}();
-          StatusChangeData(info, openFiles, shelvedFiles)
-        )
-      ).split().valueOrError()
+struct StatusChangeData =
+  P4ChangeInfo                info,
+  StatusFileList{P4OpenFile}  openFiles,
+  StatusFileList{P4FileInfo}  shelvedFiles
+
+fun statusFileList{T}(List{T} files, int max)
+  count = files.length();
+  truncated = count > max;
+  StatusFileList{T}(files[0, max], min(count, max), max, truncated)
+
+act statusQueryChanges(P4Config cfg, StatusSettings settings) -> Either{List{StatusChangeData}, Error}
+  p4RunChangeInfos(cfg, cfg.client, P4ChangeStatus.Pending, settings.changesMax).map(
+      impure lambda (List{P4ChangeInfo} changes)
+        changes.parallelMap(
+          impure lambda (P4ChangeInfo info)
+            p4RunGetOpenFiles(cfg, cfg.client, info.change, settings.filesMax + 1).map(
+              impure lambda (List{P4OpenFile} openFiles)
+                shelvedFiles = p4RunGetDepotFiles(cfg, info.change, settings.filesMax + 1) ?? List{P4FileInfo}();
+                StatusChangeData(
+                  info,
+                  statusFileList(openFiles, settings.filesMax),
+                  statusFileList(shelvedFiles, settings.filesMax))
+            )
+        ).split().valueOrError()
     )
 
-act statusQuery(P4Config cfg) -> Either{StatusData, Error}
+act statusQuery(P4Config cfg, StatusSettings settings) -> Either{StatusData, Error}
   waitForJobs(Tuple(
     fork p4RunClientInfo(cfg, cfg.client),
     fork p4RunCurrentStreamInfo(cfg),
-    fork statusQueryChanges(cfg),
-    fork p4RunGetOpenFiles(cfg, cfg.client, p4DefaultChange()))
+    fork statusQueryChanges(cfg, settings),
+    fork p4RunGetOpenFiles(cfg, cfg.client, p4DefaultChange(), settings.filesMax))
   ).map(impure lambda (Tuple{ P4ClientInfo,
                               P4StreamInfo,
                               List{StatusChangeData},
@@ -72,14 +84,27 @@ fun statusStreamWriter(StyleCtx ctx) -> Writer{StatusData}
             data.streamInfo.parent.map(lambda (P4Stream s) s.string()))
   )
 
-fun statusOpenFileWriter(StyleCtx ctx, int maxWidth) -> Writer{P4OpenFile}
+fun statusOpenFileWriter(StyleCtx ctx, int widthMax) -> Writer{P4OpenFile}
   (
     styleWriter(ctx) & enumKeyWriter(Type{P4FileOp}()) &
-    litWriter(": ") & pathRelWriter() & ttyLitStyleWriter(TtyStyle.Reset) &
-    litWriter(" (") & txtIntWriter().styledWriter(ctx, Style.Detail) & litWriter(")")
+    litWriter(": ") & pathRelWriter() & styleResetWriter(ctx) &
+    (litWriter(" #") & txtIntWriter()).styledWriter(ctx, Style.Detail)
   ).map(lambda (P4OpenFile c) Tuple(statusStyleForFileOp(c.Action), c.Action, c.clientFile.path, c.rev))
 
-fun statusChangesWriter(StyleCtx ctx, int maxWidth) -> Writer{StatusChangeData}
+fun statusFileListCountWriter{T}() -> Writer{StatusFileList{T}}
+  (
+    txtIntWriter() & ?litWriter("+") & litWriter(" files")
+  ).map(lambda (StatusFileList{T} l)
+    Tuple(l.count, l.truncated)
+  )
+
+fun statusFileListWriter{T}(Writer{T} w) -> Writer{StatusFileList{T}}
+  (
+    listWriter(newlineWriter() & indentWriter() & w) &
+    ?(newlineWriter() & indentWriter() & litWriter("... (use '--files-max [COUNT]' to increase limit)"))
+  ).map(lambda (StatusFileList{T} l) Tuple(l.files, l.truncated))
+
+fun statusChangesWriter(StyleCtx ctx, int widthMax) -> Writer{StatusChangeData}
   (
     litWriter("[") &
     stringWriter().styledWriter(ctx, Style.Important) &
@@ -87,38 +112,43 @@ fun statusChangesWriter(StyleCtx ctx, int maxWidth) -> Writer{StatusChangeData}
     stringWriter() &
     (
       ?(
-        newlineWriter() & indentWriter() &
-        litWriter("Shelved: ") & txtIntWriter() & litWriter(" files")
+        newlineWriter() & indentWriter() & litWriter("Shelved: ") & statusFileListCountWriter{P4FileInfo}()
       ).styledWriter(ctx, Style.Important) &
-      listWriter(newlineWriter() & indentWriter() & statusOpenFileWriter(ctx, maxWidth))
+      statusFileListWriter(statusOpenFileWriter(ctx, widthMax))
     ).indent()
   ).map(lambda (StatusChangeData c)
     Tuple(
       c.info.change.string(),
-      c.info.changeShortDesc(maxWidth - 16),
-      Tuple(c.shelvedFiles.isEmpty() ? Option{int}() : c.shelvedFiles.length(), c.openFiles))
+      c.info.changeShortDesc(widthMax - 16),
+      Tuple(c.shelvedFiles.count > 0 ? Option(c.shelvedFiles) : None(), c.openFiles))
   )
 
-fun statusOutputWriter(StyleCtx ctx, int maxWidth) -> Writer{StatusData}
+fun statusOutputWriter(StyleCtx ctx, int widthMax) -> Writer{StatusData}
   (
     litWriter("Client: ").styledWriter(ctx, Style.Important) & statusClientWriter(ctx) & newlineWriter() &
     litWriter("Stream: ").styledWriter(ctx, Style.Important) & statusStreamWriter(ctx) & newlineWriter() &
     litWriter("Pending: ").styledWriter(ctx, Style.Important) & newlineWriter() &
-      indentedListWriter(statusChangesWriter(ctx, maxWidth)) &
+      indentedListWriter(statusChangesWriter(ctx, widthMax)) &
     litWriter("Default: ").styledWriter(ctx, Style.Important) & newlineWriter() &
-      indentedListWriter(statusOpenFileWriter(ctx, maxWidth))
+      indentedListWriter(statusOpenFileWriter(ctx, widthMax))
   ).map(lambda (StatusData data) Tuple(data, data, data.pendingChanges, data.defaultOpenFiles))
 
 // -- Driver.
 
 struct StatusSettings =
   bool        noColor,
-  Option{int} maxWidth
+  Option{int} widthMax,
+  int         changesMax,
+  int         filesMax
+
+fun cliDefaults(Type{StatusSettings} t)
+  CliDefault("changes-max",  "100") ::
+  CliDefault("files-max",    "100")
 
 act statusCmd(StatusSettings s) -> Option{Error}
   c         = consoleOpen().failOnError();
-  maxWidth  = s.maxWidth ?? (c.termGetWidth() ?? 80);
-  dataOrErr = loadP4Config().map(statusQuery);
-  writer    = statusOutputWriter(StyleCtx(!s.noColor && c.allowColor()), maxWidth);
+  widthMax  = s.widthMax ?? (c.termGetWidth() ?? 80);
+  dataOrErr = loadP4Config().map(statusQuery[s]);
+  writer    = statusOutputWriter(StyleCtx(!s.noColor && c.allowColor()), widthMax);
   if dataOrErr as Error      err  -> err
   if dataOrErr as StatusData data -> c.writeOut(writer, data)

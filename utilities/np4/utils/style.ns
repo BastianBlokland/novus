@@ -27,5 +27,9 @@ fun styleLitWriter(StyleCtx ctx, Style s) -> Writer{None}
   ctx.allowColor ? ttyLitStyleWriter(styleToTtyStyleList(s))
                  : noneWriter()
 
+fun styleResetWriter(StyleCtx ctx) -> Writer{None}
+  ctx.allowColor ? ttyLitStyleWriter(TtyStyle.Reset)
+                 : noneWriter()
+
 fun styledWriter{T}(Writer{T} w, StyleCtx ctx, Style s)
-  styleLitWriter(ctx, s) & w & ttyLitStyleWriter(TtyStyle.Reset)
+  styleLitWriter(ctx, s) & w & styleResetWriter(ctx)

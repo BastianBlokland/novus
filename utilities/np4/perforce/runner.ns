@@ -64,34 +64,43 @@ act p4RunClientInfo(P4Config cfg, P4Client client) -> Either{P4ClientInfo, Error
   cfg.p4Run("client" :: "-o" :: client.id, Type{P4ClientInfo}())
   ! Error("Client '" + client + "' not valid on server '" + cfg.server + '\'')
 
-act p4RunChangeInfos(P4Config cfg, P4User u, int maxAmount = 25) -> Either{List{P4ChangeInfo}, Error}
+act p4RunChangeInfos(P4Config cfg, P4User u, int max) -> Either{List{P4ChangeInfo}, Error}
   cfg.p4RunMany(
     "changes"                       ::
     "-l"                            ::
     "-u" :: u.string()              ::
-    "-m" :: maxAmount.string(),
+    "-m" :: max.string(),
     Type{P4ChangeInfo}())
 
-act p4RunChangeInfos(P4Config cfg, P4User u, P4ChangeStatus s, int maxAmount = 25) -> Either{List{P4ChangeInfo}, Error}
+act p4RunChangeInfos(P4Config cfg, P4User u, P4ChangeStatus s, int max) -> Either{List{P4ChangeInfo}, Error}
   cfg.p4RunMany(
     "changes"                       ::
     "-l"                            ::
     "-u" :: u.string()              ::
     "-s" :: s.string().strToLower() ::
-    "-m" :: maxAmount.string(),
+    "-m" :: max.string(),
     Type{P4ChangeInfo}())
 
-act p4RunChangeInfos(P4Config cfg, P4Client c, P4ChangeStatus s, int maxAmount = 25) -> Either{List{P4ChangeInfo}, Error}
+act p4RunChangeInfos(P4Config cfg, P4Client c, P4ChangeStatus s, int max) -> Either{List{P4ChangeInfo}, Error}
   cfg.p4RunMany(
     "changes"                       ::
     "-l"                            ::
     "-c" :: c.string()              ::
     "-s" :: s.string().strToLower() ::
-    "-m" :: maxAmount.string(),
+    "-m" :: max.string(),
     Type{P4ChangeInfo}())
 
-act p4RunGetDepotFiles(P4Config cfg, P4Change change) -> Either{List{P4FileInfo}, Error}
-  cfg.p4RunMany("files" :: ("@=" + change.string()), Type{P4FileInfo}())
+act p4RunGetDepotFiles(P4Config cfg, P4Change change, int max) -> Either{List{P4FileInfo}, Error}
+  cfg.p4RunMany(
+    "files"                   ::
+    "-m" :: max.string()      ::
+    ("@=" + change.string()),
+    Type{P4FileInfo}())
 
-act p4RunGetOpenFiles(P4Config cfg, P4Client client, P4Change change) -> Either{List{P4OpenFile}, Error}
-  cfg.p4RunMany("opened" :: "-C" :: client.string() :: "-c" :: change.string(), Type{P4OpenFile}())
+act p4RunGetOpenFiles(P4Config cfg, P4Client client, P4Change change, int max) -> Either{List{P4OpenFile}, Error}
+  cfg.p4RunMany(
+    "opened"                  ::
+    "-C"  :: client.string()  ::
+    "-c"  :: change.string()  ::
+    "-m"  :: max.string(),
+     Type{P4OpenFile}())
