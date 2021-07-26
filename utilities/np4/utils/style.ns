@@ -2,7 +2,7 @@ import "std.ns"
 
 // -- Types.
 
-enum Style = Important, Normal, Detail, OpAdd, OpDelete, OpEdit, OpIntegrate, OpBranch, OpMove
+enum Style = Important, Normal, Detail, Resolve, OpAdd, OpDelete, OpEdit, OpIntegrate, OpBranch, OpMove
 
 struct StyleCtx = bool allowColor
 
@@ -11,6 +11,7 @@ struct StyleCtx = bool allowColor
 fun styleToTtyStyleList(Style s) -> List{TtyStyle}
   if s == Style.Important   -> TtyStyle.Bold      :: List{TtyStyle}()
   if s == Style.Detail      -> TtyStyle.Faint     :: List{TtyStyle}()
+  if s == Style.Resolve     -> TtyStyle.BgRed     :: TtyStyle.Bold
   if s == Style.OpAdd       -> TtyStyle.FgGreen   :: TtyStyle.Bold
   if s == Style.OpDelete    -> TtyStyle.FgRed     :: TtyStyle.Bold
   if s == Style.OpEdit      -> TtyStyle.FgYellow  :: TtyStyle.Bold

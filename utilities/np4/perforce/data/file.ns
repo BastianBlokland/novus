@@ -22,6 +22,13 @@ struct P4FileInfo =
   P4Change      change,
   P4FileOp      Action
 
+// -- Utilities.
+
+fun absPathToP4ClientFile(P4ClientInfo clientInfo, PathAbsolute path)
+  makeRelative(path, clientInfo.root).map(lambda (PathRelative rel) -> Either{P4ClientFile, Error}
+    P4ClientFile(clientInfo.client, rel)
+  ) ?? Error("Given path '" + path + "' is not under the client root")
+
 // -- Mappings.
 
 fun fromPython(PyObj po, Type{P4FileOp} t) -> Either{P4FileOp, Error}
