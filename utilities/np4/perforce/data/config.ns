@@ -1,16 +1,20 @@
 import "std.ns"
 
-import "user.ns"
+import "change.ns"
 import "client.ns"
 import "server.ns"
+import "user.ns"
 
 // -- Types.
 
 struct P4Config =
-  P4Server  server,
-  P4Client  client
+  P4Server        server,
+  P4Client        client,
+  List{P4Change}  hiddenChanges
 
 // -- Utilities.
+
+fun p4ChangeIsHidden(P4Config cfg, P4Change c) cfg.hiddenChanges.contains(c)
 
 act loadP4Config(PathAbsolute p = pathCurrent()) -> Either{P4Config, Error}
   parser = jsonParser{P4Config}();

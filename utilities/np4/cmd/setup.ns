@@ -12,7 +12,7 @@ struct NewWorkspace =
   P4ClientInfo  clientInfo
 
 fun setupNewConfig(SetupSettings s)
-  P4Config(s.server, s.client)
+  P4Config(s.server, s.client, s.hiddenChanges ?? List{P4Change}())
 
 act setupSaveConfig(SetupSettings s, P4Config newCfg, P4ClientInfo clientInfo) -> Option{Error}
   res = writeP4Config(newCfg, clientInfo, s.force);
@@ -48,10 +48,11 @@ fun setupSuccessWriter(StyleCtx ctx) -> Writer{NewWorkspace}
 // -- Driver.
 
 struct SetupSettings =
-  bool      noColor,
-  bool      force,
-  P4Server  server,
-  P4Client  client
+  bool                    noColor,
+  bool                    force,
+  P4Server                server,
+  P4Client                client,
+  Option{List{P4Change}}  hiddenChanges
 
 act setupCmd(SetupSettings s) -> Option{Error}
   c               = consoleOpen().failOnError();

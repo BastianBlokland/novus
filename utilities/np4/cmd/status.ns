@@ -25,6 +25,9 @@ struct StatusResolve =
   P4ClientFile    clientFile,
   P4ResolveType   resolveType
 
+fun statusFilterPending(P4ChangeInfo changeInfo, P4Config cfg)
+  !p4ChangeIsHidden(cfg, changeInfo.change)
+
 fun statusToLimitedList{T}(List{T} files, int max)
   count = files.length();
   truncated = count > max;
@@ -41,7 +44,7 @@ fun statusToResolves(List{P4ResolveFile} resolves, P4ClientInfo clientInfo) -> E
 act statusQueryChanges(P4Config cfg, StatusSettings settings) -> Either{List{StatusChange}, Error}
   p4RunChangeInfos(cfg, cfg.client, P4ChangeStatus.Pending, settings.changesMax).map(
       impure lambda (List{P4ChangeInfo} changes)
-        changes.parallelMap(
+        changes.filter(statusFilterPending[cfg]).parallelMap(
           impure lambda (P4ChangeInfo info)
             p4RunGetOpenFiles(cfg, cfg.client, info.change, settings.filesMax + 1).map(
               impure lambda (List{P4OpenFile} openFiles)
