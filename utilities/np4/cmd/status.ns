@@ -149,14 +149,20 @@ fun statusOutputWriter(StyleCtx ctx, int widthMax) -> Writer{StatusData}
   (
     litWriter("Client: ").styledWriter(ctx, Style.Important) & statusClientWriter(ctx) & newlineWriter() &
     litWriter("Stream: ").styledWriter(ctx, Style.Important) & statusStreamWriter(ctx) & newlineWriter() &
-    litWriter("Resolves: ").styledWriter(ctx, Style.Important) & newlineWriter() &
-      indentedListWriter(statusResolveFileWriter(ctx, widthMax)) &
-    litWriter("Pending: ").styledWriter(ctx, Style.Important) & newlineWriter() &
-      indentedListWriter(statusChangesWriter(ctx, widthMax)) &
-    litWriter("Default: ").styledWriter(ctx, Style.Important) & newlineWriter() &
+    ?(
+      litWriter("Resolves: ").styledWriter(ctx, Style.Important) & newlineWriter() &
+      indentedListWriter(statusResolveFileWriter(ctx, widthMax))
+    ) &
+    ?(
+      litWriter("Pending: ").styledWriter(ctx, Style.Important) & newlineWriter() &
+      indentedListWriter(statusChangesWriter(ctx, widthMax))
+    ) &
+    ?(
+      litWriter("Default: ").styledWriter(ctx, Style.Important) & newlineWriter() &
       indentedListWriter(statusOpenFileWriter(ctx, widthMax))
-  ).map(lambda (StatusData data)
-    Tuple(data, data, data.pendingResolves, data.pendingChanges, data.defaultOpenFiles)
+    )
+  ).map(lambda (StatusData d)
+    Tuple(d, d, d.pendingResolves.noneIfEmpty(), d.pendingChanges.noneIfEmpty(), d.defaultOpenFiles.noneIfEmpty())
   )
 
 // -- Driver.

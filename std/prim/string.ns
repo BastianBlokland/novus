@@ -115,6 +115,9 @@ fun >(string x, string y) -> bool
 fun isEmpty(string str)
   str == ""
 
+fun noneIfEmpty(string str) -> Option{string}
+  str.isEmpty() ? None() : str
+
 fun last(string str)
   str[str.length() - 1]
 

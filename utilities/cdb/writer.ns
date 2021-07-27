@@ -19,7 +19,7 @@ fun cmdWriter(CmdWriteFlags flags = CmdWriteFlags.None) -> Writer{Cmd}
   (
     cmdQuotedWriter(pathAbsWriter(), flags) &
     ?(litWriter(' ') & listWriter(cmdQuotedWriter(stringWriter(), flags), litWriter(' ')))
-  ).map(lambda (Cmd c) Tuple(c.path, !c.args.isEmpty() ? c.args : None()))
+  ).map(lambda (Cmd c) Tuple(c.path, c.args.noneIfEmpty()))
 
 fun entryDimWriter{T}(Writer{T} w, bool color)
   color ? w.ttyStyledTextWriter(TtyStyle.FgBrightBlack) : w
