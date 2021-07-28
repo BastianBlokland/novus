@@ -647,6 +647,7 @@ inline auto getFilePlatformError() noexcept -> PlatformError {
   case ERROR_DIR_NOT_EMPTY:
     return PlatformError::FileDirectoryNotEmpty;
   case ERROR_ALREADY_EXISTS:
+  case ERROR_FILE_EXISTS:
     return PlatformError::FileAlreadyExists;
   case ERROR_INVALID_NAME:
   case ERROR_BAD_PATHNAME:
