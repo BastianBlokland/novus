@@ -29,6 +29,20 @@ fun p4CmdError(List{string} args)
 fun p4ParseError(List{string} args)
   Error("Failed to parse p4 response (cmd: p4 " + args.string("", " ", "") + ")")
 
+// -- Parsers.
+
+fun p4ErrorParser() -> Parser{string}
+  pyMarshalParser(Type{P4RunOutput{string}}()).map(lambda (P4RunOutput{string} out)
+    if out.code != P4RunCode.Error  -> Error("Not an error")
+    else                            -> out.data
+  )
+
+fun p4ErrorMatcher(TextPattern expectedErr) -> Parser{string}
+  p4ErrorParser().map(lambda (string err)
+    if textMatch(expectedErr, err) -> err
+    else                           -> Error("Unexpected error: '" + err.trim() + '\'')
+  )
+
 // -- Actions.
 
 act p4Run(P4Config cfg, List{string} args) -> Either{string, Error}
@@ -36,8 +50,8 @@ act p4Run(P4Config cfg, List{string} args) -> Either{string, Error}
   p.wait().map(impure lambda (ProcessResult r)
     if r.isSuccess() -> r.stdOut ?? ""
     else             ->
-      pyMarshalParser(Type{P4RunOutput{string}}()).run(r.stdOut ?? "") as P4RunOutput{string} err
-        ? p4CmdError(args) :: Error(err.data)
+      p4ErrorParser().run(r.stdOut ?? "") as string err
+        ? p4CmdError(args) :: Error(err.trim())
         : p4CmdError(args) :: Error((r.stdErr ?? "").trim())
   )
 
@@ -94,11 +108,11 @@ act p4RunChangeInfos(P4Config cfg, P4Client c, P4ChangeStatus s, int max) -> Eit
     Type{P4ChangeInfo}())
 
 act p4RunGetDepotFiles(P4Config cfg, P4Change change, int max) -> Either{List{P4FileInfo}, Error}
-  p = manyUntilParser(pyMarshalParser(Type{P4FileInfo}()), endParser()) | retParser(List{P4FileInfo}());
-  cfg.p4Run(
-    "files"                   ::
-    "-m" :: max.string()      ::
-    ("@=" + change.string())).map(p.build(ParseFlags.NoWrapperError))
+  args            = "files" :: "-m" :: max.string() :: ("@=" + change.string());
+  fileListParser  = manyUntilParser(pyMarshalParser(Type{P4FileInfo}()), endParser());
+  noSuchFilesErr  = p4ErrorMatcher(GlobTextPattern("@=*no such file(s)*", StrComp.IgnoreCase));
+  p               = (fileListParser | (noSuchFilesErr >> retParser(List{P4FileInfo}()))) ! p4ParseError(args);
+  cfg.p4Run(args).map(p.build(ParseFlags.NoWrapperError))
 
 act p4RunGetOpenFiles(P4Config cfg, P4Client client, P4Change change, int max) -> Either{List{P4OpenFile}, Error}
   cfg.p4RunMany(
@@ -109,5 +123,8 @@ act p4RunGetOpenFiles(P4Config cfg, P4Client client, P4Change change, int max) -
      Type{P4OpenFile}())
 
 act p4RunPendingResolves(P4Config cfg) -> Either{List{P4ResolveFile}, Error}
-  p = manyUntilParser(pyMarshalParser(Type{P4ResolveFile}()), endParser()) | retParser(List{P4ResolveFile}());
-  cfg.p4Run("resolve" :: "-n").map(p.build(ParseFlags.NoWrapperError))
+  args               = "resolve" :: "-n";
+  fileListParser     = manyUntilParser(pyMarshalParser(Type{P4ResolveFile}()), endParser());
+  noFileToResolveErr = p4ErrorMatcher(GlobTextPattern("No file(s) to resolve*", StrComp.IgnoreCase));
+  p                  = (fileListParser | (noFileToResolveErr >> retParser(List{P4ResolveFile}()))) ! p4ParseError(args);
+  cfg.p4Run(args).map(p.build(ParseFlags.NoWrapperError))

@@ -7,4 +7,4 @@ cli(cliCmd("status", statusCmd, "Print the status of the current workspace"),
     cliCmd("setup", setupCmd, "Set a workspace up for use with np4"),
     cliAppInfo(
       "Novus P4", "Convenience wrapper around the p4 perforce client.",
-      Version(0, 2, 0)))
+      Version(0, 3, 0)))
