@@ -29,7 +29,7 @@ fun string(P4Change c)
 
 fun p4DefaultChange() P4Change(0)
 
-fun changeShortDesc(P4ChangeInfo c, int maxLength = 60)
+fun p4ChangeShortDesc(P4ChangeInfo c, int maxLength = 60)
   newLineIdx = c.desc.indexOf(isNewline);
   c.desc[0, newLineIdx < 0 ? maxLength : min(newLineIdx, maxLength)]
 

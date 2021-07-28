@@ -16,6 +16,8 @@ struct P4Config =
 
 fun p4ChangeIsHidden(P4Config cfg, P4Change c) cfg.hiddenChanges.contains(c)
 
+// -- Actions.
+
 act loadP4Config(PathAbsolute p = pathCurrent()) -> Either{P4Config, Error}
   parser = jsonParser{P4Config}();
   if fileOpen(p / ".np4", FileMode.OpenReadOnly) as File f  -> f.readToEnd(parser) ! Error("Failed to parse .np4 config file")

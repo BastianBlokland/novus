@@ -10,7 +10,7 @@ fun string(P4Var v) v.key + "=" + v.val
 
 // -- Parsers.
 
-fun p4VarParser()
+fun p4VarTxtParser()
   (
     untilParser(matchParser('=')) & matchParser('=') >> untilParser(isNewline)
   ).to(Type{P4Var}())

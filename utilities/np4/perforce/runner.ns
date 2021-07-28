@@ -29,6 +29,8 @@ fun p4CmdError(List{string} args)
 fun p4ParseError(List{string} args)
   Error("Failed to parse p4 response (cmd: p4 " + args.string("", " ", "") + ")")
 
+// -- Actions.
+
 act p4Run(P4Config cfg, List{string} args) -> Either{string, Error}
   p = run("p4", cfg.p4GlobalArgs() :: args, ProcessFlags.PipeInOut | ProcessFlags.NewGroup);
   p.wait().map(impure lambda (ProcessResult r)
@@ -51,7 +53,7 @@ act p4RunMany{T}(P4Config cfg, List{string} args, Type{T} resultType) -> Either{
 
 act p4RunGetVars(P4Config cfg) -> Either{List{P4Var}, Error}
   args = "set" :: "-q";
-  p = manyParser(p4VarParser(), newlineParser(), ParseFlags.AllowTrailingSeperator) ! p4ParseError(args);
+  p = manyParser(p4VarTxtParser(), newlineParser(), ParseFlags.AllowTrailingSeperator) ! p4ParseError(args);
   cfg.p4Run(args).map(p.build(ParseFlags.NoWrapperError))
 
 act p4RunSetVar(P4Config cfg, P4Var var) -> Option{Error}

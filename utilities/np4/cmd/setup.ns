@@ -2,7 +2,7 @@ import "std.ns"
 
 import "../perforce/ignore.ns"
 import "../perforce/runner.ns"
-import "../utils/job.ns"
+import "../utils/fork.ns"
 import "../utils/style.ns"
 
 // -- Utilities.
@@ -14,6 +14,8 @@ struct NewWorkspace =
 fun setupNewConfig(SetupSettings s)
   P4Config(s.server, s.client, s.hiddenChanges ?? List{P4Change}())
 
+// -- Actions.
+
 act setupSaveConfig(SetupSettings s, P4Config newCfg, P4ClientInfo clientInfo) -> Option{Error}
   res = writeP4Config(newCfg, clientInfo, s.force);
   res as Error err && err.code == PlatformError.FileAlreadyExists
@@ -22,7 +24,7 @@ act setupSaveConfig(SetupSettings s, P4Config newCfg, P4ClientInfo clientInfo) -
 
 act setupWorkspace(SetupSettings s, P4Config newCfg) -> Either{NewWorkspace, Error}
   p4RunClientInfo(newCfg, newCfg.client).map(impure lambda (P4ClientInfo clientInfo)
-    waitForJobs(Tuple(
+    waitForForks(Tuple(
       fork setupSaveConfig(s, newCfg, clientInfo),
       fork p4AddToIgnore(newCfg, clientInfo, ".np4"))
     ).map(impure lambda (Tuple res) NewWorkspace(newCfg, clientInfo))
@@ -56,8 +58,9 @@ struct SetupSettings =
 
 act setupCmd(SetupSettings s) -> Option{Error}
   c               = consoleOpen().failOnError();
-  style           = StyleCtx(!s.noColor && c.allowColor());
+  styleCtx        = StyleCtx(!s.noColor && c.allowColor());
+  writer          = setupSuccessWriter(styleCtx);
   newCfg          = setupNewConfig(s);
   workspaceOrErr  = setupWorkspace(s, newCfg);
   if workspaceOrErr as Error        err -> err
-  if workspaceOrErr as NewWorkspace w   -> c.writeOut(setupSuccessWriter(style) & newlineWriter(), w)
+  if workspaceOrErr as NewWorkspace w   -> c.writeOut(writer & newlineWriter(), w)
