@@ -94,11 +94,11 @@ act p4RunChangeInfos(P4Config cfg, P4Client c, P4ChangeStatus s, int max) -> Eit
     Type{P4ChangeInfo}())
 
 act p4RunGetDepotFiles(P4Config cfg, P4Change change, int max) -> Either{List{P4FileInfo}, Error}
-  cfg.p4RunMany(
+  p = manyUntilParser(pyMarshalParser(Type{P4FileInfo}()), endParser()) | retParser(List{P4FileInfo}());
+  cfg.p4Run(
     "files"                   ::
     "-m" :: max.string()      ::
-    ("@=" + change.string()),
-    Type{P4FileInfo}())
+    ("@=" + change.string())).map(p.build(ParseFlags.NoWrapperError))
 
 act p4RunGetOpenFiles(P4Config cfg, P4Client client, P4Change change, int max) -> Either{List{P4OpenFile}, Error}
   cfg.p4RunMany(

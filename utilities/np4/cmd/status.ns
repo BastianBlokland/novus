@@ -45,14 +45,15 @@ fun statusToResolves(List{P4ResolveFile} resolves, P4ClientInfo clientInfo) -> E
 // -- Actions.
 
 act statusQueryChange(P4ChangeInfo changeInfo, P4Config cfg, StatusSettings settings) -> Either{StatusChange, Error}
-  shelvedFiles = p4RunGetDepotFiles(cfg, changeInfo.change, settings.filesMax + 1) ?? List{P4FileInfo}();
-  openFilesOrErr = p4RunGetOpenFiles(cfg, cfg.client, changeInfo.change, settings.filesMax + 1);
-  openFilesOrErr.map(impure lambda (List{P4OpenFile} openFiles)
+  waitForForks(Tuple(
+    fork p4RunGetOpenFiles(cfg, cfg.client, changeInfo.change, settings.filesMax + 1),
+    fork p4RunGetDepotFiles(cfg, changeInfo.change, settings.filesMax + 1))
+  ).map(lambda (Tuple{List{P4OpenFile}, List{P4FileInfo}} res)
     StatusChange(
-        changeInfo,
-        statusToLimitedList(openFiles, settings.filesMax),
-        statusToLimitedList(shelvedFiles, settings.filesMax))
-  )
+      changeInfo,
+      statusToLimitedList(res.f1, settings.filesMax),
+      statusToLimitedList(res.f2, settings.filesMax))
+   )
 
 act statusQueryChanges(P4Config cfg, StatusSettings settings) -> Either{List{StatusChange}, Error}
   changeInfosOrErr = p4RunChangeInfos(cfg, cfg.client, P4ChangeStatus.Pending, settings.changesMax);
