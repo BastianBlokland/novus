@@ -313,6 +313,8 @@ inline auto processStart(
     // Failed to create all the pipes, close whichever child pipes where created.
     fileClose(pipeStdIn[0], pipeStdOut[1], pipeStdErr[1]);
 
+    ::free(localStr); // Free our local copy of the command-line string.
+
     *pErr = PlatformError::ProcessFailedToCreatePipes;
     return alloc->allocPlain<ProcessRef>(
         invalidProcess(), flags, pipeStdIn[1], pipeStdOut[0], pipeStdErr[0]);
