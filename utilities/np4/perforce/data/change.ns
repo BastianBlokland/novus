@@ -36,10 +36,12 @@ fun p4ChangeShortDesc(P4ChangeInfo c, int maxLength = 60)
 // -- Mappings.
 
 fun fromJson(JsonValue jv, Type{P4Change} t) -> Either{P4Change, Error}
-  jv as float f ? P4Change(int(f)) : Error("Expected a p4 change, got a " + jsonValueType(jv))
+  if jv as float  f -> P4Change(int(f))
+  if jv as string s -> txtIntParser().run(s).map(lambda (int i) P4Change(i))
+  else              -> Error("Expected a p4 change, got a " + jsonValueType(jv))
 
 fun toJson(P4Change c) -> JsonValue
-  float(c.id)
+  c.id.string()
 
 fun fromPython(PyObj po, Type{P4Change} t) -> Either{P4Change, Error}
   if po as int i    -> P4Change(i)
