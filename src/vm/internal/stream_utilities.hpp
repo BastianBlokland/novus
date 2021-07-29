@@ -41,6 +41,7 @@ inline auto streamReadString(
 
   if (!streamCheckValid(stream)) {
     tgt->updateSize(0);
+    *pErr = PlatformError::StreamInvalid;
     return false;
   }
   STREAM_DISPATCH(stream, readString(execHandle, pErr, tgt))
@@ -51,6 +52,7 @@ inline auto streamWriteString(
     -> bool {
 
   if (!streamCheckValid(stream)) {
+    *pErr = PlatformError::StreamInvalid;
     return false;
   }
   STREAM_DISPATCH(stream, writeString(execHandle, pErr, str))
@@ -59,6 +61,7 @@ inline auto streamWriteString(
 inline auto streamSetOpts(PlatformError* pErr, const Value& stream, StreamOpts opts) noexcept
     -> bool {
   if (!streamCheckValid(stream)) {
+    *pErr = PlatformError::StreamInvalid;
     return false;
   }
   STREAM_DISPATCH(stream, setOpts(pErr, opts))
@@ -67,6 +70,7 @@ inline auto streamSetOpts(PlatformError* pErr, const Value& stream, StreamOpts o
 inline auto streamUnsetOpts(PlatformError* pErr, const Value& stream, StreamOpts opts) noexcept
     -> bool {
   if (!streamCheckValid(stream)) {
+    *pErr = PlatformError::StreamInvalid;
     return false;
   }
   STREAM_DISPATCH(stream, unsetOpts(pErr, opts))
