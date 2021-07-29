@@ -55,6 +55,12 @@ public:
   ProcessRef(const ProcessRef& rhs) = delete;
   ProcessRef(ProcessRef&& rhs)      = delete;
   ~ProcessRef() noexcept {
+    // Kill the process (if its still running).
+    if (isValid() && !isFinished()) {
+      killImpl();
+      // Wait for the process to stop, this prevents leaking zombie processes.
+      block();
+    }
     // Close our handles to the in / out / err pipes if they are open.
     if (fileIsValid(m_stdIn)) {
       fileClose(m_stdIn);
@@ -64,12 +70,6 @@ public:
     }
     if (fileIsValid(m_stdErr)) {
       fileClose(m_stdErr);
-    }
-    // Kill the process (if its still running).
-    if (isValid() && !isFinished()) {
-      killImpl();
-      // Wait for the process to stop, this prevents leaking zombie processes.
-      block();
     }
     // Close any handles we have to the process.
 #if defined(_WIN32)
@@ -304,36 +304,55 @@ inline auto processStart(
   saAttr.bInheritHandle      = true;
 
   bool pipeFailed = false;
-  pipeFailed |= flags & ProcessPipeStdIn &&
-      (!CreatePipe(&pipeStdIn[0], &pipeStdIn[1], &saAttr, 0) ||
-       !SetHandleInformation(pipeStdIn[1], HANDLE_FLAG_INHERIT, 0));
-  pipeFailed |= flags & ProcessPipeStdOut &&
-      (!CreatePipe(&pipeStdOut[0], &pipeStdOut[1], &saAttr, 0) ||
-       !SetHandleInformation(pipeStdOut[0], HANDLE_FLAG_INHERIT, 0));
-  pipeFailed |= flags & ProcessPipeStdErr &&
-      (!CreatePipe(&pipeStdErr[0], &pipeStdErr[1], &saAttr, 0) ||
-       !SetHandleInformation(pipeStdErr[0], HANDLE_FLAG_INHERIT, 0));
+  pipeFailed |= flags & ProcessPipeStdIn && !CreatePipe(&pipeStdIn[0], &pipeStdIn[1], &saAttr, 0);
+  pipeFailed |=
+      flags & ProcessPipeStdOut && !CreatePipe(&pipeStdOut[0], &pipeStdOut[1], &saAttr, 0);
+  pipeFailed |=
+      flags & ProcessPipeStdErr && !CreatePipe(&pipeStdErr[0], &pipeStdErr[1], &saAttr, 0);
   if (pipeFailed) {
     // Failed to create all the pipes, close whichever child pipes where created.
     fileClose(pipeStdIn[0], pipeStdOut[1], pipeStdErr[1]);
+
+    ::free(localStr); // Free our local copy of the command-line string.
 
     *pErr = PlatformError::ProcessFailedToCreatePipes;
     return alloc->allocPlain<ProcessRef>(
         invalidProcess(), flags, pipeStdIn[1], pipeStdOut[0], pipeStdErr[0]);
   }
 
-  STARTUPINFO startupInfo = {};
-  startupInfo.cb          = sizeof(STARTUPINFO);
-  startupInfo.hStdInput   = pipeStdIn[0];
-  startupInfo.hStdOutput  = pipeStdOut[1];
-  startupInfo.hStdError   = pipeStdErr[1];
+  size_t attributeListSize;
+  ::InitializeProcThreadAttributeList(nullptr, 1, 0, &attributeListSize);
+  auto* attributeList = static_cast<LPPROC_THREAD_ATTRIBUTE_LIST>(::malloc(attributeListSize));
+  if (attributeList) {
+    ::InitializeProcThreadAttributeList(attributeList, 1, 0, &attributeListSize);
+  }
+
+  std::array handlesToInherit = {pipeStdIn[0], pipeStdOut[1], pipeStdErr[1]};
+  if (attributeList && flags & (ProcessPipeStdIn | ProcessPipeStdOut | ProcessPipeStdErr)) {
+    ::UpdateProcThreadAttribute(
+        attributeList,
+        0,
+        PROC_THREAD_ATTRIBUTE_HANDLE_LIST,
+        handlesToInherit.data(),
+        handlesToInherit.size() * sizeof(HANDLE),
+        nullptr,
+        nullptr);
+  }
+
+  STARTUPINFOEX startupInfoEx          = {};
+  startupInfoEx.StartupInfo.cb         = sizeof(startupInfoEx);
+  startupInfoEx.StartupInfo.hStdInput  = pipeStdIn[0];
+  startupInfoEx.StartupInfo.hStdOutput = pipeStdOut[1];
+  startupInfoEx.StartupInfo.hStdError  = pipeStdErr[1];
+  startupInfoEx.lpAttributeList        = attributeList;
+
   if (flags & (ProcessPipeStdIn | ProcessPipeStdOut | ProcessPipeStdErr)) {
-    startupInfo.dwFlags |= STARTF_USESTDHANDLES;
+    startupInfoEx.StartupInfo.dwFlags |= STARTF_USESTDHANDLES;
   }
 
   PROCESS_INFORMATION processInfo = {};
 
-  DWORD creationFlags = NORMAL_PRIORITY_CLASS;
+  DWORD creationFlags = NORMAL_PRIORITY_CLASS | EXTENDED_STARTUPINFO_PRESENT;
   if (flags & ProcessNewGroup) {
     creationFlags |= CREATE_NEW_PROCESS_GROUP;
   }
@@ -347,7 +366,7 @@ inline auto processStart(
       creationFlags,
       nullptr,
       nullptr,
-      &startupInfo,
+      &startupInfoEx.StartupInfo,
       &processInfo);
 
   if (!success) {
@@ -373,6 +392,10 @@ inline auto processStart(
   }
 
   ::free(localStr); // Free our local copy of the command-line string.
+  if (attributeList) {
+    DeleteProcThreadAttributeList(attributeList);
+    ::free(attributeList);
+  }
 
   // Close the child side of the pipes.
   fileClose(pipeStdIn[0], pipeStdOut[1], pipeStdErr[1]);
