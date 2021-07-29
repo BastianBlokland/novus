@@ -65,11 +65,12 @@ act compileCmd(CompileSettings s)
 
 struct EvaluateSettings =
   bool                        clear,
+  Option{Path}                novePath,
   CliPositional{Option{Path}} path
 
-act evaluateAction(Context ctx)
+act evaluateAction(Context ctx, PathAbsolute novePath)
   ProcessAction(impure lambda (PathAbsolute file) -> Option{Error}
-    run = run("nove.nx", file.string() :: List{string}());
+    run = run("novrt", novePath.string() :: file.string() :: List{string}());
     if run as Error   err     -> ctx.console.writeErr("Failed to invoke evaluator: " + err + '\n'); err
     if run as Process process -> process.wait(); None()
   )
@@ -77,10 +78,11 @@ act evaluateAction(Context ctx)
 fun cliInteruptDelay(Type{EvaluateSettings} t) seconds(1)
 
 act evaluateCmd(EvaluateSettings s)
-  ctx   = Context(s, consoleOpen().failOnError(), EndsWithTextPattern(".ns"));
-  path  = ctx.getPath();
+  ctx       = Context(s, consoleOpen().failOnError(), EndsWithTextPattern(".ns"));
+  novePath  = pathAbsolute(s.novePath ?? (pathRuntime().parent() / "nove.nx"));
+  path      = ctx.getPath();
   ctx.console.writeOut("Start watching '" + path + "' for changes to .ns files.\n");
-  driver(path, evaluateAction(ctx), ctx)
+  driver(path, evaluateAction(ctx, novePath), ctx)
 
 // -- Driver
 
