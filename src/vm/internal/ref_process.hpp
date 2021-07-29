@@ -55,6 +55,12 @@ public:
   ProcessRef(const ProcessRef& rhs) = delete;
   ProcessRef(ProcessRef&& rhs)      = delete;
   ~ProcessRef() noexcept {
+    // Kill the process (if its still running).
+    if (isValid() && !isFinished()) {
+      killImpl();
+      // Wait for the process to stop, this prevents leaking zombie processes.
+      block();
+    }
     // Close our handles to the in / out / err pipes if they are open.
     if (fileIsValid(m_stdIn)) {
       fileClose(m_stdIn);
@@ -64,12 +70,6 @@ public:
     }
     if (fileIsValid(m_stdErr)) {
       fileClose(m_stdErr);
-    }
-    // Kill the process (if its still running).
-    if (isValid() && !isFinished()) {
-      killImpl();
-      // Wait for the process to stop, this prevents leaking zombie processes.
-      block();
     }
     // Close any handles we have to the process.
 #if defined(_WIN32)
