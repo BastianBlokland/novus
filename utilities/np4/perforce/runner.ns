@@ -110,7 +110,7 @@ act p4RunChangeInfos(P4Config cfg, P4Client c, P4ChangeStatus s, int max) -> Eit
 act p4RunGetDepotFiles(P4Config cfg, P4Change change, int max) -> Either{List{P4FileInfo}, Error}
   args            = "files" :: "-m" :: max.string() :: ("@=" + change.string());
   fileListParser  = manyUntilParser(pyMarshalParser(Type{P4FileInfo}()), endParser());
-  noSuchFilesErr  = p4ErrorMatcher(GlobTextPattern("@=*no such file(s)*", StrComp.IgnoreCase));
+  noSuchFilesErr  = p4ErrorMatcher(GlobTextPattern("@=*no*file(s)*", StrComp.IgnoreCase));
   p               = (fileListParser | (noSuchFilesErr >> retParser(List{P4FileInfo}()))) ! p4ParseError(args);
   cfg.p4Run(args).map(p.build(ParseFlags.NoWrapperError))
 
