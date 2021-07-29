@@ -19,6 +19,7 @@ enum PlatformError =
   StreamNoDataAvailable         : 201,
   StreamReadNotSupported        : 202,
   StreamWriteNotSupported       : 203,
+  StreamInvalid                 : 204,
   ProcessUnknownError           : 300,
   ProcessInvalid                : 301,
   ProcessInvalidCmdLine         : 302,
@@ -81,6 +82,7 @@ fun noinline string(PlatformError err)
   if err == PlatformError.StreamNoDataAvailable         -> "No data available"
   if err == PlatformError.StreamReadNotSupported        -> "Stream does not support reading"
   if err == PlatformError.StreamWriteNotSupported       -> "Stream does not support writing"
+  if err == PlatformError.StreamInvalid                 -> "Stream is invalid"
   if err == PlatformError.ProcessUnknownError           -> "Unknown process error occured"
   if err == PlatformError.ProcessInvalid                -> "Invalid process"
   if err == PlatformError.ProcessInvalidCmdLine         -> "Invalid commandline string"

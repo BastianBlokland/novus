@@ -24,6 +24,7 @@ enum class PlatformError : uint32_t {
   StreamNoDataAvailable     = 201,
   StreamReadNotSupported    = 202,
   StreamWriteNotSupported   = 203,
+  StreamInvalid             = 204,
 
   ProcessUnknownError        = 300,
   ProcessInvalid             = 301,
