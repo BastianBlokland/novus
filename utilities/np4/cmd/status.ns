@@ -126,7 +126,7 @@ struct StatusSettings =
 fun cliDefaults(Type{StatusSettings} t)
   CliDefault("desc-length", "60")   ::
   CliDefault("changes-max", "50")   ::
-  CliDefault("files-max",   "200")
+  CliDefault("files-max",   "100")
 
 act statusCmd(StatusSettings s) -> Option{Error}
   c         = consoleOpen().failOnError();

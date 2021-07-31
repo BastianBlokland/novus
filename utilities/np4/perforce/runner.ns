@@ -81,6 +81,10 @@ act p4RunClientInfo(P4Config cfg, P4Client client) -> Either{P4ClientInfo, Error
   cfg.p4Run("client" :: "-o" :: client.id, Type{P4ClientInfo}())
   ! Error("Client '" + client + "' not valid on server '" + cfg.server + '\'')
 
+act p4RunChangeInfo(P4Config cfg, P4Change change) -> Either{P4ChangeInfo, Error}
+  cfg.p4Run("describe" :: "-s" :: change.string(), Type{P4ChangeInfo}())
+  ! Error("No change '" + change.string() + "' found on server '" + cfg.server + '\'')
+
 act p4RunChangeInfos(P4Config cfg, P4User u, int max, bool reverse) -> Either{List{P4ChangeInfo}, Error}
   cfg.p4RunMany(
     "changes"                         ::
