@@ -10,19 +10,20 @@ enum LogOrigin = Newest, Oldest
 
 struct LogData =
   P4Config            config,
-  P4ClientInfo        clientInfo,
   List{P4ChangeInfo}  changes
 
 // -- Actions.
 
+act getStreamToLog(P4Config cfg, LogSettings settings) -> Either{P4Stream, Error}
+  if settings.stream.val as P4Stream s -> s
+  else -> p4RunClientInfo(cfg, cfg.client).map(lambda (P4ClientInfo clientInfo) clientInfo.stream)
+
 act logQuery(P4Config cfg, LogSettings settings) -> Either{LogData, Error}
-  p4RunClientInfo(cfg, cfg.client)
-    .map(impure lambda (P4ClientInfo clientInfo)
-    (
-      reverse = settings.origin == LogOrigin.Oldest;
-      p4RunChangeInfos(cfg, clientInfo.stream, P4ChangeStatus.Submitted, settings.changesMax, reverse)
-        .map(lambda (List{P4ChangeInfo} changes) LogData(cfg, clientInfo, changes))
-    ))
+  getStreamToLog(cfg, settings).map(impure lambda (P4Stream stream)
+    reverse = settings.origin == LogOrigin.Oldest;
+    p4RunChangeInfos(cfg, stream, P4ChangeStatus.Submitted, settings.changesMax, reverse)
+      .map(lambda (List{P4ChangeInfo} changes) LogData(cfg, changes))
+  )
 
 // -- Writers.
 
@@ -34,10 +35,11 @@ fun logOutputWriter(DateTime now, StyleCtx ctx, LogSettings s) -> Writer{LogData
 // -- Driver.
 
 struct LogSettings =
-  bool      noColor,
-  LogOrigin origin,
-  int       descLength,
-  int       changesMax
+  bool                            noColor,
+  LogOrigin                       origin,
+  int                             descLength,
+  int                             changesMax,
+  CliPositional{Option{P4Stream}} stream
 
 fun cliDefaults(Type{LogSettings} t)
   CliDefault("origin",        "newest") ::

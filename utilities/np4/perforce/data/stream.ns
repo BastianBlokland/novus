@@ -35,3 +35,9 @@ fun fromPython(PyObj po, Type{Option{P4Stream}} t) -> Either{Option{P4Stream}, E
   if po is PyNone   -> Option{P4Stream}()
   if po as string s -> s == "none" ? Option{P4Stream}() : Option(P4Stream(s))
   else              -> Error("Expected a p4 stream path, got a " + pyObjType(po))
+
+fun cliParser(Type{P4Stream} t) p4StreamTxtParser()
+
+// -- Parsers.
+
+fun p4StreamTxtParser() untilParser(isWhitespace).to(Type{P4Stream}())
