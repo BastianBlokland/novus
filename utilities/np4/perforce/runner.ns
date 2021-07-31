@@ -110,17 +110,15 @@ act p4RunChangeInfos(P4Config cfg, P4Client c, P4ChangeStatus s, int max, bool r
     "-m" :: max.string()              :: List{string}(),
     Type{P4ChangeInfo}())
 
-act p4RunChangeInfos(P4Config cfg, P4Stream stream, P4ChangeStatus s, int max, bool reverse) -> Either{List{P4ChangeInfo}, Error}
+act p4RunVisibleChangeInfos(P4Config cfg, P4ChangeStatus s, int max, bool reverse) -> Either{List{P4ChangeInfo}, Error}
   cfg.p4RunMany(
     "changes"                         ::
     "-l"                              ::
     "-s" :: s.string().strToLower()   ::
     (reverse ? Option("-r") : None()) ::
     "-m" :: max.string()              ::
-    (stream.path + "/...")            :: List{string}(),
+    ("//" + cfg.client.id + "/...")   :: List{string}(),
     Type{P4ChangeInfo}())
-
-//P4Stream
 
 act p4RunGetDepotFiles(P4Config cfg, P4Change change, int max) -> Either{List{P4FileInfo}, Error}
   args            = "files" :: "-m" :: max.string() :: ("@=" + change.string());

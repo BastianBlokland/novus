@@ -14,16 +14,10 @@ struct LogData =
 
 // -- Actions.
 
-act getStreamToLog(P4Config cfg, LogSettings settings) -> Either{P4Stream, Error}
-  if settings.stream.val as P4Stream s -> s
-  else -> p4RunClientInfo(cfg, cfg.client).map(lambda (P4ClientInfo clientInfo) clientInfo.stream)
-
 act logQuery(P4Config cfg, LogSettings settings) -> Either{LogData, Error}
-  getStreamToLog(cfg, settings).map(impure lambda (P4Stream stream)
-    reverse = settings.origin == LogOrigin.Oldest;
-    p4RunChangeInfos(cfg, stream, P4ChangeStatus.Submitted, settings.changesMax, reverse)
-      .map(lambda (List{P4ChangeInfo} changes) LogData(cfg, changes))
-  )
+  reverse = settings.origin == LogOrigin.Oldest;
+  p4RunVisibleChangeInfos(cfg, P4ChangeStatus.Submitted, settings.changesMax, reverse)
+  .map(lambda (List{P4ChangeInfo} changes) LogData(cfg, changes))
 
 // -- Writers.
 
@@ -35,16 +29,15 @@ fun logOutputWriter(DateTime now, StyleCtx ctx, LogSettings s) -> Writer{LogData
 // -- Driver.
 
 struct LogSettings =
-  bool                            noColor,
-  LogOrigin                       origin,
-  int                             descLength,
-  int                             changesMax,
-  CliPositional{Option{P4Stream}} stream
+  bool        noColor,
+  LogOrigin   origin,
+  int         descLength,
+  int         changesMax
 
 fun cliDefaults(Type{LogSettings} t)
   CliDefault("origin",        "newest") ::
-  CliDefault("desc-length",   "60")     ::
-  CliDefault("changes-max",   "200")
+  CliDefault("desc-length",   "80")     ::
+  CliDefault("changes-max",   "25")
 
 act logCmd(LogSettings s) -> Option{Error}
   c         = consoleOpen().failOnError();
