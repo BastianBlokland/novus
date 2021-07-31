@@ -1,0 +1,53 @@
+import "std.ns"
+
+import "../perforce/runner.ns"
+import "../utils/style.ns"
+import "../utils/shared-writers.ns"
+
+// -- Types.
+
+enum LogOrigin = Newest, Oldest
+
+struct LogData =
+  P4Config            config,
+  P4ClientInfo        clientInfo,
+  List{P4ChangeInfo}  changes
+
+// -- Actions.
+
+act logQuery(P4Config cfg, LogSettings settings) -> Either{LogData, Error}
+  p4RunClientInfo(cfg, cfg.client)
+    .map(impure lambda (P4ClientInfo clientInfo)
+    (
+      reverse = settings.origin == LogOrigin.Oldest;
+      p4RunChangeInfos(cfg, clientInfo.stream, P4ChangeStatus.Submitted, settings.changesMax, reverse)
+        .map(lambda (List{P4ChangeInfo} changes) LogData(cfg, clientInfo, changes))
+    ))
+
+// -- Writers.
+
+fun logOutputWriter(DateTime now, StyleCtx ctx, LogSettings s) -> Writer{LogData}
+  (
+    listWriter(changeInfoWriter(now, ctx, s.descLength) & newlineWriter())
+  ).map(lambda (LogData d) d.changes)
+
+// -- Driver.
+
+struct LogSettings =
+  bool      noColor,
+  LogOrigin origin,
+  int       descLength,
+  int       changesMax
+
+fun cliDefaults(Type{LogSettings} t)
+  CliDefault("origin",        "newest") ::
+  CliDefault("desc-length",   "60")     ::
+  CliDefault("changes-max",   "200")
+
+act logCmd(LogSettings s) -> Option{Error}
+  c         = consoleOpen().failOnError();
+  styleCtx  = StyleCtx(!s.noColor && c.allowColor());
+  writer    = logOutputWriter(timeNow(), styleCtx, s);
+  dataOrErr = loadP4Config().map(logQuery[s]);
+  if dataOrErr as Error   err  -> err
+  if dataOrErr as LogData data -> c.writeOut(writer, data)

@@ -81,31 +81,46 @@ act p4RunClientInfo(P4Config cfg, P4Client client) -> Either{P4ClientInfo, Error
   cfg.p4Run("client" :: "-o" :: client.id, Type{P4ClientInfo}())
   ! Error("Client '" + client + "' not valid on server '" + cfg.server + '\'')
 
-act p4RunChangeInfos(P4Config cfg, P4User u, int max) -> Either{List{P4ChangeInfo}, Error}
+act p4RunChangeInfos(P4Config cfg, P4User u, int max, bool reverse) -> Either{List{P4ChangeInfo}, Error}
   cfg.p4RunMany(
-    "changes"                       ::
-    "-l"                            ::
-    "-u" :: u.string()              ::
-    "-m" :: max.string(),
+    "changes"                         ::
+    "-l"                              ::
+    "-u" :: u.string()                ::
+    (reverse ? Option("-r") : None()) ::
+    "-m" :: max.string()              :: List{string}(),
     Type{P4ChangeInfo}())
 
-act p4RunChangeInfos(P4Config cfg, P4User u, P4ChangeStatus s, int max) -> Either{List{P4ChangeInfo}, Error}
+act p4RunChangeInfos(P4Config cfg, P4User u, P4ChangeStatus s, int max, bool reverse) -> Either{List{P4ChangeInfo}, Error}
   cfg.p4RunMany(
-    "changes"                       ::
-    "-l"                            ::
-    "-u" :: u.string()              ::
-    "-s" :: s.string().strToLower() ::
-    "-m" :: max.string(),
+    "changes"                         ::
+    "-l"                              ::
+    "-u" :: u.string()                ::
+    "-s" :: s.string().strToLower()   ::
+    (reverse ? Option("-r") : None()) ::
+    "-m" :: max.string()              :: List{string}(),
     Type{P4ChangeInfo}())
 
-act p4RunChangeInfos(P4Config cfg, P4Client c, P4ChangeStatus s, int max) -> Either{List{P4ChangeInfo}, Error}
+act p4RunChangeInfos(P4Config cfg, P4Client c, P4ChangeStatus s, int max, bool reverse) -> Either{List{P4ChangeInfo}, Error}
   cfg.p4RunMany(
-    "changes"                       ::
-    "-l"                            ::
-    "-c" :: c.string()              ::
-    "-s" :: s.string().strToLower() ::
-    "-m" :: max.string(),
+    "changes"                         ::
+    "-l"                              ::
+    "-c" :: c.string()                ::
+    "-s" :: s.string().strToLower()   ::
+    (reverse ? Option("-r") : None()) ::
+    "-m" :: max.string()              :: List{string}(),
     Type{P4ChangeInfo}())
+
+act p4RunChangeInfos(P4Config cfg, P4Stream stream, P4ChangeStatus s, int max, bool reverse) -> Either{List{P4ChangeInfo}, Error}
+  cfg.p4RunMany(
+    "changes"                         ::
+    "-l"                              ::
+    "-s" :: s.string().strToLower()   ::
+    (reverse ? Option("-r") : None()) ::
+    "-m" :: max.string()              ::
+    (stream.path + "/...")            :: List{string}(),
+    Type{P4ChangeInfo}())
+
+//P4Stream
 
 act p4RunGetDepotFiles(P4Config cfg, P4Change change, int max) -> Either{List{P4FileInfo}, Error}
   args            = "files" :: "-m" :: max.string() :: ("@=" + change.string());

@@ -1,24 +1,57 @@
 import "std.ns"
 
+import "../perforce/data/file.ns"
+
 // -- Types.
 
-enum Style = Important, Normal, Detail, Resolve, OpAdd, OpDelete, OpEdit, OpIntegrate, OpBranch, OpMove
+enum Style =
+  Important, Normal, Detail,
+  Change,
+  Time,
+  User,
+  FileRev,
+  Client,
+  ClientRoot,
+  Stream,
+  StreamType,
+  Shelve,
+  ResolveType,
+  OpAdd, OpDelete, OpEdit, OpIntegrate, OpBranch, OpMove
 
 struct StyleCtx = bool allowColor
 
 // -- Writers.
 
+fun styleForP4FileOp(P4FileOp op) -> Style
+  if op == P4FileOp.Add         -> Style.OpAdd
+  if op == P4FileOp.Edit        -> Style.OpEdit
+  if op == P4FileOp.Delete      -> Style.OpDelete
+  if op == P4FileOp.Integrate   -> Style.OpIntegrate
+  if op == P4FileOp.Branch      -> Style.OpBranch
+  if op == P4FileOp.MoveAdd     -> Style.OpMove
+  if op == P4FileOp.MoveDelete  -> Style.OpMove
+  else                          -> Style.Normal
+
 fun styleToTtyStyleList(Style s) -> List{TtyStyle}
-  if s == Style.Important   -> TtyStyle.Bold      :: List{TtyStyle}()
-  if s == Style.Detail      -> TtyStyle.Faint     :: List{TtyStyle}()
-  if s == Style.Resolve     -> TtyStyle.BgRed     :: TtyStyle.Bold
-  if s == Style.OpAdd       -> TtyStyle.FgGreen   :: TtyStyle.Bold
-  if s == Style.OpDelete    -> TtyStyle.FgRed     :: TtyStyle.Bold
-  if s == Style.OpEdit      -> TtyStyle.FgYellow  :: TtyStyle.Bold
-  if s == Style.OpIntegrate -> TtyStyle.FgBlue    :: TtyStyle.Bold
-  if s == Style.OpBranch    -> TtyStyle.FgMagenta :: TtyStyle.Bold
-  if s == Style.OpMove      -> TtyStyle.FgCyan    :: TtyStyle.Bold
-  else                      -> List{TtyStyle}()
+  if s == Style.Important       -> TtyStyle.Bold      :: List{TtyStyle}()
+  if s == Style.Detail          -> TtyStyle.Faint     :: List{TtyStyle}()
+  if s == Style.Change          -> TtyStyle.FgYellow  :: TtyStyle.Bold
+  if s == Style.Time            -> TtyStyle.FgGreen   :: List{TtyStyle}()
+  if s == Style.User            -> TtyStyle.FgBlue    :: TtyStyle.Bold
+  if s == Style.FileRev         -> TtyStyle.Faint     :: List{TtyStyle}()
+  if s == Style.Client          -> List{TtyStyle}()
+  if s == Style.ClientRoot      -> TtyStyle.Faint     :: List{TtyStyle}()
+  if s == Style.Stream          -> List{TtyStyle}()
+  if s == Style.StreamType      -> TtyStyle.Faint     :: List{TtyStyle}()
+  if s == Style.Shelve          -> TtyStyle.FgYellow  :: TtyStyle.Bold
+  if s == Style.ResolveType     -> TtyStyle.BgRed     :: TtyStyle.Bold
+  if s == Style.OpAdd           -> TtyStyle.FgGreen   :: List{TtyStyle}()
+  if s == Style.OpDelete        -> TtyStyle.FgRed     :: List{TtyStyle}()
+  if s == Style.OpEdit          -> TtyStyle.FgYellow  :: List{TtyStyle}()
+  if s == Style.OpIntegrate     -> TtyStyle.FgBlue    :: List{TtyStyle}()
+  if s == Style.OpBranch        -> TtyStyle.FgMagenta :: List{TtyStyle}()
+  if s == Style.OpMove          -> TtyStyle.FgCyan    :: List{TtyStyle}()
+  else                          -> List{TtyStyle}()
 
 fun styleWriter(StyleCtx ctx) -> Writer{Style}
   ctx.allowColor ? ttyStyleListWriter().map(lambda (Style s) styleToTtyStyleList(s))

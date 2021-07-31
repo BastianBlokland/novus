@@ -1,0 +1,100 @@
+import "std.ns"
+
+import "limited-list.ns"
+import "style.ns"
+
+import "../perforce/data/change.ns"
+import "../perforce/data/resolve.ns"
+import "../perforce/data/user.ns"
+
+// -- Types.
+
+enum ChangeWriteFormat =
+  Minimal     : 0b00,
+  Default     : 0b11,
+  IncludeTime : 0b01,
+  IncludeUser : 0b10
+
+// -- Writers.
+
+fun inParensWriter{T}(Writer{T} inner) -> Writer{T}
+  litWriter('(') & inner & litWriter(')')
+
+fun inBracketsWriter{T}(Writer{T} inner) -> Writer{T}
+  litWriter('[') & inner & litWriter(']')
+
+fun inAngleBracketsWriter{T}(Writer{T} inner) -> Writer{T}
+  litWriter('<') & inner & litWriter('>')
+
+fun inBracesWriter{T}(Writer{T} inner) -> Writer{T}
+  litWriter('{') & inner & litWriter('}')
+
+fun changeWriter(StyleCtx ctx) -> Writer{P4Change}
+  (
+    litWriter("@") & txtIntWriter()
+  ).styledWriter(ctx, Style.Change).map(lambda (P4Change c) c.id)
+
+fun changeInfoWriter(DateTime now, StyleCtx ctx, int maxDescLength, ChangeWriteFormat fmt = ChangeWriteFormat.Default) -> Writer{P4ChangeInfo}
+  includeTime = (fmt & ChangeWriteFormat.IncludeTime) != 0;
+  includeUser = (fmt & ChangeWriteFormat.IncludeUser) != 0;
+  (
+    changeWriter(ctx) &
+    litWriter(' ') & stringWriter() &
+    (includeTime ? litWriter(' ') & timeSinceWriter(now, ctx, true) : nopWriter{DateTime}()) &
+    (includeUser ? litWriter(' ') & userWriter(ctx) : nopWriter{P4User}())
+  ).map(lambda (P4ChangeInfo c) Tuple(c.change, c.p4ChangeShortDesc(maxDescLength), c.time, c.user))
+
+fun userWriter(StyleCtx ctx, bool inAngleBrackets = true) -> Writer{P4User}
+  w = stringWriter();
+  (inAngleBrackets ? w.inAngleBracketsWriter() : w)
+    .styledWriter(ctx, Style.User)
+    .map(lambda (P4User u) u.id)
+
+fun fileRevWriter(StyleCtx ctx) -> Writer{int}
+  (litWriter('#') & txtIntWriter()).styledWriter(ctx, Style.FileRev)
+
+fun clientWriter(StyleCtx ctx) -> Writer{P4Client}
+  (
+    litWriter("//") & stringWriter()
+  ).styledWriter(ctx, Style.Client).map(lambda (P4Client client) client.string())
+
+fun clientRootWriter(StyleCtx ctx) -> Writer{PathAbsolute}
+  pathAbsWriter().styledWriter(ctx, Style.ClientRoot)
+
+fun streamWriter(StyleCtx ctx) -> Writer{P4Stream}
+  stringWriter().styledWriter(ctx, Style.Stream).map(lambda (P4Stream s) s.string())
+
+fun streamTypeWriter(StyleCtx ctx) -> Writer{P4StreamType}
+  enumKeyWriter(Type{P4StreamType}()).styledWriter(ctx, Style.StreamType)
+
+fun fileOpWriter(StyleCtx ctx, bool inBrackets = true) -> Writer{P4FileOp}
+  w = enumKeyWriter(Type{P4FileOp}());
+  (
+    styleWriter(ctx) & (inBrackets ? w.inBracketsWriter() : w) & styleResetWriter(ctx)
+  ).map(lambda (P4FileOp op) Tuple(styleForP4FileOp(op), op))
+
+fun openFileWriter(StyleCtx ctx) -> Writer{P4OpenFile}
+  (
+    styleWriter(ctx) &
+    enumKeyWriter(Type{P4FileOp}()) & litWriter(": ") & pathRelWriter() &
+    styleResetWriter(ctx) &
+    litWriter(' ') & fileRevWriter(ctx)
+  ).map(lambda (P4OpenFile c) Tuple(styleForP4FileOp(c.Action), c.Action, c.clientFile.path, c.rev))
+
+fun fileCountWriter(StyleCtx ctx) -> Writer{LimitedList{P4FileInfo}}
+  limitedListCountWriter{P4FileInfo}() & litWriter(" files")
+
+fun shelveCountWriter(StyleCtx ctx, bool inBraces = true) -> Writer{LimitedList{P4FileInfo}}
+  w = limitedListCountWriter{P4FileInfo}() & litWriter(" shelved");
+  inBraces ? w.inBracesWriter() : w
+
+fun resolveTypeWriter(StyleCtx ctx, bool inBrackets = true) -> Writer{P4ResolveType}
+  w = enumKeyWriter(Type{P4ResolveType}()) & litWriter(" resolve");
+  (inBrackets ? w.inBracketsWriter() : w).styledWriter(ctx, Style.ResolveType)
+
+fun timeSinceWriter(DateTime now, StyleCtx ctx, bool inParens = true) -> Writer{DateTime}
+  w = timeDurationWriter(
+    txtFloatWriter(0, FloatToStringFlags.NeverScientific),
+    litWriter(' '),
+    false) & litWriter(" ago");
+  (inParens ? w.inParensWriter() : w).styledWriter(ctx, Style.Time).map(lambda (DateTime t) now - t)
