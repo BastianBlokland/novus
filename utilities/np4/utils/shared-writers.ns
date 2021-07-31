@@ -17,6 +17,9 @@ enum ChangeWriteFormat =
 
 // -- Writers.
 
+fun withHeaderWriter{T}(StyleCtx ctx, string header, Writer{T} w) -> Writer{T}
+  litWriter(header).styledWriter(ctx, Style.Header) & litWriter(": ") & w
+
 fun inParensWriter{T}(Writer{T} inner) -> Writer{T}
   litWriter('(') & inner & litWriter(')')
 
@@ -54,18 +57,27 @@ fun fileRevWriter(StyleCtx ctx) -> Writer{int}
   (litWriter('#') & txtIntWriter()).styledWriter(ctx, Style.FileRev)
 
 fun clientWriter(StyleCtx ctx) -> Writer{P4Client}
-  (
-    litWriter("//") & stringWriter()
-  ).styledWriter(ctx, Style.Client).map(lambda (P4Client client) client.string())
+  stringWriter().styledWriter(ctx, Style.Client).map(lambda (P4Client client) client.string())
 
-fun clientRootWriter(StyleCtx ctx) -> Writer{PathAbsolute}
-  pathAbsWriter().styledWriter(ctx, Style.ClientRoot)
+fun clientInfoWriter(StyleCtx ctx) -> Writer{P4ClientInfo}
+  (
+    clientWriter(ctx) & litWriter(' ') & userWriter(ctx)
+  ).map(lambda (P4ClientInfo i) Tuple(i.client, i.owner))
 
 fun streamWriter(StyleCtx ctx) -> Writer{P4Stream}
   stringWriter().styledWriter(ctx, Style.Stream).map(lambda (P4Stream s) s.string())
 
-fun streamTypeWriter(StyleCtx ctx) -> Writer{P4StreamType}
-  enumKeyWriter(Type{P4StreamType}()).styledWriter(ctx, Style.StreamType)
+fun streamInfoWriter(StyleCtx ctx) -> Writer{P4StreamInfo}
+  (
+    streamWriter(ctx) & litWriter(' ') & streamTypeWriter(ctx) &
+    ?(litWriter(' ') & withHeaderWriter(ctx, "Parent", streamWriter(ctx)))
+  ).map(lambda (P4StreamInfo i) Tuple(i.stream, i.type, i.parent))
+
+fun streamTypeWriter(StyleCtx ctx, bool inBrackets = true) -> Writer{P4StreamType}
+  w = enumKeyWriter(Type{P4StreamType}());
+  (
+    styleWriter(ctx) & (inBrackets ? w.inBracketsWriter() : w) & styleResetWriter(ctx)
+  ).map(lambda (P4StreamType t) Tuple(styleForP4StreamType(t), t))
 
 fun fileOpWriter(StyleCtx ctx, bool inBrackets = true) -> Writer{P4FileOp}
   w = enumKeyWriter(Type{P4FileOp}());

@@ -5,15 +5,14 @@ import "../perforce/data/file.ns"
 // -- Types.
 
 enum Style =
-  Important, Normal, Detail,
+  Normal, Header,
   Change,
   Time,
   User,
   FileRev,
   Client,
-  ClientRoot,
   Stream,
-  StreamType,
+  StreamMainLine, StreamDevelopment, StreamRelease, StreamTask, StreamVirtual,
   Shelve,
   ResolveType,
   OpAdd, OpDelete, OpEdit, OpIntegrate, OpBranch, OpMove
@@ -32,26 +31,36 @@ fun styleForP4FileOp(P4FileOp op) -> Style
   if op == P4FileOp.MoveDelete  -> Style.OpMove
   else                          -> Style.Normal
 
+fun styleForP4StreamType(P4StreamType t) -> Style
+  if t == P4StreamType.Mainline     -> Style.StreamMainLine
+  if t == P4StreamType.Development  -> Style.StreamDevelopment
+  if t == P4StreamType.Release      -> Style.StreamRelease
+  if t == P4StreamType.Task         -> Style.StreamTask
+  if t == P4StreamType.Virtual      -> Style.StreamVirtual
+  else                              -> Style.Normal
+
 fun styleToTtyStyleList(Style s) -> List{TtyStyle}
-  if s == Style.Important       -> TtyStyle.Bold      :: List{TtyStyle}()
-  if s == Style.Detail          -> TtyStyle.Faint     :: List{TtyStyle}()
-  if s == Style.Change          -> TtyStyle.FgYellow  :: TtyStyle.Bold
-  if s == Style.Time            -> TtyStyle.FgGreen   :: List{TtyStyle}()
-  if s == Style.User            -> TtyStyle.FgBlue    :: TtyStyle.Bold
-  if s == Style.FileRev         -> TtyStyle.Faint     :: List{TtyStyle}()
-  if s == Style.Client          -> List{TtyStyle}()
-  if s == Style.ClientRoot      -> TtyStyle.Faint     :: List{TtyStyle}()
-  if s == Style.Stream          -> List{TtyStyle}()
-  if s == Style.StreamType      -> TtyStyle.Faint     :: List{TtyStyle}()
-  if s == Style.Shelve          -> TtyStyle.FgYellow  :: TtyStyle.Bold
-  if s == Style.ResolveType     -> TtyStyle.BgRed     :: TtyStyle.Bold
-  if s == Style.OpAdd           -> TtyStyle.FgGreen   :: List{TtyStyle}()
-  if s == Style.OpDelete        -> TtyStyle.FgRed     :: List{TtyStyle}()
-  if s == Style.OpEdit          -> TtyStyle.FgYellow  :: List{TtyStyle}()
-  if s == Style.OpIntegrate     -> TtyStyle.FgBlue    :: List{TtyStyle}()
-  if s == Style.OpBranch        -> TtyStyle.FgMagenta :: List{TtyStyle}()
-  if s == Style.OpMove          -> TtyStyle.FgCyan    :: List{TtyStyle}()
-  else                          -> List{TtyStyle}()
+  if s == Style.Header            -> TtyStyle.Bold      :: List{TtyStyle}()
+  if s == Style.Change            -> TtyStyle.FgYellow  :: TtyStyle.Bold
+  if s == Style.Time              -> TtyStyle.FgGreen   :: List{TtyStyle}()
+  if s == Style.User              -> TtyStyle.FgBlue    :: TtyStyle.Bold
+  if s == Style.FileRev           -> TtyStyle.Faint     :: List{TtyStyle}()
+  if s == Style.Client            -> List{TtyStyle}()
+  if s == Style.Stream            -> List{TtyStyle}()
+  if s == Style.StreamDevelopment -> TtyStyle.FgMagenta :: TtyStyle.Bold
+  if s == Style.StreamRelease     -> TtyStyle.FgRed     :: TtyStyle.Bold
+  if s == Style.StreamTask        -> TtyStyle.FgGreen   :: TtyStyle.Bold
+  if s == Style.StreamVirtual     -> TtyStyle.FgCyan    :: TtyStyle.Bold
+  if s == Style.StreamMainLine    -> TtyStyle.FgGreen   :: TtyStyle.Bold
+  if s == Style.Shelve            -> TtyStyle.FgYellow  :: TtyStyle.Bold
+  if s == Style.ResolveType       -> TtyStyle.FgRed     :: TtyStyle.Bold
+  if s == Style.OpAdd             -> TtyStyle.FgGreen   :: List{TtyStyle}()
+  if s == Style.OpDelete          -> TtyStyle.FgRed     :: List{TtyStyle}()
+  if s == Style.OpEdit            -> TtyStyle.FgYellow  :: List{TtyStyle}()
+  if s == Style.OpIntegrate       -> TtyStyle.FgBlue    :: List{TtyStyle}()
+  if s == Style.OpBranch          -> TtyStyle.FgMagenta :: List{TtyStyle}()
+  if s == Style.OpMove            -> TtyStyle.FgCyan    :: List{TtyStyle}()
+  else                            -> List{TtyStyle}()
 
 fun styleWriter(StyleCtx ctx) -> Writer{Style}
   ctx.allowColor ? ttyStyleListWriter().map(lambda (Style s) styleToTtyStyleList(s))

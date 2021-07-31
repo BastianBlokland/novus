@@ -3,6 +3,7 @@ import "std.ns"
 import "../perforce/ignore.ns"
 import "../perforce/runner.ns"
 import "../utils/fork.ns"
+import "../utils/shared-writers.ns"
 import "../utils/style.ns"
 
 // -- Utilities.
@@ -34,15 +35,19 @@ act setupWorkspace(SetupSettings s, P4Config newCfg) -> Either{NewWorkspace, Err
 
 fun setupSuccessWriter(StyleCtx ctx) -> Writer{NewWorkspace}
   (
-    litWriter("Workspace succesfully setup") & newlineWriter() &
-    litWriter("Root: ") & pathAbsWriter().styledWriter(ctx, Style.Important) & newlineWriter() &
-    litWriter("User: ") & stringWriter().styledWriter(ctx, Style.Important) & newlineWriter() &
-    litWriter("Host: ") & stringWriter().styledWriter(ctx, Style.Important) & newlineWriter() &
-    litWriter("Description: ") & stringWriter().styledWriter(ctx, Style.Important)
+    litWriter("Workspace succesfully setup").styledWriter(ctx, Style.Header) & newlineWriter() &
+    withHeaderWriter(ctx, "Client", clientWriter(ctx)) & newlineWriter() &
+    withHeaderWriter(ctx, "Root", pathAbsWriter()) & newlineWriter() &
+    withHeaderWriter(ctx, "Stream", streamWriter(ctx)) & newlineWriter() &
+    withHeaderWriter(ctx, "User", userWriter(ctx)) & newlineWriter() &
+    withHeaderWriter(ctx, "Host", stringWriter()) & newlineWriter() &
+    withHeaderWriter(ctx, "Description", stringWriter())
   ).map(lambda (NewWorkspace w)
     Tuple(
+      w.clientInfo.client,
       w.clientInfo.root,
-      w.clientInfo.owner.string(),
+      w.clientInfo.stream,
+      w.clientInfo.owner,
       w.clientInfo.host,
       w.clientInfo.description.trim())
     )

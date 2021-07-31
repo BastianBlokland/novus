@@ -76,20 +76,6 @@ act statusQuery(P4Config cfg, StatusSettings settings) -> Either{StatusData, Err
 
 // -- Writers.
 
-fun statusClientWriter(StyleCtx ctx) -> Writer{StatusData}
-  (
-    clientWriter(ctx) & litWriter(' ') & clientRootWriter(ctx).inParensWriter()
-  ).map(lambda (StatusData data) Tuple(data.clientInfo.client, data.clientInfo.root))
-
-fun statusStreamWriter(StyleCtx ctx) -> Writer{StatusData}
-  (
-    streamWriter(ctx) &
-    litWriter(' ') & streamTypeWriter(ctx).inParensWriter() &
-    ?(litWriter(" Parent: ").styledWriter(ctx, Style.Important) & streamWriter(ctx))
-  ).map(lambda (StatusData data)
-    Tuple(data.streamInfo.stream, data.streamInfo.type, data.streamInfo.parent)
-  )
-
 fun statusResolveFileWriter(StyleCtx ctx, StatusSettings s) -> Writer{StatusResolve}
   (
     resolveTypeWriter(ctx) & litWriter(' ') & pathRelWriter()
@@ -106,22 +92,27 @@ fun statusChangeWriter(DateTime now, StyleCtx ctx, StatusSettings s) -> Writer{S
 
 fun statusOutputWriter(DateTime now, StyleCtx ctx, StatusSettings s) -> Writer{StatusData}
   (
-    litWriter("Client: ").styledWriter(ctx, Style.Important) & statusClientWriter(ctx) & newlineWriter() &
-    litWriter("Stream: ").styledWriter(ctx, Style.Important) & statusStreamWriter(ctx) &
+    withHeaderWriter(ctx, "Client", clientInfoWriter(ctx)) & newlineWriter() &
+    withHeaderWriter(ctx, "Stream", streamInfoWriter(ctx)) &
     ?(
-      newlineWriter() & litWriter("Resolves: ").styledWriter(ctx, Style.Important) &
-      listWriter(newlineWriter() & indentWriter() & statusResolveFileWriter(ctx, s)).indent()
+      newlineWriter() & withHeaderWriter(ctx, "Resolves",
+        listWriter(newlineWriter() & indentWriter() & statusResolveFileWriter(ctx, s)).indent())
     ) &
     ?(
-      newlineWriter() & litWriter("Pending: ").styledWriter(ctx, Style.Important) &
-      listWriter(newlineWriter() & indentWriter() & statusChangeWriter(now, ctx, s)).indent()
+      newlineWriter() & withHeaderWriter(ctx, "Pending",
+        listWriter(newlineWriter() & indentWriter() & statusChangeWriter(now, ctx, s)).indent())
     ) &
     ?(
-      newlineWriter() & litWriter("Default: ").styledWriter(ctx, Style.Important) &
-      limitedListWriter(newlineWriter() & indentWriter() & openFileWriter(ctx)).indent()
+      newlineWriter() & withHeaderWriter(ctx, "Default",
+        limitedListWriter(newlineWriter() & indentWriter() & openFileWriter(ctx)).indent())
     )
   ).map(lambda (StatusData d)
-    Tuple(d, d, d.pendingResolves.noneIfEmpty(), d.pendingChanges.noneIfEmpty(), d.defaultOpenFiles.noneIfEmpty())
+    Tuple(
+      d.clientInfo,
+      d.streamInfo,
+      d.pendingResolves.noneIfEmpty(),
+      d.pendingChanges.noneIfEmpty(),
+      d.defaultOpenFiles.noneIfEmpty())
   )
 
 // -- Driver.
