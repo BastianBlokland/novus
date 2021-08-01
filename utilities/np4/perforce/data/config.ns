@@ -8,6 +8,7 @@ import "user.ns"
 // -- Types.
 
 struct P4Config =
+  Path            p4Path,
   P4Server        server,
   P4Client        client,
   List{P4Change}  hiddenChanges

@@ -46,7 +46,8 @@ fun p4ErrorMatcher(TextPattern expectedErr) -> Parser{string}
 // -- Actions.
 
 act p4Run(P4Config cfg, List{string} args) -> Either{string, Error}
-  p = run("p4", cfg.p4GlobalArgs() :: args, ProcessFlags.PipeInOut | ProcessFlags.NewGroup);
+  flags = ProcessFlags.PipeInOut | ProcessFlags.NewGroup;
+  p     = run(cfg.p4Path.string(), cfg.p4GlobalArgs() :: args, flags);
   p.wait().map(impure lambda (ProcessResult r)
     if r.isSuccess() -> r.stdOut ?? ""
     else             ->

@@ -13,7 +13,7 @@ struct NewWorkspace =
   P4ClientInfo  clientInfo
 
 fun setupNewConfig(SetupSettings s)
-  P4Config(s.server, s.client, s.hiddenChanges ?? List{P4Change}())
+  P4Config(s.p4Path, s.server, s.client, s.hiddenChanges ?? List{P4Change}())
 
 // -- Actions.
 
@@ -57,9 +57,13 @@ fun setupSuccessWriter(StyleCtx ctx) -> Writer{NewWorkspace}
 struct SetupSettings =
   bool                    noColor,
   bool                    force,
+  Path                    p4Path,
   P4Server                server,
   P4Client                client,
   Option{List{P4Change}}  hiddenChanges
+
+fun cliDefaults(Type{SetupSettings} t)
+  CliDefault("p4-path", "p4") :: List{CliDefault}()
 
 act setupCmd(SetupSettings s) -> Option{Error}
   c               = consoleOpen().failOnError();
