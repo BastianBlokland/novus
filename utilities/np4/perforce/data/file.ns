@@ -21,13 +21,18 @@ struct P4FileInfo =
   P4FileRev         rev,
   P4Change          change,
   P4FileOp          Action,
+  Option{string}    type,
   Option{DateTime}  time,
   Option{ByteSize}  size
 
 // -- Conversions.
 
-fun string(P4FileRev r)
-  r.i == 0 ? "none" : r.i.string()
+fun string(P4FileRev r) r.i.string()
+
+// -- Utilities.
+
+fun p4FileIsText(P4FileInfo f)
+  f.type == "text" || f.type == "unicode" || f.type == "utf8" || f.type == "utf16"
 
 // -- Mappings.
 
@@ -50,6 +55,7 @@ fun fromPython(PyObj po, Type{P4FileOp} t) -> Either{P4FileOp, Error}
 
 fun fromPython(PyObj po, Type{P4FileRev} t) -> Either{P4FileRev, Error}
   if po as int i    -> P4FileRev(i)
-  if po as string s -> s == "none" ? P4FileRev(0)
-                                   : txtIntParser().run(s).map(lambda (int i) P4FileRev(i))
+  if po as string s -> equals(s, "none", StrComp.IgnoreCase)
+                        ? P4FileRev(0)
+                        : txtIntParser().run(s).map(lambda (int i) P4FileRev(i))
   else -> Error("Expected a perforce FileRev, got a " + pyObjType(po))
