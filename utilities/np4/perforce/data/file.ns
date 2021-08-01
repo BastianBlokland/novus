@@ -8,16 +8,26 @@ import "path.ns"
 
 enum P4FileOp = Add, Edit, Delete, Branch, MoveAdd, MoveDelete, Integrate, Import, Purge, Archive
 
+struct P4FileRev = int i
+
 struct P4OpenFile =
   P4DepotPath   depotFile,
   P4ClientPath  clientFile,
-  int           rev,
+  P4FileRev     rev,
   P4FileOp      Action
 
 struct P4FileInfo =
-  P4DepotPath depotFile,
-  P4Change    change,
-  P4FileOp    Action
+  P4DepotPath       depotFile,
+  P4FileRev         rev,
+  P4Change          change,
+  P4FileOp          Action,
+  Option{DateTime}  time,
+  Option{ByteSize}  size
+
+// -- Conversions.
+
+fun string(P4FileRev r)
+  r.i == 0 ? "none" : r.i.string()
 
 // -- Mappings.
 
@@ -37,3 +47,9 @@ fun fromPython(PyObj po, Type{P4FileOp} t) -> Either{P4FileOp, Error}
     else                  -> Error("Unsupported P4 file operation: '" + s + '\'')
   )
   else -> Error("Expected a p4 file operation, got a " + pyObjType(po))
+
+fun fromPython(PyObj po, Type{P4FileRev} t) -> Either{P4FileRev, Error}
+  if po as int i    -> P4FileRev(i)
+  if po as string s -> s == "none" ? P4FileRev(0)
+                                   : txtIntParser().run(s).map(lambda (int i) P4FileRev(i))
+  else -> Error("Expected a perforce FileRev, got a " + pyObjType(po))

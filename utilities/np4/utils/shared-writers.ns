@@ -53,8 +53,8 @@ fun userWriter(StyleCtx ctx, bool inAngleBrackets = true) -> Writer{P4User}
     .styledWriter(ctx, Style.User)
     .map(lambda (P4User u) u.id)
 
-fun fileRevWriter(StyleCtx ctx) -> Writer{int}
-  (litWriter('#') & txtIntWriter()).styledWriter(ctx, Style.FileRev)
+fun fileRevWriter(StyleCtx ctx) -> Writer{P4FileRev}
+  (litWriter('#') & stringWriter()).styledWriter(ctx, Style.FileRev).map(lambda (P4FileRev r) r.string())
 
 fun clientWriter(StyleCtx ctx) -> Writer{P4Client}
   stringWriter().styledWriter(ctx, Style.Client).map(lambda (P4Client client) client.string())
@@ -89,8 +89,12 @@ fun fileWriter(StyleCtx ctx) -> Writer{P4FileInfo}
   (
     styleWriter(ctx) &
     enumKeyWriter(Type{P4FileOp}()) & litWriter(": ") & pathRelWriter() &
-    styleResetWriter(ctx)
-  ).map(lambda (P4FileInfo c) Tuple(styleForP4FileOp(c.Action), c.Action, c.depotFile.path))
+    styleResetWriter(ctx) &
+    litWriter(' ') & fileRevWriter(ctx) &
+    ?(litWriter(' ') & byteSizeWriter())
+  ).map(lambda (P4FileInfo f)
+    Tuple(styleForP4FileOp(f.Action), f.Action, f.depotFile.path, f.rev, f.size)
+  )
 
 fun openFileWriter(StyleCtx ctx) -> Writer{P4OpenFile}
   (
@@ -98,7 +102,7 @@ fun openFileWriter(StyleCtx ctx) -> Writer{P4OpenFile}
     enumKeyWriter(Type{P4FileOp}()) & litWriter(": ") & pathRelWriter() &
     styleResetWriter(ctx) &
     litWriter(' ') & fileRevWriter(ctx)
-  ).map(lambda (P4OpenFile c) Tuple(styleForP4FileOp(c.Action), c.Action, c.clientFile.path, c.rev))
+  ).map(lambda (P4OpenFile f) Tuple(styleForP4FileOp(f.Action), f.Action, f.clientFile.path, f.rev))
 
 fun fileCountWriter(StyleCtx ctx) -> Writer{LimitedList{P4FileInfo}}
   limitedListCountWriter{P4FileInfo}() & litWriter(" files")
