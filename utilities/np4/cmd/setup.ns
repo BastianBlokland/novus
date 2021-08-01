@@ -24,7 +24,7 @@ act setupSaveConfig(SetupSettings s, P4Config newCfg, P4ClientInfo clientInfo) -
     : res
 
 act setupWorkspace(SetupSettings s, P4Config newCfg) -> Either{NewWorkspace, Error}
-  p4RunClientInfo(newCfg, newCfg.client).map(impure lambda (P4ClientInfo clientInfo)
+  p4GetClientInfo(newCfg, newCfg.client).map(impure lambda (P4ClientInfo clientInfo)
     waitForForks(Tuple(
       fork setupSaveConfig(s, newCfg, clientInfo),
       fork p4AddToIgnore(newCfg, clientInfo, ".np4"))
@@ -35,7 +35,7 @@ act setupWorkspace(SetupSettings s, P4Config newCfg) -> Either{NewWorkspace, Err
 
 fun setupSuccessWriter(StyleCtx ctx) -> Writer{NewWorkspace}
   (
-    litWriter("Workspace succesfully setup").styledWriter(ctx, Style.Header) & newlineWriter() &
+    litWriter("Workspace successfully setup").styledWriter(ctx, Style.Header) & newlineWriter() &
     withHeaderWriter(ctx, "Client", clientWriter(ctx)) & newlineWriter() &
     withHeaderWriter(ctx, "Root", pathAbsWriter()) & newlineWriter() &
     withHeaderWriter(ctx, "Stream", streamWriter(ctx)) & newlineWriter() &

@@ -22,7 +22,7 @@ struct StatusChange =
   LimitedList{P4FileInfo} shelvedFiles
 
 struct StatusResolve =
-  P4ClientFile    clientFile,
+  P4ClientPath    clientFile,
   P4ResolveType   resolveType
 
 // -- Utilities.
@@ -31,8 +31,8 @@ fun statusFilterPending(P4ChangeInfo changeInfo, P4Config cfg) -> bool
   !p4ChangeIsHidden(cfg, changeInfo.change)
 
 fun statusToResolve(P4ResolveFile resolve, P4ClientInfo clientInfo) -> Either{StatusResolve, Error}
-  clientFileOrErr = absPathToP4ClientFile(clientInfo, resolve.clientFile);
-  clientFileOrErr.map(lambda (P4ClientFile clientFile) StatusResolve(clientFile, resolve.resolveType))
+  clientFileOrErr = absPathToP4ClientPath(clientInfo, resolve.clientFile);
+  clientFileOrErr.map(lambda (P4ClientPath clientFile) StatusResolve(clientFile, resolve.resolveType))
 
 fun statusToResolves(List{P4ResolveFile} resolves, P4ClientInfo clientInfo) -> Either{List{StatusResolve}, Error}
   resolves.map(statusToResolve[clientInfo]).split().valueOrError()
@@ -41,16 +41,18 @@ fun statusToResolves(List{P4ResolveFile} resolves, P4ClientInfo clientInfo) -> E
 
 act statusQueryChange(P4ChangeInfo changeInfo, P4Config cfg, StatusSettings settings) -> Either{StatusChange, Error}
   waitForForks(Tuple(
-    fork p4RunGetOpenFiles(cfg, cfg.client, changeInfo.change, settings.filesMax + 1),
-    fork p4RunGetDepotFiles(cfg, changeInfo.change, settings.filesMax + 1))
+    fork p4GetOpenFiles(cfg, cfg.client, changeInfo.change, settings.filesMax + 1),
+    fork p4GetDepotFiles(cfg, changeInfo.change, settings.filesMax + 1))
   ).map(lambda (Tuple{List{P4OpenFile}, List{P4FileInfo}} res)
     StatusChange(
       changeInfo, toLimitedList(res.f1, settings.filesMax), toLimitedList(res.f2, settings.filesMax))
    )
 
 act statusQueryChanges(P4Config cfg, StatusSettings settings) -> Either{List{StatusChange}, Error}
-  changeInfosOrErr = p4RunChangeInfos(cfg, cfg.client, P4ChangeStatus.Pending, settings.changesMax, false);
-  changeInfosOrErr.map(impure lambda (List{P4ChangeInfo} changes)
+  clientFilter  = Option(cfg.client);
+  userFilter    = Option{P4User}();
+  changesOrErr  = p4GetChanges(cfg, clientFilter, userFilter, P4ChangeStatus.Pending, settings.changesMax);
+  changesOrErr.map(impure lambda (List{P4ChangeInfo} changes)
       changes
         .filter(statusFilterPending[cfg])
         .parallelMap(statusQueryChange[settings][cfg])
@@ -60,11 +62,11 @@ act statusQueryChanges(P4Config cfg, StatusSettings settings) -> Either{List{Sta
 
 act statusQuery(P4Config cfg, StatusSettings settings) -> Either{StatusData, Error}
   waitForForks(Tuple(
-    fork p4RunClientInfo(cfg, cfg.client),
-    fork p4RunCurrentStreamInfo(cfg),
-    fork p4RunPendingResolves(cfg),
+    fork p4GetClientInfo(cfg, cfg.client),
+    fork p4GetCurrentStreamInfo(cfg),
+    fork p4GetPendingResolves(cfg),
     fork statusQueryChanges(cfg, settings),
-    fork p4RunGetOpenFiles(cfg, cfg.client, p4DefaultChange(), settings.filesMax + 1))
+    fork p4GetOpenFiles(cfg, cfg.client, p4DefaultChange(), settings.filesMax + 1))
   ).map(impure lambda (Tuple{ P4ClientInfo,
                               P4StreamInfo,
                               List{P4ResolveFile},

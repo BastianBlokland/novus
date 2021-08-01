@@ -66,73 +66,58 @@ act p4RunMany{T}(P4Config cfg, List{string} args, Type{T} resultType) -> Either{
 
 // -- Queries.
 
-act p4RunGetVars(P4Config cfg) -> Either{List{P4Var}, Error}
+act p4GetVars(P4Config cfg) -> Either{List{P4Var}, Error}
   args = "set" :: "-q";
   p = manyParser(p4VarTxtParser(), newlineParser(), ParseFlags.AllowTrailingSeperator) ! p4ParseError(args);
   cfg.p4Run(args).map(p.build(ParseFlags.NoWrapperError))
 
-act p4RunSetVar(P4Config cfg, P4Var var) -> Option{Error}
+act p4SetVar(P4Config cfg, P4Var var) -> Option{Error}
   cfg.p4Run("set" :: var.string()) as Error err ? err : None()
 
-act p4RunCurrentStreamInfo(P4Config cfg) -> Either{P4StreamInfo, Error}
+act p4GetCurrentStreamInfo(P4Config cfg) -> Either{P4StreamInfo, Error}
   cfg.p4Run("stream" :: "-o", Type{P4StreamInfo}())
   ! Error("No stream found for client '" + cfg.client + "' on server '" + cfg.server + '\'')
 
-act p4RunClientInfo(P4Config cfg, P4Client client) -> Either{P4ClientInfo, Error}
+act p4GetClientInfo(P4Config cfg, P4Client client) -> Either{P4ClientInfo, Error}
   cfg.p4Run("client" :: "-o" :: client.id, Type{P4ClientInfo}())
   ! Error("Client '" + client + "' not valid on server '" + cfg.server + '\'')
 
-act p4RunChangeInfo(P4Config cfg, P4Change change) -> Either{P4ChangeInfo, Error}
+act p4GetChangeInfo(P4Config cfg, P4Change change) -> Either{P4ChangeInfo, Error}
   cfg.p4Run("describe" :: "-s" :: change.string(), Type{P4ChangeInfo}())
   ! Error("No change '" + change.string() + "' found on server '" + cfg.server + '\'')
 
-act p4RunChangeInfos(P4Config cfg, P4User u, int max, bool reverse) -> Either{List{P4ChangeInfo}, Error}
+enum P4ChangesFlags =
+  None    : 0b00,
+  Reverse : 0b01
+
+act p4GetChanges(
+    P4Config          cfg,
+    Option{P4Client}  clientFilter,
+    Option{P4User}    userFilter,
+    P4ChangeStatus    statusFilter,
+    int               max,
+    P4ChangesFlags    flags = P4ChangesFlags.None,
+    P4Path            path = anyP4DepotPath()) -> Either{List{P4ChangeInfo}, Error}
+  reverse = (flags & P4ChangesFlags.Reverse) != 0;
   cfg.p4RunMany(
-    "changes"                         ::
-    "-l"                              ::
-    "-u" :: u.string()                ::
-    (reverse ? Option("-r") : None()) ::
-    "-m" :: max.string()              :: List{string}(),
+    "changes"                                                           ::
+    "-l"                                                                ::
+    (clientFilter as P4Client c ? Option("-c" :: c.string()) : None())  ::
+    (userFilter as P4User     u ? Option("-u" :: u.string()) : None())  ::
+    "-s" :: statusFilter.string().strToLower()                          ::
+    (reverse ? Option("-r") : None())                                   ::
+    "-m" :: max.string()                                                ::
+    path.string(),
     Type{P4ChangeInfo}())
 
-act p4RunChangeInfos(P4Config cfg, P4User u, P4ChangeStatus s, int max, bool reverse) -> Either{List{P4ChangeInfo}, Error}
-  cfg.p4RunMany(
-    "changes"                         ::
-    "-l"                              ::
-    "-u" :: u.string()                ::
-    "-s" :: s.string().strToLower()   ::
-    (reverse ? Option("-r") : None()) ::
-    "-m" :: max.string()              :: List{string}(),
-    Type{P4ChangeInfo}())
-
-act p4RunChangeInfos(P4Config cfg, P4Client c, P4ChangeStatus s, int max, bool reverse) -> Either{List{P4ChangeInfo}, Error}
-  cfg.p4RunMany(
-    "changes"                         ::
-    "-l"                              ::
-    "-c" :: c.string()                ::
-    "-s" :: s.string().strToLower()   ::
-    (reverse ? Option("-r") : None()) ::
-    "-m" :: max.string()              :: List{string}(),
-    Type{P4ChangeInfo}())
-
-act p4RunVisibleChangeInfos(P4Config cfg, P4ChangeStatus s, int max, bool reverse) -> Either{List{P4ChangeInfo}, Error}
-  cfg.p4RunMany(
-    "changes"                         ::
-    "-l"                              ::
-    "-s" :: s.string().strToLower()   ::
-    (reverse ? Option("-r") : None()) ::
-    "-m" :: max.string()              ::
-    ("//" + cfg.client.id + "/...")   :: List{string}(),
-    Type{P4ChangeInfo}())
-
-act p4RunGetDepotFiles(P4Config cfg, P4Change change, int max) -> Either{List{P4FileInfo}, Error}
+act p4GetDepotFiles(P4Config cfg, P4Change change, int max) -> Either{List{P4FileInfo}, Error}
   args            = "files" :: "-m" :: max.string() :: ("@=" + change.string());
   fileListParser  = manyUntilParser(pyMarshalParser(Type{P4FileInfo}()), endParser());
   noSuchFilesErr  = p4ErrorMatcher(GlobTextPattern("@=*no*file(s)*", StrComp.IgnoreCase));
   p               = (fileListParser | (noSuchFilesErr >> retParser(List{P4FileInfo}()))) ! p4ParseError(args);
   cfg.p4Run(args).map(p.build(ParseFlags.NoWrapperError))
 
-act p4RunGetOpenFiles(P4Config cfg, P4Client client, P4Change change, int max) -> Either{List{P4OpenFile}, Error}
+act p4GetOpenFiles(P4Config cfg, P4Client client, P4Change change, int max) -> Either{List{P4OpenFile}, Error}
   cfg.p4RunMany(
     "opened"                  ::
     "-C"  :: client.string()  ::
@@ -140,7 +125,7 @@ act p4RunGetOpenFiles(P4Config cfg, P4Client client, P4Change change, int max) -
     "-m"  :: max.string(),
      Type{P4OpenFile}())
 
-act p4RunPendingResolves(P4Config cfg) -> Either{List{P4ResolveFile}, Error}
+act p4GetPendingResolves(P4Config cfg) -> Either{List{P4ResolveFile}, Error}
   args               = "resolve" :: "-n";
   fileListParser     = manyUntilParser(pyMarshalParser(Type{P4ResolveFile}()), endParser());
   noFileToResolveErr = p4ErrorMatcher(GlobTextPattern("No file(s) to resolve*", StrComp.IgnoreCase));

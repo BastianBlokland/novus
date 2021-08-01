@@ -16,6 +16,8 @@ fun fromJson(JsonValue jv, Type{P4User} t) -> Either{P4User, Error}
 fun fromPython(PyObj po, Type{P4User} t) -> Either{P4User, Error}
   po as string s ? P4User(s) : Error("Expected a p4 user, got a " + pyObjType(po))
 
+fun cliParser(Type{P4User} t) p4UserTxtParser()
+
 // -- Parsers.
 
 fun p4UserTxtParser() untilParser(isWhitespace).to(Type{P4User}())

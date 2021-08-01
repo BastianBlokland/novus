@@ -5,7 +5,7 @@ import "runner.ns"
 // -- Actions.
 
 act p4GetCurrentIgnoreFileName(P4Config cfg) -> Either{Option{string}, Error}
-  p4RunGetVars(cfg).map(lambda (List{P4Var} vars)
+  p4GetVars(cfg).map(lambda (List{P4Var} vars)
     vars.first(lambda (P4Var v) v.key == "P4IGNORE").map(lambda (P4Var v) v.val)
   )
 
@@ -13,7 +13,7 @@ act p4GetIgnoreFileName(P4Config cfg) -> Either{string, Error}
   default = ".p4ignore";
   p4GetCurrentIgnoreFileName(cfg).map(impure lambda (Option{string} current) -> Either{string, Error}
     if current as string currentVal -> currentVal
-    if current is None -> p4RunSetVar(cfg, P4Var("P4IGNORE", default)) as Error err ? err : default
+    if current is None -> p4SetVar(cfg, P4Var("P4IGNORE", default)) as Error err ? err : default
   )
 
 act p4OpenIgnoreFile(P4Config cfg, P4ClientInfo clientInfo) -> Either{File, Error}

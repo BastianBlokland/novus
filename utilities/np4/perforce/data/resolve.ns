@@ -1,6 +1,6 @@
 import "std.ns"
 
-import "file.ns"
+import "path.ns"
 
 // -- Types.
 
@@ -8,5 +8,5 @@ enum P4ResolveType = None, Branch, Content, Delete, Move, Filetype, Attribute
 
 struct P4ResolveFile =
   PathAbsolute  clientFile,
-  P4DepotFile   fromFile,
+  P4DepotPath   fromFile,
   P4ResolveType resolveType

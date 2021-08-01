@@ -17,8 +17,8 @@ struct DescribeData =
 
 act describeQuery(P4Config cfg, DescribeSettings settings) -> Either{DescribeData, Error}
   waitForForks(Tuple(
-    fork p4RunChangeInfo(cfg, settings.change.val),
-    fork p4RunGetDepotFiles(cfg, settings.change.val, settings.filesMax + 1))
+    fork p4GetChangeInfo(cfg, settings.change.val),
+    fork p4GetDepotFiles(cfg, settings.change.val, settings.filesMax + 1))
   ).map(impure lambda (Tuple{P4ChangeInfo, List{P4FileInfo}} res)
     DescribeData(cfg, res.f1, timeToLocal(res.f1.time), toLimitedList(res.f2, settings.filesMax))
   )

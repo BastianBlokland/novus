@@ -15,9 +15,12 @@ struct LogData =
 // -- Actions.
 
 act logQuery(P4Config cfg, LogSettings settings) -> Either{LogData, Error}
-  reverse = settings.origin == LogOrigin.Oldest;
-  p4RunVisibleChangeInfos(cfg, P4ChangeStatus.Submitted, settings.changesMax, reverse)
-  .map(lambda (List{P4ChangeInfo} changes) LogData(cfg, changes))
+  flags        = settings.origin == LogOrigin.Newest ? P4ChangesFlags.None : P4ChangesFlags.Reverse;
+  path         = settings.path.val ?? anyP4ClientPath(cfg.client);
+  clientFilter = Option{P4Client}();
+  userFilter   = settings.user;
+  p4GetChanges(cfg, clientFilter, userFilter, P4ChangeStatus.Submitted, settings.changesMax, flags, path)
+    .map(lambda (List{P4ChangeInfo} changes) LogData(cfg, changes))
 
 // -- Writers.
 
@@ -29,10 +32,12 @@ fun logOutputWriter(DateTime now, StyleCtx ctx, LogSettings s) -> Writer{LogData
 // -- Driver.
 
 struct LogSettings =
-  bool        noColor,
-  LogOrigin   origin,
-  int         descLength,
-  int         changesMax
+  bool                          noColor,
+  LogOrigin                     origin,
+  int                           descLength,
+  int                           changesMax,
+  Option{P4User}                user,
+  CliPositional{Option{P4Path}} path
 
 fun cliDefaults(Type{LogSettings} t)
   CliDefault("origin",        "newest") ::
