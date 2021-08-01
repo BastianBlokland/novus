@@ -150,7 +150,7 @@ auto DeclareUserFuncs::visit(const parse::FuncDeclStmtNode& n) -> void {
   auto funcName     = isConv ? getName(*m_ctx, *retType) : name;
   const auto funcId = m_ctx->getProg()->declarePureFunc(
       std::move(funcName), input.value(), retType.value(), numOptInputs);
-  m_funcDecls->emplace_back(funcId, m_ctx, std::move(name), n);
+  m_funcDecls->emplace_back(funcId, m_ctx, std::move(displayName), n);
 }
 
 auto DeclareUserFuncs::validateFuncTemplateArgList(
