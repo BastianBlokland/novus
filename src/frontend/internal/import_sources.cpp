@@ -84,6 +84,11 @@ auto ImportSources::alreadyImportedRelPath(const Path& file) const -> bool {
 }
 
 auto ImportSources::import(const Path& file, input::Span span) const -> bool {
+  if (file.empty()) {
+    const auto srcId = m_sourceTableBuilder->add(&m_currentSource, span);
+    m_diags->push_back(errUnresolvedImport(srcId, file.string()));
+    return false;
+  }
 
   if (file.is_absolute() && importAbsPath(file)) {
     return true;
