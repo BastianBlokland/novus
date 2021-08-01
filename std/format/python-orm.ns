@@ -155,18 +155,24 @@ fun fromPython{T}(PyObj po, Type{T} t, Meta{#11} enumTypeKind) -> Either{T, Erro
 
 // ---- Struct from Python dict
 
+fun structFieldFromPython{T}(PyDict pd, string fieldName, Type{T} t) -> Either{T, Error}
+  pd.getField(fieldName, StrComp.IgnoreCase) as PyObj po
+    ? fromPython(po, t) ! Error("Invalid field '" + fieldName + "'")
+    : Error("No key named '" + fieldName + "' found in Dictionary")
+
+fun structFieldFromPython{T}(PyDict pd, string fieldName, Type{Option{T}} t) -> Either{Option{T}, Error}
+  pd.getField(fieldName, StrComp.IgnoreCase) as PyObj po
+    ? fromPython(po, t) ! Error("Invalid field '" + fieldName + "'")
+    : Option{T}()
+
 fun structFromPython{T, Tup, J}(PyDict pd, Type{T} t, Meta{#-1} i, Meta{J} j, Tup res) -> Either{T, Error}
   res.tupleToStruct(t)
 
 fun structFromPython{T, Tup, I, J}(PyDict pd, Type{T} t, Meta{I} i, Meta{J} j, Tup res) -> Either{T, Error}
   fieldName = reflectStructFieldName(t, j);
-  if pd.getField(fieldName, StrComp.IgnoreCase) as PyObj po ->
-  (
-    v = fromPython(po, reflectStructFieldType(t, j));
-    if v as reflect_struct_field_type{T, J} val -> structFromPython(pd, t, --i, ++j, res.tupleAdd(val))
-    if v as Error err -> Error("Invalid field '" + fieldName + "'") :: err
-  )
-  else -> Error("No key named '" + fieldName + "' found in Dictionary")
+  valOrErr  = structFieldFromPython(pd, fieldName, reflectStructFieldType(t, j));
+  if valOrErr as reflect_struct_field_type{T, J} val -> structFromPython(pd, t, --i, ++j, res.tupleAdd(val))
+  if valOrErr as Error                           err -> err
 
 fun structFromPython{T}(PyDict pd, Type{T} t) -> Either{T, Error}
   fieldCount = reflectStructFieldCount(t);
