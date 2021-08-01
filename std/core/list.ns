@@ -41,6 +41,10 @@ fun ::{T}(Option{T} opt, List{T} l)
   if opt as T val -> l.push(val)
   if opt is None  -> l
 
+fun ::{T}(Option{List{T}} opt, List{T} l)
+  if opt as List{T} other -> l.push(other)
+  if opt is None          -> l
+
 fun []{T}(List{T} l, int idx) -> Option{T}
   l.pop(idx).front()
 
