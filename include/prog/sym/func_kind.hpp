@@ -89,7 +89,7 @@ enum class FuncKind {
   FutureWaitNano, // Wait for x nanoseconds for a future to complete.
   FutureBlock,    // Block until a future has completed.
 
-  LazyGet, // Retreive the value for a lazy value.
+  LazyGet, // Retrieve the value for a lazy value.
 
   CheckEqUserType, // Check if two user types are equal.
                    // Note: Backend will generate equality for all user-types.
