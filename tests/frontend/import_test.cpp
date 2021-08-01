@@ -8,6 +8,7 @@ TEST_CASE("[frontend] Analyzing import statements", "frontend") {
 
   SECTION("Diagnostics") {
     CHECK_DIAG("import \"nonexisting.ns\"", errUnresolvedImport(NO_SRC, "nonexisting.ns"));
+    CHECK_DIAG("import \"\"", errUnresolvedImport(NO_SRC, ""));
   }
 }
 
