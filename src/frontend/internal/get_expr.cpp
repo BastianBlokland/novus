@@ -354,7 +354,9 @@ auto GetExpr::visit(const parse::CallExprNode& n) -> void {
 auto GetExpr::visit(const parse::ConditionalExprNode& n) -> void {
   auto conditions = std::vector<prog::expr::NodePtr>{};
   auto branches   = std::vector<prog::expr::NodePtr>{};
-  conditions.push_back(getSubExpr(n[0], m_ctx->getProg()->getBool(), true));
+
+  auto conditionConsts = getVisibleConstsCopy();
+  conditions.push_back(getSubExpr(n[0], &conditionConsts, m_ctx->getProg()->getBool(), true));
   if (!conditions[0]) {
     return;
   }
@@ -362,11 +364,10 @@ auto GetExpr::visit(const parse::ConditionalExprNode& n) -> void {
     return;
   }
 
-  // Make a copy of the visible constants, newly declared constants should not be visible outside.
-  auto ifBranchConsts = getVisibleConstsCopy();
-  branches.push_back(getSubExpr(n[1], &ifBranchConsts, m_typeHint));
+  // The 'if' branch gets access to the constants declared by the condition.
+  branches.push_back(getSubExpr(n[1], &conditionConsts, m_typeHint));
 
-  // Make a copy of the visible constants, newly declared constants should not be visible outside.
+  // The 'else' branch only get constants that are visible in the parent scope.
   auto elseBranchConsts = getVisibleConstsCopy();
   branches.push_back(getSubExpr(n[2], &elseBranchConsts, m_typeHint));
 
@@ -858,7 +859,7 @@ auto GetExpr::getChildExprs(
 
 auto GetExpr::getSubExpr(const parse::Node& n, prog::sym::TypeId typeHint, bool checkedConstsAccess)
     -> prog::expr::NodePtr {
-  // Transfer all flags to the sub-expression except for the 'CheckedConstsAccess'/
+  // Transfer all flags to the sub-expression except for the 'CheckedConstsAccess'.
   auto subExprFlags = checkedConstsAccess ? m_flags | Flags::CheckedConstsAccess
                                           : m_flags & ~Flags::CheckedConstsAccess;
 
@@ -876,7 +877,7 @@ auto GetExpr::getSubExpr(
     prog::sym::TypeId typeHint,
     bool checkedConstsAccess) -> prog::expr::NodePtr {
 
-  // Transfer all flags to the sub-expression except for the 'CheckedConstsAccess'/
+  // Transfer all flags to the sub-expression except for the 'CheckedConstsAccess'.
   auto subExprFlags = checkedConstsAccess ? m_flags | Flags::CheckedConstsAccess
                                           : m_flags & ~Flags::CheckedConstsAccess;
 
