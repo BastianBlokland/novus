@@ -1,6 +1,7 @@
 import "std.ns"
 
 import "../perforce/runner.ns"
+
 import "../utils/fork.ns"
 import "../utils/shared-writers.ns"
 import "../utils/style.ns"
@@ -8,14 +9,14 @@ import "../utils/style.ns"
 // -- Types.
 
 struct DescribeData =
-  P4Config                config,
+  Config                  config,
   P4ChangeInfo            changeInfo,
   DateTime                localDateTime,
   LimitedList{P4FileInfo} files
 
 // -- Actions.
 
-act describeQuery(P4Config cfg, DescribeSettings settings) -> Either{DescribeData, Error}
+act describeQuery(Config cfg, DescribeSettings settings) -> Either{DescribeData, Error}
   waitForForks(Tuple(
     fork p4GetChangeInfo(cfg, settings.change.val),
     fork p4GetDepotFiles(cfg, settings.change.val, settings.filesMax + 1))
@@ -66,6 +67,6 @@ act describeCmd(DescribeSettings s) -> Option{Error}
   c         = consoleOpen().failOnError();
   styleCtx  = StyleCtx(!s.noColor && c.allowColor());
   writer    = describeOutputWriter(timeNow(), styleCtx);
-  dataOrErr = loadP4Config().map(describeQuery[s]);
+  dataOrErr = loadConfig().map(describeQuery[s]);
   if dataOrErr as Error         err  -> err
   if dataOrErr as DescribeData  data -> c.writeOut(writer & newlineWriter(), data)

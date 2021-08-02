@@ -1,0 +1,131 @@
+import "std.ns"
+
+import "../perforce/runner.ns"
+
+import "../utils/diff-utils.ns"
+import "../utils/fork.ns"
+import "../utils/shared-writers.ns"
+import "../utils/style.ns"
+
+// -- Types.
+
+enum DiffType = FromPrevToChange, FromCurToChange
+
+struct DiffCtx =
+  Config        cfg,
+  DiffSettings  settings,
+  DiffType      diffType,
+  PathAbsolute  tmpPath
+
+struct DiffData =
+  Config            config,
+  P4ChangeInfo      changeInfo,
+  List{DiffFileSet} fileSets
+
+struct DiffFileSet =
+  P4FileInfo    info,
+  PathAbsolute  fromFile,
+  PathAbsolute  toFile
+
+// -- Utilities.
+
+fun diffTmpFileName(P4DepotPath p, P4Change c)
+  dotExt = p.path.extension().map(lambda (string ext) "." + ext) ?? "";
+  (p.path.stem() ?? "unknown") + "@" + c + dotExt
+
+fun diffTmpFileName(P4DepotPath p, P4FileRev r)
+  dotExt = p.path.extension().map(lambda (string ext) "." + ext) ?? "";
+  (p.path.stem() ?? "unknown") + "#" + r + dotExt
+
+fun shouldDiff(P4FileInfo f)
+  f.p4FileIsText() &&
+  ( f.Action == P4FileOp.Add        ||
+    f.Action == P4FileOp.Edit       ||
+    f.Action == P4FileOp.Branch     ||
+    f.Action == P4FileOp.MoveAdd    ||
+    f.Action == P4FileOp.Integrate  ||
+    f.Action == P4FileOp.Import)
+
+fun diffType(P4ChangeInfo changeInfo)
+  changeInfo.status == P4ChangeStatus.Submitted ? DiffType.FromPrevToChange
+                                                : DiffType.FromCurToChange
+
+fun getDiffFromRev(P4FileInfo f, DiffType t) -> P4FileRev
+  if f.Action == P4FileOp.Add       -> p4RevNone()
+  if f.Action == P4FileOp.MoveAdd   -> p4RevNone()
+  if f.Action == P4FileOp.Branch    -> p4RevNone()
+  if f.Action == P4FileOp.Import    -> p4RevNone()
+  if t == DiffType.FromPrevToChange -> f.rev.p4RevPrev()
+  if t == DiffType.FromCurToChange  -> f.rev
+  else                              -> p4RevNone()
+
+// -- Actions.
+
+act diffCreateTempDir() -> Either{PathAbsolute, Error}
+  rndStr    = rngInit().rngString(8).val;
+  pathOrErr = getTempPath().map(lambda (PathAbsolute p) p / "np4" / rndStr);
+  if pathOrErr as Error         err   -> err
+  if pathOrErr as PathAbsolute  path  -> fileCreatePath(path) as Error createErr ? createErr : path
+
+act diffGetFromFile(DiffCtx ctx, P4FileInfo f) -> Either{PathAbsolute, Error}
+  rev       = getDiffFromRev(f, ctx.diffType);
+  path      = ctx.tmpPath / diffTmpFileName(f.depotFile, rev);
+  maybeErr  = rev.p4RevIsNone() ? fileWrite(path, "") : p4DownloadFile(ctx.cfg, f.depotFile, rev, path).error();
+  maybeErr as Error err ? err : path
+
+act diffGetToFile(DiffCtx ctx, P4FileInfo f) -> Either{PathAbsolute, Error}
+  path = ctx.tmpPath / diffTmpFileName(f.depotFile, f.change);
+  p4DownloadFile(ctx.cfg, f.depotFile, f.change, path).map(lambda (P4FileInfo dl) path)
+
+act diffGetFileSet(DiffCtx ctx, P4FileInfo f) -> Either{DiffFileSet, Error}
+  waitForForks(Tuple(
+    fork diffGetFromFile(ctx, f),
+    fork diffGetToFile(ctx, f))
+  ).map(lambda (Tuple{PathAbsolute, PathAbsolute} data) DiffFileSet(f, data.f1, data.f2))
+
+act diffQueryFiles(DiffCtx ctx) -> Either{List{DiffFileSet}, Error}
+  change = ctx.settings.change.val;
+  p4GetDepotFiles(ctx.cfg, change, ctx.settings.filesMax).map(impure lambda (List{P4FileInfo} files)
+  (
+    files .filter(shouldDiff)
+          .map(impure lambda (P4FileInfo f) diffGetFileSet(ctx, f))
+          .split().valueOrError())
+  )
+
+act diffQuery(Config cfg, DiffSettings s, PathAbsolute tmpPath) -> Either{List{DiffFileSet}, Error}
+  changeInfoOrErr = p4GetChangeInfo(cfg, s.change.val);
+  if changeInfoOrErr as Error        err        -> err
+  if changeInfoOrErr as P4ChangeInfo changeInfo -> diffQueryFiles(DiffCtx(cfg, s, diffType(changeInfo), tmpPath))
+
+// -- Writers.
+
+fun diffFileOutputWriter(StyleCtx ctx, DiffSettings s) -> Writer{DiffFileSet}
+  (
+    withHeaderWriter(ctx, "Diffing", fileWriter(ctx)) & newlineWriter()
+  ).map(lambda (DiffFileSet f) f.info)
+
+// -- Driver.
+
+struct DiffSettings =
+  bool                    noColor,
+  int                     filesMax,
+  CliPositional{P4Change} change
+
+fun cliDefaults(Type{DiffSettings} t)
+  CliDefault("files-max", "50") :: List{CliDefault}()
+
+act diffCmd(DiffSettings s) -> Option{Error}
+  tmpPath   = diffCreateTempDir().failOnError();
+  c         = consoleOpen().failOnError();
+  styleCtx  = StyleCtx(!s.noColor && c.allowColor());
+  writer    = diffFileOutputWriter(styleCtx, s);
+  loadConfig().map(impure lambda (Config cfg)
+    filesOrErr = diffQuery(cfg, s, tmpPath);
+    if filesOrErr as Error             err   -> err
+    if filesOrErr as List{DiffFileSet} files -> files.map(impure lambda (DiffFileSet f)
+        actSeq(
+          lazy c.writeOut(writer, f),
+          lazy cfg.runDiffTool(f.fromFile, f.toFile)
+        )
+      ).combine()
+  )

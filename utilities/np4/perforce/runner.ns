@@ -1,11 +1,12 @@
 import "std.ns"
 
 import "data/change.ns"
-import "data/config.ns"
 import "data/file.ns"
 import "data/resolve.ns"
 import "data/stream.ns"
 import "data/var.ns"
+
+import "../config.ns"
 
 // -- Types.
 
@@ -17,7 +18,7 @@ struct P4RunOutput{T} =
 
 // -- Utilities.
 
-fun p4GlobalArgs(P4Config cfg) -> List{string}
+fun p4GlobalArgs(Config cfg) -> List{string}
   "-p"  :: cfg.server.string() ::
   "-c"  :: cfg.client.string() ::
   "-Q"  :: "utf8unchecked"     ::
@@ -45,7 +46,7 @@ fun p4ErrorMatcher(TextPattern expectedErr) -> Parser{string}
 
 // -- Actions.
 
-act p4Run(P4Config cfg, List{string} args) -> Either{string, Error}
+act p4Run(Config cfg, List{string} args) -> Either{string, Error}
   flags = ProcessFlags.PipeInOut | ProcessFlags.NewGroup;
   p     = run(cfg.p4Path.string(), cfg.p4GlobalArgs() :: args, flags);
   p.wait().map(impure lambda (ProcessResult r)
@@ -56,42 +57,42 @@ act p4Run(P4Config cfg, List{string} args) -> Either{string, Error}
         : p4CmdError(args) :: Error((r.stdErr ?? "").trim())
   )
 
-act p4Run{T}(P4Config cfg, List{string} args, Type{T} resultType) -> Either{T, Error}
+act p4Run{T}(Config cfg, List{string} args, Type{T} resultType) -> Either{T, Error}
   p = pyMarshalParser(resultType) ! p4ParseError(args);
   cfg.p4Run(args).map(p.build(ParseFlags.NoWrapperError))
 
-act p4RunMany{T}(P4Config cfg, List{string} args, Type{T} resultType) -> Either{List{T}, Error}
+act p4RunMany{T}(Config cfg, List{string} args, Type{T} resultType) -> Either{List{T}, Error}
   p = manyUntilParser(pyMarshalParser(resultType), endParser()) ! p4ParseError(args);
   cfg.p4Run(args).map(p.build(ParseFlags.NoWrapperError))
 
 // -- Queries.
 
-act p4GetVars(P4Config cfg) -> Either{List{P4Var}, Error}
+act p4GetVars(Config cfg) -> Either{List{P4Var}, Error}
   args = "set" :: "-q";
   p = manyParser(p4VarTxtParser(), newlineParser(), ParseFlags.AllowTrailingSeperator) ! p4ParseError(args);
   cfg.p4Run(args).map(p.build(ParseFlags.NoWrapperError))
 
-act p4SetVar(P4Config cfg, P4Var var) -> Option{Error}
+act p4SetVar(Config cfg, P4Var var) -> Option{Error}
   cfg.p4Run("set" :: var.string()) as Error err ? err : None()
 
-act p4GetCurrentStreamInfo(P4Config cfg) -> Either{P4StreamInfo, Error}
+act p4GetCurrentStreamInfo(Config cfg) -> Either{P4StreamInfo, Error}
   cfg.p4Run("stream" :: "-o", Type{P4StreamInfo}())
   ! Error("No stream found for client '" + cfg.client + "' on server '" + cfg.server + '\'')
 
-act p4GetClientInfo(P4Config cfg, P4Client client) -> Either{P4ClientInfo, Error}
+act p4GetClientInfo(Config cfg, P4Client client) -> Either{P4ClientInfo, Error}
   cfg.p4Run("client" :: "-o" :: client.id, Type{P4ClientInfo}())
   ! Error("Client '" + client + "' not valid on server '" + cfg.server + '\'')
 
-act p4GetChangeInfo(P4Config cfg, P4Change change) -> Either{P4ChangeInfo, Error}
+act p4GetChangeInfo(Config cfg, P4Change change) -> Either{P4ChangeInfo, Error}
   cfg.p4Run("describe" :: "-s" :: change.string(), Type{P4ChangeInfo}())
-  ! Error("No change '" + change.string() + "' found on server '" + cfg.server + '\'')
+  ! Error("Change '" + change.string() + "' not found")
 
 enum P4ChangesFlags =
   None    : 0b00,
   Reverse : 0b01
 
 act p4GetChanges(
-    P4Config          cfg,
+    Config            cfg,
     Option{P4Client}  clientFilter,
     Option{P4User}    userFilter,
     P4ChangeStatus    statusFilter,
@@ -110,14 +111,14 @@ act p4GetChanges(
     path.string(),
     Type{P4ChangeInfo}())
 
-act p4GetDepotFiles(P4Config cfg, P4Change change, int max) -> Either{List{P4FileInfo}, Error}
+act p4GetDepotFiles(Config cfg, P4Change change, int max) -> Either{List{P4FileInfo}, Error}
   args            = "files" :: "-m" :: max.string() :: ("@=" + change.string());
   fileListParser  = manyUntilParser(pyMarshalParser(Type{P4FileInfo}()), endParser());
   noSuchFilesErr  = p4ErrorMatcher(GlobTextPattern("@=*no*file(s)*", StrComp.IgnoreCase));
   p               = (noSuchFilesErr >> retParser(List{P4FileInfo}()) | fileListParser) ! p4ParseError(args);
   cfg.p4Run(args).map(p.build(ParseFlags.NoWrapperError))
 
-act p4GetOpenFiles(P4Config cfg, P4Client client, P4Change change, int max) -> Either{List{P4OpenFile}, Error}
+act p4GetOpenFiles(Config cfg, P4Client client, P4Change change, int max) -> Either{List{P4OpenFile}, Error}
   cfg.p4RunMany(
     "opened"                  ::
     "-C"  :: client.string()  ::
@@ -125,9 +126,19 @@ act p4GetOpenFiles(P4Config cfg, P4Client client, P4Change change, int max) -> E
     "-m"  :: max.string(),
      Type{P4OpenFile}())
 
-act p4GetPendingResolves(P4Config cfg) -> Either{List{P4ResolveFile}, Error}
+act p4GetPendingResolves(Config cfg) -> Either{List{P4ResolveFile}, Error}
   args               = "resolve" :: "-n";
   fileListParser     = manyUntilParser(pyMarshalParser(Type{P4ResolveFile}()), endParser());
   noFileToResolveErr = p4ErrorMatcher(GlobTextPattern("No file(s) to resolve*", StrComp.IgnoreCase));
   p                  = ((noFileToResolveErr >> retParser(List{P4ResolveFile}())) | fileListParser) ! p4ParseError(args);
   cfg.p4Run(args).map(p.build(ParseFlags.NoWrapperError))
+
+act p4DownloadFile(Config cfg, P4DepotPath depotPath, P4FileRev rev, Path resultPath) -> Either{P4FileInfo, Error}
+  fileSpec = depotPath.string() + "#" + rev.string();
+  cfg.p4Run("print" :: "-o" :: resultPath.pathAbsolute().string() :: fileSpec, Type{P4FileInfo}())
+    ! Error("Failed to download '" + fileSpec + "' from server '" + cfg.server + '\'')
+
+act p4DownloadFile(Config cfg, P4DepotPath depotPath, P4Change change, Path resultPath) -> Either{P4FileInfo, Error}
+  fileSpec = depotPath.string() + "@=" + change;
+  cfg.p4Run("print" :: "-o" :: resultPath.pathAbsolute().string() :: fileSpec, Type{P4FileInfo}())
+    ! Error("Failed to download '" + fileSpec + "' from server '" + cfg.server + '\'')

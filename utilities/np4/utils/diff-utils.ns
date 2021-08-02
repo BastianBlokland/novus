@@ -1,0 +1,29 @@
+import "std.ns"
+
+import "../config.ns"
+
+// -- Types.
+
+enum DiffToolPreset = Fc, Diff, VsCode, VisualStudio
+
+// -- Utilities.
+
+fun diffToolPresetCmdLine(DiffToolPreset preset)
+  if preset == DiffToolPreset.Fc            -> "fc.exe %FROM %TO"
+  if preset == DiffToolPreset.Diff          -> "diff -a --color=always --unified=3 %FROM %TO"
+  if preset == DiffToolPreset.VsCode        -> "code --diff %FROM %TO"
+  if preset == DiffToolPreset.VisualStudio  -> "devenv.exe /diff %FROM %TO"
+  else                                      -> ""
+
+// -- Actions.
+
+act getDefaultDiffToolPreset()
+  platform() == Platform.Windows ? DiffToolPreset.Fc : DiffToolPreset.Diff
+
+act runDiffTool(Config cfg, PathAbsolute from, PathAbsolute to) -> Option{Error}
+  parts = cfg.diffCmdLine.split(isWhitespace);
+  args  = parts.pop().map(lambda (string part)
+    part.replace("%FROM", from.string(), StrComp.IgnoreCase)
+        .replace("%TO", to.string(), StrComp.IgnoreCase)
+  );
+  run(parts.front() ?? "invalid-diff-tool", args).wait().error()

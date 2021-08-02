@@ -1,0 +1,37 @@
+import "std.ns"
+
+import "perforce/data/change.ns"
+import "perforce/data/client.ns"
+import "perforce/data/server.ns"
+import "perforce/data/user.ns"
+
+// -- Types.
+
+struct Config =
+  Path            p4Path,
+  P4Server        server,
+  P4Client        client,
+  List{P4Change}  hiddenChanges,
+  string          diffCmdLine
+
+// -- Utilities.
+
+fun p4ChangeIsHidden(Config cfg, P4Change c) cfg.hiddenChanges.contains(c)
+
+// -- Actions.
+
+act loadConfig(PathAbsolute p = pathCurrent()) -> Either{Config, Error}
+  parser = jsonParser{Config}();
+  if fileOpen(p / ".np4", FileMode.OpenReadOnly) as File f  -> f.readToEnd(parser) ! Error("Failed to parse .np4 config file")
+  if p.pathIsRoot()                                         -> Error("Not a np4 workspace, run 'np4 setup' to set one up")
+  else                                                      -> loadConfig(p.parent())
+
+act writeConfig(Config cfg, P4ClientInfo client, bool overwrite) -> Option{Error}
+  writeConfig(cfg, client.root / ".np4", overwrite)
+
+act writeConfig(Config cfg, PathAbsolute p, bool overwrite) -> Option{Error}
+  mode = overwrite ? FileMode.Create : FileMode.CreateNew;
+  fileOpen(p, mode).map(impure lambda (File f) writeConfig(cfg, f))
+
+act writeConfig(Config cfg, File f) -> Option{Error}
+  f.write(jsonWriter{Config}(), cfg)

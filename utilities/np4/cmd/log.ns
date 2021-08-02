@@ -1,6 +1,7 @@
 import "std.ns"
 
 import "../perforce/runner.ns"
+
 import "../utils/style.ns"
 import "../utils/shared-writers.ns"
 
@@ -9,12 +10,12 @@ import "../utils/shared-writers.ns"
 enum LogOrigin = Newest, Oldest
 
 struct LogData =
-  P4Config            config,
+  Config              config,
   List{P4ChangeInfo}  changes
 
 // -- Actions.
 
-act logQuery(P4Config cfg, LogSettings settings) -> Either{LogData, Error}
+act logQuery(Config cfg, LogSettings settings) -> Either{LogData, Error}
   flags        = settings.origin == LogOrigin.Newest ? P4ChangesFlags.None : P4ChangesFlags.Reverse;
   path         = settings.path.val ?? anyP4ClientPath(cfg.client);
   clientFilter = Option{P4Client}();
@@ -48,6 +49,6 @@ act logCmd(LogSettings s) -> Option{Error}
   c         = consoleOpen().failOnError();
   styleCtx  = StyleCtx(!s.noColor && c.allowColor());
   writer    = logOutputWriter(timeNow(), styleCtx, s);
-  dataOrErr = loadP4Config().map(logQuery[s]);
+  dataOrErr = loadConfig().map(logQuery[s]);
   if dataOrErr as Error   err  -> err
   if dataOrErr as LogData data -> c.writeOut(writer, data)
