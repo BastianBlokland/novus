@@ -8,7 +8,7 @@ import "path.ns"
 
 enum P4FileOp = Add, Edit, Delete, Branch, MoveAdd, MoveDelete, Integrate, Import, Purge, Archive
 
-struct P4FileRev = int i
+struct P4FileRev = long i
 
 struct P4OpenFile =
   P4DepotPath   depotFile,
@@ -27,12 +27,26 @@ struct P4FileInfo =
 
 // -- Conversions.
 
-fun string(P4FileRev r) r.i.string()
+fun string(P4FileRev r)
+  if r.p4RevIsNone() -> "none"
+  if r.p4RevIsHead() -> "head"
+  else               -> r.i.string()
 
 // -- Utilities.
 
 fun p4FileIsText(P4FileInfo f)
   f.type == "text" || f.type == "unicode" || f.type == "utf8" || f.type == "utf16"
+
+fun p4RevNone() P4FileRev(0)
+fun p4RevHead() P4FileRev(maxVal{long}())
+
+fun p4RevIsNone(P4FileRev r) r.i == 0
+fun p4RevIsHead(P4FileRev r) r.i == maxVal{long}()
+
+fun p4RevPrev(P4FileRev r)
+  if r.p4RevIsNone() -> p4RevNone()
+  if r.p4RevIsHead() -> p4RevHead()
+  else               -> P4FileRev(r.i - 1)
 
 // -- Mappings.
 
@@ -55,7 +69,7 @@ fun fromPython(PyObj po, Type{P4FileOp} t) -> Either{P4FileOp, Error}
 
 fun fromPython(PyObj po, Type{P4FileRev} t) -> Either{P4FileRev, Error}
   if po as int i    -> P4FileRev(i)
-  if po as string s -> equals(s, "none", StrComp.IgnoreCase)
-                        ? P4FileRev(0)
-                        : txtIntParser().run(s).map(lambda (int i) P4FileRev(i))
+  if po as string s -> if equals(s, "none", StrComp.IgnoreCase) -> p4RevNone()
+                       if equals(s, "head", StrComp.IgnoreCase) -> p4RevHead()
+                       else -> txtIntParser().run(s).map(lambda (int i) P4FileRev(i))
   else -> Error("Expected a perforce FileRev, got a " + pyObjType(po))
