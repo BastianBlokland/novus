@@ -14,6 +14,8 @@ struct PathAbsolute =
 
 union Path = PathAbsolute, PathRelative
 
+enum PathSeperator = Forward, Backward
+
 // -- Operators
 
 fun /(PathRelative l, PathRelative r)
@@ -37,14 +39,14 @@ fun /(Path p, PathRelative r)
 
 // -- Conversions
 
-fun string(Path p)
-  pathWriter().run(p)
+fun string(Path p, PathSeperator sep = PathSeperator.Forward)
+  pathWriter(sep).run(p)
 
-fun string(PathRelative p)
-  pathRelWriter().run(p)
+fun string(PathRelative p, PathSeperator sep = PathSeperator.Forward)
+  pathRelWriter(sep).run(p)
 
-fun string(PathAbsolute p)
-  pathAbsWriter().run(p)
+fun string(PathAbsolute p, PathSeperator sep = PathSeperator.Forward)
+  pathAbsWriter(sep).run(p)
 
 // -- Utilities
 
@@ -61,10 +63,10 @@ fun pathRel()
   PathRelative(List{string}())
 
 fun pathDefaultRootUnix()
-  pathAbs("/")
+  pathAbs("")
 
 fun pathDefaultRootWindows()
-  pathAbs("c:/")
+  pathAbs("c:")
 
 fun pathRoot(PathAbsolute abs)
   pathAbs(abs.root)
@@ -168,9 +170,9 @@ fun pathRelParser{UntilT}(Parser{UntilT} until = endParser()) -> Parser{PathRela
   manyUntilParser(segParser, sepParser, until, flags).to(Type{PathRelative}())
 
 fun pathAbsParser{UntilT}(Parser{UntilT} until = endParser()) -> Parser{PathAbsolute}
-  unixRoot    = matchParser("/");
+  unixRoot    = matchParser('/') >> retParser("");
   windowsRoot = (charParser() << (matchParser(":\\") | matchParser(":/")))
-    .map(lambda (char drive) drive.toUpper().string() + ":/");
+    .map(lambda (char drive) drive.toUpper().string() + ":");
   (
     (unixRoot | windowsRoot) & pathRelParser(until)
   ).to(Type{PathAbsolute}())
@@ -180,22 +182,28 @@ fun pathParser{UntilT}(Parser{UntilT} until = endParser()) -> Parser{Path}
 
 // -- Writers
 
-fun pathRelWriter() -> Writer{PathRelative}
-  listWriter(stringWriter(), litWriter('/')).map(lambda (PathRelative p) p.segments)
-
-fun pathAbsWriter() -> Writer{PathAbsolute}
+fun pathRelWriter(PathSeperator sep = PathSeperator.Forward) -> Writer{PathRelative}
   (
-    stringWriter() & pathRelWriter()
+    listWriter(stringWriter(), litWriter(sep == PathSeperator.Forward ? '/' : '\\'))
+  ).map(lambda (PathRelative p) p.segments)
+
+fun pathAbsWriter(PathSeperator sep = PathSeperator.Forward) -> Writer{PathAbsolute}
+  (
+    stringWriter() & litWriter(sep == PathSeperator.Forward ? '/' : '\\') & pathRelWriter(sep)
   ).to(Type{PathAbsolute}())
 
-fun pathWriter()
-  unionWriter(Type{Path}(), pathAbsWriter(), pathRelWriter())
+fun pathWriter(PathSeperator sep = PathSeperator.Forward)
+  unionWriter(Type{Path}(), pathAbsWriter(sep), pathRelWriter(sep))
 
 // -- Actions
 
 act pathDefaultRoot()
   if platform() == Platform.Windows -> pathDefaultRootWindows()
   else                              -> pathDefaultRootUnix()
+
+act pathNativeSeperator()
+  if platform() == Platform.Windows -> PathSeperator.Backward
+  else                              -> PathSeperator.Forward
 
 act pathAbsolute(PathRelative rel)
   (pathCurrent() / rel).pathCannonize()
@@ -262,11 +270,11 @@ assertEq(pathCannonize(pathRel() / "world" / ".." / "world" / "." / "more" / "th
 assertEq(pathCannonize(pathRel() / "world" / ".." / "world" / ".." / "more" / ".." / "things"), pathRel() / "things")
 assertEq(pathCannonize(pathRel() / "hello" / "good" / "world" / ".." / ".." / "more"), pathRel() / "hello" / "more")
 
-assertEq(pathAbsParser().run("/"), pathAbs("/"))
-assertEq(pathAbsParser().run("c:\\"), pathAbs("C:/"))
-assertEq(pathAbsParser().run("c:/"), pathAbs("C:/"))
-assertEq(pathAbsParser().run("C:/"), pathAbs("C:/"))
-assertEq(pathAbsParser().run("z:\\"), pathAbs("Z:/"))
+assertEq(pathAbsParser().run("/"), pathAbs(""))
+assertEq(pathAbsParser().run("c:\\"), pathAbs("C:"))
+assertEq(pathAbsParser().run("c:/"), pathAbs("C:"))
+assertEq(pathAbsParser().run("C:/"), pathAbs("C:"))
+assertEq(pathAbsParser().run("z:\\"), pathAbs("Z:"))
 assertIs(pathAbsParser().run("\\"), Type{Error}())
 assertIs(pathAbsParser().run("hello"), Type{Error}())
 assertIs(pathAbsParser().run("c:hello"), Type{Error}())
@@ -307,27 +315,37 @@ assertIs(pathRelParser().run("hello//world"), Type{Error}())
 
 assertEq(pathParser().run("test.txt"), Path(pathRel("test.txt" :: List{string}())))
 assertEq(pathParser().run("hello/test.txt"), Path(pathRel("hello" :: "test.txt")))
-assertEq(pathParser().run("/hello"), Path(pathAbs("/", "hello" :: List{string}())))
-assertEq(pathParser().run("c:\\hello"), Path(pathAbs("C:/", "hello" :: List{string}())))
-assertEq(pathParser().run("c:/hello"), Path(pathAbs("C:/", "hello" :: List{string}())))
+assertEq(pathParser().run("/hello"), Path(pathAbs("", "hello" :: List{string}())))
+assertEq(pathParser().run("c:\\hello"), Path(pathAbs("C:", "hello" :: List{string}())))
+assertEq(pathParser().run("c:/hello"), Path(pathAbs("C:", "hello" :: List{string}())))
 assertIs(pathParser().run("\\"), Type{Error}())
 assertIs(pathParser().run("//"), Type{Error}())
 
 assertEq(pathParser(newlineParser()).run("hello\nworld"), Path(pathRel("hello" :: List{string}())))
 assertEq(pathParser(newlineParser()).run("hello.txt\nworld"), Path(pathRel("hello.txt" :: List{string}())))
 assertEq(pathParser(newlineParser()).run("hello/world.txt\nworld"), Path(pathRel("hello" :: "world.txt")))
-assertEq(pathParser(newlineParser()).run("c:\\win\\dows\r\nhello"), Path(pathAbs("C:/", "win" :: "dows")))
+assertEq(pathParser(newlineParser()).run("c:\\win\\dows\r\nhello"), Path(pathAbs("C:", "win" :: "dows")))
 assertEq(pathParser(newlineParser()).run("你好，世界.txt\nworld"), Path(pathRel("你好，世界.txt" :: List{string}())))
 
 assertEq(pathWriter()(pathDefaultRootUnix()), "/" )
 assertEq(pathWriter()(pathDefaultRootWindows()), "c:/" )
 assertEq(pathWriter()(pathDefaultRootWindows()), "c:/" )
-assertEq(pathWriter()(pathAbs("z:/")), "z:/" )
+assertEq(pathWriter()(pathAbs("z:")), "z:/" )
 assertEq(pathWriter()(pathDefaultRootWindows() / "hello"), "c:/hello")
 assertEq(pathWriter()(pathDefaultRootUnix() / "hello"), "/hello")
 assertEq(pathWriter()(pathDefaultRootUnix() / "hello" / "world"), "/hello/world")
 assertEq(pathWriter()(pathDefaultRootUnix() / "hello world"), "/hello world")
 assertEq(pathWriter()(pathDefaultRootUnix() / "hello world" / "e l i t e"), "/hello world/e l i t e")
+
+assertEq(pathWriter(PathSeperator.Backward)(pathDefaultRootUnix()), "\\" )
+assertEq(pathWriter(PathSeperator.Backward)(pathDefaultRootWindows()), "c:\\" )
+assertEq(pathWriter(PathSeperator.Backward)(pathDefaultRootWindows()), "c:\\" )
+assertEq(pathWriter(PathSeperator.Backward)(pathAbs("z:")), "z:\\" )
+assertEq(pathWriter(PathSeperator.Backward)(pathDefaultRootWindows() / "hello"), "c:\\hello")
+assertEq(pathWriter(PathSeperator.Backward)(pathDefaultRootUnix() / "hello"), "\\hello")
+assertEq(pathWriter(PathSeperator.Backward)(pathDefaultRootUnix() / "hello" / "world"), "\\hello\\world")
+assertEq(pathWriter(PathSeperator.Backward)(pathDefaultRootUnix() / "hello world"), "\\hello world")
+assertEq(pathWriter(PathSeperator.Backward)(pathDefaultRootUnix() / "hello world" / "e l i t e"), "\\hello world\\e l i t e")
 
 assertEq(pathWriter()(pathRel() / "hello"), "hello")
 assertEq(pathWriter()(pathRel() / "hello" / "world"), "hello/world")
