@@ -50,8 +50,11 @@ fun string(ProcessFlags f)
 // -- Functions
 
 fun toCmdLine(string prog, List{string} args) -> string
-  escapeSingleQuotes = (lambda (string s) s.replace("'", "\\'"));
-  (prog :: args).map(escapeSingleQuotes).string("'", "' '", "'")
+  processElem = (lambda (string s)
+    singleQuoteEscaped = s.replace("'", "\\'");
+    singleQuoteEscaped.any(isWhitespace) ? ("'" + singleQuoteEscaped + "'") : singleQuoteEscaped
+  );
+  (prog :: args).map(processElem).string("", " ", "")
 
 fun isSuccess(ExitCode ec)
   ec.code == 0
@@ -116,12 +119,28 @@ act shutdown(Process p) -> Either{ProcessResult, Error}
 
 // -- Tests
 
+assertEq(
+  toCmdLine("git", "log" :: List{string}()),
+  "git log")
+
+assertEq(
+  toCmdLine("git", "arg with spaces" :: List{string}()),
+  "git 'arg with spaces'")
+
+assertEq(
+  toCmdLine("git", "arg 'with' spaces 'and 'quotes" :: List{string}()),
+  "git 'arg \\'with\\' spaces \\'and \\'quotes'")
+
+assertEq(
+  toCmdLine("C:\\Program Files\\CMake\\bin\\cmake", "-E" :: "echo" :: "Hello world"),
+  "'C:\\Program Files\\CMake\\bin\\cmake' -E echo 'Hello world'")
+
 assert(
   run("cmake", "-E" :: "echo" :: "Hello world" :: List{string}(), ProcessFlags.PipeInOut),
   lambda (Either{Process, Error} e)
     e as Process p  &&
     p.id.id > 0     &&
-    p.cmdLine == "'cmake' '-E' 'echo' 'Hello world'")
+    p.cmdLine == "cmake -E echo 'Hello world'")
 
 assert(
   run("cmake", "-E" :: "echo" :: "Hello world", ProcessFlags.PipeInOut).wait(),
