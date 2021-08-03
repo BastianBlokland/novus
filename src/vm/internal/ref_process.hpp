@@ -287,8 +287,7 @@ inline auto processStart(
         *itr = '"';
       } else if (itr[0] == '\\' && itr[1] == '\'') {
         // Treat backslash-quote as a normal quote (remove the backslash).
-        ::memmove(itr, itr + 1, ::strlen(itr));
-        ++itr;
+        ::memmove(itr, itr + 1, ::strlen(itr)); // Note: Copy 1 extra to move the null-term.
       }
       if (!cmdLineStrStart) {
         cmdLineStrStart = itr;
