@@ -16,15 +16,15 @@ struct NewWorkspace =
   Config        newCfg,
   P4ClientInfo  clientInfo
 
-// -- Actions.
-
-act setupNewConfig(SetupSettings s)
+fun setupNewConfig(SetupSettings s, Platform platform)
   Config(
     s.p4Path,
     s.server,
     s.client,
     s.hiddenChanges ?? List{P4Change}(),
-    diffToolPresetCmdLine(s.diffTool ?? getDefaultDiffToolPreset()))
+    diffToolPresetCmdLine(s.diffTool ?? getDefaultDiffToolPreset(platform), platform))
+
+// -- Actions.
 
 act setupSaveConfig(SetupSettings s, Config newCfg, P4ClientInfo clientInfo) -> Option{Error}
   res = writeConfig(newCfg, clientInfo, s.force);
@@ -79,7 +79,7 @@ act setupCmd(SetupSettings s) -> Option{Error}
   c               = consoleOpen().failOnError();
   styleCtx        = StyleCtx(!s.noColor && c.allowColor());
   writer          = setupSuccessWriter(styleCtx);
-  newCfg          = setupNewConfig(s);
+  newCfg          = setupNewConfig(s, platform());
   workspaceOrErr  = setupWorkspace(s, newCfg);
   if workspaceOrErr as Error        err -> err
   if workspaceOrErr as NewWorkspace w   -> c.writeOut(writer & newlineWriter(), w)

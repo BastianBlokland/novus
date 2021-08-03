@@ -1,0 +1,10 @@
+import "std.ns"
+
+// -- Utilities.
+
+fun splitCommandLineString(string str) -> Either{List{string}, Error}
+  makeQuotedParser  = (lambda (char q) qp = matchParser(q); qp >> untilParser(qp) << qp);
+  singleQuoteParser = makeQuotedParser('\'') << whitespaceParser();
+  doubleQuoteParser = makeQuotedParser('\"') << whitespaceParser();
+  nonQuotedParser   = untilParser(isWhitespace) << whitespaceParser();
+  manyParser(singleQuoteParser | doubleQuoteParser | nonQuotedParser).run(str)
