@@ -109,6 +109,7 @@ fun diffFileOutputWriter(StyleCtx ctx, DiffSettings s) -> Writer{DiffFileSet}
 struct DiffSettings =
   bool                    noColor,
   int                     filesMax,
+  bool                    altDiffTool,
   CliPositional{P4Change} change
 
 fun cliDefaults(Type{DiffSettings} t)
@@ -125,7 +126,7 @@ act diffCmd(DiffSettings s) -> Option{Error}
     if filesOrErr as List{DiffFileSet} files -> files.map(impure lambda (DiffFileSet f)
         actSeq(
           lazy c.writeOut(writer, f),
-          lazy cfg.runDiffTool(f.fromFile, f.toFile)
+          lazy cfg.runDiffTool(s.altDiffTool, f.fromFile, f.toFile)
         )
       ).combine()
   )

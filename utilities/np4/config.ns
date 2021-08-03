@@ -12,7 +12,8 @@ struct Config =
   P4Server        server,
   P4Client        client,
   List{P4Change}  hiddenChanges,
-  string          diffCmdLine
+  string          diffCmdLine,
+  string          diffCmdLineAlt
 
 // -- Utilities.
 

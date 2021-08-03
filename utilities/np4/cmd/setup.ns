@@ -22,7 +22,8 @@ fun setupNewConfig(SetupSettings s, Platform platform)
     s.server,
     s.client,
     s.hiddenChanges ?? List{P4Change}(),
-    diffToolPresetCmdLine(s.diffTool ?? getDefaultDiffToolPreset(platform), platform))
+    diffToolPresetCmdLine(s.diffTool ?? getDefaultDiffToolPreset(platform), platform),
+    diffToolPresetCmdLine(DiffToolPreset.VsCode, platform))
 
 // -- Actions.
 

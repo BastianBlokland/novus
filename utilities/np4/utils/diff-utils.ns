@@ -29,10 +29,10 @@ fun getDefaultDiffToolPreset(Platform platform)
 
 // -- Actions.
 
-act runDiffTool(Config cfg, PathAbsolute from, PathAbsolute to) -> Option{Error}
+act runDiffTool(Config cfg, bool altTool, PathAbsolute from, PathAbsolute to) -> Option{Error}
   fromStr     = from.string(pathNativeSeperator());
   toStr       = to.string(pathNativeSeperator());
-  partsOrErr  = splitCommandLineString(cfg.diffCmdLine);
+  partsOrErr  = splitCommandLineString(altTool ? cfg.diffCmdLineAlt : cfg.diffCmdLine);
   if partsOrErr as Error        cmdLineErr -> Error("Error parsing diffCmdLine") :: cmdLineErr
   if partsOrErr as List{string} parts      ->
     run(
