@@ -58,18 +58,18 @@ act p4Run(Config cfg, List{string} args) -> Either{string, Error}
   )
 
 act p4Run{T}(Config cfg, List{string} args, Type{T} resultType) -> Either{T, Error}
-  p = pyMarshalParser(resultType) ! p4ParseError(args);
+  p = pyMarshalParser(resultType) ! lazy p4ParseError(args);
   cfg.p4Run(args).map(p.build(ParseFlags.NoWrapperError))
 
 act p4RunMany{T}(Config cfg, List{string} args, Type{T} resultType) -> Either{List{T}, Error}
-  p = manyUntilParser(pyMarshalParser(resultType), endParser()) ! p4ParseError(args);
+  p = manyUntilParser(pyMarshalParser(resultType), endParser()) ! lazy p4ParseError(args);
   cfg.p4Run(args).map(p.build(ParseFlags.NoWrapperError))
 
 // -- Queries.
 
 act p4GetVars(Config cfg) -> Either{List{P4Var}, Error}
   args = "set" :: "-q";
-  p = manyParser(p4VarTxtParser(), newlineParser(), ParseFlags.AllowTrailingSeperator) ! p4ParseError(args);
+  p = manyParser(p4VarTxtParser(), newlineParser(), ParseFlags.AllowTrailingSeperator) ! lazy p4ParseError(args);
   cfg.p4Run(args).map(p.build(ParseFlags.NoWrapperError))
 
 act p4SetVar(Config cfg, P4Var var) -> Option{Error}
@@ -77,15 +77,15 @@ act p4SetVar(Config cfg, P4Var var) -> Option{Error}
 
 act p4GetCurrentStreamInfo(Config cfg) -> Either{P4StreamInfo, Error}
   cfg.p4Run("stream" :: "-o", Type{P4StreamInfo}())
-  ! Error("No stream found for client '" + cfg.client + "' on server '" + cfg.server + '\'')
+  ! lazy Error("No stream found for client '" + cfg.client + "' on server '" + cfg.server + '\'')
 
 act p4GetClientInfo(Config cfg, P4Client client) -> Either{P4ClientInfo, Error}
   cfg.p4Run("client" :: "-o" :: client.id, Type{P4ClientInfo}())
-  ! Error("Client '" + client + "' not valid on server '" + cfg.server + '\'')
+  ! lazy Error("Client '" + client + "' not valid on server '" + cfg.server + '\'')
 
 act p4GetChangeInfo(Config cfg, P4Change change) -> Either{P4ChangeInfo, Error}
   cfg.p4Run("describe" :: "-s" :: change.string(), Type{P4ChangeInfo}())
-  ! Error("Change '" + change.string() + "' not found")
+  ! lazy Error("Change '" + change.string() + "' not found")
 
 enum P4ChangesFlags =
   None    : 0b00,
@@ -115,7 +115,7 @@ act p4GetDepotFiles(Config cfg, P4Change change, int max) -> Either{List{P4FileI
   args            = "files" :: "-m" :: max.string() :: ("@=" + change.string());
   fileListParser  = manyUntilParser(pyMarshalParser(Type{P4FileInfo}()), endParser());
   noSuchFilesErr  = p4ErrorMatcher(GlobTextPattern("@=*no*file(s)*", StrComp.IgnoreCase));
-  p               = (noSuchFilesErr >> retParser(List{P4FileInfo}()) | fileListParser) ! p4ParseError(args);
+  p               = (noSuchFilesErr >> retParser(List{P4FileInfo}()) | fileListParser) ! lazy p4ParseError(args);
   cfg.p4Run(args).map(p.build(ParseFlags.NoWrapperError))
 
 act p4GetOpenFiles(Config cfg, P4Client client, P4Change change, int max) -> Either{List{P4OpenFile}, Error}
@@ -130,15 +130,15 @@ act p4GetPendingResolves(Config cfg) -> Either{List{P4ResolveFile}, Error}
   args               = "resolve" :: "-n";
   fileListParser     = manyUntilParser(pyMarshalParser(Type{P4ResolveFile}()), endParser());
   noFileToResolveErr = p4ErrorMatcher(GlobTextPattern("No file(s) to resolve*", StrComp.IgnoreCase));
-  p                  = ((noFileToResolveErr >> retParser(List{P4ResolveFile}())) | fileListParser) ! p4ParseError(args);
+  p                  = ((noFileToResolveErr >> retParser(List{P4ResolveFile}())) | fileListParser) ! lazy p4ParseError(args);
   cfg.p4Run(args).map(p.build(ParseFlags.NoWrapperError))
 
 act p4DownloadFile(Config cfg, P4DepotPath depotPath, P4FileRev rev, Path resultPath) -> Either{P4FileInfo, Error}
   fileSpec = depotPath.string() + "#" + rev.string();
   cfg.p4Run("print" :: "-o" :: resultPath.pathAbsolute().string() :: fileSpec, Type{P4FileInfo}())
-    ! Error("Failed to download '" + fileSpec + "' from server '" + cfg.server + '\'')
+    ! lazy Error("Failed to download '" + fileSpec + "' from server '" + cfg.server + '\'')
 
 act p4DownloadFile(Config cfg, P4DepotPath depotPath, P4Change change, Path resultPath) -> Either{P4FileInfo, Error}
   fileSpec = depotPath.string() + "@=" + change;
   cfg.p4Run("print" :: "-o" :: resultPath.pathAbsolute().string() :: fileSpec, Type{P4FileInfo}())
-    ! Error("Failed to download '" + fileSpec + "' from server '" + cfg.server + '\'')
+    ! lazy Error("Failed to download '" + fileSpec + "' from server '" + cfg.server + '\'')
