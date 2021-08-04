@@ -13,4 +13,4 @@ cli(cliCmd("status",    statusCmd,    "Print the status of the current workspace
     cliCmd("diff",      diffCmd,      "Run the configured diff tool on all files in a change"),
     cliAppInfo(
       "Novus P4", "Convenience wrapper around the p4 perforce client.",
-      Version(0, 9, 0)))
+      Version(0, 10, 0)))

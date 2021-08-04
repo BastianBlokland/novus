@@ -6,6 +6,7 @@ import "../utils/fork.ns"
 import "../utils/limited-list.ns"
 import "../utils/shared-writers.ns"
 import "../utils/style.ns"
+import "../utils/tracer.ns"
 
 // -- Types.
 
@@ -40,41 +41,41 @@ fun statusToResolves(List{P4ResolveFile} resolves, P4ClientInfo clientInfo) -> E
 
 // -- Actions.
 
-act statusQueryChange(P4ChangeInfo changeInfo, Config cfg, StatusSettings settings) -> Either{StatusChange, Error}
+act statusQueryChange(P4ChangeInfo changeInfo, P4RunContext runCtx, StatusSettings settings) -> Either{StatusChange, Error}
   waitForForks(Tuple(
-    fork p4GetOpenFiles(cfg, cfg.client, changeInfo.change, settings.filesMax + 1),
-    fork p4GetDepotFiles(cfg, changeInfo.change, settings.filesMax + 1))
+    fork p4GetOpenFiles(runCtx, runCtx.config.client, changeInfo.change, settings.filesMax + 1),
+    fork p4GetDepotFiles(runCtx, changeInfo.change, settings.filesMax + 1))
   ).map(lambda (Tuple{List{P4OpenFile}, List{P4FileInfo}} res)
     StatusChange(
       changeInfo, toLimitedList(res.f1, settings.filesMax), toLimitedList(res.f2, settings.filesMax))
    )
 
-act statusQueryChanges(Config cfg, StatusSettings settings) -> Either{List{StatusChange}, Error}
-  clientFilter  = Option(cfg.client);
+act statusQueryChanges(P4RunContext runCtx, StatusSettings settings) -> Either{List{StatusChange}, Error}
+  clientFilter  = Option(runCtx.config.client);
   userFilter    = Option{P4User}();
-  changesOrErr  = p4GetChanges(cfg, clientFilter, userFilter, P4ChangeStatus.Pending, settings.changesMax);
+  changesOrErr  = p4GetChanges(runCtx, clientFilter, userFilter, P4ChangeStatus.Pending, settings.changesMax);
   changesOrErr.map(impure lambda (List{P4ChangeInfo} changes)
       changes
-        .filter(statusFilterPending[cfg])
-        .parallelMap(statusQueryChange[settings][cfg])
+        .filter(statusFilterPending[runCtx.config])
+        .parallelMap(statusQueryChange[settings][runCtx])
         .split()
         .valueOrError()
     )
 
-act statusQuery(Config cfg, StatusSettings settings) -> Either{StatusData, Error}
+act statusQuery(P4RunContext runCtx, StatusSettings settings) -> Either{StatusData, Error}
   waitForForks(Tuple(
-    fork p4GetClientInfo(cfg, cfg.client),
-    fork p4GetCurrentStreamInfo(cfg),
-    fork p4GetPendingResolves(cfg),
-    fork statusQueryChanges(cfg, settings),
-    fork p4GetOpenFiles(cfg, cfg.client, p4DefaultChange(), settings.filesMax + 1))
+    fork p4GetClientInfo(runCtx, runCtx.config.client),
+    fork p4GetCurrentStreamInfo(runCtx),
+    fork p4GetPendingResolves(runCtx),
+    fork statusQueryChanges(runCtx, settings),
+    fork p4GetOpenFiles(runCtx, runCtx.config.client, p4DefaultChange(), settings.filesMax + 1))
   ).map(impure lambda (Tuple{ P4ClientInfo,
                               P4StreamInfo,
                               List{P4ResolveFile},
                               List{StatusChange},
                               List{P4OpenFile}} res)
     statusToResolves(res.f3, res.f1).map(lambda (List{StatusResolve} resolves)
-      StatusData(cfg, res.f1, res.f2, resolves, res.f4, toLimitedList(res.f5, settings.filesMax)))
+      StatusData(runCtx.config, res.f1, res.f2, resolves, res.f4, toLimitedList(res.f5, settings.filesMax)))
     )
 
 // -- Writers.
@@ -122,6 +123,7 @@ fun statusOutputWriter(DateTime now, StyleCtx ctx, StatusSettings s) -> Writer{S
 
 struct StatusSettings =
   bool  noColor,
+  bool  trace,
   int   descLength,
   int   changesMax,
   int   filesMax
@@ -134,7 +136,10 @@ fun cliDefaults(Type{StatusSettings} t)
 act statusCmd(StatusSettings s) -> Option{Error}
   c         = consoleOpen().failOnError();
   styleCtx  = StyleCtx(!s.noColor && c.allowColor());
+  tracer    = s.trace ? p4ConsoleTracer(c, styleCtx) : P4Tracer();
   writer    = statusOutputWriter(timeNow(), styleCtx, s);
-  dataOrErr = loadConfig().map(statusQuery[s]);
+  dataOrErr = loadConfig().map(impure lambda (Config cfg)
+    statusQuery(P4RunContext(cfg, tracer), s)
+  );
   if dataOrErr as Error      err  -> err
   if dataOrErr as StatusData data -> c.writeOut(writer & newlineWriter(), data)

@@ -6,13 +6,14 @@ import "../utils/diff.ns"
 import "../utils/fork.ns"
 import "../utils/shared-writers.ns"
 import "../utils/style.ns"
+import "../utils/tracer.ns"
 
 // -- Types.
 
 enum DiffType = FromPrevToChange, FromCurToChange
 
 struct DiffCtx =
-  Config        cfg,
+  P4RunContext  runCtx,
   DiffSettings  settings,
   DiffType      diffType,
   PathAbsolute  tmpPath
@@ -70,12 +71,12 @@ act diffCreateTempDir() -> Either{PathAbsolute, Error}
 act diffGetFromFile(DiffCtx ctx, P4FileInfo f) -> Either{PathAbsolute, Error}
   rev       = getDiffFromRev(f, ctx.diffType);
   path      = ctx.tmpPath / diffTmpFileName(f.depotFile, rev);
-  maybeErr  = rev.p4RevIsNone() ? fileWrite(path, "") : p4DownloadFile(ctx.cfg, f.depotFile, rev, path).error();
+  maybeErr  = rev.p4RevIsNone() ? fileWrite(path, "") : p4DownloadFile(ctx.runCtx, f.depotFile, rev, path).error();
   maybeErr as Error err ? err : path
 
 act diffGetToFile(DiffCtx ctx, P4FileInfo f) -> Either{PathAbsolute, Error}
   path = ctx.tmpPath / diffTmpFileName(f.depotFile, f.change);
-  p4DownloadFile(ctx.cfg, f.depotFile, f.change, path).map(lambda (P4FileInfo dl) path)
+  p4DownloadFile(ctx.runCtx, f.depotFile, f.change, path).map(lambda (P4FileInfo dl) path)
 
 act diffGetFileSet(DiffCtx ctx, P4FileInfo f) -> Either{DiffFileSet, Error}
   waitForForks(Tuple(
@@ -85,17 +86,17 @@ act diffGetFileSet(DiffCtx ctx, P4FileInfo f) -> Either{DiffFileSet, Error}
 
 act diffQueryFiles(DiffCtx ctx) -> Either{List{DiffFileSet}, Error}
   change = ctx.settings.change.val;
-  p4GetDepotFiles(ctx.cfg, change, ctx.settings.filesMax).map(impure lambda (List{P4FileInfo} files)
+  p4GetDepotFiles(ctx.runCtx, change, ctx.settings.filesMax).map(impure lambda (List{P4FileInfo} files)
   (
     files .filter(shouldDiff)
           .map(impure lambda (P4FileInfo f) diffGetFileSet(ctx, f))
           .split().valueOrError())
   )
 
-act diffQuery(Config cfg, DiffSettings s, PathAbsolute tmpPath) -> Either{List{DiffFileSet}, Error}
-  changeInfoOrErr = p4GetChangeInfo(cfg, s.change.val);
+act diffQuery(P4RunContext runCtx, DiffSettings s, PathAbsolute tmpPath) -> Either{List{DiffFileSet}, Error}
+  changeInfoOrErr = p4GetChangeInfo(runCtx, s.change.val);
   if changeInfoOrErr as Error        err        -> err
-  if changeInfoOrErr as P4ChangeInfo changeInfo -> diffQueryFiles(DiffCtx(cfg, s, diffType(changeInfo), tmpPath))
+  if changeInfoOrErr as P4ChangeInfo changeInfo -> diffQueryFiles(DiffCtx(runCtx, s, diffType(changeInfo), tmpPath))
 
 // -- Writers.
 
@@ -108,6 +109,7 @@ fun diffFileOutputWriter(StyleCtx ctx, DiffSettings s) -> Writer{DiffFileSet}
 
 struct DiffSettings =
   bool                    noColor,
+  bool                    trace,
   int                     filesMax,
   bool                    altDiffTool,
   CliPositional{P4Change} change
@@ -119,9 +121,10 @@ act diffCmd(DiffSettings s) -> Option{Error}
   tmpPath   = diffCreateTempDir().failOnError();
   c         = consoleOpen().failOnError();
   styleCtx  = StyleCtx(!s.noColor && c.allowColor());
+  tracer    = s.trace ? p4ConsoleTracer(c, styleCtx) : P4Tracer();
   writer    = diffFileOutputWriter(styleCtx, s);
   loadConfig().map(impure lambda (Config cfg)
-    filesOrErr = diffQuery(cfg, s, tmpPath);
+    filesOrErr = diffQuery(P4RunContext(cfg, tracer), s, tmpPath);
     if filesOrErr as Error             err   -> err
     if filesOrErr as List{DiffFileSet} files -> files.map(impure lambda (DiffFileSet f)
         actSeq(

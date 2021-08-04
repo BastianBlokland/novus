@@ -5,6 +5,7 @@ import "../perforce/runner.ns"
 import "../utils/fork.ns"
 import "../utils/shared-writers.ns"
 import "../utils/style.ns"
+import "../utils/tracer.ns"
 
 // -- Types.
 
@@ -16,12 +17,12 @@ struct DescribeData =
 
 // -- Actions.
 
-act describeQuery(Config cfg, DescribeSettings settings) -> Either{DescribeData, Error}
+act describeQuery(P4RunContext runCtx, DescribeSettings settings) -> Either{DescribeData, Error}
   waitForForks(Tuple(
-    fork p4GetChangeInfo(cfg, settings.change.val),
-    fork p4GetDepotFiles(cfg, settings.change.val, settings.filesMax + 1))
+    fork p4GetChangeInfo(runCtx, settings.change.val),
+    fork p4GetDepotFiles(runCtx, settings.change.val, settings.filesMax + 1))
   ).map(impure lambda (Tuple{P4ChangeInfo, List{P4FileInfo}} res)
-    DescribeData(cfg, res.f1, timeToLocal(res.f1.time), toLimitedList(res.f2, settings.filesMax))
+    DescribeData(runCtx.config, res.f1, timeToLocal(res.f1.time), toLimitedList(res.f2, settings.filesMax))
   )
 
 // -- Writers.
@@ -57,6 +58,7 @@ fun describeOutputWriter(DateTime now, StyleCtx ctx) -> Writer{DescribeData}
 
 struct DescribeSettings =
   bool                    noColor,
+  bool                    trace,
   int                     filesMax,
   CliPositional{P4Change} change
 
@@ -66,7 +68,10 @@ fun cliDefaults(Type{DescribeSettings} t)
 act describeCmd(DescribeSettings s) -> Option{Error}
   c         = consoleOpen().failOnError();
   styleCtx  = StyleCtx(!s.noColor && c.allowColor());
+  tracer    = s.trace ? p4ConsoleTracer(c, styleCtx) : P4Tracer();
   writer    = describeOutputWriter(timeNow(), styleCtx);
-  dataOrErr = loadConfig().map(describeQuery[s]);
+  dataOrErr = loadConfig().map(impure lambda (Config cfg)
+    describeQuery(P4RunContext(cfg, tracer), s)
+  );
   if dataOrErr as Error         err  -> err
   if dataOrErr as DescribeData  data -> c.writeOut(writer & newlineWriter(), data)

@@ -7,6 +7,7 @@ import "../utils/diff.ns"
 import "../utils/fork.ns"
 import "../utils/shared-writers.ns"
 import "../utils/style.ns"
+import "../utils/tracer.ns"
 
 import "../config.ns"
 
@@ -33,11 +34,12 @@ act setupSaveConfig(SetupSettings s, Config newCfg, P4ClientInfo clientInfo) -> 
     ? Error("Workspace already setup at: '" + clientInfo.root + "', use --force to overwrite")
     : res
 
-act setupWorkspace(SetupSettings s, Config newCfg) -> Either{NewWorkspace, Error}
-  p4GetClientInfo(newCfg, newCfg.client).map(impure lambda (P4ClientInfo clientInfo)
+act setupWorkspace(SetupSettings s, Config newCfg, P4Tracer tracer) -> Either{NewWorkspace, Error}
+  runCtx = P4RunContext(newCfg, tracer);
+  p4GetClientInfo(runCtx, newCfg.client).map(impure lambda (P4ClientInfo clientInfo)
     waitForForks(Tuple(
       fork setupSaveConfig(s, newCfg, clientInfo),
-      fork p4AddToIgnore(newCfg, clientInfo, ".np4"))
+      fork p4AddToIgnore(runCtx, clientInfo, ".np4"))
     ).map(impure lambda (Tuple res) NewWorkspace(newCfg, clientInfo))
   )
 
@@ -67,6 +69,7 @@ fun setupSuccessWriter(StyleCtx ctx) -> Writer{NewWorkspace}
 struct SetupSettings =
   bool                    noColor,
   bool                    force,
+  bool                    trace,
   Path                    p4Path,
   P4Server                server,
   P4Client                client,
@@ -79,8 +82,9 @@ fun cliDefaults(Type{SetupSettings} t)
 act setupCmd(SetupSettings s) -> Option{Error}
   c               = consoleOpen().failOnError();
   styleCtx        = StyleCtx(!s.noColor && c.allowColor());
+  tracer          = s.trace ? p4ConsoleTracer(c, styleCtx) : P4Tracer();
   writer          = setupSuccessWriter(styleCtx);
   newCfg          = setupNewConfig(s, platform());
-  workspaceOrErr  = setupWorkspace(s, newCfg);
+  workspaceOrErr  = setupWorkspace(s, newCfg, tracer);
   if workspaceOrErr as Error        err -> err
   if workspaceOrErr as NewWorkspace w   -> c.writeOut(writer & newlineWriter(), w)

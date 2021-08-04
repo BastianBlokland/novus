@@ -2,8 +2,9 @@ import "std.ns"
 
 import "../perforce/runner.ns"
 
-import "../utils/style.ns"
 import "../utils/shared-writers.ns"
+import "../utils/style.ns"
+import "../utils/tracer.ns"
 
 // -- Types.
 
@@ -15,13 +16,13 @@ struct LogData =
 
 // -- Actions.
 
-act logQuery(Config cfg, LogSettings settings) -> Either{LogData, Error}
+act logQuery(P4RunContext runCtx, LogSettings settings) -> Either{LogData, Error}
   flags        = settings.origin == LogOrigin.Newest ? P4ChangesFlags.None : P4ChangesFlags.Reverse;
-  path         = settings.path.val ?? anyP4ClientPath(cfg.client);
+  path         = settings.path.val ?? anyP4ClientPath(runCtx.config.client);
   clientFilter = Option{P4Client}();
   userFilter   = settings.user;
-  p4GetChanges(cfg, clientFilter, userFilter, P4ChangeStatus.Submitted, settings.changesMax, flags, path)
-    .map(lambda (List{P4ChangeInfo} changes) LogData(cfg, changes))
+  p4GetChanges(runCtx, clientFilter, userFilter, P4ChangeStatus.Submitted, settings.changesMax, flags, path)
+    .map(lambda (List{P4ChangeInfo} changes) LogData(runCtx.config, changes))
 
 // -- Writers.
 
@@ -34,6 +35,7 @@ fun logOutputWriter(DateTime now, StyleCtx ctx, LogSettings s) -> Writer{LogData
 
 struct LogSettings =
   bool                          noColor,
+  bool                          trace,
   LogOrigin                     origin,
   int                           descLength,
   int                           changesMax,
@@ -48,7 +50,10 @@ fun cliDefaults(Type{LogSettings} t)
 act logCmd(LogSettings s) -> Option{Error}
   c         = consoleOpen().failOnError();
   styleCtx  = StyleCtx(!s.noColor && c.allowColor());
+  tracer    = s.trace ? p4ConsoleTracer(c, styleCtx) : P4Tracer();
   writer    = logOutputWriter(timeNow(), styleCtx, s);
-  dataOrErr = loadConfig().map(logQuery[s]);
+  dataOrErr = loadConfig().map(impure lambda (Config cfg)
+    logQuery(P4RunContext(cfg, tracer), s)
+  );
   if dataOrErr as Error   err  -> err
   if dataOrErr as LogData data -> c.writeOut(writer, data)
