@@ -6,7 +6,7 @@ import "../config.ns"
 
 // -- Types.
 
-enum DiffToolPreset = Fc, Diff, VsCode, Vs2019, WinMerge
+enum DiffToolPreset = Fc, Diff, VsCode, Vs2019Community, Vs2019Professional, WinMerge
 
 // -- Utilities.
 
@@ -16,10 +16,12 @@ fun diffToolPresetCmdLine(DiffToolPreset preset, Platform platform)
   if preset == DiffToolPreset.Diff ->
     "diff -a --color=always --unified=3 %FROM %TO"
   if preset == DiffToolPreset.VsCode -> platform == Platform.Windows
-    ? "'C:/Program Files/Microsoft VS Code/Code.exe' --diff %FROM %TO"
-    : "code --diff %FROM %TO"
-  if preset == DiffToolPreset.Vs2019 ->
+    ? "'C:/Program Files/Microsoft VS Code/Code.exe' --reuse-window --diff %FROM %TO"
+    : "code --reuse-window --diff %FROM %TO"
+  if preset == DiffToolPreset.Vs2019Community ->
     "'C:/Program Files (x86)/Microsoft Visual Studio/2019/Community/Common7/IDE/devenv.exe' /diff %FROM %TO"
+  if preset == DiffToolPreset.Vs2019Professional ->
+    "'C:/Program Files (x86)/Microsoft Visual Studio/2019/Professional/Common7/IDE/devenv.exe' /diff %FROM %TO"
   if preset == DiffToolPreset.WinMerge ->
     "'C:/Program Files (x86)/WinMerge/WinMergeU.exe' /s /u %FROM %TO"
   else -> ""
