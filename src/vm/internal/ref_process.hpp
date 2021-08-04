@@ -32,6 +32,7 @@ enum ProcessFlags : uint8_t {
   ProcessPipeStdOut = 1u << 1, // Create a pipe for reading from std out.
   ProcessPipeStdErr = 1u << 2, // Create a pipe for reading from std err.
   ProcessNewGroup   = 1u << 3, // Create a new process group for the child proccess.
+  ProcessDetached   = 1u << 4, // Leave the process running when the reference gets destroyed
 };
 
 #if defined(_WIN32)
@@ -56,7 +57,7 @@ public:
   ProcessRef(ProcessRef&& rhs)      = delete;
   ~ProcessRef() noexcept {
     // Kill the process (if its still running).
-    if (isValid() && !isFinished()) {
+    if (!(m_flags & ProcessDetached) && isValid() && !isFinished()) {
       killImpl();
       // Wait for the process to stop, this prevents leaking zombie processes.
       block();

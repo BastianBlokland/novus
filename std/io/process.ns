@@ -9,13 +9,14 @@ struct ProcessId  = long id
 struct ExitCode   = int code
 
 enum ProcessFlags =
-  None        : 0b0000,
-  PipeStdIn   : 0b0001,
-  PipeStdOut  : 0b0010,
-  PipeStdErr  : 0b0100,
-  PipeOut     : 0b0110,
-  PipeInOut   : 0b0111,
-  NewGroup    : 0b1000
+  None        : 0b00000,
+  PipeStdIn   : 0b00001,
+  PipeStdOut  : 0b00010,
+  PipeStdErr  : 0b00100,
+  PipeOut     : 0b00110,
+  PipeInOut   : 0b00111,
+  NewGroup    : 0b01000,
+  Detached    : 0b11111
 
 enum Signal =
   Interupt  : 0,
