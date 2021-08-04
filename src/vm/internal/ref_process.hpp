@@ -162,7 +162,8 @@ public:
         return false;
       }
 #else // !_WIN32
-      if (::killpg(m_process, SIGINT)) {
+      if ((m_flags & ProcessNewGroup) ? ::killpg(::getpgid(m_process), SIGINT)
+                                      : ::kill(m_process, SIGINT)) {
         *pErr = PlatformError::ProcessUnknownError;
         return false;
       }
@@ -209,7 +210,10 @@ private:
 #if defined(_WIN32)
     return ::TerminateProcess(m_process.hProcess, 9999); // TODO: Decide what exitcode to use here.
 #else
-    return ::killpg(m_process, SIGKILL) == 0;
+    if (m_flags & ProcessNewGroup) {
+      return ::killpg(::getpgid(m_process), SIGKILL) == 0;
+    }
+    return ::kill(m_process, SIGKILL) == 0;
 #endif
   }
 
