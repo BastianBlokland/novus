@@ -1,0 +1,50 @@
+import "std.ns"
+
+import "text.ns"
+
+// -- Types.
+
+struct DiffTool =
+  string cmdLine,
+  bool   detached
+
+enum DiffToolPreset = Fc, Diff, VsCode, Vs2019Community, Vs2019Professional, WinMerge
+
+// -- Utilities.
+
+fun diffToolFromPreset(DiffToolPreset preset, Platform platform) -> DiffTool
+  if preset == DiffToolPreset.Fc ->
+    DiffTool("fc.exe %FROM %TO", false)
+  if preset == DiffToolPreset.Diff ->
+    DiffTool("diff -a --color=always --unified=3 %FROM %TO", false)
+  if preset == DiffToolPreset.VsCode && platform == Platform.Windows ->
+    DiffTool("'C:/Program Files/Microsoft VS Code/Code.exe' --reuse-window --diff %FROM %TO", true)
+  if preset == DiffToolPreset.VsCode ->
+    DiffTool("/usr/share/code/code --reuse-window --diff %FROM %TO", true)
+  if preset == DiffToolPreset.Vs2019Community ->
+    DiffTool("'C:/Program Files (x86)/Microsoft Visual Studio/2019/Community/Common7/IDE/devenv.exe' /diff %FROM %TO", true)
+  if preset == DiffToolPreset.Vs2019Professional ->
+    DiffTool("'C:/Program Files (x86)/Microsoft Visual Studio/2019/Professional/Common7/IDE/devenv.exe' /diff %FROM %TO", true)
+  if preset == DiffToolPreset.WinMerge ->
+    DiffTool("'C:/Program Files (x86)/WinMerge/WinMergeU.exe' /s /u %FROM %TO", true)
+  else ->
+    DiffTool("", false)
+
+fun getDefaultDiffToolPreset(Platform platform)
+  platform == Platform.Windows ? DiffToolPreset.Fc : DiffToolPreset.Diff
+
+// -- Actions.
+
+act runDiffTool(DiffTool tool, PathAbsolute from, PathAbsolute to) -> Option{Error}
+  fromStr     = from.string(pathNativeSeperator());
+  toStr       = to.string(pathNativeSeperator());
+  partsOrErr  = splitCommandLineString(tool.cmdLine);
+  if partsOrErr as Error        cmdLineErr -> Error("Error parsing diff-tool cmdLine") :: cmdLineErr
+  if partsOrErr as List{string} parts      ->
+    processOrErr = run(
+      parts.front() ?? "",
+      parts.pop().map(lambda (string part) part.replace("%FROM", fromStr, StrComp.IgnoreCase)
+                                               .replace("%TO", toStr, StrComp.IgnoreCase)
+      ), tool.detached ? ProcessFlags.Detached : ProcessFlags.None
+    );
+    tool.detached ? processOrErr.error() : processOrErr.wait().error()

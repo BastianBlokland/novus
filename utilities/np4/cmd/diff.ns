@@ -2,7 +2,7 @@ import "std.ns"
 
 import "../perforce/runner.ns"
 
-import "../utils/diff-utils.ns"
+import "../utils/diff.ns"
 import "../utils/fork.ns"
 import "../utils/shared-writers.ns"
 import "../utils/style.ns"
@@ -126,7 +126,7 @@ act diffCmd(DiffSettings s) -> Option{Error}
     if filesOrErr as List{DiffFileSet} files -> files.map(impure lambda (DiffFileSet f)
         actSeq(
           lazy c.writeOut(writer, f),
-          lazy cfg.runDiffTool(s.altDiffTool, f.fromFile, f.toFile)
+          lazy runDiffTool(s.altDiffTool ? cfg.diffToolAlt : cfg.diffTool, f.fromFile, f.toFile)
         )
       ).combine()
   )

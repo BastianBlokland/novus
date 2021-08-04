@@ -5,6 +5,8 @@ import "perforce/data/client.ns"
 import "perforce/data/server.ns"
 import "perforce/data/user.ns"
 
+import "utils/diff.ns"
+
 // -- Types.
 
 struct Config =
@@ -12,8 +14,8 @@ struct Config =
   P4Server        server,
   P4Client        client,
   List{P4Change}  hiddenChanges,
-  string          diffCmdLine,
-  string          diffCmdLineAlt
+  DiffTool        diffTool,
+  DiffTool        diffToolAlt
 
 // -- Utilities.
 

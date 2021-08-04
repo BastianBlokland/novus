@@ -3,7 +3,7 @@ import "std.ns"
 import "../perforce/ignore.ns"
 import "../perforce/runner.ns"
 
-import "../utils/diff-utils.ns"
+import "../utils/diff.ns"
 import "../utils/fork.ns"
 import "../utils/shared-writers.ns"
 import "../utils/style.ns"
@@ -22,8 +22,8 @@ fun setupNewConfig(SetupSettings s, Platform platform)
     s.server,
     s.client,
     s.hiddenChanges ?? List{P4Change}(),
-    diffToolPresetCmdLine(s.diffTool ?? getDefaultDiffToolPreset(platform), platform),
-    diffToolPresetCmdLine(DiffToolPreset.VsCode, platform))
+    diffToolFromPreset(s.diffTool ?? getDefaultDiffToolPreset(platform), platform),
+    diffToolFromPreset(DiffToolPreset.VsCode, platform))
 
 // -- Actions.
 
