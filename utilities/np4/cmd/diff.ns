@@ -88,8 +88,10 @@ act diffQueryFiles(DiffCtx ctx) -> Either{List{DiffFileSet}, Error}
   client = ctx.clientInfo.client;
   change = ctx.settings.change.val;
   filesOrErr = (
-    if ctx.diffType == DiffType.FromCurToOpen -> p4GetOpenFiles(ctx.runCtx, client, change, ctx.settings.filesMax)
-    else                                      -> p4GetDepotFiles(ctx.runCtx, change, ctx.settings.filesMax)
+    if ctx.settings.change.val is None       -> p4GetOpenFiles(ctx.runCtx, client, None(), ctx.settings.filesMax)
+    if ctx.settings.change.val as P4Change c -> ctx.diffType == DiffType.FromCurToOpen
+      ? p4GetOpenFiles(ctx.runCtx, client, c, ctx.settings.filesMax)
+      : p4GetDepotFiles(ctx.runCtx, c, ctx.settings.filesMax)
   );
   filesOrErr.map(impure lambda (List{P4FileInfo} files)
   (
@@ -99,13 +101,17 @@ act diffQueryFiles(DiffCtx ctx) -> Either{List{DiffFileSet}, Error}
   )
 
 act diffGetType(P4RunContext runCtx, DiffSettings s) -> Either{DiffType, Error}
-  if s.shelve                        -> DiffType.FromCurToChange
-  if p4ChangeIsDefault(s.change.val) -> DiffType.FromCurToOpen
-  else -> p4GetChangeInfo(runCtx, s.change.val).map(lambda (P4ChangeInfo ci)
-    isLocal = ci.client == runCtx.config.client;
-    if isLocal && ci.status == P4ChangeStatus.Pending -> DiffType.FromCurToOpen
-    else                                              -> DiffType.FromPrevToChange
-  )
+  if s.change.val is None       -> s.shelve ? Error("--shelve requires passing a change") : DiffType.FromCurToOpen
+  if s.change.val as P4Change c ->
+    if p4ChangeIsDefault(c) -> s.shelve ? Error("default changelist has no shelve") : DiffType.FromCurToOpen
+    else                    -> p4GetChangeInfo(runCtx, c).map(lambda (P4ChangeInfo ci)
+      isLocal = ci.client == runCtx.config.client;
+      if s.shelve && ci.status == P4ChangeStatus.Submitted  -> Error("Submitted change has no shelve")
+      if s.shelve                                           -> DiffType.FromCurToChange
+      if isLocal && ci.status == P4ChangeStatus.Pending     -> DiffType.FromCurToOpen
+      if ci.status == P4ChangeStatus.Pending                -> DiffType.FromCurToChange
+      else                                                  -> DiffType.FromPrevToChange
+    )
 
 act diffQuery(P4RunContext runCtx, DiffSettings s, PathAbsolute tmpPath) -> Either{List{DiffFileSet}, Error}
   waitForForks(Tuple(
@@ -126,12 +132,12 @@ fun diffFileOutputWriter(StyleCtx ctx, DiffSettings s) -> Writer{DiffFileSet}
 // -- Driver.
 
 struct DiffSettings =
-  bool                    noColor,
-  bool                    trace,
-  bool                    shelve,
-  bool                    altDiffTool,
-  int                     filesMax,
-  CliPositional{P4Change} change
+  bool                            noColor,
+  bool                            trace,
+  bool                            shelve,
+  bool                            altDiffTool,
+  int                             filesMax,
+  CliPositional{Option{P4Change}} change
 
 fun cliDefaults(Type{DiffSettings} t)
   CliDefault("files-max", "50") :: List{CliDefault}()

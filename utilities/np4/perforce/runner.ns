@@ -134,13 +134,17 @@ act p4GetDepotFiles(P4RunContext ctx, P4Change change, int max) -> Either{List{P
   p               = (noSuchFilesErr >> retParser(List{P4FileInfo}()) | fileListParser) ! lazy p4ParseError(args);
   ctx.p4Run(args).map(p.build(ParseFlags.NoWrapperError))
 
-act p4GetOpenFiles(P4RunContext ctx, P4Client client, P4Change change, int max) -> Either{List{P4FileInfo}, Error}
+act p4GetOpenFiles(
+  P4RunContext      ctx,
+  P4Client          client,
+  Option{P4Change}  changeFilter,
+  int               max) -> Either{List{P4FileInfo}, Error}
   ctx.p4RunMany(
-    "opened"                  ::
-    "-C"  :: client.string()  ::
-    "-c"  :: change.string()  ::
-    "-m"  :: max.string(),
-     Type{P4FileInfo}())
+    "opened"                                                                     ::
+    "-C"  :: client.string()                                                     ::
+    (changeFilter as P4Change change ? Option("-c" :: change.string()) : None()) ::
+    "-m"  :: max.string()                                                        :: List{string}(),
+    Type{P4FileInfo}())
 
 act p4GetPendingResolves(P4RunContext ctx) -> Either{List{P4ResolveFile}, Error}
   args               = "resolve" :: "-n";

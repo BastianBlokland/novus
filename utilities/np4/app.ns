@@ -10,7 +10,7 @@ cli(cliCmd("status",    statusCmd,    "Print the status of the current workspace
     cliCmd("setup",     setupCmd,     "Set a workspace up for use with np4"),
     cliCmd("log",       logCmd,       "Print the most recent submitted changes"),
     cliCmd("describe",  describeCmd,  "Print information about a specific change"),
-    cliCmd("diff",      diffCmd,      "Run the configured diff tool on all files in a change"),
+    cliCmd("diff",      diffCmd,      "Print file differences"),
     cliAppInfo(
       "Novus P4", "Convenience wrapper around the p4 perforce client.",
       Version(0, 11, 0)))
