@@ -112,7 +112,7 @@ act p4GetChanges(
     P4ChangeStatus    statusFilter,
     int               max,
     P4ChangesFlags    flags = P4ChangesFlags.None,
-    P4Path            path = anyP4DepotPath()) -> Either{List{P4ChangeInfo}, Error}
+    Option{P4Path}    pathFilter = None()) -> Either{List{P4ChangeInfo}, Error}
   reverse = (flags & P4ChangesFlags.Reverse) != 0;
   ctx.p4RunMany(
     "changes"                                                           ::
@@ -122,7 +122,7 @@ act p4GetChanges(
     "-s" :: statusFilter.string().strToLower()                          ::
     (reverse ? Option("-r") : None())                                   ::
     "-m" :: max.string()                                                ::
-    path.string(),
+    (pathFilter as P4Path p ? Option(p.string()) : None())              :: List{string}(),
     Type{P4ChangeInfo}())
 
 act p4GetDepotFiles(P4RunContext ctx, P4Change change, int max) -> Either{List{P4FileInfo}, Error}
