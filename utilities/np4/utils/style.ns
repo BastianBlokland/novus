@@ -15,7 +15,6 @@ enum Style =
   StreamMainLine, StreamDevelopment, StreamRelease, StreamTask, StreamVirtual,
   Shelve,
   ResolveType,
-  FileType,
   OpAdd, OpDelete, OpEdit, OpIntegrate, OpBranch, OpMove
 
 struct StyleCtx = bool allowColor
@@ -56,7 +55,6 @@ fun styleToTtyStyleList(Style s) -> List{TtyStyle}
   if s == Style.StreamMainLine    -> TtyStyle.FgGreen   :: TtyStyle.Bold
   if s == Style.Shelve            -> TtyStyle.FgYellow  :: TtyStyle.Bold
   if s == Style.ResolveType       -> TtyStyle.FgRed     :: TtyStyle.Bold
-  if s == Style.FileType          -> TtyStyle.FgCyan    :: TtyStyle.Faint
   if s == Style.OpAdd             -> TtyStyle.FgGreen   :: List{TtyStyle}()
   if s == Style.OpDelete          -> TtyStyle.FgRed     :: List{TtyStyle}()
   if s == Style.OpEdit            -> TtyStyle.FgYellow  :: List{TtyStyle}()

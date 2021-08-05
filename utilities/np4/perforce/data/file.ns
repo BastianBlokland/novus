@@ -10,20 +10,15 @@ enum P4FileOp = Add, Edit, Delete, Branch, MoveAdd, MoveDelete, Integrate, Impor
 
 struct P4FileRev = long i
 
-struct P4OpenFile =
-  P4DepotPath   depotFile,
-  P4ClientPath  clientFile,
-  P4FileRev     rev,
-  P4FileOp      Action
-
 struct P4FileInfo =
-  P4DepotPath       depotFile,
-  P4FileRev         rev,
-  P4Change          change,
-  P4FileOp          Action,
-  Option{string}    type,
-  Option{DateTime}  time,
-  Option{ByteSize}  size
+  P4DepotPath           depotFile,
+  Option{P4ClientPath}  clientFile,
+  P4FileRev             rev,
+  P4Change              change,
+  P4FileOp              Action,
+  Option{string}        type,
+  Option{DateTime}      time,
+  Option{ByteSize}      size
 
 // -- Conversions.
 
