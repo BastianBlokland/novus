@@ -17,13 +17,14 @@ struct P4RunOutput{T} =
   T         data
 
 struct P4Tracer =
-  action{List{string}, Duration, Option{Error}} cmdExecuted
+  action{List{string}, Duration, ByteSize, Option{Error}} cmdExecuted
 
 struct P4RunContext = Config config, P4Tracer tracer
 
 // -- Conversions.
 
-fun P4Tracer() P4Tracer(impure lambda (List{string} args, Duration dur) Option{Error}())
+fun P4Tracer()
+  P4Tracer(impure lambda (List{string} args, Duration dur, ByteSize outSize) Option{Error}())
 
 // -- Utilities.
 
@@ -60,7 +61,8 @@ act p4Run(P4RunContext ctx, List{string} args) -> Either{string, Error}
   startTimestamp = timestamp();
   trace = (impure lambda (ProcessResult res) -> Either{ProcessResult, Error}
     dur = timestamp() - startTimestamp;
-    ctx.tracer.cmdExecuted(args, dur) as Error traceErr ? traceErr : res
+    outSize = bytes((res.stdOut ?? "").length());
+    ctx.tracer.cmdExecuted(args, dur, outSize) as Error traceErr ? traceErr : res
   );
   p = run(ctx.config.p4Path.string(), ctx.p4GlobalArgs() :: args, flags);
   p.wait().map(trace).map(lambda (ProcessResult r)
