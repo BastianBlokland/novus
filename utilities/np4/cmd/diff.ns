@@ -96,6 +96,7 @@ act diffQueryFiles(DiffCtx ctx) -> Either{List{DiffFileSet}, Error}
   filesOrErr.map(impure lambda (List{P4FileInfo} files)
   (
     files .filter(shouldDiff)
+          .filter(lambda (P4FileInfo fi) ctx.settings.change.val is P4Change || !p4ChangeIsHidden(ctx.runCtx.config, fi.change))
           .map(impure lambda (P4FileInfo f) diffGetFileSet(ctx, f))
           .split().valueOrError())
   )
