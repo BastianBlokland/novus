@@ -14,6 +14,7 @@ enum DiffType = FromPrevToChange, FromCurToChange
 
 struct DiffCtx =
   P4RunContext  runCtx,
+  P4ClientInfo  clientInfo,
   DiffSettings  settings,
   DiffType      diffType,
   PathAbsolute  tmpPath
@@ -94,9 +95,13 @@ act diffQueryFiles(DiffCtx ctx) -> Either{List{DiffFileSet}, Error}
   )
 
 act diffQuery(P4RunContext runCtx, DiffSettings s, PathAbsolute tmpPath) -> Either{List{DiffFileSet}, Error}
-  changeInfoOrErr = p4GetChangeInfo(runCtx, s.change.val);
-  if changeInfoOrErr as Error        err        -> err
-  if changeInfoOrErr as P4ChangeInfo changeInfo -> diffQueryFiles(DiffCtx(runCtx, s, diffType(changeInfo), tmpPath))
+  waitForForks(Tuple(
+    fork p4GetClientInfo(runCtx, runCtx.config.client),
+    fork p4GetChangeInfo(runCtx, s.change.val))
+  ).map(impure lambda (Tuple{P4ClientInfo, P4ChangeInfo} data)
+    diffCtx = DiffCtx(runCtx, data.f1, s, diffType(data.f2), tmpPath);
+    diffQueryFiles(diffCtx)
+  )
 
 // -- Writers.
 

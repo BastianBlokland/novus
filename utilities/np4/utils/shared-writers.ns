@@ -91,7 +91,7 @@ fun fileWriter(StyleCtx ctx) -> Writer{P4FileInfo}
     enumKeyWriter(Type{P4FileOp}()) & litWriter(": ") & pathRelWriter() &
     styleResetWriter(ctx) &
     ?(litWriter(' ') & fileRevWriter(ctx)) &
-    ?(litWriter(' ') & byteSizeWriter())
+    ?(litWriter(' ') & byteSizeWriter(txtFloatWriter(0, FloatToStringFlags.NeverScientific)))
   ).map(lambda (P4FileInfo f)
     Tuple(
       styleForP4FileOp(f.Action),

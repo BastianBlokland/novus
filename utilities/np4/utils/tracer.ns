@@ -12,7 +12,7 @@ fun p4ConsoleTracer(Console c, StyleCtx styleCtx)
     litWriter("[trace] p4 ") &
     listWriter(stringWriter() & litWriter(' ')) &
     litWriter('(') & timeDurationWriter() & litWriter(" -> ") &
-    byteSizeWriter() & litWriter(')') & newlineWriter()
+    byteSizeWriter(txtFloatWriter(0, FloatToStringFlags.NeverScientific)) & litWriter(')') & newlineWriter()
   ).styledWriter(styleCtx, Style.Trace);
   cmdExecuted = (impure lambda (List{string} args, Duration dur, ByteSize outSize)
     c.writeErr(writer, Tuple(args, dur, outSize))
