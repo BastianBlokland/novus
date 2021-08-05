@@ -23,6 +23,9 @@ fun absPathToP4ClientPath(P4ClientInfo clientInfo, PathAbsolute path)
     P4ClientPath(clientInfo.client, rel)
   ) ?? Error("Given path '" + path + "' is not under the client root")
 
+fun p4ClientPathToAbs(P4ClientInfo clientInfo, P4ClientPath clientPath) -> PathAbsolute
+  clientInfo.root / clientPath.path
+
 // -- Mappings.
 
 fun fromPython(PyObj po, Type{P4DepotPath} t) -> Either{P4DepotPath, Error}

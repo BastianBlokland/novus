@@ -10,7 +10,7 @@ import "../utils/tracer.ns"
 
 // -- Types.
 
-enum DiffType = FromPrevToChange, FromCurToChange
+enum DiffType = FromPrevToChange, FromCurToChange, FromCurToOpen
 
 struct DiffCtx =
   P4RunContext  runCtx,
@@ -48,10 +48,6 @@ fun shouldDiff(P4FileInfo f)
     f.Action == P4FileOp.Integrate  ||
     f.Action == P4FileOp.Import)
 
-fun diffType(P4ChangeInfo changeInfo)
-  changeInfo.status == P4ChangeStatus.Submitted ? DiffType.FromPrevToChange
-                                                : DiffType.FromCurToChange
-
 fun getDiffFromRev(P4FileInfo f, DiffType t) -> P4FileRev
   if f.Action == P4FileOp.Add       -> p4RevNone()
   if f.Action == P4FileOp.MoveAdd   -> p4RevNone()
@@ -59,6 +55,7 @@ fun getDiffFromRev(P4FileInfo f, DiffType t) -> P4FileRev
   if f.Action == P4FileOp.Import    -> p4RevNone()
   if t == DiffType.FromPrevToChange -> f.rev.p4RevPrev()
   if t == DiffType.FromCurToChange  -> f.rev
+  if t == DiffType.FromCurToOpen    -> f.rev
   else                              -> p4RevNone()
 
 // -- Actions.
@@ -76,8 +73,10 @@ act diffGetFromFile(DiffCtx ctx, P4FileInfo f) -> Either{PathAbsolute, Error}
   maybeErr as Error err ? err : path
 
 act diffGetToFile(DiffCtx ctx, P4FileInfo f) -> Either{PathAbsolute, Error}
-  path = ctx.tmpPath / diffTmpFileName(f.depotFile, f.change);
-  p4DownloadFile(ctx.runCtx, f.depotFile, f.change, path).map(lambda (P4FileInfo dl) path)
+  if f.clientFile as P4ClientPath clientPath -> p4ClientPathToAbs(ctx.clientInfo, clientPath)
+  else ->
+    path = ctx.tmpPath / diffTmpFileName(f.depotFile, f.change);
+    p4DownloadFile(ctx.runCtx, f.depotFile, f.change, path).map(lambda (P4FileInfo dl) path)
 
 act diffGetFileSet(DiffCtx ctx, P4FileInfo f) -> Either{DiffFileSet, Error}
   waitForForks(Tuple(
@@ -86,20 +85,34 @@ act diffGetFileSet(DiffCtx ctx, P4FileInfo f) -> Either{DiffFileSet, Error}
   ).map(lambda (Tuple{PathAbsolute, PathAbsolute} data) DiffFileSet(f, data.f1, data.f2))
 
 act diffQueryFiles(DiffCtx ctx) -> Either{List{DiffFileSet}, Error}
+  client = ctx.clientInfo.client;
   change = ctx.settings.change.val;
-  p4GetDepotFiles(ctx.runCtx, change, ctx.settings.filesMax).map(impure lambda (List{P4FileInfo} files)
+  filesOrErr = (
+    if ctx.diffType == DiffType.FromCurToOpen -> p4GetOpenFiles(ctx.runCtx, client, change, ctx.settings.filesMax)
+    else                                      -> p4GetDepotFiles(ctx.runCtx, change, ctx.settings.filesMax)
+  );
+  filesOrErr.map(impure lambda (List{P4FileInfo} files)
   (
     files .filter(shouldDiff)
           .map(impure lambda (P4FileInfo f) diffGetFileSet(ctx, f))
           .split().valueOrError())
   )
 
+act diffGetType(P4RunContext runCtx, DiffSettings s) -> Either{DiffType, Error}
+  if s.shelve                        -> DiffType.FromCurToChange
+  if p4ChangeIsDefault(s.change.val) -> DiffType.FromCurToOpen
+  else -> p4GetChangeInfo(runCtx, s.change.val).map(lambda (P4ChangeInfo ci)
+    isLocal = ci.client == runCtx.config.client;
+    if isLocal && ci.status == P4ChangeStatus.Pending -> DiffType.FromCurToOpen
+    else                                              -> DiffType.FromPrevToChange
+  )
+
 act diffQuery(P4RunContext runCtx, DiffSettings s, PathAbsolute tmpPath) -> Either{List{DiffFileSet}, Error}
   waitForForks(Tuple(
     fork p4GetClientInfo(runCtx, runCtx.config.client),
-    fork p4GetChangeInfo(runCtx, s.change.val))
-  ).map(impure lambda (Tuple{P4ClientInfo, P4ChangeInfo} data)
-    diffCtx = DiffCtx(runCtx, data.f1, s, diffType(data.f2), tmpPath);
+    fork diffGetType(runCtx, s))
+  ).map(impure lambda (Tuple{P4ClientInfo, DiffType} data)
+    diffCtx = DiffCtx(runCtx, data.f1, s, data.f2, tmpPath);
     diffQueryFiles(diffCtx)
   )
 
@@ -115,8 +128,9 @@ fun diffFileOutputWriter(StyleCtx ctx, DiffSettings s) -> Writer{DiffFileSet}
 struct DiffSettings =
   bool                    noColor,
   bool                    trace,
-  int                     filesMax,
+  bool                    shelve,
   bool                    altDiffTool,
+  int                     filesMax,
   CliPositional{P4Change} change
 
 fun cliDefaults(Type{DiffSettings} t)
