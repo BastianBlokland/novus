@@ -19,12 +19,12 @@ fun diffToolFromPreset(DiffToolPreset preset, Platform platform) -> DiffTool
     DiffTool("diff -a --color=always --unified=3 %FROM %TO", false)
   if preset == DiffToolPreset.VsCode && platform == Platform.Windows ->
     DiffTool("'C:/Program Files/Microsoft VS Code/Code.exe' --reuse-window --diff %FROM %TO", true)
-  if preset == DiffToolPreset.VsCode ->
+  if preset == DiffToolPreset.VsCode && platform != Platform.Windows ->
     DiffTool("/usr/share/code/code --reuse-window --diff %FROM %TO", true)
   if preset == DiffToolPreset.Vs2019Community ->
-    DiffTool("'C:/Program Files (x86)/Microsoft Visual Studio/2019/Community/Common7/IDE/devenv.exe' /diff %FROM %TO", true)
+    DiffTool("'C:/Program Files (x86)/Microsoft Visual Studio/2019/Community/Common7/IDE/devenv.exe' /NoSplash /Edit /Diff %FROM %TO", true)
   if preset == DiffToolPreset.Vs2019Professional ->
-    DiffTool("'C:/Program Files (x86)/Microsoft Visual Studio/2019/Professional/Common7/IDE/devenv.exe' /diff %FROM %TO", true)
+    DiffTool("'C:/Program Files (x86)/Microsoft Visual Studio/2019/Professional/Common7/IDE/devenv.exe' /NoSplash /Edit /Diff %FROM %TO", true)
   if preset == DiffToolPreset.WinMerge ->
     DiffTool("'C:/Program Files (x86)/WinMerge/WinMergeU.exe' /s /u %FROM %TO", true)
   else ->
