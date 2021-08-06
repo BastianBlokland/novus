@@ -30,7 +30,12 @@ fun string(P4FileRev r)
 // -- Utilities.
 
 fun p4FileIsText(P4FileInfo f)
-  f.type == "text" || f.type == "unicode" || f.type == "utf8" || f.type == "utf16"
+  if f.type is None       -> false
+  if f.type as string str -> trimmed = str.trimStart();
+    trimmed.startsWith("text")    ||
+    trimmed.startsWith("unicode") ||
+    trimmed.startsWith("utf8")    ||
+    trimmed.startsWith("utf16")
 
 fun p4RevNone() P4FileRev(0)
 fun p4RevHead() P4FileRev(maxVal{long}())
