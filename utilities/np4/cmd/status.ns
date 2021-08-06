@@ -37,7 +37,7 @@ fun statusToResolve(P4ResolveFile resolve, P4ClientInfo clientInfo) -> Either{St
   clientFileOrErr.map(lambda (P4ClientPath clientFile) StatusResolve(clientFile, resolve.resolveType))
 
 fun statusToResolves(List{P4ResolveFile} resolves, P4ClientInfo clientInfo) -> Either{List{StatusResolve}, Error}
-  resolves.map(statusToResolve[clientInfo]).split().valueOrError()
+  resolves.mapReverse(statusToResolve[clientInfo]).split().valueOrError()
 
 // -- Actions.
 
