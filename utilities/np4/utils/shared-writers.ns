@@ -91,14 +91,16 @@ fun fileWriter(StyleCtx ctx) -> Writer{P4FileInfo}
     enumKeyWriter(Type{P4FileOp}()) & litWriter(": ") & pathRelWriter() &
     styleResetWriter(ctx) &
     ?(litWriter(' ') & fileRevWriter(ctx)) &
-    ?(litWriter(' ') & byteSizeWriter(txtFloatWriter(0, FloatToStringFlags.NeverScientific)))
+    ?(litWriter(' ') & byteSizeWriter(txtFloatWriter(0, FloatToStringFlags.NeverScientific))) &
+    ?(litWriter(' ') & stringWriter().inParensWriter().styledWriter(ctx, Style.FileType))
   ).map(lambda (P4FileInfo f)
     Tuple(
       styleForP4FileOp(f.Action),
       f.Action,
       f.clientFile as P4ClientPath clientPath ? clientPath.path : f.depotFile.path,
       f.rev.p4RevIsNone() ? None() : Option(f.rev),
-      f.size)
+      f.size,
+      f.type)
   )
 
 fun fileCountWriter(StyleCtx ctx) -> Writer{LimitedList{P4FileInfo}}
