@@ -8,7 +8,7 @@ struct DiffTool =
   string cmdLine,
   bool   detached
 
-enum DiffToolPreset = Fc, Diff, VsCode, Vs2019Community, Vs2019Professional, WinMerge
+enum DiffToolPreset = Fc, Diff, ColorDiff, VsCode, Vs2019Community, Vs2019Professional, WinMerge
 
 // -- Utilities.
 
@@ -16,9 +16,11 @@ fun diffToolFromPreset(DiffToolPreset preset, Platform platform) -> DiffTool
   if preset == DiffToolPreset.Fc ->
     DiffTool("fc.exe %FROM %TO", false)
   if preset == DiffToolPreset.Diff && platform == Platform.Windows ->
-    DiffTool("diff --text --report-identical-files --unified=3 %FROM %TO", false)
+    DiffTool("diff --text --report-identical-files --unified=2 %FROM %TO", false)
   if preset == DiffToolPreset.Diff && platform != Platform.Windows ->
-    DiffTool("diff --text --report-identical-files --color=always --unified=3 %FROM %TO", false)
+    DiffTool("diff --text --report-identical-files --color=always --unified=2 %FROM %TO", false)
+  if preset == DiffToolPreset.ColorDiff ->
+    DiffTool("colordiff --text --report-identical-files --unified=2 %FROM %TO", false)
   if preset == DiffToolPreset.VsCode && platform == Platform.Windows ->
     DiffTool("'C:/Program Files/Microsoft VS Code/Code.exe' --reuse-window --diff %FROM %TO", true)
   if preset == DiffToolPreset.VsCode && platform != Platform.Windows ->
