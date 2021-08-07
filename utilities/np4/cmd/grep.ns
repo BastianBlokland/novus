@@ -1,0 +1,61 @@
+import "std.ns"
+
+import "../perforce/runner.ns"
+
+import "../utils/shared-writers.ns"
+import "../utils/style.ns"
+import "../utils/tracer.ns"
+
+// -- Types.
+
+struct GrepData =
+  Config                    config,
+  LimitedList{P4GrepMatch}  matches
+
+// -- Actions.
+
+act grepQuery(P4RunContext runCtx, GrepSettings s) -> Either{GrepData, Error}
+  path = s.path.val ?? anyP4ClientPath(runCtx.config.client);
+  matchesOrErr = p4Grep(runCtx, s.pattern.val, s.caseSensitive, path, s.resultsMax + 1);
+  matchesOrErr.map(impure lambda (List{P4GrepMatch} matches)
+    GrepData(runCtx.config, toLimitedList(matches, s.resultsMax))
+  )
+
+// -- Writers.
+
+fun grepMatchWriter(StyleCtx ctx) -> Writer{P4GrepMatch}
+  (
+    depotPathWriter().styledWriter(ctx, Style.GrepMatchFile) &
+    (litWriter(':') & txtIntWriter()).styledWriter(ctx, Style.GrepMatchLine) &
+    litWriter(' ') & fileRevWriter(ctx) &
+    newlineWriter() & stringWriter()
+  ).map(lambda (P4GrepMatch m) Tuple(m.depotFile, m.line, m.rev, m.matchedLine))
+
+fun grepOutputWriter(StyleCtx ctx) -> Writer{GrepData}
+  (
+    limitedListWriter(grepMatchWriter(ctx) & newlineWriter(), litWriter("... (truncated)") & newlineWriter())
+  ).map(lambda (GrepData d) d.matches)
+
+// -- Driver.
+
+struct GrepSettings =
+  bool                          noColor,
+  bool                          trace,
+  bool                          caseSensitive,
+  int                           resultsMax,
+  CliPositional{string}         pattern,
+  CliPositional{Option{P4Path}} path
+
+fun cliDefaults(Type{GrepSettings} t)
+  CliDefault("results-max", "100") :: List{CliDefault}()
+
+act grepCmd(GrepSettings s) -> Option{Error}
+  c         = consoleOpen().failOnError();
+  styleCtx  = StyleCtx(!s.noColor && c.allowColor());
+  tracer    = s.trace ? p4ConsoleTracer(c, styleCtx) : P4Tracer();
+  writer    = grepOutputWriter(styleCtx);
+  dataOrErr = loadConfig().map(impure lambda (Config cfg)
+    grepQuery(P4RunContext(cfg, tracer), s)
+  );
+  if dataOrErr as Error     err  -> err
+  if dataOrErr as GrepData  data -> c.writeOut(writer, data)

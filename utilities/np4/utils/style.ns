@@ -16,7 +16,8 @@ enum Style =
   Shelve,
   ResolveType,
   FileType,
-  OpAdd, OpDelete, OpEdit, OpIntegrate, OpBranch, OpMove
+  OpAdd, OpDelete, OpEdit, OpIntegrate, OpBranch, OpMove,
+  GrepMatchFile, GrepMatchLine
 
 struct StyleCtx = bool allowColor
 
@@ -63,6 +64,8 @@ fun styleToTtyStyleList(Style s) -> List{TtyStyle}
   if s == Style.OpIntegrate       -> TtyStyle.FgBlue    :: List{TtyStyle}()
   if s == Style.OpBranch          -> TtyStyle.FgMagenta :: List{TtyStyle}()
   if s == Style.OpMove            -> TtyStyle.FgCyan    :: List{TtyStyle}()
+  if s == Style.GrepMatchFile     -> TtyStyle.FgGreen   :: List{TtyStyle}()
+  if s == Style.GrepMatchLine     -> TtyStyle.Bold      :: List{TtyStyle}()
   else                            -> List{TtyStyle}()
 
 fun styleWriter(StyleCtx ctx) -> Writer{Style}

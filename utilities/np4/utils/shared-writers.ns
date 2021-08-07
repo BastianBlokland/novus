@@ -85,10 +85,19 @@ fun fileOpWriter(StyleCtx ctx, bool inBrackets = true) -> Writer{P4FileOp}
     styleWriter(ctx) & (inBrackets ? w.inBracketsWriter() : w) & styleResetWriter(ctx)
   ).map(lambda (P4FileOp op) Tuple(styleForP4FileOp(op), op))
 
+fun depotPathWriter() -> Writer{P4DepotPath}
+  (litWriter("//") & pathRelWriter()).map(lambda (P4DepotPath p) p.path)
+
+fun clientPathWriter() -> Writer{P4ClientPath}
+  pathRelWriter().map(lambda (P4ClientPath p) p.path)
+
+fun p4PathWriter() -> Writer{P4Path}
+  unionWriter(Type{P4Path}(), depotPathWriter(), clientPathWriter())
+
 fun fileWriter(StyleCtx ctx) -> Writer{P4FileInfo}
   (
     styleWriter(ctx) &
-    enumKeyWriter(Type{P4FileOp}()) & litWriter(": ") & pathRelWriter() &
+    enumKeyWriter(Type{P4FileOp}()) & litWriter(": ") & p4PathWriter() &
     styleResetWriter(ctx) &
     ?(litWriter(' ') & fileRevWriter(ctx)) &
     ?(litWriter(' ') & byteSizeWriter(txtFloatWriter(0, FloatToStringFlags.NeverScientific))) &
@@ -97,7 +106,7 @@ fun fileWriter(StyleCtx ctx) -> Writer{P4FileInfo}
     Tuple(
       styleForP4FileOp(f.Action),
       f.Action,
-      f.clientFile as P4ClientPath clientPath ? clientPath.path : f.depotFile.path,
+      f.clientFile as P4ClientPath clientPath ? clientPath : f.depotFile,
       f.rev.p4RevIsNone() ? None() : Option(f.rev),
       f.size,
       f.type)

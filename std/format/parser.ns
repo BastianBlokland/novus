@@ -407,16 +407,17 @@ fun enumParser{Enum}(Type{Enum} t, StrComp sc = StrComp.Normal)
 
 // -- Combination parsers
 
-fun manyParser{T}(Parser{T} p)
+fun manyParser{T}(Parser{T} p, int max = maxVal{int}())
   Parser(lambda (ParseState begin)
-    invoke(lambda (ParseState cur, List{T} result) -> ParseResult{List{T}}
+    invoke(lambda (ParseState cur, int count, List{T} result) -> ParseResult{List{T}}
     (
       if cur.isEnd() -> cur.success(result)
       else ->
         res = p(cur);
-        if res as ParseSuccess{T} suc   -> self(suc.state, suc.val :: result)
+        if res as ParseSuccess{T} suc   -> count == max ? cur.success(suc.val :: result)
+                                                        : self(suc.state, ++count, suc.val :: result)
         if res as ParseFailure    fail  -> cur.success(result)
-    ), begin, List{T}()).map(reverse{T})
+    ), begin, 1, List{T}()).map(reverse{T})
   )
 
 fun manyParser{T, SepT}(Parser{T} p, Parser{SepT} seperator, ParseFlags flags = ParseFlags.None)

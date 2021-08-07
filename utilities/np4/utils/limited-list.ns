@@ -21,7 +21,10 @@ fun limitedListCountWriter{T}() -> Writer{LimitedList{T}}
     txtIntWriter() & ?litWriter('+')
   ).map(lambda (LimitedList{T} l) Tuple(l.count, l.truncated))
 
-fun limitedListWriter{T}(Writer{T} w, Writer{None} truncated = litWriter("... (truncated)")) -> Writer{LimitedList{T}}
+fun limitedListWriter{T}(
+    Writer{T}     w,
+    Writer{None}  truncated = newlineWriter() & indentWriter() & litWriter("... (truncated)")
+  ) -> Writer{LimitedList{T}}
   (
-    listWriter(w) & ?(newlineWriter() & indentWriter() & truncated)
+    listWriter(w) & ?truncated
   ).map(lambda (LimitedList{T} l) Tuple(l.entries, l.truncated))

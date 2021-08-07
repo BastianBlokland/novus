@@ -2,6 +2,7 @@ import "std.ns"
 
 import "data/change.ns"
 import "data/file.ns"
+import "data/grep.ns"
 import "data/resolve.ns"
 import "data/stream.ns"
 import "data/var.ns"
@@ -31,7 +32,8 @@ fun P4Tracer()
 fun p4GlobalArgs(P4RunContext ctx) -> List{string}
   "-p"  :: ctx.config.server.string() ::
   "-c"  :: ctx.config.client.string() ::
-  "-Q"  :: "utf8unchecked"     ::
+  "-Q"  :: "utf8unchecked"            ::
+  "-z"  :: "tag"                      ::
   "-G"
 
 fun p4CmdError(List{string} args)
@@ -162,3 +164,15 @@ act p4DownloadFile(P4RunContext ctx, P4DepotPath depotPath, P4Change change, Pat
   fileSpec = depotPath.string() + "@=" + change;
   ctx.p4Run("print" :: "-o" :: resultPath.pathAbsolute().string() :: fileSpec, Type{P4FileInfo}())
     ! lazy Error("Failed to download '" + fileSpec + "' from server '" + ctx.config.server + '\'')
+
+act p4Grep(P4RunContext ctx, string pattern, bool caseSensitive, P4Path path, int max) -> Either{List{P4GrepMatch}, Error}
+  args = "grep"                               ::
+    "-e" :: pattern                           ::
+    (caseSensitive ? None() : Option("-i"))   ::
+    "-n" :: "-s"                              ::
+    path.string()                             :: List{string}();
+  p = manyParser(pyMarshalParser(Type{P4GrepMatch}()), max) ! lazy p4ParseError(args);
+  ctx.p4Run(args).map(p.build(ParseFlags.NoWrapperError))
+
+act p4Where(P4RunContext ctx, P4DepotPath depotPath) -> Either{P4FileLocation, Error}
+  ctx.p4Run("where" :: depotPath.string(), Type{P4FileLocation}())

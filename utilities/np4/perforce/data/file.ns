@@ -20,6 +20,11 @@ struct P4FileInfo =
   Option{DateTime}      time,
   Option{ByteSize}      size
 
+struct P4FileLocation =
+  P4DepotPath   depotFile,
+  P4ClientPath  clientFile,
+  PathAbsolute  path
+
 // -- Conversions.
 
 fun string(P4FileRev r)
