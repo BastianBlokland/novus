@@ -24,7 +24,8 @@ fun setupNewConfig(SetupSettings s, Platform platform)
     s.client,
     s.hiddenChanges ?? List{P4Change}(),
     diffToolFromPreset(s.diffTool ?? getDefaultDiffToolPreset(platform), platform),
-    diffToolFromPreset(DiffToolPreset.VsCode, platform))
+    diffToolFromPreset(DiffToolPreset.VsCode, platform),
+    (pathRel() / "...") :: List{PathRelative}())
 
 // -- Actions.
 

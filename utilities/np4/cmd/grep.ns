@@ -14,9 +14,14 @@ struct GrepData =
 
 // -- Actions.
 
+act getGrepPaths(P4RunContext runCtx, GrepSettings s) -> List{P4Path}
+  (s.paths.val ?? runCtx.config.grepPaths).map(lambda (PathRelative rel)
+    P4Path(P4ClientPath(runCtx.config.client, rel))
+  )
+
 act grepQuery(P4RunContext runCtx, GrepSettings s) -> Either{GrepData, Error}
-  path = s.path.val ?? anyP4ClientPath(runCtx.config.client);
-  matchesOrErr = p4Grep(runCtx, s.pattern.val, s.caseSensitive, path, s.resultsMax + 1);
+  paths = getGrepPaths(runCtx, s);
+  matchesOrErr = p4Grep(runCtx, s.pattern.val, s.caseSensitive, paths, s.resultsMax + 1);
   matchesOrErr.map(impure lambda (List{P4GrepMatch} matches)
     GrepData(runCtx.config, toLimitedList(matches, s.resultsMax))
   )
@@ -29,7 +34,7 @@ fun grepMatchWriter(StyleCtx ctx) -> Writer{P4GrepMatch}
     (litWriter(':') & txtIntWriter()).styledWriter(ctx, Style.GrepMatchLine) &
     litWriter(' ') & fileRevWriter(ctx) &
     newlineWriter() & stringWriter()
-  ).map(lambda (P4GrepMatch m) Tuple(m.depotFile, m.line, m.rev, m.matchedLine))
+  ).map(lambda (P4GrepMatch m) Tuple(m.depotFile, m.line, m.rev, m.matchedLine.trim()))
 
 fun grepOutputWriter(StyleCtx ctx) -> Writer{GrepData}
   (
@@ -39,12 +44,12 @@ fun grepOutputWriter(StyleCtx ctx) -> Writer{GrepData}
 // -- Driver.
 
 struct GrepSettings =
-  bool                          noColor,
-  bool                          trace,
-  bool                          caseSensitive,
-  int                           resultsMax,
-  CliPositional{string}         pattern,
-  CliPositional{Option{P4Path}} path
+  bool                                      noColor,
+  bool                                      trace,
+  bool                                      caseSensitive,
+  int                                       resultsMax,
+  CliPositional{string}                     pattern,
+  CliPositional{Option{List{PathRelative}}} paths
 
 fun cliDefaults(Type{GrepSettings} t)
   CliDefault("results-max", "100") :: List{CliDefault}()

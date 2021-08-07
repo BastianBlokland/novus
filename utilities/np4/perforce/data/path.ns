@@ -34,6 +34,18 @@ fun fromPython(PyObj po, Type{P4DepotPath} t) -> Either{P4DepotPath, Error}
 fun fromPython(PyObj po, Type{P4ClientPath} t) -> Either{P4ClientPath, Error}
   po as string s ? p4ClientPathParser().run(s) : Error("Expected a p4 client path, got a " + pyObjType(po))
 
+fun fromJson(JsonValue jv, Type{P4DepotPath} t) -> Either{P4DepotPath, Error}
+  jv as string s ? p4DepotPathParser().run(s) : Error("Expected a p4 depot path, got a " + jsonValueType(jv))
+
+fun fromJson(JsonValue jv, Type{P4ClientPath} t) -> Either{P4ClientPath, Error}
+  jv as string s ? p4ClientPathParser().run(s) : Error("Expected a p4 client path, got a " + jsonValueType(jv))
+
+fun toJson(P4DepotPath p) -> JsonValue
+  p.string()
+
+fun toJson(P4ClientPath p) -> JsonValue
+  p.string()
+
 fun cliParser(Type{P4DepotPath} t)  p4DepotPathParser()
 fun cliParser(Type{P4ClientPath} t) p4ClientPathParser()
 fun cliParser(Type{P4Path} t)       p4DepotPathParser().map(lambda (P4DepotPath dp) P4Path(dp))

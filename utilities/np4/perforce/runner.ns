@@ -165,12 +165,12 @@ act p4DownloadFile(P4RunContext ctx, P4DepotPath depotPath, P4Change change, Pat
   ctx.p4Run("print" :: "-o" :: resultPath.pathAbsolute().string() :: fileSpec, Type{P4FileInfo}())
     ! lazy Error("Failed to download '" + fileSpec + "' from server '" + ctx.config.server + '\'')
 
-act p4Grep(P4RunContext ctx, string pattern, bool caseSensitive, P4Path path, int max) -> Either{List{P4GrepMatch}, Error}
-  args = "grep"                               ::
-    "-e" :: pattern                           ::
-    (caseSensitive ? None() : Option("-i"))   ::
-    "-n" :: "-s"                              ::
-    path.string()                             :: List{string}();
+act p4Grep(P4RunContext ctx, string pattern, bool caseSensitive, List{P4Path} paths, int max) -> Either{List{P4GrepMatch}, Error}
+  args = "grep"                                 ::
+    "-n" :: "-s"                                ::
+    (caseSensitive ? None() : Option("-i"))     ::
+    "-e" :: pattern                             ::
+    paths.map(lambda (P4Path p) p.string());
   p = manyParser(pyMarshalParser(Type{P4GrepMatch}()), max) ! lazy p4ParseError(args);
   ctx.p4Run(args).map(p.build(ParseFlags.NoWrapperError))
 

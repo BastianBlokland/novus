@@ -2,6 +2,7 @@ import "std.ns"
 
 import "perforce/data/change.ns"
 import "perforce/data/client.ns"
+import "perforce/data/path.ns"
 import "perforce/data/server.ns"
 import "perforce/data/user.ns"
 
@@ -10,12 +11,13 @@ import "utils/diff.ns"
 // -- Types.
 
 struct Config =
-  Path            p4Path,
-  P4Server        server,
-  P4Client        client,
-  List{P4Change}  hiddenChanges,
-  DiffTool        diffTool,
-  DiffTool        diffToolAlt
+  Path                p4Path,
+  P4Server            server,
+  P4Client            client,
+  List{P4Change}      hiddenChanges,
+  DiffTool            diffTool,
+  DiffTool            diffToolAlt,
+  List{PathRelative}  grepPaths
 
 // -- Utilities.
 
