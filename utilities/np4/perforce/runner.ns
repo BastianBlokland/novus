@@ -98,7 +98,11 @@ act p4GetCurrentStreamInfo(P4RunContext ctx) -> Either{P4StreamInfo, Error}
   ! lazy Error("No stream found for client '" + ctx.config.client + "' on server '" + ctx.config.server + '\'')
 
 act p4GetStreamInfos(P4RunContext ctx, P4DepotPath path, int max) -> Either{List{P4StreamInfo}, Error}
-  ctx.p4RunMany("streams" :: "-m" :: max.string() :: path.string(), Type{P4StreamInfo}())
+  pathStr = path.string();
+  ctx.p4RunMany("streams"
+    :: "-m" :: max.string()
+    :: (pathStr.endsWith("...") ? pathStr : P4DepotPath(path.path / "...").string()),
+    Type{P4StreamInfo}())
   ! lazy Error("No streams on server '" + ctx.config.server + '\'')
 
 act p4GetClientInfo(P4RunContext ctx, P4Client client) -> Either{P4ClientInfo, Error}

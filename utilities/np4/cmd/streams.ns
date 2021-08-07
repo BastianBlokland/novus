@@ -16,7 +16,7 @@ struct StreamsData =
 // -- Actions.
 
 act streamsQuery(P4RunContext runCtx, StreamsSettings s) -> Either{StreamsData, Error}
-  streamInfosOrErr = p4GetStreamInfos(runCtx, anyP4DepotPath(), s.streamsMax);
+  streamInfosOrErr = p4GetStreamInfos(runCtx, s.path.val ?? anyP4DepotPath(), s.streamsMax);
   streamInfosOrErr.map(lambda (List{P4StreamInfo} infos)
     StreamsData(runCtx.config, toTree(infos, Option{P4StreamInfo}(), p4StreamIsChildOf))
   )
@@ -31,12 +31,13 @@ fun streamsOutputWriter(StyleCtx ctx) -> Writer{StreamsData}
 // -- Driver.
 
 struct StreamsSettings =
-  bool  noColor,
-  bool  trace,
-  int   streamsMax
+  bool                                noColor,
+  bool                                trace,
+  int                                 streamsMax,
+  CliPositional{Option{P4DepotPath}}  path
 
 fun cliDefaults(Type{StreamsSettings} t)
-  CliDefault("streams-max", "100") :: List{CliDefault}()
+  CliDefault("streams-max", "250") :: List{CliDefault}()
 
 act streamsCmd(StreamsSettings s) -> Option{Error}
   c         = consoleOpen().failOnError();

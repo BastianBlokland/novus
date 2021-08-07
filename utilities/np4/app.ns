@@ -17,4 +17,4 @@ cli(cliCmd("status",    statusCmd,    "Print the status of the current workspace
     cliCmd("streams",   streamsCmd,   "Print a graph of all the streams on the server"),
     cliAppInfo(
       "Novus P4", "Convenience wrapper around the p4 perforce client.",
-      Version(0, 12, 0)))
+      Version(0, 13, 0)))
