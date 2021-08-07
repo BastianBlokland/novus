@@ -130,9 +130,10 @@ act p4GetChanges(
     Type{P4ChangeInfo}())
 
 act p4GetDepotFiles(P4RunContext ctx, P4Change change, int max) -> Either{List{P4FileInfo}, Error}
-  args            = "files" :: "-m" :: max.string() :: ("@=" + change.string());
+  fileSpec        = (anyP4ClientPath(ctx.config.client).string() + "@=" + change.string());
+  args            = "files" :: "-m" :: max.string() :: fileSpec;
   fileListParser  = manyUntilParser(pyMarshalParser(Type{P4FileInfo}()), endParser());
-  noSuchFilesErr  = p4ErrorMatcher(GlobTextPattern("@=*no*file(s)*", StrComp.IgnoreCase));
+  noSuchFilesErr  = p4ErrorMatcher(GlobTextPattern(fileSpec + "*no*file(s)*", StrComp.IgnoreCase));
   p               = (noSuchFilesErr >> retParser(List{P4FileInfo}()) | fileListParser) ! lazy p4ParseError(args);
   ctx.p4Run(args).map(p.build(ParseFlags.NoWrapperError))
 
