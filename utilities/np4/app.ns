@@ -6,6 +6,7 @@ import "cmd/grep.ns"
 import "cmd/log.ns"
 import "cmd/setup.ns"
 import "cmd/status.ns"
+import "cmd/streams.ns"
 
 cli(cliCmd("status",    statusCmd,    "Print the status of the current workspace"),
     cliCmd("setup",     setupCmd,     "Set a workspace up for use with np4"),
@@ -13,6 +14,7 @@ cli(cliCmd("status",    statusCmd,    "Print the status of the current workspace
     cliCmd("describe",  describeCmd,  "Print information about a specific change"),
     cliCmd("diff",      diffCmd,      "Print file differences"),
     cliCmd("grep",      grepCmd,      "Search for files with content matching the specified pattern"),
+    cliCmd("streams",   streamsCmd,   "Print a graph of all the streams on the server"),
     cliAppInfo(
       "Novus P4", "Convenience wrapper around the p4 perforce client.",
-      Version(0, 11, 0)))
+      Version(0, 12, 0)))

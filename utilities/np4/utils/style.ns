@@ -5,7 +5,7 @@ import "../perforce/data/file.ns"
 // -- Types.
 
 enum Style =
-  Normal, Header, Trace,
+  Normal, Header, Trace, TreeSeg,
   Change,
   Time,
   User,
@@ -45,6 +45,7 @@ fun styleToTtyStyleList(Style s) -> List{TtyStyle}
   if s == Style.Header            -> TtyStyle.Bold      :: List{TtyStyle}()
   if s == Style.Change            -> TtyStyle.FgYellow  :: TtyStyle.Bold
   if s == Style.Trace             -> TtyStyle.Faint     :: List{TtyStyle}()
+  if s == Style.TreeSeg           -> TtyStyle.Faint     :: List{TtyStyle}()
   if s == Style.Time              -> TtyStyle.FgGreen   :: List{TtyStyle}()
   if s == Style.User              -> TtyStyle.FgBlue    :: TtyStyle.Bold
   if s == Style.FileRev           -> TtyStyle.Faint     :: List{TtyStyle}()

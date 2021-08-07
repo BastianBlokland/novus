@@ -16,7 +16,13 @@ struct P4StreamInfo =
   P4StreamName      name,
   Option{P4Stream}  parent,
   P4StreamType      type,
-  string            description
+  Option{string}    description
+
+// -- Utilities.
+
+fun p4StreamIsChildOf(P4StreamInfo info, Option{P4StreamInfo} parent)
+  if parent as P4StreamInfo parentStream  -> info.parent == parentStream.stream
+  if parent is None                       -> info.parent is None
 
 // -- Conversions.
 

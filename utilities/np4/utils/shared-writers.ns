@@ -67,11 +67,11 @@ fun clientInfoWriter(StyleCtx ctx) -> Writer{P4ClientInfo}
 fun streamWriter(StyleCtx ctx) -> Writer{P4Stream}
   stringWriter().styledWriter(ctx, Style.Stream).map(lambda (P4Stream s) s.string())
 
-fun streamInfoWriter(StyleCtx ctx) -> Writer{P4StreamInfo}
+fun streamInfoWriter(StyleCtx ctx, bool showParent = true) -> Writer{P4StreamInfo}
   (
     streamWriter(ctx) & litWriter(' ') & streamTypeWriter(ctx) &
     ?(litWriter(' ') & withHeaderWriter(ctx, "Parent", streamWriter(ctx)))
-  ).map(lambda (P4StreamInfo i) Tuple(i.stream, i.type, i.parent))
+  ).map(lambda (P4StreamInfo i) Tuple(i.stream, i.type, showParent ? i.parent : None()))
 
 fun streamTypeWriter(StyleCtx ctx, bool inBrackets = true) -> Writer{P4StreamType}
   w = enumKeyWriter(Type{P4StreamType}());
