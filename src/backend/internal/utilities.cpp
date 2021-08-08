@@ -11,12 +11,6 @@ auto getLabel(const prog::Program& prog, prog::sym::FuncId funcId) -> std::strin
   return oss.str();
 }
 
-auto getUserTypeEqLabel(const prog::Program& prog, prog::sym::TypeId typeId) -> std::string {
-  std::ostringstream oss;
-  oss << "user_type_equality_" << prog.getTypeDecl(typeId).getName() << "_" << typeId;
-  return oss.str();
-}
-
 auto getConstOffset(const prog::sym::ConstDeclTable& table, prog::sym::ConstId id) -> uint16_t {
   const auto offset = table.getOffset(id);
   if (offset > std::numeric_limits<uint16_t>::max()) {

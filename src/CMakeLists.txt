@@ -228,7 +228,6 @@ message(STATUS "Configuring backend library")
 add_library(backend STATIC
   backend/internal/gen_expr.cpp
   backend/internal/gen_lazy.cpp
-  backend/internal/gen_type_eq.cpp
   backend/internal/utilities.cpp
   backend/generator.cpp)
 target_compile_features(backend PRIVATE cxx_std_17)

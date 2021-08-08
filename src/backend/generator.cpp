@@ -1,7 +1,6 @@
 #include "backend/generator.hpp"
 #include "config.hpp"
 #include "internal/gen_expr.hpp"
-#include "internal/gen_type_eq.hpp"
 #include "internal/utilities.hpp"
 #include "novasm/assembler.hpp"
 #include "prog/sym/const_kind.hpp"
@@ -74,9 +73,6 @@ auto generate(const prog::Program& program, GenerateFlags flags)
   auto asmb            = novasm::Assembler{std::move(compilerVersion)};
 
   const bool deterministic = (flags & GenerateFlags::Deterministic) != GenerateFlags::None;
-
-  // Generate equality functions for user types (structs and unions).
-  internal::genUserTypeEquality(&asmb, program);
 
   // Generate function definitons.
   internal::forEachFuncDef(program, deterministic, [&](const prog::sym::FuncDef& funcDef) {

@@ -12,9 +12,6 @@ namespace backend::internal {
 // Get a label to identify the function.
 auto getLabel(const prog::Program& prog, prog::sym::FuncId funcId) -> std::string;
 
-// Get a label to identify the (generated) equality function for the user type.
-auto getUserTypeEqLabel(const prog::Program& prog, prog::sym::TypeId typeId) -> std::string;
-
 // Get the offset in the constant-table for the constant.
 auto getConstOffset(const prog::sym::ConstDeclTable& table, prog::sym::ConstId id) -> uint16_t;
 

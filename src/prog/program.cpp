@@ -587,10 +587,6 @@ auto Program::defineStruct(sym::TypeId id, sym::FieldDeclTable fields) -> void {
   const auto& name = m_typeDecls[id].getName();
   m_funcDecls.registerFunc(*this, sym::FuncKind::MakeStruct, name, sym::TypeSet{fieldTypes}, id);
 
-  // Register equality intrinsic.
-  m_funcDecls.registerIntrinsic(
-      *this, sym::FuncKind::CheckEqUserType, "usertype_eq_usertype", sym::TypeSet{id, id}, m_bool);
-
   // Register struct definition.
   m_typeDefs.registerStruct(m_typeDecls, id, std::move(fields));
 }
@@ -601,10 +597,6 @@ auto Program::defineUnion(sym::TypeId id, std::vector<sym::TypeId> types) -> voi
   for (const auto& type : types) {
     m_funcDecls.registerImplicitConv(*this, sym::FuncKind::MakeUnion, type, id);
   }
-
-  // Register equality intrinsic.
-  m_funcDecls.registerIntrinsic(
-      *this, sym::FuncKind::CheckEqUserType, "usertype_eq_usertype", sym::TypeSet{id, id}, m_bool);
 
   // Register union definition.
   m_typeDefs.registerUnion(m_typeDecls, id, std::move(types));
@@ -631,10 +623,6 @@ auto Program::defineEnum(sym::TypeId id, std::vector<sym::EnumDef::Pair> entries
   m_funcDecls.registerFunc(*this, fk::OrInt, getFuncName(Operator::Pipe), sym::TypeSet{id, id}, id);
   m_funcDecls.registerFunc(*this, fk::AndInt, getFuncName(Operator::Amp), sym::TypeSet{id, id}, id);
 
-  // Register equality intrinsic.
-  m_funcDecls.registerIntrinsic(
-      *this, fk::CheckEqInt, "usertype_eq_usertype", sym::TypeSet{id, id}, m_bool);
-
   // Register enum definition.
   m_typeDefs.registerEnum(m_typeDecls, id, std::move(entries));
 }
@@ -645,6 +633,10 @@ auto Program::defineDelegate(
     sym::TypeSet input,
     sym::TypeId output,
     const std::vector<sym::TypeId>& aliases) -> void {
+
+  // Register utility intrinsics.
+  m_funcDecls.registerIntrinsic(
+      *this, sym::FuncKind::CheckEqDelegate, "delegate_eq_delegate", sym::TypeSet{id, id}, m_bool);
 
   // Register implicit conversions to the alias delegates.
   for (const auto& alias : aliases) {

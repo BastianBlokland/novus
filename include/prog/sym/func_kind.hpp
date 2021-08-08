@@ -91,8 +91,8 @@ enum class FuncKind {
 
   LazyGet, // Retrieve the value for a lazy value.
 
-  CheckEqUserType, // Check if two user types are equal.
-                   // Note: Backend will generate equality for all user-types.
+  CheckEqDelegate, // Check if two delegates point to the same target function.
+                   // Note: Does not compare the potential closed over values.
 
   // NOTE: The source-location functions are no-ops that just return 'unknown' and '-1' at runtime.
   // If used in a supported context (like in an optional argument initializer the frontend will
