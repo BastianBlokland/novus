@@ -1,0 +1,95 @@
+import "std/core/reflect.ns"
+import "std/diag.ns"
+
+// -- Comparision
+
+fun =={T}(T x, T y) -> bool
+  equalsStructural(x, y)
+
+fun !={T1, T2}(T1 x, T2 y) -> bool
+  !(x == y)
+
+fun equals{T1, T2}(T1 x, T2 y) -> bool
+  x == y
+
+fun equals{T}(T x, T y) -> bool
+  x == y
+
+fun >={T1, T2}(T1 x, T2 y) -> bool
+  !(x < y)
+
+fun <={T1, T2}(T1 x, T2 y) -> bool
+  !(x > y)
+
+fun less{T1, T2}(T1 x, T2 y) -> bool
+  x < y
+
+fun less{T}(T x, T y) -> bool
+  x < y
+
+fun greater{T1, T2}(T1 x, T2 y) -> bool
+  x > y
+
+fun greater{T}(T x, T y) -> bool
+  x > y
+
+// -- Structural equality.
+
+fun equalsStructural{T}(T x, T y)
+  equalsStructural(x, y, Meta{reflect_type_kind{T}}())
+
+// Note: SysStream's are not equality checked at the moment.
+fun equalsStructural{T}(T x, T y, Meta{#6}  sysStreamTypeKind) -> bool
+  true
+
+// Note: SysProcesses's are not equality checked at the moment.
+fun equalsStructural{T}(T x, T y, Meta{#7}  sysProcessTypeKind) -> bool
+  true
+
+// Note: SysIOWatcher's are not equality checked at the moment.
+fun equalsStructural{T}(T x, T y, Meta{#8}  sysIOWatcherTypeKind) -> bool
+  true
+
+fun equalsStructural{T}(T x, T y, Meta{#9} structTypeKind) -> bool
+  reflectStructEquals(x, y)
+
+fun equalsStructural{T}(T x, T y, Meta{#10} unionTypeKind) -> bool
+  reflectUnionEquals(x, y)
+
+fun equalsStructural{T}(T x, T y, Meta{#11} enumTypeKind) -> bool
+  intrinsic{int_eq_int}(int(x), int(y))
+
+fun equalsStructural{T}(T x, T y, Meta{#12} delegateTypeKind) -> bool
+  intrinsic{delegate_eq_delegate}(x, y)
+
+fun equalsStructural{T}(T x, T y, Meta{#13} futureTypeKind) -> bool
+  intrinsic{future_get}(x) == intrinsic{future_get}(y)
+
+fun equalsStructural{T}(T x, T y, Meta{#14} lazyTypeKind) -> bool
+  intrinsic{lazy_get}(x) == intrinsic{lazy_get}(y)
+
+fun equalsStructural{T}(T x, T y, Meta{#15} staticIntTypeKind) -> bool
+  bool
+
+// -- Tests
+
+assert(equals(1, 1))
+assertNot(equals(1, 2))
+
+assert(
+  eq42 = equals{int}[42];
+  eq42(42))
+
+assert(
+  eq42 = equals{int}[42];
+  (!eq42)(43))
+
+assert(
+  a = (lambda (int i) i * 2);
+  b = a;
+  a == b)
+
+assert(
+  a = (lambda (int i) i * 2);
+  b = (lambda (int i) i * 2);
+  a != b)

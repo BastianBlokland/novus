@@ -1,5 +1,6 @@
 import "std/prim/bool.ns"
 import "std/prim/char.ns"
+import "std/prim/eq.ns"
 import "std/prim/float.ns"
 import "std/prim/int.ns"
 import "std/prim/long.ns"
@@ -23,38 +24,6 @@ fun highBit{T}()              lowBit{T}() << (bitSize{T}() - 1)
 fun minVal{T}()               minVal(Type{T}())
 fun maxVal{T}()               maxVal(Type{T}())
 
-// -- Comparision
-
-fun =={T}(T x, T y) -> bool
-  intrinsic{usertype_eq_usertype}(x, y)
-
-fun !={T1, T2}(T1 x, T2 y) -> bool
-  !(x == y)
-
-fun equals{T1, T2}(T1 x, T2 y) -> bool
-  x == y
-
-fun equals{T}(T x, T y) -> bool
-  x == y
-
-fun >={T1, T2}(T1 x, T2 y) -> bool
-  !(x < y)
-
-fun <={T1, T2}(T1 x, T2 y) -> bool
-  !(x > y)
-
-fun less{T1, T2}(T1 x, T2 y) -> bool
-  x < y
-
-fun less{T}(T x, T y) -> bool
-  x < y
-
-fun greater{T1, T2}(T1 x, T2 y) -> bool
-  x > y
-
-fun greater{T}(T x, T y) -> bool
-  x > y
-
 // -- Tests
 
 assert(isIntegral{int}())
@@ -66,14 +35,3 @@ assertEq(bitSize{long}(), 64)
 
 assertEq(lowBit{int}(), 1)
 assertEq(highBit{int}(), 1 << 31)
-
-assert(equals(1, 1))
-assertNot(equals(1, 2))
-
-assert(
-  eq42 = equals{int}[42];
-  eq42(42))
-
-assert(
-  eq42 = equals{int}[42];
-  (!eq42)(43))

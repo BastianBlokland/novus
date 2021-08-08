@@ -1,4 +1,4 @@
-#include "gen_type_eq.hpp"
+#include "novasm/assembler.hpp"
 #include "utilities.hpp"
 #include <algorithm>
 #include <set>

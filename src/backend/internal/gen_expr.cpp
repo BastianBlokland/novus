@@ -379,19 +379,6 @@ auto GenExpr::visit(const prog::expr::CallExprNode& n) -> void {
     break;
   }
 
-  case prog::sym::FuncKind::CheckEqUserType: {
-    auto lhsType = n[0].getType();
-    auto rhsType = n[1].getType();
-    if (lhsType != rhsType) {
-      throw std::logic_error{"User-type equality function requires args to have the same type"};
-    }
-    m_asmb->addCall(
-        getUserTypeEqLabel(m_prog, lhsType),
-        2,
-        m_tail ? novasm::CallMode::Tail : novasm::CallMode::Normal);
-    break;
-  }
-
   case prog::sym::FuncKind::CheckEqDelegate: {
     m_asmb->addCheckEqCallDynTgt();
     break;
