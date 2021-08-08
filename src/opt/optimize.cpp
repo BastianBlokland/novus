@@ -2,6 +2,8 @@
 
 namespace opt {
 
+static unsigned int g_maxOptimizeItrs = 5;
+
 auto optimize(const prog::Program& prog) -> prog::Program {
 
   // We start with one pass of treeshaking to avoid optimizing unused functions.
@@ -9,6 +11,7 @@ auto optimize(const prog::Program& prog) -> prog::Program {
 
   // Keep optimizing until the program cannot be simplified anymore.
   bool modified;
+  unsigned int itrs = 0;
   do {
     modified = false;
 
@@ -21,7 +24,7 @@ auto optimize(const prog::Program& prog) -> prog::Program {
     // Inline possible functions.
     result = inlineCalls(result, modified);
 
-  } while (modified);
+  } while (modified && ++itrs < g_maxOptimizeItrs);
 
   // Remove any functions that have become unused due to inlining.
   result = treeshake(result);
