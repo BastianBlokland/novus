@@ -1,0 +1,44 @@
+// --- Remove (unlink) files.
+// Basic 'rm' style file remove application.
+
+import "std.ns"
+
+// -- Actions.
+
+act collectFilesToRemove(Settings s) -> Either{List{PathAbsolute}, Error}
+  s.paths.val
+    .filter(impure lambda (Path p) s.recursive || p.fileType() != FileType.Directory)
+    .map(impure lambda (Path p) s.recursive ? fileListReq(p) : (pathAbsolute(p) :: List{PathAbsolute}()))
+    .split()
+    .valueOrError()
+    .map(lambda (List{List{PathAbsolute}} paths) paths.mergeReverse())
+
+act removeFile(Console c, PathAbsolute p, Writer{PathAbsolute} writer, Settings s) -> Option{Error}
+  if s.preview -> c.writeOut(writer, p)
+  else         -> actSeq(lazy fileRemove(p), lazy c.writeOut(writer, p)) as Error err
+                    ? s.force ? None() : err
+                    : None()
+
+// -- Writers
+
+fun highlight{T}(Writer{T} w, bool color)
+  color ? w.ttyStyledTextWriter(TtyStyle.Bold) : w
+
+fun removePathWriter(bool color) -> Writer{PathAbsolute}
+  litWriter("Remove: ").highlight(color) & pathAbsWriter()
+
+// -- Driver
+
+struct Settings =
+  bool                      preview,
+  bool                      recursive,
+  bool                      force,
+  CliPositional{List{Path}} paths
+
+act main(Settings s)
+  console       = consoleOpen().failOnError();
+  filesToRemove = collectFilesToRemove(s).failOnError();
+  writer        = removePathWriter(console.allowColor()) & newlineWriter();
+  filesToRemove.mapReverse(impure lambda (PathAbsolute p) removeFile(console, p, writer, s)).combine()
+
+cli(main, cliAppInfo("Remove", "Remove (unlink) all the given files", Version(0, 2, 0)))

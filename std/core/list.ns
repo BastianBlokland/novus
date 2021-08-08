@@ -212,6 +212,12 @@ fun length{T}(List{T} l)
 fun sum{T}(List{T} l)
   l.fold(lambda (T s, T val) s + val)
 
+fun merge{T}(List{List{T}} lists)
+  lists.foldRight(lambda (List{T} l, List{T} res) l :: res)
+
+fun mergeReverse{T}(List{List{T}} lists)
+  lists.fold(lambda (List{T} l, List{T} res) l :: res)
+
 fun reverse{T}(List{T} l)
   l.fold(lambda (List{T} newList, T val) val :: newList)
 
