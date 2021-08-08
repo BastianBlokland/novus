@@ -392,6 +392,11 @@ auto GenExpr::visit(const prog::expr::CallExprNode& n) -> void {
     break;
   }
 
+  case prog::sym::FuncKind::CheckEqDelegate: {
+    m_asmb->addCheckEqCallDynTgt();
+    break;
+  }
+
   case prog::sym::FuncKind::Fail:
     m_asmb->addFail();
     break;

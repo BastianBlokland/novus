@@ -646,6 +646,10 @@ auto Program::defineDelegate(
     sym::TypeId output,
     const std::vector<sym::TypeId>& aliases) -> void {
 
+  // Register utility intrinsics.
+  m_funcDecls.registerIntrinsic(
+      *this, sym::FuncKind::CheckEqDelegate, "delegate_eq_delegate", sym::TypeSet{id, id}, m_bool);
+
   // Register implicit conversions to the alias delegates.
   for (const auto& alias : aliases) {
     const auto& aliasDecl = getTypeDecl(alias);
