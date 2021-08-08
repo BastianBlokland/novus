@@ -246,7 +246,7 @@ assertEq(
 // ---- fromPython tests
 
 assertEq(PyObj(42).fromPython(Type{int}()),                 42)
-assertIs(PyObj("42").fromPython(Type{int}()),               Type{Error}())
+assertEq(PyObj("42").fromPython(Type{int}()),               42)
 
 assertEq(PyObj(42).fromPython(Type{long}()),                42L)
 assertEq(PyObj(42L).fromPython(Type{long}()),               42L)
