@@ -83,4 +83,13 @@ auto isLiteral(const prog::expr::Node& expr) -> bool {
   }
 }
 
+auto exprSize(const prog::expr::Node& expr) -> unsigned int {
+  constexpr bool stopAtFirstHit = false;
+  auto predicate                = [](const prog::expr::Node&) { return true; };
+
+  auto matcher = ExprMatcher<decltype(predicate), stopAtFirstHit>{predicate};
+  expr.accept(&matcher);
+  return matcher.getCount();
+}
+
 } // namespace opt::internal

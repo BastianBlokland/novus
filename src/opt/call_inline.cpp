@@ -11,6 +11,10 @@
 
 namespace opt {
 
+// Calls to functions with more then 'g_maxInlineSrcFuncSize' expressions will not be inlined to
+// avoid bloating the executable.
+static unsigned int g_maxInlineSrcFuncSize = 50;
+
 class CallInlineRewriter final : public prog::expr::Rewriter {
 public:
   CallInlineRewriter(
@@ -73,6 +77,10 @@ auto CallInlineRewriter::isInlinable(const prog::expr::CallExprNode* callExpr) -
   }
 
   if (funcDef->hasFlags(prog::sym::FuncDef::Flags::NoInline)) {
+    return false;
+  }
+
+  if (internal::exprSize(funcDef->getBody()) > g_maxInlineSrcFuncSize) {
     return false;
   }
 
