@@ -241,6 +241,20 @@ fun reflectStructToString{Struct, Int}(Struct s, Meta{Int} idx, string seperator
 fun reflectStructToString{Struct}(Struct s, string prefix = "(", string seperator = ",", string suffix = ")") -> string
   prefix + reflectStructToString(s, reflectStructFieldCount(Type{Struct}()), seperator, "") + suffix
 
+// ---- Struct equality
+// Check if all fields of a struct are equal.
+
+fun reflectStructEquals{Struct}(Struct x, Struct y, Meta{#-1} fieldIdx) -> bool
+  true
+
+fun reflectStructEquals{Struct, Idx}(Struct x, Struct y, Meta{Idx} fieldIdx) -> bool
+  reflectStructField(x, fieldIdx) == reflectStructField(y, fieldIdx)
+  &&
+  reflectStructEquals(x, y, --fieldIdx)
+
+fun reflectStructEquals{Struct}(Struct x, Struct y) -> bool
+  reflectStructEquals(x, y, --reflectStructFieldCount(Type{Struct}()))
+
 // -- Union Utilities
 
 // ---- Lookup union count
@@ -314,6 +328,19 @@ fun reflectUnionToString{Union, Idx}(Union u, Meta{Idx} idx) -> string
 
 fun reflectUnionToString{Union}(Union u) -> string
   reflectUnionToString(u, --reflectUnionCount(Type{Union}()))
+
+// ---- Union equality
+// Check if two unions have the same active type and the values are equal.
+
+fun reflectUnionEquals{Union}(Union x, Union y, Meta{#-1} idx) -> bool
+  intrinsic{fail}{bool}()
+
+fun reflectUnionEquals{Union, Idx}(Union x, Union y, Meta{Idx} idx) -> bool
+  if x as reflect_union_type{Union, Idx} xVal -> y as reflect_union_type{Union, Idx} yVal && xVal == yVal
+  else -> reflectUnionEquals(x, y, --idx)
+
+fun reflectUnionEquals{Union}(Union x, Union y) -> bool
+  reflectUnionEquals(x, y, --reflectUnionCount(Type{Union}()))
 
 // -- Enum Utilities
 
@@ -602,6 +629,13 @@ assertEq(reflectStructToString(None()), "()")
 assertEq(reflectStructToString(Duration(42)), "(42)")
 assertEq(reflectStructToString(DateTime(42, timezoneUTC())), "(42,Z)")
 
+assert(reflectStructEquals(None(), None()))
+assert(reflectStructEquals(Meta{#1}(), Meta{#1}()))
+assert(reflectStructEquals(Date(2021, Month.March, 27), Date(2021, Month.March, 27)))
+assertNot(reflectStructEquals(Date(2021, Month.March, 27), Date(2022, Month.March, 27)))
+assertNot(reflectStructEquals(Date(2021, Month.March, 27), Date(2021, Month.April, 27)))
+assertNot(reflectStructEquals(Date(2021, Month.March, 27), Date(2021, Month.March, 28)))
+
 // -- Union utility tests
 
 assertEq(reflectUnionCount(Type{Option{int}}()), Meta{#2}())
@@ -644,6 +678,13 @@ assertEq(reflectUnionToString(Option{int}()), "none")
 assertEq(reflectUnionToString(Option{int}(42)), "42")
 assertEq(reflectUnionToString(TypeInfo(StaticIntInfo(1337))), "#1337")
 assertEq(reflectUnionToString(TypeInfo(RecursiveTypeInfo("Hello"))), "Hello")
+
+assert(reflectUnionEquals(Option{int}(), Option{int}()))
+assert(reflectUnionEquals(Option(42), Option(42)))
+assertNot(reflectUnionEquals(Option{int}(), Option(42)))
+assertNot(reflectUnionEquals(Option(42), Option(43)))
+assert(reflectUnionEquals(TypeInfo(StaticIntInfo(1337)), TypeInfo(StaticIntInfo(1337))))
+assertNot(reflectUnionEquals(TypeInfo(StaticIntInfo(1337)), TypeInfo(StaticIntInfo(1338))))
 
 // -- Enum utility tests
 
