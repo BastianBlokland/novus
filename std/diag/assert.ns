@@ -112,6 +112,6 @@ fun assertErrMsgWriter()
   ).map(lambda (AssertData d)
     Tuple(
       d.srcLoc,
-      d.condDesc.isEmpty() ? None() : d.condDesc,
-      d.usrMsg.isEmpty() ? None() : d.usrMsg)
+      d.condDesc.noneIfEmpty(),
+      d.usrMsg.noneIfEmpty())
   )

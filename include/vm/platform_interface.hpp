@@ -19,7 +19,7 @@ public:
   // Note: Can be empty if the program only exists in memory (For example: inline exec in tests.
   auto getProgramPath() noexcept -> const std::string& { return m_programPath; }
 
-  // Retreive the null terminated c-style string of the environment argument at the specified index.
+  // Retrieve the null terminated c-style string of the environment argument at the specified index.
   auto envGetArg(int idx) noexcept -> const char*;
 
   // Retrieve how many environment arguments are passed to the program.

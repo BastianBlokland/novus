@@ -1,0 +1,20 @@
+import "std.ns"
+
+import "shared-writers.ns"
+import "style.ns"
+
+import "../perforce/runner.ns"
+
+// -- Utilities.
+
+fun p4ConsoleTracer(Console c, StyleCtx styleCtx)
+  writer = (
+    litWriter("[trace] p4 ") &
+    listWriter(stringWriter() & litWriter(' ')) &
+    litWriter('(') & timeDurationWriter() & litWriter(" -> ") &
+    byteSizeWriter(txtFloatWriter(0, FloatToStringFlags.NeverScientific)) & litWriter(')') & newlineWriter()
+  ).styledWriter(styleCtx, Style.Trace);
+  cmdExecuted = (impure lambda (List{string} args, Duration dur, ByteSize outSize)
+    c.writeErr(writer, Tuple(args, dur, outSize))
+  );
+  P4Tracer(cmdExecuted)

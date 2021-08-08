@@ -1,0 +1,11 @@
+import "std.ns"
+
+import "file.ns"
+
+// -- Types.
+
+struct P4GrepMatch =
+  P4DepotPath  depotFile,
+  P4FileRev    rev,
+  int          line,
+  string       matchedLine

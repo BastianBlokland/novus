@@ -1,0 +1,80 @@
+import "std.ns"
+
+import "change.ns"
+import "client.ns"
+import "path.ns"
+
+// -- Types.
+
+enum P4FileOp = Add, Edit, Delete, Branch, MoveAdd, MoveDelete, Integrate, Import, Purge, Archive
+
+struct P4FileRev = long i
+
+struct P4FileInfo =
+  P4DepotPath           depotFile,
+  Option{P4ClientPath}  clientFile,
+  P4FileRev             rev,
+  P4Change              change,
+  P4FileOp              Action,
+  Option{string}        type,
+  Option{DateTime}      time,
+  Option{ByteSize}      size
+
+struct P4FileLocation =
+  P4DepotPath   depotFile,
+  P4ClientPath  clientFile,
+  PathAbsolute  path
+
+// -- Conversions.
+
+fun string(P4FileRev r)
+  if r.p4RevIsNone() -> "none"
+  if r.p4RevIsHead() -> "head"
+  else               -> r.i.string()
+
+// -- Utilities.
+
+fun p4FileIsText(P4FileInfo f)
+  if f.type is None       -> false
+  if f.type as string str -> trimmed = str.trimStart();
+    trimmed.startsWith("text")    ||
+    trimmed.startsWith("unicode") ||
+    trimmed.startsWith("utf8")    ||
+    trimmed.startsWith("utf16")
+
+fun p4RevNone() P4FileRev(0)
+fun p4RevHead() P4FileRev(maxVal{long}())
+
+fun p4RevIsNone(P4FileRev r) r.i == 0
+fun p4RevIsHead(P4FileRev r) r.i == maxVal{long}()
+
+fun p4RevPrev(P4FileRev r)
+  if r.p4RevIsNone() -> p4RevNone()
+  if r.p4RevIsHead() -> p4RevHead()
+  else               -> P4FileRev(r.i - 1)
+
+// -- Mappings.
+
+fun fromPython(PyObj po, Type{P4FileOp} t) -> Either{P4FileOp, Error}
+  if po as string s ->
+  (
+    if s == "add"         -> P4FileOp.Add
+    if s == "edit"        -> P4FileOp.Edit
+    if s == "delete"      -> P4FileOp.Delete
+    if s == "branch"      -> P4FileOp.Branch
+    if s == "move/add"    -> P4FileOp.MoveAdd
+    if s == "move/delete" -> P4FileOp.MoveDelete
+    if s == "integrate"   -> P4FileOp.Integrate
+    if s == "import"      -> P4FileOp.Import
+    if s == "purge"       -> P4FileOp.Purge
+    if s == "archive"     -> P4FileOp.Archive
+    else                  -> Error("Unsupported P4 file operation: '" + s + '\'')
+  )
+  else -> Error("Expected a p4 file operation, got a " + pyObjType(po))
+
+fun fromPython(PyObj po, Type{P4FileRev} t) -> Either{P4FileRev, Error}
+  if po as int i    -> P4FileRev(i)
+  if po as string s -> if equals(s, "none", StrComp.IgnoreCase) -> p4RevNone()
+                       if equals(s, "head", StrComp.IgnoreCase) -> p4RevHead()
+                       else -> txtIntParser().run(s).map(lambda (int i) P4FileRev(i))
+  else -> Error("Expected a perforce FileRev, got a " + pyObjType(po))

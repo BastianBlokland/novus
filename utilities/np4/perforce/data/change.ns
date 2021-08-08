@@ -1,0 +1,58 @@
+import "std.ns"
+
+import "client.ns"
+import "user.ns"
+
+// -- Types.
+
+enum P4ChangeStatus = Pending, Submitted, Shelved
+enum P4ChangeType   = Public, Restricted
+
+struct P4Change = int id
+
+struct P4ChangeInfo =
+  P4Change        change,
+  DateTime        time,
+  P4User          user,
+  P4Client        client,
+  P4ChangeStatus  status,
+  P4ChangeType    changeType,
+  string          desc
+
+// -- Conversions.
+
+fun string(P4Change c)
+  if c.id == 0  -> "default"
+  else          -> c.id.string()
+
+// -- Utilities
+
+fun p4DefaultChange() P4Change(0)
+
+fun p4ChangeIsDefault(P4Change c) c.id == 0
+
+fun p4ChangeShortDesc(P4ChangeInfo c, int maxLength = 60)
+  newLineIdx = c.desc.indexOf(isNewline);
+  c.desc[0, newLineIdx < 0 ? maxLength : min(newLineIdx, maxLength)]
+
+// -- Mappings.
+
+fun fromJson(JsonValue jv, Type{P4Change} t) -> Either{P4Change, Error}
+  if jv as float  f -> P4Change(int(f))
+  if jv as string s -> p4ChangeTxtParser().run(s)
+  else              -> Error("Expected a p4 change, got a " + jsonValueType(jv))
+
+fun toJson(P4Change c) -> JsonValue
+  c.id.string()
+
+fun fromPython(PyObj po, Type{P4Change} t) -> Either{P4Change, Error}
+  if po as int i    -> P4Change(i)
+  if po as string s -> p4ChangeTxtParser().run(s)
+  else -> Error("Expected a perforce Change, got a " + pyObjType(po))
+
+fun cliParser(Type{P4Change} t) p4ChangeTxtParser()
+
+// -- Parsers.
+
+fun p4ChangeTxtParser()
+  (matchParser("default") >> retParser(p4DefaultChange())) | txtIntParser().to(Type{P4Change}())

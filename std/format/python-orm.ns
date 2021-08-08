@@ -83,13 +83,15 @@ fun unionToPython{T}(T unionV) -> PyObj
 // -- Value from Python
 
 fun fromPython(PyObj po, Type{int} t) -> Either{int, Error}
-  if po as int i -> i
-  else           -> Error("Expected an Int, got a " + pyObjType(po))
+  if po as int    i -> i
+  if po as string s -> txtIntParser().build()(s)
+  else              -> Error("Expected an Int, got a " + pyObjType(po))
 
 fun fromPython(PyObj po, Type{long} t) -> Either{long, Error}
-  if po as int i  -> long(i)
-  if po as long l -> l
-  else            -> Error("Expected a Long, got a " + pyObjType(po))
+  if po as int    i -> long(i)
+  if po as long   l -> l
+  if po as string s -> txtLongParser().build()(s)
+  else              -> Error("Expected a Long, got a " + pyObjType(po))
 
 fun fromPython(PyObj po, Type{bool} t) -> Either{bool, Error}
   if po as bool b -> b
@@ -116,9 +118,10 @@ fun fromPython(PyObj po, Type{PathAbsolute} t) -> Either{PathAbsolute, Error}
   else              -> Error("Expected a String, got a " + pyObjType(po))
 
 fun fromPython(PyObj po, Type{DateTime} t) -> Either{DateTime, Error}
-  if po as long l -> timeEpoch() + seconds(l)
-  if po as int i  -> timeEpoch() + seconds(i)
-  else            -> Error("Expected a Long, got a " + pyObjType(po))
+  if po as long l   -> timeEpoch() + seconds(l)
+  if po as int i    -> timeEpoch() + seconds(i)
+  if po as string s -> txtLongParser().run(s).map(lambda (long l) timeEpoch() + seconds(l))
+  else              -> Error("Expected a Long, got a " + pyObjType(po))
 
 fun fromPython{T}(PyObj po, Type{Option{T}} t) -> Either{Option{T}, Error}
   if po is PyNone -> Option{T}()
@@ -152,18 +155,24 @@ fun fromPython{T}(PyObj po, Type{T} t, Meta{#11} enumTypeKind) -> Either{T, Erro
 
 // ---- Struct from Python dict
 
+fun structFieldFromPython{T}(PyDict pd, string fieldName, Type{T} t) -> Either{T, Error}
+  pd.getField(fieldName, StrComp.IgnoreCase) as PyObj po
+    ? fromPython(po, t) ! Error("Invalid field '" + fieldName + "'")
+    : Error("No key named '" + fieldName + "' found in Dictionary")
+
+fun structFieldFromPython{T}(PyDict pd, string fieldName, Type{Option{T}} t) -> Either{Option{T}, Error}
+  pd.getField(fieldName, StrComp.IgnoreCase) as PyObj po
+    ? fromPython(po, t) ! Error("Invalid field '" + fieldName + "'")
+    : Option{T}()
+
 fun structFromPython{T, Tup, J}(PyDict pd, Type{T} t, Meta{#-1} i, Meta{J} j, Tup res) -> Either{T, Error}
   res.tupleToStruct(t)
 
 fun structFromPython{T, Tup, I, J}(PyDict pd, Type{T} t, Meta{I} i, Meta{J} j, Tup res) -> Either{T, Error}
   fieldName = reflectStructFieldName(t, j);
-  if pd.getField(fieldName, StrComp.IgnoreCase) as PyObj po ->
-  (
-    v = fromPython(po, reflectStructFieldType(t, j));
-    if v as reflect_struct_field_type{T, J} val -> structFromPython(pd, t, --i, ++j, res.tupleAdd(val))
-    if v as Error err -> Error("Invalid field '" + fieldName + "'") :: err
-  )
-  else -> Error("No key named '" + fieldName + "' found in Dictionary")
+  valOrErr  = structFieldFromPython(pd, fieldName, reflectStructFieldType(t, j));
+  if valOrErr as reflect_struct_field_type{T, J} val -> structFromPython(pd, t, --i, ++j, res.tupleAdd(val))
+  if valOrErr as Error                           err -> err
 
 fun structFromPython{T}(PyDict pd, Type{T} t) -> Either{T, Error}
   fieldCount = reflectStructFieldCount(t);
@@ -237,7 +246,7 @@ assertEq(
 // ---- fromPython tests
 
 assertEq(PyObj(42).fromPython(Type{int}()),                 42)
-assertIs(PyObj("42").fromPython(Type{int}()),               Type{Error}())
+assertEq(PyObj("42").fromPython(Type{int}()),               42)
 
 assertEq(PyObj(42).fromPython(Type{long}()),                42L)
 assertEq(PyObj(42L).fromPython(Type{long}()),               42L)

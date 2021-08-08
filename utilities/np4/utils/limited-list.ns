@@ -1,0 +1,30 @@
+import "std.ns"
+
+// -- Types.
+
+struct LimitedList{T} = List{T} entries, int count, int max, bool truncated
+
+// -- Utilities.
+
+fun noneIfEmpty{T}(LimitedList{T} l) -> Option{LimitedList{T}}
+  l.count == 0 ? None() : l
+
+fun toLimitedList{T}(List{T} entries, int max) -> LimitedList{T}
+  count = entries.length();
+  truncated = count > max;
+  LimitedList(entries[0, max], min(count, max), max, truncated)
+
+// -- Writers.
+
+fun limitedListCountWriter{T}() -> Writer{LimitedList{T}}
+  (
+    txtIntWriter() & ?litWriter('+')
+  ).map(lambda (LimitedList{T} l) Tuple(l.count, l.truncated))
+
+fun limitedListWriter{T}(
+    Writer{T}     w,
+    Writer{None}  truncated = newlineWriter() & indentWriter() & litWriter("... (truncated)")
+  ) -> Writer{LimitedList{T}}
+  (
+    listWriter(w) & ?truncated
+  ).map(lambda (LimitedList{T} l) Tuple(l.entries, l.truncated))

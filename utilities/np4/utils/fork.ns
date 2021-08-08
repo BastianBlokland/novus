@@ -1,0 +1,61 @@
+import "std.ns"
+
+// -- Wait for a series of futures (Either{T, Error}) to finish.
+// Take a Tuple(future{Either{T, Error}}, ...) and turn it into a Either{Tuple(...), Error}.
+
+fun waitForForks{TupSrc, TupDst}(TupSrc s, Meta{#0} idx, TupDst result) -> Either{TupDst, Error}
+  result
+
+fun waitForForks{TupSrc, Int, T, TupDst}(TupSrc s, Meta{Int} idx, Either{T, Error} job, TupDst result)
+  if job as Error err -> err
+  if job as T     val -> s.waitForForks(idx, result.tupleAdd(val))
+
+fun waitForForks{TupSrc, Int, T, TupDst}(TupSrc s, Meta{Int} idx, Option{T} job, TupDst result)
+  if job as Error err -> err
+  else                -> s.waitForForks(idx, result)
+
+fun waitForForks{TupSrc, Int, TupDst}(TupSrc s, Meta{Int} idx, TupDst result)
+  resFuture = s.tupleGet(s.tupleSize() - idx);
+  s.waitForForks(--idx, resFuture.get(), result)
+
+fun waitForForks{TupSrc}(TupSrc s)
+  s.waitForForks(tupleSize(s), Tuple())
+
+// -- Tests
+
+assertEq(waitForForks(Tuple()), Tuple())
+
+assertEq(
+  jobA = (lambda () -> Either{int, Error} 42);
+  waitForForks(Tuple(fork jobA())),
+  Tuple(42)
+)
+
+assertEq(
+  jobA = (lambda () -> Either{int, Error} 42);
+  jobB = (lambda () -> Either{string, Error} "Hello World");
+  waitForForks(Tuple(fork jobA(), fork jobB())),
+  Tuple(42, "Hello World")
+)
+
+assertEq(
+  jobA = (lambda () -> Either{int, Error} 42);
+  jobB = (lambda () -> Either{string, Error} "Hello World");
+  jobC = (lambda () -> Either{float, Error} 1.337);
+  waitForForks(Tuple(fork jobA(), fork jobB(), fork jobC())),
+  Tuple(42, "Hello World", 1.337)
+)
+
+assertEq(
+  jobA = (lambda () -> Either{int, Error} Error("Fail"));
+  jobB = (lambda () -> Either{string, Error} "Hello World");
+  waitForForks(Tuple(fork jobA(), fork jobB())),
+  Error("Fail")
+)
+
+assertEq(
+  jobA = (lambda () -> Either{int, Error} 42);
+  jobB = (lambda () -> Either{string, Error} Error("Fail"));
+  waitForForks(Tuple(fork jobA(), fork jobB())),
+  Error("Fail")
+)

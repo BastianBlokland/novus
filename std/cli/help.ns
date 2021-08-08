@@ -36,7 +36,7 @@ struct CliHelpCmd =
 // -- Conversions
 
 fun CliHelpHeader(CliAppCfg appCfg)
-  CliHelpHeader(appCfg.appName, appCfg.appVer, appCfg.appDesc.isEmpty() ? None() : appCfg.appDesc)
+  CliHelpHeader(appCfg.appName, appCfg.appVer, appCfg.appDesc.noneIfEmpty())
 
 fun CliHelpValType(CliOpt opt)
   if opt as CliFlag     f   -> CliHelpValType("unknown", false)
@@ -46,13 +46,13 @@ fun CliHelpValType(CliOpt opt)
 fun CliHelpOpts(CliHelpCmd cmd)
   args  = cmd.opts.options.filter(lambda (CliOpt o) o is CliArg);
   flags = cmd.opts.options.filter(lambda (CliOpt o) o is CliFlag || o is CliValFlag);
-  CliHelpOpts(args.isEmpty() ? None() : args, flags.isEmpty() ? None() : flags)
+  CliHelpOpts(args.noneIfEmpty(), flags.noneIfEmpty())
 
 fun CliHelpCmd(CliAppCfg appCfg, CliCmdCfg cmdCfg)
   CliHelpCmd(
     appCfg.appBin,
-    cmdCfg.name.isEmpty() ? None() : cmdCfg.name,
-    cmdCfg.desc.isEmpty() ? None() : cmdCfg.desc,
+    cmdCfg.name.noneIfEmpty(),
+    cmdCfg.desc.noneIfEmpty(),
     cmdCfg.opts)
 
 fun CliHelpOptNecessity(CliValFlag vf)
@@ -196,7 +196,7 @@ fun cliHelpErrorWriter(CliHelpCfg cfg) -> Writer{Tuple{CliAppCfg, CliCmdCfg, Err
     stringWriter() & ?(litWriter(' ') & stringWriter()) & litWriter(": ") & newlineWriter() &
     errorWriter().cliHelpErrorHighlight(cfg) & newlineWriter()
   ).map(lambda (Tuple{CliAppCfg, CliCmdCfg, Error} input)
-    Tuple(input.f1.appBin, input.f2.name.isEmpty() ? None() : input.f2.name, input.f3))
+    Tuple(input.f1.appBin, input.f2.name.noneIfEmpty(), input.f3))
 
 fun cliHelpUnknownCmdWriter(CliHelpCfg cfg) -> Writer{Tuple{CliAppCfg, string}}
   (

@@ -1,0 +1,77 @@
+import "std.ns"
+
+import "../perforce/runner.ns"
+
+import "../utils/fork.ns"
+import "../utils/shared-writers.ns"
+import "../utils/style.ns"
+import "../utils/tracer.ns"
+
+// -- Types.
+
+struct DescribeData =
+  Config                  config,
+  P4ChangeInfo            changeInfo,
+  DateTime                localDateTime,
+  LimitedList{P4FileInfo} files
+
+// -- Actions.
+
+act describeQuery(P4RunContext runCtx, DescribeSettings settings) -> Either{DescribeData, Error}
+  waitForForks(Tuple(
+    fork p4GetChangeInfo(runCtx, settings.change.val),
+    fork p4GetDepotFiles(runCtx, settings.change.val, settings.filesMax + 1))
+  ).map(impure lambda (Tuple{P4ChangeInfo, List{P4FileInfo}} res)
+    DescribeData(runCtx.config, res.f1, timeToLocal(res.f1.time), toLimitedList(res.f2, settings.filesMax))
+  )
+
+// -- Writers.
+
+fun describeOutputWriter(DateTime now, StyleCtx ctx) -> Writer{DescribeData}
+  (
+    withHeaderWriter(ctx, "Change", changeWriter(ctx)) & newlineWriter() &
+    withHeaderWriter(ctx, "User", userWriter(ctx)) & newlineWriter() &
+    withHeaderWriter(ctx, "Date", dateTimePrettyWriter().styledWriter(ctx, Style.Time) &
+                                  litWriter(' ') & timeSinceWriter(now, ctx, true)) & newlineWriter() &
+    withHeaderWriter(ctx, "Client", stringWriter().styledWriter(ctx, Style.Client)) & newlineWriter() &
+    withHeaderWriter(ctx, "Status", enumKeyWriter(Type{P4ChangeStatus}())) & newlineWriter() &
+    withHeaderWriter(ctx, "Type", enumKeyWriter(Type{P4ChangeType}())) & newlineWriter() &
+    withHeaderWriter(ctx, "Description", stringWriter()) &
+    ?(
+      newlineWriter() & withHeaderWriter(ctx, "Files",
+        limitedListWriter(newlineWriter() & indentWriter() & fileWriter(ctx)).indent()
+      )
+    )
+  ).map(lambda (DescribeData d)
+    Tuple(
+      d.changeInfo.change,
+      d.changeInfo.user,
+      Tuple(d.localDateTime, d.changeInfo.time),
+      d.changeInfo.client.id,
+      d.changeInfo.status,
+      d.changeInfo.changeType,
+      d.changeInfo.desc.trim(),
+      d.files.noneIfEmpty())
+  )
+
+// -- Driver.
+
+struct DescribeSettings =
+  bool                    noColor,
+  bool                    trace,
+  int                     filesMax,
+  CliPositional{P4Change} change
+
+fun cliDefaults(Type{DescribeSettings} t)
+  CliDefault("files-max", "100") :: List{CliDefault}()
+
+act describeCmd(DescribeSettings s) -> Option{Error}
+  c         = consoleOpen().failOnError();
+  styleCtx  = StyleCtx(!s.noColor && c.allowColor());
+  tracer    = s.trace ? p4ConsoleTracer(c, styleCtx) : P4Tracer();
+  writer    = describeOutputWriter(timeNow(), styleCtx);
+  dataOrErr = loadConfig().map(impure lambda (Config cfg)
+    describeQuery(P4RunContext(cfg, tracer), s)
+  );
+  if dataOrErr as Error         err  -> err
+  if dataOrErr as DescribeData  data -> c.writeOut(writer & newlineWriter(), data)

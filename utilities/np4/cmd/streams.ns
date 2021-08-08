@@ -1,0 +1,51 @@
+import "std.ns"
+
+import "../perforce/runner.ns"
+
+import "../utils/shared-writers.ns"
+import "../utils/style.ns"
+import "../utils/tracer.ns"
+import "../utils/tree.ns"
+
+// -- Types.
+
+struct StreamsData =
+  Config                    config,
+  List{Tree{P4StreamInfo}}  rootStreams
+
+// -- Actions.
+
+act streamsQuery(P4RunContext runCtx, StreamsSettings s) -> Either{StreamsData, Error}
+  streamInfosOrErr = p4GetStreamInfos(runCtx, s.path.val ?? anyP4DepotPath(), s.streamsMax);
+  streamInfosOrErr.map(lambda (List{P4StreamInfo} infos)
+    StreamsData(runCtx.config, toTree(infos, Option{P4StreamInfo}(), p4StreamIsChildOf))
+  )
+
+// -- Writers.
+
+fun streamsOutputWriter(StyleCtx ctx) -> Writer{StreamsData}
+  (
+    listWriter(makeTreeWriter(ctx, streamInfoWriter(ctx, false)) & newlineWriter())
+  ).map(lambda (StreamsData d) d.rootStreams.map(toRootTreeState{P4StreamInfo}))
+
+// -- Driver.
+
+struct StreamsSettings =
+  bool                                noColor,
+  bool                                trace,
+  int                                 streamsMax,
+  CliPositional{Option{P4DepotPath}}  path
+
+fun cliDefaults(Type{StreamsSettings} t)
+  CliDefault("streams-max", "250") :: List{CliDefault}()
+
+act streamsCmd(StreamsSettings s) -> Option{Error}
+  c         = consoleOpen().failOnError();
+  styleCtx  = StyleCtx(!s.noColor && c.allowColor());
+  tracer    = s.trace ? p4ConsoleTracer(c, styleCtx) : P4Tracer();
+  writer    = streamsOutputWriter(styleCtx);
+  dataOrErr = loadConfig().map(impure lambda (Config cfg)
+    streamsQuery(P4RunContext(cfg, tracer), s)
+  );
+  if dataOrErr as Error       err  -> err
+  if dataOrErr as StreamsData data -> c.writeOut(writer, data)

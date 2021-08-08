@@ -43,6 +43,12 @@ fun !{T}(Either{T, Error} e, Error newError) -> Either{T, Error}
 fun !(Option{Error} e, Error newError) -> Option{Error}
   e.map(lambda (Error oldError) newError :: oldError)
 
+fun !{T}(Either{T, Error} e, lazy{Error} newError) -> Either{T, Error}
+  e.map(lambda (Error oldError) newError.get() :: oldError)
+
+fun !(Option{Error} e, lazy{Error} newError) -> Option{Error}
+  e.map(lambda (Error oldError) newError.get() :: oldError)
+
 fun !!{T}(Either{T, Error} e, Error newError) -> Either{T, Error}
   e.map(lambda (Error oldError) newError)
 

@@ -1,0 +1,145 @@
+import "std.ns"
+
+import "../perforce/runner.ns"
+
+import "../utils/fork.ns"
+import "../utils/limited-list.ns"
+import "../utils/shared-writers.ns"
+import "../utils/style.ns"
+import "../utils/tracer.ns"
+
+// -- Types.
+
+struct StatusData =
+  Config                  config,
+  P4ClientInfo            clientInfo,
+  P4StreamInfo            streamInfo,
+  List{StatusResolve}     pendingResolves,
+  List{StatusChange}      pendingChanges,
+  LimitedList{P4FileInfo} defaultOpenFiles
+
+struct StatusChange =
+  P4ChangeInfo            info,
+  LimitedList{P4FileInfo} openFiles,
+  LimitedList{P4FileInfo} shelvedFiles
+
+struct StatusResolve =
+  P4ClientPath    clientFile,
+  P4ResolveType   resolveType
+
+// -- Utilities.
+
+fun statusFilterPending(P4ChangeInfo changeInfo, Config cfg) -> bool
+  !p4ChangeIsHidden(cfg, changeInfo.change)
+
+fun statusToResolve(P4ResolveFile resolve, P4ClientInfo clientInfo) -> Either{StatusResolve, Error}
+  clientFileOrErr = absPathToP4ClientPath(clientInfo, resolve.clientFile);
+  clientFileOrErr.map(lambda (P4ClientPath clientFile) StatusResolve(clientFile, resolve.resolveType))
+
+fun statusToResolves(List{P4ResolveFile} resolves, P4ClientInfo clientInfo) -> Either{List{StatusResolve}, Error}
+  resolves.mapReverse(statusToResolve[clientInfo]).split().valueOrError()
+
+// -- Actions.
+
+act statusQueryChange(P4ChangeInfo changeInfo, P4RunContext runCtx, StatusSettings settings) -> Either{StatusChange, Error}
+  waitForForks(Tuple(
+    fork p4GetOpenFiles(runCtx, runCtx.config.client, changeInfo.change, settings.filesMax + 1),
+    fork p4GetDepotFiles(runCtx, changeInfo.change, settings.filesMax + 1))
+  ).map(lambda (Tuple{List{P4FileInfo}, List{P4FileInfo}} res)
+    StatusChange(
+      changeInfo, toLimitedList(res.f1, settings.filesMax), toLimitedList(res.f2, settings.filesMax))
+   )
+
+act statusQueryChanges(P4RunContext runCtx, StatusSettings settings) -> Either{List{StatusChange}, Error}
+  clientFilter  = Option(runCtx.config.client);
+  userFilter    = Option{P4User}();
+  changesOrErr  = p4GetChanges(runCtx, clientFilter, userFilter, P4ChangeStatus.Pending, settings.changesMax);
+  changesOrErr.map(impure lambda (List{P4ChangeInfo} changes)
+      changes
+        .filter(statusFilterPending[runCtx.config])
+        .parallelMap(statusQueryChange[settings][runCtx])
+        .split()
+        .valueOrError()
+    )
+
+act statusQuery(P4RunContext runCtx, StatusSettings settings) -> Either{StatusData, Error}
+  waitForForks(Tuple(
+    fork p4GetClientInfo(runCtx, runCtx.config.client),
+    fork p4GetCurrentStreamInfo(runCtx),
+    fork p4GetPendingResolves(runCtx),
+    fork statusQueryChanges(runCtx, settings),
+    fork p4GetOpenFiles(runCtx, runCtx.config.client, p4DefaultChange(), settings.filesMax + 1))
+  ).map(impure lambda (Tuple{ P4ClientInfo,
+                              P4StreamInfo,
+                              List{P4ResolveFile},
+                              List{StatusChange},
+                              List{P4FileInfo}} res)
+    statusToResolves(res.f3, res.f1).map(lambda (List{StatusResolve} resolves)
+      StatusData(runCtx.config, res.f1, res.f2, resolves, res.f4, toLimitedList(res.f5, settings.filesMax)))
+    )
+
+// -- Writers.
+
+fun statusResolveFileWriter(StyleCtx ctx, StatusSettings s) -> Writer{StatusResolve}
+  (
+    resolveTypeWriter(ctx) & litWriter(' ') & pathRelWriter()
+  ).map(lambda (StatusResolve c) Tuple(c.resolveType, c.clientFile.path))
+
+fun statusChangeWriter(DateTime now, StyleCtx ctx, StatusSettings s) -> Writer{StatusChange}
+  (
+    changeInfoWriter(now, ctx, s.descLength, ChangeWriteFormat.Minimal) &
+    ?(litWriter(' ') & shelveCountWriter(ctx).styledWriter(ctx, Style.Shelve)) &
+    limitedListWriter(newlineWriter() & indentWriter() & fileWriter(ctx)).indent()
+  ).map(lambda (StatusChange c)
+    Tuple(c.info, c.shelvedFiles.count > 0 ? Option(c.shelvedFiles) : None(), c.openFiles)
+  )
+
+fun statusOutputWriter(DateTime now, StyleCtx ctx, StatusSettings s) -> Writer{StatusData}
+  (
+    withHeaderWriter(ctx, "Client", clientInfoWriter(ctx)) & newlineWriter() &
+    withHeaderWriter(ctx, "Stream", streamInfoWriter(ctx)) &
+    ?(
+      newlineWriter() & withHeaderWriter(ctx, "Resolves",
+        listWriter(newlineWriter() & indentWriter() & statusResolveFileWriter(ctx, s)).indent())
+    ) &
+    ?(
+      newlineWriter() & withHeaderWriter(ctx, "Pending",
+        listWriter(newlineWriter() & indentWriter() & statusChangeWriter(now, ctx, s)).indent())
+    ) &
+    ?(
+      newlineWriter() & withHeaderWriter(ctx, "Default",
+        limitedListWriter(newlineWriter() & indentWriter() & fileWriter(ctx)).indent())
+    )
+  ).map(lambda (StatusData d)
+    Tuple(
+      d.clientInfo,
+      d.streamInfo,
+      d.pendingResolves.noneIfEmpty(),
+      d.pendingChanges.noneIfEmpty(),
+      d.defaultOpenFiles.noneIfEmpty())
+  )
+
+// -- Driver.
+
+struct StatusSettings =
+  bool  noColor,
+  bool  trace,
+  int   descLength,
+  int   changesMax,
+  int   filesMax
+
+fun cliDefaults(Type{StatusSettings} t)
+  CliDefault("desc-length", "60")   ::
+  CliDefault("changes-max", "50")   ::
+  CliDefault("files-max",   "100")
+
+act statusCmd(StatusSettings s) -> Option{Error}
+  c         = consoleOpen().failOnError();
+  styleCtx  = StyleCtx(!s.noColor && c.allowColor());
+  tracer    = s.trace ? p4ConsoleTracer(c, styleCtx) : P4Tracer();
+  writer    = statusOutputWriter(timeNow(), styleCtx, s);
+  dataOrErr = loadConfig().map(impure lambda (Config cfg)
+    statusQuery(P4RunContext(cfg, tracer), s)
+  );
+  if dataOrErr as Error      err  -> err
+  if dataOrErr as StatusData data -> c.writeOut(writer & newlineWriter(), data)

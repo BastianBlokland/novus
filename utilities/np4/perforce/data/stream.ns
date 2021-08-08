@@ -1,0 +1,49 @@
+import "std.ns"
+
+import "user.ns"
+
+// -- Types.
+
+enum P4StreamType = Mainline, Development, Release, Task, Virtual
+
+struct P4StreamName = string name
+
+struct P4Stream = string path
+
+struct P4StreamInfo =
+  P4Stream          stream,
+  P4User            owner,
+  P4StreamName      name,
+  Option{P4Stream}  parent,
+  P4StreamType      type,
+  Option{string}    description
+
+// -- Utilities.
+
+fun p4StreamIsChildOf(P4StreamInfo info, Option{P4StreamInfo} parent)
+  if parent as P4StreamInfo parentStream  -> info.parent == parentStream.stream
+  if parent is None                       -> info.parent is None
+
+// -- Conversions.
+
+fun string(P4StreamName s) s.name
+fun string(P4Stream s) s.path
+
+// -- Mappings.
+
+fun fromPython(PyObj po, Type{P4StreamName} t) -> Either{P4StreamName, Error}
+  po as string s ? P4StreamName(s) : Error("Expected a p4 stream name, got a " + pyObjType(po))
+
+fun fromPython(PyObj po, Type{P4Stream} t) -> Either{P4Stream, Error}
+  po as string s ? P4Stream(s) : Error("Expected a p4 stream path, got a " + pyObjType(po))
+
+fun fromPython(PyObj po, Type{Option{P4Stream}} t) -> Either{Option{P4Stream}, Error}
+  if po is PyNone   -> Option{P4Stream}()
+  if po as string s -> s == "none" ? Option{P4Stream}() : Option(P4Stream(s))
+  else              -> Error("Expected a p4 stream path, got a " + pyObjType(po))
+
+fun cliParser(Type{P4Stream} t) p4StreamTxtParser()
+
+// -- Parsers.
+
+fun p4StreamTxtParser() untilParser(isWhitespace).to(Type{P4Stream}())

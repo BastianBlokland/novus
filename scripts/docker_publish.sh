@@ -42,7 +42,7 @@ getVersionFromDockerImage()
   local versionNum
   versionNum=$(sudo docker run --rm --entrypoint cat "${tgtImg}" /novus/VERSION)
 
-  test -n "${versionNum}" || fail "Failed to retreive version number"
+  test -n "${versionNum}" || fail "Failed to retrieve version number"
 
   echo "${versionNum}"
 }

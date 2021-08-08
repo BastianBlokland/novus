@@ -1,0 +1,187 @@
+import "std.ns"
+
+import "data/change.ns"
+import "data/file.ns"
+import "data/grep.ns"
+import "data/resolve.ns"
+import "data/stream.ns"
+import "data/var.ns"
+
+import "../config.ns"
+
+// -- Types.
+
+enum P4RunCode = Stat, Info, Error
+
+struct P4RunOutput{T} =
+  P4RunCode code,
+  T         data
+
+struct P4Tracer =
+  action{List{string}, Duration, ByteSize, Option{Error}} cmdExecuted
+
+struct P4RunContext = Config config, P4Tracer tracer
+
+// -- Conversions.
+
+fun P4Tracer()
+  P4Tracer(impure lambda (List{string} args, Duration dur, ByteSize outSize) Option{Error}())
+
+// -- Utilities.
+
+fun p4GlobalArgs(P4RunContext ctx) -> List{string}
+  "-p"  :: ctx.config.server.string() ::
+  "-c"  :: ctx.config.client.string() ::
+  "-Q"  :: "utf8unchecked"            ::
+  "-z"  :: "tag"                      ::
+  "-G"
+
+fun p4CmdError(List{string} args)
+  Error("p4 error (cmd: p4 " + args.string("", " ", "") + ")")
+
+fun p4ParseError(List{string} args)
+  Error("Failed to parse p4 response (cmd: p4 " + args.string("", " ", "") + ")")
+
+// -- Parsers.
+
+fun p4ErrorParser() -> Parser{string}
+  pyMarshalParser(Type{P4RunOutput{string}}()).map(lambda (P4RunOutput{string} out)
+    if out.code != P4RunCode.Error  -> Error("Not an error")
+    else                            -> out.data
+  )
+
+fun p4ErrorMatcher(TextPattern expectedErr) -> Parser{string}
+  p4ErrorParser().map(lambda (string err)
+    if textMatch(expectedErr, err) -> err
+    else                           -> Error("Unexpected error: '" + err.trim() + '\'')
+  )
+
+// -- Actions.
+
+act p4Run(P4RunContext ctx, List{string} args) -> Either{string, Error}
+  flags = ProcessFlags.PipeInOut | ProcessFlags.NewGroup;
+  startTimestamp = timestamp();
+  trace = (impure lambda (ProcessResult res) -> Either{ProcessResult, Error}
+    dur = timestamp() - startTimestamp;
+    outSize = bytes((res.stdOut ?? "").length());
+    ctx.tracer.cmdExecuted(args, dur, outSize) as Error traceErr ? traceErr : res
+  );
+  p = run(ctx.config.p4Path.string(), ctx.p4GlobalArgs() :: args, flags);
+  p.wait().map(trace).map(lambda (ProcessResult r)
+    if r.isSuccess() -> r.stdOut ?? ""
+    else             ->
+      p4ErrorParser().run(r.stdOut ?? "") as string err
+        ? p4CmdError(args) :: Error(err.trim())
+        : p4CmdError(args) :: Error((r.stdErr ?? "").trim())
+  )
+
+act p4Run{T}(P4RunContext ctx, List{string} args, Type{T} resultType) -> Either{T, Error}
+  p = pyMarshalParser(resultType) ! lazy p4ParseError(args);
+  ctx.p4Run(args).map(p.build(ParseFlags.NoWrapperError))
+
+act p4RunMany{T}(P4RunContext ctx, List{string} args, Type{T} resultType) -> Either{List{T}, Error}
+  p = manyUntilParser(pyMarshalParser(resultType), endParser()) ! lazy p4ParseError(args);
+  ctx.p4Run(args).map(p.build(ParseFlags.NoWrapperError))
+
+// -- Queries.
+
+act p4GetVars(P4RunContext ctx) -> Either{List{P4Var}, Error}
+  args = "set" :: "-q";
+  p = manyParser(p4VarTxtParser(), newlineParser(), ParseFlags.AllowTrailingSeperator) ! lazy p4ParseError(args);
+  ctx.p4Run(args).map(p.build(ParseFlags.NoWrapperError))
+
+act p4SetVar(P4RunContext ctx, P4Var var) -> Option{Error}
+  ctx.p4Run("set" :: var.string()) as Error err ? err : None()
+
+act p4GetCurrentStreamInfo(P4RunContext ctx) -> Either{P4StreamInfo, Error}
+  ctx.p4Run("stream" :: "-o", Type{P4StreamInfo}())
+  ! lazy Error("No stream found for client '" + ctx.config.client + "' on server '" + ctx.config.server + '\'')
+
+act p4GetStreamInfos(P4RunContext ctx, P4DepotPath path, int max) -> Either{List{P4StreamInfo}, Error}
+  pathStr = path.string();
+  ctx.p4RunMany("streams"
+    :: "-m" :: max.string()
+    :: (pathStr.endsWith("...") ? pathStr : P4DepotPath(path.path / "...").string()),
+    Type{P4StreamInfo}())
+  ! lazy Error("No streams on server '" + ctx.config.server + '\'')
+
+act p4GetClientInfo(P4RunContext ctx, P4Client client) -> Either{P4ClientInfo, Error}
+  ctx.p4Run("client" :: "-o" :: client.id, Type{P4ClientInfo}())
+  ! lazy Error("Client '" + client + "' not valid on server '" + ctx.config.server + '\'')
+
+act p4GetChangeInfo(P4RunContext ctx, P4Change change) -> Either{P4ChangeInfo, Error}
+  ctx.p4Run("describe" :: "-s" :: change.string(), Type{P4ChangeInfo}())
+  ! lazy Error("Change '" + change.string() + "' not found")
+
+enum P4ChangesFlags =
+  None    : 0b00,
+  Reverse : 0b01
+
+act p4GetChanges(
+    P4RunContext      ctx,
+    Option{P4Client}  clientFilter,
+    Option{P4User}    userFilter,
+    P4ChangeStatus    statusFilter,
+    int               max,
+    P4ChangesFlags    flags = P4ChangesFlags.None,
+    Option{P4Path}    pathFilter = None()) -> Either{List{P4ChangeInfo}, Error}
+  reverse = (flags & P4ChangesFlags.Reverse) != 0;
+  ctx.p4RunMany(
+    "changes"                                                           ::
+    "-l"                                                                ::
+    (clientFilter as P4Client c ? Option("-c" :: c.string()) : None())  ::
+    (userFilter as P4User     u ? Option("-u" :: u.string()) : None())  ::
+    "-s" :: statusFilter.string().strToLower()                          ::
+    (reverse ? Option("-r") : None())                                   ::
+    "-m" :: max.string()                                                ::
+    (pathFilter as P4Path p ? Option(p.string()) : None())              :: List{string}(),
+    Type{P4ChangeInfo}())
+
+act p4GetDepotFiles(P4RunContext ctx, P4Change change, int max) -> Either{List{P4FileInfo}, Error}
+  fileSpec        = (anyP4ClientPath(ctx.config.client).string() + "@=" + change.string());
+  args            = "files" :: "-m" :: max.string() :: fileSpec;
+  fileListParser  = manyUntilParser(pyMarshalParser(Type{P4FileInfo}()), endParser());
+  noSuchFilesErr  = p4ErrorMatcher(GlobTextPattern(fileSpec + "*no*file(s)*", StrComp.IgnoreCase));
+  p               = (noSuchFilesErr >> retParser(List{P4FileInfo}()) | fileListParser) ! lazy p4ParseError(args);
+  ctx.p4Run(args).map(p.build(ParseFlags.NoWrapperError))
+
+act p4GetOpenFiles(
+  P4RunContext      ctx,
+  P4Client          client,
+  Option{P4Change}  changeFilter,
+  int               max) -> Either{List{P4FileInfo}, Error}
+  ctx.p4RunMany(
+    "opened"                                                                     ::
+    "-C"  :: client.string()                                                     ::
+    (changeFilter as P4Change change ? Option("-c" :: change.string()) : None()) ::
+    "-m"  :: max.string()                                                        :: List{string}(),
+    Type{P4FileInfo}())
+
+act p4GetPendingResolves(P4RunContext ctx) -> Either{List{P4ResolveFile}, Error}
+  args               = "resolve" :: "-n";
+  fileListParser     = manyUntilParser(pyMarshalParser(Type{P4ResolveFile}()), endParser());
+  noFileToResolveErr = p4ErrorMatcher(GlobTextPattern("No file(s) to resolve*", StrComp.IgnoreCase));
+  p                  = ((noFileToResolveErr >> retParser(List{P4ResolveFile}())) | fileListParser) ! lazy p4ParseError(args);
+  ctx.p4Run(args).map(p.build(ParseFlags.NoWrapperError))
+
+act p4DownloadFile(P4RunContext ctx, P4DepotPath depotPath, P4FileRev rev, Path resultPath) -> Either{P4FileInfo, Error}
+  fileSpec = depotPath.string() + "#" + rev.string();
+  ctx.p4Run("print" :: "-o" :: resultPath.pathAbsolute().string() :: fileSpec, Type{P4FileInfo}())
+    ! lazy Error("Failed to download '" + fileSpec + "' from server '" + ctx.config.server + '\'')
+
+act p4DownloadFile(P4RunContext ctx, P4DepotPath depotPath, P4Change change, Path resultPath) -> Either{P4FileInfo, Error}
+  fileSpec = depotPath.string() + "@=" + change;
+  ctx.p4Run("print" :: "-o" :: resultPath.pathAbsolute().string() :: fileSpec, Type{P4FileInfo}())
+    ! lazy Error("Failed to download '" + fileSpec + "' from server '" + ctx.config.server + '\'')
+
+act p4Grep(P4RunContext ctx, string pattern, bool caseSensitive, List{P4Path} paths, int max) -> Either{List{P4GrepMatch}, Error}
+  args = "grep"                                 ::
+    "-n" :: "-s"                                ::
+    (caseSensitive ? None() : Option("-i"))     ::
+    "-e" :: pattern                             ::
+    paths.map(lambda (P4Path p) p.string());
+  p = manyParser(pyMarshalParser(Type{P4GrepMatch}()), max) ! lazy p4ParseError(args);
+  ctx.p4Run(args).map(p.build(ParseFlags.NoWrapperError))
+
+act p4Where(P4RunContext ctx, P4DepotPath depotPath) -> Either{P4FileLocation, Error}
+  ctx.p4Run("where" :: depotPath.string(), Type{P4FileLocation}())

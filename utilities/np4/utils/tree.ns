@@ -1,0 +1,41 @@
+import "std.ns"
+
+import "style.ns"
+
+// -- Types.
+
+struct Tree{T} = T val, List{Tree{T}} children
+
+struct TreeState{T} = Tree{T} node, string prefix, bool lastSibling
+
+// -- Utilities.
+
+fun toTree{T}(List{T} values, Option{T} parent, function{T, Option{T}, bool} isChildPredicate) -> List{Tree{T}}
+  values
+    .filter(isChildPredicate[parent])
+    .map(lambda (T val) Tree(val, toTree(values, Option(val), isChildPredicate)))
+
+fun toRootTreeState{T}(Tree{T} node)
+  TreeState(node, "", false)
+
+fun toChildTreeState{T}(TreeState{T} parent, Tree{T} child, bool lastSibling)
+  TreeState(child, parent.prefix + (parent.lastSibling ? "   " : " │ "), lastSibling)
+
+fun toChildTreeStates{T}(TreeState{T} parent)
+  impl = ( lambda (List{Tree{T}} l, List{TreeState{T}} result)
+    if l as LNode{Tree{T}} n -> self(n.next, toChildTreeState(parent, n.val, n.next is LEnd) :: result)
+    if l is LEnd             -> result
+  );
+  impl(parent.node.children, List{TreeState{T}}()).reverse()
+
+// -- Writers.
+
+fun treeWriter{T}(StyleCtx ctx, Writer{T} valWriter, Writer{TreeState{T}} nodeWriter) -> Writer{TreeState{T}}
+  (
+    stringWriter().styledWriter(ctx, Style.TreeSeg) & valWriter & listWriter(newlineWriter() & nodeWriter)
+  ).map(lambda (TreeState{T} n)
+    Tuple(n.prefix + (n.lastSibling ? " └─" : " ├─"), n.node.val, toChildTreeStates(n))
+  )
+
+fun makeTreeWriter{T}(StyleCtx ctx, Writer{T} valWriter) -> Writer{TreeState{T}}
+  treeWriter(ctx, valWriter, lazyWriter(lazy makeTreeWriter(ctx, valWriter)))

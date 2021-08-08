@@ -1,0 +1,91 @@
+import "std.ns"
+
+import "../perforce/ignore.ns"
+import "../perforce/runner.ns"
+
+import "../utils/diff.ns"
+import "../utils/fork.ns"
+import "../utils/shared-writers.ns"
+import "../utils/style.ns"
+import "../utils/tracer.ns"
+
+import "../config.ns"
+
+// -- Utilities.
+
+struct NewWorkspace =
+  Config        newCfg,
+  P4ClientInfo  clientInfo
+
+fun setupNewConfig(SetupSettings s, Platform platform)
+  Config(
+    s.p4Path,
+    s.server,
+    s.client,
+    s.hiddenChanges ?? List{P4Change}(),
+    diffToolFromPreset(s.diffTool ?? getDefaultDiffToolPreset(platform), platform),
+    diffToolFromPreset(DiffToolPreset.VsCode, platform),
+    (pathRel() / "...") :: List{PathRelative}())
+
+// -- Actions.
+
+act setupSaveConfig(SetupSettings s, Config newCfg, P4ClientInfo clientInfo) -> Option{Error}
+  res = writeConfig(newCfg, clientInfo, s.force);
+  res as Error err && err.code == PlatformError.FileAlreadyExists
+    ? Error("Workspace already setup at: '" + clientInfo.root + "', use --force to overwrite")
+    : res
+
+act setupWorkspace(SetupSettings s, Config newCfg, P4Tracer tracer) -> Either{NewWorkspace, Error}
+  runCtx = P4RunContext(newCfg, tracer);
+  p4GetClientInfo(runCtx, newCfg.client).map(impure lambda (P4ClientInfo clientInfo)
+    waitForForks(Tuple(
+      fork setupSaveConfig(s, newCfg, clientInfo),
+      fork p4AddToIgnore(runCtx, clientInfo, ".np4"))
+    ).map(impure lambda (Tuple res) NewWorkspace(newCfg, clientInfo))
+  )
+
+// -- Writers
+
+fun setupSuccessWriter(StyleCtx ctx) -> Writer{NewWorkspace}
+  (
+    litWriter("Workspace successfully setup").styledWriter(ctx, Style.Header) & newlineWriter() &
+    withHeaderWriter(ctx, "Client", clientWriter(ctx)) & newlineWriter() &
+    withHeaderWriter(ctx, "Root", pathAbsWriter()) & newlineWriter() &
+    withHeaderWriter(ctx, "Stream", streamWriter(ctx)) & newlineWriter() &
+    withHeaderWriter(ctx, "User", userWriter(ctx)) & newlineWriter() &
+    withHeaderWriter(ctx, "Host", stringWriter()) & newlineWriter() &
+    withHeaderWriter(ctx, "Description", stringWriter())
+  ).map(lambda (NewWorkspace w)
+    Tuple(
+      w.clientInfo.client,
+      w.clientInfo.root,
+      w.clientInfo.stream,
+      w.clientInfo.owner,
+      w.clientInfo.host,
+      w.clientInfo.description.trim())
+    )
+
+// -- Driver.
+
+struct SetupSettings =
+  bool                    noColor,
+  bool                    force,
+  bool                    trace,
+  Path                    p4Path,
+  P4Server                server,
+  P4Client                client,
+  Option{List{P4Change}}  hiddenChanges,
+  Option{DiffToolPreset}  diffTool
+
+fun cliDefaults(Type{SetupSettings} t)
+  CliDefault("p4-path", "p4") :: List{CliDefault}()
+
+act setupCmd(SetupSettings s) -> Option{Error}
+  c               = consoleOpen().failOnError();
+  styleCtx        = StyleCtx(!s.noColor && c.allowColor());
+  tracer          = s.trace ? p4ConsoleTracer(c, styleCtx) : P4Tracer();
+  writer          = setupSuccessWriter(styleCtx);
+  newCfg          = setupNewConfig(s, platform());
+  workspaceOrErr  = setupWorkspace(s, newCfg, tracer);
+  if workspaceOrErr as Error        err -> err
+  if workspaceOrErr as NewWorkspace w   -> c.writeOut(writer & newlineWriter(), w)

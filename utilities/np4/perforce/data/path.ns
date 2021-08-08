@@ -1,0 +1,62 @@
+import "std.ns"
+
+import "client.ns"
+
+// -- Types.
+
+struct  P4DepotPath  = PathRelative path
+struct  P4ClientPath = P4Client client, PathRelative path
+union   P4Path       = P4DepotPath, P4ClientPath
+
+// -- Conversions.
+
+fun string(P4DepotPath p)   "//" + p.path.string()
+fun string(P4ClientPath p)  "//" + p.client.string() + '/' + p.path.string()
+
+// -- Utilities.
+
+fun anyP4DepotPath()            P4DepotPath(pathRel() / "...")
+fun anyP4ClientPath(P4Client c) P4ClientPath(c, pathRel() / "...")
+
+fun absPathToP4ClientPath(P4ClientInfo clientInfo, PathAbsolute path)
+  makeRelative(path, clientInfo.root).map(lambda (PathRelative rel) -> Either{P4ClientPath, Error}
+    P4ClientPath(clientInfo.client, rel)
+  ) ?? Error("Given path '" + path + "' is not under the client root")
+
+fun p4ClientPathToAbs(P4ClientInfo clientInfo, P4ClientPath clientPath) -> PathAbsolute
+  clientInfo.root / clientPath.path
+
+// -- Mappings.
+
+fun fromPython(PyObj po, Type{P4DepotPath} t) -> Either{P4DepotPath, Error}
+  po as string s ? p4DepotPathParser().run(s) : Error("Expected a p4 depot path, got a " + pyObjType(po))
+
+fun fromPython(PyObj po, Type{P4ClientPath} t) -> Either{P4ClientPath, Error}
+  po as string s ? p4ClientPathParser().run(s) : Error("Expected a p4 client path, got a " + pyObjType(po))
+
+fun fromJson(JsonValue jv, Type{P4DepotPath} t) -> Either{P4DepotPath, Error}
+  jv as string s ? p4DepotPathParser().run(s) : Error("Expected a p4 depot path, got a " + jsonValueType(jv))
+
+fun fromJson(JsonValue jv, Type{P4ClientPath} t) -> Either{P4ClientPath, Error}
+  jv as string s ? p4ClientPathParser().run(s) : Error("Expected a p4 client path, got a " + jsonValueType(jv))
+
+fun toJson(P4DepotPath p) -> JsonValue
+  p.string()
+
+fun toJson(P4ClientPath p) -> JsonValue
+  p.string()
+
+fun cliParser(Type{P4DepotPath} t)  p4DepotPathParser()
+fun cliParser(Type{P4ClientPath} t) p4ClientPathParser()
+fun cliParser(Type{P4Path} t)       p4DepotPathParser().map(lambda (P4DepotPath dp) P4Path(dp))
+
+// -- Parsers.
+
+fun p4DepotPathParser()
+  (matchParser("//") >> pathRelParser()).to(Type{P4DepotPath}())
+
+fun p4ClientPathParser()
+  (
+    matchParser("//") >> untilParser(matchParser('/')).to(Type{P4Client}()) << matchParser('/') &
+    pathRelParser()
+  ).to(Type{P4ClientPath}())

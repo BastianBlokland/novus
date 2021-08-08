@@ -233,16 +233,18 @@ fun noinline durationUnit(Duration d)
   if absTime < week()         -> DurationUnit.Day
   else                        -> DurationUnit.Week
 
-fun noinline string(DurationUnit d)
-  if d == DurationUnit.Nanosecond  -> "ns"
-  if d == DurationUnit.Microsecond -> "us"
-  if d == DurationUnit.Millisecond -> "ms"
-  if d == DurationUnit.Second      -> "s"
-  if d == DurationUnit.Minute      -> "m"
-  if d == DurationUnit.Hour        -> "h"
-  if d == DurationUnit.Day         -> "d"
-  if d == DurationUnit.Week        -> "w"
-  else                             -> ""
+fun string(DurationUnit d) d.string(true)
+
+fun noinline string(DurationUnit d, bool short)
+  if d == DurationUnit.Nanosecond  -> short ? "ns" : "nano-seconds"
+  if d == DurationUnit.Microsecond -> short ? "us" : "micro-seconds"
+  if d == DurationUnit.Millisecond -> short ? "ms" : "milli-seconds"
+  if d == DurationUnit.Second      -> short ? "s"  : "seconds"
+  if d == DurationUnit.Minute      -> short ? "m"  : "minutes"
+  if d == DurationUnit.Hour        -> short ? "h"  : "hours"
+  if d == DurationUnit.Day         -> short ? "d"  : "days"
+  if d == DurationUnit.Week        -> short ? "w"  : "weeks"
+  else                             -> short ? ""   : ""
 
 fun string(Duration d)
   timeDurationWriter().run(d)
@@ -427,15 +429,16 @@ fun dateTimePrettyWriter(PrettyTimeFlags flags = PrettyTimeFlags.Default) -> Wri
   ).map(lambda (DateTime dt) Tuple(Date(dt + Duration(dt.zone)), dt))
 
 // Duration in human readable format
-// Example output: '42.3s'.
+// Example output: '42.3s', '42.3 seconds'.
 fun timeDurationWriter(
-  Writer{float} numWriter = txtFloatWriter(1, FloatToStringFlags.NeverScientific),
-  Writer{None}  sepWriter = noneWriter()) -> Writer{Duration}
+  Writer{float} numWriter       = txtFloatWriter(1, FloatToStringFlags.NeverScientific),
+  Writer{None}  sepWriter       = noneWriter(),
+  bool          shortUnitFormat = true) -> Writer{Duration}
   (
     numWriter & sepWriter & stringWriter()
   ).map(lambda (Duration d)
     unit = durationUnit(d);
-    Tuple(d.ns.float() / Duration(unit).ns.float(), unit.string())
+    Tuple(d.ns.float() / Duration(unit).ns.float(), unit.string(shortUnitFormat))
   )
 
 // -- Actions

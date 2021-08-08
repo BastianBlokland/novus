@@ -67,7 +67,7 @@ public:
     return m_head.load(std::memory_order_acquire);
   }
 
-  // Retreive the 'next' references for a given reference, allows walking all live references.
+  // Retrieve the 'next' references for a given reference, allows walking all live references.
   [[nodiscard]] inline auto getNextAlloc(Ref* ref) noexcept -> Ref* { return ref->m_next; }
 
   // Free the reference after the given one.
