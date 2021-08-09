@@ -48,6 +48,10 @@ fun shouldDiff(P4FileInfo f)
     f.Action == P4FileOp.Integrate  ||
     f.Action == P4FileOp.Import)
 
+fun shouldDiff(P4FileInfo f, DiffCtx ctx)
+  shouldDiff(f) &&
+  (ctx.settings.change.val is P4Change || !p4ChangeIsHidden(ctx.runCtx.config, f.change))
+
 fun getDiffFromRev(P4FileInfo f, DiffType t) -> P4FileRev
   if f.Action == P4FileOp.Add       -> p4RevNone()
   if f.Action == P4FileOp.MoveAdd   -> p4RevNone()
@@ -95,9 +99,8 @@ act diffQueryFiles(DiffCtx ctx) -> Either{List{DiffFileSet}, Error}
   );
   filesOrErr.map(impure lambda (List{P4FileInfo} files)
   (
-    files .filter(shouldDiff)
-          .filter(lambda (P4FileInfo fi) ctx.settings.change.val is P4Change || !p4ChangeIsHidden(ctx.runCtx.config, fi.change))
-          .map(impure lambda (P4FileInfo f) diffGetFileSet(ctx, f))
+    files .filterReverse(lambda (P4FileInfo fi) shouldDiff(fi, ctx))
+          .mapReverse(impure lambda (P4FileInfo f) diffGetFileSet(ctx, f))
           .split().valueOrError())
   )
 
