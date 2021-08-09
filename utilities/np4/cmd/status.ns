@@ -44,7 +44,7 @@ fun statusToResolves(List{P4ResolveFile} resolves, P4ClientInfo clientInfo) -> E
 act statusQueryChange(P4ChangeInfo changeInfo, P4RunContext runCtx, StatusSettings settings) -> Either{StatusChange, Error}
   waitForForks(Tuple(
     fork p4GetOpenFiles(runCtx, runCtx.config.client, changeInfo.change, settings.filesMax + 1),
-    fork p4GetDepotFiles(runCtx, changeInfo.change, settings.filesMax + 1))
+    fork p4GetDepotFiles(runCtx, changeInfo.change, settings.filesMax + 1, true))
   ).map(lambda (Tuple{List{P4FileInfo}, List{P4FileInfo}} res)
     StatusChange(
       changeInfo, toLimitedList(res.f1, settings.filesMax), toLimitedList(res.f2, settings.filesMax))

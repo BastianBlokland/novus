@@ -95,7 +95,7 @@ act diffQueryFiles(DiffCtx ctx) -> Either{List{DiffFileSet}, Error}
     if ctx.settings.change.val is None       -> p4GetOpenFiles(ctx.runCtx, client, None(), ctx.settings.filesMax)
     if ctx.settings.change.val as P4Change c -> ctx.diffType == DiffType.FromCurToOpen
       ? p4GetOpenFiles(ctx.runCtx, client, c, ctx.settings.filesMax)
-      : p4GetDepotFiles(ctx.runCtx, c, ctx.settings.filesMax)
+      : p4GetDepotFiles(ctx.runCtx, c, ctx.settings.filesMax, ctx.diffType == DiffType.FromCurToChange)
   );
   filesOrErr.map(impure lambda (List{P4FileInfo} files)
   (
