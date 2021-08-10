@@ -2,7 +2,6 @@ import "std.ns"
 
 import "../perforce/runner.ns"
 
-import "../utils/fork.ns"
 import "../utils/shared-writers.ns"
 import "../utils/style.ns"
 import "../utils/tracer.ns"
@@ -18,11 +17,13 @@ struct DescribeData =
 // -- Actions.
 
 act describeQuery(P4RunContext runCtx, DescribeSettings settings) -> Either{DescribeData, Error}
-  waitForForks(Tuple(
-    fork p4GetChangeInfo(runCtx, settings.change.val),
-    fork p4GetDepotFiles(runCtx, settings.change.val, settings.filesMax + 1))
-  ).map(impure lambda (Tuple{P4ChangeInfo, List{P4FileInfo}} res)
-    DescribeData(runCtx.config, res.f1, timeToLocal(res.f1.time), toLimitedList(res.f2, settings.filesMax))
+  changeInfoOrErr = p4GetChangeInfo(runCtx, settings.change.val);
+  changeInfoOrErr.map(impure lambda (P4ChangeInfo ci)
+    shelve      = ci.status != P4ChangeStatus.Submitted;
+    filesOrErr  = p4GetDepotFiles(runCtx, ci.change, settings.filesMax + 1, shelve);
+    filesOrErr.map(impure lambda (List{P4FileInfo} files)
+      DescribeData(runCtx.config, ci, timeToLocal(ci.time), toLimitedList(files, settings.filesMax))
+    )
   )
 
 // -- Writers.

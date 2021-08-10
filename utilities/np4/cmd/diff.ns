@@ -48,6 +48,10 @@ fun shouldDiff(P4FileInfo f)
     f.Action == P4FileOp.Integrate  ||
     f.Action == P4FileOp.Import)
 
+fun shouldDiff(P4FileInfo f, DiffCtx ctx)
+  shouldDiff(f) &&
+  (ctx.settings.change.val is P4Change || !p4ChangeIsHidden(ctx.runCtx.config, f.change))
+
 fun getDiffFromRev(P4FileInfo f, DiffType t) -> P4FileRev
   if f.Action == P4FileOp.Add       -> p4RevNone()
   if f.Action == P4FileOp.MoveAdd   -> p4RevNone()
@@ -57,6 +61,9 @@ fun getDiffFromRev(P4FileInfo f, DiffType t) -> P4FileRev
   if t == DiffType.FromCurToChange  -> f.rev
   if t == DiffType.FromCurToOpen    -> f.rev
   else                              -> p4RevNone()
+
+fun useLocalToFile(DiffType t)
+  t == DiffType.FromCurToOpen
 
 // -- Actions.
 
@@ -73,7 +80,8 @@ act diffGetFromFile(DiffCtx ctx, P4FileInfo f) -> Either{PathAbsolute, Error}
   maybeErr as Error err ? err : path
 
 act diffGetToFile(DiffCtx ctx, P4FileInfo f) -> Either{PathAbsolute, Error}
-  if f.clientFile as P4ClientPath clientPath -> p4ClientPathToAbs(ctx.clientInfo, clientPath)
+  if useLocalToFile(ctx.diffType) && f.clientFile as P4ClientPath clientPath ->
+    p4ClientPathToAbs(ctx.clientInfo, clientPath)
   else ->
     path = ctx.tmpPath / diffTmpFileName(f.depotFile, f.change);
     p4DownloadFile(ctx.runCtx, f.depotFile, f.change, path).map(lambda (P4FileInfo dl) path)
@@ -91,13 +99,12 @@ act diffQueryFiles(DiffCtx ctx) -> Either{List{DiffFileSet}, Error}
     if ctx.settings.change.val is None       -> p4GetOpenFiles(ctx.runCtx, client, None(), ctx.settings.filesMax)
     if ctx.settings.change.val as P4Change c -> ctx.diffType == DiffType.FromCurToOpen
       ? p4GetOpenFiles(ctx.runCtx, client, c, ctx.settings.filesMax)
-      : p4GetDepotFiles(ctx.runCtx, c, ctx.settings.filesMax)
+      : p4GetDepotFiles(ctx.runCtx, c, ctx.settings.filesMax, ctx.diffType == DiffType.FromCurToChange)
   );
   filesOrErr.map(impure lambda (List{P4FileInfo} files)
   (
-    files .filter(shouldDiff)
-          .filter(lambda (P4FileInfo fi) ctx.settings.change.val is P4Change || !p4ChangeIsHidden(ctx.runCtx.config, fi.change))
-          .map(impure lambda (P4FileInfo f) diffGetFileSet(ctx, f))
+    files .filterReverse(lambda (P4FileInfo fi) shouldDiff(fi, ctx))
+          .mapReverse(impure lambda (P4FileInfo f) diffGetFileSet(ctx, f))
           .split().valueOrError())
   )
 
