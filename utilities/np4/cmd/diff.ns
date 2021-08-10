@@ -62,6 +62,9 @@ fun getDiffFromRev(P4FileInfo f, DiffType t) -> P4FileRev
   if t == DiffType.FromCurToOpen    -> f.rev
   else                              -> p4RevNone()
 
+fun useLocalToFile(DiffType t)
+  t == DiffType.FromCurToOpen
+
 // -- Actions.
 
 act diffCreateTempDir() -> Either{PathAbsolute, Error}
@@ -77,7 +80,8 @@ act diffGetFromFile(DiffCtx ctx, P4FileInfo f) -> Either{PathAbsolute, Error}
   maybeErr as Error err ? err : path
 
 act diffGetToFile(DiffCtx ctx, P4FileInfo f) -> Either{PathAbsolute, Error}
-  if f.clientFile as P4ClientPath clientPath -> p4ClientPathToAbs(ctx.clientInfo, clientPath)
+  if useLocalToFile(ctx.diffType) && f.clientFile as P4ClientPath clientPath ->
+    p4ClientPathToAbs(ctx.clientInfo, clientPath)
   else ->
     path = ctx.tmpPath / diffTmpFileName(f.depotFile, f.change);
     p4DownloadFile(ctx.runCtx, f.depotFile, f.change, path).map(lambda (P4FileInfo dl) path)
