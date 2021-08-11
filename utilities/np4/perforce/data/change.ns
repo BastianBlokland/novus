@@ -55,4 +55,5 @@ fun cliParser(Type{P4Change} t) p4ChangeTxtParser()
 // -- Parsers.
 
 fun p4ChangeTxtParser()
-  (matchParser("default") >> retParser(p4DefaultChange())) | txtIntParser().to(Type{P4Change}())
+  (matchParser("default") >> retParser(p4DefaultChange())) |
+  (?(matchParser("@") | matchParser("CL") | matchParser("C")) >> txtIntParser()).to(Type{P4Change}())
