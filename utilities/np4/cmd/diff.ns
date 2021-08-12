@@ -80,11 +80,12 @@ act diffGetFromFile(DiffCtx ctx, P4FileInfo f) -> Either{PathAbsolute, Error}
   maybeErr as Error err ? err : path
 
 act diffGetToFile(DiffCtx ctx, P4FileInfo f) -> Either{PathAbsolute, Error}
+  change = ctx.settings.change.val ?? f.change;
   if useLocalToFile(ctx.diffType) && f.clientFile as P4ClientPath clientPath ->
     p4ClientPathToAbs(ctx.clientInfo, clientPath)
   else ->
-    path = ctx.tmpPath / diffTmpFileName(f.depotFile, f.change);
-    p4DownloadFile(ctx.runCtx, f.depotFile, f.change, path).map(lambda (P4FileInfo dl) path)
+    path = ctx.tmpPath / diffTmpFileName(f.depotFile, change);
+    p4DownloadFile(ctx.runCtx, f.depotFile, change, path).map(lambda (P4FileInfo dl) path)
 
 act diffGetFileSet(DiffCtx ctx, P4FileInfo f) -> Either{DiffFileSet, Error}
   waitForForks(Tuple(
