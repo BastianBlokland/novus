@@ -29,7 +29,7 @@ fun diffToolFromPreset(DiffToolPreset preset, Platform platform) -> DiffTool
   if preset == DiffToolPreset.Vs2019Professional ->
     DiffTool("C:/Program Files (x86)/Microsoft Visual Studio/2019/Professional/Common7/IDE/devenv.exe", "/NoSplash" :: "/Edit" :: "/Diff" :: "%FROM" :: "%TO", true)
   if preset == DiffToolPreset.WinMerge ->
-    DiffTool("C:/Program Files (x86)/WinMerge/WinMergeU.exe", "/s" :: "/u" :: "%FROM" :: "%TO", true)
+    DiffTool("C:/Program Files (x86)/WinMerge/WinMergeU.exe", "/s" :: "/u" :: "/fr" :: "/e":: "/wl" :: "%FROM" :: "%TO", true)
   else ->
     DiffTool("", List{string}(), false)
 
