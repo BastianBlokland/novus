@@ -1,0 +1,44 @@
+// --- Pretty print c++ types.
+
+import "std.ns"
+
+// -- Types.
+
+struct CType = string name, Option{List{CType}} children
+
+// -- Parsers.
+
+fun ctypeNameParser() -> Parser{string}
+  untilParser(lambda (char c) "<> ,".contains(c.string()))
+
+fun ctypeListParser(Parser{CType} tParser = lazyParser(lazy ctypeParser()))
+  open = matchParser('<') << whitespaceParser();
+  comma = matchParser(',') << whitespaceParser();
+  close = matchParser('>') << whitespaceParser();
+  open >> manyParser(tParser, comma) << close
+
+fun ctypeParser()
+  (ctypeNameParser() << whitespaceParser() & ?ctypeListParser()).to(Type{CType}())
+
+// -- Writers.
+
+fun ctypeListWriter(Writer{CType} tWriter = lazyWriter(lazy ctypeWriter()))
+  elemWriter = newlineWriter() & indentWriter() & tWriter;
+  listWriter = listWriter(elemWriter & litWriter(','), elemWriter);
+  litWriter('<') & listWriter.indent() & newlineWriter() & indentWriter() & litWriter('>')
+
+fun ctypeWriter()
+  (stringWriter() & ?ctypeListWriter()).to(Type{CType}())
+
+// -- Driver
+
+struct Settings = CliPositional{string} input
+
+act main(Settings s)
+  console = consoleOpen().failOnError();
+  parser  = ctypeParser();
+  writer  = ctypeWriter();
+  type    = parser.run(s.input.val).failOnError();
+  console.writeOut(writer.run(type))
+
+cli(main, cliAppInfo("PrintType", "Pretty print the given c++ type", Version(0, 1, 0)))
