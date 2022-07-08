@@ -3,6 +3,7 @@ import "std.ns"
 import "data/change.ns"
 import "data/file.ns"
 import "data/grep.ns"
+import "data/reopen.ns"
 import "data/resolve.ns"
 import "data/stream.ns"
 import "data/var.ns"
@@ -198,3 +199,6 @@ act p4Grep(P4RunContext ctx, string pattern, bool caseSensitive, List{P4Path} pa
 
 act p4Where(P4RunContext ctx, P4DepotPath depotPath) -> Either{P4FileLocation, Error}
   ctx.p4Run("where" :: depotPath.string(), Type{P4FileLocation}())
+
+act p4Reopen(P4RunContext ctx, P4Change change, P4Path path) -> Either{List{P4ReopenResult}, Error}
+  ctx.p4RunMany("reopen" :: "-c" :: change.string() :: path.string(), Type{P4ReopenResult}())

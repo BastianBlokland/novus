@@ -1,0 +1,37 @@
+import "std.ns"
+
+import "../perforce/runner.ns"
+
+import "../utils/shared-writers.ns"
+import "../utils/style.ns"
+import "../utils/tracer.ns"
+
+// -- Writers.
+
+fun reopenOutputWriter() -> Writer{List{P4ReopenResult}}
+  (
+    listWriter(depotPathWriter() & newlineWriter())
+  ).map(lambda (List{P4ReopenResult} r) r.map(lambda (P4ReopenResult result) result.depotFile))
+
+
+// -- Driver.
+
+struct ReopenSettings =
+  bool                    noColor,
+  bool                    trace,
+  CliPositional{P4Change} change,
+  CliPositional{P4Path}   path
+
+fun cliDefaults(Type{ReopenSettings} t)
+  CliDefault("path", "//...") :: List{CliDefault}()
+
+act reopenCmd(ReopenSettings s) -> Option{Error}
+  c            = consoleOpen().failOnError();
+  styleCtx     = StyleCtx(!s.noColor && c.allowColor());
+  tracer       = s.trace ? p4ConsoleTracer(c, styleCtx) : P4Tracer();
+  writer       = reopenOutputWriter();
+  resultsOrErr = loadConfig().map(impure lambda (Config cfg)
+    p4Reopen(P4RunContext(cfg, tracer), s.change.val, s.path.val)
+  );
+  if resultsOrErr as Error                 err     -> err
+  if resultsOrErr as List{P4ReopenResult}  results -> c.writeOut(writer, results)
