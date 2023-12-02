@@ -407,6 +407,9 @@ fun enumParser{Enum}(Type{Enum} t, StrComp sc = StrComp.Normal)
 
 // -- Combination parsers
 
+fun skipUntil{T}(Parser{T} p)
+  untilParser(p, ParseFlags.Optional) >> p
+
 fun manyParser{T}(Parser{T} p, int max = maxVal{int}())
   Parser(lambda (ParseState begin)
     invoke(lambda (ParseState cur, int count, List{T} result) -> ParseResult{List{T}}
@@ -491,11 +494,12 @@ fun repeat{T}(Parser{T} p, int count)
     ), begin, count, List{T}())
   )
 
-fun orSkip{T}(Parser{T} p, int charSkipCount = 1)
-  Parser(lambda (ParseState s) -> ParseResult{Option{T}}
-    r = p(s);
-    if r is ParseFailure          -> (s + charSkipCount).success(Option{T}())
-    if r as ParseSuccess{T} suc   -> suc.state.success(Option{T}(suc.val))
+fun fromEnd{T}(Parser{T} p)
+  Parser(lambda (ParseState s) -> ParseResult{T}
+    fromEndState = ParseState(s.str, s.str.length() - 1 - s.pos);
+    r = p(fromEndState);
+    if r as ParseFailure    fail -> s.failure(fail.err)
+    if r as ParseSuccess{T} suc  -> (s + (suc.state.pos - fromEndState.pos)).success(suc.val)
   )
 
 // -- Tests
@@ -892,6 +896,19 @@ assertEq(enumParser(Type{Month}())("December"), Month.December)
 assertIs(enumParser(Type{Month}())("december"), Type{ParseFailure}())
 assertIs(enumParser(Type{Month}())(""), Type{ParseFailure}())
 
+assertEq(charDigitParser()("123456789"), '1')
+assertEq(charDigitParser().fromEnd()("123456789"), '9')
+assertEq(charDigitParser().fromEnd().repeat(2)("123456789"), '9' :: '8')
+assertEq(charDigitParser().fromEnd().manyParser()("123456789"), '9' :: '8' :: '7' :: '6' :: '5' :: '4' :: '3' :: '2' :: '1')
+assertEq(
+  p = (matchParser("hello") | matchParser("world")).skipUntil();
+  p("asdfhellosdfasdfworld"), "hello")
+assertEq(matchParser("world").fromEnd().skipUntil()("world"), "world")
+assertEq(
+  p = (matchParser("hello") | matchParser("world")).fromEnd().skipUntil();
+  p("asdfhellosdfasdfworld"), "world")
+
+
 assertEq(manyParser(txtBoolParser())("truefalsetruetrue"), true :: false :: true :: true)
 assertEq(manyParser(txtBoolParser())("true"), true :: List{bool}())
 assertEq(manyParser(txtBoolParser())("true1"), true :: List{bool}())
@@ -1002,5 +1019,3 @@ assertEq(txtBoolParser().repeat(0)(""), List{bool}())
 assertEq(txtBoolParser().repeat(0)(" "), List{bool}())
 assertEq(txtBoolParser().repeat(0)("true"), List{bool}())
 assertEq(txtBoolParser().repeat(1)("true"), true :: List{bool}())
-
-assertEq(manyParser(charDigitParser().orSkip()).map(filterNone{char})("1ab2s5sdf0"), '1' :: '2' :: '5' :: '0')
