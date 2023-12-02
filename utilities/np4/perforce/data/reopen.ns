@@ -1,0 +1,7 @@
+import "std.ns"
+
+import "file.ns"
+
+// -- Types.
+
+struct P4ReopenResult = P4DepotPath depotFile

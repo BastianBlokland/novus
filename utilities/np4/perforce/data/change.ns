@@ -33,7 +33,7 @@ fun p4ChangeIsDefault(P4Change c) c.id == 0
 
 fun p4ChangeShortDesc(P4ChangeInfo c, int maxLength = 60)
   newLineIdx = c.desc.indexOf(isNewline);
-  c.desc[0, newLineIdx < 0 ? maxLength : min(newLineIdx, maxLength)]
+  c.desc[0, newLineIdx < 0 ? maxLength : min(newLineIdx, maxLength)].trim()
 
 // -- Mappings.
 
@@ -55,4 +55,5 @@ fun cliParser(Type{P4Change} t) p4ChangeTxtParser()
 // -- Parsers.
 
 fun p4ChangeTxtParser()
-  (matchParser("default") >> retParser(p4DefaultChange())) | txtIntParser().to(Type{P4Change}())
+  (matchParser("default") >> retParser(p4DefaultChange())) |
+  (?(matchParser("@") | matchParser("CL") | matchParser("C")) >> txtIntParser()).to(Type{P4Change}())

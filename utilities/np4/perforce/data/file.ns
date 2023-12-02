@@ -6,19 +6,25 @@ import "path.ns"
 
 // -- Types.
 
-enum P4FileOp = Add, Edit, Delete, Branch, MoveAdd, MoveDelete, Integrate, Import, Purge, Archive
+enum P4FileOp = Add, Edit, Delete, Branch, MoveAdd, MoveDelete, Integrate, Import, Purge, Archive, Unknown
 
 struct P4FileRev = long i
 
 struct P4FileInfo =
   P4DepotPath           depotFile,
   Option{P4ClientPath}  clientFile,
-  P4FileRev             rev,
-  P4Change              change,
   P4FileOp              Action,
   Option{string}        type,
-  Option{DateTime}      time,
-  Option{ByteSize}      size
+  P4FileRev             rev,
+  P4Change              change
+
+struct P4DepotFileInfo =
+  P4DepotPath           depotFile,
+  Option{P4ClientPath}  clientFile,
+  Option{P4FileOp}      headAction,
+  Option{string}        headType,
+  Option{P4FileRev}     headRev,
+  Option{P4Change}      headChange
 
 struct P4FileLocation =
   P4DepotPath   depotFile,
@@ -32,15 +38,27 @@ fun string(P4FileRev r)
   if r.p4RevIsHead() -> "head"
   else               -> r.i.string()
 
+fun P4FileInfo(P4DepotFileInfo f)
+  P4FileInfo(
+    f.depotFile,
+    f.clientFile,
+    f.headAction ?? P4FileOp.Unknown,
+    f.headType,
+    f.headRev ?? P4FileRev(0),
+    f.headChange ?? P4Change(0)
+  )
+
 // -- Utilities.
 
 fun p4FileIsText(P4FileInfo f)
   if f.type is None       -> false
-  if f.type as string str -> trimmed = str.trimStart();
-    trimmed.startsWith("text")    ||
-    trimmed.startsWith("unicode") ||
-    trimmed.startsWith("utf8")    ||
-    trimmed.startsWith("utf16")
+  if f.type as string str -> p4FileIsText(str.trimStart())
+
+fun p4FileIsText(string type)
+  type.startsWith("text")    ||
+  type.startsWith("unicode") ||
+  type.startsWith("utf8")    ||
+  type.startsWith("utf16")
 
 fun p4RevNone() P4FileRev(0)
 fun p4RevHead() P4FileRev(maxVal{long}())

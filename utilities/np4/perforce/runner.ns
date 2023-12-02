@@ -3,6 +3,7 @@ import "std.ns"
 import "data/change.ns"
 import "data/file.ns"
 import "data/grep.ns"
+import "data/reopen.ns"
 import "data/resolve.ns"
 import "data/stream.ns"
 import "data/var.ns"
@@ -16,6 +17,10 @@ enum P4RunCode = Stat, Info, Error
 struct P4RunOutput{T} =
   P4RunCode code,
   T         data
+
+struct P4DescObj =
+  P4RunCode code,
+  string    desc
 
 struct P4Tracer =
   action{List{string}, Duration, ByteSize, Option{Error}} cmdExecuted
@@ -137,12 +142,21 @@ act p4GetChanges(
     (pathFilter as P4Path p ? Option(p.string()) : None())              :: List{string}(),
     Type{P4ChangeInfo}())
 
-act p4GetDepotFiles(P4RunContext ctx, P4Change change, int max) -> Either{List{P4FileInfo}, Error}
-  fileSpec        = (anyP4ClientPath(ctx.config.client).string() + "@=" + change.string());
-  args            = "files" :: "-m" :: max.string() :: fileSpec;
-  fileListParser  = manyUntilParser(pyMarshalParser(Type{P4FileInfo}()), endParser());
-  noSuchFilesErr  = p4ErrorMatcher(GlobTextPattern(fileSpec + "*no*file(s)*", StrComp.IgnoreCase));
-  p               = (noSuchFilesErr >> retParser(List{P4FileInfo}()) | fileListParser) ! lazy p4ParseError(args);
+act p4GetDepotFiles(
+    P4RunContext  ctx,
+    P4Change      change,
+    int           max,
+    bool          shelved
+  ) -> Either{List{P4FileInfo}, Error}
+  args = "fstat" :: "-Op"               ::
+    (shelved ? Option("-Rs") : None())  ::
+    "-e" :: change.string()             ::
+    "-m" :: max.string()                :: "//...";
+  fileParser        = pyMarshalParser(Type{P4DepotFileInfo}()).to(Type{P4FileInfo}());
+  changeDescParser  = pyMarshalParser(Type{P4DescObj}());
+  fileListParser    = manyUntilParser(fileParser << ?changeDescParser, endParser());
+  noSuchFilesErr    = p4ErrorMatcher(GlobTextPattern("//...*no*file(s)*", StrComp.IgnoreCase));
+  p                 = (noSuchFilesErr >> retParser(List{P4FileInfo}()) | fileListParser) ! lazy p4ParseError(args);
   ctx.p4Run(args).map(p.build(ParseFlags.NoWrapperError))
 
 act p4GetOpenFiles(
@@ -185,3 +199,6 @@ act p4Grep(P4RunContext ctx, string pattern, bool caseSensitive, List{P4Path} pa
 
 act p4Where(P4RunContext ctx, P4DepotPath depotPath) -> Either{P4FileLocation, Error}
   ctx.p4Run("where" :: depotPath.string(), Type{P4FileLocation}())
+
+act p4Reopen(P4RunContext ctx, P4Change change, P4Path path) -> Either{List{P4ReopenResult}, Error}
+  ctx.p4RunMany("reopen" :: "-c" :: change.string() :: path.string(), Type{P4ReopenResult}())

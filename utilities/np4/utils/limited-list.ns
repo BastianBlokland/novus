@@ -11,8 +11,9 @@ fun noneIfEmpty{T}(LimitedList{T} l) -> Option{LimitedList{T}}
 
 fun toLimitedList{T}(List{T} entries, int max) -> LimitedList{T}
   count = entries.length();
-  truncated = count > max;
-  LimitedList(entries[0, max], min(count, max), max, truncated)
+  excess = count - max;
+  truncated = excess > 0;
+  LimitedList(truncated ? entries.reverse().pop(excess).reverse() : entries, min(count, max), max, truncated)
 
 // -- Writers.
 
