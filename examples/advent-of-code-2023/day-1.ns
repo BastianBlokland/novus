@@ -1,0 +1,24 @@
+
+import "std.ns"
+
+fun calibrationValue(string line)
+  firstDigit = line.toChars().first(isDigit) ?? '\0';
+  lastDigit  = line.toChars().reverse().first(isDigit) ?? '\0';
+  txtIntParser()(string(firstDigit) + lastDigit) ?? -1
+
+fun calibrationSum(string input) input
+  .split(equals{char}['\n'])
+  .map(calibrationValue)
+  .sum()
+
+assertEq(
+  calibrationSum(
+    "1abc2\n"       +
+    "pqr3stu8vwx\n" +
+    "a1b2c3d4e5f\n" +
+    "treb7uchet\n"),
+  142)
+
+print(
+  path = pathProgram().parent() / "day-1-input.txt";
+  calibrationSum(fileRead(path).failOnError()))
