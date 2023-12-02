@@ -23,4 +23,43 @@ assertEq(
 
 print(
   path = pathProgram().parent() / "day-1-input1.txt";
-  calibrationSum(fileRead(path).failOnError()))
+  "Output part1: " + calibrationSum(fileRead(path).failOnError()))
+
+// Part 2.
+
+fun calibrationDigitParser()
+    matchParser("one")    >> retParser('1')   |
+    matchParser("two")    >> retParser('2')   |
+    matchParser("three")  >> retParser('3')   |
+    matchParser("four")   >> retParser('4')   |
+    matchParser("five")   >> retParser('5')   |
+    matchParser("six")    >> retParser('6')   |
+    matchParser("seven")  >> retParser('7')   |
+    matchParser("eight")  >> retParser('8')   |
+    matchParser("nine")   >> retParser('9')   |
+    charDigitParser()
+
+fun calibrationValue2(string line)
+  firstDigit = calibrationDigitParser().skipUntil()(line) ?? '\0';
+  lastDigit  = calibrationDigitParser().fromEnd().skipUntil()(line) ?? '\0';
+  txtIntParser()(string(firstDigit) + lastDigit) ?? -1
+
+fun calibrationSum2(string input) input
+  .split(equals{char}['\n'])
+  .map(calibrationValue2)
+  .sum()
+
+assertEq(
+  calibrationSum2(
+    "two1nine\n"         +
+    "eightwothree\n"     +
+    "abcone2threexyz\n"  +
+    "xtwone3four\n"      +
+    "4nineeightseven2\n" +
+    "zoneight234\n"      +
+    "7pqrstsixteen\n"),
+  281)
+
+print(
+  path = pathProgram().parent() / "day-1-input1.txt";
+  "Output part2: " + calibrationSum2(fileRead(path).failOnError()))
