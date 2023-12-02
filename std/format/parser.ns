@@ -491,6 +491,13 @@ fun repeat{T}(Parser{T} p, int count)
     ), begin, count, List{T}())
   )
 
+fun orSkip{T}(Parser{T} p, int charSkipCount = 1)
+  Parser(lambda (ParseState s) -> ParseResult{Option{T}}
+    r = p(s);
+    if r is ParseFailure          -> (s + charSkipCount).success(Option{T}())
+    if r as ParseSuccess{T} suc   -> suc.state.success(Option{T}(suc.val))
+  )
+
 // -- Tests
 
 assertEq(retParser(42)(""), 42)
@@ -995,3 +1002,5 @@ assertEq(txtBoolParser().repeat(0)(""), List{bool}())
 assertEq(txtBoolParser().repeat(0)(" "), List{bool}())
 assertEq(txtBoolParser().repeat(0)("true"), List{bool}())
 assertEq(txtBoolParser().repeat(1)("true"), true :: List{bool}())
+
+assertEq(manyParser(charDigitParser().orSkip()).map(filterNone{char})("1ab2s5sdf0"), '1' :: '2' :: '5' :: '0')
