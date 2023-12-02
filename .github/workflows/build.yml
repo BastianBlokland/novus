@@ -36,7 +36,7 @@ jobs:
       CC: ${{matrix.config.cc}}
       CXX: ${{matrix.config.cxx}}
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v4
       with:
         fetch-depth: 0
 
@@ -73,7 +73,7 @@ jobs:
 
     - name: fuzz-corpus-cache
       if: matrix.config.os != 'windows'
-      uses: actions/cache@v2
+      uses: actions/cache@v3
       with:
         path: ./fuzz/corpus
         key: fuzz-corpus
@@ -150,7 +150,7 @@ jobs:
       CC: ${{matrix.config.cc}}
       CXX: ${{matrix.config.cxx}}
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v4
 
     - name: install-windows-mingw
       if: matrix.config.os == 'windows' && matrix.config.generator == 'MinGW'
@@ -185,7 +185,7 @@ jobs:
       run: pwsh .\scripts\test.ps1
 
     - name: archive
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       with:
         name: novus-release-${{matrix.config.image}}-${{matrix.config.arch}}-${{matrix.config.compiler}}
         path: bin
