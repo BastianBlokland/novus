@@ -908,7 +908,6 @@ assertEq(
   p = (matchParser("hello") | matchParser("world")).fromEnd().skipUntil();
   p("asdfhellosdfasdfworld"), "world")
 
-
 assertEq(manyParser(txtBoolParser())("truefalsetruetrue"), true :: false :: true :: true)
 assertEq(manyParser(txtBoolParser())("true"), true :: List{bool}())
 assertEq(manyParser(txtBoolParser())("true1"), true :: List{bool}())
