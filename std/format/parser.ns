@@ -216,7 +216,7 @@ fun retParser{T}(T val)
   )
 
 fun nopParser()
-  retParser(true)
+  retParser(None())
 
 fun failParser(Error error = Error())
   Parser(lambda (ParseState s) -> ParseResult{bool}
@@ -494,7 +494,7 @@ fun repeat{T}(Parser{T} p, int count)
 // -- Tests
 
 assertEq(retParser(42)(""), 42)
-assertEq(nopParser()(""), true)
+assertEq(nopParser()(""), None())
 
 assertEq(failParser(Error("Hello world")).run(""), Error("Parsing failed, line: 1, column: 1") :: Error("Hello world"))
 assertEq(failParser().run("Hello world"), Error("Parsing failed, line: 1, column: 1") :: Error())
