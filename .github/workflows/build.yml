@@ -129,8 +129,8 @@ jobs:
             os: windows,
             compiler: mingw-w64-7,
             generator: MinGW,
-            cc: C:\ProgramData\Chocolatey\bin\gcc.exe,
-            cxx: C:\ProgramData\Chocolatey\bin\g++.exe
+            cc: 'C:\ProgramData\Chocolatey\bin\gcc.exe',
+            cxx: 'C:\ProgramData\Chocolatey\bin\g++.exe'
           }
         - {
             image: windows-2019,
