@@ -100,7 +100,7 @@ jobs:
       matrix:
         config:
         - {
-            image: ubuntu-18.04,
+            image: ubuntu-20.04,
             arch: x86_64,
             os: ubuntu,
             compiler: gcc9,
@@ -108,15 +108,15 @@ jobs:
             cxx: g++-9
           }
         - {
-            image: ubuntu-18.04,
+            image: ubuntu-20.04,
             arch: x86_64,
             os: ubuntu,
-            compiler: clang9,
-            cc: clang-9,
-            cxx: clang++-9
+            compiler: clang10,
+            cc: clang-10,
+            cxx: clang++-10
           }
         - {
-            image: macos-10.15,
+            image: macos-11,
             arch: x86_64,
             os: macos,
             compiler: appleclang,
@@ -128,7 +128,9 @@ jobs:
             arch: x86_64,
             os: windows,
             compiler: mingw-w64-7,
-            generator: MinGW
+            generator: MinGW,
+            cc: 'C:\ProgramData\Chocolatey\bin\gcc.exe',
+            cxx: 'C:\ProgramData\Chocolatey\bin\g++.exe'
           }
         - {
             image: windows-2019,
@@ -155,6 +157,7 @@ jobs:
       run: |
         echo "Installing mingw-w64-7"
         choco install mingw --version=7.3.0 --force
+        echo "where g++.exe:"; where.exe g++.exe
         echo "g++.exe --version:"; g++.exe --version
 
     - name: configure-unix
