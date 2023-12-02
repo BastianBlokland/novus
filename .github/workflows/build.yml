@@ -112,8 +112,8 @@ jobs:
             arch: x86_64,
             os: ubuntu,
             compiler: clang9,
-            cc: clang-9,
-            cxx: clang++-9
+            cc: clang-10,
+            cxx: clang++-10
           }
         - {
             image: macos-11,
