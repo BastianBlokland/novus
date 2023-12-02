@@ -1,6 +1,8 @@
 
 import "std.ns"
 
+// Part 1.
+
 fun calibrationValue(string line)
   firstDigit = line.toChars().first(isDigit) ?? '\0';
   lastDigit  = line.toChars().reverse().first(isDigit) ?? '\0';
@@ -20,5 +22,5 @@ assertEq(
   142)
 
 print(
-  path = pathProgram().parent() / "day-1-input.txt";
+  path = pathProgram().parent() / "day-1-input1.txt";
   calibrationSum(fileRead(path).failOnError()))
