@@ -1,6 +1,6 @@
 # Novus
 
-[![build](https://github.com/BastianBlokland/novus/actions/workflows/build.yaml/badge.svg)](https://github.com/BastianBlokland/novus/actions/workflows/build.yaml)
+![build](https://img.shields.io/github/actions/workflow/status/BastianBlokland/novus/.github/workflows/build.yml?branch=master)
 [![codecov](https://codecov.io/gh/BastianBlokland/novus/branch/master/graph/badge.svg?token=JK2KNANZ73)](https://codecov.io/gh/BastianBlokland/novus)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
