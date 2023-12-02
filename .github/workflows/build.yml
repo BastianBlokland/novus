@@ -116,7 +116,7 @@ jobs:
             cxx: clang++-9
           }
         - {
-            image: macos-10.15,
+            image: macos-11,
             arch: x86_64,
             os: macos,
             compiler: appleclang,
