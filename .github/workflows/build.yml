@@ -155,6 +155,7 @@ jobs:
       run: |
         echo "Installing mingw-w64-7"
         choco install mingw --version=7.3.0 --force
+        echo "where g++.exe:"; where g++.exe
         echo "g++.exe --version:"; g++.exe --version
 
     - name: configure-unix
