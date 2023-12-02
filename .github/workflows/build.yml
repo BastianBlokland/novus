@@ -100,7 +100,7 @@ jobs:
       matrix:
         config:
         - {
-            image: ubuntu-18.04,
+            image: ubuntu-20.04,
             arch: x86_64,
             os: ubuntu,
             compiler: gcc9,
@@ -108,7 +108,7 @@ jobs:
             cxx: g++-9
           }
         - {
-            image: ubuntu-18.04,
+            image: ubuntu-20.04,
             arch: x86_64,
             os: ubuntu,
             compiler: clang9,
