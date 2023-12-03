@@ -1,0 +1,84 @@
+
+import "std.ns"
+
+struct Range          = int startX, int startY, int endX, int endY
+struct RangedValue{T} = Range range, T value
+
+fun rangeFromTextPos(TextPos start, TextPos end)
+  Range(start.column, start.line, end.column - 1, end.line)
+
+fun isAdjacent(Range a, Range b)
+  if a.startX  - b.endX > 1 -> false
+  if b.startX  - a.endX > 1 -> false
+  if a.startY  - b.endY > 1 -> false
+  if b.startY  - a.endY > 1 -> false
+  else                      -> true
+
+fun trackRangeParser{T}(Parser{T} p) -> Parser{RangedValue{T}}
+  Parser(lambda (ParseState s) -> ParseResult{RangedValue{T}}
+    res = p(s);
+    if res as ParseFailure    fail  -> fail
+    if res as ParseSuccess{T} suc   ->
+      start = getTextPos(s.str[0, s.pos]);
+      end   = getTextPos(suc.state.str[0, suc.state.pos]);
+      suc.state.success(RangedValue(rangeFromTextPos(start, end), suc.val))
+  )
+
+struct SchematicNumber = RangedValue{long} value
+struct SchematicSymbol = RangedValue{char} value
+union  SchematicEntry  = SchematicNumber, SchematicSymbol, None
+
+fun schematicEntryParser() -> Parser{SchematicEntry}
+  (
+    txtPosLongParser().trackRangeParser().to(Type{SchematicNumber}())   |
+    matchParser(".") >> retParser(None())                               |
+    charParser().trackRangeParser().to(Type{SchematicSymbol}())
+  ).to(Type{SchematicEntry}())
+
+fun schematicEntriesParser() -> Parser{List{SchematicEntry}}
+  entryParser = schematicEntryParser();
+  lineParser  = manyUntilParser(entryParser, newlineParser()) << newlineParser();
+  manyParser(lineParser).map(merge{SchematicEntry})
+
+struct Schematic = List{SchematicNumber} numbers, List{SchematicSymbol} symbols
+
+fun schematicBuild(List{SchematicEntry} entries) -> Schematic
+  entries.fold(
+    lambda (Schematic res, SchematicEntry entry)
+      Schematic(
+        entry as SchematicNumber num ? (num :: res.numbers) : res.numbers,
+        entry as SchematicSymbol sym ? (sym :: res.symbols) : res.symbols
+      )
+    , Schematic(List{SchematicNumber}(), List{SchematicSymbol}()))
+
+fun schematicParser() -> Parser{Schematic}
+  schematicEntriesParser().map(schematicBuild)
+
+fun isAdjacentToSymbol(SchematicNumber n, Schematic s)
+  s.symbols.any(lambda (SchematicSymbol sym) n.value.range.isAdjacent(sym.value.range))
+
+fun adjacentSymbolSum(Schematic s) s.numbers
+  .filter(isAdjacentToSymbol[s])
+  .map(lambda (SchematicNumber n) n.value.value)
+  .sum()
+
+fun exampleText()
+  "467..114..\n" +
+  "...*......\n" +
+  "..35..633.\n" +
+  "......#...\n" +
+  "617*......\n" +
+  ".....+.58.\n" +
+  "..592.....\n" +
+  "......755.\n" +
+  "...$.*....\n" +
+  ".664.598..\n"
+
+assertEq(
+  schematicParser().run(exampleText()).failOnError().adjacentSymbolSum(),
+  4361)
+
+print(
+  path = pathProgram().parent() / "day-3-input1.txt";
+  text = fileRead(path).failOnError();
+  "Output part1: " + schematicParser().run(text).failOnError().adjacentSymbolSum())
