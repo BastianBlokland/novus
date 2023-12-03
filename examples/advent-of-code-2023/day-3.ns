@@ -57,10 +57,14 @@ fun schematicParser() -> Parser{Schematic}
 fun isAdjacentToSymbol(SchematicNumber n, Schematic s)
   s.symbols.any(lambda (SchematicSymbol sym) n.value.range.isAdjacent(sym.value.range))
 
+fun numberValue(SchematicNumber n) n.value.value
+
 fun adjacentSymbolSum(Schematic s) s.numbers
   .filter(isAdjacentToSymbol[s])
-  .map(lambda (SchematicNumber n) n.value.value)
+  .map(numberValue)
   .sum()
+
+// Part 1.
 
 fun exampleText()
   "467..114..\n" +
@@ -82,3 +86,27 @@ print(
   path = pathProgram().parent() / "day-3-input1.txt";
   text = fileRead(path).failOnError();
   "Output part1: " + schematicParser().run(text).failOnError().adjacentSymbolSum())
+
+// Part 2.
+
+fun adjacentNumbers(Range range, Schematic s)
+  s.numbers.filterReverse(lambda (SchematicNumber n) n.value.range.isAdjacent(range))
+
+fun gearRatio(SchematicSymbol sym, Schematic s)
+  if sym.value.value != '*' -> 0
+  else ->
+    adjacentNumbers = adjacentNumbers(sym.value.range, s);
+    if adjacentNumbers.length() != 2 -> 0
+    else ->
+      (adjacentNumbers[0].map(numberValue) ?? 0) * adjacentNumbers[1].map(numberValue) ?? 0
+
+fun gearRatioSum(Schematic s) s.symbols.map(gearRatio[s]).sum()
+
+assertEq(
+  schematicParser().run(exampleText()).failOnError().gearRatioSum(),
+  467835)
+
+print(
+  path = pathProgram().parent() / "day-3-input1.txt";
+  text = fileRead(path).failOnError();
+  "Output part2: " + schematicParser().run(text).failOnError().gearRatioSum())
