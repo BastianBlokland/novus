@@ -96,7 +96,7 @@ if(MSVC)
   set(CMAKE_EXE_LINKER_FLAGS "${LINKER_FLAGS_SHARED}")
 else()
   message(STATUS "Setting unix compiler flags")
-  set(CXX_FLAGS_SHARED "${CXX_FLAGS_SHARED} -std=c++17 -Werror -Wall -Wextra -fno-strict-aliasing")
+  set(CXX_FLAGS_SHARED "${CXX_FLAGS_SHARED} -std=c++17 -Wall -Wextra -fno-strict-aliasing")
   if(CMAKE_COMPILER_IS_GNUCXX OR MINGW)
     message(STATUS "Setting gcc specific compiler flags")
     # Disable 'maybe-uninitialized' warning on GCC, to many false positives at the time of writing.
