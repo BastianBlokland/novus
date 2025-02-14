@@ -3,9 +3,10 @@
 #include <optional>
 #include <string>
 
-#if defined(linux)
+#if defined(linux) || defined(__linux__)
 #include <climits>
 #include <unistd.h>
+#include <linux/limits.h>
 #endif
 
 #if defined(__APPLE__)
@@ -69,7 +70,7 @@ auto getSearchPaths(const char** argv) noexcept -> std::vector<filesystem::path>
 }
 
 auto getExecutablePath() noexcept -> filesystem::path {
-#if defined(linux)
+#if defined(linux) || defined(__linux__)
 
   constexpr auto selfLink = "/proc/self/exe";
 
