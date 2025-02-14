@@ -362,7 +362,7 @@ auto inline pcall(
   } break;
 
   case PCallCode::PlatformCode: {
-#if defined(linux)
+#if defined(linux) || defined(__linux__)
     PUSH_INT(1);
 #elif defined(__APPLE__) // !linux
     PUSH_INT(2);

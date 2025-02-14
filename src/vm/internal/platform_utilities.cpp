@@ -163,7 +163,7 @@ auto platformExecPath(RefAllocator* refAlloc) noexcept -> StringRef* {
     return nullptr;
   }
 
-#if defined(linux)
+#if defined(linux) || defined(__linux__)
 
   constexpr auto selfLink = "/proc/self/exe";
   if (realpath(selfLink, str->getCharDataPtr()) == nullptr) {

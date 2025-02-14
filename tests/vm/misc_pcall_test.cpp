@@ -57,7 +57,7 @@ TEST_CASE("[vm] Execute miscellaneous pcalls", "vm") {
   }
 
   SECTION("PlatformCode") {
-#if defined(linux)
+#if defined(linux) || defined(__linux__)
     const auto expectedResult = "1";
 #elif defined(__APPLE__) // !linux
     const auto expectedResult = "2";
