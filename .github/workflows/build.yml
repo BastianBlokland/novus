@@ -185,7 +185,7 @@ jobs:
       run: pwsh .\scripts\test.ps1
 
     - name: archive
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: novus-release-${{matrix.config.image}}-${{matrix.config.arch}}-${{matrix.config.compiler}}
         path: bin
