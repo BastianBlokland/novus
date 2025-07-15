@@ -369,7 +369,7 @@ auto execute(
       PUSH_INT(POP_INT() + POP_INT());
     } break;
     case OpCode::AddLong: {
-      const auto val = getLong(POP()) + getLong(POP());
+      const auto val = getULong(POP()) + getULong(POP());
       PUSH_LONG(val);
     } break;
     case OpCode::AddFloat: {
