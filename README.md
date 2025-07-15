@@ -360,7 +360,7 @@ Visual Studio (msvc).
 Before building you have to configure the project, run `scripts/configure.sh` on unix or
 `scripts/configure.ps1` on windows.
 
-For Visual Studio run `scripts/configure.ps1 -Gen VS2019`, after which the Visual Studio project
+For Visual Studio run `scripts/configure.ps1 -Gen VS2022`, after which the Visual Studio project
 can be found in the `build` directory.
 
 On unix run `scripts/configure.sh --help` for a listing of options, on windows:

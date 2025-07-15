@@ -29,8 +29,8 @@ jobs:
             image: windows-2022,
             arch: x86_64,
             os: windows,
-            compiler: vs2019,
-            generator: vs2019
+            compiler: vs2022,
+            generator: vs2022
           }
     env:
       CC: ${{matrix.config.cc}}
@@ -136,15 +136,15 @@ jobs:
             image: windows-2022,
             arch: x86_64,
             os: windows,
-            compiler: vs2019,
-            generator: vs2019
+            compiler: vs2022,
+            generator: vs2022
           }
         - {
             image: windows-2022,
             arch: x86_64,
             os: windows,
-            compiler: vs2019-clang,
-            generator: vs2019-clang
+            compiler: vs2022-clang,
+            generator: vs2022-clang
           }
     env:
       CC: ${{matrix.config.cc}}
