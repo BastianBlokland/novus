@@ -35,7 +35,7 @@ auto initQueryPerfCounterFrequency() noexcept -> void {
 auto initEndianness() noexcept -> void {
   union Mix {
     uint32_t i;
-    uint8_t c[4]; // NOLINT(modernize-avoid-c-arrays)
+    uint8_t c[4];
   };
 
   auto e       = Mix{0x01'00'00'00};
