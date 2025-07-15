@@ -111,6 +111,7 @@ function ConfigureProj(
     -DLINTING="$($lint ? "On" : "Off")" `
     -DSANITIZE="$($sanitize ? "On" : "Off")" `
     -DCOVERAGE="$($coverage ? "On" : "Off")" `
+    -DCMAKE_POLICY_VERSION_MINIMUM="3.15" `
     "$(GetToolsetArg $gen)"
 
   if ($LASTEXITCODE -ne 0) {
