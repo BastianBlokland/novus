@@ -1,5 +1,6 @@
 #pragma once
 #include "lex/token_payload.hpp"
+#include <cstdint>
 
 namespace lex {
 

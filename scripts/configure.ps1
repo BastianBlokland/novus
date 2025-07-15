@@ -15,6 +15,8 @@
   - MinGW
   - VS2019
   - VS2019-Clang
+  - VS2022
+  - VS2022-Clang
 .PARAMETER Dir
   Default: build
   Build directory.
@@ -33,7 +35,7 @@
 param(
   [ValidateSet("Debug", "Release", IgnoreCase = $true)]
   [string]$Type = "Release",
-  [ValidateSet("MinGW", "VS2019", "VS2019-Clang", IgnoreCase = $true)]
+  [ValidateSet("MinGW", "VS2019", "VS2019-Clang", "VS2022", "VS2022-Clang", IgnoreCase = $true)]
   [string]$Gen = "MinGW",
   [string]$Dir = "build",
   [switch]$Tests,
@@ -64,6 +66,8 @@ function MapToCMakeGen([string] $gen) {
     "MinGW" { "MinGW Makefiles"; break }
     "VS2019" { "Visual Studio 16 2019"; break }
     "VS2019-Clang" { "Visual Studio 16 2019"; break }
+    "VS2022" { "Visual Studio 17 2022"; break }
+    "VS2022-Clang" { "Visual Studio 17 2022"; break }
     default { Fail "Unsupported generator" }
   }
 }
@@ -73,6 +77,8 @@ function GetToolsetArg([string] $gen) {
     "MinGW" { ""; break }
     "VS2019" { ""; break }
     "VS2019-Clang" { "-TClangCL"; break }
+    "VS2022" { ""; break }
+    "VS2022-Clang" { "-TClangCL"; break }
     default { Fail "Unsupported generator" }
   }
 }
@@ -111,6 +117,7 @@ function ConfigureProj(
     -DLINTING="$($lint ? "On" : "Off")" `
     -DSANITIZE="$($sanitize ? "On" : "Off")" `
     -DCOVERAGE="$($coverage ? "On" : "Off")" `
+    -DCMAKE_POLICY_VERSION_MINIMUM="3.15" `
     "$(GetToolsetArg $gen)"
 
   if ($LASTEXITCODE -ne 0) {

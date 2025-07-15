@@ -1,5 +1,6 @@
 #pragma once
 #include "prog/sym/type_id.hpp"
+#include <cstdint>
 #include <optional>
 #include <string>
 #include <utility>

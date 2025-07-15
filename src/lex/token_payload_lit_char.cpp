@@ -5,7 +5,7 @@ namespace lex {
 
 auto LitCharTokenPayload::print(std::ostream& out) const -> std::ostream& {
   out << '\'';
-  const auto escaped = input::escape(m_val);
+  const auto escaped = input::escape(static_cast<char>(m_val));
   if (escaped) {
     out << '\\' << *escaped;
   } else {

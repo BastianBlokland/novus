@@ -80,7 +80,8 @@ configureProj()
     -DBUILD_FUZZING="${fuzzMode}" \
     -DLINTING="${lintMode}" \
     -DSANITIZE="${sanitizeMode}" \
-    -DCOVERAGE="${coverageMode}"
+    -DCOVERAGE="${coverageMode}" \
+    -DCMAKE_POLICY_VERSION_MINIMUM="3.15"
 
   info "Successfully configured build directory '${dir}'"
 }

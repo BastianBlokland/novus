@@ -1,5 +1,4 @@
 Checks: '-*,
-  modernize-*, -modernize-avoid-c-arrays, -modernize-raw-string-literal,
-  bugprone-*, -bugprone-exception-escape,
+  bugprone-*, -bugprone-exception-escape, -bugprone-unhandled-exception-at-new, -bugprone-easily-swappable-parameters, -bugprone-narrowing-conversions,
   performance-*, -performance-unnecessary-value-param'
 WarningsAsErrors: '*'

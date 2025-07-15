@@ -18,19 +18,19 @@ jobs:
       matrix:
         config:
         - {
-            image: ubuntu-20.04,
+            image: ubuntu-22.04,
             arch: x86_64,
             os: ubuntu,
-            compiler: clang10,
-            cc: clang-10,
-            cxx: clang++-10
+            compiler: clang13,
+            cc: clang-13,
+            cxx: clang++-13
           }
         - {
-            image: windows-2019,
+            image: windows-2022,
             arch: x86_64,
             os: windows,
-            compiler: vs2019,
-            generator: vs2019
+            compiler: vs2022,
+            generator: vs2022
           }
     env:
       CC: ${{matrix.config.cc}}
@@ -43,9 +43,9 @@ jobs:
     - name: install-unix
       if: matrix.config.os != 'windows'
       run: |
-        echo "Installing llvm-10"; sudo apt install llvm-10
-        sudo ln -s /usr/bin/llvm-cov-10 /usr/bin/llvm-cov
-        sudo ln -s /usr/bin/llvm-profdata-10 /usr/bin/llvm-profdata
+        echo "Installing llvm-13"; sudo apt install llvm-13
+        sudo ln -s /usr/bin/llvm-cov-13 /usr/bin/llvm-cov
+        sudo ln -s /usr/bin/llvm-profdata-13 /usr/bin/llvm-profdata
 
     - name: configure-unix
       if: matrix.config.os != 'windows'
@@ -100,7 +100,7 @@ jobs:
       matrix:
         config:
         - {
-            image: ubuntu-20.04,
+            image: ubuntu-22.04,
             arch: x86_64,
             os: ubuntu,
             compiler: gcc9,
@@ -108,12 +108,12 @@ jobs:
             cxx: g++-9
           }
         - {
-            image: ubuntu-20.04,
+            image: ubuntu-22.04,
             arch: x86_64,
             os: ubuntu,
-            compiler: clang10,
-            cc: clang-10,
-            cxx: clang++-10
+            compiler: clang13,
+            cc: clang-13,
+            cxx: clang++-13
           }
         - {
             image: macos-13,
@@ -124,27 +124,27 @@ jobs:
             cxx: clang++
           }
         - {
-            image: windows-2019,
+            image: windows-2022,
             arch: x86_64,
             os: windows,
-            compiler: mingw-w64-7,
+            compiler: mingw-w64-12,
             generator: MinGW,
             cc: 'C:\ProgramData\Chocolatey\bin\gcc.exe',
             cxx: 'C:\ProgramData\Chocolatey\bin\g++.exe'
           }
         - {
-            image: windows-2019,
+            image: windows-2022,
             arch: x86_64,
             os: windows,
-            compiler: vs2019,
-            generator: vs2019
+            compiler: vs2022,
+            generator: vs2022
           }
         - {
-            image: windows-2019,
+            image: windows-2022,
             arch: x86_64,
             os: windows,
-            compiler: vs2019-clang,
-            generator: vs2019-clang
+            compiler: vs2022-clang,
+            generator: vs2022-clang
           }
     env:
       CC: ${{matrix.config.cc}}
@@ -155,8 +155,8 @@ jobs:
     - name: install-windows-mingw
       if: matrix.config.os == 'windows' && matrix.config.generator == 'MinGW'
       run: |
-        echo "Installing mingw-w64-7"
-        choco install mingw --version=7.3.0 --force
+        echo "Installing mingw-w64-12"
+        choco install mingw --version=12.1.0 --force
         echo "where g++.exe:"; where.exe g++.exe
         echo "g++.exe --version:"; g++.exe --version
 
