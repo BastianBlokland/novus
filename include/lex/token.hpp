@@ -4,6 +4,7 @@
 #include "lex/token_cat.hpp"
 #include "lex/token_kind.hpp"
 #include "lex/token_payload.hpp"
+#include <cstdint>
 #include <iostream>
 #include <memory>
 #include <string>

@@ -2,6 +2,7 @@
 #include "input/span.hpp"
 #include "prog/sym/type_id.hpp"
 #include "prog/sym/type_id_hasher.hpp"
+#include <cstdint>
 #include <optional>
 #include <unordered_map>
 
