@@ -1,4 +1,4 @@
 Checks: '-*,
-  bugprone-*, -bugprone-exception-escape, -bugprone-easily-swappable-parameters
+  bugprone-*, -bugprone-exception-escape, -bugprone-easily-swappable-parameters,
   performance-*, -performance-unnecessary-value-param'
 WarningsAsErrors: '*'
