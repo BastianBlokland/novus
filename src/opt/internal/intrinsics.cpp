@@ -297,7 +297,7 @@ auto precomputeIntrinsic(
     const auto flags     = static_cast<uint8_t>(options);
     const auto precision = static_cast<uint8_t>(options >> 8U);
 
-#if defined(_WIN32) && defined(_TWO_DIGIT_EXPONENT)
+#if defined(_WIN32) && !defined(__MINGW32__) && defined(_TWO_DIGIT_EXPONENT)
     // By default windows will add a leading zero to pad to 3 digits in the exponent, to be
     // consistent with unix we enable the 'two digit' mode.
     _set_output_format(_TWO_DIGIT_EXPONENT);
