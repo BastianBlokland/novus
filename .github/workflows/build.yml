@@ -21,9 +21,9 @@ jobs:
             image: ubuntu-22.04,
             arch: x86_64,
             os: ubuntu,
-            compiler: clang10,
-            cc: clang-10,
-            cxx: clang++-10
+            compiler: clang13,
+            cc: clang-13,
+            cxx: clang++-13
           }
         - {
             image: windows-2022,
@@ -43,9 +43,9 @@ jobs:
     - name: install-unix
       if: matrix.config.os != 'windows'
       run: |
-        echo "Installing llvm-10"; sudo apt install llvm-10
-        sudo ln -s /usr/bin/llvm-cov-10 /usr/bin/llvm-cov
-        sudo ln -s /usr/bin/llvm-profdata-10 /usr/bin/llvm-profdata
+        echo "Installing llvm-13"; sudo apt install llvm-13
+        sudo ln -s /usr/bin/llvm-cov-13 /usr/bin/llvm-cov
+        sudo ln -s /usr/bin/llvm-profdata-13 /usr/bin/llvm-profdata
 
     - name: configure-unix
       if: matrix.config.os != 'windows'
@@ -111,9 +111,9 @@ jobs:
             image: ubuntu-22.04,
             arch: x86_64,
             os: ubuntu,
-            compiler: clang10,
-            cc: clang-10,
-            cxx: clang++-10
+            compiler: clang13,
+            cc: clang-13,
+            cxx: clang++-13
           }
         - {
             image: macos-13,
