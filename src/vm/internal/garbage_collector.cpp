@@ -93,8 +93,8 @@ auto GarbageCollector::notifyAlloc(unsigned int size) noexcept -> void {
   if (bytesAllocThreadAccum > bytesAllocThreadAccumMax) {
 
     // Decrease the bytesUntilNextCollection atomic.
-    if (m_bytesUntilNextCollection.fetch_sub(bytesAllocThreadAccum, std::memory_order_acq_rel) <
-        0) {
+    if (m_bytesUntilNextCollection.fetch_sub(
+            static_cast<int>(bytesAllocThreadAccum), std::memory_order_acq_rel) < 0) {
 
       m_bytesUntilNextCollection.store(gcByteInterval, std::memory_order_release);
       requestCollection(GarbageCollectFlags::GcCollectNormal);
