@@ -127,7 +127,7 @@ jobs:
             image: windows-2022,
             arch: x86_64,
             os: windows,
-            compiler: mingw-w64-7,
+            compiler: mingw-w64-12,
             generator: MinGW,
             cc: 'C:\ProgramData\Chocolatey\bin\gcc.exe',
             cxx: 'C:\ProgramData\Chocolatey\bin\g++.exe'
@@ -155,8 +155,8 @@ jobs:
     - name: install-windows-mingw
       if: matrix.config.os == 'windows' && matrix.config.generator == 'MinGW'
       run: |
-        echo "Installing mingw-w64-7"
-        choco install mingw --version=7.3.0 --force
+        echo "Installing mingw-w64-12"
+        choco install mingw --version=12.1.0 --force
         echo "where g++.exe:"; where.exe g++.exe
         echo "g++.exe --version:"; g++.exe --version
 
