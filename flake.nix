@@ -22,6 +22,7 @@
           llvmPkg.libcxx
           llvmPkg.lldb
           llvmPkg.clang
+          llvmPkg.bintools
 
           pkgs.cmake
           pkgs.gnumake
