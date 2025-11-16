@@ -35,3 +35,6 @@
 # Fuzz corpus
 /fuzz/corpus
 /fuzz_rawcoverage
+
+# Nix
+/.direnv
