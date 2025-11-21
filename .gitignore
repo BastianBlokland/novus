@@ -10,6 +10,7 @@
 /[Bb]in*
 /compile_commands.json
 /test_coverage.lcov
+/result
 
 # Logs
 /*.log
