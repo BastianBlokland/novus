@@ -36,8 +36,8 @@ fun mergeEntries(Database a, Database b) -> Database
 
 // -- Save / Load
 
-act getDbPath()       getHomePath().map(lambda (PathAbsolute p) p / ".cdb")
-act getDbBackupPath() getHomePath().map(lambda (PathAbsolute p) p / ".cdb.back")
+act getDbPath()       getConfigPath().map(lambda (PathAbsolute p) p / ".cdb")
+act getDbBackupPath() getConfigPath().map(lambda (PathAbsolute p) p / ".cdb.back")
 
 act saveDb(Database db, Path p) -> Option{Error}
   p.fileWrite(jsonWriter{Database}(), db)
