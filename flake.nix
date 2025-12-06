@@ -32,8 +32,8 @@
         cli11Src = pkgs.fetchFromGitHub {
           owner = "CLIUtils";
           repo = "CLI11";
-          rev = "v1.9.1";
-          sha256 = "hiYJoPR4izpEG9a13jM4J+xitMcUO9tVrC9HNDeAbEE=";
+          rev = "v2.6.1";
+          sha256 = "sha256-q5q6TgSex0xjdWFf/4e6dhrN0qWPDjIgWBpdkCTlLys=";
         };
 
         rangSrc = pkgs.fetchFromGitHub {
