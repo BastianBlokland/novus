@@ -170,7 +170,7 @@ act fileCount(Path p, FileListFlags flags = FileListFlags.None) -> Either{int, E
 
 // -- Utilities
 
-act fileListReq(
+act fileListRec(
     Path p,
     bool includeDirs = true,
     TextPattern fileFilter = AnyTextPattern(),
@@ -179,7 +179,7 @@ act fileListReq(
   dl      = fileList(pathAbs, FileListFlags.None, fileFilter, dirFilter);
   if dl as List{PathAbsolute} entries ->
     entries.fold(impure lambda (Either{List{PathAbsolute}, Error} result, PathAbsolute entry)
-      combine(result, fileListReq(entry, includeDirs, fileFilter, dirFilter))
+      combine(result, fileListRec(entry, includeDirs, fileFilter, dirFilter))
     , includeDirs ? List(pathAbs) : List{PathAbsolute}())
   if dl as Error err ->
   (
@@ -188,13 +188,13 @@ act fileListReq(
     else                                            -> err
   )
 
-act fileRemoveReq(Path p) -> Option{Error}
-  p.fileListReq(true).map(impure lambda (List{PathAbsolute} entries)
+act fileRemoveRec(Path p) -> Option{Error}
+  p.fileListRec(true).map(impure lambda (List{PathAbsolute} entries)
     entries.mapReverse(impure lambda (PathAbsolute p) fileRemove(p)).combine()
   )
 
-act fileSizeReq(Path p) -> Either{ByteSize, Error}
-  p.fileListReq(true).map(impure lambda (List{PathAbsolute} entries)
+act fileSizeRec(Path p) -> Either{ByteSize, Error}
+  p.fileListRec(true).map(impure lambda (List{PathAbsolute} entries)
     entries.mapReverse(impure lambda (PathAbsolute p) fileSize(p)).split().valueOrError().map(sum{ByteSize})
   )
 
@@ -205,9 +205,9 @@ act fileCopy(Path from, Path to) -> Option{Error}
     )
   )
 
-act fileCopyReq(Path from, Path to) -> Option{Error}
+act fileCopyRec(Path from, Path to) -> Option{Error}
   fromAbs = pathAbsolute(from);
-  fileListReq(fromAbs, false).map(impure lambda (List{PathAbsolute} files)
+  fileListRec(fromAbs, false).map(impure lambda (List{PathAbsolute} files)
     files.mapReverse(
       impure lambda (PathAbsolute p)
         targetPath = to / p.makeRelative(fromAbs) ?? pathRel();
