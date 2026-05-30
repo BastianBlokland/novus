@@ -2,7 +2,7 @@
   description = "Novus Nix Dev Environment";
 
   inputs = {
-    nixpkgs.url = "nixpkgs/nixos-25.11";
+    nixpkgs.url = "nixpkgs/nixos-26.05";
   };
 
   outputs =
@@ -15,7 +15,7 @@
     {
       packages.${system}.default = llvmPkg.stdenv.mkDerivation rec {
         pname = "novus";
-        version = "0.18.0";
+        version = "0.19.0";
         src = ./.;
 
         nativeBuildInputs = [
@@ -63,13 +63,11 @@
         '';
       };
 
-      defaultPackage.${system} = self.packages.${system};
-
       devShells.${system} = rec {
 
         llvm = (pkgs.mkShellNoCC.override { stdenv = llvmPkg.stdenv; }) {
           packages = [
-            pkgs.nixfmt-rfc-style
+            pkgs.nixfmt
             pkgs.clang-tools
 
             llvmPkg.lld

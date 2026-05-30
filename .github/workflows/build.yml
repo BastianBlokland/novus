@@ -18,12 +18,12 @@ jobs:
       matrix:
         config:
         - {
-            image: ubuntu-22.04,
+            image: ubuntu-24.04,
             arch: x86_64,
             os: ubuntu,
-            compiler: clang13,
-            cc: clang-13,
-            cxx: clang++-13
+            compiler: clang18,
+            cc: clang-18,
+            cxx: clang++-18
           }
         - {
             image: windows-2022,
@@ -43,9 +43,9 @@ jobs:
     - name: install-unix
       if: matrix.config.os != 'windows'
       run: |
-        echo "Installing llvm-13"; sudo apt install llvm-13
-        sudo ln -s /usr/bin/llvm-cov-13 /usr/bin/llvm-cov
-        sudo ln -s /usr/bin/llvm-profdata-13 /usr/bin/llvm-profdata
+        echo "Installing llvm-18"; sudo apt install llvm-18
+        sudo ln -s /usr/bin/llvm-cov-18 /usr/bin/llvm-cov
+        sudo ln -s /usr/bin/llvm-profdata-18 /usr/bin/llvm-profdata
 
     - name: configure-unix
       if: matrix.config.os != 'windows'
@@ -73,7 +73,7 @@ jobs:
 
     - name: fuzz-corpus-cache
       if: matrix.config.os != 'windows'
-      uses: actions/cache@v3
+      uses: actions/cache@v4
       with:
         path: ./fuzz/corpus
         key: fuzz-corpus
@@ -100,23 +100,23 @@ jobs:
       matrix:
         config:
         - {
-            image: ubuntu-22.04,
+            image: ubuntu-24.04,
             arch: x86_64,
             os: ubuntu,
-            compiler: gcc10,
-            cc: gcc-10,
-            cxx: g++-10
+            compiler: gcc13,
+            cc: gcc-13,
+            cxx: g++-13
           }
         - {
-            image: ubuntu-22.04,
+            image: ubuntu-24.04,
             arch: x86_64,
             os: ubuntu,
-            compiler: clang13,
-            cc: clang-13,
-            cxx: clang++-13
+            compiler: clang18,
+            cc: clang-18,
+            cxx: clang++-18
           }
         - {
-            image: macos-13,
+            image: macos-15-intel,
             arch: x86_64,
             os: macos,
             compiler: appleclang,

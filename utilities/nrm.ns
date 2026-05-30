@@ -8,7 +8,7 @@ import "std.ns"
 act collectFilesToRemove(Settings s) -> Either{List{PathAbsolute}, Error}
   s.paths.val
     .filter(impure lambda (Path p) s.recursive || p.fileType() != FileType.Directory)
-    .map(impure lambda (Path p) s.recursive ? fileListReq(p) : (pathAbsolute(p) :: List{PathAbsolute}()))
+    .map(impure lambda (Path p) s.recursive ? fileListRec(p) : (pathAbsolute(p) :: List{PathAbsolute}()))
     .split()
     .valueOrError()
     .map(lambda (List{List{PathAbsolute}} paths) paths.mergeReverse())

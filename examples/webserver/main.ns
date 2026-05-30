@@ -129,7 +129,7 @@ act serve(Settings s)
 
 act loadContent(PathAbsolute root, List{RewriteRule} rewriteUrls)
   print("Loading resouces (root: '" + root.string() + "')");
-  files = fileListReq(root, false).failOnError();
+  files = fileListRec(root, false).failOnError();
   resources = files.parallelMap(impure lambda (PathAbsolute filePath)
     contentType = findHttpContentType(filePath);
     content     = fileRead(filePath).failOnError();
