@@ -63,8 +63,6 @@
         '';
       };
 
-      defaultPackage.${system} = self.packages.${system};
-
       devShells.${system} = rec {
 
         llvm = (pkgs.mkShellNoCC.override { stdenv = llvmPkg.stdenv; }) {
