@@ -40,6 +40,7 @@ act get(IOWatcher watcher) -> Either{PathAbsolute, Error}
 assertEq(
   pathDir = pathCurrent() / "watcher-test1";
   pathFile = pathDir / "file";
+  fileRemoveReq(pathDir);
   fileCreateDir(pathDir).failOnError();
   watcher = ioWatcherCreate(pathDir);
   waitForModFile = fork watcher.get();
@@ -55,6 +56,7 @@ assertEq(
   pathDir     = pathCurrent() / "watcher-test2";
   pathSubDir  = pathDir / "subdir";
   pathFile    = pathSubDir / "file";
+  fileRemoveReq(pathDir);
   fileCreateDir(pathDir).failOnError();
   fileCreateDir(pathSubDir).failOnError();
   watcher = ioWatcherCreate(pathDir);
@@ -71,6 +73,7 @@ assertEq(
   pathDir     = pathCurrent() / "watcher-test3";
   pathSubDir  = pathDir / "lazysubdir";
   pathFile    = pathSubDir / "file";
+  fileRemoveReq(pathDir);
   fileCreateDir(pathDir).failOnError();
   watcher = ioWatcherCreate(pathDir);
   waitForModFile = fork watcher.get();
@@ -89,6 +92,7 @@ assertEq(
   pathSubDir1 = pathDir / "subdir1";
   pathSubDir2 = pathDir / "subdir2";
   pathFile    = pathSubDir2 / "file";
+  fileRemoveReq(pathDir);
   fileCreateDir(pathDir).failOnError();
   fileCreateDir(pathSubDir1).failOnError();
   watcher = ioWatcherCreate(pathDir);
@@ -106,6 +110,7 @@ assert(
   numFiles = 25;
   pathDir = pathCurrent() / "watcher-test5";
   filePaths = for(numFiles, lambda (int i) pathDir / ("file" + i));
+  fileRemoveReq(pathDir);
   fileCreateDir(pathDir).failOnError();
   watcher = ioWatcherCreate(pathDir);
   waits = for(numFiles, impure lambda (int i) fork watcher.get());
@@ -123,6 +128,7 @@ assert(
 assert(
   pathDir = pathCurrent() / "watcher-test6";
   filePaths = for(100, lambda (int i) pathDir / ("file" + i));
+  fileRemoveReq(pathDir);
   fileCreateDir(pathDir).failOnError();
   watcher = ioWatcherCreate(pathDir);
   waitForModFile = fork watcher.get();
@@ -136,6 +142,7 @@ assert(
 
 assert(
   pathDir = pathCurrent() / "watcher-test7";
+  fileRemoveReq(pathDir);
   fileCreateDir(pathDir).failOnError();
   watcher = ioWatcherCreate(pathDir);
   waitForModFile = fork watcher.get();
