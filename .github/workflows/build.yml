@@ -26,6 +26,14 @@ jobs:
             cxx: clang++-18
           }
         - {
+            image: ubuntu-24.04-arm,
+            arch: arm64,
+            os: ubuntu,
+            compiler: clang18,
+            cc: clang-18,
+            cxx: clang++-18
+          }
+        - {
             image: windows-2022,
             arch: x86_64,
             os: windows,
@@ -87,7 +95,7 @@ jobs:
       run: ./scripts/fuzz.sh --path bin/novfuzz-parse --duration 60
 
     - name: upload-coverage
-      if: matrix.config.os != 'windows'
+      if: matrix.config.os != 'windows' && matrix.config.arch == 'x86_64'
       env:
         CODECOV_TOKEN: ${{secrets.CODECOV_TOKEN}}
       run: ./scripts/upload_coverage.sh --token "${CODECOV_TOKEN}"
@@ -116,8 +124,24 @@ jobs:
             cxx: clang++-18
           }
         - {
+            image: ubuntu-24.04-arm,
+            arch: arm64,
+            os: ubuntu,
+            compiler: gcc13,
+            cc: gcc-13,
+            cxx: g++-13
+          }
+        - {
             image: macos-15-intel,
             arch: x86_64,
+            os: macos,
+            compiler: appleclang,
+            cc: clang,
+            cxx: clang++
+          }
+        - {
+            image: macos-15,
+            arch: arm64,
             os: macos,
             compiler: appleclang,
             cc: clang,
