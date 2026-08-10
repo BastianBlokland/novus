@@ -9,6 +9,7 @@
 #include "prog/expr/node_lit_int.hpp"
 #include "prog/expr/node_lit_long.hpp"
 #include "prog/expr/node_lit_string.hpp"
+#include "saturate_cast.hpp"
 #include <cassert>
 #include <cmath>
 #include <iomanip>
@@ -285,7 +286,7 @@ auto precomputeIntrinsic(
   }
   case prog::sym::FuncKind::ConvFloatInt: {
     assert(args.size() == 1);
-    return prog::expr::litIntNode(prog, static_cast<int32_t>(getFloat(*args[0])));
+    return prog::expr::litIntNode(prog, conv::saturateCast<int32_t>(getFloat(*args[0])));
   }
   case prog::sym::FuncKind::ConvFloatString: {
     assert(args.size() == 2);
@@ -321,11 +322,12 @@ auto precomputeIntrinsic(
   }
   case prog::sym::FuncKind::ConvFloatChar: {
     assert(args.size() == 1);
-    return prog::expr::litCharNode(prog, static_cast<uint8_t>(getFloat(*args[0])));
+    return prog::expr::litCharNode(
+        prog, static_cast<uint8_t>(conv::saturateCast<int32_t>(getFloat(*args[0]))));
   }
   case prog::sym::FuncKind::ConvFloatLong: {
     assert(args.size() == 1);
-    return prog::expr::litLongNode(prog, static_cast<int64_t>(getFloat(*args[0])));
+    return prog::expr::litLongNode(prog, conv::saturateCast<int64_t>(getFloat(*args[0])));
   }
 
   // Long

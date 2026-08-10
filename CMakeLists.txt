@@ -9,7 +9,7 @@ endif()
 
 project(
   Novus
-  VERSION 0.19.0
+  VERSION 0.20.0
   LANGUAGES CXX)
 
 # Custom options options.
@@ -62,7 +62,7 @@ if(SANITIZE)
     message(FATAL_ERROR "Sanitizer instrumentation is not supported on windows")
   endif()
   message(STATUS "Enabling sanitizer instrumentation")
-  set(SANITIZERS "address,alignment,bool,builtin,bounds,enum,function,integer-divide-by-zero,object-size,return,unreachable")
+  set(SANITIZERS "address,alignment,bool,builtin,bounds,enum,float-cast-overflow,function,integer-divide-by-zero,object-size,return,unreachable")
   set(CXX_FLAGS_SHARED "${CXX_FLAGS_SHARED} -fsanitize=${SANITIZERS}")
   set(LINKER_FLAGS_SHARED "${LINKER_FLAGS_SHARED} -fsanitize=${SANITIZERS}")
 endif()

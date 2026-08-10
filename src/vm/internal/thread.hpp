@@ -1,8 +1,13 @@
 #pragma once
 #include <cstdint>
-#include <immintrin.h>
 #include <tuple>
 #include <utility>
+
+#if defined(_M_ARM64) || defined(_M_ARM)
+#include <intrin.h> // On msvc the arm hint intrinsics live in 'intrin.h'.
+#elif !defined(__aarch64__) && !defined(__arm__)
+#include <immintrin.h> // On x86 'pause' is exposed as an intrinsic.
+#endif
 
 namespace vm::internal {
 
@@ -77,6 +82,14 @@ auto threadYield() noexcept -> void;
 auto threadSleepNano(int64_t time) noexcept -> bool;
 
 // Emit a cpu pause instruction.
-inline auto threadPause() noexcept -> void { _mm_pause(); }
+inline auto threadPause() noexcept -> void {
+#if defined(_M_ARM64) || defined(_M_ARM)
+  __yield();
+#elif defined(__aarch64__) || defined(__arm__)
+  asm volatile("yield" ::: "memory");
+#else // x86
+  _mm_pause();
+#endif
+}
 
 } // namespace vm::internal
