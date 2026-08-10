@@ -13,6 +13,7 @@
 #include "internal/thread.hpp"
 #include "novasm/op_code.hpp"
 #include "novasm/pcall_code.hpp"
+#include "saturate_cast.hpp"
 #include "vm/exec_state.hpp"
 #include "vm/platform_interface.hpp"
 #include <cmath>
@@ -682,7 +683,7 @@ auto execute(
       PUSH_FLOAT(static_cast<float>(getLong(POP())));
     } break;
     case OpCode::ConvFloatInt: {
-      PUSH_INT(static_cast<int32_t>(POP_FLOAT()));
+      PUSH_INT(conv::saturateCast<int32_t>(POP_FLOAT()));
     } break;
     case OpCode::ConvIntString: {
       PUSH_REF(intToString(refAlloc, POP_INT()));
@@ -708,10 +709,10 @@ auto execute(
       PUSH_INT(static_cast<uint8_t>(getLong(POP())));
     } break;
     case OpCode::ConvFloatChar: {
-      PUSH_INT(static_cast<uint8_t>(POP_FLOAT()));
+      PUSH_INT(static_cast<uint8_t>(conv::saturateCast<int32_t>(POP_FLOAT())));
     } break;
     case OpCode::ConvFloatLong: {
-      PUSH_LONG(static_cast<int64_t>(POP_FLOAT()));
+      PUSH_LONG(conv::saturateCast<int64_t>(POP_FLOAT()));
     } break;
 
     case OpCode::MakeAtomic: {

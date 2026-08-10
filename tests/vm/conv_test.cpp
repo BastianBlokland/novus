@@ -1,5 +1,6 @@
 #include "catch2/catch.hpp"
 #include "helpers.hpp"
+#include <limits>
 
 namespace vm {
 
@@ -147,7 +148,103 @@ TEST_CASE("[vm] Execute conversions", "vm") {
           ADD_PRINT(asmb);
         },
         "input",
-        "-2147483648"); // Unrepresentable by int, high bit 1 all others 0.
+        "2147483647"); // Above the range of an int, saturates to the maximum.
+    CHECK_EXPR(
+        [](novasm::Assembler* asmb) -> void {
+          asmb->addLoadLitFloat(-1e30F); // NOLINT: Magic numbers
+          asmb->addConvFloatInt();
+
+          asmb->addConvIntString();
+          ADD_PRINT(asmb);
+        },
+        "input",
+        "-2147483648"); // Below the range of an int, saturates to the minimum.
+    CHECK_EXPR(
+        [](novasm::Assembler* asmb) -> void {
+          asmb->addLoadLitFloat(std::numeric_limits<float>::infinity());
+          asmb->addConvFloatInt();
+
+          asmb->addConvIntString();
+          ADD_PRINT(asmb);
+        },
+        "input",
+        "2147483647");
+    CHECK_EXPR(
+        [](novasm::Assembler* asmb) -> void {
+          asmb->addLoadLitFloat(std::numeric_limits<float>::quiet_NaN());
+          asmb->addConvFloatInt();
+
+          asmb->addConvIntString();
+          ADD_PRINT(asmb);
+        },
+        "input",
+        "0"); // Nan converts to zero.
+  }
+
+  SECTION("Float to Long") {
+    CHECK_EXPR(
+        [](novasm::Assembler* asmb) -> void {
+          asmb->addLoadLitFloat(42.9F); // NOLINT: Magic numbers
+          asmb->addConvFloatLong();
+
+          asmb->addConvLongString();
+          ADD_PRINT(asmb);
+        },
+        "input",
+        "42");
+    CHECK_EXPR(
+        [](novasm::Assembler* asmb) -> void {
+          asmb->addLoadLitFloat(1e30F); // NOLINT: Magic numbers
+          asmb->addConvFloatLong();
+
+          asmb->addConvLongString();
+          ADD_PRINT(asmb);
+        },
+        "input",
+        "9223372036854775807"); // Above the range of a long, saturates to the maximum.
+    CHECK_EXPR(
+        [](novasm::Assembler* asmb) -> void {
+          asmb->addLoadLitFloat(std::numeric_limits<float>::quiet_NaN());
+          asmb->addConvFloatLong();
+
+          asmb->addConvLongString();
+          ADD_PRINT(asmb);
+        },
+        "input",
+        "0");
+  }
+
+  SECTION("Float to Char (out of range)") {
+    CHECK_EXPR(
+        [](novasm::Assembler* asmb) -> void {
+          asmb->addLoadLitFloat(300.0F); // NOLINT: Magic numbers
+          asmb->addConvFloatChar();
+
+          asmb->addConvIntString();
+          ADD_PRINT(asmb);
+        },
+        "input",
+        "44"); // 300 wraps around to 44.
+    CHECK_EXPR(
+        [](novasm::Assembler* asmb) -> void {
+          asmb->addLoadLitFloat(1e30F); // NOLINT: Magic numbers
+          asmb->addConvFloatChar();
+
+          asmb->addConvIntString();
+          ADD_PRINT(asmb);
+        },
+        "input",
+        "255"); // Saturates to the int maximum, of which the low 8 bits are all set.
+    CHECK_EXPR(
+        [](novasm::Assembler* asmb) -> void {
+          asmb->addLoadLitFloat(std::numeric_limits<float>::quiet_NaN());
+          asmb->addConvFloatChar();
+
+          asmb->addConvIntString();
+          ADD_PRINT(asmb);
+        },
+        "input",
+        "0");
   }
 
   SECTION("Int to String") {
